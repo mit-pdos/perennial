@@ -2,32 +2,39 @@ Global Set Implicit Arguments.
 Global Generalizable Variables T Op State.
 Global Set Printing Projections.
 
-Section Proc.
+(** Syntax: free monad over a type family of operations *)
+Inductive proc (Op: Type -> Type) (T : Type) : Type :=
+| Prim (op : Op T)
+| Ret (v : T)
+| Bind (T1 : Type) (p1 : proc Op T1) (p2 : T1 -> proc Op T).
+Arguments Ret {Op T} v.
 
-  (** Syntax: free monad over a type family of operations *)
+(** Semantics: defined using big-step execution relations *)
 
-  Context (Op:Type -> Type).
+Definition OpSemantics Op State := forall T, Op T -> State -> T -> State -> Prop.
+Definition CrashSemantics State := State -> State -> Prop.
 
-  Inductive proc (T : Type) : Type :=
-  | Prim (op : Op T)
-  | Ret (v : T)
-  | Bind (T1 : Type) (p1 : proc T1) (p2 : T1 -> proc T).
+Record Dynamics Op State :=
+  { step: OpSemantics Op State;
+    crash_step: CrashSemantics State; }.
 
-  (** Semantics: defined using big-step execution relations *)
+Section Dynamics.
 
-  Variable State:Type.
+  Context `(sem: Dynamics Op State).
+  Notation proc := (proc Op).
+  Notation step := sem.(step).
+  Notation crash_step := sem.(crash_step).
 
-  Inductive Result T :=
+  (** First, we define semantics of running programs with halting (without the
+  effect of a crash or recovery) *)
+  Inductive Result State T :=
   | Finished (v:T) (s:State)
   | Crashed (s:State).
 
-  Arguments Crashed {T} s.
+  Arguments Crashed {State T}.
+  Arguments Prim {Op T}.
 
-  Definition OpSemantics := forall T, Op T -> State -> T -> State -> Prop.
-
-  Context (step : OpSemantics).
-
-  Inductive exec : forall T, proc T -> State -> Result T -> Prop :=
+  Inductive exec : forall T, proc T -> State -> Result State T -> Prop :=
   (* normal execution *)
   | ExecRet : forall T (v:T) s,
       exec (Ret v) s (Finished v s)
@@ -52,8 +59,6 @@ Section Proc.
       exec (Bind p p') s (Crashed s')
   .
 
-  Definition CrashSemantics := State -> State -> Prop.
-  Variable crash_step : CrashSemantics.
 
   (* [exec_recover] models running recovery with crashes during recovery;
       it's essentially
@@ -92,12 +97,12 @@ Section Proc.
       exec_recover rec s' rv s'' ->
       rexec p rec s (Recovered rv s'').
 
-End Proc.
+End Dynamics.
 
 Notation "x <- p1 ; p2" := (Bind p1 (fun x => p2))
                             (at level 60, right associativity).
 
-Arguments Crashed {State T} s.
+Arguments Crashed {State T}.
+Arguments Prim {Op T}.
 Arguments RFinished {State T R} v s.
 Arguments Recovered {State T R} v s.
-Arguments Ret {Op T} v.
