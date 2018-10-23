@@ -4,6 +4,8 @@ Global Set Implicit Arguments.
 Global Generalizable Variables T R Op State.
 Global Set Printing Projections.
 
+Import RelationNotations.
+
 (** Syntax: free monad over a type family of operations *)
 Inductive proc (Op: Type -> Type) (T : Type) : Type :=
 | Prim (op : Op T)
@@ -35,17 +37,17 @@ Section Dynamics.
     match p with
     | Ret v => pure v
     | Prim op => step op
-    | Bind p p' => and_then (exec p) (fun v => exec (p' v))
+    | Bind p p' => v <- exec p; exec (p' v)
     end.
 
   Fixpoint exec_crash T (p: proc T) : relation State unit :=
     match p with
     | Ret v => pure tt
-    | Prim op => rel_or (pure tt) (step op;; pure tt)
-    | Bind p p' => rel_or (pure tt)
-                         (rel_or (exec_crash p)
-                                 (and_then (exec p)
-                                           (fun v => exec_crash (p' v))))
+    | Prim op => pure tt + (step op;; pure tt)
+    | Bind p p' => pure tt +
+                  exec_crash p +
+                  (v <- exec p;
+                     (exec_crash (p' v)))
     end.
 
   Definition exec_recover R (rec: proc R) : relation State R :=
@@ -58,5 +60,9 @@ Section Dynamics.
 
 End Dynamics.
 
-Notation "x <- p1 ; p2" := (Bind p1 (fun x => p2))
-                            (at level 60, right associativity).
+Module ProcNotations.
+  Declare Scope proc_scope.
+  Delimit Scope proc_scope with proc.
+  Notation "x <- p1 ; p2" := (Bind p1 (fun x => p2))
+                               (at level 60, right associativity) : proc_scope.
+End ProcNotations.

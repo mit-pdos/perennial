@@ -194,4 +194,11 @@ Section OutputRelations.
 
 End OutputRelations.
 
-Infix ";;" := seq (at level 21, left associativity).
+Module RelationNotations.
+  Infix "--->" := rimpl (at level 40, no associativity).
+  Infix "<--->" := requiv (at level 40, no associativity).
+  Infix ";;" := seq (at level 21, left associativity).
+  Infix "+" := rel_or.
+  Notation "x <- p1 ; p2" := (and_then p1 (fun x => p2))
+                               (at level 60, right associativity).
+End RelationNotations.

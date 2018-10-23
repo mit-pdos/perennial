@@ -3,6 +3,8 @@ Require Import Helpers.Instances.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.Helpers.
 
+Import RelationNotations.
+
 Section Dynamics.
   Context `(sem: Dynamics Op State).
   Notation proc := (proc Op).
@@ -24,9 +26,9 @@ Section Dynamics.
     - rewrite seq_left_id.
       reflexivity.
     - rewrite <- rel_or_intror.
-      rewrite <- rel_or_intror.
       rewrite bind_seq_assoc.
-      apply and_then_cong; auto.
+      setoid_rewrite H.
+      auto.
   Qed.
 
   Definition exec_equiv T (p p': proc T) :=
@@ -54,13 +56,15 @@ Section Dynamics.
     rewrite bind_assoc; auto.
   Qed.
 
-  (* exec_recover (Bind p p') ==
-     (crash_step; exec (Bind p p') -> crash)*;
-     crash_step; exec (Bind p p') -> finish ==
-
-     exec_recover p;
-     (rexec (p' _) p -> recovered);
-     exec (p' _) -> finish
-*)
+  Theorem exec_recover_bind_inv
+          `(rec1: proc R)
+          `(rec2: R -> proc R') :
+    exec_recover (Bind rec1 rec2) --->
+                 (v <- exec_recover rec1;
+                    v' <- bind_star (fun v => rexec (rec2 v) rec1) v;
+                    exec (rec2 v')).
+  Proof.
+    repeat unfold exec_recover, rexec; simpl.
+  Admitted.
 
 End Dynamics.
