@@ -1,5 +1,5 @@
 Global Set Implicit Arguments.
-Global Generalizable Variables T Op State.
+Global Generalizable Variables T R Op State.
 Global Set Printing Projections.
 
 (** Syntax: free monad over a type family of operations *)
@@ -102,6 +102,7 @@ End Dynamics.
 Notation "x <- p1 ; p2" := (Bind p1 (fun x => p2))
                             (at level 60, right associativity).
 
+Arguments exec {Op State} sem {T} p s r.
 Arguments Crashed {State T}.
 Arguments Prim {Op T}.
 Arguments RFinished {State T R} v s.

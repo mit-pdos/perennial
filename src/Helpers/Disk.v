@@ -1,7 +1,8 @@
 Require Import Omega.
 Require Import RelationClasses.
 Require Import List.
-Require Import Helpers.
+Require Import Helpers.Helpers.
+Require Import Helpers.Instances.
 
 Set Implicit Arguments.
 

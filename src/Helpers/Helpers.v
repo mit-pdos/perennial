@@ -5,35 +5,6 @@ Require Import EquivDec.
 
 Set Implicit Arguments.
 
-
-(** * Decidable equality.
-
-    [EqualDec] defines a notion of decidable equality for things
-    of type [A].  This means that there is a function, called
-    [equal_dec], which, given two things of type [A], will return
-    whether they are equal or not.
-  *)
-
-Class EqualDec A :=
-  equal_dec : forall x y : A, { x = y } + { x <> y }.
-
-(**
-    We define the notation [x == y] to mean our decidable equality
-    between [x] and [y].
-  *)
-
-Notation " x == y " := (equal_dec (x :>) (y :>)) (no associativity, at level 70).
-
-(**
-    Here, we define some types for which we know how to compute
-    decidable equality (namely, equality for [nat]s, and equality
-    for [bool]s).
-  *)
-
-Instance nat_equal_dec : EqualDec nat := eq_nat_dec.
-Instance bool_equal_dec : EqualDec bool := bool_dec.
-
-
 (** * [maybe_holds] predicate.
 
     One pattern that shows up in our lab assignments is that we
@@ -396,3 +367,14 @@ Ltac especialize H :=
 
 Ltac rename_by_type type name :=
   match goal with | x : type |- _ => rename x into name end.
+
+Ltac invert H :=
+  inversion H; subst; repeat sigT_eq; subst.
+
+Ltac invertc H := invert H; clear H.
+
+Tactic Notation "inv" uconstr(pat) :=
+  lazymatch goal with
+  | [ H: pat, H': pat |- _ ] => fail "pattern not unique"
+  | [ H: pat |- _ ] => invert H
+  end.
