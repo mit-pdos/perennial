@@ -9,7 +9,9 @@ Class EqualDec A :=
     between [x] and [y].
   *)
 
-Notation " x == y " := (equal_dec (x :>) (y :>)) (no associativity, at level 70).
+Module EqualDecNotation.
+  Infix "==" := (equal_dec (x :>) (y :>)) (no associativity, at level 70).
+End EqualDecNotation.
 
 Ltac RelInstance_t :=
   intros;
@@ -49,32 +51,9 @@ Instance sigT_eq_dec A (P: A -> Prop) (dec:EqualDec A) : EqualDec (sig P).
 Proof.
   hnf; intros.
   destruct x as [x ?], y as [y ?].
-  destruct (x == y); subst; [ left | right ].
+  destruct (equal_dec x y); subst; [ left | right ].
   - f_equal.
     apply proof_irrelevance.
   - intro.
     inversion H; congruence.
-Qed.
-
-Inductive kleene_star {A} (R: A -> A -> Prop) : A -> A -> Prop :=
-| star_refl : forall x, kleene_star R x x
-| star_one_more : forall x y z,
-    R x y ->
-    kleene_star R y z ->
-    kleene_star R x z.
-
-Local Hint Constructors kleene_star.
-
-Theorem star_one : forall A (R: A -> A -> Prop) x y,
-    R x y ->
-    kleene_star R x y.
-Proof.
-  eauto.
-Qed.
-
-Instance kleene_star_preorder A (R: A -> A -> Prop) : PreOrder (kleene_star R).
-Proof.
-  RelInstance_t.
-  - eauto.
-  - induction H; eauto.
 Qed.

@@ -378,3 +378,33 @@ Tactic Notation "inv" uconstr(pat) :=
   | [ H: pat, H': pat |- _ ] => fail "pattern not unique"
   | [ H: pat |- _ ] => invert H
   end.
+
+Ltac propositional :=
+  repeat match goal with
+         | |- forall _, _ => intros
+         | [ H: _ /\ _ |- _ ] => destruct H
+         | [ H: _ <-> _ |- _ ] => destruct H
+         | [ H: False |- _ ] => solve [ destruct H ]
+         | [ H: True |- _ ] => clear H
+         | [ H: ~?P |- _ ] => solve [ destruct (H ltac:(trivial)) ]
+         | [ H: ?P -> _, H': ?P |- _ ] =>
+           match type of P with
+           | Prop => specialize (H H')
+           end
+         | [ H: forall x, x = _ -> _ |- _ ] =>
+           specialize (H _ eq_refl)
+         | [ H: forall x, _ = x -> _ |- _ ] =>
+           specialize (H _ eq_refl)
+         | [ H: exists (varname : _), _ |- _ ] =>
+           let newvar := fresh varname in
+           destruct H as [newvar ?]
+         | [ H: ?P |- ?P ] => exact H
+         | _ => progress subst
+         end.
+
+Ltac add_hypothesis pf :=
+  let P := type of pf in
+  lazymatch goal with
+  | [ H: P |- _ ] => fail "already known"
+  | _ => pose proof pf
+  end.
