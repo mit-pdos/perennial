@@ -1,21 +1,15 @@
 ## Common library code
 CODE := $(wildcard src/POCS.v)
 CODE += $(wildcard src/Helpers/*.v)
-CODE += $(wildcard src/Common/*.v)
 CODE += $(wildcard src/Spec/*.v)
-CODE += $(wildcard src/StatDb/*.v)
-CODE += $(wildcard src/BadBlockRemap/*.v)
-CODE += $(wildcard src/AtomicPair/*.v)
-CODE += $(wildcard src/ReplicatedDisk/*.v)
-
-DEP_FILES := $(patsubst src/%.v,build/%.v.d,$(CODE))
 
 COQRFLAGS := -R build POCS
 
 BINS	:= statdb-cli remap-nbd replicate-nbd
 
 .PHONY: default
-default: $(patsubst %,bin/%,$(BINS)) docs
+# default: $(patsubst %,bin/%,$(BINS)) docs
+default: build/POCS.vo
 
 build/%.v: src/%.v
 	@mkdir -p $(@D)
