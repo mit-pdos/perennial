@@ -16,8 +16,8 @@ Arguments Ret {Op T} v.
 
 (** Semantics: defined using big-step execution relations *)
 
-Definition OpSemantics Op State := forall T, Op T -> relation State T.
-Definition CrashSemantics State := relation State unit.
+Definition OpSemantics Op State := forall T, Op T -> relation State State T.
+Definition CrashSemantics State := relation State State unit.
 
 Record Dynamics Op State :=
   { step: OpSemantics Op State;
@@ -33,14 +33,14 @@ Section Dynamics.
   (** First, we define semantics of running programs with halting (without the
   effect of a crash or recovery) *)
 
-  Fixpoint exec {T} (p: proc T) : relation State T :=
+  Fixpoint exec {T} (p: proc T) : relation State State T :=
     match p with
     | Ret v => pure v
     | Prim op => step op
     | Bind p p' => v <- exec p; exec (p' v)
     end.
 
-  Fixpoint exec_crash {T} (p: proc T) : relation State unit :=
+  Fixpoint exec_crash {T} (p: proc T) : relation State State unit :=
     match p with
     | Ret v => pure tt
     | Prim op => pure tt + (step op;; pure tt)
@@ -50,12 +50,12 @@ Section Dynamics.
                      exec_crash (p' v))
     end.
 
-  Definition exec_recover {R} (rec: proc R) : relation State R :=
+  Definition exec_recover {R} (rec: proc R) : relation State State R :=
     seq_star (exec_crash rec;; crash_step);;
              exec rec.
 
   (* recovery execution *)
-  Definition rexec {T R} (p: proc T) (rec: proc R) : relation State R :=
+  Definition rexec {T R} (p: proc T) (rec: proc R) : relation State State R :=
       exec_crash p;; crash_step;; exec_recover rec.
 
 End Dynamics.

@@ -13,12 +13,12 @@ Record SpecProps T R State :=
 Definition Specification A T R State := A -> State -> SpecProps T R State.
 
 Definition spec_exec A T R State (spec: Specification A T R State) :
-  relation State T :=
+  relation State State T :=
   fun s s' r => forall a,
     (spec a s).(pre) -> (spec a s).(post) s' r.
 
 Definition spec_rexec A T R State (spec: Specification A T R State) :
-  relation State R :=
+  relation State State R :=
   fun s s' r => forall a,
     (spec a s).(pre) -> (spec a s).(recovered) s' r.
 
