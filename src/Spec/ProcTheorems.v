@@ -17,18 +17,21 @@ Section Dynamics.
 
   Hint Resolve rimpl_refl requiv_refl.
 
+  Ltac monad :=
+    rewrite ?bind_assoc, ?bind_left_id;
+    repeat (setoid_rewrite bind_assoc ||
+            setoid_rewrite bind_left_id);
+    try reflexivity.
+
   Theorem exec_to_crash T (p: proc T) :
     rimpl (exec p;; pure tt) (exec_crash p).
   Proof.
-    induction p; simpl in *.
+    induction p; simpl in *; monad.
     - rewrite <- rel_or_intror.
       reflexivity.
-    - rewrite seq_left_id.
-      reflexivity.
-    - rewrite <- rel_or_intror.
-      rewrite bind_seq_assoc.
-      setoid_rewrite H.
-      auto.
+    - setoid_rewrite H.
+      rewrite <- rel_or_intror.
+      eauto.
   Qed.
 
   Definition exec_equiv T (p p': proc T) :=
@@ -42,8 +45,7 @@ Section Dynamics.
   Theorem monad_left_id T T' (p: T' -> proc T) v :
       Bind (Ret v) p <==> p v.
   Proof.
-    unfold "<==>"; simpl.
-    rewrite bind_left_id; auto.
+    unfold "<==>"; simpl; monad.
   Qed.
 
   Theorem monad_assoc
@@ -52,8 +54,7 @@ Section Dynamics.
           `(p3: T2 -> proc T3) :
     Bind (Bind p1 p2) p3 <==> Bind p1 (fun v => Bind (p2 v) p3).
   Proof.
-    unfold "<==>"; simpl.
-    rewrite bind_assoc; auto.
+    unfold "<==>"; simpl; monad.
   Qed.
 
   Theorem exec_recover_bind_inv
@@ -64,7 +65,8 @@ Section Dynamics.
                     v' <- bind_star (fun v => rexec (rec2 v) rec1) v;
                     exec (rec2 v')).
   Proof.
-    repeat unfold exec_recover, rexec; simpl.
+    repeat unfold exec_recover, rexec; simpl; monad.
+    rewrite ?bind_dist_r; monad.
   Admitted.
 
 End Dynamics.
