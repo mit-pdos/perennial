@@ -95,8 +95,7 @@ Section Dynamics.
     rewrite <- ?bind_assoc.
     rel_congruence; norm.
 
-
-
-  Admitted.
+    rewrite bind_sliding; norm.
+  Qed.
 
 End Dynamics.

@@ -106,6 +106,7 @@ Section OutputRelations.
            | [ H: ?r ---> _,
                   H': ?r ?x ?y ?o |- _ ] =>
              add_hypothesis (H x y o H')
+           | [ u: unit |- _ ] => destruct u
            | _ => progress propositional
            | _ => solve [ eauto 10 ]
            | [ H: _ \/ _  |- _ ] => destruct H
@@ -182,7 +183,7 @@ Section OutputRelations.
   Hint Constructors bind_star.
 
   Global Instance bind_star_respectful T :
-    Proper (pointwise_relation _ rimpl ==> pointwise_relation _ rimpl) (bind_star (T:=T)).
+    Proper (pointwise_relation _ rimpl ==> eq ==> rimpl) (bind_star (T:=T)).
   Proof.
     t.
     induction H0; eauto.
@@ -256,14 +257,8 @@ Section OutputRelations.
       seq_star r <---> bind_star (fun _ => r) tt.
   Proof.
     t.
-    - induction H;
-        repeat match goal with
-               | [ u: unit |- _ ] => destruct u
-               end; eauto.
-    - induction H; intros; subst;
-        repeat match goal with
-               | [ u: unit |- _ ] => destruct u
-               end; eauto.
+    - induction H; t.
+    - induction H; t.
   Qed.
 
   Lemma bind_star_fun_ext T (r r': T -> relation T) (init: T) :
@@ -384,6 +379,47 @@ Section OutputRelations.
 
       Grab Existential Variables.
       all: trivial.
+  Qed.
+
+  Theorem bind_sliding T1 (p: relation T1) (q: T1 -> relation unit) :
+    seq_star (and_then p q);; p <--->
+             v <- p; bind_star (fun v0 => q v0;; p) v.
+  Proof.
+    apply rimpl_to_requiv.
+    - t.
+      gen y.
+      induction H; t.
+      specialize (IHseq_star _ ltac:(eauto)); t.
+    - t.
+      gen x.
+      induction H0; t.
+      specialize (IHbind_star _ ltac:(eauto)); t.
+
+      Grab Existential Variables.
+      exact tt.
+  Qed.
+
+  Theorem seq_sliding T1 (p: relation T1) (q: relation unit) :
+    seq_star (p;; q);; p --->
+             p;; seq_star (q;; p).
+  Proof.
+    t.
+    gen y.
+    induction H; t.
+    specialize (IHseq_star _ ltac:(eauto)); t.
+  Qed.
+
+  Theorem seq_unit_sliding (p: relation unit) (q: relation unit) :
+    p;; seq_star (q;; p) --->
+     seq_star (p;; q);; p.
+  Proof.
+    t.
+    gen x.
+    induction H0; t.
+    specialize (IHseq_star _ ltac:(eauto)); t.
+
+    Grab Existential Variables.
+    exact tt.
   Qed.
 
 End OutputRelations.
