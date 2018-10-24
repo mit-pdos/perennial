@@ -12,8 +12,14 @@ Section Abstraction.
   Definition absr : relation AState CState unit :=
     fun s cs _ => abs s cs.
 
-  (* define abstraction as transforming a specification in terms of another spec *)
-  (* TODO: define abstraction in terms of execution, not specs *)
+  Definition refines T
+             (p: relation CState CState T)
+             (spec: relation AState AState T) :=
+    absr;; p ---> v <- spec; absr;; pure v.
+
+  (* define refinement as transforming an abstract specification to a concrete
+  one (a program satisfying the abstract spec should satisfy the concrete spec
+  after refinement-preserving compilation) *)
   Definition refine_spec
              A T R
              (spec: Specification A T R AState)
@@ -27,5 +33,20 @@ Section Abstraction.
          recovered := fun cs' r =>
                         exists s', abs s' cs' /\
                               (spec a s).(recovered) s' r; |}.
+
+  Section Dynamics.
+    Context `(sem: Dynamics Op CState).
+    Notation proc := (proc Op).
+    Notation exec := sem.(exec).
+    Notation rexec := sem.(rexec).
+
+    Definition crash_refines T R
+               (p: proc T) (rec: proc R)
+               (exec_spec: relation AState AState T)
+               (rexec_spec: relation AState AState R) :=
+      refines (exec p) exec_spec /\
+      refines (rexec p rec) rexec_spec.
+
+  End Dynamics.
 
 End Abstraction.
