@@ -85,11 +85,9 @@ Section Dynamics.
     rewrite ?bind_dist_r; norm.
 
     (* a few abstractions *)
-    generalize dependent (exec rec1);
-      generalize dependent (exec_crash rec1);
-      generalize dependent crash_step;
+    gen (exec rec1) (exec_crash rec1) crash_step;
       clear rec1;
-      intros crash rec1_crash rec1.
+      intros rec1 rec1_crash crash.
 
     rewrite denesting; norm.
     rel_congruence.

@@ -379,6 +379,7 @@ Tactic Notation "inv" uconstr(pat) :=
   | [ H: pat |- _ ] => invert H
   end.
 
+(** Propositional *)
 Ltac propositional :=
   repeat match goal with
          | |- forall _, _ => intros
@@ -408,3 +409,31 @@ Ltac add_hypothesis pf :=
   | [ H: P |- _ ] => fail "already known"
   | _ => pose proof pf
   end.
+
+(** Abstract *)
+Local Lemma abstract_away_helper {A} (P: A -> Prop) (x y:A) :
+  P y -> y = x -> P x.
+Proof.
+  intros; subst; auto.
+Qed.
+
+Ltac abstract_term t :=
+  match goal with
+  | |- ?g => let p := eval pattern t in g in
+               match p with
+               | ?P ?x => eapply (abstract_away_helper P)
+               end
+  end.
+
+(* borrowed from Software Foundations' LibTactics
+https://softwarefoundations.cis.upenn.edu/plf-current/LibTactics.html *)
+Tactic Notation "gen" constr(X1) :=
+  generalize dependent X1.
+Tactic Notation "gen" constr(X1) constr(X2) :=
+  gen X2; gen X1.
+Tactic Notation "gen" constr(X1) constr(X2) constr(X3) :=
+  gen X3; gen X2; gen X1.
+Tactic Notation "gen" constr(X1) constr(X2) constr(X3) constr(X4) :=
+  gen X4; gen X3; gen X2; gen X1.
+Tactic Notation "gen" constr(X1) constr(X2) constr(X3) constr(X4) constr(X5) :=
+  gen X5; gen X4; gen X3; gen X2; gen X1.
