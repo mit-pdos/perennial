@@ -57,3 +57,12 @@ Proof.
   - intro.
     inversion H; congruence.
 Qed.
+
+Class Inhabited T := witness : T.
+(* should address most instances *)
+Hint Extern 0 (Inhabited _) => unfold Inhabited; constructor : typeclass_instances.
+
+Instance unit_inhabited : Inhabited unit.
+Proof.
+  typeclasses eauto.
+Qed.

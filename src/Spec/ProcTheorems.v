@@ -17,21 +17,36 @@ Section Dynamics.
 
   Hint Resolve rimpl_refl requiv_refl.
 
-  Ltac monad :=
+  Ltac norm :=
     rewrite ?bind_assoc, ?bind_left_id;
     repeat (setoid_rewrite bind_assoc ||
-            setoid_rewrite bind_left_id);
+            setoid_rewrite bind_left_id ||
+            setoid_rewrite rel_or_assoc);
     try reflexivity.
 
   Theorem exec_to_crash T (p: proc T) :
-    rimpl (exec p;; pure tt) (exec_crash p).
+    exec p;; pure tt ---> exec_crash p.
   Proof.
-    induction p; simpl in *; monad.
+    induction p; simpl in *; norm.
     - rewrite <- rel_or_intror.
       reflexivity.
     - setoid_rewrite H.
       rewrite <- rel_or_intror.
       eauto.
+  Qed.
+
+  Theorem exec_crash_noop T (p: proc T) :
+    pure tt ---> exec_crash p.
+  Proof.
+    induction p; simpl in *; norm.
+    - rewrite <- rel_or_introl; auto.
+    - rewrite <- rel_or_introl, <- rel_or_introl; auto.
+  Qed.
+
+  Theorem exec_crash_idem T (p: proc T) :
+    pure tt + exec_crash p <---> exec_crash p.
+  Proof.
+    apply rimpl_or; auto using exec_crash_noop.
   Qed.
 
   Definition exec_equiv T (p p': proc T) :=
@@ -45,7 +60,7 @@ Section Dynamics.
   Theorem monad_left_id T T' (p: T' -> proc T) v :
       Bind (Ret v) p <==> p v.
   Proof.
-    unfold "<==>"; simpl; monad.
+    unfold "<==>"; simpl; norm.
   Qed.
 
   Theorem monad_assoc
@@ -54,7 +69,7 @@ Section Dynamics.
           `(p3: T2 -> proc T3) :
     Bind (Bind p1 p2) p3 <==> Bind p1 (fun v => Bind (p2 v) p3).
   Proof.
-    unfold "<==>"; simpl; monad.
+    unfold "<==>"; simpl; norm.
   Qed.
 
   Theorem exec_recover_bind_inv
@@ -65,8 +80,25 @@ Section Dynamics.
                     v' <- bind_star (fun v => rexec (rec2 v) rec1) v;
                     exec (rec2 v')).
   Proof.
-    repeat unfold exec_recover, rexec; simpl; monad.
-    rewrite ?bind_dist_r; monad.
+    repeat unfold exec_recover, rexec; simpl; norm.
+    rewrite exec_crash_idem.
+    rewrite ?bind_dist_r; norm.
+
+    (* a few abstractions *)
+    generalize dependent (exec rec1);
+      generalize dependent (exec_crash rec1);
+      generalize dependent crash_step;
+      clear rec1;
+      intros crash rec1_crash rec1.
+
+    rewrite denesting; norm.
+    rel_congruence.
+
+    rewrite <- ?bind_assoc.
+    rel_congruence; norm.
+
+
+
   Admitted.
 
 End Dynamics.
