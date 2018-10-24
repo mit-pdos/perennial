@@ -13,13 +13,13 @@ Record SpecProps T R State :=
 Definition Specification A T R State := A -> State -> SpecProps T R State.
 
 Definition spec_exec A T R State (spec: Specification A T R State) :
-  A -> relation State T :=
-  fun a s s' r =>
+  relation State T :=
+  fun s s' r => forall a,
     (spec a s).(pre) -> (spec a s).(post) s' r.
 
 Definition spec_rexec A T R State (spec: Specification A T R State) :
-  A -> relation State R :=
-  fun a s s' r =>
+  relation State R :=
+  fun s s' r => forall a,
     (spec a s).(pre) -> (spec a s).(recovered) s' r.
 
 Definition spec_impl A A'
@@ -41,8 +41,8 @@ Section Hoare.
   Definition proc_ok A T R
              (p: proc T) (rec: proc R)
              (spec: Specification A T R State) :=
-    forall a, rimpl (exec p) (spec_exec spec a) /\
-         rimpl (rexec p rec) (spec_rexec spec a).
+    rimpl (exec p) (spec_exec spec) /\
+    rimpl (rexec p rec) (spec_rexec spec).
 
   Theorem proc_ok_expand A T R
           (p: proc T) (rec: proc R)
@@ -56,10 +56,10 @@ Section Hoare.
                 (spec a s).(recovered) s' rv).
   Proof.
     unfold proc_ok, rimpl, spec_exec, spec_rexec; split; intros.
-    - specialize (H a); intuition eauto 10.
-    - specialize (H a); intuition idtac.
-      specialize (H x); intuition eauto.
-      specialize (H x); intuition eauto.
+    - intuition eauto 10.
+    - split; intros.
+      specialize (H a x); intuition eauto.
+      specialize (H a x); intuition eauto.
   Qed.
 
   Theorem spec_impl_relations A A'
