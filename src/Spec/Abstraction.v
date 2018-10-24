@@ -35,18 +35,17 @@ Section Abstraction.
                               (spec a s).(recovered) s' r; |}.
 
   Section Dynamics.
-    Context `(sem: Dynamics Op CState).
-    Notation proc := (proc Op).
-    Notation exec := sem.(exec).
-    Notation rexec := sem.(rexec).
+    Context C_Op (c_sem: Dynamics C_Op CState).
+    Notation c_proc := (proc C_Op).
+    Notation c_exec := c_sem.(exec).
+    Notation c_rexec := c_sem.(rexec).
 
     Definition crash_refines T R
-               (p: proc T) (rec: proc R)
+               (p: c_proc T) (rec: c_proc R)
                (exec_spec: relation AState AState T)
                (rexec_spec: relation AState AState R) :=
-      refines (exec p) exec_spec /\
-      refines (rexec p rec) rexec_spec.
-
+      refines (c_exec p) exec_spec /\
+      refines (c_rexec p rec) rexec_spec.
   End Dynamics.
 
 End Abstraction.

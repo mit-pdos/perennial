@@ -29,6 +29,9 @@ Section OutputRelations.
   Definition identity {A} {T} : relation A A T :=
     fun x y o => x = y.
 
+  Definition any {A B} {T} : relation A B T :=
+    fun x y o => True.
+
   Definition rel_or A B T (r1 r2: relation A B T) : relation A B T :=
     fun x y o => r1 x y o \/ r2 x y o.
 
