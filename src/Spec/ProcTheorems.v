@@ -36,6 +36,12 @@ Section Dynamics.
     - rewrite <- rel_or_introl, <- rel_or_introl; auto.
   Qed.
 
+  Theorem exec_crash_ret T (v: T) :
+    exec_crash (Ret v) <---> pure tt.
+  Proof.
+    reflexivity.
+  Qed.
+
   Theorem exec_crash_idem T (p: proc T) :
     pure tt + exec_crash p <---> exec_crash p.
   Proof.

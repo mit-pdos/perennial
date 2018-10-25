@@ -297,6 +297,13 @@ Section OutputRelations.
     t.
   Qed.
 
+  Global Instance rimpl_equiv_applied_proper A B T :
+    Proper (requiv ==> requiv ==> iff) (rimpl (A:=A) (B:=B) (T:=T)).
+  Proof.
+    t.
+    split; t.
+  Qed.
+
   Definition rimpl_refl A B T (r: relation A B T) : r ---> r := ltac:(reflexivity).
   Definition requiv_refl A B T (r: relation A B T) : r <---> r := ltac:(reflexivity).
 
@@ -463,15 +470,34 @@ Ltac rel_congruence :=
     solver
   end.
 
+Hint Rewrite bind_assoc bind_left_id bind_star_unit rel_or_assoc : relations.
+
+Ltac setoid_norm_goal :=
+  match goal with
+  | |- context[and_then (and_then _ _) _] =>
+    setoid_rewrite bind_assoc
+  | |- context[and_then (pure _) _] =>
+    setoid_rewrite bind_left_id
+  end.
+
+Ltac setoid_norm_hyps :=
+  match goal with
+  | [ H: context[and_then (and_then _ _) _] |- _ ] =>
+    setoid_rewrite bind_assoc in H
+  | [ H: context[and_then (pure _) _] |- _ ] =>
+    setoid_rewrite bind_left_id in H
+  end.
+
 (* TODO: maintain a fast version of this tactic *)
-Ltac norm :=
-  rewrite ?bind_assoc, ?bind_left_id, ?bind_star_unit in *;
-  repeat (setoid_rewrite bind_assoc ||
-          setoid_rewrite bind_left_id ||
-          setoid_rewrite rel_or_assoc ||
-          setoid_rewrite bind_star_unit);
-  repeat match goal with
-         | [ H: _ |- _ ] => setoid_rewrite bind_assoc in H
-         | [ H: _ |- _ ] => setoid_rewrite bind_left_id in H
-         end;
+Ltac norm_goal :=
+  autorewrite with relations;
+  repeat setoid_norm_goal;
   try reflexivity.
+
+Ltac norm_all :=
+  autorewrite with relations in *;
+  repeat (setoid_norm_goal || setoid_norm_hyps);
+  try reflexivity.
+
+Tactic Notation "norm" := norm_goal.
+Tactic Notation "norm" "in" "*" := norm_all.

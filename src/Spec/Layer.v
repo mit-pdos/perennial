@@ -26,6 +26,7 @@ Section Layers.
   Notation CState := c_layer.(State).
   Notation c_proc := (proc C_Op).
   Notation c_sem := c_layer.(sem).
+  Notation c_exec := c_layer.(sem).(exec).
   Notation c_exec_recover := c_layer.(sem).(exec_recover).
 
   Context Op (a_layer: Layer Op).
@@ -76,18 +77,58 @@ Section Layers.
    (and we need [setoid_rewrite] to rewrite under bind binders) *)
   Opaque exec_recover.
 
-  Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
-      crash_refines rf.(absr) c_sem
-                    (compile p) (Bind recover (fun _ => compile rec))
-                    (a_sem.(exec) p)
-                    (a_sem.(rexec) p rec).
+  (* attempt to make rewriting across monad associativity a bit easier; instead
+     of massaging the goal to have [r1] appear, instead generalize the
+     hypothesis to apply to apply to [forall rx, r1; rx] *)
+  Lemma impl_rx A B T (r1 r2: relation A B T) :
+    r1 ---> r2 ->
+    (forall C T2 (rx: T -> relation B C T2),
+        and_then r1 rx ---> and_then r2 rx).
+  Proof.
+    intros.
+    rel_congruence; auto.
+  Qed.
+
+  Theorem compile_exec_ok : forall T (p: a_proc T),
+      refines
+        rf.(absr)
+             (c_exec (compile p))
+             (a_sem.(exec) p).
   Proof.
     induction p; simpl; intros.
     - let H := fresh "Hop_ok" in
       pose proof (rf.(compile_op_ok) op) as H;
         unfold compile_op_refines_step, crash_refines in H;
         propositional.
-      split; eauto.
+    - unfold refines; norm.
+    - unfold refines in *; norm.
+      pose proof (impl_rx IHp).
+      norm in *.
+      setoid_rewrite H0.
+      rel_congruence; norm.
+      specialize (H x).
+      rewrite <- H.
+      norm.
+  Qed.
+
+  Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
+        crash_refines
+          rf.(absr) c_sem
+                    (compile p) (Bind recover (fun _ => compile rec))
+                    (a_sem.(exec) p)
+                    (a_sem.(rexec) p rec).
+  Proof.
+    intros.
+    split; [ now apply compile_exec_ok | ].
+    induction p; simpl; intros.
+    - let H := fresh "Hop_ok" in
+      pose proof (rf.(compile_op_ok) op) as H;
+        unfold compile_op_refines_step, crash_refines in H;
+        propositional.
+      match goal with
+      | [ H: context[c_exec (compile_op _)] |- _ ] =>
+        clear H (* normal execution of op is irrelevant *)
+      end.
       unfold refines in *.
       unfold rexec in *; norm.
       setoid_rewrite exec_recover_bind.
@@ -95,28 +136,23 @@ Section Layers.
       setoid_rewrite <- bind_assoc at 2.
       setoid_rewrite <- bind_assoc at 1.
       rewrite H0; norm.
-      rewrite ?bind_dist_r; norm.
-      apply rel_or_elim.
-      + rewrite <- exec_crash_noop; norm.
-        rel_congruence.
-        admit.
-      + unfold exec_crash.
-        rewrite <- rel_or_intror; norm.
-        rel_congruence.
-        rel_congruence.
-        admit.
+      unfold exec_crash.
+      setoid_rewrite <- bind_assoc at 3.
+      setoid_rewrite bind_dist_r at 2; norm.
+      rel_congruence.
+      admit.
+
     - let H := fresh "Hnoop" in
       pose proof (rf.(recovery_ok)) as H;
         unfold recovery_refines_noop, crash_refines in H;
         propositional.
-      split; simpl.
-      + unfold refines; norm.
-      + unfold refines in *; norm.
-        rewrite <- exec_crash_noop; norm.
-        (* TODO: repeating a proof above about c_exec_recover of [recover;
+      unfold rexec.
+      unfold refines in *; norm.
+      setoid_rewrite exec_crash_ret; norm.
+      (* TODO: repeating a proof above about c_exec_recover of [recover;
         compile rec] *)
-        setoid_rewrite exec_recover_bind.
-        unfold rexec in H0.
+      setoid_rewrite exec_recover_bind.
+      unfold rexec in H0.
   Abort.
 
 End Layers.
