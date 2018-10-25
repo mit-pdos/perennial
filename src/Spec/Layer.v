@@ -2,7 +2,7 @@ Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Abstraction.
 Require Import Helpers.RelationAlgebra.
-Require Import Helpers.Helpers.
+Require Import Tactical.ProofAutomation.
 
 Import RelationNotations.
 

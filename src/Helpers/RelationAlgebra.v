@@ -1,6 +1,9 @@
-Require Import Helpers.Instances.
-Require Import Helpers.Helpers.
+Require Import Setoid.
 Require Import Morphisms.
+
+Require Import Tactical.Propositional.
+Require Import Tactical.Misc.
+Require Import Helpers.Instances.
 
 Set Implicit Arguments.
 Generalizable All Variables.

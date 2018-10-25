@@ -1,7 +1,7 @@
 Require Import Proc.
+Require Import Tactical.ProofAutomation.
 Require Import Helpers.Instances.
 Require Import Helpers.RelationAlgebra.
-Require Import Helpers.Helpers.
 
 Import RelationNotations.
 

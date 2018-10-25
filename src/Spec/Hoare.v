@@ -1,6 +1,6 @@
 Require Import Spec.Proc.
+Require Import Tactical.Propositional.
 Require Import Helpers.RelationAlgebra.
-Require Import Helpers.Helpers.
 
 (** Defining specifications, which are just convenient ways to express program
 behavior. *)
