@@ -20,6 +20,8 @@
 *.vo
 *.v.d
 *.glob
+.coqdeps.d
+_CoqProject
 
 # created by remap-nbd
 /disk.img

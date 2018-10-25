@@ -1,59 +1,33 @@
-## Common library code
-CODE := $(wildcard src/POCS.v)
-CODE += $(wildcard src/Helpers/*.v)
-CODE += $(wildcard src/Spec/*.v)
+ALL_VFILES := $(shell find -L 'src' 'vendor' -name "*.v")
+ALL_TEST_VFILES := $(shell find -L 'src' 'vendor' -name "*Tests.v")
+TEST_VFILES := $(shell find -L 'src' -name "*Tests.v")
+VFILES := $(filter-out $(ALL_TEST_VFILES),$(ALL_VFILES))
 
-COQRFLAGS := -R build POCS
+default: $(VFILES:.v=.vo)
 
-BINS	:= statdb-cli remap-nbd replicate-nbd
-
-.PHONY: default
-# default: $(patsubst %,bin/%,$(BINS)) docs
-default: build/POCS.vo
-
-build/%.v: src/%.v
-	@mkdir -p $(@D)
-	@rm -f $@
-	@ln -s "$(shell pwd)"/$< $@
-.PRECIOUS: build/%.v
-
-build/%.v.d: build/%.v $(patsubst src/%.v,build/%.v,$(CODE))
-	coqdep -c $(COQRFLAGS) $< > $@
-.PRECIOUS: build/%.v.d
+test: $(TEST_VFILES:.v=.vo) $(VFILES:.v=vo)
 
 
--include $(patsubst src/%.v,build/%.v.d,$(CODE))
+_CoqProject: libname $(wildcard vendor/*)
+	@echo "-R src $$(cat libname)" > $@
+	@for libdir in $(wildcard vendor/*/); do \
+		echo "-R $$libdir/src $$(cat $$libdir/libname)" >> $@; \
+	done
+	@echo "_CoqProject:"
+	@cat $@
 
-build/%.vo: build/%.v
-	coqc -q $(COQRFLAGS) $<
-.PRECIOUS: build/%.vo
+.coqdeps.d: $(ALL_VFILES) _CoqProject
+	coqdep -f _CoqProject $(ALL_VFILES) > $@
 
-.PHONY: coq
-coq: $(patsubst src/%.v,build/%.vo,$(CODE))
+-include .coqdeps.d
 
-.PHONY: docs
-docs: coq
-	@mkdir -p doc
-	coqdoc $(COQRFLAGS) -g --interpolate -d doc $(patsubst src/%.v,build/%.v,$(CODE))
+%.vo: %.v .coqdeps.d _CoqProject
+	@echo "COQC $<"
+	@coqc $(shell cat '_CoqProject') $< -o $@
 
-.PHONY: %/extract
-%/extract: %/Extract.v %/fiximports.py
-	@mkdir -p $@
-	coqtop $(COQRFLAGS) -batch -noglob -load-vernac-source $<
-	./scripts/add-preprocess.sh $@/*.hs
-
-statdb-cli/extract: build/StatDb/StatDbCli.vo
-remap-nbd/extract: build/BadBlockRemap/RemappedServer.vo
-replicate-nbd/extract: build/ReplicatedDisk/ReplicatedServer.vo
-
-bin/%: %/extract
-	mkdir -p $(@D)
-	cd $(patsubst %/extract,%,$<) && PATH="$(PATH):"$(shell pwd)"/bin" stack build --copy-bins --local-bin-path ../bin
-
-.PHONY: clean
 clean:
-	rm -rf build
-	rm -rf doc
-	rm -rf $(foreach d,$(BINS),$(d)/extract)
-	rm -rf $(foreach d,$(BINS),$(d)/.stack-work)
-	rm -f $(foreach b,$(BINS),bin/$(b))
+	@echo "CLEAN vo glob aux"
+	@rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob) .coqdeps.d _CoqProject
+	@find . -name ".*.aux" -exec rm {} \;
+
+.PHONY: default test clean
