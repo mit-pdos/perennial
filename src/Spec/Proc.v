@@ -54,9 +54,18 @@ Section Dynamics.
     seq_star (exec_crash rec;; crash_step);;
              exec rec.
 
+  Definition exec_recover_unfold {R} (rec: proc R) :
+    exec_recover rec =
+    seq_star (exec_crash rec;; crash_step);;
+             exec rec := eq_refl.
+
   (* recovery execution *)
   Definition rexec {T R} (p: proc T) (rec: proc R) : relation State State R :=
       exec_crash p;; crash_step;; exec_recover rec.
+
+  Definition rexec_unfold {T R} (p: proc T) (rec: proc R) :
+    rexec p rec =
+    exec_crash p;; crash_step;; exec_recover rec := eq_refl.
 
 End Dynamics.
 

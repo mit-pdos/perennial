@@ -460,3 +460,15 @@ Ltac rel_congruence :=
     apply star_monotonic;
     solver
   end.
+
+Ltac norm :=
+  rewrite ?bind_assoc, ?bind_left_id in *;
+  repeat (setoid_rewrite bind_assoc ||
+          setoid_rewrite bind_left_id ||
+          setoid_rewrite rel_or_assoc);
+  repeat match goal with
+         | [ H: _ |- _ ] => setoid_rewrite bind_assoc in H
+         | [ H: _ |- _ ] => setoid_rewrite bind_left_id in H
+         | [ H: _ |- _ ] => setoid_rewrite rel_or_assoc in H
+         end;
+  try reflexivity.

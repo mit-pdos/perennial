@@ -17,13 +17,6 @@ Section Dynamics.
 
   Hint Resolve rimpl_refl requiv_refl.
 
-  Ltac norm :=
-    rewrite ?bind_assoc, ?bind_left_id;
-    repeat (setoid_rewrite bind_assoc ||
-            setoid_rewrite bind_left_id ||
-            setoid_rewrite rel_or_assoc);
-    try reflexivity.
-
   Theorem exec_to_crash T (p: proc T) :
     exec p;; pure tt ---> exec_crash p.
   Proof.
@@ -72,7 +65,7 @@ Section Dynamics.
     unfold "<==>"; simpl; norm.
   Qed.
 
-  Theorem exec_recover_bind_inv
+  Theorem exec_recover_bind
           `(rec1: proc R)
           `(rec2: R -> proc R') :
     exec_recover (Bind rec1 rec2) --->
