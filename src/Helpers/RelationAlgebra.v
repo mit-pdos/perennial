@@ -434,17 +434,19 @@ Section OutputRelations.
 End OutputRelations.
 
 Module RelationNotations.
-Notation "r1 ---> r2" := (rimpl r1 r2)
-                           (at level 60, no associativity, format "r1  '/' ---> '/'  r2").
-Notation "r1 <---> r2" := (requiv r1 r2)
-                           (at level 60, no associativity, format "r1  '/' <---> '/'  r2").
+  Notation "r1 ---> r2" := (rimpl r1 r2)
+                             (at level 60, no associativity,
+                              format "'[hv' r1  '/' ---> '/'  r2 ']'").
+  Notation "r1 <---> r2" := (requiv r1 r2)
+                              (at level 60, no associativity,
+                               format "'[hv' r1  '/' <---> '/'  r2 ']'").
   Infix "+" := rel_or.
 
-Notation "p1 ;; p2" := (and_then p1 (fun _ => p2))
-                         (at level 53, right associativity).
-Notation "x <- p1 ; p2" := (and_then p1 (fun x => p2))
-                            (at level 54, right associativity,
-                            format "x  <-  p1 ;  '/' p2").
+  Notation "p1 ;; p2" := (and_then p1 (fun _ => p2))
+                           (at level 53, right associativity).
+  Notation "x <- p1 ; p2" := (and_then p1 (fun x => p2))
+                              (at level 54, right associativity,
+                               format "'[' x  <-  p1 ; ']'  '/' p2").
 End RelationNotations.
 
 Ltac rel_congruence :=
