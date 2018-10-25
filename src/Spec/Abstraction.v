@@ -7,10 +7,7 @@ Import RelationNotations.
 
 Section Abstraction.
   Context (AState CState:Type).
-  Context (abs: AState -> CState -> Prop).
-
-  Definition absr : relation AState CState unit :=
-    fun s cs _ => abs s cs.
+  Context (absr: relation AState CState unit).
 
   Definition refines T
              (p: relation CState CState T)
@@ -25,13 +22,13 @@ Section Abstraction.
              (spec: Specification A T R AState)
     : Specification (AState*A) T R CState :=
     fun '(s, a) cs =>
-      {| pre := abs s cs /\
+      {| pre := absr s cs tt /\
                 (spec a s).(pre);
          post := fun cs' r =>
-                   exists s', abs s' cs' /\
+                   exists s', absr s' cs' tt /\
                          (spec a s).(post) s' r;
          recovered := fun cs' r =>
-                        exists s', abs s' cs' /\
+                        exists s', absr s' cs' tt /\
                               (spec a s).(recovered) s' r; |}.
 
   Section Dynamics.
@@ -49,3 +46,17 @@ Section Abstraction.
   End Dynamics.
 
 End Abstraction.
+
+Theorem refines_transitive State1 State2 State3 abs1 abs2 T
+        (spec1: relation State1 State1 T)
+        (spec2: relation State2 State2 T)
+        (spec3: relation State3 State3 T) :
+  refines abs1 spec1 spec2 ->
+  refines abs2 spec2 spec3 ->
+  refines (abs2;; abs1) spec1 spec3.
+Proof.
+  unfold refines; norm; intros.
+  setoid_rewrite H; norm.
+  rewrite <- bind_assoc at 1.
+  rewrite H0; norm.
+Qed.
