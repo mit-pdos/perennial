@@ -28,6 +28,6 @@ _CoqProject: libname $(wildcard vendor/*)
 clean:
 	@echo "CLEAN vo glob aux"
 	@rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob) .coqdeps.d _CoqProject
-	@find . -name ".*.aux" -exec rm {} \;
+	@find 'src' 'vendor' -name ".*.aux" -exec rm {} \;
 
 .PHONY: default test clean
