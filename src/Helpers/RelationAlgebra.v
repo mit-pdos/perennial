@@ -46,6 +46,7 @@ Section OutputRelations.
   | seq_star_one_more : forall x y z o1 o2,
       r x y o1 ->
       seq_star r y z o2 ->
+      (* TODO: rewrite to return the value from the last iteration *)
       seq_star r x z o2
   .
 
@@ -480,6 +481,87 @@ Section OutputRelations.
     and_then p q <---> p;; q tt.
   Proof.
     t.
+  Qed.
+
+  Inductive seq_star_r A `(r: relation A A T) : relation A A T :=
+  | seq_star_r_refl : forall x o,
+      seq_star_r r x x o
+  | seq_star_r_one_more : forall x y z o1 o2,
+      seq_star_r r x y o1 ->
+      r y z o2 ->
+      seq_star_r r x z o1.
+
+  Hint Constructors seq_star_r.
+
+  Theorem seq_star_lr A `(r: relation A A T) :
+    seq_star r <---> seq_star_r r;; identity.
+  Proof.
+    t.
+    - induction H; propositional; eauto.
+      clear H0.
+      induction H1; propositional; eauto.
+    - induction H; propositional; eauto.
+      clear H.
+      induction IHseq_star_r; propositional; eauto.
+      Grab Existential Variables.
+      all: auto.
+  Qed.
+
+  Theorem simulation_seq A B
+          (p: relation A B unit)
+          (q: relation B B unit)
+          (r: relation A A unit) :
+    p;; q ---> r;; p ->
+    p;; seq_star q ---> seq_star r;; p.
+  Proof.
+    setoid_rewrite seq_star_lr.
+    t.
+    induction H1; propositional.
+    - eauto 10.
+    - repeat match goal with
+             | [ u: unit |- _ ] => destruct u
+             end.
+      exists tt.
+      unfold rimpl in H; simpl in *.
+      specialize (H y0 z tt).
+      match type of H with
+      | ?P -> ?Q =>
+        let HP := fresh in
+        assert P as HP;
+          [ | specialize (H HP) ]
+      end; eauto; propositional.
+      eauto 10.
+
+      Grab Existential Variables.
+      all: auto.
+  Qed.
+
+  Theorem simulation_seq_value A B T
+          (p: relation A B unit)
+          (q: relation B B T)
+          (r: relation A A T) :
+    p;; q ---> v <- r; (p;; pure v) ->
+    p;; seq_star q ---> v <- seq_star r; (p;; pure v).
+  Proof.
+    setoid_rewrite seq_star_lr.
+    t.
+    induction H1; propositional.
+    - eauto 15.
+    - repeat match goal with
+             | [ u: unit |- _ ] => destruct u
+             end.
+      unfold rimpl in H; simpl in *.
+      specialize (H y0 z o2).
+      match type of H with
+      | ?P -> ?Q =>
+        let HP := fresh in
+        assert P as HP;
+          [ | specialize (H HP) ]
+      end; eauto; propositional.
+      eauto 15.
+
+      Grab Existential Variables.
+      all: auto.
   Qed.
 
 End OutputRelations.

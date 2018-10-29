@@ -211,6 +211,21 @@ Section Layers.
         rew H.
   Qed.
 
+  Theorem rexec_star_rec R (rec: a_proc R) :
+    refines rf.(absr)
+                 (seq_star (rexec c_sem (compile rec) recover);; c_exec (compile rec))
+                 (a_exec_recover rec).
+  Proof.
+    unfold refines.
+    rewrite exec_recover_unfold; norm.
+    pose unfolded (rexec_rec rec)
+         (fun H => red in H).
+    apply simulation_seq_value in H.
+    left assoc rew H.
+    rel_congruence.
+    rew compile_exec_ok.
+  Qed.
+
   Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
         crash_refines
           rf.(absr) c_sem
@@ -238,15 +253,15 @@ Section Layers.
       norm.
       rel_congruence.
 
-      rew @exec_recover_unfold.
-      (* TODO: need a simulation theorem to lift rexec_rec *)
-      admit.
+      rew rexec_star_rec.
     - pose unfolded crash_step_refinement
            (fun H => unfold refines in H).
       rew @exec_recover_bind.
       rew bind_star_unit.
       left assoc rew H.
       rel_congruence.
+      rew rexec_star_rec.
+    - admit.
   Abort.
 
 End Layers.
