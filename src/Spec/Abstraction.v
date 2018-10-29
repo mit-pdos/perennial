@@ -47,7 +47,7 @@ Section Abstraction.
 
 End Abstraction.
 
-Theorem refines_transitive State1 State2 State3 abs1 abs2 T
+Theorem refines_transitive_abs State1 State2 State3 abs1 abs2 T
         (spec1: relation State1 State1 T)
         (spec2: relation State2 State2 T)
         (spec3: relation State3 State3 T) :
@@ -59,4 +59,43 @@ Proof.
   setoid_rewrite H; norm.
   rewrite <- bind_assoc at 1.
   rewrite H0; norm.
+Qed.
+
+Theorem refines_trans_bind State1 State2 abs T1 T2
+        (r1: relation State1 State1 T1)
+        (r2: T1 -> relation State1 State1 T2)
+        (r1': relation State2 State2 T1)
+        (r2': T1 -> relation State2 State2 T2) :
+  refines abs r1 r1' ->
+  (forall v, refines abs (r2 v) (r2' v)) ->
+  refines abs (and_then r1 r2) (and_then r1' r2').
+Proof.
+  unfold refines; intros.
+  rewrite <- bind_assoc.
+  setoid_rewrite H; norm.
+  setoid_rewrite H0; norm.
+Qed.
+
+Theorem refines_trans_unit State1 State2 abs T2
+        (r1: relation State1 State1 unit)
+        (r2: unit -> relation State1 State1 T2)
+        (r1': relation State2 State2 unit)
+        (r2': unit -> relation State2 State2 T2) :
+  refines abs r1 r1' ->
+  (refines abs (r2 tt) (r2' tt)) ->
+  refines abs (and_then r1 r2) (and_then r1' r2').
+Proof.
+  intros.
+  apply refines_trans_bind; auto.
+  destruct v; auto.
+Qed.
+
+Theorem refines_trans State1 State2 abs T
+        (r1 r2: relation State1 State1 T)
+        (r1' r2': relation State2 State2 T) :
+  refines abs r1 r1' ->
+  refines abs r2 r2' ->
+  refines abs (r1;; r2) (r1';; r2').
+Proof.
+  auto using refines_trans_bind.
 Qed.
