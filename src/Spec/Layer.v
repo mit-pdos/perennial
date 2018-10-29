@@ -89,6 +89,10 @@ Section Layers.
     rel_congruence; auto.
   Qed.
 
+  Tactic Notation "pose" "unfolded" constr(pf) tactic(t) :=
+    let H := fresh in
+    pose proof pf as H; t H; destruct_ands.
+
   Theorem compile_exec_ok : forall T (p: a_proc T),
       refines
         rf.(absr)
@@ -96,10 +100,9 @@ Section Layers.
              (a_sem.(exec) p).
   Proof.
     induction p; simpl; intros.
-    - let H := fresh "Hop_ok" in
-      pose proof (rf.(compile_op_ok) op) as H;
-        unfold compile_op_refines_step, crash_refines in H;
-        propositional.
+    - pose unfolded (rf.(compile_op_ok) op)
+           (fun H => hnf in H).
+      propositional.
     - unfold refines; norm.
     - unfold refines in *; norm.
       pose proof (impl_rx IHp).
@@ -111,6 +114,110 @@ Section Layers.
       norm.
   Qed.
 
+  Ltac unfold_refines pf :=
+    let P := type of pf in
+    let Psimpl := (eval unfold refines in P) in
+            constr:(pf: Psimpl).
+
+  Tactic Notation "rew" uconstr(pf) :=
+    let pf' := (unfold_refines pf) in
+        setoid_rewrite pf'; norm_goal.
+  Tactic Notation "rew" "<-" uconstr(pf) :=
+    let pf' := (unfold_refines pf) in
+    setoid_rewrite <- pf'; norm_goal.
+  Tactic Notation "rew" uconstr(pf) "in" ident(H) :=
+    let pf' := (unfold_refines pf) in
+        setoid_rewrite pf' in H at 1; norm_hyp H.
+  Tactic Notation "rew" "<-" uconstr(pf) "in" ident(H) :=
+    let pf' := (unfold_refines pf) in
+        setoid_rewrite <- pf' in H at 1; norm_hyp H.
+
+  Ltac Split := match goal with
+                | |- (_ + _ ---> _) =>
+                  apply rel_or_elim; norm
+                | |- ?g ---> _ =>
+                  match g with
+                  | context[_ + _] =>
+                    repeat (setoid_rewrite bind_dist_l ||
+                            setoid_rewrite bind_dist_r);
+                    apply rel_or_elim; norm
+                  end
+                end.
+
+  Ltac Left := match goal with
+               | |- _ ---> ?g =>
+                 match g with
+                 | context[_ + _] =>
+                   rewrite <- rel_or_introl
+                 end
+               end.
+
+  Ltac Right := match goal with
+               | |- _ ---> ?g =>
+                 match g with
+                 | context[_ + _] =>
+                   rewrite <- rel_or_intror
+                 end
+               end.
+
+  Ltac left_associate H :=
+    rewrite <- ?bind_assoc in H |- *;
+    repeat setoid_rewrite <- bind_assoc;
+    repeat setoid_rewrite <- bind_assoc in H.
+
+  Tactic Notation "left" "assoc" "rew" constr(H) :=
+    left_associate H;
+    setoid_rewrite H;
+    norm;
+    norm_hyp H.
+
+  Tactic Notation "left" "assoc" "rew" "<-" constr(H) :=
+    left_associate H;
+    setoid_rewrite <- H;
+    norm;
+    norm_hyp H.
+
+  (* TODO: not sure if this is true *)
+  Theorem rexec_rec R (rec: a_proc R) :
+    rf.(absr);; rexec c_sem (compile rec) recover;; c_exec (compile rec) --->
+             v <- a_exec_recover rec;
+    rf.(absr);;
+             pure v.
+  Proof.
+    induction rec; simpl.
+    - unfold rexec; rewrite ?exec_recover_unfold; norm.
+      pose unfolded (rf.(compile_op_ok) op)
+           (fun H => hnf in H).
+      (* TODO: can we do better than unfolding refines everywhere? *)
+      unfold refines in *.
+      unfold rexec in H0.
+      rewrite exec_recover_unfold in H0.
+      left assoc rew H0.
+      rewrite ?bind_dist_r.
+      Split.
+      + rew <- seq_star_one.
+        rew <- exec_crash_noop.
+        rew H.
+      + rew <- seq_star_one.
+        rew <- exec_crash_finish.
+        rew H.
+    - unfold rexec; rewrite ?exec_recover_unfold; norm.
+      rew exec_crash_ret.
+      pose unfolded (rf.(recovery_ok))
+           (fun H => hnf in H; unfold rexec, refines in H).
+      rewrite exec_recover_unfold in H0.
+      rew <- exec_crash_noop in H0.
+      left assoc rew H0.
+      rew <- seq_star_one.
+    - unfold rexec in *; simpl in *; norm in *.
+      repeat Split.
+      rew @exec_recover_bind.
+      rew <- compile_exec_ok.
+      rew <- exec_crash_noop in IHrec.
+      left assoc rew IHrec.
+  Abort.
+
+
   Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
         crash_refines
           rf.(absr) c_sem
@@ -121,10 +228,8 @@ Section Layers.
     intros.
     split; [ now apply compile_exec_ok | ].
     induction p; simpl; intros.
-    - let H := fresh "Hop_ok" in
-      pose proof (rf.(compile_op_ok) op) as H;
-        unfold compile_op_refines_step, crash_refines in H;
-        propositional.
+    - pose unfolded (rf.(compile_op_ok) op)
+        (fun H => unfold compile_op_refines_step, crash_refines in H).
       match goal with
       | [ H: context[c_exec (compile_op _)] |- _ ] =>
         clear H (* normal execution of op is irrelevant *)
@@ -140,6 +245,13 @@ Section Layers.
       setoid_rewrite <- bind_assoc at 3.
       setoid_rewrite bind_dist_r at 2; norm.
       rel_congruence.
+      pose unfolded
+           (compile_exec_ok rec)
+           (fun H => unfold refines in H).
+
+      (* TODO: proof about [rexec c_sem (compile rec) recover] *)
+
+
       admit.
 
     - let H := fresh "Hnoop" in

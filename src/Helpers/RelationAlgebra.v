@@ -78,6 +78,11 @@ Section OutputRelations.
   Global Instance rimpl_requiv_sub : subrelation (requiv (A:=A) (B:=B) (T:=T)) rimpl :=
     ltac:(firstorder).
 
+  Global Instance rimpl_proper_basics_flip A B T (r: relation A B T) :
+    Proper
+      (Basics.flip rimpl ==> Basics.flip Basics.impl) (rimpl r) :=
+    ltac:(firstorder).
+
   Theorem rimpl_to_requiv A B T (r1 r2: relation A B T) :
     r1 ---> r2 ->
     r2 ---> r1 ->
@@ -85,6 +90,22 @@ Section OutputRelations.
   Proof.
     firstorder.
   Qed.
+
+  Theorem requiv_to_rimpl1 A B T (r1 r2: relation A B T) :
+    r1 <---> r2 ->
+    r1 ---> r2.
+  Proof.
+    firstorder.
+  Qed.
+
+  Theorem requiv_to_rimpl2 A B T (r1 r2: relation A B T) :
+    r1 <---> r2 ->
+    r2 ---> r1.
+  Proof.
+    firstorder.
+  Qed.
+
+  Hint Immediate rimpl_to_requiv requiv_to_rimpl1 requiv_to_rimpl2.
 
   Theorem rimpl_or A B T (r1 r2: relation A B T) :
     r1 ---> r2 ->
@@ -187,6 +208,14 @@ Section OutputRelations.
   Proof.
     t.
     induction H0; eauto.
+  Qed.
+
+  Global Instance seq_star_equiv_respectful :
+    Proper (requiv ==> requiv) (seq_star (A:=A) (T:=T)).
+  Proof.
+    t.
+    eapply seq_star_respectful; eauto.
+    eapply seq_star_respectful; eauto.
   Qed.
 
   Hint Constructors bind_star.
@@ -341,6 +370,12 @@ Section OutputRelations.
     - t.
   Qed.
 
+  Theorem seq_star_one A T (r: relation A A T) :
+    r ---> seq_star r.
+  Proof.
+    t.
+  Qed.
+
   Global Instance and_then_pointwise A B C T1 T2 (r: relation A B T1) :
     Proper (pointwise_relation _ (Basics.flip rimpl) ==> Basics.flip (rimpl (B:=C) (T:=T2)))
            (and_then r).
@@ -483,6 +518,14 @@ Ltac setoid_norm_goal :=
     setoid_rewrite bind_left_id
   end.
 
+Ltac setoid_norm_hyp H :=
+  match type of H with
+  | context[and_then (and_then _ _) _] =>
+    setoid_rewrite bind_assoc in H
+  | context[and_then (pure _) _] =>
+    setoid_rewrite bind_left_id in H
+  end.
+
 Ltac setoid_norm_hyps :=
   match goal with
   | [ H: context[and_then (and_then _ _) _] |- _ ] =>
@@ -497,6 +540,10 @@ Ltac norm_goal :=
   repeat setoid_norm_goal;
   try reflexivity.
 
+Ltac norm_hyp H :=
+  autorewrite with relations in H;
+  repeat (setoid_norm_hyp H).
+
 Ltac norm_all :=
   autorewrite with relations in *;
   repeat (setoid_norm_goal || setoid_norm_hyps);
@@ -504,3 +551,4 @@ Ltac norm_all :=
 
 Tactic Notation "norm" := norm_goal.
 Tactic Notation "norm" "in" "*" := norm_all.
+Tactic Notation "norm" "in" ident(H) := norm_hyp H.

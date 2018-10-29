@@ -17,7 +17,7 @@ Section Dynamics.
 
   Hint Resolve rimpl_refl requiv_refl.
 
-  Theorem exec_to_crash T (p: proc T) :
+  Theorem exec_crash_finish T (p: proc T) :
     exec p;; pure tt ---> exec_crash p.
   Proof.
     induction p; simpl in *; norm.
@@ -74,12 +74,13 @@ Section Dynamics.
   Theorem exec_recover_bind
           `(rec1: proc R)
           `(rec2: R -> proc R') :
-    exec_recover (Bind rec1 rec2) --->
+    exec_recover (Bind rec1 rec2) <--->
                  (v <- exec_recover rec1;
                     v' <- bind_star (fun v => rexec (rec2 v) rec1) v;
                     exec (rec2 v')).
   Proof.
     repeat unfold exec_recover, rexec; simpl; norm.
+
     rewrite exec_crash_idem.
     rewrite ?bind_dist_r; norm.
 
@@ -89,12 +90,26 @@ Section Dynamics.
       intros rec1 rec1_crash crash.
 
     rewrite denesting; norm.
-    rel_congruence.
+    apply rimpl_to_requiv.
+    - rel_congruence.
 
-    rewrite <- ?bind_assoc.
-    rel_congruence; norm.
+      rewrite <- ?bind_assoc.
+      rel_congruence; norm.
 
-    rewrite bind_sliding; norm.
+      rewrite bind_sliding; norm.
+    - rel_congruence.
+      rewrite <- ?bind_assoc.
+      setoid_rewrite <- bind_assoc at 3.
+      rel_congruence.
+
+      rewrite bind_sliding; norm.
+      rel_congruence.
+      apply bind_star_respectful; auto.
+      hnf; intros; norm.
   Qed.
 
 End Dynamics.
+
+Arguments exec_crash_noop [Op State sem T].
+Arguments exec_crash_finish [Op State sem T].
+Arguments exec_crash_ret [Op State sem T].
