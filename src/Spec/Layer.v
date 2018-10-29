@@ -140,17 +140,21 @@ Section Layers.
     repeat setoid_rewrite <- bind_assoc;
     try repeat setoid_rewrite <- bind_assoc in H.
 
+  Ltac temp_hyp H tac :=
+    let H' := fresh "Htmp" in
+    pose proof H as H';
+    tac H';
+    clear H'.
+
   Tactic Notation "left" "assoc" "rew" constr(H) :=
-    left_associate H;
-    setoid_rewrite H;
-    norm;
-    norm_hyp H.
+    temp_hyp H ltac:(fun H =>
+                       left_associate H;
+                       rew H).
 
   Tactic Notation "left" "assoc" "rew" "<-" constr(H) :=
-    left_associate H;
-    setoid_rewrite <- H;
-    norm;
-    norm_hyp H.
+    temp_hyp H ltac:(fun H =>
+                       left_associate H;
+                       rew <- H).
 
   Theorem compile_exec_ok : forall T (p: a_proc T),
       refines
@@ -204,10 +208,7 @@ Section Layers.
         Right.
         rew IHrec.
       + Right.
-        pose unfolded (compile_exec_ok rec)
-             (fun H => unfold refines in H).
-        (* TODO: why does left assoc rew (compile_exec_ok rec) not work? *)
-        left assoc rew H0.
+        left assoc rew (compile_exec_ok rec).
         rew H.
   Qed.
 
@@ -224,6 +225,23 @@ Section Layers.
     left assoc rew H.
     rel_congruence.
     rew compile_exec_ok.
+  Qed.
+
+  Lemma recover_ret R (rec: a_proc R) :
+    refines rf.(absr)
+                 (_ <- c_sem.(crash_step);
+                    c_exec_recover (Bind recover (fun _ => compile rec)))
+                 (a_sem.(crash_step);; a_exec_recover rec).
+  Proof.
+    unfold refines.
+    rew @exec_recover_bind.
+    rew bind_star_unit.
+    (* TODO: why does left assoc rew crash_step_refinement not work? *)
+    pose unfolded crash_step_refinement
+         (fun H => unfold refines in H).
+    left assoc rew H.
+    rel_congruence.
+    rew rexec_star_rec.
   Qed.
 
   Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
@@ -254,14 +272,16 @@ Section Layers.
       rel_congruence.
 
       rew rexec_star_rec.
-    - pose unfolded crash_step_refinement
-           (fun H => unfold refines in H).
-      rew @exec_recover_bind.
-      rew bind_star_unit.
-      left assoc rew H.
-      rel_congruence.
-      rew rexec_star_rec.
-    - admit.
-  Abort.
+    - rew recover_ret.
+    - repeat Split;
+        [ Left; Left | Left; Right | Right ].
+      + rew recover_ret.
+      + rew IHp.
+      + pose unfolded (compile_exec_ok p)
+             (fun H => unfold refines in H).
+        left assoc rew H0.
+        rel_congruence.
+        rew H.
+  Qed.
 
 End Layers.

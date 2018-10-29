@@ -371,6 +371,19 @@ Section OutputRelations.
     - t.
   Qed.
 
+  Theorem seq_star1 A T (r: relation A A T) :
+    r;; seq_star r ---> seq_star r.
+  Proof.
+    t.
+  Qed.
+
+  Theorem seq_star_fold A T (r r': relation A A T) :
+    r' ---> r ->
+    r';; seq_star r ---> seq_star r.
+  Proof.
+    t.
+  Qed.
+
   Theorem seq_star_one A T (r: relation A A T) :
     r ---> seq_star r.
   Proof.
