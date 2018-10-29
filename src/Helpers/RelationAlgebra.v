@@ -476,6 +476,12 @@ Section OutputRelations.
     exact tt.
   Qed.
 
+  Theorem bind_unit A B C T (p: relation A B unit) (q: unit -> relation B C T) :
+    and_then p q <---> p;; q tt.
+  Proof.
+    t.
+  Qed.
+
 End OutputRelations.
 
 Module RelationNotations.

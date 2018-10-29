@@ -221,7 +221,7 @@ Section Layers.
     intros.
     split; [ now apply compile_exec_ok | ].
     unfold refines, rexec.
-    induction p; simpl; intros.
+    induction p; simpl; norm.
     - pose unfolded (rf.(compile_op_ok) op)
         (fun H => hnf in H; unfold rexec, refines in H).
       match goal with
@@ -240,6 +240,13 @@ Section Layers.
 
       rew @exec_recover_unfold.
       (* TODO: need a simulation theorem to lift rexec_rec *)
+      admit.
+    - pose unfolded crash_step_refinement
+           (fun H => unfold refines in H).
+      rew @exec_recover_bind.
+      rew bind_star_unit.
+      left assoc rew H.
+      rel_congruence.
   Abort.
 
 End Layers.
