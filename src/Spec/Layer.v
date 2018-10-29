@@ -51,12 +51,7 @@ Section Layers.
                      (a_sem.(step) op;; a_sem.(crash_step))).
 
   Definition recovery_refines_noop (absr: relation AState CState unit) :=
-    crash_refines absr c_sem
-                  recover
-                  recover
-                  any (* normal behavior of recovery is irrelevant, we never ask
-                  how it runs normally *)
-                  (a_sem.(crash_step)).
+    refines absr (c_sem.(rexec) recover recover) (a_sem.(crash_step)).
 
   Record LayerRefinement :=
     { absr: relation AState CState unit;
@@ -93,27 +88,6 @@ Section Layers.
     let H := fresh in
     pose proof pf as H; t H; destruct_ands.
 
-  Theorem compile_exec_ok : forall T (p: a_proc T),
-      refines
-        rf.(absr)
-             (c_exec (compile p))
-             (a_sem.(exec) p).
-  Proof.
-    induction p; simpl; intros.
-    - pose unfolded (rf.(compile_op_ok) op)
-           (fun H => hnf in H).
-      propositional.
-    - unfold refines; norm.
-    - unfold refines in *; norm.
-      pose proof (impl_rx IHp).
-      norm in *.
-      setoid_rewrite H0.
-      rel_congruence; norm.
-      specialize (H x).
-      rewrite <- H.
-      norm.
-  Qed.
-
   Ltac unfold_refines pf :=
     let P := type of pf in
     let Psimpl := (eval unfold refines in P) in
@@ -148,7 +122,7 @@ Section Layers.
                | |- _ ---> ?g =>
                  match g with
                  | context[_ + _] =>
-                   rewrite <- rel_or_introl
+                   rewrite <- rel_or_introl; norm
                  end
                end.
 
@@ -156,14 +130,15 @@ Section Layers.
                | |- _ ---> ?g =>
                  match g with
                  | context[_ + _] =>
-                   rewrite <- rel_or_intror
+                   rewrite <- rel_or_intror; norm
                  end
                end.
 
   Ltac left_associate H :=
-    rewrite <- ?bind_assoc in H |- *;
+    try rewrite <- ?bind_assoc in H;
+    rewrite <- ?bind_assoc;
     repeat setoid_rewrite <- bind_assoc;
-    repeat setoid_rewrite <- bind_assoc in H.
+    try repeat setoid_rewrite <- bind_assoc in H.
 
   Tactic Notation "left" "assoc" "rew" constr(H) :=
     left_associate H;
@@ -177,46 +152,64 @@ Section Layers.
     norm;
     norm_hyp H.
 
-  (* TODO: not sure if this is true *)
-  Theorem rexec_rec R (rec: a_proc R) :
-    rf.(absr);; rexec c_sem (compile rec) recover;; c_exec (compile rec) --->
-             v <- a_exec_recover rec;
-    rf.(absr);;
-             pure v.
+  Theorem compile_exec_ok : forall T (p: a_proc T),
+      refines
+        rf.(absr)
+             (c_exec (compile p))
+             (a_sem.(exec) p).
   Proof.
-    induction rec; simpl.
-    - unfold rexec; rewrite ?exec_recover_unfold; norm.
-      pose unfolded (rf.(compile_op_ok) op)
+    induction p; simpl; intros.
+    - pose unfolded (rf.(compile_op_ok) op)
            (fun H => hnf in H).
-      (* TODO: can we do better than unfolding refines everywhere? *)
-      unfold refines in *.
-      unfold rexec in H0.
-      rewrite exec_recover_unfold in H0.
-      left assoc rew H0.
-      rewrite ?bind_dist_r.
-      Split.
-      + rew <- seq_star_one.
-        rew <- exec_crash_noop.
-        rew H.
-      + rew <- seq_star_one.
-        rew <- exec_crash_finish.
-        rew H.
-    - unfold rexec; rewrite ?exec_recover_unfold; norm.
-      rew exec_crash_ret.
-      pose unfolded (rf.(recovery_ok))
-           (fun H => hnf in H; unfold rexec, refines in H).
-      rewrite exec_recover_unfold in H0.
-      rew <- exec_crash_noop in H0.
-      left assoc rew H0.
-      rew <- seq_star_one.
-    - unfold rexec in *; simpl in *; norm in *.
-      repeat Split.
-      rew @exec_recover_bind.
-      rew <- compile_exec_ok.
-      rew <- exec_crash_noop in IHrec.
-      left assoc rew IHrec.
-  Abort.
+      propositional.
+    - unfold refines; norm.
+    - unfold refines in *; norm.
+      left assoc rew IHp.
+      rel_congruence; norm.
+      rew <- H.
+  Qed.
 
+  Theorem crash_step_refinement :
+    refines rf.(absr) (c_sem.(crash_step);; c_exec_recover recover)
+                      (a_sem.(crash_step)).
+  Proof.
+    unfold refines.
+    pose unfolded (rf.(recovery_ok))
+         (fun H => red in H; unfold rexec, refines in H).
+    rew <- exec_crash_noop in H.
+    assumption.
+  Qed.
+
+  Theorem rexec_rec R (rec: a_proc R):
+    refines rf.(absr)
+                 (c_sem.(rexec) (compile rec) recover)
+                 (a_sem.(exec_crash) rec;; a_sem.(crash_step)).
+  Proof.
+    unfold refines, rexec.
+    pose unfolded crash_step_refinement
+         (fun H => unfold refines in H; rename H into Hcrash_step).
+    induction rec; simpl; norm.
+    - pose unfolded (rf.(compile_op_ok) op)
+           (fun H => red in H; unfold rexec, refines in H).
+      rew H0.
+      Split.
+      Left.
+      Right.
+    - auto.
+    - repeat Split.
+      + Left.
+        Left.
+        auto.
+      + Left.
+        Right.
+        rew IHrec.
+      + Right.
+        pose unfolded (compile_exec_ok rec)
+             (fun H => unfold refines in H).
+        (* TODO: why does left assoc rew (compile_exec_ok rec) not work? *)
+        left assoc rew H0.
+        rew H.
+  Qed.
 
   Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
         crash_refines
