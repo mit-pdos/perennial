@@ -220,44 +220,26 @@ Section Layers.
   Proof.
     intros.
     split; [ now apply compile_exec_ok | ].
+    unfold refines, rexec.
     induction p; simpl; intros.
     - pose unfolded (rf.(compile_op_ok) op)
-        (fun H => unfold compile_op_refines_step, crash_refines in H).
+        (fun H => hnf in H; unfold rexec, refines in H).
       match goal with
       | [ H: context[c_exec (compile_op _)] |- _ ] =>
         clear H (* normal execution of op is irrelevant *)
       end.
-      unfold refines in *.
-      unfold rexec in *; norm.
-      setoid_rewrite exec_recover_bind.
-      setoid_rewrite <- bind_assoc at 3.
-      setoid_rewrite <- bind_assoc at 2.
-      setoid_rewrite <- bind_assoc at 1.
-      rewrite H0; norm.
-      unfold exec_crash.
-      setoid_rewrite <- bind_assoc at 3.
-      setoid_rewrite bind_dist_r at 2; norm.
+      rew @exec_recover_bind.
+      left assoc rew H0.
+      rew bind_star_unit.
+
+      (* distribute just crash_step on right side *)
+      setoid_rewrite <- bind_assoc at 4.
+      setoid_rewrite bind_dist_r at 2.
+      norm.
       rel_congruence.
-      pose unfolded
-           (compile_exec_ok rec)
-           (fun H => unfold refines in H).
 
-      (* TODO: proof about [rexec c_sem (compile rec) recover] *)
-
-
-      admit.
-
-    - let H := fresh "Hnoop" in
-      pose proof (rf.(recovery_ok)) as H;
-        unfold recovery_refines_noop, crash_refines in H;
-        propositional.
-      unfold rexec.
-      unfold refines in *; norm.
-      setoid_rewrite exec_crash_ret; norm.
-      (* TODO: repeating a proof above about c_exec_recover of [recover;
-        compile rec] *)
-      setoid_rewrite exec_recover_bind.
-      unfold rexec in H0.
+      rew @exec_recover_unfold.
+      (* TODO: need a simulation theorem to lift rexec_rec *)
   Abort.
 
 End Layers.
