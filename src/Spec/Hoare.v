@@ -2,6 +2,8 @@ Require Import Spec.Proc.
 Require Import Tactical.Propositional.
 Require Import Helpers.RelationAlgebra.
 
+Import RelationNotations.
+
 (** Defining specifications, which are just convenient ways to express program
 behavior. *)
 
@@ -41,8 +43,8 @@ Section Hoare.
   Definition proc_ok A T R
              (p: proc T) (rec: proc R)
              (spec: Specification A T R State) :=
-    rimpl (exec p) (spec_exec spec) /\
-    rimpl (rexec p rec) (spec_rexec spec).
+    exec p ---> spec_exec spec /\
+    rexec p rec ---> spec_rexec spec.
 
   Theorem proc_ok_expand A T R
           (p: proc T) (rec: proc R)
