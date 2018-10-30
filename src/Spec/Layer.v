@@ -10,16 +10,15 @@ Import RelationNotations.
 Record Layer Op :=
   { State: Type;
     sem: Dynamics Op State;
-    (* TODO: add init here *) }.
+    initP: State -> Prop }.
 
 (* LayerImpl is just the code needed to translate from one layer to another -
    the logical components are in [LayerRefinement] *)
 Record LayerImpl C_Op Op :=
   { compile_op `(op: Op T) : proc C_Op T;
-    (* TODO: layer implementations should be allowed returning from recovery
+    (* TODO: layer implementations should be allowed to return from recovery
          (though it's unclear what purpose that would serve *)
-    recover: proc C_Op unit;
-  (* TODO: add init here *) }.
+    recover: proc C_Op unit; }.
 
 Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
   match p with
@@ -28,6 +27,11 @@ Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op
   | Bind p p' => Bind (impl.(compile) p) (fun v => impl.(compile) (p' v))
   end.
 
+Definition compile_rec Op C_Op
+           `(impl: LayerImpl C_Op Op)
+           R (rec: proc Op R) : proc C_Op R :=
+  Bind impl.(recover) (fun _ => impl.(compile) rec).
+
 Hint Unfold refines : relation_rewriting.
 
 Section Layers.
@@ -35,6 +39,7 @@ Section Layers.
   Context C_Op (c_layer: Layer C_Op).
   Notation CState := c_layer.(State).
   Notation c_proc := (proc C_Op).
+  Notation c_initP := c_layer.(initP).
   Notation c_sem := c_layer.(sem).
   Notation c_exec := c_layer.(sem).(exec).
   Notation c_exec_recover := c_layer.(sem).(exec_recover).
@@ -42,6 +47,7 @@ Section Layers.
   Context Op (a_layer: Layer Op).
   Notation AState := a_layer.(State).
   Notation a_proc := (proc Op).
+  Notation a_initP := a_layer.(initP).
   Notation a_sem := a_layer.(sem).
   Notation a_exec_recover := a_layer.(sem).(exec_recover).
 
@@ -57,19 +63,20 @@ Section Layers.
                      (a_sem.(step) op;; a_sem.(crash_step))).
 
   Definition recovery_refines_crash_step (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
-    refines absr (c_sem.(crash_step);; c_exec_recover impl.(recover))
-                      (a_sem.(crash_step)).
+    refines absr
+            (c_sem.(crash_step);; c_exec_recover impl.(recover))
+            (a_sem.(crash_step)).
 
   Record LayerRefinement :=
-    {
-      impl: LayerImpl C_Op Op;
+    { impl: LayerImpl C_Op Op;
       absr: relation AState CState unit;
       compile_op_ok : compile_op_refines_step impl absr;
       recovery_noop_ok : recovery_refines_crash_step impl absr;
-      (* TODO: init_ok *) }.
+      init_ok : test c_initP ---> any (T:=unit);; test a_initP;; absr }.
 
   Context (rf: LayerRefinement).
   Notation compile_op := rf.(impl).(compile_op).
+  Notation compile_rec := rf.(impl).(compile_rec).
   Notation compile := rf.(impl).(compile).
   Notation recover := rf.(impl).(recover).
 
@@ -138,10 +145,11 @@ Section Layers.
     rew compile_exec_ok.
   Qed.
 
+
   Lemma recover_ret R (rec: a_proc R) :
     refines rf.(absr)
                  (_ <- c_sem.(crash_step);
-                    c_exec_recover (Bind recover (fun _ => compile rec)))
+                    c_exec_recover (compile_rec rec))
                  (a_sem.(crash_step);; a_exec_recover rec).
   Proof.
     unfold refines.
@@ -154,8 +162,7 @@ Section Layers.
 
   Theorem compile_rexec_ok T (p: a_proc T) R (rec: a_proc R) :
     refines rf.(absr)
-                 (rexec c_sem (compile p)
-                        (Bind recover (fun _ => compile rec)))
+                 (rexec c_sem (compile p) (compile_rec rec))
                  (rexec a_sem p rec).
   Proof.
     unfold refines, rexec.
@@ -185,12 +192,35 @@ Section Layers.
   Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
         crash_refines
           rf.(absr) c_sem
-                    (compile p) (Bind recover (fun _ => compile rec))
+                    (compile p) (compile_rec rec)
                     (a_sem.(exec) p)
                     (a_sem.(rexec) p rec).
   Proof.
     intros.
     split; [ now apply compile_exec_ok | now apply compile_rexec_ok ].
+  Qed.
+
+  Theorem complete_exec_ok : forall T (p: a_proc T),
+      test c_initP;; c_sem.(exec) (compile p) --->
+                                  any (T:=unit);; test a_initP;; (v <- a_sem.(exec) p; any (T:=unit);; pure v).
+  Proof.
+    intros.
+    rew rf.(init_ok).
+    rew compile_exec_ok.
+    repeat rel_congruence.
+    apply to_any.
+  Qed.
+
+  Theorem complete_rexec_ok : forall T (p: a_proc T) R (rec: a_proc R),
+      test c_initP;; c_sem.(rexec) (compile p) (compile_rec rec) --->
+                                  any (T:=unit);; test a_initP;; (v <- a_sem.(rexec) p rec; any (T:=unit);; pure v).
+  Proof.
+    intros.
+    rew rf.(init_ok).
+    rew compile_rexec_ok.
+    unfold rexec; norm.
+    repeat rel_congruence.
+    apply to_any.
   Qed.
 
 End Layers.
@@ -250,4 +280,9 @@ Proof.
     rew H.
     rew rf1.(rexec_star_rec).
     left assoc rew rf2.(crash_step_refinement).
+  - rew rf1.(init_ok).
+    rew rf2.(init_ok).
+    rewrite <- bind_assoc.
+    rel_congruence.
+    apply to_any.
 Qed.

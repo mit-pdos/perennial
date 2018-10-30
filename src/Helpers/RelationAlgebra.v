@@ -35,6 +35,10 @@ Section OutputRelations.
   Definition any {A B} {T} : relation A B T :=
     fun x y o => True.
 
+  Definition predicate A := A -> Prop.
+  Definition test {A} (P: predicate A) : relation A A unit :=
+    fun x y _ => P x /\ x = y.
+
   Definition rel_or A B T (r1 r2: relation A B T) : relation A B T :=
     fun x y o => r1 x y o \/ r2 x y o.
 
@@ -118,7 +122,7 @@ Section OutputRelations.
   (** Various equivalence and implication proofs *)
   Hint Unfold Proper respectful pointwise_relation : t.
   Hint Unfold Basics.flip Basics.impl : t.
-  Hint Unfold and_then rel_or pure identity : t.
+  Hint Unfold and_then rel_or pure any identity : t.
 
   Ltac t :=
     autounfold with t;
@@ -135,6 +139,7 @@ Section OutputRelations.
                   H': ?r ?x ?y ?o |- _ ] =>
              add_hypothesis (H x y o H')
            | [ u: unit |- _ ] => destruct u
+           | [ |- exists (_:unit), _ ] => exists tt
            | _ => progress propositional
            | _ => solve [ eauto 10 ]
            | [ H: _ \/ _  |- _ ] => destruct H
@@ -291,6 +296,12 @@ Section OutputRelations.
           (r3: T2 -> relation C D T3) :
     and_then (and_then r1 r2) r3 <--->
              and_then r1 (fun v => and_then (r2 v) r3).
+  Proof.
+    t.
+  Qed.
+
+  Theorem to_any A B T (r: relation A B T) :
+    r ---> any.
   Proof.
     t.
   Qed.
@@ -462,9 +473,6 @@ Section OutputRelations.
       gen x.
       induction H0; t.
       specialize (IHbind_star _ ltac:(eauto)); t.
-
-      Grab Existential Variables.
-      exact tt.
   Qed.
 
   Theorem seq_sliding A T1 (p: relation A A T1) (q: relation A A unit) :
@@ -485,9 +493,6 @@ Section OutputRelations.
     gen x.
     induction H0; t.
     specialize (IHseq_star _ ltac:(eauto)); t.
-
-    Grab Existential Variables.
-    exact tt.
   Qed.
 
   Theorem bind_unit A B C T (p: relation A B unit) (q: unit -> relation B C T) :
@@ -534,7 +539,6 @@ Section OutputRelations.
     - repeat match goal with
              | [ u: unit |- _ ] => destruct u
              end.
-      exists tt.
       unfold rimpl in H; simpl in *.
       specialize (H y0 z tt).
       match type of H with
@@ -575,6 +579,32 @@ Section OutputRelations.
 
       Grab Existential Variables.
       all: auto.
+  Qed.
+
+  (* some basic properties of tests *)
+  Hint Unfold test : t.
+
+  Theorem test_to_id A (P: predicate A) :
+    test P ---> identity.
+  Proof.
+    t.
+  Qed.
+
+  Definition pred_and A (P1 P2: predicate A) : predicate A :=
+    fun x => P1 x /\ P2 x.
+
+  Hint Unfold pred_and : t.
+
+  Theorem test_and A (P1 P2: predicate A) :
+    test P1;; test P2 <---> test (pred_and P1 P2).
+  Proof.
+    t.
+  Qed.
+
+  Theorem test_identity A :
+    identity (A:=A) <---> test (fun _ => True).
+  Proof.
+    t.
   Qed.
 
 End OutputRelations.
