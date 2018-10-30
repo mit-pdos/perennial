@@ -20,6 +20,13 @@ Record LayerImpl C_Op Op :=
     recover: proc C_Op unit;
   (* TODO: add init here *) }.
 
+Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
+  match p with
+  | Prim op => impl.(compile_op) op
+  | Ret v => Ret v
+  | Bind p p' => Bind (impl.(compile) p) (fun v => impl.(compile) (p' v))
+  end.
+
 Section Layers.
 
   Context C_Op (c_layer: Layer C_Op).
@@ -35,14 +42,10 @@ Section Layers.
   Notation a_sem := a_layer.(sem).
   Notation a_exec_recover := a_layer.(sem).(exec_recover).
 
-  Context (impl: LayerImpl C_Op Op).
-  Notation compile_op := impl.(compile_op).
-  Notation recover := impl.(recover).
-
-  Definition compile_op_refines_step (absr: relation AState CState unit) :=
+  Definition compile_op_refines_step (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
     forall T (op: Op T),
       crash_refines absr c_sem
-                    (compile_op op) recover
+                    (impl.(compile_op) op) impl.(recover)
                     (a_sem.(step) op)
                     (* same as [(pure tt + (a_sem.(step) op;; pure tt));;
                        a_sem.(crash_step)], but easier to write due to
@@ -50,23 +53,23 @@ Section Layers.
                     (a_sem.(crash_step) +
                      (a_sem.(step) op;; a_sem.(crash_step))).
 
-  Definition recovery_refines_noop (absr: relation AState CState unit) :=
-    refines absr (c_sem.(rexec) recover recover) (a_sem.(crash_step)).
+  Definition recovery_refines_noop (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
+    refines absr
+            (c_sem.(rexec) impl.(recover) impl.(recover))
+            (a_sem.(crash_step)).
 
   Record LayerRefinement :=
-    { absr: relation AState CState unit;
-      compile_op_ok : compile_op_refines_step absr;
-      recovery_ok : recovery_refines_noop absr;
+    {
+      impl: LayerImpl C_Op Op;
+      absr: relation AState CState unit;
+      compile_op_ok : compile_op_refines_step impl absr;
+      recovery_ok : recovery_refines_noop impl absr;
       (* TODO: init_ok *) }.
 
-  Fixpoint compile T (p: a_proc T) : c_proc T :=
-    match p with
-    | Prim op => compile_op op
-    | Ret v => Ret v
-    | Bind p p' => Bind (compile p) (fun v => compile (p' v))
-    end.
-
   Context (rf: LayerRefinement).
+  Notation compile_op := rf.(impl).(compile_op).
+  Notation compile := rf.(impl).(compile).
+  Notation recover := rf.(impl).(recover).
 
   (* need to mark things opaque since [setoid_rewrite] simplifies the goal
    (and we need [setoid_rewrite] to rewrite under bind binders) *)
