@@ -21,7 +21,7 @@ _CoqProject: libname $(wildcard vendor/*)
 
 -include .coqdeps.d
 
-%.vo: %.v .coqdeps.d _CoqProject
+%.vo: %.v _CoqProject
 	@echo "COQC $<"
 	@coqc $(shell cat '_CoqProject') $< -o $@
 
