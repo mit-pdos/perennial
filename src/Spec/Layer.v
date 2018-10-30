@@ -151,12 +151,40 @@ Section Layers.
     unfold refines.
     rew @exec_recover_bind.
     rew bind_star_unit.
-    pose proof crash_step_refinement.
-    unfold refines in H.
     left assoc rew crash_step_refinement.
     rel_congruence.
     rew rexec_star_rec.
   Qed.
+
+  Theorem rexec_recover R (rec: a_proc R) :
+    refines rf.(absr)
+                 (rexec c_sem
+                        (Bind recover (fun _ => compile rec))
+                        (Bind recover (fun _ => compile rec)))
+                 (rexec a_sem rec rec).
+  Proof.
+    unfold refines.
+    unfold rexec at 1; norm.
+    pose unfolded rf.(recovery_ok)
+                       (fun H => red in H;
+                              unfold rexec, refines in H;
+                              norm_hyp H).
+
+    simpl; repeat Split.
+    + rew recover_ret.
+      unfold rexec; norm.
+      rew<- exec_crash_noop.
+    + unfold rexec; norm.
+      rew @exec_recover_bind.
+      rew bind_star_unit.
+      left assoc rew H.
+      rew rexec_star_rec.
+      rew<- exec_crash_noop.
+    + rew @exec_recover_bind.
+      rew bind_star_unit.
+      rew <- exec_crash_finish in H.
+      admit.
+  Admitted.
 
   Theorem compile_rexec_ok T (p: a_proc T) R (rec: a_proc R) :
     refines rf.(absr)
@@ -200,3 +228,55 @@ Section Layers.
   Qed.
 
 End Layers.
+
+Coercion impl: LayerRefinement >-> LayerImpl.
+Coercion sem : Layer >-> Dynamics.
+
+Definition layer_impl_compose
+           Op1 Op2 Op3
+           (impl1: LayerImpl Op1 Op2)
+           (impl2: LayerImpl Op2 Op3)
+  : LayerImpl Op1 Op3.
+Proof.
+  refine {| compile_op T op :=
+                   impl1.(compile) (impl2.(compile_op) op);
+                 recover := Bind impl1.(recover)
+                                       (fun (_:unit) =>
+                                          impl1.(compile) impl2.(recover))
+              |}.
+Defined.
+
+Definition layer_compose
+           Op1 (l1: Layer Op1)
+           Op2 (l2: Layer Op2)
+           Op3 (l3: Layer Op3)
+           (rf1: LayerRefinement l1 l2)
+           (rf2: LayerRefinement l2 l3) :
+  (* most abstract: l3  --+
+                          | rf2
+                    l2 <--+ ------+
+                                  | rf1
+     most concrete: l1 <----------+
+   *)
+  LayerRefinement l1 l3.
+Proof.
+  refine {| impl := layer_impl_compose rf1.(impl) rf2.(impl);
+            absr := rf2.(absr);; rf1.(absr) |}.
+    simpl; intros.
+  - (* op crash refinement *)
+    red; unfold layer_impl_compose; simpl.
+    split; simpl; unfold refines; norm.
+    + rew rf1.(compile_exec_ok).
+      pose unfolded (rf2.(compile_op_ok) _ op)
+           (fun H => hnf in H).
+      left assoc rew H.
+    + rew rf1.(compile_rexec_ok).
+      pose unfolded (rf2.(compile_op_ok) _ op)
+           (fun H => hnf in H).
+      left assoc rew H0.
+  - red; unfold refines, layer_impl_compose; simpl; norm.
+    rew rf1.(rexec_recover).
+    pose unfolded rf2.(recovery_ok)
+                        (fun H => red in H).
+    left assoc rew H.
+Qed.
