@@ -5,12 +5,12 @@ VFILES := $(filter-out $(TEST_VFILES),$(PROJ_VFILES))
 
 default: $(VFILES:.v=.vo)
 
-test: $(TEST_VFILES:.v=.vo) $(VFILES:.v=vo)
+test: $(TEST_VFILES:.v=.vo) $(VFILES:.v=.vo)
 
 
 _CoqProject: libname $(wildcard vendor/*)
 	@echo "-R src $$(cat libname)" > $@
-	@for libdir in $(wildcard vendor/*/); do \
+	@for libdir in $(wildcard vendor/*); do \
 		echo "-R $$libdir/src $$(cat $$libdir/libname)" >> $@; \
 	done
 	@echo "_CoqProject:"
