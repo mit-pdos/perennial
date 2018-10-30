@@ -21,34 +21,27 @@ Tactic Notation "pose" "unfolded" constr(pf) tactic(t) :=
 
 Create HintDb relation_rewriting.
 
-Ltac with_hyp H tac :=
+Local Ltac with_hyp H tac :=
   let H' := fresh "Htmp" in
   pose proof H as H';
   tac H';
   clear H'.
 
-Tactic Notation "with" "hyp" constr(H) tactic(t) := with_hyp H t.
+Ltac rel_hyp H tac :=
+  (with_hyp H ltac:(fun H => autounfold with relation_rewriting in H;
+                          tac H));
+  norm_goal.
+
+Tactic Notation "rel" "with" constr(H) tactic(t) := rel_hyp H t.
 
 Tactic Notation "rew" constr(pf) :=
-  with hyp pf
-       (fun H => autounfold with relation_rewriting in H;
-              setoid_rewrite -> H;
-              norm_goal).
+  rel_hyp pf ltac:(fun H => setoid_rewrite -> H).
 Tactic Notation "rew<-" constr(pf) :=
-  with hyp pf
-       (fun H => autounfold with relation_rewriting in H;
-              setoid_rewrite <- H;
-              norm_goal).
+  rel_hyp pf ltac:(fun H => setoid_rewrite <- H).
 Tactic Notation "rew" "->" uconstr(pf) "in" ident(H) :=
-  with hyp pf
-       (fun H' => autounfold with relation_rewriting in H';
-               setoid_rewrite -> H' in H at 1;
-               norm_hyp H).
+  rel_hyp pf ltac:(fun H' => setoid_rewrite -> H' in H at 1; norm_hyp H).
 Tactic Notation "rew" "<-" uconstr(pf) "in" ident(H) :=
-  with hyp pf
-       (fun H' => autounfold with relation_rewriting in H';
-               setoid_rewrite <- H' in H at 1;
-               norm_hyp H).
+  rel_hyp pf ltac:(fun H' => setoid_rewrite <- H' in H at 1; norm_hyp H).
 
 Ltac Split := match goal with
               | |- (_ + _ ---> _) =>
@@ -84,16 +77,15 @@ Ltac left_associate H :=
   repeat setoid_rewrite <- bind_assoc;
   try repeat setoid_rewrite <- bind_assoc in H.
 
+Local Ltac left_assoc_rel_hyp H tac :=
+  rel_hyp H ltac:(fun H => left_associate H;
+                        tac H).
+
+Tactic Notation "left" "assoc" "with" constr(H) tactic(t) :=
+  left_assoc_rel_hyp H t.
+
 Tactic Notation "left" "assoc" "rew" constr(H) :=
-  with hyp H
-       (fun H => autounfold with relation_rewriting in H;
-             left_associate H;
-             setoid_rewrite H;
-             norm_goal).
+  left_assoc_rel_hyp H ltac:(fun H => setoid_rewrite H).
 
 Tactic Notation "left" "assoc" "rew" "<-" constr(H) :=
-  with hyp H
-       (fun H => autounfold with relation_rewriting in H;
-             left_associate H;
-             setoid_rewrite <- H;
-             norm_goal).
+  left_assoc_rel_hyp H ltac:(fun H => setoid_rewrite <- H).
