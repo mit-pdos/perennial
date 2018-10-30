@@ -590,9 +590,10 @@ Module RelationNotations.
 
   Notation "p1 ;; p2" := (and_then p1 (fun _ => p2))
                            (at level 53, right associativity).
+  (* TODO: experiment more with printing boxes *)
   Notation "x <- p1 ; p2" := (and_then p1 (fun x => p2))
                               (at level 54, right associativity,
-                               format "'[' x  <-  p1 ; ']'  '/' p2").
+                               format "'[' x  <-  '[v    ' p1 ']' ; ']'  '/' p2").
 End RelationNotations.
 
 Ltac rel_congruence :=

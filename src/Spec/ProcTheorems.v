@@ -1,7 +1,8 @@
 Require Import Proc.
-Require Import Tactical.ProofAutomation.
 Require Import Helpers.Instances.
 Require Import Helpers.RelationAlgebra.
+Require Import Helpers.RelationRewriting.
+Require Import Tactical.ProofAutomation.
 
 Import RelationNotations.
 
@@ -106,6 +107,24 @@ Section Dynamics.
       rel_congruence.
       apply bind_star_respectful; auto.
       hnf; intros; norm.
+  Qed.
+
+  Theorem rexec_to_exec_recover
+          `(rec: proc R) :
+    rexec rec rec ---> exec_recover rec.
+  Proof.
+    unfold rexec, exec_recover.
+    setoid_rewrite <- bind_assoc at 1.
+    setoid_rewrite <- bind_assoc at 1.
+    rew seq_star1.
+  Qed.
+
+  Theorem exec_recover_to_rexec
+          `(rec: proc R) :
+    crash_step;; exec_recover rec ---> rexec rec rec.
+  Proof.
+    unfold rexec, exec_recover.
+    setoid_rewrite <- exec_crash_noop at 2; norm.
   Qed.
 
 End Dynamics.

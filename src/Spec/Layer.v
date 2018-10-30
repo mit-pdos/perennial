@@ -156,6 +156,7 @@ Section Layers.
     rew rexec_star_rec.
   Qed.
 
+  (* TODO: possibly too strong, actual theorem should be about exec_recover and ensure crashes happen first *)
   Theorem rexec_recover R (rec: a_proc R) :
     refines rf.(absr)
                  (rexec c_sem
@@ -169,7 +170,6 @@ Section Layers.
                        (fun H => red in H;
                               unfold rexec, refines in H;
                               norm_hyp H).
-
     simpl; repeat Split.
     + rew recover_ret.
       unfold rexec; norm.
@@ -180,11 +180,15 @@ Section Layers.
       left assoc rew H.
       rew rexec_star_rec.
       rew<- exec_crash_noop.
-    + rew @exec_recover_bind.
-      rew bind_star_unit.
-      rew <- exec_crash_finish in H.
+    + Print recovery_refines_noop.
+      (* TODO: need a theorem about recovery in _non-crashed_ states? *)
+      rewrite exec_recover_unfold.
+      setoid_rewrite <- bind_assoc at 2.
+      setoid_rewrite <- bind_assoc at 2.
+      setoid_rewrite <- bind_assoc at 2.
+      setoid_rewrite seq_star_fold; norm.
       admit.
-  Admitted.
+  Abort.
 
   Theorem compile_rexec_ok T (p: a_proc T) R (rec: a_proc R) :
     refines rf.(absr)
@@ -275,6 +279,7 @@ Proof.
            (fun H => hnf in H).
       left assoc rew H0.
   - red; unfold refines, layer_impl_compose; simpl; norm.
+    rew @rexec_to_exec_recover.
     rew rf1.(rexec_recover).
     pose unfolded rf2.(recovery_ok)
                         (fun H => red in H).
