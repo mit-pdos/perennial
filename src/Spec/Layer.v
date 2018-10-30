@@ -140,21 +140,27 @@ Section Layers.
     repeat setoid_rewrite <- bind_assoc;
     try repeat setoid_rewrite <- bind_assoc in H.
 
-  Ltac temp_hyp H tac :=
+  Ltac with_hyp H tac :=
     let H' := fresh "Htmp" in
     pose proof H as H';
     tac H';
     clear H'.
 
+  Tactic Notation "with" "hyp" constr(H) tactic(t) := with_hyp H t.
+
   Tactic Notation "left" "assoc" "rew" constr(H) :=
-    temp_hyp H ltac:(fun H =>
-                       left_associate H;
-                       rew H).
+    with hyp H
+         fun H => unfold refines in H;
+               left_associate H;
+               setoid_rewrite H;
+               norm_goal.
 
   Tactic Notation "left" "assoc" "rew" "<-" constr(H) :=
-    temp_hyp H ltac:(fun H =>
-                       left_associate H;
-                       rew <- H).
+    with hyp H
+         fun H => unfold refines in H;
+               left_associate H;
+               setoid_rewrite <- H;
+               norm_goal.
 
   Theorem compile_exec_ok : forall T (p: a_proc T),
       refines
@@ -190,8 +196,6 @@ Section Layers.
                  (a_sem.(exec_crash) rec;; a_sem.(crash_step)).
   Proof.
     unfold refines, rexec.
-    pose unfolded crash_step_refinement
-         (fun H => unfold refines in H; rename H into Hcrash_step).
     induction rec; simpl; norm.
     - pose unfolded (rf.(compile_op_ok) op)
            (fun H => red in H; unfold rexec, refines in H).
@@ -199,16 +203,11 @@ Section Layers.
       Split.
       Left.
       Right.
-    - auto.
-    - repeat Split.
-      + Left.
-        Left.
-        auto.
-      + Left.
-        Right.
-        rew IHrec.
-      + Right.
-        left assoc rew (compile_exec_ok rec).
+    - rew crash_step_refinement.
+    - repeat Split; [ Left; Left | Left; Right | Right ].
+      + rew crash_step_refinement.
+      + rew IHrec.
+      + left assoc rew (compile_exec_ok rec).
         rew H.
   Qed.
 
@@ -218,7 +217,7 @@ Section Layers.
                  (a_exec_recover rec).
   Proof.
     unfold refines.
-    rewrite exec_recover_unfold; norm.
+    rew @exec_recover_unfold.
     pose unfolded (rexec_rec rec)
          (fun H => red in H).
     apply simulation_seq_value in H.
@@ -236,10 +235,9 @@ Section Layers.
     unfold refines.
     rew @exec_recover_bind.
     rew bind_star_unit.
-    (* TODO: why does left assoc rew crash_step_refinement not work? *)
-    pose unfolded crash_step_refinement
-         (fun H => unfold refines in H).
-    left assoc rew H.
+    pose proof crash_step_refinement.
+    unfold refines in H.
+    left assoc rew crash_step_refinement.
     rel_congruence.
     rew rexec_star_rec.
   Qed.
@@ -265,21 +263,14 @@ Section Layers.
       left assoc rew H0.
       rew bind_star_unit.
 
-      (* distribute just crash_step on right side *)
-      setoid_rewrite <- bind_assoc at 4.
-      setoid_rewrite bind_dist_r at 2.
-      norm.
-      rel_congruence.
-
       rew rexec_star_rec.
+      rewrite ?bind_dist_r; norm.
     - rew recover_ret.
     - repeat Split;
         [ Left; Left | Left; Right | Right ].
       + rew recover_ret.
       + rew IHp.
-      + pose unfolded (compile_exec_ok p)
-             (fun H => unfold refines in H).
-        left assoc rew H0.
+      + left assoc rew compile_exec_ok.
         rel_congruence.
         rew H.
   Qed.
