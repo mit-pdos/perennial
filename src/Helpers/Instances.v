@@ -10,7 +10,7 @@ Class EqualDec A :=
   *)
 
 Module EqualDecNotation.
-  Infix "==" := (equal_dec (x :>) (y :>)) (no associativity, at level 70).
+  Infix "==" := (equal_dec) (no associativity, at level 70).
 End EqualDecNotation.
 
 Ltac RelInstance_t :=
