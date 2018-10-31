@@ -9,7 +9,7 @@ failures with replication.
 *)
 
 
-Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
+Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
 
   Import ProcNotations EqualDecNotation.
   Open Scope proc_scope.
@@ -56,7 +56,6 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
       end
     end.
 
-  (*
   (** [sizeInit] computes the size during initialization; it may return None if
   the sizes of the underlying disks differ. *)
   Definition sizeInit : proc Op (option nat) :=
@@ -88,7 +87,7 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
     end.
 
   (* Initialize every disk block *)
-  Definition init' : proc Op InitResult :=
+  Definition init' : proc Op InitStatus :=
     size <- sizeInit;
     match size with
     | Some sz =>
@@ -97,7 +96,6 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
     | None =>
       Ret InitFailed
     end.
-  *)
 
   (*
   Definition init := then_init td.init init'.
@@ -360,7 +358,6 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
 
   Hint Resolve equal_after_diskUpd.
 
-  (*
   Theorem init_at_ok : forall a,
       proc_ok TDLayer
         (init_at a)
@@ -431,7 +428,6 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
   Qed.
 
   Hint Resolve sizeInit_ok.
-   *)
 
 
   Theorem equal_after_0_to_eq : forall d_0 d_1,
@@ -456,7 +452,6 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
   Hint Resolve equal_after_size.
   Hint Resolve equal_after_0_to_eq.
 
-  (*
   Theorem init'_ok :
     proc_ok TDLayer
       (init')
@@ -466,7 +461,7 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
               disk0 state ?|= eq d_0 /\
               disk1 state ?|= eq d_1;
             post :=
-              fun r state' =>
+              fun state' r =>
                 match r with
                 | Initialized =>
                   exists d_0' d_1',
@@ -477,7 +472,7 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
                   True
                 end;
             recovered :=
-              fun _ state' => True;
+              fun state' _ => True;
          |}).
   Proof.
     unfold init.
@@ -488,7 +483,6 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
   Qed.
 
   Hint Resolve init'_ok.
-   *)
 
   (**
    * Recovery implementation.
@@ -976,6 +970,7 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
                        | op_write a b => write a b
                        | op_size => size
                        end;
+       init := init';
        Layer.recover := recover |}.
 
   Import Helpers.RelationAlgebra.
@@ -1028,9 +1023,11 @@ Module ReplicatedDisk (td : TwoDiskAPI).  (* <: OneDiskAPI. *)
       unfold rd_abstraction.
       destruct v; repeat deex; eauto.
   Qed.
+*)
 
 
-  Theorem read_ok : forall a, proc_spec (read_spec a) (read a) recover abstr.
+  (*
+  Theorem read_ok : forall a, proc_ok TDLayer (read a) recover (read_spec a).
   Proof.
     intros.
     apply spec_abstraction_compose; simpl.

@@ -91,15 +91,25 @@ Inductive op_step : OpSemantics Op State :=
     end ->
     op_step (op_size i) state state r.
 
-Inductive bg_failure : CrashSemantics State :=
+Inductive bg_failure : State -> State -> unit -> Prop :=
 | step_id : forall (state: State), bg_failure state state tt
 | step_fail0 : forall d_0 d_1,
     bg_failure (BothDisks d_0 d_1) (OnlyDisk1 d_1) tt
 | step_fail1 : forall d_0 d_1,
     bg_failure (BothDisks d_0 d_1) (OnlyDisk0 d_0) tt.
 
+Definition pre_step {opT State}
+           (bg_step: State -> State -> unit -> Prop)
+           (step: OpSemantics opT State) :
+  OpSemantics opT State :=
+  fun T (op: opT T) state state'' v =>
+    exists state', bg_step state state' tt /\
+          step _ op state' state'' v.
+
+Definition combined_step := pre_step bg_failure (@op_step).
+
 Definition TDBaseDynamics : Dynamics Op State :=
-  {| step := op_step; crash_step := bg_failure |}.
+  {| step := op_step; crash_step := RelationAlgebra.identity |}.
 
 Definition td_init (s: State) :=
   exists d_0' d_1',
@@ -153,11 +163,28 @@ Module TwoDiskBaseImpl <: TwoDiskBaseAPI.
   Import Helpers.RelationAlgebra.
   Import RelationNotations.
 
-  (* not true *)
+  Lemma seq_star_crash:
+    seq_star (_ <- exec_crash TDBaseDynamics recover; TDBaseDynamics.(crash_step)) ---> identity.
+  Proof.
+    apply star_ind.
+    - reflexivity.
+    - rewrite bind_assoc. unfold recover. rewrite exec_crash_ret. simpl.
+      rewrite bind_left_id.
+      rewrite bind_identity1. reflexivity.
+  Qed.
+
   Lemma recover_noop :
     rec_noop TDBaseDynamics recover eq.
   Proof.
-  Admitted.
+    split.
+    - intros s s' ? []; subst. unfold spec_exec; simpl; eauto.
+    - unfold rexec. simpl. setoid_rewrite bind_left_id.
+      unfold exec_recover.
+      rewrite bind_identity1.
+      rewrite seq_star_crash.
+      rewrite bind_identity1.
+      intros s s' ? []; subst. unfold spec_rexec; simpl; eauto.
+  Qed.
 
   Lemma read_ok :
     forall i a,
@@ -171,7 +198,7 @@ Module TwoDiskBaseImpl <: TwoDiskBaseAPI.
 
   Lemma size_ok :
     forall i,
-      proc_ok TDBaseDynamics  (size i) recover (op_spec TDBaseDynamics (op_size i)).
+      proc_ok TDBaseDynamics (size i) recover (op_spec TDBaseDynamics (op_size i)).
   Proof. intros. eapply op_spec_correct, recover_noop. Qed.
 
   Hint Resolve init_ok.
