@@ -14,19 +14,6 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Import ProcNotations EqualDecNotation.
   Open Scope proc_scope.
 
-  (* FIXME: this should be in tactical but was deleted by accident *)
-  Ltac destruct_tuple :=
-    match goal with
-    | [ H: context[let '(a, b) := ?p in _] |- _ ] =>
-      let a := fresh a in
-      let b := fresh b in
-      destruct p as [a b]
-    | [ |- context[let '(a, b) := ?p in _] ] =>
-      let a := fresh a in
-      let b := fresh b in
-      destruct p as [a b]
-    end.
-
   Definition read (a:addr) : proc Op block :=
     mv0 <- td.read d0 a;
     match mv0 with
