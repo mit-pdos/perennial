@@ -92,29 +92,12 @@ Section Hoare.
     eauto 10.
   Qed.
 
-  (* I don't think this is true under current defn of exec_equiv; probably needs
-  to be strengthened. *)
-  (*
   Theorem proc_ok_exec_equiv A T `(spec: Specification A T R State)
           (p p': proc T) `(rec: proc R):
       exec_equiv sem p p' ->
       proc_ok p' rec spec ->
       proc_ok p rec spec.
-  Proof.
-    unfold proc_ok, exec_equiv. intros Hequiv.
-    intros (?&Hr). rewrite Hequiv; intuition.
-    rewrite <-Hr.
-    unfold rexec.
-    rewrite /rexec.
-    ->; split; auto. Hequiv.
-    unfold exec_equiv in Hequiv.
-    setoid_rewrite Hequiv.
-    unfold proc_ok; intros.
-    eapply H0; eauto.
-    eapply rexec_equiv; eauto.
-    symmetry; auto.
-  Qed.
-   *)
+  Proof. unfold proc_ok. intros ->; auto. Qed.
 
   Theorem proc_ok_rx A T A' T' R `(spec: Specification A T R State)
                            `(p: proc T) `(rec: proc R)
@@ -186,4 +169,95 @@ Section Hoare.
                                       state' = state;
               recovered := fun state' _ => wipe state state'; |}).
 
+  (** A more general theorem about specifications for [Ret], which
+    we will use as part of our proof automation, says
+    that [Ret v] meets a specification [spec] if the [rec_noop]
+    theorem holds (i.e., the recovery procedure is correctly
+    described by a wipe relation [wipe]), and the specification
+    [spec] matches the [wipe] relation:
+   *)
+
+  Theorem ret_spec A T R (wipe: State -> State -> Prop) `(spec: Specification A T R State)
+          (v:T) (rec: proc R):
+    rec_noop rec wipe ->
+    (forall a state, pre (spec a state) ->
+                     post (spec a state) state v /\
+                     forall state', wipe state state' ->
+                                    forall (r : R), recovered (spec a state) state' r) ->
+    proc_ok (Ret v) rec spec .
+  Proof.
+    unfold proc_ok; intros Hnoop Himpl; split.
+    - intros state state' t Hexec a Hpre.
+      inversion Hexec; subst. specialize (Himpl _ _ Hpre). intuition.
+    - destruct (Hnoop _ v) as (?&->).
+      unfold spec_rexec.
+      intros s s' r Hl a Hpre. specialize (Hl tt).
+      eapply Himpl; eauto.
+      eapply Hl; simpl; eauto.
+  Qed.
+
+  Theorem op_spec_correct T (op: Op T) rec (* (wipe: State -> State -> Prop) *):
+    rec_noop rec eq ->
+    proc_ok (Prim op) rec (op_spec sem op).
+  Proof.
+    unfold proc_ok; intros Hnoop; split.
+    - intros state state' t Hexec a Hpre; eauto.
+    - unfold rexec, spec_rexec.
+      simpl. rewrite bind_dist_r. apply rel_or_elim.
+      * destruct (Hnoop _ tt) as (?&->).
+        intros s s' [] Hl a Hpre. specialize (Hl tt).
+        split; eauto. intuition.
+      * rewrite bind_assoc.
+        destruct (Hnoop _ tt) as (?&Hr).
+        setoid_rewrite Hr.
+        unfold spec_rexec.
+        intros s s' [] Hl a Hpre.
+        inversion Hl as (?&?&?&Hrest). specialize (Hrest tt I). split; eauto.
+        right.  eexists; eauto. simpl in Hrest. subst. eauto.
+  Qed.
+
+  (** In some situations, the precondition of a specification
+    may define variables or facts that you want to [intros].
+    Here we define several helper theorems and an Ltac tactic, [spec_intros],
+    that does so.  This is done by changing the specification's precondition
+    from an arbitrary Prop (i.e., [pre]) into a statement that there's
+    some state [state0] such that [state = state0], and [intros]ing the
+    arbitrary Prop in question as a hypothesis about [state0].
+  *)
+
+  Theorem spec_intros A T R `(spec: Specification A T R State)
+          `(p: proc T) `(rec: proc R):
+      (forall a state0,
+          pre (spec a state0) ->
+          proc_ok p rec
+            (fun (_:unit) state =>
+               {| pre := state = state0;
+                  post :=
+                    fun state' r => post (spec a state) state' r;
+                  recovered :=
+                    fun state' r => recovered (spec a state) state' r;
+               |})) ->
+      proc_ok p rec spec.
+  Proof.
+    unfold proc_ok at 2; intros H.
+    split; intros s s' r Hexec a Hpre; eapply H; simpl; eauto using tt.
+  Qed.
+
+  (** Define what it means for a spec to be idempotent: *)
+  Definition idempotent A T `(spec: Specification A T unit State) :=
+    forall a state,
+      pre (spec a state) ->
+      forall v state', recovered (spec a state) state' v ->
+              (** idempotency: recovered condition implies precondition to
+                 re-run on every crash *)
+              exists a', pre (spec a' state') /\
+                    (** postcondition transitivity: establishing the
+                       postcondition from a recovered state is sufficient to
+                       establish it with respect to the original initial
+                       state (note all with the same ghost state) *)
+                    forall rv state'', post (spec a' state') rv state'' ->
+                                  post (spec a state) rv state''.
+
 End Hoare.
+
+Ltac spec_intros := intros; eapply spec_intros; intros.

@@ -81,6 +81,18 @@ Section Dynamics.
     rew H0.
   Qed.
 
+  Global Instance exec_respectful T:
+    Proper (@exec_equiv T ==> @requiv State State T) exec.
+  Proof. intros ?? (?&?); intuition. Qed.
+
+  Global Instance exec_crash_respectful T:
+    Proper (@exec_equiv T ==> @requiv State State unit) exec_crash.
+  Proof. intros ?? (?&?); intuition. Qed.
+
+  Global Instance rexec_respectful T R:
+    Proper (@exec_equiv T ==> eq ==> @requiv State State R) rexec.
+  Proof. intros ?? ? ?? ->. eapply rexec_equiv; eauto. Qed.
+
   Theorem monad_left_id T T' (p: T' -> proc T) v :
       Bind (Ret v) p <==> p v.
   Proof.
