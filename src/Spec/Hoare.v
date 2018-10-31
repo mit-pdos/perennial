@@ -1,4 +1,4 @@
-Require Import Spec.Proc.
+Require Import Spec.Proc Spec.ProcTheorems.
 Require Import Tactical.Propositional.
 Require Import Helpers.RelationAlgebra.
 
@@ -78,6 +78,48 @@ Section Hoare.
     specialize (H a s); propositional.
     specialize (H1 a' s); propositional.
     eauto 10.
+  Qed.
+
+  Theorem proc_ok_rx A T A' T' R `(spec: Specification A T R State)
+                           `(p: proc T) `(rec: proc R)
+                           `(rx: T -> proc T')
+                           `(spec': Specification A' T' R State):
+      proc_ok p rec spec ->
+      (forall a' state, pre (spec' a' state) ->
+               exists a, pre (spec a state) /\
+                    (forall r,
+                        proc_ok (rx r) rec
+                          (fun (_:unit) state' =>
+                             {| pre := post (spec a state) state' r;
+                                post :=
+                                  fun (state'' : State) r =>
+                                    post (spec' a' state) state'' r;
+                                recovered :=
+                                  fun (state'' : State) r =>
+                                    recovered (spec' a' state) state'' r |})
+                    ) /\
+                    (forall (r: R) (state': State), recovered (spec a state) state' r ->
+                             recovered (spec' a' state) state' r)) ->
+      proc_ok (Bind p rx) rec spec'.
+  Proof.
+    unfold proc_ok at 3. intros (Hp_ok&Hp_rec) Hrx.
+    split.
+    - simpl; setoid_rewrite Hp_ok.
+      intros state state' t' (t&(state_mid&Hspec_mid&Hexec_mid)) a' Hpre'.
+      specialize (Hrx _ _ Hpre') as (a&Hpre&Hok&Hrec).
+      specialize (Hok t). rewrite proc_ok_expand in Hok.
+      destruct (Hok tt state_mid) as (Hrx_ok&Hrx_rec); simpl; eauto.
+    - rewrite rexec_unfold. rewrite rexec_unfold in Hp_rec.
+      simpl. rewrite exec_crash_idem, bind_dist_r.
+      apply rel_or_elim.
+      + rewrite Hp_rec; auto.
+        intros state state' r Hspec_rexec a' Hpre'.
+        specialize (Hrx _ _ Hpre') as (a&Hpre&?&Hrec); eauto.
+      + rewrite bind_assoc, Hp_ok.
+        intros state state' t' (t&(state_mid&Hspec_mid&Hcrash_mid)) a' Hpre'.
+      specialize (Hrx _ _ Hpre') as (a&Hpre&Hok&Hrec).
+      specialize (Hok t). rewrite proc_ok_expand in Hok.
+      destruct (Hok tt state_mid) as (Hrx_ok&Hrx_rec); simpl; eauto.
   Qed.
 
 End Hoare.
