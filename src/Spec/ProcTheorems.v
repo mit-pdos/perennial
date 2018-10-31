@@ -52,17 +52,41 @@ Section Dynamics.
   Qed.
 
   Definition exec_equiv T (p p': proc T) :=
-    requiv (exec p) (exec p').
+    exec p <---> exec p' /\
+    exec_crash p <---> exec_crash p'.
 
-  Global Instance exec_equiv_equiv T : Equivalence (exec_equiv (T:=T)) :=
-    RelInstance.
+  Global Instance exec_equiv_equiv T : Equivalence (exec_equiv (T:=T)).
+  Proof.
+    unfold exec_equiv.
+    RelInstance_t; (intuition idtac);
+      repeat match goal with
+             | [ H: _ <---> _ |- _ ] =>
+               apply requiv_to_rimpls in H
+             | |- _ <---> _ =>
+               apply rimpl_to_requiv
+             | _ => progress propositional
+             end;
+      auto;
+      try solve [ etransitivity; eauto ].
+  Qed.
 
-  Infix "<==>" := exec_equiv (at level 99).
+  Infix "<==>" := exec_equiv (at level 70).
+
+  Theorem rexec_equiv T (p p': proc T) R (rec: proc R) :
+    p <==> p' ->
+    rexec p rec <---> rexec p' rec.
+  Proof.
+    unfold "<==>"; propositional.
+    unfold rexec.
+    rew H0.
+  Qed.
 
   Theorem monad_left_id T T' (p: T' -> proc T) v :
       Bind (Ret v) p <==> p v.
   Proof.
-    unfold "<==>"; simpl; norm.
+    split; simpl; norm.
+    rew rel_or_idem.
+    rew exec_crash_idem.
   Qed.
 
   Theorem monad_assoc
@@ -71,7 +95,11 @@ Section Dynamics.
           `(p3: T2 -> proc T3) :
     Bind (Bind p1 p2) p3 <==> Bind p1 (fun v => Bind (p2 v) p3).
   Proof.
-    unfold "<==>"; simpl; norm.
+    split; simpl; norm.
+    rew rel_or_idem.
+    rew exec_crash_idem.
+    repeat setoid_rewrite bind_dist_l.
+    norm.
   Qed.
 
   Theorem exec_recover_bind
@@ -128,29 +156,6 @@ Section Dynamics.
     unfold rexec, exec_recover.
     setoid_rewrite <- exec_crash_noop at 2; norm.
   Qed.
-
-  (* This is not true anymore (it was under POCS notion of exec_equiv)
-     I think exec_equiv basically needs to be strengthened to also include exec_crash equiv) *)
-
-  (*
-  Theorem rexec_equiv : forall T (p p': proc T) `(rec: proc R),
-      exec_equiv p p' ->
-      rexec p' rec ---> rexec p rec.
-  Proof.
-    intros.
-    unfold rexec.
-    unfold exec_crash.
-    induction p, p'.
-    unfold exec_crash.
-    inv_rexec.
-    apply H in H1; eauto.
-    apply H in H1; eauto.
-  Qed.
-
-  Global Instance rexec_respectful T:
-    Proper (@exec_equiv T ==> eq ==> eq ==> requiv) exec_crash.
-  Proof. intros ??. unfold exec_equiv. unfold exec_crash. simpl. unfold exec_crash.
-   *)
 
 End Dynamics.
 

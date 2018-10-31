@@ -214,7 +214,7 @@ Section Layers.
 
   Theorem complete_rexec_ok : forall T (p: a_proc T) R (rec: a_proc R),
       test c_initP;; c_sem.(rexec) (compile p) (compile_rec rec) --->
-                                  any (T:=unit);; test a_initP;; (v <- a_sem.(rexec) p rec; any (T:=unit);; pure v).
+                                   any (T:=unit);; test a_initP;; (v <- a_sem.(rexec) p rec; any (T:=unit);; pure v).
   Proof.
     intros.
     rew rf.(init_ok).

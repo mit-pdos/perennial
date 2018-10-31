@@ -114,6 +114,13 @@ Section OutputRelations.
     firstorder.
   Qed.
 
+  Theorem requiv_to_rimpls A B T (r1 r2: relation A B T) :
+    r1 <---> r2 ->
+    r1 ---> r2 /\ r2 ---> r1.
+  Proof.
+    firstorder.
+  Qed.
+
   Hint Immediate rimpl_to_requiv requiv_to_rimpl1 requiv_to_rimpl2.
 
   Theorem rimpl_or A B T (r1 r2: relation A B T) :
@@ -312,6 +319,12 @@ Section OutputRelations.
 
   Theorem rel_or_assoc A B T (r1 r2 r3: relation A B T) :
     r1 + (r2 + r3) <---> r1 + r2 + r3.
+  Proof.
+    t.
+  Qed.
+
+  Theorem rel_or_idem A B T (r: relation A B T) :
+    r + r <---> r.
   Proof.
     t.
   Qed.
@@ -738,6 +751,8 @@ Ltac setoid_norm_goal :=
     setoid_rewrite bind_left_id
   | |- context[@identity _ unit] =>
     setoid_rewrite unit_identity
+  | |- context[rel_or _ (rel_or _ _)] =>
+    setoid_rewrite rel_or_assoc
   end.
 
 Ltac setoid_norm_hyp H :=
@@ -748,6 +763,8 @@ Ltac setoid_norm_hyp H :=
     setoid_rewrite bind_left_id in H
   | context[@identity _ unit] =>
     setoid_rewrite unit_identity in H
+  | context[rel_or _ (rel_or _ _)] =>
+    setoid_rewrite rel_or_assoc in H
   end.
 
 Ltac setoid_norm_hyps :=
@@ -758,6 +775,8 @@ Ltac setoid_norm_hyps :=
     setoid_rewrite bind_left_id in H
   | [ H: context[@identity _ unit] |- _ ] =>
     setoid_rewrite unit_identity in H
+  | [ H: context[rel_or _ (rel_or _ _)] |- _ ] =>
+    setoid_rewrite rel_or_assoc in H
   end.
 
 Ltac norm_goal :=
