@@ -201,8 +201,8 @@ Section Layers.
   Qed.
 
   Theorem complete_exec_ok : forall T (p: a_proc T),
-      test c_initP;; c_sem.(exec) (compile p) --->
-                                  any (T:=unit);; test a_initP;; (v <- a_sem.(exec) p; any (T:=unit);; pure v).
+      test c_initP;; c_exec (compile p) --->
+           any (T:=unit);; test a_initP;; (v <- a_sem.(exec) p; any (T:=unit);; pure v).
   Proof.
     intros.
     rew rf.(init_ok).

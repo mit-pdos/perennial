@@ -44,8 +44,10 @@ Tactic Notation "rew" "<-" uconstr(pf) "in" ident(H) :=
   rel_hyp pf ltac:(fun H' => setoid_rewrite <- H' in H at 1; norm_hyp H).
 
 Ltac Split := match goal with
-              | |- (_ + _ ---> _) =>
+              | |- _ + _ ---> _ =>
                 apply rel_or_elim; norm
+              | |- and_then (_ + _) _ ---> _ =>
+                apply rel_or_elim_rx; norm
               | |- ?g ---> _ =>
                 match g with
                 | context[_ + _] =>
@@ -72,8 +74,6 @@ Ltac Right := match goal with
               end.
 
 Ltac left_associate H :=
-  try rewrite <- ?bind_assoc in H;
-  rewrite <- ?bind_assoc;
   repeat setoid_rewrite <- bind_assoc;
   try repeat setoid_rewrite <- bind_assoc in H.
 

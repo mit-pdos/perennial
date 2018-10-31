@@ -282,6 +282,15 @@ Section OutputRelations.
     t.
   Qed.
 
+  Theorem rel_or_elim_rx A B T (r1 r2: relation A B T)
+          C T' (rx: T -> relation B C T') r :
+    and_then r1 rx ---> r ->
+    and_then r2 rx ---> r ->
+    and_then (r1 + r2) rx ---> r.
+  Proof.
+    t.
+  Qed.
+
   Theorem bind_left_id A B T1 T2 (v:T1) (r: T1 -> relation A B T2) :
     and_then (pure v) r <---> r v.
   Proof.
@@ -666,9 +675,7 @@ Ltac setoid_norm_hyps :=
     setoid_rewrite bind_left_id in H
   end.
 
-(* TODO: maintain a fast version of this tactic *)
 Ltac norm_goal :=
-  autorewrite with relations;
   repeat setoid_norm_goal;
   try reflexivity.
 
