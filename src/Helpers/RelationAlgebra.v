@@ -404,6 +404,12 @@ Section OutputRelations.
     t.
   Qed.
 
+  Theorem seq_star_none A T (r: relation A A T) :
+    identity ---> seq_star r.
+  Proof.
+    t.
+  Qed.
+
   Theorem seq_star_one A T (r: relation A A T) :
     r ---> seq_star r.
   Proof.
@@ -610,8 +616,20 @@ Section OutputRelations.
     t.
   Qed.
 
+  Theorem test_idem A (P: predicate A) :
+    test P;; test P <---> test P.
+  Proof.
+    t.
+  Qed.
+
   Theorem test_identity A :
     identity (A:=A) <---> test (fun _ => True).
+  Proof.
+    t.
+  Qed.
+
+  Lemma unit_identity A :
+    identity (A:=A) <---> pure tt.
   Proof.
     t.
   Qed.
@@ -657,6 +675,8 @@ Ltac setoid_norm_goal :=
     setoid_rewrite bind_assoc
   | |- context[and_then (pure _) _] =>
     setoid_rewrite bind_left_id
+  | |- context[@identity _ unit] =>
+    setoid_rewrite unit_identity
   end.
 
 Ltac setoid_norm_hyp H :=
@@ -665,6 +685,8 @@ Ltac setoid_norm_hyp H :=
     setoid_rewrite bind_assoc in H
   | context[and_then (pure _) _] =>
     setoid_rewrite bind_left_id in H
+  | context[@identity _ unit] =>
+    setoid_rewrite unit_identity in H
   end.
 
 Ltac setoid_norm_hyps :=
@@ -673,6 +695,8 @@ Ltac setoid_norm_hyps :=
     setoid_rewrite bind_assoc in H
   | [ H: context[and_then (pure _) _] |- _ ] =>
     setoid_rewrite bind_left_id in H
+  | [ H: context[@identity _ unit] |- _ ] =>
+    setoid_rewrite unit_identity in H
   end.
 
 Ltac norm_goal :=
@@ -691,3 +715,21 @@ Ltac norm_all :=
 Tactic Notation "norm" := norm_goal.
 Tactic Notation "norm" "in" "*" := norm_all.
 Tactic Notation "norm" "in" ident(H) := norm_hyp H.
+
+Import RelationNotations.
+
+Theorem seq_star_invariant A (r: relation A A unit) P :
+  test P;; r ---> test P;; r;; test P ->
+  test P;; seq_star r ---> test P;; seq_star r;; test P.
+Proof.
+  intros.
+  rewrite <- bind_assoc in H.
+  apply simulation_seq in H.
+  rewrite H.
+  rewrite star_expand; norm.
+  apply rel_or_elim_rx; norm.
+  - setoid_rewrite <- seq_star_none; norm.
+    rewrite test_idem; norm.
+  - setoid_rewrite <- seq_star1 at 2; norm.
+    setoid_rewrite test_to_id at 2; norm.
+Qed.

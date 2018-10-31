@@ -72,6 +72,7 @@ Section Layers.
       absr: relation AState CState unit;
       compile_op_ok : compile_op_refines_step impl absr;
       recovery_noop_ok : recovery_refines_crash_step impl absr;
+      (* TODO: prove implementations are well-formed *)
       init_ok : test c_initP ---> any (T:=unit);; test a_initP;; absr }.
 
   Context (rf: LayerRefinement).
