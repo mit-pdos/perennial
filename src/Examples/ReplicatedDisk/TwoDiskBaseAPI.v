@@ -1,4 +1,5 @@
 Require Import POCS.
+Require Export Maybe.
 Require Export Disk.
 
 (**
@@ -100,25 +101,23 @@ Inductive bg_failure : CrashSemantics State :=
 Definition TDBaseDynamics : Dynamics Op State :=
   {| step := op_step; crash_step := bg_failure |}.
 
+Definition td_init (s: State) :=
+  exists d_0' d_1',
+    disk0 s ?|= eq d_0' /\
+    disk1 s ?|= eq d_1' /\
+    d_0' = d_1'.
+
 Definition TDLayer : Layer Op :=
-  {| Layer.State := State; sem := TDBaseDynamics; initP := fun _ => True |}.
+  {| Layer.State := State; sem := TDBaseDynamics; initP := td_init |}.
 
 Module Type TwoDiskBaseAPI.
 
-  (* XXX Need init *) 
-  (*
-  Axiom init : proc InitResult.
-   *)
   Axiom read : diskId -> addr -> proc Op (DiskResult block).
   Axiom write : diskId -> addr -> block -> proc Op (DiskResult unit).
   Axiom size : diskId -> proc Op (DiskResult nat).
   Axiom recover : proc Op unit.
 
-  (*
-  Axiom abstr : Abstraction Op State.
-   *)
-
-  (* XXX Need init *) 
+  (* XXX init *)
   (*
   Axiom init_ok : init_abstraction init recover abstr inited_any.
    *)
@@ -135,10 +134,50 @@ Module Type TwoDiskBaseAPI.
   Axiom recover_noop :
     rec_noop TDBaseDynamics recover eq.
 
+  (*
   Hint Resolve init_ok.
+   *)
   Hint Resolve read_ok.
   Hint Resolve write_ok.
   Hint Resolve size_ok.
   Hint Resolve recover_noop.
 
 End TwoDiskBaseAPI.
+
+Module TwoDiskBaseImpl <: TwoDiskBaseAPI.
+
+  Definition read i a : proc Op (DiskResult block) := Prim (op_read i a).
+  Definition write i a b : proc Op (DiskResult unit) := Prim (op_write i a b).
+  Definition size i : proc Op (DiskResult nat) := Prim (op_size i).
+  Definition recover : proc Op unit := Ret tt.
+  Import Helpers.RelationAlgebra.
+  Import RelationNotations.
+
+  (* not true *)
+  Lemma recover_noop :
+    rec_noop TDBaseDynamics recover eq.
+  Proof.
+  Admitted.
+
+  Lemma read_ok :
+    forall i a,
+      proc_ok TDBaseDynamics (read i a) recover (op_spec TDBaseDynamics (op_read i a)).
+  Proof. intros. eapply op_spec_correct, recover_noop. Qed.
+
+  Lemma write_ok :
+    forall i a b,
+      proc_ok TDBaseDynamics (write i a b) recover (op_spec TDBaseDynamics (op_write i a b)).
+  Proof. intros. eapply op_spec_correct, recover_noop. Qed.
+
+  Lemma size_ok :
+    forall i,
+      proc_ok TDBaseDynamics  (size i) recover (op_spec TDBaseDynamics (op_size i)).
+  Proof. intros. eapply op_spec_correct, recover_noop. Qed.
+
+  Hint Resolve init_ok.
+  Hint Resolve read_ok.
+  Hint Resolve write_ok.
+  Hint Resolve size_ok.
+  Hint Resolve recover_noop.
+
+End TwoDiskBaseImpl.
