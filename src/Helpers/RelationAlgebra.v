@@ -169,6 +169,17 @@ Section OutputRelations.
     specialize (H0 o1); t.
   Qed.
 
+  Theorem and_then_monotonic_wit A B C T1 T2
+          (r1 r1': relation A B T1) (r2 r2': T1 -> relation B C T2) :
+    r1 ---> r1' ->
+    (forall a b x, r1 a b x -> (r2 x ---> r2' x)) ->
+    and_then r1 r2 ---> and_then r1' r2'.
+  Proof.
+    t.
+    specialize (H0 x y0 o1) as H0.
+    t.
+  Qed.
+
   Global Instance and_then_respectful :
     Proper (rimpl ==> pointwise_relation _ rimpl ==> rimpl) (and_then (A:=A) (B:=B) (C:=C) (T1:=T1) (T2:=T2)).
   Proof.
