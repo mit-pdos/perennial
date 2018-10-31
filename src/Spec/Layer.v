@@ -215,8 +215,8 @@ Section Layers.
     else pure None.
 
   Theorem complete_exec_ok : forall T (p: a_proc T),
-      test c_initP;; (inited <- c_exec rf.(impl).(init); ifInit inited (c_exec (compile p))) --->
-           (any (T:=unit);; test a_initP;; (v <- a_sem.(exec) p; any (T:=unit);; pure (Some v))) +
+      test c_initP;; inited <- c_exec rf.(impl).(init); ifInit inited (c_exec (compile p)) --->
+           (any (T:=unit);; test a_initP;; v <- a_sem.(exec) p; any (T:=unit);; pure (Some v)) +
       (any (T:=unit);; pure None).
   Proof.
     intros.
@@ -235,8 +235,8 @@ Section Layers.
   Qed.
 
   Theorem complete_rexec_ok : forall T (p: a_proc T) R (rec: a_proc R),
-      test c_initP;; (inited <- c_exec rf.(impl).(init); ifInit inited (c_sem.(rexec) (compile p) (compile_rec rec))) --->
-           (any (T:=unit);; test a_initP;; (v <- a_sem.(rexec) p rec; any (T:=unit);; pure (Some v))) +
+      test c_initP;; inited <- c_exec rf.(impl).(init); ifInit inited (c_sem.(rexec) (compile p) (compile_rec rec)) --->
+           (any (T:=unit);; test a_initP;; v <- a_sem.(rexec) p rec; any (T:=unit);; pure (Some v)) +
       (any (T:=unit);; pure None).
   Proof.
     intros.

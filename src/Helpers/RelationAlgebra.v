@@ -733,7 +733,7 @@ Module RelationNotations.
   Infix "+" := rel_or.
 
   Notation "p1 ;; p2" := (and_then p1 (fun _ => p2))
-                           (at level 53, right associativity).
+                           (at level 54, right associativity).
   (* TODO: experiment more with printing boxes *)
   Notation "x <- p1 ; p2" := (and_then p1 (fun x => p2))
                               (at level 54, right associativity,
