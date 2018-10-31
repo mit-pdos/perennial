@@ -1,3 +1,5 @@
+Require Import Setoid.
+Require Import Morphisms.
 Require Import Proc.
 Require Import Helpers.Instances.
 Require Import Helpers.RelationAlgebra.
@@ -126,6 +128,29 @@ Section Dynamics.
     unfold rexec, exec_recover.
     setoid_rewrite <- exec_crash_noop at 2; norm.
   Qed.
+
+  (* This is not true anymore (it was under POCS notion of exec_equiv)
+     I think exec_equiv basically needs to be strengthened to also include exec_crash equiv) *)
+
+  (*
+  Theorem rexec_equiv : forall T (p p': proc T) `(rec: proc R),
+      exec_equiv p p' ->
+      rexec p' rec ---> rexec p rec.
+  Proof.
+    intros.
+    unfold rexec.
+    unfold exec_crash.
+    induction p, p'.
+    unfold exec_crash.
+    inv_rexec.
+    apply H in H1; eauto.
+    apply H in H1; eauto.
+  Qed.
+
+  Global Instance rexec_respectful T:
+    Proper (@exec_equiv T ==> eq ==> eq ==> requiv) exec_crash.
+  Proof. intros ??. unfold exec_equiv. unfold exec_crash. simpl. unfold exec_crash.
+   *)
 
 End Dynamics.
 

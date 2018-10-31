@@ -34,6 +34,18 @@ Definition spec_impl A A'
                (forall s' rv, (spec1 a' s).(recovered) s' rv ->
                          (spec2 a s).(recovered) s' rv).
 
+Definition op_spec `(sem: Dynamics Op State) `(op : Op T) : Specification unit T unit State :=
+  fun (_:unit) state =>
+    {|
+      pre := True;
+      post :=
+        fun state' v => sem.(step) op state state' v;
+      recovered :=
+        fun state' r =>
+          r = tt /\ (state' = state \/ exists v, sem.(step) op state state' v);
+    |}.
+
+
 Section Hoare.
   Context `(sem: Dynamics Op State).
   Notation proc := (proc Op).
@@ -80,6 +92,30 @@ Section Hoare.
     eauto 10.
   Qed.
 
+  (* I don't think this is true under current defn of exec_equiv; probably needs
+  to be strengthened. *)
+  (*
+  Theorem proc_ok_exec_equiv A T `(spec: Specification A T R State)
+          (p p': proc T) `(rec: proc R):
+      exec_equiv sem p p' ->
+      proc_ok p' rec spec ->
+      proc_ok p rec spec.
+  Proof.
+    unfold proc_ok, exec_equiv. intros Hequiv.
+    intros (?&Hr). rewrite Hequiv; intuition.
+    rewrite <-Hr.
+    unfold rexec.
+    rewrite /rexec.
+    ->; split; auto. Hequiv.
+    unfold exec_equiv in Hequiv.
+    setoid_rewrite Hequiv.
+    unfold proc_ok; intros.
+    eapply H0; eauto.
+    eapply rexec_equiv; eauto.
+    symmetry; auto.
+  Qed.
+   *)
+
   Theorem proc_ok_rx A T A' T' R `(spec: Specification A T R State)
                            `(p: proc T) `(rec: proc R)
                            `(rx: T -> proc T')
@@ -121,5 +157,33 @@ Section Hoare.
       specialize (Hok t). rewrite proc_ok_expand in Hok.
       destruct (Hok tt state_mid) as (Hrx_ok&Hrx_rec); simpl; eauto.
   Qed.
+
+  (** ** Reasoning about the [Ret] return operation.
+
+  The simplest procedure we can construct in our model is
+  the return operation, [Ret].  Writing a specification for
+  [Ret] should be intuitively straightforward, but turns out
+  to be slightly complicated by the possibility of crashes.
+  The [rec_noop] definition below captures this notion: a
+  [Ret v] procedure has no precondition, and has a simple
+  postcondition (the state does not change and the return
+  value is [v]), but in case of a crash, the state is wiped
+  according to some [wipe] relation.
+
+  [rec_noop] is a proposition that states that [Ret v] actually
+  meets this specification.  Proving [rec_noop] will be a
+  proof obligation, and boils down to showing that the recovery
+  procedure [rec] corresponds to the wipe relation [wipe].
+   *)
+
+  Definition rec_noop `(rec: proc R) (wipe: State -> State -> Prop) :=
+    forall T (v:T),
+      proc_ok
+        (Ret v) rec
+        (fun (_:unit) state =>
+           {| pre := True;
+              post := fun state' r => r = v /\
+                                      state' = state;
+              recovered := fun state' _ => wipe state state'; |}).
 
 End Hoare.
