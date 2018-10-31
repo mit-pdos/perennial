@@ -389,6 +389,19 @@ Section OutputRelations.
     t.
   Qed.
 
+  Theorem identity_to_any A :
+    pure tt ---> any (A:=A).
+  Proof.
+    t.
+  Qed.
+
+  Theorem any_idem A B C T1 T2 :
+    any (B:=B) (T:=T1);; any --->
+        any (A:=A) (B:=C) (T:=T2).
+  Proof.
+    t.
+  Qed.
+
   Theorem seq_star_to_bind_star : forall A (r: relation A A unit),
       seq_star r <---> bind_star (fun _ => r) tt.
   Proof.

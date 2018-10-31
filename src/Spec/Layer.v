@@ -12,13 +12,16 @@ Record Layer Op :=
     sem: Dynamics Op State;
     initP: State -> Prop }.
 
+Inductive InitStatus := Initialized | InitFailed.
+
 (* LayerImpl is just the code needed to translate from one layer to another -
    the logical components are in [LayerRefinement] *)
 Record LayerImpl C_Op Op :=
   { compile_op `(op: Op T) : proc C_Op T;
     (* TODO: layer implementations should be allowed to return from recovery
          (though it's unclear what purpose that would serve *)
-    recover: proc C_Op unit; }.
+    recover: proc C_Op unit;
+    init: proc C_Op InitStatus; }.
 
 Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
   match p with
@@ -73,7 +76,11 @@ Section Layers.
       compile_op_ok : compile_op_refines_step impl absr;
       recovery_noop_ok : recovery_refines_crash_step impl absr;
       (* TODO: prove implementations are well-formed *)
-      init_ok : test c_initP ---> any (T:=unit);; test a_initP;; absr }.
+      init_ok : test c_initP;; c_exec impl.(init) --->
+                                                  (any (T:=unit);; test a_initP;; absr;; pure Initialized)
+                (* failing initialization can do anything since a lower layer
+                might have initialized before this failure *)
+                + (any (T:=unit);; pure InitFailed)}.
 
   Context (rf: LayerRefinement).
   Notation compile_op := rf.(impl).(compile_op).
@@ -201,27 +208,51 @@ Section Layers.
     split; [ now apply compile_exec_ok | now apply compile_rexec_ok ].
   Qed.
 
+  Definition ifInit (inited:InitStatus) A `(r: relation A A T) :
+    relation A A (option T) :=
+    if inited
+    then v <- r; pure (Some v)
+    else pure None.
+
   Theorem complete_exec_ok : forall T (p: a_proc T),
-      test c_initP;; c_exec (compile p) --->
-           any (T:=unit);; test a_initP;; (v <- a_sem.(exec) p; any (T:=unit);; pure v).
+      test c_initP;; (inited <- c_exec rf.(impl).(init); ifInit inited (c_exec (compile p))) --->
+           (any (T:=unit);; test a_initP;; (v <- a_sem.(exec) p; any (T:=unit);; pure (Some v))) +
+      (any (T:=unit);; pure None).
   Proof.
     intros.
+    rewrite <- bind_assoc.
     rew rf.(init_ok).
-    rew compile_exec_ok.
-    repeat rel_congruence.
-    apply to_any.
+    repeat setoid_rewrite bind_dist_r; norm.
+    simpl.
+    Split.
+    - Left.
+      rel_congruence.
+      rel_congruence.
+      left assoc rew (compile_exec_ok p).
+      repeat rel_congruence.
+      apply to_any.
+    - Right.
   Qed.
 
   Theorem complete_rexec_ok : forall T (p: a_proc T) R (rec: a_proc R),
-      test c_initP;; c_sem.(rexec) (compile p) (compile_rec rec) --->
-                                   any (T:=unit);; test a_initP;; (v <- a_sem.(rexec) p rec; any (T:=unit);; pure v).
+      test c_initP;; (inited <- c_exec rf.(impl).(init); ifInit inited (c_sem.(rexec) (compile p) (compile_rec rec))) --->
+           (any (T:=unit);; test a_initP;; (v <- a_sem.(rexec) p rec; any (T:=unit);; pure (Some v))) +
+      (any (T:=unit);; pure None).
   Proof.
     intros.
+    rewrite <- bind_assoc.
     rew rf.(init_ok).
-    rew compile_rexec_ok.
-    unfold rexec; norm.
-    repeat rel_congruence.
-    apply to_any.
+    repeat setoid_rewrite bind_dist_r; norm.
+    simpl.
+    Split.
+    - Left.
+      rel_congruence.
+      rel_congruence.
+      rewrite <- bind_assoc.
+      rew compile_rexec_ok.
+      repeat rel_congruence.
+      apply to_any.
+    - Right.
   Qed.
 
 End Layers.
@@ -236,11 +267,16 @@ Definition layer_impl_compose
   : LayerImpl Op1 Op3.
 Proof.
   refine {| compile_op T op :=
-                   impl1.(compile) (impl2.(compile_op) op);
-                 recover := Bind impl1.(recover)
-                                       (fun (_:unit) =>
-                                          impl1.(compile) impl2.(recover))
-              |}.
+              impl1.(compile) (impl2.(compile_op) op);
+            recover := Bind impl1.(recover)
+                                    (fun (_:unit) =>
+                                       impl1.(compile) impl2.(recover));
+            init := Bind impl1.(init)
+                                 (fun inited =>
+                                    if inited
+                                    then impl1.(compile) impl2.(init)
+                                    else Ret InitFailed);
+         |}.
 Defined.
 
 Definition layer_compose
@@ -281,9 +317,21 @@ Proof.
     rew H.
     rew rf1.(rexec_star_rec).
     left assoc rew rf2.(crash_step_refinement).
-  - rew rf1.(init_ok).
-    rew rf2.(init_ok).
+  - unfold layer_impl_compose; simpl.
     rewrite <- bind_assoc.
-    rel_congruence.
-    apply to_any.
+    rew rf1.(init_ok).
+    Split.
+    + rew rf1.(compile_exec_ok).
+      setoid_rewrite <- bind_assoc at 2.
+      rew rf2.(init_ok).
+      repeat (setoid_rewrite bind_dist_r ||
+              setoid_rewrite bind_dist_l); norm.
+      left assoc rew any_idem.
+      Split.
+      * Left.
+      * Right.
+        rewrite <- bind_assoc.
+        rel_congruence.
+        apply to_any.
+    + Right.
 Qed.
