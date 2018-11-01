@@ -736,20 +736,27 @@ Section OutputRelations.
 End OutputRelations.
 
 Module RelationNotations.
+  Declare Scope relation_scope.
+  Delimit Scope relation_scope with rel.
+  Open Scope relation_scope.
   Notation "r1 ---> r2" := (rimpl r1 r2)
                              (at level 60, no associativity,
-                              format "'[hv' r1  '/' ---> '/'  r2 ']'").
+                              format "'[hv' r1  '/' ---> '/'  r2 ']'")
+                           : relation_scope.
   Notation "r1 <---> r2" := (requiv r1 r2)
                               (at level 60, no associativity,
-                               format "'[hv' r1  '/' <---> '/'  r2 ']'").
-  Infix "+" := rel_or.
+                               format "'[hv' r1  '/' <---> '/'  r2 ']'")
+                            : relation_scope.
+  Infix "+" := rel_or : relation_scope.
 
   Notation "p1 ;; p2" := (and_then p1 (fun _ => p2))
-                           (at level 54, right associativity).
+                           (at level 54, right associativity)
+  : relation_scope.
   (* TODO: experiment more with printing boxes *)
   Notation "x <- p1 ; p2" := (and_then p1 (fun x => p2))
                               (at level 54, right associativity,
-                               format "'[' x  <-  '[v    ' p1 ']' ; ']'  '/' p2").
+                               format "'[' x  <-  '[v    ' p1 ']' ; ']'  '/' p2")
+                             : relation_scope.
 End RelationNotations.
 
 Ltac rel_congruence :=

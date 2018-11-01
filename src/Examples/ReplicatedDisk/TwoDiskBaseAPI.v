@@ -2,6 +2,8 @@ Require Import POCS.
 Require Export Maybe.
 Require Export Disk.
 
+Import RelationNotations.
+
 (**
 TwoDiskBaseAPI supports reading and writing to two disks. It also allows one
 disk to fail at any time (just before any operation). Note that disk failure is

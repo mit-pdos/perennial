@@ -1,5 +1,8 @@
-Require Import RecoveryRefinement.POCS.
 From Coq Require Import List.
+
+Require Import RecoveryRefinement.POCS.
+Import RelationNotations.
+Require Import Helpers.RelationRewriting.
 
 Module Var.
   Inductive id := Sum | Count.
@@ -45,7 +48,7 @@ Module DB.
     {| step T (op: Op T) :=
          match op with
          | Add n => puts (cons n)
-         | Avg => reads (fun l => fold_left plus l 0 / length l)
+         | Avg => reads (fun l => fold_right plus 0 l / length l)
          end;
        crash_step :=
          puts (fun _ => nil); |}.
@@ -55,3 +58,44 @@ Module DB.
        sem := dynamics;
        initP := fun s => s = nil |}.
 End DB.
+
+Definition read i := Prim (Var.Read i).
+Definition write i v := Prim (Var.Write i v).
+
+Definition impl : LayerImpl Var.Op DB.Op :=
+  {| compile_op T (op: DB.Op T) :=
+       match op with
+       | DB.Add n =>
+         (sum <- read Var.Sum; _ <- write Var.Sum (sum + n)%nat;
+       count <- read Var.Count; _ <- write Var.Count (1 + count)%nat;
+       Ret tt)%proc
+       | DB.Avg =>
+         (sum <- read Var.Sum; count <- read Var.Count; Ret (sum+count)%nat)%proc
+       end;
+     recover := Ret tt;
+     init := Ret Initialized; |}.
+
+Definition absr : relation DB.l.(State) Var.l.(State) unit :=
+  fun l s _ =>
+    fst s = fold_right plus 0 l /\
+    snd s = length l.
+
+Definition rf : LayerRefinement Var.l DB.l.
+Proof.
+  refine {| Layer.impl := impl;
+            Layer.absr := absr; |}.
+  - red; intros.
+    split.
+    + admit. (* exec refinement of impls *)
+    + admit. (* rexec refinement of impls *)
+  - red; intros.
+    admit. (* recovery transfers crash step *)
+  - (* initialize abstraction *) simpl.
+    Left.
+    unfold and_then, test, rimpl, pure, any, absr; simpl; propositional.
+    descend; intuition eauto.
+    descend; intuition eauto.
+    descend; intuition eauto.
+    simpl; auto.
+    simpl; auto.
+Abort.

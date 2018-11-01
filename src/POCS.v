@@ -10,3 +10,5 @@ Require Export Spec.ProcTheorems.
 Require Export Spec.Hoare.
 Require Export Spec.Abstraction.
 Require Export Spec.Layer.
+
+Export ProcNotations.
