@@ -136,13 +136,13 @@ Module Type TwoDiskBaseAPI.
 
   Axiom read_ok :
     forall i a,
-      proc_ok TDBaseDynamics (read i a) recover (op_spec TDBaseDynamics (op_read i a)).
+      proc_cspec TDBaseDynamics (read i a) (op_spec TDBaseDynamics (op_read i a)).
   Axiom write_ok :
     forall i a b,
-      proc_ok TDBaseDynamics (write i a b) recover (op_spec TDBaseDynamics (op_write i a b)).
+      proc_cspec TDBaseDynamics (write i a b) (op_spec TDBaseDynamics (op_write i a b)).
   Axiom size_ok :
     forall i,
-      proc_ok TDBaseDynamics  (size i) recover (op_spec TDBaseDynamics (op_size i)).
+      proc_cspec TDBaseDynamics (size i) (op_spec TDBaseDynamics (op_size i)).
   Axiom recover_noop :
     rec_noop TDBaseDynamics recover eq.
 
@@ -185,23 +185,23 @@ Module TwoDiskBaseImpl <: TwoDiskBaseAPI.
       rewrite bind_identity1.
       rewrite seq_star_crash.
       rewrite bind_identity1.
-      intros s s' ? []; subst. unfold spec_rexec; simpl; eauto.
+      intros s s' ? []; subst. unfold spec_aexec; simpl; eauto.
   Qed.
 
   Lemma read_ok :
     forall i a,
-      proc_ok TDBaseDynamics (read i a) recover (op_spec TDBaseDynamics (op_read i a)).
-  Proof. intros. eapply op_spec_correct, recover_noop. Qed.
+      proc_cspec TDBaseDynamics (read i a) (op_spec TDBaseDynamics (op_read i a)).
+  Proof. intros. eapply op_spec_correct. Qed.
 
   Lemma write_ok :
     forall i a b,
-      proc_ok TDBaseDynamics (write i a b) recover (op_spec TDBaseDynamics (op_write i a b)).
-  Proof. intros. eapply op_spec_correct, recover_noop. Qed.
+      proc_cspec TDBaseDynamics (write i a b) (op_spec TDBaseDynamics (op_write i a b)).
+  Proof. intros. eapply op_spec_correct. Qed.
 
   Lemma size_ok :
     forall i,
-      proc_ok TDBaseDynamics (size i) recover (op_spec TDBaseDynamics (op_size i)).
-  Proof. intros. eapply op_spec_correct, recover_noop. Qed.
+      proc_cspec TDBaseDynamics (size i) (op_spec TDBaseDynamics (op_size i)).
+  Proof. intros. eapply op_spec_correct. Qed.
 
   Hint Resolve init_ok.
   Hint Resolve read_ok.

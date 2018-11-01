@@ -141,33 +141,33 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
              safe to run descend and create existential variables *)
              descend; (intuition eauto);
              lazymatch goal with
-             | |- proc_ok _ _ _ _ => idtac
+             | |- proc_cspec _ _ _ => idtac
              | _ => fail
              end
            end.
   
   Ltac monad_simpl :=
     repeat match goal with
-           | |- proc_ok _ (Bind (Ret _) _) _ _ =>
-             eapply proc_ok_expand; [ apply monad_left_id | ]
-           | |- proc_ok _ (Bind (Bind _ _) _) _ _ =>
-             eapply proc_ok_expand; [ apply monad_assoc | ]
+           | |- proc_cspec _ (Bind (Ret _) _) _ =>
+             eapply proc_cspec_expand; [ apply monad_left_id | ]
+           | |- proc_cspec _ (Bind (Bind _ _) _) _ =>
+             eapply proc_cspec_expand; [ apply monad_assoc | ]
            end.
   
   Ltac step_proc :=
     intros;
     match goal with
-    | |- proc_ok _ (Ret _) _ _ =>
-      eapply ret_spec
-    | |- proc_ok _ _ _ _ =>
+    | |- proc_cspec _ (Ret _) _ =>
+      eapply ret_cspec
+    | |- proc_cspec _ _ _ =>
       monad_simpl;
-      eapply proc_ok_rx; [ solve [ eauto ] | ]
-    | [ H: proc_ok _ ?p _ _
-        |- proc_ok _ ?p _ _ ] =>
-      eapply spec_impl_relations; [ unfold spec_impl | eapply H ]
+      eapply proc_cspec_rx; [ solve [ eauto ] | ]
+    | [ H: proc_cspec _ ?p _
+        |- proc_cspec _ ?p _ ] =>
+      eapply proc_cspec_impl; [ unfold spec_impl | eapply H ]
     end;
     intros; simpl;
-    cbn [pre post recovered] in *;
+    cbn [pre post alternate] in *;
     repeat match goal with
            | [ H: _ /\ _ |- _ ] => destruct H
            | [ |- rec_noop _ _ _ ] => eauto
@@ -219,9 +219,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Hint Resolve missing1_implies_any.
 
   Theorem read_int_ok : forall a,
-      proc_ok TDLayer
+      proc_cspec TDLayer
         (read a)
-        td.recover
         (fun d state =>
            {|
              pre := disk0 state ?|= eq d /\
@@ -231,24 +230,21 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                  diskGet d a ?|= eq r /\
                  disk0 state' ?|= eq d /\
                  disk1 state' ?|= eq d;
-             recovered :=
+             alternate :=
                fun state' _ =>
                  disk0 state' ?|= eq d /\
                  disk1 state' ?|= eq d;
            |}).
   Proof.
     unfold read.
-    step.
-    destruct r; step.
-    destruct r; step.
+    repeat (step; destruct r).
   Qed.
 
   Hint Resolve read_int_ok.
 
   Theorem write_int_ok : forall a b,
-      proc_ok TDLayer
+      proc_cspec TDLayer
         (write a b)
-        td.recover
         (fun d state =>
            {|
              pre :=
@@ -259,7 +255,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                  r = tt /\
                  disk0 state' ?|= eq (diskUpd d a b) /\
                  disk1 state' ?|= eq (diskUpd d a b);
-             recovered :=
+             alternate :=
                fun state' _ =>
                  (disk0 state' ?|= eq d /\
                   disk1 state' ?|= eq d) \/
@@ -288,9 +284,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Hint Resolve write_int_ok.
 
   Theorem size_int_ok :
-    proc_ok TDLayer
+    proc_cspec TDLayer
       (size)
-      td.recover
       (fun '(d_0, d_1) state =>
          {|
            pre :=
@@ -303,7 +298,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                r = diskSize d_1 /\
                disk0 state' ?|= eq d_0 /\
                disk1 state' ?|= eq d_1;
-           recovered :=
+           alternate :=
              fun state' _ =>
                disk0 state' ?|= eq d_0 /\
                disk1 state' ?|= eq d_1;
@@ -346,9 +341,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Hint Resolve equal_after_diskUpd.
 
   Theorem init_at_ok : forall a,
-      proc_ok TDLayer
+      proc_cspec TDLayer
         (init_at a)
-        td.recover
         (fun '(d_0, d_1) state =>
            {| pre :=
                 disk0 state ?|= eq d_0 /\
@@ -360,7 +354,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                     disk0 state' ?|= eq d_0' /\
                     disk1 state' ?|= eq d_1' /\
                     equal_after 0 d_0' d_1';
-              recovered :=
+              alternate :=
                 fun state' _ => True;
            |}).
   Proof.
@@ -379,9 +373,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Hint Resolve init_at_ok.
 
   Theorem sizeInit_ok :
-    proc_ok TDLayer
+    proc_cspec TDLayer
       (sizeInit)
-      td.recover
       (fun '(d_0, d_1) state =>
          {| pre :=
               disk0 state ?|= eq d_0 /\
@@ -395,7 +388,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                   | Some sz => diskSize d_0' = sz /\ diskSize d_1' = sz
                   | None => True
                   end;
-            recovered :=
+            alternate :=
               fun state' _ => True;
          |}).
   Proof.
@@ -440,9 +433,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Hint Resolve equal_after_0_to_eq.
 
   Theorem init'_ok :
-    proc_ok TDLayer
+    proc_cspec TDLayer
       (init')
-      td.recover
       (fun '(d_0, d_1) state =>
          {| pre :=
               disk0 state ?|= eq d_0 /\
@@ -458,7 +450,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                 | InitFailed =>
                   True
                 end;
-            recovered :=
+            alternate :=
               fun state' _ => True;
          |}).
   Proof.
@@ -574,9 +566,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
 
   (* we will show that fixup does nothing once the disks are the same *)
   Theorem fixup_equal_ok : forall a,
-      proc_ok TDLayer
+      proc_cspec TDLayer
         (fixup a)
-        td.recover
         (fun d state =>
            {|
              pre :=
@@ -590,7 +581,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                fun state' r =>
                  disk0 state' ?|= eq d /\
                  disk1 state' ?|= eq d;
-             recovered :=
+             alternate :=
                fun state' _ =>
                  disk0 state' ?|= eq d /\
                  disk1 state' ?|= eq d;
@@ -610,9 +601,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Qed.
 
   Theorem fixup_correct_addr_ok : forall a,
-      proc_ok TDLayer
+      proc_cspec TDLayer
         (fixup a)
-        td.recover
         (fun '(d, b) state =>
            {|
              pre :=
@@ -632,7 +622,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                    (disk0 state' ?|= eq d /\
                     disk1 state' ?|= eq d)
                  end;
-             recovered :=
+             alternate :=
                fun state' _ =>
                  (disk0 state' ?|= eq (diskUpd d a b) /\
                   disk1 state' ?|= eq (diskUpd d a b)) \/
@@ -655,9 +645,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Qed.
 
   Theorem fixup_wrong_addr_ok : forall a,
-      proc_ok TDLayer
+      proc_cspec TDLayer
         (fixup a)
-        td.recover
         (fun '(d, b, a') state =>
            {|
              pre :=
@@ -679,7 +668,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                    (disk0 state' ?|= eq (diskUpd d a' b) /\
                     disk1 state' ?|= eq (diskUpd d a' b))
                  end;
-             recovered :=
+             alternate :=
                fun state' _ =>
                  (disk0 state' ?|= eq (diskUpd d a' b) /\
                   disk1 state' ?|= eq d) \/
@@ -703,13 +692,12 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Qed.
 
   Ltac spec_case pf :=
-    eapply spec_impl_relations; [ unfold spec_impl | solve [ apply pf ] ].
+    eapply proc_cspec_impl; [ unfold spec_impl | solve [ apply pf ] ].
 
 
   Theorem fixup_ok : forall a,
-      proc_ok TDLayer
+      proc_cspec TDLayer
         (fixup a)
-        td.recover
         (fun '(d, s) state =>
            {|
              pre :=
@@ -741,7 +729,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                       disk1 state' ?|= eq (diskUpd d a' b))
                    end
                  end;
-             recovered :=
+             alternate :=
                fun state' _ =>
                  match s with
                  | FullySynced => disk0 state' ?|= eq d /\
@@ -778,9 +766,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   (* Hint Resolve Lt.lt_n_Sm_le. *)
 
   Theorem recover_at_ok : forall a,
-      proc_ok TDLayer
+      proc_cspec TDLayer
         (recover_at a)
-        td.recover
         (fun '(d, s) state =>
            {|
              pre :=
@@ -804,7 +791,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                    (disk0 state' ?|= eq (diskUpd d a' b) /\
                     disk1 state' ?|= eq (diskUpd d a' b))
                  end;
-             recovered :=
+             alternate :=
                fun state' _ =>
                  match s with
                  | FullySynced => disk0 state' ?|= eq d /\
@@ -865,7 +852,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
               (disk0 state' ?|= eq (diskUpd d a b) /\
                disk1 state' ?|= eq (diskUpd d a b))
             end;
-        recovered :=
+        alternate :=
           fun state' (_:unit) =>
             match s with
             | FullySynced => disk0 state' ?|= eq d /\
@@ -881,9 +868,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
       |}.
 
   Theorem Recover_rok :
-    proc_ok TDLayer
+    proc_cspec TDLayer
       (Recover)
-      td.recover
       Recover_spec.
   Proof.
     unfold Recover, Recover_spec; intros.
@@ -938,9 +924,6 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Hint Resolve Recover_ok.
    *)
 
-  Definition recover: proc Op unit :=
-    _ <- td.recover;
-    Recover.
 
   (* As the final step in giving the correctness of the replicated disk
   operations, we prove recovery specs that include the replicated disk Recover
@@ -987,7 +970,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
                        | op_size => size
                        end;
        init := init';
-       Layer.recover := recover |}.
+       Layer.recover := Recover |}.
 
 
   (*

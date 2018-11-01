@@ -28,9 +28,9 @@ Section Abstraction.
          post := fun cs' r =>
                    exists s', absr s' cs' tt /\
                          (spec a s).(post) s' r;
-         recovered := fun cs' r =>
+         alternate := fun cs' r =>
                         exists s', absr s' cs' tt /\
-                              (spec a s).(recovered) s' r; |}.
+                              (spec a s).(alternate) s' r; |}.
 
   Section Dynamics.
     Context C_Op (c_sem: Dynamics C_Op CState).

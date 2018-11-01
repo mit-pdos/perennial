@@ -85,7 +85,7 @@ Module TwoDisk (b : TwoDiskBaseAPI) <: TwoDiskAPI.
 
   Ltac prim :=
     intros;
-    eapply spec_impl_relations; [ unfold spec_impl | eauto ]; eexists;
+    eapply proc_cspec_impl; [ unfold spec_impl | eauto ]; eexists;
     intuition eauto; cleanup;
     intuition eauto; cleanup.
 
@@ -107,7 +107,7 @@ Module TwoDisk (b : TwoDiskBaseAPI) <: TwoDiskAPI.
 
   Hint Resolve tt.
 
-  Theorem read_ok : forall i a, proc_ok TDBaseDynamics (read i a) recover (read_spec i a).
+  Theorem read_ok : forall i a, proc_cspec TDBaseDynamics (read i a) (read_spec i a).
   Proof.
     unshelve prim; eauto.
   Qed.
@@ -125,7 +125,7 @@ Module TwoDisk (b : TwoDiskBaseAPI) <: TwoDiskAPI.
            end.
 
 
-  Theorem write_ok : forall i a v, proc_ok TDBaseDynamics (write i a v) recover (write_spec i a v).
+  Theorem write_ok : forall i a v, proc_cspec TDBaseDynamics (write i a v) (write_spec i a v).
   Proof.
     unshelve prim; eauto;
       try solve [ destruct_all ].
@@ -135,7 +135,7 @@ Module TwoDisk (b : TwoDiskBaseAPI) <: TwoDiskAPI.
     destruct_all.
   Qed.
 
-  Theorem size_ok : forall i, proc_ok TDBaseDynamics (size i) recover (size_spec i).
+  Theorem size_ok : forall i, proc_cspec TDBaseDynamics (size i) (size_spec i).
   Proof.
     unshelve prim.
     eauto.

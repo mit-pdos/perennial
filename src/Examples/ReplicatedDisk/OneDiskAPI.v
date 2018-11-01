@@ -27,7 +27,7 @@ Definition read_spec (a : addr) : Specification _ block unit State :=
     post := fun state' r =>
       state' = state /\
       diskGet state a ?|= eq r;
-    recovered := fun state' r =>
+    alternate := fun state' r =>
       state' = state
   |}.
 
@@ -36,7 +36,7 @@ Definition write_spec (a : addr) (v : block) : Specification _ _ unit State :=
     pre := True;
     post := fun state' r =>
       r = tt /\ state' = diskUpd state a v;
-    recovered := fun state' r =>
+    alternate := fun state' r =>
       state' = state \/ state' = diskUpd state a v
   |}.
 
@@ -45,7 +45,7 @@ Definition size_spec : Specification _ nat unit State :=
     pre := True;
     post := fun state' r =>
       state' = state /\ r = diskSize state;
-    recovered := fun state' r =>
+    alternate := fun state' r =>
       state' = state
   |}.
 
@@ -58,32 +58,3 @@ Definition ODBaseDynamics : Dynamics OneDiskOp State :=
 Definition ODLayer : Layer OneDiskOp :=
   {| Layer.State := State; sem := ODBaseDynamics; initP := fun _ => True |}.
 
-Module Type OneDiskAPI.
-
-  (*
-  Axiom init : proc InitResult.
-   *)
-  Axiom read : addr -> proc OneDiskOp block.
-  Axiom write : addr -> block -> proc OneDiskOp unit.
-  Axiom size : proc OneDiskOp nat.
-  Axiom recover : proc OneDiskOp unit.
-
-  (*
-  Axiom abstr : Abstraction State.
-   *)
-
-  (*
-  Axiom init_ok : init_abstraction init recover abstr inited_any.
-  Axiom read_ok : forall a, proc_spec (read_spec a) (read a) recover abstr.
-  Axiom write_ok : forall a v, proc_spec (write_spec a v) (write a v) recover abstr.
-  Axiom size_ok : proc_spec size_spec size recover abstr.
-  Axiom recover_noop : rec_noop recover abstr no_wipe.
-
-  Hint Resolve init_ok.
-  Hint Resolve read_ok.
-  Hint Resolve write_ok.
-  Hint Resolve size_ok.
-  Hint Resolve recover_noop.
-  *)
-
-End OneDiskAPI.
