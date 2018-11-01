@@ -30,7 +30,7 @@ Local Ltac with_hyp H tac :=
 Ltac rel_hyp H tac :=
   (with_hyp H ltac:(fun H => autounfold with relation_rewriting in H;
                           tac H));
-  norm_goal.
+  norm.
 
 Tactic Notation "rel" "with" constr(H) tactic(t) := rel_hyp H t.
 
@@ -51,9 +51,11 @@ Ltac Split := match goal with
               | |- ?g ---> _ =>
                 match g with
                 | context[_ + _] =>
-                  repeat (setoid_rewrite bind_dist_l ||
-                          setoid_rewrite bind_dist_r);
-                  apply rel_or_elim; norm
+                  etransitivity; [
+                    repeat (setoid_rewrite bind_dist_l ||
+                            setoid_rewrite bind_dist_r);
+                    apply rel_or_elim; norm_goal |
+                    reflexivity ]
                 end
               end.
 
@@ -61,7 +63,10 @@ Ltac Left := match goal with
              | |- _ ---> ?g =>
                match g with
                | context[_ + _] =>
-                 rewrite <- rel_or_introl; norm
+                 etransitivity;
+                 [ | rewrite <- rel_or_introl; norm_goal ];
+                 [ reflexivity | ];
+                 try reflexivity
                end
              end.
 
@@ -69,7 +74,10 @@ Ltac Right := match goal with
               | |- _ ---> ?g =>
                 match g with
                 | context[_ + _] =>
-                  rewrite <- rel_or_intror; norm
+                 etransitivity;
+                 [ | rewrite <- rel_or_intror; norm_goal ];
+                 [ reflexivity | ];
+                 try reflexivity
                 end
               end.
 

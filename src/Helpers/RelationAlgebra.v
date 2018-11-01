@@ -812,8 +812,7 @@ Ltac setoid_norm_hyps :=
   end.
 
 Ltac norm_goal :=
-  repeat setoid_norm_goal;
-  try reflexivity.
+  repeat setoid_norm_goal.
 
 Ltac norm_hyp H :=
   autorewrite with relations in H;
@@ -821,11 +820,10 @@ Ltac norm_hyp H :=
 
 Ltac norm_all :=
   autorewrite with relations in *;
-  repeat (setoid_norm_goal || setoid_norm_hyps);
-  try reflexivity.
+  repeat (setoid_norm_goal || setoid_norm_hyps).
 
-Tactic Notation "norm" := norm_goal.
-Tactic Notation "norm" "in" "*" := norm_all.
+Tactic Notation "norm" := norm_goal; try reflexivity.
+Tactic Notation "norm" "in" "*" := norm_all; try reflexivity.
 Tactic Notation "norm" "in" ident(H) := norm_hyp H.
 
 Import RelationNotations.
