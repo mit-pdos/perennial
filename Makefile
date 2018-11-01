@@ -20,7 +20,8 @@ _CoqProject: libname $(wildcard vendor/*)
 	@cat $@
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
-	coqdep -f _CoqProject $(ALL_VFILES) > $@
+	@echo "COQDEP $@"
+	@coqdep -f _CoqProject $(ALL_VFILES) > $@
 
 ifneq ($(MAKECMDGOALS), clean)
 -include .coqdeps.d
