@@ -1,6 +1,7 @@
 Require Import Spec.Proc Spec.ProcTheorems.
 Require Import Tactical.Propositional.
 Require Import Helpers.RelationAlgebra.
+Require Import Helpers.RelationRewriting.
 
 Import RelationNotations.
 
@@ -123,7 +124,7 @@ Section Hoare.
   Proof.
     unfold proc_ok at 3. intros (Hp_ok&Hp_rec) Hrx.
     split.
-    - simpl; setoid_rewrite Hp_ok.
+    - simpl; rew Hp_ok.
       intros state state' t' (t&(state_mid&Hspec_mid&Hexec_mid)) a' Hpre'.
       specialize (Hrx _ _ Hpre') as (a&Hpre&Hok&Hrec).
       specialize (Hok t). rewrite proc_ok_expand in Hok.
@@ -225,11 +226,10 @@ Section Hoare.
   Proof.
     unfold proc_loopspec; intros.
     destruct Hspec as (Hse&Hsr).
-    rewrite Hsr.
-    rewrite bind_dist_r.
-    apply rel_or_elim.
-    - rewrite bind_left_id; eauto.
-    - setoid_rewrite Hse.
+    rew Hsr.
+    Split.
+    - auto.
+    - rew Hse.
       intros s s'' tt Hrs a Hpre.
       inversion Hrs as ([]&s'&Hrs'&?).
       specialize (Hrs' a Hpre). unfold idempotent in H.
@@ -264,9 +264,7 @@ Section Hoare.
       unfold rexec in Hrspec. unfold exec_recover in Hrspec.
       destruct Hspec as (?&Hrec).
       unfold rexec in Hrec. unfold exec_recover in Hrec.
-      setoid_rewrite bind_dist_r.
-      setoid_rewrite bind_dist_r.
-      setoid_rewrite bind_left_id.
+      repeat setoid_rewrite bind_dist_r; norm.
 
       (* Base case *)
       assert (_ <- exec_crash sem p;
@@ -275,15 +273,10 @@ Section Hoare.
               exec rec'
                    --->
                    spec_rexec spec').
-      { setoid_rewrite <-seq_star_none in Hrec.
-        setoid_rewrite bind_identity in Hrec; [| exact tt].
-        setoid_rewrite <-rel_or_introl in Hrspec.
-        rewrite bind_left_id in Hrspec.
-        setoid_rewrite Hrspec.
-        setoid_rewrite <-bind_assoc.
-        setoid_rewrite <-bind_assoc.
-        setoid_rewrite bind_assoc at 2.
-        rewrite Hrec.
+      { rew <- seq_star_none in Hrec.
+        rew <- rel_or_introl in Hrspec.
+        rew Hrspec.
+        left assoc rew Hrec.
         intros s1 s3 [] Hl a Hpre.
         destruct Hl as ([]&s2&Hrexec_spec&?Hexec_rspec).
         edestruct Hspec_spec' as (?&?&?&Hrec'); eauto.
