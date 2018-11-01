@@ -78,10 +78,6 @@ Proof.
   rel_congruence; auto.
 Qed.
 
-Tactic Notation "pose" "unfolded" constr(pf) tactic(t) :=
-  let H := fresh in
-  pose proof pf as H; t H; destruct_ands.
-
 Create HintDb relation_rewriting.
 
 Local Ltac with_hyp H tac :=
