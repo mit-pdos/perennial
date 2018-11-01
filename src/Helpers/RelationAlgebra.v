@@ -35,6 +35,12 @@ Section OutputRelations.
   Definition any {A B} {T} : relation A B T :=
     fun x y o => True.
 
+  Definition reads {A} {T} (f: A -> T) : relation A A T :=
+    fun x y o => o = f x /\ x = y.
+
+  Definition puts {A} (f: A -> A) : relation A A unit :=
+    fun x y o => y = f x.
+
   Definition predicate A := A -> Prop.
   Definition test {A} (P: predicate A) : relation A A unit :=
     fun x y _ => P x /\ x = y.
@@ -140,7 +146,7 @@ Section OutputRelations.
   (** Various equivalence and implication proofs *)
   Hint Unfold Proper respectful pointwise_relation : t.
   Hint Unfold Basics.flip Basics.impl : t.
-  Hint Unfold and_then rel_or rel_and pure any identity : t.
+  Hint Unfold and_then rel_or rel_and pure any identity reads : t.
 
   Ltac t :=
     autounfold with t;
@@ -225,6 +231,12 @@ Section OutputRelations.
 
   Theorem bind_identity A B T1 T2 (r: relation A B T2) (_:Inhabited T1) :
     (_ <- identity (T:=T1); r) <---> r.
+  Proof.
+    t.
+  Qed.
+
+  Theorem reads_identity A T (f: A -> T) :
+    reads f ---> identity.
   Proof.
     t.
   Qed.
