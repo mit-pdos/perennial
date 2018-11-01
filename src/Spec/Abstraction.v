@@ -2,6 +2,7 @@ Require Import Spec.Proc.
 Require Import Spec.Hoare.
 
 Require Import Helpers.RelationAlgebra.
+Require Import Helpers.RelationRewriting.
 
 Import RelationNotations.
 

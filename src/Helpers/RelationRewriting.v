@@ -3,6 +3,69 @@ Require Import Helpers.RelationAlgebra.
 
 Import RelationNotations.
 
+Ltac rel_congruence :=
+  let solver := try reflexivity in
+  match goal with
+  | |- rimpl (and_then _ ?rx) (and_then _ ?rx) =>
+    apply and_then_monotonic_r; intros;
+    solver
+  | |- rimpl (and_then _ _) (and_then _ _) =>
+    apply and_then_monotonic; intros;
+    solver
+  | |- rimpl (seq_star _) (seq_star _) =>
+    apply star_monotonic;
+    solver
+  end.
+
+Ltac setoid_norm_goal :=
+  match goal with
+  | |- context[and_then (and_then _ _) _] =>
+    setoid_rewrite bind_assoc
+  | |- context[and_then (pure _) _] =>
+    setoid_rewrite bind_left_id
+  | |- context[@identity _ unit] =>
+    setoid_rewrite unit_identity
+  | |- context[rel_or _ (rel_or _ _)] =>
+    setoid_rewrite rel_or_assoc
+  end.
+
+Ltac setoid_norm_hyp H :=
+  match type of H with
+  | context[and_then (and_then _ _) _] =>
+    setoid_rewrite bind_assoc in H
+  | context[and_then (pure _) _] =>
+    setoid_rewrite bind_left_id in H
+  | context[@identity _ unit] =>
+    setoid_rewrite unit_identity in H
+  | context[rel_or _ (rel_or _ _)] =>
+    setoid_rewrite rel_or_assoc in H
+  end.
+
+Ltac setoid_norm_hyps :=
+  match goal with
+  | [ H: context[and_then (and_then _ _) _] |- _ ] =>
+    setoid_rewrite bind_assoc in H
+  | [ H: context[and_then (pure _) _] |- _ ] =>
+    setoid_rewrite bind_left_id in H
+  | [ H: context[@identity _ unit] |- _ ] =>
+    setoid_rewrite unit_identity in H
+  | [ H: context[rel_or _ (rel_or _ _)] |- _ ] =>
+    setoid_rewrite rel_or_assoc in H
+  end.
+
+Ltac norm_goal :=
+  repeat setoid_norm_goal.
+
+Ltac norm_hyp H :=
+  repeat (setoid_norm_hyp H).
+
+Ltac norm_all :=
+  repeat (setoid_norm_goal || setoid_norm_hyps).
+
+Tactic Notation "norm" := norm_goal; try reflexivity.
+Tactic Notation "norm" "in" "*" := norm_all; try reflexivity.
+Tactic Notation "norm" "in" ident(H) := norm_hyp H.
+
 (* attempt to make rewriting across monad associativity a bit easier; instead
      of massaging the goal to have [r1] appear, instead generalize the
      hypothesis to apply to apply to [forall rx, r1; rx] *)
