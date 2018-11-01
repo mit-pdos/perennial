@@ -1,6 +1,8 @@
 From Coq Require Import List.
 
 Require Import RecoveryRefinement.POCS.
+Require Import Spec.WeakestPreconditions.
+
 Import RelationNotations.
 Require Import Helpers.RelationRewriting.
 
@@ -79,6 +81,19 @@ Definition absr : relation DB.l.(State) Var.l.(State) unit :=
   fun l s _ =>
     fst s = fold_right plus 0 l /\
     snd s = length l.
+
+Definition op_wp T (op: Var.Op T) : precondition Var.State T :=
+    match op with
+    | Var.Read i => fun post s => post (Var.get i s) s
+    | Var.Write i v => fun post s => post tt (Var.set i v s)
+    end.
+
+Theorem op_wp_is_ok : op_wp_ok Var.dynamics op_wp.
+Proof.
+  hnf; intros.
+  destruct op; simpl in *; unfold reads, puts in *; propositional.
+  destruct v; eauto.
+Qed.
 
 Definition rf : LayerRefinement Var.l DB.l.
 Proof.
