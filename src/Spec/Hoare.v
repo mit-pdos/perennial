@@ -169,6 +169,10 @@ Section Hoare.
                                       state' = state;
               recovered := fun state' _ => wipe state state'; |}).
 
+  Definition proc_loopspec A `(rec': proc unit) `(rec: proc unit)
+             `(spec: Specification A unit unit State):=
+    (pure tt + rexec rec' rec);; exec rec' ---> spec_exec spec.
+
   (** A more general theorem about specifications for [Ret], which
     we will use as part of our proof automation, says
     that [Ret v] meets a specification [spec] if the [rec_noop]
@@ -196,6 +200,99 @@ Section Hoare.
       eapply Hl; simpl; eauto.
   Qed.
 
+  (** Define what it means for a spec to be idempotent: *)
+  Definition idempotent A T `(spec: Specification A T unit State) :=
+    forall a state,
+      pre (spec a state) ->
+      forall v state', recovered (spec a state) state' v ->
+              (** idempotency: recovered condition implies precondition to
+                 re-run on every crash *)
+              exists a', pre (spec a' state') /\
+                    (** postcondition transitivity: establishing the
+                       postcondition from a recovered state is sufficient to
+                       establish it with respect to the original initial
+                       state (note all with the same ghost state) *)
+                    forall rv state'', post (spec a' state') state'' rv ->
+                                  post (spec a state) state'' rv.
+
+
+  (* Idempotents theorem: *)
+  Theorem idempotent_loopspec A `(rec: proc unit) `(rec': proc unit)
+        `(spec: Specification A unit unit State)
+        (Hspec: proc_ok rec' rec spec):
+        idempotent spec ->
+        proc_loopspec rec' rec spec.
+  Proof.
+    unfold proc_loopspec; intros.
+    destruct Hspec as (Hse&Hsr).
+    rewrite Hsr.
+    rewrite bind_dist_r.
+    apply rel_or_elim.
+    - rewrite bind_left_id; eauto.
+    - setoid_rewrite Hse.
+      intros s s'' tt Hrs a Hpre.
+      inversion Hrs as ([]&s'&Hrs'&?).
+      specialize (Hrs' a Hpre). unfold idempotent in H.
+      edestruct H as (a'&Hpre'&Hpost); eauto.
+  Qed.
+
+  Theorem compose_recovery A A' A'' `(spec: Specification A'' T unit State)
+                               `(rspec: Specification A' unit unit State)
+                               `(spec': Specification A T unit State)
+                               `(p: proc T) `(rec: proc unit) `(rec': proc unit)
+        (Hspec: proc_ok p rec spec)
+        (Hrspec: proc_loopspec rec' rec rspec)
+        (Hspec_spec':
+           forall (a:A) state, pre (spec' a state) ->
+                      exists (a'':A''),
+                        pre (spec a'' state) /\
+                        (forall v state', post (spec a'' state) v state' ->
+                                 post (spec' a state) v state') /\
+                        (forall v state', recovered (spec a'' state) state' v ->
+                                 exists a', pre (rspec a' state') /\
+                                       forall v' state'',
+                                         post (rspec a' state') state'' v' ->
+                                         recovered (spec' a state) state'' v')):
+        proc_ok p (Bind rec (fun _ => rec')) spec'.
+  Proof.
+    unfold proc_ok; intros; split.
+    - destruct Hspec as (->&?).
+      intros s s' t Hspec a Hpre.
+      edestruct Hspec_spec' as (a''&?&Hp&?); eauto.
+    - unfold rexec; simpl. unfold exec_recover; simpl.
+      unfold proc_loopspec in Hrspec.
+      unfold rexec in Hrspec. unfold exec_recover in Hrspec.
+      destruct Hspec as (?&Hrec).
+      unfold rexec in Hrec. unfold exec_recover in Hrec.
+      setoid_rewrite bind_dist_r.
+      setoid_rewrite bind_dist_r.
+      setoid_rewrite bind_left_id.
+
+      (* Base case *)
+      assert (_ <- exec_crash sem p;
+              _ <- sem.(crash_step);
+              _ <- exec rec;
+              exec rec'
+                   --->
+                   spec_rexec spec').
+      { setoid_rewrite <-seq_star_none in Hrec.
+        setoid_rewrite bind_identity in Hrec; [| exact tt].
+        setoid_rewrite <-rel_or_introl in Hrspec.
+        rewrite bind_left_id in Hrspec.
+        setoid_rewrite Hrspec.
+        setoid_rewrite <-bind_assoc.
+        setoid_rewrite <-bind_assoc.
+        setoid_rewrite bind_assoc at 2.
+        rewrite Hrec.
+        intros s1 s3 [] Hl a Hpre.
+        destruct Hl as ([]&s2&Hrexec_spec&?Hexec_rspec).
+        edestruct Hspec_spec' as (?&?&?&Hrec'); eauto.
+        edestruct Hrec'.
+        { eapply Hrexec_spec; eauto. }
+        destruct H2 as (?&?). eapply H3. eapply Hexec_rspec. eauto.
+      }
+  Abort.
+
   Theorem op_spec_correct T (op: Op T) rec (* (wipe: State -> State -> Prop) *):
     rec_noop rec eq ->
     proc_ok (Prim op) rec (op_spec sem op).
@@ -215,6 +312,7 @@ Section Hoare.
         inversion Hl as (?&?&?&Hrest). specialize (Hrest tt I). split; eauto.
         right.  eexists; eauto. simpl in Hrest. subst. eauto.
   Qed.
+
 
   (** In some situations, the precondition of a specification
     may define variables or facts that you want to [intros].
@@ -243,20 +341,6 @@ Section Hoare.
     split; intros s s' r Hexec a Hpre; eapply H; simpl; eauto using tt.
   Qed.
 
-  (** Define what it means for a spec to be idempotent: *)
-  Definition idempotent A T `(spec: Specification A T unit State) :=
-    forall a state,
-      pre (spec a state) ->
-      forall v state', recovered (spec a state) state' v ->
-              (** idempotency: recovered condition implies precondition to
-                 re-run on every crash *)
-              exists a', pre (spec a' state') /\
-                    (** postcondition transitivity: establishing the
-                       postcondition from a recovered state is sufficient to
-                       establish it with respect to the original initial
-                       state (note all with the same ghost state) *)
-                    forall rv state'', post (spec a' state') rv state'' ->
-                                  post (spec a state) rv state''.
 
 End Hoare.
 

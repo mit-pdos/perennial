@@ -950,6 +950,35 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
     disk0 state ?|= eq d /\
     disk1 state ?|= eq d.
 
+  Import Helpers.RelationAlgebra.
+  Import RelationNotations.
+
+  (*
+  Theorem recover_noop : rec_noop TDLayer recover eq.
+  Proof.
+    unfold rec_noop. intros T v.
+    split.
+    - firstorder.
+    - unfold rexec. unfold exec_crash. rewrite bind_left_id.
+      unfold spec_rexec. simpl. rewrite bind_identity1.
+      unfold exec_recover.
+  _ <- seq_star (_ <- exec_crash TDBaseDynamics recover; TDBaseDynamics.(crash_step));
+      intros s s' []. unfold rex simpl.
+    eapply spec_impl_relations.
+    2:{ idtac. unfold recover.
+        split.
+        simpl. eauto. auto.
+        step_proc.
+    Focus 2.
+
+    [| apply Recover_spec]. proc_ok_impl.
+    simpl.
+    eapply rec_noop_compose; eauto; simpl.
+    autounfold; unfold rd_abstraction, Recover_spec; simplify.
+    exists state0', FullySynced; intuition eauto.
+  Qed.
+   *)
+
   Definition Impl_TD_OD: LayerImpl Op OneDiskOp :=
     {| compile_op := fun (T : Type) (op : OneDiskOp T) =>
                        match op in (OneDiskOp T0) return (proc Op T0) with
@@ -960,8 +989,6 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
        init := init';
        Layer.recover := recover |}.
 
-  Import Helpers.RelationAlgebra.
-  Import RelationNotations.
 
   (*
   Lemma compile_refine_TD_OD:
@@ -970,28 +997,45 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
     unfold compile_op_refines_step.
     intros T op. destruct op.
     - unfold crash_refines, refines. split.
-      * SearchAbout and_then.
-        rewrite <-
-        rewrite  apply and_then_monotonic_r.
-
+      + simpl compile_op.
+        specialize (read_int_ok a). intros (?&?).
+        setoid_rewrite H. unfold spec_exec, rd_abstraction; simpl.
+        intros s s' b Hl. inversion Hl; subst.
+        econstructor. simpl in *. destruct H1 as (y&Hy).
+        intuition. specialize (H2 s). edestruct H2; eauto.
+        exists s. split. econstructor.
+        { intuition.  destruct (diskGet s a); eauto. }
+        { econstructor; [ exact tt |].
+          exists s'. intuition. unfold pure; auto.
+        }
+      + simpl compile_op.
+        specialize (read_int_ok a). simpl. intros (?&Hr).
+        simpl. unfold spec_rexec in Hr. simpl in Hr. unfold rexec. unfold exec_recover.
+        setoid_rewrite Hr. unfold spec_exec, rd_abstraction; simpl.
+        intros s s' b Hl. inversion Hl; subst.
+        econstructor. simpl in *. destruct H1 as (y&Hy).
+        intuition. specialize (H2 s). edestruct H2; eauto.
+        exists s. split. econstructor.
+        { intuition.  destruct (diskGet s a); eauto. }
+        { econstructor; [ exact tt |].
+          exists s'. intuition. unfold pure; auto.
+        }
+      +
 
   Lemma Refinement_TD_OD: LayerRefinement TDLayer ODLayer.
   Proof.
     unshelve (econstructor).
     - apply Impl_TD_OD. 
     - exact rd_abstraction.
-      Show Proof.
-      simpl. Check rd_abstraction. Che Print relation. apply @rd_abstraction.
     refine {| impl := Impl_TD_OD;
               absr := rd_abstraction
            |}.
     - 
     econstructor.
     split.
+   *)
 
-  Definition abstr : Abstraction OneDiskAPI.State :=
-    abstraction_compose td.abstr {| abstraction := rd_abstraction; |}.
-
+(*
   Theorem init_ok : init_abstraction init recover abstr inited_any.
   Proof.
     intros.
@@ -1050,17 +1094,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
     simplify.
     exists d, FullySynced; simplify; finish.
   Qed.
-
-  (* This theorem shows that Ret does not modify the abstract state exposed by
-  the replicated disk; the interesting part is that if recovery runs, then the
-  only effect should be the wipe relation (the trivial relation [no_wipe] in
-  this case) *)
-  Theorem recover_noop : rec_noop recover abstr no_wipe.
-  Proof.
-    eapply rec_noop_compose; eauto; simpl.
-    autounfold; unfold rd_abstraction, Recover_spec; simplify.
-    exists state0', FullySynced; intuition eauto.
-  Qed.
    *)
+
 
 End ReplicatedDisk.
