@@ -18,6 +18,7 @@ Section Abstraction.
   (* define refinement as transforming an abstract specification to a concrete
   one (a program satisfying the abstract spec should satisfy the concrete spec
   after refinement-preserving compilation) *)
+  (*
   Definition refine_spec
              A T R
              (spec: Specification A T R AState)
@@ -31,6 +32,7 @@ Section Abstraction.
          alternate := fun cs' r =>
                         exists s', absr s' cs' tt /\
                               (spec a s).(alternate) s' r; |}.
+   *)
 
   Section Dynamics.
     Context C_Op (c_sem: Dynamics C_Op CState).

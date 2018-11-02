@@ -17,7 +17,7 @@ Definition other (i : diskId) :=
   | d1 => d0
   end.
 
-Definition read_spec (i : diskId) (a : addr) : Specification _ _ (unit) State :=
+Definition read_spec (i : diskId) (a : addr) : _ -> Specification _ (unit) State :=
   fun '(d, F) state => {|
     pre :=
       get_disk i         state ?|= eq d /\
@@ -37,7 +37,7 @@ Definition read_spec (i : diskId) (a : addr) : Specification _ _ (unit) State :=
       get_disk (other i) state' ?|= F;
   |}.
 
-Definition write_spec (i : diskId) (a : addr) (b : block) : Specification _ (DiskResult unit) unit _ :=
+Definition write_spec (i : diskId) (a : addr) (b : block) : _ -> Specification (DiskResult unit) unit _ :=
   fun '(d, F) state => {|
     pre :=
       get_disk i         state ?|= eq d /\
@@ -57,7 +57,7 @@ Definition write_spec (i : diskId) (a : addr) (b : block) : Specification _ (Dis
       get_disk (other i) state' ?|= F;
   |}.
 
-Definition size_spec (i : diskId) : Specification _ _ unit _ :=
+Definition size_spec (i : diskId) : _ -> Specification _ unit _ :=
   fun '(d, F) state => {|
     pre :=
       get_disk i         state ?|= eq d /\
@@ -97,9 +97,9 @@ Module Type TwoDiskAPI.
   Axiom init_ok : init_abstraction init recover abstr inited_any.
    *)
 
-  Axiom read_ok : forall i a, proc_cspec TDBaseDynamics (read i a) (read_spec i a).
-  Axiom write_ok : forall i a v, proc_cspec TDBaseDynamics (write i a v) (write_spec i a v).
-  Axiom size_ok : forall i, proc_cspec TDBaseDynamics (size i) (size_spec i).
+  Axiom read_ok : forall i a dF, proc_cspec TDBaseDynamics (read i a) (read_spec i a dF).
+  Axiom write_ok : forall i a v dF, proc_cspec TDBaseDynamics (write i a v) (write_spec i a v dF).
+  Axiom size_ok : forall i dF, proc_cspec TDBaseDynamics (size i) (size_spec i dF).
   Axiom recover_noop : rec_noop TDBaseDynamics recover eq.
 
   Hint Resolve init_ok.
