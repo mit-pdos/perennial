@@ -116,8 +116,7 @@ Definition TDBaseDynamics : Dynamics Op State :=
 Definition td_init (s: State) :=
   exists d_0' d_1',
     disk0 s ?|= eq d_0' /\
-    disk1 s ?|= eq d_1' /\
-    d_0' = d_1'.
+    disk1 s ?|= eq d_1'.
 
 Definition TDLayer : Layer Op :=
   {| Layer.State := State; sem := TDBaseDynamics; initP := td_init |}.

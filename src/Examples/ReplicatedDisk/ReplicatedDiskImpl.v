@@ -1206,8 +1206,8 @@ Module ReplicatedDisk.
     - intros sT1 sT2 i Hl.
       edestruct Hl as ([]&?&?&?).
       destruct Hl as ([]&?&?&?).
-      destruct H1 as ((d1&d2&(?&?&<-))&<-).
-      edestruct (init'_ok d1 d1) as (Hexec&Hcrash).
+      destruct H1 as ((d1&d2&(?&?))&<-).
+      edestruct (init'_ok d1 d2) as (Hexec&Hcrash).
       eapply Hexec in H0.
       destruct H as (?&<-).
       clear -H0 H1 H3. unfold spec_exec in H0. simpl in H0.
