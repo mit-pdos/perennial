@@ -2,6 +2,7 @@ Require Import POCS.
 
 Require Import TwoDiskAPI.
 Require Import OneDiskAPI.
+Require TwoDiskImpl.
 
 (**
 ReplicatedDisk provides a single-disk API on top of two disks, handling disk
@@ -9,7 +10,9 @@ failures with replication.
 *)
 
 
-Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
+Module ReplicatedDisk.
+
+  Module td : TwoDiskAPI := TwoDiskImpl.TwoDisk(TwoDiskBaseImpl).
 
   Import ProcNotations EqualDecNotation.
   Open Scope proc_scope.
@@ -1056,32 +1059,6 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Import Helpers.RelationAlgebra.
   Import RelationNotations.
 
-  (*
-  Theorem recover_noop : rec_noop TDLayer recover eq.
-  Proof.
-    unfold rec_noop. intros T v.
-    split.
-    - firstorder.
-    - unfold rexec. unfold exec_crash. rewrite bind_left_id.
-      unfold spec_rexec. simpl. rewrite bind_identity1.
-      unfold exec_recover.
-  _ <- seq_star (_ <- exec_crash TDBaseDynamics recover; TDBaseDynamics.(crash_step));
-      intros s s' []. unfold rex simpl.
-    eapply spec_impl_relations.
-    2:{ idtac. unfold recover.
-        split.
-        simpl. eauto. auto.
-        step_proc.
-    Focus 2.
-
-    [| apply Recover_spec]. proc_ok_impl.
-    simpl.
-    eapply rec_noop_compose; eauto; simpl.
-    autounfold; unfold rd_abstraction, Recover_spec; simplify.
-    exists state0', FullySynced; intuition eauto.
-  Qed.
-   *)
-
   Definition Impl_TD_OD: LayerImpl Op OneDiskOp :=
     {| compile_op := fun (T : Type) (op : OneDiskOp T) =>
                        match op in (OneDiskOp T0) return (proc Op T0) with
@@ -1226,69 +1203,26 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
     - exact rd_abstraction.
     - exact compile_refine_TD_OD.
     - exact recovery_refines_TD_OD.
-    -
-  Abort.
-
-(*
-  Theorem init_ok : init_abstraction init recover abstr inited_any.
-  Proof.
-    intros.
-    eapply then_init_compose; eauto.
-    eapply proc_spec_weaken; eauto.
-    unfold spec_impl; intros.
-    destruct state; simpl in *.
-
-    - exists (d_0, d_1); simpl; intuition eauto.
-      unfold rd_abstraction.
-      destruct v; repeat deex; eauto.
-    - exists (d_0, d_0); simpl; intuition eauto.
-      unfold rd_abstraction.
-      destruct v; repeat deex; eauto.
-    - exists (d_1, d_1); simpl; intuition eauto.
-      unfold rd_abstraction.
-      destruct v; repeat deex; eauto.
+    - intros sT1 sT2 i Hl.
+      edestruct Hl as ([]&?&?&?).
+      destruct Hl as ([]&?&?&?).
+      destruct H1 as ((d1&d2&(?&?&<-))&<-).
+      edestruct (init'_ok d1 d1) as (Hexec&Hcrash).
+      eapply Hexec in H0.
+      destruct H as (?&<-).
+      clear -H0 H1 H3. unfold spec_exec in H0. simpl in H0.
+      destruct i.
+      * left. destruct H0 as (d0'&d1'&?&?&?); subst;  intuition.
+        exists tt. eexists. split; eauto; swap 1 2.
+        { eexists tt. eexists d1'. split.
+            split; eauto. econstructor.
+            exists tt. eexists. split; simpl; split; eauto. }
+        econstructor.
+      * right. exists tt. exists sT2. split; econstructor; eauto.
   Qed.
-*)
-
-
-  (*
-  Theorem read_ok : forall a, proc_ok TDLayer (read a) recover (read_spec a).
-  Proof.
-    intros.
-    apply spec_abstraction_compose; simpl.
-    eapply compose_recovery; eauto; simplify.
-    unfold rd_abstraction in *; descend; intuition eauto.
-    exists (state2, FullySynced); simplify; finish.
-  Qed.
-
-  Theorem write_ok : forall a v, proc_spec (write_spec a v) (write a v) recover abstr.
-  Proof.
-    intros.
-    apply spec_abstraction_compose; simpl.
-    eapply compose_recovery; eauto; simplify.
-    rename state2 into d.
-    unfold rd_abstraction in *; descend; intuition eauto.
-    - exists (d, FullySynced); simplify; intuition eauto.
-    - exists (d, OutOfSync a v); simplify; intuition eauto.
-    - exists (diskUpd d a v, FullySynced); simplify; intuition eauto.
-  Qed.
-
-  Theorem size_ok : proc_spec size_spec size recover abstr.
-  Proof.
-    intros.
-    apply spec_abstraction_compose; simpl.
-    (* simplify is a bit too aggressive about existential variables here, so we
-    provide some manual simplification here *)
-    eapply compose_recovery; eauto.
-    intros; apply exists_tuple2.
-    destruct a; simpl in *.
-    rename s into d.
-    unfold rd_abstraction in *; simplify.
-    exists d, d; intuition eauto.
-    simplify.
-    exists d, FullySynced; simplify; finish.
-  Qed.
-   *)
-
 
 End ReplicatedDisk.
+
+(*
+Print Assumptions ReplicatedDisk.Refinement_TD_OD.
+*)
