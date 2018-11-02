@@ -376,7 +376,7 @@ Section Hoare.
       { rew <- seq_star_none in Hrec.
         rew <- rel_or_introl in Hrspec.
         rew Hrspec.
-        left assoc rew Hrec.
+        left_assoc rew Hrec.
         intros s1 s3 [] Hl a Hpre.
         destruct Hl as ([]&s2&Hrexec_spec&?Hexec_rspec).
         edestruct Hspec_spec' as (?&?&?&Hrec'); eauto.

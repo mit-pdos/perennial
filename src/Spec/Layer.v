@@ -104,7 +104,7 @@ Section Layers.
       propositional.
     - unfold refines; norm.
     - unfold refines in *; norm.
-      left assoc rew IHp.
+      left_assoc rew IHp.
       rel_congruence; norm.
       rew<- H.
   Qed.
@@ -134,7 +134,7 @@ Section Layers.
     - repeat Split; [ Left; Left | Left; Right | Right ].
       + rew crash_step_refinement.
       + rew IHrec.
-      + left assoc rew (compile_exec_ok rec).
+      + left_assoc rew (compile_exec_ok rec).
         rew H.
   Qed.
 
@@ -148,7 +148,7 @@ Section Layers.
     pose unfolded (rexec_rec rec)
          (fun H => red in H).
     apply simulation_seq_value in H.
-    left assoc rew H.
+    left_assoc rew H.
     rel_congruence.
     rew compile_exec_ok.
   Qed.
@@ -163,7 +163,7 @@ Section Layers.
     unfold refines.
     rew @exec_recover_bind.
     rew bind_star_unit.
-    left assoc rew crash_step_refinement.
+    left_assoc rew crash_step_refinement.
     rel_congruence.
     rew rexec_star_rec.
   Qed.
@@ -182,7 +182,7 @@ Section Layers.
         clear H (* normal execution of op is irrelevant *)
       end.
       rew @exec_recover_bind.
-      left assoc rew H0.
+      left_assoc rew H0.
       rew bind_star_unit.
 
       rew rexec_star_rec.
@@ -192,7 +192,7 @@ Section Layers.
         [ Left; Left | Left; Right | Right ].
       + rew recover_ret.
       + rew IHp.
-      + left assoc rew compile_exec_ok.
+      + left_assoc rew compile_exec_ok.
         rel_congruence.
         rew H.
   Qed.
@@ -228,7 +228,7 @@ Section Layers.
     - Left.
       rel_congruence.
       rel_congruence.
-      left assoc rew (compile_exec_ok p).
+      left_assoc rew (compile_exec_ok p).
       repeat rel_congruence.
       apply to_any.
     - Right.
@@ -302,11 +302,11 @@ Proof.
     + rew rf1.(compile_exec_ok).
       pose unfolded (rf2.(compile_op_ok) _ op)
            (fun H => hnf in H).
-      left assoc rew H.
+      left_assoc rew H.
     + rew rf1.(compile_rexec_ok).
       pose unfolded (rf2.(compile_op_ok) _ op)
            (fun H => hnf in H).
-      left assoc rew H0.
+      left_assoc rew H0.
   - red; unfold refines, layer_impl_compose; simpl; norm.
     rew @exec_recover_bind.
     rew bind_star_unit.
@@ -316,7 +316,7 @@ Proof.
     setoid_rewrite <- bind_assoc at 2.
     rew H.
     rew rf1.(rexec_star_rec).
-    left assoc rew rf2.(crash_step_refinement).
+    left_assoc rew rf2.(crash_step_refinement).
   - unfold layer_impl_compose; simpl.
     rewrite <- bind_assoc.
     rew rf1.(init_ok).
@@ -326,7 +326,7 @@ Proof.
       rew rf2.(init_ok).
       repeat (setoid_rewrite bind_dist_r ||
               setoid_rewrite bind_dist_l); norm.
-      left assoc rew any_idem.
+      left_assoc rew any_idem.
       Split.
       * Left.
       * Right.

@@ -148,11 +148,11 @@ Local Ltac left_assoc_rel_hyp H tac :=
   rel_hyp H ltac:(fun H => left_associate H;
                         tac H).
 
-Tactic Notation "left" "assoc" "with" constr(H) tactic(t) :=
+Tactic Notation "left_assoc" "with" constr(H) tactic(t) :=
   left_assoc_rel_hyp H t.
 
-Tactic Notation "left" "assoc" "rew" constr(H) :=
+Tactic Notation "left_assoc" "rew" constr(H) :=
   left_assoc_rel_hyp H ltac:(fun H => setoid_rewrite H).
 
-Tactic Notation "left" "assoc" "rew" "<-" constr(H) :=
+Tactic Notation "left_assoc" "rew" "<-" constr(H) :=
   left_assoc_rel_hyp H ltac:(fun H => setoid_rewrite <- H).
