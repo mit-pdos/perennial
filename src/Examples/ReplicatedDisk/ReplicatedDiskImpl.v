@@ -1038,6 +1038,21 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
       * destruct H0; exists (diskUpd d a b); simplify; finish.
   Qed.
 
+  Theorem size_rec_ok :
+    forall du, proc_rspec TDLayer (size) Recover (refine_spec rd_abstraction (size_spec) du).
+  Proof.
+    intros (d&[]).
+    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1.
+    - intros. eapply Recover_rok1.
+    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
+    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
+      exists tt. inversion H0. subst; intuition eauto.
+    - simplify. exists d; split; eauto.
+      unfold rd_abstraction in *; descend; simplify; intuition eauto.
+  Qed.
+
+  Hint Resolve read_rec_ok size_rec_ok write_rec_ok.
+
   Import Helpers.RelationAlgebra.
   Import RelationNotations.
 
@@ -1077,39 +1092,91 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
        init := init';
        Layer.recover := Recover |}.
 
+  Lemma proc_rspec_refine_exec Op (L: Layer Op) AState A T R (p: proc Op T) (rec: proc Op R)
+        spec abstr x:
+    (forall (t: AState * A), proc_rspec L p rec (refine_spec abstr spec t)) ->
+    (forall sO sT, abstr sO sT tt -> (spec x sO).(pre)) ->
+    _ <- abstr; exec L p ---> v <- spec_exec (spec x); _ <- abstr; pure v.
+  Proof.
+    intros Hprspec Habstr_pre.
+    intros sO sT b ([]&sTstart&Hrd&Hexec).
+    destruct (Hprspec (sO, x)).
+    eapply H in Hexec. simpl in Hexec.
+    clear -Hrd Hexec Habstr_pre.
+    edestruct Hexec; eauto. simpl. intuition; eauto.
+    do 2 eexists; intuition.
+    simplify. intros ?. simplify. finish.
+    do 2 eexists. split; eauto. finish. unfold pure; auto.
+  Qed.
 
-  (*
+  Lemma proc_rspec_refine_rec Op (L: Layer Op) AState A T R (p: proc Op T) (rec: proc Op R)
+        spec abstr x:
+    (forall (t: AState * A), proc_rspec L p rec (refine_spec abstr spec t)) ->
+    (forall sO sT, abstr sO sT tt -> (spec x sO).(pre)) ->
+    _ <- abstr; rexec L p rec ---> v <- spec_aexec (spec x); _ <- abstr; pure v.
+  Proof.
+    intros Hprspec Habstr_pre.
+    intros sO sT b ([]&sTstart&Hrd&Hexec).
+    destruct (Hprspec (sO, x)).
+    eapply H0 in Hexec. simpl in Hexec.
+    clear -Hrd Hexec Habstr_pre.
+    edestruct Hexec; eauto. simpl. intuition; eauto.
+    do 2 eexists; intuition.
+    simplify. intros ?. simplify. finish.
+    do 2 eexists. split; eauto. finish. unfold pure; auto.
+  Qed.
+
   Lemma compile_refine_TD_OD:
     compile_op_refines_step TDLayer ODLayer Impl_TD_OD rd_abstraction.
   Proof.
     unfold compile_op_refines_step.
     intros T op. destruct op.
     - unfold crash_refines, refines. split.
-      + simpl compile_op.
-        specialize (read_int_ok a). intros (?&?).
-        setoid_rewrite H. unfold spec_exec, rd_abstraction; simpl.
-        intros s s' b Hl. inversion Hl; subst.
-        econstructor. simpl in *. destruct H1 as (y&Hy).
-        intuition. specialize (H2 s). edestruct H2; eauto.
-        exists s. split. econstructor.
-        { intuition.  destruct (diskGet s a); eauto. }
-        { econstructor; [ exact tt |].
-          exists s'. intuition. unfold pure; auto.
+      + assert (spec_exec (read_spec a tt) ---> exec ODBaseDynamics (Prim (op_read a))) as Hbar.
+        { intros s1 s2 b Hl. unfold spec_exec in Hl. simplify. econstructor.
+          destruct (diskGet _ _); eauto.
         }
-      + simpl compile_op.
-        specialize (read_int_ok a). simpl. intros (?&Hr).
-        simpl. unfold spec_rexec in Hr. simpl in Hr. unfold rexec. unfold exec_recover.
-        setoid_rewrite Hr. unfold spec_exec, rd_abstraction; simpl.
-        intros s s' b Hl. inversion Hl; subst.
-        econstructor. simpl in *. destruct H1 as (y&Hy).
-        intuition. specialize (H2 s). edestruct H2; eauto.
-        exists s. split. econstructor.
-        { intuition.  destruct (diskGet s a); eauto. }
-        { econstructor; [ exact tt |].
-          exists s'. intuition. unfold pure; auto.
+        simpl in Hbar. simpl (ODLayer.(step)).
+        setoid_rewrite <-Hbar.
+        eapply proc_rspec_refine_exec; simpl; eauto.
+      + assert (spec_aexec (read_spec a tt) --->
+                ODLayer.(crash_step)
+                  + (_ <- ODLayer.(step) (op_read a); ODLayer.(crash_step))) as Hbar.
+        { intros s1 s2 b Hl. unfold spec_aexec in Hl. simplify. do 2 econstructor. }
+        setoid_rewrite <-Hbar.
+        eapply proc_rspec_refine_rec; simpl; eauto.
+    - unfold crash_refines, refines. split.
+      + assert (spec_exec (write_spec a b tt) ---> exec ODBaseDynamics (Prim (op_write a b))) as Hbar.
+        { intros s1 s2 [] Hl. unfold spec_exec in Hl. simplify. econstructor; eauto. }
+        simpl in Hbar. simpl (ODLayer.(step)).
+        setoid_rewrite <-Hbar.
+        eapply proc_rspec_refine_exec; simpl; eauto.
+      + assert (spec_aexec (write_spec a b tt) --->
+                ODLayer.(crash_step)
+                  + (_ <- ODLayer.(step) (op_write a b); ODLayer.(crash_step))) as Hbar.
+        { intros s1 s2 [] Hl. unfold spec_aexec in Hl. simplify. intuition.
+          * left. subst; econstructor.
+          * right. econstructor. subst. eexists. split; [| econstructor].
+            econstructor; auto.
         }
-      +
+        setoid_rewrite <-Hbar.
+        eapply proc_rspec_refine_rec; simpl; eauto.
+    - unfold crash_refines, refines. split.
+      + assert (spec_exec (size_spec tt) ---> exec ODBaseDynamics (Prim (op_size))) as Hbar.
+        { intros s1 s2 ? Hl. unfold spec_exec in Hl. simplify. econstructor; eauto. }
+        simpl in Hbar. simpl (ODLayer.(step)).
+        setoid_rewrite <-Hbar.
+        eapply proc_rspec_refine_exec; simpl; eauto.
+      + assert (spec_aexec (size_spec tt) --->
+                ODLayer.(crash_step)
+                  + (_ <- ODLayer.(step) (op_size); ODLayer.(crash_step))) as Hbar.
+        { intros s1 s2 ? Hl. unfold spec_aexec in Hl. simplify.
+          do 2 econstructor. }
+        setoid_rewrite <-Hbar.
+        eapply proc_rspec_refine_rec; simpl; eauto.
+  Qed.
 
+  (*
   Lemma Refinement_TD_OD: LayerRefinement TDLayer ODLayer.
   Proof.
     unshelve (econstructor).
