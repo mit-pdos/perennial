@@ -52,6 +52,7 @@ Section Hoare.
   Notation proc := (proc Op).
   Notation exec := sem.(exec).
   Notation exec_crash := sem.(exec_crash).
+  Notation crash_step := sem.(crash_step).
   Notation rexec := sem.(rexec).
 
   Definition proc_rspec A T R
@@ -313,6 +314,14 @@ Section Hoare.
                     forall rv state'', post (spec a' state') state'' rv ->
                                   post (spec a state) state'' rv.
 
+  Definition idempotent_crash_step A T R `(spec: Specification A T R State) :=
+    forall a state,
+      pre (spec a state) ->
+      forall v state' state'', alternate (spec a state) state' v ->
+                               crash_step state' state'' tt ->
+              exists a', pre (spec a' state'') /\
+                    forall rv state''', post (spec a' state'') state''' rv ->
+                                  post (spec a state) state''' rv.
 
   (*
   (* Idempotents theorem: *)
@@ -466,6 +475,59 @@ Section Hoare.
         inversion Hl as (?&?&?&Hrest). inversion Hrest; subst.
         firstorder.
   Qed.
+
+  Theorem proc_cspec_to_rspec A A' T R (cspec: Specification A T unit State)
+          `(rec_cspec: Specification A' R unit State)
+          `(rspec: Specification A' T R State)
+          `(p: proc T) `(rec: proc R):
+    proc_cspec p cspec ->
+    proc_cspec rec rec_cspec ->
+    idempotent_crash_step rec_cspec ->
+    (forall a s, (rspec a s).(pre) ->
+         exists a', (cspec a' s).(pre) /\
+               (forall s' v, (cspec a' s).(post) s' v ->
+                        (rspec a s).(post) s' v)) ->
+    (* alternate of cspec followed by crash implies pre of rec but bad ghost state *)
+    (forall a' state state' state'' v, exists a, alternate (cspec a state) state' v ->
+                               crash_step state' state'' tt ->
+                 pre (rec_cspec a' state'')) ->
+    (* recovery post implies alternate of rspec but is ghost state handled correctly? *)
+    (forall a s sc, (rspec a s).(pre) ->
+                    exists a', (forall sfin rv, (rec_cspec a' sc).(post) sfin rv ->
+                                                (rspec a s).(alternate) sfin rv)) ->
+    proc_rspec p rec rspec.
+  Proof.
+    intros (Hpe&Hpc) (Hre&Hrc).
+    unfold idempotent_crash_step. intros Hidemp.
+    intros Himpl1 Hc_crash_r Hr_alt.
+    split.
+    - rew Hpe; auto.
+      intros s1 s2 t Hl a' Hpre.
+      edestruct Himpl1 as (?&?&?); eauto.
+    - unfold rexec. rewrite Hpc.
+      unfold exec_recover.
+      setoid_rewrite Hrc.
+
+      (* Base case *)
+      assert (_ <- spec_aexec cspec;
+              _ <- crash_step;
+              exec rec
+                   --->
+                   spec_aexec rspec).
+      {  intros s s' r Hl a' Hpre.
+         destruct Hl as ([]&smid1&Haexec&Hcrash).
+         destruct Hcrash as ([]&smid2&Hcrash&Hexec).
+         edestruct Hr_alt as (a''&Hfin); eauto. eapply Hfin.
+         eapply Hre; eauto.
+           edestruct Himpl1 as (?&?&?); eauto.
+         edestruct Hc_crash_r; eauto.
+         eapply H1; eauto.
+         eapply Haexec.
+         (* Bad quantifiers on the ghost state. *)
+         admit.
+      }
+   Abort.
+
 
 End Hoare.
 
