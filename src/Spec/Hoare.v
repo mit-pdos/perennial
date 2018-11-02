@@ -392,59 +392,95 @@ Section Hoare.
         firstorder.
   Qed.
 
-  (*
-  Theorem proc_cspec_to_rspec A A' T R (cspec: Specification A T unit State)
-          `(rec_cspec: Specification A' R unit State)
-          `(rspec: Specification A' T R State)
-          `(p: proc T) `(rec: proc R):
-    proc_cspec p cspec ->
-    proc_cspec rec rec_cspec ->
-    idempotent_crash_step rec_cspec ->
-    (forall a s, (rspec a s).(pre) ->
-         exists a', (cspec a' s).(pre) /\
-               (forall s' v, (cspec a' s).(post) s' v ->
-                        (rspec a s).(post) s' v)) ->
-    (* alternate of cspec followed by crash implies pre of rec but bad ghost state *)
-    (forall a' state state' state'' v, exists a, alternate (cspec a state) state' v ->
-                               crash_step state' state'' tt ->
-                 pre (rec_cspec a' state'')) ->
-    (* recovery post implies alternate of rspec but is ghost state handled correctly? *)
-    (forall a s sc, (rspec a s).(pre) ->
-                    exists a', (forall sfin rv, (rec_cspec a' sc).(post) sfin rv ->
-                                                (rspec a s).(alternate) sfin rv)) ->
-    proc_rspec p rec rspec.
+  Lemma spec_aexec_cancel T R1 R2 (spec1 : Specification T R1 State)
+          (spec2: Specification T R2 State) (r: relation State State R2) :
+    (forall s, (spec2 s).(pre) -> (spec1 s).(pre)) ->
+    (forall s r1, _ <- test (fun s' => (spec1 s).(alternate) s' r1);
+                    r ---> (fun s2a s2b r => (spec2 s).(pre) -> (spec2 s).(alternate) s2b r)) ->
+    (_ <- spec_aexec spec1; r) ---> spec_aexec spec2.
   Proof.
-    intros (Hpe&Hpc) (Hre&Hrc).
+    intros Hpre_impl Hrest s1 s2 r2 Hl Hpre'.
+    destruct Hl as (r1&smid&?&?).
+    eapply (Hrest s1 r1); eauto. exists tt, smid. split; simpl; eauto.
+    unfold test. firstorder.
+  Qed.
+
+  Theorem proc_cspec_to_rspec A' T R (p_cspec: Specification T unit State)
+          `(rec_cspec: A' -> Specification R unit State)
+          `(p_rspec: Specification T R State)
+          `(p: proc T) `(rec: proc R):
+    proc_cspec p p_cspec ->
+    (forall a, proc_cspec rec (rec_cspec a)) ->
+    idempotent_crash_step rec_cspec ->
+    (forall s, (p_rspec s).(pre) -> (p_cspec s).(pre) /\
+               (forall s' v, (p_cspec s).(post) s' v ->
+                             (p_rspec s).(post) s' v)) ->
+    (* alternate of cspec followed by crash implies pre of rec for some ghost*)
+    (forall state state' state'' v,
+        alternate (p_cspec state) state' v ->
+        crash_step state' state'' tt ->
+        exists a, pre (rec_cspec a state'')) ->
+    (* recovery post implies alternate of rspec *)
+    (forall a s sc, (p_rspec s).(pre) ->
+                    (forall sfin rv, (rec_cspec a sc).(post) sfin rv ->
+                                     (p_rspec s).(alternate) sfin rv)) ->
+    proc_rspec p rec p_rspec.
+  Proof.
+    intros (Hpe&Hpc) Hc.
     unfold idempotent_crash_step. intros Hidemp.
     intros Himpl1 Hc_crash_r Hr_alt.
     split.
     - rew Hpe; auto.
-      intros s1 s2 t Hl a' Hpre.
-      edestruct Himpl1 as (?&?&?); eauto.
+      intros s1 s2 t Hl Hpre.
+      eapply Himpl1; eauto. eapply Hl. eapply Himpl1; eauto.
     - unfold rexec. rewrite Hpc.
       unfold exec_recover.
-      setoid_rewrite Hrc.
+      (* cancel *)
+      eapply spec_aexec_cancel.
+      { eapply Himpl1. }
 
+      intros s1 [].
+
+      setoid_rewrite <-bind_assoc.
+      assert (_ <- test (fun s' : State => (p_cspec s1).(alternate) s' tt); crash_step
+              ---> test (fun s' : State => exists a', (rec_cspec a' s').(pre))) as HCI.
+      { admit. }
+      rew HCI.
+
+      setoid_rewrite <-bind_assoc.
+      assert (_ <- test (fun s' : State => exists a' : A', (rec_cspec a' s').(pre));
+              seq_star (_ <- exec_crash rec; crash_step)
+              ---> test (fun s' : State => exists a' : A', (rec_cspec a' s').(pre))) as HCLoop.
+      { admit. }
+      rew HCLoop.
+
+      intros sa sb r Hl Hpre_s1.
+      destruct Hl as ([]&?&?&?).
+      destruct H as ((a'&?)&?).
+      subst. eapply Hr_alt; eauto.
+      eapply Hc; eauto.
+
+      (****)
       (* Base case *)
-      assert (_ <- spec_aexec cspec;
+      (*
+      assert (_ <- spec_aexec p_cspec;
               _ <- crash_step;
               exec rec
                    --->
-                   spec_aexec rspec).
-      {  intros s s' r Hl a' Hpre.
+                   spec_aexec p_rspec).
+      {  intros s s' r Hl Hpre.
          destruct Hl as ([]&smid1&Haexec&Hcrash).
          destruct Hcrash as ([]&smid2&Hcrash&Hexec).
-         edestruct Hr_alt as (a''&Hfin); eauto. eapply Hfin.
+         edestruct Hc_crash_r as (a'&?).
+         { eapply Haexec. eapply Himpl1. eauto. }
+         { eauto. }
+
+         destruct (Hc a') as (Hre&Hrc).
+         eapply Hr_alt; eauto.
          eapply Hre; eauto.
-           edestruct Himpl1 as (?&?&?); eauto.
-         edestruct Hc_crash_r; eauto.
-         eapply H1; eauto.
-         eapply Haexec.
-         (* Bad quantifiers on the ghost state. *)
-         admit.
       }
+      *)
    Abort.
-   *)
 
 
 End Hoare.
