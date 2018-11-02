@@ -846,8 +846,8 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
 
   Hint Resolve recover_at_ok.
 
-  Definition Recover_spec : _ -> Specification unit unit TwoDiskBaseAPI.State :=
-    fun '(d, s) state =>
+  Definition Recover_spec : _ -> _ -> Specification unit unit TwoDiskBaseAPI.State :=
+    fun d s state =>
       {|
         pre :=
           match s with
@@ -883,10 +883,15 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
             end;
       |}.
 
-  Theorem Recover_rok dF :
+  Inductive rec_prot : Type :=
+    | stable_sync : rec_prot
+    | stable_out : rec_prot
+    | try_recv : rec_prot.
+
+  Theorem Recover_rok1 d s :
     proc_cspec TDLayer
       (Recover)
-      (Recover_spec dF).
+      (Recover_spec d s).
   Proof.
     unfold Recover, Recover_spec; intros.
     spec_intros; simplify.
@@ -903,17 +908,68 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
       step.
   Qed.
 
-  Theorem Recover_spec_idempotent :
-    idempotent (Recover_spec).
+  Theorem Recover_rok2 d a b rp:
+    proc_cspec TDLayer
+      (Recover)
+      (match rp with
+       | stable_sync => Recover_spec d (FullySynced)
+       | stable_out => Recover_spec d (OutOfSync a b)
+       | try_recv => Recover_spec (diskUpd d a b) (OutOfSync a b)
+       end).
   Proof.
-    unfold idempotent; intuition; simplify.
-    rename a0 into d.
-    destruct b; intuition eauto.
-    - exists d, FullySynced; finish.
-    - exists d, FullySynced; finish.
-    - exists d, (OutOfSync a b); finish.
-    - exists (diskUpd d a b), FullySynced; finish.
+    unfold Recover, Recover_spec; intros.
+    spec_intros; simplify.
+    destruct rp; simplify.
+    + step.
+        unshelve (step).
+        exact d. exact FullySynced. simplify; finish.
+        step.
+    + step.
+      intuition eauto.
+      simplify.
+      unshelve (step).
+      exact d. exact (OutOfSync a b). simplify; finish.
+      step.
+    + step.
+      intuition eauto.
+      simplify.
+      unshelve (step).
+      exact (diskUpd d a b). exact (OutOfSync a b). simplify; finish.
+      step.
   Qed.
+
+  Theorem Recover_spec_idempotent_crash_step1 d :
+    idempotent_crash_step (TDBaseDynamics) (fun (t : unit) => Recover_spec d (FullySynced)).
+  Proof.
+    unfold idempotent_crash_step; intuition; simplify.
+    exists tt; finish.
+  Qed.
+
+  Theorem Recover_spec_idempotent_crash_step2 d a b :
+    idempotent_crash_step (TDBaseDynamics)
+                          (fun rp : rec_prot =>
+                             match rp with
+                             | stable_sync => Recover_spec d (FullySynced)
+                             | stable_out => Recover_spec d (OutOfSync a b)
+                             | try_recv => Recover_spec (diskUpd d a b) (OutOfSync a b)
+                             end).
+  Proof.
+    unfold idempotent_crash_step; intuition; simplify.
+    destruct a0.
+    - exists stable_sync; simplify; finish.
+    - destruct H0; [| destruct H0].
+        ** exists (stable_sync); simplify; finish.
+        ** exists (stable_out); simplify; finish.
+        ** exists (try_recv); simplify; finish.
+    - destruct H0; [| destruct H0].
+      ** exists (try_recv). simplify; finish.
+      ** simplify. exists (try_recv). simplify; finish.
+      ** simplify. exists (try_recv). simplify; finish.
+  Qed.
+
+  (*
+  Hint Resolve Recover_spec_idempotent_crash_step2.
+   *)
 
   (* TODO: not sure this is the right level to prove this looping lemma *)
   (* This proof combines your proof that recovery is correct and that its
@@ -934,7 +990,7 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
    *)
 
   (*
-  Hint Resolve Recover_ok.
+  Hint Resolve Recover_rok.
    *)
 
 
@@ -945,6 +1001,42 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Definition rd_abstraction (d:OneDiskAPI.State) (state: TwoDiskBaseAPI.State)  (_ :unit) : Prop :=
     disk0 state ?|= eq d /\
     disk1 state ?|= eq d.
+
+  Theorem read_rec_ok :
+    forall a du, proc_rspec TDLayer (read a) Recover (refine_spec rd_abstraction (read_spec a) du).
+  Proof.
+    intros a (d&[]).
+    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1. 
+    - intros []. eapply Recover_rok1.
+    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
+    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
+      exists tt. inversion H0. subst; intuition eauto.
+    - simplify. exists d; split; eauto.
+      unfold rd_abstraction in *; descend; simplify; intuition eauto.
+  Qed.
+
+  Theorem write_rec_ok :
+    forall a b du, proc_rspec TDLayer (write a b)
+                              Recover (refine_spec rd_abstraction (write_spec a b) du).
+  Proof.
+    intros a b (d&[]).
+    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step2. 
+    - intros. eapply Recover_rok2.
+    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
+    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto;
+       inversion H0; subst.
+      * exists (stable_sync); simplify; finish.
+      * exists (stable_out); simplify; finish.
+      * assert (a < diskSize d \/ a >= diskSize d) as [Hlt|Hoob] by omega.
+        ** exists (try_recv); simplify; finish.
+        ** exists (stable_sync); simplify; finish.
+    - unfold rd_abstraction in *; simplify. destruct a0.
+      * destruct H0. exists d. simplify; finish.
+      * destruct H0.
+           *** exists d. simplify; finish.
+           *** exists (diskUpd d a b); simplify; finish.
+      * destruct H0; exists (diskUpd d a b); simplify; finish.
+  Qed.
 
   Import Helpers.RelationAlgebra.
   Import RelationNotations.

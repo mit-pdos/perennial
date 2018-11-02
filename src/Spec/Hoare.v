@@ -455,7 +455,7 @@ Section Hoare.
 
       setoid_rewrite <-bind_assoc at 2.
       setoid_rewrite <-bind_assoc.
-      rewrite seq_star_any_invariant.
+      rewrite seq_star_mid_invariant.
       * rewrite bind_assoc.
         intros sa sb r Hl Hpre_s1.
         destruct Hl as ([]&smid&_&Hl).
@@ -470,6 +470,7 @@ Section Hoare.
         destruct Hexec_crash as ([]&smid&Hexec_crash&Hcrash_step).
         edestruct Hidemp as (a''&?); eauto.
         eapply Hc; eauto. eexists; intuition eauto.
+      * apply any_seq_star_any.
    Qed.
 
 End Hoare.

@@ -19,16 +19,64 @@ Proof.
     setoid_rewrite test_to_id at 2; norm.
 Qed.
 
-Lemma seq_star_any_invariant A (p: relation A A unit) P:
-  (test P;; p ---> @any _ _ unit ;; test P) ->
-  (@any A _ unit;; test P;; seq_star p ---> @any A _ unit;; test P).
+Fixpoint seq_rep_n {A T} (n: nat) (p: relation A A T) : relation A A T :=
+  match n with
+  | O => identity
+  | S n' => p ;; seq_rep_n n' p
+  end.
+
+Lemma seq_star_inv_rep_n A T (p: relation A A T) a1 a2 t:
+  seq_star p a1 a2 t ->
+  exists n, seq_rep_n n p a1 a2 t.
 Proof.
-  intros Hinv.
-  intros a a' [] ([]&amid&Htest&Hstar).
-  destruct Hstar as ([]&?&(?&<-)&Hstar).
-  induction Hstar; auto.
-  { exists tt. eexists; repeat split; eauto. }
-  edestruct Hinv as ([]&amid&_&(HP&?)).
-  { exists tt. eexists; repeat split; eauto. }
-  subst. eapply IHHstar; eauto.
+  induction 1.
+  - exists O; firstorder.
+  - destruct IHseq_star as (n&?). exists (S n).
+    simpl. do 2 eexists; intuition eauto.
+Qed.
+
+Lemma seq_star_rep_n_ind {A1 A2 T1 T2} (p: relation A1 A2 T1) q (r: relation A1 A2 T2):
+  (forall n, p ;; seq_rep_n n q ---> r) ->
+  p ;; seq_star q ---> r.
+Proof.
+  intros.
+  intros a1 a2 t2 Hl.
+  destruct Hl as (t1&a2'&Hp&Hstar).
+  eapply seq_star_inv_rep_n in Hstar as (n&?).
+  eapply H; do 2 eexists; intuition eauto.
+Qed.
+
+Lemma seq_star_mid_invariant A (p: relation A A unit) (q: relation A A unit) P:
+  (test P;; p ---> q ;; test P) ->
+  (q;; seq_star q ---> q) ->
+  (q;; test P;; seq_star p ---> q;; test P).
+Proof.
+  intros Hinv Htrans.
+  setoid_rewrite <-bind_assoc.
+  apply seq_star_rep_n_ind.
+  induction n.
+  - simpl. rewrite bind_assoc.
+    setoid_rewrite unit_identity.
+    setoid_rewrite bind_right_id_unit.
+    reflexivity.
+  - simpl. setoid_rewrite bind_assoc.
+    setoid_rewrite <-bind_assoc at 2.
+    setoid_rewrite Hinv.
+    setoid_rewrite IHn.
+    setoid_rewrite <-bind_assoc.
+    setoid_rewrite <-(seq_star1) in Htrans.
+    setoid_rewrite <-(seq_star_none) in Htrans.
+    setoid_rewrite unit_identity in Htrans.
+    setoid_rewrite bind_right_id_unit in Htrans.
+    rew Htrans.
+Qed.
+
+Lemma any_seq_star_any A T:
+  _ <- (@any A A T); seq_star (@any A A T) ---> any.
+Proof.
+  eapply seq_star_rep_n_ind.
+  induction n; simpl.
+  - firstorder.
+  - setoid_rewrite IHn.
+    apply any_idem.
 Qed.
