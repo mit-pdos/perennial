@@ -1126,54 +1126,39 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
     do 2 eexists. split; eauto. finish. unfold pure; auto.
   Qed.
 
+  Lemma proc_rspec_crash_refines Op1 Op2 (L: Layer Op1) (O: Layer Op2)
+            A T (p: proc Op1 T) (rec: proc Op1 unit)
+        spec abstr x op:
+    (forall (t: _ * A), proc_rspec L p rec (refine_spec abstr spec t)) ->
+    (forall sO sT, abstr sO sT tt -> (spec x sO).(pre)) ->
+    (spec_exec (spec x) ---> exec O (Prim op)) ->
+    (spec_aexec (spec x) ---> O.(crash_step) + (_ <- O.(step) op; O.(crash_step))) ->
+    crash_refines abstr L p rec (O.(step) op)
+                  (O.(crash_step) + (_ <- O.(step) op; O.(crash_step))).
+  Proof.
+    intros ?? He Ha. unfold crash_refines, refines. split.
+    - setoid_rewrite <-He. eapply proc_rspec_refine_exec; eauto.
+    - setoid_rewrite <-Ha. eapply proc_rspec_refine_rec; eauto.
+  Qed.
+
+  Lemma one_disk_failure_id_l r x:
+    (one_disk_failure + r)%rel x x tt.
+  Proof. left. econstructor. Qed.
+
+  Hint Resolve one_disk_failure_id_l.
+
   Lemma compile_refine_TD_OD:
     compile_op_refines_step TDLayer ODLayer Impl_TD_OD rd_abstraction.
   Proof.
     unfold compile_op_refines_step.
-    intros T op. destruct op.
-    - unfold crash_refines, refines. split.
-      + assert (spec_exec (read_spec a tt) ---> exec ODBaseDynamics (Prim (op_read a))) as Hbar.
-        { intros s1 s2 b Hl. unfold spec_exec in Hl. simplify. econstructor.
-          destruct (diskGet _ _); eauto.
-        }
-        simpl in Hbar. simpl (ODLayer.(step)).
-        setoid_rewrite <-Hbar.
-        eapply proc_rspec_refine_exec; simpl; eauto.
-      + assert (spec_aexec (read_spec a tt) --->
-                ODLayer.(crash_step)
-                  + (_ <- ODLayer.(step) (op_read a); ODLayer.(crash_step))) as Hbar.
-        { intros s1 s2 b Hl. unfold spec_aexec in Hl. simplify. do 2 econstructor. }
-        setoid_rewrite <-Hbar.
-        eapply proc_rspec_refine_rec; simpl; eauto.
-    - unfold crash_refines, refines. split.
-      + assert (spec_exec (write_spec a b tt) ---> exec ODBaseDynamics (Prim (op_write a b))) as Hbar.
-        { intros s1 s2 [] Hl. unfold spec_exec in Hl. simplify. econstructor; eauto. }
-        simpl in Hbar. simpl (ODLayer.(step)).
-        setoid_rewrite <-Hbar.
-        eapply proc_rspec_refine_exec; simpl; eauto.
-      + assert (spec_aexec (write_spec a b tt) --->
-                ODLayer.(crash_step)
-                  + (_ <- ODLayer.(step) (op_write a b); ODLayer.(crash_step))) as Hbar.
-        { intros s1 s2 [] Hl. unfold spec_aexec in Hl. simplify. intuition.
-          * left. subst; econstructor.
-          * right. econstructor. subst. eexists. split; [| econstructor].
-            econstructor; auto.
-        }
-        setoid_rewrite <-Hbar.
-        eapply proc_rspec_refine_rec; simpl; eauto.
-    - unfold crash_refines, refines. split.
-      + assert (spec_exec (size_spec tt) ---> exec ODBaseDynamics (Prim (op_size))) as Hbar.
-        { intros s1 s2 ? Hl. unfold spec_exec in Hl. simplify. econstructor; eauto. }
-        simpl in Hbar. simpl (ODLayer.(step)).
-        setoid_rewrite <-Hbar.
-        eapply proc_rspec_refine_exec; simpl; eauto.
-      + assert (spec_aexec (size_spec tt) --->
-                ODLayer.(crash_step)
-                  + (_ <- ODLayer.(step) (op_size); ODLayer.(crash_step))) as Hbar.
-        { intros s1 s2 ? Hl. unfold spec_aexec in Hl. simplify.
-          do 2 econstructor. }
-        setoid_rewrite <-Hbar.
-        eapply proc_rspec_refine_rec; simpl; eauto.
+    intros T op. destruct op;
+    unshelve (eapply proc_rspec_crash_refines; simpl; eauto); eauto using tt;
+      simplify; unfold spec_exec, spec_aexec; intros ????; simplify.
+    * econstructor; destruct (diskGet _ _); eauto.
+    * do 2 econstructor.
+    * intuition; subst; eauto.
+      right. econstructor. subst. eexists. split; [| econstructor]. econstructor; auto.
+    * econstructor.
   Qed.
 
   (*
