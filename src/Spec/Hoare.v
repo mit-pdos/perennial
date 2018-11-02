@@ -2,6 +2,7 @@ Require Import Spec.Proc Spec.ProcTheorems.
 Require Import Tactical.Propositional.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
+Require Import Helpers.RelationTheorems.
 
 Import RelationNotations.
 
@@ -405,6 +406,7 @@ Section Hoare.
     unfold test. firstorder.
   Qed.
 
+
   Theorem proc_cspec_to_rspec A' T R (p_cspec: Specification T unit State)
           `(rec_cspec: A' -> Specification R unit State)
           `(p_rspec: Specification T R State)
@@ -435,7 +437,6 @@ Section Hoare.
       eapply Himpl1; eauto. eapply Hl. eapply Himpl1; eauto.
     - unfold rexec. rewrite Hpc.
       unfold exec_recover.
-      (* cancel *)
       eapply spec_aexec_cancel.
       { eapply Himpl1. }
 
@@ -443,45 +444,33 @@ Section Hoare.
 
       setoid_rewrite <-bind_assoc.
       assert (_ <- test (fun s' : State => (p_cspec s1).(alternate) s' tt); crash_step
-              ---> test (fun s' : State => exists a', (rec_cspec a' s').(pre))) as HCI.
-      { admit. }
+              ---> @any _ _ unit ;; test (fun s' : State => exists a', (rec_cspec a' s').(pre)))
+        as HCI.
+      {
+        intros s s' [] ([]&?&((Halt&?)&Hcrash)); subst.
+        unfold any; exists tt; eexists; split; auto.
+        split; eauto.
+      }
       rew HCI.
 
+      setoid_rewrite <-bind_assoc at 2.
       setoid_rewrite <-bind_assoc.
-      assert (_ <- test (fun s' : State => exists a' : A', (rec_cspec a' s').(pre));
-              seq_star (_ <- exec_crash rec; crash_step)
-              ---> test (fun s' : State => exists a' : A', (rec_cspec a' s').(pre))) as HCLoop.
-      { admit. }
-      rew HCLoop.
-
-      intros sa sb r Hl Hpre_s1.
-      destruct Hl as ([]&?&?&?).
-      destruct H as ((a'&?)&?).
-      subst. eapply Hr_alt; eauto.
-      eapply Hc; eauto.
-
-      (****)
-      (* Base case *)
-      (*
-      assert (_ <- spec_aexec p_cspec;
-              _ <- crash_step;
-              exec rec
-                   --->
-                   spec_aexec p_rspec).
-      {  intros s s' r Hl Hpre.
-         destruct Hl as ([]&smid1&Haexec&Hcrash).
-         destruct Hcrash as ([]&smid2&Hcrash&Hexec).
-         edestruct Hc_crash_r as (a'&?).
-         { eapply Haexec. eapply Himpl1. eauto. }
-         { eauto. }
-
-         destruct (Hc a') as (Hre&Hrc).
-         eapply Hr_alt; eauto.
-         eapply Hre; eauto.
-      }
-      *)
-   Abort.
-
+      rewrite seq_star_any_invariant.
+      * rewrite bind_assoc.
+        intros sa sb r Hl Hpre_s1.
+        destruct Hl as ([]&smid&_&Hl).
+        destruct Hl as ([]&?&Htest&?).
+        destruct Htest as ((a'&?)&?).
+        subst. eapply Hr_alt; eauto.
+        eapply Hc; eauto.
+      * intros s s' [] Hl.
+        destruct Hl as ([]&?&((a'&Hcspec)&<-)&Hexec_crash).
+        unfold any; exists tt; eexists; split; auto.
+        split; [| eauto].
+        destruct Hexec_crash as ([]&smid&Hexec_crash&Hcrash_step).
+        edestruct Hidemp as (a''&?); eauto.
+        eapply Hc; eauto. eexists; intuition eauto.
+   Qed.
 
 End Hoare.
 
