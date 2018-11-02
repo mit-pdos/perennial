@@ -169,6 +169,19 @@ Section Dynamics.
     setoid_rewrite <- exec_crash_noop at 2; norm.
   Qed.
 
+  Lemma exec_crash_ret_proc `(rec: proc R):
+    exec_crash (Ret tt) ---> exec_crash rec.
+  Proof. induction rec; simpl; firstorder. Qed.
+
+  Lemma exec_crash_ret_recover_fold `(rec: proc R):
+    _ <- exec_crash (Ret tt); _ <- crash_step; exec_recover rec ---> exec_recover rec.
+  Proof.
+    setoid_rewrite (exec_crash_ret_proc rec).
+    unfold exec_recover.
+    do 2 setoid_rewrite <-bind_assoc.
+    rewrite seq_star_fold; eauto.
+  Qed.
+
 End Dynamics.
 
 Arguments exec_crash_noop [Op State sem T].

@@ -1162,18 +1162,72 @@ Module ReplicatedDisk (td : TwoDiskAPI). (* <: OneDiskAPI. *)
   Qed.
 
   (*
+  Theorem Recover_noop1 d :
+    proc_rspec TDLayer
+      (Ret tt)
+      (Recover)
+      (Recover_spec d (FullySynced)).
+  Proof.
+    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1.
+    { step. }
+    { intros []. eapply Recover_rok1. }
+    { simplify. exists tt. inversion H0; subst; eauto. }
+    { simplify. }
+  Qed.
+   *)
+
+  Theorem Recover_noop d :
+    proc_rspec TDLayer
+      (Recover)
+      (Recover)
+      (Recover_spec d (FullySynced)).
+  Proof.
+    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1.
+    { eapply Recover_rok1. }
+    { intros []. eapply Recover_rok1. }
+    { simplify. exists tt. inversion H0; subst; eauto. }
+    { simplify. }
+  Qed.
+
+  Lemma recovery_refines_TD_OD:
+    recovery_refines_crash_step TDLayer ODLayer Impl_TD_OD rd_abstraction.
+  Proof.
+    unfold recovery_refines_crash_step, refines.
+    simpl.
+    intros sO sTb [] ([]&sTa&Hrd&Hrest).
+    destruct Hrest as ([]&sTb'&[]&[]&(?&?)).
+    destruct H.
+    inversion H; subst.
+    * exists tt, sO. split; [ econstructor |].
+      edestruct (Recover_rok1 sO (FullySynced)). eapply H1 in H0.
+      unfold rd_abstraction in *.
+      exists tt, sTb; split; [| econstructor ]; eauto.
+      eapply H0. simplify.
+    * destruct (Recover_noop sO).
+      specialize (H4 sTa sTb tt).
+      unshelve (especialize H4).
+      { unfold rexec. destruct H1 as ([]&?&?).
+        do 2 eexists. split; intuition eauto.
+        do 2 eexists. split; intuition eauto.
+        unfold exec_recover.
+        do 2 eexists. split; intuition eauto.
+      }
+      do 2 eexists. split.
+      econstructor.
+      exists tt. eexists. split; [| econstructor; eauto].
+      edestruct H4. auto.
+      unfold rd_abstraction in *. eauto.
+  Qed.
+
   Lemma Refinement_TD_OD: LayerRefinement TDLayer ODLayer.
   Proof.
     unshelve (econstructor).
     - apply Impl_TD_OD. 
     - exact rd_abstraction.
-    refine {| impl := Impl_TD_OD;
-              absr := rd_abstraction
-           |}.
-    - 
-    econstructor.
-    split.
-   *)
+    - exact compile_refine_TD_OD.
+    - exact recovery_refines_TD_OD.
+    -
+  Abort.
 
 (*
   Theorem init_ok : init_abstraction init recover abstr inited_any.
