@@ -23,3 +23,12 @@ cache:
     - $HOME/.opam
 before_cache:
   - rm -rf $HOME/.opam/log
+
+# note that this disables emails to commit authors
+notifications:
+  email:
+    recipients:
+      - tchajed@mit.edu
+    # these are the defaults
+    on_success: change
+    on_failure: always
