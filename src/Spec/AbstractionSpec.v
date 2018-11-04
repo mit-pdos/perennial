@@ -4,6 +4,7 @@ Require Import Spec.Hoare.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
 Require Import Abstraction.
+Require Import Layer.
 
 Section Abstraction.
   Context (AState CState:Type).
@@ -77,7 +78,7 @@ Section Abstraction.
 
   Lemma proc_rspec_crash_refines_op T (p: proc C_Op T) (rec: proc C_Op unit)
         spec (op: A_Op T):
-    (forall t, proc_rspec c_sem p rec (refine_spec spec t)) ->
+    (forall sA sC, absr sA sC tt -> proc_rspec c_sem p rec (refine_spec spec sA)) ->
     (forall sA sC, absr sA sC tt -> (spec sA).(pre)) ->
     (forall sA sC sA' v, absr sA' sC tt -> (spec sA).(post) sA' v
                          -> (op_cstep_spec a_sem op sA).(post) sA' v) ->
@@ -91,7 +92,7 @@ Section Abstraction.
       unfold spec_exec.
       intros sA sC' t Hl.
       destruct Hl as ([]&sC&?&Hexec).
-      eapply (Hprspec sA) in Hexec.
+      eapply (Hprspec sA) in Hexec; eauto.
       simpl in Hexec. edestruct Hexec as (sA'&?&?); eauto.
       { unfold refine_spec; simpl. split; auto. eapply Hpre; eauto. }
       exists t, sA'; split; auto.
@@ -101,12 +102,68 @@ Section Abstraction.
       unfold spec_aexec.
       intros sA sC' [] Hl.
       destruct Hl as ([]&sC&?&Hexec).
-      eapply (Hprspec sA) in Hexec.
+      eapply (Hprspec sA) in Hexec; eauto.
       simpl in Hexec. edestruct Hexec as (sA'&?&?); eauto.
       { unfold refine_spec; simpl. split; auto. eapply Hpre; eauto. }
       exists tt, sA'; split; auto.
       * intros Hpre'. eapply Halt; eauto.
       * exists tt, sC'; firstorder.
+  Qed.
+
+  Ltac especialize H :=
+    match type of H with
+     |  forall (_ : ?T), _  =>
+        let a := fresh "esp" in
+        evar (a: T);
+        let a' := eval unfold a in a in
+            clear a; specialize (H a')
+    end.
+
+  Lemma proc_rspec_recovery_refines_crash_step (rec: proc C_Op unit) spec:
+    (forall sA, proc_rspec c_sem rec rec (spec sA)) ->
+    (forall sA sC sC', absr sA sC tt -> crash_step c_sem sC sC' tt -> (spec sA sC').(pre)) ->
+    (forall sA sC sCcrash sC',
+        absr sA sC tt -> crash_step c_sem sC sCcrash tt ->
+        ((spec sA sCcrash).(post) sC' tt \/ (spec sA sCcrash).(alternate) sC' tt) ->
+        exists sA', absr sA' sC' tt /\ crash_step a_sem sA sA' tt) ->
+    refines absr (_ <- c_sem.(crash_step); exec_recover c_sem rec) a_sem.(crash_step).
+  Proof.
+    intros Hprspec Hpre Hpost_crash. unfold refines.
+    intros sA sC' [] Hl.
+    destruct Hl as ([]&sC&Habsr&Hstep).
+    destruct Hstep as ([]&sCmid&Hcrash&([]&sCmid'&Hcrash_star&Hrec)).
+    edestruct Hprspec as (Hexec&Haexec); eauto.
+    unfold rexec in Haexec.
+    inversion Hcrash_star; subst.
+    - eapply Hexec in Hrec.
+      edestruct (Hpost_crash sA sC sCmid' sC') as (sA'&Habsr'&Hcrash'); eauto.
+      exists tt, sA'; firstorder.
+    - destruct H as ([]&?&?&?).
+      unshelve (especialize (Haexec sCmid sC' tt)).
+      { repeat (eexists _, _; split; eauto). }
+      edestruct (Hpost_crash sA sC) as (sA'&Habsr'&Hcrash'); eauto.
+      exists tt, sA'; firstorder.
+  Qed.
+
+  Lemma proc_cspec_init_ok (init: proc C_Op InitStatus) (A_initP: AState -> Prop)
+        (C_initP: CState -> Prop) spec:
+    proc_cspec c_sem init spec ->
+    (forall sC, C_initP sC -> (spec sC).(pre)) ->
+    (forall sC sC', (spec sC).(post) sC' Initialized ->
+                    exists sA', absr sA' sC' tt /\ A_initP sA') ->
+    (test C_initP;; exec c_sem init)
+    ---> (any (T := unit);; test A_initP;; absr;; pure Initialized) +
+         (any (T := unit);; pure InitFailed).
+  Proof using C_Op c_sem.
+    clear a_sem A_Op.
+    intros Hproc Hinit_pre Hinit_post.
+    intros sC sC' i ([]&?&(HCinit&<-)&Hexec).
+    unfold any, test.
+    destruct i.
+    - left. edestruct Hinit_post as (sA'&?).
+      { eapply Hproc; eauto. }
+      do 2 (exists tt, sA'; split; intuition). firstorder.
+    - right. exists tt, sC';  do 2 eexists; intuition.
   Qed.
 
 End Abstraction.

@@ -87,34 +87,9 @@ Module ReplicatedDisk.
       Ret InitFailed
     end.
 
-  (*
-  Definition init := then_init td.init init'.
-   *)
-
-
   (**
    * Helper theorems and tactics for proofs.
    *)
-
-  Theorem exists_tuple2 : forall A B (P: A * B -> Prop),
-      (exists a b, P (a, b)) ->
-      (exists p, P p).
-  Proof.
-    intros.
-    repeat deex; eauto.
-  Qed.
-
-  Tactic Notation "eexist_tuple" ident(a) ident(b) :=
-    match goal with
-    | [ |- exists (_:?aT * ?bT), _ ] =>
-      let a := fresh a in
-      let b := fresh b in
-      evar (a : aT);
-      evar (b : bT);
-      exists (a, b);
-      subst a;
-      subst b
-    end.
 
   Tactic Notation "evar_tuple" ident(a) ident(b) :=
     match goal with
@@ -136,9 +111,6 @@ Module ReplicatedDisk.
            | |- _ /\ _ => split; [ | solve [auto] ]
            | |- disk => shelve
            | |- disk*(disk -> Prop) => evar_tuple d F
-           | |- exists (_: disk*(disk -> Prop)), _ => eexist_tuple d F
-           | |- exists (_: disk*disk), _ => eexist_tuple d_0 d_1
-           | |- exists (_: disk*_), _ => apply exists_tuple2
            | _ => progress simpl in *
            | _ => progress safe_intuition
            | _ => progress subst
@@ -161,7 +133,7 @@ Module ReplicatedDisk.
              | _ => fail
              end
            end.
-  
+
   Ltac monad_simpl :=
     repeat match goal with
            | |- proc_cspec _ (Bind (Ret _) _) _ =>
@@ -169,7 +141,7 @@ Module ReplicatedDisk.
            | |- proc_cspec _ (Bind (Bind _ _) _) _ =>
              eapply proc_cspec_expand; [ apply monad_assoc | ]
            end.
-  
+
   Ltac step_proc :=
     intros;
     match goal with
@@ -356,16 +328,6 @@ Module ReplicatedDisk.
 
   Hint Resolve equal_after_diskUpd.
 
-  Ltac especialize H :=
-    match type of H with
-     |  forall (_ : ?T), _  =>
-        let a := fresh "esp" in
-        evar (a: T);
-        let a' := eval unfold a in a in
-            clear a; specialize (H a')
-    end.
-            
-
   Theorem init_at_ok : forall a d_0 d_1,
       proc_cspec TDLayer
         (init_at a)
@@ -478,7 +440,6 @@ Module ReplicatedDisk.
               fun state' _ => True;
          |}).
   Proof.
-    unfold init.
     step.
     spec_intros.
     simpl in H1. repeat deex.
@@ -486,7 +447,32 @@ Module ReplicatedDisk.
     step.
   Qed.
 
-  Hint Resolve init'_ok.
+  Theorem init'_ok_closed:
+    proc_cspec TDLayer
+      (init')
+      (fun state =>
+         {| pre := True;
+            post :=
+              fun state' r =>
+                match r with
+                | Initialized =>
+                  exists d_0' d_1',
+                  disk0 state' ?|= eq d_0' /\
+                  disk1 state' ?|= eq d_1' /\
+                  d_0' = d_1'
+                | InitFailed =>
+                  True
+                end;
+            alternate :=
+              fun state' _ => True;
+         |}).
+  Proof.
+    spec_intros.
+    destruct state0; simplify.
+    - eapply proc_cspec_impl; unfold spec_impl; [| eapply (init'_ok d_0)]; simplify.
+    - eapply proc_cspec_impl; unfold spec_impl; [| eapply (init'_ok d_0 d_0)]; simplify.
+    - eapply proc_cspec_impl; unfold spec_impl; [| eapply (init'_ok d_1)]; simplify.
+  Qed.
 
   (**
    * Recovery implementation.
@@ -1061,11 +1047,11 @@ Module ReplicatedDisk.
   Proof.
     unfold compile_op_refines_step.
     intros T op. destruct op.
-    * eapply proc_rspec_crash_refines_op; [ eapply read_rec_ok |..]; simplify; eauto.
+    * eapply proc_rspec_crash_refines_op; [ intros; eapply read_rec_ok |..]; simplify; eauto.
       econstructor; destruct (diskGet _ _); eauto.
-    * eapply proc_rspec_crash_refines_op; [ eapply write_rec_ok |..]; simplify; eauto.
+    * eapply proc_rspec_crash_refines_op; [ intros; eapply write_rec_ok |..]; simplify; eauto.
       intuition; subst; intuition eauto.
-    * eapply proc_rspec_crash_refines_op; [ eapply size_rec_ok |..]; simplify; eauto.
+    * eapply proc_rspec_crash_refines_op; [ intros; eapply size_rec_ok |..]; simplify; eauto.
   Qed.
 
   Theorem Recover_noop d :
@@ -1084,56 +1070,22 @@ Module ReplicatedDisk.
   Lemma recovery_refines_TD_OD:
     recovery_refines_crash_step TDLayer ODLayer Impl_TD_OD rd_abstraction.
   Proof.
-    unfold recovery_refines_crash_step, refines.
-    simpl.
-    intros sO sTb [] ([]&sTa&Hrd&Hrest).
-    destruct Hrest as ([]&sTb'&[]&[]&(?&?)).
-    destruct H.
-    inversion H; subst.
-    * exists tt, sO. split; [ econstructor |].
-      edestruct (Recover_rok1 sO (FullySynced)). eapply H1 in H0.
-      unfold rd_abstraction in *.
-      exists tt, sTb; split; [| econstructor ]; eauto.
-      eapply H0. simplify.
-    * destruct (Recover_noop sO).
-      specialize (H4 sTa sTb tt).
-      unshelve (especialize H4).
-      { unfold rexec. destruct H1 as ([]&?&?).
-        do 2 eexists. split; intuition eauto.
-        do 2 eexists. split; intuition eauto.
-        unfold exec_recover.
-        do 2 eexists. split; intuition eauto.
-      }
-      do 2 eexists. split.
-      econstructor.
-      exists tt. eexists. split; [| econstructor; eauto].
-      edestruct H4. auto.
-      unfold rd_abstraction in *. eauto.
+    unfold recovery_refines_crash_step.
+    eapply proc_rspec_recovery_refines_crash_step; [ eapply Recover_noop|..];
+      unfold rd_abstraction; simplify; inversion H0; subst; finish.
   Qed.
 
   Lemma Refinement_TD_OD: LayerRefinement TDLayer ODLayer.
   Proof.
     unshelve (econstructor).
-    - apply Impl_TD_OD. 
+    - apply Impl_TD_OD.
     - exact rd_abstraction.
     - exact compile_refine_TD_OD.
     - exact recovery_refines_TD_OD.
-    - intros sT1 sT2 i Hl.
-      edestruct Hl as ([]&?&?&?).
-      destruct Hl as ([]&?&?&?).
-      destruct H1 as ((d1&d2&(?&?))&<-).
-      edestruct (init'_ok d1 d2) as (Hexec&Hcrash).
-      eapply Hexec in H0.
-      destruct H as (?&<-).
-      clear -H0 H1 H3. unfold spec_exec in H0. simpl in H0.
-      destruct i.
-      * left. destruct H0 as (d0'&d1'&?&?&?); subst;  intuition.
-        exists tt. eexists. split; eauto; swap 1 2.
-        { eexists tt. eexists d1'. split.
-            split; eauto. econstructor.
-            exists tt. eexists. split; simpl; split; eauto. }
-        econstructor.
-      * right. exists tt. exists sT2. split; econstructor; eauto.
+    - eapply proc_cspec_init_ok; unfold rd_abstraction.
+      { eapply init'_ok_closed. }
+      { simplify. }
+      { simplify; firstorder. }
   Qed.
 
 End ReplicatedDisk.
