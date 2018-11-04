@@ -1,0 +1,24 @@
+dist: trusty
+sudo: required
+language: generic
+
+# set up ocaml and opam
+before_install:
+  - sh <(curl -sL https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-ocaml.sh)
+env:
+  global:
+    - OCAML_VERSION=4.06
+    - OPAM_VERSION=2.0.0
+  env:
+    - COQ_VERSION=master
+
+install:
+  - opam pin add -y coq "https://github.com/coq/coq.git#$COQ_VERSION"
+script: make test
+
+# cache opam-built compiler and packages
+cache:
+  directories:
+    - $HOME/.opam
+before_cache:
+  - rm -rf $HOME/.opam/log
