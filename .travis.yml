@@ -5,6 +5,7 @@ language: generic
 # set up ocaml and opam
 before_install:
   - sh <(curl -sL https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-ocaml.sh)
+  - eval $(opam config env)
 env:
   global:
     - OCAML_VERSION=4.06
