@@ -15,23 +15,6 @@ Section Abstraction.
              (spec: relation AState AState T) :=
     absr;; p ---> v <- spec; absr;; pure v.
 
-  (* define refinement as transforming an abstract specification to a concrete
-  one (a program satisfying the abstract spec should satisfy the concrete spec
-  after refinement-preserving compilation) *)
-  Definition refine_spec
-             A T R
-             (spec: A -> Specification T R AState)
-    : (AState*A) -> Specification T R CState :=
-    fun '(s, a) cs =>
-      {| pre := absr s cs tt /\
-                (spec a s).(pre);
-         post := fun cs' r =>
-                   exists s', absr s' cs' tt /\
-                         (spec a s).(post) s' r;
-         alternate := fun cs' r =>
-                        exists s', absr s' cs' tt /\
-                              (spec a s).(alternate) s' r; |}.
-
   Section Dynamics.
     Context C_Op (c_sem: Dynamics C_Op CState).
     Notation c_proc := (proc C_Op).

@@ -21,8 +21,8 @@ Inductive one_disk_op_step : OpSemantics OneDiskOp State :=
 | step_size : forall state,
     one_disk_op_step (op_size) state state (diskSize state).
 
-Definition read_spec (a : addr) : _ -> Specification block unit State :=
-  fun (_ : unit) state => {|
+Definition read_spec (a : addr) : Specification block unit State :=
+  fun state => {|
     pre := True;
     post := fun state' r =>
       state' = state /\
@@ -31,8 +31,8 @@ Definition read_spec (a : addr) : _ -> Specification block unit State :=
       state' = state
   |}.
 
-Definition write_spec (a : addr) (v : block) : _ -> Specification _ unit State :=
-  fun (_ : unit) state => {|
+Definition write_spec (a : addr) (v : block) : Specification _ unit State :=
+  fun state => {|
     pre := True;
     post := fun state' r =>
       r = tt /\ state' = diskUpd state a v;
@@ -40,8 +40,8 @@ Definition write_spec (a : addr) (v : block) : _ -> Specification _ unit State :
       state' = state \/ state' = diskUpd state a v
   |}.
 
-Definition size_spec : _ -> Specification nat unit State :=
-  fun (_ : unit) state => {|
+Definition size_spec : Specification nat unit State :=
+  fun state => {|
     pre := True;
     post := fun state' r =>
       state' = state /\ r = diskSize state;

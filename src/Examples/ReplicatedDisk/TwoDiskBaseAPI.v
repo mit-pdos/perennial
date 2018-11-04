@@ -190,17 +190,17 @@ Module TwoDiskBaseImpl <: TwoDiskBaseAPI.
   Lemma read_ok :
     forall i a,
       proc_cspec TDBaseDynamics (read i a) (op_spec TDBaseDynamics (op_read i a)).
-  Proof. intros. eapply op_spec_correct. Qed.
+  Proof. intros. eapply op_spec_sound. Qed.
 
   Lemma write_ok :
     forall i a b,
       proc_cspec TDBaseDynamics (write i a b) (op_spec TDBaseDynamics (op_write i a b)).
-  Proof. intros. eapply op_spec_correct. Qed.
+  Proof. intros. eapply op_spec_sound. Qed.
 
   Lemma size_ok :
     forall i,
       proc_cspec TDBaseDynamics (size i) (op_spec TDBaseDynamics (op_size i)).
-  Proof. intros. eapply op_spec_correct. Qed.
+  Proof. intros. eapply op_spec_sound. Qed.
 
   Hint Resolve init_ok.
   Hint Resolve read_ok.

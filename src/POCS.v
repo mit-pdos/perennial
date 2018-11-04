@@ -9,6 +9,7 @@ Require Export Spec.Proc.
 Require Export Spec.ProcTheorems.
 Require Export Spec.Hoare.
 Require Export Spec.Abstraction.
+Require Export Spec.AbstractionSpec.
 Require Export Spec.Layer.
 
 Export ProcNotations.

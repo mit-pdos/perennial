@@ -44,6 +44,18 @@ Definition op_spec `(sem: Dynamics Op State) `(op : Op T) : Specification T unit
           r = tt /\ (state' = state \/ exists v, sem.(step) op state state' v);
     |}.
 
+Definition op_cstep_spec `(sem: Dynamics Op State) `(op : Op T) : Specification T unit State :=
+  fun state =>
+    {|
+      pre := True;
+      post :=
+        fun state' v => sem.(step) op state state' v;
+      alternate :=
+        fun state' r =>
+          r = tt /\ (sem.(crash_step) state state' r
+                     \/ exists smid v, sem.(step) op state smid v
+                                       /\ sem.(crash_step) smid state' r);
+    |}.
 
 Section Hoare.
   Context `(sem: Dynamics Op State).
@@ -358,29 +370,7 @@ Section Hoare.
     split; intros s s' r Hexec Hpre; eapply H; simpl; eauto using tt.
   Qed.
 
-  (*
-  Theorem op_spec_correct T (op: Op T) rec (* (wipe: State -> State -> Prop) *):
-    rec_noop rec eq ->
-    proc_rspec (Prim op) rec (op_spec sem op).
-  Proof.
-    unfold proc_rspec; intros Hnoop; split.
-    - intros state state' t Hexec a Hpre; eauto.
-    - unfold rexec, spec_aexec.
-      simpl. rewrite bind_dist_r. apply rel_or_elim.
-      * destruct (Hnoop _ tt) as (?&->).
-        intros s s' [] Hl a Hpre. specialize (Hl tt).
-        split; eauto. intuition.
-      * rewrite bind_assoc.
-        destruct (Hnoop _ tt) as (?&Hr).
-        setoid_rewrite Hr.
-        unfold spec_aexec.
-        intros s s' [] Hl a Hpre.
-        inversion Hl as (?&?&?&Hrest). specialize (Hrest tt I). split; eauto.
-        right.  eexists; eauto. simpl in Hrest. subst. eauto.
-  Qed.
-   *)
-
-  Theorem op_spec_correct T (op: Op T):
+  Theorem op_spec_sound T (op: Op T):
     proc_cspec (Prim op) (op_spec sem op).
   Proof.
     unfold proc_cspec; split.
@@ -392,6 +382,19 @@ Section Hoare.
         inversion Hl as (?&?&?&Hrest). inversion Hrest; subst.
         firstorder.
   Qed.
+
+  Theorem op_spec_complete T (op: Op T):
+    spec_exec (op_spec sem op) ---> exec (Prim op) /\
+    spec_aexec (op_spec sem op) ---> exec_crash (Prim op).
+  Proof. split; firstorder. Qed.
+
+  Theorem op_cstep_spec_complete1 T (op: Op T):
+    spec_exec (op_cstep_spec sem op) ---> exec (Prim op).
+  Proof. firstorder. Qed.
+
+  Theorem op_cstep_spec_complete2 T (op: Op T):
+    spec_aexec (op_cstep_spec sem op) ---> crash_step + (sem.(step) op;; crash_step).
+  Proof. firstorder. Qed.
 
   Lemma spec_aexec_cancel T R1 R2 (spec1 : Specification T R1 State)
           (spec2: Specification T R2 State) (r: relation State State R2) :

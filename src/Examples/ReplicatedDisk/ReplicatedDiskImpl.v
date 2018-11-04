@@ -157,6 +157,7 @@ Module ReplicatedDisk.
              descend; (intuition eauto);
              lazymatch goal with
              | |- proc_cspec _ _ _ => idtac
+             | |- proc_rspec _ _ _ _ => idtac
              | _ => fail
              end
            end.
@@ -970,88 +971,62 @@ Module ReplicatedDisk.
       ** simplify. exists (try_recv). simplify; finish.
   Qed.
 
-  (*
-  Hint Resolve Recover_spec_idempotent_crash_step2.
-   *)
-
-  (* TODO: not sure this is the right level to prove this looping lemma *)
-  (* This proof combines your proof that recovery is correct and that its
-  specification is idempotent to show recovery is correct even if re-run on
-  every crash. *)
-  (*
-  Theorem Recover_ok :
-    proc_loopspec
-      Recover_spec
-      (Recover)
-      td.recover
-      td.abstr.
-  Proof.
-    eapply idempotent_loopspec; simpl.
-    - apply Recover_rok.
-    - apply Recover_spec_idempotent.
-  Qed.
-   *)
-
-  (*
-  Hint Resolve Recover_rok.
-   *)
-
-
   (* As the final step in giving the correctness of the replicated disk
   operations, we prove recovery specs that include the replicated disk Recover
   function. *)
 
-  Definition rd_abstraction (d:OneDiskAPI.State) (state: TwoDiskBaseAPI.State)  (_ :unit) : Prop :=
+  Definition rd_abstraction (d:OneDiskAPI.State) (state: TwoDiskBaseAPI.State) (u: unit) : Prop :=
     disk0 state ?|= eq d /\
     disk1 state ?|= eq d.
 
   Theorem read_rec_ok :
-    forall a du, proc_rspec TDLayer (read a) Recover (refine_spec rd_abstraction (read_spec a) du).
+    forall a d, proc_rspec TDLayer (read a) Recover (refine_spec rd_abstraction (read_spec a) d).
   Proof.
-    intros a (d&[]).
-    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1. 
+    intros a d.
+    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1;
+      unfold refine_spec, rd_abstraction in *.
     - intros []. eapply Recover_rok1.
-    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
-    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
+    - descend; simplify; intuition eauto.
+    - descend; simplify; intuition eauto.
       exists tt. inversion H0. subst; intuition eauto.
     - simplify. exists d; split; eauto.
-      unfold rd_abstraction in *; descend; simplify; intuition eauto.
   Qed.
 
   Theorem write_rec_ok :
-    forall a b du, proc_rspec TDLayer (write a b)
-                              Recover (refine_spec rd_abstraction (write_spec a b) du).
+    forall a b d, proc_rspec TDLayer (write a b)
+                             Recover (refine_spec rd_abstraction (write_spec a b) d).
   Proof.
-    intros a b (d&[]).
-    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step2. 
+    intros a b d.
+    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step2;
+      unfold refine_spec, rd_abstraction in *.
     - intros. eapply Recover_rok2.
-    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
-    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto;
+    - descend; simplify; intuition eauto.
+    - descend; simplify; intuition eauto;
        inversion H0; subst.
       * exists (stable_sync); simplify; finish.
       * exists (stable_out); simplify; finish.
       * assert (a < diskSize d \/ a >= diskSize d) as [Hlt|Hoob] by omega.
         ** exists (try_recv); simplify; finish.
         ** exists (stable_sync); simplify; finish.
-    - unfold rd_abstraction in *; simplify. destruct a0.
-      * destruct H0. exists d. simplify; finish.
-      * destruct H0.
-           *** exists d. simplify; finish.
-           *** exists (diskUpd d a b); simplify; finish.
-      * destruct H0; exists (diskUpd d a b); simplify; finish.
+    - unfold rd_abstraction in *; simplify. destruct a0, H0.
+      * exists d. simplify; finish.
+      * exists d. simplify; finish.
+      * exists (diskUpd d a b); simplify; finish.
+      * exists (diskUpd d a b); simplify; finish.
+      * exists (diskUpd d a b); simplify; finish.
   Qed.
 
   Theorem size_rec_ok :
-    forall du, proc_rspec TDLayer (size) Recover (refine_spec rd_abstraction (size_spec) du).
+    forall d, proc_rspec TDLayer (size) Recover (refine_spec rd_abstraction (size_spec) d).
   Proof.
-    intros (d&[]).
-    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1.
+    intros d.
+    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1;
+      unfold refine_spec, rd_abstraction in *.
     - intros. eapply Recover_rok1.
-    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
-    - unfold refine_spec, rd_abstraction in *; descend; simplify; intuition eauto.
+    - descend; simplify; intuition eauto.
+    - descend; simplify; intuition eauto.
       exists tt. inversion H0. subst; intuition eauto.
     - simplify. exists d; split; eauto.
-      unfold rd_abstraction in *; descend; simplify; intuition eauto.
   Qed.
 
   Hint Resolve read_rec_ok size_rec_ok write_rec_ok.
@@ -1069,89 +1044,29 @@ Module ReplicatedDisk.
        init := init';
        Layer.recover := Recover |}.
 
-  Lemma proc_rspec_refine_exec Op (L: Layer Op) AState A T R (p: proc Op T) (rec: proc Op R)
-        spec abstr x:
-    (forall (t: AState * A), proc_rspec L p rec (refine_spec abstr spec t)) ->
-    (forall sO sT, abstr sO sT tt -> (spec x sO).(pre)) ->
-    _ <- abstr; exec L p ---> v <- spec_exec (spec x); _ <- abstr; pure v.
-  Proof.
-    intros Hprspec Habstr_pre.
-    intros sO sT b ([]&sTstart&Hrd&Hexec).
-    destruct (Hprspec (sO, x)).
-    eapply H in Hexec. simpl in Hexec.
-    clear -Hrd Hexec Habstr_pre.
-    edestruct Hexec; eauto. simpl. intuition; eauto.
-    do 2 eexists; intuition.
-    simplify. intros ?. simplify. finish.
-    do 2 eexists. split; eauto. finish. unfold pure; auto.
-  Qed.
 
-  Lemma proc_rspec_refine_rec Op (L: Layer Op) AState A T R (p: proc Op T) (rec: proc Op R)
-        spec abstr x:
-    (forall (t: AState * A), proc_rspec L p rec (refine_spec abstr spec t)) ->
-    (forall sO sT, abstr sO sT tt -> (spec x sO).(pre)) ->
-    _ <- abstr; rexec L p rec ---> v <- spec_aexec (spec x); _ <- abstr; pure v.
-  Proof.
-    intros Hprspec Habstr_pre.
-    intros sO sT b ([]&sTstart&Hrd&Hexec).
-    destruct (Hprspec (sO, x)).
-    eapply H0 in Hexec. simpl in Hexec.
-    clear -Hrd Hexec Habstr_pre.
-    edestruct Hexec; eauto. simpl. intuition; eauto.
-    do 2 eexists; intuition.
-    simplify. intros ?. simplify. finish.
-    do 2 eexists. split; eauto. finish. unfold pure; auto.
-  Qed.
-
-  Lemma proc_rspec_crash_refines Op1 Op2 (L: Layer Op1) (O: Layer Op2)
-            A T (p: proc Op1 T) (rec: proc Op1 unit)
-        spec abstr x op:
-    (forall (t: _ * A), proc_rspec L p rec (refine_spec abstr spec t)) ->
-    (forall sO sT, abstr sO sT tt -> (spec x sO).(pre)) ->
-    (spec_exec (spec x) ---> exec O (Prim op)) ->
-    (spec_aexec (spec x) ---> O.(crash_step) + (_ <- O.(step) op; O.(crash_step))) ->
-    crash_refines abstr L p rec (O.(step) op)
-                  (O.(crash_step) + (_ <- O.(step) op; O.(crash_step))).
-  Proof.
-    intros ?? He Ha. unfold crash_refines, refines. split.
-    - setoid_rewrite <-He. eapply proc_rspec_refine_exec; eauto.
-    - setoid_rewrite <-Ha. eapply proc_rspec_refine_rec; eauto.
-  Qed.
+  Lemma one_disk_failure_id x:
+    one_disk_failure x x tt.
+  Proof. econstructor. Qed.
 
   Lemma one_disk_failure_id_l r x:
     (one_disk_failure + r)%rel x x tt.
   Proof. left. econstructor. Qed.
 
-  Hint Resolve one_disk_failure_id_l.
+  Hint Resolve one_disk_failure_id one_disk_failure_id_l.
+  Hint Constructors one_disk_op_step.
 
   Lemma compile_refine_TD_OD:
     compile_op_refines_step TDLayer ODLayer Impl_TD_OD rd_abstraction.
   Proof.
     unfold compile_op_refines_step.
-    intros T op. destruct op;
-    unshelve (eapply proc_rspec_crash_refines; simpl; eauto); eauto using tt;
-      simplify; unfold spec_exec, spec_aexec; intros ????; simplify.
-    * econstructor; destruct (diskGet _ _); eauto.
-    * do 2 econstructor.
-    * intuition; subst; eauto.
-      right. econstructor. subst. eexists. split; [| econstructor]. econstructor; auto.
-    * econstructor.
+    intros T op. destruct op.
+    * eapply proc_rspec_crash_refines_op; [ eapply read_rec_ok |..]; simplify; eauto.
+      econstructor; destruct (diskGet _ _); eauto.
+    * eapply proc_rspec_crash_refines_op; [ eapply write_rec_ok |..]; simplify; eauto.
+      intuition; subst; intuition eauto.
+    * eapply proc_rspec_crash_refines_op; [ eapply size_rec_ok |..]; simplify; eauto.
   Qed.
-
-  (*
-  Theorem Recover_noop1 d :
-    proc_rspec TDLayer
-      (Ret tt)
-      (Recover)
-      (Recover_spec d (FullySynced)).
-  Proof.
-    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1.
-    { step. }
-    { intros []. eapply Recover_rok1. }
-    { simplify. exists tt. inversion H0; subst; eauto. }
-    { simplify. }
-  Qed.
-   *)
 
   Theorem Recover_noop d :
     proc_rspec TDLayer
