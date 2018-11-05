@@ -73,6 +73,9 @@ Definition blockbytes := 1024.
 Definition block := bytes blockbytes.
 Definition block0 : block := bytes0 _.
 
+Instance bytes_default n : Default (bytes n) := bytes0 n.
+Instance block_default : Default block := _.
+
 (** Mark [blockbytes] as opaque so that Coq doesn't expand it too eagerly.
   *)
 
