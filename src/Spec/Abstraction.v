@@ -1,3 +1,5 @@
+From Tactical Require Import Propositional.
+
 Require Import Spec.Proc.
 Require Import Spec.Hoare.
 
@@ -14,6 +16,38 @@ Section Abstraction.
              (p: relation CState CState T)
              (spec: relation AState AState T) :=
     absr;; p ---> v <- spec; absr;; pure v.
+
+  Theorem refine_unfolded T
+          (p: relation CState CState T)
+          (spec: relation AState AState T) :
+    (forall s s__a, absr s__a s tt ->
+             forall s' v, p s s' v ->
+                     exists s__a', spec s__a s__a' v /\
+                            absr s__a' s' tt) ->
+    refines p spec.
+  Proof.
+    unfold refines, rimpl, and_then, pure; propositional.
+    destruct o1.
+    eapply H in H0; eauto; propositional.
+    eauto 10.
+  Qed.
+
+  (* define refinement as transforming an abstract specification to a concrete
+  one (a program satisfying the abstract spec should satisfy the concrete spec
+  after refinement-preserving compilation) *)
+  Definition refine_spec
+             A T R
+             (spec: A -> Specification T R AState)
+    : (AState*A) -> Specification T R CState :=
+    fun '(s, a) cs =>
+      {| pre := absr s cs tt /\
+                (spec a s).(pre);
+         post := fun cs' r =>
+                   exists s', absr s' cs' tt /\
+                         (spec a s).(post) s' r;
+         alternate := fun cs' r =>
+                        exists s', absr s' cs' tt /\
+                              (spec a s).(alternate) s' r; |}.
 
   Section Dynamics.
     Context C_Op (c_sem: Dynamics C_Op CState).

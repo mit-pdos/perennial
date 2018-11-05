@@ -2,6 +2,7 @@ From Coq Require Import List.
 
 Require Import RecoveryRefinement.POCS.
 Require Import Spec.WeakestPreconditions.
+Require Import Spec.WpRefine.
 
 Import RelationNotations.
 Require Import Helpers.RelationRewriting.
@@ -68,11 +69,11 @@ Definition impl : LayerImpl Var.Op DB.Op :=
   {| compile_op T (op: DB.Op T) :=
        match op with
        | DB.Add n =>
-         (sum <- read Var.Sum; _ <- write Var.Sum (sum + n)%nat;
+         (sum <- read Var.Sum; _ <- write Var.Sum (n + sum)%nat;
        count <- read Var.Count; _ <- write Var.Count (1 + count)%nat;
        Ret tt)%proc
        | DB.Avg =>
-         (sum <- read Var.Sum; count <- read Var.Count; Ret (sum+count)%nat)%proc
+         (sum <- read Var.Sum; count <- read Var.Count; Ret (sum/count)%nat)%proc
        end;
      recover := Ret tt;
      init := Ret Initialized; |}.
@@ -82,18 +83,17 @@ Definition absr : relation DB.l.(State) Var.l.(State) unit :=
     fst s = fold_right plus 0 l /\
     snd s = length l.
 
-Definition op_wp T (op: Var.Op T) : precondition Var.State T :=
-    match op with
-    | Var.Read i => fun post s => post (Var.get i s) s
-    | Var.Write i v => fun post s => post tt (Var.set i v s)
-    end.
-
-Theorem op_wp_is_ok : op_wp_ok Var.dynamics op_wp.
+Definition wp : WPSetup Var.dynamics.
 Proof.
+  refine {| op_wp T (op: Var.Op T) :=
+              match op with
+              | Var.Read i => fun post s => post (Var.get i s) s
+              | Var.Write i v => fun post s => post tt (Var.set i v s)
+              end |}.
   hnf; intros.
   destruct op; simpl in *; unfold reads, puts in *; propositional.
   destruct v; eauto.
-Qed.
+Defined.
 
 Definition rf : LayerRefinement Var.l DB.l.
 Proof.
@@ -101,9 +101,20 @@ Proof.
             Layer.absr := absr; |}.
   - red; intros.
     split.
-    + admit. (* exec refinement of impls *)
-    + admit. (* rexec refinement of impls *)
+    + eapply (wp.(wp_refine)); intros.
+      destruct s as [sum' count'].
+      unfold absr in H; simpl in *; propositional.
+      destruct op; simpl.
+      * (* read *)
+        unfold puts; descend; intuition eauto.
+        unfold absr; simpl; intuition eauto.
+      * unfold reads; descend; intuition eauto.
+        unfold absr; intuition eauto.
+    + admit. (* rexec refinement *)
   - red; intros.
+    eapply refine_unfolded; unfold absr; propositional.
+    destruct s as [sum count]; simpl in *; propositional.
+    destruct v.
     admit. (* recovery transfers crash step *)
   - (* initialize abstraction *) simpl.
     Left.
