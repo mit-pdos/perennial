@@ -1,8 +1,8 @@
 Require Import POCS.
 
-Require Import TwoDiskAPI.
 Require Import OneDiskAPI.
-Require TwoDiskImpl.
+Require Import TwoDiskAPI.
+Require Import TwoDiskTheorems.
 
 (**
 ReplicatedDisk provides a single-disk API on top of two disks, handling disk
@@ -12,7 +12,12 @@ failures with replication.
 
 Module ReplicatedDisk.
 
-  Module td : TwoDiskAPI := TwoDiskImpl.TwoDisk(TwoDiskBaseImpl).
+  Import TwoDiskAPI.TwoDisk.
+
+  (* We will be defining procedures called 'read', 'write', etc., so it's 
+     useful to introduce a shorthand for TwoDiskAPI to be able to refer back
+     to the TwoDisk primitive definitions *)
+  Module td := TwoDiskAPI.
 
   Import ProcNotations EqualDecNotation.
   Open Scope proc_scope.
@@ -179,7 +184,7 @@ Module ReplicatedDisk.
    * implementations from recovery behavior.
    *)
 
-  Theorem both_disks_not_missing : forall (state: TwoDiskBaseAPI.State),
+  Theorem both_disks_not_missing : forall (state: State),
       disk0 state ?|= missing ->
       disk1 state ?|= missing ->
       False.
@@ -189,14 +194,14 @@ Module ReplicatedDisk.
 
   Hint Resolve both_disks_not_missing : false.
 
-  Theorem missing0_implies_any : forall (state: TwoDiskBaseAPI.State) P,
+  Theorem missing0_implies_any : forall (state: State) P,
       disk0 state ?|= missing ->
       disk0 state ?|= P.
   Proof.
     destruct state; unfold missing; simpl; intuition auto.
   Qed.
 
-  Theorem missing1_implies_any : forall (state: TwoDiskBaseAPI.State) P,
+  Theorem missing1_implies_any : forall (state: State) P,
       disk1 state ?|= missing ->
       disk1 state ?|= P.
   Proof.
@@ -205,6 +210,7 @@ Module ReplicatedDisk.
 
   Hint Resolve missing0_implies_any.
   Hint Resolve missing1_implies_any.
+  Hint Resolve read_ok write_ok size_ok.
 
   Theorem read_int_ok : forall a d,
       proc_cspec TDLayer
@@ -836,7 +842,7 @@ Module ReplicatedDisk.
 
   Hint Resolve recover_at_ok.
 
-  Definition Recover_spec : _ -> _ -> Specification unit unit TwoDiskBaseAPI.State :=
+  Definition Recover_spec : _ -> _ -> Specification unit unit State :=
     fun d s state =>
       {|
         pre :=
@@ -961,12 +967,13 @@ Module ReplicatedDisk.
   operations, we prove recovery specs that include the replicated disk Recover
   function. *)
 
-  Definition rd_abstraction (d:OneDiskAPI.State) (state: TwoDiskBaseAPI.State) (u: unit) : Prop :=
+  Definition rd_abstraction (d:OneDisk.State) (state: State) (u: unit) : Prop :=
     disk0 state ?|= eq d /\
     disk1 state ?|= eq d.
 
   Theorem read_rec_ok :
-    forall a d, proc_rspec TDLayer (read a) Recover (refine_spec rd_abstraction (read_spec a) d).
+    forall a d, proc_rspec TDLayer (read a) Recover
+                           (refine_spec rd_abstraction (OneDiskAPI.read_spec a) d).
   Proof.
     intros a d.
     eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1;
@@ -979,8 +986,8 @@ Module ReplicatedDisk.
   Qed.
 
   Theorem write_rec_ok :
-    forall a b d, proc_rspec TDLayer (write a b)
-                             Recover (refine_spec rd_abstraction (write_spec a b) d).
+    forall a b d, proc_rspec TDLayer (write a b) Recover
+                             (refine_spec rd_abstraction (OneDiskAPI.write_spec a b) d).
   Proof.
     intros a b d.
     eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step2;
@@ -1003,7 +1010,8 @@ Module ReplicatedDisk.
   Qed.
 
   Theorem size_rec_ok :
-    forall d, proc_rspec TDLayer (size) Recover (refine_spec rd_abstraction (size_spec) d).
+    forall d, proc_rspec TDLayer (size) Recover
+                         (refine_spec rd_abstraction (OneDiskAPI.size_spec) d).
   Proof.
     intros d.
     eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1;
@@ -1020,30 +1028,30 @@ Module ReplicatedDisk.
   Import Helpers.RelationAlgebra.
   Import RelationNotations.
 
-  Definition Impl_TD_OD: LayerImpl Op OneDiskOp :=
-    {| compile_op := fun (T : Type) (op : OneDiskOp T) =>
-                       match op in (OneDiskOp T0) return (proc Op T0) with
-                       | op_read a => read a
-                       | op_write a b => write a b
-                       | op_size => size
+  Definition Impl_TD_OD: LayerImpl Op OneDisk.Op :=
+    {| compile_op := fun (T : Type) (op : OneDisk.Op T) =>
+                       match op in (OneDisk.Op T0) return (proc Op T0) with
+                       | OneDisk.op_read a => read a
+                       | OneDisk.op_write a b => write a b
+                       | OneDisk.op_size => size
                        end;
        init := init';
        Layer.recover := Recover |}.
 
 
   Lemma one_disk_failure_id x:
-    one_disk_failure x x tt.
+    OneDisk.one_disk_failure x x tt.
   Proof. econstructor. Qed.
 
   Lemma one_disk_failure_id_l r x:
-    (one_disk_failure + r)%rel x x tt.
+    (OneDisk.one_disk_failure + r)%rel x x tt.
   Proof. left. econstructor. Qed.
 
   Hint Resolve one_disk_failure_id one_disk_failure_id_l.
-  Hint Constructors one_disk_op_step.
+  Hint Constructors OneDisk.op_step.
 
   Lemma compile_refine_TD_OD:
-    compile_op_refines_step TDLayer ODLayer Impl_TD_OD rd_abstraction.
+    compile_op_refines_step TDLayer OneDisk.ODLayer Impl_TD_OD rd_abstraction.
   Proof.
     unfold compile_op_refines_step.
     intros T op. destruct op.
@@ -1068,14 +1076,14 @@ Module ReplicatedDisk.
   Qed.
 
   Lemma recovery_refines_TD_OD:
-    recovery_refines_crash_step TDLayer ODLayer Impl_TD_OD rd_abstraction.
+    recovery_refines_crash_step TDLayer OneDisk.ODLayer Impl_TD_OD rd_abstraction.
   Proof.
     unfold recovery_refines_crash_step.
     eapply proc_rspec_recovery_refines_crash_step; [ eapply Recover_noop|..];
       unfold rd_abstraction; simplify; inversion H0; subst; finish.
   Qed.
 
-  Lemma Refinement_TD_OD: LayerRefinement TDLayer ODLayer.
+  Lemma Refinement_TD_OD: LayerRefinement TDLayer OneDisk.ODLayer.
   Proof.
     unshelve (econstructor).
     - apply Impl_TD_OD.
