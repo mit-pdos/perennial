@@ -115,7 +115,7 @@ Defined.
 
 Definition add_addr (ds:Descriptor) (idx:nat) (a:addr) : Descriptor.
   refine {| addresses := assign ds.(addresses) idx a; |}.
-  rewrite assign_length.
+  rewrite length_assign.
   apply ds.(addresses_length).
 Defined.
 
