@@ -30,7 +30,7 @@ Record LogHdr :=
 
 Record Descriptor :=
   { addresses: list addr;
-    (* TODO: restrict addrs to be < 2^256 (-258) *)
+    (* TODO: restrict addrs to be < 2^32 for encoding in one block *)
     addresses_length:
       length addresses = LOG_LENGTH; }.
 
