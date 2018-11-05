@@ -58,11 +58,11 @@ Proof.
     inversion H; congruence.
 Qed.
 
-Class Inhabited T := witness : T.
+Class Default T := default : T.
 (* should address most instances *)
-Hint Extern 0 (Inhabited _) => unfold Inhabited; constructor : typeclass_instances.
+Hint Extern 0 (Default _) => unfold Default; constructor : typeclass_instances.
 
-Instance unit_inhabited : Inhabited unit.
+Instance unit_inhabited : Default unit.
 Proof.
   typeclasses eauto.
 Qed.

@@ -229,7 +229,7 @@ Section OutputRelations.
     t.
   Qed.
 
-  Theorem bind_identity A B T1 T2 (r: relation A B T2) (_:Inhabited T1) :
+  Theorem bind_identity A B T1 T2 (r: relation A B T2) (_:Default T1) :
     (_ <- identity (T:=T1); r) <---> r.
   Proof.
     t.
