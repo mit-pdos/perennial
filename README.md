@@ -6,7 +6,7 @@ Proving crash safety of systems by proving an implementation refines a specifica
 
 ## Compiling
 
-We stick to the master branch of Coq, which is currently the unreleased v8.9 beta. The latest stable release will often work but sometimes there are incompatibilities, in which case we'll stay compatible with Coq `master`.
+We stick to the master branch of Coq, which is currently v8.10. Unfortunately there's an incompatibility and we're sticking with warning-free code compatible with Coq master.
 
 This project uses a git submodule to include [Tactical](https://github.com/tchajed/coq-tactical) as a dependency. You can either use `git clone --recurse-submodules` or (after cloning) `git submodule --init --recursive` to set that up.
 
