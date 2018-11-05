@@ -114,7 +114,7 @@ Definition add_addr (ds:Descriptor) (idx:nat) (a:addr) : Descriptor.
   apply ds.(addresses_length).
 Defined.
 
-(* reads just go directly to the log *)
+(* reads just go directly to the data region *)
 Definition log_read a :=
   read (2+LOG_LENGTH + a).
 
@@ -148,7 +148,7 @@ when [committed := true] and always have i < hdr.(log_length). *)
 Definition apply_at desc (i:nat) :=
   v <- read (1+i);
     let a := sel desc.(addresses) i in
-    write a v.
+    write (2+LOG_LENGTH+a) v.
 
 (* [apply_upto] applies entries i through (len-1) from the log; if it crashes, the
 log is still partially applied (and it doesn't much matter how much, since
