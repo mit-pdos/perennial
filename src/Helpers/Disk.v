@@ -52,33 +52,12 @@ Existing Instance bytes_dec.
   *)
 
 Axiom bytes0 : forall n, bytes n.
-Axiom bytes1 : forall n, bytes n.
-Axiom bytes_differ : forall n, n > 0 -> bytes0 n <> bytes1 n.
-
-Definition bnull : bytes 0 := bytes0 0.
-
-Axiom bappend : forall n1 n2, bytes n1 -> bytes n2 -> bytes (n1+n2).
-Axiom bsplit : forall n1 n2, bytes (n1+n2) -> bytes n1 * bytes n2.
-Arguments bsplit {n1 n2} bs.
-
-Axiom bsplit_bappend : forall n1 n2 (b1 : bytes n1) (b2 : bytes n2), bsplit (bappend b1 b2) = (b1, b2).
-
-Fixpoint bsplit_list {n} {m} : bytes (n * m) -> list (bytes m) :=
-  match n with
-  | O => fun _ => nil
-  | S n' => fun (bs : bytes ((S n') * m)) =>
-    let (this, rest) := bsplit bs in
-    this :: bsplit_list rest
-  end.
 
 Extraction Language Haskell.
 
 Extract Constant bytes => "Data.ByteString.ByteString".
 Extract Constant bytes_dec => "(\n b1 b2 -> b1 Prelude.== b2)".
 Extract Constant bytes0 => "(\n -> Data.ByteString.replicate (Prelude.fromIntegral n) 0)".
-
-Extract Constant bappend => "(\_ _ bs1 bs2 -> Data.ByteString.append bs1 bs2)".
-Extract Constant bsplit => "(\n1 _ bs -> Data.ByteString.splitAt (Prelude.fromIntegral n1) bs)".
 
 
 (** * Model of blocks.
@@ -93,16 +72,6 @@ Definition blockbytes := 1024.
 
 Definition block := bytes blockbytes.
 Definition block0 : block := bytes0 _.
-Definition block1 : block := bytes1 _.
-
-Theorem block0_block1_differ : block0 <> block1.
-Proof.
-  apply bytes_differ.
-  unfold blockbytes.
-  omega.
-Qed.
-
-Hint Resolve block0_block1_differ.
 
 (** Mark [blockbytes] as opaque so that Coq doesn't expand it too eagerly.
   *)
@@ -165,14 +134,6 @@ Fixpoint diskUpd d (a: addr) b : disk :=
     | S a' => db :: diskUpd drest a' b
     end
   end.
-
-(** We also define another helper operation, [diskShrink], which takes
-    a disk and drops the last block.  This will be helpful in the
-    bad-block-remapping lab assignment.
-  *)
-
-Definition diskShrink (d : disk) : disk :=
-  firstn (length d - 1) d.
 
 (** Finally, we prove a variety of theorems about the behavior of these
     disk operations.
@@ -336,63 +297,7 @@ Proof.
   - rewrite IHd; auto; omega.
 Qed.
 
-(** ** Theorems about diskShrink *)
-
-Theorem diskShrink_size : forall d,
-    diskSize d <> 0 ->
-    diskSize (diskShrink d) = diskSize d - 1.
-Proof.
-  unfold diskSize, diskShrink; intros.
-  rewrite firstn_length.
-  rewrite min_l; omega.
-Qed.
-
-Theorem diskShrink_preserves : forall d a,
-    a <> diskSize (diskShrink d) ->
-    diskGet (diskShrink d) a = diskGet d a.
-Proof.
-  unfold diskShrink.
-  induction d; simpl; intros; auto.
-  destruct d; simpl in *.
-  - destruct a0; try omega; simpl.
-    destruct a0; auto.
-  - destruct a0; simpl; auto.
-    replace (length d - 0) with (length d) in * by omega.
-    rewrite <- IHd; auto.
-Qed.
-
-Theorem diskShrink_diskUpd_last : forall d a b,
-    a >= diskSize d - 1 ->
-    diskShrink (diskUpd d a b) = diskShrink d.
-Proof.
-  unfold diskShrink; intros.
-  destruct (eq_nat_dec a (diskSize d - 1)); subst.
-  - clear H.
-    rewrite diskUpd_size; unfold diskSize.
-    induction d; simpl; auto.
-    destruct d; simpl in *; auto.
-    replace (length d - 0) with (length d) in * by omega.
-    f_equal; auto.
-  - rewrite diskUpd_oob_noop by omega; auto.
-Qed.
-
-Theorem diskShrink_diskUpd_notlast : forall d a b,
-    a < diskSize d - 1 ->
-    diskShrink (diskUpd d a b) = diskUpd (diskShrink d) a b.
-Proof.
-  unfold diskShrink.
-  induction d; simpl; auto; intros.
-  destruct a0; simpl; auto.
-  - destruct d; simpl; auto.
-  - destruct d; simpl in *; auto.
-    replace (length d - 0) with (length d) in * by omega.
-    rewrite <- IHd by omega.
-    destruct a0; simpl; try rewrite diskUpd_size; unfold diskSize;
-      replace (length d - 0) with (length d) by omega; auto.
-Qed.
-
-Hint Rewrite diskUpd_size : disk_size.
-Hint Rewrite diskShrink_size using solve [ auto || omega ] : disk_size.
+Create HintDb diskUpd_size.
 
 (** We combine all of the above theorems into a hint database called "upd".
     This means that, when you type [autorewrite with upd] in some Coq proof,
@@ -408,18 +313,14 @@ Hint Rewrite diskShrink_size using solve [ auto || omega ] : disk_size.
 Local Ltac solve_disk_size :=
   solve [ autorewrite with disk_size; (auto || omega) ].
 
+Hint Rewrite diskUpd_size : disk_size.
+
 Hint Rewrite diskUpd_eq using solve_disk_size : upd.
 Hint Rewrite disk_oob_eq using solve_disk_size : upd.
 Hint Rewrite diskUpd_oob_eq using solve_disk_size : upd.
 Hint Rewrite diskUpd_size : upd.
 Hint Rewrite diskUpd_neq using (solve [ auto ]) : upd.
 Hint Rewrite diskUpd_none using (solve [ auto ]) : upd.
-
 Hint Rewrite diskUpd_same using (solve [ auto ]) : upd.
 Hint Rewrite diskUpd_oob_noop using solve_disk_size : upd.
 Hint Rewrite diskUpd_twice : upd.
-
-Hint Rewrite diskShrink_size using solve_disk_size : upd.
-Hint Rewrite diskShrink_preserves using solve_disk_size : upd.
-Hint Rewrite diskShrink_diskUpd_last using solve_disk_size : upd.
-Hint Rewrite diskShrink_diskUpd_notlast using solve_disk_size : upd.
