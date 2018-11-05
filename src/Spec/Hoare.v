@@ -477,5 +477,3 @@ Section Hoare.
    Qed.
 
 End Hoare.
-
-Ltac spec_intros := intros; first [ eapply rspec_intros | eapply cspec_intros ] ; intros.

@@ -3,6 +3,7 @@ Require Import POCS.
 Require Import OneDiskAPI.
 Require Import TwoDiskAPI.
 Require Import TwoDiskTheorems.
+Require Import HoareTactics.
 
 (**
 ReplicatedDisk provides a single-disk API on top of two disks, handling disk
@@ -137,40 +138,6 @@ Module ReplicatedDisk.
              | |- proc_rspec _ _ _ _ => idtac
              | _ => fail
              end
-           end.
-
-  Ltac monad_simpl :=
-    repeat match goal with
-           | |- proc_cspec _ (Bind (Ret _) _) _ =>
-             eapply proc_cspec_expand; [ apply monad_left_id | ]
-           | |- proc_cspec _ (Bind (Bind _ _) _) _ =>
-             eapply proc_cspec_expand; [ apply monad_assoc | ]
-           end.
-
-  Ltac step_proc :=
-    intros;
-    match goal with
-    | |- proc_cspec _ (Ret _) _ =>
-      eapply ret_cspec
-    | |- proc_cspec _ _ _ =>
-      monad_simpl;
-      eapply proc_cspec_rx; [ solve [ eauto ] | ]
-    | [ H: proc_cspec _ ?p _
-        |- proc_cspec _ ?p _ ] =>
-      eapply proc_cspec_impl; [ unfold spec_impl | eapply H ]
-    end;
-    intros; simpl;
-    cbn [pre post alternate] in *;
-    repeat match goal with
-           | [ H: _ /\ _ |- _ ] => destruct H
-           | [ |- rec_noop _ _ _ ] => eauto
-           | [ |- forall _, _ ] => intros
-           | [ |- exists (_:unit), _ ] => exists tt
-           | [ |- _ /\ _ ] => split; [ solve [ trivial ] | ]
-           | [ |- _ /\ _ ] => split; [ | solve [ trivial ] ]
-           | _ => solve [ trivial ]
-           | _ => progress subst
-           | _ => progress autounfold in *
            end.
 
   Ltac step :=
