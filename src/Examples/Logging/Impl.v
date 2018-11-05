@@ -32,7 +32,7 @@ Record Descriptor :=
   { addresses: list addr;
     (* TODO: restrict addrs to be < 2^256 (-258) *)
     addresses_length:
-      length addresses = 256; }.
+      length addresses = LOG_LENGTH; }.
 
 (* We encode the log with two blocks: a header and a descriptor block. The header has a bit which commits the transaction: log_commit first records the transaction completes and then applies it, so that recovery (also log_apply) can see that the transaction is committed and finish applying it. *)
 
@@ -108,17 +108,44 @@ Definition getdesc: proc D.Op Descriptor :=
 Definition writedesc (ds:Descriptor) :=
   write 1 (Descriptor_fmt.(encode) ds).
 
+Instance def_desc : Default Descriptor.
+  refine {| addresses := List.repeat 0 LOG_LENGTH |}.
+  apply repeat_length.
+Defined.
+
 Definition add_addr (ds:Descriptor) (idx:nat) (a:addr) : Descriptor.
   refine {| addresses := assign ds.(addresses) idx a; |}.
   rewrite assign_length.
   apply ds.(addresses_length).
 Defined.
 
+(* log init establishes that the log and descriptor are valid (note that the
+block_encoder does not assume that every block is parseable, only the encodings)
+and correspond to an empty log *)
+Definition log_init :=
+  sz <- size;
+    if lt_dec sz (2+LOG_LENGTH) then
+      Ret InitFailed
+    else
+      _ <- writehdr empty_hdr;
+    _ <- writedesc default; (* value is unimportant, ignored due to log_length = 0 *)
+    Ret Initialized.
+
+Definition log_size :=
+  sz <- size;
+    (* this subtraction never underflows because of the size established by init
+    (and the size is an invariant) *)
+    Ret (sz-(2+LOG_LENGTH)).
+
 (* reads just go directly to the data region *)
 Definition log_read a :=
   read (2+LOG_LENGTH + a).
 
 Definition log_write a v :=
+  (* I believe out-of-bounds reads at the logical level are always translated to
+  out-of-bounds applies when we attempt to apply the log; this works but is
+  complicated, since the write does actually take space in the physical log but
+  won't do anything when applied. *)
   hdr <- gethdr;
     match hdr_full hdr with
     | left _ => Ret TxnD.WriteErr
