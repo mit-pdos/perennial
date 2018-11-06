@@ -1,7 +1,6 @@
 Require Import POCS.
 
 Require Import Examples.Logging.Impl.
-Require Import Helpers.Array.
 
 Require Import Spec.HoareTactics.
 
@@ -24,8 +23,8 @@ Inductive LogDecode (d: disk) (ls: LogicalState) : Prop :=
     (Hlog_length: length ls.(ls_log) <= LOG_LENGTH)
     (Hlog: forall i, i < hdr.(log_length) ->
                      exists a b,
-                       sel ls.(ls_log) i = (a, b) /\
-                       sel desc.(addresses) i = a /\
+                       nth_error ls.(ls_log) i = Some (a, b) /\
+                       nth_error desc.(addresses) i = Some a /\
                        diskGet d (2 + i) = Some b):
     LogDecode d ls.
 
