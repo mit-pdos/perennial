@@ -62,7 +62,10 @@ Class Default T := default : T.
 (* should address most instances *)
 Hint Extern 0 (Default _) => unfold Default; constructor : typeclass_instances.
 
-Instance unit_inhabited : Default unit.
+Instance unit_def : Default unit.
 Proof.
   typeclasses eauto.
 Qed.
+
+Instance pair_def A B (defA: Default A) (defB: Default B)
+  : Default (A * B) := (default, default).
