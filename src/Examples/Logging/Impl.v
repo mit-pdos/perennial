@@ -1,7 +1,7 @@
 Require Import POCS.
 
-Require Import Examples.Logging.TxnDiskAPI.
-Require Import Examples.ReplicatedDisk.OneDiskAPI.
+Require Export Examples.Logging.TxnDiskAPI.
+Require Export Examples.ReplicatedDisk.OneDiskAPI.
 
 Require Import Helpers.Array.
 
@@ -137,9 +137,27 @@ Definition log_size :=
     (and the size is an invariant) *)
     Ret (sz-(2+LOG_LENGTH)).
 
-(* reads just go directly to the data region *)
+(* manipulating the log region *)
+Definition set_descr desc (i:nat) a v :=
+  _ <- writedesc (add_addr desc i a);
+    write (2+i) v.
+
+Definition get_logwrite desc (i:nat) :=
+    let a := sel desc.(addresses) i in
+    v <- read (1+i);
+      Ret (a, v).
+
+(* manipulating the data region *)
+Definition data_read a :=
+  read (2+LOG_LENGTH+a).
+
+Definition data_write a v :=
+  write (2+LOG_LENGTH+a) v.
+
+(* reads just go directly to the data region (transactions don't read their own
+writes) *)
 Definition log_read a :=
-  read (2+LOG_LENGTH + a).
+  data_read a.
 
 Definition log_write a v :=
   (* I believe out-of-bounds reads at the logical level are always translated to
@@ -155,9 +173,7 @@ Definition log_write a v :=
         _ <- writehdr (hdr_inc hdr pf);
         (* a crash here doesn't matter because [committed = false] and therefore
         the entire log is logically empty *)
-        let log_addr := hdr.(log_length) in
-        _ <- writedesc (add_addr desc log_addr a);
-        _ <- write (2+log_addr) v;
+        _ <- set_descr desc hdr.(log_length) a v;
           (* now the partial transaction has one more write; the descriptor
           block has the correct address at the new index, and the corresponding
           value is in the log at the paired address *)
@@ -173,9 +189,8 @@ when [committed := true] and always have i < hdr.(log_length). *)
 
 (* apply_at guarantees that index i in the log is applied *)
 Definition apply_at desc (i:nat) :=
-  v <- read (1+i);
-    let a := sel desc.(addresses) i in
-    write (2+LOG_LENGTH+a) v.
+  a_v <- get_logwrite desc i;
+    let '(a, v) := a_v in data_write a v.
 
 (* [apply_upto] applies entries i through (len-1) from the log; if it crashes, the
 log is still partially applied (and it doesn't much matter how much, since

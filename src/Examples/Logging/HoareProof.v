@@ -1,9 +1,6 @@
 Require Import POCS.
 
-Require Import Examples.Logging.TxnDiskAPI.
 Require Import Examples.Logging.Impl.
-Require Import Examples.ReplicatedDisk.OneDiskAPI.
-
 Require Import Helpers.Array.
 
 Module D := OneDisk.
@@ -16,7 +13,7 @@ Record LogicalState :=
 
 Inductive DiskDecode (d: disk) (ls: LogicalState) : Prop :=
 | disk_decode
-    (Hsize: diskSize ls.(ls_disk) + 258 = diskSize d)
+    (Hsize: 2 + LOG_LENGTH + diskSize ls.(ls_disk) = diskSize d)
     (Hdisk: forall i, i <= diskSize ls.(ls_disk) -> diskGet ls.(ls_disk) i = diskGet d (i + 258)).
 
 Inductive LogDecode (d: disk) (ls: LogicalState) : Prop :=
@@ -25,11 +22,11 @@ Inductive LogDecode (d: disk) (ls: LogicalState) : Prop :=
     (Hbdesc: diskGet d 1 = Some bdesc)
     (Hhdr_dec : LogHdr_fmt.(decode) bhdr = hdr)
     (Hdesc_dec : Descriptor_fmt.(decode) bdesc = desc)
-    (Hlog_length: length ls.(ls_log) <= 256)
+    (Hlog_length: length ls.(ls_log) <= LOG_LENGTH)
     (Hlog: forall i, i < hdr.(log_length) ->
                      exists a b,
-                       nth_error ls.(ls_log) i = Some (a, b) /\
-                       nth_error desc.(addresses) i = Some a /\
+                       sel ls.(ls_log) i = (a, b) /\
+                       sel desc.(addresses) i = a /\
                        diskGet d (2 + i) = Some b):
     LogDecode d ls.
 
@@ -42,7 +39,7 @@ Inductive CommitStatus d b : Prop :=
 Fixpoint logical_log_apply (l: list (addr * block)) (d: disk)  : disk :=
   match l with
   | nil => d
-  | (a, b) :: l' => logical_log_apply l' (diskUpd d a b)
+  | (a, b) :: l' => logical_log_apply l' (diskUpd d (2+LOG_LENGTH+a) b)
   end.
 
 Definition ls_snoc ls a v : LogicalState :=
@@ -92,10 +89,8 @@ Definition log_recover_spec ls : Specification block unit D.State :=
   fun state =>
     {|
       pre := LogDecode state ls /\ DiskDecode state ls /\ CommitStatus state false;
-      post := fun state' v => state = state' /\
-                              match diskGet ls.(ls_disk) a with
-                              | Some v' => v = v'
-                              | None => True
-                              end;
+      post := fun state' v => LogDecode state' (ls_clear ls) /\
+                       DiskDecode state' (ls_clear ls) /\
+                       CommitStatus state' false;
       alternate := fun state' _ => state = state'
     |}.
