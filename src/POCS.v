@@ -1,7 +1,7 @@
 From Coq Require Export List.
 From Coq Require Export Omega.
 
-Require Export Helpers.Instances.
+From SimpleClasses Require Export Classes.
 Require Export Helpers.RelationAlgebra.
 Require Export Tactical.ProofAutomation.
 

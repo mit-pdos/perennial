@@ -3,7 +3,7 @@ Require Import Omega.
 Require Import RelationClasses.
 Require Import List.
 Require Import Tactical.ProofAutomation.
-Require Import Helpers.Instances.
+From SimpleClasses Require Import Classes.
 Require Import Helpers.Array.
 
 Set Implicit Arguments.

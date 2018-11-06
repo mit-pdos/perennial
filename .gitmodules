@@ -1,3 +1,6 @@
 [submodule "vendor/tactical"]
 	path = vendor/tactical
 	url = https://github.com/tchajed/coq-tactical
+[submodule "vendor/simple-classes"]
+	path = vendor/simple-classes
+	url = https://github.com/tchajed/coq-simple-classes
