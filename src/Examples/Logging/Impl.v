@@ -20,6 +20,7 @@ Module TxnD := TxnDisk.
 (* The descriptor block encodes 32-bit addresses; it fits 1024byte/32bits = 256
 addresses. *)
 Definition LOG_LENGTH: nat := 256.
+Opaque LOG_LENGTH.
 Definition __log_length_calculation: LOG_LENGTH = blockbytes / 4
   := eq_refl.
 

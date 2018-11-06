@@ -1,5 +1,6 @@
 From Coq Require Import List.
 From Coq Require Import Omega.
+Require Nat.
 
 Require Import Helpers.Instances.
 
@@ -59,31 +60,64 @@ Section Array.
     induct l.
   Qed.
 
-  Fixpoint sel l n : A :=
+  Fixpoint index l n : option A :=
     match l with
-    | nil => default
+    | nil => None
     | x::xs => match n with
-              | 0 => x
-              | S n => sel xs n
+              | 0 => Some x
+              | S n => index xs n
               end
     end.
 
-  Theorem sel_assign l : forall n x',
+  Definition sel l n : A :=
+    match index l n with
+    | Some x => x
+    | None => default
+    end.
+
+  Theorem index_assign_eq l : forall n x',
       n < length l ->
-      sel (assign l n x') n = x'.
+      index (assign l n x') n = Some x'.
   Proof.
     induct l.
   Qed.
 
-  Theorem sel_assign_ne l : forall n1 n2 x',
+  Theorem index_assign_ne l : forall n1 n2 x',
       n1 <> n2 ->
-      sel (assign l n2 x') n1 = sel l n1.
+      index (assign l n2 x') n1 = index l n1.
   Proof.
     induct l.
     - generalize dependent n.
       induction n2; simpl; intros.
       + destruct n; auto; try congruence.
       + destruct n; auto.
+  Qed.
+
+  Local Lemma sel_cons_S x xs n :
+    sel (x::xs) (S n) = sel xs n.
+  Proof.
+    unfold sel; simpl; auto.
+  Qed.
+
+  Definition subslice l n m : list :=
+    firstn m (skipn n l).
+
+  Theorem subslice_len_general l n m :
+    length (subslice l n m) = Nat.min m (length l - n).
+  Proof.
+    unfold subslice.
+    rewrite firstn_length.
+    rewrite skipn_length.
+    auto.
+  Qed.
+
+  Theorem subslice_len l n m :
+    n + m <= length l ->
+    length (subslice l n m) = m.
+  Proof.
+    unfold subslice; intros.
+    rewrite firstn_length_le; auto.
+    rewrite skipn_length; omega.
   Qed.
 
 End Array.

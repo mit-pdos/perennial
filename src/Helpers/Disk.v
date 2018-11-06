@@ -4,6 +4,7 @@ Require Import RelationClasses.
 Require Import List.
 Require Import Tactical.ProofAutomation.
 Require Import Helpers.Instances.
+Require Import Helpers.Array.
 
 Set Implicit Arguments.
 
@@ -123,6 +124,8 @@ Definition addr := nat.
 Local Ltac omega_orig := omega.
 Ltac omega := unfold addr in *; omega_orig.
 
+(* TODO: maybe this whole disk library should be generalized to be an Array
+library; can we support both error and non-error gets conveniently? *)
 Definition diskGet (d : disk) (a : addr) : option block :=
   nth_error d a.
 
@@ -300,6 +303,17 @@ Proof.
   - rewrite IHd; auto; omega.
 Qed.
 
+Definition diskSubslice (d: disk) start len :=
+  subslice d start len.
+
+Theorem diskSubslice_len_ok : forall d start len,
+    start + len <= diskSize d ->
+    diskSize (diskSubslice d start len) = len.
+Proof.
+  unfold diskSize, diskSubslice; intros.
+  apply subslice_len; auto.
+Qed.
+
 Create HintDb diskUpd_size.
 
 (** We combine all of the above theorems into a hint database called "upd".
@@ -317,6 +331,7 @@ Local Ltac solve_disk_size :=
   solve [ autorewrite with disk_size; (auto || omega) ].
 
 Hint Rewrite diskUpd_size : disk_size.
+Hint Rewrite diskSubslice_len_ok using solve [ auto || omega ] : disk_size.
 
 Hint Rewrite diskUpd_eq using solve_disk_size : upd.
 Hint Rewrite disk_oob_eq using solve_disk_size : upd.

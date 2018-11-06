@@ -35,7 +35,7 @@ Ltac RelInstance_t :=
 
 Notation RelInstance := (ltac:(RelInstance_t)) (only parsing).
 
-(* For units, an explicit definition has better computational behavior.
+(* For unit, an explicit definition has better computational behavior.
 Specifically it is syntactically a [left], so any matches on [u == u']
 automatically reduce to the true case; [decide equality] would first destruct
 the arguments before producing [left]. *)
