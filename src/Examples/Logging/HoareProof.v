@@ -23,29 +23,57 @@ Inductive LogDecode (d: disk) (ls: LogicalState) : Prop :=
     (Hlog_length: length ls.(ls_log) <= LOG_LENGTH)
     (Hlog: forall i, i < hdr.(log_length) ->
                      exists a b,
-                       nth_error ls.(ls_log) i = Some (a, b) /\
-                       nth_error desc.(addresses) i = Some a /\
+                       index ls.(ls_log) i = Some (a, b) /\
+                       index desc.(addresses) i = Some a /\
                        index d (2 + i) = Some b):
     LogDecode d ls.
-
-Definition disk_invariant (d: disk) :=
-  length d >= 2 + LOG_LENGTH.
 
 Record PhysicalState :=
   { p_hdr: LogHdr;
     p_desc: Descriptor;
     p_log_values: list block;
+    p_log_values_len: length p_log_values = LOG_LENGTH;
     p_data_region: disk; }.
 
-Definition PhyDecode (d: disk) : option PhysicalState :=
-  match index d 0, index d 1 with
-  | Some bhdr, Some bdesc =>
-    Some {| p_hdr := LogHdr_fmt.(decode) bhdr;
-            p_desc := Descriptor_fmt.(decode) bdesc;
-            p_log_values := subslice d 2 (LOG_LENGTH);
-            p_data_region := subslice d (2+LOG_LENGTH) (length d - (2 + LOG_LENGTH)); |}
-  | _, _ => None
-  end.
+Inductive PhyDecode (d: disk) : PhysicalState -> Prop :=
+| phy_decode hdr desc log_values pf data
+             (Hhdr: index d 0 = Some (LogHdr_fmt.(encode) hdr))
+             (Hdesc: index d 1 = Some (Descriptor_fmt.(encode) desc))
+             (Hlog_values: forall i,
+                 i < LOG_LENGTH ->
+                 index d (2+i) = index log_values i)
+             (Hdata: forall i,
+                 index d (2+LOG_LENGTH+i) = index data i) :
+    PhyDecode d {| p_hdr := hdr;
+                   p_desc := desc;
+                   p_log_values := log_values;
+                   p_log_values_len := pf;
+                   p_data_region := data; |}
+.
+
+Lemma length_bound A (d: list A) i :
+  index d i = None ->
+  length d <= i.
+Proof.
+  intros.
+  destruct (lt_dec i (length d)); try omega.
+  exfalso; apply index_not_none in H; auto.
+Qed.
+
+Theorem PhyDecode_data_len d ps :
+  PhyDecode d ps ->
+  length ps.(p_data_region) = length d - 2 - LOG_LENGTH.
+Proof.
+  inversion 1; subst; simpl.
+  apply Nat.le_antisymm.
+  - apply length_bound.
+    rewrite <- Hdata.
+    rewrite index_oob by omega; auto.
+  - assert (length d <= 2 + LOG_LENGTH + length data); try omega.
+    apply length_bound.
+    rewrite Hdata; auto.
+    rewrite index_oob by omega; auto.
+Qed.
 
 Lemma index_inbounds_exists (d: disk) i :
   i < length d ->
@@ -54,30 +82,6 @@ Proof.
   intros.
   destruct_with_eqn (index d i); eauto.
   exfalso; apply index_not_none in Heqo; auto.
-Qed.
-
-Theorem PhyDecode_invariant : forall d,
-    disk_invariant d ->
-    exists ps, PhyDecode d = Some ps /\
-          (exists b, index d 0 = Some b /\
-                LogHdr_fmt.(decode) b = ps.(p_hdr)) /\
-          (exists b, index d 1 = Some b /\
-                Descriptor_fmt.(decode) b = ps.(p_desc)) /\
-          length ps.(p_log_values) = LOG_LENGTH /\
-          2 + LOG_LENGTH + length ps.(p_data_region) = length d.
-Proof.
-  unfold disk_invariant; intros.
-  unfold PhyDecode.
-  edestruct (@index_inbounds_exists d 0); try omega.
-  edestruct (@index_inbounds_exists d 1); try omega.
-  repeat simpl_match.
-  descend; (intuition idtac);
-    cbn [p_hdr p_desc p_log_values p_data_region].
-  - descend; intuition eauto.
-  - descend; intuition eauto.
-  - rewrite length_subslice by omega; auto.
-  - autorewrite with length.
-    omega.
 Qed.
 
 Inductive CommitStatus d b : Prop :=
@@ -237,8 +241,7 @@ Theorem gethdr ps :
   proc_cspec D.ODLayer
              gethdr
              (fun state =>
-                {| pre := disk_invariant state /\
-                          PhyDecode state = Some ps;
+                {| pre := PhyDecode state ps;
                    post state' r :=
                      r = ps.(p_hdr) /\
                      state' = state;
@@ -248,33 +251,30 @@ Proof.
   unfold gethdr.
   step.
   step.
-  eapply PhyDecode_invariant in H; propositional; eauto.
-  replace (index state 0) in *; simpl in *; propositional; eauto.
-  congruence.
+  inversion H; subst; cbn [p_hdr] in *.
+  replace (index state 0) in *; cbn [maybe_holds] in *; subst.
+  rewrite LogHdr_fmt.(encode_decode); auto.
 Qed.
 
 Theorem writedesc ps desc :
   proc_cspec D.ODLayer
              (writedesc desc)
              (fun state =>
-                {| pre := disk_invariant state /\
-                          PhyDecode state = Some ps;
+                {| pre := PhyDecode state ps;
                    post state' r :=
-                     disk_invariant state' /\
-                     exists ps', PhyDecode state' = Some ps' /\
-                            ps' = {| p_hdr := ps.(p_hdr);
+                     PhyDecode state' {| p_hdr := ps.(p_hdr);
                                      p_desc := desc;
                                      p_log_values := ps.(p_log_values);
+                                     p_log_values_len := ps.(p_log_values_len);
                                      p_data_region := ps.(p_data_region); |};
                    alternate state' _ :=
-                     disk_invariant state' /\
-                     exists ps', PhyDecode state' = Some ps' /\
-                            ps' = ps \/
-                            ps' = {| p_hdr := ps.(p_hdr);
+                     PhyDecode state' ps \/
+                     PhyDecode state' {| p_hdr := ps.(p_hdr);
                                      p_desc := desc;
                                      p_log_values := ps.(p_log_values);
-                                     p_data_region := ps.(p_data_region); |};
-                   |}).
+                                     p_log_values_len := ps.(p_log_values_len);
+                                     p_data_region := ps.(p_data_region); |}
+                |}).
 Proof.
   unfold writedesc.
   eapply proc_cspec_impl; [ unfold spec_impl | solve [eauto] ];
@@ -282,7 +282,8 @@ Proof.
     propositional;
     (intuition auto);
     propositional.
-  - unfold disk_invariant in *.
-    autorewrite with length; auto.
-  - eexists; intuition eauto.
+  assert (length s >= 2 + LOG_LENGTH) by admit.
+  - admit.
+  - admit.
+  - admit.
 Abort.
