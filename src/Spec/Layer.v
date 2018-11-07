@@ -30,6 +30,15 @@ Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op
   | Bind p p' => Bind (impl.(compile) p) (fun v => impl.(compile) (p' v))
   end.
 
+Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) T R (p: proc_seq Op T R) :
+  proc_seq C_Op T R :=
+  match p with
+  | Seq_Ret v => Seq_Ret v
+  | Seq_Bind p p' c => Seq_Bind (impl.(compile) p)
+                                (fun v => impl.(compile_seq) (p' v))
+                                (fun r => impl.(compile_seq) (c r))
+  end.
+
 Definition compile_rec Op C_Op
            `(impl: LayerImpl C_Op Op)
            R (rec: proc Op R) : proc C_Op R :=
@@ -50,6 +59,7 @@ Section Layers.
   Context Op (a_layer: Layer Op).
   Notation AState := a_layer.(State).
   Notation a_proc := (proc Op).
+  Notation a_proc_seq := (proc_seq Op).
   Notation a_initP := a_layer.(initP).
   Notation a_sem := a_layer.(sem).
   Notation a_exec_recover := a_layer.(sem).(exec_recover).
@@ -85,6 +95,7 @@ Section Layers.
   Context (rf: LayerRefinement).
   Notation compile_op := rf.(impl).(compile_op).
   Notation compile_rec := rf.(impl).(compile_rec).
+  Notation compile_seq := rf.(impl).(compile_seq).
   Notation compile := rf.(impl).(compile).
   Notation recover := rf.(impl).(recover).
 
@@ -197,6 +208,18 @@ Section Layers.
         rew H.
   Qed.
 
+  Theorem compile_exec_seq_ok T R (p: a_proc_seq T R) (rec: a_proc R) s:
+    refines rf.(absr)
+                 (exec_seq c_sem (compile_seq p) (compile_rec rec) s)
+                 (exec_seq a_sem p rec s).
+  Proof.
+    unfold refines; revert s;
+    induction p; intros s; do 2 rewrite exec_seq_unfold; simpl; norm.
+    destruct s as [[] s]; rewrite <-bind_assoc.
+    - rew compile_rexec_ok; repeat rel_congruence; eauto.
+    - rew compile_exec_ok; repeat rel_congruence; eauto.
+  Qed.
+
   Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
         crash_refines
           rf.(absr) c_sem
@@ -250,6 +273,27 @@ Section Layers.
       rel_congruence.
       rewrite <- bind_assoc.
       rew compile_rexec_ok.
+      repeat rel_congruence.
+      apply to_any.
+    - Right.
+  Qed.
+
+  Theorem complete_exec_seq_ok : forall T R (p: a_proc_seq T R) (rec: a_proc R) s,
+      test c_initP;; inited <- c_exec rf.(impl).(init); ifInit inited (c_sem.(exec_seq) (compile_seq p) (compile_rec rec) s) --->
+           (any (T:=unit);; test a_initP;; v <- a_sem.(exec_seq) p rec s; any (T:=unit);; pure (Some v)) +
+      (any (T:=unit);; pure None).
+  Proof.
+    intros.
+    rewrite <- bind_assoc.
+    rew rf.(init_ok).
+    repeat setoid_rewrite bind_dist_r; norm.
+    simpl.
+    Split.
+    - Left.
+      rel_congruence.
+      rel_congruence.
+      rewrite <- bind_assoc.
+      rew compile_exec_seq_ok.
       repeat rel_congruence.
       apply to_any.
     - Right.

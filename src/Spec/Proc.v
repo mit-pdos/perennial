@@ -1,4 +1,5 @@
 Require Import Helpers.RelationAlgebra.
+Require Import Streams.
 
 Global Set Implicit Arguments.
 Global Generalizable Variables T R Op State.
@@ -14,6 +15,18 @@ Inductive proc (Op: Type -> Type) (T : Type) : Type :=
 Arguments Prim {Op T}.
 Arguments Ret {Op T} v.
 
+(** A sequence of procedures that a user might wish to run, where for each
+    procedure in the sequence they specify a continuation to run on success,
+    and an alternate sequence to run if a crash happens. *)
+Inductive proc_seq (Op: Type -> Type) (T : Type) (R: Type) : Type :=
+| Seq_Ret (v : T)
+| Seq_Bind (T1 : Type) (p1 : proc Op T1) (p2 : T1 -> proc_seq Op T R) (c: R -> proc_seq Op T R).
+Arguments Seq_Ret {Op T R}.
+Arguments Seq_Bind {Op T R T1}.
+
+Inductive SchedChoice : Set := Crash | Finish.
+Definition schedule : Type := Stream SchedChoice.
+
 (** Semantics: defined using big-step execution relations *)
 
 Definition OpSemantics Op State := forall T, Op T -> relation State State T.
@@ -27,6 +40,7 @@ Section Dynamics.
 
   Context `(sem: Dynamics Op State).
   Notation proc := (proc Op).
+  Notation proc_seq := (proc_seq Op).
   Notation step := sem.(step).
   Notation crash_step := sem.(crash_step).
 
@@ -66,6 +80,35 @@ Section Dynamics.
   Definition rexec_unfold {T R} (p: proc T) (rec: proc R) :
     rexec p rec =
     exec_crash p;; crash_step;; exec_recover rec := eq_refl.
+
+  Fixpoint exec_seq {T R} (p: proc_seq T R) (rec: proc R) (s: schedule)
+    : relation State State T :=
+    match p with
+    | Seq_Ret v => pure v
+    | Seq_Bind p1 f c =>
+      match s with
+      | Cons b s' =>
+        match b with
+        | Crash => r <- rexec p1 rec; exec_seq (c r) rec s'
+        | Finish => v <- exec p1; exec_seq (f v) rec s'
+        end
+      end
+    end.
+
+  Lemma exec_seq_unfold {T R} (p: proc_seq T R) (rec: proc R) s :
+    exec_seq p rec s =
+      match p with
+      | Seq_Ret v => pure v
+      | Seq_Bind p1 f c =>
+        match s with
+        | Cons b s' =>
+          match b with
+          | Crash => r <- rexec p1 rec; exec_seq (c r) rec s'
+          | Finish => v <- exec p1; exec_seq (f v) rec s'
+          end
+        end
+      end.
+  Proof. destruct p; auto. Qed.
 
 End Dynamics.
 
