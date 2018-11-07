@@ -191,7 +191,9 @@ when [committed := true] and always have i < hdr.(log_length). *)
 (* apply_at guarantees that index i in the log is applied *)
 Definition apply_at desc (i:nat) :=
   a_v <- get_logwrite desc i;
-    let '(a, v) := a_v in data_write a v.
+    let '(a, v) := a_v in
+    _ <- data_write a v;
+      Ret tt.
 
 (* [apply_upto] applies entries i through (len-1) from the log; if it crashes, the
 log is still partially applied (and it doesn't much matter how much, since

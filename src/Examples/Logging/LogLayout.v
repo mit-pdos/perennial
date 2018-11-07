@@ -100,6 +100,8 @@ Ltac simplify :=
          | _ => progress propositional
          | |- _ /\ _ => split; [ solve [ auto ] | ]
          | |- _ /\ _ => split; [ | solve [ auto ] ]
+         | _ => destruct_tuple
+         | [ H: (_, _) = (_, _) |- _ ] => inv_clear H
          | _ => progress cbn [pre post alternate] in *
          end.
 
@@ -591,14 +593,53 @@ Theorem log_write_ok ps a v :
        |}).
 Proof.
   unfold log_write.
-  step; split_cases; simplify; finish.
+  step; split_wlog; simplify; finish.
   destruct (hdr_full r).
   step; simplify; finish.
   destruct ps; eauto.
-  step; split_cases; simplify; finish.
-  step; split_cases; simplify; finish.
-  step; split_cases; simplify; finish.
-  step; split_cases; simplify; finish.
+  step; split_wlog; simplify; finish.
+  step; split_wlog; simplify; finish.
+  step; split_wlog; simplify; finish.
+  step; split_wlog; simplify; finish.
 Qed.
 
 Hint Resolve log_write_ok.
+
+(* this is just a physical description of [apply_at]; it precisely encodes the
+data since we can't accurately abstract it that this level (we need to refer to
+the old disk, which isn't tracked in these specs) *)
+Theorem apply_at_ok ps desc i :
+  proc_cspec
+    (apply_at desc i)
+    (fun state =>
+       {| pre := PhyDecode state ps /\
+                 desc = ps.(p_desc) /\
+                 i < LOG_LENGTH;
+          post state' r :=
+            r = tt /\
+            PhyDecode state' {| p_hdr := ps.(p_hdr);
+                            p_desc := ps.(p_desc);
+                            p_log_values := ps.(p_log_values);
+                            p_data_region :=
+                              let a := sel ps.(p_desc) i in
+                              let v := sel ps.(p_log_values) i in
+                              assign ps.(p_data_region) a v; |};
+          alternate state' _ :=
+            exists data,
+              (data = ps.(p_data_region) \/
+               let a := sel ps.(p_desc) i in
+               let v := sel ps.(p_log_values) i in
+               data = assign ps.(p_data_region) a v) /\
+            PhyDecode state' {| p_hdr := ps.(p_hdr);
+                            p_desc := ps.(p_desc);
+                            p_log_values := ps.(p_log_values);
+                            p_data_region := data; |};
+       |}).
+Proof.
+  unfold apply_at.
+  step; split_wlog; simplify; finish.
+  step; split_wlog; simplify; finish.
+  step; split_wlog; simplify; finish.
+Qed.
+
+Hint Resolve apply_at_ok.
