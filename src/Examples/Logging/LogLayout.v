@@ -89,8 +89,14 @@ Proof.
   omega.
 Qed.
 
+Ltac match_phy_abs :=
+  match goal with
+  | [ H: PhyDecode ?d _ |- PhyDecode ?d _ ] => exact H
+  end.
+
 Ltac simplify :=
   repeat match goal with
+         | _ => match_phy_abs
          | _ => progress propositional
          | |- _ /\ _ => split; [ solve [ auto ] | ]
          | |- _ /\ _ => split; [ | solve [ auto ] ]
@@ -99,7 +105,11 @@ Ltac simplify :=
 
 Ltac finish :=
   repeat match goal with
-         | _ => eauto
+         | _ => solve [ eauto ]
+         | [ H: PhyDecode ?d ?ps |- context[PhyDecode ?d _] ] =>
+           match goal with
+           | |- exists _, _ => solve [ destruct ps; descend; eauto ]
+           end
          | _ => congruence
          end.
 
@@ -113,6 +123,7 @@ Qed.
 
 Ltac split_wlog :=
   repeat match goal with
+         | _ => match_phy_abs
          | |- _ /\ _ => apply and_wlog
          | [ H: _ \/ _ |- _ ] => destruct H
          | _ => progress propositional
@@ -121,10 +132,11 @@ Ltac split_wlog :=
 
 Ltac split_cases :=
   repeat match goal with
+         | _ => match_phy_abs
          | |- _ /\ _ => split
          | [ H: _ \/ _ |- _ ] => destruct H
          | _ => progress propositional
-         | _ => solve [ auto ]
+         | _ => solve [ eauto ]
          end.
 
 (* specs for one-disk primitives (restatement of semantics as specs) *)
@@ -135,16 +147,19 @@ Ltac prim :=
   (intuition eauto);
   propositional.
 
+Notation proc_cspec := (Hoare.proc_cspec D.ODLayer.(sem)).
+Arguments Hoare.proc_cspec {Op State} sem {T}.
+
 Theorem read_ok a :
-  proc_cspec D.ODLayer
-             (read a)
-             (fun state =>
-                {| pre := True;
-                   post state' r :=
-                     index state a ?|= eq r /\
-                     state' = state;
-                   alternate state' _ :=
-                     state' = state; |}).
+  proc_cspec
+    (read a)
+    (fun state =>
+       {| pre := True;
+          post state' r :=
+            index state a ?|= eq r /\
+            state' = state;
+          alternate state' _ :=
+            state' = state; |}).
 Proof.
   unfold read.
   prim;
@@ -157,16 +172,16 @@ Proof.
 Qed.
 
 Theorem write_ok a v :
-  proc_cspec D.ODLayer
-             (write a v)
-             (fun state =>
-                {| pre := True;
-                   post state' r :=
-                     r = tt /\
-                     state' = assign state a v;
-                   alternate state' _ :=
-                     state' = state \/
-                     state' = assign state a v; |}).
+  proc_cspec
+    (write a v)
+    (fun state =>
+       {| pre := True;
+          post state' r :=
+            r = tt /\
+            state' = assign state a v;
+          alternate state' _ :=
+            state' = state \/
+            state' = assign state a v; |}).
 Proof.
   unfold write.
   prim;
@@ -178,15 +193,15 @@ Proof.
 Qed.
 
 Theorem size_ok :
-  proc_cspec D.ODLayer
-             (size)
-             (fun state =>
-                {| pre := True;
-                   post state' r :=
-                     r = length state /\
-                     state' = state;
-                   alternate state' _ :=
-                     state' = state; |}).
+  proc_cspec
+    (size)
+    (fun state =>
+       {| pre := True;
+          post state' r :=
+            r = length state /\
+            state' = state;
+          alternate state' _ :=
+            state' = state; |}).
 Proof.
   unfold size.
   prim;
@@ -200,20 +215,21 @@ Qed.
 Hint Resolve read_ok write_ok size_ok.
 
 Ltac step :=
-  unshelve step_proc; simplify; finish.
+  step_proc; simplify; finish.
 
 Opaque index.
+Opaque D.ODLayer.
 
-Theorem gethdr ps :
-  proc_cspec D.ODLayer
-             gethdr
-             (fun state =>
-                {| pre := PhyDecode state ps;
-                   post state' r :=
-                     r = ps.(p_hdr) /\
-                     state' = state;
-                   alternate state' _ :=
-                     state' = state; |}).
+Theorem gethdr_ok ps :
+  proc_cspec
+    gethdr
+    (fun state =>
+       {| pre := PhyDecode state ps;
+          post state' r :=
+            r = ps.(p_hdr) /\
+            state' = state;
+          alternate state' _ :=
+            state' = state; |}).
 Proof.
   unfold gethdr.
   step.
@@ -222,6 +238,8 @@ Proof.
   replace (index state 0) in *; simpl in *; subst.
   rewrite LogHdr_fmt.(encode_decode); auto.
 Qed.
+
+Hint Resolve gethdr_ok.
 
 Lemma phy_writedesc:
   forall (ps : PhysicalState) (desc : Descriptor) (s : D.State),
@@ -260,9 +278,6 @@ Hint Resolve phy_writehdr.
 Ltac spec_impl :=
   eapply proc_cspec_impl; [ unfold spec_impl | solve [ eauto] ];
   simplify.
-
-Notation proc_cspec := (Hoare.proc_cspec D.ODLayer.(sem)).
-Arguments Hoare.proc_cspec {Op State} sem {T}.
 
 Theorem writehdr_ok ps hdr :
   proc_cspec
@@ -349,6 +364,27 @@ Qed.
 
 Hint Resolve phy_set_log_value.
 
+Theorem getdesc_ok ps :
+  proc_cspec
+    (getdesc)
+    (fun state =>
+       {| pre := PhyDecode state ps;
+          post state' r :=
+            r = ps.(p_desc) /\
+            state' = state;
+          alternate state' _ :=
+            state' = state; |}).
+Proof.
+  unfold getdesc.
+  step.
+  step.
+  inv_clear H; simpl in *.
+  replace (index state 1) in *; simpl in *; propositional.
+  rewrite Descriptor_fmt.(encode_decode); auto.
+Qed.
+
+Hint Resolve getdesc_ok.
+
 Theorem set_desc_ok ps desc i a v :
   proc_cspec
     (set_desc desc i a v)
@@ -356,9 +392,9 @@ Theorem set_desc_ok ps desc i a v :
        {| pre := PhyDecode state ps /\
                  ps.(p_desc) = desc /\
                  i < LOG_LENGTH;
-          post state r :=
+          post state' r :=
             r = tt /\
-            PhyDecode state {| p_hdr := ps.(p_hdr);
+            PhyDecode state' {| p_hdr := ps.(p_hdr);
                            p_desc := desc_assign desc i a;
                            p_log_values :=
                              log_assign ps.(p_log_values) i v;
@@ -373,9 +409,10 @@ Theorem set_desc_ok ps desc i a v :
 Proof.
   unfold set_desc.
   step; split_cases; simplify; finish.
-  - spec_impl; split_wlog; simplify; finish.
-  - destruct ps; eauto.
+  spec_impl; split_wlog; simplify; finish.
 Qed.
+
+Hint Resolve set_desc_ok.
 
 Theorem phy_log_size_ok ps :
   proc_cspec
@@ -517,7 +554,51 @@ Theorem data_write_ok ps a v :
 Proof.
   unfold data_write.
   spec_impl; split_wlog; simplify; finish.
-  - destruct ps; eauto.
 Qed.
 
 Hint Resolve data_write_ok.
+
+Theorem log_write_ok ps a v :
+  proc_cspec
+    (log_write a v)
+    (fun state =>
+       {| pre := PhyDecode state ps;
+          post state' r :=
+            match r with
+            | TxnD.WriteOK =>
+              let hdr := ps.(p_hdr) in
+              exists pf,
+                PhyDecode state'
+                          {| p_hdr := hdr_inc hdr pf;
+                             p_desc :=
+                               desc_assign ps.(p_desc) hdr.(log_length) a;
+                             p_log_values :=
+                               log_assign ps.(p_log_values) hdr.(log_length) v;
+                             p_data_region := ps.(p_data_region); |}
+            | TxnD.WriteErr =>
+              state' = state /\
+              ps.(p_hdr).(log_length) = LOG_LENGTH
+            end;
+          alternate state' _ :=
+            (* if we crash the log will still be uncommited, so just promise
+            that the data is unaffected *)
+            exists hdr desc log_values,
+              PhyDecode state' {| p_hdr := hdr;
+                              p_desc := desc;
+                              p_log_values := log_values;
+                              p_data_region := ps.(p_data_region) |} /\
+              hdr.(committed) = ps.(p_hdr).(committed);
+       |}).
+Proof.
+  unfold log_write.
+  step; split_cases; simplify; finish.
+  destruct (hdr_full r).
+  step; simplify; finish.
+  destruct ps; eauto.
+  step; split_cases; simplify; finish.
+  step; split_cases; simplify; finish.
+  step; split_cases; simplify; finish.
+  step; split_cases; simplify; finish.
+Qed.
+
+Hint Resolve log_write_ok.
