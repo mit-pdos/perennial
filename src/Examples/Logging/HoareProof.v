@@ -173,21 +173,40 @@ Definition log_recover_spec ls : Specification block unit D.State :=
 Ltac simplify :=
   repeat match goal with
          | _ => progress propositional
+         | |- _ /\ _ => split; [ solve [ auto ] | ]
+         | |- _ /\ _ => split; [ | solve [ auto ] ]
+         | _ => progress cbn [pre post alternate] in *
          end.
 
 Ltac finish :=
   repeat match goal with
-         | _ => auto
+         | _ => eauto
          | _ => congruence
+         end.
+
+Lemma and_wlog (P Q:Prop) :
+  P ->
+  (P -> Q) ->
+  P /\ Q.
+Proof.
+  firstorder.
+Qed.
+
+Ltac split_wlog :=
+  repeat match goal with
+         | |- _ /\ _ => apply and_wlog
+         | [ H: _ \/ _ |- _ ] => destruct H
+         | _ => progress propositional
+         | _ => solve [ auto ]
          end.
 
 (* specs for one-disk primitives (restatement of semantics as specs) *)
 Ltac prim :=
   eapply proc_cspec_impl; [ unfold spec_impl | eapply op_spec_sound ];
-    simpl;
-    propositional;
-    (intuition auto);
-    propositional.
+  simpl in *;
+  propositional;
+  (intuition eauto);
+  propositional.
 
 Theorem read_ok a :
   proc_cspec D.ODLayer
@@ -277,6 +296,66 @@ Proof.
   rewrite LogHdr_fmt.(encode_decode); auto.
 Qed.
 
+Lemma phy_writedesc:
+  forall (ps : PhysicalState) (desc : Descriptor) (s : D.State),
+    PhyDecode s ps ->
+    PhyDecode (assign s 1 (Descriptor_fmt.(encode) desc))
+              {|
+                p_hdr := ps.(p_hdr);
+                p_desc := desc;
+                p_log_values := ps.(p_log_values);
+                p_data_region := ps.(p_data_region) |}.
+Proof.
+  intros ps desc s H.
+  pose proof (PhyDecode_disk_len H).
+  inv_clear H; constructor; intros; array.
+Qed.
+
+Hint Resolve phy_writedesc.
+
+
+Lemma phy_writehdr:
+  forall (ps : PhysicalState) (hdr : LogHdr) (s : D.ODLayer.(State)),
+    PhyDecode s ps ->
+    PhyDecode (assign s 0 (LogHdr_fmt.(encode) hdr))
+              {| p_hdr := hdr;
+                 p_desc := ps.(p_desc);
+                 p_log_values := ps.(p_log_values);
+                 p_data_region := ps.(p_data_region) |}.
+Proof.
+  intros ps hdr s H.
+  pose proof (PhyDecode_disk_len H).
+  inv_clear H; constructor; intros; array.
+Qed.
+
+Hint Resolve phy_writehdr.
+
+Ltac spec_impl :=
+  eapply proc_cspec_impl; [ unfold spec_impl | solve [ eauto] ];
+  simplify.
+
+Theorem writehdr ps hdr :
+  proc_cspec D.ODLayer
+             (writehdr hdr)
+             (fun state =>
+                {| pre := PhyDecode state ps;
+                   post state' r :=
+                     PhyDecode state' {| p_hdr := hdr;
+                                     p_desc := ps.(p_desc);
+                                     p_log_values := ps.(p_log_values);
+                                     p_data_region := ps.(p_data_region); |};
+                   alternate state' _ :=
+                     PhyDecode state' ps \/
+                     PhyDecode state' {| p_hdr := hdr;
+                                     p_desc := ps.(p_desc);
+                                     p_log_values := ps.(p_log_values);
+                                     p_data_region := ps.(p_data_region); |}
+                |}).
+Proof.
+  unfold writehdr.
+  spec_impl; split_wlog.
+Qed.
+
 Theorem writedesc ps desc :
   proc_cspec D.ODLayer
              (writedesc desc)
@@ -296,12 +375,5 @@ Theorem writedesc ps desc :
                 |}).
 Proof.
   unfold writedesc.
-  eapply proc_cspec_impl; [ unfold spec_impl | solve [eauto] ];
-    simpl;
-    propositional;
-    (intuition auto);
-    propositional.
-  - admit.
-  - admit.
-  - admit.
-Abort.
+  spec_impl; split_wlog.
+Qed.
