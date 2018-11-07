@@ -28,15 +28,18 @@ Inductive LogDecode (d: disk) (ls: LogicalState) : Prop :=
                        index d (2 + i) = Some b):
     LogDecode d ls.
 
+Record LogValues :=
+  { values :> list block;
+    values_ok: length values = LOG_LENGTH }.
+
 Record PhysicalState :=
   { p_hdr: LogHdr;
     p_desc: Descriptor;
-    p_log_values: list block;
-    p_log_values_len: length p_log_values = LOG_LENGTH;
+    p_log_values: LogValues;
     p_data_region: disk; }.
 
 Inductive PhyDecode (d: disk) : PhysicalState -> Prop :=
-| phy_decode hdr desc log_values pf data
+| phy_decode hdr desc (log_values:LogValues) data
              (Hhdr: index d 0 = Some (LogHdr_fmt.(encode) hdr))
              (Hdesc: index d 1 = Some (Descriptor_fmt.(encode) desc))
              (Hlog_values: forall i,
@@ -47,17 +50,36 @@ Inductive PhyDecode (d: disk) : PhysicalState -> Prop :=
     PhyDecode d {| p_hdr := hdr;
                    p_desc := desc;
                    p_log_values := log_values;
-                   p_log_values_len := pf;
                    p_data_region := data; |}
 .
 
-Lemma length_bound A (d: list A) i :
-  index d i = None ->
-  length d <= i.
+Lemma log_length_nonzero : LOG_LENGTH > 0.
+  unfold LOG_LENGTH.
+  omega.
+Qed.
+
+(* coercion magic makes this theorem seem odd - the proof comes from inside
+log_values *)
+Lemma length_log (log_values:LogValues) :
+  length log_values = LOG_LENGTH.
 Proof.
-  intros.
-  destruct (lt_dec i (length d)); try omega.
-  exfalso; apply index_not_none in H; auto.
+  destruct log_values; auto.
+Qed.
+
+Hint Rewrite length_log : length.
+
+Theorem PhyDecode_disk_bound d ps :
+  PhyDecode d ps ->
+  length d >= 2 + LOG_LENGTH.
+Proof.
+  pose proof log_length_nonzero.
+  inversion 1; subst.
+  specialize (Hlog_values (LOG_LENGTH-1) ltac:(omega)).
+  rewrite (index_inbounds log_values (LOG_LENGTH-1)) in Hlog_values;
+    autorewrite with length;
+    try omega.
+  apply index_some_bound in Hlog_values.
+  omega.
 Qed.
 
 Theorem PhyDecode_data_len d ps :
@@ -65,23 +87,22 @@ Theorem PhyDecode_data_len d ps :
   length ps.(p_data_region) = length d - 2 - LOG_LENGTH.
 Proof.
   inversion 1; subst; simpl.
-  apply Nat.le_antisymm.
-  - apply length_bound.
-    rewrite <- Hdata.
-    rewrite index_oob by omega; auto.
+  apply length_bounds.
+  - apply index_none_bound.
+    rewrite <- Hdata; array.
   - assert (length d <= 2 + LOG_LENGTH + length data); try omega.
-    apply length_bound.
-    rewrite Hdata; auto.
-    rewrite index_oob by omega; auto.
+    apply index_none_bound.
+    rewrite Hdata; array.
 Qed.
 
-Lemma index_inbounds_exists (d: disk) i :
-  i < length d ->
-  exists b, index d i = Some b.
+Theorem PhyDecode_disk_len d ps :
+  PhyDecode d ps ->
+  length d = 2 + LOG_LENGTH + length ps.(p_data_region).
 Proof.
   intros.
-  destruct_with_eqn (index d i); eauto.
-  exfalso; apply index_not_none in Heqo; auto.
+  pose proof (PhyDecode_disk_bound H).
+  pose proof (PhyDecode_data_len H).
+  omega.
 Qed.
 
 Inductive CommitStatus d b : Prop :=
@@ -265,14 +286,12 @@ Theorem writedesc ps desc :
                      PhyDecode state' {| p_hdr := ps.(p_hdr);
                                      p_desc := desc;
                                      p_log_values := ps.(p_log_values);
-                                     p_log_values_len := ps.(p_log_values_len);
                                      p_data_region := ps.(p_data_region); |};
                    alternate state' _ :=
                      PhyDecode state' ps \/
                      PhyDecode state' {| p_hdr := ps.(p_hdr);
                                      p_desc := desc;
                                      p_log_values := ps.(p_log_values);
-                                     p_log_values_len := ps.(p_log_values_len);
                                      p_data_region := ps.(p_data_region); |}
                 |}).
 Proof.
@@ -282,7 +301,6 @@ Proof.
     propositional;
     (intuition auto);
     propositional.
-  assert (length s >= 2 + LOG_LENGTH) by admit.
   - admit.
   - admit.
   - admit.
