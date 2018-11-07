@@ -145,7 +145,7 @@ Definition set_desc desc (i:nat) a v :=
 
 Definition get_logwrite desc (i:nat) :=
     let a := sel desc.(addresses) i in
-    v <- read (1+i);
+    v <- read (2+i);
       Ret (a, v).
 
 (* manipulating the data region *)

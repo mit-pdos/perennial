@@ -1,8 +1,9 @@
 Require Import POCS.
+Require Import Spec.HoareTactics.
 
 Require Import Examples.Logging.Impl.
 
-Require Import Spec.HoareTactics.
+From SimpleClasses Require Import Classes.
 
 Opaque plus.
 Opaque lt.
@@ -382,6 +383,7 @@ Theorem writedesc_ok ps desc :
     (fun state =>
        {| pre := PhyDecode state ps;
           post state' r :=
+            r = tt /\
             PhyDecode state' {| p_hdr := ps.(p_hdr);
                             p_desc := desc;
                             p_log_values := ps.(p_log_values);
@@ -444,6 +446,7 @@ Theorem set_desc_ok ps desc i a v :
                  ps.(p_desc) = desc /\
                  i < LOG_LENGTH;
           post state r :=
+            r = tt /\
             PhyDecode state {| p_hdr := ps.(p_hdr);
                            p_desc := desc_assign desc i a;
                            p_log_values :=
@@ -461,4 +464,58 @@ Proof.
   step; split_cases; simplify; finish.
   - spec_impl; split_wlog; simplify; finish.
   - destruct ps; eauto.
+Qed.
+
+Theorem phy_log_size_ok ps :
+  proc_cspec
+    (log_size)
+    (fun state =>
+       {| pre := PhyDecode state ps;
+          post state' r :=
+            state' = state /\
+            r = length ps.(p_data_region);
+          alternate state' _ :=
+            state' = state; |}).
+Proof.
+  unfold log_size.
+  step.
+  step.
+  pose proof (PhyDecode_data_len H).
+  omega.
+Qed.
+
+Hint Resolve phy_log_size_ok.
+
+Lemma sel_log_value d ps i :
+  PhyDecode d ps ->
+  i < LOG_LENGTH ->
+  sel d (2 + i) = sel ps.(p_log_values) i.
+Proof.
+  intros; inv_clear H; simpl.
+  apply sel_index_eq.
+  eauto.
+Qed.
+
+Theorem get_logwrite_ok ps desc i :
+  proc_cspec
+    (get_logwrite desc i)
+    (fun state =>
+       {| pre := PhyDecode state ps /\
+                 i < LOG_LENGTH /\
+                 ps.(p_desc) = desc;
+          post state' r :=
+            state' = state /\
+            r = (sel ps.(p_desc) i, sel ps.(p_log_values) i);
+          alternate state' _ :=
+            state' = state; |}).
+Proof.
+  unfold get_logwrite.
+  step.
+  step.
+  pose proof (PhyDecode_disk_len H).
+  f_equal.
+  (* BUG: rewrite does not try to instantiate def using the typeclass *)
+  rewrite (@index_inbounds block _) in H1 by omega.
+  simpl in *; propositional.
+  auto using sel_log_value.
 Qed.
