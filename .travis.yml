@@ -19,7 +19,7 @@ install: |
     echo \"Build triggered by ${TRAVIS_EVENT_TYPE}\"
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     set -ex  # -e = exit on failure; -x = trace for debug
-    opam update -y
+    #opam update -y
     opam config list
     opam repo list
     opam list
