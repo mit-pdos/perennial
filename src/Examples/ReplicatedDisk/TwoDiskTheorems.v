@@ -55,7 +55,7 @@ Section specs.
         | Working v =>
           get_disk i         state' ?|= eq d /\
           get_disk (other i) state' ?|= F /\
-          diskGet d a ?|= eq v
+          index d a ?|= eq v
         | Failed =>
           get_disk i         state' ?|= missing /\
           get_disk (other i) state' ?|= F
@@ -74,7 +74,7 @@ Section specs.
       post := fun state' r =>
         match r with
         | Working _ =>
-          get_disk i         state' ?|= eq (diskUpd d a b) /\
+          get_disk i         state' ?|= eq (assign d a b) /\
           get_disk (other i) state' ?|= F
         | Failed =>
           get_disk i         state' ?|= missing /\
@@ -82,7 +82,7 @@ Section specs.
         end;
       alternate := fun state' _ =>
         (get_disk i state' ?|= eq d \/
-         get_disk i state' ?|= eq (diskUpd d a b) /\ a < diskSize d) /\
+         get_disk i state' ?|= eq (assign d a b) /\ a < length d) /\
         get_disk (other i) state' ?|= F;
     |}.
 
@@ -96,7 +96,7 @@ Section specs.
         | Working n =>
           get_disk i         state' ?|= eq d /\
           get_disk (other i) state' ?|= F /\
-          n = diskSize d
+          n = length d
         | Failed =>
           get_disk i         state' ?|= missing /\
           get_disk (other i) state' ?|= F
@@ -194,9 +194,9 @@ Section specs.
   Proof.
     unshelve prim; eauto;
       try solve [ destruct_all ].
-    destruct (le_dec (S a) (diskSize d2)).
+    destruct (le_dec (S a) (length d2)).
     destruct_all.
-    rewrite diskUpd_oob_noop by omega.
+    autorewrite with array.
     destruct_all.
   Qed.
 

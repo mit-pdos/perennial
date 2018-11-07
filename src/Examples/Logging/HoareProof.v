@@ -11,13 +11,13 @@ Record LogicalState :=
 
 Inductive DiskDecode (d: disk) (ls: LogicalState) : Prop :=
 | disk_decode
-    (Hsize: 2 + LOG_LENGTH + diskSize ls.(ls_disk) = diskSize d)
-    (Hdisk: forall i, i <= diskSize ls.(ls_disk) -> diskGet ls.(ls_disk) i = diskGet d (i + 258)).
+    (Hsize: 2 + LOG_LENGTH + length ls.(ls_disk) = length d)
+    (Hdisk: forall i, i <= length ls.(ls_disk) -> index ls.(ls_disk) i = index d (i + 258)).
 
 Inductive LogDecode (d: disk) (ls: LogicalState) : Prop :=
 | log_decode bhdr bdesc hdr desc 
-    (Hbhdr: diskGet d O = Some bhdr)
-    (Hbdesc: diskGet d 1 = Some bdesc)
+    (Hbhdr: index d O = Some bhdr)
+    (Hbdesc: index d 1 = Some bdesc)
     (Hhdr_dec : LogHdr_fmt.(decode) bhdr = hdr)
     (Hdesc_dec : Descriptor_fmt.(decode) bdesc = desc)
     (Hlog_length: length ls.(ls_log) <= LOG_LENGTH)
@@ -25,11 +25,11 @@ Inductive LogDecode (d: disk) (ls: LogicalState) : Prop :=
                      exists a b,
                        nth_error ls.(ls_log) i = Some (a, b) /\
                        nth_error desc.(addresses) i = Some a /\
-                       diskGet d (2 + i) = Some b):
+                       index d (2 + i) = Some b):
     LogDecode d ls.
 
 Definition disk_invariant (d: disk) :=
-  diskSize d >= 2 + LOG_LENGTH.
+  length d >= 2 + LOG_LENGTH.
 
 Record PhysicalState :=
   { p_hdr: LogHdr;
@@ -38,49 +38,58 @@ Record PhysicalState :=
     p_data_region: disk; }.
 
 Definition PhyDecode (d: disk) : option PhysicalState :=
-  match diskGet d 0, diskGet d 1 with
+  match index d 0, index d 1 with
   | Some bhdr, Some bdesc =>
     Some {| p_hdr := LogHdr_fmt.(decode) bhdr;
             p_desc := Descriptor_fmt.(decode) bdesc;
-            p_log_values := diskSubslice d 2 (LOG_LENGTH);
-            p_data_region := diskSubslice d (2+LOG_LENGTH) (diskSize d - (2 + LOG_LENGTH)); |}
+            p_log_values := subslice d 2 (LOG_LENGTH);
+            p_data_region := subslice d (2+LOG_LENGTH) (length d - (2 + LOG_LENGTH)); |}
   | _, _ => None
   end.
+
+Lemma index_inbounds_exists (d: disk) i :
+  i < length d ->
+  exists b, index d i = Some b.
+Proof.
+  intros.
+  destruct_with_eqn (index d i); eauto.
+  exfalso; apply index_not_none in Heqo; auto.
+Qed.
 
 Theorem PhyDecode_invariant : forall d,
     disk_invariant d ->
     exists ps, PhyDecode d = Some ps /\
-          (exists b, diskGet d 0 = Some b /\
+          (exists b, index d 0 = Some b /\
                 LogHdr_fmt.(decode) b = ps.(p_hdr)) /\
-          (exists b, diskGet d 1 = Some b /\
+          (exists b, index d 1 = Some b /\
                 Descriptor_fmt.(decode) b = ps.(p_desc)) /\
           length ps.(p_log_values) = LOG_LENGTH /\
-          2 + LOG_LENGTH + diskSize ps.(p_data_region) = diskSize d.
+          2 + LOG_LENGTH + length ps.(p_data_region) = length d.
 Proof.
   unfold disk_invariant; intros.
   unfold PhyDecode.
-  edestruct (@disk_inbounds_exists 0 d); try omega.
-  edestruct (@disk_inbounds_exists 1 d); try omega.
+  edestruct (@index_inbounds_exists d 0); try omega.
+  edestruct (@index_inbounds_exists d 1); try omega.
   repeat simpl_match.
   descend; (intuition idtac);
     cbn [p_hdr p_desc p_log_values p_data_region].
   - descend; intuition eauto.
   - descend; intuition eauto.
-  - simpl; autorewrite with disk_size; auto.
-  - autorewrite with disk_size.
+  - rewrite length_subslice by omega; auto.
+  - autorewrite with length.
     omega.
 Qed.
 
 Inductive CommitStatus d b : Prop :=
 | commit_status bhdr 
-    (Hbhdr: diskGet d O = Some bhdr)
+    (Hbhdr: index d O = Some bhdr)
     (Hstatus : (LogHdr_fmt.(decode) bhdr).(committed) = b):
     CommitStatus d b.
 
 Fixpoint logical_log_apply (l: list (addr * block)) (d: disk)  : disk :=
   match l with
   | nil => d
-  | (a, b) :: l' => logical_log_apply l' (diskUpd d (2+LOG_LENGTH+a) b)
+  | (a, b) :: l' => logical_log_apply l' (assign d (2+LOG_LENGTH+a) b)
   end.
 
 Definition ls_snoc ls a v : LogicalState :=
@@ -110,7 +119,7 @@ Definition log_size_cspec ls : Specification nat unit D.State :=
   fun state =>
     {|
       pre := LogDecode state ls /\ DiskDecode state ls /\ CommitStatus state false;
-      post := fun state' sz => state = state' /\ sz = diskSize ls.(ls_disk);
+      post := fun state' sz => state = state' /\ sz = length ls.(ls_disk);
       alternate := fun state' _ => state = state'
     |}.
     
@@ -119,7 +128,7 @@ Definition log_read_cspec ls (a: addr) : Specification block unit D.State :=
     {|
       pre := LogDecode state ls /\ DiskDecode state ls /\ CommitStatus state false;
       post := fun state' v => state = state' /\
-                              match diskGet ls.(ls_disk) a with
+                              match index ls.(ls_disk) a with
                               | Some v' => v = v'
                               | None => True
                               end;
@@ -161,7 +170,7 @@ Theorem read_ok a :
              (fun state =>
                 {| pre := True;
                    post state' r :=
-                     diskGet state a ?|= eq r /\
+                     index state a ?|= eq r /\
                      state' = state;
                    alternate state' _ :=
                      state' = state; |}).
@@ -173,7 +182,7 @@ Proof.
            end;
     propositional;
     auto.
-  destruct (diskGet s' a); simpl; eauto.
+  destruct (index s' a); simpl; eauto.
 Qed.
 
 Theorem write_ok a v :
@@ -183,10 +192,10 @@ Theorem write_ok a v :
                 {| pre := True;
                    post state' r :=
                      r = tt /\
-                     state' = diskUpd state a v;
+                     state' = assign state a v;
                    alternate state' _ :=
                      state' = state \/
-                     state' = diskUpd state a v; |}).
+                     state' = assign state a v; |}).
 Proof.
   unfold write.
   prim;
@@ -203,7 +212,7 @@ Theorem size_ok :
              (fun state =>
                 {| pre := True;
                    post state' r :=
-                     r = diskSize state /\
+                     r = length state /\
                      state' = state;
                    alternate state' _ :=
                      state' = state; |}).
@@ -222,7 +231,7 @@ Hint Resolve read_ok write_ok size_ok.
 Ltac step :=
   unshelve step_proc; simplify; finish.
 
-Opaque diskGet.
+Opaque index.
 
 Theorem gethdr ps :
   proc_cspec D.ODLayer
@@ -240,7 +249,7 @@ Proof.
   step.
   step.
   eapply PhyDecode_invariant in H; propositional; eauto.
-  replace (diskGet state 0) in *; simpl in *; propositional; eauto.
+  replace (index state 0) in *; simpl in *; propositional; eauto.
   congruence.
 Qed.
 
@@ -274,6 +283,6 @@ Proof.
     (intuition auto);
     propositional.
   - unfold disk_invariant in *.
-    autorewrite with upd; auto.
+    autorewrite with length; auto.
   - eexists; intuition eauto.
 Abort.

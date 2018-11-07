@@ -71,7 +71,7 @@ Module TwoDisk.
   Inductive op_step : OpSemantics Op State :=
   | step_read : forall a i r state,
       match get_disk i state with
-      | Some d => match diskGet d a with
+      | Some d => match index d a with
                   | Some b0 => r = Working b0
                   | None => exists b, r = Working b
                   end
@@ -80,14 +80,14 @@ Module TwoDisk.
       op_step (op_read i a) state state r
   | step_write : forall a i b state r state',
       match get_disk i state with
-      | Some d => state' = set_disk i state (diskUpd d a b) /\
+      | Some d => state' = set_disk i state (assign d a b) /\
                   r = Working tt
       | None => r = Failed /\ state' = state
       end ->
       op_step (op_write i a b) state state' r
   | step_size : forall i state r,
       match get_disk i state with
-      | Some d => r = Working (diskSize d)
+      | Some d => r = Working (length d)
       | None => r = Failed
       end ->
       op_step (op_size i) state state r.

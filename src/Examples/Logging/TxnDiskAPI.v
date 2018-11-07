@@ -20,19 +20,19 @@ Module TxnDisk.
       (* note that we read from the old disk - this allows the log to serve
       reads directly from the data region rather than from the log (which in
       practice is done with an in-memory cache of the log) *)
-      match diskGet d_old a with
+      match index d_old a with
       | Some b0 => r = b0
       | None => exists b, r = b
       end ->
       op_step (op_read a) (d_old, d) (d_old, d) r
   | step_write_success : forall a b d_old d d',
-      d' = (diskUpd d a b) ->
+      d' = (assign d a b) ->
       op_step (op_write a b) (d_old, d) (d_old, d') WriteOK
   | step_write_fail : forall a b d_old d,
       op_step (op_write a b) (d_old, d) (d_old, d) WriteErr
   | step_size : forall d_old d,
       (* it's an invariant of the log that the disks have the same size *)
-      op_step (op_size) (d_old, d) (d_old, d) (diskSize d).
+      op_step (op_size) (d_old, d) (d_old, d) (length d).
 
   Definition dyn : Dynamics Op State :=
     {| step := op_step; crash_step := pure tt |}.

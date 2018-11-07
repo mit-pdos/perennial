@@ -4,3 +4,6 @@
 [submodule "vendor/simple-classes"]
 	path = vendor/simple-classes
 	url = https://github.com/tchajed/coq-simple-classes
+[submodule "vendor/array"]
+	path = vendor/array
+	url = https://github.com/tchajed/coq-array

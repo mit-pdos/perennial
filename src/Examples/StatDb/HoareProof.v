@@ -87,7 +87,7 @@ Ltac simplify :=
          | _ => progress simpl in *
          | _ => progress safe_intuition
          | _ => progress subst
-         | _ => progress autorewrite with upd in *
+         | _ => progress autorewrite with array in *
          end.
 
 Ltac step :=

@@ -3,7 +3,7 @@ Require Import POCS.
 Require Export Examples.Logging.TxnDiskAPI.
 Require Export Examples.ReplicatedDisk.OneDiskAPI.
 
-Require Import Helpers.Array.
+From Array Require Import Array.
 
 Import ProcNotations.
 Local Open Scope proc.

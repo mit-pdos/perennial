@@ -115,12 +115,14 @@ Module ReplicatedDisk.
            | [ u: unit |- _ ] => destruct u
            | |- _ /\ _ => split; [ solve [auto] | ]
            | |- _ /\ _ => split; [ | solve [auto] ]
+           | |- list block => shelve
            | |- disk => shelve
            | |- disk*(disk -> Prop) => evar_tuple d F
+           | |- list block*(list block -> Prop) => evar_tuple d F
            | _ => progress simpl in *
            | _ => progress safe_intuition
            | _ => progress subst
-           | _ => progress autorewrite with upd in *
+           | _ => progress autorewrite with length array in *
            end.
 
   (* The [finish] tactic tries a number of techniques to solve the goal. *)
@@ -188,7 +190,7 @@ Module ReplicatedDisk.
                     disk1 state ?|= eq d;
              post :=
                fun state' r =>
-                 diskGet d a ?|= eq r /\
+                 index d a ?|= eq r /\
                  disk0 state' ?|= eq d /\
                  disk1 state' ?|= eq d;
              alternate :=
@@ -214,17 +216,17 @@ Module ReplicatedDisk.
              post :=
                fun state' r =>
                  r = tt /\
-                 disk0 state' ?|= eq (diskUpd d a b) /\
-                 disk1 state' ?|= eq (diskUpd d a b);
+                 disk0 state' ?|= eq (assign d a b) /\
+                 disk1 state' ?|= eq (assign d a b);
              alternate :=
                fun state' _ =>
                  (disk0 state' ?|= eq d /\
                   disk1 state' ?|= eq d) \/
-                 (a < diskSize d /\
-                  disk0 state' ?|= eq (diskUpd d a b) /\
+                 (a < length d /\
+                  disk0 state' ?|= eq (assign d a b) /\
                   disk1 state' ?|= eq d) \/
-                 (disk0 state' ?|= eq (diskUpd d a b) /\
-                  disk1 state' ?|= eq (diskUpd d a b));
+                 (disk0 state' ?|= eq (assign d a b) /\
+                  disk1 state' ?|= eq (assign d a b));
            |}).
   Proof.
     unfold write.
@@ -235,7 +237,7 @@ Module ReplicatedDisk.
 
     step.
     destruct r; (intuition eauto); simplify.
-    destruct (lt_dec a (diskSize d)).
+    destruct (lt_dec a (length d)).
     eauto.
     simplify.
 
@@ -252,11 +254,11 @@ Module ReplicatedDisk.
            pre :=
              disk0 state ?|= eq d_0 /\
              disk1 state ?|= eq d_1 /\
-             diskSize d_0 = diskSize d_1;
+             length d_0 = length d_1;
            post :=
              fun state' r =>
-               r = diskSize d_0 /\
-               r = diskSize d_1 /\
+               r = length d_0 /\
+               r = length d_1 /\
                disk0 state' ?|= eq d_0 /\
                disk1 state' ?|= eq d_1;
            alternate :=
@@ -274,8 +276,8 @@ Module ReplicatedDisk.
   Hint Resolve size_int_ok.
 
   Definition equal_after a (d_0 d_1: disk) :=
-    diskSize d_0 = diskSize d_1 /\
-    forall a', a <= a' -> diskGet d_0 a' = diskGet d_1 a'.
+    length d_0 = length d_1 /\
+    forall a', a <= a' -> index d_0 a' = index d_1 a'.
 
   Theorem le_eq_or_S_le : forall n m,
       n <= m ->
@@ -286,20 +288,18 @@ Module ReplicatedDisk.
     omega.
   Qed.
 
-  Theorem equal_after_diskUpd : forall a d_0 d_1 b,
+  Theorem equal_after_assign : forall a d_0 d_1 b,
       equal_after (S a) d_0 d_1 ->
-      equal_after a (diskUpd d_0 a b) (diskUpd d_1 a b).
+      equal_after a (assign d_0 a b) (assign d_1 a b).
   Proof.
     unfold equal_after; intuition.
-    autorewrite with upd; eauto.
+    autorewrite with length; eauto.
     apply le_eq_or_S_le in H; intuition subst.
-    destruct (lt_dec a' (diskSize d_0)); autorewrite with upd.
-    assert (a' < diskSize d_1) by congruence; autorewrite with upd; auto.
-    assert (~a' < diskSize d_1) by congruence; autorewrite with upd; auto.
-    autorewrite with upd; eauto.
+    destruct (lt_dec a' (length d_0)); autorewrite with array; auto.
+    autorewrite with array; auto.
   Qed.
 
-  Hint Resolve equal_after_diskUpd.
+  Hint Resolve equal_after_assign.
 
   Theorem init_at_ok : forall a d_0 d_1,
       proc_cspec TDLayer
@@ -344,7 +344,7 @@ Module ReplicatedDisk.
                   disk0 state' ?|= eq d_0' /\
                   disk1 state' ?|= eq d_1' /\
                   match r with
-                  | Some sz => diskSize d_0' = sz /\ diskSize d_1' = sz
+                  | Some sz => length d_0' = sz /\ length d_1' = sz
                   | None => True
                   end;
             alternate :=
@@ -356,7 +356,7 @@ Module ReplicatedDisk.
     destruct r.
     step.
     - destruct r.
-      + destruct (diskSize d_0 == v).
+      + destruct (length d_0 == v).
         * step.
         * step.
       + step.
@@ -374,18 +374,18 @@ Module ReplicatedDisk.
       d_0 = d_1.
   Proof.
     unfold equal_after; intuition.
-    eapply disk_ext_eq; intros.
+    eapply index_ext_eq; intros.
     eapply H1; omega.
   Qed.
 
   Theorem equal_after_size : forall d_0 d_1,
-      diskSize d_0 = diskSize d_1 ->
-      equal_after (diskSize d_0) d_0 d_1.
+      length d_0 = length d_1 ->
+      equal_after (length d_0) d_0 d_1.
   Proof.
     unfold equal_after; intuition.
-    assert (~a' < diskSize d_0) by omega.
-    assert (~a' < diskSize d_1) by congruence.
-    autorewrite with upd; eauto.
+    assert (~a' < length d_0) by omega.
+    assert (~a' < length d_1) by congruence.
+    autorewrite with array; eauto.
   Qed.
 
   Hint Resolve equal_after_size.
@@ -515,16 +515,16 @@ Module ReplicatedDisk.
   Qed.
 
   Theorem disks_eq_inbounds : forall (d: disk) a v v',
-      a < diskSize d ->
-      diskGet d a ?|= eq v ->
-      diskGet d a ?|= eq v' ->
+      a < length d ->
+      index d a ?|= eq v ->
+      index d a ?|= eq v' ->
       v = v'.
   Proof.
     intros.
-    case_eq (diskGet d a); intros.
+    case_eq (index d a); intros.
     - rewrite H2 in *. simpl in *. congruence.
     - exfalso.
-      eapply disk_inbounds_not_none; eauto.
+      apply index_not_none in H2; eauto.
   Qed.
 
   (* To make these specifications precise while also covering both the already
@@ -534,17 +534,24 @@ Module ReplicatedDisk.
   | FullySynced
   | OutOfSync (a:addr) (b:block).
 
-  Theorem diskUpd_maybe_same : forall (d:disk) a b,
-      diskGet d a ?|= eq b ->
-      diskUpd d a b = d.
+  Theorem assign_maybe_same : forall (d:disk) a b,
+      index d a ?|= eq b ->
+      assign d a b = d.
   Proof.
     intros.
-    destruct (diskGet d a) eqn:?; simpl in *; subst;
-      autorewrite with upd;
+    destruct (lt_dec a (length d));
+      autorewrite with array;
       auto.
+    destruct_with_eqn (index d a); simpl in *; subst; eauto.
+    apply index_ext_eq; intros i.
+    destruct (lt_dec i (length d)), (a == i);
+      subst;
+      autorewrite with array;
+      auto.
+    exfalso; apply index_not_none in Heqo; auto.
   Qed.
 
-  Hint Rewrite diskUpd_maybe_same using (solve [ auto ]) : upd.
+  Hint Rewrite assign_maybe_same using (solve [ auto ]) : array.
   Hint Resolve PeanoNat.Nat.lt_neq.
   Hint Resolve disks_eq_inbounds.
 
@@ -558,7 +565,7 @@ Module ReplicatedDisk.
                (* for simplicity we only consider in-bounds addresses, though
                   if a is out-of-bounds fixup just might uselessly write to
                   disk and not do anything *)
-               a < diskSize d /\
+               a < length d /\
                disk0 state ?|= eq d /\
                disk1 state ?|= eq d;
              post :=
@@ -590,27 +597,27 @@ Module ReplicatedDisk.
         (fun state =>
            {|
              pre :=
-               a < diskSize d /\
-               disk0 state ?|= eq (diskUpd d a b) /\
+               a < length d /\
+               disk0 state ?|= eq (assign d a b) /\
                disk1 state ?|= eq d;
              post :=
                fun state' r =>
                  match r with
                  | Continue =>
                    (* could happen if b already happened to be value *)
-                   disk0 state' ?|= eq (diskUpd d a b) /\
-                   disk1 state' ?|= eq (diskUpd d a b)
+                   disk0 state' ?|= eq (assign d a b) /\
+                   disk1 state' ?|= eq (assign d a b)
                  | RepairDoneOrFailed =>
-                   (disk0 state' ?|= eq (diskUpd d a b) /\
-                    disk1 state' ?|= eq (diskUpd d a b)) \/
+                   (disk0 state' ?|= eq (assign d a b) /\
+                    disk1 state' ?|= eq (assign d a b)) \/
                    (disk0 state' ?|= eq d /\
                     disk1 state' ?|= eq d)
                  end;
              alternate :=
                fun state' _ =>
-                 (disk0 state' ?|= eq (diskUpd d a b) /\
-                  disk1 state' ?|= eq (diskUpd d a b)) \/
-                 (disk0 state' ?|= eq (diskUpd d a b) /\
+                 (disk0 state' ?|= eq (assign d a b) /\
+                  disk1 state' ?|= eq (assign d a b)) \/
+                 (disk0 state' ?|= eq (assign d a b) /\
                   disk1 state' ?|= eq d) \/
                  (disk0 state' ?|= eq d /\
                   disk1 state' ?|= eq d);
@@ -634,27 +641,27 @@ Module ReplicatedDisk.
         (fun state =>
            {|
              pre :=
-               a < diskSize d /\
+               a < length d /\
                (* recovery, working from end of disk, has not yet reached the
                   correct address *)
                a' < a /\
-               disk0 state ?|= eq (diskUpd d a' b) /\
+               disk0 state ?|= eq (assign d a' b) /\
                disk1 state ?|= eq d;
              post :=
                fun state' r =>
                  match r with
                  | Continue =>
-                   disk0 state' ?|= eq (diskUpd d a' b) /\
+                   disk0 state' ?|= eq (assign d a' b) /\
                    disk1 state' ?|= eq d
                  | RepairDoneOrFailed =>
                    (disk0 state' ?|= eq d /\
                     disk1 state' ?|= eq d) \/
-                   (disk0 state' ?|= eq (diskUpd d a' b) /\
-                    disk1 state' ?|= eq (diskUpd d a' b))
+                   (disk0 state' ?|= eq (assign d a' b) /\
+                    disk1 state' ?|= eq (assign d a' b))
                  end;
              alternate :=
                fun state' _ =>
-                 (disk0 state' ?|= eq (diskUpd d a' b) /\
+                 (disk0 state' ?|= eq (assign d a' b) /\
                   disk1 state' ?|= eq d) \/
                  (disk0 state' ?|= eq d /\
                   disk1 state' ?|= eq d);
@@ -685,12 +692,12 @@ Module ReplicatedDisk.
         (fun state =>
            {|
              pre :=
-               a < diskSize d /\
+               a < length d /\
                match s with
                | FullySynced => disk0 state ?|= eq d /\
                                disk1 state ?|= eq d
                | OutOfSync a' b => a' <= a /\
-                                  disk0 state ?|= eq (diskUpd d a' b) /\
+                                  disk0 state ?|= eq (assign d a' b) /\
                                   disk1 state ?|= eq d
                end;
              post :=
@@ -702,15 +709,15 @@ Module ReplicatedDisk.
                    match r with
                    | Continue =>
                      (a' < a /\
-                      disk0 state' ?|= eq (diskUpd d a' b) /\
+                      disk0 state' ?|= eq (assign d a' b) /\
                       disk1 state' ?|= eq d) \/
-                     (disk0 state' ?|= eq (diskUpd d a' b) /\
-                      disk1 state' ?|= eq (diskUpd d a' b))
+                     (disk0 state' ?|= eq (assign d a' b) /\
+                      disk1 state' ?|= eq (assign d a' b))
                    | RepairDoneOrFailed =>
                      (disk0 state' ?|= eq d /\
                       disk1 state' ?|= eq d) \/
-                     (disk0 state' ?|= eq (diskUpd d a' b) /\
-                      disk1 state' ?|= eq (diskUpd d a' b))
+                     (disk0 state' ?|= eq (assign d a' b) /\
+                      disk1 state' ?|= eq (assign d a' b))
                    end
                  end;
              alternate :=
@@ -719,9 +726,9 @@ Module ReplicatedDisk.
                  | FullySynced => disk0 state' ?|= eq d /\
                                  disk1 state' ?|= eq d
                  | OutOfSync a' b =>
-                   (disk0 state' ?|= eq (diskUpd d a' b) /\
-                    disk1 state' ?|= eq (diskUpd d a' b)) \/
-                   (disk0 state' ?|= eq (diskUpd d a' b) /\
+                   (disk0 state' ?|= eq (assign d a' b) /\
+                    disk1 state' ?|= eq (assign d a' b)) \/
+                   (disk0 state' ?|= eq (assign d a' b) /\
                     disk1 state' ?|= eq d) \/
                    (disk0 state' ?|= eq d /\
                     disk1 state' ?|= eq d)
@@ -732,9 +739,7 @@ Module ReplicatedDisk.
     destruct s; intuition eauto.
     - spec_case fixup_equal_ok; simplify; finish.
     - apply PeanoNat.Nat.lt_eq_cases in H1; intuition.
-      + spec_case fixup_wrong_addr_ok; simplify; finish.
-        split. intuition eauto.
-        simplify; finish.
+      + spec_case (fixup_wrong_addr_ok a d b a0); simplify; finish.
         destruct v; finish.
       + spec_case fixup_correct_addr_ok; simplify; finish.
         split. intuition eauto.
@@ -752,12 +757,12 @@ Module ReplicatedDisk.
         (fun state =>
            {|
              pre :=
-               a <= diskSize d /\
+               a <= length d /\
                match s with
                | FullySynced => disk0 state ?|= eq d /\
                                disk1 state ?|= eq d
                | OutOfSync a' b => a' < a /\
-                                  disk0 state ?|= eq (diskUpd d a' b) /\
+                                  disk0 state ?|= eq (assign d a' b) /\
                                   disk1 state ?|= eq d
                end;
              post :=
@@ -769,8 +774,8 @@ Module ReplicatedDisk.
                  | OutOfSync a' b =>
                    (disk0 state' ?|= eq d /\
                     disk1 state' ?|= eq d) \/
-                   (disk0 state' ?|= eq (diskUpd d a' b) /\
-                    disk1 state' ?|= eq (diskUpd d a' b))
+                   (disk0 state' ?|= eq (assign d a' b) /\
+                    disk1 state' ?|= eq (assign d a' b))
                  end;
              alternate :=
                fun state' _ =>
@@ -780,10 +785,10 @@ Module ReplicatedDisk.
                  | OutOfSync a' b =>
                    (disk0 state' ?|= eq d /\
                     disk1 state' ?|= eq d) \/
-                   (disk0 state' ?|= eq (diskUpd d a' b) /\
+                   (disk0 state' ?|= eq (assign d a' b) /\
                     disk1 state' ?|= eq d) \/
-                   (disk0 state' ?|= eq (diskUpd d a' b) /\
-                    disk1 state' ?|= eq (diskUpd d a' b))
+                   (disk0 state' ?|= eq (assign d a' b) /\
+                    disk1 state' ?|= eq (assign d a' b))
                  end;
            |}).
   Proof.
@@ -793,7 +798,7 @@ Module ReplicatedDisk.
     - step.
       destruct s; simplify.
       * specialize (IHa d FullySynced).
-        split; intuition eauto.
+        simplify; finish.
         destruct r; step.
         omega.
       * split; [intuition; eauto; try omega|].
@@ -802,8 +807,8 @@ Module ReplicatedDisk.
         ** spec_intros. simpl in H3. destruct H3.
            *** specialize (IHa d (OutOfSync a0 b)).
                step. omega.
-           *** specialize (IHa (diskUpd d a0 b) FullySynced).
-               step. intuition.
+           *** specialize (IHa (assign d a0 b) FullySynced).
+               step. autorewrite with length in *; omega.
         ** step.
   Qed.
 
@@ -816,8 +821,8 @@ Module ReplicatedDisk.
           match s with
           | FullySynced => disk0 state ?|= eq d /\
                           disk1 state ?|= eq d
-          | OutOfSync a b => a < diskSize d /\
-                            disk0 state ?|= eq (diskUpd d a b) /\
+          | OutOfSync a b => a < length d /\
+                            disk0 state ?|= eq (assign d a b) /\
                             disk1 state ?|= eq d
           end;
         post :=
@@ -828,8 +833,8 @@ Module ReplicatedDisk.
             | OutOfSync a b =>
               (disk0 state' ?|= eq d /\
                disk1 state' ?|= eq d) \/
-              (disk0 state' ?|= eq (diskUpd d a b) /\
-               disk1 state' ?|= eq (diskUpd d a b))
+              (disk0 state' ?|= eq (assign d a b) /\
+               disk1 state' ?|= eq (assign d a b))
             end;
         alternate :=
           fun state' (_:unit) =>
@@ -839,10 +844,10 @@ Module ReplicatedDisk.
             | OutOfSync a b =>
               (disk0 state' ?|= eq d /\
                disk1 state' ?|= eq d) \/
-              (disk0 state' ?|= eq (diskUpd d a b) /\
+              (disk0 state' ?|= eq (assign d a b) /\
                disk1 state' ?|= eq d) \/
-              (disk0 state' ?|= eq (diskUpd d a b) /\
-               disk1 state' ?|= eq (diskUpd d a b))
+              (disk0 state' ?|= eq (assign d a b) /\
+               disk1 state' ?|= eq (assign d a b))
             end;
       |}.
 
@@ -877,7 +882,7 @@ Module ReplicatedDisk.
       (match rp with
        | stable_sync => Recover_spec d (FullySynced)
        | stable_out => Recover_spec d (OutOfSync a b)
-       | try_recv => Recover_spec (diskUpd d a b) (OutOfSync a b)
+       | try_recv => Recover_spec (assign d a b) (OutOfSync a b)
        end).
   Proof.
     unfold Recover, Recover_spec; intros.
@@ -897,7 +902,7 @@ Module ReplicatedDisk.
       intuition eauto.
       simplify.
       unshelve (step).
-      exact (diskUpd d a b). exact (OutOfSync a b). simplify; finish.
+      exact (assign d a b). exact (OutOfSync a b). simplify; finish.
       step.
   Qed.
 
@@ -914,10 +919,11 @@ Module ReplicatedDisk.
                              match rp with
                              | stable_sync => Recover_spec d (FullySynced)
                              | stable_out => Recover_spec d (OutOfSync a b)
-                             | try_recv => Recover_spec (diskUpd d a b) (OutOfSync a b)
+                             | try_recv => Recover_spec (assign d a b) (OutOfSync a b)
                              end).
   Proof.
     unfold idempotent_crash_step; intuition; simplify.
+    unfold identity in *; subst.
     destruct a0.
     - exists stable_sync; simplify; finish.
     - destruct H0; [| destruct H0].
@@ -961,19 +967,22 @@ Module ReplicatedDisk.
       unfold refine_spec, rd_abstraction in *.
     - intros. eapply Recover_rok2.
     - descend; simplify; intuition eauto.
-    - descend; simplify; intuition eauto;
-       inversion H0; subst.
+    - intros.
+      simpl in H.
+      (intuition eauto);
+        inversion H0; clear H0; subst.
       * exists (stable_sync); simplify; finish.
-      * exists (stable_out); simplify; finish.
-      * assert (a < diskSize d \/ a >= diskSize d) as [Hlt|Hoob] by omega.
+      * exists (stable_out); simpl.
+        intuition eauto.
+      * assert (a < length d \/ a >= length d) as [Hlt|Hoob] by omega.
         ** exists (try_recv); simplify; finish.
         ** exists (stable_sync); simplify; finish.
     - unfold rd_abstraction in *; simplify. destruct a0, H0.
       * exists d. simplify; finish.
       * exists d. simplify; finish.
-      * exists (diskUpd d a b); simplify; finish.
-      * exists (diskUpd d a b); simplify; finish.
-      * exists (diskUpd d a b); simplify; finish.
+      * exists (assign d a b); simplify; finish.
+      * exists (assign d a b); simplify; finish.
+      * exists (assign d a b); simplify; finish.
   Qed.
 
   Theorem size_rec_ok :
@@ -1023,7 +1032,7 @@ Module ReplicatedDisk.
     unfold compile_op_refines_step.
     intros T op. destruct op.
     * eapply proc_rspec_crash_refines_op; [ intros; eapply read_rec_ok |..]; simplify; eauto.
-      econstructor; destruct (diskGet _ _); eauto.
+      econstructor; destruct (index _ _); eauto.
     * eapply proc_rspec_crash_refines_op; [ intros; eapply write_rec_ok |..]; simplify; eauto.
       intuition; subst; intuition eauto.
     * eapply proc_rspec_crash_refines_op; [ intros; eapply size_rec_ok |..]; simplify; eauto.
