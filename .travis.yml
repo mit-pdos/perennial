@@ -2,33 +2,36 @@ dist: trusty
 sudo: required
 language: generic
 
-# set up ocaml and opam
-before_install:
-  - sh <(curl -sL https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-ocaml.sh)
-  - eval $(opam config env)
+services:
+  - docker
+
 env:
   global:
-    - OCAML_VERSION=4.06
-    - OPAM_VERSION=2.0.0
+  - NJOBS="2"
   matrix:
-    - COQ_VERSION=master
+  - COQ_IMAGE="coqorg/coq:dev"
 
-install:
-  - opam pin add -y coq "https://github.com/coq/coq.git#$COQ_VERSION"
-script: make test
-
-# cache opam-built compiler and packages
-cache:
-  directories:
-    - $HOME/.opam
-before_cache:
-  - rm -rf $HOME/.opam/log
-
-# note that this disables emails to commit authors
-notifications:
-  email:
-    recipients:
-      - tchajed@mit.edu
-    # these are the defaults
-    on_success: change
-    on_failure: always
+install: |
+  # Prepare the COQ container
+  docker run -d -i --init --name=COQ -v ${TRAVIS_BUILD_DIR}:/home/coq/demo -w /home/coq/demo ${COQ_IMAGE}
+  docker exec COQ /bin/bash --login -c "
+    # This bash script is double-quoted to interpolate Travis CI env vars:
+    echo \"Build triggered by ${TRAVIS_EVENT_TYPE}\"
+    export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
+    set -ex  # -e = exit on failure; -x = trace for debug
+    opam update -y
+    opam config list
+    opam repo list
+    opam list
+    "
+script:
+- echo -e "${ANSI_YELLOW}Building...${ANSI_RESET}" && echo -en 'travis_fold:start:testbuild\\r'
+- |
+  docker exec COQ /bin/bash --login -c "
+    export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
+    set -ex
+    sudo chown -R coq:coq /home/coq/demo
+    make -j ${NJOBS} -k
+    "
+- docker stop COQ  # optional
+- echo -en 'travis_fold:end:testbuild\\r'
