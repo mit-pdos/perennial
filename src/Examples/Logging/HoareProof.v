@@ -514,8 +514,51 @@ Proof.
   step.
   pose proof (PhyDecode_disk_len H).
   f_equal.
-  (* BUG: rewrite does not try to instantiate def using the typeclass *)
-  rewrite (@index_inbounds block _) in H1 by omega.
+  (* BUG: rewrite does not try to instantiate def using the typeclass without
+  the (def:=_) *)
+  rewrite (index_inbounds (def:=_)) in H1 by omega.
   simpl in *; propositional.
   auto using sel_log_value.
 Qed.
+
+Hint Resolve get_logwrite_ok.
+
+Lemma phy_index_data:
+  forall (ps : PhysicalState) (a : nat) (s : D.ODLayer.(State)),
+    PhyDecode s ps ->
+    forall v : block,
+      index s (2 + LOG_LENGTH + a) ?|= eq v ->
+      index ps.(p_data_region) a ?|= eq v.
+Proof.
+  intros ps a s H v H0.
+  pose proof (PhyDecode_disk_len H).
+  inv_clear H; simpl in *.
+
+  destruct (index_dec data a);
+    propositional;
+    autorewrite with array in *;
+    auto.
+
+  rewrite (index_inbounds (def:=_)) in * by omega; simpl.
+  simpl in *; propositional.
+  apply sel_index_eq; auto.
+Qed.
+
+Hint Resolve phy_index_data.
+
+Theorem data_read_ok ps a :
+  proc_cspec
+    (data_read a)
+    (fun state =>
+       {| pre := PhyDecode state ps;
+          post state' r :=
+            state' = state /\
+            index ps.(p_data_region) a ?|= eq r;
+          alternate state' _ :=
+            state' = state; |}).
+Proof.
+  unfold data_read.
+  spec_impl; finish.
+Qed.
+
+Hint Resolve data_read_ok.
