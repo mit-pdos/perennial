@@ -46,6 +46,21 @@ Proof.
   eapply H; do 2 eexists; intuition eauto.
 Qed.
 
+Lemma seq_star_alt A T r (x y: A) (t: T):
+  seq_star r x y t <-> (exists n, seq_rep_n n r x y t).
+Proof.
+  split.
+  - induction 1.
+    * exists O. econstructor.
+    * destruct IHseq_star as (n&Hseq).
+      exists (S n). econstructor; eauto.
+  - intros (n&Hseq). revert x y Hseq.
+    induction n; intros x y Hseq.
+    * inversion Hseq; subst; econstructor.
+    * destruct Hseq as (t'&?&?&?).
+      econstructor; eauto.
+Qed.
+
 Lemma seq_star_mid_invariant A (p: relation A A unit) (q: relation A A unit) P:
   (test P;; p ---> q ;; test P) ->
   (q;; seq_star q ---> q) ->
