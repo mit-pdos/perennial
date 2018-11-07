@@ -116,6 +116,7 @@ Ltac finish :=
          | _ => match_abs
          | _ => solve [ eauto ]
          | _ => congruence
+         | _ => omega
          end.
 
 Lemma and_wlog (P Q:Prop) :

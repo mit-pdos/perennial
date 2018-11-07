@@ -6,6 +6,10 @@ Require Import Examples.Logging.LogLayout.
 
 Import EqualDecNotation.
 
+Opaque plus.
+Opaque lt.
+Opaque D.ODLayer.
+
 Record LogicalState :=
   { ls_committed : bool;
     ls_log : list (addr * block);
@@ -42,9 +46,9 @@ Ltac match_abs ::=
   | [ H: LogDecode ?d _ |- LogDecode ?d _ ] => exact H
   | [ H: PhyDecode ?d ?ps |- exists ps, PhyDecode ?d ps /\ _ ] =>
     exists ps; split; [ exact H | ]
-  | [ H: LogDecode ?d ?ps |- context[LogDecode ?d _] ] =>
+  | [ H: LogDecode ?ps ?ls |- context[LogDecode ?ps _] ] =>
     match goal with
-    | |- exists _, _ => solve [ destruct ps; descend; eauto ]
+    | |- exists _, _ => solve [ destruct ls; descend; eauto ]
     end
   end.
 
@@ -251,3 +255,116 @@ Fixpoint logical_log_apply (l: list (addr * block)) (data: disk)  : disk :=
   | nil => data
   | (a, b) :: l' => logical_log_apply l' (assign data (2+LOG_LENGTH+a) b)
   end.
+
+Local Hint Resolve apply_at_ok.
+
+Lemma log_decode_apply_one:
+  forall (len : nat) (ps : PhysicalState) (ls : LogicalState) (i : nat) (state : D.ODLayer.(State)),
+    PhyDecode state ps ->
+    LogDecode ps ls ->
+    i + S len = length ls.(ls_log) ->
+    ls.(ls_committed) = true ->
+    LogDecode
+      {|
+        p_hdr := ps.(p_hdr);
+        p_desc := ps.(p_desc);
+        p_log_values := ps.(p_log_values);
+        p_data_region := assign ps.(p_data_region) (sel ps.(p_desc) i) (sel ps.(p_log_values) i) |}
+      {|
+        ls_committed := true;
+        ls_log := ls.(ls_log);
+        ls_disk := assign ps.(p_data_region) (sel ps.(p_desc) i) (sel ps.(p_log_values) i) |}.
+Proof.
+  intros len ps ls i state Hphy Hlog H H0.
+  constructor;
+    try erewrite logd_loglen by eauto;
+    try erewrite logd_committed by eauto;
+    intros;
+    array.
+  erewrite logd_log_contents; eauto.
+  erewrite logd_loglen by eauto; omega.
+Qed.
+
+Hint Resolve log_decode_apply_one.
+
+Theorem apply_upto_ok ps ls desc len i :
+  proc_cspec
+    (apply_upto desc i len)
+    (fun state =>
+       {| pre := PhyDecode state ps /\
+                 LogDecode ps ls /\
+                 desc = ps.(p_desc) /\
+                 i + len = length ls.(ls_log) /\
+                 ls.(ls_committed) = true /\
+                 logical_log_apply (subslice ls.(ls_log) i len) ls.(ls_disk) =
+                 logical_log_apply ls.(ls_log) ls.(ls_disk);
+          post state' r :=
+            r = tt /\
+            exists ps',
+              PhyDecode state' ps' /\
+              LogDecode ps' {| ls_committed := true;
+                               ls_log := ls.(ls_log);
+                               (* this is the target data region: applying the
+                               entire logical log to the original disk (writing
+                               the commit header logically did these writes,
+                               because this recovery procedure will take care of
+                               them) *)
+                               ls_disk := logical_log_apply ls.(ls_log) ls.(ls_disk); |};
+          alternate state' _ :=
+            exists ps',
+              PhyDecode state' ps' /\
+              exists disk,
+                LogDecode ps' {| ls_committed := true;
+                                 ls_log := ls.(ls_log);
+                                 ls_disk := disk; |} /\
+                (* re-applying the entire log to the crashed disk... *)
+                logical_log_apply ls.(ls_log) disk =
+                (* will finish what we started *)
+                logical_log_apply ls.(ls_log) ls.(ls_disk);
+       |}).
+Proof.
+  gen ps ls desc i.
+  induction len; simpl; intros.
+  - step; split_cases; simplify; finish.
+    destruct ls; simpl in *; congruence.
+    eexists; intuition eauto.
+    destruct ls; simpl in *; congruence.
+  - step; split_cases; simplify; finish.
+    pose proof (logd_log_bounds ltac:(eassumption)).
+    omega.
+    spec_intros; simplify.
+    lazymatch goal with
+    | [ H: PhyDecode _ ?ps' |- _ ] =>
+      eapply proc_cspec_impl;
+        [ unfold spec_impl |
+          apply (IHlen ps' {| ls_committed := true;
+                              ls_log := ls.(ls_log);
+                              ls_disk := let a := sel ps.(p_desc) i in
+                                         let v := sel ps.(p_log_values) i in
+                                         assign ps.(p_data_region) a v; |}) ]
+    end; simpl; simplify; split_cases; finish.
+    { erewrite logd_disk in * by eauto.
+      admit. }
+    { erewrite logd_disk in * by eauto.
+      rewrite <- H4.
+      match goal with
+      | |- LogDecode _ {| ls_disk := ?d |} => abstract_term d; [ eassumption | ]
+      end.
+      admit. (* hopefully same as above *) }
+    { erewrite logd_disk in * by eauto.
+      eexists; intuition eauto.
+      rewrite H7.
+      admit. (* not the same: need to prove re-applying the new assignment doesn't make a difference *) }
+
+    (* this is just congruence, needs automation *)
+    exists ls.(ls_disk).
+    destruct ps; simpl in *.
+    destruct ls; simpl in *.
+    intuition eauto.
+    congruence.
+
+    exists (let a := sel ps.(p_desc) i in
+       let v := sel ps.(p_log_values) i in
+       assign ps.(p_data_region) a v).
+    admit.
+Abort.
