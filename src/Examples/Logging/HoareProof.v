@@ -4,6 +4,11 @@ Require Import Examples.Logging.Impl.
 
 Require Import Spec.HoareTactics.
 
+Opaque plus.
+Opaque lt.
+
+Import EqualDecNotation.
+
 Record LogicalState :=
   { ls_disk : disk;
     ls_log : list (addr * block);
@@ -31,6 +36,8 @@ Inductive LogDecode (d: disk) (ls: LogicalState) : Prop :=
 Record LogValues :=
   { values :> list block;
     values_ok: length values = LOG_LENGTH }.
+
+Coercion addresses : Descriptor >-> list.
 
 Record PhysicalState :=
   { p_hdr: LogHdr;
@@ -200,6 +207,14 @@ Ltac split_wlog :=
          | _ => solve [ auto ]
          end.
 
+Ltac split_cases :=
+  repeat match goal with
+         | |- _ /\ _ => split
+         | [ H: _ \/ _ |- _ ] => destruct H
+         | _ => progress propositional
+         | _ => solve [ auto ]
+         end.
+
 (* specs for one-disk primitives (restatement of semantics as specs) *)
 Ltac prim :=
   eapply proc_cspec_impl; [ unfold spec_impl | eapply op_spec_sound ];
@@ -291,8 +306,8 @@ Proof.
   unfold gethdr.
   step.
   step.
-  inversion H; subst; cbn [p_hdr] in *.
-  replace (index state 0) in *; cbn [maybe_holds] in *; subst.
+  inversion H; subst; simpl in *.
+  replace (index state 0) in *; simpl in *; subst.
   rewrite LogHdr_fmt.(encode_decode); auto.
 Qed.
 
@@ -334,46 +349,116 @@ Ltac spec_impl :=
   eapply proc_cspec_impl; [ unfold spec_impl | solve [ eauto] ];
   simplify.
 
-Theorem writehdr ps hdr :
-  proc_cspec D.ODLayer
-             (writehdr hdr)
-             (fun state =>
-                {| pre := PhyDecode state ps;
-                   post state' r :=
-                     PhyDecode state' {| p_hdr := hdr;
-                                     p_desc := ps.(p_desc);
-                                     p_log_values := ps.(p_log_values);
-                                     p_data_region := ps.(p_data_region); |};
-                   alternate state' _ :=
-                     PhyDecode state' ps \/
-                     PhyDecode state' {| p_hdr := hdr;
-                                     p_desc := ps.(p_desc);
-                                     p_log_values := ps.(p_log_values);
-                                     p_data_region := ps.(p_data_region); |}
-                |}).
+Notation proc_cspec := (Hoare.proc_cspec D.ODLayer.(sem)).
+Arguments Hoare.proc_cspec {Op State} sem {T}.
+
+Theorem writehdr_ok ps hdr :
+  proc_cspec
+    (writehdr hdr)
+    (fun state =>
+       {| pre := PhyDecode state ps;
+          post state' r :=
+            PhyDecode state' {| p_hdr := hdr;
+                            p_desc := ps.(p_desc);
+                            p_log_values := ps.(p_log_values);
+                            p_data_region := ps.(p_data_region); |};
+          alternate state' _ :=
+            PhyDecode state' ps \/
+            PhyDecode state' {| p_hdr := hdr;
+                            p_desc := ps.(p_desc);
+                            p_log_values := ps.(p_log_values);
+                            p_data_region := ps.(p_data_region); |}
+       |}).
 Proof.
   unfold writehdr.
   spec_impl; split_wlog.
 Qed.
 
-Theorem writedesc ps desc :
-  proc_cspec D.ODLayer
-             (writedesc desc)
-             (fun state =>
-                {| pre := PhyDecode state ps;
-                   post state' r :=
-                     PhyDecode state' {| p_hdr := ps.(p_hdr);
-                                     p_desc := desc;
-                                     p_log_values := ps.(p_log_values);
-                                     p_data_region := ps.(p_data_region); |};
-                   alternate state' _ :=
-                     PhyDecode state' ps \/
-                     PhyDecode state' {| p_hdr := ps.(p_hdr);
-                                     p_desc := desc;
-                                     p_log_values := ps.(p_log_values);
-                                     p_data_region := ps.(p_data_region); |}
-                |}).
+Hint Resolve writehdr_ok.
+
+Theorem writedesc_ok ps desc :
+  proc_cspec
+    (writedesc desc)
+    (fun state =>
+       {| pre := PhyDecode state ps;
+          post state' r :=
+            PhyDecode state' {| p_hdr := ps.(p_hdr);
+                            p_desc := desc;
+                            p_log_values := ps.(p_log_values);
+                            p_data_region := ps.(p_data_region); |};
+          alternate state' _ :=
+            PhyDecode state' ps \/
+            PhyDecode state' {| p_hdr := ps.(p_hdr);
+                            p_desc := desc;
+                            p_log_values := ps.(p_log_values);
+                            p_data_region := ps.(p_data_region); |}
+       |}).
 Proof.
   unfold writedesc.
   spec_impl; split_wlog.
+Qed.
+
+Hint Resolve writedesc_ok.
+
+Definition log_assign (log_values:LogValues) i b : LogValues :=
+  {| values := assign log_values i b;
+     values_ok := ltac:(autorewrite with length; auto); |}.
+
+Hint Resolve addresses_length.
+
+Definition desc_assign (desc:Descriptor) i a : Descriptor :=
+  {| addresses := assign desc i a;
+     addresses_length := ltac:(autorewrite with length; auto); |}.
+
+Lemma phy_set_log_value:
+  forall (ps : PhysicalState) (i : nat) (a : addr) (v : block),
+    i < LOG_LENGTH ->
+    forall s : D.State,
+      PhyDecode s
+                {|
+                  p_hdr := ps.(p_hdr);
+                  p_desc := add_addr ps.(p_desc) i a;
+                  p_log_values := ps.(p_log_values);
+                  p_data_region := ps.(p_data_region) |} ->
+      PhyDecode (assign s (2 + i) v)
+                {|
+                  p_hdr := ps.(p_hdr);
+                  p_desc := desc_assign ps.(p_desc) i a;
+                  p_log_values := log_assign ps.(p_log_values) i v;
+                  p_data_region := ps.(p_data_region) |}.
+Proof.
+  intros ps i a v Hbound s H.
+  pose proof (PhyDecode_disk_len H); simpl in *.
+  inv_clear H; constructor; intros;
+    cbn [log_assign values]; array.
+  destruct (i == i0); subst; array.
+Qed.
+
+Hint Resolve phy_set_log_value.
+
+Theorem set_desc_ok ps desc i a v :
+  proc_cspec
+    (set_desc desc i a v)
+    (fun state =>
+       {| pre := PhyDecode state ps /\
+                 ps.(p_desc) = desc /\
+                 i < LOG_LENGTH;
+          post state r :=
+            PhyDecode state {| p_hdr := ps.(p_hdr);
+                           p_desc := desc_assign desc i a;
+                           p_log_values :=
+                             log_assign ps.(p_log_values) i v;
+                           p_data_region := ps.(p_data_region) |};
+          alternate state' _ :=
+            exists desc' log_values',
+              PhyDecode state' {| p_hdr := ps.(p_hdr);
+                              p_desc := desc';
+                              p_log_values := log_values';
+                              p_data_region := ps.(p_data_region); |};
+       |}).
+Proof.
+  unfold set_desc.
+  step; split_cases; simplify; finish.
+  - spec_impl; split_wlog; simplify; finish.
+  - destruct ps; eauto.
 Qed.

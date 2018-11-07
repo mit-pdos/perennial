@@ -139,7 +139,7 @@ Definition log_size :=
     Ret (sz-(2+LOG_LENGTH)).
 
 (* manipulating the log region *)
-Definition set_descr desc (i:nat) a v :=
+Definition set_desc desc (i:nat) a v :=
   _ <- writedesc (add_addr desc i a);
     write (2+i) v.
 
@@ -174,7 +174,7 @@ Definition log_write a v :=
         _ <- writehdr (hdr_inc hdr pf);
         (* a crash here doesn't matter because [committed = false] and therefore
         the entire log is logically empty *)
-        _ <- set_descr desc hdr.(log_length) a v;
+        _ <- set_desc desc hdr.(log_length) a v;
           (* now the partial transaction has one more write; the descriptor
           block has the correct address at the new index, and the corresponding
           value is in the log at the paired address *)
