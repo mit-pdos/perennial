@@ -1,7 +1,7 @@
 SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor')
-ALL_VFILES := $(shell find -L $(SRC_DIRS) -name "*.v")
-TEST_VFILES := $(shell find -L 'src' -name "*Tests.v")
-PROJ_VFILES := $(shell find -L 'src' -name "*.v")
+ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
+TEST_VFILES := $(shell find 'src' -name "*Tests.v")
+PROJ_VFILES := $(shell find 'src' -name "*.v")
 VFILES := $(filter-out $(TEST_VFILES),$(PROJ_VFILES))
 
 default: $(VFILES:.v=.vo)
