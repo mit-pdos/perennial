@@ -52,6 +52,8 @@ Qed.
 
 Hint Rewrite length_log : length.
 
+(* TODO: Hint Rewrite length_descriptor breaks a proof here *)
+
 Theorem PhyDecode_disk_bound d ps :
   PhyDecode d ps ->
   length d >= 2 + LOG_LENGTH.
@@ -89,14 +91,18 @@ Proof.
   omega.
 Qed.
 
-Ltac match_phy_abs :=
+Ltac match_abs :=
   match goal with
   | [ H: PhyDecode ?d _ |- PhyDecode ?d _ ] => exact H
+  | [ H: PhyDecode ?d ?ps |- context[PhyDecode ?d _] ] =>
+    match goal with
+    | |- exists _, _ => solve [ destruct ps; descend; eauto ]
+    end
   end.
 
 Ltac simplify :=
   repeat match goal with
-         | _ => match_phy_abs
+         | _ => match_abs
          | _ => progress propositional
          | |- _ /\ _ => split; [ solve [ auto ] | ]
          | |- _ /\ _ => split; [ | solve [ auto ] ]
@@ -107,11 +113,8 @@ Ltac simplify :=
 
 Ltac finish :=
   repeat match goal with
+         | _ => match_abs
          | _ => solve [ eauto ]
-         | [ H: PhyDecode ?d ?ps |- context[PhyDecode ?d _] ] =>
-           match goal with
-           | |- exists _, _ => solve [ destruct ps; descend; eauto ]
-           end
          | _ => congruence
          end.
 
@@ -125,7 +128,7 @@ Qed.
 
 Ltac split_wlog :=
   repeat match goal with
-         | _ => match_phy_abs
+         | _ => match_abs
          | |- _ /\ _ => apply and_wlog
          | [ H: _ \/ _ |- _ ] => destruct H
          | _ => progress propositional
@@ -134,7 +137,7 @@ Ltac split_wlog :=
 
 Ltac split_cases :=
   repeat match goal with
-         | _ => match_phy_abs
+         | _ => match_abs
          | |- _ /\ _ => split
          | [ H: _ \/ _ |- _ ] => destruct H
          | _ => progress propositional
@@ -149,7 +152,7 @@ Ltac prim :=
   (intuition eauto);
   propositional.
 
-Notation proc_cspec := (Hoare.proc_cspec D.ODLayer.(sem)).
+Local Notation proc_cspec := (Hoare.proc_cspec D.ODLayer.(sem)).
 Arguments Hoare.proc_cspec {Op State} sem {T}.
 
 Theorem read_ok a :
@@ -214,7 +217,7 @@ Proof.
     auto.
 Qed.
 
-Hint Resolve read_ok write_ok size_ok.
+Local Hint Resolve read_ok write_ok size_ok.
 
 Ltac step :=
   step_proc; simplify; finish.
@@ -241,7 +244,7 @@ Proof.
   rewrite LogHdr_fmt.(encode_decode); auto.
 Qed.
 
-Hint Resolve gethdr_ok.
+Local Hint Resolve gethdr_ok.
 
 Lemma phy_writedesc:
   forall (ps : PhysicalState) (desc : Descriptor) (s : D.State),
@@ -258,7 +261,7 @@ Proof.
   inv_clear H; constructor; intros; array.
 Qed.
 
-Hint Resolve phy_writedesc.
+Local Hint Resolve phy_writedesc.
 
 
 Lemma phy_writehdr:
@@ -275,7 +278,7 @@ Proof.
   inv_clear H; constructor; intros; array.
 Qed.
 
-Hint Resolve phy_writehdr.
+Local Hint Resolve phy_writehdr.
 
 Ltac spec_impl :=
   eapply proc_cspec_impl; [ unfold spec_impl | solve [ eauto] ];
@@ -303,7 +306,7 @@ Proof.
   spec_impl; split_wlog.
 Qed.
 
-Hint Resolve writehdr_ok.
+Local Hint Resolve writehdr_ok.
 
 Theorem writedesc_ok ps desc :
   proc_cspec
@@ -328,13 +331,13 @@ Proof.
   spec_impl; split_wlog.
 Qed.
 
-Hint Resolve writedesc_ok.
+Local Hint Resolve writedesc_ok.
 
 Definition log_assign (log_values:LogValues) i b : LogValues :=
   {| values := assign log_values i b;
      values_ok := ltac:(autorewrite with length; auto); |}.
 
-Hint Resolve addresses_length.
+Local Hint Resolve addresses_length.
 
 Definition desc_assign (desc:Descriptor) i a : Descriptor :=
   {| addresses := assign desc i a;
@@ -361,10 +364,11 @@ Proof.
   pose proof (PhyDecode_disk_len H); simpl in *.
   inv_clear H; constructor; intros;
     cbn [log_assign values]; array.
+
   destruct (i == i0); subst; array.
 Qed.
 
-Hint Resolve phy_set_log_value.
+Local Hint Resolve phy_set_log_value.
 
 Theorem getdesc_ok ps :
   proc_cspec
@@ -385,7 +389,7 @@ Proof.
   rewrite Descriptor_fmt.(encode_decode); auto.
 Qed.
 
-Hint Resolve getdesc_ok.
+Local Hint Resolve getdesc_ok.
 
 Theorem set_desc_ok ps desc i a v :
   proc_cspec
@@ -414,7 +418,7 @@ Proof.
   spec_impl; split_wlog; simplify; finish.
 Qed.
 
-Hint Resolve set_desc_ok.
+Local Hint Resolve set_desc_ok.
 
 Theorem phy_log_size_ok ps :
   proc_cspec
@@ -434,7 +438,7 @@ Proof.
   omega.
 Qed.
 
-Hint Resolve phy_log_size_ok.
+Local Hint Resolve phy_log_size_ok.
 
 Lemma sel_log_value d ps i :
   PhyDecode d ps ->
@@ -471,7 +475,7 @@ Proof.
   auto using sel_log_value.
 Qed.
 
-Hint Resolve get_logwrite_ok.
+Local Hint Resolve get_logwrite_ok.
 
 Lemma phy_index_data:
   forall (ps : PhysicalState) (a : nat) (s : D.ODLayer.(State)),
@@ -494,7 +498,7 @@ Proof.
   apply sel_index_eq; auto.
 Qed.
 
-Hint Resolve phy_index_data.
+Local Hint Resolve phy_index_data.
 
 Theorem data_read_ok ps a :
   proc_cspec
@@ -511,7 +515,7 @@ Proof.
   spec_impl; finish.
 Qed.
 
-Hint Resolve data_read_ok.
+Local Hint Resolve data_read_ok.
 
 Lemma phy_data_write:
   forall (ps : PhysicalState) (a : nat) (v : block) (s : D.ODLayer.(State)),
@@ -530,7 +534,7 @@ Proof.
   destruct (index_dec data i); propositional; array.
 Qed.
 
-Hint Resolve phy_data_write.
+Local Hint Resolve phy_data_write.
 
 Theorem data_write_ok ps a v :
   proc_cspec
@@ -558,7 +562,7 @@ Proof.
   spec_impl; split_wlog; simplify; finish.
 Qed.
 
-Hint Resolve data_write_ok.
+Local Hint Resolve data_write_ok.
 
 Theorem log_write_ok ps a v :
   proc_cspec
@@ -603,8 +607,6 @@ Proof.
   step; split_wlog; simplify; finish.
 Qed.
 
-Hint Resolve log_write_ok.
-
 (* this is just a physical description of [apply_at]; it precisely encodes the
 data since we can't accurately abstract it that this level (we need to refer to
 the old disk, which isn't tracked in these specs) *)
@@ -641,5 +643,3 @@ Proof.
   step; split_wlog; simplify; finish.
   step; split_wlog; simplify; finish.
 Qed.
-
-Hint Resolve apply_at_ok.
