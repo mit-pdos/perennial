@@ -455,6 +455,13 @@ Section OutputRelations.
     destruct x; reflexivity.
   Qed.
 
+  Theorem bind_star_expand A T (r: T -> relation A A T) (v:T) :
+    pure v + and_then (r v) (bind_star r) <---> bind_star r v.
+  Proof.
+    t.
+    induction H; eauto.
+  Qed.
+
   Global Instance rimpl_equiv_proper A B T (r: relation A B T) :
     Proper (requiv ==> Basics.flip Basics.impl) (rimpl r).
   Proof.
