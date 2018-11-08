@@ -48,11 +48,7 @@ Section OutputRelations.
   Definition rel_or A B T (r1 r2: relation A B T) : relation A B T :=
     fun x y o => r1 x y o \/ r2 x y o.
 
-  Definition rel_and A B T (r1 r2: relation A B T) : relation A B T :=
-    fun x y o => r1 x y o /\ r2 x y o.
-
   Infix "+" := rel_or.
-  Infix "∩" := (rel_and) (at level 50).
 
   Inductive seq_star A `(r: relation A A T) : relation A A T :=
   | seq_star_refl : forall x o,
@@ -146,7 +142,7 @@ Section OutputRelations.
   (** Various equivalence and implication proofs *)
   Hint Unfold Proper respectful pointwise_relation : t.
   Hint Unfold Basics.flip Basics.impl : t.
-  Hint Unfold and_then rel_or rel_and pure any identity reads : t.
+  Hint Unfold and_then rel_or pure any identity reads : t.
 
   Ltac t :=
     autounfold with t;
@@ -282,45 +278,6 @@ Section OutputRelations.
   Proof.
     intros.
     rewrite H; reflexivity.
-  Qed.
-
-  Theorem rel_and_symmetric A B T (r1 r2: relation A B T) :
-    r1 ∩ r2 <---> r2 ∩ r1.
-  Proof.
-    t.
-  Qed.
-
-  Theorem rel_and_assoc A B T (r1 r2 r3: relation A B T) :
-    r1 ∩ (r2 ∩ r3) <---> r1 ∩ r2 ∩ r3.
-  Proof.
-    t.
-  Qed.
-
-  Theorem rel_and_monotonic A B T (r1 r2: relation A B T) r :
-    r1 ---> r2 ->
-    r1 ∩ r ---> r2 ∩ r.
-  Proof.
-    t.
-  Qed.
-
-  Theorem rel_and_intro A B T r (r1 r2: relation A B T) :
-    r ---> r1 ->
-    r ---> r2 ->
-    r ---> r1 ∩ r2.
-  Proof.
-    t.
-  Qed.
-
-  Theorem rel_and_eliml A B T (r1 r2: relation A B T) :
-    r1 ∩ r2 ---> r1.
-  Proof.
-    t.
-  Qed.
-
-  Theorem rel_and_elimr A B T (r1 r2: relation A B T) :
-    r1 ∩ r2 ---> r2.
-  Proof.
-    t.
   Qed.
 
   Theorem rel_or_symmetric A B T (r1 r2: relation A B T) :
