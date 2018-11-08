@@ -13,9 +13,9 @@ Ltac spec_intros := intros; first [ eapply rspec_intros | eapply cspec_intros ] 
 Ltac monad_simpl :=
   repeat match goal with
          | |- proc_cspec _ (Bind (Ret _) _) _ =>
-           eapply proc_cspec_expand; [ apply monad_left_id | ]
+           eapply proc_cspec_exec_equiv; [ apply monad_left_id | ]
          | |- proc_cspec _ (Bind (Bind _ _) _) _ =>
-           eapply proc_cspec_expand; [ apply monad_assoc | ]
+           eapply proc_cspec_exec_equiv; [ apply monad_assoc | ]
          end.
 
 Ltac step_proc :=
