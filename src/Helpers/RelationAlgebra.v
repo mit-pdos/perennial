@@ -60,6 +60,16 @@ Section OutputRelations.
       seq_star r x z o2
   .
 
+  (* at-least-once iteration *)
+  Inductive seq_plus A `(r: relation A A T) : relation A A T :=
+  | seq_plus_once : forall x y o,
+      r x y o ->
+      seq_plus r x y o
+  | seq_plus_one_more : forall x y z o1 o2,
+      r x y o1 ->
+      seq_plus r y z o2 ->
+      seq_plus r x z o2.
+
   Inductive bind_star A `(r: T -> relation A A T) : T -> relation A A T :=
   | bind_star_pure : forall (o:T) x,
       bind_star r o x x o
@@ -67,6 +77,15 @@ Section OutputRelations.
       r o1 x y o2 ->
       bind_star r o2 y z o3 ->
       bind_star r o1 x z o3
+  .
+
+  Inductive bind_star_r A `(r: T -> relation A A T) : T -> relation A A T :=
+  | bind_star_r_pure : forall (o:T) x,
+      bind_star_r r o x x o
+  | bind_star_r_one_more : forall (o1:T) x y z o2 o3,
+      bind_star_r r o1 x y o2 ->
+      r o2 y z o3 ->
+      bind_star_r r o1 x z o3
   .
 
   (** Notions of equivalence and implication *)
@@ -491,6 +510,52 @@ Section OutputRelations.
     t.
   Qed.
 
+  Hint Constructors seq_plus.
+
+  Theorem plus_one `(r: relation A A T) :
+    r ---> seq_plus r.
+  Proof.
+    t.
+  Qed.
+
+  Theorem plus_expand A T (r: relation A A T) :
+    seq_plus r <---> r + (r;; seq_plus r).
+  Proof.
+    t.
+    induction H; eauto.
+  Qed.
+
+  Inductive seq_plus_r `(r: relation A A T) : relation A A T :=
+  | seq_plus_r_once : forall x y o,
+      r x y o ->
+      seq_plus_r r x y o
+  | seq_plus_r_one_more : forall x y z o1 o2,
+      seq_plus_r r x y o1 ->
+      r y z o2 ->
+      seq_plus_r r x z o2.
+
+  Hint Constructors seq_plus_r.
+
+  Theorem seq_plus_lr `(r: relation A A T) :
+    seq_plus r <---> seq_plus_r r.
+  Proof.
+    t.
+    - induction H; eauto.
+      clear H0.
+      induction IHseq_plus; eauto.
+    - induction H; eauto.
+      clear H.
+      induction IHseq_plus_r; eauto.
+  Qed.
+
+  Theorem plus_expand_r A T (r: relation A A T) :
+    seq_plus r <---> r + (seq_plus r;; r).
+  Proof.
+    rewrite seq_plus_lr.
+    t.
+    induction H; eauto.
+  Qed.
+
   Global Instance and_then_pointwise A B C T1 T2 (r: relation A B T1) :
     Proper (pointwise_relation _ (Basics.flip rimpl) ==> Basics.flip (rimpl (B:=C) (T:=T2)))
            (and_then r).
@@ -613,6 +678,28 @@ Section OutputRelations.
       induction IHseq_star_r; propositional; eauto.
       Grab Existential Variables.
       all: auto.
+  Qed.
+
+  Hint Constructors bind_star_r.
+
+  Theorem bind_star_lr A `(r: T -> relation A A T) (v:T) :
+    bind_star r v <---> bind_star_r r v.
+  Proof.
+    t.
+    - induction H; eauto.
+      clear H0.
+      induction IHbind_star; eauto.
+    - induction H; eauto.
+      clear H.
+      induction IHbind_star_r; eauto.
+  Qed.
+
+  Theorem bind_star_expand_r `(r: T -> relation A A T) (v:T) :
+    pure v + and_then (bind_star r v) r <---> bind_star r v.
+  Proof.
+    rewrite bind_star_lr.
+    t.
+    induction H; eauto.
   Qed.
 
   Theorem simulation_seq A B
