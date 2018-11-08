@@ -42,6 +42,9 @@ Definition compile_rec Op C_Op
            R (rec: proc Op R) : proc C_Op R :=
   Bind impl.(recover) (fun _ => impl.(compile) rec).
 
+Definition initOutput {A} `(L: Layer Op) (r: relation (State L) (State L) A) (v : A) : Prop :=
+  exists s1 s2, L.(initP) s1 /\ r s1 s2 v.
+
 Hint Unfold refines : relation_rewriting.
 
 Section Layers.
@@ -53,6 +56,7 @@ Section Layers.
   Notation c_sem := c_layer.(sem).
   Notation c_exec := c_layer.(sem).(exec).
   Notation c_exec_recover := c_layer.(sem).(exec_recover).
+  Notation c_output := c_layer.(initOutput).
 
   Context Op (a_layer: Layer Op).
   Notation AState := a_layer.(State).
@@ -61,6 +65,7 @@ Section Layers.
   Notation a_initP := a_layer.(initP).
   Notation a_sem := a_layer.(sem).
   Notation a_exec_recover := a_layer.(sem).(exec_recover).
+  Notation a_output := a_layer.(initOutput).
 
   Definition compile_op_refines_step (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
     forall T (op: Op T),
@@ -333,6 +338,19 @@ Section Layers.
       destruct H5 as (v&as2&?&?&?&?&?).
       inversion H7; subst; exists as1, as2. subst; split; auto.
     - repeat destruct H2. inversion H3; subst; eauto.
+  Qed.
+
+  Theorem complete_exec_seq_ok_alt2 R (p: a_proc_seq R) (rec: a_proc R) v:
+    c_output (inited <- c_exec rf.(impl).(init);
+                match inited with
+                | InitFailed => pure None
+                | Initialized =>
+                  v <- c_sem.(exec_seq) (compile_seq p) (compile_rec rec); pure (Some v)
+                end) (Some v) ->
+    a_output (a_sem.(exec_seq) p rec) v.
+  Proof.
+    unfold c_output, a_output. intros (s1&s2&?&?).
+    eapply (complete_exec_seq_ok_alt) with (mv := Some v); eauto.
   Qed.
 
 End Layers.
