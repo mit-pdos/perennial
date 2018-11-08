@@ -268,8 +268,6 @@ Fixpoint logical_log_apply (l: list (addr * block)) (data: disk)  : disk :=
   | (a, b) :: l' => logical_log_apply l' (assign data a b)
   end.
 
-Local Hint Resolve apply_at_ok.
-
 Lemma log_decode_apply_one:
   forall (len : nat) (ps : PhysicalState) (ls : LogicalState) (i : nat) (state : D.ODLayer.(State)),
     PhyDecode state ps ->
@@ -340,6 +338,72 @@ Hint Extern 3 (_ < _) => omega.
 Hint Extern 3 (_ <= _) => omega.
 Hint Extern 3 (@eq nat _ _) => omega.
 
+Definition applied_after log i d0 :=
+  logical_log_apply (subslice log i (length log - i)) d0.
+
+Definition fully_applied log d0 :=
+  logical_log_apply log d0.
+
+Section ApplyAtRespec.
+  Hint Resolve apply_at_ok.
+
+  Theorem log_apply_at_ok ps ls d0 desc i :
+    proc_cspec
+      (apply_at desc i)
+      (fun state =>
+         {| pre := PhyDecode state ps /\
+                   LogDecode ps ls /\
+                   desc = ps.(p_desc) /\
+                   i < length ls.(ls_log) /\
+                   ls.(ls_committed) = true /\
+                   applied_after ls.(ls_log) i ls.(ls_disk) = fully_applied ls.(ls_log) d0 /\
+                   fully_applied ls.(ls_log) ls.(ls_disk) = fully_applied ls.(ls_log) d0;
+            post state' r :=
+              r = tt /\
+              exists ps',
+                PhyDecode state' ps' /\
+                ps'.(p_desc) = desc /\
+                exists a v,
+                  index ls.(ls_log) i = Some (a, v) /\
+                  LogDecode ps' {| ls_committed := true;
+                                   ls_log := ls.(ls_log);
+                                   ls_disk := assign ls.(ls_disk) a v; |};
+            alternate state' _ :=
+              exists ps',
+                PhyDecode state' ps' /\
+                ps'.(p_desc) = desc /\
+                exists disk,
+                  (disk = ls.(ls_disk) \/
+                   exists a v,
+                     index ls.(ls_log) i = Some (a, v) /\
+                     disk = assign ls.(ls_disk) a v) /\
+                  LogDecode ps' {| ls_committed := true;
+                                   ls_log := ls.(ls_log);
+                                   ls_disk := disk; |};
+         |}).
+  Proof.
+    spec_impl; split_cases; simplify; finish.
+    pose proof (logd_log_bounds ltac:(eassumption)).
+    omega.
+
+    - destruct (index_dec ls.(ls_log) i); propositional; try omega.
+      destruct (sel ls.(ls_log) i) as [a v].
+      descend; intuition eauto.
+      erewrite logd_log_value in * by eauto; eauto.
+      inv_clear H7.
+      erewrite logd_disk in * by eauto.
+      destruct H0; econstructor; simpl in *; eauto.
+    - exists ls.(ls_disk); intuition eauto.
+      destruct ps, ls; simpl in *; congruence.
+    - eexists; split.
+      right; eauto.
+      erewrite logd_disk in * by eauto.
+      destruct H0; econstructor; simpl in *; eauto.
+  Qed.
+End ApplyAtRespec.
+
+Hint Resolve log_apply_at_ok.
+
 Theorem apply_upto_ok ps ls d0 desc len i :
   proc_cspec
     (apply_upto desc i len)
@@ -382,8 +446,10 @@ Proof.
     intuition eauto.
     destruct ls; simpl in *; congruence.
   - step; split_cases; simplify; finish.
-    pose proof (logd_log_bounds ltac:(eassumption)).
-    omega.
+    unfold applied_after, fully_applied.
+    replace (length ls.(ls_log) - i) with (S len) by omega.
+    auto.
+
     spec_intros; simplify.
     lazymatch goal with
     | [ H: PhyDecode _ ?ps' |- _ ] =>
@@ -394,20 +460,17 @@ Proof.
                               ls_disk := ps'.(p_data_region) |}) ]
     end; simpl; split_cases; simplify;
       try erewrite logd_disk in * by eauto;
-      finish.
+      finish;
+      simpl in *.
     { rewrite log_apply_one_more by eauto.
       rewrite H4.
       rewrite <- H5.
       erewrite <- log_apply_reapply_one by eauto; auto. }
-    { erewrite <- log_apply_reapply_one in H8; eauto.
+    { erewrite <- log_apply_reapply_one in * by eauto.
       congruence. }
     { eexists; intuition eauto.
-      rewrite H9.
+      replace (logical_log_apply ls.(ls_log) disk).
       erewrite <- log_apply_reapply_one by eauto; auto. }
-    { exists ls.(ls_disk); intuition eauto.
-      destruct ps, ls; simpl in *; congruence. }
     { eexists; intuition eauto.
-      erewrite <- log_apply_reapply_one by eauto; auto.
-      erewrite logd_disk in * by eauto.
-      congruence. }
+      erewrite <- log_apply_reapply_one by eauto; auto. }
 Qed.
