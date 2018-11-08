@@ -86,6 +86,18 @@ Proof.
   inversion 1; auto.
 Qed.
 
+Lemma logd_log_value ps ls :
+  LogDecode ps ls ->
+  forall i, i < length ls.(ls_log) ->
+       index ls.(ls_log) i =
+       Some (sel ps.(p_desc) i, sel ps.(p_log_values) i).
+Proof.
+  intros.
+  erewrite logd_log_contents; eauto.
+  erewrite logd_loglen by eauto.
+  auto.
+Qed.
+
 Lemma logd_log_bounds ps ls :
   LogDecode ps ls ->
   length ls.(ls_log) <= LOG_LENGTH.
@@ -281,8 +293,7 @@ Proof.
     try erewrite logd_committed by eauto;
     intros;
     array.
-  erewrite logd_log_contents; eauto.
-  erewrite logd_loglen by eauto; omega.
+  erewrite logd_log_value by eauto; auto.
 Qed.
 
 Hint Resolve log_decode_apply_one.
@@ -299,7 +310,37 @@ Proof.
   simpl; auto.
 Qed.
 
-Theorem apply_upto_ok ps ls desc len i :
+Theorem log_apply_idempotent log : forall d,
+    logical_log_apply log (logical_log_apply log d) =
+    logical_log_apply log d.
+Proof.
+  induction log; simpl; intros.
+  - auto.
+  - destruct a.
+Abort.
+
+Theorem log_apply_reapply_one : forall log i d a v,
+    index log i = Some (a, v) ->
+    logical_log_apply log d =
+    logical_log_apply log (assign d a v).
+Proof.
+  induction log; simpl; intros.
+  - congruence.
+  - destruct a as [a v'].
+    destruct i; simpl.
+    inv_clear H.
+    array.
+    destruct (a == a0); subst; array.
+    erewrite IHlog; eauto.
+    rewrite assign_assign_ne by auto; auto.
+Qed.
+
+Hint Resolve logd_log_value.
+Hint Extern 3 (_ < _) => omega.
+Hint Extern 3 (_ <= _) => omega.
+Hint Extern 3 (@eq nat _ _) => omega.
+
+Theorem apply_upto_ok ps ls d0 desc len i :
   proc_cspec
     (apply_upto desc i len)
     (fun state =>
@@ -309,22 +350,20 @@ Theorem apply_upto_ok ps ls desc len i :
                  i + len = length ls.(ls_log) /\
                  ls.(ls_committed) = true /\
                  logical_log_apply (subslice ls.(ls_log) i len) ls.(ls_disk) =
-                 logical_log_apply ls.(ls_log) ls.(ls_disk);
+                 logical_log_apply ls.(ls_log) d0 /\
+                 logical_log_apply ls.(ls_log) ls.(ls_disk) =
+                 logical_log_apply ls.(ls_log) d0;
           post state' r :=
             r = tt /\
             exists ps',
               PhyDecode state' ps' /\
               LogDecode ps' {| ls_committed := true;
                                ls_log := ls.(ls_log);
-                               (* this is the target data region: applying the
-                               entire logical log to the original disk (writing
-                               the commit header logically did these writes,
-                               because this recovery procedure will take care of
-                               them) *)
-                               ls_disk := logical_log_apply ls.(ls_log) ls.(ls_disk); |};
+                               ls_disk := logical_log_apply ls.(ls_log) d0; |};
           alternate state' _ :=
             exists ps',
               PhyDecode state' ps' /\
+              ps'.(p_desc) = desc /\
               exists disk,
                 LogDecode ps' {| ls_committed := true;
                                  ls_log := ls.(ls_log);
@@ -332,14 +371,15 @@ Theorem apply_upto_ok ps ls desc len i :
                 (* re-applying the entire log to the crashed disk... *)
                 logical_log_apply ls.(ls_log) disk =
                 (* will finish what we started *)
-                logical_log_apply ls.(ls_log) ls.(ls_disk);
+                logical_log_apply ls.(ls_log) d0;
        |}).
 Proof.
-  gen ps ls desc i.
+  gen ps ls d0 desc i.
   induction len; simpl; intros.
   - step; split_cases; simplify; finish.
     destruct ls; simpl in *; congruence.
-    eexists; intuition eauto.
+    exists ls.(ls_disk).
+    intuition eauto.
     destruct ls; simpl in *; congruence.
   - step; split_cases; simplify; finish.
     pose proof (logd_log_bounds ltac:(eassumption)).
@@ -351,32 +391,23 @@ Proof.
         [ unfold spec_impl |
           apply (IHlen ps' {| ls_committed := true;
                               ls_log := ls.(ls_log);
-                              ls_disk := let a := sel ps.(p_desc) i in
-                                         let v := sel ps.(p_log_values) i in
-                                         assign ps.(p_data_region) a v; |}) ]
-    end; simpl; simplify; split_cases; finish.
-    { erewrite logd_disk in * by eauto.
-      admit. }
-    { erewrite logd_disk in * by eauto.
-      rewrite <- H4.
-      match goal with
-      | |- LogDecode _ {| ls_disk := ?d |} => abstract_term d; [ eassumption | ]
-      end.
-      admit. (* hopefully same as above *) }
-    { erewrite logd_disk in * by eauto.
-      eexists; intuition eauto.
-      rewrite H7.
-      admit. (* not the same: need to prove re-applying the new assignment doesn't make a difference *) }
-
-    (* this is just congruence, needs automation *)
-    exists ls.(ls_disk).
-    destruct ps; simpl in *.
-    destruct ls; simpl in *.
-    intuition eauto.
-    congruence.
-
-    exists (let a := sel ps.(p_desc) i in
-       let v := sel ps.(p_log_values) i in
-       assign ps.(p_data_region) a v).
-    admit.
-Abort.
+                              ls_disk := ps'.(p_data_region) |}) ]
+    end; simpl; split_cases; simplify;
+      try erewrite logd_disk in * by eauto;
+      finish.
+    { rewrite log_apply_one_more by eauto.
+      rewrite H4.
+      rewrite <- H5.
+      erewrite <- log_apply_reapply_one by eauto; auto. }
+    { erewrite <- log_apply_reapply_one in H8; eauto.
+      congruence. }
+    { eexists; intuition eauto.
+      rewrite H9.
+      erewrite <- log_apply_reapply_one by eauto; auto. }
+    { exists ls.(ls_disk); intuition eauto.
+      destruct ps, ls; simpl in *; congruence. }
+    { eexists; intuition eauto.
+      erewrite <- log_apply_reapply_one by eauto; auto.
+      erewrite logd_disk in * by eauto.
+      congruence. }
+Qed.
