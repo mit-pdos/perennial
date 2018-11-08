@@ -299,6 +299,35 @@ Section Layers.
     - Right.
   Qed.
 
+  (* State a version without test, with some defns unfolded *)
+  Theorem complete_exec_seq_ok_alt T R (p: a_proc_seq T R) (rec: a_proc R) s
+      (cs1 cs2: CState) (mv: option T):
+    c_initP cs1 ->
+    (inited <- c_exec rf.(impl).(init);
+     match inited with
+     | InitFailed => pure None
+     | Initialized =>
+       v <- c_sem.(exec_seq) (compile_seq p) (compile_rec rec) s; pure (Some v)
+     end) cs1 cs2 mv ->
+    match mv with
+    | None => True
+    | Some v => exists as1 as2, a_initP as1 /\ (a_sem.(exec_seq) p rec s) as1 as2 v
+    end.
+  Proof.
+    intros.
+    pose proof (complete_exec_seq_ok p rec s).
+    unfold ifInit in H1. edestruct (H1 cs1 cs2 mv).
+    { exists tt, cs1. split; [firstorder|].
+      destruct H0 as (i&cs1'&?&?).
+      exists i, cs1'. split; intuition.
+    }
+    destruct H2 as ([]&as1&?&?).
+    - edestruct H3 as ([]&?&((?&<-)&?)).
+      destruct H5 as (v&as2&?&?&?&?&?).
+      inversion H7; subst; exists as1, as2. subst; split; auto.
+    - repeat destruct H2. inversion H3; subst; eauto.
+  Qed.
+
 End Layers.
 
 Coercion impl: LayerRefinement >-> LayerImpl.
