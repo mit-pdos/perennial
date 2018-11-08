@@ -115,7 +115,8 @@ Theorem log_read_ok ps ls a :
     (log_read a)
     (fun state =>
        {| pre := PhyDecode state ps /\
-                 LogDecode ps ls;
+                 LogDecode ps ls /\
+                 ls.(ls_committed) = false;
           post state' r :=
             state' = state /\
             index ls.(ls_disk) a ?|= eq r;
@@ -486,15 +487,16 @@ Qed.
 
 Hint Resolve LogDecode_clear_hdr.
 
-Definition log_apply_spec ps ls d0 : Specification unit unit disk :=
+Definition log_apply_spec ps ls d0 is_commit : Specification unit unit disk :=
     (fun state =>
        {| pre := PhyDecode state ps /\
                  LogDecode ps ls /\
                  massign ls.(ls_log) ls.(ls_disk) =
-                 massign ls.(ls_log) d0;
+                 massign ls.(ls_log) d0 /\
+                 ls.(ls_committed) = is_commit;
           post state' r :=
             exists ps', PhyDecode state' ps' /\
-                   if ls.(ls_committed) then
+                   if is_commit then
                      LogDecode ps' {| ls_committed := false;
                                       ls_log := nil;
                                       ls_disk := massign ls.(ls_log) d0; |}
@@ -505,7 +507,7 @@ Definition log_apply_spec ps ls d0 : Specification unit unit disk :=
           alternate state' _ :=
             exists ps',
               PhyDecode state' ps' /\
-              match ls.(ls_committed) with
+              match is_commit with
               | true =>
                 ( (* still working *)
                   exists disk,
@@ -529,10 +531,10 @@ Definition log_apply_spec ps ls d0 : Specification unit unit disk :=
               end;
        |}).
 
-Theorem log_apply_ok ps ls d0 :
+Theorem log_apply_ok ps ls is_commit :
   proc_cspec
     (log_apply)
-    (log_apply_spec ps ls d0).
+    (log_apply_spec ps ls ls.(ls_disk) is_commit).
 Proof.
   unfold log_apply, log_apply_spec.
   step; split_cases; simplify; finish.
@@ -578,10 +580,59 @@ Proof.
   destruct ls; simpl in *; congruence.
 Qed.
 
+Theorem recovery_ok ps ls is_commit :
+  proc_cspec
+    (recovery)
+    (log_apply_spec ps ls ls.(ls_disk) is_commit).
+Proof.
+  unfold recovery.
+  apply log_apply_ok.
+Qed.
+
+Theorem log_apply_spec_idempotent_crash_step' ls0 :
+  idempotent_crash_step
+    D.ODLayer.(sem)
+                (fun (a: { '(ps, ls) | ls.(ls_disk) = ls0.(ls_disk) }) =>
+                   let 'exist _ (ps, ls) _ := a in
+                   log_apply_spec ps ls ls.(ls_disk) false).
+Proof.
+  unfold idempotent_crash_step; intuition; simplify.
+  inv_clear H1.
+  destruct a.
+  destruct x.
+  simpl in H0; propositional.
+  destruct_with_eqn (l.(ls_committed)); split_cases;
+    match goal with
+    | [ H: PhyDecode _ ?ps,
+           H': LogDecode ?ps ?ls |- _ ] =>
+      unshelve eexists (exist _ (ps, ls) _)
+    end; simpl in *; repeat simpl_match; simplify; finish.
+Qed.
+
+Theorem log_apply_spec_idempotent_crash_step'_committed ls0 :
+  idempotent_crash_step
+    D.ODLayer.(sem)
+                (fun (a: { '(ps, ls) | ls.(ls_disk) = ls0.(ls_disk) }) =>
+                   let 'exist _ (ps, ls) _ := a in
+                   log_apply_spec ps ls ls.(ls_disk) false).
+Proof.
+  unfold idempotent_crash_step; intuition; simplify.
+  inv_clear H1.
+  destruct a.
+  destruct x.
+  simpl in H0; propositional.
+  destruct_with_eqn (l.(ls_committed)); split_cases;
+    match goal with
+    | [ H: PhyDecode _ ?ps,
+           H': LogDecode ?ps ?ls |- _ ] =>
+      unshelve eexists (exist _ (ps, ls) _)
+    end; simpl in *; repeat simpl_match; simplify; finish.
+Qed.
+
 Theorem log_apply_spec_idempotent_crash_step :
   idempotent_crash_step
     D.ODLayer.(sem)
-                (fun '(ps, ls) => log_apply_spec ps ls ls.(ls_disk)).
+                (fun '(ps, ls) => log_apply_spec ps ls ls.(ls_disk) ls.(ls_committed)).
 Proof.
   unfold idempotent_crash_step; intuition; simplify.
   inv_clear H1.
@@ -595,6 +646,21 @@ Proof.
     simpl in *;
     repeat simpl_match;
     simplify; finish.
+Qed.
+
+Theorem log_apply_spec_idempotent_crash_step_notxn :
+  idempotent_crash_step
+    D.ODLayer.(sem)
+                (fun '(ps, ls) => log_apply_spec ps ls ls.(ls_disk) false).
+Proof.
+  unfold idempotent_crash_step; intuition; simplify.
+  inv_clear H1.
+  simpl in H0; propositional.
+  match goal with
+  | [ H: PhyDecode state'' ?ps',
+         H': LogDecode ?ps' ?ls' |- _ ] =>
+    exists (ps', ls')
+  end; simpl; eauto.
 Qed.
 
 Local Hint Resolve phy_log_size_ok.
