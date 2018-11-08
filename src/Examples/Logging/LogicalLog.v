@@ -1,3 +1,4 @@
+From Array Require Import MultiAssign.
 Require Import POCS.
 Require Import Spec.HoareTactics.
 
@@ -9,6 +10,8 @@ Import EqualDecNotation.
 Opaque plus.
 Opaque lt.
 Opaque D.ODLayer.
+
+Implicit Types (d: disk) (log: list (addr*block)).
 
 Record LogicalState :=
   { ls_committed : bool;
@@ -260,14 +263,6 @@ Proof.
   destruct v0; simplify; finish.
 Qed.
 
-(* log contains data region addresses, and this applies them to a data region
-logical disk *)
-Fixpoint applylog (l: list (addr * block)) (data: disk)  : disk :=
-  match l with
-  | nil => data
-  | (a, b) :: l' => applylog l' (assign data a b)
-  end.
-
 Lemma log_decode_apply_one:
   forall (len : nat) (ps : PhysicalState) (ls : LogicalState) (i : nat) (state : D.ODLayer.(State)),
     PhyDecode state ps ->
@@ -299,8 +294,8 @@ Hint Resolve log_decode_apply_one.
 Theorem log_apply_one_more : forall d log i a v len,
     index log i = Some (a, v) ->
     i + 1 + len = length log ->
-    applylog (subslice log (i + 1) len) (assign d a v) =
-    applylog (subslice log i (S len)) d.
+    massign (subslice log (i + 1) len) (assign d a v) =
+    massign (subslice log i (S len)) d.
 Proof.
   intros.
   replace (i + 1) with (S i) in * by omega.
@@ -310,8 +305,8 @@ Qed.
 
 Theorem log_apply_reapply_one : forall log i d a v,
     index log i = Some (a, v) ->
-    applylog log d =
-    applylog log (assign d a v).
+    massign log d =
+    massign log (assign d a v).
 Proof.
   induction log; simpl; intros.
   - congruence.
@@ -330,10 +325,10 @@ Hint Extern 3 (_ <= _) => omega.
 Hint Extern 3 (@eq nat _ _) => omega.
 
 Definition applied_after log i d0 :=
-  applylog (subslice log i (length log - i)) d0.
+  massign (subslice log i (length log - i)) d0.
 
 Definition fully_applied log d0 :=
-  applylog log d0.
+  massign log d0.
 
 Section ApplyAtRespec.
   Hint Resolve apply_at_ok.
@@ -404,17 +399,17 @@ Theorem apply_upto_ok ps ls d0 desc len i :
                  desc = ps.(p_desc) /\
                  i + len = length ls.(ls_log) /\
                  ls.(ls_committed) = true /\
-                 applylog (subslice ls.(ls_log) i len) ls.(ls_disk) =
-                 applylog ls.(ls_log) d0 /\
-                 applylog ls.(ls_log) ls.(ls_disk) =
-                 applylog ls.(ls_log) d0;
+                 massign (subslice ls.(ls_log) i len) ls.(ls_disk) =
+                 massign ls.(ls_log) d0 /\
+                 massign ls.(ls_log) ls.(ls_disk) =
+                 massign ls.(ls_log) d0;
           post state' r :=
             r = tt /\
             exists ps',
               PhyDecode state' ps' /\
               LogDecode ps' {| ls_committed := true;
                                ls_log := ls.(ls_log);
-                               ls_disk := applylog ls.(ls_log) d0; |};
+                               ls_disk := massign ls.(ls_log) d0; |};
           alternate state' _ :=
             exists ps',
               PhyDecode state' ps' /\
@@ -424,9 +419,9 @@ Theorem apply_upto_ok ps ls d0 desc len i :
                                  ls_log := ls.(ls_log);
                                  ls_disk := disk; |} /\
                 (* re-applying the entire log to the crashed disk... *)
-                applylog ls.(ls_log) disk =
+                massign ls.(ls_log) disk =
                 (* will finish what we started *)
-                applylog ls.(ls_log) d0;
+                massign ls.(ls_log) d0;
        |}).
 Proof.
   gen ps ls d0 desc i.
@@ -453,14 +448,17 @@ Proof.
       try erewrite logd_disk in * by eauto;
       finish;
       simpl in *.
-    { rewrite log_apply_one_more by eauto.
+    { fold addr block in *.
+      rewrite log_apply_one_more; eauto.
+      Set Printing Implicit.
+      fold addr block in *.
       rewrite H4.
       rewrite <- H5.
       erewrite <- log_apply_reapply_one by eauto; auto. }
     { erewrite <- log_apply_reapply_one in * by eauto.
       congruence. }
     { eexists; intuition eauto.
-      replace (applylog ls.(ls_log) disk).
+      replace (massign ls.(ls_log) disk).
       erewrite <- log_apply_reapply_one by eauto; auto. }
     { eexists; intuition eauto.
       erewrite <- log_apply_reapply_one by eauto; auto. }
@@ -489,27 +487,18 @@ Qed.
 
 Hint Resolve LogDecode_clear_hdr.
 
-Theorem log_apply_idempotent log : forall d,
-    applylog log (applylog log d) =
-    applylog log d.
-Proof.
-  induction log; simpl; intros.
-  - auto.
-  - destruct a.
-Admitted.
-
 Definition log_apply_spec ps ls d0 : Specification unit unit disk :=
     (fun state =>
        {| pre := PhyDecode state ps /\
                  LogDecode ps ls /\
-                 applylog ls.(ls_log) ls.(ls_disk) =
-                 applylog ls.(ls_log) d0;
+                 massign ls.(ls_log) ls.(ls_disk) =
+                 massign ls.(ls_log) d0;
           post state' r :=
             exists ps', PhyDecode state' ps' /\
                    if ls.(ls_committed) then
                      LogDecode ps' {| ls_committed := false;
                                       ls_log := nil;
-                                      ls_disk := applylog ls.(ls_log) d0; |}
+                                      ls_disk := massign ls.(ls_log) d0; |}
                    else
                      LogDecode ps' {| ls_committed := false;
                                       ls_log := nil;
@@ -525,12 +514,12 @@ Definition log_apply_spec ps ls d0 : Specification unit unit disk :=
                                      ls_log := ls.(ls_log);
                                      ls_disk := disk; |} /\
                     (* ...but would finish (identical to precondition) *)
-                    applylog ls.(ls_log) disk =
-                    applylog ls.(ls_log) d0 ) \/
+                    massign ls.(ls_log) disk =
+                    massign ls.(ls_log) d0 ) \/
                 ( (* done, applied the whole log *)
                   LogDecode ps' {| ls_committed := false;
                                    ls_log := nil;
-                                   ls_disk := applylog ls.(ls_log) d0; |} )
+                                   ls_disk := massign ls.(ls_log) d0; |} )
               | false =>
                 (* never had to commit, but may or may not have cleared the log
                 by writing the header *)
@@ -564,7 +553,7 @@ Proof.
 
   left.
   eexists; intuition eauto.
-  rewrite log_apply_idempotent; auto.
+  rewrite massign_idempotent; auto.
 
   right.
   erewrite logd_disk in * by eauto; simpl in *; auto.
