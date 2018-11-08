@@ -498,9 +498,7 @@ Proof.
   - destruct a.
 Admitted.
 
-Theorem log_apply_ok ps ls d0 :
-  proc_cspec
-    (log_apply)
+Definition log_apply_spec ps ls d0 : Specification unit unit disk :=
     (fun state =>
        {| pre := PhyDecode state ps /\
                  LogDecode ps ls /\
@@ -519,24 +517,36 @@ Theorem log_apply_ok ps ls d0 :
           alternate state' _ :=
             exists ps',
               PhyDecode state' ps' /\
-              ((exists disk,
-                   LogDecode ps' {| ls_committed := true;
-                                    ls_log := ls.(ls_log);
-                                    ls_disk := disk; |} /\
-                   applylog ls.(ls_log) disk =
-                   applylog ls.(ls_log) d0) \/
-               (if ls.(ls_committed) then
+              match ls.(ls_committed) with
+              | true =>
+                ( (* still working *)
+                  exists disk,
+                    LogDecode ps' {| ls_committed := true;
+                                     ls_log := ls.(ls_log);
+                                     ls_disk := disk; |} /\
+                    (* ...but would finish (identical to precondition) *)
+                    applylog ls.(ls_log) disk =
+                    applylog ls.(ls_log) d0 ) \/
+                ( (* done, applied the whole log *)
                   LogDecode ps' {| ls_committed := false;
                                    ls_log := nil;
-                                   ls_disk := applylog ls.(ls_log) d0; |}
-                else
-                  exists log,
-                    LogDecode ps' {| ls_committed := false;
-                                     ls_log := log;
-                                     ls_disk := ls.(ls_disk); |}));
+                                   ls_disk := applylog ls.(ls_log) d0; |} )
+              | false =>
+                (* never had to commit, but may or may not have cleared the log
+                by writing the header *)
+                exists log,
+                LogDecode ps' {| ls_committed := false;
+                                 ls_log := log;
+                                 ls_disk := ls.(ls_disk); |}
+              end;
        |}).
+
+Theorem log_apply_ok ps ls d0 :
+  proc_cspec
+    (log_apply)
+    (log_apply_spec ps ls d0).
 Proof.
-  unfold log_apply.
+  unfold log_apply, log_apply_spec.
   step; split_cases; simplify; finish.
   destruct_with_eqn (r.(committed)).
   step; split_cases; simplify; finish;
@@ -569,7 +579,6 @@ Proof.
     repeat simpl_match;
     eauto.
 
-  right.
   exists ls.(ls_log).
   destruct ls; simpl in *; congruence.
 
@@ -577,7 +586,25 @@ Proof.
   left.
   exists ls.(ls_disk); intuition eauto.
   destruct ls; simpl in *; congruence.
-  right.
   exists ls.(ls_log).
   destruct ls; simpl in *; congruence.
+Qed.
+
+Theorem log_apply_spec_idempotent_crash_step :
+  idempotent_crash_step
+    D.ODLayer.(sem)
+                (fun '(ps, ls) => log_apply_spec ps ls ls.(ls_disk)).
+Proof.
+  unfold idempotent_crash_step; intuition; simplify.
+  inv_clear H1.
+  simpl in H0; propositional.
+  destruct_with_eqn (b.(ls_committed)); split_cases;
+    match goal with
+    | [ H: PhyDecode state'' ?ps',
+           H': LogDecode ?ps' ?ls' |- _ ] =>
+      exists (ps', ls')
+    end;
+    simpl in *;
+    repeat simpl_match;
+    simplify; finish.
 Qed.
