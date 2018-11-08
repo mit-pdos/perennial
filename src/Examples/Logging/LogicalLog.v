@@ -308,15 +308,6 @@ Proof.
   simpl; auto.
 Qed.
 
-Theorem log_apply_idempotent log : forall d,
-    logical_log_apply log (logical_log_apply log d) =
-    logical_log_apply log d.
-Proof.
-  induction log; simpl; intros.
-  - auto.
-  - destruct a.
-Abort.
-
 Theorem log_apply_reapply_one : forall log i d a v,
     index log i = Some (a, v) ->
     logical_log_apply log d =
@@ -473,4 +464,120 @@ Proof.
       erewrite <- log_apply_reapply_one by eauto; auto. }
     { eexists; intuition eauto.
       erewrite <- log_apply_reapply_one by eauto; auto. }
+Qed.
+
+Local Hint Resolve gethdr_ok.
+Local Hint Resolve getdesc_ok.
+Local Hint Resolve apply_upto_ok.
+Local Hint Resolve writehdr_ok.
+
+Lemma LogDecode_clear_hdr:
+  forall desc log_values data_region d',
+    data_region = d' ->
+    LogDecode
+      {|
+        p_hdr := empty_hdr;
+        p_desc := desc;
+        p_log_values := log_values;
+        p_data_region := data_region |}
+      {| ls_committed := false; ls_log := nil; ls_disk := d' |}.
+Proof.
+  intros; subst.
+  constructor; simpl; intros; array.
+  omega.
+Qed.
+
+Hint Resolve LogDecode_clear_hdr.
+
+Theorem log_apply_idempotent log : forall d,
+    logical_log_apply log (logical_log_apply log d) =
+    logical_log_apply log d.
+Proof.
+  induction log; simpl; intros.
+  - auto.
+  - destruct a.
+Admitted.
+
+Theorem log_apply_ok ps ls d0 :
+  proc_cspec
+    (log_apply)
+    (fun state =>
+       {| pre := PhyDecode state ps /\
+                 LogDecode ps ls /\
+                 logical_log_apply ls.(ls_log) ls.(ls_disk) =
+                 logical_log_apply ls.(ls_log) d0;
+          post state' r :=
+            exists ps', PhyDecode state' ps' /\
+                   if ls.(ls_committed) then
+                     LogDecode ps' {| ls_committed := false;
+                                      ls_log := nil;
+                                      ls_disk := logical_log_apply ls.(ls_log) d0; |}
+                   else
+                     LogDecode ps' {| ls_committed := false;
+                                      ls_log := nil;
+                                      ls_disk := ls.(ls_disk); |};
+          alternate state' _ :=
+            exists ps',
+              PhyDecode state' ps' /\
+              ((exists disk,
+                   LogDecode ps' {| ls_committed := true;
+                                    ls_log := ls.(ls_log);
+                                    ls_disk := disk; |} /\
+                   logical_log_apply ls.(ls_log) disk =
+                   logical_log_apply ls.(ls_log) d0) \/
+               (if ls.(ls_committed) then
+                  LogDecode ps' {| ls_committed := false;
+                                   ls_log := nil;
+                                   ls_disk := logical_log_apply ls.(ls_log) d0; |}
+                else
+                  exists log,
+                    LogDecode ps' {| ls_committed := false;
+                                     ls_log := log;
+                                     ls_disk := ls.(ls_disk); |}));
+       |}).
+Proof.
+  unfold log_apply.
+  step; split_cases; simplify; finish.
+  destruct_with_eqn (r.(committed)).
+  step; split_cases; simplify; finish;
+    erewrite logd_committed in * by eauto;
+    repeat simpl_match.
+  step; split_cases; simplify; finish.
+
+  erewrite logd_loglen by eauto; omega.
+  rewrite subslice_whole; eauto.
+  erewrite logd_loglen by eauto; omega.
+
+  spec_intros; simplify.
+  spec_impl; split_cases; simplify; finish.
+  erewrite logd_disk in * by eauto; simpl in *; auto.
+
+  left.
+  eexists; intuition eauto.
+  rewrite log_apply_idempotent; auto.
+
+  right.
+  erewrite logd_disk in * by eauto; simpl in *; auto.
+
+  left.
+  exists ls.(ls_disk); intuition eauto.
+  destruct ls; simpl in *; congruence.
+
+  monad_simpl.
+  spec_impl; split_cases; simplify; finish;
+    erewrite logd_committed in * by eauto;
+    repeat simpl_match;
+    eauto.
+
+  right.
+  exists ls.(ls_log).
+  destruct ls; simpl in *; congruence.
+
+  destruct_with_eqn (ls.(ls_committed)); eauto.
+  left.
+  exists ls.(ls_disk); intuition eauto.
+  destruct ls; simpl in *; congruence.
+  right.
+  exists ls.(ls_log).
+  destruct ls; simpl in *; congruence.
 Qed.
