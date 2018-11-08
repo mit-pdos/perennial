@@ -450,7 +450,6 @@ Proof.
       simpl in *.
     { fold addr block in *.
       rewrite log_apply_one_more; eauto.
-      Set Printing Implicit.
       fold addr block in *.
       rewrite H4.
       rewrite <- H5.
