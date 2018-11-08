@@ -399,7 +399,7 @@ Section Hoare.
   Lemma spec_aexec_cancel T R1 R2 (spec1 : Specification T R1 State)
           (spec2: Specification T R2 State) (r: relation State State R2) :
     (forall s, (spec2 s).(pre) -> (spec1 s).(pre)) ->
-    (forall s r1, _ <- test (fun s' => (spec1 s).(alternate) s' r1);
+    (forall s r1, _ <- test (fun s' => (spec1 s).(pre) /\ (spec1 s).(alternate) s' r1);
                     r ---> (fun s2a s2b r => (spec2 s).(pre) -> (spec2 s).(alternate) s2b r)) ->
     (_ <- spec_aexec spec1; r) ---> spec_aexec spec2.
   Proof.
@@ -422,6 +422,7 @@ Section Hoare.
                              (p_rspec s).(post) s' v)) ->
     (* alternate of cspec followed by crash implies pre of rec for some ghost*)
     (forall state state' state'' v,
+        pre (p_cspec state) ->
         alternate (p_cspec state) state' v ->
         crash_step state' state'' tt ->
         exists a, pre (rec_cspec a state'')) ->
@@ -446,11 +447,11 @@ Section Hoare.
       intros s1 [].
 
       setoid_rewrite <-bind_assoc.
-      assert (_ <- test (fun s' : State => (p_cspec s1).(alternate) s' tt); crash_step
+      assert (_ <- test (fun s' : State => (p_cspec s1).(pre) /\ (p_cspec s1).(alternate) s' tt); crash_step
               ---> @any _ _ unit ;; test (fun s' : State => exists a', (rec_cspec a' s').(pre)))
         as HCI.
       {
-        intros s s' [] ([]&?&((Halt&?)&Hcrash)); subst.
+        intros s s' [] ([]&?&(((Hpre&Halt)&?)&Hcrash)); subst.
         unfold any; exists tt; eexists; split; auto.
         split; eauto.
       }
