@@ -253,7 +253,7 @@ logical disk *)
 Fixpoint logical_log_apply (l: list (addr * block)) (data: disk)  : disk :=
   match l with
   | nil => data
-  | (a, b) :: l' => logical_log_apply l' (assign data (2+LOG_LENGTH+a) b)
+  | (a, b) :: l' => logical_log_apply l' (assign data a b)
   end.
 
 Local Hint Resolve apply_at_ok.
@@ -286,6 +286,18 @@ Proof.
 Qed.
 
 Hint Resolve log_decode_apply_one.
+
+Theorem log_apply_one_more : forall d log i a v len,
+    index log i = Some (a, v) ->
+    i + 1 + len = length log ->
+    logical_log_apply (subslice log (i + 1) len) (assign d a v) =
+    logical_log_apply (subslice log i (S len)) d.
+Proof.
+  intros.
+  replace (i + 1) with (S i) in * by omega.
+  erewrite subslice_one_more; eauto; try omega.
+  simpl; auto.
+Qed.
 
 Theorem apply_upto_ok ps ls desc len i :
   proc_cspec
