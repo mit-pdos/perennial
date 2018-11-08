@@ -262,10 +262,10 @@ Qed.
 
 (* log contains data region addresses, and this applies them to a data region
 logical disk *)
-Fixpoint logical_log_apply (l: list (addr * block)) (data: disk)  : disk :=
+Fixpoint applylog (l: list (addr * block)) (data: disk)  : disk :=
   match l with
   | nil => data
-  | (a, b) :: l' => logical_log_apply l' (assign data a b)
+  | (a, b) :: l' => applylog l' (assign data a b)
   end.
 
 Lemma log_decode_apply_one:
@@ -299,8 +299,8 @@ Hint Resolve log_decode_apply_one.
 Theorem log_apply_one_more : forall d log i a v len,
     index log i = Some (a, v) ->
     i + 1 + len = length log ->
-    logical_log_apply (subslice log (i + 1) len) (assign d a v) =
-    logical_log_apply (subslice log i (S len)) d.
+    applylog (subslice log (i + 1) len) (assign d a v) =
+    applylog (subslice log i (S len)) d.
 Proof.
   intros.
   replace (i + 1) with (S i) in * by omega.
@@ -310,8 +310,8 @@ Qed.
 
 Theorem log_apply_reapply_one : forall log i d a v,
     index log i = Some (a, v) ->
-    logical_log_apply log d =
-    logical_log_apply log (assign d a v).
+    applylog log d =
+    applylog log (assign d a v).
 Proof.
   induction log; simpl; intros.
   - congruence.
@@ -330,10 +330,10 @@ Hint Extern 3 (_ <= _) => omega.
 Hint Extern 3 (@eq nat _ _) => omega.
 
 Definition applied_after log i d0 :=
-  logical_log_apply (subslice log i (length log - i)) d0.
+  applylog (subslice log i (length log - i)) d0.
 
 Definition fully_applied log d0 :=
-  logical_log_apply log d0.
+  applylog log d0.
 
 Section ApplyAtRespec.
   Hint Resolve apply_at_ok.
@@ -404,17 +404,17 @@ Theorem apply_upto_ok ps ls d0 desc len i :
                  desc = ps.(p_desc) /\
                  i + len = length ls.(ls_log) /\
                  ls.(ls_committed) = true /\
-                 logical_log_apply (subslice ls.(ls_log) i len) ls.(ls_disk) =
-                 logical_log_apply ls.(ls_log) d0 /\
-                 logical_log_apply ls.(ls_log) ls.(ls_disk) =
-                 logical_log_apply ls.(ls_log) d0;
+                 applylog (subslice ls.(ls_log) i len) ls.(ls_disk) =
+                 applylog ls.(ls_log) d0 /\
+                 applylog ls.(ls_log) ls.(ls_disk) =
+                 applylog ls.(ls_log) d0;
           post state' r :=
             r = tt /\
             exists ps',
               PhyDecode state' ps' /\
               LogDecode ps' {| ls_committed := true;
                                ls_log := ls.(ls_log);
-                               ls_disk := logical_log_apply ls.(ls_log) d0; |};
+                               ls_disk := applylog ls.(ls_log) d0; |};
           alternate state' _ :=
             exists ps',
               PhyDecode state' ps' /\
@@ -424,9 +424,9 @@ Theorem apply_upto_ok ps ls d0 desc len i :
                                  ls_log := ls.(ls_log);
                                  ls_disk := disk; |} /\
                 (* re-applying the entire log to the crashed disk... *)
-                logical_log_apply ls.(ls_log) disk =
+                applylog ls.(ls_log) disk =
                 (* will finish what we started *)
-                logical_log_apply ls.(ls_log) d0;
+                applylog ls.(ls_log) d0;
        |}).
 Proof.
   gen ps ls d0 desc i.
@@ -460,7 +460,7 @@ Proof.
     { erewrite <- log_apply_reapply_one in * by eauto.
       congruence. }
     { eexists; intuition eauto.
-      replace (logical_log_apply ls.(ls_log) disk).
+      replace (applylog ls.(ls_log) disk).
       erewrite <- log_apply_reapply_one by eauto; auto. }
     { eexists; intuition eauto.
       erewrite <- log_apply_reapply_one by eauto; auto. }
@@ -490,8 +490,8 @@ Qed.
 Hint Resolve LogDecode_clear_hdr.
 
 Theorem log_apply_idempotent log : forall d,
-    logical_log_apply log (logical_log_apply log d) =
-    logical_log_apply log d.
+    applylog log (applylog log d) =
+    applylog log d.
 Proof.
   induction log; simpl; intros.
   - auto.
@@ -504,14 +504,14 @@ Theorem log_apply_ok ps ls d0 :
     (fun state =>
        {| pre := PhyDecode state ps /\
                  LogDecode ps ls /\
-                 logical_log_apply ls.(ls_log) ls.(ls_disk) =
-                 logical_log_apply ls.(ls_log) d0;
+                 applylog ls.(ls_log) ls.(ls_disk) =
+                 applylog ls.(ls_log) d0;
           post state' r :=
             exists ps', PhyDecode state' ps' /\
                    if ls.(ls_committed) then
                      LogDecode ps' {| ls_committed := false;
                                       ls_log := nil;
-                                      ls_disk := logical_log_apply ls.(ls_log) d0; |}
+                                      ls_disk := applylog ls.(ls_log) d0; |}
                    else
                      LogDecode ps' {| ls_committed := false;
                                       ls_log := nil;
@@ -523,12 +523,12 @@ Theorem log_apply_ok ps ls d0 :
                    LogDecode ps' {| ls_committed := true;
                                     ls_log := ls.(ls_log);
                                     ls_disk := disk; |} /\
-                   logical_log_apply ls.(ls_log) disk =
-                   logical_log_apply ls.(ls_log) d0) \/
+                   applylog ls.(ls_log) disk =
+                   applylog ls.(ls_log) d0) \/
                (if ls.(ls_committed) then
                   LogDecode ps' {| ls_committed := false;
                                    ls_log := nil;
-                                   ls_disk := logical_log_apply ls.(ls_log) d0; |}
+                                   ls_disk := applylog ls.(ls_log) d0; |}
                 else
                   exists log,
                     LogDecode ps' {| ls_committed := false;
