@@ -1,5 +1,5 @@
 Require Import Helpers.RelationAlgebra.
-Require Import Streams.
+Require Import List.
 
 Global Set Implicit Arguments.
 Global Generalizable Variables T R Op State.
@@ -18,14 +18,11 @@ Arguments Ret {Op T} v.
 (** A sequence of procedures that a user might wish to run, where for each
     procedure in the sequence they specify a continuation to run on success,
     and an alternate sequence to run if a crash happens. *)
-Inductive proc_seq (Op: Type -> Type) (T : Type) (R: Type) : Type :=
-| Seq_Ret (v : T)
-| Seq_Bind (T1 : Type) (p1 : proc Op T1) (p2 : T1 -> proc_seq Op T R) (c: R -> proc_seq Op T R).
-Arguments Seq_Ret {Op T R}.
-Arguments Seq_Bind {Op T R T1}.
-
-Inductive SchedChoice : Set := Crash | Finish.
-Definition schedule : Type := Stream SchedChoice.
+Inductive proc_seq (Op: Type -> Type) (R: Type) : Type :=
+| Seq_Nil
+| Seq_Bind (T : Type) (p1 : proc Op T) (p2 : T -> proc_seq Op R) (c: R -> proc_seq Op R).
+Arguments Seq_Nil {Op R}.
+Arguments Seq_Bind {Op R T}.
 
 (** Semantics: defined using big-step execution relations *)
 
@@ -81,33 +78,27 @@ Section Dynamics.
     rexec p rec =
     exec_crash p;; crash_step;; exec_recover rec := eq_refl.
 
-  Fixpoint exec_seq {T R} (p: proc_seq T R) (rec: proc R) (s: schedule)
-    : relation State State T :=
+  Inductive ExecResult : Type :=
+    | Crashed {X: Type} : X -> ExecResult
+    | Finished {X: Type} : X -> ExecResult.
+
+  Fixpoint exec_seq {R} (p: proc_seq R) (rec: proc R)
+    : relation State State (list ExecResult) :=
     match p with
-    | Seq_Ret v => pure v
+    | Seq_Nil => pure (nil)
     | Seq_Bind p1 f c =>
-      match s with
-      | Cons b s' =>
-        match b with
-        | Crash => r <- rexec p1 rec; exec_seq (c r) rec s'
-        | Finish => v <- exec p1; exec_seq (f v) rec s'
-        end
-      end
+      (v <- exec p1; l <- exec_seq (f v) rec; pure (Finished v :: l))
+      + (r <- rexec p1 rec; l <- exec_seq (c r) rec; pure (Crashed r :: l))
     end.
 
-  Lemma exec_seq_unfold {T R} (p: proc_seq T R) (rec: proc R) s :
-    exec_seq p rec s =
-      match p with
-      | Seq_Ret v => pure v
-      | Seq_Bind p1 f c =>
-        match s with
-        | Cons b s' =>
-          match b with
-          | Crash => r <- rexec p1 rec; exec_seq (c r) rec s'
-          | Finish => v <- exec p1; exec_seq (f v) rec s'
-          end
-        end
-      end.
+  Lemma exec_seq_unfold {R} (p: proc_seq R) (rec: proc R) :
+    exec_seq p rec =
+    match p with
+    | Seq_Nil => pure (nil)
+    | Seq_Bind p1 f c =>
+      (v <- exec p1; l <- exec_seq (f v) rec; pure (Finished v :: l))
+      + (r <- rexec p1 rec; l <- exec_seq (c r) rec; pure (Crashed r :: l))
+    end.
   Proof. destruct p; auto. Qed.
 
 End Dynamics.

@@ -30,10 +30,10 @@ Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op
   | Bind p p' => Bind (impl.(compile) p) (fun v => impl.(compile) (p' v))
   end.
 
-Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) T R (p: proc_seq Op T R) :
-  proc_seq C_Op T R :=
+Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) R (p: proc_seq Op R) :
+  proc_seq C_Op R :=
   match p with
-  | Seq_Ret v => Seq_Ret v
+  | Seq_Nil => Seq_Nil
   | Seq_Bind p p' c => Seq_Bind (impl.(compile) p)
                                 (fun v => impl.(compile_seq) (p' v))
                                 (fun r => impl.(compile_seq) (c r))
@@ -208,16 +208,25 @@ Section Layers.
         rew H.
   Qed.
 
-  Theorem compile_exec_seq_ok T R (p: a_proc_seq T R) (rec: a_proc R) s:
+  Theorem compile_exec_seq_ok R (p: a_proc_seq R) (rec: a_proc R):
     refines rf.(absr)
-                 (exec_seq c_sem (compile_seq p) (compile_rec rec) s)
-                 (exec_seq a_sem p rec s).
+                 (exec_seq c_sem (compile_seq p) (compile_rec rec))
+                 (exec_seq a_sem p rec).
   Proof.
-    unfold refines; revert s;
-    induction p; intros s; do 2 rewrite exec_seq_unfold; simpl; norm.
-    destruct s as [[] s]; rewrite <-bind_assoc.
-    - rew compile_rexec_ok; repeat rel_congruence; eauto.
-    - rew compile_exec_ok; repeat rel_congruence; eauto.
+    unfold refines.
+    induction p as [| ??? IH1 ? IH2]; do 2 rewrite exec_seq_unfold; simpl; [ norm |].
+    setoid_rewrite bind_dist_r. setoid_rewrite bind_dist_l.
+    eapply or_respects_impl.
+    - rewrite <-bind_assoc.
+      rew compile_exec_ok; repeat rel_congruence; eauto.
+      rewrite <-bind_assoc.
+      setoid_rewrite IH1.
+      norm.
+    - rewrite <-bind_assoc.
+      rew compile_rexec_ok; repeat rel_congruence; eauto.
+      rewrite <-bind_assoc.
+      setoid_rewrite IH2.
+      norm.
   Qed.
 
   Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
@@ -278,9 +287,9 @@ Section Layers.
     - Right.
   Qed.
 
-  Theorem complete_exec_seq_ok : forall T R (p: a_proc_seq T R) (rec: a_proc R) s,
-      test c_initP;; inited <- c_exec rf.(impl).(init); ifInit inited (c_sem.(exec_seq) (compile_seq p) (compile_rec rec) s) --->
-           (any (T:=unit);; test a_initP;; v <- a_sem.(exec_seq) p rec s; any (T:=unit);; pure (Some v)) +
+  Theorem complete_exec_seq_ok : forall R (p: a_proc_seq R) (rec: a_proc R),
+      test c_initP;; inited <- c_exec rf.(impl).(init); ifInit inited (c_sem.(exec_seq) (compile_seq p) (compile_rec rec)) --->
+           (any (T:=unit);; test a_initP;; v <- a_sem.(exec_seq) p rec; any (T:=unit);; pure (Some v)) +
       (any (T:=unit);; pure None).
   Proof.
     intros.
@@ -300,22 +309,22 @@ Section Layers.
   Qed.
 
   (* State a version without test, with some defns unfolded *)
-  Theorem complete_exec_seq_ok_alt T R (p: a_proc_seq T R) (rec: a_proc R) s
-      (cs1 cs2: CState) (mv: option T):
+  Theorem complete_exec_seq_ok_alt R (p: a_proc_seq R) (rec: a_proc R)
+      (cs1 cs2: CState) (mv: option (list ExecResult)):
     c_initP cs1 ->
     (inited <- c_exec rf.(impl).(init);
      match inited with
      | InitFailed => pure None
      | Initialized =>
-       v <- c_sem.(exec_seq) (compile_seq p) (compile_rec rec) s; pure (Some v)
+       v <- c_sem.(exec_seq) (compile_seq p) (compile_rec rec); pure (Some v)
      end) cs1 cs2 mv ->
     match mv with
     | None => True
-    | Some v => exists as1 as2, a_initP as1 /\ (a_sem.(exec_seq) p rec s) as1 as2 v
+    | Some v => exists as1 as2, a_initP as1 /\ (a_sem.(exec_seq) p rec) as1 as2 v
     end.
   Proof.
     intros.
-    pose proof (complete_exec_seq_ok p rec s).
+    pose proof (complete_exec_seq_ok p rec).
     unfold ifInit in H1. edestruct (H1 cs1 cs2 mv).
     { exists tt, cs1. split; [firstorder|].
       destruct H0 as (i&cs1'&?&?).
