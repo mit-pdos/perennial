@@ -954,7 +954,7 @@ Module ReplicatedDisk.
     - intros []. eapply Recover_rok1.
     - descend; simplify; intuition eauto.
     - descend; simplify; intuition eauto.
-      exists tt. inversion H0. subst; intuition eauto.
+      exists tt. inversion H1. subst; intuition eauto.
     - simplify. exists d; split; eauto.
   Qed.
 
@@ -968,9 +968,11 @@ Module ReplicatedDisk.
     - intros. eapply Recover_rok2.
     - descend; simplify; intuition eauto.
     - intros.
-      simpl in H.
+      simpl in *.
       (intuition eauto);
-        inversion H0; clear H0; subst.
+        repeat match goal with
+               | [ H: identity _ _ _ |- _ ] => inv_clear H
+               end.
       * exists (stable_sync); simplify; finish.
       * exists (stable_out); simpl.
         intuition eauto.
@@ -995,7 +997,7 @@ Module ReplicatedDisk.
     - intros. eapply Recover_rok1.
     - descend; simplify; intuition eauto.
     - descend; simplify; intuition eauto.
-      exists tt. inversion H0. subst; intuition eauto.
+      exists tt. inv_clear H1. intuition eauto.
     - simplify. exists d; split; eauto.
   Qed.
 
@@ -1047,7 +1049,7 @@ Module ReplicatedDisk.
     eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1.
     { eapply Recover_rok1. }
     { intros []. eapply Recover_rok1. }
-    { simplify. exists tt. inversion H0; subst; eauto. }
+    { simplify. exists tt. inv_clear H1; eauto. }
     { simplify. }
   Qed.
 
