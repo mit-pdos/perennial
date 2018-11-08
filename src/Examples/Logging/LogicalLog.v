@@ -143,6 +143,7 @@ Lemma log_decode_app:
     (a : addr) (v : block) (s : D.ODLayer.(State)),
     PhyDecode s ps ->
     LogDecode ps ls ->
+    ls.(ls_committed) = false ->
     forall pf : ps.(p_hdr).(log_length) < LOG_LENGTH,
       LogDecode
         {|
@@ -150,11 +151,11 @@ Lemma log_decode_app:
           p_desc := desc_assign ps.(p_desc) ps.(p_hdr).(log_length) a;
           p_log_values := log_assign ps.(p_log_values) ps.(p_hdr).(log_length) v;
           p_data_region := ps.(p_data_region) |}
-        {| ls_committed := ls.(ls_committed);
+        {| ls_committed := false;
            ls_log := ls.(ls_log) ++ (a, v) :: nil;
            ls_disk := ls.(ls_disk) |}.
 Proof.
-  intros ps ls a v s Hphy Hlog pf.
+  intros ps ls a v s Hphy Hlog Hcommit_false pf.
   pose proof (logd_log_bounds Hlog).
   constructor; simpl; eauto.
   - rewrite app_length; simpl.
@@ -204,6 +205,7 @@ Lemma log_decode_some_log:
   forall (ps : PhysicalState) (ls : LogicalState) (s : D.ODLayer.(State)),
     PhyDecode s ps ->
     LogDecode ps ls ->
+    ls.(ls_committed) = false ->
     forall (hdr : LogHdr) (desc : Descriptor) (log_values : LogValues),
       hdr.(committed) = ps.(p_hdr).(committed) ->
       exists log : list (addr * block),
@@ -214,11 +216,11 @@ Lemma log_decode_some_log:
             p_log_values := log_values;
             p_data_region := ps.(p_data_region) |}
           {|
-            ls_committed := ls.(ls_committed);
+            ls_committed := false;
             ls_log := log;
             ls_disk := ls.(ls_disk) |}.
 Proof.
-  intros ps ls s Hphy Hlog hdr desc log_values Hcommit.
+  intros ps ls s Hphy Hlog Hcommit_false hdr desc log_values Hcommit.
   exists (firstn hdr.(log_length) (zip desc log_values)).
   constructor; eauto.
   - rewrite firstn_length.
@@ -238,13 +240,14 @@ Theorem log_write_ok ps ls a v :
     (log_write a v)
     (fun state =>
        {| pre := PhyDecode state ps /\
-                 LogDecode ps ls;
+                 LogDecode ps ls /\
+                 ls.(ls_committed) = false;
           post state' r :=
             match r with
             | TxnD.WriteOK =>
               exists ps', PhyDecode state' ps' /\
                      LogDecode ps'
-                               {| ls_committed := ls.(ls_committed);
+                               {| ls_committed := false;
                                   ls_log := ls.(ls_log) ++ (a,v)::nil;
                                   ls_disk := ls.(ls_disk); |}
             | TxnD.WriteErr =>
@@ -255,7 +258,7 @@ Theorem log_write_ok ps ls a v :
             exists ps',
               PhyDecode state' ps' /\
               exists log,
-                (LogDecode ps' {| ls_committed := ls.(ls_committed);
+                (LogDecode ps' {| ls_committed := false;
                                   ls_log := log;
                                   ls_disk := ls.(ls_disk); |});
        |}).
@@ -589,43 +592,27 @@ Proof.
   apply log_apply_ok.
 Qed.
 
+Inductive Recghost (restrict:LogicalState -> Prop) :=
+| recghost (ps:PhysicalState) (ls:LogicalState) (pf:restrict ls).
+
+Arguments recghost {restrict}.
+
 Theorem log_apply_spec_idempotent_crash_step' ls0 :
   idempotent_crash_step
     D.ODLayer.(sem)
-                (fun (a: { '(ps, ls) | ls.(ls_disk) = ls0.(ls_disk) }) =>
-                   let 'exist _ (ps, ls) _ := a in
+                (fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
+                   let 'recghost ps ls _ := a in
                    log_apply_spec ps ls ls.(ls_disk) false).
 Proof.
   unfold idempotent_crash_step; intuition; simplify.
   inv_clear H1.
   destruct a.
-  destruct x.
   simpl in H0; propositional.
-  destruct_with_eqn (l.(ls_committed)); split_cases;
+  destruct_with_eqn (ls.(ls_committed)); split_cases;
     match goal with
     | [ H: PhyDecode _ ?ps,
            H': LogDecode ?ps ?ls |- _ ] =>
-      unshelve eexists (exist _ (ps, ls) _)
-    end; simpl in *; repeat simpl_match; simplify; finish.
-Qed.
-
-Theorem log_apply_spec_idempotent_crash_step'_committed ls0 :
-  idempotent_crash_step
-    D.ODLayer.(sem)
-                (fun (a: { '(ps, ls) | ls.(ls_disk) = ls0.(ls_disk) }) =>
-                   let 'exist _ (ps, ls) _ := a in
-                   log_apply_spec ps ls ls.(ls_disk) false).
-Proof.
-  unfold idempotent_crash_step; intuition; simplify.
-  inv_clear H1.
-  destruct a.
-  destruct x.
-  simpl in H0; propositional.
-  destruct_with_eqn (l.(ls_committed)); split_cases;
-    match goal with
-    | [ H: PhyDecode _ ?ps,
-           H': LogDecode ?ps ?ls |- _ ] =>
-      unshelve eexists (exist _ (ps, ls) _)
+      unshelve eexists (recghost ps ls _)
     end; simpl in *; repeat simpl_match; simplify; finish.
 Qed.
 

@@ -13,8 +13,8 @@ Definition logical_abstraction (d: D.State) ps ls :=
   LogDecode ps ls /\
   ls.(ls_committed) = false.
 
-Local Hint Resolve log_read_ok.
 Local Hint Resolve recovery_ok.
+Local Hint Resolve log_apply_spec_idempotent_crash_step'.
 Local Hint Resolve log_apply_spec_idempotent_crash_step_notxn.
 Local Hint Resolve log_apply_spec_idempotent_crash_step.
 
@@ -29,9 +29,11 @@ Definition mk_rspec ls0 T (p_cspec: Specification T unit D.State) :=
   @proc_cspec_to_rspec _ _
     D.ODLayer.(sem)
                 _ _ _ p_cspec
-                (fun (a: { '(ps, ls) | ls.(ls_disk) = ls0.(ls_disk) }) =>
-                   let 'exist _ (ps, ls) _ := a in
+                (fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
+                   let 'recghost ps ls _ := a in
                    log_apply_spec ps ls ls.(ls_disk) false).
+
+Local Hint Resolve log_read_ok.
 
 Definition log_read_rec_ok ps ls a :
   proc_rspec
@@ -50,26 +52,61 @@ Definition log_read_rec_ok ps ls a :
               ls'.(ls_disk) = ls.(ls_disk);
        |}).
 Proof.
-  eapply mk_rspec; eauto; simpl.
-  - intros.
-    destruct a0.
-    destruct x.
-    eapply recovery_ok.
-  - eapply log_apply_spec_idempotent_crash_step'.
-  - intros.
-    inv_clear H1.
-    eexists (exist _ (_, _) _).
-    simpl.
-    intuition eauto.
-  - unfold logical_abstraction; propositional.
-    destruct a0.
-    destruct x.
-    simpl in *; propositional.
-    descend.
+  eapply mk_rspec; eauto; simpl in *; propositional;
     repeat match goal with
-           | [ |- _ /\ _ ] => split
-           end; eauto.
-    Unshelve.
+           | [ x: Recghost _ |- _ ] => destruct x
+           end;
+    eauto.
+  - inv_clear H1.
+    eexists (recghost _ _ _); simpl; intuition eauto.
+  - simpl in H0; propositional.
+    unfold logical_abstraction.
+    descend; intuition eauto.
+
+    Grab Existential Variables.
+    simpl; auto.
+Qed.
+
+Local Hint Resolve log_write_ok.
+
+Definition log_write_rec_ok ps ls a v :
+  proc_rspec
+    (log_write a v)
+    (recovery)
+    (fun state =>
+       {| pre := logical_abstraction state ps ls;
+          post state' r :=
+            exists ps' ls',
+              logical_abstraction state' ps' ls' /\
+              ls'.(ls_committed) = false /\
+              match r with
+                | TxnD.WriteOK =>
+                  ls'.(ls_log) = ls.(ls_log) ++ (a,v)::nil
+                | TxnD.WriteErr =>
+                  ls'.(ls_log) = ls.(ls_log)
+              end;
+          alternate state' r :=
+            exists ps' ls',
+              logical_abstraction state' ps' ls' /\
+              ls'.(ls_committed) = false /\
+              ls'.(ls_log) = nil /\
+              ls'.(ls_disk) = ls.(ls_disk);
+       |}).
+Proof.
+  eapply mk_rspec; eauto; simpl in *; propositional;
+    repeat match goal with
+           | [ x: Recghost _ |- _ ] => destruct x
+           end;
+    eauto.
+  - unfold logical_abstraction in *; intuition eauto.
+    destruct v0; propositional; descend; intuition eauto.
+  - inv_clear H1.
+    eexists (recghost _ _ _); simpl; intuition eauto.
+  - simpl in H0; propositional.
+    unfold logical_abstraction.
+    descend; intuition eauto.
+
+    Grab Existential Variables.
     simpl; auto.
 Qed.
 
