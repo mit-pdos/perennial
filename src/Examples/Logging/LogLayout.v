@@ -644,3 +644,43 @@ Proof.
   step; split_wlog; simplify; finish.
   step; split_wlog; simplify; finish.
 Qed.
+
+Lemma log_subslice_len_ok:
+  forall state : D.ODLayer.(State),
+    ~ length state < 2 + LOG_LENGTH -> length (subslice state 2 LOG_LENGTH) = LOG_LENGTH.
+Proof.
+  intros.
+  rewrite length_subslice; omega.
+Qed.
+
+Theorem phy_log_init_ok :
+  proc_cspec
+    (log_init)
+    (fun state =>
+       {| pre := True;
+          post state' r :=
+            match r with
+            | Initialized =>
+              exists ps, PhyDecode state' ps /\
+                    ps.(p_hdr).(committed) = false /\
+                    ps.(p_hdr).(log_length) = 0
+            | InitFailed => state' = state
+            end;
+          alternate state' _ := True |}).
+Proof.
+  unfold log_init.
+  step.
+  destruct matches.
+  step.
+  unfold writehdr, writedesc.
+  repeat step.
+  exists {| p_hdr := empty_hdr;
+       p_desc := default;
+       p_log_values := {| values := subslice state 2 LOG_LENGTH;
+                          values_ok := ltac:(auto using log_subslice_len_ok) |};
+       p_data_region := subslice state (2+LOG_LENGTH) (length state - 2 - LOG_LENGTH); |};
+    simpl.
+  intuition eauto.
+  constructor; intros; simpl; array.
+  destruct (index_dec state (2 + LOG_LENGTH + i)); propositional; array.
+Qed.

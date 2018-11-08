@@ -626,3 +626,34 @@ Proof.
   spec_impl; split_cases; simplify.
   erewrite logd_disk by eauto; auto.
 Qed.
+
+Local Hint Resolve phy_log_init_ok.
+
+Theorem log_init_ok :
+  proc_cspec
+    (log_init)
+    (fun state =>
+       {| pre := True;
+          post state' r :=
+            match r with
+            | Initialized =>
+              exists ps ls,
+              PhyDecode state' ps /\
+              LogDecode ps ls /\
+              ls.(ls_committed) = false /\
+              ls.(ls_log) = nil
+            | InitFailed => True
+            end;
+          alternate state' _ := True |}).
+Proof.
+  spec_impl; simplify.
+  destruct v; simplify; finish.
+  exists ps, {| ls_committed := false;
+           ls_log := nil;
+           ls_disk := ps.(p_data_region); |};
+    simpl;
+    intuition eauto.
+  destruct ps; simpl in *.
+  constructor; intros; array; eauto.
+  omega.
+Qed.
