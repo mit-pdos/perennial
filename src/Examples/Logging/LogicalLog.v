@@ -608,3 +608,21 @@ Proof.
     repeat simpl_match;
     simplify; finish.
 Qed.
+
+Local Hint Resolve phy_log_size_ok.
+
+Theorem log_size_ok ps ls :
+  proc_cspec
+    (log_size)
+    (fun state =>
+       {| pre := PhyDecode state ps /\
+                 LogDecode ps ls;
+          post state' r :=
+            r = length ls.(ls_disk) /\
+            state' = state;
+          alternate state' _ :=
+            state' = state |}).
+Proof.
+  spec_impl; split_cases; simplify.
+  erewrite logd_disk by eauto; auto.
+Qed.
