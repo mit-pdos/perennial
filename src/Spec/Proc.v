@@ -20,7 +20,7 @@ Arguments Ret {Op T} v.
     and an alternate sequence to run if a crash happens. *)
 Inductive proc_seq (Op: Type -> Type) (R: Type) : Type :=
 | Seq_Nil
-| Seq_Bind (T : Type) (p1 : proc Op T) (p2 : T -> proc_seq Op R) (c: R -> proc_seq Op R).
+| Seq_Bind (T : Type) (p : proc Op T) (rx : T + R -> proc_seq Op R).
 Arguments Seq_Nil {Op R}.
 Arguments Seq_Bind {Op R T}.
 
@@ -78,26 +78,27 @@ Section Dynamics.
     rexec p rec =
     exec_crash p;; crash_step;; exec_recover rec := eq_refl.
 
-  Inductive ExecResult : Type :=
-    | Crashed {X: Type} : X -> ExecResult
-    | Finished {X: Type} : X -> ExecResult.
+  Definition exec_or_rexec {T R} (p : proc T) (rec: proc R) : relation State State (T + R) :=
+    (v <- exec p; pure (inl v)) + (v <- rexec p rec; pure (inr v)).
 
   Fixpoint exec_seq {R} (p: proc_seq R) (rec: proc R)
-    : relation State State (list ExecResult) :=
+    : relation State State (list {X : Type & X}) :=
     match p with
     | Seq_Nil => pure (nil)
-    | Seq_Bind p1 f c =>
-      (v <- exec p1; l <- exec_seq (f v) rec; pure (Finished v :: l))
-      + (r <- rexec p1 rec; l <- exec_seq (c r) rec; pure (Crashed r :: l))
+    | Seq_Bind p f =>
+      v <- exec_or_rexec p rec;
+      l <- exec_seq (f v) rec;
+      pure (existT _ _ v :: l)
     end.
 
   Lemma exec_seq_unfold {R} (p: proc_seq R) (rec: proc R) :
     exec_seq p rec =
     match p with
     | Seq_Nil => pure (nil)
-    | Seq_Bind p1 f c =>
-      (v <- exec p1; l <- exec_seq (f v) rec; pure (Finished v :: l))
-      + (r <- rexec p1 rec; l <- exec_seq (c r) rec; pure (Crashed r :: l))
+    | Seq_Bind p f =>
+      v <- exec_or_rexec p rec;
+      l <- exec_seq (f v) rec;
+      pure (existT _ _ v :: l)
     end.
   Proof. destruct p; auto. Qed.
 

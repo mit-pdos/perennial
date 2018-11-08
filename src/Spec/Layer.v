@@ -34,9 +34,7 @@ Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) R (p: proc_seq Op R) :
   proc_seq C_Op R :=
   match p with
   | Seq_Nil => Seq_Nil
-  | Seq_Bind p p' c => Seq_Bind (impl.(compile) p)
-                                (fun v => impl.(compile_seq) (p' v))
-                                (fun r => impl.(compile_seq) (c r))
+  | Seq_Bind p p' => Seq_Bind (impl.(compile) p) (fun v => impl.(compile_seq) (p' v))
   end.
 
 Definition compile_rec Op C_Op
@@ -214,18 +212,18 @@ Section Layers.
                  (exec_seq a_sem p rec).
   Proof.
     unfold refines.
-    induction p as [| ??? IH1 ? IH2]; do 2 rewrite exec_seq_unfold; simpl; [ norm |].
-    setoid_rewrite bind_dist_r. setoid_rewrite bind_dist_l.
+    induction p as [| ??? IH1]; do 2 rewrite exec_seq_unfold; simpl; [ norm |].
+    repeat setoid_rewrite bind_dist_r. repeat setoid_rewrite bind_dist_l.
     eapply or_respects_impl.
-    - rewrite <-bind_assoc.
+    - do 2 rewrite <-bind_assoc.
       rew compile_exec_ok; repeat rel_congruence; eauto.
       rewrite <-bind_assoc.
       setoid_rewrite IH1.
       norm.
-    - rewrite <-bind_assoc.
+    - do 2 rewrite <-bind_assoc.
       rew compile_rexec_ok; repeat rel_congruence; eauto.
       rewrite <-bind_assoc.
-      setoid_rewrite IH2.
+      setoid_rewrite IH1.
       norm.
   Qed.
 
@@ -310,7 +308,7 @@ Section Layers.
 
   (* State a version without test, with some defns unfolded *)
   Theorem complete_exec_seq_ok_alt R (p: a_proc_seq R) (rec: a_proc R)
-      (cs1 cs2: CState) (mv: option (list ExecResult)):
+      (cs1 cs2: CState) mv:
     c_initP cs1 ->
     (inited <- c_exec rf.(impl).(init);
      match inited with
