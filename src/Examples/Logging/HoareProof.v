@@ -219,3 +219,72 @@ Definition abstraction (txnd: TxnD.State) (d: D.State) (u: unit) : Prop :=
   exists ps ls,
     logical_abstraction d ps ls /\
     txnd = (ls.(ls_disk), massign ls.(ls_log) ls.(ls_disk)).
+
+Notation proc_refines p spec :=
+  (forall txnd, proc_rspec p recovery (refine_spec abstraction spec txnd))
+    (only parsing).
+
+Ltac rspec_impl :=
+  eapply proc_rspec_impl;
+  [ unfold spec_impl | solve [ eauto ] ];
+  simpl; propositional.
+
+Local Hint Resolve log_read_rec_ok.
+
+Ltac destruct_txnd :=
+  let t H :=
+      (let d_old := fresh "d_old" in
+       let d := fresh "d" in
+       destruct H as [d_old d]) in
+  repeat match goal with
+         | [ H: TxnD.State |- _ ] => t H
+         | [ H: TxnD.l.(State) |- _ ] => t H
+         end.
+
+Theorem log_read_abs_ok a :
+  proc_refines (log_read a)
+               (fun '(d_old, d) =>
+                  {| pre := True;
+                     post '(d_old', d') r :=
+                       d_old' = d_old /\
+                       d' = d /\
+                       index d_old a ?|= eq r;
+                     alternate '(d_old', d') _ :=
+                       d_old' = d_old /\
+                       d' = d_old; |}).
+Proof.
+  unfold refine_spec, abstraction;
+    intros; destruct_txnd; intros.
+  spec_intros; simpl in *; simplify.
+  rspec_impl; (intuition eauto); simplify.
+  eexists (_, _); intuition eauto.
+  eexists (_, _); intuition eauto.
+Qed.
+
+Module Refinement.
+
+  Definition Impl: LayerImpl D.Op TxnD.Op :=
+    {| compile_op := fun (T : Type) (op : TxnD.Op T) =>
+                       match op with
+                       | TxnD.op_read a => log_read a
+                       | TxnD.op_write a b => log_write a b
+                       | TxnD.op_commit => commit
+                       | TxnD.op_size => log_size
+                       end;
+       init := log_init;
+       Layer.recover := recovery |}.
+
+  Lemma l_compile_refines :
+    compile_op_refines_step D.ODLayer TxnD.l Impl abstraction.
+  Proof.
+    unfold compile_op_refines_step; intros.
+    destruct op; cbn [Impl compile_op recover].
+    - admit.
+    - eapply proc_rspec_crash_refines_op; intros;
+        eauto using log_read_abs_ok; destruct_txnd; simpl in *; simplify; finish.
+      constructor.
+      destruct_with_eqn (index d_old0 a); simpl in *; eauto.
+      destruct v; intuition eauto.
+  Abort.
+
+End Refinement.

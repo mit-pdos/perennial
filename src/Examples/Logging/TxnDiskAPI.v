@@ -34,8 +34,13 @@ Module TxnDisk.
       (* it's an invariant of the log that the disks have the same size *)
       op_step (op_size) (d_old, d) (d_old, d) (length d).
 
+  Definition txn_crash : State -> State -> unit -> Prop :=
+    fun '(d_old, d) '(d_old', d') r =>
+      d_old' = d_old /\
+      d' = d_old.
+
   Definition dyn : Dynamics Op State :=
-    {| step := op_step; crash_step := pure tt |}.
+    {| step := op_step; crash_step := txn_crash |}.
 
   Definition l : Layer Op :=
     {| Layer.State := State; sem := dyn; initP := fun '(d_old, d) => d_old = d |}.
