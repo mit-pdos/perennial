@@ -107,6 +107,7 @@ Ltac simplify :=
          | |- _ /\ _ => split; [ solve [ auto ] | ]
          | |- _ /\ _ => split; [ | solve [ auto ] ]
          | _ => destruct_tuple
+         | [ u: unit |- _ ] => destruct u
          | [ H: (_, _) = (_, _) |- _ ] => inv_clear H
          | _ => progress cbn [pre post alternate] in *
          end.

@@ -257,8 +257,60 @@ Proof.
     intros; destruct_txnd; intros.
   spec_intros; simpl in *; simplify.
   rspec_impl; (intuition eauto); simplify.
-  eexists (_, _); intuition eauto.
-  eexists (_, _); intuition eauto.
+  - eexists (_, _); intuition eauto.
+  - eexists (_, _); intuition eauto.
+Qed.
+
+Local Hint Resolve log_write_rec_ok.
+
+Theorem log_write_abs_ok a v :
+  proc_refines (log_write a v)
+               (fun '(d_old, d) =>
+                  {| pre := True;
+                     post '(d_old', d') r :=
+                       d_old' = d_old /\
+                       match r with
+                       | TxnD.WriteOK =>
+                         d' = assign d a v
+                       | TxnD.WriteErr =>
+                         d' = d
+                       end;
+                     alternate '(d_old', d') _ :=
+                       d_old' = d_old /\
+                       d' = d_old; |}).
+Proof.
+  unfold refine_spec, abstraction;
+    intros; destruct_txnd; intros.
+  spec_intros; simpl in *; simplify.
+  rspec_impl; (intuition eauto); simplify.
+  destruct v0.
+  - eexists (_, _); (intuition eauto); simpl.
+    admit.
+  - eexists (_, _); (intuition eauto); simpl.
+  - eexists (_, _); (intuition eauto); simpl.
+Admitted.
+
+Local Hint Resolve log_size_rec_ok.
+
+Theorem log_size_abs_ok :
+  proc_refines (log_size)
+               (fun '(d_old, d) =>
+                  {| pre := True;
+                     post '(d_old', d') r :=
+                       d_old' = d_old /\
+                       d' = d /\
+                       r = length d;
+                     alternate '(d_old', d') _ :=
+                       d_old' = d_old /\
+                       d' = d_old; |}).
+Proof.
+  unfold refine_spec, abstraction;
+    intros; destruct_txnd; intros.
+  spec_intros; simpl in *; simplify.
+  rspec_impl; (intuition eauto); simplify.
+  - eexists (_, _); intuition eauto.
+    array.
+  - eexists (_, _); intuition eauto.
 Qed.
 
 Module Refinement.
@@ -284,7 +336,12 @@ Module Refinement.
         eauto using log_read_abs_ok; destruct_txnd; simpl in *; simplify; finish.
       constructor.
       destruct_with_eqn (index d_old0 a); simpl in *; eauto.
-      destruct v; intuition eauto.
+    - eapply proc_rspec_crash_refines_op; intros;
+        eauto using log_write_abs_ok; destruct_txnd; simpl in *; simplify; finish.
+      destruct v; subst; constructor; auto.
+    - eapply proc_rspec_crash_refines_op; intros;
+        eauto using log_size_abs_ok; destruct_txnd; simpl in *; simplify; finish.
+      constructor.
   Abort.
 
 End Refinement.
