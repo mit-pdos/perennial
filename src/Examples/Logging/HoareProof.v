@@ -215,6 +215,50 @@ Proof.
     simpl; auto.
 Qed.
 
+Local Hint Resolve recovery_ok.
+
+Theorem recovery_rec_ok ps ls :
+  proc_rspec
+    (recovery)
+    (recovery)
+    (fun state =>
+       {| pre := logical_abstraction state ps ls;
+          post state' _ :=
+            exists ps,
+              logical_abstraction
+                state' ps
+                {| ls_committed := false;
+                   ls_log := nil;
+                   ls_disk := ls.(ls_disk) |};
+          alternate state' _ :=
+            exists ps,
+              logical_abstraction
+                state' ps
+                {| ls_committed := false;
+                   ls_log := nil;
+                   ls_disk := ls.(ls_disk) |};
+       |}).
+Proof.
+  eapply mk_rspec; simpl; intros;
+    repeat match goal with
+           | [ x: Recghost _ |- _ ] => destruct x
+           end.
+  - eapply (recovery_ok ps ls false).
+  - unfold logical_abstraction in *; simplify; intuition eauto.
+  - eauto.
+  - simpl; unfold logical_abstraction in *; simplify; intuition eauto.
+  - inv_clear H1.
+    simpl in *; propositional.
+    lazymatch goal with
+    | [ H: PhyDecode state'' ?ps,
+           H': LogDecode ?ps ?ls |- _ ] =>
+      unshelve eexists (recghost ps ls _); simpl; eauto
+    end.
+  - unfold logical_abstraction; simpl in *; propositional.
+    exists ps'; intuition eauto.
+    congruence.
+Qed.
+
 Definition abstraction (txnd: TxnD.State) (d: D.State) (u: unit) : Prop :=
   exists ps ls,
     logical_abstraction d ps ls /\
@@ -338,6 +382,28 @@ Proof.
   - eexists (_, _); intuition eauto.
 Qed.
 
+Local Hint Resolve recovery_rec_ok.
+
+Theorem recovery_abs_ok :
+  proc_refines (recovery)
+               (fun '(d_old, d) =>
+                  {| pre := True;
+                     post '(d_old', d') r :=
+                       r = tt /\
+                       d_old' = d_old /\
+                       d' = d_old;
+                     alternate '(d_old', d') _ :=
+                       d_old' = d_old /\
+                       d' = d_old; |}).
+Proof.
+  unfold refine_spec, abstraction;
+    intros; destruct_txnd; intros.
+  spec_intros; simpl in *; simplify.
+  rspec_impl; (intuition eauto); simplify.
+  - eexists (_, _); intuition eauto.
+  - eexists (_, _); intuition eauto.
+Qed.
+
 Module Refinement.
 
   Definition Impl: LayerImpl D.Op TxnD.Op :=
@@ -373,6 +439,37 @@ Module Refinement.
     - eapply proc_rspec_crash_refines_op; intros;
         eauto using log_size_abs_ok; destruct_txnd; simpl in *; simplify; finish.
       constructor.
+  Qed.
+
+  Lemma l_recovery_refines_crash:
+    recovery_refines_crash_step D.ODLayer TxnD.l Impl abstraction.
+  Proof.
+    unfold recovery_refines_crash_step.
+    eapply proc_rspec_recovery_refines_crash_step.
+    - intros; eapply recovery_abs_ok.
+    - intros; destruct_txnd; simpl in *.
+      inv_clear H0; (intuition eauto); simpl; eauto.
+    - intros; destruct_txnd; simpl in *.
+      inv_clear H0.
+      split_cases; destruct_txnd; propositional.
+      eexists (_, _); simpl; eauto.
+  Qed.
+
+  Lemma rf : LayerRefinement D.ODLayer TxnD.l.
+  Proof.
+    unshelve (econstructor).
+    - exact Impl.
+    - exact abstraction.
+    - exact l_compile_refines.
+    - exact l_recovery_refines_crash.
+    - eapply proc_cspec_init_ok; unfold abstraction.
+      + eapply log_init_ok.
+      + simplify.
+      + simplify.
+        eexists (ls.(ls_disk), ls.(ls_disk)); simpl; intuition eauto.
+        unfold logical_abstraction; descend; intuition eauto.
+        f_equal.
+        rewrite H2; simpl; auto.
   Qed.
 
 End Refinement.
