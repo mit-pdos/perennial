@@ -217,6 +217,5 @@ Qed.
 
 Definition abstraction (txnd: TxnD.State) (d: D.State) (u: unit) : Prop :=
   exists ps ls,
-    PhyDecode d ps /\
-    LogDecode ps ls /\
-    ls.(ls_committed) = false.
+    logical_abstraction d ps ls /\
+    txnd = (ls.(ls_disk), massign ls.(ls_log) ls.(ls_disk)).
