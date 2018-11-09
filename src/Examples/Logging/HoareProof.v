@@ -404,7 +404,7 @@ Proof.
   - eexists (_, _); intuition eauto.
 Qed.
 
-Module Refinement.
+Module LoggingRefinement.
 
   Definition Impl: LayerImpl D.Op TxnD.Op :=
     {| compile_op := fun (T : Type) (op : TxnD.Op T) =>
@@ -472,4 +472,4 @@ Module Refinement.
         rewrite H2; simpl; auto.
   Qed.
 
-End Refinement.
+End LoggingRefinement.
