@@ -41,7 +41,7 @@ Definition mk_rspec ls0 T (p_cspec: Specification T unit D.State) :=
 
 Local Hint Resolve log_read_ok.
 
-Definition log_read_rec_ok ps ls a :
+Theorem log_read_rec_ok ps ls a :
   proc_rspec
     (log_read a)
     (recovery)
@@ -78,7 +78,7 @@ Qed.
 
 Local Hint Resolve log_write_ok.
 
-Definition log_write_rec_ok ps ls a v :
+Theorem log_write_rec_ok ps ls a v :
   proc_rspec
     (log_write a v)
     (recovery)
@@ -129,7 +129,7 @@ Qed.
 
 Local Hint Resolve log_commit_ok.
 
-Definition commit_ok ps ls :
+Theorem log_commit_rec_ok ps ls :
   proc_rspec
     (commit)
     (recovery)
@@ -181,7 +181,7 @@ Qed.
 
 Local Hint Resolve log_size_ok.
 
-Definition log_size_rec_ok ps ls :
+Theorem log_size_rec_ok ps ls :
   proc_rspec
     (log_size)
     (recovery)
@@ -313,6 +313,31 @@ Proof.
   - eexists (_, _); intuition eauto.
 Qed.
 
+Local Hint Resolve log_commit_rec_ok.
+
+Theorem log_commit_abs_ok :
+  proc_refines (commit)
+               (fun '(d_old, d) =>
+                  {| pre := True;
+                     post '(d_old', d') r :=
+                       r = tt /\
+                       d_old' = d /\
+                       d' = d;
+                     alternate '(d_old', d') _ :=
+                       (d_old' = d_old /\
+                        d' = d_old) \/
+                       (d_old' = d /\
+                        d' = d); |}).
+Proof.
+  unfold refine_spec, abstraction;
+    intros; destruct_txnd; intros.
+  spec_intros; simpl in *; simplify.
+  rspec_impl; (intuition eauto); simplify; split_cases.
+  - eexists (_, _); intuition eauto.
+  - eexists (_, _); intuition eauto.
+  - eexists (_, _); intuition eauto.
+Qed.
+
 Module Refinement.
 
   Definition Impl: LayerImpl D.Op TxnD.Op :=
@@ -331,7 +356,13 @@ Module Refinement.
   Proof.
     unfold compile_op_refines_step; intros.
     destruct op; cbn [Impl compile_op recover].
-    - admit.
+    - eapply proc_rspec_crash_refines_op; intros;
+        eauto using log_commit_abs_ok; destruct_txnd; simpl in *; simplify; finish.
+      constructor.
+      split_cases; eauto.
+      right.
+      exists (d0, d0), tt; simpl.
+      eauto using TxnD.op_step.
     - eapply proc_rspec_crash_refines_op; intros;
         eauto using log_read_abs_ok; destruct_txnd; simpl in *; simplify; finish.
       constructor.
@@ -342,6 +373,6 @@ Module Refinement.
     - eapply proc_rspec_crash_refines_op; intros;
         eauto using log_size_abs_ok; destruct_txnd; simpl in *; simplify; finish.
       constructor.
-  Abort.
+  Qed.
 
 End Refinement.
