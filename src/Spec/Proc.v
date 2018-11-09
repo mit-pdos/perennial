@@ -55,10 +55,13 @@ Section Dynamics.
     match p with
     | Ret v => pure tt
     | Prim op => pure tt + (step op;; pure tt)
-    | Bind p p' => pure tt +
-                  exec_crash p +
-                  (v <- exec p;
-                     exec_crash (p' v))
+    | Bind p p' =>
+      (* note that this pure tt case is redundant (since the base cases already
+      include it) but is included for a more obvious definition *)
+      pure tt +
+      exec_crash p +
+      (v <- exec p;
+         exec_crash (p' v))
     end.
 
   Definition exec_recover {R} (rec: proc R) : relation State State R :=
