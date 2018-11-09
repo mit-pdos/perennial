@@ -14,24 +14,30 @@ Definition logical_abstraction (d: D.State) ps ls :=
   ls.(ls_committed) = false.
 
 Local Hint Resolve recovery_ok.
-(* Local Hint Resolve log_apply_spec_idempotent_crash_step_notxn. *)
 Local Hint Resolve log_apply_spec_idempotent_crash_step_notxn'.
-Local Hint Resolve log_apply_spec_idempotent_crash_step.
+Local Hint Resolve log_apply_spec_idempotent_crash_step'.
 
-Definition general_rspec T (p_cspec: Specification T unit D.State) :=
-  @proc_cspec_to_rspec _ _
-    D.ODLayer.(sem)
-                (PhysicalState*LogicalState) _ _ p_cspec
-                (fun '(ps, ls) => log_apply_spec ps ls ls.(ls_disk) ls.(ls_committed)).
+Definition general_rspec ls0 T (p_cspec: Specification T unit D.State) :=
+  proc_cspec_to_rspec
+    (sem:=D.ODLayer.(sem))
+    (p_cspec:=p_cspec)
+    (rec_cspec:=fun (a: Recghost (fun ls =>
+                                  if ls.(ls_committed) then
+                                    massign ls.(ls_log) ls.(ls_disk) =
+                                    massign ls0.(ls_log) ls0.(ls_disk)
+                                  else ls.(ls_disk) = ls0.(ls_disk) \/
+                                       ls.(ls_disk) = massign ls0.(ls_log) ls0.(ls_disk))) =>
+                  let 'recghost ps ls _ := a in
+                  log_apply_spec ps ls ls.(ls_disk) ls.(ls_committed)).
 
 
 Definition mk_rspec ls0 T (p_cspec: Specification T unit D.State) :=
-  @proc_cspec_to_rspec _ _
-    D.ODLayer.(sem)
-                _ _ _ p_cspec
-                (fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
-                   let 'recghost ps ls _ := a in
-                   log_apply_spec ps ls ls.(ls_disk) false).
+  proc_cspec_to_rspec
+    (sem:=D.ODLayer.(sem))
+    (p_cspec:=p_cspec)
+    (rec_cspec:=fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
+                  let 'recghost ps ls _ := a in
+                  log_apply_spec ps ls ls.(ls_disk) false).
 
 Local Hint Resolve log_read_ok.
 
@@ -153,15 +159,21 @@ Proof.
     descend; intuition eauto.
     destruct ls'; simpl in *; congruence.
   - inv_clear H1.
-    split_cases.
-    + eexists (_, _); simpl; eauto.
-    + eexists (_, _); simpl; eauto.
-    + eexists (_, _); simpl; eauto.
+    split_cases;
+      lazymatch goal with
+      | [ H: PhyDecode state'' ?ps,
+             H': LogDecode ?ps ?ls |- _ ] =>
+        unshelve eexists (recghost ps ls _); simpl; eauto
+      end.
   - destruct a; simpl in *; propositional.
-    destruct_with_eqn (l.(ls_committed)).
-    unfold logical_abstraction; simpl.
-    descend; right; intuition eauto.
-Abort.
+    exists ps'.
+    destruct_with_eqn (ls0.(ls_committed));
+      unfold logical_abstraction in *; simpl; propositional.
+    + right; split_cases; finish.
+    + split_cases.
+      left; split_cases; finish.
+      right; split_cases; finish.
+Qed.
 
 Definition abstraction (txnd: TxnD.State) (d: D.State) (u: unit) : Prop :=
   exists ps ls,
