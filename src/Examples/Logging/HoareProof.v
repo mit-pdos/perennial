@@ -51,10 +51,12 @@ Definition log_read_rec_ok ps ls a :
             state' = state /\
             index ls.(ls_disk) a ?|= eq r;
           alternate state' r :=
-            exists ps' ls',
-              logical_abstraction state' ps' ls' /\
-              ls'.(ls_log) = nil /\
-              ls'.(ls_disk) = ls.(ls_disk);
+            exists ps',
+              logical_abstraction
+                state' ps'
+                {| ls_committed := false;
+                   ls_log := nil;
+                   ls_disk := ls.(ls_disk); |}
        |}).
 Proof.
   eapply mk_rspec; eauto; simpl in *; propositional;
@@ -67,6 +69,8 @@ Proof.
   - simpl in H0; propositional.
     unfold logical_abstraction.
     descend; intuition eauto.
+    rewrite <- pf.
+    eassumption.
 
     Grab Existential Variables.
     simpl; auto.
@@ -117,7 +121,7 @@ Proof.
   - simpl in H0; propositional.
     unfold logical_abstraction.
     descend; intuition eauto.
-    rewrite <- pf; eauto.
+    rewrite <- pf; eassumption.
 
     Grab Existential Variables.
     simpl; auto.
@@ -173,6 +177,42 @@ Proof.
     + split_cases.
       left; split_cases; finish.
       right; split_cases; finish.
+Qed.
+
+Local Hint Resolve log_size_ok.
+
+Definition log_size_rec_ok ps ls :
+  proc_rspec
+    (log_size)
+    (recovery)
+    (fun state =>
+       {| pre := logical_abstraction state ps ls;
+          post state' r :=
+            r = length ls.(ls_disk) /\
+            state' = state;
+          alternate state' r :=
+            exists ps',
+              logical_abstraction
+                state' ps'
+                {| ls_committed := false;
+                   ls_log := nil;
+                   ls_disk := ls.(ls_disk) |};
+       |}).
+Proof.
+  eapply mk_rspec; eauto; simpl in *; propositional;
+    repeat match goal with
+           | [ x: Recghost _ |- _ ] => destruct x
+           end;
+    eauto.
+  - inv_clear H1.
+    eexists (recghost _ _ _); simpl; intuition eauto.
+  - simpl in H0; propositional.
+    unfold logical_abstraction.
+    descend; intuition eauto.
+    rewrite <- pf; eassumption.
+
+    Grab Existential Variables.
+    simpl; auto.
 Qed.
 
 Definition abstraction (txnd: TxnD.State) (d: D.State) (u: unit) : Prop :=
