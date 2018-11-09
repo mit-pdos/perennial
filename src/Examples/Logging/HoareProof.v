@@ -47,7 +47,6 @@ Definition log_read_rec_ok ps ls a :
           alternate state' r :=
             exists ps' ls',
               logical_abstraction state' ps' ls' /\
-              ls'.(ls_committed) = false /\
               ls'.(ls_log) = nil /\
               ls'.(ls_disk) = ls.(ls_disk);
        |}).
@@ -76,21 +75,27 @@ Definition log_write_rec_ok ps ls a v :
     (fun state =>
        {| pre := logical_abstraction state ps ls;
           post state' r :=
-            exists ps' ls',
-              logical_abstraction state' ps' ls' /\
-              ls'.(ls_committed) = false /\
+            exists ps',
               match r with
-                | TxnD.WriteOK =>
-                  ls'.(ls_log) = ls.(ls_log) ++ (a,v)::nil
-                | TxnD.WriteErr =>
-                  ls'.(ls_log) = ls.(ls_log)
+              | TxnD.WriteOK =>
+                logical_abstraction
+                  state' ps'
+                  {| ls_committed := false;
+                     ls_log := ls.(ls_log) ++ (a,v)::nil;
+                     ls_disk := ls.(ls_disk); |}
+              | TxnD.WriteErr =>
+                logical_abstraction
+                  state' ps'
+                  {| ls_committed := false;
+                     ls_log := ls.(ls_log);
+                     ls_disk := ls.(ls_disk); |}
               end;
           alternate state' r :=
-            exists ps' ls',
-              logical_abstraction state' ps' ls' /\
-              ls'.(ls_committed) = false /\
-              ls'.(ls_log) = nil /\
-              ls'.(ls_disk) = ls.(ls_disk);
+            exists ps',
+              logical_abstraction state' ps'
+                                  {| ls_committed := false;
+                                     ls_log := nil;
+                                     ls_disk := ls.(ls_disk) |};
        |}).
 Proof.
   eapply mk_rspec; eauto; simpl in *; propositional;
@@ -100,15 +105,63 @@ Proof.
     eauto.
   - unfold logical_abstraction in *; intuition eauto.
     destruct v0; propositional; descend; intuition eauto.
+    destruct ls; simpl in *; congruence.
   - inv_clear H1.
     eexists (recghost _ _ _); simpl; intuition eauto.
   - simpl in H0; propositional.
     unfold logical_abstraction.
     descend; intuition eauto.
+    rewrite <- pf; eauto.
 
     Grab Existential Variables.
     simpl; auto.
 Qed.
+
+Local Hint Resolve log_commit_ok.
+
+Definition commit_ok ps ls :
+  proc_rspec
+    (commit)
+    (recovery)
+    (fun state =>
+       {| pre := logical_abstraction state ps ls;
+          post state' r :=
+            exists ps',
+              logical_abstraction
+                state' ps'
+                {| ls_committed := false;
+                   ls_log := nil;
+                   ls_disk := massign ls.(ls_log) ls.(ls_disk) |};
+          alternate state' r :=
+            exists ps',
+              logical_abstraction
+                state' ps'
+                {| ls_committed := false;
+                   ls_log := nil;
+                   ls_disk := ls.(ls_disk) |} \/
+              logical_abstraction
+                state' ps'
+                {| ls_committed := false;
+                   ls_log := nil;
+                   ls_disk := massign ls.(ls_log) ls.(ls_disk) |};
+       |}).
+Proof.
+  eapply general_rspec; eauto; simpl; propositional.
+  - destruct a; eauto.
+  - unfold logical_abstraction in *; intuition eauto.
+    propositional.
+    descend; intuition eauto.
+    destruct ls'; simpl in *; congruence.
+  - inv_clear H1.
+    split_cases.
+    + eexists (_, _); simpl; eauto.
+    + eexists (_, _); simpl; eauto.
+    + eexists (_, _); simpl; eauto.
+  - destruct a; simpl in *; propositional.
+    destruct_with_eqn (l.(ls_committed)).
+    unfold logical_abstraction; simpl.
+    descend; right; intuition eauto.
+Abort.
 
 Definition abstraction (txnd: TxnD.State) (d: D.State) (u: unit) : Prop :=
   exists ps ls,

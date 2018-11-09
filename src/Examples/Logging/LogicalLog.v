@@ -1,4 +1,4 @@
-From Array Require Import MultiAssign.
+From Array Require Export MultiAssign.
 Require Import POCS.
 Require Import Spec.HoareTactics.
 
@@ -616,6 +616,15 @@ Proof.
     simplify; finish.
 Qed.
 
+Theorem log_apply_spec_idempotent_crash_step' ls0 :
+  idempotent_crash_step
+    D.ODLayer.(sem)
+                (fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
+                   let 'recghost ps ls _ := a in
+                   log_apply_spec ps ls ls.(ls_disk) ls.(ls_committed)).
+Proof.
+Abort.
+
 Theorem log_apply_spec_idempotent_crash_step_notxn :
   idempotent_crash_step
     D.ODLayer.(sem)
@@ -739,8 +748,7 @@ Theorem log_commit_ok ps ls :
             exists ps',
               PhyDecode state' ps' /\
               (* copy of log_apply crash condition *)
-              (
-                ( (* still working *)
+              ((( (* still working *)
                   exists disk,
                     LogDecode ps' {| ls_committed := true;
                                      ls_log := ls.(ls_log);
@@ -757,7 +765,7 @@ Theorem log_commit_ok ps ls :
                 exists log,
                 LogDecode ps' {| ls_committed := false;
                                  ls_log := log;
-                                 ls_disk := ls.(ls_disk); |})
+                                 ls_disk := ls.(ls_disk); |}))
        |}).
 Proof.
   step; split_cases; simplify; finish.
@@ -766,7 +774,11 @@ Proof.
   simpl in *.
   descend; intuition eauto.
 
-  Grab Existential Variables.
-  (* TODO: why does this happen? *)
-  all: auto.
+  - right.
+    exists ls.(ls_log).
+    destruct ls; simpl in *; congruence.
+  - left; left; eauto.
+  - right.
+    exists ls.(ls_log).
+    destruct ls; simpl in *; congruence.
 Qed.
