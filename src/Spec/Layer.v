@@ -220,16 +220,10 @@ Section Layers.
     induction p as [| ??? IH1]; do 2 rewrite exec_seq_unfold; simpl; [ norm |].
     repeat setoid_rewrite bind_dist_r. repeat setoid_rewrite bind_dist_l.
     eapply or_respects_impl.
-    - do 2 rewrite <-bind_assoc.
-      rew compile_exec_ok; repeat rel_congruence; eauto.
-      rewrite <-bind_assoc.
-      setoid_rewrite IH1.
-      norm.
-    - do 2 rewrite <-bind_assoc.
-      rew compile_rexec_ok; repeat rel_congruence; eauto.
-      rewrite <-bind_assoc.
-      setoid_rewrite IH1.
-      norm.
+    - left_assoc rew compile_exec_ok; repeat rel_congruence.
+      left_assoc rew IH1.
+    - left_assoc rew compile_rexec_ok; repeat rel_congruence.
+      left_assoc rew IH1.
   Qed.
 
   Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
@@ -255,9 +249,8 @@ Section Layers.
       (any (T:=unit);; pure None).
   Proof.
     intros.
-    rewrite <- bind_assoc.
-    rew rf.(init_ok).
-    repeat setoid_rewrite bind_dist_r; norm.
+    left_assoc rew rf.(init_ok).
+    repeat rew bind_dist_r.
     simpl.
     Split.
     - Left.
@@ -275,16 +268,14 @@ Section Layers.
       (any (T:=unit);; pure None).
   Proof.
     intros.
-    rewrite <- bind_assoc.
-    rew rf.(init_ok).
-    repeat setoid_rewrite bind_dist_r; norm.
+    left_assoc rew rf.(init_ok).
+    repeat rew bind_dist_r.
     simpl.
     Split.
     - Left.
       rel_congruence.
       rel_congruence.
-      rewrite <- bind_assoc.
-      rew compile_rexec_ok.
+      left_assoc rew compile_rexec_ok.
       repeat rel_congruence.
       apply to_any.
     - Right.
@@ -296,16 +287,14 @@ Section Layers.
       (any (T:=unit);; pure None).
   Proof.
     intros.
-    rewrite <- bind_assoc.
-    rew rf.(init_ok).
-    repeat setoid_rewrite bind_dist_r; norm.
+    left_assoc rew rf.(init_ok).
+    repeat rew bind_dist_r.
     simpl.
     Split.
     - Left.
       rel_congruence.
       rel_congruence.
-      rewrite <- bind_assoc.
-      rew compile_exec_seq_ok.
+      left_assoc rew compile_exec_seq_ok.
       repeat rel_congruence.
       apply to_any.
     - Right.
