@@ -285,10 +285,10 @@ Proof.
   rspec_impl; (intuition eauto); simplify.
   destruct v0.
   - eexists (_, _); (intuition eauto); simpl.
-    admit.
+    array.
   - eexists (_, _); (intuition eauto); simpl.
   - eexists (_, _); (intuition eauto); simpl.
-Admitted.
+Qed.
 
 Local Hint Resolve log_size_rec_ok.
 
