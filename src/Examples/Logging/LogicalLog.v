@@ -597,25 +597,6 @@ Inductive Recghost (restrict:LogicalState -> Prop) :=
 
 Arguments recghost {restrict}.
 
-Theorem log_apply_spec_idempotent_crash_step' ls0 :
-  idempotent_crash_step
-    D.ODLayer.(sem)
-                (fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
-                   let 'recghost ps ls _ := a in
-                   log_apply_spec ps ls ls.(ls_disk) false).
-Proof.
-  unfold idempotent_crash_step; intuition; simplify.
-  inv_clear H1.
-  destruct a.
-  simpl in H0; propositional.
-  destruct_with_eqn (ls.(ls_committed)); split_cases;
-    match goal with
-    | [ H: PhyDecode _ ?ps,
-           H': LogDecode ?ps ?ls |- _ ] =>
-      unshelve eexists (recghost ps ls _)
-    end; simpl in *; repeat simpl_match; simplify; finish.
-Qed.
-
 Theorem log_apply_spec_idempotent_crash_step :
   idempotent_crash_step
     D.ODLayer.(sem)
@@ -650,6 +631,25 @@ Proof.
   end; simpl; eauto.
 Qed.
 
+Theorem log_apply_spec_idempotent_crash_step_notxn' ls0 :
+  idempotent_crash_step
+    D.ODLayer.(sem)
+                (fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
+                   let 'recghost ps ls _ := a in
+                   log_apply_spec ps ls ls.(ls_disk) false).
+Proof.
+  unfold idempotent_crash_step; intuition; simplify.
+  inv_clear H1.
+  destruct a.
+  simpl in H0; propositional.
+  destruct_with_eqn (ls.(ls_committed)); split_cases;
+    match goal with
+    | [ H: PhyDecode _ ?ps,
+           H': LogDecode ?ps ?ls |- _ ] =>
+      unshelve eexists (recghost ps ls _)
+    end; simpl in *; repeat simpl_match; simplify; finish.
+Qed.
+
 Local Hint Resolve phy_log_size_ok.
 
 Theorem log_size_ok ps ls :
@@ -657,7 +657,8 @@ Theorem log_size_ok ps ls :
     (log_size)
     (fun state =>
        {| pre := PhyDecode state ps /\
-                 LogDecode ps ls;
+                 LogDecode ps ls /\
+                 ls.(ls_committed) = false;
           post state' r :=
             r = length ls.(ls_disk) /\
             state' = state;
@@ -697,4 +698,75 @@ Proof.
   destruct ps; simpl in *.
   constructor; intros; array; eauto.
   omega.
+Qed.
+
+Hint Resolve log_apply_ok.
+
+Lemma LogDecode_setcommit:
+  forall (ps : PhysicalState) (ls : LogicalState),
+    LogDecode ps ls ->
+    LogDecode
+      {|
+        p_hdr := hdr_setcommit ps.(p_hdr);
+        p_desc := ps.(p_desc);
+        p_log_values := ps.(p_log_values);
+        p_data_region := ps.(p_data_region) |}
+      {| ls_committed := true;
+         ls_log := ls.(ls_log);
+         ls_disk := ls.(ls_disk) |}.
+Proof.
+  intros ps ls H0.
+  destruct H0; constructor; simpl; propositional; array.
+Qed.
+
+Hint Resolve LogDecode_setcommit.
+
+Theorem log_commit_ok ps ls :
+  proc_cspec
+    (commit)
+    (fun state =>
+       {| pre := PhyDecode state ps /\
+                 LogDecode ps ls /\
+                 ls.(ls_committed) = false;
+          post state' r :=
+            exists ps' ls',
+              PhyDecode state' ps' /\
+              LogDecode ps' ls' /\
+              ls'.(ls_committed) = false /\
+              ls'.(ls_log) = nil /\
+              ls'.(ls_disk) = massign ls.(ls_log) ls.(ls_disk);
+          alternate state' _ :=
+            exists ps',
+              PhyDecode state' ps' /\
+              (* copy of log_apply crash condition *)
+              (
+                ( (* still working *)
+                  exists disk,
+                    LogDecode ps' {| ls_committed := true;
+                                     ls_log := ls.(ls_log);
+                                     ls_disk := disk; |} /\
+                    (* ...but would finish (identical to precondition) *)
+                    massign ls.(ls_log) disk =
+                    massign ls.(ls_log) ls.(ls_disk) ) \/
+                ( (* done, applied the whole log *)
+                  LogDecode ps' {| ls_committed := false;
+                                   ls_log := nil;
+                                   ls_disk := massign ls.(ls_log) ls.(ls_disk); |} )) \/
+              ((* never had to commit, but may or may not have cleared the log
+                by writing the header *)
+                exists log,
+                LogDecode ps' {| ls_committed := false;
+                                 ls_log := log;
+                                 ls_disk := ls.(ls_disk); |})
+       |}).
+Proof.
+  step; split_cases; simplify; finish.
+  step; split_cases; simplify; finish.
+  spec_impl; simpl; split_cases; simplify; finish.
+  simpl in *.
+  descend; intuition eauto.
+
+  Grab Existential Variables.
+  (* TODO: why does this happen? *)
+  all: auto.
 Qed.
