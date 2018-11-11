@@ -6,8 +6,8 @@ Proving crash safety of systems by proving an implementation refines a specifica
 
 ## Compiling
 
-We stick to the master branch of Coq, which is currently v8.10. Unfortunately there's an incompatibility and we're sticking with warning-free code compatible with Coq master.
+We develop Argosy using Coq master but remain compatible with Coq v8.9+beta and Coq v8.8.2 using continuous integration.
 
-This project uses a git submodule to include [Tactical](https://github.com/tchajed/coq-tactical) as a dependency. You can either use `git clone --recurse-submodules` or (after cloning) `git submodule --init --recursive` to set that up.
+This project uses git submodules to include several dependencies. You can either use `git clone --recurse-submodules` or (after cloning) `git submodule --init --recursive` to set that up.
 
 To compile just run `make` with Coq on your `$PATH`.
