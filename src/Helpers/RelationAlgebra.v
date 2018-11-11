@@ -7,6 +7,8 @@ From SimpleClasses Require Import Classes.
 
 Set Implicit Arguments.
 Generalizable All Variables.
+(* for compatibility with coq master *)
+Set Warnings "-undeclared-scope".
 
 Section OutputRelations.
 
@@ -799,7 +801,7 @@ Section OutputRelations.
 End OutputRelations.
 
 Module RelationNotations.
-  Declare Scope relation_scope.
+  (* Declare Scope relation_scope. *)
   Delimit Scope relation_scope with rel.
   Open Scope relation_scope.
   Notation "r1 ---> r2" := (rimpl r1 r2)

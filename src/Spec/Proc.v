@@ -4,6 +4,8 @@ Require Import List.
 Global Set Implicit Arguments.
 Global Generalizable Variables T R Op State.
 Global Set Printing Projections.
+(* for compatibility with coq master *)
+Set Warnings "-undeclared-scope".
 
 Import RelationNotations.
 
@@ -108,7 +110,7 @@ Section Dynamics.
 End Dynamics.
 
 Module ProcNotations.
-  Declare Scope proc_scope.
+  (* Declare Scope proc_scope. *)
   Delimit Scope proc_scope with proc.
   Notation "x <- p1 ; p2" := (Bind p1 (fun x => p2))
                                (at level 54, right associativity) : proc_scope.
