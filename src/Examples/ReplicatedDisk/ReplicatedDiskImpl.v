@@ -851,9 +851,9 @@ Module ReplicatedDisk.
       |}.
 
   Inductive rec_prot : Type :=
-    | stable_sync : rec_prot
-    | stable_out : rec_prot
-    | try_recv : rec_prot.
+    | prot_sync1 : rec_prot
+    | prot_out : rec_prot
+    | prot_sync2 : rec_prot.
 
   Theorem Recover_rok1 d s :
     proc_cspec TDLayer
@@ -883,9 +883,9 @@ Module ReplicatedDisk.
     proc_cspec TDLayer
       (Recover)
       (match rp with
-       | stable_sync => Recover_spec d (FullySynced)
-       | stable_out => Recover_spec d (OutOfSync a b)
-       | try_recv => Recover_spec (assign d a b) (OutOfSync a b)
+       | prot_sync1 => Recover_spec d (FullySynced)
+       | prot_out => Recover_spec d (OutOfSync a b)
+       | prot_sync2 => Recover_spec (assign d a b) (FullySynced)
        end).
   Proof.
     unfold Recover, Recover_spec; intros.
@@ -928,23 +928,20 @@ Module ReplicatedDisk.
     idempotent_crash_step (TDBaseDynamics)
                           (fun rp : rec_prot =>
                              match rp with
-                             | stable_sync => Recover_spec d (FullySynced)
-                             | stable_out => Recover_spec d (OutOfSync a b)
-                             | try_recv => Recover_spec (assign d a b) (OutOfSync a b)
+                             | prot_sync1 => Recover_spec d (FullySynced)
+                             | prot_out => Recover_spec d (OutOfSync a b)
+                             | prot_sync2 => Recover_spec (assign d a b) (FullySynced)
                              end).
   Proof.
     unfold idempotent_crash_step; intuition; simplify.
     unfold identity in *; subst.
     destruct a0.
-    - exists stable_sync; simplify; finish.
+    - exists prot_sync1; simplify; finish.
     - destruct H0; [| destruct H0].
-        ** exists (stable_sync); simplify; finish.
-        ** exists (stable_out); simplify; finish.
-        ** exists (try_recv); simplify; finish.
-    - destruct H0; [| destruct H0].
-      ** exists (try_recv). simplify; finish.
-      ** simplify. exists (try_recv). simplify; finish.
-      ** simplify. exists (try_recv). simplify; finish.
+        ** exists (prot_sync1); simplify; finish.
+        ** exists (prot_out); simplify; finish.
+        ** exists (prot_sync2); simplify; finish.
+    - exists prot_sync2; simplify; finish.
   Qed.
 
   (* As the final step in giving the correctness of the replicated disk
@@ -984,16 +981,15 @@ Module ReplicatedDisk.
         repeat match goal with
                | [ H: identity _ _ _ |- _ ] => inv_clear H
                end.
-      * exists (stable_sync); simplify; finish.
-      * exists (stable_out); simpl.
+      * exists (prot_sync1); simplify; finish.
+      * exists (prot_out); simpl.
         intuition eauto.
       * assert (a < length d \/ a >= length d) as [Hlt|Hoob] by omega.
-        ** exists (try_recv); simplify; finish.
-        ** exists (stable_sync); simplify; finish.
+        ** exists (prot_sync2); simplify; finish.
+        ** exists (prot_sync1); simplify; finish.
     - unfold rd_abstraction in *; simplify. destruct a0, H0.
       * exists d. simplify; finish.
       * exists d. simplify; finish.
-      * exists (assign d a b); simplify; finish.
       * exists (assign d a b); simplify; finish.
       * exists (assign d a b); simplify; finish.
   Qed.
