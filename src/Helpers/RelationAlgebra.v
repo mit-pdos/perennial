@@ -250,6 +250,25 @@ Section OutputRelations.
     specialize (H0 o1); t.
   Qed.
 
+  Theorem and_then_cong_l A B C T1 T2
+          (r1 r1': relation A B T1)
+          (r2: T1 -> relation B C T2) :
+    r1 <---> r1' ->
+    and_then r1 r2 <---> and_then r1' r2.
+  Proof.
+    t.
+  Qed.
+
+  Theorem and_then_cong_r A B C T1 T2
+          (r1: relation A B T1)
+          (r2 r2': T1 -> relation B C T2) :
+    (forall x, r2 x <---> r2' x) ->
+    and_then r1 r2 <---> and_then r1 r2'.
+  Proof.
+    intros.
+    apply and_then_equiv_cong; try reflexivity; eauto.
+  Qed.
+
   Theorem bind_identity1 A B T1 T2 (r: relation A B T2) :
     (_ <- identity (T:=T1); r) ---> r.
   Proof.
@@ -300,6 +319,18 @@ Section OutputRelations.
     t.
     induction H0; eauto.
     specialize (H o1); eauto.
+  Qed.
+
+  Global Instance bind_star_equiv_respectful :
+    Proper (pointwise_relation _ requiv ==> eq ==> requiv) (bind_star (A:=A) (T:=T)).
+  Proof.
+    t.
+    - induction H0; eauto.
+      specialize (H o1).
+      apply requiv_to_rimpls in H; propositional; eauto.
+    - induction H0; eauto.
+      specialize (H o1).
+      apply requiv_to_rimpls in H; propositional; eauto.
   Qed.
 
   Theorem and_then_monotonic_r A B C T1 T2
@@ -596,6 +627,22 @@ Section OutputRelations.
   Proof.
     intros.
     rewrite H; reflexivity.
+  Qed.
+
+  Lemma star_congruent A T (r1 r2: relation A A T) :
+    r1 <---> r2 ->
+    seq_star r1 <---> seq_star r2.
+  Proof.
+    intros.
+    rewrite H; reflexivity.
+  Qed.
+
+  Lemma bind_star_congruent A T (r1 r2: T -> relation A A T) (v:T) :
+    (forall v, r1 v <---> r2 v) ->
+    bind_star r1 v <---> bind_star r2 v.
+  Proof.
+    intros.
+    apply bind_star_equiv_respectful; auto.
   Qed.
 
   Ltac cong :=

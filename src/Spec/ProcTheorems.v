@@ -133,22 +133,13 @@ Section Dynamics.
       intros rec1 rec1_crash crash.
 
     rewrite denesting; norm.
-    apply rimpl_to_requiv.
-    - rel_congruence.
-
-      rewrite <- ?bind_assoc.
-      rel_congruence; norm.
-
-      rewrite bind_sliding; norm.
-    - rel_congruence.
-      rewrite <- ?bind_assoc.
-      setoid_rewrite <- bind_assoc at 3.
-      rel_congruence.
-
-      rewrite bind_sliding; norm.
-      rel_congruence.
-      apply bind_star_respectful; auto.
-      hnf; intros; norm.
+    rel_congruence.
+    rewrite <- ?bind_assoc.
+    rel_congruence; norm.
+    rewrite bind_sliding.
+    rel_congruence.
+    rel_congruence.
+    norm.
   Qed.
 
   Theorem rexec_to_exec_recover

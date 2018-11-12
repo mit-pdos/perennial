@@ -6,6 +6,7 @@ Import RelationNotations.
 Ltac rel_congruence :=
   let solver := try reflexivity in
   match goal with
+  (* monotonicity over rimpl *)
   | |- rimpl (and_then _ ?rx) (and_then _ ?rx) =>
     apply and_then_monotonic_r; intros;
     solver
@@ -15,6 +16,22 @@ Ltac rel_congruence :=
   | |- rimpl (seq_star _) (seq_star _) =>
     apply star_monotonic;
     solver
+
+  (* congruence over requiv *)
+  | |- requiv (and_then _ ?rx) (and_then _ ?rx) =>
+    apply and_then_cong_l; intros;
+    solver
+  | |- requiv (and_then ?p _) (and_then ?p _) =>
+    apply and_then_cong_r; intros;
+    solver
+  | |- requiv (and_then _ _) (and_then _ _) =>
+    apply and_then_equiv_cong; intros;
+    solver
+  | |- requiv (seq_star _) (seq_star _) =>
+    apply star_congruent;
+    solver
+  | |- requiv (bind_star _ ?v) (bind_star _ ?v) =>
+    apply bind_star_congruent; intros
   end.
 
 Ltac setoid_norm_goal :=
