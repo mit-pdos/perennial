@@ -117,6 +117,15 @@ Module TwoDisk.
       disk0 s ?|= eq d_0' /\
       disk1 s ?|= eq d_1'.
 
+  Lemma td_init_alt s: td_init s <-> True.
+  Proof.
+    split; auto; intros.
+    destruct s as [d0 d1 | d | d].
+    - repeat eexists; try congruence.
+    - exists d, d. firstorder.
+    - exists d, d. firstorder.
+  Qed.
+
   Definition TDLayer : Layer Op :=
     {| Layer.State := State; sem := TDBaseDynamics; initP := td_init |}.
 End TwoDisk.

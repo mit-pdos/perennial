@@ -15,7 +15,7 @@ Module ReplicatedDisk.
 
   Import TwoDiskAPI.TwoDisk.
 
-  (* We will be defining procedures called 'read', 'write', etc., so it's 
+  (* We will be defining procedures called 'read', 'write', etc., so it's
      useful to introduce a shorthand for TwoDiskAPI to be able to refer back
      to the TwoDisk primitive definitions *)
   Module td := TwoDiskAPI.
@@ -222,9 +222,8 @@ Module ReplicatedDisk.
                fun state' _ =>
                  (disk0 state' ?|= eq d /\
                   disk1 state' ?|= eq d) \/
-                 (a < length d /\
-                  disk0 state' ?|= eq (assign d a b) /\
-                  disk1 state' ?|= eq d) \/
+                  ((disk0 state' ?|= eq (assign d a b) /\
+                  disk1 state' ?|= eq d)) \/
                  (disk0 state' ?|= eq (assign d a b) /\
                   disk1 state' ?|= eq (assign d a b));
            |}).
@@ -241,6 +240,7 @@ Module ReplicatedDisk.
     eauto.
     simplify.
 
+    destruct r; step.
     destruct r; step.
   Qed.
 
@@ -821,9 +821,8 @@ Module ReplicatedDisk.
           match s with
           | FullySynced => disk0 state ?|= eq d /\
                           disk1 state ?|= eq d
-          | OutOfSync a b => a < length d /\
-                            disk0 state ?|= eq (assign d a b) /\
-                            disk1 state ?|= eq d
+          | OutOfSync a b => disk0 state ?|= eq (assign d a b) /\
+                             disk1 state ?|= eq d
           end;
         post :=
           fun state' (_:unit) =>
@@ -871,9 +870,13 @@ Module ReplicatedDisk.
     + step.
       intuition eauto.
       simplify.
-      unshelve (step).
-      exact d. exact (OutOfSync a b). simplify; finish.
-      step.
+      destruct (lt_dec a (length d)).
+      * unshelve (step).
+        exact d. exact (OutOfSync a b). simplify; finish.
+        step.
+      * unshelve (step).
+        exact d. exact FullySynced. simplify.
+        step.
   Qed.
 
   Theorem Recover_rok2 d a b rp:
@@ -895,15 +898,23 @@ Module ReplicatedDisk.
     + step.
       intuition eauto.
       simplify.
-      unshelve (step).
-      exact d. exact (OutOfSync a b). simplify; finish.
-      step.
+      destruct (lt_dec a (length d)).
+      * unshelve (step).
+        exact d. exact (OutOfSync a b). simplify; finish.
+        step.
+      * unshelve (step).
+        exact d. exact FullySynced. simplify.
+        step.
     + step.
       intuition eauto.
       simplify.
-      unshelve (step).
-      exact (assign d a b). exact (OutOfSync a b). simplify; finish.
-      step.
+      destruct (lt_dec a (length d)).
+      * unshelve (step).
+        exact (assign d a b). exact (OutOfSync a b). simplify; finish.
+        step.
+      * unshelve (step).
+        exact (assign d a b). exact (FullySynced). simplify; finish.
+        step.
   Qed.
 
   Theorem Recover_spec_idempotent_crash_step1 d :
