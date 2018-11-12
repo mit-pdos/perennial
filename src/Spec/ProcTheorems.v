@@ -132,14 +132,11 @@ Section Dynamics.
       clear rec1;
       intros rec1 rec1_crash crash.
 
-    rewrite denesting; norm.
+    rew denesting.
     rel_congruence.
     rewrite <- ?bind_assoc.
     rel_congruence; norm.
-    rewrite bind_sliding.
-    rel_congruence.
-    rel_congruence.
-    norm.
+    rew bind_sliding.
   Qed.
 
   Theorem rexec_to_exec_recover
