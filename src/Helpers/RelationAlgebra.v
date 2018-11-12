@@ -146,9 +146,19 @@ Section OutputRelations.
 
   Hint Immediate rimpl_to_requiv requiv_to_rimpl1 requiv_to_rimpl2.
 
+  (* we define an ordering over relations ---> in a natural way for relations,
+  but the definition is equivalent to starting with equivalence [<--->] and
+  defining [r1 <= r2 := r1 + r2 <---> r2] *)
   Theorem rimpl_or A B T (r1 r2: relation A B T) :
     r1 ---> r2 ->
     r1 + r2 <---> r2.
+  Proof.
+    firstorder.
+  Qed.
+
+  Theorem rel_or_to_rimpl A B T (r1 r2: relation A B T) :
+    r1 + r2 <---> r2 ->
+    r1 ---> r2.
   Proof.
     firstorder.
   Qed.
@@ -367,6 +377,7 @@ Section OutputRelations.
     t.
   Qed.
 
+  (* pure tt is also the right identity for relations at output type T *)
   Theorem bind_right_id_unit A (r: relation A A unit) :
     and_then r (fun _ => pure tt) <---> r.
   Proof.
@@ -702,6 +713,23 @@ Section OutputRelations.
     rewrite bind_star_lr.
     t.
     induction H; eauto.
+  Qed.
+
+  Theorem seq_star_ind_l A B T1 (q x: relation A B T1) T2 (p: relation A A T2) :
+    q + and_then p (fun _ => x) ---> x ->
+    and_then (seq_star p) (fun _ => q) ---> x.
+  Proof.
+    t.
+    induction H0; intros; eauto 10.
+  Qed.
+
+  Theorem bind_star_ind_r A B T1 (q x: relation A B T1) (p: T1 -> relation B B T1) :
+    q + and_then x p ---> x ->
+    and_then q (bind_star p) ---> x.
+  Proof.
+    t.
+    apply bind_star_lr in H1.
+    induction H1; intros; eauto 10.
   Qed.
 
   Theorem simulation_seq A B
