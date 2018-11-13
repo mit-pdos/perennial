@@ -1,5 +1,5 @@
 Require Extraction.
-From SimpleClasses Require Import Classes.
+From Classes Require Import Classes.
 From Array Require Export Array.
 
 Set Implicit Arguments.

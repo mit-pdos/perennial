@@ -3,7 +3,7 @@ Require Import Morphisms.
 
 Require Import Tactical.Propositional.
 Require Import Tactical.Misc.
-From SimpleClasses Require Import Classes.
+From Classes Require Import Classes.
 
 Set Implicit Arguments.
 Generalizable All Variables.

@@ -1,7 +1,7 @@
 Require Import Setoid.
 Require Import Morphisms.
 Require Import Proc.
-From SimpleClasses Require Import Classes.
+From Classes Require Import Classes.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
 Require Import Tactical.ProofAutomation.

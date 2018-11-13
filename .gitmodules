@@ -1,9 +1,9 @@
 [submodule "vendor/tactical"]
 	path = vendor/tactical
 	url = https://github.com/tchajed/coq-tactical
-[submodule "vendor/simple-classes"]
-	path = vendor/simple-classes
-	url = https://github.com/tchajed/coq-simple-classes
 [submodule "vendor/array"]
 	path = vendor/array
 	url = https://github.com/tchajed/coq-array
+[submodule "vendor/classes"]
+	path = vendor/classes
+	url = https://github.com/tchajed/coq-classes

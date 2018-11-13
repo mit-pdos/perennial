@@ -3,7 +3,7 @@ Require Import Spec.HoareTactics.
 
 Require Import Examples.Logging.Impl.
 
-From SimpleClasses Require Import Classes.
+From Classes Require Import Classes.
 
 Opaque plus.
 Opaque lt.
