@@ -17,11 +17,11 @@ Local Hint Resolve recovery_ok.
 Local Hint Resolve log_apply_spec_idempotent_crash_step_notxn'.
 Local Hint Resolve log_apply_spec_idempotent_crash_step'.
 
-Definition general_rspec ls0 T (p_cspec: Specification T unit D.State) :=
-  proc_cspec_to_rspec
+Definition general_rspec ls0 T (p_hspec: Specification T unit D.State) :=
+  proc_hspec_to_rspec
     (sem:=D.ODLayer.(sem))
-    (p_cspec:=p_cspec)
-    (rec_cspec:=fun (a: Recghost (fun ls =>
+    (p_hspec:=p_hspec)
+    (rec_hspec:=fun (a: Recghost (fun ls =>
                                   if ls.(ls_committed) then
                                     massign ls.(ls_log) ls.(ls_disk) =
                                     massign ls0.(ls_log) ls0.(ls_disk)
@@ -31,11 +31,11 @@ Definition general_rspec ls0 T (p_cspec: Specification T unit D.State) :=
                   log_apply_spec ps ls ls.(ls_disk) ls.(ls_committed)).
 
 
-Definition mk_rspec ls0 T (p_cspec: Specification T unit D.State) :=
-  proc_cspec_to_rspec
+Definition mk_rspec ls0 T (p_hspec: Specification T unit D.State) :=
+  proc_hspec_to_rspec
     (sem:=D.ODLayer.(sem))
-    (p_cspec:=p_cspec)
-    (rec_cspec:=fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
+    (p_hspec:=p_hspec)
+    (rec_hspec:=fun (a: Recghost (fun ls => ls.(ls_disk) = ls0.(ls_disk))) =>
                   let 'recghost ps ls _ := a in
                   log_apply_spec ps ls ls.(ls_disk) false).
 
@@ -462,7 +462,7 @@ Module LoggingRefinement.
     - exact abstraction.
     - exact l_compile_refines.
     - exact l_recovery_refines_crash.
-    - eapply proc_cspec_init_ok; unfold abstraction.
+    - eapply proc_hspec_init_ok; unfold abstraction.
       + eapply log_init_ok.
       + simplify.
       + simplify.

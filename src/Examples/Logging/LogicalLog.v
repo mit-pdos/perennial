@@ -35,7 +35,7 @@ Inductive LogDecode : PhysicalState -> LogicalState -> Prop :=
                    ls_log := log;
                    ls_disk := data; |}.
 
-Local Notation proc_cspec := (Hoare.proc_cspec D.ODLayer.(sem)).
+Local Notation proc_hspec := (Hoare.proc_hspec D.ODLayer.(sem)).
 
 Local Hint Resolve data_read_ok.
 
@@ -111,7 +111,7 @@ Proof.
 Qed.
 
 Theorem log_read_ok ps ls a :
-  proc_cspec
+  proc_hspec
     (log_read a)
     (fun state =>
        {| pre := PhyDecode state ps /\
@@ -236,7 +236,7 @@ Qed.
 Hint Resolve log_decode_some_log.
 
 Theorem log_write_ok ps ls a v :
-  proc_cspec
+  proc_hspec
     (log_write a v)
     (fun state =>
        {| pre := PhyDecode state ps /\
@@ -338,7 +338,7 @@ Section ApplyAtRespec.
   Hint Resolve apply_at_ok.
 
   Theorem log_apply_at_ok ps ls d0 desc i :
-    proc_cspec
+    proc_hspec
       (apply_at desc i)
       (fun state =>
          {| pre := PhyDecode state ps /\
@@ -395,7 +395,7 @@ End ApplyAtRespec.
 Hint Resolve log_apply_at_ok.
 
 Theorem apply_upto_ok ps ls d0 desc len i :
-  proc_cspec
+  proc_hspec
     (apply_upto desc i len)
     (fun state =>
        {| pre := PhyDecode state ps /\
@@ -443,7 +443,7 @@ Proof.
     spec_intros; simplify.
     lazymatch goal with
     | [ H: PhyDecode _ ?ps' |- _ ] =>
-      eapply proc_cspec_impl;
+      eapply proc_hspec_impl;
         [ unfold spec_impl |
           apply (IHlen ps' {| ls_committed := true;
                               ls_log := ls.(ls_log);
@@ -535,7 +535,7 @@ Definition log_apply_spec ps ls d0 is_commit : Specification unit unit disk :=
        |}).
 
 Theorem log_apply_ok ps ls is_commit :
-  proc_cspec
+  proc_hspec
     (log_apply)
     (log_apply_spec ps ls ls.(ls_disk) is_commit).
 Proof.
@@ -584,7 +584,7 @@ Proof.
 Qed.
 
 Theorem recovery_ok ps ls is_commit :
-  proc_cspec
+  proc_hspec
     (recovery)
     (log_apply_spec ps ls ls.(ls_disk) is_commit).
 Proof.
@@ -662,7 +662,7 @@ Qed.
 Local Hint Resolve phy_log_size_ok.
 
 Theorem log_size_ok ps ls :
-  proc_cspec
+  proc_hspec
     (log_size)
     (fun state =>
        {| pre := PhyDecode state ps /\
@@ -681,7 +681,7 @@ Qed.
 Local Hint Resolve phy_log_init_ok.
 
 Theorem log_init_ok :
-  proc_cspec
+  proc_hspec
     (log_init)
     (fun state =>
        {| pre := True;
@@ -731,7 +731,7 @@ Qed.
 Hint Resolve LogDecode_setcommit.
 
 Theorem log_commit_ok ps ls :
-  proc_cspec
+  proc_hspec
     (commit)
     (fun state =>
        {| pre := PhyDecode state ps /\

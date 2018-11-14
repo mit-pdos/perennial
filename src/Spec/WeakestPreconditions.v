@@ -10,7 +10,7 @@ Section Dynamics.
   Notation proc := (proc Op).
   Notation step := sem.(step).
   Notation exec := sem.(exec).
-  Notation exec_crash := sem.(exec_crash).
+  Notation exec_halt := sem.(exec_halt).
 
   Definition precondition T := forall (post: T -> State -> Prop), State -> Prop.
 
@@ -68,7 +68,7 @@ Section Dynamics.
 
   Theorem wp_crash_ok T (p: proc T) (crash: State -> Prop) :
     forall s, crashcond p crash s ->
-         forall s' v, exec_crash p s s' v ->
+         forall s' v, exec_halt p s s' v ->
                  crash s'.
   Proof.
     induction p; cleanup; eauto.
@@ -80,7 +80,7 @@ Section Dynamics.
              | [ H: _ \/ _ |- _ ] => destruct H; propositional; eauto
              end.
       + eapply IHp; eauto.
-        apply exec_crash_noop; cleanup; eauto.
+        apply exec_halt_noop; cleanup; eauto.
       + eapply wp_ok in H2; eauto.
   Qed.
 

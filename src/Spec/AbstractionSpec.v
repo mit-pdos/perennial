@@ -145,9 +145,9 @@ Section Abstraction.
       exists tt, sA'; firstorder.
   Qed.
 
-  Lemma proc_cspec_init_ok (init: proc C_Op InitStatus) (A_initP: AState -> Prop)
+  Lemma proc_hspec_init_ok (init: proc C_Op InitStatus) (A_initP: AState -> Prop)
         (C_initP: CState -> Prop) spec:
-    proc_cspec c_sem init spec ->
+    proc_hspec c_sem init spec ->
     (forall sC, C_initP sC -> (spec sC).(pre)) ->
     (forall sC sC', (spec sC).(post) sC' Initialized ->
                     exists sA', absr sA' sC' tt /\ A_initP sA') ->

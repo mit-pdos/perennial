@@ -148,17 +148,17 @@ Ltac split_cases :=
 
 (* specs for one-disk primitives (restatement of semantics as specs) *)
 Ltac prim :=
-  eapply proc_cspec_impl; [ unfold spec_impl | eapply op_spec_sound ];
+  eapply proc_hspec_impl; [ unfold spec_impl | eapply op_spec_sound ];
   simpl in *;
   propositional;
   (intuition eauto);
   propositional.
 
-Local Notation proc_cspec := (Hoare.proc_cspec D.ODLayer.(sem)).
-Arguments Hoare.proc_cspec {Op State} sem {T}.
+Local Notation proc_hspec := (Hoare.proc_hspec D.ODLayer.(sem)).
+Arguments Hoare.proc_hspec {Op State} sem {T}.
 
 Theorem read_ok a :
-  proc_cspec
+  proc_hspec
     (read a)
     (fun state =>
        {| pre := True;
@@ -179,7 +179,7 @@ Proof.
 Qed.
 
 Theorem write_ok a v :
-  proc_cspec
+  proc_hspec
     (write a v)
     (fun state =>
        {| pre := True;
@@ -200,7 +200,7 @@ Proof.
 Qed.
 
 Theorem size_ok :
-  proc_cspec
+  proc_hspec
     (size)
     (fun state =>
        {| pre := True;
@@ -228,7 +228,7 @@ Opaque index.
 Opaque D.ODLayer.
 
 Theorem gethdr_ok ps :
-  proc_cspec
+  proc_hspec
     gethdr
     (fun state =>
        {| pre := PhyDecode state ps;
@@ -283,11 +283,11 @@ Qed.
 Local Hint Resolve phy_writehdr.
 
 Ltac spec_impl :=
-  eapply proc_cspec_impl; [ unfold spec_impl | solve [ eauto] ];
+  eapply proc_hspec_impl; [ unfold spec_impl | solve [ eauto] ];
   simplify.
 
 Theorem writehdr_ok ps hdr :
-  proc_cspec
+  proc_hspec
     (writehdr hdr)
     (fun state =>
        {| pre := PhyDecode state ps;
@@ -311,7 +311,7 @@ Qed.
 Local Hint Resolve writehdr_ok.
 
 Theorem writedesc_ok ps desc :
-  proc_cspec
+  proc_hspec
     (writedesc desc)
     (fun state =>
        {| pre := PhyDecode state ps;
@@ -373,7 +373,7 @@ Qed.
 Local Hint Resolve phy_set_log_value.
 
 Theorem getdesc_ok ps :
-  proc_cspec
+  proc_hspec
     (getdesc)
     (fun state =>
        {| pre := PhyDecode state ps;
@@ -394,7 +394,7 @@ Qed.
 Local Hint Resolve getdesc_ok.
 
 Theorem set_desc_ok ps desc i a v :
-  proc_cspec
+  proc_hspec
     (set_desc desc i a v)
     (fun state =>
        {| pre := PhyDecode state ps /\
@@ -423,7 +423,7 @@ Qed.
 Local Hint Resolve set_desc_ok.
 
 Theorem phy_log_size_ok ps :
-  proc_cspec
+  proc_hspec
     (log_size)
     (fun state =>
        {| pre := PhyDecode state ps;
@@ -453,7 +453,7 @@ Proof.
 Qed.
 
 Theorem get_logwrite_ok ps desc i :
-  proc_cspec
+  proc_hspec
     (get_logwrite desc i)
     (fun state =>
        {| pre := PhyDecode state ps /\
@@ -503,7 +503,7 @@ Qed.
 Local Hint Resolve phy_index_data.
 
 Theorem data_read_ok ps a :
-  proc_cspec
+  proc_hspec
     (data_read a)
     (fun state =>
        {| pre := PhyDecode state ps;
@@ -539,7 +539,7 @@ Qed.
 Local Hint Resolve phy_data_write.
 
 Theorem data_write_ok ps a v :
-  proc_cspec
+  proc_hspec
     (data_write a v)
     (fun state =>
        {| pre := PhyDecode state ps;
@@ -567,7 +567,7 @@ Qed.
 Local Hint Resolve data_write_ok.
 
 Theorem log_write_ok ps a v :
-  proc_cspec
+  proc_hspec
     (log_write a v)
     (fun state =>
        {| pre := PhyDecode state ps;
@@ -613,7 +613,7 @@ Qed.
 data since we can't accurately abstract it that this level (we need to refer to
 the old disk, which isn't tracked in these specs) *)
 Theorem apply_at_ok ps desc i :
-  proc_cspec
+  proc_hspec
     (apply_at desc i)
     (fun state =>
        {| pre := PhyDecode state ps /\
@@ -655,7 +655,7 @@ Proof.
 Qed.
 
 Theorem phy_log_init_ok :
-  proc_cspec
+  proc_hspec
     (log_init)
     (fun state =>
        {| pre := True;

@@ -136,7 +136,7 @@ Module ReplicatedDisk.
              safe to run descend and create existential variables *)
              descend; (intuition eauto);
              lazymatch goal with
-             | |- proc_cspec _ _ _ => idtac
+             | |- proc_hspec _ _ _ => idtac
              | |- proc_rspec _ _ _ _ => idtac
              | _ => fail
              end
@@ -182,7 +182,7 @@ Module ReplicatedDisk.
   Hint Resolve read_ok write_ok size_ok.
 
   Theorem read_int_ok : forall a d,
-      proc_cspec TDLayer
+      proc_hspec TDLayer
         (read a)
         (fun state =>
            {|
@@ -206,7 +206,7 @@ Module ReplicatedDisk.
   Hint Resolve read_int_ok.
 
   Theorem write_int_ok : forall a b d,
-      proc_cspec TDLayer
+      proc_hspec TDLayer
         (write a b)
         (fun state =>
            {|
@@ -247,7 +247,7 @@ Module ReplicatedDisk.
   Hint Resolve write_int_ok.
 
   Theorem size_int_ok d_0 d_1:
-    proc_cspec TDLayer
+    proc_hspec TDLayer
       (size)
       (fun state =>
          {|
@@ -302,7 +302,7 @@ Module ReplicatedDisk.
   Hint Resolve equal_after_assign.
 
   Theorem init_at_ok : forall a d_0 d_1,
-      proc_cspec TDLayer
+      proc_hspec TDLayer
         (init_at a)
         (fun state =>
            {| pre :=
@@ -332,7 +332,7 @@ Module ReplicatedDisk.
   Hint Resolve init_at_ok.
 
   Theorem sizeInit_ok d_0 d_1 :
-    proc_cspec TDLayer
+    proc_hspec TDLayer
       (sizeInit)
       (fun state =>
          {| pre :=
@@ -392,7 +392,7 @@ Module ReplicatedDisk.
   Hint Resolve equal_after_0_to_eq.
 
   Theorem init'_ok d_0 d_1:
-    proc_cspec TDLayer
+    proc_hspec TDLayer
       (init')
       (fun state =>
          {| pre :=
@@ -421,7 +421,7 @@ Module ReplicatedDisk.
   Qed.
 
   Theorem init'_ok_closed:
-    proc_cspec TDLayer
+    proc_hspec TDLayer
       (init')
       (fun state =>
          {| pre := True;
@@ -442,9 +442,9 @@ Module ReplicatedDisk.
   Proof.
     spec_intros.
     destruct state0; simplify.
-    - eapply proc_cspec_impl; unfold spec_impl; [| eapply (init'_ok d_0)]; simplify.
-    - eapply proc_cspec_impl; unfold spec_impl; [| eapply (init'_ok d_0 d_0)]; simplify.
-    - eapply proc_cspec_impl; unfold spec_impl; [| eapply (init'_ok d_1)]; simplify.
+    - eapply proc_hspec_impl; unfold spec_impl; [| eapply (init'_ok d_0)]; simplify.
+    - eapply proc_hspec_impl; unfold spec_impl; [| eapply (init'_ok d_0 d_0)]; simplify.
+    - eapply proc_hspec_impl; unfold spec_impl; [| eapply (init'_ok d_1)]; simplify.
   Qed.
 
   (**
@@ -557,7 +557,7 @@ Module ReplicatedDisk.
 
   (* we will show that fixup does nothing once the disks are the same *)
   Theorem fixup_equal_ok : forall a d,
-      proc_cspec TDLayer
+      proc_hspec TDLayer
         (fixup a)
         (fun state =>
            {|
@@ -592,7 +592,7 @@ Module ReplicatedDisk.
   Qed.
 
   Theorem fixup_correct_addr_ok : forall a d b,
-      proc_cspec TDLayer
+      proc_hspec TDLayer
         (fixup a)
         (fun state =>
            {|
@@ -636,7 +636,7 @@ Module ReplicatedDisk.
   Qed.
 
   Theorem fixup_wrong_addr_ok : forall a d b a',
-      proc_cspec TDLayer
+      proc_hspec TDLayer
         (fixup a)
         (fun state =>
            {|
@@ -683,11 +683,11 @@ Module ReplicatedDisk.
   Qed.
 
   Ltac spec_case pf :=
-    eapply proc_cspec_impl; [ unfold spec_impl | solve [ apply pf ] ].
+    eapply proc_hspec_impl; [ unfold spec_impl | solve [ apply pf ] ].
 
 
   Theorem fixup_ok : forall a d s,
-      proc_cspec TDLayer
+      proc_hspec TDLayer
         (fixup a)
         (fun state =>
            {|
@@ -752,7 +752,7 @@ Module ReplicatedDisk.
   (* Hint Resolve Lt.lt_n_Sm_le. *)
 
   Theorem recover_at_ok : forall a d s,
-      proc_cspec TDLayer
+      proc_hspec TDLayer
         (recover_at a)
         (fun state =>
            {|
@@ -856,7 +856,7 @@ Module ReplicatedDisk.
     | prot_sync2 : rec_prot.
 
   Theorem Recover_rok1 d s :
-    proc_cspec TDLayer
+    proc_hspec TDLayer
       (Recover)
       (Recover_spec d s).
   Proof.
@@ -880,7 +880,7 @@ Module ReplicatedDisk.
   Qed.
 
   Theorem Recover_rok2 d a b rp:
-    proc_cspec TDLayer
+    proc_hspec TDLayer
       (Recover)
       (match rp with
        | prot_sync1 => Recover_spec d (FullySynced)
@@ -957,7 +957,7 @@ Module ReplicatedDisk.
                            (refine_spec rd_abstraction (OneDiskAPI.read_spec a) d).
   Proof.
     intros a d.
-    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1;
+    eapply proc_hspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1;
       unfold refine_spec, rd_abstraction in *.
     - intros []. eapply Recover_rok1.
     - descend; simplify; intuition eauto.
@@ -971,7 +971,7 @@ Module ReplicatedDisk.
                              (refine_spec rd_abstraction (OneDiskAPI.write_spec a b) d).
   Proof.
     intros a b d.
-    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step2;
+    eapply proc_hspec_to_rspec; eauto using Recover_spec_idempotent_crash_step2;
       unfold refine_spec, rd_abstraction in *.
     - intros. eapply Recover_rok2.
     - descend; simplify; intuition eauto.
@@ -999,7 +999,7 @@ Module ReplicatedDisk.
                          (refine_spec rd_abstraction (OneDiskAPI.size_spec) d).
   Proof.
     intros d.
-    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1;
+    eapply proc_hspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1;
       unfold refine_spec, rd_abstraction in *.
     - intros. eapply Recover_rok1.
     - descend; simplify; intuition eauto.
@@ -1053,7 +1053,7 @@ Module ReplicatedDisk.
       (Recover)
       (Recover_spec d (FullySynced)).
   Proof.
-    eapply proc_cspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1.
+    eapply proc_hspec_to_rspec; eauto using Recover_spec_idempotent_crash_step1.
     { eapply Recover_rok1. }
     { intros []. eapply Recover_rok1. }
     { simplify. exists tt. inv_clear H1; eauto. }
@@ -1075,7 +1075,7 @@ Module ReplicatedDisk.
     - exact rd_abstraction.
     - exact compile_refine_TD_OD.
     - exact recovery_refines_TD_OD.
-    - eapply proc_cspec_init_ok; unfold rd_abstraction.
+    - eapply proc_hspec_init_ok; unfold rd_abstraction.
       { eapply init'_ok_closed. }
       { simplify. }
       { simplify; firstorder. }

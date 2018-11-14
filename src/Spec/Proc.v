@@ -53,7 +53,7 @@ Section Dynamics.
     | Bind p p' => v <- exec p; exec (p' v)
     end.
 
-  Fixpoint exec_crash {T} (p: proc T) : relation State State unit :=
+  Fixpoint exec_halt {T} (p: proc T) : relation State State unit :=
     match p with
     | Ret v => pure tt
     | Call op => pure tt + (step op;; pure tt)
@@ -61,27 +61,27 @@ Section Dynamics.
       (* note that this pure tt case is redundant (since the base cases already
       include it) but is included for a more obvious definition *)
       pure tt +
-      exec_crash p +
+      exec_halt p +
       (v <- exec p;
-         exec_crash (p' v))
+         exec_halt (p' v))
     end.
 
   Definition exec_recover {R} (rec: proc R) : relation State State R :=
-    seq_star (exec_crash rec;; crash_step);;
+    seq_star (exec_halt rec;; crash_step);;
              exec rec.
 
   Definition exec_recover_unfold {R} (rec: proc R) :
     exec_recover rec =
-    seq_star (exec_crash rec;; crash_step);;
+    seq_star (exec_halt rec;; crash_step);;
              exec rec := eq_refl.
 
   (* recovery execution *)
   Definition rexec {T R} (p: proc T) (rec: proc R) : relation State State R :=
-      exec_crash p;; crash_step;; exec_recover rec.
+      exec_halt p;; crash_step;; exec_recover rec.
 
   Definition rexec_unfold {T R} (p: proc T) (rec: proc R) :
     rexec p rec =
-    exec_crash p;; crash_step;; exec_recover rec := eq_refl.
+    exec_halt p;; crash_step;; exec_recover rec := eq_refl.
 
   Definition exec_or_rexec {T R} (p : proc T) (rec: proc R) : relation State State (T + R) :=
     (v <- exec p; pure (inl v)) + (v <- rexec p rec; pure (inr v)).

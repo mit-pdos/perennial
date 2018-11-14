@@ -8,27 +8,27 @@ Require Import Helpers.RelationTheorems.
 Require Import Spec.Hoare.
 
 Import RelationNotations.
-Ltac spec_intros := intros; first [ eapply rspec_intros | eapply cspec_intros ] ; intros.
+Ltac spec_intros := intros; first [ eapply rspec_intros | eapply hspec_intros ] ; intros.
 
 Ltac monad_simpl :=
   repeat match goal with
-         | |- proc_cspec _ (Bind (Ret _) _) _ =>
-           eapply proc_cspec_exec_equiv; [ apply monad_left_id | ]
-         | |- proc_cspec _ (Bind (Bind _ _) _) _ =>
-           eapply proc_cspec_exec_equiv; [ apply monad_assoc | ]
+         | |- proc_hspec _ (Bind (Ret _) _) _ =>
+           eapply proc_hspec_exec_equiv; [ apply monad_left_id | ]
+         | |- proc_hspec _ (Bind (Bind _ _) _) _ =>
+           eapply proc_hspec_exec_equiv; [ apply monad_assoc | ]
          end.
 
 Ltac step_proc :=
   intros;
   match goal with
-  | |- proc_cspec _ (Ret _) _ =>
-    eapply ret_cspec
-  | |- proc_cspec _ _ _ =>
+  | |- proc_hspec _ (Ret _) _ =>
+    eapply ret_hspec
+  | |- proc_hspec _ _ _ =>
     monad_simpl;
-    eapply proc_cspec_rx; [ solve [ eauto ] | ]
-  | [ H: proc_cspec _ ?p _
-      |- proc_cspec _ ?p _ ] =>
-    eapply proc_cspec_impl; [ unfold spec_impl | eapply H ]
+    eapply proc_hspec_rx; [ solve [ eauto ] | ]
+  | [ H: proc_hspec _ ?p _
+      |- proc_hspec _ ?p _ ] =>
+    eapply proc_hspec_impl; [ unfold spec_impl | eapply H ]
   end;
   intros; simpl;
   cbn [pre post alternate] in *;
@@ -55,7 +55,7 @@ Ltac finish :=
              safe to run descend and create existential variables *)
            descend; (intuition eauto);
            lazymatch goal with
-           | |- proc_cspec _ _ _ => idtac
+           | |- proc_hspec _ _ _ => idtac
            | |- proc_rspec _ _ _ _ => idtac
            | _ => fail
            end

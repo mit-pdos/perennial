@@ -11,7 +11,7 @@ Definition absr : relation DB.l.(State) Var.l.(State) unit :=
     fst s = fold_right plus 0 l /\
     snd s = length l.
 
-Definition init_cspec : Specification InitStatus unit Var.State :=
+Definition init_hspec : Specification InitStatus unit Var.State :=
   fun state =>
     {|
       pre := state = (0, 0);
@@ -19,7 +19,7 @@ Definition init_cspec : Specification InitStatus unit Var.State :=
       alternate := fun state' (_:unit) => True
     |}.
 
-Definition add_cspec n : Specification unit unit Var.State :=
+Definition add_hspec n : Specification unit unit Var.State :=
   fun state =>
     {|
       pre := True;
@@ -37,7 +37,7 @@ Definition add_rspec n : Specification unit unit Var.State :=
       alternate := fun state' (_:unit) => state' = (0, 0)
     |}.
 
-Definition avg_cspec : Specification nat unit Var.State :=
+Definition avg_hspec : Specification nat unit Var.State :=
   fun state =>
     {|
       pre := True;
@@ -63,12 +63,12 @@ Definition recover_spec : Specification unit unit Var.State :=
 
 Lemma read_op_ok :
   forall i,
-    proc_cspec Var.dynamics (read i) (op_spec Var.dynamics (Var.Read i)).
+    proc_hspec Var.dynamics (read i) (op_spec Var.dynamics (Var.Read i)).
 Proof. intros. eapply op_spec_sound. Qed.
 
 Lemma write_op_ok :
   forall i v,
-    proc_cspec Var.dynamics (write i v) (op_spec Var.dynamics (Var.Write i v)).
+    proc_hspec Var.dynamics (write i v) (op_spec Var.dynamics (Var.Write i v)).
 Proof. intros. eapply op_spec_sound. Qed.
 
 Hint Resolve read_op_ok write_op_ok.
@@ -93,8 +93,8 @@ Ltac simplify :=
 Ltac step :=
   unshelve (step_proc); simplify; finish.
 
-Lemma recover_cok : proc_cspec Var.dynamics (impl.(recover)) recover_spec.
-Proof. simpl. eapply ret_cspec; firstorder. Qed.
+Lemma recover_cok : proc_hspec Var.dynamics (impl.(recover)) recover_spec.
+Proof. simpl. eapply ret_hspec; firstorder. Qed.
 
 Lemma recover_idempotent :
   idempotent_crash_step Var.dynamics (fun (t: unit) => recover_spec).
@@ -106,27 +106,27 @@ Qed.
 Hint Resolve recover_cok recover_idempotent.
 
 Lemma recover_rok : proc_rspec Var.dynamics (impl.(recover)) (impl.(recover)) recover_spec.
-Proof. eapply proc_cspec_to_rspec; eauto. intros []; eauto. Qed.
+Proof. eapply proc_hspec_to_rspec; eauto. intros []; eauto. Qed.
 
 Lemma init_cok :
-  proc_cspec Var.dynamics (impl.(init)) (init_cspec).
-Proof. eapply ret_cspec; firstorder. Qed.
+  proc_hspec Var.dynamics (impl.(init)) (init_hspec).
+Proof. eapply ret_hspec; firstorder. Qed.
 
 Lemma add_cok n :
-  proc_cspec Var.dynamics (impl.(compile_op) (DB.Add n)) (add_cspec n).
+  proc_hspec Var.dynamics (impl.(compile_op) (DB.Add n)) (add_hspec n).
 Proof. repeat step. Qed.
 
 Lemma avg_cok :
-  proc_cspec Var.dynamics (impl.(compile_op) (DB.Avg)) (avg_cspec).
+  proc_hspec Var.dynamics (impl.(compile_op) (DB.Avg)) (avg_hspec).
 Proof. repeat step. Qed.
 
 Lemma add_ok n :
   proc_rspec Var.dynamics (impl.(compile_op) (DB.Add n)) impl.(recover) (add_rspec n).
-Proof. eapply proc_cspec_to_rspec; [ eapply add_cok |..]; eauto. intros []; eauto. Qed.
+Proof. eapply proc_hspec_to_rspec; [ eapply add_cok |..]; eauto. intros []; eauto. Qed.
 
 Lemma avg_ok :
   proc_rspec Var.dynamics (impl.(compile_op) (DB.Avg)) impl.(recover) (avg_rspec).
-Proof. eapply proc_cspec_to_rspec; [ eapply avg_cok |..]; eauto. intros []; eauto. Qed.
+Proof. eapply proc_hspec_to_rspec; [ eapply avg_cok |..]; eauto. intros []; eauto. Qed.
 
 Hint Resolve add_ok avg_ok init_cok.
 
@@ -148,6 +148,6 @@ Proof.
       ** exists nil. subst. simplify; firstorder.
   - eapply proc_rspec_recovery_refines_crash_step; [ intros; eapply recover_rok |..]; simplify.
     intuition; exists nil; unfold absr in *; simplify; intuition; subst; simplify; try congruence.
-  - eapply proc_cspec_init_ok; [ eapply init_cok |..]; firstorder.
+  - eapply proc_hspec_init_ok; [ eapply init_cok |..]; firstorder.
     simpl in H. unfold absr. exists nil. simpl; subst; firstorder.
 Qed.

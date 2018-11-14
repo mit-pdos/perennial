@@ -134,7 +134,7 @@ Section Layers.
   Theorem rexec_rec R (rec: a_proc R):
     refines rf.(absr)
                  (c_sem.(rexec) (compile rec) recover)
-                 (a_sem.(exec_crash) rec;; a_sem.(crash_step)).
+                 (a_sem.(exec_halt) rec;; a_sem.(crash_step)).
   Proof.
     unfold refines, rexec.
     induction rec; simpl; norm.
