@@ -710,6 +710,41 @@ Section OutputRelations.
     specialize (IHseq_star _ ltac:(eauto)); t.
   Qed.
 
+  Theorem seq_plus_precise A T1 (p: relation A A T1) (q: relation A A unit) :
+    seq_plus (p;; q);; p <---> p ;; seq_plus (q;; p).
+  Proof.
+    t.
+    - gen y o.
+      induction H; t.
+      specialize (IHseq_plus _ _ ltac:(eauto)); t.
+    - gen x o1.
+      induction H0; t.
+      specialize (IHseq_plus _ _ ltac:(eauto)); t.
+  Qed.
+
+  Theorem seq_plus_to_seq_star A B T (p: relation A A unit) (r: relation A B T) :
+    seq_plus p;; r <---> p;; seq_star p;; r.
+  Proof.
+    t.
+    - induction H; t.
+    - gen x y o.
+      induction H1; t.
+      specialize (IHseq_star _ ltac:(eauto)).
+      specialize (IHseq_star _ _ ltac:(eauto)); t.
+  Qed.
+
+  Theorem seq_sliding_precise A T1 (p: relation A A T1) (q: relation A A unit) :
+    seq_star (p;; q);; p <---> p + (p ;; seq_plus (q;; p)).
+  Proof.
+    t.
+    - gen y o.
+      induction H; t.
+      specialize (IHseq_star _ _ ltac:(eauto)); t.
+    - gen x o1.
+      induction H0; t.
+      specialize (IHseq_plus _ _ ltac:(eauto)); t.
+  Qed.
+
   Theorem bind_unit A B C T (p: relation A B unit) (q: unit -> relation B C T) :
     and_then p q <---> p;; q tt.
   Proof.
