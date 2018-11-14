@@ -11,10 +11,10 @@ Import RelationNotations.
 
 (** Syntax: free monad over a type family of operations *)
 Inductive proc (Op: Type -> Type) (T : Type) : Type :=
-| Prim (op : Op T)
+| Call (op : Op T)
 | Ret (v : T)
 | Bind (T1 : Type) (p1 : proc Op T1) (p2 : T1 -> proc Op T).
-Arguments Prim {Op T}.
+Arguments Call {Op T}.
 Arguments Ret {Op T} v.
 
 (** A sequence of procedures that a user might wish to run, where for each
@@ -49,14 +49,14 @@ Section Dynamics.
   Fixpoint exec {T} (p: proc T) : relation State State T :=
     match p with
     | Ret v => pure v
-    | Prim op => step op
+    | Call op => step op
     | Bind p p' => v <- exec p; exec (p' v)
     end.
 
   Fixpoint exec_crash {T} (p: proc T) : relation State State unit :=
     match p with
     | Ret v => pure tt
-    | Prim op => pure tt + (step op;; pure tt)
+    | Call op => pure tt + (step op;; pure tt)
     | Bind p p' =>
       (* note that this pure tt case is redundant (since the base cases already
       include it) but is included for a more obvious definition *)

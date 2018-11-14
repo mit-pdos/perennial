@@ -371,7 +371,7 @@ Section Hoare.
   Qed.
 
   Theorem op_spec_sound T (op: Op T):
-    proc_cspec (Prim op) (op_spec sem op).
+    proc_cspec (Call op) (op_spec sem op).
   Proof.
     unfold proc_cspec; split.
     - intros state state' t Hexec Hpre; eauto.
@@ -384,12 +384,12 @@ Section Hoare.
   Qed.
 
   Theorem op_spec_complete T (op: Op T):
-    spec_exec (op_spec sem op) ---> exec (Prim op) /\
-    spec_aexec (op_spec sem op) ---> exec_crash (Prim op).
+    spec_exec (op_spec sem op) ---> exec (Call op) /\
+    spec_aexec (op_spec sem op) ---> exec_crash (Call op).
   Proof. split; firstorder. Qed.
 
   Theorem op_cstep_spec_complete1 T (op: Op T):
-    spec_exec (op_cstep_spec sem op) ---> exec (Prim op).
+    spec_exec (op_cstep_spec sem op) ---> exec (Call op).
   Proof. firstorder. Qed.
 
   Theorem op_cstep_spec_complete2 T (op: Op T):

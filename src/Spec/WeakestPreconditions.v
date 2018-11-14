@@ -33,7 +33,7 @@ Section Dynamics.
     fun post =>
       match p with
       | Ret v => post v
-      | Prim op => wp.(op_wp) op post
+      | Call op => wp.(op_wp) op post
       | Bind p rx =>
         precond p (fun v s' => precond (rx v) post s')
       end.
@@ -57,7 +57,7 @@ Section Dynamics.
     fun crash s =>
       match p with
       | Ret v => crash s
-      | Prim op => crash s /\
+      | Call op => crash s /\
                   wp.(op_wp) op (fun v s => crash s) s
       | Bind p rx =>
         (* crashing at s is handled by wp_crash p (inductively; the other two

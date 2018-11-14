@@ -25,7 +25,7 @@ Record LayerImpl C_Op Op :=
 
 Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
   match p with
-  | Prim op => impl.(compile_op) op
+  | Call op => impl.(compile_op) op
   | Ret v => Ret v
   | Bind p p' => Bind (impl.(compile) p) (fun v => impl.(compile) (p' v))
   end.

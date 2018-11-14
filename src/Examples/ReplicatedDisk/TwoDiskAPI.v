@@ -132,6 +132,6 @@ End TwoDisk.
 
 (* Wrappers around the primitive operations *)
 Import TwoDisk.
-Definition read i a : proc Op (DiskResult block) := Prim (op_read i a).
-Definition write i a b : proc Op (DiskResult unit) := Prim (op_write i a b).
-Definition size i : proc Op (DiskResult nat) := Prim (op_size i).
+Definition read i a : proc Op (DiskResult block) := Call (op_read i a).
+Definition write i a b : proc Op (DiskResult unit) := Call (op_write i a b).
+Definition size i : proc Op (DiskResult nat) := Call (op_size i).

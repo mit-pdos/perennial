@@ -66,9 +66,9 @@ Record block_encoder T :=
 Axiom LogHdr_fmt: block_encoder LogHdr.
 Axiom Descriptor_fmt: block_encoder Descriptor.
 
-Definition read a := Prim (D.op_read a).
-Definition write a v := Prim (D.op_write a v).
-Definition size := Prim (D.op_size).
+Definition read a := Call (D.op_read a).
+Definition write a v := Call (D.op_write a v).
+Definition size := Call (D.op_size).
 
 Definition gethdr: proc D.Op LogHdr :=
   b <- read 0;

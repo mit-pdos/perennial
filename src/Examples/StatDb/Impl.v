@@ -57,8 +57,8 @@ Module DB.
        initP := fun s => s = nil |}.
 End DB.
 
-Definition read i := Prim (Var.Read i).
-Definition write i v := Prim (Var.Write i v).
+Definition read i := Call (Var.Read i).
+Definition write i v := Call (Var.Write i v).
 
 Definition impl : LayerImpl Var.Op DB.Op :=
   {| compile_op T (op: DB.Op T) :=

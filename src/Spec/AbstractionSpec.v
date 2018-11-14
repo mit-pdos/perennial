@@ -65,7 +65,7 @@ Section Abstraction.
         spec op:
     (forall t, proc_rspec c_sem p rec (refine_spec spec t)) ->
     (forall sO sT, absr sO sT tt -> (spec sO).(pre)) ->
-    (spec_exec (spec) ---> exec a_sem (Prim op)) ->
+    (spec_exec (spec) ---> exec a_sem (Call op)) ->
     (spec_aexec (spec) --->
                   (a_sem.(crash_step) + (a_sem.(step) op;; a_sem.(crash_step)))) ->
     crash_refines absr c_sem p rec (a_sem.(step) op)
