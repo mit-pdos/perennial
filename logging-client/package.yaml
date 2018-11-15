@@ -1,0 +1,21 @@
+name:                logging-client
+version:             0.1.0.0
+license:             BSD3
+author:              "Argosy authors"
+copyright:           "2018 Argosy authors"
+
+description:         Please see the Argosy README
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- directory
+- optparse-applicative
+
+executables:
+  logging-cli:
+    main:                Main.hs
+    source-dirs:         src
+    ghc-options:
+    - -threaded
+    - -rtsopts

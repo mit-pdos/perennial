@@ -12,6 +12,6 @@ Module LoggingTwoDiskRefinement.
     eapply layer_compose.
     apply ReplicatedDisk.Refinement_TD_OD.
     apply LoggingRefinement.rf.
-  Qed.
+  Defined.
   Check rf.(compile_exec_seq_ok).
 End LoggingTwoDiskRefinement.
