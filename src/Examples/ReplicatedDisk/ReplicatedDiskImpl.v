@@ -1074,7 +1074,7 @@ Module ReplicatedDisk.
       { eapply init'_ok_closed. }
       { simplify. }
       { simplify; firstorder. }
-  Qed.
+  Defined.
 
 End ReplicatedDisk.
 
