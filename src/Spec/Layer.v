@@ -366,6 +366,77 @@ Proof.
          |}.
 Defined.
 
+Lemma compose_compile_op:
+  forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
+    (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3)
+    (rf1 : LayerRefinement l1 l2) (rf2 : LayerRefinement l2 l3),
+    compile_op_refines_step l1 l3 (layer_impl_compose rf1 rf2)
+                            (_ <- rf2.(absr); rf1.(absr)).
+Proof.
+  intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2.
+  red; unfold layer_impl_compose; simpl.
+  split; simpl; unfold refines; norm.
+  - rew rf1.(compile_exec_ok).
+    pose unfolded (rf2.(compile_op_ok) _ op)
+         (fun H => hnf in H).
+    left_assoc rew H.
+  - rew rf1.(compile_rexec_ok).
+    pose unfolded (rf2.(compile_op_ok) _ op)
+         (fun H => hnf in H).
+    left_assoc rew H0.
+Qed.
+
+Lemma compile_recovery_crash_step:
+  forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
+    (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3)
+    (rf1 : LayerRefinement l1 l2) (rf2 : LayerRefinement l2 l3),
+    recovery_refines_crash_step l1 l3 (layer_impl_compose rf1 rf2)
+                                (_ <- rf2.(absr); rf1.(absr)).
+Proof.
+  intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2.
+  red; unfold refines, layer_impl_compose; simpl; norm.
+  rew @exec_recover_bind.
+  rew bind_star_unit.
+  pose unfolded rf1.(crash_step_refinement)
+                      (fun H => unfold refines in H).
+  setoid_rewrite <- bind_assoc at 3.
+  setoid_rewrite <- bind_assoc at 2.
+  rew H.
+  rew rf1.(rexec_star_rec).
+  left_assoc rew rf2.(crash_step_refinement).
+Qed.
+
+Lemma compile_init_ok:
+  forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
+    (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3)
+    (rf1 : LayerRefinement l1 l2) (rf2 : LayerRefinement l2 l3),
+    _ <- test l1.(initP);
+      exec l1 (layer_impl_compose rf1 rf2).(init)
+                                             --->
+                                             (_ <- any (T:=unit); _ <- test l3.(initP); _ <- _ <- rf2.(absr);
+                                                rf1.(absr);
+                                                pure Initialized) + (_ <- any (T:=unit); pure InitFailed).
+Proof.
+  intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2.
+  unfold layer_impl_compose; simpl.
+  rewrite <- bind_assoc.
+  rew rf1.(init_ok).
+  Split.
+  - rew rf1.(compile_exec_ok).
+    setoid_rewrite <- bind_assoc at 2.
+    rew rf2.(init_ok).
+    repeat (setoid_rewrite bind_dist_r ||
+            setoid_rewrite bind_dist_l); norm.
+    left_assoc rew any_idem.
+    Split.
+    + Left.
+    + Right.
+      rewrite <- bind_assoc.
+      rel_congruence.
+      apply to_any.
+  - Right.
+Qed.
+
 Definition layer_compose
            Op1 (l1: Layer Op1)
            Op2 (l2: Layer Op2)
@@ -382,43 +453,7 @@ Definition layer_compose
 Proof.
   refine {| impl := layer_impl_compose rf1.(impl) rf2.(impl);
             absr := rf2.(absr);; rf1.(absr) |}.
-    simpl; intros.
-  - (* op crash refinement *)
-    red; unfold layer_impl_compose; simpl.
-    split; simpl; unfold refines; norm.
-    + rew rf1.(compile_exec_ok).
-      pose unfolded (rf2.(compile_op_ok) _ op)
-           (fun H => hnf in H).
-      left_assoc rew H.
-    + rew rf1.(compile_rexec_ok).
-      pose unfolded (rf2.(compile_op_ok) _ op)
-           (fun H => hnf in H).
-      left_assoc rew H0.
-  - red; unfold refines, layer_impl_compose; simpl; norm.
-    rew @exec_recover_bind.
-    rew bind_star_unit.
-    pose unfolded rf1.(crash_step_refinement)
-                        (fun H => unfold refines in H).
-    setoid_rewrite <- bind_assoc at 3.
-    setoid_rewrite <- bind_assoc at 2.
-    rew H.
-    rew rf1.(rexec_star_rec).
-    left_assoc rew rf2.(crash_step_refinement).
-  - unfold layer_impl_compose; simpl.
-    rewrite <- bind_assoc.
-    rew rf1.(init_ok).
-    Split.
-    + rew rf1.(compile_exec_ok).
-      setoid_rewrite <- bind_assoc at 2.
-      rew rf2.(init_ok).
-      repeat (setoid_rewrite bind_dist_r ||
-              setoid_rewrite bind_dist_l); norm.
-      left_assoc rew any_idem.
-      Split.
-      * Left.
-      * Right.
-        rewrite <- bind_assoc.
-        rel_congruence.
-        apply to_any.
-    + Right.
-Qed.
+  - apply compose_compile_op.
+  - apply compile_recovery_crash_step.
+  - apply compile_init_ok.
+Defined.

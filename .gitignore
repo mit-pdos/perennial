@@ -4,7 +4,6 @@
 /.lia.cache
 /*/.stack-work
 *.cabal
-extract/
 
 # emacs
 *.aux

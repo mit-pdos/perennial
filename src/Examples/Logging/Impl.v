@@ -80,7 +80,7 @@ Definition hdr_full (hdr:LogHdr) :
   right; auto.
   pose proof (hdr.(log_length_ok)).
   left; omega.
-Qed.
+Defined.
 
 Definition hdr_inc (hdr:LogHdr) (pf:hdr.(log_length) < LOG_LENGTH) : LogHdr.
   refine {| committed := hdr.(committed);

@@ -24,4 +24,3 @@ executables:
     ghc-options:
     - -threaded
     - -rtsopts
-    - "-F -pgmF ./fiximports.py"

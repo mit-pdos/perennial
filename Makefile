@@ -32,10 +32,17 @@ endif
 	@echo "COQC $<"
 	@coqc $(shell cat '_CoqProject') $< -o $@
 
+extract: logging-client/extract/HoareProof.hs
+
+logging-client/extract/HoareProof.hs: logging-client/Extract.vo
+	./scripts/add-preprocess.sh logging-client/extract/*.hs
+
 clean:
 	@echo "CLEAN vo glob aux"
 	@rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob)
 	@find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
+	@echo "CLEAN extraction"
+	@rm -rf logging-client/extract/*.hs
 	rm -f _CoqProject .coqdeps.d
 
 .PHONY: default test clean
