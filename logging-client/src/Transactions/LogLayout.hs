@@ -1,4 +1,7 @@
-module Transactions.LogLayout where
+module Transactions.LogLayout
+  ( logHdrFmt
+  , descriptorFmt
+  ) where
 
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString as BS
@@ -8,7 +11,7 @@ import Data.Binary.Get (runGet, getWord32le)
 import Data.Binary
 import Control.Monad (replicateM)
 
-import Impl
+import LogEncoding
 
 -- output must be exactly blocksize bytes
 toBlock :: Put -> BS.ByteString

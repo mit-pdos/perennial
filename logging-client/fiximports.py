@@ -11,6 +11,10 @@ import_modules = {
     [
         "Disk",
     ],
+    "import Transactions.LogLayout":
+    [
+        "Impl",
+    ],
 }
 
 module_imports = {}

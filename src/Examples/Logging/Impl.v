@@ -1,36 +1,13 @@
 Require Import POCS.
 
 Require Export Examples.Logging.TxnDiskAPI.
+Require Export Examples.Logging.LogEncoding.
 Require Export Examples.ReplicatedDisk.OneDiskAPI.
 
 From Array Require Import Array.
 
 Import ProcNotations.
 Local Open Scope proc.
-
-(* disk layout:
-
-| log header (1 block) | descriptor block (1 block) |
-| log value region (LOG_LENGTH blocks; see below) | data region |
-*)
-
-(* The descriptor block encodes 32-bit addresses; it fits 1024byte/32bits = 256
-addresses. *)
-Definition LOG_LENGTH: nat := 256.
-Opaque LOG_LENGTH.
-Definition __log_length_calculation: LOG_LENGTH = blockbytes / 4
-  := eq_refl.
-
-Record LogHdr :=
-  { committed: bool;
-    log_length: nat;
-    log_length_ok: log_length <= LOG_LENGTH; }.
-
-Record Descriptor :=
-  { addresses: list addr;
-    (* TODO: restrict addrs to be < 2^32 for encoding in one block *)
-    addresses_length:
-      length addresses = LOG_LENGTH; }.
 
 (* We encode the log with two blocks: a header and a descriptor block. The header has a bit which commits the transaction: log_commit first records the transaction completes and then applies it, so that recovery (also log_apply) can see that the transaction is committed and finish applying it. *)
 
@@ -54,11 +31,6 @@ is after writing the commit header but before finishing apply.
 (* Once we have a data region + logical log, we map that to the TxnDiskAPI's two
 disks by setting the old disk to the data region and the new disk to the data
 region + writes from the logical log. *)
-
-Record block_encoder T :=
-  { encode: T -> block;
-    decode: block -> T;
-    encode_decode: forall (x:T), decode (encode x) = x; }.
 
 Axiom LogHdr_fmt: block_encoder LogHdr.
 Axiom Descriptor_fmt: block_encoder Descriptor.
