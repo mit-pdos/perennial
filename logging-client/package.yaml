@@ -10,12 +10,18 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - directory
+- mtl
 - optparse-applicative
+- unix
+- unix-bytestring
 
 executables:
   logging-cli:
     main:                Main.hs
-    source-dirs:         src
+    source-dirs:
+      - src
+      - extract
     ghc-options:
     - -threaded
     - -rtsopts
+    - "-F -pgmF ./fiximports.py"

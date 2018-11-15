@@ -4,8 +4,6 @@ module Replication.TwoDiskEnvironment
   , Env
   , disk0
   , disk1
-  , requests
-  , responses
   , newEnv
   , runTD
   , (>>=)
@@ -14,7 +12,6 @@ module Replication.TwoDiskEnvironment
 
 import Control.Concurrent.MVar (MVar, newEmptyMVar)
 import Control.Monad.Reader (ReaderT, runReaderT)
-import NbdAPI
 import System.Directory (doesFileExist)
 import System.IO.Error
 import System.Posix.IO
@@ -24,9 +21,7 @@ type CachedHandle = (FilePath, Maybe Fd)
 
 data Env =
   Env { disk0Handle :: CachedHandle
-      , disk1Handle :: CachedHandle
-      , requests :: MVar Request
-      , responses :: MVar Response }
+      , disk1Handle :: CachedHandle }
 
 type Proc = ReaderT Env IO
 
@@ -48,7 +43,6 @@ newEnv :: FilePath -> FilePath -> IO Env
 newEnv fn0 fn1 = pure Env
   <*> openFile fn0
   <*> openFile fn1
-  <*> newEmptyMVar <*> newEmptyMVar
   where openFile :: FilePath -> IO CachedHandle
         openFile path =
           catchIOError (do

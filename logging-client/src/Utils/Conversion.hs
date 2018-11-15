@@ -1,6 +1,6 @@
 module Utils.Conversion where
 
-import Disk
+import Disk (blockbytes, Coq_addr)
 
 -- size of a block in bytes
 blocksize :: Num a => a

@@ -1,4 +1,4 @@
-SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor')
+SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') 'logging-client'
 ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")

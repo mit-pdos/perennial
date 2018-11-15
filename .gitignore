@@ -3,6 +3,7 @@
 /doc
 /.lia.cache
 /*/.stack-work
+*.cabal
 extract/
 
 # emacs

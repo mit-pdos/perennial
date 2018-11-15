@@ -10,9 +10,8 @@ import                   System.IO (SeekMode(..))
 import "unix-bytestring" System.Posix.IO.ByteString
 import                   System.Posix.Types (Fd)
 import                   System.Posix.Unistd (fileSynchronise)
-import                   TwoDiskBaseAPI
+import                   TwoDiskAPI
 import                   Utils.Conversion
-import                   Abstraction
 
 getDisk :: Coq_diskId -> Proc (Maybe Fd)
 getDisk Coq_d0 = reader disk0 >>= liftIO
@@ -24,10 +23,6 @@ ifExists d m = do
   liftIO $ case mfd of
       Just fd -> Working <$> m fd
       Nothing -> return Failed
-
-init :: Proc InitResult
-init = do
-  return Initialized
 
 read :: Coq_diskId -> Coq_addr -> Proc (DiskResult BS.ByteString)
 read d a = ifExists d $ \fd ->
@@ -47,7 +42,3 @@ size :: Coq_diskId -> Proc (DiskResult Integer)
 size d = ifExists d $ \fd -> do
     off <- fdSeek fd SeekFromEnd 0
     return (fromIntegral off `div` blocksize)
-
-recover :: Proc ()
-recover = do
-  return ()

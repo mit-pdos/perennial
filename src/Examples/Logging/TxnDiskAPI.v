@@ -1,7 +1,7 @@
 Require Import POCS.
 Require Export Maybe Disk.
 
-Module TxnDisk.
+Module TxnD.
 
   Definition State: Type := disk * disk.
 
@@ -45,4 +45,4 @@ Module TxnDisk.
   Definition l : Layer Op :=
     {| Layer.State := State; sem := dyn; initP := fun '(d_old, d) => d_old = d |}.
 
-End TxnDisk.
+End TxnD.

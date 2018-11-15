@@ -948,7 +948,7 @@ Module ReplicatedDisk.
   operations, we prove recovery specs that include the replicated disk Recover
   function. *)
 
-  Definition rd_abstraction (d:OneDisk.State) (state: State) (u: unit) : Prop :=
+  Definition rd_abstraction (d:D.State) (state: State) (u: unit) : Prop :=
     disk0 state ?|= eq d /\
     disk1 state ?|= eq d.
 
@@ -1013,30 +1013,30 @@ Module ReplicatedDisk.
   Import Helpers.RelationAlgebra.
   Import RelationNotations.
 
-  Definition Impl_TD_OD: LayerImpl Op OneDisk.Op :=
-    {| compile_op := fun (T : Type) (op : OneDisk.Op T) =>
-                       match op in (OneDisk.Op T0) return (proc Op T0) with
-                       | OneDisk.op_read a => read a
-                       | OneDisk.op_write a b => write a b
-                       | OneDisk.op_size => size
+  Definition Impl_TD_OD: LayerImpl Op D.Op :=
+    {| compile_op := fun (T : Type) (op : D.Op T) =>
+                       match op in (D.Op T0) return (proc Op T0) with
+                       | D.op_read a => read a
+                       | D.op_write a b => write a b
+                       | D.op_size => size
                        end;
        init := init';
        Layer.recover := Recover |}.
 
 
   Lemma one_disk_failure_id x:
-    OneDisk.one_disk_failure x x tt.
+    D.one_disk_failure x x tt.
   Proof. econstructor. Qed.
 
   Lemma one_disk_failure_id_l r x:
-    (OneDisk.one_disk_failure + r)%rel x x tt.
+    (D.one_disk_failure + r)%rel x x tt.
   Proof. left. econstructor. Qed.
 
   Hint Resolve one_disk_failure_id one_disk_failure_id_l.
-  Hint Constructors OneDisk.op_step.
+  Hint Constructors D.op_step.
 
   Lemma compile_refine_TD_OD:
-    compile_op_refines_step TDLayer OneDisk.ODLayer Impl_TD_OD rd_abstraction.
+    compile_op_refines_step TDLayer D.ODLayer Impl_TD_OD rd_abstraction.
   Proof.
     unfold compile_op_refines_step.
     intros T op. destruct op.
@@ -1061,14 +1061,14 @@ Module ReplicatedDisk.
   Qed.
 
   Lemma recovery_refines_TD_OD:
-    recovery_refines_crash_step TDLayer OneDisk.ODLayer Impl_TD_OD rd_abstraction.
+    recovery_refines_crash_step TDLayer D.ODLayer Impl_TD_OD rd_abstraction.
   Proof.
     unfold recovery_refines_crash_step.
     eapply proc_rspec_recovery_refines_crash_step; [ eapply Recover_noop|..];
       unfold rd_abstraction; simplify; inversion H0; subst; finish.
   Qed.
 
-  Lemma Refinement_TD_OD: LayerRefinement TDLayer OneDisk.ODLayer.
+  Lemma Refinement_TD_OD: LayerRefinement TDLayer D.ODLayer.
   Proof.
     unshelve (econstructor).
     - apply Impl_TD_OD.

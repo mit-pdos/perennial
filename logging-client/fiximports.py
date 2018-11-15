@@ -11,31 +11,6 @@ import_modules = {
     [
         "Disk",
     ],
-
-    "import qualified Replication.TwoDiskOps":
-    [
-        "TwoDiskBaseImpl",
-    ],
-
-    "import Replication.TwoDiskEnvironment":
-    [
-        "ReplicatedDiskImpl",
-        "NbdImpl",
-        "NbdServer",
-        "ReplicatedServer",
-        "TwoDiskBaseImpl",
-        "Abstraction",
-    ],
-
-    "import qualified Data.Word":
-    [
-        "NbdAPI",
-    ],
-
-    "import qualified Network.ServerOps":
-    [
-        "NbdImpl",
-    ],
 }
 
 module_imports = {}

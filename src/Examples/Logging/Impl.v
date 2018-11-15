@@ -8,9 +8,6 @@ From Array Require Import Array.
 Import ProcNotations.
 Local Open Scope proc.
 
-Module D := OneDisk.
-Module TxnD := TxnDisk.
-
 (* disk layout:
 
 | log header (1 block) | descriptor block (1 block) |

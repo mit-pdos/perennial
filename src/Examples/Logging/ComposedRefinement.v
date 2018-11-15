@@ -8,7 +8,7 @@ Require Import Examples.Logging.HoareProof.
 Require Import Examples.ReplicatedDisk.ReplicatedDiskImpl.
 
 Module LoggingTwoDiskRefinement.
-  Definition rf : LayerRefinement TwoDisk.TDLayer TxnDisk.l.
+  Definition rf : LayerRefinement TwoDisk.TDLayer TxnD.l.
     eapply layer_compose.
     apply ReplicatedDisk.Refinement_TD_OD.
     apply LoggingRefinement.rf.

@@ -2,7 +2,7 @@ Require Import POCS.
 Require Export Maybe Disk.
 
 
-Module OneDisk.
+Module D.
 
   Definition State := disk.
   Inductive Op : Type -> Type :=
@@ -32,9 +32,9 @@ Module OneDisk.
   Definition ODLayer : Layer Op :=
     {| Layer.State := State; sem := ODBaseDynamics; initP := fun _ => True |}.
 
-End OneDisk.
+End D.
 
-Definition read_spec (a : addr) : Specification block unit OneDisk.State :=
+Definition read_spec (a : addr) : Specification block unit D.State :=
   fun state => {|
     pre := True;
     post := fun state' r =>
@@ -44,7 +44,7 @@ Definition read_spec (a : addr) : Specification block unit OneDisk.State :=
       state' = state
   |}.
 
-Definition write_spec (a : addr) (v : block) : Specification _ unit OneDisk.State :=
+Definition write_spec (a : addr) (v : block) : Specification _ unit D.State :=
   fun state => {|
     pre := True;
     post := fun state' r =>
@@ -53,7 +53,7 @@ Definition write_spec (a : addr) (v : block) : Specification _ unit OneDisk.Stat
       state' = state \/ state' = assign state a v
   |}.
 
-Definition size_spec : Specification nat unit OneDisk.State :=
+Definition size_spec : Specification nat unit D.State :=
   fun state => {|
     pre := True;
     post := fun state' r =>

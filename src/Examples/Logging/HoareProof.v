@@ -458,7 +458,7 @@ Module LoggingRefinement.
   Import RelationNotations.
 
   Lemma  l_init_ok :
-    _ <- test OneDisk.ODLayer.(initP); exec OneDisk.ODLayer Impl.(init)
+    _ <- test D.ODLayer.(initP); exec D.ODLayer Impl.(init)
                                                                   --->
                                                                   (_ <- any (T:=unit); _ <- test TxnD.l.(initP); _ <- abstraction; pure Initialized) +
                                       (_ <- any (T:=unit); pure InitFailed).
@@ -473,7 +473,7 @@ Module LoggingRefinement.
       rewrite H2; simpl; auto.
   Qed.
 
-  Lemma rf : LayerRefinement OneDisk.ODLayer TxnD.l.
+  Lemma rf : LayerRefinement D.ODLayer TxnD.l.
   Proof.
     unshelve (econstructor).
     - exact Impl.
