@@ -16,12 +16,20 @@ dependencies:
 - unix
 - unix-bytestring
 
+library:
+  source-dirs:
+    - src
+    - extract
+
 executables:
   logging-cli:
     main:                Main.hs
-    source-dirs:
-      - src
-      - extract
+    source-dirs:         app
     ghc-options:
     - -threaded
     - -rtsopts
+
+tests:
+  spec:
+    defaults: hspec/hspec@master
+    dependencies: logging-client

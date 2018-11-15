@@ -44,7 +44,7 @@ encodeDesc ds =
 
 decodeDesc :: BS.ByteString -> Descriptor
 decodeDesc bs =
-  let fmt = replicateM blocksize (fromIntegral <$> getWord32le) in
+  let fmt = replicateM (fromIntegral coq_LOG_LENGTH) (fromIntegral <$> getWord32le) in
     runGet fmt (BSL.fromStrict bs)
 
 descriptorFmt :: Coq_block_encoder Descriptor
