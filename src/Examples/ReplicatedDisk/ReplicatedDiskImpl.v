@@ -15,11 +15,6 @@ Module ReplicatedDisk.
 
   Import TwoDiskAPI.TwoDisk.
 
-  (* We will be defining procedures called 'read', 'write', etc., so it's
-     useful to introduce a shorthand for TwoDiskAPI to be able to refer back
-     to the TwoDisk primitive definitions *)
-  Module td := TwoDiskAPI.
-
   Import ProcNotations EqualDecNotation.
   Open Scope proc_scope.
 

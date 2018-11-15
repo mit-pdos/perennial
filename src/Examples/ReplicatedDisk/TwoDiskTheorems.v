@@ -14,17 +14,17 @@ Section specs.
      We use these exclusively in this file to prove higher level specs below. *)
   Lemma read_op_ok :
     forall i a,
-      proc_hspec TDBaseDynamics (read i a) (op_spec TDBaseDynamics (op_read i a)).
+      proc_hspec TDBaseDynamics (td.read i a) (op_spec TDBaseDynamics (op_read i a)).
   Proof. intros. eapply op_spec_sound. Qed.
 
   Lemma write_op_ok :
     forall i a b,
-      proc_hspec TDBaseDynamics (write i a b) (op_spec TDBaseDynamics (op_write i a b)).
+      proc_hspec TDBaseDynamics (td.write i a b) (op_spec TDBaseDynamics (op_write i a b)).
   Proof. intros. eapply op_spec_sound. Qed.
 
   Lemma size_op_ok :
     forall i,
-      proc_hspec TDBaseDynamics (size i) (op_spec TDBaseDynamics (op_size i)).
+      proc_hspec TDBaseDynamics (td.size i) (op_spec TDBaseDynamics (op_size i)).
   Proof. intros. eapply op_spec_sound. Qed.
 
   Hint Resolve read_op_ok.
@@ -172,7 +172,7 @@ Section specs.
   Hint Resolve tt.
 
 
-  Theorem read_ok : forall i a dF, proc_hspec TDBaseDynamics (read i a) (read_spec i a dF).
+  Theorem read_ok : forall i a dF, proc_hspec TDBaseDynamics (td.read i a) (read_spec i a dF).
   Proof.
     unshelve prim; eauto.
   Qed.
@@ -190,7 +190,7 @@ Section specs.
            end.
 
 
-  Theorem write_ok : forall i a v dF, proc_hspec TDBaseDynamics (write i a v) (write_spec i a v dF).
+  Theorem write_ok : forall i a v dF, proc_hspec TDBaseDynamics (td.write i a v) (write_spec i a v dF).
   Proof.
     unshelve prim; eauto;
       try solve [ destruct_all ].
@@ -200,7 +200,7 @@ Section specs.
     destruct_all.
   Qed.
 
-  Theorem size_ok : forall i dF, proc_hspec TDBaseDynamics (size i) (size_spec i dF).
+  Theorem size_ok : forall i dF, proc_hspec TDBaseDynamics (td.size i) (size_spec i dF).
   Proof.
     unshelve prim.
   Qed.
