@@ -8,6 +8,7 @@ description:         Please see the Argosy README
 
 dependencies:
 - base >= 4.7 && < 5
+- binary
 - bytestring
 - directory
 - mtl
