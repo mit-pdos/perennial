@@ -455,21 +455,32 @@ Module LoggingRefinement.
       eexists (_, _); simpl; eauto.
   Qed.
 
-  Lemma rf : LayerRefinement D.ODLayer TxnD.l.
+  Import RelationNotations.
+
+  Lemma  l_init_ok :
+    _ <- test OneDisk.ODLayer.(initP); exec OneDisk.ODLayer Impl.(init)
+                                                                  --->
+                                                                  (_ <- any (T:=unit); _ <- test TxnD.l.(initP); _ <- abstraction; pure Initialized) +
+                                      (_ <- any (T:=unit); pure InitFailed).
+  Proof.
+    eapply proc_hspec_init_ok; unfold abstraction.
+    + eapply log_init_ok.
+    + simplify.
+    + simplify.
+      eexists (ls.(ls_disk), ls.(ls_disk)); simpl; intuition eauto.
+      unfold logical_abstraction; descend; intuition eauto.
+      f_equal.
+      rewrite H2; simpl; auto.
+  Qed.
+
+  Lemma rf : LayerRefinement OneDisk.ODLayer TxnD.l.
   Proof.
     unshelve (econstructor).
     - exact Impl.
     - exact abstraction.
     - exact l_compile_refines.
     - exact l_recovery_refines_crash.
-    - eapply proc_hspec_init_ok; unfold abstraction.
-      + eapply log_init_ok.
-      + simplify.
-      + simplify.
-        eexists (ls.(ls_disk), ls.(ls_disk)); simpl; intuition eauto.
-        unfold logical_abstraction; descend; intuition eauto.
-        f_equal.
-        rewrite H2; simpl; auto.
-  Qed.
+    - exact l_init_ok.
+  Defined.
 
 End LoggingRefinement.

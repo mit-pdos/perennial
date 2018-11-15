@@ -14,4 +14,5 @@ Module LoggingTwoDiskRefinement.
     apply LoggingRefinement.rf.
   Defined.
   Check rf.(compile_exec_seq_ok).
+  Definition compile := rf.(compile).
 End LoggingTwoDiskRefinement.
