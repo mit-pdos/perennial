@@ -9,7 +9,6 @@ import                   Disk
 import                   System.IO (SeekMode(..))
 import "unix-bytestring" System.Posix.IO.ByteString
 import                   System.Posix.Types (Fd)
-import                   System.Posix.Unistd (fileSynchronise)
 import                   TwoDiskAPI
 import                   Proc
 import                   Utils.Conversion
