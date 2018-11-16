@@ -1,16 +1,20 @@
 {-# LANGUAGE PackageImports #-}
 module Replication.TwoDiskOps where
 
-import                   Control.Monad (void)
+import                   Control.Monad (void, when, forM_)
 import                   Control.Monad.Reader (reader, liftIO)
 import qualified         Data.ByteString as BS
-import                   Replication.TwoDiskEnvironment
 import                   Disk
-import                   System.IO (SeekMode(..))
+import                   Proc
+import                   Replication.TwoDiskEnvironment
+import                   System.Directory (doesFileExist)
+import                   System.IO (SeekMode(..),
+                                    IOMode(WriteMode),
+                                    withFile,
+                                    hSetFileSize)
 import "unix-bytestring" System.Posix.IO.ByteString
 import                   System.Posix.Types (Fd)
 import                   TwoDiskAPI
-import                   Proc
 import                   Utils.Conversion
 
 type DiskResult = TwoDisk__DiskResult
@@ -52,3 +56,13 @@ interpret :: Coq_proc (TwoDisk__Op x) a -> Proc a
 interpret (Call op) = unsafeCoerce <$> interpretOp op
 interpret (Ret v) = return v
 interpret (Bind p1 p2) = interpret p1 >>= interpret . p2
+
+init :: FilePath -> FilePath -> Integer -> IO Env
+init fn0 fn1 sizeBytes = do
+  exists0 <- doesFileExist fn0
+  exists1 <- doesFileExist fn1
+  when (not exists0 && not exists1) $
+    forM_ [fn0, fn1] $ \p ->
+      withFile p WriteMode $ \h ->
+        hSetFileSize h sizeBytes
+  newEnv fn0 fn1

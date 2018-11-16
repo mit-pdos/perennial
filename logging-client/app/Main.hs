@@ -2,11 +2,8 @@
 {-# LANGUAGE RecordWildCards #-}
 module Main where
 
-import Control.Monad (when, forM_)
 import Data.Semigroup ((<>))
 import Options.Applicative
-import System.Directory
-import System.IO
 import Replication.TwoDiskEnvironment
 import qualified Replication.TwoDiskOps as TD
 import Replication.Logging
@@ -60,12 +57,6 @@ runInit :: InitOptions -> IO ()
 runInit InitOptions
   { defaultSizeKB=size,
     initDiskPaths=(fn0, fn1) } = do
-  exists0 <- doesFileExist fn0
-  exists1 <- doesFileExist fn1
-  when (not exists0 && not exists1) $
-    forM_ [fn0, fn1] $ \p ->
-      withFile p WriteMode $ \h ->
-        hSetFileSize h (fromIntegral $ size * 1024)
-  env <- newEnv fn0 fn1
+  env <- TD.init fn0 fn1 (fromIntegral size*1024)
   runTD env . TD.interpret $ logInit
   return ()
