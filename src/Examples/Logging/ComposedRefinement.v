@@ -15,4 +15,6 @@ Module LoggingTwoDiskRefinement.
   Defined.
   Check rf.(compile_exec_seq_ok).
   Definition compile := rf.(compile).
+  Definition init := rf.(init).
+  Definition recover := rf.(recover).
 End LoggingTwoDiskRefinement.
