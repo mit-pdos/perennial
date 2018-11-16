@@ -29,9 +29,9 @@ initOptions :: Parser InitOptions
 initOptions = do
   defaultSizeKB <- option auto
     ( long "size"
-      <> help "size to initialize disk files to if they do not exist"
+      <> help "size (in KB) to initialize disk files to if they do not exist"
       <> showDefault
-      <> value (100*1024)
+      <> value 1024
       <> metavar "KB" )
   pure InitOptions {..}
 

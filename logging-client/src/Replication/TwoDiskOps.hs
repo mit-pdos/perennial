@@ -31,21 +31,29 @@ ifExists d m = do
       Just fd -> TwoDisk__Working <$> m fd
       Nothing -> return TwoDisk__Failed
 
+getSizeBlocks :: Fd -> IO Integer
+getSizeBlocks fd = do
+    off <- fdSeek fd SeekFromEnd 0
+    return (fromIntegral off `div` blocksize)
+
 -- need to prefix to avoid conflict with Prelude.read
 td_read :: DiskId -> Coq_addr -> Proc (DiskResult BS.ByteString)
-td_read d a = ifExists d $ \fd ->
-  fdPread fd blocksize (fromIntegral $ addrToOffset a)
+td_read d a = ifExists d $ \fd -> do
+  sz <- getSizeBlocks fd
+  if a < sz then
+    fdPread fd blocksize (fromIntegral $ addrToOffset a)
+  else
+    return (BS.replicate blocksize 0)
 
 write :: DiskId -> Coq_addr -> BS.ByteString -> Proc (DiskResult ())
-write d a b = ifExists d $ \fd ->
-  void $ fdPwrite fd b (fromIntegral $ addrToOffset a)
+write d a b = ifExists d $ \fd -> do
+  sz <- getSizeBlocks fd
+  when (a < sz) (void $ fdPwrite fd b (fromIntegral $ addrToOffset a))
 
 -- |implementation of two disk DiskSize operation - note that this size is
 -- reported to Coq in blocks
 size :: DiskId -> Proc (DiskResult Integer)
-size d = ifExists d $ \fd -> do
-    off <- fdSeek fd SeekFromEnd 0
-    return (fromIntegral off `div` blocksize)
+size d = ifExists d getSizeBlocks
 
 interpretOp :: TwoDisk__Op a -> Proc a
 interpretOp (TwoDisk__Coq_op_read d a) = unsafeCoerce <$> td_read d a
