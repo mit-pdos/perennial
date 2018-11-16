@@ -6,18 +6,6 @@ Proving crash safety of systems by proving an implementation refines a
 specification. Supports implementations that run a recovery procedure, as well
 as abstracting away the behavior of the recovery procedure.
 
-## Compiling
-
-We develop Argosy using Coq master but remain compatible with Coq v8.9+beta and
-Coq v8.8.2 using continuous integration.
-
-This project uses git submodules to include several dependencies. If building
-from a packaged release, these dependencies should be included. Otherwise, you
-can either use `git clone --recurse-submodules` or (after cloning) `git
-submodule update --init --recursive` to set that up.
-
-To compile just run `make` with Coq on your `$PATH`.
-
 ## Overview
 
 The [src](src/) subdirectory contains the Coq development. Within that directory:
@@ -83,3 +71,23 @@ The [src](src/) subdirectory contains the Coq development. Within that directory
 The [vendor](vendor/) subdirectory contains various submodules for Coq libraries
 that we use in the development. See the README files within each submodule for
 documentation.
+
+The [logging-client](logging-client/) subdirectory contains code to extract and
+run the composed logging and replication implementation, which provides a
+transactional API on top of two unreliable disks. See its separate
+[README.md](logging-client/README.md) for details.
+
+## Compiling
+
+We develop Argosy using Coq master. It should be compatible with Coq v8.9+beta
+and Coq v8.8.2, which are tested as part of continuous integration.
+
+This project uses git submodules to include several dependencies. If building
+from a packaged release, these dependencies should be included. Otherwise, you
+can either use `git clone --recurse-submodules` or (after cloning) `git
+submodule update --init --recursive` to set that up.
+
+To compile just run `make` with Coq on your `$PATH`.
+
+Details on extraction for the logging example are in its own
+[README.md](logging-client/README.md).
