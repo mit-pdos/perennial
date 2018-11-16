@@ -1,5 +1,5 @@
 From Array Require Export MultiAssign.
-Require Import POCS.
+From RecoveryRefinement Require Import Lib.
 Require Import Spec.HoareTactics.
 
 Require Import Examples.Logging.Impl.

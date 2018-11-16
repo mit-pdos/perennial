@@ -1,4 +1,4 @@
-Require Import POCS.
+From RecoveryRefinement Require Import Lib.
 
 Require Export Examples.Logging.TxnDiskAPI.
 Require Export Examples.Logging.LogEncoding.

@@ -1,4 +1,4 @@
-Require Import POCS.
+From RecoveryRefinement Require Import Lib.
 
 Require Import Examples.Logging.TxnDiskAPI.
 Require Import Examples.ReplicatedDisk.TwoDiskAPI.

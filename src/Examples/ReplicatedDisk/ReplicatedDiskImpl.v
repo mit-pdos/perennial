@@ -1,4 +1,4 @@
-Require Import POCS.
+From RecoveryRefinement Require Import Lib.
 
 Require Import OneDiskAPI.
 Require Import TwoDiskAPI.

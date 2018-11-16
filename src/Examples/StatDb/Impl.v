@@ -1,6 +1,6 @@
 From Coq Require Import List.
 
-Require Export RecoveryRefinement.POCS.
+From RecoveryRefinement Require Export Lib.
 
 Module Var.
   Inductive id := Sum | Count.

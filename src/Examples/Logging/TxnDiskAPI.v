@@ -1,4 +1,4 @@
-Require Import POCS.
+From RecoveryRefinement Require Import Lib.
 Require Export Maybe Disk.
 
 Module TxnD.
