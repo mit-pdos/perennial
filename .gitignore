@@ -21,7 +21,3 @@
 *.glob
 .coqdeps.d
 _CoqProject
-
-# created by logging-client
-/disk0.img
-/disk1.img
