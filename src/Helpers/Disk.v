@@ -7,10 +7,9 @@ Set Implicit Arguments.
 
 (** * Model of bytes.
 
-    In our lab assignments, we will model disks as consisting of
-    blocks, which are in turn composed of bytes.  Here, we define
-    a notion of a byte array: the type of an array of [n] bytes
-    will be [bytes n].
+    We will model disks as consisting of blocks, which are in turn composed of
+    bytes.  Here, we define a notion of a byte array: the type of an array of
+    [n] bytes will be [bytes n].
 
     There's one unusual aspect of how we model bytes: instead of
     defining the bytes type in Coq, we simply add it as an [Axiom]. This
