@@ -281,7 +281,7 @@ Section Layers.
     - Right.
   Qed.
 
-  Theorem complete_exec_seq_ok : forall R (p: a_proc_seq R) (rec: a_proc R),
+  Theorem complete_exec_seq_ok_tests : forall R (p: a_proc_seq R) (rec: a_proc R),
       test c_initP;; inited <- c_exec rf.(impl).(init); ifInit inited (c_sem.(exec_seq) (compile_seq p) (compile_rec rec)) --->
            (any (T:=unit);; test a_initP;; v <- a_sem.(exec_seq) p rec; any (T:=unit);; pure (Some v)) +
       (any (T:=unit);; pure None).
@@ -301,7 +301,7 @@ Section Layers.
   Qed.
 
   (* State a version without test, with some defns unfolded *)
-  Theorem complete_exec_seq_ok_alt R (p: a_proc_seq R) (rec: a_proc R)
+  Theorem complete_exec_seq_ok_unfolded R (p: a_proc_seq R) (rec: a_proc R)
       (cs1 cs2: CState) mv:
     c_initP cs1 ->
     (inited <- c_exec rf.(impl).(init);
@@ -316,7 +316,7 @@ Section Layers.
     end.
   Proof.
     intros.
-    pose proof (complete_exec_seq_ok p rec).
+    pose proof (complete_exec_seq_ok_tests p rec).
     unfold ifInit in H1. edestruct (H1 cs1 cs2 mv).
     { exists tt, cs1. split; [firstorder|].
       destruct H0 as (i&cs1'&?&?).
@@ -329,7 +329,7 @@ Section Layers.
     - repeat destruct H2. inversion H3; subst; eauto.
   Qed.
 
-  Theorem complete_exec_seq_ok_alt2 R (p: a_proc_seq R) (rec: a_proc R) v:
+  Theorem complete_exec_seq_ok R (p: a_proc_seq R) (rec: a_proc R) v:
     c_output (inited <- c_exec rf.(impl).(init);
                 match inited with
                 | InitFailed => pure None
@@ -339,7 +339,7 @@ Section Layers.
     a_output (a_sem.(exec_seq) p rec) v.
   Proof.
     unfold c_output, a_output. intros (s1&s2&?&?).
-    eapply (complete_exec_seq_ok_alt) with (mv := Some v); eauto.
+    eapply (complete_exec_seq_ok_unfolded) with (mv := Some v); eauto.
   Qed.
 
 End Layers.
@@ -437,7 +437,7 @@ Proof.
   - Right.
 Qed.
 
-Definition layer_compose
+Definition refinement_transitive
            Op1 (l1: Layer Op1)
            Op2 (l2: Layer Op2)
            Op3 (l3: Layer Op3)

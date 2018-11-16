@@ -43,10 +43,10 @@ The [src](src/) subdirectory contains the Coq development. Within that directory
     * [Layer.v](src/Spec/Layer.v) -- defines layers, which define an "API" as a
       bundle of operations and a form of state. Also describes how to implement a
       layer in terms of another, compilation between layers, and the notion of
-      layer refinement (which we also call "recovery refinement"). The theorems
-      `compile_exec_seq_ok_alt2` and `layer_compose` prove that layer refinements
-      preserve the semantics of compiled programs, and that layers can be
-      composed, respectively.
+      layer refinement (which we also call "recovery refinement"). The theorem
+      `compile_exec_seq_ok` proves that layer refinements preserve the semantics
+      of complete interactions. `refinement_transitive` composes two
+      implementations and shows the composition is also a recovery refinement.
 
     * [Hoare.v](src/Spec/Hoare.v) -- our embedding of Crash Hoare Logic (CHL),
       which we use to help prove that an implementation is a layer refinement.
