@@ -1,7 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 module LogEncodingSpec where
 
-import Transactions.LogLayout
+import Transactions.LogEncoding
 import LogEncoding
 import Data.Bits
 

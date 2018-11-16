@@ -1,4 +1,4 @@
-module Transactions.LogLayout
+module Transactions.LogEncoding
   ( logHdrFmt
   , descriptorFmt
   ) where

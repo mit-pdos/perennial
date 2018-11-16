@@ -11,7 +11,7 @@ import_modules = {
     [
         "Disk",
     ],
-    "import Transactions.LogLayout":
+    "import Transactions.LogEncoding":
     [
         "Impl",
     ],
