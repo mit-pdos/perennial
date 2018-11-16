@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# Demo of using write-ahead logging over a replicated disk.
+#
+# To build the dependencies:
+# 1. run `make extract` at the root (this requires Coq)
+# 2. run `stack setup` to install a sandboxed GHC (this uses the Haskell Tool Stack)
+# 3. run `stack build` to compile the logging-cli binary
+#
+# The replicated disk is simulated using two files disk0.img and disk1.img,
+# which are initialized to 1MB each internally, then initialized by the
+# replication implementation, and finally initialized by the logging
+# implementation.
+#
+# The logging-cli exposes the logging API as subcommands, including a call to
+# recovery. This demo demonstrates using this API.
+
 set -e
 
 log() {
