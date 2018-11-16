@@ -25,9 +25,11 @@ executables:
   logging-cli:
     main:                Main.hs
     source-dirs:         app
+    dependencies:
+      - logging-client
     ghc-options:
-    - -threaded
-    - -rtsopts
+      - -threaded
+      - -rtsopts
 
 tests:
   spec:

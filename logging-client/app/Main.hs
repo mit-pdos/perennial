@@ -7,6 +7,9 @@ import Data.Semigroup ((<>))
 import Options.Applicative
 import System.Directory
 import System.IO
+import Replication.TwoDiskEnvironment
+import qualified Replication.TwoDiskOps as TD
+import Replication.Logging
 
 data InitOptions = InitOptions
   { defaultSizeKB :: Int
@@ -63,3 +66,6 @@ runInit InitOptions
     forM_ [fn0, fn1] $ \p ->
       withFile p WriteMode $ \h ->
         hSetFileSize h (fromIntegral $ size * 1024)
+  env <- newEnv fn0 fn1
+  runTD env . TD.interpret $ logInit
+  return ()
