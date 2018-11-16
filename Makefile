@@ -32,9 +32,9 @@ endif
 	@echo "COQC $<"
 	@coqc $(shell cat '_CoqProject') $< -o $@
 
-extract: logging-client/extract/HoareProof.hs
+extract: logging-client/extract/ComposedRefinement.hs
 
-logging-client/extract/HoareProof.hs: logging-client/Extract.vo
+logging-client/extract/ComposedRefinement.hs: logging-client/Extract.vo
 	./scripts/add-preprocess.sh logging-client/extract/*.hs
 
 clean:
