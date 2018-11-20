@@ -6,6 +6,7 @@ Require Import Helpers.RelationRewriting.
 Require Import Tactical.ProofAutomation.
 
 Import RelationNotations.
+Require FunctionalExtensionality.
 
 Record Layer Op :=
   { State: Type;
@@ -20,7 +21,7 @@ Record LayerImpl C_Op Op :=
   { compile_op `(op: Op T) : proc C_Op T;
     (* TODO: layer implementations should be allowed to return from recovery
          (though it's unclear what purpose that would serve *)
-    recover: proc C_Op unit;
+    recover: rec_seq C_Op;
     init: proc C_Op InitStatus; }.
 
 Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
@@ -28,19 +29,19 @@ Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op
   | Call op => impl.(compile_op) op
   | Ret v => Ret v
   | Bind p p' => Bind (impl.(compile) p) (fun v => impl.(compile) (p' v))
+  | Until c p v => Until c (fun mt => impl.(compile) (p mt)) v
+  | Spawn _ p => Spawn _ (impl.(compile) p)
   end.
 
-Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) R (p: proc_seq Op R) :
-  proc_seq C_Op R :=
-  match p with
+Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) (ps: rec_seq Op) :
+  rec_seq C_Op :=
+  match ps with
   | Seq_Nil => Seq_Nil
-  | Seq_Bind p p' => Seq_Bind (impl.(compile) p) (fun v => impl.(compile_seq) (p' v))
+  | Seq_Cons p ps' => Seq_Cons (impl.(compile) p) (impl.(compile_seq) ps')
   end.
 
-Definition compile_rec Op C_Op
-           `(impl: LayerImpl C_Op Op)
-           R (rec: proc Op R) : proc C_Op R :=
-  Bind impl.(recover) (fun _ => impl.(compile) rec).
+Definition compile_rec Op C_Op `(impl: LayerImpl C_Op Op) (rec: rec_seq Op) : rec_seq C_Op :=
+  rec_seq_append impl.(recover) (impl.(compile_seq) rec).
 
 Definition initOutput {A} `(L: Layer Op) (r: relation (State L) (State L) A) (v : A) : Prop :=
   exists s1 s2, L.(initP) s1 /\ r s1 s2 v.
@@ -55,18 +56,34 @@ Section Layers.
   Notation c_initP := c_layer.(initP).
   Notation c_sem := c_layer.(sem).
   Notation c_exec := c_layer.(sem).(exec).
+  Notation c_exec_seq := c_layer.(sem).(exec_seq).
   Notation c_exec_recover := c_layer.(sem).(exec_recover).
+  Notation c_exec_recover1 := c_layer.(sem).(exec_recover1).
   Notation c_output := c_layer.(initOutput).
 
   Context Op (a_layer: Layer Op).
   Notation AState := a_layer.(State).
   Notation a_proc := (proc Op).
-  Notation a_proc_seq := (proc_seq Op).
+  Notation a_rec_seq := (rec_seq Op).
   Notation a_initP := a_layer.(initP).
   Notation a_sem := a_layer.(sem).
+  Notation a_exec := a_layer.(sem).(exec).
+  Notation a_exec_halt := a_layer.(sem).(exec_halt).
   Notation a_exec_recover := a_layer.(sem).(exec_recover).
+  Notation a_exec_recover1 := a_layer.(sem).(exec_recover1).
   Notation a_output := a_layer.(initOutput).
 
+  Definition compile_refines (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
+    forall T (p: proc Op T),
+      crash_refines absr c_sem
+                    (impl.(compile) p) impl.(recover)
+                    (a_exec p)
+                    (a_exec_halt p;; a_sem.(crash_step)).
+
+  (* I don't think we can so simply phrase things in terms of per-op correctness, without
+     baking in too strongly how the reasoning is to be done *)
+
+  (*
   Definition compile_op_refines_step (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
     forall T (op: Op T),
       crash_refines absr c_sem
@@ -77,6 +94,7 @@ Section Layers.
                        parsing *)
                     (a_sem.(crash_step) +
                      (a_sem.(step) op;; a_sem.(crash_step))).
+   *)
 
   Definition recovery_refines_crash_step (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
     refines absr
@@ -86,14 +104,14 @@ Section Layers.
   Record LayerRefinement :=
     { impl: LayerImpl C_Op Op;
       absr: relation AState CState unit;
-      compile_op_ok : compile_op_refines_step impl absr;
+      compile_ok : compile_refines impl absr;
       recovery_noop_ok : recovery_refines_crash_step impl absr;
       (* TODO: prove implementations are well-formed *)
       init_ok : test c_initP;; c_exec impl.(init) --->
-                                                  (any (T:=unit);; test a_initP;; absr;; pure Initialized)
+                                                  (any (T:=unit);; test a_initP;; absr;; pure (existT _ _ Initialized))
                 (* failing initialization can do anything since a lower layer
                 might have initialized before this failure *)
-                + (any (T:=unit);; pure InitFailed)}.
+                + (any (T:=unit);; pure (existT _ _ InitFailed))}.
 
   Context (rf: LayerRefinement).
   Notation compile_op := rf.(impl).(compile_op).
@@ -111,106 +129,108 @@ Section Layers.
         rf.(absr)
              (c_exec (compile p))
              (a_sem.(exec) p).
+  Proof. intros. eapply (rf.(compile_ok) p); eauto. Qed.
+
+  Theorem compile_seq_exec_ok : forall (p: a_rec_seq),
+      refines
+        rf.(absr)
+             (c_exec_seq (compile_seq p))
+             (a_sem.(exec_seq) p).
   Proof.
-    induction p; simpl; intros.
-    - pose unfolded (rf.(compile_op_ok) op)
-           (fun H => hnf in H).
-      propositional.
-    - unfold refines; norm.
-    - unfold refines in *; norm.
-      left_assoc rew IHp.
-      rel_congruence; norm.
-      rew<- H.
+    unfold refines; induction p.
+    - simpl; norm.
+    - simpl.
+      pose unfolded (rf.(compile_ok) p)
+           (fun H => red in H; unfold rexec, refines in H).
+      rewrite <-bind_assoc. rewrite H. 
+      repeat rewrite bind_assoc.
+      rel_congruence.
+      repeat rewrite bind_assoc.
+      rew bind_left_id. eauto.
   Qed.
 
   (* TODO: this is only for compatibility, get rid of it *)
   Theorem crash_step_refinement :
     refines rf.(absr) (c_sem.(crash_step);; c_exec_recover recover)
                       (a_sem.(crash_step)).
-  Proof.
-    exact rf.(recovery_noop_ok).
-  Qed.
+  Proof. exact rf.(recovery_noop_ok). Qed.
 
-  Theorem rexec_rec R (rec: a_proc R):
+  Theorem rexec_seq_rec (rec: a_rec_seq):
     refines rf.(absr)
-                 (c_sem.(rexec) (compile rec) recover)
-                 (a_sem.(exec_halt) rec;; a_sem.(crash_step)).
+                 (c_sem.(rexec_seq) (compile_seq rec) recover)
+                 (a_sem.(exec_seq_partial) rec;; a_sem.(crash_step)).
   Proof.
     unfold refines, rexec.
     induction rec; simpl; norm.
-    - pose unfolded (rf.(compile_op_ok) op)
-           (fun H => red in H; unfold rexec, refines in H).
-      rew H0.
+    - apply crash_step_refinement.
+    - rewrite rexec_seq_unfold. simpl.
+      rew bind_dist_r.
+      rew bind_dist_l.
       Split.
-      Left.
-      Right.
-    - rew crash_step_refinement.
-    - repeat Split; [ Left; Left | Left; Right | Right ].
-      + rew crash_step_refinement.
-      + rew IHrec.
-      + left_assoc rew (compile_exec_ok rec).
-        rew H.
+      * pose unfolded (rf.(compile_ok) p)
+           (fun H => red in H; unfold rexec, refines in H).
+        rewrite <-bind_assoc. rewrite H. 
+        Left.
+        repeat rewrite bind_assoc.
+        rel_congruence.
+        repeat rewrite bind_assoc.
+        setoid_rewrite bind_left_id.
+        rewrite IHrec.
+        repeat rewrite bind_assoc.
+        rel_congruence.
+      * pose unfolded (rf.(compile_ok) p)
+           (fun H => red in H; unfold rexec, refines in H).
+        rewrite <-bind_assoc.
+        Right.
+        repeat setoid_rewrite bind_assoc in H0.
+        rewrite bind_assoc.
+        setoid_rewrite bind_left_id in H0.
+        rew H0.
   Qed.
 
-  Theorem rexec_star_rec R (rec: a_proc R) :
+  Theorem rexec_star_rec (rec: a_rec_seq) :
     refines rf.(absr)
-                 (seq_star (rexec c_sem (compile rec) recover);; c_exec (compile rec))
+                 (seq_star (rexec_seq c_sem (compile_seq rec) recover);; c_exec_seq (compile_seq rec))
                  (a_exec_recover rec).
   Proof.
     unfold refines.
     rew @exec_recover_unfold.
-    pose unfolded (rexec_rec rec)
+    pose unfolded (rexec_seq_rec rec)
          (fun H => red in H).
     apply simulation_seq_value in H.
     left_assoc rew H.
     rel_congruence.
-    rew compile_exec_ok.
+    rew compile_seq_exec_ok.
   Qed.
 
-
-  Lemma recover_ret R (rec: a_proc R) :
+  Lemma recover_ret (rec: a_rec_seq) :
     refines rf.(absr)
                  (_ <- c_sem.(crash_step);
                     c_exec_recover (compile_rec rec))
                  (a_sem.(crash_step);; a_exec_recover rec).
   Proof.
     unfold refines.
-    rew @exec_recover_bind.
-    rew bind_star_unit.
+    rew @exec_recover_append.
     left_assoc rew crash_step_refinement.
     rel_congruence.
     rew rexec_star_rec.
   Qed.
 
-  Theorem compile_rexec_ok T (p: a_proc T) R (rec: a_proc R) :
+  Theorem compile_rexec_ok T (p: a_proc T) (rec: a_rec_seq) :
     refines rf.(absr)
                  (rexec c_sem (compile p) (compile_rec rec))
                  (rexec a_sem p rec).
   Proof.
     unfold refines, rexec.
-    induction p; simpl; norm.
-    - pose unfolded (rf.(compile_op_ok) op)
-        (fun H => hnf in H; unfold rexec, refines in H).
-      match goal with
-      | [ H: context[c_exec (compile_op _)] |- _ ] =>
-        clear H (* normal execution of op is irrelevant *)
-      end.
-      rew @exec_recover_bind.
-      left_assoc rew H0.
-      rew bind_star_unit.
-
-      rew rexec_star_rec.
-      rewrite ?bind_dist_r; norm.
-    - rew recover_ret.
-    - repeat Split;
-        [ Left; Left | Left; Right | Right ].
-      + rew recover_ret.
-      + rew IHp.
-      + left_assoc rew compile_exec_ok.
-        rel_congruence.
-        rew H.
+    pose unfolded (rf.(compile_ok) p)
+         (fun H => red in H; unfold rexec, refines in H).
+    rew @exec_recover_append.
+    left_assoc rew H0.
+    rel_congruence.
+    rew rexec_star_rec.
   Qed.
 
+  (*
   Theorem compile_exec_seq_ok R (p: a_proc_seq R) (rec: a_proc R):
     refines rf.(absr)
                  (exec_seq c_sem (compile_seq p) (compile_rec rec))
@@ -225,8 +245,9 @@ Section Layers.
     - left_assoc rew compile_rexec_ok; repeat rel_congruence.
       left_assoc rew IH1.
   Qed.
+   *)
 
-  Theorem compile_ok : forall T (p: a_proc T) R (rec: a_proc R),
+  Theorem compile_ok' : forall T (p: a_proc T) rec,
         crash_refines
           rf.(absr) c_sem
                     (compile p) (compile_rec rec)
@@ -243,6 +264,7 @@ Section Layers.
     then v <- r; pure (Some v)
     else pure None.
 
+  (*
   Theorem complete_exec_ok : forall T (p: a_proc T),
       test c_initP;; inited <- c_exec rf.(impl).(init); ifInit inited (c_exec (compile p)) --->
            (any (T:=unit);; test a_initP;; v <- a_sem.(exec) p; any (T:=unit);; pure (Some v)) +
@@ -299,8 +321,10 @@ Section Layers.
       apply to_any.
     - Right.
   Qed.
+   *)
 
   (* State a version without test, with some defns unfolded *)
+  (*
   Theorem complete_exec_seq_ok_unfolded R (p: a_proc_seq R) (rec: a_proc R)
       (cs1 cs2: CState) mv:
     c_initP cs1 ->
@@ -341,6 +365,7 @@ Section Layers.
     unfold c_output, a_output. intros (s1&s2&?&?).
     eapply (complete_exec_seq_ok_unfolded) with (mv := Some v); eauto.
   Qed.
+   *)
 
 End Layers.
 
@@ -355,9 +380,7 @@ Definition layer_impl_compose
 Proof.
   refine {| compile_op T op :=
               impl1.(compile) (impl2.(compile_op) op);
-            recover := Bind impl1.(recover)
-                                    (fun (_:unit) =>
-                                       impl1.(compile) impl2.(recover));
+            recover := rec_seq_append impl1.(recover) (impl1.(compile_seq) impl2.(recover));
             init := Bind impl1.(init)
                                  (fun inited =>
                                     if inited
@@ -366,22 +389,42 @@ Proof.
          |}.
 Defined.
 
+(* TODO: the use of fun ext here is not necessary. *)
+Lemma compose_compile_equiv:
+forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
+  (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3)
+  (rf1 : LayerRefinement l1 l2) (rf2 : LayerRefinement l2 l3) T (p: proc Op3 T),
+  exec_equiv (sem l1) (compile (layer_impl_compose rf1 rf2) p) (compile rf1 (compile rf2 p)).
+Proof.
+  intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2 T p.
+  cut (compile (layer_impl_compose rf1 rf2) p =
+       (compile rf1 (compile rf2 p))).
+  { intros ->. reflexivity. }
+  induction p; simpl; eauto; try congruence.
+  - f_equal; eauto.
+    apply FunctionalExtensionality.functional_extensionality; eauto.
+  - f_equal; eauto.
+    apply FunctionalExtensionality.functional_extensionality; eauto.
+Qed.
+
 Lemma compose_compile_op:
   forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
     (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3)
     (rf1 : LayerRefinement l1 l2) (rf2 : LayerRefinement l2 l3),
-    compile_op_refines_step l1 l3 (layer_impl_compose rf1 rf2)
+    compile_refines l1 l3 (layer_impl_compose rf1 rf2)
                             (_ <- rf2.(absr); rf1.(absr)).
 Proof.
-  intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2.
-  red; unfold layer_impl_compose; simpl.
-  split; simpl; unfold refines; norm.
-  - rew rf1.(compile_exec_ok).
-    pose unfolded (rf2.(compile_op_ok) _ op)
+  intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2 T p.
+  red. simpl.
+  split; simpl; norm; unfold refines; setoid_rewrite compose_compile_equiv at 1.
+  - rew bind_assoc.
+    rew rf1.(compile_exec_ok).
+    pose unfolded (rf2.(compile_ok) p)
          (fun H => hnf in H).
     left_assoc rew H.
-  - rew rf1.(compile_rexec_ok).
-    pose unfolded (rf2.(compile_op_ok) _ op)
+  - rew bind_assoc.
+    rew rf1.(compile_rexec_ok).
+    pose unfolded (rf2.(compile_ok) p)
          (fun H => hnf in H).
     left_assoc rew H0.
 Qed.
@@ -395,8 +438,7 @@ Lemma compile_recovery_crash_step:
 Proof.
   intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2.
   red; unfold refines, layer_impl_compose; simpl; norm.
-  rew @exec_recover_bind.
-  rew bind_star_unit.
+  rew @exec_recover_append.
   pose unfolded rf1.(crash_step_refinement)
                       (fun H => unfold refines in H).
   setoid_rewrite <- bind_assoc at 3.
@@ -406,6 +448,7 @@ Proof.
   left_assoc rew rf2.(crash_step_refinement).
 Qed.
 
+(*
 Lemma compile_init_ok:
   forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
     (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3)
@@ -436,6 +479,7 @@ Proof.
       apply to_any.
   - Right.
 Qed.
+*)
 
 Definition refinement_transitive
            Op1 (l1: Layer Op1)
@@ -455,5 +499,6 @@ Proof.
             absr := rf2.(absr);; rf1.(absr) |}.
   - apply compose_compile_op.
   - apply compile_recovery_crash_step.
-  - apply compile_init_ok.
-Defined.
+  - (* apply compile_init_ok. *)
+    admit.
+Admitted.

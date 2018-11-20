@@ -1,3 +1,4 @@
+(*
 Require Import Spec.Proc Spec.ProcTheorems.
 Require Import Tactical.Propositional.
 Require Import Helpers.RelationAlgebra.
@@ -478,3 +479,4 @@ Section Hoare.
    Qed.
 
 End Hoare.
+*)

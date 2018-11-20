@@ -1,7 +1,6 @@
 From Tactical Require Import Propositional.
 
 Require Import Spec.Proc.
-Require Import Spec.Hoare.
 
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
@@ -49,6 +48,7 @@ Section Abstraction.
   (* define refinement as transforming an abstract specification to a concrete
   one (a program satisfying the abstract spec should satisfy the concrete spec
   after refinement-preserving compilation) *)
+  (*
   Definition refine_spec
              A T R
              (spec: A -> Specification T R AState)
@@ -62,17 +62,19 @@ Section Abstraction.
          alternate := fun cs' r =>
                         exists s', absr s' cs' tt /\
                               (spec a s).(alternate) s' r; |}.
+   *)
 
   Section Dynamics.
     Context C_Op (c_sem: Dynamics C_Op CState).
     Notation c_proc := (proc C_Op).
+    Notation c_rec_seq := (rec_seq C_Op).
     Notation c_exec := c_sem.(exec).
     Notation c_rexec := c_sem.(rexec).
 
-    Definition crash_refines T R
-               (p: c_proc T) (rec: c_proc R)
-               (exec_spec: relation AState AState T)
-               (rexec_spec: relation AState AState R) :=
+    Definition crash_refines T
+               (p: c_proc T) (rec: c_rec_seq)
+               (exec_spec: relation AState AState _)
+               (rexec_spec: relation AState AState _) :=
       refines (c_exec p) exec_spec /\
       refines (c_rexec p rec) rexec_spec.
   End Dynamics.

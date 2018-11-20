@@ -37,6 +37,9 @@ Section OutputRelations.
   Definition any {A B} {T} : relation A B T :=
     fun x y o => True.
 
+  Definition none {A B} {T} : relation A B T :=
+    fun x y o => False.
+
   Definition reads {A} {T} (f: A -> T) : relation A A T :=
     fun x y o => o = f x /\ x = y.
 
@@ -194,6 +197,7 @@ Section OutputRelations.
            | _ => progress propositional
            | _ => solve [ eauto 10 ]
            | [ H: _ \/ _  |- _ ] => destruct H
+           | [ H : none _ _ _ |- _] => destruct H
         end.
 
 
@@ -442,6 +446,32 @@ Section OutputRelations.
   Theorem any_idem A B C T1 T2 :
     any (B:=B) (T:=T1);; any --->
         any (A:=A) (B:=C) (T:=T2).
+  Proof.
+    t.
+  Qed.
+
+  Theorem from_none A B T (r: relation A B T):
+    none ---> r.
+  Proof.
+    t.
+  Qed.
+
+  Theorem none_idem A B C T1 T2:
+    none (B:=B) (T:=T1);; none --->
+        none (A:=A) (B:=C) (T:=T2).
+  Proof.
+    t.
+  Qed.
+
+  Theorem none_absorb_l A B C T1 T2 p:
+    x <- none (B:=B) (T:=T1); p x --->
+        none (A:=A) (B:=C) (T:=T2).
+  Proof.
+    t.
+  Qed.
+
+  Theorem none_absorb_r A B C T1 T2 (p: relation A B T1):
+    p;; none ---> none (A:=A) (B:=C) (T:=T2).
   Proof.
     t.
   Qed.
@@ -710,6 +740,13 @@ Section OutputRelations.
     specialize (IHseq_star _ ltac:(eauto)); t.
   Qed.
 
+  Theorem seq_unit_sliding_equiv A (p: relation A A unit) (q: relation A A unit) :
+     seq_star (p;; q);; p <--->
+              p;; seq_star (q;; p).
+  Proof.
+    apply rimpl_to_requiv; auto using seq_sliding, seq_unit_sliding.
+  Qed.
+
   Theorem seq_plus_precise A T1 (p: relation A A T1) (q: relation A A unit) :
     seq_plus (p;; q);; p <---> p ;; seq_plus (q;; p).
   Proof.
@@ -812,6 +849,14 @@ Section OutputRelations.
     t.
     apply bind_star_lr in H1.
     induction H1; intros; eauto 10.
+  Qed.
+
+  Theorem bind_star_ind_r_pure A T1 t (x: relation A A T1) (p: T1 -> relation A A T1):
+    (pure t) + and_then x p ---> x ->
+    bind_star p t ---> x.
+  Proof.
+    specialize (@bind_star_ind_r A A _ (pure t) x p).
+    setoid_rewrite bind_left_id; auto.
   Qed.
 
   Theorem simulation_seq A B
