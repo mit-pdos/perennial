@@ -22,7 +22,7 @@ Record LayerImpl C_Op Op :=
     (* TODO: layer implementations should be allowed to return from recovery
          (though it's unclear what purpose that would serve *)
     recover: rec_seq C_Op;
-    init: proc C_Op InitStatus; }.
+    (* init: proc C_Op InitStatus; *) }.
 
 Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
   match p with
@@ -107,11 +107,14 @@ Section Layers.
       compile_ok : compile_refines impl absr;
       recovery_noop_ok : recovery_refines_crash_step impl absr;
       (* TODO: prove implementations are well-formed *)
+      (*
       init_ok : test c_initP;; c_exec impl.(init) --->
                                                   (any (T:=unit);; test a_initP;; absr;; pure (existT _ _ Initialized))
                 (* failing initialization can do anything since a lower layer
                 might have initialized before this failure *)
-                + (any (T:=unit);; pure (existT _ _ InitFailed))}.
+                + (any (T:=unit);; pure (existT _ _ InitFailed))
+     *)
+    }.
 
   Context (rf: LayerRefinement).
   Notation compile_op := rf.(impl).(compile_op).
@@ -381,11 +384,13 @@ Proof.
   refine {| compile_op T op :=
               impl1.(compile) (impl2.(compile_op) op);
             recover := rec_seq_append impl1.(recover) (impl1.(compile_seq) impl2.(recover));
+            (*
             init := Bind impl1.(init)
                                  (fun inited =>
                                     if inited
                                     then impl1.(compile) impl2.(init)
                                     else Ret InitFailed);
+             *)
          |}.
 Defined.
 
@@ -499,6 +504,4 @@ Proof.
             absr := rf2.(absr);; rf1.(absr) |}.
   - apply compose_compile_op.
   - apply compile_recovery_crash_step.
-  - (* apply compile_init_ok. *)
-    admit.
-Admitted.
+Qed.
