@@ -4,8 +4,8 @@ Require Import Helpers.RelationRewriting.
 Import RelationNotations.
 
 Theorem seq_star_invariant A (r: relation A A unit) P :
-  test P;; r ---> test P;; r;; test P ->
-  test P;; seq_star r ---> test P;; seq_star r;; test P.
+  (test P;; r) ---> (test P;; r;; test P) ->
+  (test P;; seq_star r) ---> (test P;; seq_star r;; test P).
 Proof.
   intros.
   rewrite <- bind_assoc in H.
@@ -36,8 +36,8 @@ Proof.
 Qed.
 
 Lemma seq_star_rep_n_ind {A1 A2 T1 T2} (p: relation A1 A2 T1) q (r: relation A1 A2 T2):
-  (forall n, p ;; seq_rep_n n q ---> r) ->
-  p ;; seq_star q ---> r.
+  (forall n, (p ;; seq_rep_n n q) ---> r) ->
+  (p ;; seq_star q) ---> r.
 Proof.
   intros.
   intros a1 a2 t2 Hl.
@@ -62,9 +62,9 @@ Proof.
 Qed.
 
 Lemma seq_star_mid_invariant A (p: relation A A unit) (q: relation A A unit) P:
-  (test P;; p ---> q ;; test P) ->
-  (q;; seq_star q ---> q) ->
-  (q;; test P;; seq_star p ---> q;; test P).
+  (test P;; p) ---> (q ;; test P) ->
+  (q;; seq_star q) ---> q ->
+  (q;; test P;; seq_star p) ---> (q;; test P).
 Proof.
   intros Hinv Htrans.
   setoid_rewrite <-bind_assoc.
@@ -87,7 +87,7 @@ Proof.
 Qed.
 
 Lemma any_seq_star_any A T:
-  _ <- (@any A A T); seq_star (@any A A T) ---> any.
+  (@any A A T;; seq_star (@any A A T)) ---> any.
 Proof.
   eapply seq_star_rep_n_ind.
   induction n; simpl.

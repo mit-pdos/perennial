@@ -14,7 +14,7 @@ Section Abstraction.
   Definition refines T
              (p: relation CState CState T)
              (spec: relation AState AState T) :=
-    absr;; p ---> v <- spec; absr;; pure v.
+    (absr;; p) ---> (v <- spec; absr;; pure v).
 
   Theorem refine_unfolded_iff T
           (p: relation CState CState T)

@@ -1,7 +1,6 @@
 From RecoveryRefinement Require Import Lib.
 Require Export Maybe Disk.
 
-
 Module D.
 
   Definition State := disk.
@@ -33,31 +32,3 @@ Module D.
     {| Layer.State := State; sem := ODBaseDynamics; initP := fun _ => True |}.
 
 End D.
-
-Definition read_spec (a : addr) : Specification block unit D.State :=
-  fun state => {|
-    pre := True;
-    post := fun state' r =>
-      state' = state /\
-      index state a ?|= eq r;
-    alternate := fun state' r =>
-      state' = state
-  |}.
-
-Definition write_spec (a : addr) (v : block) : Specification _ unit D.State :=
-  fun state => {|
-    pre := True;
-    post := fun state' r =>
-      r = tt /\ state' = assign state a v;
-    alternate := fun state' r =>
-      state' = state \/ state' = assign state a v
-  |}.
-
-Definition size_spec : Specification nat unit D.State :=
-  fun state => {|
-    pre := True;
-    post := fun state' r =>
-      state' = state /\ r = length state;
-    alternate := fun state' r =>
-      state' = state
-  |}.

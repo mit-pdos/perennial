@@ -150,8 +150,8 @@ Section Dynamics.
 
   Definition exec_recover_unfold (rec: rec_seq) :
     exec_recover rec =
-    seq_star (exec_seq_partial rec;; crash_step);;
-             exec_seq rec := eq_refl.
+    (seq_star (exec_seq_partial rec;; crash_step);;
+             exec_seq rec) := eq_refl.
 
   (* recovery execution *)
   Definition rexec {T} (p: proc T) (rec: rec_seq) :=
@@ -159,14 +159,14 @@ Section Dynamics.
 
   Definition rexec_unfold {T} (p: proc T) (rec: rec_seq) :
     rexec p rec =
-    exec_partial p;; crash_step;; exec_recover rec := eq_refl.
+    (exec_partial p;; crash_step;; exec_recover rec) := eq_refl.
 
   Definition rexec_seq (ps: rec_seq) (rec: rec_seq) :=
       exec_seq_partial ps;; crash_step;; exec_recover rec.
 
   Definition rexec_seq_unfold (ps: rec_seq) (rec: rec_seq) :
     rexec_seq ps rec =
-    exec_seq_partial ps;; crash_step;; exec_recover rec := eq_refl.
+    (exec_seq_partial ps;; crash_step;; exec_recover rec) := eq_refl.
 
   Definition exec_or_rexec {T} (p : proc T) (rec: rec_seq) :=
     (v <- exec p; pure (inl v)) + (v <- rexec p rec; pure (inr v)).
@@ -201,5 +201,6 @@ Module ProcNotations.
   (* Declare Scope proc_scope. *)
   Delimit Scope proc_scope with proc.
   Notation "x <- p1 ; p2" := (Bind p1 (fun x => p2))
-                               (at level 54, right associativity) : proc_scope.
+                               (at level 20, p1 at level 100, p2 at level 200, right associativity)
+                             : proc_scope.
 End ProcNotations.

@@ -7,3 +7,15 @@
 [submodule "vendor/classes"]
 	path = vendor/classes
 	url = https://github.com/tchajed/coq-classes
+[submodule "vendor/iris-coq"]
+	path = vendor/iris-coq
+	url = git-rts@gitlab.mpi-sws.org:FP/iris-coq.git
+[submodule "vendor/stdpp"]
+	path = vendor/stdpp
+	url = git-rts@gitlab.mpi-sws.org:iris/stdpp.git
+[submodule "external/stdpp"]
+	path = external/stdpp
+	url = git-rts@gitlab.mpi-sws.org:iris/stdpp.git
+[submodule "external/iris-coq"]
+	path = external/iris-coq
+	url = git-rts@gitlab.mpi-sws.org:FP/iris-coq.git

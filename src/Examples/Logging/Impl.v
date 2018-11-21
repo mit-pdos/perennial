@@ -57,13 +57,13 @@ Defined.
 Definition hdr_inc (hdr:LogHdr) (pf:hdr.(log_length) < LOG_LENGTH) : LogHdr.
   refine {| committed := hdr.(committed);
             log_length := hdr.(log_length) + 1; |}.
-  abstract omega.
+  abstract lia.
 Defined.
 
 Definition empty_hdr : LogHdr.
   refine {| committed := false;
             log_length := 0; |}.
-  abstract omega.
+  abstract lia.
 Defined.
 
 Definition hdr_setcommit (hdr:LogHdr) : LogHdr :=
@@ -98,7 +98,7 @@ Definition log_init :=
       Ret InitFailed
     else
       _ <- writehdr empty_hdr;
-    _ <- writedesc default; (* value is unimportant, ignored due to log_length = 0 *)
+    _ <- writedesc Default.default; (* value is unimportant, ignored due to log_length = 0 *)
     Ret Initialized.
 
 Definition log_size :=

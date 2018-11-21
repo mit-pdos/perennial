@@ -70,5 +70,5 @@ Definition impl : LayerImpl Var.Op DB.Op :=
        | DB.Avg =>
          (sum <- read Var.Sum; count <- read Var.Count; Ret (sum/count)%nat)%proc
        end;
-     recover := Ret tt;
-     init := Ret Initialized; |}.
+     recover := Seq_Cons (Ret tt) (Seq_Nil);
+     (* init := Ret Initialized; *) |}.

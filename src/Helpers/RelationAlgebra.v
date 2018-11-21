@@ -970,11 +970,11 @@ Module RelationNotations.
   Infix "+" := rel_or : relation_scope.
 
   Notation "p1 ;; p2" := (and_then p1 (fun _ => p2))
-                           (at level 54, right associativity)
+  (at level 100, p2 at level 200, only parsing, right associativity)
   : relation_scope.
   (* TODO: experiment more with printing boxes *)
   Notation "x <- p1 ; p2" := (and_then p1 (fun x => p2))
-                              (at level 54, right associativity,
+                              (at level 20, p1 at level 100, p2 at level 200, right associativity,
                                format "'[' x  <-  '[v    ' p1 ']' ; ']'  '/' p2")
                              : relation_scope.
 End RelationNotations.

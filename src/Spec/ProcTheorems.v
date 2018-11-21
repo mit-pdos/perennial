@@ -32,7 +32,7 @@ Section Dynamics.
     end.
 
   Theorem exec_halt_finish T (p: proc T) :
-    exec p;; pure tt ---> exec_halt p.
+    (exec p;; pure tt) ---> exec_halt p.
   Proof.
     unfold exec, exec_halt; induction p; simpl in *; norm; try rel_congruence;
       repeat destruct_hd; norm; apply from_none.
@@ -105,7 +105,7 @@ Section Dynamics.
 
   (* TODO: there is a more general theorem of this form *)
   Lemma exec_partial_crash_pure T (p: proc T):
-    _ <- exec_partial p; crash_step <---> _ <- (exec_partial p;; pure tt); crash_step.
+    (_ <- exec_partial p; crash_step) <---> _ <- (exec_partial p;; pure tt); crash_step.
   Proof. rewrite bind_assoc. norm. Qed.
 
   Theorem rexec_equiv T (p p': proc T) (rec: rec_seq) :

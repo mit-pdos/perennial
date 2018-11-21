@@ -1,3 +1,4 @@
+(*
 Cd "logging-client/extract/".
 
 From Coq Require Extraction.
@@ -16,3 +17,4 @@ Import LoggingTwoDiskRefinement.
 Separate Extraction compile init recover.
 
 Cd "../../".
+*)
