@@ -1,7 +1,7 @@
 /build
 /bin
 /doc
-/.lia.cache
+*.lia.cache
 /*/.stack-work
 *.cabal
 
