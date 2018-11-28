@@ -8,6 +8,7 @@ services:
 env:
   global:
   - NJOBS="2"
+  - GIT_SSL_NO_VERIFY=true
   matrix:
   - COQ_IMAGE="coqorg/coq:dev"
   - COQ_IMAGE="coqorg/coq:8.9"
