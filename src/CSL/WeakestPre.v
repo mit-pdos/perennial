@@ -81,7 +81,6 @@ Qed.
 Class irisG' (OpT: Type -> Type) (Λstate : Type) (Σ : gFunctors) := IrisG {
   iris_invG :> invG Σ;
   state_interp : Λstate → iProp Σ;
-  crash_interp : Λstate → Λstate → iProp Σ;
 }.
 Notation irisG OpT Λ Σ := (irisG' OpT (State Λ) Σ).
 Global Opaque iris_invG.
