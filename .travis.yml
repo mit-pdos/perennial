@@ -5,6 +5,9 @@ language: generic
 services:
   - docker
 
+git:
+  submodules: false
+
 env:
   global:
   - NJOBS="2"
@@ -13,6 +16,9 @@ env:
   - COQ_IMAGE="coqorg/coq:dev"
   - COQ_IMAGE="coqorg/coq:8.9"
   - COQ_IMAGE="coqorg/coq:8.8.2"
+
+before_install:
+  git submodule update --init --recursive
 
 install: |
   # Prepare the COQ container
