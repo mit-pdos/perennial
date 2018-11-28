@@ -5,20 +5,22 @@ language: generic
 services:
   - docker
 
-git:
-  submodules: false
-
 env:
   global:
   - NJOBS="2"
-  - GIT_SSL_NO_VERIFY=true
   matrix:
   - COQ_IMAGE="coqorg/coq:dev"
   - COQ_IMAGE="coqorg/coq:8.9"
   - COQ_IMAGE="coqorg/coq:8.8.2"
 
+# On Travis cloning the gitlab dependencies fails due to a certificate error. In
+# order to disable SSL verification for the submodule init, we have to tell
+# Travis not to initialize submodules.
+git:
+  submodules: false
+
 before_install:
-  git submodule update --init --recursive
+  git -c http.sslVerify=false submodule update --init --recursive
 
 install: |
   # Prepare the COQ container
