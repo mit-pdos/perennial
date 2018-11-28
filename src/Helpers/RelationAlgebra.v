@@ -470,8 +470,33 @@ Section OutputRelations.
     t.
   Qed.
 
+  Theorem none_absorb_l_equiv A B C T1 T2 p:
+    x <- none (B:=B) (T:=T1); p x <--->
+        none (A:=A) (B:=C) (T:=T2).
+  Proof.
+    t.
+  Qed.
+
   Theorem none_absorb_r A B C T1 T2 (p: relation A B T1):
     p;; none ---> none (A:=A) (B:=C) (T:=T2).
+  Proof.
+    t.
+  Qed.
+
+  Theorem none_absorb_r_equiv A B C T1 T2 (p: relation A B T1):
+    p;; none <---> none (A:=A) (B:=C) (T:=T2).
+  Proof.
+    t.
+  Qed.
+
+  Theorem none_plus_r A B T1 (p: relation A B T1):
+    (p + none) <---> p.
+  Proof.
+    t.
+  Qed.
+
+  Theorem none_plus_l A B T1 (p: relation A B T1):
+    (none + p) <---> p.
   Proof.
     t.
   Qed.

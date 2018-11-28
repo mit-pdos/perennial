@@ -57,6 +57,7 @@ Section Dynamics.
     apply rimpl_to_requiv.
     - unfold exec_partial. apply bind_star_ind_r_pure.
       Split. simpl in *. unfold exec_pool_hd. simpl in *. norm.
+      rew none_plus_r.
     - setoid_rewrite <-bind_star_expand_r. Left.
   Qed.
 
@@ -142,18 +143,21 @@ Section Dynamics.
       apply rimpl_to_requiv.
       * rew<- bind_star_expand.
         Split; [ apply from_none |]. 
-        simpl. unfold exec_pool_hd; norm; simpl.
+        simpl. setoid_rewrite none_absorb_l at 1. setoid_rewrite none_plus_r at 1.
+        unfold exec_pool_hd; norm; simpl.
         setoid_rewrite <-bind_star_expand at 1.
-        rel_congruence; simpl. unfold exec_pool_hd; norm.
+        rel_congruence; simpl.
       * setoid_rewrite <-bind_star_expand at 2.
-        Right. simpl. unfold exec_pool_hd; norm.
+        Right. simpl. setoid_rewrite none_absorb_l_equiv at 1. rew none_plus_r.
+        simpl. unfold exec_pool_hd; norm.
     - unfold exec_halt, exec_partial.
       apply rimpl_to_requiv.
       * setoid_rewrite <-bind_star_expand at 1; norm.
         Split; [rew<- bind_star_expand; Left|].
+        simpl. setoid_rewrite none_absorb_l at 1. setoid_rewrite none_plus_r at 1.
         simpl. unfold exec_pool_hd; norm; simpl.
       * setoid_rewrite <-bind_star_expand at 2; norm.
-        Right.
+        Right. simpl. setoid_rewrite none_absorb_l_equiv at 1. rew none_plus_r.
         simpl. unfold exec_pool_hd; norm; simpl.
   Qed.
 

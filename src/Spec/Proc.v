@@ -106,13 +106,52 @@ Section Dynamics.
   Fixpoint exec_pool (ps: list {T & proc T})
     : relation State State thread_pool :=
     match ps with
-    | nil => pure nil
-    | existT _ T p :: nil => exec_pool_hd p nil
+    | nil => none
     | existT _ T p :: ps' =>
       (exec_pool_hd p ps') +
       (ps'_upd <- exec_pool ps';
        pure (existT _ T p :: ps'_upd))
+    (* Redundant *)
+    (* | existT _ T p :: nil => exec_pool_hd p nil *)
     end.
+
+  Inductive exec_pool_alt (ps1: thread_pool) (σ1 σ2: State) (ps2: thread_pool) : Prop :=
+    | step_atomic {T} (e1 e2: proc T) efs t1 t2 :
+       ps1 = t1 ++ existT _ _ e1 :: t2 ->
+       ps2 = t1 ++ existT _ _ e2 :: t2 ++ efs ->
+       exec_step e1 σ1 σ2 (e2, efs) ->
+       exec_pool_alt ps1 σ1 σ2 ps2.
+
+  Lemma exec_pool_alt_cons {T} ps1 σ1 σ2 ps2 e:
+    exec_pool_alt ps1 σ1 σ2 ps2 ->
+    exec_pool_alt (existT _ T e :: ps1) σ1 σ2 (existT _ T e :: ps2).
+  Proof.
+    inversion 1.
+    subst. econstructor; eauto;
+    rewrite app_comm_cons; f_equal.
+  Qed.
+
+  Lemma exec_pool_equiv_alt ps1:
+    exec_pool ps1 <---> exec_pool_alt ps1.
+  Proof.
+    intros s1 s2 ps2.
+    split.
+    - revert ps2.
+      induction ps1 as [|[T e] ps1]; intros ps2.
+      * simpl. inversion 1.
+      * simpl. intros [H|H].
+        ** destruct H as ((e'&efs)&?&?&Hp).
+           inversion Hp; subst.
+           eapply (step_atomic _ _ e e' efs nil ps1); simpl; eauto.
+        ** destruct H as (ps2'&?&?&[]); subst.
+           eapply IHps1 in H. eapply exec_pool_alt_cons; eauto.
+    - inversion 1.
+      subst. clear H.
+      induction t1 as [|[T' e] ps1].
+      * simpl. left. repeat (do 2 econstructor; split; eauto).
+      * simpl. right. do 2 eexists; split; eauto.
+        econstructor; eauto.
+  Qed.
 
   Definition exec_partial {T} (p: proc T) :=
     bind_star (exec_pool) ((existT _ T p) :: nil).
