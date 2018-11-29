@@ -25,6 +25,12 @@ Fixpoint seq_rep_n {A T} (n: nat) (p: relation A A T) : relation A A T :=
   | S n' => p ;; seq_rep_n n' p
   end.
 
+Fixpoint bind_rep_n {A T} (n: nat) (p: T -> relation A A T) (o: T) : relation A A T :=
+  match n with
+  | O => pure o
+  | S n' => x <- p o; bind_rep_n n' p x
+  end.
+
 Lemma seq_star_inv_rep_n A T (p: relation A A T) a1 a2 t:
   seq_star p a1 a2 t ->
   exists n, seq_rep_n n p a1 a2 t.
