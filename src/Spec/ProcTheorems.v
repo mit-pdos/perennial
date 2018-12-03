@@ -208,6 +208,7 @@ Section Dynamics.
 
   Opaque Proc.exec.
 
+  Definition rec_singleton {T} (rec: proc T) : rec_seq := Seq_Cons rec Seq_Nil.
 
   Lemma exec_seq_snoc T `(p: proc T) `(rec: rec_seq ):
     exec_seq (rec_seq_snoc rec p) <--->
@@ -242,6 +243,14 @@ Section Dynamics.
       rewrite <-rel_or_assoc.
       apply or_respects_equiv; eauto.
       apply rel_or_symmetric.
+  Qed.
+
+  Lemma exec_seq_partial_singleton {T} (rec: proc T) :
+    exec_seq_partial (rec_singleton rec) <---> exec_halt rec.
+  Proof.
+    simpl. apply rimpl_to_requiv.
+    - Split. apply exec_halt_finish.
+    - Right.
   Qed.
 
   Lemma exec_seq_partial_append `(rec1: rec_seq) `(rec2: rec_seq):

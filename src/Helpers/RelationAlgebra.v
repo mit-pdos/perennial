@@ -118,6 +118,12 @@ Section OutputRelations.
       (Basics.flip rimpl ==> Basics.flip Basics.impl) (rimpl r) :=
     ltac:(firstorder).
 
+  Lemma rimpl_elim A B T (r1 r2: relation A B T) a b t:
+    r1 a b t ->
+    r1 ---> r2 ->
+    r2 a b t.
+  Proof. auto. Qed.
+
   Theorem rimpl_to_requiv A B T (r1 r2: relation A B T) :
     r1 ---> r2 ->
     r2 ---> r1 ->
