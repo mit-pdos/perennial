@@ -126,8 +126,18 @@ Module TwoDisk.
     - exists d, d. firstorder.
   Qed.
 
+  Lemma crash_total_ok (s: State):
+    exists s', TDBaseDynamics.(crash_step) s s' tt.
+  Proof. eexists; econstructor. Qed.
+
   Definition TDLayer : Layer Op :=
-    {| Layer.State := State; sem := TDBaseDynamics; initP := td_init |}.
+    {| Layer.State := State;
+       sem := TDBaseDynamics;
+       trace_proj := fun _ => nil;
+       crash_preserves_trace := fun _ _ _ => eq_refl;
+       crash_total := crash_total_ok;
+       initP := td_init |}.
+
 End TwoDisk.
 
 (* Wrappers around the primitive operations *)

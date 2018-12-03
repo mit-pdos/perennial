@@ -42,7 +42,16 @@ Module TxnD.
   Definition dyn : Dynamics Op State :=
     {| step := op_step; crash_step := txn_crash |}.
 
+  Lemma crash_total_ok (s: State):
+    exists s', dyn.(crash_step) s s' tt.
+  Proof. destruct s as (d1, d1'). exists (d1, d1). econstructor; eauto. Qed.
+
   Definition l : Layer Op :=
-    {| Layer.State := State; sem := dyn; initP := fun '(d_old, d) => d_old = d |}.
+    {| Layer.State := State;
+       sem := dyn;
+       trace_proj := fun _ => nil;
+       crash_preserves_trace := fun _ _ _ => eq_refl;
+       crash_total := crash_total_ok;
+       initP := fun '(d_old, d) => d_old = d |}.
 
 End TxnD.

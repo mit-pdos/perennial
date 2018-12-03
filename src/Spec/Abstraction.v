@@ -16,6 +16,12 @@ Section Abstraction.
              (spec: relation AState AState T) :=
     (absr;; p) ---> (v <- spec; absr;; pure v).
 
+  Definition refines_if T
+             (r: relation AState CState unit)
+             (p: relation CState CState T)
+             (spec: relation AState AState T) :=
+    (absr;; p) ---> (v <- spec; r;; pure v).
+
   Theorem refine_unfolded_iff T
           (p: relation CState CState T)
           (spec: relation AState AState T) :
@@ -45,6 +51,25 @@ Section Abstraction.
     refines p spec.
   Proof. eapply refine_unfolded_iff. Qed.
 
+  Theorem refine_if_unfolded_iff T r
+          (p: relation CState CState T)
+          (spec: relation AState AState T) :
+    (forall s s__a, absr s__a s tt ->
+             forall s' v, p s s' v ->
+                     exists s__a', spec s__a s__a' v /\
+                            r s__a' s' tt) <->
+    refines_if r p spec.
+  Proof.
+    unfold refines_if, rimpl, and_then, pure; split.
+    - propositional.
+      destruct o1.
+      eapply H in H0; eauto; propositional.
+      eauto 10.
+    - intros. edestruct H; eauto. propositional.
+      destruct o1.
+      eauto 10.
+  Qed.
+
   (* define refinement as transforming an abstract specification to a concrete
   one (a program satisfying the abstract spec should satisfy the concrete spec
   after refinement-preserving compilation) *)
@@ -70,6 +95,8 @@ Section Abstraction.
     Notation c_rec_seq := (rec_seq C_Op).
     Notation c_exec := c_sem.(exec).
     Notation c_rexec := c_sem.(rexec).
+    Notation c_exec_halt := c_sem.(exec_halt).
+    Notation c_rexec_partial := c_sem.(rexec_partial).
 
     Definition crash_refines T
                (p: c_proc T) (rec: c_rec_seq)
@@ -77,6 +104,13 @@ Section Abstraction.
                (rexec_spec: relation AState AState _) :=
       refines (c_exec p) exec_spec /\
       refines (c_rexec p rec) rexec_spec.
+
+    Definition halt_refines T r
+               (p: c_proc T) (rec: c_rec_seq)
+               (exec_partial_spec: relation AState AState _)
+               (rexec_partial_spec: relation AState AState _) :=
+      refines_if r (c_exec_halt p) exec_partial_spec /\
+      refines_if r (c_rexec_partial p rec) rexec_partial_spec.
   End Dynamics.
 
 End Abstraction.

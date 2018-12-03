@@ -11,6 +11,10 @@ Require FunctionalExtensionality.
 Record Layer Op :=
   { State: Type;
     sem: Dynamics Op State;
+    (* TODO: should these be part of Dynamics instead of Layer? *)
+    trace_proj: State -> list Event;
+    crash_preserves_trace: forall s1 s2, sem.(crash_step) s1 s2 tt -> trace_proj s1 = trace_proj s2;
+    crash_total: forall s1, exists s2, sem.(crash_step) s1 s2 tt;
     initP: State -> Prop }.
 
 Inductive InitStatus := Initialized | InitFailed.
@@ -55,9 +59,14 @@ Section Layers.
   Notation c_proc := (proc C_Op).
   Notation c_initP := c_layer.(initP).
   Notation c_sem := c_layer.(sem).
+  Notation c_trace_proj := c_layer.(trace_proj).
   Notation c_exec := c_layer.(sem).(exec).
+  Notation c_exec_partial := c_layer.(sem).(exec_partial).
   Notation c_exec_seq := c_layer.(sem).(exec_seq).
+  Notation c_exec_seq_partial := c_layer.(sem).(exec_seq_partial).
+  Notation c_rexec_seq_partial := c_layer.(sem).(rexec_seq_partial).
   Notation c_exec_recover := c_layer.(sem).(exec_recover).
+  Notation c_exec_recover_partial := c_layer.(sem).(exec_recover_partial).
   Notation c_exec_recover1 := c_layer.(sem).(exec_recover1).
   Notation c_output := c_layer.(initOutput).
 
@@ -67,7 +76,9 @@ Section Layers.
   Notation a_rec_seq := (rec_seq Op).
   Notation a_initP := a_layer.(initP).
   Notation a_sem := a_layer.(sem).
+  Notation a_trace_proj := a_layer.(trace_proj).
   Notation a_exec := a_layer.(sem).(exec).
+  Notation a_exec_partial := a_layer.(sem).(exec_partial).
   Notation a_exec_halt := a_layer.(sem).(exec_halt).
   Notation a_exec_recover := a_layer.(sem).(exec_recover).
   Notation a_exec_recover1 := a_layer.(sem).(exec_recover1).
@@ -78,6 +89,16 @@ Section Layers.
       crash_refines absr c_sem
                     (impl.(compile) p) impl.(recover)
                     (a_exec p)
+                    (a_exec_halt p;; a_sem.(crash_step)).
+
+  Definition trace_relation : relation AState CState unit :=
+    fun sa sc _ => a_trace_proj sa = c_trace_proj sc.
+
+  Definition trace_refines (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
+    forall T (p: proc Op T),
+      halt_refines absr c_sem trace_relation
+                    (impl.(compile) p) impl.(recover)
+                    (a_exec_halt p)
                     (a_exec_halt p;; a_sem.(crash_step)).
 
   (* I don't think we can so simply phrase things in terms of per-op correctness, without
@@ -101,11 +122,20 @@ Section Layers.
             (c_sem.(crash_step);; c_exec_recover impl.(recover))
             (a_sem.(crash_step)).
 
+
+  Definition recovery_refines_crash_step_trace (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
+    refines_if absr trace_relation
+            (c_sem.(crash_step);; c_exec_recover_partial impl.(recover))
+            (a_sem.(crash_step)).
+
   Record LayerRefinement :=
     { impl: LayerImpl C_Op Op;
       absr: relation AState CState unit;
       compile_ok : compile_refines impl absr;
       recovery_noop_ok : recovery_refines_crash_step impl absr;
+      recovery_noop_trace_ok : recovery_refines_crash_step_trace impl absr;
+      trace_ok : trace_refines impl absr;
+      absr_preserves_trace: absr ---> trace_relation
       (* TODO: prove implementations are well-formed *)
       (*
       init_ok : test c_initP;; c_exec impl.(init) --->
@@ -126,6 +156,7 @@ Section Layers.
   (* need to mark things opaque since [setoid_rewrite] simplifies the goal
    (and we need [setoid_rewrite] to rewrite under bind binders) *)
   Opaque exec_recover.
+
 
   Theorem compile_exec_ok : forall T (p: a_proc T),
       refines
@@ -150,6 +181,53 @@ Section Layers.
       rel_congruence.
       repeat rewrite bind_assoc.
       rew bind_left_id. eauto.
+  Qed.
+
+  Theorem compile_seq_trace_ok1 : forall (p: a_rec_seq),
+      refines_if rf.(absr) trace_relation
+             (c_exec_seq_partial (compile_seq p))
+             (a_sem.(exec_seq_partial) p).
+  Proof.
+    unfold refines_if; induction p.
+    - simpl; norm. setoid_rewrite rf.(absr_preserves_trace); reflexivity.
+    - simpl.
+      pose unfolded (rf.(compile_ok) p)
+           (fun H => red in H; unfold rexec, refines in H).
+      Split.
+      * rewrite <-bind_assoc. rewrite H. 
+        Left.
+        repeat rewrite bind_assoc.
+        rel_congruence.
+        repeat rewrite bind_assoc.
+        rew bind_left_id. eauto.
+      * Right. 
+        pose unfolded (rf.(trace_ok) p)
+             (fun H => red in H; unfold rexec, refines_if, exec_halt in H).
+        rew H1.
+  Qed.
+
+  Theorem compile_seq_trace_ok2 : forall (p: a_rec_seq),
+      refines_if rf.(absr) trace_relation
+             (c_rexec_seq_partial (compile_seq p) recover)
+             (a_sem.(exec_seq_partial) p;; a_sem.(crash_step)).
+  Proof.
+    unfold refines_if; induction p.
+    - simpl; norm. eapply rf.
+    - simpl. unfold rexec_seq_partial.
+      simpl.
+      Split;
+      pose unfolded (rf.(compile_ok) p)
+           (fun H => red in H; unfold rexec, refines in H).
+      * rewrite <-bind_assoc. rewrite H. 
+        Left.
+        repeat rewrite bind_assoc.
+        rel_congruence.
+        repeat rewrite bind_assoc.
+        rew bind_left_id. rew IHp.
+      * Right. 
+        pose unfolded (rf.(trace_ok) p)
+             (fun H => red in H; unfold rexec, refines_if, exec_halt in H).
+        rew H2.
   Qed.
 
   (* TODO: this is only for compatibility, get rid of it *)
@@ -231,6 +309,79 @@ Section Layers.
     left_assoc rew H0.
     rel_congruence.
     rew rexec_star_rec.
+  Qed.
+
+  Lemma crash_trace_relation : (a_sem.(crash_step);; trace_relation) <---> trace_relation.
+  Proof.
+    intros sa sc []; split.
+    - intros ([]&sa'&Hcrash&Hrel).
+      transitivity (trace_proj _ sa'); eauto.
+      eapply crash_preserves_trace; eauto.
+    - intros. destruct (crash_total _ sa) as (sa'&?).
+      exists tt, sa'; split; eauto. 
+      transitivity (trace_proj _ sa); eauto.
+      { symmetry. eapply crash_preserves_trace; eauto. }
+  Qed.
+
+  Lemma crash_trace_relation' :
+    (a_sem.(crash_step);; trace_relation;; pure tt) <---> (trace_relation;; pure tt).
+  Proof.
+    rewrite <-bind_assoc.
+    rewrite crash_trace_relation; reflexivity.
+  Qed.
+
+  Theorem compile_rexec_trace_ok T (p: a_proc T) (rec: a_rec_seq) :
+    refines_if rf.(absr) trace_relation
+                 (rexec_partial c_sem (compile p) (compile_rec rec))
+                 (rexec_partial a_sem p rec).
+  Proof.
+    unfold refines_if, rexec_partial.
+    pose unfolded (rf.(trace_ok) p)
+         (fun H => red in H; unfold rexec_partial, refines_if in H).
+    rew @exec_recover_partial_append.
+    Split; [Split|].
+    - left_assoc rew H0.
+      rel_congruence.
+      setoid_rewrite <-(exec_seq_partial_noop a_sem rec) at 2.
+      setoid_rewrite <-(seq_star_none).
+      rew bind_unit.
+    (* TODO: next two cases have redundancy *)
+    - pose unfolded (compile_rexec_ok p rec)
+         (fun H => red in H; unfold rexec, refines in H).
+      unfold compile_rec in H1.
+      setoid_rewrite exec_recover_append in H1.
+      pose unfolded (rf.(compile_ok) p)
+           (fun H => red in H; unfold rexec, refines in H).
+      left_assoc rew H3.
+      do 2 rel_congruence.
+      pose unfolded (rexec_seq_rec rec)
+         (fun H => red in H; unfold rexec, rexec_seq, refines in H).
+      apply simulation_seq_value in H4.
+      left_assoc rew H4.
+      rel_congruence.
+      pose unfolded (compile_seq_trace_ok2 rec)
+         (fun H => red in H; unfold rexec, rexec_seq, refines in H).
+      left_assoc rew H5.
+      rel_congruence.
+      rewrite bind_unit.
+      match goal with | [ H : unit |- _] => destruct H end.
+      left_assoc rew crash_trace_relation.
+    - pose unfolded (compile_rexec_ok p rec)
+         (fun H => red in H; unfold rexec, refines in H).
+      unfold compile_rec in H1.
+      setoid_rewrite exec_recover_append in H1.
+      pose unfolded (rf.(compile_ok) p)
+           (fun H => red in H; unfold rexec, refines in H).
+      left_assoc rew H3.
+      do 2 rel_congruence.
+      pose unfolded (rexec_seq_rec rec)
+         (fun H => red in H; unfold rexec, rexec_seq, refines in H).
+      apply simulation_seq_value in H4.
+      left_assoc rew H4.
+      rel_congruence.
+      pose unfolded (compile_seq_trace_ok1 rec)
+         (fun H => red in H; unfold rexec, rexec_seq, refines in H).
+      left_assoc rew H5.
   Qed.
 
   (*
@@ -453,6 +604,115 @@ Proof.
   left_assoc rew rf2.(crash_step_refinement).
 Qed.
 
+Lemma trace_relation_trans:
+  forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
+    (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3),
+  (trace_relation l2 l3;; trace_relation l1 l2) --->
+  trace_relation l1 l3.
+Proof.
+  intros. intros s3 s1 [] ([]&s2&?&?). etransitivity; eauto.
+Qed.
+
+Lemma compile_recovery_crash_step_trace:
+  forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
+    (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3)
+    (rf1 : LayerRefinement l1 l2) (rf2 : LayerRefinement l2 l3),
+    recovery_refines_crash_step_trace l1 l3 (layer_impl_compose rf1 rf2)
+                                (_ <- rf2.(absr); rf1.(absr)).
+Proof.
+  intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2.
+  red; unfold refines, refines_if, layer_impl_compose; simpl; norm.
+  rew @exec_recover_partial_append.
+  Split; [Split|].
+  - pose unfolded rf1.(recovery_noop_trace_ok)
+                      (fun H => unfold recovery_refines_crash_step_trace, refines_if in H).
+    rew H.
+    specialize (@crash_trace_relation' _ l1 _ l2). intros H'.
+    rew (bind_unit (l2.(crash_step)) (fun v => trace_relation l1 l2;; pure v)).
+    rew H'.
+    rew bind_unit.
+    rew absr_preserves_trace.
+    rewrite <-bind_assoc.
+    rew trace_relation_trans.
+    rewrite <-bind_assoc.
+    rewrite bind_assoc.
+    rew crash_trace_relation'.
+  - pose unfolded rf1.(recovery_noop_ok)
+                      (fun H => unfold recovery_refines_crash_step, refines in H).
+    setoid_rewrite <- bind_assoc at 2.
+    setoid_rewrite <- bind_assoc at 2.
+    setoid_rewrite bind_assoc at 2.
+    rew H.
+    setoid_rewrite <-bind_assoc at 3.
+    pose unfolded (rexec_seq_rec rf1 rf2.(recover))
+         (fun H => red in H).
+    apply simulation_seq_value in H0.
+    rew H0.
+    pose unfolded rf1.(compile_seq_trace_ok2) (fun H => unfold refines_if in H).
+    rew H1.
+    pose unfolded rf2.(recovery_noop_trace_ok)
+                      (fun H => unfold recovery_refines_crash_step_trace, refines_if in H).
+    unfold exec_recover_partial in H2.
+    left_assoc rew H2.
+    rel_congruence.
+    setoid_rewrite <-bind_assoc.
+    rew bind_unit.
+    setoid_rewrite <-bind_assoc at 2.
+    rew crash_trace_relation.
+    setoid_rewrite <-bind_assoc.
+    rew trace_relation_trans.
+    rel_congruence.
+    repeat match goal with | [ H : unit |- _] => destruct H end; reflexivity.
+  - pose unfolded rf1.(recovery_noop_ok)
+                      (fun H => unfold recovery_refines_crash_step, refines in H).
+    setoid_rewrite <- bind_assoc at 2.
+    setoid_rewrite <- bind_assoc at 2.
+    setoid_rewrite bind_assoc at 2.
+    rew H.
+    setoid_rewrite <-bind_assoc at 3.
+    pose unfolded (rexec_seq_rec rf1 rf2.(recover))
+         (fun H => red in H).
+    apply simulation_seq_value in H0.
+    rew H0.
+    pose unfolded rf1.(compile_seq_trace_ok1) (fun H => unfold refines_if in H).
+    rew H1.
+    pose unfolded rf2.(recovery_noop_trace_ok)
+                      (fun H => unfold recovery_refines_crash_step_trace, refines_if in H).
+    unfold exec_recover_partial in H2.
+    left_assoc rew H2.
+    rel_congruence.
+    setoid_rewrite <-bind_assoc.
+    rew trace_relation_trans.
+Qed.
+
+Lemma compile_trace_absr:
+  forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
+    (l2 : Layer Op2) (Op3 : Type -> Type) (l3 : Layer Op3)
+    (rf1 : LayerRefinement l1 l2) (rf2 : LayerRefinement l2 l3),
+    trace_refines l1 l3 (layer_impl_compose rf1 rf2)
+                                (_ <- rf2.(absr); rf1.(absr)).
+Proof.
+  intros Op1 l1 Op2 l2 Op3 l3 rf1 rf2 T p.
+  red. simpl.
+  split; simpl; norm; unfold refines_if; setoid_rewrite compose_compile_equiv at 1.
+  - rew bind_assoc.
+    edestruct rf1.(trace_ok) as (Ht1&_). unfold refines_if in Ht1.
+    rew Ht1.
+    edestruct rf2.(trace_ok) as (Ht2&_). unfold refines_if in Ht2.
+    left_assoc rew Ht2.
+    rel_congruence.
+    left_assoc rew trace_relation_trans.
+  - rew bind_assoc.
+    pose unfolded (rf1.(compile_rexec_trace_ok) (compile rf2 p) (rf2.(recover)))
+        (fun H => unfold refines_if, compile_rec in H).
+    rew H.
+    edestruct rf2.(trace_ok) as (_&Ht2). unfold refines_if in Ht2.
+    left_assoc rew Ht2.
+    rel_congruence.
+    rel_congruence.
+    left_assoc rew trace_relation_trans.
+Qed.
+
 (*
 Lemma compile_init_ok:
   forall (Op1 : Type -> Type) (l1 : Layer Op1) (Op2 : Type -> Type)
@@ -504,4 +764,8 @@ Proof.
             absr := rf2.(absr);; rf1.(absr) |}.
   - apply compose_compile_op.
   - apply compile_recovery_crash_step.
+  - apply compile_recovery_crash_step_trace.
+  - apply compile_trace_absr.
+  - intros s3 s1 [] ([]&s2&?&?).
+    transitivity (l2.(trace_proj) s2); eapply absr_preserves_trace; eauto.
 Qed.

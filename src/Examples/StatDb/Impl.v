@@ -30,9 +30,16 @@ Module Var.
        crash_step :=
          puts (fun _ => (0, 0)); |}.
 
+  Lemma crash_total_ok (s: State):
+    exists s', dynamics.(crash_step) s s' tt.
+  Proof. eexists; econstructor. Qed.
+
   Definition l : Layer Op :=
     {| Layer.State := State;
        sem := dynamics;
+       trace_proj := fun _ => nil;
+       crash_preserves_trace := fun _ _ _ => eq_refl;
+       crash_total := crash_total_ok;
        initP := fun s => s = (0, 0)|}.
 End Var.
 
@@ -51,9 +58,16 @@ Module DB.
        crash_step :=
          puts (fun _ => nil); |}.
 
+  Lemma crash_total_ok (s: State):
+    exists s', dynamics.(crash_step) s s' tt.
+  Proof. eexists; econstructor. Qed.
+
   Definition l : Layer Op :=
     {| Layer.State := State;
        sem := dynamics;
+       trace_proj := fun _ => nil;
+       crash_preserves_trace := fun _ _ _ => eq_refl;
+       crash_total := crash_total_ok;
        initP := fun s => s = nil |}.
 End DB.
 

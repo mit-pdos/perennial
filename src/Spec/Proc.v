@@ -9,6 +9,8 @@ Set Warnings "-undeclared-scope".
 
 Import RelationNotations.
 
+Definition Event : Type := {T: Type & T}.
+
 Section Proc.
   Variable Op : Type -> Type.
 
@@ -187,21 +189,36 @@ Section Dynamics.
     seq_star (exec_seq_partial rec;; crash_step);;
              exec_seq rec.
 
+  Definition exec_recover_partial (rec: rec_seq) : relation State State unit :=
+    seq_star (exec_seq_partial rec;; crash_step);;
+             exec_seq_partial rec.
+
   Definition exec_recover_unfold (rec: rec_seq) :
     exec_recover rec =
     (seq_star (exec_seq_partial rec;; crash_step);;
              exec_seq rec) := eq_refl.
 
+  Definition exec_recover_partial_unfold (rec: rec_seq) :
+    exec_recover_partial rec =
+    (seq_star (exec_seq_partial rec;; crash_step);;
+             exec_seq_partial rec) := eq_refl.
+
   (* recovery execution *)
   Definition rexec {T} (p: proc T) (rec: rec_seq) :=
-      exec_partial p;; crash_step;; exec_recover rec.
+    exec_partial p;; crash_step;; exec_recover rec.
 
   Definition rexec_unfold {T} (p: proc T) (rec: rec_seq) :
     rexec p rec =
     (exec_partial p;; crash_step;; exec_recover rec) := eq_refl.
 
+  Definition rexec_partial {T} (p: proc T) (rec: rec_seq) :=
+    exec_partial p;; crash_step;; exec_recover_partial rec.
+
   Definition rexec_seq (ps: rec_seq) (rec: rec_seq) :=
       exec_seq_partial ps;; crash_step;; exec_recover rec.
+
+  Definition rexec_seq_partial (ps: rec_seq) (rec: rec_seq) :=
+      exec_seq_partial ps;; crash_step;; exec_recover_partial rec.
 
   Definition rexec_seq_unfold (ps: rec_seq) (rec: rec_seq) :
     rexec_seq ps rec =

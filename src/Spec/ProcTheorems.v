@@ -22,7 +22,10 @@ Section Dynamics.
   Notation rexec_seq := sem.(rexec_seq).
   Notation exec_recover1 := sem.(exec_recover1).
   Notation exec_recover := sem.(exec_recover).
+  Notation exec_recover_partial := sem.(exec_recover_partial).
   Notation rexec := sem.(rexec).
+  Notation rexec_partial := sem.(rexec_partial).
+  Notation rexec_seq_partial := sem.(rexec_seq_partial).
 
   Hint Resolve rimpl_refl requiv_refl.
 
@@ -114,7 +117,19 @@ Section Dynamics.
     rexec p rec <---> rexec p' rec.
   Proof.
     unfold "<==>"; propositional.
-    unfold rexec. norm.
+    unfold exec_halt in H0.
+    setoid_rewrite <-bind_assoc.
+    rel_congruence.
+    rewrite exec_partial_crash_pure.
+    rewrite H0.
+    norm.
+  Qed.
+
+  Theorem rexec_partial_equiv T (p p': proc T) (rec: rec_seq) :
+    p <==> p' ->
+    rexec_partial p rec <---> rexec_partial p' rec.
+  Proof.
+    unfold "<==>"; propositional.
     unfold exec_halt in H0.
     setoid_rewrite <-bind_assoc.
     rel_congruence.
@@ -134,6 +149,10 @@ Section Dynamics.
   Global Instance rexec_respectful T:
     Proper (@exec_equiv T ==> @eq (rec_seq) ==> @requiv State State _) rexec.
   Proof. intros ?? ? ?? ->. eapply rexec_equiv; eauto. Qed.
+
+  Global Instance rexec_partial_respectful T:
+    Proper (@exec_equiv T ==> @eq (rec_seq) ==> @requiv State State _) rexec_partial.
+  Proof. intros ?? ? ?? ->. eapply rexec_partial_equiv; eauto. Qed.
 
   Theorem monad_left_id T T' (p: T' -> proc T) v :
       Bind (Ret v) p <==> p v.
@@ -265,6 +284,26 @@ Section Dynamics.
     norm.
   Qed.
 
+  Lemma exec_recover_append_helper
+        (rec1 rec1_crash rec2 rec2_crash crash : relation State State unit):
+    (_ <- seq_star ((_ <- rec1_crash; crash) + (_ <- _ <- rec1; rec2_crash; crash));
+       _ <- rec1;
+       rec2)
+      <--->
+      (_ <- seq_star (_ <- rec1_crash; crash);
+         _ <- rec1;
+         _ <- seq_star (_ <- rec2_crash; _ <- crash; _ <- seq_star (_ <- rec1_crash; crash); rec1);
+         rec2).
+  Proof.
+    intros.
+    rew denesting.
+    rel_congruence.
+    rewrite <- ?bind_assoc.
+    rel_congruence; norm.
+    rewrite seq_unit_sliding_equiv.
+    norm.
+  Qed.
+
   Theorem exec_recover_append
           `(rec1: rec_seq)
           `(rec2: rec_seq) :
@@ -273,21 +312,85 @@ Section Dynamics.
                   seq_star (rexec_seq rec2 rec1);;
                   exec_seq (rec2)).
   Proof.
-    unfold exec_recover.
     unfold exec_recover, rexec, rexec_seq; simpl; norm.
     rewrite exec_seq_partial_append.
     rewrite ?bind_dist_r.
     unfold exec_recover.
     setoid_rewrite exec_seq_append.
-    gen (exec_seq rec1) (exec_seq_partial rec1) crash_step;
-      clear rec1.
-    intros rec1 rec1_crash crash.
-    rew denesting.
-    rel_congruence.
-    rewrite <- ?bind_assoc.
-    rel_congruence; norm.
-    rewrite seq_unit_sliding_equiv.
-    norm.
+    apply exec_recover_append_helper.
+  Qed.
+
+  Theorem exec_recover_partial_append
+          `(rec1: rec_seq)
+          `(rec2: rec_seq) :
+    exec_recover_partial (rec_seq_append rec1 rec2) --->
+                 (exec_recover_partial rec1) + 
+                 (exec_recover rec1;;
+                  seq_star (rexec_seq rec2 rec1);;
+                  rexec_seq_partial rec2 rec1) +
+                 (exec_recover rec1;;
+                  seq_star (rexec_seq rec2 rec1);;
+                  exec_seq_partial (rec2)).
+  Proof.
+    unfold exec_recover, exec_recover_partial, rexec, rexec_seq, rexec_seq_partial; simpl; norm.
+    rewrite exec_seq_partial_append.
+    rewrite ?bind_dist_r.
+    setoid_rewrite exec_seq_partial_append.
+    rewrite ?bind_dist_l.
+    assert (Hcase2:
+            (exec_recover rec1;;
+            seq_star (rexec_seq rec2 rec1);;
+            rexec_seq_partial rec2 rec1) <--->
+           _ <- seq_star (_ <- exec_seq_partial rec1; crash_step);
+           _ <- seq_star
+                  (_ <- exec_seq rec1; _ <- exec_seq_partial rec2; _ <- crash_step;
+                   seq_star (_ <- exec_seq_partial rec1; crash_step));
+           _ <- exec_seq rec1;
+           _ <- exec_seq_partial rec2;
+           _ <- crash_step;
+           exec_recover_partial rec1).
+    { 
+      unfold exec_recover.
+      setoid_rewrite bind_assoc.
+      setoid_rewrite <-bind_assoc at 2.
+      setoid_rewrite <-bind_assoc at 3.
+      setoid_rewrite <-bind_assoc at 3.
+      setoid_rewrite <-(seq_unit_sliding_equiv (exec_seq rec1)).
+      norm.
+    }
+
+    assert(Hcase3:
+           (exec_recover rec1;;
+           seq_star (rexec_seq rec2 rec1);;
+           exec_seq_partial (rec2)) <--->
+           _ <- seq_star (_ <- exec_seq_partial rec1; crash_step);
+           _ <- seq_star
+                  (_ <- exec_seq rec1; _ <- exec_seq_partial rec2; _ <- crash_step;
+                   seq_star (_ <- exec_seq_partial rec1; crash_step));
+           _ <- exec_seq rec1;
+           exec_seq_partial rec2).
+    { 
+      unfold rexec_seq, exec_recover.
+      setoid_rewrite bind_assoc at 1. 
+      setoid_rewrite <-bind_assoc at 2.
+      setoid_rewrite <-bind_assoc at 2.
+      setoid_rewrite <-bind_assoc at 2.
+      setoid_rewrite <-(seq_unit_sliding_equiv (exec_seq rec1)).
+      norm.
+    }
+
+    Split.
+    - rew denesting.
+      setoid_rewrite star_expand_r at 2.
+      Split.
+      * do 2 Left. 
+      * Left. Right.
+        unfold exec_recover, rexec_seq, rexec_seq_partial in Hcase2.
+        left_assoc rew Hcase2.
+    - rew denesting.
+      Right.
+      unfold exec_recover, rexec_seq, rexec_seq_partial in Hcase3.
+      left_assoc rew Hcase3.
   Qed.
 
   (*

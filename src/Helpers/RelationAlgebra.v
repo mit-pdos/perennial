@@ -583,7 +583,7 @@ Section OutputRelations.
     - apply star_ind; t.
     - t.
   Qed.
-
+  
   Theorem seq_star1 A T (r: relation A A T) :
     r;; seq_star r ---> seq_star r.
   Proof.
@@ -698,6 +698,18 @@ Section OutputRelations.
   Proof.
     intros.
     apply bind_star_equiv_respectful; auto.
+  Qed.
+
+  Theorem star_expand_r A (r: relation A A unit) :
+    seq_star r <---> identity + (seq_star r;; r).
+  Proof.
+    apply rimpl_to_requiv.
+    - unshelve (apply star_ind; t); exact tt.
+    - apply rel_or_elim.
+      * t.
+      * rewrite star_duplicate at 2.
+        apply and_then_monotonic; eauto.
+        intros []. apply star_one.
   Qed.
 
   Ltac cong :=

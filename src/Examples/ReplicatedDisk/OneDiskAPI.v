@@ -28,7 +28,16 @@ Module D.
   Definition ODBaseDynamics : Dynamics Op State :=
     {| step := op_step; crash_step := one_disk_failure |}.
 
+  Lemma crash_total_ok (s: State):
+    exists s', ODBaseDynamics.(crash_step) s s' tt.
+  Proof. eexists; econstructor. Qed.
+
   Definition ODLayer : Layer Op :=
-    {| Layer.State := State; sem := ODBaseDynamics; initP := fun _ => True |}.
+    {| Layer.State := State;
+       sem := ODBaseDynamics;
+       trace_proj := fun _ => nil;
+       crash_preserves_trace := fun _ _ _ => eq_refl;
+       crash_total := crash_total_ok;
+       initP := fun _ => True |}.
 
 End D.
