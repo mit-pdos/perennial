@@ -55,6 +55,24 @@ Record adequate {OpT T} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T) (σ1 :
    e2 ∈ t2 → (is_Some (to_val (projT2 e2)) ∨ reducible (projT2 e2) σ2)
 }.
 
+(* Adequacy for execution with a recovery procedure *)
+Record recv_adequate {OpT T R} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T)
+       (rec: proc OpT R) (σ1 : Λ.(State)) (φ : T → Λ.(State) → Prop) (φrec: Λ.(State) → Prop) := {
+  recv_adequate_normal_result σ2 res :
+    Λ.(exec) e1 σ1 σ2 res → ∃ v, res = existT _ v ∧ φ v σ2;
+  recv_adequate_result σ2 res :
+    Λ.(rexec) e1 (rec_singleton rec) σ1 σ2 res → φrec σ2;
+  (* TODO: this does not guarantee non-stuckness during recovery because rexec_partial
+     throws away the thread pool; but it seems
+     that we prefer explicit error states rather than non-partiality anyway *)
+  (*
+  recv_adequate_not_stuck t2 σ2 e2 :
+   s = NotStuck →
+   (Λ.(exec_partial) e1 σ1 σ2 t2 ∨ Λ.(rexec_partial) e1 (rec_singleton rec) σ1 σ2 t2) →
+   e2 ∈ t2 → (is_Some (to_val (projT2 e2)) ∨ reducible (projT2 e2) σ2)
+   *)
+}.
+
 (*
 Theorem adequate_tp_safe {OpT T} {Λ: Layer OpT} (e1 : proc OpT T) t2 σ1 σ2 φ :
   adequate NotStuck e1 σ1 φ →
@@ -285,6 +303,69 @@ Proof.
 Qed.
 
 Import RelationNotations.
+
+Theorem wp_recovery_adequacy {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
+        σ1 φ φinv (φrec : Λ.(State) → Prop) :
+  (* normal execution *)
+  (∀ `{Hinv : invG Σ},
+     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
+       stateI σ1 ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜φ v σ⌝ }}
+         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
+  (* recovery *)
+  (∀ `{Hinv : invG Σ} σ1 σ1' (Hφinv: φinv σ1) (Hcrash: Λ.(crash_step) σ1 σ1' tt),
+     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
+       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, ∀ σ, stateI σ ={⊤, ∅}=∗ ⌜φrec σ⌝ }}
+         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
+  recv_adequate s e rec σ1 φ φrec.
+Proof.
+  intros Hwp_e Hwp_rec. split.
+  - intros σ2 ? Hexec. eapply wp_strong_adequacy; eauto.
+    intros Hinv.
+    iMod Hwp_e as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} {$H} !> "; auto.
+  - rewrite /rexec/exec_recover => σ2 [] Hrexec.
+    eapply rimpl_elim in Hrexec; last first.
+    { setoid_rewrite exec_seq_partial_singleton.
+      setoid_rewrite <-bind_assoc at 2.
+      setoid_rewrite seq_unit_sliding.
+      setoid_rewrite bind_assoc.
+      reflexivity.
+    }
+    destruct Hrexec as (tp&σhalt&Hpartial&Hrec).
+    (* Show that φ is preserved after halt of e *)
+    assert (Hφ: φinv σhalt).
+    { eapply wp_invariance; eauto.
+      intros Hinv.
+      iMod Hwp_e as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} !>".
+      iSplitL "H"; last by iApply "Hφ".
+      iApply (wp_mono with "H"); eauto.
+    }
+    clear Hpartial Hwp_e.
+    destruct Hrec as ([]&σhalt_rec&Hhd&Hrest).
+    (* Show that φ is preserved after crash + halt of rec *)
+    assert (Hφhalt_rec: φinv σhalt_rec).
+    {
+      clear Hrest.
+      induction Hhd as [σhalt_rec []| x y z [] [] Hhd Hstar IH]; eauto.
+      eapply IH; eauto.
+      clear IH Hstar.
+      destruct Hhd as ([]&σcrash&Hcrash&Hhalt).
+      destruct Hhalt as (tp'&?&Hpartial&[]); subst.
+      eapply wp_invariance; eauto.
+      intros Hinv.
+      iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI. iIntros "{$Hσ} !>".
+      iSplitL "H"; last by iApply "Hφ".
+      iApply (wp_mono with "H"); eauto.
+    }
+    clear Hhd Hφ.
+    destruct Hrest as ([]&σcrash&Hcrash&(tp'&?&Hexec&[])); subst.
+    edestruct (wp_strong_adequacy _ s rec σcrash (λ _ σ2, φrec σ2)) as (Had&?); eauto; last first.
+    { edestruct Had; intuition eauto. }
+    intros Hinv.
+    iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto.
+    iExists stateI. iIntros "{$Hσ} {$H} !> "; auto.
+Qed.
 
 Theorem wp_recovery_invariance {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
         σ1 σ2 t2 (φ ρ : Λ.(State) → Prop) :
