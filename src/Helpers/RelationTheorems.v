@@ -41,6 +41,16 @@ Proof.
     simpl. do 2 eexists; intuition eauto.
 Qed.
 
+Lemma bind_star_inv_rep_n A T (p: T -> relation A A T) (o: T) a1 a2 t:
+  bind_star p o a1 a2 t ->
+  exists n, bind_rep_n n p o a1 a2 t.
+Proof.
+  induction 1.
+  - exists O; firstorder.
+  - destruct IHbind_star as (n&?). exists (S n).
+    simpl. do 2 eexists; intuition eauto.
+Qed.
+
 Lemma seq_star_rep_n_ind {A1 A2 T1 T2} (p: relation A1 A2 T1) q (r: relation A1 A2 T2):
   (forall n, (p ;; seq_rep_n n q) ---> r) ->
   (p ;; seq_star q) ---> r.

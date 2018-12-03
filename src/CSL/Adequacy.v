@@ -201,7 +201,6 @@ Proof.
 Qed.
 End adequacy.
 
-(*
 Theorem wp_strong_adequacy {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ φ :
   (∀ `{Hinv : invG Σ},
      (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
@@ -214,57 +213,68 @@ Proof.
     destruct Hexec as ([|(?&e')]&?&Hpartial&Hcheck).
     { inversion Hcheck. }
     destruct e'; inversion Hcheck; subst.
-    subst. destruct t'.
+    inversion H1; subst.
+    unfold exec_partial in Hpartial.
+    apply bind_star_inv_rep_n in Hpartial as (n&Hpartial).
+    assert (v' = v).
+    { eapply Eqdep.EqdepTheory.inj_pair2 in H1; eauto. }
+    subst.
+    cut (∃ v0 : T, existT T (@of_val OpT _ v0) = existT T0 (of_val v) ∧ φ v0 σ').
+    { intros (vnew&?&?). exists vnew; split; auto. inversion H0. congruence. }
     eapply (soundness (M:=iResUR Σ) _ (S (S n))).
     iMod wsat_alloc as (Hinv) "[Hw HE]". specialize (Hwp _).
     rewrite {1}uPred_fupd_eq in Hwp; iMod (Hwp with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
     iDestruct "Hwp" as (Istate) "[HI Hwp]".
-    iApply (@wptp_result _ _ (IrisG _ _ Hinv Istate)); eauto with iFrame.
-  - destruct s; last done. intros t2 σ2 e2 _ [n ?]%rtc_nsteps ?.
+    iApply (@wptp_result _ _ _ (IrisG _ _ _ Hinv Istate)); eauto with iFrame.
+  - destruct s; last done.
+    intros t2 σ2 (T'&e2') _ Hpartial Hin.
+    unfold exec_partial in Hpartial.
+    apply bind_star_inv_rep_n in Hpartial as (n&Hpartial).
     eapply (soundness (M:=iResUR Σ) _ (S (S n))).
     iMod wsat_alloc as (Hinv) "[Hw HE]". specialize (Hwp _).
     rewrite uPred_fupd_eq in Hwp; iMod (Hwp with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
     iDestruct "Hwp" as (Istate) "[HI Hwp]".
-    iApply (@wptp_safe _ _ (IrisG _ _ Hinv Istate)); eauto with iFrame.
+    iApply (@wptp_safe _ _ _ (IrisG _ _ _ Hinv Istate)); eauto with iFrame.
 Qed.
 
-Theorem wp_adequacy Σ Λ `{invPreG Σ} s e σ φ :
+Theorem wp_adequacy {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ φ :
   (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : state Λ → iProp Σ,
-       let _ : irisG Λ Σ := IrisG _ _ Hinv stateI in
+     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
        stateI σ ∗ WP e @ s; ⊤ {{ v, ⌜φ v⌝ }})%I) →
   adequate s e σ (λ v _, φ v).
 Proof.
-  intros Hwp. apply (wp_strong_adequacy Σ _)=> Hinv.
+  intros Hwp. apply (wp_strong_adequacy _ _)=> Hinv.
   iMod Hwp as (stateI) "[Hσ H]". iExists stateI. iIntros "{$Hσ} !>".
   iApply (wp_wand with "H"). iIntros (v ? σ') "_".
   iMod (fupd_intro_mask' ⊤ ∅) as "_"; auto.
 Qed.
 
-Theorem wp_invariance Σ Λ `{invPreG Σ} s e σ1 t2 σ2 φ :
+Theorem wp_invariance {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ1 t2 σ2 φ :
   (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : state Λ → iProp Σ,
-       let _ : irisG Λ Σ := IrisG _ _ Hinv stateI in
+     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
        stateI σ1 ∗ WP e @ s; ⊤ {{ _, True }} ∗ (stateI σ2 ={⊤,∅}=∗ ⌜φ⌝))%I) →
-  rtc step ([e], σ1) (t2, σ2) →
+  Λ.(exec_partial) e σ1 σ2 t2 →
   φ.
 Proof.
-  intros Hwp [n ?]%rtc_nsteps.
+  intros Hwp Hpartial.
+  apply bind_star_inv_rep_n in Hpartial as (n&Hpartial).
   eapply (soundness (M:=iResUR Σ) _ (S (S n))).
   iMod wsat_alloc as (Hinv) "[Hw HE]". specialize (Hwp _).
   rewrite {1}uPred_fupd_eq in Hwp; iMod (Hwp with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
   iDestruct "Hwp" as (Istate) "(HIstate & Hwp & Hclose)".
-  iApply (@wptp_invariance _ _ (IrisG _ _ Hinv Istate)); eauto with iFrame.
+  iApply (@wptp_invariance _ _ _ (IrisG _ _ _ Hinv Istate)); eauto with iFrame.
 Qed.
 
 (* An equivalent version that does not require finding [fupd_intro_mask'], but
 can be confusing to use. *)
-Corollary wp_invariance' Σ Λ `{invPreG Σ} s e σ1 t2 σ2 φ :
+Corollary wp_invariance' {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ1 t2 σ2 φ :
   (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : state Λ → iProp Σ,
-       let _ : irisG Λ Σ := IrisG _ _ Hinv stateI in
+     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
        stateI σ1 ∗ WP e @ s; ⊤ {{ _, True }} ∗ (stateI σ2 -∗ ∃ E, |={⊤,E}=> ⌜φ⌝))%I) →
-  rtc step ([e], σ1) (t2, σ2) →
+  Λ.(exec_partial) e σ1 σ2 t2 →
   φ.
 Proof.
   intros Hwp. eapply wp_invariance; first done.
@@ -273,4 +283,3 @@ Proof.
   iDestruct ("Hφ" with "Hσ") as (E) ">Hφ".
   iMod (fupd_intro_mask') as "_"; last by iModIntro. solve_ndisj.
 Qed.
-*)
