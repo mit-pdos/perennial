@@ -64,7 +64,7 @@ Record recv_adequate {OpT T R} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T)
     Λ.(rexec) e1 (rec_singleton rec) σ1 σ2 res → φrec σ2;
   (* TODO: this does not guarantee non-stuckness during recovery because rexec_partial
      throws away the thread pool; but it seems
-     that we prefer explicit error states rather than non-partiality anyway *)
+     that we prefer explicit error states rather than partiality anyway *)
   (*
   recv_adequate_not_stuck t2 σ2 e2 :
    s = NotStuck →
