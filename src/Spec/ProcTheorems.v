@@ -64,6 +64,14 @@ Section Dynamics.
     - setoid_rewrite <-bind_star_expand_r. Left.
   Qed.
 
+  Lemma exec_partial_finish T (p: proc T) s1 s2 (v: T) tp:
+    exec_partial p s1 s2 (cons (existT _ _ (Ret v)) tp) ->
+    exec p s1 s2 (existT _ _ v).
+  Proof.
+    intros. do 2 eexists. split; eauto.
+    simpl. econstructor; eauto.
+  Qed.
+
   Theorem exec_halt_ret T (v: T) :
     exec_halt (Ret v) <---> pure tt.
   Proof.

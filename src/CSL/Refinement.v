@@ -20,7 +20,7 @@ Definition procT {OpT} := {T : Type & proc OpT T}.
 Canonical Structure procTC OpT := leibnizC (@procT OpT).
 Canonical Structure StateC OpT (Λ: Layer OpT) := leibnizC (State Λ).
 
-Section ghost. 
+Section ghost.
 Context {OpT: Type → Type}.
 Context {Λ: Layer OpT}.
 
@@ -45,14 +45,21 @@ Section ghost_spec.
 
   Definition tpool_mapsto {T} (j: nat) (e: proc OpT T) : iProp Σ :=
     own cfg_name (◯ ({[ j := Excl (existT _ e : procTC OpT) ]}, ε)).
-  
+
+  (* ownership of this does not mean there aren't other threads not in (fst ρ) *)
+  Definition source_cfg ρ : iProp Σ :=
+    own cfg_name (◯ (tpool_to_map (fst ρ), Some (Excl (snd ρ)))).
+
   Definition source_state (σ: State Λ) : iProp Σ :=
     own cfg_name (◯ (∅ : tpoolUR, Some (Excl σ))).
+
+  Definition source_pool_map (tp: gmap nat ({T : Type & proc OpT T})) : iProp Σ :=
+    own cfg_name (◯ (Excl <$> tp : gmap nat (exclR (procTC OpT)), ε)).
 
   Definition source_inv (tp: thread_pool OpT) (σ: State Λ) : iProp Σ :=
     (∃ tp' σ', own cfg_name (● (tpool_to_map tp', Some (Excl σ')))  ∗
                  ⌜ bind_star (exec_pool Λ) tp σ σ' tp' ⌝)%I.
-    
+
   Definition source_ctx ρ : iProp Σ :=
     inv sourceN (source_inv (fst ρ) (snd ρ)).
 
@@ -148,7 +155,7 @@ Section ghost_step.
         rewrite (proj2 (tpool_to_map_lookup_none tp i)) //=.
         apply tpool_to_map_lookup_none. rewrite lookup_ge_None_2 //= app_length //=; lia.
   Qed.
-    
+
   Lemma tpool_to_map_length tp j e :
     tpool_to_map tp !! j = Some e → j < length tp.
   Proof.
@@ -170,6 +177,20 @@ Section ghost_step.
   Proof.
     intros Hlookup%tpool_singleton_included1.
     apply tpool_to_map_lookup; rewrite Hlookup; eauto.
+  Qed.
+
+  Lemma tpool_map_included1 tp1 tp2 :
+    Excl <$> tp1 ≼ tpool_to_map tp2 → (∀ j e, tp1 !! j = Some e → tp2 !! j = Some e).
+  Proof.
+    rewrite lookup_included => Hincl j e Hin.
+    specialize (Hincl j). apply tpool_to_map_lookup.
+    rewrite (lookup_fmap _ tp1 j) Hin //= in Hincl.
+    destruct (tpool_to_map tp2 !! j) as [x|] eqn: Heq; rewrite Heq in Hincl.
+    {
+      destruct (tpool_to_map_lookup_excl tp2 j x) as (e'&Heq'); setoid_subst; eauto.
+      apply Excl_included in Hincl; setoid_subst; eauto.
+    }
+    apply option_included in Hincl as [Hfalse|(?&?&?&?&?)]; congruence.
   Qed.
 
   Lemma source_thread_update {T T'} (e': proc OpT T') tp j (e: proc OpT T)  σ :
@@ -230,6 +251,34 @@ Section ghost_step.
     by iFrame.
   Qed.
 
+  Lemma source_thread_reconcile {T} tp j e x:
+    j ⤇ e -∗ own cfg_name (● (tpool_to_map tp, x)) -∗ ⌜ tp !! j = Some (existT T e) ⌝.
+  Proof.
+    iIntros "Hj Hauth".
+    iDestruct (own_valid_2 with "Hauth Hj") as %Hval_pool.
+    apply auth_valid_discrete_2 in Hval_pool as ((Hpool&_)%prod_included&Hval').
+    apply tpool_singleton_included1, tpool_to_map_lookup in Hpool; eauto.
+  Qed.
+
+  Lemma source_pool_map_reconcile tp1 tp2 x:
+    source_pool_map tp1 -∗ own cfg_name (● (tpool_to_map tp2, x)) -∗
+                    ⌜ ∀ i e, tp1 !! i = Some e → tp2 !! i = Some e ⌝.
+  Proof.
+    iIntros "Hj Hauth".
+    iDestruct (own_valid_2 with "Hauth Hj") as %Hval_pool.
+    apply auth_valid_discrete_2 in Hval_pool as ((Hpool&_)%prod_included&Hval').
+    iPureIntro. eapply tpool_map_included1; eauto.
+  Qed.
+
+  Lemma source_state_reconcile σ σ' x:
+    source_state σ -∗ own cfg_name (● (x, Excl' σ')) -∗ ⌜ σ = σ' ⌝.
+  Proof.
+    iIntros "Hstate Hauth".
+    iDestruct (own_valid_2 with "Hauth Hstate") as %Hval_state.
+    apply auth_valid_discrete_2 in Hval_state as ((_&Hstate)%prod_included&_).
+    apply Excl_included in Hstate; setoid_subst; auto.
+  Qed.
+
   Lemma ghost_step_lifting {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) σ1 σ2 e2 efs:
     Λ.(exec_step) e1 σ1 σ2 (e2, efs) →
@@ -239,14 +288,11 @@ Section ghost_step.
   Proof.
     iIntros (Hstep ?) "(#Hctx&Hj&Hstate)". rewrite /source_ctx/source_inv.
     iInv "Hctx" as (tp' σ') ">[Hauth %]" "Hclose".
-    iDestruct (own_valid_2 with "Hauth Hj") as %Hval_pool.
-    iDestruct (own_valid_2 with "Hauth Hstate") as %Hval_state.
 
     (* Reconcile view based on authoritative element *)
-    apply auth_valid_discrete_2 in Hval_pool as ((Hpool&_)%prod_included&Hval').
-    apply tpool_singleton_included1, tpool_to_map_lookup in Hpool.
-    apply auth_valid_discrete_2 in Hval_state as ((_&Hstate)%prod_included&_).
-    apply Excl_included in Hstate; setoid_subst.
+    iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
+    iDestruct (source_state_reconcile with "Hstate Hauth") as %Heq_state.
+    setoid_subst.
 
     (* Update authoritative resources to simulate step *)
     iMod (source_thread_update (K e2) with "Hj Hauth") as "[Hj Hauth]".
@@ -275,3 +321,5 @@ Section ghost_step.
 
 End ghost_step.
 End ghost.
+
+Notation "j ⤇ e" := (tpool_mapsto j e) (at level 20) : bi_scope.
