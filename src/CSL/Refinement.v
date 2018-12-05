@@ -12,7 +12,7 @@ From iris.proofmode Require Import tactics.
 
 (* Encoding of an abstract source program as a ghost resource, in order to
    use Iris to prove refinements. This is patterned off of the encoding used in
-   iris-examples/theories/logrel examples by Timany, Krebbers, and Frumin. *)
+   iris-examples/theories/logrel examples by Timany et al. *)
 Unset Implicit Arguments.
 Set Nested Proofs Allowed.
 
@@ -113,7 +113,7 @@ Section ghost_step.
     * rewrite lookup_insert_ne //=; eauto.
   Qed.
 
-  Lemma tpool_to_map_insert tp j e :
+  Lemma tpool_to_map_insert_update tp j e :
     j < length tp →
     tpool_to_map (<[j := e]> tp) = <[j := Excl e]> (tpool_to_map tp).
   Proof.
@@ -129,6 +129,24 @@ Section ghost_step.
       * efeed pose proof (lookup_ge_None_2 tp i) as Hnone; first lia.
         rewrite (proj2 (tpool_to_map_lookup_none tp i)) //=.
         apply tpool_to_map_lookup_none. rewrite list_lookup_insert_ne //=.
+  Qed.
+
+  Lemma tpool_to_map_insert_snoc tp e :
+    tpool_to_map (tp ++ [e]) = <[length tp := Excl e]> (tpool_to_map tp).
+  Proof.
+    apply: map_eq; intros i.
+    destruct (decide (i = length tp)); subst.
+    - rewrite lookup_insert tpool_to_map_lookup.
+      rewrite lookup_app_r //= Nat.sub_diag //=.
+    - rewrite lookup_insert_ne //=.
+      destruct (decide (i < length tp)) as [Hl|Hnl].
+      * efeed pose proof (lookup_lt_is_Some_2 tp) as His; first eassumption.
+        destruct His as (e'&His).
+        rewrite (proj2 (tpool_to_map_lookup tp i e')) //=.
+        apply tpool_to_map_lookup. rewrite lookup_app_l //=.
+      * efeed pose proof (lookup_ge_None_2 tp i) as Hnone; first lia.
+        rewrite (proj2 (tpool_to_map_lookup_none tp i)) //=.
+        apply tpool_to_map_lookup_none. rewrite lookup_ge_None_2 //= app_length //=; lia.
   Qed.
     
   Lemma tpool_to_map_length tp j e :
@@ -170,8 +188,30 @@ Section ghost_step.
       { econstructor. }
     }
     iFrame.
-    rewrite tpool_to_map_insert //; last first.
+    rewrite tpool_to_map_insert_update //; last first.
     { eapply tpool_to_map_length; eauto. }
+  Qed.
+
+  Lemma source_threads_fork (efs: thread_pool OpT) tp σ :
+    own cfg_name (● (tpool_to_map tp, Excl' σ))
+      ==∗ ([∗ list] ef ∈ efs, ∃ j', j' ⤇ `(projT2 ef))
+        ∗ own cfg_name (● (tpool_to_map (tp ++ efs), Excl' σ)).
+  Proof.
+    iInduction efs as [| ef efs] "IH" forall (tp).
+    - rewrite /= app_nil_r /=; auto.
+    - iIntros "Hown".
+      iMod (own_update with "Hown") as "[Hown Hj']".
+      eapply auth_update_alloc, prod_local_update_1.
+      eapply (alloc_local_update (tpool_to_map tp) _ (length tp) (Excl ef)).
+      { apply tpool_to_map_lookup_none, lookup_ge_None_2. reflexivity. }
+      { econstructor. }
+      iEval (rewrite insert_empty) in "Hj'".
+      rewrite //= -assoc.
+      iSplitL "Hj'".
+      { iExists (length tp); destruct ef; iModIntro; eauto. }
+      replace (ef :: efs) with ([ef] ++ efs) by auto.
+      rewrite assoc. iApply "IH".
+      rewrite tpool_to_map_insert_snoc; eauto.
   Qed.
 
   Lemma source_state_update σ' tp σ1 σ2 :
@@ -195,22 +235,43 @@ Section ghost_step.
     Λ.(exec_step) e1 σ1 σ2 (e2, efs) →
     nclose sourceN ⊆ E →
     source_ctx ρ ∗ j ⤇ K e1 ∗ source_state σ1
-      ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ `(projT2 ef).
+      ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
   Proof.
     iIntros (Hstep ?) "(#Hctx&Hj&Hstate)". rewrite /source_ctx/source_inv.
     iInv "Hctx" as (tp' σ') ">[Hauth %]" "Hclose".
     iDestruct (own_valid_2 with "Hauth Hj") as %Hval_pool.
     iDestruct (own_valid_2 with "Hauth Hstate") as %Hval_state.
+
+    (* Reconcile view based on authoritative element *)
+    apply auth_valid_discrete_2 in Hval_pool as ((Hpool&_)%prod_included&Hval').
+    apply tpool_singleton_included1, tpool_to_map_lookup in Hpool.
+    apply auth_valid_discrete_2 in Hval_state as ((_&Hstate)%prod_included&_).
+    apply Excl_included in Hstate; setoid_subst.
+
+    (* Update authoritative resources to simulate step *)
     iMod (source_thread_update (K e2) with "Hj Hauth") as "[Hj Hauth]".
+    iMod (source_threads_fork efs with "Hauth") as "[Hj' Hauth]".
     iMod (source_state_update σ2 with "Hstate Hauth") as "[Hstate Hauth]".
-    (* TODO: allocate the new threads *)
+
+    (* Restore the invariant *)
     iMod ("Hclose" with "[Hauth]").
-    { iNext. iExists (<[j := (existT T2 (K e2))]>tp'), σ2.
-      iFrame. admit.
+    { iNext. iExists (<[j := (existT T2 (K e2))]>tp' ++ efs), σ2.
+      iFrame. iPureIntro. apply bind_star_expand_r.
+      right. exists tp', σ'; split; auto.
+      apply exec_pool_equiv_alt.
+      econstructor.
+      { symmetry; eapply take_drop_middle; eauto. }
+      { rewrite app_comm_cons assoc; f_equal.
+        erewrite <-take_drop_middle at 1; f_equal.
+        { apply take_insert; reflexivity. }
+        { f_equal. apply drop_insert; lia. }
+        rewrite list_lookup_insert //=.
+        apply lookup_lt_is_Some_1; eauto.
+      }
+      eapply fill_step; eauto.
     }
     iModIntro; iFrame.
-    admit.
-  Admitted.
+  Qed.
 
 End ghost_step.
 End ghost.
