@@ -51,6 +51,25 @@ Proof.
     simpl. do 2 eexists; intuition eauto.
 Qed.
 
+Lemma bind_star_rep_n_to_bind_star A T (p: T -> relation A A T) (o: T) a1 a2 t n:
+  bind_rep_n n p o a1 a2 t ->
+  bind_star p o a1 a2 t.
+Proof.
+  revert o a1 a2 t. induction n; intros o a1 a2 t.
+  - simpl. inversion 1; subst. apply bind_star_pure.
+  - simpl. intros (v&a'&?&?).
+    econstructor; eauto.
+Qed.
+
+Lemma bind_star_trans A T (p: T -> relation A A T) (o1 o2 o3: T) (a1 a2 a3: A):
+  bind_star p o1 a1 a2 o2 ->
+  bind_star p o2 a2 a3 o3 ->
+  bind_star p o1 a1 a3 o3.
+Proof.
+  intros Hleft. revert o3 a3. induction Hleft; intros ??; auto.
+  intros. econstructor; eauto.
+Qed.
+
 Lemma seq_star_rep_n_ind {A1 A2 T1 T2} (p: relation A1 A2 T1) q (r: relation A1 A2 T2):
   (forall n, (p ;; seq_rep_n n q) ---> r) ->
   (p ;; seq_star q) ---> r.

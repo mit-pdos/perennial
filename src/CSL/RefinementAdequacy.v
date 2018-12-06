@@ -15,7 +15,23 @@ Import RelationNotations.
 Definition pool_map_incl {OpT} (tp1: gmap nat (@procT OpT)) (tp2: thread_pool OpT) :=
   ∀ j e, tp1 !! j = Some e → tp2 !! j = Some e.
 
-Theorem wp_recovery_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc) `{invPreG Σ} s
+Lemma pool_map_incl_alt {OpT} tp1 (tp2: thread_pool OpT) :
+  pool_map_incl tp1 tp2 ↔ tp1 ⊆ tpool_to_map tp2.
+Proof.
+  split.
+  - intros Hincl j.
+    rewrite /option_relation.
+    specialize (Hincl j). destruct (tp1 !! j) as [p|].
+    * rewrite (proj2 (tpool_to_map_lookup tp2 j p)); eauto.
+    * destruct (tpool_to_map tp2 !! j); eauto.
+  - intros Hincl j e Hin.
+    apply tpool_to_map_lookup.
+    specialize (Hincl j). rewrite Hin //= in Hincl.
+    destruct (tpool_to_map tp2 !! j); eauto; [ congruence | contradiction ].
+Qed.
+
+Theorem wp_recovery_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
+        `{invPreG Σ} `{cfgPreG OpTa Λa Σ} s
         (ea: proc OpTa T) (ec: proc OpTc T) (rec: proc OpTc R)
         φ (absr: Λa.(State) → Λc.(State) → unit → Prop) E :
   nclose sourceN ⊆ E →
@@ -24,8 +40,8 @@ Theorem wp_recovery_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer 
       (∀ `{Hinv : invG Σ} `{Hcfg: cfgG OpTa Λa Σ},
           (|={⊤}=> ∃ stateI : State Λc → iProp Σ,
              let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
-             stateI σ1c ∗ source_ctx ([existT _ ea], σ1a)
-               ∗ WP ec @ s; ⊤ {{ v, O ⤇ of_val v
+             (source_ctx ([existT _ ea], σ1a) ∗ O ⤇ ea ∗ source_state σ1a) -∗
+              stateI σ1c ∗ WP ec @ s; ⊤ {{ v, O ⤇ of_val v
                     ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ σ2a, source_state σ2a ∗ ⌜absr σ2a σ2c tt⌝)}}
                               ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ tp σ2a, source_pool_map tp
                                          ∗ source_state σ2a ∗ ⌜φ tp σ2a σ2c⌝))%I)) →
@@ -36,8 +52,8 @@ Theorem wp_recovery_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer 
      (Hcrash: Λc.(crash_step) σ1c σ1c' tt),
      (|={⊤}=> ∃ stateI : State Λc → iProp Σ,
        let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1c' ∗ source_ctx (tp1', σ1a)
-              ∗ WP rec @ s; ⊤ {{ v, (∀ σ2c, stateI σ2c ={⊤,E}=∗
+       (source_ctx (tp1', σ1a) ∗ source_pool_map (tpool_to_map tp1') ∗ source_state σ1a) -∗
+              stateI σ1c' ∗ WP rec @ s; ⊤ {{ v, (∀ σ2c, stateI σ2c ={⊤,E}=∗
                    ∃ σ2a σ2a', source_state σ2a ∗ ⌜Λa.(crash_step) σ2a σ2a' tt ∧ absr σ2a' σ2c tt⌝)}}
                               ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ tp σ2a, source_pool_map tp
                                          ∗ source_state σ2a ∗ ⌜φ tp σ2a σ2c⌝))%I) →
@@ -45,18 +61,26 @@ Theorem wp_recovery_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer 
                 (and_then (Λa.(exec_halt) ea) (fun _ => Λa.(crash_step))).
 Proof.
   intros Hsub Hwp_e Hwp_rec.
-  assert (∀ σ1a σ1c, absr σ1a σ1c tt → recv_adequate s ec rec σ1c
+  assert (Hadeq: ∀ σ1a σ1c, absr σ1a σ1c tt → recv_adequate s ec rec σ1c
                           (λ v' σ2c', ∃ σ2a, exec Λa ea σ1a σ2a (existT _ v') ∧
                                              absr σ2a σ2c' tt)
-                          (fun _ => True)).
+                          (λ σ2c', ∃ tp2 tp2' σ2a σ3a, pool_map_incl tp2 tp2' ∧
+                                                   exec_partial Λa ea σ1a σ2a tp2' ∧
+                                                   crash_step Λa σ2a σ3a tt ∧
+                                                   absr σ3a σ2c' tt)).
   { intros.
     eapply wp_recovery_adequacy with
-        (φinv := fun σ2c => ∃ tp2 tp2' σ2a efs, pool_map_incl tp2 tp2' ∧ φ tp2 σ2a σ2c
+        (φinv := fun σ2c => ∃ tp2 tp2' σ2a, pool_map_incl tp2 tp2' ∧ φ tp2 σ2a σ2c
                                                 ∧ exec_partial Λa ea σ1a σ2a tp2'); eauto.
     - iIntros (Hinv).
       assert (Inhabited Λa.(State)).
       { eexists; eauto. }
-      iMod Hwp_e as (stateI) "[Hstate [#Hsrc [H Hφ]]]"; eauto.
+      iMod (source_cfg_init [existT _ ea] σ1a) as (cfgG) "(#Hsrc&Hpool&HstateA)".
+      iMod Hwp_e as (stateI) "Hwand"; eauto.
+      iDestruct ("Hwand" with "[Hpool HstateA]") as "[Hstate [H Hφ]]"; eauto.
+      { iFrame. iFrame "#".
+        rewrite /source_pool_map/tpool_to_map fmap_insert fmap_empty insert_empty //=.
+      }
       iExists stateI. iIntros "{$Hstate} !>".
       iSplitL "H".
       * iApply wp_wand_l; iFrame "H". iIntros (v') "[Hmapsto Hopen]".
@@ -81,15 +105,53 @@ Proof.
 
         iApply fupd_mask_weaken; first by set_solver+.
         iPureIntro. exists tp2, tp', σ'; split; eauto.
-    - admit.
+    - iIntros (Hinv).
+      assert (Inhabited Λa.(State)).
+      { eexists; eauto. }
+      intros σ2c σ2c' (tp2&tp2'&σ2a&Hincl&Hφ&Hexec_partial) Hcrash.
+      iMod (source_cfg_init tp2' σ2a) as (cfgG) "(#Hsrc&Hpool&HstateA)".
+      iMod Hwp_rec as (stateI) "Hwand"; eauto.
+      iDestruct ("Hwand" with "[$]") as "[Hstate [H Hφ]]"; eauto.
+      iExists stateI. iIntros "{$Hstate} !>".
+      iSplitL "H".
+      * iApply wp_wand_l; iFrame "H". iIntros (v) "Hopen".
+        iIntros (σ3c) "Hstate".
+        iMod ("Hopen" with "Hstate") as (σ2a' σ3a) "(Hstate&%)".
+        iInv "Hsrc" as (tp' σ') ">[Hauth Hp]" "_".
+        iDestruct "Hp" as %Hp. rewrite //= in Hp.
+        iDestruct (source_state_reconcile with "Hstate Hauth") as %Hstate; subst.
+
+        iApply fupd_mask_weaken; first by set_solver+.
+        iPureIntro. exists (tpool_to_map tp'), tp', σ', σ3a; split_and!; intuition eauto.
+        { apply pool_map_incl_alt; reflexivity. }
+        { eapply bind_star_trans; eauto. }
+      * iIntros (σ3c) "Hstate".
+        iMod ("Hφ" with "Hstate") as (tp3 σ3a) "(Hpool&Hstate&%)".
+        iInv "Hsrc" as (tp' σ') ">[Hauth Hp]" "_".
+        iDestruct "Hp" as %Hp. rewrite //= in Hp.
+        iDestruct (source_state_reconcile with "Hstate Hauth") as %Hstate; subst.
+        iDestruct (source_pool_map_reconcile with "Hpool Hauth") as %Hpool; subst.
+
+        iApply fupd_mask_weaken; first by set_solver+.
+        iPureIntro. exists tp3, tp', σ'; split_and!; intuition eauto.
+        { eapply bind_star_trans; eauto. }
   }
   split.
   - rewrite /refines.
     intros σ1a σ2c (T'&v) ([]&σ1c&Habsr&Hexec).
-    edestruct H0; eauto.
+    edestruct Hadeq; eauto.
     edestruct (recv_adequate_normal_result) as (v'&Heq_val&σ2a&HexecA&Habsr'); eauto.
     do 3 eexists; eauto.
     do 3 eexists; eauto.
     econstructor; eauto.
-  -
-Abort.
+  - rewrite /refines.
+    intros σ1a σ2c [] ([]&σ1c&Habsr&Hexec).
+    edestruct Hadeq; eauto.
+    edestruct (recv_adequate_result) as (v'&?&σ2a&?&?&HexecA&HcrashA&Habsr'); eauto.
+    do 3 eexists; eauto.
+    do 3 eexists; eauto.
+    * unshelve (do 3 eexists; eauto); try exact tt.
+      econstructor; eauto.
+    * unshelve (do 3 eexists; eauto); try exact tt.
+      econstructor; eauto.
+Qed.
