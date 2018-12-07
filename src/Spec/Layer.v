@@ -62,6 +62,7 @@ Section Layers.
   Notation c_trace_proj := c_layer.(trace_proj).
   Notation c_exec := c_layer.(sem).(exec).
   Notation c_exec_partial := c_layer.(sem).(exec_partial).
+  Notation c_rexec_partial := c_layer.(sem).(rexec_partial).
   Notation c_exec_seq := c_layer.(sem).(exec_seq).
   Notation c_exec_seq_partial := c_layer.(sem).(exec_seq_partial).
   Notation c_rexec_seq_partial := c_layer.(sem).(rexec_seq_partial).
@@ -122,7 +123,6 @@ Section Layers.
             (c_sem.(crash_step);; c_exec_recover impl.(recover))
             (a_sem.(crash_step)).
 
-
   Definition recovery_refines_crash_step_trace (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
     refines_if absr trace_relation
             (c_sem.(crash_step);; c_exec_recover_partial impl.(recover))
@@ -174,7 +174,7 @@ Section Layers.
     - simpl.
       pose unfolded (rf.(compile_ok) p)
            (fun H => red in H; unfold rexec, refines in H).
-      rewrite <-bind_assoc. rewrite H. 
+      rewrite <-bind_assoc. rewrite H.
       repeat rewrite bind_assoc.
       rel_congruence.
       repeat rewrite bind_assoc.
@@ -192,13 +192,13 @@ Section Layers.
       pose unfolded (rf.(compile_ok) p)
            (fun H => red in H; unfold rexec, refines in H).
       Split.
-      * rewrite <-bind_assoc. rewrite H. 
+      * rewrite <-bind_assoc. rewrite H.
         Left.
         repeat rewrite bind_assoc.
         rel_congruence.
         repeat rewrite bind_assoc.
         rew bind_left_id. eauto.
-      * Right. 
+      * Right.
         pose unfolded (rf.(trace_ok) p)
              (fun H => red in H; unfold rexec, refines_if, exec_halt in H).
         rew H1.
@@ -244,13 +244,13 @@ Section Layers.
       Split;
       pose unfolded (rf.(compile_ok) p)
            (fun H => red in H; unfold rexec, refines in H).
-      * rewrite <-bind_assoc. rewrite H. 
+      * rewrite <-bind_assoc. rewrite H.
         Left.
         repeat rewrite bind_assoc.
         rel_congruence.
         repeat rewrite bind_assoc.
         rew bind_left_id. rew IHp.
-      * Right. 
+      * Right.
         pose unfolded (rf.(trace_ok) p)
              (fun H => red in H; unfold rexec, refines_if, exec_halt in H).
         rew H2.
@@ -276,7 +276,7 @@ Section Layers.
       Split.
       * pose unfolded (rf.(compile_ok) p)
            (fun H => red in H; unfold rexec, refines in H).
-        rewrite <-bind_assoc. rewrite H. 
+        rewrite <-bind_assoc. rewrite H.
         Left.
         repeat rewrite bind_assoc.
         rel_congruence.
@@ -344,7 +344,7 @@ Section Layers.
       transitivity (trace_proj _ sa'); eauto.
       eapply crash_preserves_trace; eauto.
     - intros. destruct (crash_total _ sa) as (sa'&?).
-      exists tt, sa'; split; eauto. 
+      exists tt, sa'; split; eauto.
       transitivity (trace_proj _ sa); eauto.
       { symmetry. eapply crash_preserves_trace; eauto. }
   Qed.
@@ -354,6 +354,39 @@ Section Layers.
   Proof.
     rewrite <-bind_assoc.
     rewrite crash_trace_relation; reflexivity.
+  Qed.
+
+  (* Under the assumption that crash steps preserve traces, the first conjunct of
+     halt_refines is redundant for trace relation *)
+  Lemma halt_refines_trace_relation_alt {T} absr (pc: c_proc T) (p: a_proc T) rec :
+    refines_if absr trace_relation (c_rexec_partial pc rec)
+                    (a_exec_halt p;; a_sem.(crash_step)) ->
+    halt_refines absr c_sem trace_relation pc rec
+                 (a_exec_halt p)
+                 (a_exec_halt p;; a_sem.(crash_step)).
+  Proof.
+    unfold halt_refines, refines_if; intros Href; split; auto.
+    unfold rexec_partial in Href.
+    rew<- crash_trace_relation.
+    setoid_rewrite bind_assoc in Href.
+    setoid_rewrite <-exec_recover_partial_noop in Href.
+    setoid_rewrite bind_unit' in Href.
+    unfold a_exec_halt in Href.
+    setoid_rewrite bind_assoc in Href.
+    setoid_rewrite bind_left_id in Href.
+    setoid_rewrite crash_trace_relation'.
+    setoid_rewrite crash_trace_relation' in Href.
+    setoid_rewrite bind_right_id_unit in Href.
+    setoid_rewrite bind_right_id_unit.
+    intros sA sC' [] ([]&sC&Habsr&Hexec_halt).
+    destruct Hexec_halt as (?&?&?&[]); subst.
+    edestruct (crash_total _ sC') as (sC''&Hcrash).
+    edestruct (Href sA sC'') as (sA'&?&?&Htrace).
+    { do 3 (do 3 eexists; eauto). }
+    do 3 eexists; eauto.
+    unfold trace_relation.
+    transitivity (c_trace_proj sC''); eauto.
+    symmetry; apply crash_preserves_trace; eauto.
   Qed.
 
   Theorem compile_rexec_trace_ok T (p: a_proc T) (rec: a_rec_seq) :

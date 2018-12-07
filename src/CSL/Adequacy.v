@@ -368,19 +368,19 @@ Proof.
 Qed.
 
 Theorem wp_recovery_invariance {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
-        σ1 σ2 t2 (φ ρ : Λ.(State) → Prop) :
+        σ1 σ2 t2 (φinv ρ : Λ.(State) → Prop) :
   (* φ is an invariant of normal execution *)
   (∀ `{Hinv : invG Σ},
      (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1 ∗ WP e @ s; ⊤ {{ _, True }} ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φ σ2'⌝))%I) →
+       stateI σ1 ∗ WP e @ s; ⊤ {{ _, True }} ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
   (* φ is an invariant of recovery execution *)
-  (∀ `{Hinv : invG Σ} σ1 σ1' (Hφ: φ σ1) (Hcrash: Λ.(crash_step) σ1 σ1' tt),
+  (∀ `{Hinv : invG Σ} σ1 σ1' (Hφ: φinv σ1) (Hcrash: Λ.(crash_step) σ1 σ1' tt),
      (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, True }} ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φ σ2'⌝))%I) →
-  (∀ σ, φ σ → ρ σ) →
-  (∀ σ1 σ2, φ σ1 → Λ.(crash_step) σ1 σ2 tt → ρ σ2) →
+       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, True }} ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
+  (∀ σ, φinv σ → ρ σ) →
+  (∀ σ1 σ2, φinv σ1 → Λ.(crash_step) σ1 σ2 tt → ρ σ2) →
   Λ.(rexec_partial) e (rec_singleton rec) σ1 σ2 t2 →
   ρ σ2.
 Proof.
@@ -388,7 +388,7 @@ Proof.
   unfold rexec_partial, exec_recover_partial in Hpartial.
   destruct Hpartial as (tp&σhalt&Hpartial&Hrec).
   (* Show that φ is preserved after halt of e *)
-  assert (Hφ: φ σhalt).
+  assert (Hφ: φinv σhalt).
   { eapply wp_invariance; eauto.
     intros Hinv.
     iMod Hwp_e as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} {$H} !> Hσ".
@@ -403,9 +403,9 @@ Proof.
   destruct Hrec as ([]&σhalt_rec&Hhd&Hrest).
   (* Show that φ is preserved after crash + halt of rec *)
   assert (Hφ_halt: ∀ σhalt σhalt_rec,
-             φ σhalt ->
+             φinv σhalt ->
              (_ <- Λ.(crash_step); exec_halt Λ rec) σhalt σhalt_rec () ->
-             φ σhalt_rec).
+             φinv σhalt_rec).
   {
     intros ??? ([]&σcrash&Hcrash&Hhalt).
     destruct Hhalt as (tp'&?&Hpartial&[]); subst.
@@ -414,7 +414,7 @@ Proof.
     iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI. iIntros "{$Hσ} {$H} !> Hσ".
       by iApply "Hφ".
   }
-  assert (Hrec: φ σhalt_rec) by eauto.
+  assert (Hrec: φinv σhalt_rec) by eauto.
   clear Hwp_rec. clear Hhd.
   revert σhalt Hrec Hφ.
   induction Hrest as [σhalt_rec []| x y z [] []]; eauto.

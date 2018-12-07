@@ -276,6 +276,7 @@ Section Dynamics.
       apply rel_or_symmetric.
   Qed.
 
+
   (* TODO: this is probably unneeded *)
   Theorem exec_recover_snoc T `(p: proc T) `(rec: rec_seq) :
     exec_recover (rec_seq_snoc rec p) <--->
@@ -408,6 +409,14 @@ Section Dynamics.
       Right.
       unfold exec_recover, rexec_seq, rexec_seq_partial in Hcase3.
       left_assoc rew Hcase3.
+  Qed.
+
+  Theorem exec_recover_partial_noop (p: rec_seq) :
+    pure tt ---> exec_recover_partial p.
+  Proof.
+    unfold exec_recover_partial.
+    rew<- seq_star_none.
+    apply exec_seq_partial_noop.
   Qed.
 
   (*

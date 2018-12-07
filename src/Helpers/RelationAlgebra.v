@@ -412,14 +412,14 @@ Section OutputRelations.
     t.
   Qed.
 
-  Theorem bind_right_id A T (r: relation A A T) :
-    and_then r (@pure A T) <---> r.
+  Theorem bind_right_id A B T (r: relation A B T) :
+    and_then r (@pure B T) <---> r.
   Proof.
     t.
   Qed.
 
   (* pure tt is also the right identity for relations at output type T *)
-  Theorem bind_right_id_unit A (r: relation A A unit) :
+  Theorem bind_right_id_unit A B (r: relation A B unit) :
     and_then r (fun _ => pure tt) <---> r.
   Proof.
     t.
@@ -827,6 +827,12 @@ Section OutputRelations.
 
   Theorem bind_unit A B C T (p: relation A B unit) (q: unit -> relation B C T) :
     and_then p q <---> p;; q tt.
+  Proof.
+    t.
+  Qed.
+
+  Theorem bind_unit' B C T (q: unit -> relation B C T) v:
+    q v <---> q tt.
   Proof.
     t.
   Qed.
