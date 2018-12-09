@@ -1,6 +1,8 @@
 From RecoveryRefinement Require Import Lib.
+From stdpp Require Import gmap nmap.
 Require Export Maybe.
 Require Export Disk.
+Require Export MVar.
 
 Import RelationNotations.
 
@@ -24,32 +26,43 @@ Module TwoDisk.
 
   Arguments Failed {T}.
 
-  Inductive State :=
+  Inductive DiskState :=
   | BothDisks (d_0:disk) (d_1:disk)
   | OnlyDisk0 (d_0:disk)
   | OnlyDisk1 (d_1:disk).
 
-  Definition disk0 (state:State) : option disk :=
+  (* TODO: might be better to use a finite dom. map type that lets values
+     depend on a type index in the keys *)
+  Definition MemState := gmap {T : Type & mvar T} {T : Type & option T}.
+
+  (* These will be extracted to an immutable array, but we model them as a list *)
+  Definition LockArray := list (mvar unit).
+
+  Record State := { disks : DiskState;
+                    mem : MemState;
+                    locks : LockArray;  }.
+
+  Definition disk0 (state:DiskState) : option disk :=
     match state with
     | BothDisks d_0 _ => Some d_0
     | OnlyDisk0 d => Some d
     | OnlyDisk1 _ => None
     end.
 
-  Definition disk1 (state:State) : option disk :=
+  Definition disk1 (state:DiskState) : option disk :=
     match state with
     | BothDisks _ d_1 => Some d_1
     | OnlyDisk0 _ => None
     | OnlyDisk1 d => Some d
     end.
 
-  Definition get_disk (i:diskId) (state:State) : option disk :=
+  Definition get_disk' (i:diskId) (state:DiskState) : option disk :=
     match i with
     | d0 => disk0 state
     | d1 => disk1 state
     end.
 
-  Definition set_disk (i:diskId) (state:State) (d:disk) : State :=
+  Definition set_disk' (i:diskId) (state:DiskState) (d:disk) : DiskState :=
     match i with
     | d0 => match state with
             | BothDisks _ d_1 => BothDisks d d_1
@@ -63,10 +76,22 @@ Module TwoDisk.
             end
     end.
 
+  Definition get_disk (i: diskId) (state:State) : option disk :=
+    get_disk' i (disks state).
+
+  Definition set_disk (i: diskId) (state:State) (d:disk) : State :=
+    {| disks := set_disk' i (disks state) d; mem := mem state; locks := locks state |}.
+
   Inductive Op : Type -> Type :=
   | op_read (i : diskId) (a : addr) : Op (DiskResult block)
   | op_write (i : diskId) (a : addr) (b : block) : Op (DiskResult unit)
-  | op_size (i : diskId) : Op (DiskResult nat).
+  | op_size (i : diskId) : Op (DiskResult nat)
+  | op_get_array (a : nat) : Op (mvar unit)
+  | op_put_mvar {T : Type} (m: mvar T) (v: T) : Op unit
+  | op_take_mvar {T : Type} (m: mvar T) : Op T.
+
+  Definition set_mem (state:State) (new_mem: MemState) : State :=
+    {| disks := disks state; mem := new_mem; locks := locks state |}.
 
   Inductive op_step : OpSemantics Op State :=
   | step_read : forall a i r state,
@@ -90,14 +115,31 @@ Module TwoDisk.
       | Some d => r = Working (length d)
       | None => r = Failed
       end ->
-      op_step (op_size i) state state r.
+      op_step (op_size i) state state r
+  (* TODO: need to represent looping by not being able to take a step,
+     so need explicit errors / identifying good states *)
+  | step_put_mvar : forall {T T': Type} (m: mvar T) (t: T) state,
+      mem state !! (existT _ m) = Some (existT T' None) →
+      op_step (op_put_mvar m t) state
+              (set_mem state (<[existT _ m := existT _ (Some t)]>(mem state)))
+              tt
+  | step_take_mvar : forall {T: Type} (m: mvar T) (t: T) state,
+      mem state !! (existT T m) = Some (existT T (Some t)) →
+      op_step (op_take_mvar m) state
+              (set_mem state (<[existT _ m := existT T None]>(mem state)))
+              t.
 
-  Inductive bg_failure : State -> State -> unit -> Prop :=
-  | step_id : forall (state: State), bg_failure state state tt
+  Inductive bg_failure' : DiskState -> DiskState -> unit -> Prop :=
+  | step_id : forall (state: DiskState), bg_failure' state state tt
   | step_fail0 : forall d_0 d_1,
-      bg_failure (BothDisks d_0 d_1) (OnlyDisk1 d_1) tt
+      bg_failure' (BothDisks d_0 d_1) (OnlyDisk1 d_1) tt
   | step_fail1 : forall d_0 d_1,
-      bg_failure (BothDisks d_0 d_1) (OnlyDisk0 d_0) tt.
+      bg_failure' (BothDisks d_0 d_1) (OnlyDisk0 d_0) tt.
+
+  Definition bg_failure (state state': State) (u: unit) : Prop :=
+    bg_failure' (disks state) (disks state') u /\
+    mem state = mem state' /\
+    locks state = locks state'.
 
   Definition pre_step {opT State}
              (bg_step: State -> State -> unit -> Prop)
@@ -109,14 +151,18 @@ Module TwoDisk.
 
   Definition combined_step := pre_step bg_failure (@op_step).
 
+  (* TODO need to init memory so that lock array is valid *)
   Definition TDBaseDynamics : Dynamics Op State :=
-    {| step := op_step; crash_step := RelationAlgebra.identity |}.
+    {| step := op_step; crash_step := fun s1 s2 tt => disks s1 = disks s2 ∧
+                                                      mem s2 = ∅ |}.
 
   Definition td_init (s: State) :=
     exists d_0' d_1',
-      disk0 s ?|= eq d_0' /\
-      disk1 s ?|= eq d_1'.
+      disk0 (disks s) ?|= eq d_0' /\
+      disk1 (disks s) ?|= eq d_1' /\
+      mem s = ∅.
 
+  (*
   Lemma td_init_alt s: td_init s <-> True.
   Proof.
     split; auto; intros.
@@ -125,10 +171,11 @@ Module TwoDisk.
     - exists d, d. firstorder.
     - exists d, d. firstorder.
   Qed.
+   *)
 
   Lemma crash_total_ok (s: State):
     exists s', TDBaseDynamics.(crash_step) s s' tt.
-  Proof. eexists; econstructor. Qed.
+  Proof. exists {| disks := disks s; mem := ∅; locks := locks s|}. econstructor; eauto. Qed.
 
   Definition TDLayer : Layer Op :=
     {| Layer.State := State;

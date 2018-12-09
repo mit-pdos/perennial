@@ -1,3 +1,4 @@
+(*
 From RecoveryRefinement Require Import Lib.
 
 Require Import OneDiskAPI.
@@ -328,3 +329,4 @@ Module ReplicatedDisk.
    *)
 
 End ReplicatedDisk.
+*)
