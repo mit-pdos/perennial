@@ -38,9 +38,9 @@ Module TwoDisk.
   (* These will be extracted to an immutable array, but we model them as a list *)
   Definition LockArray := list (mvar unit).
 
-  Record State := { disks : DiskState;
-                    mem : MemState;
-                    locks : LockArray;  }.
+  Record ValidState := { disks : DiskState; mem : MemState; locks : LockArray;  }.
+
+  Inductive State := Valid (vs: ValidState) | Error.
 
   Definition disk0 (state:DiskState) : option disk :=
     match state with
@@ -77,10 +77,18 @@ Module TwoDisk.
     end.
 
   Definition get_disk (i: diskId) (state:State) : option disk :=
-    get_disk' i (disks state).
+    match state with
+      | Valid vs => get_disk' i (disks vs)
+      | _ => None
+    end.
 
   Definition set_disk (i: diskId) (state:State) (d:disk) : State :=
-    {| disks := set_disk' i (disks state) d; mem := mem state; locks := locks state |}.
+    match state with
+    | Valid state => Valid {| disks := set_disk' i (disks state) d;
+                              mem := mem state;
+                              locks := locks state |}
+    | _ => Error
+    end.
 
   Inductive Op : Type -> Type :=
   | op_read (i : diskId) (a : addr) : Op (DiskResult block)
@@ -88,11 +96,16 @@ Module TwoDisk.
   | op_size (i : diskId) : Op (DiskResult nat)
   | op_get_array (a : nat) : Op (mvar unit)
   | op_put_mvar {T : Type} (m: mvar T) (v: T) : Op unit
-  | op_take_mvar {T : Type} (m: mvar T) : Op T.
+  | op_take_mvar {T : Type} (m: mvar T) : Op T
+  | op_new_mvar {T : Type} (v: T) : Op (mvar T).
 
   Definition set_mem (state:State) (new_mem: MemState) : State :=
-    {| disks := disks state; mem := new_mem; locks := locks state |}.
+    match state with
+    | Valid state => Valid {| disks := disks state; mem := new_mem; locks := locks state |}
+    | _ => Error
+    end.
 
+  Print Instances Lookup.
   Inductive op_step : OpSemantics Op State :=
   | step_read : forall a i r state,
       match get_disk i state with
@@ -118,16 +131,32 @@ Module TwoDisk.
       op_step (op_size i) state state r
   (* TODO: need to represent looping by not being able to take a step,
      so need explicit errors / identifying good states *)
+  | step_new_mvar : forall {T: Type} (m: mvar T) (t: T) (state: ValidState),
+      (* for some reason type class inference fails if the !! notation is used *)
+      gmap_lookup (existT T m) (mem state) = None →
+      op_step (op_new_mvar t) (Valid state)
+              (set_mem (Valid state) (<[existT T m := existT T (Some t)]>(mem state)))
+              m
   | step_put_mvar : forall {T T': Type} (m: mvar T) (t: T) state,
       mem state !! (existT _ m) = Some (existT T' None) →
-      op_step (op_put_mvar m t) state
-              (set_mem state (<[existT _ m := existT _ (Some t)]>(mem state)))
+      op_step (op_put_mvar m t) (Valid state)
+              (set_mem (Valid state) (<[existT _ m := existT _ (Some t)]>(mem state)))
+              tt
+  | step_put_mvar_err : forall {T T': Type} (m: mvar T) (t: T) state,
+      gmap_lookup (existT T m) (mem state) = None → 
+      op_step (op_put_mvar m t) (Valid state)
+              Error
               tt
   | step_take_mvar : forall {T: Type} (m: mvar T) (t: T) state,
       mem state !! (existT T m) = Some (existT T (Some t)) →
-      op_step (op_take_mvar m) state
-              (set_mem state (<[existT _ m := existT T None]>(mem state)))
-              t.
+      op_step (op_take_mvar m) (Valid state)
+              (set_mem (Valid state) (<[existT _ m := existT T None]>(mem state)))
+              t
+  | step_take_mvar_err : forall {T T': Type} (m: mvar T) (t: T) state,
+      gmap_lookup (existT T m) (mem state) = None → 
+      op_step (op_take_mvar m) (Valid state)
+              Error
+              tt.
 
   Inductive bg_failure' : DiskState -> DiskState -> unit -> Prop :=
   | step_id : forall (state: DiskState), bg_failure' state state tt

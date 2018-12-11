@@ -14,14 +14,25 @@ Section OutputRelations.
 
   (* an output relation: a heterogeneous relation from [A] to [B] that also
   emits some value of type [T] *)
-  Definition relation A B T := A -> B -> T -> Prop.
+  Inductive Return (B T: Type) : Type :=
+  | Valid (b: B) (t: T)
+  | Err.
+
+  Arguments Valid {_ _}.
+  Arguments Err {_ _}.
+    
+  Definition relation A B T := A -> Return B T -> Prop.
 
   (** Several operations on relations *)
   Definition and_then {A B C} {T1 T2}
              (r1: relation A B T1)
              (r2: T1 -> relation B C T2) :
     relation A C T2 :=
-    fun x z o2 => exists o1 y, r1 x y o1 /\ (r2 o1) y z o2.
+    fun x mz =>
+      match mz with
+      | Valid z o2 => exists o1 y, r1 x (Valid y o1) /\ (r2 o1) y (Valid z o2)
+      | Err => r1 x Err \/ exists o1 y, r1 x (Valid y o1) /\ (r2 o1) y Err
+      end.
 
   Notation "p1 ;; p2" := (and_then p1 (fun _ => p2))
                            (at level 55, p2 at next level, right associativity).
@@ -29,83 +40,111 @@ Section OutputRelations.
                                (at level 54, right associativity).
 
   Definition pure A T (o0:T) : relation A A T :=
-    fun x y o => x = y /\ o = o0.
+    fun x y => Valid x o0 = y.
 
   Definition identity {A} {T} : relation A A T :=
-    fun x y o => x = y.
+    fun x y => exists t, Valid x t = y.
 
   Definition any {A B} {T} : relation A B T :=
-    fun x y o => True.
+    fun x y => True.
 
   Definition none {A B} {T} : relation A B T :=
-    fun x y o => False.
+    fun x y => False.
 
   Definition reads {A} {T} (f: A -> T) : relation A A T :=
-    fun x y o => o = f x /\ x = y.
+    fun x y => Valid x (f x) = y.
 
   Definition puts {A} (f: A -> A) : relation A A unit :=
-    fun x y o => y = f x.
+    fun x y => y = Valid (f x) tt.
 
   Definition predicate A := A -> Prop.
+  (* TODO: should failure of a test be error? *)
   Definition test {A} (P: predicate A) : relation A A unit :=
-    fun x y _ => P x /\ x = y.
+    fun x y => P x /\ Valid x tt = y.
 
   Definition rel_or A B T (r1 r2: relation A B T) : relation A B T :=
-    fun x y o => r1 x y o \/ r2 x y o.
+    fun x y => r1 x y \/ r2 x y.
+  (*
+  Definition rel_or A B T (r1 r2: relation A B T) : relation A B T :=
+    fun x y =>
+      match y with
+      | Valid b o => (r1 x (Valid b o) /\ ~ (r2 x Err)) \/
+                     (r2 x (Valid b o) /\ ~ (r1 x Err))
+      | Err => r1 x Err \/ r2 x Err
+      end.
+   *)
 
   Infix "+" := rel_or.
 
   Inductive seq_star A `(r: relation A A T) : relation A A T :=
   | seq_star_refl : forall x o,
-      seq_star r x x o
-  | seq_star_one_more : forall x y z o1 o2,
-      r x y o1 ->
-      seq_star r y z o2 ->
+      seq_star r x (Valid x o)
+  | seq_star_one_more_valid : forall x y z o1,
+      r x (Valid y o1) ->
+      seq_star r y z ->
       (* TODO: rewrite to return the value from the last iteration *)
-      seq_star r x z o2
+      seq_star r x z
+  | seq_star_one_more_err : forall x,
+      r x Err ->
+      seq_star r x Err
   .
 
   (* at-least-once iteration *)
   Inductive seq_plus A `(r: relation A A T) : relation A A T :=
-  | seq_plus_once : forall x y o,
-      r x y o ->
-      seq_plus r x y o
-  | seq_plus_one_more : forall x y z o1 o2,
-      r x y o1 ->
-      seq_plus r y z o2 ->
-      seq_plus r x z o2.
+  | seq_plus_once : forall x y,
+      r x y ->
+      seq_plus r x y
+  | seq_plus_one_more_valid : forall x y z o1,
+      r x (Valid y o1) ->
+      seq_plus r y z ->
+      seq_plus r x z.
 
   Inductive bind_star A `(r: T -> relation A A T) : T -> relation A A T :=
   | bind_star_pure : forall (o:T) x,
-      bind_star r o x x o
-  | bind_star_one_more : forall (o1:T) x y z o2 o3,
-      r o1 x y o2 ->
-      bind_star r o2 y z o3 ->
-      bind_star r o1 x z o3
+      bind_star r o x (Valid x o)
+  | bind_star_one_more_valid : forall (o1:T) x y z o2,
+      r o1 x (Valid y o2) ->
+      bind_star r o2 y z ->
+      bind_star r o1 x z
+  | bind_star_one_more_err : forall (o1:T) x,
+      r o1 x Err ->
+      bind_star r o1 x Err
   .
 
   Inductive bind_star_r A `(r: T -> relation A A T) : T -> relation A A T :=
   | bind_star_r_pure : forall (o:T) x,
-      bind_star_r r o x x o
-  | bind_star_r_one_more : forall (o1:T) x y z o2 o3,
-      bind_star_r r o1 x y o2 ->
-      r o2 y z o3 ->
-      bind_star_r r o1 x z o3
+      bind_star_r r o x (Valid x o)
+  | bind_star_r_one_more_valid : forall (o1:T) x y z o2,
+      bind_star_r r o1 x (Valid y o2) ->
+      r o2 y z ->
+      bind_star_r r o1 x z
   .
 
   (** Notions of equivalence and implication *)
 
   Definition rimpl {A B} {T} (r1 r2: relation A B T) :=
-    forall x y o, r1 x y o -> r2 x y o.
+    forall x y, r1 x y -> r2 x Err \/ r2 x y.
 
-  Global Instance rimpl_preorder T : PreOrder (rimpl (A:=A) (B:=B) (T:=T)) :=
-    ltac:(firstorder).
+  Global Instance rimpl_preorder T : PreOrder (rimpl (A:=A) (B:=B) (T:=T)).
+  split.
+  - intros x y.  firstorder.
+  - intros x y z H1 H2 ? ? ?.
+    destruct (H1 x0 y0); intuition.
+    destruct (H2 x0 Err); intuition.
+  Qed.
 
   Definition requiv {A B} {T} (r1 r2: relation A B T) :=
-    forall x y o, r1 x y o <-> r2 x y o.
+    rimpl r1 r2 /\ rimpl r2 r1.
 
-  Global Instance requiv_equivalence : Equivalence (requiv (A:=A) (B:=B) (T:=T)) :=
-    RelInstance.
+  Global Instance requiv_equivalence : Equivalence (requiv (A:=A) (B:=B) (T:=T)).
+  Proof.
+    split.
+    - intros ?; split; reflexivity.
+    - intros ?? (?&?); split; eauto.
+    - intros ??? (?&?) (?&?); split.
+      * etransitivity; eauto.
+      * etransitivity; eauto.
+  Qed.
 
   Infix "--->" := rimpl (at level 60, no associativity).
   Infix "<--->" := requiv (at level 60, no associativity).
@@ -115,14 +154,17 @@ Section OutputRelations.
 
   Global Instance rimpl_proper_basics_flip A B T (r: relation A B T) :
     Proper
-      (Basics.flip rimpl ==> Basics.flip Basics.impl) (rimpl r) :=
-    ltac:(firstorder).
+      (Basics.flip rimpl ==> Basics.flip Basics.impl) (rimpl r).
+  Proof. 
+    unfold Basics.flip, Basics.impl.
+    intros ?? ??. etransitivity; eauto.
+  Qed.
 
-  Lemma rimpl_elim A B T (r1 r2: relation A B T) a b t:
-    r1 a b t ->
+  Lemma rimpl_elim A B T (r1 r2: relation A B T) a b:
+    r1 a b ->
     r1 ---> r2 ->
-    r2 a b t.
-  Proof. auto. Qed.
+    r2 a Err \/ r2 a b.
+  Proof. firstorder. Qed.
 
   Theorem rimpl_to_requiv A B T (r1 r2: relation A B T) :
     r1 ---> r2 ->
@@ -172,53 +214,78 @@ Section OutputRelations.
     firstorder.
   Qed.
 
-  Theorem rel_forall_intro A B T X (r : relation A B T) (rpred: X -> relation A B T) :
-    (forall x, r ---> (rpred x)) ->
-    r ---> (fun a b t => forall x, rpred x a b t).
-  Proof.
-    firstorder.
-  Qed.
-
   (** Various equivalence and implication proofs *)
   Hint Unfold Proper respectful pointwise_relation : t.
   Hint Unfold Basics.flip Basics.impl : t.
   Hint Unfold and_then rel_or pure any identity reads : t.
+
+  Ltac add_hypothesis' pf :=
+    let P := type of pf in
+    lazymatch P with
+    | ?P' \/ ?Q' => 
+      lazymatch goal with
+      | [ H: P' \/ Q' |- _ ] => fail "already known"
+      | [ H: Q' \/ P' |- _ ] => fail "already known"
+      | [ H: P' |- _ ] => fail "already known"
+      | [ H: Q' |- _ ] => fail "already known"
+      | _ => pose proof pf
+      end
+    | ?P' =>
+      lazymatch goal with
+      | [ H: P' |- _ ] => fail "already known"
+      | _ => pose proof pf
+      end
+    end.
 
   Ltac t :=
     autounfold with t;
     repeat match goal with
            | |- _ <---> _ => split
            | |- _ ---> _ => unfold "--->"
+                                   (*
+           | [ H: ?r <---> _ |- _ ] => add_hypothesis (proj1 H)
+           | [ H: _ <---> ?r |- _ ] => add_hypothesis (proj2 H)
+           | [ H: ?r ---> _ |- _] =>
+             match type of r with
+             | relation ?A ?B ?T =>
+               match goal with
+               | [ x: A, y: Return B T |- _ ] => add_hypothesis' (H x y); add_hypothesis' (H x Err)
+               | [ x: A, y: B, o: T |- _ ] => add_hypothesis' (H x (Valid y o));
+                                              add_hypothesis' (H x Err)
+               end
+             end
+                                    *)
            | [ H: ?r <---> _,
-                  H': ?r ?x ?y ?o |- _ ] =>
-             add_hypothesis (proj1 (H x y o) H')
+                  H': ?r ?x ?y |- _ ] =>
+             add_hypothesis (proj1 H x y H')
            | [ H: _ <---> ?r,
-                  H': ?r ?x ?y ?o |- _ ] =>
-             add_hypothesis (proj2 (H x y o) H')
+                  H': ?r ?x ?y |- _ ] =>
+             add_hypothesis (proj2 H x y H')
            | [ H: ?r ---> _,
-                  H': ?r ?x ?y ?o |- _ ] =>
-             add_hypothesis (H x y o H')
+                  H': ?r ?x ?y |- _ ] =>
+             add_hypothesis (H x y H')
            | [ u: unit |- _ ] => destruct u
            | [ |- exists (_:unit), _ ] => exists tt
            | _ => progress propositional
            | _ => solve [ eauto 10 ]
            | [ H: _ \/ _  |- _ ] => destruct H
-           | [ H : none _ _ _ |- _] => destruct H
+           | [ H : none _ _ |- _] => destruct H
         end.
 
+  Ltac destruct_return :=
+    match goal with
+    | [ y : Return _ _  |- _ ] => destruct y
+    end.
+               
 
   (* first some respectful/congruence rules *)
   Global Instance or_respects_equiv :
     Proper (requiv ==> requiv ==> requiv) (rel_or (A:=A) (B:=B) (T:=T)).
-  Proof.
-    t.
-  Qed.
+  Proof. t. Qed.
 
   Global Instance or_respects_impl :
     Proper (rimpl ==> rimpl ==> rimpl) (rel_or (A:=A) (B:=B) (T:=T)).
-  Proof.
-    t.
-  Qed.
+  Proof. t. Qed.
 
   Theorem and_then_monotonic A B C T1 T2
           (r1 r1': relation A B T1) (r2 r2': T1 -> relation B C T2) :
@@ -226,19 +293,10 @@ Section OutputRelations.
     (forall x, r2 x ---> r2' x) ->
     and_then r1 r2 ---> and_then r1' r2'.
   Proof.
-    t.
-    specialize (H0 o1); t.
-  Qed.
-
-  Theorem and_then_monotonic_wit A B C T1 T2
-          (r1 r1': relation A B T1) (r2 r2': T1 -> relation B C T2) :
-    r1 ---> r1' ->
-    (forall a b x, r1 a b x -> (r2 x ---> r2' x)) ->
-    and_then r1 r2 ---> and_then r1' r2'.
-  Proof.
-    t.
-    specialize (H0 x y0 o1) as H0.
-    t.
+    t. destruct_return.
+    - destruct H1 as (o1&y&?&?). edestruct (H0 o1); t.
+    - destruct H1 as [|(o1&y&?&?)]. t.
+      edestruct (H0 o1); t.
   Qed.
 
   Global Instance and_then_respectful :
@@ -255,9 +313,7 @@ Section OutputRelations.
     (forall x, r2 x <---> r2' x) ->
     and_then r1 r2 <---> and_then r1' r2'.
   Proof.
-    t.
-    specialize (H0 o1); t.
-    specialize (H0 o1); t.
+    intros. split; apply and_then_monotonic; eauto.
   Qed.
 
   Theorem and_then_cong_l A B C T1 T2
@@ -266,7 +322,7 @@ Section OutputRelations.
     r1 <---> r1' ->
     and_then r1 r2 <---> and_then r1' r2.
   Proof.
-    t.
+    intros. split; apply and_then_monotonic; eauto; intros; reflexivity.
   Qed.
 
   Theorem and_then_cong_r A B C T1 T2
@@ -275,20 +331,19 @@ Section OutputRelations.
     (forall x, r2 x <---> r2' x) ->
     and_then r1 r2 <---> and_then r1 r2'.
   Proof.
-    intros.
-    apply and_then_equiv_cong; try reflexivity; eauto.
+    intros. split; apply and_then_monotonic; eauto; intros; reflexivity.
   Qed.
 
   Theorem bind_identity1 A B T1 T2 (r: relation A B T2) :
     (_ <- identity (T:=T1); r) ---> r.
   Proof.
-    t.
+    t. destruct_return; t; intuition congruence.
   Qed.
 
   Theorem bind_identity A B T1 T2 (r: relation A B T2) (_:Default T1) :
     (_ <- identity (T:=T1); r) <---> r.
   Proof.
-    t.
+    unshelve (t; destruct_return; t; intuition congruence); eauto.
   Qed.
 
   Theorem reads_identity A T (f: A -> T) :
@@ -309,8 +364,7 @@ Section OutputRelations.
   Global Instance seq_star_respectful :
     Proper (rimpl ==> rimpl) (seq_star (A:=A) (T:=T)).
   Proof.
-    t.
-    induction H0; eauto.
+    t. (induction H0; intuition eauto); t.
   Qed.
 
   Global Instance seq_star_equiv_respectful :
@@ -327,20 +381,19 @@ Section OutputRelations.
     Proper (pointwise_relation _ rimpl ==> eq ==> rimpl) (bind_star (A:=A) (T:=T)).
   Proof.
     t.
-    induction H0; eauto.
-    specialize (H o1); eauto.
+    induction H0; (eauto; specialize (H o1); intuition eauto); t.
   Qed.
 
   Global Instance bind_star_equiv_respectful :
     Proper (pointwise_relation _ requiv ==> eq ==> requiv) (bind_star (A:=A) (T:=T)).
   Proof.
     t.
-    - induction H0; eauto.
-      specialize (H o1).
-      apply requiv_to_rimpls in H; propositional; eauto.
-    - induction H0; eauto.
-      specialize (H o1).
-      apply requiv_to_rimpls in H; propositional; eauto.
+    - induction H0; eauto;
+      specialize (H o1);
+      (apply requiv_to_rimpls in H; propositional; intuition eauto); t.
+    - induction H0; eauto;
+      specialize (H o1);
+      (apply requiv_to_rimpls in H; propositional; intuition eauto); t.
   Qed.
 
   Theorem and_then_monotonic_r A B C T1 T2
@@ -403,26 +456,26 @@ Section OutputRelations.
     and_then r2 rx ---> r ->
     and_then (r1 + r2) rx ---> r.
   Proof.
-    t.
+    t. destruct_return; t.
   Qed.
 
   Theorem bind_left_id A B T1 T2 (v:T1) (r: T1 -> relation A B T2) :
     and_then (pure v) r <---> r v.
   Proof.
-    t.
+    t; destruct_return; t; intuition congruence.
   Qed.
 
   Theorem bind_right_id A B T (r: relation A B T) :
     and_then r (@pure B T) <---> r.
   Proof.
-    t.
+    t; destruct_return; t; intuition congruence.
   Qed.
 
   (* pure tt is also the right identity for relations at output type T *)
   Theorem bind_right_id_unit A B (r: relation A B unit) :
     and_then r (fun _ => pure tt) <---> r.
   Proof.
-    t.
+    t; destruct_return; t; intuition congruence.
   Qed.
 
   Theorem bind_assoc
@@ -434,7 +487,7 @@ Section OutputRelations.
     and_then (and_then r1 r2) r3 <--->
              and_then r1 (fun v => and_then (r2 v) r3).
   Proof.
-    t.
+    repeat (t; destruct_return; t).
   Qed.
 
   Theorem to_any A B T (r: relation A B T) :
@@ -466,34 +519,39 @@ Section OutputRelations.
     none (B:=B) (T:=T1);; none --->
         none (A:=A) (B:=C) (T:=T2).
   Proof.
-    t.
+    t. destruct_return; t.
   Qed.
 
   Theorem none_absorb_l A B C T1 T2 p:
     x <- none (B:=B) (T:=T1); p x --->
         none (A:=A) (B:=C) (T:=T2).
   Proof.
-    t.
+    t. destruct_return; t.
   Qed.
 
   Theorem none_absorb_l_equiv A B C T1 T2 p:
     x <- none (B:=B) (T:=T1); p x <--->
         none (A:=A) (B:=C) (T:=T2).
   Proof.
-    t.
+    t. destruct_return; t.
   Qed.
 
+  (* This is not true anymore, because p can error *)
+  (*
   Theorem none_absorb_r A B C T1 T2 (p: relation A B T1):
     p;; none ---> none (A:=A) (B:=C) (T:=T2).
   Proof.
-    t.
+    t. destruct_return; t.
   Qed.
+   *)
 
+  (*
   Theorem none_absorb_r_equiv A B C T1 T2 (p: relation A B T1):
     p;; none <---> none (A:=A) (B:=C) (T:=T2).
   Proof.
-    t.
+    t. destruct_return; t.
   Qed.
+   *)
 
   Theorem none_plus_r A B T1 (p: relation A B T1):
     (p + none) <---> p.
@@ -520,10 +578,10 @@ Section OutputRelations.
     bind_star r init <---> bind_star r' init.
   Proof.
     t.
-    - induction H0; eauto.
-      specialize (H o1); t.
-    - induction H0; eauto.
-      specialize (H o1); t.
+    - induction H0; eauto;
+      edestruct (H o1); intuition; t.
+    - induction H0; eauto;
+      edestruct (H o1); intuition; t.
   Qed.
 
   Theorem bind_star_unit A (r: unit -> relation A A unit) u :
@@ -539,21 +597,22 @@ Section OutputRelations.
   Theorem bind_star_expand A T (r: T -> relation A A T) (v:T) :
     pure v + and_then (r v) (bind_star r) <---> bind_star r v.
   Proof.
-    t.
-    induction H; eauto.
+    t; destruct_return; t;
+    induction H; eauto;
+    t; destruct_return; t.
   Qed.
 
   Global Instance rimpl_equiv_proper A B T (r: relation A B T) :
     Proper (requiv ==> Basics.flip Basics.impl) (rimpl r).
   Proof.
-    t.
+    intros ?? (?&?) ?. etransitivity; eauto.
   Qed.
 
   Global Instance rimpl_equiv_applied_proper A B T :
     Proper (requiv ==> requiv ==> iff) (rimpl (A:=A) (B:=B) (T:=T)).
   Proof.
-    t.
-    split; t.
+    intros ?? (?&?) ?? (?&?).
+    split; intros; repeat (etransitivity; eauto).
   Qed.
 
   Definition rimpl_refl A B T (r: relation A B T) : r ---> r := ltac:(reflexivity).
@@ -564,13 +623,13 @@ Section OutputRelations.
   Theorem bind_dist_r A B C T1 T2 (r1 r2: relation A B T1) (r3: T1 -> relation B C T2) :
     and_then (r1 + r2) r3 <---> (and_then r1 r3) + (and_then r2 r3).
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
   Theorem bind_dist_l A B C T1 T2 (r1: relation A B T1) (r2 r3: T1 -> relation B C T2) :
     and_then r1 (fun v => r2 v + r3 v) <---> and_then r1 r2 + and_then r1 r3.
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
   Theorem star_ind A T (r x: relation A A T) :
@@ -578,29 +637,39 @@ Section OutputRelations.
     r;; x ---> x ->
     seq_star r ---> x.
   Proof.
-    t.
-    induction H1; eauto.
+    intros H1 H2 a y.
+    induction 1.
+    - eapply H1. econstructor; eauto.
+    - t.
+      * left. edestruct (H2 x0 Err); eauto.
+        simpl; intuition eauto.
+      * eapply H2. destruct z.
+        ** econstructor; eauto.
+        ** right. intuition eauto.
+    - eapply H2; left; eauto.
   Qed.
 
   Theorem star_expand A T (r: relation A A T) :
     seq_star r <---> identity + (r;; seq_star r).
   Proof.
     apply rimpl_to_requiv.
-    - apply star_ind; t.
-    - t.
+    - apply star_ind; t; destruct_return; t.
+      inversion H0. subst. t.
+      congruence.
+    - t; destruct_return; t.
   Qed.
   
   Theorem seq_star1 A T (r: relation A A T) :
     r;; seq_star r ---> seq_star r.
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
   Theorem seq_star_fold A T (r r': relation A A T) :
     r' ---> r ->
     r';; seq_star r ---> seq_star r.
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
   Theorem seq_star_none A T (r: relation A A T) :
@@ -612,7 +681,7 @@ Section OutputRelations.
   Theorem seq_star_one A T (r: relation A A T) :
     r ---> seq_star r.
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
   Hint Constructors seq_plus.
@@ -626,10 +695,10 @@ Section OutputRelations.
   Theorem plus_expand A T (r: relation A A T) :
     seq_plus r <---> r + (r;; seq_plus r).
   Proof.
-    t.
-    induction H; eauto.
+    t; destruct_return; t; induction H; eauto; t.
   Qed.
 
+  (*
   Inductive seq_plus_r `(r: relation A A T) : relation A A T :=
   | seq_plus_r_once : forall x y o,
       r x y o ->
@@ -660,12 +729,13 @@ Section OutputRelations.
     t.
     induction H; eauto.
   Qed.
+   *)
 
   Global Instance and_then_pointwise A B C T1 T2 (r: relation A B T1) :
     Proper (pointwise_relation _ (Basics.flip rimpl) ==> Basics.flip (rimpl (B:=C) (T:=T2)))
            (and_then r).
   Proof.
-    t.
+    t. destruct_return; t;
     specialize (H o1); t.
   Qed.
 
@@ -673,13 +743,27 @@ Section OutputRelations.
     seq_star r <---> seq_star r;; seq_star r.
   Proof.
     t.
-    induction H; t.
+    - induction H.
+      * unshelve (eauto); eauto.
+      * unshelve (destruct_return; t); eauto.
+      * do 2 left. eapply seq_star_one_more_err; eauto.
+    - destruct_return; t.
+      * remember (Valid y o1) as z eqn:Heq. revert y o1 H0 Heq. revert H.
+        induction 1; intros.
+        ** inversion Heq; subst. intuition.
+        ** subst. edestruct IHseq_star; eauto. 
+        ** congruence.
+      * remember (Valid y o1) as z eqn:Heq. revert y o1 H0 Heq. revert H.
+        induction 1; intros.
+        ** inversion Heq; subst. intuition.
+        ** subst. edestruct IHseq_star; eauto. 
+        ** congruence.
   Qed.
 
   Theorem star_one A T (r: relation A A T) :
     r ---> seq_star r.
   Proof.
-    t.
+    t. destruct_return; t.
   Qed.
 
   Lemma star_monotonic A T (r1 r2: relation A A T) :
@@ -710,7 +794,10 @@ Section OutputRelations.
     seq_star r <---> identity + (seq_star r;; r).
   Proof.
     apply rimpl_to_requiv.
-    - unshelve (apply star_ind; t); exact tt.
+    - unshelve (apply star_ind; t;
+        destruct_return; t;
+      inversion H0; subst; t;
+      congruence); exact tt.
     - apply rel_or_elim.
       * t.
       * rewrite star_duplicate at 2.
@@ -729,12 +816,12 @@ Section OutputRelations.
       solver
     end.
 
-  Theorem denesting A T (r1 r2: relation A A T) :
+  Theorem denesting A T (r1 r2: relation A A T) (_:Default T):
     seq_star (r1 + r2) <--->
              seq_star r1;; (seq_star (r2;; seq_star r1)).
   Proof.
     apply rimpl_to_requiv.
-    - apply star_ind; t.
+    - unshelve (apply star_ind; t; destruct_return; t; intuition t); eauto.
     - setoid_rewrite star_duplicate at 4; cong.
       cong.
 
@@ -742,10 +829,8 @@ Section OutputRelations.
       setoid_rewrite star_duplicate at 3; cong.
 
       setoid_rewrite star_duplicate at 2; cong.
-      cong.
-
-      Grab Existential Variables.
-      all: trivial.
+      * setoid_rewrite <-star_one. apply rel_or_intror.
+      * cong.
   Qed.
 
   Theorem bind_sliding A T1 (p: relation A A T1) (q: T1 -> relation A A unit) :
