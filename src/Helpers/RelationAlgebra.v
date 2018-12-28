@@ -20,7 +20,7 @@ Section OutputRelations.
 
   Arguments Valid {_ _}.
   Arguments Err {_ _}.
-    
+
   Definition relation A B T := A -> Return B T -> Prop.
 
   (** Several operations on relations *)
@@ -82,7 +82,6 @@ Section OutputRelations.
   | seq_star_one_more_valid : forall x y z o1,
       r x (Valid y o1) ->
       seq_star r y z ->
-      (* TODO: rewrite to return the value from the last iteration *)
       seq_star r x z
   | seq_star_one_more_err : forall x,
       r x Err ->
@@ -155,7 +154,7 @@ Section OutputRelations.
   Global Instance rimpl_proper_basics_flip A B T (r: relation A B T) :
     Proper
       (Basics.flip rimpl ==> Basics.flip Basics.impl) (rimpl r).
-  Proof. 
+  Proof.
     unfold Basics.flip, Basics.impl.
     intros ?? ??. etransitivity; eauto.
   Qed.
@@ -222,7 +221,7 @@ Section OutputRelations.
   Ltac add_hypothesis' pf :=
     let P := type of pf in
     lazymatch P with
-    | ?P' \/ ?Q' => 
+    | ?P' \/ ?Q' =>
       lazymatch goal with
       | [ H: P' \/ Q' |- _ ] => fail "already known"
       | [ H: Q' \/ P' |- _ ] => fail "already known"
@@ -270,13 +269,16 @@ Section OutputRelations.
            | _ => solve [ eauto 10 ]
            | [ H: _ \/ _  |- _ ] => destruct H
            | [ H : none _ _ |- _] => destruct H
+           | [ H : Valid _ _ = Valid _ _ |- _] => inversion H; subst; clear H
+           | [ H : Valid _ _  = Err |- _] => inversion H
+           | [ H : Err = Valid _ _ |- _] => inversion H
         end.
 
   Ltac destruct_return :=
     match goal with
     | [ y : Return _ _  |- _ ] => destruct y
     end.
-               
+
 
   (* first some respectful/congruence rules *)
   Global Instance or_respects_equiv :
@@ -654,11 +656,9 @@ Section OutputRelations.
   Proof.
     apply rimpl_to_requiv.
     - apply star_ind; t; destruct_return; t.
-      inversion H0. subst. t.
-      congruence.
     - t; destruct_return; t.
   Qed.
-  
+
   Theorem seq_star1 A T (r: relation A A T) :
     r;; seq_star r ---> seq_star r.
   Proof.
@@ -751,12 +751,12 @@ Section OutputRelations.
       * remember (Valid y o1) as z eqn:Heq. revert y o1 H0 Heq. revert H.
         induction 1; intros.
         ** inversion Heq; subst. intuition.
-        ** subst. edestruct IHseq_star; eauto. 
+        ** subst. edestruct IHseq_star; eauto.
         ** congruence.
       * remember (Valid y o1) as z eqn:Heq. revert y o1 H0 Heq. revert H.
         induction 1; intros.
         ** inversion Heq; subst. intuition.
-        ** subst. edestruct IHseq_star; eauto. 
+        ** subst. edestruct IHseq_star; eauto.
         ** congruence.
   Qed.
 
@@ -816,6 +816,18 @@ Section OutputRelations.
       solver
     end.
 
+  Theorem bind_unit' B C T (q: unit -> relation B C T) v:
+    q v <---> q tt.
+  Proof.
+    t.
+  Qed.
+
+  Theorem bind_unit A B C T (p: relation A B unit) (q: unit -> relation B C T) :
+    and_then p q <---> p;; q tt.
+  Proof.
+    setoid_rewrite <-bind_unit'; reflexivity.
+  Qed.
+
   Theorem denesting A T (r1 r2: relation A A T) (_:Default T):
     seq_star (r1 + r2) <--->
              seq_star r1;; (seq_star (r2;; seq_star r1)).
@@ -838,34 +850,80 @@ Section OutputRelations.
              v <- p; bind_star (fun v0 => q v0;; p) v.
   Proof.
     apply rimpl_to_requiv.
-    - t.
-      gen y.
-      induction H; t.
-      specialize (IHseq_star _ ltac:(eauto)); t.
-    - t.
-      gen x.
-      induction H0; t.
-      specialize (IHbind_star _ ltac:(eauto)); t.
+    - t. destruct_return.
+      * destruct H as ([]&y&Hstar&Hy).
+        remember (Valid y tt) as ret eqn:Heq. gen y Heq.
+        induction Hstar; subst; t.
+        ** specialize (IHHstar _ ltac:(eauto) ltac:(eauto)); t.
+           left. right.
+           do 2 eexists; split; eauto.
+           eapply bind_star_one_more_err. eauto.
+      * t.
+        ** set (ret := @Err A unit). replace Err with ret in H at 1; eauto.
+           remember ret as ret' eqn:Heq. unfold ret in Heq.
+           induction H.
+           *** congruence.
+           *** t; left; right; do 2 eexists; split; eauto; t.
+           *** t.
+        ** remember (Valid y tt) as ret eqn:Heq. gen y Heq.
+        induction H; subst; t.
+        *** specialize (IHseq_star _ ltac:(eauto) ltac:(eauto)); t.
+           **** left. right.
+           do 2 eexists; split; eauto.
+           eapply bind_star_one_more_err. eauto.
+           **** left. right.
+           do 2 eexists; split; eauto.
+           eapply bind_star_one_more_err. eauto.
+    - t. destruct_return.
+      * t.
+        gen x.
+        unshelve (induction H0; t); try exact tt.
+        specialize (IHbind_star _ ltac:(eauto)); t.
+      * unshelve t; try exact tt.
+        **
+        gen x.
+        unshelve (induction H0; t); try exact tt.
+        unshelve (specialize (IHbind_star _ ltac:(eauto)); t); try exact tt.
   Qed.
 
   Theorem seq_sliding A T1 (p: relation A A T1) (q: relation A A unit) :
     seq_star (p;; q);; p --->
              p;; seq_star (q;; p).
   Proof.
-    t.
-    gen y.
-    induction H; t.
-    specialize (IHseq_star _ ltac:(eauto)); t.
+    - t. destruct_return.
+      * destruct H as ([]&y&Hstar&Hy).
+        remember (Valid y tt) as ret eqn:Heq. gen y Heq.
+        induction Hstar; subst; t.
+        specialize (IHHstar _ ltac:(eauto) ltac:(eauto)); t.
+        left. right.
+        do 2 eexists; split; eauto.
+        eapply seq_star_one_more_err. eauto.
+      * t.
+        ** set (ret := @Err A unit). replace Err with ret in H at 1; eauto.
+           remember ret as ret' eqn:Heq. unfold ret in Heq.
+           induction H.
+           *** congruence.
+           *** t; left; right; do 2 eexists; split; eauto; t.
+           *** t.
+        ** remember (Valid y tt) as ret eqn:Heq. gen y Heq.
+           induction H; subst; t.
+           specialize (IHseq_star _ ltac:(eauto) ltac:(eauto)); t.
+           *** left. right.
+           do 2 eexists; split; eauto.
+           eapply seq_star_one_more_err. eauto.
+           *** left. right.
+           do 2 eexists; split; eauto.
+           eapply seq_star_one_more_err. eauto.
   Qed.
+
 
   Theorem seq_unit_sliding A (p: relation A A unit) (q: relation A A unit) :
     p;; seq_star (q;; p) --->
      seq_star (p;; q);; p.
   Proof.
-    t.
-    gen x.
-    induction H0; t.
-    specialize (IHseq_star _ ltac:(eauto)); t.
+    setoid_rewrite seq_star_to_bind_star at 1.
+    setoid_rewrite bind_sliding.
+    eapply bind_unit.
   Qed.
 
   Theorem seq_unit_sliding_equiv A (p: relation A A unit) (q: relation A A unit) :
@@ -875,75 +933,82 @@ Section OutputRelations.
     apply rimpl_to_requiv; auto using seq_sliding, seq_unit_sliding.
   Qed.
 
-  Theorem seq_plus_precise A T1 (p: relation A A T1) (q: relation A A unit) :
-    seq_plus (p;; q);; p <---> p ;; seq_plus (q;; p).
-  Proof.
-    t.
-    - gen y o.
-      induction H; t.
-      specialize (IHseq_plus _ _ ltac:(eauto)); t.
-    - gen x o1.
-      induction H0; t.
-      specialize (IHseq_plus _ _ ltac:(eauto)); t.
-  Qed.
-
-  Theorem seq_plus_to_seq_star A B T (p: relation A A unit) (r: relation A B T) :
-    seq_plus p;; r <---> p;; seq_star p;; r.
-  Proof.
-    t.
-    - induction H; t.
-    - gen x y o.
-      induction H1; t.
-      specialize (IHseq_star _ ltac:(eauto)).
-      specialize (IHseq_star _ _ ltac:(eauto)); t.
-  Qed.
-
-  Theorem seq_sliding_precise A T1 (p: relation A A T1) (q: relation A A unit) :
-    seq_star (p;; q);; p <---> p + (p ;; seq_plus (q;; p)).
-  Proof.
-    t.
-    - gen y o.
-      induction H; t.
-      specialize (IHseq_star _ _ ltac:(eauto)); t.
-    - gen x o1.
-      induction H0; t.
-      specialize (IHseq_plus _ _ ltac:(eauto)); t.
-  Qed.
-
-  Theorem bind_unit A B C T (p: relation A B unit) (q: unit -> relation B C T) :
-    and_then p q <---> p;; q tt.
-  Proof.
-    t.
-  Qed.
-
-  Theorem bind_unit' B C T (q: unit -> relation B C T) v:
-    q v <---> q tt.
-  Proof.
-    t.
-  Qed.
-
   Inductive seq_star_r A `(r: relation A A T) : relation A A T :=
   | seq_star_r_refl : forall x o,
-      seq_star_r r x x o
-  | seq_star_r_one_more : forall x y z o1 o2,
-      seq_star_r r x y o1 ->
-      r y z o2 ->
-      seq_star_r r x z o1.
+      seq_star_r r x (Valid x o)
+  | seq_star_r_err_refl : forall x,
+      r x Err ->
+      seq_star_r r x Err
+  | seq_star_r_one_more_valid : forall x y z o1 o2,
+      seq_star_r r x (Valid y o1) ->
+      r y (Valid z o2) ->
+      seq_star_r r x (Valid z o2)
+  | seq_star_r_one_more_err : forall x y o1,
+      seq_star_r r x (Valid y o1) ->
+      r y Err ->
+      seq_star_r r x Err.
 
   Hint Constructors seq_star_r.
+
+  Lemma seq_star_r_one_more_valid_left {A T} (r: relation A A T) x y z o1 o2:
+    r x (Valid y o1) ->
+    seq_star_r r y (Valid z o2) ->
+    exists o3, seq_star_r r x (Valid z o3).
+  Proof.
+    intros Hr Hseq. remember (Valid z o2) as ret eqn: Heq. revert x z o1 o2 Hr Heq.
+    induction Hseq; intros.
+    - unshelve t; eauto.
+    - unshelve t; eauto.
+    - t. edestruct IHHseq; eauto.
+    - t.
+  Qed.
+
+  Lemma seq_star_trans A `(r: relation A A T) (x y: A) (o: T) z:
+    seq_star r x (Valid y o) ->
+    seq_star r y z ->
+    seq_star r x z.
+  Proof.
+    intros Hstar.
+    remember (Valid y o) as ret eqn:Heq. revert y o Heq.
+    induction Hstar; t.
+  Qed.
+
+  Lemma seq_star_rl_valid A `(r: relation A A T) x b o1 o2:
+    seq_star_r r x (Valid b o1) ->
+    seq_star r x (Valid b o2).
+  Proof.
+    intros Hstar.
+    remember (Valid b o1) as ret eqn:Heq.
+    revert b o1 Heq. induction Hstar; t.
+    specialize (IHHstar y o1 ltac:(eauto)); t.
+    clear Hstar.
+    remember (Valid y o2) as ret eqn:Heq.
+    revert o2 Heq.
+    induction IHHstar; t.
+  Qed.
 
   Theorem seq_star_lr A `(r: relation A A T) :
     seq_star r <---> seq_star_r r;; identity.
   Proof.
     t.
-    - induction H; propositional; eauto.
-      clear H0.
-      induction H1; propositional; eauto.
-    - induction H; propositional; eauto.
-      clear H.
-      induction IHseq_star_r; propositional; eauto.
-      Grab Existential Variables.
-      all: auto.
+    - induction H.
+      * unshelve t; eauto.
+      * t.
+        ** clear H0. unshelve (induction H1; propositional; eauto; t; destruct_return; t); eauto.
+        ** destruct_return; t.
+           *** edestruct (@seq_star_r_one_more_valid_left A _ r); eauto; t.
+           *** clear H0. remember Err as ret eqn:Heq.
+               gen Heq. unshelve (induction H1; intros; t); eauto.
+               left. left.
+               edestruct (@seq_star_r_one_more_valid_left A _ r); eauto; t.
+      * left. left. econstructor. unshelve t; eauto.
+    - destruct_return; t.
+      * right. eapply seq_star_rl_valid; eauto.
+      * left.
+        inversion H; subst.
+        ** eapply seq_star_one_more_err; eauto.
+        ** unshelve (eapply seq_star_trans; [| eapply seq_star_one_more_err; eauto]); eauto.
+           eapply seq_star_rl_valid; eauto.
   Qed.
 
   Hint Constructors bind_star_r.
