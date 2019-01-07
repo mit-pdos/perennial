@@ -3,6 +3,7 @@ Require Import Spec.ProcTheorems.
 Require Import Spec.Abstraction.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
+Require Import Helpers.RelationTheorems.
 Require Import Tactical.ProofAutomation.
 
 Import RelationNotations.
@@ -13,8 +14,10 @@ Record Layer Op :=
     sem: Dynamics Op State;
     (* TODO: should these be part of Dynamics instead of Layer? *)
     trace_proj: State -> list Event;
-    crash_preserves_trace: forall s1 s2, sem.(crash_step) s1 s2 tt -> trace_proj s1 = trace_proj s2;
-    crash_total: forall s1, exists s2, sem.(crash_step) s1 s2 tt;
+    crash_preserves_trace:
+      forall s1 s2, sem.(crash_step) s1 (Valid s2 tt) -> trace_proj s1 = trace_proj s2;
+    crash_total: forall s1, exists s2, sem.(crash_step) s1 (Valid s2 tt);
+    crash_non_err: forall s1 ret, sem.(crash_step) s1 ret -> ret <> Err;
     initP: State -> Prop }.
 
 Inductive InitStatus := Initialized | InitFailed.
@@ -48,7 +51,7 @@ Definition compile_rec Op C_Op `(impl: LayerImpl C_Op Op) (rec: rec_seq Op) : re
   rec_seq_append impl.(recover) (impl.(compile_seq) rec).
 
 Definition initOutput {A} `(L: Layer Op) (r: relation (State L) (State L) A) (v : A) : Prop :=
-  exists s1 s2, L.(initP) s1 /\ r s1 s2 v.
+  exists s1 s2, L.(initP) s1 /\ r s1 (Valid s2 v).
 
 Hint Unfold refines : relation_rewriting.
 
@@ -93,7 +96,7 @@ Section Layers.
                     (a_exec_halt p;; a_sem.(crash_step)).
 
   Definition trace_relation : relation AState CState unit :=
-    fun sa sc _ => a_trace_proj sa = c_trace_proj sc.
+    fun sa ret => exists sc, ret = Valid sc tt /\ a_trace_proj sa = c_trace_proj sc.
 
   Definition trace_refines (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
     forall T (p: proc Op T),
@@ -256,6 +259,20 @@ Section Layers.
         rew H2.
   Qed.
 
+  Lemma absr_preserves_trace' s1 s2:
+    rf.(absr) s1 (Valid s2 tt) -> trace_proj _ s1 = trace_proj _ s2.
+  Proof.
+    intros. edestruct absr_preserves_trace; eauto;
+    inversion H0; intuition; congruence.
+  Qed.
+
+  Lemma absr_no_err sa:
+    rf.(absr) sa Err -> False.
+  Proof.
+    intros. edestruct absr_preserves_trace; eauto;
+    inversion H0; intuition; congruence.
+  Qed.
+
   (* TODO: this is only for compatibility, get rid of it *)
   Theorem crash_step_refinement :
     refines rf.(absr) (c_sem.(crash_step);; c_exec_recover recover)
@@ -339,14 +356,23 @@ Section Layers.
 
   Lemma crash_trace_relation : (a_sem.(crash_step);; trace_relation) <---> trace_relation.
   Proof.
-    intros sa sc []; split.
-    - intros ([]&sa'&Hcrash&Hrel).
-      transitivity (trace_proj _ sa'); eauto.
-      eapply crash_preserves_trace; eauto.
-    - intros. destruct (crash_total _ sa) as (sa'&?).
-      exists tt, sa'; split; eauto.
-      transitivity (trace_proj _ sa); eauto.
-      { symmetry. eapply crash_preserves_trace; eauto. }
+    split.
+    - intros sa [? []|].
+      * intros ([]&sa'&Hcrash&Hrel).
+        right. destruct Hrel as (sc&Hinv&?). inversion Hinv. subst.
+        eexists; split; eauto.
+        transitivity (trace_proj _ sa'); eauto.
+        eapply crash_preserves_trace; eauto.
+      * intros [Hhd|(?&?&?&(?&?&?))].
+        { exfalso. eapply crash_non_err; eauto. }
+        congruence.
+    - intros sa [? []|] H.
+      * destruct (crash_total _ sa) as (sa'&?).
+        right. exists tt, sa'; split; eauto.
+        eexists; split; eauto. transitivity (trace_proj _ sa); eauto.
+        { symmetry. eapply crash_preserves_trace; eauto. }
+        destruct H as (?&?&?). congruence.
+      * destruct H as (?&?&?). congruence.
   Qed.
 
   Lemma crash_trace_relation' :
@@ -358,13 +384,16 @@ Section Layers.
 
   (* Under the assumption that crash steps preserve traces, the first conjunct of
      halt_refines is redundant for trace relation *)
-  Lemma halt_refines_trace_relation_alt {T} absr (pc: c_proc T) (p: a_proc T) rec :
+  Lemma halt_refines_trace_relation_alt {T} (absr: relation AState CState unit)
+        (pc: c_proc T) (p: a_proc T) rec :
+    (forall sa, absr sa Err -> False) ->
     refines_if absr trace_relation (c_rexec_partial pc rec)
                     (a_exec_halt p;; a_sem.(crash_step)) ->
     halt_refines absr c_sem trace_relation pc rec
                  (a_exec_halt p)
                  (a_exec_halt p;; a_sem.(crash_step)).
   Proof.
+    intros Habsr_err.
     unfold halt_refines, refines_if; intros Href; split; auto.
     unfold rexec_partial in Href.
     rew<- crash_trace_relation.
@@ -378,15 +407,31 @@ Section Layers.
     setoid_rewrite crash_trace_relation' in Href.
     setoid_rewrite bind_right_id_unit in Href.
     setoid_rewrite bind_right_id_unit.
-    intros sA sC' [] ([]&sC&Habsr&Hexec_halt).
-    destruct Hexec_halt as (?&?&?&[]); subst.
-    edestruct (crash_total _ sC') as (sC''&Hcrash).
-    edestruct (Href sA sC'') as (sA'&?&?&Htrace).
-    { do 3 (do 3 eexists; eauto). }
-    do 3 eexists; eauto.
-    unfold trace_relation.
-    transitivity (c_trace_proj sC''); eauto.
-    symmetry; apply crash_preserves_trace; eauto.
+    intros sA [sC' []|].
+    * intros ([]&sC&Habsr&Hexec_halt).
+      destruct Hexec_halt as (?&?&?&Hpure); subst.
+      inversion Hpure; subst.
+      edestruct (crash_total _ sC') as (sC''&Hcrash).
+      edestruct (Href sA (Valid sC'' tt)) as [?|Hv]; eauto. (* [(sA'&?&?&Htrace)|]. *)
+      {
+        do 2 eexists; split; eauto.
+        do 2 eexists; split; eauto.
+      }
+      destruct Hv as (sA'&?&?&Htrace).
+      right.
+      do 3 eexists; eauto.
+      apply crash_preserves_trace in Hcrash.
+      eexists; split; eauto.
+      transitivity (c_trace_proj sC''); eauto.
+      destruct Htrace as (?&Hinv&?). inversion Hinv; subst; eauto.
+    * intros [| ([]&sC&Habsr&Hexec_halt)].
+      { exfalso; eauto. }
+      destruct Hexec_halt as [?|(?&?&?&Hpure)]; subst.
+      ** edestruct (Href sA Err) as [?|Hv]; eauto. (* [(sA'&?&?&Htrace)|]. *)
+          right.
+          do 2 eexists; split; eauto.
+          left; eauto.
+      ** inversion Hpure.
   Qed.
 
   Theorem compile_rexec_trace_ok T (p: a_proc T) (rec: a_rec_seq) :
@@ -650,7 +695,13 @@ Lemma trace_relation_trans:
   (trace_relation l2 l3;; trace_relation l1 l2) --->
   trace_relation l1 l3.
 Proof.
-  intros. intros s3 s1 [] ([]&s2&?&?). etransitivity; eauto.
+  intros. intros s3 [s1 []|].
+  * intros ([]&s2&?&?). right.
+    destruct H.
+    destruct H0. intuition. eexists; split; eauto; congruence.
+  * intros [H|(?&?&?&Hp)].
+    ** inversion H; intuition; congruence.
+    ** inversion Hp; intuition; congruence.
 Qed.
 
 Lemma compile_trace_absr:
@@ -714,6 +765,7 @@ Proof.
 Qed.
 *)
 
+
 Definition refinement_transitive
            Op1 (l1: Layer Op1)
            Op2 (l2: Layer Op2)
@@ -732,6 +784,10 @@ Proof.
             absr := rf2.(absr);; rf1.(absr) |}.
   - apply compose_compile_op.
   - apply compile_trace_absr.
-  - intros s3 s1 [] ([]&s2&?&?).
-    transitivity (l2.(trace_proj) s2); eapply absr_preserves_trace; eauto.
+  - intros s3 [s1 []|].
+    * intros ([]&s2&?&?).
+      right. eexists; split; eauto. transitivity (l2.(trace_proj) s2);
+      eapply absr_preserves_trace'; eauto.
+    * intros [?|(?&?&?&?)]; exfalso;
+      eapply absr_no_err; eauto.
 Qed.

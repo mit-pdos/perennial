@@ -113,10 +113,19 @@ Section OutputRelations.
   Inductive bind_star_r A `(r: T -> relation A A T) : T -> relation A A T :=
   | bind_star_r_pure : forall (o:T) x,
       bind_star_r r o x (Valid x o)
+                  (*
+  | bind_star_r_err_refl : forall (o1:T) x,
+      r o1 x Err ->
+      bind_star_r r o1 x Err
+                   *)
   | bind_star_r_one_more_valid : forall (o1:T) x y z o2,
       bind_star_r r o1 x (Valid y o2) ->
       r o2 y z ->
       bind_star_r r o1 x z
+  | bind_star_r_one_more_err : forall (o1 o2:T) x y,
+      bind_star_r r o1 x (Valid y o2) ->
+      r o2 y Err ->
+      bind_star_r r o1 x Err
   .
 
   (** Notions of equivalence and implication *)
@@ -936,6 +945,7 @@ Section OutputRelations.
   Inductive seq_star_r A `(r: relation A A T) : relation A A T :=
   | seq_star_r_refl : forall x o,
       seq_star_r r x (Valid x o)
+  (* This might seem redundant because of _one_more_err, but it is not if T is uninhabited *)
   | seq_star_r_err_refl : forall x,
       r x Err ->
       seq_star_r r x Err
@@ -987,6 +997,8 @@ Section OutputRelations.
     induction IHHstar; t.
   Qed.
 
+  Hint Resolve seq_star_r_one_more_valid_left.
+
   Theorem seq_star_lr A `(r: relation A A T) :
     seq_star r <---> seq_star_r r;; identity.
   Proof.
@@ -994,10 +1006,10 @@ Section OutputRelations.
     - induction H.
       * unshelve t; eauto.
       * t.
-        ** clear H0. unshelve (induction H1; propositional; eauto; t; destruct_return; t); eauto.
+        ** unshelve (induction H1; propositional; eauto; t; destruct_return; t); eauto.
         ** destruct_return; t.
            *** edestruct (@seq_star_r_one_more_valid_left A _ r); eauto; t.
-           *** clear H0. remember Err as ret eqn:Heq.
+           *** remember Err as ret eqn:Heq.
                gen Heq. unshelve (induction H1; intros; t); eauto.
                left. left.
                edestruct (@seq_star_r_one_more_valid_left A _ r); eauto; t.
@@ -1013,105 +1025,82 @@ Section OutputRelations.
 
   Hint Constructors bind_star_r.
 
+  Lemma bind_star_r_one_more_valid_left {A T} (r: T -> relation A A T) x y z o1 o2 o3:
+    r o1 x (Valid y o2) ->
+    bind_star_r r o2 y (Valid z o3) ->
+    bind_star_r r o1 x (Valid z o3).
+  Proof.
+    intros Hr Hseq. remember (Valid z o2) as ret eqn: Heq. revert x o1 Hr Heq.
+    induction Hseq; intros; unshelve t; eauto.
+  Qed.
+
+  Lemma bind_star_trans A `(r: T -> relation A A T) (x y: A) (o1 o2: T) z:
+    bind_star r o1 x (Valid y o2) ->
+    bind_star r o2 y z ->
+    bind_star r o1 x z.
+  Proof.
+    intros Hstar.
+    remember (Valid y o2) as ret eqn:Heq. revert y o2 Heq.
+    induction Hstar; t.
+  Qed.
+
+  Lemma bind_star_rl_valid A `(r: T -> relation A A T) x b o1 o2:
+    bind_star_r r o1 x (Valid b o2) ->
+    bind_star r o1 x (Valid b o2).
+  Proof.
+    intros Hstar.
+    remember (Valid b o2) as ret eqn:Heq.
+    revert b o2 Heq. induction Hstar; t.
+    specialize (IHHstar y o2 ltac:(eauto)); t.
+    clear Hstar.
+    remember (Valid y o2) as ret eqn:Heq.
+    revert o2 Heq H.
+    induction IHHstar; t.
+  Qed.
+
+  Hint Resolve bind_star_r_one_more_valid_left.
+
   Theorem bind_star_lr A `(r: T -> relation A A T) (v:T) :
     bind_star r v <---> bind_star_r r v.
   Proof.
     t.
-    - induction H; eauto.
-      clear H0.
-      induction IHbind_star; eauto.
-    - induction H; eauto.
-      clear H.
-      induction IHbind_star_r; eauto.
+    - induction H.
+      * unshelve t; eauto.
+      * t.
+        ** unshelve (induction H1; propositional; eauto; t; destruct_return; t); eauto.
+        ** destruct_return; t; unshelve (induction H1; intros; t); eauto.
+      * t.
+    - destruct_return; t.
+      * right. eapply bind_star_rl_valid; eauto.
+      * left.
+        inversion H; subst;
+        unshelve (eapply bind_star_trans; [| eapply bind_star_one_more_err; eauto]);
+        eauto using bind_star_rl_valid.
   Qed.
 
   Theorem bind_star_expand_r `(r: T -> relation A A T) (v:T) :
     pure v + and_then (bind_star r v) r <---> bind_star r v.
   Proof.
     rewrite bind_star_lr.
-    t.
-    induction H; eauto.
+    t; destruct_return; t;
+    induction H; eauto;
+    t; destruct_return; t.
   Qed.
 
   Theorem seq_star_ind_l A B T1 (q x: relation A B T1) T2 (p: relation A A T2) :
     q + and_then p (fun _ => x) ---> x ->
     and_then (seq_star p) (fun _ => q) ---> x.
   Proof.
-    t.
-    induction H0; intros; eauto 10.
-  Qed.
-
-  Theorem bind_star_ind_r A B T1 (q x: relation A B T1) (p: T1 -> relation B B T1) :
-    q + and_then x p ---> x ->
-    and_then q (bind_star p) ---> x.
-  Proof.
-    t.
-    apply bind_star_lr in H1.
-    induction H1; intros; eauto 10.
-  Qed.
-
-  Theorem bind_star_ind_r_pure A T1 t (x: relation A A T1) (p: T1 -> relation A A T1):
-    (pure t) + and_then x p ---> x ->
-    bind_star p t ---> x.
-  Proof.
-    specialize (@bind_star_ind_r A A _ (pure t) x p).
-    setoid_rewrite bind_left_id; auto.
-  Qed.
-
-  Theorem simulation_seq A B
-          (p: relation A B unit)
-          (q: relation B B unit)
-          (r: relation A A unit) :
-    p;; q ---> r;; p ->
-    p;; seq_star q ---> seq_star r;; p.
-  Proof.
-    setoid_rewrite seq_star_lr.
-    t.
-    induction H1; propositional.
-    - eauto 10.
-    - repeat match goal with
-             | [ u: unit |- _ ] => destruct u
-             end.
-      unfold rimpl in H; simpl in *.
-      specialize (H y0 z tt).
-      match type of H with
-      | ?P -> ?Q =>
-        let HP := fresh in
-        assert P as HP;
-          [ | specialize (H HP) ]
-      end; eauto; propositional.
-      eauto 10.
-
-      Grab Existential Variables.
-      all: auto.
-  Qed.
-
-  Theorem simulation_seq_value A B T
-          (p: relation A B unit)
-          (q: relation B B T)
-          (r: relation A A T) :
-    p;; q ---> v <- r; (p;; pure v) ->
-    p;; seq_star q ---> v <- seq_star r; (p;; pure v).
-  Proof.
-    setoid_rewrite seq_star_lr.
-    t.
-    induction H1; propositional.
-    - eauto 15.
-    - repeat match goal with
-             | [ u: unit |- _ ] => destruct u
-             end.
-      unfold rimpl in H; simpl in *.
-      specialize (H y0 z o2).
-      match type of H with
-      | ?P -> ?Q =>
-        let HP := fresh in
-        assert P as HP;
-          [ | specialize (H HP) ]
-      end; eauto; propositional.
-      eauto 15.
-
-      Grab Existential Variables.
-      all: auto.
+    t; destruct_return; t.
+    * remember (Valid y o1) as ret eqn:Heq.
+      revert y b o1 Heq H1. induction H0; intros; t.
+      edestruct IHseq_star; t.
+      edestruct (H x0 Err); t.
+    * remember Err as ret eqn:Heq.
+      revert Heq. induction H0; t.
+    * remember (Valid y o1) as ret eqn:Heq.
+      revert y o1 Heq H1. induction H0; intros; t.
+      edestruct IHseq_star; t.
   Qed.
 
   (* some basic properties of tests *)
@@ -1131,25 +1120,25 @@ Section OutputRelations.
   Theorem test_and A (P1 P2: predicate A) :
     test P1;; test P2 <---> test (pred_and P1 P2).
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
   Theorem test_idem A (P: predicate A) :
     test P;; test P <---> test P.
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
   Theorem test_identity A :
     identity (A:=A) <---> test (fun _ => True).
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
   Lemma unit_identity A :
     identity (A:=A) <---> pure tt.
   Proof.
-    t.
+    t; destruct_return; t.
   Qed.
 
 End OutputRelations.
@@ -1176,4 +1165,9 @@ Module RelationNotations.
                               (at level 20, p1 at level 100, p2 at level 200, right associativity,
                                format "'[' x  <-  '[v    ' p1 ']' ; ']'  '/' p2")
                              : relation_scope.
+  Ltac destruct_return :=
+    match goal with
+    | [ y : Return _ _  |- _ ] => destruct y
+    end.
+
 End RelationNotations.

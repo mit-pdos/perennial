@@ -4,6 +4,7 @@ Require Import Spec.Proc.
 
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
+Require Import Helpers.RelationTheorems.
 
 Import RelationNotations.
 
@@ -22,6 +23,7 @@ Section Abstraction.
              (spec: relation AState AState T) :=
     (absr;; p) ---> (v <- spec; r;; pure v).
 
+  (*
   Theorem refine_unfolded_iff T
           (p: relation CState CState T)
           (spec: relation AState AState T) :
@@ -69,6 +71,7 @@ Section Abstraction.
       destruct o1.
       eauto 10.
   Qed.
+   *)
 
   (* define refinement as transforming an abstract specification to a concrete
   one (a program satisfying the abstract spec should satisfy the concrete spec

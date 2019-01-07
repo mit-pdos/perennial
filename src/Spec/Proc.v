@@ -28,6 +28,7 @@ Arguments Call {Op T}.
 Arguments Ret {Op T} v.
 Arguments Until {Op T} _ _ _.
 Arguments Spawn {Op} _.
+Arguments Err {_ _}.
 
 (*
 Inductive proc_seq (Op: Type -> Type) (R: Type) : Type :=
@@ -117,12 +118,18 @@ Section Dynamics.
     (* | existT _ T p :: nil => exec_pool_hd p nil *)
     end.
 
-  Inductive exec_pool_alt (ps1: thread_pool) (σ1 σ2: State) (ps2: thread_pool) : Prop :=
-    | step_atomic {T} (e1 e2: proc T) efs t1 t2 :
+  (*
+  Inductive exec_pool_alt (ps1: thread_pool) (σ1: State) (ret: Return State * thread_pool) : Prop :=
+    | step_atomic_valid {T} (e1 e2: proc T) efs t1 t2 :
        ps1 = t1 ++ existT _ _ e1 :: t2 ->
        ps2 = t1 ++ existT _ _ e2 :: t2 ++ efs ->
-       exec_step e1 σ1 σ2 (e2, efs) ->
-       exec_pool_alt ps1 σ1 σ2 ps2.
+       ret = Valid σ2 ps2 ->
+       exec_step e1 σ1 (Valid σ2 (e2, efs)) ->
+       exec_pool_alt ps1 σ1 σ2 ps2
+    | step_atomic_error {T} (e1: proc T) efs t1 t2 :
+       ps1 = t1 ++ existT _ _ e1 :: t2 ->
+       exec_step e1 σ1 Err ->
+       exec_pool_alt ps1 σ1 σ2 Err.
 
   Lemma exec_pool_alt_cons {T} ps1 σ1 σ2 ps2 e:
     exec_pool_alt ps1 σ1 σ2 ps2 ->
@@ -154,6 +161,7 @@ Section Dynamics.
       * simpl. right. do 2 eexists; split; eauto.
         econstructor; eauto.
   Qed.
+   *)
 
   Definition exec_partial {T} (p: proc T) :=
     bind_star (exec_pool) ((existT _ T p) :: nil).

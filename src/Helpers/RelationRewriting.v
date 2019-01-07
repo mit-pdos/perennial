@@ -46,8 +46,10 @@ Ltac setoid_norm_goal :=
     setoid_rewrite rel_or_assoc
   | |- context[and_then (none) _] =>
     setoid_rewrite none_absorb_l
+                   (*
   | |- context[and_then _ (fun _ => none)] =>
     setoid_rewrite none_absorb_r
+                    *)
   end.
 
 Ltac setoid_norm_hyp H :=
