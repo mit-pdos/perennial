@@ -5,6 +5,7 @@ From Classes Require Export Classes.
 Require Export Helpers.RelationAlgebra.
 Require Export Tactical.ProofAutomation.
 
+Require Export Spec.Options.
 Require Export Spec.Proc.
 Require Export Spec.ProcTheorems.
 Require Export Spec.Abstraction.
