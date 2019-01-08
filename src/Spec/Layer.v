@@ -321,10 +321,10 @@ Section Layers.
     rew @exec_recover_unfold.
     pose unfolded (rexec_seq_rec rec)
          (fun H => red in H).
-    apply simulation_seq_value in H.
-    left_assoc rew H.
-    rel_congruence.
-    rew compile_seq_exec_ok.
+    apply simulation_seq_value_no_err in H; eauto using absr_no_err.
+    { left_assoc rew H.
+      rel_congruence.
+      rew compile_seq_exec_ok. }
   Qed.
 
   Lemma recover_ret (rec: a_rec_seq) :
@@ -460,7 +460,7 @@ Section Layers.
       do 2 rel_congruence.
       pose unfolded (rexec_seq_rec rec)
          (fun H => red in H; unfold rexec, rexec_seq, refines in H).
-      apply simulation_seq_value in H4.
+      apply simulation_seq_value_no_err in H4; eauto using absr_no_err.
       left_assoc rew H4.
       rel_congruence.
       pose unfolded (compile_seq_trace_ok2 rec)
@@ -480,7 +480,7 @@ Section Layers.
       do 2 rel_congruence.
       pose unfolded (rexec_seq_rec rec)
          (fun H => red in H; unfold rexec, rexec_seq, refines in H).
-      apply simulation_seq_value in H4.
+      apply simulation_seq_value_no_err in H4; eauto using absr_no_err.
       left_assoc rew H4.
       rel_congruence.
       pose unfolded (compile_seq_trace_ok1 rec)

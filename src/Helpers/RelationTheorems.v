@@ -1,5 +1,6 @@
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
+From Classes Require Import Classes.
 
 Import RelationNotations.
 
@@ -242,45 +243,64 @@ Proof.
     setoid_rewrite seq_star_fold; reflexivity.
 Qed.
 
-Theorem simulation_seq_value A B T
+Theorem simulation_seq_value A B T (_:Default T)
         (p: relation A B unit)
         (q: relation B B T)
         (r: relation A A T) :
   (p;; q) ---> (v <- r; (p;; pure v)) ->
   (p;; seq_star q) ---> (v <- seq_star r; (p;; pure v)).
 Proof.
-Admitted.
-(*
   intros Hconv.
   apply seq_star_rep_n_ind. intros n.
 
   induction n. simpl.
   - setoid_rewrite <-seq_star_none.
-    rew unit_identity.
-    rew bind_right_id_unit.
+    intros a1 a2. destruct_return.
+    * intros ([]&?&?&?).
+      right.
+      do 2 eexists; split; eauto.
+      econstructor; eauto.
+      do 2 eexists; split; eauto.
+      inversion H0; subst. inversion H1; subst.
+      econstructor; eauto.
+    * intros [?|([]&?&?&?)].
+      ** left. right.
+         unshelve (do 2 eexists; split; eauto; econstructor; eauto); eauto.
+      ** inversion H0; congruence.
   - simpl.
     setoid_rewrite <-bind_assoc.
     rew Hconv. rew IHn.
     setoid_rewrite <-bind_assoc.
     setoid_rewrite seq_star_fold; reflexivity.
-  setoid_rewrite seq_star_lr.
-  t.
-  induction H1; propositional.
-  - eauto 15.
-  - repeat match goal with
-           | [ u: unit |- _ ] => destruct u
-           end.
-    unfold rimpl in H; simpl in *.
-    specialize (H y0 z o2).
-    match type of H with
-    | ?P -> ?Q =>
-      let HP := fresh in
-      assert P as HP;
-        [ | specialize (H HP) ]
-    end; eauto; propositional.
-    eauto 15.
-
-    Grab Existential Variables.
-    all: auto.
 Qed.
-*)
+
+Theorem simulation_seq_value_no_err A B T
+        (p: relation A B unit)
+        (q: relation B B T)
+        (r: relation A A T) :
+  (forall a, p a (Err _ _) -> False) ->
+  (p;; q) ---> (v <- r; (p;; pure v)) ->
+  (p;; seq_star q) ---> (v <- seq_star r; (p;; pure v)).
+Proof.
+  intros Herr Hconv.
+  apply seq_star_rep_n_ind. intros n.
+
+  induction n. simpl.
+  - setoid_rewrite <-seq_star_none.
+    intros a1 a2. destruct_return.
+    * intros ([]&?&?&?).
+      right.
+      do 2 eexists; split; eauto.
+      econstructor; eauto.
+      do 2 eexists; split; eauto.
+      inversion H0; subst. inversion H1; subst.
+      econstructor; eauto.
+    * intros [?|([]&?&?&?)].
+      ** exfalso; eauto.
+      ** inversion H0; congruence.
+  - simpl.
+    setoid_rewrite <-bind_assoc.
+    rew Hconv. rew IHn.
+    setoid_rewrite <-bind_assoc.
+    setoid_rewrite seq_star_fold; reflexivity.
+Qed.

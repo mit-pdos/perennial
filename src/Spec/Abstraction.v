@@ -23,74 +23,88 @@ Section Abstraction.
              (spec: relation AState AState T) :=
     (absr;; p) ---> (v <- spec; r;; pure v).
 
-  (*
   Theorem refine_unfolded_iff T
           (p: relation CState CState T)
           (spec: relation AState AState T) :
-    (forall s s__a, absr s__a s tt ->
-             forall s' v, p s s' v ->
-                     exists s__a', spec s__a s__a' v /\
-                            absr s__a' s' tt) <->
+    (forall s__a, absr s__a Err -> False) ->
+    (forall s s__a, absr s__a (Valid s tt) ->
+             (forall s' v, p s (Valid s' v) ->
+                     (exists s__a', spec s__a (Valid s__a' v) /\
+                                   absr s__a' (Valid s' tt)) \/ spec s__a Err) /\
+             (p s Err -> spec s__a Err)) <->
     refines p spec.
   Proof.
     unfold refines, rimpl, and_then, pure; split.
-    - propositional.
-      destruct o1.
-      eapply H in H0; eauto; propositional.
-      eauto 10.
-    - intros. edestruct H; eauto. propositional.
-      destruct o1.
-      eauto 10.
+    - propositional. destruct_return. propositional.
+      * destruct o1. eapply H0 in H1 as (?&?); eauto.
+        edestruct H1 as [(?&?&?)|]; eauto.
+        right. intuition eauto 10.
+      * intuition; [ exfalso; eauto |].
+        propositional.
+        destruct o1. eapply H0 in H1 as (?&?); eauto.
+    - intros. split.
+      * intros. edestruct (H0 s__a (Valid s' v)) as [[|]|]; eauto 20.
+        ** propositional. intuition.
+           *** exfalso; eauto.
+           *** propositional. congruence.
+        ** propositional. inversion H5. subst. left. eexists; split; eauto.
+           destruct o0. eauto.
+      * intros. edestruct (H0 s__a Err) as [[|]|]; eauto 20.
+        ** propositional. intuition.
+           *** exfalso; eauto.
+           *** propositional. congruence.
+        ** intuition. propositional. intuition.
+           *** exfalso; eauto.
+           *** propositional. congruence.
   Qed.
 
   Theorem refine_unfolded T
           (p: relation CState CState T)
           (spec: relation AState AState T) :
-    (forall s s__a, absr s__a s tt ->
-             forall s' v, p s s' v ->
-                     exists s__a', spec s__a s__a' v /\
-                            absr s__a' s' tt) ->
+    (forall s__a, absr s__a Err -> False) ->
+    (forall s s__a, absr s__a (Valid s tt) ->
+             (forall s' v, p s (Valid s' v) ->
+                     (exists s__a', spec s__a (Valid s__a' v) /\
+                                   absr s__a' (Valid s' tt)) \/ spec s__a Err) /\
+             (p s Err -> spec s__a Err)) ->
     refines p spec.
-  Proof. eapply refine_unfolded_iff. Qed.
+  Proof. intros. eapply refine_unfolded_iff; eauto. Qed.
 
-  Theorem refine_if_unfolded_iff T r
+  Theorem refine_if_unfolded_iff T (r: relation AState CState unit)
           (p: relation CState CState T)
           (spec: relation AState AState T) :
-    (forall s s__a, absr s__a s tt ->
-             forall s' v, p s s' v ->
-                     exists s__a', spec s__a s__a' v /\
-                            r s__a' s' tt) <->
+    (forall s__a, absr s__a Err -> False) ->
+    (forall s__a, r s__a Err -> False) ->
+    (forall s s__a, absr s__a (Valid s tt) ->
+             (forall s' v, p s (Valid s' v) ->
+                     (exists s__a', spec s__a (Valid s__a' v) /\
+                                   r s__a' (Valid s' tt)) \/ spec s__a Err) /\
+             (p s Err -> spec s__a Err)) <->
     refines_if r p spec.
   Proof.
-    unfold refines_if, rimpl, and_then, pure; split.
-    - propositional.
-      destruct o1.
-      eapply H in H0; eauto; propositional.
-      eauto 10.
-    - intros. edestruct H; eauto. propositional.
-      destruct o1.
-      eauto 10.
+    unfold refines_if, rimpl, and_then, pure. intros ? Herr; split.
+    - propositional. destruct_return. propositional.
+      * destruct o1. eapply H0 in H1 as (?&?); eauto.
+        edestruct H1 as [(?&?&?)|]; eauto.
+        right. intuition eauto 10.
+      * intuition; [ exfalso; eauto |].
+        propositional.
+        destruct o1. eapply H0 in H1 as (?&?); eauto.
+    - intros. split.
+      * intros. edestruct (H0 s__a (Valid s' v)) as [[|]|]; eauto 20.
+        ** propositional. intuition.
+           *** exfalso; eauto.
+           *** propositional. congruence.
+        ** propositional. inversion H5. subst. left. eexists; split; eauto.
+           destruct o0. eauto.
+      * intros. edestruct (H0 s__a Err) as [[|]|]; eauto 20.
+        ** propositional. intuition.
+           *** exfalso; eauto.
+           *** propositional. congruence.
+        ** intuition. propositional. intuition.
+           *** exfalso; eauto.
+           *** propositional. congruence.
   Qed.
-   *)
-
-  (* define refinement as transforming an abstract specification to a concrete
-  one (a program satisfying the abstract spec should satisfy the concrete spec
-  after refinement-preserving compilation) *)
-  (*
-  Definition refine_spec
-             A T R
-             (spec: A -> Specification T R AState)
-    : (AState*A) -> Specification T R CState :=
-    fun '(s, a) cs =>
-      {| pre := absr s cs tt /\
-                (spec a s).(pre);
-         post := fun cs' r =>
-                   exists s', absr s' cs' tt /\
-                         (spec a s).(post) s' r;
-         alternate := fun cs' r =>
-                        exists s', absr s' cs' tt /\
-                              (spec a s).(alternate) s' r; |}.
-   *)
 
   Section Dynamics.
     Context C_Op (c_sem: Dynamics C_Op CState).
@@ -171,14 +185,15 @@ Proof.
   auto using refines_trans_bind.
 Qed.
 
-Theorem refines_star State1 State2 abs T
+Theorem refines_star State1 State2 (abs: relation State2 State1 unit) T
         (r1: relation State1 State1 T)
         (r2: relation State2 State2 T) :
+  (forall a, abs a Err -> False) ->
   refines abs r1 r2 ->
   refines abs (seq_star r1) (seq_star r2).
 Proof.
-  unfold refines. intros Hr.
-  rew simulation_seq_value; auto.
+  unfold refines. intros ? Hr.
+  rew simulation_seq_value_no_err; auto.
 Qed.
 
 Theorem refines_or State1 State2 abs T
