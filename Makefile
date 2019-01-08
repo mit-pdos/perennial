@@ -31,7 +31,7 @@ endif
 
 %.vo: %.v _CoqProject
 	@echo "COQC $<"
-	@coqc -w -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error \
+	@coqc -w -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template \
      $(shell cat '_CoqProject') $< -o $@
 
 extract: logging-client/extract/ComposedRefinement.hs
