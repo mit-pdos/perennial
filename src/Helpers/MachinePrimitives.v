@@ -2,6 +2,9 @@
 Global Unset Auto Template Polymorphism.
 Global Set Implicit Arguments.
 
+From Coq Require Import ZArith.ZArith.
+Local Open Scope Z.
+
 Axiom ByteString : Type.
 
 Record MachineInt (bits:nat) : Type :=
@@ -10,8 +13,8 @@ Record MachineInt (bits:nat) : Type :=
     int_val1 : intTy;
     intPlus : intTy -> intTy -> intTy;
     intCmp : intTy -> intTy -> comparison;
-    toNat : intTy -> nat;
-    toNat_ok : forall x, toNat x < Nat.pow 2 bits;
+    toNum : intTy -> Z;
+    toNum_ok : forall x, toNum x < Z.pow 2 (Z.of_nat bits);
     encodeLE : intTy -> ByteString;
     decodeLE : ByteString -> intTy;
     encode_decode_LE_ok : forall x, decodeLE (encodeLE x) = x; }.
@@ -21,6 +24,7 @@ Arguments int_val1 {bits int} : rename.
 Arguments intCmp {bits int} : rename.
 
 Axiom int64 : MachineInt 64.
+Axiom int32 : MachineInt 32.
 Axiom int16 : MachineInt 16.
 Axiom int8  : MachineInt 8.
 

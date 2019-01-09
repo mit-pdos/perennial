@@ -29,6 +29,9 @@ Module Data.
   Definition get Op' {i:Injectable Op Op'} T (var: Var T) : proc Op' T :=
     Call (inject (GetVar var)).
 
+  Definition set Op' {i:Injectable Op Op'} T (var: Var T) (v: T) : proc Op' T :=
+    Call (inject (SetVar var v)).
+
   Definition arrayAppend Op' {i:Injectable Op Op'} T (a: Array T) (v:T) : proc Op' unit :=
     Call (inject (ArrayAppend a v)).
 End Data.

@@ -1,10 +1,8 @@
 From RecoveryRefinement Require Import Lib.
 From RecoveryRefinement Require Import Spec.SumProc.
 From RecoveryRefinement Require Import Database.Filesys.
-From RecoveryRefinement Require Import Database.DataStructures.
-
-Require Import Helpers.MachinePrimitives.
-Require Import Database.BinaryEncoding.
+From RecoveryRefinement Require Import Database.Common.
+From RecoveryRefinement Require Import Database.BinaryEncoding.
 
 Import ProcNotations.
 Open Scope proc.
@@ -52,10 +50,16 @@ Module LogImpl.
       let bs := encode (array16 txn) in
       lift (FS.append fd bs).
 
+  Definition clear : proc (Data.Op ⊕ FS.Op) _ :=
+    fd <- Data.get LogFd;
+      lift (FS.truncate fd).
+
   Definition getRecoveredTxns : proc (Data.Op ⊕ FS.Op) _ :=
     Data.get LogRecoveredTxns.
 
-  Import DecodeNotations.
+  Definition init : proc (Data.Op ⊕ FS.Op) _ :=
+    fd <- lift (FS.create "log");
+      Data.set LogFd fd.
 
   Definition recover : proc (Data.Op ⊕ FS.Op) _ :=
     fd <- Data.get LogFd;
