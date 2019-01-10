@@ -4,9 +4,6 @@ From RecoveryRefinement Require Import Database.Filesys.
 From RecoveryRefinement Require Import Database.Common.
 From RecoveryRefinement Require Import Database.BinaryEncoding.
 
-Import ProcNotations.
-Open Scope proc.
-
 Module Log.
   Inductive Op : Type -> Type :=
   | AddTxn : ByteString -> Op unit
@@ -45,6 +42,9 @@ Definition DoWhileVoid Op T (body: T -> proc Op (option T)) (init: T) : proc Op 
        (fun _ => Ret tt).
 
 Module LogImpl.
+  Import ProcNotations.
+  Local Open Scope proc.
+
   Definition addTxn (txn: ByteString) : proc (Data.Op ⊕ FS.Op) _ :=
     fd <- Data.get (Log File);
       let bs := encode (array16 txn) in

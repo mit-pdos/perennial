@@ -42,6 +42,21 @@ Module Data.
   Definition set Op' {i:Injectable Op Op'} T (var: Var T) (v: T) : proc Op' T :=
     Call (inject (SetVar var v)).
 
+  Definition readIORef Op' {i:Injectable Op Op'}
+             T (ref:IORef T) : proc Op' T :=
+    Call (inject (ReadIORef ref)).
+
+  Definition writeIORef Op' {i:Injectable Op Op'}
+             T (ref:IORef T) (v:T) : proc Op' unit :=
+    Call (inject (WriteIORef ref v)).
+
+  (* non-atomic modify (we could add atomicModifyIORef' but I don't think we
+  need it) *)
+  Definition modifyIORef Op' {i:Injectable Op Op'}
+             T (ref:IORef T) (f: T -> T) : proc Op' unit :=
+    Bind (Call (inject (ReadIORef ref)))
+         (fun x => Call (inject (WriteIORef ref (f x)))).
+
   Definition arrayAppend Op' {i:Injectable Op Op'} T (a: Array T) (v:T) : proc Op' unit :=
     Call (inject (ArrayAppend a v)).
 End Data.

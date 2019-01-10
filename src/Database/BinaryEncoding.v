@@ -1,5 +1,6 @@
 From Coq Require Import FunctionalExtensionality.
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
+From RecoveryRefinement Require Import Database.Common.
 
 From Tactical Require Import ProofAutomation.
 
@@ -104,4 +105,14 @@ Proof.
             decode :=
               l <- decode int16;;
                 array16 <$> decodeFixed (int16_to_int64 l); |}.
+Defined.
+
+Instance entry_fmt : Encodable Entry.t.
+Proof.
+  refine {| encode :=
+              fun e => encode e.(Entry.key) ++ encode (array16 e.(Entry.value));
+            decode :=
+              key <- decode int64;;
+            value <- getBytes <$> decode Array16;;
+            ret (Entry.mk key value); |}.
 Defined.
