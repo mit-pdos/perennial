@@ -1,7 +1,7 @@
 From RecoveryRefinement Require Export Helpers.MachinePrimitives.
 From RecoveryRefinement Require Export Database.DataStructures.
 
-Definition Key := ByteString.
+Definition Key := int64.
 Definition Value := ByteString.
 
 Module Entry.

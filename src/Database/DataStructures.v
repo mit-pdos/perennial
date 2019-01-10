@@ -5,10 +5,15 @@ From RecoveryRefinement Require Import Spec.SumProc.
 Set Implicit Arguments.
 
 Axiom Array : Type -> Type.
+Axiom IORef : Type -> Type.
+
+Inductive LogVar : Type -> Type :=
+| File : LogVar Fd
+| RecoveredTxns : LogVar (Array ByteString)
+.
 
 Inductive Var : Type -> Type :=
-| LogFd : Var Fd
-| LogRecoveredTxns : Var (Array ByteString)
+| Log : forall T, LogVar T -> Var T
 .
 
 Module Data.
@@ -16,6 +21,11 @@ Module Data.
   (* generic variable operations *)
   | GetVar : forall T, Var T -> Op T
   | SetVar : forall T, Var T -> T -> Op T
+
+  (* arbitrary references *)
+  | NewIORef : forall T, T -> Op (IORef T)
+  | ReadIORef : forall T, IORef T -> Op T
+  | WriteIORef : forall T, IORef T -> T -> Op unit
 
   (* arrays *)
   | NewArray : forall T, Op (Array T)

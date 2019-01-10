@@ -46,24 +46,24 @@ Definition DoWhileVoid Op T (body: T -> proc Op (option T)) (init: T) : proc Op 
 
 Module LogImpl.
   Definition addTxn (txn: ByteString) : proc (Data.Op ⊕ FS.Op) _ :=
-    fd <- Data.get LogFd;
+    fd <- Data.get (Log File);
       let bs := encode (array16 txn) in
       lift (FS.append fd bs).
 
   Definition clear : proc (Data.Op ⊕ FS.Op) _ :=
-    fd <- Data.get LogFd;
+    fd <- Data.get (Log File);
       lift (FS.truncate fd).
 
   Definition getRecoveredTxns : proc (Data.Op ⊕ FS.Op) _ :=
-    Data.get LogRecoveredTxns.
+    Data.get (Log RecoveredTxns).
 
   Definition init : proc (Data.Op ⊕ FS.Op) _ :=
     fd <- lift (FS.create "log");
-      Data.set LogFd fd.
+      Data.set (Log File) fd.
 
   Definition recover : proc (Data.Op ⊕ FS.Op) _ :=
-    fd <- Data.get LogFd;
-      txns <- Data.get LogRecoveredTxns;
+    fd <- Data.get (Log File);
+      txns <- Data.get (Log RecoveredTxns);
       sz <- lift (FS.size fd);
       log <- lift (FS.readAt fd int_val0 sz);
       DoWhileVoid (fun log => match decode Array16 log with
