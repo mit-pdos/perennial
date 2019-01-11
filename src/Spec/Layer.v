@@ -15,8 +15,8 @@ Record Layer Op :=
     (* TODO: should these be part of Dynamics instead of Layer? *)
     trace_proj: State -> list Event;
     crash_preserves_trace:
-      forall s1 s2, sem.(crash_step) s1 (Valid s2 tt) -> trace_proj s1 = trace_proj s2;
-    crash_total: forall s1, exists s2, sem.(crash_step) s1 (Valid s2 tt);
+      forall s1 s2, sem.(crash_step) s1 (Val s2 tt) -> trace_proj s1 = trace_proj s2;
+    crash_total: forall s1, exists s2, sem.(crash_step) s1 (Val s2 tt);
     crash_non_err: forall s1 ret, sem.(crash_step) s1 ret -> ret <> Err;
     initP: State -> Prop }.
 
@@ -51,7 +51,7 @@ Definition compile_rec Op C_Op `(impl: LayerImpl C_Op Op) (rec: rec_seq Op) : re
   rec_seq_append impl.(recover) (impl.(compile_seq) rec).
 
 Definition initOutput {A} `(L: Layer Op) (r: relation (State L) (State L) A) (v : A) : Prop :=
-  exists s1 s2, L.(initP) s1 /\ r s1 (Valid s2 v).
+  exists s1 s2, L.(initP) s1 /\ r s1 (Val s2 v).
 
 Hint Unfold refines : relation_rewriting.
 
@@ -96,7 +96,7 @@ Section Layers.
                     (a_exec_halt p;; a_sem.(crash_step)).
 
   Definition trace_relation : relation AState CState unit :=
-    fun sa ret => exists sc, ret = Valid sc tt /\ a_trace_proj sa = c_trace_proj sc.
+    fun sa ret => exists sc, ret = Val sc tt /\ a_trace_proj sa = c_trace_proj sc.
 
   Definition trace_refines (impl: LayerImpl C_Op Op) (absr: relation AState CState unit) :=
     forall T (p: proc Op T),
@@ -260,7 +260,7 @@ Section Layers.
   Qed.
 
   Lemma absr_preserves_trace' s1 s2:
-    rf.(absr) s1 (Valid s2 tt) -> trace_proj _ s1 = trace_proj _ s2.
+    rf.(absr) s1 (Val s2 tt) -> trace_proj _ s1 = trace_proj _ s2.
   Proof.
     intros. edestruct absr_preserves_trace; eauto;
     inversion H0; intuition; congruence.
@@ -412,7 +412,7 @@ Section Layers.
       destruct Hexec_halt as (?&?&?&Hpure); subst.
       inversion Hpure; subst.
       edestruct (crash_total _ sC') as (sC''&Hcrash).
-      edestruct (Href sA (Valid sC'' tt)) as [?|Hv]; eauto. (* [(sA'&?&?&Htrace)|]. *)
+      edestruct (Href sA (Val sC'' tt)) as [?|Hv]; eauto. (* [(sA'&?&?&Htrace)|]. *)
       {
         do 2 eexists; split; eauto.
         do 2 eexists; split; eauto.

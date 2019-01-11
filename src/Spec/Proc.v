@@ -123,8 +123,8 @@ Section Dynamics.
     | step_atomic_valid {T} (e1 e2: proc T) ps2 efs σ2 t1 t2 :
        ps1 = t1 ++ existT _ _ e1 :: t2 ->
        ps2 = t1 ++ existT _ _ e2 :: t2 ++ efs ->
-       ret = Valid σ2 ps2 ->
-       exec_step e1 σ1 (Valid σ2 (e2, efs)) ->
+       ret = Val σ2 ps2 ->
+       exec_step e1 σ1 (Val σ2 (e2, efs)) ->
        exec_pool_alt ps1 σ1 ret
     | step_atomic_error {T} (e1: proc T) t1 t2 :
        ps1 = t1 ++ existT _ _ e1 :: t2 ->
@@ -133,8 +133,8 @@ Section Dynamics.
        exec_pool_alt ps1 σ1 ret.
 
   Lemma exec_pool_alt_cons_valid {T} ps1 σ1 σ2 ps2 e:
-    exec_pool_alt ps1 σ1 (Valid σ2 ps2) ->
-    exec_pool_alt (existT _ T e :: ps1) σ1 (Valid σ2 (existT _ T e :: ps2)).
+    exec_pool_alt ps1 σ1 (Val σ2 ps2) ->
+    exec_pool_alt (existT _ T e :: ps1) σ1 (Val σ2 (existT _ T e :: ps2)).
   Proof.
     inversion 1; [| congruence].
     subst. inversion H2; subst; econstructor; eauto;

@@ -15,10 +15,10 @@ Section OutputRelations.
   (* an output relation: a heterogeneous relation from [A] to [B] that also
   emits some value of type [T] *)
   Inductive Return (B T: Type) : Type :=
-  | Valid (b: B) (t: T)
+  | Val (b: B) (t: T)
   | Err.
 
-  Arguments Valid {_ _}.
+  Arguments Val {_ _}.
   Arguments Err {_ _}.
 
   Definition relation A B T := A -> Return B T -> Prop.
@@ -30,8 +30,8 @@ Section OutputRelations.
     relation A C T2 :=
     fun x mz =>
       match mz with
-      | Valid z o2 => exists o1 y, r1 x (Valid y o1) /\ (r2 o1) y (Valid z o2)
-      | Err => r1 x Err \/ exists o1 y, r1 x (Valid y o1) /\ (r2 o1) y Err
+      | Val z o2 => exists o1 y, r1 x (Val y o1) /\ (r2 o1) y (Val z o2)
+      | Err => r1 x Err \/ exists o1 y, r1 x (Val y o1) /\ (r2 o1) y Err
       end.
 
   Notation "p1 ;; p2" := (and_then p1 (fun _ => p2))
@@ -40,10 +40,10 @@ Section OutputRelations.
                                (at level 54, right associativity).
 
   Definition pure A T (o0:T) : relation A A T :=
-    fun x y => Valid x o0 = y.
+    fun x y => Val x o0 = y.
 
   Definition identity {A} {T} : relation A A T :=
-    fun x y => exists t, Valid x t = y.
+    fun x y => exists t, Val x t = y.
 
   Definition any {A B} {T} : relation A B T :=
     fun x y => True.
@@ -52,15 +52,15 @@ Section OutputRelations.
     fun x y => False.
 
   Definition reads {A} {T} (f: A -> T) : relation A A T :=
-    fun x y => Valid x (f x) = y.
+    fun x y => Val x (f x) = y.
 
   Definition puts {A} (f: A -> A) : relation A A unit :=
-    fun x y => y = Valid (f x) tt.
+    fun x y => y = Val (f x) tt.
 
   Definition predicate A := A -> Prop.
   (* TODO: should failure of a test be error? *)
   Definition test {A} (P: predicate A) : relation A A unit :=
-    fun x y => P x /\ Valid x tt = y.
+    fun x y => P x /\ Val x tt = y.
 
   Definition rel_or A B T (r1 r2: relation A B T) : relation A B T :=
     fun x y => r1 x y \/ r2 x y.
@@ -68,8 +68,8 @@ Section OutputRelations.
   Definition rel_or A B T (r1 r2: relation A B T) : relation A B T :=
     fun x y =>
       match y with
-      | Valid b o => (r1 x (Valid b o) /\ ~ (r2 x Err)) \/
-                     (r2 x (Valid b o) /\ ~ (r1 x Err))
+      | Val b o => (r1 x (Val b o) /\ ~ (r2 x Err)) \/
+                     (r2 x (Val b o) /\ ~ (r1 x Err))
       | Err => r1 x Err \/ r2 x Err
       end.
    *)
@@ -78,9 +78,9 @@ Section OutputRelations.
 
   Inductive seq_star A `(r: relation A A T) : relation A A T :=
   | seq_star_refl : forall x o,
-      seq_star r x (Valid x o)
+      seq_star r x (Val x o)
   | seq_star_one_more_valid : forall x y z o1,
-      r x (Valid y o1) ->
+      r x (Val y o1) ->
       seq_star r y z ->
       seq_star r x z
   | seq_star_one_more_err : forall x,
@@ -94,15 +94,15 @@ Section OutputRelations.
       r x y ->
       seq_plus r x y
   | seq_plus_one_more_valid : forall x y z o1,
-      r x (Valid y o1) ->
+      r x (Val y o1) ->
       seq_plus r y z ->
       seq_plus r x z.
 
   Inductive bind_star A `(r: T -> relation A A T) : T -> relation A A T :=
   | bind_star_pure : forall (o:T) x,
-      bind_star r o x (Valid x o)
+      bind_star r o x (Val x o)
   | bind_star_one_more_valid : forall (o1:T) x y z o2,
-      r o1 x (Valid y o2) ->
+      r o1 x (Val y o2) ->
       bind_star r o2 y z ->
       bind_star r o1 x z
   | bind_star_one_more_err : forall (o1:T) x,
@@ -112,18 +112,18 @@ Section OutputRelations.
 
   Inductive bind_star_r A `(r: T -> relation A A T) : T -> relation A A T :=
   | bind_star_r_pure : forall (o:T) x,
-      bind_star_r r o x (Valid x o)
+      bind_star_r r o x (Val x o)
                   (*
   | bind_star_r_err_refl : forall (o1:T) x,
       r o1 x Err ->
       bind_star_r r o1 x Err
                    *)
   | bind_star_r_one_more_valid : forall (o1:T) x y z o2,
-      bind_star_r r o1 x (Valid y o2) ->
+      bind_star_r r o1 x (Val y o2) ->
       r o2 y z ->
       bind_star_r r o1 x z
   | bind_star_r_one_more_err : forall (o1 o2:T) x y,
-      bind_star_r r o1 x (Valid y o2) ->
+      bind_star_r r o1 x (Val y o2) ->
       r o2 y Err ->
       bind_star_r r o1 x Err
   .
@@ -258,7 +258,7 @@ Section OutputRelations.
              | relation ?A ?B ?T =>
                match goal with
                | [ x: A, y: Return B T |- _ ] => add_hypothesis' (H x y); add_hypothesis' (H x Err)
-               | [ x: A, y: B, o: T |- _ ] => add_hypothesis' (H x (Valid y o));
+               | [ x: A, y: B, o: T |- _ ] => add_hypothesis' (H x (Val y o));
                                               add_hypothesis' (H x Err)
                end
              end
@@ -278,9 +278,9 @@ Section OutputRelations.
            | _ => solve [ eauto 10 ]
            | [ H: _ \/ _  |- _ ] => destruct H
            | [ H : none _ _ |- _] => destruct H
-           | [ H : Valid _ _ = Valid _ _ |- _] => inversion H; subst; clear H
-           | [ H : Valid _ _  = Err |- _] => inversion H
-           | [ H : Err = Valid _ _ |- _] => inversion H
+           | [ H : Val _ _ = Val _ _ |- _] => inversion H; subst; clear H
+           | [ H : Val _ _  = Err |- _] => inversion H
+           | [ H : Err = Val _ _ |- _] => inversion H
         end.
 
   Ltac destruct_return :=
@@ -757,12 +757,12 @@ Section OutputRelations.
       * unshelve (destruct_return; t); eauto.
       * do 2 left. eapply seq_star_one_more_err; eauto.
     - destruct_return; t.
-      * remember (Valid y o1) as z eqn:Heq. revert y o1 H0 Heq. revert H.
+      * remember (Val y o1) as z eqn:Heq. revert y o1 H0 Heq. revert H.
         induction 1; intros.
         ** inversion Heq; subst. intuition.
         ** subst. edestruct IHseq_star; eauto.
         ** congruence.
-      * remember (Valid y o1) as z eqn:Heq. revert y o1 H0 Heq. revert H.
+      * remember (Val y o1) as z eqn:Heq. revert y o1 H0 Heq. revert H.
         induction 1; intros.
         ** inversion Heq; subst. intuition.
         ** subst. edestruct IHseq_star; eauto.
@@ -861,7 +861,7 @@ Section OutputRelations.
     apply rimpl_to_requiv.
     - t. destruct_return.
       * destruct H as ([]&y&Hstar&Hy).
-        remember (Valid y tt) as ret eqn:Heq. gen y Heq.
+        remember (Val y tt) as ret eqn:Heq. gen y Heq.
         induction Hstar; subst; t.
         ** specialize (IHHstar _ ltac:(eauto) ltac:(eauto)); t.
            left. right.
@@ -874,7 +874,7 @@ Section OutputRelations.
            *** congruence.
            *** t; left; right; do 2 eexists; split; eauto; t.
            *** t.
-        ** remember (Valid y tt) as ret eqn:Heq. gen y Heq.
+        ** remember (Val y tt) as ret eqn:Heq. gen y Heq.
         induction H; subst; t.
         *** specialize (IHseq_star _ ltac:(eauto) ltac:(eauto)); t.
            **** left. right.
@@ -901,7 +901,7 @@ Section OutputRelations.
   Proof.
     - t. destruct_return.
       * destruct H as ([]&y&Hstar&Hy).
-        remember (Valid y tt) as ret eqn:Heq. gen y Heq.
+        remember (Val y tt) as ret eqn:Heq. gen y Heq.
         induction Hstar; subst; t.
         specialize (IHHstar _ ltac:(eauto) ltac:(eauto)); t.
         left. right.
@@ -914,7 +914,7 @@ Section OutputRelations.
            *** congruence.
            *** t; left; right; do 2 eexists; split; eauto; t.
            *** t.
-        ** remember (Valid y tt) as ret eqn:Heq. gen y Heq.
+        ** remember (Val y tt) as ret eqn:Heq. gen y Heq.
            induction H; subst; t.
            specialize (IHseq_star _ ltac:(eauto) ltac:(eauto)); t.
            *** left. right.
@@ -944,28 +944,28 @@ Section OutputRelations.
 
   Inductive seq_star_r A `(r: relation A A T) : relation A A T :=
   | seq_star_r_refl : forall x o,
-      seq_star_r r x (Valid x o)
+      seq_star_r r x (Val x o)
   (* This might seem redundant because of _one_more_err, but it is not if T is uninhabited *)
   | seq_star_r_err_refl : forall x,
       r x Err ->
       seq_star_r r x Err
   | seq_star_r_one_more_valid : forall x y z o1 o2,
-      seq_star_r r x (Valid y o1) ->
-      r y (Valid z o2) ->
-      seq_star_r r x (Valid z o2)
+      seq_star_r r x (Val y o1) ->
+      r y (Val z o2) ->
+      seq_star_r r x (Val z o2)
   | seq_star_r_one_more_err : forall x y o1,
-      seq_star_r r x (Valid y o1) ->
+      seq_star_r r x (Val y o1) ->
       r y Err ->
       seq_star_r r x Err.
 
   Hint Constructors seq_star_r.
 
   Lemma seq_star_r_one_more_valid_left {A T} (r: relation A A T) x y z o1 o2:
-    r x (Valid y o1) ->
-    seq_star_r r y (Valid z o2) ->
-    exists o3, seq_star_r r x (Valid z o3).
+    r x (Val y o1) ->
+    seq_star_r r y (Val z o2) ->
+    exists o3, seq_star_r r x (Val z o3).
   Proof.
-    intros Hr Hseq. remember (Valid z o2) as ret eqn: Heq. revert x z o1 o2 Hr Heq.
+    intros Hr Hseq. remember (Val z o2) as ret eqn: Heq. revert x z o1 o2 Hr Heq.
     induction Hseq; intros.
     - unshelve t; eauto.
     - unshelve t; eauto.
@@ -974,25 +974,25 @@ Section OutputRelations.
   Qed.
 
   Lemma seq_star_trans A `(r: relation A A T) (x y: A) (o: T) z:
-    seq_star r x (Valid y o) ->
+    seq_star r x (Val y o) ->
     seq_star r y z ->
     seq_star r x z.
   Proof.
     intros Hstar.
-    remember (Valid y o) as ret eqn:Heq. revert y o Heq.
+    remember (Val y o) as ret eqn:Heq. revert y o Heq.
     induction Hstar; t.
   Qed.
 
   Lemma seq_star_rl_valid A `(r: relation A A T) x b o1 o2:
-    seq_star_r r x (Valid b o1) ->
-    seq_star r x (Valid b o2).
+    seq_star_r r x (Val b o1) ->
+    seq_star r x (Val b o2).
   Proof.
     intros Hstar.
-    remember (Valid b o1) as ret eqn:Heq.
+    remember (Val b o1) as ret eqn:Heq.
     revert b o1 Heq. induction Hstar; t.
     specialize (IHHstar y o1 ltac:(eauto)); t.
     clear Hstar.
-    remember (Valid y o2) as ret eqn:Heq.
+    remember (Val y o2) as ret eqn:Heq.
     revert o2 Heq.
     induction IHHstar; t.
   Qed.
@@ -1026,34 +1026,34 @@ Section OutputRelations.
   Hint Constructors bind_star_r.
 
   Lemma bind_star_r_one_more_valid_left {A T} (r: T -> relation A A T) x y z o1 o2 o3:
-    r o1 x (Valid y o2) ->
-    bind_star_r r o2 y (Valid z o3) ->
-    bind_star_r r o1 x (Valid z o3).
+    r o1 x (Val y o2) ->
+    bind_star_r r o2 y (Val z o3) ->
+    bind_star_r r o1 x (Val z o3).
   Proof.
-    intros Hr Hseq. remember (Valid z o2) as ret eqn: Heq. revert x o1 Hr Heq.
+    intros Hr Hseq. remember (Val z o2) as ret eqn: Heq. revert x o1 Hr Heq.
     induction Hseq; intros; unshelve t; eauto.
   Qed.
 
   Lemma bind_star_trans A `(r: T -> relation A A T) (x y: A) (o1 o2: T) z:
-    bind_star r o1 x (Valid y o2) ->
+    bind_star r o1 x (Val y o2) ->
     bind_star r o2 y z ->
     bind_star r o1 x z.
   Proof.
     intros Hstar.
-    remember (Valid y o2) as ret eqn:Heq. revert y o2 Heq.
+    remember (Val y o2) as ret eqn:Heq. revert y o2 Heq.
     induction Hstar; t.
   Qed.
 
   Lemma bind_star_rl_valid A `(r: T -> relation A A T) x b o1 o2:
-    bind_star_r r o1 x (Valid b o2) ->
-    bind_star r o1 x (Valid b o2).
+    bind_star_r r o1 x (Val b o2) ->
+    bind_star r o1 x (Val b o2).
   Proof.
     intros Hstar.
-    remember (Valid b o2) as ret eqn:Heq.
+    remember (Val b o2) as ret eqn:Heq.
     revert b o2 Heq. induction Hstar; t.
     specialize (IHHstar y o2 ltac:(eauto)); t.
     clear Hstar.
-    remember (Valid y o2) as ret eqn:Heq.
+    remember (Val y o2) as ret eqn:Heq.
     revert o2 Heq H.
     induction IHHstar; t.
   Qed.
@@ -1092,13 +1092,13 @@ Section OutputRelations.
     and_then (seq_star p) (fun _ => q) ---> x.
   Proof.
     t; destruct_return; t.
-    * remember (Valid y o1) as ret eqn:Heq.
+    * remember (Val y o1) as ret eqn:Heq.
       revert y b o1 Heq H1. induction H0; intros; t.
       edestruct IHseq_star; t.
       edestruct (H x0 Err); t.
     * remember Err as ret eqn:Heq.
       revert Heq. induction H0; t.
-    * remember (Valid y o1) as ret eqn:Heq.
+    * remember (Val y o1) as ret eqn:Heq.
       revert y o1 Heq H1. induction H0; intros; t.
       edestruct IHseq_star; t.
   Qed.

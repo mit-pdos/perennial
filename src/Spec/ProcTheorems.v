@@ -66,8 +66,8 @@ Section Dynamics.
   Qed.
 
   Lemma exec_partial_finish T (p: proc T) s1 s2 (v: T) tp:
-    exec_partial p s1 (Valid s2 (cons (existT _ _ (Ret v)) tp)) ->
-    exec p s1 (Valid s2 (existT _ _ v)).
+    exec_partial p s1 (Val s2 (cons (existT _ _ (Ret v)) tp)) ->
+    exec p s1 (Val s2 (existT _ _ v)).
   Proof.
     intros. do 2 eexists. split; eauto.
     simpl. econstructor; eauto.

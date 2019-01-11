@@ -27,10 +27,10 @@ Section Abstraction.
           (p: relation CState CState T)
           (spec: relation AState AState T) :
     (forall s__a, absr s__a Err -> False) ->
-    (forall s s__a, absr s__a (Valid s tt) ->
-             (forall s' v, p s (Valid s' v) ->
-                     (exists s__a', spec s__a (Valid s__a' v) /\
-                                   absr s__a' (Valid s' tt)) \/ spec s__a Err) /\
+    (forall s s__a, absr s__a (Val s tt) ->
+             (forall s' v, p s (Val s' v) ->
+                     (exists s__a', spec s__a (Val s__a' v) /\
+                                   absr s__a' (Val s' tt)) \/ spec s__a Err) /\
              (p s Err -> spec s__a Err)) <->
     refines p spec.
   Proof.
@@ -43,7 +43,7 @@ Section Abstraction.
         propositional.
         destruct o1. eapply H0 in H1 as (?&?); eauto.
     - intros. split.
-      * intros. edestruct (H0 s__a (Valid s' v)) as [[|]|]; eauto 20.
+      * intros. edestruct (H0 s__a (Val s' v)) as [[|]|]; eauto 20.
         ** propositional. intuition.
            *** exfalso; eauto.
            *** propositional. congruence.
@@ -62,10 +62,10 @@ Section Abstraction.
           (p: relation CState CState T)
           (spec: relation AState AState T) :
     (forall s__a, absr s__a Err -> False) ->
-    (forall s s__a, absr s__a (Valid s tt) ->
-             (forall s' v, p s (Valid s' v) ->
-                     (exists s__a', spec s__a (Valid s__a' v) /\
-                                   absr s__a' (Valid s' tt)) \/ spec s__a Err) /\
+    (forall s s__a, absr s__a (Val s tt) ->
+             (forall s' v, p s (Val s' v) ->
+                     (exists s__a', spec s__a (Val s__a' v) /\
+                                   absr s__a' (Val s' tt)) \/ spec s__a Err) /\
              (p s Err -> spec s__a Err)) ->
     refines p spec.
   Proof. intros. eapply refine_unfolded_iff; eauto. Qed.
@@ -75,10 +75,10 @@ Section Abstraction.
           (spec: relation AState AState T) :
     (forall s__a, absr s__a Err -> False) ->
     (forall s__a, r s__a Err -> False) ->
-    (forall s s__a, absr s__a (Valid s tt) ->
-             (forall s' v, p s (Valid s' v) ->
-                     (exists s__a', spec s__a (Valid s__a' v) /\
-                                   r s__a' (Valid s' tt)) \/ spec s__a Err) /\
+    (forall s s__a, absr s__a (Val s tt) ->
+             (forall s' v, p s (Val s' v) ->
+                     (exists s__a', spec s__a (Val s__a' v) /\
+                                   r s__a' (Val s' tt)) \/ spec s__a Err) /\
              (p s Err -> spec s__a Err)) <->
     refines_if r p spec.
   Proof.
@@ -91,7 +91,7 @@ Section Abstraction.
         propositional.
         destruct o1. eapply H0 in H1 as (?&?); eauto.
     - intros. split.
-      * intros. edestruct (H0 s__a (Valid s' v)) as [[|]|]; eauto 20.
+      * intros. edestruct (H0 s__a (Val s' v)) as [[|]|]; eauto 20.
         ** propositional. intuition.
            *** exfalso; eauto.
            *** propositional. congruence.
