@@ -1,4 +1,5 @@
 Require Import Helpers.RelationAlgebra.
+Require Import Helpers.RelationTheorems.
 Require Import List.
 
 Global Set Implicit Arguments.
@@ -75,7 +76,7 @@ Section Dynamics.
                       (p : option T -> proc Op T)
                       (v : option T) :=
     Bind (p v) (fun x => if c x then Ret x else Until c p (Some x)).
-   
+
   Fixpoint exec_step {T} (p: proc Op T)
     : relation State State (proc Op T * thread_pool Op) :=
     match p with
@@ -118,50 +119,77 @@ Section Dynamics.
     (* | existT _ T p :: nil => exec_pool_hd p nil *)
     end.
 
-  (*
-  Inductive exec_pool_alt (ps1: thread_pool) (σ1: State) (ret: Return State * thread_pool) : Prop :=
-    | step_atomic_valid {T} (e1 e2: proc T) efs t1 t2 :
+  Inductive exec_pool_alt (ps1: thread_pool) (σ1: State) (ret: Return State thread_pool) : Prop :=
+    | step_atomic_valid {T} (e1 e2: proc T) ps2 efs σ2 t1 t2 :
        ps1 = t1 ++ existT _ _ e1 :: t2 ->
        ps2 = t1 ++ existT _ _ e2 :: t2 ++ efs ->
        ret = Valid σ2 ps2 ->
        exec_step e1 σ1 (Valid σ2 (e2, efs)) ->
-       exec_pool_alt ps1 σ1 σ2 ps2
-    | step_atomic_error {T} (e1: proc T) efs t1 t2 :
+       exec_pool_alt ps1 σ1 ret
+    | step_atomic_error {T} (e1: proc T) t1 t2 :
        ps1 = t1 ++ existT _ _ e1 :: t2 ->
+       ret = Err ->
        exec_step e1 σ1 Err ->
-       exec_pool_alt ps1 σ1 σ2 Err.
+       exec_pool_alt ps1 σ1 ret.
 
-  Lemma exec_pool_alt_cons {T} ps1 σ1 σ2 ps2 e:
-    exec_pool_alt ps1 σ1 σ2 ps2 ->
-    exec_pool_alt (existT _ T e :: ps1) σ1 σ2 (existT _ T e :: ps2).
+  Lemma exec_pool_alt_cons_valid {T} ps1 σ1 σ2 ps2 e:
+    exec_pool_alt ps1 σ1 (Valid σ2 ps2) ->
+    exec_pool_alt (existT _ T e :: ps1) σ1 (Valid σ2 (existT _ T e :: ps2)).
   Proof.
-    inversion 1.
-    subst. econstructor; eauto;
+    inversion 1; [| congruence].
+    subst. inversion H2; subst; econstructor; eauto;
+    rewrite app_comm_cons; f_equal.
+  Qed.
+
+  Lemma exec_pool_alt_cons_err {T} ps1 σ1 e:
+    exec_pool_alt ps1 σ1 Err ->
+    exec_pool_alt (existT _ T e :: ps1) σ1 Err.
+  Proof.
+    inversion 1; [congruence|].
+    subst. subst; econstructor; eauto;
     rewrite app_comm_cons; f_equal.
   Qed.
 
   Lemma exec_pool_equiv_alt ps1:
     exec_pool ps1 <---> exec_pool_alt ps1.
   Proof.
-    intros s1 s2 ps2.
     split.
-    - revert ps2.
-      induction ps1 as [|[T e] ps1]; intros ps2.
+    - induction ps1 as [|[T e] ps1]; intros σ1.
       * simpl. inversion 1.
-      * simpl. intros [H|H].
-        ** destruct H as ((e'&efs)&?&?&Hp).
-           inversion Hp; subst.
-           eapply (step_atomic _ _ e e' efs nil ps1); simpl; eauto.
-        ** destruct H as (ps2'&?&?&[]); subst.
-           eapply IHps1 in H. eapply exec_pool_alt_cons; eauto.
-    - inversion 1.
-      subst. clear H.
+      * simpl. intros [σ2 ?|].
+        {
+          intros [H|H].
+          ** destruct H as ((e'&efs)&?&?&Hp).
+             inversion Hp; subst.
+             right. eapply (step_atomic_valid _ e e' efs nil ps1); simpl; eauto.
+          ** inversion H as (ps2'&?&?&Hpure). inversion Hpure; subst.
+             eapply IHps1 in H0. destruct H0.
+             *** left. eapply exec_pool_alt_cons_err; eauto.
+             *** right. eapply exec_pool_alt_cons_valid; eauto.
+        }
+        {
+          intros [H|H].
+           ** destruct H as [?|(?&?&?&Hpure)].
+              right. eapply (step_atomic_error _ e nil ps1); simpl; eauto.
+              inversion Hpure.
+           ** apply bind_pure_no_err in H.
+              right. eapply exec_pool_alt_cons_err; eauto.
+              eapply IHps1 in H. intuition.
+        }
+    - inversion 1; subst; clear H;
       induction t1 as [|[T' e] ps1].
-      * simpl. left. repeat (do 2 econstructor; split; eauto).
-      * simpl. right. do 2 eexists; split; eauto.
-        econstructor; eauto.
+      * simpl. right. left.
+        do 2 econstructor; split; eauto.
+        econstructor.
+      * destruct IHps1.
+        ** simpl. left. right.
+           left. eauto.
+        ** simpl. right. right.
+           do 2 eexists; split; eauto.
+           econstructor; eauto.
+      * simpl. right. left. left. eauto.
+      * simpl. right. right. left. intuition eauto.
   Qed.
-   *)
 
   Definition exec_partial {T} (p: proc T) :=
     bind_star (exec_pool) ((existT _ T p) :: nil).

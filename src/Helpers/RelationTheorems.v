@@ -304,3 +304,10 @@ Proof.
     setoid_rewrite <-bind_assoc.
     setoid_rewrite seq_star_fold; reflexivity.
 Qed.
+
+Theorem bind_pure_no_err A B C T (p: relation A B T) (f: T -> C) a:
+  (x <- p; pure (f x)) a (@Err _ _) ->
+  p a (@Err _ _).
+Proof.
+  eapply bind_with_no_err; intros; eapply pure_no_err; eauto.
+Qed.

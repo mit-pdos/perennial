@@ -1103,6 +1103,18 @@ Section OutputRelations.
       edestruct IHseq_star; t.
   Qed.
 
+  Theorem pure_no_err A T (a: A) (v: T): pure v a Err -> False.
+  Proof. inversion 1. Qed.
+
+  Theorem bind_with_no_err A B C T S (p: relation A B T) (r: T -> relation B C S) a:
+    (forall b t, r t b Err -> False) ->
+    and_then p r a Err ->
+    p a Err.
+  Proof.
+    intros Hno_err. inversion 1; auto.
+    exfalso; t.
+  Qed.
+
   (* some basic properties of tests *)
   Hint Unfold test : t.
 
