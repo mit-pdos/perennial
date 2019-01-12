@@ -16,10 +16,17 @@ Unset Implicit Arguments.
 Import uPred.
 
 Definition reducible {OpT T Λ} (e : proc OpT T) (σ : State Λ) :=
-  ∃ e' σ' efs, exec_step (Λ.(sem)) e σ σ' (e', efs).
+  ∃ e' σ' efs, exec_step (Λ.(sem)) e σ (Val σ' (e', efs)).
 
+Definition non_errorable {OpT T Λ} (e : proc OpT T) (σ : State Λ) :=
+  ¬ exec_step (Λ.(sem)) e σ Err.
+
+
+(*
 Definition irreducible {OpT T Λ} (e : proc OpT T) (σ : State Λ) :=
-  ∀ e' σ' efs, ¬exec_step (Λ.(sem)) e σ σ' (e', efs).
+  (∀ e' σ' efs, ¬exec_step (Λ.(sem)) e σ (Val σ' (e', efs))) ∨
+               exec_step (Λ.(sem)) e σ Err.
+*)
 
 Definition to_val {OpT T} (e: proc OpT T) : option T :=
    match e in (proc _ T0) return (option T0) with
@@ -35,14 +42,21 @@ Proof. auto. Qed.
 Lemma of_to_val {OpT T} (e: proc OpT T) (v : T) : to_val e = Some v → of_val v = e.
 Proof. destruct e => //=.  rewrite /of_val //=. congruence. Qed.
 
+Lemma val_non_errorable {OpT T Λ} (e: proc OpT T) σ v :
+  to_val e = Some v → @non_errorable _ _ Λ e σ.
+Proof. destruct e => //=. Qed.
+
 Class IntoVal {OpT T} (e : proc OpT T) (v : T) :=
   into_val : of_val v = e.
+
+Definition irreducible {OpT T Λ} (e : proc OpT T) (σ : State Λ) :=
+  is_Some (to_val e) ∨ exec_step (Λ.(sem)) e σ Err.
 
 Inductive atomicity := StronglyAtomic | WeaklyAtomic.
 
 Class Atomic {OpT T} Λ (a : atomicity) (e : proc OpT T) : Prop :=
   atomic σ e' σ' efs :
-    exec_step (Λ.(sem)) e σ σ' (e', efs) →
+    exec_step (Λ.(sem)) e σ (Val σ' (e', efs)) →
     if a is WeaklyAtomic then irreducible e' σ' else is_Some (to_val e').
 
 Inductive stuckness := NotStuck | MaybeStuck.
@@ -62,12 +76,18 @@ Definition stuckness_to_atomicity (s : stuckness) : atomicity :=
 Class LanguageCtx {OpT: Type → Type} {T1 T2} Λ (K : proc OpT T1 → proc OpT T2) := {
   fill_not_val (e: proc OpT T1) :
     to_val e = None → to_val (K e) = None;
-  fill_step e1 σ1 e2 σ2 efs :
-    exec_step Λ.(sem) e1 σ1 σ2 (e2, efs) →
-    exec_step Λ.(sem) (K e1) σ1 σ2 (K e2, efs);
-  fill_step_inv e1' σ1 e2 σ2 efs :
-    to_val e1' = None → exec_step Λ.(sem) (K e1') σ1 σ2 (e2, efs) →
-    ∃ e2', e2 = K e2' ∧ exec_step Λ.(sem) e1' σ1 σ2 (e2', efs)
+  fill_step_valid e1 σ1 e2 σ2 efs :
+    exec_step Λ.(sem) e1 σ1 (Val σ2 (e2, efs)) →
+    exec_step Λ.(sem) (K e1) σ1 (Val σ2 (K e2, efs));
+  fill_step_err e1 σ1 :
+    exec_step Λ.(sem) e1 σ1 Err →
+    exec_step Λ.(sem) (K e1) σ1 Err;
+  fill_step_inv_valid e1' σ1 e2 σ2 efs :
+    to_val e1' = None → exec_step Λ.(sem) (K e1') σ1 (Val σ2 (e2, efs)) →
+    ∃ e2', e2 = K e2' ∧ exec_step Λ.(sem) e1' σ1 (Val σ2 (e2', efs));
+  fill_step_inv_err e1' σ1 :
+    to_val e1' = None → exec_step Λ.(sem) (K e1') σ1 Err →
+    exec_step Λ.(sem) e1' σ1 Err;
 }.
 
 
@@ -75,7 +95,21 @@ Lemma reducible_fill {OpT T1 T2} K `{LanguageCtx OpT T1 T2 Λ K} e (σ: State Λ
   to_val e = None → reducible (K e) σ → reducible e σ.
 Proof.
   intros ? (e'&σ'&efs&Hstep); unfold reducible.
-  apply fill_step_inv in Hstep as (e2' & _ & Hstep); eauto.
+  apply fill_step_inv_valid in Hstep as (e2' & _ & Hstep); eauto.
+Qed.
+
+Lemma non_errorable_fill_inv {OpT T1 T2} K `{LanguageCtx OpT T1 T2 Λ K} e (σ: State Λ) :
+  to_val e = None → non_errorable (K e) σ → non_errorable e σ.
+Proof.
+  intros ? Hnon Hstep; unfold non_errorable.
+  eapply Hnon. apply fill_step_err; eauto.
+Qed.
+
+Lemma non_errorable_fill {OpT T1 T2} K `{LanguageCtx OpT T1 T2 Λ K} e (σ: State Λ) :
+  to_val e = None → non_errorable e σ → non_errorable (K e) σ.
+Proof.
+  intros ? Hnon Hstep; unfold non_errorable.
+  eapply Hnon. apply fill_step_inv_err; eauto.
 Qed.
 
 Class irisG' (OpT: Type -> Type) (Λstate : Type) (Σ : gFunctors) := IrisG {
@@ -92,8 +126,8 @@ Definition wp_pre {OpT} `{Λ: Layer OpT} `{irisG OpT Λ Σ} (s : stuckness)
   match to_val e1 with
   | Some v => |={E}=> Φ v
   | None => ∀ σ1,
-     state_interp σ1 ={E,∅}=∗ ⌜if s is NotStuck then reducible e1 σ1 else True⌝ ∗
-     ∀ e2 σ2 efs, ⌜exec_step Λ.(sem) e1 σ1 σ2 (e2, efs)⌝ ={∅,∅,E}▷=∗
+     state_interp σ1 ={E,∅}=∗ ⌜if s is NotStuck then non_errorable e1 σ1 else True⌝ ∗
+     ∀ e2 σ2 efs, ⌜exec_step Λ.(sem) e1 σ1 (Val σ2 (e2, efs))⌝ ={∅,∅,E}▷=∗
        state_interp σ2 ∗ wp T E e2 Φ ∗
        [∗ list] ef ∈ efs, wp (projT1 ef) ⊤ (projT2 ef) (λ _, True)
   end%I.
@@ -310,8 +344,10 @@ Proof.
   iMod ("H" with "[//]") as "H". iIntros "!>!>". iMod "H" as "(Hphy & H & $)". destruct s.
   - rewrite !wp_unfold /wp_pre. destruct (to_val e2) as [v2|] eqn:He2.
     + iDestruct "H" as ">> $". by iFrame.
-    + iMod ("H" with "[$]") as "[H _]". iDestruct "H" as %(? & ? & ? & ?).
-      by edestruct (atomic _ _ _ _ Hstep).
+    + iMod ("H" with "[$]") as "[% H]".
+      edestruct (atomic _ _ _ _ Hstep) as [Hval|Herr].
+      * rewrite He2 //= in Hval; exfalso. eapply is_Some_None; eauto.
+      * exfalso; eauto.
   - destruct (atomic _ _ _ _ Hstep) as [v <-%of_to_val].
     iMod (wp_value_inv' with "H") as ">H". iFrame "Hphy". by iApply wp_value'.
 Qed.
@@ -337,9 +373,9 @@ Proof.
   rewrite wp_unfold /wp_pre fill_not_val //.
   iIntros (σ1) "Hσ". iMod ("H" with "[$]") as "[% H]". iModIntro; iSplit.
   { iPureIntro. destruct s; last done.
-    unfold reducible in *. naive_solver eauto using fill_step. }
+    eapply non_errorable_fill; eauto. }
   iIntros (e2 σ2 efs Hstep).
-  destruct (fill_step_inv e σ1 e2 σ2 efs) as (e2'&->&?); auto.
+  destruct (fill_step_inv_valid e σ1 e2 σ2 efs) as (e2'&->&?); auto.
   iMod ("H" $! e2' σ2 efs with "[//]") as "H". iIntros "!>!>".
   iMod "H" as "($ & H & $)". by iApply "IH".
 Qed.
@@ -352,9 +388,9 @@ Proof.
   { apply of_to_val in He as <-. by rewrite !wp_unfold /wp_pre. }
   rewrite fill_not_val //.
   iIntros (σ1) "Hσ". iMod ("H" with "[$]") as "[% H]". iModIntro; iSplit.
-  { destruct s; eauto using reducible_fill. }
+  { destruct s; eauto using non_errorable_fill_inv. }
   iIntros (e2 σ2 efs Hstep).
-  iMod ("H" $! (K e2) σ2 efs with "[]") as "H"; [by eauto using fill_step|].
+  iMod ("H" $! (K e2) σ2 efs with "[]") as "H"; [by eauto using fill_step_valid|].
   iIntros "!>!>". iMod "H" as "($ & H & $)". by iApply "IH".
 Qed.
 

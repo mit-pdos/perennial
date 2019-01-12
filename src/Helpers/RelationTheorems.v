@@ -109,6 +109,20 @@ Proof.
        eapply H. right. eauto.
 Qed.
 
+Theorem bind_rep_r_n_err_inv A T (r: T -> relation A A T) n o a:
+  bind_rep_r_n n r o a (@Err _ _) ->
+  exists n' o' a', n' <= n /\
+  bind_rep_r_n n' r o a (Val a' o') /\
+  r o' a' (@Err _ _).
+Proof.
+  induction n.
+  - inversion 1.
+  - intros [Hleft|(o'&a'&?)].
+    * edestruct IHn as (n'&o'&a'&?); eauto.
+      exists n', o', a'. intuition.
+    * exists n, o', a'. intuition.
+Qed.
+
 Lemma seq_star_alt A T r (x : A) (y: Return A T):
   seq_star r x y <-> (exists n, seq_rep_n n r x y).
 Proof.
@@ -140,6 +154,26 @@ Proof.
   induction n.
   - simpl. rew bind_right_id.
   - simpl. rew<- IHn.
+Qed.
+
+Lemma bind_rep_lr_n_val A T (r: T -> relation A A T) o n a a' o':
+  bind_rep_n n r o a (Val a' o') <-> bind_rep_r_n n r o a (Val a' o').
+Proof.
+  revert o a a' o'. induction n; intros o a a' o'.
+  { reflexivity. }
+  split.
+  - intros (omid&amid&Hr&Hn). eapply IHn in Hn.
+    clear -Hr Hn. revert o a amid omid a' o' Hr Hn.  induction n; intros.
+    * inversion Hn; subst. do 2 eexists; split; eauto.
+      econstructor.
+    * destruct Hn as (omid''&amid''&?&?).
+      eapply IHn in H; eauto. do 2 eexists; split; eauto.
+  - intros (omid&amid&Hn&Hr). eapply IHn in Hn.
+    clear -Hr Hn. revert o a amid omid a' o' Hr Hn.  induction n; intros.
+    * inversion Hn; subst. do 2 eexists; split; eauto.
+      econstructor.
+    * destruct Hn as (omid''&amid''&?&?).
+      eapply IHn in H0; eauto. do 2 eexists; split; eauto.
 Qed.
 
 Lemma bind_star_alt A T r (x : A) o (y: Return A T):

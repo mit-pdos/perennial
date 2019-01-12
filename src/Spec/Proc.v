@@ -150,45 +150,51 @@ Section Dynamics.
     rewrite app_comm_cons; f_equal.
   Qed.
 
-  Lemma exec_pool_equiv_alt ps1:
-    exec_pool ps1 <---> exec_pool_alt ps1.
+  Lemma exec_pool_equiv_alt_val ps1 σ1 σ2 ps2:
+    exec_pool ps1 σ1 (Val σ2 ps2) <-> exec_pool_alt ps1 σ1 (Val σ2 ps2).
   Proof.
     split.
-    - induction ps1 as [|[T e] ps1]; intros σ1.
+    - revert σ2 ps2. induction ps1 as [|[T e] ps1]; intros σ2 ps2.
       * simpl. inversion 1.
-      * simpl. intros [σ2 ?|].
-        {
+      * simpl.
           intros [H|H].
           ** destruct H as ((e'&efs)&?&?&Hp).
              inversion Hp; subst.
-             right. eapply (step_atomic_valid _ e e' efs nil ps1); simpl; eauto.
+             eapply (step_atomic_valid _ e e' efs nil ps1); simpl; eauto.
           ** inversion H as (ps2'&?&?&Hpure). inversion Hpure; subst.
-             eapply IHps1 in H0. destruct H0.
-             *** left. eapply exec_pool_alt_cons_err; eauto.
-             *** right. eapply exec_pool_alt_cons_valid; eauto.
-        }
+             eapply exec_pool_alt_cons_valid; eauto.
+    - inversion 1; subst. clear H. inversion_clear H2; subst.
+      induction t1 as [|[T' e] ps1].
+      * simpl. left.
+        do 2 econstructor; split; eauto.
+        econstructor.
+      * simpl. right.
+           do 2 eexists; split; eauto.
+           econstructor; eauto.
+      * congruence.
+  Qed.
+
+  Lemma exec_pool_equiv_alt_err ps1 σ1:
+    exec_pool ps1 σ1 Err <-> exec_pool_alt ps1 σ1 Err.
+  Proof.
+    split.
+    - induction ps1 as [|[T e] ps1]. 
+      * simpl. inversion 1.
+      * simpl. 
         {
           intros [H|H].
            ** destruct H as [?|(?&?&?&Hpure)].
-              right. eapply (step_atomic_error _ e nil ps1); simpl; eauto.
+              eapply (step_atomic_error _ e nil ps1); simpl; eauto.
               inversion Hpure.
            ** apply bind_pure_no_err in H.
-              right. eapply exec_pool_alt_cons_err; eauto.
-              eapply IHps1 in H. intuition.
+              eapply exec_pool_alt_cons_err; eauto.
         }
     - inversion 1; subst; clear H;
       induction t1 as [|[T' e] ps1].
-      * simpl. right. left.
-        do 2 econstructor; split; eauto.
-        econstructor.
-      * destruct IHps1.
-        ** simpl. left. right.
-           left. eauto.
-        ** simpl. right. right.
-           do 2 eexists; split; eauto.
-           econstructor; eauto.
-      * simpl. right. left. left. eauto.
-      * simpl. right. right. left. intuition eauto.
+      * congruence.
+      * congruence. 
+      * simpl. left. left. eauto.
+      * simpl. right. left. intuition eauto.
   Qed.
 
   Definition exec_partial {T} (p: proc T) :=
