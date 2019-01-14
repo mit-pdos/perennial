@@ -174,6 +174,25 @@ Section OutputRelations.
     r2 a Err \/ r2 a b.
   Proof. firstorder. Qed.
 
+  Lemma requiv_no_err_elim A B T (r1 r2: relation A B T) a b:
+    r1 a b ->
+    r1 <---> r2 ->
+    ~ (r1 a Err) ->
+    r2 a b.
+  Proof.
+    intros Hr1 (Hlr&Hrl) Hno_err. eapply Hlr in Hr1.
+    destruct Hr1 as [Herr|?]; eauto.
+    apply Hrl in Herr. intuition.
+  Qed.
+
+  Lemma requiv_err_elim A B T (r1 r2: relation A B T) a:
+    r1 a Err ->
+    r1 <---> r2 ->
+    r2 a Err.
+  Proof.
+    intros Hr1 (Hlr&Hrl). eapply Hlr in Hr1; intuition.
+  Qed.
+
   Theorem rimpl_to_requiv A B T (r1 r2: relation A B T) :
     r1 ---> r2 ->
     r2 ---> r1 ->
@@ -315,6 +334,17 @@ Section OutputRelations.
   Proof.
     unfold Proper, "==>"; intros.
     apply and_then_monotonic; auto.
+  Qed.
+
+  Lemma and_then_err_cancel A B C T1 T2 a
+        (r1: relation A B T1)
+        (r2 r2': T1 -> relation B C T2) :
+    and_then r1 r2 a Err ->
+    (forall x b, r2 x b Err -> r2' x b Err) ->
+    and_then r1 r2' a Err.
+  Proof.
+    intros Hand_then1 Himpl.
+    destruct Hand_then1; t.
   Qed.
 
   Theorem and_then_equiv_cong A B C T1 T2

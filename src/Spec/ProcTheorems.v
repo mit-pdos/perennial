@@ -170,7 +170,7 @@ Section Dynamics.
     - unfold exec, exec_partial.
       apply rimpl_to_requiv.
       * rew<- bind_star_expand.
-        Split; [ apply from_none |]. 
+        Split; [ apply from_none |].
         simpl. setoid_rewrite none_absorb_l at 1. setoid_rewrite none_plus_r at 1.
         unfold exec_pool_hd; norm; simpl.
         setoid_rewrite <-bind_star_expand at 1.
@@ -204,7 +204,7 @@ Section Dynamics.
 
   Lemma exec_seq_partial_nil: exec_seq_partial Seq_Nil <---> pure tt.
   Proof. eauto. Qed.
-  
+
   Lemma exec_seq_nil: exec_seq Seq_Nil <---> pure tt.
   Proof. eauto. Qed.
 
@@ -343,7 +343,7 @@ Section Dynamics.
           `(rec1: rec_seq)
           `(rec2: rec_seq) :
     exec_recover_partial (rec_seq_append rec1 rec2) --->
-                 (exec_recover_partial rec1) + 
+                 (exec_recover_partial rec1) +
                  (exec_recover rec1;;
                   seq_star (rexec_seq rec2 rec1);;
                   rexec_seq_partial rec2 rec1) +
@@ -368,7 +368,7 @@ Section Dynamics.
            _ <- exec_seq_partial rec2;
            _ <- crash_step;
            exec_recover_partial rec1).
-    { 
+    {
       unfold exec_recover.
       setoid_rewrite bind_assoc.
       setoid_rewrite <-bind_assoc at 2.
@@ -388,9 +388,9 @@ Section Dynamics.
                    seq_star (_ <- exec_seq_partial rec1; crash_step));
            _ <- exec_seq rec1;
            exec_seq_partial rec2).
-    { 
+    {
       unfold rexec_seq, exec_recover.
-      setoid_rewrite bind_assoc at 1. 
+      setoid_rewrite bind_assoc at 1.
       setoid_rewrite <-bind_assoc at 2.
       setoid_rewrite <-bind_assoc at 2.
       setoid_rewrite <-bind_assoc at 2.
@@ -402,7 +402,7 @@ Section Dynamics.
     - rew denesting.
       setoid_rewrite star_expand_r at 2.
       Split.
-      * do 2 Left. 
+      * do 2 Left.
       * Left. Right.
         unfold exec_recover, rexec_seq, rexec_seq_partial in Hcase2.
         left_assoc rew Hcase2.
@@ -418,6 +418,33 @@ Section Dynamics.
     unfold exec_recover_partial.
     rew<- seq_star_none.
     apply exec_seq_partial_noop.
+  Qed.
+
+  Lemma exec_partial_err_exec_err T (p: proc T) s:
+    exec_partial p s Err -> exec p s Err.
+  Proof. econstructor; eauto. Qed.
+
+  Lemma exec_seq_partial_err_exec_seq_err (rec: rec_seq) s:
+    exec_seq_partial rec s Err -> exec_seq rec s Err.
+  Proof.
+    revert s. induction rec; auto; intros s.
+    unfold exec_seq_partial.
+    intros [?|Hhd].
+    - eapply and_then_err_cancel; eauto.
+    - apply bind_pure_no_err in Hhd. left. apply exec_partial_err_exec_err; auto.
+  Qed.
+
+  Lemma rexec_partial_err_rexec_err T `(p: proc T) (rec: rec_seq) s:
+    rexec_partial p rec s Err -> rexec p rec s Err.
+  Proof.
+    unfold rexec_partial, rexec, exec_recover, exec_recover_partial.
+    intros H.
+    eapply requiv_err_elim in H; swap 1 2.
+    { repeat setoid_rewrite <-bind_assoc. reflexivity. }
+    eapply requiv_err_elim; swap 1 2.
+    { repeat setoid_rewrite <-bind_assoc. reflexivity. }
+    eapply and_then_err_cancel; eauto.
+    simpl. intros. apply exec_seq_partial_err_exec_seq_err; auto.
   Qed.
 
   (*
