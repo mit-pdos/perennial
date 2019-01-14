@@ -9,7 +9,6 @@ Axiom IORef : Type -> Type.
 
 Inductive LogVar : Type -> Type :=
 | File : LogVar Fd
-| RecoveredTxns : LogVar (Array ByteString)
 .
 
 Inductive Var : Type -> Type :=
@@ -41,6 +40,10 @@ Module Data.
 
   Definition set Op' {i:Injectable Op Op'} T (var: Var T) (v: T) : proc Op' T :=
     Call (inject (SetVar var v)).
+
+  Definition newIORef Op' {i:Injectable Op Op'}
+             T (v:T) : proc Op' (IORef T) :=
+    Call (inject (NewIORef v)).
 
   Definition readIORef Op' {i:Injectable Op Op'}
              T (ref:IORef T) : proc Op' T :=

@@ -4,17 +4,6 @@ From RecoveryRefinement Require Import Database.Filesys.
 From RecoveryRefinement Require Import Database.Common.
 From RecoveryRefinement Require Import Database.BinaryEncoding.
 
-Module Log.
-  Inductive Op : Type -> Type :=
-  | AddTxn : ByteString -> Op unit
-  | Clear : Op unit
-  (* hack to return from recovery: these transactions are processed and
-  persisted by the upper layer; we don't provide a way to clear them here
-  because all they do is take memory *)
-  | GetRecoveredTxns : Op (Array ByteString)
-  .
-End Log.
-
 Definition DoWhile Op T (body: T -> proc Op (option T)) (init: T) : proc Op T :=
   Bind (Until (T:=option T * T) (fun '(v, last) => match v with
                | Some _ => false
@@ -41,7 +30,7 @@ Definition DoWhileVoid Op T (body: T -> proc Op (option T)) (init: T) : proc Op 
         (Some (Some init)))
        (fun _ => Ret tt).
 
-Module LogImpl.
+Module Log.
   Import ProcNotations.
   Local Open Scope proc.
 
@@ -54,23 +43,20 @@ Module LogImpl.
     fd <- Data.get (Log File);
       lift (FS.truncate fd).
 
-  Definition getRecoveredTxns : proc (Data.Op ⊕ FS.Op) _ :=
-    Data.get (Log RecoveredTxns).
-
   Definition init : proc (Data.Op ⊕ FS.Op) _ :=
     fd <- lift (FS.create "log");
       Data.set (Log File) fd.
 
-  Definition recover : proc (Data.Op ⊕ FS.Op) _ :=
+  Definition recoverTxns : proc (Data.Op ⊕ FS.Op) (Array ByteString) :=
     fd <- Data.get (Log File);
-      txns <- Data.get (Log RecoveredTxns);
+      txns <- Call (inject (Data.NewArray ByteString));
       sz <- lift (FS.size fd);
       log <- lift (FS.readAt fd int_val0 sz);
-      DoWhileVoid (fun log => match decode Array16 log with
-                           | Some (txn, n) =>
-                             _ <- Data.arrayAppend txns txn;
-                               Ret (Some (BS.drop n log))
-                           | None => Ret None
-                           end) log.
-
-End LogImpl.
+      _ <- DoWhileVoid (fun log => match decode Array16 log with
+                               | Some (txn, n) =>
+                                 _ <- Data.arrayAppend txns (getBytes txn);
+                                   Ret (Some (BS.drop n log))
+                               | None => Ret None
+                               end) log;
+      Ret txns.
+End Log.

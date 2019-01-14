@@ -32,6 +32,8 @@ Module Table.
         indexMin : IORef Key;
         indexMax : IORef Key;
         indexNumKeys : IORef int64;
+        (* these are finished index entries *)
+        indexEntries : Array IndexEntry.t;
       }.
   End TblWriter.
 
@@ -42,30 +44,17 @@ Module Table.
            length : int64; }.
   End ReadIterator.
 
-  Inductive Op : Type -> Type :=
-  (* read a table (by iterating over it) *)
-  | ReadAll : Tbl.t -> Op ReadIterator.t
-  | ReadNext : Tbl.t -> ReadIterator.t -> Op (option Entry.t)
-  (* create a table by streaming entries *)
-  | New : Fd -> Op TblWriter.t
-  | PutEntry : TblWriter.t -> Entry.t -> Op unit
-  | Create : TblWriter.t -> int32 -> Op Tbl.t
-  .
-
-End Table.
-
-Module TableImpl.
-  Import Table.
-
   Import ProcNotations.
   Local Open Scope proc.
 
-  Definition readAll (t:Tbl.t) : proc (Data.Op ⊕ FS.Op) _ :=
+  Notation proc := (proc (Data.Op ⊕ FS.Op)).
+
+  Definition readAll (t:Tbl.t) : proc ReadIterator.t :=
     lift (index <- Call (Data.NewIORef int_val0);
             buf <- Call (Data.NewIORef BS.empty);
             Ret (ReadIterator.mk index buf int_val0)).
 
-  Definition fill (t:Tbl.t) (it:ReadIterator.t) : proc (Data.Op ⊕ FS.Op) _ :=
+  Definition fill (t:Tbl.t) (it:ReadIterator.t) : proc unit :=
     offset <- Data.readIORef it.(ReadIterator.offset);
       data <- lift (FS.readAt t.(Tbl.fd) offset int_val4096);
       _ <- Data.modifyIORef it.(ReadIterator.offset) (fun o => intPlus _ o (BS.length data));
@@ -73,7 +62,7 @@ Module TableImpl.
       let newData := BS.take (intSub (BS.length data) offset) data in
       Data.modifyIORef it.(ReadIterator.buffer) (fun bs => BS.append bs newData).
 
-  Definition readNext (t:Tbl.t) (it:ReadIterator.t) : proc (Data.Op ⊕ FS.Op) _ :=
+  Definition readNext (t:Tbl.t) (it:ReadIterator.t) : proc (option Entry.t) :=
     data <- Data.readIORef it.(ReadIterator.buffer);
       match decode Entry.t data with
       | Some (e, n) =>
@@ -83,4 +72,36 @@ Module TableImpl.
                  Ret None (* TODO: restart, if filling added any new values *)
       end.
 
-End TableImpl.
+  Definition new (fh:Fd) : proc TblWriter.t :=
+    fileOffset <- Data.newIORef (int_val0);
+      indexOffset <- Data.newIORef (int_val0);
+      indexMin <- Data.newIORef (int_val0);
+      indexMax <- Data.newIORef (int_val0);
+      indexNumKeys <- Data.newIORef (int_val0);
+      indexEntries <- Call (inject (Data.NewArray _));
+      Ret {| TblWriter.fd := fh;
+             TblWriter.fileOffset := fileOffset;
+             TblWriter.indexOffset := indexOffset;
+             TblWriter.indexMin := indexMin;
+             TblWriter.indexMax := indexMax;
+             TblWriter.indexNumKeys := indexNumKeys;
+             TblWriter.indexEntries := indexEntries; |}.
+
+  Definition putEntry (t:TblWriter.t) (e: Entry.t) : proc unit :=
+    (* TODO: implement *)
+    Ret tt.
+
+  (* create the current index entry *)
+  Definition flushEntry (t:TblWriter.t) : proc unit :=
+    (* TODO: implement *)
+    Ret tt.
+
+  (* consumes the table writer and finishes writing out the table *)
+  Definition create (t:TblWriter.t) (id:int32) : proc Tbl.t :=
+    _ <- flushEntry t;
+      (* TODO: write out index *)
+      Ret {| Tbl.fd := TblWriter.fd t;
+             Tbl.ident := id;
+             Tbl.index := TblWriter.indexEntries t; |}.
+
+End Table.
