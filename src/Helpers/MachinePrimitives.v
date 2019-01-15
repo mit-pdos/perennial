@@ -2,21 +2,20 @@
 Global Unset Auto Template Polymorphism.
 Global Set Implicit Arguments.
 
-From Coq Require Import ZArith.ZArith.
-Local Open Scope Z.
+From Coq Require Import NArith.NArith.
+Local Open Scope N.
 
 Axiom ByteString : Type.
 
-(* TODO: make this unsigned *)
-Record MachineInt (bits:nat) : Type :=
+Record MachineUint (bits:nat) : Type :=
   { intTy :> Type;
     int_val0 : intTy;
     int_val1 : intTy;
     intPlus : intTy -> intTy -> intTy;
     intSub : intTy -> intTy -> intTy;
     intCmp : intTy -> intTy -> comparison;
-    toNum : intTy -> Z;
-    toNum_ok : forall x, toNum x < Z.pow 2 (Z.of_nat bits);
+    toNum : intTy -> N;
+    toNum_ok : forall x, toNum x < N.pow 2 (N.of_nat bits);
     encodeLE : intTy -> ByteString;
     decodeLE : ByteString -> intTy;
     encode_decode_LE_ok : forall x, decodeLE (encodeLE x) = x; }.
@@ -26,22 +25,22 @@ Arguments int_val1 {bits int} : rename.
 Arguments intCmp {bits int} : rename.
 Arguments intSub {bits int} : rename.
 
-Axiom int64 : MachineInt 64.
-Axiom int32 : MachineInt 32.
-Axiom int16 : MachineInt 16.
-Axiom int8  : MachineInt 8.
+Axiom uint64 : MachineUint 64.
+Axiom uint32 : MachineUint 32.
+Axiom uint16 : MachineUint 16.
+Axiom uint8   : MachineUint 8.
 
-Axiom int_val4096 : int64.
+Axiom uint_val4096 : uint64.
 
-Axiom int64_to_int16 : int64 -> int16.
-Axiom int16_to_int64 : int16 -> int64.
+Axiom uint64_to_uint16 : uint64 -> uint16.
+Axiom uint16_to_uint64 : uint16 -> uint64.
 
 Module BS.
   Axiom append : ByteString -> ByteString -> ByteString.
-  Axiom length : ByteString -> int64.
+  Axiom length : ByteString -> uint64.
   (* BS.take n bs ++ BS.drop n bs = bs *)
-  Axiom take : int64 -> ByteString -> ByteString.
-  Axiom drop : int64 -> ByteString -> ByteString.
+  Axiom take : uint64 -> ByteString -> ByteString.
+  Axiom drop : uint64 -> ByteString -> ByteString.
   Axiom empty : ByteString.
 End BS.
 

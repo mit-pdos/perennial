@@ -12,9 +12,9 @@ Module FS.
   | Open : Path -> Op Fd
   | Close : Fd -> Op unit
   | List : Op (list Path)
-  | Size : Fd -> Op int64
+  | Size : Fd -> Op uint64
   (* readAt fh offset length *)
-  | ReadAt : Fd -> int64 -> int64 -> Op ByteString
+  | ReadAt : Fd -> uint64 -> uint64 -> Op ByteString
   | Create : Path -> Op Fd
   | Append : Fd -> ByteString -> Op unit
   | Delete : Path -> Op unit

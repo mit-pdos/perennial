@@ -14,7 +14,7 @@ Module Table.
   (* reference to a read-only table *)
   Module Tbl.
     Record t :=
-      mk { ident : int32;
+      mk { ident : uint32;
            fd : Fd;
            index : Array IndexEntry.t; }.
   End Tbl.
@@ -26,12 +26,12 @@ Module Table.
         important for performance; it avoids issuing a write syscall for every
         entry (110 bytes), batching them into 4096-byte writes *)
         fd : Fd;
-        fileOffset : IORef int64;
+        fileOffset : IORef uint64;
         (* these are all for the current index entry *)
-        indexOffset : IORef int64;
+        indexOffset : IORef uint64;
         indexMin : IORef Key;
         indexMax : IORef Key;
-        indexNumKeys : IORef int64;
+        indexNumKeys : IORef uint64;
         (* these are finished index entries *)
         indexEntries : Array IndexEntry.t;
       }.
@@ -39,9 +39,9 @@ Module Table.
 
   Module ReadIterator.
     Record t :=
-      mk { offset : IORef int64;
+      mk { offset : IORef uint64;
            buffer : IORef ByteString;
-           length : int64; }.
+           length : uint64; }.
   End ReadIterator.
 
   Import ProcNotations.
@@ -56,7 +56,7 @@ Module Table.
 
   Definition fill (t:Tbl.t) (it:ReadIterator.t) : proc unit :=
     offset <- Data.readIORef it.(ReadIterator.offset);
-      data <- lift (FS.readAt t.(Tbl.fd) offset int_val4096);
+      data <- lift (FS.readAt t.(Tbl.fd) offset uint_val4096);
       _ <- Data.modifyIORef it.(ReadIterator.offset) (fun o => intPlus _ o (BS.length data));
       (* technically this is known to be unnecessary if len - offset >= 4096 *)
       let newData := BS.take (intSub (BS.length data) offset) data in
@@ -97,7 +97,7 @@ Module Table.
     Ret tt.
 
   (* consumes the table writer and finishes writing out the table *)
-  Definition create (t:TblWriter.t) (id:int32) : proc Tbl.t :=
+  Definition create (t:TblWriter.t) (id:uint32) : proc Tbl.t :=
     _ <- flushEntry t;
       (* TODO: write out index *)
       Ret {| Tbl.fd := TblWriter.fd t;

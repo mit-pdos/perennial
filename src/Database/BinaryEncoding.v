@@ -6,12 +6,12 @@ From Tactical Require Import ProofAutomation.
 
 Import BSNotations.
 
-Definition Decoder T := ByteString -> option (T * int64).
+Definition Decoder T := ByteString -> option (T * uint64).
 
 Definition decodeBind T1 T2 (dec1: Decoder T1) (dec2: T1 -> Decoder T2) : Decoder T2 :=
   fun bs => match dec1 bs with
          | Some (v1, n) => match dec2 v1 (BS.drop n bs) with
-                          | Some (v2, n2) => Some (v2, intPlus int64 n n2)
+                          | Some (v2, n2) => Some (v2, intPlus uint64 n n2)
                           | None => None
                           end
          | None => None
@@ -42,7 +42,7 @@ Definition decodeFinished : Decoder unit :=
          | _ => Some (tt, int_val0)
          end.
 
-Definition decodeFixed (n:int64) : Decoder ByteString :=
+Definition decodeFixed (n:uint64) : Decoder ByteString :=
   fun bs => match intCmp (BS.length bs) n with
          | Gt => None
          | _ => Some (BS.take n bs, n)
@@ -87,24 +87,24 @@ Proof.
                  ret (v1, v2); |}.
 Defined.
 
-Axiom int64_fmt : Encodable int64.
-Existing Instance int64_fmt.
+Axiom uint64_fmt : Encodable uint64.
+Existing Instance uint64_fmt.
 
-Axiom int16_fmt : Encodable int16.
-Existing Instance int16_fmt.
+Axiom uint16_fmt : Encodable uint16.
+Existing Instance uint16_fmt.
 
-Axiom int8_fmt : Encodable int8.
-Existing Instance int8_fmt.
+Axiom uint8_fmt : Encodable uint8.
+Existing Instance uint8_fmt.
 
 Record Array16 := array16 { getBytes :> ByteString }.
 
 Instance array16_fmt : Encodable Array16.
 Proof.
   refine {| encode := fun (bs:Array16) =>
-              array16 (encode (int64_to_int16 (BS.length bs)) ++ bs);
+              array16 (encode (uint64_to_uint16 (BS.length bs)) ++ bs);
             decode :=
-              l <- decode int16;;
-                array16 <$> decodeFixed (int16_to_int64 l); |}.
+              l <- decode uint16;;
+                array16 <$> decodeFixed (uint16_to_uint64 l); |}.
 Defined.
 
 Instance entry_fmt : Encodable Entry.t.
@@ -112,7 +112,7 @@ Proof.
   refine {| encode :=
               fun e => encode e.(Entry.key) ++ encode (array16 e.(Entry.value));
             decode :=
-              key <- decode int64;;
+              key <- decode uint64;;
             value <- getBytes <$> decode Array16;;
             ret (Entry.mk key value); |}.
 Defined.

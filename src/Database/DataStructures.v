@@ -28,8 +28,8 @@ Module Data.
 
   (* arrays *)
   | NewArray : forall T, Op (Array T)
-  | ArrayLength : forall T, Array T -> Op int64
-  | ArrayGet : forall T, Array T -> int64 -> Op T
+  | ArrayLength : forall T, Array T -> Op uint64
+  | ArrayGet : forall T, Array T -> uint64 -> Op T
   | ArrayAppend : forall T, Array T -> T -> Op unit
 
   (* TODO: hashtables *)
