@@ -21,21 +21,22 @@ Defined.
 Module FS.
   Implicit Types (p:Path) (fh:Fd) (bs:ByteString).
 
+  (* the types of the arguments are determined by their, using the implicit
+  types given above *)
   Inductive Op : Type -> Type :=
-  | Open : Path -> Op Fd
-  | Close : Fd -> Op unit
+  | Open p : Op Fd
+  | Close fh : Op unit
   | List : Op (list Path)
-  | Size : Fd -> Op uint64
-  (* readAt fh offset length *)
-  | ReadAt : Fd -> uint64 -> uint64 -> Op ByteString
-  | Create : Path -> Op Fd
-  | Append : Fd -> ByteString -> Op unit
-  | Delete : Path -> Op unit
-  | Truncate : Fd -> Op unit
-  | AtomicCreate : Path -> ByteString -> Op unit
+  | Size fh : Op uint64
+  | ReadAt fh (off:uint64) (len:uint64) : Op ByteString
+  | Create p : Op Fd
+  | Append fh bs' : Op unit
+  | Delete p : Op unit
+  | Truncate fh : Op unit
+  | AtomicCreate p bs : Op unit
   .
 
-  Definition open (p:Path) : proc Op Fd := Call (Open p).
+  Definition open p : proc Op Fd := Call (Open p).
   Definition close fh := Call (Close fh).
   Definition list := Call (List).
   Definition size fh := Call (Size fh).
