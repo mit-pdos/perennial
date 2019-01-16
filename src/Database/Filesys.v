@@ -2,6 +2,9 @@ From RecoveryRefinement Require Import Lib.
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
+From RecordUpdate Require Import RecordSet.
+Import ApplicativeNotations.
+
 From Classes Require Import EqualDec.
 Import EqualDecNotation.
 
@@ -32,6 +35,7 @@ Module FS.
   | Create p : Op Fd
   | Append fh bs' : Op unit
   | Delete p : Op unit
+  | Rename p1 p2 : Op bool (* returns false if the destination exists *)
   | Truncate fh : Op unit
   | AtomicCreate p bs : Op unit
   .
@@ -50,16 +54,11 @@ Module FS.
   Inductive OpenMode := Read | Write.
 
   Record State :=
-    { files: gmap Path ByteString;
-      fds: gmap Fd (Path * OpenMode); }.
+    mkState { files: gmap Path ByteString;
+              fds: gmap Fd (Path * OpenMode); }.
 
-  Definition upd_files (f: _ -> _) (s:State) : State :=
-    {| files := f s.(files);
-       fds := s.(fds); |}.
-
-  Definition upd_fds (f: _ -> _) (s:State) : State :=
-    {| files := s.(files);
-       fds := f s.(fds); |}.
+  Instance _eta : Settable State :=
+    mkSettable (constructor mkState <*> files <*> fds)%set.
 
   Definition readFd (fh: Fd) (m: OpenMode) : relation State State Path :=
     readSome (fun s => match s.(fds) !! fh with
@@ -76,10 +75,10 @@ Module FS.
     | Open p =>
       _ <- readSome (fun s => s.(files) !! p);
         fh <- such_that (fun s fh => s.(fds) !! fh = None);
-        _ <- puts (upd_fds (insert fh (p, Read)));
+        _ <- puts (set fds (insert fh (p, Read)));
         pure fh
     | Close fh =>
-      puts (upd_fds (map_delete fh))
+      puts (set fds (map_delete fh))
     | List =>
       reads (fun s => map fst (map_to_list s.(files)))
     | Size fh =>
@@ -92,15 +91,15 @@ Module FS.
                 readSome (fun s => s.(files) !! p));
         pure (BS.take len (BS.drop off bs))
     | Create p =>
-      fh <- such_that (fun s fh => s.(fds) !! fh = None);
-        _ <- readNone (fun s => s.(files) !! p);
-        _ <- puts (upd_files (insert p BS.empty));
-        _ <- puts (upd_fds (insert fh (p, Write)));
+      _ <- readNone (fun s => s.(files) !! p);
+        fh <- such_that (fun s fh => s.(fds) !! fh = None);
+        _ <- puts (set files (insert p BS.empty));
+        _ <- puts (set fds (insert fh (p, Write)));
         pure fh
     | Append fh bs' =>
       p <- readFd fh Write;
         bs <- readSome (fun s => s.(files) !! p);
-        puts (upd_files (insert p (BS.append bs bs')))
+        puts (set files (insert p (BS.append bs bs')))
     | Delete p =>
       (* Delete(p) fails if there is an open fh pointing to p - this is a safe
       approximation of real behavior, where the underlying inode for the file is
@@ -108,15 +107,24 @@ Module FS.
       (_ <- such_that (fun s fh =>
                         exists m, s.(fds) !! fh = Some (p, m)); error)
       (* delete's error case supercedes this succesful deletion case *)
-      + puts (upd_files (map_delete p))
+      + puts (set files (map_delete p))
     | Truncate fh =>
       p <- (p <- readFd fh Write;
              _ <- readSome (fun s => s.(files) !! p);
              pure p);
-        puts (upd_files (insert p BS.empty))
+        puts (set files (insert p BS.empty))
+    | Rename p1 p2 =>
+      bs <- readSome (fun s => s.(files) !! p1);
+        dst <- reads (fun s => s.(files) !! p2);
+        match dst with
+        | Some _ =>  pure false
+        | None => _ <- puts (set files (map_delete p1));
+                   _ <- puts (set files (insert p2 bs));
+                   pure true
+        end
     | AtomicCreate p bs =>
       _ <- readNone (fun s => s.(files) !! p);
-        puts (upd_files (insert p bs))
+        puts (set files (insert p bs))
     end.
 
 End FS.
