@@ -2,6 +2,12 @@
 Global Unset Auto Template Polymorphism.
 Global Set Implicit Arguments.
 
+From Classes Require Import EqualDec.
+
+From stdpp Require Import decidable countable.
+
+Instance eqdecision `{dec:EqualDec A} : EqDecision A := dec.
+
 From Coq Require Import NArith.NArith.
 Local Open Scope N.
 
@@ -50,3 +56,7 @@ Module BSNotations.
 End BSNotations.
 
 Axiom Fd:Type.
+Axiom fd_eqdec : EqualDec Fd.
+Existing Instance fd_eqdec.
+Axiom fd_countable : Countable Fd.
+Existing Instance fd_countable.

@@ -3,7 +3,7 @@ Require Import Helpers.RelationTheorems.
 Require Import List.
 
 Global Set Implicit Arguments.
-Global Generalizable Variables T R Op State.
+Global Generalizable All Variables.
 Global Set Printing Projections.
 (* for compatibility with coq master *)
 Set Warnings "-undeclared-scope".

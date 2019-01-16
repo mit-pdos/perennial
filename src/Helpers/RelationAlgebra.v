@@ -58,6 +58,24 @@ Section OutputRelations.
   Definition puts {A} (f: A -> A) : relation A A unit :=
     fun x y => y = Val (f x) tt.
 
+  Definition error {A B T} : relation A B T :=
+    fun _ r => r = Err.
+
+  Definition readSome {A T} (f: A -> option T) : relation A A T :=
+    fun s r => match f s with
+            | Some v => r = Val s v
+            | None => r = Err
+            end.
+
+  Definition readNone {A T} (f: A -> option T) : relation A A unit :=
+    fun s r => match f s with
+            | Some _ => r = Err
+            | None => r = Val s tt
+            end.
+
+  Inductive such_that {A T} (f: A -> T -> Prop) : relation A A T :=
+  | such_that_holds : forall s v, f s v -> such_that f s (Val s v).
+
   Definition predicate A := A -> Prop.
   (* TODO: should failure of a test be error? *)
   Definition test {A} (P: predicate A) : relation A A unit :=
