@@ -12,16 +12,10 @@ From Coq Require Import String.
 
 Definition Path := string.
 
-Instance ascii_eqdec : EqualDec Ascii.ascii.
-hnf.
-decide equality; decide equality.
-Defined.
-
-(* TODO: add this instance to coq-classes *)
 Instance path_eqdec : EqualDec Path.
-hnf.
-decide equality.
-destruct (equal a a0); auto.
+Proof.
+  unfold Path.
+  typeclasses eauto.
 Defined.
 
 Module FS.
@@ -53,8 +47,6 @@ Module FS.
   Definition atomicCreate p bs := Call (AtomicCreate p bs).
 
   Inductive OpenMode := Read | Write.
-
-  Instance mode_eqdec : EqualDec OpenMode := ltac:(hnf; decide equality).
 
   Record State :=
     { files: gmap Path ByteString;
