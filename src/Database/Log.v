@@ -45,7 +45,7 @@ Module Log.
 
   Definition init : proc (Data.Op ⊕ FS.Op) _ :=
     fd <- lift (FS.create "log");
-      Data.set (Log File) fd.
+      Data.set_var (Log File) fd.
 
   Definition recoverTxns : proc (Data.Op ⊕ FS.Op) (Array ByteString) :=
     fd <- Data.get (Log File);

@@ -26,12 +26,12 @@ Module Table.
         important for performance; it avoids issuing a write syscall for every
         entry (110 bytes), batching them into 4096-byte writes *)
         fd : Fd;
-        fileOffset : IORef uint64;
+        fileOffset : IORef ty.uint64;
         (* these are all for the current index entry *)
-        indexOffset : IORef uint64;
-        indexMin : IORef Key;
-        indexMax : IORef Key;
-        indexNumKeys : IORef uint64;
+        indexOffset : IORef ty.uint64;
+        indexMin : IORef ty.uint64; (* key *)
+        indexMax : IORef ty.uint64;
+        indexNumKeys : IORef ty.uint64;
         (* these are finished index entries *)
         indexEntries : Array IndexEntry.t;
       }.
@@ -39,8 +39,8 @@ Module Table.
 
   Module ReadIterator.
     Record t :=
-      mk { offset : IORef uint64;
-           buffer : IORef ByteString;
+      mk { offset : IORef ty.uint64;
+           buffer : IORef ty.ByteString;
            length : uint64; }.
   End ReadIterator.
 
@@ -50,9 +50,9 @@ Module Table.
   Notation proc := (proc (Data.Op ⊕ FS.Op)).
 
   Definition readAll (t:Tbl.t) : proc ReadIterator.t :=
-    lift (index <- Call (Data.NewIORef int_val0);
-            buf <- Call (Data.NewIORef BS.empty);
-            Ret (ReadIterator.mk index buf int_val0)).
+    index <- Data.newIORef ty.uint64 int_val0;
+      buf <- Data.newIORef ty.ByteString BS.empty;
+      Ret (ReadIterator.mk index buf int_val0).
 
   Definition fill (t:Tbl.t) (it:ReadIterator.t) : proc unit :=
     offset <- Data.readIORef it.(ReadIterator.offset);
@@ -73,11 +73,11 @@ Module Table.
       end.
 
   Definition new (fh:Fd) : proc TblWriter.t :=
-    fileOffset <- Data.newIORef (int_val0);
-      indexOffset <- Data.newIORef (int_val0);
-      indexMin <- Data.newIORef (int_val0);
-      indexMax <- Data.newIORef (int_val0);
-      indexNumKeys <- Data.newIORef (int_val0);
+    fileOffset <- Data.newIORef ty.uint64 (int_val0);
+      indexOffset <- Data.newIORef ty.uint64 (int_val0);
+      indexMin <- Data.newIORef ty.uint64 (int_val0);
+      indexMax <- Data.newIORef ty.uint64 (int_val0);
+      indexNumKeys <- Data.newIORef ty.uint64 (int_val0);
       indexEntries <- Call (inject (Data.NewArray _));
       Ret {| TblWriter.fd := fh;
              TblWriter.fileOffset := fileOffset;
