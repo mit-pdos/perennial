@@ -20,6 +20,7 @@ Record MachineUint (bits:nat) : Type :=
     intPlus : intTy -> intTy -> intTy;
     intSub : intTy -> intTy -> intTy;
     intCmp : intTy -> intTy -> comparison;
+    fromNum : N -> intTy;
     toNum : intTy -> N;
     toNum_ok : forall x, toNum x < N.pow 2 (N.of_nat bits);
     encodeLE : intTy -> ByteString;

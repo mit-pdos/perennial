@@ -7,7 +7,7 @@ From RecordUpdate Require Import RecordSet.
 Import ApplicativeNotations.
 
 From Classes Require Import EqualDec.
-From Coq Require Import Program.Equality.
+From Coq Require Import NArith.
 Import EqNotations.
 
 Set Implicit Arguments.
@@ -16,27 +16,37 @@ Module ty.
   Inductive t : Type :=
   | Fd
   | uint64
+  | uint32
   | ByteString
+  | prod (A B:t)
   .
 End ty.
 
+Delimit Scope type_code_scope with ty.
+Infix "*" := (ty.prod) : type_code_scope.
+
 Definition ty := ty.t.
 
-Coercion Ty (T:ty) : Type :=
+Fixpoint Ty (T:ty) : Type :=
   match T with
   | ty.Fd => Fd
   | ty.uint64 => uint64
+  | ty.uint32 => uint32
   | ty.ByteString => ByteString
+  | ty.prod A B => prod (Ty A) (Ty B)
   end.
+
+Coercion Ty : ty >-> Sortclass.
 
 Axiom IORef_ : Type.
 Axiom ioref_eqdec : EqualDec IORef_.
 Existing Instance ioref_eqdec.
-
 Definition IORef (T:ty) := IORef_.
 
-(* TODO: fix Arrays to be same as IORef *)
-Axiom Array : Type -> Type.
+Axiom Array_ : Type.
+Axiom array_eqdec : EqualDec Array_.
+Existing Instance array_eqdec.
+Definition Array (T:ty) := Array_.
 
 (* TODO: fix Vars to be same as IORef *)
 Inductive LogVar : Type -> Type :=
@@ -46,27 +56,6 @@ Inductive LogVar : Type -> Type :=
 Inductive Var : Type -> Type :=
 | Log : forall T, LogVar T -> Var T
 .
-
-Instance var_eqdec T : EqualDec (Var T).
-Proof.
-  hnf; intros.
-  destruct x, y.
-  - dependent destruction l; dependent destruction l0; auto.
-Defined.
-
-(* hetereogeneous equality of a type family *)
-Class HEqDec A (F: A -> Type) :=
-  heq_dec : forall a1 a2 (x: F a1) (y: F a2),
-    {H & (rew H in x) = y} + {forall H, (rew H in x) <> y}.
-
-Definition var_eq T1 T2 (x: Var T1) (y: Var T2) :
-  {H & (rew H in x) = y} + {forall H, (rew H in x) <> y}.
-Proof.
-  destruct x, y.
-  - dependent destruction l; dependent destruction l0.
-    left.
-    exists eq_refl; auto.
-Defined.
 
 Module Data.
   Inductive Op : Type -> Type :=
@@ -118,11 +107,12 @@ Module Data.
 
   Record State : Type :=
     mkState { iorefs: IORef_ -> option {T:ty & T};
+              arrays: Array_ -> option {T:ty & list T};
               (* TODO: similar model for variables (except complete map) and
               arrays *) }.
 
   Instance _eta : Settable _ :=
-    mkSettable (constructor mkState <*> iorefs)%set.
+    mkSettable (constructor mkState <*> iorefs <*> arrays)%set.
 
   Definition upd_iorefs T (v: IORef T) (x: T)
              (f:IORef_ -> option {T:ty & T}) : IORef_ -> option {T:ty & T}
@@ -133,13 +123,35 @@ Module Data.
     match f v with
     | Some (existT T' x) =>
       match equal T' T with
-      | left H => Some (rew H in x)
+      | left H => Some (rew [Ty] H in x)
       | right _ => None
       end
     | None => None
     end.
 
+  Definition get_array T (v: Array T)
+             (f: Array_ -> option {T:ty & list T}) : option (list T) :=
+    match f v with
+    | Some (existT T' x) =>
+      match equal T' T with
+      | left H => Some (rew [fun (T:ty) => list T] H in x)
+      | right _ => None
+      end
+    | None => None
+    end.
+
+  Definition upd_arrays T (v: Array T) (x: list T)
+             (f:Array_ -> option {T:ty & list T}) : Array_ -> option {T:ty & list T} :=
+    fun r => if equal r v then Some (existT T x) else f r.
+
   Import RelationNotations.
+
+  Definition checkTy (T:ty) {F: ty -> Type} {A} (xbundle: {T:ty & F T}) : relation A A (F T) :=
+    let 'existT T0 x := xbundle in
+    match equal T0 T with
+    | left H => pure (rew [F] H in x)
+    | right _ => error
+    end.
 
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
@@ -150,10 +162,23 @@ Module Data.
         _ <- puts (set iorefs (upd_iorefs r x));
         pure r
     | WriteIORef v x =>
-      _ <- readSome (fun s => s.(iorefs) v);
+      _ <- readSome (fun s => get_ioref v s.(iorefs));
         puts (set iorefs (upd_iorefs v x))
     | ReadIORef v =>
       readSome (fun s => get_ioref v s.(iorefs))
+    | NewArray T =>
+      r <- such_that (fun s r => s.(arrays) r = None);
+        _ <- puts (set arrays (upd_arrays r (@nil T)));
+        pure r
+    | ArrayAppend v x =>
+      l0 <- readSome (fun s => get_array v s.(arrays));
+        puts (set arrays (upd_arrays v (l0 ++ x::nil)))
+    | ArrayLength v =>
+      l <- readSome (fun s => get_array v s.(arrays));
+        pure (uint64.(fromNum) (N.of_nat (length l)))
+    | ArrayGet v i =>
+      l0 <- readSome (fun s => get_array v s.(arrays));
+        readSome (fun _ => List.nth_error l0 (N.to_nat (uint64.(toNum) i)))
     | _ => error
     end.
 

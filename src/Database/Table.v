@@ -6,9 +6,15 @@ From RecoveryRefinement Require Import Database.Filesys.
 
 Module Table.
   Module IndexEntry.
-    Record t :=
-      mk { handle : SliceHandle.t;
-           keys: Key * Key; }.
+    Definition ty := (ty.uint64 * ty.uint32 * ty.uint64 * ty.uint64)%ty.
+    Definition t := ltac:(let x := eval unfold ty, Ty in (Ty ty) in
+                              exact x).
+    Definition handle (x:t) : SliceHandle.t :=
+      let '(off, len, _, _) := x in
+      SliceHandle.mk off len.
+    Definition keys (x:t) : Key * Key :=
+      let '(_, _, min, max) := x in
+      (min, max).
   End IndexEntry.
 
   (* reference to a read-only table *)
@@ -16,7 +22,7 @@ Module Table.
     Record t :=
       mk { ident : uint32;
            fd : Fd;
-           index : Array IndexEntry.t; }.
+           index : Array IndexEntry.ty; }.
   End Tbl.
 
   Module TblWriter.
@@ -33,7 +39,7 @@ Module Table.
         indexMax : IORef ty.uint64;
         indexNumKeys : IORef ty.uint64;
         (* these are finished index entries *)
-        indexEntries : Array IndexEntry.t;
+        indexEntries : Array IndexEntry.ty;
       }.
   End TblWriter.
 

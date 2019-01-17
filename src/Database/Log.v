@@ -47,16 +47,19 @@ Module Log.
     fd <- lift (FS.create "log");
       Data.set_var (Log File) fd.
 
-  Definition recoverTxns : proc (Data.Op ⊕ FS.Op) (Array ByteString) :=
-    fd <- Data.get (Log File);
-      txns <- Call (inject (Data.NewArray ByteString));
+  (* TODO: injection type inference does the wrong thing here, need to debug
+  it *)
+  Definition recoverTxns : proc (Data.Op ⊕ FS.Op) (Array ty.ByteString) :=
+    fd <- Data.get (Op':=Data.Op ⊕ FS.Op) (Log File);
+      txns <- Call (inject (Op:=Data.Op ⊕ FS.Op) (Data.NewArray ty.ByteString));
       sz <- lift (FS.size fd);
       log <- lift (FS.readAt fd int_val0 sz);
-      _ <- DoWhileVoid (fun log => match decode Array16 log with
-                               | Some (txn, n) =>
-                                 _ <- Data.arrayAppend txns (getBytes txn);
-                                   Ret (Some (BS.drop n log))
-                               | None => Ret None
-                               end) log;
+      _ <- DoWhileVoid
+        (fun log => match decode Array16 log with
+                 | Some (txn, n) =>
+                   _ <- Data.arrayAppend (Op':=Data.Op ⊕ FS.Op) txns (getBytes txn);
+                     Ret (Some (BS.drop n log))
+                 | None => Ret None
+                 end) log;
       Ret txns.
 End Log.

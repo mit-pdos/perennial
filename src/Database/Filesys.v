@@ -105,9 +105,11 @@ Module FS.
       approximation of real behavior, where the underlying inode for the file is
       retained as long as there are open files *)
       (_ <- such_that (fun s fh =>
-                        exists m, s.(fds) !! fh = Some (p, m)); error)
+                        exists m, s.(fds) !! fh = Some (p, m));
+         error)
       (* delete's error case supercedes this succesful deletion case *)
-      + puts (set files (map_delete p))
+      + (_ <- readSome (fun s => s.(files) !! p);
+           puts (set files (map_delete p)))
     | Truncate fh =>
       p <- (p <- readFd fh Write;
              _ <- readSome (fun s => s.(files) !! p);
