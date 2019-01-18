@@ -35,22 +35,22 @@ Module Log.
   Local Open Scope proc.
 
   Definition addTxn (txn: ByteString) : proc (Data.Op ⊕ FS.Op) _ :=
-    fd <- Data.get (Log File);
+    fd <- Data.get (Var.LogFile);
       let bs := encode (array16 txn) in
       lift (FS.append fd bs).
 
   Definition clear : proc (Data.Op ⊕ FS.Op) _ :=
-    fd <- Data.get (Log File);
+    fd <- Data.get (Var.LogFile);
       lift (FS.truncate fd).
 
   Definition init : proc (Data.Op ⊕ FS.Op) _ :=
     fd <- lift (FS.create "log");
-      Data.set_var (Log File) fd.
+      Data.set_var (Var.LogFile) fd.
 
   (* TODO: injection type inference does the wrong thing here, need to debug
   it *)
   Definition recoverTxns : proc (Data.Op ⊕ FS.Op) (Array ty.ByteString) :=
-    fd <- Data.get (Op':=Data.Op ⊕ FS.Op) (Log File);
+    fd <- Data.get (Op':=Data.Op ⊕ FS.Op) (Var.LogFile);
       txns <- Call (inject (Op:=Data.Op ⊕ FS.Op) (Data.NewArray ty.ByteString));
       sz <- lift (FS.size fd);
       log <- lift (FS.readAt fd int_val0 sz);

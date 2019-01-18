@@ -48,20 +48,24 @@ Axiom array_eqdec : EqualDec Array_.
 Existing Instance array_eqdec.
 Definition Array (T:ty) := Array_.
 
-(* TODO: fix Vars to be same as IORef *)
-Inductive LogVar : Type -> Type :=
-| File : LogVar Fd
-.
+Module Var.
+  Inductive t :=
+  | LogFile
+  .
 
-Inductive Var : Type -> Type :=
-| Log : forall T, LogVar T -> Var T
-.
+  Definition ty (x:t) : Type :=
+    match x with
+    | LogFile => Fd
+    end.
+End Var.
+
+Instance var_eqdec : EqualDec Var.t := _.
 
 Module Data.
   Inductive Op : Type -> Type :=
   (* generic variable operations *)
-  | GetVar : forall T, Var T -> Op T
-  | SetVar : forall T, Var T -> T -> Op T
+  | GetVar : forall (v:Var.t), Op (Var.ty v)
+  | SetVar : forall (v:Var.t), Var.ty v -> Op unit
 
   (* arbitrary references *)
   | NewIORef : forall (T:ty), T -> Op (IORef T)
@@ -77,10 +81,10 @@ Module Data.
   (* TODO: hashtables *)
   .
 
-  Definition get Op' {i:Injectable Op Op'} T (var: Var T) : proc Op' T :=
+  Definition get Op' {i:Injectable Op Op'} (var: Var.t) : proc Op' (Var.ty var) :=
     Call (inject (GetVar var)).
 
-  Definition set_var Op' {i:Injectable Op Op'} T (var: Var T) (v: T) : proc Op' T :=
+  Definition set_var Op' {i:Injectable Op Op'} (var: Var.t) (v: Var.ty var) : proc Op' unit :=
     Call (inject (SetVar var v)).
 
   Definition newIORef Op' {i:Injectable Op Op'}
@@ -106,13 +110,21 @@ Module Data.
     Call (inject (ArrayAppend a v)).
 
   Record State : Type :=
-    mkState { iorefs: IORef_ -> option {T:ty & T};
+    mkState { vars: forall (var:Var.t), Var.ty var;
+              iorefs: IORef_ -> option {T:ty & T};
               arrays: Array_ -> option {T:ty & list T};
               (* TODO: similar model for variables (except complete map) and
               arrays *) }.
 
   Instance _eta : Settable _ :=
-    mkSettable (constructor mkState <*> iorefs <*> arrays)%set.
+    mkSettable (constructor mkState <*> vars <*> iorefs <*> arrays)%set.
+
+  Definition upd_vars (var: Var.t) (v: Var.ty var) (vars: forall var, Var.ty var) :
+    forall var, Var.ty var :=
+    fun var' => match equal var var' with
+             | left H => rew [Var.ty] H in v
+             | right _ => vars var'
+             end.
 
   Definition upd_iorefs T (v: IORef T) (x: T)
              (f:IORef_ -> option {T:ty & T}) : IORef_ -> option {T:ty & T}
@@ -146,17 +158,10 @@ Module Data.
 
   Import RelationNotations.
 
-  Definition checkTy (T:ty) {F: ty -> Type} {A} (xbundle: {T:ty & F T}) : relation A A (F T) :=
-    let 'existT T0 x := xbundle in
-    match equal T0 T with
-    | left H => pure (rew [F] H in x)
-    | right _ => error
-    end.
-
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
-    (* | GetVar v => reads (fun s => vars s v) *)
-    (* | SetVar v x => puts (set vars (fupd v x)) *)
+    | GetVar v => reads (fun s => vars s v)
+    | SetVar v x => puts (set vars (upd_vars v x))
     | NewIORef _ x =>
       r <- such_that (fun s r => s.(iorefs) r = None);
         _ <- puts (set iorefs (upd_iorefs r x));
@@ -179,7 +184,6 @@ Module Data.
     | ArrayGet v i =>
       l0 <- readSome (fun s => get_array v s.(arrays));
         readSome (fun _ => List.nth_error l0 (N.to_nat (uint64.(toNum) i)))
-    | _ => error
     end.
 
 End Data.
