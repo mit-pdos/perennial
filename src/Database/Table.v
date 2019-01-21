@@ -67,8 +67,10 @@ Module Table.
                  end).
 
   Definition readIndexData (fd:Fd) : proc ByteString :=
-    (* TODO: read index handle and read its data *)
-    Ret BS.empty.
+    sz <- Call (inject (FS.Size fd));
+      let headerLength := uint64.(fromNum) 16 in
+      data <- lift (FS.readAt fd (intSub sz headerLength) headerLength);
+        Ret data.
 
   Definition recover (ident: uint32) (fd:Fd) : proc Tbl.t :=
     index <- Call (inject (Data.NewArray _));
