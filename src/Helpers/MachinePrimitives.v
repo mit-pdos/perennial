@@ -15,8 +15,6 @@ Axiom ByteString : Type.
 
 Record MachineUint (bits:nat) : Type :=
   { intTy :> Type;
-    int_val0 : intTy;
-    int_val1 : intTy;
     intPlus : intTy -> intTy -> intTy;
     intSub : intTy -> intTy -> intTy;
     intCmp : intTy -> intTy -> comparison;
@@ -27,8 +25,8 @@ Record MachineUint (bits:nat) : Type :=
     decodeLE : ByteString -> intTy;
     encode_decode_LE_ok : forall x, decodeLE (encodeLE x) = x; }.
 
-Arguments int_val0 {bits int} : rename.
-Arguments int_val1 {bits int} : rename.
+Definition int_val0 bits {int:MachineUint bits} := int.(fromNum) 0.
+Definition int_val1 bits {int:MachineUint bits} := int.(fromNum) 1.
 Arguments intCmp {bits int} : rename.
 Arguments intSub {bits int} : rename.
 
@@ -37,9 +35,10 @@ Axiom uint32 : MachineUint 32.
 Axiom uint16 : MachineUint 16.
 Axiom uint8   : MachineUint 8.
 
-Axiom uint_val4096 : uint64.
+Definition uint_val4096 : uint64 := uint64.(fromNum) 4096.
 
 Axiom uint64_to_uint16 : uint64 -> uint16.
+Axiom uint64_to_uint32 : uint64 -> uint32.
 Axiom uint16_to_uint64 : uint16 -> uint64.
 
 Module BS.

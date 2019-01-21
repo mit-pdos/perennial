@@ -109,6 +109,12 @@ Module Data.
   Definition arrayAppend Op' {i:Injectable Op Op'} T (a: Array T) (v:T) : proc Op' unit :=
     Call (inject (ArrayAppend a v)).
 
+  Definition arrayLength Op' {i:Injectable Op Op'} T (a: Array T) : proc Op' uint64 :=
+    Call (inject (ArrayLength a)).
+
+  Definition arrayGet Op' {i:Injectable Op Op'} T (a: Array T) (ix:uint64) : proc Op' T :=
+    Call (inject (ArrayGet a ix)).
+
   Record State : Type :=
     mkState { vars: forall (var:Var.t), Var.ty var;
               iorefs: IORef_ -> option {T:ty & T};

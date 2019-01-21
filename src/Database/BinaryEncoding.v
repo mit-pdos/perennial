@@ -90,6 +90,9 @@ Defined.
 Axiom uint64_fmt : Encodable uint64.
 Existing Instance uint64_fmt.
 
+Axiom uint32_fmt : Encodable uint32.
+Existing Instance uint32_fmt.
+
 Axiom uint16_fmt : Encodable uint16.
 Existing Instance uint16_fmt.
 

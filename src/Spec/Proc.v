@@ -341,3 +341,6 @@ Definition LoopRet {Op T R} (x:R) : proc Op (LoopOutcome T R) := Ret (DoneWithOu
 (* TODO: define all loops in terms of this more flexible version *)
 Definition Loop Op T R (body: T -> proc Op (LoopOutcome T R)) (init:T) : proc Op R.
 Admitted.
+
+Definition LoopWhileVoid Op R (body: proc Op (LoopOutcome unit R)) : proc Op R
+  := Loop (fun _ => body) tt.
