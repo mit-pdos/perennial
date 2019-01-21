@@ -1,8 +1,13 @@
 From Coq Require Import FunctionalExtensionality.
+From Coq Require Import Program.Wf.
+From Coq Require Import NArith.NArith.
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Database.Common.
 
 From Tactical Require Import ProofAutomation.
+
+From Classes Require Import EqualDec.
+Import EqualDecNotation.
 
 Import BSNotations.
 
@@ -119,3 +124,42 @@ Proof.
             value <- getBytes <$> decode Array16;;
             ret (Entry.mk key value); |}.
 Defined.
+
+Fixpoint encode_list T (enc: T -> ByteString) (l: list T) : ByteString :=
+  match l with
+  | nil => BS.empty
+  | cons x xs => BS.append (enc x) (encode_list enc xs)
+  end.
+
+Program Fixpoint decode_list T (dec: Decoder T) (bs:ByteString)
+        {measure (uint64.(toNum) (BS.length bs)) (N.lt)} : option (list T * uint64) :=
+  if bs == BS.empty
+  then Some (nil, int_val0)
+  else match dec bs with
+       | Some (x, n) => if intCmp n int_val0 == Eq then None else
+                         match decode_list dec (BS.drop n bs) with
+                         | Some (x', n') => Some (cons x x', n')
+                         | None => None
+                         end
+       | None => None
+       end.
+Next Obligation.
+  intros.
+  rewrite BS.drop_length.
+  (* TODO: need a lot more assumptions about uint64's to prove this
+  inequality *)
+Admitted.
+Next Obligation.
+  apply measure_wf.
+  apply N.lt_wf_0.
+Qed.
+
+(* decode a list of elements encoded with a particular format, expecting them to
+fit exactly in the input buffer
+
+intentionally not an instance since lists can be encoded in multiple ways (eg,
+with a length prefix) and this isn't the most general such format *)
+Definition exact_list_fmt T (fmt:Encodable T) : Encodable (list T).
+  refine {| encode := encode_list (@encode T fmt);
+            decode := decode_list (@decode T fmt); |}.
+Admitted.

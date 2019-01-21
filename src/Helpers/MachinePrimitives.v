@@ -12,6 +12,8 @@ From Coq Require Import NArith.NArith.
 Local Open Scope N.
 
 Axiom ByteString : Type.
+Axiom eqdec_ByteString : EqualDec ByteString.
+Existing Instance eqdec_ByteString.
 
 Record MachineUint (bits:nat) : Type :=
   { intTy :> Type;
@@ -48,6 +50,9 @@ Module BS.
   Axiom take : uint64 -> ByteString -> ByteString.
   Axiom drop : uint64 -> ByteString -> ByteString.
   Axiom empty : ByteString.
+
+  (* TODO: probably best derived from other axioms *)
+  Axiom drop_length : forall n bs, BS.length (BS.drop n bs) = intSub (BS.length bs) n.
 End BS.
 
 Module BSNotations.
