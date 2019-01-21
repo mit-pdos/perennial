@@ -66,6 +66,23 @@ Module Table.
                             if ok then Continue tt else LoopRet None
                  end).
 
+  Definition readIndexData (fd:Fd) : proc ByteString :=
+    (* TODO: read index handle and read its data *)
+    Ret BS.empty.
+
+  Definition recover (ident: uint32) (fd:Fd) : proc Tbl.t :=
+    index <- Call (inject (Data.NewArray _));
+      indexData <- readIndexData fd;
+      _ <- Loop (fun indexData =>
+              match decode (Ty IndexEntry.ty) indexData with
+              | Some (e, n) => _ <- Data.arrayAppend index e;
+                                Continue (BS.drop n indexData)
+              | None => LoopRet tt
+              end) indexData;
+      Ret {| Tbl.ident := ident;
+             Tbl.fd := fd;
+             Tbl.index := index |}.
+
   Module TblWriter.
     Record t :=
       mk {
