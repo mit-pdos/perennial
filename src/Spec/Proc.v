@@ -302,3 +302,42 @@ Module ProcNotations.
                                (at level 20, p1 at level 100, p2 at level 200, right associativity)
                              : proc_scope.
 End ProcNotations.
+
+(* replacements for Until loops *)
+
+Definition DoWhile Op T (body: T -> proc Op (option T)) (init: T) : proc Op T :=
+  Bind (Until (T:=option T * T) (fun '(v, last) => match v with
+               | Some _ => false
+               | None => true
+               end)
+        (fun v => match v with
+               | Some (Some x, last) => Bind (body x) (fun v => Ret (v, x))
+               | Some (None, last) => Ret (None, last)
+               | None => Ret (None, init)
+               end)
+        (Some (Some init, init)))
+       (fun '(_, last) => Ret last).
+
+Definition DoWhileVoid Op T (body: T -> proc Op (option T)) (init: T) : proc Op unit :=
+  Bind (Until (T:=option T) (fun v => match v with
+               | Some _ => false
+               | None => true
+               end)
+        (fun v => match v with
+               | Some (Some x) => body x
+               | Some None => Ret None
+               | None => Ret None
+               end)
+        (Some (Some init)))
+       (fun _ => Ret tt).
+
+Inductive LoopOutcome (T R:Type) : Type :=
+| ContinueOutcome (x:T)
+| DoneWithOutcome (r:R).
+
+Definition Continue {Op T R} (x:T) : proc Op (LoopOutcome T R) := Ret (ContinueOutcome R x).
+Definition LoopRet {Op T R} (x:R) : proc Op (LoopOutcome T R) := Ret (DoneWithOutcome T x).
+
+(* TODO: define all loops in terms of this more flexible version *)
+Definition Loop Op T R (body: T -> proc Op (LoopOutcome T R)) (init:T) : proc Op R.
+Admitted.
