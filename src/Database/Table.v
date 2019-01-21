@@ -19,9 +19,11 @@ Module Table.
 
   (* reference to a read-only table *)
   Module Tbl.
+    (* note that unlike in specious-db, tables do not track an identifer; it's
+    only used to compute the table's filename, and that responsibility can
+    simply be shifted to the manifest *)
     Record t :=
-      mk { ident : uint32;
-           fd : Fd;
+      mk { fd : Fd;
            index : Array IndexEntry.ty; }.
   End Tbl.
 
@@ -72,7 +74,7 @@ Module Table.
       data <- lift (FS.readAt fd (intSub sz headerLength) headerLength);
         Ret data.
 
-  Definition recover (ident: uint32) (fd:Fd) : proc Tbl.t :=
+  Definition recover (fd:Fd) : proc Tbl.t :=
     index <- Call (inject (Data.NewArray _));
       indexData <- readIndexData fd;
       _ <- Loop (fun indexData =>
@@ -81,8 +83,7 @@ Module Table.
                                 Continue (BS.drop n indexData)
               | None => LoopRet tt
               end) indexData;
-      Ret {| Tbl.ident := ident;
-             Tbl.fd := fd;
+      Ret {| Tbl.fd := fd;
              Tbl.index := index |}.
 
   Module TblWriter.
@@ -161,7 +162,7 @@ Module Table.
         Ret tt.
 
   (* consumes the table writer and finishes writing out the table *)
-  Definition create (t:TblWriter.t) (id:uint32) : proc Tbl.t :=
+  Definition create (t:TblWriter.t) : proc Tbl.t :=
     _ <- flushEntry t;
       numEntries <- Data.arrayLength t.(TblWriter.indexEntries);
       indexEntries <- Loop (fun '(i, bs) =>
@@ -177,7 +178,6 @@ Module Table.
       let indexData := BS.append indexEntries indexHandle in
       _ <- lift (FS.append t.(TblWriter.fd) indexData);
       Ret {| Tbl.fd := TblWriter.fd t;
-             Tbl.ident := id;
              Tbl.index := TblWriter.indexEntries t; |}.
 
 End Table.
