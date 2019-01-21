@@ -42,6 +42,7 @@ Definition uint_val4096 : uint64 := uint64.(fromNum) 4096.
 Axiom uint64_to_uint16 : uint64 -> uint16.
 Axiom uint64_to_uint32 : uint64 -> uint32.
 Axiom uint16_to_uint64 : uint16 -> uint64.
+Axiom uint32_to_uint64 : uint32 -> uint64.
 
 Module BS.
   Axiom append : ByteString -> ByteString -> ByteString.

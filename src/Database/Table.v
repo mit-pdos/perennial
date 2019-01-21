@@ -60,13 +60,59 @@ Module Table.
 
   Definition readNext (t:Tbl.t) (it:ReadIterator.t) : proc (option Entry.t) :=
     LoopWhileVoid (data <- Data.readIORef it.(ReadIterator.buffer);
-                 match decode Entry.t data with
-                 | Some (e, n) =>
-                   _ <- Data.writeIORef it.(ReadIterator.buffer) (BS.drop n data);
-                     LoopRet (Some e)
-                 | None => ok <- fill t it;
-                            if ok then Continue tt else LoopRet None
-                 end).
+                     match decode Entry.t data with
+                     | Some (e, n) =>
+                       _ <- Data.writeIORef it.(ReadIterator.buffer) (BS.drop n data);
+                         LoopRet (Some e)
+                     | None => ok <- fill t it;
+                                if ok then Continue tt else LoopRet None
+                     end).
+
+  Definition keyWithin (k:Key) (bounds: Key * Key) : bool :=
+    let (min, max) := bounds in
+    match intCmp min k with
+    | Lt => false
+    | _ => match intCmp k max with
+          | Gt => false
+          | _ => true
+          end
+    end.
+
+  Definition indexSearch (t:Tbl.t) (k:Key) : proc (option SliceHandle.t) :=
+    sz <- Data.arrayLength t.(Tbl.index);
+      Loop (fun i =>
+              if intCmp i sz == Eq
+              then LoopRet None
+              else
+                h <- Data.arrayGet t.(Tbl.index) i;
+                if keyWithin k h.(IndexEntry.keys)
+                then LoopRet (Some h.(IndexEntry.handle))
+                else Continue (uint64.(intPlus) i int_val1)) int_val0.
+
+  Definition readHandle (t:Tbl.t) (h:SliceHandle.t) : proc ByteString :=
+    lift (FS.readAt t.(Tbl.fd) h.(SliceHandle.offset) (uint32_to_uint64 h.(SliceHandle.length))).
+
+  Inductive TableSearchResult :=
+  | Missing
+  | NotInTable
+  | Found (v:Value)
+  .
+
+  Definition get (t:Tbl.t) (k:Key) : proc TableSearchResult :=
+    mh <- indexSearch t k;
+      match mh with
+      | Some h =>
+        data <- readHandle t h;
+          Loop (fun data =>
+                  match decode Entry.t data with
+                  | Some (e, n) =>
+                    if intCmp e.(Entry.key) k == Eq
+                    then LoopRet (Found e.(Entry.value))
+                    else Continue (BS.drop n data)
+                  | None => LoopRet Missing
+                  end) data
+      | None => Ret NotInTable
+      end.
 
   Definition readIndexData (fd:Fd) : proc ByteString :=
     sz <- Call (inject (FS.Size fd));
