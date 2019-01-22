@@ -38,7 +38,9 @@ Fixpoint Ty (T:ty) : Type :=
   | ty.option A => option (Ty A)
   end.
 
-Fixpoint Ty_eqdec T : EqualDec (Ty T).
+Coercion Ty : ty >-> Sortclass.
+
+Fixpoint Ty_eqdec (T:ty) : EqualDec T.
 Proof.
   destruct T; simpl.
   - typeclasses eauto 1.
@@ -48,8 +50,7 @@ Proof.
   - apply pair_eq_dec.
   - apply option_eq_dec.
 Defined.
-
-Coercion Ty : ty >-> Sortclass.
+Existing Instance Ty_eqdec.
 
 Axiom IORef_ : Type.
 Axiom ioref_eqdec : EqualDec IORef_.
@@ -60,6 +61,11 @@ Axiom Array_ : Type.
 Axiom array_eqdec : EqualDec Array_.
 Existing Instance array_eqdec.
 Definition Array (T:ty) := Array_.
+
+Axiom HashTable_ : Type.
+Axiom hashtable_eqdec : EqualDec HashTable_.
+Existing Instance hashtable_eqdec.
+Definition HashTable (K V:ty) := HashTable_.
 
 Module Var.
   Inductive t :=
@@ -89,7 +95,13 @@ Module Data.
   | ArrayGet : forall T, Array T -> uint64 -> Op T
   | ArrayAppend : forall T, Array T -> T -> Op unit
 
-  (* TODO: hashtables *)
+  (* hashtables *)
+  | NewHashTable :
+      forall K V, Op (HashTable K V)
+  | HashTableAlter :
+      forall (K V:ty), HashTable K V -> K -> (option V -> option V) -> Op unit
+  | HashTableLookup :
+      forall K V, HashTable K V -> K -> Op (option V)
   .
 
   Definition get Op' {i:Injectable Op Op'} (var: Var.t) : proc Op' (Var.ty var) :=
@@ -126,15 +138,23 @@ Module Data.
   Definition arrayGet Op' {i:Injectable Op Op'} T (a: Array T) (ix:uint64) : proc Op' T :=
     Call (inject (ArrayGet a ix)).
 
+  (* model of a HashTable_: existential K, V types and a corresponding partial
+  map *)
+  Inductive sigKVMap : Type :=
+  | existKVMap (K V:ty) (m: K -> option V).
+
   Record State : Type :=
     mkState { vars: forall (var:Var.t), Var.ty var;
               iorefs: IORef_ -> option {T:ty & T};
               arrays: Array_ -> option {T:ty & list T};
-              (* TODO: similar model for variables (except complete map) and
-              arrays *) }.
+              hashtables: HashTable_ -> option sigKVMap; }.
 
   Instance _eta : Settable _ :=
-    mkSettable (constructor mkState <*> vars <*> iorefs <*> arrays)%set.
+    mkSettable (constructor mkState
+                            <*> vars
+                            <*> iorefs
+                            <*> arrays
+                            <*> hashtables)%set.
 
   Module OptionNotations.
     Delimit Scope option_monad with opt.
@@ -186,6 +206,22 @@ Module Data.
              (f:Array_ -> option {T:ty & list T}) : Array_ -> option {T:ty & list T} :=
     fun r => if r == v then ret! existT T x else f r.
 
+  Definition get_hashtable K V (v: HashTable K V)
+             (f:HashTable_ -> option sigKVMap) : option (K -> option V) :=
+    Some! (existKVMap K' V' x) <- f v;
+      left! HK <- K' == K;
+      left! HV <- V' == V;
+      ret! rew [fun (V:ty) => _ -> option V] HV in
+          (rew [fun (K:ty) => K -> option _] HK in x).
+
+  Definition upd_hashtable K V (v: HashTable K V) (m: K -> option V)
+             (f:HashTable_ -> option sigKVMap) : HashTable_ -> option sigKVMap :=
+    fun r => if r == v then ret! existKVMap K V m else f r.
+
+  Definition alter_map (K V:Type) {decK: EqualDec K} (m: K -> option V)
+             (k:K) (f: option V -> option V) : K -> option V :=
+    fun k' => if k == k' then f (m k) else m k'.
+
   Close Scope option_monad.
 
   Import RelationNotations.
@@ -216,6 +252,17 @@ Module Data.
     | ArrayGet v i =>
       l0 <- readSome (fun s => get_array v s.(arrays));
         readSome (fun _ => List.nth_error l0 (N.to_nat (toNum i)))
+    | NewHashTable K V =>
+      r <- such_that (fun s r => s.(hashtables) r = None);
+        _ <- puts (set hashtables (upd_hashtable (K:=K) (V:=V) r (fun _ => None)));
+        pure r
+    | HashTableLookup v k =>
+      m <- readSome (fun s => get_hashtable v s.(hashtables));
+        pure (m k)
+    | HashTableAlter v k f =>
+      m <- readSome (fun s => get_hashtable v s.(hashtables));
+        _ <- puts (set hashtables (upd_hashtable v (alter_map m k f)));
+        pure tt
     end.
 
   Definition vars0 (v:Var.t) : Var.ty v :=
