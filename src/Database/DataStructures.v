@@ -136,42 +136,57 @@ Module Data.
   Instance _eta : Settable _ :=
     mkSettable (constructor mkState <*> vars <*> iorefs <*> arrays)%set.
 
+  Module OptionNotations.
+    Delimit Scope option_monad with opt.
+    Notation "'Some!' x <- a ; f" :=
+      (match a with
+       | Some x => f
+       | _ => None
+       end)
+        (right associativity, at level 70, x pattern) : option_monad.
+
+    Notation "'left!' H <- a ; f" :=
+      (match a with
+       | left H => f
+       | right _ => None
+       end)
+        (right associativity, at level 60, f at level 200) : option_monad.
+
+    Notation "'ret!' a" := (Some a) (at level 60) : option_monad.
+  End OptionNotations.
+
+  Import EqualDecNotation.
+  Import OptionNotations.
+  Local Open Scope option_monad.
+
   Definition upd_vars (var: Var.t) (v: Var.ty var) (vars: forall var, Var.ty var) :
     forall var, Var.ty var :=
-    fun var' => match equal var var' with
+    fun var' => match var == var' with
              | left H => rew [Var.ty] H in v
              | right _ => vars var'
              end.
 
   Definition upd_iorefs T (v: IORef T) (x: T)
              (f:IORef_ -> option {T:ty & T}) : IORef_ -> option {T:ty & T}
-    := fun r => if equal r v then Some (existT T x) else f r.
+    := fun r => if r == v then ret! existT T x else f r.
 
   Definition get_ioref T (v: IORef T)
              (f:IORef_ -> option {T:ty & T}) : option T :=
-    match f v with
-    | Some (existT T' x) =>
-      match equal T' T with
-      | left H => Some (rew [Ty] H in x)
-      | right _ => None
-      end
-    | None => None
-    end.
+    Some! (existT T' x) <- f v;
+      left! H <- T' == T;
+      ret! rew [Ty] H in x.
 
   Definition get_array T (v: Array T)
              (f: Array_ -> option {T:ty & list T}) : option (list T) :=
-    match f v with
-    | Some (existT T' x) =>
-      match equal T' T with
-      | left H => Some (rew [fun (T:ty) => list T] H in x)
-      | right _ => None
-      end
-    | None => None
-    end.
+    Some! (existT T' x) <- f v;
+      left! H <- T' == T;
+      ret! rew [fun (T:ty) => list T] H in x.
 
   Definition upd_arrays T (v: Array T) (x: list T)
              (f:Array_ -> option {T:ty & list T}) : Array_ -> option {T:ty & list T} :=
-    fun r => if equal r v then Some (existT T x) else f r.
+    fun r => if r == v then ret! existT T x else f r.
+
+  Close Scope option_monad.
 
   Import RelationNotations.
 
