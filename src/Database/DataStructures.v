@@ -19,6 +19,7 @@ Module ty.
   | uint32
   | ByteString
   | prod (A B:t)
+  | option (A:t)
   .
 End ty.
 
@@ -34,6 +35,7 @@ Fixpoint Ty (T:ty) : Type :=
   | ty.uint32 => uint32
   | ty.ByteString => ByteString
   | ty.prod A B => prod (Ty A) (Ty B)
+  | ty.option A => option (Ty A)
   end.
 
 Fixpoint Ty_eqdec T : EqualDec (Ty T).
@@ -44,6 +46,7 @@ Proof.
   - typeclasses eauto 1.
   - typeclasses eauto 1.
   - apply pair_eq_dec.
+  - apply option_eq_dec.
 Defined.
 
 Coercion Ty : ty >-> Sortclass.
