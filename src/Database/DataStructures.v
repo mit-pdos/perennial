@@ -36,6 +36,16 @@ Fixpoint Ty (T:ty) : Type :=
   | ty.prod A B => prod (Ty A) (Ty B)
   end.
 
+Fixpoint Ty_eqdec T : EqualDec (Ty T).
+Proof.
+  destruct T; simpl.
+  - typeclasses eauto 1.
+  - typeclasses eauto 1.
+  - typeclasses eauto 1.
+  - typeclasses eauto 1.
+  - apply pair_eq_dec.
+Defined.
+
 Coercion Ty : ty >-> Sortclass.
 
 Axiom IORef_ : Type.
@@ -187,7 +197,7 @@ Module Data.
         pure (uint64.(fromNum) (N.of_nat (length l)))
     | ArrayGet v i =>
       l0 <- readSome (fun s => get_array v s.(arrays));
-        readSome (fun _ => List.nth_error l0 (N.to_nat (uint64.(toNum) i)))
+        readSome (fun _ => List.nth_error l0 (N.to_nat (toNum i)))
     end.
 
   Definition vars0 (v:Var.t) : Var.ty v :=

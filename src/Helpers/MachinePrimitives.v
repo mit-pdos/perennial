@@ -22,6 +22,8 @@ Record MachineUint (bits:nat) : Type :=
     intCmp : intTy -> intTy -> comparison;
     fromNum : N -> intTy;
     toNum : intTy -> N;
+    toNum_inj : forall x y, toNum x = toNum y -> x = y;
+    intCmp_ok : forall x y, intCmp x y = N.compare (toNum x) (toNum y);
     toNum_ok : forall x, toNum x < N.pow 2 (N.of_nat bits);
     encodeLE : intTy -> ByteString;
     decodeLE : ByteString -> intTy;
@@ -31,6 +33,13 @@ Definition int_val0 bits {int:MachineUint bits} := int.(fromNum) 0.
 Definition int_val1 bits {int:MachineUint bits} := int.(fromNum) 1.
 Arguments intCmp {bits int} : rename.
 Arguments intSub {bits int} : rename.
+Arguments toNum {bits int} : rename.
+
+Instance uint_eqdec bits (int: MachineUint bits) : EqualDec int.
+Proof.
+  apply (EqualDec.inj_eq_dec toNum).
+  apply toNum_inj.
+Defined.
 
 Axiom uint64 : MachineUint 64.
 Axiom uint32 : MachineUint 32.

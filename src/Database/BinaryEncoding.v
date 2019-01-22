@@ -132,7 +132,7 @@ Fixpoint encode_list T (enc: T -> ByteString) (l: list T) : ByteString :=
   end.
 
 Program Fixpoint decode_list T (dec: Decoder T) (bs:ByteString)
-        {measure (uint64.(toNum) (BS.length bs)) (N.lt)} : option (list T * uint64) :=
+        {measure (toNum (BS.length bs)) (N.lt)} : option (list T * uint64) :=
   if bs == BS.empty
   then Some (nil, int_val0)
   else match dec bs with
