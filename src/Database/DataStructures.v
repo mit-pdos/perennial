@@ -50,12 +50,10 @@ Definition Array (T:ty) := Array_.
 
 Module Var.
   Inductive t :=
-  | LogFile
   .
 
   Definition ty (x:t) : Type :=
     match x with
-    | LogFile => Fd
     end.
 End Var.
 
@@ -192,12 +190,8 @@ Module Data.
         readSome (fun _ => List.nth_error l0 (N.to_nat (uint64.(toNum) i)))
     end.
 
-End Data.
+  Definition vars0 (v:Var.t) : Var.ty v :=
+    match v with
+    end.
 
-(* TODO: we should be able to make this pattern more convenient, but for now
-calling withEnv results in worse syntax than a Bind (due to poor indentation)
-and still requires calling lift over the second part. *)
-Definition withEnv env (p: proc Data.Op env)
-           Op' T (p': env -> proc Op' T)
-           {i:Injectable Data.Op Op'} : proc Op' T :=
-  Bind (lift p) p'.
+End Data.

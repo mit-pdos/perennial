@@ -36,7 +36,7 @@ Module FS.
   | Append fh bs' : Op unit
   | Delete p : Op unit
   | Rename p1 p2 : Op bool (* returns false if the destination exists *)
-  | Truncate fh : Op unit
+  | Truncate p : Op unit
   | AtomicCreate p bs : Op unit
   .
 
@@ -48,7 +48,7 @@ Module FS.
   Definition create p := Call (Create p).
   Definition append fh bs := Call (Append fh bs).
   Definition delete p := Call (Delete p).
-  Definition truncate fh := Call (Truncate fh).
+  Definition truncate p := Call (Truncate p).
   Definition atomicCreate p bs := Call (AtomicCreate p bs).
 
   Inductive OpenMode := Read | Write.
@@ -110,10 +110,8 @@ Module FS.
       (* delete's error case supercedes this succesful deletion case *)
       + (_ <- readSome (fun s => s.(files) !! p);
            puts (set files (map_delete p)))
-    | Truncate fh =>
-      p <- (p <- readFd fh Write;
-             _ <- readSome (fun s => s.(files) !! p);
-             pure p);
+    | Truncate p =>
+      _ <- readSome (fun s => s.(files) !! p);
         puts (set files (insert p BS.empty))
     | Rename p1 p2 =>
       bs <- readSome (fun s => s.(files) !! p1);

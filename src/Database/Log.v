@@ -8,23 +8,23 @@ Module Log.
   Import ProcNotations.
   Local Open Scope proc.
 
-  Definition addTxn (txn: ByteString) : proc (Data.Op ⊕ FS.Op) _ :=
-    fd <- Data.get (Var.LogFile);
+  Definition t := Fd.
+
+  Definition addTxn (l:t) (txn: ByteString) : proc (Data.Op ⊕ FS.Op) _ :=
       let bs := encode (array16 txn) in
-      lift (FS.append fd bs).
+      lift (FS.append l bs).
 
-  Definition clear : proc (Data.Op ⊕ FS.Op) _ :=
-    fd <- Data.get (Var.LogFile);
-      lift (FS.truncate fd).
+  Definition clear (p:string) : proc (Data.Op ⊕ FS.Op) _ :=
+      lift (FS.truncate p).
 
-  Definition init : proc (Data.Op ⊕ FS.Op) _ :=
-    fd <- lift (FS.create "log");
-      Data.set_var (Var.LogFile) fd.
+  Definition create (p:string) : proc (Data.Op ⊕ FS.Op) t :=
+    fd <- lift (FS.create p);
+      Ret fd.
 
   (* TODO: injection type inference does the wrong thing here, need to debug
   it *)
-  Definition recoverTxns : proc (Data.Op ⊕ FS.Op) (Array ty.ByteString) :=
-    fd <- Data.get (Op':=Data.Op ⊕ FS.Op) (Var.LogFile);
+  Definition recoverTxns (p:string) : proc (Data.Op ⊕ FS.Op) (Array ty.ByteString) :=
+    fd <- lift (FS.open p);
       txns <- Call (inject (Op:=Data.Op ⊕ FS.Op) (Data.NewArray ty.ByteString));
       sz <- lift (FS.size fd);
       log <- lift (FS.readAt fd int_val0 sz);
