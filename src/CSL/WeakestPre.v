@@ -31,7 +31,7 @@ Definition irreducible {OpT T Λ} (e : proc OpT T) (σ : State Λ) :=
 Definition to_val {OpT T} (e: proc OpT T) : option T :=
    match e in (proc _ T0) return (option T0) with
    | @Ret _ T0 v => Some v
-   | @Call _ T0 _ | @Bind _ T0 _ _ _ | @Until _ T0 _ _ _ => None
+   | @Call _ T0 _ | @Bind _ T0 _ _ _ | @Loop _ T0 _ _ _ => None
    | Spawn _ _ => None
    end.
 

@@ -12,6 +12,16 @@ Import RelationNotations.
 
 Definition Event : Type := {T: Type & T}.
 
+Inductive LoopOutcome (T R:Type) : Type :=
+| ContinueOutcome (x:T)
+| DoneWithOutcome (r:R).
+
+Arguments ContinueOutcome {_ _} _.
+Arguments DoneWithOutcome {_ _} _.
+
+(* TODO: define all loops in terms of this more flexible version *)
+
+
 Section Proc.
   Variable Op : Type -> Type.
 
@@ -19,17 +29,19 @@ Section Proc.
   | Call : forall T (op : Op T), proc T
   | Ret : forall T (v : T), proc T
   | Bind : forall T (T1 : Type) (p1 : proc T1) (p2 : T1 -> proc T), proc T
-  (* TODO: why is p's argument an option in until? *)
-  | Until : forall T (c : T -> bool) (p : option T -> proc T) (v : option T), proc T
+  | Loop : forall T R (body: T -> proc (LoopOutcome T R)) (init:T), proc R
   | Spawn : forall T (p: proc T), proc unit.
 
 End Proc.
 
 Arguments Call {Op T}.
 Arguments Ret {Op T} v.
-Arguments Until {Op T} _ _ _.
+Arguments Loop {Op T R} _ _.
 Arguments Spawn {Op} _.
 Arguments Err {_ _}.
+
+Definition Continue {Op T R} (x:T) : proc Op (LoopOutcome T R) := Ret (ContinueOutcome x).
+Definition LoopRet {Op T R} (x:R) : proc Op (LoopOutcome T R) := Ret (DoneWithOutcome x).
 
 (*
 Inductive proc_seq (Op: Type -> Type) (R: Type) : Type :=
@@ -72,10 +84,13 @@ Section Dynamics.
   (** First, we define semantics of running programs with halting (without the
   effect of a crash or recovery) *)
 
-  Definition until1 T (c : T -> bool)
-                      (p : option T -> proc Op T)
-                      (v : option T) :=
-    Bind (p v) (fun x => if c x then Ret x else Until c p (Some x)).
+  Definition loop1 T R (body : T -> proc Op (LoopOutcome T R)) (init: T) :=
+    Bind (body init)
+         (fun out =>
+            match out with
+            | ContinueOutcome x => Loop body x
+            | DoneWithOutcome r => Ret r
+            end).
 
   Fixpoint exec_step {T} (p: proc Op T)
     : relation State State (proc Op T * thread_pool Op) :=
@@ -91,7 +106,7 @@ Section Dynamics.
         | Ret v => fun p' => pure (p' v, t)
         | p => fun p' => pure (Bind p p',t)
         end) p'
-    | Until c p v  => pure (until1 c p v, nil)
+    | Loop b init => pure (loop1 b init, nil)
     | Spawn T' p' => pure (Ret tt, existT _ T' p' :: nil)
     end.
 
@@ -305,6 +320,7 @@ End ProcNotations.
 
 (* replacements for Until loops *)
 
+(*
 Definition DoWhile Op T (body: T -> proc Op (option T)) (init: T) : proc Op T :=
   Bind (Until (T:=option T * T) (fun '(v, last) => match v with
                | Some _ => false
@@ -330,17 +346,7 @@ Definition DoWhileVoid Op T (body: T -> proc Op (option T)) (init: T) : proc Op 
                end)
         (Some (Some init)))
        (fun _ => Ret tt).
-
-Inductive LoopOutcome (T R:Type) : Type :=
-| ContinueOutcome (x:T)
-| DoneWithOutcome (r:R).
-
-Definition Continue {Op T R} (x:T) : proc Op (LoopOutcome T R) := Ret (ContinueOutcome R x).
-Definition LoopRet {Op T R} (x:R) : proc Op (LoopOutcome T R) := Ret (DoneWithOutcome T x).
-
-(* TODO: define all loops in terms of this more flexible version *)
-Definition Loop Op T R (body: T -> proc Op (LoopOutcome T R)) (init:T) : proc Op R.
-Admitted.
+*)
 
 Definition LoopWhileVoid Op R (body: proc Op (LoopOutcome unit R)) : proc Op R
   := Loop (fun _ => body) tt.
