@@ -170,6 +170,16 @@ Module BS.
     fromByteList (List.skipn n.(toNum) bs).
   Definition empty : ByteString := fromByteList [].
 
+  Theorem skipn_length A n (l: list A) :
+    List.length (List.skipn n l) = List.length l - n.
+  Proof.
+    generalize dependent n.
+    induction l; simpl; intros.
+    rewrite skipn_nil; simpl.
+    lia.
+    destruct n; simpl; auto.
+  Qed.
+
   Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = intSub (BS.length bs) n.
   Proof.
     destruct n as [n ?], bs as [bs].
@@ -178,7 +188,7 @@ Module BS.
     rewrite toNum_fromMum.
     cbn [UInt.val getBytes toNum].
     rewrite toNum_fromMum.
-    rewrite List.skipn_length.
+    rewrite skipn_length.
   Admitted.
 End BS.
 
