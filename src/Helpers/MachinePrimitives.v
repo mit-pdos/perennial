@@ -169,28 +169,32 @@ Module BS.
   Definition drop (n:uint64) bs :=
     fromByteList (List.skipn n.(toNum) bs).
   Definition empty : ByteString := fromByteList [].
-
-  Theorem skipn_length A n (l: list A) :
-    List.length (List.skipn n l) = List.length l - n.
-  Proof.
-    generalize dependent n.
-    induction l; simpl; intros.
-    rewrite skipn_nil; simpl.
-    lia.
-    destruct n; simpl; auto.
-  Qed.
-
-  Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = intSub (BS.length bs) n.
-  Proof.
-    destruct n as [n ?], bs as [bs].
-    apply toNum_inj.
-    unfold drop, length, intSub.
-    rewrite toNum_fromMum.
-    cbn [UInt.val getBytes toNum].
-    rewrite toNum_fromMum.
-    rewrite skipn_length.
-  Admitted.
 End BS.
+
+Lemma skipn_nil A n : skipn n (@nil A) = nil.
+  induction n; simpl; auto.
+Qed.
+
+Lemma skipn_length A n (l: list A) :
+  List.length (List.skipn n l) = List.length l - n.
+Proof.
+  generalize dependent n.
+  induction l; simpl; intros.
+  rewrite skipn_nil; simpl.
+  lia.
+  destruct n; simpl; auto.
+Qed.
+
+Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = intSub (BS.length bs) n.
+Proof.
+  destruct n as [n ?], bs as [bs].
+  apply toNum_inj.
+  unfold BS.drop, BS.length, intSub.
+  rewrite toNum_fromMum.
+  cbn [UInt.val getBytes toNum].
+  rewrite toNum_fromMum.
+  rewrite skipn_length.
+Admitted.
 
 Module BSNotations.
   Delimit Scope bs_scope with bs.

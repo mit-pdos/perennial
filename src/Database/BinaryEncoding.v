@@ -141,7 +141,7 @@ Program Fixpoint decode_list T (dec: Decoder T) (bs:ByteString)
        end.
 Next Obligation.
   intros.
-  rewrite BS.drop_length.
+  rewrite drop_length.
   (* TODO: need a lot more assumptions about uint64's to prove this
   inequality *)
 Admitted.
