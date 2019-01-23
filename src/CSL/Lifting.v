@@ -2,7 +2,7 @@ Require Export Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Abstraction.
 Require Export Spec.Layer.
-Require Export WeakestPre.
+Require Export CSL.WeakestPre.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
 From iris.proofmode Require Import tactics.
