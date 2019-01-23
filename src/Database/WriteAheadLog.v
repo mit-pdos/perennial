@@ -7,7 +7,7 @@ From RecoveryRefinement Require Import Database.Log.
 
 Module WAL.
   Module Cache.
-    Definition t := HashTable ty.uint64 (ty.option ty.ByteString).
+    Definition t := HashTable uint64 (option ByteString).
   End Cache.
 
   Module DbLog.

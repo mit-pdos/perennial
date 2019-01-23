@@ -23,9 +23,9 @@ Module Log.
 
   (* TODO: injection type inference does the wrong thing here, need to debug
   it *)
-  Definition recoverTxns (p:string) : proc (Data.Op ⊕ FS.Op) (Array ty.ByteString) :=
+  Definition recoverTxns (p:string) : proc (Data.Op ⊕ FS.Op) (Array ByteString) :=
     fd <- lift (FS.open p);
-      txns <- Call (inject (Op:=Data.Op ⊕ FS.Op) (Data.NewArray ty.ByteString));
+      txns <- Call (inject (Op:=Data.Op ⊕ FS.Op) (Data.NewArray ByteString));
       sz <- lift (FS.size fd);
       log <- lift (FS.readAt fd int_val0 sz);
       _ <- Loop

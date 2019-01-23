@@ -12,60 +12,23 @@ Import EqNotations.
 
 Set Implicit Arguments.
 
-Module ty.
-  Inductive t : Type :=
-  | Fd
-  | uint64
-  | uint32
-  | ByteString
-  | prod (A B:t)
-  | option (A:t)
-  .
-End ty.
+Axiom IORef : Type -> Type.
+Axiom Array : Type -> Type.
+Axiom HashTable : forall (K:Type) (dec:EqualDec K) (V:Type), Type.
 
-Delimit Scope type_code_scope with ty.
-Infix "*" := (ty.prod) : type_code_scope.
+Arguments HashTable K {dec} V.
 
-Definition ty := ty.t.
+Axiom sigIORef_eq_dec : EqualDec (sigT IORef).
+Axiom sigArray_eq_dec : EqualDec (sigT Array).
 
-Fixpoint Ty (T:ty) : Type :=
-  match T with
-  | ty.Fd => Fd
-  | ty.uint64 => uint64
-  | ty.uint32 => uint32
-  | ty.ByteString => ByteString
-  | ty.prod A B => prod (Ty A) (Ty B)
-  | ty.option A => option (Ty A)
-  end.
+(* single-index version of HashTable *)
+Inductive HashTableIdx :=
+| KVIdx (K:Type) (dec:EqualDec K) (V:Type).
+Arguments KVIdx K {dec} V.
+Definition HashTable' := fun '(KVIdx K V) => HashTable K V.
+Axiom sigHashTable_eq_dec : EqualDec (sigT HashTable').
 
-Coercion Ty : ty >-> Sortclass.
-
-Fixpoint Ty_eqdec (T:ty) : EqualDec T.
-Proof.
-  destruct T; simpl.
-  - typeclasses eauto 1.
-  - typeclasses eauto 1.
-  - typeclasses eauto 1.
-  - typeclasses eauto 1.
-  - apply pair_eq_dec.
-  - apply option_eq_dec.
-Defined.
-Existing Instance Ty_eqdec.
-
-Axiom IORef_ : Type.
-Axiom ioref_eqdec : EqualDec IORef_.
-Existing Instance ioref_eqdec.
-Definition IORef (T:ty) := IORef_.
-
-Axiom Array_ : Type.
-Axiom array_eqdec : EqualDec Array_.
-Existing Instance array_eqdec.
-Definition Array (T:ty) := Array_.
-
-Axiom HashTable_ : Type.
-Axiom hashtable_eqdec : EqualDec HashTable_.
-Existing Instance hashtable_eqdec.
-Definition HashTable (K V:ty) := HashTable_.
+Existing Instances sigIORef_eq_dec sigArray_eq_dec sigHashTable_eq_dec.
 
 Module Var.
   Inductive t :=
@@ -85,7 +48,7 @@ Module Data.
   | SetVar : forall (v:Var.t), Var.ty v -> Op unit
 
   (* arbitrary references *)
-  | NewIORef : forall (T:ty), T -> Op (IORef T)
+  | NewIORef : forall T, T -> Op (IORef T)
   | ReadIORef : forall T, IORef T -> Op T
   | WriteIORef : forall T, IORef T -> T -> Op unit
 
@@ -97,12 +60,14 @@ Module Data.
 
   (* hashtables *)
   | NewHashTable :
-      forall K V, Op (HashTable K V)
+      forall K dec V, Op (@HashTable K dec V)
   | HashTableAlter :
-      forall (K V:ty), HashTable K V -> K -> (option V -> option V) -> Op unit
+      forall K dec V, @HashTable K dec V -> K -> (option V -> option V) -> Op unit
   | HashTableLookup :
-      forall K V, HashTable K V -> K -> Op (option V)
+      forall K dec V, @HashTable K dec V -> K -> Op (option V)
   .
+
+  Arguments NewHashTable K {dec} V.
 
   Definition get Op' {i:Injectable Op Op'} (var: Var.t) : proc Op' (Var.ty var) :=
     Call (inject (GetVar var)).
@@ -111,8 +76,8 @@ Module Data.
     Call (inject (SetVar var v)).
 
   Definition newIORef Op' {i:Injectable Op Op'}
-             (T:ty) (v:T) : proc Op' (IORef T) :=
-    Call (inject (NewIORef T v)).
+             T (v:T) : proc Op' (IORef T) :=
+    Call (inject (NewIORef v)).
 
   Definition readIORef Op' {i:Injectable Op Op'}
              T (ref:IORef T) : proc Op' T :=
@@ -138,16 +103,20 @@ Module Data.
   Definition arrayGet Op' {i:Injectable Op Op'} T (a: Array T) (ix:uint64) : proc Op' T :=
     Call (inject (ArrayGet a ix)).
 
-  (* model of a HashTable_: existential K, V types and a corresponding partial
-  map *)
-  Inductive sigKVMap : Type :=
-  | existKVMap (K V:ty) (m: K -> option V).
+  Record DynMap A (Ref: A -> Type) (Model: A -> Type) :=
+    { dynMap : sigT Ref -> option (sigT Model);
+      dynMap_wf : forall T v, match dynMap (existT T v) with
+                         | Some (existT T' _) => T' = T
+                         | None => True
+                         end; }.
+
+  Definition hashtableM := fun '(KVIdx K V) => K -> option V.
 
   Record State : Type :=
     mkState { vars: forall (var:Var.t), Var.ty var;
-              iorefs: IORef_ -> option {T:ty & T};
-              arrays: Array_ -> option {T:ty & list T};
-              hashtables: HashTable_ -> option sigKVMap; }.
+              iorefs: DynMap IORef id;
+              arrays: DynMap Array list;
+              hashtables: DynMap HashTable' hashtableM; }.
 
   Instance _eta : Settable _ :=
     mkSettable (constructor mkState
@@ -186,82 +155,76 @@ Module Data.
              | right _ => vars var'
              end.
 
-  Definition upd_iorefs T (v: IORef T) (x: T)
-             (f:IORef_ -> option {T:ty & T}) : IORef_ -> option {T:ty & T}
-    := fun r => if r == v then ret! existT T x else f r.
+  Definition getDyn A (Ref Model: A -> Type)
+             (m: DynMap Ref Model) a (r: Ref a) : option (Model a).
+  Proof.
+    pose proof (m.(dynMap_wf) _ r).
+    destruct (m.(dynMap) (existT a r)); [ apply Some | exact None ].
+    destruct s.
+    exact (rew H in m0).
+  Defined.
 
-  Definition get_ioref T (v: IORef T)
-             (f:IORef_ -> option {T:ty & T}) : option T :=
-    Some! (existT T' x) <- f v;
-      left! H <- T' == T;
-      ret! rew [Ty] H in x.
+  Arguments getDyn {A Ref Model} m {a} r.
 
-  Definition get_array T (v: Array T)
-             (f: Array_ -> option {T:ty & list T}) : option (list T) :=
-    Some! (existT T' x) <- f v;
-      left! H <- T' == T;
-      ret! rew [fun (T:ty) => list T] H in x.
+  Definition updDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+             a (v: Ref a) (x: Model a) (m: DynMap Ref Model) : DynMap Ref Model.
+  Proof.
+    refine {| dynMap := fun r => if r == existT a v then ret! existT a x else m.(dynMap) r |}.
+    intros.
+    destruct (existT _ v0 == existT _ v).
+    - inversion e; auto.
+    - apply (m.(dynMap_wf) _ v0).
+  Defined.
 
-  Definition upd_arrays T (v: Array T) (x: list T)
-             (f:Array_ -> option {T:ty & list T}) : Array_ -> option {T:ty & list T} :=
-    fun r => if r == v then ret! existT T x else f r.
+  Arguments updDyn {A Ref Model dec a} v x m.
 
-  Definition get_hashtable K V (v: HashTable K V)
-             (f:HashTable_ -> option sigKVMap) : option (K -> option V) :=
-    Some! (existKVMap K' V' x) <- f v;
-      left! HK <- K' == K;
-      left! HV <- V' == V;
-      ret! rew [fun (V:ty) => _ -> option V] HV in
-          (rew [fun (K:ty) => K -> option _] HK in x).
-
-  Definition upd_hashtable K V (v: HashTable K V) (m: K -> option V)
-             (f:HashTable_ -> option sigKVMap) : HashTable_ -> option sigKVMap :=
-    fun r => if r == v then ret! existKVMap K V m else f r.
-
-  Definition alter_map (K V:Type) {decK: EqualDec K} (m: K -> option V)
-             (k:K) (f: option V -> option V) : K -> option V :=
+  Definition alter_map (K V:Type) {decK: EqualDec K} (m: hashtableM (KVIdx K V))
+             (k:K) (f: option V -> option V) : hashtableM (KVIdx K V) :=
     fun k' => if k == k' then f (m k) else m k'.
 
   Close Scope option_monad.
 
   Import RelationNotations.
 
+  Definition emptyHashTable (idx:HashTableIdx) : hashtableM idx :=
+    let 'KVIdx _ _ := idx in fun _ => None.
+
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | GetVar v => reads (fun s => vars s v)
     | SetVar v x => puts (set vars (upd_vars v x))
-    | NewIORef _ x =>
-      r <- such_that (fun s r => s.(iorefs) r = None);
-        _ <- puts (set iorefs (upd_iorefs r x));
+    | NewIORef x =>
+      r <- such_that (fun s r => getDyn s.(iorefs) r = None);
+        _ <- puts (set iorefs (updDyn r x));
         pure r
     | WriteIORef v x =>
-      _ <- readSome (fun s => get_ioref v s.(iorefs));
-        puts (set iorefs (upd_iorefs v x))
+      _ <- readSome (fun s => getDyn s.(iorefs) v);
+        puts (set iorefs (updDyn v x))
     | ReadIORef v =>
-      readSome (fun s => get_ioref v s.(iorefs))
+      readSome (fun s => getDyn s.(iorefs) v)
     | NewArray T =>
-      r <- such_that (fun s r => s.(arrays) r = None);
-        _ <- puts (set arrays (upd_arrays r (@nil T)));
+      r <- such_that (fun s r => getDyn s.(arrays) r = None);
+        _ <- puts (set arrays (updDyn r (@nil T)));
         pure r
     | ArrayAppend v x =>
-      l0 <- readSome (fun s => get_array v s.(arrays));
-        puts (set arrays (upd_arrays v (l0 ++ x::nil)))
+      l0 <- readSome (fun s => getDyn s.(arrays) v);
+        puts (set arrays (updDyn v (l0 ++ x::nil)%list))
     | ArrayLength v =>
-      l <- readSome (fun s => get_array v s.(arrays));
+      l <- readSome (fun s => getDyn s.(arrays) v);
         pure (uint64.(fromNum) (N.of_nat (length l)))
     | ArrayGet v i =>
-      l0 <- readSome (fun s => get_array v s.(arrays));
+      l0 <- readSome (fun s => getDyn s.(arrays) v);
         readSome (fun _ => List.nth_error l0 (N.to_nat (toNum i)))
     | NewHashTable K V =>
-      r <- such_that (fun s r => s.(hashtables) r = None);
-        _ <- puts (set hashtables (upd_hashtable (K:=K) (V:=V) r (fun _ => None)));
+      r <- such_that (fun s r => getDyn s.(hashtables) r = None);
+        _ <- puts (set hashtables (updDyn r (emptyHashTable (KVIdx K V))));
         pure r
     | HashTableLookup v k =>
-      m <- readSome (fun s => get_hashtable v s.(hashtables));
+      m <- readSome (fun s => getDyn (a:=KVIdx _ _) s.(hashtables) v);
         pure (m k)
     | HashTableAlter v k f =>
-      m <- readSome (fun s => get_hashtable v s.(hashtables));
-        _ <- puts (set hashtables (upd_hashtable v (alter_map m k f)));
+      m <- readSome (fun s => getDyn (a:=KVIdx _ _) s.(hashtables) v);
+        _ <- puts (set hashtables (updDyn v (alter_map m k f)));
         pure tt
     end.
 

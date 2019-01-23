@@ -159,3 +159,15 @@ Definition exact_list_fmt T (fmt:Encodable T) : Encodable (list T).
   refine {| encode := encode_list (@encode T fmt);
             decode := decode_list (@decode T fmt); |}.
 Admitted.
+
+Instance SliceHandle_fmt : Encodable SliceHandle.t.
+Proof.
+  refine {| encode :=
+              fun h => encode h.(SliceHandle.offset)
+                    ++ encode h.(SliceHandle.length);
+            decode :=
+              offset <- decode uint64;;
+            length <- decode uint32;;
+            ret (SliceHandle.mk offset length);
+         |}.
+Defined.

@@ -1,20 +1,23 @@
 From RecoveryRefinement Require Import Lib.
 From RecoveryRefinement Require Import Spec.SumProc.
 From RecoveryRefinement Require Import Database.Common.
+From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Database.BinaryEncoding.
 From RecoveryRefinement Require Import Database.Filesys.
 
 Module Table.
   Module IndexEntry.
-    Definition ty := (ty.uint64 * ty.uint32 * ty.uint64 * ty.uint64)%ty.
-    Definition t := ltac:(let x := eval unfold ty, Ty in (Ty ty) in
-                              exact x).
-    Definition handle (x:t) : SliceHandle.t :=
-      let '(off, len, _, _) := x in
-      SliceHandle.mk off len.
-    Definition keys (x:t) : Key * Key :=
-      let '(_, _, min, max) := x in
-      (min, max).
+    Record t :=
+      mk { handle: SliceHandle.t;
+           keys: Key * Key; }.
+
+    Instance t_enc : Encodable t.
+    Proof.
+      refine {| encode := fun e => BS.append (encode e.(handle)) (encode e.(keys));
+                decode := decodeBind (decode SliceHandle.t)
+                                     (fun h => decodeBind (decode (Key * Key))
+                                      (fun ks => decodeRet (mk h ks))); |}.
+    Defined.
   End IndexEntry.
 
   (* reference to a read-only table *)
@@ -24,13 +27,13 @@ Module Table.
     simply be shifted to the manifest *)
     Record t :=
       mk { fd : Fd;
-           index : Array IndexEntry.ty; }.
+           index : Array IndexEntry.t; }.
   End Tbl.
 
   Module ReadIterator.
     Record t :=
-      mk { offset : IORef ty.uint64;
-           buffer : IORef ty.ByteString;
+      mk { offset : IORef uint64;
+           buffer : IORef ByteString;
            length : uint64; }.
   End ReadIterator.
 
@@ -42,8 +45,8 @@ Module Table.
   Notation proc := (proc (Data.Op ⊕ FS.Op)).
 
   Definition readAll (t:Tbl.t) : proc ReadIterator.t :=
-    index <- Data.newIORef ty.uint64 int_val0;
-      buf <- Data.newIORef ty.ByteString BS.empty;
+    index <- Data.newIORef int_val0;
+      buf <- Data.newIORef BS.empty;
       Ret (ReadIterator.mk index buf int_val0).
 
   (* [fill] attempts to fill the iterator buffer, and returns true if it
@@ -124,7 +127,7 @@ Module Table.
     index <- Call (inject (Data.NewArray _));
       indexData <- readIndexData fd;
       _ <- Loop (fun indexData =>
-              match decode (Ty IndexEntry.ty) indexData with
+              match decode IndexEntry.t indexData with
               | Some (e, n) => _ <- Data.arrayAppend index e;
                                 Continue (BS.drop n indexData)
               | None => LoopRet tt
@@ -136,28 +139,28 @@ Module Table.
     Record t :=
       mk {
         fd : Fd;
-        fileOffset : IORef ty.uint64;
+        fileOffset : IORef uint64;
         (* these are all for the current index entry *)
-        indexOffset : IORef ty.uint64;
-        indexMin : IORef ty.uint64; (* key *)
-        indexMax : IORef ty.uint64;
+        indexOffset : IORef uint64;
+        indexMin : IORef uint64; (* key *)
+        indexMax : IORef uint64;
         (* this is used to track whether the index is entry;
 
           for verification purposes the only relevant fact is whether it's 0 (in
           which the other index refs should be ignored) or non-zero, but its
           actual value is also used to determine when entries should be split *)
-        indexNumKeys : IORef ty.uint64;
+        indexNumKeys : IORef uint64;
         (* these are finished index entries *)
-        indexEntries : Array IndexEntry.ty;
+        indexEntries : Array IndexEntry.t;
       }.
   End TblWriter.
 
   Definition new (fh:Fd) : proc TblWriter.t :=
-    fileOffset <- Data.newIORef ty.uint64 (int_val0);
-      indexOffset <- Data.newIORef ty.uint64 (int_val0);
-      indexMin <- Data.newIORef ty.uint64 (int_val0);
-      indexMax <- Data.newIORef ty.uint64 (int_val0);
-      indexNumKeys <- Data.newIORef ty.uint64 (int_val0);
+    fileOffset <- Data.newIORef (int_val0);
+      indexOffset <- Data.newIORef (int_val0);
+      indexMin <- Data.newIORef (int_val0);
+      indexMax <- Data.newIORef (int_val0);
+      indexNumKeys <- Data.newIORef (int_val0);
       indexEntries <- Call (inject (Data.NewArray _));
       Ret {| TblWriter.fd := fh;
              TblWriter.fileOffset := fileOffset;
@@ -180,9 +183,12 @@ Module Table.
         fileOffset <- Data.readIORef t.(TblWriter.fileOffset);
       indexOffset <- Data.readIORef t.(TblWriter.indexOffset);
       let indexLength := uint64_to_uint32 (intSub fileOffset indexOffset) in
+      let indexHandle := {| SliceHandle.offset := indexOffset;
+                            SliceHandle.length := indexLength; |} in
       indexMin <- Data.readIORef t.(TblWriter.indexMin);
         indexMax <- Data.readIORef t.(TblWriter.indexMax);
-        let e := (indexOffset, indexLength, indexMin, indexMax) in
+        let e := {| IndexEntry.handle := indexHandle;
+                    IndexEntry.keys := (indexMin, indexMax); |} in
         _ <- Data.arrayAppend t.(TblWriter.indexEntries) e;
           (* clear current index entry *)
           _ <- Data.writeIORef t.(TblWriter.indexNumKeys) int_val0;
