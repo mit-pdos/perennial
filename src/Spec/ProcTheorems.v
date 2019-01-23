@@ -421,8 +421,13 @@ Section Dynamics.
   Qed.
 
   Lemma exec_partial_err_exec_err T (p: proc T) s:
-    exec_partial p s Err -> exec p s Err.
-  Proof. econstructor; eauto. Qed.
+    exec_partial p s Err <-> exec p s Err.
+  Proof.
+    split.
+    - econstructor; eauto.
+    - destruct 1 as [?|(a&b&Hpart&Hbad)]; auto.
+      destruct a as [|(?&[])]; inversion Hbad.
+  Qed.
 
   Lemma exec_seq_partial_err_exec_seq_err (rec: rec_seq) s:
     exec_seq_partial rec s Err -> exec_seq rec s Err.
@@ -445,6 +450,13 @@ Section Dynamics.
     { repeat setoid_rewrite <-bind_assoc. reflexivity. }
     eapply and_then_err_cancel; eauto.
     simpl. intros. apply exec_seq_partial_err_exec_seq_err; auto.
+  Qed.
+
+  Lemma exec_err_rexec_err T (p: proc T) rec s:
+    exec p s Err -> rexec p rec s Err.
+  Proof.
+    intros Herr. apply exec_partial_err_exec_err in Herr.
+    unfold rexec. left; eauto.
   Qed.
 
   (*

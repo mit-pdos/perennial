@@ -246,7 +246,8 @@ Context `{Λ: Layer OpT} `{irisG OpT Λ Σ}.
  *)
 
 Definition crashed (P: iProp Σ) : iProp Σ :=
-  (∀ σ1 σ2, state_interp σ1 ∗ ⌜crash_step Λ.(sem) σ1 σ2 tt⌝ -∗ <comp> |==> state_interp σ2 ∗ P)%I.
+  (∀ σ1 σ2, state_interp σ1 ∗ ⌜crash_step Λ.(sem) σ1 (Val σ2 tt)⌝
+                                                  -∗ <comp> |==> state_interp σ2 ∗ P)%I.
 
 
 Global Instance crashed_ne n :

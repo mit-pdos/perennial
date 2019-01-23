@@ -469,7 +469,7 @@ Proof.
 Qed.
 
 Theorem wp_recovery_invariance {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
-        σ1 σ2 t2 (φinv ρ : Λ.(State) → Prop) :
+        σ1 (φinv ρ : Λ.(State) → Prop) :
   (* φ is an invariant of normal execution *)
   (∀ `{Hinv : invG Σ},
      (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
@@ -482,16 +482,14 @@ Theorem wp_recovery_invariance {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (
        stateI σ1' ∗ WP rec @ s; ⊤ {{ _, True }} ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
   (∀ σ, φinv σ → ρ σ) →
   (∀ σ1 σ2, φinv σ1 → Λ.(crash_step) σ1 (Val σ2 tt) → ρ σ2) →
-  Λ.(rexec_partial) e (rec_singleton rec) σ1 (Val σ2 t2) →
   s = NotStuck →
-  ρ σ2.
+  (∀ σ2 t2, Λ.(rexec_partial) e (rec_singleton rec) σ1 (Val σ2 t2) → ρ σ2)
+    ∧ recv_adequate s e rec σ1 (fun _ _ => True) (fun _ => True).
 Proof.
-  intros Hwp_e Hwp_rec Himpl Hcrash_impl Hpartial Hnonstuck.
-  unfold rexec_partial, exec_recover_partial in Hpartial.
-  eapply requiv_no_err_elim in Hpartial; first last.
-  { intros Herr. apply rexec_partial_err_rexec_err in Herr.
-    eapply recv_adequate_not_stuck; eauto.
-    eapply wp_recovery_adequacy with (φ := fun _ _ => True) (φrec := fun _ => True); first eauto.
+  intros Hwp_e Hwp_rec Himpl Hcrash_impl Hnonstuck.
+  assert (recv_adequate s e rec σ1 (fun _ _ => True) (fun _ => True)).
+  {
+    eapply wp_recovery_adequacy; first eauto.
     - intros. iMod Hwp_e as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI.
       iIntros "{$Hσ} {$Hφ} !>".
       iApply (wp_mono with "H"); eauto.
@@ -502,6 +500,13 @@ Proof.
       iApply (wp_mono with "H"); eauto.
       iIntros. iApply fupd_mask_weaken; auto.
     - eauto.
+  }
+  split; auto.
+  intros σ2 t2 Hpartial.
+  unfold rexec_partial, exec_recover_partial in Hpartial.
+  eapply requiv_no_err_elim in Hpartial; first last.
+  { intros Herr. apply rexec_partial_err_rexec_err in Herr.
+    eapply recv_adequate_not_stuck; eauto.
   }
   { setoid_rewrite exec_seq_partial_singleton.
     setoid_rewrite <-bind_assoc at 2.

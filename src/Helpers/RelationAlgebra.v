@@ -1,5 +1,6 @@
 Require Import Setoid.
 Require Import Morphisms.
+Require Classical_Prop.
 
 Require Import Tactical.Propositional.
 Require Import Tactical.Misc.
@@ -132,6 +133,14 @@ Section OutputRelations.
 
   Definition rimpl {A B} {T} (r1 r2: relation A B T) :=
     forall x y, r1 x y -> r2 x Err \/ r2 x y.
+
+  Lemma rimpl_alt {A B} {T} (r1 r2: relation A B T) :
+    (forall a ret, ~ r2 a Err -> r1 a ret -> r2 a ret) ->
+    rimpl r1 r2.
+  Proof.
+    intros Halt x ret Hr1.
+    destruct (Classical_Prop.classic (r2 x Err)); auto.
+  Qed.
 
   Global Instance rimpl_preorder T : PreOrder (rimpl (A:=A) (B:=B) (T:=T)).
   split.
