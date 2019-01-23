@@ -30,48 +30,50 @@ Proof.
     destruct (tpool_to_map tp2 !! j); eauto; [ congruence | contradiction ].
 Qed.
 
+Require Import Helpers.RelationAlgebra.
 Theorem wp_recovery_crash_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ} s
         (ea: proc OpTa T) (ec: proc OpTc T) (rec: proc OpTc R)
-        φ (absr: Λa.(State) → Λc.(State) → unit → Prop) E :
+        φ (absr: relation Λa.(State) Λc.(State) unit) E :
   nclose sourceN ⊆ E →
   (∀ (σ1a: Λa.(State)) σ1c,
-      absr σ1a σ1c tt →
+      absr σ1a (Val σ1c tt) →
       (∀ `{Hinv : invG Σ} `{Hcfg: cfgG OpTa Λa Σ},
           (|={⊤}=> ∃ stateI : State Λc → iProp Σ,
              let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
              (source_ctx ([existT _ ea], σ1a) ∗ O ⤇ ea ∗ source_state σ1a) -∗
               stateI σ1c ∗ WP ec @ s; ⊤ {{ v, O ⤇ of_val v
-                    ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ σ2a, source_state σ2a ∗ ⌜absr σ2a σ2c tt⌝)}}
+                    ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ σ2a, source_state σ2a ∗ ⌜absr σ2a (Val σ2c tt)⌝)}}
                               ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ tp σ2a, source_pool_map tp
                                          ∗ source_state σ2a ∗ ⌜φ tp σ2a σ2c⌝))%I)) →
   (∀ `{Hinv : invG Σ} `{Hcfg: cfgG OpTa Λa Σ}
      tp1 tp1' σ1a σ1c σ1c'
      (Hφ: φ tp1 σ1a σ1c)
      (Htp_sub: pool_map_incl tp1 tp1')
-     (Hcrash: Λc.(crash_step) σ1c σ1c' tt),
+     (Hcrash: Λc.(crash_step) σ1c (Val σ1c' tt)),
      (|={⊤}=> ∃ stateI : State Λc → iProp Σ,
        let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
        (source_ctx (tp1', σ1a) ∗ source_pool_map (tpool_to_map tp1') ∗ source_state σ1a) -∗
               stateI σ1c' ∗ WP rec @ s; ⊤ {{ v, (∀ σ2c, stateI σ2c ={⊤,E}=∗
-                   ∃ σ2a σ2a', source_state σ2a ∗ ⌜Λa.(crash_step) σ2a σ2a' tt ∧ absr σ2a' σ2c tt⌝)}}
+                   ∃ σ2a σ2a', source_state σ2a ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt)
+                               ∧ absr σ2a' (Val σ2c tt)⌝)}}
                               ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ tp σ2a, source_pool_map tp
                                          ∗ source_state σ2a ∗ ⌜φ tp σ2a σ2c⌝))%I) →
   crash_refines absr Λc ec (rec_singleton rec) (Λa.(exec) ea)
                 (and_then (Λa.(exec_halt) ea) (fun _ => Λa.(crash_step))).
 Proof.
   intros Hsub Hwp_e Hwp_rec.
-  assert (Hadeq: ∀ σ1a σ1c, absr σ1a σ1c tt → recv_adequate s ec rec σ1c
-                          (λ v' σ2c', ∃ σ2a, exec Λa ea σ1a σ2a (existT _ v') ∧
-                                             absr σ2a σ2c' tt)
+  assert (Hadeq: ∀ σ1a σ1c, absr σ1a (Val σ1c tt) → recv_adequate s ec rec σ1c
+                          (λ v' σ2c', ∃ σ2a, exec Λa ea σ1a (Val σ2a (existT _ v')) ∧
+                                             absr σ2a (Val σ2c' tt))
                           (λ σ2c', ∃ tp2 tp2' σ2a σ3a, pool_map_incl tp2 tp2' ∧
-                                                   exec_partial Λa ea σ1a σ2a tp2' ∧
-                                                   crash_step Λa σ2a σ3a tt ∧
-                                                   absr σ3a σ2c' tt)).
+                                                   exec_partial Λa ea σ1a (Val σ2a tp2') ∧
+                                                   crash_step Λa σ2a (Val σ3a tt) ∧
+                                                   absr σ3a (Val σ2c' tt))).
   { intros.
     eapply wp_recovery_adequacy with
         (φinv := fun σ2c => ∃ tp2 tp2' σ2a, pool_map_incl tp2 tp2' ∧ φ tp2 σ2a σ2c
-                                                ∧ exec_partial Λa ea σ1a σ2a tp2'); eauto.
+                                                ∧ exec_partial Λa ea σ1a (Val σ2a tp2')); eauto.
     - iIntros (Hinv).
       assert (Inhabited Λa.(State)).
       { eexists; eauto. }

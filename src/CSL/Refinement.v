@@ -61,8 +61,9 @@ Section ghost_spec.
     own cfg_name (◯ (Excl <$> tp : gmap nat (exclR (procTC OpT)), ε)).
 
   Definition source_inv (tp: thread_pool OpT) (σ: State Λ) : iProp Σ :=
-    (∃ tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ')))  ∗
-                 ⌜ bind_star (exec_pool Λ) tp σ σ' tp' ⌝)%I.
+    (∃ tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
+                   ⌜ bind_star (exec_pool Λ) tp σ (Val σ' tp')
+                     ∧ ¬ bind_star (exec_pool Λ) tp σ Err ⌝)%I.
 
   Definition source_ctx ρ : iProp Σ :=
     inv sourceN (source_inv (fst ρ) (snd ρ)).
@@ -223,8 +224,10 @@ Section ghost_step.
   Qed.
 
   Lemma source_cfg_init `{cfgPreG Σ} tp σ :
+    ¬ bind_star (exec_pool Λ) tp σ Err →
     (|={⊤}=> ∃ _ : cfgG Σ, source_ctx (tp, σ) ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ)%I.
   Proof.
+    intros Hno_err.
     iMod (own_alloc (● (tpool_to_res tp, Some (Excl σ))
                        ⋅ ◯ (tpool_to_res tp, Some (Excl σ)))) as (γ) "(Hauth&Hfrag)".
     { apply @auth_valid_discrete_2; first by apply _. split; [| split].
@@ -239,7 +242,7 @@ Section ghost_step.
     iExists IN.
     iMod (inv_alloc sourceN ⊤ (source_inv tp σ) with "[Hauth]").
     { rewrite /source_inv. iNext. iExists tp, σ. iFrame "Hauth".
-      iPureIntro; econstructor. }
+      iPureIntro; split; eauto. econstructor. }
     iModIntro. iFrame.
     rewrite pair_split.
     iDestruct "Hfrag" as "($&$)".
@@ -336,7 +339,7 @@ Section ghost_step.
 
   Lemma ghost_step_lifting {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    Λ.(exec_step) e1 σ1 σ2 (e2, efs) →
+    Λ.(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
     nclose sourceN ⊆ E →
     source_ctx ρ ∗ j ⤇ K e1 ∗ source_state σ1
       ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
@@ -357,19 +360,22 @@ Section ghost_step.
     (* Restore the invariant *)
     iMod ("Hclose" with "[Hauth]").
     { iNext. iExists (<[j := (existT T2 (K e2))]>tp' ++ efs), σ2.
-      iFrame. iPureIntro. apply bind_star_expand_r.
+      iFrame. intuition. iPureIntro; split; auto.
+
+      apply bind_star_expand_r_valid.
       right. exists tp', σ'; split; auto.
-      apply exec_pool_equiv_alt.
+      apply exec_pool_equiv_alt_val.
       econstructor.
       { symmetry; eapply take_drop_middle; eauto. }
-      { rewrite app_comm_cons assoc; f_equal.
+      { reflexivity. }
+      { f_equal. rewrite app_comm_cons assoc; f_equal.
         erewrite <-take_drop_middle at 1; f_equal.
         { apply take_insert; reflexivity. }
         { f_equal. apply drop_insert; lia. }
         rewrite list_lookup_insert //=.
         apply lookup_lt_is_Some_1; eauto.
       }
-      eapply fill_step; eauto.
+      eapply fill_step_valid; eauto.
     }
     iModIntro; iFrame.
   Qed.

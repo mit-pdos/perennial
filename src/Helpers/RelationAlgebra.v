@@ -1088,6 +1088,20 @@ Section OutputRelations.
     induction IHHstar; t.
   Qed.
 
+  Lemma bind_star_lr_valid A `(r: T -> relation A A T) x b o1 o2:
+    bind_star r o1 x (Val b o2) ->
+    bind_star_r r o1 x (Val b o2).
+  Proof.
+    intros Hstar.
+    remember (Val b o2) as ret eqn:Heq.
+    revert b o2 Heq. induction Hstar; t.
+    specialize (IHHstar _ _ ltac:(eauto)); t.
+    clear Hstar.
+    remember (Val y o2) as ret eqn:Heq.
+    subst.
+    induction IHHstar; t.
+  Qed.
+
   Hint Resolve bind_star_r_one_more_valid_left.
 
   Theorem bind_star_lr A `(r: T -> relation A A T) (v:T) :
@@ -1106,6 +1120,32 @@ Section OutputRelations.
         inversion H; subst;
         unshelve (eapply bind_star_trans; [| eapply bind_star_one_more_err; eauto]);
         eauto using bind_star_rl_valid.
+  Qed.
+
+  Theorem bind_star_expand_r_valid `(r: T -> relation A A T) (v:T) x b o :
+    (rel_or (pure v) (and_then (bind_star r v) r) x (Val b o)) <-> bind_star r v x (Val b o).
+  Proof.
+    split.
+    - intros. apply bind_star_rl_valid.
+      destruct H; t.
+      * inversion H; subst. econstructor.
+      * inversion H; subst. t.
+        eapply bind_star_r_one_more_valid.
+        { eapply bind_star_lr_valid; eauto. }
+        { eauto. }
+    - intros [?|?|?]%bind_star_lr_valid.
+      * left; econstructor.
+      * right. destruct_return.
+        ** do 2 eexists; split.
+           *** eapply bind_star_rl_valid; eauto.
+           *** eauto.
+        ** right. do 2 eexists; split.
+           *** eapply bind_star_rl_valid; eauto.
+           *** eauto.
+      * right.
+        ** right. do 2 eexists; split.
+           *** eapply bind_star_rl_valid; eauto.
+           *** eauto.
   Qed.
 
   Theorem bind_star_expand_r `(r: T -> relation A A T) (v:T) :
