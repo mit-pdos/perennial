@@ -92,17 +92,13 @@ Proof.
                  ret (v1, v2); |}.
 Defined.
 
-Axiom uint64_fmt : Encodable uint64.
-Existing Instance uint64_fmt.
-
-Axiom uint32_fmt : Encodable uint32.
-Existing Instance uint32_fmt.
-
-Axiom uint16_fmt : Encodable uint16.
-Existing Instance uint16_fmt.
-
-Axiom uint8_fmt : Encodable uint8.
-Existing Instance uint8_fmt.
+Instance uint_fmt bytes (int: MachineUInt bytes) (enc:UIntEncoding int) : Encodable int :=
+  {| encode := encodeLE;
+    decode := fun bs =>
+                match decodeLE bs with
+                | Some x => Some (x, uint64.(fromNum) (N.of_nat bytes))
+                | None => None
+                end; |}.
 
 Record Array16 := array16 { getBytes :> ByteString }.
 
