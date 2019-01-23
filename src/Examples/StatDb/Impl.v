@@ -25,7 +25,7 @@ Module Var.
     end.
 
   Import RelationNotations.
-  Definition cas (i: id) (vold: nat) (vnew: nat): RelationAlgebra.relation State State nat :=
+  Definition cas_rel (i: id) (vold: nat) (vnew: nat): RelationAlgebra.relation State State nat :=
     v <- reads (get i);
     if nat_eq_dec v vold then
         puts (set i vnew);;
@@ -38,7 +38,7 @@ Module Var.
          match op with
          | Read i => reads (get i)
          | Write i v => puts (set i v)
-         | CAS i vold vnew => cas i vold vnew
+         | CAS i vold vnew => cas_rel i vold vnew
          end;
        crash_step :=
          puts (fun _ => (0, 0, 0)); |}.
@@ -96,6 +96,7 @@ End DB.
 
 Definition read i := Call (Var.Read i).
 Definition write i v := Call (Var.Write i v).
+Definition cas i vold vnew := Call (Var.CAS i vold vnew).
 
 Definition lock : proc Var.Op unit :=
   Loop (fun (_ : unit) =>

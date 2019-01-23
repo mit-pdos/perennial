@@ -4,6 +4,7 @@ Require Import Spec.Abstraction.
 Require Export Spec.Layer.
 Require Export CSL.WeakestPre.
 Require Import Helpers.RelationAlgebra.
+Require Import Helpers.RelationTheorems.
 Require Import Helpers.RelationRewriting.
 From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
@@ -93,6 +94,27 @@ Proof.
   iIntros (?) "H". iApply wp_lift_atomic_step_fupd; [done|].
   iIntros (?) "?". iMod ("H" with "[$]") as "[$ H]". iIntros "!> * % !> !>".
   by iApply "H".
+Qed.
+
+Lemma wp_lift_call_step {T} {s E Φ} (op: OpT T):
+  (∀ σ1, state_interp σ1 ={E}=∗
+    ⌜if s is NotStuck then ¬ Λ.(sem).(step) op σ1 Err else True⌝ ∗
+    ▷ ∀ e2 σ2, ⌜Λ.(sem).(step) op σ1 (Val σ2 e2)⌝ ={E}=∗
+      state_interp σ2 ∗ Φ e2)
+  ⊢ WP (Call op) @ s; E {{ Φ }}.
+Proof.
+  iIntros "H". iApply wp_lift_atomic_step; [done|].
+  iIntros (σ) "?". iMod ("H" with "[$]") as "[% H]".
+  iSplitL "".
+  {
+    iModIntro; iPureIntro; destruct s => //= Herr.
+      by apply bind_pure_no_err in Herr.
+  }
+  iIntros "!> * % !>".
+  iIntros (σ2 efs Hstep).
+  destruct Hstep as (?&?&Hstep&Hpure). inversion Hpure; subst.
+  rewrite //= right_id.
+  iApply "H"; eauto.
 Qed.
 
 Lemma wp_lift_pure_det_step {T} `{Inhabited (State Λ)} {s E E' Φ} (e1: proc OpT T) e2 efs :
