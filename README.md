@@ -1,6 +1,6 @@
 # Recovery refinement
 
-[![Build Status](https://travis-ci.org/mit-pdos/argosy.svg?branch=master)](https://travis-ci.org/mit-pdos/argosy)
+[![Build Status](https://travis-ci.org/mit-pdos/argosy.svg?branch=concur)](https://travis-ci.org/mit-pdos/argosy)
 
 Proving crash safety of systems by proving an implementation refines a
 specification. Supports implementations that run a recovery procedure, as well

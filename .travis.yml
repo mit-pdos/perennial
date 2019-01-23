@@ -11,11 +11,6 @@ env:
   matrix:
   - COQ_IMAGE="coqorg/coq:dev"
   - COQ_IMAGE="coqorg/coq:8.9"
-  - COQ_IMAGE="coqorg/coq:8.8.2"
-matrix:
-  # TODO: figure out why Iris behavior changed since 8.8.2 remove this.
-  allow_failures:
-    - env: COQ_IMAGE="coqorg/coq:8.8.2"
 
 # On Travis cloning the gitlab dependencies fails due to a certificate error. In
 # order to disable SSL verification for the submodule init, we have to tell
