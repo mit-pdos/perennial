@@ -16,7 +16,7 @@ Definition Decoder T := ByteString -> option (T * uint64).
 Definition decodeBind T1 T2 (dec1: Decoder T1) (dec2: T1 -> Decoder T2) : Decoder T2 :=
   fun bs => match dec1 bs with
          | Some (v1, n) => match dec2 v1 (BS.drop n bs) with
-                          | Some (v2, n2) => Some (v2, intPlus uint64 n n2)
+                          | Some (v2, n2) => Some (v2, intPlus n n2)
                           | None => None
                           end
          | None => None
@@ -92,11 +92,11 @@ Proof.
                  ret (v1, v2); |}.
 Defined.
 
-Instance uint_fmt bytes (int: MachineUInt bytes) (enc:UIntEncoding int) : Encodable int :=
+Instance uint_fmt bytes_m1 (enc:UIntEncoding bytes_m1) : Encodable (UInt.t bytes_m1) :=
   {| encode := encodeLE;
     decode := fun bs =>
                 match decodeLE bs with
-                | Some x => Some (x, uint64.(fromNum) (N.of_nat bytes))
+                | Some x => Some (x, fromNum (1+bytes_m1))
                 | None => None
                 end; |}.
 
@@ -128,7 +128,7 @@ Fixpoint encode_list T (enc: T -> ByteString) (l: list T) : ByteString :=
   end.
 
 Program Fixpoint decode_list T (dec: Decoder T) (bs:ByteString)
-        {measure (toNum (BS.length bs)) (N.lt)} : option (list T * uint64) :=
+        {measure (toNum (BS.length bs)) lt} : option (list T * uint64) :=
   if bs == BS.empty
   then Some (nil, int_val0)
   else match dec bs with
@@ -147,7 +147,7 @@ Next Obligation.
 Admitted.
 Next Obligation.
   apply measure_wf.
-  apply N.lt_wf_0.
+  apply Wf_nat.lt_wf.
 Qed.
 
 (* decode a list of elements encoded with a particular format, expecting them to

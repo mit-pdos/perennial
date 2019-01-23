@@ -55,7 +55,7 @@ Module Table.
     offset <- Data.readIORef it.(ReadIterator.offset);
       data <- lift (FS.readAt t.(Tbl.fd) offset uint_val4096);
       if intCmp (BS.length data) int_val0 == Eq then Ret false
-      else (_ <- Data.modifyIORef it.(ReadIterator.offset) (fun o => intPlus _ o (BS.length data));
+      else (_ <- Data.modifyIORef it.(ReadIterator.offset) (fun o => intPlus o (BS.length data));
               (* technically this is known to be unnecessary if len - offset >= 4096 *)
               let newData := BS.take (intSub (BS.length data) offset) data in
               _ <- Data.modifyIORef it.(ReadIterator.buffer) (fun bs => BS.append bs newData);
@@ -90,7 +90,7 @@ Module Table.
                 h <- Data.arrayGet t.(Tbl.index) i;
                 if keyWithin k h.(IndexEntry.keys)
                 then LoopRet (Some h.(IndexEntry.handle))
-                else Continue (uint64.(intPlus) i int_val1)) int_val0.
+                else Continue (intPlus i int_val1)) int_val0.
 
   Definition readHandle (t:Tbl.t) (h:SliceHandle.t) : proc ByteString :=
     lift (FS.readAt t.(Tbl.fd) h.(SliceHandle.offset) (uint32_to_uint64 h.(SliceHandle.length))).
@@ -119,7 +119,7 @@ Module Table.
 
   Definition readIndexData (fd:Fd) : proc ByteString :=
     sz <- Call (inject (FS.Size fd));
-      let headerLength := uint64.(fromNum) 16 in
+      let headerLength := fromNum 16 in
       data <- lift (FS.readAt fd (intSub sz headerLength) headerLength);
         Ret data.
 
@@ -205,10 +205,10 @@ Module Table.
           else Ret tt;
       let data := encode e in
       _ <- lift (FS.append t.(TblWriter.fd) data);
-        _ <- Data.modifyIORef t.(TblWriter.fileOffset) (uint64.(intPlus) (BS.length data));
+        _ <- Data.modifyIORef t.(TblWriter.fileOffset) (intPlus (BS.length data));
         _ <- Data.writeIORef t.(TblWriter.indexMax) e.(Entry.key);
-        _ <- Data.writeIORef t.(TblWriter.indexNumKeys) (uint64.(intPlus) numKeys int_val1);
-        _ <- if intCmp numKeys (uint64.(fromNum) 9) == Gt then
+        _ <- Data.writeIORef t.(TblWriter.indexNumKeys) (intPlus numKeys int_val1);
+        _ <- if intCmp numKeys (fromNum 9) == Gt then
               flushEntry t
             else Ret tt;
         Ret tt.
@@ -222,7 +222,7 @@ Module Table.
                   else
                     e <- Data.arrayGet t.(TblWriter.indexEntries) i;
                     let encoded := encode e in
-                    Continue (uint64.(intPlus) i int_val1, BS.append bs encoded))
+                    Continue (intPlus i int_val1, BS.append bs encoded))
                    (int_val0, BS.empty);
       indexStart <- Data.readIORef t.(TblWriter.fileOffset);
       let indexLength := uint64_to_uint32 (BS.length indexEntries) in

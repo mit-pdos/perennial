@@ -211,10 +211,10 @@ Module Data.
         puts (set arrays (updDyn v (l0 ++ x::nil)%list))
     | ArrayLength v =>
       l <- readSome (fun s => getDyn s.(arrays) v);
-        pure (uint64.(fromNum) (N.of_nat (length l)))
+        pure (fromNum (length l))
     | ArrayGet v i =>
       l0 <- readSome (fun s => getDyn s.(arrays) v);
-        readSome (fun _ => List.nth_error l0 (N.to_nat (toNum i)))
+        readSome (fun _ => List.nth_error l0 (toNum i))
     | NewHashTable K V =>
       r <- such_that (fun s r => getDyn s.(hashtables) r = None);
         _ <- puts (set hashtables (updDyn r (emptyHashTable (KVIdx K V))));
