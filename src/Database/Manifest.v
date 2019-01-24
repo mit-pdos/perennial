@@ -10,7 +10,7 @@ Module Manifest.
     Record t :=
       mk { l0tables: Array Table.Tbl.t;
            l1tables: Array Table.Tbl.t;
-           nextIdent: IORef uint32;
+           nextIdent: IORef uint64;
          }.
   End Mft.
 End Manifest.

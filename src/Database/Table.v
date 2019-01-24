@@ -5,6 +5,8 @@ From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Database.BinaryEncoding.
 From RecoveryRefinement Require Import Database.Filesys.
 
+Import UIntNotations.
+
 Module Table.
   Module IndexEntry.
     Record t :=
@@ -45,19 +47,19 @@ Module Table.
   Notation proc := (proc (Data.Op ⊕ FS.Op)).
 
   Definition readAll (t:Tbl.t) : proc ReadIterator.t :=
-    index <- Data.newIORef int_val0;
+    index <- Data.newIORef 0%u64;
       buf <- Data.newIORef BS.empty;
-      Ret (ReadIterator.mk index buf int_val0).
+      Ret (ReadIterator.mk index buf 0).
 
   (* [fill] attempts to fill the iterator buffer, and returns true if it
   succeeds *)
   Definition fill (t:Tbl.t) (it:ReadIterator.t) : proc bool :=
     offset <- Data.readIORef it.(ReadIterator.offset);
-      data <- lift (FS.readAt t.(Tbl.fd) offset uint_val4096);
-      if intCmp (BS.length data) int_val0 == Eq then Ret false
-      else (_ <- Data.modifyIORef it.(ReadIterator.offset) (fun o => intPlus o (BS.length data));
+      data <- lift (FS.readAt t.(Tbl.fd) offset 4096);
+      if BS.length data == 0 then Ret false
+      else (_ <- Data.modifyIORef it.(ReadIterator.offset) (fun o => o + (BS.length data))%u64;
               (* technically this is known to be unnecessary if len - offset >= 4096 *)
-              let newData := BS.take (intSub (BS.length data) offset) data in
+              let newData := BS.take (BS.length data - offset)%u64 data in
               _ <- Data.modifyIORef it.(ReadIterator.buffer) (fun bs => BS.append bs newData);
                 Ret true).
 
@@ -73,9 +75,9 @@ Module Table.
 
   Definition keyWithin (k:Key) (bounds: Key * Key) : bool :=
     let (min, max) := bounds in
-    match intCmp min k with
+    match compare min k with
     | Lt => false
-    | _ => match intCmp k max with
+    | _ => match compare k max with
           | Gt => false
           | _ => true
           end
@@ -84,16 +86,16 @@ Module Table.
   Definition indexSearch (t:Tbl.t) (k:Key) : proc (option SliceHandle.t) :=
     sz <- Data.arrayLength t.(Tbl.index);
       Loop (fun i =>
-              if intCmp i sz == Eq
+              if compare i sz == Eq
               then LoopRet None
               else
                 h <- Data.arrayGet t.(Tbl.index) i;
                 if keyWithin k h.(IndexEntry.keys)
                 then LoopRet (Some h.(IndexEntry.handle))
-                else Continue (intPlus i int_val1)) int_val0.
+                else Continue (i + 1))%u64 0.
 
   Definition readHandle (t:Tbl.t) (h:SliceHandle.t) : proc ByteString :=
-    lift (FS.readAt t.(Tbl.fd) h.(SliceHandle.offset) (as_uint uint64 h.(SliceHandle.length))).
+    lift (FS.readAt t.(Tbl.fd) h.(SliceHandle.offset) h.(SliceHandle.length)).
 
   Inductive TableSearchResult :=
   | Missing
@@ -109,7 +111,7 @@ Module Table.
           Loop (fun data =>
                   match decode Entry.t data with
                   | Some (e, n) =>
-                    if intCmp e.(Entry.key) k == Eq
+                    if e.(Entry.key) == k
                     then LoopRet (Found e.(Entry.value))
                     else Continue (BS.drop n data)
                   | None => LoopRet Missing
@@ -120,7 +122,7 @@ Module Table.
   Definition readIndexData (fd:Fd) : proc ByteString :=
     sz <- Call (inject (FS.Size fd));
       let headerLength := fromNum 16 in
-      data <- lift (FS.readAt fd (intSub sz headerLength) headerLength);
+      data <- lift (FS.readAt fd (sz - headerLength)%u64 headerLength);
         Ret data.
 
   Definition recover (fd:Fd) : proc Tbl.t :=
@@ -156,11 +158,11 @@ Module Table.
   End TblWriter.
 
   Definition new (fh:Fd) : proc TblWriter.t :=
-    fileOffset <- Data.newIORef (int_val0);
-      indexOffset <- Data.newIORef (int_val0);
-      indexMin <- Data.newIORef (int_val0);
-      indexMax <- Data.newIORef (int_val0);
-      indexNumKeys <- Data.newIORef (int_val0);
+    fileOffset <- Data.newIORef 0%u64;
+      indexOffset <- Data.newIORef 0%u64;
+      indexMin <- Data.newIORef 0%u64;
+      indexMax <- Data.newIORef 0%u64;
+      indexNumKeys <- Data.newIORef 0%u64;
       indexEntries <- Call (inject (Data.NewArray _));
       Ret {| TblWriter.fd := fh;
              TblWriter.fileOffset := fileOffset;
@@ -173,7 +175,7 @@ Module Table.
   (* create the current index entry *)
   Definition flushEntry (t:TblWriter.t) : proc unit :=
     numKeys <- Data.readIORef t.(TblWriter.indexNumKeys);
-      if intCmp numKeys int_val0 == Eq
+      if numKeys == 0
       then Ret tt (* need to gracefully handle having no entry to flush, so that
       flushes are a no-op;
 
@@ -182,7 +184,7 @@ Module Table.
       else
         fileOffset <- Data.readIORef t.(TblWriter.fileOffset);
       indexOffset <- Data.readIORef t.(TblWriter.indexOffset);
-      let indexLength := as_uint _ (intSub fileOffset indexOffset) in
+      let indexLength := (fileOffset - indexOffset)%u64 in
       let indexHandle := {| SliceHandle.offset := indexOffset;
                             SliceHandle.length := indexLength; |} in
       indexMin <- Data.readIORef t.(TblWriter.indexMin);
@@ -191,13 +193,13 @@ Module Table.
                     IndexEntry.keys := (indexMin, indexMax); |} in
         _ <- Data.arrayAppend t.(TblWriter.indexEntries) e;
           (* clear current index entry *)
-          _ <- Data.writeIORef t.(TblWriter.indexNumKeys) int_val0;
+          _ <- Data.writeIORef t.(TblWriter.indexNumKeys) 0;
           Ret tt.
 
   Definition putEntry (t:TblWriter.t) (e: Entry.t) : proc unit :=
     start <- Data.readIORef t.(TblWriter.fileOffset);
       numKeys <- Data.readIORef t.(TblWriter.indexNumKeys);
-      _ <- if intCmp numKeys int_val0 == Eq then
+      _ <- if numKeys == 0 then
             (* initialize a new index entry *)
             _ <- Data.writeIORef t.(TblWriter.indexMin) e.(Entry.key);
               _ <- Data.writeIORef t.(TblWriter.indexOffset) start;
@@ -205,10 +207,10 @@ Module Table.
           else Ret tt;
       let data := encode e in
       _ <- lift (FS.append t.(TblWriter.fd) data);
-        _ <- Data.modifyIORef t.(TblWriter.fileOffset) (intPlus (BS.length data));
+        _ <- Data.modifyIORef t.(TblWriter.fileOffset) (fun o => o + (BS.length data))%u64;
         _ <- Data.writeIORef t.(TblWriter.indexMax) e.(Entry.key);
-        _ <- Data.writeIORef t.(TblWriter.indexNumKeys) (intPlus numKeys int_val1);
-        _ <- if intCmp numKeys (fromNum 9) == Gt then
+        _ <- Data.writeIORef t.(TblWriter.indexNumKeys) (numKeys + 1)%u64;
+        _ <- if compare numKeys 9 == Gt then
               flushEntry t
             else Ret tt;
         Ret tt.
@@ -218,14 +220,14 @@ Module Table.
     _ <- flushEntry t;
       numEntries <- Data.arrayLength t.(TblWriter.indexEntries);
       indexEntries <- Loop (fun '(i, bs) =>
-                  if intCmp i numEntries == Eq then LoopRet bs
+                  if i == numEntries then LoopRet bs
                   else
                     e <- Data.arrayGet t.(TblWriter.indexEntries) i;
                     let encoded := encode e in
-                    Continue (intPlus i int_val1, BS.append bs encoded))
-                   (int_val0, BS.empty);
+                    Continue (i + 1, BS.append bs encoded)%u64)
+                   (0%u64, BS.empty);
       indexStart <- Data.readIORef t.(TblWriter.fileOffset);
-      let indexLength := as_uint _ (BS.length indexEntries) in
+      let indexLength := BS.length indexEntries in
       let indexHandle := encode (indexStart, indexLength) in
       let indexData := BS.append indexEntries indexHandle in
       _ <- lift (FS.append t.(TblWriter.fd) indexData);

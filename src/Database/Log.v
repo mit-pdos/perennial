@@ -11,7 +11,7 @@ Module Log.
   Definition t := Fd.
 
   Definition addTxn (l:t) (txn: ByteString) : proc (Data.Op ⊕ FS.Op) _ :=
-      let bs := encode (array16 txn) in
+      let bs := encode (array64 txn) in
       lift (FS.append l bs).
 
   Definition clear (p:string) : proc (Data.Op ⊕ FS.Op) _ :=
@@ -27,9 +27,9 @@ Module Log.
     fd <- lift (FS.open p);
       txns <- Call (inject (Op:=Data.Op ⊕ FS.Op) (Data.NewArray ByteString));
       sz <- lift (FS.size fd);
-      log <- lift (FS.readAt fd int_val0 sz);
+      log <- lift (FS.readAt fd 0 sz);
       _ <- Loop
-        (fun log => match decode Array16 log with
+        (fun log => match decode Array64 log with
                  | Some (txn, n) =>
                    _ <- Data.arrayAppend (Op':=Data.Op ⊕ FS.Op) txns (getBytes txn);
                      Continue (BS.drop n log)

@@ -13,5 +13,5 @@ End Entry.
 Module SliceHandle.
   Record t :=
     mk { offset : uint64;
-         length : uint32; }.
+         length : uint64; }.
 End SliceHandle.

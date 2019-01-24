@@ -1,6 +1,6 @@
 From Coq Require Import FunctionalExtensionality.
 From Coq Require Import Program.Wf.
-From Coq Require Import NArith.NArith.
+From Coq Require Import micromega.Lia.
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Database.Common.
 
@@ -9,14 +9,14 @@ From Tactical Require Import ProofAutomation.
 From Classes Require Import EqualDec.
 Import EqualDecNotation.
 
-Import BSNotations.
+Import BSNotations UIntNotations.
 
 Definition Decoder T := ByteString -> option (T * uint64).
 
 Definition decodeBind T1 T2 (dec1: Decoder T1) (dec2: T1 -> Decoder T2) : Decoder T2 :=
   fun bs => match dec1 bs with
          | Some (v1, n) => match dec2 v1 (BS.drop n bs) with
-                          | Some (v2, n2) => Some (v2, intPlus n n2)
+                          | Some (v2, n2) => Some (v2, (n + n2)%u64)
                           | None => None
                           end
          | None => None
@@ -36,19 +36,19 @@ Proof.
 Abort.
 
 Definition decodeRet T (v:T) : Decoder T :=
-  fun _ => Some (v, int_val0).
+  fun _ => Some (v, fromNum 0).
 
 Definition decodeFail {T} : Decoder T :=
   fun _ => None.
 
 Definition decodeFinished : Decoder unit :=
-  fun bs => match intCmp (BS.length bs) int_val0 with
+  fun bs => match compare (BS.length bs) 0 with
          | Gt => None
-         | _ => Some (tt, int_val0)
+         | _ => Some (tt, 0%u64)
          end.
 
 Definition decodeFixed (n:uint64) : Decoder ByteString :=
-  fun bs => match intCmp (BS.length bs) n with
+  fun bs => match compare (BS.length bs) n with
          | Gt => None
          | _ => Some (BS.take n bs, n)
          end.
@@ -92,32 +92,32 @@ Proof.
                  ret (v1, v2); |}.
 Defined.
 
-Instance uint_fmt `{enc:@UIntEncoding bits good intTy int} : Encodable intTy :=
+Instance uint64_fmt : Encodable uint64 :=
   {| encode := encodeLE;
     decode := fun bs =>
                 match decodeLE bs with
-                | Some x => Some (x, fromNum numBytes)
+                | Some x => Some (x, fromNum 8)
                 | None => None
                 end; |}.
 
-Record Array16 := array16 { getBytes :> ByteString }.
+Record Array64 := array64 { getBytes :> ByteString }.
 
-Instance array16_fmt : Encodable Array16.
+Instance array64_fmt : Encodable Array64.
 Proof.
-  refine {| encode := fun (bs:Array16) =>
-              array16 (encode (as_uint uint16 (BS.length bs)) ++ bs);
+  refine {| encode := fun (bs:Array64) =>
+              array64 (encode (BS.length bs) ++ bs);
             decode :=
-              l <- decode uint16;;
-                array16 <$> decodeFixed (as_uint uint64 l); |}.
+              l <- decode uint64;;
+                array64 <$> decodeFixed l; |}.
 Defined.
 
 Instance entry_fmt : Encodable Entry.t.
 Proof.
   refine {| encode :=
-              fun e => encode e.(Entry.key) ++ encode (array16 e.(Entry.value));
+              fun e => encode e.(Entry.key) ++ encode (array64 e.(Entry.value));
             decode :=
               key <- decode uint64;;
-            value <- getBytes <$> decode Array16;;
+            value <- getBytes <$> decode Array64;;
             ret (Entry.mk key value); |}.
 Defined.
 
@@ -130,9 +130,9 @@ Fixpoint encode_list T (enc: T -> ByteString) (l: list T) : ByteString :=
 Program Fixpoint decode_list T (dec: Decoder T) (bs:ByteString)
         {measure (toNum (BS.length bs)) lt} : option (list T * uint64) :=
   if bs == BS.empty
-  then Some (nil, int_val0)
+  then Some (nil, 0)
   else match dec bs with
-       | Some (x, n) => if intCmp n int_val0 == Eq then None else
+       | Some (x, n) => if n == 0 then None else
                          match decode_list dec (BS.drop n bs) with
                          | Some (x', n') => Some (cons x x', n')
                          | None => None
@@ -142,9 +142,15 @@ Program Fixpoint decode_list T (dec: Decoder T) (bs:ByteString)
 Next Obligation.
   intros.
   rewrite drop_length.
-  (* TODO: need a lot more assumptions about uint64's to prove this
-  inequality *)
-Admitted.
+  simpl.
+  destruct n as [n]; simpl in *.
+  destruct bs as [bs]; simpl in *.
+  u64_cleanup.
+  assert (length bs > 0).
+  destruct bs; simpl in *; try lia.
+  exfalso; eauto.
+  lia.
+Qed.
 Next Obligation.
   apply measure_wf.
   apply Wf_nat.lt_wf.
@@ -167,7 +173,7 @@ Proof.
                     ++ encode h.(SliceHandle.length);
             decode :=
               offset <- decode uint64;;
-            length <- decode uint32;;
+            length <- decode uint64;;
             ret (SliceHandle.mk offset length);
          |}.
 Defined.

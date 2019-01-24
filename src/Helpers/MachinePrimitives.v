@@ -13,89 +13,83 @@ From Coq Require Import Extraction.
 
 (** Machine unsigned integers *)
 
-Definition uint_max (bits:nat) := pow 2 bits.
+(* These will extract to Word64, with checked arithmetic to ensure the program
+raises an exception (that is, crashes) if it overflows, leaving the model. We
+can handle underflow by returning 0; we have to check anyway and the Coq model
+saturates to 0 so we might as well match it (relying on this is a bad idea in
+case we ever make this situation better). *)
+Record uint64 : Type :=
+  fromNum { toNum : nat }.
 
-Class UIntT (bits:nat) (intTy:Type) :=
-  { toNum : intTy -> nat;
-    fromNum : nat -> intTy;
-    toNum_wf : forall x, toNum x < uint_max bits;
-    fromNum_wf : forall n, toNum (fromNum n) = n mod (uint_max bits);
-    toNum_inj : forall x y, toNum x = toNum y -> x = y;
-    intPlus : intTy -> intTy -> intTy;
-    intSub : intTy -> intTy -> intTy;
-    intCmp : intTy -> intTy -> comparison; }.
+(* so convenient! wow! *)
+Coercion fromNum : nat >-> uint64.
 
-(* TODO: prove this from some correctness conditions in UIntT *)
-Instance uint_eq_dec bits intTy (int:UIntT bits intTy) : EqualDec intTy.
-Admitted.
-
-Class BitWidth (bits:nat) :=
-  { numBytes : nat;
-    numBytes_eq : 8 * numBytes = bits;
-    bits_gt_0 : 0 < bits; }.
-
-Theorem uint_max_ne0 bits : uint_max bits <> 0.
+Lemma toNum_inj : forall x y, toNum x = toNum y -> x = y.
 Proof.
-  unfold uint_max.
-  apply Nat.pow_nonzero; auto.
+  destruct x, y; simpl; auto.
 Qed.
 
-Theorem uint_max_gt_1 bits {good:BitWidth bits} : 1 < uint_max bits.
+Lemma from_to_num_id : forall x, fromNum (toNum x) = x.
 Proof.
-  unfold uint_max.
-  pose proof bits_gt_0.
-  destruct bits; simpl; try lia.
-  pose proof (Nat.pow_nonzero 2 bits ltac:(auto)).
-  lia.
+  destruct x; simpl; auto.
 Qed.
 
-Section UInts.
-  Context {bits intTy} {int:UIntT bits intTy}.
+Lemma to_from_num_id : forall n, toNum (fromNum n) = n.
+Proof.
+  simpl; auto.
+Qed.
 
-  Hint Resolve uint_max_ne0 : core.
+Lemma u64_neq n m :
+    fromNum n <> fromNum m ->
+    n <> m.
+Proof.
+  intuition auto.
+Qed.
 
-  Definition int_val0 : intTy := fromNum 0.
-  Theorem int_val0_num : toNum int_val0 = 0.
-    unfold int_val0.
-    rewrite fromNum_wf.
-    rewrite Nat.mod_0_l; auto.
-  Qed.
+Lemma fromNum_inj n m :
+    fromNum n = fromNum m ->
+    n = m.
+Proof.
+  inversion 1; auto.
+Qed.
 
-  Definition int_val1 : intTy := fromNum 1.
-  Theorem int_val1_num {good:BitWidth bits} : toNum int_val1 = 1.
-    unfold int_val1.
-    rewrite fromNum_wf.
-    apply Nat.mod_small.
-    apply uint_max_gt_1.
-  Qed.
-End UInts.
+Ltac u64_cleanup :=
+  repeat match goal with
+         | [ H: fromNum ?n = fromNum ?m |- _ ] =>
+           apply fromNum_inj in H
+         | [ H: fromNum ?n <> fromNum ?m |- _ ] =>
+           apply u64_neq in H
+         end.
 
-Axioms uint64 uint32 uint16 uint8 : Type.
-Axioms
-  (uint64_uint : UIntT 64 uint64)
-  (uint32_uint : UIntT 32 uint32)
-  (uint16_uint : UIntT 16 uint16)
-  (uint8_uint : UIntT 8 uint8)
-.
+Section UInt64.
+  Implicit Types (x y:uint64).
+  Definition add x y : uint64 := fromNum (x.(toNum) + y.(toNum)).
+  Definition sub x y : uint64 := fromNum (x.(toNum) - y.(toNum)).
+  Definition compare x y : comparison := Nat.compare x.(toNum) y.(toNum).
+End UInt64.
 
-Existing Instances uint64_uint uint32_uint uint16_uint uint8_uint.
+Instance uint64_eq_dec : EqualDec uint64.
+Proof.
+  hnf; intros.
+  destruct_with_eqn (compare x y); unfold compare in *;
+    [ left | right; intros <- .. ].
+  - destruct x as [x], y as [y]; simpl in *.
+    apply Nat.compare_eq_iff in Heqc; auto using toNum_inj.
+  - destruct x as [x]; simpl in *.
+    rewrite Nat.compare_refl in *; congruence.
+  - destruct x as [x]; simpl in *.
+    rewrite Nat.compare_refl in *; congruence.
+Defined.
 
-Ltac mkBitwidth bits :=
-  let bytes := eval simpl in (Nat.div bits 8) in
-      let bits_m1 := eval simpl in (bits-1) in
-      exact (@Build_BitWidth bits bytes eq_refl (Nat.lt_0_succ bits_m1)).
+Module UIntNotations.
+  Delimit Scope uint64_scope with u64.
+  Infix "+" := add : uint64_scope.
+  Infix "-" := sub : uint64_scope.
+  Notation "0" := (fromNum 0) : uint64_scope.
+  Notation "1" := (fromNum 1) : uint64_scope.
+End UIntNotations.
 
-Instance goodwidth_64 : BitWidth _ := ltac:(mkBitwidth 64).
-Instance goodwidth_32 : BitWidth _ := ltac:(mkBitwidth 32).
-Instance goodwidth_16 : BitWidth _ := ltac:(mkBitwidth 16).
-Instance goodwidth_8 : BitWidth _ := ltac:(mkBitwidth 8).
-
-Definition uint_val4096 : uint64 := fromNum 4096.
-
-Definition as_uint `{uint1:UIntT bits1 intTy1} `(uint2:UIntT bits2 intTy2)
-           (x:intTy1) : intTy2 := fromNum x.(toNum).
-Arguments as_uint {bits1 intTy1 uint1} {bits2} intTy2 {uint2} x.
-
+(* bytes are completely opaque; there should be no need to worry about them *)
 Axiom byte : Type.
 Axiom byte_eqdec : EqualDec byte.
 Existing Instance byte_eqdec.
@@ -135,33 +129,30 @@ Proof.
   destruct n; simpl; auto.
 Qed.
 
-Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = intSub (BS.length bs) n.
+Import UIntNotations.
+
+Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = (BS.length bs - n)%u64.
 Proof.
   destruct bs as [bs].
   unfold BS.drop, BS.length; cbn [getBytes].
   rewrite skipn_length.
-Admitted.
+  reflexivity.
+Qed.
 
 Module BSNotations.
   Delimit Scope bs_scope with bs.
   Infix "++" := BS.append : bs_scope.
 End BSNotations.
 
-Class UIntEncoding bits (good:BitWidth bits) intTy (int:UIntT bits intTy) :=
+Class UIntEncoding bytes intTy :=
   { encodeLE : intTy -> ByteString;
     decodeLE : ByteString -> option intTy;
-    encode_length_ok : forall x, toNum (BS.length (encodeLE x)) = numBytes;
+    encode_length_ok : forall x, toNum (BS.length (encodeLE x)) = bytes;
     encode_decode_LE_ok : forall x, decodeLE (encodeLE x) = Some x;
   }.
 
-Arguments UIntEncoding {bits good} intTy {int}.
-
-Axioms
-  (uint64_le_enc : UIntEncoding uint64)
-  (uint32_le_enc : UIntEncoding uint32)
-  (uint16_le_enc : UIntEncoding uint16)
-  (uint8_le_enc : UIntEncoding uint8).
-Existing Instances uint64_le_enc uint32_le_enc uint16_le_enc uint8_le_enc.
+Axiom uint64_le_enc : UIntEncoding 8 uint64.
+Existing Instances uint64_le_enc.
 
 (** File descriptors *)
 
