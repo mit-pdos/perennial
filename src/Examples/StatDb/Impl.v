@@ -108,17 +108,21 @@ Definition lock : proc Var.Op unit :=
        )%proc tt.
 Definition unlock : proc Var.Op unit := Call (Var.Write Var.Lock 0).
 
+Definition add n :=
+  (_ <- lock;
+   sum <- read Var.Sum; _ <- write Var.Sum (n + sum)%nat;
+   count <- read Var.Count; _ <- write Var.Count (1 + count)%nat;
+   unlock)%proc.
+
+Definition avg :=
+  (_ <- lock;
+   sum <- read Var.Sum; count <- read Var.Count; _ <- unlock; Ret (sum/count)%nat)%proc.
+
 Definition impl : LayerImpl Var.Op DB.Op :=
   {| compile_op T (op: DB.Op T) :=
        match op with
-       | DB.Add n =>
-         (_ <- lock;
-          sum <- read Var.Sum; _ <- write Var.Sum (n + sum)%nat;
-          count <- read Var.Count; _ <- write Var.Count (1 + count)%nat;
-          unlock)%proc
-       | DB.Avg =>
-         (_ <- lock;
-          sum <- read Var.Sum; count <- read Var.Count; _ <- unlock; Ret (sum/count)%nat)%proc
+       | DB.Add n => add n
+       | DB.Avg => avg
        end;
      recover := Seq_Cons (Ret tt) (Seq_Nil);
      (* init := Ret Initialized; *) |}.

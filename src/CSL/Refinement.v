@@ -5,7 +5,7 @@ Require Import Spec.Layer.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationTheorems.
 Require Import Helpers.RelationRewriting.
-Require Import CSL.WeakestPre.
+Require Import CSL.WeakestPre CSL.Lifting.
 From iris.algebra Require Import auth frac agree gmap list.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
@@ -378,6 +378,28 @@ Section ghost_step.
       eapply fill_step_valid; eauto.
     }
     iModIntro; iFrame.
+  Qed.
+
+  Lemma ghost_step_lifting_bind' {T1 T2} E ρ j (K: T1 → proc OpT T2)
+             (e1: proc OpT T1) σ1 σ2 e2 efs:
+    Λ.(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
+    nclose sourceN ⊆ E →
+    source_ctx ρ ∗ j ⤇ Bind e1 K ∗ source_state σ1
+      ={E}=∗ j ⤇ Bind e2 K ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
+  Proof.
+    intros. unshelve (eapply (ghost_step_lifting E ρ j (fun x => Bind x K))); eauto.
+    apply bind_proc_ctx.
+  Qed.
+
+  (* Curried form is more useful, I think *)
+  Lemma ghost_step_lifting_bind {T1 T2} E ρ j (K: T1 → proc OpT T2)
+             (e1: proc OpT T1) σ1 σ2 e2 efs:
+    Λ.(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
+    nclose sourceN ⊆ E →
+    j ⤇ Bind e1 K -∗ source_ctx ρ -∗ source_state σ1
+      ={E}=∗ j ⤇ Bind e2 K ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
+  Proof.
+    iIntros. iApply ghost_step_lifting_bind'; eauto. iFrame. iAssumption.
   Qed.
 
 End ghost_step.

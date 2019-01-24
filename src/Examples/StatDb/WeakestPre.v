@@ -1,10 +1,9 @@
 From iris.algebra Require Import auth gmap.
-Require Export CSL.WeakestPre.
-Require Import CSL.Lifting.
+Require Export CSL.WeakestPre CSL.Lifting.
 Require Import StatDb.Impl.
 Require Import Helpers.RelationTheorems.
 From iris.base_logic.lib Require Export invariants.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Export tactics.
 Set Default Proof Using "Type".
 
 
@@ -19,7 +18,7 @@ Definition reg_map `{varG Σ} (i: Var.id) (v: nat) :=
 Definition reg_map_auth `{varG Σ} (i: Var.id) (v: nat) :=
   own (var_reg_gnames i) (● (Excl' v)).
 
-Local Notation "i ↦ v" := (reg_map i v) (at level 20) : bi_scope.
+Global Notation "i ↦ v" := (reg_map i v) (at level 20) : bi_scope.
 Local Notation "i ↦● v" := (reg_map_auth i v) (at level 20) : bi_scope.
 
 
