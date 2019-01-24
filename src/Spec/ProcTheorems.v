@@ -61,7 +61,7 @@ Section Dynamics.
     apply rimpl_to_requiv.
     - unfold exec_partial. apply bind_star_ind_r_pure.
       Split. simpl in *. unfold exec_pool_hd. simpl in *. norm.
-      rew none_plus_r.
+      rew none_plus_r. apply from_none.
     - setoid_rewrite <-bind_star_expand_r. Left.
   Qed.
 

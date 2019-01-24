@@ -3,3 +3,4 @@
 From RecoveryRefinement Require Import Database.Store.
 From RecoveryRefinement Require Import CSL.RefinementAdequacy.
 From RecoveryRefinement Require Import CSL.Lifting.
+From RecoveryRefinement Require Import Examples.StatDb.WeakestPre.

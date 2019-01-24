@@ -106,7 +106,7 @@ Proof.
   rewrite {1}wp_unfold /wp_pre. iIntros (?) "[(Hw & HE & Hσ) H]".
   destruct (to_val e1) eqn:Hval.
   { apply of_to_val in Hval. rewrite /of_val in Hval. subst.
-    inversion H; subst. iModIntro; rewrite wp_unfold //=. by iFrame.
+    inversion H; subst.
   }
   rewrite // uPred_fupd_eq.
   iMod ("H" $! σ1 with "Hσ [Hw HE]") as ">(Hw & HE & _ & H)"; first by iFrame.

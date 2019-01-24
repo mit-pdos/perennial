@@ -44,7 +44,7 @@ Proof. destruct e => //=.  rewrite /of_val //=. congruence. Qed.
 
 Lemma val_non_errorable {OpT T Λ} (e: proc OpT T) σ v :
   to_val e = Some v → @non_errorable _ _ Λ e σ.
-Proof. destruct e => //=. Qed.
+Proof. destruct e => //= _ Hexec. inversion Hexec. Qed.
 
 Class IntoVal {OpT T} (e : proc OpT T) (v : T) :=
   into_val : of_val v = e.

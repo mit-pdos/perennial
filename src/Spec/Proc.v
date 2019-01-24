@@ -92,20 +92,19 @@ Section Dynamics.
             | DoneWithOutcome r => Ret r
             end).
 
-  Fixpoint exec_step {T} (p: proc Op T)
+  Fixpoint exec_step {T} (p: proc Op T) {struct p}
     : relation State State (proc Op T * thread_pool Op) :=
     match p with
-    | Ret v => pure (Ret v, nil)
+    | Ret v => none
     | Call op => v <- step sem op; pure (Ret v, nil)
     | @Bind _ T0 _ p p' =>
-      vp <- exec_step p;
-      (let (p1, t) := vp in
-       match p1 in (proc _ T1) return
+      match p in (proc _ T1) return
              (T1 -> proc _ T0) -> relation State State (proc _ T0 * thread_pool _)
        with
-        | Ret v => fun p' => pure (p' v, t)
-        | p => fun p' => pure (Bind p p',t)
-        end) p'
+      | Ret v => fun p' => pure (p' v, nil)
+      | _ => fun _ => vp <- exec_step p;
+                      pure (Bind (fst vp) p', snd vp)
+      end p'
     | Loop b init => pure (loop1 b init, nil)
     | Spawn T' p' => pure (Ret tt, existT _ T' p' :: nil)
     end.

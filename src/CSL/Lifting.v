@@ -8,6 +8,7 @@ Require Import Helpers.RelationTheorems.
 Require Import Helpers.RelationRewriting.
 From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
+Global Unset Implicit Arguments.
 
 Section lifting.
   Context {OpT: Type → Type}.
@@ -43,15 +44,15 @@ Proof.
   iMod ("H" with "Hσ") as "[$ H]". iIntros "!> * % !>". by iApply "H".
 Qed.
 
-Lemma wp_lift_pure_step {T} `{Inhabited (State Λ)} s E E' Φ (e1: proc OpT T) :
-  (∀ σ1, if s is NotStuck then non_errorable e1 σ1 ∧ to_val e1 = None else to_val e1 = None) →
+Lemma wp_lift_pure_step {T} s E E' Φ (e1: proc OpT T) :
+  (if s is NotStuck then (∀ σ1, non_errorable e1 σ1) ∧ to_val e1 = None else to_val e1 = None) →
   (∀ σ1 e2 σ2 efs, exec_step (Λ.(sem)) e1 σ1 (Val σ2 (e2, efs)) → σ1 = σ2) →
   (|={E,E'}▷=> ∀ e2 efs σ, ⌜exec_step (Λ.(sem)) e1 σ (Val σ (e2, efs))⌝ →
     WP e2 @ s; E {{ Φ }} ∗ [∗ list] ef ∈ efs, WP (projT2 ef) @ s; ⊤ {{ _, True }})
   ⊢ WP e1 @ s; E {{ Φ }}.
 Proof.
   iIntros (Hsafe Hstep) "H". iApply wp_lift_step.
-  { specialize (Hsafe inhabitant). destruct s; intuition. }
+  { destruct s; intuition. }
   iIntros (σ1) "Hσ". iMod "H".
   iMod fupd_intro_mask' as "Hclose"; last iModIntro; first by set_solver. iSplit.
   { iPureIntro. destruct s; intuition; eapply Hsafe. }
@@ -117,8 +118,8 @@ Proof.
   iApply "H"; eauto.
 Qed.
 
-Lemma wp_lift_pure_det_step {T} `{Inhabited (State Λ)} {s E E' Φ} (e1: proc OpT T) e2 efs :
-  (∀ σ1, if s is NotStuck then non_errorable e1 σ1 ∧ to_val e1 = None else to_val e1 = None) →
+Lemma wp_lift_pure_det_step {T} {s E Φ} E' (e1: proc OpT T) e2 efs :
+  (if s is NotStuck then (∀ σ1, non_errorable e1 σ1) ∧ to_val e1 = None else to_val e1 = None) →
   (∀ σ1 e2' σ2 efs', exec_step (Λ.(sem)) e1 σ1 (Val σ2 (e2', efs'))
                      → σ1 = σ2 ∧ e2 = e2' ∧ efs = efs')→
   (|={E,E'}▷=> WP e2 @ s; E {{ Φ }} ∗ [∗ list] ef ∈ efs, WP (projT2 ef) @ s; ⊤ {{ _, True }})
@@ -129,6 +130,112 @@ Proof.
   iApply (step_fupd_wand with "H"); iIntros "H".
   by iIntros (e' efs' σ (_&->&->)%Hpuredet).
 Qed.
+
+Lemma loop_non_errorable {T R} σ (b: T → proc OpT (LoopOutcome T R)) (init: T):
+  non_errorable (Loop b init) σ.
+Proof. inversion 1. Qed.
+
+Lemma spawn_non_errorable {T} σ (e: proc OpT T):
+  non_errorable (Spawn _ e) σ.
+Proof. inversion 1. Qed.
+
+Local Instance bind_proc_ctx {T R} (f: T → proc OpT R) : LanguageCtx Λ (λ x, Bind x f).
+Proof.
+  split; auto.
+  - intros e1 σ ??? H.
+    induction e1 => //=.
+    * inversion H as (?&?&Hstep&Hpure).
+      inversion Hpure; subst. repeat eexists; eauto.
+    * do 2 eexists. destruct e1; split; eauto; try econstructor.
+    * inversion H; subst; do 2 eexists; split; econstructor.
+    * inversion H; subst; do 2 eexists; split; econstructor.
+  - intros e1 σ1 Herr.
+    induction e1 => //=.
+    * apply bind_pure_no_err in Herr; intuition.
+    * left. destruct e1; eauto; try econstructor.
+  - intros e1 σ ???? H.
+    induction e1 => //=.
+    * inversion H as (?&?&Hstep&Hpure).
+      inversion Hpure; subst.
+      inversion Hstep as (?&?&?&Hpure'); inversion Hpure'; subst.
+      repeat eexists; eauto.
+    * inversion H as ((?&?)&?&Hstep&Hpure).
+      inversion Hpure; subst. eexists; split; eauto.
+    * inversion H as ((?&?)&?&Hstep&Hpure).
+      inversion Hpure; subst. eexists; split; eauto.
+    * inversion H as ((?&?)&?&Hstep&Hpure).
+      inversion Hpure; subst. eexists; split; eauto.
+  - intros e1 σ ? Herr.
+    induction e1 => //=.
+    * do 2 apply bind_pure_no_err in Herr.
+      eauto.
+    * inversion Herr; eauto.
+      destruct H1 as (?&?&?&Hp). inversion Hp.
+    * inversion Herr.
+      ** exfalso. eapply loop_non_errorable; eauto.
+      ** destruct H1 as (?&?&?&Hp). inversion Hp.
+    * inversion Herr.
+      ** exfalso. eapply spawn_non_errorable; eauto.
+      ** destruct H0 as (?&?&?&Hp). inversion Hp.
+Qed.
+
+Lemma wp_bind_proc {T1 T2} (f: T1 → proc OpT T2) s E (e: proc OpT T1) Φ :
+  WP e @ s; E {{ v, WP Bind (of_val v) f @ s; E {{ Φ }} }} ⊢ WP Bind e f @ s; E {{ Φ }}.
+Proof. by apply: wp_bind. Qed.
+
+Lemma wp_bind_proc_val {T1 T2} (f: T1 → proc OpT T2) s E v Φ:
+  WP f v @ s; E {{ v, Φ v }} -∗ WP Bind (of_val v) f @ s; E {{ v, Φ v }}.
+Proof.
+  iIntros "Hwp".
+  iApply (wp_lift_step); first by auto.
+  iIntros (σ1) "?".
+  iMod (fupd_intro_mask' E ∅) as "Hclose"; first set_solver.
+  iSplitL "".
+  { iPureIntro. destruct s; auto. inversion 1. }
+  iIntros "!> !>". iIntros (??? Hstep); iFrame.
+  iMod "Hclose". iModIntro; iFrame.
+  inversion Hstep; subst; by iFrame.
+Qed.
+
+Lemma wp_bind_proc_subst {T1 T2} (f: T1 → proc OpT T2)  s E (e: proc OpT T1) Φ :
+  WP e @ s; E {{ v, WP (f v) @ s; E {{ Φ }} }} ⊢ WP Bind e f @ s; E {{ Φ }}.
+Proof.
+  iIntros "H". iApply wp_bind_proc.
+  iApply wp_wand_l; iFrame "H".
+  iIntros (v).
+  rewrite wp_bind_proc_val.
+  (* TODO: something is being eta expanded here and so unification is failing *)
+  replace (fun v : T2 => Φ v) with Φ by auto.
+  eauto.
+Qed.
+
+Lemma wp_loop {T R} {s E Φ} (b: T → proc OpT (LoopOutcome T R)) (init: T):
+  WP (b init) @ s; E {{ λ out, (WP (match out with
+                                    | ContinueOutcome x => Loop b x
+                                    | DoneWithOutcome r => Ret r
+                                    end) @ s ; E {{ Φ }}) }}
+  ⊢ WP (Loop b init) @ s; E {{ Φ }}.
+Proof.
+  iIntros "Hwp".
+  iApply (wp_lift_pure_det_step E _ (loop1 b init)).
+  { intros; destruct s; intuition eauto using loop_non_errorable. }
+  - iIntros (σ1 e2 σ2 efs); inversion 1; subst; auto.
+  - iIntros "!> !> !>"; iSplitR ""; auto.
+    by iApply wp_bind_proc_subst.
+Qed.
+
+Global Instance Call_atomic {T} a (op: OpT T) : Atomic Λ a (Call op).
+Proof.
+  intros ???? (?&?&Hstep&Hpure); inversion Hpure; subst.
+  destruct a; try econstructor; eauto.
+Qed.
+
+Global Instance Ret_IntoValue {T} (x: T) : IntoVal (Ret x : proc OpT T) x.
+Proof. rewrite //=. Qed.
+
+Lemma wp_ret {T} {s E Φ} (v: T) :
+  Φ v ⊢ WP (Ret v) @ s; E {{ Φ }}.
+Proof. iApply wp_value => //=. Qed.
 
 (*
 Lemma wp_pure_step_fupd `{Inhabited (State Λ)} s E E' e1 e2 φ n Φ :
@@ -154,3 +261,7 @@ Proof.
 Qed.
 *)
 End lifting.
+
+Ltac wp_ret := iApply wp_ret.
+Ltac wp_bind := iApply wp_bind_proc_subst.
+Ltac wp_loop := iApply wp_loop.
