@@ -1,0 +1,44 @@
+name:                database
+version:             0.1.0.0
+github:              "mit-pdos/argosy"
+license:             BSD3
+author:              "Argosy authors"
+copyright:           "2019 Argosy authors"
+
+extra-source-files:
+- README.md
+
+description:         Please see the Argosy README
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- unix
+- unix-bytestring
+
+library:
+  source-dirs:
+    - src
+    - extract
+
+executables:
+  database-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - database
+
+tests:
+  database-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - database

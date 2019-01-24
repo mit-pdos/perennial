@@ -1,4 +1,4 @@
-SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external') 'logging-client'
+SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external') 'logging-client' 'database'
 ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
@@ -34,10 +34,13 @@ endif
 	@coqc -w -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template \
      $(shell cat '_CoqProject') $< -o $@
 
-extract: logging-client/extract/ComposedRefinement.hs
+extract: database/extract/ExtractionExamples.hs
 
 logging-client/extract/ComposedRefinement.hs: logging-client/Extract.vo
 	./scripts/add-preprocess.sh logging-client/extract/*.hs
+
+database/extract/ExtractionExamples.hs: database/Extract.vo
+	./scripts/add-preprocess.sh database/extract/*.hs
 
 clean:
 	@echo "CLEAN vo glob aux"
@@ -45,6 +48,7 @@ clean:
 	@find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
 	@echo "CLEAN extraction"
 	@rm -rf logging-client/extract/*.hs
+	@rm -rf database/extract/*.hs
 	rm -f _CoqProject .coqdeps.d
 
 .PHONY: default test clean

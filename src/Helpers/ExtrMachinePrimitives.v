@@ -21,6 +21,7 @@ Extract Inlined Constant add => "(+)".
 Extract Inlined Constant sub => "(-)".
 Extract Inlined Constant compare => "compare".
 
+Extract Inlined Constant byte => "Word8".
 (* extract these to a real type, but don't provide any constructor *)
 Extract Inductive ByteString => "Data.ByteString.ByteString" ["undefined"].
 
