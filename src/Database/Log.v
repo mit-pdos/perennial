@@ -18,8 +18,6 @@ Module Log.
     fd <- lift (FS.create p);
       Ret fd.
 
-  (* TODO: injection type inference does the wrong thing here, need to debug
-  it *)
   Definition recoverTxns (p:string) : proc (Array ByteString) :=
     fd <- lift (FS.open p);
       txns <- Call (inject (Data.NewArray ByteString));
