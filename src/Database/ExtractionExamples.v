@@ -37,7 +37,7 @@ Module HashTableBenchmarks.
 
   Definition ex2_par_reads (t:HashTable uint64 ByteString)
              (k:uint64) (iters:uint64) : proc unit :=
-    _ <- Spawn _ (ex2_seq_reads t k iters);
+    _ <- Spawn (ex2_seq_reads t k iters);
       _ <- ex2_seq_reads t k iters;
       Ret tt.
 

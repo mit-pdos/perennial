@@ -37,7 +37,7 @@ Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op
   | Ret v => Ret v
   | Bind p p' => Bind (impl.(compile) p) (fun v => impl.(compile) (p' v))
   | Loop b init => Loop (fun mt => impl.(compile) (b mt)) init
-  | Spawn _ p => Spawn _ (impl.(compile) p)
+  | Spawn p => Spawn (impl.(compile) p)
   end.
 
 Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) (ps: rec_seq Op) :

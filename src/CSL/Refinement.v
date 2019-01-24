@@ -13,7 +13,7 @@ From iris.proofmode Require Import tactics.
 (* Encoding of an abstract source program as a ghost resource, in order to
    use Iris to prove refinements. This is patterned off of the encoding used in
    iris-examples/theories/logrel examples by Timany et al. *)
-Unset Implicit Arguments.
+Global Unset Implicit Arguments.
 Set Nested Proofs Allowed.
 
 Definition procT {OpT} := {T : Type & proc OpT T}.
@@ -337,7 +337,7 @@ Section ghost_step.
     apply Excl_included in Hstate; setoid_subst; auto.
   Qed.
 
-  Lemma ghost_step_lifting {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
+  Lemma ghost_step_lifting' {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) σ1 σ2 e2 efs:
     Λ.(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
     nclose sourceN ⊆ E →
@@ -380,6 +380,56 @@ Section ghost_step.
     iModIntro; iFrame.
   Qed.
 
+  (* Curried form is more useful, I think *)
+  Lemma ghost_step_lifting {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
+             (e1: proc OpT T1) σ1 σ2 e2 efs:
+    Λ.(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
+    nclose sourceN ⊆ E →
+    j ⤇ K e1 -∗ source_ctx ρ -∗ source_state σ1
+      ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
+  Proof. iIntros. iApply ghost_step_lifting'; eauto. iFrame. iAssumption. Qed.
+
+  Lemma ghost_step_lifting_puredet {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
+             (e1: proc OpT T1) e2 efs:
+    (∀ σ1, Λ.(exec_step) e1 σ1 (Val σ1 (e2, efs))) →
+    nclose sourceN ⊆ E →
+    source_ctx ρ ∗ j ⤇ K e1
+      ={E}=∗ j ⤇ K e2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
+  Proof.
+    iIntros (Hstep ?) "(#Hctx&Hj)". rewrite /source_ctx/source_inv.
+    iInv "Hctx" as (tp' σ') ">[Hauth %]" "Hclose".
+
+    (* Reconcile view based on authoritative element *)
+    iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
+    setoid_subst.
+
+    (* Update authoritative resources to simulate step *)
+    iMod (source_thread_update (K e2) with "Hj Hauth") as "[Hj Hauth]".
+    iMod (source_threads_fork efs with "Hauth") as "[Hj' Hauth]".
+
+    (* Restore the invariant *)
+    iMod ("Hclose" with "[Hauth]").
+    { iNext. iExists (<[j := (existT T2 (K e2))]>tp' ++ efs), _.
+      iFrame. intuition. iPureIntro; split; auto.
+
+      apply bind_star_expand_r_valid.
+      right. exists tp', σ'; split; auto.
+      apply exec_pool_equiv_alt_val.
+      econstructor.
+      { symmetry; eapply take_drop_middle; eauto. }
+      { reflexivity. }
+      { f_equal. rewrite app_comm_cons assoc; f_equal.
+        erewrite <-take_drop_middle at 1; f_equal.
+        { apply take_insert; reflexivity. }
+        { f_equal. apply drop_insert; lia. }
+        rewrite list_lookup_insert //=.
+        apply lookup_lt_is_Some_1; eauto.
+      }
+      eapply fill_step_valid; eauto.
+    }
+    iModIntro; iFrame.
+  Qed.
+
   Lemma ghost_step_lifting_bind' {T1 T2} E ρ j (K: T1 → proc OpT T2)
              (e1: proc OpT T1) σ1 σ2 e2 efs:
     Λ.(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
@@ -387,19 +437,42 @@ Section ghost_step.
     source_ctx ρ ∗ j ⤇ Bind e1 K ∗ source_state σ1
       ={E}=∗ j ⤇ Bind e2 K ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
   Proof.
-    intros. unshelve (eapply (ghost_step_lifting E ρ j (fun x => Bind x K))); eauto.
-    apply bind_proc_ctx.
+    intros. unshelve (eapply (ghost_step_lifting' E ρ j (fun x => Bind x K))); eauto.
   Qed.
 
-  (* Curried form is more useful, I think *)
   Lemma ghost_step_lifting_bind {T1 T2} E ρ j (K: T1 → proc OpT T2)
              (e1: proc OpT T1) σ1 σ2 e2 efs:
     Λ.(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
     nclose sourceN ⊆ E →
     j ⤇ Bind e1 K -∗ source_ctx ρ -∗ source_state σ1
       ={E}=∗ j ⤇ Bind e2 K ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
+  Proof. iIntros. iApply ghost_step_lifting_bind'; eauto. iFrame. iAssumption. Qed.
+
+  Lemma ghost_step_bind_ret {T1 T2 T3} E ρ j K' `{LanguageCtx OpT T2 T3 Λ K'}
+        (K: T1 → proc OpT T2) v:
+    nclose sourceN ⊆ E →
+    j ⤇ K' (Bind (Ret v) K) -∗ source_ctx ρ ={E}=∗ j ⤇ K' (K v).
   Proof.
-    iIntros. iApply ghost_step_lifting_bind'; eauto. iFrame. iAssumption.
+    iIntros (?) "Hj Hctx". iMod (ghost_step_lifting_puredet with "[Hj Hctx]") as "($&?)"; eauto.
+    { intros. econstructor. }
+  Qed.
+
+  Lemma ghost_step_loop {T1 T2 T3} E ρ j K `{LanguageCtx OpT T2 T3 Λ K}
+        (body: T1 → proc OpT (LoopOutcome T1 T2)) v:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Loop body v) -∗ source_ctx ρ ={E}=∗ j ⤇ K (loop1 body v).
+  Proof.
+    iIntros (?) "Hj Hctx". iMod (ghost_step_lifting_puredet with "[Hj Hctx]") as "($&?)"; eauto.
+    { intros. econstructor. }
+  Qed.
+
+  Lemma ghost_step_spawn {T T'} E ρ j K `{LanguageCtx OpT unit T Λ K} (e: proc OpT T'):
+    nclose sourceN ⊆ E →
+    j ⤇ K (Spawn e) -∗ source_ctx ρ ={E}=∗ j ⤇ K (Ret tt) ∗ (∃ j', j' ⤇ e).
+  Proof.
+    iIntros (?) "Hj Hctx". iMod (ghost_step_lifting_puredet with "[Hj Hctx]") as "($&H)"; eauto.
+    { intros. econstructor. }
+    iDestruct "H" as "(?&?)"; by iFrame.
   Qed.
 
 End ghost_step.

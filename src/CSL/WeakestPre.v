@@ -32,7 +32,7 @@ Definition to_val {OpT T} (e: proc OpT T) : option T :=
    match e in (proc _ T0) return (option T0) with
    | @Ret _ T0 v => Some v
    | @Call _ T0 _ | @Bind _ T0 _ _ _ | @Loop _ T0 _ _ _ => None
-   | Spawn _ _ => None
+   | @Spawn _ _ _ => None
    end.
 
 Definition of_val {OpT T} (v :T) : proc OpT T := Ret v.

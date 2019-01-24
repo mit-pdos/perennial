@@ -13,7 +13,7 @@ Fixpoint lift Op1 Op {i:Injectable Op1 Op} T (p: proc Op1 T) : proc Op T :=
   | Ret v => Ret v
   | Bind p1 p2 => Bind (lift p1) (fun v => lift (p2 v))
   | Loop body init => Loop (fun v => lift (body v)) init
-  | Spawn _ p => Spawn _ (lift p)
+  | Spawn p => Spawn (lift p)
   end.
 
 Module OpSums.

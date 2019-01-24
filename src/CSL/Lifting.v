@@ -136,10 +136,10 @@ Lemma loop_non_errorable {T R} σ (b: T → proc OpT (LoopOutcome T R)) (init: T
 Proof. inversion 1. Qed.
 
 Lemma spawn_non_errorable {T} σ (e: proc OpT T):
-  non_errorable (Spawn _ e) σ.
+  non_errorable (Spawn e) σ.
 Proof. inversion 1. Qed.
 
-Local Instance bind_proc_ctx {T R} (f: T → proc OpT R) : LanguageCtx Λ (λ x, Bind x f).
+Global Instance bind_proc_ctx {T R} (f: T → proc OpT R) : LanguageCtx Λ (λ x, Bind x f).
 Proof.
   split; auto.
   - intros e1 σ ??? H.
@@ -179,12 +179,35 @@ Proof.
       ** destruct H0 as (?&?&?&Hp). inversion Hp.
 Qed.
 
+Global Instance id_ctx {T} : LanguageCtx Λ (fun (x : proc OpT T) => x).
+Proof. split; intuition eauto. Qed.
+
+Global Instance comp_ctx {T1 T2 T3} (K: proc OpT T1 → proc OpT T2) (K': proc OpT T2 → proc OpT T3) :
+  LanguageCtx Λ K →
+  LanguageCtx Λ K' →
+  LanguageCtx Λ (λ x, K' (K x)).
+Proof.
+  intros Hctx Hctx'.
+  split; intros.
+  - by do 2 apply fill_not_val.
+  - by do 2 apply fill_step_valid.
+  - by do 2 apply fill_step_err.
+  - edestruct (@fill_step_inv_valid _ _ _ _ _ Hctx'); eauto; intuition.
+    { apply fill_not_val; auto. }
+    subst.
+    edestruct (@fill_step_inv_valid _ _ _ _ _ Hctx); eauto; intuition.
+    subst.
+    eauto.
+  - do 2 (apply fill_step_inv_err; auto).
+    { apply fill_not_val; auto. }
+Qed.
+
 Lemma wp_bind_proc {T1 T2} (f: T1 → proc OpT T2) s E (e: proc OpT T1) Φ :
   WP e @ s; E {{ v, WP Bind (of_val v) f @ s; E {{ Φ }} }} ⊢ WP Bind e f @ s; E {{ Φ }}.
 Proof. by apply: wp_bind. Qed.
 
 Lemma wp_bind_proc_val {T1 T2} (f: T1 → proc OpT T2) s E v Φ:
-  WP f v @ s; E {{ v, Φ v }} -∗ WP Bind (of_val v) f @ s; E {{ v, Φ v }}.
+  ▷ WP f v @ s; E {{ v, Φ v }} -∗ WP Bind (of_val v) f @ s; E {{ v, Φ v }}.
 Proof.
   iIntros "Hwp".
   iApply (wp_lift_step); first by auto.
@@ -198,7 +221,7 @@ Proof.
 Qed.
 
 Lemma wp_bind_proc_subst {T1 T2} (f: T1 → proc OpT T2)  s E (e: proc OpT T1) Φ :
-  WP e @ s; E {{ v, WP (f v) @ s; E {{ Φ }} }} ⊢ WP Bind e f @ s; E {{ Φ }}.
+  WP e @ s; E {{ v, ▷ WP (f v) @ s; E {{ Φ }} }} ⊢ WP Bind e f @ s; E {{ Φ }}.
 Proof.
   iIntros "H". iApply wp_bind_proc.
   iApply wp_wand_l; iFrame "H".
@@ -209,8 +232,15 @@ Proof.
   eauto.
 Qed.
 
+Lemma wp_bind_proc_subst_weak {T1 T2} (f: T1 → proc OpT T2)  s E (e: proc OpT T1) Φ :
+  WP e @ s; E {{ v, WP (f v) @ s; E {{ Φ }} }} ⊢ WP Bind e f @ s; E {{ Φ }}.
+Proof.
+  iIntros "H". iApply wp_bind_proc_subst.
+  iApply wp_wand_l; iFrame "H"; eauto.
+Qed.
+
 Lemma wp_loop {T R} {s E Φ} (b: T → proc OpT (LoopOutcome T R)) (init: T):
-  WP (b init) @ s; E {{ λ out, (WP (match out with
+  WP (b init) @ s; E {{ λ out, ▷ (WP (match out with
                                     | ContinueOutcome x => Loop b x
                                     | DoneWithOutcome r => Ret r
                                     end) @ s ; E {{ Φ }}) }}
@@ -236,6 +266,17 @@ Proof. rewrite //=. Qed.
 Lemma wp_ret {T} {s E Φ} (v: T) :
   Φ v ⊢ WP (Ret v) @ s; E {{ Φ }}.
 Proof. iApply wp_value => //=. Qed.
+
+Lemma wp_spawn {T} s E (e: proc OpT T) Φ :
+  ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ tt -∗ WP Spawn e @ s; E {{ Φ }}.
+Proof.
+  iIntros "He HΦ".
+  iApply wp_lift_pure_det_step.
+  { destruct s; intuition. apply spawn_non_errorable. }
+  { inversion 1; subst; split_and!; eauto. }
+  iIntros "!> !> !> /="; iFrame.
+  by iApply wp_value.
+Qed.
 
 (*
 Lemma wp_pure_step_fupd `{Inhabited (State Λ)} s E E' e1 e2 φ n Φ :
@@ -263,5 +304,5 @@ Qed.
 End lifting.
 
 Ltac wp_ret := iApply wp_ret.
-Ltac wp_bind := iApply wp_bind_proc_subst.
+Ltac wp_bind := iApply wp_bind_proc_subst_weak.
 Ltac wp_loop := iApply wp_loop.

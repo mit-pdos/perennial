@@ -37,7 +37,7 @@ End Proc.
 Arguments Call {Op T}.
 Arguments Ret {Op T} v.
 Arguments Loop {Op T R} _ _.
-Arguments Spawn {Op} _.
+Arguments Spawn {Op _} _.
 Arguments Err {_ _}.
 
 Definition Continue {Op T R} (x:T) : proc Op (LoopOutcome T R) := Ret (ContinueOutcome x).
@@ -106,7 +106,7 @@ Section Dynamics.
                       pure (Bind (fst vp) p', snd vp)
       end p'
     | Loop b init => pure (loop1 b init, nil)
-    | Spawn T' p' => pure (Ret tt, existT _ T' p' :: nil)
+    | @Spawn _ T' p' => pure (Ret tt, existT _ T' p' :: nil)
     end.
 
   (* TODO: need to define this after, otherwise can't use proc in the above *)
