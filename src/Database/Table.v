@@ -93,7 +93,7 @@ Module Table.
                 else Continue (intPlus i int_val1)) int_val0.
 
   Definition readHandle (t:Tbl.t) (h:SliceHandle.t) : proc ByteString :=
-    lift (FS.readAt t.(Tbl.fd) h.(SliceHandle.offset) (uint32_to_uint64 h.(SliceHandle.length))).
+    lift (FS.readAt t.(Tbl.fd) h.(SliceHandle.offset) (as_uint uint64 h.(SliceHandle.length))).
 
   Inductive TableSearchResult :=
   | Missing
@@ -182,7 +182,7 @@ Module Table.
       else
         fileOffset <- Data.readIORef t.(TblWriter.fileOffset);
       indexOffset <- Data.readIORef t.(TblWriter.indexOffset);
-      let indexLength := uint64_to_uint32 (intSub fileOffset indexOffset) in
+      let indexLength := as_uint _ (intSub fileOffset indexOffset) in
       let indexHandle := {| SliceHandle.offset := indexOffset;
                             SliceHandle.length := indexLength; |} in
       indexMin <- Data.readIORef t.(TblWriter.indexMin);
@@ -225,7 +225,7 @@ Module Table.
                     Continue (intPlus i int_val1, BS.append bs encoded))
                    (int_val0, BS.empty);
       indexStart <- Data.readIORef t.(TblWriter.fileOffset);
-      let indexLength := uint64_to_uint32 (BS.length indexEntries) in
+      let indexLength := as_uint _ (BS.length indexEntries) in
       let indexHandle := encode (indexStart, indexLength) in
       let indexData := BS.append indexEntries indexHandle in
       _ <- lift (FS.append t.(TblWriter.fd) indexData);

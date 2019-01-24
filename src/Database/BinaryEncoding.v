@@ -92,11 +92,11 @@ Proof.
                  ret (v1, v2); |}.
 Defined.
 
-Instance uint_fmt bytes_m1 (enc:UIntEncoding bytes_m1) : Encodable (UInt.t bytes_m1) :=
+Instance uint_fmt `{enc:@UIntEncoding bits good intTy int} : Encodable intTy :=
   {| encode := encodeLE;
     decode := fun bs =>
                 match decodeLE bs with
-                | Some x => Some (x, fromNum (1+bytes_m1))
+                | Some x => Some (x, fromNum numBytes)
                 | None => None
                 end; |}.
 
@@ -105,10 +105,10 @@ Record Array16 := array16 { getBytes :> ByteString }.
 Instance array16_fmt : Encodable Array16.
 Proof.
   refine {| encode := fun (bs:Array16) =>
-              array16 (encode (uint64_to_uint16 (BS.length bs)) ++ bs);
+              array16 (encode (as_uint uint16 (BS.length bs)) ++ bs);
             decode :=
               l <- decode uint16;;
-                array16 <$> decodeFixed (uint16_to_uint64 l); |}.
+                array16 <$> decodeFixed (as_uint uint64 l); |}.
 Defined.
 
 Instance entry_fmt : Encodable Entry.t.

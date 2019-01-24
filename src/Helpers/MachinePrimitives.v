@@ -9,142 +9,92 @@ From stdpp Require Import decidable countable.
 
 Instance eqdecision `{dec:EqualDec A} : EqDecision A := dec.
 
+From Coq Require Import Extraction.
+
 (** Machine unsigned integers *)
 
-Module UInt.
-  Definition max bytes_m1 := pow 2 (8 + 8 * bytes_m1).
-  Record t (bytes_m1:nat) :=
-    mk { val : nat;
-         val_wf : val < max bytes_m1; }.
-End UInt.
+Definition uint_max (bits:nat) := pow 2 bits.
 
-Arguments UInt.mk bytes_m1 val val_wf : clear implicits.
+Class UIntT (bits:nat) (intTy:Type) :=
+  { toNum : intTy -> nat;
+    fromNum : nat -> intTy;
+    toNum_wf : forall x, toNum x < uint_max bits;
+    fromNum_wf : forall n, toNum (fromNum n) = n mod (uint_max bits);
+    toNum_inj : forall x y, toNum x = toNum y -> x = y;
+    intPlus : intTy -> intTy -> intTy;
+    intSub : intTy -> intTy -> intTy;
+    intCmp : intTy -> intTy -> comparison; }.
 
-Definition uint := UInt.t.
+(* TODO: prove this from some correctness conditions in UIntT *)
+Instance uint_eq_dec bits intTy (int:UIntT bits intTy) : EqualDec intTy.
+Admitted.
 
-Section uint.
-  Context {bytes_m1:nat}.
-  Notation t := (uint bytes_m1).
-  Notation mk := (UInt.mk bytes_m1).
-  Notation bound := (UInt.max bytes_m1).
+Class BitWidth (bits:nat) :=
+  { numBytes : nat;
+    numBytes_eq : 8 * numBytes = bits;
+    bits_gt_0 : 0 < bits; }.
 
-  Implicit Types (x y:t).
-
-  Lemma bound_not_0 : bound <> 0.
-  Proof.
-    unfold bound.
-    apply Nat.pow_nonzero.
-    auto.
-  Qed.
-  Hint Resolve bound_not_0 : core.
-
-  Tactic Notation "mkT" uconstr(x) := refine (mk x _).
-
-  Definition toNum x := x.(UInt.val).
-
-  Definition fromNum (n:nat) : t.
-    mkT (n mod bound).
-    apply Nat.mod_upper_bound; auto.
-  Defined.
-
-  Theorem toNum_inj : forall x y, toNum x = toNum y -> x = y.
-  Proof.
-    intros.
-    destruct x as [x Hx], y as [y Hy]; simpl in *.
-    subst; auto.
-    f_equal.
-    apply proof_irrel.
-  Qed.
-
-  Theorem toNum_fromMum : forall n, toNum (fromNum n) = n mod bound.
-  Proof.
-    unfold toNum, fromNum; simpl; auto.
-  Qed.
-
-  Lemma bound_gt_1 : 1 < bound.
-  Proof.
-    unfold bound.
-    change (8 + 8 * bytes_m1) with (1 + (7 + 8 * bytes_m1)).
-    rewrite Nat.pow_add_r.
-    generalize dependent (7 + 8 * bytes_m1); intros.
-    assert (2 ^ n <> 0).
-    apply Nat.pow_nonzero; auto.
-    generalize dependent (2 ^ n); intros.
-    simpl.
-    lia.
-  Qed.
-
-  Lemma bound_gt_0 : 0 < bound.
-    pose proof bound_gt_1.
-    lia.
-  Qed.
-
-  Hint Resolve bound_gt_0 : core.
-
-  Definition intPlus x y : t.
-    mkT ((x.(toNum) + y.(toNum)) mod bound).
-    apply Nat.mod_upper_bound; auto.
-  Defined.
-
-  Definition intSub x y : t.
-    mkT (x.(UInt.val) - y.(UInt.val)).
-    pose proof UInt.val_wf x.
-    abstract lia.
-  Defined.
-
-  Definition int_val0 : t.
-    mkT 0.
-    auto.
-  Defined.
-
-  Definition int_val1 : t.
-    mkT 1.
-    apply bound_gt_1.
-  Defined.
-
-  Definition intCmp x y : comparison :=
-    Nat.compare x.(toNum) y.(toNum).
-
-  Global Instance uint_eq_dec : EqualDec t.
-  apply (EqualDec.inj_eq_dec toNum toNum_inj).
-  Defined.
-
-End uint.
-
-Definition uint64 := UInt.t (8 - 1).
-Definition uint32 := UInt.t (4 - 1).
-Definition uint16 := UInt.t (2 - 1).
-Definition uint8  := UInt.t (1 - 1).
-
-Definition uint_val4096 : uint64 := fromNum 4096.
-
-Definition uint64_to_uint16 (x:uint64) : uint16 :=
-  fromNum x.(toNum).
-
-Definition uint64_to_uint32 (x:uint64) : uint32 :=
-  fromNum x.(toNum).
-
-Definition upcast_bound {bytes_m1_1 bytes_m1_2} :
-  forall x, x < UInt.max bytes_m1_1 ->
-       bytes_m1_1 <= bytes_m1_2 ->
-       x < UInt.max bytes_m1_2.
+Theorem uint_max_ne0 bits : uint_max bits <> 0.
 Proof.
-  intros.
-  unfold UInt.max in *.
-  eapply Nat.lt_le_trans; eauto.
-  apply Nat.pow_le_mono_r; auto.
+  unfold uint_max.
+  apply Nat.pow_nonzero; auto.
+Qed.
+
+Theorem uint_max_gt_1 bits {good:BitWidth bits} : 1 < uint_max bits.
+Proof.
+  unfold uint_max.
+  pose proof bits_gt_0.
+  destruct bits; simpl; try lia.
+  pose proof (Nat.pow_nonzero 2 bits ltac:(auto)).
   lia.
 Qed.
 
-Definition uint16_to_uint64 (x:uint16) : uint64.
-  refine (UInt.mk _ x.(toNum) _).
-  apply (upcast_bound x.(UInt.val_wf)); abstract (simpl; repeat constructor).
-Defined.
+Section UInts.
+  Context {bits intTy} {int:UIntT bits intTy}.
 
-Definition uint32_to_uint64 (x:uint32) : uint64.
-  refine (UInt.mk _ x.(toNum) _).
-  apply (upcast_bound x.(UInt.val_wf)); abstract (simpl; repeat constructor).
-Defined.
+  Hint Resolve uint_max_ne0 : core.
+
+  Definition int_val0 : intTy := fromNum 0.
+  Theorem int_val0_num : toNum int_val0 = 0.
+    unfold int_val0.
+    rewrite fromNum_wf.
+    rewrite Nat.mod_0_l; auto.
+  Qed.
+
+  Definition int_val1 : intTy := fromNum 1.
+  Theorem int_val1_num {good:BitWidth bits} : toNum int_val1 = 1.
+    unfold int_val1.
+    rewrite fromNum_wf.
+    apply Nat.mod_small.
+    apply uint_max_gt_1.
+  Qed.
+End UInts.
+
+Axioms uint64 uint32 uint16 uint8 : Type.
+Axioms
+  (uint64_uint : UIntT 64 uint64)
+  (uint32_uint : UIntT 32 uint32)
+  (uint16_uint : UIntT 16 uint16)
+  (uint8_uint : UIntT 8 uint8)
+.
+
+Existing Instances uint64_uint uint32_uint uint16_uint uint8_uint.
+
+Ltac mkBitwidth bits :=
+  let bytes := eval simpl in (Nat.div bits 8) in
+      let bits_m1 := eval simpl in (bits-1) in
+      exact (@Build_BitWidth bits bytes eq_refl (Nat.lt_0_succ bits_m1)).
+
+Instance goodwidth_64 : BitWidth _ := ltac:(mkBitwidth 64).
+Instance goodwidth_32 : BitWidth _ := ltac:(mkBitwidth 32).
+Instance goodwidth_16 : BitWidth _ := ltac:(mkBitwidth 16).
+Instance goodwidth_8 : BitWidth _ := ltac:(mkBitwidth 8).
+
+Definition uint_val4096 : uint64 := fromNum 4096.
+
+Definition as_uint `{uint1:UIntT bits1 intTy1} `(uint2:UIntT bits2 intTy2)
+           (x:intTy1) : intTy2 := fromNum x.(toNum).
+Arguments as_uint {bits1 intTy1 uint1} {bits2} intTy2 {uint2} x.
 
 Axiom byte : Type.
 Axiom byte_eqdec : EqualDec byte.
@@ -187,12 +137,8 @@ Qed.
 
 Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = intSub (BS.length bs) n.
 Proof.
-  destruct n as [n ?], bs as [bs].
-  apply toNum_inj.
-  unfold BS.drop, BS.length, intSub.
-  rewrite toNum_fromMum.
-  cbn [UInt.val getBytes toNum].
-  rewrite toNum_fromMum.
+  destruct bs as [bs].
+  unfold BS.drop, BS.length; cbn [getBytes].
   rewrite skipn_length.
 Admitted.
 
@@ -201,17 +147,20 @@ Module BSNotations.
   Infix "++" := BS.append : bs_scope.
 End BSNotations.
 
-Class UIntEncoding bytes_m1 : Type :=
-  { encodeLE : UInt.t bytes_m1 -> ByteString;
-    decodeLE : ByteString -> option (UInt.t bytes_m1);
-    encode_length_ok : forall x, toNum (BS.length (encodeLE x)) = 1 + bytes_m1;
+Class UIntEncoding bits (good:BitWidth bits) intTy (int:UIntT bits intTy) :=
+  { encodeLE : intTy -> ByteString;
+    decodeLE : ByteString -> option intTy;
+    encode_length_ok : forall x, toNum (BS.length (encodeLE x)) = numBytes;
     encode_decode_LE_ok : forall x, decodeLE (encodeLE x) = Some x;
   }.
 
-Axiom uint64_le_enc : UIntEncoding (8 - 1).
-Axiom uint32_le_enc : UIntEncoding (4 - 1).
-Axiom uint16_le_enc : UIntEncoding (2 - 1).
-Axiom uint8_le_enc : UIntEncoding (1 - 1).
+Arguments UIntEncoding {bits good} intTy {int}.
+
+Axioms
+  (uint64_le_enc : UIntEncoding uint64)
+  (uint32_le_enc : UIntEncoding uint32)
+  (uint16_le_enc : UIntEncoding uint16)
+  (uint8_le_enc : UIntEncoding uint8).
 Existing Instances uint64_le_enc uint32_le_enc uint16_le_enc uint8_le_enc.
 
 (** File descriptors *)
