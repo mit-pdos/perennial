@@ -89,6 +89,32 @@ Module UIntNotations.
   Notation "1" := (fromNum 1) : uint64_scope.
 End UIntNotations.
 
+Section UInt64Properties.
+  Implicit Types (x y z:uint64).
+  Import UIntNotations.
+  Local Open Scope u64.
+
+  Set Printing Coercions.
+
+  Ltac start :=
+    repeat match goal with
+           | |- forall _, _ => intros
+           | [ a: uint64 |- _ ] => destruct a as [a]
+           | |- @eq uint64 _ _ => apply toNum_inj
+           end; simpl;
+    try lia.
+
+  Theorem add_comm x y : x + y = y + x.
+  Proof.
+    start.
+  Qed.
+
+  Theorem add_assoc x y z : x + (y + z) = x + y + z.
+  Proof.
+    start.
+  Qed.
+End UInt64Properties.
+
 (* bytes are completely opaque; there should be no need to worry about them *)
 Axiom byte : Type.
 Axiom byte_eqdec : EqualDec byte.
@@ -96,6 +122,13 @@ Existing Instance byte_eqdec.
 
 Record ByteString :=
   fromByteList { getBytes: list byte }.
+
+Local Theorem getBytes_inj bs1 bs2 :
+  getBytes bs1 = getBytes bs2 -> bs1 = bs2.
+Proof.
+  destruct bs1, bs2; simpl.
+  intros ->; auto.
+Qed.
 
 Instance ByteString_eq_dec : EqualDec ByteString.
 Proof.
@@ -129,15 +162,32 @@ Proof.
   destruct n; simpl; auto.
 Qed.
 
-Import UIntNotations.
+Section ByteStringProperties.
+  Ltac start :=
+    repeat match goal with
+           | |- forall _, _ => intros
+           | [ a: uint64 |- _ ] => destruct a as [a]
+           | [ bs: ByteString |- _ ] => destruct bs as [bs]
+           | |- @eq uint64 _ _ => apply toNum_inj
+           | |- @eq ByteString _ _ => apply getBytes_inj
+           end; simpl.
 
-Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = (BS.length bs - n)%u64.
-Proof.
-  destruct bs as [bs].
-  unfold BS.drop, BS.length; cbn [getBytes].
-  rewrite skipn_length.
-  reflexivity.
-Qed.
+  Import UIntNotations.
+
+  Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = (BS.length bs - n)%u64.
+  Proof.
+    start.
+    rewrite skipn_length.
+    reflexivity.
+  Qed.
+
+  Theorem drop_drop n m bs :
+    BS.drop n (BS.drop m bs) = BS.drop (m + n)%u64 bs.
+  Proof.
+    start.
+    rewrite list.drop_drop; auto.
+  Qed.
+End ByteStringProperties.
 
 Module BSNotations.
   Delimit Scope bs_scope with bs.

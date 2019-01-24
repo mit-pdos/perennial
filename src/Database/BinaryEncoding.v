@@ -31,9 +31,10 @@ Theorem decodeBind_assoc T1 T2 T3
 Proof.
   extensionality x.
   unfold decodeBind; simpl.
-  destruct matches; subst; auto.
-  (* required associativity of intPlus as well as a model of BS.drop *)
-Abort.
+  destruct matches; subst; auto;
+    rewrite ?drop_drop, ?add_assoc in *;
+    try congruence.
+Qed.
 
 Definition decodeRet T (v:T) : Decoder T :=
   fun _ => Some (v, fromNum 0).
