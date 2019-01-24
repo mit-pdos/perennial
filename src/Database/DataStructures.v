@@ -41,6 +41,14 @@ End Var.
 
 Instance var_eqdec : EqualDec Var.t := _.
 
+(* modeling non-atomic operations as pairs of begin/end ops *)
+Inductive NonAtomicArgs T :=
+| FinishArgs (args:T)
+| Begin.
+Arguments Begin {T}.
+(* NOTE: this does not allow dependent return values *)
+Definition retT T (args:NonAtomicArgs T) T' : Type := if args then T' else unit.
+
 Module Data.
   Inductive Op : Type -> Type :=
   (* generic variable operations *)
@@ -50,7 +58,7 @@ Module Data.
   (* arbitrary references *)
   | NewIORef : forall T, T -> Op (IORef T)
   | ReadIORef : forall T, IORef T -> Op T
-  | WriteIORef : forall T, IORef T -> T -> Op unit
+  | WriteIORef : forall T, IORef T -> forall (args:NonAtomicArgs T), Op (retT args unit)
 
   (* arrays *)
   | NewArray : forall T, Op (Array T)
@@ -83,16 +91,24 @@ Module Data.
              T (ref:IORef T) : proc Op' T :=
     Call (inject (ReadIORef ref)).
 
+  (* nonAtomicOp takes an operation partially applied to some key identifying
+  the object (assuming the operation does separate over some resources, such as
+  addresses or references) *)
+  Definition nonAtomicOp {Op ArgT T}
+             (op: forall (args:NonAtomicArgs ArgT), Op (retT args T))
+    : ArgT -> proc Op T :=
+    fun args => Bind (Call (op Begin)) (fun _ => Call (op (FinishArgs args))).
+
   Definition writeIORef Op' {i:Injectable Op Op'}
              T (ref:IORef T) (v:T) : proc Op' unit :=
-    Call (inject (WriteIORef ref v)).
+    lift (nonAtomicOp (WriteIORef ref) v).
 
-  (* non-atomic modify (we could add atomicModifyIORef' but I don't think we
-  need it) *)
+  (* non-atomic modify (this immediately follows from Read and Write each not
+  being atomic) *)
   Definition modifyIORef Op' {i:Injectable Op Op'}
              T (ref:IORef T) (f: T -> T) : proc Op' unit :=
     Bind (Call (inject (ReadIORef ref)))
-         (fun x => Call (inject (WriteIORef ref (f x)))).
+         (fun x => (writeIORef ref (f x))).
 
   Definition arrayAppend Op' {i:Injectable Op Op'} T (a: Array T) (v:T) : proc Op' unit :=
     Call (inject (ArrayAppend a v)).
@@ -102,6 +118,13 @@ Module Data.
 
   Definition arrayGet Op' {i:Injectable Op Op'} T (a: Array T) (ix:uint64) : proc Op' T :=
     Call (inject (ArrayGet a ix)).
+
+  (* this is represented as an inductive rather than a combination of ObjΣ and a
+  boolean state to make misuse harder (there's no reasonable way to use the
+  state without knowing the status) *)
+  Inductive NonAtomicState ObjΣ : Type :=
+  | Clean (s:ObjΣ)
+  | Dirty (s:ObjΣ).
 
   Record DynMap A (Ref: A -> Type) (Model: A -> Type) :=
     { dynMap : sigT Ref -> option (sigT Model);
@@ -114,7 +137,7 @@ Module Data.
 
   Record State : Type :=
     mkState { vars: forall (var:Var.t), Var.ty var;
-              iorefs: DynMap IORef id;
+              iorefs: DynMap IORef (fun T => NonAtomicState T);
               arrays: DynMap Array list;
               hashtables: DynMap HashTable' hashtableM; }.
 
@@ -189,19 +212,56 @@ Module Data.
   Definition emptyHashTable (idx:HashTableIdx) : hashtableM idx :=
     let 'KVIdx _ _ := idx in fun _ => None.
 
+  Definition readClean {State} ObjΣ (s: NonAtomicState ObjΣ) : relation State State ObjΣ :=
+    match s with
+    | Clean s => pure s
+    | Dirty _ => error
+    end.
+
+  Definition readDirty {State} ObjΣ (s: NonAtomicState ObjΣ) : relation State State ObjΣ :=
+    match s with
+    | Clean _ => error
+    | Dirty s  => pure s
+    end.
+
+  Definition nonAtomicStep
+             {ArgT} (args: NonAtomicArgs ArgT) {T} (* the operation *)
+             {ObjΣ} (obj_s: NonAtomicState ObjΣ)
+             {State}
+             (mkDirty: ObjΣ -> relation State State unit)
+             (opStep: ObjΣ -> ArgT -> relation State State T)
+    : relation State State (retT args T) :=
+    match args with
+    | Begin => s <- readClean obj_s;
+                mkDirty s
+    | FinishArgs x => s <- readDirty obj_s;
+                       opStep s x
+    end.
+
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | GetVar v => reads (fun s => vars s v)
     | SetVar v x => puts (set vars (upd_vars v x))
     | NewIORef x =>
       r <- such_that (fun s r => getDyn s.(iorefs) r = None);
-        _ <- puts (set iorefs (updDyn r x));
+        _ <- puts (set iorefs (updDyn r (Clean x)));
         pure r
     | WriteIORef v x =>
-      _ <- readSome (fun s => getDyn s.(iorefs) v);
-        puts (set iorefs (updDyn v x))
+      obj_s <- readSome (fun s => getDyn s.(iorefs) v);
+        nonAtomicStep
+          x obj_s
+          (* TODO: it would be really nice to abstract away this notion of
+          getters/setters for state so that we don't have to use relations
+          everywhere and can just use state transformers, very similar to lens.
+          For example, right now these semantics are technically allowed to use
+          the entire state to update this object, but it should be apparent from
+          the lenses used that the semantics depends only on the lens {iorefs,
+          set iorefs} |> {getDyn v, updDyn v} *)
+          (fun refS => puts (set iorefs (updDyn v (Dirty refS))))
+          (fun refS x => puts (set iorefs (updDyn v (Clean refS))))
     | ReadIORef v =>
-      readSome (fun s => getDyn s.(iorefs) v)
+      obj_s <- readSome (fun s => getDyn s.(iorefs) v);
+        readClean obj_s
     | NewArray T =>
       r <- such_that (fun s r => getDyn s.(arrays) r = None);
         _ <- puts (set arrays (updDyn r (@nil T)));
