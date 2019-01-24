@@ -104,7 +104,7 @@ Module Data.
       Call! ReadIORef ref.
 
     Definition writeIORef T (ref:IORef T) (v:T) : proc unit :=
-      lift (nonAtomicOp (WriteIORef ref) v).
+      nonAtomicOp (fun args => inject (WriteIORef ref args)) v.
 
     (* non-atomic modify (this immediately follows from Read and Write each not
   being atomic) *)
