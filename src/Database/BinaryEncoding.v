@@ -158,7 +158,7 @@ with a length prefix) and this isn't the most general such format *)
 Definition exact_list_fmt T (fmt:Encodable T) : Encodable (list T).
   refine {| encode := encode_list (@encode T fmt);
             decode := decode_list (@decode T fmt); |}.
-Admitted.
+Defined.
 
 Instance SliceHandle_fmt : Encodable SliceHandle.t.
 Proof.
