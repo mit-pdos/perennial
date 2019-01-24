@@ -20,7 +20,7 @@ Module Log.
 
   Definition recoverTxns (p:string) : proc (Array ByteString) :=
     fd <- lift (FS.open p);
-      txns <- Call (inject (Data.NewArray ByteString));
+      txns <- Data.newArray ByteString;
       sz <- lift (FS.size fd);
       log <- lift (FS.readAt fd 0 sz);
       _ <- Loop

@@ -120,7 +120,7 @@ Module Table.
         Ret data.
 
   Definition recover (fd:Fd) : proc Tbl.t :=
-    index <- Call (inject (Data.NewArray _));
+    index <- Data.newArray _;
       indexData <- readIndexData fd;
       _ <- Loop (fun indexData =>
               match decode IndexEntry.t indexData with
@@ -157,7 +157,7 @@ Module Table.
       indexMin <- Data.newIORef 0%u64;
       indexMax <- Data.newIORef 0%u64;
       indexNumKeys <- Data.newIORef 0%u64;
-      indexEntries <- Call (inject (Data.NewArray _));
+      indexEntries <- Data.newArray _;
       Ret {| TblWriter.fd := fh;
              TblWriter.fileOffset := fileOffset;
              TblWriter.indexOffset := indexOffset;

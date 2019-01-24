@@ -49,6 +49,14 @@ Arguments Begin {T}.
 (* NOTE: this does not allow dependent return values *)
 Definition retT T (args:NonAtomicArgs T) T' : Type := if args then T' else unit.
 
+(* nonAtomicOp takes an operation partially applied to some key identifying
+  the object (assuming the operation does separate over some resources, such as
+  addresses or references) *)
+Definition nonAtomicOp {Op ArgT T}
+           (op: forall (args:NonAtomicArgs ArgT), Op (retT args T))
+  : ArgT -> proc Op T :=
+  fun args => Bind (Call (op Begin)) (fun _ => Call (op (FinishArgs args))).
+
 Module Data.
   Inductive Op : Type -> Type :=
   (* generic variable operations *)
@@ -77,47 +85,55 @@ Module Data.
 
   Arguments NewHashTable K {dec} V.
 
-  Definition get Op' {i:Injectable Op Op'} (var: Var.t) : proc Op' (Var.ty var) :=
-    Call (inject (GetVar var)).
+  Section OpWrappers.
 
-  Definition set_var Op' {i:Injectable Op Op'} (var: Var.t) (v: Var.ty var) : proc Op' unit :=
-    Call (inject (SetVar var v)).
+    Context Op' {i:Injectable Op Op'}.
+    Notation proc := (proc Op').
+    Notation "'Call!' op" := (Call (inject op)) (at level 0, op at level 200).
 
-  Definition newIORef Op' {i:Injectable Op Op'}
-             T (v:T) : proc Op' (IORef T) :=
-    Call (inject (NewIORef v)).
+    Definition get (var: Var.t) : proc (Var.ty var) :=
+      Call! GetVar var.
 
-  Definition readIORef Op' {i:Injectable Op Op'}
-             T (ref:IORef T) : proc Op' T :=
-    Call (inject (ReadIORef ref)).
+    Definition set_var (var: Var.t) (v: Var.ty var) : proc unit :=
+      Call! SetVar var v.
 
-  (* nonAtomicOp takes an operation partially applied to some key identifying
-  the object (assuming the operation does separate over some resources, such as
-  addresses or references) *)
-  Definition nonAtomicOp {Op ArgT T}
-             (op: forall (args:NonAtomicArgs ArgT), Op (retT args T))
-    : ArgT -> proc Op T :=
-    fun args => Bind (Call (op Begin)) (fun _ => Call (op (FinishArgs args))).
+    Definition newIORef T (v:T) : proc (IORef T) :=
+      Call! NewIORef v.
 
-  Definition writeIORef Op' {i:Injectable Op Op'}
-             T (ref:IORef T) (v:T) : proc Op' unit :=
-    lift (nonAtomicOp (WriteIORef ref) v).
+    Definition readIORef T (ref:IORef T) : proc T :=
+      Call! ReadIORef ref.
 
-  (* non-atomic modify (this immediately follows from Read and Write each not
+    Definition writeIORef T (ref:IORef T) (v:T) : proc unit :=
+      lift (nonAtomicOp (WriteIORef ref) v).
+
+    (* non-atomic modify (this immediately follows from Read and Write each not
   being atomic) *)
-  Definition modifyIORef Op' {i:Injectable Op Op'}
-             T (ref:IORef T) (f: T -> T) : proc Op' unit :=
-    Bind (Call (inject (ReadIORef ref)))
-         (fun x => (writeIORef ref (f x))).
+    Definition modifyIORef T (ref:IORef T) (f: T -> T) : proc unit :=
+      Bind (Call! ReadIORef ref)
+           (fun x => writeIORef ref (f x)).
 
-  Definition arrayAppend Op' {i:Injectable Op Op'} T (a: Array T) (v:T) : proc Op' unit :=
-    Call (inject (ArrayAppend a v)).
+    Definition newArray T : proc _ :=
+      Call! NewArray T.
 
-  Definition arrayLength Op' {i:Injectable Op Op'} T (a: Array T) : proc Op' uint64 :=
-    Call (inject (ArrayLength a)).
+    Definition arrayAppend T (a: Array T) (v:T) : proc unit :=
+      Call! ArrayAppend a v.
 
-  Definition arrayGet Op' {i:Injectable Op Op'} T (a: Array T) (ix:uint64) : proc Op' T :=
-    Call (inject (ArrayGet a ix)).
+    Definition arrayLength T (a: Array T) : proc uint64 :=
+      Call! ArrayLength a.
+
+    Definition arrayGet T (a: Array T) (ix:uint64) : proc T :=
+      Call! ArrayGet a ix.
+
+    Definition newHashTable K dec V : proc _ :=
+      Call! @NewHashTable K dec V.
+
+    Definition hashTableAlter K dec V h k f : proc _ :=
+      Call! @HashTableAlter K dec V h k f.
+
+    Definition hashTableLookup K dec V h k : proc _ :=
+      Call! @HashTableLookup K dec V h k.
+
+  End OpWrappers.
 
   (* this is represented as an inductive rather than a combination of ObjΣ and a
   boolean state to make misuse harder (there's no reasonable way to use the
