@@ -1,8 +1,4 @@
-From RecoveryRefinement Require Import Lib.
-From RecoveryRefinement Require Import Spec.SumProc.
-From RecoveryRefinement Require Import Database.Common.
-From RecoveryRefinement Require Import Database.BinaryEncoding.
-From RecoveryRefinement Require Import Database.Filesys.
+From RecoveryRefinement Require Import Database.Base.
 From RecoveryRefinement Require Import Database.Log.
 
 Module WAL.
@@ -18,8 +14,6 @@ Module WAL.
 
   Import ProcNotations.
   Local Open Scope proc.
-
-  Notation proc := (proc (Data.Op ⊕ FS.Op)).
 
   Definition create (p: string) : proc DbLog.t :=
     log <- Log.create p;

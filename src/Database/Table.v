@@ -1,9 +1,5 @@
-From RecoveryRefinement Require Import Lib.
-From RecoveryRefinement Require Import Spec.SumProc.
-From RecoveryRefinement Require Import Database.Common.
-From RecoveryRefinement Require Import Helpers.MachinePrimitives.
+From RecoveryRefinement Require Import Database.Base.
 From RecoveryRefinement Require Import Database.BinaryEncoding.
-From RecoveryRefinement Require Import Database.Filesys.
 
 Import UIntNotations.
 
@@ -43,8 +39,6 @@ Module Table.
 
   Import ProcNotations.
   Local Open Scope proc.
-
-  Notation proc := (proc (Data.Op ⊕ FS.Op)).
 
   Definition readAll (t:Tbl.t) : proc ReadIterator.t :=
     index <- Data.newIORef 0%u64;

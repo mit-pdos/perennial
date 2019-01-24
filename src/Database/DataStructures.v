@@ -1,6 +1,6 @@
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Spec.Proc.
-From RecoveryRefinement Require Import Spec.SumProc.
+From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
 From RecordUpdate Require Import RecordSet.
