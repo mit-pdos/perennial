@@ -1,4 +1,5 @@
 From RecoveryRefinement Require Import Lib.
+From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
@@ -40,16 +41,23 @@ Module FS.
   | AtomicCreate p bs : Op unit
   .
 
-  Definition open p : proc Op Fd := Call (Open p).
-  Definition close fh := Call (Close fh).
-  Definition list := Call (List).
-  Definition size fh := Call (Size fh).
-  Definition readAt fh off len := Call (ReadAt fh off len).
-  Definition create p := Call (Create p).
-  Definition append fh bs := Call (Append fh bs).
-  Definition delete p := Call (Delete p).
-  Definition truncate p := Call (Truncate p).
-  Definition atomicCreate p bs := Call (AtomicCreate p bs).
+  Section OpWrappers.
+
+    Context Op' {i:Injectable Op Op'}.
+    Notation proc := (proc Op').
+    Notation "'Call!' op" := (Call (inject op)) (at level 0, op at level 200).
+    Definition open p : proc _ := Call! Open p.
+    Definition close fh : proc _ := Call! Close fh.
+    Definition list : proc _ := Call! List.
+    Definition size fh : proc _ := Call! Size fh.
+    Definition readAt fh off len : proc _ := Call! ReadAt fh off len.
+    Definition create p : proc _ := Call! Create p.
+    Definition append fh bs : proc _ := Call! Append fh bs.
+    Definition delete p : proc _ := Call! Delete p.
+    Definition truncate p : proc _ := Call! Truncate p.
+    Definition atomicCreate p bs : proc _ := Call! AtomicCreate p bs.
+
+  End OpWrappers.
 
   Inductive OpenMode := Read | Write.
 

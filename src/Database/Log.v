@@ -9,20 +9,20 @@ Module Log.
 
   Definition addTxn (l:t) (txn: ByteString) : proc _ :=
       let bs := encode (array64 txn) in
-      lift (FS.append l bs).
+      FS.append l bs.
 
   Definition clear (p:string) : proc _ :=
-      lift (FS.truncate p).
+      FS.truncate p.
 
   Definition create (p:string) : proc t :=
-    fd <- lift (FS.create p);
+    fd <- FS.create p;
       Ret fd.
 
   Definition recoverTxns (p:string) : proc (Array ByteString) :=
-    fd <- lift (FS.open p);
+    fd <- FS.open p;
       txns <- Data.newArray ByteString;
-      sz <- lift (FS.size fd);
-      log <- lift (FS.readAt fd 0 sz);
+      sz <- FS.size fd;
+      log <- FS.readAt fd 0 sz;
       _ <- Loop
         (fun log => match decode Array64 log with
                  | Some (txn, n) =>

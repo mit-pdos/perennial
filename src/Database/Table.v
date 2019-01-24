@@ -49,7 +49,7 @@ Module Table.
   succeeds *)
   Definition fill (t:Tbl.t) (it:ReadIterator.t) : proc bool :=
     offset <- Data.readIORef it.(ReadIterator.offset);
-      data <- lift (FS.readAt t.(Tbl.fd) offset 4096);
+      data <- FS.readAt t.(Tbl.fd) offset 4096;
       if BS.length data == 0 then Ret false
       else (_ <- Data.modifyIORef it.(ReadIterator.offset) (fun o => o + (BS.length data))%u64;
               (* technically this is known to be unnecessary if len - offset >= 4096 *)
@@ -89,7 +89,7 @@ Module Table.
                 else Continue (i + 1))%u64 0.
 
   Definition readHandle (t:Tbl.t) (h:SliceHandle.t) : proc ByteString :=
-    lift (FS.readAt t.(Tbl.fd) h.(SliceHandle.offset) h.(SliceHandle.length)).
+    FS.readAt t.(Tbl.fd) h.(SliceHandle.offset) h.(SliceHandle.length).
 
   Inductive TableSearchResult :=
   | Missing
@@ -114,9 +114,9 @@ Module Table.
       end.
 
   Definition readIndexData (fd:Fd) : proc ByteString :=
-    sz <- Call (inject (FS.Size fd));
+    sz <- FS.size fd;
       let headerLength := fromNum 16 in
-      data <- lift (FS.readAt fd (sz - headerLength)%u64 headerLength);
+      data <- FS.readAt fd (sz - headerLength)%u64 headerLength;
         Ret data.
 
   Definition recover (fd:Fd) : proc Tbl.t :=
@@ -200,7 +200,7 @@ Module Table.
               Ret tt
           else Ret tt;
       let data := encode e in
-      _ <- lift (FS.append t.(TblWriter.fd) data);
+      _ <- FS.append t.(TblWriter.fd) data;
         _ <- Data.modifyIORef t.(TblWriter.fileOffset) (fun o => o + (BS.length data))%u64;
         _ <- Data.writeIORef t.(TblWriter.indexMax) e.(Entry.key);
         _ <- Data.writeIORef t.(TblWriter.indexNumKeys) (numKeys + 1)%u64;
@@ -224,7 +224,7 @@ Module Table.
       let indexLength := BS.length indexEntries in
       let indexHandle := encode (indexStart, indexLength) in
       let indexData := BS.append indexEntries indexHandle in
-      _ <- lift (FS.append t.(TblWriter.fd) indexData);
+      _ <- FS.append t.(TblWriter.fd) indexData;
       Ret {| Tbl.fd := TblWriter.fd t;
              Tbl.index := TblWriter.indexEntries t; |}.
 
