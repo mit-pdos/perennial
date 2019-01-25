@@ -551,3 +551,115 @@ Proof.
     eapply Hφ_halt; eauto. destruct o1; eauto.
   - congruence.
 Qed.
+
+Theorem wp_recovery_nonstuck_internal {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
+        σ1 φ φinv (φrec : Λ.(State) → iProp Σ) :
+  (* normal execution *)
+  (∀ `{Hinv : invG Σ},
+     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
+       stateI σ1 ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜φ v σ⌝ }}
+       ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2'))
+     ∗
+     (∀ `{Hinv : invG Σ} σ1 σ1' (Hcrash: Λ.(crash_step) σ1 (Val σ1' tt)),
+     (φinv σ1 ={⊤}=∗ ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
+       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, ∀ σ, stateI σ ={⊤, ∅}=∗ φrec σ }}
+         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2'))))%I →
+    s = NotStuck →
+    ¬ Λ.(rexec) e (rec_singleton rec) σ1 Err.
+Proof.
+  - rewrite /rexec/exec_recover => Hwp Hnstuck Hrexec.
+    eapply rimpl_elim in Hrexec; last first.
+    { setoid_rewrite exec_seq_partial_singleton.
+      setoid_rewrite <-bind_assoc at 2.
+      setoid_rewrite seq_unit_sliding.
+      setoid_rewrite bind_assoc.
+      simpl exec_seq. SearchAbout exec.
+      setoid_rewrite exec_halt_finish.
+      reflexivity.
+    }
+    assert (Hrexec' : (_ <- exec_partial Λ e; _ <- seq_star (_ <- Λ.(crash_step); exec_halt Λ rec);
+            _ <- Λ.(crash_step); exec_halt Λ rec) σ1 Err).
+    { intuition. }
+    clear Hrexec.
+    (* Show that we couldn't have crashed during e *)
+    destruct Hrexec' as [|(tp&σhalt&Hpartial&Hrec)].
+    { eapply wp_strong_adequacy; eauto.
+      intros Hinv.
+      iDestruct (Hwp $! _) as "(Hwp_e&Hwp_rec)".
+      iMod "Hwp_e" as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} {$H} !> "; auto.
+    }
+    assert (∃ σcrash σrec_err,
+               (seq_star (_ <- Λ.(crash_step); exec_halt Λ rec) σhalt (Val σcrash tt) ∧
+                Λ.(crash_step) σcrash (Val σrec_err tt) ∧
+                exec_halt Λ rec σrec_err Err))
+     as (σcrash&σrec_err&Hstar&Hcrash&Herr).
+    {
+      clear -Hrec.
+      destruct Hrec as [Hstar_err|([]&σhalt_rec&Hhd&Hrest)].
+      - remember Err as ret eqn:Heq.
+        revert Heq; induction Hstar_err; intros; try congruence; subst.
+        * edestruct IHHstar_err as (σcrash&σrec_err&Hstar&?); auto.
+          exists σcrash, σrec_err; split; auto.
+          econstructor; eauto.
+        * destruct H as [|([]&σ&?&?)].
+          { exfalso. eapply crash_non_err; eauto. }
+          exists x, σ; split; auto.
+          econstructor.
+      - destruct Hrest as [|([]&σ&?&?)].
+          { exfalso. eapply crash_non_err; eauto. }
+          do 2 eexists; split_and!; eauto.
+    }
+
+    edestruct (wp_strong_adequacy _ s rec σrec_err (λ _ σ2, True)) as (Had&?); eauto; last first.
+    { apply bind_pure_no_err in Herr; intuition. }
+
+    intros Hinv.
+    iMod wsat_alloc as (Hinv') "[Hw HE]".
+    iPoseProof (Hwp $! Hinv') as "(Hwp_e&Hwp_rec)".
+    iAssert (|==> ◇ φinv σhalt)%I with "[Hw HE]" as ">>Hσhalt".
+    {
+      iClear "Hwp_rec".
+      rewrite uPred_fupd_eq.
+      iMod ("Hwp_e" with "[$Hw $HE]") as ">(Hw & HE & Hrest)".
+      iDestruct "Hrest" as (stateI) "(Hs&Hwp&Hinv)".
+      iSpecialize ("Hinv" $! σhalt with "[Hs Hwp]").
+      (* need to show you can obtain state interp for anything you can reduce to
+         from initial and weakest pre*)
+      { admit. }
+      rewrite /uPred_fupd_def.
+      iMod ("Hinv" with "[$Hw $HE]") as ">(?&?&$)".
+      done.
+    }
+    clear Hpartial Hrec.
+    iClear "Hwp_e".
+
+    iAssert (|==> ◇ φinv σcrash)%I with "[Hσhalt]" as ">>Hinv'".
+    {
+      clear Hcrash σrec_err Herr.
+      remember (Val σcrash ()) as ret eqn:Heq.
+      iInduction Hstar as [?|x y ? ? Hstep Hstar|?] "IH" forall (Heq); inversion Heq; subst; auto.
+      iMod wsat_alloc as (Hinv'') "[Hw HE]".
+      iSpecialize ("Hwp_rec" $! Hinv'').
+      destruct Hstep as ([]&σrec_err&Hcrash&?).
+      iSpecialize ("Hwp_rec" $! _ σrec_err Hcrash).
+      rewrite uPred_fupd_eq.
+      iMod ("Hwp_rec" with "Hσhalt [$Hw $HE]") as ">(Hw & HE & Hrest)".
+      iDestruct "Hrest" as (stateI) "(Hs&Hwp&Hinv)".
+      iSpecialize ("Hinv" $! y with "[Hs Hwp]").
+      (* need to show you can obtain state interp for anything you can reduce to
+         from initial and weakest pre*)
+      { admit. }
+      rewrite /uPred_fupd_def.
+      iMod ("Hinv" with "[$Hw $HE]") as ">(?&?&?)".
+      iApply "IH"; auto.
+    }
+
+
+    iSpecialize ("Hwp_rec" $! Hinv σcrash σrec_err Hcrash with "Hinv'").
+    iMod "Hwp_rec" as (stateI) "[Hσ [H _]]"; eauto.
+    iExists stateI. iIntros "{$Hσ} !> "; auto.
+    iApply wp_wand_l; iFrame.
+    iIntros (?) "Hwand". iIntros (σ) "H". iMod ("Hwand" with "H"); auto.
+Admitted.
