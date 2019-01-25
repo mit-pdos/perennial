@@ -4,8 +4,8 @@ From RecoveryRefinement Require Import Database.BaseLayer.
 
 Extraction Language Haskell.
 
-Extract Constant IORef "a" => "Data.IORef.IORef a".
-Extract Constant Array "a" => "Data.Vector.Vector a".
-Extract Constant HashTable "k" "v" => "Data.HashTable.IO.BasicHashTable k v".
+Extract Constant IORef "a" => "Lib.IORef a".
+Extract Constant Array "a" => "Lib.Vector a".
+Extract Constant HashTable "k" "v" => "Lib.HashTable k v".
 
 (* TODO: extract proc to some monad *)

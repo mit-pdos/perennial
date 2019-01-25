@@ -1,6 +1,34 @@
 module Lib
-    ( someFunc
-    ) where
+  ( Word64
+  , ByteString
+  , BS.append
+  , Fd
+  , IORef
+  , Vector
+  , HashTable
+  , add
+  , sub
+  , Lib.compare
+  )
+where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+import Data.Word (Word64)
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
+import System.Posix.Types (Fd)
+
+-- data structures
+import Data.IORef (IORef)
+import Data.Vector (Vector)
+import Data.HashTable.IO (BasicHashTable)
+
+type HashTable k v = BasicHashTable k v
+
+add :: Word64 -> Word64 -> Word64
+add x y = if x > maxBound - y then error "integer overflow" else x+y
+
+sub :: Word64 -> Word64 -> Word64
+sub x y = if y >= x then 0 else x - y
+
+compare :: Word64 -> Word64 -> Ordering
+compare = Prelude.compare
