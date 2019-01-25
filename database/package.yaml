@@ -34,6 +34,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - database
+    - criterion
+    - deepseq
 
 tests:
   database-test:

@@ -1,3 +1,5 @@
 .stack-work/
 database.cabal
 *~
+# criterion-generated plots
+*.html
