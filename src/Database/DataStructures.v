@@ -14,19 +14,15 @@ Set Implicit Arguments.
 
 Axiom IORef : Type -> Type.
 Axiom Array : Type -> Type.
-Axiom HashTable : forall (K:Type) (dec:EqualDec K) (V:Type), Type.
+(* Hashtables always use uint64 as the key type since the Haskell interpreter
+needs to statically know the type in order to resolve Hashable and Eq instances
 
-Arguments HashTable K {dec} V.
+We could instead use a type code and dispatch on that. *)
+Axiom HashTable : forall (V:Type), Type.
 
 Axiom sigIORef_eq_dec : EqualDec (sigT IORef).
 Axiom sigArray_eq_dec : EqualDec (sigT Array).
-
-(* single-index version of HashTable *)
-Inductive HashTableIdx :=
-| KVIdx (K:Type) (dec:EqualDec K) (V:Type).
-Arguments KVIdx K {dec} V.
-Definition HashTable' := fun '(KVIdx K V) => HashTable K V.
-Axiom sigHashTable_eq_dec : EqualDec (sigT HashTable').
+Axiom sigHashTable_eq_dec : EqualDec (sigT HashTable).
 
 Existing Instances sigIORef_eq_dec sigArray_eq_dec sigHashTable_eq_dec.
 
@@ -76,14 +72,12 @@ Module Data.
 
   (* hashtables *)
   | NewHashTable :
-      forall K dec V, Op (@HashTable K dec V)
+      forall V, Op (HashTable V)
   | HashTableAlter :
-      forall K dec V, @HashTable K dec V -> K -> (option V -> option V) -> Op unit
+      forall V, HashTable V -> uint64 -> (option V -> option V) -> Op unit
   | HashTableLookup :
-      forall K dec V, @HashTable K dec V -> K -> Op (option V)
+      forall V, HashTable V -> uint64 -> Op (option V)
   .
-
-  Arguments NewHashTable K {dec} V.
 
   Section OpWrappers.
 
@@ -124,14 +118,14 @@ Module Data.
     Definition arrayGet T (a: Array T) (ix:uint64) : proc T :=
       Call! ArrayGet a ix.
 
-    Definition newHashTable K dec V : proc _ :=
-      Call! @NewHashTable K dec V.
+    Definition newHashTable V : proc _ :=
+      Call! NewHashTable V.
 
-    Definition hashTableAlter K dec V h k f : proc _ :=
-      Call! @HashTableAlter K dec V h k f.
+    Definition hashTableAlter V h k f : proc _ :=
+      Call! @HashTableAlter V h k f.
 
-    Definition hashTableLookup K dec V h k : proc _ :=
-      Call! @HashTableLookup K dec V h k.
+    Definition hashTableLookup V h k : proc _ :=
+      Call! @HashTableLookup V h k.
 
   End OpWrappers.
 
@@ -149,13 +143,13 @@ Module Data.
                          | None => True
                          end; }.
 
-  Definition hashtableM := fun '(KVIdx K V) => K -> option V.
+  Definition hashtableM := fun V => uint64 -> option V.
 
   Record State : Type :=
     mkState { vars: forall (var:Var.t), Var.ty var;
               iorefs: DynMap IORef (fun T => NonAtomicState T);
               arrays: DynMap Array list;
-              hashtables: DynMap HashTable' hashtableM; }.
+              hashtables: DynMap HashTable hashtableM; }.
 
   Instance _eta : Settable _ :=
     mkSettable (constructor mkState
@@ -217,16 +211,13 @@ Module Data.
 
   Arguments updDyn {A Ref Model dec a} v x m.
 
-  Definition alter_map (K V:Type) {decK: EqualDec K} (m: hashtableM (KVIdx K V))
-             (k:K) (f: option V -> option V) : hashtableM (KVIdx K V) :=
+  Definition alter_map V (m: hashtableM V)
+             (k:uint64) (f: option V -> option V) : hashtableM V :=
     fun k' => if k == k' then f (m k) else m k'.
 
   Close Scope option_monad.
 
   Import RelationNotations.
-
-  Definition emptyHashTable (idx:HashTableIdx) : hashtableM idx :=
-    let 'KVIdx _ _ := idx in fun _ => None.
 
   Definition readClean {State} ObjΣ (s: NonAtomicState ObjΣ) : relation State State ObjΣ :=
     match s with
@@ -291,15 +282,15 @@ Module Data.
     | ArrayGet v i =>
       l0 <- readSome (fun s => getDyn s.(arrays) v);
         readSome (fun _ => List.nth_error l0 (toNum i))
-    | NewHashTable K V =>
+    | NewHashTable V =>
       r <- such_that (fun s r => getDyn s.(hashtables) r = None);
-        _ <- puts (set hashtables (updDyn r (emptyHashTable (KVIdx K V))));
+        _ <- puts (set hashtables (updDyn r (fun _ => @None V)));
         pure r
     | HashTableLookup v k =>
-      m <- readSome (fun s => getDyn (a:=KVIdx _ _) s.(hashtables) v);
+      m <- readSome (fun s => getDyn s.(hashtables) v);
         pure (m k)
     | HashTableAlter v k f =>
-      m <- readSome (fun s => getDyn (a:=KVIdx _ _) s.(hashtables) v);
+      m <- readSome (fun s => getDyn s.(hashtables) v);
         _ <- puts (set hashtables (updDyn v (alter_map m k f)));
         pure tt
     end.

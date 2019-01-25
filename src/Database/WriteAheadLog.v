@@ -3,7 +3,7 @@ From RecoveryRefinement Require Import Database.Log.
 
 Module WAL.
   Module Cache.
-    Definition t := HashTable uint64 (option ByteString).
+    Definition t := HashTable (option ByteString).
   End Cache.
 
   Module DbLog.
@@ -17,7 +17,7 @@ Module WAL.
 
   Definition create (p: string) : proc DbLog.t :=
     log <- Log.create p;
-      cache <- Call (inject (Data.NewHashTable _ _));
+      cache <- Data.newHashTable _;
       Ret {| DbLog.log := log;
              DbLog.cache := cache; |}.
 
