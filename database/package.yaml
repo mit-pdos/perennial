@@ -16,7 +16,7 @@ dependencies:
 - mtl
 - unix
 - unix-bytestring
-- vector
+- dynamic-mvector
 - hashtables
 
 ghc-options:

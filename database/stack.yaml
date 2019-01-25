@@ -37,7 +37,8 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
-# extra-deps: []
+extra-deps:
+- dynamic-mvector-0.1.0.5@sha256:b1bcdf422191e623b9de5c2d5a2e846893c932e981bd37b0cdb5c77f1895983e
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

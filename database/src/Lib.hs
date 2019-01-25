@@ -4,7 +4,7 @@ module Lib
   , BS.append
   , Fd
   , IORef
-  , Vector
+  , Array
   , HashTable
   , add
   , sub
@@ -19,9 +19,10 @@ import System.Posix.Types (Fd)
 
 -- data structures
 import Data.IORef (IORef)
-import Data.Vector (Vector)
+import Data.Vector.Mutable.Dynamic (IOVector)
 import Data.HashTable.IO (BasicHashTable)
 
+type Array a = IOVector a
 type HashTable k v = BasicHashTable k v
 
 add :: Word64 -> Word64 -> Word64
