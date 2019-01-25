@@ -19,6 +19,9 @@ dependencies:
 - vector
 - hashtables
 
+ghc-options:
+  - -O2
+
 library:
   source-dirs:
     - src
