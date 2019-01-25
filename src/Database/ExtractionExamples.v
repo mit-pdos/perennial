@@ -8,7 +8,7 @@ Local Open Scope u64.
 
 Import EqualDecNotation.
 
-Module HashTableBenchmarks.
+Section HashTableBenchmarks.
 
   Definition ex1_setup : proc (HashTable ByteString) :=
     Data.newHashTable _.

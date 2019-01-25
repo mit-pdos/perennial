@@ -1,4 +1,6 @@
-module Interpreter where
+module Interpreter
+  ( interpret
+  ) where
 
 import qualified GHC.Base
 import Control.Concurrent (forkIO)
