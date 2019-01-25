@@ -10,35 +10,32 @@ Import EqualDecNotation.
 
 Section HashTableBenchmarks.
 
-  Definition ex1_setup : proc (HashTable ByteString) :=
+  Implicit Types (r:HashTable ByteString) (k:uint64) (bs:ByteString).
+
+  Definition ht_setup : proc (HashTable ByteString) :=
     Data.newHashTable _.
 
-  Definition ex1_write1 (k:uint64) (bs:ByteString)
-    (t:HashTable ByteString) : proc unit :=
-    Data.hashTableAlter t k (fun _ => Some bs).
+  Definition ht_write1 k bs r : proc unit :=
+    Data.hashTableAlter r k (fun _ => Some bs).
 
-  Definition ex1_write3 (k:uint64) (bs:ByteString)
-             (t:HashTable ByteString) : proc unit :=
-    _ <- Data.hashTableAlter t k (fun _ => Some bs);
-    _ <- Data.hashTableAlter t (k+1)%u64 (fun _ => Some bs);
-    _ <- Data.hashTableAlter t (k+2)%u64 (fun _ => Some bs);
+  Definition ht_write3 k bs r : proc unit :=
+    _ <- Data.hashTableAlter r k (fun _ => Some bs);
+    _ <- Data.hashTableAlter r (k+1) (fun _ => Some bs);
+    _ <- Data.hashTableAlter r (k+2) (fun _ => Some bs);
     Ret tt.
 
-  Definition ex1_read (k:uint64)
-             (t:HashTable ByteString) : proc (option ByteString) :=
-    Data.hashTableLookup t k.
+  Definition ht_read k r : proc (option ByteString) :=
+    Data.hashTableLookup r k.
 
-  Definition ex2_seq_reads (k:uint64) (iters:uint64)
-             (t:HashTable ByteString) : proc unit :=
+  Definition ht_seq_reads k (iters:uint64) r : proc unit :=
     Loop (fun i => if i == iters
                 then LoopRet tt
-                else _ <- Data.hashTableLookup t k;
-                  Continue (i+1)%u64) 0.
+                else _ <- Data.hashTableLookup r k;
+                  Continue (i+1)) 0.
 
-  Definition ex2_par_reads (k:uint64) (iters:uint64)
-             (t:HashTable ByteString) : proc unit :=
-    _ <- Spawn (ex2_seq_reads k iters t);
-      _ <- ex2_seq_reads k iters t;
+  Definition ht_par_reads k (iters:uint64) r : proc unit :=
+    _ <- Spawn (ht_seq_reads k iters r);
+      _ <- ht_seq_reads k iters r;
       Ret tt.
 
 End HashTableBenchmarks.
