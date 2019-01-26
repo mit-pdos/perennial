@@ -1,11 +1,14 @@
 {-# LANGUAGE TypeApplications #-}
 module DataOps where
 
-import Lib (Word64, coerceRet, coerceVoid)
-import DataStructures
-import Data.IORef (newIORef, readIORef, writeIORef)
+import           Control.Concurrent.MVar (newMVar, takeMVar, putMVar)
+import           Data.IORef (newIORef, readIORef, writeIORef)
+
 import qualified Data.HashTable.IO as H
 import qualified Data.Vector.Mutable.Dynamic as V
+
+import           DataStructures
+import           Lib (Word64, coerceRet, coerceVoid)
 
 interpret :: Data__Op x -> IO x
 interpret (Data__GetVar) = error "there are no variables"
@@ -25,3 +28,9 @@ interpret (Data__HashTableAlter h k f) =
   coerceVoid $ H.mutate h k (\v -> (f v, ()))
 interpret (Data__HashTableLookup h k) =
   coerceRet $ H.lookup h k
+interpret Data__NewLock =
+  coerceRet @LockRef $ newMVar ()
+interpret (Data__LockAcquire r) =
+  coerceVoid $ takeMVar r
+interpret (Data__LockRelease r) =
+  coerceVoid $ putMVar r ()

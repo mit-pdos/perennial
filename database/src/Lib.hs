@@ -9,6 +9,7 @@ module Lib
   , IORef
   , Array
   , HashTable
+  , LockRef
   , add
   , sub
   , Lib.compare
@@ -24,6 +25,7 @@ import           System.Posix.Types (Fd)
 
 -- data structures
 import           Data.IORef (IORef)
+import           Control.Concurrent.MVar (MVar)
 import           Data.Vector.Mutable.Dynamic (IOVector)
 import           Data.HashTable.IO (BasicHashTable)
 
@@ -31,6 +33,7 @@ import           Unsafe.Coerce (unsafeCoerce)
 
 type Array a = IOVector a
 type HashTable k v = BasicHashTable k v
+type LockRef = MVar ()
 
 add :: Word64 -> Word64 -> Word64
 add x y = if x > maxBound - y then error "integer overflow" else x+y

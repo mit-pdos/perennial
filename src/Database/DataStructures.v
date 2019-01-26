@@ -19,12 +19,14 @@ needs to statically know the type in order to resolve Hashable and Eq instances
 
 We could instead use a type code and dispatch on that. *)
 Axiom HashTable : forall (V:Type), Type.
+Axiom LockRef : Type.
 
 Axiom sigIORef_eq_dec : EqualDec (sigT IORef).
 Axiom sigArray_eq_dec : EqualDec (sigT Array).
 Axiom sigHashTable_eq_dec : EqualDec (sigT HashTable).
+Axiom lockRef_eq_dec : EqualDec LockRef.
 
-Existing Instances sigIORef_eq_dec sigArray_eq_dec sigHashTable_eq_dec.
+Existing Instances sigIORef_eq_dec sigArray_eq_dec sigHashTable_eq_dec lockRef_eq_dec.
 
 Module Var.
   Inductive t :=
@@ -77,6 +79,11 @@ Module Data.
       forall V, HashTable V -> uint64 -> (option V -> option V) -> Op unit
   | HashTableLookup :
       forall V, HashTable V -> uint64 -> Op (option V)
+
+  (* locks *)
+  | NewLock : Op LockRef (* will be unlocked *)
+  | LockAcquire : LockRef -> Op unit
+  | LockRelease : LockRef -> Op unit
   .
 
   Section OpWrappers.
@@ -127,6 +134,15 @@ Module Data.
     Definition hashTableLookup V h k : proc _ :=
       Call! @HashTableLookup V h k.
 
+    Definition newLock : proc _ :=
+      Call! NewLock.
+
+    Definition lockAcquire r : proc _ :=
+      Call! LockAcquire r.
+
+    Definition lockRelease r : proc _ :=
+      Call! LockRelease r.
+
   End OpWrappers.
 
   (* this is represented as an inductive rather than a combination of ObjΣ and a
@@ -149,14 +165,16 @@ Module Data.
     mkState { vars: forall (var:Var.t), Var.ty var;
               iorefs: DynMap IORef (fun T => NonAtomicState T);
               arrays: DynMap Array list;
-              hashtables: DynMap HashTable hashtableM; }.
+              hashtables: DynMap HashTable hashtableM;
+              locks: LockRef -> option bool; }.
 
   Instance _eta : Settable _ :=
     mkSettable (constructor mkState
                             <*> vars
                             <*> iorefs
                             <*> arrays
-                            <*> hashtables)%set.
+                            <*> hashtables
+                            <*> locks)%set.
 
   Module OptionNotations.
     Delimit Scope option_monad with opt.
@@ -187,6 +205,9 @@ Module Data.
              | left H => rew [Var.ty] H in v
              | right _ => vars var'
              end.
+
+  Definition upd_locks (r:LockRef) (v:bool) (ls: LockRef -> option bool) : LockRef -> option bool :=
+    fun r' => if r == r' then Some v else ls r'.
 
   Definition getDyn A (Ref Model: A -> Type)
              (m: DynMap Ref Model) a (r: Ref a) : option (Model a).
@@ -293,6 +314,20 @@ Module Data.
       m <- readSome (fun s => getDyn s.(hashtables) v);
         _ <- puts (set hashtables (updDyn v (alter_map m k f)));
         pure tt
+    | NewLock =>
+      r <- such_that (fun s r => s.(locks) r = None);
+        _ <- puts (set locks (upd_locks r false));
+        pure r
+    | LockAcquire r =>
+      v <- readSome (fun s => s.(locks) r);
+        if v
+        then none (* lock is held *)
+        else puts (set locks (upd_locks r true))
+    | LockRelease r =>
+      v <- readSome (fun s => s.(locks) r);
+        if v
+        then puts (set locks (upd_locks r false))
+        else error (* error to attempt to double-release a lock *)
     end.
 
   Definition vars0 (v:Var.t) : Var.ty v :=
