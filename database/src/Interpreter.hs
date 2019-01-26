@@ -2,25 +2,27 @@ module Interpreter
   ( interpret
   ) where
 
-import qualified GHC.Base
-import Control.Concurrent (forkIO)
 import Control.Monad (void)
 
---import qualified FilesysOps
-import qualified DataOps
-
 import Proc
+import qualified FilesysOps
+import qualified DataOps
 import qualified BaseLayer
-import DataStructures
 
-interpret :: Coq_proc (BaseLayer.Op GHC.Base.Any) x -> IO x
-interpret (Call (BaseLayer.FilesysOp _)) = error "filesystem ops not wired in"
-interpret (Call (BaseLayer.DataOp op)) = unsafeCoerce <$> DataOps.interpret op
+import Filesys.Generic
+import Control.Monad.IO.Class
+import Control.Concurrent.Forkable
+import Lib (coerceRet, coerceVoid)
+
+interpret :: (MonadFilesys m, MonadIO m, ForkableMonad m) =>
+             Coq_proc (BaseLayer.Op a) x -> m x
+interpret (Call (BaseLayer.FilesysOp op)) = coerceRet $ FilesysOps.interpret op
+interpret (Call (BaseLayer.DataOp op)) = coerceRet . liftIO $ DataOps.interpret op
 interpret (Ret x) = return x
 interpret (Bind x f) = interpret x >>= interpret . f
-interpret (Spawn x) =
-  let spawnedThread = void $ interpret x in
-  unsafeCoerce <$> forkIO spawnedThread
+interpret (Spawn x) = do
+  _ <- forkIO (void $ interpret x)
+  coerceVoid $ return ()
 interpret (Loop body x0) = do
   x <- interpret $ body x0
   case x of

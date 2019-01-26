@@ -1,28 +1,35 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Lib
-import ExtractionExamples
-import Interpreter
+import qualified BaseLayer
+import           Proc (Coq_proc)
 
-import Criterion.Main
-import BenchHelpers
-import Control.Monad (forM_, replicateM_, void)
+import           Lib
+import           ExtractionExamples
+import qualified Filesys.NoFilesys as NoFilesys
+import           Interpreter
+
+import           Criterion.Main
+import           BenchHelpers
+import           Control.Monad (forM_, replicateM_, void)
+
+run :: Coq_proc (BaseLayer.Op a) x -> IO x
+run = NoFilesys.run . interpret
 
 emptyTbl :: IO (HashTable Word64 ByteString)
-emptyTbl = interpret ht_setup
+emptyTbl = run ht_setup
 
 key :: Word64
 key = 10
 
 hashTableWrites :: [Benchmark]
 hashTableWrites = writeSuite [
-        ("1", interpret . ht_write1 key "value")
-      , ("3", interpret . ht_write3 key "value")
+        ("1", run . ht_write1 key "value")
+      , ("3", run . ht_write3 key "value")
       , ("hs3", \h -> do
-            interpret $ ht_write1 key "value" h
-            interpret $ ht_write1 (key+1) "value" h
-            interpret $ ht_write1 (key+2) "value" h
+            run $ ht_write1 key "value" h
+            run $ ht_write1 (key+1) "value" h
+            run $ ht_write1 (key+2) "value" h
             return ()
         )
       ]
@@ -31,13 +38,13 @@ hashTableWrites = writeSuite [
 hashTableReads :: [Benchmark]
 hashTableReads = [
   bgroup "seq" $ readSuite [
-      (1, \iters -> interpret . ht_seq_reads key iters)
-      , (1000, \iters -> interpret . ht_seq_reads key iters)
-      , (10000, \iters -> interpret . ht_seq_reads key iters)
+      (1, \iters -> run . ht_seq_reads key iters)
+      , (1000, \iters -> run . ht_seq_reads key iters)
+      , (10000, \iters -> run . ht_seq_reads key iters)
       ]
   , bgroup "par" $ readSuite [
-      (500, \iters -> interpret . ht_par_reads key iters)
-      , (5000, \iters -> interpret . ht_par_reads key iters)
+      (500, \iters -> run . ht_par_reads key iters)
+      , (5000, \iters -> run . ht_par_reads key iters)
       ]
   ]
   where readSuite = map (\(num, b) ->
@@ -46,55 +53,55 @@ hashTableReads = [
 
 arrayAppends :: [Benchmark]
 arrayAppends = appendSuite [
-  ("1", interpret . a_append1)
-  , ("3", interpret . a_append3)
+  ("1", run . a_append1)
+  , ("3", run . a_append3)
   , ("hs3", \r -> do
-        interpret $ a_append1 r
-        interpret $ a_append1 r
-        interpret $ a_append1 r
+        run $ a_append1 r
+        run $ a_append1 r
+        run $ a_append1 r
         return ())
-  , ("1000", interpret . a_append_many 1000)
-  , ("10000", interpret . a_append_many 10000)
-  , ("hs10000", replicateM_ 10000 . interpret . a_append1)
+  , ("1000", run . a_append_many 1000)
+  , ("10000", run . a_append_many 10000)
+  , ("hs10000", replicateM_ 10000 . run . a_append1)
   ]
-  where appendSuite = map (\(name, b) -> bench name $ withEnvRun (interpret a_setup) b)
+  where appendSuite = map (\(name, b) -> bench name $ withEnvRun (run a_setup) b)
 
 prepareArray :: Word64 -> IO (Array Word64)
 prepareArray n = do
-  r <- interpret a_setup
-  interpret $ a_append_many n r
+  r <- run a_setup
+  run $ a_append_many n r
   return r
 
 arrayReads :: [Benchmark]
 arrayReads = [
-  bench "read1" $ withEnvRun (prepareArray 1) $ void . interpret . a_read
+  bench "read1" $ withEnvRun (prepareArray 1) $ void . run . a_read
   , bgroup "seq" $ readSuite [
-      (1, interpret . a_readall)
-      , (1000, interpret . a_readall)
-      , (10000, interpret . a_readall)
+      (1, run . a_readall)
+      , (1000, run . a_readall)
+      , (10000, run . a_readall)
       ]
   , bgroup "par" $ readSuite [
-      (500, interpret . a_readall_par)
-      , (5000, interpret . a_readall_par)
+      (500, run . a_readall_par)
+      , (5000, run . a_readall_par)
       ]
     ]
   where readSuite = map (\(num, b) -> benchNum num $ \iters -> withEnvRun (prepareArray iters) b)
 
 prepareRef :: IO (IORef ByteString)
-prepareRef = interpret (ref_setup "string")
+prepareRef = run (ref_setup "string")
 
 iorefBenches :: [Benchmark]
 iorefBenches = [
-  bench "write" $ withEnv prepareRef $ interpret . ref_write "new string"
+  bench "write" $ withEnv prepareRef $ run . ref_write "new string"
   , bgroup "read" [
-      bench "1" $ withEnv prepareRef $ interpret . ref_read
+      bench "1" $ withEnv prepareRef $ run . ref_read
       , bgroup "seq" $ iorefSuite [
-          (1, \iters -> interpret . ref_read_seq iters)
-          , (100000, \iters -> interpret . ref_read_seq iters)
+          (1, \iters -> run . ref_read_seq iters)
+          , (100000, \iters -> run . ref_read_seq iters)
       ]
       , bgroup "par" $ iorefSuite [
-          (1, \iters -> interpret . ref_read_par iters)
-          , (50000, \iters -> interpret . ref_read_par iters)
+          (1, \iters -> run . ref_read_par iters)
+          , (50000, \iters -> run . ref_read_par iters)
           ]
       ]
   ]
@@ -104,7 +111,7 @@ filledTbl :: IO (HashTable Word64 ByteString)
 filledTbl = do
   h <- emptyTbl
   forM_ [1..1000] $ \i ->
-    interpret $ ht_write1 i "value" h
+    run $ ht_write1 i "value" h
   return h
 
 main :: IO ()
