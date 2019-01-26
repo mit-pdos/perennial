@@ -161,12 +161,14 @@ Module Data.
 
   Definition hashtableM := fun V => uint64 -> option V.
 
+  Inductive LockStatus := Locked | Unlocked.
+
   Record State : Type :=
     mkState { vars: forall (var:Var.t), Var.ty var;
               iorefs: DynMap IORef (fun T => NonAtomicState T);
               arrays: DynMap Array list;
               hashtables: DynMap HashTable hashtableM;
-              locks: LockRef -> option bool; }.
+              locks: LockRef -> option LockStatus; }.
 
   Instance _eta : Settable _ :=
     mkSettable (constructor mkState
@@ -206,7 +208,7 @@ Module Data.
              | right _ => vars var'
              end.
 
-  Definition upd_locks (r:LockRef) (v:bool) (ls: LockRef -> option bool) : LockRef -> option bool :=
+  Definition upd_locks (r:LockRef) (v:LockStatus) (ls: LockRef -> option LockStatus) : LockRef -> option LockStatus :=
     fun r' => if r == r' then Some v else ls r'.
 
   Definition getDyn A (Ref Model: A -> Type)
@@ -316,18 +318,20 @@ Module Data.
         pure tt
     | NewLock =>
       r <- such_that (fun s r => s.(locks) r = None);
-        _ <- puts (set locks (upd_locks r false));
+        _ <- puts (set locks (upd_locks r Unlocked));
         pure r
     | LockAcquire r =>
       v <- readSome (fun s => s.(locks) r);
-        if v
-        then none (* lock is held *)
-        else puts (set locks (upd_locks r true))
+        match v with
+        | Locked => none
+        | Unlocked => puts (set locks (upd_locks r Locked))
+        end
     | LockRelease r =>
       v <- readSome (fun s => s.(locks) r);
-        if v
-        then puts (set locks (upd_locks r false))
-        else error (* error to attempt to double-release a lock *)
+        match v with
+        | Locked => puts (set locks (upd_locks r Unlocked))
+        | Unlocked => error (* error to attempt to double-release a lock *)
+        end
     end.
 
   Definition vars0 (v:Var.t) : Var.ty v :=
