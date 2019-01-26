@@ -80,6 +80,26 @@ arrayReads = [
     ]
   where readSuite = map (\(num, b) -> benchNum num $ \iters -> withEnvRun (prepareArray iters) b)
 
+prepareRef :: IO (IORef ByteString)
+prepareRef = interpret (ref_setup "string")
+
+iorefBenches :: [Benchmark]
+iorefBenches = [
+  bench "write" $ withEnv prepareRef $ interpret . ref_write "new string"
+  , bgroup "read" [
+      bench "1" $ withEnv prepareRef $ interpret . ref_read
+      , bgroup "seq" $ iorefSuite [
+          (1, \iters -> interpret . ref_read_seq iters)
+          , (100000, \iters -> interpret . ref_read_seq iters)
+      ]
+      , bgroup "par" $ iorefSuite [
+          (1, \iters -> interpret . ref_read_par iters)
+          , (50000, \iters -> interpret . ref_read_par iters)
+          ]
+      ]
+  ]
+  where iorefSuite = map (\(num, b) -> benchNum num $ \iters -> withEnv prepareRef (b iters))
+
 filledTbl :: IO (HashTable Word64 ByteString)
 filledTbl = do
   h <- emptyTbl
@@ -89,7 +109,8 @@ filledTbl = do
 
 main :: IO ()
 main = defaultMain [
-  bgroup "hashtable" [
+  bgroup "ioref" iorefBenches
+  , bgroup "hashtable" [
       bgroup "write" hashTableWrites
       , bgroup "read" hashTableReads
       ]

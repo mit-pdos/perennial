@@ -72,3 +72,27 @@ Section ArrayBenchmarks.
     _ <- Spawn (a_readall r);
       a_readall r.
 End ArrayBenchmarks.
+
+Section IORefBenchmarks.
+  Implicit Types (r:IORef ByteString) (bs:ByteString).
+
+  Definition ref_setup bs : proc (IORef ByteString) :=
+    Data.newIORef bs.
+
+  Definition ref_write bs r : proc unit :=
+    Data.writeIORef r bs.
+
+  Definition ref_read r : proc unit :=
+    _ <- Data.readIORef r;
+      Ret tt.
+
+  Definition ref_read_seq iters r : proc unit :=
+    Loop (fun i => if i == iters then LoopRet tt
+                else _ <- Data.readIORef r;
+                  Continue (i+1)) 0.
+
+  Definition ref_read_par iters r : proc unit :=
+    _ <- Spawn (ref_read_seq iters r);
+    ref_read_seq iters r.
+
+End IORefBenchmarks.
