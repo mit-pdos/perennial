@@ -21,12 +21,6 @@ env:
   - COQ_IMAGE="coqorg/coq:dev"
   - COQ_IMAGE="coqorg/coq:8.9"
 
-matrix:
-  allow_failures:
-    # TODO: debug why extraction of empty inductives changed
-    # (seems like old behavior is correct)
-    - env: COQ_IMAGE="coqorg/coq:8.9"
-
 # On Travis cloning the gitlab dependencies fails due to a certificate error. In
 # order to disable SSL verification for the submodule init, we have to tell
 # Travis not to initialize submodules.

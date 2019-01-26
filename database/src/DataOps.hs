@@ -8,8 +8,8 @@ import qualified Data.HashTable.IO as H
 import qualified Data.Vector.Mutable.Dynamic as V
 
 interpret :: Data__Op x -> IO x
-interpret (Data__GetVar _) = error "there are no variables"
-interpret (Data__SetVar _ _) = error "there are no variables"
+interpret (Data__GetVar) = error "there are no variables"
+interpret (Data__SetVar _) = error "there are no variables"
 interpret (Data__NewIORef x) = coerceRet @(IORef _) $ newIORef x
 interpret (Data__ReadIORef r) = readIORef r
 interpret (Data__WriteIORef _ Begin) = coerceVoid $ return ()
