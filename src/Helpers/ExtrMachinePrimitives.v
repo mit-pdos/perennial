@@ -14,12 +14,11 @@ Extract Inlined Constant toNum => "undefined".
 
 Extract Inductive comparison => "Prelude.Ordering" ["Prelude.EQ" "Prelude.LT" "Prelude.GT"].
 
-(* TODO: need checked versions of these *)
 Extract Constant add => "Lib.add".
 Extract Constant sub => "Lib.sub".
 Extract Constant compare => "Lib.compare".
 
-Extract Inlined Constant byte => "Word8".
+Extract Constant byte => "Lib.Word8".
 (* extract these to a real type, but don't provide any constructor *)
 Extract Inductive ByteString => "Lib.ByteString" ["undefined"].
 

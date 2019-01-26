@@ -2,6 +2,7 @@
 
 module Lib
   ( Word64
+  , Word8
   , ByteString
   , BS.append
   , Fd
@@ -16,7 +17,7 @@ module Lib
   )
 where
 
-import           Data.Word (Word64)
+import           Data.Word (Word64, Word8)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import           System.Posix.Types (Fd)
