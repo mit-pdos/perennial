@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Filesys.NoFilesys
-  ( NoFilesysM(..)
+  ( NoFilesysM(run)
   ) where
 
 import Filesys.Generic

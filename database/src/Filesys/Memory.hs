@@ -1,5 +1,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module Filesys.Memory where
+module Filesys.Memory
+  ( MemFilesysM
+  , run
+  ) where
 
 import           Control.Monad (void)
 import           Control.Monad.Reader (ReaderT, reader, liftIO, runReaderT, lift)
