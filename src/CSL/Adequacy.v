@@ -146,6 +146,24 @@ Proof.
   iModIntro; iNext; iMod "H" as ">?". by iApply IH.
 Qed.
 
+Lemma bupd_iter_mono n P Q :
+  (P -∗ Q) -∗ Nat.iter n (λ P, |==> ▷ P)%I P -∗ Nat.iter n (λ P, |==> ▷ P)%I Q.
+Proof.
+  iIntros "HPQ". iInduction n as [|n IH] "IH".
+  - simpl. iApply "HPQ".
+  - simpl. iIntros "Hiter". iMod "Hiter". iModIntro. iNext. iApply ("IH" with "HPQ Hiter").
+Qed.
+
+Lemma wptp_steps_state_inv {T} s n e1 t1 t2 σ1 σ2 Φ :
+  bind_rep_n n (Λ.(exec_pool)) (existT T e1 :: t1) σ1 (Val σ2 t2) →
+  world σ1 ∗ WP e1 @ s; ⊤ {{ Φ }} ∗ wptp s t1 ⊢
+  Nat.iter (S n) (λ P, |==> ▷ P) (world σ2).
+Proof.
+  iIntros (?) "H". iPoseProof (wptp_steps with "H") as "H"; eauto.
+  iApply (bupd_iter_mono with "[] H"); eauto.
+  iIntros "H". iDestruct "H" as (??) "(?&?&?)"; iFrame.
+Qed.
+
 Lemma bupd_iter_laterN_mono n P Q `{!Plain Q} :
   (P ⊢ Q) → Nat.iter n (λ P, |==> ▷ P)%I P ⊢ ▷^n Q.
 Proof.
@@ -210,9 +228,9 @@ Proof.
 Qed.
 End adequacy.
 
-Theorem wp_strong_adequacy {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ φ :
+Theorem wp_strong_adequacy {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ φ k:
   (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+     Nat.iter k (λ P, |==> ▷ P)%I (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
        stateI σ ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜φ v σ⌝ }})%I) →
   adequate s e σ φ.
@@ -230,9 +248,14 @@ Proof.
     subst.
     cut (∃ v0 : T, existT T (@of_val OpT _ v0) = existT T' (of_val v) ∧ φ v0 σ').
     { intros (vnew&?&?). exists vnew; split; auto. inversion H0. congruence. }
-    eapply (soundness (M:=iResUR Σ) _ (S (S n))).
+    eapply (soundness (M:=iResUR Σ) _ (S k + S (S n))).
+    rewrite laterN_plus.
+    iApply bupd_iter_laterN_mono; first by reflexivity.
     iMod wsat_alloc as (Hinv) "[Hw HE]". specialize (Hwp _).
-    rewrite {1}uPred_fupd_eq in Hwp; iMod (Hwp with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
+    iModIntro. iNext.
+    iApply (bupd_iter_mono k with "[Hw HE] []"); last by iApply Hwp.
+    iIntros "Hwp". rewrite {1}uPred_fupd_eq.
+    iMod ("Hwp" with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
     iDestruct "Hwp" as (Istate) "[HI Hwp]".
     iApply (@wptp_result _ _ _ (IrisG _ _ _ Hinv Istate)); eauto with iFrame.
   - destruct s; last done.
@@ -246,30 +269,38 @@ Proof.
     apply exec_pool_equiv_alt_err in Hexec.
     inversion Hexec; subst; try congruence.
     cut (@non_errorable _ _ Λ e1 σ2); eauto.
-    eapply (soundness (M:=iResUR Σ) _ (S (S n'))).
+    eapply (soundness (M:=iResUR Σ) _ (S k + S (S n'))).
+    rewrite laterN_plus.
+    iApply bupd_iter_laterN_mono; first by reflexivity.
     iMod wsat_alloc as (Hinv) "[Hw HE]". specialize (Hwp _).
-    rewrite uPred_fupd_eq in Hwp; iMod (Hwp with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
+    iModIntro. iNext.
+    iApply (bupd_iter_mono k with "[Hw HE] []"); last by iApply Hwp.
+    iIntros "Hwp". rewrite {1}uPred_fupd_eq.
+    iMod ("Hwp" with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
     iDestruct "Hwp" as (Istate) "[HI Hwp]".
     iApply (@wptp_safe _ _ _ (IrisG _ _ _ Hinv Istate)); eauto with iFrame.
     set_solver+.
 Qed.
 
-Theorem wp_adequacy {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ φ :
+Theorem wp_adequacy {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ φ k:
   (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+     Nat.iter k (λ P, |==> ▷ P)%I (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
        stateI σ ∗ WP e @ s; ⊤ {{ v, ⌜φ v⌝ }})%I) →
   adequate s e σ (λ v _, φ v).
 Proof.
-  intros Hwp. apply (wp_strong_adequacy _ _)=> Hinv.
-  iMod Hwp as (stateI) "[Hσ H]". iExists stateI. iIntros "{$Hσ} !>".
+  intros Hwp. apply (wp_strong_adequacy _ _ _ _ _ k)=> Hinv.
+  iPoseProof (Hwp _) as "Hwp".
+  iApply (bupd_iter_mono with "[] Hwp").
+  iIntros "Hwp'".
+  iMod "Hwp'" as (stateI) "[Hσ H]". iExists stateI. iIntros "{$Hσ} !>".
   iApply (wp_wand with "H"). iIntros (v ? σ') "_".
   iMod (fupd_intro_mask' ⊤ ∅) as "_"; auto.
 Qed.
 
-Theorem wp_invariance {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ1 t2 σ2 φ :
+Theorem wp_invariance {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ1 t2 σ2 φ k:
   (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+     Nat.iter k (λ P, |==> ▷ P)%I (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
        stateI σ1 ∗ WP e @ s; ⊤ {{ _, True }} ∗ (stateI σ2 ={⊤,∅}=∗ ⌜φ⌝))%I) →
   Λ.(exec_partial) e σ1 (Val σ2 t2) →
@@ -277,9 +308,14 @@ Theorem wp_invariance {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ1 t2 σ2 �
 Proof.
   intros Hwp Hpartial.
   apply bind_star_inv_rep_n in Hpartial as (n&Hpartial).
-  eapply (soundness (M:=iResUR Σ) _ (S (S n))).
+  eapply (soundness (M:=iResUR Σ) _ (S k + S (S n))).
+  rewrite laterN_plus.
+  iApply bupd_iter_laterN_mono; first by reflexivity.
   iMod wsat_alloc as (Hinv) "[Hw HE]". specialize (Hwp _).
-  rewrite {1}uPred_fupd_eq in Hwp; iMod (Hwp with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
+  iModIntro. iNext.
+  iApply (bupd_iter_mono k with "[Hw HE] []"); last by iApply Hwp.
+  iIntros "Hwp". rewrite {1}uPred_fupd_eq.
+  iMod ("Hwp" with "[$Hw $HE]") as ">(Hw & HE & Hwp)".
   iDestruct "Hwp" as (Istate) "(HIstate & Hwp & Hclose)".
   iApply (@wptp_invariance _ _ _ (IrisG _ _ _ Hinv Istate)); eauto with iFrame.
 Qed.
@@ -294,7 +330,7 @@ Corollary wp_invariance' {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ1 t2 σ
   Λ.(exec_partial) e σ1 (Val σ2 t2) →
   φ.
 Proof.
-  intros Hwp. eapply wp_invariance; first done.
+  intros Hwp. eapply wp_invariance with (k := O); first done.
   intros Hinv. iMod (Hwp Hinv) as (stateI) "(? & ? & Hφ)".
   iModIntro. iExists stateI. iFrame. iIntros "Hσ".
   iDestruct ("Hφ" with "Hσ") as (E) ">Hφ".
@@ -303,269 +339,77 @@ Qed.
 
 Import RelationNotations.
 
-Theorem wp_recovery_nonstuck {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
-        σ1 φ φinv (φrec : Λ.(State) → Prop) :
-  (* normal execution *)
-  (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
-       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1 ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜φ v σ⌝ }}
-         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
-  (* recovery *)
-  (∀ `{Hinv : invG Σ} σ1 σ1' (Hφinv: φinv σ1) (Hcrash: Λ.(crash_step) σ1 (Val σ1' tt)),
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
-       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, ∀ σ, stateI σ ={⊤, ∅}=∗ ⌜φrec σ⌝ }}
-         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
-    s = NotStuck →
-    ¬ Λ.(rexec) e (rec_singleton rec) σ1 Err.
+Lemma exec_rec_iter_split {R} OpT (Λ: Layer OpT) (rec: proc OpT R) σhalt ret:
+  (_ <- seq_star (_ <- Λ.(crash_step); exec_halt Λ rec); _ <- Λ.(crash_step); exec_halt Λ rec)
+    σhalt ret →
+  ∃ σcrash σrec : Λ.(State),
+    seq_star (_ <- Λ.(crash_step); exec_halt Λ rec) σhalt (Val σcrash ())
+    ∧ Λ.(crash_step) σcrash (Val σrec ())
+    ∧ exec_halt Λ rec σrec ret.
 Proof.
-  - rewrite /rexec/exec_recover => Hwp_e Hwp_rec Hnstuck Hrexec.
-    eapply rimpl_elim in Hrexec; last first.
-    { setoid_rewrite exec_seq_partial_singleton.
-      setoid_rewrite <-bind_assoc at 2.
-      setoid_rewrite seq_unit_sliding.
-      setoid_rewrite bind_assoc.
-      reflexivity.
-    }
-    assert (Hrexec' : (_ <- exec_partial Λ e; _ <- seq_star (_ <- Λ.(crash_step); exec_halt Λ rec);
-            _ <- Λ.(crash_step); exec_seq Λ (rec_singleton rec)) σ1 Err).
-    { intuition. }
-    clear Hrexec.
-    (* Show that φ is preserved after halt of e *)
-    destruct Hrexec' as [|(tp&σhalt&Hpartial&Hrec)].
-    { eapply wp_strong_adequacy; eauto.
-      intros Hinv.
-      iMod Hwp_e as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} {$H} !> "; auto.
-    }
-    assert (Hφ: φinv σhalt).
-    { eapply wp_invariance; eauto.
-      intros Hinv.
-      iMod Hwp_e as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} !>".
-      iSplitL "H"; last by iApply "Hφ".
-      iApply (wp_mono with "H"); eauto.
-    }
-    clear Hpartial Hwp_e.
+  intros Hrec. destruct ret as [b t|].
+  {
+    destruct Hrec as ([]&σhalt_rec&Hhd&([]&?&?&?)).
+    do 2 eexists; split_and!; eauto.
+  }
+  {
     destruct Hrec as [Hstar_err|([]&σhalt_rec&Hhd&Hrest)].
-    { remember Err as ret eqn:Heq.
+    - remember Err as ret eqn:Heq.
       revert Heq; induction Hstar_err; intros; try congruence; subst.
-      * apply IHHstar_err; auto.
-        destruct H0 as ([]&σ1'&?&?).
-        destruct H1 as (?&?&?&Hpure). inversion Hpure; subst.
-        eapply wp_invariance; eauto.
-        intros Hinv.
-        iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI. iIntros "{$Hσ} !>".
-        iSplitL "H"; last by iApply "Hφ".
-        iApply (wp_mono with "H"); eauto.
-      * destruct H0 as [|([]&σ1'&?&?)].
-        { eapply crash_non_err; eauto. }
-        eapply bind_pure_no_err in H1.
-        eapply wp_adequacy with (φ0 := λ _, True); eauto.
-        intros Hinv.
-        iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI. iIntros "{$Hσ} !>".
-        iApply (wp_mono with "H"); eauto.
-    }
-    (* Show that φ is preserved after crash + halt of rec *)
-    assert (Hφhalt_rec: φinv σhalt_rec).
-    {
-      clear Hrest.
-      remember (Val σhalt_rec ()) as ret eqn: Heq.
-      revert σhalt_rec Heq.
-      induction Hhd as [? []| x y z [] Hhd Hstar IH|]; inversion 1; subst; eauto.
-      eapply IH; eauto.
-      clear IH Hstar.
-      destruct Hhd as ([]&σcrash&Hcrash&Hhalt).
-      inversion Hhalt as (tp'&?&Hpartial&Hpure); subst.
-      inversion Hpure; subst.
-      eapply wp_invariance; eauto.
-      intros Hinv.
-      iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI. iIntros "{$Hσ} !>".
-      iSplitL "H"; last by iApply "Hφ".
-      iApply (wp_mono with "H"); eauto.
-    }
-    clear Hhd Hφ.
-    destruct Hrest as [Hhd|Hrest].
-    { eapply crash_non_err; eauto. }
-    destruct Hrest as ([]&σcrash&Hcrash&[Hexec|(?&?&?&Hfalse)]); last first.
-    { inversion Hfalse. }
-    destruct Hexec as [|(l&?&?&Hmatch)]; last first.
-    { destruct l as [|(?&[])]; inversion Hmatch. }
-    edestruct (wp_strong_adequacy _ s rec σcrash (λ _ σ2, φrec σ2)) as (Had&?); eauto; last first.
-    { intuition eauto. }
-    intros Hinv.
-    iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto.
-    iExists stateI. iIntros "{$Hσ} {$H} !> "; auto.
+      * edestruct IHHstar_err as (σcrash&σrec_err&Hstar&?); auto.
+        exists σcrash, σrec_err; split; auto.
+        econstructor; eauto.
+      * destruct H as [|([]&σ&?&?)].
+        { exfalso. eapply crash_non_err; eauto. }
+        exists x, σ; split; auto.
+        econstructor.
+    - destruct Hrest as [|([]&σ&?&?)].
+      { exfalso. eapply crash_non_err; eauto. }
+      do 2 eexists; split_and!; eauto.
+  }
 Qed.
 
-Theorem wp_recovery_adequacy {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
-        σ1 φ φinv (φrec : Λ.(State) → Prop) :
-  (* normal execution *)
-  (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
-       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1 ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜φ v σ⌝ }}
-         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
-  (* recovery *)
-  (∀ `{Hinv : invG Σ} σ1 σ1' (Hφinv: φinv σ1) (Hcrash: Λ.(crash_step) σ1 (Val σ1' tt)),
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
-       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, ∀ σ, stateI σ ={⊤, ∅}=∗ ⌜φrec σ⌝ }}
-         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
-  s = NotStuck →
-  recv_adequate s e rec σ1 φ φrec.
-Proof.
-  intros Hwp_e Hwp_rec. split.
-  - intros σ2 ? Hexec. eapply wp_strong_adequacy; eauto.
-    intros Hinv.
-    iMod Hwp_e as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} {$H} !> "; auto.
-  - rewrite /rexec/exec_recover => σ2 [] Hrexec.
-    eapply requiv_no_err_elim in Hrexec; first last.
-    { eapply wp_recovery_nonstuck; eauto. }
-    { setoid_rewrite exec_seq_partial_singleton.
-      setoid_rewrite <-bind_assoc at 2.
-      setoid_rewrite <-seq_unit_sliding_equiv.
-      setoid_rewrite bind_assoc.
-      reflexivity.
-    }
-    destruct Hrexec as (tp&σhalt&Hpartial&Hrec).
-    (* Show that φ is preserved after halt of e *)
-    assert (Hφ: φinv σhalt).
-    { eapply wp_invariance; eauto.
-      intros Hinv.
-      iMod Hwp_e as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} !>". (*  *)
-      iSplitL "H"; last by iApply "Hφ".
-      iApply (wp_mono with "H"); eauto.
-    }
-    clear Hpartial Hwp_e.
-    destruct Hrec as ([]&σhalt_rec&Hhd&Hrest).
-    (* Show that φ is preserved after crash + halt of rec *)
-    assert (Hφhalt_rec: φinv σhalt_rec).
-    {
-      clear Hrest.
-      remember (Val σhalt_rec ()) as ret eqn: Heq.
-      revert σhalt_rec Heq.
-      induction Hhd as [? []| x y z [] Hhd Hstar IH|]; inversion 1; subst; eauto.
-      eapply IH; eauto.
-      clear IH Hstar.
-      destruct Hhd as ([]&σcrash&Hcrash&Hhalt).
-      inversion Hhalt as (tp'&?&Hpartial&Hpure); subst.
-      inversion Hpure; subst.
-      eapply wp_invariance; eauto.
-      intros Hinv.
-      iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI. iIntros "{$Hσ} !>".
-      iSplitL "H"; last by iApply "Hφ".
-      iApply (wp_mono with "H"); eauto.
-    }
-    clear Hhd Hφ.
-    destruct Hrest as ([]&σcrash&Hcrash&(tp'&?&Hexec&Hp)); subst.
-    inversion Hp; subst.
-    edestruct (wp_strong_adequacy _ NotStuck
-                                  rec σcrash (λ _ σ2, φrec σ2)) as (Had&?); eauto; last first.
-    { edestruct Had; intuition eauto. }
-    intros Hinv.
-    iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto.
-    iExists stateI. iIntros "{$Hσ} {$H} !> "; auto.
-  - eapply wp_recovery_nonstuck; eauto.
-Qed.
+Inductive seq_star_exec_steps {R} {OpT} {Λ: Layer OpT} (rec: proc OpT R)
+  : Λ.(State) → Λ.(State) → nat → Prop :=
+  | sses_nil σ :
+      seq_star_exec_steps rec σ σ O
+  | sses_cons σ1 σ1' σ2 ret σ3 k n :
+      Λ.(crash_step) σ1 (Val σ1' ()) →
+      bind_rep_n n (exec_pool Λ) [existT R rec] σ1' (Val σ2 ret) →
+      seq_star_exec_steps rec σ2 σ3 k →
+      seq_star_exec_steps rec σ1 σ3 (S n + S k).
 
-Theorem wp_recovery_invariance {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
-        σ1 (φinv ρ : Λ.(State) → Prop) :
-  (* φ is an invariant of normal execution *)
-  (∀ `{Hinv : invG Σ},
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
-       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1 ∗ WP e @ s; ⊤ {{ _, True }} ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
-  (* φ is an invariant of recovery execution *)
-  (∀ `{Hinv : invG Σ} σ1 σ1' (Hφ: φinv σ1) (Hcrash: Λ.(crash_step) σ1 (Val σ1' tt)),
-     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
-       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, True }} ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ ⌜φinv σ2'⌝))%I) →
-  (∀ σ, φinv σ → ρ σ) →
-  (∀ σ1 σ2, φinv σ1 → Λ.(crash_step) σ1 (Val σ2 tt) → ρ σ2) →
-  s = NotStuck →
-  (∀ σ2 t2, Λ.(rexec_partial) e (rec_singleton rec) σ1 (Val σ2 t2) → ρ σ2)
-    ∧ recv_adequate s e rec σ1 (fun _ _ => True) (fun _ => True).
+Lemma seq_star_exec_steps_intro {R} {OpT} {Λ: Layer OpT} (rec: proc OpT R) σhalt σcrash:
+  seq_star (_ <- Λ.(crash_step); exec_halt Λ rec) σhalt (Val σcrash ()) →
+  ∃ k, seq_star_exec_steps rec σhalt σcrash k.
 Proof.
-  intros Hwp_e Hwp_rec Himpl Hcrash_impl Hnonstuck.
-  assert (recv_adequate s e rec σ1 (fun _ _ => True) (fun _ => True)).
-  {
-    eapply wp_recovery_adequacy; first eauto.
-    - intros. iMod Hwp_e as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI.
-      iIntros "{$Hσ} {$Hφ} !>".
-      iApply (wp_mono with "H"); eauto.
-      iIntros. iApply fupd_mask_weaken; auto.
-    - intros. iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI.
-      iIntros "{$Hσ} !>".
-      iSplitL "H"; last eauto.
-      iApply (wp_mono with "H"); eauto.
-      iIntros. iApply fupd_mask_weaken; auto.
-    - eauto.
-  }
-  split; auto.
-  intros σ2 t2 Hpartial.
-  unfold rexec_partial, exec_recover_partial in Hpartial.
-  eapply requiv_no_err_elim in Hpartial; first last.
-  { intros Herr. apply rexec_partial_err_rexec_err in Herr.
-    eapply recv_adequate_not_stuck; eauto.
-  }
-  { setoid_rewrite exec_seq_partial_singleton.
-    setoid_rewrite <-bind_assoc at 2.
-    setoid_rewrite <-bind_assoc at 2.
-    setoid_rewrite <-seq_unit_sliding_equiv.
-    setoid_rewrite bind_assoc.
-    setoid_rewrite bind_assoc.
-    reflexivity.
-  }
-  destruct Hpartial as (tp&σhalt&Hpartial&Hrec).
-  (* Show that φ is preserved after halt of e *)
-  assert (Hφ: φinv σhalt).
-  { eapply wp_invariance; eauto.
-    intros Hinv.
-    iMod Hwp_e as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} {$H} !> Hσ".
-      by iApply "Hφ".
-  }
-  clear Hpartial Hwp_e.
-  destruct Hrec as ([]&σhalt_rec&Hhd&Hrest).
-  (* Show that φ is preserved after crash + halt of rec *)
-  assert (Hφ_halt: ∀ σhalt σhalt_rec,
-             φinv σhalt ->
-             (_ <- Λ.(crash_step); exec_halt Λ rec) σhalt (Val σhalt_rec ()) ->
-             φinv σhalt_rec).
-  {
-    intros ??? ([]&σcrash&Hcrash&Hhalt).
-    destruct Hhalt as (tp'&?&Hpartial&Hp); subst.
-    inversion Hp; subst.
-    eapply wp_invariance; eauto.
-    intros Hinv.
-    iMod Hwp_rec as (stateI) "[Hσ [H Hφ]]"; eauto. iExists stateI. iIntros "{$Hσ} {$H} !> Hσ".
-      by iApply "Hφ".
-  }
-  cut (φinv σhalt_rec).
-  destruct t2. intros Hrec.
-  eapply Himpl, Hφ_halt; eauto.
-  clear Hwp_rec. clear Hrest.
-  remember (Val σhalt_rec ()) as ret eqn:Heq.
-  revert σhalt_rec Heq. induction Hhd; eauto.
-  - intros. inversion Heq; subst. eauto.
-  - intros; subst. eapply IHHhd; eauto.
-    eapply Hφ_halt; eauto. destruct o1; eauto.
-  - congruence.
+  intros Hstar.
+  remember (Val σcrash ()) as ret eqn:Heq; revert Heq.
+  induction Hstar as [|??? [] Hstep|]; inversion 1; subst.
+  - exists O. econstructor.
+  - destruct Hstep as ([]&σ'&Hcrash&Hexec).
+    edestruct IHHstar as (k&Hrest); auto.
+    destruct Hexec as (?&?&Hpartial&Hpure).
+    inversion Hpure; subst.
+    apply bind_star_inv_rep_n in Hpartial as (n&Hbind).
+    exists (S n + S k)%nat; econstructor; eauto.
 Qed.
 
 Theorem wp_recovery_nonstuck_internal {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
-        σ1 φ φinv (φrec : Λ.(State) → iProp Σ) :
-  (* normal execution *)
+        σ1 φ φinv φrec :
   (∀ `{Hinv : invG Σ},
+     (* normal execution *)
      (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1 ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜φ v σ⌝ }}
-       ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2'))
+       stateI σ1 ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜ φ v σ ⌝ }}
+       ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2')
      ∗
-     (∀ `{Hinv : invG Σ} σ1 σ1' (Hcrash: Λ.(crash_step) σ1 (Val σ1' tt)),
+     (* recovery execution *)
+     □ (∀ `{Hinv : invG Σ} σ1 σ1' (Hcrash: Λ.(crash_step) σ1 (Val σ1' tt)),
      (φinv σ1 ={⊤}=∗ ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
-       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, ∀ σ, stateI σ ={⊤, ∅}=∗ φrec σ }}
-         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2'))))%I →
+       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, ∀ σ, stateI σ ={⊤, ∅}=∗ ⌜ φrec σ ⌝ }}
+         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2')))))%I →
     s = NotStuck →
     ¬ Λ.(rexec) e (rec_singleton rec) σ1 Err.
 Proof.
@@ -575,7 +419,7 @@ Proof.
       setoid_rewrite <-bind_assoc at 2.
       setoid_rewrite seq_unit_sliding.
       setoid_rewrite bind_assoc.
-      simpl exec_seq. SearchAbout exec.
+      simpl exec_seq.
       setoid_rewrite exec_halt_finish.
       reflexivity.
     }
@@ -585,81 +429,298 @@ Proof.
     clear Hrexec.
     (* Show that we couldn't have crashed during e *)
     destruct Hrexec' as [|(tp&σhalt&Hpartial&Hrec)].
-    { eapply wp_strong_adequacy; eauto.
+    { eapply wp_strong_adequacy with (k := O); eauto.
       intros Hinv.
-      iDestruct (Hwp $! _) as "(Hwp_e&Hwp_rec)".
-      iMod "Hwp_e" as (stateI) "[Hσ [H Hφ]]". iExists stateI. iIntros "{$Hσ} {$H} !> "; auto.
-    }
-    assert (∃ σcrash σrec_err,
-               (seq_star (_ <- Λ.(crash_step); exec_halt Λ rec) σhalt (Val σcrash tt) ∧
-                Λ.(crash_step) σcrash (Val σrec_err tt) ∧
-                exec_halt Λ rec σrec_err Err))
-     as (σcrash&σrec_err&Hstar&Hcrash&Herr).
-    {
-      clear -Hrec.
-      destruct Hrec as [Hstar_err|([]&σhalt_rec&Hhd&Hrest)].
-      - remember Err as ret eqn:Heq.
-        revert Heq; induction Hstar_err; intros; try congruence; subst.
-        * edestruct IHHstar_err as (σcrash&σrec_err&Hstar&?); auto.
-          exists σcrash, σrec_err; split; auto.
-          econstructor; eauto.
-        * destruct H as [|([]&σ&?&?)].
-          { exfalso. eapply crash_non_err; eauto. }
-          exists x, σ; split; auto.
-          econstructor.
-      - destruct Hrest as [|([]&σ&?&?)].
-          { exfalso. eapply crash_non_err; eauto. }
-          do 2 eexists; split_and!; eauto.
+      iPoseProof (Hwp $! Hinv) as "Hwp".
+      iMod "Hwp" as (stateI) "(Hσ&Hwp_e&?&_)".
+      iExists stateI. iIntros "{$Hσ} !> "; auto.
     }
 
-    edestruct (wp_strong_adequacy _ s rec σrec_err (λ _ σ2, True)) as (Had&?); eauto; last first.
-    { apply bind_pure_no_err in Herr; intuition. }
+    edestruct (@exec_rec_iter_split)
+        as (σcrash&σrec_err&Hstar&Hcrash&Herr); eauto.
+
+    apply bind_star_inv_rep_n in Hpartial as (n&Hpartial).
+    apply seq_star_exec_steps_intro in Hstar as (k&Hstar).
+    apply bind_pure_no_err in Herr.
+    edestruct (bind_star_inv_rep_n) as (n'&Herr'); first by eapply Herr.
+
+    edestruct (wp_strong_adequacy _ s rec σrec_err (λ _ σ2, True)
+               (S n + S k )) as (Had&?); eauto; last first.
+    { intuition. }
+
 
     intros Hinv.
+    rewrite Nat_iter_add.
     iMod wsat_alloc as (Hinv') "[Hw HE]".
-    iPoseProof (Hwp $! Hinv') as "(Hwp_e&Hwp_rec)".
-    iAssert (|==> ◇ φinv σhalt)%I with "[Hw HE]" as ">>Hσhalt".
+    iPoseProof (Hwp $! Hinv') as "Hwp".
+    rewrite uPred_fupd_eq.
+    iMod ("Hwp" with "[$Hw $HE]") as ">(Hw & HE & Hrest)".
+    iDestruct "Hrest" as (stateI) "(Hσ&Hwp_e&Hinv&#Hwp_rec)".
+    iAssert (Nat.iter (S n) (λ P, |==> ▷ P)%I (|==> ◇ φinv σhalt))%I with "[Hw HE Hσ Hwp_e Hinv]"
+      as "Hσhalt".
     {
-      iClear "Hwp_rec".
-      rewrite uPred_fupd_eq.
-      iMod ("Hwp_e" with "[$Hw $HE]") as ">(Hw & HE & Hrest)".
-      iDestruct "Hrest" as (stateI) "(Hs&Hwp&Hinv)".
-      iSpecialize ("Hinv" $! σhalt with "[Hs Hwp]").
-      (* need to show you can obtain state interp for anything you can reduce to
-         from initial and weakest pre*)
-      { admit. }
-      rewrite /uPred_fupd_def.
-      iMod ("Hinv" with "[$Hw $HE]") as ">(?&?&$)".
-      done.
+      iDestruct (wptp_steps_state_inv with "[-Hinv]") as "H".
+      { eapply Hpartial. }
+      { iFrame. done. }
+      iApply (bupd_iter_mono with "[Hinv] H").
+      iIntros "(Hw&HE&Hstate)". iSpecialize ("Hinv" with "Hstate").
+      iMod ("Hinv" with "[$Hw $HE]") as "(?&?&$)"; auto.
     }
-    clear Hpartial Hrec.
-    iClear "Hwp_e".
+    iApply (bupd_iter_mono with "[] Hσhalt"); iIntros "Hσhalt".
 
-    iAssert (|==> ◇ φinv σcrash)%I with "[Hσhalt]" as ">>Hinv'".
+    iClear "Hwp".
+    clear Hpartial Hrec.
+
+    iAssert (Nat.iter (S k) (λ P, |==> ▷ P)%I (|==> ◇ φinv σcrash))%I with "[Hσhalt]" as "Hinv'".
     {
-      clear Hcrash σrec_err Herr.
-      remember (Val σcrash ()) as ret eqn:Heq.
-      iInduction Hstar as [?|x y ? ? Hstep Hstar|?] "IH" forall (Heq); inversion Heq; subst; auto.
+      clear Hcrash σrec_err Herr Herr'.
+      iInduction Hstar as [| σhalt σhalt' σmid ret σcrash k m Hcrash Hrep Hind ] "IH".
+      { iIntros "!> !>"; auto. }
+
+      rewrite (Nat_iter_S (S m + S k)).
+      rewrite Nat_iter_add.
+      iMod wsat_alloc as (Hinv'') "[Hw HE]".
+      iSpecialize ("Hwp_rec" $! _ _ _ Hcrash).
+      rewrite uPred_fupd_eq.
+      iMod "Hσhalt". iModIntro. iMod "Hσhalt". iNext.
+      iMod ("Hwp_rec" with "Hσhalt [$Hw $HE]") as ">(Hw & HE & Hrest)".
+      iDestruct "Hrest" as (stateI') "(Hs&Hwp&Hinv)".
+      iDestruct (wptp_steps_state_inv with "[-Hinv]") as "H".
+      { eapply Hrep. }
+      { iFrame. done. }
+      iApply (bupd_iter_mono with "[Hinv] H").
+      iIntros "(Hw&HE&Hstate)".
+      iApply "IH"; auto.
+      iSpecialize ("Hinv" with "[Hstate]"); eauto.
+      rewrite /uPred_fupd_def.
+      by iMod ("Hinv" with "[$Hw $HE]") as ">(?&?&$)".
+    }
+
+
+    iApply (bupd_iter_mono with "[] Hinv'"); iIntros ">>Hinv'".
+    iSpecialize ("Hwp_rec" $! Hinv σcrash σrec_err Hcrash with "Hinv'").
+    iMod "Hwp_rec" as (stateI'') "[Hσ [H _]]"; eauto.
+    iExists stateI''. iIntros "{$Hσ} !> "; auto.
+    iApply wp_wand_l; iFrame.
+    iIntros (?) "Hwand". iIntros. iApply @fupd_mask_weaken; auto.
+Qed.
+
+Theorem wp_recovery_adequacy {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
+        σ1 φ φinv (φrec : Λ.(State) → Prop) :
+  (∀ `{Hinv : invG Σ},
+     (* normal execution *)
+     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
+       stateI σ1 ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜ φ v σ ⌝ }}
+       ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2')
+     ∗
+     (* recovery execution *)
+     □ (∀ `{Hinv : invG Σ} σ1 σ1' (Hcrash: Λ.(crash_step) σ1 (Val σ1' tt)),
+     (φinv σ1 ={⊤}=∗ ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
+       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, ∀ σ, stateI σ ={⊤, ∅}=∗ ⌜ φrec σ ⌝ }}
+         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2')))))%I →
+  s = NotStuck →
+  recv_adequate s e rec σ1 φ φrec.
+Proof.
+  intros Hwp ?. split.
+  - intros σ2 ? Hexec. eapply wp_strong_adequacy with (k := 0); eauto.
+    intros Hinv.
+    iPoseProof (Hwp $! Hinv) as "Hwp".
+    iMod "Hwp" as (stateI) "(Hσ&Hwp_e&?&_)".
+    iExists stateI. iIntros "{$Hσ} !> "; auto.
+  - rewrite /rexec/exec_recover => σ2 [] Hrexec.
+    eapply requiv_no_err_elim in Hrexec; first last.
+    { eapply wp_recovery_nonstuck_internal; eauto. }
+    { setoid_rewrite exec_seq_partial_singleton.
+      setoid_rewrite <-bind_assoc at 2.
+      setoid_rewrite <-seq_unit_sliding_equiv.
+      setoid_rewrite bind_assoc.
+      reflexivity.
+    }
+    simpl exec_seq in Hrexec.
+
+    destruct Hrexec as (tp&σhalt&Hpartial&Hrec).
+    destruct Hrec as ([]&σcrash&Hstar&Hfin).
+    destruct Hfin as ([]&σcrash'&Hcrash&Hfin).
+
+
+    apply bind_star_inv_rep_n in Hpartial as (n&Hpartial).
+    apply seq_star_exec_steps_intro in Hstar as (k&Hstar).
+    destruct Hfin as (?&?&Hexec&Hp).
+    inversion Hp; subst. clear Hp.
+
+    edestruct (wp_strong_adequacy _ NotStuck rec σcrash' (λ _ s, φrec s)
+               (S n + S k )) as (Had&?); eauto; last first.
+    { edestruct Had; intuition eauto. }
+
+
+    intros Hinv.
+    rewrite Nat_iter_add.
+    iMod wsat_alloc as (Hinv') "[Hw HE]".
+    iPoseProof (Hwp $! Hinv') as "Hwp".
+    rewrite uPred_fupd_eq.
+    iMod ("Hwp" with "[$Hw $HE]") as ">(Hw & HE & Hrest)".
+    iDestruct "Hrest" as (stateI) "(Hσ&Hwp_e&Hinv&#Hwp_rec)".
+    iAssert (Nat.iter (S n) (λ P, |==> ▷ P)%I (|==> ◇ φinv σhalt))%I with "[Hw HE Hσ Hwp_e Hinv]"
+      as "Hσhalt".
+    {
+      iDestruct (wptp_steps_state_inv with "[-Hinv]") as "H".
+      { eapply Hpartial. }
+      { iFrame. done. }
+      iApply (bupd_iter_mono with "[Hinv] H").
+      iIntros "(Hw&HE&Hstate)". iSpecialize ("Hinv" with "Hstate").
+      iMod ("Hinv" with "[$Hw $HE]") as "(?&?&$)"; auto.
+    }
+    iApply (bupd_iter_mono with "[] Hσhalt"); iIntros "Hσhalt".
+
+    iClear "Hwp".
+    clear Hpartial.
+
+    iAssert (Nat.iter (S k) (λ P, |==> ▷ P)%I (|==> ◇ φinv σcrash))%I with "[Hσhalt]" as "Hinv'".
+    {
+      clear Hcrash Hexec σcrash' σ2 x Hexec.
+      iInduction Hstar as [| σhalt σhalt' σmid ret σcrash k m Hcrash Hrep Hind ] "IH".
+      { iIntros "!> !>"; auto. }
+
+      rewrite (Nat_iter_S (S m + S k)).
+      rewrite Nat_iter_add.
       iMod wsat_alloc as (Hinv'') "[Hw HE]".
       iSpecialize ("Hwp_rec" $! Hinv'').
-      destruct Hstep as ([]&σrec_err&Hcrash&?).
-      iSpecialize ("Hwp_rec" $! _ σrec_err Hcrash).
+      iSpecialize ("Hwp_rec" $! _ _ Hcrash).
       rewrite uPred_fupd_eq.
+      iMod "Hσhalt". iModIntro. iMod "Hσhalt". iNext.
       iMod ("Hwp_rec" with "Hσhalt [$Hw $HE]") as ">(Hw & HE & Hrest)".
-      iDestruct "Hrest" as (stateI) "(Hs&Hwp&Hinv)".
-      iSpecialize ("Hinv" $! y with "[Hs Hwp]").
-      (* need to show you can obtain state interp for anything you can reduce to
-         from initial and weakest pre*)
-      { admit. }
-      rewrite /uPred_fupd_def.
-      iMod ("Hinv" with "[$Hw $HE]") as ">(?&?&?)".
+      iDestruct "Hrest" as (stateI') "(Hs&Hwp&Hinv)".
+      iDestruct (wptp_steps_state_inv with "[-Hinv]") as "H".
+      { eapply Hrep. }
+      { iFrame. done. }
+      iApply (bupd_iter_mono with "[Hinv] H").
+      iIntros "(Hw&HE&Hstate)".
       iApply "IH"; auto.
+      iSpecialize ("Hinv" with "[Hstate]"); eauto.
+      rewrite /uPred_fupd_def.
+      by iMod ("Hinv" with "[$Hw $HE]") as ">(?&?&$)".
     }
 
 
-    iSpecialize ("Hwp_rec" $! Hinv σcrash σrec_err Hcrash with "Hinv'").
-    iMod "Hwp_rec" as (stateI) "[Hσ [H _]]"; eauto.
-    iExists stateI. iIntros "{$Hσ} !> "; auto.
-    iApply wp_wand_l; iFrame.
-    iIntros (?) "Hwand". iIntros (σ) "H". iMod ("Hwand" with "H"); auto.
-Admitted.
+    iApply (bupd_iter_mono with "[] Hinv'"); iIntros ">>Hinv'".
+    iSpecialize ("Hwp_rec" $! Hinv σcrash σcrash' Hcrash with "Hinv'").
+    iMod "Hwp_rec" as (stateI'') "[Hσ [H _]]"; eauto.
+    iExists stateI''. iIntros "{$Hσ} !> "; auto.
+  - eapply wp_recovery_nonstuck_internal; eauto.
+Qed.
+
+Theorem wp_recovery_invariance {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
+        σ1 φ φrec φinv ρ :
+  (∀ `{Hinv : invG Σ},
+     (* normal execution *)
+     (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
+       stateI σ1 ∗ WP e @ s; ⊤ {{ v, ∀ σ, stateI σ ={⊤,∅}=∗ ⌜ φ v σ ⌝ }}
+       ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2' ∗ ⌜ ρ σ2' ⌝)
+     ∗
+     (* recovery execution *)
+     □ (∀ `{Hinv : invG Σ} σ1 σ1' (Hcrash: Λ.(crash_step) σ1 (Val σ1' tt)),
+     (φinv σ1 ={⊤}=∗ ∃ stateI : State Λ → iProp Σ,
+       let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
+       stateI σ1' ∗ WP rec @ s; ⊤ {{ _, ∀ σ, stateI σ ={⊤, ∅}=∗ ⌜ φrec σ ⌝ }}
+         ∗ (∀ σ2', stateI σ2' ={⊤,∅}=∗ φinv σ2' ∗ ⌜ ρ σ2' ⌝)))))%I →
+  s = NotStuck →
+  (∀ σ2 t2, Λ.(rexec_partial) e (rec_singleton rec) σ1 (Val σ2 t2) → ρ σ2)
+    ∧ recv_adequate s e rec σ1 φ φrec.
+Proof.
+  intros Hwp ?.
+  assert (recv_adequate s e rec σ1 φ φrec).
+  {
+    eapply wp_recovery_adequacy with (φinv0 := φinv); first eauto.
+    - intros. iIntros. iPoseProof (Hwp $! Hinv) as "Hwp".
+      iMod "Hwp" as (stateI) "(Hσ&Hwp_e&Hφ&#Hwp_rec)".
+      iModIntro. iExists stateI. iFrame.
+      iSplitR "Hwp_rec".
+      * iIntros. iMod ("Hφ" with "[$]") as "($&?)"; auto.
+      * iIntros. iModIntro. iIntros.
+        iMod ("Hwp_rec" with "[//] [$]") as (stateI') "[Hσ [H Hφ]]"; eauto.
+        iExists stateI'.
+        iIntros "{$Hσ} {$H} !>". iIntros. iMod ("Hφ" with "[$]") as "($&?)"; auto.
+    - eauto.
+  }
+  split; auto. intros σ2 [] Hpartial.
+  unfold rexec_partial, exec_recover_partial in Hpartial.
+
+  eapply requiv_no_err_elim in Hpartial; first last.
+  { intros Herr. apply rexec_partial_err_rexec_err in Herr.
+    eapply recv_adequate_not_stuck; eauto. }
+  { setoid_rewrite exec_seq_partial_singleton.
+    setoid_rewrite <-bind_assoc at 2.
+    setoid_rewrite <-bind_assoc at 2.
+    setoid_rewrite <-seq_unit_sliding_equiv.
+    setoid_rewrite bind_assoc.
+    setoid_rewrite bind_assoc.
+    reflexivity.
+  }
+  destruct Hpartial as (tp&σhalt&Hpartial&Hrec).
+  destruct Hrec as ([]&σcrash&Hstar&([]&σrec&Hcrash&Hrec)).
+  destruct Hrec as (?&?&Hrec&Hpure). inversion Hpure; subst.
+  apply bind_star_inv_rep_n in Hpartial as (n&Hpartial).
+  apply seq_star_exec_steps_intro in Hstar as (k&Hstar).
+
+  eapply @wp_invariance with (k := (S n + S k)%nat); eauto.
+  intros Hinv.
+  rewrite Nat_iter_add.
+  iMod wsat_alloc as (Hinv') "[Hw HE]".
+  iPoseProof (Hwp $! Hinv') as "Hwp".
+  rewrite uPred_fupd_eq.
+  iMod ("Hwp" with "[$Hw $HE]") as ">(Hw & HE & Hrest)".
+  iDestruct "Hrest" as (stateI) "(Hσ&Hwp_e&Hinv&#Hwp_rec)".
+
+  iAssert (Nat.iter (S n) (λ P, |==> ▷ P)%I (|==> ◇ φinv σhalt))%I with "[Hw HE Hσ Hwp_e Hinv]"
+    as "Hσhalt".
+  {
+    iDestruct (wptp_steps_state_inv with "[-Hinv]") as "H".
+    { eapply Hpartial. }
+    { iFrame. done. }
+    iApply (bupd_iter_mono with "[Hinv] H").
+    iIntros "(Hw&HE&Hstate)". iSpecialize ("Hinv" with "Hstate").
+    iMod ("Hinv" with "[$Hw $HE]") as "(?&?&($&?))"; auto.
+  }
+  iApply (bupd_iter_mono with "[] Hσhalt"); iIntros "Hσhalt".
+
+  iClear "Hwp".
+  clear Hpartial.
+
+  iAssert (Nat.iter (S k) (λ P, |==> ▷ P)%I (|==> ◇ φinv σcrash))%I with "[Hσhalt]" as "Hinv'".
+  {
+    clear Hcrash Hrec σ2 Hpure.
+    iInduction Hstar as [| σhalt σhalt' σmid ret σcrash k m Hcrash Hrep Hind ] "IH".
+    { iIntros "!> !>"; auto. }
+
+    rewrite (Nat_iter_S (S m + S k)).
+    rewrite Nat_iter_add.
+    iMod wsat_alloc as (Hinv'') "[Hw HE]".
+    iSpecialize ("Hwp_rec" $! Hinv'').
+    iSpecialize ("Hwp_rec" $! _ _ Hcrash).
+    rewrite uPred_fupd_eq.
+    iMod "Hσhalt". iModIntro. iMod "Hσhalt". iNext.
+    iMod ("Hwp_rec" with "Hσhalt [$Hw $HE]") as ">(Hw & HE & Hrest)".
+    iDestruct "Hrest" as (stateI') "(Hs&Hwp&Hinv)".
+    iDestruct (wptp_steps_state_inv with "[-Hinv]") as "H".
+    { eapply Hrep. }
+    { iFrame. done. }
+    iApply (bupd_iter_mono with "[Hinv] H").
+    iIntros "(Hw&HE&Hstate)".
+    iApply "IH"; auto.
+    iSpecialize ("Hinv" with "[Hstate]"); eauto.
+    rewrite /uPred_fupd_def.
+    by iMod ("Hinv" with "[$Hw $HE]") as ">(?&?&($&?))".
+  }
+
+
+  iApply (bupd_iter_mono with "[] Hinv'"); iIntros ">>Hinv'".
+  iSpecialize ("Hwp_rec" $! Hinv σcrash _ Hcrash with "Hinv'").
+  iMod "Hwp_rec" as (stateI'') "[Hσ [H Hinv]]"; eauto.
+  iExists stateI''. iIntros "{$Hσ} !> "; auto.
+  iSplitL "H".
+  - iApply wp_wand_l; iFrame. iIntros; auto.
+  - iIntros. iMod ("Hinv" with "[$]") as "(?&$)"; auto.
+Qed.
