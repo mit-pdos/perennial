@@ -22,7 +22,7 @@ import                   Control.Concurrent.Forkable
 
 newtype Env = Env { filesysRoot :: FilePath }
 
-newtype RootFilesysM a = RootFilesysM { getReader :: ReaderT Env IO a }
+newtype RootFilesysM a = RootFilesysM (ReaderT Env IO a)
   deriving (Functor, Applicative, Monad, MonadIO, ForkableMonad, MonadReader Env)
 
 withRoot :: (FilePath -> IO a) -> RootFilesysM a
@@ -34,7 +34,7 @@ resolvePath :: (FilePath -> IO a) -> FilePath -> RootFilesysM a
 resolvePath act f = withRoot $ \root -> act (joinPath [root, f])
 
 run :: FilePath -> RootFilesysM a -> IO a
-run root act = runReaderT (getReader act) (Env root)
+run root (RootFilesysM act) = runReaderT act (Env root)
 
 instance MonadFilesys RootFilesysM where
   open = let perms = Nothing
@@ -50,10 +50,13 @@ instance MonadFilesys RootFilesysM where
   close f = liftIO $ closeFd f
   delete = resolvePath $ \f -> removeFile f
   ftruncate f = liftIO $ setFileSize f 0
-  readAt f off len = liftIO $ fdPread f (fromIntegral len) (fromIntegral off)
+  readAt f off len = liftIO $ do
+    bs <- fdPread f (fromIntegral len) (fromIntegral off)
+    when (BS.length bs < fromIntegral len) $ error "short read"
+    return bs
   append f bs = liftIO $ do
     count <- fdWrite f bs
-    when (fromIntegral count < BS.length bs) $ error "short read"
+    when (fromIntegral count < BS.length bs) $ error "short write"
   rename f1 f2 = liftIO $ System.Posix.Files.rename f1 f2
   atomicCreate f bs = withRoot $ \root -> do
     let dstFile = joinPath [root, f]
