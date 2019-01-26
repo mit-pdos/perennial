@@ -1,6 +1,7 @@
 From Coq Require Import Extraction.
 From Coq Require Import ExtrHaskellBasic.
 From Coq Require Import ExtrHaskellNatInteger.
+From Coq Require Import ExtrHaskellString.
 
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 

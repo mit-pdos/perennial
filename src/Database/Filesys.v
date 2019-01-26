@@ -25,7 +25,7 @@ Defined.
 Module FS.
   Implicit Types (p:Path) (fh:Fd) (bs:ByteString).
 
-  (* the types of the arguments are determined by their, using the implicit
+  (* the types of the arguments are determined by their name, using the implicit
   types given above *)
   Inductive Op : Type -> Type :=
   | Open p : Op Fd
@@ -36,7 +36,7 @@ Module FS.
   | Create p : Op Fd
   | Append fh bs' : Op unit
   | Delete p : Op unit
-  | Rename p1 p2 : Op bool (* returns false if the destination exists *)
+  | Rename p1 p2 : Op unit
   | Truncate p : Op unit
   | AtomicCreate p bs : Op unit
   .
@@ -54,6 +54,7 @@ Module FS.
     Definition create p : proc _ := Call! Create p.
     Definition append fh bs : proc _ := Call! Append fh bs.
     Definition delete p : proc _ := Call! Delete p.
+    Definition rename p1 p2 : proc _ := Call! Rename p1 p2.
     Definition truncate p : proc _ := Call! Truncate p.
     Definition atomicCreate p bs : proc _ := Call! AtomicCreate p bs.
 
@@ -122,14 +123,19 @@ Module FS.
       _ <- readSome (fun s => s.(files) !! p);
         puts (set files (insert p BS.empty))
     | Rename p1 p2 =>
-      bs <- readSome (fun s => s.(files) !! p1);
-        dst <- reads (fun s => s.(files) !! p2);
-        match dst with
-        | Some _ =>  pure false
-        | None => _ <- puts (set files (map_delete p1));
-                   _ <- puts (set files (insert p2 bs));
-                   pure true
-        end
+      (* Rename requires that the destination path not be open *)
+      (_ <- such_that (fun s fh =>
+                        exists m, s.(fds) !! fh = Some (p2, m));
+         error)
+      (* Rename always creates the destination directory - other behaviors
+      require checks, which makes the operation non-atomic.
+
+       Linux does have renameat2 for renaming without overwriting, presumably
+       atomically, but it would be complicated to use, especially from
+       Haskell. *)
+      + (bs <- readSome (fun s => s.(files) !! p1);
+           _ <- puts (set files (map_delete p1));
+           puts (set files (insert p2 bs)))
     | AtomicCreate p bs =>
       _ <- readNone (fun s => s.(files) !! p);
         puts (set files (insert p bs))

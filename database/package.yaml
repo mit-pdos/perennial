@@ -18,6 +18,8 @@ dependencies:
 - unix-bytestring
 - dynamic-mvector
 - hashtables
+- directory
+- filepath
 
 ghc-options:
   - -O2
