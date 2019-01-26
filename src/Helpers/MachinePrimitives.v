@@ -1,6 +1,4 @@
-(* TODO: this is a bit of a hack, should be using a dedicated Options.v *)
-Global Unset Auto Template Polymorphism.
-Global Set Implicit Arguments.
+Set Implicit Arguments.
 
 From Coq Require Import Omega.
 From Coq Require Import Arith.
