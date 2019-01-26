@@ -19,6 +19,7 @@ dependencies:
 - unix-bytestring
 - dynamic-mvector
 - hashtables
+- hashable
 - directory
 - filepath
 
