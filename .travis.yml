@@ -63,7 +63,7 @@ script:
     make -j${NJOBS} -k src/ShouldBuild.vo extract
     chmod -R a+rw database
     "
-- cd database && stack --allow-different-user build
+- cd database && stack --allow-different-user test
 - echo -en 'travis_fold:end:build\\r'
 
 after_script:
