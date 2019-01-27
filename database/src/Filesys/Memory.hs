@@ -9,7 +9,6 @@ import           Control.Monad.Reader (ReaderT, reader, liftIO, runReaderT, lift
 import qualified Data.ByteString as BS
 import qualified Data.HashTable.IO as H
 import           Data.Hashable (Hashable)
-import qualified Data.List as List
 
 import           Control.Concurrent.MVar (MVar, newMVar, withMVar)
 import           Data.IORef (IORef, newIORef, atomicModifyIORef')
@@ -108,6 +107,5 @@ instance MonadFilesys MemFilesysM where
     using files $ \h -> htModify h p (`BS.append` bs)
   ftruncate p = withFilesys $
     using files $ \h -> H.insert h p BS.empty
-  list = withFilesys $ do
-    listing <- using files $ \h -> map fst <$> H.toList h
-    return $ List.sort listing
+  list = withFilesys $
+    using files $ \h -> map fst <$> H.toList h
