@@ -9,10 +9,21 @@ import sys
 import_modules = {
     "import qualified Lib":
     [
-        "MachinePrimitives",
+        "BinaryEncoding",
+        "Common",
         "DataStructures",
-        "Filesys",
         "ExtractionExamples",
+        "Filesys",
+        "MachinePrimitives",
+        "SimpleDb",
+    ],
+    "import qualified Data.Char":
+    [
+        "EqualDec",
+    ],
+    "import qualified Data.Bits":
+    [
+        "EqualDec",
     ],
 }
 
@@ -39,6 +50,10 @@ MODULE_REPLACE = r"""module Coq.\1 where\n"""
 IMPORT_RE = re.compile(r"""import qualified (?P<import>.*)""")
 IMPORT_REPLACE = r"""import qualified Coq.\1 as \1"""
 
+def is_ghc_import(mod):
+    return (mod == "Prelude"
+            or mod.startswith("GHC."))
+
 out.write("{-# LINE 1 \"%s\" #-}\n" % (args.input.name))
 for n, line in enumerate(args.input, 1):
     m = MODULE_RE.match(line)
@@ -52,8 +67,7 @@ for n, line in enumerate(args.input, 1):
             out.write("{-# LINE %d \"%s\" #-}\n" % (n, args.input.name))
     else:
         m = IMPORT_RE.match(line)
-        if m and m.group("import") not in ["Prelude",
-                                           "GHC.Base"]:
+        if m and not is_ghc_import(m.group("import")):
             line = IMPORT_RE.sub(IMPORT_REPLACE, line)
     line = line.replace('__FILE__', '"%s"' % args.input.name)
     line = line.replace('__LINE__', '%d' % n)

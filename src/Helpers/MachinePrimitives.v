@@ -210,15 +210,23 @@ Module BSNotations.
   Infix "++" := BS.append : bs_scope.
 End BSNotations.
 
-Class UIntEncoding bytes intTy :=
+Class LittleEndianEncoder intTy :=
   { encodeLE : intTy -> ByteString;
-    decodeLE : ByteString -> option intTy;
-    encode_length_ok : forall x, toNum (BS.length (encodeLE x)) = bytes;
-    encode_decode_LE_ok : forall x, decodeLE (encodeLE x) = Some x;
-  }.
+    decodeLE : ByteString -> option intTy; }.
 
-Axiom uint64_le_enc : UIntEncoding 8 uint64.
-Existing Instances uint64_le_enc.
+Class LittleEndianEncoderOK bytes intTy (enc:LittleEndianEncoder intTy) :=
+  { encode_length_ok : forall x, toNum (BS.length (encodeLE x)) = bytes;
+    encode_decode_LE_ok : forall x, decodeLE (encodeLE x) = Some x; }.
+
+Axiom uint64_to_le : uint64 -> ByteString.
+Axiom uint64_from_le : ByteString -> option uint64.
+
+Instance uint64_le_enc : LittleEndianEncoder uint64 :=
+  {| encodeLE := uint64_to_le;
+     decodeLE := uint64_from_le; |}.
+
+Axiom uint64_enc_ok : LittleEndianEncoderOK 8 uint64_le_enc.
+Existing Instance uint64_enc_ok.
 
 (** File descriptors *)
 

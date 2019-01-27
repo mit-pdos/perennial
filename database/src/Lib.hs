@@ -12,7 +12,15 @@ module Lib
   , LockRef
   , add
   , sub
+  , byteString_pack
+  , byteString_unpack
+  , byteString_to_String
+  , string_to_ByteString
+  , bs_take
+  , bs_drop
   , Lib.compare
+  , uint64_to_le
+  , uint64_from_le
   , coerceRet
   , coerceVoid
   )
@@ -25,10 +33,16 @@ import           Data.IORef (IORef)
 import           Control.Concurrent.ReadWriteLock (RWLock)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC8
+import qualified Data.ByteString.Lazy as BSL
 import           Data.HashTable.IO (BasicHashTable)
 import           Data.Vector.Mutable.Dynamic (IOVector)
+import Data.Binary.Get (getWord64le, runGetOrFail)
+import Data.Binary.Put (putWord64le, runPut)
 
 import           Unsafe.Coerce (unsafeCoerce)
+
+{-# ANN module ("HLint: ignore Use camelCase" :: String) #-}
 
 type Array a = IOVector a
 type HashTable k v = BasicHashTable k v
@@ -42,6 +56,33 @@ sub x y = if y >= x then 0 else x - y
 
 compare :: Word64 -> Word64 -> Ordering
 compare = Prelude.compare
+
+byteString_pack :: [Word8] -> ByteString
+byteString_pack = BS.pack
+
+byteString_unpack :: ByteString -> [Word8]
+byteString_unpack = BS.unpack
+
+byteString_to_String :: ByteString -> String
+byteString_to_String = BSC8.unpack
+
+string_to_ByteString :: String -> ByteString
+string_to_ByteString = BSC8.pack
+
+uint64_to_le :: Word64 -> ByteString
+uint64_to_le = BSL.toStrict . runPut . putWord64le
+
+uint64_from_le :: ByteString -> Maybe Word64
+uint64_from_le bs =
+  case runGetOrFail getWord64le $ BSL.fromStrict bs of
+    Left _ -> Nothing
+    Right (_, _, x) -> Just x
+
+bs_take :: Word64 -> ByteString -> ByteString
+bs_take n = BS.take (fromIntegral n)
+
+bs_drop :: Word64 -> ByteString -> ByteString
+bs_drop n = BS.drop (fromIntegral n)
 
 -- Some background: our [Op : Type -> Type] definitions are all GADTs but Coq
 -- extracts a type with a single type parameter, losing information on the
