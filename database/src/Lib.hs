@@ -12,12 +12,13 @@ module Lib
   , LockRef
   , add
   , sub
-  , byteString_pack
-  , byteString_unpack
   , byteString_to_String
   , string_to_ByteString
+  , bs_append
   , bs_take
   , bs_drop
+  , bs_empty
+  , bs_length
   , Lib.compare
   , uint64_to_le
   , uint64_from_le
@@ -57,12 +58,6 @@ sub x y = if y >= x then 0 else x - y
 compare :: Word64 -> Word64 -> Ordering
 compare = Prelude.compare
 
-byteString_pack :: [Word8] -> ByteString
-byteString_pack = BS.pack
-
-byteString_unpack :: ByteString -> [Word8]
-byteString_unpack = BS.unpack
-
 byteString_to_String :: ByteString -> String
 byteString_to_String = BSC8.unpack
 
@@ -78,11 +73,20 @@ uint64_from_le bs =
     Left _ -> Nothing
     Right (_, _, x) -> Just x
 
+bs_append :: ByteString -> ByteString -> ByteString
+bs_append = BS.append
+
 bs_take :: Word64 -> ByteString -> ByteString
 bs_take n = BS.take (fromIntegral n)
 
 bs_drop :: Word64 -> ByteString -> ByteString
 bs_drop n = BS.drop (fromIntegral n)
+
+bs_empty :: ByteString
+bs_empty = BS.empty
+
+bs_length :: ByteString -> Word64
+bs_length = fromIntegral . BS.length
 
 -- Some background: our [Op : Type -> Type] definitions are all GADTs but Coq
 -- extracts a type with a single type parameter, losing information on the
