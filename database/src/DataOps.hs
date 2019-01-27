@@ -28,6 +28,10 @@ interpret (Data__HashTableAlter h k f) =
   coerceVoid $ H.mutate h k (\v -> (f v, ()))
 interpret (Data__HashTableLookup h k) =
   coerceRet $ H.lookup h k
+interpret (Data__HashTableReadAll h) = do
+  a <- V.new 0
+  H.mapM_ (V.pushBack a) h
+  coerceRet @(Array (Word64,_)) $ return a
 interpret Data__NewLock =
   coerceRet @LockRef RWLock.new
 interpret (Data__LockAcquire m r) =

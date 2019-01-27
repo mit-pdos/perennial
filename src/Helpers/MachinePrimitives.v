@@ -79,6 +79,16 @@ Proof.
     rewrite Nat.compare_refl in *; congruence.
 Defined.
 
+Instance uint64_countable : Countable uint64.
+Proof.
+  refine {| encode x := Pos.of_nat (S (toNum x));
+            decode n := Some (fromNum (Pos.to_nat n - 1)) |}.
+  intros.
+  destruct x as [x].
+  rewrite Nat2Pos.id; simpl; try lia.
+  rewrite Nat.sub_0_r; auto.
+Qed.
+
 Module UIntNotations.
   Delimit Scope uint64_scope with u64.
   Infix "+" := add : uint64_scope.

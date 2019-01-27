@@ -1,3 +1,6 @@
+From stdpp Require gmap.
+From stdpp Require Import fin_maps.
+
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
@@ -81,6 +84,9 @@ Module Data.
       forall V, HashTable V -> uint64 -> (option V -> option V) -> Op unit
   | HashTableLookup :
       forall V, HashTable V -> uint64 -> Op (option V)
+  (* TODO: this operation is definitely not thread-safe; should use the non-atomic op combinators on the entire hashtable API *)
+  | HashTableReadAll :
+      forall V, HashTable V -> Op (Array (uint64*V))
 
   (* locks *)
   | NewLock : Op LockRef (* will be unlocked *)
@@ -136,6 +142,9 @@ Module Data.
     Definition hashTableLookup V h k : proc _ :=
       Call! @HashTableLookup V h k.
 
+    Definition hashTableReadAll V h : proc _ :=
+      Call! @HashTableReadAll V h.
+
     Definition newLock : proc _ :=
       Call! NewLock.
 
@@ -161,7 +170,7 @@ Module Data.
                          | None => True
                          end; }.
 
-  Definition hashtableM := fun V => uint64 -> option V.
+  Definition hashtableM V := gmap.gmap uint64 V.
 
   Inductive LockStatus := Locked (m:LockMode) | Unlocked.
 
@@ -238,7 +247,7 @@ Module Data.
 
   Definition alter_map V (m: hashtableM V)
              (k:uint64) (f: option V -> option V) : hashtableM V :=
-    fun k' => if k == k' then f (m k) else m k'.
+    partial_alter f k m.
 
   Close Scope option_monad.
 
@@ -317,15 +326,21 @@ Module Data.
         readSome (fun _ => List.nth_error l0 (toNum i))
     | NewHashTable V =>
       r <- such_that (fun s r => getDyn s.(hashtables) r = None);
-        _ <- puts (set hashtables (updDyn r (fun _ => @None V)));
+        _ <- puts (set hashtables (updDyn r empty));
         pure r
     | HashTableLookup v k =>
       m <- readSome (fun s => getDyn s.(hashtables) v);
-        pure (m k)
+        pure (m !! k)
     | HashTableAlter v k f =>
       m <- readSome (fun s => getDyn s.(hashtables) v);
         _ <- puts (set hashtables (updDyn v (alter_map m k f)));
         pure tt
+    | HashTableReadAll h =>
+      m <- readSome (fun s => getDyn s.(hashtables) h);
+        a <- such_that (fun s a => getDyn s.(arrays) a = None);
+        let els : list (uint64*_) := map_to_list m in
+        _ <- puts (set arrays (updDyn a els));
+        pure a
     | NewLock =>
       r <- such_that (fun s r => s.(locks) r = None);
         _ <- puts (set locks (upd_locks r Unlocked));
