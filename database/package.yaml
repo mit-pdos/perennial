@@ -23,6 +23,7 @@ dependencies:
 - hashable
 - directory
 - filepath
+- concurrent-extra
 
 ghc-options:
   - -O2

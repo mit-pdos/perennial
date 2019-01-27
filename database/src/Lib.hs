@@ -21,8 +21,8 @@ where
 import           Data.Word (Word64, Word8)
 import           System.Posix.Types (Fd)
 import           Data.IORef (IORef)
-import           Control.Concurrent.MVar (MVar)
 
+import           Control.Concurrent.ReadWriteLock (RWLock)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import           Data.HashTable.IO (BasicHashTable)
@@ -32,7 +32,7 @@ import           Unsafe.Coerce (unsafeCoerce)
 
 type Array a = IOVector a
 type HashTable k v = BasicHashTable k v
-type LockRef = MVar ()
+type LockRef = RWLock
 
 add :: Word64 -> Word64 -> Word64
 add x y = if x > maxBound - y then error "integer overflow" else x+y

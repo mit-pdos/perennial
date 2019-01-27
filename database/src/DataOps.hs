@@ -1,11 +1,11 @@
 {-# LANGUAGE TypeApplications #-}
 module DataOps where
 
-import           Control.Concurrent.MVar (newMVar, takeMVar, putMVar)
 import           Data.IORef (newIORef, readIORef, writeIORef)
 
 import qualified Data.HashTable.IO as H
 import qualified Data.Vector.Mutable.Dynamic as V
+import qualified Control.Concurrent.ReadWriteLock as RWLock
 
 import           Coq.DataStructures
 import           Lib (Word64, coerceRet, coerceVoid)
@@ -29,8 +29,12 @@ interpret (Data__HashTableAlter h k f) =
 interpret (Data__HashTableLookup h k) =
   coerceRet $ H.lookup h k
 interpret Data__NewLock =
-  coerceRet @LockRef $ newMVar ()
-interpret (Data__LockAcquire r) =
-  coerceVoid $ takeMVar r
-interpret (Data__LockRelease r) =
-  coerceVoid $ putMVar r ()
+  coerceRet @LockRef RWLock.new
+interpret (Data__LockAcquire m r) =
+  coerceVoid $ case m of
+                 Reader -> RWLock.acquireRead r
+                 Writer -> RWLock.acquireWrite r
+interpret (Data__LockRelease m r) =
+  coerceVoid $ case m of
+                 Reader -> RWLock.releaseRead r
+                 Writer -> RWLock.releaseWrite r
