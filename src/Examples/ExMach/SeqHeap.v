@@ -173,6 +173,54 @@ Section seq_heap.
     by intros [_ ?%agree_op_invL'].
   Qed.
 
+  Lemma mapsto_fun_split l q vs vs1 vs2 :
+    (∀ i, is_Some (vs1 i) → ¬ is_Some (vs2 i)) →
+    (∀ i, is_Some (vs2 i) → ¬ is_Some (vs1 i)) →
+    (∀ i v, vs i = Some v ↔ (vs1 i = Some v ∨ vs2 i = Some v)) →
+    (l ↦{q} vs @ ⊤ -∗ l ↦{q} vs1 @ ⊤ ∗ l ↦{q} vs2 @ ⊤).
+  Proof.
+    intros Hnon_overlap1 Hnon_overlap2 Hlookup.
+    rewrite mapsto_fun_eq /mapsto_fun_def -own_op -auth_frag_op.
+    apply own_mono.
+    unshelve (apply: auth_frag_mono).
+    exists ε. rewrite right_id.
+    intros i. rewrite ofe_fun_lookup_op.
+    specialize (Hlookup i).
+    specialize (Hnon_overlap1 i).
+    specialize (Hnon_overlap2 i).
+    destruct (vs i) as [v|].
+    - edestruct (Hlookup v) as ([Heq|Heq]&?); first by reflexivity.
+      * rewrite Heq.
+        assert (vs2 i = None) as ->.
+        { apply eq_None_not_Some; eauto. }
+        by rewrite right_id.
+      * rewrite Heq.
+        assert (vs1 i = None) as ->.
+        { apply eq_None_not_Some; eauto. }
+        by rewrite left_id.
+    - destruct (vs1 i) as [v|].
+      { edestruct (Hlookup v) as (_&Hfalse).
+        exfalso. feed pose proof Hfalse; eauto. congruence. }
+      destruct (vs2 i) as [v|].
+      { edestruct (Hlookup v) as (_&Hfalse).
+        exfalso. feed pose proof Hfalse; eauto. congruence. }
+      by rewrite right_id.
+  Qed.
+
+  Lemma mapsto_fun_weaken l q vs1 vs2 k:
+    (∀ i, vs2 i = if nat_eq_dec i k then None else vs1 i) →
+    (l ↦{q} vs1 @ ⊤ -∗ l ↦{q} vs2 @ ⊤).
+  Proof.
+    intros Hlookup.
+    rewrite (mapsto_fun_split l q vs1 (fun i => if nat_eq_dec i k then vs1 k else None)
+                              vs2).
+    { iIntros "(_&?)". done. }
+    { intros i. rewrite Hlookup. destruct nat_eq_dec => //=. intros []%is_Some_None. }
+    { intros i. rewrite Hlookup. destruct nat_eq_dec => //=. intros []%is_Some_None. }
+    { intros i v. rewrite Hlookup. destruct nat_eq_dec => //=; subst;
+      split; intuition; congruence.  }
+  Qed.
+
   (*
   Global Instance ex_mapsto_fractional l : Fractional (λ q, l ↦{q} -)%I.
   Proof.
