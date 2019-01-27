@@ -11,14 +11,14 @@ import qualified         Data.ByteString as BS
 import qualified         Data.ByteString.Internal as BSI
 import                   System.Directory (listDirectory, removeFile)
 import                   System.FilePath.Posix (joinPath)
-import                   System.Posix.Files (getFdStatus,
-                                             fileSize,
-                                             setFileSize,
-                                             rename,
-                                             ownerReadMode, ownerWriteMode,
-                                             unionFileModes)
-import                   System.Posix.IO ( openFd,  OpenMode(..)
-                       , closeFd)
+import                   System.Posix.Files ( getFdStatus
+                                             , fileSize
+                                             , setFileSize
+                                             , rename
+                                             )
+import                   System.Posix.IO ( openFd, OpenMode(..)
+                                         , closeFd
+                                         )
 import qualified         System.Posix.IO as PosixIO
 import "unix-bytestring" System.Posix.IO.ByteString (fdPreadBuf, fdWrite)
 import                   System.Posix.Types (Fd, ByteCount, FileOffset)
@@ -62,7 +62,7 @@ instance MonadFilesys RootFilesysM where
   open = let perms = Nothing
              mode = PosixIO.defaultFileFlags in
            resolvePath $ \f -> openFd f ReadOnly perms mode
-  create = let perms = Just (ownerReadMode `unionFileModes` ownerWriteMode)
+  create = let perms = Just 0o644
                mode = PosixIO.defaultFileFlags {PosixIO.append=True} in
              resolvePath $ \f -> openFd f ReadWrite perms mode
   list = withRoot $ \root -> listDirectory root
