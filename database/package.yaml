@@ -45,12 +45,6 @@ executables:
     - deepseq
 
 tests:
-  database-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - database
+  spec:
+    defaults: hspec/hspec@master
+    dependencies: database

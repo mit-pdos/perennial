@@ -50,10 +50,8 @@ instance MonadFilesys RootFilesysM where
   close f = liftIO $ closeFd f
   delete = resolvePath $ \f -> removeFile f
   ftruncate f = liftIO $ setFileSize f 0
-  readAt f off len = liftIO $ do
-    bs <- fdPread f (fromIntegral len) (fromIntegral off)
-    when (BS.length bs < fromIntegral len) $ error "short read"
-    return bs
+  readAt f off len = liftIO $
+    fdPread f (fromIntegral len) (fromIntegral off)
   append f bs = liftIO $ do
     count <- fdWrite f bs
     when (fromIntegral count < BS.length bs) $ error "short write"

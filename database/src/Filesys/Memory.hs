@@ -9,6 +9,7 @@ import           Control.Monad.Reader (ReaderT, reader, liftIO, runReaderT, lift
 import qualified Data.ByteString as BS
 import qualified Data.HashTable.IO as H
 import           Data.Hashable (Hashable)
+import qualified Data.List as List
 
 import           Control.Concurrent.MVar (MVar, newMVar, withMVar)
 import           Data.IORef (IORef, newIORef, atomicModifyIORef')
@@ -61,29 +62,30 @@ resolveFd fh = using handles $ \h -> do
   mp <- H.lookup h (fromIntegral fh)
   case mp of
     Just p -> return p
-    Nothing -> error "attempt to look up non-existent file"
+    Nothing -> error $ "attempt to look up non-existent fd: " ++ show fh
 
 resolvePath :: FilePath -> ReaderT State IO ByteString
 resolvePath p = using files $ \h -> do
   mbs <- H.lookup h p
   case mbs of
     Just bs -> return bs
-    Nothing -> error "attempt to look up non-existent path"
+    Nothing -> error $ "attempt to look up non-existent path: " ++ p
 
 htModify :: (Eq k, Hashable k) => HashTable k v -> k -> (v -> v) -> IO ()
 htModify h k f = void $ H.mutate h k mutator
   where mutator (Just v) = (Just $ f v, ())
         mutator Nothing = (Nothing, ())
 
-openFile :: FilePath -> MemFilesysM Fd
-openFile p = withFilesys $ do
+instance MonadFilesys MemFilesysM where
+  open p = withFilesys $ do
     fd <- getFd
     using handles $ \h -> H.insert h fd p
     return . fromIntegral $ fd
-
-instance MonadFilesys MemFilesysM where
-  open = openFile
-  create = openFile
+  create p = withFilesys $ do
+    fd <- getFd
+    using handles $ \h -> H.insert h fd p
+    using files $ \h -> H.insert h p BS.empty
+    return . fromIntegral $ fd
   close fh = withFilesys $
     using handles $ \h -> H.delete h (fromIntegral fh)
   size fh = withFilesys $ do
@@ -106,5 +108,6 @@ instance MonadFilesys MemFilesysM where
     using files $ \h -> htModify h p (`BS.append` bs)
   ftruncate p = withFilesys $
     using files $ \h -> H.insert h p BS.empty
-  list = withFilesys $
-    using files $ \h -> map fst <$> H.toList h
+  list = withFilesys $ do
+    listing <- using files $ \h -> map fst <$> H.toList h
+    return $ List.sort listing
