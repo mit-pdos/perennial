@@ -55,7 +55,8 @@ instance MonadFilesys RootFilesysM where
   append f bs = liftIO $ do
     count <- fdWrite f bs
     when (fromIntegral count < BS.length bs) $ error "short write"
-  rename f1 f2 = liftIO $ System.Posix.Files.rename f1 f2
+  rename f1 f2 = withRoot $ \root ->
+    System.Posix.Files.rename (joinPath [root, f1]) (joinPath [root, f2])
   atomicCreate f bs = withRoot $ \root -> do
     let dstFile = joinPath [root, f]
     let tmpFile = dstFile ++ ".tmp"

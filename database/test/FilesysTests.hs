@@ -85,9 +85,6 @@ filesysSpec run = do
       mapM_ (`makeFile` "") ["f1", "f2", "f3"]
       files <- list
       liftIO $ files `shouldMatchList` ["f1", "f2", "f3"]
-    it "should list files in order" $ run $ do
-      mapM_ (`makeFile` "") ["f1", "f2", "f3"]
-      list `shouldReturn` ["f1", "f2", "f3"]
     it "should delete files" $ run $ do
       makeFile "f1" "data"
       makeFile "f2" "data"
