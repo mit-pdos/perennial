@@ -127,13 +127,13 @@ Proof.
   iModIntro. by iExists (SeqHeapG L V Σ _ _ _ γ).
 Qed.
 
-Lemma seq_heap_strong_init `{seq_heapPreG L V Σ} σs :
-  (|==> ∃ _ : seq_heapG L V Σ, seq_heap_ctx σs ∗
+Lemma seq_heap_strong_init `{H: seq_heapPreG L V Σ} σs :
+  (|==> ∃ (H0 : seq_heapG L V Σ) (Hpf: seq_heap_inG = seq_heap_preG_inG), seq_heap_ctx σs ∗
     own (seq_heap_name _) (◯ (to_seq_heap σs)))%I.
 Proof.
   iMod (own_alloc (● to_seq_heap σs ⋅ ◯ to_seq_heap σs)) as (γ) "(?&?)".
   { apply auth_valid_discrete_2; split; auto. exact: to_seq_heap_valid. }
-  iModIntro. iExists (SeqHeapG L V Σ _ _ _ γ). iFrame.
+  iModIntro. unshelve (iExists (SeqHeapG L V Σ _ _ _ γ), _); auto. iFrame.
 Qed.
 
 Section seq_heap.
@@ -245,27 +245,6 @@ Section seq_heap.
   Qed.
    *)
 
-  (*
-  Lemma seq_heap_alloc k σ l vs :
-    σ !! l = None → gen_heap_ctx σ ==∗ gen_heap_ctx (<[l:=v]>σ) ∗ l ↦ v.
-  Proof.
-    iIntros (?) "Hσ". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
-    iMod (own_update with "Hσ") as "[Hσ Hl]".
-    { eapply auth_update_alloc,
-        (alloc_singleton_local_update _ _ (1%Qp, to_agree (v:leibnizC _)))=> //.
-      by apply lookup_to_gen_heap_None. }
-    iModIntro. rewrite to_gen_heap_insert. iFrame.
-  Qed.
-
-  Lemma gen_heap_dealloc σ l v :
-    gen_heap_ctx σ -∗ l ↦ v ==∗ gen_heap_ctx (delete l σ).
-  Proof.
-    iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
-    rewrite to_gen_heap_delete. iApply (own_update_2 with "Hσ Hl").
-    eapply auth_update_dealloc, (delete_singleton_local_update _ _ _).
-  Qed.
-   *)
-
   Lemma seq_heap_valid σs l q vs :
     seq_heap_ctx σs -∗ l ↦{q} vs @ ⊤ -∗ ⌜∀ k v, vs k = Some v → (σs k) !! l = Some v⌝.
   Proof.
@@ -294,6 +273,74 @@ Section seq_heap.
     - intros k. specialize (H1 k). specialize (Hm k). rewrite ofe_fun_lookup_op in Hm.
       edestruct (H1 n (Some (mf k))); eauto.
   Qed.
+
+  Lemma seq_heap_alloc σs l vs :
+    (∀ i, σs i !! l = None) →
+    seq_heap_ctx σs ==∗
+                 seq_heap_ctx (λ n, match vs n with | None => σs n | Some v => <[l:=v]>(σs n) end)
+                 ∗ l ↦ vs @ ⊤.
+  Proof.
+    iIntros (Hnone) "Hσ". rewrite /seq_heap_ctx mapsto_fun_eq /mapsto_fun_def.
+    iMod (own_update _ _
+                       (● to_seq_heap (λ n, match vs n with
+                                            | None => σs n
+                                            | Some v => <[l:=v]>(σs n)
+                                            end) ⋅
+                       (◯ (λ n : nat, match vs n with
+                                      | Some v => {[l := (1%Qp, to_agree v)]}
+                                      | None => ε
+                                      end)))
+            with "Hσ") as "[Hσ Hl]".
+    { eapply auth_update_alloc, ofe_fun_local_update => k.
+      specialize (Hnone k) as Hs1. rewrite /to_seq_heap.
+      destruct (vs k) as [v|].
+      - rewrite /to_gen_heap fmap_insert //=. rewrite -/to_gen_heap.
+        eapply (alloc_singleton_local_update _ _ (1%Qp, to_agree (v:leibnizC _)))=> //.
+          by apply lookup_to_gen_heap_None.
+      - reflexivity.
+    }
+    iModIntro; iFrame.
+  Qed.
+
+  (*
+  Lemma seq_heap_bulk_alloc σs l (σs' : gmap L (nat → option V)) k :
+    (∀ l, is_Some (σs' !! l) → ∀ i, σs i !! l = None) →
+    seq_heap_ctx σs ==∗
+                 seq_heap_ctx (λ n, match vs n with | None => σs n | Some v => <[l:=v]>(σs n) end)
+                 ∗ l ↦ vs @ ⊤.
+  Proof.
+    iIntros (Hnone) "Hσ". rewrite /seq_heap_ctx mapsto_fun_eq /mapsto_fun_def.
+    iMod (own_update _ _
+                       (● to_seq_heap (λ n, match vs n with
+                                            | None => σs n
+                                            | Some v => <[l:=v]>(σs n)
+                                            end) ⋅
+                       (◯ (λ n : nat, match vs n with
+                                      | Some v => {[l := (1%Qp, to_agree v)]}
+                                      | None => ε
+                                      end)))
+            with "Hσ") as "[Hσ Hl]".
+    { eapply auth_update_alloc, ofe_fun_local_update => k.
+      specialize (Hnone k) as Hs1. rewrite /to_seq_heap.
+      destruct (vs k) as [v|].
+      - rewrite /to_gen_heap fmap_insert //=. rewrite -/to_gen_heap.
+        eapply (alloc_singleton_local_update _ _ (1%Qp, to_agree (v:leibnizC _)))=> //.
+          by apply lookup_to_gen_heap_None.
+      - reflexivity.
+    }
+    iModIntro; iFrame.
+  Qed.
+   *)
+
+  (*
+  Lemma gen_heap_dealloc σ l v :
+    gen_heap_ctx σ -∗ l ↦ v ==∗ gen_heap_ctx (delete l σ).
+  Proof.
+    iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
+    rewrite to_gen_heap_delete. iApply (own_update_2 with "Hσ Hl").
+    eapply auth_update_dealloc, (delete_singleton_local_update _ _ _).
+  Qed.
+   *)
 
   Lemma seq_heap_update σs l (vs1 : nat → option V) (vs2: nat → option V) :
     (∀ k, is_Some (vs1 k) ↔ is_Some (vs2 k)) →

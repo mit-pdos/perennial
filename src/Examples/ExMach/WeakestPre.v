@@ -8,6 +8,11 @@ Require Export ExMach.ExMachAPI.
 Require Export ExMach.SeqHeap.
 Set Default Proof Using "Type".
 
+Class exmachGenG Σ := ExMachGenG {
+                     exm_gen_invG : invG Σ;
+                     exm_gen_mem_inG :> seq_heapG nat nat Σ;
+                     exm_gen_disk_inG :> gen_heapG nat nat Σ;
+                   }.
 
 Class exmachG Σ := ExMachG {
                      exm_invG : invG Σ;
@@ -16,20 +21,26 @@ Class exmachG Σ := ExMachG {
                      exm_current : nat;
                    }.
 
+Definition exmachGen_set `{H: exmachGenG Σ} (k: nat) :=
+  ExMachG Σ (exm_gen_invG) (exm_gen_mem_inG) (exm_gen_disk_inG)
+          k.
+
 Import ExMach.
+
+Definition ex_mach_interp {Σ} {hG: gen_heapG addr nat Σ} {hS: seq_heapG addr nat Σ} curr :=
+      (λ s, ∃ mems disks, seq_heap_ctx mems ∗
+                          gen_heap_ctx disks ∗
+                            ⌜ mems curr = mem_state s ∧
+                              disks = disk_state s ∧
+                              (∀ k, k > curr → mems k = mem_state (crash_fun s)) ∧
+                              (∀ i, is_Some (mem_state s !! i) → i < size) ∧
+                              (∀ i, is_Some (disk_state s !! i) → i < size) ⌝
+      )%I.
 
 Instance exmachG_irisG `{exmachG Σ} : irisG ExMach.Op ExMach.l Σ :=
   {
     iris_invG := exm_invG;
-    state_interp :=
-      (λ s, ∃ mems disks, @seq_heap_ctx _ _ _ _ _ (exm_mem_inG) mems ∗
-                          gen_heap_ctx disks ∗
-                            ⌜ mems (exm_current) = mem_state s ∧
-                              disks = disk_state s ∧
-                              (∀ k, k > exm_current → mems k = mem_state (crash_fun s)) ∧
-                              (∀ i, is_Some (mem_state s !! i) → i < size) ∧
-                              (∀ i, is_Some (disk_state s !! i) → i < size) ⌝
-      )%I
+    state_interp := ex_mach_interp exm_current;
   }.
 
 
@@ -54,6 +65,7 @@ Global Notation "l ↦ v @C" :=
   (@mapsto_fun _ _ _ _ _ (exm_mem_inG) l 1 (mem_mapsto_vs (S exm_current) v))
   (at level 20) : bi_scope.
 
+
 Section lifting.
 Context `{exmachG Σ}.
 
@@ -61,6 +73,71 @@ Lemma nat_compare_lt_Lt: ∀ n m : nat, n < m → (n ?= m) = Lt.
 Proof. intros. by apply nat_compare_lt. Qed.
 Lemma nat_compare_gt_Gt: ∀ n m : nat, n > m → (n ?= m) = Gt.
 Proof. intros. by apply nat_compare_gt. Qed.
+
+Lemma mem_init_to_bigOp mem:
+  own (seq_heap_name (exm_mem_inG))
+      (◯ to_seq_heap (λ i : nat, match Nat.compare i exm_current with
+                                    | Lt => ε
+                                    | Eq => mem
+                                    | Gt => (fun _ => 0) <$> mem
+                                    end))
+      -∗
+  [∗ map] i↦v ∈ mem, i ↦ v @N.
+Proof.
+  induction mem using map_ind.
+  - iIntros. rewrite //=.
+  - iIntros "Hown". 
+    rewrite big_opM_insert //.
+
+    iAssert (own (seq_heap_name (exm_mem_inG)) 
+                 (◯ to_seq_heap (λ i : nat, match Nat.compare i exm_current with 
+                                            | Lt => ε
+                                            | Eq => m
+                                            | Gt => (fun _ => 0) <$> m
+                                            end))
+                 ∗ 
+                 (i ↦ x @N))%I
+                    with "[Hown]" as "[Hrest $]".
+    { rewrite /mem_mapsto_vs mapsto_fun_eq /mapsto_fun_def.
+      rewrite -own_op.
+      iApply (own_mono with "Hown").
+      rewrite -auth_frag_op. apply auth_frag_mono.
+      exists ε. rewrite right_id.
+      intros k. rewrite ofe_fun_lookup_op. rewrite /to_seq_heap.
+      destruct (Nat.compare_spec k (exm_current)).
+      * subst. rewrite to_gen_heap_insert.
+        rewrite insert_singleton_op; first by rewrite comm.
+        by apply lookup_to_gen_heap_None.
+      * by rewrite right_id.
+      * rewrite fmap_insert to_gen_heap_insert.
+        rewrite insert_singleton_op; first by rewrite comm.
+        rewrite ?lookup_fmap H0 //=.
+    }
+    by iApply IHmem.
+Qed.
+
+Lemma mem_init_to_bigOp0 mem:
+  exm_current = 0 →
+  (∀ i, is_Some (mem !! i) ↔ i < size) →
+  own (seq_heap_name (exm_mem_inG))
+      (◯ to_seq_heap (λ i : nat, if nat_eq_dec i exm_current then mem else init_zero))
+      -∗
+  [∗ map] i↦v ∈ mem, i ↦ v @N.
+Proof.
+  intros H0 Hsize.
+  iIntros.
+  iApply mem_init_to_bigOp.
+  iApply own_mono; last eauto.
+  apply auth_frag_mono.
+  exists ε. rewrite right_id.
+  intros k. rewrite H0. rewrite /to_seq_heap.
+  destruct (Nat.compare_spec k 0).
+  * subst. destruct nat_eq_dec; last by exfalso. done.
+  * lia.
+  * destruct nat_eq_dec; first by lia.
+    rewrite /to_gen_heap => l.
+    rewrite well_sized_mem_0_init //.
+Qed.
 
 Lemma wp_write_mem s E i v' v :
   {{{ ▷ i ↦ v' @N }}} write_mem i v @ s; E {{{ RET tt; i ↦ v @N }}}.

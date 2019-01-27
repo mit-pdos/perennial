@@ -16,6 +16,10 @@ Module ExMach.
 
   Record State := mkState { mem_state: gmap addr nat; disk_state: gmap addr nat }.
 
+  Definition state_wf s :=
+    (∀ i, is_Some (mem_state s !! i) ↔ i < size) ∧
+    (∀ i, is_Some (disk_state s !! i) ↔ i < size).
+
   Definition get_default (i: addr) (s: gmap addr nat) : nat :=
     match s !! i with
     | Some n => n
@@ -65,6 +69,40 @@ Module ExMach.
     rewrite /init_zero. induction 1.
     - rewrite //=. rewrite insert_insert //.
     - rewrite //=. rewrite insert_commute; last by lia. rewrite IHle //=.
+  Qed.
+
+  Lemma init_zero_lookup_lt_zero i:
+    i < size →
+    init_zero !! i = Some 0.
+  Proof.
+    rewrite /init_zero. induction 1.
+    - rewrite lookup_insert //=.
+    - rewrite //=. rewrite lookup_insert_ne; last (by lia). eauto.
+  Qed.
+
+  Lemma init_zero_lookup_ge_None i:
+    ¬ i < size →
+    init_zero !! i = None.
+  Proof.
+    revert i. rewrite /init_zero. induction size => i ?.
+    - rewrite //=.
+    - rewrite lookup_insert_ne; last by lia.
+      rewrite IHn; auto.
+  Qed.
+
+  Lemma well_sized_mem_0_init (mem: gmap addr nat):
+    (∀ i, is_Some (mem !! i) ↔ i < size) →
+    (λ _, 0) <$> mem = init_zero.
+  Proof.
+    intros. rewrite -leibniz_equiv_iff => i.
+    destruct (nat_lt_dec i size).
+    * rewrite init_zero_lookup_lt_zero //.
+      rewrite lookup_fmap.
+      edestruct (H i). destruct H1; eauto. rewrite H1 //=.
+    * rewrite lookup_fmap.
+      edestruct (H i). destruct (mem !! i) as [|] eqn:Heq.
+      ** rewrite Heq in H0. exfalso. intuition eauto.
+      ** rewrite init_zero_lookup_ge_None //=.
   Qed.
 
   Definition crash_fun := (fun s => {| mem_state := init_zero; disk_state := disk_state s|}).
