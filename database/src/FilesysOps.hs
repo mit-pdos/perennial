@@ -3,7 +3,7 @@ module FilesysOps
   ( interpret
   ) where
 
-import Filesys
+import Coq.Filesys
 import Filesys.Generic
 import Lib (Fd, Word64, ByteString,
             coerceRet, coerceVoid)

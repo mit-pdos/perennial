@@ -5,13 +5,13 @@ import           Control.Monad (forM_, replicateM_, void)
 
 import           Criterion.Main
 
-import qualified BaseLayer
 import           BenchHelpers
-import           ExtractionExamples
+import qualified Coq.BaseLayer as BaseLayer
+import           Coq.ExtractionExamples
+import           Coq.Proc (Coq_proc)
 import qualified Filesys.NoFilesys as NoFilesys
 import           Interpreter
 import           Lib
-import           Proc (Coq_proc)
 
 run :: Coq_proc (BaseLayer.Op a) x -> IO x
 run = NoFilesys.run . interpret

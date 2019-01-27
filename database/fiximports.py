@@ -34,18 +34,27 @@ args = parser.parse_args()
 out = args.output
 
 module_name = None
-MODULE_RE = re.compile("module (?P<module>.*) where\n")
+MODULE_RE = re.compile(r"""module (?P<module>.*) where\n""")
+MODULE_REPLACE = r"""module Coq.\1 where\n"""
+IMPORT_RE = re.compile(r"""import qualified (?P<import>.*)""")
+IMPORT_REPLACE = r"""import qualified Coq.\1 as \1"""
 
 out.write("{-# LINE 1 \"%s\" #-}\n" % (args.input.name))
 for n, line in enumerate(args.input, 1):
     m = MODULE_RE.match(line)
     if m:
         module_name = m.group("module")
+        line = MODULE_RE.sub(MODULE_REPLACE, line)
     if line.strip() == "import qualified Prelude":
         mod_imports = module_imports.get(module_name)
         if mod_imports:
             out.write(mod_imports)
             out.write("{-# LINE %d \"%s\" #-}\n" % (n, args.input.name))
+    else:
+        m = IMPORT_RE.match(line)
+        if m and m.group("import") not in ["Prelude",
+                                           "GHC.Base"]:
+            line = IMPORT_RE.sub(IMPORT_REPLACE, line)
     line = line.replace('__FILE__', '"%s"' % args.input.name)
     line = line.replace('__LINE__', '%d' % n)
     out.write(line)

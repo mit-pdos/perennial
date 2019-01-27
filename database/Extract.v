@@ -1,4 +1,4 @@
-Cd "database/extract/".
+Cd "database/src/Coq/".
 
 From Coq Require Extraction.
 
@@ -10,4 +10,4 @@ Extraction Language Haskell.
 
 Separate Extraction ExtractionExamples.
 
-Cd "../../".
+Cd "../../..".

@@ -7,6 +7,7 @@ copyright:           "2019 Argosy authors"
 
 extra-source-files:
 - README.md
+- fiximports.py
 
 description:         Please see the Argosy README
 
@@ -27,9 +28,7 @@ ghc-options:
   - -O2
 
 library:
-  source-dirs:
-    - src
-    - extract
+  source-dirs: src
 
 executables:
   extraction-bench:

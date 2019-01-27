@@ -34,13 +34,13 @@ endif
 	@coqc -w -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template \
      $(shell cat '_CoqProject') $< -o $@
 
-extract: database/extract/ExtractionExamples.hs
+extract: database/src/Coq/ExtractionExamples.hs
 
 logging-client/extract/ComposedRefinement.hs: logging-client/Extract.vo
 	./scripts/add-preprocess.sh logging-client/extract/*.hs
 
-database/extract/ExtractionExamples.hs: database/Extract.vo
-	./scripts/add-preprocess.sh database/extract/*.hs
+database/src/Coq/ExtractionExamples.hs: database/Extract.vo
+	./scripts/add-preprocess.sh database/src/Coq/*.hs
 
 clean:
 	@echo "CLEAN vo glob aux"
@@ -48,7 +48,7 @@ clean:
 	@find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
 	@echo "CLEAN extraction"
 	@rm -rf logging-client/extract/*.hs
-	@rm -rf database/extract/*.hs
+	@rm -rf database/src/Coq/*.hs
 	rm -f _CoqProject .coqdeps.d
 
 .PHONY: default test clean

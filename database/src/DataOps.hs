@@ -7,7 +7,7 @@ import           Data.IORef (newIORef, readIORef, writeIORef)
 import qualified Data.HashTable.IO as H
 import qualified Data.Vector.Mutable.Dynamic as V
 
-import           DataStructures
+import           Coq.DataStructures
 import           Lib (Word64, coerceRet, coerceVoid)
 
 interpret :: Data__Op x -> IO x

@@ -6,11 +6,11 @@ import           Control.Concurrent.Forkable
 import           Control.Monad (void)
 import           Control.Monad.IO.Class
 
-import           Proc
-import qualified FilesysOps
+import qualified Coq.BaseLayer as BaseLayer
+import           Coq.Proc
 import qualified DataOps
-import qualified BaseLayer
 import           Filesys.Generic
+import qualified FilesysOps
 import           Lib (coerceRet, coerceVoid)
 
 
