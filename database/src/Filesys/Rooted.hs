@@ -8,6 +8,7 @@ module Filesys.Rooted
 import                   Control.Monad (when)
 import                   Control.Monad.Reader (ReaderT, MonadReader, reader, liftIO, runReaderT)
 import qualified         Data.ByteString as BS
+import qualified         Data.ByteString.Internal as BSI
 import                   System.Directory (listDirectory, removeFile)
 import                   System.FilePath.Posix (joinPath)
 import                   System.Posix.Files (getFdStatus,
@@ -19,7 +20,8 @@ import                   System.Posix.Files (getFdStatus,
 import                   System.Posix.IO ( openFd,  OpenMode(..)
                        , closeFd)
 import qualified         System.Posix.IO as PosixIO
-import "unix-bytestring" System.Posix.IO.ByteString (fdPread, fdWrite)
+import "unix-bytestring" System.Posix.IO.ByteString (fdPreadBuf, fdWrite)
+import                   System.Posix.Types (Fd, ByteCount, FileOffset)
 
 import                   Filesys.Generic
 import                   Control.Monad.IO.Class
@@ -40,6 +42,21 @@ resolvePath act f = withRoot $ \root -> act (joinPath [root, f])
 
 run :: FilePath -> RootFilesysM a -> IO a
 run root (RootFilesysM act) = runReaderT act (Env root)
+
+-- Alternate wrapper for Linux's pread. the fdPread from unix-bytestring checks
+-- for 0 and raises an EOF exception, but we don't consider that an error in the
+-- semantics (and just return an empty bytestring)
+--
+-- NOTE: we could do this by catching an exception from the normal fdPread, but
+-- this seemed simpler and more efficient than the appropriate error catching
+-- code.
+fdPread :: Fd -> ByteCount -> FileOffset -> IO BS.ByteString
+fdPread fd nbytes offset
+    | nbytes <= 0 = return BS.empty
+    | otherwise   =
+        BSI.createAndTrim (fromIntegral nbytes) $ \buf -> do
+            rc <- fdPreadBuf fd buf nbytes offset
+            return (fromIntegral rc)
 
 instance MonadFilesys RootFilesysM where
   open = let perms = Nothing
