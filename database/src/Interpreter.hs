@@ -2,17 +2,17 @@ module Interpreter
   ( interpret
   ) where
 
-import Control.Monad (void)
+import           Control.Concurrent.Forkable
+import           Control.Monad (void)
+import           Control.Monad.IO.Class
 
-import Proc
+import           Proc
 import qualified FilesysOps
 import qualified DataOps
 import qualified BaseLayer
+import           Filesys.Generic
+import           Lib (coerceRet, coerceVoid)
 
-import Filesys.Generic
-import Control.Monad.IO.Class
-import Control.Concurrent.Forkable
-import Lib (coerceRet, coerceVoid)
 
 interpret :: (MonadFilesys m, MonadIO m, ForkableMonad m) =>
              Coq_proc (BaseLayer.Op a) x -> m x

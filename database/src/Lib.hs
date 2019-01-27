@@ -19,15 +19,14 @@ module Lib
 where
 
 import           Data.Word (Word64, Word8)
-import           Data.ByteString (ByteString)
-import qualified Data.ByteString as BS
 import           System.Posix.Types (Fd)
-
--- data structures
 import           Data.IORef (IORef)
 import           Control.Concurrent.MVar (MVar)
-import           Data.Vector.Mutable.Dynamic (IOVector)
+
+import           Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
 import           Data.HashTable.IO (BasicHashTable)
+import           Data.Vector.Mutable.Dynamic (IOVector)
 
 import           Unsafe.Coerce (unsafeCoerce)
 

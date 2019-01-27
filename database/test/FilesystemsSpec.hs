@@ -1,14 +1,15 @@
-module FilesystemsSpec where
+module FilesystemsSpec(spec) where
 
 import Test.Hspec
-import System.Directory
+import System.Directory ( createDirectory
+                        , removeDirectoryRecursive
+                        , doesDirectoryExist
+                        )
 import Control.Monad (when)
 
 import FilesysTests
 import qualified Filesys.Memory as Mem
 import qualified Filesys.Rooted as Rooted
-
-{-# ANN module ("HLint: ignore Redundant do" :: String) #-}
 
 ensureEmptyDir :: FilePath -> IO ()
 ensureEmptyDir d = do

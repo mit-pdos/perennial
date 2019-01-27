@@ -3,9 +3,11 @@ module Filesys.NoFilesys
   ( NoFilesysM(run)
   ) where
 
-import Filesys.Generic
 import Control.Monad.IO.Class
+
 import Control.Concurrent.Forkable
+
+import Filesys.Generic
 
 newtype NoFilesysM a = NoFilesysM { run :: IO a }
   deriving (Functor, Applicative, Monad, MonadIO, ForkableMonad)

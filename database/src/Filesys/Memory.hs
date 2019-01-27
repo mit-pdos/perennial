@@ -6,15 +6,15 @@ module Filesys.Memory
 
 import           Control.Monad (void)
 import           Control.Monad.Reader (ReaderT, reader, liftIO, runReaderT, lift)
-import qualified Data.ByteString as BS
-import qualified Data.HashTable.IO as H
-import           Data.Hashable (Hashable)
-
+import           Control.Monad.IO.Class
 import           Control.Concurrent.MVar (MVar, newMVar, withMVar)
 import           Data.IORef (IORef, newIORef, atomicModifyIORef')
 
 import           Control.Concurrent.Forkable
-import           Control.Monad.IO.Class
+import qualified Data.ByteString as BS
+import qualified Data.HashTable.IO as H
+import           Data.Hashable (Hashable)
+
 import           Filesys.Generic
 import           Lib (Fd, ByteString)
 

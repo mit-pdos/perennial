@@ -1,17 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import qualified BaseLayer
-import           Proc (Coq_proc)
+import           Control.Monad (forM_, replicateM_, void)
 
-import           Lib
+import           Criterion.Main
+
+import qualified BaseLayer
+import           BenchHelpers
 import           ExtractionExamples
 import qualified Filesys.NoFilesys as NoFilesys
 import           Interpreter
-
-import           Criterion.Main
-import           BenchHelpers
-import           Control.Monad (forM_, replicateM_, void)
+import           Lib
+import           Proc (Coq_proc)
 
 run :: Coq_proc (BaseLayer.Op a) x -> IO x
 run = NoFilesys.run . interpret

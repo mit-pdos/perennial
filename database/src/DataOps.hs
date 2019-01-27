@@ -11,7 +11,7 @@ import           DataStructures
 import           Lib (Word64, coerceRet, coerceVoid)
 
 interpret :: Data__Op x -> IO x
-interpret (Data__GetVar) = error "there are no variables"
+interpret Data__GetVar = error "there are no variables"
 interpret (Data__SetVar _) = error "there are no variables"
 interpret (Data__NewIORef x) = coerceRet @(IORef _) $ newIORef x
 interpret (Data__ReadIORef r) = readIORef r

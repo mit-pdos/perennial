@@ -1,8 +1,6 @@
 module Filesys.Generic where
 
-import Data.ByteString (ByteString)
-import Data.Word (Word64)
-import System.Posix.Types (Fd)
+import Lib (Word64, Fd, ByteString)
 
 -- A MonadFilesys exposes the filesystem APIs in the Filesys layer, in some
 -- ambient monad
