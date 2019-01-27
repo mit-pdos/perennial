@@ -10,7 +10,12 @@ import                   Control.Monad.Reader (ReaderT, MonadReader, reader, lif
 import qualified         Data.ByteString as BS
 import                   System.Directory (listDirectory, removeFile)
 import                   System.FilePath.Posix (joinPath)
-import                   System.Posix.Files (getFdStatus, fileSize, setFileSize, rename)
+import                   System.Posix.Files (getFdStatus,
+                                             fileSize,
+                                             setFileSize,
+                                             rename,
+                                             ownerReadMode, ownerWriteMode,
+                                             unionFileModes)
 import                   System.Posix.IO ( openFd,  OpenMode(..)
                        , closeFd)
 import qualified         System.Posix.IO as PosixIO
@@ -40,7 +45,7 @@ instance MonadFilesys RootFilesysM where
   open = let perms = Nothing
              mode = PosixIO.defaultFileFlags in
            resolvePath $ \f -> openFd f ReadOnly perms mode
-  create = let perms = Just 0644
+  create = let perms = Just (ownerReadMode `unionFileModes` ownerWriteMode)
                mode = PosixIO.defaultFileFlags {PosixIO.append=True} in
              resolvePath $ \f -> openFd f ReadWrite perms mode
   list = withRoot $ \root -> listDirectory root
@@ -49,7 +54,7 @@ instance MonadFilesys RootFilesysM where
     return $ fromIntegral . fileSize $ s
   close f = liftIO $ closeFd f
   delete = resolvePath $ \f -> removeFile f
-  ftruncate f = liftIO $ setFileSize f 0
+  ftruncate = resolvePath $ \f -> setFileSize f 0
   readAt f off len = liftIO $
     fdPread f (fromIntegral len) (fromIntegral off)
   append f bs = liftIO $ do
