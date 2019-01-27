@@ -154,6 +154,14 @@ Module BS.
   Definition drop (n:uint64) bs :=
     fromByteList (List.skipn n.(toNum) bs).
   Definition empty : ByteString := fromByteList [].
+  (* argh, we actually do need conversions between strings and ByteStrings
+because of paths; maybe we should write the entire filesystem API in terms of
+ByteString paths? It might even be easier than these conversions; the only
+problem perhaps will be a handful of string literals. We really don't want to
+use string as the ByteString model since it lacks all the theorems about
+lists. *)
+  Axiom fromString : String.string -> ByteString.
+  Axiom toString : ByteString -> String.string.
 End BS.
 
 Lemma skipn_nil A n : skipn n (@nil A) = nil.

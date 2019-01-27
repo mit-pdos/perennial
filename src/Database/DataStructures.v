@@ -96,7 +96,7 @@ Module Data.
 
   Section OpWrappers.
 
-    Context Op' {i:Injectable Op Op'}.
+    Context {Op'} {i:Injectable Op Op'}.
     Notation proc := (proc Op').
     Notation "'Call!' op" := (Call (inject op)) (at level 0, op at level 200).
 
@@ -106,7 +106,7 @@ Module Data.
     Definition set_var (var: Var.t) (v: Var.ty var) : proc unit :=
       Call! SetVar var v.
 
-    Definition newIORef T (v:T) : proc (IORef T) :=
+    Definition newIORef {T} (v:T) : proc (IORef T) :=
       Call! NewIORef v.
 
     Definition readIORef T (ref:IORef T) : proc T :=

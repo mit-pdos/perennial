@@ -43,7 +43,7 @@ Module FS.
 
   Section OpWrappers.
 
-    Context Op' {i:Injectable Op Op'}.
+    Context {Op'} {i:Injectable Op Op'}.
     Notation proc := (proc Op').
     Notation "'Call!' op" := (Call (inject op)) (at level 0, op at level 200).
     Definition open p : proc _ := Call! Open p.
