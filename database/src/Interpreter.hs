@@ -19,12 +19,15 @@ interpret :: (MonadFilesys m, MonadIO m, ForkableMonad m) =>
 interpret (Call (BaseLayer.FilesysOp op)) = coerceRet $ FilesysOps.interpret op
 interpret (Call (BaseLayer.DataOp op)) = coerceRet . liftIO $ DataOps.interpret op
 interpret (Ret x) = return x
-interpret (Bind x f) = interpret x >>= interpret . f
+interpret (Bind x f) = do
+  r <- interpret x
+  interpret (f r)
 interpret (Spawn x) = do
   _ <- forkIO (void $ interpret x)
   coerceVoid $ return ()
-interpret (Loop body x0) = do
-  x <- interpret $ body x0
-  case x of
-    ContinueOutcome t -> interpret (Loop body t)
-    DoneWithOutcome r -> return r
+interpret (Loop body x0) = go x0
+  where go arg = do
+          x <- interpret $ body arg
+          case x of
+            ContinueOutcome t -> go t
+            DoneWithOutcome r -> return r
