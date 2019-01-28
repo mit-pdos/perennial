@@ -102,7 +102,7 @@ Proof.
   }
   iSplitL "Hrec".
   {
-    (* For some reason @wp_wand_l fails here, not sure why *)
+    (* TODO: For some reason @wp_wand_l fails here, not sure why *)
     iPoseProof (@wp_mono with "[Hrec]") as "H"; [| eauto |]; last eauto.
     iIntros. iApply fupd_mask_weaken; auto.
   }
@@ -114,3 +114,86 @@ Proof.
              exm_current := S HexmachG.(@exm_current Σ) |}.
   iFrame.
 Qed.
+
+
+Section test.
+
+  Definition test := (_ <- write_mem 0 1; Ret ())%proc.
+  Definition test_rec := (x <- read_mem 0; if nat_eq_dec x 0 then assert true else assert false)%proc.
+
+  Context `{exmachG}.
+
+  Definition EI := (∃ v, 0 ↦ v @N)%I.
+  Definition EI' := (0 ↦ 0 @N)%I.
+  Definition CI := (0 ↦ 0 @C)%I.
+
+  Lemma test_spec N: {{{ inv N EI }}} test {{{ RET (); True }}}.
+  Proof.
+    iIntros (Φ) "Hinv H". rewrite /test. wp_bind.
+    iInv N as (v) ">HEI".
+    iApply (wp_write_mem with "[$]"); iIntros "!> ? !>".
+    iSplitR "H".
+    - iNext. iExists _. eauto.
+    - wp_ret. by iApply "H".
+  Qed.
+
+  Lemma test_rec_spec N: {{{ inv N EI' }}} test_rec {{{ RET (); True }}}.
+    iIntros (Φ) "Hinv H". rewrite /test_rec. wp_bind.
+    iInv N as ">HEI".
+    iApply (wp_read_mem with "[$]"); iIntros "!> ? !>".
+    iSplitR "H".
+    - iNext. eauto.
+    - iApply wp_assert; eauto.
+  Qed.
+
+End test.
+
+Arguments CI : clear implicits.
+
+Section closed.
+
+  Lemma exm_current_S Σ H1 a0 a1 a2:
+    (S (@exm_current Σ (ExMachG Σ H1 a0 a1 a2))) =
+    (@exm_current Σ (ExMachG Σ H1 a0 a1 (S a2))).
+  Proof. rewrite //=. Qed.
+
+
+  (* TODO: shorten and bundle up the re-usable reasoning here. *)
+  Lemma adeq_closed:
+    @recv_adequate _ _ _ ExMach.l NotStuck test test_rec init_state (λ v _, True) (λ _, True).
+  Proof.
+    eapply (exmach_recovery_adequacy exmachΣ) with (φinv := CI exmachΣ).
+    - apply init_state_wf.
+    - iIntros (?). unfold exmachGen_set. iIntros "Hbig".
+      rewrite (big_opM_delete _ _ 0 0); last first.
+      { rewrite /mem_state. apply init_zero_lookup_lt_zero. rewrite /size. lia. }
+      iDestruct "Hbig" as "(Hz&_)".
+      iMod (inv_alloc nroot _ EI with "[-]") as "#H".
+      { iExists O; eauto. }
+
+      iModIntro.
+      iSplitR ""; last iSplitR "".
+      * by iApply test_spec.
+      * iMod (inv_open_timeless with "H") as "(HEI&_)".
+        set_solver+. iApply fupd_mask_weaken; first by set_solver+.
+        iDestruct "HEI" as (v) "Hpt".
+        iApply mem_crash; eauto.
+      * iClear "H". iModIntro.
+        iIntros (??? ?) "Hinv".
+        iDestruct "Hinv" as (?) "Hinv'".
+        simpl. rewrite /CI exm_current_S.
+        clear H0.
+        unshelve (iMod (@inv_alloc _ a nroot ⊤ EI' with "[-]") as "#H").
+        { eexists. eauto. eauto. eauto. exact (S a2). }
+        { iNext. rewrite /EI'. simpl. simpl. iApply "Hinv'". }
+        iModIntro.
+        iSplitL.
+        ** iApply test_rec_spec; eauto.
+        ** iMod (@inv_open_timeless with "H") as "(HEI&_)".
+           set_solver+. iApply @fupd_mask_weaken; first by set_solver+.
+           iApply mem_crash; eauto.
+    - auto.
+  Qed.
+End closed.
+
+Print Assumptions adeq_closed.

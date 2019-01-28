@@ -12,7 +12,8 @@ Module ExMach.
   | Write_Mem (i:addr) (v:nat) : Op unit
   | CAS (i:addr) (vold: nat) (vnew:nat) : Op nat
   | Read_Disk (i:addr) : Op nat
-  | Write_Disk (i:addr) (v:nat) : Op unit.
+  | Write_Disk (i:addr) (v:nat) : Op unit
+  | Fail : Op unit.
 
   Record State := mkState { mem_state: gmap addr nat; disk_state: gmap addr nat }.
 
@@ -90,6 +91,21 @@ Module ExMach.
       rewrite IHn; auto.
   Qed.
 
+  Definition init_state :=
+    {| mem_state := init_zero; disk_state := init_zero |}.
+
+  Lemma init_state_wf:
+    state_wf init_state.
+  Proof.
+    cut (∀ i : nat, is_Some (init_state.(mem_state) !! i) ↔ i < size).
+    { intros; split; trivial. }
+    intros i. split.
+    - intros Hsome. apply not_ge. intros ?.
+      rewrite init_zero_lookup_ge_None // in Hsome; last lia.
+      eapply is_Some_None; eauto.
+    - intros ?. rewrite init_zero_lookup_lt_zero //. eauto.
+  Qed.
+
   Lemma well_sized_mem_0_init (mem: gmap addr nat):
     (∀ i, is_Some (mem !! i) ↔ i < size) →
     (λ _, 0) <$> mem = init_zero.
@@ -115,6 +131,7 @@ Module ExMach.
          | Read_Disk i => reads (get_disk i)
          | Write_Disk i v => puts (set_disk i v)
          | CAS i vold vnew => cas_rel i vold vnew
+         | Fail => error
          end;
        crash_step := puts crash_fun |}. 
 
@@ -133,7 +150,7 @@ Module ExMach.
        crash_preserves_trace := fun _ _ _ => eq_refl;
        crash_total := crash_total_ok;
        crash_non_err := crash_non_err_ok;
-       initP := fun s => s = {| mem_state := init_zero; disk_state := init_zero |} |}.
+       initP := fun s => s = init_state |}.
 End ExMach.
 
 Definition read_mem i := Call (ExMach.Read_Mem i).
@@ -141,6 +158,7 @@ Definition write_mem i v := Call (ExMach.Write_Mem i v).
 Definition read_disk i := Call (ExMach.Read_Disk i).
 Definition write_disk i v := Call (ExMach.Write_Disk i v).
 Definition cas i vold vnew := Call (ExMach.CAS i vold vnew).
+Definition assert (b: bool) := if b then (_ <- Ret (); Ret ())%proc else Call (ExMach.Fail).
 
 Definition lock i : proc ExMach.Op unit :=
   Loop (fun (_ : unit) =>

@@ -50,7 +50,7 @@ Definition mem_mapsto_vs k v k' :=
   | Eq => Some v
   | Gt => Some 0
   end.
-  
+
 Global Notation "l ↦{ q } v @N" :=
   (@mapsto_fun _ _ _ _ _ (exm_mem_inG) l q (mem_mapsto_vs (exm_current) v))
   (at level 20, q at level 50, format "l  ↦{ q } v @N") : bi_scope.
@@ -86,16 +86,16 @@ Lemma mem_init_to_bigOp mem:
 Proof.
   induction mem using map_ind.
   - iIntros. rewrite //=.
-  - iIntros "Hown". 
+  - iIntros "Hown".
     rewrite big_opM_insert //.
 
-    iAssert (own (seq_heap_name (exm_mem_inG)) 
-                 (◯ to_seq_heap (λ i : nat, match Nat.compare i exm_current with 
+    iAssert (own (seq_heap_name (exm_mem_inG))
+                 (◯ to_seq_heap (λ i : nat, match Nat.compare i exm_current with
                                             | Lt => ε
                                             | Eq => m
                                             | Gt => (fun _ => 0) <$> m
                                             end))
-                 ∗ 
+                 ∗
                  (i ↦ x @N))%I
                     with "[Hown]" as "[Hrest $]".
     { rewrite /mem_mapsto_vs mapsto_fun_eq /mapsto_fun_def.
@@ -187,7 +187,7 @@ Lemma wp_read_mem s E i v :
   {{{ ▷ i ↦ v @N }}} read_mem i @ s; E {{{ RET v; i ↦ v @N }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
-  iIntros (σ) "Hown". 
+  iIntros (σ) "Hown".
   iModIntro. iSplit; first by destruct s.
   iIntros (e2 σ2 Hstep) "!>".
   inversion Hstep; subst.
@@ -300,6 +300,14 @@ Proof.
       ** apply Hsize.
     * eauto.
   - iApply "HΦ". eauto.
+Qed.
+
+Lemma wp_assert s E b:
+  b = true →
+  {{{ True }}} assert b @ s; E {{{ RET (); True }}}.
+Proof.
+  iIntros (Hb Φ) "_ HΦ". rewrite Hb -wp_bind_proc_val.
+  iNext. wp_ret. by iApply "HΦ".
 Qed.
 
 End lifting.
