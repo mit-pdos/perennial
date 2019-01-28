@@ -145,6 +145,7 @@ Definition newDb : proc Db.t :=
     bufferL <- Data.newLock;
     tableName <- Data.newIORef "table";
     table <- createTbl "table";
+    _ <- FS.atomicCreate "manifest" (BS.fromString "table");
     tableRef <- Data.newIORef table;
     tableL <- Data.newLock;
     compactionL <- Data.newLock;
@@ -233,7 +234,9 @@ buf; assumes a compaction lock (for the shadow table), read lock over the table
 (though see comment below about this being redundant), and that buf is
 read-only *)
 Definition constructNewTable db buf :
-  proc (Path (* old table name *) * Tbl.t (* newly constructed table *)) :=
+  proc (Path (* old table name *) *
+        Tbl.t (* old table *) *
+        Tbl.t (* newly constructed table *)) :=
   oldName <- Data.readIORef db.(Db.tableName);
     let name := freshTable oldName in
     w <- newTblW name;
@@ -241,7 +244,7 @@ Definition constructNewTable db buf :
       _ <- tblPutOldTable w oldTable buf;
       _ <- tblPutBuffer w buf;
       t <- tblWClose w;
-      Ret (oldName, t).
+      Ret (oldName, oldTable, t).
 
 Definition compact db : proc unit :=
   _ <- Data.lockAcquire Writer db.(Db.compactionL);
@@ -266,8 +269,8 @@ Definition compact db : proc unit :=
        which it won't do till later in this function *)
       _ <- Data.lockAcquire Reader db.(Db.tableL);
       oldTable_t <- constructNewTable db buf;
-      let (oldTable, t) := oldTable_t in
-      let newTable := freshTable oldTable in
+      let '(oldTableName, oldTable, t) := oldTable_t in
+      let newTable := freshTable oldTableName in
       _ <- Data.lockRelease Reader db.(Db.tableL);
 
       (* next, install it (persistently and in-memory) *)
@@ -275,10 +278,10 @@ Definition compact db : proc unit :=
       _ <- Data.writeIORef db.(Db.table) t;
       _ <- Data.writeIORef db.(Db.tableName) newTable;
       _ <- FS.atomicCreate "manifest" (BS.fromString newTable);
-      _ <- FS.delete oldTable;
+      _ <- FS.close oldTable.(Tbl.file);
+      _ <- FS.delete oldTableName;
       _ <- Data.lockRelease Writer db.(Db.tableL);
 
-      _ <- Data.lockRelease Reader db.(Db.bufferL);
       _ <- Data.lockRelease Writer db.(Db.compactionL);
       Ret tt.
 
@@ -287,6 +290,7 @@ Definition recoverManifest : proc Path :=
   fd <- FS.open "manifest";
     sz <- FS.size fd;
     bs <- FS.readAt fd 0 sz;
+    _ <- FS.close fd;
     Ret (BS.toString bs).
 
 Fixpoint deleteOtherFiles' tableName ps : proc _ :=
@@ -326,3 +330,13 @@ Definition recover : proc Db.t :=
            Db.table := table;
            Db.tableL := tableL;
            Db.compactionL := compactionL |}.
+
+Definition closeDb db : proc unit :=
+  _ <- compact db;
+    _ <- Data.lockAcquire Writer db.(Db.bufferL);
+    _ <- Data.lockAcquire Writer db.(Db.compactionL);
+    t <- Data.readIORef db.(Db.table);
+    _ <- FS.close t.(Tbl.file);
+    _ <- Data.lockRelease Writer db.(Db.compactionL);
+    _ <- Data.lockRelease Writer db.(Db.bufferL);
+    Ret tt.
