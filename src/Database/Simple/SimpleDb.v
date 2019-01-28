@@ -331,8 +331,8 @@ Definition recover : proc Db.t :=
            Db.tableL := tableL;
            Db.compactionL := compactionL |}.
 
-Definition closeDb db : proc unit :=
-  _ <- compact db;
+(* immediate shutdown; like a crash, but cleanly close all files *)
+Definition shutdownDb db : proc unit :=
     _ <- Data.lockAcquire Writer db.(Db.bufferL);
     _ <- Data.lockAcquire Writer db.(Db.compactionL);
     t <- Data.readIORef db.(Db.table);
@@ -340,3 +340,7 @@ Definition closeDb db : proc unit :=
     _ <- Data.lockRelease Writer db.(Db.compactionL);
     _ <- Data.lockRelease Writer db.(Db.bufferL);
     Ret tt.
+
+Definition closeDb db : proc unit :=
+  _ <- compact db;
+    shutdownDb db.
