@@ -4,7 +4,7 @@ import           Test.Hspec
 
 import qualified Coq.BaseLayer as BaseLayer
 import           Coq.Proc (Coq_proc(..))
-import           Coq.SimpleDb
+import qualified           Coq.SimpleDb as Db
 import qualified Filesys.Memory as Mem
 import           Interpreter
 
@@ -14,23 +14,30 @@ run = interpret
 withFs :: Mem.MemFilesysM a -> IO a
 withFs = Mem.run
 
+type DbT = Db.Db__Coq_t
+
+newDb :: Mem.MemFilesysM DbT
+newDb = run Db.newDb
+
+recover :: Mem.MemFilesysM DbT
+recover = run Db.recover
+
+closeDb :: DbT -> Mem.MemFilesysM ()
+closeDb db = run $ Db.closeDb db
+
 {-# ANN module ("HLint: ignore Redundant do" :: String) #-}
 
 spec :: Spec
 spec = do
   describe "basic database operations" $ do
     it "should initialize" $ withFs $ do
-      run $ newDb
+      _ <- newDb
       return ()
     describe "should initialize and shutdown" $ do
       it "should work" $ withFs $ do
-        db <- run $ newDb
-        run $ closeDb db
+        newDb >>= closeDb
       it "should close all files" $ Mem.runCheckFds $ do
-        db <- run $ newDb
-        run $ closeDb db
+        newDb >>= closeDb
       it "should recover safely" $ Mem.runCheckFds $ do
-        db <- run $ newDb
-        run $ closeDb db
-        db <- run $ recover
-        run $ closeDb db
+        newDb >>= closeDb
+        recover >>= closeDb
