@@ -43,3 +43,5 @@ interpret (Data__LockRelease m r) =
   coerceVoid $ case m of
                  Reader -> RWLock.releaseRead r
                  Writer -> RWLock.releaseWrite r
+interpret (Data__PrintByteString bs) =
+  coerceVoid $ putStr "print: " >> print bs

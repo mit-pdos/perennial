@@ -49,6 +49,7 @@ Definition readTableIndex fd index : proc unit :=
   sequence of encoded entires (a suffix of all the entires in fd), and index has
   pointers to everything before bs *)
   Loop (fun '(off,bs) =>
+          _ <- Data.printByteString bs;
           match decode Entry.t bs with
           | Some (e, n) =>
             (* here we need to compute the offset to the value within the
