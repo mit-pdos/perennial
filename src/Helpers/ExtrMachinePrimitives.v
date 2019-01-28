@@ -15,6 +15,8 @@ Extract Inlined Constant toNum => "UNDEFINED_toNum".
 Extract Constant uint64_from_le => "Lib.uint64_from_le".
 Extract Constant uint64_to_le => "Lib.uint64_to_le".
 
+Extract Constant four_kilobytes => "(4096 :: Lib.Word64)".
+
 
 Extract Inductive comparison => "Prelude.Ordering" ["Prelude.EQ" "Prelude.LT" "Prelude.GT"].
 

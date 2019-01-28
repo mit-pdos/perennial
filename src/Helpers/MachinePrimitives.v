@@ -89,12 +89,15 @@ Proof.
   rewrite Nat.sub_0_r; auto.
 Qed.
 
+Definition four_kilobytes : uint64 := fromNum 4096.
+
 Module UIntNotations.
   Delimit Scope uint64_scope with u64.
   Infix "+" := add : uint64_scope.
   Infix "-" := sub : uint64_scope.
   Notation "0" := (fromNum 0) : uint64_scope.
   Notation "1" := (fromNum 1) : uint64_scope.
+  Notation "4096" := four_kilobytes : uint64_scope.
 End UIntNotations.
 
 Section UInt64Properties.
