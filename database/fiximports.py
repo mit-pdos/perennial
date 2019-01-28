@@ -11,6 +11,7 @@ import_modules = {
     [
         "BinaryEncoding",
         "Common",
+        "DataStructureTests",
         "DataStructures",
         "ExtractionExamples",
         "Filesys",
