@@ -14,8 +14,8 @@ Section refinement_triples.
 
   Definition DBLockInv :=
     (∃ l, source_state l
-          ∗ sum_addr ↦ (fold_right plus O l) @N
-          ∗ count_addr ↦ (length l) @N)%I.
+          ∗ sum_addr m↦ (fold_right plus O l)
+          ∗ count_addr m↦ (length l))%I.
 
   Definition DBInv := (source_ctx ρ ∗ ∃ N γ, is_lock N γ lock_addr DBLockInv)%I.
 

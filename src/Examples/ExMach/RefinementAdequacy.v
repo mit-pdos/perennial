@@ -5,16 +5,15 @@ From iris.algebra Require Export functions.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.
 Require Export ExMach.ExMachAPI ExMach.WeakestPre.
-Require Export ExMach.SeqHeap.
 Set Default Proof Using "Type".
 
 Class exmachPreG Σ := ExMachPreG {
   exm_preG_iris :> invPreG Σ;
-  exm_preG_mem :> seq_heapPreG nat nat Σ;
+  exm_preG_mem :> gen_heapPreG nat nat Σ;
   exm_preG_disk :> gen_heapPreG nat nat Σ
 }.
 
-Definition exmachΣ : gFunctors := #[invΣ; gen_heapΣ nat nat; seq_heapΣ nat nat].
+Definition exmachΣ : gFunctors := #[invΣ; gen_heapΣ nat nat; gen_heapΣ nat nat].
 Instance subG_exmachPreG {Σ} : subG exmachΣ Σ → exmachPreG Σ.
 Proof. solve_inG. Qed.
 
@@ -25,75 +24,71 @@ Import ExMach.
 Definition exmach_recovery_adequacy {T R} Σ `{exmachPreG Σ} s
            (e: proc ExMach.Op T) (rec: proc _ R) σ φ φrec (φinv : forall {_ : exmachG Σ}, iProp Σ) :
   state_wf σ →
-  (∀ `{exmachGenG Σ},
-      let H := exmachGen_set 0 in
-      (([∗ map] i ↦ v ∈ mem_state σ, i ↦ v @N)
-               ={⊤}=∗
+  (∀ `{exmachG Σ},
+      (([∗ map] i ↦ v ∈ mem_state σ, i m↦ v) -∗
+       ([∗ map] i ↦ v ∈ disk_state σ, i d↦ v) ={⊤}=∗
                WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}
                ∗ (|={⊤, ∅}=> φinv)
-               ∗ □ (∀ Hinv H0 H1 k,
-                      let H := @ExMachG Σ Hinv H0 H1 (S k) in
-                      (∃ Hinv, @φinv (@ExMachG Σ Hinv _ _ k))
+               ∗ □ (∀ `{hex: exmachG Σ},
+                      (∃ Hinv H0', @φinv (@ExMachG Σ Hinv H0' (exm_disk_inG))) -∗
+                      ([∗ map] i ↦ v ∈ init_zero, i m↦ v)
                       ={⊤}=∗ WP rec @ s; ⊤ {{ _, ⌜ φrec ⌝ }}
-                         ∗ (|={⊤, ∅}=>
-                         let _ := ExMachG Σ _ _ _ (exm_current) in φinv))
+                         ∗ (|={⊤, ∅}=> φinv))
       )%I) →
   s = NotStuck →
   @recv_adequate _ _ _ ExMach.l s e rec σ (λ v _, φ v) (λ _, φrec).
 Proof.
   intros Hwf Hwp Hnot_stuck.
   eapply (wp_recovery_adequacy _ _) with
-   (φinv0 := (fun s => ∃ _ : exmachG Σ, state_interp s ∗ φinv _)%I); auto.
+      (φinv0 := (fun s => ∃ _ : exmachG Σ,
+                     state_interp s
+                       ∗ φinv _
+                       ∗ (∃ (hM: gen_heapG addr nat Σ)
+                            (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
+            H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable)) , gen_heap_ctx init_zero ∗ own (gen_heap_name hM)
+                                                     (◯ to_gen_heap init_zero)))%I); auto.
   iIntros (?) "".
-  iMod (seq_heap_strong_init
-          (fun i => if nat_eq_dec i 0 then mem_state σ else init_zero)) as (? Hpf_eq) "(Hmc&Hm)".
-  iMod (gen_heap_init (disk_state σ)) as (?) "Hd".
-  iExists (ex_mach_interp O).
-  iSplitL "Hmc Hd".
-  { simpl. iExists _, _. iFrame. iPureIntro.
-    destruct nat_eq_dec; last by congruence.
+  iMod (gen_heap_strong_init (mem_state σ)) as (hM Hmpf_eq) "(Hmc&Hm)".
+  iMod (gen_heap_strong_init (disk_state σ)) as (hD Hdpf_eq) "(Hdc&Hd)".
+  iExists (@ex_mach_interp _ hM hD).
+  iSplitL "Hmc Hdc".
+  { iExists _, _. iFrame. iPureIntro.
     destruct Hwf as (Hwf1&Hwf2).
-    split_and!; eauto.
-    intros k ?.
-    destruct nat_eq_dec.
-    * lia.
-    * intuition.
-    * intros i. destruct (Hwf1 i). intuition.
-    * intros i. destruct (Hwf2 i). intuition.
+    split_and!; eauto; intros i.
+    * destruct (Hwf1 i); intuition.
+    * destruct (Hwf2 i); intuition.
   }
-  iPoseProof (Hwp (ExMachGenG Σ _ _ _)) as "H".
-  iMod ("H" with "[Hm]") as "(Hwp&Hinv&#Hrec)"; iClear "H".
-  {
-    rewrite -Hpf_eq. iApply mem_init_to_bigOp0; auto.
-    destruct Hwf; auto.
-  }
-  iModIntro.
+  iPoseProof (Hwp (ExMachG Σ _ hM hD)) as "H".
+  iMod ("H" with "[Hm] [Hd]") as "(Hwp&Hinv&#Hrec)"; iClear "H".
+  { rewrite -Hmpf_eq. iApply mem_init_to_bigOp; auto. }
+  { rewrite -Hdpf_eq. iApply disk_init_to_bigOp; auto. }
   iSplitL "Hwp".
-  { iApply wp_wand_l; iFrame. iIntros.
+  { iApply wp_wand_l; iFrame. iModIntro. iIntros.
     iApply fupd_mask_weaken; first by set_solver+. auto. }
   iSplitL "Hinv".
-  { iIntros.  iMod "Hinv". iModIntro. iExists _. iFrame; auto. }
-  iAlways. iIntros (invG ?? Hcrash) "Hinv".
-  iDestruct "Hinv" as (HexmachG) "(Hstate&Hinv)".
-  simpl in *.
-  iSpecialize ("Hrec" $! invG (@exm_mem_inG _ HexmachG) (@exm_disk_inG _ HexmachG)
-                      ((@exm_current Σ HexmachG)) with "[Hinv]").
-  { iExists (exm_invG). destruct HexmachG; auto. }
-  iMod "Hrec" as "(Hrec&Hinv)".
+  { iModIntro. iIntros (?) "Hinterp". iMod "Hinv".
+    iMod (gen_heap_strong_init (init_zero)) as (hM' Hmpf_eq') "(Hmc&Hm)".
+    iExists _. iModIntro. iFrame "Hinv". iFrame "Hinterp". iExists hM', Hmpf_eq'; iFrame. }
+  iModIntro. iAlways. iIntros (invG ?? Hcrash) "Hinv".
+  iDestruct "Hinv" as (HexmachG) "(Hstate&Hinv&Hm')".
+  iDestruct "Hm'" as (hM' Hmpf_eq') "(Hmc'&Hm')".
+  iSpecialize ("Hrec" $! (ExMachG Σ invG hM' (@exm_disk_inG _ HexmachG)) with "[Hinv]").
+  { iExists (exm_invG). iExists (@exm_mem_inG _ HexmachG); eauto.
+    destruct HexmachG; auto. }
+  iMod ("Hrec" with "[Hm']") as "(Hrec&Hinv)".
+  { rewrite -Hmpf_eq'. iApply @mem_init_to_bigOp; auto. }
   iModIntro.
-  iExists ((@ex_mach_interp Σ (@exm_disk_inG Σ HexmachG) (@exm_mem_inG Σ HexmachG)
-                            (S (@exm_current Σ HexmachG)))).
-  iSplitL "Hstate".
+  iExists (@ex_mach_interp Σ hM' (@exm_disk_inG Σ HexmachG)).
+  iSplitL "Hstate Hmc'".
   { (* shows ex_mach_interp is holds after crash for next gen *)
     rewrite /ex_mach_interp.
-    iDestruct "Hstate" as (mems disks) "(?&?&%&Hp)".
-    iDestruct "Hp" as %(Hdisks&Hcrash'&Hwf1&Hwf2).
+    iDestruct "Hstate" as (mems disks) "(_&?&%&Hp)".
+    iDestruct "Hp" as %(Hdisks&Hwf1&Hwf2).
     inversion Hcrash; subst.
-    iExists mems, _. iFrame.
+    iExists init_zero, _. iFrame.
     iPureIntro. split_and!.
-    * eauto.
     * rewrite /crash_fun//=.
-    * intros. eapply Hcrash'; eauto. lia.
+    * rewrite /crash_fun//=.
     * rewrite /crash_fun/=. intros i Hsome.
       apply not_le; intros Hge.
       rewrite init_zero_lookup_ge_None in Hsome; last by lia.
@@ -107,91 +102,91 @@ Proof.
     iIntros. iApply fupd_mask_weaken; auto.
   }
   iIntros.
+  iMod (gen_heap_strong_init (init_zero)) as (hM'' Hmpf_eq'') "(Hmc&Hm)".
   iMod "Hinv". iModIntro.
   iExists {| exm_invG := invG;
-             exm_mem_inG := HexmachG.(@exm_mem_inG Σ);
-             exm_disk_inG := HexmachG.(@exm_disk_inG Σ);
-             exm_current := S HexmachG.(@exm_current Σ) |}.
-  iFrame.
+             exm_mem_inG := hM';
+             exm_disk_inG := HexmachG.(@exm_disk_inG Σ) |}.
+  iFrame. iExists hM'', Hmpf_eq''. iFrame.
 Qed.
 
 
 Section test.
 
-  Definition test := (_ <- write_mem 0 1; Ret ())%proc.
-  Definition test_rec := (x <- read_mem 0; if nat_eq_dec x 0 then assert true else assert false)%proc.
+  Definition test := (_ <- write_mem 0 1; write_disk 0 1)%proc.
+  Definition test_rec := (x <- read_mem 0; y <- read_disk 0;
+                          assert (andb (Nat.eqb x 0) (negb (Nat.eqb y 2))))%proc.
 
   Context `{exmachG}.
 
-  Definition EI := (∃ v, 0 ↦ v @N)%I.
-  Definition EI' := (0 ↦ 0 @N)%I.
-  Definition CI := (0 ↦ 0 @C)%I.
+  Definition EI := (∃ v, ⌜ v < 2 ⌝ ∗ 0 d↦ v )%I.
 
-  Lemma test_spec N: {{{ inv N EI }}} test {{{ RET (); True }}}.
+  Lemma test_spec N: {{{ inv N EI ∗ 0 m↦ 0 }}} test {{{ RET (); True }}}.
   Proof.
-    iIntros (Φ) "Hinv H". rewrite /test. wp_bind.
-    iInv N as (v) ">HEI".
-    iApply (wp_write_mem with "[$]"); iIntros "!> ? !>".
+    iIntros (Φ) "(Hinv&mem) H". rewrite /test. wp_bind.
+    iApply (wp_write_mem with "[$]"). iIntros "!> ?".
+    iInv N as ">HEI".
+    iDestruct "HEI" as (v ?) "Hd".
+    iApply (wp_write_disk with "[$]"). iIntros "!> ? !>".
     iSplitR "H".
-    - iNext. iExists _. eauto.
-    - wp_ret. by iApply "H".
+    - iExists 1. iNext. eauto.
+    - by iApply "H".
   Qed.
 
-  Lemma test_rec_spec N: {{{ inv N EI' }}} test_rec {{{ RET (); True }}}.
-    iIntros (Φ) "Hinv H". rewrite /test_rec. wp_bind.
+  Lemma test_rec_spec N: {{{ inv N EI ∗ 0 m↦ 0 }}} test_rec {{{ RET (); True }}}.
+    iIntros (Φ) "(Hinv&Hmem) H". rewrite /test_rec. wp_bind.
+    iApply (wp_read_mem with "[$]"); iIntros "!> ?".
+    wp_bind.
     iInv N as ">HEI".
-    iApply (wp_read_mem with "[$]"); iIntros "!> ? !>".
+    iDestruct "HEI" as (v ?) "Hd".
+    iApply (wp_read_disk with "[$]"); iIntros "!> ? !>".
     iSplitR "H".
-    - iNext. eauto.
-    - iApply wp_assert; eauto.
+    - iExists v. iNext. eauto.
+    - iApply wp_assert; auto.
+      rewrite (Nat.eqb_refl).
+      destruct (Nat.eqb_spec v 2); auto. lia.
   Qed.
 
 End test.
 
-Arguments CI : clear implicits.
-
 Section closed.
-
-  Lemma exm_current_S Σ H1 a0 a1 a2:
-    (S (@exm_current Σ (ExMachG Σ H1 a0 a1 a2))) =
-    (@exm_current Σ (ExMachG Σ H1 a0 a1 (S a2))).
-  Proof. rewrite //=. Qed.
-
 
   (* TODO: shorten and bundle up the re-usable reasoning here. *)
   Lemma adeq_closed:
     @recv_adequate _ _ _ ExMach.l NotStuck test test_rec init_state (λ v _, True) (λ _, True).
   Proof.
-    eapply (exmach_recovery_adequacy exmachΣ) with (φinv := CI exmachΣ).
+    eapply (exmach_recovery_adequacy exmachΣ) with (φinv := @EI _).
     - apply init_state_wf.
-    - iIntros (?). unfold exmachGen_set. iIntros "Hbig".
+    - iIntros (?). iIntros "Hbig1 Hbig2".
       rewrite (big_opM_delete _ _ 0 0); last first.
       { rewrite /mem_state. apply init_zero_lookup_lt_zero. rewrite /size. lia. }
-      iDestruct "Hbig" as "(Hz&_)".
-      iMod (inv_alloc nroot _ EI with "[-]") as "#H".
-      { iExists O; eauto. }
+      rewrite (big_opM_delete _ (init_state.(disk_state)) 0 0); last first.
+      { rewrite /mem_state. apply init_zero_lookup_lt_zero. rewrite /size. lia. }
+      iDestruct "Hbig1" as "(Hzm&_)".
+      iDestruct "Hbig2" as "(Hzd&_)".
+      iMod (inv_alloc nroot _ EI with "[Hzd]") as "#H".
+      { iExists O. iNext. iFrame. auto. }
 
       iModIntro.
-      iSplitR ""; last iSplitR "".
-      * by iApply test_spec.
-      * iMod (inv_open_timeless with "H") as "(HEI&_)".
-        set_solver+. iApply fupd_mask_weaken; first by set_solver+.
-        iDestruct "HEI" as (v) "Hpt".
-        iApply mem_crash; eauto.
+      iSplitL "Hzm"; last iSplitR "".
+      * iApply (test_spec with "[Hzm]"); iFrame; eauto.
+      * iMod (@inv_open_timeless with "H") as "(HEI&_)".
+        set_solver+. iApply @fupd_mask_weaken; first by set_solver; eauto.
+        done.
       * iClear "H". iModIntro.
-        iIntros (??? ?) "Hinv".
-        iDestruct "Hinv" as (?) "Hinv'".
-        simpl. rewrite /CI exm_current_S.
-        clear H0.
-        unshelve (iMod (@inv_alloc _ a nroot ⊤ EI' with "[-]") as "#H").
-        { eexists. eauto. eauto. eauto. exact (S a2). }
-        { iNext. rewrite /EI'. simpl. simpl. iApply "Hinv'". }
-        iModIntro.
-        iSplitL.
-        ** iApply test_rec_spec; eauto.
-        ** iMod (@inv_open_timeless with "H") as "(HEI&_)".
-           set_solver+. iApply @fupd_mask_weaken; first by set_solver+.
-           iApply mem_crash; eauto.
+        iIntros (?) "HEI Hbig".
+        rewrite (big_opM_delete _ _ 0 0); last first.
+        { rewrite /mem_state. apply init_zero_lookup_lt_zero. rewrite /size. lia. }
+        iDestruct "Hbig" as "(H&_)".
+        iDestruct "HEI" as (H ?) "HEI".
+        rewrite /EI. simpl. clear H.
+        iMod (inv_alloc nroot ⊤ EI with "[HEI]") as "#H'".
+        { iNext. rewrite /EI. auto. }
+        iModIntro. iSplitL "H".
+        ** iApply (test_rec_spec with "[H]"); iFrame; eauto.
+        ** iMod (@inv_open_timeless with "H'") as "(HEI&_)".
+           set_solver+. iApply @fupd_mask_weaken; first by set_solver; eauto.
+           done.
     - auto.
   Qed.
 End closed.
