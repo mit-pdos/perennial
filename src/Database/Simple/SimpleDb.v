@@ -83,7 +83,7 @@ Definition readValue fd off : proc ByteString :=
       let bs := BS.drop n bs in
       (* bs' should be the remainder of the value at off *)
       bs' <- if compare (BS.length bs) len == Lt then
-              FS.readAt fd (off+BS.length bs) (len - BS.length bs)
+              FS.readAt fd (off+n+BS.length bs) (len - BS.length bs)
             else Ret BS.empty;
         Ret (BS.append bs bs')
     | None => Ret BS.empty
