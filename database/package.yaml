@@ -52,3 +52,7 @@ tests:
     - database
     - QuickCheck
     - quickcheck-instances
+    ghc-options:
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wno-name-shadowing

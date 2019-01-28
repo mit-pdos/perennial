@@ -57,13 +57,13 @@ Definition readTableIndex fd index : proc unit :=
             let valueOffset := 8+off in
             _ <- Data.hashTableAlter index e.(Entry.key)
                                               (fun _ => Some valueOffset);
-              Continue (off, BS.drop n bs)
+              Continue (off+n, BS.drop n bs)
           | None =>
-            bs' <- FS.readAt fd off 4096;
+            bs' <- FS.readAt fd (off+BS.length bs) 4096;
               if BS.length bs' == 0
               then LoopRet tt (* no more data; should only happen if bs was
               already empty since the table has a sequence of entries *)
-              else Continue (off+BS.length bs, BS.append bs bs')
+              else Continue (off, BS.append bs bs')
           end)
        (0, BS.empty).
 
@@ -219,13 +219,13 @@ Definition tblPutOldTable (w:TblW.t) t (b:HashTable ByteString) : proc _ :=
                     Ret tt
                   | None => tblPut w k v
                   end;
-              Continue (off, BS.drop n bs)
+              Continue (off+n, BS.drop n bs)
           | None =>
-            bs' <- FS.readAt t.(Tbl.file) off 4096;
+            bs' <- FS.readAt t.(Tbl.file) (off+BS.length bs) 4096;
               if BS.length bs' == 0
               then LoopRet tt (* no more data; should only happen if bs was
               already empty since the table has a sequence of entries *)
-              else Continue (off+BS.length bs, BS.append bs bs')
+              else Continue (off, BS.append bs bs')
           end)
        (0, BS.empty).
 
@@ -254,6 +254,7 @@ Definition compact db : proc unit :=
     buf <- Data.readIORef db.(Db.wbuffer);
     _ <- (empty_wbuffer <- Data.newHashTable _;
            Data.writeIORef db.(Db.wbuffer) empty_wbuffer);
+    _ <- Data.writeIORef db.(Db.rbuffer) buf;
     _ <- Data.lockRelease Writer db.(Db.bufferL);
 
     (* next, construct the new table *)
@@ -280,6 +281,8 @@ Definition compact db : proc unit :=
       _ <- FS.atomicCreate "manifest" (BS.fromString newTable);
       _ <- FS.close oldTable.(Tbl.file);
       _ <- FS.delete oldTableName;
+      (* note that we don't need to remove the rbuffer (it's just a cache for
+      the part of the table we just persisted) *)
       _ <- Data.lockRelease Writer db.(Db.tableL);
 
       _ <- Data.lockRelease Writer db.(Db.compactionL);

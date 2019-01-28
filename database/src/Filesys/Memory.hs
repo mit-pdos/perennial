@@ -2,7 +2,7 @@
 module Filesys.Memory
   ( MemFilesysM
   , run
-  , runCheckFds
+  , checkFds
   ) where
 
 import           Control.Concurrent.MVar (MVar, newMVar, withMVar)
@@ -57,12 +57,10 @@ openFds = withFilesys $ do
   h <- reader handles
   liftIO $ map snd <$> H.toList h
 
-runCheckFds :: MemFilesysM a -> IO a
-runCheckFds act = run $ do
-  x <- act
+checkFds :: MemFilesysM ()
+checkFds = do
   openfiles <- openFds
   unless (null openfiles) $ error $ "there are still open fds to " ++ show openfiles
-  return x
 
 getFd :: ReaderT State IO Int
 getFd = do
