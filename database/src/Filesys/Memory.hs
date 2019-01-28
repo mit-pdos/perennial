@@ -3,13 +3,16 @@ module Filesys.Memory
   ( MemFilesysM
   , run
   , checkFds
+  , printDebugListing
   ) where
 
+import           Control.Arrow (second) -- I apologize
 import           Control.Concurrent.MVar (MVar, newMVar, withMVar)
 import           Control.Monad (void, unless)
 import           Control.Monad.IO.Class
 import           Control.Monad.Reader (ReaderT, reader, liftIO, runReaderT, lift)
 import           Data.IORef (IORef, newIORef, atomicModifyIORef')
+import           GHC.Exts (sortWith)
 
 import           Control.Concurrent.Forkable
 import qualified Data.ByteString as BS
@@ -53,14 +56,23 @@ withFilesys act = MemFilesysM $
   using filesys $ \m -> withMVar m (runReaderT act)
 
 openFds :: MemFilesysM [FilePath]
-openFds = withFilesys $ do
-  h <- reader handles
-  liftIO $ map snd <$> H.toList h
+openFds = withFilesys $
+  using handles (\h -> map snd <$> H.toList h)
 
 checkFds :: MemFilesysM ()
 checkFds = do
   openfiles <- openFds
   unless (null openfiles) $ error $ "there are still open fds to " ++ show openfiles
+
+printDebugListing :: MemFilesysM ()
+printDebugListing = withFilesys $ do
+  listing <- do
+    h <- reader files
+    ents <- liftIO $ sortWith fst <$> H.toList h
+    return $ map (second BS.length) ents
+  liftIO $ putStr "file sizes: " >> print listing
+  fds <- using handles (\h -> sortWith fst <$> H.toList h)
+  liftIO $ putStr "open files: " >> print fds
 
 getFd :: ReaderT State IO Int
 getFd = do
