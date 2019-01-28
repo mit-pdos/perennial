@@ -8,6 +8,9 @@ Each function returns a proc (A*A), where the first elements is the actual value
 
 Local Open Scope proc.
 
+Import UIntNotations.
+Local Open Scope u64.
+
 Notation spec A := ((A * A)%type) (only parsing).
 
 Definition shouldReturn A (p: proc A) (expected:A) : proc (spec A) :=
@@ -45,6 +48,14 @@ Definition hashtableLookup bs :
     x1 <- Data.hashTableLookup r 1;
     x2 <- Data.hashTableLookup r 3;
     Ret ((x1, x2), (None, Some bs)).
+
+Definition hashtableIntLookup :
+  proc (spec (option uint64 * option uint64)) :=
+  r <- Data.newHashTable uint64;
+    _ <- Data.hashTableAlter r 3 (fun _ => Some 4096);
+    x1 <- Data.hashTableLookup r 1;
+    x2 <- Data.hashTableLookup r 3;
+    Ret ((x1, x2), (None, Some 4096)).
 
 Definition hashtableReadAll :
   proc (spec (uint64 * uint64)) :=

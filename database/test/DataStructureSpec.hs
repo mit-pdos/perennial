@@ -34,6 +34,8 @@ spec = parallel $ do
   describe "hashtables" $ do
     it "should lookup" $ do
       runTest $ hashtableLookup "bar"
+    it "should lookup ints" $ do
+      runTest $ hashtableIntLookup
     it "should read all elements" $ do
       runTest hashtableReadAll
   describe "locks" $ do
