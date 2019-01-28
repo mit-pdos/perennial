@@ -101,8 +101,10 @@ bs_length = fromIntegral . BS.length
 -- The key is to use visible type application syntax (foo @Int, after using
 -- TypeApplications), and an explicit forall ensures that the desired type
 -- variable is first.
+{-# INLINE coerceRet #-}
 coerceRet :: forall a x f. Functor f => f a -> f x
-coerceRet = fmap unsafeCoerce
+coerceRet = unsafeCoerce
 
+{-# INLINE coerceVoid #-}
 coerceVoid :: Functor f => f () -> f x
-coerceVoid = fmap unsafeCoerce
+coerceVoid = coerceRet

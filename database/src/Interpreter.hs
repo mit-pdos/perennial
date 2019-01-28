@@ -14,6 +14,7 @@ import qualified FilesysOps
 import           Lib (coerceRet, coerceVoid)
 
 
+{-# INLINE interpret #-}
 interpret :: (MonadFilesys m, MonadIO m, ForkableMonad m) =>
              Coq_proc (BaseLayer.Op a) x -> m x
 interpret (Call (BaseLayer.FilesysOp op)) = coerceRet $ FilesysOps.interpret op

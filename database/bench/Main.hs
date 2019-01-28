@@ -13,6 +13,7 @@ import qualified Filesys.NoFilesys as NoFilesys
 import           Interpreter
 import           Lib
 
+{-# INLINE run #-}
 run :: Coq_proc (BaseLayer.Op a) x -> IO x
 run = NoFilesys.run . interpret
 
