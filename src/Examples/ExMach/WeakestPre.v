@@ -33,10 +33,13 @@ Definition ex_mach_interp {Σ} {hM: gen_heapG addr nat Σ} {hD: gen_heapG addr n
                           (∀ i, is_Some (disk_state s !! i) → i < size) ⌝
       )%I.
 
+Definition ex_mach_interp' `{exmachG Σ} :=
+    @ex_mach_interp _ exm_mem_inG exm_disk_inG.
+
 Instance exmachG_irisG `{exmachG Σ} : irisG ExMach.Op ExMach.l Σ :=
   {
     iris_invG := exm_invG;
-    state_interp := @ex_mach_interp _ exm_mem_inG exm_disk_inG;
+    state_interp := ex_mach_interp'
   }.
 
 

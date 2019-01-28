@@ -5,7 +5,7 @@ Require Import Spec.Layer.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationTheorems.
 Require Import Helpers.RelationRewriting.
-Require Import CSL.WeakestPre CSL.Refinement CSL.Adequacy.
+Require Export CSL.WeakestPre CSL.Refinement CSL.Adequacy.
 From iris.algebra Require Import auth frac agree gmap list.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
@@ -34,7 +34,8 @@ Require Import Helpers.RelationAlgebra.
 Theorem wp_recovery_crash_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
         (ea: proc OpTa T) (ec: proc OpTc T) (rec: proc OpTc R)
-        φinv (absr: relation Λa.(State) Λc.(State) unit) E
+        (φinv : forall {_ : @cfgG OpTa Λa Σ}, Λc.(State) → iProp Σ)
+        (absr: relation Λa.(State) Λc.(State) unit) E
         (Habsr_no_err: ∀ σa, ¬ absr σa Err):
   nclose sourceN ⊆ E →
   (∀ (σ1a: Λa.(State)) σ1c,
@@ -43,7 +44,7 @@ Theorem wp_recovery_crash_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: 
           (|={⊤}=> ∃ stateI : State Λc → iProp Σ,
              let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
              (source_ctx ([existT _ ea], σ1a) ∗ O ⤇ ea ∗ source_state σ1a)
-               -∗
+               ={⊤}=∗
                stateI σ1c
                ∗ WP ec @ NotStuck; ⊤ {{ v, O ⤇ of_val v
                     ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ σ2a, source_state σ2a ∗ ⌜absr σ2a (Val σ2c tt)⌝)}}
@@ -85,7 +86,7 @@ Proof.
                                                    absr σ3a (Val σ2c' tt))).
   { intros σ1a σ1c ? Habsr_init.
     eapply wp_recovery_adequacy with
-        (φinv0 := fun σ => (φinv σ ∗ ∃ _ : cfgG Σ, source_inv [existT T ea] σ1a)%I); eauto.
+        (φinv0 := fun σ => (∃ _ : cfgG Σ, φinv _ σ ∗ source_inv [existT T ea] σ1a)%I); eauto.
     iIntros (Hinv).
     assert (Inhabited Λa.(State)).
     { eexists; eauto. }
@@ -93,7 +94,7 @@ Proof.
     { intros Herr; apply Hno_fault. apply exec_partial_err_exec_err; eauto. }
     iPoseProof (Hwp _ _ Habsr_init $! Hinv cfgG) as "H".
     iMod "H" as (stateI) "Hwand"; eauto.
-    iDestruct ("Hwand" with "[Hpool HstateA]") as "[Hstate [H [Hinv #Hφ]]]"; eauto.
+    iMod ("Hwand" with "[Hpool HstateA]") as "[Hstate [H [Hinv #Hφ]]]"; eauto.
     { iFrame. iFrame "#".
       rewrite /source_pool_map/tpool_to_map fmap_insert fmap_empty insert_empty //=.
     }
@@ -116,9 +117,9 @@ Proof.
       iMod (inv_open_timeless with "Hsrc") as "(?&_)"; first by eassumption.
       iApply fupd_mask_weaken; auto.
       { set_solver+. }
-      iFrame. iExists _; eauto.
-    * iModIntro. iIntros (????) "(?&Hinv)".
-      iDestruct "Hinv" as (cfgG') "HcfgInv".
+      iFrame. iExists _; iFrame.
+    * iModIntro. iIntros (????) "Hinv".
+      iDestruct "Hinv" as (cfgG') "(?&HcfgInv)".
       iClear "Hsrc".
       iMod ("Hφ" with "[//] [$]") as (stateI') "(Hstate&Hwp&Hinv)".
       iMod (inv_alloc sourceN ⊤ (source_inv _ _) with "HcfgInv") as "#cfgInv".
@@ -139,7 +140,7 @@ Proof.
          iMod (inv_open_timeless with "cfgInv") as "(?&_)"; first by eassumption.
          iApply fupd_mask_weaken; auto.
          { set_solver+. }
-         iFrame. iExists _; eauto.
+         iFrame. iExists _; iFrame.
   }
   split.
   - rewrite /refines.
@@ -180,6 +181,7 @@ Proof.
       econstructor; eauto.
 Qed.
 
+(* TODO: need to generalize so that φinv can depend on cfgG as above *)
 Theorem wp_recovery_trace_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
         (ea: proc OpTa T) (ec: proc OpTc T) (rec: proc OpTc R)
@@ -192,7 +194,7 @@ Theorem wp_recovery_trace_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: 
           (|={⊤}=> ∃ stateI : State Λc → iProp Σ,
              let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
              (source_ctx ([existT _ ea], σ1a) ∗ O ⤇ ea ∗ source_state σ1a)
-               -∗
+               ={⊤}=∗
                stateI σ1c
                ∗ WP ec @ NotStuck; ⊤ {{ v, O ⤇ of_val v
                     ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ ∃ σ2a, source_state σ2a ∗ ⌜absr σ2a (Val σ2c tt)⌝)}}
@@ -263,7 +265,7 @@ Proof.
       apply exec_partial_err_exec_err; eauto. }
     iPoseProof (Hwp _ _ Habsr_init $! Hinv cfgG) as "H".
     iMod "H" as (stateI) "Hwand"; eauto.
-    iDestruct ("Hwand" with "[Hpool HstateA]") as "[Hstate [H [Hinv #Hφ]]]"; eauto.
+    iMod ("Hwand" with "[Hpool HstateA]") as "[Hstate [H [Hinv #Hφ]]]"; eauto.
     { iFrame. iFrame "#".
       rewrite /source_pool_map/tpool_to_map fmap_insert fmap_empty insert_empty //=.
     }

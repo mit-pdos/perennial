@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy.
 Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions.
 From iris.base_logic.lib Require Export invariants gen_heap.
@@ -110,6 +110,110 @@ Proof.
   iFrame. iExists hM'', Hmpf_eq''. iFrame.
 Qed.
 
+Require Import Spec.Proc.
+Require Import Spec.ProcTheorems.
+Require Import Spec.Abstraction.
+Require Import Spec.Layer.
+Theorem exmach_crash_refinement {T R} OpTa Σ (Λa: Layer OpTa)
+        `{exmachPreG Σ} `{cfgPreG OpTa Λa Σ}
+        (ea: proc OpTa T) (ec: proc ExMach.Op T) (rec: proc ExMach.Op R)
+        (absr: relation Λa.(State) ExMach.State unit) (Habsr_no_err: ∀ σa, ¬ absr σa Err)
+        (Habsr_wf: ∀ σa σc, absr σa (Val σc tt) → state_wf σc) E
+        (φinv: forall {_ : @cfgG OpTa Λa Σ} {_ : exmachG Σ}, iProp Σ):
+  nclose sourceN ⊆ E →
+  (∀ (σ1a: Λa.(State)) σ,
+      absr σ1a (Val σ tt) →
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpTa Λa Σ},
+          (([∗ map] i ↦ v ∈ mem_state σ, i m↦ v) -∗
+           ([∗ map] i ↦ v ∈ disk_state σ, i d↦ v) -∗
+             (source_ctx ([existT _ ea], σ1a) ∗ O ⤇ ea ∗ source_state σ1a) ={⊤}=∗
+                WP ec @ NotStuck; ⊤ {{ v, O ⤇ of_val v
+                    ∗ (∀ σ2c, ex_mach_interp' σ2c ={⊤,E}=∗ ∃ σ2a, source_state σ2a ∗ ⌜absr σ2a (Val σ2c tt)⌝)}}
+                    ∗ (|={⊤,E}=> φinv)
+                    ∗ □ (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpTa Λa Σ} σ1c σ1c' (Hcrash: ExMach.l.(crash_step) σ1c (Val σ1c' tt)),
+                           (∃ Hinv H0', @φinv _ (@ExMachG Σ Hinv H0' (exm_disk_inG))) -∗
+                           ([∗ map] i ↦ v ∈ init_zero, i m↦ v)
+                           ={⊤}=∗ WP rec @ NotStuck; ⊤ {{ v, (∀ σ2c, ex_mach_interp' σ2c ={⊤,E}=∗ ∃ σ2a σ2a', source_state σ2a ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt) ∧ absr σ2a' (Val σ2c tt)⌝)}}
+                                  ∗ (|={⊤,E}=> φinv))))%I) →
+  crash_refines absr ExMach.l ec (rec_singleton rec) (Λa.(exec) ea)
+                (and_then (Λa.(exec_halt) ea) (fun _ => Λa.(crash_step))).
+Proof.
+  intros ? Hwp.
+  eapply (wp_recovery_crash_refinement OpTa ExMach.Op Σ Λa ExMach.l)
+    with
+      (E0 := E)
+      (φinv0 := (fun cfgG s => ∃ (_ : exmachG Σ),
+                     state_interp s
+                       ∗ φinv cfgG _
+                       ∗ (∃ (hM: gen_heapG addr nat Σ)
+                            (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
+            H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable)) , gen_heap_ctx init_zero ∗ own (gen_heap_name hM) (◯ to_gen_heap init_zero)))%I); auto.
+  iIntros (σ1a σ Habsr) "".
+  iIntros (? Hcfg0).
+  iMod (gen_heap_strong_init (mem_state σ)) as (hM Hmpf_eq) "(Hmc&Hm)".
+  iMod (gen_heap_strong_init (disk_state σ)) as (hD Hdpf_eq) "(Hdc&Hd)".
+  iExists (@ex_mach_interp _ hM hD).
+  iIntros "!> (Hsrc&Hpt0)".
+  iSplitL "Hmc Hdc".
+  { iExists _, _. iFrame. iPureIntro.
+    edestruct (Habsr_wf) as (Hwf1&Hwf2); first eauto.
+    split_and!; eauto; intros i.
+    * destruct (Hwf1 i); intuition.
+    * destruct (Hwf2 i); intuition.
+  }
+  iPoseProof (Hwp σ1a σ Habsr $! (ExMachG Σ _ hM hD) Hcfg0) as "H".
+  iMod ("H" with "[Hm] [Hd] [Hsrc Hpt0]") as "(Hwp&Hinv&#Hrec)"; iClear "H".
+  { rewrite -Hmpf_eq. iApply mem_init_to_bigOp; auto. }
+  { rewrite -Hdpf_eq. iApply disk_init_to_bigOp; auto. }
+  { iFrame.  }
+  iSplitL "Hwp".
+  { iApply wp_wand_l; iFrame. iModIntro. iIntros (v) "($&H)"; auto. }
+  iSplitL "Hinv".
+  { iModIntro. iIntros (?) "Hinterp". iMod "Hinv".
+    iMod (gen_heap_strong_init (init_zero)) as (hM' Hmpf_eq') "(Hmc&Hm)".
+    iExists _. iModIntro. iFrame "Hinv". iFrame "Hinterp". iExists hM', Hmpf_eq'; iFrame. }
+  iModIntro. iAlways. iIntros (invG Hcfg' ?? Hcrash) "Hinv".
+  iDestruct "Hinv" as (HexmachG) "(Hstate&Hinv&Hm')".
+  iDestruct "Hm'" as (hM' Hmpf_eq') "(Hmc'&Hm')".
+  iSpecialize ("Hrec" $! (ExMachG Σ invG hM' (@exm_disk_inG _ HexmachG)) Hcfg' with "[//] [Hinv]").
+  { iExists (exm_invG). iExists (@exm_mem_inG _ HexmachG); eauto.
+    destruct HexmachG; auto. }
+  iMod ("Hrec" with "[Hm']") as "(Hrec&Hinv)".
+  { rewrite -Hmpf_eq'. iApply @mem_init_to_bigOp; auto. }
+  iModIntro.
+  iExists (@ex_mach_interp Σ hM' (@exm_disk_inG Σ HexmachG)).
+  iSplitL "Hstate Hmc'".
+  { (* shows ex_mach_interp is holds after crash for next gen *)
+    rewrite /ex_mach_interp.
+    iDestruct "Hstate" as (mems disks) "(_&?&%&Hp)".
+    iDestruct "Hp" as %(Hdisks&Hwf1&Hwf2).
+    inversion Hcrash; subst.
+    iExists init_zero, _. iFrame.
+    iPureIntro. split_and!.
+    * rewrite /crash_fun//=.
+    * rewrite /crash_fun//=.
+    * rewrite /crash_fun/=. intros i Hsome.
+      apply not_le; intros Hge.
+      rewrite init_zero_lookup_ge_None in Hsome; last by lia.
+      apply is_Some_None in Hsome; auto.
+    * rewrite /crash_fun; auto.
+  }
+  iSplitL "Hrec".
+  {
+    (* TODO: For some reason @wp_wand_l fails here, not sure why *)
+    iPoseProof (@wp_mono with "[Hrec]") as "H"; [| eauto |]; last eauto.
+    iIntros (?) "H". iIntros. iMod ("H" with "[$]") as (??) "(?&%)". iModIntro.
+    iExists _, _. iFrame.
+    eauto.
+  }
+  iIntros.
+  iMod (gen_heap_strong_init (init_zero)) as (hM'' Hmpf_eq'') "(Hmc&Hm)".
+  iMod "Hinv". iModIntro.
+  iExists {| exm_invG := invG;
+             exm_mem_inG := hM';
+             exm_disk_inG := HexmachG.(@exm_disk_inG Σ) |}.
+  iFrame. iExists hM'', Hmpf_eq''. iFrame.
+Qed.
 
 Section test.
 
