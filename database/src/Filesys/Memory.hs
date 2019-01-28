@@ -2,12 +2,13 @@
 module Filesys.Memory
   ( MemFilesysM
   , run
+  , runCheckFds
   ) where
 
-import           Control.Monad (void)
-import           Control.Monad.Reader (ReaderT, reader, liftIO, runReaderT, lift)
-import           Control.Monad.IO.Class
 import           Control.Concurrent.MVar (MVar, newMVar, withMVar)
+import           Control.Monad (void, unless)
+import           Control.Monad.IO.Class
+import           Control.Monad.Reader (ReaderT, reader, liftIO, runReaderT, lift)
 import           Data.IORef (IORef, newIORef, atomicModifyIORef')
 
 import           Control.Concurrent.Forkable
@@ -50,6 +51,18 @@ using f act = do
 withFilesys :: ReaderT State IO a -> MemFilesysM a
 withFilesys act = MemFilesysM $
   using filesys $ \m -> withMVar m (runReaderT act)
+
+openFds :: MemFilesysM [FilePath]
+openFds = withFilesys $ do
+  h <- reader handles
+  liftIO $ map snd <$> H.toList h
+
+runCheckFds :: MemFilesysM a -> IO a
+runCheckFds act = run $ do
+  x <- act
+  openfiles <- openFds
+  unless (null openfiles) $ error $ "there are still open fds to " ++ show openfiles
+  return x
 
 getFd :: ReaderT State IO Int
 getFd = do
