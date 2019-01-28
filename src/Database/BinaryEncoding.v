@@ -49,10 +49,9 @@ Definition decodeFinished : Decoder unit :=
          end.
 
 Definition decodeFixed (n:uint64) : Decoder ByteString :=
-  fun bs => match compare (BS.length bs) n with
-         | Gt => None
-         | _ => Some (BS.take n bs, n)
-         end.
+  fun bs => if compare n (BS.length bs) == Gt
+         then None
+         else Some (BS.take n bs, n).
 
 Definition decodeMap A B (f: A -> B) (dec: Decoder A) : Decoder B :=
   fun bs => match dec bs with

@@ -49,7 +49,6 @@ Definition readTableIndex fd index : proc unit :=
   sequence of encoded entires (a suffix of all the entires in fd), and index has
   pointers to everything before bs *)
   Loop (fun '(off,bs) =>
-          _ <- Data.printByteString bs;
           match decode Entry.t bs with
           | Some (e, n) =>
             (* here we need to compute the offset to the value within the
@@ -71,8 +70,8 @@ Definition recoverTbl (p:Path) : proc Tbl.t :=
   index <- Data.newHashTable uint64;
     fd <- FS.open p;
     _ <- readTableIndex fd index;
-  Ret {| Tbl.index := index;
-         Tbl.file := fd |}.
+    Ret {| Tbl.index := index;
+           Tbl.file := fd |}.
 
 Definition closeTbl t : proc unit :=
   FS.close t.(Tbl.file).

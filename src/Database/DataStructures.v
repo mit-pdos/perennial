@@ -93,7 +93,7 @@ Module Data.
   | LockAcquire : LockMode -> LockRef -> Op unit
   | LockRelease : LockMode -> LockRef -> Op unit
 
-  | PrintByteString : ByteString -> Op unit
+  | PrintByteString : String.string -> ByteString -> Op unit
   .
 
   Section OpWrappers.
@@ -156,8 +156,8 @@ Module Data.
     Definition lockRelease m r : proc _ :=
       Call! LockRelease m r.
 
-    Definition printByteString bs : proc _ :=
-      Call! PrintByteString bs.
+    Definition printByteString key bs : proc _ :=
+      Call! PrintByteString key bs.
 
   End OpWrappers.
 
@@ -371,7 +371,7 @@ Module Data.
                       else error (* attempt to release a lock with the wrong mode *)
         | Unlocked => error (* attempt to double-release a lock *)
         end
-    | PrintByteString _ => identity
+    | PrintByteString _ _ => identity
     end.
 
   Definition vars0 (v:Var.t) : Var.ty v :=

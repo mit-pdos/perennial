@@ -6,7 +6,6 @@ import           Prelude hiding (read)
 
 import           Control.Monad.IO.Class
 import qualified Data.ByteString.Char8 as BSC8
-import qualified Data.HashTable.IO as H
 import qualified Data.List as List
 import           Test.Hspec hiding (shouldReturn)
 
@@ -156,16 +155,14 @@ persistenceSpec = do
     recovered $ \db -> do
       read db 1 `shouldReturn` Just "v1"
       read db 2 `shouldReturn` Nothing
-  xit "should recover multiple writes" $ withFs $ do
+  it "should recover multiple writes" $ withFs $ do
     beforeCrash $ \db -> do
       write db 1 "value1"
       write db 2 "v2"
       write db 3 "another value"
       compact db
       read db 1 `shouldReturn` Just "value1"
-      Mem.printDebugListing
     recovered $ \db -> do
-      Mem.printDebugListing
       read db 1 `shouldReturn` Just "value1"
       read db 2 `shouldReturn` Just "v2"
       read db 3 `shouldReturn` Just "another value"
@@ -198,14 +195,12 @@ tableSpec = do
     tblRead t 1 `shouldReturn` Just (largeVal 5000)
     tblRead t 3 `shouldReturn` Just "small"
     tblRead t 2 `shouldReturn` Just "also small"
-  xit "should recover correctly" $ withFs $ do
+  it "should recover correctly" $ withFs $ do
     t <- withTbl $ \w -> do
       tblPut w 1 "v1"
       tblPut w 3 "v3"
     closeTbl t
     t <- recoverTbl "table"
-    liftIO $ case t of
-      Db.Tbl__Coq_mk h _ -> H.toList h >>= print
     tblRead t 1 `shouldReturn` Just "v1"
     tblRead t 3 `shouldReturn` Just "v3"
 

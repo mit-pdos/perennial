@@ -2,10 +2,12 @@
 module DataOps where
 
 import           Data.IORef (newIORef, readIORef, writeIORef)
+import           Text.Printf (printf)
 
+import qualified Control.Concurrent.ReadWriteLock as RWLock
+import qualified Data.ByteString as BS
 import qualified Data.HashTable.IO as H
 import qualified Data.Vector.Mutable.Dynamic as V
-import qualified Control.Concurrent.ReadWriteLock as RWLock
 
 import           Coq.DataStructures
 import           Lib (Word64, coerceRet, coerceVoid)
@@ -24,8 +26,7 @@ interpret (Data__ArrayLength r) =
 interpret (Data__ArrayGet r i) = V.unsafeRead r (fromIntegral i)
 interpret (Data__ArrayAppend r x) = coerceVoid $ V.pushBack r x
 interpret Data__NewHashTable = coerceRet @(HashTable _) H.new
-interpret (Data__HashTableAlter h k f) = do
-  putStrLn $ "key " ++ show k ++ " being modified"
+interpret (Data__HashTableAlter h k f) =
   coerceVoid $ H.mutate h k (\v -> (f v, ()))
 interpret (Data__HashTableLookup h k) =
   coerceRet $ H.lookup h k
@@ -43,5 +44,6 @@ interpret (Data__LockRelease m r) =
   coerceVoid $ case m of
                  Reader -> RWLock.releaseRead r
                  Writer -> RWLock.releaseWrite r
-interpret (Data__PrintByteString bs) =
-  coerceVoid $ putStr "print: " >> print bs
+interpret (Data__PrintByteString key bs) =
+  let bsDisplay = if BS.null bs then "" else ": " ++ show bs in
+  coerceVoid $ putStrLn $ printf "print(%s)" key ++ bsDisplay
