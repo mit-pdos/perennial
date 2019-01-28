@@ -4,8 +4,11 @@ module SimpleDbSpec(spec) where
 
 import           Prelude hiding (read)
 
-import           Test.Hspec hiding (shouldReturn)
 import           Control.Monad.IO.Class
+import qualified Data.ByteString.Char8 as BSC8
+import qualified Data.HashTable.IO as H
+import qualified Data.List as List
+import           Test.Hspec hiding (shouldReturn)
 
 import           Coq.Common (Key, Value)
 import qualified Coq.SimpleDb as Db
@@ -53,11 +56,17 @@ newTbl p = interpret $ Db.newTblW p
 tblPut :: TableW -> Key -> Value -> MemFilesysM ()
 tblPut t k v = interpret $ Db.tblPut t k v
 
-tblClose :: TableW -> MemFilesysM TableT
-tblClose t = interpret $ Db.tblWClose t
+tblWClose :: TableW -> MemFilesysM TableT
+tblWClose t = interpret $ Db.tblWClose t
 
 tblRead :: TableT -> Key -> MemFilesysM (Maybe Value)
 tblRead t k = interpret $ Db.tblRead t k
+
+closeTbl :: TableT -> MemFilesysM ()
+closeTbl t = interpret $ Db.closeTbl t
+
+recoverTbl :: FilePath -> MemFilesysM TableT
+recoverTbl p = interpret $ Db.recoverTbl p
 
 withDb :: (DbT -> MemFilesysM ()) -> IO ()
 withDb act = withFs $ do
@@ -166,7 +175,7 @@ withTbl :: (TableW -> MemFilesysM ()) -> MemFilesysM TableT
 withTbl act = do
   w <- newTbl "table"
   act w
-  tblClose w
+  tblWClose w
 
 tableSpec :: Spec
 tableSpec = do
@@ -180,10 +189,29 @@ tableSpec = do
       tblPut w 2 "other value"
     tblRead t 1 `shouldReturn` Just "v1"
     tblRead t 2 `shouldReturn` Just "other value"
+  it "should work with large values" $ withFs $ do
+    let largeVal n = BSC8.pack (List.replicate n 'a')
+    t <- withTbl $ \w -> do
+      tblPut w 3 "small"
+      tblPut w 1 (largeVal 5000)
+      tblPut w 2 "also small"
+    tblRead t 1 `shouldReturn` Just (largeVal 5000)
+    tblRead t 3 `shouldReturn` Just "small"
+    tblRead t 2 `shouldReturn` Just "also small"
+  xit "should recover correctly" $ withFs $ do
+    t <- withTbl $ \w -> do
+      tblPut w 1 "v1"
+      tblPut w 3 "v3"
+    closeTbl t
+    t <- recoverTbl "table"
+    liftIO $ case t of
+      Db.Tbl__Coq_mk h _ -> H.toList h >>= print
+    tblRead t 1 `shouldReturn` Just "v1"
+    tblRead t 3 `shouldReturn` Just "v3"
 
 spec :: Spec
 spec = do
   describe "database open, close, recovery" lifecycleSpec
   describe "basic database operations" basicDatabaseSpec
+  describe "table creation and reading" tableSpec
   describe "database should persist correctly" persistenceSpec
-  xdescribe "table creation and reading" tableSpec

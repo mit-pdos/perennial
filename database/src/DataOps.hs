@@ -24,7 +24,8 @@ interpret (Data__ArrayLength r) =
 interpret (Data__ArrayGet r i) = V.unsafeRead r (fromIntegral i)
 interpret (Data__ArrayAppend r x) = coerceVoid $ V.pushBack r x
 interpret Data__NewHashTable = coerceRet @(HashTable _) H.new
-interpret (Data__HashTableAlter h k f) =
+interpret (Data__HashTableAlter h k f) = do
+  putStrLn $ "key " ++ show k ++ " being modified"
   coerceVoid $ H.mutate h k (\v -> (f v, ()))
 interpret (Data__HashTableLookup h k) =
   coerceRet $ H.lookup h k

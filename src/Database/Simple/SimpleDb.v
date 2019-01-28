@@ -55,8 +55,7 @@ Definition readTableIndex fd index : proc unit :=
             encoded entry; we know the key is 8 bytes, so the overall offset to
             the value is always 8+off *)
             let valueOffset := 8+off in
-            _ <- Data.hashTableAlter index e.(Entry.key)
-                                              (fun _ => Some valueOffset);
+            _ <- Data.hashTableAlter index e.(Entry.key) (fun _ => Some valueOffset);
               Continue (off+n, BS.drop n bs)
           | None =>
             bs' <- FS.readAt fd (off+BS.length bs) 4096;
@@ -68,11 +67,14 @@ Definition readTableIndex fd index : proc unit :=
        (0, BS.empty).
 
 Definition recoverTbl (p:Path) : proc Tbl.t :=
-  index <- Data.newHashTable _;
+  index <- Data.newHashTable uint64;
     fd <- FS.open p;
     _ <- readTableIndex fd index;
   Ret {| Tbl.index := index;
          Tbl.file := fd |}.
+
+Definition closeTbl t : proc unit :=
+  FS.close t.(Tbl.file).
 
 (* read an array encoded at off efficiently (using a single bulk IO in the
 common case) *)
@@ -85,7 +87,7 @@ Definition readValue fd off : proc ByteString :=
       bs' <- if compare (BS.length bs) len == Lt then
               FS.readAt fd (off+n+BS.length bs) (len - BS.length bs)
             else Ret BS.empty;
-        Ret (BS.append bs bs')
+        Ret (BS.take len (BS.append bs bs'))
     | None => Ret BS.empty
     end.
 
@@ -279,7 +281,7 @@ Definition compact db : proc unit :=
       _ <- Data.writeIORef db.(Db.table) t;
       _ <- Data.writeIORef db.(Db.tableName) newTable;
       _ <- FS.atomicCreate "manifest" (BS.fromString newTable);
-      _ <- FS.close oldTable.(Tbl.file);
+      _ <- closeTbl oldTable;
       _ <- FS.delete oldTableName;
       (* note that we don't need to remove the rbuffer (it's just a cache for
       the part of the table we just persisted) *)
@@ -339,7 +341,7 @@ Definition shutdownDb db : proc unit :=
     _ <- Data.lockAcquire Writer db.(Db.bufferL);
     _ <- Data.lockAcquire Writer db.(Db.compactionL);
     t <- Data.readIORef db.(Db.table);
-    _ <- FS.close t.(Tbl.file);
+    _ <- closeTbl t;
     _ <- Data.lockRelease Writer db.(Db.compactionL);
     _ <- Data.lockRelease Writer db.(Db.bufferL);
     Ret tt.
