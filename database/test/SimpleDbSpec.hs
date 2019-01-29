@@ -37,8 +37,14 @@ closeDb db = interpret $ Db.closeDb db
 shutdownDb :: DbT -> MemFilesysM ()
 shutdownDb db = interpret $ Db.shutdownDb db
 
+crash :: DbT -> MemFilesysM ()
+crash db = shutdownDb db >> Mem.checkFds
+
 compact :: DbT -> MemFilesysM ()
 compact db = interpret $ Db.compact db
+
+persistCrash :: DbT -> MemFilesysM ()
+persistCrash db = compact db >> crash db
 
 read :: DbT -> Key -> MemFilesysM (Maybe Value)
 read db k = interpret $ Db.read db k
@@ -67,11 +73,19 @@ closeTbl t = interpret $ Db.closeTbl t
 recoverTbl :: FilePath -> MemFilesysM TableT
 recoverTbl p = interpret $ Db.recoverTbl p
 
+bracket ::
+  MemFilesysM res -- ^ initialize resource
+  -> (res -> MemFilesysM ()) -- ^ cleanup resource
+  -> (res -> MemFilesysM a) -- ^ action
+  -> MemFilesysM a
+bracket open close act = do
+  res <- open
+  x <- act res
+  close res
+  return x
+
 withDb :: (DbT -> MemFilesysM ()) -> IO ()
-withDb act = withFs $ do
-  db <- newDb
-  act db
-  closeDb db
+withDb = withFs . bracket newDb closeDb
 
 shouldReturn :: (Show a, Eq a) => MemFilesysM a -> a -> MemFilesysM ()
 shouldReturn act expected = do
@@ -79,10 +93,7 @@ shouldReturn act expected = do
   liftIO $ x `shouldBe` expected
 
 beforeCrash :: (DbT -> MemFilesysM ()) -> MemFilesysM ()
-beforeCrash act = do
-  db <- newDb
-  act db
-  shutdownDb db
+beforeCrash = bracket newDb crash
 
 recovered :: (DbT -> MemFilesysM ()) -> MemFilesysM ()
 recovered act = do
@@ -156,17 +167,34 @@ persistenceSpec = do
       read db 1 `shouldReturn` Just "v1"
       read db 2 `shouldReturn` Nothing
   it "should recover multiple writes" $ withFs $ do
-    beforeCrash $ \db -> do
+    bracket newDb persistCrash $ \db -> do
       write db 1 "value1"
       write db 2 "v2"
       write db 3 "another value"
-      compact db
-      read db 1 `shouldReturn` Just "value1"
-    recovered $ \db -> do
+    bracket recover crash $ \db -> do
       read db 1 `shouldReturn` Just "value1"
       read db 2 `shouldReturn` Just "v2"
       read db 3 `shouldReturn` Just "another value"
       read db 0 `shouldReturn` Nothing
+  it "should persist multiple tables" $ withFs $ do
+    bracket newDb persistCrash $ \db -> do
+      write db 1 "v1"
+      write db 2 "v2"
+    bracket recover persistCrash $ \db -> do
+      write db 3 "v3"
+      write db 4 "v4"
+    bracket recover closeDb $ \db -> do
+      read db 1 `shouldReturn` Just "v1"
+      read db 3 `shouldReturn` Just "v3"
+  it "should overwrite table values" $ withFs $ do
+    bracket newDb closeDb $ \db -> do
+      write db 1 "v1"
+    bracket recover persistCrash $ \db -> do
+      write db 1 "v2"
+    recovered $ \db -> do
+      read db 1 `shouldReturn` Just "v2"
+      write db 1 "v3"
+      read db 1 `shouldReturn` Just "v3"
 
 withTbl :: (TableW -> MemFilesysM ()) -> MemFilesysM TableT
 withTbl act = do
