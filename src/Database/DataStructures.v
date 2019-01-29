@@ -177,7 +177,7 @@ Module Data.
 
   Definition hashtableM V := gmap.gmap uint64 V.
 
-  Inductive LockStatus := Locked (m:LockMode) | Unlocked.
+  Inductive LockStatus := Locked | ReadLocked (num:nat) | Unlocked.
 
   Record State : Type :=
     mkState { vars: forall (var:Var.t), Var.ty var;
@@ -284,13 +284,35 @@ Module Data.
                        opStep s x
     end.
 
-  (* can two modes be acquired simulataneously? only true when both are
-  readers *)
-  Definition lock_compat (m1 m2:LockMode) : bool :=
-    match m1, m2 with
-    | Reader, Reader => true
-    | _, _ => false
+  (* returns [Some s'] when the lock should be acquired to status s', and None
+  if the lock would block *)
+  Definition lock_acquire (m:LockMode) (s:LockStatus) : option LockStatus :=
+    match m, s with
+    | Reader, ReadLocked n => Some (ReadLocked (S n))
+    (* note that the number is one less than the number of readers, so that
+       ReadLocked 0 means something *)
+    | Reader, Unlocked => Some (ReadLocked 0)
+    | Writer, Unlocked => Some Locked
+    | _, _ => None
     end.
+
+  (* returns [Some s'] when the lock should be released to status s', and None if this usage is an error *)
+  Definition lock_release (m:LockMode) (s:LockStatus) : option LockStatus :=
+    match m, s with
+    | Reader, ReadLocked 0 => Some Unlocked
+    | Reader, ReadLocked (S n) => Some (ReadLocked n)
+    | Writer, Locked => Some Unlocked
+    | _, _ => None
+    end.
+
+  (* sanity check lock definitions: if you can acquire a lock, you can always
+  release it the same way and get back to where you started *)
+  Lemma lock_acquire_release m s :
+    forall s', lock_acquire m s = Some s' ->
+          lock_release m s' = Some s.
+  Proof.
+    destruct m, s; simpl; inversion 1; auto.
+  Qed.
 
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
@@ -352,24 +374,18 @@ Module Data.
         pure r
     | LockAcquire m r =>
       v <- readSome (fun s => s.(locks) r);
-        match v with
-        | Locked m' =>
-          if lock_compat m m'
-          then (* both callers can have this lock *)
-            puts (set locks (upd_locks r (Locked m)))
-          else (* disabled transition; will only become available when the lock
-                  is freed by its owner *)
-            none
-        | Unlocked => puts (set locks (upd_locks r (Locked m)))
+        match lock_acquire m v with
+        | Some s' => puts (set locks (upd_locks r s'))
+        | None =>
+          (* disabled transition; will only become available when the lock
+             is freed by its owner *)
+          none
         end
     | LockRelease m r =>
       v <- readSome (fun s => s.(locks) r);
-        (* this API needs to be used correctly, since the caller should only release locks after definitely acquiring them *)
-        match v with
-        | Locked m' => if m == m'
-                      then puts (set locks (upd_locks r Unlocked))
-                      else error (* attempt to release a lock with the wrong mode *)
-        | Unlocked => error (* attempt to double-release a lock *)
+        match lock_release m v with
+        | Some s' => puts (set locks (upd_locks r s'))
+        | None => error (* attempt to free the lock incorrectly *)
         end
     | PrintByteString _ _ => identity
     end.
