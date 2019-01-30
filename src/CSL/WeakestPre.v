@@ -146,6 +146,7 @@ Definition wp_eq {OpT} `{irisG OpT Λ Σ} : wp = @wp_def OpT Λ Σ _ := wp_aux.(
 
 Arguments wp {_ _ _ _} _ {_} _ _.
 Instance: Params (@wp) 8.
+Qed.
 
 Notation "'WP' e @ s ; E {{ Φ } }" := (wp s E e Φ)
   (at level 20, e, Φ at level 200,
