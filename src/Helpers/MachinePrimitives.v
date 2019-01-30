@@ -89,6 +89,104 @@ Proof.
   rewrite Nat.sub_0_r; auto.
 Qed.
 
+Inductive Uint64CompareSpec x : uint64 -> Type :=
+| CompareEq : compare x x = Eq ->
+              Uint64CompareSpec x x
+| CompareLt : forall y, toNum x < toNum y ->
+                   compare x y = Lt ->
+                   Uint64CompareSpec x y
+| CompareGt : forall y, toNum x > toNum y ->
+                   compare x y = Gt ->
+                   Uint64CompareSpec x y
+.
+
+Definition u64_compare_dec x y : Uint64CompareSpec x y.
+Proof.
+  destruct_with_eqn (Nat.compare x.(toNum) y.(toNum));
+    [ assert (x = y); [ | subst; eapply CompareEq ]
+    | eapply CompareLt
+    | eapply CompareGt ];
+    unfold compare; simpl;
+      eauto.
+  - apply Nat.compare_eq_iff in Heqc.
+    apply toNum_inj; auto.
+  - apply Nat.compare_lt_iff in Heqc; auto.
+  - apply Nat.compare_gt_iff in Heqc; auto.
+Defined.
+
+Definition compare_to_pf {x y c} :
+  compare x y = c ->
+  match c with
+  | Eq => x = y
+  | Lt => toNum x < toNum y
+  | Gt => toNum x > toNum y
+  end.
+Proof.
+  intros; subst.
+  destruct (u64_compare_dec x y);
+    rewrite e;
+    eauto.
+Qed.
+
+Local Definition compare_lt_dec_helper x y :
+  {H & equal (compare x y) Lt = left H /\
+       toNum x < toNum y} +
+  {H & equal (compare x y) Lt = right H /\
+       toNum x >= toNum y}.
+Proof.
+  destruct (u64_compare_dec x y); rewrite e;
+    match goal with
+    | |- context[equal ?x ?y] => destruct (equal x y); try congruence
+    end;
+    eauto.
+  assert (toNum x >= toNum y) by lia; eauto.
+Qed.
+
+Local Definition compare_gt_dec_helper x y :
+  {H & equal (compare x y) Gt = left H /\
+       toNum x > toNum y} +
+  {H & equal (compare x y) Gt = right H /\
+       toNum x <= toNum y}.
+Proof.
+  destruct (u64_compare_dec x y); rewrite e;
+    match goal with
+    | |- context[equal ?x ?y] => destruct (equal x y); try congruence
+    end;
+    eauto.
+  assert (toNum x <= toNum y) by lia; eauto.
+Qed.
+
+Theorem compare_eq x : compare x x = Eq.
+Proof.
+  destruct x; simpl.
+  apply Nat.compare_eq_iff; auto.
+Qed.
+
+Inductive BinaryCompareSpec (x y : uint64) (c:comparison)
+          (Peq Pneq: Prop) :=
+| CompareIsEq Heq (Hc: equal (compare x y) c = left Heq) (pf:Peq)
+| CompareIsNeq Hneq (Hc: equal (compare x y) c = right Hneq) (pf:Pneq).
+
+Definition compare_lt_dec x y :
+  BinaryCompareSpec x y Lt
+                    (toNum x < toNum y)
+                    (toNum x >= toNum y).
+Proof.
+  destruct (compare_lt_dec_helper x y).
+  destruct s; intuition; eauto using BinaryCompareSpec.
+  destruct s; intuition; eauto using BinaryCompareSpec.
+Qed.
+
+Definition compare_gt_dec x y :
+  BinaryCompareSpec x y Gt
+                    (toNum x > toNum y)
+                    (toNum x <= toNum y).
+Proof.
+  destruct (compare_gt_dec_helper x y).
+  destruct s; intuition; eauto using BinaryCompareSpec.
+  destruct s; intuition; eauto using BinaryCompareSpec.
+Qed.
+
 Definition four_kilobytes : uint64 := fromNum 4096.
 
 Module UIntNotations.
@@ -181,19 +279,36 @@ Proof.
   destruct n; simpl; auto.
 Qed.
 
+Module BSNotations.
+  Delimit Scope bs_scope with bs.
+  Infix "++" := BS.append : bs_scope.
+End BSNotations.
+
 Section ByteStringProperties.
   Ltac start :=
     repeat match goal with
-           | |- forall _, _ => intros
            | [ a: uint64 |- _ ] => destruct a as [a]
            | [ bs: ByteString |- _ ] => destruct bs as [bs]
            | |- @eq uint64 _ _ => apply toNum_inj
            | |- @eq ByteString _ _ => apply getBytes_inj
-           end; simpl.
+           | _ => progress simpl
+           | |- forall _, _ => intros
+           end.
 
   Import UIntNotations.
+  Import BSNotations.
 
-  Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = (BS.length bs - n)%u64.
+  Local Open Scope u64.
+  Local Open Scope bs.
+
+  Theorem append_assoc bs1 bs2 bs3 :
+    (bs1 ++ bs2) ++ bs3 = bs1 ++ bs2 ++ bs3.
+  Proof.
+    start.
+    rewrite app_assoc; auto.
+  Qed.
+
+  Theorem drop_length : forall n bs, BS.length (BS.drop n bs) = BS.length bs - n.
   Proof.
     start.
     rewrite skipn_length.
@@ -201,35 +316,65 @@ Section ByteStringProperties.
   Qed.
 
   Theorem drop_drop n m bs :
-    BS.drop n (BS.drop m bs) = BS.drop (m + n)%u64 bs.
+    BS.drop n (BS.drop m bs) = BS.drop (m + n) bs.
   Proof.
     start.
     rewrite list.drop_drop; auto.
   Qed.
+
+  Theorem drop_app_exact n bs1 bs2 :
+    n = BS.length bs1 ->
+    BS.drop n (bs1 ++ bs2) = bs2.
+  Proof.
+    intros ->.
+    start.
+    rewrite list.drop_app; auto.
+  Qed.
+
+  Theorem app_length bs1 bs2 :
+    BS.length (bs1 ++ bs2) = BS.length bs1 + BS.length bs2.
+  Proof.
+    start.
+    rewrite app_length; auto.
+  Qed.
+
+  Theorem take_app_exact n bs1 bs2 :
+    BS.length bs1 = n ->
+    BS.take n (bs1 ++ bs2) = bs1.
+  Proof.
+    start.
+    apply fromNum_inj in H; subst; simpl.
+    rewrite take_app; auto.
+  Qed.
+
+  Theorem take_length_le bs n :
+    toNum n <= toNum (BS.length bs) ->
+    BS.length (BS.take n bs) = n.
+  Proof.
+    start.
+    rewrite take_length.
+    lia.
+  Qed.
+
+  Theorem take_length_gt bs n :
+    toNum n > toNum (BS.length bs) ->
+    BS.length (BS.take n bs) = BS.length bs.
+  Proof.
+    start.
+    rewrite take_length.
+    lia.
+  Qed.
+
 End ByteStringProperties.
 
-Module BSNotations.
-  Delimit Scope bs_scope with bs.
-  Infix "++" := BS.append : bs_scope.
-End BSNotations.
-
-Class LittleEndianEncoder intTy :=
-  { encodeLE : intTy -> ByteString;
-    decodeLE : ByteString -> option intTy; }.
-
-Class LittleEndianEncoderOK bytes intTy (enc:LittleEndianEncoder intTy) :=
-  { encode_length_ok : forall x, toNum (BS.length (encodeLE x)) = bytes;
-    encode_decode_LE_ok : forall x, decodeLE (encodeLE x) = Some x; }.
+Record LittleEndianEncoder bytes intTy (enc:intTy -> ByteString) (dec:ByteString -> option intTy) :=
+  { encode_length_ok : forall x, BS.length (enc x) = fromNum bytes;
+    encode_decode_ok : forall x, dec (enc x) = Some x; }.
 
 Axiom uint64_to_le : uint64 -> ByteString.
 Axiom uint64_from_le : ByteString -> option uint64.
 
-Instance uint64_le_enc : LittleEndianEncoder uint64 :=
-  {| encodeLE := uint64_to_le;
-     decodeLE := uint64_from_le; |}.
-
-Axiom uint64_enc_ok : LittleEndianEncoderOK 8 uint64_le_enc.
-Existing Instance uint64_enc_ok.
+Axiom uint64_le_enc : LittleEndianEncoder 8 uint64_to_le uint64_from_le.
 
 (** File descriptors *)
 

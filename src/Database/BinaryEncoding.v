@@ -72,54 +72,117 @@ End DecodeNotations.
 
 Class Encodable (T: Type) :=
   { encode : T -> ByteString;
-    decode : Decoder T; }.
+    decode : Decoder T;
+  }.
 
-Arguments encode {T fmt} v : rename.
-Arguments decode T {fmt} bs : rename.
+Class EncodableCorrect T (enc:Encodable T) :=
+  { decode_encode : forall x bs',
+        decode (encode x ++ bs')%bs = Some (x, BS.length (encode x));
+    (* TODO: also prove prefix of an encoding decodes to None *)
+  }.
+
+(* only for this file's proofs make formats explicit *)
+Arguments encode {T} fmt : rename.
+Arguments decode {T} fmt : rename.
+Arguments decode_encode {T} fmt {fmt_ok} : rename.
 
 Import DecodeNotations.
 Local Open Scope bs.
 Local Open Scope dec.
 
+Theorem decodeBind_encode_first T1 T2 fmt1 {fmt1_ok:EncodableCorrect fmt1} (rx: T1 -> Decoder T2) :
+  forall x bs',
+    decodeBind fmt1.(decode) rx (fmt1.(encode) x ++ bs') =
+    match rx x bs' with
+    | Some (v, n) => Some (v, BS.length (fmt1.(encode) x) + n)%u64
+    | None => None
+    end.
+Proof.
+  unfold decodeBind; simpl; intros.
+  rewrite fmt1.(decode_encode).
+  rewrite drop_app_exact; auto.
+Qed.
+
 Instance product_fmt
          T1 T2 (fmt1: Encodable T1) (fmt2: Encodable T2)
   : Encodable (T1*T2).
 Proof.
-  refine {| encode '(x1, x2) := encode x1 ++ encode x2;
+  refine {| encode '(x1, x2) := fmt1.(encode) x1 ++ fmt2.(encode) x2;
             decode :=
-              v1 <- decode T1;;
-                 v2 <- decode T2;;
+              v1 <- fmt1.(decode);;
+                 v2 <- fmt2.(decode);;
                  ret (v1, v2); |}.
 Defined.
 
-Instance uint64_fmt : Encodable uint64 :=
-  {| encode := encodeLE;
-    decode := fun bs =>
-                match decodeLE bs with
-                | Some x => Some (x, fromNum 8)
-                | None => None
-                end; |}.
+Instance product_fmt_ok
+         `(fmt1_ok: @EncodableCorrect T1 fmt1) `(fmt2_ok: @EncodableCorrect T2 fmt2) : EncodableCorrect (product_fmt fmt1 fmt2).
+Proof.
+  constructor; intros.
+  destruct x as [x1 x2]; simpl.
+  rewrite append_assoc.
+  rewrite decodeBind_encode_first; eauto.
+  rewrite decodeBind_encode_first; eauto.
+  simpl.
+  f_equal.
+  f_equal.
+  rewrite app_length.
+  apply toNum_inj; simpl.
+  lia.
+Qed.
+
+Instance uint64_fmt : Encodable uint64.
+Proof.
+  refine {| encode := uint64_to_le;
+            decode := fun bs =>
+                        let num := BS.take 8 bs in
+                        if compare (BS.length num) 8 == Lt
+                        then None
+                        else match uint64_from_le num with
+                             | Some x => Some (x, fromNum 8)
+                             | None => None
+                             end; |}.
+Defined.
+
+Instance uint64_fmt_ok : EncodableCorrect uint64_fmt.
+Proof.
+  constructor; intros.
+  simpl.
+  rewrite take_app_exact
+    by (rewrite uint64_le_enc.(encode_length_ok); auto).
+  rewrite uint64_le_enc.(encode_length_ok).
+  rewrite compare_eq.
+  destruct (Eq == Lt); try congruence.
+  rewrite uint64_le_enc.(encode_decode_ok); auto.
+Qed.
 
 Record Array64 := array64 { getBytes :> ByteString }.
 
 Instance array64_fmt : Encodable Array64.
 Proof.
   refine {| encode := fun (bs:Array64) =>
-              array64 (encode (BS.length bs) ++ bs);
+              array64 (uint64_fmt.(encode) (BS.length bs) ++ bs);
             decode :=
-              l <- decode uint64;;
-                array64 <$> decodeFixed l; |}.
+              l <- uint64_fmt.(decode);;
+                                     array64 <$> decodeFixed l; |}.
 Defined.
+
+Instance array64_fmt_ok : EncodableCorrect array64_fmt.
+Proof.
+Admitted.
 
 Instance entry_fmt : Encodable Entry.t.
 Proof.
   refine {| encode :=
-              fun e => encode e.(Entry.key) ++ encode (array64 e.(Entry.value));
+              fun e => uint64_fmt.(encode) e.(Entry.key) ++ array64_fmt.(encode) (array64 e.(Entry.value));
             decode :=
-              key <- decode uint64;;
-            value <- getBytes <$> decode Array64;;
+              key <- uint64_fmt.(decode);;
+            value <- getBytes <$> array64_fmt.(decode);;
             ret (Entry.mk key value); |}.
 Defined.
+
+Instance entry_fmt_ok : EncodableCorrect entry_fmt.
+Proof.
+Admitted.
 
 Fixpoint encode_list T (enc: T -> ByteString) (l: list T) : ByteString :=
   match l with
@@ -169,11 +232,18 @@ Defined.
 Instance SliceHandle_fmt : Encodable SliceHandle.t.
 Proof.
   refine {| encode :=
-              fun h => encode h.(SliceHandle.offset)
-                    ++ encode h.(SliceHandle.length);
+              fun h => uint64_fmt.(encode) h.(SliceHandle.offset)
+                    ++ uint64_fmt.(encode) h.(SliceHandle.length);
             decode :=
-              offset <- decode uint64;;
-            length <- decode uint64;;
+              offset <- uint64_fmt.(decode);;
+            length <- uint64_fmt.(decode);;
             ret (SliceHandle.mk offset length);
          |}.
 Defined.
+
+Instance SliceHandle_fmt_ok : EncodableCorrect SliceHandle_fmt.
+Proof.
+Admitted.
+
+Arguments encode {T fmt} v : rename.
+Arguments decode T {fmt} bs : rename.
