@@ -145,8 +145,7 @@ Definition wp `{irisG OpT Λ Σ} := unseal (@wp_aux OpT Λ Σ _).
 Definition wp_eq {OpT} `{irisG OpT Λ Σ} : wp = @wp_def OpT Λ Σ _ := wp_aux.(seal_eq).
 
 Arguments wp {_ _ _ _} _ {_} _ _.
-Instance: Params (@wp) 8.
-Qed.
+Instance: Params (@wp) 8 := ltac:(constructor).
 
 Notation "'WP' e @ s ; E {{ Φ } }" := (wp s E e Φ)
   (at level 20, e, Φ at level 200,
