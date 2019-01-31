@@ -9,13 +9,20 @@ Module Table.
       mk { handle: SliceHandle.t;
            keys: Key * Key; }.
 
-    Instance t_enc : Encodable t.
+    Instance t_fmt : Encodable t.
     Proof.
       refine {| encode := fun e => BS.append (encode e.(handle)) (encode e.(keys));
                 decode := decodeBind (decode SliceHandle.t)
                                      (fun h => decodeBind (decode (Key * Key))
                                       (fun ks => decodeRet (mk h ks))); |}.
     Defined.
+
+    Instance t_fmt_ok : EncodableCorrect t_fmt.
+    Proof.
+      constructor; intros; simpl.
+      destruct x as [handle [min max]]; simpl.
+      BinaryEncoding.simplify.
+    Qed.
   End IndexEntry.
 
   (* reference to a read-only table *)

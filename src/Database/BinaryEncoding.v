@@ -75,6 +75,14 @@ Definition decodeMap A B (f: A -> B) (dec: Decoder A) : Decoder B :=
          | None => None
          end.
 
+Theorem decodeMap_bind T1 T2 T3 f dec rx bs :
+  @decodeBind T1 T3 (decodeMap f dec) rx bs =
+  @decodeBind T2 T3 dec (fun x => rx (f x)) bs.
+Proof.
+  unfold decodeBind, decodeMap; simpl.
+  destruct matches.
+Qed.
+
 Module DecodeNotations.
   (* Declare Scope decode_bind_scope. *)
   Delimit Scope decode_bind_scope with dec.
@@ -170,20 +178,30 @@ Proof.
                  ret (v1, v2); |}.
 Defined.
 
+Hint Rewrite decodeBind_assoc decodeMap_bind : dec.
+Hint Rewrite append_assoc app_length decodeBind_encode_first : dec.
+
+Ltac solve_num_eq :=
+  match goal with
+  | |- @eq uint64 ?x ?y =>
+    apply toNum_inj; simpl; lia
+  end.
+
+Ltac simplify :=
+  autorewrite with dec;
+  repeat match goal with
+         | |- EncodableCorrect _ => typeclasses eauto with core typeclass_instances
+         | |- Some (_, ?x) = Some (_, ?x) => f_equal
+         | |- Some (_, ?x) = Some (_, ?y) => replace x with y by solve_num_eq
+         | |- ?x = ?x => reflexivity
+         | _ => progress cbn [decodeRet decodeBind]
+         end.
+
 Instance product_fmt_ok
          `(fmt1_ok: @EncodableCorrect T1 fmt1) `(fmt2_ok: @EncodableCorrect T2 fmt2) : EncodableCorrect (product_fmt fmt1 fmt2).
 Proof.
   constructor; intros.
-  destruct x as [x1 x2]; simpl.
-  rewrite append_assoc.
-  rewrite decodeBind_encode_first; eauto.
-  rewrite decodeBind_encode_first; eauto.
-  simpl.
-  f_equal.
-  f_equal.
-  rewrite app_length.
-  apply toNum_inj; simpl.
-  lia.
+  destruct x as [x1 x2]; simpl; simplify.
 Qed.
 
 Instance uint64_fmt : Encodable uint64.
@@ -211,9 +229,9 @@ Proof.
   rewrite uint64_le_enc.(encode_decode_ok); auto.
 Qed.
 
-Record Array64 := array64 { getBytes :> ByteString }.
+Global Opaque uint64_fmt.
 
-Opaque uint64_fmt.
+Record Array64 := array64 { getBytes :> ByteString }.
 
 Instance array64_fmt : Encodable Array64.
 Proof.
@@ -223,8 +241,6 @@ Proof.
               l <- uint64_fmt.(decode);;
                                      array64 <$> decodeFixed l; |}.
 Defined.
-
-Hint Resolve uint64_fmt_ok : core.
 
 Theorem decodeFixed_first bs bs' :
   decodeFixed (BS.length bs) (bs ++ bs') = Some (bs, BS.length bs).
@@ -239,17 +255,17 @@ Proof.
   rewrite take_app_exact; auto.
 Qed.
 
+
 Instance array64_fmt_ok : EncodableCorrect array64_fmt.
 Proof.
-  constructor; intros.
-  simpl.
-  rewrite append_assoc.
-  rewrite app_length.
-  rewrite decodeBind_encode_first by eauto.
+  constructor; intros; simpl.
+  simplify.
   unfold decodeMap.
-  rewrite decodeFixed_first; simpl.
-  destruct x as [bs]; simpl; auto.
+  rewrite decodeFixed_first; simpl; simplify.
+  destruct x as [bs]; auto.
 Qed.
+
+Global Opaque array64_fmt.
 
 Instance entry_fmt : Encodable Entry.t.
 Proof.
@@ -263,7 +279,12 @@ Defined.
 
 Instance entry_fmt_ok : EncodableCorrect entry_fmt.
 Proof.
-Admitted.
+  constructor; intros; simpl.
+  destruct x as [k v].
+  simplify.
+Qed.
+
+Global Opaque entry_fmt.
 
 Fixpoint encode_list T (enc: T -> ByteString) (l: list T) : ByteString :=
   match l with
@@ -324,7 +345,12 @@ Defined.
 
 Instance SliceHandle_fmt_ok : EncodableCorrect SliceHandle_fmt.
 Proof.
-Admitted.
+  constructor; intros; simpl.
+  destruct x as [o l].
+  simplify.
+Qed.
+
+Global Opaque SliceHandle_fmt.
 
 Arguments encode {T fmt} v : rename.
 Arguments decode T {fmt} bs : rename.
