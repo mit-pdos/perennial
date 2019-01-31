@@ -53,6 +53,22 @@ Definition decodeFixed (n:uint64) : Decoder ByteString :=
          then None
          else Some (BS.take n bs, n).
 
+Lemma compare_not_gt x y : compare x y <> Gt -> x.(toNum) <= y.(toNum).
+Proof.
+  intros.
+  destruct (compare_gt_dec x y); eauto.
+  congruence.
+Qed.
+
+Definition decodeFixedSig (n:uint64) : Decoder {bs:ByteString | BS.length bs = n}.
+  intro bs.
+  destruct (compare n (BS.length bs) == Gt).
+  exact None.
+  refine (Some (_, n)).
+  exists (BS.take n bs).
+  apply take_length_le; eauto using compare_not_gt.
+Defined.
+
 Definition decodeMap A B (f: A -> B) (dec: Decoder A) : Decoder B :=
   fun bs => match dec bs with
          | Some (v, n) => Some (f v, n)
@@ -101,6 +117,46 @@ Proof.
   unfold decodeBind; simpl; intros.
   rewrite fmt1.(decode_encode).
   rewrite drop_app_exact; auto.
+Qed.
+
+Definition fixed_fmt n : Encodable {x:ByteString | BS.length x = n} :=
+  {| encode x := proj1_sig x;
+     decode := decodeFixedSig n; |}.
+
+Theorem Some_proj_eq A T (P: A -> Prop) (x y:option (sig P * T)) :
+  match x with
+  | Some (x', n) => Some (proj1_sig x', n)
+  | None => None
+  end = match y with
+        | Some (y', n) => Some (proj1_sig y', n)
+        | None => None
+        end ->
+  x = y.
+Proof.
+  destruct x as [ [x n] | ], y as [ [y n'] | ];
+    intros; eauto; try congruence.
+  inversion H; subst.
+  f_equal.
+  f_equal.
+  destruct x, y.
+  apply ProofIrrelevance.ProofIrrelevanceTheory.subset_eq_compat; eauto.
+Qed.
+
+Theorem fixed_fmt_ok n : EncodableCorrect (fixed_fmt n).
+Proof.
+  constructor; intros.
+  destruct x as [bs ?]; simpl.
+  apply Some_proj_eq; simpl.
+  unfold decodeFixedSig.
+
+  destruct (compare n (BS.length (bs ++ bs')) == Gt); subst;
+    simpl in *;
+    rewrite ?app_length in *.
+  - apply compare_to_pf in e0; simpl in *.
+    lia.
+  - f_equal.
+    f_equal.
+    rewrite take_app_exact; auto.
 Qed.
 
 Instance product_fmt
@@ -157,6 +213,8 @@ Qed.
 
 Record Array64 := array64 { getBytes :> ByteString }.
 
+Opaque uint64_fmt.
+
 Instance array64_fmt : Encodable Array64.
 Proof.
   refine {| encode := fun (bs:Array64) =>
@@ -166,8 +224,16 @@ Proof.
                                      array64 <$> decodeFixed l; |}.
 Defined.
 
+Hint Resolve uint64_fmt_ok : core.
+
 Instance array64_fmt_ok : EncodableCorrect array64_fmt.
 Proof.
+  constructor; intros.
+  simpl.
+  rewrite append_assoc.
+  rewrite decodeBind_encode_first by eauto.
+  unfold decodeMap.
+
 Admitted.
 
 Instance entry_fmt : Encodable Entry.t.
