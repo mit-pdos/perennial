@@ -2,6 +2,7 @@
 /bin
 /doc
 *.lia.cache
+*.nia.cache
 /*/.stack-work
 *.cabal
 
