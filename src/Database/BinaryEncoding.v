@@ -226,15 +226,30 @@ Defined.
 
 Hint Resolve uint64_fmt_ok : core.
 
+Theorem decodeFixed_first bs bs' :
+  decodeFixed (BS.length bs) (bs ++ bs') = Some (bs, BS.length bs).
+Proof.
+  unfold decodeFixed.
+  rewrite app_length.
+  match goal with
+  | |- context[compare ?x ?y == Gt] =>
+    destruct (compare_gt_dec x y); simpl in *; try lia
+  end.
+  rewrite Hc.
+  rewrite take_app_exact; auto.
+Qed.
+
 Instance array64_fmt_ok : EncodableCorrect array64_fmt.
 Proof.
   constructor; intros.
   simpl.
   rewrite append_assoc.
+  rewrite app_length.
   rewrite decodeBind_encode_first by eauto.
   unfold decodeMap.
-
-Admitted.
+  rewrite decodeFixed_first; simpl.
+  destruct x as [bs]; simpl; auto.
+Qed.
 
 Instance entry_fmt : Encodable Entry.t.
 Proof.
