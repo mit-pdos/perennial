@@ -100,19 +100,53 @@ Definition tblRead t k : proc (option ByteString) :=
     | None => Ret None
     end.
 
+Module BufFile.
+  Record t :=
+    mk { file: Fd;
+         buf: IORef (list ByteString);
+         bufSize: IORef uint64; }.
+End BufFile.
+
+Definition newBuf (fd:Fd) : proc BufFile.t :=
+  buf <- Data.newIORef nil;
+    bufSize <- Data.newIORef 0;
+    Ret {| BufFile.file := fd;
+           BufFile.buf := buf;
+           BufFile.bufSize := bufSize |}.
+
+Definition bufFlush (f:BufFile.t) : proc unit :=
+  buf <- Data.readIORef f.(BufFile.buf);
+    _ <- FS.append f.(BufFile.file) (BS.concat (reverse buf));
+    _ <- Data.writeIORef f.(BufFile.buf) nil;
+    _ <- Data.writeIORef f.(BufFile.bufSize) 0;
+    Ret tt.
+
+Definition bufClose (f:BufFile.t) : proc unit :=
+  _ <- bufFlush f;
+    FS.close f.(BufFile.file).
+
+Definition bufAppend (f:BufFile.t) (bs:ByteString) : proc unit :=
+  _ <- Data.modifyIORef f.(BufFile.buf) (fun buf => cons bs buf);
+    sz <- Data.readIORef f.(BufFile.bufSize);
+    let sz' := sz + BS.length bs in
+    _ <- Data.writeIORef f.(BufFile.bufSize) sz';
+    if compare sz' (4096+4096+4096+4096) == Gt then bufFlush f
+    else Ret tt.
+
 Module TblW.
   (* NOTE: we can buffer writes here conveniently for efficiency (otherwise
   every entry gets its own write syscall) *)
   Record t :=
     mk { index: HashTable uint64;
          name: Path;
-         file: Fd;
+         file: BufFile.t;
          offset: IORef uint64; }.
 End TblW.
 
 Definition newTblW p : proc TblW.t :=
   index <- Data.newHashTable _;
-    file <- FS.create p;
+    f <- FS.create p;
+    file <- newBuf f;
     offset <- Data.newIORef 0;
     Ret {| TblW.index := index;
            TblW.name := p;
@@ -123,12 +157,12 @@ Definition tblWGetOffset (w:TblW.t) : proc uint64 :=
   Data.readIORef w.(TblW.offset).
 
 Definition tblWAppend (w:TblW.t) (bs:ByteString) : proc _ :=
-  _ <- FS.append w.(TblW.file) bs;
+  _ <- bufAppend w.(TblW.file) bs;
   Data.modifyIORef w.(TblW.offset) (fun o => o + BS.length bs).
 
 Definition tblWClose (w:TblW.t) : proc Tbl.t :=
   (* if we're buffering now is the chance to flush *)
-  _ <- FS.close w.(TblW.file);
+  _ <- bufClose w.(TblW.file);
     fd <- FS.open w.(TblW.name);
     Ret {| Tbl.file := fd;
            Tbl.index := w.(TblW.index); |}.

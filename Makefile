@@ -34,6 +34,7 @@ endif
 	@coqc -w -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template \
      $(shell cat '_CoqProject') $< -o $@
 
+.PHONY: extract
 extract: database/src/Coq/ExtractionExamples.hs
 
 logging-client/extract/ComposedRefinement.hs: logging-client/Extract.vo
@@ -41,6 +42,12 @@ logging-client/extract/ComposedRefinement.hs: logging-client/Extract.vo
 
 database/src/Coq/ExtractionExamples.hs: database/Extract.vo
 	./scripts/add-preprocess.sh database/src/Coq/*.hs
+
+.PHONY: build-extract
+build-extract: extract
+	@echo "stack build"
+	@cd database && stack build
+
 
 clean:
 	@echo "CLEAN vo glob aux"

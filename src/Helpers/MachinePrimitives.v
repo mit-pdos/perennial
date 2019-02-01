@@ -249,6 +249,7 @@ Module BS.
   Implicit Types (bs:ByteString).
   Local Coercion getBytes : ByteString >-> list.
   Definition append bs1 bs2 := fromByteList (bs1 ++ bs2).
+  Definition concat (bss: list ByteString) := fromByteList (concat (map getBytes bss)).
   Definition length bs : uint64 := fromNum (List.length bs).
   Definition take (n:uint64) bs :=
     fromByteList (List.firstn n.(toNum) bs).

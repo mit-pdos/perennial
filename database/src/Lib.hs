@@ -15,6 +15,7 @@ module Lib
   , byteString_to_String
   , string_to_ByteString
   , bs_append
+  , bs_concat
   , bs_take
   , bs_drop
   , bs_empty
@@ -75,6 +76,9 @@ uint64_from_le bs =
 
 bs_append :: ByteString -> ByteString -> ByteString
 bs_append = BS.append
+
+bs_concat :: [ByteString] -> ByteString
+bs_concat = BS.concat
 
 bs_take :: Word64 -> ByteString -> ByteString
 bs_take n = BS.take (fromIntegral n)

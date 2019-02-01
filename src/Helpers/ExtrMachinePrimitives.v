@@ -31,6 +31,7 @@ Extract Constant getBytes => "UNDEFINED_getBytes".
 Extract Constant BS.toString => "Lib.byteString_to_String".
 Extract Constant BS.fromString => "Lib.string_to_ByteString".
 Extract Constant BS.append => "Lib.bs_append".
+Extract Constant BS.concat => "Lib.bs_concat".
 Extract Constant BS.drop => "Lib.bs_drop".
 Extract Constant BS.take => "Lib.bs_take".
 Extract Constant BS.empty => "Lib.bs_empty".

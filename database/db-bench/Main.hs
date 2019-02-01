@@ -76,16 +76,18 @@ avgTimeIO n act = do
 dbBench :: BenchOptions -> DbM ()
 dbBench BenchOptions{..} = do
   let iters = iterations
-  t <- avgTimeIO iters rwrite
-  liftIO $ printf "buffer write [%d iters]: %0.1f us\n" iters (t * 1e6)
+  wt <- avgTimeIO iters rwrite
+  liftIO $ printf "buffer write [%d iters]: %0.1f us\n" iters (wt * 1e6)
   fillSmall
   t <- timeIO compact
   liftIO $ printf "compaction: %0.1f ms\n" (t * 1e3)
-  t <- avgTimeIO iters rread
-  liftIO $ printf "rbuffer read [%d iters]: %0.1f us\n" iters (t * 1e6)
-  compact -- make sure read buffer is empty
-  t <- avgTimeIO iters rread
-  liftIO $ printf "table read [%d iters]: %0.1f us\n" iters (t * 1e6)
+  let amortizedWrites = (wt*fromIntegral iters + t)/fromIntegral iters
+  liftIO $ printf "amortized write [%d iters]: %0.f us\n" iters (amortizedWrites * 1e6)
+  -- t <- avgTimeIO iters rread
+  -- liftIO $ printf "rbuffer read [%d iters]: %0.1f us\n" iters (t * 1e6)
+  -- compact -- make sure read buffer is empty
+  -- t <- avgTimeIO iters rread
+  -- liftIO $ printf "table read [%d iters]: %0.1f us\n" iters (t * 1e6)
 
 app :: Options -> IO ()
 app Options{..} = do
