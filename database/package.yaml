@@ -44,6 +44,16 @@ executables:
     - database
     - criterion
     - deepseq
+  db-bench:
+    main:                Main.hs
+    source-dirs:         db-bench
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - database
+    - optparse-applicative
 
 tests:
   spec:
