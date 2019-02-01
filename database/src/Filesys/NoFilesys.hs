@@ -1,4 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Filesys.NoFilesys
   ( NoFilesysM(run)
   ) where

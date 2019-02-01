@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module SimpleDbSpec(spec) where
 
 

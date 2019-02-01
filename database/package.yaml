@@ -29,6 +29,10 @@ dependencies:
 ghc-options:
   - -O2
 
+default-extensions:
+  - OverloadedStrings
+  - GeneralizedNewtypeDeriving
+
 library:
   source-dirs: src
 

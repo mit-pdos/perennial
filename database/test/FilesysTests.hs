@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE RankNTypes #-}
 module FilesysTests
   ( filesysSpec
   ) where

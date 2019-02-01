@@ -1,5 +1,4 @@
 {-# LANGUAGE PackageImports #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Filesys.Rooted
   ( RootFilesysM
   , run

@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module DataStructureSpec(spec) where
 
 import           Test.Hspec

@@ -1,4 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module SimpleDatabase
   ( RootFilesysM
   , DbM
