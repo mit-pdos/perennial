@@ -35,7 +35,7 @@ library:
 executables:
   extraction-bench:
     main:                Main.hs
-    source-dirs:         bench
+    source-dirs:         extraction-bench
     ghc-options:
     - -threaded
     - -rtsopts
