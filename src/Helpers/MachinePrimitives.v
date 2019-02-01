@@ -347,6 +347,22 @@ Section ByteStringProperties.
     rewrite take_app; auto.
   Qed.
 
+  Theorem take_app_first n bs1 bs2 :
+    n.(toNum) <= (BS.length bs1).(toNum) ->
+    BS.take n (bs1 ++ bs2) = BS.take n bs1.
+  Proof.
+    start.
+    rewrite take_app_le; eauto.
+  Qed.
+
+  Theorem take_app_second n bs1 bs2 :
+    n.(toNum) >= (BS.length bs1).(toNum) ->
+    BS.take n (bs1 ++ bs2) = bs1 ++ BS.take (n - BS.length bs1) bs2.
+  Proof.
+    start.
+    rewrite take_app_ge; eauto.
+  Qed.
+
   Theorem take_length_le bs n :
     toNum n <= toNum (BS.length bs) ->
     BS.length (BS.take n bs) = n.
@@ -363,6 +379,24 @@ Section ByteStringProperties.
     start.
     rewrite take_length.
     lia.
+  Qed.
+
+  Theorem take_take1 bs n m :
+    n.(toNum) <= m.(toNum) ->
+    BS.take n (BS.take m bs) = BS.take n bs.
+  Proof.
+    start.
+    rewrite take_take.
+    f_equal; lia.
+  Qed.
+
+  Theorem take_take2 bs n m :
+    m.(toNum) <= n.(toNum) ->
+    BS.take n (BS.take m bs) = BS.take m bs.
+  Proof.
+    start.
+    rewrite take_take.
+    f_equal; lia.
   Qed.
 
 End ByteStringProperties.

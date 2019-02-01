@@ -1,5 +1,4 @@
 From Coq Require Import FunctionalExtensionality.
-From Coq Require Import Program.Wf.
 From Coq Require Import micromega.Lia.
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Database.Common.
@@ -85,14 +84,17 @@ Class Encodable (T: Type) :=
 
 Class EncodableCorrect T (enc:Encodable T) :=
   { decode_encode : forall x bs',
-        decode (encode x ++ bs')%bs = Some (x, BS.length (encode x));
-    (* TODO: also prove prefix of an encoding decodes to None *)
+      decode (encode x ++ bs')%bs = Some (x, BS.length (encode x));
+    decode_prefix : forall x n,
+        n.(toNum) < (BS.length (encode x)).(toNum) ->
+        decode (BS.take n (encode x)) = None;
   }.
 
 (* only for this file's proofs make formats explicit *)
 Arguments encode {T} fmt : rename.
 Arguments decode {T} fmt : rename.
 Arguments decode_encode {T} fmt {fmt_ok} : rename.
+Arguments decode_prefix {T} fmt {fmt_ok} : rename.
 
 Import DecodeNotations.
 Local Open Scope bs.
@@ -129,10 +131,11 @@ Ltac solve_num_eq :=
   match goal with
   | |- @eq uint64 ?x ?y =>
     apply toNum_inj; simpl; lia
+  | |- _ => simpl; lia
   end.
 
 Ltac simplify :=
-  autorewrite with dec;
+  autorewrite with dec in *;
   repeat match goal with
          | |- EncodableCorrect _ => typeclasses eauto with core typeclass_instances
          | |- Some (_, ?x) = Some (_, ?x) => f_equal
@@ -141,12 +144,61 @@ Ltac simplify :=
          | _ => progress cbn [decodeRet decodeBind]
          end.
 
+Opaque BS.length.
+
+Definition take_app_split n bs1 bs2 :
+  {n.(toNum) < (BS.length bs1).(toNum) /\
+   BS.take n (bs1 ++ bs2) = BS.take n bs1}
+  + {n.(toNum) >= (BS.length bs1).(toNum) /\
+     BS.take n (bs1 ++ bs2) = bs1 ++ BS.take (n - BS.length bs1)%u64 bs2}.
+Proof.
+  destruct (numbers.nat_lt_dec n.(toNum) (BS.length bs1).(toNum));
+    [ left | right ].
+  intuition eauto.
+  rewrite take_app_first by lia; eauto.
+  (intuition eauto); try solve_num_eq.
+  rewrite take_app_second by solve_num_eq; auto.
+Qed.
+
+Theorem decodeBind_prefix n `(enc:@EncodableCorrect T fmt) (x:T) T' rx bs' :
+  (n.(toNum) >= (BS.length (fmt.(encode) x)).(toNum) ->
+   rx x (BS.take (n - BS.length (fmt.(encode) x))%u64 bs') = None) ->
+  @decodeBind T T' fmt.(decode) rx (BS.take n (fmt.(encode) x ++ bs')) = None.
+Proof.
+  intros Hngt.
+  destruct (take_app_split n (fmt.(encode) x) bs');
+    propositional; simpl.
+  - rewrite H0.
+    unfold decodeBind; simpl.
+    rewrite fmt.(decode_prefix); auto.
+  - rewrite take_app_second by solve_num_eq.
+    rewrite decodeBind_encode_first; eauto.
+    rewrite Hngt; auto.
+Qed.
+
+Theorem decodeBind_prefix_first `(enc:@EncodableCorrect T fmt)
+        T' rx bs :
+  fmt.(decode) bs = None ->
+  @decodeBind T T' fmt.(decode) rx bs = None.
+Proof.
+  intros.
+  unfold decodeBind; simpl.
+  rewrite H; auto.
+Qed.
+
 Instance product_fmt_ok
          `(fmt1_ok: @EncodableCorrect T1 fmt1) `(fmt2_ok: @EncodableCorrect T2 fmt2) : EncodableCorrect (product_fmt fmt1 fmt2).
 Proof.
-  constructor; intros.
-  destruct x as [x1 x2]; simpl; simplify.
+  constructor; intros; destruct x as [x1 x2].
+  - simpl; simplify.
+  - simpl in *; simplify.
+    apply decodeBind_prefix; eauto; intros.
+    apply decodeBind_prefix_first; eauto.
+    rewrite fmt2.(decode_prefix); eauto.
+    simpl in *; lia.
 Qed.
+
+Global Opaque product_fmt.
 
 Instance uint64_fmt : Encodable uint64.
 Proof.
@@ -163,14 +215,27 @@ Defined.
 
 Instance uint64_fmt_ok : EncodableCorrect uint64_fmt.
 Proof.
-  constructor; intros.
+  constructor; intros; simpl in *.
+  - rewrite take_app_exact
+      by (rewrite uint64_le_enc.(encode_length_ok); auto).
+    rewrite uint64_le_enc.(encode_length_ok).
+    rewrite compare_eq.
+    destruct (Eq == Lt); try congruence.
+    rewrite uint64_le_enc.(encode_decode_ok); auto.
+  - rewrite uint64_le_enc.(encode_length_ok) in *.
+    rewrite take_take2 by lia.
+    rewrite take_length_le.
+    destruct (compare_lt_dec n 8); simpl in *;
+      try lia;
+      repeat simpl_match; auto.
+    rewrite uint64_le_enc.(encode_length_ok); lia.
+Qed.
+
+Theorem uint64_fmt_length x :
+  BS.length (uint64_fmt.(encode) x) = 8.
+Proof.
   simpl.
-  rewrite take_app_exact
-    by (rewrite uint64_le_enc.(encode_length_ok); auto).
-  rewrite uint64_le_enc.(encode_length_ok).
-  rewrite compare_eq.
-  destruct (Eq == Lt); try congruence.
-  rewrite uint64_le_enc.(encode_decode_ok); auto.
+  apply uint64_le_enc.(encode_length_ok).
 Qed.
 
 Global Opaque uint64_fmt.
@@ -199,14 +264,31 @@ Proof.
   rewrite take_app_exact; auto.
 Qed.
 
+Theorem decodeFixed_prefix n bs :
+  (BS.length bs).(toNum) < n.(toNum) ->
+  decodeFixed n bs = None.
+Proof.
+  unfold decodeFixed; simpl; intros.
+  destruct (u64_compare_dec n (BS.length bs)); try lia.
+  rewrite e.
+  destruct (Gt == Gt); congruence.
+Qed.
 
 Instance array64_fmt_ok : EncodableCorrect array64_fmt.
 Proof.
   constructor; intros; simpl.
-  simplify.
-  unfold decodeMap.
-  rewrite decodeFixed_first; simpl; simplify.
-  destruct x as [bs]; auto.
+  - simplify.
+    unfold decodeMap.
+    rewrite decodeFixed_first; simpl; simplify.
+    destruct x as [bs]; auto.
+  - apply decodeBind_prefix; intros; try typeclasses eauto.
+    unfold decodeMap; simpl.
+    rewrite decodeFixed_prefix; simpl; auto.
+    destruct x as [bs]; simpl in *.
+    rewrite app_length in *.
+    rewrite uint64_fmt_length in *.
+    simpl in *.
+    rewrite take_length_le; simpl; lia.
 Qed.
 
 Global Opaque array64_fmt.
@@ -224,56 +306,20 @@ Defined.
 Instance entry_fmt_ok : EncodableCorrect entry_fmt.
 Proof.
   constructor; intros; simpl.
-  destruct x as [k v].
-  simplify.
+  - destruct x as [k v].
+    simplify.
+  - destruct x as [k v]; simpl in *.
+    rewrite app_length in *.
+    apply decodeBind_prefix; intros; eauto.
+    typeclasses eauto.
+    rewrite decodeMap_bind; simpl.
+    apply decodeBind_prefix_first.
+    typeclasses eauto.
+    rewrite array64_fmt.(decode_prefix); auto.
+    simpl in *; lia.
 Qed.
 
 Global Opaque entry_fmt.
-
-Fixpoint encode_list T (enc: T -> ByteString) (l: list T) : ByteString :=
-  match l with
-  | nil => BS.empty
-  | cons x xs => BS.append (enc x) (encode_list enc xs)
-  end.
-
-Program Fixpoint decode_list T (dec: Decoder T) (bs:ByteString)
-        {measure (toNum (BS.length bs)) lt} : option (list T * uint64) :=
-  if bs == BS.empty
-  then Some (nil, 0)
-  else match dec bs with
-       | Some (x, n) => if n == 0 then None else
-                         match decode_list dec (BS.drop n bs) with
-                         | Some (x', n') => Some (cons x x', n')
-                         | None => None
-                         end
-       | None => None
-       end.
-Next Obligation.
-  intros.
-  rewrite drop_length.
-  simpl.
-  destruct n as [n]; simpl in *.
-  destruct bs as [bs]; simpl in *.
-  u64_cleanup.
-  assert (length bs > 0).
-  destruct bs; simpl in *; try lia.
-  exfalso; eauto.
-  lia.
-Qed.
-Next Obligation.
-  apply measure_wf.
-  apply Wf_nat.lt_wf.
-Qed.
-
-(* decode a list of elements encoded with a particular format, expecting them to
-fit exactly in the input buffer
-
-intentionally not an instance since lists can be encoded in multiple ways (eg,
-with a length prefix) and this isn't the most general such format *)
-Definition exact_list_fmt T (fmt:Encodable T) : Encodable (list T).
-  refine {| encode := encode_list (@encode T fmt);
-            decode := decode_list (@decode T fmt); |}.
-Defined.
 
 Instance SliceHandle_fmt : Encodable SliceHandle.t.
 Proof.
@@ -290,8 +336,16 @@ Defined.
 Instance SliceHandle_fmt_ok : EncodableCorrect SliceHandle_fmt.
 Proof.
   constructor; intros; simpl.
-  destruct x as [o l].
-  simplify.
+  - destruct x as [o l].
+    simplify.
+  - destruct x as [o l]; simpl in *.
+    rewrite app_length in *; simpl in *.
+    apply decodeBind_prefix; intros.
+    typeclasses eauto.
+    apply decodeBind_prefix_first; intros.
+    typeclasses eauto.
+    rewrite uint64_fmt.(decode_prefix); auto.
+    simpl in *; lia.
 Qed.
 
 Global Opaque SliceHandle_fmt.

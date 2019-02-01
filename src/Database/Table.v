@@ -9,19 +9,34 @@ Module Table.
       mk { handle: SliceHandle.t;
            keys: Key * Key; }.
 
+    Import DecodeNotations.
+
+    Import BSNotations.
+    Local Open Scope bs.
+
     Instance t_fmt : Encodable t.
     Proof.
-      refine {| encode := fun e => BS.append (encode e.(handle)) (encode e.(keys));
+      refine {| encode := fun e => encode e.(handle) ++ encode e.(keys);
                 decode := decodeBind (decode SliceHandle.t)
                                      (fun h => decodeBind (decode (Key * Key))
                                       (fun ks => decodeRet (mk h ks))); |}.
     Defined.
 
+    Opaque BS.length.
+
     Instance t_fmt_ok : EncodableCorrect t_fmt.
     Proof.
       constructor; intros; simpl.
-      destruct x as [handle [min max]]; simpl.
-      BinaryEncoding.simplify.
+      - destruct x as [handle [min max]]; simpl.
+        BinaryEncoding.simplify.
+      - destruct x as [handle [min max]]; simpl in *.
+        rewrite app_length in H.
+        apply decodeBind_prefix; intros.
+        typeclasses eauto.
+        apply decodeBind_prefix_first; intros.
+        typeclasses eauto.
+        rewrite (product_fmt uint64_fmt uint64_fmt).(decode_prefix); auto.
+        unfold Key in *; simpl in *; lia.
     Qed.
   End IndexEntry.
 
