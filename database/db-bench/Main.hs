@@ -83,11 +83,11 @@ dbBench BenchOptions{..} = do
   liftIO $ printf "compaction: %0.1f ms\n" (t * 1e3)
   let amortizedWrites = (wt*fromIntegral iters + t)/fromIntegral iters
   liftIO $ printf "amortized write [%d iters]: %0.f us\n" iters (amortizedWrites * 1e6)
-  -- t <- avgTimeIO iters rread
-  -- liftIO $ printf "rbuffer read [%d iters]: %0.1f us\n" iters (t * 1e6)
-  -- compact -- make sure read buffer is empty
-  -- t <- avgTimeIO iters rread
-  -- liftIO $ printf "table read [%d iters]: %0.1f us\n" iters (t * 1e6)
+  t <- avgTimeIO iters rread
+  liftIO $ printf "rbuffer read [%d iters]: %0.1f us\n" iters (t * 1e6)
+  compact -- make sure read buffer is empty
+  t <- avgTimeIO iters rread
+  liftIO $ printf "table read [%d iters]: %0.1f us\n" iters (t * 1e6)
 
 app :: Options -> IO ()
 app Options{..} = do
