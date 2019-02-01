@@ -3,3 +3,5 @@ database.cabal
 *~
 # criterion-generated plots
 *.html
+# profiles generated with +RTS -p
+*.prof

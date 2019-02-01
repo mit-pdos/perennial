@@ -94,7 +94,7 @@ app Options{..} = do
   ex <- doesDirectoryExist filesysRoot
   when ex $ removeDirectoryRecursive filesysRoot
   createDirectory filesysRoot
-  FS.run filesysRoot $ bracket new close $ dbBench benchOptions
+  FS.run filesysRoot $ bracket new crash $ dbBench benchOptions
   removeDirectoryRecursive filesysRoot
 
 main :: IO ()
