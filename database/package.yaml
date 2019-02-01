@@ -54,6 +54,7 @@ executables:
     dependencies:
     - database
     - optparse-applicative
+    - random
 
 tests:
   spec:
