@@ -6,7 +6,7 @@ import           System.CPUTime
 import           Text.Printf
 import           Control.Concurrent.MVar (newEmptyMVar, putMVar, tryTakeMVar)
 
-import           Control.Concurrent.Forkable (forkIO)
+import           Control.Concurrent.Forkable
 import           Control.Monad (replicateM, forM_, when)
 import           Control.Monad.IO.Class
 import qualified Data.ByteString as BS
@@ -35,10 +35,13 @@ opts = pure Options
                         (progDesc "run fill + read benchmarks"))
     <> command "fillcompact" (info fillCompactOpts
                              (progDesc "concurrent fill + compact benchmark"))
+    <> command "readcompact" (info readCompactOpts
+                             (progDesc "concurrent read + compact benchmark"))
   )
 
 data Command = FillReadBench FillReadOptions
              | FillCompactBench FillCompactOptions
+             | ReadCompactBench ReadCompactOptions
 
 newtype FillReadOptions =
   FillReadOptions{ iterations :: Int }
@@ -47,19 +50,27 @@ data FillCompactOptions =
   FillCompactOptions{ iterations :: Int
                     , numKeys :: Int }
 
+data ReadCompactOptions =
+  ReadCompactOptions{ iterations :: Int
+                    , numKeys :: Int
+                    , parReaders :: Int }
+
 fillReadOpts :: Parser Command
 fillReadOpts = FillReadBench <$> opts
   where opts = pure FillReadOptions <*> iterOpt
 
 fillCompactOpts :: Parser Command
 fillCompactOpts = FillCompactBench <$> opts
-  where opts = pure FillCompactOptions
-          <*> iterOpt
+  where opts = pure FillCompactOptions <*> iterOpt <*> dbSizeOpt
+
+readCompactOpts :: Parser Command
+readCompactOpts = ReadCompactBench <$> opts
+  where opts = pure ReadCompactOptions <*> iterOpt <*> dbSizeOpt
           <*> option auto
-          ( long "db-size"
-            <> value 100
-            <> showDefault
-            <> help "maximum number of keys in database" )
+          ( long "par"
+          <> value 2
+          <> showDefault
+          <> help "number of parallel reader threads" )
 
 iterOpt :: Parser Int
 iterOpt = option auto
@@ -68,6 +79,13 @@ iterOpt = option auto
     <> value 10000
     <> showDefault
     <> help "number of iterations to run reads/writes" )
+
+dbSizeOpt :: Parser Int
+dbSizeOpt = option auto
+  ( long "db-size"
+    <> value 100
+    <> showDefault
+    <> help "maximum number of keys in database" )
 
 -- | timeIO runs an action and times it, reporting the result in seconds
 timeIO :: MonadIO m => m () -> m Double
@@ -165,9 +183,29 @@ fillCompactBench FillCompactOptions{..} = do
   reportTime "write with compactions" iters (sum ts / fromIntegral iters)
   liftIO $ printf "  (finished %d compactions)\n" numCompactions
 
+spawn :: (ForkableMonad m, MonadIO m) => m a -> m (MVar a)
+spawn act = do
+  m <- liftIO newEmptyMVar
+  _ <- forkIO $ act >>= liftIO . putMVar m
+  return m
+
+readCompactBench :: ReadCompactOptions -> DbM ()
+readCompactBench ReadCompactOptions{..} = do
+  let iters = iterations
+  forM_ [1..fromIntegral numKeys] $ \k -> write k theValue
+  compact
+  compact
+  (ts, numCompactions) <- whileCompacting $ do
+    let reads = replicateM iters (timeIO rread)
+    ms <- replicateM parReaders $ spawn reads
+    concat <$> mapM (liftIO . takeMVar) ms
+  reportTime "reads with compactions" iters (sum ts / fromIntegral (length ts))
+  liftIO $ printf "  (finished %d compactions)\n" numCompactions
+
 runBench :: Command -> DbM ()
 runBench (FillReadBench opts) = fillReadBench opts
 runBench (FillCompactBench opts) = fillCompactBench opts
+runBench (ReadCompactBench opts) = readCompactBench opts
 
 app :: Options -> IO ()
 app Options{..} = do
