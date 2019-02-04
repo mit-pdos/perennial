@@ -13,7 +13,7 @@ _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 	@for libdir in $(wildcard vendor/*); do \
 	libname=$$(cat $$libdir/libname); \
 	if [ $$? -ne 0 ]; then \
-	  echo "Do you need to run git submodule --init --recursive?" 1>&2; \
+	  echo "Do you need to run git submodule update --init --recursive?" 1>&2; \
 		exit 1; \
 	fi; \
 	echo "-R $$libdir/src $$(cat $$libdir/libname)" >> $@; \
