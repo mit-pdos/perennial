@@ -73,21 +73,46 @@ avgTimeIO n act = do
   measurements <- replicateM n (timeIO act)
   return $ sum measurements / fromIntegral (length measurements)
 
+timeWithUnits :: Double -> (Double, String)
+timeWithUnits t
+  | t < 2e-6 = (t*1e9, "ns")
+  | t < 2e-3 = (t*1e6, "us")
+  | t < 2.0 = (t*1e3, "ms")
+  | otherwise = (t, "s")
+
+reportTime :: MonadIO m =>
+              String -> -- ^ label
+              Int -> -- ^ iters
+              Double -> -- ^ time (seconds)
+              m ()
+reportTime label iters timeSec =
+  let (t, units) = timeWithUnits timeSec
+      timing :: String
+      timing = printf "%0.1f %s" t units in
+    if iters == 1 then
+      liftIO $ printf "%17s : %s\n" label timing
+    else
+      liftIO $ printf "%17s : %s [%d iters]\n" label timing iters
+
+reportAvg :: MonadIO m => String -> Int -> m () -> m Double
+reportAvg label iters act = do
+  t <- avgTimeIO iters act
+  reportTime label iters t
+  return t
+
 dbBench :: BenchOptions -> DbM ()
 dbBench BenchOptions{..} = do
   let iters = iterations
-  wt <- avgTimeIO iters rwrite
-  liftIO $ printf "buffer write [%d iters]: %0.1f us\n" iters (wt * 1e6)
+  wt <- reportAvg "buffer write" iters rwrite
   fillSmall
   t <- timeIO compact
-  liftIO $ printf "compaction: %0.1f ms\n" (t * 1e3)
-  let amortizedWrites = (wt*fromIntegral iters + t)/fromIntegral iters
-  liftIO $ printf "amortized write [%d iters]: %0.f us\n" iters (amortizedWrites * 1e6)
-  t <- avgTimeIO iters rread
-  liftIO $ printf "rbuffer read [%d iters]: %0.1f us\n" iters (t * 1e6)
+  reportTime "compaction" 1 t
+  let amortizedWriteTime = (wt*fromIntegral iters + t)/fromIntegral iters
+  reportTime "amortized write" iters amortizedWriteTime
+  _ <- reportAvg "rbuffer read" iters rread
   compact -- make sure read buffer is empty
-  t <- avgTimeIO iters rread
-  liftIO $ printf "table read [%d iters]: %0.1f us\n" iters (t * 1e6)
+  _ <- reportAvg "table read" iters rread
+  return ()
 
 app :: Options -> IO ()
 app Options{..} = do
