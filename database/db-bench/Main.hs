@@ -1,10 +1,12 @@
-{-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
+{-# LANGUAGE RecordWildCards, NamedFieldPuns, DuplicateRecordFields #-}
 module Main(main) where
 
 import           Prelude hiding (read)
 import           System.CPUTime
 import           Text.Printf
+import           Control.Concurrent.MVar (newEmptyMVar, putMVar, tryTakeMVar)
 
+import           Control.Concurrent.Forkable (forkIO)
 import           Control.Monad (replicateM, forM_, when)
 import           Control.Monad.IO.Class
 import qualified Data.ByteString as BS
@@ -19,7 +21,7 @@ import           SimpleDatabase
 
 data Options =
   Options { filesysRoot :: FilePath
-          , benchOptions :: BenchOptions }
+          , benchCmd :: Command }
 
 opts :: Parser Options
 opts = pure Options
@@ -28,14 +30,39 @@ opts = pure Options
     <> metavar "DIR"
     <> value "bench.db"
     <> help "filesystem root directory" )
-  <*> benchOpts
+  <*> hsubparser
+  ( command "fillread" (info fillReadOpts
+                        (progDesc "run fill + read benchmarks"))
+    <> command "fillcompact" (info fillCompactOpts
+                             (progDesc "concurrent fill + compact benchmark"))
+  )
 
-newtype BenchOptions =
-  BenchOptions{ iterations :: Int }
+data Command = FillReadBench FillReadOptions
+             | FillCompactBench FillCompactOptions
 
-benchOpts :: Parser BenchOptions
-benchOpts = pure BenchOptions
-  <*> option auto
+newtype FillReadOptions =
+  FillReadOptions{ iterations :: Int }
+
+data FillCompactOptions =
+  FillCompactOptions{ iterations :: Int
+                    , numKeys :: Int }
+
+fillReadOpts :: Parser Command
+fillReadOpts = FillReadBench <$> opts
+  where opts = pure FillReadOptions <*> iterOpt
+
+fillCompactOpts :: Parser Command
+fillCompactOpts = FillCompactBench <$> opts
+  where opts = pure FillCompactOptions
+          <*> iterOpt
+          <*> option auto
+          ( long "db-size"
+            <> value 100
+            <> showDefault
+            <> help "maximum number of keys in database" )
+
+iterOpt :: Parser Int
+iterOpt = option auto
   ( long "iters"
     <> short 'i'
     <> value 10000
@@ -83,7 +110,7 @@ timeWithUnits t
 reportTime :: MonadIO m =>
               String -> -- ^ label
               Int -> -- ^ iters
-              Double -> -- ^ time (seconds)
+              Double -> -- ^ time/iteration (seconds)
               m ()
 reportTime label iters timeSec =
   let (t, units) = timeWithUnits timeSec
@@ -100,8 +127,8 @@ reportAvg label iters act = do
   reportTime label iters t
   return t
 
-dbBench :: BenchOptions -> DbM ()
-dbBench BenchOptions{..} = do
+fillReadBench :: FillReadOptions -> DbM ()
+fillReadBench FillReadOptions{..} = do
   let iters = iterations
   wt <- reportAvg "buffer write" iters rwrite
   fillSmall
@@ -114,17 +141,45 @@ dbBench BenchOptions{..} = do
   _ <- reportAvg "table read" iters rread
   return ()
 
+whileCompacting :: DbM a -> DbM (a, Int)
+whileCompacting act = do
+  m <- liftIO newEmptyMVar
+  _ <- forkIO $ do
+    x <- act
+    liftIO $ putMVar m x
+  let compactTillDone n = do
+        compact
+        r <- liftIO $ tryTakeMVar m
+        case r of
+          Just x -> return (x, n)
+          Nothing -> compactTillDone (n+1)
+  compactTillDone 0
+
+fillCompactBench :: FillCompactOptions -> DbM ()
+fillCompactBench FillCompactOptions{..} = do
+  let iters = iterations
+  let sizedWrite = do
+        k <- liftIO $ randomRIO (1, fromIntegral numKeys)
+        write k theValue
+  (ts, numCompactions) <- whileCompacting $ replicateM iters (timeIO sizedWrite)
+  reportTime "write with compactions" iters (sum ts / fromIntegral iters)
+  liftIO $ printf "  (finished %d compactions)\n" numCompactions
+
+runBench :: Command -> DbM ()
+runBench (FillReadBench opts) = fillReadBench opts
+runBench (FillCompactBench opts) = fillCompactBench opts
+
 app :: Options -> IO ()
 app Options{..} = do
   ex <- doesDirectoryExist filesysRoot
   when ex $ removeDirectoryRecursive filesysRoot
   createDirectory filesysRoot
-  FS.run filesysRoot $ bracket new crash $ dbBench benchOptions
+  FS.run filesysRoot $ bracket new crash $ runBench benchCmd
   removeDirectoryRecursive filesysRoot
 
 main :: IO ()
 main = app =<< execParser options
-  where options = info opts
+  where options = info (opts <**> helper)
                   ( fullDesc
                     <> progDesc "benchmark simple database"
                     <> header "db-bench - benchmark runner for SimpleDb" )
