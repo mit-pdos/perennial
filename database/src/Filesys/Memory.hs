@@ -14,6 +14,7 @@ import           Data.IORef (IORef, newIORef, atomicModifyIORef')
 import           GHC.Exts (sortWith)
 
 import           Control.Concurrent.Forkable
+import           Control.Monad.Catch (MonadThrow, MonadCatch, MonadMask)
 import qualified Data.ByteString as BS
 import qualified Data.HashTable.IO as H
 import           Data.Hashable (Hashable)
@@ -33,7 +34,8 @@ data State =
 newtype Env = Env { filesys :: MVar State }
 
 newtype MemFilesysM a = MemFilesysM (ReaderT Env IO a)
-  deriving (Functor, Applicative, Monad, MonadIO, ForkableMonad)
+  deriving (Functor, Applicative, Monad, MonadIO,
+            ForkableMonad, MonadThrow, MonadCatch, MonadMask)
 
 newEnv :: IO Env
 newEnv = Env <$> do

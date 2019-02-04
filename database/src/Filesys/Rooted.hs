@@ -22,14 +22,15 @@ import qualified         System.Posix.IO as PosixIO
 import "unix-bytestring" System.Posix.IO.ByteString (fdPreadBuf, fdWrite)
 import                   System.Posix.Types (Fd, ByteCount, FileOffset)
 
-import                   Filesys.Generic
-import                   Control.Monad.IO.Class
 import                   Control.Concurrent.Forkable
+import                   Control.Monad.IO.Class
+import                   Filesys.Generic
 
 newtype Env = Env { filesysRoot :: FilePath }
 
 newtype RootFilesysM a = RootFilesysM (ReaderT Env IO a)
-  deriving (Functor, Applicative, Monad, MonadIO, ForkableMonad, MonadReader Env)
+  deriving (Functor, Applicative, Monad, MonadIO,
+            ForkableMonad, MonadReader Env)
 
 withRoot :: (FilePath -> IO a) -> RootFilesysM a
 withRoot act = do

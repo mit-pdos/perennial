@@ -25,6 +25,7 @@ dependencies:
 - filepath
 - concurrent-extra
 - binary
+- exceptions
 
 ghc-options:
   - -O2

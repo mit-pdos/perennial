@@ -1,10 +1,12 @@
 module SimpleDbConcurrentSpec(spec) where
 
+import Control.Concurrent.MVar (MVar, newEmptyMVar, putMVar, takeMVar)
+import Control.Monad (forM, forM_, replicateM_,
+                      when)
 import Prelude hiding (read, reads)
 
 import Control.Concurrent.Forkable
-import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar)
-import Control.Monad (forM, forM_, replicateM_, mapM, void, when)
+import Control.Monad.Catch (MonadMask, finally)
 import Control.Monad.IO.Class
 import Test.Hspec hiding (shouldReturn)
 
@@ -14,16 +16,27 @@ import SimpleDbTesting
 
 {-# ANN module ("HLint: ignore Redundant do" :: String) #-}
 
-runAll :: (ForkableMonad m, MonadIO m) => [m a] -> m [a]
-runAll acts = do
-  mvars <- forM acts $ \act -> do
-    m <- liftIO newEmptyMVar
-    _ <- forkIO (act >>= liftIO . putMVar m)
-    return m
-  mapM (liftIO . takeMVar) mvars
+type DoneChannel = MVar ()
 
-runAll_ :: (ForkableMonad m, MonadIO m) => [m a] -> m ()
-runAll_ acts = void $ runAll acts
+newChannel :: MonadIO m => m DoneChannel
+newChannel = liftIO newEmptyMVar
+
+sendDone :: MonadIO m => DoneChannel -> m ()
+sendDone c = liftIO $ putMVar c ()
+
+spawn :: (ForkableMonad m, MonadIO m, MonadMask m) => m a -> m DoneChannel
+spawn act = do
+  c <- newChannel
+  _ <- forkIO $ finally act (sendDone c)
+  return c
+
+waitFor :: MonadIO m => DoneChannel -> m ()
+waitFor = liftIO . takeMVar
+
+runAll_ :: (ForkableMonad m, MonadIO m, MonadMask m) => [m ()] -> m ()
+runAll_ acts = do
+  mvars <- forM acts spawn
+  mapM_ waitFor mvars
 
 writes :: DbT -> MemFilesysM ()
 writes db = forM_ [1..1000] $ \k -> write db k "val"
