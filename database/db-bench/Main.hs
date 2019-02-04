@@ -25,7 +25,7 @@ data Options =
 
 opts :: Parser Options
 opts = pure Options
-  <*> option auto
+  <*> option str
   ( long "root"
     <> metavar "DIR"
     <> value "bench.db"
