@@ -7,7 +7,7 @@ import qualified Data.ByteString.Char8 as BSC8
 import qualified Data.List as List
 import           Test.Hspec hiding (shouldReturn)
 
-import SimpleDbTesting
+import           SimpleDbTesting
 
 {-# ANN module ("HLint: ignore Redundant do" :: String) #-}
 
