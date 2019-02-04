@@ -179,16 +179,17 @@ Definition newDb : proc Db.t :=
   wbuffer <- Bind (Data.newHashTable _) Data.newIORef;
   rbuffer <- Bind (Data.newHashTable _) Data.newIORef;
     bufferL <- Data.newLock;
-    tableName <- Data.newIORef "table";
-    table <- createTbl "table";
-    _ <- FS.atomicCreate "manifest" (BS.fromString "table");
+    let tableName := "table.0" in
+    tableNameRef <- Data.newIORef tableName;
+    table <- createTbl tableName;
+    _ <- FS.atomicCreate "manifest" (BS.fromString tableName);
     tableRef <- Data.newIORef table;
     tableL <- Data.newLock;
     compactionL <- Data.newLock;
     Ret {| Db.wbuffer := wbuffer;
            Db.rbuffer := rbuffer;
            Db.bufferL := bufferL;
-           Db.tableName := tableName;
+           Db.tableName := tableNameRef;
            Db.table := tableRef;
            Db.tableL := tableL;
            Db.compactionL := compactionL |}.
@@ -226,7 +227,9 @@ Definition write db k v : proc unit :=
 ideally it would take table[n] and increment n, in order to get nice
 filenames *)
 Definition freshTable p : Path :=
-  (p ++ "0")%string.
+  if p == "table.0" then "table.1"
+  else if p == "table.1" then "table.0"
+       else (p ++ "x")%string.
 
 (* put all (key,value) pairs in (read) buffer to w *)
 Definition tblPutBuffer (w:TblW.t) (b:HashTable ByteString) : proc _ :=
