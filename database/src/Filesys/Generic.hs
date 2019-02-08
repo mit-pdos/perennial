@@ -21,3 +21,4 @@ class Monad m => MonadFilesys m where
   ftruncate :: FilePath -> m ()
   rename :: FilePath -> FilePath -> m ()
   atomicCreate :: FilePath -> ByteString -> m ()
+  link :: FilePath -> FilePath -> m Bool

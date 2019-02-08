@@ -133,3 +133,4 @@ instance MonadFilesys MemFilesysM where
     using files $ \h -> H.insert h p BS.empty
   list = withFilesys $
     using files $ \h -> map fst <$> H.toList h
+  link = error "in-memory filesystem does not have hard links"

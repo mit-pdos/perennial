@@ -10,10 +10,15 @@ import qualified         Data.ByteString as BS
 import qualified         Data.ByteString.Internal as BSI
 import                   System.Directory (listDirectory, removeFile)
 import                   System.FilePath.Posix (joinPath)
+import                   System.IO.Error ( isAlreadyExistsErrorType
+                                          , ioError
+                                          , ioeGetErrorType
+                                          , catchIOError)
 import                   System.Posix.Files ( getFdStatus
                                              , fileSize
                                              , setFileSize
                                              , rename
+                                             , createLink
                                              )
 import                   System.Posix.IO ( openFd, OpenMode(..)
                                          , closeFd
@@ -58,6 +63,13 @@ fdPread fd nbytes offset
             rc <- fdPreadBuf fd buf nbytes offset
             return (fromIntegral rc)
 
+catchExistsError :: IO a -> a -> IO a
+catchExistsError act fallback =
+  catchIOError act $ \e ->
+  if isAlreadyExistsErrorType (ioeGetErrorType e)
+  then return fallback
+  else ioError e
+
 instance MonadFilesys RootFilesysM where
   open = let perms = Nothing
              mode = PosixIO.defaultFileFlags in
@@ -84,3 +96,7 @@ instance MonadFilesys RootFilesysM where
     let tmpFile = dstFile ++ ".tmp"
     BS.writeFile tmpFile bs
     System.Posix.Files.rename tmpFile dstFile
+  link p1 p2 = withRoot $ \root -> do
+    let srcFile = joinPath [root, p1]
+    let dstFile = joinPath [root, p2]
+    catchExistsError (createLink srcFile dstFile >> return True) False

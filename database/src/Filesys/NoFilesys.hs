@@ -26,3 +26,4 @@ instance MonadFilesys NoFilesysM where
   ftruncate = oops
   rename = oops
   atomicCreate = oops
+  link = oops

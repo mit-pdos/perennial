@@ -26,9 +26,11 @@ dependencies:
 - concurrent-extra
 - binary
 - exceptions
+- random
 
 ghc-options:
   - -O2
+  - -Werror=incomplete-patterns
 
 default-extensions:
   - OverloadedStrings
