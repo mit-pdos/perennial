@@ -7,6 +7,7 @@ From RecoveryRefinement Require Import Database.Base.
 
 Axiom pid_to_tmpfile : uint64 -> Path.
 Axiom rnd_to_msgfile : uint64 -> Path.
+Axiom is_tmpfile : Path -> bool.
 
 Module MailServer.
 
@@ -17,10 +18,10 @@ Module MailServer.
   Definition deliver (msg : ByteString) :=
     pid <- FS.getpid;
     let tmpfile := pid_to_tmpfile pid in
-    fd <- FS.open tmpfile;
+    fd <- FS.create tmpfile;
     _ <- FS.append fd msg;
     _ <- FS.close fd;
-    Loop
+    _ <- Loop
       (fun _ =>
         rnd <- FS.random;
         let msgfile := rnd_to_msgfile rnd in
@@ -28,7 +29,8 @@ Module MailServer.
         if ok then
           LoopRet tt
         else
-          Continue tt) tt.
+          Continue tt) tt;
+    FS.delete tmpfile.
 
   Definition pickup :=
     fns <- FS.list;
@@ -37,11 +39,13 @@ Module MailServer.
         match fns with
         | nil => LoopRet msgs
         | fn :: fns' =>
-          fd <- FS.open fn;
-          len <- FS.size fd;
-          msg <- FS.readAt fd 0 len;
-          _ <- FS.close fd;
-          Continue (fns', (fn, msg) :: msgs)
+          if is_tmpfile fn then Continue (fns', msgs)
+          else
+            fd <- FS.open fn;
+            len <- FS.size fd;
+            msg <- FS.readAt fd 0 len;
+            _ <- FS.close fd;
+            Continue (fns', (fn, msg) :: msgs)
         end) (fns, nil).
 
   Definition delete (fn : Path) :=
