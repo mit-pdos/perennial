@@ -12,6 +12,14 @@ Admitted.
 Definition ioref_mapsto `{baseG Σ} {T} (r:IORef T) (x:T) : iProp Σ.
 Admitted.
 
+Definition hashtable_mapsto `{baseG Σ} {V}
+           (r:HashTable V) (v:uint64 -> option V) : iProp Σ.
+Admitted.
+
+Definition array_mapsto `{baseG Σ} {T}
+           (r:Array T) (v: list T) : iProp Σ.
+Admitted.
+
 Definition path_mapsto `{baseG Σ} (p: Path) (bs: ByteString) : iProp Σ.
 Admitted.
 
@@ -24,6 +32,10 @@ Class GenericMapsTo `{baseG Σ} (Addr:Type) :=
 
 Instance ioref_gen_mapsto `{baseG Σ} T : GenericMapsTo (@IORef T)
   := {| generic_mapsto := ioref_mapsto; |}.
+Instance hashtable_gen_mapsto `{baseG Σ} V : GenericMapsTo (@HashTable V)
+  := {| generic_mapsto := hashtable_mapsto; |}.
+Instance array_gen_mapsto `{baseG Σ} T : GenericMapsTo (@Array T)
+  := {| generic_mapsto := array_mapsto; |}.
 Instance path_gen_mapsto `{baseG Σ} : GenericMapsTo Path :=
   {| generic_mapsto := path_mapsto |}.
 Instance fd_gen_mapsto `{baseG Σ} : GenericMapsTo Fd :=
