@@ -37,11 +37,15 @@ opts = pure Options
                              (progDesc "concurrent fill + compact benchmark"))
     <> command "readcompact" (info readCompactOpts
                              (progDesc "concurrent read + compact benchmark"))
+    <> command "parread" (info parReadOpts
+                           (progDesc "parallel readers"))
   )
 
+-- TODO: don't really need different records for options, can be unified
 data Command = FillReadBench FillReadOptions
              | FillCompactBench FillCompactOptions
              | ReadCompactBench ReadCompactOptions
+             | ParReadBench ParReadOptions
 
 newtype FillReadOptions =
   FillReadOptions{ iterations :: Int }
@@ -55,6 +59,11 @@ data ReadCompactOptions =
                     , numKeys :: Int
                     , parReaders :: Int }
 
+data ParReadOptions =
+  ParReadOptions{ iterations :: Int
+                , parReaders :: Int
+                }
+
 fillReadOpts :: Parser Command
 fillReadOpts = FillReadBench <$> opts
   where opts = pure FillReadOptions <*> iterOpt
@@ -65,12 +74,11 @@ fillCompactOpts = FillCompactBench <$> opts
 
 readCompactOpts :: Parser Command
 readCompactOpts = ReadCompactBench <$> opts
-  where opts = pure ReadCompactOptions <*> iterOpt <*> dbSizeOpt
-          <*> option auto
-          ( long "par"
-          <> value 2
-          <> showDefault
-          <> help "number of parallel reader threads" )
+  where opts = pure ReadCompactOptions <*> iterOpt <*> dbSizeOpt <*> parReadersOpt
+
+parReadOpts :: Parser Command
+parReadOpts = ParReadBench <$> opts
+  where opts = pure ParReadOptions <*> iterOpt <*> parReadersOpt
 
 iterOpt :: Parser Int
 iterOpt = option auto
@@ -86,6 +94,13 @@ dbSizeOpt = option auto
     <> value 100
     <> showDefault
     <> help "maximum number of keys in database" )
+
+parReadersOpt :: Parser Int
+parReadersOpt = option auto
+  ( long "par"
+    <> value 2
+    <> showDefault
+    <> help "number of parallel reader threads" )
 
 -- | timeIO runs an action and times it, reporting the result in seconds
 timeIO :: MonadIO m => m () -> m Double
@@ -189,16 +204,35 @@ spawn act = do
   _ <- forkIO $ act >>= liftIO . putMVar m
   return m
 
-readCompactBench :: ReadCompactOptions -> DbM ()
-readCompactBench ReadCompactOptions{..} = do
-  let iters = iterations
+writeTable :: Int -> -- ^ number of keys
+              DbM ()
+writeTable numKeys = do
   forM_ [1..fromIntegral numKeys] $ \k -> write k theValue
   compact
   compact
-  (ts, numCompactions) <- whileCompacting $ do
-    let reads = timeIO $ replicateM_ iters rread
-    ms <- replicateM parReaders $ spawn reads
-    mapM (liftIO . takeMVar) ms
+
+parReads :: Int -> -- ^ par
+            Int -> -- ^ iters
+            DbM [Double]
+parReads par iters = do
+  let reads = timeIO $ replicateM_ iters rread
+  ms <- replicateM par $ spawn reads
+  mapM (liftIO . takeMVar) ms
+
+parReadBench :: ParReadOptions -> DbM ()
+parReadBench ParReadOptions{..} = do
+  let iters = iterations
+  let numKeys = 100
+  writeTable numKeys
+  ts <- parReads parReaders iters
+  let totalIters = iters * parReaders
+  reportTime "reads" totalIters (sum ts / fromIntegral totalIters)
+
+readCompactBench :: ReadCompactOptions -> DbM ()
+readCompactBench ReadCompactOptions{..} = do
+  let iters = iterations
+  writeTable numKeys
+  (ts, numCompactions) <- whileCompacting $ parReads parReaders iters
   let totalIters = iters * parReaders
   reportTime "reads with compactions" totalIters (sum ts / fromIntegral totalIters)
   liftIO $ printf "  (finished %d compactions)\n" numCompactions
@@ -207,6 +241,7 @@ runBench :: Command -> DbM ()
 runBench (FillReadBench opts) = fillReadBench opts
 runBench (FillCompactBench opts) = fillCompactBench opts
 runBench (ReadCompactBench opts) = readCompactBench opts
+runBench (ParReadBench opts) = parReadBench opts
 
 app :: Options -> IO ()
 app Options{..} = do
