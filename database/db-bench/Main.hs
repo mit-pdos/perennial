@@ -7,7 +7,7 @@ import           Text.Printf
 import           Control.Concurrent.MVar (newEmptyMVar, putMVar, tryTakeMVar)
 
 import           Control.Concurrent.Forkable
-import           Control.Monad (replicateM, forM_, when)
+import           Control.Monad (replicateM, replicateM_, forM_, when)
 import           Control.Monad.IO.Class
 import qualified Data.ByteString as BS
 import           Options.Applicative
@@ -196,10 +196,11 @@ readCompactBench ReadCompactOptions{..} = do
   compact
   compact
   (ts, numCompactions) <- whileCompacting $ do
-    let reads = replicateM iters (timeIO rread)
+    let reads = timeIO $ replicateM_ iters rread
     ms <- replicateM parReaders $ spawn reads
-    concat <$> mapM (liftIO . takeMVar) ms
-  reportTime "reads with compactions" iters (sum ts / fromIntegral (length ts))
+    mapM (liftIO . takeMVar) ms
+  let totalIters = iters * parReaders
+  reportTime "reads with compactions" totalIters (sum ts / fromIntegral totalIters)
   liftIO $ printf "  (finished %d compactions)\n" numCompactions
 
 runBench :: Command -> DbM ()
