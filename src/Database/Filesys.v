@@ -39,6 +39,11 @@ Module FS.
   | Rename p1 p2 : Op unit
   | Truncate p : Op unit
   | AtomicCreate p bs : Op unit
+
+  (* Additional operations that seem to be required for the mail server. *)
+  | GetPID : Op uint64
+  | Random : Op uint64
+  | Link p1 p2 : Op bool
   .
 
   Section OpWrappers.
@@ -58,12 +63,19 @@ Module FS.
     Definition truncate p : proc _ := Call! Truncate p.
     Definition atomicCreate p bs : proc _ := Call! AtomicCreate p bs.
 
+    Definition getpid : proc _ := Call! GetPID.
+    Definition random : proc _ := Call! Random.
+    Definition link p1 p2 : proc _ := Call! Link p1 p2.
+
   End OpWrappers.
 
   Inductive OpenMode := Read | Write.
 
   Record State :=
     mkState { files: gmap Path ByteString;
+              (* Mail server uses link+unlink so it would be nicer to have
+               * an explicit model of inodes and hard links.
+               *)
               fds: gmap Fd (Path * OpenMode); }.
 
   Instance _eta : Settable State :=
@@ -139,6 +151,18 @@ Module FS.
     | AtomicCreate p bs =>
       _ <- readNone (fun s => s.(files) !! p);
         puts (set files (insert p bs))
+
+    (* Mail server specific ops *)
+    | GetPID =>
+      (* XXX where are PIDs in Iris? *)
+      r <- such_that (fun s r => True);
+      pure r
+    | Random =>
+      r <- such_that (fun s r => True);
+      pure r
+    | Link p1 p2 =>
+      (* XXX need hard link model state *)
+      pure true
     end.
 
   Definition crash_step : relation State State unit :=
