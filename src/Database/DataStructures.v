@@ -394,4 +394,21 @@ Module Data.
     match v with
     end.
 
+  Global Instance empty_dynmap A Ref Model : Empty (@DynMap A Ref Model).
+  refine {| dynMap := fun _ => None; |}.
+  intros; auto.
+  Defined.
+
+  Instance empty_state : Empty State.
+  refine {| vars := vars0 ;
+            iorefs := ∅ ;
+            arrays := ∅ ;
+            hashtables := ∅ ;
+            locks := fun _ => None ;
+         |}.
+  Defined.
+
+  Definition crash_step : relation State State unit :=
+    puts (fun _ => ∅).
+
 End Data.

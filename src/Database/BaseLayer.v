@@ -14,7 +14,7 @@ Inductive Op : Type -> Type :=
 Instance data_inj : Injectable Data.Op Op := DataOp.
 Instance fs_inj : Injectable FS.Op Op := FilesysOp.
 
-Module Layer.
+Module Base.
 
   Record State :=
     mkState { fsΣ : FS.State;
@@ -37,4 +37,23 @@ Module Layer.
       step (DataOp op) s (Val (set dataΣ (fun _ => s') s) r)
   .
 
-End Layer.
+  Inductive crash_step : relation State State unit :=
+  | BaseCrashStep : forall s s',
+      FS.crash_step (fsΣ s) (Val (fsΣ s') tt) ->
+      Data.crash_step (dataΣ s) (Val (dataΣ s') tt) ->
+      crash_step s (Val s' tt).
+
+  Definition l : Layer Op.
+    refine {| Layer.State := State;
+              sem := {| Proc.step := step; Proc.crash_step := crash_step |};
+              trace_proj := fun _ => nil;
+              initP := fun _ => True; |}; simpl; intros.
+    - auto.
+    - destruct s1; eexists (mkState _ _); simpl.
+      constructor; simpl.
+      hnf; simpl; eauto.
+      hnf; simpl; eauto.
+    - inversion H; eauto.
+  Defined.
+
+End Base.

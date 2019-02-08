@@ -141,4 +141,7 @@ Module FS.
         puts (set files (insert p bs))
     end.
 
+  Definition crash_step : relation State State unit :=
+    puts (set fds (fun _ => ∅)).
+
 End FS.
