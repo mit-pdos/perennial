@@ -56,4 +56,32 @@ Section lifting.
   Proof.
   Admitted.
 
+  Theorem wp_newHashTable V (r:HashTable V) :
+    {{{ emp }}}
+      Data.newHashTable V
+      {{{ RET r; r ↦ ∅ }}}.
+  Proof.
+  Admitted.
+
+  Theorem wp_hashTableLookup V (r:HashTable V) (v:Data.hashtableM V) k mv :
+    {{{ r ↦ v }}}
+      Data.hashTableLookup r k
+      {{{ RET mv; ⌜mv = v !! k⌝ ∗ r ↦ v }}}.
+  Proof.
+  Admitted.
+
+  Theorem wp_hashTableAlter V (r:HashTable V) (v:Data.hashtableM V) k f :
+    {{{ r ↦ v }}}
+      Data.hashTableAlter r k f
+      {{{ RET (); r ↦ (Data.alter_map v k f) }}}.
+  Proof.
+  Admitted.
+
+  Theorem wp_hashTableReadAll V (r:HashTable V) (v:Data.hashtableM V) (ents: Array (uint64*V)):
+    {{{ r ↦ v }}}
+      Data.hashTableReadAll r
+      {{{ RET ents; ents ↦ map_to_list v ∗ r ↦ v }}}.
+  Proof.
+  Admitted.
+
 End lifting.

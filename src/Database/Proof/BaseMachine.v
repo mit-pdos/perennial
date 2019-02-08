@@ -13,7 +13,7 @@ Definition ioref_mapsto `{baseG Σ} {T} (r:IORef T) (x:T) : iProp Σ.
 Admitted.
 
 Definition hashtable_mapsto `{baseG Σ} {V}
-           (r:HashTable V) (v:uint64 -> option V) : iProp Σ.
+           (r:HashTable V) (v:Data.hashtableM V) : iProp Σ.
 Admitted.
 
 Definition array_mapsto `{baseG Σ} {T}
