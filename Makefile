@@ -48,6 +48,8 @@ build-extract: extract
 	@echo "stack build"
 	@cd database && stack build
 
+.PHONY: ci
+ci: src/ShouldBuild.vo extract
 
 clean:
 	@echo "CLEAN vo glob aux"
