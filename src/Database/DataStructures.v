@@ -19,6 +19,7 @@ Set Implicit Arguments.
 
 (* TODO: rename to Ptr *)
 Axiom IORef : Type -> Type.
+Axiom nullptr : forall T, IORef T.
 
 Module slice.
   Section Slices.
@@ -31,6 +32,8 @@ Module slice.
 
     Instance _eta : Settable t :=
       mkSettable (constructor mk <*> ptr <*> offset <*> length)%set.
+
+    Definition nil := {| ptr := nullptr A; offset := 0; length := 0 |}.
 
     Definition skip (n:uint64) (x:t) : t :=
       set length (fun l => sub l n)
