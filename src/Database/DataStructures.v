@@ -38,6 +38,22 @@ Module slice.
 
     Definition take (n:uint64) (x:t) : t :=
       set length (fun _ => n) x.
+
+    Definition subslice (low high:uint64) (x:t) : t :=
+      set length (fun _ => sub high low)
+          (set offset (fun o => add o low) x).
+
+    Theorem subslice_skip_take low high x :
+      subslice low high x = skip low (take high x).
+    Proof.
+      destruct x; unfold subslice, skip; simpl; auto.
+    Qed.
+
+    Theorem subslice_take_skip low high x :
+      subslice low high x = take (sub high low) (skip low x).
+    Proof.
+      destruct x; unfold subslice, skip; simpl; auto.
+    Qed.
   End Slices.
 End slice.
 
