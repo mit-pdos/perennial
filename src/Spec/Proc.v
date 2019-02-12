@@ -315,6 +315,9 @@ Module ProcNotations.
   Notation "x <- p1 ; p2" := (Bind p1 (fun x => p2))
                                (at level 20, p1 at level 100, p2 at level 200, right associativity)
                              : proc_scope.
+  Notation "'let!' x <- p1 ; p2" := (Bind p1 (fun x => p2))
+                               (at level 20, x pattern, p1 at level 100, p2 at level 200, right associativity)
+                             : proc_scope.
 End ProcNotations.
 
 (* replacements for Until loops *)

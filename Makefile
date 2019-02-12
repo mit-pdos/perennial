@@ -49,7 +49,7 @@ build-extract: extract
 	@cd database && stack build
 
 .PHONY: ci
-ci: src/ShouldBuild.vo extract
+ci: src/ShouldBuild.vo $(TEST_VFILES:.v=.vo) extract
 
 clean:
 	@echo "CLEAN vo glob aux"
