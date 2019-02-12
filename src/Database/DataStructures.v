@@ -1,3 +1,5 @@
+From Coq Require Import ProofIrrelevance.
+
 From stdpp Require gmap.
 From stdpp Require Import fin_maps.
 
@@ -15,7 +17,30 @@ Import EqNotations.
 
 Set Implicit Arguments.
 
+(* TODO: rename to Ptr *)
 Axiom IORef : Type -> Type.
+
+Module slice.
+  Section Slices.
+    Variable A:Type.
+
+    Record t :=
+      mk { ptr: IORef A;
+           offset: uint64;
+           length: uint64 }.
+
+    Instance _eta : Settable t :=
+      mkSettable (constructor mk <*> ptr <*> offset <*> length)%set.
+
+    Definition skip (n:uint64) (x:t) : t :=
+      set length (fun l => sub l n)
+          (set offset (fun o => add o n) x).
+
+    Definition take (n:uint64) (x:t) : t :=
+      set length (fun _ => n) x.
+  End Slices.
+End slice.
+
 Axiom Array : Type -> Type.
 (* Hashtables always use uint64 as the key type since the Haskell interpreter
 needs to statically know the type in order to resolve Hashable and Eq instances
@@ -30,6 +55,25 @@ Axiom sigHashTable_eq_dec : EqualDec (sigT HashTable).
 Axiom lockRef_eq_dec : EqualDec LockRef.
 
 Existing Instances sigIORef_eq_dec sigArray_eq_dec sigHashTable_eq_dec lockRef_eq_dec.
+
+Instance slice_eq_dec : EqualDec (sigT slice.t).
+Proof.
+  hnf; intros.
+  destruct x as [T1 x], y as [T2 y].
+  destruct x, y; simpl.
+  destruct (equal (existT _ ptr) (existT _ ptr0));
+    [ | right ].
+  - destruct (equal offset offset0), (equal length length0);
+      [ left | right.. ];
+      repeat match goal with
+             | [ H: existT ?T _ = existT ?T _ |- _ ] =>
+               apply inj_pair2 in H; subst
+             | [ H: existT _ _ = existT _ _ |- _ ] =>
+               inversion H; subst; clear H
+             end; eauto; try (inversion 1; congruence).
+  - inversion 1; subst.
+    apply inj_pair2 in H2; subst; congruence.
+Defined.
 
 Module Var.
   Inductive t :=
@@ -76,6 +120,9 @@ Module Data.
   | ArrayLength : forall T, Array T -> Op uint64
   | ArrayGet : forall T, Array T -> uint64 -> Op T
   | ArrayAppend : forall T, Array T -> T -> Op unit
+
+  (* TODO: add slice operations (allocation, appending elements, appending
+  slices, indexing) *)
 
   (* hashtables *)
   | NewHashTable :
