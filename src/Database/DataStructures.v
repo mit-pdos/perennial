@@ -139,6 +139,8 @@ Module Data.
 
   (* TODO: add slice operations (allocation, appending elements, appending
   slices, indexing) *)
+  | UInt64Get : slice.t byte -> Op uint64
+  | UInt64Put : uint64 -> slice.t byte -> Op unit
 
   (* hashtables *)
   | NewHashTable :
@@ -156,6 +158,7 @@ Module Data.
   | LockAcquire : LockMode -> LockRef -> Op unit
   | LockRelease : LockMode -> LockRef -> Op unit
 
+  (* debugging *)
   | PrintByteString : String.string -> ByteString -> Op unit
   .
 
@@ -197,6 +200,12 @@ Module Data.
 
     Definition arrayGet T (a: Array T) (ix:uint64) : proc T :=
       Call! ArrayGet a ix.
+
+    Definition uint64Get p : proc uint64 :=
+      Call! UInt64Get p.
+
+    Definition uint64Put p n : proc unit :=
+      Call! UInt64Put p n.
 
     Definition newHashTable V : proc _ :=
       Call! NewHashTable V.
@@ -414,6 +423,9 @@ Module Data.
     | ArrayGet v i =>
       l0 <- readSome (fun s => getDyn s.(arrays) v);
         readSome (fun _ => List.nth_error l0 (toNum i))
+    (* TODO: model these using uint64_{to,from}_le axioms *)
+    | UInt64Get p => error
+    | UInt64Put n p => error
     | NewHashTable V =>
       r <- such_that (fun s r => getDyn s.(hashtables) r = None);
         _ <- puts (set hashtables (updDyn r empty));
