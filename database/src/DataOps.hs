@@ -26,6 +26,9 @@ interpret (Data__ArrayLength r) =
   coerceRet @Word64 $ fromIntegral <$> V.length r
 interpret (Data__ArrayGet r i) = V.unsafeRead r (fromIntegral i)
 interpret (Data__ArrayAppend r x) = coerceVoid $ V.pushBack r x
+interpret (Data__NewSlice) = error "slices are unsupported"
+interpret (Data__SliceAppend _ _) = error "slices are unsupported"
+interpret (Data__SliceAppendSlice _ _) = error "slices are unsupported"
 interpret (Data__UInt64Get _) = error "slices are unsupported"
 interpret (Data__UInt64Put _ _) = error "slices are unsupported"
 interpret Data__NewHashTable = coerceRet @(HashTable _) H.new

@@ -142,6 +142,10 @@ Module Data.
 
   (* TODO: add slice operations (allocation, appending elements, appending
   slices, indexing) *)
+  | NewSlice : forall T, Op (slice.t T)
+  | SliceAppend : forall T, slice.t T -> T -> Op (slice.t T)
+  | SliceAppendSlice : forall T, slice.t T -> slice.t T -> Op (slice.t T)
+
   | UInt64Get : slice.t byte -> Op uint64
   | UInt64Put : uint64 -> slice.t byte -> Op unit
 
@@ -203,6 +207,15 @@ Module Data.
 
     Definition arrayGet T (a: Array T) (ix:uint64) : proc T :=
       Call! ArrayGet a ix.
+
+    Definition newSlice T : proc _ :=
+      Call! NewSlice T.
+
+    Definition sliceAppend T d x : proc _ :=
+      Call! @SliceAppend T d x.
+
+    Definition sliceAppendSlice T d d' : proc _ :=
+      Call! @SliceAppendSlice T d d'.
 
     Definition uint64Get p : proc uint64 :=
       Call! UInt64Get p.
@@ -426,6 +439,9 @@ Module Data.
     | ArrayGet v i =>
       l0 <- readSome (fun s => getDyn s.(arrays) v);
         readSome (fun _ => List.nth_error l0 (toNum i))
+    | NewSlice T => error
+    | SliceAppend d x => error
+    | SliceAppendSlice d d' => error
     (* TODO: model these using uint64_{to,from}_le axioms *)
     | UInt64Get p => error
     | UInt64Put n p => error

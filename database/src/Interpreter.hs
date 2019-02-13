@@ -19,6 +19,8 @@ interpret :: (MonadFilesys m, MonadIO m, ForkableMonad m) =>
              Coq_proc (BaseLayer.Op a) x -> m x
 interpret (Call (BaseLayer.FilesysOp op)) = coerceRet $ FilesysOps.interpret op
 interpret (Call (BaseLayer.DataOp op)) = coerceRet . liftIO $ DataOps.interpret op
+interpret (Call (BaseLayer.SliceReadAt _ _ _)) = error "slices are unsupported"
+interpret (Call (BaseLayer.SliceAppend _ _)) = error "slices are unsupported"
 interpret (Ret x) = return x
 interpret (Bind x f) = do
   r <- interpret x
