@@ -11,7 +11,7 @@ From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 From RecordUpdate Require Import RecordSet.
 Import ApplicativeNotations.
 
-From Classes Require Import EqualDec.
+From Classes Require Import EqualDec Default.
 From Coq Require Import NArith.
 Import EqNotations.
 
@@ -34,6 +34,8 @@ Module slice.
       mkSettable (constructor mk <*> ptr <*> offset <*> length)%set.
 
     Definition nil := {| ptr := nullptr A; offset := 0; length := 0 |}.
+
+    Global Instance slice_def : Default t := nil.
 
     Definition skip (n:uint64) (x:t) : t :=
       set length (fun l => sub l n)
@@ -231,6 +233,14 @@ Module Data.
 
     Definition hashTableLookup V h k : proc _ :=
       Call! @HashTableLookup V h k.
+
+    Definition goHashTableLookup V {_:Default V} (h: HashTable V) k : proc (V * bool) :=
+      Bind (Call (inject (HashTableLookup h k)))
+           (fun mv =>
+              match mv with
+              | Some v => Ret (v, true)
+              | None => Ret (default, false)
+              end).
 
     Definition hashTableReadAll V h : proc _ :=
       Call! @HashTableReadAll V h.
