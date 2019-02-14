@@ -7,11 +7,12 @@ From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
+From RecoveryRefinement Require Import Helpers.GoModel.
 
 From RecordUpdate Require Import RecordSet.
 Import ApplicativeNotations.
 
-From Classes Require Import EqualDec Default.
+From Classes Require Import EqualDec.
 From Coq Require Import NArith.
 Import EqNotations.
 
@@ -35,7 +36,7 @@ Module slice.
 
     Definition nil := {| ptr := nullptr A; offset := 0; length := 0 |}.
 
-    Global Instance slice_def : Default t := nil.
+    Global Instance slice_zero : HasGoZero t := nil.
 
     Definition skip (n:uint64) (x:t) : t :=
       set length (fun l => sub l n)
@@ -234,12 +235,12 @@ Module Data.
     Definition hashTableLookup V h k : proc _ :=
       Call! @HashTableLookup V h k.
 
-    Definition goHashTableLookup V {_:Default V} (h: HashTable V) k : proc (V * bool) :=
+    Definition goHashTableLookup V {_:HasGoZero V} (h: HashTable V) k : proc (V * bool) :=
       Bind (Call (inject (HashTableLookup h k)))
            (fun mv =>
               match mv with
               | Some v => Ret (v, true)
-              | None => Ret (default, false)
+              | None => Ret (zeroValue _, false)
               end).
 
     Definition hashTableReadAll V h : proc _ :=
