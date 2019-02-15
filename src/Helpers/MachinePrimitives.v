@@ -420,6 +420,9 @@ Axiom uint64_le_enc : LittleEndianEncoder 8 uint64_to_le uint64_from_le.
 (** File descriptors *)
 
 Axiom Fd:Type.
+(* needed to model zero-valued structs *)
+(* TODO: need to make sure normal fds are not equal to InvalidFd *)
+Axiom InvalidFd:Fd.
 Axiom fd_eqdec : EqualDec Fd.
 Existing Instance fd_eqdec.
 Axiom fd_countable : Countable Fd.

@@ -11,3 +11,5 @@ Instance bool_zero : HasGoZero bool := false.
 
 Axiom byte0 : byte.
 Instance byte_zero : HasGoZero byte := byte0.
+
+Instance fd_zero : HasGoZero Fd := InvalidFd.

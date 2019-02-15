@@ -24,6 +24,8 @@ Set Implicit Arguments.
 Axiom IORef : Type -> Type.
 Axiom nullptr : forall T, IORef T.
 
+Instance ioref_zero T : HasGoZero (IORef T) := nullptr T.
+
 Module slice.
   Section Slices.
     Variable A:Type.
@@ -71,7 +73,14 @@ needs to statically know the type in order to resolve Hashable and Eq instances
 
 We could instead use a type code and dispatch on that. *)
 Axiom HashTable : forall (V:Type), Type.
+Axiom nilMap : forall (V:Type), HashTable V.
+
+Instance map_zero V : HasGoZero (HashTable V) := nilMap V.
+
 Axiom LockRef : Type.
+(* TODO: switch to a unified pointer type *)
+Axiom LockRef_nil : LockRef.
+Instance LockRef_zero : HasGoZero LockRef := LockRef_nil.
 
 Axiom sigIORef_eq_dec : EqualDec (sigT IORef).
 Axiom sigArray_eq_dec : EqualDec (sigT Array).
