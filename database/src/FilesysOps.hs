@@ -24,7 +24,6 @@ interpret (FS__ReadAt fh off len) = coerceRet @ByteString $ readAt fh off len
 interpret (FS__Append fh bs) = coerceVoid $ append fh bs
 interpret (FS__AtomicCreate f bs) = coerceVoid $ atomicCreate f bs
 interpret (FS__Link p1 p2) = coerceRet @Bool $ link p1 p2
-interpret FS__GetPID = error "Haskell does not have numeric ThreadIDs"
 -- TODO: really shouldn't be in the filesystem layer (at best data structures,
 -- better yet a separate state-independent layer)
 interpret FS__Random = coerceRet @Word64 $ liftIO randomIO
