@@ -3,9 +3,12 @@ ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
 VFILES := $(filter-out $(TEST_VFILES),$(PROJ_VFILES))
+TEST_VO := $(TEST_VFILES:.v=.vo)
 
-default: $(VFILES:.v=.vo)
-test: $(TEST_VFILES:.v=.vo) $(VFILES:.v=.vo)
+default: src/ShouldBuild.vo
+
+all: $(VFILES:.v=.vo)
+test: $(TEST_VO) $(VFILES:.v=.vo)
 
 _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 	@echo "-R src $$(cat libname)" > $@
@@ -49,7 +52,7 @@ build-extract: extract
 	@cd database && stack build
 
 .PHONY: ci
-ci: src/ShouldBuild.vo $(TEST_VFILES:.v=.vo) extract
+ci: src/ShouldBuild.vo $(TEST_VO) extract
 
 clean:
 	@echo "CLEAN vo glob aux"
