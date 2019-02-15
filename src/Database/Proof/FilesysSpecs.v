@@ -6,6 +6,8 @@ From RecoveryRefinement Require Import Database.Proof.BaseMachine.
 
 Implicit Types (p:Path) (fh:Fd) (bs:ByteString).
 
+Definition path_dec : forall (a b : Path), {a=b}+{a<>b} := string_dec.
+
 Section lifting.
   Context `{!baseG Σ}.
 
@@ -57,6 +59,13 @@ Section lifting.
     {{{ ▷ dirents S }}}
       FS.list
       {{{ RET r; ⌜r = S⌝ ∗ dirents S}}}.
+  Admitted.
+
+  (* TODO: require no open FDs for the deleted file? *)
+  Theorem wp_delete S p bs :
+    {{{ ▷ dirents S ∗ ⌜p ∈ S⌝ ∗ p ↦ bs }}}
+      FS.delete p
+      {{{ RET (); dirents (remove path_dec p S) }}}.
   Admitted.
 
 End lifting.

@@ -41,7 +41,6 @@ Module FS.
   | AtomicCreate p bs : Op unit
 
   (* Additional operations that seem to be required for the mail server. *)
-  | GetPID : Op uint64
   | Random : Op uint64
   | Link p1 p2 : Op bool
   .
@@ -63,7 +62,6 @@ Module FS.
     Definition truncate p : proc _ := Call! Truncate p.
     Definition atomicCreate p bs : proc _ := Call! AtomicCreate p bs.
 
-    Definition getpid : proc _ := Call! GetPID.
     Definition random : proc _ := Call! Random.
     Definition link p1 p2 : proc _ := Call! Link p1 p2.
 
@@ -153,10 +151,6 @@ Module FS.
         puts (set files (insert p bs))
 
     (* Mail server specific ops *)
-    | GetPID =>
-      (* XXX where are PIDs in Iris? *)
-      r <- such_that (fun s r => True);
-      pure r
     | Random =>
       r <- such_that (fun s r => True);
       pure r
