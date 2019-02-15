@@ -6,6 +6,7 @@ notifications:
   email:
     - tchajed@mit.edu
     - jtassaro@andrew.cmu.edu
+    - nickolai@csail.mit.edu
 
 services:
   - docker
