@@ -339,6 +339,12 @@ Section ByteStringProperties.
     rewrite app_length; auto.
   Qed.
 
+  Theorem app_empty bs :
+    BS.append BS.empty bs = bs.
+  Proof.
+    start; eauto.
+  Qed.
+
   Theorem take_app_exact n bs1 bs2 :
     BS.length bs1 = n ->
     BS.take n (bs1 ++ bs2) = bs1.
