@@ -111,13 +111,13 @@ Definition ReadValue (f:Fd) (off:uint64) : proc (slice.t byte) :=
     Ret newBuf
   else Ret (slice.take totalBytes buf).
 
-Definition TableRead (t:Table.t) (k:uint64) : proc (slice.t byte) :=
+Definition TableRead (t:Table.t) (k:uint64) : proc (slice.t byte * bool) :=
   let! (off, ok) <- Data.goHashTableLookup t.(Table.Index) k;
   if negb ok
-  then Ret (slice.nil _)
+  then Ret (slice.nil _, false)
   else
     p <- ReadValue t.(Table.File) off;
-    Ret p.
+    Ret (p, true).
 
 Module bufFile.
   Record t := mk {
