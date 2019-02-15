@@ -12,6 +12,8 @@ From RecoveryRefinement Require Import Helpers.GoModel.
 From RecordUpdate Require Import RecordSet.
 Import ApplicativeNotations.
 
+Import UIntNotations.
+
 From Classes Require Import EqualDec.
 From Coq Require Import NArith.
 Import EqNotations.
@@ -133,6 +135,8 @@ Module Data.
   | SetVar : forall (v:Var.t), Var.ty v -> Op unit
 
   (* arbitrary references *)
+  (* TODO: these are subsumed by the more general operations with offsets (using
+  a size/offset of 1 everywhere) *)
   | NewIORef : forall T, T -> Op (IORef T)
   | ReadIORef : forall T, IORef T -> Op T
   | WriteIORef : forall T, IORef T -> forall (args:NonAtomicArgs T), Op (retT args unit)
@@ -143,14 +147,14 @@ Module Data.
   | ArrayGet : forall T, Array T -> uint64 -> Op T
   | ArrayAppend : forall T, Array T -> T -> Op unit
 
-  (* TODO: add slice operations (allocation, appending elements, appending
-  slices, indexing) *)
-  | NewSlice : forall T, Op (slice.t T)
+  (* create a new allocation of a particular size, filled with a chosen value *)
+  | NewAlloc : forall T, T -> uint64 -> Op (IORef T)
   | SliceAppend : forall T, slice.t T -> T -> Op (slice.t T)
   | SliceAppendSlice : forall T, slice.t T -> slice.t T -> Op (slice.t T)
+  | PtrDeref : forall T (ptr:IORef T) (off:uint64), Op T
 
   | UInt64Get : slice.t byte -> Op uint64
-  | UInt64Put : uint64 -> slice.t byte -> Op unit
+  | UInt64Put : slice.t byte -> uint64 -> Op unit
 
   (* hashtables *)
   | NewHashTable :
@@ -211,8 +215,8 @@ Module Data.
     Definition arrayGet T (a: Array T) (ix:uint64) : proc T :=
       Call! ArrayGet a ix.
 
-    Definition newSlice T : proc _ :=
-      Call! NewSlice T.
+    Definition newAlloc T x len : proc _ :=
+      Call! @NewAlloc T x len.
 
     Definition sliceAppend T d x : proc _ :=
       Call! @SliceAppend T d x.
@@ -220,11 +224,25 @@ Module Data.
     Definition sliceAppendSlice T d d' : proc _ :=
       Call! @SliceAppendSlice T d d'.
 
+    Definition ptrDeref T p off : proc _ :=
+      Call! @PtrDeref T p off.
+
+    (* Go helpers *)
+
+    Definition newSlice T {GoZero:HasGoZero T} len : proc (slice.t T) :=
+      Bind (Call (inject (@NewAlloc T (zeroValue T) len)))
+           (fun p => Ret {| slice.ptr := p;
+                         slice.length := len;
+                         slice.offset := 0%u64 |}).
+
+    Definition sliceRead T (s: slice.t T) off : proc T :=
+      ptrDeref s.(slice.ptr) (s.(slice.offset) + off)%u64.
+
     Definition uint64Get p : proc uint64 :=
       Call! UInt64Get p.
 
-    Definition uint64Put p n : proc unit :=
-      Call! UInt64Put p n.
+    Definition uint64Put n p : proc unit :=
+      Call! UInt64Put n p.
 
     Definition newHashTable V : proc _ :=
       Call! NewHashTable V.
@@ -450,12 +468,13 @@ Module Data.
     | ArrayGet v i =>
       l0 <- readSome (fun s => getDyn s.(arrays) v);
         readSome (fun _ => List.nth_error l0 (toNum i))
-    | NewSlice T => error
+    | NewAlloc x len => error
     | SliceAppend d x => error
     | SliceAppendSlice d d' => error
+    | PtrDeref p off => error
     (* TODO: model these using uint64_{to,from}_le axioms *)
     | UInt64Get p => error
-    | UInt64Put n p => error
+    | UInt64Put p n => error
     | NewHashTable V =>
       r <- such_that (fun s r => getDyn s.(hashtables) r = None);
         _ <- puts (set hashtables (updDyn r empty));
@@ -517,3 +536,5 @@ Module Data.
     puts (fun _ => ∅).
 
 End Data.
+
+Arguments Data.newSlice {Op'} {i} T {GoZero} len.

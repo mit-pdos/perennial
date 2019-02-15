@@ -134,8 +134,6 @@ Definition bufAppend (f:BufFile.t) (bs:ByteString) : proc unit :=
     else Ret tt.
 
 Module TblW.
-  (* NOTE: we can buffer writes here conveniently for efficiency (otherwise
-  every entry gets its own write syscall) *)
   Record t :=
     mk { index: HashTable uint64;
          name: Path;
@@ -161,7 +159,6 @@ Definition tblWAppend (w:TblW.t) (bs:ByteString) : proc _ :=
   Data.modifyIORef w.(TblW.offset) (fun o => o + BS.length bs).
 
 Definition tblWClose (w:TblW.t) : proc Tbl.t :=
-  (* if we're buffering now is the chance to flush *)
   _ <- bufClose w.(TblW.file);
     fd <- FS.open w.(TblW.name);
     Ret {| Tbl.file := fd;
