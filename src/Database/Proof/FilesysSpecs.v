@@ -16,10 +16,10 @@ Section lifting.
   Definition dirents (S: list Path) : iProp Σ.
   Admitted.
 
-  Theorem wp_create S p fh :
+  Theorem wp_create S p :
     {{{ ▷ dirents S ∗ ⌜~p ∈ S⌝ }}}
       FS.create p
-      {{{ RET fh; dirents (p::S) ∗ p ↦ BS.empty ∗ fh ↦ (p, FS.Write) }}}.
+      {{{ fh, RET fh; dirents (p::S) ∗ p ↦ BS.empty ∗ fh ↦ (p, FS.Write) }}}.
   Admitted.
 
   Theorem wp_append fh bs' p bs :
@@ -36,29 +36,29 @@ Section lifting.
 
   (* TODO: is this the right spec? should [p ↦ bs] be in the precondition? how
   are [p ↦ ?] facts related to dirents S? *)
-  Theorem wp_open S p fh bs :
+  Theorem wp_open S p bs :
     {{{ ▷ (dirents S ∗ p ↦ bs) ∗ ⌜p ∈ S⌝ }}}
       FS.open p
-      {{{ RET fh; dirents S ∗ p ↦ bs ∗ fh ↦ (p, FS.Read) }}}.
+      {{{ fh, RET fh; dirents S ∗ p ↦ bs ∗ fh ↦ (p, FS.Read) }}}.
   Admitted.
 
-  Theorem wp_readAt fh off len p bs bs_r :
+  Theorem wp_readAt fh off len p bs :
     {{{ ▷ (p ↦ bs ∗ fh ↦ (p, FS.Read)) }}}
       FS.readAt fh off len
-      {{{ RET bs_r; ⌜bs_r = BS.take len (BS.drop off bs)⌝ ∗ p ↦ bs ∗ fh ↦ (p, FS.Read) }}}.
+      {{{ bs_r, RET bs_r; ⌜bs_r = BS.take len (BS.drop off bs)⌝ ∗ p ↦ bs ∗ fh ↦ (p, FS.Read) }}}.
   Admitted.
 
-  Theorem wp_size fh p bs len :
+  Theorem wp_size fh p bs :
     {{{ ▷ (p ↦ bs ∗ fh ↦ (p, FS.Read)) }}}
       FS.size fh
-      {{{ RET len; ⌜len = BS.length bs⌝ ∗ p ↦ bs ∗ fh ↦ (p, FS.Read) }}}.
+      {{{ len, RET len; ⌜len = BS.length bs⌝ ∗ p ↦ bs ∗ fh ↦ (p, FS.Read) }}}.
   Admitted.
 
   (* TODO: handle permutation here *)
-  Theorem wp_list S r :
+  Theorem wp_list S :
     {{{ ▷ dirents S }}}
       FS.list
-      {{{ RET r; ⌜r = S⌝ ∗ dirents S}}}.
+      {{{ r, RET r; ⌜r = S⌝ ∗ dirents S}}}.
   Admitted.
 
   (* TODO: require no open FDs for the deleted file? *)
@@ -66,6 +66,22 @@ Section lifting.
     {{{ ▷ dirents S ∗ ⌜p ∈ S⌝ ∗ p ↦ bs }}}
       FS.delete p
       {{{ RET (); dirents (remove path_dec p S) }}}.
+  Admitted.
+
+  Theorem wp_link (src dst : Path) S bs :
+    {{{ ▷ (dirents S ∗ src ↦ bs) }}}
+      FS.link src dst
+      {{{ ok, RET ok;
+        match ok with
+        | false => dirents S ∗ src ↦ bs
+        | true => dirents (dst::S) ∗ src ↦ bs ∗ dst ↦ bs
+        end }}}.
+  Admitted.
+
+  Theorem wp_random :
+    {{{ True }}}
+      FS.random
+      {{{ r, RET r; True }}}.
   Admitted.
 
 End lifting.
@@ -78,10 +94,10 @@ Section DerivedSpecs.
   Definition appendFile p fh bs := p ↦ bs ∗ fh ↦ (p, FS.Write).
   Definition readFile p fh bs := p ↦ bs ∗ fh ↦ (p, FS.Read).
 
-  Theorem create_ok S p fh :
+  Theorem create_ok S p :
     {{{ ▷ dirents S ∗ ⌜~p ∈ S⌝ }}}
       FS.create p
-      {{{ RET fh; dirents (p::S) ∗ appendFile p fh BS.empty }}}.
+      {{{ fh, RET fh; dirents (p::S) ∗ appendFile p fh BS.empty }}}.
   Proof.
     iIntros (Φ).
     iApply wp_create.
@@ -120,19 +136,19 @@ Section DerivedSpecs.
     iApply ("Post" with "Hp").
   Qed.
 
-  Theorem open_ok S p fh bs :
+  Theorem open_ok S p bs :
     {{{ ▷ (dirents S ∗ p ↦ bs) ∗ ⌜p ∈ S⌝ }}}
       FS.open p
-      {{{ RET fh; dirents S ∗ readFile p fh bs }}}.
+      {{{ fh, RET fh; dirents S ∗ readFile p fh bs }}}.
   Proof.
     iIntros (Φ).
     iApply wp_open.
   Qed.
 
-  Theorem readAt_ok fh off len p bs bs_r :
+  Theorem readAt_ok fh off len p bs :
     {{{ ▷ readFile p fh bs }}}
       FS.readAt fh off len
-      {{{ RET bs_r; ⌜bs_r = BS.take len (BS.drop off bs)⌝ ∗ readFile p fh bs }}}.
+      {{{ bs_r, RET bs_r; ⌜bs_r = BS.take len (BS.drop off bs)⌝ ∗ readFile p fh bs }}}.
   Proof.
     iIntros (Φ).
     iApply wp_readAt.
