@@ -6,18 +6,21 @@ Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
 Require Import Helpers.RelationTheorems.
 Require Import Tactical.ProofAutomation.
+Require Import List.
 
 Import RelationNotations.
 
 Section Dynamics.
   Context `(sem: Dynamics Op State).
   Notation proc := (proc Op).
+  Notation proc_seq := (proc_seq Op).
   Notation rec_seq := (rec_seq Op).
   Notation step := sem.(step).
   Notation crash_step := sem.(crash_step).
   Notation exec_halt := sem.(exec_halt).
   Notation exec_partial := sem.(exec_partial).
   Notation exec := sem.(exec).
+  Notation exec_pool := sem.(exec_pool).
   Notation exec_seq_partial := sem.(exec_seq_partial).
   Notation exec_seq := sem.(exec_seq).
   Notation rexec_seq := sem.(rexec_seq).
@@ -27,6 +30,8 @@ Section Dynamics.
   Notation rexec := sem.(rexec).
   Notation rexec_partial := sem.(rexec_partial).
   Notation rexec_seq_partial := sem.(rexec_seq_partial).
+  Notation proc_exec_seq := sem.(proc_exec_seq).
+  Notation exec_or_rexec := sem.(exec_or_rexec).
 
   Hint Resolve rimpl_refl requiv_refl.
 
@@ -214,10 +219,54 @@ Section Dynamics.
     setoid_rewrite exec_seq_partial_nil.
     norm. apply bind_right_id_unit.
   Qed.
+  
+  Definition exec_partial_n {T} (p: proc T) n :=
+    bind_rep_n n (exec_pool) ((existT _ T p) :: nil).
+
+  Definition exec_n {T} (e: proc T) n (σ: State) (res: Return (State) {T : Type & T})
+           : Prop :=
+    match res with
+    | Err => bind_rep_n n (exec_pool) (existT _ _ e :: nil) σ Err
+    | Val σ' v => exists tp, bind_rep_n n (exec_pool)
+                                        (existT _ _ e :: nil) σ
+                                        (Val σ' (existT _ _ (Ret (projT2 v)) :: tp))
+    end.
+
+  Lemma exec_equiv_exec_n {T} (e : proc T) σ res:
+    exec e σ res <-> exists n, exec_n e n σ res.
+  Proof.
+    destruct res.
+    - split.
+      * intros (tp&?&Hhd&Htl).
+        destruct tp as [| (v'&[]) tp']; try inversion Htl.
+        subst. apply bind_star_inv_rep_n in Hhd as (n&?).
+        exists n, tp'. eauto.
+      * intros (n&tp&Hexec).
+        apply bind_star_rep_n_to_bind_star in Hexec.
+        eexists (_ :: tp), _; split; eauto.
+        simpl. destruct t; econstructor.
+    - split.
+      * intros H%bind_with_no_err.
+        { apply bind_star_inv_rep_n in H as (n&?).
+          exists n. eauto. }
+        { intros ? [| (?&[])]; inversion 1. }
+      * intros (n&Hexec).
+        left. apply bind_star_rep_n_to_bind_star in Hexec. eauto.
+  Qed.
+
+
+  Lemma exec_partial_equiv_exec_partial_n {T} (e : proc T) σ res:
+    exec_partial e σ res <-> exists n, exec_partial_n e n σ res.
+  Proof.
+    split.
+    - intros (n&Hrep)%bind_star_inv_rep_n. exists n; eauto.
+    - intros (n&?). eapply bind_star_rep_n_to_bind_star; eauto.
+  Qed.
 
   Opaque Proc.exec.
 
   Definition rec_singleton {T} (rec: proc T) : rec_seq := Seq_Cons rec Seq_Nil.
+
 
   Lemma exec_seq_snoc T `(p: proc T) `(rec: rec_seq ):
     exec_seq (rec_seq_snoc rec p) <--->
@@ -457,6 +506,279 @@ Section Dynamics.
   Proof.
     intros Herr. apply exec_partial_err_exec_err in Herr.
     unfold rexec. left; eauto.
+  Qed.
+
+  Lemma rexec_singleton_ret_intro T (p: proc T) σ1 σ2 σ2' tp:
+    exec_partial p σ1 (Val σ2 tp) ->
+    crash_step σ2 (Val σ2' tt) ->
+    rexec p (rec_singleton (Ret tt)) σ1 (Val σ2' tt).
+  Proof.
+    intros.
+    do 2 eexists; split; eauto.
+    do 2 eexists; split; eauto.
+    do 2 eexists; split; simpl; eauto.
+    { eapply seq_star_refl. }
+    do 2 eexists; split; simpl; [| econstructor].
+    do 2 eexists; split; eauto.
+    econstructor.
+    simpl. econstructor.
+    Unshelve. exact tt.
+  Qed.
+
+  Inductive seq_star_exec_steps {R} (rec: proc R) : nat -> relation State State unit :=
+    | sses_nil σ o :
+        seq_star_exec_steps rec O σ (Val σ o)
+    | sses_cons_val σ1 σ1' σ2 ret σ3 k n :
+        crash_step σ1 (Val σ1' tt) ->
+        bind_rep_n n (exec_pool) (existT _ R rec :: nil) σ1' (Val σ2 ret) ->
+        seq_star_exec_steps rec k σ2 σ3 ->
+        seq_star_exec_steps rec (S n + S k) σ1 σ3
+    | sses_cons_err σ1 σ1' n :
+        crash_step σ1 (Val σ1' tt) ->
+        bind_rep_n n (exec_pool) (existT _ R rec :: nil) σ1' Err ->
+        seq_star_exec_steps rec (S n) σ1 Err .
+
+  Context (crash_non_err: forall s1 ret, (crash_step) s1 ret -> ret <> Err).
+
+  Lemma seq_star_exec_steps_intro {R} (rec: proc R) σhalt ret:
+    seq_star (_ <- crash_step; exec_halt rec) σhalt ret ->
+    exists k, seq_star_exec_steps rec k σhalt ret.
+  Proof.
+    intros Hstar.
+    induction Hstar as [|??? [] Hstep|? Hstep]; subst.
+    - exists O. econstructor.
+    - destruct Hstep as ([]&σ'&Hcrash&Hexec).
+      edestruct IHHstar as (k&Hrest); auto.
+      destruct Hexec as (?&?&Hpartial&Hpure).
+      inversion Hpure; subst.
+      apply bind_star_inv_rep_n in Hpartial as (n&Hbind).
+      exists (S n + S k)%nat; econstructor; eauto.
+    - destruct Hstep as [Hcrash|([]&σ'&Hcrash&Hexec)].
+      { exfalso. eapply crash_non_err in Hcrash. eauto. }
+      apply bind_pure_no_err in Hexec.
+      apply exec_partial_equiv_exec_partial_n in Hexec as (n&?).
+      eexists. eapply sses_cons_err; eauto.
+  Qed.
+
+  Lemma seq_star_exec_steps_elim {R} (rec: proc R) σhalt ret k:
+    seq_star_exec_steps rec k σhalt ret ->
+    seq_star (_ <- crash_step; exec_halt rec) σhalt ret.
+  Proof.
+    intros Hstar.
+    induction Hstar as [|??? ? ? k n| ???]; subst.
+    - econstructor.
+    - econstructor; eauto.
+      do 2 eexists; split; eauto.
+      do 2 eexists; split; [| econstructor].
+      apply exec_partial_equiv_exec_partial_n; eexists; eauto.
+    - eapply seq_star_one_more_err.
+      right.
+      do 2 eexists; split; eauto.
+      left.
+      apply exec_partial_equiv_exec_partial_n; eexists; eauto.
+  Qed.
+
+  Inductive rexec_n {T R} (e: proc T) (rec: proc R) (n : nat) : relation State State unit :=
+    | rexec_n_intro σ1 ret n1 n2 n3:
+        (n1 + n2 + n3 = n)%nat ->
+        (_ <- exec_partial_n e n1;
+         _ <- seq_star_exec_steps rec n2;
+         _ <- crash_step; _ <- exec_n rec n3; pure tt) σ1 ret ->
+        rexec_n e rec n σ1 ret.
+
+  Lemma rexec_equiv_rexec_n {T R} (e: proc T) (rec: proc R) σ1 ret:
+    (_ <- exec_partial e; _ <- seq_star (_ <- (crash_step); exec_halt rec);
+       _ <- crash_step; _ <- exec rec; pure tt) σ1 ret <->
+    exists n, rexec_n e rec n σ1 ret.
+  Proof.
+    split.
+    - destruct ret as [σ2 tt|].
+      * intros (tp&σ1a&Hpartial&([]&?&Hstar&([]&?&?&Hexec))).
+        apply exec_partial_equiv_exec_partial_n in Hpartial as (n1&?).
+        apply seq_star_exec_steps_intro in Hstar as (n2&?); eauto.
+        destruct Hexec as (?&?&Hexec&Hpure); inversion Hpure; subst.
+        apply exec_equiv_exec_n in Hexec as (n3&?).
+        exists (n1 + n2 + n3)%nat; econstructor; eauto.
+        repeat (do 2 eexists; split; eauto).
+      * intros [Hpartial|(tp&σ1a&Hpartial&Hrest)]. 
+        { apply exec_partial_equiv_exec_partial_n in Hpartial as (n1&?).
+          exists n1. exists n1 O O.
+          ** do 2 rewrite <-plus_n_O. auto.
+          ** left; eauto.
+        }
+        apply exec_partial_equiv_exec_partial_n in Hpartial as (n1&?).
+        destruct Hrest as [Hstar|([]&?&Hstar&Hexec)].
+        { apply seq_star_exec_steps_intro in Hstar as (n2&?); eauto.
+          exists (n1 + n2)%nat. exists n1 n2 O.
+          ** rewrite <-plus_n_O. auto.
+          ** right. do 2 eexists; split; eauto. left; eauto.
+        }
+        apply seq_star_exec_steps_intro in Hstar as (n2&?); eauto.
+        destruct Hexec as [|([]&?&?&Hexec)].
+        { exfalso. eapply crash_non_err; eauto. }
+        apply bind_pure_no_err, exec_equiv_exec_n in Hexec as (n3&?).
+        exists (n1 + n2 + n3)%nat. exists n1 n2 n3; auto.
+        right. do 2 eexists; split; eauto. right. do 2 eexists; split; eauto.
+        right. do 2 eexists; split; eauto. left; eauto.
+    - intros (n&H). inversion H as [?? n1 n2 n3 Heq Hstep]; subst.
+      destruct ret as [σ2 tt|].
+      * destruct Hstep as (tp&σ1a&Hpartial&([]&?&Hstar&([]&?&?&Hexec))).
+        destruct Hexec as (?&?&?&Hpure). inversion Hpure; subst.
+        do 2 eexists; split; eauto.
+        { eapply exec_partial_equiv_exec_partial_n; eexists; eauto. }
+        do 2 eexists; split; eauto.
+        { eapply seq_star_exec_steps_elim; eauto. }
+        do 2 eexists; split; eauto.
+        do 2 eexists; split; eauto.
+        { eapply exec_equiv_exec_n; eexists; eauto. }
+      * destruct Hstep as [Hpartial|(tp&σ1a&Hpartial&Hrest)]. 
+        { left. eapply exec_partial_equiv_exec_partial_n; eexists; eauto. }
+        destruct Hrest as [Hstar|([]&?&Hstar&Hexec)].
+        { right. do 2 eexists; split.
+          { eapply exec_partial_equiv_exec_partial_n; eexists; eauto. }
+          { left. eapply seq_star_exec_steps_elim; eauto. }
+        }
+        right. do 2 eexists; split; eauto.
+        { eapply exec_partial_equiv_exec_partial_n; eexists; eauto. }
+        right. do 2 eexists; split; eauto.
+        { eapply seq_star_exec_steps_elim; eauto. }
+        destruct Hexec as [|([]&?&?&Hexec)].
+        { exfalso. eapply crash_non_err; eauto. }
+        right. do 2 eexists; split; eauto.
+        apply bind_pure_no_err in Hexec.
+        left. 
+        eapply exec_equiv_exec_n; eauto.
+  Qed.
+
+
+  Lemma rexec_equiv_rexec_n'_val {T R} (e: proc T) (rec: proc R) σ1 σ2:
+    ~ rexec e (rec_singleton rec) σ1 Err -> 
+    (rexec e (rec_singleton rec) σ1 (Val σ2 tt) <->
+    exists n, rexec_n e rec n σ1 (Val σ2 tt)).
+  Proof.
+    intros Hnoerr.
+    split.
+    - intros Hrexec; apply rexec_equiv_rexec_n; eauto.
+      eapply requiv_no_err_elim in Hrexec; swap 1 3.
+      { eassumption. }
+      { unfold rexec, exec_recover.
+        setoid_rewrite exec_seq_partial_singleton.
+        setoid_rewrite <-bind_assoc at 2.
+        setoid_rewrite <-seq_unit_sliding_equiv.
+        setoid_rewrite bind_assoc.
+        reflexivity.
+      }
+      eauto.
+    - intros (n&Hrexec_n).
+      eapply requiv_no_err_elim'; swap 1 3.
+      { eassumption. }
+      { unfold rexec, exec_recover.
+        setoid_rewrite exec_seq_partial_singleton.
+        setoid_rewrite <-bind_assoc at 2.
+        setoid_rewrite <-seq_unit_sliding_equiv.
+        setoid_rewrite bind_assoc.
+        reflexivity.
+      }
+      eapply rexec_equiv_rexec_n; eauto.
+  Qed.
+
+  Lemma rexec_equiv_rexec_n'_err {T R} (e: proc T) (rec: proc R) σ1:
+    (rexec e (rec_singleton rec) σ1 Err <->
+    exists n, rexec_n e rec n σ1 Err).
+  Proof.
+    split.
+    - intros Hrexec; apply rexec_equiv_rexec_n; eauto.
+      eapply requiv_err_elim in Hrexec.
+      { eassumption. }
+      { unfold rexec, exec_recover.
+        setoid_rewrite exec_seq_partial_singleton.
+        setoid_rewrite <-bind_assoc at 2.
+        setoid_rewrite <-seq_unit_sliding_equiv.
+        setoid_rewrite bind_assoc.
+        reflexivity.
+      }
+    - intros (n&Hrexec_n).
+      eapply requiv_err_elim.
+      { eapply rexec_equiv_rexec_n; eauto. }
+      { symmetry. unfold rexec, exec_recover.
+        setoid_rewrite exec_seq_partial_singleton.
+        setoid_rewrite <-bind_assoc at 2.
+        setoid_rewrite <-seq_unit_sliding_equiv.
+        setoid_rewrite bind_assoc.
+        reflexivity.
+      }
+  Qed.
+
+  Definition exec_or_rexec_n {T R} (p : proc T) (rec: proc R) n :=
+    (v <- exec_n p n; pure (Normal v)) +
+    (v <- rexec_n p rec n; pure (Recovered (existT (fun T => T) _ v))).
+  
+  Lemma exec_or_rexec_equiv_exec_or_rexec_n {T R} (e: proc T) (rec: proc R) σ1 σ2 out:
+    ~ (exec_or_rexec e (rec_singleton rec) σ1 Err) -> 
+    (exec_or_rexec e (rec_singleton rec) σ1 (Val σ2 out) <->
+    exists n, exec_or_rexec_n e rec n σ1 (Val σ2 out)).
+  Proof.
+    intros Hno_err. split.
+    - intros [Hexec|Hrexec].
+      * destruct Hexec as ([]&?&Hexec&Hpure). inversion Hpure; subst.
+        eapply exec_equiv_exec_n in Hexec as (n&?).
+        exists n. left. do 2 eexists; split; eauto.
+      * destruct Hrexec as ([]&?&Hexec&Hpure). inversion Hpure; subst.
+        eapply rexec_equiv_rexec_n'_val in Hexec as (n&?).
+        { exists n. right. do 2 eexists; split; eauto. }
+        { intros Herr. eapply Hno_err. right. econstructor; eauto. }
+    - intros (n&[Hexec|Hrexec]).
+      * destruct Hexec as ([]&?&Hexec&Hpure). inversion Hpure; subst.
+        left. do 2 eexists; split; eauto. eapply exec_equiv_exec_n. eexists; eauto.
+      * destruct Hrexec as ([]&?&Hexec&Hpure). inversion Hpure; subst.
+        right. do 2 eexists; split; eauto.
+        eapply rexec_equiv_rexec_n'_val. 
+        { intros Herr. eapply Hno_err. right. econstructor; eauto. }
+        { eexists; eauto. }
+  Qed.
+  
+  Fixpoint proc_exec_seq_n {T R} (p: proc_seq T) (rec: proc R) n :=
+    match p with
+    | Proc_Seq_Final p =>
+      fun s1 ret =>
+        exists n1, (n = (5 + n1))%nat /\
+        (exec_or_rexec_n p rec n1) s1 ret
+    | Proc_Seq_Bind p f =>
+      fun s1 ret =>
+        exists n1 n2, (n = (5 + n1) + S n2)%nat /\
+        (v <- exec_or_rexec_n p rec n1;
+        proc_exec_seq_n (f v) rec n2) s1 ret
+    end.
+
+  Lemma proc_exec_seq_equiv_proc_exec_seq_n {T R} (p: proc_seq T) (rec: proc R) σ1 σ2 out:
+    ~ (proc_exec_seq p (rec_singleton rec) σ1 Err) -> 
+    (proc_exec_seq p (rec_singleton rec) σ1 (Val σ2 out) <->
+    exists n, proc_exec_seq_n p rec n σ1 (Val σ2 out)).
+  Proof.
+    revert σ1. induction p as [| ??? IH]; intros σ1 Hno_err.
+    * split.
+      ** intros (n1&?)%exec_or_rexec_equiv_exec_or_rexec_n; eauto.
+         exists (5+n1)%nat; eexists; eauto.
+      ** intros (n&(n1&?&?)). apply exec_or_rexec_equiv_exec_or_rexec_n; eauto.
+    * split.
+      ** intros (?&?&Hhd&Htl).
+         eapply IH in Htl as (n2&?).
+         { eapply exec_or_rexec_equiv_exec_or_rexec_n in Hhd as (n1&?).
+           { exists ((5 + n1) + S n2)%nat. repeat (do 2 eexists; split; eauto). }
+           { intros Herr.  eapply Hno_err. left; eauto. }
+         }
+         { intros Herr. eapply Hno_err. right. eauto. }
+      ** intros (n&(?&?&?&(?&?&Hhd&Htl))).
+         subst.
+         do 2 eexists; split.
+         { eapply exec_or_rexec_equiv_exec_or_rexec_n; eauto. intros Herr.
+           eapply Hno_err. left; eauto. }
+         { eapply IH; eauto. intros Herr.
+           eapply Hno_err. right; eauto.
+           do 2 eexists; split; eauto.
+           eapply exec_or_rexec_equiv_exec_or_rexec_n; eauto. intros Herr'.
+           eapply Hno_err. left; eauto.
+         }
   Qed.
 
   (*

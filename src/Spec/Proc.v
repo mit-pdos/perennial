@@ -58,6 +58,20 @@ Inductive rec_seq (Op: Type -> Type) : Type :=
 Arguments Seq_Nil {Op}.
 Arguments Seq_Cons {Op T}.
 
+(** A sequence of procedures that a user might wish to run, where for each
+    procedure in the sequence they specify a continuation to run on success,
+    and an alternate sequence to run if a crash happens. *)
+
+Inductive ExecOutcome : Type :=
+| Normal : {T : Type & T} -> ExecOutcome
+| Recovered : {T: Type & T} -> ExecOutcome.
+
+Inductive proc_seq (Op: Type -> Type) T0  : Type :=
+| Proc_Seq_Final (p: proc Op T0)
+| Proc_Seq_Bind (T : Type) (p : proc Op T) (rx : ExecOutcome -> proc_seq Op T0).
+Arguments Proc_Seq_Final {Op _}.
+Arguments Proc_Seq_Bind {Op _ _}.
+
 Fixpoint rec_seq_append Op (ps1 ps2: rec_seq Op) :=
   match ps1 with
   | Seq_Nil => ps2
@@ -112,6 +126,7 @@ Section Dynamics.
   (* TODO: need to define this after, otherwise can't use proc in the above *)
   Notation proc := (proc Op).
   Notation rec_seq := (rec_seq Op).
+  Notation proc_seq := (proc_seq Op).
   Notation thread_pool := (thread_pool Op).
   Notation step := sem.(step).
   Notation crash_step := sem.(crash_step).
@@ -280,32 +295,31 @@ Section Dynamics.
     rexec_seq ps rec =
     (exec_seq_partial ps;; crash_step;; exec_recover rec) := eq_refl.
 
-  Definition exec_or_rexec {T} (p : proc T) (rec: rec_seq) :=
-    (v <- exec p; pure (inl v)) + (v <- rexec p rec; pure (inr v)).
+  Definition exec_or_rexec {T} (p : proc T) (rec: rec_seq) : relation State State ExecOutcome :=
+    (v <- exec p; pure (Normal v)) + (v <- rexec p rec; pure (Recovered (existT (fun T => T) _ v))).
 
   (* TODO: need to track that the hd type does not change for this to make sense *)
-  (*
-  Fixpoint exec_seq {R} (p: proc_seq R) (rec: proc R)
-    : relation State State (list {X : Type & X}) :=
+
+  Fixpoint proc_exec_seq {T} (p: proc_seq T) (rec: rec_seq)
+    : relation State State ExecOutcome :=
     match p with
-    | Seq_Nil => pure (nil)
-    | Seq_Bind p f =>
+    | Proc_Seq_Final p =>
+      exec_or_rexec p rec
+    | Proc_Seq_Bind p f =>
       v <- exec_or_rexec p rec;
-      l <- exec_seq (f v) rec;
-      pure (existT _ _ v :: l)
+      proc_exec_seq (f v) rec
     end.
 
-  Lemma exec_seq_unfold {R} (p: proc_seq R) (rec: proc R) :
-    exec_seq p rec =
+  Lemma proc_exec_seq_unfold {T} (p: proc_seq T) (rec: rec_seq) :
+    proc_exec_seq p rec =
     match p with
-    | Seq_Nil => pure (nil)
-    | Seq_Bind p f =>
+    | Proc_Seq_Final p =>
+      exec_or_rexec p rec
+    | Proc_Seq_Bind p f =>
       v <- exec_or_rexec p rec;
-      l <- exec_seq (f v) rec;
-      pure (existT _ _ v :: l)
+      proc_exec_seq (f v) rec
     end.
   Proof. destruct p; auto. Qed.
-   *)
 
 End Dynamics.
 

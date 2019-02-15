@@ -212,6 +212,16 @@ Section OutputRelations.
     apply Hrl in Herr. intuition.
   Qed.
 
+  Lemma requiv_no_err_elim' A B T (r1 r2: relation A B T) a b:
+    r1 a b ->
+    r1 <---> r2 ->
+    ~ (r2 a Err) ->
+    r2 a b.
+  Proof.
+    intros Hr1 (Hlr&Hrl) Hno_err. eapply Hlr in Hr1.
+    destruct Hr1 as [Herr|?]; eauto. intuition.
+  Qed.
+
   Lemma requiv_err_elim A B T (r1 r2: relation A B T) a:
     r1 a Err ->
     r1 <---> r2 ->
