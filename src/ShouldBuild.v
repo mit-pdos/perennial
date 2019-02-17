@@ -17,7 +17,5 @@ From RecoveryRefinement Require Import Examples.ExMach.RefinementAdequacy.
 From RecoveryRefinement Require Import Examples.StatDb.Refinement.
 
 (* goose output *)
-From RecoveryRefinement Require Import Database.Simple.GoSimpleDb.
-From RecoveryRefinement Require Import Examples.GooseUnitTests.
-(* new goose support library *)
-From RecoveryRefinement.Goose Require Import base.
+From RecoveryRefinement Require Import Goose.Examples.UnitTests.
+From RecoveryRefinement Require Import Goose.Examples.SimpleDb.
