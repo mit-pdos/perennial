@@ -10,6 +10,7 @@ import qualified Data.HashTable.IO as H
 import qualified Data.Vector.Mutable.Dynamic as V
 
 import           Coq.DataStructures
+import           Coq.SemanticsHelpers
 import           Lib (Word64, coerceRet, coerceVoid)
 
 {-# INLINE interpret #-}
