@@ -40,12 +40,6 @@ Definition wp_recovery_refinement {T R OpTa OpTc} Σ (Λa: Layer OpTa) (Λc: Lay
                                φrec σ2a' σ2c )}}
                ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ φinv σ2c))))))%I.
 
-Fixpoint map_proc_seq {OpTa OpTc T} (f: ∀ T, proc OpTa T → proc OpTc T) (es: proc_seq OpTa T) :=
-  match es with
-  | Proc_Seq_Final e => Proc_Seq_Final (f _ e)
-  | @Proc_Seq_Bind _ _ _  e es' =>
-    Proc_Seq_Bind (f _ e) (fun x => map_proc_seq f (es' x))
-  end.
 
 Fixpoint wp_proc_seq_refinement {T R OpTa OpTc} {Σ} (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}

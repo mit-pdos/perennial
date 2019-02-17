@@ -222,6 +222,50 @@ Proof.
   iFrame. iExists hM'', Hmpf_eq''. iFrame.
 Qed.
 
+Section refinement.
+  Context OpT (Λa: Layer OpT).
+  Context (impl: LayerImpl ExMach.Op OpT).
+  Notation compile_op := impl.(compile_op).
+  Notation compile_rec := impl.(compile_rec).
+  Notation compile_seq := impl.(compile_seq).
+  Notation compile := impl.(compile).
+  Notation recover := impl.(recover).
+  Notation compile_proc_seq := impl.(compile_proc_seq).
+  Context `{exmachPreG Σ}.
+  Context (φinv: forall {_ : @cfgG OpT Λa Σ} {_ : exmachG Σ}, iProp Σ).
+  Context (E: coPset).
+  Context (nameIncl: nclose sourceN ⊆ E).
+  (* TODO: we should get rid of rec_seq if we're not exploiting vertical comp anymore *)
+  Context (recv: proc ExMach.Op unit).
+  Context (recsingle: recover = rec_singleton recv).
+
+  Context (refinement_triples:
+             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1),
+               j ⤇ K e ∗ (@φinv H1 H2) ⊢
+                 WP compile e {{ v, j ⤇ K (Ret v) }}).
+
+  Context (recv_triple:
+             forall {H1 H2},
+               (@φinv H1 H2) ⊢
+                    WP recv @ NotStuck; ⊤ {{ v, |={⊤,E}=> ∃ σ2a σ2a', source_state σ2a
+                                               ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt)⌝}}).
+
+  Context (init_absr: Λa.(State) → ExMach.State → Prop).
+
+  Context (init_inv: ∀ σ1a σ1c ρ, init_absr σ1a σ1c →
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+          (([∗ map] i ↦ v ∈ mem_state σ1c, i m↦ v) -∗
+           ([∗ map] i ↦ v ∈ disk_state σ1c, i d↦ v) -∗
+           source_ctx (ρ, σ1a) ∗ source_state σ1a) ={⊤}=∗ φinv _ _)).
+
+  Context (inv_preserve_crash:
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+          (∃ Hinv H0', @φinv Hcfg (@ExMachG Σ Hinv H0' (exm_disk_inG))) -∗
+          ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={⊤}=∗ φinv _ _)).
+
+
+End refinement.
+
 Section test.
 
   Definition test := (_ <- write_mem 0 1; write_disk 0 1)%proc.

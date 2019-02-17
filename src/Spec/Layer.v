@@ -40,12 +40,22 @@ Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op
   | Spawn p => Spawn (impl.(compile) p)
   end.
 
+Fixpoint map_proc_seq {Op C_Op T} (f: forall T, proc Op T -> proc C_Op T) (es: proc_seq Op T) :=
+  match es with
+  | Proc_Seq_Final e => Proc_Seq_Final (f _ e)
+  | @Proc_Seq_Bind _ _ _  e es' =>
+    Proc_Seq_Bind (f _ e) (fun x => map_proc_seq f (es' x))
+  end.
+
 Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) (ps: rec_seq Op) :
   rec_seq C_Op :=
   match ps with
   | Seq_Nil => Seq_Nil
   | Seq_Cons p ps' => Seq_Cons (impl.(compile) p) (impl.(compile_seq) ps')
   end.
+
+Fixpoint compile_proc_seq Op C_Op T `(impl: LayerImpl C_Op Op) (ps: proc_seq Op T) :=
+  map_proc_seq (impl.(compile)) ps.
 
 Definition compile_rec Op C_Op `(impl: LayerImpl C_Op Op) (rec: rec_seq Op) : rec_seq C_Op :=
   rec_seq_append impl.(recover) (impl.(compile_seq) rec).
