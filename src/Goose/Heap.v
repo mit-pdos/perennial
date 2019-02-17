@@ -16,12 +16,13 @@ Module Data.
   Inductive Op : Type -> Type :=
   | NewAlloc T (v:T) (len:uint64) : Op (ptr T)
   | PtrDeref T (p:ptr T) (off:uint64) : Op T
+  | PtrStore T (p:ptr T) (off:uint64) (x:T) : Op unit
 
   | SliceAppend T (s:slice.t T) (x:T) : Op (slice.t T)
   | SliceAppendSlice T (s:slice.t T) (s':slice.t T) : Op (slice.t T)
 
   | NewMap V : Op (Map V)
-  | MapAlter `(m:Map V) (k:uint64) (f:option V -> option V) : Op (Map V)
+  | MapAlter `(m:Map V) (k:uint64) (f:option V -> option V) : Op unit
   | MapLookup `(m:Map V) (k:uint64) : Op (option V)
   | MapStartIter `(m:Map V) : Op (list (uint64*V))
   | MapEndIter `(m:Map V) : Op unit
@@ -47,6 +48,9 @@ Module Data.
     Definition newAlloc T v len :=
       Call! @NewAlloc T v len.
 
+    Definition newPtr T {GoZero:HasGoZero T} : proc (ptr T) :=
+      newAlloc (zeroValue T) 1.
+
     Definition newSlice T {GoZero:HasGoZero T} len : proc (slice.t T) :=
       Bind (newAlloc (zeroValue T) len)
            (fun p => Ret {| slice.ptr := p;
@@ -56,8 +60,20 @@ Module Data.
     Definition ptrDeref T p off :=
       Call! @PtrDeref T p off.
 
+    Definition readPtr T (p: ptr T) : proc T :=
+      ptrDeref p 0.
+
     Definition sliceRead T (s: slice.t T) off : proc T :=
       ptrDeref s.(slice.ptr) (s.(slice.offset) + off).
+
+    Definition ptrStore T p off x :=
+      Call! @PtrStore T p off x.
+
+    Definition writePtr T (p: ptr T) x :=
+      ptrStore p 0 x.
+
+    Definition sliceWrite T (s: slice.t T) off (x:T) : proc unit :=
+      ptrStore s.(slice.ptr) (s.(slice.offset) + off) x.
 
     Definition sliceAppend T s x :=
       Call! @SliceAppend T s x.
@@ -133,3 +149,6 @@ Module Data.
   Global Instance empty_heap : Empty State := {| allocs := ∅ |}.
 
 End Data.
+
+Arguments Data.newPtr {Op' i} T {GoZero}.
+Arguments Data.newSlice {Op' i} T {GoZero} len.

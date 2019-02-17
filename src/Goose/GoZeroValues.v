@@ -13,3 +13,5 @@ Instance byte_zero : HasGoZero byte := byte0.
 Instance ptr_zero ty : HasGoZero (Ptr.t ty) := nullptr _.
 Instance file_zero : HasGoZero File := nilFile.
 Instance slice_zero T : HasGoZero (slice.t T) := slice.nil _.
+
+Instance string_zero : HasGoZero string := ""%string.

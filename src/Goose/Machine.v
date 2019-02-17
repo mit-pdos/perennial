@@ -16,6 +16,23 @@ Instance eqdecision `{dec:EqualDec A} : EqDecision A := dec.
 
 Definition uint64 := nat.
 
+Definition compare_to x y (c: comparison)
+  : {match c with
+     | Lt => x < y
+     | Gt => y < x
+     | Eq => x = y
+     end} +
+    {match c with
+     | Lt => x >= y
+     | Gt => y >= x
+     | Eq => x <> y
+     end}.
+  destruct c.
+  - apply Nat.eq_dec.
+  - destruct (lt_dec x y); auto; right; abstract omega.
+  - destruct (lt_dec y x); auto; right; abstract omega.
+Defined.
+
 Axiom byte:Type.
 Axiom byte0:byte.
 

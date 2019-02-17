@@ -1,5 +1,5 @@
 From RecoveryRefinement Require Import Spec.InjectOp.
-From RecoveryRefinement Require Import Goose.Heap Goose.Filesys.
+From RecoveryRefinement Require Export Goose.Heap Goose.Filesys.
 
 Inductive Op : Type -> Type :=
 | FilesysOp : forall T, FS.Op T -> Op T
