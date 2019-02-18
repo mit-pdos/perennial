@@ -226,8 +226,7 @@ End UInt64Properties.
 
 (* bytes are completely opaque; there should be no need to worry about them *)
 Axiom byte : Type.
-Axiom byte_eqdec : EqualDec byte.
-Existing Instance byte_eqdec.
+Declare Instance byte_eqdec : EqualDec byte.
 
 Record ByteString :=
   fromByteList { getBytes: list byte }.
@@ -423,7 +422,5 @@ Axiom Fd:Type.
 (* needed to model zero-valued structs *)
 (* TODO: need to make sure normal fds are not equal to InvalidFd *)
 Axiom InvalidFd:Fd.
-Axiom fd_eqdec : EqualDec Fd.
-Existing Instance fd_eqdec.
-Axiom fd_countable : Countable Fd.
-Existing Instance fd_countable.
+Declare Instance fd_eqdec : EqualDec Fd.
+Declare Instance fd_countable : Countable Fd.

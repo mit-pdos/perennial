@@ -11,10 +11,8 @@ Axiom mvar : Type -> Type.
 (* Should not use these in code that will be extracted, they're just to be able
    to use them with various type classes that expect countability, solely for modeling
    semantics of operations *)
-Axiom mvar_dec : EqDecision {T : Type & mvar T}.
-Existing Instance mvar_dec.
-Axiom mvar_countable : Countable {T : Type & mvar T}.
-Existing Instance mvar_countable.
+Declare Instance mvar_dec : EqDecision {T : Type & mvar T}.
+Declare Instance mvar_countable : Countable {T : Type & mvar T}.
 
 Extraction Language Haskell.
 

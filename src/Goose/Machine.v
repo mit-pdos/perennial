@@ -50,10 +50,8 @@ Axiom uint64_le_enc : LittleEndianEncoder 8 uint64_to_le uint64_from_le.
 (* note these are Go file handles, which may be nil *)
 Axiom File : Type.
 Axiom nilFile : File.
-Axiom file_eqdec : EqualDec File.
-Existing Instance file_eqdec.
-Axiom file_countable : Countable File.
-Existing Instance file_countable.
+Declare Instance file_eqdec : EqualDec File.
+Declare Instance file_countable : Countable File.
 
 (*! Pointers *)
 
@@ -73,8 +71,7 @@ Definition ptr T := Ptr.t (Ptr.Heap T).
 Definition Map V := Ptr.t (Ptr.Map V).
 Definition LockRef := Ptr.t Ptr.Lock.
 
-Axiom sigPtr_eq_dec : EqualDec (sigT Ptr.t).
-Existing Instance sigPtr_eq_dec.
+Declare Instance sigPtr_eq_dec : EqualDec (sigT Ptr.t).
 
 Module slice.
   Section Slices.

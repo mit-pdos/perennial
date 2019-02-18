@@ -30,12 +30,10 @@ Axiom HashTable : forall (V:Type), Type.
 
 Axiom LockRef : Type.
 
-Axiom sigIORef_eq_dec : EqualDec (sigT IORef).
-Axiom sigArray_eq_dec : EqualDec (sigT Array).
-Axiom sigHashTable_eq_dec : EqualDec (sigT HashTable).
-Axiom lockRef_eq_dec : EqualDec LockRef.
-
-Existing Instances sigIORef_eq_dec sigArray_eq_dec sigHashTable_eq_dec lockRef_eq_dec.
+Declare Instance sigIORef_eq_dec : EqualDec (sigT IORef).
+Declare Instance sigArray_eq_dec : EqualDec (sigT Array).
+Declare Instance sigHashTable_eq_dec : EqualDec (sigT HashTable).
+Declare Instance lockRef_eq_dec : EqualDec LockRef.
 
 Module Var.
   Inductive t :=

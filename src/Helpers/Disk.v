@@ -29,8 +29,7 @@ Set Implicit Arguments.
 
 Axiom bytes : nat -> Type.
 
-Axiom bytes_dec : forall n, EqualDec (bytes n).
-Existing Instance bytes_dec.
+Declare Instance bytes_dec : forall n, EqualDec (bytes n).
 
 (**
     Two "initial" byte values: an all-zero array, [bytes0], and
