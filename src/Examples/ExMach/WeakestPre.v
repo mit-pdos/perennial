@@ -301,7 +301,7 @@ Section lock.
   Context `{!exmachG Σ, !lockG Σ}.
 
   Definition lock_inv (γ : gname) (i: addr) (P : iProp Σ) : iProp Σ :=
-    ((i m↦ 0 ∗ P ∗ own γ (Excl ())) ∨ (i m↦ 1))%I.
+    ((i m↦ 0 ∗ P ∗ own γ (Excl ())) ∨ (∃ v, i m↦ v ∗ ⌜ v ≠ 0 ⌝))%I.
 
   Definition is_lock (N: namespace) (γ: gname) (i: addr) (P: iProp Σ) : iProp Σ :=
     (inv N (lock_inv γ i P))%I.
@@ -315,13 +315,28 @@ Section lock.
   Global Instance locked_timless γ : Timeless (locked γ).
   Proof. apply _. Qed.
 
-  Lemma lock_init N i (R: iProp Σ) E : i m↦ 0 -∗ R ={E}=∗ ∃ γ, is_lock N γ i R.
+  Lemma lock_init N i v (R: iProp Σ) E : i m↦ v -∗ (⌜ v = 0 ⌝ -∗ R) ={E}=∗ ∃ γ, is_lock N γ i R.
   Proof.
     iIntros "Hl HR".
     iMod (own_alloc (Excl ())) as (γ) "Hexcl"; first done.
     iMod (inv_alloc N _ (lock_inv γ i R) with "[-]").
-    { iNext. iLeft; iFrame. }
+    { iNext.
+      destruct (nat_eq_dec v 0).
+      * subst. iLeft; iFrame. iApply "HR"; auto.
+      * iRight. iExists _. iFrame. eauto.
+    }
     iModIntro; iExists _; done.
+  Qed.
+
+  Lemma lock_crack N i (R: iProp Σ) γ E :
+    ↑N ⊆ E →
+    is_lock N γ i R ={E, E ∖ ↑N}=∗ ▷ ∃ v, i m↦ v ∗ (⌜ v = 0 ⌝ -∗ R).
+  Proof.
+    intros. rewrite /is_lock. iIntros "Hinv".
+    iInv "Hinv" as "[(?&?&?)|HR]" "_".
+    - iModIntro. iExists 0. iNext. iFrame; iIntros; auto.
+    - iModIntro. iNext. iDestruct "HR" as (v) "(?&%)".
+      iExists v. iFrame. iIntros; congruence.
   Qed.
 
   Lemma wp_lock N γ i (R: iProp Σ):
@@ -332,10 +347,15 @@ Section lock.
     iInv N as "[HL|>HUL]".
     - iDestruct "HL" as "(>H&?&>?)".
       iApply (wp_cas_suc with "[$]"). iIntros "!> Hl !>"; iFrame.
+      iSplitL "Hl".
+      { iRight. iNext. iExists _. iFrame. eauto. }
       rewrite //=. wp_ret. wp_ret.
       iApply "HΦ"; iFrame.
-    - iApply (wp_cas_fail with "[$]"); first done. iIntros "!> Hl !>"; iFrame.
-      rewrite //=. wp_ret. iApply "IH"; eauto.
+    - iDestruct "HUL" as (v) "(?&%)".
+      iApply (wp_cas_fail with "[$]"); first done. iIntros "!> Hl !>"; iFrame.
+      iSplitL "Hl".
+      { iRight. iNext. iExists _. iFrame. eauto. }
+      rewrite //=. destruct nat_eq_dec; first by congruence. wp_ret. iApply "IH"; eauto.
   Qed.
 
   Lemma wp_unlock N γ i (R: iProp Σ):
@@ -345,7 +365,8 @@ Section lock.
     iInv N as "[HL|>HUL]".
     - iDestruct "HL" as "(>H&?&>Htok)".
       iDestruct (own_valid_2 with "Htok Hlocked") as %H => //=.
-    - iApply (wp_write_mem with "[$]"); iIntros "!> H !>".
+    - iDestruct "HUL" as (v) "(?&%)".
+      iApply (wp_write_mem with "[$]"); iIntros "!> H !>".
       iSplitR "HΦ"; last by iApply "HΦ".
       iLeft. iFrame.
   Qed.

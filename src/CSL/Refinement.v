@@ -33,6 +33,13 @@ Class cfgPreG (Σ : gFunctors) :=
   { cfg_preG_inG :> inG Σ (authR cfgUR) }.
 Class cfgG Σ := { cfg_inG :> inG Σ (authR cfgUR); cfg_name : gname }.
 
+Definition cfgΣ : gFunctors :=
+  #[GFunctor (authR (cfgUR))].
+
+Instance subG_cfgPreG {Σ} :
+  subG (cfgΣ) Σ → cfgPreG Σ.
+Proof. solve_inG. Qed.
+
 Fixpoint tpool_to_map_aux (tp: thread_pool OpT) (id: nat) : gmap nat (@procT OpT):=
   match tp with
   | [] => ∅

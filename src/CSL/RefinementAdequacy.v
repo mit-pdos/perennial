@@ -32,7 +32,7 @@ Definition wp_recovery_refinement {T R OpTa OpTc} Σ (Λa: Layer OpTa) (Λc: Lay
         ∗
         □ (∀ `{Hinv : invG Σ} `{Hcfg: cfgG OpTa Λa Σ} σ1c σ1c'
            (Hcrash: Λc.(crash_step) σ1c (Val σ1c' tt)),
-            (φinv σ1c ={⊤}=∗ ∃ stateI : State Λc → iProp Σ,
+            (φinv σ1c ∗ source_ctx ([existT _ ea], σ1a) ={⊤}=∗ ∃ stateI : State Λc → iProp Σ,
                let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
                stateI σ1c'
                ∗ WP rec @ NotStuck; ⊤ {{ v, (∀ σ2c, stateI σ2c ={⊤,E}=∗
@@ -103,8 +103,8 @@ Proof.
   * iModIntro. iIntros (????) "Hinv".
     iDestruct "Hinv" as (cfgG') "(?&HcfgInv)".
     iClear "Hsrc".
-    iMod ("Hφ" with "[//] [$]") as (stateI') "(Hstate&Hwp&Hinv)".
     iMod (inv_alloc sourceN ⊤ (source_inv _ _) with "HcfgInv") as "#cfgInv".
+    iMod ("Hφ" with "[//] [$]") as (stateI') "(Hstate&Hwp&Hinv)".
     iModIntro. iExists stateI'. iFrame.
     iSplitL "Hwp".
     ** iApply wp_wand_l; iFrame.

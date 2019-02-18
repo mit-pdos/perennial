@@ -140,13 +140,15 @@ Section refinement.
   (* TODO: Much of this business is just to capture the fact that exec_inner/crash_inner
      should not really mention invariants, because those old invariants are 'dead' *)
   Context (crash_inner_inv :
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
-          (∃ Hinv, crash_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG)))
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} cfg,
+          (∃ Hinv, crash_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG))) ∗
+          source_ctx cfg
           ={⊤}=∗ crash_inv Hcfg Hex)).
 
   Context (exec_inner_inv :
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} Hinv,
-          exec_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG))
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} cfg,
+          (∃ Hinv, exec_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG))) ∗
+          source_ctx cfg
           ={⊤}=∗ exec_inv Hcfg Hex)).
 
   Context (inv_implies_source:
@@ -220,7 +222,8 @@ Section refinement.
   iExists (@ex_mach_interp _ hM hD).
   iIntros "!> (#Hsrc&Hpt0&Hstate)".
   iMod ("H" with "Hsrc Hstate") as "Hinv".
-  iMod (exec_inner_inv (ExMachG Σ _ hM hD) _ with "Hinv") as "#Hinv".
+  iMod (exec_inner_inv (ExMachG Σ _ hM hD) _ with "[Hinv]") as "#Hinv".
+  { iFrame. iFrame "Hsrc". iExists _. iFrame. }
   simpl.
   iModIntro.
   iFrame "Hstate0".
@@ -244,12 +247,14 @@ Section refinement.
     iExists (ExMachG Σ _ hM hD). iFrame "Hmach".
     iExists hM', Hmpf_eq'. iFrame.
   }
-  iModIntro. iIntros (invG Hcfg' ?? Hcrash) "Hinv0".
+
+  iClear "Hsrc".
+  iModIntro. iIntros (invG Hcfg' ?? Hcrash) "(Hinv0&#Hsrc)".
   iDestruct "Hinv0" as (HexmachG') "(Hinterp&Hinv0)".
   iDestruct "Hinv0" as (hM' Hmpf_eq') "(Hmc'&Hcrash_inner)".
   iClear "Hinv".
-  iMod (crash_inner_inv (ExMachG Σ _ hM' (exm_disk_inG)) Hcfg' with "[Hcrash_inner]") as "#Hinv".
-  { iIntros. simpl. iExists ( exmachG_irisG.(@iris_invG Op ExMach.State Σ)).
+  iMod (crash_inner_inv (ExMachG Σ invG hM' (exm_disk_inG)) Hcfg' with "[Hcrash_inner]") as "#Hinv".
+  { iIntros. simpl. iFrame "Hsrc". iExists ( exmachG_irisG.(@iris_invG Op ExMach.State Σ)).
     iFrame. }
   iModIntro.
   iExists (@ex_mach_interp Σ hM' (exm_disk_inG)).
@@ -311,7 +316,8 @@ Section refinement.
   iExists (@ex_mach_interp _ hM hD).
   iIntros "!> (#Hsrc&Hpt0&Hstate)".
   iMod ("H" with "Hsrc Hstate") as "Hinv".
-  iMod (exec_inner_inv (ExMachG Σ _ hM hD) _ with "Hinv") as "#Hinv".
+  iMod (exec_inner_inv (ExMachG Σ _ hM hD) _ with "[Hinv]") as "#Hinv".
+  { iFrame "Hsrc".  iFrame. iExists _. iFrame. }
   simpl.
   iModIntro.
   iFrame "Hstate0".
@@ -343,14 +349,15 @@ Section refinement.
     iExists (ExMachG Σ _ hM hD). iFrame "Hmach".
     iExists hM', Hmpf_eq', H2. iFrame.
   }
-  iModIntro. iIntros (invG Hcfg' ?? Hcrash) "Hinv0".
+  iClear "Hsrc".
+  iModIntro. iIntros (invG Hcfg' ?? Hcrash) "(Hinv0&#Hsrc)".
   iDestruct "Hinv0" as (HexmachG') "(Hinterp&Hinv0)".
   iDestruct "Hinv0" as (hM' Hmpf_eq' Hmdpf_eq') "(Hmc'&Hcrash_inner)".
   iClear "Hinv".
   iMod (crash_inner_inv (ExMachG Σ _
                                  hM' (exm_disk_inG)) Hcfg'
                          with "[Hcrash_inner]") as "#Hinv".
-  { iIntros. simpl. iExists ( exmachG_irisG.(@iris_invG Op ExMach.State Σ)).
+  { iIntros. simpl. iFrame "Hsrc". iExists ( exmachG_irisG.(@iris_invG Op ExMach.State Σ)).
     iFrame. }
   iModIntro.
   iExists (@ex_mach_interp Σ hM' (exm_disk_inG)).
