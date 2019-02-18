@@ -24,6 +24,12 @@ Definition UseSlice  : proc unit :=
   s1 <- Data.sliceAppendSlice s s;
   FS.atomicCreate "file" s1.
 
+Definition UseSliceIndexing  : proc uint64 :=
+  s <- Data.newSlice uint64 2;
+  _ <- Data.sliceWrite s 1 2;
+  x <- Data.sliceRead s 0;
+  Ret x.
+
 Definition UseMap  : proc unit :=
   m <- Data.newMap (slice.t byte);
   _ <- Data.mapAlter m 1 (fun _ => Some (slice.nil _));
@@ -37,6 +43,25 @@ Definition UsePtr  : proc unit :=
   _ <- Data.writePtr p 1;
   x <- Data.readPtr p;
   Data.writePtr p x.
+
+Definition IterMapKeysAndValues (m:Map uint64) : proc uint64 :=
+  sumPtr <- Data.newPtr uint64;
+  _ <- Data.mapIter m (fun k v =>
+    sum <- Data.readPtr sumPtr;
+    Data.writePtr sumPtr (sum + k + v));
+  sum <- Data.readPtr sumPtr;
+  Ret sum.
+
+Definition IterMapKeys (m:Map uint64) : proc (slice.t uint64) :=
+  keysSlice <- Data.newSlice uint64 0;
+  keysRef <- Data.newPtr (slice.t uint64);
+  _ <- Data.writePtr keysRef keysSlice;
+  _ <- Data.mapIter m (fun k _ =>
+    keys <- Data.readPtr keysRef;
+    newKeys <- Data.sliceAppend keys k;
+    Data.writePtr keysRef newKeys);
+  keys <- Data.readPtr keysRef;
+  Ret keys.
 
 Definition Empty  : proc unit :=
   Ret tt.
@@ -67,6 +92,18 @@ Definition oddLiterals  : proc allTheLiterals.t :=
   Ret {| allTheLiterals.int := 5;
          allTheLiterals.s := "backquote string";
          allTheLiterals.b := false; |}.
+
+Definition DoSomething (s:string) : proc unit :=
+  Ret tt.
+
+Definition ConditionalInLoop  : proc unit :=
+  Loop (fun i =>
+        _ <- if compare_to i 3 Lt
+        then DoSomething ("i is small")
+        else Ret tt;
+        if compare_to i 5 Gt
+        then LoopRet tt
+        else Continue (i + 1)) 0.
 
 Definition ReturnTwo (p:slice.t byte) : proc (uint64 * uint64) :=
   Ret (0, 0).
