@@ -56,9 +56,14 @@ Definition DecodeEntry (data:slice.t byte) : proc (Entry.t * uint64) :=
       Ret ({| Entry.Key := 0;
               Entry.Value := slice.nil _; |}, 0)
     else
-      let value := slice.subslice (l1 + l2) (l1 + l2 + valueLen) data in
-      Ret ({| Entry.Key := key;
-              Entry.Value := value; |}, l1 + l2 + valueLen).
+      if compare_to (slice.length data) (l1 + l2 + valueLen) Lt
+      then
+        Ret ({| Entry.Key := 0;
+                Entry.Value := slice.nil _; |}, 0)
+      else
+        let value := slice.subslice (l1 + l2) (l1 + l2 + valueLen) data in
+        Ret ({| Entry.Key := key;
+                Entry.Value := value; |}, l1 + l2 + valueLen).
 
 Module lazyFileBuf.
   Record t := mk {
@@ -78,7 +83,7 @@ Definition readTableIndex (f:File) (index:Map uint64) : proc unit :=
           Continue {| lazyFileBuf.offset := buf.(lazyFileBuf.offset) + l;
                       lazyFileBuf.next := slice.skip l buf.(lazyFileBuf.next); |}
         else
-          p <- FS.readAt f buf.(lazyFileBuf.offset) 4096;
+          p <- FS.readAt f (buf.(lazyFileBuf.offset) + slice.length buf.(lazyFileBuf.next)) 4096;
           if slice.length p == 0
           then LoopRet tt
           else
@@ -295,7 +300,7 @@ Definition tablePutOldTable (w:tableWriter.t) (t:Table.t) (b:Map (slice.t byte))
           Continue {| lazyFileBuf.offset := buf.(lazyFileBuf.offset) + l;
                       lazyFileBuf.next := slice.skip l buf.(lazyFileBuf.next); |}
         else
-          p <- FS.readAt t.(Table.File) buf.(lazyFileBuf.offset) 4096;
+          p <- FS.readAt t.(Table.File) (buf.(lazyFileBuf.offset) + slice.length buf.(lazyFileBuf.next)) 4096;
           if slice.length p == 0
           then LoopRet tt
           else
