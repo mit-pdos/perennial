@@ -54,7 +54,7 @@ Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) (ps: rec_seq Op) :
   | Seq_Cons p ps' => Seq_Cons (impl.(compile) p) (impl.(compile_seq) ps')
   end.
 
-Fixpoint compile_proc_seq Op C_Op T `(impl: LayerImpl C_Op Op) (ps: proc_seq Op T) :=
+Definition compile_proc_seq Op C_Op T `(impl: LayerImpl C_Op Op) (ps: proc_seq Op T) :=
   map_proc_seq (impl.(compile)) ps.
 
 Definition compile_rec Op C_Op `(impl: LayerImpl C_Op Op) (rec: rec_seq Op) : rec_seq C_Op :=
