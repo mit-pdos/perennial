@@ -32,10 +32,79 @@ Section refinement.
   Context (recv: proc ExMach.Op unit).
   Context (recsingle: recover = rec_singleton recv).
 
-  Context (refinement_triples:
+  Context (refinement_op_triples:
+             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
+               j ⤇ K (Call op) ∗ (@exec_inv H1 H2) ⊢
+                 WP compile (Call op) {{ v, j ⤇ K (Ret v) }}).
+
+  Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ ∃ ρ, source_ctx ρ).
+
+  Lemma refinement_triples:
              forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1),
                j ⤇ K e ∗ (@exec_inv H1 H2) ⊢
-                 WP compile e {{ v, j ⤇ K (Ret v) }}).
+                 WP compile e {{ v, j ⤇ K (Ret v) }}.
+  Proof.
+    intros ???? j K Hctx e.
+    iIntros "(Hj&#Hinv)".
+    iAssert (⌜∃ ea: Λa.(State), True⌝)%I as %[? _].
+    {
+      iDestruct (exec_inv_source_ctx with "Hinv") as ((?&?)) "#Hctx".
+      eauto.
+    }
+    assert (Inhabited Λa.(State)).
+    { eexists. eauto. }
+    iInduction e as [] "IH" forall (j T2 K Hctx).
+    - iApply refinement_op_triples; iFrame; eauto.
+    - wp_ret. eauto.
+    - wp_bind.
+      iApply wp_wand_l. iSplitL ""; last first.
+      * iApply ("IH1" $! _ _ (fun x => K (Bind x p2)) with "[] Hj"); try iFrame.
+        { iPureIntro. apply comp_ctx; auto. apply _. }
+      * iIntros (?) "Hj".
+        iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
+        iMod (ghost_step_bind_ret with "Hj []") as "Hj".
+        { set_solver+. }
+        { eauto. }
+        iApply "IH"; auto.
+    - iLöb as "IHloop" forall (init).
+      iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
+      iMod (ghost_step_loop with "Hj []") as "Hj".
+      { set_solver+. }
+      { eauto. }
+      wp_loop.
+      iApply wp_wand_l.
+      iSplitL ""; last first.
+      * rewrite /loop1. simpl.
+        iApply ("IH" $! _ _ _ (fun x => K (Bind x
+                               (fun out => match out with
+                               | ContinueOutcome x => Loop body x
+                               | DoneWithOutcome r => Ret r
+                               end))) with "[] Hj")%proc.
+        { iPureIntro. apply comp_ctx; auto. apply _. }
+      * iIntros (out) "Hj".
+        destruct out.
+        ** iNext.
+           iMod (ghost_step_bind_ret with "Hj []") as "Hj".
+           { set_solver+. }
+           { eauto. }
+             by iApply "IHloop".
+        ** iNext.
+           iMod (ghost_step_bind_ret with "Hj []") as "Hj".
+           { set_solver+. }
+           { eauto. }
+           by wp_ret.
+   - iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
+     iMod (ghost_step_spawn with "Hj []") as "(Hj&Hj')".
+     { set_solver+. }
+     { eauto. }
+     iDestruct "Hj'" as (j') "Hj'".
+     iApply (wp_spawn with "[Hj'] [Hj]").
+     { iNext. iApply wp_wand_l; iSplitL ""; last first.
+       { iApply ("IH" $! _ _ (fun x => x)); first (iPureIntro; apply _).
+         iFrame. }
+       eauto. }
+     eauto.
+  Qed.
 
   Context (recv_triple:
              forall {H1 H2},
