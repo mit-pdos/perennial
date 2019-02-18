@@ -21,7 +21,6 @@ The Begin phase will get some arguments that it will ignore; ill-formed code can
 pass different arguments to begin and end, but it'll just mean the same thing as
 passing the same thing. *)
 Implicit Types (na:NonAtomicArgs unit).
-Notation NAFinish := (FinishArgs tt).
 
 Module Data.
   Inductive Op : Type -> Type :=
@@ -29,7 +28,7 @@ Module Data.
   | PtrDeref T (p:ptr T) (off:uint64) : Op T
   | PtrStore T (p:ptr T) (off:uint64) (x:T) na : Op unit
 
-  | SliceAppend T (s:slice.t T) (x:T) : Op (slice.t T)
+  | SliceAppend T (s:slice.t T) (x:T) na : Op (retT na (slice.t T))
   | SliceAppendSlice T (s:slice.t T) (s':slice.t T) : Op (slice.t T)
 
   | NewMap V : Op (Map V)
@@ -49,6 +48,19 @@ Module Data.
   | BytesToString : slice.t byte -> Op string
   | StringToBytes : string -> Op (slice.t byte)
   .
+
+  Definition nonAtomicOp {Op Op'} {i:Injectable Op Op'} {T}
+             (op: forall (args:NonAtomicArgs unit), Op (retT args T))
+    : proc Op' T :=
+    Bind (Call (inject (op Begin)))
+         (fun _ => Call (inject (op (FinishArgs tt)))).
+
+  (* write-only operations can have a return type of unit, regardless of phase *)
+  Definition nonAtomicWriteOp {Op Op'} {i:Injectable Op Op'}
+             (op: forall (args:NonAtomicArgs unit), Op unit)
+    : proc Op' unit :=
+    Bind (Call (inject (op Begin)))
+         (fun _ => Call (inject (op (FinishArgs tt)))).
 
   Section OpWrappers.
 
@@ -79,8 +91,7 @@ Module Data.
       ptrDeref s.(slice.ptr) (s.(slice.offset) + off).
 
     Definition ptrStore T p off x : proc _ :=
-      (_ <- Call (@PtrStore T p off x Begin);
-         Call (PtrStore p off x NAFinish))%proc.
+      nonAtomicWriteOp (@PtrStore T p off x).
 
     Definition writePtr T (p: ptr T) x :=
       ptrStore p 0 x.
@@ -88,8 +99,8 @@ Module Data.
     Definition sliceWrite T (s: slice.t T) off (x:T) : proc unit :=
       ptrStore s.(slice.ptr) (s.(slice.offset) + off) x.
 
-    Definition sliceAppend T s x :=
-      Call! @SliceAppend T s x.
+    Definition sliceAppend T s x : proc _ :=
+      nonAtomicOp (@SliceAppend T s x).
 
     Definition sliceAppendSlice T s s' :=
       Call! @SliceAppendSlice T s s'.
@@ -97,8 +108,7 @@ Module Data.
     Definition newMap V := Call! NewMap V.
 
     Definition mapAlter V m (k: uint64) (f: option V -> option V) : proc _ :=
-      (_ <- Call (@MapAlter V m k f Begin);
-        Call (MapAlter m k f NAFinish))%proc.
+      nonAtomicWriteOp (@MapAlter V m k f).
 
     Definition mapLookup V m k := Call! @MapLookup V m k.
 
@@ -160,6 +170,10 @@ Module Data.
   Definition updAllocs ty (p:Ptr.t ty) (x:ptrModel ty)
     : relation State State unit :=
     puts (set allocs (updDyn p x)).
+
+  Definition delAllocs ty (p:Ptr.t ty)
+    : relation State State unit :=
+    puts (set allocs (deleteDyn p)).
 
   Import RelationNotations.
 
@@ -255,6 +269,10 @@ Module Data.
       eauto.
   Qed.
 
+  Definition getSliceModel T (s:slice.t T) (alloc: list T) : option (list T) :=
+    (* TODO: return None if anything goes out-of-bounds *)
+    Some (list.take (s.(slice.length)) (list.drop s.(slice.offset) alloc)).
+
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | NewAlloc v len =>
@@ -275,6 +293,25 @@ Module Data.
                                 alloc' <- readSome (fun _ => list_nth_upd alloc off x);
                                 updAllocs p (s', alloc')
       end
+    | SliceAppend p x ph =>
+      (* TODO: can this operation be atomic? We're just deleting the old slice
+      anyway, so what's the point of marking it for anything? *)
+      let! (s, alloc) <- readSome (getAlloc p.(slice.ptr));
+           match ph return relation _ _ (retT ph (slice.t _)) with
+           | Begin => s' <- readSome (fun _ => lock_acquire Writer s);
+                       updAllocs p.(slice.ptr) (s', alloc)
+           | FinishArgs _ =>
+             val <- readSome (fun _ => getSliceModel p alloc);
+               s' <- readSome (fun _ => lock_release Writer s);
+               (* we always invalidate the old pointer, which should be a sound
+               over-approximation of behavior *)
+               _ <- delAllocs p.(slice.ptr);
+               r <- such_that (fun s (r:ptr _) => getAlloc r s = None /\ r <> nullptr _);
+               _ <- updAllocs p.(slice.ptr) (Unlocked, val ++ [x]);
+               pure {| slice.ptr := r;
+                       slice.offset := 0;
+                       slice.length := (p.(slice.length) + 1)%nat |}
+           end
     | NewMap V =>
       r <- such_that (fun s (r:Map _) => getAlloc r s = None /\ r <> nullptr _);
         _ <- updAllocs r (Unlocked, ∅);

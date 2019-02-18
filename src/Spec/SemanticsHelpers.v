@@ -112,7 +112,18 @@ Proof.
   - apply (m.(dynMap_wf) _ v0).
 Defined.
 
+Definition deleteDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+           a (v: Ref a) (m: DynMap Ref Model) : DynMap Ref Model.
+Proof.
+  refine {| dynMap := fun r => if r == existT a v then None else m.(dynMap) r |}.
+  intros.
+  destruct (existT _ v0 == existT _ v).
+  - auto.
+  - apply (m.(dynMap_wf) _ v0).
+Defined.
+
 Arguments updDyn {A Ref Model dec a} v x m.
+Arguments deleteDyn {A Ref Model dec a} v m.
 
 Instance empty_dynmap A Ref Model : Empty (@DynMap A Ref Model).
 refine {| dynMap := fun _ => None; |}.
