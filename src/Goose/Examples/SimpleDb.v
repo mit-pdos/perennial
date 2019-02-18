@@ -268,3 +268,138 @@ Definition Write (db:Database.t) (k:uint64) (v:slice.t byte) : proc unit :=
   buf <- Data.readPtr db.(Database.wbuffer);
   _ <- Data.mapAlter buf k (fun _ => Some v);
   Data.lockRelease db.(Database.bufferL) Writer.
+
+Definition freshTable (p:string) : proc string :=
+  if p == "table.0"
+  then Ret "table.1"
+  else
+    if p == "table.1"
+    then Ret "table.0"
+    else Ret p.
+
+Definition tablePutBuffer (w:tableWriter.t) (buf:Map (slice.t byte)) : proc unit :=
+  Data.mapIter buf (fun k v =>
+    tablePut w k v).
+
+(* add all of table t to the table w being created; skip any keys in the (read)
+buffer b since those writes overwrite old ones *)
+Definition tablePutOldTable (w:tableWriter.t) (t:Table.t) (b:Map (slice.t byte)) : proc unit :=
+  Loop (fun buf =>
+        let! (e, l) <- DecodeEntry buf.(lazyFileBuf.next);
+        if compare_to l 0 Gt
+        then
+          let! (_, ok) <- Data.mapGet b e.(Entry.Key);
+          _ <- if negb ok
+          then tablePut w e.(Entry.Key) e.(Entry.Value)
+          else Ret tt;
+          Continue {| lazyFileBuf.offset := buf.(lazyFileBuf.offset) + l;
+                      lazyFileBuf.next := slice.skip l buf.(lazyFileBuf.next); |}
+        else
+          p <- FS.readAt t.(Table.File) buf.(lazyFileBuf.offset) 4096;
+          if slice.length p == 0
+          then LoopRet tt
+          else
+            newBuf <- Data.sliceAppendSlice buf.(lazyFileBuf.next) p;
+            Continue {| lazyFileBuf.offset := buf.(lazyFileBuf.offset);
+                        lazyFileBuf.next := newBuf; |}) {| lazyFileBuf.offset := 0;
+           lazyFileBuf.next := slice.nil _; |}.
+
+(* Build a new shadow table that incorporates the current table and a
+(write) buffer wbuf.
+
+Assumes all the appropriate locks have been taken.
+
+Returns the old table and new table. *)
+Definition constructNewTable (db:Database.t) (wbuf:Map (slice.t byte)) : proc (Table.t * Table.t) :=
+  oldName <- Data.readPtr db.(Database.tableName);
+  name <- freshTable oldName;
+  w <- newTableWriter name;
+  oldTable <- Data.readPtr db.(Database.table);
+  _ <- tablePutOldTable w oldTable wbuf;
+  _ <- tablePutBuffer w wbuf;
+  newTable <- tableWriterClose w;
+  Ret (oldTable, newTable).
+
+Definition Compact (db:Database.t) : proc unit :=
+  _ <- Data.lockAcquire db.(Database.compactionL) Writer;
+  _ <- Data.lockAcquire db.(Database.bufferL) Writer;
+  buf <- Data.readPtr db.(Database.wbuffer);
+  emptyWbuffer <- Data.newMap (slice.t byte);
+  _ <- Data.writePtr db.(Database.wbuffer) emptyWbuffer;
+  _ <- Data.writePtr db.(Database.rbuffer) buf;
+  _ <- Data.lockRelease db.(Database.bufferL) Writer;
+  _ <- Data.lockAcquire db.(Database.tableL) Reader;
+  oldTableName <- Data.readPtr db.(Database.tableName);
+  let! (oldTable, t) <- constructNewTable db buf;
+  newTable <- freshTable oldTableName;
+  _ <- Data.lockRelease db.(Database.tableL) Reader;
+  _ <- Data.lockAcquire db.(Database.tableL) Writer;
+  _ <- Data.writePtr db.(Database.table) t;
+  _ <- Data.writePtr db.(Database.tableName) newTable;
+  manifestData <- Data.stringToBytes newTable;
+  _ <- FS.atomicCreate "manifest" manifestData;
+  _ <- CloseTable oldTable;
+  _ <- FS.delete oldTableName;
+  _ <- Data.lockRelease db.(Database.tableL) Writer;
+  Data.lockRelease db.(Database.compactionL) Writer.
+
+Definition recoverManifest  : proc string :=
+  f <- FS.open "manifest";
+  manifestData <- FS.readAt f 0 4096;
+  tableName <- Data.bytesToString manifestData;
+  _ <- FS.close f;
+  Ret tableName.
+
+(* delete 'name' if it isn't tableName or "manifest" *)
+Definition deleteOtherFile (name:string) (tableName:string) : proc unit :=
+  if name == tableName
+  then Ret tt
+  else
+    if name == "manifest"
+    then Ret tt
+    else FS.delete name.
+
+Definition deleteOtherFiles (tableName:string) : proc unit :=
+  files <- FS.list;
+  let nfiles := slice.length files in
+  Loop (fun i =>
+        if i == nfiles
+        then LoopRet tt
+        else
+          name <- Data.sliceRead files i;
+          _ <- deleteOtherFile name tableName;
+          Continue (i + 1)) 0.
+
+Definition Recover  : proc Database.t :=
+  tableName <- recoverManifest;
+  table <- RecoverTable tableName;
+  tableRef <- Data.newPtr Table.t;
+  _ <- Data.writePtr tableRef table;
+  tableNameRef <- Data.newPtr string;
+  _ <- Data.writePtr tableNameRef tableName;
+  _ <- deleteOtherFiles tableName;
+  wbuffer <- makeValueBuffer;
+  rbuffer <- makeValueBuffer;
+  bufferL <- Data.newLock;
+  tableL <- Data.newLock;
+  compactionL <- Data.newLock;
+  Ret {| Database.wbuffer := wbuffer;
+         Database.rbuffer := rbuffer;
+         Database.bufferL := bufferL;
+         Database.table := tableRef;
+         Database.tableName := tableNameRef;
+         Database.tableL := tableL;
+         Database.compactionL := compactionL; |}.
+
+(* immediate shutdown; like a crash, but cleanly close all files *)
+Definition Shutdown (db:Database.t) : proc unit :=
+  _ <- Data.lockAcquire db.(Database.bufferL) Writer;
+  _ <- Data.lockAcquire db.(Database.compactionL) Writer;
+  t <- Data.readPtr db.(Database.table);
+  _ <- CloseTable t;
+  _ <- Data.lockRelease db.(Database.compactionL) Writer;
+  Data.lockRelease db.(Database.bufferL) Writer.
+
+Definition Close (db:Database.t) : proc unit :=
+  _ <- Compact db;
+  Shutdown db.
