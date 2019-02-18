@@ -19,7 +19,7 @@ Module Data.
   Inductive Op : Type -> Type :=
   | NewAlloc T (v:T) (len:uint64) : Op (ptr T)
   | PtrDeref T (p:ptr T) (off:uint64) : Op T
-  | PtrStore T (p:ptr T) (off:uint64) (x:T) : Op unit
+  | PtrStore T (p:ptr T) (args:NonAtomicArgs (uint64 * T)) : Op unit
 
   | SliceAppend T (s:slice.t T) (x:T) : Op (slice.t T)
   | SliceAppendSlice T (s:slice.t T) (s':slice.t T) : Op (slice.t T)
@@ -70,8 +70,9 @@ Module Data.
     Definition sliceRead T (s: slice.t T) off : proc T :=
       ptrDeref s.(slice.ptr) (s.(slice.offset) + off).
 
-    Definition ptrStore T p off x :=
-      Call! @PtrStore T p off x.
+    Definition ptrStore T p off x : proc _ :=
+      (_ <- Call (inject (@PtrStore T p Begin));
+         Call (inject (PtrStore p (FinishArgs (off, x)))))%proc.
 
     Definition writePtr T (p: ptr T) x :=
       ptrStore p 0 x.
@@ -130,7 +131,11 @@ Module Data.
 
   Definition ptrModel (code:Ptr.ty) : Type :=
     match code with
-    | Ptr.Heap T => list T
+    | Ptr.Heap T =>
+      (* note that for convenience we use a reader-writer LockStatus, but the
+      way its used (only Writer acquires/releases) guarantees that it is always
+      either Unlocked or Locked, never ReadLocked *)
+      LockStatus * list T
     | Ptr.Map V => hashtableM V
     | Ptr.Lock => LockStatus
     end.
@@ -198,16 +203,70 @@ Module Data.
     destruct m, s; simpl; (intuition eauto); propositional; try congruence.
   Qed.
 
+  Fixpoint list_nth_upd A (l: list A) (n: nat) (x: A) : option (list A) :=
+    match n with
+    | 0 => match l with
+          | nil => None
+          | x0::xs => Some (x::xs)
+          end
+    | S n' => match l with
+             | nil => None
+             | x0::xs => match list_nth_upd xs n' x with
+                        | Some xs' => Some (x0::xs')
+                        | None => None
+                        end
+             end
+    end.
+
+  Theorem list_nth_upd_length A (l: list A) n x l' :
+    list_nth_upd l n x = Some l' ->
+    length l = length l'.
+  Proof.
+    generalize dependent l.
+    generalize dependent l'.
+    induction n; simpl.
+    - destruct l; simpl; inversion 1; subst.
+      simpl; auto.
+    - destruct l; simpl; inversion 1; subst.
+      destruct_with_eqn (list_nth_upd l n x); try congruence.
+      inv_clear H.
+      simpl; eauto.
+  Qed.
+
+  Theorem list_nth_upd_get_nth A (l: list A) n x l' :
+    list_nth_upd l n x = Some l' ->
+    List.nth_error l' n = Some x.
+  Proof.
+    generalize dependent l.
+    generalize dependent l'.
+    induction n; simpl.
+    - destruct l; simpl; inversion 1; subst; auto.
+    - destruct l; simpl; inversion 1; subst.
+      destruct_with_eqn (list_nth_upd l n x); try congruence.
+      inv_clear H.
+      eauto.
+  Qed.
+
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | NewAlloc v len =>
       r <- such_that (fun s (r:ptr _) => getAlloc r s = None /\ r <> nullptr _);
-        _ <- updAllocs r (List.repeat v len);
+        _ <- updAllocs r (Unlocked, List.repeat v len);
         pure r
     | PtrDeref p off =>
-      alloc <- readSome (getAlloc p);
+      let! (s, alloc) <- readSome (getAlloc p);
+           _ <- readSome (fun _ => lock_available Reader s);
         x <- readSome (fun _ => List.nth_error alloc off);
         pure x
+    | PtrStore p args =>
+      let! (s, alloc) <- readSome (getAlloc p);
+      match args with
+      | Begin => s' <- readSome (fun _ => lock_acquire Writer s);
+                  updAllocs p (s', alloc)
+      | FinishArgs (off, x) => s' <- readSome (fun _ => lock_release Writer s);
+                                alloc' <- readSome (fun _ => list_nth_upd alloc off x);
+                                updAllocs p (s', alloc')
+      end
     | NewMap V =>
       r <- such_that (fun s (r:Map _) => getAlloc r s = None /\ r <> nullptr _);
         _ <- updAllocs r (Unlocked, ∅);
