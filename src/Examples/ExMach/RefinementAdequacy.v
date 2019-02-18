@@ -105,17 +105,17 @@ Section refinement.
                   (φrec := fun _ _ => True%I)
                   (E0 := E); eauto).
     clear Hno_err.
-    iAssert (∀ invG H1 ρ, |={⊤}=>
-         ∃ hM hD
-              (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
-            H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable))
-              (Hdpf_eq : hD.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
-            H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable)),
-           (@ex_mach_interp _ hM hD σ1c) ∗
-           (source_ctx (ρ, σ1a) -∗ source_state σ1a ={⊤}=∗
-         exec_inner H1 (ExMachG Σ invG hM hD)))%I as "Hpre".
-      {
-        iIntros.
+  iAssert (∀ invG H1 ρ, |={⊤}=>
+       ∃ hM hD
+            (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
+          H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable))
+            (Hdpf_eq : hD.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
+          H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable)),
+         (@ex_mach_interp _ hM hD σ1c) ∗
+         (source_ctx (ρ, σ1a) -∗ source_state σ1a ={⊤}=∗
+       exec_inner H1 (ExMachG Σ invG hM hD)))%I as "Hpre".
+  {
+  iIntros.
   iMod (gen_heap_strong_init (mem_state σ1c)) as (hM Hmpf_eq) "(Hmc&Hm)".
   iMod (gen_heap_strong_init (disk_state σ1c)) as (hD Hdpf_eq) "(Hdc&Hd)".
   iModIntro. iExists hM, hD, Hmpf_eq, Hdpf_eq. iSplitL "Hmc Hdc".
@@ -137,15 +137,14 @@ Section refinement.
   }
 
   clear Hinit.
-    iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre".
-    -
-
-      iSplit; first by eauto.
+  iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre".
+  - iSplit; first by eauto.
   iExists (fun cfgG s => ∃ (_ : exmachG Σ),
                      state_interp s ∗
                        (∃ (hM: gen_heapG addr nat Σ)
                             (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
-                                       H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable)) ,
+                                       H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ
+                                                              nat_eq_dec nat_countable)) ,
             gen_heap_ctx init_zero ∗ crash_inner cfgG (ExMachG Σ _ hM (exm_disk_inG))))%I; auto.
   iIntros (invG0 Hcfg0).
   iMod ("Hpre" $! invG0 _ _) as (hM hD ??) "(Hstate0&H)".
@@ -180,9 +179,7 @@ Section refinement.
   iDestruct "Hinv0" as (HexmachG') "(Hinterp&Hinv0)".
   iDestruct "Hinv0" as (hM' Hmpf_eq') "(Hmc'&Hcrash_inner)".
   iClear "Hinv".
-  iMod (crash_inner_inv (ExMachG Σ _
-                                 hM' (exm_disk_inG)) Hcfg'
-                         with "[Hcrash_inner]") as "#Hinv".
+  iMod (crash_inner_inv (ExMachG Σ _ hM' (exm_disk_inG)) Hcfg' with "[Hcrash_inner]") as "#Hinv".
   { iIntros. simpl. iExists ( exmachG_irisG.(@iris_invG Op ExMach.State Σ)).
     iFrame. }
   iModIntro.
@@ -230,14 +227,15 @@ Section refinement.
   }
   -
     iSplit; first by eauto.
-  iExists (fun cfgG s => ∃ (Hex : exmachG Σ),
-                     state_interp s ∗
-                       (∃ (hM: gen_heapG addr nat Σ)
-                            (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
-                                       H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable))
-
-                            (Hdpf_eq : (@exm_disk_inG Σ Hex).(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable)=
-                                       H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable)) ,
+  iExists (fun cfgG s => ∃ (Hex : exmachG Σ), state_interp s ∗
+            (∃ (hM: gen_heapG addr nat Σ)
+               (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
+                          H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ
+                                                                   nat_eq_dec nat_countable))
+               (Hdpf_eq : (@exm_disk_inG Σ Hex).(@gen_heap_inG addr nat Σ
+                                                               nat_eq_dec nat_countable)=
+                          H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ
+                                                                   nat_eq_dec nat_countable)) ,
             gen_heap_ctx init_zero ∗ crash_inner cfgG (ExMachG Σ _ hM (exm_disk_inG))))%I; auto.
   iIntros (invG0 Hcfg0).
   iMod ("Hpre" $! invG0 _ _) as (hM hD ??) "(Hstate0&H)".
