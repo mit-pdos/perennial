@@ -23,7 +23,7 @@ Module FS.
   Inductive Op : Type -> Type :=
   | Open p : Op File
   | Close fh : Op unit
-  | List : Op (list string)
+  | List : Op (slice.t string)
   | Size fh : Op uint64
   | ReadAt fh (off:uint64) (len:uint64) : Op (slice.t byte)
   | Create p : Op File
