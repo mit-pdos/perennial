@@ -8,6 +8,7 @@ From RecoveryRefinement.Goose Require Import GoZeroValues.
 
 From stdpp Require Import base.
 
+Import ProcNotations.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
 Inductive LockMode := Reader | Writer.
@@ -52,10 +53,10 @@ Module Data.
       newAlloc (zeroValue T) 1.
 
     Definition newSlice T {GoZero:HasGoZero T} len : proc (slice.t T) :=
-      Bind (newAlloc (zeroValue T) len)
-           (fun p => Ret {| slice.ptr := p;
-                         slice.length := len;
-                         slice.offset := 0 |}).
+      (p <- newAlloc (zeroValue T) len;
+         Ret {| slice.ptr := p;
+                slice.length := len;
+                slice.offset := 0 |})%proc.
 
     Definition ptrDeref T p off :=
       Call! @PtrDeref T p off.
@@ -85,17 +86,23 @@ Module Data.
 
     Definition mapAlter V m k f := Call! @MapAlter V m k f.
     Definition mapLookup V m k := Call! @MapLookup V m k.
-    Definition mapStartIter V m := Call! @MapStartIter V m.
-    Definition mapEndIter V m := Call! @MapEndIter V m.
+
+    Definition mapIter V (m: Map V) (body: uint64 -> V -> proc unit) : proc unit :=
+      (kvs <- Call (inject (MapStartIter m));
+         _ <- List.fold_right
+           (fun '(k, v) p => Bind p (fun _ => body k v))
+           (Ret tt) kvs;
+         Call (inject (MapEndIter m)))%proc.
 
     Definition mapGet V {_:HasGoZero V} (m: Map V) k : proc (V * bool) :=
-      Bind (mapLookup m k)
-           (fun mv => match mv with
-                   | Some v => Ret (v, true)
-                   | None => Ret (zeroValue V, false)
-                   end).
+      (mv <- mapLookup m k;
+        match mv with
+        | Some v => Ret (v, true)
+        | None => Ret (zeroValue V, false)
+        end)%proc.
 
     Definition newLock := Call! NewLock.
+
     Definition lockAcquire l m := Call! LockAcquire l m.
     Definition lockRelease l m := Call! LockRelease l m.
 
