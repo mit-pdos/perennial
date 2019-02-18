@@ -15,18 +15,25 @@ From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
 Inductive LockMode := Reader | Writer.
 
+(* We don't really need to put an argument here; it just needs to be Begin|End.
+
+The Begin phase will get some arguments that it will ignore; ill-formed code can
+pass different arguments to begin and end, but it'll just mean the same thing as
+passing the same thing. *)
+Implicit Types (na:NonAtomicArgs unit).
+Notation NAFinish := (FinishArgs tt).
+
 Module Data.
   Inductive Op : Type -> Type :=
   | NewAlloc T (v:T) (len:uint64) : Op (ptr T)
   | PtrDeref T (p:ptr T) (off:uint64) : Op T
-  | PtrStore T (p:ptr T) (args:NonAtomicArgs (uint64 * T)) : Op unit
+  | PtrStore T (p:ptr T) (off:uint64) (x:T) na : Op unit
 
   | SliceAppend T (s:slice.t T) (x:T) : Op (slice.t T)
   | SliceAppendSlice T (s:slice.t T) (s':slice.t T) : Op (slice.t T)
 
   | NewMap V : Op (Map V)
-  | MapAlter `(m:Map V) (args:NonAtomicArgs
-                                (uint64 * (option V -> option V))) : Op unit
+  | MapAlter `(m:Map V) (off:uint64) (f:option V -> option V) na : Op unit
   | MapLookup `(m:Map V) (k:uint64) : Op (option V)
   | MapStartIter `(m:Map V) : Op (list (uint64*V))
   | MapEndIter `(m:Map V) : Op unit
@@ -47,7 +54,8 @@ Module Data.
 
     Context {Op'} {i:Injectable Op Op'}.
     Notation proc := (proc Op').
-    Notation "'Call!' op" := (Call (inject op) : proc _) (at level 0, op at level 200).
+    Notation "'Call' op" := (Call (inject op) : proc _) (at level 0).
+    Notation "'Call!' op" := (Call op : proc _) (at level 0, op at level 200).
 
     Definition newAlloc T v len :=
       Call! @NewAlloc T v len.
@@ -71,8 +79,8 @@ Module Data.
       ptrDeref s.(slice.ptr) (s.(slice.offset) + off).
 
     Definition ptrStore T p off x : proc _ :=
-      (_ <- Call (inject (@PtrStore T p Begin));
-         Call (inject (PtrStore p (FinishArgs (off, x)))))%proc.
+      (_ <- Call (@PtrStore T p off x Begin);
+         Call (PtrStore p off x NAFinish))%proc.
 
     Definition writePtr T (p: ptr T) x :=
       ptrStore p 0 x.
@@ -89,17 +97,17 @@ Module Data.
     Definition newMap V := Call! NewMap V.
 
     Definition mapAlter V m (k: uint64) (f: option V -> option V) : proc _ :=
-      (_ <- Call (inject (@MapAlter V m Begin));
-        Call (inject (MapAlter m (FinishArgs (k, f)))))%proc.
+      (_ <- Call (@MapAlter V m k f Begin);
+        Call (MapAlter m k f NAFinish))%proc.
 
     Definition mapLookup V m k := Call! @MapLookup V m k.
 
     Definition mapIter V (m: Map V) (body: uint64 -> V -> proc unit) : proc unit :=
-      (kvs <- Call (inject (MapStartIter m));
+      (kvs <- Call (MapStartIter m);
          _ <- List.fold_right
            (fun '(k, v) p => Bind p (fun _ => body k v))
            (Ret tt) kvs;
-         Call (inject (MapEndIter m)))%proc.
+         Call (MapEndIter m))%proc.
 
     Definition mapGet V {_:HasGoZero V} (m: Map V) k : proc (V * bool) :=
       (mv <- mapLookup m k;
@@ -258,12 +266,12 @@ Module Data.
            _ <- readSome (fun _ => lock_available Reader s);
         x <- readSome (fun _ => List.nth_error alloc off);
         pure x
-    | PtrStore p args =>
+    | PtrStore p off x ph =>
       let! (s, alloc) <- readSome (getAlloc p);
-      match args with
+      match ph with
       | Begin => s' <- readSome (fun _ => lock_acquire Writer s);
                   updAllocs p (s', alloc)
-      | FinishArgs (off, x) => s' <- readSome (fun _ => lock_release Writer s);
+      | FinishArgs _ => s' <- readSome (fun _ => lock_release Writer s);
                                 alloc' <- readSome (fun _ => list_nth_upd alloc off x);
                                 updAllocs p (s', alloc')
       end
@@ -275,12 +283,12 @@ Module Data.
       let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
            _ <- readSome (fun _ => lock_available Reader s);
         pure (m !! k)
-    | MapAlter r args =>
+    | MapAlter r k f ph =>
       let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
-      match args with
+      match ph with
       | Begin => s' <- readSome (fun _ => lock_acquire Writer s);
                   updAllocs r (s', m)
-      | FinishArgs (k, f) => s' <- readSome (fun _ => lock_release Writer s);
+      | FinishArgs _ => s' <- readSome (fun _ => lock_release Writer s);
                               updAllocs r (s', partial_alter f k m)
       end
     | MapStartIter r =>
