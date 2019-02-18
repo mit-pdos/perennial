@@ -10,17 +10,12 @@ Import ApplicativeNotations.
 
 Inductive Op : Type -> Type :=
 | FilesysOp : forall T, FS.Op T -> Op T
-| DataOp : forall T, Data.Op T -> Op T
-| SliceReadAt (fd:Fd) (off:uint64) (len:uint64) : Op (slice.t byte)
-| SliceAppend (fd:Fd) (buf:slice.t byte) : Op unit.
+| DataOp : forall T, Data.Op T -> Op T.
 
 Instance data_inj : Injectable Data.Op Op := DataOp.
 Instance fs_inj : Injectable FS.Op Op := FilesysOp.
 
 Module Base.
-
-  Definition sliceReadAt fd off len := Call (SliceReadAt fd off len).
-  Definition sliceAppend fd buf := Call (SliceAppend fd buf).
 
   Record State :=
     mkState { fsΣ : FS.State;

@@ -8,7 +8,6 @@ From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.SemanticsHelpers.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
-From RecoveryRefinement Require Import Helpers.GoModel.
 
 From RecordUpdate Require Import RecordSet.
 Import ApplicativeNotations.
@@ -21,67 +20,15 @@ Import EqNotations.
 
 Set Implicit Arguments.
 
-(* TODO: rename to Ptr *)
 Axiom IORef : Type -> Type.
-Axiom nullptr : forall T, IORef T.
-
-Instance ioref_zero T : HasGoZero (IORef T) := nullptr T.
-
-Module slice.
-  Section Slices.
-    Variable A:Type.
-
-    Record t :=
-      mk { ptr: IORef A;
-           offset: uint64;
-           length: uint64 }.
-
-    Instance _eta : Settable t :=
-      mkSettable (constructor mk <*> ptr <*> offset <*> length)%set.
-
-    Definition nil := {| ptr := nullptr A; offset := 0; length := 0 |}.
-
-    Global Instance slice_zero : HasGoZero t := nil.
-
-    Definition skip (n:uint64) (x:t) : t :=
-      set length (fun l => sub l n)
-          (set offset (fun o => add o n) x).
-
-    Definition take (n:uint64) (x:t) : t :=
-      set length (fun _ => n) x.
-
-    Definition subslice (low high:uint64) (x:t) : t :=
-      set length (fun _ => sub high low)
-          (set offset (fun o => add o low) x).
-
-    Theorem subslice_skip_take low high x :
-      subslice low high x = skip low (take high x).
-    Proof.
-      destruct x; unfold subslice, skip; simpl; auto.
-    Qed.
-
-    Theorem subslice_take_skip low high x :
-      subslice low high x = take (sub high low) (skip low x).
-    Proof.
-      destruct x; unfold subslice, skip; simpl; auto.
-    Qed.
-  End Slices.
-End slice.
-
 Axiom Array : Type -> Type.
 (* Hashtables always use uint64 as the key type since the Haskell interpreter
 needs to statically know the type in order to resolve Hashable and Eq instances
 
 We could instead use a type code and dispatch on that. *)
 Axiom HashTable : forall (V:Type), Type.
-Axiom nilMap : forall (V:Type), HashTable V.
-
-Instance map_zero V : HasGoZero (HashTable V) := nilMap V.
 
 Axiom LockRef : Type.
-(* TODO: switch to a unified pointer type *)
-Axiom LockRef_nil : LockRef.
-Instance LockRef_zero : HasGoZero LockRef := LockRef_nil.
 
 Axiom sigIORef_eq_dec : EqualDec (sigT IORef).
 Axiom sigArray_eq_dec : EqualDec (sigT Array).
@@ -89,25 +36,6 @@ Axiom sigHashTable_eq_dec : EqualDec (sigT HashTable).
 Axiom lockRef_eq_dec : EqualDec LockRef.
 
 Existing Instances sigIORef_eq_dec sigArray_eq_dec sigHashTable_eq_dec lockRef_eq_dec.
-
-Instance slice_eq_dec : EqualDec (sigT slice.t).
-Proof.
-  hnf; intros.
-  destruct x as [T1 x], y as [T2 y].
-  destruct x, y; simpl.
-  destruct (equal (existT _ ptr) (existT _ ptr0));
-    [ | right ].
-  - destruct (equal offset offset0), (equal length length0);
-      [ left | right.. ];
-      repeat match goal with
-             | [ H: existT ?T _ = existT ?T _ |- _ ] =>
-               apply inj_pair2 in H; subst
-             | [ H: existT _ _ = existT _ _ |- _ ] =>
-               inversion H; subst; clear H
-             end; eauto; try (inversion 1; congruence).
-  - inversion 1; subst.
-    apply inj_pair2 in H2; subst; congruence.
-Defined.
 
 Module Var.
   Inductive t :=
@@ -140,15 +68,6 @@ Module Data.
   | ArrayLength : forall T, Array T -> Op uint64
   | ArrayGet : forall T, Array T -> uint64 -> Op T
   | ArrayAppend : forall T, Array T -> T -> Op unit
-
-  (* create a new allocation of a particular size, filled with a chosen value *)
-  | NewAlloc : forall T, T -> uint64 -> Op (IORef T)
-  | SliceAppend : forall T, slice.t T -> T -> Op (slice.t T)
-  | SliceAppendSlice : forall T, slice.t T -> slice.t T -> Op (slice.t T)
-  | PtrDeref : forall T (ptr:IORef T) (off:uint64), Op T
-
-  | UInt64Get : slice.t byte -> Op uint64
-  | UInt64Put : slice.t byte -> uint64 -> Op unit
 
   (* hashtables *)
   | NewHashTable :
@@ -209,35 +128,6 @@ Module Data.
     Definition arrayGet T (a: Array T) (ix:uint64) : proc T :=
       Call! ArrayGet a ix.
 
-    Definition newAlloc T x len : proc _ :=
-      Call! @NewAlloc T x len.
-
-    Definition sliceAppend T d x : proc _ :=
-      Call! @SliceAppend T d x.
-
-    Definition sliceAppendSlice T d d' : proc _ :=
-      Call! @SliceAppendSlice T d d'.
-
-    Definition ptrDeref T p off : proc _ :=
-      Call! @PtrDeref T p off.
-
-    (* Go helpers *)
-
-    Definition newSlice T {GoZero:HasGoZero T} len : proc (slice.t T) :=
-      Bind (Call (inject (@NewAlloc T (zeroValue T) len)))
-           (fun p => Ret {| slice.ptr := p;
-                         slice.length := len;
-                         slice.offset := 0%u64 |}).
-
-    Definition sliceRead T (s: slice.t T) off : proc T :=
-      ptrDeref s.(slice.ptr) (s.(slice.offset) + off)%u64.
-
-    Definition uint64Get p : proc uint64 :=
-      Call! UInt64Get p.
-
-    Definition uint64Put n p : proc unit :=
-      Call! UInt64Put n p.
-
     Definition newHashTable V : proc _ :=
       Call! NewHashTable V.
 
@@ -246,14 +136,6 @@ Module Data.
 
     Definition hashTableLookup V h k : proc _ :=
       Call! @HashTableLookup V h k.
-
-    Definition goHashTableLookup V {_:HasGoZero V} (h: HashTable V) k : proc (V * bool) :=
-      Bind (Call (inject (HashTableLookup h k)))
-           (fun mv =>
-              match mv with
-              | Some v => Ret (v, true)
-              | None => Ret (zeroValue _, false)
-              end).
 
     Definition hashTableReadAll V h : proc _ :=
       Call! @HashTableReadAll V h.
@@ -380,13 +262,6 @@ Module Data.
     | ArrayGet v i =>
       l0 <- readSome (fun s => getDyn s.(arrays) v);
         readSome (fun _ => List.nth_error l0 (toNum i))
-    | NewAlloc x len => error
-    | SliceAppend d x => error
-    | SliceAppendSlice d d' => error
-    | PtrDeref p off => error
-    (* TODO: model these using uint64_{to,from}_le axioms *)
-    | UInt64Get p => error
-    | UInt64Put p n => error
     | NewHashTable V =>
       r <- such_that (fun s r => getDyn s.(hashtables) r = None);
         _ <- puts (set hashtables (updDyn r empty));
@@ -443,5 +318,3 @@ Module Data.
     puts (fun _ => ∅).
 
 End Data.
-
-Arguments Data.newSlice {Op'} {i} T {GoZero} len.

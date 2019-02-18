@@ -9,7 +9,6 @@ import sys
 import_modules = {
     "import qualified Lib":
     [
-        "BaseLayer",
         "BinaryEncoding",
         "Common",
         "DataStructureTests",

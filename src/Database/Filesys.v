@@ -2,7 +2,6 @@ From RecoveryRefinement Require Import Lib.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
-From RecoveryRefinement Require Import Helpers.GoModel.
 
 From RecordUpdate Require Import RecordSet.
 Import ApplicativeNotations.
@@ -16,8 +15,6 @@ From stdpp Require Import fin_maps.
 From Coq Require Import String.
 
 Definition Path := string.
-
-Instance Path_zero : HasGoZero Path := "".
 
 Instance path_eqdec : EqualDec Path.
 Proof.
