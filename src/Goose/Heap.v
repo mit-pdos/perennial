@@ -6,6 +6,8 @@ From RecoveryRefinement Require Import Spec.SemanticsHelpers.
 From RecoveryRefinement.Goose Require Import Machine.
 From RecoveryRefinement.Goose Require Import GoZeroValues.
 
+From Tactical Require Import ProofAutomation.
+
 From stdpp Require Import base.
 
 Import ProcNotations.
@@ -23,7 +25,8 @@ Module Data.
   | SliceAppendSlice T (s:slice.t T) (s':slice.t T) : Op (slice.t T)
 
   | NewMap V : Op (Map V)
-  | MapAlter `(m:Map V) (k:uint64) (f:option V -> option V) : Op unit
+  | MapAlter `(m:Map V) (args:NonAtomicArgs
+                                (uint64 * (option V -> option V))) : Op unit
   | MapLookup `(m:Map V) (k:uint64) : Op (option V)
   | MapStartIter `(m:Map V) : Op (list (uint64*V))
   | MapEndIter `(m:Map V) : Op unit
@@ -84,7 +87,10 @@ Module Data.
 
     Definition newMap V := Call! NewMap V.
 
-    Definition mapAlter V m k f := Call! @MapAlter V m k f.
+    Definition mapAlter V m (k: uint64) (f: option V -> option V) : proc _ :=
+      (_ <- Call (inject (@MapAlter V m Begin));
+        Call (inject (MapAlter m (FinishArgs (k, f)))))%proc.
+
     Definition mapLookup V m k := Call! @MapLookup V m k.
 
     Definition mapIter V (m: Map V) (body: uint64 -> V -> proc unit) : proc unit :=
@@ -113,9 +119,14 @@ Module Data.
     Definition stringToBytes s := Call! StringToBytes s.
   End OpWrappers.
 
-  Definition hashtableM V := gmap.gmap uint64 V.
-
   Inductive LockStatus := Locked | ReadLocked (num:nat) | Unlocked.
+
+  (* We model a hashtable as if it had a lock, but the calls to acquire and
+  release this lock never block but instead error on failure.
+
+     I can't yet tell if this is a new idea, obvious, an old idea, or weird.
+   *)
+  Definition hashtableM V := (LockStatus * gmap.gmap uint64 V)%type.
 
   Definition ptrModel (code:Ptr.ty) : Type :=
     match code with
@@ -130,7 +141,7 @@ Module Data.
   Instance _eta : Settable _ :=
     mkSettable (constructor mkState <*> allocs)%set.
 
-  Definition getAlloc (s:State) ty (p:Ptr.t ty) : option (ptrModel ty) :=
+  Definition getAlloc ty (p:Ptr.t ty) (s:State) : option (ptrModel ty) :=
     getDyn s.(allocs) p.
 
   Definition updAllocs ty (p:Ptr.t ty) (x:ptrModel ty)
@@ -139,17 +150,110 @@ Module Data.
 
   Import RelationNotations.
 
+  (* returns [Some s'] when the lock should be acquired to status s', and None
+  if the lock would block *)
+  Definition lock_acquire (m:LockMode) (s:LockStatus) : option LockStatus :=
+    match m, s with
+    | Reader, ReadLocked n => Some (ReadLocked (S n))
+    (* note that the number is one less than the number of readers, so that
+       ReadLocked 0 means something *)
+    | Reader, Unlocked => Some (ReadLocked 0)
+    | Writer, Unlocked => Some Locked
+    | _, _ => None
+    end.
+
+  (* returns [Some s'] when the lock should be released to status s', and None if this usage is an error *)
+  Definition lock_release (m:LockMode) (s:LockStatus) : option LockStatus :=
+    match m, s with
+    | Reader, ReadLocked 0 => Some Unlocked
+    | Reader, ReadLocked (S n) => Some (ReadLocked n)
+    | Writer, Locked => Some Unlocked
+    | _, _ => None
+    end.
+
+  (* lock_available reports whether acquiring and releasing the lock atomically
+  would succeed; phrased as an option unit for compatibility with readSome *)
+  Definition lock_available (m:LockMode) (s:LockStatus) : option unit :=
+    match m, s with
+    | Reader, ReadLocked _ => Some tt
+    | _, Unlocked => Some tt
+    | _, _ => None
+    end.
+
+  (* sanity check lock definitions: if you can acquire a lock, you can always
+  release it the same way and get back to where you started *)
+  Lemma lock_acquire_release m s :
+    forall s', lock_acquire m s = Some s' ->
+          lock_release m s' = Some s.
+  Proof.
+    destruct m, s; simpl; inversion 1; auto.
+  Qed.
+
+  (* sanity check lock_available *)
+  Theorem lock_available_acquire_release m s :
+    lock_available m s = Some tt <->
+    (exists s', lock_acquire m s = Some s' /\
+           lock_release m s' = Some s).
+  Proof.
+    destruct m, s; simpl; (intuition eauto); propositional; try congruence.
+  Qed.
+
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | NewAlloc v len =>
-      r <- such_that (fun s (r:ptr _) => getAlloc s r = None /\ r <> nullptr _);
+      r <- such_that (fun s (r:ptr _) => getAlloc r s = None /\ r <> nullptr _);
         _ <- updAllocs r (List.repeat v len);
         pure r
     | PtrDeref p off =>
-      alloc <- such_that (fun s alloc => getAlloc s p = Some alloc);
-        x <- such_that (fun _ x => List.nth_error alloc off = Some x);
+      alloc <- readSome (getAlloc p);
+        x <- readSome (fun _ => List.nth_error alloc off);
         pure x
-    (* TODO: rest of the semantics *)
+    | NewMap V =>
+      r <- such_that (fun s (r:Map _) => getAlloc r s = None /\ r <> nullptr _);
+        _ <- updAllocs r (Unlocked, ∅);
+          pure r
+    | MapLookup r k =>
+      let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
+           _ <- readSome (fun _ => lock_available Reader s);
+        pure (m !! k)
+    | MapAlter r args =>
+      let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
+      match args with
+      | Begin => s' <- readSome (fun _ => lock_acquire Writer s);
+                  updAllocs r (s', m)
+      | FinishArgs (k, f) => s' <- readSome (fun _ => lock_release Writer s);
+                              updAllocs r (s', partial_alter f k m)
+      end
+    | MapStartIter r =>
+      let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
+           s' <- readSome (fun _ => lock_acquire Reader s);
+           _ <- updAllocs r (s', m);
+           (* TODO: allow any permutation *)
+           pure (fin_maps.map_to_list m)
+    | MapEndIter r =>
+      let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
+           s' <- readSome (fun _ => lock_release Reader s);
+           _ <- updAllocs r (s', m);
+           pure tt
+    | NewLock =>
+      r <- such_that (fun s (r:LockRef) => getAlloc r s = None /\ r <> nullptr _);
+        _ <- updAllocs r Unlocked;
+        pure r
+    | LockAcquire r m =>
+      v <- readSome (fun s => getDyn s.(allocs) r);
+        match lock_acquire m v with
+        | Some s' => updAllocs r s'
+        | None =>
+          (* disabled transition; will only become available when the lock
+             is freed by its owner *)
+          none
+        end
+    | LockRelease r m =>
+      v <- readSome (fun s => getDyn s.(allocs) r);
+        match lock_release m v with
+        | Some s' => updAllocs r s'
+        | None => error (* attempt to free the lock incorrectly *)
+        end
     | _ => error
     end.
 
