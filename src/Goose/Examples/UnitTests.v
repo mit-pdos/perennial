@@ -63,6 +63,10 @@ Definition IterMapKeys (m:Map uint64) : proc (slice.t uint64) :=
   keys <- Data.readPtr keysRef;
   Ret keys.
 
+Definition GetRandom  : proc uint64 :=
+  r <- Data.randomUint64;
+  Ret r.
+
 Definition Empty  : proc unit :=
   Ret tt.
 
@@ -140,6 +144,9 @@ Definition LoopSpawn  : proc unit :=
           Continue (i + 1)) 0;
   Loop (fun dummy =>
         Continue dummy) true.
+
+Definition StringAppend (s:string) : proc string :=
+  Ret ("prefix " ++ s).
 
 Definition DoSomeLocking (l:LockRef) : proc unit :=
   _ <- Data.lockAcquire l Writer;
