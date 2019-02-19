@@ -47,6 +47,10 @@ Module Data.
 
   | BytesToString : slice.t byte -> Op string
   | StringToBytes : string -> Op (slice.t byte)
+
+  (* TODO: doesn't really belong in a heap model, but very few operations are
+  non-deterministic but don't depend on the heap *)
+  | RandomUint64 : Op uint64
   .
 
   Definition nonAtomicOp {Op Op'} {i:Injectable Op Op'} {T}
@@ -136,6 +140,8 @@ Module Data.
 
     Definition bytesToString bs := Call! BytesToString bs.
     Definition stringToBytes s := Call! StringToBytes s.
+
+    Definition randomUint64 := Call! RandomUint64.
   End OpWrappers.
 
   Inductive LockStatus := Locked | ReadLocked (num:nat) | Unlocked.
@@ -358,6 +364,8 @@ Module Data.
         | Some s' => updAllocs r s'
         | None => error (* attempt to free the lock incorrectly *)
         end
+    | RandomUint64 =>
+      such_that (fun _ _ => True)
     | _ => error
     end.
 
