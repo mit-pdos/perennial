@@ -33,6 +33,10 @@ Definition compare_to x y (c: comparison)
   - destruct (lt_dec y x); auto; right; abstract omega.
 Defined.
 
+Axiom uint64_to_string : uint64 -> string.
+Axiom uint64_to_string_inj :
+  forall x y, uint64_to_string x = uint64_to_string y -> x = y.
+
 Axiom byte:Type.
 Axiom byte0:byte.
 
