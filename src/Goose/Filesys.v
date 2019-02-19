@@ -32,13 +32,14 @@ Module FS.
   | Rename p1 p2 : Op unit
   | Truncate p : Op unit
   | AtomicCreate p bs : Op unit
+  | Link p1 p2 : Op bool
   .
 
   Section OpWrappers.
 
     Context {Op'} {i:Injectable Op Op'}.
     Notation proc := (proc Op').
-    Notation "'Call!' op" := (Call (inject op)) (at level 0, op at level 200).
+    Notation "'Call!' op" := (Call (inject op) : proc _) (at level 0, op at level 200).
     Definition open p : proc _ := Call! Open p.
     Definition close fh : proc _ := Call! Close fh.
     Definition list : proc _ := Call! List.
@@ -50,6 +51,7 @@ Module FS.
     Definition rename p1 p2 : proc _ := Call! Rename p1 p2.
     Definition truncate p : proc _ := Call! Truncate p.
     Definition atomicCreate p bs : proc _ := Call! AtomicCreate p bs.
+    Definition link p1 p2 := Call! Link p1 p2.
 
   End OpWrappers.
 

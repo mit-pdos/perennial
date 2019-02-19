@@ -19,3 +19,4 @@ From RecoveryRefinement Require Import Examples.StatDb.Refinement.
 (* goose output *)
 From RecoveryRefinement Require Import Goose.Examples.UnitTests.
 From RecoveryRefinement Require Import Goose.Examples.SimpleDb.
+From RecoveryRefinement Require Import Goose.Examples.MailServer.
