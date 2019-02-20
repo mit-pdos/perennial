@@ -1,5 +1,3 @@
-From Coq Require Import List.
-
 Require Import AtomicPair.AtomicPairAPI.
 Require Import ExMach.ExMachAPI.
 
