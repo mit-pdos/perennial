@@ -15,7 +15,7 @@ From RecoveryRefinement Require Import CSL.Lifting.
 From RecoveryRefinement Require Import Examples.ExMach.WeakestPre.
 From RecoveryRefinement Require Import Examples.ExMach.RefinementAdequacy.
 From RecoveryRefinement Require Import Examples.StatDb.Refinement.
-From RecoveryRefinement Require Import Examples.AtomicPair.ImplShadow.
+From RecoveryRefinement Require Import Examples.AtomicPair.RefinementShadow.
 
 (* goose output *)
 From RecoveryRefinement Require Import Goose.Examples.UnitTests.

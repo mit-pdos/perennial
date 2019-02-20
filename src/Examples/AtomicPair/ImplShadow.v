@@ -46,3 +46,14 @@ Definition read  :=
    snd_val <- read_disk (snd (read_addrs ptr));
    _ <- unlock lock_addr;
    Ret (fst_val, snd_val))%proc.
+
+Definition recv : proc ExMach.Op _ := Ret tt.
+
+Definition impl : LayerImpl ExMach.Op AtomicPair.Op :=
+  {| compile_op T (op: AtomicPair.Op T) :=
+       match op with
+       | AtomicPair.Write n => write n
+       | AtomicPair.Read => read
+       end;
+     recover := Seq_Cons (recv) (Seq_Nil);
+     (* init := Ret Initialized; *) |}.
