@@ -1,14 +1,14 @@
 From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement.
 Require Import StatDb.Impl ExMach.WeakestPre ExMach.RefinementAdequacy.
-Set Default Proof Using "Type".
 Unset Implicit Arguments.
 
 Definition recv : proc ExMach.Op _ := Ret tt.
 
-
+Set Default Proof Using "Type".
 Section refinement_triples.
-  Context `{!exmachG Σ, lockG Σ, !@cfgG (DB.Op) (DB.l) Σ, !inG Σ (authR (optionUR (exclR (listC natC))))}.
+  Context `{!exmachG Σ, lockG Σ, !@cfgG (DB.Op) (DB.l) Σ,
+            !inG Σ (authR (optionUR (exclR (listC natC))))}.
   Context (ρ : thread_pool DB.Op * DB.l.(State)).
 
   Import ExMach.
