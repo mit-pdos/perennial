@@ -286,6 +286,49 @@ Proof.
   iNext. wp_ret. by iApply "HΦ".
 Qed.
 
+Fixpoint ptr_iter (n: nat) (iters: nat) :=
+  (match iters with
+  | O => n d↦ 0
+  | S n' => n d↦ 0 ∗ (ptr_iter (S n) n')
+  end)%I.
+
+Fixpoint rep_delete n (mem: gmap addr nat) :=
+  match n with
+  | O => mem
+  | S n' => delete n' (rep_delete n' mem)
+  end.
+
+Lemma rep_delete_lookup m n:
+  m ≥ n → rep_delete n ExMach.init_zero !! m = ExMach.init_zero !! m.
+Proof.
+  intros ?. induction n.
+  * rewrite /rep_delete. auto.
+  * rewrite /rep_delete lookup_delete_ne; last lia. eapply IHn. lia.
+Qed.
+
+Lemma disk_ptr_iter_split_aux n iters:
+  n + iters < size →
+  (([∗ map] i↦v ∈ rep_delete n ExMach.init_zero, i d↦ v)
+     -∗ ptr_iter n iters ∗ [∗ map] i↦v ∈ rep_delete (n + S iters) ExMach.init_zero, i d↦ v)%I.
+Proof.
+  revert n. induction iters.
+  - intros n ?. rewrite (big_opM_delete _ _ n 0); last first.
+    rewrite rep_delete_lookup.
+    { apply init_zero_lookup_lt_zero; first by lia. }
+    { auto. }
+    replace (n + 1) with (S n) by lia.
+    iIntros "(?&?)". iFrame.
+  - intros n ?.
+    rewrite (big_opM_delete _ _ n 0); last first.
+    rewrite rep_delete_lookup.
+    { apply init_zero_lookup_lt_zero; first by lia. }
+    { auto. }
+    replace (n + S (S iters)) with (S n + S iters) by lia.
+    iIntros "(?&?)". iFrame.
+    iApply IHiters; first by lia.
+    eauto.
+Qed.
+
 End lifting.
 
 (* Essentially the same as the verification of the spinlock in Iris heap_lang

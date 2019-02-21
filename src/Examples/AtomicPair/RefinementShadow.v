@@ -1,38 +1,10 @@
 From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement.
 Require Import AtomicPairAPI AtomicPair.ImplShadow ExMach.WeakestPre ExMach.RefinementAdequacy.
+Require Import AtomicPair.Helpers.
 Unset Implicit Arguments.
 
-(* TODO: move *)
-Section ghost_var_helpers.
-Context {A: ofeT} `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A}.
-Context {Σ} {Hin: inG Σ (authR (optionUR (exclR A)))}.
-
-Lemma ghost_var_agree γ (a1 a2: A) :
-  own γ (● (Excl' a1)) -∗ own γ (◯ (Excl' a2)) -∗ ⌜ a1 = a2 ⌝.
-Proof.
-  iIntros "Hγ1 Hγ2".
-  iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
-  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_valid_discrete_2.
-  done.
-Qed.
-
-Lemma ghost_var_update γ (a1' a1 a2 : A) :
-  own γ (● (Excl' a1)) -∗ own γ (◯ (Excl' a2)) ==∗
-    own γ (● (Excl' a1')) ∗ own γ (◯ (Excl' a1')).
-Proof.
-  iIntros "Hγ● Hγ◯".
-  iMod (own_update_2 _ _ _ (● Excl' a1' ⋅ ◯ Excl' a1') with "Hγ● Hγ◯") as "[$$]".
-  { by apply auth_update, option_local_update, exclusive_local_update. }
-  done.
-Qed.
-End ghost_var_helpers.
-
-  (* Extends the iExist tactic to make it easier to re-prove invariants after steps *)
-Instance from_exist_left_sep {Σ} {A} (Φ : A → iProp Σ) Q :
-  FromExist (▷ (∃ a, Φ a) ∗ Q) (λ a, ▷ Φ a ∗ Q)%I .
-Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
-
+Existing Instance from_exist_left_sep.
 
 Local Ltac destruct_einner H :=
   iDestruct H as (? (?&?) (?&?)) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";
@@ -221,42 +193,10 @@ Section refinement_triples.
           ∗ copy1_fst d↦ 0 ∗ copy1_snd d↦ 0)%I.
   Proof.
     iIntros "Hdisk".
-    rewrite (big_opM_delete _ _ 0 0); last first.
-    { rewrite /ExMach.disk_state. apply init_zero_lookup_lt_zero. rewrite /size. lia. }
-    rewrite (big_opM_delete _ _ 1 0); last first.
-    { rewrite /ExMach.disk_state.
-      rewrite lookup_delete_ne; last auto.
-      apply init_zero_lookup_lt_zero. rewrite /size. lia. }
-    rewrite (big_opM_delete _ _ 2 0); last first.
-    { rewrite /ExMach.disk_state.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      apply init_zero_lookup_lt_zero. rewrite /size. lia. }
-    rewrite (big_opM_delete _ _ 3 0); last first.
-    { rewrite /ExMach.disk_state.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      apply init_zero_lookup_lt_zero. rewrite /size. lia. }
-    rewrite (big_opM_delete _ _ 4 0); last first.
-    { rewrite /ExMach.disk_state.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      apply init_zero_lookup_lt_zero. rewrite /size. lia. }
-    rewrite (big_opM_delete _ _ 5 0); last first.
-    { rewrite /ExMach.disk_state.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      rewrite lookup_delete_ne; last auto.
-      apply init_zero_lookup_lt_zero. rewrite /size. lia. }
-    iDestruct "Hdisk" as "(?&?&?&?&?&_)".
-    iFrame.
+    iPoseProof (disk_ptr_iter_split_aux O 4 with "Hdisk") as "H".
+    { rewrite /size. lia. }
+    iDestruct "H" as "($&_)".
   Qed.
-
 
 End refinement_triples.
 
@@ -287,10 +227,12 @@ Section refinement.
     eapply (exmach_crash_refinement_seq) with
         (Σ := myΣ)
         (exec_inv := fun H1 H2 => (∃ ρ, @ExecInv myΣ H2 _ H1 _ _ ρ)%I)
-        (crash_inv := fun H1 H2 =>(∃ ρ, @CrashInv myΣ H2 H1 ρ)%I)
         (exec_inner := fun H1 H2 => (∃ v, lock_addr m↦ v ∗
             (∃ γ1 γ2 γ3, (⌜ v = 0  ⌝ -∗ @ExecLockInv myΣ _ _ γ1 γ2 γ3) ∗ @ExecInner myΣ H2 H1 _ _ γ1 γ2 γ3))%I)
         (crash_inner := fun H1 H2 => (@CrashInner myΣ H2 H1)%I)
+        (crash_param := fun H1 H2 => unit)
+        (crash_inv := fun H1 H2 _ =>(∃ ρ, @CrashInv myΣ H2 H1 ρ)%I)
+        (crash_starter := fun H1 H2 _ => True%I)
         (E := nclose sourceN).
     { apply _. }
     { apply _. }
@@ -302,7 +244,7 @@ Section refinement.
       - iApply (read_refinement with "[$]"). eauto.
     }
     { intros. iIntros "H". iDestruct "H" as (ρ) "(?&?)". eauto. }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+    { intros. iIntros "(H&_)". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
       wp_ret. iInv "Hinv" as (ptr_val pcurr pother) ">(?&Hcase&?)" "_".
       iMod (own_alloc (● (Excl' ptr_val) ⋅ ◯ (Excl' ptr_val))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
       { apply auth_valid_discrete_2; split; eauto. econstructor. }
@@ -359,7 +301,7 @@ Section refinement.
       iDestruct "Hinv" as (???) "(?&?&?)".
       iMod (@inv_alloc myΣ (exm_invG) iN _ CrashInner with "[-]").
       { iNext. iExists _, _, _; iFrame. }
-      iModIntro. iExists _. iFrame "Hsrc". auto.
+      iModIntro. iFrame. iExists tt, _. iFrame "Hsrc".
     }
     { intros. iIntros "H". iDestruct "H" as "(Hinv&#Hsrc)".
       iDestruct "Hinv" as (invG v) "Hinv".

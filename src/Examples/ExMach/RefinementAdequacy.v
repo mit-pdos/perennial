@@ -20,11 +20,14 @@ Section refinement.
   Context `{cfgPreG OpT Λa Σ}.
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
   Context (exec_inner: forall {_ : @cfgG OpT Λa Σ} {_ : exmachG Σ}, iProp Σ).
-  Context (crash_inv: forall {_ : @cfgG OpT Λa Σ} {_ : exmachG Σ}, iProp Σ).
+  Context (crash_param: forall (_ : @cfgG OpT Λa Σ) (_ : exmachG Σ), Type).
+  Context (crash_inv: forall {H1 : @cfgG OpT Λa Σ} {H2 : exmachG Σ}, @crash_param _ _ → iProp Σ).
+  Context (crash_starter: forall {H1 : @cfgG OpT Λa Σ} {H2 : exmachG Σ}, @crash_param _ _ → iProp Σ).
   Context (exec_inv: forall {_ : @cfgG OpT Λa Σ} {_ : exmachG Σ}, iProp Σ).
 
   Context (einv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : exmachG Σ}, Persistent (exec_inv H1 H2)).
-  Context (cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : exmachG Σ}, Persistent (crash_inv H1 H2)).
+  Context (cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : exmachG Σ}
+            {P: crash_param _ _}, Persistent (crash_inv H1 H2 P)).
 
   Context (E: coPset).
   Context (nameIncl: nclose sourceN ⊆ E).
@@ -107,8 +110,8 @@ Section refinement.
   Qed.
 
   Context (recv_triple:
-             forall {H1 H2},
-               (@crash_inv H1 H2) ⊢
+             forall {H1 H2} param,
+               (@crash_inv H1 H2 param) ∗ (@crash_starter H1 H2 param) ⊢
                     WP recv @ NotStuck; ⊤ {{ v, |={⊤,E}=> ∃ σ2a σ2a', source_state σ2a
                     ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt)⌝ ∗
                     ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) ρ,
@@ -132,8 +135,8 @@ Section refinement.
               ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex))).
 
   Context (crash_inv_preserve_crash:
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
-          crash_inv Hcfg Hex ={⊤, E}=∗ ∀ Hmem',
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} param,
+          crash_inv Hcfg Hex param ={⊤, E}=∗ ∀ Hmem',
           (let Hex := ExMachG Σ (exm_invG) Hmem' (exm_disk_inG) in
               ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex))).
 
@@ -143,7 +146,7 @@ Section refinement.
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} cfg,
           (∃ Hinv, crash_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG))) ∗
           source_ctx cfg
-          ={⊤}=∗ crash_inv Hcfg Hex)).
+          ={⊤}=∗ ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param)).
 
   Context (exec_inner_inv :
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} cfg,
@@ -253,7 +256,8 @@ Section refinement.
   iDestruct "Hinv0" as (HexmachG') "(Hinterp&Hinv0)".
   iDestruct "Hinv0" as (hM' Hmpf_eq') "(Hmc'&Hcrash_inner)".
   iClear "Hinv".
-  iMod (crash_inner_inv (ExMachG Σ invG hM' (exm_disk_inG)) Hcfg' with "[Hcrash_inner]") as "#Hinv".
+  iMod (crash_inner_inv (ExMachG Σ invG hM' (exm_disk_inG)) Hcfg' with "[Hcrash_inner]") as
+      (param) "(#Hinv&Hstarter)".
   { iIntros. simpl. iFrame "Hsrc". iExists ( exmachG_irisG.(@iris_invG Op ExMach.State Σ)).
     iFrame. }
   iModIntro.
@@ -275,10 +279,10 @@ Section refinement.
       apply is_Some_None in Hsome; auto.
     * rewrite /crash_fun; auto.
   }
-  iSplitL "Hinv".
+  iSplitL "Hinv Hstarter".
   {
-    iPoseProof (@wp_mono with "[Hinv]") as "H"; swap 1 2.
-    { iApply recv_triple. iApply "Hinv". }
+    iPoseProof (@wp_mono with "[Hinv Hstarter]") as "H"; swap 1 2.
+    { iApply recv_triple. iFrame. iApply "Hinv". }
     { reflexivity. }
     iApply (@wp_mono with "H").
     iIntros (_) "H". iIntros (σ2c) "Hinterp".
@@ -356,7 +360,7 @@ Section refinement.
   iClear "Hinv".
   iMod (crash_inner_inv (ExMachG Σ _
                                  hM' (exm_disk_inG)) Hcfg'
-                         with "[Hcrash_inner]") as "#Hinv".
+                         with "[Hcrash_inner]") as (param) "(#Hinv&Hstarter)".
   { iIntros. simpl. iFrame "Hsrc". iExists ( exmachG_irisG.(@iris_invG Op ExMach.State Σ)).
     iFrame. }
   iModIntro.
@@ -378,10 +382,10 @@ Section refinement.
       apply is_Some_None in Hsome; auto.
     * rewrite /crash_fun; auto.
   }
-  iSplitL "Hinv".
+  iSplitL "Hinv Hstarter".
   {
-    iPoseProof (@wp_mono with "[Hinv IH]") as "H"; swap 1 2.
-    { iApply recv_triple. iApply "Hinv". }
+    iPoseProof (@wp_mono with "[Hinv Hstarter IH]") as "H"; swap 1 2.
+    { iApply recv_triple. iFrame "Hstarter". iApply "Hinv". }
     { reflexivity. }
     iApply (@wp_wand with "H [IH]").
     iIntros (_) "H". iIntros (σ2c) "Hinterp".

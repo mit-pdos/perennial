@@ -10,7 +10,7 @@ Definition log_snd := 4.
 
 (* Memory addresses *)
 Definition main_lock := 0.
-Definition log_lock := 0.
+Definition log_lock := 1.
 
 Definition write (p: nat * nat) :=
   (_ <- lock log_lock;

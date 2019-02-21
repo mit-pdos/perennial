@@ -142,10 +142,12 @@ Section refinement.
     eapply (exmach_crash_refinement_seq) with
         (Σ := myΣ)
         (exec_inv := fun H1 H2 => (∃ ρ, @DBInv myΣ H2 _ H1 _ ρ)%I)
-        (crash_inv := fun H1 H2 =>(∃ ρ, @CrashInv myΣ H2 H1 ρ)%I)
         (exec_inner := fun H1 H2 => (∃ v, lock_addr m↦ v ∗
             (∃ γ, (⌜ v = 0  ⌝-∗ @DBLockInv myΣ H2 _ γ) ∗ @DBInnerInv _ _ _ γ))%I)
+        (crash_param := fun _ _ => unit)
         (crash_inner := fun H1 H2 => (@DBCrashInner myΣ H2 H1)%I)
+        (crash_inv := fun H1 H2 _ =>(∃ ρ, @CrashInv myΣ H2 H1 ρ)%I)
+        (crash_starter := fun H1 H2 _ => True%I)
         (E := nclose sourceN).
     { apply _. }
     { apply _. }
@@ -157,7 +159,7 @@ Section refinement.
       - iApply (avg_refinement with "[$]"). iNext. iIntros (?) "H". iApply "H".
     }
     { intros. iIntros "H". iDestruct "H" as (ρ) "(?&?)". eauto. }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+    { intros. iIntros "(H&_)". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
       wp_ret. iInv "Hinv" as (l) ">(?&?&?&?)" "_".
       rewrite /source_inv.
       iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2) "[Hauth Hfrag]".
@@ -207,7 +209,7 @@ Section refinement.
       iDestruct "Hinv" as (l) "(?&?)".
       iMod (@inv_alloc myΣ (exm_invG) iN _ DBCrashInner with "[-]").
       { iNext. iExists l; iFrame. }
-      iModIntro. iExists _. iFrame "Hsrc". auto.
+      iModIntro. iFrame.  iExists tt, _. iFrame "Hsrc".
     }
     { intros. iIntros "H". iDestruct "H" as "(Hinv&#Hsrc)".
       iDestruct "Hinv" as (invG v) "Hinv".
