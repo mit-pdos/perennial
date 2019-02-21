@@ -75,7 +75,79 @@ Module FS.
 
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
-    | _ => error
+    | Open p =>
+      _ <- readSome (fun s => s.(files) !! p);
+        fh <- such_that (fun s fh => s.(fds) !! fh = None);
+        _ <- puts (set fds (insert fh (p, Read)));
+        pure fh
+    | Close fh =>
+      puts (set fds (map_delete fh))
+    | List =>
+      (* TODO: this should be non-atomic *)
+      l <- reads (fun s => map fst (map_to_list s.(files)));
+        error
+    | Size fh =>
+        bs <- (p <- readFd fh Read;
+                readSome (fun s => s.(files) !! p));
+        pure (length bs)
+    | ReadAt fh off len =>
+      p <- readFd fh Read;
+        bs <- (p <- readFd fh Read;
+                readSome (fun s => s.(files) !! p));
+        let read_bs := list.take len (list.drop off bs) in
+        r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
+          _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap byte) r (Data.Unlocked, read_bs))));
+          pure {| slice.ptr := r;
+                  slice.offset := 0;
+                  slice.length := length read_bs; |}
+    | Create p =>
+      _ <- readNone (fun s => s.(files) !! p);
+        fh <- such_that (fun s fh => s.(fds) !! fh = None);
+        _ <- puts (set files (insert p nil));
+        _ <- puts (set fds (insert fh (p, Write)));
+        pure fh
+    | Append fh p' =>
+      path <- readFd fh Write;
+      let! (s, alloc) <- readSome (fun st => Data.getAlloc p'.(slice.ptr) st.(heap));
+           bs' <- readSome (fun _ => Data.getSliceModel p' alloc);
+           _ <- readSome (fun _ => Data.lock_available Reader s);
+           bs <- readSome (fun s => s.(files) !! path);
+           puts (set files (insert path (bs ++ bs')))
+    | Delete p =>
+      (* Delete(p) fails if there is an open fh pointing to p - this is a safe
+      approximation of real behavior, where the underlying inode for the file is
+      retained as long as there are open files *)
+      (_ <- such_that (fun s fh =>
+                        exists m, s.(fds) !! fh = Some (p, m));
+         error)
+      (* delete's error case supercedes this succesful deletion case *)
+      + (_ <- readSome (fun s => s.(files) !! p);
+           puts (set files (map_delete p)))
+    | Truncate p =>
+      _ <- readSome (fun s => s.(files) !! p);
+        puts (set files (insert p nil))
+    | Rename p1 p2 =>
+      (* Rename requires that the destination path not be open *)
+      (_ <- such_that (fun s fh =>
+                        exists m, s.(fds) !! fh = Some (p2, m));
+         error)
+      (* Rename always creates the destination directory - other behaviors
+      require checks, which makes the operation non-atomic.
+
+       Linux does have renameat2 for renaming without overwriting, presumably
+       atomically, but it would be complicated to use, especially from
+       Haskell. *)
+      + (bs <- readSome (fun s => s.(files) !! p1);
+           _ <- puts (set files (map_delete p1));
+           puts (set files (insert p2 bs)))
+    | AtomicCreate path p =>
+      _ <- readNone (fun s => s.(files) !! path);
+      let! (s, alloc) <- readSome (fun st => Data.getAlloc p.(slice.ptr) st.(heap));
+           bs <- readSome (fun _ => Data.getSliceModel p alloc);
+           _ <- readSome (fun _ => Data.lock_available Reader s);
+        puts (set files (insert path bs))
+    (* TODO: figure out how to write link semantics *)
+    | Link p1 p2 => error
     end.
 
   Definition crash_step : relation State State unit :=
