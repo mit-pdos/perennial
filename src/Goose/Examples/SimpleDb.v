@@ -3,7 +3,7 @@ From RecoveryRefinement.Goose Require Import base.
 
 Module Table.
   (* A Table provides access to an immutable copy of data on the filesystem,
-  along with an index for fast random access. *)
+     along with an index for fast random access. *)
   Record t := mk {
     Index: Map uint64;
     File: File;
@@ -31,10 +31,10 @@ End Entry.
 
 (* DecodeUInt64 is a Decoder(uint64)
 
-All decoders have the shape func(p []byte) (T, uint64)
+   All decoders have the shape func(p []byte) (T, uint64)
 
-The uint64 represents the number of bytes consumed; if 0,
-then decoding failed, and the value of type T should be ignored. *)
+   The uint64 represents the number of bytes consumed; if 0,
+   then decoding failed, and the value of type T should be ignored. *)
 Definition DecodeUInt64 (p:slice.t byte) : proc (uint64 * uint64) :=
   if compare_to (slice.length p) 8 Lt
   then Ret (0, 0)
@@ -287,7 +287,7 @@ Definition tablePutBuffer (w:tableWriter.t) (buf:Map (slice.t byte)) : proc unit
     tablePut w k v).
 
 (* add all of table t to the table w being created; skip any keys in the (read)
-buffer b since those writes overwrite old ones *)
+   buffer b since those writes overwrite old ones *)
 Definition tablePutOldTable (w:tableWriter.t) (t:Table.t) (b:Map (slice.t byte)) : proc unit :=
   Loop (fun buf =>
         let! (e, l) <- DecodeEntry buf.(lazyFileBuf.next);
@@ -310,11 +310,11 @@ Definition tablePutOldTable (w:tableWriter.t) (t:Table.t) (b:Map (slice.t byte))
            lazyFileBuf.next := slice.nil _; |}.
 
 (* Build a new shadow table that incorporates the current table and a
-(write) buffer wbuf.
+   (write) buffer wbuf.
 
-Assumes all the appropriate locks have been taken.
+   Assumes all the appropriate locks have been taken.
 
-Returns the old table and new table. *)
+   Returns the old table and new table. *)
 Definition constructNewTable (db:Database.t) (wbuf:Map (slice.t byte)) : proc (Table.t * Table.t) :=
   oldName <- Data.readPtr db.(Database.tableName);
   name <- freshTable oldName;
