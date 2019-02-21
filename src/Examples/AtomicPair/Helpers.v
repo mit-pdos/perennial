@@ -7,6 +7,14 @@ Section ghost_var_helpers.
 Context {A: ofeT} `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A}.
 Context {Σ} {Hin: inG Σ (authR (optionUR (exclR A)))}.
 
+Lemma ghost_var_alloc (a: A) :
+  (|==> ∃ γ, own γ (● (Excl' a)) ∗ own γ (◯ (Excl' a)))%I.
+Proof.
+  iMod (own_alloc (● (Excl' a) ⋅ ◯ (Excl' a))) as (γ) "[H1 H2]".
+  { apply auth_valid_discrete_2; split; eauto. econstructor. }
+  iModIntro. iExists γ. iFrame.
+Qed.
+
 Lemma ghost_var_agree γ (a1 a2: A) :
   own γ (● (Excl' a1)) -∗ own γ (◯ (Excl' a2)) -∗ ⌜ a1 = a2 ⌝.
 Proof.

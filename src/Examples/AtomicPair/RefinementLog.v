@@ -6,9 +6,12 @@ Unset Implicit Arguments.
 
 Local Ltac destruct_commit_inner H :=
   iDestruct H as ">H";
-  iDestruct H as (??) "(Hflag_auth&Hlog_auth&Hcommit&Hlog_fst&Hlog_snd&Hsomewriter)";
+  iDestruct H as (????) "(Hflag_auth&Hlog_auth&Hmain_auth&Hsrc_auth&Hrest0)";
+  iDestruct "Hrest0" as "(Hcommit&Hlog_fst&Hlog_snd&Hmain_fst&Hmain_snd&Hsrc&Hsomewriter0&Hsomewriter1)";
   try (iDestruct (ghost_var_agree with "Hflag_auth [$]") as %?; subst; []);
-  try (iDestruct (ghost_var_agree with "Hlog_auth [$]") as %Hp; inversion_clear Hp; subst; []).
+  try (iDestruct (ghost_var_agree with "Hlog_auth [$]") as %Hp; inversion_clear Hp; subst; []);
+  try (iDestruct (ghost_var_agree with "Hmain_auth [$]") as %Hp; inversion_clear Hp; subst; []);
+  try (iDestruct (ghost_var_agree with "Hsrc_auth [$]") as %Hp; subst; []).
 
 Local Ltac destruct_main_inner H :=
   iDestruct H as (?) ">(Hmain_auth&Hmain_fst&Hmain_snd)";
@@ -41,19 +44,26 @@ Section refinement_triples.
   (* If the commit flag is set, we can assume that *some* thread in the abstract
      program was in the middle of writing *)
   Definition CommitInner (Γ: ghost_names) :=
-    (∃ flag plog, own (γflag Γ) (● (Excl' flag)) ∗ own (γlog Γ) (● (Excl' plog))
+    (∃ flag (plog: nat * nat) (pcurr: nat * nat) (psrc : nat * nat),
+    (* Authoritative copies *)
+    own (γflag Γ) (● (Excl' flag)) ∗ own (γlog Γ) (● (Excl' plog))
+     ∗ own (γmain Γ) (● (Excl' pcurr)) ∗ own (γsrc Γ) (● (Excl' psrc))
      ∗ log_commit d↦ fst flag ∗ log_fst d↦ (fst plog) ∗ log_snd d↦ (snd plog)
-     ∗ (⌜ fst flag = 1 ⌝ → someone_writing plog (snd flag)))%I.
+     ∗ main_fst d↦ (fst pcurr) ∗ main_snd d↦ (snd pcurr)
+     ∗ source_state psrc
+     ∗ (⌜ fst flag = 0 ⌝ → ⌜ pcurr = psrc ⌝)
+     ∗ (⌜ fst flag ≠ 0 ⌝ → someone_writing plog (snd flag)))%I.
 
+  (*
   Definition MainInner (Γ: ghost_names) :=
     (∃ (pcurr: nat * nat), own (γmain Γ) (● (Excl' pcurr))
                                ∗ main_fst d↦ (fst pcurr) ∗ main_snd d↦ (snd pcurr))%I.
 
   Definition SrcInner (Γ: ghost_names) :=
     (∃ (psrc: nat * nat), own (γsrc Γ) (● (Excl' psrc)) ∗ source_state psrc)%I.
+   *)
 
-  Definition ExecInner Γ :=
-     (MainInner Γ ∗ CommitInner Γ ∗ SrcInner Γ)%I.
+  Definition ExecInner Γ := CommitInner Γ.
 
   (* Holding the main lock guarantees the value of the atomic pair will not
      change out from underneath you -- this is enforced by granting ownership of
@@ -74,38 +84,29 @@ Section refinement_triples.
 
   Definition ExecInv :=
     (∃ Γ, source_ctx ρ
-      ∗ (∃ γlock_main, is_lock mlN γlock_main main_lock (MainLockInv Γ)
-                                    ∗ inv miN (MainInner Γ)
-                                    ∗ inv siN (SrcInner Γ))
-      ∗ (∃ γlock_log, is_lock llN γlock_log log_lock (LogLockInv Γ)
-                                    ∗ inv liN (CommitInner Γ)))%I.
+      ∗ (∃ γlock_main, is_lock mlN γlock_main main_lock (MainLockInv Γ))
+      ∗ (∃ γlock_log, is_lock llN γlock_log log_lock (LogLockInv Γ))
+      ∗ inv liN (CommitInner Γ))%I.
 
   Definition CrashStarter Γ :=
     (main_lock m↦ 0 ∗ log_lock m↦ 0 ∗
-      ∃ pcurr plog src,  
-        (∃ (pcurr: nat * nat), own (γmain Γ) (◯ (Excl' pcurr))
-                                   ∗ own (γsrc Γ) (◯ (Excl' pcurr)))%I.
-
-  Definition LogLockInv Γ :=
-    (∃ (plog: nat * nat), own (γflag Γ) (◯ (Excl' (0, (0, existT _ (Ret tt) : procTC _))))
-                              ∗ own (γlog Γ) (◯ (Excl' plog)))%I.
-
-
-               LogLockInv Γ)%I.
+      ∃ flag (plog pcurr psrc : nat * nat),
+        own (γflag Γ) (◯ (Excl' flag)) ∗ own (γlog Γ) (◯ (Excl' plog))
+            ∗ own (γmain Γ) (◯ (Excl' pcurr)) ∗ own (γsrc Γ) (◯ (Excl' psrc)))%I.
 
   Definition CrashInner Γ :=
     (ExecInner Γ ∗ CrashStarter Γ)%I.
 
   Definition CrashInv Γ :=
-    (source_ctx ρ ∗ inv miN (MainInner Γ) ∗ inv siN (SrcInner Γ)
-      ∗ inv liN (CommitInner Γ))%I.
+    (source_ctx ρ ∗ inv liN (CommitInner Γ))%I.
 
   Lemma write_refinement {T} j K `{LanguageCtx AtomicPair.Op unit T AtomicPair.l K} p:
     {{{ j ⤇ K (Call (AtomicPair.Write p)) ∗ ExecInv }}} write p {{{ v, RET v; j ⤇ K (Ret v) }}}.
   Proof.
     iIntros (Φ) "(Hj&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ) "(#Hsource_inv&#Hinv_main&#Hinv_log)".
-    iDestruct "Hinv_log" as (γlock_log) "(#Hlockinv&#Hinv)".
+    iDestruct "Hrest" as (Γ) "(#Hsource_inv&#Hmain_lock&Hlog_lock&#Hinv)".
+    iDestruct "Hlog_lock" as (γlock_log) "#Hlockinv".
+    iDestruct "Hmain_lock" as (γlock_main) "#Hmlockinv".
     wp_bind. iApply (wp_lock with "[$]").
     iIntros "!> (Hlocked&HLL)".
     iDestruct "HLL" as (plog) "(Hflag_ghost&Hlog_ghost)".
@@ -117,9 +118,9 @@ Section refinement_triples.
     iMod (ghost_var_update (γlog Γ) (fst p, snd plog)
             with "Hlog_auth [$]") as "(Hlog_auth&Hlog_ghost)".
     iModIntro.
-    iExists (0, (0, existT _ (Ret tt) : procTC AtomicPair.Op)), _; iFrame.
+    iExists (0, (0, existT _ (Ret tt) : procTC AtomicPair.Op)), _, _, _; iFrame.
     iSplitL ""; first by (simpl; iIntros "!> %"; congruence).
-    iClear "Hsomewriter".
+    iClear "Hsomewriter1".
 
     wp_bind.
     iInv "Hinv" as "H".
@@ -127,8 +128,9 @@ Section refinement_triples.
     iApply (wp_write_disk with "Hlog_snd"). iIntros "!> Hlog_snd".
     iMod (ghost_var_update (γlog Γ) (fst p, snd p) with "Hlog_auth [$]") as "(Hlog_auth&Hlog_ghost)".
     iModIntro.
-    iExists (0, _), _; iFrame. iSplitL ""; first by (simpl; iIntros "!> %"; congruence).
-    iClear "Hsomewriter".
+    iExists (0, _), _, _, _; iFrame.
+    iSplitL ""; first by (simpl; iIntros "!> %"; congruence).
+    iClear "Hsomewriter1".
 
     wp_bind.
     iInv "Hinv" as "H".
@@ -138,38 +140,42 @@ Section refinement_triples.
             (1, (j, (existT _ (K (Call (AtomicPair.Write p)))) : procTC AtomicPair.Op))
             with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
     iModIntro.
-    iExists _, _; iFrame. iSplitL "".
-    { iNext. iIntros. simpl. iExists _, _. destruct p; eauto. }
-    iClear "Hsomewriter".
+    iExists _, _,_, _; iFrame. iSplitL "".
+    { iNext. iSplitL; eauto. iIntros. simpl. iExists _, _. destruct p; eauto. }
+    iClear "Hsomewriter1".
+    iClear "Hsomewriter0".
 
-    iDestruct "Hinv_main" as (γlock_main) "(#Hmlockinv&#Hminv&#Hmsrc)".
     wp_bind. iApply (wp_lock with "Hmlockinv").
     iIntros "!> (Hlocked'&HML)".
     iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
 
     wp_bind.
-    iInv "Hminv" as "H".
-    destruct_main_inner "H".
+    iInv "Hinv" as "H".
+    destruct_commit_inner "H".
     iApply (wp_write_disk with "Hmain_fst"). iIntros "!> Hmain_fst".
     iMod (ghost_var_update (γmain Γ) (fst p, snd pmain) with "Hmain_auth [$]")
       as "(Hmain_auth&Hmain_ghost)".
-    iModIntro. iExists _. iFrame.
-
-    wp_bind.
-    iInv "Hminv" as "H".
-    destruct_main_inner "H".
-    iApply (wp_write_disk with "Hmain_snd"). iIntros "!> Hmain_snd".
-    iMod (ghost_var_update (γmain Γ) (fst p, snd p) with "Hmain_auth [$]")
-      as "(Hmain_auth&Hmain_ghost)".
-    iModIntro. iExists _. iFrame.
+    iModIntro.
+    iExists _, _,_, _; iFrame. iSplitL "".
+    { iNext. iIntros; eauto. }
+    iClear "Hsomewriter0".
 
     wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iDestruct ("Hsomewriter" with "[//]") as (? K' ?) "Hj". simpl.
+    iApply (wp_write_disk with "Hmain_snd"). iIntros "!> Hmain_snd".
+    iMod (ghost_var_update (γmain Γ) (fst p, snd p) with "Hmain_auth [$]")
+      as "(Hmain_auth&Hmain_ghost)".
+    iModIntro.
+    iExists _, _,_, _; iFrame. iSplitL "".
+    { iNext. iIntros; eauto. }
+    iClear "Hsomewriter0".
+
+    wp_bind.
+    iInv "Hinv" as "H".
+    destruct_commit_inner "H".
+    iDestruct ("Hsomewriter1" with "[//]") as (? K' ?) "Hj". simpl.
     iApply (wp_write_disk with "Hcommit"). iIntros "!> Hcommit".
-    iInv "Hmsrc" as "H".
-    destruct_src_inner "H".
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsrc") as "(Hj&Hsrc&_)".
     { do 2 eexists; split; last by eauto. econstructor. }
     { solve_ndisj. }
@@ -177,12 +183,9 @@ Section refinement_triples.
     iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
             with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
     iModIntro.
-    iExists _; iFrame.
-
-    iModIntro.
     destruct p;
-    iExists _, _; iFrame. iSplitL "".
-    { iNext. simpl. iIntros. congruence. }
+    iExists _, _,_, _; iFrame. iSplitL "".
+    { iNext. iSplitL; eauto. simpl. iIntros; congruence. }
 
     wp_bind.
     iApply (wp_unlock with "[Hflag_ghost Hlog_ghost Hlocked]"); iFrame.
@@ -199,30 +202,28 @@ Section refinement_triples.
     {{{ j ⤇ K (Call (AtomicPair.Read)) ∗ ExecInv }}} read {{{ v, RET v; j ⤇ K (Ret v) }}}.
   Proof.
     iIntros (Φ) "(Hj&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ) "(#Hsource_inv&#Hinv_main&#Hinv_log)".
-    iDestruct "Hinv_main" as (γlock_main) "(#Hmlockinv&#Hminv&#Hmsrc)".
+    iDestruct "Hrest" as (Γ) "(#Hsource_inv&#Hmain_lock&Hlog_lock&#Hinv)".
+    iDestruct "Hlog_lock" as (γlock_log) "#Hlockinv".
+    iDestruct "Hmain_lock" as (γlock_main) "#Hmlockinv".
     wp_bind. iApply (wp_lock with "Hmlockinv").
     iIntros "!> (Hlocked'&HML)".
     iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
 
 
     wp_bind.
-    iInv "Hminv" as "H".
-    destruct_main_inner "H".
+    iInv "Hinv" as "H".
+    destruct_commit_inner "H".
     iApply (wp_read_disk with "Hmain_fst"). iIntros "!> Hmain_fst".
-    iModIntro. iExists _. iFrame.
+    iModIntro. iExists _, _, _, _. iFrame.
 
     wp_bind.
-    iInv "Hminv" as "H".
-    destruct_main_inner "H".
-    iInv "Hmsrc" as "H".
-    destruct_src_inner "H".
+    iInv "Hinv" as "H".
+    destruct_commit_inner "H".
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsrc") as "(Hj&Hsrc&_)".
     { do 2 eexists; split; last by eauto. econstructor. }
     { solve_ndisj. }
     iApply (wp_read_disk with "Hmain_snd"). iIntros "!> Hmain_snd".
-    iModIntro. iExists _. iFrame.
-    iModIntro. iExists _. iFrame.
+    iModIntro. iExists _, _, _, _. iFrame.
 
     wp_bind.
     iApply (wp_unlock with "[Hmain_ghost Hsrc_ghost Hlocked']"); iFrame.
@@ -277,6 +278,11 @@ Section refinement.
     ExMach.l.(initP) σ1c ∧ AtomicPair.l.(initP) σ1a.
 
   Import ExMach.
+
+  Instance from_exist_left_sep' {Σ} {A} (Φ : A → iProp Σ) Q :
+    FromExist ((∃ a, Φ a) ∗ Q) (λ a, Φ a ∗ Q)%I .
+  Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
+
   Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq AtomicPair.Op T) :
     init_absr σ1a σ1c →
     ¬ proc_exec_seq AtomicPair.l es (rec_singleton (Ret ())) σ1a Err →
@@ -309,115 +315,277 @@ Section refinement.
     { intros. iIntros "H". iDestruct "H" as (ρ ?) "(?&?)". eauto. }
     {
       (* recv triple TODO: pull this triple out? *)
-      intros ? ? Γ. iIntros "(H&Hstarter)". iDestruct "H" as (ρ) "(#Hctx&#Hrest)".
-      iDestruct "Hrest" as "(#Hinv_main&#Hsource_inv&#Hinv_log)".
-      iDestruct "Hstarter" as "(Hmain_lock&Hmain_lock_inv&Hlog_lock&Hlog_lock_inv)".
-      iDestruct "Hlog_lock_inv" as (plog) "(Hflag_ghost&Hlog_ghost)".
-      iDestruct "Hmain_lock_inv" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
+      intros ? ? Γ. iIntros "(H&Hstarter)". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+      iDestruct "Hstarter" as "(Hmain_lock&Hlog_lock&Hrest)".
+      iDestruct "Hrest" as (flag plog pcurr psrc) "(Hflag_ghost&Hlog_ghost&Hmain_ghost&Hsrc_ghost)".
       wp_bind.
-      iInv "Hinv_log" as "H".
+      iInv "Hinv" as "H".
       destruct_commit_inner "H".
 
       iApply (wp_read_disk with "Hcommit"); iIntros "!> Hcommit".
-      simpl.
-      iModIntro.
+      destruct flag as (flag&thd).
+      simpl. destruct flag.
+      * (* commit bit not set *)
+        iExists _, _, _, _.
+        iModIntro.
+        iFrame. iSplitL "Hcommit Hsomewriter0".
+        { simpl. iFrame. iNext. iIntros; congruence. }
+        wp_ret.
+        iClear "Hsomewriter1".
 
-      iDestruct "Hinv
+
+        iInv "Hinv" as "H" "_".
+        destruct_commit_inner "H".
+        iDestruct ("Hsomewriter0" with "[//]") as %Hpeq. subst.
+
+        iApply fupd_mask_weaken.
+        { solve_ndisj. }
+
+        iExists psrc, psrc. iFrame.
+        iSplitL ""; first by (iPureIntro; econstructor).
+
+        iClear "Hctx Hinv".
+        iIntros (???) "(#Hctx&Hsrc)".
+        iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
+                with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
 
 
+        iModIntro. iExists Γ, 0, 0. iFrame.
+        rewrite /MainLockInv.
+        iSplitL "Hmain_ghost Hsrc_ghost".
+        { iIntros; iExists _; iFrame. }
+        iSplitL "Hlog_ghost".
+        { iIntros; iExists _; iFrame. }
+
+        iExists _, _, _, _. iFrame.
+        iSplitL ""; first by eauto.
+        simpl. iIntros; congruence.
+      * (* commit bit set *)
+        iExists _, _, _, _.
+        iModIntro.
+        iFrame. iSplitL "Hcommit Hsomewriter1".
+        { simpl. iFrame. iNext. iIntros; congruence. }
+        iClear "Hsomewriter0".
+
+        wp_bind.
+        (* iInv fails for mysterious type class reasons that I cannot debug *)
+        iApply wp_atomic.
+        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        destruct_commit_inner "H".
+        iApply (wp_read_disk with "Hlog_fst"). iModIntro. iIntros "!> Hlog_fst".
+        iMod ("Hclo" with "[-Hmain_lock Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
+        { iNext. iExists _, _, _, _. iFrame. }
+
+        wp_bind.
+        iModIntro.
+        (* iInv fails for mysterious type class reasons that I cannot debug *)
+        iApply wp_atomic.
+        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        destruct_commit_inner "H".
+        iApply (wp_read_disk with "Hlog_snd"). iModIntro. iIntros "!> Hlog_snd".
+        iMod ("Hclo" with "[-Hmain_lock Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
+        { iNext. iExists _, _, _, _. iFrame. }
 
 
-      wp_ret. iInv "Hinv" as (ptr_val pcurr pother) ">(?&Hcase&?)" "_".
-      iMod (own_alloc (● (Excl' ptr_val) ⋅ ◯ (Excl' ptr_val))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
-      { apply auth_valid_discrete_2; split; eauto. econstructor. }
-      iMod (own_alloc (● (Excl' pcurr) ⋅ ◯ (Excl' pcurr))) as (γ2) "[Hauth_curr Hfrag_curr]".
-      { by eauto. }
-      iMod (own_alloc (● (Excl' pother) ⋅ ◯ (Excl' pother))) as (γ3) "[Hauth_other Hfrag_other]".
-      { by eauto. }
-      iApply (fupd_mask_weaken _ _).
-      { solve_ndisj. }
-      iExists pcurr, pcurr. iFrame.
-      iSplitL "".
-      { iPureIntro; econstructor. }
-      iClear "Hctx Hinv".
-      iIntros (???) "(#Hctx&Hstate)".
-      iModIntro. iExists _. iFrame. iExists γ1, γ2, γ3.
-      iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other"; iIntros; iExists _, _, _; iFrame.
-    }
+        wp_bind.
+        iModIntro.
+        (* iInv fails for mysterious type class reasons that I cannot debug *)
+        iApply wp_atomic.
+        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        destruct_commit_inner "H".
+        iApply (wp_write_disk with "Hmain_fst"). iModIntro. iIntros "!> Hmain_fst".
+        iMod (ghost_var_update (γmain Γ) (fst plog, snd pcurr) with "Hmain_auth [$]")
+          as "(Hmain_auth&Hmain_ghost)".
+
+        iMod ("Hclo" with "[-Hmain_lock Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
+        { iNext. iExists _, _, _, _. iFrame. iIntros; eauto. }
+
+        iModIntro.
+        wp_bind.
+        (* iInv fails for mysterious type class reasons that I cannot debug *)
+        iApply wp_atomic.
+        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        destruct_commit_inner "H".
+        iApply (wp_write_disk with "Hmain_snd"). iModIntro. iIntros "!> Hmain_snd".
+        iMod (ghost_var_update (γmain Γ) (fst plog, snd plog) with "Hmain_auth [$]")
+          as "(Hmain_auth&Hmain_ghost)".
+
+        iMod ("Hclo" with "[-Hmain_lock Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
+        { iNext. iExists _, _, _, _. iFrame. iIntros; eauto. }
+
+
+        iModIntro.
+        iApply wp_atomic.
+        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        destruct_commit_inner "H".
+        destruct thd. simpl.
+        iDestruct ("Hsomewriter1" with "[//]") as (? K' Heq) "Hj". simpl.
+        rewrite Heq.
+        iApply (wp_write_disk with "Hcommit"). iModIntro. iIntros "!> Hcommit".
+        iMod (ghost_step_lifting with "Hj Hctx Hsrc") as "(Hj&Hsrc&_)".
+        { do 2 eexists; split; last by eauto. econstructor. }
+        { solve_ndisj. }
+        iMod (ghost_var_update (γsrc Γ) plog with "Hsrc_auth [$]") as "(Hsrc_auth&Hsrc_ghost)".
+        iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
+                with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
+        iMod ("Hclo" with "[-Hj Hmain_lock Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
+        { iNext. destruct plog. iExists _, _, _, _. iFrame.
+          iSplitL ""; auto. simpl. iIntros; congruence. }
+
+        iModIntro.
+
+        iInv "Hinv" as "H" "_".
+        destruct_commit_inner "H".
+        iDestruct ("Hsomewriter0" with "[//]") as %Hpeq. subst.
+
+        iApply fupd_mask_weaken.
+        { solve_ndisj. }
+
+        iExists plog, plog. iFrame.
+        iSplitL ""; first by (iPureIntro; econstructor).
+
+        iClear "Hctx Hinv".
+        iIntros (???) "(#Hctx&Hsrc)".
+        iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
+                with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
+
+
+        iModIntro. iExists Γ, 0, 0. iFrame.
+        rewrite /MainLockInv.
+        iSplitL "Hmain_ghost Hsrc_ghost".
+        { destruct plog. iIntros; iExists _; iFrame.  }
+        iSplitL "Hlog_ghost".
+        { iIntros; iExists _; iFrame. }
+
+        iExists _, _, _, _. iFrame.
+        iSplitL ""; first by eauto.
+        simpl. iIntros; congruence.
+
+        }
     { intros ?? (H&?). inversion H. subst. eapply ExMach.init_state_wf. }
     { intros ??? (H&Hinit) ??. inversion H. inversion Hinit. subst.
       iIntros "(Hmem&Hdisk&#?&Hstate)".
-      iMod (own_alloc (● (Excl' 0) ⋅ ◯ (Excl' 0))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
-      { apply auth_valid_discrete_2; split; eauto. econstructor. }
-      iMod (own_alloc (● (Excl' (0, 0)) ⋅ ◯ (Excl' (0, 0)))) as (γ2) "[Hauth_curr Hfrag_curr]".
-      { apply auth_valid_discrete_2; split; eauto. econstructor. }
-      iMod (own_alloc (● (Excl' (0, 0)) ⋅ ◯ (Excl' (0, 0)))) as (γ3) "[Hauth_other Hfrag_other]".
-      { apply auth_valid_discrete_2; split; eauto. econstructor. }
-      iPoseProof (init_mem_split with "Hmem") as "?".
+      iMod (ghost_var_alloc (0, (0, existT _ (Ret tt) : procTC _)))
+        as (γflag) "[Hflag_auth Hflag_ghost]".
+      iMod (ghost_var_alloc (0, 0))
+        as (γlog) "[Hlog_auth Hlog_ghost]".
+      iMod (ghost_var_alloc (0, 0))
+        as (γsrc) "[Hsrc_auth Hsrc_ghost]".
+      iMod (ghost_var_alloc (0, 0))
+        as (γmain) "[Hmain_auth Hmain_ghost]".
+
+      iModIntro. iExists {| γflag := γflag; γlog := γlog; γsrc := γsrc; γmain := γmain|}.
+      iExists 0, 0.
+      iPoseProof (init_mem_split with "Hmem") as "(?&?)".
       iPoseProof (init_disk_split with "Hdisk") as "(?&?&?&?&?)".
-      iModIntro. iExists _. iFrame. iExists γ1, γ2, γ3.
-      iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other"; iIntros; iExists _, _, _; iFrame.
-      simpl. iFrame.
+
+      iFrame.
+      iSplitL "Hmain_ghost Hsrc_ghost".
+      { iIntros; iExists _; iFrame.  }
+      iSplitL "Hlog_ghost".
+      { iIntros; iExists _; iFrame. }
+
+      iExists _, _, _, _. iFrame. simpl. iFrame.
+      iSplitL; eauto.
+      simpl. iIntros; congruence.
     }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
-      iDestruct "Hinv" as (γlock γ1 γ2 γ3) "(#Hlock&#Hinv)".
-      iInv "Hinv" as "Hopen" "_".
-      destruct_einner "Hopen".
+    { intros. iIntros "H". iDestruct "H" as (ρ Γ) "Hrest".
+      iDestruct "Hrest" as "(#Hsource_inv&#Hmain_lock&#Hlog_lock&#Hinv)".
+      iDestruct "Hmain_lock" as (γlock_main) "Hmlock".
+      iDestruct "Hlog_lock" as (γlock_log) "Hlock".
+      iInv "Hinv" as "H" "_".
+      iDestruct "H" as ">H".
+      iDestruct "H" as (flag plog pmain psrc) "(_&_&_&_&Hrest0)".
+      iDestruct "Hrest0" as
+          "(Hcommit&Hlog_fst&Hlog_snd&Hmain_fst&Hmain_snd&Hsrc&Hsomewriter0&Hsomewriter1)".
+
+      iMod (ghost_var_alloc flag)
+        as (γflag) "[Hflag_auth Hflag_ghost]".
+      iMod (ghost_var_alloc plog)
+        as (γlog) "[Hlog_auth Hlog_ghost]".
+      iMod (ghost_var_alloc psrc)
+        as (γsrc) "[Hsrc_auth Hsrc_ghost]".
+      iMod (ghost_var_alloc pmain)
+        as (γmain) "[Hmain_auth Hmain_ghost]".
+
       iApply fupd_mask_weaken; first by solve_ndisj.
       iIntros (?) "Hmem".
-      iModIntro. iExists _, _, _. iFrame.
-      iPoseProof (@init_mem_split with "Hmem") as "?".
-      iFrame.
+      iPoseProof (@init_mem_split with "Hmem") as "(?&?)".
+      iModIntro. iExists {| γflag := γflag; γlog := γlog; γsrc := γsrc; γmain := γmain|}.
+      rewrite /CrashInner/ExecInner/CommitInner.
+      iExists flag, plog, pmain, psrc. simpl. iFrame.
+      iExists flag, plog, pmain, psrc. simpl. iFrame.
     }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
-      iInv "Hinv" as ">Hopen" "_".
-      iDestruct "Hopen" as (???) "(?&?&_)".
+    { intros ?? Γ. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+      iInv "Hinv" as ">H" "_".
+      iDestruct "H" as (flag plog pmain psrc) "(_&_&_&_&Hrest0)".
+      iDestruct "Hrest0" as
+          "(Hcommit&Hlog_fst&Hlog_snd&Hmain_fst&Hmain_snd&Hsrc&Hsomewriter0&Hsomewriter1)".
+
+      iMod (ghost_var_alloc flag)
+        as (γflag) "[Hflag_auth Hflag_ghost]".
+      iMod (ghost_var_alloc plog)
+        as (γlog) "[Hlog_auth Hlog_ghost]".
+      iMod (ghost_var_alloc psrc)
+        as (γsrc) "[Hsrc_auth Hsrc_ghost]".
+      iMod (ghost_var_alloc pmain)
+        as (γmain) "[Hmain_auth Hmain_ghost]".
+
       iApply fupd_mask_weaken; first by solve_ndisj.
       iIntros (?) "Hmem".
-      iModIntro. iExists _, _, _. iFrame.
-      iPoseProof (@init_mem_split with "Hmem") as "?".
-      iFrame.
+      iPoseProof (@init_mem_split with "Hmem") as "(?&?)".
+      iModIntro. iExists {| γflag := γflag; γlog := γlog; γsrc := γsrc; γmain := γmain|}.
+      rewrite /CrashInner/ExecInner/CommitInner.
+      iExists flag, plog, pmain, psrc. simpl. iFrame.
+      iExists flag, plog, pmain, psrc. simpl. iFrame.
     }
     { intros. iIntros "H". iDestruct "H" as "(Hinv&#Hsrc)".
-      iDestruct "Hinv" as (invG) "Hinv".
-      iDestruct "Hinv" as (???) "(?&?&?)".
-      iMod (@inv_alloc myΣ (exm_invG) iN _ CrashInner with "[-]").
-      { iNext. iExists _, _, _; iFrame. }
-      iModIntro. iFrame. iExists tt, _. iFrame "Hsrc".
+      iDestruct "Hinv" as (invG Γ) "Hinv".
+      iDestruct "Hinv" as "(Hexec&Hinv)".
+      iMod (@inv_alloc myΣ (exm_invG) liN _ (ExecInner Γ) with "Hexec").
+      iModIntro. iExists Γ.
+      iFrame.  iExists cfg. iFrame "Hsrc".
     }
     { intros. iIntros "H". iDestruct "H" as "(Hinv&#Hsrc)".
-      iDestruct "Hinv" as (invG v) "Hinv".
-      iDestruct "Hinv" as "(?&Hinv)".
-      iDestruct "Hinv" as (γ1 γ2 γ3) "(Hlock&Hinner)".
-      iMod (@lock_init myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG)) _ lN
-                       lock_addr _ (ExecLockInv γ1 γ2 γ3) with "[$] [-Hinner]") as (γlock) "H".
-      { iFrame. }
-      iMod (@inv_alloc myΣ (exm_invG) iN _ (ExecInner γ1 γ2 γ3) with "[Hinner]").
-      { iFrame. }
-      iModIntro. iExists cfg. iFrame "Hsrc". iExists _, _, _, _. iFrame.
+      iDestruct "Hinv" as (invG Γ v1 v2) "(Hmlock&Hllock&Hml&Hll&Hexec)".
+      iMod (@inv_alloc myΣ (exm_invG) liN _ (ExecInner Γ) with "Hexec").
+      iMod (@lock_init myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG)) _ mlN
+                       main_lock _ (MainLockInv Γ) with "[$] Hml") as (γlock) "H".
+      iMod (@lock_init myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG)) _ llN
+                       log_lock _ (LogLockInv Γ) with "[$] Hll") as (γlock') "H'".
+      iModIntro. iExists cfg. iFrame "Hsrc". iExists Γ. iFrame.
+      iExists _; iFrame. iExists _; iFrame.
     }
     { iIntros (??) "H".
-      iDestruct "H" as (?) "(?&H)".
-      iDestruct "H" as (????) "(?&Hinv)".
+      iDestruct "H" as (? Γ) "(?&?&?&Hinv)".
       iInv "Hinv" as "H" "_".
-      destruct_einner "H".
+      destruct_commit_inner "H".
       iApply fupd_mask_weaken; first by solve_ndisj.
       iExists _; iFrame.
     }
     { iIntros (??) "H".
-      iDestruct "H" as (?) "(?&H)".
-      iDestruct "H" as (????) "(Hlock&Hinv)".
+      iDestruct "H" as (? Γ) "(Hsrc_ctx&Hmlock&Hlock&Hinv)".
       iInv "Hinv" as "H" "_".
-      destruct_einner "H".
-      iMod (lock_crack with "Hlock") as ">H"; first by solve_ndisj.
-      iDestruct "H" as (v) "(?&?)".
+      destruct_commit_inner "H".
+      iDestruct "Hmlock" as (γlock_main) "Hmlock".
+      iDestruct "Hlock" as (γlock_log) "Hlock".
+      iMod (lock_crack with "Hmlock") as (?) ">(Hmlock&?)"; first by solve_ndisj.
+      iMod (lock_crack with "Hlock") as (?) ">(Hlock&?)"; first by solve_ndisj.
       iApply fupd_mask_weaken; first by solve_ndisj.
       iExists _; iFrame.
-      iFrame. iIntros (???) "(?&?)".
-      iModIntro.
-      iExists _. iFrame. iExists _, _, _. iFrame.
-      iExists _, _, _. iFrame.
+
+        iClear "Hsrc_ctx".
+        iIntros (???) "(#Hctx&Hsrc)".
+        iModIntro. iExists Γ, _, _. iFrame.
+        iExists _, _, _, _. iFrame.
+
+        (* This is actually false -- we really *need* to model closing/finishing
+           and running open for this example, because if a parent thread terminates
+           while a writer was in the middle of committing, a crash after the new program
+           starts would actually cause recovery to apply this write! *)
+
+        admit.
     }
-  Qed.
+  Admitted.
 
 End refinement.
