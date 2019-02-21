@@ -40,6 +40,37 @@ Axiom uint64_to_string_inj :
 Axiom byte:Type.
 Axiom byte0:byte.
 
+Axiom ascii_to_byte : Ascii.ascii -> byte.
+Axiom byte_to_ascii : byte -> Ascii.ascii.
+Axiom ascii_byte_bijection1 : forall c, byte_to_ascii (ascii_to_byte c) = c.
+Axiom ascii_byte_bijection2 : forall b, ascii_to_byte (byte_to_ascii b) = b.
+
+Fixpoint bytes_to_string (l: list byte) : string :=
+  match l with
+  | nil => EmptyString
+  | b::bs => String (byte_to_ascii b) (bytes_to_string bs)
+  end.
+
+Fixpoint string_to_bytes (s: string) : list byte :=
+  match s with
+  | EmptyString => nil
+  | String c s' => ascii_to_byte c :: string_to_bytes s'
+  end.
+
+Theorem bytes_to_string_bijection_1 : forall l,
+    string_to_bytes (bytes_to_string l) = l.
+Proof.
+  induction l; simpl;
+    rewrite ?ascii_byte_bijection1, ?ascii_byte_bijection2; congruence.
+Qed.
+
+Theorem bytes_to_string_bijection_2 : forall s,
+    bytes_to_string (string_to_bytes s) = s.
+Proof.
+  induction s; simpl;
+    rewrite ?ascii_byte_bijection1, ?ascii_byte_bijection2; congruence.
+Qed.
+
 (*! Pure model of uint64 little-endian encoding. *)
 
 Record LittleEndianEncoder bytes intTy (enc:intTy -> list byte) (dec:list byte -> option intTy) :=
