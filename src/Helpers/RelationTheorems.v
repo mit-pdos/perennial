@@ -345,3 +345,13 @@ Theorem bind_pure_no_err A B C T (p: relation A B T) (f: T -> C) a:
 Proof.
   eapply bind_with_no_err; intros; eapply pure_no_err; eauto.
 Qed.
+
+Lemma fst_lift_non_err {A1 A2 B T} (r: relation A1 A2 T) s (b : B) :
+  ~ r s (@Err _ _) ->
+  ~ fst_lift r (s, b) (@Err _ _).
+Proof. intuition. Qed.
+
+Lemma snd_lift_non_err {A1 A2 B T} (r: relation A1 A2 T) s (b : B) :
+  ~ r s (@Err _ _) ->
+  ~ snd_lift r (b, s) (@Err _ _).
+Proof. intuition. Qed.

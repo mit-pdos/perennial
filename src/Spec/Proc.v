@@ -30,6 +30,8 @@ Section Proc.
   | Ret : forall T (v : T), proc T
   | Bind : forall T (T1 : Type) (p1 : proc T1) (p2 : T1 -> proc T), proc T
   | Loop : forall T R (body: T -> proc (LoopOutcome T R)) (init:T), proc R
+  | Unregister : proc unit
+  | Wait : proc unit
   | Spawn : forall T (p: proc T), proc unit.
 
 End Proc.
@@ -39,6 +41,8 @@ Arguments Ret {Op T} v.
 Arguments Loop {Op T R} _ _.
 Arguments Spawn {Op _} _.
 Arguments Err {_ _}.
+Arguments Unregister {_}.
+Arguments Wait {_}.
 
 Definition Continue {Op T R} (x:T) : proc Op (LoopOutcome T R) := Ret (ContinueOutcome x).
 Definition LoopRet {Op T R} (x:R) : proc Op (LoopOutcome T R) := Ret (DoneWithOutcome x).
@@ -86,14 +90,22 @@ Definition thread_pool (Op: Type -> Type) := list {T : Type & proc Op T}.
 Definition OpSemantics Op State :=
   forall T, Op T -> relation State State T.
 Definition CrashSemantics State := relation State State unit.
+Definition FinishSemantics State := relation State State unit.
 
 Record Dynamics Op State :=
   { step: OpSemantics Op State;
-    crash_step: CrashSemantics State; }.
+    crash_step: CrashSemantics State;
+    finish_step: FinishSemantics State;
+  }.
 
 Section Dynamics.
 
-  Context `(sem: Dynamics Op State).
+  Context `(sem: Dynamics Op OpState).
+  Definition State : Type := nat * OpState.
+
+  Definition lifted_crash_step : CrashSemantics State :=
+    fst_lift (puts (fun x => 1));;
+    snd_lift (sem.(crash_step)).
 
   (** First, we define semantics of running programs with halting (without the
   effect of a crash or recovery) *)
@@ -110,7 +122,7 @@ Section Dynamics.
     : relation State State (proc Op T * thread_pool Op) :=
     match p with
     | Ret v => none
-    | Call op => v <- step sem op; pure (Ret v, nil)
+    | Call op => v <- snd_lift (step sem op); pure (Ret v, nil)
     | @Bind _ T0 _ p p' =>
       match p in (proc _ T1) return
              (T1 -> proc _ T0) -> relation State State (proc _ T0 * thread_pool _)
@@ -120,7 +132,15 @@ Section Dynamics.
                       pure (Bind (fst vp) p', snd vp)
       end p'
     | Loop b init => pure (loop1 b init, nil)
-    | @Spawn _ T' p' => pure (Ret tt, existT _ T' p' :: nil)
+    | Unregister =>
+      fst_lift (puts pred);;
+      pure (Ret tt, nil)
+    | Wait =>
+      fst_lift (such_that (fun x (_ : unit) => x = 1));;
+      pure (Ret tt, nil)
+    | @Spawn _ _ p' =>
+      fst_lift (puts S);;
+      pure (Ret tt, existT _ _ (Bind p' (fun _ => Unregister)) :: nil)
     end.
 
   (* TODO: need to define this after, otherwise can't use proc in the above *)
@@ -129,7 +149,7 @@ Section Dynamics.
   Notation proc_seq := (proc_seq Op).
   Notation thread_pool := (thread_pool Op).
   Notation step := sem.(step).
-  Notation crash_step := sem.(crash_step).
+  Notation crash_step := lifted_crash_step.
 
   Definition exec_pool_hd {T} (p: proc T) (ps: thread_pool)
     : relation State State thread_pool :=
@@ -333,36 +353,6 @@ Module ProcNotations.
                                (at level 20, x pattern, p1 at level 100, p2 at level 200, right associativity)
                              : proc_scope.
 End ProcNotations.
-
-(* replacements for Until loops *)
-
-(*
-Definition DoWhile Op T (body: T -> proc Op (option T)) (init: T) : proc Op T :=
-  Bind (Until (T:=option T * T) (fun '(v, last) => match v with
-               | Some _ => false
-               | None => true
-               end)
-        (fun v => match v with
-               | Some (Some x, last) => Bind (body x) (fun v => Ret (v, x))
-               | Some (None, last) => Ret (None, last)
-               | None => Ret (None, init)
-               end)
-        (Some (Some init, init)))
-       (fun '(_, last) => Ret last).
-
-Definition DoWhileVoid Op T (body: T -> proc Op (option T)) (init: T) : proc Op unit :=
-  Bind (Until (T:=option T) (fun v => match v with
-               | Some _ => false
-               | None => true
-               end)
-        (fun v => match v with
-               | Some (Some x) => body x
-               | Some None => Ret None
-               | None => Ret None
-               end)
-        (Some (Some init)))
-       (fun _ => Ret tt).
-*)
 
 Definition LoopWhileVoid Op R (body: proc Op (LoopOutcome unit R)) : proc Op R
   := Loop (fun _ => body) tt.

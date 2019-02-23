@@ -44,9 +44,16 @@ Module Base.
       Data.crash_step (dataΣ s) (Val (dataΣ s') tt) ->
       crash_step s (Val s' tt).
 
+  Inductive finish_step : relation State State unit :=
+  | BaseFinishStep : forall s s',
+      FS.finish_step (fsΣ s) (Val (fsΣ s') tt) ->
+      Data.finish_step (dataΣ s) (Val (dataΣ s') tt) ->
+      finish_step s (Val s' tt).
+
   Definition l : Layer Op.
-    refine {| Layer.State := State;
-              sem := {| Proc.step := step; Proc.crash_step := crash_step |};
+    refine {| Layer.OpState := State;
+              sem := {| Proc.step := step; Proc.crash_step := crash_step;
+                        Proc.finish_step := finish_step |};
               trace_proj := fun _ => nil;
               initP := fun _ => True; |}; simpl; intros.
     - auto.

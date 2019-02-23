@@ -4,7 +4,6 @@ Require Import ExMach.Adequacy.
 Import ExMach.
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
-Require Import Spec.Abstraction.
 Require Import Spec.Layer.
 
 Section refinement.
@@ -37,18 +36,18 @@ Section refinement.
 
   Context (refinement_op_triples:
              forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
-               j ⤇ K (Call op) ∗ (@exec_inv H1 H2) ⊢
-                 WP compile (Call op) {{ v, j ⤇ K (Ret v) }}).
+               j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
+                 WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered }}).
 
   Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ ∃ ρ, source_ctx ρ).
 
   Lemma refinement_triples:
              forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1),
-               j ⤇ K e ∗ (@exec_inv H1 H2) ⊢
-                 WP compile e {{ v, j ⤇ K (Ret v) }}.
+               j ⤇ K e ∗ Registered ∗ (@exec_inv H1 H2) ⊢
+                 WP compile e {{ v, j ⤇ K (Ret v) ∗ Registered }}.
   Proof.
     intros ???? j K Hctx e.
-    iIntros "(Hj&#Hinv)".
+    iIntros "(Hj&Hreg&#Hinv)".
     iAssert (⌜∃ ea: Λa.(State), True⌝)%I as %[? _].
     {
       iDestruct (exec_inv_source_ctx with "Hinv") as ((?&?)) "#Hctx".
@@ -58,17 +57,17 @@ Section refinement.
     { eexists. eauto. }
     iInduction e as [] "IH" forall (j T2 K Hctx).
     - iApply refinement_op_triples; iFrame; eauto.
-    - wp_ret. eauto.
+    - wp_ret. iFrame.
     - wp_bind.
       iApply wp_wand_l. iSplitL ""; last first.
       * iApply ("IH1" $! _ _ (fun x => K (Bind x p2)) with "[] Hj"); try iFrame.
         { iPureIntro. apply comp_ctx; auto. apply _. }
-      * iIntros (?) "Hj".
+      * iIntros (?) "(Hj&Hreg)".
         iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
         iMod (ghost_step_bind_ret with "Hj []") as "Hj".
         { set_solver+. }
         { eauto. }
-        iApply "IH"; auto.
+        iApply ("IH" with "[//] Hj Hreg"); auto.
     - iLöb as "IHloop" forall (init).
       iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
       iMod (ghost_step_loop with "Hj []") as "Hj".
@@ -82,20 +81,21 @@ Section refinement.
                                (fun out => match out with
                                | ContinueOutcome x => Loop body x
                                | DoneWithOutcome r => Ret r
-                               end))) with "[] Hj")%proc.
+                               end))) with "[] Hj Hreg")%proc.
         { iPureIntro. apply comp_ctx; auto. apply _. }
-      * iIntros (out) "Hj".
+      * iIntros (out) "(Hj&Hreg)".
         destruct out.
         ** iNext.
            iMod (ghost_step_bind_ret with "Hj []") as "Hj".
            { set_solver+. }
            { eauto. }
-             by iApply "IHloop".
+           iApply ("IHloop" with "Hj Hreg").
         ** iNext.
            iMod (ghost_step_bind_ret with "Hj []") as "Hj".
            { set_solver+. }
            { eauto. }
-           by wp_ret.
+           wp_ret. iFrame.
+   - simpl. iApply (wp_unregister with "Hreg"). iNext  refinement_op_triples; iFrame; eauto.
    - iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
      iMod (ghost_step_spawn with "Hj []") as "(Hj&Hj')".
      { set_solver+. }

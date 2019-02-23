@@ -1,6 +1,5 @@
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
-Require Import Spec.Abstraction.
 Require Import Spec.Layer.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationTheorems.
@@ -31,12 +30,12 @@ Definition wp_recovery_refinement {T R OpTa OpTc} Σ (Λa: Layer OpTa) (Λc: Lay
                     ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ φinv σ2c)
         ∗
         □ (∀ `{Hinv : invG Σ} `{Hcfg: cfgG OpTa Λa Σ} σ1c σ1c'
-           (Hcrash: Λc.(crash_step) σ1c (Val σ1c' tt)),
+           (Hcrash: Λc.(lifted_crash_step) σ1c (Val σ1c' tt)),
             (φinv σ1c ∗ source_ctx ([existT _ ea], σ1a) ={⊤}=∗ ∃ stateI : State Λc → iProp Σ,
                let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
                stateI σ1c'
                ∗ WP rec @ NotStuck; ⊤ {{ v, (∀ σ2c, stateI σ2c ={⊤,E}=∗
-                   ∃ σ2a σ2a', source_state σ2a ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt) ⌝ ∗
+                   ∃ σ2a σ2a', source_state σ2a ∗ ⌜Λa.(lifted_crash_step) σ2a (Val σ2a' tt) ⌝ ∗
                                φrec σ2a' σ2c )}}
                ∗ (∀ σ2c, stateI σ2c ={⊤,E}=∗ φinv σ2c))))))%I.
 
@@ -63,7 +62,7 @@ Theorem wp_recovery_refinement_adequacy_internal {T R} OpTa OpTc Σ (Λa: Layer 
   recv_adequate_internal NotStuck ec rec σ1c
     (λ v σ2c, ∃ σ2a, ⌜ exec Λa ea σ1a (Val σ2a (existT _ v)) ⌝ ∗ φ v σ2a σ2c)%I
     (λ σ2c, ∃ tp2 σ2a σ2a', ⌜ exec_partial Λa ea σ1a (Val σ2a tp2) ∧
-                            crash_step Λa σ2a (Val σ2a' tt) ⌝ ∗ φrec σ2a' σ2c)%I k.
+                            lifted_crash_step Λa σ2a (Val σ2a' tt) ⌝ ∗ φrec σ2a' σ2c)%I k.
 Proof.
   iIntros "Hwp".
   unshelve (iApply wp_recovery_adequacy_internal); eauto.
@@ -240,7 +239,7 @@ Proof.
   intros Hwp ?? Hexec.
   eapply proc_exec_seq_equiv_proc_exec_seq_n in Hexec as (n&?); last first.
   { admit. (* just need to show non-error *) }
-  { eauto using crash_non_err. }
+  { eauto using lifted_crash_non_err. }
   eapply (soundness (M:=iResUR Σ) _ (S O + n)).
   iApply bupd_iter_laterN_mono; first by reflexivity; eauto.
   iApply (wp_proc_seq_refinement_adequacy_internal); eauto.

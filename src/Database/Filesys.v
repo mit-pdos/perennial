@@ -162,4 +162,7 @@ Module FS.
   Definition crash_step : relation State State unit :=
     puts (set fds (fun _ => ∅)).
 
+  Definition finish_step : relation State State unit :=
+    puts (set fds (fun _ => ∅)).
+
 End FS.

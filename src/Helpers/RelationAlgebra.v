@@ -61,6 +61,20 @@ Section OutputRelations.
   Definition error {A B T} : relation A B T :=
     fun _ r => r = Err.
 
+  Definition fst_lift {A1 A2 B T} (r: relation A1 A2 T) : relation (A1 * B) (A2 * B) T :=
+    fun '(a, b) y =>
+      match y with
+      | Err => r a Err
+      | Val (a', b') t => r a (Val a' t) /\ b = b'
+      end.
+
+  Definition snd_lift {A1 A2 B T} (r: relation A1 A2 T) : relation (B * A1) (B * A2) T :=
+    fun '(b, a) y =>
+      match y with
+      | Err => r a Err
+      | Val (b', a') t => r a (Val a' t) /\ b = b'
+      end.
+
   Definition readSome {A T} (f: A -> option T) : relation A A T :=
     fun s r => match f s with
             | Some v => r = Val s v

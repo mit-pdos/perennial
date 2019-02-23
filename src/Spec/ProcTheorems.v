@@ -11,12 +11,13 @@ Require Import List.
 Import RelationNotations.
 
 Section Dynamics.
-  Context `(sem: Dynamics Op State).
+  Context `(sem: Dynamics Op OpState).
   Notation proc := (proc Op).
   Notation proc_seq := (proc_seq Op).
   Notation rec_seq := (rec_seq Op).
   Notation step := sem.(step).
-  Notation crash_step := sem.(crash_step).
+  Notation crash_step := sem.(lifted_crash_step).
+  Notation State := (@State OpState).
   Notation exec_halt := sem.(exec_halt).
   Notation exec_partial := sem.(exec_partial).
   Notation exec := sem.(exec).
@@ -387,6 +388,8 @@ Section Dynamics.
     setoid_rewrite exec_seq_append.
     apply exec_recover_append_helper.
   Qed.
+
+  Opaque lifted_crash_step.
 
   Theorem exec_recover_partial_append
           `(rec1: rec_seq)
@@ -842,6 +845,6 @@ Section Dynamics.
 
 End Dynamics.
 
-Arguments exec_halt_noop [Op State sem T].
-Arguments exec_halt_finish [Op State sem T].
-Arguments exec_halt_ret [Op State sem T].
+Arguments exec_halt_noop [Op OpState sem T].
+Arguments exec_halt_finish [Op OpState sem T].
+Arguments exec_halt_ret [Op OpState sem T].

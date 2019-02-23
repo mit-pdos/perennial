@@ -7,7 +7,6 @@ Require Export Tactical.ProofAutomation.
 
 Require Export Spec.Proc.
 Require Export Spec.ProcTheorems.
-Require Export Spec.Abstraction.
 Require Export Spec.Layer.
 
 Export ProcNotations.

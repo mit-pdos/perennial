@@ -315,4 +315,7 @@ Module Data.
   Definition crash_step : relation State State unit :=
     puts (fun _ => ∅).
 
+  Definition finish_step : relation State State unit :=
+    puts (fun _ => ∅).
+
 End Data.

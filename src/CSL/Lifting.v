@@ -1,6 +1,5 @@
 Require Export Spec.Proc.
 Require Import Spec.ProcTheorems.
-Require Import Spec.Abstraction.
 Require Export Spec.Layer.
 Require Export CSL.WeakestPre.
 Require Import Helpers.RelationAlgebra.
@@ -99,8 +98,8 @@ Qed.
 
 Lemma wp_lift_call_step {T} {s E Φ} (op: OpT T):
   (∀ σ1, state_interp σ1 ={E}=∗
-    ⌜if s is NotStuck then ¬ Λ.(sem).(step) op σ1 Err else True⌝ ∗
-    ▷ ∀ e2 σ2, ⌜Λ.(sem).(step) op σ1 (Val σ2 e2)⌝ ={E}=∗
+    ⌜if s is NotStuck then ¬ snd_lift ( Λ.(sem).(step) op) σ1 Err else True⌝ ∗
+    ▷ ∀ e2 σ2, ⌜snd_lift (Λ.(sem).(step) op) σ1 (Val σ2 e2)⌝ ={E}=∗
       state_interp σ2 ∗ Φ e2)
   ⊢ WP (Call op) @ s; E {{ Φ }}.
 Proof.
@@ -137,7 +136,24 @@ Proof. inversion 1. Qed.
 
 Lemma spawn_non_errorable {T} σ (e: proc OpT T):
   non_errorable (Spawn e) σ.
-Proof. inversion 1. Qed.
+Proof.
+  destruct σ. intros Herr. apply bind_pure_no_err in Herr.
+  rewrite /fst_lift in Herr. inversion Herr. 
+Qed.
+
+Lemma wait_non_errorable σ:
+  non_errorable (Wait) σ.
+Proof.
+  destruct σ. intros Herr. apply bind_pure_no_err in Herr.
+  rewrite /fst_lift in Herr. inversion Herr. 
+Qed.
+
+Lemma unregister_non_errorable σ:
+  non_errorable (Unregister) σ.
+Proof.
+  destruct σ. intros Herr. apply bind_pure_no_err in Herr.
+  rewrite /fst_lift in Herr. inversion Herr. 
+Qed.
 
 Global Instance bind_proc_ctx {T R} (f: T → proc OpT R) : LanguageCtx Λ (λ x, Bind x f).
 Proof.
@@ -148,17 +164,41 @@ Proof.
       inversion Hpure; subst. repeat eexists; eauto.
     * do 2 eexists. destruct e1; split; eauto; try econstructor.
     * inversion H; subst; do 2 eexists; split; econstructor.
-    * inversion H; subst; do 2 eexists; split; econstructor.
+    * destruct σ as (n,s). destruct σ2 as (n2,s2).
+      destruct H as ([]&?&?&?). inversion H0; subst.
+      rewrite /fst_lift in H. destruct H; subst. inversion H. subst.
+      eexists (Ret tt, []), (pred n, s2). split; try econstructor.
+      do 2 eexists; last econstructor.
+      rewrite /fst_lift; split; eauto.
+    * destruct σ as (n,s). destruct σ2 as (n2,s2).
+      destruct H as ([]&?&?&?). inversion H0; subst.
+      rewrite /fst_lift in H. destruct H; subst. inversion H. subst.
+      eexists (Ret tt, []), (1, s2). split; try econstructor.
+      do 2 eexists; last econstructor.
+      rewrite /fst_lift; split; eauto.
+    * destruct σ as (n,s). destruct σ2 as (n2,s2).
+      destruct H as ([]&?&?&?). inversion H0; subst.
+      rewrite /fst_lift in H. destruct H; subst. inversion H. subst.
+      eexists (Ret tt, [existT _ (Bind e1 (λ _, Unregister))]), (S n, s2). split; try econstructor.
+      do 2 eexists; last econstructor.
+      rewrite /fst_lift; split; eauto.
   - intros e1 σ1 Herr.
     induction e1 => //=.
     * apply bind_pure_no_err in Herr; intuition.
     * left. destruct e1; eauto; try econstructor.
+    * apply bind_pure_no_err in Herr; intuition.
+    * apply bind_pure_no_err in Herr; intuition.
+    * apply bind_pure_no_err in Herr; intuition.
   - intros e1 σ ???? H.
     induction e1 => //=.
     * inversion H as (?&?&Hstep&Hpure).
       inversion Hpure; subst.
       inversion Hstep as (?&?&?&Hpure'); inversion Hpure'; subst.
       repeat eexists; eauto.
+    * inversion H as ((?&?)&?&Hstep&Hpure).
+      inversion Hpure; subst. eexists; split; eauto.
+    * inversion H as ((?&?)&?&Hstep&Hpure).
+      inversion Hpure; subst. eexists; split; eauto.
     * inversion H as ((?&?)&?&Hstep&Hpure).
       inversion Hpure; subst. eexists; split; eauto.
     * inversion H as ((?&?)&?&Hstep&Hpure).
@@ -174,6 +214,12 @@ Proof.
     * inversion Herr.
       ** exfalso. eapply loop_non_errorable; eauto.
       ** destruct H1 as (?&?&?&Hp). inversion Hp.
+    * inversion Herr.
+      ** exfalso. eapply unregister_non_errorable; eauto.
+      ** destruct H0 as (?&?&?&Hp). inversion Hp.
+    * inversion Herr.
+      ** exfalso. eapply wait_non_errorable; eauto.
+      ** destruct H0 as (?&?&?&Hp). inversion Hp.
     * inversion Herr.
       ** exfalso. eapply spawn_non_errorable; eauto.
       ** destruct H0 as (?&?&?&Hp). inversion Hp.
@@ -267,6 +313,8 @@ Lemma wp_ret {T} {s E Φ} (v: T) :
   Φ v ⊢ WP (Ret v) @ s; E {{ Φ }}.
 Proof. iApply wp_value => //=. Qed.
 
+(* We can no longer give a generic spawn lemma because it affects state *)
+(*
 Lemma wp_spawn {T} s E (e: proc OpT T) Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ tt -∗ WP Spawn e @ s; E {{ Φ }}.
 Proof.
@@ -277,6 +325,7 @@ Proof.
   iIntros "!> !> !> /="; iFrame.
   by iApply wp_value.
 Qed.
+*)
 
 (*
 Lemma wp_pure_step_fupd `{Inhabited (State Λ)} s E E' e1 e2 φ n Φ :

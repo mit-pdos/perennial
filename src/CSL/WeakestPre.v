@@ -4,7 +4,6 @@
 
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
-Require Import Spec.Abstraction.
 Require Import Spec.Layer.
 Require Import Helpers.RelationAlgebra.
 Require Import Helpers.RelationRewriting.
@@ -32,6 +31,7 @@ Definition to_val {OpT T} (e: proc OpT T) : option T :=
    match e in (proc _ T0) return (option T0) with
    | @Ret _ T0 v => Some v
    | @Call _ T0 _ | @Bind _ T0 _ _ _ | @Loop _ T0 _ _ _ => None
+   | @Unregister _ => None | @Wait _ => None
    | @Spawn _ _ _ => None
    end.
 

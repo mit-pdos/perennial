@@ -133,7 +133,8 @@ Module ExMach.
          | CAS i vold vnew => cas_rel i vold vnew
          | Fail => error
          end;
-       crash_step := puts crash_fun |}. 
+       crash_step := puts crash_fun;
+       finish_step := puts crash_fun |}. 
 
   Lemma crash_total_ok (s: State):
     exists s', dynamics.(crash_step) s (Val s' tt).
@@ -144,7 +145,7 @@ Module ExMach.
   Proof. inversion 1; congruence. Qed.
 
   Definition l : Layer Op :=
-    {| Layer.State := State;
+    {| Layer.OpState := State;
        sem := dynamics;
        trace_proj := fun _ => nil;
        crash_preserves_trace := fun _ _ _ => eq_refl;
