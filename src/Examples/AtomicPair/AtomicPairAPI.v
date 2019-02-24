@@ -15,7 +15,9 @@ Module AtomicPair.
          | Write p => puts (fun _ => p)
          | Read => reads (fun l => l)
          end;
-       crash_step := pure tt |}.
+       crash_step := pure tt;
+       finish_step := pure tt;
+    |}.
 
   Lemma crash_total_ok (s: State):
     exists s', dynamics.(crash_step) s (Val s' tt).
@@ -26,7 +28,7 @@ Module AtomicPair.
   Proof. inversion 1; congruence. Qed.
 
   Definition l : Layer Op :=
-    {| Layer.State := State;
+    {| Layer.OpState := State;
        sem := dynamics;
        trace_proj := fun _ => nil;
        crash_preserves_trace := fun _ _ _ => eq_refl;

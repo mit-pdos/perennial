@@ -17,7 +17,10 @@ Module DB.
          | Avg => reads (fun l => fold_right plus 0 l / length l)
          end;
        crash_step :=
-         puts (fun _ => nil); |}.
+         puts (fun _ => nil);
+       finish_step :=
+         puts (fun _ => nil);
+    |}.
 
   Lemma crash_total_ok (s: State):
     exists s', dynamics.(crash_step) s (Val s' tt).
@@ -28,7 +31,7 @@ Module DB.
   Proof. inversion 1; congruence. Qed.
 
   Definition l : Layer Op :=
-    {| Layer.State := State;
+    {| Layer.OpState := State;
        sem := dynamics;
        trace_proj := fun _ => nil;
        crash_preserves_trace := fun _ _ _ => eq_refl;

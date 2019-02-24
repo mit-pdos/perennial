@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (DB.Op) (DB.l) Σ,
             !inG Σ (authR (optionUR (exclR (listC natC))))}.
-  Context (ρ : thread_pool DB.Op * DB.l.(State)).
+  Context (ρ : thread_pool DB.Op * DB.l.(OpState)).
 
   Import ExMach.
 
@@ -35,9 +35,11 @@ Section refinement_triples.
 
   (* TODO: write smart tactics for applying the wp_primitives *)
   Lemma add_refinement {T} j K `{LanguageCtx DB.Op unit T DB.l K} n:
-    {{{ j ⤇ K (Call (DB.Add n)) ∗ DBInv }}} add n {{{ v, RET v; j ⤇ K (Ret v) }}}.
+    {{{ j ⤇ K (Call (DB.Add n)) ∗ Registered ∗ DBInv }}}
+      add n
+    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
-    iIntros (Φ) "(Hj&#Hsource_inv&Hinv) HΦ".
+    iIntros (Φ) "(Hj&Hreg&#Hsource_inv&Hinv) HΦ".
     iDestruct "Hinv" as (γ1 γ2) "(#Hlockinv&#Hinv)".
     wp_bind. iApply (wp_lock with "[$]").
     iIntros "!> (Hlocked&HDB)".
@@ -50,7 +52,7 @@ Section refinement_triples.
     iDestruct (own_valid_2 with "Htok Hsource_tok")
       as %[<-%Excl_included%leibniz_equiv _]%auth_valid_discrete_2.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
-    { do 2 eexists; split; last by eauto. econstructor. }
+    { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto. econstructor. }
     { solve_ndisj. }
     iMod (own_update_2 _ _ _ (● Excl' (n :: l) ⋅ ◯ Excl' (n :: l)) with "Htok Hsource_tok")
       as "[Hfull ?]".
@@ -60,11 +62,11 @@ Section refinement_triples.
     iModIntro.
     iSplitL "Hfull Hsource".
     { iNext. iExists _. iFrame. }
-    iAssert (DBLockInv γ2) with "[-HΦ Hlocked Hj]" as "HDB".
+    iAssert (DBLockInv γ2) with "[-HΦ Hreg Hlocked Hj]" as "HDB".
     { iExists _; simpl. do 2 iFrame. }
-    iApply (wp_unlock with "[-HΦ Hj]"); iFrame.
+    iApply (wp_unlock with "[-HΦ Hreg Hj]"); iFrame.
     { iFrame "Hlockinv". eauto. }
-    iIntros "!> _". by iApply "HΦ".
+    iIntros "!> _". iApply ("HΦ" with ""); iFrame.
   Qed.
 
   Lemma avg_refinement {T} j K `{LanguageCtx DB.Op nat T DB.l K}:
@@ -81,7 +83,7 @@ Section refinement_triples.
     iDestruct (own_valid_2 with "Htok Hsource_tok")
       as %[<-%Excl_included%leibniz_equiv _]%auth_valid_discrete_2.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
-    { do 2 eexists; split; last by eauto. econstructor. }
+    { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto. econstructor. }
     { solve_ndisj. }
 
     iApply (wp_read_mem with "Hcount"). iIntros "!> Hcount".
@@ -134,10 +136,11 @@ Section refinement.
   Import ExMach.
   Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq DB.Op T) :
     init_absr σ1a σ1c →
-    ¬ proc_exec_seq DB.l es (rec_singleton (Ret ())) σ1a Err →
+    wf_client_seq es →
+    ¬ proc_exec_seq DB.l es (rec_singleton (Ret ())) (1, σ1a) Err →
     ∀ σ2c res, ExMach.l.(proc_exec_seq) (compile_proc_seq StatDb.Impl.impl es)
-                                        (rec_singleton recv) σ1c (Val σ2c res) →
-    ∃ σ2a, DB.l.(proc_exec_seq) es (rec_singleton (Ret tt)) σ1a (Val σ2a res).
+                                        (rec_singleton recv) (1, σ1c) (Val σ2c res) →
+    ∃ σ2a, DB.l.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
   Proof.
     eapply (exmach_crash_refinement_seq) with
         (Σ := myΣ)
@@ -154,9 +157,9 @@ Section refinement.
     { intros. apply _. }
     { intros. apply _. }
     { set_solver+. }
-    { intros. iIntros "(?&HDB)". iDestruct "HDB" as (ρ) "HDB". destruct op.
-      - iApply (add_refinement with "[$]"). iNext. iIntros (?) "H". iApply "H".
-      - iApply (avg_refinement with "[$]"). iNext. iIntros (?) "H". iApply "H".
+    { intros. iIntros "(?&?&HDB)". iDestruct "HDB" as (ρ) "HDB". destruct op.
+      - iApply (add_refinement with "[$]"). iNext. iIntros (?) "H". iFrame.
+      - iApply (avg_refinement with "[$]"). iNext. iIntros (?) "H". iFrame.
     }
     { intros. iIntros "H". iDestruct "H" as (ρ) "(?&?)". eauto. }
     { intros. iIntros "(H&_)". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
@@ -170,7 +173,7 @@ Section refinement.
       iSplitL "".
       { iPureIntro; econstructor. }
       iClear "Hctx Hinv".
-      iIntros (???) "(#Hctx&Hstate)".
+      iIntros (????) "(#Hctx&Hstate)".
       rewrite /DBLockInv.
       iModIntro. iExists _. iFrame. iExists γ2. iSplitR "Hauth Hstate"; iIntros; iExists nil; iFrame.
     }
@@ -188,7 +191,7 @@ Section refinement.
       iInv "Hinv" as ">Hopen" "_".
       iDestruct "Hopen" as (l) "(?&?)".
       iApply fupd_mask_weaken; first by solve_ndisj.
-      iIntros (?) "Hmem".
+      iIntros (??) "Hmem".
       iModIntro. iExists l; iFrame.
       iPoseProof (@init_mem_split with "Hmem") as "(?&?&?)".
       iFrame.
@@ -198,7 +201,7 @@ Section refinement.
       iInv "Hinv" as ">Hopen" "_".
       iDestruct "Hopen" as (l) "(?&?)".
       iApply fupd_mask_weaken; first by solve_ndisj.
-      iIntros (?) "Hmem".
+      iIntros (??) "Hmem".
       iModIntro. iExists l. iFrame.
       iPoseProof (@init_mem_split with "Hmem") as "(?&?&?)".
       iFrame.
@@ -215,21 +218,21 @@ Section refinement.
       iDestruct "Hinv" as (invG v) "Hinv".
       iDestruct "Hinv" as "(?&Hinv)".
       iDestruct "Hinv" as (γ2) "(Hlock&Hinner)".
-      iMod (@lock_init myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG)) _ lN
+      iMod (@lock_init myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
                        lock_addr _ (DBLockInv γ2) with "[$] [-Hinner]") as (γ1) "H".
       { iFrame. }
       iMod (@inv_alloc myΣ (exm_invG) iN _ (DBInnerInv γ2) with "[Hinner]").
       { iFrame. }
       iModIntro. rewrite /DBInv. iExists cfg. iFrame "Hsrc". iExists γ1, γ2. iFrame.
     }
-    { iIntros (??) "H".
+    { iIntros (??) "? H".
       iDestruct "H" as (?) "(?&H)".
       iDestruct "H" as (??) "(?&Hinv)".
       iInv "Hinv" as (l') ">(Htok&Hsource)" "_".
       iApply fupd_mask_weaken; first by solve_ndisj.
       iExists _; eauto.
     }
-    { iIntros (??) "H".
+    { iIntros (??) "? H".
       iDestruct "H" as (?) "(?&H)".
       iDestruct "H" as (γ1 γ2) "(Hlock&Hinv)".
       iInv "Hinv" as (l') ">(Htok&Hsource)" "_".
@@ -237,7 +240,7 @@ Section refinement.
       iDestruct "H" as (v) "(?&?)".
       iApply fupd_mask_weaken; first by solve_ndisj.
       iExists _; eauto.
-      iFrame. iIntros (???) "(?&?)".
+      iFrame. iIntros (????) "(?&?)".
       iModIntro.
       iExists v. iFrame. iExists γ2. iFrame. 
       iExists _. iFrame.

@@ -327,6 +327,7 @@ Section Dynamics.
       exec_or_rexec p rec
     | Proc_Seq_Bind p f =>
       v <- exec_or_rexec p rec;
+      _ <- fst_lift (puts (fun _ => 1));
       proc_exec_seq (f v) rec
     end.
 
@@ -337,9 +338,27 @@ Section Dynamics.
       exec_or_rexec p rec
     | Proc_Seq_Bind p f =>
       v <- exec_or_rexec p rec;
+      _ <- fst_lift (puts (fun _ => 1));
       proc_exec_seq (f v) rec
     end.
   Proof. destruct p; auto. Qed.
+
+  Fixpoint wf_client {T} (p: proc T) :=
+    match p with
+    | Unregister => False
+    | Wait => False
+    | Loop body _ => (forall t, wf_client (body t))
+    | Spawn e => wf_client e
+    | Call _ => True
+    | Ret _ => True
+    | Bind e rx => wf_client e /\ (forall x, wf_client (rx x))
+    end.
+
+  Fixpoint wf_client_seq {T} (p: proc_seq T) :=
+    match p with
+    | Proc_Seq_Final p => wf_client p
+    | Proc_Seq_Bind p f => wf_client p /\ (forall v, wf_client_seq (f v))
+    end.
 
 End Dynamics.
 

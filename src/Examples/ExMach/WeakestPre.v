@@ -19,6 +19,9 @@ Section thread_reg.
     own (treg_name tr) (Cinl (Count (-1)%Z)).
   Definition AllDone :=
     own (treg_name tr) (Cinr (◯ (Excl' tt))).
+  Lemma AllDone_Register_excl:
+    AllDone -∗ Registered -∗ False.
+  Proof. iIntros "Had Hreg". iDestruct (own_valid_2 with "Had Hreg") as %[]. Qed.
 End thread_reg.
 
 Class exmachG Σ := ExMachG {

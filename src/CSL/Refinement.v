@@ -17,7 +17,7 @@ Set Nested Proofs Allowed.
 
 Definition procT {OpT} := {T : Type & proc OpT T}.
 Canonical Structure procTC OpT := leibnizC (@procT OpT).
-Canonical Structure StateC OpT (Λ: Layer OpT) := leibnizC (State Λ).
+Canonical Structure StateC OpT (Λ: Layer OpT) := leibnizC (OpState Λ).
 
 Section ghost.
 Context {OpT: Type → Type}.
@@ -57,19 +57,19 @@ Section ghost_spec.
     own cfg_name (◯ ({[ j := Excl (existT _ e : procTC OpT) ]}, ε)).
 
   (* ownership of this does not mean there aren't other threads not in (fst ρ) *)
-  Definition source_cfg ρ : iProp Σ :=
-    own cfg_name (◯ (tpool_to_res (fst ρ), Some (Excl (snd ρ)))).
+  Definition source_cfg (ρ: thread_pool OpT * State Λ) : iProp Σ :=
+    own cfg_name (◯ (tpool_to_res (fst ρ), Some (Excl (snd (snd ρ))))).
 
-  Definition source_state (σ: State Λ) : iProp Σ :=
+  Definition source_state (σ: OpState Λ) : iProp Σ :=
     own cfg_name (◯ (∅ : tpoolUR, Some (Excl σ))).
 
   Definition source_pool_map (tp: gmap nat ({T : Type & proc OpT T})) : iProp Σ :=
     own cfg_name (◯ (Excl <$> tp : gmap nat (exclR (procTC OpT)), ε)).
 
-  Definition source_inv (tp: thread_pool OpT) (σ: State Λ) : iProp Σ :=
-    (∃ tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
-                   ⌜ bind_star (exec_pool Λ.(sem)) tp σ (Val σ' tp')
-                     ∧ ¬ bind_star (exec_pool Λ.(sem)) tp σ Err ⌝)%I.
+  Definition source_inv (tp: thread_pool OpT) (σ: OpState Λ) : iProp Σ :=
+    (∃ tp' n σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
+                   ⌜ bind_star (exec_pool Λ.(sem)) tp (1, σ) (Val (n, σ') tp')
+                     ∧ ¬ bind_star (exec_pool Λ.(sem)) tp (1, σ) Err ⌝)%I.
 
   Definition source_ctx ρ : iProp Σ :=
     inv sourceN (source_inv (fst ρ) (snd ρ)).
@@ -229,8 +229,8 @@ Section ghost_step.
     * by left.
   Qed.
 
-  Lemma source_cfg_init `{cfgPreG Σ} tp (σ: State Λ) :
-    ¬ bind_star (exec_pool Λ.(sem)) tp σ Err →
+  Lemma source_cfg_init `{cfgPreG Σ} tp (σ: OpState Λ) :
+    ¬ bind_star (exec_pool Λ.(sem)) tp (1, σ) Err →
     (|={⊤}=> ∃ _ : cfgG Σ, source_ctx (tp, σ) ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ)%I.
   Proof.
     intros Hno_err.
@@ -247,7 +247,7 @@ Section ghost_step.
     set (IN := {| cfg_name := γ |}).
     iExists IN.
     iMod (inv_alloc sourceN ⊤ (source_inv tp σ) with "[Hauth]").
-    { rewrite /source_inv. iNext. iExists tp, σ. iFrame "Hauth".
+    { rewrite /source_inv. iNext. iExists tp, 1, σ. iFrame "Hauth".
       iPureIntro; split; eauto. econstructor. }
     iModIntro. iFrame.
     rewrite pair_split.
@@ -255,7 +255,7 @@ Section ghost_step.
   Qed.
 
   Context `{cfgG Σ}.
-  Context `{Inhabited Λ.(State)}.
+  Context `{Inhabited Λ.(OpState)}.
 
   Lemma source_thread_update {T T'} (e': proc OpT T') tp j (e: proc OpT T)  σ :
     j ⤇ e -∗ own cfg_name (● (tpool_to_res tp, Excl' σ))
@@ -345,13 +345,13 @@ Section ghost_step.
 
   Lemma ghost_step_lifting' {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    Λ.(sem).(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
+    (∀ n, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
     nclose sourceN ⊆ E →
     source_ctx ρ ∗ j ⤇ K e1 ∗ source_state σ1
       ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
   Proof.
     iIntros (Hstep ?) "(#Hctx&Hj&Hstate)". rewrite /source_ctx/source_inv.
-    iInv "Hctx" as (tp' σ') ">[Hauth %]" "Hclose".
+    iInv "Hctx" as (tp' n' σ') ">[Hauth %]" "Hclose".
 
     (* Reconcile view based on authoritative element *)
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
@@ -362,14 +362,15 @@ Section ghost_step.
     iMod (source_thread_update (K e2) with "Hj Hauth") as "[Hj Hauth]".
     iMod (source_threads_fork efs with "Hauth") as "[Hj' Hauth]".
     iMod (source_state_update σ2 with "Hstate Hauth") as "[Hstate Hauth]".
+    destruct (Hstep n') as (n''&?).
 
     (* Restore the invariant *)
     iMod ("Hclose" with "[Hauth]").
-    { iNext. iExists (<[j := (existT T2 (K e2))]>tp' ++ efs), σ2.
+    { iNext. iExists (<[j := (existT T2 (K e2))]>tp' ++ efs), n'', σ2.
       iFrame. intuition. iPureIntro; split; auto.
 
       apply bind_star_expand_r_valid.
-      right. exists tp', σ'; split; auto.
+      right. exists tp', (n', σ'); split; auto.
       apply exec_pool_equiv_alt_val.
       econstructor.
       { symmetry; eapply take_drop_middle; eauto. }
@@ -389,7 +390,7 @@ Section ghost_step.
   (* Curried form is more useful, I think *)
   Lemma ghost_step_lifting {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    Λ.(sem).(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
+    (∀ n, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
     nclose sourceN ⊆ E →
     j ⤇ K e1 -∗ source_ctx ρ -∗ source_state σ1
       ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
@@ -397,13 +398,13 @@ Section ghost_step.
 
   Lemma ghost_step_lifting_puredet {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) e2 efs:
-    (∀ σ1, Λ.(sem).(exec_step) e1 σ1 (Val σ1 (e2, efs))) →
+    (∀ n σ1, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ1) (e2, efs))) →
     nclose sourceN ⊆ E →
     source_ctx ρ ∗ j ⤇ K e1
       ={E}=∗ j ⤇ K e2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
   Proof.
     iIntros (Hstep ?) "(#Hctx&Hj)". rewrite /source_ctx/source_inv.
-    iInv "Hctx" as (tp' σ') ">[Hauth %]" "Hclose".
+    iInv "Hctx" as (tp' n' σ') ">[Hauth %]" "Hclose".
 
     (* Reconcile view based on authoritative element *)
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
@@ -412,14 +413,15 @@ Section ghost_step.
     (* Update authoritative resources to simulate step *)
     iMod (source_thread_update (K e2) with "Hj Hauth") as "[Hj Hauth]".
     iMod (source_threads_fork efs with "Hauth") as "[Hj' Hauth]".
+    destruct (Hstep n' σ') as (n''&?).
 
     (* Restore the invariant *)
     iMod ("Hclose" with "[Hauth]").
-    { iNext. iExists (<[j := (existT T2 (K e2))]>tp' ++ efs), _.
+    { iNext. iExists (<[j := (existT T2 (K e2))]>tp' ++ efs), _, _.
       iFrame. intuition. iPureIntro; split; auto.
 
       apply bind_star_expand_r_valid.
-      right. exists tp', σ'; split; auto.
+      right. exists tp', (n', σ'); split; auto.
       apply exec_pool_equiv_alt_val.
       econstructor.
       { symmetry; eapply take_drop_middle; eauto. }
@@ -438,7 +440,7 @@ Section ghost_step.
 
   Lemma ghost_step_lifting_bind' {T1 T2} E ρ j (K: T1 → proc OpT T2)
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    Λ.(sem).(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
+    (∀ n, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
     nclose sourceN ⊆ E →
     source_ctx ρ ∗ j ⤇ Bind e1 K ∗ source_state σ1
       ={E}=∗ j ⤇ Bind e2 K ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
@@ -448,7 +450,7 @@ Section ghost_step.
 
   Lemma ghost_step_lifting_bind {T1 T2} E ρ j (K: T1 → proc OpT T2)
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    Λ.(sem).(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
+    (∀ n, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
     nclose sourceN ⊆ E →
     j ⤇ Bind e1 K -∗ source_ctx ρ -∗ source_state σ1
       ={E}=∗ j ⤇ Bind e2 K ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
@@ -460,7 +462,7 @@ Section ghost_step.
     j ⤇ K' (Bind (Ret v) K) -∗ source_ctx ρ ={E}=∗ j ⤇ K' (K v).
   Proof.
     iIntros (?) "Hj Hctx". iMod (ghost_step_lifting_puredet with "[Hj Hctx]") as "($&?)"; eauto.
-    { intros. econstructor. }
+    { intros. eexists. econstructor. }
   Qed.
 
   Lemma ghost_step_loop {T1 T2 T3} E ρ j K `{LanguageCtx OpT T2 T3 Λ K}
@@ -469,9 +471,22 @@ Section ghost_step.
     j ⤇ K (Loop body v) -∗ source_ctx ρ ={E}=∗ j ⤇ K (loop1 body v).
   Proof.
     iIntros (?) "Hj Hctx". iMod (ghost_step_lifting_puredet with "[Hj Hctx]") as "($&?)"; eauto.
-    { intros. econstructor. }
+    { intros. eexists. econstructor. }
   Qed.
 
+  Lemma ghost_step_spawn {T T'} E ρ j K `{LanguageCtx OpT unit T Λ K} (e: proc OpT T'):
+    nclose sourceN ⊆ E →
+    j ⤇ K (Spawn e) -∗ source_ctx ρ
+    ={E}=∗ j ⤇ K (Ret tt) ∗ (∃ j', j' ⤇ (Bind e (λ _, Unregister))).
+  Proof.
+    iIntros (?) "Hj Hctx". iMod (ghost_step_lifting_puredet with "[Hj Hctx]") as "($&H)"; eauto.
+    { intros. exists (S n). econstructor.  exists (S n, σ1); split; econstructor; eauto.
+      econstructor; eauto.
+    }
+    iModIntro. iDestruct "H" as "($&_)".
+  Qed.
+
+  (*
   Lemma ghost_step_spawn {T T'} E ρ j K `{LanguageCtx OpT unit T Λ K} (e: proc OpT T') σ:
     nclose sourceN ⊆ E →
     j ⤇ K (Spawn e) -∗ source_state σ -∗ source_ctx ρ
@@ -486,6 +501,7 @@ Section ghost_step.
     }
     iDestruct "H" as "(?&?&?)". by iFrame.
   Qed.
+   *)
 
 End ghost_step.
 End ghost.

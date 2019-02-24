@@ -750,6 +750,7 @@ Section Dynamics.
       fun s1 ret =>
         exists n1 n2, (n = (5 + n1) + S n2)%nat /\
         (v <- exec_or_rexec_n p rec n1;
+        fst_lift (puts (fun x => 1));;
         proc_exec_seq_n (f v) rec n2) s1 ret
     end.
 
@@ -765,22 +766,30 @@ Section Dynamics.
       ** intros (n&(n1&?&?)). apply exec_or_rexec_equiv_exec_or_rexec_n; eauto.
     * split.
       ** intros (?&?&Hhd&Htl).
+         destruct Htl as ([]&?&Hlft&Htl).
          eapply IH in Htl as (n2&?).
          { eapply exec_or_rexec_equiv_exec_or_rexec_n in Hhd as (n1&?).
            { exists ((5 + n1) + S n2)%nat. repeat (do 2 eexists; split; eauto). }
            { intros Herr.  eapply Hno_err. left; eauto. }
          }
-         { intros Herr. eapply Hno_err. right. eauto. }
-      ** intros (n&(?&?&?&(?&?&Hhd&Htl))).
+         { intros Herr. eapply Hno_err. right.
+           do 2 eexists; split; eauto.
+           right.
+           do 2 eexists; split; eauto.
+         }
+      ** intros (n&(?&?&?&(?&?&Hhd&([]&?&Hlft&Htl)))).
          subst.
          do 2 eexists; split.
          { eapply exec_or_rexec_equiv_exec_or_rexec_n; eauto. intros Herr.
            eapply Hno_err. left; eauto. }
-         { eapply IH; eauto. intros Herr.
+         {
+           do 2 eexists; split; eauto.
+           eapply IH; eauto. intros Herr.
            eapply Hno_err. right; eauto.
            do 2 eexists; split; eauto.
            eapply exec_or_rexec_equiv_exec_or_rexec_n; eauto. intros Herr'.
            eapply Hno_err. left; eauto.
+           right. do 2 eexists; split; eauto.
          }
   Qed.
 
