@@ -28,9 +28,7 @@ dependencies:
 - exceptions
 - random
 
-ghc-options:
-  - -O2
-  - -Werror=incomplete-patterns
+ghc-options: -O2
 
 default-extensions:
   - OverloadedStrings
