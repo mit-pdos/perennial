@@ -22,7 +22,7 @@ Definition wp_recovery_refinement {T R OpTa OpTc} Σ (Λa: Layer OpTa) (Λc: Lay
          ∀ `{Hinv : invG Σ} `{Hcfg: cfgG OpTa Λa Σ},
           (|={⊤}=> ∃ stateI : State Λc → iProp Σ,
              let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
-             (source_ctx ([existT _ ea], (snd σ1a)) ∗ O ⤇ ea ∗ source_state (snd σ1a))
+             (source_ctx' ([existT _ ea], (snd σ1a)) ∗ O ⤇ ea ∗ source_state (snd σ1a))
                ={⊤}=∗
                stateI σ1c
                ∗ WP ec @ NotStuck; ⊤ {{ v, O ⤇ of_val v
@@ -31,7 +31,7 @@ Definition wp_recovery_refinement {T R OpTa OpTc} Σ (Λa: Layer OpTa) (Λc: Lay
         ∗
         □ (∀ `{Hinv : invG Σ} `{Hcfg: cfgG OpTa Λa Σ} σ1c σ1c'
            (Hcrash: Λc.(lifted_crash_step) σ1c (Val σ1c' tt)),
-            (φinv σ1c ∗ source_ctx ([existT _ ea], (snd σ1a)) ={⊤}=∗ ∃ stateI : State Λc → iProp Σ,
+            (φinv σ1c ∗ source_ctx' ([existT _ ea], (snd σ1a)) ={⊤}=∗ ∃ stateI : State Λc → iProp Σ,
                let _ : irisG OpTc Λc Σ := IrisG _ _ _ Hinv stateI in
                stateI σ1c'
                ∗ WP rec @ NotStuck; ⊤ {{ v, (∀ σ2c, stateI σ2c ={⊤,E}=∗

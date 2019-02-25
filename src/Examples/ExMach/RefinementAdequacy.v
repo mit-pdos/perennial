@@ -39,7 +39,7 @@ Section refinement.
                j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
                  WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered }}).
 
-  Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ ∃ ρ, source_ctx ρ).
+  Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
 
   Lemma refinement_triples:
              forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1),
@@ -67,14 +67,14 @@ Section refinement.
         { eapply Hwf. }
         { iPureIntro. apply comp_ctx; auto. apply _. }
       * iIntros (?) "(Hj&Hreg)".
-        iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
+        iDestruct (exec_inv_source_ctx with "Hinv") as "#Hctx".
         iMod (ghost_step_bind_ret with "Hj []") as "Hj".
         { set_solver+. }
         { eauto. }
         iApply ("IH" with "[] [] Hj Hreg"); auto.
         { iPureIntro. eapply Hwf. }
     - iLöb as "IHloop" forall (init Hwf).
-      iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
+      iDestruct (exec_inv_source_ctx with "Hinv") as "#Hctx".
       iMod (ghost_step_loop with "Hj []") as "Hj".
       { set_solver+. }
       { eauto. }
@@ -104,7 +104,7 @@ Section refinement.
            wp_ret. iFrame.
    - inversion Hwf.
    - inversion Hwf.
-   - iDestruct (exec_inv_source_ctx with "Hinv") as (?) "#Hctx".
+   - iDestruct (exec_inv_source_ctx with "Hinv") as "#Hctx".
      iMod (ghost_step_spawn with "Hj []") as "(Hj&Hj')".
      { set_solver+. }
      { eauto. }
@@ -129,19 +129,19 @@ Section refinement.
                (@crash_inv H1 H2 param) ∗ Registered ∗ (@crash_starter H1 H2 param) ⊢
                     WP recv @ NotStuck; ⊤ {{ v, |={⊤,E}=> ∃ σ2a σ2a', source_state σ2a
                     ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt)⌝ ∗
-                    ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) tr' ρ,
-                      source_ctx (ρ, σ2a') ∗ source_state σ2a'  ={⊤}=∗
+                    ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) tr',
+                      source_ctx ∗ source_state σ2a'  ={⊤}=∗
                       exec_inner Hcfg' (ExMachG Σ Hinv' exm_mem_inG exm_disk_inG tr')
                                                }}).
 
   Context (init_absr: Λa.(OpState) → ExMach.State → Prop).
   Context (init_wf: ∀ σ1a σ1c, init_absr σ1a σ1c → state_wf σ1c).
 
-  Context (init_exec_inner: ∀ σ1a σ1c ρ, init_absr σ1a σ1c →
+  Context (init_exec_inner: ∀ σ1a σ1c, init_absr σ1a σ1c →
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
           (([∗ map] i ↦ v ∈ mem_state σ1c, i m↦ v) ∗
            ([∗ map] i ↦ v ∈ disk_state σ1c, i d↦ v) ∗
-           source_ctx (ρ, σ1a) ∗ source_state σ1a) ={⊤}=∗ exec_inner _ _)).
+           source_ctx ∗ source_state σ1a) ={⊤}=∗ exec_inner _ _)).
 
   Context (exec_inv_preserve_crash:
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
@@ -158,16 +158,14 @@ Section refinement.
   (* TODO: Much of this business is just to capture the fact that exec_inner/crash_inner
      should not really mention invariants, because those old invariants are 'dead' *)
   Context (crash_inner_inv :
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} cfg,
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
           (∃ Hinv, crash_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG) (exm_treg_inG))) ∗
-          source_ctx cfg
-          ={⊤}=∗ ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param)).
+          source_ctx ={⊤}=∗ ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param)).
 
   Context (exec_inner_inv :
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} cfg,
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
           (∃ Hinv, exec_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG) (exm_treg_inG))) ∗
-          source_ctx cfg
-          ={⊤}=∗ exec_inv Hcfg Hex)).
+          source_ctx ={⊤}=∗ exec_inv Hcfg Hex)).
 
   Context (inv_implies_source:
              ∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
@@ -177,9 +175,9 @@ Section refinement.
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
           AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
           ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
-          ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hreg' ρ,
+          ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hreg',
             (let Hex := ExMachG Σ Hinv' Hmem' (exm_disk_inG) Hreg' in
-            source_ctx (ρ, σ2a') ∗ source_state σ2a' ∗ ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={⊤}=∗
+            source_ctx∗ source_state σ2a' ∗ ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={⊤}=∗
                exec_inner Hcfg' Hex))%I).
 
 
@@ -204,7 +202,7 @@ Section refinement.
             (Hdpf_eq : hD.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
           H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable)),
          (@ex_mach_interp _ hM hD {| treg_name := tR; treg_counter_inG := _ |} (1, σ1c)) ∗
-         (source_ctx (ρ, σ1a) -∗ source_state σ1a ={⊤}=∗
+         (source_ctx' (ρ, σ1a) -∗ source_state σ1a ={⊤}=∗
          own tR (Cinl (Count (-1))) ∗ 
           exec_inner H1 (ExMachG Σ invG hM hD {| treg_name := tR; treg_counter_inG := _ |})))%I
       as "Hpre".
@@ -225,12 +223,12 @@ Section refinement.
     * destruct (Hwf2 i); intuition.
   }
   iIntros.
-  iPoseProof (init_exec_inner σ1a σ1c ρ Hinit (ExMachG Σ _ hM hD tR') _) as "H".
+  iPoseProof (init_exec_inner σ1a σ1c Hinit (ExMachG Σ _ hM hD tR') _) as "H".
   iMod ("H" with "[-Hreg]") as "$".
   { iFrame.  iSplitL "Hm"; [| iSplitL "Hd"].
     { rewrite -Hmpf_eq. iApply mem_init_to_bigOp; auto. }
     { rewrite -Hdpf_eq. iApply disk_init_to_bigOp; auto. }
-    eauto.
+    iExists _; eauto.
   }
   iFrame; eauto.
   }
@@ -252,7 +250,7 @@ Section refinement.
   iIntros "!> (#Hsrc&Hpt0&Hstate)".
   iMod ("H" with "Hsrc Hstate") as "(Hreg&Hinv)".
   iMod (exec_inner_inv (ExMachG Σ _ hM hD tR') _ with "[Hinv]") as "#Hinv".
-  { iFrame. iFrame "Hsrc". iExists _. iFrame. }
+  { iFrame. iSplitR ""; last by (iExists _; eauto). iExists _. iFrame. }
   simpl.
   iModIntro.
   iFrame "Hstate0".
@@ -298,8 +296,8 @@ Section refinement.
   set (tR'' := {| treg_name := tR_fresh; treg_counter_inG := _ |}).
   iMod (crash_inner_inv (ExMachG Σ invG hM' (exm_disk_inG) tR'') Hcfg' with "[Hcrash_inner]") as
       (param) "(#Hinv&Hstarter)".
-  { iIntros. simpl. iFrame "Hsrc". iExists ( exmachG_irisG.(@iris_invG Op _ Σ)).
-    iFrame. }
+  { iIntros. simpl. iSplitR ""; last by (iExists _; iFrame).
+    iExists ( exmachG_irisG.(@iris_invG Op _ Σ)). iFrame. }
   iModIntro.
   iAssert (own tR_fresh (Cinl (Count 1)) ∗ own tR_fresh (Cinl (Count (-1))))%I
     with "[Hreg]" as "(Ht&Hreg)".
@@ -380,7 +378,7 @@ Section refinement.
   iIntros "!> (#Hsrc&Hpt0&Hstate)".
   iMod ("H" with "Hsrc Hstate") as "(Hreg&Hinv)".
   iMod (exec_inner_inv (ExMachG Σ _ hM hD tR') _ with "[Hinv]") as "#Hinv".
-  { iFrame "Hsrc".  iFrame. iExists _. iFrame. }
+  { iSplitR ""; last by (iExists _; iFrame). iExists _. iFrame. }
   simpl.
   iModIntro.
   iFrame "Hstate0".
@@ -429,7 +427,8 @@ Section refinement.
          inversion Hfinish. subst. rewrite /crash_fun. simpl.
          iPureIntro. split_and!; [ | | apply init_state_wf |]; auto.
        }
-       iIntros "Hctx' Hsrc'". iMod ("Hfinish" $! _ _ hM' with "[-]"). iFrame. 
+       iIntros "Hctx' Hsrc'". iMod ("Hfinish" $! _ _ hM' with "[-]").
+       iSplitL "Hctx'"; first by (iExists _; iFrame). iFrame. 
        { rewrite -Hmpf_eq'. iApply (@mem_init_to_bigOp _ (ExMachG Σ _ hM' hD tR') with "Hm"). }
        iFrame; eauto.
      }
@@ -456,7 +455,8 @@ Section refinement.
   iMod (crash_inner_inv (ExMachG Σ _
                                  hM' (exm_disk_inG) tR''') Hcfg'
                          with "[Hcrash_inner]") as (param) "(#Hinv&Hstarter)".
-  { iIntros. simpl. iFrame "Hsrc". iExists ( exmachG_irisG.(@iris_invG Op _ Σ)).
+  { iIntros. simpl. iSplitR ""; last by (iExists _; iFrame).
+    iExists ( exmachG_irisG.(@iris_invG Op _ Σ)).
     iFrame. }
   iModIntro.
   iAssert (own tR_fresh' (Cinl (Count 1)) ∗ own tR_fresh' (Cinl (Count (-1))))%I
@@ -516,8 +516,8 @@ Section refinement.
        iExists hM'. iExists (HexmachG'.(@exm_disk_inG Σ)). iExists tR_fresh''.
        unshelve (iExists _; iExists _); eauto.
        destruct σ2c. iDestruct "Hinterp" as "(?&?)".
-       iFrame. iIntros. iMod ("Hfinish" with "[-]"). iFrame. eauto.
-       iModIntro. iFrame.
+       iFrame. iIntros. iMod ("Hfinish" with "[-]"). iSplitL ""; first by (iExists _; iFrame).
+       iFrame. eauto.
      }
   }
   {

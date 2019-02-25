@@ -16,8 +16,6 @@ Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (AtomicPair.Op) (AtomicPair.l) Σ,
             !inG Σ (authR (optionUR (exclR (prodC natC natC)))),
             !inG Σ (authR (optionUR (exclR natC)))}.
-  Context (ρ : thread_pool AtomicPair.Op * AtomicPair.l.(OpState)).
-
   Import ExMach.
 
   (* TODO: this should work, but the invariant is too global: ideally,
@@ -61,9 +59,9 @@ Section refinement_triples.
   Definition iN : namespace := (nroot.@"inner").
 
   Definition ExecInv :=
-    (source_ctx ρ ∗ ∃ γlock γ1 γ2 γ3, is_lock lN γlock lock_addr (ExecLockInv γ1 γ2 γ3)
+    (source_ctx ∗ ∃ γlock γ1 γ2 γ3, is_lock lN γlock lock_addr (ExecLockInv γ1 γ2 γ3)
                                            ∗ inv iN (ExecInner γ1 γ2 γ3))%I.
-  Definition CrashInv := (source_ctx ρ ∗ inv iN CrashInner)%I.
+  Definition CrashInv := (source_ctx ∗ inv iN CrashInner)%I.
 
 
   Lemma read_of_swap ptr_val :
@@ -87,40 +85,34 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
-    iApply (wp_read_disk with "[$]"). iIntros "!> Haddr".
+    wp_step.
     iModIntro; iExists _, _, _; iFrame.
     destruct p as (new_fst&new_snd).
-    wp_bind.
-    (* iInv fails for mysterious type class reasons that I cannot debug *)
-    iApply wp_atomic.
-    iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
-    destruct_einner "H".
 
+
+    wp_bind.
+    iFastInv "Hinv" "H".
+    destruct_einner "H".
     iDestruct "Hcase" as "(?&?&Hfst&Hsnd)".
-    iModIntro.
-    iApply (wp_write_disk with "Hfst"). iIntros "!> Hfst".
+    wp_step.
     iMod (ghost_var_update γ3 (new_fst, n2) with "Hown3 [$]") as "(Hown3&Hother_ghost)".
-    iMod ("Hclo" with "[-Hj HΦ Hlocked Hptr_ghost Hpair_ghost Hother_ghost Hreg]").
-    { iModIntro. iExists ptr_val. simpl. iExists _, _; iFrame.
-      simpl. iFrame. }
+    iExists ptr_val. simpl. iExists _, _; iFrame.
+    simpl. iFrame.
 
     iModIntro.
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
     iDestruct "Hcase" as "(Ho1&Ho2&Hfst&Hsnd)".
-    iApply (wp_write_disk with "Hsnd"). iIntros "!> Hsnd".
+    wp_step.
     iMod (ghost_var_update γ3 (new_fst, new_snd) with "Hown3 [$]") as "(Hown3&Hother_ghost)".
     iModIntro; iExists _, _; iFrame.
     simpl.
     iExists (_, _). iFrame.
 
-    (* iInv fails for mysterious type class reasons that I cannot debug *)
     wp_bind.
-    iApply wp_atomic.
-    iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+    iFastInv "Hinv" "H".
     destruct_einner "H".
-    iModIntro.
     iMod (ghost_var_update γ1 (swap_ptr ptr_val) with "Hown1 [$]") as "(Hown1&Hptr_ghost)".
     iMod (ghost_var_update γ2 (new_fst, new_snd) with "Hown2 [$]") as "(Hown2&Hpair_ghost)".
     iMod (ghost_var_update γ3 (n, n0) with "Hown3 [$]") as "(Hown3&Hother_ghost)".
@@ -129,13 +121,10 @@ Section refinement_triples.
       econstructor.
     }
     { solve_ndisj. }
-
-    iApply (wp_write_disk with "Hptr"). iIntros "!> Hsnd".
-    iMod ("Hclo" with "[-Hj HΦ Hlocked Hptr_ghost Hpair_ghost Hother_ghost Hreg]").
-    { iModIntro. iExists (swap_ptr ptr_val). simpl. iExists _, _; iFrame.
-      iFrame. iDestruct "Hcase" as "(Ho1&Ho2&Hfst'&Hsnd')".
-      rewrite ?read_of_swap ?write_of_swap; iFrame.
-    }
+    wp_step.
+    iExists (swap_ptr ptr_val). iExists _, _; iFrame.
+    iDestruct "Hcase" as "(Ho1&Ho2&Hfst'&Hsnd')".
+    rewrite ?read_of_swap ?write_of_swap; iFrame.
 
     iModIntro.
     iApply (wp_unlock with "[-HΦ Hreg Hj]"); iFrame.
@@ -153,22 +142,25 @@ Section refinement_triples.
     wp_bind. iApply (wp_lock with "[$]").
     iIntros "!> (Hlocked&HEL)".
     iDestruct "HEL" as (ptr_val pcurr pother) "(Hptr_ghost&Hpair_ghost&Hother_ghost)".
+
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
-    iApply (wp_read_disk with "[$]"). iIntros "!> Haddr".
+    wp_step.
     iModIntro; iExists _, _, _; iFrame.
+
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
     iDestruct "Hcase" as "(Hfst&Hsnd&?&?)".
-    iApply (wp_read_disk with "Hfst"). iIntros "!> Hfst".
+    wp_step.
     iModIntro; iExists _, _, _; iFrame.
+
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
     iDestruct "Hcase" as "(Hfst&Hsnd&?&?)".
-    iApply (wp_read_disk with "Hsnd"). iIntros "!> Hsnd".
+    wp_step.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
       econstructor.
@@ -233,12 +225,13 @@ Section refinement.
   Proof.
     eapply (exmach_crash_refinement_seq) with
         (Σ := myΣ)
-        (exec_inv := fun H1 H2 => (∃ ρ, @ExecInv myΣ H2 _ H1 _ _ ρ)%I)
+        (exec_inv := fun H1 H2 => @ExecInv myΣ H2 _ H1 _ _)
         (exec_inner := fun H1 H2 => (∃ v, lock_addr m↦ v ∗
-            (∃ γ1 γ2 γ3, (⌜ v = 0  ⌝ -∗ @ExecLockInv myΣ _ _ γ1 γ2 γ3) ∗ @ExecInner myΣ H2 H1 _ _ γ1 γ2 γ3))%I)
+            (∃ γ1 γ2 γ3, (⌜ v = 0  ⌝ -∗ @ExecLockInv myΣ _ _ γ1 γ2 γ3) 
+                          ∗ @ExecInner myΣ H2 H1 _ _ γ1 γ2 γ3))%I)
         (crash_inner := fun H1 H2 => (@CrashInner myΣ H2 H1)%I)
         (crash_param := fun H1 H2 => unit)
-        (crash_inv := fun H1 H2 _ =>(∃ ρ, @CrashInv myΣ H2 H1 ρ)%I)
+        (crash_inv := fun H1 H2 _ => @CrashInv myΣ H2 H1)
         (crash_starter := fun H1 H2 _ => True%I)
         (E := nclose sourceN).
     { apply _. }
@@ -246,12 +239,12 @@ Section refinement.
     { intros. apply _. }
     { intros. apply _. }
     { set_solver+. }
-    { intros. iIntros "(?&?&H)". iDestruct "H" as (ρ) "H". destruct op.
+    { intros. iIntros "(?&?&?)". destruct op.
       - iApply (write_refinement with "[$]"). eauto.
       - iApply (read_refinement with "[$]"). eauto.
     }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(?&?)". eauto. }
-    { intros. iIntros "(H&_)". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+    { intros. iIntros "(?&?)"; eauto. }
+    { intros. iIntros "((#Hctx&#Hinv)&_)".
       wp_ret. iInv "Hinv" as (ptr_val pcurr pother) ">(?&Hcase&?)" "_".
       iMod (own_alloc (● (Excl' ptr_val) ⋅ ◯ (Excl' ptr_val))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
       { apply auth_valid_discrete_2; split; eauto. econstructor. }
@@ -265,12 +258,12 @@ Section refinement.
       iSplitL "".
       { iPureIntro; econstructor. }
       iClear "Hctx Hinv".
-      iIntros (????) "(#Hctx&Hstate)".
+      iIntros (???) "(#Hctx&Hstate)".
       iModIntro. iExists _. iFrame. iExists γ1, γ2, γ3.
       iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other"; iIntros; iExists _, _, _; iFrame.
     }
     { intros ?? (H&?). inversion H. subst. eapply ExMach.init_state_wf. }
-    { intros ??? (H&Hinit) ??. inversion H. inversion Hinit. subst.
+    { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
       iIntros "(Hmem&Hdisk&#?&Hstate)".
       iMod (own_alloc (● (Excl' 0) ⋅ ◯ (Excl' 0))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
       { apply auth_valid_discrete_2; split; eauto. econstructor. }
@@ -284,7 +277,7 @@ Section refinement.
       iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other"; iIntros; iExists _, _, _; iFrame.
       simpl. iFrame.
     }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+    { intros. iIntros "(#Hctx&#Hinv)".
       iDestruct "Hinv" as (γlock γ1 γ2 γ3) "(#Hlock&#Hinv)".
       iInv "Hinv" as "Hopen" "_".
       destruct_einner "Hopen".
@@ -294,7 +287,7 @@ Section refinement.
       iPoseProof (@init_mem_split with "Hmem") as "?".
       iFrame.
     }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+    { intros. iIntros "(#Hctx&#Hinv)".
       iInv "Hinv" as ">Hopen" "_".
       iDestruct "Hopen" as (???) "(?&?&_)".
       iApply fupd_mask_weaken; first by solve_ndisj.
@@ -303,14 +296,14 @@ Section refinement.
       iPoseProof (@init_mem_split with "Hmem") as "?".
       iFrame.
     }
-    { intros. iIntros "H". iDestruct "H" as "(Hinv&#Hsrc)".
+    { intros. iIntros "(Hinv&#Hsrc)".
       iDestruct "Hinv" as (invG) "Hinv".
       iDestruct "Hinv" as (???) "(?&?&?)".
       iMod (@inv_alloc myΣ (exm_invG) iN _ CrashInner with "[-]").
       { iNext. iExists _, _, _; iFrame. }
-      iModIntro. iFrame. iExists tt, _. iFrame "Hsrc".
+      iModIntro. iFrame. iExists tt. iFrame "Hsrc".
     }
-    { intros. iIntros "H". iDestruct "H" as "(Hinv&#Hsrc)".
+    { intros. iIntros "(Hinv&#Hsrc)".
       iDestruct "Hinv" as (invG v) "Hinv".
       iDestruct "Hinv" as "(?&Hinv)".
       iDestruct "Hinv" as (γ1 γ2 γ3) "(Hlock&Hinner)".
@@ -319,18 +312,16 @@ Section refinement.
       { iFrame. }
       iMod (@inv_alloc myΣ (exm_invG) iN _ (ExecInner γ1 γ2 γ3) with "[Hinner]").
       { iFrame. }
-      iModIntro. iExists cfg. iFrame "Hsrc". iExists _, _, _, _. iFrame.
+      iModIntro. iFrame "Hsrc". iExists _, _, _, _. iFrame.
     }
-    { iIntros (??) "? H".
-      iDestruct "H" as (?) "(?&H)".
+    { iIntros (??) "? (?&H)".
       iDestruct "H" as (????) "(?&Hinv)".
       iInv "Hinv" as "H" "_".
       destruct_einner "H".
       iApply fupd_mask_weaken; first by solve_ndisj.
       iExists _; iFrame.
     }
-    { iIntros (??) "? H".
-      iDestruct "H" as (?) "(?&H)".
+    { iIntros (??) "? (?&H)".
       iDestruct "H" as (????) "(Hlock&Hinv)".
       iInv "Hinv" as "H" "_".
       iDestruct "H" as (ptr (n1&n2) (n1'&n2')) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";
@@ -342,7 +333,7 @@ Section refinement.
       iExists _, _; iFrame.
       iSplitL "".
       { iPureIntro. econstructor. }
-      iFrame. iIntros (?????) "(?&?&Hmem)".
+      iFrame. iIntros (????) "(?&?&Hmem)".
       iPoseProof (@init_mem_split with "Hmem") as "?".
       iExists _. iFrame. rewrite /ExecLockInv.
       iMod (own_alloc (● (Excl' ptr) ⋅ ◯ (Excl' ptr))) as (γ1') "[Hauth_ptr Hfrag_ptr]".

@@ -9,8 +9,6 @@ Set Default Proof Using "Type".
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (DB.Op) (DB.l) Σ,
             !inG Σ (authR (optionUR (exclR (listC natC))))}.
-  Context (ρ : thread_pool DB.Op * DB.l.(OpState)).
-
   Import ExMach.
 
   Definition DBInnerInv γ :=
@@ -28,10 +26,9 @@ Section refinement_triples.
   Definition lN : namespace := (nroot.@"lock").
   Definition iN : namespace := (nroot.@"inner").
 
-  Definition DBInv := (source_ctx ρ ∗
-                                  ∃ γ1 γ2, is_lock lN γ1 lock_addr (DBLockInv γ2)
-                                                   ∗ inv iN (DBInnerInv γ2))%I.
-  Definition CrashInv := (source_ctx ρ ∗ inv iN DBCrashInner)%I.
+  Definition DBInv := (source_ctx ∗ ∃ γ1 γ2, is_lock lN γ1 lock_addr (DBLockInv γ2)
+                                                     ∗ inv iN (DBInnerInv γ2))%I.
+  Definition CrashInv := (source_ctx ∗ inv iN DBCrashInner)%I.
 
   (* TODO: write smart tactics for applying the wp_primitives *)
   Lemma add_refinement {T} j K `{LanguageCtx DB.Op unit T DB.l K} n:
@@ -44,9 +41,7 @@ Section refinement_triples.
     wp_bind. iApply (wp_lock with "[$]").
     iIntros "!> (Hlocked&HDB)".
     iDestruct "HDB" as (l) "(Hsource_tok&Hsum&Hcount)".
-    wp_bind. iApply (wp_read_mem with "Hsum"). iIntros "!> Hsum".
-    wp_bind. iApply (wp_write_mem with "[$]"). iIntros "!> Hsum".
-    wp_bind. iApply (wp_read_mem with "Hcount"). iIntros "!> Hcount".
+    do 3 wp_step.
     wp_bind.
     iInv "Hinv" as (l') ">(Htok&Hsource)".
     iDestruct (own_valid_2 with "Htok Hsource_tok")
@@ -58,7 +53,7 @@ Section refinement_triples.
       as "[Hfull ?]".
     { by apply auth_update, option_local_update, exclusive_local_update. }
 
-    iApply (wp_write_mem with "[$]"). iIntros "!> Hcount".
+    wp_step.
     iModIntro.
     iSplitL "Hfull Hsource".
     { iNext. iExists _. iFrame. }
@@ -77,7 +72,7 @@ Section refinement_triples.
     wp_bind. iApply (wp_lock with "[$]").
     iIntros "!> (Hlocked&HDB)".
     iDestruct "HDB" as (l) "(Hsource_tok&Hsum&Hcount)".
-    wp_bind. iApply (wp_read_mem with "Hsum"). iIntros "!> Hsum".
+    wp_step.
     wp_bind.
     iInv "Hinv" as (l') ">(Htok&Hsource)".
     iDestruct (own_valid_2 with "Htok Hsource_tok")
@@ -86,7 +81,7 @@ Section refinement_triples.
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto. econstructor. }
     { solve_ndisj. }
 
-    iApply (wp_read_mem with "Hcount"). iIntros "!> Hcount".
+    wp_step.
     iModIntro.
     iSplitL "Htok Hsource".
     { iNext. iExists _. iFrame. }
@@ -144,12 +139,12 @@ Section refinement.
   Proof.
     eapply (exmach_crash_refinement_seq) with
         (Σ := myΣ)
-        (exec_inv := fun H1 H2 => (∃ ρ, @DBInv myΣ H2 _ H1 _ ρ)%I)
+        (exec_inv := fun H1 H2 => (@DBInv myΣ H2 _ H1 _)%I)
         (exec_inner := fun H1 H2 => (∃ v, lock_addr m↦ v ∗
             (∃ γ, (⌜ v = 0  ⌝-∗ @DBLockInv myΣ H2 _ γ) ∗ @DBInnerInv _ _ _ γ))%I)
         (crash_param := fun _ _ => unit)
         (crash_inner := fun H1 H2 => (@DBCrashInner myΣ H2 H1)%I)
-        (crash_inv := fun H1 H2 _ =>(∃ ρ, @CrashInv myΣ H2 H1 ρ)%I)
+        (crash_inv := fun H1 H2 _ => @CrashInv myΣ H2 H1)
         (crash_starter := fun H1 H2 _ => True%I)
         (E := nclose sourceN).
     { apply _. }
@@ -157,12 +152,12 @@ Section refinement.
     { intros. apply _. }
     { intros. apply _. }
     { set_solver+. }
-    { intros. iIntros "(?&?&HDB)". iDestruct "HDB" as (ρ) "HDB". destruct op.
+    { intros. iIntros "(?&?&HDB)". destruct op.
       - iApply (add_refinement with "[$]"). iNext. iIntros (?) "H". iFrame.
       - iApply (avg_refinement with "[$]"). iNext. iIntros (?) "H". iFrame.
     }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(?&?)". eauto. }
-    { intros. iIntros "(H&_)". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+    { iIntros (??) "(?&?)"; eauto. }
+    { intros. iIntros "((#Hctx&#Hinv)&_&_)".
       wp_ret. iInv "Hinv" as (l) ">(?&?&?&?)" "_".
       rewrite /source_inv.
       iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2) "[Hauth Hfrag]".
@@ -173,19 +168,19 @@ Section refinement.
       iSplitL "".
       { iPureIntro; econstructor. }
       iClear "Hctx Hinv".
-      iIntros (????) "(#Hctx&Hstate)".
+      iIntros (???) "(#Hctx&Hstate)".
       rewrite /DBLockInv.
       iModIntro. iExists _. iFrame. iExists γ2. iSplitR "Hauth Hstate"; iIntros; iExists nil; iFrame.
     }
     { intros ?? (H&?). inversion H. subst. eapply ExMach.init_state_wf. }
-    { intros ??? (H&Hinit) ??. inversion H. inversion Hinit. subst.
+    { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
       iIntros "(Hmem&?&#?&Hstate)".
       iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2) "[Hauth Hfrag]".
       { clear. by eauto. }
       iPoseProof (init_mem_split with "Hmem") as "(?&?&?)".
       iModIntro. iExists _. iFrame. iExists γ2. iSplitR "Hauth Hstate"; iIntros; iExists nil; iFrame.
     }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+    { intros. iIntros "(#Hctx&#Hinv)".
       iDestruct "Hinv" as (γ1 γ2) "(Hlock&#Hinv)".
       rewrite /DBCrashInner.
       iInv "Hinv" as ">Hopen" "_".
@@ -196,7 +191,7 @@ Section refinement.
       iPoseProof (@init_mem_split with "Hmem") as "(?&?&?)".
       iFrame.
     }
-    { intros. iIntros "H". iDestruct "H" as (ρ) "(#Hctx&#Hinv)".
+    { intros. iIntros "(#Hctx&#Hinv)".
       rewrite /DBCrashInner.
       iInv "Hinv" as ">Hopen" "_".
       iDestruct "Hopen" as (l) "(?&?)".
@@ -212,7 +207,7 @@ Section refinement.
       iDestruct "Hinv" as (l) "(?&?)".
       iMod (@inv_alloc myΣ (exm_invG) iN _ DBCrashInner with "[-]").
       { iNext. iExists l; iFrame. }
-      iModIntro. iFrame.  iExists tt, _. iFrame "Hsrc".
+      iModIntro. iFrame. iExists tt. iFrame "Hsrc".
     }
     { intros. iIntros "H". iDestruct "H" as "(Hinv&#Hsrc)".
       iDestruct "Hinv" as (invG v) "Hinv".
@@ -223,17 +218,15 @@ Section refinement.
       { iFrame. }
       iMod (@inv_alloc myΣ (exm_invG) iN _ (DBInnerInv γ2) with "[Hinner]").
       { iFrame. }
-      iModIntro. rewrite /DBInv. iExists cfg. iFrame "Hsrc". iExists γ1, γ2. iFrame.
+      iModIntro. rewrite /DBInv. iFrame "Hsrc". iExists γ1, γ2. iFrame.
     }
-    { iIntros (??) "? H".
-      iDestruct "H" as (?) "(?&H)".
+    { iIntros (??) "? (?&H)".
       iDestruct "H" as (??) "(?&Hinv)".
       iInv "Hinv" as (l') ">(Htok&Hsource)" "_".
       iApply fupd_mask_weaken; first by solve_ndisj.
       iExists _; eauto.
     }
-    { iIntros (??) "? H".
-      iDestruct "H" as (?) "(?&H)".
+    { iIntros (??) "? (?&H)".
       iDestruct "H" as (γ1 γ2) "(Hlock&Hinv)".
       iInv "Hinv" as (l') ">(Htok&Hsource)" "_".
       iMod (lock_crack with "Hlock") as ">H"; first by solve_ndisj.
@@ -241,7 +234,7 @@ Section refinement.
       iApply fupd_mask_weaken; first by solve_ndisj.
       iExists _, nil; eauto.
       iFrame. iSplitL ""; first by eauto. 
-      iIntros (?????) "(?&Hstate&Hmem)".
+      iIntros (????) "(?&Hstate&Hmem)".
       iPoseProof (@init_mem_split with "Hmem") as "(?&?&?)".
       iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2') "[Hauth Hfrag]".
       { by eauto. }
