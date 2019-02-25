@@ -45,11 +45,17 @@ Fixpoint wp_proc_seq_refinement {T R OpTa OpTc} {Σ} (Λa: Layer OpTa) (Λc: Lay
         (es: proc_seq OpTa T) (rec: proc OpTc R) (f: ∀ T, proc OpTa T → proc OpTc T)
         (σ1a: State Λa) σ1c φ φrec E : iProp Σ :=
   match es with
-  | Proc_Seq_Final e => wp_recovery_refinement Σ Λa Λc e (f _ e) rec σ1a σ1c φ φrec E O
+  | Proc_Seq_Final e => wp_recovery_refinement Σ Λa Λc e (f _ e) rec σ1a σ1c 
+      (λ v σ2a σ2c, ∀ σ2c' (Hfinish: Λc.(finish_step) σ2c (Val σ2c' tt)),
+          ∃ σ2a' (Hfinisha: Λa.(finish_step) σ2a (Val σ2a' tt)),
+            φ v σ2a' σ2c')%I
+      φrec E O
   | @Proc_Seq_Bind _ _ T0 e es' =>
     wp_recovery_refinement Σ Λa Λc e (f _ e) rec σ1a σ1c
-      (λ v σ2a σ2c, wp_proc_seq_refinement Λa Λc (es' (Normal (existT T0 v)))
-                                           rec f (1, σ2a) (1, σ2c) φ φrec E)%I
+      (λ v σ2a σ2c, ∀ σ2c' (Hfinish: Λc.(finish_step) σ2c (Val σ2c' tt)),
+          ∃ σ2a' (Hfinisha: Λa.(finish_step) σ2a (Val σ2a' tt)),
+          wp_proc_seq_refinement Λa Λc (es' (Normal (existT T0 v)))
+                                         rec f (1, σ2a') (1, σ2c') φ φrec E)%I
       (λ σ2a σ2c, wp_proc_seq_refinement Λa Λc (es' (Recovered (existT _ tt)))
                                          rec f (1, σ2a) (1, σ2c) φ φrec E) E O
   end.
@@ -69,13 +75,45 @@ Proof.
   split; eauto. econstructor; destruct t; eauto.
 Qed.
 
+Lemma finish_step_snd {OpT} (Λa: Layer OpT) σ1a σ2a t n:
+  lifted_finish_step Λa σ1a (Val σ2a t) →
+  lifted_finish_step Λa (n, snd σ1a) (Val (1, snd σ2a) tt).
+Proof.
+  rewrite /lifted_finish_step.
+  destruct σ1a as (n1&σ1a).
+  destruct σ2a as (n2&σ2a).
+  intros ([]&(?&σ1a')&Hput&Hcrash).
+  inversion Hput; subst.
+  inversion H. subst.
+  inversion Hcrash; subst.
+  exists tt, (1, σ1a').
+  split; eauto. econstructor; destruct t; eauto.
+Qed.
+
+Lemma lifted_finish_step_intro {OpT} (Λa: Layer OpT) n σ σ' t1 t2:
+ finish_step Λa σ (Val σ' t1) →
+ lifted_finish_step Λa (n, σ) (Val (1, σ') t2).
+Proof.
+  intros. destruct t1, t2.
+  exists tt, (1, σ); split; rewrite //=.
+Qed.
+
+Lemma lifted_finish_step_intro' {OpT} (Λa: Layer OpT) σ σ' t1 t2:
+ finish_step Λa (snd σ) (Val σ' t1) →
+ lifted_finish_step Λa σ (Val (1, σ') t2).
+Proof.
+  intros. destruct t1, t2, σ.
+  eapply lifted_finish_step_intro; eauto.
+Qed.
+
 Theorem wp_recovery_refinement_adequacy_internal {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
         (ea: proc OpTa T) (ec: proc OpTc T) (rec: proc OpTc R) σ1a σ1c φ φrec E k
         (Hno_fault : ¬ exec Λa ea (1, σ1a) Err):
   wp_recovery_refinement Σ Λa Λc ea ec rec (1, σ1a) σ1c φ φrec E k ⊢
   recv_adequate_internal NotStuck ec rec σ1c
-    (λ v σ2c, ∃ σ2a, ⌜ exec Λa ea (1, σ1a) (Val σ2a (existT _ v)) ⌝ ∗ φ v (snd σ2a) (snd σ2c))%I
+    (λ v σ2c, ∃ σ2a, ⌜ exec Λa ea (1, σ1a) (Val σ2a (existT _ v)) ⌝
+                            ∗ φ v (snd σ2a) (snd σ2c))%I
     (λ σ2c, ∃ tp2 σ2a σ2a', ⌜ exec_partial Λa ea (1, σ1a) (Val σ2a tp2) ∧
                             lifted_crash_step Λa σ2a (Val σ2a' tt) ⌝ ∗ φrec (snd σ2a') (snd σ2c))%I k.
 Proof.
@@ -155,7 +193,12 @@ Proof.
   iIntros "Hwp". iIntros (n σ2c res Hexec). iRevert "Hwp".
   iInduction es as [] "IH" forall (k n σ1c σ1a Hno_fault Hexec); iIntros "Hwp".
   - destruct Hexec as (n1&?&Hexec). subst. destruct Hexec as [Hnorm|Hrecv].
-      ** destruct Hnorm as (v&?&Hexec&Hpure). inversion Hpure; subst.
+      ** destruct Hnorm as (v&(?&σ2c')&Hexec&Hfinish). 
+         destruct Hfinish as ([]&(?&σ2c'')&Hfinish&Hpure).
+         inversion Hpure; subst.
+         destruct Hfinish as ([]&(?&?)&Hput&Hfinish).
+         inversion Hfinish; subst.
+         inversion Hput; subst.
          unshelve (iPoseProof (wp_recovery_refinement_adequacy_internal with "Hwp") as "Hwp"); eauto.
          { intros Hexec'. apply Hno_fault. by do 2 left. }
          iDestruct "Hwp" as "(Hwp&_)".
@@ -164,8 +207,15 @@ Proof.
          iIntros "H".
          iDestruct "H" as (v' Hp) "H". subst.
          iDestruct "H" as (σ2a Hexeca) "H".
-         iPureIntro. eexists. left. do 2 eexists. intuition eauto. econstructor.
-      ** destruct Hrecv as ([]&?&Hrexec&Hpure). inversion Hpure; subst.
+         unshelve (iDestruct ("H" $! _ _) as (σ2a' Hfinisha) "H"); [| eauto|].
+         iPureIntro. eexists (_, σ2a'). left. do 2 eexists. intuition eauto.
+         exists tt. eexists _.
+         intuition; eauto.
+         destruct σ2a; eapply lifted_finish_step_intro; eauto.
+         econstructor.
+      ** destruct Hrecv as ([]&?&Hrexec&Hrest). 
+         destruct Hrest as ([]&(?&?)&Hputs&Hpure).
+         inversion Hpure; subst.
          unshelve (iPoseProof (wp_recovery_refinement_adequacy_internal with "Hwp") as "Hwp"); eauto.
          { intros Hexec'. apply Hno_fault. by do 2 left. }
          iDestruct "Hwp" as "(_&(Hwp&_))".
@@ -174,12 +224,21 @@ Proof.
          iIntros "H".
          iDestruct "H" as (tp σ2a) "H". subst.
          iDestruct "H" as (σ2a' Hexeca) "H".
-         iPureIntro. exists σ2a'.  right.
+         destruct Hexeca as (Hexeca&Hcrash).
+         iPureIntro. exists (1, snd σ2a').  right.
          exists tt, σ2a'; split; last econstructor.
          eapply rexec_singleton_ret_intro; intuition eauto.
+         exists (1, (snd σ2a')); split; eauto.
+         *** destruct σ2a'; split; eauto. econstructor.
+         *** econstructor.
   - destruct Hexec as (n1&n2&Heq&(res0&σ1'&Hhd&Hrest)).
       destruct Hhd as [Hnorm|Hrecv].
-      ** destruct Hnorm as (v&?&Hexec&Hpure). inversion Hpure; subst.
+      ** destruct Hnorm as (v&(?&?)&Hexec&Hfinish). 
+         destruct Hfinish as ([]&(?&?)&Hfinish&Hpure).
+         destruct Hfinish as ([]&(?&?)&Hputs&Hfinish).
+         inversion Hputs; subst.
+         inversion Hpure; subst.
+         destruct Hfinish; subst.
          replace ((S k + (5 + n1 + S n2)))%nat with ((S k + 5 + n1) + S n2)%nat by lia.
          rewrite /wp_proc_seq_refinement -/wp_proc_seq_refinement.
          rewrite Nat_iter_add.
@@ -192,34 +251,35 @@ Proof.
          iIntros "H".
          iDestruct "H" as (v' Hp) "H". subst.
          iDestruct "H" as (σ2a Hexeca) "H".
-         replace (S n2) with (1 + n2)%nat by auto.
-         destruct Hrest as ([]&(?&?)&Hput&Hrest).
-         destruct σ1' as (?&σ1').
-         inversion Hput; subst.
-         inversion H1. subst.
+         unshelve (iDestruct ("H" $! _ _) as (σ2a' Hfinisha) "H"); [| eauto|]; [].
+         inversion H1; subst.
          iMod ("IH" $! _ O n2 with "[] [] H") as "H".
          { iPureIntro. intros Herr.
            eapply Hno_fault. right.
            do 2 eexists; split; eauto.
            left.
            do 2 eexists; split; eauto.
+           exists tt. eexists. split; eauto.
+           eapply lifted_finish_step_intro'; eauto.
            econstructor.
-           right.
-           eexists tt, _. split; eauto.
-           destruct σ2a; econstructor; eauto.
          }
          { eauto. }
          iModIntro.
          iNext.
          iApply bupd_iter_mono; last by iApply "H".
          iIntros "H".
-         iDestruct "H" as (σ2a') "%".
-         iPureIntro. exists σ2a'.
+         iDestruct "H" as (σ2a'') "%".
+         iPureIntro. exists σ2a''.
          do 2 eexists; split; eauto.
-         left. do 2 eexists; split; eauto. econstructor.
+         left. do 2 eexists; split; eauto.
          eexists tt, _. split; eauto.
-         destruct σ2a; split; eauto.
-      ** destruct Hrecv as ([]&?&Hexec&Hpure). inversion Hpure; subst.
+         eapply lifted_finish_step_intro'; eauto.
+         econstructor.
+      ** destruct Hrecv as ([]&(?&?)&Hrexec&Hfinish). 
+         destruct Hfinish as ([]&(?&?)&Hputs&Hpure).
+         inversion Hpure. subst.
+         destruct Hputs as (Hput&Hpure'). inversion Hpure'. subst.
+         inversion Hput; subst.
          replace ((S k + (5 + n1 + S n2)))%nat with ((S k + (5 + n1)) + S n2)%nat by lia.
          rewrite /wp_proc_seq_refinement -/wp_proc_seq_refinement.
          rewrite Nat_iter_add.
@@ -232,10 +292,6 @@ Proof.
          iDestruct "H" as (v' Hp) "H". subst.
          iDestruct "H" as (σ2a Hexeca) "H".
          replace (S n2) with (1 + n2)%nat by auto.
-         destruct Hrest as ([]&(?&?)&Hput&Hrest).
-         destruct σ1' as (?&σ1').
-         inversion Hput; subst.
-         inversion H1. subst.
          iMod ("IH" $! _ O n2 with "[] [] H") as "H".
          { iPureIntro. intros Herr.
            eapply Hno_fault. right.
@@ -243,8 +299,7 @@ Proof.
            right.
            do 2 eexists; split; eauto; last econstructor.
            eapply rexec_singleton_ret_intro; intuition eauto.
-           right.
-           eexists tt, _. split; eauto.
+           eexists (_, _); split; eauto; last econstructor.
            destruct σ2a; econstructor; eauto.
          }
          { eauto. }
@@ -259,8 +314,8 @@ Proof.
          econstructor; last econstructor.
          econstructor; last econstructor.
          eapply rexec_singleton_ret_intro; intuition eauto.
-         eexists tt, _. split; eauto.
-         destruct σ2a; split; eauto.
+         eexists (_, _); split; eauto; last econstructor.
+         destruct σ2a; econstructor; eauto.
 Qed.
 
 Import uPred.

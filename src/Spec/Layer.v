@@ -16,6 +16,7 @@ Record Layer Op :=
     crash_preserves_trace:
       forall s1 s2, sem.(crash_step) s1 (Val s2 tt) -> trace_proj s1 = trace_proj s2;
     crash_total: forall s1, exists s2, sem.(crash_step) s1 (Val s2 tt);
+    finish_total: forall s1, exists s2, sem.(finish_step) s1 (Val s2 tt);
     crash_non_err: forall s1 ret, sem.(crash_step) s1 ret -> ret <> Err;
     initP: OpState -> Prop }.
 

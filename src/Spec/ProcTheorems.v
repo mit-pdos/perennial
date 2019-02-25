@@ -17,6 +17,7 @@ Section Dynamics.
   Notation rec_seq := (rec_seq Op).
   Notation step := sem.(step).
   Notation crash_step := sem.(lifted_crash_step).
+  Notation finish_step := sem.(lifted_finish_step).
   Notation State := (@State OpState).
   Notation exec_halt := sem.(exec_halt).
   Notation exec_partial := sem.(exec_partial).
@@ -713,8 +714,13 @@ Section Dynamics.
   Qed.
 
   Definition exec_or_rexec_n {T R} (p : proc T) (rec: proc R) n :=
-    (v <- exec_n p n; pure (Normal v)) +
-    (v <- rexec_n p rec n; pure (Recovered (existT (fun T => T) _ v))).
+    (v <- exec_n p n;
+     _ <- finish_step;
+     pure (Normal v))
+    +
+    (v <- rexec_n p rec n;
+     _ <- fst_lift (puts (fun _ => 1));
+     pure (Recovered (existT (fun T => T) _ v))).
   
   Lemma exec_or_rexec_equiv_exec_or_rexec_n {T R} (e: proc T) (rec: proc R) σ1 σ2 out:
     ~ (exec_or_rexec e (rec_singleton rec) σ1 Err) -> 
@@ -750,7 +756,6 @@ Section Dynamics.
       fun s1 ret =>
         exists n1 n2, (n = (5 + n1) + S n2)%nat /\
         (v <- exec_or_rexec_n p rec n1;
-        fst_lift (puts (fun x => 1));;
         proc_exec_seq_n (f v) rec n2) s1 ret
     end.
 
@@ -766,91 +771,30 @@ Section Dynamics.
       ** intros (n&(n1&?&?)). apply exec_or_rexec_equiv_exec_or_rexec_n; eauto.
     * split.
       ** intros (?&?&Hhd&Htl).
-         destruct Htl as ([]&?&Hlft&Htl).
          eapply IH in Htl as (n2&?).
          { eapply exec_or_rexec_equiv_exec_or_rexec_n in Hhd as (n1&?).
-           { exists ((5 + n1) + S n2)%nat. repeat (do 2 eexists; split; eauto). }
+           { exists ((5 + n1) + S n2)%nat.
+             do 2 eexists; split; eauto.
+             do 2 eexists; split; eauto.
+           }
            { intros Herr.  eapply Hno_err. left; eauto. }
          }
          { intros Herr. eapply Hno_err. right.
            do 2 eexists; split; eauto.
-           right.
-           do 2 eexists; split; eauto.
          }
-      ** intros (n&(?&?&?&(?&?&Hhd&([]&?&Hlft&Htl)))).
+      ** intros (n&(?&?&?&(?&?&Hhd&Htl))).
          subst.
          do 2 eexists; split.
          { eapply exec_or_rexec_equiv_exec_or_rexec_n; eauto. intros Herr.
            eapply Hno_err. left; eauto. }
          {
-           do 2 eexists; split; eauto.
            eapply IH; eauto. intros Herr.
            eapply Hno_err. right; eauto.
            do 2 eexists; split; eauto.
            eapply exec_or_rexec_equiv_exec_or_rexec_n; eauto. intros Herr'.
            eapply Hno_err. left; eauto.
-           right. do 2 eexists; split; eauto.
          }
   Qed.
-
-  (*
-  Theorem exec_recover_bind
-          `(rec1: proc unit)
-          `(rec2: proc unit) :
-    exec_recover (Bind rec1 (fun _ => rec2)) <--->
-                 (v <- exec_recover rec1;
-                    v' <- bind_star (fun v => rexec rec2 rec1) v;
-                    exec (rec2)).
-  Proof.
-    repeat unfold exec_recover, rexec; simpl; norm.
-    rew denesting.
-
-    rewrite exec_halt_idem.
-    rewrite ?bind_dist_r; norm.
-
-    (* a few abstractions *)
-    gen (exec rec1) (exec_halt rec1) crash_step;
-      clear rec1;
-      intros rec1 rec1_crash crash.
-
-    rew denesting.
-    rel_congruence.
-    rewrite <- ?bind_assoc.
-    rel_congruence; norm.
-    rew bind_sliding.
-  Qed.
-   *)
-
-  (*
-  Theorem rexec_to_exec_recover
-          `(rec: rec_seq) :
-    rexec rec rec ---> exec_recover rec.
-  Proof.
-    unfold rexec, exec_recover.
-    setoid_rewrite <- bind_assoc at 1.
-    setoid_rewrite <- bind_assoc at 1.
-    rew seq_star1.
-  Qed.
-
-  Lemma exec_halt_ret_proc `(rec: proc R):
-    exec_halt (Ret tt) ---> exec_halt rec.
-  Proof.
-    rew exec_halt_ret.
-    unfold exec_halt, exec_partial.
-    rew<- bind_star_expand.
-    Left.
-  Qed.
-
-  Lemma exec_halt_ret_recover_fold `(rec: proc R):
-    _ <- exec_halt (Ret tt); _ <- crash_step; exec_recover rec ---> exec_recover rec.
-  Proof.
-    setoid_rewrite (exec_halt_ret_proc rec).
-    unfold exec_recover.
-    setoid_rewrite <-bind_assoc at 1.
-    setoid_rewrite <-bind_assoc at 1.
-    rewrite seq_star_fold; eauto.
-  Qed.
-   *)
 
 End Dynamics.
 

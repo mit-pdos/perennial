@@ -61,6 +61,10 @@ Module Base.
       constructor; simpl.
       hnf; simpl; eauto.
       hnf; simpl; eauto.
+    - destruct s1; eexists (mkState _ _); simpl.
+      constructor; simpl.
+      hnf; simpl; eauto.
+      hnf; simpl; eauto.
     - inversion H; eauto.
   Defined.
 

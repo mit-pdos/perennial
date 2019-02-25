@@ -107,6 +107,10 @@ Section Dynamics.
     fst_lift (puts (fun x => 1));;
     snd_lift (sem.(crash_step)).
 
+  Definition lifted_finish_step : FinishSemantics State :=
+    fst_lift (puts (fun x => 1));;
+    snd_lift (sem.(finish_step)).
+
   (** First, we define semantics of running programs with halting (without the
   effect of a crash or recovery) *)
 
@@ -316,7 +320,13 @@ Section Dynamics.
     (exec_seq_partial ps;; crash_step;; exec_recover rec) := eq_refl.
 
   Definition exec_or_rexec {T} (p : proc T) (rec: rec_seq) : relation State State ExecOutcome :=
-    (v <- exec p; pure (Normal v)) + (v <- rexec p rec; pure (Recovered (existT (fun T => T) _ v))).
+    (v <- exec p;
+     _ <- lifted_finish_step;
+     pure (Normal v))
+    +
+    (v <- rexec p rec;
+     _ <- fst_lift (puts (fun _ => 1 ));
+     pure (Recovered (existT (fun T => T) _ v))).
 
   (* TODO: need to track that the hd type does not change for this to make sense *)
 
@@ -327,7 +337,6 @@ Section Dynamics.
       exec_or_rexec p rec
     | Proc_Seq_Bind p f =>
       v <- exec_or_rexec p rec;
-      _ <- fst_lift (puts (fun _ => 1));
       proc_exec_seq (f v) rec
     end.
 
@@ -338,7 +347,6 @@ Section Dynamics.
       exec_or_rexec p rec
     | Proc_Seq_Bind p f =>
       v <- exec_or_rexec p rec;
-      _ <- fst_lift (puts (fun _ => 1));
       proc_exec_seq (f v) rec
     end.
   Proof. destruct p; auto. Qed.

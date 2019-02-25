@@ -36,6 +36,7 @@ Module DB.
        trace_proj := fun _ => nil;
        crash_preserves_trace := fun _ _ _ => eq_refl;
        crash_total := crash_total_ok;
+       finish_total := crash_total_ok;
        crash_non_err := crash_non_err_ok;
        initP := fun s => s = nil |}.
 End DB.

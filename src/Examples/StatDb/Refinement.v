@@ -239,11 +239,17 @@ Section refinement.
       iMod (lock_crack with "Hlock") as ">H"; first by solve_ndisj.
       iDestruct "H" as (v) "(?&?)".
       iApply fupd_mask_weaken; first by solve_ndisj.
-      iExists _; eauto.
-      iFrame. iIntros (????) "(?&?)".
-      iModIntro.
-      iExists v. iFrame. iExists γ2. iFrame. 
-      iExists _. iFrame.
+      iExists _, nil; eauto.
+      iFrame. iSplitL ""; first by eauto. 
+      iIntros (?????) "(?&Hstate&Hmem)".
+      iPoseProof (@init_mem_split with "Hmem") as "(?&?&?)".
+      iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2') "[Hauth Hfrag]".
+      { by eauto. }
+      iModIntro. iExists O. iFrame.
+      iExists γ2'. rewrite /DBInnerInv/DBLockInv.
+      iSplitR "Hstate Hauth".
+      { iIntros. iExists _; iFrame. }
+      { iExists _; iFrame. }
     }
   Qed.
 

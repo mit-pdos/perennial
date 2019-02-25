@@ -173,13 +173,14 @@ Section refinement.
              ∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
              AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ σ2a : Λa.(OpState), source_state σ2a).
 
-  (* TODO: should we model explicit effects of finishing programs? *)
   Context (exec_inv_preserve_finish:
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
-          AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ σ2a : Λa.(OpState), source_state σ2a ∗
-          ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hreg' ρ,
-            source_ctx (ρ, σ2a) ∗ source_state σ2a  ={⊤}=∗
-             exec_inner Hcfg' (ExMachG Σ Hinv' exm_mem_inG exm_disk_inG Hreg'))).
+          AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
+          ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
+          ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hreg' ρ,
+            (let Hex := ExMachG Σ Hinv' Hmem' (exm_disk_inG) Hreg' in
+            source_ctx (ρ, σ2a') ∗ source_state σ2a' ∗ ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={⊤}=∗
+               exec_inner Hcfg' Hex))%I).
 
 
   Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) :
@@ -272,7 +273,8 @@ Section refinement.
      iIntros "!> Hdone".
      wp_ret. iFrame. iIntros.
      iMod (inv_implies_source with "Hdone Hinv") as (σ2a) "H".
-     iModIntro. iExists _; iFrame; auto.
+     iModIntro. iExists σ2a; iFrame. iIntros. 
+     destruct (finish_total Λa σ2a) as (σ2a'&?). unshelve (iExists _, _); [ | eauto |]; auto.
   }
   iSplit.
   { iIntros (σ2c) "Hmach".
@@ -400,13 +402,17 @@ Section refinement.
                with "Hreg").
      iIntros "!> Hdone".
      wp_ret. iFrame. iIntros (σ2c) "Hmach".
-     iMod (exec_inv_preserve_finish with "Hdone Hinv") as (σ2a) "(H&Hfinish)".
+     iMod (exec_inv_preserve_finish with "Hdone Hinv") as (σ2a σ2a') "(H&Hfina&Hfinish)".
+     iDestruct "Hfina" as %Hfina.
      iModIntro. iExists _; iFrame; auto.
      simpl.
      rewrite -/wp_proc_seq_refinement.
+     iIntros (σ2c'). iIntros.
+     unshelve (iExists σ2a', _); [eauto |]; [].
      iApply "IH".
      { iPureIntro. destruct Hwf_seq. eauto. }
      { iIntros.
+       iMod (gen_heap_strong_init (init_zero)) as (hM' Hmpf_eq') "(Hmc&Hm)".
        iMod (own_alloc (Cinl (Count 0))) as (tR_fresh') "Ht".
        { constructor. }
        iAssert (own tR_fresh' (Cinl (Count 1))
@@ -414,10 +420,18 @@ Section refinement.
        { rewrite /Registered -own_op Cinl_op counting_op' //=. }
        set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
        iModIntro.
-       iExists hM. iExists hD. iExists tR_fresh'. unshelve (iExists _, _); try eauto.
-       destruct σ2c. iDestruct "Hmach" as "(?&?)".
-       iFrame. iIntros. iMod ("Hfinish" with "[-]"). iFrame. eauto.
-       iModIntro. eauto.
+       iExists hM'. iExists hD. iExists tR_fresh'. unshelve (iExists _, _); try eauto.
+       destruct σ2c as (n&σ2c). iDestruct "Hmach" as "(?&Hmach)".
+       iFrame.
+       iSplitL ("Hmc Hmach").
+       { iClear "IH". iDestruct "Hmach" as (mem0 disk) "(?&?&%&%&%&%)".
+         iExists init_zero, disk. iFrame.
+         inversion Hfinish. subst. rewrite /crash_fun. simpl.
+         iPureIntro. split_and!; [ | | apply init_state_wf |]; auto.
+       }
+       iIntros "Hctx' Hsrc'". iMod ("Hfinish" $! _ _ hM' with "[-]"). iFrame. 
+       { rewrite -Hmpf_eq'. iApply (@mem_init_to_bigOp _ (ExMachG Σ _ hM' hD tR') with "Hm"). }
+       iFrame; eauto.
      }
   }
   iSplit.

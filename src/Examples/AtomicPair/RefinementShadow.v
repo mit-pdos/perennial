@@ -333,15 +333,30 @@ Section refinement.
       iDestruct "H" as (?) "(?&H)".
       iDestruct "H" as (????) "(Hlock&Hinv)".
       iInv "Hinv" as "H" "_".
-      destruct_einner "H".
+      iDestruct "H" as (ptr (n1&n2) (n1'&n2')) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";
+        iDestruct "Hmap" as "(Hptr&Hcase)";
+        repeat unify_ghost.
       iMod (lock_crack with "Hlock") as ">H"; first by solve_ndisj.
       iDestruct "H" as (v) "(?&?)".
       iApply fupd_mask_weaken; first by solve_ndisj.
-      iExists _; iFrame.
-      iFrame. iIntros (????) "(?&?)".
-      iModIntro.
-      iExists _. iFrame. iExists _, _, _. iFrame.
-      iExists _, _, _. iFrame.
+      iExists _, _; iFrame.
+      iSplitL "".
+      { iPureIntro. econstructor. }
+      iFrame. iIntros (?????) "(?&?&Hmem)".
+      iPoseProof (@init_mem_split with "Hmem") as "?".
+      iExists _. iFrame. rewrite /ExecLockInv.
+      iMod (own_alloc (● (Excl' ptr) ⋅ ◯ (Excl' ptr))) as (γ1') "[Hauth_ptr Hfrag_ptr]".
+      { apply auth_valid_discrete_2; split; eauto. econstructor. }
+      iMod (own_alloc (● (Excl' (n1, n2)) ⋅ ◯ (Excl' (n1, n2))))
+        as (γ2') "[Hauth_curr Hfrag_curr]".
+      { apply auth_valid_discrete_2; split; eauto. econstructor. }
+      iMod (own_alloc (● (Excl' (n1', n2')) ⋅ ◯ (Excl' (n1', n2'))))
+        as (γ3') "[Hauth_other Hfrag_other]".
+      { apply auth_valid_discrete_2; split; eauto. econstructor. }
+      iExists γ1', γ2', γ3'. iFrame.
+      iModIntro. rewrite /ExecInner. iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other". 
+      { iIntros. iExists _, _, _. iFrame. }
+      { iIntros. iExists _, _, _. iFrame. }
     }
   Qed.
 

@@ -594,16 +594,40 @@ Section refinement.
       iMod (lock_crack with "Hmlock") as (?) ">(Hmlock&?)"; first by solve_ndisj.
       iMod (lock_crack with "Hlock") as (?) ">(Hlock&?)"; first by solve_ndisj.
       iApply fupd_mask_weaken; first by solve_ndisj.
-      iExists _; iFrame.
-
-        iClear "Hsrc_ctx".
-        iIntros (????) "(#Hctx&Hsrc)".
-        iModIntro. iExists Γ, _, _. iFrame.
-        iExists _, _, _, _. iFrame.
+      iExists _, _; iFrame.
+      iSplitL "".
+      { iPureIntro. econstructor. }
+      iClear "Hsrc_ctx".
+      iIntros (?????) "(#Hctx&Hsrc&Hmem)".
+      destruct (fst H0); last first.
+      { 
         rewrite someone_writing_unfold.
-        iIntros "Hp". iDestruct ("Hsomewriter1" with "Hp") as (??) "(Hreg&?&?)".
+        iDestruct ("Hsomewriter1" with "[//]") as (??) "(Hreg&?&?)".
         iExFalso. iApply (@AllDone_Register_excl with "Had Hreg").
+      }
+      iDestruct ("Hsomewriter0" with "[//]") as %hp. subst.
+      iMod (ghost_var_alloc (0, (0, existT _ (Ret tt) : procTC _)))
+        as (γflag) "[Hflag_auth' Hflag_ghost']".
+      iMod (ghost_var_alloc H1)
+        as (γlog) "[Hlog_auth' Hlog_ghost']".
+      iMod (ghost_var_alloc H3)
+        as (γsrc) "[Hsrc_auth' Hsrc_ghost']".
+      iMod (ghost_var_alloc H3)
+        as (γmain) "[Hmain_auth' Hmain_ghost']".
 
+      iPoseProof (@init_mem_split with "Hmem") as "(?&?)".
+      iExists {| γflag := γflag; γlog := γlog; γsrc := γsrc; γmain := γmain|}.
+      iExists _, _. iFrame.
+      rewrite /MainLockInv.
+      iSplitL "Hmain_ghost' Hsrc_ghost'".
+      { iModIntro; iIntros. iExists _. iFrame. }
+
+      iSplitL "Hlog_ghost'".
+      { iModIntro; iIntros. iExists _. iFrame. }
+      
+      iModIntro. iExists _, _, _, _. iFrame.
+      iSplitL ""; auto.
+      simpl. iIntros; try congruence.
     }
   Qed.
 
