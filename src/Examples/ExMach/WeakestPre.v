@@ -165,7 +165,7 @@ Proof.
   (* TODO: break out split/join lemmas for register *)
   iAssert (own (treg_name _) (Cinl (Count n)) ∗ Registered)%I
           with "[Hown Hreg]" as "(Hown&Hreg)".
-  { 
+  {
     destruct (decide (n = 1)) as [->|]; last first.
     {  destruct n as [|[|n]]; try lia; iFrame. }
     iDestruct "Hown" as "[Hown|Hown]"; first by iFrame.
@@ -173,7 +173,7 @@ Proof.
   }
   iAssert (own (treg_name _) (Cinl (Count (S n))) ∗ Registered)%I
           with "[Hown]" as "(Hown&Hreg')".
-  { 
+  {
     rewrite -own_op Cinl_op counting_op' //=.
     repeat destruct decide; try lia. replace (S n + (-1))%Z with (n : Z) by lia. done.
   }
@@ -203,7 +203,7 @@ Proof.
 
   iAssert (∃ n', ⌜ n = S n' ⌝ ∗ own (treg_name _) (Cinl (Count n)) ∗ Registered)%I
           with "[Hown Hreg]" as (n' Heq) "(Hown&Hreg)".
-  { 
+  {
     destruct (decide (n = 1)) as [->|]; last first.
     {  destruct n as [|[|n]]; try lia.
        - iDestruct (own_valid_2 with "Hown Hreg") as %[].
@@ -215,7 +215,7 @@ Proof.
   subst.
   iAssert (own (treg_name _) (Cinl (Count n')))%I
           with "[Hown Hreg]" as "Hown".
-  { 
+  {
     iCombine "Hown Hreg" as "Hown".
     rewrite Cinl_op counting_op' //=.
     repeat destruct decide; try lia. replace (S n' + (-1))%Z with (n' : Z) by lia. done.
@@ -244,20 +244,20 @@ Proof.
 
   iAssert (own (treg_name _) (Cinl (Count 1)) ∗ Registered)%I
           with "[Hown Hreg]" as "(Hown&Hreg)".
-  { 
+  {
     iDestruct "Hown" as "[Hown|Hown]"; first by (iFrame).
     iDestruct (own_valid_2 with "Hown Hreg") as %[].
   }
   subst.
   iAssert (own (treg_name _) (Cinl (Count O)))%I
           with "[Hown Hreg]" as "Hown".
-  { 
+  {
     iCombine "Hown Hreg" as "Hown".
     rewrite Cinl_op counting_op' //=.
   }
   iMod (own_update with "Hown") as "(Hdone&Hown)".
   { apply cmra_update_exclusive with (y:=Cinr (◯ (Excl' tt)) ⋅ Cinr (● (Excl' tt))) => //=. }
-  iModIntro. iFrame. simpl. 
+  iModIntro. iFrame. simpl.
   rewrite right_id.
   by iApply "HΦ".
 Qed.
@@ -573,3 +573,65 @@ Section lock.
       iLeft. iFrame.
   Qed.
 End lock.
+
+Ltac wp_write_disk :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (write_disk ?loc ?val) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc d↦ _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
+        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
+        iApply (wp_write_disk with spat); iIntros ipat
+      end
+    end
+  end.
+
+Ltac wp_read_disk :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (read_disk ?loc) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc d↦ _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
+        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
+        iApply (wp_read_disk with spat); iIntros ipat
+      end
+    end
+  end.
+
+Ltac wp_write_mem :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (write_mem ?loc ?val) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc m↦ _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
+        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
+        iApply (wp_write_mem with spat); iIntros ipat
+      end
+    end
+  end.
+
+Ltac wp_read_mem :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (read_mem ?loc) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc m↦ _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
+        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
+        iApply (wp_read_mem with spat); iIntros ipat
+      end
+    end
+  end.
+
+Ltac wp_step := first [ wp_read_disk | wp_write_disk | wp_read_mem | wp_write_mem | wp_ret ].

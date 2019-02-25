@@ -134,7 +134,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iApply (wp_write_disk with "Hlog_fst"). iIntros "!> Hlog_fst".
+    wp_step.
     iMod (ghost_var_update (γlog Γ) (fst p, snd plog)
             with "Hlog_auth [$]") as "(Hlog_auth&Hlog_ghost)".
     iModIntro.
@@ -145,7 +145,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iApply (wp_write_disk with "Hlog_snd"). iIntros "!> Hlog_snd".
+    wp_step.
     iMod (ghost_var_update (γlog Γ) (fst p, snd p) with "Hlog_auth [$]") as "(Hlog_auth&Hlog_ghost)".
     iModIntro.
     iExists (0, _), _, _, _; iFrame.
@@ -155,7 +155,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iApply (wp_write_disk with "Hcommit"). iIntros "!> Hcommit".
+    wp_step.
     iMod (ghost_var_update (γflag Γ)
             (1, (j, (existT _ (K (Call (AtomicPair.Write p)))) : procTC AtomicPair.Op))
             with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
@@ -173,7 +173,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iApply (wp_write_disk with "Hmain_fst"). iIntros "!> Hmain_fst".
+    wp_step.
     iMod (ghost_var_update (γmain Γ) (fst p, snd pmain) with "Hmain_auth [$]")
       as "(Hmain_auth&Hmain_ghost)".
     iModIntro.
@@ -185,7 +185,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iApply (wp_write_disk with "Hmain_snd"). iIntros "!> Hmain_snd".
+    wp_step.
     iMod (ghost_var_update (γmain Γ) (fst p, snd p) with "Hmain_auth [$]")
       as "(Hmain_auth&Hmain_ghost)".
     iModIntro.
@@ -199,7 +199,7 @@ Section refinement_triples.
     destruct_commit_inner "H".
     rewrite someone_writing_unfold.
     iDestruct ("Hsomewriter1" with "[//]") as (? K') "(Hreg&%&Hj)". simpl.
-    iApply (wp_write_disk with "Hcommit"). iIntros "!> Hcommit".
+    wp_step.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsrc") as "(Hj&Hsrc&_)".
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
       econstructor.
@@ -241,7 +241,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iApply (wp_read_disk with "Hmain_fst"). iIntros "!> Hmain_fst".
+    wp_step.
     iModIntro.
     recommit.
 
@@ -253,7 +253,7 @@ Section refinement_triples.
       econstructor.
     }
     { solve_ndisj. }
-    iApply (wp_read_disk with "Hmain_snd"). iIntros "!> Hmain_snd".
+    wp_step.
     iModIntro.
     recommit.
 
@@ -355,7 +355,7 @@ Section refinement.
       iInv "Hinv" as "H".
       destruct_commit_inner "H".
 
-      iApply (wp_read_disk with "Hcommit"); iIntros "!> Hcommit".
+      wp_step.
       destruct flag as (flag&thd).
       simpl. destruct flag.
       * (* commit bit not set *)
@@ -397,20 +397,20 @@ Section refinement.
         wp_bind.
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iApply (wp_read_disk with "Hlog_fst"). iIntros "!> Hlog_fst".
+        wp_step.
         iModIntro. recommit.
 
         wp_bind.
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iApply (wp_read_disk with "Hlog_snd"). iIntros "!> Hlog_snd".
+        wp_step.
         iModIntro. recommit.
 
 
         wp_bind.
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iApply (wp_write_disk with "Hmain_fst"). iIntros "!> Hmain_fst".
+        wp_step.
         iMod (ghost_var_update (γmain Γ) (fst plog, snd pcurr) with "Hmain_auth [$]")
           as "(Hmain_auth&Hmain_ghost)".
         iModIntro. recommit.
@@ -420,7 +420,7 @@ Section refinement.
         wp_bind.
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iApply (wp_write_disk with "Hmain_snd"). iIntros "!> Hmain_snd".
+        wp_step.
         iMod (ghost_var_update (γmain Γ) (fst plog, snd plog) with "Hmain_auth [$]")
           as "(Hmain_auth&Hmain_ghost)".
         iModIntro. recommit.
@@ -435,7 +435,7 @@ Section refinement.
         iDestruct ("Hsomewriter1" with "[//]") as (K' ?) "(_&Heq&Hj)".
         iDestruct "Heq" as %Heq.
         rewrite Heq.
-        iApply (wp_write_disk with "Hcommit"). iIntros "!> Hcommit".
+        wp_step.
         iMod (ghost_step_lifting with "Hj Hctx Hsrc") as "(Hj&Hsrc&_)".
         { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
           econstructor.
