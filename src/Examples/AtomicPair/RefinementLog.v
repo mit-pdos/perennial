@@ -2,24 +2,14 @@ From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement.
 Require Import AtomicPairAPI AtomicPair.ImplLog ExMach.WeakestPre ExMach.RefinementAdequacy.
 Require Import AtomicPair.Helpers.
+Set Default Proof Using "Type".
 Unset Implicit Arguments.
 
 Local Ltac destruct_commit_inner H :=
   iDestruct H as ">H";
-  iDestruct H as (????) "(Hflag_auth&Hlog_auth&Hmain_auth&Hsrc_auth&Hrest0)";
+  iDestruct "H" as (????) "(Hflag_auth&Hlog_auth&Hmain_auth&Hsrc_auth&Hrest0)";
   iDestruct "Hrest0" as "(Hcommit&Hlog_fst&Hlog_snd&Hmain_fst&Hmain_snd&Hsrc&Hsomewriter0&Hsomewriter1)";
-  try (iDestruct (ghost_var_agree with "Hflag_auth [$]") as %?; subst; []);
-  try (iDestruct (ghost_var_agree with "Hlog_auth [$]") as %Hp; inversion_clear Hp; subst; []);
-  try (iDestruct (ghost_var_agree with "Hmain_auth [$]") as %Hp; inversion_clear Hp; subst; []);
-  try (iDestruct (ghost_var_agree with "Hsrc_auth [$]") as %Hp; subst; []).
-
-Local Ltac destruct_main_inner H :=
-  iDestruct H as (?) ">(Hmain_auth&Hmain_fst&Hmain_snd)";
-  try (iDestruct (ghost_var_agree with "Hmain_auth [$]") as %Hp; inversion_clear Hp; subst; []).
-
-Local Ltac destruct_src_inner H :=
-  iDestruct H as (?) ">(Hsrc_auth&Hsrc)";
-  try (iDestruct (ghost_var_agree with "Hsrc_auth [$]") as %Hp; subst; []).
+  repeat unify_ghost.
 
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (AtomicPair.Op) (AtomicPair.l) Σ,
@@ -401,64 +391,47 @@ Section refinement.
         iClear "Hsomewriter0".
 
         wp_bind.
-        (* iInv fails for mysterious type class reasons that I cannot debug *)
-        iApply wp_atomic.
-        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iApply (wp_read_disk with "Hlog_fst"). iModIntro. iIntros "!> Hlog_fst".
-        iMod ("Hclo" with "[-Hmain_lock Hreg Hlog_lock Hflag_ghost
-                      Hlog_ghost Hmain_ghost Hsrc_ghost]").
-        { iNext. iExists _, _, _, _. iFrame. }
+        iApply (wp_read_disk with "Hlog_fst"). iIntros "!> Hlog_fst".
+        iModIntro. iExists _, _, _, _. iFrame.
 
         wp_bind.
-        iModIntro.
-        (* iInv fails for mysterious type class reasons that I cannot debug *)
-        iApply wp_atomic.
-        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iApply (wp_read_disk with "Hlog_snd"). iModIntro. iIntros "!> Hlog_snd".
-        iMod ("Hclo" with "[-Hmain_lock Hreg
-                Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
-        { iNext. iExists _, _, _, _. iFrame. }
+        iApply (wp_read_disk with "Hlog_snd"). iIntros "!> Hlog_snd".
+        iModIntro. iExists _, _, _, _. iFrame.
 
 
         wp_bind.
-        iModIntro.
-        (* iInv fails for mysterious type class reasons that I cannot debug *)
-        iApply wp_atomic.
-        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iApply (wp_write_disk with "Hmain_fst"). iModIntro. iIntros "!> Hmain_fst".
+        iApply (wp_write_disk with "Hmain_fst"). iIntros "!> Hmain_fst".
         iMod (ghost_var_update (γmain Γ) (fst plog, snd pcurr) with "Hmain_auth [$]")
           as "(Hmain_auth&Hmain_ghost)".
+        iModIntro. iExists _, _, _, _. iFrame.
+        iSplitL ""; eauto.
+        iClear "Hsomewriter0".
 
-        iMod ("Hclo" with "[-Hmain_lock Hreg Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
-        { iNext. iExists _, _, _, _. iFrame. iIntros; eauto. }
-
-        iModIntro.
         wp_bind.
-        (* iInv fails for mysterious type class reasons that I cannot debug *)
-        iApply wp_atomic.
-        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iApply (wp_write_disk with "Hmain_snd"). iModIntro. iIntros "!> Hmain_snd".
+        iApply (wp_write_disk with "Hmain_snd"). iIntros "!> Hmain_snd".
         iMod (ghost_var_update (γmain Γ) (fst plog, snd plog) with "Hmain_auth [$]")
           as "(Hmain_auth&Hmain_ghost)".
+        iModIntro. iExists _, _, _, _. iFrame.
+        iSplitL ""; eauto.
+        iClear "Hsomewriter0".
 
-        iMod ("Hclo" with "[-Hmain_lock Hreg Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
-        { iNext. iExists _, _, _, _. iFrame. iIntros; eauto. }
 
-
-        iModIntro.
-        iApply wp_atomic.
-        iMod (inv_open with "Hinv") as "(H&Hclo)"; first by set_solver+; iModIntro.
+        iFastInv "Hinv" "H".
         destruct_commit_inner "H".
         destruct thd. simpl.
         rewrite someone_writing_unfold.
         iDestruct ("Hsomewriter1" with "[//]") as (K' ?) "(_&Heq&Hj)".
         iDestruct "Heq" as %Heq.
         rewrite Heq.
-        iApply (wp_write_disk with "Hcommit"). iModIntro. iIntros "!> Hcommit".
+        iApply (wp_write_disk with "Hcommit"). iIntros "!> Hcommit".
         iMod (ghost_step_lifting with "Hj Hctx Hsrc") as "(Hj&Hsrc&_)".
         { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
           econstructor.
@@ -467,13 +440,13 @@ Section refinement.
         iMod (ghost_var_update (γsrc Γ) plog with "Hsrc_auth [$]") as "(Hsrc_auth&Hsrc_ghost)".
         iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
                 with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
-        iMod ("Hclo" with "[-Hj Hmain_lock Hlog_lock Hflag_ghost Hlog_ghost Hmain_ghost Hsrc_ghost]").
-        { iNext. destruct plog. iExists _, _, _, _. iFrame.
-          iSplitL ""; auto. simpl. iIntros; congruence. }
-
-        iModIntro.
+        iModIntro. iExists _, _, _, _. iFrame.
+        iSplitL "Hmain_auth".
+        { destruct plog; iFrame. simpl. iNext; iSplitL; eauto. iIntros; congruence. }
+        iClear "Hsomewriter0".
 
         iInv "Hinv" as "H" "_".
+
         destruct_commit_inner "H".
         iDestruct ("Hsomewriter0" with "[//]") as %Hpeq. subst.
 

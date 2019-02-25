@@ -535,3 +535,15 @@ Section proofmode_classes.
     iIntros (v) ">[Hβ HΦ]". iApply "HΦ". by iApply "Hclose".
   Qed.
 End proofmode_classes.
+
+
+From iris.base_logic.lib Require Export invariants.
+Lemma wp_fast_inv `{irisG OpT Λ Σ} {T} E N P Φ (e: proc OpT T) s:
+  Atomic Λ (stuckness_to_atomicity s) e →
+  ↑N ⊆ E →
+  inv N P -∗ (▷ P -∗ WP e @ s; E ∖ ↑N {{ v, |={E ∖ ↑N}=> ▷ P ∗ Φ v }}) -∗ WP e @ s ; E {{ Φ }}. 
+Proof.
+  iIntros (??) "Hinv HPQ". iInv "Hinv" as "H".
+  by iApply "HPQ".
+Qed.
+Ltac iFastInv H1 H2 := iApply (wp_fast_inv with H1); first (by set_solver+); iIntros H2.

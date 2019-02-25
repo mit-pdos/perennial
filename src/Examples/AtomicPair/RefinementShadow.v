@@ -9,9 +9,7 @@ Existing Instance from_exist_left_sep.
 Local Ltac destruct_einner H :=
   iDestruct H as (? (?&?) (?&?)) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";
   iDestruct "Hmap" as "(Hptr&Hcase)";
-  try (iDestruct (ghost_var_agree with "Hown1 [$]") as %?; subst; []);
-  try (iDestruct (ghost_var_agree with "Hown2 [$]") as %Hp; inversion_clear Hp; subst; []);
-  try (iDestruct (ghost_var_agree with "Hown3 [$]") as %Hp; inversion_clear Hp; subst; []).
+  repeat unify_ghost.
 
 Set Default Proof Using "Type".
 Section refinement_triples.

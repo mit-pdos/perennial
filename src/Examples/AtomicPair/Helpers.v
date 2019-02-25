@@ -40,3 +40,20 @@ Instance from_exist_left_sep {Σ} {A} (Φ : A → iProp Σ) Q :
   FromExist (▷ (∃ a, Φ a) ∗ Q) (λ a, ▷ Φ a ∗ Q)%I .
 Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
 
+
+From iris.proofmode Require Import coq_tactics intro_patterns spec_patterns.
+From iris.proofmode Require Import tactics.
+From stdpp Require Import hlist pretty.
+
+(* This tactic searches for own H (● (Excl' x)) and own H (◯ (Excl' y)) in the context and
+   uses ghost_var_agree to prove that x = y. *)
+Ltac unify_ghost :=
+  match goal with
+  | [ |- context[ environments.Esnoc _ (INamed ?auth_name) (own ?y (● (Excl' ?x)))] ] =>
+    match goal with
+    | [ |- context[ own y (◯ (Excl' x))] ] => fail 1
+    | [ |- context[ environments.Esnoc _ (INamed ?frag_name) (own y (◯ (Excl' ?z)))] ] =>
+      let pat := constr:([(SIdent (INamed auth_name) nil); (SIdent (INamed frag_name) nil)]) in
+      (iDestruct (ghost_var_agree with pat) as %Hp; inversion_clear Hp; subst; [])
+    end
+  end.

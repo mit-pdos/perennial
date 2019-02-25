@@ -27,7 +27,6 @@ Canonical Structure countingC := leibnizC counting.
 Local Ltac by_cases :=
   repeat (match goal with
           | [ H: counting |- _ ] => destruct H
-          | [ H: counting |- _ ] => destruct H
           end) => //=;
   repeat destruct decide => //=; try lia.
 
