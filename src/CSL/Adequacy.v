@@ -90,7 +90,7 @@ Record recv_adequate {OpT T R} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T)
  }.
 
 Record proc_seq_adequate {OpT T R} {Λ: Layer OpT} (s : stuckness) (es : proc_seq OpT T)
-       (rec: proc OpT R) (σ1 : Λ.(State)) (φ : T → Λ.(State) → Prop) (φrec: Λ.(State) → Prop) := {
+       (rec: proc OpT R) (σ1 : Λ.(State)) (φ : T → Λ.(State) → Prop) := {
    proc_seq_adequate_normal_result σ2 res :
      Λ.(proc_exec_seq) es (rec_singleton rec) σ1 (Val σ2 res) → φ res σ2;
    proc_seq_adequate_not_stuck :
@@ -830,14 +830,14 @@ Qed.
 *)
 
 Fixpoint wp_proc_seq {T R} OpT Σ (Λ: Layer OpT) `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
-        σ1 φ (φrec : Λ.(State) → iProp Σ) : iProp Σ :=
+        σ1 φ : iProp Σ :=
   match es with
   | Proc_Seq_Nil v => (φ v σ1)%I
   | @Proc_Seq_Bind _ _ T0 e es' =>
     wp_recovery (Λ := Λ) s e rec σ1
                 (λ v σ2, ∀ σ2' (Hfinish: Λ.(finish_step) (snd σ2) (Val σ2' tt)),
-                    wp_proc_seq s (es' (Normal (existT T0 v))) rec (1, σ2') φ φrec)%I
-                (λ σ2, wp_proc_seq s (es' (Recovered (existT _ tt))) rec (1, snd σ2) φ φrec)
+                    wp_proc_seq Λ s (es' (Normal (existT T0 v))) rec (1, σ2') φ)%I
+                (λ σ2, wp_proc_seq Λ s (es' (Recovered (existT _ tt))) rec (1, snd σ2) φ)
                 O
   end.
 
@@ -857,9 +857,9 @@ Qed.
 Lemma wp_recovery_mono {T R OpT} Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
       σ1 φ φ' φrec φrec' k:
   (∀ v σ, φ v σ -∗ φ' v σ) -∗
-                           □ (∀ σ, φrec σ -∗ φrec' σ) -∗
-                           wp_recovery (Λ := Λ) s e rec σ1 φ φrec k -∗
-                           wp_recovery s e rec σ1 φ' φrec' k.
+  □ (∀ σ, φrec σ -∗ φrec' σ) -∗
+  wp_recovery (Λ := Λ) s e rec σ1 φ φrec k -∗
+  wp_recovery s e rec σ1 φ' φrec' k.
 Proof.
   iIntros "Hwand1 Hwand2 Hrec".
   rewrite /wp_recovery.
@@ -875,14 +875,31 @@ Proof.
 Qed.
 
 
+Lemma wp_proc_seq_mono {T R OpT} Σ Λ `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
+      σ1 φ φ':
+  □ (∀ v σ, φ v σ -∗ φ' v σ) -∗
+  wp_proc_seq (Λ := Λ) s es rec σ1 φ -∗
+  wp_proc_seq s es rec σ1 φ'.
+Proof.
+  revert σ1.
+  induction es as [| ?? es IH] => σ1.
+  - rewrite //=. iIntros "H". iApply "H".
+  - iIntros "#H".
+    iApply wp_recovery_mono; rewrite -/wp_proc_seq.
+    * iIntros (??) "H2". iIntros.
+      iApply IH; first by eauto. iApply "H2". eauto.
+    * iAlways. iIntros. rewrite -/wp_proc_seq.
+      iApply IH; eauto.
+Qed.
+
 Lemma wp_proc_seq_ind {T0 T R} OpT Σ (Λ: Layer OpT)
       `{invPreG Σ} (p: proc OpT T0) (rx: ExecOutcome → proc_seq OpT T) (rec: proc OpT R)
-      σ1 σ1' φ φrec k res:
+      σ1 σ1' φ k res:
   exec_or_rexec Λ p (rec_singleton rec) σ1 (Val σ1' res) →
   Nat.iter k (λ P, |==> ▷ P)%I
-           (wp_proc_seq NotStuck (Proc_Seq_Bind p rx) rec σ1 φ φrec) →
+           (wp_proc_seq NotStuck (Proc_Seq_Bind p rx) rec σ1 φ) →
   ∃ n, Nat.iter n (λ P, |==> ▷ P)%I
-                (wp_proc_seq NotStuck (rx res) rec σ1' φ φrec).
+                (wp_proc_seq NotStuck (rx res) rec σ1' φ).
 Proof.
   intros Hhd Hwp.
   destruct Hhd as [Hnorm|Hrecv].
@@ -922,11 +939,11 @@ Qed.
 
 Theorem wp_proc_seq_adequacy {T R} OpT Σ (Λ: Layer OpT)
         `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
-        σ1 φ φrec k:
+        σ1 φ k:
   Nat.iter k (λ P, |==> ▷ P)%I
-             (wp_proc_seq s es rec σ1 (λ v σ2, ⌜ φ v σ2 ⌝%I) (λ σ2, ⌜ φrec σ2 ⌝%I)) →
+             (wp_proc_seq s es rec σ1 (λ v σ2, ⌜ φ v σ2 ⌝%I)) →
   s = NotStuck →
-  proc_seq_adequate (Λ := Λ) s es rec σ1 φ φrec.
+  proc_seq_adequate (Λ := Λ) s es rec σ1 φ.
 Proof.
   intros Hwp ->.
   split.
@@ -945,7 +962,7 @@ Proof.
          eapply exec_err_rexec_err in Hnorm.
          eapply recv_adequate_not_stuck; eauto.
          eapply wp_recovery_adequacy with (φ0 := fun _ _ => True)
-                                          (φrec0 := fun _ => True); first done.
+                                          (φrec := fun _ => True); first done.
          iApply (bupd_iter_mono); last iApply Hwp.
          rewrite /wp_proc_seq -/wp_proc_seq.
          iIntros "Hwp".
@@ -954,7 +971,7 @@ Proof.
          { apply bind_pure_no_err in Hfalse; eauto. inversion Hfalse. }
          eapply recv_adequate_not_stuck; eauto.
          eapply wp_recovery_adequacy with (φ0 := fun _ _ => True)
-                                          (φrec0 := fun _ => True); first done.
+                                          (φrec := fun _ => True); first done.
          iApply (bupd_iter_mono); last iApply Hwp.
          rewrite /wp_proc_seq -/wp_proc_seq.
          iIntros "Hwp".

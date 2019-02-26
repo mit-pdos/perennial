@@ -185,8 +185,9 @@ Section refinement.
                                         (rec_singleton recv) (1, σ1c) (Val σ2c res) →
     ∃ σ2a, Λa.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
   Proof.
-    rewrite /compile_proc_seq. intros Hinit Hwf_seq Hno_err.
+    rewrite /compile_proc_seq. intros Hinit Hwf_seq Hno_err σ2c0 ?.
     unshelve (eapply wp_proc_seq_refinement_adequacy with
+                  (Λc := l)
                   (φ := fun _ _ _ => True%I)
                   (E0 := E); eauto).
     clear Hno_err.

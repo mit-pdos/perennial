@@ -102,19 +102,20 @@ Proof.
   eapply lifted_finish_step_intro; eauto.
 Qed.
 
-Theorem wp_recovery_refinement_adequacy_internal {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
+Lemma wp_recovery_refinement_impl_wp_recovery {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
         (ea: proc OpTa T) (ec: proc OpTc T) (rec: proc OpTc R) σ1a σ1c φ φrec E k
         (Hno_fault : ¬ exec Λa ea (1, σ1a) Err):
   wp_recovery_refinement Σ Λa Λc ea ec rec (1, σ1a) σ1c φ φrec E k ⊢
-  recv_adequate_internal NotStuck ec rec σ1c
-    (λ v σ2c, ∃ σ2a, ⌜ exec Λa ea (1, σ1a) (Val σ2a (existT _ v)) ⌝
-                            ∗ φ v (snd σ2a) (snd σ2c))%I
-    (λ σ2c, ∃ tp2 σ2a σ2a', ⌜ exec_partial Λa ea (1, σ1a) (Val σ2a tp2) ∧
-                            lifted_crash_step Λa σ2a (Val σ2a' tt) ⌝ ∗ φrec (snd σ2a') (snd σ2c))%I k.
+  wp_recovery NotStuck ec rec σ1c
+    (λ (v : T) (σ2c : State Λc),
+       ∃ σ2a, ⌜exec Λa ea (1, σ1a) (Val σ2a (existT T v))⌝ ∗ φ v σ2a.2 σ2c.2)
+    (λ σ2c : State Λc,
+       ∃ tp2 (σ2a σ2a' : Proc.State),
+         ⌜exec_partial Λa ea (1, σ1a) (Val σ2a tp2) ∧ lifted_crash_step Λa σ2a (Val σ2a' tt)⌝
+         ∗ φrec σ2a'.2 σ2c.2) k.
 Proof.
   iIntros "Hwp".
-  unshelve (iApply wp_recovery_adequacy_internal); eauto.
   iApply (bupd_iter_mono with "[] Hwp"). iIntros "Hwp".
   iDestruct "Hwp" as (Hclosure φinv) "Hwp".
   iExists (fun σ => (∃ _ : cfgG Σ, φinv _ σ ∗ source_inv [existT T ea] (σ1a))%I).
@@ -174,6 +175,22 @@ Proof.
        iApply fupd_mask_weaken; auto.
        { set_solver+. }
        iFrame. iExists _; iFrame.
+Qed.
+
+Theorem wp_recovery_refinement_adequacy_internal {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
+        `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
+        (ea: proc OpTa T) (ec: proc OpTc T) (rec: proc OpTc R) σ1a σ1c φ φrec E k
+        (Hno_fault : ¬ exec Λa ea (1, σ1a) Err):
+  wp_recovery_refinement Σ Λa Λc ea ec rec (1, σ1a) σ1c φ φrec E k ⊢
+  recv_adequate_internal NotStuck ec rec σ1c
+    (λ v σ2c, ∃ σ2a, ⌜ exec Λa ea (1, σ1a) (Val σ2a (existT _ v)) ⌝
+                            ∗ φ v (snd σ2a) (snd σ2c))%I
+    (λ σ2c, ∃ tp2 σ2a σ2a', ⌜ exec_partial Λa ea (1, σ1a) (Val σ2a tp2) ∧
+                            lifted_crash_step Λa σ2a (Val σ2a' tt) ⌝ ∗ φrec (snd σ2a') (snd σ2c))%I k.
+Proof.
+  iIntros "Hwp".
+  unshelve (iApply wp_recovery_adequacy_internal); eauto.
+  iApply wp_recovery_refinement_impl_wp_recovery; eauto.
 Qed.
 
 Theorem wp_proc_seq_refinement_adequacy_internal {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
@@ -279,24 +296,93 @@ Proof.
          destruct σ2a; econstructor; eauto.
 Qed.
 
+Theorem wp_proc_seq_refinement_impl_wp_proc_seq {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
+        `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
+        (es: proc_seq OpTa T) (rec: proc OpTc R) f σ1c σ1a φ E
+        (Hno_fault : ¬ Λa.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) Err):
+  wp_proc_seq_refinement Λa Λc es rec f (1, σ1a) (1, σ1c) φ E ⊢
+  wp_proc_seq NotStuck (map_proc_seq f es) rec (1, σ1c)
+    (λ (v : T) (σ2c : State Λc), ∃ σ2a, φ v σ2a (1, σ2c.2)).
+Proof.
+  revert σ1c σ1a Hno_fault.
+  induction es as [| ??? IH] => σ1c σ1a Hno_fault.
+  - simpl. eauto.
+  - rewrite /wp_proc_seq_refinement -/wp_proc_seq_refinement.
+    iIntros "Hwp".
+    iPoseProof (wp_recovery_refinement_impl_wp_recovery with "Hwp") as "Hwp".
+    { intros Hexec. apply Hno_fault. do 2 left. do 2 left.
+      by apply exec_partial_err_exec_err. }
+    iApply wp_recovery_mono; last iApply "Hwp"; rewrite -/wp_proc_seq.
+    * iIntros (??) "H".
+      iDestruct "H" as (σ2a Hexeca) "H".
+      iIntros.
+      iDestruct ("H" $! _ Hfinish) as (σ2a' Hexeca') "H".
+      simpl. iApply IH.
+      { intros Herr. eapply Hno_fault. right. do 2 eexists; split; eauto.
+        left.
+        do 2 eexists; split; eauto.
+        do 2 eexists. split; eauto; last econstructor.
+        rewrite /lifted_finish_step.
+        eexists tt, (1, snd σ2a); split.
+        * destruct σ2a. split; eauto. econstructor.
+        * econstructor; eauto.
+      }
+      eauto.
+    * iAlways. iIntros (?) "H".
+      iDestruct "H" as (tp2 σ2a σ2a' (Hexeca&Hcrash)) "H".
+        destruct σ2a.
+        destruct σ2a'.
+      iIntros.
+      simpl. iApply IH.
+      { intros Herr. eapply Hno_fault. right.
+        do 2 eexists; split; eauto.
+        right.
+        do 2 eexists. split.
+        eapply rexec_singleton_ret_intro; eauto.
+        do 2 eexists; split; eauto; last econstructor.
+        econstructor.
+        econstructor.
+        eauto.
+      }
+      eauto.
+Qed.
+
+Theorem wp_proc_seq_refinement_impl_wp_proc_seq' {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
+        `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
+        (es: proc_seq OpTa T) (rec: proc OpTc R) f σ1c σ1a φ E
+        (Hno_fault : ¬ Λa.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) Err):
+  wp_proc_seq_refinement Λa Λc es rec f (1, σ1a) (1, σ1c) φ E ⊢
+  wp_proc_seq NotStuck (map_proc_seq f es) rec (1, σ1c) (λ _ _, True).
+Proof.
+  iIntros "H".
+  iPoseProof (wp_proc_seq_refinement_impl_wp_proc_seq with "H") as "H"; auto.
+  iApply wp_proc_seq_mono; last by iApply "H".
+  iAlways. auto.
+Qed.
+
 Import uPred.
 Theorem wp_proc_seq_refinement_adequacy {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
         (es: proc_seq OpTa T) (rec: proc OpTc R) f σ1c σ1a φ E
         (Hno_fault : ¬ Λa.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) Err):
-  wp_proc_seq_refinement Λa Λc es rec f (1, σ1a) σ1c φ E →
-  ∀ σ2c res, Λc.(proc_exec_seq) (map_proc_seq f es) (rec_singleton rec) σ1c (Val σ2c res) →
+  wp_proc_seq_refinement Λa Λc es rec f (1, σ1a) (1, σ1c) φ E →
+  ∀ σ2c res, Λc.(proc_exec_seq) (map_proc_seq f es) (rec_singleton rec) (1, σ1c) (Val σ2c res) →
   ∃ σ2a, Λa.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
 Proof.
   intros Hwp ?? Hexec.
   eapply proc_exec_seq_equiv_proc_exec_seq_n in Hexec as (n&?); last first.
-  { admit. (* just need to show non-error *) }
+  { eapply proc_seq_adequate_not_stuck; eauto.
+    eapply wp_proc_seq_adequacy with (k := 0) (φ0 := λ _ _, True); eauto.
+    simpl.
+    iApply (wp_proc_seq_refinement_impl_wp_proc_seq' with "[]"); eauto.
+    iApply Hwp.
+  }
   { eauto using lifted_crash_non_err. }
   eapply (soundness (M:=iResUR Σ) _ (S O + n)).
   iApply bupd_iter_laterN_mono; first by reflexivity; eauto.
   iApply (wp_proc_seq_refinement_adequacy_internal); eauto.
   iApply Hwp; eauto.
-Admitted.
+Qed.
 
 (*
 Theorem wp_recovery_crash_refinement {T R} OpTa OpTc Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
