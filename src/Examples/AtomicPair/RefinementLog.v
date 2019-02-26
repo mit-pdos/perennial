@@ -563,13 +563,6 @@ Section refinement.
       iModIntro. iFrame "Hsrc". iExists Γ. iFrame.
       iExists _; iFrame. iExists _; iFrame.
     }
-    { iIntros (??) "? H".
-      iDestruct "H" as (Γ) "(?&?&?&Hinv)".
-      iInv "Hinv" as "H" "_".
-      destruct_commit_inner "H".
-      iApply fupd_mask_weaken; first by solve_ndisj.
-      iExists _; iFrame.
-    }
     { iIntros (??) "Had H".
       iDestruct "H" as (Γ) "(Hsrc_ctx&Hmlock&Hlock&Hinv)".
       iInv "Hinv" as "H" "_".

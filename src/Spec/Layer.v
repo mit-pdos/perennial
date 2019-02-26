@@ -49,11 +49,11 @@ Import ProcNotations.
 Definition compile_whole Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
   Bind (impl.(compile) p) (fun v => _ <- Wait; Ret v)%proc.
 
-Fixpoint map_proc_seq {Op C_Op T} (f: forall T, proc Op T -> proc C_Op T) (es: proc_seq Op T) :=
+Fixpoint map_proc_seq {T Op C_Op} (f: forall T, proc Op T -> proc C_Op T) (es: proc_seq Op T) :=
   match es with
-  | Proc_Seq_Final e => Proc_Seq_Final (f _ e)
-  | @Proc_Seq_Bind _ _ _  e es' =>
-    Proc_Seq_Bind (f _ e) (fun x => map_proc_seq f (es' x))
+  | Proc_Seq_Nil v => (Proc_Seq_Nil v : proc_seq C_Op T)
+  | @Proc_Seq_Bind _ _ T0 e es' =>
+    Proc_Seq_Bind (f _ (e: proc Op T0)) (fun x => map_proc_seq f (es' x))
   end.
 
 Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) (ps: rec_seq Op) :
@@ -63,7 +63,7 @@ Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) (ps: rec_seq Op) :
   | Seq_Cons p ps' => Seq_Cons (impl.(compile_whole) p) (impl.(compile_seq) ps')
   end.
 
-Definition compile_proc_seq Op C_Op T `(impl: LayerImpl C_Op Op) (ps: proc_seq Op T) :=
+Definition compile_proc_seq {T} Op C_Op `(impl: LayerImpl C_Op Op) (ps: proc_seq Op T) :=
   map_proc_seq (impl.(compile_whole)) ps.
 
 Definition compile_rec Op C_Op `(impl: LayerImpl C_Op Op) (rec: rec_seq Op) : rec_seq C_Op :=

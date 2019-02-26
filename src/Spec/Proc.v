@@ -70,10 +70,10 @@ Inductive ExecOutcome : Type :=
 | Normal : {T : Type & T} -> ExecOutcome
 | Recovered : {T: Type & T} -> ExecOutcome.
 
-Inductive proc_seq (Op: Type -> Type) T0  : Type :=
-| Proc_Seq_Final (p: proc Op T0)
-| Proc_Seq_Bind (T : Type) (p : proc Op T) (rx : ExecOutcome -> proc_seq Op T0).
-Arguments Proc_Seq_Final {Op _}.
+Inductive proc_seq (Op: Type -> Type) (T: Type) : Type :=
+| Proc_Seq_Nil (v : T) (*  : ExecOutcome) *)
+| Proc_Seq_Bind (T0 : Type) (p : proc Op T0) (rx : ExecOutcome -> proc_seq Op T).
+Arguments Proc_Seq_Nil {Op _}.
 Arguments Proc_Seq_Bind {Op _ _}.
 
 Fixpoint rec_seq_append Op (ps1 ps2: rec_seq Op) :=
@@ -328,13 +328,10 @@ Section Dynamics.
      _ <- fst_lift (puts (fun _ => 1 ));
      pure (Recovered (existT (fun T => T) _ v))).
 
-  (* TODO: need to track that the hd type does not change for this to make sense *)
-
   Fixpoint proc_exec_seq {T} (p: proc_seq T) (rec: rec_seq)
-    : relation State State ExecOutcome :=
+    : relation State State _ (* ExecOutcome *) :=
     match p with
-    | Proc_Seq_Final p =>
-      exec_or_rexec p rec
+    | Proc_Seq_Nil v => pure v (* (Normal (existT _ _ v)) *)
     | Proc_Seq_Bind p f =>
       v <- exec_or_rexec p rec;
       proc_exec_seq (f v) rec
@@ -343,8 +340,7 @@ Section Dynamics.
   Lemma proc_exec_seq_unfold {T} (p: proc_seq T) (rec: rec_seq) :
     proc_exec_seq p rec =
     match p with
-    | Proc_Seq_Final p =>
-      exec_or_rexec p rec
+    | Proc_Seq_Nil v => pure v
     | Proc_Seq_Bind p f =>
       v <- exec_or_rexec p rec;
       proc_exec_seq (f v) rec
@@ -364,7 +360,7 @@ Section Dynamics.
 
   Fixpoint wf_client_seq {T} (p: proc_seq T) :=
     match p with
-    | Proc_Seq_Final p => wf_client p
+    | Proc_Seq_Nil _ => True
     | Proc_Seq_Bind p f => wf_client p /\ (forall v, wf_client_seq (f v))
     end.
 

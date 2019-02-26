@@ -315,13 +315,6 @@ Section refinement.
       iModIntro. iFrame "Hsrc". iExists _, _, _, _. iFrame.
     }
     { iIntros (??) "? (?&H)".
-      iDestruct "H" as (????) "(?&Hinv)".
-      iInv "Hinv" as "H" "_".
-      destruct_einner "H".
-      iApply fupd_mask_weaken; first by solve_ndisj.
-      iExists _; iFrame.
-    }
-    { iIntros (??) "? (?&H)".
       iDestruct "H" as (????) "(Hlock&Hinv)".
       iInv "Hinv" as "H" "_".
       iDestruct "H" as (ptr (n1&n2) (n1'&n2')) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";

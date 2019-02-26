@@ -748,10 +748,8 @@ Section Dynamics.
   
   Fixpoint proc_exec_seq_n {T R} (p: proc_seq T) (rec: proc R) n :=
     match p with
-    | Proc_Seq_Final p =>
-      fun s1 ret =>
-        exists n1, (n = (5 + n1))%nat /\
-        (exec_or_rexec_n p rec n1) s1 ret
+    | Proc_Seq_Nil v =>
+      fun s1 ret => n = 5 /\ (pure v) s1 ret
     | Proc_Seq_Bind p f =>
       fun s1 ret =>
         exists n1 n2, (n = (5 + n1) + S n2)%nat /\
@@ -765,10 +763,9 @@ Section Dynamics.
     exists n, proc_exec_seq_n p rec n σ1 (Val σ2 out)).
   Proof.
     revert σ1. induction p as [| ??? IH]; intros σ1 Hno_err.
-    * split.
-      ** intros (n1&?)%exec_or_rexec_equiv_exec_or_rexec_n; eauto.
-         exists (5+n1)%nat; eexists; eauto.
-      ** intros (n&(n1&?&?)). apply exec_or_rexec_equiv_exec_or_rexec_n; eauto.
+    * split; simpl.
+      ** intuition eauto.
+      ** intros (?&[]); eauto.
     * split.
       ** intros (?&?&Hhd&Htl).
          eapply IH in Htl as (n2&?).

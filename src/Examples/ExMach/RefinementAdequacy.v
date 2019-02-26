@@ -167,10 +167,6 @@ Section refinement.
           (∃ Hinv, exec_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG) (exm_treg_inG))) ∗
           source_ctx ={⊤}=∗ exec_inv Hcfg Hex)).
 
-  Context (inv_implies_source:
-             ∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
-             AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ σ2a : Λa.(OpState), source_state σ2a).
-
   Context (exec_inv_preserve_finish:
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
           AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
@@ -192,7 +188,6 @@ Section refinement.
     rewrite /compile_proc_seq. intros Hinit Hwf_seq Hno_err.
     unshelve (eapply wp_proc_seq_refinement_adequacy with
                   (φ := fun _ _ _ => True%I)
-                  (φrec := fun _ _ => True%I)
                   (E0 := E); eauto).
     clear Hno_err.
   iAssert (∀ invG H1 ρ, |={⊤}=>
@@ -234,133 +229,8 @@ Section refinement.
   }
 
   clear Hinit.
-  iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre".
+  iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre"; first by eauto.
   - iSplit; first by eauto.
-  iExists (fun cfgG s => ∃ (_ : exmachG Σ),
-                     state_interp s ∗
-                       (∃ (hM: gen_heapG addr nat Σ) tr
-                            (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
-                                       H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ
-                                                              nat_eq_dec nat_countable)) ,
-            gen_heap_ctx init_zero ∗ own tr (Cinl (Count 0)) ∗ crash_inner cfgG (ExMachG Σ _ hM (exm_disk_inG) {| treg_name := tr; treg_counter_inG := _ |})))%I; auto.
-  iIntros (invG0 Hcfg0).
-  iMod ("Hpre" $! invG0 _ _) as (hM hD tR ??) "(Hstate0&H)".
-  set (tR' := {| treg_name := tR; treg_counter_inG := _ |}).
-  iExists (@ex_mach_interp _ hM hD tR').
-  iIntros "!> (#Hsrc&Hpt0&Hstate)".
-  iMod ("H" with "Hsrc Hstate") as "(Hreg&Hinv)".
-  iMod (exec_inner_inv (ExMachG Σ _ hM hD tR') _ with "[Hinv]") as "#Hinv".
-  { iFrame. iSplitR ""; last by (iExists _; eauto). iExists _. iFrame. }
-  simpl.
-  iModIntro.
-  iFrame "Hstate0".
-  iSplitL "Hpt0 Hreg".
-  {  iPoseProof (@wp_mono with "[Hpt0 Hreg]") as "H"; swap 1 2.
-     { iApply refinement_triples. eauto. iFrame "Hinv". iFrame. }
-     { reflexivity. }
-     simpl. rewrite /compile_whole.
-     wp_bind.
-     iApply (wp_wand with "H [Hinv]").
-     iIntros (v) "(Hpt0&Hreg)".
-     wp_bind.
-     iApply (@wp_wait Σ {| exm_invG := invG0;
-             exm_mem_inG := hM;
-             exm_disk_inG := hD;
-             exm_treg_inG := {| treg_counter_inG := H.(@exm_preG_treg_inG Σ); treg_name := tR |} |}
-               with "Hreg").
-     iIntros "!> Hdone".
-     wp_ret. iFrame. iIntros.
-     iMod (inv_implies_source with "Hdone Hinv") as (σ2a) "H".
-     iModIntro. iExists σ2a; iFrame. iIntros. 
-     destruct (finish_total Λa σ2a) as (σ2a'&?). unshelve (iExists _, _); [ | eauto |]; auto.
-  }
-  iSplit.
-  { iIntros (σ2c) "Hmach".
-    iMod (exec_inv_preserve_crash with "Hinv") as "Hinv_post".
-    iMod (gen_heap_strong_init (init_zero)) as (hM' Hmpf_eq') "(Hmc&Hm)".
-    iMod (own_alloc (Cinl (Count 0))) as (tR_fresh) "Ht".
-    { constructor. }
-    set (tR'' := {| treg_name := tR_fresh; treg_counter_inG := _ |}).
-    iMod ("Hinv_post" $! _ tR'' with "[Hm]") as "Hinv'".
-    { rewrite -Hmpf_eq'. iApply @mem_init_to_bigOp; auto. }
-    iIntros. iModIntro.
-    iExists (ExMachG Σ _ hM hD tR'). iFrame "Hmach".
-    iExists hM', tR_fresh, Hmpf_eq'. iFrame.
-  }
-
-  iClear "Hsrc".
-  iModIntro. iIntros (invG Hcfg' ?? Hcrash) "(Hinv0&#Hsrc)".
-  iDestruct "Hinv0" as (HexmachG') "(Hinterp&Hinv0)".
-  iDestruct "Hinv0" as (hM' tR_fresh Hmpf_eq') "(Hmc'&Hreg&Hcrash_inner)".
-  iClear "Hinv".
-  set (tR'' := {| treg_name := tR_fresh; treg_counter_inG := _ |}).
-  iMod (crash_inner_inv (ExMachG Σ invG hM' (exm_disk_inG) tR'') Hcfg' with "[Hcrash_inner]") as
-      (param) "(#Hinv&Hstarter)".
-  { iIntros. simpl. iSplitR ""; last by (iExists _; iFrame).
-    iExists ( exmachG_irisG.(@iris_invG Op _ Σ)). iFrame. }
-  iModIntro.
-  iAssert (own tR_fresh (Cinl (Count 1)) ∗ own tR_fresh (Cinl (Count (-1))))%I
-    with "[Hreg]" as "(Ht&Hreg)".
-  { rewrite /Registered -own_op Cinl_op counting_op' //=. }
-  iExists (@ex_mach_interp Σ hM' (exm_disk_inG) tR'').
-  iSplitL "Hinterp Ht Hmc'".
-  { (* shows ex_mach_interp is holds after crash for next gen *)
-    rewrite /ex_mach_interp'.
-    rewrite /ex_mach_interp.
-    destruct a, a0.
-    iDestruct "Hinterp" as "(?&Hinterp)".
-    iDestruct "Hinterp" as (mems disks) "(Hdisks&?&%&Hp)".
-    iDestruct "Hp" as %(Hdisks&Hwf1'&Hwf2').
-    destruct Hcrash as ([]&(?&?)&Hput&Hrest).
-    inversion Hput. inversion H4. subst.
-    inversion Hrest; subst. inversion H3. subst.
-    iSplitL "Ht".
-    { iFrame. }
-    iExists init_zero, _.
-    iFrame.
-    iPureIntro. split_and!.
-    * rewrite /crash_fun//=.
-    * rewrite /crash_fun//=.
-    * rewrite /crash_fun/=. intros i Hsome.
-      apply not_le; intros Hge.
-      rewrite init_zero_lookup_ge_None in Hsome; last by lia.
-      apply is_Some_None in Hsome; auto.
-    * rewrite /crash_fun; auto.
-  }
-  iSplitL "Hinv Hreg Hstarter".
-  {
-    iPoseProof (@wp_mono with "[Hinv Hreg Hstarter]") as "H"; swap 1 2.
-    { iApply recv_triple. iFrame. iApply "Hinv". }
-    { reflexivity. }
-    iApply (@wp_mono with "H").
-    iIntros (_) "H". iIntros (σ2c) "Hinterp".
-    iMod "H". iModIntro.
-    iDestruct "H" as (σ2a σ2a') "(Hsource&Hinner&Hp)".
-    iExists (1, σ2a), (1, σ2a'). iFrame "Hsource".
-    rewrite right_id. iDestruct "Hinner" as %?. iPureIntro.
-    { eexists tt, (1, σ2a). split; eauto. split; eauto. econstructor; eauto. econstructor; eauto.
-      }
-  }
-  {
-    iIntros (σ2c) "Hmach".
-    iMod (crash_inv_preserve_crash with "Hinv") as "Hinv_post".
-    iMod (gen_heap_strong_init (init_zero)) as (hM'' Hmpf_eq'') "(Hmc&Hm)".
-    iMod (own_alloc (Cinl (Count 0))) as (tR_fresh') "Ht".
-    { constructor. }
-    set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
-    iIntros. 
-    iMod ("Hinv_post" with "[Hm]") as "Hinv'".
-    { rewrite -Hmpf_eq''. iApply @mem_init_to_bigOp; auto. }
-    iModIntro.
-    iExists {| exm_invG := invG;
-               exm_mem_inG := hM';
-               exm_disk_inG := HexmachG'.(@exm_disk_inG Σ);
-               exm_treg_inG := tR''
-            |}.
-    iFrame. iExists hM'', tR_fresh', Hmpf_eq''. iFrame.
-  }
-  -
-    iSplit; first by eauto.
   iExists (fun cfgG s => ∃ (Hex : exmachG Σ), state_interp s ∗
             (∃ (hM: gen_heapG addr nat Σ) tr
                (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =

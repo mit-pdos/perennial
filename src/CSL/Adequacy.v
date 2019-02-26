@@ -92,11 +92,7 @@ Record recv_adequate {OpT T R} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T)
 Record proc_seq_adequate {OpT T R} {Λ: Layer OpT} (s : stuckness) (es : proc_seq OpT T)
        (rec: proc OpT R) (σ1 : Λ.(State)) (φ : T → Λ.(State) → Prop) (φrec: Λ.(State) → Prop) := {
    proc_seq_adequate_normal_result σ2 res :
-     Λ.(proc_exec_seq) es (rec_singleton rec) σ1 (Val σ2 res) →
-     match res with
-     | Normal e => ∃ v, e = existT _ v ∧ φ v σ2
-     | Recovered _ => φrec σ2
-     end;
+     Λ.(proc_exec_seq) es (rec_singleton rec) σ1 (Val σ2 res) → φ res σ2;
    proc_seq_adequate_not_stuck :
      s = NotStuck →
      ¬ Λ.(proc_exec_seq) es (rec_singleton rec) σ1 Err
@@ -819,13 +815,13 @@ Proof.
 Qed.
 *)
 
-Fixpoint wp_proc_seq {T R} OpT Σ Λ `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
+Fixpoint wp_proc_seq {T R} OpT Σ (Λ: Layer OpT) `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
         σ1 φ (φrec : Λ.(State) → iProp Σ) : iProp Σ :=
   match es with
-  | Proc_Seq_Final e => wp_recovery s e rec σ1 φ φrec O
+  | Proc_Seq_Nil v => (φ v σ1)%I
   | @Proc_Seq_Bind _ _ T0 e es' =>
-    wp_recovery s e rec σ1
-                (λ v σ2, wp_proc_seq s (es' (Normal (existT T0 v))) rec σ2 φ φrec)
+    wp_recovery (Λ := Λ) s e rec σ1
+                (λ (v: T0) σ2, wp_proc_seq s (es' (Normal (existT T0 v))) rec σ2 φ φrec)
                 (λ σ2, wp_proc_seq s (es' (Recovered (existT _ tt))) rec σ2 φ φrec)
                 O
   end.

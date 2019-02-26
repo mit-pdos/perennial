@@ -221,12 +221,6 @@ Section refinement.
       iModIntro. rewrite /DBInv. iFrame "Hsrc". iExists γ1, γ2. iFrame.
     }
     { iIntros (??) "? (?&H)".
-      iDestruct "H" as (??) "(?&Hinv)".
-      iInv "Hinv" as (l') ">(Htok&Hsource)" "_".
-      iApply fupd_mask_weaken; first by solve_ndisj.
-      iExists _; eauto.
-    }
-    { iIntros (??) "? (?&H)".
       iDestruct "H" as (γ1 γ2) "(Hlock&Hinv)".
       iInv "Hinv" as (l') ">(Htok&Hsource)" "_".
       iMod (lock_crack with "Hlock") as ">H"; first by solve_ndisj.
