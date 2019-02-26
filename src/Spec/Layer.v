@@ -18,6 +18,7 @@ Record Layer Op :=
     crash_total: forall s1, exists s2, sem.(crash_step) s1 (Val s2 tt);
     finish_total: forall s1, exists s2, sem.(finish_step) s1 (Val s2 tt);
     crash_non_err: forall s1 ret, sem.(crash_step) s1 ret -> ret <> Err;
+    finish_non_err: forall s1 ret, sem.(finish_step) s1 ret -> ret <> Err;
     initP: OpState -> Prop }.
 
 Inductive InitStatus := Initialized | InitFailed.

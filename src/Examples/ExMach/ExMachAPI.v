@@ -152,6 +152,7 @@ Module ExMach.
        crash_total := crash_total_ok;
        finish_total := crash_total_ok;
        crash_non_err := crash_non_err_ok;
+       finish_non_err := crash_non_err_ok;
        initP := fun s => s = init_state |}.
 End ExMach.
 

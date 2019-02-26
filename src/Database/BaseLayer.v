@@ -66,6 +66,7 @@ Module Base.
       hnf; simpl; eauto.
       hnf; simpl; eauto.
     - inversion H; eauto.
+    - inversion H; eauto.
   Defined.
 
 End Base.

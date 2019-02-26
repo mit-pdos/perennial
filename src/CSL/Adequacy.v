@@ -287,20 +287,34 @@ Proof.
   * destruct H0 as (?&(?&?)&?&?). by apply crash_non_err in H1.
 Qed.
 
+Lemma lifted_finish_non_err {OpT} (Λ: Layer OpT):
+  ∀ (s1 : Proc.State) (ret : Return Proc.State ()), lifted_finish_step Λ s1 ret → ret ≠ Err.
+Proof.
+  intros ??. rewrite /lifted_finish_step. destruct ret; auto.
+  destruct s1. inversion 1.
+  * inversion H0.
+  * destruct H0 as (?&(?&?)&?&?). by apply finish_non_err in H1.
+Qed.
+
+Lemma recv_adequacy_int_non_stuck {T R} OpT Σ Λ (e: proc OpT T) (rec: proc OpT R) σ φ φrec k:
+  recv_adequate_internal (Σ := Σ) (Λ := Λ) NotStuck e rec σ φ φrec k →
+  ¬ rexec Λ e (rec_singleton rec) σ Err.
+Proof.
+  intros Hinternal Hrexec.
+  apply rexec_equiv_rexec_n'_err in Hrexec as (n&?Hrexec);
+    last by eapply lifted_crash_non_err.
+  eapply (soundness (M:=iResUR Σ) _ (S k + (5 + n))).
+  iDestruct Hinternal as "(_&Hnstuck)". iApply "Hnstuck"; eauto.
+Qed.
+
 Theorem recv_adequacy_int_to_ext {T R} OpT Σ Λ (e: proc OpT T) (rec: proc OpT R) σ φ φrec k:
   recv_adequate_internal (Σ := Σ) (Λ := Λ) NotStuck e rec σ
                          (fun v σ => ⌜ φ v σ ⌝)%I (fun σ => ⌜ φrec σ ⌝)%I k →
   recv_adequate NotStuck e rec σ φ φrec.
 Proof.
   intros Hinternal.
-  assert (¬ rexec Λ e (rec_singleton rec) σ Err).
-  {
-    intros Hrexec.
-    apply rexec_equiv_rexec_n'_err in Hrexec as (n&?Hrexec);
-      last by eapply lifted_crash_non_err.
-    eapply (soundness (M:=iResUR Σ) _ (S k + (5 + n))).
-    iDestruct Hinternal as "(_&Hnstuck)". iApply "Hnstuck"; eauto.
-  }
+  assert (¬ rexec Λ e (rec_singleton rec) σ Err)
+    by (eapply recv_adequacy_int_non_stuck; eauto).
   split; auto.
   - intros ?? Hexec.
     apply exec_equiv_exec_n in Hexec as (n&?).
@@ -821,111 +835,131 @@ Fixpoint wp_proc_seq {T R} OpT Σ (Λ: Layer OpT) `{invPreG Σ} s (es: proc_seq 
   | Proc_Seq_Nil v => (φ v σ1)%I
   | @Proc_Seq_Bind _ _ T0 e es' =>
     wp_recovery (Λ := Λ) s e rec σ1
-                (λ (v: T0) σ2, wp_proc_seq s (es' (Normal (existT T0 v))) rec σ2 φ φrec)
-                (λ σ2, wp_proc_seq s (es' (Recovered (existT _ tt))) rec σ2 φ φrec)
+                (λ v σ2, ∀ σ2' (Hfinish: Λ.(finish_step) (snd σ2) (Val σ2' tt)),
+                    wp_proc_seq s (es' (Normal (existT T0 v))) rec (1, σ2') φ φrec)%I
+                (λ σ2, wp_proc_seq s (es' (Recovered (existT _ tt))) rec (1, snd σ2) φ φrec)
                 O
   end.
 
-(* TODO: there is a lot of silly case splitting because of how these
-   lemmas are structured *)
-(*
-Theorem wp_proc_seq_adequacy {T R} OpT Σ Λ `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
+Lemma recv_idemp_mono {R OpT} Σ Λ `{invPreG Σ} s (rec: proc OpT R)
+      φinv φrec φrec':
+  □ (∀ σ, φrec σ -∗ φrec' σ) -∗
+    recv_idemp (Λ := Λ) s rec φinv φrec -∗
+    recv_idemp s rec φinv φrec'.
+Proof.
+  iIntros "#Hwand #Hrec !>". iIntros.
+  unshelve (iMod ("Hrec" $! _ _ _ _ with "[$]") as (stateI) "(H&Hwp&?)"); eauto.
+  iModIntro. iExists stateI. iFrame.
+  iApply (wp_wand with "Hwp"). iIntros (?) "Himpl".
+  iIntros. iMod ("Himpl" with "[$]"). iApply "Hwand"; eauto.
+Qed.
+
+Lemma wp_recovery_mono {T R OpT} Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
+      σ1 φ φ' φrec φrec' k:
+  (∀ v σ, φ v σ -∗ φ' v σ) -∗
+                           □ (∀ σ, φrec σ -∗ φrec' σ) -∗
+                           wp_recovery (Λ := Λ) s e rec σ1 φ φrec k -∗
+                           wp_recovery s e rec σ1 φ' φrec' k.
+Proof.
+  iIntros "Hwand1 Hwand2 Hrec".
+  rewrite /wp_recovery.
+  iApply (bupd_iter_mono with "[Hwand1 Hwand2]"); last iApply "Hrec".
+  iIntros "Hrec".
+  iDestruct "Hrec" as (φinv) "Hrec".
+  iExists φinv. iIntros (?). iMod ("Hrec" $! _) as (?) "(?&Hwp&Hinv&Hrec)".
+  iModIntro. iExists _. iFrame.
+  iSplitL "Hwp Hwand1".
+  * iApply (wp_wand with "Hwp"). iIntros (?) "Himpl".
+    iIntros. iMod ("Himpl" with "[$]"). iApply "Hwand1"; eauto.
+  * by iApply (recv_idemp_mono with "Hwand2 Hrec").
+Qed.
+
+
+Lemma wp_proc_seq_ind {T0 T R} OpT Σ (Λ: Layer OpT)
+      `{invPreG Σ} (p: proc OpT T0) (rx: ExecOutcome → proc_seq OpT T) (rec: proc OpT R)
+      σ1 σ1' φ φrec k res:
+  exec_or_rexec Λ p (rec_singleton rec) σ1 (Val σ1' res) →
+  Nat.iter k (λ P, |==> ▷ P)%I
+           (wp_proc_seq NotStuck (Proc_Seq_Bind p rx) rec σ1 φ φrec) →
+  ∃ n, Nat.iter n (λ P, |==> ▷ P)%I
+                (wp_proc_seq NotStuck (rx res) rec σ1' φ φrec).
+Proof.
+  intros Hhd Hwp.
+  destruct Hhd as [Hnorm|Hrecv].
+  ** destruct Hnorm as (v&x&Hexec&Hfinish).
+     destruct Hfinish as ([]&(?&?)&Hfinish&Hpure).
+     destruct Hfinish as ([]&(?&?)&(Hput&Hfin)).
+     destruct x.
+     inversion Hput; subst. inversion H0. subst.
+     inversion Hfin; subst.
+     inversion Hpure; subst.
+     rewrite exec_equiv_exec_n in Hexec *.
+     intros (n'&Hexec).
+     exists (S k + (S (S n')))%nat.
+     iPoseProof Hwp as "Hwp".
+     iPoseProof (wp_recovery_adequacy_internal with "Hwp") as "(Hnorm&_)"; eauto.
+     unshelve (iApply (bupd_iter_mono); last iApply "Hnorm"; eauto).
+     iIntros "Hrec". iDestruct "Hrec" as (v' Hp) "Hrec".
+     subst. rewrite -/wp_proc_seq. iApply "Hrec"; eauto.
+  ** destruct Hrecv as ([]&x&Hrexec&Hfinish).
+     destruct Hfinish as ([]&(?&?)&Hfinish&Hpure).
+     destruct x.
+     inversion Hfinish; subst. inversion H0. subst.
+     inversion Hpure; subst.
+     rewrite rexec_equiv_rexec_n'_val in Hrexec *; swap 1 3.
+     { eapply recv_adequacy_int_non_stuck; eauto.
+       iPoseProof Hwp as "Hwp".
+       iApply (@wp_recovery_adequacy_internal with "Hwp"); eauto.
+     }
+     { eapply lifted_crash_non_err. }
+     intros (n'&Hrexec).
+     exists (S k + (5 + n'))%nat.
+     iPoseProof Hwp as "Hwp".
+     iPoseProof (wp_recovery_adequacy_internal with "Hwp") as "(_&Hrecv)"; eauto.
+     unshelve (iApply (bupd_iter_mono); last iApply "Hrecv"; eauto).
+     iIntros "Hrec". eauto.
+Qed.
+
+Theorem wp_proc_seq_adequacy {T R} OpT Σ (Λ: Layer OpT)
+        `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
         σ1 φ φrec k:
   Nat.iter k (λ P, |==> ▷ P)%I
-             (wp_proc_seq Λ s es rec σ1 (λ v σ2, ⌜ φ v σ2 ⌝%I) (λ σ2, ⌜ φrec σ2 ⌝%I)) →
+             (wp_proc_seq s es rec σ1 (λ v σ2, ⌜ φ v σ2 ⌝%I) (λ σ2, ⌜ φrec σ2 ⌝%I)) →
   s = NotStuck →
-  proc_seq_adequate s es rec σ1 φ φrec.
+  proc_seq_adequate (Λ := Λ) s es rec σ1 φ φrec.
 Proof.
   intros Hwp ->.
   split.
   - revert k σ1 Hwp. induction es => k σ1 Hwp σ2 res.
-    * destruct 1 as [Hnorm|Hrecv].
-      ** destruct Hnorm as (v&?&Hexec&Hpure). inversion Hpure; subst.
-         eapply recv_adequate_normal_result with (s := NotStuck); eauto.
-         unshelve (eapply recv_adequacy_int_to_ext); eauto.
-         unshelve (iApply wp_recovery_adequacy_internal); eauto.
-         iApply Hwp.
-      ** destruct Hrecv as (v&?&Hrexec&Hpure). inversion Hpure; subst.
-         eapply recv_adequate_result with (s := NotStuck); eauto.
-         unshelve (eapply recv_adequacy_int_to_ext); eauto.
-         unshelve (iApply wp_recovery_adequacy_internal); eauto.
-         iApply Hwp.
+    * inversion 1; subst.
+      eapply (soundness (M:=iResUR Σ) _ k).
+      iApply bupd_iter_laterN_mono; first (by reflexivity).
+      iApply Hwp.
     * destruct 1 as (res0&σ1'&Hhd&Hrest).
-      destruct Hhd as [Hnorm|Hrecv].
-      ** destruct Hnorm as (v&?&Hexec&Hpure). inversion Hpure; subst.
-         eapply exec_equiv_exec_n in Hexec as (n&Hexec).
-         iPoseProof Hwp as "Hwp".
-         eapply H0; eauto.
-         eapply wp_recovery_adequacy_internal in Hwp; auto.
-         eapply recv_adequate_internal_normal_result in Hwp; eauto.
-         eapply H0; eauto.
+      edestruct (@wp_proc_seq_ind); eauto.
+  - revert k σ1 Hwp. induction es as [| ??? IH] => k σ1 Hwp σ2.
+    * inversion 1; subst.
+    * destruct 1 as [[Hnorm|Hrec]|Htl].
+      ** destruct Hnorm as [Hnorm|(?&?&?&Hfalse)]; last first.
+         { apply bind_pure_no_err, lifted_finish_non_err in Hfalse; eauto. }
+         eapply exec_err_rexec_err in Hnorm.
+         eapply recv_adequate_not_stuck; eauto.
+         eapply wp_recovery_adequacy with (φ0 := fun _ _ => True)
+                                          (φrec0 := fun _ => True); first done.
          iApply (bupd_iter_mono); last iApply Hwp.
-         iIntros "Hrec". iDestruct "Hrec" as (v' Hp) "Hrec".
-         subst. iApply "Hrec".
-      ** destruct Hrecv as ([]&?&Hrexec&Hpure). inversion Hpure; subst.
-         eapply wp_recovery_adequacy_internal in Hwp; auto.
-         eapply rexec_equiv_rexec_n' in Hrexec as (n&Hexec).
-         { eapply recv_adequate_internal_result in Hwp as Hwp; eauto.
-           eapply H0; eauto. }
-         { eapply recv_adequate_internal_not_stuck in Hwp as Hwp; eauto. }
-  - revert k σ1 Hwp. induction es => k σ1 Hwp _.
-    * destruct 1 as [Hnorm%bind_pure_no_err|Hrecv%bind_pure_no_err].
-      ** eapply exec_err_rexec_err in Hnorm.
-         eapply recv_adequate_internal_not_stuck; eauto.
-         eapply wp_recovery_adequacy_internal; eauto.
-      ** eapply recv_adequate_internal_not_stuck; eauto.
-         eapply wp_recovery_adequacy_internal; eauto.
-    * destruct 1 as [[Hnorm%bind_pure_no_err|Hrec%bind_pure_no_err]|Htl].
-      ** eapply exec_err_rexec_err in Hnorm.
-         eapply recv_adequate_internal_not_stuck; eauto.
-         eapply wp_recovery_adequacy_internal; eauto.
-      ** eapply recv_adequate_internal_not_stuck; eauto.
-         eapply wp_recovery_adequacy_internal; eauto.
-      ** destruct Htl as (?&σ1'&[Hnorm|Hrec]&?).
-         *** destruct Hnorm as (v&?&Hexec&Hpure). inversion Hpure; subst.
-             eapply wp_recovery_adequacy_internal in Hwp; auto.
-             eapply exec_equiv_exec_n in Hexec as (n&Hexec).
-             eapply recv_adequate_internal_normal_result in Hwp; eauto.
-             eapply H0; eauto.
-             iApply (bupd_iter_mono); last iApply Hwp.
-             iIntros "Hrec". iDestruct "Hrec" as (v' Hp) "Hrec".
-             subst. iApply "Hrec".
-         *** destruct Hrec as ([]&?&Hexec&Hpure). inversion Hpure; subst.
-             eapply wp_recovery_adequacy_internal in Hwp; auto.
-             eapply rexec_equiv_rexec_n' in Hexec as (n&Hexec).
-             { eapply recv_adequate_internal_result in Hwp as Hwp; eauto.
-               eapply H0; eauto. }
-             { eapply recv_adequate_internal_not_stuck in Hwp as Hwp; eauto. }
+         rewrite /wp_proc_seq -/wp_proc_seq.
+         iIntros "Hwp".
+         iApply (wp_recovery_mono with "[] [] Hwp"); eauto.
+      ** destruct Hrec as [Hrec|(?&(?&?)&?&Hfalse)]; last first.
+         { apply bind_pure_no_err in Hfalse; eauto. inversion Hfalse. }
+         eapply recv_adequate_not_stuck; eauto.
+         eapply wp_recovery_adequacy with (φ0 := fun _ _ => True)
+                                          (φrec0 := fun _ => True); first done.
+         iApply (bupd_iter_mono); last iApply Hwp.
+         rewrite /wp_proc_seq -/wp_proc_seq.
+         iIntros "Hwp".
+         iApply (wp_recovery_mono with "[] [] Hwp"); eauto.
+      ** destruct Htl as (?&?&Hhd&?).
+         edestruct (@wp_proc_seq_ind); eauto.
+         eapply IH; eauto.
 Qed.
-*)
-
-(*
-Theorem wp_proc_seq_adequacy' {T R} OpT Σ Λ `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
-        σ1 φ φrec k:
-  Nat.iter k (λ P, |==> ▷ P)%I
-             (wp_proc_seq Λ s es rec σ1 (λ v σ2, ⌜ φ v σ2 ⌝%I) (λ σ2, ⌜ φrec σ2 ⌝%I)) →
-  s = NotStuck →
-  proc_seq_adequate s es rec σ1 φ φrec.
-Proof.
-  intros Hwp ->.
-  revert k σ1 Hwp. induction es => k σ1 Hwp.
-  - split.
-    * destruct 1 as [Hnorm|Hrecv].
-      ** destruct Hnorm as (v&?&Hexec&Hpure). inversion Hpure; subst.
-         eapply recv_adequate_normal_result; eauto.
-         eapply recv_adequacy_int_to_ext.
-         eapply wp_recovery_adequacy_internal; eauto.
-      ** destruct Hrecv as (v&?&Hrexec&Hpure). inversion Hpure; subst.
-         eapply recv_adequate_result; eauto.
-         eapply recv_adequacy_int_to_ext.
-         eapply wp_recovery_adequacy_internal; eauto.
-    * intros ?. destruct 1 as [Hnorm%bind_pure_no_err|Hrecv%bind_pure_no_err].
-      ** eapply exec_err_rexec_err in Hnorm.
-         eapply recv_adequate_internal_not_stuck; eauto.
-         eapply wp_recovery_adequacy_internal; eauto.
-      ** eapply recv_adequate_internal_not_stuck; eauto.
-         eapply wp_recovery_adequacy_internal; eauto.
-  - split. intros.
-    * destruct H1 as (res0&σ1'&Hhd&Hrest).
-      destruct Hhd.
-*)
