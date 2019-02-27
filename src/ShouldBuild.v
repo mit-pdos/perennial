@@ -12,6 +12,7 @@ From RecoveryRefinement Require Import Mail.Impl Mail.API.
 (* concurrency framework *)
 From RecoveryRefinement Require Import CSL.RefinementAdequacy.
 From RecoveryRefinement Require Import CSL.Lifting.
+From RecoveryRefinement Require Import CSL.Count_Heap.
 From RecoveryRefinement Require Import Examples.ExMach.WeakestPre.
 From RecoveryRefinement Require Import Examples.ExMach.RefinementAdequacy.
 From RecoveryRefinement Require Import Examples.StatDb.Refinement.
