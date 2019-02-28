@@ -14,6 +14,8 @@ From stdpp Require Import base.
 Import ProcNotations.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
+Set Implicit Arguments.
+
 (* We don't really need to put an argument here; it just needs to be Begin|End.
 
 The Begin phase will get some arguments that it will ignore; ill-formed code can
@@ -22,9 +24,11 @@ passing the same thing. *)
 Implicit Types (na:NonAtomicArgs unit).
 
 Module Data.
+  Section GoModel.
+  Context `{model_wf: GoModelWf}.
   Inductive Op : Type -> Type :=
   | NewAlloc T (v:T) (len:uint64) : Op (ptr T)
-  | PtrDeref T (p:ptr T) (off:uint64) : Op T
+  | PtrDeref {T} (p:ptr T) (off:uint64) : Op T
   | PtrStore T (p:ptr T) (off:uint64) (x:T) na : Op unit
 
   (* slice append is atomic since it is modeled as destroying the input
@@ -87,7 +91,7 @@ Module Data.
                 slice.length := len;
                 slice.offset := 0 |})%proc.
 
-    Definition ptrDeref T p off :=
+    Definition ptrDeref {T} p off :=
       Call! @PtrDeref T p off.
 
     Definition readPtr T (p: ptr T) : proc T :=
@@ -116,7 +120,7 @@ Module Data.
     Definition mapAlter V m (k: uint64) (f: option V -> option V) : proc _ :=
       nonAtomicWriteOp (@MapAlter V m k f).
 
-    Definition mapLookup V m k := Call! @MapLookup V m k.
+    Definition mapLookup {V} m k := Call! @MapLookup V m k.
 
     Definition mapIter V (m: Map V) (body: uint64 -> V -> proc unit) : proc unit :=
       (kvs <- Call (MapStartIter m);
@@ -179,19 +183,19 @@ Module Data.
    *)
 
   Record State : Type :=
-    mkState { allocs : DynMap Ptr.t ptrModel; }.
+    mkState { allocs : DynMap Ptr ptrModel; }.
 
-  Instance _eta : Settable _ :=
+  Global Instance _eta : Settable _ :=
     mkSettable (constructor mkState <*> allocs)%set.
 
-  Definition getAlloc ty (p:Ptr.t ty) (s:State) : option (ptrModel ty) :=
+  Definition getAlloc {ty} (p:Ptr ty) (s:State) : option (ptrModel ty) :=
     getDyn s.(allocs) p.
 
-  Definition updAllocs ty (p:Ptr.t ty) (x:ptrModel ty)
+  Definition updAllocs {ty} (p:Ptr ty) (x:ptrModel ty)
     : relation State State unit :=
     puts (set allocs (updDyn p x)).
 
-  Definition delAllocs ty (p:Ptr.t ty)
+  Definition delAllocs {ty} (p:Ptr ty)
     : relation State State unit :=
     puts (set allocs (deleteDyn p)).
 
@@ -394,8 +398,9 @@ Module Data.
     end.
 
   Global Instance empty_heap : Empty State := {| allocs := ∅ |}.
+  End GoModel.
 
 End Data.
 
-Arguments Data.newPtr {Op' i} T {GoZero}.
-Arguments Data.newSlice {Op' i} T {GoZero} len.
+Arguments Data.newPtr {model} {Op' i} T {GoZero}.
+Arguments Data.newSlice {model} {Op' i} T {GoZero} len.

@@ -18,6 +18,8 @@ From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 Import EqualDecNotation.
 
 Module FS.
+  Section GoModel.
+  Context `{model_wf:GoModelWf}.
   Implicit Types (p:string) (fh:File) (bs:slice.t byte).
 
   (* the types of the arguments are determined by their name, using the implicit
@@ -64,7 +66,7 @@ Module FS.
               files: gmap.gmap string (List.list byte);
               fds: gmap.gmap File (string * OpenMode); }.
 
-  Instance _eta : Settable State :=
+  Global Instance _eta : Settable State :=
     mkSettable (constructor mkState <*> heap <*> files <*> fds)%set.
 
   Definition readFd (fh: File) (m: OpenMode) : relation State State string :=
@@ -170,4 +172,5 @@ Module FS.
        files := ∅;
        fds := ∅; |}.
 
+  End GoModel.
 End FS.

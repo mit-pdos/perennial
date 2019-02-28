@@ -33,62 +33,9 @@ Definition compare_to x y (c: comparison)
   - destruct (lt_dec y x); auto; right; abstract omega.
 Defined.
 
-Axiom uint64_to_string : uint64 -> string.
-Axiom uint64_to_string_inj :
-  forall x y, uint64_to_string x = uint64_to_string y -> x = y.
-
-Axiom byte:Type.
-Axiom byte0:byte.
-
-Axiom ascii_to_byte : Ascii.ascii -> byte.
-Axiom byte_to_ascii : byte -> Ascii.ascii.
-Axiom ascii_byte_bijection1 : forall c, byte_to_ascii (ascii_to_byte c) = c.
-Axiom ascii_byte_bijection2 : forall b, ascii_to_byte (byte_to_ascii b) = b.
-
-Fixpoint bytes_to_string (l: list byte) : string :=
-  match l with
-  | nil => EmptyString
-  | b::bs => String (byte_to_ascii b) (bytes_to_string bs)
-  end.
-
-Fixpoint string_to_bytes (s: string) : list byte :=
-  match s with
-  | EmptyString => nil
-  | String c s' => ascii_to_byte c :: string_to_bytes s'
-  end.
-
-Theorem bytes_to_string_bijection_1 : forall l,
-    string_to_bytes (bytes_to_string l) = l.
-Proof.
-  induction l; simpl;
-    rewrite ?ascii_byte_bijection1, ?ascii_byte_bijection2; congruence.
-Qed.
-
-Theorem bytes_to_string_bijection_2 : forall s,
-    bytes_to_string (string_to_bytes s) = s.
-Proof.
-  induction s; simpl;
-    rewrite ?ascii_byte_bijection1, ?ascii_byte_bijection2; congruence.
-Qed.
-
-(*! Pure model of uint64 little-endian encoding. *)
-
-Record LittleEndianEncoder bytes intTy (enc:intTy -> list byte) (dec:list byte -> option intTy) :=
+Record FixedLengthEncoder bytes intTy byteTy (enc:intTy -> list byteTy) (dec:list byteTy -> option intTy) :=
   { encode_length_ok : forall x, length (enc x) = bytes;
     encode_decode_ok : forall x, dec (enc x) = Some x; }.
-
-Axiom uint64_to_le : uint64 -> list byte.
-Axiom uint64_from_le : list byte -> option uint64.
-Axiom uint64_le_enc : LittleEndianEncoder 8 uint64_to_le uint64_from_le.
-
-(*! File descriptors *)
-(* note these are Go file handles, which may be nil *)
-Axiom File : Type.
-Axiom nilFile : File.
-Declare Instance file_eqdec : EqualDec File.
-Declare Instance file_countable : Countable File.
-
-(*! Pointers *)
 
 Module Ptr.
   Inductive ty : Type :=
@@ -96,24 +43,87 @@ Module Ptr.
   | Map (V:Type)
   | Lock
   .
-
-  Axiom t : ty -> Type.
 End Ptr.
 
-Axiom nullptr : forall ty, Ptr.t ty.
+Class GoModel : Type :=
+  { byte : Type;
+    byte0 : byte;
 
-Definition ptr T := Ptr.t (Ptr.Heap T).
-Definition Map V := Ptr.t (Ptr.Map V).
-Definition LockRef := Ptr.t Ptr.Lock.
+    (*! Strings *)
+    uint64_to_string : uint64 -> string;
+    ascii_to_byte : Ascii.ascii -> byte;
+    byte_to_ascii : byte -> Ascii.ascii;
 
-Declare Instance sigPtr_eq_dec : EqualDec (sigT Ptr.t).
+    (*! Pure model of uint64 little-endian encoding. *)
+    uint64_to_le : uint64 -> list byte;
+    uint64_from_le : list byte -> option uint64;
+
+    (*! File handles *)
+    File : Type;
+    (* TODO: rename this, its should be an invalid fd (unfortunately its the
+    zero value for File, which is the valid Fd 0) *)
+    nilFile : File;
+
+    (*! Pointers *)
+    Ptr : Ptr.ty -> Type;
+    nullptr : forall ty, Ptr ty;
+
+
+  }.
+
+Class GoModelWf (model:GoModel) :=
+  { uint64_to_string_inj :
+      forall x y, uint64_to_string x = uint64_to_string y -> x = y;
+    ascii_byte_bijection1 : forall c, byte_to_ascii (ascii_to_byte c) = c;
+    ascii_byte_bijection2 : forall b, ascii_to_byte (byte_to_ascii b) = b;
+    uint64_le_enc : FixedLengthEncoder 8 uint64_to_le uint64_from_le;
+    file_eqdec :> EqualDec File;
+    file_countable :> Countable File;
+    sigPtr_eq_dec :> EqualDec (sigT Ptr);
+  }.
+
+Section DerivedMethods.
+  Context {model:GoModel} {model_wf:GoModelWf model}.
+
+  Fixpoint bytes_to_string (l: list byte) : string :=
+    match l with
+    | nil => EmptyString
+    | b::bs => String (byte_to_ascii b) (bytes_to_string bs)
+    end.
+
+  Fixpoint string_to_bytes (s: string) : list byte :=
+    match s with
+    | EmptyString => nil
+    | String c s' => ascii_to_byte c :: string_to_bytes s'
+    end.
+
+  Theorem bytes_to_string_bijection_1 : forall l,
+      string_to_bytes (bytes_to_string l) = l.
+  Proof.
+    induction l; simpl;
+      rewrite ?ascii_byte_bijection1, ?ascii_byte_bijection2; congruence.
+  Qed.
+
+  Theorem bytes_to_string_bijection_2 : forall s,
+      bytes_to_string (string_to_bytes s) = s.
+  Proof.
+    induction s; simpl;
+      rewrite ?ascii_byte_bijection1, ?ascii_byte_bijection2; congruence.
+  Qed.
+
+  Definition ptr T := Ptr (Ptr.Heap T).
+  Definition Map V := Ptr (Ptr.Map V).
+  Definition LockRef := Ptr Ptr.Lock.
+
+End DerivedMethods.
 
 Module slice.
   Section Slices.
+    Context {model:GoModel}.
     Variable A:Type.
 
     Record t :=
-      mk { ptr: Ptr.t (Ptr.Heap A);
+      mk { ptr: Ptr (Ptr.Heap A);
            offset: uint64;
            length: uint64 }.
 
@@ -147,7 +157,7 @@ Module slice.
   End Slices.
 End slice.
 
-Instance slice_eq_dec : EqualDec (sigT slice.t).
+Instance slice_eq_dec `{GoModelWf} : EqualDec (sigT slice.t).
 Proof.
   hnf; intros.
   destruct x as [T1 x], y as [T2 y].
@@ -163,5 +173,5 @@ Proof.
                inversion H; subst; clear H
              end; eauto; try (inversion 1; congruence).
   - inversion 1; subst.
-    apply inj_pair2 in H2; subst; congruence.
+    apply inj_pair2 in H3; subst; congruence.
 Defined.

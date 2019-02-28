@@ -16,16 +16,19 @@ Set Default Proof Using "Type".
 Import Data.
 Import Filesys.FS.
 
-Notation heap_inG := (gen_heapG (sigT (Ptr.t)) (sigT ptrRawModel)).
+Notation heap_inG := (gen_heapG (sigT Ptr) (sigT ptrRawModel)).
 
-Class gooseG Σ := GooseG {
-                     go_invG : invG Σ;
-                     go_heap_inG :> heap_inG Σ;
-                     (* Maybe actually we do want a gmap version for these *)
-                     go_fs_inG :> gen_heapG string (List.list byte) Σ;
-                     go_fds_inG :> gen_heapG File (List.list byte) Σ;
-                     go_treg_inG :> tregG Σ;
-                   }.
+Class gooseG Σ :=
+  GooseG {
+      go_invG : invG Σ;
+      model :> GoModel;
+      model_wf :> GoModelWf model;
+      go_heap_inG :> heap_inG Σ;
+      (* Maybe actually we do want a gmap version for these *)
+      go_fs_inG :> gen_heapG string (List.list byte) Σ;
+      go_fds_inG :> gen_heapG File (List.list byte) Σ;
+      go_treg_inG :> tregG Σ;
+    }.
 
 Definition pull_lock :=
     (λ v : option {x : Ptr.ty & ptrModel x},
@@ -47,10 +50,10 @@ Lemma pull_lock_insert_heap {T} p v (σ: sigT (Ptr.t) → option (sigT ptrModel)
         (λ k, pull_lock (<[existT (Ptr.Heap T) p := existT (ptrModel _) (Locked, v)]>σ k)).
 *)
 
-Definition heap_interp {Σ} (hM: heap_inG Σ) : State → iProp Σ :=
+Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
   (λ s, (gen_heap_ctx (λ k, pull_lock (SemanticsHelpers.dynMap (allocs s.(heap)) k)))).
 
-Definition goose_interp {Σ} {hM: heap_inG Σ} {tr: tregG Σ} :=
+Definition goose_interp {Σ} `{model_wf:GoModelWf} {hM: heap_inG Σ} {tr: tregG Σ} :=
   (λ s, thread_count_interp (fst s) ∗ heap_interp hM (snd s))%I.
 
 Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=

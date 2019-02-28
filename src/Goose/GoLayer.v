@@ -7,17 +7,18 @@ From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.Layer.
-From RecoveryRefinement Require Export Goose.Heap Goose.Filesys.
+From RecoveryRefinement Require Export Goose.Machine Goose.Heap Goose.Filesys.
 
-
-Inductive Op : Type -> Type :=
+Inductive Op `{GoModel} : Type -> Type :=
 | FilesysOp : forall T, FS.Op T -> Op T
 | DataOp : forall T, Data.Op T -> Op T.
 
-Instance data_inj : Injectable Data.Op Op := DataOp.
-Instance fs_inj : Injectable FS.Op Op := FilesysOp.
+Instance data_inj `{GoModel} : Injectable Data.Op Op := DataOp.
+Instance fs_inj `{GoModel} : Injectable FS.Op Op := FilesysOp.
 
 Module Go.
+  Section GoModel.
+  Context `{model_wf:GoModelWf}.
   Notation State := FS.State.
 
   Inductive step : forall T, Op T -> relation State State T :=
@@ -51,4 +52,5 @@ Module Go.
     - apply FS.crash_step_non_err in H; eauto.
   Defined.
 
+  End GoModel.
 End Go.
