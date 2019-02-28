@@ -1,4 +1,5 @@
 From RecordUpdate Require Import RecordUpdate.
+From Tactical Require Import ProofAutomation.
 
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
@@ -153,5 +154,19 @@ Module FS.
   Definition crash_step : relation State State unit :=
     _ <- puts (set fds (fun _ => ∅));
       puts (set heap (fun _ => ∅)).
+
+  Theorem crash_step_non_err s res :
+      crash_step s res ->
+      res <> Err.
+  Proof.
+    destruct res; eauto.
+    unfold crash_step, puts; simpl; intros.
+    (intuition auto); propositional; discriminate.
+  Qed.
+
+  Global Instance empty_fs : Empty State :=
+    {| heap := ∅;
+       files := ∅;
+       fds := ∅; |}.
 
 End FS.
