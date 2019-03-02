@@ -23,3 +23,6 @@ From RecoveryRefinement Require Import Examples.Logging.LogRefinement.
 From RecoveryRefinement Require Import Goose.Examples.UnitTests.
 From RecoveryRefinement Require Import Goose.Examples.SimpleDb.
 From RecoveryRefinement Require Import Goose.Examples.MailServer.
+
+(* goose proof rules *)
+From RecoveryRefinement Require Import Goose.Proof.Interp.
