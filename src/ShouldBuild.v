@@ -17,7 +17,7 @@ From RecoveryRefinement Require Import Examples.ExMach.RefinementAdequacy.
 From RecoveryRefinement Require Import Examples.StatDb.Refinement.
 From RecoveryRefinement Require Import Examples.AtomicPair.RefinementShadow.
 From RecoveryRefinement Require Import Examples.AtomicPair.RefinementLog.
-From RecoveryRefinement Require Import Examples.Logging.LogImpl.
+From RecoveryRefinement Require Import Examples.Logging.LogRefinement.
 
 (* goose output *)
 From RecoveryRefinement Require Import Goose.Examples.UnitTests.

@@ -81,6 +81,8 @@ Definition commit :=
   _ <- lock disk_lock;
   s <- get_state;
   l <- read_disk log_len;
+  (* TODO: hold state lock only enough to read, then use disk lock to prevent
+  concurrent commit *)
   _ <- match s with
       | Empty => Ret tt
       | Txn1 => write_mem_txn txn1_start l
@@ -105,6 +107,7 @@ Definition reserve_state s : option (BufState * nat) :=
 (* try_reserve returns Some start if it manages to reserve the transaction whose
 in-memory start address is start, and None otherwise *)
 Definition try_reserve : proc (option nat) :=
+  _ <- lock state_lock;
   s <- get_state;
   ret <- match reserve_state s with
         | Some (s', txn_start) =>
@@ -112,6 +115,8 @@ Definition try_reserve : proc (option nat) :=
             Ret (Some txn_start)
         | None => Ret None
         end;
+  (* TODO: hold lock across reservation and txn *)
+  _ <- unlock state_lock;
   Ret ret.
 
 Definition reserve : proc nat :=
@@ -123,11 +128,9 @@ Definition reserve : proc nat :=
             end) tt.
 
 Definition append txn : proc unit :=
-  _ <- lock state_lock;
   start <- reserve;
   _ <- write_mem start (fst txn);
   _ <- write_mem (1 + start) (snd txn);
-  _ <- unlock state_lock;
   Ret tt.
 
 Definition get_log i : proc (option nat) :=
