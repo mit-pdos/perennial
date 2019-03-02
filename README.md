@@ -1,6 +1,6 @@
 # Recovery refinement
 
-[![Build Status](https://travis-ci.org/mit-pdos/armada.svg?branch=concur)](https://travis-ci.org/mit-pdos/armada)
+[![Build Status](https://travis-ci.org/mit-pdos/armada.svg?branch=master)](https://travis-ci.org/mit-pdos/armada)
 
 Proving crash safety of systems by proving an implementation refines a
 specification. Supports implementations that run a recovery procedure, as well
