@@ -100,6 +100,20 @@ Proof.
   exact (rew H in m0).
 Defined.
 
+Require Import Program.
+
+Lemma getDyn_lookup A (Ref Model: A -> Type)
+      (m: DynMap Ref Model) a (r: Ref a) (v: Model a) :
+  m.(dynMap) (existT _ r) = Some (existT _ v) →
+  getDyn m a r = Some v.
+Proof.
+  unfold getDyn. destruct m as [map wf]. simpl.
+  generalize (wf a r). generalize (map (existT a r)).
+  intros ret Heq. clear.
+  destruct ret as [(?&?)|]; inversion 1.
+  subst. apply Eqdep.EqdepTheory.inj_pair2 in H2; subst; auto.
+Qed.
+
 Arguments getDyn {A Ref Model} m {a} r.
 
 Definition updDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}

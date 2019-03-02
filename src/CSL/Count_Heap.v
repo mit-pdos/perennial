@@ -9,36 +9,38 @@ From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
 Import uPred.
+From Classes Require Import EqualDec.
+Import EqualDecNotation.
 
-Global Instance partial_fn_insert (A T : Type) `{EqDecision A} : Insert A T (A → option T) :=
+Global Instance partial_fn_insert (A T : Type) `{EqualDec A} : Insert A T (A → option T) :=
   λ (a : A) (t : T) (f : A → option T) (b : A),
-    if decide (a = b) then Some t else f b.
-Global Instance partial_fn_delete (A T : Type) `{EqDecision A} : Delete A (A → option T) :=
+    if b == a then Some t else f b.
+Global Instance partial_fn_delete (A T : Type) `{EqualDec A} : Delete A (A → option T) :=
   λ (a : A) (f : A → option T) (b : A),
-    if decide (a = b) then None else f b.
+    if b == a then None else f b.
 
-Definition gen_heapUR L V `{EqDecision L}: ucmraT :=
+Definition gen_heapUR L V `{EqualDec L}: ucmraT :=
   ofe_funUR (fun (a: L) => optionUR (prodR countingR (agreeR (leibnizC V)))).
-Definition to_gen_heap {L V} `{EqDecision L} (f: L → option V): gen_heapUR L V :=
+Definition to_gen_heap {L V} `{EqualDec L} (f: L → option V): gen_heapUR L V :=
   λ k, match (f k) with
        | None => None
        | Some v => Some (Count 0, to_agree (v: leibnizC V))
        end.
 
 (** The CMRA we need. *)
-Class gen_heapG (L V : Type) (Σ : gFunctors) `{EqDecision L} := GenHeapG {
+Class gen_heapG (L V : Type) (Σ : gFunctors) `{EqualDec L} := GenHeapG {
   gen_heap_inG :> inG Σ (authR (gen_heapUR L V));
   gen_heap_name : gname
 }.
 Arguments gen_heap_name {_ _ _ _} _ : assert.
 
-Class gen_heapPreG (L V : Type) (Σ : gFunctors) `{EqDecision L} :=
+Class gen_heapPreG (L V : Type) (Σ : gFunctors) `{EqualDec L} :=
   { gen_heap_preG_inG :> inG Σ (authR (gen_heapUR L V)) }.
 
-Definition gen_heapΣ (L V : Type) `{EqDecision L} : gFunctors :=
+Definition gen_heapΣ (L V : Type) `{EqualDec L} : gFunctors :=
   #[GFunctor (authR (gen_heapUR L V))].
 
-Instance subG_gen_heapPreG {Σ L V} `{EqDecision L} :
+Instance subG_gen_heapPreG {Σ L V} `{EqualDec L} :
   subG (gen_heapΣ L V) Σ → gen_heapPreG L V Σ.
 Proof. solve_inG. Qed.
 
@@ -51,7 +53,7 @@ Section definitions.
   Definition mapsto_def (l : L) (n: nat) (v: V) : iProp Σ :=
     own (gen_heap_name hG)
         (◯ (fun l' =>
-              if decide (l = l') then
+              if l' == l then
                 Some (Count (n: Z), to_agree (v : leibnizC V))
               else
                 ε)).
@@ -62,7 +64,7 @@ Section definitions.
   Definition read_mapsto_def (l : L) (v: V) : iProp Σ :=
     own (gen_heap_name hG)
         (◯ (fun l' =>
-              if decide (l = l') then
+              if l' == l then
                 Some (Count (-1), to_agree (v : leibnizC V))
               else
                 ε)).
@@ -85,7 +87,7 @@ Local Notation "l r↦ -" := (∃ v, l r↦ v)%I
   (at level 20, format "l  r↦ -") : bi_scope.
 
 Section to_gen_heap.
-  Context (L V : Type) `{EqDecision L}.
+  Context (L V : Type) `{EqualDec L}.
   Implicit Types σ : L → option V.
 
   (** Conversion to heaps and back *)
@@ -94,14 +96,14 @@ Section to_gen_heap.
   Lemma lookup_to_gen_heap_None σ l : σ l = None → to_gen_heap σ l = None.
   Proof. rewrite /to_gen_heap. by case (σ l). Qed.
   Lemma gen_heap_singleton_included σ l q v :
-    ((fun l' => if decide (l = l') then
+    ((fun l' => if l' == l then
                   Some (Count q, to_agree (v : leibnizC V))
                 else
                   ε) : gen_heapUR L V) ≼ to_gen_heap σ → σ l = Some v.
   Proof.
     intros Hincl. apply (ofe_fun_included_spec_1 _ _ l) in Hincl.
     move: Hincl. rewrite /to_gen_heap.
-    destruct (decide (l = l)); last congruence.
+    destruct (l == l); last congruence.
     destruct (σ l).
     - move=> /Some_pair_included_total_2 [_] /to_agree_included /leibniz_equiv_iff -> //.
     - rewrite option_included. intros [?|Hcase].
@@ -113,14 +115,14 @@ Section to_gen_heap.
   Proof.
     rewrite /to_gen_heap=> k//=.
     rewrite /insert/partial_fn_insert.
-    destruct (decide (l = k)) => //=.
+    destruct ((k == l)) => //=.
   Qed.
   Lemma to_gen_heap_delete l σ :
     to_gen_heap (delete l σ) ≡ delete l (to_gen_heap σ).
   Proof.
     rewrite /to_gen_heap=> k//=.
     rewrite /delete/partial_fn_delete.
-    destruct (decide (l = k)) => //=.
+    destruct ((k == l)) => //=.
   Qed.
 End to_gen_heap.
 
@@ -154,7 +156,7 @@ Section gen_heap.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
     f_equiv=> /auth_own_valid /=.
     intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
-    destruct (decide (l = l)); last by congruence.
+    destruct ((l == l)); last by congruence.
     rewrite -Some_op pair_op.
     by intros [_ ?%agree_op_invL'].
   Qed.
@@ -166,7 +168,7 @@ Section gen_heap.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
     f_equiv=> /auth_own_valid /=.
     intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
-    destruct (decide (l = l)); last by congruence.
+    destruct ((l == l)); last by congruence.
     rewrite -Some_op pair_op.
     intros [Hcount ?].
     rewrite counting_op' //= in Hcount.
@@ -178,7 +180,7 @@ Section gen_heap.
     rewrite mapsto_eq read_mapsto_eq /mapsto_def /read_mapsto_def.
     rewrite -own_op -auth_frag_op.
     f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
-    destruct (decide (l = l')) => //=.
+    destruct ((l' == l)) => //=.
     rewrite -Some_op pair_op.
     rewrite counting_op' //=.
     replace (S q + (-1))%Z with (q : Z) by lia.
@@ -187,7 +189,7 @@ Section gen_heap.
   Qed.
 
   (* TODO move *)
-  Lemma ofe_fun_local_update `{EqDecision A} {B: A → ucmraT} f1 f2 f1' f2' :
+  Lemma ofe_fun_local_update `{EqualDec A} {B: A → ucmraT} f1 f2 f1' f2' :
     (∀ x, (f1 x, f2 x) ~l~> (f1' x , f2' x)) →
     (f1 : ofe_fun B, f2) ~l~> (f1', f2').
   Proof.
@@ -209,8 +211,8 @@ Section gen_heap.
     { eapply auth_update_alloc. apply ofe_fun_local_update => k.
       rewrite /to_gen_heap.
       rewrite /insert/partial_fn_insert.
-      destruct (decide (l = k)).
-      * subst. rewrite /insert/partial_fn_insert. destruct (decide (k = k)); last by congruence.
+      destruct ((k == l)).
+      * subst. rewrite /insert/partial_fn_insert. destruct ((l == l)); last by congruence.
         rewrite Hnone.
         rewrite ofe_fun_lookup_empty.
         apply (alloc_option_local_update (Count 0, to_agree (v:leibnizC _)))=> //.
@@ -227,7 +229,7 @@ Section gen_heap.
     eapply auth_update_dealloc.
     apply ofe_fun_local_update => k.
     rewrite /delete/partial_fn_delete.
-    destruct (decide (l = k)).
+    destruct ((k == l)).
     * apply delete_option_local_update; apply _.
     * reflexivity.
   Qed.
@@ -256,7 +258,7 @@ Section gen_heap.
             with "Hσ Hl") as "[Hσ Hl]".
     { eapply auth_update, ofe_fun_local_update => k.
       rewrite /to_gen_heap/insert/partial_fn_insert//=.
-      destruct (decide (l = k)).
+      destruct ((k == l)).
       * subst. rewrite Hl.
         unshelve (apply: option_local_update).
         apply exclusive_local_update=>//=.
