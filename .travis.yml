@@ -8,6 +8,12 @@ notifications:
     - jtassaro@andrew.cmu.edu
     - nickolai@csail.mit.edu
 
+branches:
+  only:
+    - master
+      # for version tags of the form v0.1 or v0.1.1
+    - /^v\d+\.\d+(\.\d+)?$/
+
 services:
   - docker
 
