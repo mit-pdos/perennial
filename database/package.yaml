@@ -1,15 +1,15 @@
 name:                database
 version:             0.1.0.0
-github:              "mit-pdos/argosy"
+github:              "mit-pdos/armada"
 license:             BSD3
-author:              "Argosy authors"
-copyright:           "2019 Argosy authors"
+author:              "Armada authors"
+copyright:           "2019 Armada authors"
 
 extra-source-files:
 - README.md
 - fiximports.py
 
-description:         Please see the Argosy README
+description:         Please see the Armada README
 
 dependencies:
 - base >= 4.7 && < 5

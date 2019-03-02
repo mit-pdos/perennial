@@ -1,6 +1,6 @@
 # Recovery refinement
 
-[![Build Status](https://travis-ci.org/mit-pdos/argosy.svg?branch=concur)](https://travis-ci.org/mit-pdos/argosy)
+[![Build Status](https://travis-ci.org/mit-pdos/armada.svg?branch=concur)](https://travis-ci.org/mit-pdos/armada)
 
 Proving crash safety of systems by proving an implementation refines a
 specification. Supports implementations that run a recovery procedure, as well
@@ -79,7 +79,7 @@ transactional API on top of two unreliable disks. See its separate
 
 ## Compiling
 
-We develop Argosy using Coq master. It should be compatible with Coq v8.9+beta
+We develop Armada using Coq master. It should be compatible with Coq v8.9+beta
 and Coq v8.8.2, which are tested as part of continuous integration.
 
 This project uses git submodules to include several dependencies. If building

@@ -1,6 +1,6 @@
 (* This is a modification of the Iris 'gen_heap'.v file to using counting
    permissions and arbitrary function maps instead of fractional permissions and gmaps
-   a very common pattern for Argosy examples. *)
+   a very common pattern for Armada examples. *)
 
 From iris.algebra Require Import auth agree functions.
 From RecoveryRefinement.CSL Require Import Counting.

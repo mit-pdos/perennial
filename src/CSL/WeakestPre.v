@@ -1,5 +1,5 @@
 (* This is a port of weakestpre.v from the Iris Project to the shallow embedding
-   used in Argosy. (See external/iris-coq/theories/program_logic/weakestpre.v)
+   used in Armada. (See external/iris-coq/theories/program_logic/weakestpre.v)
    *)
 
 Require Import Spec.Proc.
