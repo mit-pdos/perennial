@@ -1,7 +1,8 @@
 (* This is a modification of the Iris 'gen_heap'.v file to using counting
-   permissions instead of fractional permissions, since that seems to be
+   permissions and arbitrary function maps instead of fractional permissions and gmaps
    a very common pattern for Argosy examples. *)
-From iris.algebra Require Import auth gmap agree.
+
+From iris.algebra Require Import auth agree functions.
 From RecoveryRefinement.CSL Require Import Counting.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
@@ -9,42 +10,62 @@ From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
 Import uPred.
 
-Definition gen_heapUR (L V : Type) `{Countable L} : ucmraT :=
-  gmapUR L (prodR countingR (agreeR (leibnizC V))).
-Definition to_gen_heap {L V} `{Countable L} : gmap L V → gen_heapUR L V :=
-  fmap (λ v, (Count 0, to_agree (v : leibnizC V))).
+Global Instance partial_fn_insert (A T : Type) `{EqDecision A} : Insert A T (A → option T) :=
+  λ (a : A) (t : T) (f : A → option T) (b : A),
+    if decide (a = b) then Some t else f b.
+Global Instance partial_fn_delete (A T : Type) `{EqDecision A} : Delete A (A → option T) :=
+  λ (a : A) (f : A → option T) (b : A),
+    if decide (a = b) then None else f b.
+
+Definition gen_heapUR L V `{EqDecision L}: ucmraT :=
+  ofe_funUR (fun (a: L) => optionUR (prodR countingR (agreeR (leibnizC V)))).
+Definition to_gen_heap {L V} `{EqDecision L} (f: L → option V): gen_heapUR L V :=
+  λ k, match (f k) with
+       | None => None
+       | Some v => Some (Count 0, to_agree (v: leibnizC V))
+       end.
 
 (** The CMRA we need. *)
-Class gen_heapG (L V : Type) (Σ : gFunctors) `{Countable L} := GenHeapG {
+Class gen_heapG (L V : Type) (Σ : gFunctors) `{EqDecision L} := GenHeapG {
   gen_heap_inG :> inG Σ (authR (gen_heapUR L V));
   gen_heap_name : gname
 }.
-Arguments gen_heap_name {_ _ _ _ _} _ : assert.
+Arguments gen_heap_name {_ _ _ _} _ : assert.
 
-Class gen_heapPreG (L V : Type) (Σ : gFunctors) `{Countable L} :=
+Class gen_heapPreG (L V : Type) (Σ : gFunctors) `{EqDecision L} :=
   { gen_heap_preG_inG :> inG Σ (authR (gen_heapUR L V)) }.
 
-Definition gen_heapΣ (L V : Type) `{Countable L} : gFunctors :=
+Definition gen_heapΣ (L V : Type) `{EqDecision L} : gFunctors :=
   #[GFunctor (authR (gen_heapUR L V))].
 
-Instance subG_gen_heapPreG {Σ L V} `{Countable L} :
+Instance subG_gen_heapPreG {Σ L V} `{EqDecision L} :
   subG (gen_heapΣ L V) Σ → gen_heapPreG L V Σ.
 Proof. solve_inG. Qed.
 
 Section definitions.
   Context `{hG : gen_heapG L V Σ}.
 
-  Definition gen_heap_ctx (σ : gmap L V) : iProp Σ :=
+  Definition gen_heap_ctx (σ : L → option V) : iProp Σ :=
     own (gen_heap_name hG) (● (to_gen_heap σ)).
 
   Definition mapsto_def (l : L) (n: nat) (v: V) : iProp Σ :=
-    own (gen_heap_name hG) (◯ {[ l := (Count n, to_agree (v : leibnizC V)) ]}).
+    own (gen_heap_name hG)
+        (◯ (fun l' =>
+              if decide (l = l') then
+                Some (Count (n: Z), to_agree (v : leibnizC V))
+              else
+                ε)).
   Definition mapsto_aux : seal (@mapsto_def). by eexists. Qed.
   Definition mapsto := mapsto_aux.(unseal).
   Definition mapsto_eq : @mapsto = @mapsto_def := mapsto_aux.(seal_eq).
 
   Definition read_mapsto_def (l : L) (v: V) : iProp Σ :=
-    own (gen_heap_name hG) (◯ {[ l := (Count (-1), to_agree (v : leibnizC V)) ]}).
+    own (gen_heap_name hG)
+        (◯ (fun l' =>
+              if decide (l = l') then
+                Some (Count (-1), to_agree (v : leibnizC V))
+              else
+                ε)).
   Definition read_mapsto_aux : seal (@read_mapsto_def). by eexists. Qed.
   Definition read_mapsto := read_mapsto_aux.(unseal).
   Definition read_mapsto_eq : @read_mapsto = @read_mapsto_def := read_mapsto_aux.(seal_eq).
@@ -64,27 +85,43 @@ Local Notation "l r↦ -" := (∃ v, l r↦ v)%I
   (at level 20, format "l  r↦ -") : bi_scope.
 
 Section to_gen_heap.
-  Context (L V : Type) `{Countable L}.
-  Implicit Types σ : gmap L V.
+  Context (L V : Type) `{EqDecision L}.
+  Implicit Types σ : L → option V.
 
   (** Conversion to heaps and back *)
   Lemma to_gen_heap_valid σ : ✓ to_gen_heap σ.
-  Proof. intros l. rewrite lookup_fmap. by case (σ !! l). Qed.
-  Lemma lookup_to_gen_heap_None σ l : σ !! l = None → to_gen_heap σ !! l = None.
-  Proof. by rewrite /to_gen_heap lookup_fmap=> ->. Qed.
+  Proof. rewrite /to_gen_heap => l. by case (σ l). Qed.
+  Lemma lookup_to_gen_heap_None σ l : σ l = None → to_gen_heap σ l = None.
+  Proof. rewrite /to_gen_heap. by case (σ l). Qed.
   Lemma gen_heap_singleton_included σ l q v :
-    {[l := (q, to_agree v)]} ≼ to_gen_heap σ → σ !! l = Some v.
+    ((fun l' => if decide (l = l') then
+                  Some (Count q, to_agree (v : leibnizC V))
+                else
+                  ε) : gen_heapUR L V) ≼ to_gen_heap σ → σ l = Some v.
   Proof.
-    rewrite singleton_included=> -[[q' av] []].
-    rewrite /to_gen_heap lookup_fmap fmap_Some_equiv => -[v' [Hl [/= -> ->]]].
-    move=> /Some_pair_included_total_2 [_] /to_agree_included /leibniz_equiv_iff -> //.
+    intros Hincl. apply (ofe_fun_included_spec_1 _ _ l) in Hincl.
+    move: Hincl. rewrite /to_gen_heap.
+    destruct (decide (l = l)); last congruence.
+    destruct (σ l).
+    - move=> /Some_pair_included_total_2 [_] /to_agree_included /leibniz_equiv_iff -> //.
+    - rewrite option_included. intros [?|Hcase].
+      * congruence.
+      * repeat destruct Hcase as [? Hcase]. congruence.
   Qed.
   Lemma to_gen_heap_insert l v σ :
-    to_gen_heap (<[l:=v]> σ) = <[l:=(Count 0, to_agree (v:leibnizC V))]> (to_gen_heap σ).
-  Proof. by rewrite /to_gen_heap fmap_insert. Qed.
+    to_gen_heap (<[l:=v]> σ) ≡ <[l:=(Count 0, to_agree (v:leibnizC V))]> (to_gen_heap σ).
+  Proof.
+    rewrite /to_gen_heap=> k//=.
+    rewrite /insert/partial_fn_insert.
+    destruct (decide (l = k)) => //=.
+  Qed.
   Lemma to_gen_heap_delete l σ :
-    to_gen_heap (delete l σ) = delete l (to_gen_heap σ).
-  Proof. by rewrite /to_gen_heap fmap_delete. Qed.
+    to_gen_heap (delete l σ) ≡ delete l (to_gen_heap σ).
+  Proof.
+    rewrite /to_gen_heap=> k//=.
+    rewrite /delete/partial_fn_delete.
+    destruct (decide (l = k)) => //=.
+  Qed.
 End to_gen_heap.
 
 Lemma gen_heap_init `{gen_heapPreG L V Σ} σ :
@@ -92,14 +129,14 @@ Lemma gen_heap_init `{gen_heapPreG L V Σ} σ :
 Proof.
   iMod (own_alloc (● to_gen_heap σ)) as (γ) "Hh".
   { apply: auth_auth_valid. exact: to_gen_heap_valid. }
-  iModIntro. by iExists (GenHeapG L V Σ _ _ _ γ).
+  iModIntro. by iExists (GenHeapG L V Σ _ _ γ).
 Qed.
 
 Section gen_heap.
   Context `{gen_heapG L V Σ}.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : V → iProp Σ.
-  Implicit Types σ : gmap L V.
+  Implicit Types σ : L → option V.
   Implicit Types h g : gen_heapUR L V.
   Implicit Types l : L.
   Implicit Types v : V.
@@ -115,7 +152,10 @@ Section gen_heap.
     apply wand_intro_r.
     rewrite mapsto_eq read_mapsto_eq /mapsto_def /read_mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_own_valid /=. rewrite op_singleton singleton_valid pair_op.
+    f_equiv=> /auth_own_valid /=.
+    intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
+    destruct (decide (l = l)); last by congruence.
+    rewrite -Some_op pair_op.
     by intros [_ ?%agree_op_invL'].
   Qed.
 
@@ -124,7 +164,10 @@ Section gen_heap.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_own_valid /=. rewrite op_singleton singleton_valid pair_op.
+    f_equiv=> /auth_own_valid /=.
+    intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
+    destruct (decide (l = l)); last by congruence.
+    rewrite -Some_op pair_op.
     intros [Hcount ?].
     rewrite counting_op' //= in Hcount.
     repeat destruct decide => //=. lia.
@@ -134,22 +177,46 @@ Section gen_heap.
   Proof.
     rewrite mapsto_eq read_mapsto_eq /mapsto_def /read_mapsto_def.
     rewrite -own_op -auth_frag_op.
-    rewrite op_singleton pair_op.
+    f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
+    destruct (decide (l = l')) => //=.
+    rewrite -Some_op pair_op.
     rewrite counting_op' //=.
-    repeat destruct decide => //=. lia.
     replace (S q + (-1))%Z with (q : Z) by lia.
+    repeat (destruct (decide)); try lia.
     by rewrite agree_idemp.
   Qed.
 
-  Lemma gen_heap_alloc σ l v :
-    σ !! l = None → gen_heap_ctx σ ==∗ gen_heap_ctx (<[l:=v]>σ) ∗ l ↦ v.
+  (* TODO move *)
+  Lemma ofe_fun_local_update `{EqDecision A} {B: A → ucmraT} f1 f2 f1' f2' :
+    (∀ x, (f1 x, f2 x) ~l~> (f1' x , f2' x)) →
+    (f1 : ofe_fun B, f2) ~l~> (f1', f2').
   Proof.
-    iIntros (?) "Hσ". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
-    iMod (own_update with "Hσ") as "[Hσ Hl]".
-    { eapply auth_update_alloc,
-        (alloc_singleton_local_update _ _ (Count 0, to_agree (v:leibnizC _)))=> //.
-      by apply lookup_to_gen_heap_None. }
-    iModIntro. rewrite to_gen_heap_insert. iFrame.
+    intros Hupd.
+    apply local_update_unital=> n mf Hmv Hm; simpl in *.
+    split.
+    - intros k. specialize (Hupd k). specialize (Hm k). rewrite ofe_fun_lookup_op in Hm.
+      edestruct (Hupd n (Some (mf k))); eauto.
+    - intros k. specialize (Hupd k). specialize (Hm k). rewrite ofe_fun_lookup_op in Hm.
+      edestruct (Hupd n (Some (mf k))); eauto.
+  Qed.
+
+  Lemma gen_heap_alloc σ l v :
+    σ l = None → gen_heap_ctx σ ==∗ gen_heap_ctx (<[l:=v]>σ) ∗ l ↦ v.
+  Proof.
+    iIntros (Hnone) "Hσ". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
+    iMod (own_update _ _ (● to_gen_heap (<[l := v]> σ) ⋅ ◯ <[l := (Count 0, to_agree v)]>ε)
+            with "Hσ") as "[Hσ Hl]".
+    { eapply auth_update_alloc. apply ofe_fun_local_update => k.
+      rewrite /to_gen_heap.
+      rewrite /insert/partial_fn_insert.
+      destruct (decide (l = k)).
+      * subst. rewrite /insert/partial_fn_insert. destruct (decide (k = k)); last by congruence.
+        rewrite Hnone.
+        rewrite ofe_fun_lookup_empty.
+        apply (alloc_option_local_update (Count 0, to_agree (v:leibnizC _)))=> //.
+      * reflexivity.
+    }
+    by iFrame.
   Qed.
 
   Lemma gen_heap_dealloc σ l v :
@@ -157,17 +224,22 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     rewrite to_gen_heap_delete. iApply (own_update_2 with "Hσ Hl").
-    eapply auth_update_dealloc, (delete_singleton_local_update _ _ _).
+    eapply auth_update_dealloc.
+    apply ofe_fun_local_update => k.
+    rewrite /delete/partial_fn_delete.
+    destruct (decide (l = k)).
+    * apply delete_option_local_update; apply _.
+    * reflexivity.
   Qed.
 
-  Lemma gen_heap_valid σ l q v : gen_heap_ctx σ -∗ l ↦{q} v -∗ ⌜σ !! l = Some v⌝.
+  Lemma gen_heap_valid σ l q v : gen_heap_ctx σ -∗ l ↦{q} v -∗ ⌜σ l = Some v⌝.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
       as %[Hl%gen_heap_singleton_included _]%auth_valid_discrete_2; auto.
   Qed.
 
-  Lemma gen_heap_valid_2 σ l v : gen_heap_ctx σ -∗ l r↦ v -∗ ⌜σ !! l = Some v⌝.
+  Lemma gen_heap_valid_2 σ l v : gen_heap_ctx σ -∗ l r↦ v -∗ ⌜σ l = Some v⌝.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx read_mapsto_eq /read_mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
@@ -180,10 +252,16 @@ Section gen_heap.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
       as %[Hl%gen_heap_singleton_included _]%auth_valid_discrete_2.
-    iMod (own_update_2 with "Hσ Hl") as "[Hσ Hl]".
-    { eapply auth_update, singleton_local_update,
-        (exclusive_local_update _ (Count 0, to_agree (v2:leibnizC _)))=> //.
-      by rewrite /to_gen_heap lookup_fmap Hl. }
-    iModIntro. rewrite to_gen_heap_insert. iFrame.
+    iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := v2]> σ) ⋅ ◯ <[l := (Count 0, to_agree v2)]>ε)
+            with "Hσ Hl") as "[Hσ Hl]".
+    { eapply auth_update, ofe_fun_local_update => k.
+      rewrite /to_gen_heap/insert/partial_fn_insert//=.
+      destruct (decide (l = k)).
+      * subst. rewrite Hl.
+        unshelve (apply: option_local_update).
+        apply exclusive_local_update=>//=.
+      * reflexivity.
+    }
+    by iFrame.
   Qed.
 End gen_heap.
