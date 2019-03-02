@@ -1,28 +1,11 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg.
 Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.
 Require Export ExMach.ExMachAPI.
 Set Default Proof Using "Type".
-
-Class tregG Σ := TRegG {
-                     treg_counter_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitC))));
-                     treg_name: gname
-                   }.
-Arguments treg_name {_}.
-
-Section thread_reg.
-  Context `{tr: tregG Σ}.
-  Definition Registered :=
-    own (treg_name tr) (Cinl (Count (-1)%Z)).
-  Definition AllDone :=
-    own (treg_name tr) (Cinr (◯ (Excl' tt))).
-  Lemma AllDone_Register_excl:
-    AllDone -∗ Registered -∗ False.
-  Proof. iIntros "Had Hreg". iDestruct (own_valid_2 with "Had Hreg") as %[]. Qed.
-End thread_reg.
 
 Class exmachG Σ := ExMachG {
                      exm_invG : invG Σ;
@@ -42,20 +25,18 @@ Proof.
   iModIntro. unshelve (iExists (GenHeapG L V Σ _ _ _ γ), _); auto. iFrame.
 Qed.
 
-Definition ex_mach_interp {Σ} {hM: gen_heapG addr nat Σ} {hD: gen_heapG addr nat Σ}
-           {tr: tregG Σ}  :=
-  (λ s, let (n, s) := (s : nat * State) in
-        (match n with
-         | 1 => own (treg_name tr) (Cinl (Count 1)) ∨ own (treg_name tr) (Cinr (● (Excl' tt)))
-         | _ => own (treg_name tr) (Cinl (Count n))
-         end) ∗
-        ∃ mem disk, (gen_heap_ctx mem (hG := hM)) ∗
+Definition disk_state_interp {Σ} (hM: gen_heapG addr nat Σ) (hD: gen_heapG addr nat Σ) :=
+  (λ s, ∃ mem disk, (gen_heap_ctx mem (hG := hM)) ∗
                         (gen_heap_ctx disk (hG := hD)) ∗
                         ⌜ mem = mem_state s ∧
                           disk = disk_state s ∧
                           (∀ i, is_Some (mem_state s !! i) → i < size) ∧
-                          (∀ i, is_Some (disk_state s !! i) → i < size) ⌝
-      )%I.
+                          (∀ i, is_Some (disk_state s !! i) → i < size) ⌝)%I.
+
+
+Definition ex_mach_interp {Σ} {hM: gen_heapG addr nat Σ} {hD: gen_heapG addr nat Σ}
+           {tr: tregG Σ}  :=
+  (λ s, thread_count_interp (fst s) ∗ disk_state_interp hM hD (snd s))%I.
 
 Definition ex_mach_interp' `{exmachG Σ} :=
     @ex_mach_interp _ exm_mem_inG exm_disk_inG exm_treg_inG.
@@ -142,125 +123,30 @@ Proof.
     by iApply IHdisk.
 Qed.
 
+Import Reg_wp.
+Lemma thread_reg1:
+  ∀ n σ, state_interp (n, σ)
+                      -∗ thread_count_interp n ∗ disk_state_interp (exm_mem_inG) (exm_disk_inG) σ.
+Proof. eauto. Qed.
+Lemma thread_reg2:
+  ∀ n σ, thread_count_interp n ∗ disk_state_interp (exm_mem_inG) (exm_disk_inG) σ
+                             -∗ state_interp (n, σ).
+Proof. auto. Qed.
+
 Lemma wp_spawn {T} s E (e: proc _ T) Φ :
   ▷ Registered
     -∗ ▷ (Registered -∗ WP (let! _ <- e; Unregister)%proc @ s; ⊤ {{ _, True }})
     -∗ ▷ ( Registered -∗ Φ tt)
     -∗ WP Spawn e @ s; E {{ Φ }}.
-Proof.
-  iIntros "Hreg He HΦ".
-  iApply wp_lift_atomic_step.
-  { auto. }
-  iIntros ((n, σ)) "Hown".
-  iModIntro. iSplit.
-  { destruct s; intuition. iPureIntro. eapply spawn_non_errorable. }
-  iIntros (e2 (n', σ2) ? Hstep) "!>".
-  destruct Hstep as ([]&(?&?)&?&?).
-  inversion H0. subst.
-  inversion H1. subst.
-  inversion H2. subst.
-  iDestruct "Hown" as "(Hown&?)".
-
-
-  (* TODO: break out split/join lemmas for register *)
-  iAssert (own (treg_name _) (Cinl (Count n)) ∗ Registered)%I
-          with "[Hown Hreg]" as "(Hown&Hreg)".
-  {
-    destruct (decide (n = 1)) as [->|]; last first.
-    {  destruct n as [|[|n]]; try lia; iFrame. }
-    iDestruct "Hown" as "[Hown|Hown]"; first by iFrame.
-    iDestruct (own_valid_2 with "Hown Hreg") as %[].
-  }
-  iAssert (own (treg_name _) (Cinl (Count (S n))) ∗ Registered)%I
-          with "[Hown]" as "(Hown&Hreg')".
-  {
-    rewrite -own_op Cinl_op counting_op' //=.
-    repeat destruct decide; try lia. replace (S n + (-1))%Z with (n : Z) by lia. done.
-  }
-  iModIntro. simpl. iFrame. iSplitL "Hown".
-  { destruct n; iFrame. }
-  iSplitL "Hreg HΦ".
-  { by iApply "HΦ". }
-  rewrite right_id.
-  by iApply "He".
-Qed.
+Proof. eapply wp_spawn; eauto using thread_reg1, thread_reg2. Qed.
 
 Lemma wp_unregister s E :
   {{{ ▷ Registered }}} Unregister @ s; E {{{ RET tt; True }}}.
-Proof.
-  iIntros (Φ) ">Hreg HΦ".
-  iApply wp_lift_atomic_step.
-  { auto. }
-  iIntros ((n, σ)) "Hown".
-  iModIntro. iSplit.
-  { destruct s; intuition. iPureIntro. eapply unregister_non_errorable. }
-  iIntros (e2 (n', σ2) ? Hstep) "!>".
-  destruct Hstep as ([]&(?&?)&?&?).
-  inversion H0. subst.
-  inversion H1. subst.
-  inversion H2. subst.
-  iDestruct "Hown" as "(Hown&?)".
-
-  iAssert (∃ n', ⌜ n = S n' ⌝ ∗ own (treg_name _) (Cinl (Count n)) ∗ Registered)%I
-          with "[Hown Hreg]" as (n' Heq) "(Hown&Hreg)".
-  {
-    destruct (decide (n = 1)) as [->|]; last first.
-    {  destruct n as [|[|n]]; try lia.
-       - iDestruct (own_valid_2 with "Hown Hreg") as %[].
-       - iExists (S n). iFrame; eauto.
-    }
-    iExists O. iDestruct "Hown" as "[Hown|Hown]"; first by (iFrame).
-    iDestruct (own_valid_2 with "Hown Hreg") as %[].
-  }
-  subst.
-  iAssert (own (treg_name _) (Cinl (Count n')))%I
-          with "[Hown Hreg]" as "Hown".
-  {
-    iCombine "Hown Hreg" as "Hown".
-    rewrite Cinl_op counting_op' //=.
-    repeat destruct decide; try lia. replace (S n' + (-1))%Z with (n' : Z) by lia. done.
-  }
-  iModIntro. simpl. iFrame. iSplitL "Hown".
-  { destruct n' as [|[|n']]; iFrame. }
-  rewrite right_id.
-  by iApply "HΦ".
-Qed.
+Proof. eapply wp_unregister; eauto using thread_reg1, thread_reg2. Qed.
 
 Lemma wp_wait s E :
   {{{ ▷ Registered }}} Wait @ s; E {{{ RET tt; AllDone }}}.
-Proof.
-  iIntros (Φ) ">Hreg HΦ".
-  iApply wp_lift_atomic_step.
-  { auto. }
-  iIntros ((n, σ)) "Hown".
-  iModIntro. iSplit.
-  { destruct s; intuition. iPureIntro. eapply wait_non_errorable. }
-  iIntros (e2 (n', σ2) ? Hstep) "!>".
-  destruct Hstep as ([]&(?&?)&?&?).
-  inversion H0. subst.
-  inversion H1. subst.
-  inversion H2. subst.
-  iDestruct "Hown" as "(Hown&?)".
-
-  iAssert (own (treg_name _) (Cinl (Count 1)) ∗ Registered)%I
-          with "[Hown Hreg]" as "(Hown&Hreg)".
-  {
-    iDestruct "Hown" as "[Hown|Hown]"; first by (iFrame).
-    iDestruct (own_valid_2 with "Hown Hreg") as %[].
-  }
-  subst.
-  iAssert (own (treg_name _) (Cinl (Count O)))%I
-          with "[Hown Hreg]" as "Hown".
-  {
-    iCombine "Hown Hreg" as "Hown".
-    rewrite Cinl_op counting_op' //=.
-  }
-  iMod (own_update with "Hown") as "(Hdone&Hown)".
-  { apply cmra_update_exclusive with (y:=Cinr (◯ (Excl' tt)) ⋅ Cinr (● (Excl' tt))) => //=. }
-  iModIntro. iFrame. simpl.
-  rewrite right_id.
-  by iApply "HΦ".
-Qed.
+Proof. eapply wp_wait; eauto using thread_reg1, thread_reg2. Qed.
 
 Lemma wp_write_mem s E i v' v :
   {{{ ▷ i m↦ v' }}} write_mem i v @ s; E {{{ RET tt; i m↦ v }}}.
@@ -273,6 +159,7 @@ Proof.
   inversion H0. subst.
   inversion Hstep; subst.
   iDestruct "Hown" as "(?&Hown)".
+  rewrite /disk_state_interp.
   iDestruct "Hown" as (mems disks) "(Hown1&Hown2&Hp)".
   iDestruct "Hp" as %(Heq_mem&?&Hsize&?).
   iDestruct (gen_heap_valid with "Hown1 Hi") as %Hin_bound.
