@@ -4,6 +4,7 @@ From Tactical Require Import ProofAutomation.
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.SemanticsHelpers.
+From RecoveryRefinement Require Import Spec.LockDefs.
 From RecoveryRefinement.Goose Require Import Machine.
 From RecoveryRefinement.Goose Require Import GoZeroValues.
 From RecoveryRefinement.Goose Require Import Heap.
@@ -97,7 +98,7 @@ Module FS.
                 readSome (fun s => s.(files) !! p));
         let read_bs := list.take len (list.drop off bs) in
         r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
-          _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap byte) r (Data.Unlocked, read_bs))));
+          _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap byte) r (Unlocked, read_bs))));
           pure {| slice.ptr := r;
                   slice.offset := 0;
                   slice.length := length read_bs; |}
@@ -111,7 +112,7 @@ Module FS.
       path <- readFd fh Write;
       let! (s, alloc) <- readSome (fun st => Data.getAlloc p'.(slice.ptr) st.(heap));
            bs' <- readSome (fun _ => Data.getSliceModel p' alloc);
-           _ <- readSome (fun _ => Data.lock_available Reader s);
+           _ <- readSome (fun _ => lock_available Reader s);
            bs <- readSome (fun s => s.(files) !! path);
            puts (set files (insert path (bs ++ bs')))
     | Delete p =>
@@ -145,7 +146,7 @@ Module FS.
       _ <- readNone (fun s => s.(files) !! path);
       let! (s, alloc) <- readSome (fun st => Data.getAlloc p.(slice.ptr) st.(heap));
            bs <- readSome (fun _ => Data.getSliceModel p alloc);
-           _ <- readSome (fun _ => Data.lock_available Reader s);
+           _ <- readSome (fun _ => lock_available Reader s);
         puts (set files (insert path bs))
     (* TODO: figure out how to write link semantics *)
     | Link p1 p2 => error

@@ -185,4 +185,3 @@ Proof.
   destruct ret as [(?&?)|]; [| intuition].
   unfold eq_rect. auto.
 Qed.
-

@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordUpdate.
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.SemanticsHelpers.
+From RecoveryRefinement Require Import Spec.LockDefs.
 From RecoveryRefinement.Goose Require Import Machine.
 From RecoveryRefinement.Goose Require Import GoZeroValues.
 
@@ -12,8 +13,6 @@ From stdpp Require Import base.
 
 Import ProcNotations.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
-
-Inductive LockMode := Reader | Writer.
 
 (* We don't really need to put an argument here; it just needs to be Begin|End.
 
@@ -147,7 +146,6 @@ Module Data.
     Definition randomUint64 := Call! RandomUint64.
   End OpWrappers.
 
-  Inductive LockStatus := Locked | ReadLocked (num:nat) | Unlocked.
 
   (* We model a hashtable as if it had a lock, but the calls to acquire and
   release this lock never block but instead error on failure.
@@ -165,7 +163,20 @@ Module Data.
       LockStatus * list T
     | Ptr.Map V => hashtableM V
     | Ptr.Lock => LockStatus
+      (* JDT: it might be more convenient if this was LockStatus * unit *)
     end.
+
+  Definition ptrRawModel (code:Ptr.ty) : Type :=
+    match code with
+    | Ptr.Heap T => list T
+    | Ptr.Map V => gmap.gmap uint64 V
+    | Ptr.Lock => unit
+    end.
+
+  (*
+  Lemma ptrModel_raw1 code: ptrModel code = (LockStatus * ptrRawModel code)%type.
+  Proof. destruct code; auto. Qed.
+   *)
 
   Record State : Type :=
     mkState { allocs : DynMap Ptr.t ptrModel; }.
@@ -185,36 +196,6 @@ Module Data.
     puts (set allocs (deleteDyn p)).
 
   Import RelationNotations.
-
-  (* returns [Some s'] when the lock should be acquired to status s', and None
-  if the lock would block *)
-  Definition lock_acquire (m:LockMode) (s:LockStatus) : option LockStatus :=
-    match m, s with
-    | Reader, ReadLocked n => Some (ReadLocked (S n))
-    (* note that the number is one less than the number of readers, so that
-       ReadLocked 0 means something *)
-    | Reader, Unlocked => Some (ReadLocked 0)
-    | Writer, Unlocked => Some Locked
-    | _, _ => None
-    end.
-
-  (* returns [Some s'] when the lock should be released to status s', and None if this usage is an error *)
-  Definition lock_release (m:LockMode) (s:LockStatus) : option LockStatus :=
-    match m, s with
-    | Reader, ReadLocked 0 => Some Unlocked
-    | Reader, ReadLocked (S n) => Some (ReadLocked n)
-    | Writer, Locked => Some Unlocked
-    | _, _ => None
-    end.
-
-  (* lock_available reports whether acquiring and releasing the lock atomically
-  would succeed; phrased as an option unit for compatibility with readSome *)
-  Definition lock_available (m:LockMode) (s:LockStatus) : option unit :=
-    match m, s with
-    | Reader, ReadLocked _ => Some tt
-    | _, Unlocked => Some tt
-    | _, _ => None
-    end.
 
   (* sanity check lock definitions: if you can acquire a lock, you can always
   release it the same way and get back to where you started *)
