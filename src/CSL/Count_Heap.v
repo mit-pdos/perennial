@@ -50,7 +50,7 @@ Section definitions.
   Definition gen_heap_ctx (σ : L → option V) : iProp Σ :=
     own (gen_heap_name hG) (● (to_gen_heap σ)).
 
-  Definition mapsto_def (l : L) (n: nat) (v: V) : iProp Σ :=
+  Definition mapsto_def (l : L) (n: Z) (v: V) : iProp Σ :=
     own (gen_heap_name hG)
         (◯ (fun l' =>
               if l' == l then
@@ -161,8 +161,9 @@ Section gen_heap.
     by intros [_ ?%agree_op_invL'].
   Qed.
 
-  Lemma mapsto_valid l q1 q2 v1 v2 : l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ False.
+  Lemma mapsto_valid l q1 q2 v1 v2 : q1 >= 0 → q2 >= 0 → l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ False.
   Proof.
+    intros ??.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
@@ -175,7 +176,7 @@ Section gen_heap.
     repeat destruct decide => //=. lia.
   Qed.
 
-  Lemma read_split_join l q v : l ↦{q} v ⊣⊢ (l ↦{S q} v ∗ l r↦ v).
+  Lemma read_split_join l (q: nat) v : l ↦{q} v ⊣⊢ (l ↦{S q} v ∗ l r↦ v).
   Proof.
     rewrite mapsto_eq read_mapsto_eq /mapsto_def /read_mapsto_def.
     rewrite -own_op -auth_frag_op.

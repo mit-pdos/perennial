@@ -41,7 +41,7 @@ Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=
 
 Class GenericMapsTo `{gooseG Σ} (Addr:Type) :=
   { ValTy : Type;
-    generic_mapsto : Addr -> nat → ValTy -> iProp Σ; }.
+    generic_mapsto : Addr -> Z → ValTy -> iProp Σ; }.
 
 Notation "l ↦{ q } v" := (generic_mapsto l q v)
                       (at level 20) : bi_scope.
@@ -49,7 +49,7 @@ Notation "l ↦ v" := (generic_mapsto l 0 v)
                       (at level 20) : bi_scope.
 
 
-Definition ptr_mapsto `{gooseG Σ} {T} (l: ptr T) (q: nat) (v: Datatypes.list T) : iProp Σ :=
+Definition ptr_mapsto `{gooseG Σ} {T} (l: ptr T) q (v: Datatypes.list T) : iProp Σ :=
    mapsto (existT (Ptr.Heap T) l) q (existT (Ptr.Heap T) (Unlocked, v)).
 
 (*
@@ -211,9 +211,9 @@ Lemma wp_writePtr {T} s E (p: ptr T) v' l v :
   {{{ ▷ p ↦ (v' :: l) }}} writePtr p v @ s; E {{{ RET tt; p ↦ (v :: l) }}}.
 Proof. iIntros (Φ) ">Hi HΦ". iApply (wp_ptrStore with "Hi"); eauto. Qed.
 
-Lemma wp_ptrDeref {T} s E (p: ptr T) off l v :
+Lemma wp_ptrDeref {T} s E (p: ptr T) q off l v :
   List.nth_error l off = Some v →
-  {{{ ▷ p ↦ l }}} ptrDeref p off @ s; E {{{ RET v; p ↦ l }}}.
+  {{{ ▷ p ↦{q} l }}} ptrDeref p off @ s; E {{{ RET v; p ↦{q} l }}}.
 Proof.
   intros Hupd.
   iIntros (Φ) ">Hi HΦ". rewrite /ptrDeref.
@@ -239,8 +239,8 @@ Proof.
     by iApply "HΦ".
 Qed.
 
-Lemma wp_readPtr {T} s E (p: ptr T) v l :
-  {{{ ▷ p ↦ (v :: l) }}} readPtr p @ s; E {{{ RET v; p ↦ (v :: l) }}}.
+Lemma wp_readPtr {T} s E (p: ptr T) q v l :
+  {{{ ▷ p ↦{q} (v :: l) }}} readPtr p @ s; E {{{ RET v; p ↦{q} (v :: l) }}}.
 Proof. iIntros (Φ) ">Hi HΦ". iApply (wp_ptrDeref with "Hi"); eauto. Qed.
 
 Lemma nth_error_lookup {A :Type} (l: Datatypes.list A) (i: nat) :
@@ -252,9 +252,9 @@ Proof.
   * move: IHi. simpl. destruct l => //=.
 Qed.
 
-Lemma wp_sliceRead {T} s E (p: slice.t T) off l v :
+Lemma wp_sliceRead {T} s E (p: slice.t T) q off l v :
   List.nth_error l off = Some v →
-  {{{ ▷ p ↦ l }}} sliceRead p off @ s; E {{{ RET v; p ↦ l }}}.
+  {{{ ▷ p ↦{q} l }}} sliceRead p off @ s; E {{{ RET v; p ↦{q} l }}}.
 Proof.
   iIntros (Hnth Φ) ">Hp HΦ".
   iDestruct "Hp" as (vs Heq) "Hp".
