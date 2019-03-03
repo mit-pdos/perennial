@@ -102,7 +102,7 @@ Defined.
 
 Require Import Program.
 
-Lemma getDyn_lookup A (Ref Model: A -> Type)
+Lemma getDyn_lookup1 A (Ref Model: A -> Type)
       (m: DynMap Ref Model) a (r: Ref a) (v: Model a) :
   m.(dynMap) (existT _ r) = Some (existT _ v) →
   getDyn m a r = Some v.
@@ -112,6 +112,30 @@ Proof.
   intros ret Heq. clear.
   destruct ret as [(?&?)|]; inversion 1.
   subst. apply Eqdep.EqdepTheory.inj_pair2 in H2; subst; auto.
+Qed.
+
+Lemma getDyn_lookup2 A (Ref Model: A -> Type)
+      (m: DynMap Ref Model) a (r: Ref a) (v: Model a) :
+  getDyn m a r = Some v →
+  m.(dynMap) (existT _ r) = Some (existT _ v).
+Proof.
+  unfold getDyn. destruct m as [map wf]. simpl.
+  generalize (wf a r). generalize (map (existT a r)).
+  intros ret Heq. clear.
+  destruct ret as [(?&?)|]; inversion 1.
+  subst. unfold eq_rect. auto.
+Qed.
+
+Lemma getDyn_lookup_none A (Ref Model: A -> Type)
+      (m: DynMap Ref Model) a (r: Ref a) :
+  getDyn m a r = None <->
+  m.(dynMap) (existT _ r) = None.
+Proof.
+  unfold getDyn. destruct m as [map wf]. simpl.
+  generalize (wf a r). generalize (map (existT a r)).
+  intros ret Heq. clear.
+  destruct ret as [(?&?)|]; [| intuition].
+  split; inversion 1.
 Qed.
 
 Arguments getDyn {A Ref Model} m {a} r.
@@ -143,3 +167,22 @@ Instance empty_dynmap A Ref Model : Empty (@DynMap A Ref Model).
 refine {| dynMap := fun _ => None; |}.
 intros; auto.
 Defined.
+
+Lemma getDyn_deleteDyn_ne A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+      (m: DynMap Ref Model) a (r1 r2: Ref a) :
+  ~ (r1 = r2) ->
+  getDyn (deleteDyn r1 m) r2 =
+  getDyn m r2.
+Proof.
+  intros.
+  unfold getDyn, deleteDyn. destruct m as [map wf]. simpl.
+  destruct (equal).
+  { apply Eqdep.EqdepTheory.inj_pair2 in e; subst; congruence. }
+  generalize (wf a r2).
+  generalize (map (existT a r2)).
+  simpl.
+  intros ret Heq.
+  destruct ret as [(?&?)|]; [| intuition].
+  unfold eq_rect. auto.
+Qed.
+

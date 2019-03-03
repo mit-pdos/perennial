@@ -49,6 +49,9 @@ Notation "l ↦ v" := (generic_mapsto l 0 v)
                       (at level 20) : bi_scope.
 
 
+(* TODO: should we also push through here that this means p must be non-null?
+   nullptr never gets added to heap mapping so it would also be derivable
+   if we enforced that as a property of the heap  *)
 Definition ptr_mapsto `{gooseG Σ} {T} (l: ptr T) q (v: Datatypes.list T) : iProp Σ :=
    mapsto (existT (Ptr.Heap T) l) q (existT (Ptr.Heap T) (Unlocked, v)).
 
@@ -141,7 +144,7 @@ Ltac inv_step :=
          | [ H : readSome _ _ (Val _ _) |- _ ] =>
            apply readSome_Some_inv in H as (?&?); subst
          | [ H : context[getAlloc ?p ?σ] |- _ ] =>
-           unfold getAlloc in H; try erewrite (SemanticsHelpers.getDyn_lookup) in H; eauto; []
+           unfold getAlloc in H; try erewrite (SemanticsHelpers.getDyn_lookup1) in H; eauto; []
          | [ H : context[let '(s, alloc) := ?x in _] |- _] => destruct x
          | [ H : lock_acquire _ Unlocked = Some _ |- _ ] => inversion H; subst; clear H
          | [ H : Some ?x = Some ?x |- _] => clear H
@@ -274,5 +277,112 @@ Proof.
   destruct (decide_rel); last by congruence.
   eauto.
 Qed.
+
+Lemma getSliceModel_len_inv {T} (p: slice.t T) l l':
+  getSliceModel p l = Some l' →
+  length l' = p.(slice.length).
+Proof.
+  rewrite /getSliceModel. apply sublist_lookup_length.
+Qed.
+
+Lemma wp_sliceAppend {T} s E (p: slice.t T) l v :
+  {{{ ▷ p ↦ l }}} sliceAppend p v @ s; E {{{ p', RET p'; p' ↦ (l ++ [v]) }}}.
+Proof.
+  iIntros (Φ) ">Hp HΦ".
+  iDestruct "Hp" as (vs Heq) "Hp".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (@gen_heap_valid with "Hσ Hp") as %?.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    apply snd_lift_non_err => Herr.
+    inversion Herr; inj_pair2; subst.
+    inv_step; try congruence; inversion Hhd_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inversion H1. subst.
+  inj_pair2.
+  inv_step.
+  inversion Hhd1; subst.
+  inversion Hhd2; subst.
+  inversion Hhd3; subst.
+  inversion Htl0. subst.
+  intuition.
+  simpl. iFrame.
+  unshelve (iMod (@gen_heap_dealloc with "Hσ Hp") as "Hσ").
+  unshelve (iMod (@gen_heap_alloc with "Hσ") as "[$ Hp]").
+  { rewrite /base.delete/partial_fn_delete.
+    destruct equal; subst; auto.
+    match goal with
+    | [ H: getAlloc ?x _ = None |- _ ] => rename H into Hlookup
+    end.
+    eapply SemanticsHelpers.getDyn_lookup_none; eauto.
+    rewrite /getAlloc//= in Hlookup.
+    rewrite SemanticsHelpers.getDyn_deleteDyn_ne in Hlookup; eauto.
+    intros Heq'. subst. congruence.
+  }
+  iModIntro.
+  iApply "HΦ".
+  iExists _. iFrame. iPureIntro.
+  trans_elim (getSliceModel p l1). inv_step.
+  rewrite /getSliceModel//=.
+  apply getSliceModel_len_inv in Heq.
+  rewrite sublist_lookup_all //=.
+  rewrite app_length //=. lia.
+Qed.
+
+(* TODO: current permission model doesn't let us use a 'read permission' to
+   transition to ReadLocked status *)
+(*
+Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2 :
+  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
+    sliceAppendSlice p1 p2 @ s; E
+  {{{ p', RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} l2 }}}.
+Proof.
+  iIntros (Φ) "(>Hp1&>Hp2) HΦ".
+  iDestruct "Hp1" as (vs1 Heq1) "Hp1".
+  iDestruct "Hp2" as (vs2 Heq2) "Hp2".
+  rewrite /sliceAppendSlice.
+  rewrite /nonAtomicOp.
+  wp_bind.
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (@gen_heap_valid with "Hσ Hp1") as %?.
+  iDestruct (@gen_heap_valid with "Hσ Hp2") as %?.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    apply snd_lift_non_err => Herr.
+    inversion Herr; inj_pair2; subst.
+    inv_step; try congruence; inversion Hhd_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inversion H2. subst.
+  inj_pair2.
+  inv_step.
+  inversion Htl; subst.
+  simpl. iFrame.
+  unshelve (iMod (@gen_heap_update with "Hσ Hp2") as "[$ Hp2]").
+  { rewrite /base.delete/partial_fn_delete.
+    destruct equal; subst; auto.
+    match goal with
+    | [ H: getAlloc ?x _ = None |- _ ] => rename H into Hlookup
+    end.
+    eapply SemanticsHelpers.getDyn_lookup_none; eauto.
+    rewrite /getAlloc//= in Hlookup.
+    rewrite SemanticsHelpers.getDyn_deleteDyn_ne in Hlookup; eauto.
+    intros Heq'. subst. congruence.
+  }
+  iModIntro.
+  iApply "HΦ".
+  iExists _. iFrame. iPureIntro.
+  trans_elim (getSliceModel p l1). inv_step.
+  rewrite /getSliceModel//=.
+  apply getSliceModel_len_inv in Heq.
+  rewrite sublist_lookup_all //=.
+  rewrite app_length //=. lia.
+Qed.
+*)
 
 End lifting.
