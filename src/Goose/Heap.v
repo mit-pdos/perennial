@@ -279,8 +279,7 @@ Module Data.
   Qed.
 
   Definition getSliceModel T (s:slice.t T) (alloc: list T) : option (list T) :=
-    (* TODO: return None if anything goes out-of-bounds *)
-    Some (list.take (s.(slice.length)) (list.drop s.(slice.offset) alloc)).
+    stdpp.list.sublist_lookup s.(slice.offset) s.(slice.length) alloc.
 
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
