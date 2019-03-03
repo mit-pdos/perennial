@@ -1,4 +1,4 @@
-SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external') 'logging-client' 'database'
+SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external') 'database'
 ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
@@ -40,9 +40,6 @@ endif
 .PHONY: extract
 extract: database/src/Coq/ExtractionExamples.hs
 
-logging-client/extract/ComposedRefinement.hs: logging-client/Extract.vo
-	./scripts/add-preprocess.sh logging-client/extract/*.hs
-
 database/src/Coq/ExtractionExamples.hs: database/Extract.vo
 	./scripts/add-preprocess.sh database/src/Coq/*.hs
 
@@ -59,7 +56,6 @@ clean:
 	@rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob)
 	@find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
 	@echo "CLEAN extraction"
-	@rm -rf logging-client/extract/*.hs
 	@rm -rf database/src/Coq/*.hs
 	rm -f _CoqProject .coqdeps.d
 
