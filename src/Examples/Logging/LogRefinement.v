@@ -56,8 +56,10 @@ Section refinement_triples.
      end)%I.
 
   Record ghost_names :=
-    { γstate : gname;
+    { γslock : gname;
+      γstate : gname;
       γtxns : gname;
+      γdlock : gname;
       γlog : gname; }.
 
   Fixpoint flatten_txns (txns: list (nat*nat)) : list nat :=
@@ -92,5 +94,23 @@ Section refinement_triples.
     (∃ (log: list nat),
         log_len d↦ length log ∗
                 log_map 0 log)%I.
+
+  Definition CrashInner :=
+    (∃ (log: list nat),
+        source_state {| Log.mem_buf := nil;
+                        Log.disk_log := log; |} ∗
+                     free_buffer_map Empty ∗
+                     state_lock m↦ 0)%I.
+
+  Definition lN : namespace := nroot.@"lock".
+  Definition iN : namespace := nroot.@"inner".
+
+  Definition ExecInv :=
+    (source_ctx ∗ ∃ (names:ghost_names),
+          is_lock lN names.(γslock) state_lock (StateLockInv names) ∗
+                                    inv iN (ExecInner names ∗ ExecDiskInv))%I.
+
+  Definition CrashInv :=
+    (source_ctx ∗ inv iN CrashInner)%I.
 
 End refinement_triples.
