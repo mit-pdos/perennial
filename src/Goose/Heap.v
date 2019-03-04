@@ -94,7 +94,7 @@ Module Data.
     Definition ptrDeref {T} p off :=
       Call! @PtrDeref T p off.
 
-    Definition readPtr T (p: ptr T) : proc T :=
+    Definition readPtr {T} (p: ptr T) : proc T :=
       ptrDeref p 0.
 
     Definition sliceRead T (s: slice.t T) off : proc T :=

@@ -11,15 +11,16 @@ From RecoveryRefinement.Goose Require Import base.
 Module Table.
   (* A Table provides access to an immutable copy of data on the filesystem,
      along with an index for fast random access. *)
-  Record t := mk {
+  Record t {model:GoModel} := mk {
     Index: Map uint64;
     File: File;
   }.
-  Global Instance t_zero : HasGoZero t := mk (zeroValue _) (zeroValue _).
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End Table.
 
 (* CreateTable creates a new, empty table. *)
-Definition CreateTable (p:string) : proc Table.t :=
+Definition CreateTable {model:GoModel} (p:string) : proc Table.t :=
   index <- Data.newMap uint64;
   f <- FS.create p;
   _ <- FS.close f;
@@ -29,11 +30,12 @@ Definition CreateTable (p:string) : proc Table.t :=
 
 Module Entry.
   (* Entry represents a (key, value) pair. *)
-  Record t := mk {
+  Record t {model:GoModel} := mk {
     Key: uint64;
     Value: slice.t byte;
   }.
-  Global Instance t_zero : HasGoZero t := mk (zeroValue _) (zeroValue _).
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End Entry.
 
 (* DecodeUInt64 is a Decoder(uint64)
@@ -42,7 +44,7 @@ End Entry.
 
    The uint64 represents the number of bytes consumed; if 0,
    then decoding failed, and the value of type T should be ignored. *)
-Definition DecodeUInt64 (p:slice.t byte) : proc (uint64 * uint64) :=
+Definition DecodeUInt64 {model:GoModel} (p:slice.t byte) : proc (uint64 * uint64) :=
   if compare_to (slice.length p) 8 Lt
   then Ret (0, 0)
   else
@@ -50,7 +52,7 @@ Definition DecodeUInt64 (p:slice.t byte) : proc (uint64 * uint64) :=
     Ret (n, 8).
 
 (* DecodeEntry is a Decoder(Entry) *)
-Definition DecodeEntry (data:slice.t byte) : proc (Entry.t * uint64) :=
+Definition DecodeEntry {model:GoModel} (data:slice.t byte) : proc (Entry.t * uint64) :=
   let! (key, l1) <- DecodeUInt64 data;
   if l1 == 0
   then
@@ -73,15 +75,16 @@ Definition DecodeEntry (data:slice.t byte) : proc (Entry.t * uint64) :=
                 Entry.Value := value; |}, l1 + l2 + valueLen).
 
 Module lazyFileBuf.
-  Record t := mk {
+  Record t {model:GoModel} := mk {
     offset: uint64;
     next: slice.t byte;
   }.
-  Global Instance t_zero : HasGoZero t := mk (zeroValue _) (zeroValue _).
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End lazyFileBuf.
 
 (* readTableIndex parses a complete table on disk into a key->offset index *)
-Definition readTableIndex (f:File) (index:Map uint64) : proc unit :=
+Definition readTableIndex {model:GoModel} (f:File) (index:Map uint64) : proc unit :=
   Loop (fun buf =>
         let! (e, l) <- DecodeEntry buf.(lazyFileBuf.next);
         if compare_to l 0 Gt
@@ -100,7 +103,7 @@ Definition readTableIndex (f:File) (index:Map uint64) : proc unit :=
            lazyFileBuf.next := slice.nil _; |}.
 
 (* RecoverTable restores a table from disk on startup. *)
-Definition RecoverTable (p:string) : proc Table.t :=
+Definition RecoverTable {model:GoModel} (p:string) : proc Table.t :=
   index <- Data.newMap uint64;
   f <- FS.open p;
   _ <- readTableIndex f index;
@@ -108,10 +111,10 @@ Definition RecoverTable (p:string) : proc Table.t :=
          Table.File := f; |}.
 
 (* CloseTable frees up the fd held by a table. *)
-Definition CloseTable (t:Table.t) : proc unit :=
+Definition CloseTable {model:GoModel} (t:Table.t) : proc unit :=
   FS.close t.(Table.File).
 
-Definition readValue (f:File) (off:uint64) : proc (slice.t byte) :=
+Definition readValue {model:GoModel} (f:File) (off:uint64) : proc (slice.t byte) :=
   startBuf <- FS.readAt f off 512;
   totalBytes <- Data.uint64Get startBuf;
   let buf := slice.skip 8 startBuf in
@@ -123,7 +126,7 @@ Definition readValue (f:File) (off:uint64) : proc (slice.t byte) :=
     Ret newBuf
   else Ret (slice.take totalBytes buf).
 
-Definition tableRead (t:Table.t) (k:uint64) : proc (slice.t byte * bool) :=
+Definition tableRead {model:GoModel} (t:Table.t) (k:uint64) : proc (slice.t byte * bool) :=
   let! (off, ok) <- Data.mapGet t.(Table.Index) k;
   if negb ok
   then Ret (slice.nil _, false)
@@ -132,19 +135,20 @@ Definition tableRead (t:Table.t) (k:uint64) : proc (slice.t byte * bool) :=
     Ret (p, true).
 
 Module bufFile.
-  Record t := mk {
+  Record t {model:GoModel} := mk {
     file: File;
     buf: ptr (slice.t byte);
   }.
-  Global Instance t_zero : HasGoZero t := mk (zeroValue _) (zeroValue _).
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End bufFile.
 
-Definition newBuf (f:File) : proc bufFile.t :=
+Definition newBuf {model:GoModel} (f:File) : proc bufFile.t :=
   buf <- Data.newPtr (slice.t byte);
   Ret {| bufFile.file := f;
          bufFile.buf := buf; |}.
 
-Definition bufFlush (f:bufFile.t) : proc unit :=
+Definition bufFlush {model:GoModel} (f:bufFile.t) : proc unit :=
   buf <- Data.readPtr f.(bufFile.buf);
   if slice.length buf == 0
   then Ret tt
@@ -152,26 +156,27 @@ Definition bufFlush (f:bufFile.t) : proc unit :=
     _ <- FS.append f.(bufFile.file) buf;
     Data.writePtr f.(bufFile.buf) (slice.nil _).
 
-Definition bufAppend (f:bufFile.t) (p:slice.t byte) : proc unit :=
+Definition bufAppend {model:GoModel} (f:bufFile.t) (p:slice.t byte) : proc unit :=
   buf <- Data.readPtr f.(bufFile.buf);
   buf2 <- Data.sliceAppendSlice buf p;
   Data.writePtr f.(bufFile.buf) buf2.
 
-Definition bufClose (f:bufFile.t) : proc unit :=
+Definition bufClose {model:GoModel} (f:bufFile.t) : proc unit :=
   _ <- bufFlush f;
   FS.close f.(bufFile.file).
 
 Module tableWriter.
-  Record t := mk {
+  Record t {model:GoModel} := mk {
     index: Map uint64;
     name: string;
     file: bufFile.t;
     offset: ptr uint64;
   }.
-  Global Instance t_zero : HasGoZero t := mk (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _).
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _).
 End tableWriter.
 
-Definition newTableWriter (p:string) : proc tableWriter.t :=
+Definition newTableWriter {model:GoModel} (p:string) : proc tableWriter.t :=
   index <- Data.newMap uint64;
   f <- FS.create p;
   buf <- newBuf f;
@@ -181,31 +186,31 @@ Definition newTableWriter (p:string) : proc tableWriter.t :=
          tableWriter.file := buf;
          tableWriter.offset := off; |}.
 
-Definition tableWriterAppend (w:tableWriter.t) (p:slice.t byte) : proc unit :=
+Definition tableWriterAppend {model:GoModel} (w:tableWriter.t) (p:slice.t byte) : proc unit :=
   _ <- bufAppend w.(tableWriter.file) p;
   off <- Data.readPtr w.(tableWriter.offset);
   Data.writePtr w.(tableWriter.offset) (off + slice.length p).
 
-Definition tableWriterClose (w:tableWriter.t) : proc Table.t :=
+Definition tableWriterClose {model:GoModel} (w:tableWriter.t) : proc Table.t :=
   _ <- bufClose w.(tableWriter.file);
   f <- FS.open w.(tableWriter.name);
   Ret {| Table.Index := w.(tableWriter.index);
          Table.File := f; |}.
 
 (* EncodeUInt64 is an Encoder(uint64) *)
-Definition EncodeUInt64 (x:uint64) (p:slice.t byte) : proc (slice.t byte) :=
+Definition EncodeUInt64 {model:GoModel} (x:uint64) (p:slice.t byte) : proc (slice.t byte) :=
   tmp <- Data.newSlice byte 8;
   _ <- Data.uint64Put tmp x;
   p2 <- Data.sliceAppendSlice p tmp;
   Ret p2.
 
 (* EncodeSlice is an Encoder([]byte) *)
-Definition EncodeSlice (data:slice.t byte) (p:slice.t byte) : proc (slice.t byte) :=
+Definition EncodeSlice {model:GoModel} (data:slice.t byte) (p:slice.t byte) : proc (slice.t byte) :=
   p2 <- EncodeUInt64 (slice.length data) p;
   p3 <- Data.sliceAppendSlice p2 data;
   Ret p3.
 
-Definition tablePut (w:tableWriter.t) (k:uint64) (v:slice.t byte) : proc unit :=
+Definition tablePut {model:GoModel} (w:tableWriter.t) (k:uint64) (v:slice.t byte) : proc unit :=
   tmp <- Data.newSlice byte 0;
   tmp2 <- EncodeUInt64 k tmp;
   tmp3 <- EncodeSlice v tmp2;
@@ -215,7 +220,7 @@ Definition tablePut (w:tableWriter.t) (k:uint64) (v:slice.t byte) : proc unit :=
 
 Module Database.
   (* Database is a handle to an open database. *)
-  Record t := mk {
+  Record t {model:GoModel} := mk {
     wbuffer: ptr (Map (slice.t byte));
     rbuffer: ptr (Map (slice.t byte));
     bufferL: LockRef;
@@ -224,17 +229,18 @@ Module Database.
     tableL: LockRef;
     compactionL: LockRef;
   }.
-  Global Instance t_zero : HasGoZero t := mk (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _).
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _) (zeroValue _).
 End Database.
 
-Definition makeValueBuffer  : proc (ptr (Map (slice.t byte))) :=
+Definition makeValueBuffer {model:GoModel} : proc (ptr (Map (slice.t byte))) :=
   buf <- Data.newMap (slice.t byte);
   bufPtr <- Data.newPtr (Map (slice.t byte));
   _ <- Data.writePtr bufPtr buf;
   Ret bufPtr.
 
 (* NewDb initializes a new database on top of an empty filesys. *)
-Definition NewDb  : proc Database.t :=
+Definition NewDb {model:GoModel} : proc Database.t :=
   wbuf <- makeValueBuffer;
   rbuf <- makeValueBuffer;
   bufferL <- Data.newLock;
@@ -260,7 +266,7 @@ Definition NewDb  : proc Database.t :=
    the value if k was in the database.
 
    Reflects any completed in-memory writes. *)
-Definition Read (db:Database.t) (k:uint64) : proc (slice.t byte * bool) :=
+Definition Read {model:GoModel} (db:Database.t) (k:uint64) : proc (slice.t byte * bool) :=
   _ <- Data.lockAcquire db.(Database.bufferL) Reader;
   buf <- Data.readPtr db.(Database.wbuffer);
   let! (v, ok) <- Data.mapGet buf k;
@@ -289,13 +295,13 @@ Definition Read (db:Database.t) (k:uint64) : proc (slice.t byte * bool) :=
    the previous value if k is present.
 
    The new value is buffered in memory. To persist it, call db.Compact(). *)
-Definition Write (db:Database.t) (k:uint64) (v:slice.t byte) : proc unit :=
+Definition Write {model:GoModel} (db:Database.t) (k:uint64) (v:slice.t byte) : proc unit :=
   _ <- Data.lockAcquire db.(Database.bufferL) Writer;
   buf <- Data.readPtr db.(Database.wbuffer);
   _ <- Data.mapAlter buf k (fun _ => Some v);
   Data.lockRelease db.(Database.bufferL) Writer.
 
-Definition freshTable (p:string) : proc string :=
+Definition freshTable {model:GoModel} (p:string) : proc string :=
   if p == "table.0"
   then Ret "table.1"
   else
@@ -303,13 +309,13 @@ Definition freshTable (p:string) : proc string :=
     then Ret "table.0"
     else Ret p.
 
-Definition tablePutBuffer (w:tableWriter.t) (buf:Map (slice.t byte)) : proc unit :=
+Definition tablePutBuffer {model:GoModel} (w:tableWriter.t) (buf:Map (slice.t byte)) : proc unit :=
   Data.mapIter buf (fun k v =>
     tablePut w k v).
 
 (* add all of table t to the table w being created; skip any keys in the (read)
    buffer b since those writes overwrite old ones *)
-Definition tablePutOldTable (w:tableWriter.t) (t:Table.t) (b:Map (slice.t byte)) : proc unit :=
+Definition tablePutOldTable {model:GoModel} (w:tableWriter.t) (t:Table.t) (b:Map (slice.t byte)) : proc unit :=
   Loop (fun buf =>
         let! (e, l) <- DecodeEntry buf.(lazyFileBuf.next);
         if compare_to l 0 Gt
@@ -336,7 +342,7 @@ Definition tablePutOldTable (w:tableWriter.t) (t:Table.t) (b:Map (slice.t byte))
    Assumes all the appropriate locks have been taken.
 
    Returns the old table and new table. *)
-Definition constructNewTable (db:Database.t) (wbuf:Map (slice.t byte)) : proc (Table.t * Table.t) :=
+Definition constructNewTable {model:GoModel} (db:Database.t) (wbuf:Map (slice.t byte)) : proc (Table.t * Table.t) :=
   oldName <- Data.readPtr db.(Database.tableName);
   name <- freshTable oldName;
   w <- newTableWriter name;
@@ -350,7 +356,7 @@ Definition constructNewTable (db:Database.t) (wbuf:Map (slice.t byte)) : proc (T
 
    This simple database design must re-write all data to combine in-memory
    writes with existing writes. *)
-Definition Compact (db:Database.t) : proc unit :=
+Definition Compact {model:GoModel} (db:Database.t) : proc unit :=
   _ <- Data.lockAcquire db.(Database.compactionL) Writer;
   _ <- Data.lockAcquire db.(Database.bufferL) Writer;
   buf <- Data.readPtr db.(Database.wbuffer);
@@ -373,7 +379,7 @@ Definition Compact (db:Database.t) : proc unit :=
   _ <- Data.lockRelease db.(Database.tableL) Writer;
   Data.lockRelease db.(Database.compactionL) Writer.
 
-Definition recoverManifest  : proc string :=
+Definition recoverManifest {model:GoModel} : proc string :=
   f <- FS.open "manifest";
   manifestData <- FS.readAt f 0 4096;
   tableName <- Data.bytesToString manifestData;
@@ -381,7 +387,7 @@ Definition recoverManifest  : proc string :=
   Ret tableName.
 
 (* delete 'name' if it isn't tableName or "manifest" *)
-Definition deleteOtherFile (name:string) (tableName:string) : proc unit :=
+Definition deleteOtherFile {model:GoModel} (name:string) (tableName:string) : proc unit :=
   if name == tableName
   then Ret tt
   else
@@ -389,7 +395,7 @@ Definition deleteOtherFile (name:string) (tableName:string) : proc unit :=
     then Ret tt
     else FS.delete name.
 
-Definition deleteOtherFiles (tableName:string) : proc unit :=
+Definition deleteOtherFiles {model:GoModel} (tableName:string) : proc unit :=
   files <- FS.list;
   let nfiles := slice.length files in
   Loop (fun i =>
@@ -401,7 +407,7 @@ Definition deleteOtherFiles (tableName:string) : proc unit :=
           Continue (i + 1)) 0.
 
 (* Recover restores a previously created database after a crash or shutdown. *)
-Definition Recover  : proc Database.t :=
+Definition Recover {model:GoModel} : proc Database.t :=
   tableName <- recoverManifest;
   table <- RecoverTable tableName;
   tableRef <- Data.newPtr Table.t;
@@ -426,7 +432,7 @@ Definition Recover  : proc Database.t :=
 
    Discards any uncommitted in-memory writes; similar to a crash except for
    cleanly closing any open files. *)
-Definition Shutdown (db:Database.t) : proc unit :=
+Definition Shutdown {model:GoModel} (db:Database.t) : proc unit :=
   _ <- Data.lockAcquire db.(Database.bufferL) Writer;
   _ <- Data.lockAcquire db.(Database.compactionL) Writer;
   t <- Data.readPtr db.(Database.table);
@@ -437,6 +443,6 @@ Definition Shutdown (db:Database.t) : proc unit :=
 (* Close closes an open database cleanly, flushing any in-memory writes.
 
    db should not be used afterward *)
-Definition Close (db:Database.t) : proc unit :=
+Definition Close {model:GoModel} (db:Database.t) : proc unit :=
   _ <- Compact db;
   Shutdown db.

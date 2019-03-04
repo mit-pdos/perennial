@@ -2,14 +2,15 @@
 From RecoveryRefinement.Goose Require Import base.
 
 Module partialFile.
-  Record t := mk {
+  Record t {model:GoModel} := mk {
     off: uint64;
     data: slice.t byte;
   }.
-  Global Instance t_zero : HasGoZero t := mk (zeroValue _) (zeroValue _).
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End partialFile.
 
-Definition readMessage (name:string) : proc (slice.t byte) :=
+Definition readMessage {model:GoModel} (name:string) : proc (slice.t byte) :=
   f <- FS.open name;
   fileContents <- Data.newPtr (slice.t byte);
   _ <- Loop (fun pf =>
@@ -26,7 +27,8 @@ Definition readMessage (name:string) : proc (slice.t byte) :=
   fileData <- Data.readPtr fileContents;
   Ret fileData.
 
-Definition Pickup  : proc (slice.t (slice.t byte)) :=
+(* Pickup reads all stored messages *)
+Definition Pickup {model:GoModel} : proc (slice.t (slice.t byte)) :=
   names <- FS.list;
   messages <- Data.newPtr (slice.t (slice.t byte));
   initMessages <- Data.newSlice (slice.t byte) 0;
@@ -44,7 +46,7 @@ Definition Pickup  : proc (slice.t (slice.t byte)) :=
   msgs <- Data.readPtr messages;
   Ret msgs.
 
-Definition writeAll (fname:string) (data:slice.t byte) : proc unit :=
+Definition writeAll {model:GoModel} (fname:string) (data:slice.t byte) : proc unit :=
   f <- FS.create fname;
   _ <- Loop (fun buf =>
         if compare_to (slice.length buf) 4096 Lt
@@ -56,13 +58,16 @@ Definition writeAll (fname:string) (data:slice.t byte) : proc unit :=
           Continue (slice.skip 4096 buf)) data;
   FS.close f.
 
-Definition Deliver (tid:string) (msg:slice.t byte) : proc unit :=
+(* Deliver stores a new message
+
+   tid should be a unique thread ID (used as a helper for spooling the message). *)
+Definition Deliver {model:GoModel} (tid:string) (msg:slice.t byte) : proc unit :=
   _ <- writeAll tid msg;
-  initId <- Data.randomUint64;
+  initID <- Data.randomUint64;
   Loop (fun id =>
         ok <- FS.link tid ("msg" ++ uint64_to_string id);
         if ok
         then LoopRet tt
         else
-          newId <- Data.randomUint64;
-          Continue newId) initId.
+          newID <- Data.randomUint64;
+          Continue newID) initID.
