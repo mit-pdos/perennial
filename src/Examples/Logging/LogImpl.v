@@ -122,21 +122,30 @@ Definition reserve_state s : option (BufState * nat) :=
   | _ => None (* in-memory log is full *)
   end.
 
-(* try_reserve returns Some start if it manages to reserve the transaction whose
-in-memory start address is start, and None otherwise *)
+(* try_reserve returns [Some start] if it manages to reserve the transaction
+whose in-memory start address is start, and None otherwise.
+
+ try_reserve also acquires the state_lock if it returns [Some start] *)
 Definition try_reserve : proc (option nat) :=
   _ <- lock state_lock;
   s <- get_state;
   ret <- match reserve_state s with
         | Some (s', txn_start) =>
           _ <- put_state s';
+            (* note that state_lock is still held *)
             Ret (Some txn_start)
-        | None => Ret None
+        | None => _ <- unlock state_lock;
+                   Ret None
         end;
-  (* TODO: hold lock across reservation and txn *)
-  _ <- unlock state_lock;
   Ret ret.
 
+(* reserve repeatedly tries to find an in-memory transaction to buffer to.
+
+When reserve returns, it returns in-memory start address of the reserved
+transaction and acquires the state lock.
+
+reserve will infinite loop if both transactions are full; to unblock it, some
+thread must commit the in-memory state. *)
 Definition reserve : proc nat :=
   Loop (fun _ =>
           reservation <- try_reserve;
@@ -149,6 +158,8 @@ Definition append txn : proc unit :=
   start <- reserve;
   _ <- write_mem start (fst txn);
   _ <- write_mem (1 + start) (snd txn);
+  (* free state_lock acquired by reserve *)
+  _ <- unlock state_lock;
   Ret tt.
 
 Definition get_log i : proc (option nat) :=
