@@ -70,9 +70,9 @@ Section refinement_triples.
 
   Definition ExecInner names :=
     (∃ (s:BufState) (txns: list (nat*nat)) (log: list nat),
-        own (names.(γstate)) (● (Excl' s)) ∗
-            own (names.(γtxns)) (● (Excl' txns)) ∗
-            own (names.(γlog)) (● (Excl' log)) ∗
+        own (names.(γstate)) (● Excl' s) ∗
+            own (names.(γtxns)) (● Excl' txns) ∗
+            own (names.(γlog)) (● Excl' log) ∗
             buffer_map s txns ∗
             source_state {| Log.mem_buf := flatten_txns txns;
                             Log.disk_log := log; |} ∗
@@ -82,7 +82,7 @@ Section refinement_triples.
     (∃ s txns,
         buffer_map s txns ∗
                    free_buffer_map s ∗
-                   own (names.(γtxns)) (◯ (Excl' txns)))%I.
+                   own (names.(γtxns)) (◯ Excl' txns))%I.
 
   Fixpoint log_map (i: nat) log :=
     (match log with
@@ -90,10 +90,15 @@ Section refinement_triples.
      | x::log' => log_idx i d↦ x ∗ log_map (1+i) log'
      end)%I.
 
-  Definition ExecDiskInv :=
+  Definition ExecDiskInv names :=
     (∃ (log: list nat),
         log_len d↦ length log ∗
-                log_map 0 log)%I.
+                log_map 0 log ∗
+                own (names.(γlog)) (● Excl' log))%I.
+
+  Definition DiskLockInv names :=
+    (∃ (log: list nat),
+        own (names.(γlog)) (◯ Excl' log))%I.
 
   Definition CrashInner :=
     (∃ (log: list nat),
@@ -103,12 +108,14 @@ Section refinement_triples.
                      state_lock m↦ 0)%I.
 
   Definition lN : namespace := nroot.@"lock".
+  Definition ldN : namespace := nroot.@"dlock".
   Definition iN : namespace := nroot.@"inner".
 
   Definition ExecInv :=
     (source_ctx ∗ ∃ (names:ghost_names),
-          is_lock lN names.(γslock) state_lock (StateLockInv names) ∗
-                                    inv iN (ExecInner names ∗ ExecDiskInv))%I.
+          is_lock lN (names.(γslock)) state_lock (StateLockInv names) ∗
+                  is_lock ldN (names.(γdlock)) disk_lock (DiskLockInv names) ∗
+                  inv iN (ExecInner names ∗ ExecDiskInv names))%I.
 
   Definition CrashInv :=
     (source_ctx ∗ inv iN CrashInner)%I.
