@@ -208,11 +208,11 @@ Proof.
   inv_step.
   inversion Htl0; subst.
   simpl. iFrame.
-  unshelve (iMod (gen_heap_update with "Hσ Hi") as "[Hheap Hi]"); simpl.
+  unshelve (iMod (@gen_heap_update with "Hσ Hi") as "[Hheap Hi]"); simpl.
   { exact (Locked). }
   { exists (Ptr.Heap T). eauto. }
   iSplitL "Hheap".
-  iModIntro. iApply gen_heap_ctx_proper; last eauto.
+  iModIntro. iApply @gen_heap_ctx_proper; last eauto.
   intros k. destruct k.
   rewrite /insert/partial_fn_insert/pull_lock.  rewrite //=.
   destruct equal => //=. inversion e. subst. inj_pair2; eauto.
@@ -271,7 +271,7 @@ Proof.
   { exists (Ptr.Heap T). exact x1. }
   iModIntro. iFrame.
   iSplitL "Hσ".
-  iApply gen_heap_ctx_proper; last eauto.
+  iApply @gen_heap_ctx_proper; last eauto.
   intros k. destruct k.
   rewrite /insert/partial_fn_insert/pull_lock.  rewrite //=.
   destruct equal => //=. inversion e. subst. inj_pair2; eauto.
