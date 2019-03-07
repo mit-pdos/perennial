@@ -77,37 +77,25 @@ Definition put_state s :=
   write_mem state (enc_state s).
 
 Definition commit :=
+  (* TODO: technically we can delay acquiring the write lock until we've read
+  the in-memory transactions, but this requires monotonocity of the log length
+  and I'm not sure it's an interesting complication *)
   _ <- lock state_lock;
   _ <- lock disk_lock;
   s <- get_state;
   l <- read_disk log_len;
-  txns <- match s with
-         | Empty => Ret []
-         | Txn1 => txn <- read_txn txn1_start;
-                    Ret [txn]
-         | Txn2 => txn <- read_txn txn2_start;
-                    Ret [txn]
-         | Txn12 => txn1 <- read_txn txn1_start;
-                     txn2 <- read_txn txn2_start;
-                     Ret [txn1; txn2]
-         | Txn21 => txn1 <- read_txn txn1_start;
-                     txn2 <- read_txn txn2_start;
-                     (* technically the order is irrelevant since they're
-                     committing together, but this should be easier to prove
-                     correct *)
-                     Ret [txn2; txn1]
-         end;
-  _ <- unlock state_lock;
-  _ <- lock disk_lock;
-  _ <- match txns with
-      | [] => Ret tt
-      | txn1::txns' =>
-        _ <- write_txn txn1 l;
-          match txns' with
-          | [] => Ret tt
-          | [txn2] => write_txn txn2 (2 + l)
-          | _ => Ret tt (* impossible *)
-          end
+  _ <- match s with
+      | Empty => Ret tt
+      | Txn1 => write_mem_txn txn1_start l
+      | Txn2 => write_mem_txn txn2_start l
+      | Txn12 => _ <- write_mem_txn txn1_start l;
+                  write_mem_txn txn2_start (2 + l)
+      | Txn21 =>
+        (* technically the order is irrelevant since they're
+           committing together, but this should be easier to prove
+           correct *)
+        _ <- write_mem_txn txn2_start l;
+        write_mem_txn txn1_start (2 + l)
       end;
   _ <- write_disk log_len (l + 2 * state_length s);
   _ <- put_state Empty;
