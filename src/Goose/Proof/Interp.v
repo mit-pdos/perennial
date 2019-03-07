@@ -135,6 +135,7 @@ Ltac inj_pair2 :=
   repeat match goal with
          | [ H: existT ?x ?o1 = existT ?x ?o2 |- _ ] =>
            apply Eqdep.EqdepTheory.inj_pair2 in H; subst
+         | [ H: existT ?x _ = existT ?y _ |- _ ] => inversion H; subst
          end.
 
 Ltac trans_elim P :=
@@ -142,8 +143,13 @@ Ltac trans_elim P :=
   |[ H1 : P = ?y, H2 : P = ?z |- _ ] => rewrite H1 in H2
   end.
 
+Lemma lock_acquire_writer_inv l0 l1:
+  lock_acquire Writer l0 = Some l1 →
+  l0 = Unlocked ∧ l1 = Locked.
+Proof. destruct l0 => //=; inversion 1; auto. Qed.
+
 Ltac inv_step :=
-  repeat match goal with
+  repeat (inj_pair2; match goal with
          | [ H : Data.step _ _ Err  |- _ ] =>
            let Hhd_err := fresh "Hhd_err" in
            let Hhd := fresh "Hhd" in
@@ -166,13 +172,26 @@ Ltac inv_step :=
            apply readSome_Err_inv in H
          | [ H : readSome _ _ (Val _ _) |- _ ] =>
            apply readSome_Some_inv in H as (?&?); subst
+         | [ H : context[pull_lock _] |- _ ] =>
+           unfold pull_lock in H
          | [ H : context[getAlloc ?p ?σ] |- _ ] =>
            unfold getAlloc in H; try erewrite (SemanticsHelpers.getDyn_lookup1) in H; eauto; []
          | [ H : context[let '(s, alloc) := ?x in _] |- _] => destruct x
          | [ H : lock_acquire _ Unlocked = Some _ |- _ ] => inversion H; subst; clear H
-         | [ H : Some ?x = Some ?x |- _] => clear H
-         | [ H : Some _ = Some _ |- _] => inversion H; subst
-         end.
+         | [ H : lock_acquire Writer _ = Some _ |- _ ] =>
+           apply lock_acquire_writer_inv in H as (?&?)
+         | [ H : Some _ = Some _ |- _] => apply Some_inj in H; subst
+         | [ H : (?a, ?b) = (?c, ?d) |- _] => apply pair_inj in H as (?&?); subst
+         | [ H : Go.step _ _ Err |- _ ] => inversion H; clear H; subst
+         | [ H : Go.step _ _ (Val _ _) |- _ ] => inversion H; clear H; subst
+         | [ H: context [match ?σ.(heap).(allocs).(SemanticsHelpers.dynMap) ?p with
+                         | _ => _  end ] |- _ ] =>
+           let pfresh := fresh "p" in
+           destruct (σ.(heap).(allocs).(SemanticsHelpers.dynMap) p) as [([]&pfresh)|] eqn:Heqσ;
+           inversion H; subst; destruct pfresh
+         end); inj_pair2.
+
+Ltac unfoldpull := rewrite /insert/partial_fn_insert/base.delete/partial_fn_delete/pull_lock.
 
 Lemma wp_ptrStore_start {T} s E (p: ptr T) off l l' v :
   list_nth_upd l off v = Some l' →
@@ -185,52 +204,23 @@ Proof.
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ)".
   iDestruct (@gen_heap_valid1 with "Hσ Hi") as %?.
-  simpl in H0.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err => Herr.
-    rewrite /pull_lock in H0.
-    match goal with
-    | [ H: context [match ?σ.(heap).(allocs).(SemanticsHelpers.dynMap) ?p with
-                    | _ => _  end ] |- _ ] =>
-      destruct (σ.(heap).(allocs).(SemanticsHelpers.dynMap) p) as [([]&?)|] eqn:Heqσ
-    end; inversion H0; subst; destruct p0.
-    simpl in *. subst.
-    clear H0.
-    inversion Herr; inj_pair2; subst;
-    inv_step; try congruence.
-    rewrite //= in Hhd_err.
+    apply snd_lift_non_err. simpl => Herr.
+    inv_step; simpl in *; subst; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  inversion H1. subst.
-  inj_pair2.
-  inv_step.
+  simpl in *. inv_step.
   inversion Htl0; subst.
   simpl. iFrame.
   unshelve (iMod (@gen_heap_update with "Hσ Hi") as "[Hheap Hi]"); simpl.
   { exact (Locked). }
   { exists (Ptr.Heap T). eauto. }
   iSplitL "Hheap".
-  iModIntro. iApply @gen_heap_ctx_proper; last eauto.
-  intros k. destruct k.
-  rewrite /insert/partial_fn_insert/pull_lock.  rewrite //=.
-  destruct equal => //=. inversion e. subst. inj_pair2; eauto.
-  subst. eauto.
-  rewrite //= in H4. destruct l0; inversion H4. subst. eauto.
+  { iModIntro. iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
+    unfoldpull => //=. destruct matches. }
   iApply "HΦ"; eauto.
-  rewrite //= in H4. destruct l0; inversion H4. subst. eauto.
-  rewrite /pull_lock in H0.
-    match goal with
-    | [ H: context [match ?σ.(heap).(allocs).(SemanticsHelpers.dynMap) ?p with
-                    | _ => _  end ] |- _ ] =>
-      destruct (σ.(heap).(allocs).(SemanticsHelpers.dynMap) p) as [([]&?)|] eqn:Heqσ
-    end; inversion H0; subst; destruct p0.
-    simpl in H0.
-      apply Some_inj in H0.
-      apply (f_equal snd) in H0. simpl in H0.
-      inj_pair2. subst.
-    inv_step. auto.
 Qed.
 
 Lemma wp_ptrStore {T} s E (p: ptr T) off l l' v :
@@ -246,60 +236,30 @@ Proof.
   iDestruct (@gen_heap_valid1 with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err => Herr.
-    rewrite /pull_lock in H0.
-    match goal with
-    | [ H: context [match ?σ.(heap).(allocs).(SemanticsHelpers.dynMap) ?p with
-                    | _ => _  end ] |- _ ] =>
-      destruct (σ.(heap).(allocs).(SemanticsHelpers.dynMap) p) as [([]&?)|] eqn:Heqσ
-    end; inversion H0; subst; destruct p0.
-    simpl in *. subst.
-      apply Some_inj in H0.
-      apply (f_equal snd) in H0. simpl in H0.
-    inversion Herr; inj_pair2; subst;
-    inv_step; try congruence.
-    rewrite //= in Hhd_err.
+    apply snd_lift_non_err. simpl => Herr.
+    inv_step; simpl in *; subst; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  inversion H1. subst.
-  inj_pair2.
-  inv_step.
+  simpl in *. inv_step.
   inversion Htl; subst; simpl in *.
   unshelve (iMod (@gen_heap_update with "Hσ Hi") as "[Hσ Hi]").
   { exact (Unlocked). }
   { exists (Ptr.Heap T). exact x1. }
   iModIntro. iFrame.
   iSplitL "Hσ".
-  iApply @gen_heap_ctx_proper; last eauto.
-  intros k. destruct k.
-  rewrite /insert/partial_fn_insert/pull_lock.  rewrite //=.
-  destruct equal => //=. inversion e. subst. inj_pair2; eauto.
-  unfold pull_lock in H0.
-  destruct l0; try congruence.
-
+  { iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
+    unfoldpull => //=. destruct matches. inv_step; eauto.
+  }
   iApply "HΦ".
-  inversion H5; subst.
-  unfold pull_lock in H0.
-    match goal with
-    | [ H: context [match ?σ.(heap).(allocs).(SemanticsHelpers.dynMap) ?p with
-                    | _ => _  end ] |- _ ] =>
-      destruct (σ.(heap).(allocs).(SemanticsHelpers.dynMap) p) as [([]&?)|] eqn:Heqσ
-    end; inversion H0; subst; destruct p0.
-    simpl in H0.
-      apply Some_inj in H0.
-      apply (f_equal snd) in H0. simpl in H0.
-      inj_pair2. simpl in *. subst.
-      inv_step.
-      trans_elim (list_nth_upd l1 off v).
-      inv_step. eauto.
+  trans_elim (list_nth_upd l1 off v).
+  inv_step. eauto.
 Qed.
 
 Lemma wp_writePtr {T} s E (p: ptr T) v' l v :
   {{{ ▷ p ↦ (v' :: l) }}} writePtr p v @ s; E {{{ RET tt; p ↦ (v :: l) }}}.
 Proof. iIntros (Φ) ">Hi HΦ". iApply (wp_ptrStore with "Hi"); eauto. Qed.
 
-(*
 Lemma wp_ptrDeref {T} s E (p: ptr T) q off l v :
   List.nth_error l off = Some v →
   {{{ ▷ p ↦{q} l }}} ptrDeref p off @ s; E {{{ RET v; p ↦{q} l }}}.
@@ -308,22 +268,19 @@ Proof.
   iIntros (Φ) ">Hi HΦ". rewrite /ptrDeref.
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ)".
-  iDestruct (@gen_heap_valid with "Hσ Hi") as %?.
+  iDestruct (@gen_heap_valid with "Hσ Hi") as %[s' [? ?]].
   simpl in H0.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err => Herr.
-    inversion Herr; inj_pair2; subst.
-    inv_step; try congruence.
-    rewrite //= in Hhd_err.
+    apply snd_lift_non_err. simpl => Herr.
+    inv_step; simpl in *; subst; try congruence.
+    destruct l0; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  inversion H1. subst.
-  inj_pair2.
-  inv_step.
+  simpl in *. inv_step.
   inversion Htl; subst.
-  iFrame.
+  iFrame. simpl in *.
   trans_elim (nth_error l1 off). inv_step.
     by iApply "HΦ".
 Qed.
@@ -363,7 +320,6 @@ Proof.
   destruct (decide_rel); last by congruence.
   eauto.
 Qed.
-*)
 
 Lemma getSliceModel_len_inv {T} (p: slice.t T) l l':
   getSliceModel p l = Some l' →
@@ -372,7 +328,6 @@ Proof.
   rewrite /getSliceModel. apply sublist_lookup_length.
 Qed.
 
-(*
 Lemma wp_sliceAppend {T} s E (p: slice.t T) l v :
   {{{ ▷ p ↦ l }}} sliceAppend p v @ s; E {{{ p', RET p'; p' ↦ (l ++ [v]) }}}.
 Proof.
@@ -380,18 +335,15 @@ Proof.
   iDestruct "Hp" as (vs Heq) "Hp".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ)".
-  iDestruct (@gen_heap_valid with "Hσ Hp") as %?.
+  iDestruct (@gen_heap_valid1 with "Hσ Hp") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err => Herr.
-    inversion Herr; inj_pair2; subst.
-    inv_step; try congruence; inversion Hhd_err.
+    apply snd_lift_non_err. simpl => Herr.
+    inv_step; simpl in *; subst; try congruence; inversion Hhd_err.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  inversion H1. subst.
-  inj_pair2.
-  inv_step.
+  simpl in *. inv_step.
   inversion Hhd1; subst.
   inversion Hhd2; subst.
   inversion Hhd3; subst.
@@ -399,27 +351,76 @@ Proof.
   intuition.
   simpl. iFrame.
   unshelve (iMod (@gen_heap_dealloc with "Hσ Hp") as "Hσ").
-  unshelve (iMod (@gen_heap_alloc with "Hσ") as "[$ Hp]").
+  unshelve (iMod (@gen_heap_alloc with "Hσ") as "[Hσ Hp]").
+  { exists (Ptr.Heap T).
+    match goal with
+    | [H : getAlloc ?x _ = None |- _ ] => exact x
+    end.
+  }
+  { eexists (Ptr.Heap T). shelve. }  (* eapply (x ++ [v]). } *)
   { rewrite /base.delete/partial_fn_delete.
     destruct equal; subst; auto.
     match goal with
     | [ H: getAlloc ?x _ = None |- _ ] => rename H into Hlookup
     end.
-    eapply SemanticsHelpers.getDyn_lookup_none; eauto.
-    rewrite /getAlloc//= in Hlookup.
-    rewrite SemanticsHelpers.getDyn_deleteDyn_ne in Hlookup; eauto.
-    intros Heq'. subst. congruence.
+    rewrite /getAlloc SemanticsHelpers.getDyn_deleteDyn_ne in Hlookup; eauto.
+    rewrite SemanticsHelpers.getDyn_lookup_none2 => //=.
+    intros Hfalse. subst. congruence.
   }
+  iSplitL "Hσ".
+  { iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
+    unfoldpull => //=. destruct matches. }
   iModIntro.
   iApply "HΦ".
   iExists _. iFrame. iPureIntro.
+  simpl in *.
   trans_elim (getSliceModel p l1). inv_step.
   rewrite /getSliceModel//=.
   apply getSliceModel_len_inv in Heq.
   rewrite sublist_lookup_all //=.
   rewrite app_length //=. lia.
 Qed.
-*)
+
+Lemma wp_sliceAppendSlice_start {T} s E (p1 p2: slice.t T) q l1 l2 :
+  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
+   Call (InjectOp.inject (SliceAppendSlice p1 p2 SemanticsHelpers.Begin)) @ s; E
+   {{{ RET tt; p1 ↦ l1 ∗ (∃  l0, ⌜ getSliceModel p2 l0 = Some l2 ⌝
+       ∗ mapsto (existT (Ptr.Heap T) p2.(slice.ptr)) q (ReadLocked 0) (existT (Ptr.Heap T) l0)) }}}.
+Proof.
+  iIntros (Φ) "(>Hp1&>Hp2) HΦ".
+  iDestruct "Hp1" as (vs1 Heq1) "Hp1".
+  iDestruct "Hp2" as (vs2 Heq2) "Hp2".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (@gen_heap_valid1 with "Hσ Hp1") as %?.
+  iDestruct (@gen_heap_valid with "Hσ Hp2") as %[s' [? ?]].
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    apply snd_lift_non_err => Herr.
+    inversion Herr; inj_pair2; subst.
+    inv_step; simpl in *; subst; try congruence; inversion Hhd_err.
+    destruct l; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst. simpl in *.
+  inv_step.
+  inversion Htl; subst.
+  simpl. iFrame.
+  iMod (@gen_heap_readlock with "Hσ Hp2") as (s' ?) "(Hσ&Hp2)".
+  rewrite /pull_lock in H3.
+  inv_step.
+  rewrite Heqσ in H3.
+  simpl in *. inv_step.
+  iSplitL "Hσ".
+  {  iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
+     unfoldpull => //=. destruct matches. simpl in *.
+     rewrite /force_read_lock. destruct s'; try congruence; inv_step; eauto.
+  }
+  iModIntro.
+  iApply "HΦ"; iFrame.
+  iSplitL "Hp1"; iExists _; iFrame; eauto.
+Qed.
+
 
 (*
 Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2 :
@@ -428,29 +429,45 @@ Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2 :
   {{{ p', RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} l2 }}}.
 Proof.
   iIntros (Φ) "(>Hp1&>Hp2) HΦ".
-  iDestruct "Hp1" as (vs1 Heq1) "Hp1".
-  iDestruct "Hp2" as (vs2 Heq2) "Hp2".
   rewrite /sliceAppendSlice.
   rewrite /nonAtomicOp.
-  wp_bind.
+  wp_bind. iApply (wp_sliceAppendSlice_start with "[Hp1 Hp2]").
+  { iFrame. }
+  iNext.
+ iIntros "(Hp1&Hp2)".
+  iDestruct "Hp1" as (vs1 Heq1) "Hp1".
+  iDestruct "Hp2" as (vs2 Heq2) "Hp2".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ)".
-  iDestruct (@gen_heap_valid with "Hσ Hp1") as %?.
+  iDestruct (@gen_heap_valid1 with "Hσ Hp1") as %?.
   iDestruct (@gen_heap_valid with "Hσ Hp2") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     apply snd_lift_non_err => Herr.
     inversion Herr; inj_pair2; subst.
-    inv_step; try congruence; inversion Hhd_err.
+    inv_step; simpl in *; subst; try congruence; inversion Hhd_err.
+    destruct l; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
-  inversion Hstep; subst.
-  inversion H2. subst.
-  inj_pair2.
+  inversion Hstep; subst. simpl in *.
   inv_step.
   inversion Htl; subst.
   simpl. iFrame.
-  unshelve (iMod (@gen_heap_update with "Hσ Hp2") as "[$ Hp2]").
+  iMod (@gen_heap_readlock with "Hσ Hp2") as (s' ?) "(Hσ&Hp2)".
+  rewrite /pull_lock in H3.
+  inv_step.
+  rewrite Heqσ in H3.
+  simpl in *. inv_step.
+  iSplitL "Hσ".
+  {  iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
+     unfoldpull => //=. destruct matches. simpl in *.
+     rewrite /force_read_lock. destruct s'; try congruence; inv_step; eauto.
+  }
+  iModIntro.
+
+
+
+  simpl. rewrite /heap_interp.
   { rewrite /base.delete/partial_fn_delete.
     destruct equal; subst; auto.
     match goal with

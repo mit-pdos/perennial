@@ -138,6 +138,18 @@ Proof.
   split; inversion 1.
 Qed.
 
+Lemma getDyn_lookup_none1 A (Ref Model: A -> Type)
+      (m: DynMap Ref Model) a (r: Ref a) :
+  m.(dynMap) (existT _ r) = None ->
+  getDyn m a r = None.
+Proof. edestruct getDyn_lookup_none; eauto. Qed.
+
+Lemma getDyn_lookup_none2 A (Ref Model: A -> Type)
+      (m: DynMap Ref Model) a (r: Ref a) :
+  getDyn m a r = None ->
+  m.(dynMap) (existT _ r) = None.
+Proof. edestruct getDyn_lookup_none; eauto. Qed.
+
 Arguments getDyn {A Ref Model} m {a} r.
 
 Definition updDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
