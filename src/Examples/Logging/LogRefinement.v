@@ -72,6 +72,7 @@ Section refinement_triples.
     | (v1, v2) :: txns' => v1 :: v2 :: flatten_txns txns'
     end.
 
+  (*
   Definition ExecInner names :=
     (∃ (s:BufState) (txns: list (nat*nat)) (log: list nat),
         own (names.(γstate)) (● Excl' s) ∗
@@ -81,6 +82,7 @@ Section refinement_triples.
             source_state {| Log.mem_buf := flatten_txns txns;
                             Log.disk_log := log; |}
     )%I.
+*)
 
   Definition StateLockInv names :=
     (∃ s txns,
@@ -99,18 +101,18 @@ Section refinement_triples.
     induction log; intros; simpl; apply _.
   Qed.
 
-  Definition ExecDiskInv names :=
-    (∃ (log: list nat),
-        log_len d↦ length log ∗
-                log_map 0 log ∗
-                own (names.(γlog)) (● Excl' log))%I.
+  Definition ExecDiskInv (log: list nat) :=
+    (log_len d↦ length log ∗ log_map 0 log)%I.
 
   Definition DiskLockInv names :=
-    (∃ (log: list nat),
-        own (names.(γlog)) (◯ Excl' log))%I.
+    (∃ (log: list nat), own (names.(γlog)) (◯ Excl' log))%I.
 
-  Definition CrashInner :=
-    (∃ (log: list nat),
+  Definition Abstraction txns log :=
+    source_state {| Log.mem_buf := flatten_txns txns;
+                    Log.disk_log := log |}.
+
+  Definition CrashInv :=
+    (source_ctx ∗ ∃ (log: list nat),
         source_state {| Log.mem_buf := nil;
                         Log.disk_log := log; |} ∗
                      free_buffer_map Empty ∗
@@ -120,14 +122,20 @@ Section refinement_triples.
   Definition ldN : namespace := nroot.@"dlock".
   Definition iN : namespace := nroot.@"inner".
 
+  Definition VolatileInv names (txns: list (nat*nat)) :=
+    (own (names.(γtxns)) (● Excl' txns))%I.
+
+  Definition DurableInv names log :=
+    (own (names.(γlog)) (● Excl' log) ∗
+         ExecDiskInv log)%I.
+
   Definition ExecInv :=
     (source_ctx ∗ ∃ (names:ghost_names),
           is_lock lN (names.(γslock)) state_lock (StateLockInv names) ∗
                   is_lock ldN (names.(γdlock)) disk_lock (DiskLockInv names) ∗
-                  inv iN (ExecInner names ∗ ExecDiskInv names))%I.
-
-  Definition CrashInv :=
-    (source_ctx ∗ inv iN CrashInner)%I.
+                  inv iN (∃ (txns: list (nat*nat)) (log: list nat),
+                             VolatileInv names txns ∗
+                             DurableInv names log ∗ Abstraction txns log))%I.
 
   Lemma log_map_extract_general log : forall k i,
     i < length log ->
@@ -162,6 +170,45 @@ Section refinement_triples.
     apply (log_map_extract_general log 0 i); auto.
   Qed.
 
+
+  Theorem exec_step_GetLog_inbounds i n txns' log :
+    i < length log ->
+    exec_step Log.l (Call (Log.GetLog i))
+              (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
+              (Val
+                 (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
+                 (Ret (Some (nth i log 0)), [])).
+  Proof.
+    intros.
+    repeat econstructor.
+    simpl.
+    intuition eauto.
+    unfold reads; simpl.
+    f_equal.
+    rewrite <- nth_default_eq.
+    unfold nth_default.
+    destruct_with_eqn (nth_error log i); eauto.
+    apply nth_error_None in Heqo.
+    lia.
+  Qed.
+
+  Theorem exec_step_GetLog_oob i n txns' log :
+    i >= length log ->
+    exec_step Log.l (Call (Log.GetLog i))
+              (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
+              (Val
+                 (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
+                 (Ret None, [])).
+  Proof.
+    intros.
+    repeat econstructor.
+    simpl.
+    intuition eauto.
+    unfold reads; simpl.
+    f_equal.
+    apply nth_error_None; lia.
+  Qed.
+
   Lemma get_log_refinement j `{LanguageCtx Log.Op _ T Log.l K} i:
     {{{ j ⤇ K (Call (Log.GetLog i)) ∗ Registered ∗ ExecInv }}}
       get_log i
@@ -175,38 +222,65 @@ Section refinement_triples.
     iDestruct "Hlinv" as (log) "Hownlog".
 
     wp_bind.
-    iInv "Hinv" as "(Hexec&Hdisk)".
-    iDestruct "Hdisk" as (log') ">(Hlog_len&Hlog_data&Hownlog_auth)".
+    iInv "Hinv" as (txns log') "(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as ">(Hownlog_auth&Hdisk)".
     AtomicPair.Helpers.unify_ghost.
     clear log'.
 
+    iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
     wp_step.
     iFrame.
     unfold ExecDiskInv.
-    iModIntro; iExists _; iFrame.
+    iModIntro; iExists _, _; iFrame.
 
-    destruct matches; wp_bind.
-    wp_bind.
-    iInv "Hinv" as "(Hexec&Hdisk)".
-    iDestruct "Hdisk" as (log') ">(Hlog_len&Hlog_data&Hownlog_auth)".
-    AtomicPair.Helpers.unify_ghost.
-    clear log'.
-    iPoseProof (log_map_extract i with "Hlog_data") as "(Hi&Hlog_rest)"; auto.
+    destruct matches.
+    - wp_bind.
+      wp_bind.
+      iInv "Hinv" as (txns' log') "(Hvol&Hdur&Habs)".
+      iDestruct "Hdur" as ">(Hownlog_auth&Hdisk)".
+      iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
+      AtomicPair.Helpers.unify_ghost.
+      clear log'.
+      iPoseProof (log_map_extract i with "Hlog_data") as "(Hi&Hlog_rest)"; auto.
 
-    wp_step.
+      wp_step.
+      iMod (ghost_step_lifting with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)".
+      intros.
+      eexists.
+      eauto using exec_step_GetLog_inbounds.
+      solve_ndisj.
 
-    iFrame.
-    iSpecialize ("Hlog_rest" with "Hi").
-    iModIntro; iExists _; iFrame.
-    wp_step.
-    wp_bind.
-    iApply (wp_unlock with "[Hownlog Hlocked]").
-    iFrame "Hdlock Hlocked".
-    iExists _; iFrame.
-    iIntros "!> _".
-    wp_step.
-    iApply "HΦ".
-    iFrame.
+      iSpecialize ("Hlog_rest" with "Hi").
+      iModIntro; iExists _, _; iFrame.
+      wp_step.
+      wp_bind.
+      iApply (wp_unlock with "[Hownlog Hlocked]").
+      iFrame "Hdlock Hlocked".
+      iExists _; iFrame.
+      iIntros "!> _".
+      wp_step.
+      iApply "HΦ".
+      iFrame.
+    - wp_bind.
+      admit.
+      (*
+      iInv "Hinv" as (txns' log') "(Hvol&Hdur&Habs)".
+      wp_step.
+
+      iMod (ghost_step_lifting with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)".
+      intros.
+      eexists.
+      eauto using exec_step_GetLog_oob.
+      solve_ndisj.
+      wp_bind.
+      iApply (wp_unlock with "[Hownlog Hlocked]").
+      iFrame "Hdlock Hlocked".
+      iExists _; iFrame.
+      iIntros "!> _".
+      wp_step.
+      iApply "HΦ".
+      iFrame.
+       *)
   Abort.
 
 End refinement_triples.
