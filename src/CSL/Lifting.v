@@ -306,6 +306,9 @@ Proof.
   destruct a; try econstructor; eauto.
 Qed.
 
+Global Instance Ret_atomic {T} (v: T)  : Atomic Λ a (Ret v).
+Proof. intros ?????. inversion 1. Qed.
+
 Global Instance Ret_IntoValue {T} (x: T) : IntoVal (Ret x : proc OpT T) x.
 Proof. rewrite //=. Qed.
 

@@ -193,7 +193,7 @@ Section refinement_triples.
   Qed.
 
   Theorem exec_step_GetLog_oob i n txns' log :
-    i >= length log ->
+    ¬ i < length log →
     exec_step Log.l (Call (Log.GetLog i))
               (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
               (Val
@@ -236,8 +236,8 @@ Section refinement_triples.
     destruct matches.
     - wp_bind.
       wp_bind.
-      iInv "Hinv" as (txns' log') "(Hvol&Hdur&Habs)".
-      iDestruct "Hdur" as ">(Hownlog_auth&Hdisk)".
+      iInv "Hinv" as (txns' log') ">(Hvol&Hdur&Habs)".
+      iDestruct "Hdur" as "(Hownlog_auth&Hdisk)".
       iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
       AtomicPair.Helpers.unify_ghost.
       clear log'.
@@ -262,16 +262,17 @@ Section refinement_triples.
       iApply "HΦ".
       iFrame.
     - wp_bind.
-      admit.
-      (*
-      iInv "Hinv" as (txns' log') "(Hvol&Hdur&Habs)".
+      iInv "Hinv" as (txns' log') ">(Hvol&Hdur&Habs)".
+      iDestruct "Hdur" as "(Hownlog_auth&Hdisk)".
+      iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
+      AtomicPair.Helpers.unify_ghost.
       wp_step.
 
       iMod (ghost_step_lifting with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)".
-      intros.
-      eexists.
-      eauto using exec_step_GetLog_oob.
+      { eauto using exec_step_GetLog_oob. }
       solve_ndisj.
+      iModIntro; iExists _, _. iFrame.
+
       wp_bind.
       iApply (wp_unlock with "[Hownlog Hlocked]").
       iFrame "Hdlock Hlocked".
@@ -280,7 +281,6 @@ Section refinement_triples.
       wp_step.
       iApply "HΦ".
       iFrame.
-       *)
-  Abort.
+  Qed.
 
 End refinement_triples.
