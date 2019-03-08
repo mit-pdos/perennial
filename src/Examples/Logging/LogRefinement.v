@@ -2,7 +2,8 @@ From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement.
 From RecoveryRefinement.Examples.Logging Require Import LogAPI LogImpl.
 From RecoveryRefinement.Examples Require Import ExMach.WeakestPre ExMach.RefinementAdequacy.
-Require AtomicPair.Helpers.
+From RecoveryRefinement Require AtomicPair.Helpers.
+From iris.base_logic.lib Require Export invariants gen_heap.
 
 Unset Implicit Arguments.
 
@@ -25,19 +26,18 @@ Section refinement_triples.
     (start m↦ txn.1 ∗ (1+start) m↦ txn.2)%I.
 
   Definition buffer_map (s:BufState) (txns: list (nat*nat)) :=
-    (state m↦ enc_state s ∗
-           match s with
-           | Empty => emp
-           | Txn1 => (∃ txn, ⌜txns = [txn]⌝ ∗
-                                         txn_map txn1_start txn)
-           | Txn2 => (∃ txn, ⌜txns = [txn]⌝ ∗
-                                         txn_map txn2_start txn)
-           | Txn12 => (∃ txn1 txn2, ⌜txns = [txn1; txn2]⌝ ∗
-                                                       txn_map txn1_start txn1 ∗
-                                                       txn_map txn2_start txn2)
-           | Txn21 => ∃ txn1 txn2, ⌜txns = [txn1; txn2]⌝ ∗
-                                                      txn_map txn2_start txn1 ∗
-                                                      txn_map txn1_start txn2
+    (match s with
+     | Empty => ⌜txns = []⌝
+     | Txn1 => (∃ txn, ⌜txns = [txn]⌝ ∗
+                                   txn_map txn1_start txn)
+     | Txn2 => (∃ txn, ⌜txns = [txn]⌝ ∗
+                                   txn_map txn2_start txn)
+     | Txn12 => (∃ txn1 txn2, ⌜txns = [txn1; txn2]⌝ ∗
+                                                 txn_map txn1_start txn1 ∗
+                                                 txn_map txn2_start txn2)
+     | Txn21 => ∃ txn1 txn2, ⌜txns = [txn1; txn2]⌝ ∗
+                                                txn_map txn2_start txn1 ∗
+                                                txn_map txn1_start txn2
      end)%I.
 
   Definition txn_free start :=
@@ -51,6 +51,9 @@ Section refinement_triples.
      | Txn12 => emp
      | Txn21 => emp
      end)%I.
+
+  Definition state_interp (s:BufState) (txns: list (nat*nat)) :=
+    (buffer_map s txns ∗ free_buffer_map s)%I.
 
   Record ghost_names :=
     { γslock : gname;
@@ -79,8 +82,8 @@ Section refinement_triples.
 
   Definition StateLockInv names :=
     (∃ s txns,
-        buffer_map s txns ∗ free_buffer_map s ∗
-                   own (names.(γtxns)) (◯ Excl' txns))%I.
+        state m↦ enc_state s ∗ state_interp s txns ∗
+              own (names.(γtxns)) (◯ Excl' txns))%I.
 
   Fixpoint log_map (i: nat) log :=
     (match log with
@@ -295,6 +298,66 @@ Section refinement_triples.
       iFrame.
   Qed.
 
+  Theorem get_state_ok s :
+    {{{ state m↦ enc_state s }}}
+      get_state
+      {{{ RET s; state m↦ enc_state s }}}.
+  Proof.
+    iIntros (Φ) "Hstate HΦ".
+    unfold get_state.
+    wp_bind.
+    wp_step.
+    rewrite enc_dec_id.
+    wp_step.
+    iApply "HΦ"; by iFrame.
+  Qed.
+
+  Theorem reserve_state_ok s txns s' txn_start :
+    reserve_state s = Some (s', txn_start) ->
+    (state_interp s txns -∗
+                  ∃ (txn0:nat*nat),
+                    txn_map txn_start txn0 ∗
+                            (∀ txn',
+                                txn_map txn_start txn' -∗
+                                        state_interp s' (txns ++ [txn'])))%I.
+  Proof.
+    destruct s; simpl; inversion 1; subst.
+    - unfold state_interp at 1.
+      iIntros "(Halloc&(Htxn1&Htxn2))"; simpl.
+      iDestruct "Halloc" as "%"; subst.
+      iDestruct "Htxn1" as (txn1) "Htxn1".
+      iExists _.
+      iFrame.
+      iIntros (txns') "Htxn1".
+      unfold state_interp; simpl.
+      iFrame.
+      iExists _; by iFrame.
+    - unfold state_interp at 1.
+      iIntros "(Halloc&Htxn2)"; simpl.
+      iDestruct "Halloc" as (txn ->) "Htxn1".
+      iDestruct "Htxn2" as (txn2) "Htxn2".
+      iExists _.
+      iFrame.
+      iIntros (txns') "Htxn2".
+      unfold state_interp; simpl.
+      iSplitL; auto.
+      iExists _, _.
+      iSplitR; auto.
+      iFrame.
+    - unfold state_interp at 1.
+      iIntros "(Halloc&Htxn1)"; simpl.
+      iDestruct "Halloc" as (txn ->) "Htxn2".
+      iDestruct "Htxn1" as (txn1) "Htxn1".
+      iExists _.
+      iFrame.
+      iIntros (txns') "Htxn1".
+      unfold state_interp; simpl.
+      iSplitL; auto.
+      iExists _, _.
+      iSplitR; auto.
+      iFrame.
+  Qed.
+
   Theorem try_reserve_ok γnames :
     {{{ ExecInv' γnames }}}
       try_reserve
@@ -305,8 +368,8 @@ Section refinement_triples.
             txn_map start_a txn ∗
                     own (γnames.(γtxns)) (◯ Excl' txns0) ∗
                     (∀ txn', txn_map start_a txn' -∗
-                                     buffer_map s' (txns0 ++ [txn']) ∗
-                                     free_buffer_map s') ∗
+                                     state m↦ enc_state s' ∗
+                                     state_interp s' (txns0 ++ [txn'])) ∗
                   locked (γnames.(γslock))
           end
       }}}.
@@ -317,6 +380,66 @@ Section refinement_triples.
     iApply (wp_lock with "Hslock").
     iNext.
     iIntros "(Hlocked&Hstateinv)".
-  Abort.
+
+    iDestruct "Hstateinv" as (s txns) "(Hstate&Hstateinterp&Howntxn)".
+    wp_bind.
+    iApply (get_state_ok with "Hstate"). iIntros "!> Hstate".
+    wp_bind.
+    destruct_with_eqn (reserve_state s); simpl.
+    - destruct p as (s'&txn_start).
+      wp_bind.
+      unfold put_state.
+      wp_step.
+      wp_step.
+      wp_step.
+      iApply "HΦ".
+      iExists s', txns.
+      (* use reserve_state_ok to get the garbage transaction we're reserving *)
+      iPoseProof (reserve_state_ok with "Hstateinterp") as "Hstateinterp"; eauto.
+      iDestruct "Hstateinterp" as (txn0) "(Htxn0&Hwand)".
+      iExists txn0.
+      iFrame.
+      auto.
+    - wp_bind.
+      iApply (wp_unlock with "[-HΦ]").
+      iFrame "Hslock Hlocked".
+      iExists _, _; iFrame.
+      iIntros "!> _".
+      wp_step.
+      wp_step.
+      by iApply "HΦ".
+  Qed.
+
+  Theorem reserve_ok γnames :
+    {{{ ExecInv' γnames }}}
+      reserve
+      {{{ start_a, RET start_a;
+          ∃ (s':BufState) (txns0: list (nat*nat)) (txn:nat*nat),
+            txn_map start_a txn ∗
+                    own (γnames.(γtxns)) (◯ Excl' txns0) ∗
+                    (∀ txn', txn_map start_a txn' -∗
+                                     state m↦ enc_state s' ∗
+                                     state_interp s' (txns0 ++ [txn'])) ∗
+                    locked (γnames.(γslock))
+      }}}.
+  Proof.
+    iIntros (Φ) "#Hinv HΦ".
+    unfold reserve.
+    iLöb as "IH".
+    wp_loop.
+    wp_bind.
+    iApply (try_reserve_ok with "Hinv").
+    iNext.
+    iIntros (v) "Hreserve".
+    destruct v as [start|]; simpl.
+    wp_step.
+    wp_step.
+    by iApply "HΦ".
+
+    wp_step.
+    iNext.
+    iApply "IH".
+    by iApply "HΦ".
+  Qed.
 
 End refinement_triples.
