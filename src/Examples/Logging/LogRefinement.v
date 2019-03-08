@@ -21,13 +21,6 @@ Section refinement_triples.
             !inG Σ (authR (optionUR (exclR BufStateC)))}.
   Import ExMach.
 
-  (* Definition ptr_map (ptr_val : nat) (pcurr: nat * nat) (pother: nat * nat) :=
-    (ptr_addr d↦ ptr_val ∗
-     (read_addrs ptr_val).1 d↦ pcurr.1 ∗
-     (read_addrs ptr_val).2 d↦ pcurr.2 ∗
-     (write_addrs ptr_val).1 d↦ pother.1 ∗
-     (write_addrs ptr_val).2 d↦ pother.2)%I. *)
-
   Definition txn_map start (txn: nat * nat) :=
     (start m↦ txn.1 ∗ (1+start) m↦ txn.2)%I.
 
@@ -95,14 +88,26 @@ Section refinement_triples.
      | x::log' => log_idx i d↦ x ∗ log_map (1+i) log'
      end)%I.
 
-  Instance log_map_timeless i log : Timeless (log_map i log).
+  Instance log_map_timeless log : forall i, Timeless (log_map i log).
   Proof.
-    generalize dependent i.
-    induction log; intros; simpl; apply _.
+    induction log; intros; apply _.
+  Qed.
+
+  (* len free addresses in the on-disk log starting at log idx i *)
+  Fixpoint log_free i len :=
+    (match len with
+     | 0 => emp
+     | S len => (∃ (x:nat), log_idx i d↦ x) ∗ log_free (1+i) len
+     end)%I.
+
+  Instance log_free_timeless len : forall i, Timeless (log_free i len).
+  Proof.
+    induction len; intros; apply _.
   Qed.
 
   Definition ExecDiskInv (log: list nat) :=
-    (log_len d↦ length log ∗ log_map 0 log)%I.
+    (log_len d↦ length log ∗ log_map 0 log ∗
+             log_free (length log) (1000 - length log))%I.
 
   Definition DiskLockInv names :=
     (∃ (log: list nat), own (names.(γlog)) (◯ Excl' log))%I.
@@ -247,7 +252,7 @@ Section refinement_triples.
       wp_bind.
       iInv "Hinv" as (txns' log') ">(Hvol&Hdur&Habs)".
       iDestruct "Hdur" as "(Hownlog_auth&Hdisk)".
-      iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
+      iDestruct "Hdisk" as "(Hlog_len&Hlog_data&Hlog_free)".
       AtomicPair.Helpers.unify_ghost.
       clear log'.
       iPoseProof (log_map_extract i with "Hlog_data") as "(Hi&Hlog_rest)"; auto.
@@ -270,7 +275,7 @@ Section refinement_triples.
     - wp_bind.
       iInv "Hinv" as (txns' log') ">(Hvol&Hdur&Habs)".
       iDestruct "Hdur" as "(Hownlog_auth&Hdisk)".
-      iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
+      iDestruct "Hdisk" as "(Hlog_len&Hlog_data&Hlog_free)".
       AtomicPair.Helpers.unify_ghost.
       wp_step.
 

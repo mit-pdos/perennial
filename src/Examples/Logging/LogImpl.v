@@ -76,31 +76,34 @@ Definition get_state :=
 Definition put_state s :=
   write_mem state (enc_state s).
 
-Definition commit :=
+Definition commit : proc bool :=
   (* TODO: technically we can delay acquiring the write lock until we've read
   the in-memory transactions, but this requires monotonocity of the log length
   and I'm not sure it's an interesting complication *)
   _ <- lock state_lock;
   _ <- lock disk_lock;
-  s <- get_state;
   l <- read_disk log_len;
-  _ <- match s with
-      | Empty => Ret tt
-      | Txn1 => write_mem_txn txn1_start l
-      | Txn2 => write_mem_txn txn2_start l
-      | Txn12 => _ <- write_mem_txn txn1_start l;
-                  write_mem_txn txn2_start (2 + l)
-      | Txn21 =>
-        (* technically the order is irrelevant since they're
+  if le_dec ExMach.size (log_idx (2+l)) then
+    Ret false
+  else
+    s <- get_state;
+    _ <- match s with
+        | Empty => Ret tt
+        | Txn1 => write_mem_txn txn1_start l
+        | Txn2 => write_mem_txn txn2_start l
+        | Txn12 => _ <- write_mem_txn txn1_start l;
+                    write_mem_txn txn2_start (2 + l)
+        | Txn21 =>
+          (* technically the order is irrelevant since they're
            committing together, but this should be easier to prove
            correct *)
-        _ <- write_mem_txn txn2_start l;
-        write_mem_txn txn1_start (2 + l)
-      end;
-  _ <- write_disk log_len (l + 2 * state_length s);
-  _ <- put_state Empty;
-  _ <- unlock disk_lock;
-  Ret tt.
+          _ <- write_mem_txn txn2_start l;
+            write_mem_txn txn1_start (2 + l)
+        end;
+    _ <- write_disk log_len (l + 2 * state_length s);
+    _ <- put_state Empty;
+    _ <- unlock disk_lock;
+    Ret true.
 
 Definition reserve_state s : option (BufState * nat) :=
   match s with
