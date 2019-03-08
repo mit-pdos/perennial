@@ -170,6 +170,15 @@ Section refinement_triples.
     apply (log_map_extract_general log 0 i); auto.
   Qed.
 
+  Theorem exec_step_call Op (l: Layer Op) T (op: Op T) : forall n s s' r,
+    l.(step) op s (Val s' r) ->
+    exec_step l (Call op)
+              (n, s) (Val (n, s') (Ret r, [])).
+  Proof.
+    intros.
+    simpl; unfold pure.
+    eexists _, (_, _); simpl; intuition eauto.
+  Qed.
 
   Theorem exec_step_GetLog_inbounds i n txns' log :
     i < length log ->
@@ -180,9 +189,7 @@ Section refinement_triples.
                  (Ret (Some (nth i log 0)), [])).
   Proof.
     intros.
-    repeat econstructor.
-    simpl.
-    intuition eauto.
+    eapply exec_step_call; simpl.
     unfold reads; simpl.
     f_equal.
     rewrite <- nth_default_eq.
@@ -201,13 +208,15 @@ Section refinement_triples.
                  (Ret None, [])).
   Proof.
     intros.
-    repeat econstructor.
-    simpl.
-    intuition eauto.
+    eapply exec_step_call; simpl.
     unfold reads; simpl.
     f_equal.
     apply nth_error_None; lia.
   Qed.
+
+  Hint Resolve
+       exec_step_GetLog_inbounds
+       exec_step_GetLog_oob : core.
 
   Lemma get_log_refinement j `{LanguageCtx Log.Op _ T Log.l K} i:
     {{{ j ⤇ K (Call (Log.GetLog i)) ∗ Registered ∗ ExecInv }}}
@@ -244,10 +253,7 @@ Section refinement_triples.
       iPoseProof (log_map_extract i with "Hlog_data") as "(Hi&Hlog_rest)"; auto.
 
       wp_step.
-      iMod (ghost_step_lifting with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)".
-      intros.
-      eexists.
-      eauto using exec_step_GetLog_inbounds.
+      iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
       solve_ndisj.
 
       iSpecialize ("Hlog_rest" with "Hi").
@@ -268,9 +274,8 @@ Section refinement_triples.
       AtomicPair.Helpers.unify_ghost.
       wp_step.
 
-      iMod (ghost_step_lifting with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)".
-      { eauto using exec_step_GetLog_oob. }
-      solve_ndisj.
+      iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
+        solve_ndisj.
       iModIntro; iExists _, _. iFrame.
 
       wp_bind.

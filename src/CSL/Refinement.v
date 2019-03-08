@@ -406,6 +406,17 @@ Section ghost_step.
     iApply ghost_step_lifting'; eauto. iFrame.
   Qed.
 
+  Lemma ghost_step_call {T1 T2} E j K `{LanguageCtx OpT T1 T2 Λ K} r σ2
+             (op: OpT T1) σ1 :
+    (∀ n, Λ.(sem).(exec_step) (Call op) (n, σ1) (Val (n, σ2) (Ret r, []))) →
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call op) -∗ source_ctx -∗ source_state σ1
+      ={E}=∗ j ⤇ K (Ret r) ∗ source_state σ2 ∗ [∗ list] ef ∈ [], ∃ j', j' ⤇ (projT2 ef).
+  Proof.
+    iIntros (??) "Hj Hsrc ?".
+    iApply (ghost_step_lifting with "Hj Hsrc"); eauto; iFrame.
+  Qed.
+
   Lemma ghost_step_lifting_puredet {T1 T2} E j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) e2 efs:
     (∀ n σ1, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ1) (e2, efs))) →
