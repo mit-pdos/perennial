@@ -7,7 +7,7 @@ Import RelationNotations.
 Module Log.
   Inductive Op : Type -> Type :=
   | Append (txn: nat * nat) : Op unit
-  | Commit : Op unit
+  | Commit : Op bool
   | GetLog (i: nat) : Op (option nat)
   .
 
@@ -24,8 +24,9 @@ Module Log.
          | Append (v1, v2) =>
            puts (set mem_buf (fun l => l ++ [v1; v2]))
          | Commit =>
-           l' <- reads mem_buf;
-         puts (set disk_log (fun l => l ++ l'))
+           (l' <- reads mem_buf;
+              _ <- puts (set disk_log (fun l => l ++ l'));
+              pure true) + pure false
          | GetLog i => reads (fun s => nth_error (disk_log s) i)
          end;
        crash_step :=
