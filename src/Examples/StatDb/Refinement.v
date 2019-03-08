@@ -38,8 +38,7 @@ Section refinement_triples.
   Proof.
     iIntros (Φ) "(Hj&Hreg&#Hsource_inv&Hinv) HΦ".
     iDestruct "Hinv" as (γ1 γ2) "(#Hlockinv&#Hinv)".
-    wp_bind. iApply (wp_lock with "[$]").
-    iIntros "!> (Hlocked&HDB)".
+    wp_lock "(Hlocked&HDB)".
     iDestruct "HDB" as (l) "(Hsource_tok&Hsum&Hcount)".
     do 3 wp_step.
     wp_bind.
@@ -68,8 +67,7 @@ Section refinement_triples.
   Proof.
     iIntros (Φ) "(Hj&#Hsource_inv&Hinv) HΦ".
     iDestruct "Hinv" as (γ1 γ2) "(#Hlockinv&#Hinv)".
-    wp_bind. iApply (wp_lock with "[$]").
-    iIntros "!> (Hlocked&HDB)".
+    wp_lock "(Hlocked&HDB)".
     iDestruct "HDB" as (l) "(Hsource_tok&Hsum&Hcount)".
     wp_step.
     wp_bind.

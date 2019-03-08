@@ -531,6 +531,20 @@ Ltac wp_read_mem :=
     end
   end.
 
+Ltac wp_lock H :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (lock ?loc) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?Hlock) (is_lock _ _ ?loc _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed Hlock) nil)]) in
+        iApply (wp_lock with spat); iIntros "!>"; iIntros H
+      end
+    end
+  end.
+
 Ltac wp_step := first [ wp_read_disk | wp_write_disk | wp_read_mem | wp_write_mem | wp_ret ].
 
 Import spec_patterns.

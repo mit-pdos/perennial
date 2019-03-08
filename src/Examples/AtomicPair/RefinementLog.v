@@ -114,8 +114,7 @@ Section refinement_triples.
     iDestruct "Hrest" as (Γ) "(#Hsource_inv&#Hmain_lock&Hlog_lock&#Hinv)".
     iDestruct "Hlog_lock" as (γlock_log) "#Hlockinv".
     iDestruct "Hmain_lock" as (γlock_main) "#Hmlockinv".
-    wp_bind. iApply (wp_lock with "[$]").
-    iIntros "!> (Hlocked&HLL)".
+    wp_lock "(Hlocked&HLL)".
     iDestruct "HLL" as (plog) "(Hflag_ghost&Hlog_ghost)".
 
     wp_bind.
@@ -153,8 +152,7 @@ Section refinement_triples.
     iClear "Hsomewriter1" .
     iClear "Hsomewriter0".
 
-    wp_bind. iApply (wp_lock with "Hmlockinv").
-    iIntros "!> (Hlocked'&HML)".
+    wp_lock "(Hlocked'&HML)".
     iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
 
     wp_bind.
@@ -218,8 +216,7 @@ Section refinement_triples.
     iDestruct "Hrest" as (Γ) "(#Hsource_inv&#Hmain_lock&Hlog_lock&#Hinv)".
     iDestruct "Hlog_lock" as (γlock_log) "#Hlockinv".
     iDestruct "Hmain_lock" as (γlock_main) "#Hmlockinv".
-    wp_bind. iApply (wp_lock with "Hmlockinv").
-    iIntros "!> (Hlocked'&HML)".
+    wp_lock "(Hlocked'&HML)".
     iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
 
     wp_bind.

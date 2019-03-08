@@ -235,9 +235,8 @@ Section refinement_triples.
   Proof.
     iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
     iDestruct "Hinv" as (γnames) "#(Hslock&Hdlock&Hinv)".
-    wp_bind. iApply (wp_lock with "[$]").
+    wp_lock "(Hlocked&Hlinv)".
 
-    iIntros "!> (Hlocked&Hlinv)".
     iDestruct "Hlinv" as (log) "Hownlog".
 
     wp_bind.
@@ -370,10 +369,7 @@ Section refinement_triples.
   Proof.
     iIntros (Φ) "#(Hslock&Hdlock&Hinv) HΦ".
     unfold try_reserve.
-    wp_bind.
-    iApply (wp_lock with "Hslock").
-    iNext.
-    iIntros "(Hlocked&Hstateinv)".
+    wp_lock "(Hlocked&Hstateinv)".
 
     iDestruct "Hstateinv" as (s txns) "(Hstate&Hstateinterp&Howntxn)".
     wp_bind.
@@ -465,9 +461,7 @@ Section refinement_triples.
     iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
     iDestruct "Hinv" as (γnames) "#(Hslock&Hdlock&Hinv)".
     unfold commit.
-    wp_bind.
-    iApply (wp_lock with "Hdlock").
-    iIntros "!> (Hdlocked & Hdiskinv)".
+    wp_lock "(Hdlocked & Hdiskinv)".
     wp_bind.
     iDestruct "Hdiskinv" as (log) "Hownlog".
     iInv "Hinv" as (txns log') ">(Hvol&Hdur&Habs)".
@@ -490,8 +484,8 @@ Section refinement_triples.
       wp_step.
       iApply "HΦ"; by iFrame.
     -  iExists _, _; iFrame.
-       wp_bind. iApply (wp_lock with "Hslock").
-       iIntros "!> !> (Hslocked & Hstateinv)".
+       iModIntro.
+       wp_lock "(Hslocked & Hstateinv)".
        wp_bind.
        iDestruct "Hstateinv" as (s txns') "(Hstate&Hstateinterp&Howntxn)".
        iApply (get_state_ok with "Hstate"). iIntros "!> Hstate".
