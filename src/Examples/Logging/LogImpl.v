@@ -80,12 +80,13 @@ Definition commit : proc bool :=
   (* TODO: technically we can delay acquiring the write lock until we've read
   the in-memory transactions, but this requires monotonocity of the log length
   and I'm not sure it's an interesting complication *)
-  _ <- lock state_lock;
   _ <- lock disk_lock;
   l <- read_disk log_len;
   if le_dec ExMach.size (log_idx (2+l)) then
-    Ret false
+      _ <- unlock disk_lock;
+      Ret false
   else
+    _ <- lock state_lock;
     s <- get_state;
     _ <- match s with
         | Empty => Ret tt

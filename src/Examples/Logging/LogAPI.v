@@ -25,6 +25,7 @@ Module Log.
            puts (set mem_buf (fun l => l ++ [v1; v2]))
          | Commit =>
            (l' <- reads mem_buf;
+              _ <- puts (set mem_buf (fun _ => nil));
               _ <- puts (set disk_log (fun l => l ++ l'));
               pure true) + pure false
          | GetLog i => reads (fun s => nth_error (disk_log s) i)

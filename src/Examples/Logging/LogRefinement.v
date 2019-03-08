@@ -442,4 +442,110 @@ Section refinement_triples.
     by iApply "HΦ".
   Qed.
 
+  Theorem exec_step_Commit_fail n txns log :
+    exec_step Log.l (Call (Log.Commit))
+              (n, {| Log.mem_buf := flatten_txns txns; Log.disk_log := log |})
+              (Val
+                 (n, {| Log.mem_buf := flatten_txns txns; Log.disk_log := log |})
+                 (Ret false, [])).
+  Proof.
+    apply exec_step_call; simpl.
+    right.
+    reflexivity.
+  Qed.
+
+  Theorem exec_step_Commit_ok n txns log :
+    exec_step Log.l (Call (Log.Commit))
+              (n, {| Log.mem_buf := flatten_txns txns; Log.disk_log := log |})
+              (Val
+                 (n, {| Log.mem_buf := []; Log.disk_log := log ++ flatten_txns txns |})
+                 (Ret true, [])).
+  Proof.
+    apply exec_step_call; simpl.
+    left.
+    repeat (eexists; eauto).
+  Qed.
+
+  Theorem commit_refinement j `{LanguageCtx Log.Op _ T Log.l K} :
+    {{{ j ⤇ K (Call (Log.Commit)) ∗ Registered ∗ ExecInv }}}
+      commit
+    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
+  Proof.
+    iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
+    iDestruct "Hinv" as (γnames) "#(Hslock&Hdlock&Hinv)".
+    unfold commit.
+    wp_bind.
+    iApply (wp_lock with "Hdlock").
+    iIntros "!> (Hdlocked & Hdiskinv)".
+    wp_bind.
+    iDestruct "Hdiskinv" as (log) "Hownlog".
+    iInv "Hinv" as (txns log') ">(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as "(Hownlog'&Hdiskinv)".
+    AtomicPair.Helpers.unify_ghost.
+    clear log'.
+    iDestruct "Hdiskinv" as "(Hlen&Hlog&Hfree)".
+    wp_step.
+    destruct matches.
+    - (* failure case *)
+      iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)";
+        eauto using exec_step_Commit_fail.
+      solve_ndisj.
+
+      iExists _, _; iFrame.
+      wp_bind.
+      iApply (wp_unlock with "[Hdlocked Hownlog]").
+      iFrame "Hdlock".
+      iFrame.
+      iExists _; iFrame.
+
+      iIntros "!> _".
+      wp_step.
+      iApply "HΦ"; by iFrame.
+    -  iExists _, _; iFrame.
+       wp_bind. iApply (wp_lock with "Hslock").
+       iIntros "!> !> (Hslocked & Hstateinv)".
+       wp_bind.
+       iDestruct "Hstateinv" as (s txns') "(Hstate&Hstateinterp&Howntxn)".
+       iApply (get_state_ok with "Hstate"). iIntros "!> Hstate".
+       wp_bind.
+       destruct s.
+       * simpl.
+         replace (length log + 0) with (length log) by lia.
+         wp_step.
+         wp_bind.
+         iInv "Hinv" as (txns'' log') ">(Hvol&Hdur&Habs)".
+         iDestruct "Hdur" as "(Hownlog'&Hdiskinv)".
+         unfold VolatileInv.
+         repeat AtomicPair.Helpers.unify_ghost.
+         clear txns'' log'.
+         iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)";
+           eauto using exec_step_Commit_ok.
+         solve_ndisj.
+         iDestruct "Hdiskinv" as "(Hlen&Hlog&Hfree)".
+         wp_step.
+         iDestruct "Hstateinterp" as (->) "Hlogfree".
+
+         iExists nil, _; iFrame.
+         simpl; rewrite List.app_nil_r.
+         unfold Abstraction; iFrame.
+         wp_bind.
+         iModIntro.
+         unfold put_state.
+         wp_step.
+         wp_bind.
+
+         iApply (wp_unlock with "[Hdlocked Hownlog]").
+         iFrame "Hdlock".
+         iFrame.
+         iExists _; iFrame.
+
+         iIntros "!> _".
+         wp_step.
+         iApply "HΦ"; by iFrame.
+       * admit.
+       * admit.
+       * admit.
+       * admit.
+  Abort.
+
 End refinement_triples.
