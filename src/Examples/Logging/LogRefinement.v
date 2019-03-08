@@ -134,13 +134,15 @@ Section refinement_triples.
     (own (names.(γlog)) (● Excl' log) ∗
          ExecDiskInv log)%I.
 
+  Definition ExecInv' names :=
+    (is_lock lN (names.(γslock)) state_lock (StateLockInv names) ∗
+             is_lock ldN (names.(γdlock)) disk_lock (DiskLockInv names) ∗
+             inv iN (∃ (txns: list (nat*nat)) (log: list nat),
+                        VolatileInv names txns ∗
+                                    DurableInv names log ∗ Abstraction txns log))%I.
+
   Definition ExecInv :=
-    (source_ctx ∗ ∃ (names:ghost_names),
-          is_lock lN (names.(γslock)) state_lock (StateLockInv names) ∗
-                  is_lock ldN (names.(γdlock)) disk_lock (DiskLockInv names) ∗
-                  inv iN (∃ (txns: list (nat*nat)) (log: list nat),
-                             VolatileInv names txns ∗
-                             DurableInv names log ∗ Abstraction txns log))%I.
+    (source_ctx ∗ ∃ (names:ghost_names), ExecInv' names)%I.
 
   Lemma log_map_extract_general log : forall k i,
     i < length log ->
@@ -292,5 +294,29 @@ Section refinement_triples.
       iApply "HΦ".
       iFrame.
   Qed.
+
+  Theorem try_reserve_ok γnames :
+    {{{ ExecInv' γnames }}}
+      try_reserve
+      {{{ v, RET v;
+          match v with
+          | None => emp
+          | Some start_a => ∃ (s':BufState) (txns0: list (nat*nat)) (txn:nat*nat),
+            txn_map start_a txn ∗
+                    own (γnames.(γtxns)) (◯ Excl' txns0) ∗
+                    (∀ txn', txn_map start_a txn' -∗
+                                     buffer_map s' (txns0 ++ [txn']) ∗
+                                     free_buffer_map s') ∗
+                  locked (γnames.(γslock))
+          end
+      }}}.
+  Proof.
+    iIntros (Φ) "#(Hslock&Hdlock&Hinv) HΦ".
+    unfold try_reserve.
+    wp_bind.
+    iApply (wp_lock with "Hslock").
+    iNext.
+    iIntros "(Hlocked&Hstateinv)".
+  Abort.
 
 End refinement_triples.
