@@ -59,9 +59,8 @@ Section refinement_triples.
     { iNext. iExists _. iFrame. }
     iAssert (DBLockInv γ2) with "[-HΦ Hreg Hlocked Hj]" as "HDB".
     { iExists _; simpl. do 2 iFrame. }
-    iApply (wp_unlock with "[-HΦ Hreg Hj]"); iFrame.
-    { iFrame "Hlockinv". eauto. }
-    iIntros "!> _". iApply ("HΦ" with ""); iFrame.
+    wp_unlock "[-HΦ Hreg Hj]"; eauto.
+    iApply ("HΦ" with ""); iFrame.
   Qed.
 
   Lemma avg_refinement {T} j K `{LanguageCtx DB.Op nat T DB.l K}:
@@ -87,13 +86,11 @@ Section refinement_triples.
     { iNext. iExists _. iFrame. }
     iAssert (DBLockInv γ2) with "[-HΦ Hlocked Hj]" as "HDB".
     { iExists _; iFrame. }
-    wp_bind. iApply (wp_unlock with "[-HΦ Hj]"); iFrame.
-    { iFrame "Hlockinv"; eauto. }
-    iIntros "!> _".
+    wp_unlock "[-HΦ Hj]"; eauto.
     wp_ret. by iApply "HΦ".
   Qed.
 
-  Lemma init_mem_split: 
+  Lemma init_mem_split:
     (([∗ map] i↦v ∈ init_zero, i m↦ v) -∗
                                 lock_addr m↦ 0 ∗ sum_addr m↦ 0 ∗ count_addr m↦ 0)%I.
   Proof.
@@ -120,10 +117,10 @@ Section refinement.
   Definition helperΣ : gFunctors := #[GFunctor (authR (optionUR (exclR (listC natC))))].
   Instance subG_helperΣ : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (listC natC)))).
   Proof. solve_inG. Qed.
-  
+
   Definition myΣ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ DB.Op DB.l; lockΣ; helperΣ].
   Existing Instance subG_cfgPreG.
-  
+
   Definition init_absr σ1a σ1c :=
     ExMach.l.(initP) σ1c ∧ DB.l.(initP) σ1a.
 

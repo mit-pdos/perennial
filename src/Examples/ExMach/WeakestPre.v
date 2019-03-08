@@ -459,6 +459,16 @@ Section lock.
       iSplitR "HΦ"; last by iApply "HΦ".
       iLeft. iFrame.
   Qed.
+
+  Lemma wp_unlock' N γ i (R: iProp Σ):
+    is_lock N γ i R -∗ {{{ locked γ ∗ R }}} unlock i {{{ RET tt; True }}}.
+  Proof.
+    iIntros "#Hlock". iAlways.
+    iIntros (Φ) "(Hlocked&HR) HΦ".
+    iApply (wp_unlock with "[-HΦ]").
+    { iFrame "Hlock". iFrame. }
+    eauto.
+  Qed.
 End lock.
 
 Ltac wp_write_disk :=
@@ -522,3 +532,41 @@ Ltac wp_read_mem :=
   end.
 
 Ltac wp_step := first [ wp_read_disk | wp_write_disk | wp_read_mem | wp_write_mem | wp_ret ].
+
+Import spec_patterns.
+
+Definition spec_goal_extend (g: list (spec_patterns.spec_pat)) (s: ident) :=
+  match g with
+  | (SGoal g) :: nil =>
+    [SGoal {| spec_goal_kind := spec_goal_kind g;
+              spec_goal_negate := spec_goal_negate g;
+              spec_goal_frame := spec_goal_frame g;
+              spec_goal_hyps :=
+                match spec_goal_negate g with
+                | false => (s :: spec_goal_hyps g)
+                | _ => spec_goal_hyps g
+                end;
+              spec_goal_done := (spec_goal_done g) |}]
+  | _ => []
+  end.
+
+
+Ltac wp_unlock s :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (unlock ?loc) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?ilock) (is_lock _ ?name loc _)] ] =>
+        match goal with
+        | [ |- context[ environments.Esnoc _ (INamed ?ilocked) (locked name)] ] =>
+        let spat_parse := spec_patterns.spec_pat.parse s in
+        let spat' := eval vm_compute in (spec_goal_extend spat_parse ilocked) in
+        let spat := constr:((spec_patterns.SIdent (INamed ilock) nil) :: spat') in
+        let sel_frame_locked := constr:((sel_patterns.SelIdent (INamed ilocked)) :: nil) in
+        iApply (wp_unlock' with spat); [ iFrame sel_frame_locked | iIntros "!> _"]
+        end
+      end
+    end
+  end.

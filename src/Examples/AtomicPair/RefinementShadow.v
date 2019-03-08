@@ -127,9 +127,9 @@ Section refinement_triples.
     rewrite ?read_of_swap ?write_of_swap; iFrame.
 
     iModIntro.
-    iApply (wp_unlock with "[-HΦ Hreg Hj]"); iFrame.
-    { iFrame "Hlockinv". iExists _, _, _. iFrame. }
-    iIntros "!> _". iApply "HΦ"; iFrame.
+    wp_unlock "[-HΦ Hreg Hj]"; iFrame.
+    { iExists _, _, _. iFrame. }
+    iApply "HΦ"; iFrame.
   Qed.
 
   Lemma read_refinement {T} j K `{LanguageCtx AtomicPair.Op (nat*nat) T AtomicPair.l K}:
@@ -169,9 +169,8 @@ Section refinement_triples.
 
     iModIntro; iExists _, _, _; iFrame.
     wp_bind.
-    iApply (wp_unlock with "[-HΦ Hreg Hj]"); iFrame.
-    { iFrame "Hlockinv". iExists _, _, _. iFrame. }
-    iIntros "!> _". simpl.
+    wp_unlock "[-HΦ Hreg Hj]".
+    { iExists _, _, _. iFrame. }
     wp_ret. iApply "HΦ"; iFrame.
   Qed.
 

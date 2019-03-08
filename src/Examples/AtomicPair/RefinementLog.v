@@ -200,15 +200,13 @@ Section refinement_triples.
     iSplitL "".
     { iNext. iSplitL; eauto. simpl. iIntros; congruence. }
 
-    wp_bind.
-    iApply (wp_unlock with "[Hflag_ghost Hlog_ghost Hlocked]"); iFrame.
-    { iFrame "Hlockinv". iExists _; iFrame. }
+    wp_unlock "[Hlog_ghost Hflag_ghost]".
+    { iExists _; iFrame. }
 
-    iIntros "!> _".
-    iApply (wp_unlock with "[-Hj Hreg HΦ]"); iFrame.
-    { iFrame "Hmlockinv". iExists _; iFrame. }
+    wp_unlock "[-Hj Hreg HΦ]".
+    { iExists _; iFrame. }
 
-    iIntros "!> _". iApply "HΦ". iFrame.
+    iApply "HΦ". iFrame.
   Qed.
 
   Lemma read_refinement {T} j K `{LanguageCtx AtomicPair.Op (nat*nat) T AtomicPair.l K}:
@@ -244,10 +242,10 @@ Section refinement_triples.
     recommit.
 
     wp_bind.
-    iApply (wp_unlock with "[Hmain_ghost Hsrc_ghost Hlocked']"); iFrame.
-    { iFrame "Hmlockinv". iExists _; iFrame. }
+    wp_unlock "[Hmain_ghost Hsrc_ghost]".
+    { iExists _; iFrame. }
 
-    iIntros "!> _". wp_ret. destruct pmain. iApply "HΦ". iFrame.
+    wp_ret. destruct pmain. iApply "HΦ". iFrame.
   Qed.
 
   Lemma init_mem_split:

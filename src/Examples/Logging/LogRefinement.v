@@ -269,11 +269,8 @@ Section refinement_triples.
       iSpecialize ("Hlog_rest" with "Hi").
       iModIntro; iExists _, _; iFrame.
       wp_step.
-      wp_bind.
-      iApply (wp_unlock with "[Hownlog Hlocked]").
-      iFrame "Hdlock Hlocked".
-      iExists _; iFrame.
-      iIntros "!> _".
+      wp_unlock "[Hownlog]".
+      { iExists _; iFrame. }
       wp_step.
       iApply "HΦ".
       iFrame.
@@ -288,11 +285,8 @@ Section refinement_triples.
         solve_ndisj.
       iModIntro; iExists _, _. iFrame.
 
-      wp_bind.
-      iApply (wp_unlock with "[Hownlog Hlocked]").
-      iFrame "Hdlock Hlocked".
-      iExists _; iFrame.
-      iIntros "!> _".
+      wp_unlock "[Hownlog]".
+      { iExists _; iFrame. }
       wp_step.
       iApply "HΦ".
       iFrame.
@@ -401,12 +395,9 @@ Section refinement_triples.
       iFrame.
       auto.
     - wp_bind.
-      iApply (wp_unlock with "[-HΦ]").
-      iFrame "Hslock Hlocked".
-      iExists _, _; iFrame.
-      iIntros "!> _".
-      wp_step.
-      wp_step.
+      wp_unlock "[-HΦ]".
+      { iExists _, _; iFrame. }
+      do 2 wp_step.
       by iApply "HΦ".
   Qed.
 
@@ -492,13 +483,10 @@ Section refinement_triples.
       solve_ndisj.
 
       iExists _, _; iFrame.
-      wp_bind.
-      iApply (wp_unlock with "[Hdlocked Hownlog]").
-      iFrame "Hdlock".
-      iFrame.
-      iExists _; iFrame.
+      iModIntro.
+      wp_unlock "[Hownlog]".
+      { iExists _; iFrame. }
 
-      iIntros "!> _".
       wp_step.
       iApply "HΦ"; by iFrame.
     -  iExists _, _; iFrame.
@@ -534,12 +522,9 @@ Section refinement_triples.
          wp_step.
          wp_bind.
 
-         iApply (wp_unlock with "[Hdlocked Hownlog]").
-         iFrame "Hdlock".
-         iFrame.
-         iExists _; iFrame.
+         wp_unlock "[Hownlog]".
+         { iExists _; iFrame. }
 
-         iIntros "!> _".
          wp_step.
          iApply "HΦ"; by iFrame.
        * admit.
