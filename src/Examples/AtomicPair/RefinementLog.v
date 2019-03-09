@@ -125,112 +125,21 @@ Section refinement_triples.
     iExists _, _. iFrame. by iApply "HPQ".
   Qed.
 
-  Lemma write_log_fst m Γ flagsnd (plog plog' pcurr psrc: nat * nat) x E j i:
-    {{{ named j (CommitInner' m Γ (0, flagsnd) plog pcurr psrc)
-                     ∗ (named i (own Γ.(γlog) (◯ Excl' plog'))) }}}
-      write_disk log_fst x @ E
-    {{{ RET tt; named j (CommitInner' m Γ (0, flagsnd) (x, plog'.2) pcurr psrc)
-                             ∗ named i (own Γ.(γlog) (◯ Excl' (x, plog'.2))) }}}.
-  Proof.
-    iIntros (Φ) "(Hinner&Hflag_ghost) HΦ".
-    iAssignNames.
-    iDestructRepR "Hinner"; iAssignNames.
-    unify_ghost.
-    iNamed (iMod (named_ghost_var_update (γlog Γ) (x, snd plog')
-            with "Hlog_auth [$]") as "(?&?)").
-    wp_step.
-    iApply "HΦ". iNamed (iFrame). iFrame.
-    rewrite //=. iIntros "%"; congruence.
-  Qed.
+  (* TODO: move *)
+  Global Instance named_timeless i (P: iProp Σ) : Timeless P → Timeless (named i P).
+  Proof. rewrite /named named_eq /named_def//=. Qed.
 
-  Lemma write_log_snd m Γ flagsnd (plog plog' pcurr psrc: nat * nat) x E:
-    {{{ CommitInner' m Γ (0, flagsnd) plog pcurr psrc
-                     ∗ own Γ.(γlog) (◯ Excl' plog') }}}
-      write_disk log_snd x @ E
-    {{{ RET tt; CommitInner' m Γ (0, flagsnd) (plog'.1, x) pcurr psrc
-                             ∗ own Γ.(γlog) (◯ Excl' (plog'.1, x)) }}}.
-  Proof.
-    iIntros (Φ) "(Hinner&Hflag_ghost) HΦ".
-    destruct_commit_inner' "Hinner".
-    iMod (ghost_var_update (γlog Γ) (fst plog', x)
-            with "Hlog_auth [$]") as "(Hlog_auth&Hlog_ghost)".
-    wp_step.
-    iApply "HΦ". iNamed (iFrame). iFrame.
-    rewrite //=.
-    iIntros "%"; congruence.
-  Qed.
 
-  Lemma write_main_fst m Γ base flagsnd (plog pcurr pcurr' psrc: nat * nat) x E:
-    {{{ CommitInner' m Γ (S base, flagsnd) plog pcurr psrc
-                     ∗ own Γ.(γmain) (◯ Excl' pcurr') }}}
-      write_disk main_fst x @ E
-    {{{ RET tt; CommitInner' m Γ (S base, flagsnd) plog (x, pcurr'.2) psrc
-                             ∗ own Γ.(γmain) (◯ Excl' (x, pcurr'.2)) }}}.
-  Proof.
-    iIntros (Φ) "(Hinner&Hmain_ghost) HΦ".
-    destruct_commit_inner' "Hinner".
-    iMod (ghost_var_update (γmain Γ) (x, snd pcurr')
-            with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
-    wp_step.
-    iApply "HΦ". iNamed (iFrame). iFrame.
-    rewrite //=.
-  Qed.
-
-  Lemma write_main_snd m Γ base flagsnd (plog pcurr pcurr' psrc: nat * nat) x E:
-    {{{ CommitInner' m Γ (S base, flagsnd) plog pcurr psrc
-                     ∗ own Γ.(γmain) (◯ Excl' pcurr') }}}
-      write_disk main_snd x @ E
-    {{{ RET tt; CommitInner' m Γ (S base, flagsnd) plog (pcurr'.1, x) psrc
-                             ∗ own Γ.(γmain) (◯ Excl' (pcurr'.1, x)) }}}.
-  Proof.
-    iIntros (Φ) "(Hinner&Hmain_ghost) HΦ".
-    destruct_commit_inner' "Hinner".
-    iMod (ghost_var_update (γmain Γ) (fst pcurr', x)
-            with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
-    wp_step.
-    iApply "HΦ". iNamed (iFrame). iFrame.
-    rewrite //=.
-  Qed.
-
-  Lemma unify_inner_log m Γ pflag (plog plog' pcurr psrc: nat * nat):
-    CommitInner' m Γ pflag plog pcurr psrc
-                 ∗ own Γ.(γlog) (◯ Excl' plog') -∗ ⌜ plog = plog' ⌝.
-  Proof. iIntros "(H&H')". destruct_commit_inner' "H". auto. Qed.
-
-  Lemma unify_inner_flag m Γ pflag pflag' (plog pcurr psrc: nat * nat):
-    CommitInner' m Γ pflag plog pcurr psrc
-                 ∗ own Γ.(γflag) (◯ Excl' pflag') -∗ ⌜ pflag = pflag' ⌝.
-  Proof. iIntros "(H&H')". destruct_commit_inner' "H". auto. Qed.
-
-  Lemma unify_inner_main m Γ pflag (plog pcurr pcurr' psrc: nat * nat):
-    CommitInner' m Γ pflag plog pcurr psrc
-                 ∗ own Γ.(γmain) (◯ Excl' pcurr') -∗ ⌜ pcurr = pcurr' ⌝.
-  Proof. iIntros "(H&H')". destruct_commit_inner' "H". auto. Qed.
-
-  Lemma unify_inner_src m Γ pflag (plog pcurr psrc psrc': nat * nat):
-    CommitInner' m Γ pflag plog pcurr psrc
-                 ∗ own Γ.(γsrc) (◯ Excl' psrc') -∗ ⌜ psrc = psrc' ⌝.
-  Proof. iIntros "(H&H')". destruct_commit_inner' "H". auto. Qed.
-
-  Ltac unify_flag :=
-    try (iDestruct (unify_inner_flag with "[$]") as %?; subst; []).
-
-  Ltac unify_commit :=
-    try (iDestruct (unify_inner_flag with "[$]") as %?; subst; []);
-    try (iDestruct (unify_inner_log with "[$]") as %?; subst; []);
-    try (iDestruct (unify_inner_main with "[$]") as %?; subst; []);
-    try (iDestruct (unify_inner_src with "[$]") as %?; subst; []).
-
-Global Instance named_timeless i (P: iProp Σ) : Timeless P → Timeless (named i P).
-Proof. rewrite /named named_eq /named_def//=. Qed.
-
-  Lemma write_log_fst'  Γ flagsnd (plog plog' pcurr psrc: nat * nat) x j i:
-    {{{ inv liN (CommitInner Registered Γ)
-            ∗ (named i (own Γ.(γlog) (◯ Excl' plog')))
-            ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
+  Lemma write_log_fst (m: iProp Σ) {_: Timeless m}
+        Γ flagsnd (plog': nat * nat) x j i:
+    {{{
+        inv liN (CommitInner m Γ)
+        ∗ (named i (own Γ.(γlog) (◯ Excl' plog')))
+        ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}
       write_disk log_fst x
-    {{{ RET tt;
+    {{{
+        RET tt;
         named i (own Γ.(γlog) (◯ Excl' (x, plog'.2)))
         ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}.
@@ -248,6 +157,158 @@ Proof. rewrite /named named_eq /named_def//=. Qed.
     iApply "HΦ". iFrame.
   Qed.
 
+  Lemma write_log_snd (m: iProp Σ) {H': Timeless m}
+        Γ flagsnd (plog': nat * nat) x j i:
+    {{{
+        inv liN (CommitInner m Γ)
+        ∗ (named i (own Γ.(γlog) (◯ Excl' plog')))
+        ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
+    }}}
+      write_disk log_snd x
+    {{{
+        RET tt;
+        named i (own Γ.(γlog) (◯ Excl' (plog'.1, x)))
+        ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
+    }}}.
+  Proof.
+    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ".
+    iInv "Hinv" as "H".
+    destruct_ex_commit_inner "H".
+    iDestructRepR "H"; iAssignNames.
+    repeat unify_ghost.
+    iMod (ghost_var_update (γlog Γ) (fst plog', x)
+            with "Hlog_auth [$]") as "(Hlog_auth&Hlog_ghost)".
+    wp_step. repeat iExists _; iNamed (iFrame).
+    iFrame. iModIntro. iSplitR.
+    { iIntros "!> %". rewrite //=. }
+    iApply "HΦ". iFrame.
+  Qed.
+
+  Lemma write_main_fst (m: iProp Σ) {H': Timeless m}
+        Γ base flagsnd (pcurr': nat * nat) x i j:
+    {{{
+        inv liN (CommitInner m Γ)
+        ∗ (named i (own Γ.(γmain) (◯ Excl' pcurr')))
+        ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
+    }}}
+      write_disk main_fst x
+    {{{ RET tt;
+        named i (own Γ.(γmain) (◯ Excl' (x, pcurr'.2)))
+        ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
+    }}}.
+  Proof.
+    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ".
+    iInv "Hinv" as "H".
+    destruct_ex_commit_inner "H".
+    iDestructRepR "H"; iAssignNames.
+    repeat unify_ghost.
+    iMod (ghost_var_update (γmain Γ) (x, snd pcurr')
+            with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
+    wp_step. repeat iExists _; iNamed (iFrame).
+    iFrame. iModIntro. iSplitR.
+    { iIntros "!> %". rewrite //=. }
+    iApply "HΦ". iFrame.
+  Qed.
+
+  Lemma write_main_snd (m: iProp Σ) {H': Timeless m}
+        Γ base flagsnd (pcurr': nat * nat) x i j:
+    {{{
+        inv liN (CommitInner m Γ)
+        ∗ (named i (own Γ.(γmain) (◯ Excl' pcurr')))
+        ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
+    }}}
+      write_disk main_snd x
+    {{{ RET tt;
+        named i (own Γ.(γmain) (◯ Excl' (pcurr'.1, x)))
+        ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
+    }}}.
+  Proof.
+    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ".
+    iInv "Hinv" as "H".
+    destruct_ex_commit_inner "H".
+    iDestructRepR "H"; iAssignNames.
+    repeat unify_ghost.
+    iMod (ghost_var_update (γmain Γ) (fst pcurr', x)
+            with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
+    wp_step. repeat iExists _; iNamed (iFrame).
+    iFrame. iModIntro. iSplitR.
+    { iIntros "!> %". rewrite //=. }
+    iApply "HΦ". iFrame.
+  Qed.
+
+  Lemma read_main_fst (m: iProp Σ) {H': Timeless m}
+        Γ (pcurr': nat * nat) i:
+    {{{
+        inv liN (CommitInner m Γ)
+        ∗ (named i (own Γ.(γmain) (◯ Excl' pcurr')))
+    }}}
+      read_disk main_fst
+    {{{ RET (fst pcurr');
+        named i (own Γ.(γmain) (◯ Excl' pcurr'))
+    }}}.
+  Proof.
+    iIntros (Φ) "(Hinv&Hlog) HΦ".
+    iInv "Hinv" as "H".
+    destruct_ex_commit_inner "H".
+    iDestructRepR "H"; iAssignNames.
+    repeat unify_ghost.
+    wp_step. repeat iExists _; iNamed (iFrame).
+    iFrame. iModIntro.
+    iApply "HΦ". iFrame.
+  Qed.
+
+  Lemma read_main_snd (m: iProp Σ) {H': Timeless m}
+        Γ (pcurr': nat * nat) i:
+    {{{
+        inv liN (CommitInner m Γ)
+        ∗ (named i (own Γ.(γmain) (◯ Excl' pcurr')))
+    }}}
+      read_disk main_snd
+    {{{ RET (snd pcurr');
+        named i (own Γ.(γmain) (◯ Excl' pcurr'))
+    }}}.
+  Proof.
+    iIntros (Φ) "(Hinv&Hlog) HΦ".
+    iInv "Hinv" as "H".
+    destruct_ex_commit_inner "H".
+    iDestructRepR "H"; iAssignNames.
+    repeat unify_ghost.
+    wp_step. repeat iExists _; iNamed (iFrame).
+    iFrame. iModIntro.
+    iApply "HΦ". iFrame.
+  Qed.
+
+  Ltac wp_step' := wp_step.
+  Ltac wp_step :=
+    try wp_bind;
+    try match goal with
+      | [ |- environments.envs_entails ?x ?igoal ] =>
+        match igoal with
+        | @wp _ _ _ _ _ _ _ (write_disk log_fst _) _  =>
+          iNamed (iApply (write_log_fst with "[$]"); eauto; iIntros "!> (?&?)")
+        | @wp _ _ _ _ _ _ _ (write_disk log_snd _) _  =>
+          iNamed (iApply (write_log_snd with "[$]"); eauto; iIntros "!> (?&?)")
+        | @wp _ _ _ _ _ _ _ (write_disk main_fst _) _  =>
+          iNamed (iApply (write_main_fst with "[$]"); eauto; iIntros "!> (?&?)")
+        | @wp _ _ _ _ _ _ _ (write_disk main_snd _) _  =>
+          iNamed (iApply (write_main_snd with "[$]"); eauto; iIntros "!> (?&?)")
+        | @wp _ _ _ _ _ _ _ (read_disk main_fst) _  =>
+          iNamed (iApply (read_main_fst with "[$]"); eauto; iIntros "!> ?")
+        | @wp _ _ _ _ _ _ _ (read_disk main_snd) _  =>
+          iNamed (iApply (read_main_snd with "[$]"); eauto; iIntros "!> ?")
+        | @wp _ _ _ _ _ _ _ _ _  => wp_step'
+        end
+      end.
+
+  (*
+  Ltac wp_step :=
+    try wp_bind; try wp_step'
+    try (iNamed (iApply (write_log_snd with "[$]"); eauto; iIntros "!> (?&?)"));
+    try (iNamed (iApply (write_main_fst with "[$]"); eauto; iIntros "!> (?&?)"));
+    try (iNamed (iApply (write_main_snd with "[$]"); eauto; iIntros "!> (?&?)")).
+   *)
+
+
   Lemma write_refinement {T} j K `{LanguageCtx AtomicPair.Op unit T AtomicPair.l K} p:
     {{{ j ⤇ K (Call (AtomicPair.Write p)) ∗ Registered ∗ ExecInv }}}
       write p
@@ -260,17 +321,8 @@ Proof. rewrite /named named_eq /named_def//=. Qed.
     wp_lock "(Hlocked&HLL)".
     iDestruct "HLL" as (plog) "(Hflag_ghost&Hlog_ghost)".
 
-    wp_bind.
-    iNamed (iApply (write_log_fst' with "[$]"); eauto; iIntros "!> (?&?)").
+    repeat wp_step.
 
-    wp_bind.
-    iInv "Hinv" as "H".
-    destruct_ex_commit_inner "H".
-    unify_flag.
-    iApply (write_log_snd with "[$]").
-    iIntros "!> (H&Hlog_ghost) !>". repeat iExists _. iFrame "H".
-
-    wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
     wp_step.
@@ -278,7 +330,7 @@ Proof. rewrite /named named_eq /named_def//=. Qed.
             (1, (j, (existT _ (K (Call (AtomicPair.Write p)))) : procTC AtomicPair.Op))
             with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
     iModIntro.
-   iExists _, _, _, _; unbundle_names. iNamed (recommit').
+    iExists _, _, _, _; unbundle_names. iNamed (recommit').
     iSplitL "Hreg Hj".
     { iNext. iSplitL ""; eauto. iIntros. simpl. rewrite someone_writing_unfold.
       iExists _, _. iFrame. destruct p; eauto. }
@@ -288,21 +340,8 @@ Proof. rewrite /named named_eq /named_def//=. Qed.
     wp_lock "(Hlocked'&HML)".
     iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
 
-    wp_bind.
-    iInv "Hinv" as "H".
-    destruct_ex_commit_inner "H".
-    unify_flag.
-    iApply (write_main_fst with "[$]").
-    iIntros "!> (H&Hmain_ghost) !>". repeat iExists _; iFrame "H".
+    repeat wp_step.
 
-    wp_bind.
-    iInv "Hinv" as "H".
-    destruct_ex_commit_inner "H".
-    unify_flag.
-    iApply (write_main_snd with "[$]").
-    iIntros "!> (H&Hmain_ghost) !>". repeat iExists _. iFrame "H".
-
-    wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
     rewrite someone_writing_unfold.
@@ -342,30 +381,27 @@ Proof. rewrite /named named_eq /named_def//=. Qed.
     wp_lock "(Hlocked'&HML)".
     iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
 
+    (* Simulate the step, since we know what it will be *)
     wp_bind.
-    iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    wp_step.
-    iModIntro.
-    recommit.
-
-    wp_bind.
-    iInv "Hinv" as "H".
+    iInv "Hinv" as "H" "Hclose".
     destruct_commit_inner "H".
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsrc") as "(Hj&Hsrc&_)".
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
       econstructor.
     }
     { solve_ndisj. }
+    iMod ("Hclose" with "[-Hj HΦ Hlocked' Hreg Hmain_ghost Hsrc_ghost]") as "_".
+    { recommit. }
+
     wp_step.
-    iModIntro.
-    recommit.
+    iApply (fupd_intro_mask); first by set_solver+.
+    wp_step.
 
     wp_bind.
     wp_unlock "[Hmain_ghost Hsrc_ghost]".
     { iExists _; iFrame. }
 
-    wp_ret. destruct pmain. iApply "HΦ". iFrame.
+    wp_ret. destruct pmain. simpl. iApply "HΦ". iFrame.
   Qed.
 
   Lemma init_mem_split:
@@ -395,6 +431,28 @@ Proof. rewrite /named named_eq /named_def//=. Qed.
 
 End refinement_triples.
 
+Ltac wp_step' := wp_step.
+Ltac wp_step :=
+  try wp_bind;
+  try match goal with
+      | [ |- environments.envs_entails ?x ?igoal ] =>
+        match igoal with
+        | @wp _ _ _ _ _ _ _ (write_disk log_fst _) _  =>
+          iNamed (iApply (write_log_fst with "[$]"); eauto; iIntros "!> (?&?)")
+        | @wp _ _ _ _ _ _ _ (write_disk log_snd _) _  =>
+          iNamed (iApply (write_log_snd with "[$]"); eauto; iIntros "!> (?&?)")
+        | @wp _ _ _ _ _ _ _ (write_disk main_fst _) _  =>
+          iNamed (iApply (write_main_fst with "[$]"); eauto; iIntros "!> (?&?)")
+        | @wp _ _ _ _ _ _ _ (write_disk main_snd _) _  =>
+          iNamed (iApply (write_main_snd with "[$]"); eauto; iIntros "!> (?&?)")
+        | @wp _ _ _ _ _ _ _ (read_disk main_fst) _  =>
+          iNamed (iApply (read_main_fst with "[$]"); eauto; iIntros "!> ?")
+        | @wp _ _ _ _ _ _ _ (read_disk main_snd) _  =>
+          iNamed (iApply (read_main_snd with "[$]"); eauto; iIntros "!> ?")
+        | @wp _ _ _ _ _ _ _ _ _  => wp_step'
+        end
+      end.
+
 Section refinement.
 
   Definition helperΣ : gFunctors :=
@@ -418,9 +476,6 @@ Section refinement.
   Instance from_exist_left_sep' {Σ} {A} (Φ : A → iProp Σ) Q :
     FromExist ((∃ a, Φ a) ∗ Q) (λ a, Φ a ∗ Q)%I .
   Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
-
-  Ltac unify_flag :=
-    try (iDestruct (unify_inner_flag with "[$]") as %?; subst; []).
 
   Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq AtomicPair.Op T) :
     init_absr σ1a σ1c →
@@ -513,19 +568,7 @@ Section refinement.
         wp_step.
         iModIntro. recommit.
 
-        wp_bind.
-        iInv "Hinv" as "H".
-        destruct_ex_commit_inner "H".
-        unify_flag.
-        iApply (write_main_fst with "[$]").
-        iIntros "!> (H&Hmain_ghost) !>". repeat iExists _; iFrame "H".
-
-        wp_bind.
-        iInv "Hinv" as "H".
-        destruct_ex_commit_inner "H".
-        unify_flag.
-        iApply (write_main_snd with "[$]").
-        iIntros "!> (H&Hmain_ghost) !>". repeat iExists _. iFrame "H".
+        repeat wp_step.
 
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".

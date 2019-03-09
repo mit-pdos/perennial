@@ -545,6 +545,13 @@ Ltac wp_lock H :=
     end
   end.
 
+(*
+  Try to make wp_step extensible using this pattern:
+  https://stackoverflow.com/questions/48868186/extensible-tactic-in-coq
+
+  I don't like this but it's pretty light weight to start with
+*)
+
 Ltac wp_step := first [ wp_read_disk | wp_write_disk | wp_read_mem | wp_write_mem | wp_ret ].
 
 Import spec_patterns.
