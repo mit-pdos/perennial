@@ -119,11 +119,11 @@ Section refinement_triples.
     iExists _, _. iFrame. by iApply "HPQ".
   Qed.
 
-  Lemma write_log_fst Γ flagsnd (plog plog' pcurr psrc: nat * nat) x E:
-    {{{ CommitInner' Registered Γ (0, flagsnd) plog pcurr psrc
+  Lemma write_log_fst m Γ flagsnd (plog plog' pcurr psrc: nat * nat) x E:
+    {{{ CommitInner' m Γ (0, flagsnd) plog pcurr psrc
                      ∗ own Γ.(γlog) (◯ Excl' plog') }}}
       write_disk log_fst x @ E
-    {{{ RET tt; CommitInner' Registered Γ (0, flagsnd) (x, plog'.2) pcurr psrc
+    {{{ RET tt; CommitInner' m Γ (0, flagsnd) (x, plog'.2) pcurr psrc
                              ∗ own Γ.(γlog) (◯ Excl' (x, plog'.2)) }}}.
   Proof.
     iIntros (Φ) "(Hinner&Hflag_ghost) HΦ".
@@ -136,11 +136,11 @@ Section refinement_triples.
     iIntros "%"; congruence.
   Qed.
 
-  Lemma write_log_snd Γ flagsnd (plog plog' pcurr psrc: nat * nat) x E:
-    {{{ CommitInner' Registered Γ (0, flagsnd) plog pcurr psrc
+  Lemma write_log_snd m Γ flagsnd (plog plog' pcurr psrc: nat * nat) x E:
+    {{{ CommitInner' m Γ (0, flagsnd) plog pcurr psrc
                      ∗ own Γ.(γlog) (◯ Excl' plog') }}}
       write_disk log_snd x @ E
-    {{{ RET tt; CommitInner' Registered Γ (0, flagsnd) (plog'.1, x) pcurr psrc
+    {{{ RET tt; CommitInner' m Γ (0, flagsnd) (plog'.1, x) pcurr psrc
                              ∗ own Γ.(γlog) (◯ Excl' (plog'.1, x)) }}}.
   Proof.
     iIntros (Φ) "(Hinner&Hflag_ghost) HΦ".
@@ -153,23 +153,55 @@ Section refinement_triples.
     iIntros "%"; congruence.
   Qed.
 
-  Lemma unify_inner_log Γ pflag (plog plog' pcurr psrc: nat * nat):
-    CommitInner' Registered Γ pflag plog pcurr psrc
+  Lemma write_main_fst m Γ base flagsnd (plog pcurr pcurr' psrc: nat * nat) x E:
+    {{{ CommitInner' m Γ (S base, flagsnd) plog pcurr psrc
+                     ∗ own Γ.(γmain) (◯ Excl' pcurr') }}}
+      write_disk main_fst x @ E
+    {{{ RET tt; CommitInner' m Γ (S base, flagsnd) plog (x, pcurr'.2) psrc
+                             ∗ own Γ.(γmain) (◯ Excl' (x, pcurr'.2)) }}}.
+  Proof.
+    iIntros (Φ) "(Hinner&Hmain_ghost) HΦ".
+    destruct_commit_inner' "Hinner".
+    iMod (ghost_var_update (γmain Γ) (x, snd pcurr')
+            with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
+    wp_step.
+    iApply "HΦ". iFrame.
+    rewrite //=.
+  Qed.
+
+  Lemma write_main_snd m Γ base flagsnd (plog pcurr pcurr' psrc: nat * nat) x E:
+    {{{ CommitInner' m Γ (S base, flagsnd) plog pcurr psrc
+                     ∗ own Γ.(γmain) (◯ Excl' pcurr') }}}
+      write_disk main_snd x @ E
+    {{{ RET tt; CommitInner' m Γ (S base, flagsnd) plog (pcurr'.1, x) psrc
+                             ∗ own Γ.(γmain) (◯ Excl' (pcurr'.1, x)) }}}.
+  Proof.
+    iIntros (Φ) "(Hinner&Hmain_ghost) HΦ".
+    destruct_commit_inner' "Hinner".
+    iMod (ghost_var_update (γmain Γ) (fst pcurr', x)
+            with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
+    wp_step.
+    iApply "HΦ". iFrame.
+    rewrite //=.
+  Qed.
+
+  Lemma unify_inner_log m Γ pflag (plog plog' pcurr psrc: nat * nat):
+    CommitInner' m Γ pflag plog pcurr psrc
                  ∗ own Γ.(γlog) (◯ Excl' plog') -∗ ⌜ plog = plog' ⌝.
   Proof. iIntros "(H&H')". destruct_commit_inner' "H". auto. Qed.
 
-  Lemma unify_inner_flag Γ pflag pflag' (plog pcurr psrc: nat * nat):
-    CommitInner' Registered Γ pflag plog pcurr psrc
+  Lemma unify_inner_flag m Γ pflag pflag' (plog pcurr psrc: nat * nat):
+    CommitInner' m Γ pflag plog pcurr psrc
                  ∗ own Γ.(γflag) (◯ Excl' pflag') -∗ ⌜ pflag = pflag' ⌝.
   Proof. iIntros "(H&H')". destruct_commit_inner' "H". auto. Qed.
 
-  Lemma unify_inner_main Γ pflag (plog pcurr pcurr' psrc: nat * nat):
-    CommitInner' Registered Γ pflag plog pcurr psrc
+  Lemma unify_inner_main m Γ pflag (plog pcurr pcurr' psrc: nat * nat):
+    CommitInner' m Γ pflag plog pcurr psrc
                  ∗ own Γ.(γmain) (◯ Excl' pcurr') -∗ ⌜ pcurr = pcurr' ⌝.
   Proof. iIntros "(H&H')". destruct_commit_inner' "H". auto. Qed.
 
-  Lemma unify_inner_src Γ pflag (plog pcurr psrc psrc': nat * nat):
-    CommitInner' Registered Γ pflag plog pcurr psrc
+  Lemma unify_inner_src m Γ pflag (plog pcurr psrc psrc': nat * nat):
+    CommitInner' m Γ pflag plog pcurr psrc
                  ∗ own Γ.(γsrc) (◯ Excl' psrc') -∗ ⌜ psrc = psrc' ⌝.
   Proof. iIntros "(H&H')". destruct_commit_inner' "H". auto. Qed.
 
@@ -228,27 +260,17 @@ Section refinement_triples.
 
     wp_bind.
     iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    wp_step.
-    iMod (ghost_var_update (γmain Γ) (fst p, snd pmain) with "Hmain_auth [$]")
-      as "(Hmain_auth&Hmain_ghost)".
-    iModIntro.
-    recommit.
-    iSplitL "".
-    { iNext. iIntros; eauto. }
-    iClear "Hsomewriter0".
+    destruct_ex_commit_inner "H".
+    unify_flag.
+    iApply (write_main_fst with "[$]").
+    iIntros "!> (H&Hmain_ghost) !>". repeat iExists _; iFrame "H".
 
     wp_bind.
     iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    wp_step.
-    iMod (ghost_var_update (γmain Γ) (fst p, snd p) with "Hmain_auth [$]")
-      as "(Hmain_auth&Hmain_ghost)".
-    iModIntro.
-    recommit.
-    iSplitL "".
-    { iNext. iIntros; eauto. }
-    iClear "Hsomewriter0".
+    destruct_ex_commit_inner "H".
+    unify_flag.
+    iApply (write_main_snd with "[$]").
+    iIntros "!> (H&Hmain_ghost) !>". repeat iExists _. iFrame "H".
 
     wp_bind.
     iInv "Hinv" as "H".
@@ -367,6 +389,9 @@ Section refinement.
     FromExist ((∃ a, Φ a) ∗ Q) (λ a, Φ a ∗ Q)%I .
   Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
 
+  Ltac unify_flag :=
+    try (iDestruct (unify_inner_flag with "[$]") as %?; subst; []).
+
   Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq AtomicPair.Op T) :
     init_absr σ1a σ1c →
     wf_client_seq es →
@@ -458,26 +483,19 @@ Section refinement.
         wp_step.
         iModIntro. recommit.
 
+        wp_bind.
+        iInv "Hinv" as "H".
+        destruct_ex_commit_inner "H".
+        unify_flag.
+        iApply (write_main_fst with "[$]").
+        iIntros "!> (H&Hmain_ghost) !>". repeat iExists _; iFrame "H".
 
         wp_bind.
-        iFastInv "Hinv" "H".
-        destruct_commit_inner "H".
-        wp_step.
-        iMod (ghost_var_update (γmain Γ) (fst plog, snd pcurr) with "Hmain_auth [$]")
-          as "(Hmain_auth&Hmain_ghost)".
-        iModIntro. recommit.
-        iSplitL ""; eauto.
-        iClear "Hsomewriter0".
-
-        wp_bind.
-        iFastInv "Hinv" "H".
-        destruct_commit_inner "H".
-        wp_step.
-        iMod (ghost_var_update (γmain Γ) (fst plog, snd plog) with "Hmain_auth [$]")
-          as "(Hmain_auth&Hmain_ghost)".
-        iModIntro. recommit.
-        iSplitL ""; eauto.
-        iClear "Hsomewriter0".
+        iInv "Hinv" as "H".
+        destruct_ex_commit_inner "H".
+        unify_flag.
+        iApply (write_main_snd with "[$]").
+        iIntros "!> (H&Hmain_ghost) !>". repeat iExists _. iFrame "H".
 
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".
