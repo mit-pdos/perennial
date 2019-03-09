@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth.
-Require Export CSL.Refinement ExMach.WeakestPre.
+Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre.
 Unset Implicit Arguments.
 
 (* TODO: move *)
@@ -33,6 +33,12 @@ Proof.
   { by apply auth_update, option_local_update, exclusive_local_update. }
   done.
 Qed.
+
+Lemma named_ghost_var_update γ (a1' a1 a2 : A) i1 i2 :
+  named i1 (own γ (● (Excl' a1))) -∗ named i2 (own γ (◯ (Excl' a2)))
+        ==∗ named i1 (own γ (● (Excl' a1'))) ∗ named i2 (own γ (◯ (Excl' a1'))).
+Proof. unbundle_names; apply ghost_var_update. Qed.
+
 End ghost_var_helpers.
 
   (* Extends the iExist tactic to make it easier to re-prove invariants after steps *)
