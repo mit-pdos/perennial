@@ -10,7 +10,7 @@ Local Ltac destruct_ex_commit_inner H :=
   iDestruct "H" as (????) "H".
 
 Local Ltac destruct_commit_inner' H :=
-  iDestructRepR H; iAssignNames; repeat unify_ghost.
+  iLDestruct H; repeat unify_ghost.
 
 Local Ltac destruct_commit_inner H :=
   destruct_ex_commit_inner H;
@@ -142,10 +142,6 @@ Section refinement_triples.
     iExists _, _. iFrame. by iApply "HPQ".
   Qed.
 
-  (* TODO: move *)
-  Global Instance named_timeless i (P: iProp Σ) : Timeless P → Timeless (named i P).
-  Proof. rewrite /named named_eq /named_def//=. Qed.
-
   Global Instance CommitInner'_timeless P Γ flag plog pcurr psrc :
     Timeless P → Timeless (CommitInner' P Γ flag plog pcurr psrc).
   Proof. intros. destruct flag as (c&?). destruct c; apply _. Qed.
@@ -154,10 +150,23 @@ Section refinement_triples.
     Timeless P → Timeless (CommitInner P Γ).
   Proof. intros. apply _. Qed.
 
-  (* TODO: move *)
-  Instance named_frame_here :
-    ∀ (PROP : bi) i (p : bool) (R : PROP), Frame p (named i R) R emp | 100.
-  Proof. intros ???. rewrite /named named_eq /named_def //=//=. apply _. Qed.
+  Global Instance sep_into_sep_single_named {PROP: bi} (i: string) (P: PROP) :
+    IntoSepEnv (named i P) [(LNamed i, P)].
+  Proof. rewrite /IntoSepEnv//=. iFrame. eauto. Qed.
+
+  Global Instance sep_into_sep_cons {PROP: bi} (i: string) (P Q: PROP) Ps :
+    IntoSepEnv Q Ps →
+    IntoSepEnv (named i P ∗ Q) ((LNamed i, P) :: Ps) | 10.
+  Proof. rewrite /IntoSepEnv//=. iIntros (?) "(?&?)". iFrame. by iApply H1. Qed.
+
+  Global Instance sep_into_sep_anon_cons {PROP: bi} (P Q: PROP) Ps :
+    IntoSepEnv Q Ps →
+    IntoSepEnv (P ∗ Q) ((LAnon, P) :: Ps) | 50.
+  Proof. rewrite /IntoSepEnv//=. iIntros (?) "(?&?)". iFrame. by iApply H1. Qed.
+
+  Global Instance sep_into_sep_single_anon {PROP: bi} (P: PROP) :
+    IntoSepEnv P [(LAnon, P)] | 100.
+  Proof. rewrite /IntoSepEnv//=. iFrame. eauto. Qed.
 
   Lemma write_log_fst (m: iProp Σ) {_: Timeless m}
         Γ flagsnd (plog': nat * nat) x j i:
@@ -173,11 +182,11 @@ Section refinement_triples.
         ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}.
   Proof.
-    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ".
+    iIntros (Φ). iIntros "(Hinv&Hlog&Hflag) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iDestructRepR "Hlog_inv";
-    iDestructRepR "Hcommit_inv"; iAssignNames.
+    iLDestruct "Hlog_inv";
+    iLDestruct "Hcommit_inv".
     repeat unify_ghost. simpl.
     iNamed (iMod (named_ghost_var_update (γlog Γ) (x, snd plog')
             with "Hlog_auth [$]") as "(?&?)").
@@ -200,12 +209,11 @@ Section refinement_triples.
         ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}.
   Proof.
-    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ".
+    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
-    destruct_ex_commit_inner "H".
-    iDestructRepR "H"; iAssignNames.
-    iDestructRepR "Hlog_inv";
-    iDestructRepR "Hcommit_inv"; iAssignNames.
+    destruct_commit_inner "H".
+    iLDestruct "Hlog_inv";
+    iLDestruct "Hcommit_inv".
     repeat unify_ghost.
     iMod (ghost_var_update (γlog Γ) (fst plog', x)
             with "Hlog_auth [$]") as "(Hlog_auth&Hlog_ghost)".
@@ -227,11 +235,11 @@ Section refinement_triples.
         ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
     }}}.
   Proof.
-    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ".
+    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iDestructRepR "Hmain_inv";
-    iDestructRepR "Hcommit_inv"; iAssignNames.
+    iLDestruct "Hmain_inv";
+    iLDestruct "Hcommit_inv".
     repeat unify_ghost.
     iMod (ghost_var_update (γmain Γ) (x, snd pcurr')
             with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
@@ -253,11 +261,11 @@ Section refinement_triples.
         ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
     }}}.
   Proof.
-    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ".
+    iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iDestructRepR "Hmain_inv";
-    iDestructRepR "Hcommit_inv"; iAssignNames.
+    iLDestruct "Hmain_inv";
+    iLDestruct "Hcommit_inv".
     repeat unify_ghost.
     iMod (ghost_var_update (γmain Γ) (fst pcurr', x)
             with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
@@ -277,12 +285,12 @@ Section refinement_triples.
         named i (own Γ.(γmain) (◯ Excl' pcurr'))
     }}}.
   Proof.
-    iIntros (Φ) "(Hinv&Hlog) HΦ".
+    iIntros (Φ) "(Hinv&Hlog) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iDestructRepR "Hmain_inv"; iAssignNames.
+    iLDestruct "Hmain_inv".
     repeat unify_ghost.
-    wp_step. iModIntro. recommit. 
+    wp_step. iModIntro. recommit.
     iNamed (iFrame).
     iApply "HΦ". iFrame.
   Qed.
@@ -298,10 +306,10 @@ Section refinement_triples.
         named i (own Γ.(γmain) (◯ Excl' pcurr'))
     }}}.
   Proof.
-    iIntros (Φ) "(Hinv&Hlog) HΦ".
+    iIntros (Φ) "(Hinv&Hlog) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
-    iDestructRepR "Hmain_inv"; iAssignNames.
+    iLDestruct "Hmain_inv".
     repeat unify_ghost.
     wp_step. iModIntro. recommit.
     iNamed (iFrame).
@@ -325,11 +333,11 @@ Section refinement_triples.
                   : prodC natC (procTC AtomicPair.Op)))))
     }}}.
   Proof.
-    iIntros (Φ) "(Hinv&Hm&Hj&Hlog&Hflag) HΦ".
+    iIntros (Φ) "(Hinv&Hm&Hj&Hlog&Hflag) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    iDestructRepR "Hlog_inv"; iAssignNames.
-    iDestructRepR "Hcommit_inv"; iAssignNames.
+    destruct_commit_inner "H";
+    iLDestruct "Hlog_inv";
+    iLDestruct "Hcommit_inv".
     unify_ghost.
     iMod (ghost_var_update (γflag Γ)
                            (1, (j, existT _ (K (Call (AtomicPair.Write p))))
@@ -364,12 +372,12 @@ Section refinement_triples.
         ∗ j ⤇ K (Ret tt)
     }}}.
   Proof.
-    iIntros (Φ) "(Hsource_inv&Hinv&Hflag&Hmain&Hsrc_ghost) HΦ".
+    iIntros (Φ) "(Hsource_inv&Hinv&Hflag&Hmain&Hsrc_ghost) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    iDestructRepR "Hmain_inv"; iAssignNames.
-    iDestructRepR "Hcommit_inv"; iAssignNames.
-    iDestructRepR "Hsrc_inv"; iAssignNames.
+    destruct_commit_inner "H";
+    iLDestruct "Hmain_inv";
+    iLDestruct "Hcommit_inv";
+    iLDestruct "Hsrc_inv".
     repeat unify_ghost.
     simpl. rewrite /CommitOn.
     rewrite someone_writing_unfold.
@@ -399,17 +407,17 @@ Section refinement_triples.
       | [ |- environments.envs_entails ?x ?igoal ] =>
         match igoal with
         | @wp _ _ _ _ _ _ _ (write_disk log_fst _) _  =>
-          iNamed (iApply (write_log_fst with "[$]"); eauto; iIntros "!> (?&?)")
+          iNamed (iApply (write_log_fst with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (write_disk log_snd _) _  =>
-          iNamed (iApply (write_log_snd with "[$]"); eauto; iIntros "!> (?&?)")
+          iNamed (iApply (write_log_snd with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (write_disk main_fst _) _  =>
-          iNamed (iApply (write_main_fst with "[$]"); eauto; iIntros "!> (?&?)")
+          iNamed (iApply (write_main_fst with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (write_disk main_snd _) _  =>
-          iNamed (iApply (write_main_snd with "[$]"); eauto; iIntros "!> (?&?)")
+          iNamed (iApply (write_main_snd with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (read_disk main_fst) _  =>
-          iNamed (iApply (read_main_fst with "[$]"); eauto; iIntros "!> ?")
+          iNamed (iApply (read_main_fst with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (read_disk main_snd) _  =>
-          iNamed (iApply (read_main_snd with "[$]"); eauto; iIntros "!> ?")
+          iNamed (iApply (read_main_snd with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ _ _  => wp_step'
         end
       end.
@@ -428,13 +436,13 @@ Section refinement_triples.
 
     repeat wp_step.
     destruct p as (p1, p2). simpl.
-    iNamed (iApply (set_commit Registered with "[$]"); eauto; iIntros "!> (?&?)").
+    iNamed (iApply (set_commit Registered with "[$]"); first (eauto); iIntros "!>"; iLIntro).
 
     wp_lock "(Hlocked'&HML)".
     iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
 
     repeat wp_step.
-    iNamed (iApply (unset_commit Registered with "[$]"); eauto; iIntros "!> (?&?&?&?&?)").
+    iNamed (iApply (unset_commit Registered with "[$]"); first (eauto); iIntros "!>"; iLIntro).
 
     wp_unlock "[Hlog_ghost Hflag_ghost]".
     { iExists _; iFrame. }
@@ -461,8 +469,8 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H" "Hclose".
     destruct_commit_inner "H".
-    iDestructRepR "Hmain_inv"; iAssignNames.
-    iDestructRepR "Hsrc_inv"; iAssignNames.
+    iLDestruct "Hmain_inv";
+    iLDestruct "Hsrc_inv".
     unify_ghost.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsrc") as "(Hj&Hsrc&_)".
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
@@ -517,17 +525,17 @@ Ltac wp_step :=
       | [ |- environments.envs_entails ?x ?igoal ] =>
         match igoal with
         | @wp _ _ _ _ _ _ _ (write_disk log_fst _) _  =>
-          iNamed (iApply (write_log_fst with "[$]"); eauto; iIntros "!> (?&?)")
+          iNamed (iApply (write_log_fst with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (write_disk log_snd _) _  =>
-          iNamed (iApply (write_log_snd with "[$]"); eauto; iIntros "!> (?&?)")
+          iNamed (iApply (write_log_snd with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (write_disk main_fst _) _  =>
-          iNamed (iApply (write_main_fst with "[$]"); eauto; iIntros "!> (?&?)")
+          iNamed (iApply (write_main_fst with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (write_disk main_snd _) _  =>
-          iNamed (iApply (write_main_snd with "[$]"); eauto; iIntros "!> (?&?)")
+          iNamed (iApply (write_main_snd with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (read_disk main_fst) _  =>
-          iNamed (iApply (read_main_fst with "[$]"); eauto; iIntros "!> ?")
+          iNamed (iApply (read_main_fst with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ (read_disk main_snd) _  =>
-          iNamed (iApply (read_main_snd with "[$]"); eauto; iIntros "!> ?")
+          iNamed (iApply (read_main_snd with "[$]"); iIntros "!>"; iLIntro)
         | @wp _ _ _ _ _ _ _ _ _  => wp_step'
         end
       end.
@@ -595,7 +603,7 @@ Section refinement.
       wp_bind.
       iInv "Hinv" as "H".
       destruct_commit_inner "H".
-      iDestructRepR "Hcommit_inv"; iAssignNames. repeat unify_ghost.
+      iLDestruct "Hcommit_inv". repeat unify_ghost.
 
       wp_step.
       destruct flag as (flag&thd).
@@ -608,9 +616,9 @@ Section refinement.
 
         iInv "Hinv" as "H" "_".
         destruct_commit_inner "H".
-        iDestructRepR "Hsrc_inv"; iAssignNames.
-        iDestructRepR "Hcommit_inv"; iAssignNames.
-        iDestructRepR "Hmain_inv"; iAssignNames.
+        iLDestruct "Hsrc_inv".
+        iLDestruct "Hcommit_inv".
+        iLDestruct "Hmain_inv".
         repeat unify_ghost.
         iDestruct ("Hsomewriter") as %Hpeq; subst.
 
@@ -641,7 +649,7 @@ Section refinement.
         wp_bind.
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iDestructRepR "Hlog_inv"; iAssignNames.
+        iLDestruct "Hlog_inv".
         unify_ghost.
         wp_step.
         iModIntro. recommit. iNamed (iFrame). iFrame.
@@ -649,7 +657,7 @@ Section refinement.
         wp_bind.
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iDestructRepR "Hlog_inv"; iAssignNames.
+        iLDestruct "Hlog_inv".
         unify_ghost.
         wp_step.
         iModIntro. recommit. iNamed (iFrame). iFrame.
@@ -658,10 +666,10 @@ Section refinement.
 
         iFastInv "Hinv" "H".
         destruct_commit_inner "H".
-        iDestructRepR "Hmain_inv"; iAssignNames.
-        iDestructRepR "Hcommit_inv"; iAssignNames.
-        iDestructRepR "Hsrc_inv"; iAssignNames.
-        iDestructRepR "Hlog_inv"; iAssignNames.
+        iLDestruct "Hmain_inv".
+        iLDestruct "Hcommit_inv".
+        iLDestruct "Hsrc_inv".
+        iLDestruct "Hlog_inv".
         repeat unify_ghost.
         destruct thd. simpl.
         simpl. rewrite /CommitOn.
@@ -687,10 +695,10 @@ Section refinement.
 
         iInv "Hinv" as "H" "_".
         destruct_commit_inner "H".
-        iDestructRepR "Hmain_inv"; iAssignNames.
-        iDestructRepR "Hcommit_inv"; iAssignNames.
-        iDestructRepR "Hsrc_inv"; iAssignNames.
-        iDestructRepR "Hlog_inv"; iAssignNames.
+        iLDestruct "Hmain_inv".
+        iLDestruct "Hcommit_inv".
+        iLDestruct "Hsrc_inv".
+        iLDestruct "Hlog_inv".
         repeat unify_ghost.
         iDestruct ("Hsomewriter") as %Hpeq.
 
@@ -756,12 +764,12 @@ Section refinement.
       iInv "Hinv" as "H" "_".
       iDestruct "H" as ">H".
       iDestruct "H" as (flag plog pmain psrc) "H".
-      iDestructRepR "H"; iAssignNames.
-      iDestructRepR "Hmain_inv".
-      iDestructRepR "Hcommit_inv".
-      iDestructRepR "Hsrc_inv".
-      iDestructRepR "Hlog_inv".
-      unbundle_names.
+      iLDestruct "H"; iAssignNames.
+      iLDestruct "Hmain_inv".
+      iLDestruct "Hcommit_inv".
+      iLDestruct "Hsrc_inv".
+      iLDestruct "Hlog_inv".
+      iClear "Hmain_auth Hflag_auth Hlog_auth Hsrc_auth".
 
       iMod (ghost_var_alloc flag)
         as (γflag) "[Hflag_auth Hflag_ghost]".
@@ -794,12 +802,12 @@ Section refinement.
     { intros ?? Γ. iIntros "(#Hctx&#Hinv)".
       iInv "Hinv" as ">H" "_".
       iDestruct "H" as (flag plog pmain psrc) "H".
-      iDestructRepR "H"; iAssignNames.
-      iDestructRepR "Hmain_inv".
-      iDestructRepR "Hcommit_inv".
-      iDestructRepR "Hsrc_inv".
-      iDestructRepR "Hlog_inv".
-      unbundle_names.
+      iLDestruct "H".
+      iLDestruct "Hmain_inv".
+      iLDestruct "Hcommit_inv".
+      iLDestruct "Hsrc_inv".
+      iLDestruct "Hlog_inv".
+      iClear "Hmain_auth Hflag_auth Hlog_auth Hsrc_auth".
 
       iMod (ghost_var_alloc flag)
         as (γflag) "[Hflag_auth Hflag_ghost]".
@@ -843,12 +851,11 @@ Section refinement.
       iDestruct "H" as (Γ) "(Hsrc_ctx&Hmlock&Hlock&Hinv)".
       iInv "Hinv" as ">H" "_".
       iDestruct "H" as (flag plog pmain psrc) "H".
-      iDestructRepR "H"; iAssignNames.
-      iDestructRepR "Hmain_inv".
-      iDestructRepR "Hcommit_inv".
-      iDestructRepR "Hsrc_inv".
-      iDestructRepR "Hlog_inv".
-      unbundle_names.
+      iLDestruct "H".
+      iLDestruct "Hmain_inv".
+      iLDestruct "Hcommit_inv".
+      iLDestruct "Hsrc_inv".
+      iLDestruct "Hlog_inv".
       iDestruct "Hmlock" as (γlock_main) "Hmlock".
       iDestruct "Hlock" as (γlock_log) "Hlock".
       iMod (lock_crack with "Hmlock") as (?) ">(Hmlock&?)"; first by solve_ndisj.
