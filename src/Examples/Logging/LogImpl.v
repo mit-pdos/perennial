@@ -53,9 +53,8 @@ Qed.
 Local Notation proc := (proc ExMach.Op).
 
 Definition read_txn start_addr :=
-  a <- read_mem start_addr;
-  v1 <- read_mem a;
-  v2 <- read_mem (1 + a);
+  v1 <- read_mem start_addr;
+  v2 <- read_mem (1 + start_addr);
   Ret (v1, v2).
 
 Definition write_txn txn log_start_addr :=
