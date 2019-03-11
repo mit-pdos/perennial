@@ -275,8 +275,6 @@ Section refinement_triples.
 
     iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
     wp_step.
-    iFrame.
-    unfold ExecDiskInv.
     iModIntro; iExists _, _; iFrame.
 
     destruct matches.
@@ -457,6 +455,97 @@ Section refinement_triples.
     by iApply "HΦ".
   Qed.
 
+  Theorem flatten_txns_append txns txn :
+    flatten_txns (txns ++ [txn]) = flatten_txns txns ++ [txn.1; txn.2].
+  Proof.
+    destruct txn; simpl.
+    induction txns; simpl; auto.
+    destruct a; simpl; congruence.
+  Qed.
+
+  Theorem exec_step_Append n txns log txn :
+    exec_step Log.l (Call (Log.Append txn))
+              (n, {| Log.mem_buf := flatten_txns txns; Log.disk_log := log |})
+              (Val
+                 (n, {| Log.mem_buf := flatten_txns (txns ++ [txn]); Log.disk_log := log |})
+                 (Ret tt, [])).
+  Proof.
+    apply exec_step_call; simpl.
+    destruct txn.
+    rewrite flatten_txns_append; simpl.
+    reflexivity.
+  Qed.
+
+  Hint Resolve exec_step_Append : core.
+
+  Theorem append_refinement j `{LanguageCtx Log.Op _ T Log.l K} txn :
+    {{{ j ⤇ K (Call (Log.Append txn)) ∗ Registered ∗ ExecInv }}}
+      append txn
+      {{{ v, RET v; j ⤇ K (Ret tt) ∗ Registered }}}.
+  Proof.
+    iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
+    iDestruct "Hinv" as (γnames) "#(Hslock&Hdlock&Hinv)".
+    unfold append.
+    wp_bind.
+    iApply (reserve_ok γnames).
+    iFrame "#".
+
+    iIntros "!>" (start_a) "Hpost".
+    wp_bind.
+    iInv "Hinv" as (txns log) ">(Hvol&Hdur&Habs)".
+    iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
+    solve_ndisj.
+    iDestruct "Hpost" as (s' txns' txn0) "(Htxnmap&Howntxns&Htxnupd&Hlocked)".
+    iDestruct "Htxnmap" as "(Htxn1&Htxn2)".
+    unfold VolatileInv.
+    Helpers.unify_ghost.
+    clear txns. rename txns' into txns.
+    iMod (Helpers.ghost_var_update γnames.(γtxns) (txns ++ [txn]) with "Hvol [$]")
+      as "(Howntxns_auth&Howntxns)".
+
+    wp_step.
+    iModIntro.
+    iExists _, _; iFrame.
+    wp_bind. wp_step.
+    wp_bind.
+    iPoseProof ("Htxnupd" with "[Htxn1 Htxn2]") as "(Hstate&Hstateinterp)";
+      [ by iFrame | ].
+    wp_unlock "[Howntxns Hstate Hstateinterp]".
+    unfold StateLockInv.
+    iExists _, _; iFrame.
+    wp_step.
+    iApply "HΦ". by iFrame.
+  Qed.
+
+  Theorem write_mem_txn_ok txn_start log_start free_len : forall txn,
+      free_len >= 2 ->
+    {{{ txn_map txn_start txn ∗ log_free log_start free_len }}}
+      write_mem_txn txn_start log_start
+      {{{ RET tt; txn_map txn_start txn ∗
+                          log_idx log_start d↦ txn.1 ∗
+                          log_idx (1+log_start) d↦ txn.2 ∗
+                          log_free (2+log_start) (free_len-2) }}}.
+  Proof.
+    iIntros (txn Hfree_bound Φ) "(Htxn&Hlogfree) HΦ".
+    wp_bind.
+    wp_bind.
+    iDestruct "Htxn" as "(Htxn.1&Htxn.2)".
+    wp_step.
+    wp_bind.
+    wp_step.
+    wp_step.
+    replace (free_len) with (S (S (free_len-2))) by lia; simpl.
+    replace (free_len-2-0) with (free_len-2) by lia.
+    iDestruct "Hlogfree" as "(Hlog1&Hlog2&Hlogfree)".
+    iDestruct "Hlog1" as (x) "Hlog1".
+    iDestruct "Hlog2" as (x') "Hlog2".
+    wp_bind.
+    wp_step.
+    simpl.
+    wp_step.
+    iApply "HΦ"; iFrame.
+  Qed.
+
   Theorem exec_step_Commit_fail n txns log :
     exec_step Log.l (Call (Log.Commit))
               (n, {| Log.mem_buf := flatten_txns txns; Log.disk_log := log |})
@@ -549,7 +638,19 @@ Section refinement_triples.
 
          wp_step.
          iApply "HΦ"; by iFrame.
-       * admit.
+       * iDestruct "Hstateinterp" as (txn1 ->) "(Htxn1&Htxn2free)".
+         (* TODO: really need to open invariant here, but can't do to wrong bind
+         associativity; can I prove the appropriate Atomic instance or something? *)
+         wp_bind. wp_bind.
+         iInv "Hinv" as (txns'' log') ">(Hvol&Hdur&Habs)".
+         iDestruct "Hdur" as "(Hownlog'&Hdiskinv)".
+         unfold VolatileInv.
+         repeat AtomicPair.Helpers.unify_ghost.
+         clear txns'' log'.
+
+         iDestruct "Hdiskinv" as "(Hlen&Hlog&Hfree)".
+         (* now write_mem_txn_ok should apply *)
+         admit.
        * admit.
        * admit.
        * admit.
