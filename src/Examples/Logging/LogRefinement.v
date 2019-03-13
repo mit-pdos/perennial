@@ -88,7 +88,11 @@ Section refinement_triples.
       γstate : gname;
       γtxns : gname;
       γdlock : gname;
-      γlog : gname; }.
+      γlog : gname;
+      (* an abbreviation for log_shadow *)
+      (* TODO: come up with a better name *)
+      γlog_sh : gname;
+    }.
 
   Fixpoint flatten_txns (txns: list (nat*nat)) : list nat :=
     match txns with
@@ -136,12 +140,19 @@ Section refinement_triples.
     induction len; intros; apply _.
   Qed.
 
-  Definition ExecDiskInv (log: list nat) :=
-    (log_len d↦ length log ∗ log_map 0 log ∗
-             log_free (length log) (1000 - length log))%I.
+  Definition ExecDiskInv (log: list nat) (log_sh: list nat) :=
+    (log_len d↦ length log ∗
+             log_map 0 log ∗
+             (* in between the log and the free space are shadow writes - writes
+             to the free space that are important for non-crash execution but
+             that we would lose track of on crash *)
+             log_map (length log) log_sh ∗
+             log_free (length log + length log_sh)
+             (1000 - (length log + length log_sh)))%I.
 
-  Definition DiskLockInv names :=
-    (∃ (log: list nat), own (names.(γlog)) (◯ Excl' log))%I.
+  Definition DiskLockInv Γ :=
+    (∃ (log log_sh: list nat),
+        own (Γ.(γlog)) (◯ Excl' log) ∗ own (Γ.(γlog_sh)) (◯ Excl' log_sh))%I.
 
   Definition Abstraction txns log :=
     source_state {| Log.mem_buf := flatten_txns txns;
@@ -158,22 +169,24 @@ Section refinement_triples.
   Definition ldN : namespace := nroot.@"dlock".
   Definition iN : namespace := nroot.@"inner".
 
-  Definition VolatileInv names (txns: list (nat*nat)) :=
-    (own (names.(γtxns)) (● Excl' txns))%I.
+  Definition VolatileInv Γ (txns: list (nat*nat)) :=
+    (own (Γ.(γtxns)) (● Excl' txns))%I.
 
-  Definition DurableInv names log :=
-    (own (names.(γlog)) (● Excl' log) ∗
-         ExecDiskInv log)%I.
+  Definition DurableInv Γ log log_sh :=
+    (own (Γ.(γlog)) (● Excl' log) ∗
+         own (Γ.(γlog_sh)) (● Excl' log_sh) ∗
+         ExecDiskInv log log_sh)%I.
 
-  Definition ExecInv' names :=
-    (is_lock lN (names.(γslock)) state_lock (StateLockInv names) ∗
-             is_lock ldN (names.(γdlock)) disk_lock (DiskLockInv names) ∗
-             inv iN (∃ (txns: list (nat*nat)) (log: list nat),
-                        VolatileInv names txns ∗
-                                    DurableInv names log ∗ Abstraction txns log))%I.
+  Definition ExecInv' Γ :=
+    (is_lock lN (Γ.(γslock)) state_lock (StateLockInv Γ) ∗
+             is_lock ldN (Γ.(γdlock)) disk_lock (DiskLockInv Γ) ∗
+             inv iN (∃ (txns: list (nat*nat)) (log log_sh: list nat),
+                        VolatileInv Γ txns ∗
+                                    DurableInv Γ log log_sh ∗
+                                    Abstraction txns log))%I.
 
   Definition ExecInv :=
-    (source_ctx ∗ ∃ (names:ghost_names), ExecInv' names)%I.
+    (source_ctx ∗ ∃ (Γ:ghost_names), ExecInv' Γ)%I.
 
   Lemma log_map_extract_general log : forall k i,
     i < length log ->
@@ -265,26 +278,26 @@ Section refinement_triples.
     iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
     wp_lock "(Hlocked&Hlinv)".
 
-    iDestruct "Hlinv" as (log) "Hownlog".
+    iDestruct "Hlinv" as (log log_sh) "(Hownlog&Hownlog_sh)".
 
     wp_bind.
-    iInv "Hinv" as (txns log') "(Hvol&Hdur&Habs)".
-    iDestruct "Hdur" as ">(Hownlog_auth&Hdisk)".
-    AtomicPair.Helpers.unify_ghost.
-    clear log'.
+    iInv "Hinv" as (txns log' log_sh') "(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as ">(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
+    repeat Helpers.unify_ghost.
+    clear log' log_sh'.
 
     iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
     wp_step.
-    iModIntro; iExists _, _; iFrame.
+    iModIntro; iExists _, _, _; iFrame.
 
     destruct matches.
     - wp_bind.
       wp_bind.
-      iInv "Hinv" as (txns' log') ">(Hvol&Hdur&Habs)".
-      iDestruct "Hdur" as "(Hownlog_auth&Hdisk)".
+      iInv "Hinv" as (txns' log' log_sh') ">(Hvol&Hdur&Habs)".
+      iDestruct "Hdur" as "(Hownlog_auth&Hlog_sh_auth&Hdisk)".
       iDestruct "Hdisk" as "(Hlog_len&Hlog_data&Hlog_free)".
-      AtomicPair.Helpers.unify_ghost.
-      clear log'.
+      repeat Helpers.unify_ghost.
+      clear log' log_sh'.
       iPoseProof (log_map_extract i with "Hlog_data") as "(Hi&Hlog_rest)"; auto.
 
       wp_step.
@@ -292,26 +305,27 @@ Section refinement_triples.
       solve_ndisj.
 
       iSpecialize ("Hlog_rest" with "Hi").
-      iModIntro; iExists _, _; iFrame.
+      iModIntro; iExists _, _, _; iFrame.
       wp_step.
-      wp_unlock "[Hownlog]".
-      { iExists _; iFrame. }
+      wp_unlock "[Hownlog Hownlog_sh]".
+      { iExists _, _; iFrame. }
       wp_step.
       iApply "HΦ".
       iFrame.
     - wp_bind.
-      iInv "Hinv" as (txns' log') ">(Hvol&Hdur&Habs)".
-      iDestruct "Hdur" as "(Hownlog_auth&Hdisk)".
+      iInv "Hinv" as (txns' log' log_sh') ">(Hvol&Hdur&Habs)".
+      iDestruct "Hdur" as "(Hownlog_auth&Hlog_sh_auth&Hdisk)".
       iDestruct "Hdisk" as "(Hlog_len&Hlog_data&Hlog_free)".
-      AtomicPair.Helpers.unify_ghost.
+      repeat Helpers.unify_ghost.
+      clear log' log_sh'.
       wp_step.
 
       iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
         solve_ndisj.
-      iModIntro; iExists _, _. iFrame.
+      iModIntro; iExists _, _, _. iFrame.
 
-      wp_unlock "[Hownlog]".
-      { iExists _; iFrame. }
+      wp_unlock "[Hownlog Hownlog_sh]".
+      { iExists _, _; iFrame. }
       wp_step.
       iApply "HΦ".
       iFrame.
@@ -492,7 +506,7 @@ Section refinement_triples.
 
     iIntros "!>" (start_a) "Hpost".
     wp_bind.
-    iInv "Hinv" as (txns log) ">(Hvol&Hdur&Habs)".
+    iInv "Hinv" as (txns log log_sh) ">(Hvol&Hdur&Habs)".
     iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
     solve_ndisj.
     iDestruct "Hpost" as (s' txns' txn0) "(Htxnmap&Howntxns&Htxnupd&Hlocked)".
@@ -505,7 +519,7 @@ Section refinement_triples.
 
     wp_step.
     iModIntro.
-    iExists _, _; iFrame.
+    iExists _, _, _; iFrame.
     wp_bind. wp_step.
     wp_bind.
     iPoseProof ("Htxnupd" with "[Htxn1 Htxn2]") as "(Hstate&Hstateinterp)";
@@ -580,11 +594,11 @@ Section refinement_triples.
     unfold commit.
     wp_lock "(Hdlocked & Hdiskinv)".
     wp_bind.
-    iDestruct "Hdiskinv" as (log) "Hownlog".
-    iInv "Hinv" as (txns log') ">(Hvol&Hdur&Habs)".
-    iDestruct "Hdur" as "(Hownlog'&Hdiskinv)".
-    AtomicPair.Helpers.unify_ghost.
-    clear log'.
+    iDestruct "Hdiskinv" as (log log_sh) "(Hownlog&Hownlog_sh)".
+    iInv "Hinv" as (txns log' log_sh') ">(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as "(Hownlog'&Hownlog_sh'&Hdiskinv)".
+    repeat Helpers.unify_ghost.
+    clear log' log_sh'.
     iDestruct "Hdiskinv" as "(Hlen&Hlog&Hfree)".
     wp_step.
     destruct matches.
@@ -593,14 +607,14 @@ Section refinement_triples.
         eauto using exec_step_Commit_fail.
       solve_ndisj.
 
-      iExists _, _; iFrame.
+      iExists _, _, _; iFrame.
       iModIntro.
-      wp_unlock "[Hownlog]".
-      { iExists _; iFrame. }
+      wp_unlock "[Hownlog Hownlog_sh]".
+      { iExists _, _; iFrame. }
 
       wp_step.
       iApply "HΦ"; by iFrame.
-    -  iExists _, _; iFrame.
+    -  iExists _, _, _; iFrame.
        iModIntro.
        wp_lock "(Hslocked & Hstateinv)".
        wp_bind.
@@ -612,11 +626,11 @@ Section refinement_triples.
        * replace (length log + 0) with (length log) by lia.
          wp_step.
          wp_bind.
-         iInv "Hinv" as (txns'' log') ">(Hvol&Hdur&Habs)".
-         iDestruct "Hdur" as "(Hownlog'&Hdiskinv)".
+         iInv "Hinv" as (txns'' log' log_sh') ">(Hvol&Hdur&Habs)".
+         iDestruct "Hdur" as "(Hownlog'&Hownlog_sh'&Hdiskinv)".
          unfold VolatileInv.
-         repeat AtomicPair.Helpers.unify_ghost.
-         clear txns'' log'.
+         repeat Helpers.unify_ghost.
+         clear txns'' log' log_sh'.
          iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)";
            eauto using exec_step_Commit_ok.
          solve_ndisj.
@@ -624,7 +638,7 @@ Section refinement_triples.
          wp_step.
          iDestruct "Hstateinterp" as (->) "Hlogfree".
 
-         iExists nil, _; iFrame.
+         iExists nil, _, _; iFrame.
          simpl; rewrite List.app_nil_r.
          unfold Abstraction; iFrame.
          wp_bind.
@@ -633,20 +647,18 @@ Section refinement_triples.
          wp_step.
          wp_bind.
 
-         wp_unlock "[Hownlog]".
-         { iExists _; iFrame. }
+         wp_unlock "[Hownlog Hownlog_sh]".
+         { iExists _, _; iFrame. }
 
          wp_step.
          iApply "HΦ"; by iFrame.
        * iDestruct "Hstateinterp" as (txn1 ->) "(Htxn1&Htxn2free)".
-         (* TODO: really need to open invariant here, but can't do to wrong bind
-         associativity; can I prove the appropriate Atomic instance or something? *)
          wp_bind. wp_bind.
-         iInv "Hinv" as (txns'' log') ">(Hvol&Hdur&Habs)".
-         iDestruct "Hdur" as "(Hownlog'&Hdiskinv)".
+         iInv "Hinv" as (txns'' log' log_sh') ">(Hvol&Hdur&Habs)".
+         iDestruct "Hdur" as "(Hownlog'&Hownlog_sh'&Hdiskinv)".
          unfold VolatileInv.
-         repeat AtomicPair.Helpers.unify_ghost.
-         clear txns'' log'.
+         repeat Helpers.unify_ghost.
+         clear txns'' log' log_sh'.
 
          iDestruct "Hdiskinv" as "(Hlen&Hlog&Hfree)".
          (* now write_mem_txn_ok should apply *)
