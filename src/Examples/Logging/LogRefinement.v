@@ -262,7 +262,7 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
-    iDestruct "Hinv" as (γnames) "#(Hslock&Hdlock&Hinv)".
+    iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
     wp_lock "(Hlocked&Hlinv)".
 
     iDestruct "Hlinv" as (log) "Hownlog".
@@ -377,19 +377,19 @@ Section refinement_triples.
       iFrame.
   Qed.
 
-  Theorem try_reserve_ok γnames :
-    {{{ ExecInv' γnames }}}
+  Theorem try_reserve_ok Γ :
+    {{{ ExecInv' Γ }}}
       try_reserve
       {{{ v, RET v;
           match v with
           | None => emp
           | Some start_a => ∃ (s':BufState) (txns0: list (nat*nat)) (txn:nat*nat),
             txn_map start_a txn ∗
-                    own (γnames.(γtxns)) (◯ Excl' txns0) ∗
+                    own (Γ.(γtxns)) (◯ Excl' txns0) ∗
                     (∀ txn', txn_map start_a txn' -∗
                                      state m↦ enc_state s' ∗
                                      state_interp s' (txns0 ++ [txn'])) ∗
-                  locked (γnames.(γslock))
+                  locked (Γ.(γslock))
           end
       }}}.
   Proof.
@@ -423,17 +423,17 @@ Section refinement_triples.
       by iApply "HΦ".
   Qed.
 
-  Theorem reserve_ok γnames :
-    {{{ ExecInv' γnames }}}
+  Theorem reserve_ok Γ :
+    {{{ ExecInv' Γ }}}
       reserve
       {{{ start_a, RET start_a;
           ∃ (s':BufState) (txns0: list (nat*nat)) (txn:nat*nat),
             txn_map start_a txn ∗
-                    own (γnames.(γtxns)) (◯ Excl' txns0) ∗
+                    own (Γ.(γtxns)) (◯ Excl' txns0) ∗
                     (∀ txn', txn_map start_a txn' -∗
                                      state m↦ enc_state s' ∗
                                      state_interp s' (txns0 ++ [txn'])) ∗
-                    locked (γnames.(γslock))
+                    locked (Γ.(γslock))
       }}}.
   Proof.
     iIntros (Φ) "#Hinv HΦ".
@@ -484,10 +484,10 @@ Section refinement_triples.
       {{{ v, RET v; j ⤇ K (Ret tt) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
-    iDestruct "Hinv" as (γnames) "#(Hslock&Hdlock&Hinv)".
+    iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
     unfold append.
     wp_bind.
-    iApply (reserve_ok γnames).
+    iApply (reserve_ok Γ).
     iFrame "#".
 
     iIntros "!>" (start_a) "Hpost".
@@ -500,7 +500,7 @@ Section refinement_triples.
     unfold VolatileInv.
     Helpers.unify_ghost.
     clear txns. rename txns' into txns.
-    iMod (Helpers.ghost_var_update γnames.(γtxns) (txns ++ [txn]) with "Hvol [$]")
+    iMod (Helpers.ghost_var_update Γ.(γtxns) (txns ++ [txn]) with "Hvol [$]")
       as "(Howntxns_auth&Howntxns)".
 
     wp_step.
@@ -576,7 +576,7 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
-    iDestruct "Hinv" as (γnames) "#(Hslock&Hdlock&Hinv)".
+    iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
     unfold commit.
     wp_lock "(Hdlocked & Hdiskinv)".
     wp_bind.
