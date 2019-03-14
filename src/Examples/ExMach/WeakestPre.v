@@ -426,6 +426,13 @@ Section lock.
     iModIntro; iExists _; done.
   Qed.
 
+  Lemma lock_init_unlocked N i (R: iProp Σ) E : i m↦ 0 -∗ R ={E}=∗ ∃ γ, is_lock N γ i R.
+  Proof.
+    iIntros "Hl HR".
+    iApply (lock_init with "Hl").
+    iIntros "_"; iFrame.
+  Qed.
+
   Lemma lock_crack N i (R: iProp Σ) γ E :
     ↑N ⊆ E →
     is_lock N γ i R ={E, E ∖ ↑N}=∗ ▷ ∃ v, i m↦ v ∗ (⌜ v = 0 ⌝ -∗ R).

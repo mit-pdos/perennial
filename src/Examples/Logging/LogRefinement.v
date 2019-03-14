@@ -154,6 +154,7 @@ Section refinement_triples.
             own (Γ.(γtxns)) (● Excl' txns) ∗
             own (Γ.(γlog)) (● Excl' log) ∗
             own (Γ.(γlog_sh)) (● Excl' log_sh) ∗
+            state m↦ enc_state s ∗
             state_interp s txns ∗
             state_lock m↦ 0 ∗
             disk_lock m↦ 0 ∗
@@ -166,6 +167,7 @@ Section refinement_triples.
     (∃ (buf: list nat) (log: list nat),
       source_state {| Log.mem_buf := buf;
                       Log.disk_log := log; |} ∗
+                   state m↦ enc_state Empty ∗
                    state_interp Empty [] ∗
                    state_lock m↦ 0 ∗
                    disk_lock m↦ 0 ∗
@@ -757,11 +759,9 @@ Section refinement_triples.
     iApply (ptr_iter_to_log_free with "Hlen").
   Qed.
 
-  Import NamedDestruct.
-
   Theorem init_mem_split :
     (([∗ map] i↦v ∈ init_zero, i m↦ v) -∗
-                                       state_interp Empty [] ∗ state_lock m↦ 0 ∗ disk_lock m↦ 0)%I.
+                                       state m↦ enc_state Empty ∗ state_interp Empty [] ∗ state_lock m↦ 0 ∗ disk_lock m↦ 0)%I.
   Proof.
     iIntros "Hmem".
     iPoseProof (mem_ptr_iter_split_aux 0 6 with "Hmem") as "(H&_)".
@@ -843,7 +843,7 @@ Proof.
   { intros. iIntros "((#Hctx&#Hinv)&_)".
     wp_ret.
     iDestruct "Hinv" as (Γ) "Hinv".
-    iInv "Hinv" as (buf log) ">(Hsource&Hstateinterp&Hstatelock&Hdisklock&Hdiskinv&Hownlog)" "_".
+    iInv "Hinv" as (buf log) ">(Hsource&Hstateval&Hstateinterp&Hstatelock&Hdisklock&Hdiskinv&Hownlog)" "_".
     iApply (fupd_mask_weaken _ _).
     solve_ndisj.
     iExists _, {| Log.mem_buf := []; Log.disk_log := log |}; iFrame.
@@ -889,7 +889,7 @@ Proof.
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
     iModIntro.
-    iPoseProof (@init_mem_split with "Hmem") as "(Hstateinterp&Hstatelock&Hdisklock)".
+    iPoseProof (@init_mem_split with "Hmem") as "(Hstateval&Hstateinterp&Hstatelock&Hdisklock)".
     unfold CrashInner, Abstraction.
     iExists (ltac:(econstructor) : ghost_names), (flatten_txns txns), log.
     iFrame.
@@ -901,7 +901,7 @@ Proof.
     iDestruct "Hinner" as (txns log) "(?&?&?&?&?&?)".
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
-    iPoseProof (@init_mem_split with "Hmem") as "(Hstateinterp&Hstatelock&Hdisklock)".
+    iPoseProof (@init_mem_split with "Hmem") as "(Hstateval&Hstateinterp&Hstatelock&Hdisklock)".
     iModIntro.
     iExists Γ.
     unfold CrashInner.
@@ -914,6 +914,30 @@ Proof.
     { iNext. iExists _, _; iFrame. }
     iModIntro. iFrame. iExists tt. iFrame "Hsrc".
     iExists _; iFrame.
+  }
+  { intros. iIntros "(Hinv&#Hsrc)".
+    iDestruct "Hinv" as (invG Γ) "Hinner".
+    iDestruct "Hinner" as (s txns log log_sh)
+                            "(Hownstate&Howntxns&Hownlog&Hlownlog_sh&
+                            Hstateval&Hstateinterp&Hstatelock&Hdisklock&
+                            Hdiskinv&Hsource)".
+    unfold ExecInv.
+    iFrame "Hsrc".
+    iExists Γ; unfold ExecInner, ExecInv'.
+
+    iAssert (StateLockInv Γ) with "[Hstateval Hstateinterp]" as "Hstateinv".
+    unfold StateLockInv.
+
+    iPoseProof (@lock_init_unlocked myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
+                                    state_lock (StateLockInv Γ) with "Hstatelock") as "Hstatelock_init".
+    iSplitL "Hstatelock_init".
+    iMod "Hstatelock_init" as (γlock.
+
+
+    { iFrame. }
+    iMod (@inv_alloc myΣ (exm_invG) iN _ (ExecInner γ1 γ2 γ3) with "[Hinner]").
+    { iFrame. }
+    iModIntro. iFrame "Hsrc". iExists _, _, _, _. iFrame.
   }
 
   (* copy of RefinementShadow proof *)
