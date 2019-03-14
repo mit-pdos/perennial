@@ -895,24 +895,28 @@ Proof.
     iFrame.
     iApply DiskInv_forget_shadow; iFrame.
   }
-
-  (* copy of RefinementShadow proof *)
   { intros. iIntros "(#Hctx&#Hinv)".
-    iInv "Hinv" as ">Hopen" "_".
-    iDestruct "Hopen" as (???) "(?&?&_)".
+    iDestruct "Hinv" as (Γ) "#Hinv".
+    iInv "Hinv" as ">Hinner" "_".
+    iDestruct "Hinner" as (txns log) "(?&?&?&?&?&?)".
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
-    iModIntro. iExists _, _, _. iFrame.
-    iPoseProof (@init_mem_split with "Hmem") as "?".
-    iFrame.
+    iPoseProof (@init_mem_split with "Hmem") as "(Hstateinterp&Hstatelock&Hdisklock)".
+    iModIntro.
+    iExists Γ.
+    unfold CrashInner.
+    iExists _, _; iFrame.
   }
   { intros. iIntros "(Hinv&#Hsrc)".
     iDestruct "Hinv" as (invG) "Hinv".
-    iDestruct "Hinv" as (???) "(?&?&?)".
-    iMod (@inv_alloc myΣ (exm_invG) iN _ CrashInner with "[-]").
-    { iNext. iExists _, _, _; iFrame. }
+    iDestruct "Hinv" as (Γ ??) "(?&?&?)".
+    iMod (@inv_alloc myΣ (exm_invG) iN _ (CrashInner Γ) with "[-]").
+    { iNext. iExists _, _; iFrame. }
     iModIntro. iFrame. iExists tt. iFrame "Hsrc".
+    iExists _; iFrame.
   }
+
+  (* copy of RefinementShadow proof *)
   { intros. iIntros "(Hinv&#Hsrc)".
     iDestruct "Hinv" as (invG v) "Hinv".
     iDestruct "Hinv" as "(?&Hinv)".
