@@ -41,11 +41,14 @@ Proof. unbundle_names; apply ghost_var_update. Qed.
 
 End ghost_var_helpers.
 
-  (* Extends the iExist tactic to make it easier to re-prove invariants after steps *)
 Instance from_exist_left_sep {Σ} {A} (Φ : A → iProp Σ) Q :
-  FromExist (▷ (∃ a, Φ a) ∗ Q) (λ a, ▷ Φ a ∗ Q)%I .
+  FromExist ((∃ a, Φ a) ∗ Q) (λ a, Φ a ∗ Q)%I .
 Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
 
+  (* Extends the iExist tactic to make it easier to re-prove invariants after steps *)
+Instance from_exist_left_sep_later {Σ} {A} (Φ : A → iProp Σ) Q :
+  FromExist (▷ (∃ a, Φ a) ∗ Q) (λ a, ▷ Φ a ∗ Q)%I .
+Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
 
 From iris.proofmode Require Import coq_tactics intro_patterns spec_patterns.
 From iris.proofmode Require Import tactics.

@@ -4,7 +4,7 @@ Require Import AtomicPairAPI AtomicPair.ImplShadow ExMach.WeakestPre ExMach.Refi
 Require Import AtomicPair.Helpers.
 Unset Implicit Arguments.
 
-Existing Instance from_exist_left_sep.
+Existing Instance from_exist_left_sep_later.
 
 Local Ltac destruct_einner H :=
   iDestruct H as (? (?&?) (?&?)) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";

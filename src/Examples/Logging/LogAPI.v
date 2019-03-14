@@ -37,10 +37,6 @@ Module Log.
        puts (set disk_log (fun l => l ++ l'));
     |}.
 
-  Global Instance empty_state : Empty State :=
-    {| mem_buf := [];
-       disk_log := [] |}.
-
   (* TODO: factor out these total/non-erroring theorems to typeclasses over
   relations with instances for reads, puts, and bind *)
 
@@ -57,11 +53,18 @@ Module Log.
     discriminate.
   Qed.
 
+  Definition init_state : State :=
+    {| mem_buf := []; disk_log := [] |}.
+
+  Global Instance state_Inhabited : Inhabited State.
+  constructor; apply init_state.
+  Defined.
+
   Definition l : Layer Op.
     refine {| Layer.OpState := State;
               sem := dynamics;
               trace_proj := fun _ => nil;
-              initP := fun s => s = ∅ |};
+              initP := fun s => s = init_state; |};
       intros; eauto using crash_total_ok, crash_non_err_ok.
     - simpl; descend; unfold reads, puts; intuition eauto.
     - inversion 1; subst; simpl in *.

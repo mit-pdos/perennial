@@ -8,6 +8,7 @@ From iris.base_logic.lib Require Export invariants gen_heap.
 Unset Implicit Arguments.
 
 (* TODO: move this out *)
+Existing Instance AtomicPair.Helpers.from_exist_left_sep_later.
 Existing Instance AtomicPair.Helpers.from_exist_left_sep.
 
 Canonical Structure BufStateC := leibnizC BufState.
@@ -100,18 +101,6 @@ Section refinement_triples.
     | (v1, v2) :: txns' => v1 :: v2 :: flatten_txns txns'
     end.
 
-  (*
-  Definition ExecInner names :=
-    (∃ (s:BufState) (txns: list (nat*nat)) (log: list nat),
-        own (names.(γstate)) (● Excl' s) ∗
-            own (names.(γtxns)) (● Excl' txns) ∗
-            own (names.(γlog)) (● Excl' log) ∗
-            buffer_map s txns ∗ free_buffer_map s ∗
-            source_state {| Log.mem_buf := flatten_txns txns;
-                            Log.disk_log := log; |}
-    )%I.
-*)
-
   Definition StateLockInv names :=
     (∃ s txns,
         state m↦ enc_state s ∗ state_interp s txns ∗
@@ -123,7 +112,7 @@ Section refinement_triples.
      | x::log' => log_idx i d↦ x ∗ log_map (1+i) log'
      end)%I.
 
-  Instance log_map_timeless log : forall i, Timeless (log_map i log).
+  Global Instance log_map_timeless log : forall i, Timeless (log_map i log).
   Proof.
     induction log; intros; apply _.
   Qed.
@@ -135,7 +124,7 @@ Section refinement_triples.
      | S len => (∃ (x:nat), log_idx i d↦ x) ∗ log_free (1+i) len
      end)%I.
 
-  Instance log_free_timeless len : forall i, Timeless (log_free i len).
+  Global Instance log_free_timeless len : forall i, Timeless (log_free i len).
   Proof.
     induction len; intros; apply _.
   Qed.
@@ -148,7 +137,7 @@ Section refinement_triples.
              that we would lose track of on crash *)
              log_map (length log) log_sh ∗
              log_free (length log + length log_sh)
-             (1000 - (length log + length log_sh)))%I.
+             (999 - (length log + length log_sh)))%I.
 
   Definition DiskLockInv Γ :=
     (∃ (log log_sh: list nat),
@@ -158,12 +147,30 @@ Section refinement_triples.
     source_state {| Log.mem_buf := flatten_txns txns;
                     Log.disk_log := log |}.
 
-  Definition CrashInv :=
-    (source_ctx ∗ ∃ (log: list nat),
-        source_state {| Log.mem_buf := nil;
-                        Log.disk_log := log; |} ∗
-                     free_buffer_map Empty ∗
-                     state_lock m↦ 0)%I.
+  Definition ExecInner Γ :=
+    (∃ (s:BufState) (txns: list (nat*nat)) (log log_sh: list nat),
+        own (Γ.(γstate)) (● Excl' s) ∗
+            own (Γ.(γtxns)) (● Excl' txns) ∗
+            own (Γ.(γlog)) (● Excl' log) ∗
+            own (Γ.(γlog_sh)) (● Excl' log_sh) ∗
+            state_interp s txns ∗
+            state_lock m↦ 0 ∗
+            disk_lock m↦ 0 ∗
+            ExecDiskInv log log_sh ∗
+            source_state {| Log.mem_buf := flatten_txns txns;
+                            Log.disk_log := log; |}
+    )%I.
+
+  Definition CrashInner Γ :=
+    (∃ (buf: list nat) (log: list nat),
+      source_state {| Log.mem_buf := buf;
+                      Log.disk_log := log; |} ∗
+                   state_interp Empty [] ∗
+                   state_lock m↦ 0 ∗
+                   disk_lock m↦ 0 ∗
+                   ExecDiskInv log [] ∗
+                   own (Γ.(γlog)) (● Excl' log)
+    )%I.
 
   Definition lN : namespace := nroot.@"lock".
   Definition ldN : namespace := nroot.@"dlock".
@@ -187,6 +194,9 @@ Section refinement_triples.
 
   Definition ExecInv :=
     (source_ctx ∗ ∃ (Γ:ghost_names), ExecInv' Γ)%I.
+
+  Definition CrashInv :=
+    (source_ctx ∗ ∃ (Γ:ghost_names), inv iN (CrashInner Γ))%I.
 
   Lemma log_map_extract_general log : forall k i,
     i < length log ->
@@ -321,7 +331,7 @@ Section refinement_triples.
       wp_step.
 
       iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
-        solve_ndisj.
+      solve_ndisj.
       iModIntro; iExists _, _, _. iFrame.
 
       wp_unlock "[Hownlog Hownlog_sh]".
@@ -329,6 +339,7 @@ Section refinement_triples.
       wp_step.
       iApply "HΦ".
       iFrame.
+
   Qed.
 
   Theorem get_state_ok s :
@@ -495,7 +506,7 @@ Section refinement_triples.
   Theorem append_refinement j `{LanguageCtx Log.Op _ T Log.l K} txn :
     {{{ j ⤇ K (Call (Log.Append txn)) ∗ Registered ∗ ExecInv }}}
       append txn
-      {{{ v, RET v; j ⤇ K (Ret tt) ∗ Registered }}}.
+      {{{ RET tt; j ⤇ K (Ret tt) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
     iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
@@ -666,6 +677,225 @@ Section refinement_triples.
        * admit.
        * admit.
        * admit.
-  Abort.
+  Admitted.
+
+  Lemma ptr_iter_to_log_free iters : forall x,
+    (ptr_iter (fun l v => l d↦ v)  (S x) iters -∗ log_free x (S iters))%I.
+  Proof.
+    induction iters; simpl; intros.
+    - iIntros "Hptr_iter".
+      auto.
+    - iIntros "(HSx&Hptr_iter)".
+      iSplitL "HSx"; eauto.
+      iPoseProof (IHiters with "Hptr_iter") as "Hptr_iter".
+      simpl; iFrame.
+  Qed.
+
+  Theorem init_disk_split :
+    ( ([∗ map] i↦ v ∈ init_zero, i d↦ v) -∗ ExecDiskInv [] [])%I.
+  Proof.
+    unfold ExecDiskInv.
+    iIntros "Hdisk".
+    iPoseProof (disk_ptr_iter_split_aux 0 0 with "Hdisk") as "(Hlen&Hdisk)".
+    unfold size; lia.
+    cbn [ptr_iter length log_map plus minus].
+    iFrame "Hlen".
+    rewrite ?left_id.
+
+    iPoseProof (disk_ptr_iter_split_aux 1 998 with "Hdisk") as "(Hlen&Hemp)".
+    unfold size; lia.
+    iApply (ptr_iter_to_log_free with "Hlen").
+  Qed.
+
+  Import NamedDestruct.
+
+  Theorem init_mem_split :
+    (([∗ map] i↦v ∈ init_zero, i m↦ v) -∗
+                                       state_interp Empty [] ∗ state_lock m↦ 0 ∗ disk_lock m↦ 0)%I.
+  Proof.
+    iIntros "Hmem".
+    iPoseProof (mem_ptr_iter_split_aux 0 6 with "Hmem") as "(H&_)".
+    unfold size; lia.
+    unfold state_interp, buffer_map, free_buffer_map, txn_free, txn_map.
+    do 6 iDestruct "H" as "(?&H)".
+    iFrame.
+    iSplitL ""; auto.
+    iExists (_, _); iFrame.
+    iExists (_, _); iFrame.
+  Qed.
 
 End refinement_triples.
+
+Definition helperΣ : gFunctors :=
+  #[
+      GFunctor (authR (optionUR (exclR (prodC natC natC))));
+        GFunctor (authR (optionUR (exclR (listC (prodC natC natC)))));
+        GFunctor (authR (optionUR (exclR (listC natC))));
+        GFunctor (authR (optionUR (exclR natC)));
+        GFunctor (authR (optionUR (exclR BufStateC)))
+    ].
+
+Instance subG_helperΣ1 : subG helperΣ Σ → inG Σ
+                                              (authR (optionUR (exclR (prodC natC natC)))).
+Proof. solve_inG. Qed.
+Instance subG_helperΣ2 : subG helperΣ Σ → inG Σ
+                                              (authR (optionUR (exclR (listC (prodC natC natC))))).
+Proof. solve_inG. Qed.
+Instance subG_helperΣ3 : subG helperΣ Σ → inG Σ
+                                              (authR (optionUR (exclR (listC natC)))).
+Proof. solve_inG. Qed.
+Instance subG_helperΣ4 : subG helperΣ Σ → inG Σ
+                                              (authR (optionUR (exclR natC))).
+Proof. solve_inG. Qed.
+Instance subG_helperΣ5 : subG helperΣ Σ → inG Σ
+                                              (authR (optionUR (exclR BufStateC))).
+Proof. solve_inG. Qed.
+
+Definition myΣ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ Log.Op Log.l; lockΣ; helperΣ].
+Existing Instance subG_cfgPreG.
+
+Definition init_absr σ1a σ1c :=
+  ExMach.l.(initP) σ1c ∧ Log.l.(initP) σ1a.
+
+Import ExMach.
+
+Opaque init_zero.
+
+Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq Log.Op T) :
+  init_absr σ1a σ1c →
+  wf_client_seq es →
+  ¬ proc_exec_seq Log.l es (rec_singleton (Ret ())) (1, σ1a) Err →
+  ∀ σ2c res, ExMach.l.(proc_exec_seq) (compile_proc_seq LogImpl.impl es)
+                                      (rec_singleton recv) (1, σ1c) (Val σ2c res) →
+  ∃ σ2a, Log.l.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
+Proof.
+  eapply (exmach_crash_refinement_seq) with
+      (Σ := myΣ)
+      (exec_inv := fun H1 H2 => @ExecInv myΣ H2 _ H1 _ _)
+      (exec_inner := fun H1 H2 =>
+                       (∃ Γ, @ExecInner myΣ H2 H1 _ _ _ Γ)%I)
+      (crash_inner := fun H1 H2 => (∃ Γ, @CrashInner myΣ H2 H1 _ Γ)%I)
+      (crash_param := fun H1 H2 => unit)
+      (crash_inv := fun H1 H2 _ => @CrashInv myΣ H2 H1 _)
+      (crash_starter := fun H1 H2 _ => True%I)
+      (E := nclose sourceN).
+  { apply _. }
+  { apply _. }
+  { intros. apply _. }
+  { intros. apply _. }
+  { set_solver+. }
+  { intros. iIntros "(?&?&?)". destruct op.
+    - iApply (append_refinement with "[$]"); eauto.
+    - iApply (commit_refinement with "[$]"). eauto.
+    - iApply (get_log_refinement with "[$]"). eauto.
+  }
+  { intros. iIntros "(?&?)"; eauto. }
+  { intros. iIntros "((#Hctx&#Hinv)&_)".
+    wp_ret.
+    iDestruct "Hinv" as (Γ) "Hinv".
+    iInv "Hinv" as (buf log) ">(Hsource&Hstateinterp&Hstatelock&Hdisklock&Hdiskinv&Hownlog)" "_".
+    iApply (fupd_mask_weaken _ _).
+    solve_ndisj.
+    iExists _, {| Log.mem_buf := []; Log.disk_log := log |}; iFrame.
+    iSplitL "".
+    iPureIntro.
+    { simpl. reflexivity. }
+    iClear "Hctx Hinv".
+    iIntros (???) "(#Hctx&Hstate)".
+    iMod (Helpers.ghost_var_alloc Empty)
+      as (γ1) "[Hownstate_auth Hownstate]".
+    iMod (Helpers.ghost_var_alloc (@nil (nat*nat)))
+      as (γ2) "[Howntxns_auth Howntxns]".
+    iMod (Helpers.ghost_var_alloc log)
+      as (γ3) "[Hownlog_auth Hownlog']".
+    iMod (Helpers.ghost_var_alloc (@nil nat))
+      as (γ4) "[Hownlog_sh_auth Hownlog_sh]".
+    iDestruct "Hstateinterp" as "(Hbufmap&Hfree)".
+    iExists (ltac:(econstructor) : ghost_names), Empty, nil, log, nil; simpl.
+    by iFrame.
+  }
+  { intros ?? (H&?). inversion H. subst. eapply ExMach.init_state_wf. }
+  { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
+    iIntros "(Hmem&Hdisk&#?&Hstate)".
+    unfold ExecInner.
+    iMod (Helpers.ghost_var_alloc Empty)
+      as (γ1) "[Hownstate_auth Hownstate]".
+    iMod (Helpers.ghost_var_alloc (@nil (nat*nat)))
+      as (γ2) "[Howntxns_auth Howntxns]".
+    iMod (Helpers.ghost_var_alloc (@nil nat))
+      as (γ3) "[Hownlog_auth Hownlog]".
+    iMod (Helpers.ghost_var_alloc (@nil nat))
+      as (γ4) "[Hownlog_sh_auth Hownlog_sh]".
+    iExists (ltac:(econstructor) : ghost_names), Empty, nil, nil, nil; simpl.
+    iPoseProof (init_disk_split with "Hdisk") as "$".
+    iFrame.
+    iPoseProof (init_mem_split with "Hmem") as "$".
+    auto.
+  }
+  { intros. iIntros "(#Hctx&#Hinv)".
+    iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
+    iInv "Hinv" as (txns log log_sh) ">(Hvol&Hdur&Habs)".
+    iApply fupd_mask_weaken; first by solve_ndisj.
+    iExists _, _, _. iFrame.
+    iIntros (??) "Hmem".
+    iIntros (??) "Hmem".
+    iModIntro. iExists _, _, _. iFrame.
+    iPoseProof (@init_mem_split with "Hmem") as "?".
+    iFrame.
+  }
+  { intros. iIntros "(#Hctx&#Hinv)".
+    iInv "Hinv" as ">Hopen" "_".
+    iDestruct "Hopen" as (???) "(?&?&_)".
+    iApply fupd_mask_weaken; first by solve_ndisj.
+    iIntros (??) "Hmem".
+    iModIntro. iExists _, _, _. iFrame.
+    iPoseProof (@init_mem_split with "Hmem") as "?".
+    iFrame.
+  }
+  { intros. iIntros "(Hinv&#Hsrc)".
+    iDestruct "Hinv" as (invG) "Hinv".
+    iDestruct "Hinv" as (???) "(?&?&?)".
+    iMod (@inv_alloc myΣ (exm_invG) iN _ CrashInner with "[-]").
+    { iNext. iExists _, _, _; iFrame. }
+    iModIntro. iFrame. iExists tt. iFrame "Hsrc".
+  }
+  { intros. iIntros "(Hinv&#Hsrc)".
+    iDestruct "Hinv" as (invG v) "Hinv".
+    iDestruct "Hinv" as "(?&Hinv)".
+    iDestruct "Hinv" as (γ1 γ2 γ3) "(Hlock&Hinner)".
+    iMod (@lock_init myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
+                     lock_addr _ (ExecLockInv γ1 γ2 γ3) with "[$] [-Hinner]") as (γlock) "H".
+    { iFrame. }
+    iMod (@inv_alloc myΣ (exm_invG) iN _ (ExecInner γ1 γ2 γ3) with "[Hinner]").
+    { iFrame. }
+    iModIntro. iFrame "Hsrc". iExists _, _, _, _. iFrame.
+  }
+  { iIntros (??) "? (?&H)".
+    iDestruct "H" as (????) "(Hlock&Hinv)".
+    iInv "Hinv" as "H" "_".
+    iDestruct "H" as (ptr (n1&n2) (n1'&n2')) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";
+      iDestruct "Hmap" as "(Hptr&Hcase)";
+      repeat unify_ghost.
+    iMod (lock_crack with "Hlock") as ">H"; first by solve_ndisj.
+    iDestruct "H" as (v) "(?&?)".
+    iApply fupd_mask_weaken; first by solve_ndisj.
+    iExists _, _; iFrame.
+    iSplitL "".
+    { iPureIntro. econstructor. }
+    iFrame. iIntros (????) "(?&?&Hmem)".
+    iPoseProof (@init_mem_split with "Hmem") as "?".
+    iExists _. iFrame. rewrite /ExecLockInv.
+    iMod (own_alloc (● (Excl' ptr) ⋅ ◯ (Excl' ptr))) as (γ1') "[Hauth_ptr Hfrag_ptr]".
+    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    iMod (own_alloc (● (Excl' (n1, n2)) ⋅ ◯ (Excl' (n1, n2))))
+      as (γ2') "[Hauth_curr Hfrag_curr]".
+    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    iMod (own_alloc (● (Excl' (n1', n2')) ⋅ ◯ (Excl' (n1', n2'))))
+      as (γ3') "[Hauth_other Hfrag_other]".
+    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    iExists γ1', γ2', γ3'. iFrame.
+    iModIntro. rewrite /ExecInner. iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other".
+    { iIntros. iExists _, _, _. iFrame. }
+    { iIntros. iExists _, _, _. iFrame. }
+  }
+Qed.
