@@ -130,7 +130,8 @@ Section refinement_triples.
   Qed.
 
   Definition ExecDiskInv (log: list nat) (log_sh: list nat) :=
-    (log_len d↦ length log ∗
+    (⌜length log + length log_sh <= 999⌝ ∗
+             log_len d↦ length log ∗
              log_map 0 log ∗
              (* in between the log and the free space are shadow writes - writes
              to the free space that are important for non-crash execution but
@@ -171,6 +172,50 @@ Section refinement_triples.
                    ExecDiskInv log [] ∗
                    own (Γ.(γlog)) (● Excl' log)
     )%I.
+
+  Theorem log_map_to_free log : forall start,
+    (log_map start log -∗ log_free start (length log))%I.
+  Proof.
+    induction log; simpl; intros.
+    iIntros "?"; auto.
+    iIntros "(Hstart&Hrest)".
+    iSplitL "Hstart".
+    iExists _; eauto.
+    iApply IHlog; iAssumption.
+  Qed.
+
+  Theorem log_free_combine last n : forall start,
+      start+n <= last ->
+      (log_free (start + n) (last - (start + n)) ∗ log_free start n
+                -∗ log_free start (last - start))%I.
+  Proof.
+    induction n; simpl; intros.
+    - replace (start + 0) with start by lia.
+      iIntros "(?&_)"; iFrame.
+    - iIntros "(Hfree&Hstart&Hfree')".
+      specialize (IHn (S start)).
+      replace (start + S n) with (S start + n) by lia; simpl in *.
+      iPoseProof (IHn with "[Hfree Hfree']") as "Hfree"; first by lia.
+      iFrame.
+      replace (last - start) with (S (last - S start)) by lia.
+      iFrame.
+  Qed.
+
+  Theorem DiskInv_forget_shadow log log_sh :
+    (ExecDiskInv log log_sh -∗
+                 ExecDiskInv log [])%I.
+  Proof.
+    unfold ExecDiskInv.
+    iIntros "(%&?&?&Hmap_sh&Hfree)"; iFrame.
+    iSplitL "".
+    iPureIntro; simpl; lia.
+    iSplitL ""; auto.
+    cbn [log_map length].
+    replace (length log + 0) with (length log) by lia.
+    iPoseProof (log_map_to_free with "Hmap_sh") as "Hfree_sh".
+    iApply log_free_combine; [ | iFrame ].
+    lia.
+  Qed.
 
   Definition lN : namespace := nroot.@"lock".
   Definition ldN : namespace := nroot.@"dlock".
@@ -296,16 +341,16 @@ Section refinement_triples.
     repeat Helpers.unify_ghost.
     clear log' log_sh'.
 
-    iDestruct "Hdisk" as "(Hlog_len&Hlog_data)".
+    iDestruct "Hdisk" as "(%&Hlog_len&Hlog_data)".
     wp_step.
     iModIntro; iExists _, _, _; iFrame.
-
+    iSplitL ""; auto.
     destruct matches.
     - wp_bind.
       wp_bind.
       iInv "Hinv" as (txns' log' log_sh') ">(Hvol&Hdur&Habs)".
       iDestruct "Hdur" as "(Hownlog_auth&Hlog_sh_auth&Hdisk)".
-      iDestruct "Hdisk" as "(Hlog_len&Hlog_data&Hlog_free)".
+      iDestruct "Hdisk" as "(_&Hlog_len&Hlog_data&Hlog_free)".
       repeat Helpers.unify_ghost.
       clear log' log_sh'.
       iPoseProof (log_map_extract i with "Hlog_data") as "(Hi&Hlog_rest)"; auto.
@@ -316,6 +361,7 @@ Section refinement_triples.
 
       iSpecialize ("Hlog_rest" with "Hi").
       iModIntro; iExists _, _, _; iFrame.
+      iSplitL ""; auto.
       wp_step.
       wp_unlock "[Hownlog Hownlog_sh]".
       { iExists _, _; iFrame. }
@@ -610,7 +656,7 @@ Section refinement_triples.
     iDestruct "Hdur" as "(Hownlog'&Hownlog_sh'&Hdiskinv)".
     repeat Helpers.unify_ghost.
     clear log' log_sh'.
-    iDestruct "Hdiskinv" as "(Hlen&Hlog&Hfree)".
+    iDestruct "Hdiskinv" as "(%&Hlen&Hlog&Hfree)".
     wp_step.
     destruct matches.
     - (* failure case *)
@@ -620,6 +666,7 @@ Section refinement_triples.
 
       iExists _, _, _; iFrame.
       iModIntro.
+      iSplitL ""; auto.
       wp_unlock "[Hownlog Hownlog_sh]".
       { iExists _, _; iFrame. }
 
@@ -627,6 +674,7 @@ Section refinement_triples.
       iApply "HΦ"; by iFrame.
     -  iExists _, _, _; iFrame.
        iModIntro.
+       iSplitL ""; auto.
        wp_lock "(Hslocked & Hstateinv)".
        wp_bind.
        iDestruct "Hstateinv" as (s txns') "(Hstate&Hstateinterp&Howntxn)".
@@ -645,13 +693,14 @@ Section refinement_triples.
          iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)";
            eauto using exec_step_Commit_ok.
          solve_ndisj.
-         iDestruct "Hdiskinv" as "(Hlen&Hlog&Hfree)".
+         iDestruct "Hdiskinv" as "(%&Hlen&Hlog&Hfree)".
          wp_step.
          iDestruct "Hstateinterp" as (->) "Hlogfree".
 
          iExists nil, _, _; iFrame.
          simpl; rewrite List.app_nil_r.
          unfold Abstraction; iFrame.
+         iSplitL ""; auto.
          wp_bind.
          iModIntro.
          unfold put_state.
@@ -671,7 +720,7 @@ Section refinement_triples.
          repeat Helpers.unify_ghost.
          clear txns'' log' log_sh'.
 
-         iDestruct "Hdiskinv" as "(Hlen&Hlog&Hfree)".
+         iDestruct "Hdiskinv" as "(%&Hlen&Hlog&Hfree)".
          (* now write_mem_txn_ok should apply *)
          admit.
        * admit.
@@ -699,6 +748,7 @@ Section refinement_triples.
     iPoseProof (disk_ptr_iter_split_aux 0 0 with "Hdisk") as "(Hlen&Hdisk)".
     unfold size; lia.
     cbn [ptr_iter length log_map plus minus].
+    iSplitL ""; first by iPureIntro; lia.
     iFrame "Hlen".
     rewrite ?left_id.
 
@@ -834,15 +884,19 @@ Proof.
   }
   { intros. iIntros "(#Hctx&#Hinv)".
     iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
-    iInv "Hinv" as (txns log log_sh) ">(Hvol&Hdur&Habs)".
+    iInv "Hinv" as (txns log log_sh) ">(Hvol&Hdur&Habs)" "_".
+    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
     iApply fupd_mask_weaken; first by solve_ndisj.
-    iExists _, _, _. iFrame.
     iIntros (??) "Hmem".
-    iIntros (??) "Hmem".
-    iModIntro. iExists _, _, _. iFrame.
-    iPoseProof (@init_mem_split with "Hmem") as "?".
+    iModIntro.
+    iPoseProof (@init_mem_split with "Hmem") as "(Hstateinterp&Hstatelock&Hdisklock)".
+    unfold CrashInner, Abstraction.
+    iExists (ltac:(econstructor) : ghost_names), (flatten_txns txns), log.
     iFrame.
+    iApply DiskInv_forget_shadow; iFrame.
   }
+
+  (* copy of RefinementShadow proof *)
   { intros. iIntros "(#Hctx&#Hinv)".
     iInv "Hinv" as ">Hopen" "_".
     iDestruct "Hopen" as (???) "(?&?&_)".
