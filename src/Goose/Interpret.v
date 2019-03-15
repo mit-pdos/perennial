@@ -28,9 +28,6 @@ Ltac refl' e :=
   | fun x : ?T => @reads ?A ?T0 (@?f x) =>
     constr: (fun x => Reads A T0 (f x))
               
-  | fun x : ?T => @readSome ?A ?T0 (@?f x) =>
-    constr: (fun x => ReadSome A T0 (f x))
-              
   | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
     let f1 := refl' r1 in
     let f2 := refl' (fun (p: T * T1) => (r2 (fst p) (snd p))) in
@@ -39,13 +36,12 @@ Ltac refl' e :=
   end.
 
 Ltac refl1 := let t := refl' constr:(fun _: unit => pure (A:=unit) 1) in idtac t.
-Ltac refl2 := let t := refl' constr:(fun _: unit => (fun x : nat => reads (A:=nat) (T:=nat) (fun x0 : nat => x0 + x))) in idtac t.
+Ltac refl2 := let t := refl' constr:(fun _: unit => reads (A:=nat) (fun x : nat => x + 3)) in idtac t.
 Ltac refl3 := let t := refl' constr:(fun _: unit => and_then (pure 3) (fun x : nat => reads (A:=nat) (T:=nat) (fun x0 : nat => x0 + x))) in idtac t.
 Ltac refl4 := let t := refl' constr:(fun _: unit => and_then (pure 3) (fun _: nat => pure (A:=nat) 1)) in idtac t.
 
-Goal (pure nat 1) = (pure nat 2).
-  refl1.
-  refl4.
+Goal (pure nat 1) = (pure nat 2). 
+  refl2.
 Abort.
 
 Definition refl4_out := (fun x : unit => AndThen ((fun H : unit => Pure nat ((fun _ : unit => 3) H)) x) (fun y : nat => (fun p : unit * nat => Pure nat ((fun _ : unit * nat => 1) p)) (x, y))).
