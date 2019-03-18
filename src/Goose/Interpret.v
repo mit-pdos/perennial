@@ -34,32 +34,27 @@ Ltac refl' e :=
               
   end.
 
-Ltac refl e :=
-  let t := refl' constr:(fun _ : unit => e) in idtac t.
+Ltac test e :=
+  let e' := refl' constr:(fun _ : unit => e) in
+  let e'' := eval cbv [rtermDenote] in (rtermDenote (e' tt)) in
+  unify e e''.
 
-(*                                                       
-Ltac refl e :=
-  let t := refl' constr:(fun _ : unit => e) in
-  eval cbv [rtermDenote t] in (rtermDenote (t tt)).
- *)
+Ltac testPure := test (pure (A:=unit) 1).
+Ltac testReads := test (reads (A:=nat) (fun x : nat => x + 3)).
+Ltac testReadSome := test (and_then (pure 3) (fun x : nat => readSome (A:=nat) (T:=nat) (fun x0 : nat => Some (x0 + x)))).
+Ltac testAndThen := test (and_then (pure 3) (fun _: nat => pure (A:=nat) 1)).
 
-Ltac reflPure := refl (pure (A:=unit) 1).
-Ltac reflReads := refl (reads (A:=nat) (fun x : nat => x + 3)).
-Ltac reflReadSome := refl (and_then (pure 3) (fun x : nat => readSome (A:=nat) (T:=nat) (fun x0 : nat => Some (x0 + x)))).
-Ltac reflAndThen := refl (and_then (pure 3) (fun _: nat => pure (A:=nat) 1)).
+Definition ex1 : rterm nat nat nat := AndThen (Pure nat 3) (fun n => ReadSome (fun x => Some (x+n))).
+Definition ex2 : rterm nat nat nat := AndThen (Pure nat 3) (fun n => Reads (fun x => (x+n))).
+Definition ex3 : rterm nat nat nat := AndThen (ReadSome (fun x => Some (x+1))) (fun n => Reads (fun x => (x+n))).
+Eval cbv [rtermDenote ex1] in (rtermDenote ex1).
 
 Goal False.
-  reflPure.
-  reflReads.
-  reflReadSome.
-  reflAndThen.
+  testPure.
+  testReads.
+  testReadSome.
+  testAndThen.
+  test (rtermDenote ex1).
+  test (rtermDenote ex2).
+  test (rtermDenote ex3).
 Abort.
-
-Definition ex : rterm nat nat nat := AndThen (Pure nat 3) (fun n => ReadSome (fun x => Some (x+n))).
-Eval cbv [rtermDenote ex] in (rtermDenote ex).
-
-Definition refl2_out := (fun x : unit => Reads ((fun (_ : unit) (x0 : nat) => x0 + 3) x)). 
-Eval cbv [rtermDenote refl2_out] in (rtermDenote (refl2_out tt)).
-
-Definition refl4_out := (fun x : unit => AndThen ((fun H : unit => Pure nat ((fun _ : unit => 3) H)) x) (fun y : nat => (fun p : unit * nat => Pure nat ((fun _ : unit * nat => 1) p)) (x, y))).
-Eval cbv [rtermDenote refl4_out] in (rtermDenote (refl4_out tt)).
