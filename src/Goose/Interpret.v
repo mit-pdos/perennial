@@ -16,8 +16,10 @@ Inductive Output {B} {T} : Type :=
 Arguments Success: clear implicits.
 
 Fixpoint interpret A B T (r: rterm A B T) : A -> @Output B T.
+  (* intros.
+     exact Error. *)
   match r with
-  | Pure _ v => Success (s: B) (v: T)
+  | Pure _ v => Success s v
   end.
 
 Fixpoint rtermDenote A B T (r: rterm A B T) : relation A B T :=
