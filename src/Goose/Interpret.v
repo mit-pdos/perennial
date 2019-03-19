@@ -8,6 +8,18 @@ Inductive rterm : Type -> Type -> Type -> Type :=
 | AndThen A B C T1 T2 : rterm A B T1 -> (T1 -> rterm B C T2) -> rterm A C T2
 .
 
+Inductive Output {B} {T} : Type :=
+| Success (s: B) (v: T) 
+| Error
+.
+
+Arguments Success: clear implicits.
+
+Fixpoint interpret A B T (r: rterm A B T) : A -> @Output B T.
+  match r with
+  | Pure _ v => Success (s: B) (v: T)
+  end.
+
 Fixpoint rtermDenote A B T (r: rterm A B T) : relation A B T :=
   match r with
   | Pure _ o0 => pure o0
@@ -34,10 +46,15 @@ Ltac refl' e :=
               
   end.
 
+Ltac refl e :=
+  let t := refl' constr:(fun _ : unit => e) in
+  let t' := (eval cbn beta in (t tt)) in
+  constr:(t').
+
 Ltac test e :=
-  let e' := refl' constr:(fun _ : unit => e) in
-  let e'' := eval cbv [rtermDenote] in (rtermDenote (e' tt)) in
-  unify e e''.
+  let t := refl e in
+  let e' := eval cbv [rtermDenote] in (rtermDenote t) in
+  unify e e'.
 
 Ltac testPure := test (pure (A:=unit) 1).
 Ltac testReads := test (reads (A:=nat) (fun x : nat => x + 3)).
