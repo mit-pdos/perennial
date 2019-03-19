@@ -142,7 +142,8 @@ Section refinement_triples.
 
   Definition DiskLockInv Γ :=
     (∃ (log log_sh: list nat),
-        own (Γ.(γlog)) (◯ Excl' log) ∗ own (Γ.(γlog_sh)) (◯ Excl' log_sh))%I.
+        ⌜log_sh = []⌝ ∗
+                    own (Γ.(γlog)) (◯ Excl' log) ∗ own (Γ.(γlog_sh)) (◯ Excl' log_sh))%I.
 
   Definition Abstraction txns log :=
     source_state {| Log.mem_buf := flatten_txns txns;
@@ -349,7 +350,7 @@ Section refinement_triples.
     ExecInv "Hinv".
     wp_lock "(Hlocked&Hlinv)".
 
-    iDestruct "Hlinv" as (log log_sh) "(Hownlog&Hownlog_sh)".
+    iDestruct "Hlinv" as (log log_sh) "(->&Hownlog&Hownlog_sh)".
 
     wp_bind.
     DurInv "Hinv".
@@ -374,7 +375,7 @@ Section refinement_triples.
       iSplitL ""; auto.
       wp_step.
       wp_unlock "[Hownlog Hownlog_sh]".
-      { iExists _, _; iFrame. }
+      { iExists _, _; by iFrame. }
       wp_step.
       iApply "HΦ".
       iFrame.
@@ -388,7 +389,7 @@ Section refinement_triples.
       iModIntro; iExists _, _, _. iFrame.
 
       wp_unlock "[Hownlog Hownlog_sh]".
-      { iExists _, _; iFrame. }
+      { iExists _, _; by iFrame. }
       wp_step.
       iApply "HΦ".
       iFrame.
@@ -626,16 +627,17 @@ Section refinement_triples.
   Lemma move_minus1 x y : x - y - 1 = (x-1) - y.
   Proof. lia. Qed.
 
-  Theorem write_mem_txn_ok Γ txn_start (log log_sh: list nat) : forall txn,
+  Theorem write_mem_txn_ok Γ log_off txn_start (log log_sh: list nat) : forall txn,
       999 - (length log + length log_sh) >= 2 ->
+      log_off = length log + length log_sh ->
       {{{ ExecInv' Γ ∗ txn_map txn_start txn ∗
                    own Γ.(γlog) (◯ Excl' log) ∗
                                 own Γ.(γlog_sh) (◯ Excl' log_sh) }}}
-      write_mem_txn txn_start (length log + length log_sh)
+      write_mem_txn txn_start log_off
       {{{ RET tt; txn_map txn_start txn ∗
                           own Γ.(γlog_sh) (◯ Excl' (log_sh ++ [txn.1; txn.2])) }}}.
   Proof.
-    iIntros (txn Hlen_bound Φ) "(Hinv&Htxn&Hownlog&Hownlog_sh) HΦ".
+    iIntros (txn Hlen_bound -> Φ) "(Hinv&Htxn&Hownlog&Hownlog_sh) HΦ".
     wp_bind. wp_bind.
     iDestruct "Htxn" as "(Htxn.1&Htxn.2)".
     wp_step.
@@ -722,6 +724,56 @@ Section refinement_triples.
     repeat (eexists; eauto).
   Qed.
 
+  Lemma length_flatten txns :
+    length (flatten_txns txns) = 2 * length txns.
+  Proof.
+    induction txns; simpl.
+    - auto.
+    - destruct a; simpl.
+      lia.
+  Qed.
+
+  Lemma length_extend_log log txns :
+    length (log ++ flatten_txns txns) = length log + 2*length txns.
+  Proof.
+    by rewrite app_length length_flatten.
+  Qed.
+
+  Theorem write_log_len_ok Γ (log: list nat) (txns: list (nat*nat)) : forall l',
+      (* TODO: need to swallow log_sh, not txns *)
+      l' = length log + 2*length txns ->
+      {{{ ExecInv' Γ ∗
+                   own (Γ.(γlog)) (◯ Excl' log) ∗
+                   own (Γ.(γtxns)) (◯ Excl' txns) }}}
+        write_disk log_len l'
+        {{{ RET tt; own (Γ.(γlog)) (◯ Excl' (log ++ flatten_txns txns)) ∗
+                own (Γ.(γtxns)) (◯ Excl' txns)
+        }}}.
+  Proof.
+    iIntros (l' -> Φ) "(Hinv&Hownlog&Howntxns) HΦ".
+    iDestruct "Hinv" as "#(Hslock&Hdlock&Hinv)".
+    iInv "Hinv" as (txns' log' log_sh) ">(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
+    unfold VolatileInv.
+    iDestruct "Hvol" as "Howntxns_auth".
+    repeat Helpers.unify_ghost.
+    clear txns' log'.
+    iDestruct "Hdisk" as "(%&Hlog_len&Hmap&Hlog_sh&Hlog_free)".
+    wp_step.
+    iMod (Helpers.ghost_var_update Γ.(γlog) (log ++ flatten_txns txns) with "Hownlog_auth Hownlog")
+      as "(Hownlog_auth&Hownlog)".
+    iMod (Helpers.ghost_var_update Γ.(γtxns) (@nil (nat*nat)) with "Howntxns_auth Howntxns")
+      as "(Howntxns_auth&Howntxns)".
+    iModIntro.
+    iExists [], (log ++ flatten_txns txns), log_sh.
+    iFrame.
+    unfold ExecDiskInv; iFrame.
+    iSplitR "HΦ".
+    iModIntro.
+    rewrite length_extend_log.
+    iFrame.
+  Abort.
+
   Theorem commit_refinement j `{LanguageCtx Log.Op _ T Log.l K} :
     {{{ j ⤇ K (Call (Log.Commit)) ∗ Registered ∗ ExecInv }}}
       commit
@@ -732,7 +784,7 @@ Section refinement_triples.
     unfold commit.
     wp_lock "(Hdlocked & Hdiskinv)".
     wp_bind.
-    iDestruct "Hdiskinv" as (log log_sh) "(Hownlog&Hownlog_sh)".
+    iDestruct "Hdiskinv" as (log log_sh) "(->&Hownlog&Hownlog_sh)".
     iInv "Hinv" as (txns log' log_sh') ">(Hvol&Hdur&Habs)".
     iDestruct "Hdur" as "(Hownlog'&Hownlog_sh'&Hdiskinv)".
     repeat Helpers.unify_ghost.
@@ -749,7 +801,7 @@ Section refinement_triples.
       iModIntro.
       iSplitL ""; auto.
       wp_unlock "[Hownlog Hownlog_sh]".
-      { iExists _, _; iFrame. }
+      { iExists _, _; by iFrame. }
 
       wp_step.
       iApply "HΦ"; by iFrame.
@@ -789,20 +841,25 @@ Section refinement_triples.
          wp_bind.
 
          wp_unlock "[Hownlog Hownlog_sh]".
-         { iExists _, _; iFrame. }
+         { iExists _, _; by iFrame. }
 
          wp_step.
          iApply "HΦ"; by iFrame.
        * iDestruct "Hstateinterp" as (txn1 ->) "(Htxn1&Htxn2free)".
-         wp_bind. wp_bind.
-         iInv "Hinv" as (txns'' log' log_sh') ">(Hvol&Hdur&Habs)".
-         iDestruct "Hdur" as "(Hownlog'&Hownlog_sh'&Hdiskinv)".
-         unfold VolatileInv.
-         repeat Helpers.unify_ghost.
-         clear txns'' log' log_sh'.
+         unfold size, log_idx in n.
+         (* fix lia bug; see https://github.com/coq/coq/issues/8898 *)
+         pose proof n.
+         iApply (write_mem_txn_ok Γ (length log) txn1_start log []
+                   with "[Htxn1 Hownlog Hownlog_sh]").
+         simpl; lia.
+         simpl; lia.
+         (* TODO: surely we can do these two together *)
+         iFrame.
+         iFrame "#".
 
-         iDestruct "Hdiskinv" as "(%&Hlen&Hlog&Hfree)".
-         (* now write_mem_txn_ok should apply *)
+         simpl.
+         iIntros "!> (Htxn&Hownlog_sh)".
+
          admit.
        * admit.
        * admit.
