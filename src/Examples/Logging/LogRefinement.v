@@ -618,6 +618,21 @@ Section refinement_triples.
       iApply (IHlog with "[$] [$]"); auto.
   Qed.
 
+  Lemma log_map_combine log' : forall log x x',
+      x' = x + length log ->
+      log_map x log -∗ log_map x' log' -∗ log_map x (log ++ log').
+  Proof.
+    induction log'; simpl.
+    - iIntros (log x x' ->) "Hlogmap _".
+      rewrite app_nil_r; auto.
+    - iIntros (log x x' ->) "Hlogmap (Hidx&Hlogmap')".
+      iPoseProof (log_map_plus1 with "Hlogmap Hidx") as "Hlogmap"; first by auto.
+      replace (log ++ a :: log') with ((log ++ [a]) ++ log').
+      iApply (IHlog' with "Hlogmap Hlogmap'").
+      rewrite app_length; simpl; lia.
+      rewrite <- app_assoc; reflexivity.
+  Qed.
+
   Lemma move_plus1 x y : x + (y + 1) = S (x + y).
   Proof. lia. Qed.
 
@@ -739,39 +754,46 @@ Section refinement_triples.
     by rewrite app_length length_flatten.
   Qed.
 
-  Theorem write_log_len_ok Γ (log: list nat) (txns: list (nat*nat)) : forall l',
-      (* TODO: need to swallow log_sh, not txns *)
-      l' = length log + 2*length txns ->
+  Theorem write_log_len_ok Γ (log log_sh: list nat) (txns: list (nat*nat)) : forall l',
+      (* TODO: need to apply op update to change the abstract state *)
+      l' = length log + length log_sh ->
       {{{ ExecInv' Γ ∗
                    own (Γ.(γlog)) (◯ Excl' log) ∗
+                   own (Γ.(γlog_sh)) (◯ Excl' log_sh) ∗
                    own (Γ.(γtxns)) (◯ Excl' txns) }}}
         write_disk log_len l'
-        {{{ RET tt; own (Γ.(γlog)) (◯ Excl' (log ++ flatten_txns txns)) ∗
+        {{{ RET tt;
+            own (Γ.(γlog)) (◯ Excl' (log ++ log_sh)) ∗
+                own (Γ.(γlog_sh)) (◯ Excl' []) ∗
                 own (Γ.(γtxns)) (◯ Excl' txns)
         }}}.
   Proof.
-    iIntros (l' -> Φ) "(Hinv&Hownlog&Howntxns) HΦ".
+    iIntros (l' -> Φ) "(Hinv&Hownlog&Hownlog_sh&Howntxns) HΦ".
     iDestruct "Hinv" as "#(Hslock&Hdlock&Hinv)".
-    iInv "Hinv" as (txns' log' log_sh) ">(Hvol&Hdur&Habs)".
+    iInv "Hinv" as (txns' log' log_sh') ">(Hvol&Hdur&Habs)".
     iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
     unfold VolatileInv.
     iDestruct "Hvol" as "Howntxns_auth".
     repeat Helpers.unify_ghost.
-    clear txns' log'.
+    clear txns' log' log_sh'.
     iDestruct "Hdisk" as "(%&Hlog_len&Hmap&Hlog_sh&Hlog_free)".
     wp_step.
-    iMod (Helpers.ghost_var_update Γ.(γlog) (log ++ flatten_txns txns) with "Hownlog_auth Hownlog")
+    iMod (Helpers.ghost_var_update Γ.(γlog) (log ++ log_sh) with "Hownlog_auth Hownlog")
       as "(Hownlog_auth&Hownlog)".
-    iMod (Helpers.ghost_var_update Γ.(γtxns) (@nil (nat*nat)) with "Howntxns_auth Howntxns")
-      as "(Howntxns_auth&Howntxns)".
+    iMod (Helpers.ghost_var_update Γ.(γlog_sh) (@nil nat) with "Hownlog_sh_auth Hownlog_sh")
+      as "(Hownlog_sh_auth&Hownlog_sh)".
     iModIntro.
-    iExists [], (log ++ flatten_txns txns), log_sh.
+    iExists txns, (log ++ log_sh), [].
     iFrame.
-    unfold ExecDiskInv; iFrame.
-    iSplitR "HΦ".
+    unfold ExecDiskInv.
+    iSplitR "HΦ Howntxns Hownlog Hownlog_sh"; [ | iApply "HΦ"; by iFrame ].
     iModIntro.
-    rewrite length_extend_log.
+    rewrite app_length; cbn [length]; rewrite <- plus_n_O.
+    iPoseProof (log_map_combine with "Hmap Hlog_sh") as "Hmap"; first by lia.
     iFrame.
+
+    iSplitL ""; first by iPureIntro.
+    (* need to update abstract state *)
   Abort.
 
   Theorem commit_refinement j `{LanguageCtx Log.Op _ T Log.l K} :
