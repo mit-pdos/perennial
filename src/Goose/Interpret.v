@@ -15,12 +15,43 @@ Inductive Output {B} {T} : Type :=
 
 Arguments Success: clear implicits.
 
-Fixpoint interpret A B T (r: rterm A B T) : A -> @Output B T.
-  (* intros.
-     exact Error. *)
-  match r with
-  | Pure _ v => Success s v
-  end.
+Fixpoint interpret (A B T : Type) (r : rterm A B T) (X : A) : Output :=
+  match r in (rterm T0 T1 T2) return (T0 -> Output) with
+  | @Pure A0 T0 t => fun X0 : A0 => Success A0 T0 X0 t
+  | @Reads A0 T0 t => fun X0 : A0 => Success A0 T0 X0 (t X0)
+  | @ReadSome A0 T0 o =>
+      fun X0 : A0 =>
+      let X1 := o X0 in match X1 with
+                        | Some t => Success A0 T0 X0 t
+                        | None => Error
+                        end
+  | @AndThen A0 B0 C T1 T2 r0 r1 =>
+      fun X0 : A0 =>
+      let X1 := @interpret A0 B0 T1 r0 X0 in
+      match X1 with
+      | Success _ _ s v => let X2 := r1 v in let X3 := @interpret B0 C T2 X2 s in X3
+      | Error => Error
+      end
+  end X. 
+
+(*
+  intros.
+  destruct r.
+  - exact (Success A T X t).
+  - exact (Success A T X (t X)).
+  - pose proof (o X).
+    destruct X0.
+    exact (Success A T X t).
+    exact Error.
+  - pose proof (interpret A B T1 r X).
+    destruct X0.
+    + pose proof (r0 v).
+      pose proof (interpret B C T2 X0 s).
+      exact X1.
+    + exact Error.
+Qed.
+Print interpret.    
+*)
 
 Fixpoint rtermDenote A B T (r: rterm A B T) : relation A B T :=
   match r with
@@ -77,3 +108,9 @@ Goal False.
   test (rtermDenote ex2).
   test (rtermDenote ex3).
 Abort.
+
+(* These appear to do the right thing, based on my understanding. I'll
+try to get some real examples written soon. *)
+Compute (interpret ex1 7).
+Compute (interpret ex2 7).
+Compute (interpret ex3 7).
