@@ -754,21 +754,27 @@ Section refinement_triples.
     by rewrite app_length length_flatten.
   Qed.
 
-  Theorem write_log_len_ok Γ (log log_sh: list nat) (txns: list (nat*nat)) : forall l',
+  Theorem write_log_len_ok j A `{LanguageCtx Log.Op _ T Log.l K} (op: Log.Op A) (v: A)
+          Γ (log log_sh: list nat) (txns: list (nat*nat)) : forall l',
       (* TODO: need to apply op update to change the abstract state *)
       l' = length log + length log_sh ->
+      Log.l.(step) op
+                   {| Log.mem_buf := flatten_txns txns; Log.disk_log := log; |}
+                   (Val {| Log.mem_buf := []; Log.disk_log := log ++ log_sh; |} v)->
       {{{ ExecInv' Γ ∗
+                   j ⤇ K (Call op) ∗ source_ctx ∗
                    own (Γ.(γlog)) (◯ Excl' log) ∗
                    own (Γ.(γlog_sh)) (◯ Excl' log_sh) ∗
                    own (Γ.(γtxns)) (◯ Excl' txns) }}}
         write_disk log_len l'
         {{{ RET tt;
+            j ⤇ K (Ret v) ∗
             own (Γ.(γlog)) (◯ Excl' (log ++ log_sh)) ∗
                 own (Γ.(γlog_sh)) (◯ Excl' []) ∗
                 own (Γ.(γtxns)) (◯ Excl' txns)
         }}}.
   Proof.
-    iIntros (l' -> Φ) "(Hinv&Hownlog&Hownlog_sh&Howntxns) HΦ".
+    iIntros (l' -> Hopstep Φ) "(Hinv&Hj&Hsource_inv&Hownlog&Hownlog_sh&Howntxns) HΦ".
     iDestruct "Hinv" as "#(Hslock&Hdlock&Hinv)".
     iInv "Hinv" as (txns' log' log_sh') ">(Hvol&Hdur&Habs)".
     iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
@@ -782,18 +788,24 @@ Section refinement_triples.
       as "(Hownlog_auth&Hownlog)".
     iMod (Helpers.ghost_var_update Γ.(γlog_sh) (@nil nat) with "Hownlog_sh_auth Hownlog_sh")
       as "(Hownlog_sh_auth&Hownlog_sh)".
+    iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Habs&_)".
+    eauto using exec_step_call.
+    solve_ndisj.
     iModIntro.
     iExists txns, (log ++ log_sh), [].
     iFrame.
     unfold ExecDiskInv.
-    iSplitR "HΦ Howntxns Hownlog Hownlog_sh"; [ | iApply "HΦ"; by iFrame ].
+    iSplitR "HΦ Hj Howntxns Hownlog Hownlog_sh"; [ | iApply "HΦ"; by iFrame ].
     iModIntro.
     rewrite app_length; cbn [length]; rewrite <- plus_n_O.
     iPoseProof (log_map_combine with "Hmap Hlog_sh") as "Hmap"; first by lia.
     iFrame.
-
     iSplitL ""; first by iPureIntro.
-    (* need to update abstract state *)
+    unfold Abstraction; iFrame.
+    (* Oops, the abstract update only applies post-crash; we can't do a
+    ghost_step_call until after the state is updated. In theory we could fix
+    this by making sure to write the state first, but that's unsatisfying
+    because it forces the durability point to be a valid commit point. *)
   Abort.
 
   Theorem commit_refinement j `{LanguageCtx Log.Op _ T Log.l K} :
