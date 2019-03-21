@@ -19,6 +19,9 @@ Definition named_aux {PROP: bi} : seal (@named_def PROP). by eexists. Qed.
 Definition named {PROP: bi} := (@named_aux PROP).(unseal).
 Definition named_eq {PROP : bi} : @named PROP = @named_def PROP := (@named_aux PROP).(seal_eq).
 
+Global Instance named_persistent {PROP: sbi} i (P: PROP) : Persistent P → Persistent (named i P).
+Proof. rewrite named_eq /named_def//=. Qed.
+
 Global Instance named_timeless {PROP: sbi} i (P: PROP) : Timeless P → Timeless (named i P).
 Proof. rewrite named_eq /named_def//=. Qed.
 
