@@ -7,9 +7,6 @@ From iris.base_logic.lib Require Export invariants gen_heap.
 
 Unset Implicit Arguments.
 
-(* TODO: move this out *)
-Existing Instance AtomicPair.Helpers.from_exist_left_sep.
-
 Canonical Structure BufStateC := leibnizC BufState.
 
 Set Default Proof Using "Type".

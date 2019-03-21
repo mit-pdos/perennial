@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth.
-Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre.
+Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre CSL.ProofModeClasses.
 Unset Implicit Arguments.
 
 (* TODO: move *)
@@ -40,12 +40,6 @@ Lemma named_ghost_var_update γ (a1' a1 a2 : A) i1 i2 :
 Proof. unbundle_names; apply ghost_var_update. Qed.
 
 End ghost_var_helpers.
-
-  (* Extends the iExist tactic to make it easier to re-prove invariants after steps *)
-Instance from_exist_left_sep {Σ} {A} (Φ : A → iProp Σ) Q :
-  FromExist (▷ (∃ a, Φ a) ∗ Q) (λ a, ▷ Φ a ∗ Q)%I .
-Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
-
 
 From iris.proofmode Require Import coq_tactics intro_patterns spec_patterns.
 From iris.proofmode Require Import tactics.

@@ -10,6 +10,8 @@ From iris.bi Require Export bi telescopes.
 From stdpp Require Import namespaces.
 From iris.proofmode Require Export classes notation tactics.
 From stdpp Require Import hlist pretty.
+
+Require Import CSL.ProofModeClasses.
 Set Default Proof Using "Type".
 Export ident.
 
@@ -383,7 +385,7 @@ Ltac iLDestructCore H :=
      fail "iLDestruct: some name not fresh"
   |set_counter_reduce; pm_reduce].
 
-Ltac iLDestruct H := repeat (try iLDestructEx H); iLDestructCore H.
+Ltac iLDestruct H := repeat (try iLDestructEx H); iLDestructCore H; iDestructPure.
 
 Ltac iLIntro :=
   let H := iFresh in iIntros H; iLDestruct H.
@@ -442,7 +444,6 @@ Proof.
   auto.
 Qed.
 
-
 (*
 Lemma Hbig_slow : [∗] (pl2p (bigterm_list P "a" 20)) ⊢ True.
 Proof.
@@ -451,6 +452,11 @@ Proof.
   auto.
 Time Qed.
 *)
+
+Lemma test_pure Q : (named "HQ" Q ∗ named "?" ⌜ (2 + 2 = 4)%nat ⌝ ∗ named "HQ2" Q) ⊢ (True : PROP).
+Proof.
+  iLIntro. auto.
+Qed.
 
 Lemma Hbig_combined : [∗] (pl2p (bigterm_list P "a" 20)) -∗ [∗] (pl2p (bigterm_list P "b" 20)) -∗ True.
 Proof.
