@@ -19,7 +19,10 @@ Definition named_aux {PROP: bi} : seal (@named_def PROP). by eexists. Qed.
 Definition named {PROP: bi} := (@named_aux PROP).(unseal).
 Definition named_eq {PROP : bi} : @named PROP = @named_def PROP := (@named_aux PROP).(seal_eq).
 
-Global Instance named_persistent {PROP: sbi} i (P: PROP) : Persistent P → Persistent (named i P).
+Global Instance named_persistent {PROP: bi} i (P: PROP) : Persistent P → Persistent (named i P).
+Proof. rewrite named_eq /named_def//=. Qed.
+
+Global Instance named_affine {PROP: sbi} i (P: PROP) : Affine P → Affine (named i P).
 Proof. rewrite named_eq /named_def//=. Qed.
 
 Global Instance named_timeless {PROP: sbi} i (P: PROP) : Timeless P → Timeless (named i P).
@@ -121,6 +124,12 @@ Arguments IntoSepEnv {_} _%I _%I : simpl never.
 Arguments into_sep_env {_} _%I _%I {_}.
 Hint Mode IntoSepEnv + ! - : typeclass_instances.
 
+Class IntoAndEnv {PROP : bi} (p: bool) (P: PROP) (Ps: prop_list PROP) :=
+  into_and_env : □?p P ⊢ □?p [∧] (pl2p Ps).
+Arguments IntoAndEnv {_} _ _%I _%I : simpl never.
+Arguments into_and_env {_} _ _%I _%I {_}.
+Hint Mode IntoAndEnv + + ! - : typeclass_instances.
+
 Class FrameSepEnv {PROP : bi} (Δ Δ' : envs PROP) (P Q : PROP) :=
   frame_env : ∃ R, (of_envs Δ ⊢ (R ∗ of_envs Δ')) ∧ (R -∗ Q -∗ P).
 Arguments FrameSepEnv {_} _%I _%I _%I _%I.
@@ -158,6 +167,16 @@ Fixpoint pl_env_expand (p: positive) (Ps: prop_list PROP) (Γ: env PROP) : posit
   end.
 Global Instance env_into_sep_env (Ps: prop_list PROP) : IntoSepEnv ([∗] pl2p Ps) Ps.
 Proof. rewrite /IntoSepEnv. trivial. Qed.
+
+Global Instance positive_into_and_sep:
+  BiPositive PROP → ∀ (P : PROP) (Ps : prop_list PROP), IntoSepEnv P Ps → IntoAndEnv true P Ps.
+Proof.
+  intros HPOS P Ps.
+  rewrite /IntoSepEnv/IntoAndEnv => ->. simpl.
+  induction Ps => //=; auto.
+  rewrite intuitionistically_sep intuitionistically_and.
+  iIntros "(?&?)". iFrame. by iApply IHPs.
+Qed.
 
 Global Instance sep_into_sep_single_named (i: string) (P: PROP) :
   IntoSepEnv (named i P) [(LNamed i, P)].
@@ -299,34 +318,60 @@ Global Instance frame_env_miss R : FrameSepEnv [] R R | 100.
 Proof. intros. by rewrite /FrameSepEnv//= left_id. Qed.
 *)
 
-Lemma tac_sep_list_destruct Δ Δ' i Γ bump (P: PROP) (Ps: prop_list PROP) Q :
-  envs_lookup i Δ = Some (false, P) →
-  IntoSepEnv P Ps →
+Lemma tac_sep_list_destruct Δ Δ' i p Γ bump (P: PROP) (Ps: prop_list PROP) Q :
+  envs_lookup i Δ = Some (p, P) →
+  (if p then IntoAndEnv true P Ps else IntoSepEnv P Ps) →
   pl_env_expand (env_counter Δ) Ps Enil = (bump, Γ) →
-  envs_simple_replace i false Γ Δ = Some Δ' →
+  envs_simple_replace i p Γ Δ = Some Δ' →
   envs_entails (envs_set_counter Δ' bump) Q → envs_entails Δ Q.
 Proof.
   rewrite envs_entails_eq => Hlookup Hsep Hexpand Hrepl Himpl.
   rewrite envs_simple_replace_sound //=.
-  rewrite /= (into_sep_env P).
-  assert (Hrec: ∀ p (Γ: env PROP), ([∗] Γ -∗ [∗] pl2p Ps -∗ [∗] snd (pl_env_expand p Ps Γ))%I).
+  assert (Hrec1: ∀ p (Γ: env PROP), ([∗] Γ -∗ [∗] pl2p Ps -∗ [∗] snd (pl_env_expand p Ps Γ))%I).
   { clear. induction Ps => //= p Γ.
     * iIntros "H"; eauto.
     * iIntros "H1 (a&H2)".
       destruct a as ([]&?); simpl;
       iApply (IHPs with "[a H1] H2"); iFrame.
   }
-  specialize (Hrec (env_counter Δ) Enil). rewrite Hexpand in Hrec.
-  iIntros "(HPs&HIH)". iPoseProof (Hrec with "[$] [$]") as "HPs'".
-  rewrite envs_set_counter_sound in Himpl * => ->.
-  by iApply "HIH".
+  assert (Hrec2: ∀ p (Γ: env PROP), (□ [∧] Γ -∗ □ [∧] pl2p Ps -∗ □ [∧] snd (pl_env_expand p Ps Γ))%I).
+  { clear. induction Ps => //= p Γ.
+    * iIntros "H"; eauto.
+    * iIntros "#H1 #(a&H2)".
+      destruct a as ([]&?); simpl;
+      iApply (IHPs with "[a H1] H2"); iFrame;
+      simpl;
+      iApply intuitionistically_and;
+      iSplit; simpl; iFrame "#".
+  }
+  specialize (Hrec1 (env_counter Δ) Enil). rewrite Hexpand in Hrec1.
+  specialize (Hrec2 (env_counter Δ) Enil). rewrite Hexpand in Hrec2.
+  destruct p.
+  - rewrite (into_and_env true P). simpl.
+    iIntros "(Hps&Hwand)".
+    iPoseProof (Hrec2 with "[ ] [$]") as "HPs'".
+    simpl; iAlways; trivial. simpl.
+    rewrite envs_set_counter_sound in Himpl * => ->.
+    by iApply "Hwand".
+  - rewrite (into_sep_env P). simpl.
+    iIntros "(Hps&Hwand)".  iPoseProof (Hrec1 with "[$] [$]") as "HPs'".
+    rewrite envs_set_counter_sound in Himpl * => ->.
+    by iApply "Hwand".
 Qed.
 End list_destruct.
 
 Ltac set_counter_reduce :=
   match goal with |- ?u => let v := eval cbv [envs_set_counter] in u in change v end.
 
-Ltac iLDestruct H :=
+Ltac iLDestructEx H :=
+  match goal with
+  | [ |- context[ environments.Esnoc _ (INamed H) (bi_exist (fun x => _))%I ]] =>
+    iDestruct H as (x) H
+  | [ |- context[ environments.Esnoc _ H (bi_exist (fun x => _))%I ]] =>
+    iDestruct H as (x) H
+  end.
+
+Ltac iLDestructCore H :=
   eapply (tac_sep_list_destruct _ _ H);
   [pm_reflexivity ||
      let H := pretty_ident H in
@@ -338,11 +383,19 @@ Ltac iLDestruct H :=
      fail "iLDestruct: some name not fresh"
   |set_counter_reduce; pm_reduce].
 
+Ltac iLDestruct H := repeat (try iLDestructEx H); iLDestructCore H.
+
 Ltac iLIntro :=
   let H := iFresh in iIntros H; iLDestruct H.
 
+Ltac iLIntroP :=
+  let H := iFresh in
+  let pat :=constr:(IAlwaysElim (IIdent H)) in
+  iIntros H; iLDestruct H.
+
 Section test.
 Context {PROP: bi}.
+Context {Hpos: BiPositive PROP}.
 Context {P P' : nat → PROP}.
 
 Context (HPP': ∀ n, P n ⊢ P' n).
@@ -353,6 +406,24 @@ Fixpoint bigterm_list (P: nat → PROP) s n :=
   | O => []
   | S n' => (LNamed s, P (S n')) :: bigterm_list P (String "a" s) n'
   end.
+
+Lemma Hex_destruct : (∃ foo : nat, (named "bar" True)) ⊢ (True : PROP).
+Proof.
+  iIntros "H". iLDestruct "H".
+  auto.
+Qed.
+
+Lemma Hpers_ldestruct : (∃ foo : nat, named "bar" (□ emp) ∗ named "foo" (□ emp)%I) ⊢ (True : PROP).
+Proof using Hpos.
+  iIntros "#H". iLDestruct "H".
+  auto.
+Qed.
+
+Lemma Hpers_intro_ldestruct :
+  (∃ foo : nat, named "bar" (□ emp) ∗ named "foo" (□ emp)%I) ⊢ (True : PROP).
+Proof using Hpos.
+  iLIntroP. auto.
+Qed.
 
 Lemma HPP_destruct_named : True ∗ [∗] test_list ∗ True ⊢ P O -∗ P O -∗ P O -∗ P O -∗ [∗] test_list.
 Proof.
