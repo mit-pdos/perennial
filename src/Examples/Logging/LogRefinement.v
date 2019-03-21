@@ -54,9 +54,6 @@ Section refinement_triples.
      end)%I.
 
   Definition state_interp (s:BufState) (txns: list (nat*nat)) :=
-    (buffer_map s txns ∗ free_buffer_map s)%I.
-
-  Definition state_interp' (s:BufState) (txns: list (nat*nat)) :=
     (match s with
      | Empty => ⌜txns = []⌝ ∗ txn_free txn1_start ∗ txn_free txn2_start
      | Txn1 => ∃ txn1, ⌜txns = [txn1]⌝ ∗ txn_map txn1_start txn1 ∗ txn_free txn2_start
@@ -64,25 +61,6 @@ Section refinement_triples.
     | Txn12 => ∃ txn1 txn2, ⌜txns = [txn1; txn2]⌝ ∗ txn_map txn1_start txn1 ∗ txn_map txn2_start txn2
     | Txn21 => ∃ txn1 txn2, ⌜txns = [txn2; txn1]⌝ ∗ txn_map txn1_start txn1 ∗ txn_map txn2_start txn2
      end)%I.
-
-  Theorem state_interp_to_state_interp' s txns :
-    state_interp s txns -∗ state_interp' s txns.
-  Proof.
-    unfold state_interp; destruct s; simpl; iIntros "H".
-    - auto.
-    - iDestruct "H" as "(H1&H2)".
-      iDestruct "H1" as (txn ->) "H1".
-      iExists _; by iFrame.
-    - iDestruct "H" as "(H1&H2)".
-      iDestruct "H1" as (txn ->) "H1".
-      iExists _; by iFrame.
-    - iDestruct "H" as "(H1&H2)".
-      iDestruct "H1" as (txn1 txn2 ->) "H1".
-      iExists _, _; by iFrame.
-    - iDestruct "H" as "(H1&H2)".
-      iDestruct "H1" as (txn1 txn2 ->) "H1".
-      iExists _, _; by iFrame.
-  Qed.
 
   Record ghost_names :=
     { γslock : gname;
@@ -419,9 +397,7 @@ Section refinement_triples.
                                         state_interp s' (txns ++ [txn'])))%I.
   Proof.
     destruct s; simpl; inversion 1; subst.
-    - unfold state_interp at 1.
-      iIntros "(Halloc&(Htxn1&Htxn2))"; simpl.
-      iDestruct "Halloc" as "%"; subst.
+    - iIntros "(->&Htxn1&Htxn2)"; simpl.
       iDestruct "Htxn1" as (txn1) "Htxn1".
       iExists _.
       iFrame.
@@ -429,30 +405,24 @@ Section refinement_triples.
       unfold state_interp; simpl.
       iFrame.
       iExists _; by iFrame.
-    - unfold state_interp at 1.
-      iIntros "(Halloc&Htxn2)"; simpl.
-      iDestruct "Halloc" as (txn ->) "Htxn1".
+    - iIntros "Hstateinterp".
+      iDestruct "Hstateinterp" as (txn ->) "(Htxn1&Htxn2)".
       iDestruct "Htxn2" as (txn2) "Htxn2".
       iExists _.
       iFrame.
       iIntros (txns') "Htxn2".
-      unfold state_interp; simpl.
-      iSplitL; auto.
-      iExists _, _.
-      iSplitR; auto.
-      iFrame.
-    - unfold state_interp at 1.
-      iIntros "(Halloc&Htxn1)"; simpl.
-      iDestruct "Halloc" as (txn ->) "Htxn2".
-      iDestruct "Htxn1" as (txn1) "Htxn1".
+      simpl.
+      iExists _, _; iFrame.
+      iPureIntro; auto.
+    - iIntros "Hstateinterp".
+      iDestruct "Hstateinterp" as (txn ->) "(Htxn1&Htxn2)".
+      iDestruct "Htxn2" as (txn2) "Htxn2".
       iExists _.
       iFrame.
-      iIntros (txns') "Htxn1".
-      unfold state_interp; simpl.
-      iSplitL; auto.
-      iExists _, _.
-      iSplitR; auto.
-      iFrame.
+      iIntros (txns') "Htxn2".
+      simpl.
+      iExists _, _; iFrame.
+      iPureIntro; auto.
   Qed.
 
   Theorem try_reserve_ok Γ :
@@ -845,7 +815,6 @@ Section refinement_triples.
        wp_lock "(Hslocked & Hstateinv)".
        wp_bind.
        iDestruct "Hstateinv" as (s txns') "(Hstate&Hstateinterp&Howntxn)".
-       iPoseProof (state_interp_to_state_interp' with "Hstateinterp") as "Hstateinterp".
        iApply (get_state_ok with "Hstate"). iIntros "!> Hstate".
        wp_bind.
        destruct s; simpl.
