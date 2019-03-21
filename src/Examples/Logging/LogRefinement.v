@@ -20,6 +20,7 @@ Section refinement_triples.
             !inG Σ (authR (optionUR (exclR (listC (prodC natC natC))))),
             !inG Σ (authR (optionUR (exclR (listC natC)))),
             !inG Σ (authR (optionUR (exclR natC))),
+            !inG Σ (authR (optionUR (exclR boolC))),
             !inG Σ (authR (optionUR (exclR BufStateC)))}.
   Import ExMach.
 
@@ -71,6 +72,7 @@ Section refinement_triples.
       (* an abbreviation for log_shadow *)
       (* TODO: come up with a better name *)
       γlog_sh : gname;
+      γuse_mem : gname;
     }.
 
   Fixpoint flatten_txns (txns: list (nat*nat)) : list nat :=
@@ -79,10 +81,11 @@ Section refinement_triples.
     | (v1, v2) :: txns' => v1 :: v2 :: flatten_txns txns'
     end.
 
-  Definition StateLockInv names :=
+  Definition StateLockInv Γ :=
     (∃ s txns,
         state m↦ enc_state s ∗ state_interp s txns ∗
-              own (names.(γtxns)) (◯ Excl' txns))%I.
+              own (Γ.(γtxns)) (◯ Excl' txns) ∗
+              own (Γ.(γuse_mem)) (◯ Excl' true))%I.
 
   Fixpoint log_map (i: nat) log :=
     (match log with
@@ -121,11 +124,13 @@ Section refinement_triples.
   Definition DiskLockInv Γ :=
     (∃ (log log_sh: list nat),
         ⌜log_sh = []⌝ ∗
-                    own (Γ.(γlog)) (◯ Excl' log) ∗ own (Γ.(γlog_sh)) (◯ Excl' log_sh))%I.
+                    own (Γ.(γlog)) (◯ Excl' log) ∗
+                    own (Γ.(γlog_sh)) (◯ Excl' log_sh))%I.
 
-  Definition Abstraction txns log :=
-    source_state {| Log.mem_buf := flatten_txns txns;
-                    Log.disk_log := log |}.
+  Definition Abstraction (use_mem: bool) txns log :=
+    source_state
+       {| Log.mem_buf := if use_mem then flatten_txns txns else [];
+               Log.disk_log := log; |}.
 
   Definition ExecInner Γ :=
     (∃ (s:BufState) (txns: list (nat*nat)) (log log_sh: list nat),
@@ -203,20 +208,21 @@ Section refinement_triples.
   Definition iN : namespace := nroot.@"inner".
 
   Definition VolatileInv Γ (txns: list (nat*nat)) :=
-    (own (Γ.(γtxns)) (● Excl' txns))%I.
+    own (Γ.(γtxns)) (● Excl' txns).
 
-  Definition DurableInv Γ log log_sh :=
+  Definition DurableInv Γ (use_mem: bool) log log_sh :=
     (own (Γ.(γlog)) (● Excl' log) ∗
          own (Γ.(γlog_sh)) (● Excl' log_sh) ∗
+         own (Γ.(γuse_mem)) (● Excl' use_mem) ∗
          ExecDiskInv log log_sh)%I.
 
   Definition ExecInv' Γ :=
     (is_lock lN (Γ.(γslock)) state_lock (StateLockInv Γ) ∗
              is_lock ldN (Γ.(γdlock)) disk_lock (DiskLockInv Γ) ∗
-             inv iN (∃ (txns: list (nat*nat)) (log log_sh: list nat),
+             inv iN (∃ (use_mem: bool) (txns: list (nat*nat)) (log log_sh: list nat),
                         VolatileInv Γ txns ∗
-                                    DurableInv Γ log log_sh ∗
-                                    Abstraction txns log))%I.
+                                    DurableInv Γ use_mem log log_sh ∗
+                                    Abstraction use_mem txns log))%I.
 
   Definition ExecInv :=
     (source_ctx ∗ ∃ (Γ:ghost_names), ExecInv' Γ)%I.
@@ -267,12 +273,12 @@ Section refinement_triples.
     eexists _, (_, _); simpl; intuition eauto.
   Qed.
 
-  Theorem exec_step_GetLog_inbounds i n txns' log :
+  Theorem exec_step_GetLog_inbounds i n mem_buf log :
     i < length log ->
     exec_step Log.l (Call (Log.GetLog i))
-              (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
+              (n, {| Log.mem_buf := mem_buf; Log.disk_log := log |})
               (Val
-                 (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
+                 (n, {| Log.mem_buf := mem_buf; Log.disk_log := log |})
                  (Ret (Some (nth i log 0)), [])).
   Proof.
     intros.
@@ -286,12 +292,12 @@ Section refinement_triples.
     lia.
   Qed.
 
-  Theorem exec_step_GetLog_oob i n txns' log :
+  Theorem exec_step_GetLog_oob i n mem_buf log :
     ¬ i < length log →
     exec_step Log.l (Call (Log.GetLog i))
-              (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
+              (n, {| Log.mem_buf := mem_buf; Log.disk_log := log |})
               (Val
-                 (n, {| Log.mem_buf := flatten_txns txns'; Log.disk_log := log |})
+                 (n, {| Log.mem_buf := mem_buf; Log.disk_log := log |})
                  (Ret None, [])).
   Proof.
     intros.
@@ -309,11 +315,12 @@ Section refinement_triples.
     iDestruct Hinv as (Γ) "#(Hslock&Hdlock&Hinv)".
 
   Ltac DurInv Hinv :=
+    let use_mem := fresh "use_mem" in
     let txns := fresh "txns" in
     let log' := fresh "log'" in
     let log_sh' := fresh "log_sh'" in
-    iInv "Hinv" as (txns log' log_sh') "(Hvol&Hdur&Habs)";
-    iDestruct "Hdur" as ">(Hownlog_auth&Hownlog_sh_auth&Hdisk)";
+    iInv "Hinv" as (use_mem txns log' log_sh') "(Hvol&Hdur&Habs)";
+    iDestruct "Hdur" as ">(Hownlog_auth&Hownlog_sh_auth&Hownuse_mem_auth&Hdisk)";
     try iDestruct "Habs" as ">Habs";
     try iDestruct "Hvol" as ">Hvol";
     repeat Helpers.unify_ghost;
@@ -335,8 +342,8 @@ Section refinement_triples.
 
     iDestruct "Hdisk" as "(%&Hlog_len&Hlog_data)".
     wp_step.
-    iModIntro; iExists _, _, _; iFrame.
-    iSplitL ""; auto.
+    iModIntro; iExists _, _, _, _; iFrame.
+    iSplitL ""; first by auto.
     destruct matches.
     - wp_bind.
       wp_bind.
@@ -345,11 +352,11 @@ Section refinement_triples.
       iPoseProof (log_map_extract i with "Hlog_data") as "(Hi&Hlog_rest)"; auto.
 
       wp_step.
-      iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
+      iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; first by eauto.
       solve_ndisj.
 
       iSpecialize ("Hlog_rest" with "Hi").
-      iModIntro; iExists _, _, _; iFrame.
+      iModIntro; iExists _, _, _, _; iFrame.
       iSplitL ""; auto.
       wp_step.
       wp_unlock "[Hownlog Hownlog_sh]".
@@ -362,9 +369,9 @@ Section refinement_triples.
       iDestruct "Hdisk" as "(Hlog_len&Hlog_data&Hlog_free)".
       wp_step.
 
-      iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
+      iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; first by eauto.
       solve_ndisj.
-      iModIntro; iExists _, _, _. iFrame.
+      iModIntro; iExists _, _, _, _. iFrame.
 
       wp_unlock "[Hownlog Hownlog_sh]".
       { iExists _, _; by iFrame. }
@@ -434,6 +441,7 @@ Section refinement_triples.
           | Some start_a => ∃ (s':BufState) (txns0: list (nat*nat)) (txn:nat*nat),
             txn_map start_a txn ∗
                     own (Γ.(γtxns)) (◯ Excl' txns0) ∗
+                    own (Γ.(γuse_mem)) (◯ Excl' true) ∗
                     (∀ txn', txn_map start_a txn' -∗
                                      state m↦ enc_state s' ∗
                                      state_interp s' (txns0 ++ [txn'])) ∗
@@ -445,7 +453,7 @@ Section refinement_triples.
     unfold try_reserve.
     wp_lock "(Hlocked&Hstateinv)".
 
-    iDestruct "Hstateinv" as (s txns) "(Hstate&Hstateinterp&Howntxn)".
+    iDestruct "Hstateinv" as (s txns) "(Hstate&Hstateinterp&Howntxn&Hownuse_mem)".
     wp_bind.
     iApply (get_state_ok with "Hstate"). iIntros "!> Hstate".
     wp_bind.
@@ -478,6 +486,7 @@ Section refinement_triples.
           ∃ (s':BufState) (txns0: list (nat*nat)) (txn:nat*nat),
             txn_map start_a txn ∗
                     own (Γ.(γtxns)) (◯ Excl' txns0) ∗
+                    own (Γ.(γuse_mem)) (◯ Excl' true) ∗
                     (∀ txn', txn_map start_a txn' -∗
                                      state m↦ enc_state s' ∗
                                      state_interp s' (txns0 ++ [txn'])) ∗
@@ -538,25 +547,30 @@ Section refinement_triples.
 
     iIntros "!>" (start_a) "Hpost".
     wp_bind.
-    iInv "Hinv" as (txns log log_sh) ">(Hvol&Hdur&Habs)".
-    iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)"; eauto.
-    solve_ndisj.
-    iDestruct "Hpost" as (s' txns' txn0) "(Htxnmap&Howntxns&Htxnupd&Hlocked)".
-    iDestruct "Htxnmap" as "(Htxn1&Htxn2)".
+    iInv "Hinv" as (use_mem txns log log_sh) ">(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hownuse_mem_auth&Hdisk)".
+
+    repeat Helpers.unify_ghost.
+    iDestruct "Hpost" as (s' txns' txn0) "(Htxnmap&Howntxns&Hownuse_mem&Htxnupd&Hlocked)".
     unfold VolatileInv.
-    Helpers.unify_ghost.
-    clear txns. rename txns' into txns.
+    repeat Helpers.unify_ghost.
+    clear use_mem txns. rename txns' into txns.
+    iMod (ghost_step_call with "Hj Hsource_inv Habs") as "(Hj&Hsource&_)".
+    cbn iota; eauto.
+    solve_ndisj.
+    iDestruct "Htxnmap" as "(Htxn1&Htxn2)".
     iMod (Helpers.ghost_var_update Γ.(γtxns) (txns ++ [txn]) with "Hvol [$]")
       as "(Howntxns_auth&Howntxns)".
 
     wp_step.
     iModIntro.
-    iExists _, _, _; iFrame.
+    iExists _, _, _, _; iFrame.
+    unfold Abstraction; iFrame.
     wp_bind. wp_step.
     wp_bind.
     iPoseProof ("Htxnupd" with "[Htxn1 Htxn2]") as "(Hstate&Hstateinterp)";
       [ by iFrame | ].
-    wp_unlock "[Howntxns Hstate Hstateinterp]".
+    wp_unlock "[Howntxns Hstate Hstateinterp Hownuse_mem]".
     unfold StateLockInv.
     iExists _, _; iFrame.
     wp_step.
@@ -631,8 +645,8 @@ Section refinement_triples.
     wp_step.
     wp_bind.
     iDestruct "Hinv" as "#(Hslock&Hdlock&Hinv)".
-    iInv "Hinv" as (txns log' log_sh') ">(Hvol&Hdur&Habs)".
-    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
+    iInv "Hinv" as (use_mem txns log' log_sh') ">(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hownuse_mem_auth&Hdisk)".
     repeat Helpers.unify_ghost.
     clear log' log_sh'.
     iDestruct "Hdisk" as "(%&Hlog_len&Hmap&Hlog_sh&Hlog_free)".
@@ -641,8 +655,7 @@ Section refinement_triples.
     iMod (Helpers.ghost_var_update Γ.(γlog_sh) (log_sh ++ [txn.1]) with "[$] [$]") as
         "(Hownlog_sh_auth&Hownlog_sh)".
     wp_step.
-    iExists _, _, _.
-    iFrame.
+    iExists _, _, _, _; iFrame.
     iSplitL "Hlog_sh Hfree1 Hfree".
     iIntros "!> !>".
     rewrite ?app_length; cbn [length].
@@ -655,10 +668,10 @@ Section refinement_triples.
     iFrame.
     iModIntro.
 
-    iInv "Hinv" as (txns' log' log_sh') ">(Hvol&Hdur&Habs)".
-    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
+    iInv "Hinv" as (use_mem' txns' log' log_sh') ">(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hownuse_mem_auth&Hdisk)".
     repeat Helpers.unify_ghost.
-    clear log' log_sh'.
+    clear use_mem log' log_sh'.
     iDestruct "Hdisk" as "(%&Hlog_len&Hmap&Hlog_sh&Hlog_free)".
     rewrite app_length in H2 |- *; cbn [length] in H2 |- *.
     iPoseProof (log_free_reserve1 with "Hlog_free") as (n2) "(Hfree2&Hfree)";
@@ -667,13 +680,14 @@ Section refinement_triples.
     iMod (Helpers.ghost_var_update Γ.(γlog_sh) (log_sh ++ [txn.1; txn.2]) with "[$] [$]") as
         "(Hownlog_sh_auth&Hownlog_sh)".
     wp_step.
-    iExists _, _, _.
+    iExists _, _, _, _.
     iFrame "Hvol Habs".
     iModIntro.
     iFrame "Hlog_len Hownlog_auth Hownlog_sh_auth Hmap".
     rewrite app_length; cbn [length].
 
     iSplitR "HΦ Htxn.1 Htxn.2 Hownlog_sh Hownlog".
+    iFrame.
     iModIntro.
     iSplitL ""; first by iPureIntro; lia.
     iPoseProof (log_map_plus1 with "Hlog_sh Hfree2") as "Hlog_sh".
@@ -746,8 +760,8 @@ Section refinement_triples.
   Proof.
     iIntros (l' -> Hopstep Φ) "(Hinv&Hj&Hsource_inv&Hownlog&Hownlog_sh&Howntxns) HΦ".
     iDestruct "Hinv" as "#(Hslock&Hdlock&Hinv)".
-    iInv "Hinv" as (txns' log' log_sh') ">(Hvol&Hdur&Habs)".
-    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
+    iInv "Hinv" as (use_mem txns' log' log_sh') ">(Hvol&Hdur&Habs)".
+    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hownuse_mem_auth&Hdisk)".
     unfold VolatileInv.
     iDestruct "Hvol" as "Howntxns_auth".
     repeat Helpers.unify_ghost.
