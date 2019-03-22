@@ -635,7 +635,8 @@ Section refinement_triples.
                                 own Γ.(γlog_sh) (◯ Excl' log_sh) }}}
       write_mem_txn txn_start log_off
       {{{ RET tt; txn_map txn_start txn ∗
-                          own Γ.(γlog_sh) (◯ Excl' (log_sh ++ [txn.1; txn.2])) }}}.
+                   own Γ.(γlog) (◯ Excl' log) ∗
+                                own Γ.(γlog_sh) (◯ Excl' (log_sh ++ [txn.1; txn.2])) }}}.
   Proof.
     iIntros (txn Hlen_bound -> Φ) "(Hinv&Htxn&Hownlog&Hownlog_sh) HΦ".
     wp_bind. wp_bind.
@@ -792,6 +793,19 @@ Section refinement_triples.
     repeat (eexists; eauto).
   Qed.
 
+  Arguments write_log_len_ok {j A T} K {ctx} {op} {v} Γ : rename.
+
+  Lemma commit_step_success buf log :
+      Log.l.(step)
+              Log.Commit
+              {| Log.mem_buf := buf; Log.disk_log := log |}
+              (Val {| Log.mem_buf := []; Log.disk_log := log ++ buf |} true).
+  Proof.
+    simpl.
+    left.
+    repeat eexists.
+  Qed.
+
   Theorem commit_refinement j `{LanguageCtx Log.Op _ T Log.l K} :
     {{{ j ⤇ K (Call (Log.Commit)) ∗ Registered ∗ ExecInv }}}
       commit
@@ -875,9 +889,27 @@ Section refinement_triples.
            iFrame "#". }
 
          simpl.
-         iIntros "!> (Htxn&Hownlog_sh)".
+         iIntros "!> (Htxn&Hownlog&Hownlog_sh)".
+         wp_bind.
+         iApply (write_log_len_ok K Γ log [txn1.1; txn1.2] [txn1] (op:=Log.Commit) with "[Hj Hownlog Hownlog_sh Howntxn Hownuse_mem]").
+         { simpl; lia. }
+         { destruct txn1; cbn [flatten_txns fst snd].
+           eauto using commit_step_success. }
+         { iFrame. iFrame "#". }
 
-         admit.
+         iIntros "!> (Hj&Hownlog&Hownlog_sh&Howntxns&Hownuse_mem)".
+         wp_bind.
+         unfold put_state.
+         wp_step.
+         (* NOTE: why do we never have to update the state ghost variable? is it
+         actually useless? *)
+
+         wp_bind.
+         wp_unlock "[Hownlog Hownlog_sh]".
+         { iExists _, _. by iFrame. }
+         wp_step.
+         iApply "HΦ".
+         iFrame.
        * admit.
        * admit.
        * admit.
@@ -918,7 +950,7 @@ Section refinement_triples.
   Proof.
     iIntros "Hmem".
     iPoseProof (mem_ptr_iter_split_aux 0 6 with "Hmem") as "(H&_)".
-    unfold size; lia.
+    { unfold size; lia. }
     unfold state_interp, buffer_map, free_buffer_map, txn_free, txn_map.
     do 6 iDestruct "H" as "(?&H)".
     iFrame.
