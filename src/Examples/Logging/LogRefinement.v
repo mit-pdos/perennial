@@ -182,6 +182,7 @@ Section refinement_triples.
       iIntros "(?&_)"; iFrame.
     - iIntros "(Hfree&Hstart&Hfree')".
       specialize (IHn (S start)).
+
       replace (start + S n) with (S start + n) by lia; simpl in *.
       iPoseProof (IHn with "[Hfree Hfree']") as "Hfree"; first by lia.
       + iFrame.
@@ -967,6 +968,7 @@ Definition helperΣ : gFunctors :=
         GFunctor (authR (optionUR (exclR (listC (prodC natC natC)))));
         GFunctor (authR (optionUR (exclR (listC natC))));
         GFunctor (authR (optionUR (exclR natC)));
+        GFunctor (authR (optionUR (exclR boolC)));
         GFunctor (authR (optionUR (exclR BufStateC)))
     ].
 
@@ -983,6 +985,9 @@ Instance subG_helperΣ4 : subG helperΣ Σ → inG Σ
                                               (authR (optionUR (exclR natC))).
 Proof. solve_inG. Qed.
 Instance subG_helperΣ5 : subG helperΣ Σ → inG Σ
+                                              (authR (optionUR (exclR boolC))).
+Proof. solve_inG. Qed.
+Instance subG_helperΣ6 : subG helperΣ Σ → inG Σ
                                               (authR (optionUR (exclR BufStateC))).
 Proof. solve_inG. Qed.
 
@@ -1006,7 +1011,7 @@ Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq Log.Op T) :
 Proof.
   eapply (exmach_crash_refinement_seq) with
       (Σ := myΣ)
-      (exec_inv := fun H1 H2 => @ExecInv myΣ H2 _ H1 _ _)
+      (exec_inv := fun H1 H2 => @ExecInv myΣ H2 _ H1 _ _ _)
       (exec_inner := fun H1 H2 =>
                        (∃ Γ, @ExecInner myΣ H2 H1 _ _ _ Γ)%I)
       (crash_inner := fun H1 H2 => (∃ Γ, @CrashInner myΣ H2 H1 _ Γ)%I)
@@ -1020,21 +1025,24 @@ Proof.
   { intros. apply _. }
   { set_solver+. }
   { intros. iIntros "(?&?&?)". destruct op.
-    - iApply (append_refinement with "[$]"); eauto.
-    - iApply (commit_refinement with "[$]"). eauto.
-    - iApply (get_log_refinement with "[$]"). eauto.
+    - iApply (append_refinement with "[$]").
+      iIntros "!> (Hj&Hreg)"; iFrame.
+    - iApply (commit_refinement with "[$]").
+      iIntros "!>" (v) "(Hj&Hreg)"; iFrame.
+    - iApply (get_log_refinement with "[$]").
+      iIntros "!>" (v) "(Hj&Hreg)"; iFrame.
   }
   { intros. iIntros "(?&?)"; eauto. }
   { intros. iIntros "((#Hctx&#Hinv)&_)".
-    wp_ret.
     iDestruct "Hinv" as (Γ) "Hinv".
+    wp_ret.
     iInv "Hinv" as (buf log) ">(Hsource&Hstateval&Hstateinterp&Hstatelock&Hdisklock&Hdiskinv&Hownlog)" "_".
     iApply (fupd_mask_weaken _ _).
-    solve_ndisj.
+    { solve_ndisj. }
     iExists _, {| Log.mem_buf := []; Log.disk_log := log |}; iFrame.
     iSplitL "".
-    iPureIntro.
-    { simpl. reflexivity. }
+    { iPureIntro.
+      simpl. reflexivity. }
     iClear "Hctx Hinv".
     iIntros (???) "(#Hctx&Hstate)".
     iMod (Helpers.ghost_var_alloc Empty)
@@ -1069,8 +1077,8 @@ Proof.
   }
   { intros. iIntros "(#Hctx&#Hinv)".
     iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
-    iInv "Hinv" as (txns log log_sh) ">(Hvol&Hdur&Habs)" "_".
-    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Hdisk)".
+    iInv "Hinv" as (use_mem txns log log_sh) ">(Hvol&Hdur&Habs)" "_".
+    iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Huse_mem_auth&Hdisk)".
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
     iModIntro.
