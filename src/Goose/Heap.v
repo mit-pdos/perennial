@@ -346,6 +346,11 @@ Module Data.
       r <- such_that (fun s (r:LockRef) => getAlloc r s = None /\ r <> nullptr _);
         _ <- updAllocs r Unlocked;
         pure r
+    (* TODO: Go rwlocks actually give preference to writers, so once a writer
+       attempts to acquire a lock, it should get it before any subsequent
+       readers that call LockAcquire. We are not modeling this. However, our
+       model should be a conservative overapproximation for purposes of
+       safety. *)
     | LockAcquire r m =>
       v <- readSome (fun s => getDyn s.(allocs) r);
         match lock_acquire m v with
