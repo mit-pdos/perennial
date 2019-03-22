@@ -155,6 +155,11 @@ Ltac inv_step :=
            let Hhd := fresh "Hhd" in
            let Htl_err := fresh "Htl_err" in
            inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
+         | [ |- ¬ Go.step _ _ Err ] => let Herr := fresh "Herr" in
+                                    intros Herr
+         | [ |- ¬ snd_lift _ _ Err ] => apply snd_lift_non_err;
+                                        let Herr := fresh "Herr" in
+                                        intros Herr
          | [ H : and_then _ _ _ Err  |- _ ] =>
            let Hhd_err := fresh "Hhd_err" in
            let Hhd := fresh "Hhd" in
@@ -200,14 +205,13 @@ Lemma wp_ptrStore_start {T} s E (p: ptr T) off l l' v :
    {{{ RET tt; mapsto (existT (Ptr.Heap T) p) 0 Locked (existT (Ptr.Heap T) l) }}}.
 Proof.
   intros Hupd.
-  iIntros (Φ) ">Hi HΦ". rewrite /ptrStore/nonAtomicWriteOp.
+  iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ)".
   iDestruct (@gen_heap_valid1 with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err. simpl => Herr.
-    inv_step; simpl in *; subst; congruence.
+    simpl. inv_step; simpl in *; subst; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
@@ -236,8 +240,7 @@ Proof.
   iDestruct (@gen_heap_valid1 with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err. simpl => Herr.
-    inv_step; simpl in *; subst; congruence.
+    simpl. inv_step; simpl in *; subst; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
@@ -272,8 +275,7 @@ Proof.
   simpl in H0.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err. simpl => Herr.
-    inv_step; simpl in *; subst; try congruence.
+    simpl. inv_step; simpl in *; subst; try congruence.
     destruct l0; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
@@ -338,8 +340,8 @@ Proof.
   iDestruct (@gen_heap_valid1 with "Hσ Hp") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err. simpl => Herr.
-    inv_step; simpl in *; subst; try congruence; inversion Hhd_err.
+    simpl. inv_step; simpl in *; subst; try congruence.
+    inversion Hhd_err.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
@@ -381,112 +383,60 @@ Proof.
   rewrite app_length //=. lia.
 Qed.
 
-Lemma wp_sliceAppendSlice_start {T} s E (p1 p2: slice.t T) q l1 l2 :
-  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
-   Call (InjectOp.inject (SliceAppendSlice p1 p2 SemanticsHelpers.Begin)) @ s; E
-   {{{ RET tt; p1 ↦ l1 ∗ (∃  l0, ⌜ getSliceModel p2 l0 = Some l2 ⌝
-       ∗ mapsto (existT (Ptr.Heap T) p2.(slice.ptr)) q (ReadLocked 0) (existT (Ptr.Heap T) l0)) }}}.
+Lemma take_1_drop {T} (x: T) n l:
+  nth_error l n = Some x →
+  take 1 (drop n l) = [x].
 Proof.
-  iIntros (Φ) "(>Hp1&>Hp2) HΦ".
-  iDestruct "Hp1" as (vs1 Heq1) "Hp1".
-  iDestruct "Hp2" as (vs2 Heq2) "Hp2".
-  iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
-  iDestruct (@gen_heap_valid1 with "Hσ Hp1") as %?.
-  iDestruct (@gen_heap_valid with "Hσ Hp2") as %[s' [? ?]].
-  iModIntro. iSplit.
-  { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err => Herr.
-    inversion Herr; inj_pair2; subst.
-    inv_step; simpl in *; subst; try congruence; inversion Hhd_err.
-    destruct l; try congruence.
-  }
-  iIntros (e2 (n', σ2) Hstep) "!>".
-  inversion Hstep; subst. simpl in *.
-  inv_step.
-  inversion Htl; subst.
-  simpl. iFrame.
-  iMod (@gen_heap_readlock with "Hσ Hp2") as (s' ?) "(Hσ&Hp2)".
-  rewrite /pull_lock in H3.
-  inv_step.
-  rewrite Heqσ in H3.
-  simpl in *. inv_step.
-  iSplitL "Hσ".
-  {  iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
-     unfoldpull => //=. destruct matches. simpl in *.
-     rewrite /force_read_lock. destruct s'; try congruence; inv_step; eauto.
-  }
-  iModIntro.
-  iApply "HΦ"; iFrame.
-  iSplitL "Hp1"; iExists _; iFrame; eauto.
+  revert l.
+  induction n => l; destruct l; inversion 1; eauto.
+Qed.
+
+Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l1 l2 rem off :
+  rem + off <= length l2 →
+  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
+    sliceAppendSlice_aux p1 p2 rem off @ s; E
+  {{{ p', RET p'; p' ↦ (l1 ++ (firstn rem (skipn off l2))) ∗ p2 ↦{q} l2 }}}.
+Proof.
+  iIntros (Hlen Φ) "(>Hp1&>Hp2) HΦ".
+  iInduction rem as [| rem] "IH" forall (off Hlen l1 p1).
+  - simpl. rewrite firstn_O app_nil_r.
+    rewrite -wp_bind_proc_val.
+    iNext. wp_ret. iApply "HΦ"; iFrame.
+  - simpl.
+    destruct (nth_error l2 off) as [x|] eqn:Hnth; last first.
+    { apply nth_error_None in Hnth. lia. }
+    wp_bind. iApply (wp_sliceRead with "Hp2"); eauto.
+    iIntros "!> Hp2".
+    wp_bind. iApply (wp_sliceAppend with "Hp1"); eauto.
+    iIntros "!>". iIntros (p1') "Hp1".
+    replace (S rem) with (1 + rem) by lia.
+    rewrite -take_take_drop.
+    erewrite take_1_drop; eauto.
+    rewrite drop_drop.
+    replace (off + 1) with (S off) by lia.
+    rewrite assoc.
+    iApply ("IH" with "[] Hp1 Hp2"); eauto.
+    iPureIntro; lia.
 Qed.
 
 
-(*
 Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2 :
   {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
     sliceAppendSlice p1 p2 @ s; E
   {{{ p', RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} l2 }}}.
 Proof.
-  iIntros (Φ) "(>Hp1&>Hp2) HΦ".
   rewrite /sliceAppendSlice.
-  rewrite /nonAtomicOp.
-  wp_bind. iApply (wp_sliceAppendSlice_start with "[Hp1 Hp2]").
-  { iFrame. }
-  iNext.
- iIntros "(Hp1&Hp2)".
-  iDestruct "Hp1" as (vs1 Heq1) "Hp1".
-  iDestruct "Hp2" as (vs2 Heq2) "Hp2".
-  iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
-  iDestruct (@gen_heap_valid1 with "Hσ Hp1") as %?.
-  iDestruct (@gen_heap_valid with "Hσ Hp2") as %?.
-  iModIntro. iSplit.
-  { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err => Herr.
-    inversion Herr; inj_pair2; subst.
-    inv_step; simpl in *; subst; try congruence; inversion Hhd_err.
-    destruct l; try congruence.
+  iIntros (Φ) "(>Hp1&>Hp2) HΦ".
+  iAssert (⌜ p2.(slice.length) = length l2 ⌝)%I with "[-]" as %->.
+  { iDestruct "Hp2" as (vs2 Heq2) "Hp2".
+    rewrite /getSliceModel in Heq2.
+    iPureIntro. symmetry.
+    eapply sublist_lookup_length; eauto.
   }
-  iIntros (e2 (n', σ2) Hstep) "!>".
-  inversion Hstep; subst. simpl in *.
-  inv_step.
-  inversion Htl; subst.
-  simpl. iFrame.
-  iMod (@gen_heap_readlock with "Hσ Hp2") as (s' ?) "(Hσ&Hp2)".
-  rewrite /pull_lock in H3.
-  inv_step.
-  rewrite Heqσ in H3.
-  simpl in *. inv_step.
-  iSplitL "Hσ".
-  {  iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
-     unfoldpull => //=. destruct matches. simpl in *.
-     rewrite /force_read_lock. destruct s'; try congruence; inv_step; eauto.
-  }
-  iModIntro.
-
-
-
-  simpl. rewrite /heap_interp.
-  { rewrite /base.delete/partial_fn_delete.
-    destruct equal; subst; auto.
-    match goal with
-    | [ H: getAlloc ?x _ = None |- _ ] => rename H into Hlookup
-    end.
-    eapply SemanticsHelpers.getDyn_lookup_none; eauto.
-    rewrite /getAlloc//= in Hlookup.
-    rewrite SemanticsHelpers.getDyn_deleteDyn_ne in Hlookup; eauto.
-    intros Heq'. subst. congruence.
-  }
-  iModIntro.
+  iApply (wp_sliceAppendSlice_aux with "[$]"); first by lia.
+  rewrite drop_0 firstn_all.
   iApply "HΦ".
-  iExists _. iFrame. iPureIntro.
-  trans_elim (getSliceModel p l1). inv_step.
-  rewrite /getSliceModel//=.
-  apply getSliceModel_len_inv in Heq.
-  rewrite sublist_lookup_all //=.
-  rewrite app_length //=. lia.
 Qed.
-*)
+
 
 End lifting.

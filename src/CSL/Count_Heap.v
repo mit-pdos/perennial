@@ -355,6 +355,17 @@ Section gen_heap.
     by apply nat_included in Hincl.
   Qed.
 
+  Lemma Cinl_included_nat' (n: nat) s:
+    (Cinl n : lockR) ≼ to_lock s → ∃ m, n <= m ∧ to_lock s = Cinl m.
+  Proof.
+    rewrite csum_included.
+    intros [|[(n'&m'&Heqn&Heqm&Hincl)|(?&?&?)]]; intuition; try congruence.
+    { destruct s; simpl in *; congruence. }
+    inversion Heqn. inversion Heqm. subst.
+     apply nat_included in Hincl.
+    eexists; split; eauto.
+  Qed.
+
   Lemma gen_heap_readlock σ l q v :
     gen_heap_ctx σ -∗ mapsto l q Unlocked v ==∗ ∃ s, ⌜ σ l = Some (s, v) ⌝ ∗
                  gen_heap_ctx (<[l:=(force_read_lock s,v)]>σ) ∗ mapsto l q (ReadLocked 0) v.
@@ -389,8 +400,8 @@ Section gen_heap.
   Qed.
 
   Lemma gen_heap_readunlock σ l q v :
-    gen_heap_ctx σ -∗ mapsto l q (ReadLocked 0) v ==∗ ∃ s, ⌜ σ l = Some (s, v) ⌝ ∗
-                 gen_heap_ctx (<[l:=(force_read_unlock s,v)]>σ) ∗ mapsto l q Unlocked v.
+    gen_heap_ctx σ -∗ mapsto l q (ReadLocked 0) v ==∗ ∃ n, ⌜ σ l = Some (ReadLocked n, v) ⌝ ∗
+                 gen_heap_ctx (<[l:=(force_read_unlock (ReadLocked n),v)]>σ) ∗ mapsto l q Unlocked v.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
@@ -418,7 +429,9 @@ Section gen_heap.
            simpl in Hincl. apply Cinl_included_nat in Hincl. lia.
       * reflexivity.
     }
-    iExists s. by iFrame.
+    apply Cinl_included_nat' in Hincl as (m&?&Heq).
+    destruct s; simpl in *; inversion Heq; subst; try lia.
+    iExists _; by iFrame.
   Qed.
 
 

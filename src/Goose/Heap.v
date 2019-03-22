@@ -35,8 +35,9 @@ Module Data.
   allocation (when in reality Go re-uses it if there is capacity and otherwise
   re-allocates and copies) *)
   | SliceAppend T (s:slice.t T) (x:T) : Op (slice.t T)
+  (*
   | SliceAppendSlice T (s:slice.t T) (s':slice.t T) na : Op (retT na (slice.t T))
-
+  *)
   | NewMap V : Op (Map V)
   | MapAlter `(m:Map V) (off:uint64) (f:option V -> option V) na : Op unit
   | MapLookup `(m:Map V) (k:uint64) : Op (option V)
@@ -112,8 +113,25 @@ Module Data.
     Definition sliceAppend T s x : proc _ :=
       Call! @SliceAppend T s x.
 
+    Fixpoint sliceAppendSlice_aux T (s s': slice.t T) rem off :=
+      (match rem with
+      | O => _ <- Ret tt; Ret s
+      | S rem' =>
+         x <- sliceRead s' off;
+         supd <- sliceAppend s x;
+         sliceAppendSlice_aux supd s' rem' (S off)
+      end)%proc.
+
+    (* TODO: if s' is nil, this will not be seen as modifying s, but
+       I suspect racey calls to append(s, nil) by two threads might be
+       unsafe in Go. *)
+    Definition sliceAppendSlice T (s s' : slice.t T) : proc _ :=
+      sliceAppendSlice_aux s s' (s'.(slice.length)) O.
+
+    (*
     Definition sliceAppendSlice T s s' :=
       nonAtomicOp (@SliceAppendSlice T s s').
+     *)
 
     Definition newMap V := Call! NewMap V.
 
@@ -298,23 +316,6 @@ Module Data.
            pure {| slice.ptr := r;
                    slice.offset := 0;
                    slice.length := (p.(slice.length) + 1)%nat |}
-    | SliceAppendSlice p1 p2 ph =>
-      let! (s2, alloc2) <- readSome (getAlloc p2.(slice.ptr));
-           val2 <- readSome (fun _ => getSliceModel p2 alloc2);
-           match ph return relation _ _ (retT ph (slice.t _)) with
-           | Begin => s2' <- readSome (fun _ => lock_acquire Reader s2);
-                       updAllocs p2.(slice.ptr) (s2', alloc2)
-           | FinishArgs _ => s2' <- readSome (fun _ => lock_release Reader s2);
-                              let! (s1, alloc1) <- readSome (getAlloc p1.(slice.ptr));
-                                   _ <- readSome (fun _ => lock_available Writer s1);
-                                   val1 <- readSome (fun _ => getSliceModel p1 alloc1);
-                                   _ <- delAllocs p1.(slice.ptr);
-                                   r <- such_that (fun s (r:ptr _) => getAlloc r s = None /\ r <> nullptr _);
-                                   _ <- updAllocs r (Unlocked, val1 ++ val2);
-                                   pure {| slice.ptr := r;
-                                           slice.offset := 0;
-                                           slice.length := (length val1 + length val2)%nat; |}
-                                 end
     | NewMap V =>
       r <- such_that (fun s (r:Map _) => getAlloc r s = None /\ r <> nullptr _);
         _ <- updAllocs r (Unlocked, ∅);
