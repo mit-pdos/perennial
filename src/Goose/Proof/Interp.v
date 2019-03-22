@@ -198,6 +198,46 @@ Ltac inv_step :=
 
 Ltac unfoldpull := rewrite /insert/partial_fn_insert/base.delete/partial_fn_delete/pull_lock.
 
+Lemma wp_newAlloc {T} s E (v: T) len :
+  {{{ True }}}
+    newAlloc v len @ s ; E
+  {{{ (p: ptr T) , RET p; p ↦ (List.repeat v len) }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    simpl. inv_step; simpl in *; subst; try congruence.
+    inversion Hhd_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step.
+  inversion Hhd. subst.
+  intuition.
+  inv_step.
+  inversion Htl0. subst.
+  inversion Hhd1. subst.
+  inversion Htl1. subst.
+  intuition.
+  eapply SemanticsHelpers.getDyn_lookup_none in H0.
+  unshelve (iMod (@gen_heap_alloc with "Hσ") as "(Hσ&Hp)").
+  { exists (Ptr.Heap T). eauto. }
+  { exists (Ptr.Heap T). exact (List.repeat v len). }
+  { unfoldpull => //=. by rewrite H0. }
+  iFrame.
+  iSplitL "Hσ".
+  { iModIntro. iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
+    unfoldpull => //=.
+    inversion Hhd2. subst.
+    destruct equal; inj_pair2; inv_step.
+    * simpl. destruct equal; simpl; congruence.
+    * simpl. destruct equal; simpl; congruence.
+  }
+  iApply "HΦ"; eauto.
+Qed.
+
 Lemma wp_ptrStore_start {T} s E (p: ptr T) off l l' v :
   list_nth_upd l off v = Some l' →
   {{{ ▷ p ↦ l }}}
