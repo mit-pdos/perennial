@@ -191,7 +191,7 @@ Section gen_heap.
   Implicit Types v : V.
 
   (** General properties of mapsto *)
-  Global Instance mapsto_timeless l q v : Timeless (l ↦{q} v).
+  Global Instance mapsto_timeless l q m v : Timeless (mapsto l q m v).
   Proof. rewrite mapsto_eq /mapsto_def. apply _. Qed.
   Global Instance read_mapsto_timeless l v : Timeless (l r↦ v).
   Proof. rewrite read_mapsto_eq /read_mapsto_def. apply _. Qed.
@@ -304,6 +304,16 @@ Section gen_heap.
     apply gen_heap_singleton_full_included in Hl; eauto.
   Qed.
 
+  Lemma gen_heap_valid2 σ l z s v :
+    gen_heap_ctx σ -∗ mapsto l z s v -∗
+    ⌜ ∃ s' : LockStatus, σ l = Some (s', v) ∧ to_lock s ≼ to_lock s' ⌝.
+  Proof.
+    iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
+    iDestruct (own_valid_2 with "Hσ Hl")
+      as %[Hl _]%auth_valid_discrete_2; auto.
+    apply gen_heap_singleton_included in Hl; eauto.
+  Qed.
+
   Lemma gen_heap_valid σ l q v :
     gen_heap_ctx σ -∗ l ↦{q} v -∗ ⌜∃ s, σ l = Some (s, v) ∧ s ≠ Locked ⌝.
   Proof.
@@ -376,6 +386,40 @@ Section gen_heap.
     destruct Hl as (s&Hl&Hincl).
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (force_read_lock s, v)]> σ)
                                 ⋅ ◯ <[l := (Count q, (to_lock (ReadLocked 0), to_agree v))]>ε)
+            with "Hσ Hl") as "[Hσ Hl]".
+    { eapply auth_update, ofe_fun_local_update => k.
+      rewrite /to_gen_heap/insert/partial_fn_insert//=.
+      destruct ((k == l)).
+      * subst. rewrite Hl.
+        unshelve (apply: option_local_update).
+        unshelve (apply: prod_local_update_2).
+        destruct s.
+        ** simpl in Hincl. apply csum_included in Hincl.
+           destruct Hincl as [|[(?&?&?)|(?&?&?)]]; intuition; try congruence.
+        ** simpl.
+           unshelve (apply: prod_local_update_1).
+           apply csum_local_update_l.
+           apply nat_local_update; lia.
+        ** simpl.
+           unshelve (apply: prod_local_update_1).
+           apply csum_local_update_l.
+           apply nat_local_update; lia.
+      * reflexivity.
+    }
+    iExists s. by iFrame.
+  Qed.
+
+  Lemma gen_heap_readlock' σ l q v n :
+    gen_heap_ctx σ -∗ mapsto l q (ReadLocked n) v ==∗ ∃ s, ⌜ σ l = Some (s, v) ⌝ ∗
+                 gen_heap_ctx (<[l:=(force_read_lock s,v)]>σ)
+                 ∗ mapsto l q (ReadLocked (S n)) v.
+  Proof.
+    iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
+    iDestruct (own_valid_2 with "Hσ Hl")
+      as %[Hl%gen_heap_singleton_included _]%auth_valid_discrete_2.
+    destruct Hl as (s&Hl&Hincl).
+    iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (force_read_lock s, v)]> σ)
+                                ⋅ ◯ <[l := (Count q, (to_lock (ReadLocked (S n)), to_agree v))]>ε)
             with "Hσ Hl") as "[Hσ Hl]".
     { eapply auth_update, ofe_fun_local_update => k.
       rewrite /to_gen_heap/insert/partial_fn_insert//=.

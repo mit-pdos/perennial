@@ -28,6 +28,7 @@ Class gooseG Σ :=
       go_fs_inG :> gen_heapG string (List.list byte) Σ;
       go_fds_inG :> gen_heapG File (List.list byte) Σ;
       go_treg_inG :> tregG Σ;
+      go_lock_inG :> inG Σ lockR;
     }.
 
 Definition pull_lock :=
@@ -188,7 +189,7 @@ Ltac inv_step :=
          | [ H : context[pull_lock _] |- _ ] =>
            unfold pull_lock in H
          | [ H : context[getAlloc ?p ?σ] |- _ ] =>
-           unfold getAlloc in H; try erewrite (SemanticsHelpers.getDyn_lookup1) in H; eauto; []
+           unfold getAlloc in H; erewrite (SemanticsHelpers.getDyn_lookup1) in H; eauto; []
          | [ H : context[let '(s, alloc) := ?x in _] |- _] => destruct x
          | [ H : lock_acquire _ Unlocked = Some _ |- _ ] => inversion H; subst; clear H
          | [ H : lock_acquire Writer _ = Some _ |- _ ] =>
@@ -207,7 +208,7 @@ Ltac inv_step :=
                          | _ => _  end ] |- _ ] =>
            let pfresh := fresh "p" in
            destruct (σ.(heap).(allocs).(SemanticsHelpers.dynMap) p) as [([]&pfresh)|] eqn:Heqσ;
-           inversion H; subst; destruct pfresh
+           inversion H; subst; try destruct pfresh
          end); inj_pair2.
 
 Ltac unfoldpull := rewrite /insert/partial_fn_insert/base.delete/partial_fn_delete/pull_lock.
@@ -454,5 +455,139 @@ Proof.
   rewrite drop_0 firstn_all.
   iApply "HΦ".
 Qed.
+
+Definition lock_mapsto `{gooseG Σ} (l: LockRef) q mode : iProp Σ :=
+   mapsto (existT (Ptr.Lock) l) q mode (existT (Ptr.Lock) tt).
+
+Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
+  (∃ (n: nat) stat, lock_mapsto l n stat ∗
+    match stat with
+      | Unlocked => ⌜ n = O ⌝ ∗ P O
+      | ReadLocked n' => ⌜ n = S n' ⌝ ∗ P n'
+      | Locked => ⌜ n = 1 ⌝
+    end)%I.
+
+(*
+Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
+  ((lock_mapsto l O Unlocked ∗ P O) ∨
+   (∃ n : nat, lock_mapsto l (S n) (ReadLocked n) ∗ P (S n)) ∨
+   (lock_mapsto l 1 Locked))%I.
+*)
+
+Definition is_lock (N: namespace) (l: LockRef) (P: nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
+  (□ (∀ n, P n ==∗ P (S n) ∗ Q) ∗
+   □ (∀ n, Q ∗ P (S n) ==∗ P n) ∗
+   inv N (lock_inv l P Q))%I.
+
+Definition wlocked (l: LockRef) : iProp Σ :=
+  lock_mapsto l (-1) Locked.
+
+Definition rlocked (l: LockRef) : iProp Σ :=
+  lock_mapsto l (-1) (ReadLocked O).
+
+Global Instance inhabited_LockStatus: Inhabited LockStatus.
+Proof. eexists. exact Unlocked. Qed.
+
+Global Instance inhabited_LockMode: Inhabited LockMode.
+Proof. eexists. exact Reader. Qed.
+
+Lemma wp_newLock N s E (P: nat → iProp Σ) (Q: iProp Σ) :
+  {{{ □ (∀ n, P n ==∗ P (S n) ∗ Q) ∗
+      □ (∀ n, Q ∗ P (S n) ==∗ P n) ∗
+      P O
+  }}}
+    newLock @ s ; E
+  {{{ (l: LockRef), RET l; is_lock N l P Q }}}.
+Proof.
+  iIntros (Φ) "(#HPQ1&#HPQ2&HP) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    simpl. inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. do 2 (inv_step; intuition).
+  eapply SemanticsHelpers.getDyn_lookup_none in H0.
+  unshelve (iMod (@gen_heap_alloc with "Hσ") as "(Hσ&Hl)").
+  { exists (Ptr.Lock). eauto. }
+  { exists (Ptr.Lock). exact tt. }
+  { unfoldpull => //=. by rewrite H0. }
+  iFrame.
+  iSplitL "Hσ".
+  { iModIntro. iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
+    unfoldpull => //=.
+    destruct equal; auto.
+  }
+  iApply "HΦ"; eauto.
+  iMod (inv_alloc N _ (lock_inv e2 P Q) with "[HP Hl]").
+  { iNext. iExists O, Unlocked. by iFrame. }
+  iModIntro. iFrame "# ∗".
+Qed.
+
+Lemma wp_lockAcquire_read N l P Q :
+  {{{ is_lock N l P Q }}}
+    lockAcquire l Reader
+  {{{ RET tt; Q ∗ rlocked l }}}.
+Proof.
+  iIntros (Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
+  iInv N as (k stat) "(>H&Hstat)".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (@gen_heap_valid2 with "Hσ H") as %[s' [? ?]].
+  iModIntro. iSplit.
+  { iPureIntro.
+    simpl. inv_step; simpl in *; subst; try congruence.
+    rewrite SemanticsHelpers.getDyn_lookup_none in Hhd_err * => Heq; congruence.
+    destruct x; inversion Htl_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step.
+  destruct stat.
+  { admit. }
+  {
+    unshelve (iMod (@gen_heap_readlock' with "Hσ H") as (s Heq) "(Hσ&Hl)"); simpl.
+    iFrame.
+    iSplitL "Hσ".
+    { iModIntro. iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
+      unfoldpull => //=.
+      inv_step.
+      destruct equal; auto.
+      {
+        destruct x; simpl in Htl; inversion Htl. subst. simpl.
+        destruct equal; auto.
+        rewrite Heqσ in Heq. inv_step; simpl.
+        eapply SemanticsHelpers.getDyn_lookup2 in H3.
+        rewrite Heqσ in H3. inv_step.
+        eauto.
+        congruence.
+        subst. simpl.
+        destruct equal; auto; try congruence.
+
+        rewrite Heqσ in Heq. inv_step; simpl.
+        eapply SemanticsHelpers.getDyn_lookup2 in H3.
+        rewrite Heqσ in H3. inv_step.
+        auto.
+      }
+      {
+        destruct x; simpl in Htl; inversion Htl. subst. simpl.
+        destruct equal; auto.
+        rewrite Heqσ in Heq. inv_step; simpl.
+        eapply SemanticsHelpers.getDyn_lookup2 in H3.
+        rewrite Heqσ in H3. inv_step.
+        eauto.
+        congruence.
+        subst. simpl.
+        destruct equal; auto; try congruence.
+      }
+  }
+  iModIntro. iDestruct "Hstat" as (Heq') "HP".
+  iMod ("HPQ1" with "HP") as "(HP&HQ)".
+  subst.
+  iSplitL "Hl HP".
+  { iModIntro. iNext. iExists (S (S num)), (ReadLocked (S (num))). iFrame.
+Abort.
 
 End lifting.
