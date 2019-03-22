@@ -148,8 +148,14 @@ Lemma lock_acquire_writer_inv l0 l1:
   l0 = Unlocked ∧ l1 = Locked.
 Proof. destruct l0 => //=; inversion 1; auto. Qed.
 
+Lemma lock_available_reader_fail_inv l:
+  lock_available Reader l = None →
+  l = Locked.
+Proof. destruct l => //=. Qed.
+
 Ltac inv_step :=
   repeat (inj_pair2; match goal with
+         | [ H : unit |- _ ] => destruct H
          | [ H : Data.step _ _ Err  |- _ ] =>
            let Hhd_err := fresh "Hhd_err" in
            let Hhd := fresh "Hhd" in
@@ -165,6 +171,8 @@ Ltac inv_step :=
            let Hhd := fresh "Hhd" in
            let Htl_err := fresh "Htl_err" in
            inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
+         | [ H : such_that _ _ _ |- _ ] => inversion H; subst; clear H
+         | [ H : pure _ _ _ |- _ ] => inversion H; subst; clear H
          | [ H : Data.step _ _ (Val _ _)  |- _ ] =>
            let Hhd := fresh "Hhd" in
            let Htl := fresh "Htl" in
@@ -185,6 +193,12 @@ Ltac inv_step :=
          | [ H : lock_acquire _ Unlocked = Some _ |- _ ] => inversion H; subst; clear H
          | [ H : lock_acquire Writer _ = Some _ |- _ ] =>
            apply lock_acquire_writer_inv in H as (?&?)
+         | [ H : lock_available Reader _ = None |- _ ] =>
+           apply lock_available_reader_fail_inv in H
+         | [ H : delAllocs _ _ (Val _ _) |- _ ] =>
+           inversion H; subst; clear H
+         | [ H : updAllocs _ _ _ (Val _ _) |- _ ] =>
+           inversion H; subst; clear H
          | [ H : Some _ = Some _ |- _] => apply Some_inj in H; subst
          | [ H : (?a, ?b) = (?c, ?d) |- _] => apply pair_inj in H as (?&?); subst
          | [ H : Go.step _ _ Err |- _ ] => inversion H; clear H; subst
@@ -209,18 +223,10 @@ Proof.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     simpl. inv_step; simpl in *; subst; try congruence.
-    inversion Hhd_err.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
-  inversion Hhd. subst.
-  intuition.
-  inv_step.
-  inversion Htl0. subst.
-  inversion Hhd1. subst.
-  inversion Htl1. subst.
-  intuition.
+  simpl in *. do 2 (inv_step; intuition).
   eapply SemanticsHelpers.getDyn_lookup_none in H0.
   unshelve (iMod (@gen_heap_alloc with "Hσ") as "(Hσ&Hp)").
   { exists (Ptr.Heap T). eauto. }
@@ -230,10 +236,7 @@ Proof.
   iSplitL "Hσ".
   { iModIntro. iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
     unfoldpull => //=.
-    inversion Hhd2. subst.
-    destruct equal; inj_pair2; inv_step.
-    * simpl. destruct equal; simpl; congruence.
-    * simpl. destruct equal; simpl; congruence.
+    destruct equal; auto.
   }
   iApply "HΦ"; eauto.
 Qed.
@@ -256,7 +259,6 @@ Proof.
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   simpl in *. inv_step.
-  inversion Htl0; subst.
   simpl. iFrame.
   unshelve (iMod (@gen_heap_update with "Hσ Hi") as "[Hheap Hi]"); simpl.
   { exact (Locked). }
@@ -284,11 +286,10 @@ Proof.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
-  inversion Htl; subst; simpl in *.
+  simpl in *. inv_step. subst; simpl in *.
   unshelve (iMod (@gen_heap_update with "Hσ Hi") as "[Hσ Hi]").
   { exact (Unlocked). }
-  { exists (Ptr.Heap T). exact x1. }
+  { exists (Ptr.Heap T). eauto. }
   iModIntro. iFrame.
   iSplitL "Hσ".
   { iApply @gen_heap_ctx_proper; last eauto; intros (?&?).
@@ -316,12 +317,10 @@ Proof.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     simpl. inv_step; simpl in *; subst; try congruence.
-    destruct l0; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   simpl in *. inv_step.
-  inversion Htl; subst.
   iFrame. simpl in *.
   trans_elim (nth_error l1 off). inv_step.
     by iApply "HΦ".
@@ -333,12 +332,7 @@ Proof. iIntros (Φ) ">Hi HΦ". iApply (wp_ptrDeref with "Hi"); eauto. Qed.
 
 Lemma nth_error_lookup {A :Type} (l: Datatypes.list A) (i: nat) :
   nth_error l i = l !! i.
-Proof.
-  revert l.
-  induction i => l.
-  * destruct l; auto.
-  * move: IHi. simpl. destruct l => //=.
-Qed.
+Proof. revert l; induction i => l; destruct l; eauto. Qed.
 
 Lemma wp_sliceRead {T} s E (p: slice.t T) q off l v :
   List.nth_error l off = Some v →
@@ -381,17 +375,12 @@ Proof.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     simpl. inv_step; simpl in *; subst; try congruence.
-    inversion Hhd_err.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
-  inversion Hhd1; subst.
-  inversion Hhd2; subst.
-  inversion Hhd3; subst.
-  inversion Htl0. subst.
-  intuition.
-  simpl. iFrame.
+  simpl in *. inv_step. simpl in *.
+  intuition. subst.
+  iFrame.
   unshelve (iMod (@gen_heap_dealloc with "Hσ Hp") as "Hσ").
   unshelve (iMod (@gen_heap_alloc with "Hσ") as "[Hσ Hp]").
   { exists (Ptr.Heap T).
@@ -417,19 +406,14 @@ Proof.
   iExists _. iFrame. iPureIntro.
   simpl in *.
   trans_elim (getSliceModel p l1). inv_step.
-  rewrite /getSliceModel//=.
   apply getSliceModel_len_inv in Heq.
-  rewrite sublist_lookup_all //=.
-  rewrite app_length //=. lia.
+  rewrite /getSliceModel sublist_lookup_all //= app_length //=. lia.
 Qed.
 
 Lemma take_1_drop {T} (x: T) n l:
   nth_error l n = Some x →
   take 1 (drop n l) = [x].
-Proof.
-  revert l.
-  induction n => l; destruct l; inversion 1; eauto.
-Qed.
+Proof. revert l. induction n => l; destruct l; inversion 1; eauto. Qed.
 
 Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l1 l2 rem off :
   rem + off <= length l2 →
@@ -439,9 +423,8 @@ Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l1 l2 rem off :
 Proof.
   iIntros (Hlen Φ) "(>Hp1&>Hp2) HΦ".
   iInduction rem as [| rem] "IH" forall (off Hlen l1 p1).
-  - simpl. rewrite firstn_O app_nil_r.
-    rewrite -wp_bind_proc_val.
-    iNext. wp_ret. iApply "HΦ"; iFrame.
+  - simpl. rewrite firstn_O app_nil_r -wp_bind_proc_val.
+    iNext; wp_ret; iApply "HΦ"; iFrame.
   - simpl.
     destruct (nth_error l2 off) as [x|] eqn:Hnth; last first.
     { apply nth_error_None in Hnth. lia. }
@@ -449,16 +432,11 @@ Proof.
     iIntros "!> Hp2".
     wp_bind. iApply (wp_sliceAppend with "Hp1"); eauto.
     iIntros "!>". iIntros (p1') "Hp1".
-    replace (S rem) with (1 + rem) by lia.
-    rewrite -take_take_drop.
+    rewrite -Nat.add_1_l -take_take_drop drop_drop assoc Nat.add_1_r.
     erewrite take_1_drop; eauto.
-    rewrite drop_drop.
-    replace (off + 1) with (S off) by lia.
-    rewrite assoc.
     iApply ("IH" with "[] Hp1 Hp2"); eauto.
     iPureIntro; lia.
 Qed.
-
 
 Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2 :
   {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
@@ -469,7 +447,6 @@ Proof.
   iIntros (Φ) "(>Hp1&>Hp2) HΦ".
   iAssert (⌜ p2.(slice.length) = length l2 ⌝)%I with "[-]" as %->.
   { iDestruct "Hp2" as (vs2 Heq2) "Hp2".
-    rewrite /getSliceModel in Heq2.
     iPureIntro. symmetry.
     eapply sublist_lookup_length; eauto.
   }
@@ -477,6 +454,5 @@ Proof.
   rewrite drop_0 firstn_all.
   iApply "HΦ".
 Qed.
-
 
 End lifting.
