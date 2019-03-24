@@ -829,8 +829,10 @@ Proof.
 Qed.
 *)
 
+(* TODO: Recent versions of coq seem to take a lot longer to accept this definition
+   if {struct es} is removed. *)
 Fixpoint wp_proc_seq {T R} OpT Σ (Λ: Layer OpT) `{invPreG Σ} s (es: proc_seq OpT T) (rec: proc OpT R)
-        σ1 φ : iProp Σ :=
+        σ1 φ {struct es} : iProp Σ :=
   match es with
   | Proc_Seq_Nil v => (φ v σ1)%I
   | @Proc_Seq_Bind _ _ T0 e es' =>

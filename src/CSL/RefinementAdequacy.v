@@ -43,7 +43,7 @@ Definition wp_recovery_refinement {T R OpTa OpTc} Σ (Λa: Layer OpTa) (Λc: Lay
 Fixpoint wp_proc_seq_refinement {T R OpTa OpTc} {Σ} (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
         (es: proc_seq OpTa T) (rec: proc OpTc R) (f: ∀ T, proc OpTa T → proc OpTc T)
-        (σ1a: State Λa) σ1c φ E : iProp Σ :=
+        (σ1a: State Λa) σ1c φ E {struct es} : iProp Σ :=
   match es with
   | Proc_Seq_Nil v => (φ v σ1a σ1c)%I
   | @Proc_Seq_Bind _ _ T0 e es' =>
