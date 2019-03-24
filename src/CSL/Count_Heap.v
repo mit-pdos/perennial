@@ -22,11 +22,11 @@ Global Instance partial_fn_delete (A T : Type) `{EqualDec A} : Delete A (A → o
     if b == a then None else f b.
 
 Definition lockR :=
-  csumR natR (optionUR (exclR unitC)).
+  csumR natR (agreeR unitC).
 
 Definition to_lock (s: LockStatus) : lockR :=
   match s with
-  | Locked => Cinr (Excl' tt)
+  | Locked => Cinr (to_agree tt)
   | ReadLocked n => Cinl (S n)
   | Unlocked => Cinl O
   end.
@@ -227,7 +227,7 @@ Section gen_heap.
     rewrite counting_op' //= in Hcount.
   Qed.
 
-  Lemma read_split_join' l (q: nat) n v :
+  Lemma read_split_join1 l (q: nat) n v :
     mapsto l q (ReadLocked n) v ⊣⊢
            mapsto l (S q) Unlocked v ∗ mapsto l (-1) (ReadLocked n) v.
   Proof.
@@ -245,10 +245,9 @@ Section gen_heap.
     rewrite agree_idemp //=.
   Qed.
 
-  (*
-  Lemma read_split_join' l (q: nat) n v :
-    mapsto l q (ReadLocked (S n)) v ⊣⊢
-           mapsto l (S q) (ReadLocked n) v ∗ mapsto l (-1) (ReadLocked O) v.
+  Lemma read_split_join2 l (q: nat) n v :
+    mapsto l q (ReadLocked n) v ⊣⊢
+           mapsto l (S q) (ReadLocked n) v ∗ mapsto l (-1) Unlocked v.
   Proof.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op.
@@ -257,14 +256,27 @@ Section gen_heap.
     rewrite -Some_op ?pair_op.
     rewrite counting_op' //= Cinl_op.
     replace (S q + (-1))%Z with (q : Z) by lia.
-    assert (S n ⋅ 1 = (S (S n))) as Hop.
-    { rewrite /op/cmra_op//=/nat_op. lia. }
+    assert (S n ⋅ 0 = (S n)) as Hop by auto.
     replace (S q + (-1))%Z with (q : Z) by lia.
     repeat (destruct (decide)); try lia.
     rewrite Hop.
     rewrite agree_idemp //=.
   Qed.
-   *)
+
+  Lemma read_split_join3 l (q: nat) v :
+    mapsto l q Locked v ⊣⊢
+           mapsto l (S q) Locked v ∗ mapsto l (-1) Locked v.
+  Proof.
+    rewrite mapsto_eq /mapsto_def.
+    rewrite -own_op -auth_frag_op.
+    f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
+    destruct ((l' == l)) => //=.
+    rewrite -Some_op ?pair_op.
+    rewrite counting_op' //= Cinr_op.
+    replace (S q + (-1))%Z with (q : Z) by lia.
+    repeat (destruct (decide)); try lia.
+    rewrite ?agree_idemp //=.
+  Qed.
 
   Lemma read_split_join l (q: nat) v : l ↦{q} v ⊣⊢ (l ↦{S q} v ∗ l r↦ v).
   Proof.
@@ -420,7 +432,7 @@ Section gen_heap.
   Qed.
 
   Lemma Cinr_included_excl' s:
-    (Cinr (Excl' ()): lockR) ≼ to_lock s → s = Locked.
+    (Cinr (to_agree tt): lockR) ≼ to_lock s → s = Locked.
   Proof.
     rewrite csum_included.
     intros [|[(n'&m'&Heqn&Heqm&Hincl)|(?&?&?)]]; intuition;
@@ -494,16 +506,18 @@ Section gen_heap.
     iExists s. by iFrame.
   Qed.
 
-  Lemma gen_heap_readunlock σ l q v :
-    gen_heap_ctx σ -∗ mapsto l q (ReadLocked 0) v ==∗ ∃ n, ⌜ σ l = Some (ReadLocked n, v) ⌝ ∗
-                 gen_heap_ctx (<[l:=(force_read_unlock (ReadLocked n),v)]>σ) ∗ mapsto l q Unlocked v.
+  Lemma gen_heap_readunlock σ l q n v :
+    gen_heap_ctx σ -∗ mapsto l q (ReadLocked n) v ==∗ ∃ n', ⌜ σ l = Some (ReadLocked n', v) ⌝ ∗
+                 gen_heap_ctx (<[l:=(force_read_unlock (ReadLocked n'),v)]>σ)
+                 ∗ mapsto l q (force_read_unlock (ReadLocked n)) v.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
       as %[Hl%gen_heap_singleton_included _]%auth_valid_discrete_2.
     destruct Hl as (s&Hl&Hincl).
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (force_read_unlock s, v)]> σ)
-                                ⋅ ◯ <[l := (Count q, (to_lock Unlocked, to_agree v))]>ε)
+                                ⋅ ◯ <[l := (Count q, (to_lock (force_read_unlock (ReadLocked n)),
+                                                      to_agree v))]>ε)
             with "Hσ Hl") as "[Hσ Hl]".
     { eapply auth_update, ofe_fun_local_update => k.
       rewrite /to_gen_heap/insert/partial_fn_insert//=.
@@ -516,7 +530,7 @@ Section gen_heap.
            destruct Hincl as [|[(?&?&?)|(?&?&?)]]; intuition; try congruence.
         ** simpl.
            unshelve (apply: prod_local_update_1).
-           destruct num => //=;
+           destruct num, n => //=;
            apply csum_local_update_l;
            apply nat_local_update; lia.
         ** simpl.
@@ -526,7 +540,7 @@ Section gen_heap.
     }
     apply Cinl_included_nat' in Hincl as (m&?&Heq).
     destruct s; simpl in *; inversion Heq; subst; try lia.
-    iExists _; by iFrame.
+    iExists num; by iFrame.
   Qed.
 
 

@@ -136,10 +136,20 @@ Section gen_heap.
   Lemma mapsto_valid' {T} (l: L T) v1 v2: l ↦{0} v1 -∗ l ↦{-1} v2 -∗ False.
   Proof. iIntros "H1 H2". by iApply (@mapsto_valid' with "H1 H2"). Qed.
 
-  Lemma read_split_join' {T} (l: L T) (q: nat) n v :
+  Lemma read_split_join1 {T} (l: L T) (q: nat) n v :
     mapsto l q (ReadLocked n) v ⊣⊢
            mapsto l (S q) Unlocked v ∗ mapsto l (-1) (ReadLocked n) v.
-  Proof. rewrite /mapsto/read_mapsto. apply @read_split_join'. Qed.
+  Proof. rewrite /mapsto/read_mapsto. apply @read_split_join1. Qed.
+
+  Lemma read_split_join2 {T} (l: L T) (q: nat) n v :
+    mapsto l q (ReadLocked n) v ⊣⊢
+           mapsto l (S q) (ReadLocked n) v ∗ mapsto l (-1) Unlocked v.
+  Proof. rewrite /mapsto/read_mapsto. apply @read_split_join2. Qed.
+
+  Lemma read_split_join3 {T} (l: L T) (q: nat) v :
+    mapsto l q Locked v ⊣⊢
+           mapsto l (S q) Locked v ∗ mapsto l (-1) Locked v.
+  Proof. rewrite /mapsto/read_mapsto. apply @read_split_join3. Qed.
 
   Lemma read_split_join {T} (l: L T) (q: nat) v : l ↦{q} v ⊣⊢ (l ↦{S q} v ∗ l r↦ v).
   Proof. rewrite /mapsto/read_mapsto. apply @read_split_join. Qed.
@@ -237,10 +247,11 @@ Section gen_heap.
     destruct equal => //=.
   Qed.
 
-  Lemma gen_typed_heap_readunlock T σ (l: L T) q v :
-    gen_typed_heap_ctx σ -∗ mapsto l q (ReadLocked 0) v ==∗
+  Lemma gen_typed_heap_readunlock T σ (l: L T) q n1 v :
+    gen_typed_heap_ctx σ -∗ mapsto l q (ReadLocked n1) v ==∗
       ∃ n, ⌜ getDyn σ l = Some (ReadLocked n, v) ⌝ ∗
-      gen_typed_heap_ctx (updDyn l (force_read_unlock (ReadLocked n),v) σ) ∗ mapsto l q Unlocked v.
+                               gen_typed_heap_ctx (updDyn l (force_read_unlock (ReadLocked n),v) σ)
+                               ∗ mapsto l q (force_read_unlock (ReadLocked n1)) v.
   Proof.
     iIntros "Hσ Hl". iMod (@gen_heap_readunlock with "Hσ Hl") as (s Heq') "(Hσ&$)".
     iModIntro. iExists s. iSplitL "".

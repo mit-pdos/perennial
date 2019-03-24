@@ -400,8 +400,8 @@ Definition lock_mapsto `{gooseG Σ} (l: LockRef) q mode : iProp Σ :=
 Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
   (∃ (n: nat) stat, lock_mapsto l n stat ∗
     match stat with
-      | Unlocked => P n
-      | ReadLocked n' => False
+      | Unlocked => ⌜ n = O ⌝ ∗ P O
+      | ReadLocked n' => ⌜ n = S n' ⌝ ∗ P (S n')
       | Locked => ⌜ n = 1 ⌝
     end)%I.
 
@@ -421,7 +421,7 @@ Definition wlocked (l: LockRef) : iProp Σ :=
   lock_mapsto l (-1) Locked.
 
 Definition rlocked (l: LockRef) : iProp Σ :=
-  lock_mapsto l (-1) (ReadLocked O).
+  lock_mapsto l (-1) Unlocked.
 
 Global Instance inhabited_LockStatus: Inhabited LockStatus.
 Proof. eexists. exact Unlocked. Qed.
@@ -486,15 +486,26 @@ Proof.
   edestruct (lock_acquire_Reader_success_inv) as (?&?); first by eauto.
   destruct stat.
   { apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
-  { eauto. }
+  {
+    iMod (gen_typed_heap_readlock' (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
+    simpl; inv_step. iFrame.
+    iDestruct "Hstat" as "(%&HP)".
+    iMod ("HPQ1" with "HP") as "(HP&HQ)".
+    do 2 iModIntro.
+    iDestruct (read_split_join2 (T := Ptr.Lock) with "Hl") as "(Hl&?)".
+    iSplitL "Hl HP".
+    { iNext. iExists (S k), (ReadLocked (S num)). subst. by iFrame. }
+    iApply "HΦ"; iFrame.
+  }
   {
     iMod (gen_typed_heap_readlock (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
     simpl; inv_step. iFrame.
-    iMod ("HPQ1" with "Hstat") as "(HP&HQ)".
+    iDestruct "Hstat" as "(%&HP)".
+    iMod ("HPQ1" with "HP") as "(HP&HQ)".
     do 2 iModIntro.
-    iDestruct (read_split_join' (T := Ptr.Lock) with "Hl") as "(Hl&?)".
+    iDestruct (read_split_join2 (T := Ptr.Lock) with "Hl") as "(Hl&?)".
     iSplitL "Hl HP".
-    { iNext. iExists (S k), Unlocked. iFrame. }
+    { iNext. iExists (S O), (ReadLocked O). subst. by iFrame. }
     iApply "HΦ"; iFrame.
   }
 Qed.
@@ -511,34 +522,126 @@ Proof.
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ Hrlocked") as %[s'' [? Hrlock]].
   apply Count_Heap.Cinl_included_nat' in Hrlock as (m&?&?); subst.
+  destruct stat; swap 2 3.
+  { (* Write locked -- impossible *)
+    apply Count_Heap.Cinr_included_excl' in Hlock; subst.
+    inv_step. simpl in *. congruence.
+  }
+  { (* Unlocked -- impossible *)
+    iDestruct "Hstat" as "(>%&HP)"; subst.
+    iDestruct (mapsto_valid' (T := Ptr.Lock) with "H Hrlocked") as %[].
+  }
   iModIntro. iSplit.
   { iPureIntro.
     simpl. inv_step; simpl in *; subst; try congruence.
-    destruct l0; try destruct num; try inversion Htl_err; simpl in *; try congruence.
-    assert (0 = m) by congruence. lia.
+    destruct l0; try destruct num0; try inversion Htl_err; simpl in *; try congruence.
+    apply Count_Heap.Cinl_included_nat in Hlock. lia.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   simpl in *. inv_step.
-  destruct stat.
-  { apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
-  { eauto. }
-  {
-    iMod (gen_typed_heap_readunlock (Ptr.Lock) with "Hσ Hrlocked") as (s Heq) "(Hσ&Hl)".
-    simpl; inv_step. iFrame.
-    simpl in *.
-    destruct k as [|k].
-    { iDestruct (mapsto_valid' (T := Ptr.Lock) with "H Hl") as %[]. }
-    iMod ("HPQ2" with "[$]") as "HP".
-    iModIntro.
-    iDestruct (read_split_join (T := Ptr.Lock) with "[$]") as "H".
+  iDestruct "Hstat" as "(%&HP)"; subst.
+  iMod (gen_typed_heap_readunlock (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
+  simpl; inv_step. iFrame.
+  iMod ("HPQ2" with "[$]") as "HP".
+  iModIntro.
+  unfold rlocked.
+  destruct num.
+  * iDestruct (read_split_join (T := Ptr.Lock) with "[$]") as "H".
     iSplitL "Hσ".
     { destruct s; inversion Htl; subst; iFrame. }
     iModIntro.
     iSplitL "H HP".
-    { iNext. iExists k, Unlocked. iFrame. }
-    by iApply "HΦ"; iFrame.
+    { iNext. iExists O, Unlocked. by iFrame. }
+      by iApply "HΦ"; iFrame.
+  * iDestruct (read_split_join2 (T := Ptr.Lock) with "[$]") as "H".
+    iSplitL "Hσ".
+    { destruct s; inversion Htl; subst; iFrame. }
+    iModIntro.
+    iSplitL "H HP".
+    { iNext. iExists (S num), (ReadLocked num). by iFrame. }
+      by iApply "HΦ"; iFrame.
+Qed.
+
+Lemma lock_acquire_Writer_success_inv (l: LockRef) s σ h':
+  match lock_acquire Writer s with
+  | Some s' => updAllocs l (s', ())
+  | None => none
+  end σ.(heap) (Val h' ()) →
+  s = Unlocked ∧
+  lock_acquire Writer s = Some Locked ∧
+  h' = {| allocs := updDyn l (Locked, ()) σ.(heap).(allocs) |}.
+Proof. destruct s => //=; inversion 1; subst; eauto. Qed.
+
+Lemma wp_lockAcquire_writer N l P Q :
+  {{{ is_lock N l P Q }}}
+    lockAcquire l Writer
+  {{{ RET tt; P O ∗ wlocked l }}}.
+Proof.
+  iIntros (Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
+  iInv N as (k stat) "(>H&Hstat)".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
+  iModIntro. iSplit.
+  { iPureIntro.
+    simpl. inv_step; simpl in *; subst; try congruence.
+    destruct l0; inversion Htl_err.
   }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step.
+  edestruct (lock_acquire_Writer_success_inv) as (?&?&?); first by eauto; subst.
+  destruct stat.
+  { (* Writelocked -- impossible *)
+    apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
+  { (* Readlocked -- impossible *)
+    subst. simpl in *.
+    apply Count_Heap.Cinl_included_nat in Hlock. lia.
+  }
+  iDestruct "Hstat" as "(%&HP)"; subst.
+  iMod (gen_typed_heap_update (Ptr.Lock) with "Hσ H") as "($&Hl)".
+  simpl; inv_step. iFrame.
+  do 2 iModIntro.
+  iDestruct (read_split_join3 (T := Ptr.Lock) l O with "Hl") as "(Hl&?)".
+  iSplitL "Hl".
+  { iNext. iExists 1, Locked. by iFrame. }
+  iApply "HΦ"; iFrame.
+Qed.
+
+Lemma wp_lockRelease_writer N l P Q :
+  {{{ is_lock N l P Q ∗ P O ∗ wlocked l }}}
+    lockRelease l Writer
+  {{{ RET tt; True }}}.
+Proof.
+  iIntros (Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
+  iInv N as (k stat) "(>H&Hstat)".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
+  iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ Hrlocked") as %[s'' [? Hrlock]].
+  apply Count_Heap.Cinr_included_excl' in Hrlock; subst.
+  iModIntro. iSplit.
+  { iPureIntro.
+    simpl. inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step.
+  iFrame.
+  destruct stat.
+  {
+    iDestruct "Hstat" as "%"; subst.
+    iDestruct (read_split_join3 (T := Ptr.Lock) l O with "[$]") as "H".
+    simpl in Htl. inv_step.
+    iMod (gen_typed_heap_update (Ptr.Lock) with "Hσ H") as "($&Hl)".
+    do 2 iModIntro.
+    iSplitL "Hl HQ".
+    { iNext. iExists O, Unlocked. by iFrame. }
+    iApply "HΦ"; by iFrame.
+  }
+  { apply Count_Heap.Cinl_included_nat' in Hlock as (?&?&?); subst. simpl in *; congruence. }
+  { apply Count_Heap.Cinl_included_nat' in Hlock as (?&?&?); subst. simpl in *; congruence. }
 Qed.
 
 End lifting.
