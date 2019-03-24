@@ -74,16 +74,7 @@ Section definitions.
   Definition mapsto := mapsto_aux.(unseal).
   Definition mapsto_eq : @mapsto = @mapsto_def := mapsto_aux.(seal_eq).
 
-  Definition read_mapsto_def (l : L) (s: LockStatus) (v: V) : iProp Σ :=
-    own (gen_heap_name hG)
-        (◯ (fun l' =>
-              if l' == l then
-                Some (Count (-1), (to_lock s, to_agree (v : leibnizC V)))
-              else
-                ε)).
-  Definition read_mapsto_aux : seal (@read_mapsto_def). by eexists. Qed.
-  Definition read_mapsto := read_mapsto_aux.(unseal).
-  Definition read_mapsto_eq : @read_mapsto = @read_mapsto_def := read_mapsto_aux.(seal_eq).
+  Definition read_mapsto l s v := mapsto l (-1) s v.
 End definitions.
 
 Local Notation "l ↦{ q } v" := (mapsto l q Unlocked v)
@@ -194,7 +185,7 @@ Section gen_heap.
   Global Instance mapsto_timeless l q m v : Timeless (mapsto l q m v).
   Proof. rewrite mapsto_eq /mapsto_def. apply _. Qed.
   Global Instance read_mapsto_timeless l v : Timeless (l r↦ v).
-  Proof. rewrite read_mapsto_eq /read_mapsto_def. apply _. Qed.
+  Proof. apply _. Qed.
 
   Lemma mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ ⌜v1 = v2⌝.
   Proof.
@@ -223,9 +214,61 @@ Section gen_heap.
     repeat destruct decide => //=. lia.
   Qed.
 
+  Lemma mapsto_valid' l v1 v2: l ↦{0} v1 -∗ l ↦{-1} v2 -∗ False.
+  Proof.
+    apply wand_intro_r.
+    rewrite mapsto_eq /mapsto_def.
+    rewrite -own_op -auth_frag_op own_valid discrete_valid.
+    f_equiv=> /auth_own_valid /=.
+    intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
+    destruct ((l == l)); last by congruence.
+    rewrite -Some_op pair_op.
+    intros [Hcount ?].
+    rewrite counting_op' //= in Hcount.
+  Qed.
+
+  Lemma read_split_join' l (q: nat) n v :
+    mapsto l q (ReadLocked n) v ⊣⊢
+           mapsto l (S q) Unlocked v ∗ mapsto l (-1) (ReadLocked n) v.
+  Proof.
+    rewrite mapsto_eq /mapsto_def.
+    rewrite -own_op -auth_frag_op.
+    f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
+    destruct ((l' == l)) => //=.
+    rewrite -Some_op ?pair_op.
+    rewrite counting_op' //= Cinl_op.
+    replace (S q + (-1))%Z with (q : Z) by lia.
+    assert (0 ⋅ S n = (S n)) as Hop by auto.
+    replace (S q + (-1))%Z with (q : Z) by lia.
+    repeat (destruct (decide)); try lia.
+    rewrite Hop.
+    rewrite agree_idemp //=.
+  Qed.
+
+  (*
+  Lemma read_split_join' l (q: nat) n v :
+    mapsto l q (ReadLocked (S n)) v ⊣⊢
+           mapsto l (S q) (ReadLocked n) v ∗ mapsto l (-1) (ReadLocked O) v.
+  Proof.
+    rewrite mapsto_eq /mapsto_def.
+    rewrite -own_op -auth_frag_op.
+    f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
+    destruct ((l' == l)) => //=.
+    rewrite -Some_op ?pair_op.
+    rewrite counting_op' //= Cinl_op.
+    replace (S q + (-1))%Z with (q : Z) by lia.
+    assert (S n ⋅ 1 = (S (S n))) as Hop.
+    { rewrite /op/cmra_op//=/nat_op. lia. }
+    replace (S q + (-1))%Z with (q : Z) by lia.
+    repeat (destruct (decide)); try lia.
+    rewrite Hop.
+    rewrite agree_idemp //=.
+  Qed.
+   *)
+
   Lemma read_split_join l (q: nat) v : l ↦{q} v ⊣⊢ (l ↦{S q} v ∗ l r↦ v).
   Proof.
-    rewrite mapsto_eq read_mapsto_eq /mapsto_def /read_mapsto_def.
+    rewrite /read_mapsto mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op.
     f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
     destruct ((l' == l)) => //=.
@@ -374,6 +417,14 @@ Section gen_heap.
     inversion Heqn. inversion Heqm. subst.
      apply nat_included in Hincl.
     eexists; split; eauto.
+  Qed.
+
+  Lemma Cinr_included_excl' s:
+    (Cinr (Excl' ()): lockR) ≼ to_lock s → s = Locked.
+  Proof.
+    rewrite csum_included.
+    intros [|[(n'&m'&Heqn&Heqm&Hincl)|(?&?&?)]]; intuition;
+      destruct s; simpl in *; congruence.
   Qed.
 
   Lemma gen_heap_readlock σ l q v :

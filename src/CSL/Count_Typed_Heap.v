@@ -115,9 +115,6 @@ Qed.
 Section gen_heap.
   Context `{gen_typed_heapG A L V Σ}.
   Implicit Types P Q : iProp Σ.
-  (*
-  Implicit Types Φ : V → iProp Σ.
-   *)
   Implicit Types σ : DynMap L (λ T, (LockStatus * V T)%type).
   Implicit Types h g : gen_typed_heapUR A L V.
 
@@ -136,24 +133,16 @@ Section gen_heap.
     q1 >= 0 → q2 >= 0 → l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ False.
   Proof. iIntros (??) "H1 H2". by iApply (@mapsto_valid with "H1 H2"). Qed.
 
+  Lemma mapsto_valid' {T} (l: L T) v1 v2: l ↦{0} v1 -∗ l ↦{-1} v2 -∗ False.
+  Proof. iIntros "H1 H2". by iApply (@mapsto_valid' with "H1 H2"). Qed.
+
+  Lemma read_split_join' {T} (l: L T) (q: nat) n v :
+    mapsto l q (ReadLocked n) v ⊣⊢
+           mapsto l (S q) Unlocked v ∗ mapsto l (-1) (ReadLocked n) v.
+  Proof. rewrite /mapsto/read_mapsto. apply @read_split_join'. Qed.
+
   Lemma read_split_join {T} (l: L T) (q: nat) v : l ↦{q} v ⊣⊢ (l ↦{S q} v ∗ l r↦ v).
   Proof. rewrite /mapsto/read_mapsto. apply @read_split_join. Qed.
-
-  (*
-  Lemma gen_typed_heap_ctx_proper σ σ' :
-    (∀ T (k: L T), getDyn σ k = getDyn σ' k) →
-    gen_typed_heap_ctx σ -∗ gen_typed_heap_ctx σ'.
-  Proof.
-    intros Hequiv. apply gen_heap_ctx_proper. intros (T&k).
-    rewrite /pull_lock.
-    intros Hequiv. rewrite /gen_heap_ctx.
-    iApply own_mono.
-    rewrite /to_gen_heap.
-    apply auth_included; split; auto => //=.
-    exists ε. rewrite right_id.
-    do 2 f_equiv. intros k. rewrite Hequiv; eauto.
-  Qed.
-   *)
 
   Lemma pull_lock_getDyn {T} σ l (s: LockStatus) v:
     pull_lock (σ.(dynMap) (existT T l)) = Some (s, existT T v) →
