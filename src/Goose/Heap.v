@@ -176,18 +176,6 @@ Module Data.
    *)
   Definition hashtableM V := (LockStatus * gmap.gmap uint64 V)%type.
 
-  Definition ptrModel (code:Ptr.ty) : Type :=
-    match code with
-    | Ptr.Heap T =>
-      (* note that for convenience we use a reader-writer LockStatus, but the
-      way its used (only Writer acquires/releases) guarantees that it is always
-      either Unlocked or Locked, never ReadLocked *)
-      LockStatus * list T
-    | Ptr.Map V => hashtableM V
-    | Ptr.Lock => LockStatus
-      (* JDT: it might be more convenient if this was LockStatus * unit *)
-    end.
-
   Definition ptrRawModel (code:Ptr.ty) : Type :=
     match code with
     | Ptr.Heap T => list T
@@ -195,10 +183,14 @@ Module Data.
     | Ptr.Lock => unit
     end.
 
-  (*
+  Definition ptrModel (code:Ptr.ty) : Type :=
+   (* note that for convenience we use a reader-writer LockStatus for heap, but the
+   way its used (only Writer acquires/releases) guarantees that it is always
+   either Unlocked or Locked, never ReadLocked *)
+    LockStatus * ptrRawModel code.
+
   Lemma ptrModel_raw1 code: ptrModel code = (LockStatus * ptrRawModel code)%type.
   Proof. destruct code; auto. Qed.
-   *)
 
   Record State : Type :=
     mkState { allocs : DynMap Ptr ptrModel; }.
@@ -345,7 +337,7 @@ Module Data.
            pure tt
     | NewLock =>
       r <- such_that (fun s (r:LockRef) => getAlloc r s = None /\ r <> nullptr _);
-        _ <- updAllocs r Unlocked;
+        _ <- updAllocs r (Unlocked, tt);
         pure r
     (* TODO: Go rwlocks actually give preference to writers, so once a writer
        attempts to acquire a lock, it should get it before any subsequent
@@ -353,18 +345,18 @@ Module Data.
        model should be a conservative overapproximation for purposes of
        safety. *)
     | LockAcquire r m =>
-      v <- readSome (fun s => getDyn s.(allocs) r);
+      let! (v, _) <- readSome (fun s => getDyn s.(allocs) r);
         match lock_acquire m v with
-        | Some s' => updAllocs r s'
+        | Some s' => updAllocs r (s', tt)
         | None =>
           (* disabled transition; will only become available when the lock
              is freed by its owner *)
           none
         end
     | LockRelease r m =>
-      v <- readSome (fun s => getDyn s.(allocs) r);
+      let! (v, _) <- readSome (fun s => getDyn s.(allocs) r);
         match lock_release m v with
-        | Some s' => updAllocs r s'
+        | Some s' => updAllocs r (s', tt)
         | None => error (* attempt to free the lock incorrectly *)
         end
     | Uint64Get p ph =>

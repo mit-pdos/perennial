@@ -111,11 +111,11 @@ Section DerivedMethods.
       rewrite ?ascii_byte_bijection1, ?ascii_byte_bijection2; congruence.
   Qed.
 
-  Definition ptr T := Ptr (Ptr.Heap T).
-  Definition Map V := Ptr (Ptr.Map V).
-  Definition LockRef := Ptr Ptr.Lock.
-
 End DerivedMethods.
+
+Notation ptr T := (Ptr (Ptr.Heap T)).
+Notation Map V := (Ptr (Ptr.Map V)).
+Notation LockRef := (Ptr Ptr.Lock).
 
 Module slice.
   Section Slices.
@@ -162,7 +162,7 @@ Proof.
   hnf; intros.
   destruct x as [T1 x], y as [T2 y].
   destruct x, y; simpl.
-  destruct (equal (existT _ ptr0) (existT _ ptr1));
+  destruct (equal (existT _ ptr) (existT _ ptr0));
     [ | right ].
   - destruct (equal offset offset0), (equal length length0);
       [ left | right.. ];
