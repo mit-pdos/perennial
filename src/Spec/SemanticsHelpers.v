@@ -66,7 +66,11 @@ Record DynMap A (Ref: A -> Type) (Model: A -> Type) :=
     dynMap_wf : forall T v, match dynMap (existT T v) with
                        | Some (existT T' _) => T' = T
                        | None => True
-                       end; }.
+                       end;
+    dynMap_dom : list (sigT Ref);
+    dynMap_dom_spec : forall x, dynMap x <> None <-> In x dynMap_dom;
+    dynMap_dom_nodup : NoDup dynMap_dom;
+}.
 
 Module OptionNotations.
   Delimit Scope option_monad with opt.
@@ -151,33 +155,92 @@ Lemma getDyn_lookup_none2 A (Ref Model: A -> Type)
 Proof. edestruct getDyn_lookup_none; eauto. Qed.
 
 Arguments getDyn {A Ref Model} m {a} r.
+From stdpp Require Import list.
+
+Instance In_dec {T} {dec: EqualDec T} (a: T) l:
+  Decision (In a l).
+Proof.
+  assert (EqDecision T).
+  { unfold EqDecision, EqualDec, Decision in *; eauto. }
+  edestruct (@elem_of_list_dec _ _ a l).
+  * left. by apply elem_of_list_In.
+  * right. intros Hfalse. eapply n. by apply elem_of_list_In.
+Qed.
 
 Definition updDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
            a (v: Ref a) (x: Model a) (m: DynMap Ref Model) : DynMap Ref Model.
 Proof.
-  refine {| dynMap := fun r => if r == existT a v then ret! existT a x else m.(dynMap) r |}.
-  intros.
-  destruct (existT _ v0 == existT _ v).
-  - inversion e; auto.
-  - apply (m.(dynMap_wf) _ v0).
+  refine {| dynMap := fun r => if r == existT a v then ret! existT a x else m.(dynMap) r;
+            dynMap_dom := if decide (In (existT a v) m.(dynMap_dom)) then
+                            m.(dynMap_dom)
+                          else
+                            existT a v :: m.(dynMap_dom) |}.
+  { intros.
+    destruct (existT _ v0 == existT _ v).
+    - inversion e; auto.
+    - apply (m.(dynMap_wf) _ v0). }
+  { intros (a'&v').
+    destruct (existT _ _ == existT _ v).
+    - abstract (split; auto; intros _; inversion e; subst;
+                apply Eqdep.EqdepTheory.inj_pair2 in e; subst; auto;
+                case (decide); eauto; intros; by left).
+    - abstract (rewrite dynMap_dom_spec; split; case (decide); auto; intros ?;
+                [ by right | intros [|]; eauto; congruence ]).
+  }
+  { case (decide).
+    - intros; apply dynMap_dom_nodup.
+    - intros Hnotin. econstructor; [| apply dynMap_dom_nodup].
+      by rewrite elem_of_list_In.
+  }
 Defined.
+
+Lemma remove_In_ne {A: Type} dec (l: list A) (x y : A):
+  ~ (x = y) -> In y (remove dec x l) <-> In y l.
+Proof.
+  induction l; eauto.
+  intros Hneq. simpl. destruct dec; subst.
+  * rewrite IHl; intuition.
+  * simpl. rewrite IHl; eauto.
+Qed.
+
+Lemma remove_NoDup {A: Type} dec (l: list A) (x : A):
+  NoDup l → NoDup (remove dec x l).
+Proof.
+  induction 1; simpl. econstructor.
+  destruct dec; subst; eauto.
+  econstructor; eauto. rewrite elem_of_list_In, remove_In_ne; eauto.
+  by rewrite <-elem_of_list_In.
+Qed.
 
 Definition deleteDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
            a (v: Ref a) (m: DynMap Ref Model) : DynMap Ref Model.
 Proof.
-  refine {| dynMap := fun r => if r == existT a v then None else m.(dynMap) r |}.
+  refine {| dynMap := fun r => if r == existT a v then None else m.(dynMap) r;
+            dynMap_dom := remove dec (existT a v) m.(dynMap_dom) |}.
   intros.
   destruct (existT _ v0 == existT _ v).
   - auto.
   - apply (m.(dynMap_wf) _ v0).
+  - { intros (a'&v').
+      destruct (existT _ _ == existT _ v).
+      - split; auto; intros Hin.
+        * by eauto.
+        * inversion e. subst.
+          apply Eqdep.EqdepTheory.inj_pair2 in e; subst; auto.
+          exfalso; eapply remove_In; eauto.
+      - rewrite dynMap_dom_spec. rewrite remove_In_ne; auto.
+    }
+  - apply remove_NoDup, dynMap_dom_nodup.
 Defined.
 
 Arguments updDyn {A Ref Model dec a} v x m.
 Arguments deleteDyn {A Ref Model dec a} v m.
 
 Instance empty_dynmap A Ref Model : Empty (@DynMap A Ref Model).
-refine {| dynMap := fun _ => None; |}.
-intros; auto.
+refine {| dynMap := fun _ => None; dynMap_dom := nil |}.
+- intros; auto.
+- abstract (intros; split; try inversion 1; congruence).
+- econstructor.
 Defined.
 
 Lemma getDyn_deleteDyn_ne A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
