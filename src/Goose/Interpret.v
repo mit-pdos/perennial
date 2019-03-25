@@ -1,6 +1,7 @@
 From RecoveryRefinement Require Import Spec.SemanticsHelpers.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
+
 Inductive rterm : Type -> Type -> Type -> Type :=
 | Pure A T : T -> rterm A A T
 | Reads A T : (A -> T) -> rterm A A T
@@ -8,50 +9,32 @@ Inductive rterm : Type -> Type -> Type -> Type :=
 | AndThen A B C T1 T2 : rterm A B T1 -> (T1 -> rterm B C T2) -> rterm A C T2
 .
 
-Inductive Output {B} {T} : Type :=
-| Success (s: B) (v: T) 
+Inductive Output B T : Type :=
+| Success (b: B) (t: T) 
 | Error
 .
 
-Arguments Success: clear implicits.
+Arguments Success {_ _}.
+Arguments Error {_ _}.
 
-Fixpoint interpret (A B T : Type) (r : rterm A B T) (X : A) : Output :=
-  match r in (rterm T0 T1 T2) return (T0 -> Output) with
-  | @Pure A0 T0 t => fun X0 : A0 => Success A0 T0 X0 t
-  | @Reads A0 T0 t => fun X0 : A0 => Success A0 T0 X0 (t X0)
-  | @ReadSome A0 T0 o =>
-      fun X0 : A0 =>
-      let X1 := o X0 in match X1 with
-                        | Some t => Success A0 T0 X0 t
+Fixpoint interpret (A B T : Type) (r : rterm A B T) (X : A) : Output B T :=
+  match r in (rterm A B T) return (A -> Output B T) with
+  | Pure A t => fun a => Success a t
+  | Reads f => fun a => Success a (f a)
+  | ReadSome f =>
+      fun a =>
+      let t' := f a in match t' with
+                        | Some t => Success a t
                         | None => Error
                         end
-  | @AndThen A0 B0 C T1 T2 r0 r1 =>
-      fun X0 : A0 =>
-      let X1 := @interpret A0 B0 T1 r0 X0 in
-      match X1 with
-      | Success _ _ s v => let X2 := r1 v in let X3 := @interpret B0 C T2 X2 s in X3
+  | AndThen r f =>
+      fun a =>
+      let o := interpret r a in
+      match o with
+      | Success b t => let r' := f t in let o' := interpret r' b in o'
       | Error => Error
       end
   end X. 
-
-(*
-  intros.
-  destruct r.
-  - exact (Success A T X t).
-  - exact (Success A T X (t X)).
-  - pose proof (o X).
-    destruct X0.
-    exact (Success A T X t).
-    exact Error.
-  - pose proof (interpret A B T1 r X).
-    destruct X0.
-    + pose proof (r0 v).
-      pose proof (interpret B C T2 X0 s).
-      exact X1.
-    + exact Error.
-Qed.
-Print interpret.    
-*)
 
 Fixpoint rtermDenote A B T (r: rterm A B T) : relation A B T :=
   match r with
@@ -109,8 +92,6 @@ Goal False.
   test (rtermDenote ex3).
 Abort.
 
-(* These appear to do the right thing, based on my understanding. I'll
-try to get some real examples written soon. *)
 Compute (interpret ex1 7).
 Compute (interpret ex2 7).
-Compute (interpret ex3 7).
+Compute (interpret ex3 7) .
