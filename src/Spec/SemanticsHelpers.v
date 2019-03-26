@@ -68,7 +68,7 @@ Record DynMap A (Ref: A -> Type) (Model: A -> Type) :=
                        | None => True
                        end;
     dynMap_dom : list (sigT Ref);
-    dynMap_dom_spec : forall x, dynMap x <> None <-> In x dynMap_dom;
+    dynMap_dom_spec : forall x, dynMap x <> None <-> x ∈ dynMap_dom;
     dynMap_dom_nodup : NoDup dynMap_dom;
 }.
 
@@ -157,6 +157,15 @@ Proof. edestruct getDyn_lookup_none; eauto. Qed.
 Arguments getDyn {A Ref Model} m {a} r.
 From stdpp Require Import list.
 
+Instance In_dec {T} {dec: EqualDec T} (a: T) (l: list T):
+  Decision (a ∈ l).
+Proof.
+  assert (EqDecision T).
+  { unfold EqDecision, EqualDec, Decision in *; eauto. }
+  apply _.
+Qed.
+
+(*
 Instance In_dec {T} {dec: EqualDec T} (a: T) l:
   Decision (In a l).
 Proof.
@@ -166,12 +175,13 @@ Proof.
   * left. by apply elem_of_list_In.
   * right. intros Hfalse. eapply n. by apply elem_of_list_In.
 Qed.
+*)
 
 Definition updDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
            a (v: Ref a) (x: Model a) (m: DynMap Ref Model) : DynMap Ref Model.
 Proof.
   refine {| dynMap := fun r => if r == existT a v then ret! existT a x else m.(dynMap) r;
-            dynMap_dom := if decide (In (existT a v) m.(dynMap_dom)) then
+            dynMap_dom := if decide ((existT a v) ∈ m.(dynMap_dom)) then
                             m.(dynMap_dom)
                           else
                             existT a v :: m.(dynMap_dom) |}.
@@ -185,14 +195,30 @@ Proof.
                 apply Eqdep.EqdepTheory.inj_pair2 in e; subst; auto;
                 case (decide); eauto; intros; by left).
     - abstract (rewrite dynMap_dom_spec; split; case (decide); auto; intros ?;
-                [ by right | intros [|]; eauto; congruence ]).
+                [ by right | rewrite elem_of_cons; intros [|]; eauto; congruence ]).
   }
   { case (decide).
     - intros; apply dynMap_dom_nodup.
-    - intros Hnotin. econstructor; [| apply dynMap_dom_nodup].
-      by rewrite elem_of_list_In.
+    - intros Hnotin. econstructor; [| apply dynMap_dom_nodup]; auto.
   }
 Defined.
+
+Lemma remove_elem_of {A: Type} dec (l: list A) (x : A):
+  ~ x ∈ (remove dec x l).
+Proof.
+  induction l; eauto; simpl; eauto.
+  * inversion 1.
+  * destruct dec; subst; eauto. rewrite elem_of_cons; intuition.
+Qed.
+
+Lemma remove_elem_of_ne {A: Type} dec (l: list A) (x y : A):
+  ~ (y = x) -> y ∈ (remove dec x l) <-> y ∈ l.
+Proof.
+  induction l; eauto.
+  intros Hneq. simpl. destruct dec; subst; rewrite ?elem_of_cons.
+  * rewrite IHl; intuition.
+  * rewrite ?IHl; eauto.
+Qed.
 
 Lemma remove_In_ne {A: Type} dec (l: list A) (x y : A):
   ~ (x = y) -> In y (remove dec x l) <-> In y l.
@@ -227,8 +253,8 @@ Proof.
         * by eauto.
         * inversion e. subst.
           apply Eqdep.EqdepTheory.inj_pair2 in e; subst; auto.
-          exfalso; eapply remove_In; eauto.
-      - rewrite dynMap_dom_spec. rewrite remove_In_ne; auto.
+          exfalso; eapply remove_elem_of; eauto.
+      - rewrite dynMap_dom_spec. rewrite remove_elem_of_ne; auto.
     }
   - apply remove_NoDup, dynMap_dom_nodup.
 Defined.
@@ -243,20 +269,142 @@ refine {| dynMap := fun _ => None; dynMap_dom := nil |}.
 - econstructor.
 Defined.
 
-Lemma getDyn_deleteDyn_ne A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+Global Instance DynMap_equiv A (Ref Model: A → Type) : Equiv (DynMap Ref Model) := λ m m',
+  ∀ a (r: Ref a), getDyn m r = getDyn m' r.
+
+Global Instance getDyn_Proper A (Ref Model: A → Type) :
+  Proper (equiv ==> forall_relation (λ a : A, pointwise_relation (Ref a) eq))
+         (@getDyn A Ref Model).
+Proof. intros m1 m2 Hequiv. eauto. Qed.
+
+Global Instance DynMap_equivalence A (Ref Model: A → Type):
+  Equivalence (@equiv (DynMap Ref Model) (@DynMap_equiv _ Ref Model)).
+Proof.
+  split.
+  - intros m a r; eauto.
+  - intros m1 m2 a r; eauto.
+  - intros m1 m2 m3 ?? a r. etransitivity; eauto.
+Qed.
+
+Lemma getDyn_deleteDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+      (m: DynMap Ref Model) a (r: Ref a) :
+  getDyn (deleteDyn r m) r = None.
+Proof.
+  intros.
+  unfold getDyn, deleteDyn. destruct m as [map wf]. simpl.
+  destruct (equal); [| congruence]; eauto.
+Qed.
+
+Lemma getDyn_deleteDyn_ne1 A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+      (m: DynMap Ref Model) a (r1: Ref a) (r2: sigT Ref) :
+  ~ (existT _ r1 = r2) ->
+  getDyn (deleteDyn r1 m) (projT2 r2) = getDyn m (projT2 r2).
+Proof.
+  unfold getDyn, deleteDyn; simpl. destruct equal; [| by congruence].
+  intros. exfalso. destruct r2. simpl in *. inversion e; subst.
+  apply Eqdep.EqdepTheory.inj_pair2 in e; subst. intuition.
+Qed.
+
+Lemma getDyn_deleteDyn_ne2 A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
       (m: DynMap Ref Model) a (r1 r2: Ref a) :
   ~ (r1 = r2) ->
   getDyn (deleteDyn r1 m) r2 =
   getDyn m r2.
 Proof.
-  intros.
-  unfold getDyn, deleteDyn. destruct m as [map wf]. simpl.
-  destruct (equal).
-  { apply Eqdep.EqdepTheory.inj_pair2 in e; subst; congruence. }
-  generalize (wf a r2).
-  generalize (map (existT a r2)).
-  simpl.
-  intros ret Heq.
-  destruct ret as [(?&?)|]; [| intuition].
-  unfold eq_rect. auto.
+  replace r2 with (projT2 (existT _ r2)) by auto.
+  intros. apply (getDyn_deleteDyn_ne1 _ (r2 := (existT a r2))).
+  intros Heq. apply Eqdep.EqdepTheory.inj_pair2 in Heq; subst. intuition.
 Qed.
+
+Lemma updDyn_deleteDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+      (m: DynMap Ref Model) a (r: Ref a) x:
+  updDyn r x (deleteDyn r m) ≡ updDyn r x m.
+Proof.
+  intros a' r'.
+  unfold getDyn, updDyn, deleteDyn; simpl.
+  destruct (equal); eauto.
+Qed.
+
+Lemma getDyn_updDyn A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+      (m: DynMap Ref Model) a x (r: Ref a) :
+  getDyn (updDyn r x m) r = Some x.
+Proof.
+  unfold getDyn, updDyn; simpl. destruct equal; [| by congruence].
+  f_equal. rewrite <-Eqdep.Eq_rect_eq.eq_rect_eq; auto.
+Qed.
+
+Lemma getDyn_updDyn_ne1 A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+      (m: DynMap Ref Model) a x (r1: Ref a) (r2: sigT Ref) :
+  ~ (existT _ r1 = r2) ->
+  getDyn (updDyn r1 x m) (projT2 r2) = getDyn m (projT2 r2).
+Proof.
+  unfold getDyn, updDyn; simpl. destruct equal; [| by congruence].
+  intros. exfalso. destruct r2. simpl in *. inversion e; subst.
+  apply Eqdep.EqdepTheory.inj_pair2 in e; subst. intuition.
+Qed.
+
+Lemma getDyn_updDyn_ne2 A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+      (m: DynMap Ref Model) a x (r1 r2: Ref a) :
+  ~ (r1 = r2) ->
+  getDyn (updDyn r1 x m) r2 = getDyn m r2.
+Proof.
+  replace r2 with (projT2 (existT _ r2)) by auto.
+  intros. apply (getDyn_updDyn_ne1 _ _ (r2 := (existT a r2))).
+  intros Heq. apply Eqdep.EqdepTheory.inj_pair2 in Heq; subst. intuition.
+Qed.
+
+Global Instance updDyn_Proper A (Ref Model: A → Type) {dec: EqualDec (sigT Ref)}
+       a (r: Ref a) (x: Model a):
+  Proper (equiv ==> equiv) (updDyn r x).
+Proof.
+  intros m1 m2 Hequiv a' r'.
+  destruct (dec (existT _ r) (existT _ r')).
+  - inversion e. subst.
+    apply Eqdep.EqdepTheory.inj_pair2 in e; subst.
+    by rewrite ?getDyn_updDyn.
+  - rewrite ?(getDyn_updDyn_ne1 _ _ (r2 := existT a' r')); eauto.
+Qed.
+
+Global Instance deleteDyn_Proper A (Ref Model: A → Type) {dec: EqualDec (sigT Ref)}
+       a (r: Ref a):
+  Proper (equiv ==> equiv) (deleteDyn (Model := Model) r).
+Proof.
+  intros m1 m2 Hequiv a' r'.
+  destruct (dec (existT _ r) (existT _ r')).
+  - inversion e. subst.
+    apply Eqdep.EqdepTheory.inj_pair2 in e; subst.
+    by rewrite ?getDyn_deleteDyn.
+  - rewrite ?(getDyn_deleteDyn_ne1 _ (r2 := existT a' r')); eauto.
+Qed.
+
+Lemma updDyn_identity A (Ref Model: A -> Type) {dec: EqualDec (sigT Ref)}
+      (m: DynMap Ref Model) a (r: Ref a) x:
+  getDyn m r = Some x →
+  updDyn r x m ≡ m.
+Proof.
+  intros Hlookup a' r'.
+  destruct (dec (existT _ r) (existT _ r')).
+  * inversion e; subst. apply Eqdep.EqdepTheory.inj_pair2 in e; subst.
+    by rewrite getDyn_updDyn.
+  * replace r' with (projT2 (existT _ r')) by auto.
+    rewrite (getDyn_updDyn_ne1 _ _ (r2 := existT a' r')); eauto.
+Qed.
+
+Lemma dynMap_dom_spec' A (Ref Model: A -> Type)
+      (m: DynMap Ref Model) a (x: Ref a):
+  getDyn m x <> None <-> existT _ x ∈ dynMap_dom m.
+Proof. by rewrite <-dynMap_dom_spec, getDyn_lookup_none. Qed.
+
+Lemma dynMap_equiv_perm_dom A (Ref Model: A -> Type)
+      (m1 m2: DynMap Ref Model):
+  m1 ≡ m2 →
+  dynMap_dom m1 ≡ₚ dynMap_dom m2.
+Proof.
+  intros Hequiv.
+  apply NoDup_Permutation; eauto using dynMap_dom_nodup.
+  intros (a&x). by rewrite <-?dynMap_dom_spec', Hequiv.
+Qed.
+
+Global Instance dynMap_dom_Proper A (Ref Model: A → Type) :
+  Proper (equiv ==> (≡ₚ)) (@dynMap_dom A Ref Model).
+Proof. intros m1 m2 Hequiv. eapply dynMap_equiv_perm_dom; eauto. Qed.
