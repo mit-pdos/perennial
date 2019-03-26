@@ -150,7 +150,7 @@ Section refinement_triples.
     )%I.
 
   Definition CrashInner Γ :=
-    (∃ (buf: list nat) (log: list nat),
+    (∃ (use_mem: bool) (buf: list nat) (log log_sh: list nat),
       source_state {| Log.mem_buf := buf;
                       Log.disk_log := log; |} ∗
                    state m↦ enc_state Empty ∗
@@ -158,7 +158,11 @@ Section refinement_triples.
                    state_lock m↦ 0 ∗
                    disk_lock m↦ 0 ∗
                    ExecDiskInv log [] ∗
-                   own (Γ.(γlog)) (● Excl' log)
+                   own (Γ.(γlog)) (● Excl' log) ∗
+                   own (Γ.(γlog)) (◯ Excl' log) ∗
+                   own (Γ.(γuse_mem)) (● Excl' use_mem) ∗
+                   own (Γ.(γuse_mem)) (◯ Excl' use_mem) ∗
+                   own (Γ.(γlog_sh)) (◯ Excl' log_sh)
     )%I.
 
   Theorem log_map_to_free log : forall start,
@@ -1014,9 +1018,9 @@ Proof.
       (exec_inv := fun H1 H2 => @ExecInv myΣ H2 _ H1 _ _ _)
       (exec_inner := fun H1 H2 =>
                        (∃ Γ, @ExecInner myΣ H2 H1 _ _ _ Γ)%I)
-      (crash_inner := fun H1 H2 => (∃ Γ, @CrashInner myΣ H2 H1 _ Γ)%I)
+      (crash_inner := fun H1 H2 => (∃ Γ, @CrashInner myΣ H2 H1 _ _ Γ)%I)
       (crash_param := fun H1 H2 => unit)
-      (crash_inv := fun H1 H2 _ => @CrashInv myΣ H2 H1 _)
+      (crash_inv := fun H1 H2 _ => @CrashInv myΣ H2 H1 _ _)
       (crash_starter := fun H1 H2 _ => True%I)
       (E := nclose sourceN).
   { apply _. }
@@ -1036,7 +1040,8 @@ Proof.
   { intros. iIntros "((#Hctx&#Hinv)&_)".
     iDestruct "Hinv" as (Γ) "Hinv".
     wp_ret.
-    iInv "Hinv" as (buf log) ">(Hsource&Hstateval&Hstateinterp&Hstatelock&Hdisklock&Hdiskinv&Hownlog)" "_".
+    iInv "Hinv" as (use_mem buf log log_sh) ">(Hsource&Hstateval&Hstateinterp&Hstatelock&Hdisklock&Hdiskinv&Hown)" "_".
+    iDestruct "Hown" as "(Hownlog_auth&Hownlog&Hownuse_mem_auth&Hownuse_mem&Hownuse_log_sh)".
     iApply (fupd_mask_weaken _ _).
     { solve_ndisj. }
     iExists _, {| Log.mem_buf := []; Log.disk_log := log |}; iFrame.
@@ -1084,7 +1089,7 @@ Proof.
     iModIntro.
     iPoseProof (@init_mem_split with "Hmem") as "(Hstateval&Hstateinterp&Hstatelock&Hdisklock)".
     unfold CrashInner, Abstraction.
-    iExists (ltac:(econstructor) : ghost_names), (flatten_txns txns), log.
+    iExists (ltac:(econstructor) : ghost_names), (if use_mem then flatten_txns txns else []), log.
     iFrame.
     iApply DiskInv_forget_shadow; iFrame.
   }
@@ -1119,10 +1124,11 @@ Proof.
     iExists Γ; unfold ExecInner, ExecInv'.
 
     iAssert (StateLockInv Γ) with "[Hstateval Hstateinterp]" as "Hstateinv".
-    unfold StateLockInv.
+    { unfold StateLockInv.
+      iExists _, _; iFrame.
 
-    iPoseProof (@lock_init_unlocked myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
-                                    state_lock (StateLockInv Γ) with "Hstatelock") as "Hstatelock_init".
+      iPoseProof (@lock_init_unlocked myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
+                                      state_lock (StateLockInv Γ) with "Hstatelock") as "Hstatelock_init".
     iSplitL "Hstatelock_init".
     iMod "Hstatelock_init" as (γlock.
 
