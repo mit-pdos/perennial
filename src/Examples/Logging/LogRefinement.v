@@ -5,8 +5,6 @@ From RecoveryRefinement.Examples Require Import ExMach.WeakestPre ExMach.Refinem
 From RecoveryRefinement Require AtomicPair.Helpers.
 From iris.base_logic.lib Require Export invariants gen_heap.
 
-From RecordUpdate Require Import RecordSet.
-
 Unset Implicit Arguments.
 
 (* TODO: move this out *)
@@ -78,9 +76,6 @@ Section refinement_triples.
       γlog_sh : gname;
       γuse_mem : gname;
     }.
-
-  Global Instance ghost_names_eta : Settable ghost_names :=
-    settable! Build_ghost_names <γslock; γstate; γtxns; γdlock; γlog; γlog_sh; γuse_mem>.
 
   Fixpoint flatten_txns (txns: list (nat*nat)) : list nat :=
     match txns with
