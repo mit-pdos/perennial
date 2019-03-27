@@ -1,21 +1,38 @@
 From RecoveryRefinement Require Import Spec.SemanticsHelpers.
+
+From stdpp Require Import base.
+From Tactical Require Import ProofAutomation.
+
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
+From RecoveryRefinement Require Import Spec.Proc.
+From RecoveryRefinement Require Import Spec.InjectOp.
+From RecoveryRefinement Require Import Spec.Layer.
+From RecoveryRefinement Require Export Filesys.
 
 Inductive rterm : Type -> Type -> Type -> Type :=
 | Pure A T : T -> rterm A A T
+(* | Identity A T : rterm A A T *)
+(* | Any A B T : rterm A B T *)
+(* | None A B T : rterm A B T *)
 | Reads A T : (A -> T) -> rterm A A T
+(* | Puts A unit : (A -> A) -> rterm A A unit *)
+(* | Error A B T : rterm A B T *)
 | ReadSome A T : (A -> option T) -> rterm A A T
+(* | ReadNone A T : (A -> option T) -> rterm A A unit *)
 | AndThen A B C T1 T2 : rterm A B T1 -> (T1 -> rterm B C T2) -> rterm A C T2
+(* | SuchThat A T : (A -> T -> Prop) -> rterm A A T *)
 .
 
 Inductive Output B T : Type :=
 | Success (b: B) (t: T) 
 | Error
+| NotImpl
 .
 
 Arguments Success {_ _}.
 Arguments Error {_ _}.
+Arguments NotImpl {_ _}.
 
 Fixpoint interpret (A B T : Type) (r : rterm A B T) (X : A) : Output B T :=
   match r in (rterm A B T) return (A -> Output B T) with
@@ -33,6 +50,7 @@ Fixpoint interpret (A B T : Type) (r : rterm A B T) (X : A) : Output B T :=
       match o with
       | Success b t => let r' := f t in let o' := interpret r' b in o'
       | Error => Error
+      | NotImpl => NotImpl
       end
   end X. 
 
@@ -60,6 +78,7 @@ Ltac refl' e :=
     let f2 := refl' (fun (p: T * T1) => (r2 (fst p) (snd p))) in
     constr: (fun x => AndThen (f1 x) (fun y => f2 (x, y)))
               
+  | _ => ltac:(idtac e)
   end.
 
 Ltac refl e :=
@@ -72,6 +91,16 @@ Ltac test e :=
   let e' := eval cbv [rtermDenote] in (rtermDenote t) in
   unify e e'.
 
+Ltac refl_op o :=
+  let t := eval cbv [FS.step] in (FS.step o) in
+  refl t.
+
+Definition reify A B T (op : FS.Op A) : rterm A B T.
+  destruct op eqn:?.
+  - let x := reflop (FS.Open p) in idtac x.
+    pose proof (FS.step) as step.
+
+(* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
 Ltac testReads := test (reads (A:=nat) (fun x : nat => x + 3)).
 Ltac testReadSome := test (and_then (pure 3) (fun x : nat => readSome (A:=nat) (T:=nat) (fun x0 : nat => Some (x0 + x)))).
@@ -94,4 +123,4 @@ Abort.
 
 Compute (interpret ex1 7).
 Compute (interpret ex2 7).
-Compute (interpret ex3 7) .
+Compute (interpret ex3 7).
