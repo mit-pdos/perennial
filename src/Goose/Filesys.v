@@ -67,7 +67,7 @@ Module FS.
               fds: gmap.gmap File (string * OpenMode); }.
 
   Global Instance _eta : Settable State :=
-    mkSettable (constructor mkState <*> heap <*> files <*> fds)%set.
+    settable! mkState <heap; files; fds>.
 
   Definition readFd (fh: File) (m: OpenMode) : relation State State string :=
     readSome (fun s => match s.(fds) !! fh with

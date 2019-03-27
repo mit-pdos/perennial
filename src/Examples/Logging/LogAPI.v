@@ -1,4 +1,4 @@
-From RecordUpdate Require Import RecordUpdate.
+From RecordUpdate Require Import RecordSet.
 
 From RecoveryRefinement Require Export Lib.
 
@@ -16,7 +16,7 @@ Module Log.
               disk_log : list nat; }.
 
   Global Instance _eta : Settable _ :=
-    mkSettable (constructor mkState <*> mem_buf <*> disk_log)%set.
+    settable! mkState <mem_buf; disk_log>.
 
   Definition dynamics : Dynamics Op State :=
     {| step T (op: Op T) :=

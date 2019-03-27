@@ -10,7 +10,6 @@ From RecoveryRefinement Require Import Spec.SemanticsHelpers.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
 From RecordUpdate Require Import RecordSet.
-Import ApplicativeNotations.
 
 Import UIntNotations.
 
@@ -164,12 +163,7 @@ Module Data.
               locks: LockRef -> option LockStatus; }.
 
   Instance _eta : Settable _ :=
-    mkSettable (constructor mkState
-                            <*> vars
-                            <*> iorefs
-                            <*> arrays
-                            <*> hashtables
-                            <*> locks)%set.
+    settable! mkState <vars; iorefs; arrays; hashtables; locks>.
 
   Import EqualDecNotation.
   Import OptionNotations.
