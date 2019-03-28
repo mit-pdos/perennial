@@ -779,5 +779,21 @@ Proof.
   destruct s'; inv_step; iFrame; iApply "HΦ"; iFrame; iModIntro; eauto.
 Qed.
 
+Lemma wp_mapIter {T} s E (p: Map T) (m: gmap uint64 T) q body Φ:
+  ▷ p ↦{q} m -∗
+  ▷ (∀ l, ⌜ Permutation.Permutation l (fin_maps.map_to_list m) ⌝
+          -∗ WP (mapIterLoop l body) @ s; E {{ Φ }}) -∗
+  WP mapIter p body @ s; E {{ v, p ↦{q} m ∗ Φ v }}.
+Proof.
+  iIntros "Hp Hloop".
+  rewrite /mapIter.
+  wp_bind. iApply (wp_MapStartIter with "Hp").
+  iNext. iIntros (l) "(%&Hp)".
+  wp_bind. iApply (wp_wand with "[Hloop]").
+  { iApply "Hloop"; eauto. }
+  iIntros ([]) "HΦ".
+  iApply (wp_MapEndIter with "Hp").
+  iFrame. eauto.
+Qed.
 
 End lifting.

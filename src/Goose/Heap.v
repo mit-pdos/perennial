@@ -140,11 +140,14 @@ Module Data.
 
     Definition mapLookup {V} m k := Call! @MapLookup V m k.
 
+    Definition mapIterLoop V kvs (body: uint64 -> V -> proc unit) : proc unit :=
+      List.fold_right
+        (fun '(k, v) p => Bind p (fun _ => body k v))
+        (Ret tt) kvs.
+
     Definition mapIter V (m: Map V) (body: uint64 -> V -> proc unit) : proc unit :=
       (kvs <- Call (MapStartIter m);
-         _ <- List.fold_right
-           (fun '(k, v) p => Bind p (fun _ => body k v))
-           (Ret tt) kvs;
+         _ <- mapIterLoop kvs body;
          Call (MapEndIter m))%proc.
 
     Definition mapGet V {_:HasGoZero V} (m: Map V) k : proc (V * bool) :=
