@@ -18,25 +18,31 @@ From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 Import EqualDecNotation.
 
 Module FS.
+  Module path.
+    Record t :=
+      mk { dir: string;
+           fname: string; }.
+  End path.
+
   Section GoModel.
   Context `{model_wf:GoModelWf}.
-  Implicit Types (p:string) (fh:File) (bs:slice.t byte).
+  Implicit Types (dir p:string) (fh:File) (bs:slice.t byte).
 
   (* the types of the arguments are determined by their name, using the implicit
   types given above *)
   Inductive Op : Type -> Type :=
-  | Open p : Op File
+  | Open dir p : Op File
   | Close fh : Op unit
-  | List : Op (slice.t string)
+  | List dir : Op (slice.t string)
   | Size fh : Op uint64
   | ReadAt fh (off:uint64) (len:uint64) : Op (slice.t byte)
-  | Create p : Op File
+  | Create dir p : Op File
   | Append fh bs' : Op unit
-  | Delete p : Op unit
-  | Rename p1 p2 : Op unit
-  | Truncate p : Op unit
-  | AtomicCreate p bs : Op unit
-  | Link p1 p2 : Op bool
+  | Delete dir p : Op unit
+  | Rename dir1 p1 dir2 p2 : Op unit
+  | Truncate dir p : Op unit
+  | AtomicCreate dir p bs : Op unit
+  | Link dir1 p1 dir2 p2 : Op bool
   .
 
   Section OpWrappers.
@@ -44,32 +50,40 @@ Module FS.
     Context {Op'} {i:Injectable Op Op'}.
     Notation proc := (proc Op').
     Notation "'Call!' op" := (Call (inject op) : proc _) (at level 0, op at level 200).
-    Definition open p : proc _ := Call! Open p.
+    Definition open dir p : proc _ := Call! Open dir p.
     Definition close fh : proc _ := Call! Close fh.
-    Definition list : proc _ := Call! List.
+    Definition list dir : proc _ := Call! List dir.
     Definition size fh : proc _ := Call! Size fh.
     Definition readAt fh off len : proc _ := Call! ReadAt fh off len.
-    Definition create p : proc _ := Call! Create p.
+    Definition create dir p : proc _ := Call! Create dir p.
     Definition append fh bs : proc _ := Call! Append fh bs.
-    Definition delete p : proc _ := Call! Delete p.
-    Definition rename p1 p2 : proc _ := Call! Rename p1 p2.
-    Definition truncate p : proc _ := Call! Truncate p.
-    Definition atomicCreate p bs : proc _ := Call! AtomicCreate p bs.
-    Definition link p1 p2 := Call! Link p1 p2.
+    Definition delete dir p : proc _ := Call! Delete dir p.
+    Definition rename dir1 p1 dir2 p2 : proc _ := Call! Rename dir1 p1 dir2 p2.
+    Definition truncate dir p : proc _ := Call! Truncate dir p.
+    Definition atomicCreate dir p bs : proc _ := Call! AtomicCreate dir p bs.
+    Definition link dir1 p1 dir2 p2 := Call! Link dir1 p1 dir2 p2.
 
   End OpWrappers.
 
   Inductive OpenMode := Read | Write.
 
+  Global Instance path_countable : countable.Countable path.t.
+  Proof.
+    apply (countable.inj_countable'
+            (fun '(path.mk dir fname) => (dir, fname))
+            (fun '(dir, fname) => path.mk dir fname)).
+    destruct x; simpl; auto.
+  Qed.
+
   Record State :=
     mkState { heap: Data.State;
-              files: gmap.gmap string (List.list byte);
-              fds: gmap.gmap File (string * OpenMode); }.
+              files: gmap.gmap path.t (List.list byte);
+              fds: gmap.gmap File (path.t * OpenMode); }.
 
   Global Instance _eta : Settable State :=
     settable! mkState <heap; files; fds>.
 
-  Definition readFd (fh: File) (m: OpenMode) : relation State State string :=
+  Definition readFd (fh: File) (m: OpenMode) : relation State State path.t :=
     readSome (fun s => match s.(fds) !! fh with
                     | Some (p, m') => if m == m' then Some p else None
                     | _ => None
@@ -77,19 +91,29 @@ Module FS.
 
   Import RelationNotations.
 
+  Definition readDir (files: gmap.gmap path.t (List.list byte)) (dir0: string) : List.list string :=
+    map_fold (fun '(path.mk dir _) _data ents =>
+               if dir == dir0 then dir::ents else ents)
+             [] files.
+
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
-    | Open p =>
+    | Open dir name =>
+      let p := path.mk dir name in
       _ <- readSome (fun s => s.(files) !! p);
         fh <- such_that (fun s fh => s.(fds) !! fh = None);
         _ <- puts (set fds (insert fh (p, Read)));
         pure fh
     | Close fh =>
       puts (set fds (map_delete fh))
-    | List =>
+    | List dir =>
       (* TODO: this should be non-atomic *)
-      l <- reads (fun s => map fst (map_to_list s.(files)));
-        error
+      l <- reads (fun s => readDir s.(files) dir);
+        r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
+        _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap string) r (Unlocked, l))));
+        pure {| slice.ptr := r;
+                slice.offset := 0;
+                slice.length := length l; |}
     | Size fh =>
         bs <- (p <- readFd fh Read;
                 readSome (fun s => s.(files) !! p));
@@ -104,7 +128,8 @@ Module FS.
           pure {| slice.ptr := r;
                   slice.offset := 0;
                   slice.length := length read_bs; |}
-    | Create p =>
+    | Create dir name =>
+      let p := path.mk dir name in
       _ <- readNone (fun s => s.(files) !! p);
         fh <- such_that (fun s fh => s.(fds) !! fh = None);
         _ <- puts (set files (insert p nil));
@@ -117,7 +142,8 @@ Module FS.
            _ <- readSome (fun _ => lock_available Reader s);
            bs <- readSome (fun s => s.(files) !! path);
            puts (set files (insert path (bs ++ bs')))
-    | Delete p =>
+    | Delete dir name =>
+      let p := path.mk dir name in
       (* Delete(p) fails if there is an open fh pointing to p - this is a safe
       approximation of real behavior, where the underlying inode for the file is
       retained as long as there are open files *)
@@ -127,10 +153,13 @@ Module FS.
       (* delete's error case supercedes this succesful deletion case *)
       + (_ <- readSome (fun s => s.(files) !! p);
            puts (set files (map_delete p)))
-    | Truncate p =>
+    | Truncate dir name =>
+      let p := path.mk dir name in
       _ <- readSome (fun s => s.(files) !! p);
         puts (set files (insert p nil))
-    | Rename p1 p2 =>
+    | Rename dir1 name1 dir2 name2 =>
+      let p1 := path.mk dir1 name1 in
+      let p2 := path.mk dir2 name2 in
       (* Rename requires that the destination path not be open *)
       (_ <- such_that (fun s fh =>
                         exists m, s.(fds) !! fh = Some (p2, m));
@@ -144,15 +173,28 @@ Module FS.
       + (bs <- readSome (fun s => s.(files) !! p1);
            _ <- puts (set files (map_delete p1));
            puts (set files (insert p2 bs)))
-    | AtomicCreate path p =>
+    | AtomicCreate dir name p =>
+      let path := path.mk dir name in
       _ <- readNone (fun s => s.(files) !! path);
       let! (s, alloc) <- readSome (fun st => Data.getAlloc p.(slice.ptr) st.(heap));
            bs <- readSome (fun _ => Data.getSliceModel p alloc);
            _ <- readSome (fun _ => lock_available Reader s);
         puts (set files (insert path bs))
-    (* TODO: figure out how to write link semantics *)
-    | Link p1 p2 => error
-    end.
+    | Link dir1 name1 dir2 name2 =>
+        let p1 := path.mk dir1 name1 in
+        let p2 := path.mk dir2 name2 in
+        bs <- readSome (fun s => s.(files) !! p1);
+        (_ <- such_that (fun s fh =>
+                         s.(fds) !! fh = Some (p1, Write)); error)
+        + (mdest <- reads (fun s => s.(files) !! p2);
+             match mdest with
+             | Some _ =>
+               (* model hardlink as copy since there's no way to modify a file
+               after it's been created *)
+               _ <- puts (set files (insert p2 bs)); pure true
+             | None => pure false
+             end)
+         end.
 
   Definition crash_step : relation State State unit :=
     _ <- puts (set fds (fun _ => ∅));
