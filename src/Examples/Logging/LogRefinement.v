@@ -943,8 +943,6 @@ Section refinement_triples.
          wp_bind.
          unfold put_state.
          wp_step.
-         (* NOTE: why do we never have to update the state ghost variable? is it
-         actually useless? *)
 
          wp_bind.
          wp_unlock "[Hownlog Hownlog_sh]".
@@ -952,9 +950,85 @@ Section refinement_triples.
          wp_step.
          iApply "HΦ".
          iFrame.
-       * admit.
-       * admit.
-  Admitted.
+       * iDestruct "Hstateinterp" as (txn1 txn2 ->) "(Htxn1&Htxn2)".
+         wp_bind.
+         unfold size, log_idx in n.
+         pose proof n.
+         iApply (write_mem_txn_ok _ _ _ _ _ log []
+                   with "[Htxn1 Hownlog Hownlog_sh]").
+         { simpl; lia. }
+         { simpl; lia. }
+         { iFrame.
+           iFrame "#". }
+         simpl.
+         iIntros "!> (Htxn1&Hownlog&Hownlog_sh)".
+         iApply (write_mem_txn_ok _ _ _ _ _ log [txn1.1; txn1.2]
+                   with "[Htxn2 Hownlog Hownlog_sh]").
+         { simpl; lia. }
+         { simpl; lia. }
+         { iFrame.
+           iFrame "#". }
+         simpl.
+         iIntros "!> (Htxn2&Hownlog&Hownlog_sh)".
+         wp_bind.
+         iApply (write_log_len_ok K _ _ Γ log [txn1.1; txn1.2; txn2.1; txn2.2] [txn1; txn2] (op:=Log.Commit) with "[Hj Hownlog Hownlog_sh Howntxn Hownuse_mem]").
+         { simpl; lia. }
+         { destruct txn1, txn2; cbn [flatten_txns fst snd].
+           eauto using commit_step_success. }
+         { iFrame. iFrame "#". }
+
+         iIntros "!> (Hj&Hownlog&Hownlog_sh&Howntxns&Hownuse_mem)".
+
+         wp_bind.
+         unfold put_state.
+         wp_step.
+
+         wp_bind.
+         wp_unlock "[Hownlog Hownlog_sh]".
+         { iExists _, _. by iFrame. }
+         wp_step.
+         iApply "HΦ".
+         iFrame.
+       * iDestruct "Hstateinterp" as (txn1 txn2 ->) "(Htxn1&Htxn2)".
+         wp_bind.
+         unfold size, log_idx in n.
+         pose proof n.
+         iApply (write_mem_txn_ok _ _ _ _ _ log []
+                   with "[Htxn2 Hownlog Hownlog_sh]").
+         { simpl; lia. }
+         { simpl; lia. }
+         { iFrame.
+           iFrame "#". }
+         simpl.
+         iIntros "!> (Htxn2&Hownlog&Hownlog_sh)".
+         iApply (write_mem_txn_ok _ _ _ _ _ log [txn2.1; txn2.2]
+                   with "[Htxn1 Hownlog Hownlog_sh]").
+         { simpl; lia. }
+         { simpl; lia. }
+         { iFrame.
+           iFrame "#". }
+         simpl.
+         iIntros "!> (Htxn1&Hownlog&Hownlog_sh)".
+         wp_bind.
+         iApply (write_log_len_ok K _ _ Γ log [txn2.1; txn2.2; txn1.1; txn1.2] [txn2; txn1] (op:=Log.Commit) with "[Hj Hownlog Hownlog_sh Howntxn Hownuse_mem]").
+         { simpl; lia. }
+         { destruct txn1, txn2; cbn [flatten_txns fst snd].
+           eauto using commit_step_success. }
+         { iFrame. iFrame "#". }
+
+         iIntros "!> (Hj&Hownlog&Hownlog_sh&Howntxns&Hownuse_mem)".
+
+         wp_bind.
+         unfold put_state.
+         wp_step.
+
+         wp_bind.
+         wp_unlock "[Hownlog Hownlog_sh]".
+         { iExists _, _. by iFrame. }
+         wp_step.
+         iApply "HΦ".
+         iFrame.
+  Qed.
 
   Lemma ptr_iter_to_log_free iters : forall x,
     (ptr_iter (fun l v => l d↦ v)  (S x) iters -∗ log_free x (S iters))%I.
