@@ -918,7 +918,40 @@ Section refinement_triples.
          wp_step.
          iApply "HΦ".
          iFrame.
-       * admit.
+       * iDestruct "Hstateinterp" as (txn2 ->) "(Htxn2&Htxn1free)".
+         unfold size, log_idx in n.
+         (* fix lia bug; see https://github.com/coq/coq/issues/8898 *)
+         pose proof n.
+         iApply (write_mem_txn_ok _ _ Γ (length log) txn2_start log []
+                   with "[Htxn2 Hownlog Hownlog_sh]").
+         { simpl; lia. }
+         { simpl; lia. }
+         (* TODO: surely we can do these two together *)
+         { iFrame.
+           iFrame "#". }
+
+         simpl.
+         iIntros "!> (Htxn&Hownlog&Hownlog_sh)".
+         wp_bind.
+         iApply (write_log_len_ok K _ _ Γ log [txn2.1; txn2.2] [txn2] (op:=Log.Commit) with "[Hj Hownlog Hownlog_sh Howntxn Hownuse_mem]").
+         { simpl; lia. }
+         { destruct txn2; cbn [flatten_txns fst snd].
+           eauto using commit_step_success. }
+         { iFrame. iFrame "#". }
+
+         iIntros "!> (Hj&Hownlog&Hownlog_sh&Howntxns&Hownuse_mem)".
+         wp_bind.
+         unfold put_state.
+         wp_step.
+         (* NOTE: why do we never have to update the state ghost variable? is it
+         actually useless? *)
+
+         wp_bind.
+         wp_unlock "[Hownlog Hownlog_sh]".
+         { iExists _, _. by iFrame. }
+         wp_step.
+         iApply "HΦ".
+         iFrame.
        * admit.
        * admit.
   Admitted.
