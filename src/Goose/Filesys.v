@@ -33,7 +33,7 @@ Module FS.
   Inductive Op : Type -> Type :=
   | Open dir p : Op File
   | Close fh : Op unit
-  | List dir : Op (slice.t string)
+  | List dir (na: NonAtomicArgs unit) : Op (retT na (slice.t string))
   | Size fh : Op uint64
   | ReadAt fh (off:uint64) (len:uint64) : Op (slice.t byte)
   | Create dir p : Op File
@@ -52,7 +52,9 @@ Module FS.
     Notation "'Call!' op" := (Call (inject op) : proc _) (at level 0, op at level 200).
     Definition open dir p : proc _ := Call! Open dir p.
     Definition close fh : proc _ := Call! Close fh.
-    Definition list dir : proc _ := Call! List dir.
+    Definition list dir : proc (slice.t string) :=
+      Bind (Call (inject (List dir Begin)))
+           (fun _ => Call (inject (List dir (FinishArgs tt)))).
     Definition size fh : proc _ := Call! Size fh.
     Definition readAt fh off len : proc _ := Call! ReadAt fh off len.
     Definition create dir p : proc _ := Call! Create dir p.
@@ -77,11 +79,12 @@ Module FS.
 
   Record State :=
     mkState { heap: Data.State;
+              dirs: gmap.gmap string LockStatus;
               files: gmap.gmap path.t (List.list byte);
               fds: gmap.gmap File (path.t * OpenMode); }.
 
   Global Instance _eta : Settable State :=
-    settable! mkState <heap; files; fds>.
+    settable! mkState <heap; dirs; files; fds>.
 
   Definition readFd (fh: File) (m: OpenMode) : relation State State path.t :=
     readSome (fun s => match s.(fds) !! fh with
@@ -104,20 +107,32 @@ Module FS.
         fh <- such_that (fun s fh => s.(fds) !! fh = None);
         _ <- puts (set fds (insert fh (p, Read)));
         pure fh
+
     | Close fh =>
       puts (set fds (map_delete fh))
-    | List dir =>
-      (* TODO: this should be non-atomic *)
-      l <- reads (fun s => readDir s.(files) dir);
-        r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
-        _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap string) r (Unlocked, l))));
-        pure {| slice.ptr := r;
-                slice.offset := 0;
-                slice.length := length l; |}
+
+    | List dir na =>
+      s <- readSome (fun s => s.(dirs) !! dir);
+        match na return relation _ _ (retT na (slice.t string)) with
+        | Begin =>
+          s' <- readSome (fun _ => lock_acquire Reader s);
+            puts (set dirs (insert dir s'))
+        | FinishArgs _ =>
+          s' <- readSome (fun _ => lock_release Reader s);
+            _ <- puts (set dirs (insert dir s'));
+            l <- reads (fun s => readDir s.(files) dir);
+            r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
+            _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap string) r (Unlocked, l))));
+            pure {| slice.ptr := r;
+                    slice.offset := 0;
+                    slice.length := length l; |}
+        end
+
     | Size fh =>
         bs <- (p <- readFd fh Read;
                 readSome (fun s => s.(files) !! p));
         pure (length bs)
+
     | ReadAt fh off len =>
       p <- readFd fh Read;
         bs <- (p <- readFd fh Read;
@@ -128,6 +143,7 @@ Module FS.
           pure {| slice.ptr := r;
                   slice.offset := 0;
                   slice.length := length read_bs; |}
+
     | Create dir name =>
       let p := path.mk dir name in
       _ <- readNone (fun s => s.(files) !! p);
@@ -135,6 +151,7 @@ Module FS.
         _ <- puts (set files (insert p nil));
         _ <- puts (set fds (insert fh (p, Write)));
         pure fh
+
     | Append fh p' =>
       path <- readFd fh Write;
       let! (s, alloc) <- readSome (fun st => Data.getAlloc p'.(slice.ptr) st.(heap));
@@ -142,6 +159,7 @@ Module FS.
            _ <- readSome (fun _ => lock_available Reader s);
            bs <- readSome (fun s => s.(files) !! path);
            puts (set files (insert path (bs ++ bs')))
+
     | Delete dir name =>
       let p := path.mk dir name in
       (* Delete(p) fails if there is an open fh pointing to p - this is a safe
@@ -151,12 +169,16 @@ Module FS.
                         exists m, s.(fds) !! fh = Some (p, m));
          error)
       (* delete's error case supercedes this succesful deletion case *)
-      + (_ <- readSome (fun s => s.(files) !! p);
+      + (s <- readSome (fun s => s.(dirs) !! p.(path.dir));
+         _ <- readSome (fun _ => lock_available Writer s);
+       _ <- readSome (fun s => s.(files) !! p);
            puts (set files (map_delete p)))
+
     | Truncate dir name =>
       let p := path.mk dir name in
       _ <- readSome (fun s => s.(files) !! p);
         puts (set files (insert p nil))
+
     | Rename dir1 name1 dir2 name2 =>
       let p1 := path.mk dir1 name1 in
       let p2 := path.mk dir2 name2 in
@@ -173,6 +195,7 @@ Module FS.
       + (bs <- readSome (fun s => s.(files) !! p1);
            _ <- puts (set files (map_delete p1));
            puts (set files (insert p2 bs)))
+
     | AtomicCreate dir name p =>
       let path := path.mk dir name in
       _ <- readNone (fun s => s.(files) !! path);
@@ -180,6 +203,7 @@ Module FS.
            bs <- readSome (fun _ => Data.getSliceModel p alloc);
            _ <- readSome (fun _ => lock_available Reader s);
         puts (set files (insert path bs))
+
     | Link dir1 name1 dir2 name2 =>
         let p1 := path.mk dir1 name1 in
         let p2 := path.mk dir2 name2 in
@@ -211,6 +235,7 @@ Module FS.
 
   Global Instance empty_fs : Empty State :=
     {| heap := ∅;
+       dirs := ∅;
        files := ∅;
        fds := ∅; |}.
 
