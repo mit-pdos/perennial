@@ -43,11 +43,13 @@ Module Go.
               Layer.sem := sem;
               trace_proj := fun _ => nil;
               initP := fun s => s = ∅ |};
-      simpl; unfold puts;
+      simpl; unfold puts, pure;
         propositional.
     - auto.
     - descend; intuition eauto.
+      descend; intuition eauto.
     - descend; intuition eauto.
+      descend; intuition eauto.
     - apply FS.crash_step_non_err in H; eauto.
     - apply FS.crash_step_non_err in H; eauto.
   Defined.

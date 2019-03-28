@@ -77,172 +77,166 @@ Module FS.
     destruct x; simpl; auto.
   Qed.
 
+  Definition Inode := nat.
+
   Record State :=
     mkState { heap: Data.State;
-              dirs: gmap.gmap string LockStatus;
-              files: gmap.gmap path.t (List.list byte);
-              fds: gmap.gmap File (path.t * OpenMode); }.
+              dirlocks: gmap.gmap string (LockStatus * unit);
+              dirents: gmap.gmap string (gmap.gmap string Inode);
+              inodes: gmap.gmap Inode (List.list byte);
+              fds: gmap.gmap File (Inode * OpenMode); }.
 
   Global Instance _eta : Settable State :=
-    settable! mkState <heap; dirs; files; fds>.
-
-  Definition readFd (fh: File) (m: OpenMode) : relation State State path.t :=
-    readSome (fun s => match s.(fds) !! fh with
-                    | Some (p, m') => if m == m' then Some p else None
-                    | _ => None
-                    end).
+    settable! mkState <heap; dirlocks; dirents; inodes; fds>.
 
   Import RelationNotations.
 
-  Definition readDir (files: gmap.gmap path.t (List.list byte)) (dir0: string) : List.list string :=
-    map_fold (fun '(path.mk dir _) _data ents =>
-               if dir == dir0 then dir::ents else ents)
-             [] files.
+  Definition lookup K `{countable.Countable K} V (proj:State -> gmap.gmap K V) (k:K) : relation State State V :=
+    readSome (fun s => s.(proj) !! k).
+
+  Definition resolvePath dir name : relation State State Inode :=
+    let! ents <- lookup dirents dir;
+         readSome (fun _ => ents !! name).
+
+  Definition fresh_key K `{countable.Countable K} V (proj: State -> gmap.gmap K V) : relation State State K :=
+    such_that (fun s v => s.(proj) !! v = None).
+
+  Definition createSlice V (data: List.list V) : relation State State (slice.t V) :=
+    r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
+      _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap V) r (Unlocked, data))));
+      pure {| slice.ptr := r;
+              slice.offset := 0;
+              slice.length := length data; |}.
+
+  Definition readFd (fh: File) m : relation State State (List.list byte) :=
+    let! (inode, m') <- lookup fds fh;
+         if m == m' then lookup inodes inode
+         else error.
+
+  Definition unwrap S A (e: option A) : relation S S A :=
+    match e with
+    | Some v => pure v
+    | None => error
+    end.
+
+  Definition is_none S A (e: option A) : relation S S unit :=
+    match e with
+    | Some _ => error
+    | None => pure tt
+    end.
 
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | Open dir name =>
-      let p := path.mk dir name in
-      _ <- readSome (fun s => s.(files) !! p);
-        fh <- such_that (fun s fh => s.(fds) !! fh = None);
-        _ <- puts (set fds (insert fh (p, Read)));
+      inode <- resolvePath dir name;
+        fh <- fresh_key fds;
+        _ <- puts (set fds <[fh := (inode, Read)]>);
         pure fh
 
     | Close fh =>
       puts (set fds (map_delete fh))
 
     | List dir na =>
-      s <- readSome (fun s => s.(dirs) !! dir);
-        match na return relation _ _ (retT na (slice.t string)) with
-        | Begin =>
-          s' <- readSome (fun _ => lock_acquire Reader s);
-            puts (set dirs (insert dir s'))
-        | FinishArgs _ =>
-          s' <- readSome (fun _ => lock_release Reader s);
-            _ <- puts (set dirs (insert dir s'));
-            l <- reads (fun s => readDir s.(files) dir);
-            r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
-            _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap string) r (Unlocked, l))));
-            pure {| slice.ptr := r;
-                    slice.offset := 0;
-                    slice.length := length l; |}
-        end
+      let! (s, _) <- lookup dirlocks dir;
+           match na return relation _ _ (retT na (slice.t string)) with
+           | Begin =>
+             s' <- unwrap (lock_acquire Reader s);
+               puts (set dirlocks <[dir := (s', tt)]>)
+           | FinishArgs _ =>
+             let! ents <- lookup dirents dir;
+                  s' <- unwrap (lock_release Reader s);
+                  _ <- puts (set dirlocks <[dir := (s', tt)]>);
+                  let l := map fst (map_to_list ents) in
+                  createSlice l
+                end
 
     | Size fh =>
-        bs <- (p <- readFd fh Read;
-                readSome (fun s => s.(files) !! p));
+      bs <- readFd fh Read;
         pure (length bs)
 
     | ReadAt fh off len =>
-      p <- readFd fh Read;
-        bs <- (p <- readFd fh Read;
-                readSome (fun s => s.(files) !! p));
+      bs <- readFd fh Read;
         let read_bs := list.take len (list.drop off bs) in
-        r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
-          _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap byte) r (Unlocked, read_bs))));
-          pure {| slice.ptr := r;
-                  slice.offset := 0;
-                  slice.length := length read_bs; |}
+        createSlice bs
 
     | Create dir name =>
-      let p := path.mk dir name in
-      oldFile <- reads (fun s => s.(files) !! p);
-        match oldFile with
-        | Some _ => f <- such_that (fun _ _ => True);
-                     pure (f, false)
-        | None =>
-          fh <- such_that (fun s fh => s.(fds) !! fh = None);
-            _ <- puts (set files (insert p nil));
-            _ <- puts (set fds (insert fh (p, Write)));
-            pure (fh, true)
-        end
+      ents <- lookup dirents dir;
+           match ents !! name with
+           | Some _ => fh <- identity;
+                        pure (fh, false)
+           | None =>
+             inode <- fresh_key inodes;
+               fh <- fresh_key fds;
+               _ <- puts (set inodes <[inode := nil]>);
+               _ <- puts (set fds <[fh := (inode, Write)]>);
+               pure (fh, true)
+           end
 
     | Append fh p' =>
-      path <- readFd fh Write;
+      let! (inode, _) <- lookup fds fh;
+      bs <- readFd fh Write;
       let! (s, alloc) <- readSome (fun st => Data.getAlloc p'.(slice.ptr) st.(heap));
-           bs' <- readSome (fun _ => Data.getSliceModel p' alloc);
-           _ <- readSome (fun _ => lock_available Reader s);
-           bs <- readSome (fun s => s.(files) !! path);
-           puts (set files (insert path (bs ++ bs')))
+           bs' <- unwrap (Data.getSliceModel p' alloc);
+           _ <- unwrap (lock_available Reader s);
+           puts (set inodes <[ inode := bs ++ bs' ]>)
 
     | Delete dir name =>
-      let p := path.mk dir name in
-      (* Delete(p) fails if there is an open fh pointing to p - this is a safe
-      approximation of real behavior, where the underlying inode for the file is
-      retained as long as there are open files *)
-      (_ <- such_that (fun s fh =>
-                        exists m, s.(fds) !! fh = Some (p, m));
-         error)
-      (* delete's error case supercedes this succesful deletion case *)
-      + (s <- readSome (fun s => s.(dirs) !! p.(path.dir));
-         _ <- readSome (fun _ => lock_available Writer s);
-       _ <- readSome (fun s => s.(files) !! p);
-           puts (set files (map_delete p)))
+      let! (s, _) <- lookup dirlocks dir;
+           _ <- unwrap (lock_available Writer s);
+           ents <- lookup dirents dir;
+           _ <- unwrap (ents !! name);
+       puts (set dirents <[ dir := map_delete name ents ]>)
 
-    | Truncate dir name =>
-      let p := path.mk dir name in
-      _ <- readSome (fun s => s.(files) !! p);
-        puts (set files (insert p nil))
+    (* TODO: eventually implement these (currently unused) *)
+    | Truncate dir name => error
+    | AtomicCreate dir name p => error
 
     | Rename dir1 name1 dir2 name2 =>
-      let p1 := path.mk dir1 name1 in
-      let p2 := path.mk dir2 name2 in
-      (* Rename requires that the destination path not be open *)
-      (_ <- such_that (fun s fh =>
-                        exists m, s.(fds) !! fh = Some (p2, m));
-         error)
-      (* Rename always creates the destination directory - other behaviors
-      require checks, which makes the operation non-atomic.
-
-       Linux does have renameat2 for renaming without overwriting, presumably
-       atomically, but it would be complicated to use, especially from
-       Haskell. *)
-      + (bs <- readSome (fun s => s.(files) !! p1);
-           _ <- puts (set files (map_delete p1));
-           puts (set files (insert p2 bs)))
-
-    | AtomicCreate dir name p =>
-      let path := path.mk dir name in
-      _ <- readNone (fun s => s.(files) !! path);
-      let! (s, alloc) <- readSome (fun st => Data.getAlloc p.(slice.ptr) st.(heap));
-           bs <- readSome (fun _ => Data.getSliceModel p alloc);
-           _ <- readSome (fun _ => lock_available Reader s);
-        puts (set files (insert path bs))
+      ents1 <- lookup dirents dir1;
+        inode1 <- unwrap (ents1 !! name1);
+        ents2 <- lookup dirents dir2;
+        _ <- is_none (ents2 !! name2);
+        _ <- puts (set dirents <[ dir1 := map_delete name1 ents1 ]>);
+        _ <- puts (set dirents <[ dir2 := <[ name2 := inode1 ]> ents2 ]>);
+        pure tt
 
     | Link dir1 name1 dir2 name2 =>
-        let p1 := path.mk dir1 name1 in
-        let p2 := path.mk dir2 name2 in
-        bs <- readSome (fun s => s.(files) !! p1);
-        (_ <- such_that (fun s fh =>
-                         s.(fds) !! fh = Some (p1, Write)); error)
-        + (mdest <- reads (fun s => s.(files) !! p2);
-             match mdest with
-             | Some _ =>
-               (* model hardlink as copy since there's no way to modify a file
-               after it's been created *)
-               _ <- puts (set files (insert p2 bs)); pure true
-             | None => pure false
-             end)
-         end.
+      ents1 <- lookup dirents dir1;
+        inode1 <- unwrap (ents1 !! name1);
+        ents2 <- lookup dirents dir2;
+        match ents2 !! name2 with
+        | Some _ => pure false
+        | None =>
+          _ <- puts (set dirents <[ dir2 := <[ name2 := inode1 ]> ents2 ]>);
+            pure true
+        end
+    end.
 
-  Definition crash_step : relation State State unit :=
+    Definition crash_step : relation State State unit :=
     _ <- puts (set fds (fun _ => ∅));
-      puts (set heap (fun _ => ∅)).
+        _ <- puts (set heap (fun _ => ∅));
+        _ <- puts (set dirlocks (fmap (fun _ => (Unlocked, tt))));
+        pure tt.
 
   Theorem crash_step_non_err s res :
       crash_step s res ->
       res <> Err.
   Proof.
     destruct res; eauto.
-    unfold crash_step, puts; simpl; intros.
-    (intuition auto); propositional; discriminate.
+    unfold crash_step, puts, pure; simpl; intros.
+    repeat match goal with
+           | [ H: _ \/ _ |- _ ] => destruct H
+           | _ => progress propositional
+           | _ => discriminate
+           end.
   Qed.
 
   Global Instance empty_fs : Empty State :=
     {| heap := ∅;
-       dirs := ∅;
-       files := ∅;
-       fds := ∅; |}.
+       dirlocks := ∅;
+       dirents := ∅;
+       fds := ∅;
+       inodes := ∅; |}.
 
   End GoModel.
 End FS.
