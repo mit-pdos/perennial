@@ -61,6 +61,8 @@ Notation "l ↦ v" := (generic_mapsto l 0 v)
 Definition ptr_mapsto `{gooseG Σ} {T} (l: ptr T) q (v: Datatypes.list T) : iProp Σ
   := mapsto l q Unlocked v.
 
+Definition map_mapsto `{gooseG Σ} {T} (l: Map T) q v : iProp Σ
+  := mapsto l q Unlocked v.
 (*
 Definition path_mapsto `{baseG Σ} (p: Path) (bs: ByteString) : iProp Σ.
 Admitted.
@@ -71,6 +73,9 @@ Admitted.
 
 Instance ptr_gen_mapsto `{gooseG Σ} T : GenericMapsTo (ptr T)
   := {| generic_mapsto := ptr_mapsto; |}.
+
+Instance map_gen_mapsto `{gooseG Σ} T : GenericMapsTo (Map T)
+  := {| generic_mapsto := map_mapsto; |}.
 
 Definition slice_mapsto `{gooseG Σ} {T} (l: slice.t T) q (vs: Datatypes.list T) : iProp Σ :=
   (∃ vs', ⌜ getSliceModel l vs' = Some vs ⌝ ∗ l.(slice.ptr) ↦{q} vs')%I.
@@ -642,6 +647,83 @@ Proof.
   }
   { apply Count_Heap.Cinl_included_nat' in Hlock as (?&?&?); subst. simpl in *; congruence. }
   { apply Count_Heap.Cinl_included_nat' in Hlock as (?&?&?); subst. simpl in *; congruence. }
+Qed.
+
+(* TODO: Some redundancy between the map/ptr triples could be cut *)
+Lemma wp_newMap T s E :
+  {{{ True }}}
+    newMap T @ s ; E
+  {{{ (p: Map T) , RET p; p ↦ (∅ : gmap uint64 T) }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    simpl. inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. do 2 (inv_step; intuition).
+  iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
+  iFrame. iApply "HΦ"; eauto.
+Qed.
+
+Lemma wp_mapAlter_start {T} s E (p: Map T) (m: gmap uint64 T) k f :
+  {{{ ▷ p ↦ m }}}
+   Call (InjectOp.inject (MapAlter p k f SemanticsHelpers.Begin)) @ s ; E
+   {{{ RET tt; mapsto p 0 Locked m }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (gen_typed_heap_valid1 (Ptr.Map T) with "Hσ Hi") as %?.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    simpl. inv_step; simpl in *; subst; simpl in *; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step.
+  iMod (@gen_typed_heap_update with "Hσ Hi") as "[$ Hi]".
+  iFrame. iApply "HΦ"; eauto.
+Qed.
+
+Lemma wp_mapAlter {T} s E (p: Map T) (m: gmap uint64 T) k f :
+  {{{ ▷ p ↦ m }}} mapAlter p k f @ s; E {{{ RET tt; p ↦ (partial_alter f k m) }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". rewrite /mapAlter/nonAtomicWriteOp.
+  wp_bind. iApply (wp_mapAlter_start with "Hi"); eauto.
+  iNext. iIntros "Hi".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (gen_typed_heap_valid1 (Ptr.Map T) with "Hσ Hi") as %?.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    simpl. inv_step; simpl in *; subst; congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step. subst; simpl in *.
+  iMod (gen_typed_heap_update (Ptr.Map T) with "Hσ Hi") as "[$ Hi]".
+  iFrame. iApply "HΦ". inv_step; eauto.
+Qed.
+
+Lemma wp_mapLookup {T} s E (p: Map T) (m: gmap uint64 T) q k:
+  {{{ ▷ p ↦{q} m }}} mapLookup p k @ s; E {{{ RET (m !! k); p ↦{q} m }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". rewrite /mapLookup.
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %[s' [? ?]].
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    simpl. inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step.
+  iFrame. by iApply "HΦ".
 Qed.
 
 End lifting.
