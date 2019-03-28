@@ -395,6 +395,13 @@ Lemma dynMap_dom_spec' A (Ref Model: A -> Type)
   getDyn m x <> None <-> existT _ x ∈ dynMap_dom m.
 Proof. by rewrite <-dynMap_dom_spec, getDyn_lookup_none. Qed.
 
+Lemma dynMap_dom_non_spec A (Ref Model: A -> Type)
+      (m: DynMap Ref Model) a (x: Ref a):
+  getDyn m x = None <-> ¬ existT _ x ∈ dynMap_dom m.
+Proof.
+  rewrite <-dynMap_dom_spec'. destruct getDyn; auto; split; firstorder.
+Qed.
+
 Lemma dynMap_equiv_perm_dom A (Ref Model: A -> Type)
       (m1 m2: DynMap Ref Model):
   m1 ≡ m2 →
@@ -408,3 +415,24 @@ Qed.
 Global Instance dynMap_dom_Proper A (Ref Model: A → Type) :
   Proper (equiv ==> (≡ₚ)) (@dynMap_dom A Ref Model).
 Proof. intros m1 m2 Hequiv. eapply dynMap_equiv_perm_dom; eauto. Qed.
+
+Lemma dynMap_dom_empty_iff A (Ref Model: A -> Type)
+      (m: DynMap Ref Model):
+  m ≡ ∅ <-> dynMap_dom m = [].
+Proof.
+  split.
+  - intros Hequiv. apply Permutation_nil. rewrite Hequiv; eauto.
+  - intros Hdom a k. unfold getDyn at 2; simpl. rewrite dynMap_dom_non_spec, Hdom.
+    inversion 1.
+Qed.
+
+Lemma dynMap_dom_lookup A (Ref Model: A -> Type)
+      (m: DynMap Ref Model) (k : nat) (y : {a : A & Ref a}):
+  m.(dynMap_dom) !! k = Some y ->
+  exists v, getDyn m (projT2 y) = Some v.
+Proof.
+  intros Hin%elem_of_list_lookup_2.
+  replace y with (existT _ (projT2 y)) in Hin by (destruct y; eauto).
+  rewrite <-dynMap_dom_spec' in Hin.
+  destruct getDyn as [?|] eqn:Heq; eauto; congruence.
+Qed.
