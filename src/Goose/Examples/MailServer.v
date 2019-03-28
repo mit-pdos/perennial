@@ -50,8 +50,27 @@ Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t (slice.t byte)) 
   msgs <- Data.readPtr messages;
   Ret msgs.
 
-Definition writeTmp {model:GoModel} (fname:string) (data:slice.t byte) : proc unit :=
-  f <- FS.create "spool" fname;
+Definition createTmp {model:GoModel} : proc (File * string) :=
+  initID <- Data.randomUint64;
+  finalFile <- Data.newPtr File;
+  finalName <- Data.newPtr string;
+  _ <- Loop (fun id =>
+        let fname := uint64_to_string id in
+        let! (f, ok) <- FS.create "tmp" fname;
+        if ok
+        then
+          _ <- Data.writePtr finalFile f;
+          _ <- Data.writePtr finalName fname;
+          LoopRet tt
+        else
+          newID <- Data.randomUint64;
+          Continue newID) initID;
+  f <- Data.readPtr finalFile;
+  name <- Data.readPtr finalName;
+  Ret (f, name).
+
+Definition writeTmp {model:GoModel} (data:slice.t byte) : proc string :=
+  let! (f, name) <- createTmp;
   _ <- Loop (fun buf =>
         if compare_to (slice.length buf) 4096 Lt
         then
@@ -60,19 +79,22 @@ Definition writeTmp {model:GoModel} (fname:string) (data:slice.t byte) : proc un
         else
           _ <- FS.append f (slice.take 4096 buf);
           Continue (slice.skip 4096 buf)) data;
-  FS.close f.
+  _ <- FS.close f;
+  Ret name.
 
-(* Deliver stores a new message
-
-   tid should be a unique thread ID (used as a helper for spooling the message). *)
-Definition Deliver {model:GoModel} (tid:string) (user:uint64) (msg:slice.t byte) : proc unit :=
+(* Deliver stores a new message *)
+Definition Deliver {model:GoModel} (user:uint64) (msg:slice.t byte) : proc unit :=
   userDir <- getUserDir user;
-  _ <- writeTmp tid msg;
+  tmpName <- writeTmp msg;
   initID <- Data.randomUint64;
-  Loop (fun id =>
-        ok <- FS.link "spool" tid userDir ("msg" ++ uint64_to_string id);
+  _ <- Loop (fun id =>
+        ok <- FS.link "spool" tmpName userDir ("msg" ++ uint64_to_string id);
         if ok
         then LoopRet tt
         else
           newID <- Data.randomUint64;
-          Continue newID) initID.
+          Continue newID) initID;
+  FS.delete "spool" tmpName.
+
+Definition Recover {model:GoModel} : proc unit :=
+  Ret tt.
