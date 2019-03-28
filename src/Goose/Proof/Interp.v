@@ -192,6 +192,8 @@ Ltac inv_step :=
          | [ H : updAllocs _ _ _ (Val _ _) |- _ ] =>
            inversion H; subst; clear H
          | [ H : Some _ = Some _ |- _] => apply Some_inj in H; subst
+         | [ H : Cinl _ = Cinl _ |- _] => inversion H; clear H; subst
+         | [ H : ReadLocked _ = ReadLocked _ |- _] => inversion H; clear H; subst
          | [ H : (?a, ?b) = (?c, ?d) |- _] => apply pair_inj in H as (?&?); subst
          | [ H : Go.step _ _ Err |- _ ] => inversion H; clear H; subst
          | [ H : Go.step _ _ (Val _ _) |- _ ] => inversion H; clear H; subst
@@ -725,5 +727,57 @@ Proof.
   simpl in *. inv_step.
   iFrame. by iApply "HΦ".
 Qed.
+
+Lemma wp_MapStartIter {T} s E (p: Map T) (m: gmap uint64 T) q:
+  {{{ ▷ p ↦{q} m }}}
+    (Call (InjectOp.inject (@MapStartIter _ T p)))%proc @ s; E
+  {{{ l, RET l; ⌜ Permutation.Permutation l (fin_maps.map_to_list m) ⌝
+                  ∗ mapsto p q (ReadLocked O) m }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %?.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    simpl. destruct H0 as (?&?&?). inv_step; simpl in *; subst; try congruence.
+    destruct l; eauto; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step. subst; simpl in *.
+  iMod (gen_typed_heap_readlock (Ptr.Map T) with "Hσ Hi") as (s' Heq) "(Hσ&Hl)".
+  iFrame.
+  destruct l; simpl in *; try congruence;
+    inv_step; simpl; iFrame; iApply "HΦ"; iFrame; iModIntro; eauto.
+Qed.
+
+Lemma wp_MapEndIter {T} s E (p: Map T) (m: gmap uint64 T) q:
+  {{{ ▷ mapsto p q (ReadLocked O) m }}}
+    (Call (InjectOp.inject (@MapEndIter _ T p)))%proc @ s; E
+  {{{ RET tt; p ↦{q} m }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ)".
+  iDestruct (gen_typed_heap_valid2 (Ptr.Map T) with "Hσ Hi") as %[s' [? Hlock]].
+  apply Count_Heap.Cinl_included_nat' in Hlock as (?&?&?); subst.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    simpl.
+    destruct s'; simpl in *;
+    inv_step; simpl in *; subst; try congruence; try lia.
+    destruct num; congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  simpl in *. inv_step. subst; simpl in *.
+  iMod (gen_typed_heap_readunlock (Ptr.Map T) with "Hσ Hi") as (s' Heq) "(Hσ&Hl)".
+  iFrame.
+  destruct l; simpl in *; try congruence;
+    inv_step; simpl; iFrame.
+  destruct s'; inv_step; iFrame; iApply "HΦ"; iFrame; iModIntro; eauto.
+Qed.
+
 
 End lifting.
