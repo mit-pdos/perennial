@@ -1,4 +1,4 @@
-From RecordUpdate Require Import RecordUpdate.
+From RecordUpdate Require Import RecordSet.
 From Tactical Require Import ProofAutomation.
 
 From RecoveryRefinement Require Import Spec.Proc.
