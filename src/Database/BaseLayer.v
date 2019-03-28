@@ -6,7 +6,6 @@ From RecoveryRefinement Require Import Database.DataStructures.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 From RecordUpdate Require Import RecordSet.
-Import ApplicativeNotations.
 
 Inductive Op : Type -> Type :=
 | FilesysOp : forall T, FS.Op T -> Op T
@@ -21,7 +20,7 @@ Module Base.
     mkState { fsΣ : FS.State;
               dataΣ : Data.State; }.
 
-  Instance eta : Settable _ := mkSettable (constructor mkState <*> fsΣ <*> dataΣ)%set.
+  Instance eta : Settable _ := settable! mkState <fsΣ; dataΣ>.
 
   Inductive step T : Op T -> relation State State T :=
   | FilesysOpErr : forall op s,

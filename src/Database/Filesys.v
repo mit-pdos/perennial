@@ -4,7 +4,6 @@ From RecoveryRefinement Require Import Helpers.MachinePrimitives.
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
 From RecordUpdate Require Import RecordSet.
-Import ApplicativeNotations.
 
 From Classes Require Import EqualDec.
 Import EqualDecNotation.
@@ -77,7 +76,7 @@ Module FS.
               fds: gmap Fd (Path * OpenMode); }.
 
   Instance _eta : Settable State :=
-    mkSettable (constructor mkState <*> files <*> fds)%set.
+    settable! mkState <files; fds>.
 
   Definition readFd (fh: Fd) (m: OpenMode) : relation State State Path :=
     readSome (fun s => match s.(fds) !! fh with

@@ -128,7 +128,7 @@ Module slice.
            length: uint64 }.
 
     Instance _eta : Settable t :=
-      mkSettable (constructor mk <*> ptr <*> offset <*> length)%set.
+      settable! mk <ptr; offset; length>.
 
     Definition nil := {| ptr := nullptr _; offset := 0; length := 0 |}.
 

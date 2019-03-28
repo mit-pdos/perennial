@@ -41,8 +41,8 @@ Definition state_length (s:BufState) : nat :=
   | Empty => 0
   | Txn1 => 1
   | Txn2 => 1
-  | Txn12 => 1
-  | Txn21 => 1
+  | Txn12 => 2
+  | Txn21 => 2
   end.
 
 Theorem enc_dec_id s : dec_state (enc_state s) = Some s.
@@ -81,7 +81,9 @@ Definition commit : proc bool :=
   and I'm not sure it's an interesting complication *)
   _ <- lock disk_lock;
   l <- read_disk log_len;
-  if le_dec ExMach.size (log_idx (2+l)) then
+  (* always check for two free slots (technically we could first lock the state
+  and check for the right number, but that's too much work) *)
+  if le_dec ExMach.size (log_idx (4+l)) then
       _ <- unlock disk_lock;
       Ret false
   else

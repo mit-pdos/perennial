@@ -196,7 +196,7 @@ Module Data.
     mkState { allocs : DynMap Ptr ptrModel; }.
 
   Global Instance _eta : Settable _ :=
-    mkSettable (constructor mkState <*> allocs)%set.
+    settable! mkState <allocs>.
 
   Definition getAlloc {ty} (p:Ptr ty) (s:State) : option (ptrModel ty) :=
     getDyn s.(allocs) p.
