@@ -66,10 +66,8 @@ Section refinement_triples.
      end)%I.
 
   Record ghost_names :=
-    { γslock : gname;
-      γstate : gname;
+    { γstate : gname;
       γtxns : gname;
-      γdlock : gname;
       γlog : gname;
       (* an abbreviation for log_shadow *)
       (* TODO: come up with a better name *)
@@ -197,9 +195,9 @@ Section refinement_triples.
          own (Γ.(γuse_mem)) (● Excl' use_mem) ∗
          ExecDiskInv log log_sh)%I.
 
-  Definition ExecInv' Γ :=
-    (is_lock lN (Γ.(γslock)) state_lock (StateLockInv Γ) ∗
-             is_lock ldN (Γ.(γdlock)) disk_lock (DiskLockInv Γ) ∗
+  Definition ExecInv' γslock γdlock Γ :=
+    (is_lock lN γslock state_lock (StateLockInv Γ) ∗
+             is_lock ldN γdlock disk_lock (DiskLockInv Γ) ∗
              inv iN (∃ (use_mem: bool) (txns: list (nat*nat)) (log log_sh: list nat),
                         VolatileInv Γ txns ∗
                                     DurableInv Γ use_mem log log_sh ∗
@@ -212,7 +210,7 @@ Section refinement_triples.
                                     Abstraction use_mem txns log)%I.
 
   Definition ExecInv :=
-    (source_ctx ∗ ∃ (Γ:ghost_names), ExecInv' Γ)%I.
+    (source_ctx ∗ ∃ γslock γdlock (Γ:ghost_names), ExecInv' γslock γdlock Γ)%I.
 
   Definition ExecInner Γ :=
     (∃ (log: list nat),
@@ -323,7 +321,7 @@ Section refinement_triples.
        exec_step_GetLog_oob : core.
 
   Ltac ExecInv Hinv :=
-    iDestruct Hinv as (Γ) "#(Hslock&Hdlock&Hinv)".
+    iDestruct Hinv as (γslock γdlock Γ) "#(Hslock&Hdlock&Hinv)".
 
   Ltac DurInv Hinv :=
     let use_mem := fresh "use_mem" in
@@ -443,8 +441,8 @@ Section refinement_triples.
       iPureIntro; auto.
   Qed.
 
-  Theorem try_reserve_ok Γ :
-    {{{ ExecInv' Γ }}}
+  Theorem try_reserve_ok γslock γdlock Γ :
+    {{{ ExecInv' γslock γdlock Γ }}}
       try_reserve
       {{{ v, RET v;
           match v with
@@ -456,7 +454,7 @@ Section refinement_triples.
                     (∀ txn', txn_map start_a txn' -∗
                                      state m↦ enc_state s' ∗
                                      state_interp s' (txns0 ++ [txn'])) ∗
-                  locked (Γ.(γslock))
+                  locked γslock
           end
       }}}.
   Proof.
@@ -490,8 +488,8 @@ Section refinement_triples.
       by iApply "HΦ".
   Qed.
 
-  Theorem reserve_ok Γ :
-    {{{ ExecInv' Γ }}}
+  Theorem reserve_ok γslock γdlock Γ :
+    {{{ ExecInv' γslock γdlock Γ }}}
       reserve
       {{{ start_a, RET start_a;
           ∃ (s':BufState) (txns0: list (nat*nat)) (txn:nat*nat),
@@ -501,7 +499,7 @@ Section refinement_triples.
                     (∀ txn', txn_map start_a txn' -∗
                                      state m↦ enc_state s' ∗
                                      state_interp s' (txns0 ++ [txn'])) ∗
-                    locked (Γ.(γslock))
+                    locked γslock
       }}}.
   Proof.
     iIntros (Φ) "#Hinv HΦ".
@@ -550,10 +548,10 @@ Section refinement_triples.
       {{{ RET tt; j ⤇ K (Ret tt) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
-    iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
+    iDestruct "Hinv" as (γslock γdlock Γ) "#(Hslock&Hdlock&Hinv)".
     unfold append.
     wp_bind.
-    iApply (reserve_ok Γ).
+    iApply (reserve_ok γslock γdlock Γ).
     { iFrame "#". }
 
     iIntros "!>" (start_a) "Hpost".
@@ -637,10 +635,10 @@ Section refinement_triples.
   Lemma move_minus1 x y : x - y - 1 = (x-1) - y.
   Proof. lia. Qed.
 
-  Theorem write_mem_txn_ok Γ log_off txn_start (log log_sh: list nat) : forall txn,
+  Theorem write_mem_txn_ok γslock γdlock Γ log_off txn_start (log log_sh: list nat) : forall txn,
       999 - (length log + length log_sh) >= 2 ->
       log_off = length log + length log_sh ->
-      {{{ ExecInv' Γ ∗ txn_map txn_start txn ∗
+      {{{ ExecInv' γslock γdlock Γ ∗ txn_map txn_start txn ∗
                    own Γ.(γlog) (◯ Excl' log) ∗
                                 own Γ.(γlog_sh) (◯ Excl' log_sh) }}}
       write_mem_txn txn_start log_off
@@ -726,13 +724,13 @@ Section refinement_triples.
   Qed.
 
   Theorem write_log_len_ok j A `{LanguageCtx Log.Op _ T Log.l K} (op: Log.Op A) (v: A)
-          Γ (log log_sh: list nat) (txns: list (nat*nat)) : forall l',
+          γslock γdlock Γ (log log_sh: list nat) (txns: list (nat*nat)) : forall l',
       (* TODO: need to apply op update to change the abstract state *)
       l' = length log + length log_sh ->
       Log.l.(step) op
                    {| Log.mem_buf := flatten_txns txns; Log.disk_log := log; |}
                    (Val {| Log.mem_buf := []; Log.disk_log := log ++ log_sh; |} v)->
-      {{{ ExecInv' Γ ∗
+      {{{ ExecInv' γslock γdlock Γ ∗
                    j ⤇ K (Call op) ∗ source_ctx ∗
                    own (Γ.(γlog)) (◯ Excl' log) ∗
                    own (Γ.(γlog_sh)) (◯ Excl' log_sh) ∗
@@ -803,7 +801,7 @@ Section refinement_triples.
     repeat (eexists; eauto).
   Qed.
 
-  Arguments write_log_len_ok {j A T} K {ctx} {op} {v} Γ : rename.
+  Arguments write_log_len_ok {j A T} K {ctx} {op} {v} γslock γdlock Γ : rename.
 
   Lemma commit_step_success buf log :
       Log.l.(step)
@@ -822,7 +820,7 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Href&#Hsource_inv&Hinv) HΦ".
-    iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
+    iDestruct "Hinv" as (γslock γdlock Γ) "#(Hslock&Hdlock&Hinv)".
     unfold commit.
     wp_lock "(Hdlocked & Hdiskinv)".
     wp_bind.
@@ -890,7 +888,7 @@ Section refinement_triples.
          unfold size, log_idx in n.
          (* fix lia bug; see https://github.com/coq/coq/issues/8898 *)
          pose proof n.
-         iApply (write_mem_txn_ok Γ (length log) txn1_start log []
+         iApply (write_mem_txn_ok _ _ Γ (length log) txn1_start log []
                    with "[Htxn1 Hownlog Hownlog_sh]").
          { simpl; lia. }
          { simpl; lia. }
@@ -901,7 +899,7 @@ Section refinement_triples.
          simpl.
          iIntros "!> (Htxn&Hownlog&Hownlog_sh)".
          wp_bind.
-         iApply (write_log_len_ok K Γ log [txn1.1; txn1.2] [txn1] (op:=Log.Commit) with "[Hj Hownlog Hownlog_sh Howntxn Hownuse_mem]").
+         iApply (write_log_len_ok K _ _ Γ log [txn1.1; txn1.2] [txn1] (op:=Log.Commit) with "[Hj Hownlog Hownlog_sh Howntxn Hownuse_mem]").
          { simpl; lia. }
          { destruct txn1; cbn [flatten_txns fst snd].
            eauto using commit_step_success. }
@@ -1087,7 +1085,7 @@ Proof.
     iExists _, _; by iFrame.
   }
   { intros. iIntros "(#Hctx&#Hinv)".
-    iDestruct "Hinv" as (Γ) "#(Hslock&Hdlock&Hinv)".
+    iDestruct "Hinv" as (γslock γdlock Γ) "#(Hslock&Hdlock&Hinv)".
     iInv "Hinv" as (use_mem txns log log_sh) ">(Hvol&Hdur&Habs)" "_".
     iDestruct "Hdur" as "(Hownlog_auth&Hownlog_sh_auth&Huse_mem_auth&Hdisk)".
     iApply fupd_mask_weaken; first by solve_ndisj.
@@ -1153,41 +1151,46 @@ Proof.
     iDestruct "Hinner" as (log) "(Hvol&Hdur&Habs&Hstatelock&Hstateinv&Hdisklock&Hdiskinv)".
     unfold ExecInv.
     iFrame "#".
+    iMod (Helpers.ghost_var_alloc (@nil (nat*nat)))
+      as (γ2) "[Howntxns_auth Howntxns]".
     iMod (Helpers.ghost_var_alloc log)
       as (γ3) "[Hownlog_auth Hownlog]".
     iMod (Helpers.ghost_var_alloc (@nil nat))
       as (γ4) "[Hownlog_sh_auth Hownlog_sh]".
     iMod (Helpers.ghost_var_alloc true)
       as (γ5) "[Hownuse_mem_auth Hownuse_mem]".
-    set (Γ' := {| γslock := Γ.(γslock);
-                  γdlock := Γ.(γdlock);
-                  γstate := Γ.(γstate);
-                  γtxns := Γ.(γtxns);
+    set (Γ' := {| γstate := Γ.(γstate);
+                  γtxns := γ2;
                   γlog := γ3; γlog_sh := γ4;
                   γuse_mem := γ5; |}).
+    iDestruct "Hstateinv" as (s txns) "(Hstateval&Hstateinterp&Howntxns'&Hownuse_mem')".
+    unfold VolatileInv.
+    iDestruct "Hdur" as "(Hownlog_auth'&Hownlog_sh_auth'&Hownuse_mem_auth'&Hdiskinv')".
+    repeat Helpers.unify_ghost.
+    clear txns.
+    iAssert (StateLockInv Γ') with "[Hstateval Hstateinterp Hownuse_mem Howntxns]" as "Hstateinv".
+    { unfold StateLockInv; simpl.
+      iExists s, []; iFrame. }
     iMod (@lock_init_unlocked myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
-                              state_lock (StateLockInv Γ) with "Hstatelock Hstateinv")
+                              state_lock (StateLockInv Γ') with "Hstatelock Hstateinv")
       as (γl1) "Hstatelock_init".
+    iDestruct "Hdiskinv" as (log' log_sh' ->) "(Hownlog'&Hownlog_sh')".
+    Helpers.unify_ghost.
+    iAssert (DiskLockInv Γ') with "[Hownlog Hownlog_sh]" as "Hdiskinv".
+    { unfold DiskLockInv.
+      iExists _, _; by iFrame. }
     iMod (@lock_init_unlocked myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ ldN
-                              disk_lock (DiskLockInv Γ) with "Hdisklock Hdiskinv")
+                              disk_lock (DiskLockInv Γ') with "Hdisklock Hdiskinv")
       as (γl2) "Hdisklock_init".
-    set (Γ'' := {| γslock := γl1;
-                  γdlock := γl2;
-                  γstate := Γ.(γstate);
-                  γtxns := Γ.(γtxns);
-                  γlog := γ3; γlog_sh := γ4;
-                  γuse_mem := γ5; |}).
-    iExists Γ''.
+    iExists γl1, γl2, Γ'.
     unfold ExecInv'; simpl.
     iFrame.
 
     iMod (@inv_alloc myΣ (exm_invG) iN _ (ExecInv_inv Γ')
-            with "[Hvol Hdur Habs Hownlog_auth Hownlog_sh_auth Hownuse_mem_auth]").
+            with "[Howntxns_auth Hdiskinv' Habs Hownlog_auth Hownlog_sh_auth Hownuse_mem_auth]").
     { iExists _, _, _; iFrame.
-      iDestruct "Hdur" as "(_&_&_&Hdiskinv)".
-      iExists _; iFrame.
-    }
-    iModIntro. iFrame.
+      iExists _; iFrame. }
+    by iFrame.
   }
 
   (* copy of RefinementShadow proof *)
