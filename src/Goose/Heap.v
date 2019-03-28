@@ -328,8 +328,7 @@ Module Data.
       let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
            s' <- readSome (fun _ => lock_acquire Reader s);
            _ <- updAllocs r (s', m);
-           (* TODO: allow any permutation *)
-           pure (fin_maps.map_to_list m)
+           such_that (fun _ l => Permutation.Permutation l (fin_maps.map_to_list m))
     | MapEndIter r =>
       let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
            s' <- readSome (fun _ => lock_release Reader s);
