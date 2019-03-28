@@ -53,6 +53,7 @@ install: |
     opam config list
     opam repo list
     opam list
+    echo \"git log: https://github.com/coq/coq/commits/\$(opam info -f source-hash coq)\"
     "
 before_script:
 - |
