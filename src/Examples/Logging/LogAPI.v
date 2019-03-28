@@ -33,8 +33,7 @@ Module Log.
        crash_step :=
          puts (set mem_buf (fun _ => []));
        finish_step :=
-         l' <- reads mem_buf;
-       puts (set disk_log (fun l => l ++ l'));
+         puts (set mem_buf (fun _ => []));
     |}.
 
   (* TODO: factor out these total/non-erroring theorems to typeclasses over
@@ -53,6 +52,12 @@ Module Log.
     discriminate.
   Qed.
 
+  Lemma finish_total_ok s :
+    exists s', dynamics.(finish_step) s (Val s' tt).
+  Proof.
+    eexists; econstructor.
+  Qed.
+
   Definition init_state : State :=
     {| mem_buf := []; disk_log := [] |}.
 
@@ -65,10 +70,7 @@ Module Log.
               sem := dynamics;
               trace_proj := fun _ => nil;
               initP := fun s => s = init_state; |};
-      intros; eauto using crash_total_ok, crash_non_err_ok.
-    - simpl; descend; unfold reads, puts; intuition eauto.
-    - inversion 1; subst; simpl in *.
-      (intuition eauto); propositional; discriminate.
+      intros; eauto using crash_total_ok, crash_non_err_ok, finish_total_ok.
   Defined.
 
 End Log.
