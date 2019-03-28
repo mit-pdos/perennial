@@ -38,7 +38,7 @@ Definition byteSliceToString {model:GoModel} (p:slice.t byte) : proc string :=
 Definition useSlice {model:GoModel} : proc unit :=
   s <- Data.newSlice byte 1;
   s1 <- Data.sliceAppendSlice s s;
-  FS.atomicCreate "file" s1.
+  FS.atomicCreate "dir" "file" s1.
 
 Definition useSliceIndexing {model:GoModel} : proc uint64 :=
   s <- Data.newSlice uint64 2;

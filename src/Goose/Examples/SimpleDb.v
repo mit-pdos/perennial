@@ -22,9 +22,9 @@ End Table.
 (* CreateTable creates a new, empty table. *)
 Definition CreateTable {model:GoModel} (p:string) : proc Table.t :=
   index <- Data.newMap uint64;
-  f <- FS.create p;
+  f <- FS.create "db" p;
   _ <- FS.close f;
-  f2 <- FS.open p;
+  f2 <- FS.open "db" p;
   Ret {| Table.Index := index;
          Table.File := f2; |}.
 
@@ -105,7 +105,7 @@ Definition readTableIndex {model:GoModel} (f:File) (index:Map uint64) : proc uni
 (* RecoverTable restores a table from disk on startup. *)
 Definition RecoverTable {model:GoModel} (p:string) : proc Table.t :=
   index <- Data.newMap uint64;
-  f <- FS.open p;
+  f <- FS.open "db" p;
   _ <- readTableIndex f index;
   Ret {| Table.Index := index;
          Table.File := f; |}.
@@ -178,7 +178,7 @@ End tableWriter.
 
 Definition newTableWriter {model:GoModel} (p:string) : proc tableWriter.t :=
   index <- Data.newMap uint64;
-  f <- FS.create p;
+  f <- FS.create "db" p;
   buf <- newBuf f;
   off <- Data.newPtr uint64;
   Ret {| tableWriter.index := index;
@@ -193,7 +193,7 @@ Definition tableWriterAppend {model:GoModel} (w:tableWriter.t) (p:slice.t byte) 
 
 Definition tableWriterClose {model:GoModel} (w:tableWriter.t) : proc Table.t :=
   _ <- bufClose w.(tableWriter.file);
-  f <- FS.open w.(tableWriter.name);
+  f <- FS.open "db" w.(tableWriter.name);
   Ret {| Table.Index := w.(tableWriter.index);
          Table.File := f; |}.
 
@@ -373,14 +373,14 @@ Definition Compact {model:GoModel} (db:Database.t) : proc unit :=
   _ <- Data.writePtr db.(Database.table) t;
   _ <- Data.writePtr db.(Database.tableName) newTable;
   manifestData <- Data.stringToBytes newTable;
-  _ <- FS.atomicCreate "manifest" manifestData;
+  _ <- FS.atomicCreate "db" "manifest" manifestData;
   _ <- CloseTable oldTable;
-  _ <- FS.delete oldTableName;
+  _ <- FS.delete "db" oldTableName;
   _ <- Data.lockRelease db.(Database.tableL) Writer;
   Data.lockRelease db.(Database.compactionL) Writer.
 
 Definition recoverManifest {model:GoModel} : proc string :=
-  f <- FS.open "manifest";
+  f <- FS.open "db" "manifest";
   manifestData <- FS.readAt f 0 4096;
   tableName <- Data.bytesToString manifestData;
   _ <- FS.close f;
@@ -393,10 +393,10 @@ Definition deleteOtherFile {model:GoModel} (name:string) (tableName:string) : pr
   else
     if name == "manifest"
     then Ret tt
-    else FS.delete name.
+    else FS.delete "db" name.
 
 Definition deleteOtherFiles {model:GoModel} (tableName:string) : proc unit :=
-  files <- FS.list;
+  files <- FS.list "db";
   let nfiles := slice.length files in
   Loop (fun i =>
         if i == nfiles

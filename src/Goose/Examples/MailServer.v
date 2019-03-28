@@ -10,8 +10,11 @@ Module partialFile.
   Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End partialFile.
 
-Definition readMessage {model:GoModel} (name:string) : proc (slice.t byte) :=
-  f <- FS.open name;
+Definition getUserDir {model:GoModel} (user:uint64) : proc string :=
+  Ret ("user" ++ uint64_to_string user).
+
+Definition readMessage {model:GoModel} (userDir:string) (name:string) : proc (slice.t byte) :=
+  f <- FS.open userDir name;
   fileContents <- Data.newPtr (slice.t byte);
   _ <- Loop (fun pf =>
         buf <- FS.readAt f pf.(partialFile.off) 4096;
@@ -28,8 +31,9 @@ Definition readMessage {model:GoModel} (name:string) : proc (slice.t byte) :=
   Ret fileData.
 
 (* Pickup reads all stored messages *)
-Definition Pickup {model:GoModel} : proc (slice.t (slice.t byte)) :=
-  names <- FS.list;
+Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t (slice.t byte)) :=
+  userDir <- getUserDir user;
+  names <- FS.list userDir;
   messages <- Data.newPtr (slice.t (slice.t byte));
   initMessages <- Data.newSlice (slice.t byte) 0;
   _ <- Data.writePtr messages initMessages;
@@ -38,7 +42,7 @@ Definition Pickup {model:GoModel} : proc (slice.t (slice.t byte)) :=
         then LoopRet tt
         else
           name <- Data.sliceRead names i;
-          msg <- readMessage name;
+          msg <- readMessage userDir name;
           oldMessages <- Data.readPtr messages;
           newMessages <- Data.sliceAppend oldMessages msg;
           _ <- Data.writePtr messages newMessages;
@@ -46,8 +50,8 @@ Definition Pickup {model:GoModel} : proc (slice.t (slice.t byte)) :=
   msgs <- Data.readPtr messages;
   Ret msgs.
 
-Definition writeAll {model:GoModel} (fname:string) (data:slice.t byte) : proc unit :=
-  f <- FS.create fname;
+Definition writeTmp {model:GoModel} (fname:string) (data:slice.t byte) : proc unit :=
+  f <- FS.create "spool" fname;
   _ <- Loop (fun buf =>
         if compare_to (slice.length buf) 4096 Lt
         then
@@ -61,11 +65,12 @@ Definition writeAll {model:GoModel} (fname:string) (data:slice.t byte) : proc un
 (* Deliver stores a new message
 
    tid should be a unique thread ID (used as a helper for spooling the message). *)
-Definition Deliver {model:GoModel} (tid:string) (msg:slice.t byte) : proc unit :=
-  _ <- writeAll tid msg;
+Definition Deliver {model:GoModel} (tid:string) (user:uint64) (msg:slice.t byte) : proc unit :=
+  userDir <- getUserDir user;
+  _ <- writeTmp tid msg;
   initID <- Data.randomUint64;
   Loop (fun id =>
-        ok <- FS.link tid ("msg" ++ uint64_to_string id);
+        ok <- FS.link "spool" tid userDir ("msg" ++ uint64_to_string id);
         if ok
         then LoopRet tt
         else
