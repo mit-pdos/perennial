@@ -22,7 +22,7 @@ End Table.
 (* CreateTable creates a new, empty table. *)
 Definition CreateTable {model:GoModel} (p:string) : proc Table.t :=
   index <- Data.newMap uint64;
-  f <- FS.create "db" p;
+  let! (f, _) <- FS.create "db" p;
   _ <- FS.close f;
   f2 <- FS.open "db" p;
   Ret {| Table.Index := index;
@@ -178,7 +178,7 @@ End tableWriter.
 
 Definition newTableWriter {model:GoModel} (p:string) : proc tableWriter.t :=
   index <- Data.newMap uint64;
-  f <- FS.create "db" p;
+  let! (f, _) <- FS.create "db" p;
   buf <- newBuf f;
   off <- Data.newPtr uint64;
   Ret {| tableWriter.index := index;

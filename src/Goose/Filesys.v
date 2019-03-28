@@ -36,7 +36,7 @@ Module FS.
   | List dir (na: NonAtomicArgs unit) : Op (retT na (slice.t string))
   | Size fh : Op uint64
   | ReadAt fh (off:uint64) (len:uint64) : Op (slice.t byte)
-  | Create dir p : Op File
+  | Create dir p : Op (File*bool)
   | Append fh bs' : Op unit
   | Delete dir p : Op unit
   | Rename dir1 p1 dir2 p2 : Op unit
@@ -146,11 +146,16 @@ Module FS.
 
     | Create dir name =>
       let p := path.mk dir name in
-      _ <- readNone (fun s => s.(files) !! p);
-        fh <- such_that (fun s fh => s.(fds) !! fh = None);
-        _ <- puts (set files (insert p nil));
-        _ <- puts (set fds (insert fh (p, Write)));
-        pure fh
+      oldFile <- reads (fun s => s.(files) !! p);
+        match oldFile with
+        | Some _ => f <- such_that (fun _ _ => True);
+                     pure (f, false)
+        | None =>
+          fh <- such_that (fun s fh => s.(fds) !! fh = None);
+            _ <- puts (set files (insert p nil));
+            _ <- puts (set fds (insert fh (p, Write)));
+            pure (fh, true)
+        end
 
     | Append fh p' =>
       path <- readFd fh Write;
