@@ -69,6 +69,9 @@ Module FS.
 
   Inductive OpenMode := Read | Write.
 
+  Global Instance path_eqdec: EqDecision path.t.
+  Proof. apply _. Qed.
+
   Global Instance path_countable : countable.Countable path.t.
   Proof.
     apply (countable.inj_countable'
@@ -167,6 +170,7 @@ Module FS.
            | None =>
              inode <- fresh_key inodes;
                fh <- fresh_key fds;
+               _ <- puts (set dirents <[ dir := <[ name := inode ]> ents ]>);
                _ <- puts (set inodes <[inode := nil]>);
                _ <- puts (set fds <[fh := (inode, Write)]>);
                pure (fh, true)
