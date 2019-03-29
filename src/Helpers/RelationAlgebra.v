@@ -75,6 +75,13 @@ Section OutputRelations.
       | Val (b', a') t => r a (Val a' t) /\ b = b'
       end.
 
+  Definition zoom A C (proj: A -> C) (inj: C -> A -> A) T (r: relation C C T) : relation A A T :=
+    fun s y =>
+      match y with
+      | Err => r (proj s) Err
+      | Val s' t => r (proj s) (Val (proj s') t) /\ s' = inj (proj s') s
+      end.
+
   Definition readSome {A T} (f: A -> option T) : relation A A T :=
     fun s r => match f s with
             | Some v => r = Val s v

@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordUpdate.
 From Tactical Require Import ProofAutomation.
 
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
+From RecoveryRefinement Require Import Helpers.RecordZoom.
 
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
@@ -21,17 +22,11 @@ Module Go.
   Context `{model_wf:GoModelWf}.
   Notation State := FS.State.
 
-  Inductive step : forall T, Op T -> relation State State T :=
-  | StepFilesysOp T (op: FS.Op T) s res :
-      FS.step op s res ->
-      step (FilesysOp op) s res
-  | StepDataOpOk T (op: Data.Op T) s h' v :
-      Data.step op (FS.heap s) (Val h' v) ->
-      step (DataOp op) s (Val (set FS.heap (fun _ => h') s) v)
-  | StepDataOpErr T (op: Data.Op T) s :
-      Data.step op (FS.heap s) Err ->
-      step (DataOp op) s Err
-  .
+  Definition step T (op:Op T) : relation State State T :=
+    match op with
+    | FilesysOp op => FS.step op
+    | DataOp op => _zoom FS.heap (Data.step op)
+    end.
 
   Definition sem : Dynamics Op State :=
     {| Proc.step := step;
