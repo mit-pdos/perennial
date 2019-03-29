@@ -17,6 +17,13 @@ End importantStruct.
 Definition doSubtleThings {model:GoModel} : proc unit :=
   Ret tt.
 
+Definition GlobalConstant : string := "foo".
+
+(* an untyped string *)
+Definition UntypedStringConstant : string := "bar".
+
+Definition TypedInt : uint64 := 32.
+
 Definition typedLiteral {model:GoModel} : proc uint64 :=
   Ret 3.
 
