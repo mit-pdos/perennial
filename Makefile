@@ -34,7 +34,7 @@ endif
 
 %.vo: %.v _CoqProject
 	@echo "COQC $<"
-	@coqc -w -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template \
+	@coqc -w -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template,-ambiguous-paths \
      $(shell cat '_CoqProject') $< -o $@
 
 .PHONY: extract
