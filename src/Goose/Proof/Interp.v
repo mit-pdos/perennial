@@ -18,13 +18,14 @@ Import Filesys.FS.
 
 Notation heap_inG := (@gen_typed_heapG Ptr.ty Ptr ptrRawModel).
 
-Class fsG (m: GoModel) Σ :=
+Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
    FsG {
       (* todo -- I would like to re-use some of the LockStatus reasoning but right now will need some duplication *)
       go_fs_dlocks_inG :> gen_heapG string (LockStatus * unit) Σ;
       go_fs_dirs_inG :> gen_heapG string (gset string) Σ;
+      go_fs_paths_inG :> gen_heapG path.t (Inode) Σ;
       go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
-      go_fs_fds_inG :> gen_heapG path.t (Inode * OpenMode) Σ;
+      go_fs_fds_inG :> gen_heapG File (Inode * OpenMode) Σ;
      }.
 
 Class gooseG Σ :=
@@ -40,9 +41,19 @@ Class gooseG Σ :=
 Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
   (λ s, (gen_typed_heap_ctx s.(heap).(allocs))).
 
-Definition fs_interp {Σ model} `{model_wf:@GoModelWf model} (F: fsG model Σ) : State → iProp Σ :=
+Definition dirent_insert (m: gmap path.t Inode) (d: string) (md: gmap string Inode) :=
+  map_fold (λ f inode m', <[ {| path.dir := d; path.fname := f |} := inode]> m') m md.
+
+Definition dirent_flatten (m: gmap string (gmap string Inode)) : gmap path.t Inode :=
+  map_fold (λ dir filemap m', dirent_insert m' dir filemap) ∅ m.
+
+Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : State → iProp Σ :=
   (λ s, (gen_heap_ctx (hG := go_fs_dirs_inG)
-                      (fmap (dom (gset string) (Dom := gset_dom)) s.(dirents)))).
+                      (fmap (dom (gset string) (Dom := gset_dom)) s.(dirents)))
+   ∗ (gen_heap_ctx (hG := go_fs_dlocks_inG) (s.(dirlocks)))
+   ∗ (gen_heap_ctx (hG := go_fs_paths_inG) (dirent_flatten s.(dirents)))
+   ∗ (gen_heap_ctx (hG := go_fs_inodes_inG) s.(inodes))
+   ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds)))%I.
 
 Definition goose_interp {Σ} `{model_wf:GoModelWf} {G: gooseG Σ} {tr: tregG Σ} :=
   (λ s, heap_interp (go_heap_inG) s ∗ fs_interp (go_fs_inG) s)%I.
@@ -53,9 +64,8 @@ Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=
     state_interp := (λ s, thread_count_interp (fst s) ∗ goose_interp (snd s))%I
   }.
 
-Class GenericMapsTo `{gooseG Σ} (Addr:Type) :=
-  { ValTy : Type;
-    generic_mapsto : Addr -> Z → ValTy -> iProp Σ; }.
+Class GenericMapsTo `{gooseG Σ} (Addr:Type) (ValTy: Type) :=
+  { generic_mapsto : Addr -> Z → ValTy -> iProp Σ; }.
 
 Notation "l ↦{ q } v" := (generic_mapsto l q v)
                       (at level 20) : bi_scope.
@@ -72,25 +82,48 @@ Definition ptr_mapsto `{gooseG Σ} {T} (l: ptr T) q (v: Datatypes.list T) : iPro
 
 Definition map_mapsto `{gooseG Σ} {T} (l: Map T) q v : iProp Σ
   := Count_Typed_Heap.mapsto (hG := go_heap_inG) l q Unlocked v.
-(*
-Definition path_mapsto `{baseG Σ} (p: Path) (bs: ByteString) : iProp Σ.
-Admitted.
 
-Definition fd_mapsto `{baseG Σ} (fh: Fd) (s:Path * FS.OpenMode) : iProp Σ.
-Admitted.
-*)
-
-Instance ptr_gen_mapsto `{gooseG Σ} T : GenericMapsTo (ptr T)
+Instance ptr_gen_mapsto `{gooseG Σ} T : GenericMapsTo (ptr T) _
   := {| generic_mapsto := ptr_mapsto; |}.
 
-Instance map_gen_mapsto `{gooseG Σ} T : GenericMapsTo (Map T)
+Instance map_gen_mapsto `{gooseG Σ} T : GenericMapsTo (Map T) _
   := {| generic_mapsto := map_mapsto; |}.
 
 Definition slice_mapsto `{gooseG Σ} {T} (l: slice.t T) q (vs: Datatypes.list T) : iProp Σ :=
   (∃ vs', ⌜ getSliceModel l vs' = Some vs ⌝ ∗ l.(slice.ptr) ↦{q} vs')%I.
 
-Instance slice_gen_mapsto `{gooseG Σ} T : GenericMapsTo (slice.t T)
+Instance slice_gen_mapsto `{gooseG Σ} T : GenericMapsTo (slice.t T) _
   := {| generic_mapsto := slice_mapsto; |}.
+
+Definition dir_mapsto `{gooseG Σ} (d: string) q (fs: gset string) : iProp Σ
+  := mapsto (hG := go_fs_dirs_inG) d q fs.
+
+Definition dirlock_mapsto `{gooseG Σ} (d: string) q (s: LockStatus) : iProp Σ
+  := mapsto (hG := go_fs_dlocks_inG) d q (s, tt).
+
+Definition path_mapsto `{gooseG Σ} (p: path.t) q (i: Inode) : iProp Σ
+  := mapsto (hG := go_fs_paths_inG) p q i.
+
+Definition inode_mapsto `{gooseG Σ} (i: Inode) q (bs: List.list byte) : iProp Σ
+  := mapsto (hG := go_fs_inodes_inG) i q bs.
+
+Definition fd_mapsto `{gooseG Σ} (fd: File) q (v: Inode * OpenMode) : iProp Σ
+  := mapsto (hG := go_fs_fds_inG) fd q v.
+
+Instance dir_gen_mapsto `{gooseG Σ} : GenericMapsTo (string) (gset string)
+  := {| generic_mapsto := dir_mapsto; |}.
+
+Instance dirlock_gen_mapsto `{gooseG Σ} : GenericMapsTo (string) LockStatus
+  := {| generic_mapsto := dirlock_mapsto; |}.
+
+Instance path_gen_mapsto `{gooseG Σ} : GenericMapsTo (path.t) _
+  := {| generic_mapsto := path_mapsto; |}.
+
+Instance inode_gen_mapsto `{gooseG Σ} : GenericMapsTo (Inode) _
+  := {| generic_mapsto := inode_mapsto; |}.
+
+Instance fd_gen_mapsto `{gooseG Σ} : GenericMapsTo File _
+  := {| generic_mapsto := fd_mapsto; |}.
 
 Import Reg_wp.
 Section lifting.
@@ -347,7 +380,7 @@ Proof.
 Qed.
 
 Lemma wp_sliceAppend {T} s E (p: slice.t T) l v :
-  {{{ ▷ p ↦ l }}} sliceAppend p v @ s; E {{{ p', RET p'; p' ↦ (l ++ [v]) }}}.
+  {{{ ▷ p ↦ l }}} sliceAppend p v @ s; E {{{ (p': slice.t T), RET p'; p' ↦ (l ++ [v]) }}}.
 Proof.
   iIntros (Φ) ">Hp HΦ".
   iDestruct "Hp" as (vs Heq) "Hp".
@@ -383,7 +416,7 @@ Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l1 l2 rem off :
   rem + off <= length l2 →
   {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
     sliceAppendSlice_aux p1 p2 rem off @ s; E
-  {{{ p', RET p'; p' ↦ (l1 ++ (firstn rem (skipn off l2))) ∗ p2 ↦{q} l2 }}}.
+  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ (firstn rem (skipn off l2))) ∗ p2 ↦{q} l2 }}}.
 Proof.
   iIntros (Hlen Φ) "(>Hp1&>Hp2) HΦ".
   iInduction rem as [| rem] "IH" forall (off Hlen l1 p1).
@@ -405,7 +438,7 @@ Qed.
 Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2 :
   {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
     sliceAppendSlice p1 p2 @ s; E
-  {{{ p', RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} l2 }}}.
+  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} l2 }}}.
 Proof.
   rewrite /sliceAppendSlice.
   iIntros (Φ) "(>Hp1&>Hp2) HΦ".
