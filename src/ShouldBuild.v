@@ -1,11 +1,3 @@
-(* simple database *)
-From RecoveryRefinement Require Import Database.Store.
-From RecoveryRefinement Require Import Database.Simple.SimpleDb.
-From RecoveryRefinement Require Import Database.Simple.SimpleDbProof.
-
-(* mail server experiment *)
-From RecoveryRefinement Require Import Mail.Impl Mail.API.
-
 (* concurrency framework *)
 From RecoveryRefinement Require Import CSL.RefinementAdequacy.
 From RecoveryRefinement Require Import CSL.Lifting.

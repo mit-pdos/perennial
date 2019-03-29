@@ -17,10 +17,6 @@ branches:
 services:
   - docker
 
-cache:
-  directories:
-    - $HOME/.stack
-
 env:
   global:
   - NJOBS="2"
@@ -36,10 +32,6 @@ git:
 
 before_install:
   - git -c http.sslVerify=false submodule update --init --recursive
-  # Download and unpack the stack executable
-  - mkdir -p ~/.local/bin
-  - export PATH=$HOME/.local/bin:$PATH
-  - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
 install: |
   # Prepare the COQ container
@@ -69,9 +61,7 @@ script:
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     set -ex
     make -j${NJOBS} -k ci
-    chmod -R a+rw database
     "
-- cd database && stack --allow-different-user test
 - echo -en 'travis_fold:end:build\\r'
 
 after_script:

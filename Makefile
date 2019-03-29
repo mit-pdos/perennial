@@ -1,4 +1,4 @@
-SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external') 'database'
+SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external')
 ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
@@ -37,26 +37,13 @@ endif
 	@coqc -w -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template,-ambiguous-paths \
      $(shell cat '_CoqProject') $< -o $@
 
-.PHONY: extract
-extract: database/src/Coq/ExtractionExamples.hs
-
-database/src/Coq/ExtractionExamples.hs: database/Extract.vo
-	./scripts/add-preprocess.sh database/src/Coq/*.hs
-
-.PHONY: build-extract
-build-extract: extract
-	@echo "stack build"
-	@cd database && stack build
-
 .PHONY: ci
-ci: src/ShouldBuild.vo $(TEST_VO) extract
+ci: src/ShouldBuild.vo $(TEST_VO)
 
 clean:
 	@echo "CLEAN vo glob aux"
 	@rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob)
 	@find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
-	@echo "CLEAN extraction"
-	@rm -rf database/src/Coq/*.hs
 	rm -f _CoqProject .coqdeps.d
 
 .PHONY: default test clean
