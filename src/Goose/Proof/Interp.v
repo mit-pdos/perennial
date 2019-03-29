@@ -845,4 +845,69 @@ Proof.
   iFrame. eauto.
 Qed.
 
+Lemma insert_flatten dents dir fname i ds:
+  dents !! dir = Some ds →
+  <[{| path.dir := dir; path.fname := fname |}:=i]> (dirent_flatten dents) =
+  dirent_flatten (<[dir:=<[fname:=i]> ds]> dents).
+Proof.
+  admit.
+Admitted.
+
+Lemma wp_create_new dir fname S s E :
+  {{{ dir ↦ S ∗ ⌜ ¬ fname ∈ S ⌝ }}}
+    create dir fname @ s ; E
+  {{{ (i: Inode) (f: File), RET (f, true);
+      f ↦ (i, Write)
+        ∗ i ↦ []
+        ∗ dir ↦ (S ∪ {[fname]})
+        ∗ {| path.dir := dir; path.fname := fname |} ↦ i
+  }}}.
+Proof.
+  iIntros (Φ) "(Hd&%) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds)".
+  iDestruct (gen_heap_valid with "Hents Hd") as %H'.
+           rewrite lookup_fmap in H'.
+           eapply fmap_Some_1 in H' as (?&?&?).
+           subst.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    apply snd_lift_non_err; try (apply zoom_non_err);
+                                   let Herr := fresh "Herr" in
+                                   intros Herr.
+      inversion Herr as [Hhd_err|(?&?&Hhd&Htl_err)]; clear Herr.
+    { unfold lookup in Hhd_err. inv_step. congruence. }
+    simpl in *. unfold lookup in Hhd. inv_step.
+    rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl_err.
+    inv_step;
+    inversion Hhd_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+           let Hhd := fresh "Hhd" in
+           let Htl := fresh "Htl" in
+           destruct H2 as (?&?&Hhd&Htl).
+    unfold lookup in Hhd. inv_step.
+    rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl.
+    clear Hstep.
+  do 2 (inv_step; intuition).
+  inversion Hhd0. subst.
+  inversion Hhd. subst.
+  inversion Hhd1. inversion Hhd2. inversion Hhd3. subst.
+  iMod (gen_heap_alloc _ {| path.dir := dir; path.fname := fname |} x with "Hpaths") as "(Hpaths&Hp)".
+  { simpl. admit. }
+  iMod (gen_heap_update _ (dir) _ (dom (gset string) (<[fname := x]> x0)) with "Hents Hd") as "(?&?)".
+  iMod (gen_heap_alloc with "Hinodes") as "(?&?)".
+  eauto.
+  iMod (gen_heap_alloc with "Hfds") as "(?&?)".
+  eauto.
+  iFrame.
+  rewrite -fmap_insert.
+  simpl. simpl in *. iFrame.
+  rewrite -insert_flatten; eauto.
+  iFrame. iApply "HΦ". iFrame.
+  by rewrite dom_insert_L comm_L.
+Admitted.
+
 End lifting.
