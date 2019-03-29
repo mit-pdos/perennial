@@ -18,28 +18,34 @@ Import Filesys.FS.
 
 Notation heap_inG := (@gen_typed_heapG Ptr.ty Ptr ptrRawModel).
 
+Class fsG (m: GoModel) Σ :=
+   FsG {
+      (* todo -- I would like to re-use some of the LockStatus reasoning but right now will need some duplication *)
+      go_fs_dlocks_inG :> gen_heapG string (LockStatus * unit) Σ;
+      go_fs_dirs_inG :> gen_heapG string (gset string) Σ;
+      go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
+      go_fs_fds_inG :> gen_heapG path.t (Inode * OpenMode) Σ;
+     }.
+
 Class gooseG Σ :=
   GooseG {
       go_invG : invG Σ;
       model :> GoModel;
       model_wf :> GoModelWf model;
       go_heap_inG :> (@gen_typed_heapG Ptr.ty Ptr ptrRawModel Σ _);
-      (* todo -- I would like to re-use some of the LockStatus reasoning but right now will need some duplication *)
-      go_fs_dlocks_inG :> gen_heapG string (LockStatus * unit) Σ;
-      go_fs_dirs_inG :> gen_heapG string (gset string) Σ;
-      go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
-      go_fs_fds_inG :> gen_heapG path.t (Inode * OpenMode) Σ;
+      go_fs_inG :> fsG model Σ;
       go_treg_inG :> tregG Σ;
     }.
 
 Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
   (λ s, (gen_typed_heap_ctx s.(heap).(allocs))).
 
-Definition fs_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
-  (λ s, True%I).
+Definition fs_interp {Σ model} `{model_wf:@GoModelWf model} (F: fsG model Σ) : State → iProp Σ :=
+  (λ s, (gen_heap_ctx (hG := go_fs_dirs_inG)
+                      (fmap (dom (gset string) (Dom := gset_dom)) s.(dirents)))).
 
-Definition goose_interp {Σ} `{model_wf:GoModelWf} {hM: heap_inG Σ} {tr: tregG Σ} :=
-  (λ s, heap_interp hM s ∗ fs_interp hM s)%I.
+Definition goose_interp {Σ} `{model_wf:GoModelWf} {G: gooseG Σ} {tr: tregG Σ} :=
+  (λ s, heap_interp (go_heap_inG) s ∗ fs_interp (go_fs_inG) s)%I.
 
 Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=
   {
@@ -143,6 +149,11 @@ Lemma lock_available_reader_fail_inv l:
 Proof. destruct l => //=. Qed.
 
 Import SemanticsHelpers.
+
+Lemma zoom_non_err {A C} (proj : A → C) (inj : C → A → A) {T} (r : relation C C T) (s : A):
+  ¬ r (proj s) Err → ¬ zoom proj inj r s Err.
+Proof. firstorder. Qed.
+
 Ltac inv_step :=
   repeat (inj_pair2; match goal with
          | [ H : unit |- _ ] => destruct H
@@ -153,7 +164,7 @@ Ltac inv_step :=
            inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
          | [ |- ¬ Go.step _ _ Err ] => let Herr := fresh "Herr" in
                                     intros Herr
-         | [ |- ¬ snd_lift _ _ Err ] => apply snd_lift_non_err;
+         | [ |- ¬ snd_lift _ _ Err ] => apply snd_lift_non_err; try (apply zoom_non_err);
                                         let Herr := fresh "Herr" in
                                         intros Herr
          | [ H : and_then _ _ _ Err  |- _ ] =>
@@ -182,6 +193,12 @@ Ltac inv_step :=
          | [ H : ?x = Some ?y,
              H': ?x = _ |- _] =>
              rewrite H in H'
+         | [ H : ?σ2 = RecordSet.set heap (λ _ : Data.State, ?σ2.(heap)) ?σ |- _ ] =>
+           let Heq := fresh "Heq" in
+           let heapName := fresh "heap" in
+           remember (σ2.(heap)) as heapName eqn:Heq; clear Heq; subst
+         | [ H: Go.l.(sem).(Proc.step) _ _ _ |- _] =>
+           destruct H as (?&?)
          | [ H : context[let '(s, alloc) := ?x in _] |- _] => destruct x
          | [ H : lock_acquire _ Unlocked = Some _ |- _ ] => inversion H; subst; clear H
          | [ H : lock_acquire Writer _ = Some _ |- _ ] =>
@@ -215,11 +232,11 @@ Proof.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step. simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. do 2 (inv_step; intuition).
+  do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
   iFrame. iApply "HΦ"; eauto.
 Qed.
@@ -237,11 +254,11 @@ Proof.
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; simpl in *; try congruence.
+    inv_step; simpl in *; subst; simpl in *; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
+  inv_step.
   iMod (@gen_typed_heap_update with "Hσ Hi") as "[$ Hi]".
   iFrame. iApply "HΦ"; eauto.
 Qed.
@@ -259,11 +276,11 @@ Proof.
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; congruence.
+    inv_step; simpl in *; subst; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step. subst; simpl in *.
+  inv_step. subst; simpl in *.
   iMod (gen_typed_heap_update (Ptr.Heap T) with "Hσ Hi") as "[$ Hi]".
   iFrame. iApply "HΦ". inv_step; eauto.
 Qed.
@@ -283,11 +300,11 @@ Proof.
   iDestruct (gen_typed_heap_valid (Ptr.Heap T) with "Hσ Hi") as %[s' [? ?]].
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
+  inv_step.
   iFrame. by iApply "HΦ".
 Qed.
 
@@ -339,11 +356,11 @@ Proof.
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hp") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step. simpl in *.
+  inv_step. simpl in *.
   intuition. subst.
   iFrame.
   iMod (gen_typed_heap_dealloc (Ptr.Heap T) with "Hσ Hp") as "Hσ".
@@ -450,12 +467,11 @@ Proof.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. do 2 (inv_step; intuition).
-  eapply SemanticsHelpers.getDyn_lookup_none in H0.
+  do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hl)"; first by eauto.
   iFrame.
   iApply "HΦ"; eauto.
@@ -485,12 +501,12 @@ Proof.
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iModIntro. iSplit.
   { iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
     destruct l0; inversion Htl_err.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
+  inv_step.
   edestruct (lock_acquire_Reader_success_inv) as (?&?); first by eauto.
   destruct stat.
   { apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
@@ -541,13 +557,13 @@ Proof.
   }
   iModIntro. iSplit.
   { iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
     destruct l0; try destruct num0; try inversion Htl_err; simpl in *; try congruence.
     apply Count_Heap.Cinl_included_nat in Hlock. lia.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
+  inv_step.
   iDestruct "Hstat" as "(%&HP)"; subst.
   iMod (gen_typed_heap_readunlock (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
   simpl; inv_step. iFrame.
@@ -593,12 +609,12 @@ Proof.
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iModIntro. iSplit.
   { iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
     destruct l0; inversion Htl_err.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
+  inv_step.
   edestruct (lock_acquire_Writer_success_inv) as (?&?&?); first by eauto; subst.
   destruct stat.
   { (* Writelocked -- impossible *)
@@ -631,11 +647,11 @@ Proof.
   apply Count_Heap.Cinr_included_excl' in Hrlock; subst.
   iModIntro. iSplit.
   { iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
+  inv_step.
   iFrame.
   destruct stat.
   {
@@ -663,11 +679,11 @@ Proof.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. do 2 (inv_step; intuition).
+  do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
   iFrame. iApply "HΦ"; eauto.
 Qed.
@@ -683,11 +699,11 @@ Proof.
   iDestruct (gen_typed_heap_valid1 (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; simpl in *; try congruence.
+    inv_step; simpl in *; subst; simpl in *; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
+  inv_step.
   iMod (@gen_typed_heap_update with "Hσ Hi") as "[$ Hi]".
   iFrame. iApply "HΦ"; eauto.
 Qed.
@@ -703,11 +719,11 @@ Proof.
   iDestruct (gen_typed_heap_valid1 (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; congruence.
+    inv_step; simpl in *; subst; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step. subst; simpl in *.
+  inv_step. subst; simpl in *.
   iMod (gen_typed_heap_update (Ptr.Map T) with "Hσ Hi") as "[$ Hi]".
   iFrame. iApply "HΦ". inv_step; eauto.
 Qed.
@@ -721,11 +737,11 @@ Proof.
   iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %[s' [? ?]].
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. inv_step; simpl in *; subst; try congruence.
+    inv_step; simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step.
+  inv_step.
   iFrame. by iApply "HΦ".
 Qed.
 
@@ -741,12 +757,12 @@ Proof.
   iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl. destruct H0 as (?&?&?). inv_step; simpl in *; subst; try congruence.
+    destruct H0 as (?&?&?). inv_step; simpl in *; subst; try congruence.
     destruct l; eauto; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step. subst; simpl in *.
+  inv_step. subst; simpl in *.
   iMod (gen_typed_heap_readlock (Ptr.Map T) with "Hσ Hi") as (s' Heq) "(Hσ&Hl)".
   iFrame.
   destruct l; simpl in *; try congruence;
@@ -765,14 +781,13 @@ Proof.
   apply Count_Heap.Cinl_included_nat' in Hlock as (?&?&?); subst.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
-    simpl.
-    destruct s'; simpl in *;
-    inv_step; simpl in *; subst; try congruence; try lia.
+    destruct s';
+    inv_step; simpl in *; inv_step; subst; try congruence; try lia;
     destruct num; congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  simpl in *. inv_step. subst; simpl in *.
+  inv_step. subst; simpl in *.
   iMod (gen_typed_heap_readunlock (Ptr.Map T) with "Hσ Hi") as (s' Heq) "(Hσ&Hl)".
   iFrame.
   destruct l; simpl in *; try congruence;
