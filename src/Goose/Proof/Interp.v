@@ -4,7 +4,7 @@ From iris.algebra Require Import auth gmap frac agree.
 Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting Count_Typed_Heap CSL.ThreadReg.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting Count_Typed_Heap CSL.ThreadReg CSL.Count_GHeap.
 From iris.proofmode Require Export tactics.
 
 From RecoveryRefinement.Goose Require Import Machine GoZeroValues Heap GoLayer.
@@ -24,24 +24,27 @@ Class gooseG Σ :=
       model :> GoModel;
       model_wf :> GoModelWf model;
       go_heap_inG :> (@gen_typed_heapG Ptr.ty Ptr ptrRawModel Σ _);
-      (* Maybe actually we do want a gmap version for these *)
-      (*
-      go_fs_inG :> gen_heapG string (List.list byte) Σ;
-      go_fds_inG :> gen_heapG File (List.list byte) Σ;
-       *)
+      (* todo -- I would like to re-use some of the LockStatus reasoning but right now will need some duplication *)
+      go_fs_dlocks_inG :> gen_heapG string (LockStatus * unit) Σ;
+      go_fs_dirs_inG :> gen_heapG string (gset string) Σ;
+      go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
+      go_fs_fds_inG :> gen_heapG path.t (Inode * OpenMode) Σ;
       go_treg_inG :> tregG Σ;
     }.
 
 Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
   (λ s, (gen_typed_heap_ctx s.(heap).(allocs))).
 
+Definition fs_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
+  (λ s, True%I).
+
 Definition goose_interp {Σ} `{model_wf:GoModelWf} {hM: heap_inG Σ} {tr: tregG Σ} :=
-  (λ s, thread_count_interp (fst s) ∗ heap_interp hM (snd s))%I.
+  (λ s, heap_interp hM s ∗ fs_interp hM s)%I.
 
 Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=
   {
     iris_invG := go_invG;
-    state_interp := goose_interp
+    state_interp := (λ s, thread_count_interp (fst s) ∗ goose_interp (snd s))%I
   }.
 
 Class GenericMapsTo `{gooseG Σ} (Addr:Type) :=
@@ -59,10 +62,10 @@ Notation "l ↦ v" := (generic_mapsto l 0 v)
    if we enforced that as a property of the heap  *)
 
 Definition ptr_mapsto `{gooseG Σ} {T} (l: ptr T) q (v: Datatypes.list T) : iProp Σ
-  := mapsto l q Unlocked v.
+  := Count_Typed_Heap.mapsto (hG := go_heap_inG)  l q Unlocked v.
 
 Definition map_mapsto `{gooseG Σ} {T} (l: Map T) q v : iProp Σ
-  := mapsto l q Unlocked v.
+  := Count_Typed_Heap.mapsto (hG := go_heap_inG) l q Unlocked v.
 (*
 Definition path_mapsto `{baseG Σ} (p: Path) (bs: ByteString) : iProp Σ.
 Admitted.
@@ -88,12 +91,10 @@ Section lifting.
 Context `{gooseG Σ}.
 
 Lemma thread_reg1:
-  ∀ n σ, state_interp (n, σ)
-                      -∗ thread_count_interp n ∗ heap_interp (go_heap_inG) σ.
+  ∀ n σ, state_interp (n, σ) -∗ thread_count_interp n ∗ goose_interp σ.
 Proof. auto. Qed.
 Lemma thread_reg2:
-  ∀ n σ, thread_count_interp n ∗ heap_interp (go_heap_inG) σ
-                             -∗ state_interp (n, σ).
+  ∀ n σ, thread_count_interp n ∗ goose_interp σ -∗ state_interp (n, σ).
 Proof. auto. Qed.
 
 Lemma wp_spawn {T} s E (e: proc _ T) Φ :
@@ -211,7 +212,7 @@ Lemma wp_newAlloc {T} s E (v: T) len :
 Proof.
   iIntros (Φ) "_ HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     simpl. inv_step; simpl in *; subst; try congruence.
@@ -227,12 +228,12 @@ Lemma wp_ptrStore_start {T} s E (p: ptr T) off l l' v :
   list_nth_upd l off v = Some l' →
   {{{ ▷ p ↦ l }}}
    Call (InjectOp.inject (PtrStore p off v SemanticsHelpers.Begin)) @ s ; E
-   {{{ RET tt; mapsto p 0 Locked l }}}.
+   {{{ RET tt; Count_Typed_Heap.mapsto p 0 Locked l }}}.
 Proof.
   intros Hupd.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -254,7 +255,7 @@ Proof.
   wp_bind. iApply (wp_ptrStore_start with "Hi"); eauto.
   iNext. iIntros "Hi".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -278,7 +279,7 @@ Proof.
   intros Hupd.
   iIntros (Φ) ">Hi HΦ". rewrite /ptrDeref.
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid (Ptr.Heap T) with "Hσ Hi") as %[s' [? ?]].
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -334,7 +335,7 @@ Proof.
   iIntros (Φ) ">Hp HΦ".
   iDestruct "Hp" as (vs Heq) "Hp".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hp") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -402,7 +403,7 @@ Proof.
 Qed.
 
 Definition lock_mapsto `{gooseG Σ} (l: LockRef) q mode : iProp Σ :=
-   mapsto l q mode tt.
+   Count_Typed_Heap.mapsto l q mode tt.
 
 Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
   (∃ (n: nat) stat, lock_mapsto l n stat ∗
@@ -446,7 +447,7 @@ Lemma wp_newLock N s E (P: nat → iProp Σ) (Q: iProp Σ) :
 Proof.
   iIntros (Φ) "(#HPQ1&#HPQ2&HP) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     simpl. inv_step; simpl in *; subst; try congruence.
@@ -480,7 +481,7 @@ Proof.
   iIntros (Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
   iInv N as (k stat) "(>H&Hstat)".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iModIntro. iSplit.
   { iPureIntro.
@@ -525,7 +526,7 @@ Proof.
   iIntros (Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
   iInv N as (k stat) "(>H&Hstat)".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ Hrlocked") as %[s'' [? Hrlock]].
   apply Count_Heap.Cinl_included_nat' in Hrlock as (m&?&?); subst.
@@ -554,14 +555,14 @@ Proof.
   iModIntro.
   unfold rlocked.
   destruct num.
-  * iDestruct (read_split_join (T := Ptr.Lock) with "[$]") as "H".
+  * iDestruct (Count_Typed_Heap.read_split_join (T := Ptr.Lock) with "[$]") as "H".
     iSplitL "Hσ".
     { destruct s; inversion Htl; subst; iFrame. }
     iModIntro.
     iSplitL "H HP".
     { iNext. iExists O, Unlocked. by iFrame. }
       by iApply "HΦ"; iFrame.
-  * iDestruct (read_split_join2 (T := Ptr.Lock) with "[$]") as "H".
+  * iDestruct (Count_Typed_Heap.read_split_join2 (T := Ptr.Lock) with "[$]") as "H".
     iSplitL "Hσ".
     { destruct s; inversion Htl; subst; iFrame. }
     iModIntro.
@@ -588,7 +589,7 @@ Proof.
   iIntros (Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
   iInv N as (k stat) "(>H&Hstat)".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iModIntro. iSplit.
   { iPureIntro.
@@ -624,7 +625,7 @@ Proof.
   iIntros (Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
   iInv N as (k stat) "(>H&Hstat)".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ Hrlocked") as %[s'' [? Hrlock]].
   apply Count_Heap.Cinr_included_excl' in Hrlock; subst.
@@ -659,7 +660,7 @@ Lemma wp_newMap T s E :
 Proof.
   iIntros (Φ) "_ HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     simpl. inv_step; simpl in *; subst; try congruence.
@@ -674,11 +675,11 @@ Qed.
 Lemma wp_mapAlter_start {T} s E (p: Map T) (m: gmap uint64 T) k f :
   {{{ ▷ p ↦ m }}}
    Call (InjectOp.inject (MapAlter p k f SemanticsHelpers.Begin)) @ s ; E
-   {{{ RET tt; mapsto p 0 Locked m }}}.
+   {{{ RET tt; Count_Typed_Heap.mapsto p 0 Locked m }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid1 (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -698,7 +699,7 @@ Proof.
   wp_bind. iApply (wp_mapAlter_start with "Hi"); eauto.
   iNext. iIntros "Hi".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid1 (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -716,7 +717,7 @@ Lemma wp_mapLookup {T} s E (p: Map T) (m: gmap uint64 T) q k:
 Proof.
   iIntros (Φ) ">Hi HΦ". rewrite /mapLookup.
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %[s' [? ?]].
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -732,11 +733,11 @@ Lemma wp_MapStartIter {T} s E (p: Map T) (m: gmap uint64 T) q:
   {{{ ▷ p ↦{q} m }}}
     (Call (InjectOp.inject (@MapStartIter _ T p)))%proc @ s; E
   {{{ l, RET l; ⌜ Permutation.Permutation l (fin_maps.map_to_list m) ⌝
-                  ∗ mapsto p q (ReadLocked O) m }}}.
+                  ∗ Count_Typed_Heap.mapsto p q (ReadLocked O) m }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -753,13 +754,13 @@ Proof.
 Qed.
 
 Lemma wp_MapEndIter {T} s E (p: Map T) (m: gmap uint64 T) q:
-  {{{ ▷ mapsto p q (ReadLocked O) m }}}
+  {{{ ▷ Count_Typed_Heap.mapsto p q (ReadLocked O) m }}}
     (Call (InjectOp.inject (@MapEndIter _ T p)))%proc @ s; E
   {{{ RET tt; p ↦{q} m }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ)".
+  iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Map T) with "Hσ Hi") as %[s' [? Hlock]].
   apply Count_Heap.Cinl_included_nat' in Hlock as (?&?&?); subst.
   iModIntro. iSplit.
