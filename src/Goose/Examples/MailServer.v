@@ -30,12 +30,21 @@ Definition readMessage {model:GoModel} (userDir:string) (name:string) : proc (sl
   fileData <- Data.readPtr fileContents;
   Ret fileData.
 
+Module Message.
+  Record t {model:GoModel} := mk {
+    Id: string;
+    Contents: slice.t byte;
+  }.
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
+End Message.
+
 (* Pickup reads all stored messages *)
-Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t (slice.t byte)) :=
+Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t Message.t) :=
   userDir <- getUserDir user;
   names <- FS.list userDir;
-  messages <- Data.newPtr (slice.t (slice.t byte));
-  initMessages <- Data.newSlice (slice.t byte) 0;
+  messages <- Data.newPtr (slice.t Message.t);
+  initMessages <- Data.newSlice Message.t 0;
   _ <- Data.writePtr messages initMessages;
   _ <- Loop (fun i =>
         if i == slice.length names
@@ -44,7 +53,8 @@ Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t (slice.t byte)) 
           name <- Data.sliceRead names i;
           msg <- readMessage userDir name;
           oldMessages <- Data.readPtr messages;
-          newMessages <- Data.sliceAppend oldMessages msg;
+          newMessages <- Data.sliceAppend oldMessages {| Message.Id := name;
+             Message.Contents := msg; |};
           _ <- Data.writePtr messages newMessages;
           Continue (i + 1)) 0;
   msgs <- Data.readPtr messages;
@@ -96,5 +106,16 @@ Definition Deliver {model:GoModel} (user:uint64) (msg:slice.t byte) : proc unit 
           Continue newID) initID;
   FS.delete "spool" tmpName.
 
+Definition Delete {model:GoModel} (user:uint64) (msgID:string) : proc unit :=
+  userDir <- getUserDir user;
+  FS.delete userDir msgID.
+
 Definition Recover {model:GoModel} : proc unit :=
-  Ret tt.
+  spooled <- FS.list "spool";
+  Loop (fun i =>
+        if i == slice.length spooled
+        then LoopRet tt
+        else
+          name <- Data.sliceRead spooled i;
+          _ <- FS.delete "spool" name;
+          Continue (i + 1)) 0.
