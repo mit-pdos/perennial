@@ -8,21 +8,23 @@ From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.Layer.
-From RecoveryRefinement Require Export Filesys.
+From RecoveryRefinement Require Import Goose.Filesys Goose.Heap Goose.GoLayer.
 
-Inductive rterm : Type -> Type -> Type -> Type :=
-| Pure A T : T -> rterm A A T
-(* | Identity A T : rterm A A T *)
-(* | Any A B T : rterm A B T *)
-(* | None A B T : rterm A B T *)
-| Reads A T : (A -> T) -> rterm A A T
-(* | Puts A unit : (A -> A) -> rterm A A unit *)
-(* | Error A B T : rterm A B T *)
-| ReadSome A T : (A -> option T) -> rterm A A T
-(* | ReadNone A T : (A -> option T) -> rterm A A unit *)
-| AndThen A B C T1 T2 : rterm A B T1 -> (T1 -> rterm B C T2) -> rterm A C T2
-(* | SuchThat A T : (A -> T -> Prop) -> rterm A A T *)
+Module RTerm.
+Inductive t : Type -> Type -> Type -> Type :=
+| Pure A T : T -> t A A T
+(* | Identity A T : t A A T *)
+(* | None A B T : t A B T *)
+| Reads A T : (A -> T) -> t A A T
+| Puts A : (A -> A) -> t A A unit
+| Error A B T : t A B T
+| ReadSome A T : (A -> option T) -> t A A T
+| ReadNone A T : (A -> option T) -> t A A unit
+| AndThen A B C T1 T2 : t A B T1 -> (T1 -> t B C T2) -> t A C T2
+(* | SuchThat A T : (A -> T -> Prop) -> t A A T *)
+| NotImpl A B T (r: relation A B T) : t A B T
 .
+End RTerm.
 
 Inductive Output B T : Type :=
 | Success (b: B) (t: T) 
@@ -34,17 +36,25 @@ Arguments Success {_ _}.
 Arguments Error {_ _}.
 Arguments NotImpl {_ _}.
 
-Fixpoint interpret (A B T : Type) (r : rterm A B T) (X : A) : Output B T :=
-  match r in (rterm A B T) return (A -> Output B T) with
-  | Pure A t => fun a => Success a t
-  | Reads f => fun a => Success a (f a)
-  | ReadSome f =>
+Fixpoint interpret (A B T : Type) (r : RTerm.t A B T) (X : A) : Output B T :=
+  match r in (RTerm.t A B T) return (A -> Output B T) with
+  | RTerm.Pure A t => fun a => Success a t
+  | RTerm.Reads f => fun a => Success a (f a)
+  | RTerm.ReadSome f =>
       fun a =>
       let t' := f a in match t' with
                         | Some t => Success a t
                         | None => Error
                         end
-  | AndThen r f =>
+  | RTerm.ReadNone f =>
+      fun a =>
+      let t' := f a in match t' with
+                        | Some t => Error
+                        | None => Success a tt
+                        end
+  | RTerm.Puts f => fun a => Success (f a) tt
+  | RTerm.Error _ _ _ => fun a => Error
+  | RTerm.AndThen r f =>
       fun a =>
       let o := interpret r a in
       match o with
@@ -52,39 +62,57 @@ Fixpoint interpret (A B T : Type) (r : rterm A B T) (X : A) : Output B T :=
       | Error => Error
       | NotImpl => NotImpl
       end
+  | RTerm.NotImpl _ => fun a => NotImpl
   end X. 
 
-Fixpoint rtermDenote A B T (r: rterm A B T) : relation A B T :=
+Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   match r with
-  | Pure _ o0 => pure o0
-  | Reads f => reads f
-  | ReadSome f => readSome f
-  | AndThen r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
+  | RTerm.Pure _ o0 => pure o0
+  | RTerm.Reads f => reads f
+  | RTerm.ReadSome f => readSome f
+  | RTerm.ReadNone f => readNone f
+  | RTerm.Puts f => puts f
+  | RTerm.Error _ _ _ => error
+  | RTerm.AndThen r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
+  | RTerm.NotImpl r => r
   end.
 
-Ltac refl' e :=
+Ltac refl' RetB RetT e :=
   match eval simpl in e with
   | fun x : ?T => @pure ?A _ (@?E x) =>
-    constr:(fun x => Pure A (E x))
+    constr: (fun x => RTerm.Pure A (E x))
 
   | fun x : ?T => @reads ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
-    constr: (fun x => Reads (f x))
+    constr: (fun x => RTerm.Reads (f x))
               
   | fun x : ?T => @readSome ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
-    constr: (fun x => ReadSome (f x))
+    constr: (fun x => RTerm.ReadSome (f x))
+
+  | fun x : ?T => @readNone ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
+    constr: (fun x => RTerm.ReadNone (f x))
+
+  | fun x : ?T => @puts ?A ?A (fun (y: ?A) => (@?f x y)) =>
+    constr: (fun x => RTerm.Puts (f x))
+
+  | fun x : ?T => @error ?A ?B ?T0 =>
+    constr: (fun x => RTerm.Error A B T0)
 
   | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
-    let f1 := refl' r1 in
-    let f2 := refl' (fun (p: T * T1) => (r2 (fst p) (snd p))) in
-    constr: (fun x => AndThen (f1 x) (fun y => f2 (x, y)))
+    let f1 := refl' B T1 r1 in
+    let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
+    constr: (fun x => RTerm.AndThen (f1 x) (fun y => f2 (x, y)))
               
-  | _ => ltac:(idtac e)
+  | fun x : ?T => @?E x =>
+    constr: (fun x => RTerm.NotImpl (E x))
   end.
 
 Ltac refl e :=
-  let t := refl' constr:(fun _ : unit => e) in
-  let t' := (eval cbn beta in (t tt)) in
-  constr:(t').
+  lazymatch type of e with
+  | @relation _ ?B ?T =>                        
+    let t := refl' B T constr:(fun _ : unit => e) in
+    let t' := (eval cbn beta in (t tt)) in
+    constr:(t')
+  end.
 
 Ltac test e :=
   let t := refl e in
@@ -92,35 +120,49 @@ Ltac test e :=
   unify e e'.
 
 Ltac refl_op o :=
-  let t := eval cbv [FS.step] in (FS.step o) in
+  let t := eval cbv [FS.step] in (step o) in
   refl t.
 
-Definition reify A B T (op : FS.Op A) : rterm A B T.
-  destruct op eqn:?.
-  - let x := reflop (FS.Open p) in idtac x.
-    pose proof (FS.step) as step.
+Definition reify A B T {model : Machine.GoModel} (op : Op A)  : RTerm.t A B T.
+  destruct op.
+  destruct o eqn:?.
+  admit.
+  admit.
+Admitted.
 
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
-Ltac testReads := test (reads (A:=nat) (fun x : nat => x + 3)).
+Ltac testReads := test (reads (A:=nat) (fun x : nat => x + 3)).                         
 Ltac testReadSome := test (and_then (pure 3) (fun x : nat => readSome (A:=nat) (T:=nat) (fun x0 : nat => Some (x0 + x)))).
+Ltac testReadNone := test (and_then (pure 3) (fun x : nat => readNone (A:=nat) (T:=nat) (fun x0 : nat => Some (x0 + x)))).
 Ltac testAndThen := test (and_then (pure 3) (fun _: nat => pure (A:=nat) 1)).
 
-Definition ex1 : rterm nat nat nat := AndThen (Pure nat 3) (fun n => ReadSome (fun x => Some (x+n))).
-Definition ex2 : rterm nat nat nat := AndThen (Pure nat 3) (fun n => Reads (fun x => (x+n))).
-Definition ex3 : rterm nat nat nat := AndThen (ReadSome (fun x => Some (x+1))) (fun n => Reads (fun x => (x+n))).
-Eval cbv [rtermDenote ex1] in (rtermDenote ex1).
+Definition ex1 : RTerm.t nat nat nat :=
+  RTerm.AndThen (RTerm.Pure nat 3) (fun n => RTerm.ReadSome (fun x => Some (x+n))).
+Definition ex2 : RTerm.t nat nat nat :=
+  RTerm.AndThen (RTerm.Pure nat 3) (fun n => RTerm.Reads (fun x => (x+n))).
+Definition ex3 : RTerm.t nat nat nat :=
+  RTerm.AndThen (RTerm.ReadSome (fun x => Some (x+1))) (fun n => RTerm.Reads (fun x => (x+n))).
+Definition ex4 : RTerm.t nat nat unit :=
+  RTerm.AndThen (RTerm.Pure nat 3) (fun n => RTerm.Puts (fun x => x+n)).
 
 Goal False.
   testPure.
   testReads.
   testReadSome.
+  testReadNone.
   testAndThen.
+  test (puts (fun x : nat => 3)).
+  test (puts (fun x : unit => tt)).
+  test (error: relation nat nat nat).
   test (rtermDenote ex1).
   test (rtermDenote ex2).
   test (rtermDenote ex3).
+  test (rtermDenote ex4).
 Abort.
 
 Compute (interpret ex1 7).
 Compute (interpret ex2 7).
 Compute (interpret ex3 7).
+Compute (interpret ex4 7).
+Compute (interpret (RTerm.Error nat nat nat)).
