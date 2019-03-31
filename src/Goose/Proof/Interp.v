@@ -4,7 +4,8 @@ From iris.algebra Require Import auth gmap frac agree.
 Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting Count_Typed_Heap CSL.ThreadReg CSL.Count_GHeap.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting
+               CSL.Count_Typed_Heap CSL.ThreadReg CSL.Count_Double_Heap CSL.Count_GHeap.
 From iris.proofmode Require Export tactics.
 
 From RecoveryRefinement.Goose Require Import Machine GoZeroValues Heap GoLayer.
@@ -23,7 +24,7 @@ Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
       (* todo -- I would like to re-use some of the LockStatus reasoning but right now will need some duplication *)
       go_fs_dlocks_inG :> gen_heapG string (LockStatus * unit) Σ;
       go_fs_dirs_inG :> gen_heapG string (gset string) Σ;
-      go_fs_paths_inG :> gen_heapG path.t (Inode) Σ;
+      go_fs_paths_inG :> gen_dirG string string (Inode) Σ;
       go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
       go_fs_fds_inG :> gen_heapG File (Inode * OpenMode) Σ;
      }.
@@ -41,17 +42,11 @@ Class gooseG Σ :=
 Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
   (λ s, (gen_typed_heap_ctx s.(heap).(allocs))).
 
-Definition dirent_insert (m: gmap path.t Inode) (d: string) (md: gmap string Inode) :=
-  map_fold (λ f inode m', <[ {| path.dir := d; path.fname := f |} := inode]> m') m md.
-
-Definition dirent_flatten (m: gmap string (gmap string Inode)) : gmap path.t Inode :=
-  map_fold (λ dir filemap m', dirent_insert m' dir filemap) ∅ m.
-
 Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : State → iProp Σ :=
   (λ s, (gen_heap_ctx (hG := go_fs_dirs_inG)
                       (fmap (dom (gset string) (Dom := gset_dom)) s.(dirents)))
    ∗ (gen_heap_ctx (hG := go_fs_dlocks_inG) (s.(dirlocks)))
-   ∗ (gen_heap_ctx (hG := go_fs_paths_inG) (dirent_flatten s.(dirents)))
+   ∗ (gen_dir_ctx (hG := go_fs_paths_inG) s.(dirents))
    ∗ (gen_heap_ctx (hG := go_fs_inodes_inG) s.(inodes))
    ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds)))%I.
 
@@ -102,7 +97,7 @@ Definition dirlock_mapsto `{gooseG Σ} (d: string) q (s: LockStatus) : iProp Σ
   := mapsto (hG := go_fs_dlocks_inG) d q (s, tt).
 
 Definition path_mapsto `{gooseG Σ} (p: path.t) q (i: Inode) : iProp Σ
-  := mapsto (hG := go_fs_paths_inG) p q i.
+  := Count_Double_Heap.mapsto (hG := go_fs_paths_inG) (path.dir p) (path.fname p) q i.
 
 Definition inode_mapsto `{gooseG Σ} (i: Inode) q (bs: List.list byte) : iProp Σ
   := mapsto (hG := go_fs_inodes_inG) i q bs.
@@ -845,14 +840,6 @@ Proof.
   iFrame. eauto.
 Qed.
 
-Lemma insert_flatten dents dir fname i ds:
-  dents !! dir = Some ds →
-  <[{| path.dir := dir; path.fname := fname |}:=i]> (dirent_flatten dents) =
-  dirent_flatten (<[dir:=<[fname:=i]> ds]> dents).
-Proof.
-  admit.
-Admitted.
-
 Lemma wp_create_new dir fname S s E :
   {{{ dir ↦ S ∗ ⌜ ¬ fname ∈ S ⌝ }}}
     create dir fname @ s ; E
@@ -895,8 +882,9 @@ Proof.
   inversion Hhd0. subst.
   inversion Hhd. subst.
   inversion Hhd1. inversion Hhd2. inversion Hhd3. subst.
-  iMod (gen_heap_alloc _ {| path.dir := dir; path.fname := fname |} x with "Hpaths") as "(Hpaths&Hp)".
-  { simpl. admit. }
+  iMod (gen_dir_alloc2 _ _ dir fname x with "Hpaths") as "(Hpaths&Hp)".
+  { simpl. eauto. }
+  { eauto. }
   iMod (gen_heap_update _ (dir) _ (dom (gset string) (<[fname := x]> x0)) with "Hents Hd") as "(?&?)".
   iMod (gen_heap_alloc with "Hinodes") as "(?&?)".
   eauto.
@@ -905,9 +893,7 @@ Proof.
   iFrame.
   rewrite -fmap_insert.
   simpl. simpl in *. iFrame.
-  rewrite -insert_flatten; eauto.
-  iFrame. iApply "HΦ". iFrame.
-  by rewrite dom_insert_L comm_L.
-Admitted.
+  iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
+Qed.
 
 End lifting.
