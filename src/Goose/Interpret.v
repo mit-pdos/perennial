@@ -5,12 +5,12 @@ From Tactical Require Import ProofAutomation.
 
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 From RecordUpdate Require Import RecordSet.
-(* From RecoveryRefinement Require Import Helpers.RecordZoom. *)
+From RecoveryRefinement Require Import Helpers.RecordZoom.
 
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.Layer.
-From RecoveryRefinement Require Import Goose.Filesys. Goose.Heap Goose.GoLayer.
+From RecoveryRefinement Require Import Goose.Filesys Goose.Heap Goose.GoLayer.
 
 Module RTerm.
 Inductive t : Type -> Type -> Type -> Type :=
@@ -126,22 +126,21 @@ Ltac reflop_fs o :=
   refl t.
 
 Ltac reflop_data o :=
-  let t := eval simpl in (Go._zoom FS.heap (Data.step o)) in
+  let t := eval simpl in (_zoom FS.heap (Data.step o)) in
   refl t.
 
 Definition reify T {model : Machine.GoModel} {model_wf : Machine.GoModelWf model}
-           (op : Op T)  : RTerm.t Go.State Go.State T.
+           (op : Op T)  : RTerm.t FS.State FS.State T.
   destruct op.
   - destruct o eqn:?;
     match goal with
     | [ H : o = ?A |- _ ] => let x := reflop_fs A in exact x
     end.
-  - destruct o eqn:?.
-    + let x := reflop_data (Data.NewAlloc v len) in exact x.
+  - destruct o eqn:?;
     match goal with
     | [ H : o = ?A |- _ ] => let x := reflop_data A in exact x
     end.
-Admitted.
+Qed.
 
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
