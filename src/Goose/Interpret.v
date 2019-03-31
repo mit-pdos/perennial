@@ -4,11 +4,13 @@ From stdpp Require Import base.
 From Tactical Require Import ProofAutomation.
 
 From RecoveryRefinement Require Import Helpers.RelationAlgebra.
+From RecordUpdate Require Import RecordSet.
+(* From RecoveryRefinement Require Import Helpers.RecordZoom. *)
 
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.Layer.
-From RecoveryRefinement Require Import Goose.Filesys Goose.Heap Goose.GoLayer.
+From RecoveryRefinement Require Import Goose.Filesys. Goose.Heap Goose.GoLayer.
 
 Module RTerm.
 Inductive t : Type -> Type -> Type -> Type :=
@@ -119,15 +121,26 @@ Ltac test e :=
   let e' := eval cbv [rtermDenote] in (rtermDenote t) in
   unify e e'.
 
-Ltac refl_op o :=
-  let t := eval cbv [FS.step] in (step o) in
+Ltac reflop_fs o :=
+  let t := eval cbv [FS.step] in (FS.step o) in
   refl t.
 
-Definition reify A B T {model : Machine.GoModel} (op : Op A)  : RTerm.t A B T.
+Ltac reflop_data o :=
+  let t := eval simpl in (Go._zoom FS.heap (Data.step o)) in
+  refl t.
+
+Definition reify T {model : Machine.GoModel} {model_wf : Machine.GoModelWf model}
+           (op : Op T)  : RTerm.t Go.State Go.State T.
   destruct op.
-  destruct o eqn:?.
-  admit.
-  admit.
+  - destruct o eqn:?;
+    match goal with
+    | [ H : o = ?A |- _ ] => let x := reflop_fs A in exact x
+    end.
+  - destruct o eqn:?.
+    + let x := reflop_data (Data.NewAlloc v len) in exact x.
+    match goal with
+    | [ H : o = ?A |- _ ] => let x := reflop_data A in exact x
+    end.
 Admitted.
 
 (* Tests *)    
