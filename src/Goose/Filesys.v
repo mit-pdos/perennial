@@ -137,6 +137,7 @@ Module FS.
         pure fh
 
     | Close fh =>
+      _ <- lookup fds fh;
       puts (set fds (map_delete fh))
 
     | List dir na =>
