@@ -4,6 +4,7 @@ From iris.algebra Require Import auth gmap frac agree.
 Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants.
+Require CSL.Count_Heap.
 Require Export CSL.WeakestPre CSL.Lifting CSL.Counting
                CSL.Count_Typed_Heap CSL.ThreadReg CSL.Count_Double_Heap CSL.Count_GHeap.
 From iris.proofmode Require Export tactics.
@@ -21,8 +22,7 @@ Notation heap_inG := (@gen_typed_heapG Ptr.ty Ptr ptrRawModel).
 
 Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
    FsG {
-      (* todo -- I would like to re-use some of the LockStatus reasoning but right now will need some duplication *)
-      go_fs_dlocks_inG :> gen_heapG string (LockStatus * unit) Σ;
+      go_fs_dlocks_inG :> Count_Heap.gen_heapG string unit Σ;
       go_fs_dirs_inG :> gen_heapG string (gset string) Σ;
       go_fs_paths_inG :> gen_dirG string string (Inode) Σ;
       go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
@@ -45,7 +45,7 @@ Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → 
 Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : State → iProp Σ :=
   (λ s, (gen_heap_ctx (hG := go_fs_dirs_inG)
                       (fmap (dom (gset string) (Dom := gset_dom)) s.(dirents)))
-   ∗ (gen_heap_ctx (hG := go_fs_dlocks_inG) (s.(dirlocks)))
+   ∗ (Count_Heap.gen_heap_ctx (hG := go_fs_dlocks_inG) (λ l, s.(dirlocks) !! l))
    ∗ (gen_dir_ctx (hG := go_fs_paths_inG) s.(dirents))
    ∗ (gen_heap_ctx (hG := go_fs_inodes_inG) s.(inodes))
    ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds))
@@ -94,8 +94,8 @@ Instance slice_gen_mapsto `{gooseG Σ} T : GenericMapsTo (slice.t T) _
 Definition dir_mapsto `{gooseG Σ} (d: string) q (fs: gset string) : iProp Σ
   := mapsto (hG := go_fs_dirs_inG) d q fs.
 
-Definition dirlock_mapsto `{gooseG Σ} (d: string) q (s: LockStatus) : iProp Σ
-  := mapsto (hG := go_fs_dlocks_inG) d q (s, tt).
+Definition dirlock_mapsto `{gooseG Σ} (d: string) q s : iProp Σ
+  := Count_Heap.mapsto (hG := go_fs_dlocks_inG) d q s tt.
 
 Definition path_mapsto `{gooseG Σ} (p: path.t) q (i: Inode) : iProp Σ
   := Count_Double_Heap.mapsto (hG := go_fs_paths_inG) (path.dir p) (path.fname p) q i.
@@ -393,29 +393,61 @@ Proof.
   iFrame. iApply "HΦ". by iFrame.
 Qed.
 
-Lemma wp_list dir (S: gset string) s E :
-  {{{ dir ↦ S ∗ dir ↦ Unlocked }}}
-    list dir @ s ; E
-  {{{ (s: slice.t string) (l: Datatypes.list string), RET s;
-      ⌜ (Permutation.Permutation l (elements S)) ⌝ ∗
-      s ↦ l ∗ dir ↦ S ∗ dir ↦ Unlocked }}}.
+Lemma wp_list_start dir (S: gset string) s q E :
+  {{{ dir ↦{q} Unlocked }}}
+    list_start dir @ s ; E
+  {{{ RET tt; dir ↦{q} ReadLocked O }}}.
 Proof.
-  iIntros (Φ) "(Hd&Hdl) HΦ".
-  wp_bind.
+  iIntros (Φ) "Hdl HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&HFS)".
   iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
   iDestruct "Hdom" as %Hdom.
-  iDestruct (gen_heap_valid with "Hdlocks Hdl") as %H'.
-  simpl in H'.
+  iDestruct (Count_Heap.gen_heap_valid with "Hdlocks Hdl") as %[s' [Hlookup Hnl]].
+  simpl in Hlookup.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; simpl in *; subst; try congruence.
+    destruct l; try congruence; inversion Hhd_err.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
-  inv_step.
-  iFrame.
+  iMod (Count_Heap.gen_heap_readlock with "Hdlocks Hdl") as (s'' Heq) "(Hdlocks&Hdl)".
+  inv_step. iFrame. iSplitR "HΦ Hdl"; last first.
+  { iApply "HΦ". by iFrame. }
+  (* TODO: casework here is silly *)
+  destruct s''; try congruence; inversion Hhd; subst.
+  * iFrame. simpl.
+    iSplitL.
+    { iModIntro. iApply Count_Heap.gen_heap_ctx_proper; last auto. intros k.
+      simpl. rewrite {1}/insert/Count_Heap.partial_fn_insert//=.
+      destruct equal; eauto. subst. by rewrite lookup_insert.
+      rewrite lookup_insert_ne //=.
+    }
+    iPureIntro. rewrite dom_insert_L. rewrite Hdom.
+    assert (dir ∈ dom (gset string) x1.(dirlocks)).
+    { apply elem_of_dom. eexists; eauto. }
+    set_solver.
+  * iFrame. simpl.
+    iSplitL.
+    { iModIntro. iApply Count_Heap.gen_heap_ctx_proper; last auto. intros k.
+      simpl. rewrite {1}/insert/Count_Heap.partial_fn_insert//=.
+      destruct equal; eauto. subst. by rewrite lookup_insert.
+      rewrite lookup_insert_ne //=.
+    }
+    iPureIntro. rewrite dom_insert_L. rewrite Hdom.
+    assert (dir ∈ dom (gset string) x1.(dirlocks)).
+    { apply elem_of_dom. eexists; eauto. }
+    set_solver.
+Qed.
+
+Lemma wp_list_finish dir (S: gset string) s q1 q2 E :
+  {{{ dir ↦{q1} S ∗ dir ↦{q2} (ReadLocked O) }}}
+    list_finish dir @ s ; E
+  {{{ (s: slice.t string) (l: Datatypes.list string), RET s;
+      ⌜ (Permutation.Permutation l (elements S)) ⌝ ∗
+      s ↦ l ∗ dir ↦{q1} S ∗ dir ↦{q2} Unlocked }}}.
+Proof.
 Abort.
 
 Lemma wp_newAlloc {T} s E (v: T) len :

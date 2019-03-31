@@ -55,6 +55,8 @@ Module FS.
     Definition list dir : proc (slice.t string) :=
       Bind (Call (inject (List dir Begin)))
            (fun _ => Call (inject (List dir (FinishArgs tt)))).
+    Definition list_start dir : proc unit := Call! (List dir Begin).
+    Definition list_finish dir : proc _ := Call! (List dir (FinishArgs tt)).
     Definition size fh : proc _ := Call! Size fh.
     Definition readAt fh off len : proc _ := Call! ReadAt fh off len.
     Definition create dir p : proc _ := Call! Create dir p.
