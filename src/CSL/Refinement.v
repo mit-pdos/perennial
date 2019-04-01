@@ -351,7 +351,7 @@ Section ghost_step.
 
   Lemma ghost_step_lifting' {T1 T2} E ρ j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    (∀ n, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
+    (∀ n, ∃ n', exec_step Λ.(sem) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
     nclose sourceN ⊆ E →
     source_ctx' ρ ∗ j ⤇ K e1 ∗ source_state σ1
       ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
@@ -396,7 +396,7 @@ Section ghost_step.
   (* Curried form is more useful, I think *)
   Lemma ghost_step_lifting {T1 T2} E j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    (∀ n, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
+    (∀ n, ∃ n', exec_step Λ.(sem) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
     nclose sourceN ⊆ E →
     j ⤇ K e1 -∗ source_ctx -∗ source_state σ1
       ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
@@ -408,7 +408,7 @@ Section ghost_step.
 
   Lemma ghost_step_call {T1 T2} E j K `{LanguageCtx OpT T1 T2 Λ K} r σ2
              (op: OpT T1) σ1 :
-    (∀ n, Λ.(sem).(exec_step) (Call op) (n, σ1) (Val (n, σ2) (Ret r, []))) →
+    (∀ n, exec_step Λ.(sem) (Call op) (n, σ1) (Val (n, σ2) (Ret r, []))) →
     nclose sourceN ⊆ E →
     j ⤇ K (Call op) -∗ source_ctx -∗ source_state σ1
       ={E}=∗ j ⤇ K (Ret r) ∗ source_state σ2 ∗ [∗ list] ef ∈ [], ∃ j', j' ⤇ (projT2 ef).
@@ -419,7 +419,7 @@ Section ghost_step.
 
   Lemma ghost_step_lifting_puredet {T1 T2} E j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) e2 efs:
-    (∀ n σ1, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ1) (e2, efs))) →
+    (∀ n σ1, ∃ n', exec_step Λ.(sem) e1 (n, σ1) (Val (n', σ1) (e2, efs))) →
     nclose sourceN ⊆ E →
     source_ctx ∗ j ⤇ K e1
       ={E}=∗ j ⤇ K e2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
@@ -461,7 +461,7 @@ Section ghost_step.
 
   Lemma ghost_step_lifting_bind' {T1 T2} E j (K: T1 → proc OpT T2)
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    (∀ n, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
+    (∀ n, ∃ n', exec_step Λ.(sem) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
     nclose sourceN ⊆ E →
     source_ctx ∗ j ⤇ Bind e1 K ∗ source_state σ1
       ={E}=∗ j ⤇ Bind e2 K ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).
@@ -473,7 +473,7 @@ Section ghost_step.
 
   Lemma ghost_step_lifting_bind {T1 T2} E j (K: T1 → proc OpT T2)
              (e1: proc OpT T1) σ1 σ2 e2 efs:
-    (∀ n, ∃ n', Λ.(sem).(exec_step) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
+    (∀ n, ∃ n', exec_step Λ.(sem) e1 (n, σ1) (Val (n', σ2) (e2, efs))) →
     nclose sourceN ⊆ E →
     j ⤇ Bind e1 K -∗ source_ctx -∗ source_state σ1
       ={E}=∗ j ⤇ Bind e2 K ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ (projT2 ef).

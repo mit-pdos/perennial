@@ -9,12 +9,12 @@ Require Import Spec.Layer.
 Section refinement.
   Context OpT (Λa: Layer OpT).
   Context (impl: LayerImpl ExMach.Op OpT).
-  Notation compile_op := impl.(compile_op).
-  Notation compile_rec := impl.(compile_rec).
-  Notation compile_seq := impl.(compile_seq).
-  Notation compile := impl.(compile).
-  Notation recover := impl.(recover).
-  Notation compile_proc_seq := impl.(compile_proc_seq).
+  Notation compile_op := (compile_op impl).
+  Notation compile_rec := (compile_rec impl).
+  Notation compile_seq := (compile_seq impl).
+  Notation compile := (compile impl).
+  Notation recover := (recover impl).
+  Notation compile_proc_seq := (compile_proc_seq impl).
   Context `{exmachPreG Σ}.
   Context `{cfgPreG OpT Λa Σ}.
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
@@ -49,12 +49,12 @@ Section refinement.
   Proof.
     intros ???? j K Hctx e Hwf.
     iIntros "(Hj&Hreg&#Hinv)".
-    iAssert (⌜∃ ea: Λa.(State), True⌝)%I as %[? _].
+    iAssert (⌜∃ ea: State Λa, True⌝)%I as %[? _].
     {
       iDestruct (exec_inv_source_ctx with "Hinv") as ((?&?)) "#Hctx".
       eauto.
     }
-    assert (Inhabited Λa.(State)).
+    assert (Inhabited (State Λa)).
     { eexists. eauto. }
     assert (Inhabited Λa.(OpState)).
     { eexists. destruct x; eauto. }
@@ -181,9 +181,9 @@ Section refinement.
     init_absr σ1a σ1c →
     wf_client_seq es →
     ¬ proc_exec_seq Λa es (rec_singleton (Ret ())) (1, σ1a) Err →
-    ∀ σ2c res, ExMach.l.(proc_exec_seq) (compile_proc_seq es)
+    ∀ σ2c res, proc_exec_seq ExMach.l (compile_proc_seq es)
                                         (rec_singleton recv) (1, σ1c) (Val σ2c res) →
-    ∃ σ2a, Λa.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
+    ∃ σ2a, proc_exec_seq Λa es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
   Proof.
     rewrite /compile_proc_seq. intros Hinit Hwf_seq Hno_err σ2c0 ?.
     unshelve (eapply wp_proc_seq_refinement_adequacy with

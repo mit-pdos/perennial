@@ -43,59 +43,59 @@ Qed.
 
 (* Program logic adequacy *)
 Definition adequate_internal {Σ} {OpT T} {Λ: Layer OpT} (s : stuckness)
-           (e1 : proc OpT T) (σ1 : Λ.(State)) (φ : T → Λ.(State) → iProp Σ) k : iProp Σ :=
+           (e1 : proc OpT T) (σ1 : State Λ) (φ : T → State Λ → iProp Σ) k : iProp Σ :=
   ((∀ (n: nat) σ2 res,
-    ⌜ Λ.(exec_n) e1 n σ1 (Val σ2 res) ⌝ →
+    ⌜ exec_n Λ e1 n σ1 (Val σ2 res) ⌝ →
     (Nat.iter (S k + S (S n)) (λ P, |==> ▷ P)%I (∃ v, ⌜ res = existT _ v ⌝ ∧ φ v σ2))) ∧
   ((∀ (n: nat),
      ⌜ s = NotStuck ⌝ →
-     ⌜ Λ.(exec_partial_n) e1 n σ1 Err ⌝ →
+     ⌜ exec_partial_n Λ e1 n σ1 Err ⌝ →
      (▷^(S k + S (S n)) False))))%I.
 
-Record adequate {OpT T} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T) (σ1 : Λ.(State))
-    (φ : T → Λ.(State) → Prop) := {
+Record adequate {OpT T} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T) (σ1 : State Λ)
+    (φ : T → State Λ → Prop) := {
    adequate_result σ2 res :
-    Λ.(exec) e1 σ1 (Val σ2 res) → ∃ v, res = existT _ v ∧ φ v σ2;
+    exec Λ e1 σ1 (Val σ2 res) → ∃ v, res = existT _ v ∧ φ v σ2;
     adequate_not_stuck :
-    s = NotStuck → ¬ Λ.(exec_partial) e1 σ1 Err
+    s = NotStuck → ¬ exec_partial Λ e1 σ1 Err
  }.
 
 (* Adequacy for execution with a recovery procedure *)
 Definition recv_adequate_internal {Σ} {OpT T R} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T)
-       (rec: proc OpT R) (σ1 : Λ.(State))
-       (φ : T → Λ.(State) → iProp Σ) (φrec: Λ.(State) → iProp Σ) k :=
+       (rec: proc OpT R) (σ1 : State Λ)
+       (φ : T → State Λ → iProp Σ) (φrec: State Λ → iProp Σ) k :=
   (* recv_adequate_internal_normal_result n σ2 res  : *)
   ((∀ n σ2 res,
-    ⌜ Λ.(exec_n) e1 n σ1 (Val σ2 res) ⌝ →
+    ⌜ exec_n Λ e1 n σ1 (Val σ2 res) ⌝ →
     (Nat.iter (S k + (S (S n))) (λ P, |==> ▷ P)%I (∃ v, ⌜ res = existT _ v ⌝ ∧ φ v σ2)))
    ∧
    (∀ n σ2 res,
-    ⌜ Λ.(rexec_n) e1 rec n σ1 (Val σ2 res) ⌝ →
+    ⌜ rexec_n Λ e1 rec n σ1 (Val σ2 res) ⌝ →
     (Nat.iter (S k + (5 + n))) (λ P, |==> ▷ P)%I (φrec σ2))
    ∧
   ((∀ (n: nat),
      ⌜ s = NotStuck ⌝ →
-     ⌜ Λ.(rexec_n) e1 rec n σ1 Err ⌝ →
+     ⌜ rexec_n Λ e1 rec n σ1 Err ⌝ →
      (▷^(S k + (5 + n)) False))))%I.
 
 Record recv_adequate {OpT T R} {Λ: Layer OpT} (s : stuckness) (e1 : proc OpT T)
-       (rec: proc OpT R) (σ1 : Λ.(State)) (φ : T → Λ.(State) → Prop) (φrec: Λ.(State) → Prop) := {
+       (rec: proc OpT R) (σ1 : State Λ) (φ : T → State Λ → Prop) (φrec: State Λ → Prop) := {
    recv_adequate_normal_result σ2 res :
-     Λ.(exec) e1 σ1 (Val σ2 res) → ∃ v, res = existT _ v ∧ φ v σ2;
+     exec Λ e1 σ1 (Val σ2 res) → ∃ v, res = existT _ v ∧ φ v σ2;
    recv_adequate_result σ2 res :
-     Λ.(rexec) e1 (rec_singleton rec) σ1 (Val σ2 res) → φrec σ2;
+     rexec Λ e1 (rec_singleton rec) σ1 (Val σ2 res) → φrec σ2;
    recv_adequate_not_stuck :
      s = NotStuck →
-     ¬ Λ.(rexec) e1 (rec_singleton rec) σ1 Err
+     ¬ rexec Λ e1 (rec_singleton rec) σ1 Err
  }.
 
 Record proc_seq_adequate {OpT T R} {Λ: Layer OpT} (s : stuckness) (es : proc_seq OpT T)
-       (rec: proc OpT R) (σ1 : Λ.(State)) (φ : T → Λ.(State) → Prop) := {
+       (rec: proc OpT R) (σ1 : State Λ) (φ : T → State Λ → Prop) := {
    proc_seq_adequate_normal_result σ2 res :
-     Λ.(proc_exec_seq) es (rec_singleton rec) σ1 (Val σ2 res) → φ res σ2;
+     proc_exec_seq Λ es (rec_singleton rec) σ1 (Val σ2 res) → φ res σ2;
    proc_seq_adequate_not_stuck :
      s = NotStuck →
-     ¬ Λ.(proc_exec_seq) es (rec_singleton rec) σ1 Err
+     ¬ proc_exec_seq Λ es (rec_singleton rec) σ1 Err
  }.
 
 Section adequacy.
@@ -110,7 +110,7 @@ Notation world σ := (world' ⊤ σ) (only parsing).
 Notation wptp s t := ([∗ list] ef ∈ t, WP (projT2 ef) @ s; ⊤ {{ _, True }})%I.
 
 Lemma wp_step {T} s E e1 σ1 (e2: proc OpT T) σ2 efs Φ :
-  Λ.(exec_step) e1 σ1 (Val σ2 (e2, efs)) →
+  exec_step Λ e1 σ1 (Val σ2 (e2, efs)) →
   world' E σ1 ∗ WP e1 @ s; E {{ Φ }}
   ==∗ ▷ |==> ◇ (world' E σ2 ∗ WP e2 @ s; E {{ Φ }} ∗ wptp s efs).
 Proof.
@@ -126,7 +126,7 @@ Proof.
 Qed.
 
 Lemma wptp_step {T} s e1 t1 t2 σ1 σ2 Φ :
-  Λ.(exec_pool) ((existT T e1) :: t1) σ1 (Val σ2 t2) →
+  exec_pool Λ ((existT T e1) :: t1) σ1 (Val σ2 t2) →
   world σ1 ∗ WP e1 @ s; ⊤ {{ Φ }} ∗ wptp s t1
   ==∗ ∃ e2 t2', ⌜t2 = existT T e2 :: t2'⌝ ∗ ▷ |==> ◇ (world σ2 ∗ WP e2 @ s; ⊤ {{ Φ }} ∗ wptp s t2').
 Proof.
@@ -145,7 +145,7 @@ Proof.
 Qed.
 
 Lemma wptp_steps {T} s n e1 t1 t2 σ1 σ2 Φ :
-  bind_rep_n n (Λ.(exec_pool)) (existT T e1 :: t1) σ1 (Val σ2 t2) →
+  bind_rep_n n (exec_pool Λ) (existT T e1 :: t1) σ1 (Val σ2 t2) →
   world σ1 ∗ WP e1 @ s; ⊤ {{ Φ }} ∗ wptp s t1 ⊢
   Nat.iter (S n) (λ P, |==> ▷ P) (∃ e2 t2',
     ⌜t2 = existT T e2 :: t2'⌝ ∗ world σ2 ∗ WP e2 @ s; ⊤ {{ Φ }} ∗ wptp s t2').
@@ -173,7 +173,7 @@ Proof.
 Qed.
 
 Lemma wptp_steps_state_inv {T} s n e1 t1 t2 σ1 σ2 Φ :
-  bind_rep_n n (Λ.(exec_pool)) (existT T e1 :: t1) σ1 (Val σ2 t2) →
+  bind_rep_n n (exec_pool Λ) (existT T e1 :: t1) σ1 (Val σ2 t2) →
   world σ1 ∗ WP e1 @ s; ⊤ {{ Φ }} ∗ wptp s t1 ⊢
   Nat.iter (S n) (λ P, |==> ▷ P) (world σ2).
 Proof.
@@ -196,7 +196,7 @@ Proof.
 Qed.
 
 Lemma wptp_result {T T'} s n e1 t1 v2' t2 σ1 σ2 φ :
-  bind_rep_n n (Λ.(exec_pool)) (existT T e1 :: t1) σ1 (Val σ2 (existT T' (of_val v2') :: t2)) →
+  bind_rep_n n (exec_pool Λ) (existT T e1 :: t1) σ1 (Val σ2 (existT T' (of_val v2') :: t2)) →
   world σ1 ∗ WP e1 @ s; ⊤ {{ v, ∀ σ, state_interp σ ={⊤,∅}=∗ ⌜φ v σ⌝ }} ∗ wptp s t1
   ⊢ ▷^(S (S n)) ⌜∃ v2, existT T (@of_val OpT _ v2) = existT T' (@of_val OpT _ v2') ∧ φ v2 σ2⌝.
 Proof.
@@ -219,7 +219,7 @@ Proof.
 Qed.
 
 Lemma wptp_result' {T T'} s n e1 t1 v2' t2 σ1 σ2 φ :
-  bind_rep_n n (Λ.(exec_pool)) (existT T e1 :: t1) σ1 (Val σ2 (existT T' (of_val v2') :: t2)) →
+  bind_rep_n n (exec_pool Λ) (existT T e1 :: t1) σ1 (Val σ2 (existT T' (of_val v2') :: t2)) →
   world σ1 ∗ WP e1 @ s; ⊤ {{ v, ∀ σ, state_interp σ ={⊤,∅}=∗ φ v σ }} ∗ wptp s t1
   ⊢ Nat.iter (S (S n)) (λ P, |==> ▷ P)%I (∃ v2, ⌜ existT T (@of_val OpT _ v2) = existT T' (@of_val OpT _ v2') ⌝ ∧ φ v2 σ2).
 Proof.
@@ -232,7 +232,7 @@ Proof.
 Qed.
 
 Lemma wptp_safe {T T'} n (e1: proc OpT T) (e2: proc OpT T') t1 t2 σ1 σ2 Φ :
-  bind_rep_n n (Λ.(exec_pool)) (existT T e1 :: t1) σ1 (Val σ2 t2) →
+  bind_rep_n n (exec_pool Λ) (existT T e1 :: t1) σ1 (Val σ2 t2) →
   existT T' e2 ∈ t2 →
   world σ1 ∗ WP e1 {{ Φ }} ∗ wptp NotStuck t1
   ⊢ ▷^(S (S n)) ⌜ non_errorable e2 σ2 ⌝.
@@ -247,7 +247,7 @@ Proof.
 Qed.
 
 Lemma wptp_invariance {T} s n e1 t1 t2 σ1 σ2 φ Φ :
-  bind_rep_n n (Λ.(exec_pool)) (existT T e1 :: t1) σ1 (Val σ2 t2) →
+  bind_rep_n n (exec_pool Λ) (existT T e1 :: t1) σ1 (Val σ2 t2) →
   (state_interp σ2 ={⊤,∅}=∗ ⌜φ⌝) ∗ world σ1 ∗ WP e1 @ s; ⊤ {{ Φ }} ∗ wptp s t1
   ⊢ ▷^(S (S n)) ⌜φ⌝.
 Proof.
@@ -426,7 +426,7 @@ Theorem wp_invariance {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ1 t2 σ2 �
      Nat.iter k (λ P, |==> ▷ P)%I (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
        stateI σ1 ∗ WP e @ s; ⊤ {{ _, True }} ∗ (stateI σ2 ={⊤,∅}=∗ ⌜φ⌝))%I) →
-  Λ.(exec_partial) e σ1 (Val σ2 t2) →
+  exec_partial Λ e σ1 (Val σ2 t2) →
   φ.
 Proof.
   intros Hwp Hpartial.
@@ -450,7 +450,7 @@ Corollary wp_invariance' {T} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) σ1 t2 σ
      (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
        stateI σ1 ∗ WP e @ s; ⊤ {{ _, True }} ∗ (stateI σ2 -∗ ∃ E, |={⊤,E}=> ⌜φ⌝))%I) →
-  Λ.(exec_partial) e σ1 (Val σ2 t2) →
+  exec_partial Λ e σ1 (Val σ2 t2) →
   φ.
 Proof.
   intros Hwp. eapply wp_invariance with (k := O); first done.
@@ -463,11 +463,11 @@ Qed.
 Import RelationNotations.
 
 Lemma exec_rec_iter_split {R} OpT (Λ: Layer OpT) (rec: proc OpT R) σhalt ret:
-  (_ <- seq_star (_ <- Λ.(lifted_crash_step); exec_halt Λ rec); _ <- Λ.(lifted_crash_step); exec_halt Λ rec)
+  (_ <- seq_star (_ <- lifted_crash_step Λ; exec_halt Λ rec); _ <- lifted_crash_step Λ; exec_halt Λ rec)
     σhalt ret →
-  ∃ σcrash σrec : Λ.(State),
-    seq_star (_ <- Λ.(lifted_crash_step); exec_halt Λ rec) σhalt (Val σcrash ())
-    ∧ Λ.(lifted_crash_step) σcrash (Val σrec ())
+  ∃ σcrash σrec : State Λ,
+    seq_star (_ <- lifted_crash_step Λ; exec_halt Λ rec) σhalt (Val σcrash ())
+    ∧ lifted_crash_step Λ σcrash (Val σrec ())
     ∧ exec_halt Λ rec σrec ret.
 Proof.
   intros Hrec. destruct ret as [b t|].
@@ -493,12 +493,12 @@ Proof.
 Qed.
 
 Lemma rexec_n_iter_split {R} OpT (Λ: Layer OpT) (rec: proc OpT R) σhalt ret n2 n3:
-  (_ <- seq_star_exec_steps Λ rec n2; _ <- Λ.(lifted_crash_step); _ <- exec_n Λ rec n3; pure ())
+  (_ <- seq_star_exec_steps Λ rec n2; _ <- lifted_crash_step Λ; _ <- exec_n Λ rec n3; pure ())
            σhalt ret →
-  ∃ (σcrash σrec : Λ.(State)) n2' n3',
+  ∃ (σcrash σrec : State Λ) n2' n3',
     (n2 + n3 >= n2' + n3')%nat ∧
     (seq_star_exec_steps Λ rec n2') σhalt (Val σcrash ())
-    ∧ Λ.(lifted_crash_step) σcrash (Val σrec ())
+    ∧ lifted_crash_step Λ σcrash (Val σrec ())
     ∧ (_ <- exec_n Λ rec n3'; pure ()) σrec ret.
 Proof.
   intros Hrec. destruct ret as [b t|].
@@ -525,7 +525,7 @@ Qed.
 
 Definition recv_idemp {R OpT} Σ (Λ: Layer OpT) `{invPreG Σ} s (rec: proc OpT R)
         φinv φrec :=
-     (□ (∀ `{Hinv : invG Σ} σ1 σ1' (Hcrash: Λ.(lifted_crash_step) σ1 (Val σ1' tt)),
+     (□ (∀ `{Hinv : invG Σ} σ1 σ1' (Hcrash: lifted_crash_step Λ σ1 (Val σ1' tt)),
            (φinv σ1 ={⊤}=∗
                 ∃ stateI : State Λ → iProp Σ,
                   let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
@@ -569,7 +569,7 @@ Qed.
 Definition wp_recovery {T R OpT} Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
         σ1 φ φrec k :=
   (Nat.iter k (λ P, |==> ▷ P)%I
-    (∃ (φinv : Λ.(State) → iProp Σ), ∀ `{Hinv : invG Σ},
+    (∃ (φinv : State Λ → iProp Σ), ∀ `{Hinv : invG Σ},
      (* normal execution *)
      (|={⊤}=> ∃ stateI : State Λ → iProp Σ,
        let _ : irisG OpT Λ Σ := IrisG _ _ _ Hinv stateI in
@@ -578,7 +578,7 @@ Definition wp_recovery {T R OpT} Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: pro
      ∗ recv_idemp s rec φinv φrec)))%I.
 
 Theorem wp_recovery_adequacy_internal {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
-        σ1 φ (φrec : Λ.(State) → iProp Σ) k:
+        σ1 φ (φrec : State Λ → iProp Σ) k:
   s = NotStuck →
   wp_recovery s e rec σ1 φ φrec k ⊢
   recv_adequate_internal s e rec σ1 φ φrec k.
@@ -702,7 +702,7 @@ Proof.
 Qed.
 
 Theorem wp_recovery_adequacy {T R} OpT Σ Λ `{invPreG Σ} s (e: proc OpT T) (rec: proc OpT R)
-        σ1 φ (φrec : Λ.(State) → Prop) k:
+        σ1 φ (φrec : State Λ → Prop) k:
   s = NotStuck →
   wp_recovery s e rec σ1 (fun v σ => ⌜ φ v σ ⌝)%I (fun σ => ⌜ φrec σ ⌝)%I k →
   recv_adequate s e rec σ1 φ φrec.
