@@ -441,6 +441,23 @@ Proof.
     set_solver.
 Qed.
 
+Lemma createSlice_non_err V (data: List.list V) s : ¬ createSlice data s Err.
+Proof. inversion 1 as [Hhd_err|(?&?&Hhd&Htl_err)]; inv_step. Qed.
+
+Lemma map_to_list_dom_perm {K V} `{Countable K} (m: gmap K V):
+  map fst (map_to_list m) ≡ₚ elements (dom (gset K) m).
+Proof.
+  apply NoDup_Permutation.
+  - apply NoDup_fst_map_to_list.
+  - apply NoDup_elements.
+  - intros k. rewrite elem_of_elements elem_of_dom. split.
+    * intros ((?&v)&?&?%elem_of_map_to_list)%elem_of_list_fmap_2.
+       simpl in *; subst; eexists; eauto.
+    * intros (v&?). apply elem_of_list_fmap.
+      exists (k, v); split; eauto.
+      rewrite elem_of_map_to_list. eauto.
+Qed.
+
 Lemma wp_list_finish dir (S: gset string) s q1 q2 E :
   {{{ dir ↦{q1} S ∗ dir ↦{q2} (ReadLocked O) }}}
     list_finish dir @ s ; E
@@ -448,7 +465,54 @@ Lemma wp_list_finish dir (S: gset string) s q1 q2 E :
       ⌜ (Permutation.Permutation l (elements S)) ⌝ ∗
       s ↦ l ∗ dir ↦{q1} S ∗ dir ↦{q2} Unlocked }}}.
 Proof.
-Abort.
+  iIntros (Φ) "(Hd&Hdl) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&HFS)".
+  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
+  iDestruct "Hdom" as %Hdom.
+  iDestruct (Count_GHeap.gen_heap_valid with "Hents Hd") as %Hlookup1.
+  rewrite lookup_fmap in Hlookup1.
+  eapply fmap_Some_1 in Hlookup1 as (?&?&?).
+  subst.
+  iDestruct (Count_Heap.gen_heap_valid2 with "Hdlocks Hdl") as %[s' [Hlookup2 Hl]].
+  apply Count_Heap.Cinl_included_nat' in Hl as (m&?&?); subst.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; subst; try congruence.
+    - destruct l; simpl in *; try congruence. destruct num; try inversion Hhd_err.
+      inv_step; lia.
+    - eapply createSlice_non_err; eauto.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  iMod (Count_Heap.gen_heap_readunlock with "Hdlocks Hdl") as (s'' Heq) "(Hdlocks&Hdl)".
+  inversion Hstep; subst.
+  inv_step. red in Htl0. do 2 (inv_step; intuition).
+  match goal with
+    | [ H:  unwrap  _ ?x1 (Val ?x2 ?res) |- _] =>
+      assert (x1 = x2)
+  end.
+  { destruct s''; inversion Hhd0; subst; eauto. }
+  subst.
+  iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
+  iFrame. iSplitR "HΦ Hd Hdl Hp"; last first.
+  { iApply "HΦ". iFrame. iSplitR; last first. iModIntro.
+    iExists _. iFrame. iPureIntro.
+    rewrite /getSliceModel sublist_lookup_all //= app_length //=. iPureIntro.
+    eapply map_to_list_dom_perm.
+  }
+  simpl.
+  iFrame.
+  iSplitL.
+  { iModIntro. iApply Count_Heap.gen_heap_ctx_proper; last auto. intros k.
+    simpl. rewrite {1}/insert/Count_Heap.partial_fn_insert//=.
+    destruct s''; inversion Hhd0; inv_step; destruct equal; eauto; subst;
+    rewrite ?lookup_insert ?lookup_insert_ne //=.
+  }
+  iPureIntro. rewrite dom_insert_L. rewrite Hdom.
+    assert (dir ∈ dom (gset string) x4.(dirlocks)).
+    { apply elem_of_dom. eexists; eauto. }
+    set_solver.
+Qed.
 
 Lemma wp_newAlloc {T} s E (v: T) len :
   {{{ True }}}
