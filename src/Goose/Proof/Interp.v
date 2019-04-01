@@ -325,6 +325,87 @@ Proof.
   iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
 Qed.
 
+Lemma wp_link_not_new dir1 name1 dir2 name2 (inode: Inode) S s E :
+  {{{ (path.mk dir1 name1) ↦ inode
+      ∗ dir2 ↦ S
+      ∗ ⌜ name2 ∈ S ⌝
+  }}}
+    link dir1 name1 dir2 name2 @ s ; E
+  {{{ RET false;
+     (path.mk dir1 name1) ↦ inode
+     ∗ dir2 ↦ S
+  }}}.
+Proof.
+  iIntros (Φ) "(Hp&Hd&%) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct (gen_heap_valid with "Hents Hd") as %Hset.
+  rewrite lookup_fmap in Hset.
+  eapply fmap_Some_1 in Hset as (?&?&?).
+  subst.
+  iDestruct (gen_dir_valid with "Hpaths Hp") as %H'.
+  simpl in H'. destruct H' as (σd&Hd&Hf).
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence.
+    rewrite Hf in Hhd_err. inv_step; inversion Hhd_err.
+    rewrite Hf in Hhd0. inversion Hhd0; subst.
+    simpl in *; congruence.
+    rewrite Hf in Hhd0. inversion Hhd0; subst. simpl in *.
+    inv_step.
+    rewrite elem_of_dom in H0 * => Hsome. destruct Hsome as (?&Hsome).
+    rewrite Hsome in Htl_err.
+    inv_step; inversion Hhd_err; congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. rewrite Hf in Hhd0. inversion Hhd0. subst. simpl in *. inv_step.
+  rewrite elem_of_dom in H0 * => Hsome. destruct Hsome as (?&Hsome).
+  rewrite Hsome in Htl. inv_step.
+  iFrame. iSplitL ""; auto.
+  iApply "HΦ". iFrame. eauto.
+Qed.
+
+Lemma createSlice_non_err V (data: List.list V) s : ¬ createSlice data s Err.
+Proof. inversion 1 as [Hhd_err|(?&?&Hhd&Htl_err)]; inv_step. Qed.
+
+Lemma wp_readAt fh (inode: Inode) (bs: Datatypes.list byte) off len s E :
+  {{{ fh ↦ (inode, Read)
+      ∗ inode ↦ bs
+  }}}
+    readAt fh off len @ s ; E
+  {{{ (s: slice.t byte), RET s;
+      fh ↦ (inode, Read)
+      ∗ inode ↦ bs
+      ∗ s ↦ (list.take len (list.drop off bs))
+  }}}.
+Proof.
+  iIntros (Φ) "(Hfh&Hi) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
+  iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; try unfold readFd in Hhd_err; inv_step.
+    * simpl in *; subst; try congruence.
+    * simpl in *; inv_step. congruence.
+    * eapply createSlice_non_err in Htl_err; eauto.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. red in Htl. do 2 (inv_step; intuition).
+  unfold readFd in Hhd. inv_step. destruct equal; last by congruence.
+  inv_step.
+  iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
+  iFrame. iSplitL ""; auto.
+  iApply "HΦ". iFrame. iModIntro.
+  iExists _. iFrame. iPureIntro.
+  rewrite /getSliceModel sublist_lookup_all //= app_length //=.
+Qed.
+
 Lemma wp_create_new dir fname S s E :
   {{{ dir ↦ S ∗ ⌜ ¬ fname ∈ S ⌝ }}}
     create dir fname @ s ; E
@@ -493,9 +574,6 @@ Proof.
     { apply elem_of_dom. eexists; eauto. }
     set_solver.
 Qed.
-
-Lemma createSlice_non_err V (data: List.list V) s : ¬ createSlice data s Err.
-Proof. inversion 1 as [Hhd_err|(?&?&Hhd&Htl_err)]; inv_step. Qed.
 
 Lemma map_to_list_dom_perm {K V} `{Countable K} (m: gmap K V):
   map fst (map_to_list m) ≡ₚ elements (dom (gset K) m).

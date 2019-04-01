@@ -163,7 +163,7 @@ Module FS.
     | ReadAt fh off len =>
       bs <- readFd fh Read;
         let read_bs := list.take len (list.drop off bs) in
-        createSlice bs
+        createSlice read_bs
 
     | Create dir name =>
       ents <- lookup dirents dir;
