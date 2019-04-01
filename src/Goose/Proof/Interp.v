@@ -486,7 +486,7 @@ Proof.
   iIntros (e2 (n', σ2) Hstep) "!>".
   iMod (Count_Heap.gen_heap_readunlock with "Hdlocks Hdl") as (s'' Heq) "(Hdlocks&Hdl)".
   inversion Hstep; subst.
-  inv_step. red in Htl0. do 2 (inv_step; intuition).
+  inv_step. unfold createSlice in Htl. do 2 (inv_step; intuition).
   match goal with
     | [ H:  unwrap  _ ?x1 (Val ?x2 ?res) |- _] =>
       assert (x1 = x2)
@@ -498,7 +498,7 @@ Proof.
   { iApply "HΦ". iFrame. iSplitR; last first. iModIntro.
     iExists _. iFrame. iPureIntro.
     rewrite /getSliceModel sublist_lookup_all //= app_length //=. iPureIntro.
-    eapply map_to_list_dom_perm.
+    rewrite -map_to_list_dom_perm //.
   }
   simpl.
   iFrame.

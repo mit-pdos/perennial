@@ -152,7 +152,7 @@ Module FS.
              let! ents <- lookup dirents dir;
                   s' <- unwrap (lock_release Reader s);
                   _ <- puts (set dirlocks <[dir := (s', tt)]>);
-                  let l := map fst (map_to_list ents) in
+                  l <- such_that (λ _ l, Permutation.Permutation l (map fst (map_to_list ents)));
                   createSlice l
                 end
 
