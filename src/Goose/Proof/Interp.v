@@ -272,6 +272,59 @@ Ltac inv_step :=
            inversion H; subst; try destruct pfresh
          end); inj_pair2.
 
+Lemma wp_link_new dir1 name1 dir2 name2 (inode: Inode) S s E :
+  {{{ (path.mk dir1 name1) ↦ inode
+      ∗ dir2 ↦ S
+      ∗ ⌜ ¬ name2 ∈ S ⌝
+  }}}
+    link dir1 name1 dir2 name2 @ s ; E
+  {{{ RET true;
+     (path.mk dir1 name1) ↦ inode
+     ∗ (path.mk dir2 name2) ↦ inode
+     ∗ dir2 ↦ (S ∪ {[name2]})
+  }}}.
+Proof.
+  iIntros (Φ) "(Hp&Hd&%) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct (gen_heap_valid with "Hents Hd") as %Hset.
+  rewrite lookup_fmap in Hset.
+  eapply fmap_Some_1 in Hset as (?&?&?).
+  subst.
+  iDestruct (gen_dir_valid with "Hpaths Hp") as %H'.
+  simpl in H'. destruct H' as (σd&Hd&Hf).
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence.
+    rewrite Hf in Hhd_err. inv_step; inversion Hhd_err.
+    rewrite Hf in Hhd0. inversion Hhd0; subst.
+    simpl in *; congruence.
+    rewrite Hf in Hhd0. inversion Hhd0; subst. simpl in *.
+    inv_step.
+    rewrite not_elem_of_dom in H0 * => Hsome.
+    rewrite Hsome in Htl_err.
+    inv_step.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. rewrite Hf in Hhd0. inversion Hhd0. subst.
+  simpl in *. inv_step.
+  rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl.
+  inv_step. subst.
+  do 2 (inv_step; intuition).
+  iMod (gen_dir_alloc2 _ _ dir2 name2 _ with "Hpaths") as "(Hpaths&Hp2)"; eauto.
+  iMod (gen_heap_update _ (dir2) _ (dom (gset string) (<[name2 := _]> x4)) with "Hents Hd") as "(?&?)".
+  iFrame.
+  rewrite -fmap_insert. iFrame.
+  iSplitL "".
+  { simpl. rewrite dom_insert_L. iPureIntro. simpl in *. rewrite -H1.
+    assert (dir2 ∈ dom (gset string) x5.(dirents)).
+    { apply elem_of_dom. eexists; eauto. }
+     set_solver. }
+  iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
+Qed.
+
 Lemma wp_create_new dir fname S s E :
   {{{ dir ↦ S ∗ ⌜ ¬ fname ∈ S ⌝ }}}
     create dir fname @ s ; E
