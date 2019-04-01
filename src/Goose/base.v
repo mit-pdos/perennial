@@ -3,7 +3,6 @@ From Classes Require Import EqualDec.
 From RecoveryRefinement Require Export Spec.Proc.
 From RecoveryRefinement Require Export Spec.LockDefs.
 
-From RecoveryRefinement.Goose Require Export Machine.
 From RecoveryRefinement.Goose Require Export GoZeroValues.
 From RecoveryRefinement.Goose Require Export GoLayer.
 

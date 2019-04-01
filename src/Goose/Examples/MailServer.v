@@ -15,6 +15,8 @@ Definition getUserDir {model:GoModel} (user:uint64) : proc string :=
 
 Definition SpoolDir : string := "spool".
 
+Definition NumUsers : uint64 := 100.
+
 Definition readMessage {model:GoModel} (userDir:string) (name:string) : proc (slice.t byte) :=
   f <- FS.open userDir name;
   fileContents <- Data.newPtr (slice.t byte);
@@ -43,6 +45,9 @@ End Message.
 
 (* Pickup reads all stored messages *)
 Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t Message.t) :=
+  ls <- Globals.getX;
+  l <- Data.sliceRead ls user;
+  _ <- Data.lockAcquire l Writer;
   userDir <- getUserDir user;
   names <- FS.list userDir;
   messages <- Data.newPtr (slice.t Message.t);
@@ -60,6 +65,7 @@ Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t Message.t) :=
           _ <- Data.writePtr messages newMessages;
           Continue (i + 1)) 0;
   msgs <- Data.readPtr messages;
+  _ <- Data.lockRelease l Writer;
   Ret msgs.
 
 Definition createTmp {model:GoModel} : proc (File * string) :=
@@ -109,10 +115,29 @@ Definition Deliver {model:GoModel} (user:uint64) (msg:slice.t byte) : proc unit 
   FS.delete SpoolDir tmpName.
 
 Definition Delete {model:GoModel} (user:uint64) (msgID:string) : proc unit :=
+  ls <- Globals.getX;
+  l <- Data.sliceRead ls user;
+  _ <- Data.lockAcquire l Writer;
   userDir <- getUserDir user;
-  FS.delete userDir msgID.
+  _ <- FS.delete userDir msgID;
+  Data.lockRelease l Writer.
+
+Definition initLocks {model:GoModel} : proc unit :=
+  locks <- Data.newPtr (slice.t LockRef);
+  _ <- Loop (fun i =>
+        if i == NumUsers
+        then LoopRet tt
+        else
+          oldLocks <- Data.readPtr locks;
+          l <- Data.newLock;
+          newLocks <- Data.sliceAppend oldLocks l;
+          _ <- Data.writePtr locks newLocks;
+          Continue (i + 1)) 0;
+  finalLocks <- Data.readPtr locks;
+  Globals.setX finalLocks.
 
 Definition Recover {model:GoModel} : proc unit :=
+  _ <- initLocks;
   spooled <- FS.list SpoolDir;
   Loop (fun i =>
         if i == slice.length spooled
