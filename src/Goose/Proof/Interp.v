@@ -30,13 +30,11 @@ Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
       go_fs_fds_inG :> gen_heapG File (Inode * OpenMode) Σ;
      }.
 
-Class gooseG Σ :=
+Class gooseG (m: GoModel) {model_wf: GoModelWf m} Σ :=
   GooseG {
       go_invG : invG Σ;
-      model :> GoModel;
-      model_wf :> GoModelWf model;
       go_heap_inG :> (@gen_typed_heapG Ptr.ty Ptr ptrRawModel Σ _);
-      go_fs_inG :> fsG model Σ;
+      go_fs_inG :> fsG m Σ;
       go_treg_inG :> tregG Σ;
     }.
 
@@ -52,7 +50,7 @@ Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : FS.State → iProp 
    ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds))
    ∗ ⌜ dom (gset string) s.(dirents) = dom (gset string) s.(dirlocks) ⌝)%I.
 
-Definition goose_interp {Σ} `{model_wf:GoModelWf} {G: gooseG Σ} {tr: tregG Σ} :=
+Definition goose_interp {m Hwf Σ} {G: @gooseG m Hwf Σ} :=
   (λ (s: State), heap_interp (go_heap_inG) (fs s) ∗ fs_interp (go_fs_inG) (fs s))%I.
 
 Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=
@@ -122,40 +120,6 @@ Instance inode_gen_mapsto `{gooseG Σ} : GenericMapsTo (Inode) _
 Instance fd_gen_mapsto `{gooseG Σ} : GenericMapsTo File _
   := {| generic_mapsto := fd_mapsto; |}.
 
-Import Reg_wp.
-Section lifting.
-Context `{gooseG Σ}.
-
-Lemma thread_reg1:
-  ∀ n σ, state_interp (n, σ) -∗ thread_count_interp n ∗ goose_interp σ.
-Proof. auto. Qed.
-Lemma thread_reg2:
-  ∀ n σ, thread_count_interp n ∗ goose_interp σ -∗ state_interp (n, σ).
-Proof. auto. Qed.
-
-Lemma wp_spawn {T} s E (e: proc _ T) Φ :
-  ▷ Registered
-    -∗ ▷ (Registered -∗ WP (let! _ <- e; Unregister)%proc @ s; ⊤ {{ _, True }})
-    -∗ ▷ ( Registered -∗ Φ tt)
-    -∗ WP Spawn e @ s; E {{ Φ }}.
-Proof. eapply wp_spawn; eauto using thread_reg1, thread_reg2. Qed.
-
-Lemma wp_unregister s E :
-  {{{ ▷ Registered }}} Unregister @ s; E {{{ RET tt; True }}}.
-Proof. eapply wp_unregister; eauto using thread_reg1, thread_reg2. Qed.
-
-Lemma wp_wait s E :
-  {{{ ▷ Registered }}} Wait @ s; E {{{ RET tt; AllDone }}}.
-Proof. eapply wp_wait; eauto using thread_reg1, thread_reg2. Qed.
-
-Lemma readSome_Err_inv {A T : Type} (f : A → option T) (s : A) :
-  readSome f s Err → f s = None.
-Proof. rewrite /readSome. destruct (f s); auto; congruence. Qed.
-
-Lemma readSome_Some_inv {A T : Type} (f : A → option T) (s : A) s' t :
-  readSome f s (Val s' t) → s = s' ∧ f s = Some t.
-Proof. rewrite /readSome. destruct (f s); auto; try inversion 1; subst; split; congruence. Qed.
-
 Ltac inj_pair2 :=
   repeat match goal with
          | [ H: existT ?x ?o1 = existT ?x ?o2 |- _ ] =>
@@ -182,11 +146,19 @@ Import SemanticsHelpers.
 
 Lemma zoom_non_err {A C} (proj : A → C) (inj : C → A → A) {T} (r : relation C C T) (s : A):
   ¬ r (proj s) Err → ¬ zoom proj inj r s Err.
-Proof. firstorder. Qed.
+Proof. clear. firstorder. Qed.
 
 Lemma zoom2_non_err {A B C} (proj: A → B) (proj2: B → C) (inj2: C → B → B) (inj: B → A → A) {T} (r : relation C C T) (s : A):
   ¬ r (proj2 (proj s)) Err → ¬ zoom proj inj (zoom proj2 inj2 r) s Err.
-Proof. firstorder. Qed.
+Proof. clear. firstorder. Qed.
+
+Lemma readSome_Err_inv {A T : Type} (f : A → option T) (s : A) :
+  readSome f s Err → f s = None.
+Proof. rewrite /readSome. destruct (f s); auto; congruence. Qed.
+
+Lemma readSome_Some_inv {A T : Type} (f : A → option T) (s : A) s' t :
+  readSome f s (Val s' t) → s = s' ∧ f s = Some t.
+Proof. rewrite /readSome. destruct (f s); auto; try inversion 1; subst; split; congruence. Qed.
 
 Ltac inv_step :=
   repeat (inj_pair2; match goal with
@@ -294,6 +266,32 @@ Ltac inv_step :=
            destruct (σ.(heap).(allocs).(SemanticsHelpers.dynMap) p) as [([]&pfresh)|] eqn:Heqσ;
            inversion H; subst; try destruct pfresh
          end); inj_pair2.
+
+Import Reg_wp.
+Section lifting.
+Context `{@gooseG gmodel Hwf Σ}.
+
+Lemma thread_reg1:
+  ∀ n σ, state_interp (n, σ) -∗ thread_count_interp n ∗ goose_interp σ.
+Proof. auto. Qed.
+Lemma thread_reg2:
+  ∀ n σ, thread_count_interp n ∗ goose_interp σ -∗ state_interp (n, σ).
+Proof. auto. Qed.
+
+Lemma wp_spawn {T} s E (e: proc _ T) Φ :
+  ▷ Registered
+    -∗ ▷ (Registered -∗ WP (let! _ <- e; Unregister)%proc @ s; ⊤ {{ _, True }})
+    -∗ ▷ ( Registered -∗ Φ tt)
+    -∗ WP Spawn e @ s; E {{ Φ }}.
+Proof. eapply wp_spawn; eauto using thread_reg1, thread_reg2. Qed.
+
+Lemma wp_unregister s E :
+  {{{ ▷ Registered }}} Unregister @ s; E {{{ RET tt; True }}}.
+Proof. eapply wp_unregister; eauto using thread_reg1, thread_reg2. Qed.
+
+Lemma wp_wait s E :
+  {{{ ▷ Registered }}} Wait @ s; E {{{ RET tt; AllDone }}}.
+Proof. eapply wp_wait; eauto using thread_reg1, thread_reg2. Qed.
 
 Lemma wp_link_new dir1 name1 dir2 name2 (inode: Inode) S s E :
   {{{ (path.mk dir1 name1) ↦ inode

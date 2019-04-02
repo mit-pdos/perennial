@@ -96,8 +96,17 @@ Proof.
   iModIntro. by iExists (GenHeapG L V Σ _ _ _ γ).
 Qed.
 
+Lemma gen_heap_strong_init `{H: gen_heapPreG L V Σ} σs :
+  (|==> ∃ (H0 : gen_heapG L V Σ) (Hpf: gen_heap_inG = gen_heap_preG_inG), gen_heap_ctx σs ∗
+    own (gen_heap_name _) (◯ (to_gen_heap σs)))%I.
+Proof.
+  iMod (own_alloc (● to_gen_heap σs ⋅ ◯ to_gen_heap σs)) as (γ) "(?&?)".
+  { apply auth_valid_discrete_2; split; auto. exact: to_gen_heap_valid. }
+  iModIntro. unshelve (iExists (GenHeapG L V Σ _ _ _ γ), _); auto. iFrame.
+Qed.
+
 Section gen_heap.
-  Context `{gen_heapG L V Σ}.
+  Context `{hG: gen_heapG L V Σ}.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : V → iProp Σ.
   Implicit Types σ : gmap L V.
@@ -110,6 +119,24 @@ Section gen_heap.
   Proof. rewrite mapsto_eq /mapsto_def. apply _. Qed.
   Global Instance read_mapsto_timeless l v : Timeless (l r↦ v).
   Proof. rewrite read_mapsto_eq /read_mapsto_def. apply _. Qed.
+
+  Lemma gen_heap_init_to_bigOp σ:
+    own (gen_heap_name hG) (◯ to_gen_heap σ)
+        -∗ [∗ map] i↦v ∈ σ, i ↦ v .
+  Proof.
+    induction σ using map_ind.
+    - iIntros. rewrite //=.
+    - iIntros "Hown".
+      rewrite big_opM_insert //.
+      iAssert (own (gen_heap_name hG) (◯ to_gen_heap m) ∗ (i ↦ x))%I
+        with "[Hown]" as "[Hrest $]".
+      {
+        rewrite mapsto_eq /mapsto_def //.
+        rewrite to_gen_heap_insert insert_singleton_op; last by apply lookup_to_gen_heap_None.
+        rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
+      }
+      by iApply IHσ.
+  Qed.
 
   Lemma mapsto_agree l q1 v1 v2 : l ↦{q1} v1 -∗ l r↦ v2 -∗ ⌜v1 = v2⌝.
   Proof.
