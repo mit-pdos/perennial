@@ -40,7 +40,7 @@ Module Go.
 
   Definition crash_step : relation State State unit :=
     _zoom fs FS.crash_step;;
-          _zoom maillocks (puts (fun _ => slice.nil _)).
+          _zoom maillocks (puts (fun _ => Globals.init)).
 
   Theorem crash_step_non_err : forall s res,
       crash_step s res -> res <> Err.

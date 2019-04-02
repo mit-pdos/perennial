@@ -17,12 +17,19 @@ Module Globals.
   | GetX : Op G
   .
 
-  Definition State := G.
+  Definition State := option G.
+  Definition init : State := None.
+
+  Import RelationNotations.
 
   Definition step T (op: Op T) : relation State State T :=
     match op in Op T return relation State State T with
-    | SetX x => puts (fun _ => x)
-    | GetX => reads id
+    | SetX x => s <- reads id;
+                 match s with
+                 | Some _ => error
+                 | None => puts (fun _ => Some x)
+                 end
+    | GetX => readSome id
     end.
 
   Section OpWrappers.
