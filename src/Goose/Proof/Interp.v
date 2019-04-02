@@ -203,7 +203,7 @@ Ltac inv_step :=
                                              *)
            | DataOp _ => destruct H as ((?&?)&?)
            end
-         | [ H: Go.l.(sem).(Proc.step) ?op _ Err |- _] =>
+         | [ H: (sem Go.l).(Proc.step) ?op _ Err |- _] =>
            let op := eval compute in op in
            match op with
            | FilesysOp _ =>
