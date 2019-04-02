@@ -17,6 +17,7 @@ Set Default Proof Using "Type".
 
 Import Data.
 Import Filesys.FS.
+Import GoLayer.Go.
 
 Notation heap_inG := (@gen_typed_heapG Ptr.ty Ptr ptrRawModel).
 
@@ -39,10 +40,10 @@ Class gooseG Σ :=
       go_treg_inG :> tregG Σ;
     }.
 
-Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
-  (λ s, (gen_typed_heap_ctx s.(heap).(allocs))).
+Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : FS.State → iProp Σ :=
+  (λ (s: FS.State), (gen_typed_heap_ctx s.(heap).(allocs))).
 
-Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : State → iProp Σ :=
+Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : FS.State → iProp Σ :=
   (λ s, (gen_heap_ctx (hG := go_fs_dirs_inG)
                       (fmap (dom (gset string) (Dom := gset_dom)) s.(dirents)))
    ∗ (Count_Heap.gen_heap_ctx (hG := go_fs_dlocks_inG) (λ l, s.(dirlocks) !! l))
@@ -52,7 +53,7 @@ Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : State → iProp Σ 
    ∗ ⌜ dom (gset string) s.(dirents) = dom (gset string) s.(dirlocks) ⌝)%I.
 
 Definition goose_interp {Σ} `{model_wf:GoModelWf} {G: gooseG Σ} {tr: tregG Σ} :=
-  (λ s, heap_interp (go_heap_inG) s ∗ fs_interp (go_fs_inG) s)%I.
+  (λ (s: State), heap_interp (go_heap_inG) (fs s) ∗ fs_interp (go_fs_inG) (fs s))%I.
 
 Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=
   {
@@ -183,17 +184,24 @@ Lemma zoom_non_err {A C} (proj : A → C) (inj : C → A → A) {T} (r : relatio
   ¬ r (proj s) Err → ¬ zoom proj inj r s Err.
 Proof. firstorder. Qed.
 
+Lemma zoom2_non_err {A B C} (proj: A → B) (proj2: B → C) (inj2: C → B → B) (inj: B → A → A) {T} (r : relation C C T) (s : A):
+  ¬ r (proj2 (proj s)) Err → ¬ zoom proj inj (zoom proj2 inj2 r) s Err.
+Proof. firstorder. Qed.
+
 Ltac inv_step :=
   repeat (inj_pair2; match goal with
          | [ H : unit |- _ ] => destruct H
-         | [ H: Go.l.(sem).(Proc.step) ?op _ (Val _ _) |- _] =>
+         | [ H: l.(Layer.sem).(Proc.step) ?op _ (Val _ _) |- _] =>
            let op := eval compute in op in
            match op with
+           | FilesysOp _ => destruct H as (?&?)
+                                            (*
            | FilesysOp _ =>
              let Hhd := fresh "Hhd" in
              let Htl := fresh "Htl" in
              destruct H as (?&?&Hhd&Htl)
-           | DataOp _ => destruct H as (?&?)
+                                             *)
+           | DataOp _ => destruct H as ((?&?)&?)
            end
          | [ H: Go.l.(sem).(Proc.step) ?op _ Err |- _] =>
            let op := eval compute in op in
@@ -203,8 +211,13 @@ Ltac inv_step :=
                                   let Hhd := fresh "Hhd" in
                                   let Htl_err := fresh "Htl_err" in
                                   inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
-           | DataOp _ => destruct H as (?&?)
+           | DataOp _ => destruct H as ((?&?)&?)
            end
+         | [ H : FS.step _ _ Err  |- _ ] =>
+           let Hhd_err := fresh "Hhd_err" in
+           let Hhd := fresh "Hhd" in
+           let Htl_err := fresh "Htl_err" in
+           inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
          | [ H : Data.step _ _ Err  |- _ ] =>
            let Hhd_err := fresh "Hhd_err" in
            let Hhd := fresh "Hhd" in
@@ -212,7 +225,9 @@ Ltac inv_step :=
            inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
          | [ |- ¬ Go.step _ _ Err ] => let Herr := fresh "Herr" in
                                     intros Herr
-         | [ |- ¬ snd_lift _ _ Err ] => apply snd_lift_non_err; try (apply zoom_non_err);
+         | [ |- ¬ snd_lift _ _ Err ] => apply snd_lift_non_err;
+                                        try (apply zoom2_non_err);
+                                        try (apply zoom_non_err);
                                         let Herr := fresh "Herr" in
                                         intros Herr
          | [ H : and_then _ _ _ Err  |- _ ] =>
@@ -223,6 +238,10 @@ Ltac inv_step :=
          | [ H : such_that _ _ _ |- _ ] => inversion H; subst; clear H
          | [ H : pure _ _ _ |- _ ] => inversion H; subst; clear H
          | [ H : Data.step _ _ (Val _ _)  |- _ ] =>
+           let Hhd := fresh "Hhd" in
+           let Htl := fresh "Htl" in
+           destruct H as (?&?&Hhd&Htl)
+         | [ H : FS.step _ _ (Val _ _)  |- _ ] =>
            let Hhd := fresh "Hhd" in
            let Htl := fresh "Htl" in
            destruct H as (?&?&Hhd&Htl)
@@ -249,6 +268,10 @@ Ltac inv_step :=
            let Heq := fresh "Heq" in
            let heapName := fresh "heap" in
            remember (σ2.(heap)) as heapName eqn:Heq; clear Heq; subst
+         | [ H : ?σ2 = RecordSet.set fs (λ _ : FS.State, ?σ2.(fs)) ?σ |- _ ] =>
+           let Heq := fresh "Heq" in
+           let fsName := fresh "fs" in
+           remember (σ2.(fs)) as fsName eqn:Heq; clear Heq; subst
          | [ H : context[let '(s, alloc) := ?x in _] |- _] => destruct x
          | [ H : lock_acquire _ Unlocked = Some _ |- _ ] => inversion H; subst; clear H
          | [ H : lock_acquire Writer _ = Some _ |- _ ] =>
@@ -311,15 +334,15 @@ Proof.
   inv_step. rewrite Hf in Hhd0. inversion Hhd0. subst.
   simpl in *. inv_step.
   rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl.
-  inv_step. subst.
+  inv_step.
   do 2 (inv_step; intuition).
   iMod (gen_dir_alloc2 _ _ dir2 name2 _ with "Hpaths") as "(Hpaths&Hp2)"; eauto.
   iMod (gen_heap_update _ (dir2) _ (dom (gset string) (<[name2 := _]> x4)) with "Hents Hd") as "(?&?)".
   iFrame.
-  rewrite -fmap_insert. iFrame.
+  rewrite -fmap_insert. iFrame. simpl. iFrame.
   iSplitL "".
   { simpl. rewrite dom_insert_L. iPureIntro. simpl in *. rewrite -H1.
-    assert (dir2 ∈ dom (gset string) x5.(dirents)).
+    assert (dir2 ∈ dom (gset string) σ.(fs).(dirents)).
     { apply elem_of_dom. eexists; eauto. }
      set_solver. }
   iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
@@ -435,7 +458,7 @@ Proof.
     inv_step; try unfold readFd in *; inv_step; try congruence;
     (destruct equal; last by congruence); inv_step; try congruence.
     * unfold unwrap in Hhd_err. rewrite Heq in Hhd_err. inv_step.
-    * unfold unwrap in Hhd_err. destruct l; try congruence; inv_step.
+    * unfold unwrap in Hhd_err. destruct l0; try congruence; inv_step.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
@@ -488,7 +511,7 @@ Proof.
   rewrite -fmap_insert. iFrame.
   iSplitL "".
   { simpl. rewrite dom_insert_L. iPureIntro. simpl in *. rewrite -H1.
-    assert (dir ∈ dom (gset string) x4.(dirents)).
+    assert (dir ∈ dom (gset string) σ.(fs).(dirents)).
     { apply elem_of_dom. eexists; eauto. }
      set_solver. }
   iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
@@ -587,7 +610,7 @@ Proof.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; simpl in *; subst; try congruence.
-    destruct l; try congruence; inversion Hhd_err.
+    destruct l0; try congruence; inversion Hhd_err.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
@@ -604,7 +627,7 @@ Proof.
       rewrite lookup_insert_ne //=.
     }
     iPureIntro. rewrite dom_insert_L. rewrite Hdom.
-    assert (dir ∈ dom (gset string) x1.(dirlocks)).
+    assert (dir ∈ dom (gset string) σ.(fs).(dirlocks)).
     { apply elem_of_dom. eexists; eauto. }
     set_solver.
   * iFrame. simpl.
@@ -615,7 +638,7 @@ Proof.
       rewrite lookup_insert_ne //=.
     }
     iPureIntro. rewrite dom_insert_L. rewrite Hdom.
-    assert (dir ∈ dom (gset string) x1.(dirlocks)).
+    assert (dir ∈ dom (gset string) σ.(fs).(dirlocks)).
     { apply elem_of_dom. eexists; eauto. }
     set_solver.
 Qed.
@@ -667,7 +690,7 @@ Proof.
   rewrite fmap_insert. iFrame.
   iSplitL "".
   { simpl. rewrite dom_insert_L. iPureIntro. rewrite -Hdom.
-    assert (dir ∈ dom (gset string) x5.(dirents)).
+    assert (dir ∈ dom (gset string) σ.(fs).(dirents)).
     { apply elem_of_dom. eexists; eauto. }
      set_solver. }
   iApply "HΦ". iFrame. rewrite dom_delete_L. by iFrame.
@@ -694,7 +717,7 @@ Proof.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; subst; try congruence.
-    - destruct l; simpl in *; try congruence. destruct num; try inversion Hhd_err.
+    - destruct l0; simpl in *; try congruence. destruct num; try inversion Hhd_err.
       inv_step; lia.
     - eapply createSlice_non_err; eauto.
   }
@@ -724,7 +747,7 @@ Proof.
     rewrite ?lookup_insert ?lookup_insert_ne //=.
   }
   iPureIntro. rewrite dom_insert_L. rewrite Hdom.
-    assert (dir ∈ dom (gset string) x4.(dirlocks)).
+    assert (dir ∈ dom (gset string) σ.(fs).(dirlocks)).
     { apply elem_of_dom. eexists; eauto. }
     set_solver.
 Qed.
@@ -743,6 +766,7 @@ Proof.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
+  destruct H0 as ((?&?)&?).
   do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
   iFrame. iApply "HΦ"; eauto.
@@ -1265,14 +1289,14 @@ Proof.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     destruct H0 as (?&?&?). inv_step; simpl in *; subst; try congruence.
-    destruct l; eauto; try congruence.
+    destruct l0; eauto; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_readlock (Ptr.Map T) with "Hσ Hi") as (s' Heq) "(Hσ&Hl)".
   iFrame.
-  destruct l; simpl in *; try congruence;
+  destruct l0; simpl in *; try congruence;
     inv_step; simpl; iFrame; iApply "HΦ"; iFrame; iModIntro; eauto.
 Qed.
 
@@ -1297,7 +1321,7 @@ Proof.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_readunlock (Ptr.Map T) with "Hσ Hi") as (s' Heq) "(Hσ&Hl)".
   iFrame.
-  destruct l; simpl in *; try congruence;
+  destruct l0; simpl in *; try congruence;
     inv_step; simpl; iFrame.
   destruct s'; inv_step; iFrame; iApply "HΦ"; iFrame; iModIntro; eauto.
 Qed.
