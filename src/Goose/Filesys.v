@@ -55,6 +55,8 @@ Module FS.
     Definition list dir : proc (slice.t string) :=
       Bind (Call (inject (List dir Begin)))
            (fun _ => Call (inject (List dir (FinishArgs tt)))).
+    Definition list_start dir : proc unit := Call! (List dir Begin).
+    Definition list_finish dir : proc _ := Call! (List dir (FinishArgs tt)).
     Definition size fh : proc _ := Call! Size fh.
     Definition readAt fh off len : proc _ := Call! ReadAt fh off len.
     Definition create dir p : proc _ := Call! Create dir p.
@@ -137,6 +139,7 @@ Module FS.
         pure fh
 
     | Close fh =>
+      _ <- lookup fds fh;
       puts (set fds (map_delete fh))
 
     | List dir na =>
@@ -149,7 +152,7 @@ Module FS.
              let! ents <- lookup dirents dir;
                   s' <- unwrap (lock_release Reader s);
                   _ <- puts (set dirlocks <[dir := (s', tt)]>);
-                  let l := map fst (map_to_list ents) in
+                  l <- such_that (λ _ l, Permutation.Permutation l (map fst (map_to_list ents)));
                   createSlice l
                 end
 
@@ -160,7 +163,7 @@ Module FS.
     | ReadAt fh off len =>
       bs <- readFd fh Read;
         let read_bs := list.take len (list.drop off bs) in
-        createSlice bs
+        createSlice read_bs
 
     | Create dir name =>
       ents <- lookup dirents dir;

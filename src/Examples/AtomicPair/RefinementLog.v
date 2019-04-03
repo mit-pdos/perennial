@@ -567,9 +567,9 @@ Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq AtomicPair.Op T) :
   init_absr σ1a σ1c →
   wf_client_seq es →
   ¬ proc_exec_seq AtomicPair.l es (rec_singleton (Ret ())) (1, σ1a) Err →
-  ∀ σ2c res, ExMach.l.(proc_exec_seq) (compile_proc_seq ImplLog.impl es)
+  ∀ σ2c res, proc_exec_seq ExMach.l (compile_proc_seq ImplLog.impl es)
                                       (rec_singleton recv) (1, σ1c) (Val σ2c res) →
-  ∃ σ2a, AtomicPair.l.(proc_exec_seq) es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
+  ∃ σ2a, proc_exec_seq AtomicPair.l es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
 Proof.
   eapply (exmach_crash_refinement_seq) with
       (Σ := myΣ)

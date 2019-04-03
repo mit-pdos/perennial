@@ -48,7 +48,7 @@ Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op
 (* TODO: add call to 'close' after the wait *)
 Import ProcNotations.
 Definition compile_whole Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
-  Bind (impl.(compile) p) (fun v => _ <- Wait; Ret v)%proc.
+  Bind (compile impl p) (fun v => _ <- Wait; Ret v)%proc.
 
 Fixpoint map_proc_seq {T Op C_Op} (f: forall T, proc Op T -> proc C_Op T) (es: proc_seq Op T) :=
   match es with
@@ -61,13 +61,13 @@ Fixpoint compile_seq Op C_Op `(impl: LayerImpl C_Op Op) (ps: rec_seq Op) :
   rec_seq C_Op :=
   match ps with
   | Seq_Nil => Seq_Nil
-  | Seq_Cons p ps' => Seq_Cons (impl.(compile_whole) p) (impl.(compile_seq) ps')
+  | Seq_Cons p ps' => Seq_Cons (compile_whole impl p) (impl.(compile_seq) ps')
   end.
 
 Definition compile_proc_seq {T} Op C_Op `(impl: LayerImpl C_Op Op) (ps: proc_seq Op T) :=
-  map_proc_seq (impl.(compile_whole)) ps.
+  map_proc_seq (compile_whole impl) ps.
 
 Definition compile_rec Op C_Op `(impl: LayerImpl C_Op Op) (rec: rec_seq Op) : rec_seq C_Op :=
-  rec_seq_append impl.(recover) (impl.(compile_seq) rec).
+  rec_seq_append impl.(recover) (compile_seq impl rec).
 
 Coercion sem : Layer >-> Dynamics.

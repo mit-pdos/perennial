@@ -4,7 +4,9 @@ From iris.algebra Require Import auth gmap frac agree.
 Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting Count_Typed_Heap CSL.ThreadReg CSL.Count_GHeap.
+Require CSL.Count_Heap.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting
+               CSL.Count_Typed_Heap CSL.ThreadReg CSL.Count_Double_Heap CSL.Count_GHeap.
 From iris.proofmode Require Export tactics.
 
 From RecoveryRefinement.Goose Require Import Machine GoZeroValues Heap GoLayer.
@@ -15,15 +17,15 @@ Set Default Proof Using "Type".
 
 Import Data.
 Import Filesys.FS.
+Import GoLayer.Go.
 
 Notation heap_inG := (@gen_typed_heapG Ptr.ty Ptr ptrRawModel).
 
 Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
    FsG {
-      (* todo -- I would like to re-use some of the LockStatus reasoning but right now will need some duplication *)
-      go_fs_dlocks_inG :> gen_heapG string (LockStatus * unit) Σ;
+      go_fs_dlocks_inG :> Count_Heap.gen_heapG string unit Σ;
       go_fs_dirs_inG :> gen_heapG string (gset string) Σ;
-      go_fs_paths_inG :> gen_heapG path.t (Inode) Σ;
+      go_fs_paths_inG :> gen_dirG string string (Inode) Σ;
       go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
       go_fs_fds_inG :> gen_heapG File (Inode * OpenMode) Σ;
      }.
@@ -38,25 +40,20 @@ Class gooseG Σ :=
       go_treg_inG :> tregG Σ;
     }.
 
-Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : State → iProp Σ :=
-  (λ s, (gen_typed_heap_ctx s.(heap).(allocs))).
+Definition heap_interp {Σ} `{model_wf:GoModelWf} (hM: heap_inG Σ) : FS.State → iProp Σ :=
+  (λ (s: FS.State), (gen_typed_heap_ctx s.(heap).(allocs))).
 
-Definition dirent_insert (m: gmap path.t Inode) (d: string) (md: gmap string Inode) :=
-  map_fold (λ f inode m', <[ {| path.dir := d; path.fname := f |} := inode]> m') m md.
-
-Definition dirent_flatten (m: gmap string (gmap string Inode)) : gmap path.t Inode :=
-  map_fold (λ dir filemap m', dirent_insert m' dir filemap) ∅ m.
-
-Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : State → iProp Σ :=
+Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : FS.State → iProp Σ :=
   (λ s, (gen_heap_ctx (hG := go_fs_dirs_inG)
                       (fmap (dom (gset string) (Dom := gset_dom)) s.(dirents)))
-   ∗ (gen_heap_ctx (hG := go_fs_dlocks_inG) (s.(dirlocks)))
-   ∗ (gen_heap_ctx (hG := go_fs_paths_inG) (dirent_flatten s.(dirents)))
+   ∗ (Count_Heap.gen_heap_ctx (hG := go_fs_dlocks_inG) (λ l, s.(dirlocks) !! l))
+   ∗ (gen_dir_ctx (hG := go_fs_paths_inG) s.(dirents))
    ∗ (gen_heap_ctx (hG := go_fs_inodes_inG) s.(inodes))
-   ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds)))%I.
+   ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds))
+   ∗ ⌜ dom (gset string) s.(dirents) = dom (gset string) s.(dirlocks) ⌝)%I.
 
 Definition goose_interp {Σ} `{model_wf:GoModelWf} {G: gooseG Σ} {tr: tregG Σ} :=
-  (λ s, heap_interp (go_heap_inG) s ∗ fs_interp (go_fs_inG) s)%I.
+  (λ (s: State), heap_interp (go_heap_inG) (fs s) ∗ fs_interp (go_fs_inG) (fs s))%I.
 
 Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=
   {
@@ -98,11 +95,11 @@ Instance slice_gen_mapsto `{gooseG Σ} T : GenericMapsTo (slice.t T) _
 Definition dir_mapsto `{gooseG Σ} (d: string) q (fs: gset string) : iProp Σ
   := mapsto (hG := go_fs_dirs_inG) d q fs.
 
-Definition dirlock_mapsto `{gooseG Σ} (d: string) q (s: LockStatus) : iProp Σ
-  := mapsto (hG := go_fs_dlocks_inG) d q (s, tt).
+Definition dirlock_mapsto `{gooseG Σ} (d: string) q s : iProp Σ
+  := Count_Heap.mapsto (hG := go_fs_dlocks_inG) d q s tt.
 
 Definition path_mapsto `{gooseG Σ} (p: path.t) q (i: Inode) : iProp Σ
-  := mapsto (hG := go_fs_paths_inG) p q i.
+  := Count_Double_Heap.mapsto (hG := go_fs_paths_inG) (path.dir p) (path.fname p) q i.
 
 Definition inode_mapsto `{gooseG Σ} (i: Inode) q (bs: List.list byte) : iProp Σ
   := mapsto (hG := go_fs_inodes_inG) i q bs.
@@ -187,9 +184,40 @@ Lemma zoom_non_err {A C} (proj : A → C) (inj : C → A → A) {T} (r : relatio
   ¬ r (proj s) Err → ¬ zoom proj inj r s Err.
 Proof. firstorder. Qed.
 
+Lemma zoom2_non_err {A B C} (proj: A → B) (proj2: B → C) (inj2: C → B → B) (inj: B → A → A) {T} (r : relation C C T) (s : A):
+  ¬ r (proj2 (proj s)) Err → ¬ zoom proj inj (zoom proj2 inj2 r) s Err.
+Proof. firstorder. Qed.
+
 Ltac inv_step :=
   repeat (inj_pair2; match goal with
          | [ H : unit |- _ ] => destruct H
+         | [ H: l.(Layer.sem).(Proc.step) ?op _ (Val _ _) |- _] =>
+           let op := eval compute in op in
+           match op with
+           | FilesysOp _ => destruct H as (?&?)
+                                            (*
+           | FilesysOp _ =>
+             let Hhd := fresh "Hhd" in
+             let Htl := fresh "Htl" in
+             destruct H as (?&?&Hhd&Htl)
+                                             *)
+           | DataOp _ => destruct H as ((?&?)&?)
+           end
+         | [ H: (sem Go.l).(Proc.step) ?op _ Err |- _] =>
+           let op := eval compute in op in
+           match op with
+           | FilesysOp _ =>
+                                  let Hhd_err := fresh "Hhd_err" in
+                                  let Hhd := fresh "Hhd" in
+                                  let Htl_err := fresh "Htl_err" in
+                                  inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
+           | DataOp _ => destruct H as ((?&?)&?)
+           end
+         | [ H : FS.step _ _ Err  |- _ ] =>
+           let Hhd_err := fresh "Hhd_err" in
+           let Hhd := fresh "Hhd" in
+           let Htl_err := fresh "Htl_err" in
+           inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
          | [ H : Data.step _ _ Err  |- _ ] =>
            let Hhd_err := fresh "Hhd_err" in
            let Hhd := fresh "Hhd" in
@@ -197,7 +225,9 @@ Ltac inv_step :=
            inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
          | [ |- ¬ Go.step _ _ Err ] => let Herr := fresh "Herr" in
                                     intros Herr
-         | [ |- ¬ snd_lift _ _ Err ] => apply snd_lift_non_err; try (apply zoom_non_err);
+         | [ |- ¬ snd_lift _ _ Err ] => apply snd_lift_non_err;
+                                        try (apply zoom2_non_err);
+                                        try (apply zoom_non_err);
                                         let Herr := fresh "Herr" in
                                         intros Herr
          | [ H : and_then _ _ _ Err  |- _ ] =>
@@ -211,10 +241,18 @@ Ltac inv_step :=
            let Hhd := fresh "Hhd" in
            let Htl := fresh "Htl" in
            destruct H as (?&?&Hhd&Htl)
+         | [ H : FS.step _ _ (Val _ _)  |- _ ] =>
+           let Hhd := fresh "Hhd" in
+           let Htl := fresh "Htl" in
+           destruct H as (?&?&Hhd&Htl)
          | [ H : and_then _ _ _ (Val _ _)  |- _ ] =>
            let Hhd := fresh "Hhd" in
            let Htl := fresh "Htl" in
            destruct H as (?&?&Hhd&Htl)
+         | [ H: lookup _ _ _ _ |- _ ] => unfold lookup in H
+         | [ H: resolvePath _ _ _ _ |- _ ] => unfold resolvePath in H
+         | [ H: puts _ _ _ |- _ ] => inversion H; subst; clear H
+         | [ H: fresh_key _ _ _ |- _ ] => inversion H; subst; clear H
          | [ H : readSome _ _ Err |- _ ] =>
            apply readSome_Err_inv in H
          | [ H : readSome _ _ (Val _ _) |- _ ] =>
@@ -230,8 +268,10 @@ Ltac inv_step :=
            let Heq := fresh "Heq" in
            let heapName := fresh "heap" in
            remember (σ2.(heap)) as heapName eqn:Heq; clear Heq; subst
-         | [ H: Go.l.(sem).(Proc.step) _ _ _ |- _] =>
-           destruct H as (?&?)
+         | [ H : ?σ2 = RecordSet.set fs (λ _ : FS.State, ?σ2.(fs)) ?σ |- _ ] =>
+           let Heq := fresh "Heq" in
+           let fsName := fresh "fs" in
+           remember (σ2.(fs)) as fsName eqn:Heq; clear Heq; subst
          | [ H : context[let '(s, alloc) := ?x in _] |- _] => destruct x
          | [ H : lock_acquire _ Unlocked = Some _ |- _ ] => inversion H; subst; clear H
          | [ H : lock_acquire Writer _ = Some _ |- _ ] =>
@@ -255,6 +295,463 @@ Ltac inv_step :=
            inversion H; subst; try destruct pfresh
          end); inj_pair2.
 
+Lemma wp_link_new dir1 name1 dir2 name2 (inode: Inode) S s E :
+  {{{ (path.mk dir1 name1) ↦ inode
+      ∗ dir2 ↦ S
+      ∗ ⌜ ¬ name2 ∈ S ⌝
+  }}}
+    link dir1 name1 dir2 name2 @ s ; E
+  {{{ RET true;
+     (path.mk dir1 name1) ↦ inode
+     ∗ (path.mk dir2 name2) ↦ inode
+     ∗ dir2 ↦ (S ∪ {[name2]})
+  }}}.
+Proof.
+  iIntros (Φ) "(Hp&Hd&%) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct (gen_heap_valid with "Hents Hd") as %Hset.
+  rewrite lookup_fmap in Hset.
+  eapply fmap_Some_1 in Hset as (?&?&?).
+  subst.
+  iDestruct (gen_dir_valid with "Hpaths Hp") as %H'.
+  simpl in H'. destruct H' as (σd&Hd&Hf).
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence.
+    rewrite Hf in Hhd_err. inv_step; inversion Hhd_err.
+    rewrite Hf in Hhd0. inversion Hhd0; subst.
+    simpl in *; congruence.
+    rewrite Hf in Hhd0. inversion Hhd0; subst. simpl in *.
+    inv_step.
+    rewrite not_elem_of_dom in H0 * => Hsome.
+    rewrite Hsome in Htl_err.
+    inv_step.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. rewrite Hf in Hhd0. inversion Hhd0. subst.
+  simpl in *. inv_step.
+  rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl.
+  inv_step.
+  do 2 (inv_step; intuition).
+  iMod (gen_dir_alloc2 _ _ dir2 name2 _ with "Hpaths") as "(Hpaths&Hp2)"; eauto.
+  iMod (gen_heap_update _ (dir2) _ (dom (gset string) (<[name2 := _]> x4)) with "Hents Hd") as "(?&?)".
+  iFrame.
+  rewrite -fmap_insert. iFrame. simpl. iFrame.
+  iSplitL "".
+  { simpl. rewrite dom_insert_L. iPureIntro. simpl in *. rewrite -H1.
+    assert (dir2 ∈ dom (gset string) σ.(fs).(dirents)).
+    { apply elem_of_dom. eexists; eauto. }
+     set_solver. }
+  iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
+Qed.
+
+Lemma wp_link_not_new dir1 name1 dir2 name2 (inode: Inode) S s E :
+  {{{ (path.mk dir1 name1) ↦ inode
+      ∗ dir2 ↦ S
+      ∗ ⌜ name2 ∈ S ⌝
+  }}}
+    link dir1 name1 dir2 name2 @ s ; E
+  {{{ RET false;
+     (path.mk dir1 name1) ↦ inode
+     ∗ dir2 ↦ S
+  }}}.
+Proof.
+  iIntros (Φ) "(Hp&Hd&%) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct (gen_heap_valid with "Hents Hd") as %Hset.
+  rewrite lookup_fmap in Hset.
+  eapply fmap_Some_1 in Hset as (?&?&?).
+  subst.
+  iDestruct (gen_dir_valid with "Hpaths Hp") as %H'.
+  simpl in H'. destruct H' as (σd&Hd&Hf).
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence.
+    rewrite Hf in Hhd_err. inv_step; inversion Hhd_err.
+    rewrite Hf in Hhd0. inversion Hhd0; subst.
+    simpl in *; congruence.
+    rewrite Hf in Hhd0. inversion Hhd0; subst. simpl in *.
+    inv_step.
+    rewrite elem_of_dom in H0 * => Hsome. destruct Hsome as (?&Hsome).
+    rewrite Hsome in Htl_err.
+    inv_step; inversion Hhd_err; congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. rewrite Hf in Hhd0. inversion Hhd0. subst. simpl in *. inv_step.
+  rewrite elem_of_dom in H0 * => Hsome. destruct Hsome as (?&Hsome).
+  rewrite Hsome in Htl. inv_step.
+  iFrame. iSplitL ""; auto.
+  iApply "HΦ". iFrame. eauto.
+Qed.
+
+Lemma createSlice_non_err V (data: List.list V) s : ¬ createSlice data s Err.
+Proof. inversion 1 as [Hhd_err|(?&?&Hhd&Htl_err)]; inv_step. Qed.
+
+Lemma lock_available_reader_succ l:
+  l ≠ Locked → lock_available Reader l = Some tt.
+Proof. destruct l; eauto; try congruence. Qed.
+
+Lemma wp_readAt fh (inode: Inode) (bs: Datatypes.list byte) off len q1 q2 s E :
+  {{{ fh ↦{q1} (inode, Read)
+      ∗ inode ↦{q2} bs
+  }}}
+    readAt fh off len @ s ; E
+  {{{ (s: slice.t byte), RET s;
+      fh ↦{q1} (inode, Read)
+      ∗ inode ↦{q2} bs
+      ∗ s ↦ (list.take len (list.drop off bs))
+  }}}.
+Proof.
+  iIntros (Φ) "(Hfh&Hi) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
+  iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; try unfold readFd in Hhd_err; inv_step.
+    * simpl in *; subst; try congruence.
+    * simpl in *; inv_step. congruence.
+    * eapply createSlice_non_err in Htl_err; eauto.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. red in Htl. do 2 (inv_step; intuition).
+  unfold readFd in Hhd. inv_step. destruct equal; last by congruence.
+  inv_step.
+  iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
+  iFrame. iSplitL ""; auto.
+  iApply "HΦ". iFrame. iModIntro.
+  iExists _. iFrame. iPureIntro.
+  rewrite /getSliceModel sublist_lookup_all //= app_length //=.
+Qed.
+
+Lemma wp_append fh (inode: Inode) (p': slice.t byte) (bs bs': Datatypes.list byte) q1 q2 s E :
+  {{{ fh ↦{q1} (inode, Write)
+      ∗ inode ↦ bs
+      ∗ p' ↦{q2} bs'
+  }}}
+    append fh p' @ s ; E
+  {{{ RET tt;
+      fh ↦{q1} (inode, Write)
+      ∗ inode ↦ (bs ++ bs')
+      ∗ p' ↦{q2} bs'
+  }}}.
+Proof.
+  iIntros (Φ) "(Hfh&Hi&Hp) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&HFS)".
+  iDestruct "Hp" as (vs Heq) "Hp".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
+  iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
+  iDestruct (gen_typed_heap_valid (Ptr.Heap byte) with "Hσ Hp") as %[s' [? ?]].
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; try unfold readFd in *; inv_step; try congruence;
+    (destruct equal; last by congruence); inv_step; try congruence.
+    * unfold unwrap in Hhd_err. rewrite Heq in Hhd_err. inv_step.
+    * unfold unwrap in Hhd_err. destruct l0; try congruence; inv_step.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  unfold readFd in *. unfold unwrap in *.
+  inv_step. destruct equal; last by congruence.
+  inv_step. rewrite lock_available_reader_succ // in Hhd1.
+  rewrite Heq in Hhd0.
+  inv_step.
+  iMod (gen_heap_update with "Hinodes Hi") as "($&?)".
+  iFrame. iSplitL ""; first by auto.
+  iApply "HΦ". iFrame.
+  iModIntro. iExists _; eauto.
+Qed.
+
+Lemma wp_create_new dir fname S s E :
+  {{{ dir ↦ S ∗ ⌜ ¬ fname ∈ S ⌝ }}}
+    create dir fname @ s ; E
+  {{{ (i: Inode) (f: File), RET (f, true);
+      f ↦ (i, Write)
+        ∗ i ↦ []
+        ∗ dir ↦ (S ∪ {[fname]})
+        ∗ {| path.dir := dir; path.fname := fname |} ↦ i
+  }}}.
+Proof.
+  iIntros (Φ) "(Hd&%) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct (gen_heap_valid with "Hents Hd") as %H'.
+  rewrite lookup_fmap in H'.
+  eapply fmap_Some_1 in H' as (?&?&?).
+  subst.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence.
+    rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl_err.
+    inv_step; inversion Hhd_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl.
+  do 2 (inv_step; intuition).
+  iMod (gen_dir_alloc2 _ _ dir fname x with "Hpaths") as "(Hpaths&Hp)"; eauto.
+  iMod (gen_heap_update _ (dir) _ (dom (gset string) (<[fname := x]> x0)) with "Hents Hd") as "(?&?)".
+  iMod (gen_heap_alloc with "Hinodes") as "(?&?)"; first eauto.
+  iMod (gen_heap_alloc with "Hfds") as "(?&?)"; first eauto.
+  iFrame.
+  rewrite -fmap_insert. iFrame.
+  iSplitL "".
+  { simpl. rewrite dom_insert_L. iPureIntro. simpl in *. rewrite -H1.
+    assert (dir ∈ dom (gset string) σ.(fs).(dirents)).
+    { apply elem_of_dom. eexists; eauto. }
+     set_solver. }
+  iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
+Qed.
+
+Lemma identity_val_inv {A B: Type} (x x': A) (b: B):
+  identity x (Val x' b) → x = x'.
+Proof. inversion 1; subst. congruence. Qed.
+
+Lemma wp_create_not_new dir fname S s E :
+  {{{ dir ↦ S ∗ ⌜ fname ∈ S ⌝ }}}
+    create dir fname @ s ; E
+  {{{ (f: File), RET (f, false); dir ↦ S }}}.
+Proof.
+  iIntros (Φ) "(Hd&%) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?)".
+  iDestruct (gen_heap_valid with "Hents Hd") as %H'.
+  rewrite lookup_fmap in H'.
+  eapply fmap_Some_1 in H' as (?&?&?).
+  subst.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence.
+    rewrite elem_of_dom in H0 * => Hsome. destruct Hsome as (?&Hsome).
+    rewrite Hsome in Htl_err.
+    inv_step; inversion Hhd_err; congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  rewrite elem_of_dom in H0 * => Hsome. destruct Hsome as (?&Hsome).
+  rewrite Hsome in Htl.
+  do 2 (inv_step; intuition).
+  apply identity_val_inv in Hhd; subst.
+  iFrame. by iApply "HΦ".
+Qed.
+
+Lemma wp_open dir fname inode q s E :
+  {{{ path.mk dir fname ↦{q} inode  }}}
+    open dir fname @ s ; E
+  {{{ (f: File), RET f; path.mk dir fname ↦{q} inode ∗ f ↦ (inode, Read) }}}.
+Proof.
+  iIntros (Φ) "Hd HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?)".
+  iDestruct (gen_dir_valid with "Hpaths Hd") as %H'.
+  simpl in H'. destruct H' as (σd&Hd&Hf).
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  iMod (gen_heap_alloc with "Hfds") as "[Hfds Hp]"; first by eauto.
+  iFrame. iApply "HΦ". by iFrame.
+Qed.
+
+Lemma wp_close fh m s E :
+  {{{ fh ↦ m }}}
+    close fh @ s ; E
+  {{{ RET tt; True }}}.
+Proof.
+  iIntros (Φ) "Hd HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?)".
+  iDestruct (gen_heap_valid with "Hfds Hd") as %H'.
+  simpl in H'.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  iMod (gen_heap_dealloc with "Hfds Hd") as "Hfds".
+  iFrame. iApply "HΦ". by iFrame.
+Qed.
+
+Lemma wp_list_start dir (S: gset string) s q E :
+  {{{ dir ↦{q} Unlocked }}}
+    list_start dir @ s ; E
+  {{{ RET tt; dir ↦{q} ReadLocked O }}}.
+Proof.
+  iIntros (Φ) "Hdl HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
+  iDestruct "Hdom" as %Hdom.
+  iDestruct (Count_Heap.gen_heap_valid with "Hdlocks Hdl") as %[s' [Hlookup Hnl]].
+  simpl in Hlookup.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; simpl in *; subst; try congruence.
+    destruct l0; try congruence; inversion Hhd_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  iMod (Count_Heap.gen_heap_readlock with "Hdlocks Hdl") as (s'' Heq) "(Hdlocks&Hdl)".
+  inv_step. iFrame. iSplitR "HΦ Hdl"; last first.
+  { iApply "HΦ". by iFrame. }
+  (* TODO: casework here is silly *)
+  destruct s''; try congruence; inversion Hhd; subst.
+  * iFrame. simpl.
+    iSplitL.
+    { iModIntro. iApply Count_Heap.gen_heap_ctx_proper; last auto. intros k.
+      simpl. rewrite {1}/insert/Count_Heap.partial_fn_insert//=.
+      destruct equal; eauto. subst. by rewrite lookup_insert.
+      rewrite lookup_insert_ne //=.
+    }
+    iPureIntro. rewrite dom_insert_L. rewrite Hdom.
+    assert (dir ∈ dom (gset string) σ.(fs).(dirlocks)).
+    { apply elem_of_dom. eexists; eauto. }
+    set_solver.
+  * iFrame. simpl.
+    iSplitL.
+    { iModIntro. iApply Count_Heap.gen_heap_ctx_proper; last auto. intros k.
+      simpl. rewrite {1}/insert/Count_Heap.partial_fn_insert//=.
+      destruct equal; eauto. subst. by rewrite lookup_insert.
+      rewrite lookup_insert_ne //=.
+    }
+    iPureIntro. rewrite dom_insert_L. rewrite Hdom.
+    assert (dir ∈ dom (gset string) σ.(fs).(dirlocks)).
+    { apply elem_of_dom. eexists; eauto. }
+    set_solver.
+Qed.
+
+Lemma map_to_list_dom_perm {K V} `{Countable K} (m: gmap K V):
+  map fst (map_to_list m) ≡ₚ elements (dom (gset K) m).
+Proof.
+  apply NoDup_Permutation.
+  - apply NoDup_fst_map_to_list.
+  - apply NoDup_elements.
+  - intros k. rewrite elem_of_elements elem_of_dom. split.
+    * intros ((?&v)&?&?%elem_of_map_to_list)%elem_of_list_fmap_2.
+       simpl in *; subst; eexists; eauto.
+    * intros (v&?). apply elem_of_list_fmap.
+      exists (k, v); split; eauto.
+      rewrite elem_of_map_to_list. eauto.
+Qed.
+
+Lemma wp_delete dir fname (S: gset string) (inode: Inode) s E :
+  {{{ dir ↦ S ∗ dir ↦ Unlocked ∗ path.mk dir fname ↦ inode }}}
+    delete dir fname @ s ; E
+  {{{ RET tt; dir ↦ (S ∖ {[ fname ]}) ∗ dir ↦ Unlocked }}}.
+Proof.
+  iIntros (Φ) "(Hd&Hdl&Hp) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&HFS)".
+  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
+  iDestruct "Hdom" as %Hdom.
+  iDestruct (Count_Heap.gen_heap_valid1 with "Hdlocks Hdl") as %?.
+  iDestruct (gen_dir_valid with "Hpaths Hp") as %H'.
+  simpl in H'. destruct H' as (σd&Hd&Hf).
+  iDestruct (gen_heap_valid with "Hents Hd") as %H'.
+  rewrite lookup_fmap in H'.
+  eapply fmap_Some_1 in H' as (?&?&?).
+  subst.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; simpl in *; subst; try congruence.
+    inv_step. rewrite Hf in Hhd_err. inversion Hhd_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  unfold unwrap in *. simpl in *. inv_step. rewrite Hf in Hhd1. inv_step.
+  iFrame. simpl.
+  iMod (gen_dir_dealloc with "Hpaths Hp") as "Hpaths"; eauto.
+  simpl. iFrame.
+  iMod (gen_heap_update _ (dir) _ (dom (gset string) (map_delete fname _)) with "Hents Hd") as "(?&?)".
+  rewrite fmap_insert. iFrame.
+  iSplitL "".
+  { simpl. rewrite dom_insert_L. iPureIntro. rewrite -Hdom.
+    assert (dir ∈ dom (gset string) σ.(fs).(dirents)).
+    { apply elem_of_dom. eexists; eauto. }
+     set_solver. }
+  iApply "HΦ". iFrame. rewrite dom_delete_L. by iFrame.
+Qed.
+
+Lemma wp_list_finish dir (S: gset string) s q1 q2 E :
+  {{{ dir ↦{q1} S ∗ dir ↦{q2} (ReadLocked O) }}}
+    list_finish dir @ s ; E
+  {{{ (s: slice.t string) (l: Datatypes.list string), RET s;
+      ⌜ (Permutation.Permutation l (elements S)) ⌝ ∗
+      s ↦ l ∗ dir ↦{q1} S ∗ dir ↦{q2} Unlocked }}}.
+Proof.
+  iIntros (Φ) "(Hd&Hdl) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&HFS)".
+  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
+  iDestruct "Hdom" as %Hdom.
+  iDestruct (Count_GHeap.gen_heap_valid with "Hents Hd") as %Hlookup1.
+  rewrite lookup_fmap in Hlookup1.
+  eapply fmap_Some_1 in Hlookup1 as (?&?&?).
+  subst.
+  iDestruct (Count_Heap.gen_heap_valid2 with "Hdlocks Hdl") as %[s' [Hlookup2 Hl]].
+  apply Count_Heap.Cinl_included_nat' in Hl as (m&?&?); subst.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; subst; try congruence.
+    - destruct l0; simpl in *; try congruence. destruct num; try inversion Hhd_err.
+      inv_step; lia.
+    - eapply createSlice_non_err; eauto.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  iMod (Count_Heap.gen_heap_readunlock with "Hdlocks Hdl") as (s'' Heq) "(Hdlocks&Hdl)".
+  inversion Hstep; subst.
+  inv_step. unfold createSlice in Htl. do 2 (inv_step; intuition).
+  match goal with
+    | [ H:  unwrap  _ ?x1 (Val ?x2 ?res) |- _] =>
+      assert (x1 = x2)
+  end.
+  { destruct s''; inversion Hhd0; subst; eauto. }
+  subst.
+  iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
+  iFrame. iSplitR "HΦ Hd Hdl Hp"; last first.
+  { iApply "HΦ". iFrame. iSplitR; last first. iModIntro.
+    iExists _. iFrame. iPureIntro.
+    rewrite /getSliceModel sublist_lookup_all //= app_length //=. iPureIntro.
+    rewrite -map_to_list_dom_perm //.
+  }
+  simpl.
+  iFrame.
+  iSplitL.
+  { iModIntro. iApply Count_Heap.gen_heap_ctx_proper; last auto. intros k.
+    simpl. rewrite {1}/insert/Count_Heap.partial_fn_insert//=.
+    destruct s''; inversion Hhd0; inv_step; destruct equal; eauto; subst;
+    rewrite ?lookup_insert ?lookup_insert_ne //=.
+  }
+  iPureIntro. rewrite dom_insert_L. rewrite Hdom.
+    assert (dir ∈ dom (gset string) σ.(fs).(dirlocks)).
+    { apply elem_of_dom. eexists; eauto. }
+    set_solver.
+Qed.
+
 Lemma wp_newAlloc {T} s E (v: T) len :
   {{{ True }}}
     newAlloc v len @ s ; E
@@ -269,6 +766,7 @@ Proof.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
+  destruct H0 as ((?&?)&?).
   do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
   iFrame. iApply "HΦ"; eauto.
@@ -791,14 +1289,14 @@ Proof.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     destruct H0 as (?&?&?). inv_step; simpl in *; subst; try congruence.
-    destruct l; eauto; try congruence.
+    destruct l0; eauto; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_readlock (Ptr.Map T) with "Hσ Hi") as (s' Heq) "(Hσ&Hl)".
   iFrame.
-  destruct l; simpl in *; try congruence;
+  destruct l0; simpl in *; try congruence;
     inv_step; simpl; iFrame; iApply "HΦ"; iFrame; iModIntro; eauto.
 Qed.
 
@@ -823,7 +1321,7 @@ Proof.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_readunlock (Ptr.Map T) with "Hσ Hi") as (s' Heq) "(Hσ&Hl)".
   iFrame.
-  destruct l; simpl in *; try congruence;
+  destruct l0; simpl in *; try congruence;
     inv_step; simpl; iFrame.
   destruct s'; inv_step; iFrame; iApply "HΦ"; iFrame; iModIntro; eauto.
 Qed.
@@ -845,69 +1343,5 @@ Proof.
   iFrame. eauto.
 Qed.
 
-Lemma insert_flatten dents dir fname i ds:
-  dents !! dir = Some ds →
-  <[{| path.dir := dir; path.fname := fname |}:=i]> (dirent_flatten dents) =
-  dirent_flatten (<[dir:=<[fname:=i]> ds]> dents).
-Proof.
-  admit.
-Admitted.
-
-Lemma wp_create_new dir fname S s E :
-  {{{ dir ↦ S ∗ ⌜ ¬ fname ∈ S ⌝ }}}
-    create dir fname @ s ; E
-  {{{ (i: Inode) (f: File), RET (f, true);
-      f ↦ (i, Write)
-        ∗ i ↦ []
-        ∗ dir ↦ (S ∪ {[fname]})
-        ∗ {| path.dir := dir; path.fname := fname |} ↦ i
-  }}}.
-Proof.
-  iIntros (Φ) "(Hd&%) HΦ".
-  iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
-  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds)".
-  iDestruct (gen_heap_valid with "Hents Hd") as %H'.
-           rewrite lookup_fmap in H'.
-           eapply fmap_Some_1 in H' as (?&?&?).
-           subst.
-  iModIntro. iSplit.
-  { destruct s; auto. iPureIntro.
-    apply snd_lift_non_err; try (apply zoom_non_err);
-                                   let Herr := fresh "Herr" in
-                                   intros Herr.
-      inversion Herr as [Hhd_err|(?&?&Hhd&Htl_err)]; clear Herr.
-    { unfold lookup in Hhd_err. inv_step. congruence. }
-    simpl in *. unfold lookup in Hhd. inv_step.
-    rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl_err.
-    inv_step;
-    inversion Hhd_err.
-  }
-  iIntros (e2 (n', σ2) Hstep) "!>".
-  inversion Hstep; subst.
-           let Hhd := fresh "Hhd" in
-           let Htl := fresh "Htl" in
-           destruct H2 as (?&?&Hhd&Htl).
-    unfold lookup in Hhd. inv_step.
-    rewrite not_elem_of_dom in H0 * => Hsome. rewrite Hsome in Htl.
-    clear Hstep.
-  do 2 (inv_step; intuition).
-  inversion Hhd0. subst.
-  inversion Hhd. subst.
-  inversion Hhd1. inversion Hhd2. inversion Hhd3. subst.
-  iMod (gen_heap_alloc _ {| path.dir := dir; path.fname := fname |} x with "Hpaths") as "(Hpaths&Hp)".
-  { simpl. admit. }
-  iMod (gen_heap_update _ (dir) _ (dom (gset string) (<[fname := x]> x0)) with "Hents Hd") as "(?&?)".
-  iMod (gen_heap_alloc with "Hinodes") as "(?&?)".
-  eauto.
-  iMod (gen_heap_alloc with "Hfds") as "(?&?)".
-  eauto.
-  iFrame.
-  rewrite -fmap_insert.
-  simpl. simpl in *. iFrame.
-  rewrite -insert_flatten; eauto.
-  iFrame. iApply "HΦ". iFrame.
-  by rewrite dom_insert_L comm_L.
-Admitted.
 
 End lifting.

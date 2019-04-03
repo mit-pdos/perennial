@@ -16,24 +16,24 @@ Section Dynamics.
   Notation proc_seq := (proc_seq Op).
   Notation rec_seq := (rec_seq Op).
   Notation step := sem.(step).
-  Notation crash_step := sem.(lifted_crash_step).
-  Notation finish_step := sem.(lifted_finish_step).
+  Notation crash_step := (lifted_crash_step sem).
+  Notation finish_step := (lifted_finish_step sem).
   Notation State := (@State OpState).
-  Notation exec_halt := sem.(exec_halt).
-  Notation exec_partial := sem.(exec_partial).
-  Notation exec := sem.(exec).
-  Notation exec_pool := sem.(exec_pool).
-  Notation exec_seq_partial := sem.(exec_seq_partial).
-  Notation exec_seq := sem.(exec_seq).
-  Notation rexec_seq := sem.(rexec_seq).
-  Notation exec_recover1 := sem.(exec_recover1).
-  Notation exec_recover := sem.(exec_recover).
-  Notation exec_recover_partial := sem.(exec_recover_partial).
-  Notation rexec := sem.(rexec).
-  Notation rexec_partial := sem.(rexec_partial).
-  Notation rexec_seq_partial := sem.(rexec_seq_partial).
-  Notation proc_exec_seq := sem.(proc_exec_seq).
-  Notation exec_or_rexec := sem.(exec_or_rexec).
+  Notation exec_halt := (exec_halt sem).
+  Notation exec_partial := (exec_partial sem).
+  Notation exec := (exec sem).
+  Notation exec_pool := (exec_pool sem).
+  Notation exec_seq_partial := (exec_seq_partial sem).
+  Notation exec_seq := (exec_seq sem).
+  Notation rexec_seq := (rexec_seq sem).
+  Notation exec_recover1 := (exec_recover1 sem).
+  Notation exec_recover := (exec_recover sem).
+  Notation exec_recover_partial := (exec_recover_partial sem).
+  Notation rexec := (rexec sem).
+  Notation rexec_partial := (rexec_partial sem).
+  Notation rexec_seq_partial := (rexec_seq_partial sem).
+  Notation proc_exec_seq := (proc_exec_seq sem).
+  Notation exec_or_rexec := (exec_or_rexec sem).
 
   Hint Resolve rimpl_refl requiv_refl.
 
