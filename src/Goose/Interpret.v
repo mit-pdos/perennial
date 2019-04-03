@@ -1,31 +1,36 @@
-From RecoveryRefinement Require Import Spec.SemanticsHelpers.
-
 From stdpp Require Import base.
 From Tactical Require Import ProofAutomation.
 
-From RecoveryRefinement Require Import Helpers.RelationAlgebra.
-From RecordUpdate Require Import RecordSet.
-From RecoveryRefinement Require Import Helpers.RecordZoom.
+From RecordUpdate Require Import RecordSet RecordUpdate.
 
+From RecoveryRefinement Require Import Helpers.RelationAlgebra.
+From RecoveryRefinement Require Import Helpers.RecordZoom.
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
+From RecoveryRefinement Require Import Spec.SemanticsHelpers.
+From RecoveryRefinement Require Import Spec.LockDefs.
 From RecoveryRefinement Require Import Spec.Layer.
-From RecoveryRefinement Require Import Goose.Filesys Goose.Heap Goose.GoLayer.
+From RecoveryRefinement Require Import Goose.Machine Goose.Filesys Goose.Heap Goose.GoZeroValues Goose.GoLayer.
+
+Import ProcNotations.
 
 Module RTerm.
-Inductive t : Type -> Type -> Type -> Type :=
-| Pure A T : T -> t A A T
-(* | Identity A T : t A A T *)
-(* | None A B T : t A B T *)
-| Reads A T : (A -> T) -> t A A T
-| Puts A : (A -> A) -> t A A unit
-| Error A B T : t A B T
-| ReadSome A T : (A -> option T) -> t A A T
-| ReadNone A T : (A -> option T) -> t A A unit
-| AndThen A B C T1 T2 : t A B T1 -> (T1 -> t B C T2) -> t A C T2
-(* | SuchThat A T : (A -> T -> Prop) -> t A A T *)
-| NotImpl A B T (r: relation A B T) : t A B T
-.
+  Inductive t : Type -> Type -> Type -> Type :=
+  | Pure A T : T -> t A A T
+  (* | Identity A T : t A A T *)
+  (* | None A B T : t A B T *)
+  | Reads A T : (A -> T) -> t A A T
+  | Puts A : (A -> A) -> t A A unit
+  | Error A B T : t A B T
+  | ReadSome A T : (A -> option T) -> t A A T
+  | ReadNone A T : (A -> option T) -> t A A unit
+  | AndThen A B C T1 T2 : t A B T1 -> (T1 -> t B C T2) -> t A C T2
+  (* | SuchThat A T : (A -> T -> Prop) -> t A A T *)
+  (* | SuchAlloc ty (v: ty) : t FS.State FS.State (Ptr ty) *)
+  (* | UpdAllocs {model: GoModel} {model_wf: GoModelWf model} ty : Ptr ty -> t FS.State FS.State unit *)
+  (* | DelAllocs {model: GoModel} {model_wf: GoModelWf model} ty : Ptr ty -> t FS.State FS.State unit *)
+  | NotImpl A B T (r: relation A B T) : t A B T
+  .
 End RTerm.
 
 Inductive Output B T : Type :=
@@ -38,34 +43,36 @@ Arguments Success {_ _}.
 Arguments Error {_ _}.
 Arguments NotImpl {_ _}.
 
-Fixpoint interpret (A B T : Type) (r : RTerm.t A B T) (X : A) : Output B T :=
-  match r in (RTerm.t A B T) return (A -> Output B T) with
-  | RTerm.Pure A t => fun a => Success a t
-  | RTerm.Reads f => fun a => Success a (f a)
+Definition ptrMap := unit.
+
+Fixpoint interpret (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
+  match r in (RTerm.t A B T) return ((A * ptrMap) -> Output (B * ptrMap) T) with
+  | RTerm.Pure A t => fun x => Success x t
+  | RTerm.Reads f => fun x => Success x (f (fst x))
   | RTerm.ReadSome f =>
-      fun a =>
-      let t' := f a in match t' with
-                        | Some t => Success a t
+      fun x =>
+      let t' := f (fst x) in match t' with
+                        | Some t => Success x t
                         | None => Error
                         end
   | RTerm.ReadNone f =>
-      fun a =>
-      let t' := f a in match t' with
+      fun x =>
+      let t' := f (fst x) in match t' with
                         | Some t => Error
-                        | None => Success a tt
+                        | None => Success x tt
                         end
-  | RTerm.Puts f => fun a => Success (f a) tt
-  | RTerm.Error _ _ _ => fun a => Error
+  | RTerm.Puts f => fun x => Success (f (fst x), snd x) tt
+  | RTerm.Error _ _ _ => (fun x => Error)
   | RTerm.AndThen r f =>
-      fun a =>
-      let o := interpret r a in
+      fun x =>
+      let o := interpret r x in
       match o with
       | Success b t => let r' := f t in let o' := interpret r' b in o'
       | Error => Error
       | NotImpl => NotImpl
       end
-  | RTerm.NotImpl _ => fun a => NotImpl
-  end X. 
+  | RTerm.NotImpl _ => (fun x => NotImpl)
+  end X.
 
 Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   match r with
@@ -173,8 +180,8 @@ Goal False.
   test (rtermDenote ex4).
 Abort.
 
-Compute (interpret ex1 7).
-Compute (interpret ex2 7).
-Compute (interpret ex3 7).
-Compute (interpret ex4 7).
+Compute (interpret ex1 (7, tt)).
+Compute (interpret ex2 (7, tt)).
+Compute (interpret ex3 (7, tt)).
+Compute (interpret ex4 (7, tt)).
 Compute (interpret (RTerm.Error nat nat nat)).
