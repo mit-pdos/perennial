@@ -11,8 +11,6 @@ Unset Implicit Arguments.
 Existing Instance AtomicPair.Helpers.from_exist_left_sep_later.
 Existing Instance AtomicPair.Helpers.from_exist_left_sep.
 
-Canonical Structure BufStateC := leibnizC BufState.
-
 Set Default Goal Selector "!".
 
 Set Default Proof Using "Type".
@@ -22,8 +20,7 @@ Section refinement_triples.
             !inG Σ (authR (optionUR (exclR (listC (prodC natC natC))))),
             !inG Σ (authR (optionUR (exclR (listC natC)))),
             !inG Σ (authR (optionUR (exclR natC))),
-            !inG Σ (authR (optionUR (exclR boolC))),
-            !inG Σ (authR (optionUR (exclR BufStateC)))}.
+            !inG Σ (authR (optionUR (exclR boolC)))}.
   Import ExMach.
 
   Definition txn_map start (txn: nat * nat) :=
@@ -66,8 +63,7 @@ Section refinement_triples.
      end)%I.
 
   Record ghost_names :=
-    { γstate : gname;
-      γtxns : gname;
+    { γtxns : gname;
       γlog : gname;
       (* an abbreviation for log_shadow *)
       (* TODO: come up with a better name *)
@@ -1082,8 +1078,7 @@ Definition helperΣ : gFunctors :=
         GFunctor (authR (optionUR (exclR (listC (prodC natC natC)))));
         GFunctor (authR (optionUR (exclR (listC natC))));
         GFunctor (authR (optionUR (exclR natC)));
-        GFunctor (authR (optionUR (exclR boolC)));
-        GFunctor (authR (optionUR (exclR BufStateC)))
+        GFunctor (authR (optionUR (exclR boolC)))
     ].
 
 Instance subG_helperΣ1 : subG helperΣ Σ → inG Σ
@@ -1100,9 +1095,6 @@ Instance subG_helperΣ4 : subG helperΣ Σ → inG Σ
 Proof. solve_inG. Qed.
 Instance subG_helperΣ5 : subG helperΣ Σ → inG Σ
                                               (authR (optionUR (exclR boolC))).
-Proof. solve_inG. Qed.
-Instance subG_helperΣ6 : subG helperΣ Σ → inG Σ
-                                              (authR (optionUR (exclR BufStateC))).
 Proof. solve_inG. Qed.
 
 Definition myΣ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ Log.Op Log.l; lockΣ; helperΣ].
@@ -1166,20 +1158,17 @@ Proof.
   { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
     iIntros "(Hmem&Hdisk&#?&Hstate)".
     unfold ExecInner.
-    iMod (Helpers.ghost_var_alloc Empty)
-      as (γ1) "[Hownstate_auth Hownstate]".
     iMod (Helpers.ghost_var_alloc (@nil (nat*nat)))
-      as (γ2) "[Howntxns_auth Howntxns]".
+      as (γ1) "[Howntxns_auth Howntxns]".
     iMod (Helpers.ghost_var_alloc (@nil nat))
-      as (γ3) "[Hownlog_auth Hownlog]".
+      as (γ2) "[Hownlog_auth Hownlog]".
     iMod (Helpers.ghost_var_alloc (@nil nat))
-      as (γ4) "[Hownlog_sh_auth Hownlog_sh]".
+      as (γ3) "[Hownlog_sh_auth Hownlog_sh]".
     iMod (Helpers.ghost_var_alloc true)
-      as (γ5) "[Hownuse_mem_auth Hownuse_mem]".
-    iExists {| γstate := γ1;
-               γtxns := γ2;
-               γlog := γ3; γlog_sh := γ4;
-               γuse_mem := γ5 |}, nil.
+      as (γ4) "[Hownuse_mem_auth Hownuse_mem]".
+    iExists {| γtxns := γ1;
+               γlog := γ2; γlog_sh := γ3;
+               γuse_mem := γ4 |}, nil.
     unfold VolatileInv, DurableInv, Abstraction, StateLockInv, DiskLockInv; simpl.
     iPoseProof (init_disk_split with "Hdisk") as "Hdiskinv".
     iPoseProof (init_mem_split with "Hmem") as "(Hstateval&Hstateinterp&Hstatelock&Hdisklock)".
@@ -1199,21 +1188,20 @@ Proof.
     iIntros (??) "Hmem".
     iPoseProof (@init_mem_split with "Hmem") as "(Hstateval&Hstateinterp&Hstatelock&Hdisklock)".
     iMod (Helpers.ghost_var_alloc (@nil (nat*nat)))
-      as (γ2) "[Howntxns_auth Howntxns]".
+      as (γ1) "[Howntxns_auth Howntxns]".
     iClear "Hownlog_auth".
     iMod (Helpers.ghost_var_alloc log)
-      as (γ3) "[Hownlog_auth Hownlog]".
+      as (γ2) "[Hownlog_auth Hownlog]".
     iClear "Hownlog_sh_auth".
     iMod (Helpers.ghost_var_alloc (@nil nat))
-      as (γ4) "[Hownlog_sh_auth Hownlog_sh]".
+      as (γ3) "[Hownlog_sh_auth Hownlog_sh]".
     iMod (Helpers.ghost_var_alloc true)
-      as (γ5) "[Hownuse_mem_auth Hownuse_mem]".
+      as (γ4) "[Hownuse_mem_auth Hownuse_mem]".
     iPoseProof (DiskInv_forget_shadow with "Hdisk") as "Hdisk".
     unfold CrashInner, Abstraction.
-    iExists {| γstate := Γ.(γstate);
-               γtxns := γ2;
-               γlog := γ3; γlog_sh := γ4;
-               γuse_mem := γ5 |}, log.
+    iExists {| γtxns := γ1;
+               γlog := γ2; γlog_sh := γ3;
+               γuse_mem := γ4 |}, log.
     unfold VolatileInv, DurableInv, StateLockInv, DiskLockInv; simpl.
     iFrame.
     iSplitL "Habs".
@@ -1226,9 +1214,9 @@ Proof.
     iInv "Hinv" as ">Hinner" "_".
     iDestruct "Hinner" as (log) "(Hvol&Hdur&?&?&?&?&?)".
     iMod (Helpers.ghost_var_alloc (@nil (nat*nat)))
-      as (γ2) "[Howntxns_auth Howntxns]".
+      as (γ1) "[Howntxns_auth Howntxns]".
     iMod (Helpers.ghost_var_alloc true)
-      as (γ5) "[Hownuse_mem_auth Hownuse_mem]".
+      as (γ4) "[Hownuse_mem_auth Hownuse_mem]".
 
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
@@ -1236,10 +1224,9 @@ Proof.
     iModIntro.
     unfold CrashInner.
 
-    iExists {| γstate := Γ.(γstate);
-               γtxns := γ2;
+    iExists {| γtxns := γ1;
                γlog := Γ.(γlog); γlog_sh := Γ.(γlog_sh);
-               γuse_mem := γ5 |}, log.
+               γuse_mem := γ4 |}, log.
     unfold VolatileInv, DurableInv, StateLockInv; simpl; iFrame.
     iDestruct "Hdur" as "(?&?&?&?)".
     iFrame.
@@ -1259,17 +1246,16 @@ Proof.
     unfold ExecInv.
     iFrame "#".
     iMod (Helpers.ghost_var_alloc (@nil (nat*nat)))
-      as (γ2) "[Howntxns_auth Howntxns]".
+      as (γ1) "[Howntxns_auth Howntxns]".
     iMod (Helpers.ghost_var_alloc log)
-      as (γ3) "[Hownlog_auth Hownlog]".
+      as (γ2) "[Hownlog_auth Hownlog]".
     iMod (Helpers.ghost_var_alloc (@nil nat))
-      as (γ4) "[Hownlog_sh_auth Hownlog_sh]".
+      as (γ3) "[Hownlog_sh_auth Hownlog_sh]".
     iMod (Helpers.ghost_var_alloc true)
-      as (γ5) "[Hownuse_mem_auth Hownuse_mem]".
-    set (Γ' := {| γstate := Γ.(γstate);
-                  γtxns := γ2;
-                  γlog := γ3; γlog_sh := γ4;
-                  γuse_mem := γ5; |}).
+      as (γ4) "[Hownuse_mem_auth Hownuse_mem]".
+    set (Γ' := {| γtxns := γ1;
+                  γlog := γ2; γlog_sh := γ3;
+                  γuse_mem := γ4; |}).
     iDestruct "Hstateinv" as (s txns') "(Hstateval&Hstateinterp&Howntxns'&Hownuse_mem')".
     unfold VolatileInv.
     iDestruct "Hdur" as "(Hownlog_auth'&Hownlog_sh_auth'&Hownuse_mem_auth'&Hdiskinv')".
@@ -1312,20 +1298,17 @@ Proof.
     iIntros (????) "(Hsrcinv&Hsrc&Hmem)".
     iPoseProof (@init_mem_split with "Hmem") as "(Hstateval&Hstateinterp&Hstatelock&Hdisklock)".
 
-    iMod (Helpers.ghost_var_alloc Empty)
-      as (γ1) "[Hownstate_auth Hownstate]".
     iMod (Helpers.ghost_var_alloc (@nil (nat*nat)))
-      as (γ2) "[Howntxns_auth Howntxns]".
+      as (γ1) "[Howntxns_auth Howntxns]".
     iMod (Helpers.ghost_var_alloc log)
-      as (γ3) "[Hownlog_auth Hownlog]".
+      as (γ2) "[Hownlog_auth Hownlog]".
     iMod (Helpers.ghost_var_alloc (@nil nat))
-      as (γ4) "[Hownlog_sh_auth Hownlog_sh]".
+      as (γ3) "[Hownlog_sh_auth Hownlog_sh]".
     iMod (Helpers.ghost_var_alloc true)
-      as (γ5) "[Hownuse_mem_auth Hownuse_mem]".
-    iExists {| γstate := γ1;
-               γtxns := γ2;
-               γlog := γ3; γlog_sh := γ4;
-               γuse_mem := γ5 |}, log.
+      as (γ4) "[Hownuse_mem_auth Hownuse_mem]".
+    iExists {| γtxns := γ1;
+               γlog := γ2; γlog_sh := γ3;
+               γuse_mem := γ4 |}, log.
     iModIntro.
     unfold VolatileInv, DurableInv, Abstraction, StateLockInv, DiskLockInv; simpl; iFrame.
     iDestruct "Hdur" as "(_&_&_&Hdisk)".
