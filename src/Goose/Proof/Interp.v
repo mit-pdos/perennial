@@ -5,7 +5,7 @@ Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants.
 Require CSL.Count_Heap.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.Count_Ghost
                CSL.Count_Typed_Heap CSL.ThreadReg CSL.Count_Double_Heap CSL.Count_GHeap.
 From iris.proofmode Require Export tactics.
 
@@ -30,11 +30,18 @@ Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
       go_fs_fds_inG :> gen_heapG File (Inode * OpenMode) Σ;
      }.
 
+Class globalG (m: GoModel) {wf: GoModelWf m} Σ :=
+  GlobalG {
+      go_global_alg_inG :> ghost_mapG Σ;
+      go_global_name : gname;
+    }.
+
 Class gooseG (m: GoModel) {model_wf: GoModelWf m} Σ :=
   GooseG {
       go_invG : invG Σ;
       go_heap_inG :> (@gen_typed_heapG Ptr.ty Ptr ptrRawModel Σ _);
       go_fs_inG :> fsG m Σ;
+      go_global_inG :> globalG m Σ;
       go_treg_inG :> tregG Σ;
     }.
 
@@ -50,8 +57,13 @@ Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : FS.State → iProp 
    ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds))
    ∗ ⌜ dom (gset string) s.(dirents) = dom (gset string) s.(dirlocks) ⌝)%I.
 
+Definition global_interp {m Hwf Σ} (G: @globalG m Hwf Σ) :
+  Globals.State (slice.t LockRef) → iProp Σ :=
+  λ s, ghost_mapsto_auth (go_global_name) s.
+
 Definition goose_interp {m Hwf Σ} {G: @gooseG m Hwf Σ} :=
-  (λ (s: State), heap_interp (go_heap_inG) (fs s) ∗ fs_interp (go_fs_inG) (fs s))%I.
+  (λ (s: State), heap_interp (go_heap_inG) (fs s) ∗ fs_interp (go_fs_inG) (fs s)
+                 ∗ global_interp (go_global_inG) (maillocks s))%I.
 
 Instance gooseG_irisG `{gooseG Σ} : irisG GoLayer.Op GoLayer.Go.l Σ :=
   {
@@ -104,6 +116,17 @@ Definition inode_mapsto `{gooseG Σ} (i: Inode) q (bs: List.list byte) : iProp �
 
 Definition fd_mapsto `{gooseG Σ} (fd: File) q (v: Inode * OpenMode) : iProp Σ
   := mapsto (hG := go_fs_fds_inG) fd q v.
+
+Definition ghost_gen_mapsto' {A} `{gooseG Σ} (γ: gname) q (v: A) : iProp Σ
+  := ghost_mapsto γ q v.
+
+Inductive GLOBAL : Set := global.
+
+Instance ghost_gen_mapsto {A} `{gooseG Σ} : GenericMapsTo gname A
+  := {| generic_mapsto := ghost_mapsto |}.
+
+Instance global_gen_mapsto `{gooseG Σ} : GenericMapsTo GLOBAL (option (slice.t LockRef))
+  := {| generic_mapsto := λ _ q v, ghost_mapsto (go_global_name) q v|}.
 
 Instance dir_gen_mapsto `{gooseG Σ} : GenericMapsTo (string) (gset string)
   := {| generic_mapsto := dir_mapsto; |}.
@@ -173,6 +196,7 @@ Ltac inv_step :=
              let Htl := fresh "Htl" in
              destruct H as (?&?&Hhd&Htl)
                                              *)
+           | LockGlobalOp _ => destruct H as (?&?)
            | DataOp _ => destruct H as ((?&?)&?)
            end
          | [ H: (sem Go.l).(Proc.step) ?op _ Err |- _] =>
@@ -183,9 +207,19 @@ Ltac inv_step :=
                                   let Hhd := fresh "Hhd" in
                                   let Htl_err := fresh "Htl_err" in
                                   inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
+           | LockGlobalOp _ =>
+                                  let Hhd_err := fresh "Hhd_err" in
+                                  let Hhd := fresh "Hhd" in
+                                  let Htl_err := fresh "Htl_err" in
+                                  inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
            | DataOp _ => destruct H as ((?&?)&?)
            end
          | [ H : FS.step _ _ Err  |- _ ] =>
+           let Hhd_err := fresh "Hhd_err" in
+           let Hhd := fresh "Hhd" in
+           let Htl_err := fresh "Htl_err" in
+           inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
+         | [ H : Globals.step _ _ Err  |- _ ] =>
            let Hhd_err := fresh "Hhd_err" in
            let Hhd := fresh "Hhd" in
            let Htl_err := fresh "Htl_err" in
@@ -217,6 +251,10 @@ Ltac inv_step :=
            let Hhd := fresh "Hhd" in
            let Htl := fresh "Htl" in
            destruct H as (?&?&Hhd&Htl)
+         | [ H : Globals.step _ _ (Val _ _)  |- _ ] =>
+           let Hhd := fresh "Hhd" in
+           let Htl := fresh "Htl" in
+           destruct H as (?&?&Hhd&Htl)
          | [ H : and_then _ _ _ (Val _ _)  |- _ ] =>
            let Hhd := fresh "Hhd" in
            let Htl := fresh "Htl" in
@@ -244,12 +282,18 @@ Ltac inv_step :=
            let Heq := fresh "Heq" in
            let fsName := fresh "fs" in
            remember (σ2.(fs)) as fsName eqn:Heq; clear Heq; subst
+         | [ H : ?σ2 = RecordSet.set maillocks (λ _, ?σ2.(maillocks)) ?σ |- _ ] =>
+           let Heq := fresh "Heq" in
+           let fsName := fresh "ml" in
+           remember (σ2.(maillocks)) as fsName eqn:Heq; clear Heq; subst
          | [ H : context[let '(s, alloc) := ?x in _] |- _] => destruct x
          | [ H : lock_acquire _ Unlocked = Some _ |- _ ] => inversion H; subst; clear H
          | [ H : lock_acquire Writer _ = Some _ |- _ ] =>
            apply lock_acquire_writer_inv in H as (?&?)
          | [ H : lock_available Reader _ = None |- _ ] =>
            apply lock_available_reader_fail_inv in H
+         | [ H : reads _ _ _ |- _ ] =>
+           unfold reads in H
          | [ H : delAllocs _ _ (Val _ _) |- _ ] =>
            inversion H; subst; clear H
          | [ H : updAllocs _ _ _ (Val _ _) |- _ ] =>
@@ -293,6 +337,47 @@ Lemma wp_wait s E :
   {{{ ▷ Registered }}} Wait @ s; E {{{ RET tt; AllDone }}}.
 Proof. eapply wp_wait; eauto using thread_reg1, thread_reg2. Qed.
 
+Lemma wp_setX (l: slice.t LockRef) s E :
+  {{{ global ↦ None }}}
+    Globals.setX l @ s; E
+  {{{ RET tt; global ↦ Some l }}}.
+Proof.
+  iIntros (Φ) "Hp HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&?&HG)".
+  iDestruct (ghost_var_agree with "HG Hp") as %Heq.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; try congruence.
+    inversion Hhd. subst. rewrite Heq in Htl_err. inv_step.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. inversion Hhd; subst. rewrite Heq in Htl. inv_step.
+  iMod (ghost_var_update _ (Some l) with "HG Hp") as "(HG&HP)".
+  iFrame. by iApply "HΦ".
+Qed.
+
+Lemma wp_getX (l: slice.t LockRef) q s E :
+  {{{ global ↦{q} Some l }}}
+    Globals.getX @ s; E
+  {{{ RET l; global ↦{q} Some l }}}.
+Proof.
+  iIntros (Φ) "Hp HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&?&?&HG)".
+  iDestruct (ghost_var_agree with "HG Hp") as %Heq.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; try congruence.
+    rewrite Heq in Herr. inversion Herr.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. rewrite Heq in H0. rewrite Heq. inversion H0; subst.
+  iFrame. by iApply "HΦ".
+Qed.
+
 Lemma wp_link_new dir1 name1 dir2 name2 (inode: Inode) S s E :
   {{{ (path.mk dir1 name1) ↦ inode
       ∗ dir2 ↦ S
@@ -307,7 +392,7 @@ Lemma wp_link_new dir1 name1 dir2 name2 (inode: Inode) S s E :
 Proof.
   iIntros (Φ) "(Hp&Hd&%) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
+  iIntros ((n, σ)) "(?&?&HFS&?)".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
   iDestruct (gen_heap_valid with "Hents Hd") as %Hset.
   rewrite lookup_fmap in Hset.
@@ -359,7 +444,7 @@ Lemma wp_link_not_new dir1 name1 dir2 name2 (inode: Inode) S s E :
 Proof.
   iIntros (Φ) "(Hp&Hd&%) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
+  iIntros ((n, σ)) "(?&?&HFS&?)".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
   iDestruct (gen_heap_valid with "Hents Hd") as %Hset.
   rewrite lookup_fmap in Hset.
@@ -408,7 +493,7 @@ Lemma wp_readAt fh (inode: Inode) (bs: Datatypes.list byte) off len q1 q2 s E :
 Proof.
   iIntros (Φ) "(Hfh&Hi) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ&HFS)".
+  iIntros ((n, σ)) "(?&Hσ&HFS&?)".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
   iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
   iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
@@ -445,7 +530,7 @@ Lemma wp_append fh (inode: Inode) (p': slice.t byte) (bs bs': Datatypes.list byt
 Proof.
   iIntros (Φ) "(Hfh&Hi&Hp) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ&HFS)".
+  iIntros ((n, σ)) "(?&Hσ&HFS&?)".
   iDestruct "Hp" as (vs Heq) "Hp".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
   iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
@@ -484,7 +569,7 @@ Lemma wp_create_new dir fname S s E :
 Proof.
   iIntros (Φ) "(Hd&%) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
+  iIntros ((n, σ)) "(?&?&HFS&?)".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
   iDestruct (gen_heap_valid with "Hents Hd") as %H'.
   rewrite lookup_fmap in H'.
@@ -526,7 +611,7 @@ Lemma wp_create_not_new dir fname S s E :
 Proof.
   iIntros (Φ) "(Hd&%) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
+  iIntros ((n, σ)) "(?&?&HFS&?)".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?)".
   iDestruct (gen_heap_valid with "Hents Hd") as %H'.
   rewrite lookup_fmap in H'.
@@ -556,7 +641,7 @@ Lemma wp_open dir fname inode q s E :
 Proof.
   iIntros (Φ) "Hd HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
+  iIntros ((n, σ)) "(?&?&HFS&?)".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?)".
   iDestruct (gen_dir_valid with "Hpaths Hd") as %H'.
   simpl in H'. destruct H' as (σd&Hd&Hf).
@@ -578,7 +663,7 @@ Lemma wp_close fh m s E :
 Proof.
   iIntros (Φ) "Hd HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
+  iIntros ((n, σ)) "(?&?&HFS&?)".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?)".
   iDestruct (gen_heap_valid with "Hfds Hd") as %H'.
   simpl in H'.
@@ -600,7 +685,7 @@ Lemma wp_list_start dir (S: gset string) s q E :
 Proof.
   iIntros (Φ) "Hdl HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
+  iIntros ((n, σ)) "(?&?&HFS&?)".
   iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
   iDestruct "Hdom" as %Hdom.
   iDestruct (Count_Heap.gen_heap_valid with "Hdlocks Hdl") as %[s' [Hlookup Hnl]].
@@ -662,7 +747,7 @@ Lemma wp_delete dir fname (S: gset string) (inode: Inode) s E :
 Proof.
   iIntros (Φ) "(Hd&Hdl&Hp) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&?&HFS)".
+  iIntros ((n, σ)) "(?&?&HFS&?)".
   iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
   iDestruct "Hdom" as %Hdom.
   iDestruct (Count_Heap.gen_heap_valid1 with "Hdlocks Hdl") as %?.
@@ -703,7 +788,7 @@ Lemma wp_list_finish dir (S: gset string) s q1 q2 E :
 Proof.
   iIntros (Φ) "(Hd&Hdl) HΦ".
   iApply wp_lift_call_step.
-  iIntros ((n, σ)) "(?&Hσ&HFS)".
+  iIntros ((n, σ)) "(?&Hσ&HFS&?)".
   iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
   iDestruct "Hdom" as %Hdom.
   iDestruct (Count_GHeap.gen_heap_valid with "Hents Hd") as %Hlookup1.

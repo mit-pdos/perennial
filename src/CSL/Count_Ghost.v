@@ -4,6 +4,7 @@ From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre CSL.ProofModeClasses.
+Require Eqdep.
 
 Definition ghost_tagged_type := {X: Type & X}.
 Global Instance ghost_tagged_Equiv : @Equiv ghost_tagged_type := (=).
@@ -51,7 +52,6 @@ Proof.
   iModIntro. iExists γ. iFrame.
 Qed.
 
-Require Eqdep.
 
 Lemma ghost_var_agree {A} γ (a1 a2: A) q :
   γ ●↦ a1 -∗ γ ↦{q} a2 -∗ ⌜ a1 = a2 ⌝.
