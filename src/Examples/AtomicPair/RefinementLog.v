@@ -5,6 +5,8 @@ Require Import AtomicPair.Helpers.
 Set Default Proof Using "All".
 Unset Implicit Arguments.
 
+From Tactical Require Import UnfoldLemma.
+
 Local Ltac destruct_ex_commit_inner H :=
   iDestruct H as ">H";
   iDestruct "H" as (????) "H".
@@ -44,13 +46,7 @@ Section refinement_triples.
       (fst je) ⤇ projT2 (snd je))%I.
 
   (* TODO: iFrame is too aggressive if this is transparent *)
-  Lemma someone_writing_unfold P p je :
-    someone_writing P p je =
-    (∃ (K: proc AtomicPair.Op unit → proc AtomicPair.Op (projT1 (snd je)))
-        `{LanguageCtx AtomicPair.Op unit (projT1 (snd je)) AtomicPair.l K},
-     P ∗  ⌜ projT2 (snd je) = K (Call (AtomicPair.Write p)) ⌝ ∗
-      (fst je) ⤇ projT2 (snd je))%I.
-  Proof. done. Qed.
+  Definition someone_writing_unfold P p je := unfold_lemma (someone_writing P p je).
 
   Global Instance someone_writing_timeless : Timeless P → Timeless (someone_writing P p je).
   Proof. apply _. Qed.
