@@ -74,10 +74,14 @@ Module Mail.
         puts (set messages <[ uid := (s, <[ n := msg ]> msgs) ]>)
     | Delete uid msg =>
       let! (s, msgs) <- lookup messages uid;
-           _ <- Filesys.FS.unwrap (lock_available Writer s);
-        (* TODO: move unwrap out of Filesys *)
-        _ <- Filesys.FS.unwrap (msgs !! msg);
-        puts (set messages <[ uid := (s, delete msg msgs) ]>)
+           match s with
+           | Locked =>
+             _ <- Filesys.FS.unwrap (msgs !! msg);
+               puts (set messages <[ uid := (s, delete msg msgs) ]>)
+           (* the lock will never be read locked, but for convenience we
+              consider that an error as well *)
+           | _ => error
+           end
     | Unlock uid =>
       let! (s, msgs) <- lookup messages uid;
            s <- Filesys.FS.unwrap (lock_release Writer s);
