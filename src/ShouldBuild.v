@@ -11,6 +11,7 @@ From RecoveryRefinement Require Import Examples.StatDb.Refinement.
 From RecoveryRefinement Require Import Examples.AtomicPair.RefinementShadow.
 From RecoveryRefinement Require Import Examples.AtomicPair.RefinementLog.
 From RecoveryRefinement Require Import Examples.Logging.LogRefinement.
+From RecoveryRefinement Require Import Examples.MailServer.MailAPI.
 
 (* goose output *)
 From RecoveryRefinement Require Import Goose.Examples.UnitTests.

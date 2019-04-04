@@ -18,12 +18,13 @@ Module Mail.
   | Pickup uid : Op (slice.t Message.t)
   | Deliver uid (msg: slice.t byte) : Op unit
   | Delete uid (msgID: string) : Op unit
+  | Unlock uid : Op unit
   | DataOp T (op: Data.Op T) : Op T
   .
 
   Record State : Type :=
     { heap: Data.State;
-      messages: gmap.gmap uint64 (gmap.gmap string (list byte)); }.
+      messages: gmap.gmap uint64 (LockStatus * gmap.gmap string (list byte)); }.
 
   Global Instance etaState : Settable _ :=
     settable! Build_State <heap; messages>.
@@ -61,21 +62,26 @@ Module Mail.
   Definition step T (op: Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | Pickup uid =>
-      msgs <- lookup messages uid;
+      let! (s, msgs) <- lookup messages uid;
+           s <- Filesys.FS.unwrap (lock_acquire Writer s);
+           _ <- puts (set messages <[uid := (s, msgs)]>);
         messageData <- createMessages (map_to_list msgs);
         createSlice messageData
     | Deliver uid msg =>
-      msgs <- lookup messages uid;
+      let! (s, msgs) <- lookup messages uid;
         n <- such_that (fun _ (n: string) => msgs !! n = None);
         msg <- readSlice msg;
-        puts (set messages <[ uid := <[ n := msg ]> msgs ]>)
+        puts (set messages <[ uid := (s, <[ n := msg ]> msgs) ]>)
     | Delete uid msg =>
-      msgs <- lookup messages uid;
-        (* TODO: would be nice to make this not error; filesystem would have to
-        expose delete errors rather than forbid them *)
+      let! (s, msgs) <- lookup messages uid;
+           _ <- Filesys.FS.unwrap (lock_available Writer s);
         (* TODO: move unwrap out of Filesys *)
         _ <- Filesys.FS.unwrap (msgs !! msg);
-        puts (set messages <[ uid := delete msg msgs ]>)
+        puts (set messages <[ uid := (s, delete msg msgs) ]>)
+    | Unlock uid =>
+      let! (s, msgs) <- lookup messages uid;
+           s <- Filesys.FS.unwrap (lock_release Writer s);
+           puts (set messages <[uid := (s, msgs)]>)
     | DataOp op => _zoom heap (Data.step op)
     end.
 
@@ -90,7 +96,7 @@ Module Mail.
   Definition initP (s:State) :=
     s.(heap) = ∅ /\
     (forall (uid: uint64),
-        (uid < 100 -> s.(messages) !! uid = Some ∅) /\
+        (uid < 100 -> s.(messages) !! uid = Some (Unlocked, ∅)) /\
         (uid >= 100 -> s.(messages) !! uid = None)).
 
   Definition l : Layer Op.
