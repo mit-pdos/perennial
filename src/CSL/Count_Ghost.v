@@ -5,6 +5,7 @@ From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre CSL.ProofModeClasses.
 Require Eqdep.
+Import uPred.
 
 Definition ghost_tagged_type := {X: Type & X}.
 Global Instance ghost_tagged_Equiv : @Equiv ghost_tagged_type := (=).
@@ -66,6 +67,30 @@ Proof.
     apply Eqdep.EqdepTheory.inj_pair2 in Heq2'. subst. eauto.
   - apply prod_included in Hincl as (?&Heq2'%to_agree_included).
     apply Eqdep.EqdepTheory.inj_pair2 in Heq2'. subst. eauto.
+Qed.
+
+Lemma ghost_var_agree2 {A} γ (a1 a2: A) q1 q2 :
+  γ ↦{q1} a1 -∗ γ ↦{q2} a2 -∗ ⌜ a1 = a2 ⌝.
+Proof.
+  apply wand_intro_r.
+  rewrite -own_op -auth_frag_op own_valid discrete_valid.
+  f_equiv=> /auth_own_valid /=.
+  rewrite -Some_op pair_op.
+  intros [_ Heq%agree_op_invL'].
+  apply Eqdep.EqdepTheory.inj_pair2 in Heq. eauto.
+Qed.
+
+Lemma read_split_join {A} γ (n: nat) (v: A):
+  γ ↦{n} v ⊣⊢ γ ↦{S n} v ∗ γ ↦{-1} v.
+Proof.
+  rewrite -own_op -auth_frag_op /ghost_mapsto.
+  f_equiv. rewrite -Some_op ?pair_op.
+  rewrite counting_op' //=.
+  replace (S n + (-1))%Z with (n : Z) by lia.
+  assert (0 ⋅ S n = (S n)) as Hop by auto.
+  replace (S n + (-1))%Z with (n : Z) by lia.
+  repeat (destruct (decide)); try lia.
+  rewrite agree_idemp //=.
 Qed.
 
 Lemma ghost_var_update {A} γ (a1' a1 a2 : A) :

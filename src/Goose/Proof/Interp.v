@@ -28,6 +28,8 @@ Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
       go_fs_paths_inG :> gen_dirG string string (Inode) Σ;
       go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
       go_fs_fds_inG :> gen_heapG File (Inode * OpenMode) Σ;
+      go_fs_domalg_inG :> ghost_mapG Σ;
+      go_fs_dom_name : gname;
      }.
 
 Class globalG (m: GoModel) {wf: GoModelWf m} Σ :=
@@ -55,6 +57,8 @@ Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : FS.State → iProp 
    ∗ (gen_dir_ctx (hG := go_fs_paths_inG) s.(dirents))
    ∗ (gen_heap_ctx (hG := go_fs_inodes_inG) s.(inodes))
    ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds))
+   ∗ (∃ n: nat, ghost_mapsto (go_fs_dom_name) n
+                             (fst <$> map_to_list s.(dirents) : Datatypes.list string))
    ∗ ⌜ dom (gset string) s.(dirents) = dom (gset string) s.(dirlocks) ⌝)%I.
 
 Definition global_interp {m Hwf Σ} (G: @globalG m Hwf Σ) :
@@ -393,7 +397,7 @@ Proof.
   iIntros (Φ) "(Hp&Hd&%) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&HFS&?)".
-  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?&%)".
   iDestruct (gen_heap_valid with "Hents Hd") as %Hset.
   rewrite lookup_fmap in Hset.
   eapply fmap_Some_1 in Hset as (?&?&?).
