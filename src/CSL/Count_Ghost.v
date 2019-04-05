@@ -10,8 +10,15 @@ Import uPred.
 Class ghost_mapG (A: ofeT) Σ `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A} :=
   { ghost_map_inG :> inG Σ (authR (optionUR (prodR countingR (agreeR A)))) }.
 
+Definition ghost_mapΣ (A: ofeT) `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A} : gFunctors :=
+  #[GFunctor (authR (optionUR (prodR countingR (agreeR A))))].
+
+Instance subG_ghost_mapG (A: ofeT) Σ `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A} :
+  subG (ghost_mapΣ A) Σ → ghost_mapG A Σ.
+Proof. solve_inG. Qed.
+
 Section ghost_var_helpers.
-Context {A: ofeT} `{@ghost_mapG A Σ H1 H2}.
+Context {A: ofeT} `{hGMG: @ghost_mapG A Σ H1 H2}.
 
 
 Definition ghost_mapsto (γ: gname) (n: Z) (v : A) : iProp Σ :=
