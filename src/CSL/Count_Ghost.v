@@ -7,28 +7,18 @@ Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre CSL.ProofModeC
 Require Eqdep.
 Import uPred.
 
-Definition ghost_tagged_type := {X: Type & X}.
-Global Instance ghost_tagged_Equiv : @Equiv ghost_tagged_type := (=).
-Global Instance ghost_tagged_equiv : @Equivalence ghost_tagged_type (=).
-Proof. apply _. Qed.
-(*
-  split.
-  - intros ?. rewrite /ghost_tagged_Equiv. econstructor. trivial. reflexivity. eauto. intros (X&Ix). exists (Logic.eq_refl) => //=.
-  - intros (X&Ix) (Y&Iy) (HeqTy&Heq).
-    exists (Logic.eq_sym HeqTy); destruct HeqTy => //=.
-  - intros (X&Ix) (Y&Iy) (Z&Iz) (HeqTy1&Heq1) (HeqTy2&Heq2).
-    destruct HeqTy1, HeqTy2; exists (Logic.eq_refl) => //=.
-    etransitivity; eauto.
-Qed.
-*)
+Class ghost_mapG (A: ofeT) Σ `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A} :=
+  { ghost_map_inG :> inG Σ (authR (optionUR (prodR countingR (agreeR A)))) }.
 
-Class ghost_mapG Σ :=
-  { ghost_map_inG :> inG Σ (authR (optionUR (prodR countingR (agreeR (discreteC ghost_tagged_type))))) }.
+Section ghost_var_helpers.
+Context {A: ofeT} `{@ghost_mapG A Σ H1 H2}.
 
-Definition ghost_mapsto `{ghost_mapG Σ} {A: Type} (γ: gname) (n: Z) (v : A) : iProp Σ :=
-  (own γ (◯ Some (Count n, to_agree (existT A v : discreteC ghost_tagged_type))))%I.
-Definition ghost_mapsto_auth `{ghost_mapG Σ} {A: Type} (γ: gname) (v : A) : iProp Σ :=
-  (own γ (● Some (Count 0, to_agree (existT A v : discreteC ghost_tagged_type))))%I.
+
+Definition ghost_mapsto (γ: gname) (n: Z) (v : A) : iProp Σ :=
+  (own γ (◯ Some (Count n, to_agree v)))%I.
+Definition ghost_mapsto_auth (γ: gname) (v : A) : iProp Σ :=
+  (own γ (● Some (Count 0, to_agree v))).
+End ghost_var_helpers.
 
 Local Notation "l ●↦ v" := (ghost_mapsto_auth l v)
   (at level 20, format "l  ●↦  v") : bi_scope.
@@ -41,20 +31,20 @@ Local Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
 Local Notation "l ↦ -" := (l ↦{0} -)%I (at level 20) : bi_scope.
 
 Section ghost_var_helpers.
-Context {Σ} `{ghost_mapG Σ}.
+Context {A} {Σ}  `{ghost_mapG A Σ}.
 
-Lemma ghost_var_alloc {A} (a: A):
+Lemma ghost_var_alloc (a: A):
   (|==> ∃ γ, γ ●↦ a ∗ γ ↦ a)%I.
 Proof.
-  iMod (own_alloc (● (Some (Count 0, to_agree (existT A a : discreteC ghost_tagged_type))) ⋅
-                   ◯ (Some (Count 0, to_agree (existT A a : discreteC ghost_tagged_type)))))
+  iMod (own_alloc (● (Some (Count 0, to_agree a)) ⋅
+                   ◯ (Some (Count 0, to_agree a))))
     as (γ) "[H1 H2]".
   { apply auth_valid_discrete_2; split; eauto. split; econstructor. }
   iModIntro. iExists γ. iFrame.
 Qed.
 
 
-Lemma ghost_var_agree {A} γ (a1 a2: A) q :
+Lemma ghost_var_agree γ (a1 a2: A) q :
   γ ●↦ a1 -∗ γ ↦{q} a2 -∗ ⌜ a1 = a2 ⌝.
 Proof.
   iIntros "Hγ1 Hγ2".
@@ -63,24 +53,21 @@ Proof.
   apply option_included in Hincl as [|(p1&p2&Heq1&Heq2&Hcase)]; first by congruence.
   inversion Heq1; subst. inversion Heq2; subst.
   destruct Hcase as [(Heq1'&Heq2')|Hincl].
-  - apply to_agree_inj in Heq2'.
-    apply Eqdep.EqdepTheory.inj_pair2 in Heq2'. subst. eauto.
-  - apply prod_included in Hincl as (?&Heq2'%to_agree_included).
-    apply Eqdep.EqdepTheory.inj_pair2 in Heq2'. subst. eauto.
+  - apply to_agree_inj in Heq2'. eauto.
+  - apply prod_included in Hincl as (?&Heq2'%to_agree_included); eauto.
 Qed.
 
-Lemma ghost_var_agree2 {A} γ (a1 a2: A) q1 q2 :
+Lemma ghost_var_agree2 γ (a1 a2: A) q1 q2 :
   γ ↦{q1} a1 -∗ γ ↦{q2} a2 -∗ ⌜ a1 = a2 ⌝.
 Proof.
   apply wand_intro_r.
   rewrite -own_op -auth_frag_op own_valid discrete_valid.
   f_equiv=> /auth_own_valid /=.
   rewrite -Some_op pair_op.
-  intros [_ Heq%agree_op_invL'].
-  apply Eqdep.EqdepTheory.inj_pair2 in Heq. eauto.
+  intros [_ Heq%agree_op_invL']. eauto.
 Qed.
 
-Lemma read_split_join {A} γ (n: nat) (v: A):
+Lemma read_split_join γ (n: nat) (v: A):
   γ ↦{n} v ⊣⊢ γ ↦{S n} v ∗ γ ↦{-1} v.
 Proof.
   rewrite -own_op -auth_frag_op /ghost_mapsto.
@@ -93,19 +80,19 @@ Proof.
   rewrite agree_idemp //=.
 Qed.
 
-Lemma ghost_var_update {A} γ (a1' a1 a2 : A) :
+Lemma ghost_var_update γ (a1' a1 a2 : A) :
   γ ●↦ a1 -∗ γ ↦ a2 ==∗ γ ●↦ a1' ∗ γ ↦ a1'.
 Proof.
   iIntros "Hγ● Hγ◯".
   iMod (own_update_2 _ _ _
-                     (● (Some (Count 0, to_agree (existT A a1' : discreteC ghost_tagged_type))) ⋅
-                      ◯ (Some (Count 0, to_agree (existT A a1' : discreteC ghost_tagged_type))))
+                     (● (Some (Count 0, to_agree a1')) ⋅
+                      ◯ (Some (Count 0, to_agree a1')))
                         with "Hγ● Hγ◯") as "[$$]".
   { by apply auth_update, option_local_update, exclusive_local_update. }
   done.
 Qed.
 
-Lemma named_ghost_var_update {A} γ (a1' a1 a2 : A) i1 i2 :
+Lemma named_ghost_var_update γ (a1' a1 a2 : A) i1 i2 :
   named i1 (γ ●↦ a1) -∗ named i2 (γ ↦ a2)
         ==∗ named i1 (γ ●↦ a1') ∗ named i2 (γ ↦ a1').
 Proof. unbundle_names; apply ghost_var_update. Qed.
@@ -132,8 +119,8 @@ Ltac unify_ghost :=
 
 Module test.
 Section test.
-Context {Σ} `{ghost_mapG Σ}.
-Lemma test {A} γ q (v1 v2: A) : γ ●↦ v1 -∗ γ ↦{q} v2 -∗ ⌜ v1 = v2 ⌝.
+Context {Σ} `{ghost_mapG A Σ}.
+Lemma test γ q (v1 v2: A) : γ ●↦ v1 -∗ γ ↦{q} v2 -∗ ⌜ v1 = v2 ⌝.
 Proof. iIntros "H1 H2". by unify_ghost. Qed.
 End test.
 End test.

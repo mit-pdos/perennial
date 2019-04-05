@@ -28,13 +28,15 @@ Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
       go_fs_paths_inG :> gen_dirG string string (Inode) Σ;
       go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
       go_fs_fds_inG :> gen_heapG File (Inode * OpenMode) Σ;
-      go_fs_domalg_inG :> ghost_mapG Σ;
+      go_fs_domalg_inG :> ghost_mapG (discreteC (gset string)) Σ;
       go_fs_dom_name : gname;
      }.
 
+Canonical Structure sliceLockC {m: GoModel} {wf: GoModelWf m} := leibnizC (option (slice.t LockRef)).
+
 Class globalG (m: GoModel) {wf: GoModelWf m} Σ :=
   GlobalG {
-      go_global_alg_inG :> ghost_mapG Σ;
+      go_global_alg_inG :> ghost_mapG (discreteC sliceLockC) Σ;
       go_global_name : gname;
     }.
 
@@ -57,13 +59,13 @@ Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : FS.State → iProp 
    ∗ (gen_dir_ctx (hG := go_fs_paths_inG) s.(dirents))
    ∗ (gen_heap_ctx (hG := go_fs_inodes_inG) s.(inodes))
    ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds))
-   ∗ (∃ n: nat, ghost_mapsto (go_fs_dom_name) n
-                             (fst <$> map_to_list s.(dirents) : Datatypes.list string))
+   ∗ (∃ n: nat, ghost_mapsto (A := discreteC (gset string))
+                             (go_fs_dom_name) n (dom (gset string) s.(dirents)))
    ∗ ⌜ dom (gset string) s.(dirents) = dom (gset string) s.(dirlocks) ⌝)%I.
 
 Definition global_interp {m Hwf Σ} (G: @globalG m Hwf Σ) :
   Globals.State (slice.t LockRef) → iProp Σ :=
-  λ s, ghost_mapsto_auth (go_global_name) s.
+  λ s, ghost_mapsto_auth (A := discreteC (@sliceLockC m Hwf)) (go_global_name) s.
 
 Definition goose_interp {m Hwf Σ} {G: @gooseG m Hwf Σ} :=
   (λ (s: State), heap_interp (go_heap_inG) (fs s) ∗ fs_interp (go_fs_inG) (fs s)
@@ -121,16 +123,21 @@ Definition inode_mapsto `{gooseG Σ} (i: Inode) q (bs: List.list byte) : iProp �
 Definition fd_mapsto `{gooseG Σ} (fd: File) q (v: Inode * OpenMode) : iProp Σ
   := mapsto (hG := go_fs_fds_inG) fd q v.
 
+(*
 Definition ghost_gen_mapsto' {A} `{gooseG Σ} (γ: gname) q (v: A) : iProp Σ
   := ghost_mapsto γ q v.
+*)
 
 Inductive GLOBAL : Set := global.
 
+(*
 Instance ghost_gen_mapsto {A} `{gooseG Σ} : GenericMapsTo gname A
   := {| generic_mapsto := ghost_mapsto |}.
+*)
 
-Instance global_gen_mapsto `{gooseG Σ} : GenericMapsTo GLOBAL (option (slice.t LockRef))
-  := {| generic_mapsto := λ _ q v, ghost_mapsto (go_global_name) q v|}.
+Program Instance global_gen_mapsto `{gooseG Σ} : GenericMapsTo GLOBAL (option (slice.t LockRef))
+  := {| generic_mapsto := λ _ q v,
+                          (ghost_mapsto (A := discreteC (@sliceLockC _ _)) (go_global_name) q v)|}.
 
 Instance dir_gen_mapsto `{gooseG Σ} : GenericMapsTo (string) (gset string)
   := {| generic_mapsto := dir_mapsto; |}.
@@ -349,7 +356,7 @@ Proof.
   iIntros (Φ) "Hp HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&?&HG)".
-  iDestruct (ghost_var_agree with "HG Hp") as %Heq.
+  iDestruct (ghost_var_agree (A := discreteC sliceLockC) with "HG Hp") as %Heq.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; try congruence.
@@ -358,7 +365,7 @@ Proof.
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   inv_step. inversion Hhd; subst. rewrite Heq in Htl. inv_step.
-  iMod (ghost_var_update _ (Some l) with "HG Hp") as "(HG&HP)".
+  iMod (ghost_var_update (A := discreteC sliceLockC) _ (Some l) with "HG Hp") as "(HG&HP)".
   iFrame. by iApply "HΦ".
 Qed.
 
@@ -370,7 +377,7 @@ Proof.
   iIntros (Φ) "Hp HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&?&HG)".
-  iDestruct (ghost_var_agree with "HG Hp") as %Heq.
+  iDestruct (ghost_var_agree (A := discreteC sliceLockC) with "HG Hp") as %Heq.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; try congruence.
@@ -380,6 +387,13 @@ Proof.
   inversion Hstep; subst.
   inv_step. rewrite Heq in H0. rewrite Heq. inversion H0; subst.
   iFrame. by iApply "HΦ".
+Qed.
+
+Lemma dom_insert_L_in {K A} `{Countable K} (m: gmap K A) (i: K) (x: A):
+  i ∈ dom (gset K) m →
+  dom (gset K) (<[i:=x]> m) = dom (gset K) m.
+Proof.
+  rewrite dom_insert_L. intros. set_solver.
 Qed.
 
 Lemma wp_link_new dir1 name1 dir2 name2 (inode: Inode) S s E :
@@ -424,14 +438,14 @@ Proof.
   inv_step.
   do 2 (inv_step; intuition).
   iMod (gen_dir_alloc2 _ _ dir2 name2 _ with "Hpaths") as "(Hpaths&Hp2)"; eauto.
-  iMod (gen_heap_update _ (dir2) _ (dom (gset string) (<[name2 := _]> x4)) with "Hents Hd") as "(?&?)".
+  iMod (gen_heap_update _ (dir2) _ (dom (gset string) (<[name2 := _]> x4))
+          with "Hents Hd") as "(?&?)".
   iFrame.
-  rewrite -fmap_insert. iFrame. simpl. iFrame.
-  iSplitL "".
-  { simpl. rewrite dom_insert_L. iPureIntro. simpl in *. rewrite -H1.
-    assert (dir2 ∈ dom (gset string) σ.(fs).(dirents)).
-    { apply elem_of_dom. eexists; eauto. }
-     set_solver. }
+  rewrite -fmap_insert. iFrame. simpl.
+  rewrite ?(dom_insert_L_in _ dir2); last first.
+  { apply elem_of_dom. eexists; eauto. }
+  iFrame.
+  iSplitL ""; auto.
   iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
 Qed.
 
@@ -449,7 +463,7 @@ Proof.
   iIntros (Φ) "(Hp&Hd&%) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&HFS&?)".
-  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?&%)".
   iDestruct (gen_heap_valid with "Hents Hd") as %Hset.
   rewrite lookup_fmap in Hset.
   eapply fmap_Some_1 in Hset as (?&?&?).
@@ -498,7 +512,7 @@ Proof.
   iIntros (Φ) "(Hfh&Hi) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&HFS&?)".
-  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?&%)".
   iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
   iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
   iModIntro. iSplit.
@@ -536,7 +550,7 @@ Proof.
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&HFS&?)".
   iDestruct "Hp" as (vs Heq) "Hp".
-  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?&%)".
   iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
   iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
   iDestruct (gen_typed_heap_valid (Ptr.Heap byte) with "Hσ Hp") as %[s' [? ?]].
@@ -574,7 +588,7 @@ Proof.
   iIntros (Φ) "(Hd&%) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&HFS&?)".
-  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&%)".
+  iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?&%)".
   iDestruct (gen_heap_valid with "Hents Hd") as %H'.
   rewrite lookup_fmap in H'.
   eapply fmap_Some_1 in H' as (?&?&?).
@@ -596,11 +610,11 @@ Proof.
   iMod (gen_heap_alloc with "Hfds") as "(?&?)"; first eauto.
   iFrame.
   rewrite -fmap_insert. iFrame.
-  iSplitL "".
-  { simpl. rewrite dom_insert_L. iPureIntro. simpl in *. rewrite -H1.
-    assert (dir ∈ dom (gset string) σ.(fs).(dirents)).
-    { apply elem_of_dom. eexists; eauto. }
-     set_solver. }
+  simpl.
+  rewrite ?(dom_insert_L_in _ dir); last first.
+  { apply elem_of_dom. eexists; eauto. }
+  iFrame.
+  iSplitL ""; auto.
   iApply "HΦ". iFrame. by rewrite dom_insert_L comm_L.
 Qed.
 
@@ -690,7 +704,7 @@ Proof.
   iIntros (Φ) "Hdl HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&HFS&?)".
-  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
+  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&?&Hdom)".
   iDestruct "Hdom" as %Hdom.
   iDestruct (Count_Heap.gen_heap_valid with "Hdlocks Hdl") as %[s' [Hlookup Hnl]].
   simpl in Hlookup.
@@ -752,7 +766,7 @@ Proof.
   iIntros (Φ) "(Hd&Hdl&Hp) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&HFS&?)".
-  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
+  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&?&Hdom)".
   iDestruct "Hdom" as %Hdom.
   iDestruct (Count_Heap.gen_heap_valid1 with "Hdlocks Hdl") as %?.
   iDestruct (gen_dir_valid with "Hpaths Hp") as %H'.
@@ -775,11 +789,10 @@ Proof.
   simpl. iFrame.
   iMod (gen_heap_update _ (dir) _ (dom (gset string) (map_delete fname _)) with "Hents Hd") as "(?&?)".
   rewrite fmap_insert. iFrame.
-  iSplitL "".
-  { simpl. rewrite dom_insert_L. iPureIntro. rewrite -Hdom.
-    assert (dir ∈ dom (gset string) σ.(fs).(dirents)).
-    { apply elem_of_dom. eexists; eauto. }
-     set_solver. }
+  simpl. rewrite ?(dom_insert_L_in _ dir) ; last first.
+  { apply elem_of_dom. eexists; eauto. }
+  iFrame.
+  iSplitL ""; auto.
   iApply "HΦ". iFrame. rewrite dom_delete_L. by iFrame.
 Qed.
 
@@ -793,7 +806,7 @@ Proof.
   iIntros (Φ) "(Hd&Hdl) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&HFS&?)".
-  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&Hdom)".
+  iDestruct "HFS" as "(Hents&Hdlocks&Hpaths&Hinodes&Hfds&?&Hdom)".
   iDestruct "Hdom" as %Hdom.
   iDestruct (Count_GHeap.gen_heap_valid with "Hents Hd") as %Hlookup1.
   rewrite lookup_fmap in Hlookup1.
