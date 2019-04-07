@@ -10,11 +10,13 @@ From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.SemanticsHelpers.
 From RecoveryRefinement Require Import Spec.LockDefs.
 From RecoveryRefinement Require Import Spec.Layer.
-From RecoveryRefinement Require Import Goose.Machine Goose.Filesys Goose.Heap Goose.GoZeroValues Goose.GoLayer.
+From RecoveryRefinement Require Import Goose.Machine Goose.Filesys Goose.Heap Goose.GoZeroValues Goose.GoLayer Goose.Globals.
 
 Import ProcNotations.
 
 Module RTerm.
+  Section GoModel.
+  Context `{model_wf : GoModelWf}.
   Inductive t : Type -> Type -> Type -> Type :=
   | Pure A T : T -> t A A T
   (* | Identity A T : t A A T *)
@@ -26,11 +28,12 @@ Module RTerm.
   | ReadNone A T : (A -> option T) -> t A A unit
   | AndThen A B C T1 T2 : t A B T1 -> (T1 -> t B C T2) -> t A C T2
   (* | SuchThat A T : (A -> T -> Prop) -> t A A T *)
-  (* | SuchAlloc ty (v: ty) : t FS.State FS.State (Ptr ty) *)
-  (* | UpdAllocs {model: GoModel} {model_wf: GoModelWf model} ty : Ptr ty -> t FS.State FS.State unit *)
-  (* | DelAllocs {model: GoModel} {model_wf: GoModelWf model} ty : Ptr ty -> t FS.State FS.State unit *)
+  (* | SuchAlloc (ty : Ptr.ty) : t Go.State Go.State (Ptr ty) *)
+  (* | UpdAllocs ty : Ptr ty -> t Go.State Go.State unit *)
+  (* | DelAllocs ty : Ptr ty -> t Go.State Go.State unit *)
   | NotImpl A B T (r: relation A B T) : t A B T
   .
+  End GoModel.
 End RTerm.
 
 Inductive Output B T : Type :=
@@ -44,6 +47,7 @@ Arguments Error {_ _}.
 Arguments NotImpl {_ _}.
 
 Definition ptrMap := unit.
+Definition ptrMap_null : ptrMap := tt.
 
 Fixpoint interpret (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
   match r in (RTerm.t A B T) return ((A * ptrMap) -> Output (B * ptrMap) T) with
@@ -73,6 +77,13 @@ Fixpoint interpret (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B
       end
   | RTerm.NotImpl _ => (fun x => NotImpl)
   end X.
+
+Definition interpret_t (A B T : Type) (r: RTerm.t A B T) : A -> Return B T :=
+  fun a => match interpret r (a, ptrMap_null) with
+           | Success x t => Val (fst x) t
+           | Error => Err
+           | NotImpl => Err
+           end.
 
 Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   match r with
@@ -129,15 +140,19 @@ Ltac test e :=
   unify e e'.
 
 Ltac reflop_fs o :=
-  let t := eval cbv [FS.step] in (FS.step o) in
+  let t := eval cbv [FS.step] in (_zoom Go.fs (FS.step o)) in
   refl t.
 
 Ltac reflop_data o :=
-  let t := eval simpl in (_zoom FS.heap (Data.step o)) in
+  let t := eval simpl in (_zoom Go.fs (_zoom FS.heap (Data.step o))) in
   refl t.
 
-Definition reify T {model : Machine.GoModel} {model_wf : Machine.GoModelWf model}
-           (op : Op T)  : RTerm.t FS.State FS.State T.
+Ltac reflop_glob o :=
+  let t := eval simpl in (_zoom Go.maillocks (Globals.step o)) in
+  refl t.
+
+Definition reify T {model : GoModel} {model_wf : GoModelWf model}
+           (op : Op T)  : RTerm.t Go.State Go.State T.
   destruct op.
   - destruct o eqn:?;
     match goal with
@@ -147,7 +162,14 @@ Definition reify T {model : Machine.GoModel} {model_wf : Machine.GoModelWf model
     match goal with
     | [ H : o = ?A |- _ ] => let x := reflop_data A in exact x
     end.
+  - destruct o eqn:?;
+    match goal with
+    | [ H : o = ?A |- _ ] => let x := reflop_glob A in exact x
+    end.
 Qed.
+
+(* Prove Interpreter *)
+Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A), (rtermDenote r) a (interpret_t r a).
 
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
