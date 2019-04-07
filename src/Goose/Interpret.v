@@ -49,7 +49,25 @@ Arguments NotImpl {_ _}.
 Definition ptrMap := unit.
 Definition ptrMap_null : ptrMap := tt.
 
-Fixpoint interpret (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
+Instance goModel : GoModel :=
+  { byte := unit;
+    byte0 := tt;
+
+    uint64_to_string n := ""%string;
+    ascii_to_byte a := tt;
+    byte_to_ascii b := Ascii.zero;
+
+    uint64_to_le u := [tt];
+    uint64_from_le bs := None;
+
+    File := unit;
+    nilFile := tt;
+
+    Ptr ty := unit;
+    nullptr ty := tt;
+    }.
+
+Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
   match r in (RTerm.t A B T) return ((A * ptrMap) -> Output (B * ptrMap) T) with
   | RTerm.Pure A t => fun x => Success x t
   | RTerm.Reads f => fun x => Success x (f (fst x))
@@ -69,17 +87,17 @@ Fixpoint interpret (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B
   | RTerm.Error _ _ _ => (fun x => Error)
   | RTerm.AndThen r f =>
       fun x =>
-      let o := interpret r x in
+      let o := interpret' r x in
       match o with
-      | Success b t => let r' := f t in let o' := interpret r' b in o'
+      | Success b t => let r' := f t in let o' := interpret' r' b in o'
       | Error => Error
       | NotImpl => NotImpl
       end
   | RTerm.NotImpl _ => (fun x => NotImpl)
   end X.
 
-Definition interpret_t (A B T : Type) (r: RTerm.t A B T) : A -> Return B T :=
-  fun a => match interpret r (a, ptrMap_null) with
+Definition interpret (A B T : Type) (r: RTerm.t A B T) : A -> Return B T :=
+  fun a => match interpret' r (a, ptrMap_null) with
            | Success x t => Val (fst x) t
            | Error => Err
            | NotImpl => Err
