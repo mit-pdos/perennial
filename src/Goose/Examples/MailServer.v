@@ -43,7 +43,7 @@ Module Message.
   Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End Message.
 
-(* Pickup reads all stored messages *)
+(* Pickup reads all stored messages and acquires a per-user lock. *)
 Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t Message.t) :=
   ls <- Globals.getX;
   l <- Data.sliceRead ls user;
@@ -65,7 +65,6 @@ Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t Message.t) :=
           _ <- Data.writePtr messages newMessages;
           Continue (i + 1)) 0;
   msgs <- Data.readPtr messages;
-  _ <- Data.lockRelease l Writer;
   Ret msgs.
 
 Definition createTmp {model:GoModel} : proc (File * string) :=
@@ -100,7 +99,8 @@ Definition writeTmp {model:GoModel} (data:slice.t byte) : proc string :=
   _ <- FS.close f;
   Ret name.
 
-(* Deliver stores a new message *)
+(* Deliver stores a new message.
+   Does not require holding the per-user pickup/delete lock. *)
 Definition Deliver {model:GoModel} (user:uint64) (msg:slice.t byte) : proc unit :=
   userDir <- getUserDir user;
   tmpName <- writeTmp msg;
@@ -114,12 +114,16 @@ Definition Deliver {model:GoModel} (user:uint64) (msg:slice.t byte) : proc unit 
           Continue newID) initID;
   FS.delete SpoolDir tmpName.
 
+(* Delete deletes a message for the current user.
+   Requires the per-user lock, acquired with pickup. *)
 Definition Delete {model:GoModel} (user:uint64) (msgID:string) : proc unit :=
-  ls <- Globals.getX;
-  l <- Data.sliceRead ls user;
-  _ <- Data.lockAcquire l Writer;
   userDir <- getUserDir user;
-  _ <- FS.delete userDir msgID;
+  FS.delete userDir msgID.
+
+(* Unlock releases the lock for the current user. *)
+Definition Unlock {model:GoModel} (user:uint64) : proc unit :=
+  locks <- Globals.getX;
+  l <- Data.sliceRead locks user;
   Data.lockRelease l Writer.
 
 Definition initLocks {model:GoModel} : proc unit :=

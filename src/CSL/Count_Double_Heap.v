@@ -120,6 +120,15 @@ Proof.
   iModIntro. by iExists (GenDirG L1 L2 V Σ _ _ _ _ _ γ).
 Qed.
 
+Lemma gen_dir_strong_init `{gen_dirPreG L1 L2 V Σ} σ :
+  (|==> ∃ (H0 : gen_dirG L1 L2 V Σ) (Hpf: gen_dir_inG = gen_dir_preG_inG), gen_dir_ctx σ ∗
+    own (gen_dir_name _) (◯ (to_gen_dir σ)))%I.
+Proof.
+  iMod (own_alloc (● to_gen_dir σ ⋅ ◯ to_gen_dir σ)) as (γ) "(?&?)".
+  { apply auth_valid_discrete_2; split; auto. exact: to_gen_dir_valid. }
+  iModIntro. unshelve (iExists (GenDirG L1 L2 V Σ _ _ _ _ _ γ), _); auto. iFrame.
+Qed.
+
 Section gen_dir.
   Context `{gen_dirG L1 L2 V Σ}.
   Implicit Types P Q : iProp Σ.

@@ -112,6 +112,14 @@ Proof.
   iModIntro. by iExists {| gt_inG := Hgen |}.
 Qed.
 
+Lemma gen_typed_heap_strong_init {A} {L V: A → Type} `{H: gen_heapPreG (sigT L) (sigT V) Σ} σ :
+  (|==> ∃ (H0 : gen_typed_heapG L V Σ) (Hpf: @gen_heap_inG _ _ _ _ (gt_inG) = gen_heap_preG_inG),
+        gen_typed_heap_ctx σ ∗ own (gen_heap_name (gt_inG)) (◯ (to_gen_typed_heap σ)))%I.
+Proof.
+  iMod (gen_heap_strong_init (λ k, pull_lock (dynMap σ k))) as (Hgen ?) "(?&?)".
+  iModIntro. unshelve (iExists {| gt_inG := Hgen |}, _); eauto. iFrame.
+Qed.
+
 Section gen_heap.
   Context `{gen_typed_heapG A L V Σ}.
   Implicit Types P Q : iProp Σ.
