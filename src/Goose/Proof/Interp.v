@@ -314,6 +314,7 @@ Ltac inv_step :=
            inversion H; subst; clear H
          | [ H : updAllocs _ _ _ (Val _ _) |- _ ] =>
            inversion H; subst; clear H
+         | [ H: allocPtr _ _ _ _ |- _ ] => unfold allocPtr in H
          | [ H : Some _ = Some _ |- _] => apply Some_inj in H; subst
          | [ H : Cinl _ = Cinl _ |- _] => inversion H; clear H; subst
          | [ H : ReadLocked _ = ReadLocked _ |- _] => inversion H; clear H; subst
