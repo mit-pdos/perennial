@@ -72,9 +72,13 @@ Module Mail.
     match op in Op T return relation State State T with
     | Pickup uid =>
       let! (s, msgs) <- lookup messages uid;
-           s <- Filesys.FS.unwrap (lock_acquire Writer s);
+        match lock_acquire Writer s with
+        | Some s =>
            _ <- puts (set messages <[uid := (s, msgs)]>);
            pure (map_to_list msgs)
+        | None =>
+          none
+        end
     | CreateMessages msgs =>
         messageData <- createMessages msgs;
         createSlice messageData
