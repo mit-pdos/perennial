@@ -182,7 +182,7 @@ Proof.
 Qed.
 
 Section gen_heap.
-  Context `{gen_heapG L V Σ}.
+  Context `{hG: gen_heapG L V Σ}.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : V → iProp Σ.
   Implicit Types σ : L → option (LockStatus * V).
@@ -195,6 +195,48 @@ Section gen_heap.
   Proof. rewrite mapsto_eq /mapsto_def. apply _. Qed.
   Global Instance read_mapsto_timeless l v : Timeless (l r↦ v).
   Proof. apply _. Qed.
+
+  (* This is an odd special lemma *)
+  Lemma gen_heap_init_to_bigOp `{Countable L} (σ: gmap L (LockStatus * V)):
+    (∀ s x, σ !! s = Some x → fst x = Unlocked) →
+    own (gen_heap_name hG) (◯ to_gen_heap (λ s, σ !! s))
+        -∗ [∗ map] i↦x ∈ σ, i ↦ snd x.
+  Proof.
+    induction σ using map_ind.
+    - iIntros. rewrite //=.
+    - iIntros (Hunlocked) "Hown".
+      rewrite big_opM_insert //.
+      iAssert (own (gen_heap_name hG) (◯ to_gen_heap (λ s, m !! s)) ∗ (i ↦ snd x))%I
+        with "[Hown]" as "[Hrest $]".
+      {
+        rewrite mapsto_eq /mapsto_def //.
+        iAssert (own (gen_heap_name hG) (◯ to_gen_heap (<[i:=x]>(λ s : L,  m !! s))))
+                with "[Hown]" as "Hown'".
+        { iApply (own_proper with "Hown"). f_equiv.
+          intros k. rewrite /to_gen_heap/insert/partial_fn_insert//=.
+          destruct (equal).
+          * subst. rewrite lookup_insert //=.
+          * rewrite lookup_insert_ne //=.
+        }
+        assert (fst x = Unlocked) as Heq_unlocked.
+        { eapply (Hunlocked i). by rewrite lookup_insert. }
+        destruct x as (l&v).
+        rewrite to_gen_heap_insert.
+        rewrite -own_op.
+        iApply (own_proper with "Hown'").
+        rewrite -auth_frag_op. f_equiv. intros k.
+        rewrite ofe_fun_lookup_op.
+        rewrite /insert/partial_fn_insert//=.
+        destruct (k == i).
+        - subst. rewrite lookup_to_gen_heap_None //.
+          rewrite left_id. simpl in Heq_unlocked. by rewrite Heq_unlocked.
+        - by rewrite right_id.
+      }
+      iApply IHσ.
+      * intros. eapply (Hunlocked s). rewrite lookup_insert_ne; eauto.
+        intros Heq. congruence.
+      * eauto.
+  Qed.
 
   Lemma mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ ⌜v1 = v2⌝.
   Proof.

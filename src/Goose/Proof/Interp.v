@@ -129,6 +129,7 @@ Definition ghost_gen_mapsto' {A} `{gooseG Σ} (γ: gname) q (v: A) : iProp Σ
 *)
 
 Inductive GLOBAL : Set := global.
+Inductive ROOTDIR : Set := rootdir.
 
 (*
 Instance ghost_gen_mapsto {A} `{gooseG Σ} : GenericMapsTo gname A
@@ -138,6 +139,10 @@ Instance ghost_gen_mapsto {A} `{gooseG Σ} : GenericMapsTo gname A
 Program Instance global_gen_mapsto `{gooseG Σ} : GenericMapsTo GLOBAL (option (slice.t LockRef))
   := {| generic_mapsto := λ _ q v,
                           (ghost_mapsto (A := discreteC (@sliceLockC _ _)) (go_global_name) q v)|}.
+
+Program Instance rootdir_gen_mapsto `{gooseG Σ} : GenericMapsTo ROOTDIR (gset string)
+  := {| generic_mapsto := λ _ q v,
+                          (ghost_mapsto (A := discreteC (gset string)) (go_fs_dom_name) q v)|}.
 
 Instance dir_gen_mapsto `{gooseG Σ} : GenericMapsTo (string) (gset string)
   := {| generic_mapsto := dir_mapsto; |}.

@@ -87,6 +87,13 @@ Proof.
   rewrite agree_idemp //=.
 Qed.
 
+Lemma read_split γ (n: nat) (v: A):
+  γ ↦{n} v ⊢ γ ↦{S n} v ∗ γ ↦{-1} v.
+Proof. by rewrite read_split_join. Qed.
+Lemma read_join γ (n: nat) (v: A):
+  γ ↦{S n} v ∗ γ ↦{-1} v ⊢ γ ↦{n} v.
+Proof. by rewrite -read_split_join. Qed.
+
 Lemma ghost_var_update γ (a1' a1 a2 : A) :
   γ ●↦ a1 -∗ γ ↦ a2 ==∗ γ ●↦ a1' ∗ γ ↦ a1'.
 Proof.

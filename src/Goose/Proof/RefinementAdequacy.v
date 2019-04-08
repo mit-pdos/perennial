@@ -181,12 +181,14 @@ Section refinement.
              ∀ σ1a σ1c, init_absr σ1a σ1c →
                         dom (gset string) σ1c.(fs).(dirents) =
                         dom (gset string) σ1c.(fs).(dirlocks) ∧
+                        (∀ s l, σ1c.(fs).(dirlocks) !! s = Some l → fst l = Unlocked) ∧
                         σ1c.(maillocks) = None).
 
-  (* TODO: need initial root dir listing permission based on σ1c as well *)
   Context (init_exec_inner: ∀ σ1a σ1c, init_absr σ1a σ1c →
       (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ},
           (([∗ map] d ↦ ents ∈ σ1c.(fs).(dirents), d ↦ dom (gset string) ents) ∗
+          rootdir ↦{-1} dom (gset string) σ1c.(fs).(dirents) ∗
+          ([∗ set] dir ∈ dom (gset string) σ1c.(fs).(dirents), dir ↦ Unlocked) ∗
            source_ctx ∗ source_state σ1a ∗ global ↦ None) ={⊤}=∗ exec_inner _ _)).
 
   (* Helper to update collection of ghost algebra for file system to use new
@@ -199,14 +201,14 @@ Section refinement.
       (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ},
           exec_inv Hcfg Hex ={⊤, E}=∗ ∀ Hmem' Hdlocks' Hfds' Hreg' Hglobal',
             (let Hex := GooseG _ _ Σ (go_invG) Hmem' (crash_fsG _ Hdlocks' Hfds') Hreg' Hglobal' in
-           (* TODO: should get dirlocks + uninit global*)
+           (∃ S, rootdir ↦{-1} S ∗ [∗ set] dir ∈ S, dir ↦ Unlocked) ∗
            global ↦ None ={E}=∗ crash_inner Hcfg Hex))).
 
   Context (crash_inv_preserve_crash:
       (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ} param,
           crash_inv Hcfg Hex param ={⊤, E}=∗ ∀ Hmem' Hdlocks' Hfds' Hreg' Hglobal',
           (let Hex := GooseG _ _ Σ (go_invG) Hmem' (crash_fsG _ Hdlocks' Hfds') Hreg' Hglobal' in
-           (* TODO: should get dirlocks + uninit global *)
+           (∃ S, rootdir ↦{-1} S ∗ [∗ set] dir ∈ S, dir ↦ Unlocked) ∗
            global ↦ None ={E}=∗ crash_inner Hcfg Hex))).
 
   (* TODO: Much of this business is just to capture the fact that exec_inner/crash_inner
@@ -230,7 +232,7 @@ Section refinement.
           ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hdlocks' Hfds' Hreg' Hglobal',
             (let Hex := GooseG _ _ Σ Hinv' Hmem' (crash_fsG _ Hdlocks' Hfds') Hreg' Hglobal' in
              source_ctx ∗ source_state σ2a' ∗
-             (* TODO: should get fresh global/dirlocks *)
+             (∃ S, rootdir ↦{-1} S ∗ [∗ set] dir ∈ S, dir ↦ Unlocked) ∗
              global ↦ None ={⊤}=∗ exec_inner Hcfg' Hex))%I).
 
 
@@ -274,6 +276,9 @@ Section refinement.
   set (tR' := {| treg_name := tR; treg_counter_inG := _ |}).
   iMod (ghost_var_alloc (A := discreteC (gset string))
                         (dom (gset string) σ1c.(fs).(dirents))) as (hGD) "(HgdA&Hgd)".
+  replace 0%Z with (O :Z) by auto.
+  iPoseProof (Count_Ghost.read_split (A := discreteC (gset string)) hGD
+                with "Hgd") as "(Hgd&Hgdr)".
   iMod (ghost_var_alloc (A := discreteC sliceLockC)
                         (σ1c.(maillocks))) as (hGL) "(HglA&Hgl)".
   iAssert (own tR (Cinl (Count 1)) ∗ own tR (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
@@ -282,16 +287,23 @@ Section refinement.
   set (hGl := (GlobalG _ _ _ _ hGL)).
   iModIntro. iExists hM, hFG, hGl, tR. (* Hmpf_eq, Hdpf_eq. *)
   iSplitL "Hmc Hdc Hfdc Hidc Hpc Hlc Ht HglA Hgd".
-  { iFrame. simpl. iSplitL "Hgd". iExists O; iFrame. iPureIntro. eapply init_wf; eauto. }
+  { iFrame. simpl. iSplitL "Hgd". iExists 1; iFrame. iPureIntro. eapply init_wf; eauto. }
   iIntros.
   iPoseProof (init_exec_inner σ1a σ1c Hinit (GooseG _ _ Σ _ hM hFG hGl tR') _) as "H".
   iMod ("H" with "[-Hreg]") as "$".
-  { edestruct (init_wf) as (?&->); eauto. iFrame.
-    iSplitL "Hd".
-    * iPoseProof (@gen_heap_init_to_bigOp _ _ _ _ _ hD with "[Hd]") as "Hfoo".
+  { edestruct (init_wf) as (?&?&->); eauto. iFrame.
+    iSplitL "Hd"; [| iSplitL "Hl"].
+    * iPoseProof (@gen_heap_init_to_bigOp _ _ _ _ _ hD with "[Hd]") as "?".
       { by rewrite Hdpf_eq. }
       by rewrite big_opM_fmap.
-    * iExists _; eauto.
+    * iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ hL _ _ (σ1c.(fs).(dirlocks))
+                    with "[Hl]") as "Hl".
+      { intros s x. eapply init_wf; eauto. }
+      { by rewrite HLpf_eq. }
+      edestruct (init_wf) as (->&_&_); eauto.
+      iApply big_sepM_dom. iApply (big_sepM_mono with "Hl").
+      intros ? (?&[]); eauto.
+    * iExists _. eauto.
   }
   iFrame; eauto.
   }
@@ -361,6 +373,21 @@ Section refinement.
        iModIntro.
        iExists hM'. iExists (crash_fsG hD hDlocks' hFds'). iExists hGl''. iExists tR_fresh'.
        iFrame.
+       simpl.
+
+       (* TODO: make a lemma *)
+       iAssert (goose_interp σ2c ∗ rootdir ↦{-1} dom (gset string) σ2c.(fs).(dirents)
+                ∗ ⌜ dom (gset string) σ2c.(fs).(dirents) = dom (gset string) σ2c.(fs).(dirlocks) ⌝)%I
+               with "[Hmach]" as "(Hmach&Hroot&Hdom_eq)".
+       {  iClear "IH Hinv Hsrc".
+          clear.
+          iDestruct "Hmach" as "(?&(?&?&?&?&?&Hroot&%)&?)".
+          iDestruct "Hroot" as (n) "Hmapsto".
+          iFrame. iFrame "%".
+          rewrite Count_Ghost.read_split.
+          iDestruct "Hmapsto" as "(?&?)". iFrame.
+          iExists (S n). eauto.
+       }
        iSplitL ("Hmc Hmach Hfdsc Hdlocksc HglA").
        { iClear "IH".
          iDestruct "Hmach" as "(?&(?&?&?&?&?&?)&?)".
@@ -372,7 +399,13 @@ Section refinement.
        }
        iIntros "Hctx' Hsrc'". iMod ("Hfinish" $! _ _ hM' with "[-]").
        iSplitL "Hctx'"; first by (iExists _; iFrame). iFrame.
-       unfold hG. simpl. unfold tR'''. iFrame.
+       iExists _. iFrame.
+       iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ _ _ _ _
+                     with "[Hlocks]") as "Hl"; swap 1 2.
+       { rewrite Hdlocks'_eq'. eauto. }
+       { intros s x. rewrite lookup_fmap. by intros (?&?&->)%fmap_Some_1. }
+       iDestruct "Hdom_eq" as %->.
+       iApply big_sepM_dom. rewrite big_sepM_fmap. eauto.
        eauto.
      }
   }
@@ -392,8 +425,27 @@ Section refinement.
     { constructor. }
     set (hGl := GlobalG _ _ _ _ hGl_name).
     set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
-    iMod ("Hinv_post" with "[Hm Hgl]") as "Hinv'".
-    { iFrame. }
+    iAssert (goose_interp σ2c ∗ rootdir ↦{-1} dom (gset string) σ2c.(fs).(dirents)
+             ∗ ⌜ dom (gset string) σ2c.(fs).(dirents) = dom (gset string) σ2c.(fs).(dirlocks) ⌝)%I
+      with "[Hmach]" as "(Hmach&Hroot&Hdom_eq)".
+    {  iClear "IH Hinv Hsrc".
+       clear.
+       iDestruct "Hmach" as "(?&(?&?&?&?&?&Hroot&%)&?)".
+       iDestruct "Hroot" as (?) "Hmapsto".
+       iFrame. iFrame "%".
+       rewrite Count_Ghost.read_split.
+       iDestruct "Hmapsto" as "(?&?)". iFrame.
+       iExists (S _). eauto.
+    }
+    iMod ("Hinv_post" with "[Hm Hgl Hlocks Hroot Hdom_eq]") as "Hinv'".
+    { iFrame. iExists _. iFrame.
+       iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ _ _ _ _
+                     with "[Hlocks]") as "Hl"; swap 1 2.
+       { rewrite Hdlocks'_eq'. eauto. }
+       { intros s x. rewrite lookup_fmap. by intros (?&?&->)%fmap_Some_1. }
+       iDestruct "Hdom_eq" as %->.
+       iApply big_sepM_dom. rewrite big_sepM_fmap. eauto.
+    }
     iIntros. iModIntro.
     unfold hG.
     simpl.
@@ -512,7 +564,7 @@ Section refinement.
     set (hGl'':= GlobalG _ _ _ _ hGl''_name).
     set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
     iMod ("Hinv_post" with "[Hm Hgl]") as "Hinv'".
-    { iFrame. }
+    { iFrame. admit. }
     iIntros. iModIntro.
     unfold hG.
     simpl.
