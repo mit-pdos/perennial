@@ -15,7 +15,8 @@ Module Mail.
   Implicit Types (uid:uint64).
 
   Inductive Op : Type -> Type :=
-  | Pickup uid : Op (slice.t Message.t)
+  | Pickup uid : Op (list (string * list byte))
+  | CreateMessages (msgs: list (string * list byte)) : Op (slice.t Message.t)
   | Deliver uid (msg: slice.t byte) : Op unit
   | Delete uid (msgID: string) : Op unit
   | Unlock uid : Op unit
@@ -52,6 +53,14 @@ Module Mail.
         pure (Message.mk name contents::messageData)
     end.
 
+  Section OpWrappers.
+
+    Definition pickup uid : proc Op (slice.t Message.t) :=
+      (msgs <- Call (Pickup uid);
+       Call (CreateMessages msgs))%proc.
+
+  End OpWrappers.
+
   (* TODO: move this to Heap *)
   Definition readSlice T (p: slice.t T) : relation State State (list T) :=
     let! (s, alloc) <- readSome (fun s => Data.getAlloc p.(slice.ptr) s.(heap));
@@ -65,7 +74,9 @@ Module Mail.
       let! (s, msgs) <- lookup messages uid;
            s <- Filesys.FS.unwrap (lock_acquire Writer s);
            _ <- puts (set messages <[uid := (s, msgs)]>);
-        messageData <- createMessages (map_to_list msgs);
+           pure (map_to_list msgs)
+    | CreateMessages msgs =>
+        messageData <- createMessages msgs;
         createSlice messageData
     | Deliver uid msg =>
       let! (s, msgs) <- lookup messages uid;
