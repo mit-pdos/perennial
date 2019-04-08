@@ -20,3 +20,4 @@ From RecoveryRefinement Require Import Goose.Examples.MailServer.
 
 (* goose proof rules *)
 From RecoveryRefinement Require Import Goose.Proof.Interp.
+From RecoveryRefinement Require Import Goose.Proof.RefinementAdequacy.

@@ -235,6 +235,19 @@ Section refinement.
              (∃ S, rootdir ↦{-1} S ∗ [∗ set] dir ∈ S, dir ↦ Unlocked) ∗
              global ↦ None ={⊤}=∗ exec_inner Hcfg' Hex))%I).
 
+  Lemma goose_interp_split_read_dir `{gooseG Σ} σ2c:
+    (goose_interp σ2c -∗
+      goose_interp σ2c ∗ rootdir ↦{-1} dom (gset string) σ2c.(fs).(dirents)
+      ∗ ⌜ dom (gset string) σ2c.(fs).(dirents) = dom (gset string) σ2c.(fs).(dirlocks) ⌝)%I.
+  Proof.
+    clear.
+    iIntros "(?&(?&?&?&?&?&Hroot&%)&?)".
+    iDestruct "Hroot" as (n) "Hmapsto".
+    iFrame. iFrame "%".
+    rewrite Count_Ghost.read_split.
+    iDestruct "Hmapsto" as "(?&?)". iFrame.
+    iExists (S n). eauto.
+  Qed.
 
   Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) :
     init_absr σ1a σ1c →
@@ -251,13 +264,7 @@ Section refinement.
                   (E0 := E); eauto).
     clear Hno_err.
   iAssert (∀ invG H1 ρ, |={⊤}=>
-       ∃ hM hD hGl tR
-         (*
-            (Hmpf_eq : hM.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
-          H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable))
-            (Hdpf_eq : hD.(@gen_heap_inG addr nat Σ nat_eq_dec nat_countable) =
-          H.(@exm_preG_disk Σ).(@gen_heap_preG_inG addr nat Σ nat_eq_dec nat_countable))
-          *),
+       ∃ hM hD hGl tR,
              ((@state_interp _ _ _ (@gooseG_irisG _ _ _ (GooseG _ _ Σ _ hM hD hGl {| treg_name := tR; treg_counter_inG := _ |}))) (1, σ1c)) ∗
          (source_ctx' (ρ, σ1a) -∗ source_state σ1a ={⊤}=∗
          own tR (Cinl (Count (-1))) ∗
@@ -317,6 +324,8 @@ Section refinement.
                                    ∗ gen_heap_ctx (∅: gmap File (Inode * OpenMode))
                                    ∗ ghost_mapsto_auth (hGMG := go_global_alg_inG)
                                                        (go_global_name) None
+                                  ∗ Count_Heap.gen_heap_ctx
+                                  (λ k, ((λ _ : LockStatus * (), (Unlocked, ())) <$> (snd s).(fs).(dirlocks)) !! k)
                                    ∗ crash_inner cfgG
                                    (GooseG _ _ Σ _ hM (crash_fsG (go_fs_inG) hDlock' hFds') hGl'
  {| treg_name := tr; treg_counter_inG := _ |})))%I; auto.
@@ -358,7 +367,7 @@ Section refinement.
        iMod (gen_typed_heap_strong_init ∅) as (hM' Hmpf_eq') "(Hmc&Hm)".
        iMod (gen_heap_strong_init (∅: gmap File (Inode * OpenMode)))
          as (hFds' Hfds'_eq') "(Hfdsc&Hfd)".
-       iMod (Count_Heap.gen_heap_strong_init 
+       iMod (Count_Heap.gen_heap_strong_init
                (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ2c.(fs).(dirlocks)) !! s))
          as (hDlocks' Hdlocks'_eq') "(Hdlocksc&Hlocks)".
        iMod (own_alloc (Cinl (Count 0))) as (tR_fresh') "Ht".
@@ -374,20 +383,7 @@ Section refinement.
        iExists hM'. iExists (crash_fsG hD hDlocks' hFds'). iExists hGl''. iExists tR_fresh'.
        iFrame.
        simpl.
-
-       (* TODO: make a lemma *)
-       iAssert (goose_interp σ2c ∗ rootdir ↦{-1} dom (gset string) σ2c.(fs).(dirents)
-                ∗ ⌜ dom (gset string) σ2c.(fs).(dirents) = dom (gset string) σ2c.(fs).(dirlocks) ⌝)%I
-               with "[Hmach]" as "(Hmach&Hroot&Hdom_eq)".
-       {  iClear "IH Hinv Hsrc".
-          clear.
-          iDestruct "Hmach" as "(?&(?&?&?&?&?&Hroot&%)&?)".
-          iDestruct "Hroot" as (n) "Hmapsto".
-          iFrame. iFrame "%".
-          rewrite Count_Ghost.read_split.
-          iDestruct "Hmapsto" as "(?&?)". iFrame.
-          iExists (S n). eauto.
-       }
+       iPoseProof (goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
        iSplitL ("Hmc Hmach Hfdsc Hdlocksc HglA").
        { iClear "IH".
          iDestruct "Hmach" as "(?&(?&?&?&?&?&?)&?)".
@@ -425,18 +421,7 @@ Section refinement.
     { constructor. }
     set (hGl := GlobalG _ _ _ _ hGl_name).
     set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
-    iAssert (goose_interp σ2c ∗ rootdir ↦{-1} dom (gset string) σ2c.(fs).(dirents)
-             ∗ ⌜ dom (gset string) σ2c.(fs).(dirents) = dom (gset string) σ2c.(fs).(dirlocks) ⌝)%I
-      with "[Hmach]" as "(Hmach&Hroot&Hdom_eq)".
-    {  iClear "IH Hinv Hsrc".
-       clear.
-       iDestruct "Hmach" as "(?&(?&?&?&?&?&Hroot&%)&?)".
-       iDestruct "Hroot" as (?) "Hmapsto".
-       iFrame. iFrame "%".
-       rewrite Count_Ghost.read_split.
-       iDestruct "Hmapsto" as "(?&?)". iFrame.
-       iExists (S _). eauto.
-    }
+    iPoseProof (goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
     iMod ("Hinv_post" with "[Hm Hgl Hlocks Hroot Hdom_eq]") as "Hinv'".
     { iFrame. iExists _. iFrame.
        iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ _ _ _ _
@@ -459,7 +444,7 @@ Section refinement.
   iClear "Hsrc".
   iModIntro. iIntros (invG Hcfg' ?? Hcrash) "(Hinv0&#Hsrc)".
   iDestruct "Hinv0" as (HexmachG') "(Hinterp&Hinv0)".
-  iDestruct "Hinv0" as (hM' hDl' hGl_fresh' hFd' tR_fresh' (* Hmpf_eq' Hmdpf_eq' *)) "(Hmc'&Hreg&Hfdc'&Hglc'&Hcrash_inner)".
+  iDestruct "Hinv0" as (hM' hDl' hGl_fresh' hFd' tR_fresh' (* Hmpf_eq' Hmdpf_eq' *)) "(Hmc'&Hreg&Hfdc'&Hglc'&Hlocks'&Hcrash_inner)".
   iClear "Hinv".
   set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
   iMod (crash_inner_inv (GooseG _ _ Σ _
@@ -472,13 +457,7 @@ Section refinement.
     with "[Hreg]" as "(Ht&Hreg)".
   { rewrite /Registered -own_op Cinl_op counting_op' //=. }
   iExists (@state_interp _ _ _ (@gooseG_irisG _ _ _ (GooseG _ _ _ _ hM' (crash_fsG (@go_fs_inG _ _ _ HexmachG') hDl' hFd') hGl_fresh' tR'''))).
-  (*
-  iExists (@state_interp _ _ _ (@gooseG_irisG _ _ tR''' hG)).
-   *)
-  (*
-  iExists (@ex_mach_interp Σ hM' (exm_disk_inG) tR''').
-   *)
-  iSplitL "Hinterp Ht Hmc' Hfdc' Hglc'".
+  iSplitL "Hinterp Ht Hmc' Hfdc' Hglc' Hlocks'".
   { (* shows ex_mach_interp is holds after crash for next gen *)
     destruct a, a0.
     iDestruct "Hinterp" as "(?&Hinterp)".
@@ -501,10 +480,6 @@ Section refinement.
     unfold crash_fsG. simpl. unfold fs_interp. simpl.
     iFrame.
     rewrite dom_fmap_L.
-    iSplitL "".
-    { (* todo: need to include dirlocks in the invariant, but to do that
-         we have to keep track of what directories there are throughout *)
-      admit. }
     auto.
   }
   iSplitL "Hinv Hreg Hstarter".
@@ -563,8 +538,16 @@ Section refinement.
     { constructor. }
     set (hGl'':= GlobalG _ _ _ _ hGl''_name).
     set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
-    iMod ("Hinv_post" with "[Hm Hgl]") as "Hinv'".
-    { iFrame. admit. }
+    iPoseProof (@goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
+    iMod ("Hinv_post" with "[Hm Hgl Hlocks Hroot Hdom_eq]") as "Hinv'".
+    { iFrame. iExists _. iFrame.
+       iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ _ _ _ _
+                     with "[Hlocks]") as "Hl"; swap 1 2.
+       { rewrite Hdlocks'_eq'. eauto. }
+       { intros s x. rewrite lookup_fmap. by intros (?&?&->)%fmap_Some_1. }
+       iDestruct "Hdom_eq" as %->.
+       iApply big_sepM_dom. rewrite big_sepM_fmap. eauto.
+    }
     iIntros. iModIntro.
     unfold hG.
     simpl.
@@ -572,6 +555,7 @@ Section refinement.
     iExists (GooseG _ _ Σ invG hM'
                (crash_fsG HexmachG'.(@go_fs_inG _ _ Σ) hDl' hFd') hGl_fresh' tR'''). iFrame.
     iExists hM'', _, _, _, tR_fresh''. iFrame.
-  Admitted.
+  }
+  Qed.
 
 End refinement.

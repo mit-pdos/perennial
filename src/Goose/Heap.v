@@ -279,12 +279,15 @@ Module Data.
   Definition getSliceModel T (s:slice.t T) (alloc: list T) : option (list T) :=
     stdpp.list.sublist_lookup s.(slice.offset) s.(slice.length) alloc.
 
+  Definition allocPtr (ty: Ptr.ty) (init: ptrRawModel ty) : relation State State (model.(@Ptr) ty) :=
+      r <- such_that (fun s r => getAlloc r s = None /\ r <> nullptr _);
+        _ <- updAllocs r (Unlocked, init);
+        pure r.
+
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | NewAlloc v len =>
-      r <- such_that (fun s (r:ptr _) => getAlloc r s = None /\ r <> nullptr _);
-        _ <- updAllocs r (Unlocked, List.repeat v len);
-        pure r
+      allocPtr (Ptr.Heap _) (List.repeat v len)
     | PtrDeref p off =>
       let! (s, alloc) <- readSome (getAlloc p);
            _ <- readSome (fun _ => lock_available Reader s);
@@ -306,15 +309,12 @@ Module Data.
            (* we always invalidate the old pointer, which should be a sound
                over-approximation of behavior *)
            _ <- delAllocs p.(slice.ptr);
-           r <- such_that (fun s (r:ptr _) => getAlloc r s = None /\ r <> nullptr _);
-           _ <- updAllocs r (Unlocked, val ++ [x]);
+           r <- allocPtr (Ptr.Heap _) (val ++ [x]);
            pure {| slice.ptr := r;
                    slice.offset := 0;
                    slice.length := (p.(slice.length) + 1)%nat |}
     | NewMap V =>
-      r <- such_that (fun s (r:Map _) => getAlloc r s = None /\ r <> nullptr _);
-        _ <- updAllocs r (Unlocked, ∅);
-          pure r
+      allocPtr (Ptr.Map _) ∅
     | MapLookup r k =>
       let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
            _ <- readSome (fun _ => lock_available Reader s);
@@ -338,9 +338,7 @@ Module Data.
            _ <- updAllocs r (s', m);
            pure tt
     | NewLock =>
-      r <- such_that (fun s (r:LockRef) => getAlloc r s = None /\ r <> nullptr _);
-        _ <- updAllocs r (Unlocked, tt);
-        pure r
+      allocPtr Ptr.Lock tt
     (* TODO: Go rwlocks actually give preference to writers, so once a writer
        attempts to acquire a lock, it should get it before any subsequent
        readers that call LockAcquire. We are not modeling this. However, our
@@ -389,8 +387,7 @@ Module Data.
            _ <- readSome (fun _ => lock_available Reader s);
            pure (bytes_to_string val)
     | StringToBytes s =>
-      r <- such_that (fun s (r: ptr _) => getAlloc r s = None /\ r <> nullptr _);
-        _ <- updAllocs r (Unlocked, string_to_bytes s);
+      r <- allocPtr (Ptr.Heap _) (string_to_bytes s);
         pure {| slice.ptr := r;
                 slice.offset := 0;
                 slice.length := String.length s; |}
