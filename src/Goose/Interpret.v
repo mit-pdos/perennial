@@ -29,8 +29,8 @@ Module RTerm.
   | AndThen A B C T1 T2 : t A B T1 -> (T1 -> t B C T2) -> t A C T2
   (* | SuchThat A T : (A -> T -> Prop) -> t A A T *)
   (* | SuchAlloc (ty : Ptr.ty) : t Go.State Go.State (Ptr ty) *)
-  (* | UpdAllocs ty : Ptr ty -> t Go.State Go.State unit *)
-  (* | DelAllocs ty : Ptr ty -> t Go.State Go.State unit *)
+  | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t Go.State Go.State unit
+  | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
   | NotImpl A B T (r: relation A B T) : t A B T
   .
   End GoModel.
@@ -67,7 +67,15 @@ Instance goModel : GoModel :=
     nullptr ty := tt;
     }.
 
-Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
+Check (set Go.fs).
+Check (set FS.heap).
+Check (set Data.allocs).
+Check (fun x => (set Go.fs (set FS.heap (set Data.allocs x)))).
+Check @set.
+Check (@set _ _ Data.allocs).
+Check (@set Data.State (DynMap goModel.(@Ptr) Data.ptrModel) Data.allocs _).
+
+Fixpoint interpret' (A B T : Type) {model: GoModel} {model_wf: GoModelWf model} (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
   match r in (RTerm.t A B T) return ((A * ptrMap) -> Output (B * ptrMap) T) with
   | RTerm.Pure A t => fun x => Success x t
   | RTerm.Reads f => fun x => Success x (f (fst x))
@@ -85,6 +93,13 @@ Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (
                         end
   | RTerm.Puts f => fun x => Success (f (fst x), snd x) tt
   | RTerm.Error _ _ _ => (fun x => Error)
+  (* Need a way of composing Setters in order to make this better? *)
+  | RTerm.UpdAllocs p pm =>
+    fun x => let f := (set Go.fs (set FS.heap (@set Data.State (DynMap model.(@Ptr) Data.ptrModel) Data.allocs _ (updDyn p pm))))
+                        in Success (f (fst x), snd x) tt
+  | RTerm.DelAllocs _ p =>
+    fun x => let f := (set Go.fs (set FS.heap (@set Data.State (DynMap model.(@Ptr) Data.ptrModel) Data.allocs _ (deleteDyn p))))
+                        in Success (f (fst x), snd x) tt
   | RTerm.AndThen r f =>
       fun x =>
       let o := interpret' r x in
@@ -96,7 +111,7 @@ Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (
   | RTerm.NotImpl _ => (fun x => NotImpl)
   end X.
 
-Definition interpret (A B T : Type) (r: RTerm.t A B T) : A -> Return B T :=
+Definition interpret (A B T : Type) (model: GoModel) (r: RTerm.t A B T) : A -> Return B T :=
   fun a => match interpret' r (a, ptrMap_null) with
            | Success x t => Val (fst x) t
            | Error => Err
@@ -187,7 +202,7 @@ Definition reify T {model : GoModel} {model_wf : GoModelWf model}
 Qed.
 
 (* Prove Interpreter *)
-Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A), (rtermDenote r) a (interpret_t r a).
+Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A), (rtermDenote r) a (interpret model r a).
 
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
@@ -220,8 +235,8 @@ Goal False.
   test (rtermDenote ex4).
 Abort.
 
-Compute (interpret ex1 (7, tt)).
-Compute (interpret ex2 (7, tt)).
-Compute (interpret ex3 (7, tt)).
-Compute (interpret ex4 (7, tt)).
+Compute (interpret goModel ex1 7).
+Compute (interpret ex2 7).
+Compute (interpret ex3 7).
+Compute (interpret ex4 7).
 Compute (interpret (RTerm.Error nat nat nat)).
