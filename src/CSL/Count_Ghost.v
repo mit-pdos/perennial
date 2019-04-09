@@ -64,6 +64,31 @@ Proof.
   - apply prod_included in Hincl as (?&Heq2'%to_agree_included); eauto.
 Qed.
 
+Lemma ghost_var_auth_valid γ (a1 a2: A) :
+  γ ●↦ a1 -∗ γ ●↦ a2 -∗ False.
+Proof.
+  apply wand_intro_r. rewrite -own_op //=.
+  rewrite /op/cmra_op//=/auth_op//=.
+  rewrite -Some_op /op/cmra_op//=/excl_op.
+  rewrite own_valid discrete_valid. iIntros ([]).
+Qed.
+
+Lemma ghost_valid γ (q1 q2: Z) (v1 v2: A):
+ (q1 >= 0)%Z → (q2 >= 0)%Z → γ ↦{q1} v1 -∗ γ ↦{q2} v2 -∗ False.
+Proof.
+  intros.
+    apply wand_intro_r.
+    rewrite -own_op -auth_frag_op own_valid discrete_valid.
+    f_equiv=> /auth_own_valid /=. rewrite -Some_op pair_op.
+    intros [Hcount ?].
+    rewrite counting_op' //= in Hcount.
+    repeat destruct decide => //=. lia.
+Qed.
+
+Lemma ghost_valid' γ (q1 q2: nat) (v1 v2: A):
+ γ ↦{q1} v1 -∗ γ ↦{q2} v2 -∗ False.
+Proof. intros. eapply ghost_valid; lia. Qed.
+
 Lemma ghost_var_agree2 γ (a1 a2: A) q1 q2 :
   γ ↦{q1} a1 -∗ γ ↦{q2} a2 -∗ ⌜ a1 = a2 ⌝.
 Proof.

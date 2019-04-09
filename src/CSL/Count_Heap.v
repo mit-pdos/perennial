@@ -250,7 +250,8 @@ Section gen_heap.
     by intros [_ [_ ?%agree_op_invL']].
   Qed.
 
-  Lemma mapsto_valid l q1 q2 v1 v2 : q1 >= 0 → q2 >= 0 → l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ False.
+  Lemma mapsto_valid_generic l (q1 q2: Z) ls1 ls2 v1 v2 :
+    (q1 >= 0 → q2 >= 0 → mapsto l q1 ls1 v1 -∗ mapsto l q2 ls2 v2 -∗ False)%Z.
   Proof.
     intros ??.
     apply wand_intro_r.
@@ -264,6 +265,9 @@ Section gen_heap.
     rewrite counting_op' //= in Hcount.
     repeat destruct decide => //=. lia.
   Qed.
+
+  Lemma mapsto_valid l q1 q2 v1 v2 : (q1 >= 0 → q2 >= 0 → l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ False)%Z.
+  Proof. intros. apply mapsto_valid_generic; eauto. Qed.
 
   Lemma mapsto_valid' l v1 v2: l ↦{0} v1 -∗ l ↦{-1} v2 -∗ False.
   Proof.
