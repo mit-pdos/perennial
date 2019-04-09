@@ -67,15 +67,9 @@ Instance goModel : GoModel :=
     nullptr ty := tt;
     }.
 
-Check (set Go.fs).
-Check (set FS.heap).
-Check (set Data.allocs).
-Check (fun x => (set Go.fs (set FS.heap (set Data.allocs x)))).
-Check @set.
-Check (@set _ _ Data.allocs).
-Check (@set Data.State (DynMap goModel.(@Ptr) Data.ptrModel) Data.allocs _).
+Declare Instance goModelWf : GoModelWf goModel.
 
-Fixpoint interpret' (A B T : Type) {model: GoModel} {model_wf: GoModelWf model} (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
+Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
   match r in (RTerm.t A B T) return ((A * ptrMap) -> Output (B * ptrMap) T) with
   | RTerm.Pure A t => fun x => Success x t
   | RTerm.Reads f => fun x => Success x (f (fst x))
@@ -93,12 +87,11 @@ Fixpoint interpret' (A B T : Type) {model: GoModel} {model_wf: GoModelWf model} 
                         end
   | RTerm.Puts f => fun x => Success (f (fst x), snd x) tt
   | RTerm.Error _ _ _ => (fun x => Error)
-  (* Need a way of composing Setters in order to make this better? *)
   | RTerm.UpdAllocs p pm =>
-    fun x => let f := (set Go.fs (set FS.heap (@set Data.State (DynMap model.(@Ptr) Data.ptrModel) Data.allocs _ (updDyn p pm))))
+    fun x => let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (updDyn p pm))))
                         in Success (f (fst x), snd x) tt
   | RTerm.DelAllocs _ p =>
-    fun x => let f := (set Go.fs (set FS.heap (@set Data.State (DynMap model.(@Ptr) Data.ptrModel) Data.allocs _ (deleteDyn p))))
+    fun x => let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (deleteDyn p))))
                         in Success (f (fst x), snd x) tt
   | RTerm.AndThen r f =>
       fun x =>
@@ -111,7 +104,7 @@ Fixpoint interpret' (A B T : Type) {model: GoModel} {model_wf: GoModelWf model} 
   | RTerm.NotImpl _ => (fun x => NotImpl)
   end X.
 
-Definition interpret (A B T : Type) (model: GoModel) (r: RTerm.t A B T) : A -> Return B T :=
+Definition interpret (A B T : Type) (r: RTerm.t A B T) : A -> Return B T :=
   fun a => match interpret' r (a, ptrMap_null) with
            | Success x t => Val (fst x) t
            | Error => Err
@@ -126,10 +119,16 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.ReadNone f => readNone f
   | RTerm.Puts f => puts f
   | RTerm.Error _ _ _ => error
+  | RTerm.UpdAllocs p pm => _zoom Go.fs (_zoom FS.heap (Data.updAllocs p pm))
+  | RTerm.DelAllocs _ p => _zoom Go.fs (_zoom FS.heap (Data.delAllocs p))
   | RTerm.AndThen r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
   | RTerm.NotImpl r => r
   end.
 
+(* 
+  | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t Go.State Go.State unit
+  | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
+*)
 Ltac refl' RetB RetT e :=
   match eval simpl in e with
   | fun x : ?T => @pure ?A _ (@?E x) =>
@@ -149,6 +148,12 @@ Ltac refl' RetB RetT e :=
 
   | fun x : ?T => @error ?A ?B ?T0 =>
     constr: (fun x => RTerm.Error A B T0)
+
+  | fun x: ?T => @Data.updAllocs ?ty ?p ?pm =>
+    constr: (fun x => RTerm.UpdAllocs ty p pm)
+
+  | fun x: ?T => @Data.delAllocs ?ty ?p =>
+    constr: (fun x => RTerm.DelAllocs ty p)
 
   | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
     let f1 := refl' B T1 r1 in
@@ -235,7 +240,7 @@ Goal False.
   test (rtermDenote ex4).
 Abort.
 
-Compute (interpret goModel ex1 7).
+Compute (interpret ex1 7).
 Compute (interpret ex2 7).
 Compute (interpret ex3 7).
 Compute (interpret ex4 7).
