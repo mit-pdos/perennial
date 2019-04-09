@@ -1215,6 +1215,13 @@ Section OutputRelations.
     t; destruct_return; t.
   Qed.
 
+  Theorem bind_star_expand_r_err `(r: T -> relation A A T) (v:T) x:
+    (rel_or (pure v) (and_then (bind_star r v) r) x Err) <-> bind_star r v x Err.
+  Proof.
+    split; intros; (eapply requiv_err_elim; [ eassumption |]);
+    rewrite bind_star_expand_r; eauto.
+  Qed.
+
   Theorem seq_star_ind_l A B T1 (q x: relation A B T1) T2 (p: relation A A T2) :
     q + and_then p (fun _ => x) ---> x ->
     and_then (seq_star p) (fun _ => q) ---> x.

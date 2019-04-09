@@ -417,6 +417,29 @@ Section ghost_step.
     iApply (ghost_step_lifting with "Hj Hsrc"); eauto; iFrame.
   Qed.
 
+  Lemma ghost_step_err {T1 T2} E j K `{LanguageCtx OpT T1 T2 Λ K} (op: OpT T1) σ:
+    (∀ n, exec_step Λ.(sem) (Call op) (n, σ) Err) →
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call op) -∗ source_ctx -∗ source_state σ ={E}=∗ False.
+  Proof.
+    iIntros (??) "Hj Hctx Hstate".
+    rewrite /source_ctx/source_inv.
+    iDestruct "Hctx" as (ρ) "#Hctx".
+    iInv "Hctx" as (tp' n' σ') ">[Hauth Hpure]" "Hclose".
+    iDestruct "Hpure" as %(Hstep&Hnoerr).
+    iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
+    iDestruct (source_state_reconcile with "Hstate Hauth") as %Heq_state.
+    subst.
+    exfalso. eapply Hnoerr.
+    apply bind_star_expand_r_err.
+    right. right. exists tp', (n', σ'); split; auto.
+    apply exec_pool_equiv_alt_err.
+    eapply step_atomic_error.
+    { symmetry; eapply take_drop_middle; eauto. }
+    { reflexivity. }
+    { eapply fill_step_err; eauto. }
+  Qed.
+
   Lemma ghost_step_lifting_puredet {T1 T2} E j K `{LanguageCtx OpT T1 T2 Λ K}
              (e1: proc OpT T1) e2 efs:
     (∀ n σ1, ∃ n', exec_step Λ.(sem) e1 (n, σ1) (Val (n', σ1) (e2, efs))) →

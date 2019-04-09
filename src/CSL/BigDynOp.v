@@ -374,3 +374,17 @@ Implicit Types Ps Qs : list PROP.
     (∀ a k x, Affine (Φ a k x)) → Affine ([∗ dmap] k↦x ∈ m, Φ _ k x).
   Proof. intros. apply big_sepL_affine=> _ [??]. destruct getDyn; apply _. Qed.
 End prop.
+
+Section sprop.
+Context {PROP : sbi}.
+Implicit Types P Q : PROP.
+Implicit Types Ps Qs : list PROP.
+  Context {A : Type} {Ref Model : A → Type}.
+  Implicit Types m : DynMap Ref Model.
+  Implicit Types Φ Ψ : ∀ {T}, Ref T → Model T → PROP.
+
+  Global Instance big_sepDM_timeless Φ m :
+    Timeless (emp: PROP)%I →
+    (∀ a k x, Timeless (Φ a k x)) → Timeless ([∗ dmap] k↦x ∈ m, Φ _ k x).
+  Proof. intros. eapply big_sepL_timeless=> _ [??]; apply _. Qed.
+End sprop.

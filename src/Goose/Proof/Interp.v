@@ -702,7 +702,7 @@ Proof.
   iFrame. iApply "HΦ". by iFrame.
 Qed.
 
-Lemma wp_list_start dir (S: gset string) s q E :
+Lemma wp_list_start dir q s E :
   {{{ dir ↦{q} Unlocked }}}
     list_start dir @ s ; E
   {{{ RET tt; dir ↦{q} ReadLocked O }}}.
@@ -1016,6 +1016,18 @@ Lemma take_1_drop {T} (x: T) n l:
   take 1 (drop n l) = [x].
 Proof. revert l. induction n => l; destruct l; inversion 1; eauto. Qed.
 
+Lemma slice_agree {T} (p: slice.t T) v1 v2 q1 q2:
+  p ↦{q1} v1 -∗ p ↦{q2} v2 -∗ ⌜ v1 = v2 ⌝.
+Proof.
+  iIntros "Hp1 Hp2".
+  iDestruct "Hp1" as (l1 ?) "Hp1".
+  iDestruct "Hp2" as (l2 ?) "Hp2".
+  iAssert (⌜l1 = l2⌝)%I with "[Hp1 Hp2]" as %Heq.
+  { iApply (@Count_Typed_Heap.mapsto_agree _ _ _ _ _ (go_heap_inG) (Ptr.Heap T)
+                  with "Hp1 Hp2"). }
+  subst. iPureIntro. congruence.
+Qed.
+
 Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l1 l2 rem off :
   rem + off <= length l2 →
   {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
@@ -1060,11 +1072,11 @@ Definition lock_mapsto `{gooseG Σ} (l: LockRef) q mode : iProp Σ :=
    Count_Typed_Heap.mapsto l q mode tt.
 
 Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
-  (∃ (n: nat) stat, lock_mapsto l n stat ∗
+  (∃ (n: Z) stat, lock_mapsto l n stat ∗
     match stat with
       | Unlocked => ⌜ n = O ⌝ ∗ P O
       | ReadLocked n' => ⌜ n = S n' ⌝ ∗ P (S n')
-      | Locked => ⌜ n = 1 ⌝
+      | Locked => ⌜ n = (-1)%Z ⌝
     end)%I.
 
 (*
@@ -1080,7 +1092,7 @@ Definition is_lock (N: namespace) (l: LockRef) (P: nat → iProp Σ) (Q: iProp �
    inv N (lock_inv l P Q))%I.
 
 Definition wlocked (l: LockRef) : iProp Σ :=
-  lock_mapsto l (-1) Locked.
+  lock_mapsto l 1 Locked.
 
 Definition rlocked (l: LockRef) : iProp Σ :=
   lock_mapsto l (-1) Unlocked.
@@ -1090,6 +1102,10 @@ Proof. eexists. exact Unlocked. Qed.
 
 Global Instance inhabited_LockMode: Inhabited LockMode.
 Proof. eexists. exact Reader. Qed.
+
+Lemma wlocked_wlocked l:
+  wlocked l -∗ wlocked l -∗ False.
+Proof. rewrite /wlocked/lock_mapsto. apply Count_Typed_Heap.mapsto_valid_locked; lia. Qed.
 
 Lemma wp_newLock N s E (P: nat → iProp Σ) (Q: iProp Σ) :
   {{{ □ (∀ n, P n ==∗ P (S n) ∗ Q) ∗
@@ -1153,9 +1169,10 @@ Proof.
     iDestruct "Hstat" as "(%&HP)".
     iMod ("HPQ1" with "HP") as "(HP&HQ)".
     do 2 iModIntro.
+    subst.
     iDestruct (read_split_join2 (T := Ptr.Lock) with "Hl") as "(Hl&?)".
     iSplitL "Hl HP".
-    { iNext. iExists (S k), (ReadLocked (S num)). subst. by iFrame. }
+    { iNext. iExists (S (S num)), (ReadLocked (S num)). subst. by iFrame. }
     iApply "HΦ"; iFrame.
   }
   {
@@ -1164,6 +1181,7 @@ Proof.
     iDestruct "Hstat" as "(%&HP)".
     iMod ("HPQ1" with "HP") as "(HP&HQ)".
     do 2 iModIntro.
+    subst.
     iDestruct (read_split_join2 (T := Ptr.Lock) with "Hl") as "(Hl&?)".
     iSplitL "Hl HP".
     { iNext. iExists (S O), (ReadLocked O). subst. by iFrame. }
@@ -1264,9 +1282,9 @@ Proof.
   iMod (gen_typed_heap_update (Ptr.Lock) with "Hσ H") as "($&Hl)".
   simpl; inv_step. iFrame.
   do 2 iModIntro.
-  iDestruct (read_split_join3 (T := Ptr.Lock) l O with "Hl") as "(Hl&?)".
+  iDestruct (read_split_join3 (T := Ptr.Lock) l O with "Hl") as "(?&Hl)".
   iSplitL "Hl".
-  { iNext. iExists 1, Locked. by iFrame. }
+  { iNext. iExists (-1)%Z, Locked. by iFrame. }
   iApply "HΦ"; iFrame.
 Qed.
 
