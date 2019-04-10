@@ -11,6 +11,31 @@ From RecoveryRefinement.Goose Require Import GoZeroValues.
 
 Unset Implicit Arguments.
 
+Lemma map_Permutation (A B: Type) (f: A → B) (al: list A) (bl: list B):
+  Permutation.Permutation (map f al) bl →
+  ∃ al', Permutation.Permutation al al' ∧
+         map f al' = bl.
+Proof.
+  intros Hperm.
+  remember (map f al) as bl0 eqn:Heq.
+  revert Heq.
+  revert al.
+  induction Hperm => al Heq.
+  - destruct al. exists []. eauto.
+    inversion Heq.
+  - destruct al as [|a al]; inversion Heq; subst.
+    simpl in Heq.
+    edestruct (IHHperm) as (al'&?&?); eauto.
+    subst. exists (a :: al'). split; eauto.
+  - destruct al as [|a [| b al]]; try inversion Heq; subst.
+    exists (b :: a :: al); split; eauto.
+    econstructor.
+  - edestruct (IHHperm1) as (al1&?&?); eauto.
+    edestruct (IHHperm2) as (al2&?&?); eauto.
+    exists al2; split; eauto.
+    etransitivity; try eassumption; eauto.
+Qed.
+
 (* TODO: move this out *)
 Existing Instance AtomicPair.Helpers.from_exist_left_sep_later.
 Existing Instance AtomicPair.Helpers.from_exist_left_sep.
@@ -445,17 +470,19 @@ Section refinement_triples.
     iIntros (s lmsg_names) "!> (Hperm&Hslice_list&Hdircontents&Hdirlock)".
     iDestruct "Hperm" as %Hperm.
     (* Simulate the first step of Pickup here, since we've finished readdir *)
-    iMod (ghost_step_call _ _ (λ x, K (Bind x (λ x, Call (Pickup_End uid x))))
+    SearchAbout elements map.
+    rewrite -map_to_list_dom_perm in Hperm *.
+    intros Hperm. symmetry in Hperm.
+    edestruct (map_Permutation) as (msgs'&Hperm'&Hmsgs'_map); first by eauto.
+    iMod (ghost_step_call _ _ (λ x, K (Bind x (λ x, Call (Pickup_End uid x)))) msgs'
             with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
     { intros. econstructor. eexists; split; last by econstructor.
       econstructor; eauto. econstructor.
       eexists. split.
       - rewrite /lookup/readSome. rewrite Heq. eauto.
       - simpl. do 2 eexists; split; last first.
-        { (* todo: we have to prove that if you look up the lmsg_names (which is a perm
-             of the dom of msgs), then you get a permutation of map_to_list msgs *)
-        econstructor. eauto. }
-        econstructor.
+        * econstructor; eauto. by symmetry.
+        * econstructor.
     }
     { solve_ndisj. }
 
@@ -492,32 +519,43 @@ Section refinement_triples.
     iDestruct (slice_mapsto_len with "Hslice_list") as %->.
 
     (* Get induction hypothesis into shape *)
-    remember [] as lmsgs_slices eqn:Heq_lmsgs_slices.
-    iAssert ([∗ list] idx ↦ M ; name ∈ lmsgs_slices ; take 0 lmsg_names,
-                     ∃ v,  ⌜ msgs !! name = Some v ⌝
-                           ∗ ⌜ Message.Id M = name ⌝
-                           ∗ ⌜ Message.Contents M = bytes_to_string v ⌝)%I as "Hslice_prefix".
-    { rewrite Heq_lmsgs_slices big_sepL2_nil //. }
+    remember [] as lmsgs_read eqn:Heq_lmsgs_read.
+    assert (length lmsg_names = length msgs').
+    { by rewrite -Hmsgs'_map map_length. }
+    assert (lmsgs_read = createMessages (take O msgs')) as Hread_ind.
+    { by eauto. }
     assert (exists k, 0 + k = length lmsg_names) as Hk by (exists (length lmsg_names); lia).
     revert Hk.
-    assert (length lmsgs_slices = 0) as Hlen by (rewrite Heq_lmsgs_slices //=).
+    assert (length lmsgs_read = 0) as Hlen by (rewrite Heq_lmsgs_read //=).
     move: Hlen.
     assert (∃ i, i = 0) as (i&Heq_i) by eauto.
     rewrite -{1}Heq_i.
     rewrite -{1}Heq_i.
     rewrite -[a in Loop _ a]Heq_i.
+    rewrite -Heq_i in Hread_ind.
     replace (messages'.(slice.length) = 0) with
         (messages'.(slice.length) = i) by congruence.
     clear Heq_i => Hlen.
-    clear Heq_lmsgs_slices.
+    clear Heq_lmsgs_read.
     intros (k&Hk).
 
     induction k.
     - wp_loop.
-      rewrite right_id in Hk * => ->.
+      rewrite right_id in Hk * => Hlen_names.
+      rewrite Hlen_names.
       destruct equal as [_|]; last by congruence.
       iMod (ghost_step_bind_ret with "Hj Hsource") as "Hj".
       { solve_ndisj. }
+      Lemma createMessages_length msgs:
+        length (createMessages msgs) = length msgs.
+      Proof. induction msgs as [|(?&?) ?] => //=. congruence. Qed.
+      assert (i = length msgs').
+      { congruence. }
+      assert (lmsgs_read = createMessages msgs').
+      {
+        subst. rewrite map_length. by rewrite firstn_all.
+      }
+      subst. rewrite map_length. rewrite firstn_all.
       wp_ret.
       iNext.
       iInv "Hinv" as "H".
@@ -545,8 +583,11 @@ Section refinement_triples.
         { econstructor. eauto. }
         do 2 eexists. split.
         { econstructor.  }
-        assert (length (createMessages (map_to_list msgs)) =
-                messages'.(slice.length)) as -> by admit.
+        assert (length (createMessages msgs') =
+                messages'.(slice.length)) as ->. 
+        { subst. symmetry. etransitivity; first by eassumption.
+          by rewrite createMessages_length.
+        }
         rewrite /pure.
         f_equal.
         destruct messages'. simpl.
@@ -577,10 +618,17 @@ Section refinement_triples.
         rewrite big_sepDM_updDyn; last first.
         { intuition. }
         iFrame. simpl.
-       iDestruct "Hmessages" as (unwrapped) "(%&Hptr)".
-       (* FALSE: it is only a permutation of this, but we'll have handled that ealier *)
-       assert (unwrapped = (createMessages (map_to_list msgs))) as ->.
-       { admit. }
+       iDestruct "Hmessages" as (unwrapped) "(HgetSlice&Hptr)".
+       iDestruct "HgetSlice" as %HgetSlice.
+       (* TODO: make the createSlice non-det in terms of the underlying data
+          outside the slice's view, then we can just directly use that *)
+       assert (unwrapped = (createMessages msgs')) as ->.
+       {  move: HgetSlice. rewrite /Data.getSliceModel/sublist_lookup/mguard/option_guard.
+          destruct decide_rel; eauto; last by congruence.
+          rewrite H10 //=. rewrite drop_0. rewrite H9.
+          (*     SearchAbout sublist_lookup. rewrite H10. rewrite sublist_lookup_all; eauto. *)
+          admit.
+       }
        iFrame.
       }
       iModIntro. wp_bind.
