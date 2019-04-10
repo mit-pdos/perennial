@@ -45,8 +45,8 @@ Section refinement_triples.
        Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v))%I.
 
   Definition InboxLockInv (γ: gname) (n: nat) :=
-    (∃ S, ghost_mapsto_auth γ (A := discreteC contents) S
-      ∗ ghost_mapsto (A := discreteC contents) γ O S)%I.
+    (∃ S1 S2, ghost_mapsto_auth γ (A := discreteC contents) S1
+      ∗ ghost_mapsto (A := discreteC contents) γ O S2)%I.
 
   Definition MailboxStatusInterp (uid: uint64) (lk: LockRef) (γ: gname)
              (ls: MailboxStatus) (msgs: contents) :=
@@ -192,7 +192,7 @@ Section refinement_triples.
     InboxLockInv γ n ==∗ ghost_mapsto_auth γ (A := discreteC contents) S
                  ∗ ghost_mapsto (A := discreteC contents) γ O S.
   Proof.
-    iIntros "Hlockinv". iDestruct "Hlockinv" as (?) "(H1&H2)".
+    iIntros "Hlockinv". iDestruct "Hlockinv" as (??) "(H1&H2)".
       by iMod (ghost_var_update (A := discreteC contents) with "H1 H2") as "($&$)".
   Qed.
 
@@ -218,8 +218,8 @@ Section refinement_triples.
                       partialFile.data := newData; |}) {| partialFile.off := 0;
            partialFile.data := initData; |};
   fileData <- Data.readPtr fileContents;
-  Ret fileData)%proc.
-
+  fileStr <- Data.bytesToString fileData;
+  Ret fileStr)%proc.
 
   Lemma take_length_lt {A} (l : Datatypes.list A) (n : nat):
     length (take n l) < n → take n l = l.
@@ -232,7 +232,7 @@ Section refinement_triples.
   Lemma wp_readMessage_handle f inode ls q1 q2 :
     {{{ f ↦{q1} (inode, Read) ∗ inode ↦{q2} ls }}}
       readMessage_handle f
-    {{{ s, RET s; s ↦ ls ∗ f ↦{q1} (inode, Read) ∗ inode ↦{q2} ls }}}.
+    {{{ RET (bytes_to_string ls); f ↦{q1} (inode, Read) ∗ inode ↦{q2} ls }}}.
   Proof.
     iIntros (Φ) "(Hf&Hinode) HΦ".
     wp_bind.
@@ -268,10 +268,13 @@ Section refinement_triples.
       wp_bind.
       iApply (wp_readPtr with "[$]").
       iIntros "!> HfC".
+      wp_bind.
+      iApply (wp_bytesToString with "[$]").
+      iIntros "!> _".
       wp_ret.
-      iApply "HΦ". iFrame.
       apply take_length_lt in Hlt.
-      rewrite Hlt. rewrite take_drop. iFrame.
+      rewrite Hlt. rewrite take_drop.
+      iApply "HΦ". iFrame.
     - wp_ret.
       iNext.
       iApply ("IH" with "[$] [$] [$] [$]").
@@ -279,6 +282,37 @@ Section refinement_triples.
       assert (length (take k (drop idx ls)) = k) as ->; last by eauto.
       cut (length (take k (drop idx ls)) ≤ k); first by lia.
       eapply firstn_le_length.
+  Qed.
+
+  Lemma pickup_end_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) msgs E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (Pickup_End uid (map_to_list msgs))) -∗ source_ctx -∗ source_state σ
+    ={E}=∗ ⌜ ∃ v, σ.(messages) !! uid = Some (MPickingUp, v) ⌝.
+  Proof.
+    destruct (σ.(messages) !! uid) as [v|] eqn:Heq.
+    - destruct v as ([]&?); try (iIntros; iPureIntro; eauto; done).
+      * iIntros (?) "Hpts Hsrc Hstate".
+        rewrite /pickup.
+        iMod (ghost_step_err _ _ _
+                with "[Hpts] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq //. }
+        by left.
+      * iIntros (?) "Hpts Hsrc Hstate".
+        rewrite /pickup.
+        iMod (ghost_step_err _ _ _
+                with "[Hpts] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq //. }
+        by left.
+    - iIntros (?) "Hpts Hsrc Hstate".
+      rewrite /pickup.
+      iMod (ghost_step_err _ _ _
+              with "[Hpts] Hsrc Hstate"); eauto; last first.
+      intros n. left. left.
+      rewrite /lookup/readSome Heq //.
   Qed.
 
   Lemma pickup_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
@@ -342,20 +376,20 @@ Section refinement_triples.
     { iDestruct "Hmbox" as ">(Hlocked'&Hauth)".
       iDestruct "Hauth" as (S) "(Hauth&%)".
       iExFalso.
-      iDestruct "Hlockinv" as (S') "(Hauth'&?)".
+      iDestruct "Hlockinv" as (S' ?) "(Hauth'&?)".
       iApply (@ghost_var_auth_valid (discreteC contents) with "Hauth Hauth'").
     }
     { iDestruct "Hmbox" as ">(Hlocked'&Hauth&?)".
-      iDestruct "Hauth" as (S) "(Hauth&?)".
+      iDestruct "Hauth" as (S ?) "(Hauth&?)".
       iExFalso.
-      iDestruct "Hlockinv" as (S') "(Hauth'&?)".
+      iDestruct "Hlockinv" as (S' ?) "(Hauth'&?)".
       iApply (@ghost_var_auth_valid (discreteC contents) with "Hauth Hauth'").
     }
     iDestruct "Hmbox" as "[>Hmbox|Hmbox]"; last first.
     { iDestruct "Hmbox" as ">(Hlocked'&Hauth)".
-      iDestruct "Hauth" as (S) "(Hauth&?)".
+      iDestruct "Hauth" as (S ?) "(Hauth&?)".
       iExFalso.
-      iDestruct "Hlockinv" as (S') "(Hauth'&?)".
+      iDestruct "Hlockinv" as (S' ?) "(Hauth'&?)".
       iApply (@ghost_var_auth_valid (discreteC contents) with "Hauth Hauth'").
     }
 
@@ -447,7 +481,7 @@ Section refinement_triples.
     iIntros (messages0) "!> Hmessages0".
     wp_bind.
     iApply (wp_newSlice with "[//]").
-    iIntros (messages) "!> Hmessages".
+    iIntros (messages') "!> (Hmessages&Hmessagesp)".
     wp_bind.
     iApply (wp_writePtr with "[$]").
     iIntros "!> Hmessages0".
@@ -462,14 +496,19 @@ Section refinement_triples.
     iAssert ([∗ list] idx ↦ M ; name ∈ lmsgs_slices ; take 0 lmsg_names,
                      ∃ v,  ⌜ msgs !! name = Some v ⌝
                            ∗ ⌜ Message.Id M = name ⌝
-                           ∗ ⌜ (Message.Contents M).(slice.offset) = O
-                             ∧ (Message.Contents M).(slice.length) = length v ⌝
-                           ∗ Message.Contents M ↦ v)%I as "Hslice_prefix".
+                           ∗ ⌜ Message.Contents M = bytes_to_string v ⌝)%I as "Hslice_prefix".
     { rewrite Heq_lmsgs_slices big_sepL2_nil //. }
     assert (exists k, 0 + k = length lmsg_names) as Hk by (exists (length lmsg_names); lia).
     revert Hk.
     assert (length lmsgs_slices = 0) as Hlen by (rewrite Heq_lmsgs_slices //=).
-    move: Hlen. generalize 0 => i Hlen.
+    move: Hlen.
+    assert (∃ i, i = 0) as (i&Heq_i) by eauto.
+    rewrite -{1}Heq_i.
+    rewrite -{1}Heq_i.
+    rewrite -[a in Loop _ a]Heq_i.
+    replace (messages'.(slice.length) = 0) with
+        (messages'.(slice.length) = i) by congruence.
+    clear Heq_i => Hlen.
     clear Heq_lmsgs_slices.
     intros (k&Hk).
 
@@ -480,7 +519,74 @@ Section refinement_triples.
       iMod (ghost_step_bind_ret with "Hj Hsource") as "Hj".
       { solve_ndisj. }
       wp_ret.
-
+      iNext.
+      iInv "Hinv" as "H".
+      clear σ Heq.
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      assert (Data.getAlloc messages'.(slice.ptr) σ.(heap) = None /\
+              messages'.(slice.ptr) <> nullptr _).
+      { admit. }
+      iDestruct "Hmessagesp" as %(?&?).
+      assert (∃ v, σ.(messages) !! uid = Some (MPickingUp, v)) as (v&Heq).
+      { admit. }
+      iMod (ghost_step_call _ _ _ messages'
+            with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+      { intros. econstructor. eexists; split; last by econstructor.
+        econstructor; last eauto.
+        do 2 eexists.
+        split.
+        { rewrite /lookup/readSome. rewrite Heq. eauto. }
+        reduce.
+        do 2 eexists. split.
+        { simpl. econstructor.  }
+        do 2 eexists. split.
+        { simpl. econstructor. }
+        do 2 eexists. split.
+        { econstructor. eauto. }
+        do 2 eexists. split.
+        { econstructor.  }
+        assert (length (createMessages (map_to_list msgs)) =
+                messages'.(slice.length)) as -> by admit.
+        rewrite /pure.
+        f_equal.
+        destruct messages'. simpl.
+        f_equal. simpl in *. eauto.
+      }
+      { solve_ndisj. }
+      wp_ret.
+      iExists _. iFrame.
+      iSplitR "Hj Hmessages0 HΦ Hreg".
+      { iModIntro. iNext.
+        iSplitL "Hmsgs Hcontents_frag Hdirlock".
+        { simpl. rewrite /MsgsInv. iDestruct "Hmsgs" as (l0) "(?&Hmap)".
+          iExists _. iFrame.
+          simpl.
+          iApply (big_sepM_insert_override_2 with "Hmap"); eauto.
+          rewrite /MsgInv. simpl.
+          iIntros "H". iDestruct "H" as (lk' γ') "(%&%&(?&Hinterp&?&?))".
+          iExists _, _. iFrame.
+          iDestruct "Hinterp" as "(?&Hinterp)". iFrame.
+          iDestruct "Hinterp" as (S) "(Hauth&_)".
+          iFrame "%".
+          iExists _, _.  iFrame.
+          assert (γ' = γ) as -> by congruence.
+          iFrame.
+        }
+        unfold HeapInv.
+        simpl.
+        rewrite big_sepDM_updDyn; last first.
+        { intuition. }
+        iFrame. simpl.
+       iDestruct "Hmessages" as (unwrapped) "(%&Hptr)".
+       (* FALSE: it is only a permutation of this, but we'll have handled that ealier *)
+       assert (unwrapped = (createMessages (map_to_list msgs))) as ->.
+       { admit. }
+       iFrame.
+      }
+      iModIntro. wp_bind.
+      iApply (wp_readPtr with "[$]").
+      iIntros "!> Hptr". wp_ret. iApply "HΦ". iFrame.
+    -
   Abort.
 
 
