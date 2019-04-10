@@ -1083,6 +1083,32 @@ Proof.
   iApply "HΦ".
 Qed.
 
+Lemma wp_bytesToString p bs q s E :
+  {{{ ▷ p ↦{q} bs }}}
+    bytesToString p @ s ; E
+  {{{ RET (bytes_to_string bs); p ↦{q} bs }}}.
+Proof.
+  iIntros (Φ) ">Hp HΦ".
+  iDestruct "Hp" as (vs Heq) "Hp".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct (gen_typed_heap_valid (Ptr.Heap _) with "Hσ Hp") as %[s' [? ?]].
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. simpl in *.
+  intuition. subst.
+  iFrame.
+  iModIntro.
+  iApply "HΦ".
+  iExists _. iFrame. iPureIntro.
+  repeat (deex; inv_step).
+  eauto.
+Qed.
+
 Definition lock_mapsto `{gooseG Σ} (l: LockRef) q mode : iProp Σ :=
    Count_Typed_Heap.mapsto l q mode tt.
 
