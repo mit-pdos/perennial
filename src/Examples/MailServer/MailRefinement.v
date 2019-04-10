@@ -323,7 +323,7 @@ Section refinement_triples.
     iPoseProof (@Count_Heap.read_split_join1 with "[Hrl Hrl']") as "Hrl".
     { iFrame.  }
     iApply (wp_list_finish with "[$]").
-    iIntros (s lmsgs) "!> (Hperm&Hslice_list&Hdircontents&Hdirlock)".
+    iIntros (s lmsg_names) "!> (Hperm&Hslice_list&Hdircontents&Hdirlock)".
     iDestruct "Hperm" as %Hperm.
     (* Simulate the first step of Pickup here, since we've finished readdir *)
     iMod (ghost_step_call _ _ (λ x, K (Bind x (λ x, Call (Pickup_End uid x))))
@@ -332,7 +332,10 @@ Section refinement_triples.
       econstructor; eauto. econstructor.
       eexists. split.
       - rewrite /lookup/readSome. rewrite Heq. eauto.
-      - simpl. do 2 eexists; split; last by eauto.
+      - simpl. do 2 eexists; split; last first.
+        { (* todo: we have to prove that if you look up the lmsg_names (which is a perm
+             of the dom of msgs), then you get a permutation of map_to_list msgs *)
+        econstructor. eauto. }
         econstructor.
     }
     { solve_ndisj. }
@@ -356,16 +359,47 @@ Section refinement_triples.
     (* Begin creating message slices *)
     wp_bind.
     iApply (wp_newAlloc with "[//]").
+    iIntros (messages0) "!> Hmessages0".
+    wp_bind.
+    iApply (wp_newSlice with "[//]").
     iIntros (messages) "!> Hmessages".
-    wp_bind. wp_bind.
-    iApply (wp_newAlloc with "[//]").
-    iIntros (initMessages0) "!> Hinit".
-    wp_ret.
     wp_bind.
     iApply (wp_writePtr with "[$]").
-    iIntros "!> Hmessages".
+    iIntros "!> Hmessages0".
     wp_bind.
     (* Begin loop *)
+    simpl repeat.
+
+    (* just work through base case manually, but we ought to do induction here *)
+    Lemma slice_mapsto_len {T} (s: slice.t T) (ls: Datatypes.list T) :
+      s ↦ ls -∗ ⌜ s.(slice.length) = length ls ⌝.
+    Proof.
+      iIntros "Hpts". iDestruct "Hpts" as (??) "Hpts". iPureIntro.
+      symmetry. eapply getSliceModel_len_inv; eauto.
+    Qed.
+
+    iDestruct (slice_mapsto_len with "Hslice_list") as %->.
+
+    (* Get induction hypothesis into shape *)
+    remember [] as lmsgs_slices eqn:Heq_lmsgs_slices.
+    iAssert ([∗ list] idx ↦ M ; name ∈ lmsgs_slices ; take 0 lmsg_names,
+                     ∃ v,  ⌜ msgs !! name = Some v ⌝
+                           ∗ ⌜ Message.Id M = name ⌝
+                           ∗ Message.Contents M ↦ v)%I as "Hslice_prefix".
+    { rewrite Heq_lmsgs_slices big_sepL2_nil //. }
+    assert (exists k, 0 + k = length lmsg_names) as Hk by (exists (length lmsg_names); lia).
+    revert Hk.
+    assert (length lmsgs_slices = 0) as Hlen by (rewrite Heq_lmsgs_slices //=).
+    move: Hlen. generalize 0 => i Hlen.
+    clear Heq_lmsgs_slices.
+    intros (k&Hk).
+
+    induction k.
+    - wp_loop.
+      rewrite right_id in Hk * => ->.
+      destruct equal as [_|]; last by congruence.
+      wp_ret.
+
   Abort.
 
 
