@@ -71,13 +71,12 @@ Module Mail.
               slice.offset := 0;
               slice.length := length data; |}.
 
-  Fixpoint createMessages (msgs: list (string * list byte)) : relation State State (list Message.t) :=
+  Fixpoint createMessages (msgs: list (string * list byte)) : list Message.t :=
     match msgs with
-    | nil => pure nil
-    | (name,msg)::msgs =>
-      contents <- createSlice msg;
-        messageData <- createMessages msgs;
-        pure (Message.mk name contents::messageData)
+    | nil => nil
+    | (name,contents)::msgs =>
+      let msg := Message.mk name (bytes_to_string contents) in
+      msg::createMessages msgs
     end.
 
   Section OpWrappers.
@@ -110,8 +109,7 @@ Module Mail.
         let! (s, msgs') <- lookup messages uid;
         s <- Filesys.FS.unwrap (mailbox_finish_pickup s);
         _ <- puts (set messages <[uid := (s, msgs')]>);
-        messageData <- createMessages msgs;
-        createSlice messageData
+        createSlice (createMessages msgs)
     | Deliver uid msg =>
       let! (s, msgs) <- lookup messages uid;
         n <- such_that (fun _ (n: string) => msgs !! n = None);
