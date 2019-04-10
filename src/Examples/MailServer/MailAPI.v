@@ -102,7 +102,7 @@ Module Mail.
         match mailbox_lock_acquire s with
         | Some s =>
            _ <- puts (set messages <[uid := (s, msgs)]>);
-           pure (map_to_list msgs)
+           such_that (λ _ msgs', Permutation.Permutation msgs' (map_to_list msgs))
         | None =>
           none
         end
