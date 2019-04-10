@@ -84,16 +84,16 @@ Section refinement_triples.
     iExists _. iFrame. iExists _. eauto.
   Qed.
 
-  Definition MsgInv (Γ: gmap uint64 gname) (σ: Mail.State) ls uid lm : iProp Σ :=
+  Definition MsgInv (Γ: gmap uint64 gname) ls uid lm : iProp Σ :=
       (∃ lk γ, ⌜ Γ !! uid = Some γ ⌝
       ∗ ⌜ List.nth_error ls uid = Some lk ⌝
       ∗ InboxInv uid lk γ (fst lm) (snd lm))%I.
 
   Definition MsgsInv (Γ : gmap uint64 gname) (σ: Mail.State) : iProp Σ :=
-    (∃ ls, GlobalInv ls ∗ ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ σ ls uid lm))%I.
+    (∃ ls, GlobalInv ls ∗ ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm))%I.
 
-  Lemma MsgInv_pers_split Γ σ ls uid lm :
-    MsgInv Γ σ ls uid lm -∗
+  Lemma MsgInv_pers_split Γ ls uid lm :
+    MsgInv Γ ls uid lm -∗
            (∃ lk γ, ⌜ Γ !! uid = Some γ ⌝
                   ∗ ⌜ List.nth_error ls uid = Some lk ⌝
                   ∗ (is_lock boxN lk (InboxLockInv γ) True)).
@@ -105,7 +105,7 @@ Section refinement_triples.
 
   Lemma MsgsInv_pers_split Γ σ ls uid v:
     σ.(messages) !! uid = Some v →
-    ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ σ ls uid lm)
+    ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm)
     -∗ (∃ lk γ, ⌜ Γ !! uid = Some γ ⌝
                 ∗ ⌜ List.nth_error ls uid = Some lk ⌝
                 ∗ (is_lock boxN lk (InboxLockInv γ) True)).
@@ -182,6 +182,15 @@ Section refinement_triples.
     iDestruct (ghost_var_agree2 (A := discreteC sliceLockC) with "Hgptr Hgptr'") as %Heq.
     inversion Heq; subst.
     iApply (slice_agree with "Hlsptr Hlsptr'").
+  Qed.
+
+  Set Nested Proofs Allowed.
+  Lemma InboxLockInv_set_msgs γ n S :
+    InboxLockInv γ n ==∗ ghost_mapsto_auth γ (A := discreteC contents) S
+                 ∗ ghost_mapsto (A := discreteC contents) γ O S.
+  Proof.
+    iIntros "Hlockinv". iDestruct "Hlockinv" as (?) "(H1&H2)".
+      by iMod (ghost_var_update (A := discreteC contents) with "H1 H2") as "($&$)".
   Qed.
 
   Lemma pickup_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
@@ -288,7 +297,7 @@ Section refinement_triples.
     }
 
     iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
-    iDestruct (big_sepM_lookup_acc with "Hm") as "(Huid&Hm)"; eauto.
+    iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
     iDestruct "Huid" as (??) "(>Heq1&>Heq2&Hinbox)".
     iDestruct "Heq1" as %Heq1.
     iDestruct "Heq2" as %Heq2.
@@ -306,7 +315,7 @@ Section refinement_triples.
       iApply (wlocked_wlocked with "Hlocked Hlocked'").
     }
     iDestruct "Hmbox" as "[>Hmbox|>Hmbox]".
-    { admit. }
+    { iExFalso. iApply (@Count_Heap.mapsto_valid_generic with "Hrl Hmbox"); lia. }
     iDestruct "Hmbox" as "(Hrl'&Hlockinv)".
     iPoseProof (@Count_Heap.read_split_join1 with "[Hrl Hrl']") as "Hrl".
     { iFrame.  }
@@ -314,17 +323,45 @@ Section refinement_triples.
     iIntros (s lmsgs) "!> (Hperm&Hslice_list&Hdircontents&Hdirlock)".
     iDestruct "Hperm" as %Hperm.
     (* Simulate the first step of Pickup here, since we've finished readdir *)
+    iMod (ghost_step_call _ _ (λ x, K (Bind x (λ x, Call (Pickup_End uid x))))
+            with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+    { intros. econstructor. eexists; split; last by econstructor.
+      econstructor; eauto. econstructor.
+      eexists. split.
+      - rewrite /lookup/readSome. rewrite Heq. eauto.
+      - simpl. do 2 eexists; split; last by eauto.
+        econstructor.
+    }
+    { solve_ndisj. }
 
-    (*
+
+    iMod (InboxLockInv_set_msgs _ _ msgs with "[$]") as "(Hcontents_auth&Hcontents_frag)".
     iModIntro.
     iExists _. iFrame.
     iExists _. iFrame.
     replace 0%Z with (O: Z) by auto.
-    iSplitL "Hm Hmbox Hdircontents Hmsgs Hlockinv".
+
+    iSplitL "Hm Hlocked Hcontents_auth Hdircontents Hmsgs".
     { iNext.
-      iApply "Hm". iExists _, _. iFrame "%".
+      iApply "Hm". iExists _, _.
+      iSplitL ""; first by eauto.
+      iSplitL ""; first by eauto.
       iFrame "Hlock". iFrame.
-      iRight. iFrame.
+      iExists _; iFrame. eauto.
     }
-     *)
-    Abort.
+
+    (* Begin creating message slices *)
+    wp_bind.
+    iApply (wp_newAlloc with "[//]").
+    iIntros (messages) "!> Hmessages".
+    wp_bind. wp_bind.
+    iApply (wp_newAlloc with "[//]").
+    iIntros (initMessages0) "!> Hinit".
+    wp_ret.
+    wp_bind.
+    iApply (wp_writePtr with "[$]").
+    iIntros "!> Hmessages".
+    wp_bind.
+    (* Begin loop *)
+  Abort.
+End refinement_triples.

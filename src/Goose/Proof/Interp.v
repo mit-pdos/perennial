@@ -1105,7 +1105,7 @@ Proof. eexists. exact Reader. Qed.
 
 Lemma wlocked_wlocked l:
   wlocked l -∗ wlocked l -∗ False.
-Proof. rewrite /wlocked/lock_mapsto. apply Count_Typed_Heap.mapsto_valid_locked; lia. Qed.
+Proof. rewrite /wlocked/lock_mapsto. apply Count_Typed_Heap.mapsto_valid_generic; lia. Qed.
 
 Lemma wp_newLock N s E (P: nat → iProp Σ) (Q: iProp Σ) :
   {{{ □ (∀ n, P n ==∗ P (S n) ∗ Q) ∗

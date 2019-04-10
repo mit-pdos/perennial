@@ -144,8 +144,8 @@ Section gen_heap.
   Lemma mapsto_valid' {T} (l: L T) v1 v2: l ↦{0} v1 -∗ l ↦{-1} v2 -∗ False.
   Proof. iIntros "H1 H2". by iApply (@mapsto_valid' with "H1 H2"). Qed.
 
-  Lemma mapsto_valid_locked {T} (l: L T) (q1 q2: Z) v1 v2 :
-    (q1 >= 0 → q2 >= 0 → mapsto l q1 Locked v1 -∗ mapsto l q2 Locked v2 -∗ False)%Z.
+  Lemma mapsto_valid_generic {T} (l: L T) (q1 q2: Z) ls1 ls2 v1 v2 :
+    (q1 >= 0 → q2 >= 0 → mapsto l q1 ls1 v1 -∗ mapsto l q2 ls2 v2 -∗ False)%Z.
   Proof. iIntros (??) "H1 H2". by iApply (@mapsto_valid_generic with "H1 H2"). Qed.
 
   Lemma read_split_join1 {T} (l: L T) (q: nat) n v :
