@@ -21,6 +21,9 @@ Notation contents := (gmap string (Datatypes.list byte)).
 Canonical Structure contentsC {m: GoModel} {wf: GoModelWf m} :=
   leibnizC contents.
 
+Definition UserDir {model: GoModel} (user:uint64) :=
+  ("user" ++ uint64_to_string user)%string.
+
 Set Default Proof Using "Type".
 Section refinement_triples.
   Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ,
@@ -364,4 +367,7 @@ Section refinement_triples.
     wp_bind.
     (* Begin loop *)
   Abort.
+
+
+
 End refinement_triples.

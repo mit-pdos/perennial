@@ -10,11 +10,8 @@ Module partialFile.
   Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End partialFile.
 
-Definition UserDir {model: GoModel} (user:uint64) :=
-  ("user" ++ uint64_to_string user).
-
 Definition getUserDir {model:GoModel} (user:uint64) : proc string :=
-  Ret (UserDir user).
+  Ret ("user" ++ uint64_to_string user).
 
 Definition SpoolDir : string := "spool".
 
