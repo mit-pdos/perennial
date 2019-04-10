@@ -105,11 +105,11 @@ Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (
   | RTerm.NotImpl _ => (fun x => NotImpl)
   end X.
 
-Definition interpret (A B T : Type) (r: RTerm.t A B T) : A -> Return B T :=
+Definition interpret (A B T : Type) (r: RTerm.t A B T) : A -> Output B T :=
   fun a => match interpret' r (a, ptrMap_null) with
-           | Success x t => Val (fst x) t
-           | Error => Err
-           | NotImpl => Err
+           | Success x t => Success (fst x) t
+           | Error => Error
+           | NotImpl => NotImpl
            end.
 
 Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
@@ -208,7 +208,10 @@ Definition reify T {model : GoModel} {model_wf : GoModelWf model}
 Qed.
 
 (* Prove Interpreter *)
-Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A), (rtermDenote r) a (interpret model r a).
+Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A),
+    (interpret r a) = NotImpl \/
+    ((interpret r a) = Error /\ (rtermDenote r) a Err) \/
+    (exists b t, (interpret r a) = Success b t /\ (rtermDenote r) a (Val b t)).
 
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
