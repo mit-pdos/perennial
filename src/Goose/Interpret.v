@@ -14,41 +14,6 @@ From RecoveryRefinement Require Import Goose.Machine Goose.Filesys Goose.Heap Go
 
 Import ProcNotations.
 
-Module RTerm.
-  Section GoModel.
-  Context `{model_wf : GoModelWf}.
-  Inductive t : Type -> Type -> Type -> Type :=
-  | Pure A T : T -> t A A T
-  (* | Identity A T : t A A T *)
-  (* | None A B T : t A B T *)
-  | Reads A T : (A -> T) -> t A A T
-  | Puts A : (A -> A) -> t A A unit
-  | Error A B T : t A B T
-  | ReadSome A T : (A -> option T) -> t A A T
-  | ReadNone A T : (A -> option T) -> t A A unit
-  | AndThen A B C T1 T2 : t A B T1 -> (T1 -> t B C T2) -> t A C T2
-  (* | SuchThat A T : (A -> T -> Prop) -> t A A T *)
-  (* | SuchAlloc (ty : Ptr.ty) : t Go.State Go.State (Ptr ty) *)
-  | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t Go.State Go.State unit
-  | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
-  | NotImpl A B T (r: relation A B T) : t A B T
-  .
-  End GoModel.
-End RTerm.
-
-Inductive Output B T : Type :=
-| Success (b: B) (t: T) 
-| Error
-| NotImpl
-.
-
-Arguments Success {_ _}.
-Arguments Error {_ _}.
-Arguments NotImpl {_ _}.
-
-Definition ptrMap := unit.
-Definition ptrMap_null : ptrMap := tt.
-
 Instance goModel : GoModel :=
   { byte := unit;
     byte0 := tt;
@@ -63,11 +28,43 @@ Instance goModel : GoModel :=
     File := unit;
     nilFile := tt;
 
-    Ptr ty := unit;
-    nullptr ty := tt;
+    Ptr ty := nat;
+    nullptr ty := 0;
     }.
 
 Declare Instance goModelWf : GoModelWf goModel.
+
+Module RTerm.
+  Inductive t : Type -> Type -> Type -> Type :=
+  | Pure A T : T -> t A A T
+  (* | Identity A T : t A A T *)
+  (* | None A B T : t A B T *)
+  | Reads A T : (A -> T) -> t A A T
+  | Puts A : (A -> A) -> t A A unit
+  | Error A B T : t A B T
+  | ReadSome A T : (A -> option T) -> t A A T
+  | ReadNone A T : (A -> option T) -> t A A unit
+  | AndThen A B C T1 T2 : t A B T1 -> (T1 -> t B C T2) -> t A C T2
+  | AllocPtr ty : Data.ptrRawModel ty -> t Go.State Go.State (goModel.(@Ptr) ty)
+  | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t Go.State Go.State unit
+  | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
+  | NotImpl A B T (r: relation A B T) : t A B T
+  .
+End RTerm.
+
+Inductive Output B T : Type :=
+| Success (b: B) (t: T) 
+| Error
+| NotImpl
+.
+
+Arguments Success {_ _}.
+Arguments Error {_ _}.
+Arguments NotImpl {_ _}.
+
+Definition ptrMap := nat.
+Definition ptrMap_null : ptrMap := 1.
+
 
 Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
   match r in (RTerm.t A B T) return ((A * ptrMap) -> Output (B * ptrMap) T) with
@@ -87,10 +84,14 @@ Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (
                         end
   | RTerm.Puts f => fun x => Success (f (fst x), snd x) tt
   | RTerm.Error _ _ _ => (fun x => Error)
+  | RTerm.AllocPtr _ prm => 
+    fun x => let p := snd x
+                 in let f := (set Go.fs (set FS.heap (@set Data.State (DynMap goModel.(@Ptr) Data.ptrModel) Data.allocs _ (updDyn p (Unlocked, prm)))))
+                        in Success (f (fst x), (snd x) + 1) p
   | RTerm.UpdAllocs p pm =>
     fun x => let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (updDyn p pm))))
                         in Success (f (fst x), snd x) tt
-  | RTerm.DelAllocs _ p =>
+  | RTerm.DelAllocs p =>
     fun x => let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (deleteDyn p))))
                         in Success (f (fst x), snd x) tt
   | RTerm.AndThen r f =>
@@ -119,16 +120,13 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.ReadNone f => readNone f
   | RTerm.Puts f => puts f
   | RTerm.Error _ _ _ => error
+  | RTerm.AllocPtr _ prm => _zoom Go.fs (_zoom FS.heap (Data.allocPtr _ prm))
   | RTerm.UpdAllocs p pm => _zoom Go.fs (_zoom FS.heap (Data.updAllocs p pm))
-  | RTerm.DelAllocs _ p => _zoom Go.fs (_zoom FS.heap (Data.delAllocs p))
+  | RTerm.DelAllocs  p => _zoom Go.fs (_zoom FS.heap (Data.delAllocs p))
   | RTerm.AndThen r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
   | RTerm.NotImpl r => r
   end.
 
-(* 
-  | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t Go.State Go.State unit
-  | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
-*)
 Ltac refl' RetB RetT e :=
   match eval simpl in e with
   | fun x : ?T => @pure ?A _ (@?E x) =>
@@ -148,6 +146,9 @@ Ltac refl' RetB RetT e :=
 
   | fun x : ?T => @error ?A ?B ?T0 =>
     constr: (fun x => RTerm.Error A B T0)
+
+  | fun x: ?T => @Data.allocPtr ?ty ?prm =>
+    constr: (fun x => RTerm.AllocPtr ty prm)
 
   | fun x: ?T => @Data.updAllocs ?ty ?p ?pm =>
     constr: (fun x => RTerm.UpdAllocs ty p pm)
