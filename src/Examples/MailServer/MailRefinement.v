@@ -196,6 +196,91 @@ Section refinement_triples.
       by iMod (ghost_var_update (A := discreteC contents) with "H1 H2") as "($&$)".
   Qed.
 
+  Lemma slice_mapsto_len {T} (s: slice.t T) (ls: Datatypes.list T) :
+    s ↦ ls -∗ ⌜ s.(slice.length) = length ls ⌝.
+  Proof.
+    iIntros "Hpts". iDestruct "Hpts" as (??) "Hpts". iPureIntro.
+    symmetry. eapply getSliceModel_len_inv; eauto.
+  Qed.
+
+  Definition readMessage_handle f :=
+  (fileContents <- Data.newPtr (slice.t byte);
+  initData <- Data.newSlice byte 0;
+  _ <- Loop (fun pf =>
+        buf <- FS.readAt f pf.(partialFile.off) 4096;
+        newData <- Data.sliceAppendSlice pf.(partialFile.data) buf;
+        if compare_to (slice.length buf) 4096 Lt
+        then
+          _ <- Data.writePtr fileContents newData;
+          LoopRet tt
+        else
+          Continue {| partialFile.off := pf.(partialFile.off) + slice.length buf;
+                      partialFile.data := newData; |}) {| partialFile.off := 0;
+           partialFile.data := initData; |};
+  fileData <- Data.readPtr fileContents;
+  Ret fileData)%proc.
+
+
+  Lemma take_length_lt {A} (l : Datatypes.list A) (n : nat):
+    length (take n l) < n → take n l = l.
+  Proof.
+    intros Hlen. apply take_ge.
+    rewrite take_length in Hlen.
+    lia.
+  Qed.
+
+  Lemma wp_readMessage_handle f inode ls q1 q2 :
+    {{{ f ↦{q1} (inode, Read) ∗ inode ↦{q2} ls }}}
+      readMessage_handle f
+    {{{ s, RET s; s ↦ ls ∗ f ↦{q1} (inode, Read) ∗ inode ↦{q2} ls }}}.
+  Proof.
+    iIntros (Φ) "(Hf&Hinode) HΦ".
+    wp_bind.
+    iApply (wp_newAlloc with "[//]").
+    iIntros (fileContents) "!> HfC".
+    wp_bind.
+    iApply (@wp_newSlice with "[//]").
+    iIntros (fileSlice) "!> (HfS&_)".
+    simpl repeat.
+    generalize 4096 => k.
+    replace [] with (take 0 ls) by auto.
+    generalize 0 => idx.
+    wp_bind.
+    iLöb as "IH" forall (fileSlice idx).
+    wp_loop.
+    wp_bind.
+    iApply (wp_readAt with "[$]").
+    iIntros (s) "!> (Hf&Hinode&Hs)".
+    wp_bind.
+    iApply (wp_sliceAppendSlice with "[HfS Hs]").
+    { iFrame. }
+    simpl. clear fileSlice.
+    iIntros (fileSlice) "!> (HfS&Hs)".
+    iDestruct (slice_mapsto_len with "Hs") as %->.
+    iClear "Hs".
+    destruct lt_dec as [Hlt|Hnlt].
+    - wp_bind.
+      iApply (wp_writePtr with "[$]").
+      iIntros "!> HfC".
+      wp_ret.
+      iNext.
+      wp_ret.
+      wp_bind.
+      iApply (wp_readPtr with "[$]").
+      iIntros "!> HfC".
+      wp_ret.
+      iApply "HΦ". iFrame.
+      apply take_length_lt in Hlt.
+      rewrite Hlt. rewrite take_drop. iFrame.
+    - wp_ret.
+      iNext.
+      iApply ("IH" with "[$] [$] [$] [$]").
+      rewrite take_take_drop.
+      assert (length (take k (drop idx ls)) = k) as ->; last by eauto.
+      cut (length (take k (drop idx ls)) ≤ k); first by lia.
+      eapply firstn_le_length.
+  Qed.
+
   Lemma pickup_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
     {{{ j ⤇ K (pickup uid) ∗ Registered ∗ ExecInv }}}
       Pickup uid
@@ -370,14 +455,6 @@ Section refinement_triples.
     (* Begin loop *)
     simpl repeat.
 
-    (* just work through base case manually, but we ought to do induction here *)
-    Lemma slice_mapsto_len {T} (s: slice.t T) (ls: Datatypes.list T) :
-      s ↦ ls -∗ ⌜ s.(slice.length) = length ls ⌝.
-    Proof.
-      iIntros "Hpts". iDestruct "Hpts" as (??) "Hpts". iPureIntro.
-      symmetry. eapply getSliceModel_len_inv; eauto.
-    Qed.
-
     iDestruct (slice_mapsto_len with "Hslice_list") as %->.
 
     (* Get induction hypothesis into shape *)
@@ -385,6 +462,8 @@ Section refinement_triples.
     iAssert ([∗ list] idx ↦ M ; name ∈ lmsgs_slices ; take 0 lmsg_names,
                      ∃ v,  ⌜ msgs !! name = Some v ⌝
                            ∗ ⌜ Message.Id M = name ⌝
+                           ∗ ⌜ (Message.Contents M).(slice.offset) = O
+                             ∧ (Message.Contents M).(slice.length) = length v ⌝
                            ∗ Message.Contents M ↦ v)%I as "Hslice_prefix".
     { rewrite Heq_lmsgs_slices big_sepL2_nil //. }
     assert (exists k, 0 + k = length lmsg_names) as Hk by (exists (length lmsg_names); lia).
@@ -398,6 +477,8 @@ Section refinement_triples.
     - wp_loop.
       rewrite right_id in Hk * => ->.
       destruct equal as [_|]; last by congruence.
+      iMod (ghost_step_bind_ret with "Hj Hsource") as "Hj".
+      { solve_ndisj. }
       wp_ret.
 
   Abort.

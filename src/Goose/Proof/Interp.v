@@ -954,13 +954,18 @@ Lemma nth_error_lookup {A :Type} (l: Datatypes.list A) (i: nat) :
 Proof. revert l; induction i => l; destruct l; eauto. Qed.
 
 Lemma wp_newSlice {T} {GoZero: HasGoZero T} s E len:
-  {{{ True }}} newSlice T len @ s ; E {{{ s, RET s; s ↦ (List.repeat (zeroValue T) len) }}}.
+  {{{ True }}}
+    newSlice T len @ s ; E
+  {{{ s, RET s; s ↦ (List.repeat (zeroValue T) len)
+      ∗ ⌜ s.(slice.length) = len ∧ s.(slice.offset) = 0 ⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_bind. iApply wp_newAlloc; first auto.
   iIntros (p) "!> Hpt".
-  wp_ret. iApply "HΦ". iExists _. iFrame. iPureIntro.
-  rewrite /getSliceModel sublist_lookup_all//= repeat_length //.
+  wp_ret. iApply "HΦ". iSplitL.
+  { iExists _. iFrame. iPureIntro.
+    rewrite /getSliceModel sublist_lookup_all//= repeat_length //. }
+  { iPureIntro; auto. }
 Qed.
 
 Lemma wp_sliceRead {T} s E (p: slice.t T) q off l v :
