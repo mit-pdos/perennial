@@ -259,6 +259,8 @@ Section refinement_triples.
       readMessage_handle f
     {{{ RET (bytes_to_string ls); f ↦{q1} (inode, Read) ∗ inode ↦{q2} ls }}}.
   Proof.
+    rewrite /readMessage_handle.
+    generalize 4096 => k.
     iIntros (Φ) "(Hf&Hinode) HΦ".
     wp_bind.
     iApply (wp_newAlloc with "[//]").
@@ -267,7 +269,6 @@ Section refinement_triples.
     iApply (@wp_newSlice with "[//]").
     iIntros (fileSlice) "!> (HfS&_)".
     simpl repeat.
-    generalize 4096 => k.
     replace [] with (take 0 ls) by auto.
     generalize 0 => idx.
     wp_bind.
@@ -308,6 +309,10 @@ Section refinement_triples.
       cut (length (take k (drop idx ls)) ≤ k); first by lia.
       eapply firstn_le_length.
   Qed.
+
+  Lemma createMessages_length msgs:
+    length (createMessages msgs) = length msgs.
+  Proof. induction msgs as [|(?&?) ?] => //=. congruence. Qed.
 
   Lemma pickup_end_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) msgs E:
     nclose sourceN ⊆ E →
@@ -470,7 +475,6 @@ Section refinement_triples.
     iIntros (s lmsg_names) "!> (Hperm&Hslice_list&Hdircontents&Hdirlock)".
     iDestruct "Hperm" as %Hperm.
     (* Simulate the first step of Pickup here, since we've finished readdir *)
-    SearchAbout elements map.
     rewrite -map_to_list_dom_perm in Hperm *.
     intros Hperm. symmetry in Hperm.
     edestruct (map_Permutation) as (msgs'&Hperm'&Hmsgs'_map); first by eauto.
@@ -508,7 +512,7 @@ Section refinement_triples.
     iIntros (messages0) "!> Hmessages0".
     wp_bind.
     iApply (wp_newSlice with "[//]").
-    iIntros (messages') "!> (Hmessages&Hmessagesp)".
+    iIntros (messages') "!> (Hmessages&_)".
     wp_bind.
     iApply (wp_writePtr with "[$]").
     iIntros "!> Hmessages0".
@@ -546,9 +550,6 @@ Section refinement_triples.
       destruct equal as [_|]; last by congruence.
       iMod (ghost_step_bind_ret with "Hj Hsource") as "Hj".
       { solve_ndisj. }
-      Lemma createMessages_length msgs:
-        length (createMessages msgs) = length msgs.
-      Proof. induction msgs as [|(?&?) ?] => //=. congruence. Qed.
       assert (i = length msgs').
       { congruence. }
       assert (lmsgs_read = createMessages msgs').
@@ -564,9 +565,9 @@ Section refinement_triples.
       assert (Data.getAlloc messages'.(slice.ptr) σ.(heap) = None /\
               messages'.(slice.ptr) <> nullptr _).
       { admit. }
-      iDestruct "Hmessagesp" as %(?&?).
       assert (∃ v, σ.(messages) !! uid = Some (MPickingUp, v)) as (v&Heq).
       { admit. }
+      iDestruct "Hmessages" as (malloc Hmalloc) "Hmessages".
       iMod (ghost_step_call _ _ _ messages'
             with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
       { intros. econstructor. eexists; split; last by econstructor.
@@ -581,17 +582,11 @@ Section refinement_triples.
         { simpl. econstructor. }
         do 2 eexists. split.
         { econstructor. eauto. }
+        eexists (_, _), _. split.
+        { econstructor. split; eauto. }
         do 2 eexists. split.
-        { econstructor.  }
-        assert (length (createMessages msgs') =
-                messages'.(slice.length)) as ->. 
-        { subst. symmetry. etransitivity; first by eassumption.
-          by rewrite createMessages_length.
-        }
-        rewrite /pure.
-        f_equal.
-        destruct messages'. simpl.
-        f_equal. simpl in *. eauto.
+        { econstructor. }
+        econstructor.
       }
       { solve_ndisj. }
       wp_ret.
@@ -617,19 +612,7 @@ Section refinement_triples.
         simpl.
         rewrite big_sepDM_updDyn; last first.
         { intuition. }
-        iFrame. simpl.
-       iDestruct "Hmessages" as (unwrapped) "(HgetSlice&Hptr)".
-       iDestruct "HgetSlice" as %HgetSlice.
-       (* TODO: make the createSlice non-det in terms of the underlying data
-          outside the slice's view, then we can just directly use that *)
-       assert (unwrapped = (createMessages msgs')) as ->.
-       {  move: HgetSlice. rewrite /Data.getSliceModel/sublist_lookup/mguard/option_guard.
-          destruct decide_rel; eauto; last by congruence.
-          rewrite H10 //=. rewrite drop_0. rewrite H9.
-          (*     SearchAbout sublist_lookup. rewrite H10. rewrite sublist_lookup_all; eauto. *)
-          admit.
-       }
-       iFrame.
+        iFrame.
       }
       iModIntro. wp_bind.
       iApply (wp_readPtr with "[$]").

@@ -66,10 +66,11 @@ Module Mail.
 
   Definition createSlice V (data: List.list V) : relation State State (slice.t V) :=
     r <- such_that (fun s (r: ptr _) => Data.getAlloc r s.(heap) = None /\ r <> nullptr _);
-      _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap V) r (Unlocked, data))));
-      pure {| slice.ptr := r;
-              slice.offset := 0;
-              slice.length := length data; |}.
+    salloc <- such_that (fun _ (salloc : slice.t _ * List.list V) =>
+                           let (sli, alloc) := salloc in
+                           sli.(slice.ptr) = r ∧ Data.getSliceModel sli alloc = Some data);
+    _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap V) r (Unlocked, snd salloc))));
+    pure (fst salloc).
 
   Fixpoint createMessages (msgs: list (string * list byte)) : list Message.t :=
     match msgs with
