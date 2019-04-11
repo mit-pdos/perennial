@@ -1197,18 +1197,19 @@ Lemma lock_acquire_Reader_success_inv (l: LockRef) s σ h':
   h' = {| allocs := updDyn l (force_read_lock s, ()) σ.(heap).(allocs) |}.
 Proof. destruct s => //=; inversion 1; subst; eauto. Qed.
 
-Lemma wp_lockAcquire_read N l P Q :
+Lemma wp_lockAcquire_read N l P Q s E:
+  ↑N ⊆ E →
   {{{ is_lock N l P Q }}}
-    lockAcquire l Reader
+    lockAcquire l Reader @ s ; E
   {{{ RET tt; Q ∗ rlocked l }}}.
 Proof.
-  iIntros (Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
+  iIntros (? Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
   iInv N as (k stat) "(>H&Hstat)".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iModIntro. iSplit.
-  { iPureIntro.
+  { iPureIntro. destruct s; eauto.
     inv_step; simpl in *; subst; try congruence.
     destruct l0; inversion Htl_err.
   }
@@ -1219,7 +1220,7 @@ Proof.
   destruct stat.
   { apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
   {
-    iMod (gen_typed_heap_readlock' (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
+    iMod (gen_typed_heap_readlock' (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
     simpl; inv_step. iFrame.
     iDestruct "Hstat" as "(%&HP)".
     iMod ("HPQ1" with "HP") as "(HP&HQ)".
@@ -1231,7 +1232,7 @@ Proof.
     iApply "HΦ"; iFrame.
   }
   {
-    iMod (gen_typed_heap_readlock (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
+    iMod (gen_typed_heap_readlock (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
     simpl; inv_step. iFrame.
     iDestruct "Hstat" as "(%&HP)".
     iMod ("HPQ1" with "HP") as "(HP&HQ)".
@@ -1244,12 +1245,13 @@ Proof.
   }
 Qed.
 
-Lemma wp_lockRelease_read N l P Q :
+Lemma wp_lockRelease_read N l P Q s E:
+  ↑N ⊆ E →
   {{{ is_lock N l P Q ∗ Q ∗ rlocked l }}}
-    lockRelease l Reader
+    lockRelease l Reader @ s; E
   {{{ RET tt; True }}}.
 Proof.
-  iIntros (Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
+  iIntros (? Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
   iInv N as (k stat) "(>H&Hstat)".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
@@ -1266,7 +1268,7 @@ Proof.
     iDestruct (mapsto_valid' (T := Ptr.Lock) with "H Hrlocked") as %[].
   }
   iModIntro. iSplit.
-  { iPureIntro.
+  { iPureIntro. destruct s; eauto.
     inv_step; simpl in *; subst; try congruence.
     destruct l0; try destruct num0; try inversion Htl_err; simpl in *; try congruence.
     apply Count_Heap.Cinl_included_nat in Hlock. lia.
@@ -1275,7 +1277,7 @@ Proof.
   inversion Hstep; subst.
   inv_step.
   iDestruct "Hstat" as "(%&HP)"; subst.
-  iMod (gen_typed_heap_readunlock (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
+  iMod (gen_typed_heap_readunlock (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
   simpl; inv_step. iFrame.
   iMod ("HPQ2" with "[$]") as "HP".
   iModIntro.
@@ -1283,14 +1285,14 @@ Proof.
   destruct num.
   * iDestruct (Count_Typed_Heap.read_split_join (T := Ptr.Lock) with "[$]") as "H".
     iSplitL "Hσ".
-    { destruct s; inversion Htl; subst; iFrame. }
+    { destruct s'; inversion Htl; subst; iFrame. }
     iModIntro.
     iSplitL "H HP".
     { iNext. iExists O, Unlocked. by iFrame. }
       by iApply "HΦ"; iFrame.
   * iDestruct (Count_Typed_Heap.read_split_join2 (T := Ptr.Lock) with "[$]") as "H".
     iSplitL "Hσ".
-    { destruct s; inversion Htl; subst; iFrame. }
+    { destruct s'; inversion Htl; subst; iFrame. }
     iModIntro.
     iSplitL "H HP".
     { iNext. iExists (S num), (ReadLocked num). by iFrame. }
@@ -1307,18 +1309,19 @@ Lemma lock_acquire_Writer_success_inv (l: LockRef) s σ h':
   h' = {| allocs := updDyn l (Locked, ()) σ.(heap).(allocs) |}.
 Proof. destruct s => //=; inversion 1; subst; eauto. Qed.
 
-Lemma wp_lockAcquire_writer N l P Q :
+Lemma wp_lockAcquire_writer N l P Q s0 E :
+  ↑N ⊆ E →
   {{{ is_lock N l P Q }}}
-    lockAcquire l Writer
+    lockAcquire l Writer @ s0 ; E
   {{{ RET tt; P O ∗ wlocked l }}}.
 Proof.
-  iIntros (Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
+  iIntros (? Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
   iInv N as (k stat) "(>H&Hstat)".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iModIntro. iSplit.
-  { iPureIntro.
+  { iPureIntro. destruct s0; eauto.
     inv_step; simpl in *; subst; try congruence.
     destruct l0; inversion Htl_err.
   }
@@ -1343,12 +1346,13 @@ Proof.
   iApply "HΦ"; iFrame.
 Qed.
 
-Lemma wp_lockRelease_writer N l P Q :
+Lemma wp_lockRelease_writer N l P Q s0 E :
+  ↑N ⊆ E →
   {{{ is_lock N l P Q ∗ P O ∗ wlocked l }}}
-    lockRelease l Writer
+    lockRelease l Writer @ s0; E
   {{{ RET tt; True }}}.
 Proof.
-  iIntros (Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
+  iIntros (? Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
   iInv N as (k stat) "(>H&Hstat)".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
@@ -1356,7 +1360,7 @@ Proof.
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ Hrlocked") as %[s'' [? Hrlock]].
   apply Count_Heap.Cinr_included_excl' in Hrlock; subst.
   iModIntro. iSplit.
-  { iPureIntro.
+  { iPureIntro. destruct s0; eauto.
     inv_step; simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
