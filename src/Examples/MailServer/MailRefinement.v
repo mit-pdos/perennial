@@ -319,7 +319,7 @@ Section refinement_triples.
 
   Lemma createMessages_length msgs:
     length (createMessages msgs) = length msgs.
-  Proof. induction msgs as [|(?&?) ?] => //=. congruence. Qed.
+  Proof. by rewrite map_length. Qed.
 
   Lemma pickup_end_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) msgs E:
     nclose sourceN ⊆ E →
@@ -353,6 +353,25 @@ Section refinement_triples.
               with "[Hpts] Hsrc Hstate"); eauto; last first.
       intros n. left. left.
       rewrite /lookup/readSome Heq //.
+  Qed.
+
+  Lemma nth_error_map {A B: Type} (f:A → B) (n: nat) l (b: B):
+    nth_error (map f l) n = Some b → ∃ a, f a = b ∧ nth_error l n = Some a.
+  Proof.
+    revert l. induction n => l //=.
+    * destruct l as [| a l] => //=. intros. exists a; split; congruence.
+    * destruct l as [| a l] => //=. intros. eauto.
+  Qed.
+
+  Lemma take_snoc_S {A} (ls: List.list A) (i: nat) a :
+    nth_error ls i = Some a →
+    take (i + 1) ls = take i ls ++ [a].
+  Proof.
+    intros Hin. revert ls Hin. induction i => ls Hin.
+    - rewrite //=. destruct ls; inversion Hin; subst.
+      simpl. by rewrite firstn_O.
+    - rewrite //=. destruct ls; inversion Hin.
+      simpl. f_equal. eauto.
   Qed.
 
   Lemma pickup_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
@@ -555,7 +574,7 @@ Section refinement_triples.
 
     iMod (ghost_step_bind_ret with "Hj Hsource") as "Hj".
     { solve_ndisj. }
-    iInduction k as [|k] "IH" forall (messages'); last first.
+    iInduction k as [|k] "IH" forall (messages' i lmsgs_read Hread_ind Hlen Hk); last first.
     - wp_loop.
       destruct equal as [Heq_bad|].
       { exfalso. rewrite Heq_bad in Hk. lia. }
@@ -587,14 +606,16 @@ Section refinement_triples.
       iDestruct "Hsubset" as %Hsubset.
       iDestruct (ghost_var_agree (A := discreteC contents) with "Hauth Hcontents_frag") as %?.
       subst.
-      assert (∃ body, msgs !! curr_name = Some body) as (body&Hmsgs_curr_name).
+      assert (∃ body, msgs !! curr_name = Some body ∧
+             nth_error msgs' i = Some (curr_name, body)) as (body&Hmsgs_curr_name&Hmsgs'_curr_name).
       {
-        apply nth_error_In in Heq_name1.
-        apply in_map_iff in Heq_name1 as (mbody&Heq_body&Hin).
+        apply nth_error_map in Heq_name1 as (mbody&Heq_body&Hnth_name1).
+        apply nth_error_In in Hnth_name1 as Hin.
         destruct mbody as (?&body). simpl in Heq_body. subst.
         exists body.
-        apply elem_of_list_In in Hin. rewrite -Hperm' in Hin *.
-        apply elem_of_map_to_list.
+        apply elem_of_list_In in Hin. split.
+        * rewrite -Hperm' in Hin *. apply elem_of_map_to_list.
+        * eauto.
       }
       iDestruct (big_sepM_lookup_acc with "Hmsgs") as "(Hcurr_msg&Hmsgs)"; eauto.
       { eapply lookup_weaken; last eassumption. eauto. }
@@ -615,9 +636,24 @@ Section refinement_triples.
       iModIntro.
       iApply (wp_readMessage_handle with "[$]").
       iIntros "!> (Hfh&Hinode)".
-      admit.
-
-
+      wp_bind.
+      iApply (wp_readPtr with "[$]").
+      iIntros "!> Hmessages0".
+      wp_bind.
+      iApply (wp_sliceAppend with "Hmessages").
+      rename messages' into messages_old.
+      iIntros (messages') "!> Hmessages".
+      wp_bind.
+      iApply (wp_writePtr with "Hmessages0").
+      iIntros "!> Hmessages0".
+      wp_ret.
+      iNext. iApply ("IH" with "[] [] [] [$] HΦ [$] [$] [$] [$] [$] [$] [$] [$]").
+      * iPureIntro.
+        rewrite -(map_app _ _ ([ (curr_name, body)])).
+        f_equal.
+        erewrite take_snoc_S; eauto.
+      * iPureIntro. rewrite app_length Hlen //=.
+      * iPureIntro. lia.
     - wp_loop.
       rewrite right_id in Hk * => Hlen_names.
       rewrite Hlen_names.
@@ -643,14 +679,13 @@ Section refinement_triples.
         iExFalso.
         rewrite /HeapInv.
         rewrite /Data.getAlloc in Heq_get.
-        iPoseProof (big_sepDM_lookup with "Hheap") as "Hheap"; eauto.
-        { eassumption. }
+        iPoseProof (big_sepDM_lookup (T:=(Ptr.Heap Message.t))
+                      (dec := sigPtr_eq_dec) with "Hheap") as "Hheap"; eauto.
         iDestruct "Hmessages" as (???) "Hmessages".
         iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hmessages] Hheap"); try iFrame.
         { lia. }
         { eauto. lia. }
       }
-      (****)
       iMod (pickup_end_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       iDestruct "Hmessages" as (malloc Hmalloc) "Hmessages".
@@ -704,9 +739,7 @@ Section refinement_triples.
       iModIntro. wp_bind.
       iApply (wp_readPtr with "[$]").
       iIntros "!> Hptr". wp_ret. iApply "HΦ". iFrame.
-    -
-  Abort.
-
+  Time Qed.
 
 
 End refinement_triples.

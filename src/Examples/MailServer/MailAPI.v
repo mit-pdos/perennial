@@ -72,13 +72,8 @@ Module Mail.
     _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap V) r (Unlocked, snd salloc))));
     pure (fst salloc).
 
-  Fixpoint createMessages (msgs: list (string * list byte)) : list Message.t :=
-    match msgs with
-    | nil => nil
-    | (name,contents)::msgs =>
-      let msg := Message.mk name (bytes_to_string contents) in
-      msg::createMessages msgs
-    end.
+  Definition createMessages (msgs: list (string * list byte)) : list Message.t :=
+    map (λ '(name, contents), Message.mk name (bytes_to_string contents)) msgs.
 
   Section OpWrappers.
 
