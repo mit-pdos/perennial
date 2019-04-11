@@ -374,6 +374,85 @@ Section refinement_triples.
       simpl. f_equal. eauto.
   Qed.
 
+  Lemma unlock_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (Unlock uid)) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ v, ⌜ σ.(messages) !! uid = Some (MLocked, v) ⌝ ∗
+        j ⤇ K (Call (Unlock uid)) ∗ source_state σ.
+  Proof.
+    destruct (σ.(messages) !! uid) as [v|] eqn:Heq.
+    - destruct v as ([]&?).
+      * iIntros (?) "Hpts Hsrc Hstate".
+        rewrite /pickup.
+        iMod (ghost_step_err _ _ _
+                with "[Hpts] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq //. }
+        by left.
+      * iIntros. iFrame. eauto.
+      * iIntros (?) "Hpts Hsrc Hstate".
+        rewrite /pickup.
+        iMod (ghost_step_err _ _ _
+                with "[Hpts] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq //. }
+        by left.
+    - iIntros (?) "Hpts Hsrc Hstate".
+      rewrite /pickup.
+      iMod (ghost_step_err _ _ _
+              with "[Hpts] Hsrc Hstate"); eauto; last first.
+      intros n. left. left.
+      rewrite /lookup/readSome Heq //.
+  Qed.
+
+  Lemma unlock_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
+    {{{ j ⤇ K (Call (Unlock uid)) ∗ Registered ∗ ExecInv }}}
+      MailServer.Unlock uid
+    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
+  Proof.
+    iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
+    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    wp_bind.
+    iInv "Hinv" as "H".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
+    iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
+    iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
+    iApply (wp_getX with "[$]"); iIntros "!> Hglobal_read".
+    iMod (unlock_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
+    { solve_ndisj. }
+    iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
+    iDestruct "Huid" as (lk γ) "(%&%&#Hlock&Hinbox)".
+    iDestruct "Hinbox" as "(Hmbox&Hdircontents&Hmsgs)".
+    iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+    { intros. econstructor. eexists; split; last by econstructor.
+      econstructor; eauto. econstructor.
+      eexists. split.
+      - rewrite /lookup/readSome. rewrite Heq. eauto.
+      - simpl. do 2 eexists; split; econstructor.
+    }
+    { solve_ndisj. }
+    iExists _. iFrame.
+    iExists _. iFrame.
+    iDestruct "Hmbox" as "(Hwlock&Hlockinv&Hunlocked)".
+    iSplitL "Hm Hmsgs Hdircontents Hunlocked".
+    { iModIntro.  iNext. iApply "Hm". iExists _, _.
+      do 2 (iSplitL ""; eauto).
+      iFrame. iFrame "Hlock".
+    }
+    iModIntro.
+    wp_bind. iApply (wp_sliceRead with "[$]").
+    { eauto. }
+    iIntros "!> Hlsptr".
+    iApply (wp_lockRelease_writer with "[Hwlock Hlockinv]"); swap 1 2.
+    { iFrame "Hlock"; iFrame. }
+    { set_solver+. }
+    iIntros "!> _". iApply "HΦ". iFrame.
+  Qed.
+
   Lemma pickup_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
     {{{ j ⤇ K (pickup uid) ∗ Registered ∗ ExecInv }}}
       Pickup uid
@@ -405,7 +484,9 @@ Section refinement_triples.
     { eauto. }
     iIntros "!> Hlsptr".
 
-    wp_bind. iApply (wp_lockAcquire_writer with "[$]").
+    wp_bind. 
+    iApply (wp_lockAcquire_writer with "Hlock").
+    { set_solver+. }
     iIntros "!> (Hlockinv&Hlocked)".
     wp_bind. wp_ret.
     wp_bind.
