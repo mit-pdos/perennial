@@ -160,9 +160,9 @@ Section gen_heap.
     repeat destruct decide => //=. lia.
   Qed.
 
-  Lemma read_split_join l (q: nat) v : l ↦{q} v ⊣⊢ (l ↦{S q} v ∗ l r↦ v).
+  Lemma read_split_join l (q: nat) v : l ↦{q} v ⊣⊢ (l ↦{S q} v ∗ l ↦{-1} v).
   Proof.
-    rewrite mapsto_eq read_mapsto_eq /mapsto_def /read_mapsto_def.
+    rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op.
     rewrite op_singleton pair_op.
     rewrite counting_op' //=.

@@ -246,6 +246,13 @@ Section refinement_triples.
   fileStr <- Data.bytesToString fileData;
   Ret fileStr)%proc.
 
+  Lemma readMessage_unfold_open userDir name:
+    readMessage userDir name =
+    (let! f <- open userDir name;
+     readMessage_handle f)%proc.
+  Proof. trivial. Qed.
+  Opaque readMessage.
+
   Lemma take_length_lt {A} (l : Datatypes.list A) (n : nat):
     length (take n l) < n → take n l = l.
   Proof.
@@ -546,13 +553,75 @@ Section refinement_triples.
     clear Heq_lmsgs_read.
     intros (k&Hk).
 
-    induction k.
+    iMod (ghost_step_bind_ret with "Hj Hsource") as "Hj".
+    { solve_ndisj. }
+    iInduction k as [|k] "IH" forall (messages'); last first.
+    - wp_loop.
+      destruct equal as [Heq_bad|].
+      { exfalso. rewrite Heq_bad in Hk. lia. }
+      assert (i < length lmsg_names).
+      { lia. }
+      destruct (nth_error lmsg_names i) as [curr_name|] eqn:Heq_name1; last first.
+      { exfalso. eapply nth_error_Some; eauto. }
+      wp_bind. iApply (wp_sliceRead with "Hslice_list"); first eauto.
+      iIntros "!> Hslice_list".
+      wp_bind.
+      rewrite readMessage_unfold_open.
+      wp_bind.
+      clear σ Heq.
+      iInv "Hinv" as "H".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      iMod (pickup_end_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
+      { solve_ndisj. }
+      iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
+      iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
+      iDestruct (big_sepM_lookup_acc with "Hm") as "(Huid&Hm)"; eauto.
+      iDestruct "Huid" as (??) "(>Heq1&>Heq2&Hinbox)".
+      iDestruct "Heq1" as %Heq1'.
+      iDestruct "Heq2" as %Heq2'.
+      iDestruct "Hinbox" as "(Hlock'&Hmbox&>Hdircontents&>Hmsgs)".
+      assert (H7 = lk) by congruence. subst.
+      assert (H8 = γ) by congruence. subst.
+      iDestruct "Hmbox" as ">(Hwlock&Hlockinv)".
+      iDestruct "Hlockinv" as (S) "(Hauth&Hsubset)".
+      iDestruct "Hsubset" as %Hsubset.
+      iDestruct (ghost_var_agree (A := discreteC contents) with "Hauth Hcontents_frag") as %?.
+      subst.
+      assert (∃ body, msgs !! curr_name = Some body) as (body&Hmsgs_curr_name).
+      {
+        apply nth_error_In in Heq_name1.
+        apply in_map_iff in Heq_name1 as (mbody&Heq_body&Hin).
+        destruct mbody as (?&body). simpl in Heq_body. subst.
+        exists body.
+        apply elem_of_list_In in Hin. rewrite -Hperm' in Hin *.
+        apply elem_of_map_to_list.
+      }
+      iDestruct (big_sepM_lookup_acc with "Hmsgs") as "(Hcurr_msg&Hmsgs)"; eauto.
+      { eapply lookup_weaken; last eassumption. eauto. }
+      iDestruct "Hcurr_msg" as (inode q) "(Hpath&Hinode)".
+      iApply (wp_open with "[$]").
+      iIntros (fh) "!> (Hpath&Hfh)".
+      iPoseProof (@Count_GHeap.read_split_join with "Hinode") as "(Hinode_inv&Hinode)".
+      iExists _. iFrame.
+      iSplitL "Hm Hinode_inv Hmsgs Hglobal Hauth Hwlock Hdircontents Hpath".
+      { iModIntro. iNext. iExists _. iFrame. iApply "Hm".
+        iExists _, _. iFrame.
+        iSplitL ""; first by eauto.
+        iSplitL ""; first by eauto.
+        iFrame "Hlock". iExists _. iFrame.
+        iSplitL ""; first by eauto.
+        iApply "Hmsgs". iExists _, (S q). iFrame.
+      }
+      iModIntro.
+      iApply (wp_readMessage_handle with "[$]").
+      iIntros "!> (Hfh&Hinode)".
+      admit.
+
+
     - wp_loop.
       rewrite right_id in Hk * => Hlen_names.
       rewrite Hlen_names.
       destruct equal as [_|]; last by congruence.
-      iMod (ghost_step_bind_ret with "Hj Hsource") as "Hj".
-      { solve_ndisj. }
       assert (i = length msgs').
       { congruence. }
       assert (lmsgs_read = createMessages msgs').
