@@ -408,6 +408,93 @@ Section refinement_triples.
       rewrite /lookup/readSome Heq //.
   Qed.
 
+  Lemma delete_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (Delete uid msg)) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ v body, ⌜ σ.(messages) !! uid = Some (MLocked, v) ∧ v !! msg = Some body ⌝ ∗
+        j ⤇ K (Call (Delete uid msg)) ∗ source_state σ.
+  Proof.
+    destruct (σ.(messages) !! uid) as [v|] eqn:Heq.
+    - destruct v as ([]&msgs).
+      * iIntros (?) "Hpts Hsrc Hstate".
+        rewrite /pickup.
+        iMod (ghost_step_err _ _ _
+                with "[Hpts] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq //. }
+        econstructor.
+      * iIntros (?) "Hpts Hsrc Hstate".
+        destruct (msgs !! msg) as [body|] eqn:Heq_msg.
+        ** iFrame. eauto.
+        ** iMod (ghost_step_err _ _ _
+                with "[Hpts] Hsrc Hstate"); eauto; last first.
+           intros n. left. right.
+           do 2 eexists; split.
+           { rewrite /lookup/readSome Heq //. }
+           simpl. left.
+           rewrite Heq_msg. econstructor.
+      * iIntros (?) "Hpts Hsrc Hstate".
+        rewrite /pickup.
+        iMod (ghost_step_err _ _ _
+                with "[Hpts] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq //. }
+        econstructor.
+    - iIntros (?) "Hpts Hsrc Hstate".
+      rewrite /pickup.
+      iMod (ghost_step_err _ _ _
+              with "[Hpts] Hsrc Hstate"); eauto; last first.
+      intros n. left. left.
+      rewrite /lookup/readSome Heq //.
+  Qed.
+
+  Lemma delete_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
+    {{{ j ⤇ K (Call (Delete uid msg)) ∗ Registered ∗ ExecInv }}}
+      MailServer.Delete uid msg
+    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
+  Proof.
+    iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
+    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    wp_bind. wp_ret.
+    iInv "Hinv" as "H".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
+    iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
+    iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
+    iMod (delete_step_inv with "Hj Hsource Hstate") as (v body (Heq1&Heq2)) "(Hj&Hstate)".
+    { solve_ndisj. }
+    iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
+    iDestruct "Huid" as (lk γ) "(>%&>%&#Hlock&>Hinbox)".
+    iDestruct "Hinbox" as "(Hmbox&Hdircontents&Hmsgs)".
+    iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+    { intros. econstructor. eexists; split; last by econstructor.
+      econstructor; eauto. econstructor.
+      eexists. split.
+      - rewrite /lookup/readSome. rewrite Heq1. eauto.
+      - simpl. do 2 eexists; split.
+        * rewrite Heq2 //=.
+        * econstructor.
+    }
+    { solve_ndisj. }
+    iDestruct (big_sepM_delete with "Hmsgs") as "(Hcurr_msg&Hmsgs)"; eauto.
+    iDestruct "Hmbox" as "(Hlocked&Hlockinv&Hdirlock)".
+    iDestruct "Hcurr_msg" as (inode q) "(Hpath&Hinode)".
+    iApply (wp_delete with "[Hpath Hdircontents Hdirlock]").
+    { iFrame. }
+    iIntros "!> (Hdircontents&Hdirlock)".
+    iExists _. iFrame. iModIntro.
+    iSplitR "HΦ Hreg Hj".
+    - iNext. iExists _. iFrame.
+      iApply "Hm". iExists _, _. iFrame.
+      do 2 (iSplitL ""; eauto).
+      iFrame "Hlock".
+      rewrite dom_delete_L. iFrame.
+    - iApply "HΦ". iFrame.
+  Qed.
+
   Lemma unlock_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
     {{{ j ⤇ K (Call (Unlock uid)) ∗ Registered ∗ ExecInv }}}
       MailServer.Unlock uid
@@ -484,7 +571,7 @@ Section refinement_triples.
     { eauto. }
     iIntros "!> Hlsptr".
 
-    wp_bind. 
+    wp_bind.
     iApply (wp_lockAcquire_writer with "Hlock").
     { set_solver+. }
     iIntros "!> (Hlockinv&Hlocked)".
