@@ -103,13 +103,13 @@ Section refinement_triples.
   Proof.
     iIntros "HG".
     iDestruct "HG" as (lsptr q) "(HP1&HP2)".
-    iDestruct "HP2" as (v Heq) "HP2".
+    iDestruct "HP2" as (v Heq ?) "HP2".
     rewrite //= @read_split /ptr_mapsto Count_Typed_Heap.read_split_join.
     iDestruct "HP1" as "(HP1&HR1)".
     iDestruct "HP2" as "(HP2&HR2)".
     iSplitL "HP1 HP2".
-    { iExists lsptr, (S q). iFrame. iExists _. eauto. }
-    iExists _. iFrame. iExists _. eauto.
+    { iExists lsptr, (S q). iFrame. iExists _. by iFrame. }
+    iExists _. iFrame. iExists _. by iFrame.
   Qed.
 
   Definition MsgInv (Γ: gmap uint64 gname) ls uid lm : iProp Σ :=
@@ -316,11 +316,14 @@ Section refinement_triples.
 
   Lemma pickup_end_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) msgs E:
     nclose sourceN ⊆ E →
-    j ⤇ K (Call (Pickup_End uid (map_to_list msgs))) -∗ source_ctx -∗ source_state σ
-    ={E}=∗ ⌜ ∃ v, σ.(messages) !! uid = Some (MPickingUp, v) ⌝.
+    j ⤇ K (Call (Pickup_End uid msgs)) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ v, ⌜ σ.(messages) !! uid = Some (MPickingUp, v) ⌝ ∗
+        j ⤇ K (Call (Pickup_End uid msgs)) ∗ source_state σ.
   Proof.
     destruct (σ.(messages) !! uid) as [v|] eqn:Heq.
-    - destruct v as ([]&?); try (iIntros; iPureIntro; eauto; done).
+    - destruct v as ([]&?).
+      * iIntros.  iFrame. eauto.
       * iIntros (?) "Hpts Hsrc Hstate".
         rewrite /pickup.
         iMod (ghost_step_err _ _ _
@@ -562,11 +565,25 @@ Section refinement_triples.
       iInv "Hinv" as "H".
       clear σ Heq.
       iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
-      assert (Data.getAlloc messages'.(slice.ptr) σ.(heap) = None /\
-              messages'.(slice.ptr) <> nullptr _).
-      { admit. }
-      assert (∃ v, σ.(messages) !! uid = Some (MPickingUp, v)) as (v&Heq).
-      { admit. }
+      (* Show messages' ptr can't be in σ, else we'd have a redundant pts to *)
+      iDestruct (slice_mapsto_non_null with "Hmessages") as %?.
+      iAssert (⌜ Data.getAlloc messages'.(slice.ptr) σ.(heap) = None /\
+               messages'.(slice.ptr) <> nullptr _ ⌝)%I with "[-]" as %?.
+      { iSplit; last auto.
+        destruct (Data.getAlloc messages'.(slice.ptr) σ.(heap)) as [v|] eqn:Heq_get; last by done.
+        iExFalso.
+        rewrite /HeapInv.
+        rewrite /Data.getAlloc in Heq_get.
+        iPoseProof (big_sepDM_lookup with "Hheap") as "Hheap"; eauto.
+        { eassumption. }
+        iDestruct "Hmessages" as (???) "Hmessages".
+        iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hmessages] Hheap"); try iFrame.
+        { lia. }
+        { eauto. lia. }
+      }
+      (****)
+      iMod (pickup_end_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
+      { solve_ndisj. }
       iDestruct "Hmessages" as (malloc Hmalloc) "Hmessages".
       iMod (ghost_step_call _ _ _ messages'
             with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
@@ -613,6 +630,7 @@ Section refinement_triples.
         rewrite big_sepDM_updDyn; last first.
         { intuition. }
         iFrame.
+        iDestruct "Hmessages" as (?) "Hm". eauto.
       }
       iModIntro. wp_bind.
       iApply (wp_readPtr with "[$]").

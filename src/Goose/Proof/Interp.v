@@ -905,6 +905,10 @@ Lemma ptr_mapsto_non_null {T} (p: ptr T) (v: List.list T):
     (p ↦ v -∗ ⌜ p ≠ nullptr _ ⌝)%I.
 Proof. iIntros "(?&?)"; eauto. Qed.
 
+Lemma slice_mapsto_non_null {T} (p: slice.t T) (v: List.list T):
+  (p ↦ v -∗ ⌜ p.(slice.ptr) ≠ nullptr _ ⌝)%I.
+Proof. iIntros "H". iDestruct "H" as (?) "(?&(?&?))". eauto. Qed.
+
 Lemma wp_ptrStore {T} s E (p: ptr T) off l l' v :
   list_nth_upd l off v = Some l' →
   {{{ ▷ p ↦ l }}} ptrStore p off v @ s; E {{{ RET tt; p ↦ l' }}}.
