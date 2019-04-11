@@ -91,10 +91,10 @@ Notation "l ↦ v" := (generic_mapsto l 0 v)
    if we enforced that as a property of the heap  *)
 
 Definition ptr_mapsto `{gooseG Σ} {T} (l: ptr T) q (v: Datatypes.list T) : iProp Σ
-  := Count_Typed_Heap.mapsto (hG := go_heap_inG)  l q Unlocked v.
+  := (⌜ l ≠ nullptr _ ⌝ ∗ Count_Typed_Heap.mapsto (hG := go_heap_inG) l q Unlocked v)%I.
 
 Definition map_mapsto `{gooseG Σ} {T} (l: Map T) q v : iProp Σ
-  := Count_Typed_Heap.mapsto (hG := go_heap_inG) l q Unlocked v.
+  := (⌜ l ≠ nullptr _ ⌝ ∗ Count_Typed_Heap.mapsto (hG := go_heap_inG) l q Unlocked v)%I.
 
 Instance ptr_gen_mapsto `{gooseG Σ} T : GenericMapsTo (ptr T) _
   := {| generic_mapsto := ptr_mapsto; |}.
@@ -555,7 +555,7 @@ Proof.
   iIntros (Φ) "(Hfh&Hi&Hp) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&HFS&?)".
-  iDestruct "Hp" as (vs Heq) "Hp".
+  iDestruct "Hp" as (vs Heq Hnonnull) "Hp".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?&%)".
   iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
   iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
@@ -578,7 +578,7 @@ Proof.
   iMod (gen_heap_update with "Hinodes Hi") as "($&?)".
   iFrame. iSplitL ""; first by auto.
   iApply "HΦ". iFrame.
-  iModIntro. iExists _; eauto.
+  iModIntro. iExists _; by iFrame.
 Qed.
 
 Lemma wp_create_new dir fname S s E :
@@ -875,7 +875,7 @@ Proof.
   destruct H0 as ((?&?)&?).
   do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
-  iFrame. iApply "HΦ"; eauto.
+  iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma wp_ptrStore_start {T} s E (p: ptr T) off l l' v :
@@ -888,6 +888,7 @@ Proof.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hi" as (Hnonull) "Hi".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -900,13 +901,19 @@ Proof.
   iFrame. iApply "HΦ"; eauto.
 Qed.
 
+Lemma ptr_mapsto_non_null {T} (p: ptr T) (v: List.list T):
+    (p ↦ v -∗ ⌜ p ≠ nullptr _ ⌝)%I.
+Proof. iIntros "(?&?)"; eauto. Qed.
+
 Lemma wp_ptrStore {T} s E (p: ptr T) off l l' v :
   list_nth_upd l off v = Some l' →
   {{{ ▷ p ↦ l }}} ptrStore p off v @ s; E {{{ RET tt; p ↦ l' }}}.
 Proof.
   intros Hupd.
   iIntros (Φ) ">Hi HΦ". rewrite /ptrStore/nonAtomicWriteOp.
-  wp_bind. iApply (wp_ptrStore_start with "Hi"); eauto.
+  iDestruct (ptr_mapsto_non_null with "Hi") as %Hnonull.
+  wp_bind.
+  iApply (wp_ptrStore_start with "Hi"); eauto.
   iNext. iIntros "Hi".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
@@ -919,7 +926,7 @@ Proof.
   inversion Hstep; subst.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_update (Ptr.Heap T) with "Hσ Hi") as "[$ Hi]".
-  iFrame. iApply "HΦ". inv_step; eauto.
+  iFrame. iApply "HΦ". inv_step; by iFrame.
 Qed.
 
 Lemma wp_writePtr {T} s E (p: ptr T) v' l v :
@@ -934,6 +941,7 @@ Proof.
   iIntros (Φ) ">Hi HΦ". rewrite /ptrDeref.
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hi" as (?) "Hi".
   iDestruct (gen_typed_heap_valid (Ptr.Heap T) with "Hσ Hi") as %[s' [? ?]].
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -942,7 +950,7 @@ Proof.
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   inv_step.
-  iFrame. by iApply "HΦ".
+  iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma wp_readPtr {T} s E (p: ptr T) q v l :
@@ -1005,6 +1013,7 @@ Proof.
   iDestruct "Hp" as (vs Heq) "Hp".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hp" as (?) "Hp".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hp") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1035,8 +1044,8 @@ Lemma slice_agree {T} (p: slice.t T) v1 v2 q1 q2:
   p ↦{q1} v1 -∗ p ↦{q2} v2 -∗ ⌜ v1 = v2 ⌝.
 Proof.
   iIntros "Hp1 Hp2".
-  iDestruct "Hp1" as (l1 ?) "Hp1".
-  iDestruct "Hp2" as (l2 ?) "Hp2".
+  iDestruct "Hp1" as (l1 ??) "Hp1".
+  iDestruct "Hp2" as (l2 ??) "Hp2".
   iAssert (⌜l1 = l2⌝)%I with "[Hp1 Hp2]" as %Heq.
   { iApply (@Count_Typed_Heap.mapsto_agree _ _ _ _ _ (go_heap_inG) (Ptr.Heap T)
                   with "Hp1 Hp2"). }
@@ -1092,6 +1101,7 @@ Proof.
   iDestruct "Hp" as (vs Heq) "Hp".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hp" as (?) "Hp".
   iDestruct (gen_typed_heap_valid (Ptr.Heap _) with "Hσ Hp") as %[s' [? ?]].
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1381,7 +1391,7 @@ Proof.
   inversion Hstep; subst.
   do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
-  iFrame. iApply "HΦ"; eauto.
+  iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma wp_mapAlter_start {T} s E (p: Map T) (m: gmap uint64 T) k f :
@@ -1392,6 +1402,7 @@ Proof.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hi" as (?) "Hi".
   iDestruct (gen_typed_heap_valid1 (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1404,10 +1415,15 @@ Proof.
   iFrame. iApply "HΦ"; eauto.
 Qed.
 
+Lemma map_mapsto_non_null {T} (p: Map T) (v: gmap uint64 T):
+    (p ↦ v -∗ ⌜ p ≠ nullptr _ ⌝)%I.
+Proof. iIntros "(?&?)"; eauto. Qed.
+
 Lemma wp_mapAlter {T} s E (p: Map T) (m: gmap uint64 T) k f :
   {{{ ▷ p ↦ m }}} mapAlter p k f @ s; E {{{ RET tt; p ↦ (partial_alter f k m) }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". rewrite /mapAlter/nonAtomicWriteOp.
+  iDestruct (map_mapsto_non_null with "Hi") as %Hnonnull.
   wp_bind. iApply (wp_mapAlter_start with "Hi"); eauto.
   iNext. iIntros "Hi".
   iApply wp_lift_call_step.
@@ -1421,7 +1437,7 @@ Proof.
   inversion Hstep; subst.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_update (Ptr.Map T) with "Hσ Hi") as "[$ Hi]".
-  iFrame. iApply "HΦ". inv_step; eauto.
+  iFrame. iApply "HΦ". inv_step; by iFrame.
 Qed.
 
 Lemma wp_mapLookup {T} s E (p: Map T) (m: gmap uint64 T) q k:
@@ -1430,6 +1446,7 @@ Proof.
   iIntros (Φ) ">Hi HΦ". rewrite /mapLookup.
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hi" as (?) "Hi".
   iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %[s' [? ?]].
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1438,7 +1455,7 @@ Proof.
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   inv_step.
-  iFrame. by iApply "HΦ".
+  iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma wp_MapStartIter {T} s E (p: Map T) (m: gmap uint64 T) q:
@@ -1450,6 +1467,7 @@ Proof.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hi" as (Hnonnull) "Hi".
   iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1466,11 +1484,12 @@ Proof.
 Qed.
 
 Lemma wp_MapEndIter {T} s E (p: Map T) (m: gmap uint64 T) q:
+  p ≠ nullptr _ →
   {{{ ▷ Count_Typed_Heap.mapsto p q (ReadLocked O) m }}}
     (Call (InjectOp.inject (@MapEndIter _ T p)))%proc @ s; E
   {{{ RET tt; p ↦{q} m }}}.
 Proof.
-  iIntros (Φ) ">Hi HΦ".
+  iIntros (Hnonnull Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Map T) with "Hσ Hi") as %[s' [? Hlock]].
@@ -1492,19 +1511,20 @@ Proof.
 Qed.
 
 Lemma wp_mapIter {T} s E (p: Map T) (m: gmap uint64 T) q body Φ:
+  p ≠ nullptr _ →
   ▷ p ↦{q} m -∗
   ▷ (∀ l, ⌜ Permutation.Permutation l (fin_maps.map_to_list m) ⌝
           -∗ WP (mapIterLoop l body) @ s; E {{ Φ }}) -∗
   WP mapIter p body @ s; E {{ v, p ↦{q} m ∗ Φ v }}.
 Proof.
-  iIntros "Hp Hloop".
+  iIntros (?) "Hp Hloop".
   rewrite /mapIter.
   wp_bind. iApply (wp_MapStartIter with "Hp").
   iNext. iIntros (l) "(%&Hp)".
   wp_bind. iApply (wp_wand with "[Hloop]").
   { iApply "Hloop"; eauto. }
   iIntros ([]) "HΦ".
-  iApply (wp_MapEndIter with "Hp").
+  iApply (wp_MapEndIter with "Hp"); eauto.
   iFrame. eauto.
 Qed.
 
