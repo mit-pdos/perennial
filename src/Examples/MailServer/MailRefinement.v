@@ -878,7 +878,7 @@ Section refinement_triples.
     - iInv "Hinv" as "H".
       iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
       destruct na; last first.
-      * iMod (store_start_step_inv_do with "Hj Hsource Hstate") as (s alloc Heq) "(Hj&Hstate)".
+      * iMod (store_start_step_inv_do j K with "Hj Hsource Hstate") as (s alloc Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2).
         iDestruct (big_sepDM_insert_acc with "Hheap") as "(Hp&Hheap)".
@@ -889,7 +889,7 @@ Section refinement_triples.
         iExists _. iFrame. iSplitL "Hheap Hp".
         ** iApply "Hheap". by iFrame.
         ** iApply "HΦ". by iFrame.
-      * iMod (store_finish_step_inv_do with "Hj Hsource Hstate")
+      * iMod (store_finish_step_inv_do j K with "Hj Hsource Hstate")
           as (s alloc alloc' Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2&Heq3).
