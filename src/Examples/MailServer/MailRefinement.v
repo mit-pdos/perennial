@@ -265,6 +265,13 @@ Section refinement_triples.
       simpl. iFrame. eauto.
   Qed.
 
+  (* TODO: this lemma is in the Coq standard library in master but not 8.9 *)
+  Lemma skipn_firstn_comm' {A} (m n : nat) (l : Datatypes.list A):
+    drop m (take n l) = take (n - m) (drop m l).
+  Proof.
+    revert n l. induction m; intros [] []; rewrite ?skipn_O -?minus_n_O ?take_nil //=.
+  Qed.
+
   Lemma slice_skip_split {A} k data (bs0 bs: List.list A) q:
     k ≤ data.(slice.length) →
     data ↦{q} (bs0, bs)
@@ -279,7 +286,7 @@ Section refinement_triples.
       destruct decide_rel; last by inversion 1.
       destruct decide_rel; last by lia.
       inversion 1. subst. f_equal.
-      rewrite skipn_firstn_comm drop_drop //.
+      rewrite skipn_firstn_comm' drop_drop //.
     * iIntros "H". iDestruct "H" as (HgetSlice') "H".
       simpl. iFrame. eauto.
   Qed.
