@@ -67,7 +67,10 @@ Section refinement_triples.
      pointer with the same value in the concrete state. *)
   Definition HeapInv (σ : Mail.State) : iProp Σ :=
     ([∗ dmap] p↦v ∈ (Data.allocs σ.(heap)),
-       Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v))%I.
+     match (fst v) with
+     | ReadLocked n => Count_Typed_Heap.mapsto (hG := go_heap_inG) p n (fst v) (snd v)
+     | _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
+     end)%I.
 
   Definition InboxLockInv (γ: gname) (n: nat) :=
     (∃ S1 S2, ghost_mapsto_auth γ (A := discreteC contents) S1
@@ -159,7 +162,7 @@ Section refinement_triples.
 
   Instance HeapInv_Timeless σ:
     Timeless (HeapInv σ).
-  Proof. apply _. Qed.
+  Proof. apply big_sepDM_timeless; first apply _. intros ?? ([]&?); apply _. Qed.
 
   Definition ExecInv :=
     (∃ Γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ))%I.
@@ -543,6 +546,66 @@ Section refinement_triples.
       rewrite /lookup/readSome Heq //.
   Qed.
 
+  Lemma deref_step_inv_do {T T2} j K `{LanguageCtx _ T T2 Mail.l K} p off (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (DataOp (Data.PtrDeref p off))) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ s alloc v, ⌜ Data.getAlloc p σ.(heap) = Some (s, alloc) ∧
+                      lock_available Reader s <> None ∧
+                      List.nth_error alloc off = Some v ⌝ ∗
+        j ⤇ K (Ret v) ∗ source_state σ.
+  Proof.
+    iIntros (?) "Hj Hsrc Hstate".
+    destruct (Data.getAlloc p σ.(heap)) as [v|] eqn:Heq_lookup; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. left.
+        { rewrite /lookup/readSome Heq_lookup //. }
+    }
+    destruct v as (s&alloc).
+    iExists s, alloc.
+    destruct (lock_available Reader s) as [?|] eqn:Heq_avail; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        simpl.
+        left. destruct s; simpl in Heq_avail; try inversion Heq_avail; try econstructor.
+    }
+    destruct (nth_error alloc off) as [v|] eqn:Heq_nth; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_avail //. }
+        left.
+        { rewrite /lookup/readSome Heq_nth //. }
+    }
+    iMod (ghost_step_call _ _ _ v with "Hj Hsrc Hstate") as "(?&?&?)".
+    { intros n.
+      do 2 eexists; split; last econstructor.
+      do 2 eexists; last eauto.
+      * do 2 eexists. split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_avail //. }
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_nth //. }
+        econstructor.
+      * unfold RecordSet.set. destruct σ; eauto.
+    }
+    { eauto. }
+    iExists _. iFrame. eauto.
+  Qed.
+
+
   Lemma delete_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
     {{{ j ⤇ K (Call (Delete uid msg)) ∗ Registered ∗ ExecInv }}}
       MailServer.Delete uid msg
@@ -631,6 +694,82 @@ Section refinement_triples.
     { set_solver+. }
     iIntros "!> _". iApply "HΦ". iFrame.
   Qed.
+
+  Lemma HeapInv_non_alloc_inv {A} σ p q (ls: List.list A):
+    q >= 0 →
+    HeapInv σ -∗ p ↦{q} ls -∗
+            ⌜ Data.getAlloc p σ.(heap) = None /\ p ≠ nullptr _ ⌝.
+  Proof.
+    iIntros (?) "Hheap Hp".
+    iDestruct "Hp" as "(%&Hp)". iSplit; last auto.
+    destruct (Data.getAlloc p σ.(heap)) as [v|] eqn:Heq_get; last by done.
+    iExFalso.
+    rewrite /HeapInv.
+    rewrite /Data.getAlloc in Heq_get.
+    iPoseProof (big_sepDM_lookup (T:=(Ptr.Heap A))
+                                 (dec := sigPtr_eq_dec) with "Hheap") as "Hheap"; eauto.
+    destruct v as ([]&?);
+      iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hp] Hheap"); try iFrame;
+        eauto with lia.
+  Qed.
+
+  Lemma data_op_refinement {T1 T2} j K `{LanguageCtx _ _ T2 Mail.l K} (op: Data.Op T1):
+    {{{ j ⤇ K (Call (DataOp op)) ∗ Registered ∗ ExecInv }}}
+      Call (GoLayer.DataOp op)
+    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
+  Proof.
+    iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
+    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    destruct op.
+    - iInv "Hinv" as "H".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      iApply (wp_newAlloc with "[//]").
+      iIntros (p) "!> Hp".
+      iDestruct (HeapInv_non_alloc_inv _ _ 0 with "[$] Hp") as %?; first auto.
+      iMod (ghost_step_call _ _ _ p ((RecordSet.set heap _ σ : l.(OpState)))
+            with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+      { intros. econstructor. eexists; split; last by econstructor.
+        econstructor; last eauto.
+        econstructor.
+        * do 2 eexists. split.
+          ** econstructor; eauto.
+          ** do 2 eexists. split; last econstructor.
+             econstructor.
+        * eauto.
+      }
+      { solve_ndisj. }
+      iModIntro. iExists _. iFrame. iSplitL "Hheap Hp".
+      { iNext.
+        rewrite /HeapInv//=.
+        rewrite big_sepDM_updDyn; try intuition.
+        iFrame. simpl. iDestruct "Hp" as "(?&$)".
+      }
+      iApply "HΦ"; by iFrame.
+    - iInv "Hinv" as "H".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      iMod (deref_step_inv_do with "Hj Hsource Hstate") as (s alloc v Heq) "(Hj&Hstate)".
+      { solve_ndisj. }
+      destruct Heq as (Heq1&Heq2&Heq3).
+      iDestruct (big_sepDM_lookup_acc with "Hheap") as "(Hp&Hheap)".
+      { eauto. }
+      destruct s; try (simpl in Heq2; congruence); simpl.
+      * iApply (wp_ptrDeref' with "Hp").
+        { eauto. }
+        { eauto. }
+        iIntros "!> Hp".
+        iExists _. iFrame. iSplitL "Hheap Hp".
+        ** iApply "Hheap". by iFrame.
+        ** iApply "HΦ". by iFrame.
+      * iApply (wp_ptrDeref' with "Hp").
+        { eauto. }
+        { eauto. }
+        iIntros "!> Hp".
+        iExists _. iFrame. iSplitL "Hheap Hp".
+        ** iApply "Hheap". by iFrame.
+        ** iApply "HΦ". by iFrame.
+    -
+   Abort.
+
 
   Lemma pickup_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
     {{{ j ⤇ K (pickup uid) ∗ Registered ∗ ExecInv }}}
@@ -933,20 +1072,8 @@ Section refinement_triples.
       (* Show messages' ptr can't be in σ, else we'd have a redundant pts to *)
       iDestruct (slice_mapsto_non_null with "[Hmessages]") as %?.
       { iExists _; eauto. }
-      iAssert (⌜ Data.getAlloc messages'.(slice.ptr) σ.(heap) = None /\
-               messages'.(slice.ptr) <> nullptr _ ⌝)%I with "[-]" as %?.
-      { iSplit; last auto.
-        destruct (Data.getAlloc messages'.(slice.ptr) σ.(heap)) as [v|] eqn:Heq_get; last by done.
-        iExFalso.
-        rewrite /HeapInv.
-        rewrite /Data.getAlloc in Heq_get.
-        iPoseProof (big_sepDM_lookup (T:=(Ptr.Heap Message.t))
-                      (dec := sigPtr_eq_dec) with "Hheap") as "Hheap"; eauto.
-        iDestruct "Hmessages" as (??) "Hmessages".
-        iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hmessages] Hheap"); try iFrame.
-        { lia. }
-        { eauto. lia. }
-      }
+      iDestruct (HeapInv_non_alloc_inv _ _ 0 with "[$] [Hmessages]") as %?; first auto.
+      { iDestruct "Hmessages" as "(?&?)"; iFrame. }
       iMod (pickup_end_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       iDestruct "Hmessages" as (malloc Hmalloc) "Hmessages".

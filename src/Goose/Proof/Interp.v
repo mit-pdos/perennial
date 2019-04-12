@@ -942,16 +942,24 @@ Lemma wp_writePtr {T} s E (p: ptr T) v' l v :
   {{{ ▷ p ↦ (v' :: l) }}} writePtr p v @ s; E {{{ RET tt; p ↦ (v :: l) }}}.
 Proof. iIntros (Φ) ">Hi HΦ". iApply (wp_ptrStore with "Hi"); eauto. Qed.
 
-Lemma wp_ptrDeref {T} s E (p: ptr T) q off l v :
+(* Note: this version would almost never be used directly when reasoning
+   about a program, only in refinement proofs to show that a source-level
+   dereference can be "compiled" to a low level dereference *)
+Lemma wp_ptrDeref' {T} s E (p: ptr T) q status off l v :
+  lock_available Reader status <> None →
   List.nth_error l off = Some v →
-  {{{ ▷ p ↦{q} l }}} ptrDeref p off @ s; E {{{ RET v; p ↦{q} l }}}.
+  {{{ ▷ Count_Typed_Heap.mapsto p q status l }}}
+     ptrDeref p off @ s; E
+  {{{ RET v; Count_Typed_Heap.mapsto p q status l }}}.
 Proof.
-  intros Hupd.
+  intros Hstat Hupd.
   iIntros (Φ) ">Hi HΦ". rewrite /ptrDeref.
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
-  iDestruct "Hi" as (?) "Hi".
-  iDestruct (gen_typed_heap_valid (Ptr.Heap T) with "Hσ Hi") as %[s' [? ?]].
+  iDestruct (gen_typed_heap_valid2 (Ptr.Heap T) with "Hσ Hi") as %[s' [? Hrlock]].
+  assert (∃ m, Count_Heap.to_lock s' = Cinl m) as (m&?).
+  { destruct status; simpl in Hstat; try congruence;
+    apply Count_Heap.Cinl_included_nat' in Hrlock as (m&?&?); subst; eauto. }
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; simpl in *; subst; try congruence.
@@ -960,6 +968,18 @@ Proof.
   inversion Hstep; subst.
   inv_step.
   iFrame. iApply "HΦ"; by iFrame.
+Qed.
+
+Lemma wp_ptrDeref {T} s E (p: ptr T) q off l v :
+  List.nth_error l off = Some v →
+  {{{ ▷ p ↦{q} l }}} ptrDeref p off @ s; E {{{ RET v; p ↦{q} l }}}.
+Proof.
+  intros Hupd.
+  iIntros (Φ) ">Hi HΦ".
+  iDestruct "Hi" as (?) "Hi".
+  iApply (wp_ptrDeref' with "Hi"); eauto.
+  iIntros "!> Hp".
+  iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma wp_readPtr {T} s E (p: ptr T) q v l :
