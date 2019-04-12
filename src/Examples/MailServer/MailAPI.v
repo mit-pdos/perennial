@@ -17,7 +17,8 @@ Module Mail.
   Inductive Op : Type -> Type :=
   | Pickup_Start uid : Op (list (string * list byte))
   | Pickup_End uid (msgs: list (string * list byte)) : Op (slice.t Message.t)
-  | Deliver uid (msg: slice.t byte) : Op unit
+  | Deliver_Start uid (msg: slice.t byte) : Op unit
+  | Deliver_End uid (msg: slice.t byte) : Op unit
   | Delete uid (msgID: string) : Op unit
   | Unlock uid : Op unit
   | DataOp T (op: Data.Op T) : Op T
@@ -81,6 +82,10 @@ Module Mail.
       (msgs <- Call (Pickup_Start uid);
        Call (Pickup_End uid msgs))%proc.
 
+    Definition deliver uid msg : proc Op unit :=
+      (_ <- Call (Deliver_Start uid msg);
+       Call (Deliver_End uid msg))%proc.
+
   End OpWrappers.
 
   (* TODO: move this to Heap *)
@@ -89,6 +94,18 @@ Module Mail.
          _ <- readSome (fun _ => lock_available Reader s);
          (* TODO: need bounds checks *)
          pure (list.take p.(slice.length) (list.drop p.(slice.offset) alloc)).
+
+  Definition readLockSlice T (p: slice.t T) : relation State State unit :=
+    let! (s, alloc) <- readSome (fun s => Data.getAlloc p.(slice.ptr) s.(heap));
+         s' <- readSome (fun _ => lock_acquire Reader s);
+         _ <- readSome (fun _ => Data.getSliceModel p alloc);
+         puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap T) p.(slice.ptr) (s', alloc)))).
+
+  Definition readUnlockSlice T (p: slice.t T) : relation State State (list T) :=
+    let! (s, alloc) <- readSome (fun s => Data.getAlloc p.(slice.ptr) s.(heap));
+         s' <- readSome (fun _ => lock_release Reader s);
+         _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap T) p.(slice.ptr) (s', alloc))));
+         readSome (fun _ => Data.getSliceModel p alloc).
 
   Definition step T (op: Op T) : relation State State T :=
     match op in Op T return relation State State T with
@@ -106,11 +123,12 @@ Module Mail.
         s <- Filesys.FS.unwrap (mailbox_finish_pickup s);
         _ <- puts (set messages <[uid := (s, msgs')]>);
         createSlice (createMessages msgs)
-    | Deliver uid msg =>
+    | Deliver_Start uid msg => readLockSlice msg
+    | Deliver_End uid msg =>
       let! (s, msgs) <- lookup messages uid;
-        n <- such_that (fun _ (n: string) => msgs !! n = None);
-        msg <- readSlice msg;
-        puts (set messages <[ uid := (s, <[ n := msg ]> msgs) ]>)
+      n <- such_that (fun _ (n: string) => msgs !! n = None);
+      msg <- readUnlockSlice msg;
+      puts (set messages <[ uid := (s, <[ n := msg ]> msgs) ]>)
     | Delete uid msg =>
       let! (s, msgs) <- lookup messages uid;
            match s with
