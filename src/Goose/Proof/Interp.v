@@ -883,17 +883,14 @@ Proof.
   iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
-Lemma wp_ptrStore_start {T} s E (p: ptr T) off l l' v :
-  list_nth_upd l off v = Some l' →
-  {{{ ▷ p ↦ l }}}
+Lemma wp_ptrStore_start {T} s E (p: ptr T) off l v :
+  {{{ ▷ Count_Typed_Heap.mapsto p 0 Unlocked l }}}
    Call (InjectOp.inject (PtrStore p off v SemanticsHelpers.Begin)) @ s ; E
    {{{ RET tt; Count_Typed_Heap.mapsto p 0 Locked l }}}.
 Proof.
-  intros Hupd.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
-  iDestruct "Hi" as (Hnonull) "Hi".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -914,16 +911,14 @@ Lemma slice_mapsto_non_null {T} (p: slice.t T) (v: List.list T):
   (p ↦ v -∗ ⌜ p.(slice.ptr) ≠ nullptr _ ⌝)%I.
 Proof. iIntros "H". iDestruct "H" as (?) "(?&(?&?))". eauto. Qed.
 
-Lemma wp_ptrStore {T} s E (p: ptr T) off l l' v :
+Lemma wp_ptrStore_finish {T} s E (p: ptr T) off l l' v :
   list_nth_upd l off v = Some l' →
-  {{{ ▷ p ↦ l }}} ptrStore p off v @ s; E {{{ RET tt; p ↦ l' }}}.
+  {{{ ▷ Count_Typed_Heap.mapsto p 0 Locked l }}}
+    Call (InjectOp.inject (PtrStore p off v (FinishArgs ()))) @ s; E
+  {{{ RET tt; Count_Typed_Heap.mapsto p 0 Unlocked l' }}}.
 Proof.
   intros Hupd.
-  iIntros (Φ) ">Hi HΦ". rewrite /ptrStore/nonAtomicWriteOp.
-  iDestruct (ptr_mapsto_non_null with "Hi") as %Hnonull.
-  wp_bind.
-  iApply (wp_ptrStore_start with "Hi"); eauto.
-  iNext. iIntros "Hi".
+  iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hi") as %?.
@@ -936,6 +931,21 @@ Proof.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_update (Ptr.Heap T) with "Hσ Hi") as "[$ Hi]".
   iFrame. iApply "HΦ". inv_step; by iFrame.
+Qed.
+
+Lemma wp_ptrStore {T} s E (p: ptr T) off l l' v :
+  list_nth_upd l off v = Some l' →
+  {{{ ▷ p ↦ l }}} ptrStore p off v @ s; E {{{ RET tt; p ↦ l' }}}.
+Proof.
+  intros Hupd.
+  iIntros (Φ) ">Hi HΦ". rewrite /ptrStore/nonAtomicWriteOp.
+  iDestruct (ptr_mapsto_non_null with "Hi") as %Hnonull.
+  wp_bind.
+  iDestruct "Hi" as (?) "Hi".
+  iApply (wp_ptrStore_start with "Hi"); eauto.
+  iNext. iIntros "Hi".
+  iApply (wp_ptrStore_finish with "Hi"); eauto.
+  iIntros "!> ?". iApply "HΦ". by iFrame.
 Qed.
 
 Lemma wp_writePtr {T} s E (p: ptr T) v' l v :

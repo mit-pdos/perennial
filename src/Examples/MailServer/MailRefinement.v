@@ -605,6 +605,114 @@ Section refinement_triples.
     iExists _. iFrame. eauto.
   Qed.
 
+  Lemma store_start_step_inv_do {T T2} j K `{LanguageCtx _ unit T2 Mail.l K} p off (x: T)
+        (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (DataOp (Data.PtrStore p off x Begin))) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ s alloc, ⌜ Data.getAlloc p σ.(heap) = Some (s, alloc) ∧
+                      lock_acquire Writer s <> None ⌝ ∗
+        j ⤇ K (Ret tt)
+        ∗ source_state (RecordSet.set heap (RecordSet.set Data.allocs (updDyn p (Locked, alloc))) σ).
+  Proof.
+    iIntros (?) "Hj Hsrc Hstate".
+    destruct (Data.getAlloc p σ.(heap)) as [v|] eqn:Heq_lookup; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. left.
+        { rewrite /lookup/readSome Heq_lookup //. }
+    }
+    destruct v as (s&alloc).
+    iExists s, alloc.
+    destruct (lock_acquire Writer s) as [?|] eqn:Heq_avail; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        simpl.
+        left. destruct s; simpl in Heq_avail; try inversion Heq_avail; try econstructor.
+    }
+    iMod (ghost_step_call _ _ _ tt ((RecordSet.set heap _ σ : l.(OpState)))
+            with "Hj Hsrc Hstate") as "(?&?&?)".
+    { intros n.
+      do 2 eexists; split; last econstructor.
+      do 2 eexists; last eauto.
+      * do 2 eexists. split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_avail //. }
+        econstructor.
+    }
+    { eauto. }
+    iFrame. eauto.
+    destruct s; inversion Heq_avail; subst. eauto.
+  Qed.
+
+  Lemma store_finish_step_inv_do {T T2} j K `{LanguageCtx _ unit T2 Mail.l K} p off (x: T) xh
+        (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (DataOp (Data.PtrStore p off x (FinishArgs xh)))) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ s alloc alloc', ⌜ Data.getAlloc p σ.(heap) = Some (s, alloc) ∧
+                            Data.list_nth_upd alloc off x = Some alloc' ∧
+                            lock_release Writer s <> None ⌝ ∗
+        j ⤇ K (Ret tt)
+        ∗ source_state (RecordSet.set heap (RecordSet.set Data.allocs (updDyn p (Unlocked, alloc'))) σ).
+  Proof.
+    iIntros (?) "Hj Hsrc Hstate".
+    destruct (Data.getAlloc p σ.(heap)) as [v|] eqn:Heq_lookup; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. left.
+        { rewrite /lookup/readSome Heq_lookup //. }
+    }
+    destruct v as (s&alloc).
+    iExists s, alloc.
+    destruct (lock_release Writer s) as [?|] eqn:Heq_avail; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        simpl.
+        left. destruct s; simpl in Heq_avail; try inversion Heq_avail; try econstructor.
+    }
+    destruct (Data.list_nth_upd alloc off x) as [alloc'|] eqn:Heq_upd; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_avail //. }
+        left.
+        rewrite /readSome Heq_upd //.
+    }
+    iMod (ghost_step_call _ _ _ tt ((RecordSet.set heap _ σ : l.(OpState)))
+            with "Hj Hsrc Hstate") as "(?&?&?)".
+    { intros n.
+      do 2 eexists; split; last econstructor.
+      do 2 eexists; last eauto.
+      * do 2 eexists. split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_avail //. }
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_upd //. }
+        econstructor.
+    }
+    { eauto. }
+    iFrame. eauto.
+    destruct s; inversion Heq_avail; subst. eauto.
+  Qed.
+
 
   Lemma delete_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
     {{{ j ⤇ K (Call (Delete uid msg)) ∗ Registered ∗ ExecInv }}}
@@ -762,6 +870,34 @@ Section refinement_triples.
         ** iApply "HΦ". by iFrame.
       * iApply (wp_ptrDeref' with "Hp").
         { eauto. }
+        { eauto. }
+        iIntros "!> Hp".
+        iExists _. iFrame. iSplitL "Hheap Hp".
+        ** iApply "Hheap". by iFrame.
+        ** iApply "HΦ". by iFrame.
+    - iInv "Hinv" as "H".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      destruct na; last first.
+      * iMod (store_start_step_inv_do with "Hj Hsource Hstate") as (s alloc Heq) "(Hj&Hstate)".
+        { solve_ndisj. }
+        destruct Heq as (Heq1&Heq2).
+        iDestruct (big_sepDM_insert_acc with "Hheap") as "(Hp&Hheap)".
+        { eauto. }
+        destruct s; try (simpl in Heq2; congruence); simpl; [].
+        iApply (wp_ptrStore_start with "Hp").
+        iIntros "!> Hp".
+        iExists _. iFrame. iSplitL "Hheap Hp".
+        ** iApply "Hheap". by iFrame.
+        ** iApply "HΦ". by iFrame.
+      * iMod (store_finish_step_inv_do with "Hj Hsource Hstate")
+          as (s alloc alloc' Heq) "(Hj&Hstate)".
+        { solve_ndisj. }
+        destruct Heq as (Heq1&Heq2&Heq3).
+        iDestruct (big_sepDM_insert_acc with "Hheap") as "(Hp&Hheap)".
+        { eauto. }
+        destruct s; try (simpl in Heq3; congruence); simpl; [].
+        destruct args.
+        iApply (wp_ptrStore_finish with "Hp").
         { eauto. }
         iIntros "!> Hp".
         iExists _. iFrame. iSplitL "Hheap Hp".
