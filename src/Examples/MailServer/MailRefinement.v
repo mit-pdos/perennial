@@ -95,21 +95,21 @@ Section refinement_triples.
                 ∗ inode ↦{n} msgData))%I.
 
   Definition GlobalInv ls : iProp Σ :=
-    (∃ (lsptr: slice.t LockRef) (q: nat), global ↦{q} Some lsptr ∗ lsptr ↦{q} ls)%I.
+    (∃ (lsptr: slice.t LockRef) (q: nat), global ↦{q} Some lsptr ∗ lsptr ↦{q} (ls, ls))%I.
 
 
   Lemma GlobalInv_split ls :
-    GlobalInv ls ⊢ GlobalInv ls ∗ ∃ lsptr, global ↦{-1} Some lsptr ∗ lsptr ↦{-1} ls.
+    GlobalInv ls ⊢ GlobalInv ls ∗ ∃ lsptr, global ↦{-1} Some lsptr ∗ lsptr ↦{-1} (ls, ls).
   Proof.
     iIntros "HG".
     iDestruct "HG" as (lsptr q) "(HP1&HP2)".
-    iDestruct "HP2" as (v Heq ?) "HP2".
+    iDestruct "HP2" as (Heq ?) "HP2".
     rewrite //= @read_split /ptr_mapsto Count_Typed_Heap.read_split_join.
     iDestruct "HP1" as "(HP1&HR1)".
     iDestruct "HP2" as "(HP2&HR2)".
     iSplitL "HP1 HP2".
-    { iExists lsptr, (S q). iFrame. iExists _. by iFrame. }
-    iExists _. iFrame. iExists _. by iFrame.
+    { iExists lsptr, (S q). iFrame.  by iFrame. }
+    iExists _. iFrame. by iFrame.
   Qed.
 
   Definition MsgInv (Γ: gmap uint64 gname) ls uid lm : iProp Σ :=
@@ -202,14 +202,14 @@ Section refinement_triples.
   Qed.
 
   Lemma GlobalInv_unify lsptr ls ls':
-    global ↦{-1} Some lsptr -∗ lsptr ↦{-1} ls -∗ GlobalInv ls' -∗ ⌜ ls = ls' ⌝.
+    global ↦{-1} Some lsptr -∗ lsptr ↦{-1} (ls, ls) -∗ GlobalInv ls' -∗ ⌜ ls = ls' ⌝.
   Proof.
     iIntros "Hgptr Hlsptr HG".
     iDestruct "HG" as (lsptr' ?) "(Hgptr'&Hlsptr')".
     rewrite //=.
     iDestruct (ghost_var_agree2 (A := discreteC sliceLockC) with "Hgptr Hgptr'") as %Heq.
     inversion Heq; subst.
-    iApply (slice_agree with "Hlsptr Hlsptr'").
+    iDestruct (slice_agree with "Hlsptr Hlsptr'") as "(?&?)"; eauto.
   Qed.
 
   Set Nested Proofs Allowed.
@@ -221,7 +221,14 @@ Section refinement_triples.
       by iMod (ghost_var_update (A := discreteC contents) with "H1 H2") as "($&$)".
   Qed.
 
-  Lemma slice_mapsto_len {T} (s: slice.t T) (ls: Datatypes.list T) :
+  Lemma slice_mapsto_len {T} (s: slice.t T) (ls0 ls: Datatypes.list T) :
+    s ↦ (ls0, ls) -∗ ⌜ s.(slice.length) = length ls ⌝.
+  Proof.
+    iIntros "Hpts". iDestruct "Hpts" as (??) "Hpts". iPureIntro.
+    symmetry. eapply getSliceModel_len_inv; eauto.
+  Qed.
+
+  Lemma slice_mapsto_len' {T} (s: slice.t T) (ls: Datatypes.list T) :
     s ↦ ls -∗ ⌜ s.(slice.length) = length ls ⌝.
   Proof.
     iIntros "Hpts". iDestruct "Hpts" as (??) "Hpts". iPureIntro.
@@ -238,17 +245,15 @@ Section refinement_triples.
               _ <- FS.append f (slice.take 4096 buf);
               Continue (slice.skip 4096 buf)) data)%proc.
 
-  (* TODO: need stronger slice points to that does remember what the underlying
-     array was to make these proofs clean *)
-  Lemma slice_take_split {A} k data (bs: List.list A) q:
+  Lemma slice_take_split {A} k data (bs0 bs: List.list A) q:
     k ≤ data.(slice.length) →
-    data ↦{q} bs
-         -∗ (slice.take k data) ↦{q} (take k bs)
-         ∗ ((slice.take k data) ↦{q} (take k bs) -∗ data ↦{q} bs).
+    data ↦{q} (bs0, bs)
+         -∗ (slice.take k data) ↦{q} (bs0, take k bs)
+         ∗ ((slice.take k data) ↦{q} (bs0, take k bs) -∗ data ↦{q} (bs0, bs)).
   Proof.
-    iIntros (Hlen) "H". iDestruct "H" as (vs HgetSlice) "H".
+    iIntros (Hlen) "H". iDestruct "H" as (HgetSlice) "H".
     iSplitL "H".
-    * iExists _. iFrame.
+    * iFrame.
       iPureIntro. move: HgetSlice. rewrite /Data.getSliceModel//=.
       rewrite /sublist_lookup/mguard/option_guard.
       destruct decide_rel; last by inversion 1.
@@ -256,15 +261,33 @@ Section refinement_triples.
       inversion 1. subst. f_equal.
       rewrite take_take.
       f_equal. lia.
-    * iIntros "H". iDestruct "H" as (? HgetSlice') "H".
-      simpl. iExists _. iFrame. eauto. iFrame.
-  Abort.
+    * iIntros "H". iDestruct "H" as (HgetSlice') "H".
+      simpl. iFrame. eauto.
+  Qed.
 
+  Lemma slice_skip_split {A} k data (bs0 bs: List.list A) q:
+    k ≤ data.(slice.length) →
+    data ↦{q} (bs0, bs)
+         -∗ (slice.skip k data) ↦{q} (bs0, drop k bs)
+         ∗ ((slice.skip k data) ↦{q} (bs0, drop k bs) -∗ data ↦{q} (bs0, bs)).
+  Proof.
+    iIntros (Hlen) "H". iDestruct "H" as (HgetSlice) "H".
+    iSplitL "H".
+    * iFrame.
+      iPureIntro. move: HgetSlice. rewrite /Data.getSliceModel//=.
+      rewrite /sublist_lookup/mguard/option_guard.
+      destruct decide_rel; last by inversion 1.
+      destruct decide_rel; last by lia.
+      inversion 1. subst. f_equal.
+      rewrite skipn_firstn_comm drop_drop //.
+    * iIntros "H". iDestruct "H" as (HgetSlice') "H".
+      simpl. iFrame. eauto.
+  Qed.
 
-  Lemma wp_writeBuf f data inode bs1 bs2 q:
-    {{{ f ↦ (inode, Write) ∗ inode ↦ bs1 ∗ data ↦{q} bs2 }}}
+  Lemma wp_writeBuf f data inode bs0 bs1 bs2 q:
+    {{{ f ↦ (inode, Write) ∗ inode ↦ bs1 ∗ data ↦{q} (bs0, bs2) }}}
       writeBuf f data
-    {{{ RET tt; f ↦ (inode, Write) ∗ inode ↦ (bs1 ++ bs2) ∗ data ↦{q} bs2 }}}.
+    {{{ RET tt; f ↦ (inode, Write) ∗ inode ↦ (bs1 ++ bs2) ∗ data ↦{q} (bs0, bs2) }}}.
   Proof.
     rewrite /writeBuf.
     generalize 4096 => k.
@@ -276,24 +299,17 @@ Section refinement_triples.
       iApply (wp_append with "[$]").
       iIntros "!> H". do 2 wp_ret. by iApply "HΦ".
     - wp_bind.
-      (* TODO: not true, see above about need for stronger slice rule *)
-      iAssert ((slice.take k data) ↦{q} (take k bs2)
-                ∗ ((slice.take k data) ↦{q} (take k bs2) -∗ data ↦{q} bs2))%I with "[Hdata]"
-        as "(Htake&Hwand)".
-      { admit. }
+      iDestruct (slice_take_split k with "Hdata") as "(Htake&Hwand)"; first by lia.
       iApply (wp_append with "[$]").
       iIntros "!> (Hf&Hinode&Hdata)".
       iDestruct ("Hwand" with "Hdata") as "Hdata".
       wp_ret.
-      iAssert ((slice.skip k data) ↦{q} (drop k bs2)
-                ∗ ((slice.skip k data) ↦{q} (drop k bs2) -∗ data ↦{q} bs2))%I with "[Hdata]"
-        as "(Hdrop&Hwand)".
-      { admit. }
+      iDestruct (slice_skip_split k with "Hdata") as "(Hdrop&Hwand)"; first by lia.
       iApply ("IH" with "Hf Hinode Hdrop [HΦ Hwand]").
       iIntros "!> (Hf&Hinode&Hdata)".
       iDestruct ("Hwand" with "Hdata") as "Hdata".
       iApply "HΦ". iFrame. rewrite -app_assoc take_drop //.
-  Abort.
+  Qed.
 
   Definition readMessage_handle f :=
   (fileContents <- Data.newPtr (slice.t byte);
@@ -341,11 +357,13 @@ Section refinement_triples.
     iIntros (fileContents) "!> HfC".
     wp_bind.
     iApply (@wp_newSlice with "[//]").
-    iIntros (fileSlice) "!> (HfS&_)".
+    iIntros (fileSlice) "!> HfS".
     simpl repeat.
     replace [] with (take 0 ls) by auto.
     generalize 0 => idx.
     wp_bind.
+    iAssert (fileSlice ↦ take idx ls)%I with "[HfS]" as "HfS".
+    { iExists _; eauto. }
     iLöb as "IH" forall (fileSlice idx).
     wp_loop.
     wp_bind.
@@ -369,7 +387,7 @@ Section refinement_triples.
       iApply (wp_readPtr with "[$]").
       iIntros "!> HfC".
       wp_bind.
-      iApply (wp_bytesToString with "[$]").
+      iApply (wp_bytesToString' with "HfS").
       iIntros "!> _".
       wp_ret.
       apply take_length_lt in Hlt.
@@ -776,7 +794,7 @@ Section refinement_triples.
     iIntros (messages0) "!> Hmessages0".
     wp_bind.
     iApply (wp_newSlice with "[//]").
-    iIntros (messages') "!> (Hmessages&_)".
+    iIntros (messages') "!> Hmessages".
     wp_bind.
     iApply (wp_writePtr with "[$]").
     iIntros "!> Hmessages0".
@@ -906,7 +924,8 @@ Section refinement_triples.
       clear σ Heq.
       iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
       (* Show messages' ptr can't be in σ, else we'd have a redundant pts to *)
-      iDestruct (slice_mapsto_non_null with "Hmessages") as %?.
+      iDestruct (slice_mapsto_non_null with "[Hmessages]") as %?.
+      { iExists _; eauto. }
       iAssert (⌜ Data.getAlloc messages'.(slice.ptr) σ.(heap) = None /\
                messages'.(slice.ptr) <> nullptr _ ⌝)%I with "[-]" as %?.
       { iSplit; last auto.
@@ -916,7 +935,7 @@ Section refinement_triples.
         rewrite /Data.getAlloc in Heq_get.
         iPoseProof (big_sepDM_lookup (T:=(Ptr.Heap Message.t))
                       (dec := sigPtr_eq_dec) with "Hheap") as "Hheap"; eauto.
-        iDestruct "Hmessages" as (???) "Hmessages".
+        iDestruct "Hmessages" as (??) "Hmessages".
         iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hmessages] Hheap"); try iFrame.
         { lia. }
         { eauto. lia. }
@@ -969,7 +988,6 @@ Section refinement_triples.
         rewrite big_sepDM_updDyn; last first.
         { intuition. }
         iFrame.
-        iDestruct "Hmessages" as (?) "Hm". eauto.
       }
       iModIntro. wp_bind.
       iApply (wp_readPtr with "[$]").

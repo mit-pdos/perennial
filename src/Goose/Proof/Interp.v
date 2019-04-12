@@ -102,11 +102,16 @@ Instance ptr_gen_mapsto `{gooseG Σ} T : GenericMapsTo (ptr T) _
 Instance map_gen_mapsto `{gooseG Σ} T : GenericMapsTo (Map T) _
   := {| generic_mapsto := map_mapsto; |}.
 
-Definition slice_mapsto `{gooseG Σ} {T} (l: slice.t T) q (vs: Datatypes.list T) : iProp Σ :=
-  (∃ vs', ⌜ getSliceModel l vs' = Some vs ⌝ ∗ l.(slice.ptr) ↦{q} vs')%I.
+Definition slice_mapsto `{gooseG Σ} {T} (l: slice.t T) q vss : iProp Σ :=
+  (⌜ getSliceModel l (fst vss) = Some (snd vss) ⌝ ∗ l.(slice.ptr) ↦{q} (fst vss))%I.
+
+Definition slice_mapsto' `{gooseG Σ} {T} (l: slice.t T) q (vs: Datatypes.list T) : iProp Σ :=
+  (∃ vs0, slice_mapsto l q (vs0, vs))%I.
 
 Instance slice_gen_mapsto `{gooseG Σ} T : GenericMapsTo (slice.t T) _
   := {| generic_mapsto := slice_mapsto; |}.
+Instance slice_gen_mapsto' `{gooseG Σ} T : GenericMapsTo (slice.t T) _
+  := {| generic_mapsto := slice_mapsto'; |}.
 
 Definition dir_mapsto `{gooseG Σ} (d: string) q (fs: gset string) : iProp Σ
   := mapsto (hG := go_fs_dirs_inG) d q fs.
@@ -512,7 +517,7 @@ Lemma wp_readAt fh (inode: Inode) (bs: Datatypes.list byte) off len q1 q2 s E :
   {{{ (s: slice.t byte), RET s;
       fh ↦{q1} (inode, Read)
       ∗ inode ↦{q2} bs
-      ∗ s ↦ (list.take len (list.drop off bs))
+      ∗ s ↦ (list.take len (list.drop off bs), (list.take len (list.drop off bs)))
   }}}.
 Proof.
   iIntros (Φ) "(Hfh&Hi) HΦ".
@@ -536,26 +541,26 @@ Proof.
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
   iFrame. iSplitL ""; auto.
   iApply "HΦ". iFrame. iModIntro.
-  iExists _. iFrame. iPureIntro.
+  iFrame. iPureIntro.
   rewrite /getSliceModel sublist_lookup_all //= app_length //=.
 Qed.
 
-Lemma wp_append fh (inode: Inode) (p': slice.t byte) (bs bs': Datatypes.list byte) q1 q2 s E :
+Lemma wp_append fh (inode: Inode) (p': slice.t byte) (bs bs1 bs2: Datatypes.list byte) q1 q2 s E :
   {{{ fh ↦{q1} (inode, Write)
       ∗ inode ↦ bs
-      ∗ p' ↦{q2} bs'
+      ∗ p' ↦{q2} (bs1, bs2)
   }}}
     append fh p' @ s ; E
   {{{ RET tt;
       fh ↦{q1} (inode, Write)
-      ∗ inode ↦ (bs ++ bs')
-      ∗ p' ↦{q2} bs'
+      ∗ inode ↦ (bs ++ bs2)
+      ∗ p' ↦{q2} (bs1, bs2)
   }}}.
 Proof.
   iIntros (Φ) "(Hfh&Hi&Hp) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&HFS&?)".
-  iDestruct "Hp" as (vs Heq Hnonnull) "Hp".
+  iDestruct "Hp" as (Heq Hnonnull) "Hp".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?&%)".
   iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
   iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
@@ -578,7 +583,7 @@ Proof.
   iMod (gen_heap_update with "Hinodes Hi") as "($&?)".
   iFrame. iSplitL ""; first by auto.
   iApply "HΦ". iFrame.
-  iModIntro. iExists _; by iFrame.
+  iModIntro. by iFrame.
 Qed.
 
 Lemma wp_create_new dir fname S s E :
@@ -807,7 +812,7 @@ Lemma wp_list_finish dir (S: gset string) s q1 q2 E :
     list_finish dir @ s ; E
   {{{ (s: slice.t string) (l: Datatypes.list string), RET s;
       ⌜ (Permutation.Permutation l (elements S)) ⌝ ∗
-      s ↦ l ∗ dir ↦{q1} S ∗ dir ↦{q2} Unlocked }}}.
+      s ↦ (l, l) ∗ dir ↦{q1} S ∗ dir ↦{q2} Unlocked }}}.
 Proof.
   iIntros (Φ) "(Hd&Hdl) HΦ".
   iApply wp_lift_call_step.
@@ -840,7 +845,7 @@ Proof.
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
   iFrame. iSplitR "HΦ Hd Hdl Hp"; last first.
   { iApply "HΦ". iFrame. iSplitR; last first. iModIntro.
-    iExists _. iFrame. iPureIntro.
+    iFrame. iPureIntro.
     rewrite /getSliceModel sublist_lookup_all //= app_length //=. iPureIntro.
     rewrite -map_to_list_dom_perm //.
   }
@@ -968,36 +973,33 @@ Proof. revert l; induction i => l; destruct l; eauto. Qed.
 Lemma wp_newSlice {T} {GoZero: HasGoZero T} s E len:
   {{{ True }}}
     newSlice T len @ s ; E
-  {{{ s, RET s; s ↦ (List.repeat (zeroValue T) len)
-      ∗ ⌜ s.(slice.length) = len ∧ s.(slice.offset) = 0 ⌝ }}}.
+  {{{ s, RET s; s ↦ (List.repeat (zeroValue T) len, (List.repeat (zeroValue T) len)) }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_bind. iApply wp_newAlloc; first auto.
   iIntros (p) "!> Hpt".
-  wp_ret. iApply "HΦ". iSplitL.
-  { iExists _. iFrame. iPureIntro.
-    rewrite /getSliceModel sublist_lookup_all//= repeat_length //. }
-  { iPureIntro; auto. }
+  wp_ret. iApply "HΦ"; iFrame.
+  rewrite /getSliceModel sublist_lookup_all//= repeat_length //.
 Qed.
 
-Lemma wp_sliceRead {T} s E (p: slice.t T) q off l v :
-  List.nth_error l off = Some v →
-  {{{ ▷ p ↦{q} l }}} sliceRead p off @ s; E {{{ RET v; p ↦{q} l }}}.
+Lemma wp_sliceRead {T} s E (p: slice.t T) q off l1 l2 v :
+  List.nth_error l2 off = Some v →
+  {{{ ▷ p ↦{q} (l1, l2) }}} sliceRead p off @ s; E {{{ RET v; p ↦{q} (l1, l2) }}}.
 Proof.
   iIntros (Hnth Φ) ">Hp HΦ".
-  iDestruct "Hp" as (vs Heq) "Hp".
+  iDestruct "Hp" as (Heq) "Hp".
   rewrite /getSliceModel/sublist_lookup/mguard/option_guard in Heq.
   destruct (decide_rel); last by congruence.
   inversion Heq. subst.
   iApply (wp_ptrDeref with "Hp").
   rewrite nth_error_lookup in Hnth *.
-  assert (Hlen: off < length (take p.(slice.length) (drop p.(slice.offset) vs))).
+  assert (Hlen: off < length (take p.(slice.length) (drop p.(slice.offset) l1))).
   { eapply lookup_lt_is_Some_1. eauto. }
   rewrite lookup_take in Hnth. rewrite lookup_drop in Hnth.
   rewrite nth_error_lookup. eauto.
   { rewrite take_length in Hlen. lia. }
   iIntros "!> ?".
-  iApply "HΦ". iExists _; iFrame.
+  iApply "HΦ". iFrame.
   rewrite /getSliceModel/sublist_lookup/mguard/option_guard.
   destruct (decide_rel); last by congruence.
   eauto.
@@ -1010,11 +1012,13 @@ Proof.
   rewrite /getSliceModel. apply sublist_lookup_length.
 Qed.
 
-Lemma wp_sliceAppend {T} s E (p: slice.t T) l v :
-  {{{ ▷ p ↦ l }}} sliceAppend p v @ s; E {{{ (p': slice.t T), RET p'; p' ↦ (l ++ [v]) }}}.
+Lemma wp_sliceAppend {T} s E (p: slice.t T) l1 l2 v :
+  {{{ ▷ p ↦ (l1, l2) }}}
+    sliceAppend p v @ s; E
+  {{{ (p': slice.t T), RET p'; p' ↦ (l2 ++ [v], l2 ++ [v]) }}}.
 Proof.
   iIntros (Φ) ">Hp HΦ".
-  iDestruct "Hp" as (vs Heq) "Hp".
+  iDestruct "Hp" as (Heq) "Hp".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct "Hp" as (?) "Hp".
@@ -1033,7 +1037,7 @@ Proof.
   iFrame.
   iModIntro.
   iApply "HΦ".
-  iExists _. iFrame. iPureIntro.
+  iFrame. iPureIntro.
   simpl in *. inv_step.
   apply getSliceModel_len_inv in Heq.
   rewrite /getSliceModel sublist_lookup_all //= app_length //=. lia.
@@ -1044,23 +1048,32 @@ Lemma take_1_drop {T} (x: T) n l:
   take 1 (drop n l) = [x].
 Proof. revert l. induction n => l; destruct l; inversion 1; eauto. Qed.
 
-Lemma slice_agree {T} (p: slice.t T) v1 v2 q1 q2:
+Lemma slice_agree {T} (p: slice.t T) v1 v1' v2 v2' q1 q2:
+  p ↦{q1} (v1, v1') -∗ p ↦{q2} (v2, v2') -∗ ⌜ v1 = v2 ∧ v1' = v2' ⌝.
+Proof.
+  iIntros "Hp1 Hp2".
+  iDestruct "Hp1" as (??) "Hp1".
+  iDestruct "Hp2" as (??) "Hp2".
+  iAssert (⌜v1 = v2⌝)%I with "[Hp1 Hp2]" as %Heq.
+  { simpl. iApply (@Count_Typed_Heap.mapsto_agree _ _ _ _ _ (go_heap_inG) (Ptr.Heap T)
+                  with "Hp1 Hp2"). }
+  subst. iPureIntro. simpl in *. split; congruence.
+Qed.
+
+Lemma slice_agree' {T} (p: slice.t T) v1 v2 q1 q2:
   p ↦{q1} v1 -∗ p ↦{q2} v2 -∗ ⌜ v1 = v2 ⌝.
 Proof.
   iIntros "Hp1 Hp2".
-  iDestruct "Hp1" as (l1 ??) "Hp1".
-  iDestruct "Hp2" as (l2 ??) "Hp2".
-  iAssert (⌜l1 = l2⌝)%I with "[Hp1 Hp2]" as %Heq.
-  { iApply (@Count_Typed_Heap.mapsto_agree _ _ _ _ _ (go_heap_inG) (Ptr.Heap T)
-                  with "Hp1 Hp2"). }
-  subst. iPureIntro. congruence.
+  iDestruct "Hp1" as (l1) "Hp1".
+  iDestruct "Hp2" as (l2) "Hp2".
+  iDestruct (slice_agree with "Hp1 Hp2") as "(?&?)"; eauto.
 Qed.
 
-Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l1 l2 rem off :
+Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l2' l1 l2 rem off :
   rem + off <= length l2 →
-  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
+  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} (l2', l2) }}}
     sliceAppendSlice_aux p1 p2 rem off @ s; E
-  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ (firstn rem (skipn off l2))) ∗ p2 ↦{q} l2 }}}.
+  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ (firstn rem (skipn off l2))) ∗ p2 ↦{q} (l2', l2) }}}.
 Proof.
   iIntros (Hlen Φ) "(>Hp1&>Hp2) HΦ".
   iInduction rem as [| rem] "IH" forall (off Hlen l1 p1).
@@ -1071,18 +1084,19 @@ Proof.
     { apply nth_error_None in Hnth. lia. }
     wp_bind. iApply (wp_sliceRead with "Hp2"); eauto.
     iIntros "!> Hp2".
-    wp_bind. iApply (wp_sliceAppend with "Hp1"); eauto.
+    wp_bind. iDestruct "Hp1" as (?) "Hp1". iApply (wp_sliceAppend with "Hp1"); eauto.
     iIntros "!>". iIntros (p1') "Hp1".
     rewrite -Nat.add_1_l -take_take_drop drop_drop assoc Nat.add_1_r.
     erewrite take_1_drop; eauto.
-    iApply ("IH" with "[] Hp1 Hp2"); eauto.
-    iPureIntro; lia.
+    iApply ("IH" with "[] [Hp1] Hp2"); eauto.
+    * iPureIntro; lia.
+    * iExists _. eauto.
 Qed.
 
-Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2 :
-  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
+Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2' l2 :
+  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} (l2', l2) }}}
     sliceAppendSlice p1 p2 @ s; E
-  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} l2 }}}.
+  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} (l2', l2) }}}.
 Proof.
   rewrite /sliceAppendSlice.
   iIntros (Φ) "(>Hp1&>Hp2) HΦ".
@@ -1096,13 +1110,13 @@ Proof.
   iApply "HΦ".
 Qed.
 
-Lemma wp_bytesToString p bs q s E :
-  {{{ ▷ p ↦{q} bs }}}
+Lemma wp_bytesToString p bs0 bs q s E :
+  {{{ ▷ p ↦{q} (bs0, bs) }}}
     bytesToString p @ s ; E
-  {{{ RET (bytes_to_string bs); p ↦{q} bs }}}.
+  {{{ RET (bytes_to_string bs); p ↦{q} (bs0, bs) }}}.
 Proof.
   iIntros (Φ) ">Hp HΦ".
-  iDestruct "Hp" as (vs Heq) "Hp".
+  iDestruct "Hp" as (Heq) "Hp".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct "Hp" as (?) "Hp".
@@ -1118,9 +1132,20 @@ Proof.
   iFrame.
   iModIntro.
   iApply "HΦ".
-  iExists _. iFrame. iPureIntro.
+  iFrame. iPureIntro.
   repeat (deex; inv_step).
   eauto.
+Qed.
+
+Lemma wp_bytesToString' p bs q s E :
+  {{{ ▷ p ↦{q} bs }}}
+    bytesToString p @ s ; E
+  {{{ RET (bytes_to_string bs); p ↦{q} bs }}}.
+Proof.
+  iIntros (Φ) ">Hp HΦ".
+  iDestruct "Hp" as (vs) "Hp".
+  iApply (wp_bytesToString with "Hp").
+  iIntros "!> Hp". iApply "HΦ". iExists _; eauto.
 Qed.
 
 Definition lock_mapsto `{gooseG Σ} (l: LockRef) q mode : iProp Σ :=
