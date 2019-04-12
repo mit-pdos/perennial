@@ -228,6 +228,73 @@ Section refinement_triples.
     symmetry. eapply getSliceModel_len_inv; eauto.
   Qed.
 
+  Definition writeBuf {model:GoModel} f (data:slice.t byte) :=
+    (Loop (fun buf =>
+            if compare_to (slice.length buf) 4096 Lt
+            then
+              _ <- FS.append f buf;
+                LoopRet tt
+            else
+              _ <- FS.append f (slice.take 4096 buf);
+              Continue (slice.skip 4096 buf)) data)%proc.
+
+  (* TODO: need stronger slice points to that does remember what the underlying
+     array was to make these proofs clean *)
+  Lemma slice_take_split {A} k data (bs: List.list A) q:
+    k ≤ data.(slice.length) →
+    data ↦{q} bs
+         -∗ (slice.take k data) ↦{q} (take k bs)
+         ∗ ((slice.take k data) ↦{q} (take k bs) -∗ data ↦{q} bs).
+  Proof.
+    iIntros (Hlen) "H". iDestruct "H" as (vs HgetSlice) "H".
+    iSplitL "H".
+    * iExists _. iFrame.
+      iPureIntro. move: HgetSlice. rewrite /Data.getSliceModel//=.
+      rewrite /sublist_lookup/mguard/option_guard.
+      destruct decide_rel; last by inversion 1.
+      destruct decide_rel; last by lia.
+      inversion 1. subst. f_equal.
+      rewrite take_take.
+      f_equal. lia.
+    * iIntros "H". iDestruct "H" as (? HgetSlice') "H".
+      simpl. iExists _. iFrame. eauto. iFrame.
+  Abort.
+
+
+  Lemma wp_writeBuf f data inode bs1 bs2 q:
+    {{{ f ↦ (inode, Write) ∗ inode ↦ bs1 ∗ data ↦{q} bs2 }}}
+      writeBuf f data
+    {{{ RET tt; f ↦ (inode, Write) ∗ inode ↦ (bs1 ++ bs2) ∗ data ↦{q} bs2 }}}.
+  Proof.
+    rewrite /writeBuf.
+    generalize 4096 => k.
+    iIntros (Φ) "(Hf&Hinode&Hdata) HΦ".
+    iLöb as "IH" forall (data bs1 bs2 q).
+    wp_loop.
+    destruct compare_to.
+    - wp_bind.
+      iApply (wp_append with "[$]").
+      iIntros "!> H". do 2 wp_ret. by iApply "HΦ".
+    - wp_bind.
+      (* TODO: not true, see above about need for stronger slice rule *)
+      iAssert ((slice.take k data) ↦{q} (take k bs2)
+                ∗ ((slice.take k data) ↦{q} (take k bs2) -∗ data ↦{q} bs2))%I with "[Hdata]"
+        as "(Htake&Hwand)".
+      { admit. }
+      iApply (wp_append with "[$]").
+      iIntros "!> (Hf&Hinode&Hdata)".
+      iDestruct ("Hwand" with "Hdata") as "Hdata".
+      wp_ret.
+      iAssert ((slice.skip k data) ↦{q} (drop k bs2)
+                ∗ ((slice.skip k data) ↦{q} (drop k bs2) -∗ data ↦{q} bs2))%I with "[Hdata]"
+        as "(Hdrop&Hwand)".
+      { admit. }
+      iApply ("IH" with "Hf Hinode Hdrop [HΦ Hwand]").
+      iIntros "!> (Hf&Hinode&Hdata)".
+      iDestruct ("Hwand" with "Hdata") as "Hdata".
+      iApply "HΦ". iFrame. rewrite -app_assoc take_drop //.
+  Abort.
+
   Definition readMessage_handle f :=
   (fileContents <- Data.newPtr (slice.t byte);
   initData <- Data.newSlice byte 0;
