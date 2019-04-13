@@ -53,6 +53,7 @@ Set Default Proof Using "Type".
 Section refinement_triples.
   Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ,
             ghost_mapG (discreteC contents) Σ}.
+  Context {hGTmp: gen_heapG string Filesys.FS.Inode Σ}.
   (*
   Context `{Hghost_path: gen_dirPreG string string (Inode) Σ}.
   Context `{Hghost_dirset: gen_heapPreG string (gset string) Σ}.
@@ -68,9 +69,9 @@ Section refinement_triples.
   Definition HeapInv (σ : Mail.State) : iProp Σ :=
     ([∗ dmap] p↦v ∈ (Data.allocs σ.(heap)),
      match (fst v) with
-     | ReadLocked n => Count_Typed_Heap.mapsto (hG := go_heap_inG) p n (fst v) (snd v)
+     | ReadLocked n => Count_Typed_Heap.mapsto (hG := go_heap_inG) p (S n) Unlocked (snd v)
      | _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
-     end)%I.
+     end ∗ ⌜ p ≠ gmodel.(@nullptr) _⌝)%I.
 
   Definition InboxLockInv (γ: gname) (n: nat) :=
     (∃ S1 S2, ghost_mapsto_auth γ (A := discreteC contents) S1
@@ -146,9 +147,16 @@ Section refinement_triples.
     iDestruct (MsgInv_pers_split with "Huid") as "$".
   Qed.
 
+  Instance tmp_gen_mapsto `{gooseG Σ} : GenericMapsTo _ _
+    := {| generic_mapsto := λ l q v, Count_GHeap.mapsto (hG := hGTmp) l q v|}%I.
+
   (* TODO: need to link spool paths to inodes so we can unlink during recovery *)
   Definition TmpInv : iProp Σ :=
-    (∃ tmps, SpoolDir ↦ tmps)%I.
+    (∃ tmps_map, SpoolDir ↦ dom (gset string) tmps_map
+                          ∗ gen_heap_ctx tmps_map
+                          ∗ [∗ map] name↦inode ∈ tmps_map,
+                                      path.mk SpoolDir name ↦ inode
+                                      (* ∗ name ↦{1} inode *) )%I.
 
   Definition execN : namespace := (nroot.@"msgs_inv").
 
@@ -165,7 +173,7 @@ Section refinement_triples.
   Proof. apply big_sepDM_timeless; first apply _. intros ?? ([]&?); apply _. Qed.
 
   Definition ExecInv :=
-    (∃ Γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ))%I.
+    (∃ Γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ ∗ TmpInv))%I.
 
   Global Instance source_state_inhab:
     Inhabited State.
@@ -713,6 +721,113 @@ Section refinement_triples.
     destruct s; inversion Heq_avail; subst. eauto.
   Qed.
 
+  Lemma deliver_start_step_inv_do {T2} j K `{LanguageCtx _ unit T2 Mail.l K} uid msg
+        (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (Deliver_Start uid msg)) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ s alloc vs s', ⌜ Data.getAlloc msg.(slice.ptr) σ.(heap) = Some (s, alloc) ∧
+                           Data.getSliceModel msg alloc = Some vs ∧
+                           lock_acquire Reader s = Some s' ⌝ ∗
+        j ⤇ K (Ret tt)
+        ∗ source_state (RecordSet.set heap (RecordSet.set Data.allocs
+                                                          (updDyn msg.(slice.ptr) (s', alloc))) σ).
+  Proof.
+    iIntros (?) "Hj Hsrc Hstate".
+    destruct (Data.getAlloc msg.(slice.ptr) σ.(heap)) as [v|] eqn:Heq_lookup; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. left.
+        { rewrite /lookup/readSome Heq_lookup //. }
+    }
+    destruct v as (s&alloc).
+    iExists s, alloc.
+    destruct (lock_acquire Reader s) as [?|] eqn:Heq_avail; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        simpl.
+        left. destruct s; simpl in Heq_avail; try inversion Heq_avail; try econstructor.
+    }
+    destruct (Data.getSliceModel msg alloc) as [alloc'|] eqn:Heq_upd; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_avail //. }
+        left.
+        rewrite /readSome Heq_upd //.
+    }
+    iMod (ghost_step_call _ _ _ tt ((RecordSet.set heap _ σ : l.(OpState)))
+            with "Hj Hsrc Hstate") as "(?&?&?)".
+    { intros n.
+      do 2 eexists; split; last econstructor.
+      do 2 eexists; last eauto.
+      * do 2 eexists.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_avail //. }
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_upd //. }
+        econstructor.
+    }
+    { eauto. }
+    iFrame. eauto.
+  Qed.
+
+  Lemma writeTmp_unfold_writeBuf msg:
+    writeTmp msg =
+    (let! (f, name) <- createTmp;
+     _ <- writeBuf f msg;
+     _ <- close f; Ret name)%proc.
+  Proof. trivial. Qed.
+  Opaque writeTmp.
+
+  Lemma deliver_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
+    {{{ j ⤇ K ((deliver uid msg)) ∗ Registered ∗ ExecInv }}}
+      MailServer.Deliver uid msg
+    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
+  Proof.
+    iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
+    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    wp_bind. wp_ret.
+    rewrite -fupd_wp.
+    iInv "Hinv" as "H".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    rewrite /deliver.
+    iMod (deliver_start_step_inv_do j (λ x, K (Bind x (λ x, Call (Deliver_End uid msg))))
+            with "Hj Hsource Hstate")
+          as (s alloc vs s' Heq) "(Hj&Hstate)".
+    { solve_ndisj. }
+    destruct Heq as (Heq1&Heq2&Heq3).
+    iExists _. iFrame.
+    iDestruct (big_sepDM_insert_acc (dec := sigPtr_eq_dec) with "Hheap") as "((Hp&%)&Hheap)".
+    { eauto. }
+    iAssert (▷ HeapInv (RecordSet.set heap
+                          (RecordSet.set Data.allocs (updDyn msg.(slice.ptr) (s', alloc))) σ)
+               ∗ msg.(slice.ptr) ↦{-1} alloc)%I
+      with "[Hp Hheap]"
+      as "($&Hp)".
+    { destruct s; inversion Heq3.
+      * simpl. iDestruct (Count_Typed_Heap.read_split_join with "Hp") as "(Hp&$)".
+        iSplitR ""; last eauto.
+        iApply "Hheap"; eauto.
+      * simpl. iDestruct (Count_Typed_Heap.read_split_join with "Hp") as "(Hp&$)".
+        iSplitR ""; last eauto.
+        iApply "Hheap"; eauto.
+    }
+    iModIntro.
+    rewrite writeTmp_unfold_writeBuf.
+  Abort.
+
 
   Lemma delete_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
     {{{ j ⤇ K (Call (Delete uid msg)) ∗ Registered ∗ ExecInv }}}
@@ -723,7 +838,7 @@ Section refinement_triples.
     iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
     wp_bind. wp_ret.
     iInv "Hinv" as "H".
-    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
     iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
     iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
@@ -767,7 +882,7 @@ Section refinement_triples.
     iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
     wp_bind.
     iInv "Hinv" as "H".
-    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
     iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
     iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
@@ -815,7 +930,7 @@ Section refinement_triples.
     rewrite /HeapInv.
     rewrite /Data.getAlloc in Heq_get.
     iPoseProof (big_sepDM_lookup (T:=(Ptr.Heap A))
-                                 (dec := sigPtr_eq_dec) with "Hheap") as "Hheap"; eauto.
+                                 (dec := sigPtr_eq_dec) with "Hheap") as "(Hheap&%)"; eauto.
     destruct v as ([]&?);
       iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hp] Hheap"); try iFrame;
         eauto with lia.
@@ -830,7 +945,7 @@ Section refinement_triples.
     iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
     destruct op.
     - iInv "Hinv" as "H".
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
       iApply (wp_newAlloc with "[//]").
       iIntros (p) "!> Hp".
       iDestruct (HeapInv_non_alloc_inv _ _ 0 with "[$] Hp") as %?; first auto.
@@ -850,15 +965,15 @@ Section refinement_triples.
       { iNext.
         rewrite /HeapInv//=.
         rewrite big_sepDM_updDyn; try intuition.
-        iFrame. simpl. iDestruct "Hp" as "(?&$)".
+        iFrame. simpl. iDestruct "Hp" as "(?&$)"; eauto.
       }
       iApply "HΦ"; by iFrame.
     - iInv "Hinv" as "H".
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
       iMod (deref_step_inv_do with "Hj Hsource Hstate") as (s alloc v Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       destruct Heq as (Heq1&Heq2&Heq3).
-      iDestruct (big_sepDM_lookup_acc with "Hheap") as "(Hp&Hheap)".
+      iDestruct (big_sepDM_lookup_acc with "Hheap") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct s; try (simpl in Heq2; congruence); simpl.
       * iApply (wp_ptrDeref' with "Hp").
@@ -876,12 +991,12 @@ Section refinement_triples.
         ** iApply "Hheap". by iFrame.
         ** iApply "HΦ". by iFrame.
     - iInv "Hinv" as "H".
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
       destruct na; last first.
       * iMod (store_start_step_inv_do j K with "Hj Hsource Hstate") as (s alloc Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2).
-        iDestruct (big_sepDM_insert_acc with "Hheap") as "(Hp&Hheap)".
+        iDestruct (big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
         { eauto. }
         destruct s; try (simpl in Heq2; congruence); simpl; [].
         iApply (wp_ptrStore_start with "Hp").
@@ -893,7 +1008,7 @@ Section refinement_triples.
           as (s alloc alloc' Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2&Heq3).
-        iDestruct (big_sepDM_insert_acc with "Hheap") as "(Hp&Hheap)".
+        iDestruct (big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
         { eauto. }
         destruct s; try (simpl in Heq3; congruence); simpl; [].
         destruct args.
@@ -916,7 +1031,7 @@ Section refinement_triples.
     iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
     wp_bind.
     iInv "Hinv" as "H".
-    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
     iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
     iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
@@ -949,7 +1064,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     clear σ Heq v.
-    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
     destruct (σ.(messages) !! uid) as [v|] eqn:Heq; last first.
     {
@@ -1004,7 +1119,7 @@ Section refinement_triples.
 
     iInv "Hinv" as "H".
     clear σ Heq Heq1 Heq2 msgs.
-    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
     destruct (σ.(messages) !! uid) as [v|] eqn:Heq; last first.
     {
@@ -1124,7 +1239,7 @@ Section refinement_triples.
       wp_bind.
       clear σ Heq.
       iInv "Hinv" as "H".
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
       iMod (pickup_end_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
@@ -1204,7 +1319,7 @@ Section refinement_triples.
       iNext.
       iInv "Hinv" as "H".
       clear σ Heq.
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap)".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
       (* Show messages' ptr can't be in σ, else we'd have a redundant pts to *)
       iDestruct (slice_mapsto_non_null with "[Hmessages]") as %?.
       { iExists _; eauto. }
@@ -1257,7 +1372,7 @@ Section refinement_triples.
         simpl.
         rewrite big_sepDM_updDyn; last first.
         { intuition. }
-        iFrame.
+        iFrame; eauto.
       }
       iModIntro. wp_bind.
       iApply (wp_readPtr with "[$]").
