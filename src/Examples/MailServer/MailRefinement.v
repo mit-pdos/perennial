@@ -165,6 +165,7 @@ Section refinement_triples.
   (* TODO: need to link spool paths to inodes so we can unlink during recovery *)
   Definition TmpInv : iProp Σ :=
     (∃ tmps_map, SpoolDir ↦ dom (gset string) tmps_map
+                          ∗ SpoolDir ↦ Unlocked
                           ∗ gen_heap_ctx tmps_map
                           ∗ [∗ map] name↦inode ∈ tmps_map,
                                       path.mk SpoolDir name ↦ inode
@@ -921,7 +922,7 @@ Section refinement_triples.
     rewrite /ExecInv.
     iFastInv "Hinv" "H".
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-    iDestruct "Htmp" as (tmps_map) "(Hspool&Htmp_auth&Htmps)".
+    iDestruct "Htmp" as (tmps_map) "(Hspool&Hspool_unlocked&Htmp_auth&Htmps)".
     destruct (decide (gmodel.(@uint64_to_string) id ∈ dom (gset string) tmps_map)) as
         [ Hin | Hfresh ].
     * iApply (wp_create_not_new with "[Hspool]").
@@ -965,7 +966,7 @@ Section refinement_triples.
   Proof.
     iIntros "Hn Htmp".
     rewrite /TmpInv.
-    iDestruct "Htmp" as (tmp_map) "(?&Htmp_auth&Hpaths)".
+    iDestruct "Htmp" as (tmp_map) "(?&?&Htmp_auth&Hpaths)".
     iDestruct (gen_heap_valid with "[$] [$]") as %Hlookup.
     iDestruct (big_sepM_lookup_acc with "[$]") as "(Hpath&Hpaths)"; eauto.
     iFrame. iIntros. iExists _. iFrame. by iApply "Hpaths".
@@ -1000,6 +1001,24 @@ Section refinement_triples.
     iDestruct (Count_Typed_Heap.mapsto_agree_generic with "[Hsli] Hlookup") as %Heq.
     { eauto. }
     subst. iPureIntro; split; auto. simpl in *. congruence.
+  Qed.
+
+  Lemma TmpInv_path_delete name inode:
+    name ↦ inode -∗ TmpInv -∗
+         |==> (∃ (S: gset string), path.mk SpoolDir name ↦ inode ∗ SpoolDir ↦ S
+                 ∗ SpoolDir ↦ Unlocked
+                 ∗ (SpoolDir ↦ (S ∖ {[ name ]}) -∗ SpoolDir ↦ Unlocked -∗ TmpInv )).
+  Proof.
+    iIntros "Hn Htmp".
+    rewrite /TmpInv.
+    iDestruct "Htmp" as (tmp_map) "(?&?&Htmp_auth&Hpaths)".
+    iDestruct (gen_heap_valid with "[$] [$]") as %Hlookup.
+    iMod (gen_heap_dealloc with "[$] [$]") as "Htmp_auth".
+    iDestruct (big_sepM_delete with "Hpaths") as "(Hcurr&Hpaths)"; eauto.
+    iExists _. iFrame.
+    iIntros "!> ??".
+    iExists (map_delete name tmp_map).
+    rewrite dom_delete_L. iFrame.
   Qed.
 
   Lemma deliver_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
@@ -1093,7 +1112,8 @@ Section refinement_triples.
       iIntros (id') "!> _".
       wp_ret. iNext.
       iApply ("IH" with "[$] [$] [$] [$] [$] [$]").
-    - iApply (wp_link_new with "[Hpath Hdircontents]").
+    - iClear "IH".
+      iApply (wp_link_new with "[Hpath Hdircontents]").
       { iFrame. eauto. }
       iIntros "!> (Hpath&Hpathnew&Hdircontents)".
       iDestruct ("Htmp" with "Hpath") as "Htmp".
@@ -1152,8 +1172,16 @@ Section refinement_triples.
       wp_ret.
       iModIntro. iNext.
       (* Delete the temp file *)
-  Abort.
-
+      rewrite /delete.
+      iInv "Hinv" as "H".
+      iDestruct "H" as (?) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+      iMod (TmpInv_path_delete with "[$] Htmp") as (S) "(Hpath&Hdir&Hdirlock&Hwand)".
+      iApply (wp_delete with "[$]").
+      iIntros "!> (?&?)".
+      iDestruct ("Hwand" with "[$] [$]") as "Htmp".
+      iExists _. iFrame.
+      iApply "HΦ". by iFrame.
+  Qed.
 
   Lemma delete_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
     {{{ j ⤇ K (Call (Delete uid msg)) ∗ Registered ∗ ExecInv }}}
