@@ -54,10 +54,6 @@ Section refinement_triples.
   Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ,
             ghost_mapG (discreteC contents) Σ}.
   Context {hGTmp: gen_heapG string Filesys.FS.Inode Σ}.
-  (*
-  Context `{Hghost_path: gen_dirPreG string string (Inode) Σ}.
-  Context `{Hghost_dirset: gen_heapPreG string (gset string) Σ}.
-   *)
 
   Import Filesys.FS.
   Import GoLayer.Go.
@@ -74,16 +70,6 @@ Section refinement_triples.
        Count_Typed_Heap.mapsto (hG := go_heap_inG) p (S n) Unlocked (snd v)
      | _, _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
      end ∗ ⌜ p ≠ gmodel.(@nullptr) _⌝)%I (Data.allocs σ.(heap)).
-
-  (*
-  Definition HeapInv (σ : Mail.State) : iProp Σ :=
-    ([∗ dmap] p↦v ∈ (Data.allocs σ.(heap)),
-     match (fst v), projT1 p with
-     | ReadLocked n, (Ptr.Heap _) =>
-       Count_Typed_Heap.mapsto (hG := go_heap_inG) p (S n) Unlocked (snd v)
-     | _, _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
-     end ∗ ⌜ p ≠ gmodel.(@nullptr) _⌝)%I.
-   *)
 
   Definition InboxLockInv (γ: gname) (n: nat) :=
     (∃ S1 S2, ghost_mapsto_auth γ (A := discreteC contents) S1
@@ -162,7 +148,6 @@ Section refinement_triples.
   Instance tmp_gen_mapsto `{gooseG Σ} : GenericMapsTo _ _
     := {| generic_mapsto := λ l q v, Count_GHeap.mapsto (hG := hGTmp) l q v|}%I.
 
-  (* TODO: need to link spool paths to inodes so we can unlink during recovery *)
   Definition TmpInv : iProp Σ :=
     (∃ tmps_map, SpoolDir ↦ dom (gset string) tmps_map
                           ∗ SpoolDir ↦ Unlocked
@@ -173,10 +158,6 @@ Section refinement_triples.
 
   Definition execN : namespace := (nroot.@"msgs_inv").
 
-  (*
-  Definition msgsN : namespace := (nroot.@"msgs_inv").
-  Definition heapN : namespace := (nroot.@"heap_inv").
-   *)
   Instance InboxLockInv_Timeless γ n:
     Timeless (InboxLockInv γ n).
   Proof. apply _. Qed.
@@ -190,14 +171,6 @@ Section refinement_triples.
 
   Definition ExecInv :=
     (∃ Γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ ∗ TmpInv))%I.
-
-  Global Instance source_state_inhab:
-    Inhabited State.
-  Proof. eexists. exact {| heap := ∅; messages := ∅ |}. Qed.
-
-  Global Instance LockRef_inhab:
-    Inhabited LockRef.
-  Proof. eexists. apply nullptr. Qed.
 
   Lemma GlobalInv_unify lsptr ls ls':
     global ↦{-1} Some lsptr -∗ lsptr ↦{-1} (ls, ls) -∗ GlobalInv ls' -∗ ⌜ ls = ls' ⌝.
@@ -933,12 +906,8 @@ Section refinement_triples.
     iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
     iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
     iApply (wp_getX with "[$]"); iIntros "!> Hglobal_read".
-
-    destruct (σ.(messages) !! uid) as [v|] eqn:Heq; last first.
-    {
-      iMod (pickup_step_inv' with "[$] [$] [$]") as %[]; eauto.
-      { solve_ndisj. }
-    }
+    iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
+    { solve_ndisj. }
     iDestruct (MsgsInv_pers_split with "Hm") as "#Huid"; first eauto.
     iDestruct "Huid" as (lk γ HΓlookup Hnth) "#Hlock".
 
@@ -963,11 +932,8 @@ Section refinement_triples.
     clear σ Heq v.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
-    destruct (σ.(messages) !! uid) as [v|] eqn:Heq; last first.
-    {
-      iMod (pickup_step_inv' with "[$] [$] [$]") as %[]; eauto.
-      { solve_ndisj. }
-    }
+    iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
+    { solve_ndisj. }
 
     iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
     iDestruct (big_sepM_lookup_acc with "Hm") as "(Huid&Hm)"; eauto.
@@ -1018,11 +984,8 @@ Section refinement_triples.
     clear σ Heq Heq1 Heq2 msgs.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
-    destruct (σ.(messages) !! uid) as [v|] eqn:Heq; last first.
-    {
-      iMod (pickup_step_inv' with "[$] [$] [$]") as %[]; eauto.
-      { solve_ndisj. }
-    }
+    iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
+    { solve_ndisj. }
 
     iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
     iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.

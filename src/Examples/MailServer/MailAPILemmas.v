@@ -39,10 +39,11 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
   Lemma pickup_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →
     j ⤇ K (pickup uid) -∗ source_ctx -∗ source_state σ
-    ={E}=∗ ⌜ ∃ v, σ.(messages) !! uid = Some v ⌝.
+    ={E}=∗ ⌜ ∃ v, σ.(messages) !! uid = Some v ⌝
+           ∗ j ⤇ K (pickup uid) ∗ source_state σ.
   Proof.
     destruct (σ.(messages) !! uid) as [v|] eqn:Heq.
-    - iIntros; iPureIntro; eauto.
+    - iIntros; iFrame; eauto.
     - iIntros (?) "Hpts Hsrc Hstate".
       rewrite /pickup.
       iMod (ghost_step_err _ _ (λ x, K (Bind x (λ x, Call (Pickup_End uid x))))
@@ -50,20 +51,6 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
       eauto.
       intros n. left. left.
       rewrite /lookup/readSome Heq //.
-  Qed.
-
-  Lemma pickup_step_inv' {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
-    nclose sourceN ⊆ E →
-    σ.(messages) !! uid = None →
-    j ⤇ K (pickup uid) -∗ source_ctx -∗ source_state σ
-    ={E}=∗ False.
-  Proof.
-    - iIntros (? Hnone) "Hpts Hsrc Hstate".
-      rewrite /pickup.
-      iMod (ghost_step_err _ _ (λ x, K (Bind x (λ x, Call (Pickup_End uid x))))
-              with "[Hpts] Hsrc Hstate"); eauto; last first.
-      intros n. left. left.
-      rewrite /lookup/readSome Hnone //.
   Qed.
 
   Lemma pickup_end_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) msgs E:
