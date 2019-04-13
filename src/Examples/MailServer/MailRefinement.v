@@ -67,11 +67,23 @@ Section refinement_triples.
   (* Every pointer in the abstract state should have a matching
      pointer with the same value in the concrete state. *)
   Definition HeapInv (σ : Mail.State) : iProp Σ :=
+    big_opDM bi_sep
+     (λ T p v,
+     match (fst v), T with
+     | ReadLocked n, (Ptr.Heap _) =>
+       Count_Typed_Heap.mapsto (hG := go_heap_inG) p (S n) Unlocked (snd v)
+     | _, _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
+     end ∗ ⌜ p ≠ gmodel.(@nullptr) _⌝)%I (Data.allocs σ.(heap)).
+
+  (*
+  Definition HeapInv (σ : Mail.State) : iProp Σ :=
     ([∗ dmap] p↦v ∈ (Data.allocs σ.(heap)),
-     match (fst v) with
-     | ReadLocked n => Count_Typed_Heap.mapsto (hG := go_heap_inG) p (S n) Unlocked (snd v)
-     | _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
+     match (fst v), projT1 p with
+     | ReadLocked n, (Ptr.Heap _) =>
+       Count_Typed_Heap.mapsto (hG := go_heap_inG) p (S n) Unlocked (snd v)
+     | _, _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
      end ∗ ⌜ p ≠ gmodel.(@nullptr) _⌝)%I.
+   *)
 
   Definition InboxLockInv (γ: gname) (n: nat) :=
     (∃ S1 S2, ghost_mapsto_auth γ (A := discreteC contents) S1
@@ -170,7 +182,10 @@ Section refinement_triples.
 
   Instance HeapInv_Timeless σ:
     Timeless (HeapInv σ).
-  Proof. apply big_sepDM_timeless; first apply _. intros ?? ([]&?); apply _. Qed.
+  Proof.
+    apply big_sepDM_timeless; first apply _.
+    intros [] ? ([]&?); apply _.
+  Qed.
 
   Definition ExecInv :=
     (∃ Γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ ∗ TmpInv))%I.
@@ -791,6 +806,71 @@ Section refinement_triples.
   Proof. trivial. Qed.
   Opaque writeTmp.
 
+  (* TODO: this actually only depends on TmpInv. For modulariy, maybe break up proof
+     into a "re-usable" temp directory pattern? *)
+  Lemma wp_createTmp Γ:
+    {{{ inv execN (∃ σ : l.(OpState), source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ ∗ TmpInv) }}}
+      createTmp
+    {{{ (f: File) name (inode: Inode), RET (f, name);
+        name ↦ inode ∗ inode ↦ [] ∗ f ↦ (inode, Write) }}}.
+  Proof.
+    iIntros (Φ) "#Hinv HΦ".
+    rewrite /createTmp.
+    wp_bind.
+    iApply wp_randomUint64; first auto.
+    iIntros (id) "!> _".
+    wp_bind.
+    iApply wp_newAlloc; first auto.
+    iIntros (finalName) "!> HfinalName".
+    simpl repeat.
+    wp_bind.
+    iApply wp_newAlloc; first auto.
+    iIntros (finalFile) "!> HfinalFile".
+    wp_bind.
+    iLöb as "IH" forall (id).
+    wp_loop.
+    wp_bind.
+    rewrite /ExecInv.
+    iFastInv "Hinv" "H".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    iDestruct "Htmp" as (tmps_map) "(Hspool&Htmp_auth&Htmps)".
+    destruct (decide (gmodel.(@uint64_to_string) id ∈ dom (gset string) tmps_map)) as
+        [ Hin | Hfresh ].
+    * iApply (wp_create_not_new with "[Hspool]").
+      { iFrame. eauto. }
+      iIntros (?) "!> Hspool".
+      iExists _. iFrame. iExists _. iFrame.
+      iModIntro. wp_bind.
+      iApply wp_randomUint64; first auto.
+      iIntros (id') "!> _". wp_ret.
+      iNext. iApply ("IH" with "HΦ [$] [$]").
+    * iApply (wp_create_new with "[Hspool]").
+      { iFrame. eauto. }
+      iIntros (inode f) "!> (Hf&Hinode&Hspool&Hpath)".
+      iMod (gen_heap_alloc tmps_map (gmodel.(@uint64_to_string) id) inode with "Htmp_auth")
+        as "(Htmp_auth&Htmp_frag)".
+      { eapply not_elem_of_dom; eauto. }
+      iExists _. iFrame.
+      iPoseProof (big_sepM_insert_2 with "[Hpath] Htmps") as "Htmps".
+      { iApply "Hpath". }
+      iExists _. iFrame.
+      rewrite dom_insert_L comm_L. iFrame.
+      iModIntro.
+      wp_bind.
+      iApply (wp_writePtr with "HfinalName").
+      iIntros "!> HfinalName".
+      wp_bind.
+      iApply (wp_writePtr with "HfinalFile").
+      iIntros "!> HfinalFile".
+      wp_ret. iNext. wp_ret.
+      wp_bind.
+      iApply (wp_readPtr with "HfinalName").
+      iIntros "!> HfinalName".
+      wp_bind.
+      iApply (wp_readPtr with "HfinalFile").
+      iIntros "!> _". wp_ret. iApply "HΦ"; by iFrame.
+  Qed.
+
   Lemma deliver_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
     {{{ j ⤇ K ((deliver uid msg)) ∗ Registered ∗ ExecInv }}}
       MailServer.Deliver uid msg
@@ -825,7 +905,21 @@ Section refinement_triples.
         iApply "Hheap"; eauto.
     }
     iModIntro.
+    iModIntro.
     rewrite writeTmp_unfold_writeBuf.
+    wp_bind.
+    wp_bind.
+    iApply (wp_createTmp with "Hinv").
+    iIntros (f name inode) "!> (Hghost&Hinode&Hf)".
+    wp_bind.
+    iApply (wp_writeBuf with "[Hf Hinode Hp]").
+    { iFrame. eauto. }
+    iIntros "!> (Hf&Hinode&Hp)".
+    wp_bind.
+    iApply (wp_close with "[$]").
+    iIntros "!> _".
+    wp_ret.
+    rewrite app_nil_l.
   Abort.
 
 
@@ -1018,7 +1112,6 @@ Section refinement_triples.
         iExists _. iFrame. iSplitL "Hheap Hp".
         ** iApply "Hheap". by iFrame.
         ** iApply "HΦ". by iFrame.
-    -
    Abort.
 
 

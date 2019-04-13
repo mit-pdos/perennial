@@ -1591,5 +1591,26 @@ Proof.
   iFrame. eauto.
 Qed.
 
+Lemma wp_randomUint64 s E:
+  {{{ True }}}
+     randomUint64 @ s ; E
+  {{{ (x: uint64), RET x; True }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "?".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence. inv_step.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  match goal with
+    | [ H : Data.step RandomUint64 _ _ |- _ ] => inversion H
+  end.
+  subst. iFrame.
+  by iApply "HΦ".
+Qed.
 
 End lifting.
