@@ -798,6 +798,94 @@ Section refinement_triples.
     iFrame. eauto.
   Qed.
 
+  Lemma deliver_end_step_inv {T2} j K `{LanguageCtx _ unit T2 Mail.l K} uid msg
+        (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (Deliver_End uid msg)) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ v s alloc vs s', ⌜ σ.(messages) !! uid = Some v ∧
+                           Data.getAlloc msg.(slice.ptr) σ.(heap) = Some (s, alloc) ∧
+                           Data.getSliceModel msg alloc = Some vs ∧
+                           lock_release Reader s = Some s' ⌝ ∗
+        j ⤇ K (Call (Deliver_End uid msg))
+        ∗ source_state σ.
+  Proof.
+    iIntros (?) "Hj Hsrc Hstate".
+    destruct (σ.(messages) !! uid) as [(ms&mbox)|] eqn:Heq_uid; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. left.
+        { rewrite /lookup/readSome Heq_uid //. }
+    }
+    destruct (Data.getAlloc msg.(slice.ptr) σ.(heap)) as [(s&alloc)|] eqn:Heq_lookup; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_uid //. }
+        right.
+        exists (fresh (dom (gset string) mbox)).
+        eexists; split.
+        { rewrite /lookup/readSome. econstructor.
+          eapply (not_elem_of_dom (D := gset string)).
+          apply is_fresh.
+        }
+        left.
+        rewrite /readUnlockSlice.
+        left. rewrite /readSome Heq_lookup //.
+    }
+    destruct (lock_release Reader s) as [?|] eqn:Heq_avail; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_uid //. }
+        right.
+        exists (fresh (dom (gset string) mbox)).
+        eexists; split.
+        { rewrite /lookup/readSome. econstructor.
+          eapply (not_elem_of_dom (D := gset string)).
+          apply is_fresh.
+        }
+        left.
+        right.
+        do 2 eexists; split; eauto.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        left.
+        { rewrite /lookup/readSome Heq_avail //. }
+    }
+    destruct (Data.getSliceModel msg alloc) as [alloc'|] eqn:Heq_upd; last first.
+    {
+      iMod (ghost_step_err _ _ _
+                with "[Hj] Hsrc Hstate"); eauto; last first.
+        intros n. left. right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_uid //. }
+        right.
+        exists (fresh (dom (gset string) mbox)).
+        eexists; split.
+        { rewrite /lookup/readSome. econstructor.
+          eapply (not_elem_of_dom (D := gset string)).
+          apply is_fresh.
+        }
+        left.
+        right.
+        do 2 eexists; split; eauto.
+        { rewrite /lookup/readSome Heq_lookup //. }
+        right.
+        do 2 eexists; split.
+        { rewrite /lookup/readSome Heq_avail //. }
+        right.
+        do 2 eexists; split.
+        { econstructor. }
+        rewrite /readSome Heq_upd //.
+    }
+    iFrame. iExists _, _ ,_, _, _. iPureIntro; eauto.
+  Qed.
+
   Lemma writeTmp_unfold_writeBuf msg:
     writeTmp msg =
     (let! (f, name) <- createTmp;
@@ -871,6 +959,49 @@ Section refinement_triples.
       iIntros "!> _". wp_ret. iApply "HΦ"; by iFrame.
   Qed.
 
+  Lemma TmpInv_path_acc name inode:
+    name ↦ inode -∗ TmpInv -∗ (name ↦ inode ∗ path.mk SpoolDir name ↦ inode
+                                    ∗ (path.mk SpoolDir name ↦ inode -∗ TmpInv )).
+  Proof.
+    iIntros "Hn Htmp".
+    rewrite /TmpInv.
+    iDestruct "Htmp" as (tmp_map) "(?&Htmp_auth&Hpaths)".
+    iDestruct (gen_heap_valid with "[$] [$]") as %Hlookup.
+    iDestruct (big_sepM_lookup_acc with "[$]") as "(Hpath&Hpaths)"; eauto.
+    iFrame. iIntros. iExists _. iFrame. by iApply "Hpaths".
+  Qed.
+
+  Lemma MailboxStatusInterp_insert uid lk γ mstat mbox name body :
+    mbox !! name = None →
+    MailboxStatusInterp uid lk γ mstat mbox
+                        -∗ MailboxStatusInterp uid lk γ mstat (<[ name := body ]>mbox).
+  Proof.
+    iIntros (Hfresh) "Hinterp".
+    destruct mstat; auto.
+    iDestruct "Hinterp" as "($&HS)". iDestruct "HS" as (S) "(Hauth&%)".
+    iExists _; iFrame. iPureIntro.
+    etransitivity; first eauto.
+    apply insert_subseteq; eauto.
+  Qed.
+
+  Lemma HeapInv_agree_slice {T} σ sli alloc alloc' (vs vs': List.list T) status q:
+    Data.getAlloc sli.(slice.ptr) σ.(heap) = Some (status, alloc') →
+    Data.getSliceModel sli alloc' = Some vs' →
+    sli ↦{q} (alloc, vs) -∗ HeapInv σ -∗ ⌜ alloc = alloc' ∧ vs = vs' ⌝.
+  Proof.
+    iIntros (??) "Hsli Hheap".
+    rewrite /HeapInv.
+    iDestruct (big_sepDM_lookup (dec := sigPtr_eq_dec) with "Hheap") as "(Hlookup&%)".
+    { eauto. }
+    iAssert (∃ s q, Count_Typed_Heap.mapsto sli.(slice.ptr) s q alloc')%I
+      with "[Hlookup]" as (??) "Hlookup".
+    { destruct status; eauto. }
+    iDestruct "Hsli" as (??) "Hsli".
+    iDestruct (Count_Typed_Heap.mapsto_agree_generic with "[Hsli] Hlookup") as %Heq.
+    { eauto. }
+    subst. iPureIntro; split; auto. simpl in *. congruence.
+  Qed.
+
   Lemma deliver_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
     {{{ j ⤇ K ((deliver uid msg)) ∗ Registered ∗ ExecInv }}}
       MailServer.Deliver uid msg
@@ -886,6 +1017,8 @@ Section refinement_triples.
     iMod (deliver_start_step_inv_do j (λ x, K (Bind x (λ x, Call (Deliver_End uid msg))))
             with "Hj Hsource Hstate")
           as (s alloc vs s' Heq) "(Hj&Hstate)".
+    { solve_ndisj. }
+    iMod (ghost_step_bind_ret with "Hj Hsource") as "Hj".
     { solve_ndisj. }
     destruct Heq as (Heq1&Heq2&Heq3).
     iExists _. iFrame.
@@ -920,6 +1053,105 @@ Section refinement_triples.
     iIntros "!> _".
     wp_ret.
     rewrite app_nil_l.
+
+    (* Link loop *)
+    wp_bind.
+    iApply wp_randomUint64; first auto.
+    iIntros (id) "!> _".
+    wp_bind.
+    iLöb as "IH" forall (id).
+    wp_loop.
+    wp_bind.
+    iInv "Hinv" as "H".
+    clear σ Heq1 Heq2 Heq3.
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    iMod (deliver_end_step_inv j K
+            with "Hj Hsource Hstate")
+          as ((mstat&mbox) msg_stat' alloc' vs' lstatus Heq) "(Hj&Hstate)".
+    { solve_ndisj. }
+    destruct Heq as (He1&Heq2&Heq3&Heq4).
+    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
+    iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
+    iDestruct "Huid" as (lk γ) "(>%&>%&#Hlock&Hinbox)".
+    iDestruct "Hinbox" as "(Hmbox&>Hdircontents&Hmsgs)".
+    iDestruct (TmpInv_path_acc with "[$] [$]") as "(Hghost&Hpath&Htmp)".
+    (* Case on whether the file already exists *)
+    destruct (decide (("msg" ++ uint64_to_string id)%string ∈ dom (gset string) mbox))
+             as [Hin|Hfresh].
+    - iApply (wp_link_not_new with "[Hpath Hdircontents]").
+      { iFrame. eauto. }
+      iIntros "!> (Hpath&Hdircontents)".
+      iDestruct ("Htmp" with "Hpath") as "Htmp".
+      iDestruct ("Hm" with "[Hmsgs Hmbox Hdircontents]") as "Hm".
+      { iExists _, _. iFrame; eauto. }
+      rewrite insert_id; last eauto.
+      iExists _. iFrame.
+      iExists _. iFrame.
+      iModIntro.
+      wp_bind.
+      iApply wp_randomUint64; first auto.
+      iIntros (id') "!> _".
+      wp_ret. iNext.
+      iApply ("IH" with "[$] [$] [$] [$] [$] [$]").
+    - iApply (wp_link_new with "[Hpath Hdircontents]").
+      { iFrame. eauto. }
+      iIntros "!> (Hpath&Hpathnew&Hdircontents)".
+      iDestruct ("Htmp" with "Hpath") as "Htmp".
+      iDestruct (big_sepM_insert_2 with "[Hpathnew Hinode] Hmsgs") as "Hmsgs".
+      { simpl.  iExists _, _. iFrame. replace (0 : Z) with (O: Z) by auto. iFrame. }
+      iDestruct ("Hm" $! (mstat, <[ ("msg" ++ (uint64_to_string) id)%string := vs]> mbox)
+                   with "[Hmsgs Hmbox Hdircontents]") as "Hm".
+      { iExists _, _. iFrame.
+        rewrite dom_insert_L comm_L. iFrame.
+        iFrame "Hlock".
+        iSplitL ""; first eauto.
+        iSplitL ""; first eauto.
+        simpl.
+        iApply MailboxStatusInterp_insert; eauto.
+        eapply not_elem_of_dom; eauto.
+      }
+      iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+      { intros. econstructor. eexists; split; last by econstructor.
+        econstructor; eauto. econstructor.
+        eexists. split.
+        - rewrite /lookup/readSome. rewrite He1. eauto.
+        - do 2 eexists; split.
+          { econstructor; eauto. eapply not_elem_of_dom; eauto. }
+          do 2 eexists; split.
+          { rewrite /readUnlockSlice.
+            do 2 eexists; split.
+            { rewrite /readSome Heq2 //. }
+            do 2 eexists; split.
+            { rewrite /readSome Heq4 //. }
+            do 2 eexists; split.
+            { econstructor. }
+            { rewrite /readSome Heq3 //. }
+          }
+          econstructor.
+      }
+      { solve_ndisj. }
+      iDestruct (HeapInv_agree_slice with "[$] [$]") as %(?&?); eauto.
+      subst.
+      iExists _. iFrame.
+      iSplitL "Hheap Hm Hglobal Hp".
+      {
+        iExists _. iFrame.
+        iDestruct (big_sepDM_insert_acc (dec := sigPtr_eq_dec) with "Hheap")
+          as "((Hlookup&%)&Hclose)".
+        { eauto. }
+        iApply "Hclose".
+        iSplitR ""; auto.
+        iModIntro.
+        destruct msg_stat'; inversion Heq4; [].
+        simpl.
+        iDestruct "Hp" as (??) "Hp".
+        iDestruct (Count_Typed_Heap.read_split_join with "[$]") as "H".
+        destruct num; inv_step; eauto.
+      }
+      wp_ret.
+      wp_ret.
+      iModIntro. iNext.
+      (* Delete the temp file *)
   Abort.
 
 

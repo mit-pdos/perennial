@@ -238,7 +238,8 @@ Section gen_heap.
       * eauto.
   Qed.
 
-  Lemma mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ ⌜v1 = v2⌝.
+  Lemma mapsto_agree_generic l (q1 q2: Z) ls1 ls2 v1 v2 :
+    mapsto l q1 ls1 v1 -∗ mapsto l q2 ls2 v2 -∗ ⌜ v1 = v2 ⌝.
   Proof.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
@@ -249,6 +250,9 @@ Section gen_heap.
     rewrite -Some_op pair_op.
     by intros [_ [_ ?%agree_op_invL']].
   Qed.
+
+  Lemma mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ ⌜v1 = v2⌝.
+  Proof. apply mapsto_agree_generic. Qed.
 
   Lemma mapsto_valid_generic l (q1 q2: Z) ls1 ls2 v1 v2 :
     (q1 >= 0 → q2 >= 0 → mapsto l q1 ls1 v1 -∗ mapsto l q2 ls2 v2 -∗ False)%Z.

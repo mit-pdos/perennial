@@ -132,6 +132,12 @@ Section gen_heap.
   Global Instance read_mapsto_timeless {T} (l: L T) v : Timeless (l r↦ v).
   Proof. apply _. Qed.
 
+  Lemma mapsto_agree_generic {T} (l: L T) (q1 q2: Z) ls1 ls2 v1 v2 :
+    mapsto l q1 ls1 v1 -∗ mapsto l q2 ls2 v2 -∗ ⌜ v1 = v2 ⌝.
+  Proof.
+    iIntros "H1 H2". iDestruct (@mapsto_agree_generic with "H1 H2") as %Heq'. by inj_pair2.
+  Qed.
+
   Lemma mapsto_agree {T} (l: L T) q1 q2 v1 v2 : l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ ⌜v1 = v2⌝.
   Proof.
     iIntros "H1 H2". iDestruct (@mapsto_agree with "H1 H2") as %Heq'. by inj_pair2.
