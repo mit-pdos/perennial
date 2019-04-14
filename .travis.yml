@@ -41,6 +41,7 @@ install: |
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     set -ex  # -e = exit on failure; -x = trace for debug
     #opam update -y
+    opam switch \${COMPILER_EDGE}; eval \$(opam env)
     opam config list
     opam repo list
     opam list
