@@ -163,10 +163,12 @@ Module Mail.
 
   (* Post crash, recovery will perform lock initialization for the mailserver *)
   Definition crash_step : relation State State unit :=
-    puts (set open (λ _, true)).
+    _ <- puts (set open (λ _, true));
+    puts (set messages (λ m, (λ inbox, (MUnlocked, snd inbox)) <$> m)).
 
   Definition finish_step : relation State State unit :=
-    puts (set open (λ _, false)).
+    _ <- puts (set open (λ _, false));
+    puts (set messages (λ m, (λ inbox, (MUnlocked, snd inbox)) <$> m)).
 
   Definition sem : Dynamics Op State :=
     {| Proc.step := step;
@@ -185,10 +187,12 @@ Module Mail.
               trace_proj := fun _ => nil;
               Layer.initP := initP;
            |}; simpl; intros; auto.
-    - eexists; econstructor.
-    - eexists; econstructor.
-    - inversion H; subst; congruence.
-    - inversion H; subst; congruence.
+    - do 3 eexists; split; econstructor.
+    - do 3 eexists; split; econstructor.
+    - destruct ret; inversion H; eauto.
+       repeat deex. inversion H1.
+    - destruct ret; inversion H; eauto.
+       repeat deex. inversion H1.
   Defined.
 
   End GoModel.

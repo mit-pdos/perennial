@@ -76,32 +76,37 @@ Section refinement_triples.
       ∗ ghost_mapsto (A := discreteC contents) γ O S2)%I.
 
   Definition MailboxStatusInterp (uid: uint64) (lk: LockRef) (γ: gname)
-             (ls: MailboxStatus) (msgs: contents) :=
-    (match ls with
-     | MUnlocked => UserDir uid ↦ Unlocked
-        ∨ (UserDir uid ↦{-1} ReadLocked 0 ∗ InboxLockInv γ O)
-     | MPickingUp => wlocked lk
-        ∗ ∃ (S: contents), ghost_mapsto_auth γ (A := discreteC contents) S ∗ ⌜ S ⊆ msgs ⌝
-     | MLocked => wlocked lk ∗ InboxLockInv γ O ∗ UserDir uid ↦ Unlocked
-     end)%I.
+             (ls: MailboxStatus) (msgs: contents) (open: bool) :=
+    (if open then
+       match ls with
+       | MUnlocked => UserDir uid ↦ Unlocked
+          ∨ (UserDir uid ↦{-1} ReadLocked 0 ∗ InboxLockInv γ O)
+       | MPickingUp => wlocked lk
+          ∗ ∃ (S: contents), ghost_mapsto_auth γ (A := discreteC contents) S ∗ ⌜ S ⊆ msgs ⌝
+       | MLocked => wlocked lk ∗ InboxLockInv γ O ∗ UserDir uid ↦ Unlocked
+       end
+     else
+       ⌜ ls = MUnlocked ⌝ ∗ InboxLockInv γ O ∗ UserDir uid ↦ Unlocked)%I.
 
   Definition boxN : namespace := (nroot.@"inbox_lock").
 
   Definition InboxInv (uid: uint64) (lk: LockRef) (γ: gname) (ls: MailboxStatus)
-             (msgs: gmap.gmap string (Datatypes.list byte)) :=
-    (is_lock boxN lk (InboxLockInv γ) True
-     ∗ MailboxStatusInterp uid lk γ ls msgs
+             (msgs: gmap.gmap string (Datatypes.list byte)) (open: bool) :=
+    ((if open then is_lock boxN lk (InboxLockInv γ) True else True)
+     ∗ MailboxStatusInterp uid lk γ ls msgs open
      ∗ UserDir uid ↦ dom (gset string) msgs
      ∗ ([∗ map] mid ↦ msgData ∈ msgs,
         ∃ inode (n: nat), path.mk (UserDir uid) mid ↦ inode
                 ∗ inode ↦{n} msgData))%I.
 
-  Definition GlobalInv ls : iProp Σ :=
-    (∃ (lsptr: slice.t LockRef) (q: nat), global ↦{q} Some lsptr ∗ lsptr ↦{q} (ls, ls))%I.
-
+  Definition GlobalInv ls (open: bool): iProp Σ :=
+    (if open then
+       ∃ (lsptr: slice.t LockRef) (q: nat), global ↦{q} Some lsptr ∗ lsptr ↦{q} (ls, ls)
+     else
+       global ↦ None)%I.
 
   Lemma GlobalInv_split ls :
-    GlobalInv ls ⊢ GlobalInv ls ∗ ∃ lsptr, global ↦{-1} Some lsptr ∗ lsptr ↦{-1} (ls, ls).
+    GlobalInv ls true ⊢ GlobalInv ls true ∗ ∃ lsptr, global ↦{-1} Some lsptr ∗ lsptr ↦{-1} (ls, ls).
   Proof.
     iIntros "HG".
     iDestruct "HG" as (lsptr q) "(HP1&HP2)".
@@ -114,16 +119,20 @@ Section refinement_triples.
     iExists _. iFrame. by iFrame.
   Qed.
 
-  Definition MsgInv (Γ: gmap uint64 gname) ls uid lm : iProp Σ :=
+  Definition MsgInv (Γ: gmap uint64 gname) ls uid lm (open: bool) : iProp Σ :=
       (∃ lk γ, ⌜ Γ !! uid = Some γ ⌝
-      ∗ ⌜ List.nth_error ls uid = Some lk ⌝
-      ∗ InboxInv uid lk γ (fst lm) (snd lm))%I.
+      ∗ ⌜ if open then List.nth_error ls uid = Some lk else True ⌝
+      ∗ InboxInv uid lk γ (fst lm) (snd lm) open)%I.
+
+  Definition RootDirInv (σ: Mail.State) : iProp Σ :=
+    (rootdir ↦{-1} (set_map UserDir (dom (gset uint64) σ.(messages))))%I.
 
   Definition MsgsInv (Γ : gmap uint64 gname) (σ: Mail.State) : iProp Σ :=
-    (∃ ls, GlobalInv ls ∗ ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm))%I.
+    (∃ ls, GlobalInv ls σ.(open) ∗ RootDirInv σ
+                     ∗ ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm σ.(open)))%I.
 
   Lemma MsgInv_pers_split Γ ls uid lm :
-    MsgInv Γ ls uid lm -∗
+    MsgInv Γ ls uid lm true -∗
            (∃ lk γ, ⌜ Γ !! uid = Some γ ⌝
                   ∗ ⌜ List.nth_error ls uid = Some lk ⌝
                   ∗ (is_lock boxN lk (InboxLockInv γ) True)).
@@ -135,7 +144,7 @@ Section refinement_triples.
 
   Lemma MsgsInv_pers_split Γ σ ls uid v:
     σ.(messages) !! uid = Some v →
-    ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm)
+    ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm true)
     -∗ (∃ lk γ, ⌜ Γ !! uid = Some γ ⌝
                 ∗ ⌜ List.nth_error ls uid = Some lk ⌝
                 ∗ (is_lock boxN lk (InboxLockInv γ) True)).
@@ -173,7 +182,7 @@ Section refinement_triples.
     (∃ Γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ ∗ TmpInv))%I.
 
   Lemma GlobalInv_unify lsptr ls ls':
-    global ↦{-1} Some lsptr -∗ lsptr ↦{-1} (ls, ls) -∗ GlobalInv ls' -∗ ⌜ ls = ls' ⌝.
+    global ↦{-1} Some lsptr -∗ lsptr ↦{-1} (ls, ls) -∗ GlobalInv ls' true -∗ ⌜ ls = ls' ⌝.
   Proof.
     iIntros "Hgptr Hlsptr HG".
     iDestruct "HG" as (lsptr' ?) "(Hgptr'&Hlsptr')".
@@ -491,8 +500,8 @@ Section refinement_triples.
 
   Lemma MailboxStatusInterp_insert uid lk γ mstat mbox name body :
     mbox !! name = None →
-    MailboxStatusInterp uid lk γ mstat mbox
-                        -∗ MailboxStatusInterp uid lk γ mstat (<[ name := body ]>mbox).
+    MailboxStatusInterp uid lk γ mstat mbox true
+                        -∗ MailboxStatusInterp uid lk γ mstat (<[ name := body ]>mbox) true.
   Proof.
     iIntros (Hfresh) "Hinterp".
     destruct mstat; auto.
@@ -609,7 +618,8 @@ Section refinement_triples.
           as ((mstat&mbox) msg_stat' alloc' vs' lstatus Heq) "(Hj&Hstate)".
     { solve_ndisj. }
     destruct Heq as (He1&Heq2&Heq3&Heq4).
-    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
+    rewrite /MsgsInv. rewrite Hopen.
+    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hrootdir&Hm)".
     iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
     iDestruct "Huid" as (lk γ) "(>%&>%&#Hlock&Hinbox)".
     iDestruct "Hinbox" as "(Hmbox&>Hdircontents&Hmsgs)".
@@ -625,6 +635,7 @@ Section refinement_triples.
       { iExists _, _. iFrame; eauto. }
       rewrite insert_id; last eauto.
       iExists _. iFrame.
+      rewrite Hopen.
       iExists _. iFrame.
       iModIntro.
       wp_bind.
@@ -673,12 +684,18 @@ Section refinement_triples.
       iDestruct (HeapInv_agree_slice with "[$] [$]") as %(?&?); eauto.
       subst.
       iExists _. iFrame.
-      iSplitL "Hheap Hm Hglobal Hp".
+      iSplitL "Hheap Hm Hglobal Hp Hrootdir".
       {
         iExists _. iFrame.
+        simpl open. rewrite Hopen. iFrame.
         iDestruct (big_sepDM_insert_acc (dec := sigPtr_eq_dec) with "Hheap")
           as "((Hlookup&%)&Hclose)".
         { eauto. }
+        iSplitL "Hrootdir".
+        { iModIntro. rewrite /RootDirInv. simpl.
+          rewrite dom_insert_L_in //; eauto.
+          { eapply elem_of_dom. eexists; eauto. }
+        }
         iApply "Hclose".
         iSplitR ""; auto.
         iModIntro.
@@ -713,7 +730,11 @@ Section refinement_triples.
     wp_bind. wp_ret.
     iInv "Hinv" as "H".
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
+    rewrite /MsgsInv ?Hopen.
+    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hrootdir&Hm)".
     iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
     iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
     iMod (delete_step_inv with "Hj Hsource Hstate") as (v body (Heq1&Heq2)) "(Hj&Hstate)".
@@ -721,9 +742,6 @@ Section refinement_triples.
     iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
     iDestruct "Huid" as (lk γ) "(>%&>%&#Hlock&>Hinbox)".
     iDestruct "Hinbox" as "(Hmbox&Hdircontents&Hmsgs)".
-    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
-    { simpl; auto. }
-    { solve_ndisj. }
     iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
     { intros. econstructor. eexists; split; last by econstructor.
       econstructor; eauto. eapply opened_step; auto. econstructor.
@@ -743,6 +761,11 @@ Section refinement_triples.
     iExists _. iFrame. iModIntro.
     iSplitR "HΦ Hreg Hj".
     - iNext. iExists _. iFrame.
+      simpl open. rewrite Hopen. iFrame.
+      iSplitL "Hrootdir".
+      { rewrite /RootDirInv //=. rewrite dom_insert_L_in //.
+        eapply elem_of_dom. eauto.
+      }
       iApply "Hm". iExists _, _. iFrame.
       do 2 (iSplitL ""; eauto).
       iFrame "Hlock".
@@ -760,14 +783,15 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
+    rewrite /MsgsInv ?Hopen.
+    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hrootdir&Hm)".
     iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
     iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
     iApply (wp_getX with "[$]"); iIntros "!> Hglobal_read".
     iMod (unlock_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
-    { solve_ndisj. }
-    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
-    { simpl; auto. }
     { solve_ndisj. }
     iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
     iDestruct "Huid" as (lk γ) "(%&%&#Hlock&Hinbox)".
@@ -781,10 +805,15 @@ Section refinement_triples.
     }
     { solve_ndisj. }
     iExists _. iFrame.
-    iExists _. iFrame.
+    iExists _.
+    simpl open. rewrite Hopen. iFrame.
     iDestruct "Hmbox" as "(Hwlock&Hlockinv&Hunlocked)".
-    iSplitL "Hm Hmsgs Hdircontents Hunlocked".
-    { iModIntro.  iNext. iApply "Hm". iExists _, _.
+    iSplitL "Hm Hmsgs Hdircontents Hunlocked Hrootdir".
+    { iModIntro.  iNext.
+      iSplitL "Hrootdir".
+      { rewrite /RootDirInv//=. rewrite dom_insert_L_in; eauto.
+        eapply elem_of_dom; eauto. }
+      iApply "Hm". iExists _, _.
       do 2 (iSplitL ""; eauto).
       iFrame. iFrame "Hlock".
     }
@@ -909,20 +938,21 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as "H".
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hm)".
+    iMod (is_opened_step_inv' with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
+    rewrite /MsgsInv ?Hopen.
+    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hrootdir&Hm)".
     iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
     iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
     iApply (wp_getX with "[$]"); iIntros "!> Hglobal_read".
     iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
     { solve_ndisj. }
-    iMod (is_opened_step_inv' with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
-    { simpl; auto. }
-    { solve_ndisj. }
     iDestruct (MsgsInv_pers_split with "Hm") as "#Huid"; first eauto.
     iDestruct "Huid" as (lk γ HΓlookup Hnth) "#Hlock".
 
     (* re-do invariant *)
-    iExists _. iFrame. iExists _. iFrame.
+    iExists _. iFrame. iExists _. rewrite Hopen. iFrame.
 
     iModIntro.
     wp_bind. iApply (wp_sliceRead with "[$]").
@@ -941,11 +971,12 @@ Section refinement_triples.
     iInv "Hinv" as "H".
     clear σ Hopen Heq v.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-    iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
-    iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
-    { solve_ndisj. }
     iMod (is_opened_step_inv' with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
     { simpl; auto. }
+    { solve_ndisj. }
+    rewrite /MsgsInv ?Hopen.
+    iDestruct "Hmsgs" as (ls') "(>Hglobal&Hrootdir&Hm)".
+    iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
     { solve_ndisj. }
 
     iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
@@ -985,6 +1016,7 @@ Section refinement_triples.
     iExists _. iFrame.
     replace 0%Z with (O: Z) by auto.
     iPoseProof (@Count_Heap.read_split_join1 with "Hmbox") as "(Hrl&Hmbox)".
+    rewrite ?Hopen. iFrame.
     iSplitL "Hm Hmbox Hdircontents Hmsgs Hlockinv".
     { iNext.
       iApply "Hm". iExists _, _. iFrame "%".
@@ -996,11 +1028,12 @@ Section refinement_triples.
     iInv "Hinv" as "H".
     clear σ Hopen Heq Heq1 Heq2 msgs.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-    iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
-    iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
-    { solve_ndisj. }
     iMod (is_opened_step_inv' with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
     { simpl; auto. }
+    { solve_ndisj. }
+    rewrite /MsgsInv ?Hopen.
+    iDestruct "Hmsgs" as (ls') "(>Hglobal&Hrootdir&Hm)".
+    iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
     { solve_ndisj. }
 
     iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
@@ -1049,11 +1082,15 @@ Section refinement_triples.
     iMod (InboxLockInv_set_msgs _ _ msgs with "[$]") as "(Hcontents_auth&Hcontents_frag)".
     iModIntro.
     iExists _. iFrame.
-    iExists _. iFrame.
+    iExists _. simpl open. rewrite Hopen. iFrame.
     replace 0%Z with (O: Z) by auto.
 
-    iSplitL "Hm Hlocked Hcontents_auth Hdircontents Hmsgs".
+    iSplitL "Hm Hlocked Hcontents_auth Hdircontents Hmsgs Hrootdir".
     { iNext.
+      iSplitL "Hrootdir".
+      { rewrite /RootDirInv dom_insert_L_in //.
+        { eapply elem_of_dom; eauto. }
+      }
       iApply "Hm". iExists _, _.
       iSplitL ""; first by eauto.
       iSplitL ""; first by eauto.
@@ -1121,7 +1158,8 @@ Section refinement_triples.
       iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
       { simpl; auto. }
       { solve_ndisj. }
-      iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
+      rewrite /MsgsInv ?Hopen.
+      iDestruct "Hmsgs" as (ls') "(>Hglobal&Hopen&Hm)".
       iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
       iDestruct (big_sepM_lookup_acc with "Hm") as "(Huid&Hm)"; eauto.
       iDestruct "Huid" as (??) "(>Heq1&>Heq2&Hinbox)".
@@ -1152,7 +1190,7 @@ Section refinement_triples.
       iApply (wp_open with "[$]").
       iIntros (fh) "!> (Hpath&Hfh)".
       iPoseProof (@Count_GHeap.read_split_join with "Hinode") as "(Hinode_inv&Hinode)".
-      iExists _. iFrame.
+      iExists _. iFrame. rewrite ?Hopen. iFrame.
       iSplitL "Hm Hinode_inv Hmsgs Hglobal Hauth Hwlock Hdircontents Hpath".
       { iModIntro. iNext. iExists _. iFrame. iApply "Hm".
         iExists _, _. iFrame.
@@ -1231,13 +1269,17 @@ Section refinement_triples.
       }
       { solve_ndisj. }
       wp_ret.
-      iExists _. iFrame.
+      iExists _. iFrame. simpl open. rewrite Hopen.
       iSplitR "Hj Hmessages0 HΦ Hreg".
       { iModIntro. iNext.
         iSplitL "Hmsgs Hcontents_frag Hdirlock".
-        { simpl. rewrite /MsgsInv. iDestruct "Hmsgs" as (l0) "(?&Hmap)".
+        { simpl. rewrite /MsgsInv. iDestruct "Hmsgs" as (l0) "(?&Hrootdir&Hmap)".
           iExists _. iFrame.
           simpl.
+          iSplitL "Hrootdir".
+          { rewrite /RootDirInv//= dom_insert_L_in //.
+            eapply elem_of_dom; eauto.
+          }
           iApply (big_sepM_insert_override_2 with "Hmap"); eauto.
           rewrite /MsgInv. simpl.
           iIntros "H". iDestruct "H" as (lk' γ') "(%&%&(?&Hinterp&?&?))".
