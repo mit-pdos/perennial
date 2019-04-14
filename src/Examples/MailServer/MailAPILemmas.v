@@ -75,7 +75,9 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
   Ltac err0 := err_start; err_hd.
   Ltac err1 := err_start; err_cons; err_hd.
   Ltac err2 := err_start; err_cons; err_cons; err_hd.
+  Ltac err3 := err_start; err_cons; err_cons; err_cons; err_hd.
 
+  Ltac solve_err := ghost_err; solve [ err0 | err1 | err2 | err3 ].
 
   Lemma pickup_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →
@@ -84,7 +86,7 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
            ∗ j ⤇ K (pickup uid) ∗ source_state σ.
   Proof.
     iIntros.
-    non_err; last by (ghost_err; err0).
+    non_err; last by solve_err.
     iIntros; iFrame; eauto.
   Qed.
 
@@ -96,8 +98,8 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
         j ⤇ K (Call (Pickup_End uid msgs)) ∗ source_state σ.
   Proof.
     iIntros. non_err.
-    - destruct p as ([]&?); try (by iFrame; auto); ghost_err; err1.
-    - ghost_err; err0.
+    - destruct p as ([]&?); try (by iFrame; auto); solve_err.
+    - solve_err.
   Qed.
 
   Lemma unlock_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
@@ -108,8 +110,8 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
         j ⤇ K (Call (Unlock uid)) ∗ source_state σ.
   Proof.
     iIntros. non_err.
-    - destruct p as ([]&?); try (by iFrame; eauto); ghost_err; err1.
-    - ghost_err; err0.
+    - destruct p as ([]&?); try (by iFrame; eauto); solve_err.
+    - solve_err.
   Qed.
 
   Lemma delete_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg (σ: l.(OpState)) E:
@@ -120,13 +122,11 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
         j ⤇ K (Call (Delete uid msg)) ∗ source_state σ.
   Proof.
     iIntros. non_err.
-    - destruct p as ([]&msgs); try (by iFrame; eauto).
-      * ghost_err; err1.
-      * iExists _. non_err.
-        ** iFrame. eauto.
-        ** ghost_err; err1.
-      * ghost_err; err1.
-    - ghost_err; err0.
+    - destruct p as ([]&msgs); try (by iFrame; eauto); try solve_err.
+      iExists _. non_err.
+      * iFrame. eauto.
+      * solve_err.
+    - solve_err.
   Qed.
 
   Lemma deref_step_inv_do {T T2} j K `{LanguageCtx _ T T2 Mail.l K} p off (σ: l.(OpState)) E:
@@ -138,11 +138,11 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
                       List.nth_error alloc off = Some v ⌝ ∗
         j ⤇ K (Ret v) ∗ source_state σ.
   Proof.
-    iIntros. non_err; last by (ghost_err; err0).
+    iIntros. non_err; last by solve_err.
     destruct p0 as (s&alloc).
     iExists s, alloc.
-    non_err'; last by (ghost_err; err1).
-    non_err'; last by (ghost_err; err2).
+    non_err'; last by solve_err.
+    non_err'; last by solve_err.
     iMod (ghost_step_call _ _ _ _ with "[$] [$] [$]") as "(?&?&?)".
     { intros n.
       do 2 eexists; split; last econstructor.
@@ -165,10 +165,10 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
         ∗ source_state (RecordSet.set heap (RecordSet.set Data.allocs (updDyn p (Locked, alloc))) σ).
   Proof.
     iIntros.
-    non_err; last by (ghost_err; err0).
+    non_err; last by solve_err.
     destruct p0 as (s&alloc).
     iExists s, alloc.
-    non_err; last by (ghost_err; err1).
+    non_err; last by solve_err.
     iMod (ghost_step_call _ _ _ tt ((RecordSet.set heap _ σ : l.(OpState)))
             with "[$] [$] [$]") as "(?&?&?)".
     { intros n.
@@ -188,59 +188,24 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
     ={E}=∗
         ∃ s alloc alloc', ⌜ Data.getAlloc p σ.(heap) = Some (s, alloc) ∧
                             Data.list_nth_upd alloc off x = Some alloc' ∧
-                            lock_release Writer s <> None ⌝ ∗
+                            lock_release Writer s = Some Unlocked ⌝ ∗
         j ⤇ K (Ret tt)
         ∗ source_state (RecordSet.set heap (RecordSet.set Data.allocs (updDyn p (Unlocked, alloc'))) σ).
   Proof.
-    iIntros (?) "Hj Hsrc Hstate".
-    destruct (Data.getAlloc p σ.(heap)) as [v|] eqn:Heq_lookup; last first.
-    {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. left.
-        { rewrite /lookup/readSome Heq_lookup //. }
-    }
-    destruct v as (s&alloc).
+    iIntros.
+    non_err; last by solve_err.
+    destruct p0 as (s&alloc).
     iExists s, alloc.
-    destruct (lock_release Writer s) as [?|] eqn:Heq_avail; last first.
-    {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_lookup //. }
-        simpl.
-        left. destruct s; simpl in Heq_avail; try inversion Heq_avail; try econstructor.
-    }
-    destruct (Data.list_nth_upd alloc off x) as [alloc'|] eqn:Heq_upd; last first.
-    {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_lookup //. }
-        right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_avail //. }
-        left.
-        rewrite /readSome Heq_upd //.
-    }
+    non_err; try solve_err.
     iMod (ghost_step_call _ _ _ tt ((RecordSet.set heap _ σ : l.(OpState)))
-            with "Hj Hsrc Hstate") as "(?&?&?)".
+            with "[$] [$] [$]") as "(?&?&?)".
     { intros n.
       do 2 eexists; split; last econstructor.
-      do 2 eexists; last eauto.
-      * do 2 eexists. split.
-        { rewrite /lookup/readSome Heq_lookup //. }
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_avail //. }
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_upd //. }
-        econstructor.
+      repeat (do 2 eexists; try split; non_err).
     }
     { eauto. }
     iFrame. eauto.
-    destruct s; inversion Heq_avail; subst. eauto.
+    destruct s; simpl in *; try congruence. inv_step. eauto.
   Qed.
 
   Lemma deliver_start_step_inv_do {T2} j K `{LanguageCtx _ unit T2 Mail.l K} uid msg
@@ -255,51 +220,16 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
         ∗ source_state (RecordSet.set heap (RecordSet.set Data.allocs
                                                           (updDyn msg.(slice.ptr) (s', alloc))) σ).
   Proof.
-    iIntros (?) "Hj Hsrc Hstate".
-    destruct (Data.getAlloc msg.(slice.ptr) σ.(heap)) as [v|] eqn:Heq_lookup; last first.
-    {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. left.
-        { rewrite /lookup/readSome Heq_lookup //. }
-    }
-    destruct v as (s&alloc).
+    iIntros.
+    non_err; last by solve_err.
+    destruct p as (s&alloc).
     iExists s, alloc.
-    destruct (lock_acquire Reader s) as [?|] eqn:Heq_avail; last first.
-    {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_lookup //. }
-        simpl.
-        left. destruct s; simpl in Heq_avail; try inversion Heq_avail; try econstructor.
-    }
-    destruct (Data.getSliceModel msg alloc) as [alloc'|] eqn:Heq_upd; last first.
-    {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_lookup //. }
-        right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_avail //. }
-        left.
-        rewrite /readSome Heq_upd //.
-    }
+    non_err; try solve_err.
     iMod (ghost_step_call _ _ _ tt ((RecordSet.set heap _ σ : l.(OpState)))
-            with "Hj Hsrc Hstate") as "(?&?&?)".
+            with "[$] [$] [$]") as "(?&?&?)".
     { intros n.
       do 2 eexists; split; last econstructor.
-      do 2 eexists; last eauto.
-      * do 2 eexists.
-        { rewrite /lookup/readSome Heq_lookup //. }
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_avail //. }
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_upd //. }
-        econstructor.
+      repeat (do 2 eexists; try split; non_err).
     }
     { eauto. }
     iFrame. eauto.
@@ -319,76 +249,39 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
   Proof.
     iIntros (?) "Hj Hsrc Hstate".
     destruct (σ.(messages) !! uid) as [(ms&mbox)|] eqn:Heq_uid; last first.
-    {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. left.
-        { rewrite /lookup/readSome Heq_uid //. }
-    }
+    { solve_err. }
     destruct (Data.getAlloc msg.(slice.ptr) σ.(heap)) as [(s&alloc)|] eqn:Heq_lookup; last first.
     {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_uid //. }
-        right.
-        exists (fresh (dom (gset string) mbox)).
-        eexists; split.
-        { rewrite /lookup/readSome. econstructor.
-          eapply (not_elem_of_dom (D := gset string)).
-          apply is_fresh.
-        }
-        left.
-        rewrite /readUnlockSlice.
-        left. rewrite /readSome Heq_lookup //.
+      ghost_err.
+      intros n. left. right.
+      do 2 eexists; split; non_err.
+      right.
+      exists (fresh (dom (gset string) mbox)).
+      eexists; split.
+      { econstructor. eapply (not_elem_of_dom (D := gset string)), is_fresh. }
+      err0.
     }
     destruct (lock_release Reader s) as [?|] eqn:Heq_avail; last first.
     {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_uid //. }
-        right.
-        exists (fresh (dom (gset string) mbox)).
-        eexists; split.
-        { rewrite /lookup/readSome. econstructor.
-          eapply (not_elem_of_dom (D := gset string)).
-          apply is_fresh.
-        }
-        left.
-        right.
-        do 2 eexists; split; eauto.
-        { rewrite /lookup/readSome Heq_lookup //. }
-        left.
-        { rewrite /lookup/readSome Heq_avail //. }
+      ghost_err.
+      intros n. left. right.
+      do 2 eexists; split; non_err.
+      right.
+      exists (fresh (dom (gset string) mbox)).
+      eexists; split.
+      { econstructor. eapply (not_elem_of_dom (D := gset string)), is_fresh. }
+      err1.
     }
     destruct (Data.getSliceModel msg alloc) as [alloc'|] eqn:Heq_upd; last first.
     {
-      iMod (ghost_step_err _ _ _
-                with "[Hj] Hsrc Hstate"); eauto; last first.
-        intros n. left. right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_uid //. }
-        right.
-        exists (fresh (dom (gset string) mbox)).
-        eexists; split.
-        { rewrite /lookup/readSome. econstructor.
-          eapply (not_elem_of_dom (D := gset string)).
-          apply is_fresh.
-        }
-        left.
-        right.
-        do 2 eexists; split; eauto.
-        { rewrite /lookup/readSome Heq_lookup //. }
-        right.
-        do 2 eexists; split.
-        { rewrite /lookup/readSome Heq_avail //. }
-        right.
-        do 2 eexists; split.
-        { econstructor. }
-        rewrite /readSome Heq_upd //.
+      ghost_err.
+      intros n. left. right.
+      do 2 eexists; split; non_err.
+      right.
+      exists (fresh (dom (gset string) mbox)).
+      eexists; split.
+      { econstructor. eapply (not_elem_of_dom (D := gset string)), is_fresh. }
+      err3.
     }
     iFrame. iExists _, _ ,_, _, _. iPureIntro; eauto.
   Qed.
