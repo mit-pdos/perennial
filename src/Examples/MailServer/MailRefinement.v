@@ -86,7 +86,7 @@ Section refinement_triples.
        | MLocked => wlocked lk ∗ InboxLockInv γ O ∗ UserDir uid ↦ Unlocked
        end
      else
-       ⌜ ls = MUnlocked ⌝ ∗ InboxLockInv γ O ∗ UserDir uid ↦ Unlocked)%I.
+       ⌜ ls = MUnlocked ⌝ ∗ UserDir uid ↦ Unlocked)%I.
 
   Definition boxN : namespace := (nroot.@"inbox_lock").
 
@@ -124,10 +124,16 @@ Section refinement_triples.
       ∗ ⌜ if open then List.nth_error ls uid = Some lk else True ⌝
       ∗ InboxInv uid lk γ (fst lm) (snd lm) open)%I.
 
-  Definition RootDirInv (σ: Mail.State) : iProp Σ :=
-    (rootdir ↦{-1} (set_map UserDir (dom (gset uint64) σ.(messages))))%I.
+  Definition userRange_ok (s: gset uint64) :=
+    (forall (uid: uint64),
+        (uid < 100 -> uid ∈ s) /\
+        (uid >= 100 -> ¬ uid ∈ s)).
 
-  Definition MsgsInv (Γ : gmap uint64 gname) (σ: Mail.State) : iProp Σ :=
+  Definition RootDirInv (σ: Mail.State) : iProp Σ :=
+    (rootdir ↦{-1} (set_map UserDir (dom (gset uint64) σ.(messages)))
+      ∗ ⌜ userRange_ok (dom (gset uint64) (σ.(messages))) ⌝)%I.
+
+  Definition MsgsInv (Γ : gmap uint64 gname) (γ: gname) (σ: Mail.State) : iProp Σ :=
     (∃ ls, GlobalInv ls σ.(open) ∗ RootDirInv σ
                      ∗ ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm σ.(open)))%I.
 
@@ -179,7 +185,7 @@ Section refinement_triples.
   Qed.
 
   Definition ExecInv :=
-    (∃ Γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ ∗ TmpInv))%I.
+    (∃ Γ γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ γ σ ∗ HeapInv σ ∗ TmpInv))%I.
 
   Lemma GlobalInv_unify lsptr ls ls':
     global ↦{-1} Some lsptr -∗ lsptr ↦{-1} (ls, ls) -∗ GlobalInv ls' true -∗ ⌜ ls = ls' ⌝.
@@ -421,10 +427,26 @@ Section refinement_triples.
   Proof. trivial. Qed.
   Opaque writeTmp.
 
+  (*
+  Lemma initLocks_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} :
+    {{{ j ⤇ K (Call Open) ∗ Registered ∗ ExecInv }}}
+      initLocks
+    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
+  Proof.
+    iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
+    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    rewrite /initLocks.
+    wp_bind.
+    iApply wp_newAlloc; first auto.
+    iIntros (locks) "!> Hlocks".
+    wp_bind.
+    iAssert (∃ Γ
+   *)
+
   (* TODO: this actually only depends on TmpInv. For modulariy, maybe break up proof
      into a "re-usable" temp directory pattern? *)
-  Lemma wp_createTmp Γ:
-    {{{ inv execN (∃ σ : l.(OpState), source_state σ ∗ MsgsInv Γ σ ∗ HeapInv σ ∗ TmpInv) }}}
+  Lemma wp_createTmp Γ γ:
+    {{{ inv execN (∃ σ : l.(OpState), source_state σ ∗ MsgsInv Γ γ σ ∗ HeapInv σ ∗ TmpInv) }}}
       createTmp
     {{{ (f: File) name (inode: Inode), RET (f, name);
         name ↦ inode ∗ inode ↦ [] ∗ f ↦ (inode, Write) }}}.
@@ -553,7 +575,7 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    iDestruct "Hrest" as (Γ γinit) "(#Hsource&#Hinv)".
     wp_bind. wp_ret.
     rewrite -fupd_wp.
     iInv "Hinv" as "H".
@@ -726,7 +748,7 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    iDestruct "Hrest" as (Γ γinit) "(#Hsource&#Hinv)".
     wp_bind. wp_ret.
     iInv "Hinv" as "H".
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
@@ -779,7 +801,7 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    iDestruct "Hrest" as (Γ γinit) "(#Hsource&#Hinv)".
     wp_bind.
     iInv "Hinv" as "H".
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
@@ -851,7 +873,7 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    iDestruct "Hrest" as (Γ γinit) "(#Hsource&#Hinv)".
     iInv "Hinv" as "H".
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
@@ -934,7 +956,7 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    iDestruct "Hrest" as (Γ γinit) "(#Hsource&#Hinv)".
     wp_bind.
     iInv "Hinv" as "H".
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".

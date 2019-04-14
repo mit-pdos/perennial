@@ -79,6 +79,21 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
 
   Ltac solve_err := ghost_err; solve [ err0 | err1 | err2 | err3 ].
 
+  Lemma open_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call Open) -∗ source_ctx -∗ source_state σ
+    ={E}=∗ ⌜ σ.(open) = false ⌝
+           ∗ j ⤇ K (Call Open) ∗ source_state σ.
+  Proof.
+    iIntros.
+    destruct (σ.(open)) as [|] eqn:Heq.
+    - ghost_err.
+      intros n. left. right. do 2 eexists. split.
+      { rewrite /reads. rewrite Heq. econstructor. }
+      simpl. econstructor.
+    - by iFrame.
+  Qed.
+
   Lemma pickup_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →
     j ⤇ K (pickup uid) -∗ source_ctx -∗ source_state σ
