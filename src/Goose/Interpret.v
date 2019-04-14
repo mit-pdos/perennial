@@ -1,4 +1,4 @@
-From stdpp Require Import base.
+From stdpp Require Import base countable.
 From Tactical Require Import ProofAutomation.
 
 From RecordUpdate Require Import RecordSet RecordUpdate.
@@ -13,6 +13,22 @@ From RecoveryRefinement Require Import Spec.Layer.
 From RecoveryRefinement Require Import Goose.Machine Goose.Filesys Goose.Heap Goose.GoZeroValues Goose.GoLayer Goose.Globals.
 
 Import ProcNotations.
+
+Record natbyte : Type := Byte {
+                       b : nat;
+                       _ : b < 256;
+                     }.
+Definition natbyte0 : natbyte.
+Proof.
+  eapply Byte with (b := 0).
+  destruct (zerop 256); eauto. discriminate.
+Qed.
+
+Definition ascii_to_natbyte : Ascii.ascii -> natbyte.
+Proof.
+  intros a.
+  eapply Byte with (b := Ascii.nat_of_ascii a).
+Admitted.
 
 Instance goModel : GoModel :=
   { byte := unit;
