@@ -225,9 +225,11 @@ Qed.
 
 (* Prove Interpreter *)
 Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A),
-    (interpret r a) = NotImpl \/
-    ((interpret r a) = Error /\ (rtermDenote r) a Err) \/
-    (exists b t, (interpret r a) = Success b t /\ (rtermDenote r) a (Val b t)).
+    match (interpret r a) with
+    | NotImpl => True
+    | Error => rtermDenote r a Err
+    | Success b t => rtermDenote r a (Val b t)
+    end.
 
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
