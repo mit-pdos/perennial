@@ -15,6 +15,7 @@ Module Mail.
   Implicit Types (uid:uint64).
 
   Inductive Op : Type -> Type :=
+  | Open : Op unit
   | Pickup_Start uid : Op (list (string * list byte))
   | Pickup_End uid (msgs: list (string * list byte)) : Op (slice.t Message.t)
   | Deliver_Start uid (msg: slice.t byte) : Op unit
@@ -52,10 +53,12 @@ Module Mail.
 
   Record State : Type :=
     { heap: Data.State;
-      messages: gmap.gmap uint64 (MailboxStatus * gmap.gmap string (list byte)); }.
+      messages: gmap.gmap uint64 (MailboxStatus * gmap.gmap string (list byte));
+      open : bool;
+    }.
 
   Global Instance etaState : Settable _ :=
-    settable! Build_State <heap; messages>.
+    settable! Build_State <heap; messages; open>.
 
   Import RelationNotations.
 
@@ -107,7 +110,13 @@ Module Mail.
          _ <- puts (set heap (set Data.allocs (updDyn (a:=Ptr.Heap T) p.(slice.ptr) (s', alloc))));
          readSome (fun _ => Data.getSliceModel p alloc).
 
-  Definition step T (op: Op T) : relation State State T :=
+  Definition step_closed T (op: Op T) : relation State State T :=
+    match op in Op T return relation State State T with
+    | Open => puts (set open (λ _, true))
+    | _ => error
+    end.
+
+  Definition step_open T (op: Op T) : relation State State T :=
     match op in Op T return relation State State T with
     | Pickup_Start uid =>
       let! (s, msgs) <- lookup messages uid;
@@ -142,10 +151,22 @@ Module Mail.
            s <- Filesys.FS.unwrap (mailbox_lock_release s);
            puts (set messages <[uid := (s, msgs)]>)
     | DataOp op => _zoom heap (Data.step op)
+    | Open => error
     end.
 
-  Definition crash_step : relation State State unit := pure tt.
-  Definition finish_step : relation State State unit := pure tt.
+  Definition step T (op: Op T) : relation State State T :=
+    i <- reads open;
+    match i with
+    | true => step_open op
+    | false => step_closed op
+    end.
+
+  (* Post crash, recovery will perform lock initialization for the mailserver *)
+  Definition crash_step : relation State State unit :=
+    puts (set open (λ _, true)).
+
+  Definition finish_step : relation State State unit :=
+    puts (set open (λ _, false)).
 
   Definition sem : Dynamics Op State :=
     {| Proc.step := step;
@@ -154,6 +175,7 @@ Module Mail.
 
   Definition initP (s:State) :=
     s.(heap) = ∅ /\
+    s.(open) = false /\
     (forall (uid: uint64),
         (uid < 100 -> s.(messages) !! uid = Some (MUnlocked, ∅)) /\
         (uid >= 100 -> s.(messages) !! uid = None)).

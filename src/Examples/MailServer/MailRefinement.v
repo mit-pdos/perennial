@@ -309,7 +309,7 @@ Section refinement_triples.
 
   Lemma readMessage_unfold_open userDir name:
     readMessage userDir name =
-    (let! f <- open userDir name;
+    (let! f <- FS.open userDir name;
      readMessage_handle f)%proc.
   Proof. trivial. Qed.
   Opaque readMessage.
@@ -601,6 +601,9 @@ Section refinement_triples.
     iInv "Hinv" as "H".
     clear σ Heq1 Heq2 Heq3.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
     iMod (deliver_end_step_inv j K
             with "Hj Hsource Hstate")
           as ((mstat&mbox) msg_stat' alloc' vs' lstatus Heq) "(Hj&Hstate)".
@@ -649,7 +652,7 @@ Section refinement_triples.
       }
       iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
       { intros. econstructor. eexists; split; last by econstructor.
-        econstructor; eauto. econstructor.
+        econstructor; eauto. apply opened_step; auto. econstructor.
         eexists. split.
         - rewrite /lookup/readSome. rewrite He1. eauto.
         - do 2 eexists; split.
@@ -718,9 +721,12 @@ Section refinement_triples.
     iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
     iDestruct "Huid" as (lk γ) "(>%&>%&#Hlock&>Hinbox)".
     iDestruct "Hinbox" as "(Hmbox&Hdircontents&Hmsgs)".
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
     iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
     { intros. econstructor. eexists; split; last by econstructor.
-      econstructor; eauto. econstructor.
+      econstructor; eauto. eapply opened_step; auto. econstructor.
       eexists. split.
       - rewrite /lookup/readSome. rewrite Heq1. eauto.
       - simpl. do 2 eexists; split.
@@ -760,12 +766,15 @@ Section refinement_triples.
     iApply (wp_getX with "[$]"); iIntros "!> Hglobal_read".
     iMod (unlock_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
     { solve_ndisj. }
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
     iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
     iDestruct "Huid" as (lk γ) "(%&%&#Hlock&Hinbox)".
     iDestruct "Hinbox" as "(Hmbox&Hdircontents&Hmsgs)".
     iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
     { intros. econstructor. eexists; split; last by econstructor.
-      econstructor; eauto. econstructor.
+      econstructor; eauto. eapply opened_step; auto. econstructor.
       eexists. split.
       - rewrite /lookup/readSome. rewrite Heq. eauto.
       - simpl. do 2 eexists; split; econstructor.
@@ -814,17 +823,19 @@ Section refinement_triples.
   Proof.
     iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
     iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
+    iInv "Hinv" as "H".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
     destruct op.
-    - iInv "Hinv" as "H".
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-      iApply (wp_newAlloc with "[//]").
+    - iApply (wp_newAlloc with "[//]").
       iIntros (p) "!> Hp".
       iDestruct (HeapInv_non_alloc_inv _ _ 0 with "[$] Hp") as %?; first auto.
       iMod (ghost_step_call _ _ _ p ((RecordSet.set heap _ σ : l.(OpState)))
             with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
       { intros. econstructor. eexists; split; last by econstructor.
-        econstructor; last eauto.
-        econstructor.
+        econstructor; eauto. eapply opened_step; auto. econstructor.
         * do 2 eexists. split.
           ** econstructor; eauto.
           ** do 2 eexists. split; last econstructor.
@@ -839,9 +850,7 @@ Section refinement_triples.
         iFrame. simpl. iDestruct "Hp" as "(?&$)"; eauto.
       }
       iApply "HΦ"; by iFrame.
-    - iInv "Hinv" as "H".
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-      iMod (deref_step_inv_do with "Hj Hsource Hstate") as (s alloc v Heq) "(Hj&Hstate)".
+    - iMod (deref_step_inv_do with "Hj Hsource Hstate") as (s alloc v Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       destruct Heq as (Heq1&Heq2&Heq3).
       iDestruct (big_sepDM_lookup_acc with "Hheap") as "((Hp&%)&Hheap)".
@@ -861,9 +870,7 @@ Section refinement_triples.
         iExists _. iFrame. iSplitL "Hheap Hp".
         ** iApply "Hheap". by iFrame.
         ** iApply "HΦ". by iFrame.
-    - iInv "Hinv" as "H".
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-      destruct na; last first.
+    - destruct na; last first.
       * iMod (store_start_step_inv_do j K with "Hj Hsource Hstate") as (s alloc Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2).
@@ -908,6 +915,9 @@ Section refinement_triples.
     iApply (wp_getX with "[$]"); iIntros "!> Hglobal_read".
     iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
     { solve_ndisj. }
+    iMod (is_opened_step_inv' with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
     iDestruct (MsgsInv_pers_split with "Hm") as "#Huid"; first eauto.
     iDestruct "Huid" as (lk γ HΓlookup Hnth) "#Hlock".
 
@@ -929,10 +939,13 @@ Section refinement_triples.
 
     wp_bind.
     iInv "Hinv" as "H".
-    clear σ Heq v.
+    clear σ Hopen Heq v.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
     iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
+    { solve_ndisj. }
+    iMod (is_opened_step_inv' with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
     { solve_ndisj. }
 
     iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
@@ -981,10 +994,13 @@ Section refinement_triples.
 
 
     iInv "Hinv" as "H".
-    clear σ Heq Heq1 Heq2 msgs.
+    clear σ Hopen Heq Heq1 Heq2 msgs.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
     iMod (pickup_step_inv with "[$] [$] [$]") as ((v&Heq)) "(Hj&Hstate)".
+    { solve_ndisj. }
+    iMod (is_opened_step_inv' with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
     { solve_ndisj. }
 
     iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
@@ -1020,7 +1036,7 @@ Section refinement_triples.
     iMod (ghost_step_call _ _ (λ x, K (Bind x (λ x, Call (Pickup_End uid x)))) msgs'
             with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
     { intros. econstructor. eexists; split; last by econstructor.
-      econstructor; eauto. econstructor.
+        econstructor; eauto. eapply opened_step; auto. econstructor.
       eexists. split.
       - rewrite /lookup/readSome. rewrite Heq. eauto.
       - simpl. do 2 eexists; split; last first.
@@ -1097,10 +1113,13 @@ Section refinement_triples.
       wp_bind.
       rewrite readMessage_unfold_open.
       wp_bind.
-      clear σ Heq.
+      clear σ Hopen Heq.
       iInv "Hinv" as "H".
       iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
       iMod (pickup_end_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
+      { solve_ndisj. }
+      iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+      { simpl; auto. }
       { solve_ndisj. }
       iDestruct "Hmsgs" as (ls') "(>Hglobal&Hm)".
       iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
@@ -1178,7 +1197,7 @@ Section refinement_triples.
       wp_ret.
       iNext.
       iInv "Hinv" as "H".
-      clear σ Heq.
+      clear σ Hopen Heq.
       iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
       (* Show messages' ptr can't be in σ, else we'd have a redundant pts to *)
       iDestruct (slice_mapsto_non_null with "[Hmessages]") as %?.
@@ -1187,13 +1206,15 @@ Section refinement_triples.
       { iDestruct "Hmessages" as "(?&?)"; iFrame. }
       iMod (pickup_end_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
       { solve_ndisj. }
+      iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+      { simpl; auto. }
+      { solve_ndisj. }
       iDestruct "Hmessages" as (malloc Hmalloc) "Hmessages".
       iMod (ghost_step_call _ _ _ messages'
             with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
       { intros. econstructor. eexists; split; last by econstructor.
-        econstructor; last eauto.
+        econstructor; eauto. apply opened_step; auto. econstructor.
         do 2 eexists.
-        split.
         { rewrite /lookup/readSome. rewrite Heq. eauto. }
         reduce.
         do 2 eexists. split.

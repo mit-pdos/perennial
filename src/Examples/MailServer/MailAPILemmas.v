@@ -30,7 +30,7 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
 
   Global Instance source_state_inhab:
     Inhabited State.
-  Proof. eexists. exact {| heap := ∅; messages := ∅ |}. Qed.
+  Proof. eexists. exact {| heap := ∅; messages := ∅; open := false |}. Qed.
 
   Global Instance LockRef_inhab:
     Inhabited LockRef.
@@ -68,7 +68,7 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
 
   (* Tactics for proving an error occurs at 0th, 1st, 2nd step of a repeated and_then *)
   Ltac do_then := repeat (do 2 eexists; split; non_err).
-  Ltac err_start := left.
+  Ltac err_start := left; right; do_then; destruct (open); last by econstructor.
   Ltac err_hd := left; non_err; try econstructor.
   Ltac err_cons := right; do_then.
 
@@ -129,6 +129,65 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
     - solve_err.
   Qed.
 
+  Lemma is_opened_step_inv {T T2} j K `{LanguageCtx _ T T2 Mail.l K} op (σ: l.(OpState)) E:
+    match op with
+    | Open => False
+    | _ => True
+    end →
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call op) -∗ source_ctx -∗ source_state σ
+    ={E}=∗ ⌜ σ.(open) = true ⌝ ∗ j ⤇ K (Call op) ∗ source_state σ.
+  Proof.
+    iIntros.
+    destruct (σ.(open)) as [|] eqn:Heq; last first.
+    - ghost_err.
+      intros n. left. right. do 2 eexists. split.
+      { rewrite /reads. rewrite Heq. econstructor. }
+      simpl. destruct op; try econstructor. exfalso; eauto.
+    - by iFrame.
+  Qed.
+
+  Lemma is_opened_step_inv' {T T1 T2} j K f `{LanguageCtx _ T1 T2 Mail.l K} (op: Op T)
+        (σ: l.(OpState)) E:
+    match op with
+    | Open => False
+    | _ => True
+    end →
+    nclose sourceN ⊆ E →
+    j ⤇ K (Bind (Call op) f) -∗ source_ctx -∗ source_state σ
+    ={E}=∗ ⌜ σ.(open) = true ⌝ ∗ j ⤇ K (Bind (Call op) f) ∗ source_state σ.
+  Proof.
+    iIntros.
+    destruct (σ.(open)) as [|] eqn:Heq; last first.
+    - ghost_err.
+      intros n. left. right. do 2 eexists. split.
+      { rewrite /reads. rewrite Heq. econstructor. }
+      simpl. destruct op; try econstructor. exfalso; eauto.
+    - by iFrame.
+  Qed.
+
+  Lemma if_relation_left {A B T} b (P Q: relation A B T) a o :
+    b = true →
+    P a o → (if b then P else Q) a o.
+  Proof. intros ->. trivial. Qed.
+
+  Lemma opened_step {T} (op: Op T) σ ret:
+    σ.(open) = true →
+    step_open op σ ret →
+    l.(Proc.step) op σ ret.
+  Proof.
+    intros Heq Hstep.
+    destruct ret.
+    - do 2 eexists.
+      split.
+      { rewrite /reads; eauto. }
+      rewrite Heq. eauto.
+    - right. do 2 eexists.
+      split.
+      { rewrite /reads; eauto. }
+      rewrite Heq; eauto.
+  Qed.
+
   Lemma deref_step_inv_do {T T2} j K `{LanguageCtx _ T T2 Mail.l K} p off (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →
     j ⤇ K (Call (DataOp (Data.PtrDeref p off))) -∗ source_ctx -∗ source_state σ
@@ -139,6 +198,8 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
         j ⤇ K (Ret v) ∗ source_state σ.
   Proof.
     iIntros. non_err; last by solve_err.
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; auto.
+    { simpl; auto. }
     destruct p0 as (s&alloc).
     iExists s, alloc.
     non_err'; last by solve_err.
@@ -146,7 +207,9 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
     iMod (ghost_step_call _ _ _ _ with "[$] [$] [$]") as "(?&?&?)".
     { intros n.
       do 2 eexists; split; last econstructor.
-      do 2 eexists; last eauto.
+      eexists; last eauto.
+      eapply opened_step; auto.
+      eexists.
       * repeat (do 2 eexists; split; non_err).
       * unfold RecordSet.set. destruct σ; eauto.
     }
@@ -166,6 +229,8 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
   Proof.
     iIntros.
     non_err; last by solve_err.
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; auto.
+    { simpl; auto. }
     destruct p0 as (s&alloc).
     iExists s, alloc.
     non_err; last by solve_err.
@@ -173,7 +238,9 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
             with "[$] [$] [$]") as "(?&?&?)".
     { intros n.
       do 2 eexists; split; last econstructor.
-      do 2 eexists; last eauto.
+      eexists; auto.
+      eapply opened_step; auto.
+      eexists; last eauto.
       repeat (do 2 eexists; split; non_err).
     }
     { eauto. }
@@ -194,6 +261,8 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
   Proof.
     iIntros.
     non_err; last by solve_err.
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; auto.
+    { simpl; auto. }
     destruct p0 as (s&alloc).
     iExists s, alloc.
     non_err; try solve_err.
@@ -201,6 +270,9 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
             with "[$] [$] [$]") as "(?&?&?)".
     { intros n.
       do 2 eexists; split; last econstructor.
+      eexists; auto.
+      eapply opened_step; auto.
+      eexists; last eauto.
       repeat (do 2 eexists; try split; non_err).
     }
     { eauto. }
@@ -222,6 +294,8 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
   Proof.
     iIntros.
     non_err; last by solve_err.
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; auto.
+    { simpl; auto. }
     destruct p as (s&alloc).
     iExists s, alloc.
     non_err; try solve_err.
@@ -229,6 +303,9 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
             with "[$] [$] [$]") as "(?&?&?)".
     { intros n.
       do 2 eexists; split; last econstructor.
+      eexists; auto.
+      eapply opened_step; auto.
+      eexists; last eauto.
       repeat (do 2 eexists; try split; non_err).
     }
     { eauto. }
@@ -247,35 +324,45 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
         j ⤇ K (Call (Deliver_End uid msg))
         ∗ source_state σ.
   Proof.
-    iIntros (?) "Hj Hsrc Hstate".
+    iIntros.
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; auto.
+    { simpl; auto. }
     destruct (σ.(messages) !! uid) as [(ms&mbox)|] eqn:Heq_uid; last first.
     { solve_err. }
     destruct (Data.getAlloc msg.(slice.ptr) σ.(heap)) as [(s&alloc)|] eqn:Heq_lookup; last first.
     {
       ghost_err.
-      intros n. left. right.
+      intros n. left.
+      eapply opened_step; auto.
+
+      right.
       do 2 eexists; split; non_err.
       right.
       exists (fresh (dom (gset string) mbox)).
       eexists; split.
       { econstructor. eapply (not_elem_of_dom (D := gset string)), is_fresh. }
-      err0.
+      left. rewrite /readUnlockSlice.
+      err_hd.
     }
     destruct (lock_release Reader s) as [?|] eqn:Heq_avail; last first.
     {
       ghost_err.
-      intros n. left. right.
+      intros n. left.
+      eapply opened_step; auto.
+      right.
       do 2 eexists; split; non_err.
       right.
       exists (fresh (dom (gset string) mbox)).
       eexists; split.
       { econstructor. eapply (not_elem_of_dom (D := gset string)), is_fresh. }
-      err1.
+      left. err_cons; err_hd.
     }
     destruct (Data.getSliceModel msg alloc) as [alloc'|] eqn:Heq_upd; last first.
     {
       ghost_err.
-      intros n. left. right.
+      intros n. left.
+      eapply opened_step; auto.
+      right.
       do 2 eexists; split; non_err.
       right.
       exists (fresh (dom (gset string) mbox)).
