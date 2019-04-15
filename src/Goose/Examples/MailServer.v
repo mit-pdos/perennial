@@ -122,6 +122,12 @@ Definition Delete {model:GoModel} (user:uint64) (msgID:string) : proc unit :=
   userDir <- getUserDir user;
   FS.delete userDir msgID.
 
+(* Lock acquires the lock for the current user *)
+Definition Lock {model:GoModel} (user:uint64) : proc unit :=
+  locks <- Globals.getX;
+  l <- Data.sliceRead locks user;
+  Data.lockAcquire l Writer.
+
 (* Unlock releases the lock for the current user. *)
 Definition Unlock {model:GoModel} (user:uint64) : proc unit :=
   locks <- Globals.getX;
@@ -130,6 +136,8 @@ Definition Unlock {model:GoModel} (user:uint64) : proc unit :=
 
 Definition initLocks {model:GoModel} : proc unit :=
   locks <- Data.newPtr (slice.t LockRef);
+  initLocks <- Data.newSlice LockRef 0;
+  _ <- Data.writePtr locks initLocks;
   _ <- Loop (fun i =>
         if i == NumUsers
         then LoopRet tt
