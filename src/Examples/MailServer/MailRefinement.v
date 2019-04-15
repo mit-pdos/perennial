@@ -550,7 +550,7 @@ Section refinement_triples.
       destruct k; auto.
     }
     assert (Hlen: length lock_list <= NumUsers) by
-        (rewrite Heq_lock_list; lia).
+        (rewrite Heq_lock_list; cbn [length]; lia).
     clear Heq_lock_list.
     iLöb as "IH" forall (lock_list locks Hlen).
     wp_loop.
