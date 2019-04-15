@@ -53,7 +53,9 @@ Declare Instance goModelWf : GoModelWf goModel.
 Module RTerm.
   Inductive t : Type -> Type -> Type -> Type :=
   | Pure A T : T -> t A A T
-  (* | Identity A T : t A A T *)
+  (* We won't be able to interpret this without a particular T being
+     specified, so we require one in the constructor. *)
+  (* | Identity A T : T -> t A A T *)
   (* | None A B T : t A B T *)
   | Reads A T : (A -> T) -> t A A T
   | Puts A : (A -> A) -> t A A unit
@@ -243,6 +245,11 @@ Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A),
     | Error => rtermDenote r a Err
     | Success b t => rtermDenote r a (Val b t)
     end.
+Proof.
+  intros.
+  pose (interpret r a).
+  inversion o.
+  - admit.
 
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
