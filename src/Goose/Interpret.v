@@ -64,6 +64,8 @@ Module RTerm.
   | AllocPtr ty : Data.ptrRawModel ty -> t Go.State Go.State (goModel.(@Ptr) ty)
   | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t Go.State Go.State unit
   | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
+  | FstLift A1 A2 B T : t A1 A2 T -> t (A1 * B) (A2 * B) T
+  | SndLift A1 A2 B T : t A1 A2 T -> t (B * A1) (B * A2) T
   | NotImpl A B T (r: relation A B T) : t A B T
   .
 End RTerm.
@@ -80,7 +82,6 @@ Arguments NotImpl {_ _}.
 
 Definition ptrMap := nat.
 Definition ptrMap_null : ptrMap := 1.
-
 
 Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
   match r in (RTerm.t A B T) return ((A * ptrMap) -> Output (B * ptrMap) T) with
@@ -118,7 +119,9 @@ Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (
       | Error => Error
       | NotImpl => NotImpl
       end
-  | RTerm.NotImpl _ => (fun x => NotImpl)
+  | RTerm.FstLift _ _ => fun x => NotImpl
+  | RTerm.SndLift _ _ => fun x => NotImpl
+  | RTerm.NotImpl _ => fun x => NotImpl
   end X.
 
 Definition interpret (A B T : Type) (r: RTerm.t A B T) : A -> Output B T :=
@@ -140,6 +143,8 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.UpdAllocs p pm => _zoom Go.fs (_zoom FS.heap (Data.updAllocs p pm))
   | RTerm.DelAllocs  p => _zoom Go.fs (_zoom FS.heap (Data.delAllocs p))
   | RTerm.AndThen r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
+  | RTerm.FstLift _ r => fst_lift (rtermDenote r)
+  | RTerm.SndLift _ r => snd_lift (rtermDenote r)
   | RTerm.NotImpl r => r
   end.
 
@@ -176,7 +181,15 @@ Ltac refl' RetB RetT e :=
     let f1 := refl' B T1 r1 in
     let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
     constr: (fun x => RTerm.AndThen (f1 x) (fun y => f2 (x, y)))
+
+  | fun x: ?T => @fst_lift ?A1 ?A2 ?B ?T (@?r x) =>
+    let f := refl' A2 T r in
+    constr: (fun x => RTerm.FstLift (f x))
               
+  | fun x: ?T => @snd_lift ?A1 ?A2 ?B ?T (@?r x) =>
+    let f := refl' A2 T r in
+    constr: (fun x => RTerm.SndLift (f x))
+
   | fun x : ?T => @?E x =>
     constr: (fun x => RTerm.NotImpl (E x))
   end.
