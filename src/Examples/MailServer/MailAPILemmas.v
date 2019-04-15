@@ -94,6 +94,29 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
     - by iFrame.
   Qed.
 
+  (* Two threads trying to open triggers undefined behavior *)
+  Lemma open_open_step_inv {T T'} j j' K K' `{LanguageCtx _ _ T Mail.l K}
+        `{LanguageCtx _ _ T' Mail.l K'} (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call Open) -∗ j' ⤇ K' (Call Open) -∗ source_ctx -∗ source_state σ
+    ={E}=∗ False.
+  Proof.
+    iIntros (?) "Hj Hj' #Hsrc Hstate".
+    iMod (open_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; first auto.
+    iMod (ghost_step_call with "[$] [$] [$]") as "(?&?&?)".
+    { intros n. do 2 eexists; split; last by econstructor.
+      econstructor; auto.
+      do 2 eexists; split.
+      { rewrite /reads Hopen //=. }
+      simpl. do 2 eexists. split.
+      * econstructor.
+      * econstructor.
+    }
+    { auto. }
+    iMod (open_step_inv with "[$] [$] [$]") as (Hopen') "(?&?)"; first auto.
+    simpl in Hopen'. congruence.
+  Qed.
+
   Lemma pickup_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →
     j ⤇ K (pickup uid) -∗ source_ctx -∗ source_state σ

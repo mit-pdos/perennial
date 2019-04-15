@@ -146,12 +146,31 @@ Section refinement_triples.
     (rootdir ↦{-1} (set_map UserDir (dom (gset uint64) σ.(messages)))
       ∗ ⌜ userRange_ok (dom (gset uint64) (σ.(messages))) ⌝)%I.
 
+  Lemma RootDirInv_range_ok σ :
+    RootDirInv σ -∗ ⌜ userRange_ok (dom (gset _) (σ.(messages))) ⌝.
+  Proof. by iIntros "(?&$)". Qed.
+
+  Lemma userRange_ok_eq s s':
+    userRange_ok s →
+    userRange_ok s' →
+    s = s'.
+  Proof.
+    rewrite /userRange_ok => Hok1 Hok2.
+    rewrite -leibniz_equiv_iff => i.
+    clear -Hok1 Hok2.
+    destruct (Hok1 i) as (Hlt1&Hge1).
+    destruct (Hok2 i) as (Hlt2&Hge2).
+    destruct (lt_dec i 100) as [Hlt|Hnlt].
+    - intuition.
+    - assert (i >= 100) by lia. intuition.
+  Qed.
+
   Definition InitInv (Γ: gmap uint64 gname) γ σ :=
     (∃ v : ghost_init_status, ghost_mapsto_auth γ v ∗
     match v with
       | Uninit =>
         ghost_mapsto γ O v ∗ ⌜ σ.(open) = false ⌝
-        ∗ ([∗ map] uid↦lm ∈ σ.(messages), ∃ γuid, ⌜ Γ !! uid = Some γuid ⌝ ∗ InboxLockInv γ O)
+        ∗ ([∗ map] uid↦lm ∈ σ.(messages), ∃ γuid, ⌜ Γ !! uid = Some γuid ⌝ ∗ InboxLockInv γuid O)
       | Started_Init j K =>
         j ⤇ K (Call Open) ∗ ⌜ σ.(open) = false ⌝
       | Finished_Init =>
@@ -452,21 +471,158 @@ Section refinement_triples.
   Proof. trivial. Qed.
   Opaque writeTmp.
 
-  (*
-  Lemma initLocks_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} :
+  Global Instance ghost_init_status_inhabited :
+    Inhabited (ghost_init_status).
+  Proof. econstructor. exact Uninit. Qed.
+
+  Lemma userRange_in_elim s k:
+    userRange_ok s →
+    k ∈ s →
+    k < NumUsers.
+  Proof.
+    rewrite /userRange_ok => Hrange ?.
+    destruct (lt_dec k NumUsers) as [?|Hn]; auto.
+    assert (k ≥ NumUsers) by lia. exfalso; eapply Hrange; eauto.
+  Qed.
+
+  Lemma open_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} :
     {{{ j ⤇ K (Call Open) ∗ Registered ∗ ExecInv }}}
-      initLocks
+      MailServer.Open
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ) "(#Hsource&#Hinv)".
-    rewrite /initLocks.
+    iDestruct "Hrest" as (Γ γ) "(#Hsource&#Hinv)".
+    rewrite /MailServer.Open.
     wp_bind.
-    iApply wp_newAlloc; first auto.
+    (* Take out the ghost variables needed to create the locks *)
+    iInv "Hinv" as "H".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    iDestruct "Hmsgs" as (ls) "(Hglobal&>Hrootdir&Hinit&Hm)".
+    iDestruct (RootDirInv_range_ok with "Hrootdir") as %Hrange_ok.
+    iDestruct "Hinit" as (init_stat) "Hinit".
+    iMod (open_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)".
+    { solve_ndisj. }
+    (* Prove that the init status ghost variable must be Uninit
+       by showing alternatives imply undefined behavior/false *)
+    destruct init_stat; swap 1 3.
+    { iDestruct "Hinit" as ">(?&%)".
+      exfalso. congruence. }
+    { iDestruct "Hinit" as ">(?&Hj'&%)".
+      iMod (open_open_step_inv with "Hj Hj' [$] [$]").
+      { solve_ndisj. }
+      eauto. }
+    iDestruct "Hinit" as ">(Hauth&Hfrag&%&Hghosts)".
+    iApply wp_newAlloc; first by auto.
+    iIntros (locks0) "!> Hlocks0".
+    iExists _. iFrame.
+    iExists _. iFrame.
+    iMod (ghost_var_update (A := ghost_init_statusC) with "[$] [$]") as "(Hauth&Hfrag)".
+    iSplitL "Hauth Hj".
+    { iExists (Started_Init _ _). iFrame. eauto. }
+    iModIntro.
+    wp_bind.
+    iApply @wp_newSlice; first by auto.
     iIntros (locks) "!> Hlocks".
     wp_bind.
-    iAssert (∃ Γ
-   *)
+    iApply (wp_writePtr with "[$]").
+    iIntros "!> Hlocks0".
+    simpl repeat.
+    wp_bind.
+    remember (@nil LockRef) as lock_list eqn:Heq_lock_list.
+    (*
+    iAssert ([∗ list] k↦lk ∈ lock_list,
+             ∃ γ, ⌜ Γ !! k = Some γ ⌝ ∗ is_lock boxN lk (InboxLockInv γ) True)%I as "Hlocks_made".
+    { rewrite Heq_lock_list //. }
+     *)
+    replace 0 with (length lock_list) at 1; last first.
+    { rewrite Heq_lock_list //. }
+    iDestruct (big_sepM_dom with "Hghosts") as "Hghosts".
+    iAssert ([∗ set] k ∈ dom (gset _) σ.(messages),
+             ∃ γuid : gname, ⌜Γ !! k = Some γuid⌝ ∗
+             match nth_error lock_list k with
+             | Some lk => is_lock boxN lk (InboxLockInv γuid) True
+             | None => InboxLockInv γuid 0
+             end)%I with "[Hghosts]" as "Hghosts".
+    { iApply big_sepS_mono; last auto.
+      iIntros (k Hin) "H".
+      iDestruct "H" as (γuid) "(Heq&Hlock)".
+      iExists _; iFrame. rewrite Heq_lock_list.
+      destruct k; auto.
+    }
+    assert (Hlen: length lock_list <= NumUsers) by
+        (rewrite Heq_lock_list; lia).
+    clear Heq_lock_list.
+    iLöb as "IH" forall (lock_list locks Hlen).
+    wp_loop.
+    destruct equal.
+    - iClear "IH".
+      wp_ret. wp_ret.
+      iIntros "!>".
+      wp_bind. iApply (wp_readPtr with "[$]").
+      iIntros "!> Hlocks0".
+      iInv "Hinv" as "H".
+      iDestruct "H" as (σ') "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+      iDestruct "Hmsgs" as (ls') "(Hglobal&>Hrootdir&Hinit&Hm)".
+      iDestruct (RootDirInv_range_ok with "Hrootdir") as %Hrange_ok'.
+      iDestruct "Hinit" as (init_stat) "Hinit".
+      iDestruct "Hinit" as "(>Hauth&Hinit)".
+      iDestruct (ghost_var_agree (A := ghost_init_statusC) with "Hauth Hfrag") as %Heq.
+      subst.
+      iDestruct "Hinit" as ">(Hj&Hopen')".
+      iDestruct "Hopen'" as %Hopen'.
+      rewrite Hopen'. simpl GlobalInv. iDestruct "Hglobal" as ">Hglobal".
+      iApply (wp_setX with "[$]").
+      iIntros "!> Hglobal".
+      rewrite (userRange_ok_eq _ _ Hrange_ok Hrange_ok').
+      iAssert ([∗ set] k ∈ dom (gset uint64) σ'.(messages),
+               ∃ γuid lk, ⌜Γ !! k = Some γuid⌝ ∗ ⌜ lock_list !! k = Some lk ⌝
+                                  ∗ is_lock boxN lk (InboxLockInv γuid) True)%I
+        with "[Hghosts]" as "Hghosts".
+      { iApply big_sepS_mono; last eauto.
+        iIntros (k Hin) "H".
+        iDestruct "H" as (γuid Heq) "H".
+        iExists γuid.
+        destruct nth_error as [lk|] eqn:Heq_nth_error; last first.
+        { exfalso. rewrite nth_error_None in Heq_nth_error *. eapply userRange_in_elim in Hin; auto.
+          rewrite e. lia. }
+        iExists lk. iSplitL ""; auto. iSplitL ""; auto.
+        iPureIntro. rewrite -nth_error_lookup //.
+      }
+      iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+      { intros. econstructor. eexists; split; last by econstructor.
+        econstructor; eauto. do 2 eexists; split.
+        { rewrite /reads Hopen'. eauto. }
+        do 2 econstructor; split; econstructor.
+      }
+      { solve_ndisj. }
+      iExists _. iFrame. iExists lock_list. iFrame.
+      iSplitR "Hj HΦ Hreg"; last first.
+      { iModIntro. iApply "HΦ"; iFrame. }
+      iExists _, O. iFrame.
+      iMod (ghost_var_update (A := ghost_init_statusC) with "Hauth Hfrag") as "(Hauth&Hfrag)".
+      iSplitL "Hrootdir".
+      { iModIntro. rewrite /RootDirInv. simpl.
+        rewrite dom_fmap_L //; eauto.
+      }
+      iSplitL "Hauth".
+      { iExists Finished_Init. iFrame. eauto. }
+      iDestruct (big_sepM_dom with "Hghosts") as "Hghosts".
+      iDestruct (big_sepM_sepM with "[Hm Hghosts]") as "Hm".
+      { iFrame. }
+      iModIntro. iNext.
+      rewrite big_sepM_fmap.
+      iApply big_sepM_mono; iFrame.
+      iIntros (k (mstat&msgs) Hin) "(H1&H2)".
+      iDestruct "H1" as (γ' lk' ? ?) "H".
+      simpl. iDestruct "H2" as (?? _ _ _) "((Hinterp&?)&?&Hin)".
+      iExists _, _.
+      rewrite nth_error_lookup.
+      iSplitL ""; auto.
+      iSplitL ""; auto.
+      iFrame.
+    -
+  Abort.
+
 
   (* TODO: this actually only depends on TmpInv. For modulariy, maybe break up proof
      into a "re-usable" temp directory pattern? *)

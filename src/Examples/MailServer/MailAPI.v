@@ -112,7 +112,9 @@ Module Mail.
 
   Definition step_closed T (op: Op T) : relation State State T :=
     match op in Op T return relation State State T with
-    | Open => puts (set open (λ _, true))
+    | Open =>
+      _ <- puts (set open (λ _, true));
+      puts (set messages (λ m, (λ inbox, (MUnlocked, snd inbox)) <$> m))
     | _ => error
     end.
 
@@ -161,9 +163,8 @@ Module Mail.
     | false => step_closed op
     end.
 
-  (* Post crash, recovery will perform lock initialization for the mailserver *)
   Definition crash_step : relation State State unit :=
-    _ <- puts (set open (λ _, true));
+    _ <- puts (set open (λ _, false));
     puts (set messages (λ m, (λ inbox, (MUnlocked, snd inbox)) <$> m)).
 
   Definition finish_step : relation State State unit :=
