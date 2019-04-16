@@ -21,7 +21,8 @@ Record Layer Op :=
     finish_non_err: forall s1 ret, sem.(finish_step) s1 ret -> ret <> Err;
     initP: OpState -> Prop }.
 
-Inductive InitStatus := Initialized | InitFailed.
+Definition State `(L: Layer Op) := @Proc.State (L.(OpState)).
+Coercion sem : Layer >-> Dynamics.
 
 (* LayerImpl is just the code needed to translate from one layer to another -
    the logical components are in [LayerRefinement] *)
@@ -29,10 +30,7 @@ Record LayerImpl C_Op Op :=
   { compile_op `(op: Op T) : proc C_Op T;
     (* TODO: layer implementations should be allowed to return from recovery
          (though it's unclear what purpose that would serve *)
-    recover: rec_seq C_Op;
-    (* init: proc C_Op InitStatus; *) }.
-
-Definition State `(L: Layer Op) := @Proc.State (L.(OpState)).
+    recover: rec_seq C_Op; }.
 
 Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
   match p with
@@ -45,7 +43,6 @@ Fixpoint compile Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op
   | Spawn p => Spawn (impl.(compile) p)
   end.
 
-(* TODO: add call to 'close' after the wait *)
 Import ProcNotations.
 Definition compile_whole Op C_Op `(impl: LayerImpl C_Op Op) T (p: proc Op T) : proc C_Op T :=
   Bind (compile impl p) (fun v => _ <- Wait; Ret v)%proc.
@@ -70,4 +67,48 @@ Definition compile_proc_seq {T} Op C_Op `(impl: LayerImpl C_Op Op) (ps: proc_seq
 Definition compile_rec Op C_Op `(impl: LayerImpl C_Op Op) (rec: rec_seq Op) : rec_seq C_Op :=
   rec_seq_append impl.(recover) (compile_seq impl rec).
 
-Coercion sem : Layer >-> Dynamics.
+(* Some translations are not expressable as per-operation mappings. Instead,
+   they transform appropriate *sequences* of operations (i.e., procs) into
+   procs in the layer below. We represent these translations as relations instead of functions.
+   This is fine because we use these for Goose layers, where we don't need to literally
+   extract the compile translation as runnable code *)
+Record LayerImplRel C_Op Op :=
+  { compile_rel_base {T} : proc Op T -> proc C_Op T -> Prop;
+    recover_rel: rec_seq C_Op;
+  }.
+
+Inductive compile_rel Op C_Op `(impl: LayerImplRel C_Op Op): forall T,
+  proc Op T -> proc C_Op T -> Prop :=
+| cr_base {T} (p1: proc Op T) p2:
+    impl.(compile_rel_base) p1 p2 ->
+    compile_rel impl p1 p2
+| cr_ret {T} (v: T): compile_rel impl (Ret v) (Ret v)
+| cr_bind {T1 T2} (p1: proc Op T1) (p1': forall T1, proc Op T2) p2 p2':
+    compile_rel impl p1 p2 ->
+    (forall x, compile_rel impl (p1' x) (p2' x)) ->
+    compile_rel impl (Bind p1 p1') (Bind p2 p2')
+| cr_loop {T R} (b: T -> proc Op (LoopOutcome T R))  b' init:
+    (forall mt, compile_rel impl (b mt) (b' mt)) ->
+    compile_rel impl (Loop b init) (Loop b' init)
+| cr_unregister:
+    compile_rel impl Unregister Unregister
+| cr_wait:
+    compile_rel impl Wait Wait
+| cr_spawn {T} (p: proc Op T) p':
+    compile_rel impl p p' ->
+    compile_rel impl (Spawn p) (Spawn p').
+
+Inductive compile_rel_whole Op C_Op `(impl: LayerImplRel C_Op Op) T:
+  proc Op T -> proc C_Op T -> Prop :=
+| cr_whole p p':
+    compile_rel impl p p' ->
+    compile_rel_whole impl p (Bind p' (fun v => _ <- Wait; Ret v))%proc.
+
+Inductive compile_rel_proc_seq {T Op C_Op} `(impl: LayerImplRel C_Op Op):
+  proc_seq Op T -> proc_seq C_Op T -> Prop :=
+| cr_seq_nil (v: T):
+    compile_rel_proc_seq impl (Proc_Seq_Nil v) (Proc_Seq_Nil v)
+| cr_seq_cons {T'} (p: proc Op T') p' f f':
+    compile_rel_whole impl p p' ->
+    (forall x, compile_rel_proc_seq impl (f x) (f' x)) ->
+    compile_rel_proc_seq impl (Proc_Seq_Bind p f) (Proc_Seq_Bind p' f').
