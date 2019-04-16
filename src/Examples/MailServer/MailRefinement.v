@@ -485,6 +485,23 @@ Section refinement_triples.
     assert (k ≥ NumUsers) by lia. exfalso; eapply Hrange; eauto.
   Qed.
 
+  Lemma nth_error_snoc {A: Type} (l: List.list A) (a: A):
+    nth_error (l ++ [a]) (length l) = Some a.
+  Proof. induction l => //=. Qed.
+
+  Lemma nth_error_snoc_ne {A: Type} (l: List.list A) (a: A) k:
+    k ≠ length l →
+    nth_error (l ++ [a]) k = nth_error l k.
+  Proof.
+    intros Hneq.
+    destruct (lt_dec k (length l)) as [?|Hgt].
+    - rewrite nth_error_app1 //.
+    - assert (length l < k) by lia.
+      etransitivity.
+      * eapply nth_error_None. rewrite app_length //=. lia.
+      * symmetry. eapply nth_error_None. lia.
+  Qed.
+
   Lemma open_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} :
     {{{ j ⤇ K (Call Open) ∗ Registered ∗ ExecInv }}}
       MailServer.Open
@@ -529,11 +546,6 @@ Section refinement_triples.
     simpl repeat.
     wp_bind.
     remember (@nil LockRef) as lock_list eqn:Heq_lock_list.
-    (*
-    iAssert ([∗ list] k↦lk ∈ lock_list,
-             ∃ γ, ⌜ Γ !! k = Some γ ⌝ ∗ is_lock boxN lk (InboxLockInv γ) True)%I as "Hlocks_made".
-    { rewrite Heq_lock_list //. }
-     *)
     replace 0 with (length lock_list) at 1; last first.
     { rewrite Heq_lock_list //. }
     iDestruct (big_sepM_dom with "Hghosts") as "Hghosts".
@@ -620,8 +632,53 @@ Section refinement_triples.
       iSplitL ""; auto.
       iSplitL ""; auto.
       iFrame.
-    -
-  Abort.
+    - wp_bind. iApply (wp_readPtr with "[$]").
+      iIntros "!> Hlocks0".
+      wp_bind.
+      assert (length lock_list ∈ dom (gset uint64) σ.(messages)).
+      { eapply Hrange_ok. move: Hlen n. rewrite /NumUsers.
+        inversion 1; eauto.
+        * congruence.
+        * subst. lia.
+      }
+      iDestruct (big_sepS_delete with "Hghosts") as "(Huid&Hghosts)".
+      { eauto. }
+      iDestruct "Huid" as (γuid Heq_γuid) "Hlockinv".
+      assert (nth_error lock_list (length lock_list) = None) as ->.
+      { apply nth_error_None. trivial. }
+      iApply (wp_newLock boxN _ _ (InboxLockInv γuid) True%I with "[Hlockinv]").
+      { iFrame. iSplitL "".
+        - iModIntro. by iIntros (i) "$".
+        - iModIntro. by iIntros (i) "(?&$)".
+      }
+      iIntros (lk) "!> #His_lock".
+      wp_bind.
+      iApply (wp_sliceAppend with "[$]").
+      iIntros (locks') "!> Hlocks'".
+      wp_bind.
+      iApply (wp_writePtr with "[$]").
+      iIntros "!> Hlocks0".
+      wp_ret.
+      replace (length (lock_list) + 1) with (length (lock_list ++ [lk])); last first.
+      { rewrite app_length //=. }
+      iApply ("IH" with "[] [$] [$] [$] [$] [$] [Hghosts]").
+      { iPureIntro. rewrite app_length //=. inversion Hlen; eauto.
+        * congruence.
+        * subst. rewrite /NumUsers. lia.
+      }
+      iApply (big_sepS_delete with "[Hghosts]").
+      { eauto. }
+      { iSplitL "".
+        - iExists γuid. iSplitL ""; auto.
+          rewrite nth_error_snoc //.
+        - iApply (big_sepS_mono with "Hghosts").
+          iIntros (k Hin) "H".
+          iDestruct "H" as (γuid' ?) "H".
+          iExists γuid'. iSplitL ""; auto.
+          rewrite nth_error_snoc_ne; eauto.
+          set_solver.
+      }
+  Qed.
 
 
   (* TODO: this actually only depends on TmpInv. For modulariy, maybe break up proof
