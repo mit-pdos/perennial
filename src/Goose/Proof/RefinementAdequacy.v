@@ -30,7 +30,7 @@ Definition fsΣ (m: GoModel) {wf: GoModelWf m} : gFunctors :=
     ghost_mapΣ (discreteC (gset string))
    ].
 
-Instance subG_fsPreG m {wf: GoModelWf m} {Σ} : subG (fsΣ m) Σ → (fsPreG m) Σ.
+Global Instance subG_fsPreG m {wf: GoModelWf m} {Σ} : subG (fsΣ m) Σ → (fsPreG m) Σ.
 Proof. solve_inG. Qed.
 
 Class goosePreG (goose_model: GoModel) {wf: GoModelWf goose_model} Σ := GoosePreG {
@@ -44,7 +44,7 @@ Class goosePreG (goose_model: GoModel) {wf: GoModelWf goose_model} Σ := GoosePr
 Definition gooseΣ (m: GoModel) {wf: GoModelWf m} : gFunctors :=
   #[invΣ; fsΣ m; gen_typed_heapΣ Ptr ptrRawModel; ghost_mapΣ (discreteC (sliceLockC));
       GFunctor (csumR countingR (authR (optionUR (exclR unitC))))].
-Instance subG_goosePreG (m: GoModel) {wf: GoModelWf m} {Σ} : subG (gooseΣ m) Σ → goosePreG m Σ.
+Global Instance subG_goosePreG (m: GoModel) {wf: GoModelWf m} {Σ} : subG (gooseΣ m) Σ → goosePreG m Σ.
 Proof. solve_inG. Qed.
 
 

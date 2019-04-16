@@ -138,10 +138,10 @@ Section gen_heap.
       by iApply IHσ.
   Qed.
 
-  Lemma mapsto_agree l q1 v1 v2 : l ↦{q1} v1 -∗ l r↦ v2 -∗ ⌜v1 = v2⌝.
+  Lemma mapsto_agree l q1 v1 v2 : l ↦{q1} v1 -∗ l ↦{-1} v2 -∗ ⌜v1 = v2⌝.
   Proof.
     apply wand_intro_r.
-    rewrite mapsto_eq read_mapsto_eq /mapsto_def /read_mapsto_def.
+    rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
     f_equiv=> /auth_own_valid /=. rewrite op_singleton singleton_valid pair_op.
     by intros [_ ?%agree_op_invL'].

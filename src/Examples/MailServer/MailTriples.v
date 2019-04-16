@@ -204,7 +204,7 @@ Section refinement_triples.
     iDestruct (MsgInv_pers_split with "Huid") as "$".
   Qed.
 
-  Instance tmp_gen_mapsto `{gooseG Σ} : GenericMapsTo _ _
+  Global Instance tmp_gen_mapsto `{gooseG Σ} : GenericMapsTo _ _
     := {| generic_mapsto := λ l q v, Count_GHeap.mapsto (hG := hGTmp) l q v|}%I.
 
   Definition TmpInv : iProp Σ :=
@@ -214,14 +214,19 @@ Section refinement_triples.
                           ∗ [∗ map] name↦inode ∈ tmps_map,
                                       path.mk SpoolDir name ↦ inode
                                       (* ∗ name ↦{1} inode *) )%I.
+  Definition TmpInv_crash : iProp Σ :=
+    (∃ tmps_map, SpoolDir ↦{1} dom (gset string) tmps_map
+                          ∗ [∗ map] name↦inode ∈ tmps_map,
+                                      path.mk SpoolDir name ↦ inode
+                                      (* ∗ name ↦{1} inode *) )%I.
 
   Definition execN : namespace := (nroot.@"msgs_inv").
 
-  Instance InboxLockInv_Timeless γ n:
+  Global Instance InboxLockInv_Timeless γ n:
     Timeless (InboxLockInv γ n).
   Proof. apply _. Qed.
 
-  Instance HeapInv_Timeless σ:
+  Global Instance HeapInv_Timeless σ:
     Timeless (HeapInv σ).
   Proof.
     apply big_sepDM_timeless; first apply _.
@@ -230,6 +235,11 @@ Section refinement_triples.
 
   Definition ExecInv :=
     (∃ Γ γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ γ σ ∗ HeapInv σ ∗ TmpInv))%I.
+
+  Definition CrashInv :=
+    (∃ Γ γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ γ σ ∗ HeapInv σ ∗ TmpInv_crash))%I.
+  Definition CrashStarter :=
+    (∃ tmps : gset string, SpoolDir ↦{-1} tmps ∗ SpoolDir ↦ Unlocked)%I.
 
   Lemma GlobalInv_unify lsptr ls ls':
     global ↦{-1} Some lsptr -∗ lsptr ↦{-1} (ls, ls) -∗ GlobalInv ls' true -∗ ⌜ ls = ls' ⌝.
