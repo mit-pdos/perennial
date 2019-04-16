@@ -52,13 +52,11 @@ Section refinement.
   Context `{@goosePreG gm gmHwf Σ}.
   Context OpT (Λa: Layer OpT).
   Context `{cfgPreG OpT Λa Σ}.
-  Context (impl: LayerImpl GoLayer.Op OpT).
-  Notation compile_op := (compile_op impl).
-  Notation compile_rec := (compile_rec impl).
-  Notation compile_seq := (compile_seq impl).
-  Notation compile := (compile impl).
-  Notation recover := (recover impl).
-  Notation compile_proc_seq := (compile_proc_seq impl).
+  Context (impl: LayerImplRel GoLayer.Op OpT).
+  Notation compile_rel_base := (compile_rel_base impl).
+  Notation compile_rel_proc_seq := (compile_rel_proc_seq impl).
+  Notation compile_rel := (compile_rel impl).
+  Notation recover := (recover_rel impl).
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: gooseG gm Σ}, iProp Σ).
   Context (exec_inner: forall {_ : @cfgG OpT Λa Σ} {_ : gooseG gm Σ}, iProp Σ).
   Context (crash_param: forall (_ : @cfgG OpT Λa Σ) (_ : gooseG gm Σ), Type).
@@ -76,20 +74,23 @@ Section refinement.
   Context (recv: proc GoLayer.Op unit).
   Context (recsingle: recover = rec_singleton recv).
 
-  Context (refinement_op_triples:
-             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
-               j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
-                 WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered }}).
+  Context (refinement_base_triples:
+             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (p: proc OpT T1) p',
+               compile_rel_base p p' →
+               j ⤇ K p ∗ Registered ∗ (@exec_inv H1 H2) ⊢
+                 WP p' {{ v, j ⤇ K (Ret v) ∗ Registered }}).
 
   Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
 
   Lemma refinement_triples:
-             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1),
+             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1) e',
                wf_client e →
+               compile_rel e e' →
+
                j ⤇ K e ∗ Registered ∗ (@exec_inv H1 H2) ⊢
-                 WP compile e {{ v, j ⤇ K (Ret v) ∗ Registered }}.
+                 WP e' {{ v, j ⤇ K (Ret v) ∗ Registered }}.
   Proof.
-    intros ???? j K Hctx e Hwf.
+    intros ???? j K Hctx e e' Hwf Hcompile.
     iIntros "(Hj&Hreg&#Hinv)".
     iAssert (⌜∃ ea: Layer.State Λa, True⌝)%I as %[? _].
     {
@@ -100,14 +101,15 @@ Section refinement.
     { eexists. eauto. }
     assert (Inhabited Λa.(OpState)).
     { eexists. destruct x; eauto. }
-    iInduction e as [] "IH" forall (j T2 K Hctx).
-    - iApply refinement_op_triples; iFrame; eauto.
+    rename T2 into T2'.
+    iInduction Hcompile as [] "IH" forall (T2' j K Hctx Hwf).
+    - iApply refinement_base_triples; eauto. by iFrame.
     - wp_ret. iFrame.
     - wp_bind.
       iApply wp_wand_l. iSplitL ""; last first.
-      * unshelve (iApply ("IH1" $! _ _ _ (fun x => K (Bind x p2)) with "[] Hj"); try iFrame).
-        { eapply Hwf. }
+      * unshelve (iApply ("IH1" $! _ j (fun x => K (Bind x p1')) with "[] [] [Hj]"); try iFrame).
         { iPureIntro. apply comp_ctx; auto. apply _. }
+        { inversion Hwf; eauto. }
       * iIntros (?) "(Hj&Hreg)".
         iDestruct (exec_inv_source_ctx with "Hinv") as "#Hctx".
         iMod (ghost_step_bind_ret with "Hj []") as "Hj".
@@ -124,13 +126,13 @@ Section refinement.
       iApply wp_wand_l.
       iSplitL ""; last first.
       * rewrite /loop1. simpl.
-        unshelve (iApply ("IH" $! _ _ _ _ (fun x => K (Bind x
+        unshelve (iApply ("IH" $! _ _ _ (fun x => K (Bind x
                                (fun out => match out with
-                               | ContinueOutcome x => Loop body x
+                               | ContinueOutcome x => Loop b x
                                | DoneWithOutcome r => Ret r
-                               end))) with "[] Hj Hreg")%proc).
-        { eauto. }
+                               end))) with "[] [] Hj Hreg")%proc).
         { iPureIntro. apply comp_ctx; auto. apply _. }
+        { simpl in Hwf. eauto. }
       * iIntros (out) "(Hj&Hreg)".
         destruct out.
         ** iNext.
@@ -155,10 +157,10 @@ Section refinement.
      { iNext. iIntros "Hreg'".
        { wp_bind.
          iApply (wp_wand with "[Hj' Hreg'] []").
-         { unshelve (iApply ("IH" $! _ _ _ (fun x => Bind x (fun _ => Unregister))
-                               with "[] Hj' Hreg'")).
-           { eauto. }
+         { unshelve (iApply ("IH" $! _ _ (fun x => Bind x (fun _ => Unregister))
+                               with "[] [] Hj' Hreg'")).
            { iPureIntro. apply _. }
+           { eauto. }
          }
          { iIntros (?) "(?&?)". iApply (wp_unregister with "[$]"). iIntros "!> ?". eauto. }
        }
@@ -249,18 +251,19 @@ Section refinement.
     iExists (S n). eauto.
   Qed.
 
-  Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) :
+  Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) es' :
     init_absr σ1a σ1c →
     wf_client_seq es →
+    compile_rel_proc_seq es es' →
     ¬ proc_exec_seq Λa es (rec_singleton (Ret ())) (1, σ1a) Err →
-    ∀ σ2c res, proc_exec_seq GoLayer.Go.l (compile_proc_seq es)
+    ∀ σ2c res, proc_exec_seq GoLayer.Go.l es'
                                         (rec_singleton recv) (1, σ1c) (Val σ2c res) →
     ∃ σ2a, proc_exec_seq Λa es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
   Proof.
-    rewrite /compile_proc_seq. intros Hinit Hwf_seq Hno_err σ2c0 ?.
+    rewrite /compile_proc_seq. intros Hinit Hwf_seq Hcompile Hno_err σ2c0 ?.
     unshelve (eapply wp_proc_seq_refinement_adequacy with
                   (Λc := l)
-                  (φ := fun _ _ _ => True%I)
+                  (φ := fun va vc _ _ => ⌜ va = vc ⌝%I)
                   (E0 := E); eauto).
     clear Hno_err.
   iAssert (∀ invG H1 ρ, |={⊤}=>
@@ -316,7 +319,10 @@ Section refinement.
   }
 
   clear Hinit.
-  iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre"; first by eauto.
+  iInduction Hcompile as [] "IH" forall (σ1a σ1c) "Hpre"; first by eauto.
+ (*
+  iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre". first by eauto.
+  *)
   - iSplit; first by eauto.
   iExists (fun cfgG s => ∃ (Hex : @gooseG gm gmHwf Σ), state_interp s ∗
             (∃ hM hDlock' hGl' hFds'  tr,
@@ -342,18 +348,19 @@ Section refinement.
   iModIntro.
   iFrame "Hstate0".
   iSplitL "Hpt0 Hreg".
-  {  iPoseProof (@wp_mono with "[Hpt0 Hreg]") as "H"; swap 1 2.
-     { iApply refinement_triples. destruct (Hwf_seq) as (?&?). eauto. iFrame. iFrame "Hinv".
-     }
+  {
+       inversion H1; subst.
+       iPoseProof (@wp_mono with "[Hpt0 Hreg]") as "H"; swap 1 2.
+     { iApply refinement_triples. destruct (Hwf_seq) as (?&?); eauto; iFrame. eauto.
+       iFrame. iFrame "Hinv".  }
      { reflexivity. }
-     rewrite /compile_whole.
      wp_bind.
      iApply (wp_wand with "H [Hinv]").
      iIntros (v) "(Hpt0&Hreg)". iFrame.
      wp_bind.
      iApply (wp_wait with "Hreg").
      iIntros "!> Hdone".
-     wp_ret. iFrame. iIntros (σ2c) "Hmach".
+     wp_ret. iFrame. iExists _. iFrame. iIntros (σ2c) "Hmach".
      iMod (exec_inv_preserve_finish with "Hdone Hinv") as (σ2a σ2a') "(H&Hfina&Hfinish)".
      iDestruct "Hfina" as %Hfina.
      iModIntro. iExists _; iFrame; auto.
@@ -463,12 +470,16 @@ Section refinement.
     iDestruct "Hinterp" as "(?&Hinterp)".
     destruct Hcrash as ([]&(?&?)&Hput&Hrest).
     inversion Hput. subst. inv_step.
-    inversion Hrest; subst. inversion H1. subst.
+    inversion Hrest; subst.
+    match goal with
+      | [H: crash_step _ _ |- _ ] => inversion H
+    end.
+    subst.
     deex. inv_step.
-    inv_step. inversion H2. inv_step. inversion H3. subst.
+    inv_step. inversion H4. inv_step. inversion H5. subst.
     inv_step. subst.
-    inversion H4. subst. deex. inv_step. subst.
-    inversion H3. subst.
+    inversion H6. subst. deex. inv_step. subst.
+    inversion H4. subst.
     simpl.
     iSplitL "Ht".
     { iFrame. }

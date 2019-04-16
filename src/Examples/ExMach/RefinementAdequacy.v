@@ -188,7 +188,7 @@ Section refinement.
     rewrite /compile_proc_seq. intros Hinit Hwf_seq Hno_err σ2c0 ?.
     unshelve (eapply wp_proc_seq_refinement_adequacy with
                   (Λc := l)
-                  (φ := fun _ _ _ => True%I)
+                  (φ := fun va vc _ _ => ⌜ va = vc ⌝%I)
                   (E0 := E); eauto).
     clear Hno_err.
   iAssert (∀ invG H1 ρ, |={⊤}=>
@@ -270,7 +270,7 @@ Section refinement.
              exm_treg_inG := tR' |}
                with "Hreg").
      iIntros "!> Hdone".
-     wp_ret. iFrame. iIntros (σ2c) "Hmach".
+     wp_ret. iFrame. iExists _. iFrame. iIntros (σ2c) "Hmach".
      iMod (exec_inv_preserve_finish with "Hdone Hinv") as (σ2a σ2a') "(H&Hfina&Hfinish)".
      iDestruct "Hfina" as %Hfina.
      iModIntro. iExists _; iFrame; auto.
@@ -299,7 +299,7 @@ Section refinement.
          iPureIntro. split_and!; [ | | apply init_state_wf |]; auto.
        }
        iIntros "Hctx' Hsrc'". iMod ("Hfinish" $! _ _ hM' with "[-]").
-       iSplitL "Hctx'"; first by (iExists _; iFrame). iFrame. 
+       iSplitL "Hctx'"; first by (iExists _; iFrame). iFrame.
        { rewrite -Hmpf_eq'. iApply (@mem_init_to_bigOp _ (ExMachG Σ _ hM' hD tR') with "Hm"). }
        iFrame; eauto.
      }
