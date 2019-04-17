@@ -51,6 +51,32 @@ Proof.
 Qed.
 
 
+Lemma ghost_var_bulk_alloc {L V} `{Countable L} (m: gmap L V) (f: L → V → A):
+  (|==> ∃ (Γ: gmap L gname), ⌜ dom (gset L) Γ = dom (gset L) m ⌝ ∗
+        [∗ map] k↦v∈m, ∃ γ, ⌜ Γ !! k = Some γ ⌝ ∗ γ ●↦ (f k v) ∗ γ ↦ (f k v))%I.
+Proof.
+  iInduction m as [|k v] "IH" using map_ind.
+  - iExists ∅.
+    iSplitL "".
+    { by rewrite ?dom_empty_L. }
+    { by iApply big_sepM_empty. }
+  - iMod "IH" as (Γ Hdom) "Hmap".
+    iMod (ghost_var_alloc (f k v)) as (γ) "H".
+    iModIntro. iExists (<[k := γ]> Γ).
+    iSplitL "".
+    { iPureIntro. rewrite ?dom_insert_L Hdom //. }
+    { iApply big_sepM_insert; auto.
+      iSplitL "H".
+      { iExists γ. rewrite lookup_insert. by iFrame. }
+      { iApply (big_sepM_mono); last eauto.
+        iIntros (k' x' Hin) "H".
+        rewrite lookup_insert_ne; auto.
+        intros ->. congruence.
+      }
+    }
+Qed.
+
+
 Lemma ghost_var_agree γ (a1 a2: A) q :
   γ ●↦ a1 -∗ γ ↦{q} a2 -∗ ⌜ a1 = a2 ⌝.
 Proof.

@@ -164,12 +164,10 @@ Module Mail.
     end.
 
   Definition crash_step : relation State State unit :=
-    _ <- puts (set open (λ _, false));
-    puts (set messages (λ m, (λ inbox, (MUnlocked, snd inbox)) <$> m)).
+    puts (set open (λ _, false)).
 
   Definition finish_step : relation State State unit :=
-    _ <- puts (set open (λ _, false));
-    puts (set messages (λ m, (λ inbox, (MUnlocked, snd inbox)) <$> m)).
+    puts (set open (λ _, false)).
 
   Definition sem : Dynamics Op State :=
     {| Proc.step := step;
@@ -191,9 +189,7 @@ Module Mail.
     - do 3 eexists; split; econstructor.
     - do 3 eexists; split; econstructor.
     - destruct ret; inversion H; eauto.
-       repeat deex. inversion H1.
     - destruct ret; inversion H; eauto.
-       repeat deex. inversion H1.
   Defined.
 
   End GoModel.

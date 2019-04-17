@@ -143,7 +143,7 @@ Section refinement_triples.
         (uid >= 100 -> ¬ uid ∈ s)).
 
   Definition RootDirInv (σ: Mail.State) : iProp Σ :=
-    (rootdir ↦{-1} (set_map UserDir (dom (gset uint64) σ.(messages)))
+    (rootdir ↦{-1} ((set_map UserDir (dom (gset uint64) σ.(messages))) ∪ {[ SpoolDir ]})
       ∗ ⌜ userRange_ok (dom (gset uint64) (σ.(messages))) ⌝)%I.
 
   Lemma RootDirInv_range_ok σ :
@@ -177,9 +177,18 @@ Section refinement_triples.
         ⌜ σ.(open) = true ⌝
       end)%I.
 
+  Definition InitInv_crash (Γ: gmap uint64 gname) γ σ :=
+    (ghost_mapsto_auth γ Uninit
+        ∗ ghost_mapsto γ O Uninit
+        ∗ ([∗ map] uid↦lm ∈ σ.(messages), ∃ γuid, ⌜ Γ !! uid = Some γuid ⌝ ∗ InboxLockInv γuid O))%I.
+
   Definition MsgsInv (Γ : gmap uint64 gname) (γ: gname) (σ: Mail.State) : iProp Σ :=
     (∃ ls, GlobalInv ls σ.(open) ∗ RootDirInv σ ∗ InitInv Γ γ σ
                      ∗ ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm σ.(open)))%I.
+
+  Definition MsgsInv_crash (Γ : gmap uint64 gname) (γ: gname) (σ: Mail.State) : iProp Σ :=
+    (∃ ls, GlobalInv ls false ∗ RootDirInv σ ∗ InitInv_crash Γ γ σ
+                     ∗ ([∗ map] uid↦lm ∈ σ.(messages), MsgInv Γ ls uid lm false))%I.
 
   Lemma MsgInv_pers_split Γ ls uid lm :
     MsgInv Γ ls uid lm true -∗
@@ -203,6 +212,19 @@ Section refinement_triples.
     iDestruct (big_sepM_lookup_acc with "Hm") as "(Huid&Hm)"; eauto.
     iDestruct (MsgInv_pers_split with "Huid") as "$".
   Qed.
+
+  Lemma MsgsInv_crash_set_false Γ γ σ :
+    MsgsInv_crash Γ γ σ -∗ MsgsInv Γ γ (RecordSet.set open (λ _, false) σ).
+  Proof.
+    iIntros "H". iDestruct "H" as (ls) "(Hglobal&Hrootdir&Hinit&Hmsgs)".
+    iExists ls. iFrame.
+    rewrite /InitInv_crash/InitInv.
+    iExists Uninit. iDestruct "Hinit" as "($&$&$)". eauto.
+  Qed.
+
+  Global Instance MsgsInv_crash_timeless  Γ γ σ:
+    Timeless (MsgsInv_crash Γ γ σ).
+  Proof. apply _. Qed.
 
   Global Instance tmp_gen_mapsto `{gooseG Σ} : GenericMapsTo _ _
     := {| generic_mapsto := λ l q v, Count_GHeap.mapsto (hG := hGTmp) l q v|}%I.
@@ -236,10 +258,17 @@ Section refinement_triples.
   Definition ExecInv :=
     (∃ Γ γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ γ σ ∗ HeapInv σ ∗ TmpInv))%I.
 
+  Definition ExecInner :=
+    (∃ Γ γ σ, ⌜ σ.(open) = false ⌝ ∗ source_state σ ∗ MsgsInv Γ γ σ ∗ HeapInv σ ∗ TmpInv)%I.
+
   Definition CrashInv :=
-    (∃ Γ γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ γ σ ∗ HeapInv σ ∗ TmpInv_crash))%I.
+    (∃ Γ γ, source_ctx
+              ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv_crash Γ γ σ ∗ HeapInv σ ∗ TmpInv_crash))%I.
   Definition CrashStarter :=
     (∃ tmps : gset string, SpoolDir ↦{-1} tmps ∗ SpoolDir ↦ Unlocked)%I.
+
+  Definition CrashInner :=
+    ((∃ Γ γ σ, source_state σ ∗ MsgsInv_crash Γ γ σ ∗ HeapInv σ ∗ TmpInv_crash) ∗ CrashStarter)%I.
 
   Lemma GlobalInv_unify lsptr ls ls':
     global ↦{-1} Some lsptr -∗ lsptr ↦{-1} (ls, ls) -∗ GlobalInv ls' true -∗ ⌜ ls = ls' ⌝.
