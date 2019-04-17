@@ -84,6 +84,8 @@ Section refinement_triples.
      | _, _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
      end ∗ ⌜ p ≠ gmodel.(@nullptr) _⌝)%I (Data.allocs σ.(heap)).
 
+  Definition HeapInv_crash (σ: Mail.State) : iProp Σ := True%I.
+
   Definition InboxLockInv (γ: gname) (n: nat) :=
     (∃ S1 S2, ghost_mapsto_auth γ (A := discreteC contents) S1
       ∗ ghost_mapsto (A := discreteC contents) γ O S2)%I.
@@ -99,7 +101,7 @@ Section refinement_triples.
        | MLocked => wlocked lk ∗ InboxLockInv γ O ∗ UserDir uid ↦ Unlocked
        end
      else
-       ⌜ ls = MUnlocked ⌝ ∗ UserDir uid ↦ Unlocked)%I.
+       ⌜ ls = ls ⌝ ∗ UserDir uid ↦ Unlocked)%I.
 
   Definition boxN : namespace := (nroot.@"inbox_lock").
 
@@ -111,6 +113,18 @@ Section refinement_triples.
      ∗ ([∗ map] mid ↦ msgData ∈ msgs,
         ∃ inode (n: nat), path.mk (UserDir uid) mid ↦ inode
                 ∗ inode ↦{n} msgData))%I.
+
+  Definition InboxInv_weak (uid: uint64) (lk: LockRef) (γ: gname) (ls: MailboxStatus)
+             (msgs: gmap.gmap string (Datatypes.list byte)) (open: bool) :=
+     (MailboxStatusInterp uid lk γ ls msgs open
+     ∗ UserDir uid ↦ dom (gset string) msgs
+     ∗ ([∗ map] mid ↦ msgData ∈ msgs,
+        ∃ inode (n: nat), path.mk (UserDir uid) mid ↦ inode
+                ∗ inode ↦{n} msgData))%I.
+
+  Global Instance InboxInv_timeless uid lk γ ls msgs open:
+    Timeless (InboxInv_weak uid lk γ ls msgs open).
+  Proof. rewrite /InboxInv_weak. destruct ls, open; apply _. Qed.
 
   Definition GlobalInv ls (open: bool): iProp Σ :=
     (if open then
@@ -136,6 +150,13 @@ Section refinement_triples.
       (∃ lk γ, ⌜ Γ !! uid = Some γ ⌝
       ∗ ⌜ if open then List.nth_error ls uid = Some lk else True ⌝
       ∗ InboxInv uid lk γ (fst lm) (snd lm) open)%I.
+
+  Definition MsgInv_weak (Γ: gmap uint64 gname) uid lm (open: bool) : iProp Σ :=
+      (∃ lk γ, ⌜ Γ !! uid = Some γ ⌝ ∗ InboxInv_weak uid lk γ (fst lm) (snd lm) open)%I.
+
+  Global Instance MsgInv_weak_timeless Γ uid x open:
+    Timeless (MsgInv_weak Γ uid x open).
+  Proof. rewrite /MsgInv_weak. apply _. Qed.
 
   Definition userRange_ok (s: gset uint64) :=
     (forall (uid: uint64),
@@ -213,6 +234,15 @@ Section refinement_triples.
     iDestruct (MsgInv_pers_split with "Huid") as "$".
   Qed.
 
+  Lemma MsgInv_weaken Γ lks uid lm open:
+    MsgInv Γ lks uid lm open -∗ MsgInv_weak Γ uid lm open.
+  Proof.
+    iIntros "H". iDestruct "H" as (lk γ Hlookup) "(_&Hinbox)".
+    iExists _, _. iSplitL ""; auto.
+    iDestruct "Hinbox" as "(?&Hmb&?&?)".
+    iFrame.
+  Qed.
+
   Lemma MsgsInv_crash_set_false Γ γ σ :
     MsgsInv_crash Γ γ σ -∗ MsgsInv Γ γ (RecordSet.set open (λ _, false) σ).
   Proof.
@@ -263,12 +293,15 @@ Section refinement_triples.
 
   Definition CrashInv :=
     (∃ Γ γ, source_ctx
-              ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv_crash Γ γ σ ∗ HeapInv σ ∗ TmpInv_crash))%I.
+              ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv_crash Γ γ σ
+              ∗ HeapInv_crash σ ∗ TmpInv_crash))%I.
+
   Definition CrashStarter :=
     (∃ tmps : gset string, SpoolDir ↦{-1} tmps ∗ SpoolDir ↦ Unlocked)%I.
 
   Definition CrashInner :=
-    ((∃ Γ γ σ, source_state σ ∗ MsgsInv_crash Γ γ σ ∗ HeapInv σ ∗ TmpInv_crash) ∗ CrashStarter)%I.
+    ((∃ Γ γ σ, source_state σ ∗ MsgsInv_crash Γ γ σ
+               ∗ HeapInv_crash σ ∗ TmpInv_crash) ∗ CrashStarter)%I.
 
   Lemma GlobalInv_unify lsptr ls ls':
     global ↦{-1} Some lsptr -∗ lsptr ↦{-1} (ls, ls) -∗ GlobalInv ls' true -∗ ⌜ ls = ls' ⌝.
