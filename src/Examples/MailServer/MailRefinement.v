@@ -280,10 +280,29 @@ Proof.
       iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
       iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom'.
       rewrite Heq_dom'.
-      assert (curr_name ∈ tmps ∖ list_to_set (take i ltmps)).
-      { admit. }
+      assert (Hcurr_in: curr_name ∈ tmps ∖ list_to_set (take i ltmps)).
+      {
+        apply elem_of_difference; split.
+        - rewrite -Heq_dom. apply elem_of_elements.
+          rewrite -Hltmps. apply elem_of_list_In.
+          eapply nth_error_In; eauto.
+        - rewrite elem_of_list_to_set. rewrite elem_of_list_In.
+          assert (NoDup ltmps) as HNoDup.
+          { rewrite Hltmps. apply NoDup_elements. }
+          eapply nth_error_split in Heq_curr_name as (l1&l2&Hsplit&Hlen').
+          rewrite Hsplit. rewrite -Hlen' take_app.
+          rewrite Hsplit in HNoDup.
+          apply NoDup_app in HNoDup as (?&Hnotin&?).
+          intros Hin. eapply Hnotin.
+          { apply elem_of_list_In. eauto. }
+          by left.
+      }
       assert (∃ v, tmps_map' !! curr_name = Some v) as (inode&Hcurr_inode).
-      { admit. }
+      {
+        rewrite -Heq_dom' in Hcurr_in.
+        apply elem_of_dom in Hcurr_in as (v&?).
+        eauto.
+      }
       iDestruct (big_sepM_delete with "Hpaths") as "(Hcurr&Hpaths)"; eauto.
       iApply (wp_delete with "[$]").
       iIntros "!> (Hdir&Hdirlock)".
@@ -299,8 +318,13 @@ Proof.
       { iPureIntro. inversion Hlen; try congruence; try lia. }
       rewrite dom_delete_L Heq_dom'.
       rewrite difference_difference_L.
-      (* todo: prove list_to_set (take (i+1 ltmps) gives you union of take i ltmps with curr *)
-      admit.
+      assert ((tmps ∖ list_to_set (take (i + 1) ltmps)) =
+              (tmps ∖ (list_to_set (take i ltmps) ∪ {[curr_name]}))) as ->; last by auto.
+      f_equal.
+      eapply nth_error_split in Heq_curr_name as (l1&l2&Hsplit&Hlen').
+      rewrite Hsplit -Hlen' take_app.
+      rewrite firstn_app_2 //= firstn_O.
+      rewrite list_to_set_app_L //= right_id_L //.
   }
   { rewrite /init_absr/initP/init_base. intuition. }
   { clear. iIntros (σ1a σ1c Hinit).
@@ -346,7 +370,16 @@ Proof.
         iDestruct (big_sepM_dom with "Hdirlocks") as "Hdirlocks".
         iAssert ([∗ map] uid↦lm ∈ σ1a.(messages), MsgInv Γ [] uid (MUnlocked, ∅) false)%I
                  with "[Hdirs Hdirlocks]" as "H"; last first.
-        { iModIntro. iApply big_sepM_mono; last eauto. admit. }
+        { iModIntro. iApply (big_sepM_mono with "H").
+          iIntros (k x Hin) "H".
+          iDestruct "H" as (? γuid) "(H1&H2&H3)". iExists _, _. iFrame.
+          assert (x = (MUnlocked, ∅)) as ->; last by auto.
+          destruct (lt_dec k 100) as [Hlt|Hnlt].
+          * destruct (Hrange k) as (Hrange1&?).
+            feed pose proof (Hrange1); first by lia. congruence.
+          * destruct (Hrange k) as (?&Hgt).
+            feed pose proof (Hgt); first by lia. congruence.
+        }
         iAssert ([∗ map] k↦y ∈ base.delete SpoolDir σ1c.(fs).(dirents), k ↦ ∅)%I
           with "[Hdirs]" as "Hdirs".
         { iApply big_sepM_mono; last eauto.
@@ -359,7 +392,9 @@ Proof.
         }
         assert (Hdirs_delete : dom (gset string) (map_delete SpoolDir (σ1c.(fs).(dirents))) =
                                set_map UserDir (dom (gset uint64) σ1a.(messages))).
-        { admit. }
+        { rewrite dom_delete_L Hdirs.
+          (* I'm amazed set_solver can handle this! *)
+          set_solver+. }
         move: Hdirs_delete.
         rewrite /base.delete.
         generalize ((map_delete SpoolDir σ1c.(fs).(dirents))) => dirs.
@@ -370,7 +405,12 @@ Proof.
         rewrite big_sepM_insert //.
         rewrite big_sepM_insert //.
         assert (∃ v, dirs !! (UserDir k) = Some v) as (v&Hin).
-        { admit. }
+        {
+          rewrite dom_insert_L in Hdom.
+          assert (Hin: UserDir k ∈ dom (gset string) dirs).
+          { set_solver. }
+          apply elem_of_dom in Hin. eauto.
+        }
         iDestruct (big_sepM_delete with "Hdirlocks") as "(Hlock&Hdirlocks)"; first eauto.
         iDestruct (big_sepM_delete with "Hdirs") as "(Hdir&Hdirs)"; first eauto.
         iDestruct "HΓ'" as "(Hghost&HΓ')".
@@ -384,7 +424,20 @@ Proof.
         iPureIntro. rewrite dom_insert_L in Hdom.
         rewrite dom_delete_L.
         rewrite Hdom.
-        admit.
+        assert (Hnin: (UserDir k) ∉ (set_map UserDir (dom (gset uint64) m) : gset string)).
+        {
+          rewrite elem_of_map.
+          intros (k0&Heq&Hin').
+          apply string_app_inj, uint64_to_string_inj in Heq.
+          subst. apply elem_of_dom in Hin' as (?&?); congruence.
+        }
+        clear -Hnin.
+        rewrite set_map_union_singleton.
+        rewrite -leibniz_equiv_iff.
+        rewrite difference_union_distr_l.
+        rewrite difference_diag_L left_id.
+        rewrite difference_disjoint //.
+        rewrite disjoint_singleton_r. auto.
       }
       iExists _. iFrame. iFrame.
       iSplitL ""; auto.
@@ -632,4 +685,12 @@ Proof.
     iSplitL ""; eauto.
     iFrame. auto.
   }
+  (* TODO get rid of these *)
+  Unshelve.
+  apply sigPtr_eq_dec.
+  apply sigPtr_eq_dec.
+  apply (zeroValue _).
+  apply (zeroValue _).
+  apply sigPtr_eq_dec.
+  apply (zeroValue _).
 Abort.
