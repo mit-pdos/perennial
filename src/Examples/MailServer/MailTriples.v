@@ -1,6 +1,6 @@
 From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
-From RecoveryRefinement.Examples.MailServer Require Import MailAPI MailAPILemmas.
+From RecoveryRefinement.Examples.MailServer Require Import MailAPI MailAPILemmas MailHeap.
 From RecoveryRefinement.Goose.Examples Require Import MailServer.
 From RecoveryRefinement.Goose.Proof Require Import Interp.
 Require Import Goose.Proof.RefinementAdequacy.
@@ -67,26 +67,15 @@ Section refinement_triples.
   Context {hGcontents: ghost_mapG contentsC Σ}.
   Context {hGinit: ghost_mapG ghost_init_statusC Σ}.
   Context {hGTmp: gen_heapG string Filesys.FS.Inode Σ}.
+Import Filesys.FS.
+Import GoLayer.Go.
+Import Mail.
 
-  Import Filesys.FS.
-  Import GoLayer.Go.
-  Import Mail.
-
-
-  (* Every pointer in the abstract state should have a matching
-     pointer with the same value in the concrete state. *)
-  Definition HeapInv (σ : Mail.State) : iProp Σ :=
-    big_opDM bi_sep
-     (λ T p v,
-     match (fst v), T with
-     | ReadLocked n, (Ptr.Heap _) =>
-       Count_Typed_Heap.mapsto (hG := go_heap_inG) p (S n) Unlocked (snd v)
-     | _, _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
-     end ∗ ⌜ p ≠ gmodel.(@nullptr) _⌝)%I (Data.allocs σ.(heap)).
 
   Definition InboxLockInv (γ: gname) (n: nat) :=
     (∃ S1 S2, ghost_mapsto_auth γ (A := discreteC contents) S1
       ∗ ghost_mapsto (A := discreteC contents) γ O S2)%I.
+
 
   Definition MailboxStatusInterp (uid: uint64) (lk: LockRef) (γ: gname)
              (ls: MailboxStatus) (msgs: contents) (open: bool) :=
@@ -248,13 +237,6 @@ Section refinement_triples.
   Global Instance InboxLockInv_Timeless γ n:
     Timeless (InboxLockInv γ n).
   Proof. apply _. Qed.
-
-  Global Instance HeapInv_Timeless σ:
-    Timeless (HeapInv σ).
-  Proof.
-    apply big_sepDM_timeless; first apply _.
-    intros [] ? ([]&?); apply _.
-  Qed.
 
   Definition ExecInv :=
     (∃ Γ γ, source_ctx ∗ inv execN (∃ σ, source_state σ ∗ MsgsInv Γ γ σ ∗ HeapInv σ ∗ TmpInv))%I.
@@ -802,24 +784,6 @@ Section refinement_triples.
     apply insert_subseteq; eauto.
   Qed.
 
-  Lemma HeapInv_agree_slice {T} σ sli alloc alloc' (vs vs': List.list T) status q:
-    Data.getAlloc sli.(slice.ptr) σ.(heap) = Some (status, alloc') →
-    Data.getSliceModel sli alloc' = Some vs' →
-    sli ↦{q} (alloc, vs) -∗ HeapInv σ -∗ ⌜ alloc = alloc' ∧ vs = vs' ⌝.
-  Proof.
-    iIntros (??) "Hsli Hheap".
-    rewrite /HeapInv.
-    iDestruct (big_sepDM_lookup (dec := sigPtr_eq_dec) with "Hheap") as "(Hlookup&%)".
-    { eauto. }
-    iAssert (∃ s q, Count_Typed_Heap.mapsto sli.(slice.ptr) s q alloc')%I
-      with "[Hlookup]" as (??) "Hlookup".
-    { destruct status; eauto. }
-    iDestruct "Hsli" as (??) "Hsli".
-    iDestruct (Count_Typed_Heap.mapsto_agree_generic with "[Hsli] Hlookup") as %Heq.
-    { eauto. }
-    subst. iPureIntro; split; auto. simpl in *. congruence.
-  Qed.
-
   Lemma TmpInv_path_delete name inode:
     name ↦ inode -∗ TmpInv -∗
          |==> (∃ (S: gset string), path.mk SpoolDir name ↦ inode ∗ SpoolDir ↦ S
@@ -1133,107 +1097,6 @@ Section refinement_triples.
     { set_solver+. }
     iIntros "!> _". iApply "HΦ". iFrame.
   Qed.
-
-  Lemma HeapInv_non_alloc_inv {A} σ p q (ls: List.list A):
-    q >= 0 →
-    HeapInv σ -∗ p ↦{q} ls -∗
-            ⌜ Data.getAlloc p σ.(heap) = None /\ p ≠ nullptr _ ⌝.
-  Proof.
-    iIntros (?) "Hheap Hp".
-    iDestruct "Hp" as "(%&Hp)". iSplit; last auto.
-    destruct (Data.getAlloc p σ.(heap)) as [v|] eqn:Heq_get; last by done.
-    iExFalso.
-    rewrite /HeapInv.
-    rewrite /Data.getAlloc in Heq_get.
-    iPoseProof (big_sepDM_lookup (T:=(Ptr.Heap A))
-                                 (dec := sigPtr_eq_dec) with "Hheap") as "(Hheap&%)"; eauto.
-    destruct v as ([]&?);
-      iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hp] Hheap"); try iFrame;
-        eauto with lia.
-  Qed.
-
-  Lemma data_op_refinement {T1 T2} j K `{LanguageCtx _ _ T2 Mail.l K} (op: Data.Op T1):
-    {{{ j ⤇ K (Call (DataOp op)) ∗ Registered ∗ ExecInv }}}
-      Call (GoLayer.DataOp op)
-    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
-  Proof.
-    iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
-    iDestruct "Hrest" as (Γ γinit) "(#Hsource&#Hinv)".
-    iInv "Hinv" as "H".
-    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
-    { simpl; auto. }
-    { solve_ndisj. }
-    destruct op.
-    - iApply (wp_newAlloc with "[//]").
-      iIntros (p) "!> Hp".
-      iDestruct (HeapInv_non_alloc_inv _ _ 0 with "[$] Hp") as %?; first auto.
-      iMod (ghost_step_call _ _ _ p ((RecordSet.set heap _ σ : l.(OpState)))
-            with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
-      { intros. econstructor. eexists; split; last by econstructor.
-        econstructor; eauto. eapply opened_step; auto. econstructor.
-        * do 2 eexists. split.
-          ** econstructor; eauto.
-          ** do 2 eexists. split; last econstructor.
-             econstructor.
-        * eauto.
-      }
-      { solve_ndisj. }
-      iModIntro. iExists _. iFrame. iSplitL "Hheap Hp".
-      { iNext.
-        rewrite /HeapInv//=.
-        rewrite big_sepDM_updDyn; try intuition.
-        iFrame. simpl. iDestruct "Hp" as "(?&$)"; eauto.
-      }
-      iApply "HΦ"; by iFrame.
-    - iMod (deref_step_inv_do with "Hj Hsource Hstate") as (s alloc v Heq) "(Hj&Hstate)".
-      { solve_ndisj. }
-      destruct Heq as (Heq1&Heq2&Heq3).
-      iDestruct (big_sepDM_lookup_acc with "Hheap") as "((Hp&%)&Hheap)".
-      { eauto. }
-      destruct s; try (simpl in Heq2; congruence); simpl.
-      * iApply (wp_ptrDeref' with "Hp").
-        { eauto. }
-        { eauto. }
-        iIntros "!> Hp".
-        iExists _. iFrame. iSplitL "Hheap Hp".
-        ** iApply "Hheap". by iFrame.
-        ** iApply "HΦ". by iFrame.
-      * iApply (wp_ptrDeref' with "Hp").
-        { eauto. }
-        { eauto. }
-        iIntros "!> Hp".
-        iExists _. iFrame. iSplitL "Hheap Hp".
-        ** iApply "Hheap". by iFrame.
-        ** iApply "HΦ". by iFrame.
-    - destruct na; last first.
-      * iMod (store_start_step_inv_do j K with "Hj Hsource Hstate") as (s alloc Heq) "(Hj&Hstate)".
-        { solve_ndisj. }
-        destruct Heq as (Heq1&Heq2).
-        iDestruct (big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
-        { eauto. }
-        destruct s; try (simpl in Heq2; congruence); simpl; [].
-        iApply (wp_ptrStore_start with "Hp").
-        iIntros "!> Hp".
-        iExists _. iFrame. iSplitL "Hheap Hp".
-        ** iApply "Hheap". by iFrame.
-        ** iApply "HΦ". by iFrame.
-      * iMod (store_finish_step_inv_do j K with "Hj Hsource Hstate")
-          as (s alloc alloc' Heq) "(Hj&Hstate)".
-        { solve_ndisj. }
-        destruct Heq as (Heq1&Heq2&Heq3).
-        iDestruct (big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
-        { eauto. }
-        destruct s; try (simpl in Heq3; congruence); simpl; [].
-        destruct args.
-        iApply (wp_ptrStore_finish with "Hp").
-        { eauto. }
-        iIntros "!> Hp".
-        iExists _. iFrame. iSplitL "Hheap Hp".
-        ** iApply "Hheap". by iFrame.
-        ** iApply "HΦ". by iFrame.
-   Abort.
-
 
   Lemma pickup_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
     {{{ j ⤇ K (pickup uid) ∗ Registered ∗ ExecInv }}}

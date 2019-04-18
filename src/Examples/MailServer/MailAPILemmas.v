@@ -22,11 +22,56 @@ Set Default Goal Selector "!".
 
 Set Default Proof Using "Type".
 
+Import Filesys.FS.
+Import GoLayer.Go.
+Import Mail.
+
+Ltac non_err' :=
+  (match goal with
+  | [ |- context[?x = Some _ ]] =>
+    match x with
+    | None => fail 1
+    | Some _ => fail 1
+    | _ =>
+      let Heq := fresh "Heq" in
+      destruct x as [?|] eqn:Heq
+    end
+  | [ |- lookup _ _ _ _ ] =>
+    unfold lookup
+  | [ |- unwrap _ _ _ ] =>
+    unfold unwrap
+  | [ |- readSome _ _ _ ] =>
+    unfold readSome
+  | [ |- context [match ?x with | _ => _ end] ] =>
+    match goal with
+      | [ H: x = _ |- _ ] => rewrite H
+    end
+  end).
+Ltac non_err := (repeat non_err'; trivial).
+
+Ltac ghost_err :=
+  (iMod (ghost_step_err _ _ _ with "[$] [$] [$]") ||
+   match goal with
+      | [ |- context[ (_ ⤇ ?K _)%I] ] =>
+        iMod (ghost_step_err _ _ (λ x, K (Bind x _))
+                with "[$] [$] [$]")
+   end); eauto.
+
+(* Tactics for proving an error occurs at 0th, 1st, 2nd step of a repeated and_then *)
+Ltac do_then := repeat (do 2 eexists; split; non_err).
+Ltac err_start := left; right; do_then; destruct (open); last by econstructor.
+Ltac err_hd := left; non_err; try econstructor.
+Ltac err_cons := right; do_then.
+
+Ltac err0 := err_start; err_hd.
+Ltac err1 := err_start; err_cons; err_hd.
+Ltac err2 := err_start; err_cons; err_cons; err_hd.
+Ltac err3 := err_start; err_cons; err_cons; err_cons; err_hd.
+
+Ltac solve_err := ghost_err; solve [ err0 | err1 | err2 | err3 ].
+
 Section api_lemmas.
 Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
-  Import Filesys.FS.
-  Import GoLayer.Go.
-  Import Mail.
 
   Global Instance source_state_inhab:
     Inhabited State.
@@ -35,49 +80,6 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
   Global Instance LockRef_inhab:
     Inhabited LockRef.
   Proof. eexists. apply nullptr. Qed.
-  Ltac non_err' :=
-    (match goal with
-    | [ |- context[?x = Some _ ]] =>
-      match x with
-      | None => fail 1
-      | Some _ => fail 1
-      | _ =>
-        let Heq := fresh "Heq" in
-        destruct x as [?|] eqn:Heq
-      end
-    | [ |- lookup _ _ _ _ ] =>
-      unfold lookup
-    | [ |- unwrap _ _ _ ] =>
-      unfold unwrap
-    | [ |- readSome _ _ _ ] =>
-      unfold readSome
-    | [ |- context [match ?x with | _ => _ end] ] =>
-      match goal with
-        | [ H: x = _ |- _ ] => rewrite H
-      end
-    end).
-  Ltac non_err := (repeat non_err'; trivial).
-
-  Ltac ghost_err :=
-    (iMod (ghost_step_err _ _ _ with "[$] [$] [$]") ||
-     match goal with
-        | [ |- context[ (_ ⤇ ?K _)%I] ] =>
-          iMod (ghost_step_err _ _ (λ x, K (Bind x _))
-                  with "[$] [$] [$]")
-     end); eauto.
-
-  (* Tactics for proving an error occurs at 0th, 1st, 2nd step of a repeated and_then *)
-  Ltac do_then := repeat (do 2 eexists; split; non_err).
-  Ltac err_start := left; right; do_then; destruct (open); last by econstructor.
-  Ltac err_hd := left; non_err; try econstructor.
-  Ltac err_cons := right; do_then.
-
-  Ltac err0 := err_start; err_hd.
-  Ltac err1 := err_start; err_cons; err_hd.
-  Ltac err2 := err_start; err_cons; err_cons; err_hd.
-  Ltac err3 := err_start; err_cons; err_cons; err_cons; err_hd.
-
-  Ltac solve_err := ghost_err; solve [ err0 | err1 | err2 | err3 ].
 
   Lemma open_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →

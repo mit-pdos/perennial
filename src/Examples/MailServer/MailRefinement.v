@@ -1,6 +1,6 @@
 From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
-From RecoveryRefinement.Examples.MailServer Require Import MailAPI MailAPILemmas MailTriples.
+From RecoveryRefinement.Examples.MailServer Require Import MailAPI MailAPILemmas MailHeap MailTriples.
 From RecoveryRefinement.Goose.Examples Require Import MailServer.
 From RecoveryRefinement.Goose.Proof Require Import Interp.
 Require Import Goose.Proof.RefinementAdequacy.
@@ -205,7 +205,14 @@ Proof.
       iIntros (?) "(?&?)"; iFrame.
     - iApply (unlock_refinement with "[$]"). iIntros "!>".
       iIntros (?) "(?&?)"; iFrame.
-    - admit. (* data op refinement, which is partial so far *)
+    - iDestruct "Hexec" as (Γ γ) "(#Hsource&#Hinv)".
+      iInv "Hinv" as "H".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+      iApply (data_op_refinement with "[$]").
+      { solve_ndisj. }
+      iIntros (v) "!> H".
+      iDestruct "H" as (h') "(Hj&Hreg&Hstate&Hheap)".
+      iModIntro. iFrame. iNext. iExists _. iFrame.
   }
   { intros. iIntros "H". iDestruct "H" as (hGTmp ??) "($&?)". }
   { intros. iIntros "(Hrest&Hreg&Hstarter)".
@@ -693,4 +700,5 @@ Proof.
   apply (zeroValue _).
   apply sigPtr_eq_dec.
   apply (zeroValue _).
-Abort.
+Time Qed.
+Print Assumptions mail_crash_refinement_seq.
