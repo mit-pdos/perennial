@@ -120,9 +120,9 @@ Section refinement_triples.
         ∃ inode (n: nat), path.mk (UserDir uid) mid ↦ inode
                 ∗ inode ↦{n} msgData))%I.
 
-  Global Instance InboxInv_timeless uid lk γ ls msgs open:
-    Timeless (InboxInv_weak uid lk γ ls msgs open).
-  Proof. rewrite /InboxInv_weak. destruct ls, open; apply _. Qed.
+  Global Instance InboxInv_timeless uid lk γ ls msgs open':
+    Timeless (InboxInv_weak uid lk γ ls msgs open').
+  Proof. rewrite /InboxInv_weak. destruct ls, open'; apply _. Qed.
 
   Definition GlobalInv ls (open: bool): iProp Σ :=
     (if open then
