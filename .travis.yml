@@ -60,7 +60,7 @@ script:
   docker exec COQ /bin/bash --login -c "
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     set -ex
-    make -j${NJOBS} -k ci
+    travis_wait 20 make -j${NJOBS} -k ci
     "
 - echo -en 'travis_fold:end:build\\r'
 
