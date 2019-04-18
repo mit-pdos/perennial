@@ -56,7 +56,7 @@ script:
 - echo -e "${ANSI_YELLOW}Building ${TRAVIS_REPO_SLUG}...${ANSI_RESET}" && echo -en 'travis_fold:start:build\\r'
   # TODO: go back to running the test target once things work
 - |
-  travis_wait 20 docker exec COQ /bin/bash --login -c "
+  docker exec COQ /bin/bash --login -c "
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     set -ex
     make -j${NJOBS} -k ci
