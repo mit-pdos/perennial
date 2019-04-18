@@ -208,7 +208,7 @@ Proof.
     - iDestruct "Hexec" as (Γ γ) "(#Hsource&#Hinv)".
       iInv "Hinv" as "H".
       iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-      iApply (data_op_refinement with "[$]").
+      iApply (data_op_refinement j K with "[$]").
       { solve_ndisj. }
       iIntros (v) "!> H".
       iDestruct "H" as (h') "(Hj&Hreg&Hstate&Hheap)".
