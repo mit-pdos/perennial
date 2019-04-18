@@ -167,6 +167,149 @@ Proof.
     subst. rewrite Hsome' in Hsome; try lia. congruence.
 Qed.
 
+(* TODO: the goal statement here looks really confusing -- it's extracted from
+   one of the obligations from applying crash_refinement_seq below. I only break
+   it out to shorten the qed time of that proof below.
+
+   The explicit implicit arguments are needed or else the wrong things get resolved. *)
+
+Program Lemma recovery_triple {gm} {Hgmwf: @GoModelWf gm}:
+  ∀ (H1 : cfgG myΣ) (H2 : gooseG gm myΣ) (param : gname),
+    (@CrashInv _ _ myΣ H2 H1 _ _ param) ∗ Registered ∗ (@CrashStarter _ _ myΣ H2 param)
+    -∗ WP Recover
+       {{ _, |={⊤,nclose sourceN}=>
+          ∃ σ2a σ2a' : l.(OpState),
+            source_state σ2a
+              ∗ ⌜l.(Proc.crash_step) σ2a (Val σ2a' tt)⌝
+              ∗ (∀ (Hcfg' : cfgG myΣ) (Hinv' : invG myΣ) (tr' : tregG myΣ),
+                    source_ctx ∗ source_state σ2a'
+                    ={⊤}=∗
+                        (λ H1 H2,
+                         ∃ hGTmp, @ExecInner gm Hgmwf myΣ H2 H1 _ _ hGTmp)
+                        Hcfg'
+                        (GooseG _ _ myΣ Hinv' go_heap_inG go_fs_inG go_global_inG tr')) }}.
+Proof.
+  intros. iIntros "(Hrest&Hreg&Hstarter)".
+  iDestruct "Hrest" as (Γ γ) "(#Hsource&#Hinv)".
+  iDestruct "Hstarter" as (tmps) "(Htmps_frag&Hlock)".
+  wp_bind. wp_bind.
+  iApply (wp_list_start with "[$]").
+  iIntros "!> Hlock".
+  iInv "Hinv" as "H".
+  iDestruct "H" as (σ) "(>Hstate&>Hmsgs&>Hheap&>Htmp)".
+  iDestruct "Htmp" as (tmps_map) "(Hdir&Hauth&Hpaths)".
+  iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom.
+  iApply (wp_list_finish with "[$]").
+  iIntros (s ltmps) "!> (Hltmps&Hs&Htmps&Hlock)".
+  iExists _.
+  iSplitL "Hstate Hmsgs Hheap Hauth Htmps Hpaths".
+  { iFrame. iExists _. by iFrame. }
+  iModIntro.
+  iDestruct "Hltmps" as %Hltmps.
+
+  iAssert (ghost_mapsto (A := discreteC (gset string))
+                        param 0 (tmps ∖ list_to_set (take 0 ltmps)))%I with "[Htmps_frag]"
+    as "Htmps_frag".
+  { by rewrite difference_empty_L. }
+  iDestruct (slice_mapsto_len with "Hs") as %->.
+  assert (0 <= length ltmps) as Hlen by lia.
+  revert Hlen.
+  remember 0 as i eqn:Heq_i.
+  intros Hlen.
+  rewrite [a in S a]Heq_i.
+  clear Heq_i.
+  iLöb as "IH" forall (i Hlen).
+  wp_loop.
+  destruct equal as [Heqlen|Hneq].
+  - iClear "IH". subst.
+    rewrite firstn_all.
+    (* in a sense we do not even need to argue that the spool dir is actually empty at
+       this point, it is totally irrelevant *)
+    wp_ret. wp_ret. iNext.
+    iInv "Hinv" as "H" "_".
+    clear σ.
+    iDestruct "H" as (σ) "(>Hstate&>Hmsgs&>Hheap&>Htmp)".
+    iApply (fupd_mask_weaken _ _).
+    { solve_ndisj. }
+    iExists _, _.
+    iFrame. iSplitL "".
+    { iPureIntro. do 2 eexists; split; econstructor. }
+    iClear "Hsource".
+    iIntros (???) "(#Hsource&Hstate)".
+    iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
+    iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom.
+    rewrite <-Heq_dom.
+    iMod (gen_heap_init tmps_map') as (hGTmp) "Htmp".
+    iExists hGTmp, Γ, γ, _.
+    iFrame.
+    iSplitL "".
+    { eauto. }
+    iSplitL "Hmsgs".
+    { by iApply MsgsInv_crash_set_false. }
+    iSplitL "".
+    { iModIntro. by iApply big_sepDM_empty. }
+    iExists _. by iFrame.
+  - wp_bind.
+    destruct (nth_error ltmps i) as [curr_name|] eqn:Heq_curr_name; last first.
+    { exfalso. eapply nth_error_Some; eauto.  inversion Hlen; try congruence; try lia. }
+    iApply (wp_sliceRead with "[$]"); first eauto.
+    iIntros "!> Hs".
+    wp_bind.
+    iInv "Hinv" as "H".
+    clear σ.
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
+    iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom'.
+    rewrite Heq_dom'.
+    assert (Hcurr_in: curr_name ∈ tmps ∖ list_to_set (take i ltmps)).
+    {
+      apply elem_of_difference; split.
+      - rewrite -Heq_dom. apply elem_of_elements.
+        rewrite -Hltmps. apply elem_of_list_In.
+        eapply nth_error_In; eauto.
+      - rewrite elem_of_list_to_set. rewrite elem_of_list_In.
+        assert (NoDup ltmps) as HNoDup.
+        { rewrite Hltmps. apply NoDup_elements. }
+        eapply nth_error_split in Heq_curr_name as (l1&l2&Hsplit&Hlen').
+        rewrite Hsplit. rewrite -Hlen' take_app.
+        rewrite Hsplit in HNoDup.
+        apply NoDup_app in HNoDup as (?&Hnotin&?).
+        intros Hin. eapply Hnotin.
+        { apply elem_of_list_In. eauto. }
+        by left.
+    }
+    assert (∃ v, tmps_map' !! curr_name = Some v) as (inode&Hcurr_inode).
+    {
+      rewrite -Heq_dom' in Hcurr_in.
+      apply elem_of_dom in Hcurr_in as (v&?).
+      eauto.
+    }
+    iDestruct (big_sepM_delete with "Hpaths") as "(Hcurr&Hpaths)"; eauto.
+    iApply (wp_delete with "[$]").
+    iIntros "!> (Hdir&Hdirlock)".
+    iMod (ghost_var_update (A := discreteC (gset string)) with "Hauth [$]") as "(Hauth&Hfrag)".
+    iSplitL "Hstate Hmsgs Hheap Hpaths Hdir Hauth".
+    {
+      iExists _. iFrame.
+      iModIntro. iNext. iExists _. iFrame.
+      rewrite dom_delete_L. rewrite Heq_dom'. iFrame.
+    }
+    wp_ret. iModIntro. iNext.
+    iApply ("IH" with "[] [$] [$] [$] [Hfrag]").
+    { iPureIntro. inversion Hlen; try congruence; try lia. }
+    rewrite dom_delete_L Heq_dom'.
+    rewrite difference_difference_L.
+    assert ((tmps ∖ list_to_set (take (i + 1) ltmps)) =
+            (tmps ∖ (list_to_set (take i ltmps) ∪ {[curr_name]}))) as ->; last by auto.
+    f_equal.
+    eapply nth_error_split in Heq_curr_name as (l1&l2&Hsplit&Hlen').
+    rewrite Hsplit -Hlen' take_app.
+    rewrite firstn_app_2 //= firstn_O.
+    rewrite list_to_set_app_L //= right_id_L //.
+    Unshelve.
+    eapply sigPtr_eq_dec.
+Qed.
+
 Lemma mail_crash_refinement_seq {gm} {Hgmwf: @GoModelWf gm} {T} σ1c σ1a esa esc:
   init_absr σ1a σ1c →
   wf_client_seq esa →
@@ -216,123 +359,7 @@ Proof.
   }
   { intros. iIntros "H". iDestruct "H" as (hGTmp ??) "($&?)". }
   { idtac "obligation 2".
-    intros. iIntros "(Hrest&Hreg&Hstarter)".
-    iDestruct "Hrest" as (Γ γ) "(#Hsource&#Hinv)".
-    iDestruct "Hstarter" as (tmps) "(Htmps_frag&Hlock)".
-    wp_bind. wp_bind.
-    iApply (wp_list_start with "[$]").
-    iIntros "!> Hlock".
-    iInv "Hinv" as "H".
-    iDestruct "H" as (σ) "(>Hstate&>Hmsgs&>Hheap&>Htmp)".
-    iDestruct "Htmp" as (tmps_map) "(Hdir&Hauth&Hpaths)".
-    iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom.
-    iApply (wp_list_finish with "[$]").
-    iIntros (s ltmps) "!> (Hltmps&Hs&Htmps&Hlock)".
-    iExists _.
-    iSplitL "Hstate Hmsgs Hheap Hauth Htmps Hpaths".
-    { iFrame. iExists _. by iFrame. }
-    iModIntro.
-    iDestruct "Hltmps" as %Hltmps.
-
-    iAssert (ghost_mapsto (A := discreteC (gset string))
-                          param 0 (tmps ∖ list_to_set (take 0 ltmps)))%I with "[Htmps_frag]"
-      as "Htmps_frag".
-    { by rewrite difference_empty_L. }
-    iDestruct (slice_mapsto_len with "Hs") as %->.
-    assert (0 <= length ltmps) as Hlen by lia.
-    revert Hlen.
-    remember 0 as i eqn:Heq_i.
-    intros Hlen.
-    rewrite [a in S a]Heq_i.
-    clear Heq_i.
-    iLöb as "IH" forall (i Hlen).
-    wp_loop.
-    destruct equal as [Heqlen|Hneq].
-    - iClear "IH". subst.
-      rewrite firstn_all.
-      (* in a sense we do not even need to argue that the spool dir is actually empty at
-         this point, it is totally irrelevant *)
-      wp_ret. wp_ret. iNext.
-      iInv "Hinv" as "H" "_".
-      clear σ.
-      iDestruct "H" as (σ) "(>Hstate&>Hmsgs&>Hheap&>Htmp)".
-      iApply (fupd_mask_weaken _ _).
-      { solve_ndisj. }
-      iExists _, _.
-      iFrame. iSplitL "".
-      { iPureIntro. do 2 eexists; split; econstructor. }
-      iClear "Hsource".
-      iIntros (???) "(#Hsource&Hstate)".
-      iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
-      iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom.
-      rewrite <-Heq_dom.
-      iMod (gen_heap_init tmps_map') as (hGTmp) "Htmp".
-      iExists hGTmp, Γ, γ, _.
-      iFrame.
-      iSplitL "".
-      { eauto. }
-      iSplitL "Hmsgs".
-      { by iApply MsgsInv_crash_set_false. }
-      iSplitL "".
-      { iModIntro. by iApply big_sepDM_empty. }
-      iExists _. by iFrame.
-    - wp_bind.
-      destruct (nth_error ltmps i) as [curr_name|] eqn:Heq_curr_name; last first.
-      { exfalso. eapply nth_error_Some; eauto.  inversion Hlen; try congruence; try lia. }
-      iApply (wp_sliceRead with "[$]"); first eauto.
-      iIntros "!> Hs".
-      wp_bind.
-      iInv "Hinv" as "H".
-      clear σ.
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-      iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
-      iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom'.
-      rewrite Heq_dom'.
-      assert (Hcurr_in: curr_name ∈ tmps ∖ list_to_set (take i ltmps)).
-      {
-        apply elem_of_difference; split.
-        - rewrite -Heq_dom. apply elem_of_elements.
-          rewrite -Hltmps. apply elem_of_list_In.
-          eapply nth_error_In; eauto.
-        - rewrite elem_of_list_to_set. rewrite elem_of_list_In.
-          assert (NoDup ltmps) as HNoDup.
-          { rewrite Hltmps. apply NoDup_elements. }
-          eapply nth_error_split in Heq_curr_name as (l1&l2&Hsplit&Hlen').
-          rewrite Hsplit. rewrite -Hlen' take_app.
-          rewrite Hsplit in HNoDup.
-          apply NoDup_app in HNoDup as (?&Hnotin&?).
-          intros Hin. eapply Hnotin.
-          { apply elem_of_list_In. eauto. }
-          by left.
-      }
-      assert (∃ v, tmps_map' !! curr_name = Some v) as (inode&Hcurr_inode).
-      {
-        rewrite -Heq_dom' in Hcurr_in.
-        apply elem_of_dom in Hcurr_in as (v&?).
-        eauto.
-      }
-      iDestruct (big_sepM_delete with "Hpaths") as "(Hcurr&Hpaths)"; eauto.
-      iApply (wp_delete with "[$]").
-      iIntros "!> (Hdir&Hdirlock)".
-      iMod (ghost_var_update (A := discreteC (gset string)) with "Hauth [$]") as "(Hauth&Hfrag)".
-      iSplitL "Hstate Hmsgs Hheap Hpaths Hdir Hauth".
-      {
-        iExists _. iFrame.
-        iModIntro. iNext. iExists _. iFrame.
-        rewrite dom_delete_L. rewrite Heq_dom'. iFrame.
-      }
-      wp_ret. iModIntro. iNext.
-      iApply ("IH" with "[] [$] [$] [$] [Hfrag]").
-      { iPureIntro. inversion Hlen; try congruence; try lia. }
-      rewrite dom_delete_L Heq_dom'.
-      rewrite difference_difference_L.
-      assert ((tmps ∖ list_to_set (take (i + 1) ltmps)) =
-              (tmps ∖ (list_to_set (take i ltmps) ∪ {[curr_name]}))) as ->; last by auto.
-      f_equal.
-      eapply nth_error_split in Heq_curr_name as (l1&l2&Hsplit&Hlen').
-      rewrite Hsplit -Hlen' take_app.
-      rewrite firstn_app_2 //= firstn_O.
-      rewrite list_to_set_app_L //= right_id_L //.
+    eapply recovery_triple.
   }
   { rewrite /init_absr/initP/init_base. intuition. }
   { idtac "obligation 3".
