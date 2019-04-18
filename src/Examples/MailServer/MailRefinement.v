@@ -192,7 +192,7 @@ Proof.
   { intros. apply _. }
   { intros. apply _. }
   { set_solver+. }
-  {
+  { idtac "obligation 1".
     intros ???? j K Hctx p p' Hcompile. iIntros "(Hj&Hreg&Hexec)".
     iDestruct "Hexec" as (hGTmp) "Hexec". inversion Hcompile; inj_pair2.
     - iApply (open_refinement with "[$]"). iIntros "!>".
@@ -215,7 +215,8 @@ Proof.
       iModIntro. iFrame. iNext. iExists _. iFrame.
   }
   { intros. iIntros "H". iDestruct "H" as (hGTmp ??) "($&?)". }
-  { intros. iIntros "(Hrest&Hreg&Hstarter)".
+  { idtac "obligation 2".
+    intros. iIntros "(Hrest&Hreg&Hstarter)".
     iDestruct "Hrest" as (Γ γ) "(#Hsource&#Hinv)".
     iDestruct "Hstarter" as (tmps) "(Htmps_frag&Hlock)".
     wp_bind. wp_bind.
@@ -334,7 +335,8 @@ Proof.
       rewrite list_to_set_app_L //= right_id_L //.
   }
   { rewrite /init_absr/initP/init_base. intuition. }
-  { clear. iIntros (σ1a σ1c Hinit).
+  { idtac "obligation 3".
+    clear. iIntros (σ1a σ1c Hinit).
     iIntros (??) "(Hdirs&Hroot&Hdirlocks&Hsrc&Hstate&Hglobal)".
     pose proof (init_dirs _ _ Hinit) as Hdirs.
     destruct Hinit as (Hinita&Hinitc).
@@ -460,6 +462,7 @@ Proof.
     }
   }
   {
+    idtac "obligation 4".
     iIntros (??) "H".
     iDestruct "H" as (hGtmp_old) "Hrest".
     iDestruct "Hrest" as (Γold γold) "(#Hsource&#Hinv)".
@@ -534,6 +537,7 @@ Proof.
   }
   {
     (* Idempotence *)
+    idtac "obligation 5 (idempotence)".
     iIntros (?? γtmp) "Hcrash".
     iDestruct "Hcrash" as (??) "(#Hsrc&#Hinv)".
     iInv "Hinv" as "H" "_".
@@ -599,14 +603,16 @@ Proof.
     iSplitL ""; eauto.
     iFrame. auto.
   }
-  { iIntros (??) "(H1&H2)". iDestruct "H1" as (Hinv γtmp) "(H&Hstarter)".
+  { idtac "obligation 6".
+    iIntros (??) "(H1&H2)". iDestruct "H1" as (Hinv γtmp) "(H&Hstarter)".
     iDestruct "H" as (???) "(?&?&?)".
     iExists _. iFrame.
     iExists _, _. iFrame.
     iMod (@inv_alloc myΣ (go_invG) execN _ _ with "[-]"); last eauto.
     iNext. iExists _. iFrame.
   }
-  { iIntros (??) "(H1&H2)". iDestruct "H1" as (Hinv hGTmp ??? Hclosed) "(Hstate&Hmsgs&Heap&Htmps)".
+  { idtac "obligation 7".
+    iIntros (??) "(H1&H2)". iDestruct "H1" as (Hinv hGTmp ??? Hclosed) "(Hstate&Hmsgs&Heap&Htmps)".
     iExists hGTmp.
     iExists _, _. iFrame.
     iMod (@inv_alloc myΣ (go_invG) execN _ _ with "[-]"); last eauto.
@@ -616,7 +622,7 @@ Proof.
     iExists _. iFrame "Hglobal Hroot Hinit".
     rewrite Hclosed. eauto.
   }
-  {
+  { idtac "obligation 8".
     iIntros (??) "_ H".
     iDestruct "H" as (hGTmp Γ γ) "Hrest".
     iDestruct "Hrest" as "(#Hsource&#Hinv)".
