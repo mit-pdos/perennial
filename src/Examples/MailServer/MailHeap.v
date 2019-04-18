@@ -24,6 +24,15 @@ Import Mail.
 
   (* Every pointer in the abstract state should have a matching
      pointer with the same value in the concrete state. *)
+  Definition HeapInv' (σ : DynMap gmodel.(@Ptr) Data.ptrModel) : iProp Σ :=
+    big_opDM bi_sep
+     (λ T p v,
+     match (fst v), T with
+     | ReadLocked n, (Ptr.Heap _) =>
+       Count_Typed_Heap.mapsto (hG := go_heap_inG) p (S n) Unlocked (snd v)
+     | _, _ => Count_Typed_Heap.mapsto (hG := go_heap_inG) p O (fst v) (snd v)
+     end ∗ ⌜ p ≠ gmodel.(@nullptr) _⌝)%I σ.
+
   Definition HeapInv (σ : Mail.State) : iProp Σ :=
     big_opDM bi_sep
      (λ T p v,
@@ -58,14 +67,14 @@ Import Mail.
     subst. iPureIntro; split; auto. simpl in *. congruence.
   Qed.
 
-  Lemma HeapInv_non_alloc_inv {A} σ p q (ls: List.list A):
+  Lemma HeapInv_non_alloc_inv' {A} σ p q (ls: List.list A):
     q >= 0 →
-    HeapInv σ -∗ p ↦{q} ls -∗
-            ⌜ Data.getAlloc p σ.(heap) = None /\ p ≠ nullptr _ ⌝.
+    HeapInv' σ -∗ p ↦{q} ls -∗
+            ⌜ getDyn σ p = None /\ p ≠ nullptr _ ⌝.
   Proof.
     iIntros (?) "Hheap Hp".
     iDestruct "Hp" as "(%&Hp)". iSplit; last auto.
-    destruct (Data.getAlloc p σ.(heap)) as [v|] eqn:Heq_get; last by done.
+    destruct (getDyn σ p) as [v|] eqn:Heq_get; last by done.
     iExFalso.
     rewrite /HeapInv.
     rewrite /Data.getAlloc in Heq_get.
@@ -76,6 +85,44 @@ Import Mail.
         eauto with lia.
   Qed.
 
+  Lemma HeapInv_non_alloc_inv {A} σ p q (ls: List.list A):
+    q >= 0 →
+    HeapInv σ -∗ p ↦{q} ls -∗
+            ⌜ Data.getAlloc p σ.(heap) = None /\ p ≠ nullptr _ ⌝.
+  Proof.
+    iIntros (?) "Hheap Hp".
+    iDestruct (HeapInv_non_alloc_inv' with "[$] [$]") as %Heq; eauto.
+  Qed.
+
+  Lemma take_drop_sublist_inv {A} (l: List.list A) a n1 n2:
+    take n2 (drop n1 l) = a :: l → False.
+  Proof.
+    intros Htake. apply (f_equal length) in Htake.
+    rewrite take_length drop_length //= in Htake.
+    lia.
+  Qed.
+
+  Lemma take_drop_all_inv {A: Type} (l: List.list A) n1 n2:
+    n1 ≤ length l →
+    take n2 (drop n1 l) = l → n1 = O.
+  Proof.
+    destruct l, n1 => //=.
+    - inversion 1.
+    - intros; exfalso; by eapply take_drop_sublist_inv.
+  Qed.
+
+  Lemma getSliceModel_full_inv {T} (p: slice.t T) l:
+    Data.getSliceModel p l = Some l →
+    length l = p.(slice.length) ∧ p.(slice.offset) = 0.
+  Proof.
+    intros Hget. split.
+    - eapply getSliceModel_len_inv; eauto.
+    - move: Hget. rewrite /Data.getSliceModel/sublist_lookup/mguard/option_guard.
+      destruct decide_rel; last by congruence.
+      inversion 1.
+      eapply take_drop_all_inv; eauto.
+      lia.
+  Qed.
 
   Lemma data_op_refinement {T1 T2} j K `{LanguageCtx _ _ T2 Mail.l K} (op: Data.Op T1) E σ:
     nclose sourceN ⊆ E →
@@ -157,6 +204,51 @@ Import Mail.
         iApply "HΦ".
         iExists _. iFrame.
         iApply "Hheap". by iFrame.
+    - iMod (slice_append_step_inv j K with "Hj Hsource Hstate") as (s' alloc vs Heq) "(Hj&Hstate)".
+      { solve_ndisj. }
+      destruct Heq as (He1&Heq2&Heq3).
+      iDestruct (big_sepDM_delete with "Hheap") as "((Hp&%)&Hheap)".
+      { eauto. }
+      destruct s'; try (simpl in Heq3; congruence); simpl; [].
+      iApply (wp_sliceAppend with "[Hp]").
+      { iNext. iFrame. iPureIntro. split; eauto. }
+      iIntros (p') "!> Hp".
+      iDestruct "Hp" as (Heq) "Hp".
+      simpl in Heq.
+      efeed pose proof (@getSliceModel_len_inv) as Hlen; eauto.
+      iApply "HΦ".
+      iDestruct (HeapInv_non_alloc_inv' _ _ 0 with "Hheap Hp") as %?; first auto.
+      edestruct (@getSliceModel_full_inv) as (Heqp'1&Heqp'2); eauto.
+      destruct p' as [ ptr ? ?]. simpl in Heqp'1, Heqp'2.  rewrite -Heqp'1 Heqp'2. simpl. subst.
+      iMod (ghost_step_call _ _ _ {| slice.ptr := ptr; slice.offset := 0; slice.length := _ |}
+               ((RecordSet.set heap
+                   (λ heap, RecordSet.set Data.allocs (updDyn ptr (Unlocked, vs ++ [x]))
+                       (RecordSet.set Data.allocs (deleteDyn s.(slice.ptr)) heap)) σ) : l.(OpState))
+            with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+      { intros. econstructor. eexists; split; last by econstructor.
+        econstructor; eauto. eapply opened_step; auto. econstructor.
+        * do 2 eexists. split.
+          ** non_err.
+          ** simpl.
+             do 2 eexists. split; first by non_err.
+             do 2 eexists. split; first by non_err.
+             do 2 eexists. split; first by non_err.
+             do 2 eexists. split; last by econstructor.
+             do 2 eexists; split.
+             econstructor. split.
+             *** intuition. destruct σ. rewrite /Data.getAlloc. simpl. eauto.
+             *** intuition.
+             *** do 2 eexists. split; last by econstructor.
+                 simpl. econstructor.
+        * econstructor.
+      }
+      { solve_ndisj. }
+      iExists _. iFrame.
+      simpl in *. rewrite app_length (getSliceModel_len_inv _ _ _ Heq2). iFrame.
+      iModIntro.
+      rewrite /HeapInv.
+      simpl. intuition. rewrite big_sepDM_updDyn; try iFrame; eauto.
+      iDestruct "Hp" as "(?&?)"; iFrame; eauto.
     -
   Admitted.
 

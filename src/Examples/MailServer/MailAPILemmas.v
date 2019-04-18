@@ -320,6 +320,30 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
     destruct s; simpl in *; try congruence. inv_step. eauto.
   Qed.
 
+  Lemma slice_append_step_inv {T T2} j K `{LanguageCtx _ _ T2 Mail.l K} p (x: T)
+        (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (DataOp (Data.SliceAppend p x))) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ s alloc val, ⌜ Data.getAlloc p.(slice.ptr) σ.(heap) = Some (s, alloc) ∧
+                       Data.getSliceModel p alloc = Some val ∧
+                       lock_available Writer s = Some tt ⌝ ∗
+        j ⤇ K (Call (DataOp (Data.SliceAppend p x)))
+        ∗ source_state σ.
+  Proof.
+    iIntros.
+    non_err; last by solve_err.
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; auto.
+    { simpl; auto. }
+    destruct p0 as (s&alloc).
+    iExists s, alloc.
+    non_err'; last by solve_err.
+    iExists _.
+    non_err'; last by solve_err.
+    inv_step.
+    iFrame. eauto.
+  Qed.
+
   Lemma deliver_start_step_inv_do {T2} j K `{LanguageCtx _ unit T2 Mail.l K} uid msg
         (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →
