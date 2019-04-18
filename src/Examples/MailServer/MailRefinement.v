@@ -728,7 +728,6 @@ Proof.
   (* TODO get rid of these *)
   Unshelve.
   apply sigPtr_eq_dec.
-  apply sigPtr_eq_dec.
   apply (zeroValue _).
   apply (zeroValue _).
   apply sigPtr_eq_dec.
