@@ -377,6 +377,7 @@ Import Mail.
            partialFile.data := initData; |};
   fileData <- Data.readPtr fileContents;
   fileStr <- Data.bytesToString fileData;
+  _ <- FS.close f;
   Ret fileStr)%proc.
 
   (* TODO: this is no longer an equality, but the two programs are equivalent up
@@ -384,10 +385,8 @@ Import Mail.
   Lemma readMessage_unfold_open userDir name:
     readMessage userDir name =
     (let! f <- FS.open userDir name;
-     fileStr <- readMessage_handle f;
-     _ <- FS.close f;
-     Ret fileStr)%proc.
-  Proof. Admitted.
+      readMessage_handle f)%proc.
+  Proof. auto. Qed.
   Opaque readMessage.
 
   Lemma take_length_lt {A} (l : Datatypes.list A) (n : nat):
@@ -398,10 +397,10 @@ Import Mail.
     lia.
   Qed.
 
-  Lemma wp_readMessage_handle f inode ls q1 q2 :
-    {{{ f ↦{q1} (inode, Read) ∗ inode ↦{q2} ls }}}
+  Lemma wp_readMessage_handle f inode ls q2 :
+    {{{ f ↦ (inode, Read) ∗ inode ↦{q2} ls }}}
       readMessage_handle f
-    {{{ RET (bytes_to_string ls); f ↦{q1} (inode, Read) ∗ inode ↦{q2} ls }}}.
+    {{{ RET (bytes_to_string ls); inode ↦{q2} ls }}}.
   Proof.
     rewrite /readMessage_handle.
     generalize 4096 => k.
@@ -442,6 +441,9 @@ Import Mail.
       iIntros "!> HfC".
       wp_bind.
       iApply (wp_bytesToString' with "HfS").
+      iIntros "!> _".
+      wp_bind.
+      iApply (wp_close with "Hf").
       iIntros "!> _".
       wp_ret.
       apply take_length_lt in Hlt.
@@ -1376,13 +1378,8 @@ Import Mail.
         iApply "Hmsgs". iExists _, (S q). iFrame.
       }
       iModIntro.
-      wp_bind.
       iApply (wp_readMessage_handle with "[$]").
-      iIntros "!> (Hfh&Hinode)".
-      wp_bind.
-      iApply (wp_close with "[$]").
-      iIntros "!> _".
-      wp_ret.
+      iIntros "!> Hinode".
       wp_bind.
       iApply (wp_readPtr with "[$]").
       iIntros "!> Hmessages0".
