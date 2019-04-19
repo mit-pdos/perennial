@@ -34,6 +34,7 @@ Definition readMessage {model:GoModel} (userDir:string) (name:string) : proc str
            partialFile.data := initData; |};
   fileData <- Data.readPtr fileContents;
   fileStr <- Data.bytesToString fileData;
+  _ <- FS.close f;
   Ret fileStr.
 
 Module Message.

@@ -379,11 +379,15 @@ Import Mail.
   fileStr <- Data.bytesToString fileData;
   Ret fileStr)%proc.
 
+  (* TODO: this is no longer an equality, but the two programs are equivalent up
+  to monad laws *)
   Lemma readMessage_unfold_open userDir name:
     readMessage userDir name =
     (let! f <- FS.open userDir name;
-     readMessage_handle f)%proc.
-  Proof. trivial. Qed.
+     fileStr <- readMessage_handle f;
+     _ <- FS.close f;
+     Ret fileStr)%proc.
+  Proof. Admitted.
   Opaque readMessage.
 
   Lemma take_length_lt {A} (l : Datatypes.list A) (n : nat):
@@ -1372,8 +1376,13 @@ Import Mail.
         iApply "Hmsgs". iExists _, (S q). iFrame.
       }
       iModIntro.
+      wp_bind.
       iApply (wp_readMessage_handle with "[$]").
       iIntros "!> (Hfh&Hinode)".
+      wp_bind.
+      iApply (wp_close with "[$]").
+      iIntros "!> _".
+      wp_ret.
       wp_bind.
       iApply (wp_readPtr with "[$]").
       iIntros "!> Hmessages0".
