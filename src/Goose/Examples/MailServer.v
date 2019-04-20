@@ -10,37 +10,37 @@ Module partialFile.
   Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End partialFile.
 
-Definition UserDir {model: GoModel} (user:uint64) :=
-  ("user" ++ uint64_to_string user).
-
 Definition getUserDir {model:GoModel} (user:uint64) : proc string :=
-  Ret (UserDir user).
+  Ret ("user" ++ uint64_to_string user).
 
 Definition SpoolDir : string := "spool".
 
 Definition NumUsers : uint64 := 100.
 
-Definition readMessage {model:GoModel} (userDir:string) (name:string) : proc (slice.t byte) :=
+Definition readMessage {model:GoModel} (userDir:string) (name:string) : proc string :=
   f <- FS.open userDir name;
   fileContents <- Data.newPtr (slice.t byte);
+  initData <- Data.newSlice byte 0;
   _ <- Loop (fun pf =>
-        buf <- FS.readAt f pf.(partialFile.off) 4096;
+        buf <- FS.readAt f pf.(partialFile.off) 512;
         newData <- Data.sliceAppendSlice pf.(partialFile.data) buf;
-        if compare_to (slice.length buf) 4096 Lt
+        if compare_to (slice.length buf) 512 Lt
         then
           _ <- Data.writePtr fileContents newData;
           LoopRet tt
         else
-          Continue {| partialFile.off := pf.(partialFile.off);
+          Continue {| partialFile.off := pf.(partialFile.off) + slice.length buf;
                       partialFile.data := newData; |}) {| partialFile.off := 0;
-           partialFile.data := slice.nil _; |};
+           partialFile.data := initData; |};
   fileData <- Data.readPtr fileContents;
-  Ret fileData.
+  fileStr <- Data.bytesToString fileData;
+  _ <- FS.close f;
+  Ret fileStr.
 
 Module Message.
   Record t {model:GoModel} := mk {
     Id: string;
-    Contents: slice.t byte;
+    Contents: string;
   }.
   Arguments mk {model}.
   Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
@@ -123,14 +123,22 @@ Definition Delete {model:GoModel} (user:uint64) (msgID:string) : proc unit :=
   userDir <- getUserDir user;
   FS.delete userDir msgID.
 
+(* Lock acquires the lock for the current user *)
+Definition Lock {model:GoModel} (user:uint64) : proc unit :=
+  locks <- Globals.getX;
+  l <- Data.sliceRead locks user;
+  Data.lockAcquire l Writer.
+
 (* Unlock releases the lock for the current user. *)
 Definition Unlock {model:GoModel} (user:uint64) : proc unit :=
   locks <- Globals.getX;
   l <- Data.sliceRead locks user;
   Data.lockRelease l Writer.
 
-Definition initLocks {model:GoModel} : proc unit :=
+Definition Open {model:GoModel} : proc unit :=
   locks <- Data.newPtr (slice.t LockRef);
+  initLocks <- Data.newSlice LockRef 0;
+  _ <- Data.writePtr locks initLocks;
   _ <- Loop (fun i =>
         if i == NumUsers
         then LoopRet tt
@@ -144,7 +152,6 @@ Definition initLocks {model:GoModel} : proc unit :=
   Globals.setX finalLocks.
 
 Definition Recover {model:GoModel} : proc unit :=
-  _ <- initLocks;
   spooled <- FS.list SpoolDir;
   Loop (fun i =>
         if i == slice.length spooled

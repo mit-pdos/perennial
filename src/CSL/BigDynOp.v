@@ -388,3 +388,34 @@ Implicit Types Ps Qs : list PROP.
     (∀ a k x, Timeless (Φ a k x)) → Timeless ([∗ dmap] k↦x ∈ m, Φ _ k x).
   Proof. intros. eapply big_sepL_timeless=> _ [??]; apply _. Qed.
 End sprop.
+
+(* TODO: upstream this *)
+Section big_op.
+Context `{Monoid M o}.
+Implicit Types xs : list M.
+Infix "`o`" := o (at level 50, left associativity).
+Section gset.
+  Context `{Countable A} `{Countable B}.
+  Implicit Types X : gset A.
+  Implicit Types f : A → M.
+
+  Lemma set_map_union_singleton (h: A → B) X x:
+    set_map h ({[x]} ∪ X) = ({[h x]} ∪ (set_map h X) : gset B).
+  Proof. set_solver. Qed.
+
+  Lemma big_opS_fmap (h: A → B) X (g: B → M):
+    (∀ x y, h x = h y → x = y) →
+    ([^o set] x ∈ set_map h X, g x) ≡ ([^o set] x ∈ X, g (h x)).
+  Proof.
+    intros Hinj.
+    induction X as [|x X ? IH] using set_ind_L => //=.
+    rewrite set_map_union_singleton.
+    rewrite ?big_opS_union.
+    - rewrite ?big_opS_singleton IH //.
+    - set_solver.
+    - cut ((h x) ∉ (set_map h X : gset _)); first by set_solver.
+      intros (x'&Heq&Hin)%elem_of_map.
+      apply Hinj in Heq. subst. auto.
+  Qed.
+End gset.
+End big_op.

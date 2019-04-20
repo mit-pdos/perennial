@@ -1,12 +1,10 @@
-dist: trusty
-sudo: required
+dist: xenial
 language: minimal
 
 notifications:
   email:
     - tchajed@mit.edu
     - jtassaro@andrew.cmu.edu
-    - nickolai@csail.mit.edu
 
 branches:
   only:
@@ -42,6 +40,7 @@ install: |
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     set -ex  # -e = exit on failure; -x = trace for debug
     #opam update -y
+    opam switch \${COMPILER_EDGE}; eval \$(opam env)
     opam config list
     opam repo list
     opam list
@@ -53,6 +52,8 @@ before_script:
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     sudo chown -R coq:coq /home/coq/demo
     "
+- source ./etc/ci/travis_keep_alive.sh
+
 script:
 - echo -e "${ANSI_YELLOW}Building ${TRAVIS_REPO_SLUG}...${ANSI_RESET}" && echo -en 'travis_fold:start:build\\r'
   # TODO: go back to running the test target once things work
@@ -65,4 +66,7 @@ script:
 - echo -en 'travis_fold:end:build\\r'
 
 after_script:
-- docker stop COQ
+  - docker stop COQ
+
+after_success:
+  - kill $PID_KEEP_ALIVE

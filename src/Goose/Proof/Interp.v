@@ -91,10 +91,10 @@ Notation "l ↦ v" := (generic_mapsto l 0 v)
    if we enforced that as a property of the heap  *)
 
 Definition ptr_mapsto `{gooseG Σ} {T} (l: ptr T) q (v: Datatypes.list T) : iProp Σ
-  := Count_Typed_Heap.mapsto (hG := go_heap_inG)  l q Unlocked v.
+  := (⌜ l ≠ nullptr _ ⌝ ∗ Count_Typed_Heap.mapsto (hG := go_heap_inG) l q Unlocked v)%I.
 
 Definition map_mapsto `{gooseG Σ} {T} (l: Map T) q v : iProp Σ
-  := Count_Typed_Heap.mapsto (hG := go_heap_inG) l q Unlocked v.
+  := (⌜ l ≠ nullptr _ ⌝ ∗ Count_Typed_Heap.mapsto (hG := go_heap_inG) l q Unlocked v)%I.
 
 Instance ptr_gen_mapsto `{gooseG Σ} T : GenericMapsTo (ptr T) _
   := {| generic_mapsto := ptr_mapsto; |}.
@@ -102,11 +102,16 @@ Instance ptr_gen_mapsto `{gooseG Σ} T : GenericMapsTo (ptr T) _
 Instance map_gen_mapsto `{gooseG Σ} T : GenericMapsTo (Map T) _
   := {| generic_mapsto := map_mapsto; |}.
 
-Definition slice_mapsto `{gooseG Σ} {T} (l: slice.t T) q (vs: Datatypes.list T) : iProp Σ :=
-  (∃ vs', ⌜ getSliceModel l vs' = Some vs ⌝ ∗ l.(slice.ptr) ↦{q} vs')%I.
+Definition slice_mapsto `{gooseG Σ} {T} (l: slice.t T) q vss : iProp Σ :=
+  (⌜ getSliceModel l (fst vss) = Some (snd vss) ⌝ ∗ l.(slice.ptr) ↦{q} (fst vss))%I.
+
+Definition slice_mapsto' `{gooseG Σ} {T} (l: slice.t T) q (vs: Datatypes.list T) : iProp Σ :=
+  (∃ vs0, slice_mapsto l q (vs0, vs))%I.
 
 Instance slice_gen_mapsto `{gooseG Σ} T : GenericMapsTo (slice.t T) _
   := {| generic_mapsto := slice_mapsto; |}.
+Instance slice_gen_mapsto' `{gooseG Σ} T : GenericMapsTo (slice.t T) _
+  := {| generic_mapsto := slice_mapsto'; |}.
 
 Definition dir_mapsto `{gooseG Σ} (d: string) q (fs: gset string) : iProp Σ
   := mapsto (hG := go_fs_dirs_inG) d q fs.
@@ -512,7 +517,7 @@ Lemma wp_readAt fh (inode: Inode) (bs: Datatypes.list byte) off len q1 q2 s E :
   {{{ (s: slice.t byte), RET s;
       fh ↦{q1} (inode, Read)
       ∗ inode ↦{q2} bs
-      ∗ s ↦ (list.take len (list.drop off bs))
+      ∗ s ↦ (list.take len (list.drop off bs), (list.take len (list.drop off bs)))
   }}}.
 Proof.
   iIntros (Φ) "(Hfh&Hi) HΦ".
@@ -536,26 +541,26 @@ Proof.
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
   iFrame. iSplitL ""; auto.
   iApply "HΦ". iFrame. iModIntro.
-  iExists _. iFrame. iPureIntro.
+  iFrame. iPureIntro.
   rewrite /getSliceModel sublist_lookup_all //= app_length //=.
 Qed.
 
-Lemma wp_append fh (inode: Inode) (p': slice.t byte) (bs bs': Datatypes.list byte) q1 q2 s E :
+Lemma wp_append fh (inode: Inode) (p': slice.t byte) (bs bs1 bs2: Datatypes.list byte) q1 q2 s E :
   {{{ fh ↦{q1} (inode, Write)
       ∗ inode ↦ bs
-      ∗ p' ↦{q2} bs'
+      ∗ p' ↦{q2} (bs1, bs2)
   }}}
     append fh p' @ s ; E
   {{{ RET tt;
       fh ↦{q1} (inode, Write)
-      ∗ inode ↦ (bs ++ bs')
-      ∗ p' ↦{q2} bs'
+      ∗ inode ↦ (bs ++ bs2)
+      ∗ p' ↦{q2} (bs1, bs2)
   }}}.
 Proof.
   iIntros (Φ) "(Hfh&Hi&Hp) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&HFS&?)".
-  iDestruct "Hp" as (vs Heq) "Hp".
+  iDestruct "Hp" as (Heq Hnonnull) "Hp".
   iDestruct "HFS" as "(Hents&?&Hpaths&Hinodes&Hfds&?&%)".
   iDestruct (gen_heap_valid with "Hfds Hfh") as %Hfd.
   iDestruct (gen_heap_valid with "Hinodes Hi") as %Hi.
@@ -578,7 +583,7 @@ Proof.
   iMod (gen_heap_update with "Hinodes Hi") as "($&?)".
   iFrame. iSplitL ""; first by auto.
   iApply "HΦ". iFrame.
-  iModIntro. iExists _; eauto.
+  iModIntro. by iFrame.
 Qed.
 
 Lemma wp_create_new dir fname S s E :
@@ -807,7 +812,7 @@ Lemma wp_list_finish dir (S: gset string) s q1 q2 E :
     list_finish dir @ s ; E
   {{{ (s: slice.t string) (l: Datatypes.list string), RET s;
       ⌜ (Permutation.Permutation l (elements S)) ⌝ ∗
-      s ↦ l ∗ dir ↦{q1} S ∗ dir ↦{q2} Unlocked }}}.
+      s ↦ (l, l) ∗ dir ↦{q1} S ∗ dir ↦{q2} Unlocked }}}.
 Proof.
   iIntros (Φ) "(Hd&Hdl) HΦ".
   iApply wp_lift_call_step.
@@ -840,7 +845,7 @@ Proof.
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
   iFrame. iSplitR "HΦ Hd Hdl Hp"; last first.
   { iApply "HΦ". iFrame. iSplitR; last first. iModIntro.
-    iExists _. iFrame. iPureIntro.
+    iFrame. iPureIntro.
     rewrite /getSliceModel sublist_lookup_all //= app_length //=. iPureIntro.
     rewrite -map_to_list_dom_perm //.
   }
@@ -875,16 +880,14 @@ Proof.
   destruct H0 as ((?&?)&?).
   do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
-  iFrame. iApply "HΦ"; eauto.
+  iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
-Lemma wp_ptrStore_start {T} s E (p: ptr T) off l l' v :
-  list_nth_upd l off v = Some l' →
-  {{{ ▷ p ↦ l }}}
+Lemma wp_ptrStore_start {T} s E (p: ptr T) off l v :
+  {{{ ▷ Count_Typed_Heap.mapsto p 0 Unlocked l }}}
    Call (InjectOp.inject (PtrStore p off v SemanticsHelpers.Begin)) @ s ; E
    {{{ RET tt; Count_Typed_Heap.mapsto p 0 Locked l }}}.
 Proof.
-  intros Hupd.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
@@ -900,14 +903,22 @@ Proof.
   iFrame. iApply "HΦ"; eauto.
 Qed.
 
-Lemma wp_ptrStore {T} s E (p: ptr T) off l l' v :
+Lemma ptr_mapsto_non_null {T} (p: ptr T) (v: List.list T):
+    (p ↦ v -∗ ⌜ p ≠ nullptr _ ⌝)%I.
+Proof. iIntros "(?&?)"; eauto. Qed.
+
+Lemma slice_mapsto_non_null {T} (p: slice.t T) (v: List.list T):
+  (p ↦ v -∗ ⌜ p.(slice.ptr) ≠ nullptr _ ⌝)%I.
+Proof. iIntros "H". iDestruct "H" as (?) "(?&(?&?))". eauto. Qed.
+
+Lemma wp_ptrStore_finish {T} s E (p: ptr T) off l l' v :
   list_nth_upd l off v = Some l' →
-  {{{ ▷ p ↦ l }}} ptrStore p off v @ s; E {{{ RET tt; p ↦ l' }}}.
+  {{{ ▷ Count_Typed_Heap.mapsto p 0 Locked l }}}
+    Call (InjectOp.inject (PtrStore p off v (FinishArgs ()))) @ s; E
+  {{{ RET tt; Count_Typed_Heap.mapsto p 0 Unlocked l' }}}.
 Proof.
   intros Hupd.
-  iIntros (Φ) ">Hi HΦ". rewrite /ptrStore/nonAtomicWriteOp.
-  wp_bind. iApply (wp_ptrStore_start with "Hi"); eauto.
-  iNext. iIntros "Hi".
+  iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hi") as %?.
@@ -919,22 +930,46 @@ Proof.
   inversion Hstep; subst.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_update (Ptr.Heap T) with "Hσ Hi") as "[$ Hi]".
-  iFrame. iApply "HΦ". inv_step; eauto.
+  iFrame. iApply "HΦ". inv_step; by iFrame.
+Qed.
+
+Lemma wp_ptrStore {T} s E (p: ptr T) off l l' v :
+  list_nth_upd l off v = Some l' →
+  {{{ ▷ p ↦ l }}} ptrStore p off v @ s; E {{{ RET tt; p ↦ l' }}}.
+Proof.
+  intros Hupd.
+  iIntros (Φ) ">Hi HΦ". rewrite /ptrStore/nonAtomicWriteOp.
+  iDestruct (ptr_mapsto_non_null with "Hi") as %Hnonull.
+  wp_bind.
+  iDestruct "Hi" as (?) "Hi".
+  iApply (wp_ptrStore_start with "Hi"); eauto.
+  iNext. iIntros "Hi".
+  iApply (wp_ptrStore_finish with "Hi"); eauto.
+  iIntros "!> ?". iApply "HΦ". by iFrame.
 Qed.
 
 Lemma wp_writePtr {T} s E (p: ptr T) v' l v :
   {{{ ▷ p ↦ (v' :: l) }}} writePtr p v @ s; E {{{ RET tt; p ↦ (v :: l) }}}.
 Proof. iIntros (Φ) ">Hi HΦ". iApply (wp_ptrStore with "Hi"); eauto. Qed.
 
-Lemma wp_ptrDeref {T} s E (p: ptr T) q off l v :
+(* Note: this version would almost never be used directly when reasoning
+   about a program, only in refinement proofs to show that a source-level
+   dereference can be "compiled" to a low level dereference *)
+Lemma wp_ptrDeref' {T} s E (p: ptr T) q status off l v :
+  lock_available Reader status <> None →
   List.nth_error l off = Some v →
-  {{{ ▷ p ↦{q} l }}} ptrDeref p off @ s; E {{{ RET v; p ↦{q} l }}}.
+  {{{ ▷ Count_Typed_Heap.mapsto p q status l }}}
+     ptrDeref p off @ s; E
+  {{{ RET v; Count_Typed_Heap.mapsto p q status l }}}.
 Proof.
-  intros Hupd.
+  intros Hstat Hupd.
   iIntros (Φ) ">Hi HΦ". rewrite /ptrDeref.
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
-  iDestruct (gen_typed_heap_valid (Ptr.Heap T) with "Hσ Hi") as %[s' [? ?]].
+  iDestruct (gen_typed_heap_valid2 (Ptr.Heap T) with "Hσ Hi") as %[s' [? Hrlock]].
+  assert (∃ m, Count_Heap.to_lock s' = Cinl m) as (m&?).
+  { destruct status; simpl in Hstat; try congruence;
+    apply Count_Heap.Cinl_included_nat' in Hrlock as (m&?&?); subst; eauto. }
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; simpl in *; subst; try congruence.
@@ -942,7 +977,19 @@ Proof.
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   inv_step.
-  iFrame. by iApply "HΦ".
+  iFrame. iApply "HΦ"; by iFrame.
+Qed.
+
+Lemma wp_ptrDeref {T} s E (p: ptr T) q off l v :
+  List.nth_error l off = Some v →
+  {{{ ▷ p ↦{q} l }}} ptrDeref p off @ s; E {{{ RET v; p ↦{q} l }}}.
+Proof.
+  intros Hupd.
+  iIntros (Φ) ">Hi HΦ".
+  iDestruct "Hi" as (?) "Hi".
+  iApply (wp_ptrDeref' with "Hi"); eauto.
+  iIntros "!> Hp".
+  iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma wp_readPtr {T} s E (p: ptr T) q v l :
@@ -953,24 +1000,36 @@ Lemma nth_error_lookup {A :Type} (l: Datatypes.list A) (i: nat) :
   nth_error l i = l !! i.
 Proof. revert l; induction i => l; destruct l; eauto. Qed.
 
-Lemma wp_sliceRead {T} s E (p: slice.t T) q off l v :
-  List.nth_error l off = Some v →
-  {{{ ▷ p ↦{q} l }}} sliceRead p off @ s; E {{{ RET v; p ↦{q} l }}}.
+Lemma wp_newSlice {T} {GoZero: HasGoZero T} s E len:
+  {{{ True }}}
+    newSlice T len @ s ; E
+  {{{ s, RET s; s ↦ (List.repeat (zeroValue T) len, (List.repeat (zeroValue T) len)) }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_bind. iApply wp_newAlloc; first auto.
+  iIntros (p) "!> Hpt".
+  wp_ret. iApply "HΦ"; iFrame.
+  rewrite /getSliceModel sublist_lookup_all//= repeat_length //.
+Qed.
+
+Lemma wp_sliceRead {T} s E (p: slice.t T) q off l1 l2 v :
+  List.nth_error l2 off = Some v →
+  {{{ ▷ p ↦{q} (l1, l2) }}} sliceRead p off @ s; E {{{ RET v; p ↦{q} (l1, l2) }}}.
 Proof.
   iIntros (Hnth Φ) ">Hp HΦ".
-  iDestruct "Hp" as (vs Heq) "Hp".
+  iDestruct "Hp" as (Heq) "Hp".
   rewrite /getSliceModel/sublist_lookup/mguard/option_guard in Heq.
   destruct (decide_rel); last by congruence.
   inversion Heq. subst.
   iApply (wp_ptrDeref with "Hp").
   rewrite nth_error_lookup in Hnth *.
-  assert (Hlen: off < length (take p.(slice.length) (drop p.(slice.offset) vs))).
+  assert (Hlen: off < length (take p.(slice.length) (drop p.(slice.offset) l1))).
   { eapply lookup_lt_is_Some_1. eauto. }
   rewrite lookup_take in Hnth. rewrite lookup_drop in Hnth.
   rewrite nth_error_lookup. eauto.
   { rewrite take_length in Hlen. lia. }
   iIntros "!> ?".
-  iApply "HΦ". iExists _; iFrame.
+  iApply "HΦ". iFrame.
   rewrite /getSliceModel/sublist_lookup/mguard/option_guard.
   destruct (decide_rel); last by congruence.
   eauto.
@@ -983,13 +1042,16 @@ Proof.
   rewrite /getSliceModel. apply sublist_lookup_length.
 Qed.
 
-Lemma wp_sliceAppend {T} s E (p: slice.t T) l v :
-  {{{ ▷ p ↦ l }}} sliceAppend p v @ s; E {{{ (p': slice.t T), RET p'; p' ↦ (l ++ [v]) }}}.
+Lemma wp_sliceAppend {T} s E (p: slice.t T) l1 l2 v :
+  {{{ ▷ p ↦ (l1, l2) }}}
+    sliceAppend p v @ s; E
+  {{{ (p': slice.t T), RET p'; p' ↦ (l2 ++ [v], l2 ++ [v]) }}}.
 Proof.
   iIntros (Φ) ">Hp HΦ".
-  iDestruct "Hp" as (vs Heq) "Hp".
+  iDestruct "Hp" as (Heq) "Hp".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hp" as (?) "Hp".
   iDestruct (gen_typed_heap_valid1 (Ptr.Heap T) with "Hσ Hp") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1005,7 +1067,7 @@ Proof.
   iFrame.
   iModIntro.
   iApply "HΦ".
-  iExists _. iFrame. iPureIntro.
+  iFrame. iPureIntro.
   simpl in *. inv_step.
   apply getSliceModel_len_inv in Heq.
   rewrite /getSliceModel sublist_lookup_all //= app_length //=. lia.
@@ -1016,23 +1078,32 @@ Lemma take_1_drop {T} (x: T) n l:
   take 1 (drop n l) = [x].
 Proof. revert l. induction n => l; destruct l; inversion 1; eauto. Qed.
 
-Lemma slice_agree {T} (p: slice.t T) v1 v2 q1 q2:
+Lemma slice_agree {T} (p: slice.t T) v1 v1' v2 v2' q1 q2:
+  p ↦{q1} (v1, v1') -∗ p ↦{q2} (v2, v2') -∗ ⌜ v1 = v2 ∧ v1' = v2' ⌝.
+Proof.
+  iIntros "Hp1 Hp2".
+  iDestruct "Hp1" as (??) "Hp1".
+  iDestruct "Hp2" as (??) "Hp2".
+  iAssert (⌜v1 = v2⌝)%I with "[Hp1 Hp2]" as %Heq.
+  { simpl. iApply (@Count_Typed_Heap.mapsto_agree _ _ _ _ _ (go_heap_inG) (Ptr.Heap T)
+                  with "Hp1 Hp2"). }
+  subst. iPureIntro. simpl in *. split; congruence.
+Qed.
+
+Lemma slice_agree' {T} (p: slice.t T) v1 v2 q1 q2:
   p ↦{q1} v1 -∗ p ↦{q2} v2 -∗ ⌜ v1 = v2 ⌝.
 Proof.
   iIntros "Hp1 Hp2".
-  iDestruct "Hp1" as (l1 ?) "Hp1".
-  iDestruct "Hp2" as (l2 ?) "Hp2".
-  iAssert (⌜l1 = l2⌝)%I with "[Hp1 Hp2]" as %Heq.
-  { iApply (@Count_Typed_Heap.mapsto_agree _ _ _ _ _ (go_heap_inG) (Ptr.Heap T)
-                  with "Hp1 Hp2"). }
-  subst. iPureIntro. congruence.
+  iDestruct "Hp1" as (l1) "Hp1".
+  iDestruct "Hp2" as (l2) "Hp2".
+  iDestruct (slice_agree with "Hp1 Hp2") as "(?&?)"; eauto.
 Qed.
 
-Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l1 l2 rem off :
+Lemma wp_sliceAppendSlice_aux {T} s E (p1 p2: slice.t T) q l2' l1 l2 rem off :
   rem + off <= length l2 →
-  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
+  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} (l2', l2) }}}
     sliceAppendSlice_aux p1 p2 rem off @ s; E
-  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ (firstn rem (skipn off l2))) ∗ p2 ↦{q} l2 }}}.
+  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ (firstn rem (skipn off l2))) ∗ p2 ↦{q} (l2', l2) }}}.
 Proof.
   iIntros (Hlen Φ) "(>Hp1&>Hp2) HΦ".
   iInduction rem as [| rem] "IH" forall (off Hlen l1 p1).
@@ -1043,18 +1114,19 @@ Proof.
     { apply nth_error_None in Hnth. lia. }
     wp_bind. iApply (wp_sliceRead with "Hp2"); eauto.
     iIntros "!> Hp2".
-    wp_bind. iApply (wp_sliceAppend with "Hp1"); eauto.
+    wp_bind. iDestruct "Hp1" as (?) "Hp1". iApply (wp_sliceAppend with "Hp1"); eauto.
     iIntros "!>". iIntros (p1') "Hp1".
     rewrite -Nat.add_1_l -take_take_drop drop_drop assoc Nat.add_1_r.
     erewrite take_1_drop; eauto.
-    iApply ("IH" with "[] Hp1 Hp2"); eauto.
-    iPureIntro; lia.
+    iApply ("IH" with "[] [Hp1] Hp2"); eauto.
+    * iPureIntro; lia.
+    * iExists _. eauto.
 Qed.
 
-Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2 :
-  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} l2 }}}
+Lemma wp_sliceAppendSlice {T} s E (p1 p2: slice.t T) q l1 l2' l2 :
+  {{{ ▷ p1 ↦ l1 ∗ ▷ p2 ↦{q} (l2', l2) }}}
     sliceAppendSlice p1 p2 @ s; E
-  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} l2 }}}.
+  {{{ (p': slice.t T), RET p'; p' ↦ (l1 ++ l2) ∗ p2 ↦{q} (l2', l2) }}}.
 Proof.
   rewrite /sliceAppendSlice.
   iIntros (Φ) "(>Hp1&>Hp2) HΦ".
@@ -1068,8 +1140,77 @@ Proof.
   iApply "HΦ".
 Qed.
 
+Lemma wp_bytesToString p bs0 bs q s E :
+  {{{ ▷ p ↦{q} (bs0, bs) }}}
+    bytesToString p @ s ; E
+  {{{ RET (bytes_to_string bs); p ↦{q} (bs0, bs) }}}.
+Proof.
+  iIntros (Φ) ">Hp HΦ".
+  iDestruct "Hp" as (Heq) "Hp".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hp" as (?) "Hp".
+  iDestruct (gen_typed_heap_valid (Ptr.Heap _) with "Hσ Hp") as %[s' [? ?]].
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step. simpl in *.
+  intuition. subst.
+  iFrame.
+  iModIntro.
+  iApply "HΦ".
+  iFrame. iPureIntro.
+  repeat (deex; inv_step).
+  eauto.
+Qed.
+
+Lemma wp_bytesToString' p bs q s E :
+  {{{ ▷ p ↦{q} bs }}}
+    bytesToString p @ s ; E
+  {{{ RET (bytes_to_string bs); p ↦{q} bs }}}.
+Proof.
+  iIntros (Φ) ">Hp HΦ".
+  iDestruct "Hp" as (vs) "Hp".
+  iApply (wp_bytesToString with "Hp").
+  iIntros "!> Hp". iApply "HΦ". iExists _; eauto.
+Qed.
+
+(* TODO: need to add axiom to about how string to bytes preserves length *)
+(*
+Lemma wp_stringToBytes str s E :
+  {{{ True }}}
+    stringToBytes str @ s ; E
+  {{{ p, RET p; p ↦ (string_to_bytes str, string_to_bytes str) }}}.
+Proof.
+*)
+
+Lemma wp_stringToBytes str s E :
+  {{{ True }}}
+    stringToBytes str @ s ; E
+  {{{ p, RET p; p.(slice.ptr) ↦ (string_to_bytes str)
+                              ∗ ⌜ p.(slice.length) = String.length str ∧
+                                  p.(slice.offset) = 0 ⌝ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&?)".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  destruct H0 as ((?&?)&?).
+  do 2 (inv_step; intuition).
+  iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
+  iFrame. iApply "HΦ". iFrame. iPureIntro; split; eauto.
+Qed.
+
 Definition lock_mapsto `{gooseG Σ} (l: LockRef) q mode : iProp Σ :=
-   Count_Typed_Heap.mapsto l q mode tt.
+   (⌜ l ≠ nullptr _ ⌝ ∗ Count_Typed_Heap.mapsto l q mode tt)%I.
 
 Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
   (∃ (n: Z) stat, lock_mapsto l n stat ∗
@@ -1078,13 +1219,6 @@ Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ
       | ReadLocked n' => ⌜ n = S n' ⌝ ∗ P (S n')
       | Locked => ⌜ n = (-1)%Z ⌝
     end)%I.
-
-(*
-Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
-  ((lock_mapsto l O Unlocked ∗ P O) ∨
-   (∃ n : nat, lock_mapsto l (S n) (ReadLocked n) ∗ P (S n)) ∨
-   (lock_mapsto l 1 Locked))%I.
-*)
 
 Definition is_lock (N: namespace) (l: LockRef) (P: nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
   (□ (∀ n, P n ==∗ P (S n) ∗ Q) ∗
@@ -1105,17 +1239,18 @@ Proof. eexists. exact Reader. Qed.
 
 Lemma wlocked_wlocked l:
   wlocked l -∗ wlocked l -∗ False.
-Proof. rewrite /wlocked/lock_mapsto. apply Count_Typed_Heap.mapsto_valid_locked; lia. Qed.
-
-Lemma wp_newLock N s E (P: nat → iProp Σ) (Q: iProp Σ) :
-  {{{ □ (∀ n, P n ==∗ P (S n) ∗ Q) ∗
-      □ (∀ n, Q ∗ P (S n) ==∗ P n) ∗
-      P O
-  }}}
-    newLock @ s ; E
-  {{{ (l: LockRef), RET l; is_lock N l P Q }}}.
 Proof.
-  iIntros (Φ) "(#HPQ1&#HPQ2&HP) HΦ".
+  rewrite /wlocked/lock_mapsto.
+  iIntros "(%&H1) (%&H2)".
+  iApply (Count_Typed_Heap.mapsto_valid_generic l 1 1 with "[H1] [H2]"); try lia; eauto.
+Qed.
+
+Lemma wp_newLock_raw s E :
+  {{{ True }}}
+    newLock @ s ; E
+  {{{ (l: LockRef), RET l; lock_mapsto l 0 Unlocked }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iModIntro. iSplit.
@@ -1127,8 +1262,23 @@ Proof.
   do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hl)"; first by eauto.
   iFrame.
+  iApply "HΦ"; by iFrame.
+Qed.
+
+Lemma wp_newLock N s E (P: nat → iProp Σ) (Q: iProp Σ) :
+  {{{ □ (∀ n, P n ==∗ P (S n) ∗ Q) ∗
+      □ (∀ n, Q ∗ P (S n) ==∗ P n) ∗
+      P O
+  }}}
+    newLock @ s ; E
+  {{{ (l: LockRef), RET l; is_lock N l P Q }}}.
+Proof.
+  iIntros (Φ) "(#HPQ1&#HPQ2&HP) HΦ".
+  rewrite -wp_fupd.
+  iApply wp_newLock_raw; auto.
+  iIntros (l) "!> Hl".
   iApply "HΦ"; eauto.
-  iMod (inv_alloc N _ (lock_inv e2 P Q) with "[HP Hl]").
+  iMod (inv_alloc N _ (lock_inv l P Q) with "[HP Hl]").
   { iNext. iExists O, Unlocked. by iFrame. }
   iModIntro. iFrame "# ∗".
 Qed.
@@ -1142,18 +1292,55 @@ Lemma lock_acquire_Reader_success_inv (l: LockRef) s σ h':
   h' = {| allocs := updDyn l (force_read_lock s, ()) σ.(heap).(allocs) |}.
 Proof. destruct s => //=; inversion 1; subst; eauto. Qed.
 
-Lemma wp_lockAcquire_read N l P Q :
-  {{{ is_lock N l P Q }}}
-    lockAcquire l Reader
-  {{{ RET tt; Q ∗ rlocked l }}}.
+(*
+Lemma wp_lockAcquire_read_raw l q status s E:
+  {{{ lock_mapsto l q status }}}
+    lockAcquire l Reader @ s ; E
+  {{{ RET tt; lock_mapsto l q (force_read_lock status) }}}.
 Proof.
-  iIntros (Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
-  iInv N as (k stat) "(>H&Hstat)".
+  iIntros (Φ) "(%&H) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iModIntro. iSplit.
-  { iPureIntro.
+  { iPureIntro. destruct s; eauto.
+    inv_step; simpl in *; subst; try congruence.
+    destruct l0; inversion Htl_err.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  edestruct (lock_acquire_Reader_success_inv) as (?&?); first by eauto.
+  destruct status.
+  { apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
+  {
+    apply Count_Heap.Cinl_included_nat' in Hlock as (m&?&?). subst.
+    iMod (gen_typed_heap_readlock' (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
+    simpl; inv_step. iFrame.
+    by iApply "HΦ"; iFrame.
+  }
+  {
+    apply Count_Heap.Cinl_included_nat' in Hlock as (m&?&?). subst.
+    iMod (gen_typed_heap_readlock (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
+    simpl; inv_step. iFrame.
+    by iApply "HΦ"; iFrame.
+  }
+Qed.
+*)
+
+Lemma wp_lockAcquire_read N l P Q s E:
+  ↑N ⊆ E →
+  {{{ is_lock N l P Q }}}
+    lockAcquire l Reader @ s ; E
+  {{{ RET tt; Q ∗ rlocked l }}}.
+Proof.
+  iIntros (? Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
+  iInv N as (k stat) "(>(%&H)&Hstat)".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
+  iModIntro. iSplit.
+  { iPureIntro. destruct s; eauto.
     inv_step; simpl in *; subst; try congruence.
     destruct l0; inversion Htl_err.
   }
@@ -1164,7 +1351,7 @@ Proof.
   destruct stat.
   { apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
   {
-    iMod (gen_typed_heap_readlock' (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
+    iMod (gen_typed_heap_readlock' (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
     simpl; inv_step. iFrame.
     iDestruct "Hstat" as "(%&HP)".
     iMod ("HPQ1" with "HP") as "(HP&HQ)".
@@ -1173,10 +1360,10 @@ Proof.
     iDestruct (read_split_join2 (T := Ptr.Lock) with "Hl") as "(Hl&?)".
     iSplitL "Hl HP".
     { iNext. iExists (S (S num)), (ReadLocked (S num)). subst. by iFrame. }
-    iApply "HΦ"; iFrame.
+    iApply "HΦ"; by iFrame.
   }
   {
-    iMod (gen_typed_heap_readlock (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
+    iMod (gen_typed_heap_readlock (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
     simpl; inv_step. iFrame.
     iDestruct "Hstat" as "(%&HP)".
     iMod ("HPQ1" with "HP") as "(HP&HQ)".
@@ -1185,17 +1372,47 @@ Proof.
     iDestruct (read_split_join2 (T := Ptr.Lock) with "Hl") as "(Hl&?)".
     iSplitL "Hl HP".
     { iNext. iExists (S O), (ReadLocked O). subst. by iFrame. }
-    iApply "HΦ"; iFrame.
+    iApply "HΦ"; by iFrame.
   }
 Qed.
 
-Lemma wp_lockRelease_read N l P Q :
+Lemma wp_lockRelease_read_raw l q stat stat' s E:
+  lock_release Reader stat = Some stat' →
+  {{{ lock_mapsto l q stat }}}
+    lockRelease l Reader @ s; E
+  {{{ RET tt; lock_mapsto l q stat' }}}.
+Proof.
+  iIntros (Hrel Φ) "(%&H) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
+  destruct stat; swap 2 3.
+  { inversion Hrel. }
+  { inversion Hrel. }
+  apply Count_Heap.Cinl_included_nat' in Hlock as (m&?&?); subst.
+  destruct m; first by lia.
+  iModIntro. iSplit.
+  { iPureIntro. destruct s; eauto.
+    inv_step; simpl in *; subst; try congruence.
+    destruct l0; try destruct num0; try inversion Htl_err; simpl in *; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  iMod (gen_typed_heap_readunlock (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
+  simpl; inv_step. iFrame.
+  iModIntro.
+  destruct num; destruct s'; simpl in *; inv_step; iFrame; by iApply "HΦ"; iFrame.
+Qed.
+
+Lemma wp_lockRelease_read N l P Q s E:
+  ↑N ⊆ E →
   {{{ is_lock N l P Q ∗ Q ∗ rlocked l }}}
-    lockRelease l Reader
+    lockRelease l Reader @ s; E
   {{{ RET tt; True }}}.
 Proof.
-  iIntros (Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
-  iInv N as (k stat) "(>H&Hstat)".
+  iIntros (? Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&(%&Hrlocked)) HΦ".
+  iInv N as (k stat) "(>(%&H)&Hstat)".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
@@ -1211,7 +1428,7 @@ Proof.
     iDestruct (mapsto_valid' (T := Ptr.Lock) with "H Hrlocked") as %[].
   }
   iModIntro. iSplit.
-  { iPureIntro.
+  { iPureIntro. destruct s; eauto.
     inv_step; simpl in *; subst; try congruence.
     destruct l0; try destruct num0; try inversion Htl_err; simpl in *; try congruence.
     apply Count_Heap.Cinl_included_nat in Hlock. lia.
@@ -1220,7 +1437,7 @@ Proof.
   inversion Hstep; subst.
   inv_step.
   iDestruct "Hstat" as "(%&HP)"; subst.
-  iMod (gen_typed_heap_readunlock (Ptr.Lock) with "Hσ H") as (s Heq) "(Hσ&Hl)".
+  iMod (gen_typed_heap_readunlock (Ptr.Lock) with "Hσ H") as (s' Heq) "(Hσ&Hl)".
   simpl; inv_step. iFrame.
   iMod ("HPQ2" with "[$]") as "HP".
   iModIntro.
@@ -1228,14 +1445,14 @@ Proof.
   destruct num.
   * iDestruct (Count_Typed_Heap.read_split_join (T := Ptr.Lock) with "[$]") as "H".
     iSplitL "Hσ".
-    { destruct s; inversion Htl; subst; iFrame. }
+    { destruct s'; inversion Htl; subst; iFrame. }
     iModIntro.
     iSplitL "H HP".
     { iNext. iExists O, Unlocked. by iFrame. }
       by iApply "HΦ"; iFrame.
   * iDestruct (Count_Typed_Heap.read_split_join2 (T := Ptr.Lock) with "[$]") as "H".
     iSplitL "Hσ".
-    { destruct s; inversion Htl; subst; iFrame. }
+    { destruct s'; inversion Htl; subst; iFrame. }
     iModIntro.
     iSplitL "H HP".
     { iNext. iExists (S num), (ReadLocked num). by iFrame. }
@@ -1252,18 +1469,19 @@ Lemma lock_acquire_Writer_success_inv (l: LockRef) s σ h':
   h' = {| allocs := updDyn l (Locked, ()) σ.(heap).(allocs) |}.
 Proof. destruct s => //=; inversion 1; subst; eauto. Qed.
 
-Lemma wp_lockAcquire_writer N l P Q :
+Lemma wp_lockAcquire_writer N l P Q s0 E :
+  ↑N ⊆ E →
   {{{ is_lock N l P Q }}}
-    lockAcquire l Writer
+    lockAcquire l Writer @ s0 ; E
   {{{ RET tt; P O ∗ wlocked l }}}.
 Proof.
-  iIntros (Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
-  iInv N as (k stat) "(>H&Hstat)".
+  iIntros (? Φ) "(#HPQ1&#HPQ2&#Hinv) HΦ".
+  iInv N as (k stat) "(>(%&H)&Hstat)".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iModIntro. iSplit.
-  { iPureIntro.
+  { iPureIntro. destruct s0; eauto.
     inv_step; simpl in *; subst; try congruence.
     destruct l0; inversion Htl_err.
   }
@@ -1285,23 +1503,52 @@ Proof.
   iDestruct (read_split_join3 (T := Ptr.Lock) l O with "Hl") as "(?&Hl)".
   iSplitL "Hl".
   { iNext. iExists (-1)%Z, Locked. by iFrame. }
-  iApply "HΦ"; iFrame.
+  iApply "HΦ"; by iFrame.
 Qed.
 
-Lemma wp_lockRelease_writer N l P Q :
+Lemma wp_lockRelease_writer_raw l stat stat' s E:
+  lock_release Writer stat = Some stat' →
+  {{{ lock_mapsto l 0 stat }}}
+    lockRelease l Writer @ s; E
+  {{{ RET tt; lock_mapsto l 0 stat' }}}.
+Proof.
+  iIntros (Hrel Φ) "(%&H) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
+  destruct stat; swap 1 3.
+  { inversion Hrel. }
+  { inversion Hrel. }
+  apply Count_Heap.Cinr_included_excl' in Hlock; subst.
+  inversion Hrel. subst.
+  iModIntro. iSplit.
+  { iPureIntro. destruct s; eauto.
+    inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  simpl in Htl. inv_step.
+  iMod (gen_typed_heap_update (Ptr.Lock) with "Hσ H") as "($&Hl)".
+  iFrame.
+  iApply "HΦ"; by iFrame.
+Qed.
+
+Lemma wp_lockRelease_writer N l P Q s0 E :
+  ↑N ⊆ E →
   {{{ is_lock N l P Q ∗ P O ∗ wlocked l }}}
-    lockRelease l Writer
+    lockRelease l Writer @ s0; E
   {{{ RET tt; True }}}.
 Proof.
-  iIntros (Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&Hrlocked) HΦ".
-  iInv N as (k stat) "(>H&Hstat)".
+  iIntros (? Φ) "((#HPQ1&#HPQ2&#Hinv)&HQ&(%&Hrlocked)) HΦ".
+  iInv N as (k stat) "(>(%&H)&Hstat)".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
   iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ Hrlocked") as %[s'' [? Hrlock]].
   apply Count_Heap.Cinr_included_excl' in Hrlock; subst.
   iModIntro. iSplit.
-  { iPureIntro.
+  { iPureIntro. destruct s0; eauto.
     inv_step; simpl in *; subst; try congruence.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
@@ -1340,7 +1587,7 @@ Proof.
   inversion Hstep; subst.
   do 2 (inv_step; intuition).
   iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
-  iFrame. iApply "HΦ"; eauto.
+  iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma wp_mapAlter_start {T} s E (p: Map T) (m: gmap uint64 T) k f :
@@ -1351,6 +1598,7 @@ Proof.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hi" as (?) "Hi".
   iDestruct (gen_typed_heap_valid1 (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1363,10 +1611,15 @@ Proof.
   iFrame. iApply "HΦ"; eauto.
 Qed.
 
+Lemma map_mapsto_non_null {T} (p: Map T) (v: gmap uint64 T):
+    (p ↦ v -∗ ⌜ p ≠ nullptr _ ⌝)%I.
+Proof. iIntros "(?&?)"; eauto. Qed.
+
 Lemma wp_mapAlter {T} s E (p: Map T) (m: gmap uint64 T) k f :
   {{{ ▷ p ↦ m }}} mapAlter p k f @ s; E {{{ RET tt; p ↦ (partial_alter f k m) }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". rewrite /mapAlter/nonAtomicWriteOp.
+  iDestruct (map_mapsto_non_null with "Hi") as %Hnonnull.
   wp_bind. iApply (wp_mapAlter_start with "Hi"); eauto.
   iNext. iIntros "Hi".
   iApply wp_lift_call_step.
@@ -1380,7 +1633,7 @@ Proof.
   inversion Hstep; subst.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_update (Ptr.Map T) with "Hσ Hi") as "[$ Hi]".
-  iFrame. iApply "HΦ". inv_step; eauto.
+  iFrame. iApply "HΦ". inv_step; by iFrame.
 Qed.
 
 Lemma wp_mapLookup {T} s E (p: Map T) (m: gmap uint64 T) q k:
@@ -1389,6 +1642,7 @@ Proof.
   iIntros (Φ) ">Hi HΦ". rewrite /mapLookup.
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hi" as (?) "Hi".
   iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %[s' [? ?]].
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1397,7 +1651,7 @@ Proof.
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   inv_step.
-  iFrame. by iApply "HΦ".
+  iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma wp_MapStartIter {T} s E (p: Map T) (m: gmap uint64 T) q:
@@ -1409,6 +1663,7 @@ Proof.
   iIntros (Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct "Hi" as (Hnonnull) "Hi".
   iDestruct (gen_typed_heap_valid (Ptr.Map T) with "Hσ Hi") as %?.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
@@ -1425,11 +1680,12 @@ Proof.
 Qed.
 
 Lemma wp_MapEndIter {T} s E (p: Map T) (m: gmap uint64 T) q:
+  p ≠ nullptr _ →
   {{{ ▷ Count_Typed_Heap.mapsto p q (ReadLocked O) m }}}
     (Call (InjectOp.inject (@MapEndIter _ T p)))%proc @ s; E
   {{{ RET tt; p ↦{q} m }}}.
 Proof.
-  iIntros (Φ) ">Hi HΦ".
+  iIntros (Hnonnull Φ) ">Hi HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
   iDestruct (gen_typed_heap_valid2 (Ptr.Map T) with "Hσ Hi") as %[s' [? Hlock]].
@@ -1451,21 +1707,43 @@ Proof.
 Qed.
 
 Lemma wp_mapIter {T} s E (p: Map T) (m: gmap uint64 T) q body Φ:
+  p ≠ nullptr _ →
   ▷ p ↦{q} m -∗
   ▷ (∀ l, ⌜ Permutation.Permutation l (fin_maps.map_to_list m) ⌝
           -∗ WP (mapIterLoop l body) @ s; E {{ Φ }}) -∗
   WP mapIter p body @ s; E {{ v, p ↦{q} m ∗ Φ v }}.
 Proof.
-  iIntros "Hp Hloop".
+  iIntros (?) "Hp Hloop".
   rewrite /mapIter.
   wp_bind. iApply (wp_MapStartIter with "Hp").
   iNext. iIntros (l) "(%&Hp)".
   wp_bind. iApply (wp_wand with "[Hloop]").
   { iApply "Hloop"; eauto. }
   iIntros ([]) "HΦ".
-  iApply (wp_MapEndIter with "Hp").
+  iApply (wp_MapEndIter with "Hp"); eauto.
   iFrame. eauto.
 Qed.
 
+Lemma wp_randomUint64 s E:
+  {{{ True }}}
+     randomUint64 @ s ; E
+  {{{ (x: uint64), RET x; True }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "?".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence. inv_step.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  match goal with
+    | [ H : Data.step RandomUint64 _ _ |- _ ] => inversion H
+  end.
+  subst. iFrame.
+  by iApply "HΦ".
+Qed.
 
 End lifting.
