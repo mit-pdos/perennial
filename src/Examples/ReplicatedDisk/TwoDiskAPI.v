@@ -3,9 +3,73 @@ From Coq Require Import List.
 From stdpp Require Import gmap.
 From RecoveryRefinement Require Export Lib.
 
+Definition size := 1000.
+Definition addr := nat.
+
+Definition wf_range (d: gmap addr nat) :=
+  (∀ i, is_Some (d !! i) ↔ i < size).
+
+Fixpoint init_zero_aux (n: nat) (s: gmap addr nat) :=
+  match n with
+  | O => s
+  | S n' => <[n' := O]>(init_zero_aux n' s)
+  end.
+
+Definition init_zero := init_zero_aux size gmap_empty.
+
+Lemma init_zero_insert_zero i:
+  i < size →
+  <[i := 0]> init_zero = init_zero.
+Proof.
+  rewrite /init_zero. induction 1.
+  - rewrite //=. rewrite insert_insert //.
+  - rewrite //=. rewrite insert_commute; last by lia. rewrite IHle //=.
+Qed.
+
+Lemma init_zero_lookup_lt_zero i:
+  i < size →
+  init_zero !! i = Some 0.
+Proof.
+  rewrite /init_zero. induction 1.
+  - rewrite lookup_insert //=.
+  - rewrite //=. rewrite lookup_insert_ne; last (by lia). eauto.
+Qed.
+
+Lemma init_zero_lookup_ge_None i:
+  ¬ i < size →
+  init_zero !! i = None.
+Proof.
+  revert i. rewrite /init_zero. induction size => i ?.
+  - rewrite //=.
+  - rewrite lookup_insert_ne; last by lia.
+    rewrite IHn; auto.
+Qed.
+
+Lemma wf_init_zero: wf_range init_zero.
+Proof.
+  intros i. split.
+  - intros Hsome. apply not_ge. intros ?.
+    rewrite init_zero_lookup_ge_None // in Hsome; last lia.
+    eapply is_Some_None; eauto.
+  - intros ?. rewrite init_zero_lookup_lt_zero //. eauto.
+Qed.
+
+Lemma well_sized_mem_0_init (mem: gmap addr nat):
+  (∀ i, is_Some (mem !! i) ↔ i < size) →
+  (λ _, 0) <$> mem = init_zero.
+Proof.
+  intros. rewrite -leibniz_equiv_iff => i.
+  destruct (nat_lt_dec i size).
+  * rewrite init_zero_lookup_lt_zero //.
+    rewrite lookup_fmap.
+    edestruct (H i). destruct H1; eauto. rewrite H1 //=.
+  * rewrite lookup_fmap.
+    edestruct (H i). destruct (mem !! i) as [|] eqn:Heq.
+    ** rewrite Heq in H0. exfalso. intuition eauto.
+    ** rewrite init_zero_lookup_ge_None //=.
+Qed.
+
 Module TwoDisk.
-  Definition size := 1000.
-  Definition addr := nat.
 
   Inductive diskId :=
   | d0
@@ -48,9 +112,6 @@ Module TwoDisk.
     | d0 => disk0 state
     | d1 => disk1 state
     end.
-
-  Definition wf_range (d: gmap addr nat) :=
-    (∀ i, is_Some (d !! i) ↔ i < size).
 
   Definition wf_disk (md: option disk) :=
     match md with
@@ -135,72 +196,12 @@ Module TwoDisk.
     else
         pure v.
 
-  Fixpoint init_zero_aux (n: nat) (s: gmap addr nat) :=
-    match n with
-    | O => s
-    | S n' => <[n' := O]>(init_zero_aux n' s)
-    end.
-
-  Definition init_zero := init_zero_aux size gmap_empty.
-
-  Lemma init_zero_insert_zero i:
-    i < size →
-    <[i := 0]> init_zero = init_zero.
-  Proof.
-    rewrite /init_zero. induction 1.
-    - rewrite //=. rewrite insert_insert //.
-    - rewrite //=. rewrite insert_commute; last by lia. rewrite IHle //=.
-  Qed.
-
-  Lemma init_zero_lookup_lt_zero i:
-    i < size →
-    init_zero !! i = Some 0.
-  Proof.
-    rewrite /init_zero. induction 1.
-    - rewrite lookup_insert //=.
-    - rewrite //=. rewrite lookup_insert_ne; last (by lia). eauto.
-  Qed.
-
-  Lemma init_zero_lookup_ge_None i:
-    ¬ i < size →
-    init_zero !! i = None.
-  Proof.
-    revert i. rewrite /init_zero. induction size => i ?.
-    - rewrite //=.
-    - rewrite lookup_insert_ne; last by lia.
-      rewrite IHn; auto.
-  Qed.
-
   Definition init_state :=
     {| mem_state := init_zero; disks_state := BothDisks init_zero init_zero |}.
-
-  Lemma wf_init_zero: wf_range init_zero.
-  Proof.
-    intros i. split.
-    - intros Hsome. apply not_ge. intros ?.
-      rewrite init_zero_lookup_ge_None // in Hsome; last lia.
-      eapply is_Some_None; eauto.
-    - intros ?. rewrite init_zero_lookup_lt_zero //. eauto.
-  Qed.
 
   Lemma init_state_wf:
     state_wf init_state.
   Proof. split_and!; apply wf_init_zero. Qed.
-
-  Lemma well_sized_mem_0_init (mem: gmap addr nat):
-    (∀ i, is_Some (mem !! i) ↔ i < size) →
-    (λ _, 0) <$> mem = init_zero.
-  Proof.
-    intros. rewrite -leibniz_equiv_iff => i.
-    destruct (nat_lt_dec i size).
-    * rewrite init_zero_lookup_lt_zero //.
-      rewrite lookup_fmap.
-      edestruct (H i). destruct H1; eauto. rewrite H1 //=.
-    * rewrite lookup_fmap.
-      edestruct (H i). destruct (mem !! i) as [|] eqn:Heq.
-      ** rewrite Heq in H0. exfalso. intuition eauto.
-      ** rewrite init_zero_lookup_ge_None //=.
-  Qed.
 
   Definition crash_fun := (fun s => {| mem_state := init_zero; disks_state := disks_state s|}).
 
