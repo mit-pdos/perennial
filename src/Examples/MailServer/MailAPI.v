@@ -152,7 +152,19 @@ Module Mail.
       let! (s, msgs) <- lookup messages uid;
            s <- Filesys.FS.unwrap (mailbox_lock_release s);
            puts (set messages <[uid := (s, msgs)]>)
-    | DataOp op => _zoom heap (Data.step op)
+    | DataOp op =>
+      (* The MailServer does not involve map operations or little endian encoding,
+         so we do not prove refinement for these operations. *)
+      match op with
+      | Data.NewMap _ => error
+      | Data.MapLookup _ _ => error
+      | Data.MapAlter _ _ _ _ => error
+      | Data.MapStartIter _ => error
+      | Data.MapEndIter _ => error
+      | Data.Uint64Get _ _ => error
+      | Data.Uint64Put _ _ _ => error
+      |  _ => _zoom heap (Data.step op)
+      end
     | Open => error
     end.
 

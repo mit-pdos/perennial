@@ -344,6 +344,42 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
     iFrame. eauto.
   Qed.
 
+  Lemma bytes_to_string_step_inv_do {T2} j K `{LanguageCtx _ _ T2 Mail.l K} p
+        (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (DataOp (Data.BytesToString p))) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ s alloc val, ⌜ Data.getAlloc p.(slice.ptr) σ.(heap) = Some (s, alloc) ∧
+                       Data.getSliceModel p alloc = Some val ∧
+                       lock_available Reader s = Some tt ⌝ ∗
+        j ⤇ K (Ret (bytes_to_string val))
+        ∗ source_state σ.
+  Proof.
+    iIntros.
+    non_err; last by solve_err.
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; auto.
+    { simpl; auto. }
+    destruct p0 as (s&alloc).
+    iExists s, alloc.
+    non_err'; last by solve_err.
+    non_err'; last by solve_err.
+    iExists _.
+    inv_step.
+    iMod (ghost_step_call _ _ _ _ with "[$] [$] [$]") as "(?&?&?)".
+    { intros n.
+      do 2 eexists; split; last econstructor.
+      eexists; last eauto.
+      eapply opened_step; auto.
+      eexists.
+      * repeat (do 2 eexists; split; non_err).
+        { unfold Data.getAlloc. rewrite Heq //=. }
+        repeat (do 2 eexists; try split; non_err).
+      * unfold RecordSet.set. destruct σ; eauto.
+    }
+    { solve_ndisj. }
+    iFrame. eauto.
+  Qed.
+
   Lemma lock_release_step_inv_do {T} j K `{LanguageCtx _ _ T Mail.l K} lk m (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →
     j ⤇ K (Call (DataOp (Data.LockRelease lk m))) -∗ source_ctx -∗ source_state σ

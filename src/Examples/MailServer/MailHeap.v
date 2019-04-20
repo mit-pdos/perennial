@@ -175,7 +175,7 @@ Import Mail.
     - iMod (deref_step_inv_do with "Hj Hsource Hstate") as (s alloc v Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       destruct Heq as (Heq1&Heq2&Heq3).
-      iDestruct (big_sepDM_lookup_acc with "Hheap") as "((Hp&%)&Hheap)".
+      iDestruct (big_sepDM_lookup_acc (dec := sigPtr_eq_dec) with "Hheap") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct s; try (simpl in Heq2; congruence); simpl.
       * iApply (wp_ptrDeref' with "Hp").
@@ -265,11 +265,11 @@ Import Mail.
       rewrite /HeapInv.
       simpl. intuition. rewrite big_sepDM_updDyn; try iFrame; eauto.
       iDestruct "Hp" as "(?&?)"; iFrame; eauto.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
+    - ghost_err. err_start. econstructor.
+    - ghost_err. err_start. econstructor.
+    - ghost_err. err_start. econstructor.
+    - ghost_err. err_start. econstructor.
+    - ghost_err. err_start. econstructor.
     - iApply (wp_newLock_raw with "[//]").
       iIntros (p) "!> Hp".
       iDestruct (HeapInv_non_alloc_lock_inv' _ _ 0 with "[$] Hp") as %?; first auto.
@@ -402,7 +402,79 @@ Import Mail.
         iApply "HΦ".
         iExists _. iFrame.
         iApply "Hheap". simpl. destruct s2; by iFrame.
-    -
-  Admitted.
+    - ghost_err. err_start. econstructor.
+    - ghost_err. err_start. econstructor.
+    - iMod (bytes_to_string_step_inv_do j K with "Hj Hsource Hstate") as (s alloc val (He1&He2&He3))
+                                                                           "(Hj&Hstate)".
+      { solve_ndisj. }
+      iDestruct (big_sepDM_lookup_acc (dec := sigPtr_eq_dec) (T:=(Ptr.Heap byte))
+                   with "Hheap") as "((Hp&%)&Hheap)".
+      { eauto. }
+      destruct s; try (simpl in He3; congruence); simpl; [|].
+      * iApply (wp_bytesToString with "[Hp]").
+        { iNext. iFrame. eauto. }
+        iIntros "!> Hp".
+        iApply "HΦ".
+        iExists (σ.(heap)). iFrame. simpl.
+        destruct σ. iFrame "Hstate".
+        iApply "Hheap". iDestruct "Hp" as "(?&?&?)". iFrame.
+        eauto.
+      * iApply (wp_bytesToString with "[Hp]").
+        { iNext. iFrame. eauto. }
+        iIntros "!> Hp".
+        iApply "HΦ".
+        iExists (σ.(heap)). iFrame. simpl.
+        destruct σ. iFrame "Hstate".
+        iApply "Hheap". iDestruct "Hp" as "(?&?&?)". iFrame.
+        eauto.
+    - iApply (wp_stringToBytes with "[//]").
+      iIntros (p) "!> (Hp&%)".
+      iDestruct (HeapInv_non_alloc_inv' _ _ 0 with "[$] Hp") as %?; first auto.
+      iMod (ghost_step_call _ _ _ p
+             ((RecordSet.set heap (λ h, RecordSet.set Data.allocs
+                 (updDyn p.(slice.ptr) (Unlocked, string_to_bytes s)) h)) σ : l.(OpState))
+            with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+      { intros. econstructor. eexists; split; last by econstructor.
+        econstructor; eauto. eapply opened_step; auto. econstructor.
+        * do 2 eexists. split.
+          ** do 2 eexists. split.
+             *** do 2 eexists; intuition eauto.
+             *** do 2 eexists; non_err. split; last by econstructor.
+                 econstructor.
+          ** simpl. intuition. subst. destruct p. simpl in *. subst. econstructor.
+        * econstructor.
+      }
+      { solve_ndisj. }
+      iModIntro. iApply "HΦ". iExists _. iFrame.
+      {
+        rewrite /HeapInv//=.
+        rewrite big_sepDM_updDyn; try intuition.
+        iFrame. simpl. iDestruct "Hp" as "(?&$)"; eauto.
+      }
+    - iApply wp_lift_call_step.
+      iIntros ((n, σ')) "(?&Hσ'&?)".
+      iModIntro. iSplit.
+      { iPureIntro. inv_step; simpl in *; subst; inv_step. }
+      iIntros (e2 (n', σ2) Hstep) "!>".
+      inversion Hstep; subst.
+      inv_step.
+      iFrame.
+      simpl.
+      inv_step. inversion H2. subst.  simpl in *.
+      iSplitL "Hσ'".
+      { unfold RecordSet.set. destruct σ'. simpl. by iFrame. }
+      iModIntro.
+      iMod (ghost_step_call _ _ _ e2 _
+            with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+      { intros. econstructor. eexists; split; last by econstructor.
+        econstructor; eauto. eapply opened_step; auto. econstructor.
+        * by econstructor.
+        * destruct σ; eauto.
+      }
+      { solve_ndisj. }
+      iModIntro. iApply "HΦ".
+      iExists _. iFrame.
+      destruct σ; simpl. iFrame.
+  Time Qed.
 
 End refinement_heap_triples.
