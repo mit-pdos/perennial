@@ -344,6 +344,63 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
     iFrame. eauto.
   Qed.
 
+  Lemma lock_release_step_inv_do {T} j K `{LanguageCtx _ _ T Mail.l K} lk m (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (DataOp (Data.LockRelease lk m))) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ s s', ⌜ Data.getAlloc lk σ.(heap) = Some (s, tt) ∧
+                      lock_release m s = Some s' ⌝ ∗
+        j ⤇ K (Ret tt)
+        ∗ source_state (RecordSet.set heap (RecordSet.set Data.allocs (updDyn lk (s', ()))) σ).
+  Proof.
+    iIntros.
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(?&?)"; auto.
+    { simpl; auto. }
+    non_err; last first.
+    { ghost_err. intros n. err_start. err_hd.
+      unfold Data.getAlloc in Heq. by rewrite Heq.
+    }
+    destruct p as (?&[]).
+    iExists _.
+    non_err; last first.
+    { ghost_err. intros n. err_start. err_cons.
+      { unfold Data.getAlloc in Heq. by rewrite Heq. }
+      simpl. rewrite Heq0. econstructor.
+    }
+    iExists _. eauto.
+    iMod (ghost_step_call _ _ _ tt ((RecordSet.set heap _ σ : l.(OpState)))
+            with "[$] [$] [$]") as "(?&?&?)".
+    { intros n.
+      do 2 eexists; split; last econstructor.
+      eexists; auto.
+      eapply opened_step; auto.
+      eexists; last eauto.
+      repeat (do 2 eexists; try split; non_err).
+      { unfold Data.getAlloc in Heq. by rewrite Heq. }
+      simpl. rewrite Heq0. econstructor.
+    }
+    { eauto. }
+    iFrame. eauto.
+  Qed.
+
+  Lemma lock_acquire_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} lk m (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (DataOp (Data.LockAcquire lk m))) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ s, ⌜ Data.getAlloc lk σ.(heap) = Some (s, tt) ⌝
+        ∗ j ⤇ K (Call (DataOp (Data.LockAcquire lk m)))
+        ∗ source_state σ.
+  Proof.
+    iIntros.
+    non_err; last first.
+    { ghost_err. intros n. err_start. err_hd.
+      unfold Data.getAlloc in Heq. by rewrite Heq.
+    }
+    destruct p as (?&[]).
+    iExists _.
+    iFrame. eauto.
+  Qed.
+
   Lemma deliver_start_step_inv_do {T2} j K `{LanguageCtx _ unit T2 Mail.l K} uid msg
         (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →

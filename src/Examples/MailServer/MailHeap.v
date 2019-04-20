@@ -67,6 +67,22 @@ Import Mail.
     subst. iPureIntro; split; auto. simpl in *. congruence.
   Qed.
 
+  Lemma HeapInv_non_alloc_lock_inv' σ lk q mode:
+    q >= 0 →
+    HeapInv' σ -∗ lock_mapsto lk q mode  -∗
+            ⌜ getDyn σ lk = None /\ lk ≠ nullptr _ ⌝.
+  Proof.
+    iIntros (?) "Hheap (%&Hp)".
+    iSplit; last auto.
+    destruct (getDyn σ lk) as [v|] eqn:Heq_get; last by done.
+    iExFalso.
+    iPoseProof (big_sepDM_lookup (T:=(Ptr.Lock))
+                                 (dec := sigPtr_eq_dec) with "Hheap") as "(Hheap&%)"; eauto.
+    destruct v as ([]&?);
+      iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hp] Hheap"); try iFrame;
+        eauto with lia.
+  Qed.
+
   Lemma HeapInv_non_alloc_inv' {A} σ p q (ls: List.list A):
     q >= 0 →
     HeapInv' σ -∗ p ↦{q} ls -∗
@@ -249,6 +265,102 @@ Import Mail.
       rewrite /HeapInv.
       simpl. intuition. rewrite big_sepDM_updDyn; try iFrame; eauto.
       iDestruct "Hp" as "(?&?)"; iFrame; eauto.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    - iApply (wp_newLock_raw with "[//]").
+      iIntros (p) "!> Hp".
+      iDestruct (HeapInv_non_alloc_lock_inv' _ _ 0 with "[$] Hp") as %?; first auto.
+      iMod (ghost_step_call _ _ _ p ((RecordSet.set heap _ σ : l.(OpState)))
+            with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+      { intros. econstructor. eexists; split; last by econstructor.
+        econstructor; eauto. eapply opened_step; auto. econstructor.
+        * do 2 eexists. split.
+          ** econstructor; eauto.
+          ** do 2 eexists. split; last econstructor.
+             econstructor.
+        * eauto.
+      }
+      { solve_ndisj. }
+      iModIntro. iApply "HΦ". iExists _. iFrame.
+      {
+        rewrite /HeapInv//=.
+        rewrite big_sepDM_updDyn; try intuition.
+        iFrame. simpl. iDestruct "Hp" as "(?&$)"; eauto.
+      }
+    - iMod (lock_acquire_step_inv j K with "Hj Hsource Hstate") as (s') "(Heq&Hj&Hstate)".
+      { solve_ndisj. }
+      iDestruct "Heq" as %Hget.
+      iDestruct (big_sepDM_insert_acc (T:= Ptr.Lock) with "Hheap") as "((Hp&%)&Hheap)".
+      { eauto. }
+      destruct l0.
+      * iApply wp_lift_call_step.
+        iIntros ((n, σ')) "(?&Hσ'&?)".
+        iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ' [Hp]") as %[s'' [? Hlock]].
+        { destruct s'; eauto. }
+        iModIntro. iSplit.
+        { iPureIntro.
+          inv_step; simpl in *; subst; try congruence.
+          destruct l0; inversion Htl_err.
+        }
+        iIntros (e2 (n', σ2) Hstep) "!>".
+        inversion Hstep; subst.
+        inv_step.
+        edestruct (lock_acquire_Reader_success_inv) as (?&?); first by eauto.
+        inv_step.
+        destruct s'.
+        { apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
+        {
+          apply Count_Heap.Cinl_included_nat' in Hlock as (m&?&?). subst.
+          iMod (gen_typed_heap_readlock' (Ptr.Lock) with "Hσ' Hp") as (s' Heq) "(Hσ&Hl)".
+          simpl; inv_step. iFrame.
+          iModIntro. iApply "HΦ".
+            iMod (ghost_step_call _ _ _ _ ((RecordSet.set heap _ σ : l.(OpState)))
+                  with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+            { intros. econstructor. eexists; split; last by econstructor.
+              econstructor; eauto. eapply opened_step; auto. econstructor.
+              * do 2 eexists. split.
+                ** non_err.
+                ** do 2 eexists.
+              * eauto.
+            }
+            { solve_ndisj. }
+            iExists _. iFrame.
+            iApply "Hheap". simpl. iFrame. eauto.
+        }
+        {
+          apply Count_Heap.Cinl_included_nat' in Hlock as (m&?&?). subst.
+          iMod (gen_typed_heap_readlock (Ptr.Lock) with "Hσ' Hp") as (s' Heq) "(Hσ&Hl)".
+          simpl; inv_step. iFrame.
+          iModIntro. iApply "HΦ".
+            iMod (ghost_step_call _ _ _ _ ((RecordSet.set heap _ σ : l.(OpState)))
+                  with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+            { intros. econstructor. eexists; split; last by econstructor.
+              econstructor; eauto. eapply opened_step; auto. econstructor.
+              * do 2 eexists. split.
+                ** non_err.
+                ** do 2 eexists.
+              * eauto.
+            }
+            { solve_ndisj. }
+            iExists _. iFrame.
+            iApply "Hheap". simpl. iFrame. eauto.
+        }
+      * admit.
+    - iMod (lock_release_step_inv_do j K with "Hj Hsource Hstate") as (s1 s2 (He1&He2)) "(Hj&Hstate)".
+      { solve_ndisj. }
+      iDestruct (big_sepDM_insert_acc (T:= Ptr.Lock) with "Hheap") as "((Hp&%)&Hheap)".
+      { eauto. }
+      destruct l0.
+      * iApply (wp_lockRelease_read_raw with "[Hp]"); first by eauto.
+        { destruct s1; iFrame; eauto. }
+        iIntros "!> (%&?)".
+        iApply "HΦ".
+        iExists _. iFrame.
+        iApply "Hheap". simpl. destruct s2; by iFrame.
+      * admit.
     -
   Admitted.
 
