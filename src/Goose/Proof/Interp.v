@@ -1178,6 +1178,37 @@ Proof.
   iIntros "!> Hp". iApply "HΦ". iExists _; eauto.
 Qed.
 
+(* TODO: need to add axiom to about how string to bytes preserves length *)
+(*
+Lemma wp_stringToBytes str s E :
+  {{{ True }}}
+    stringToBytes str @ s ; E
+  {{{ p, RET p; p ↦ (string_to_bytes str, string_to_bytes str) }}}.
+Proof.
+*)
+
+Lemma wp_stringToBytes str s E :
+  {{{ True }}}
+    stringToBytes str @ s ; E
+  {{{ p, RET p; p.(slice.ptr) ↦ (string_to_bytes str)
+                              ∗ ⌜ p.(slice.length) = String.length str ∧
+                                  p.(slice.offset) = 0 ⌝ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&?)".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro.
+    inv_step. simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  destruct H0 as ((?&?)&?).
+  do 2 (inv_step; intuition).
+  iMod (gen_typed_heap_alloc with "Hσ") as "(Hσ&Hp)"; eauto.
+  iFrame. iApply "HΦ". iFrame. iPureIntro; split; eauto.
+Qed.
+
 Definition lock_mapsto `{gooseG Σ} (l: LockRef) q mode : iProp Σ :=
    (⌜ l ≠ nullptr _ ⌝ ∗ Count_Typed_Heap.mapsto l q mode tt)%I.
 
@@ -1188,14 +1219,6 @@ Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ
       | ReadLocked n' => ⌜ n = S n' ⌝ ∗ P (S n')
       | Locked => ⌜ n = (-1)%Z ⌝
     end)%I.
-
-(*
-Definition lock_inv (l: LockRef) (P : nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
-  ((lock_mapsto l O Unlocked ∗ P O) ∨
-   (∃ n : nat, lock_mapsto l (S n) (ReadLocked n) ∗ P (S n)) ∨
-   (lock_mapsto l 1 Locked))%I.
-*)
-
 
 Definition is_lock (N: namespace) (l: LockRef) (P: nat → iProp Σ) (Q: iProp Σ) : iProp Σ :=
   (□ (∀ n, P n ==∗ P (S n) ∗ Q) ∗
@@ -1480,6 +1503,34 @@ Proof.
   iDestruct (read_split_join3 (T := Ptr.Lock) l O with "Hl") as "(?&Hl)".
   iSplitL "Hl".
   { iNext. iExists (-1)%Z, Locked. by iFrame. }
+  iApply "HΦ"; by iFrame.
+Qed.
+
+Lemma wp_lockRelease_writer_raw l stat stat' s E:
+  lock_release Writer stat = Some stat' →
+  {{{ lock_mapsto l 0 stat }}}
+    lockRelease l Writer @ s; E
+  {{{ RET tt; lock_mapsto l 0 stat' }}}.
+Proof.
+  iIntros (Hrel Φ) "(%&H) HΦ".
+  iApply wp_lift_call_step.
+  iIntros ((n, σ)) "(?&Hσ&?)".
+  iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ H") as %[s' [? Hlock]].
+  destruct stat; swap 1 3.
+  { inversion Hrel. }
+  { inversion Hrel. }
+  apply Count_Heap.Cinr_included_excl' in Hlock; subst.
+  inversion Hrel. subst.
+  iModIntro. iSplit.
+  { iPureIntro. destruct s; eauto.
+    inv_step; simpl in *; subst; try congruence.
+  }
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  simpl in Htl. inv_step.
+  iMod (gen_typed_heap_update (Ptr.Lock) with "Hσ H") as "($&Hl)".
+  iFrame.
   iApply "HΦ"; by iFrame.
 Qed.
 

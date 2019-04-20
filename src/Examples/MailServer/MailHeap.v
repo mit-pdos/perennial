@@ -348,7 +348,43 @@ Import Mail.
             iExists _. iFrame.
             iApply "Hheap". simpl. iFrame. eauto.
         }
-      * admit.
+      * iApply wp_lift_call_step.
+        iIntros ((n, σ')) "(?&Hσ'&?)".
+        iDestruct (gen_typed_heap_valid2 (Ptr.Lock) with "Hσ' [Hp]") as %[s'' [? Hlock]].
+        { destruct s'; eauto. }
+        iModIntro. iSplit.
+        { iPureIntro.
+          inv_step; simpl in *; subst; try congruence.
+          destruct l0; inversion Htl_err.
+        }
+        iIntros (e2 (n', σ2) Hstep) "!>".
+        inversion Hstep; subst.
+        inv_step.
+        edestruct (lock_acquire_Writer_success_inv) as (?&?&?); first by eauto; subst.
+        subst.
+              inv_step.
+              destruct s'.
+        { (* Writelocked -- impossible *)
+          apply Count_Heap.Cinr_included_excl' in Hlock; subst. simpl in *; congruence. }
+        { (* Readlocked -- impossible *)
+          subst. simpl in *.
+          apply Count_Heap.Cinl_included_nat in Hlock. lia.
+        }
+        iMod (gen_typed_heap_update (Ptr.Lock) with "Hσ' Hp") as "($&Hl)".
+        simpl; inv_step. iFrame.
+        iModIntro. iApply "HΦ".
+        iMod (ghost_step_call _ _ _ _ ((RecordSet.set heap _ σ : l.(OpState)))
+              with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+        { intros. econstructor. eexists; split; last by econstructor.
+          econstructor; eauto. eapply opened_step; auto. econstructor.
+          * do 2 eexists. split.
+            ** non_err.
+            ** do 2 eexists.
+          * eauto.
+        }
+        { solve_ndisj. }
+        iExists _. iFrame.
+        iApply "Hheap". simpl. iFrame. eauto.
     - iMod (lock_release_step_inv_do j K with "Hj Hsource Hstate") as (s1 s2 (He1&He2)) "(Hj&Hstate)".
       { solve_ndisj. }
       iDestruct (big_sepDM_insert_acc (T:= Ptr.Lock) with "Hheap") as "((Hp&%)&Hheap)".
@@ -360,7 +396,12 @@ Import Mail.
         iApply "HΦ".
         iExists _. iFrame.
         iApply "Hheap". simpl. destruct s2; by iFrame.
-      * admit.
+      * iApply (wp_lockRelease_writer_raw with "[Hp]"); first by eauto.
+        { destruct s1; iFrame; eauto. }
+        iIntros "!> (%&?)".
+        iApply "HΦ".
+        iExists _. iFrame.
+        iApply "Hheap". simpl. destruct s2; by iFrame.
     -
   Admitted.
 
