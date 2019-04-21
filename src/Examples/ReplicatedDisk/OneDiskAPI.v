@@ -11,8 +11,7 @@ Module OneDisk.
      a disk CAS *)
   Inductive Op : Type -> Type :=
   | Read_Disk (i:addr) : Op nat
-  | Write_Disk (i:addr) (v:nat) : Op unit
-  | Fail : Op unit.
+  | Write_Disk (i:addr) (v:nat) : Op unit.
 
   Record State := mkState { disk_state: disk }.
 
@@ -42,7 +41,6 @@ Module OneDisk.
          match op with
          | Read_Disk i => reads (lookup_disk i)
          | Write_Disk i v => puts (upd_disk i v)
-         | Fail => error
          end;
        crash_step := pure tt;
        finish_step := pure tt |}.
