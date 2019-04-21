@@ -1,0 +1,669 @@
+From iris.algebra Require Import auth gmap frac agree csum excl.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg.
+Require Import Helpers.RelationTheorems.
+From iris.algebra Require Export functions csum.
+From iris.base_logic.lib Require Export invariants gen_heap.
+From iris.proofmode Require Export tactics.
+Require Export TwoDiskAPI.
+Set Default Proof Using "Type".
+
+Import TwoDisk.
+
+Canonical Structure diskIdC := leibnizC diskId.
+Class disk_statusG (Σ: gFunctors) : Set :=
+  Disk_statusG { disk_status_inG :> inG Σ (csumR (exclR unitC) (agreeR (diskIdC)));
+                 disk_status_name: gname}.
+Arguments disk_status_name {_}.
+
+Section disk_status.
+  Context `{tr: disk_statusG Σ}.
+
+  Definition is_OnlyDisk (id: diskId) :=
+    own (disk_status_name tr) (Cinr (to_agree id)).
+
+  Definition to_status (ds: DisksState) :=
+    match ds with
+    | OnlyDisk id _ => (Cinr (to_agree id))
+    | BothDisks _ _ => (Cinl ((Excl tt)))
+    end.
+
+  Definition disk_status_ctx ds :=
+    own (disk_status_name tr) (to_status ds).
+
+  Lemma disk_status_agree id ds :
+    disk_status_ctx ds -∗ is_OnlyDisk id -∗ ∃ d, ⌜ ds = OnlyDisk id d ⌝.
+  Proof.
+    iIntros "H1 H2". iDestruct (own_valid_2 with "H1 H2") as %H.
+    destruct ds; eauto. rewrite Cinr_op in H. apply agree_op_inv' in H. inversion H; subst.
+    eauto.
+  Qed.
+
+  Lemma disk_status_update_both disk0 disk1 ds:
+    disk_status_ctx (BothDisks disk0 disk1) ==∗ disk_status_ctx ds.
+  Proof.
+    iIntros "Hown". iMod (own_update with "Hown") as "$"; eauto.
+    { simpl. apply: cmra_update_exclusive. destruct ds; econstructor. }
+  Qed.
+
+  Lemma disk_status_update_only id d d':
+    disk_status_ctx (OnlyDisk id d) ==∗ disk_status_ctx (OnlyDisk id d').
+  Proof.
+    iIntros "Hown". trivial.
+  Qed.
+
+End disk_status.
+
+Class exmachG Σ := ExMachG {
+                     exm_invG : invG Σ;
+                     exm_mem_inG :> gen_heapG nat nat Σ;
+                     exm_disk0_inG :> gen_heapG nat nat Σ;
+                     exm_disk1_inG :> gen_heapG nat nat Σ;
+                     exm_status_inG :> disk_statusG Σ;
+                     exm_treg_inG :> tregG Σ;
+                   }.
+
+Lemma gen_heap_strong_init `{H: gen_heapPreG L V Σ} σs :
+  (|==> ∃ (H0 : gen_heapG L V Σ) (Hpf: gen_heap_inG = gen_heap_preG_inG), gen_heap_ctx σs ∗
+    own (gen_heap_name _) (◯ (to_gen_heap σs)))%I.
+Proof.
+  iMod (own_alloc (● to_gen_heap σs ⋅ ◯ to_gen_heap σs)) as (γ) "(?&?)".
+  { apply auth_valid_discrete_2; split; auto. exact: to_gen_heap_valid. }
+  iModIntro. unshelve (iExists (GenHeapG L V Σ _ _ _ γ), _); auto. iFrame.
+Qed.
+
+Definition disk_state_interp {Σ}
+           (hM: gen_heapG addr nat Σ) (hD0 hD1: gen_heapG addr nat Σ) (hStatus: disk_statusG Σ)  :=
+  (λ s, ∃ mem disk0 disk1, (gen_heap_ctx mem (hG := hM)) ∗
+                     (gen_heap_ctx disk0 (hG := hD0)) ∗
+                     (gen_heap_ctx disk1 (hG := hD0)) ∗
+                      disk_status_ctx (disks_state s) ∗
+                        ⌜ mem = mem_state s ∧
+                           match disks_state s with
+                           | BothDisks disk0' disk1' => disk0 = disk0' ∧ disk1 = disk1'
+                           | OnlyDisk d0 disk0' => disk0 = disk0'
+                           | OnlyDisk d1 disk1' => disk1 = disk1'
+                           end ∧ state_wf s⌝)%I.
+
+Definition ex_mach_interp {Σ} {hM: gen_heapG addr nat Σ} {hD0 hD1: gen_heapG addr nat Σ} hS
+           {tr: tregG Σ}  :=
+  (λ s, thread_count_interp (fst s) ∗ disk_state_interp hM hD0 hD1 hS (snd s))%I.
+
+Definition ex_mach_interp' `{exmachG Σ} :=
+    @ex_mach_interp _ exm_mem_inG exm_disk0_inG exm_disk1_inG  exm_status_inG exm_treg_inG.
+
+Instance exmachG_irisG `{exmachG Σ} : irisG TwoDisk.Op TwoDisk.l Σ :=
+  {
+    iris_invG := exm_invG;
+    state_interp := ex_mach_interp'
+  }.
+
+Definition mem_mapsto_vs k v k' :=
+  match Nat.compare k' k with
+  | Lt => None
+  | Eq => Some v
+  | Gt => Some 0
+  end.
+
+Global Notation "l m↦{ q } v " := (mapsto (hG := exm_mem_inG) l q v)
+  (at level 20, q at level 50, format "l  m↦{ q } v") : bi_scope.
+Global Notation "l m↦ v " :=
+  (mapsto (hG := exm_mem_inG) l 1 v)
+  (at level 20) : bi_scope.
+
+Global Notation "l d0↦{ q } v " := (mapsto (hG := exm_disk0_inG) l q v)
+  (at level 20, q at level 50, format "l  d0↦{ q } v") : bi_scope.
+Global Notation "l d0↦ v " :=
+  (mapsto (hG := exm_disk0_inG) l 1 v)
+  (at level 20) : bi_scope.
+Global Notation "l d1↦{ q } v " := (mapsto (hG := exm_disk1_inG) l q v)
+  (at level 20, q at level 50, format "l  d1↦{ q } v") : bi_scope.
+Global Notation "l d1↦ v " :=
+  (mapsto (hG := exm_disk1_inG) l 1 v)
+  (at level 20) : bi_scope.
+
+Section lifting.
+Context `{exmachG Σ}.
+
+Lemma nat_compare_lt_Lt: ∀ n m : nat, n < m → (n ?= m) = Lt.
+Proof. intros. by apply nat_compare_lt. Qed.
+Lemma nat_compare_gt_Gt: ∀ n m : nat, n > m → (n ?= m) = Gt.
+Proof. intros. by apply nat_compare_gt. Qed.
+
+Lemma mem_init_to_bigOp mem:
+  own (i := @gen_heap_inG _ _ _ _ _ exm_mem_inG)
+      (gen_heap_name (exm_mem_inG))
+      (◯ to_gen_heap mem)
+      -∗
+  [∗ map] i↦v ∈ mem, i m↦ v .
+Proof.
+  induction mem using map_ind.
+  - iIntros. rewrite //=.
+  - iIntros "Hown".
+    rewrite big_opM_insert //.
+
+    iAssert (own (i := @gen_heap_inG _ _ _ _ _ exm_mem_inG) (gen_heap_name (exm_mem_inG))
+                 (◯ to_gen_heap m) ∗
+                 (i m↦ x))%I
+                    with "[Hown]" as "[Hrest $]".
+    {
+      rewrite mapsto_eq /mapsto_def //.
+      rewrite to_gen_heap_insert insert_singleton_op; last by apply lookup_to_gen_heap_None.
+      rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
+    }
+    by iApply IHmem.
+Qed.
+
+Lemma disk0_init_to_bigOp disk:
+  own (i := @gen_heap_inG _ _ _ _ _ exm_disk0_inG)
+      (gen_heap_name (exm_disk0_inG))
+      (◯ to_gen_heap disk)
+      -∗
+  [∗ map] i↦v ∈ disk, i d0↦ v .
+Proof.
+  induction disk using map_ind.
+  - iIntros. rewrite //=.
+  - iIntros "Hown".
+    rewrite big_opM_insert //.
+
+    iAssert (own (i := @gen_heap_inG _ _ _ _ _ exm_disk0_inG) (gen_heap_name (exm_disk0_inG))
+                 (◯ to_gen_heap m) ∗
+                 (i d0↦ x))%I
+                    with "[Hown]" as "[Hrest $]".
+    {
+      rewrite mapsto_eq /mapsto_def //.
+      rewrite to_gen_heap_insert insert_singleton_op; last by apply lookup_to_gen_heap_None.
+      rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
+    }
+    by iApply IHdisk.
+Qed.
+
+Lemma disk1_init_to_bigOp disk:
+  own (i := @gen_heap_inG _ _ _ _ _ exm_disk1_inG)
+      (gen_heap_name (exm_disk1_inG))
+      (◯ to_gen_heap disk)
+      -∗
+  [∗ map] i↦v ∈ disk, i d1↦ v .
+Proof.
+  induction disk using map_ind.
+  - iIntros. rewrite //=.
+  - iIntros "Hown".
+    rewrite big_opM_insert //.
+
+    iAssert (own (i := @gen_heap_inG _ _ _ _ _ exm_disk1_inG) (gen_heap_name (exm_disk1_inG))
+                 (◯ to_gen_heap m) ∗
+                 (i d1↦ x))%I
+                    with "[Hown]" as "[Hrest $]".
+    {
+      rewrite mapsto_eq /mapsto_def //.
+      rewrite to_gen_heap_insert insert_singleton_op; last by apply lookup_to_gen_heap_None.
+      rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
+    }
+    by iApply IHdisk.
+Qed.
+
+Import Reg_wp.
+Lemma thread_reg1:
+  ∀ n σ, state_interp (n, σ)
+         -∗ thread_count_interp n
+            ∗ disk_state_interp (exm_mem_inG) (exm_disk0_inG) (exm_disk1_inG) (exm_status_inG) σ.
+Proof. eauto. Qed.
+Lemma thread_reg2:
+  ∀ n σ, thread_count_interp n
+         ∗ disk_state_interp (exm_mem_inG) (exm_disk0_inG) (exm_disk1_inG) (exm_status_inG) σ
+         -∗ state_interp (n, σ).
+Proof. auto. Qed.
+
+Lemma wp_spawn {T} s E (e: proc _ T) Φ :
+  ▷ Registered
+    -∗ ▷ (Registered -∗ WP (let! _ <- e; Unregister)%proc @ s; ⊤ {{ _, True }})
+    -∗ ▷ ( Registered -∗ Φ tt)
+    -∗ WP Spawn e @ s; E {{ Φ }}.
+Proof. eapply wp_spawn; eauto using thread_reg1, thread_reg2. Qed.
+
+Lemma wp_unregister s E :
+  {{{ ▷ Registered }}} Unregister @ s; E {{{ RET tt; True }}}.
+Proof. eapply wp_unregister; eauto using thread_reg1, thread_reg2. Qed.
+
+Lemma wp_wait s E :
+  {{{ ▷ Registered }}} Wait @ s; E {{{ RET tt; AllDone }}}.
+Proof. eapply wp_wait; eauto using thread_reg1, thread_reg2. Qed.
+
+Lemma wp_write_mem s E i v' v :
+  {{{ ▷ i m↦ v' }}} write_mem i v @ s; E {{{ RET tt; i m↦ v }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
+  iIntros ((n, σ)) "Hown".
+  iModIntro. iSplit; first by destruct s.
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inversion H0. subst.
+  inversion Hstep; subst.
+  iDestruct "Hown" as "(?&Hown)".
+  rewrite /disk_state_interp.
+  iDestruct "Hown" as (mems disk0 disk1) "(Hown1&Hownd0&Hownd1&?&Hp)".
+  iDestruct "Hp" as %(Heq_mem&?&Hsize&?).
+  iDestruct (gen_heap_valid with "Hown1 Hi") as %Hin_bound.
+  iMod (@gen_heap_update with "Hown1 Hi") as "[Hown1 Hi]".
+  iModIntro. iSplitR "Hi HΦ".
+  - iFrame. iExists _, disk0, disk1. iFrame.
+    iPureIntro. split_and!.
+    * rewrite /upd_mem/upd_default -Heq_mem Hin_bound //.
+    * simpl in *. destruct (σ.(disks_state)); eauto.
+    * split; intuition; eauto.
+      rewrite /upd_mem/upd_default//= => i'.
+      specialize (Hsize i').
+      destruct ((mem_state σ) !! i) eqn:Heq; rewrite Heq.
+      ** case (decide (i = i')).
+         *** intros ->. simpl in *. rewrite -Hsize lookup_insert. split; eauto.
+         *** intros ?. rewrite lookup_insert_ne //=.
+      ** apply Hsize.
+  - iApply "HΦ". eauto.
+Qed.
+
+Lemma wp_read_mem s E i v :
+  {{{ ▷ i m↦ v }}} read_mem i @ s; E {{{ RET v; i m↦ v }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
+  iIntros ((n, σ)) "Hown".
+  iModIntro. iSplit; first by destruct s.
+  iIntros (e2 (n', σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inversion H0. subst.
+  inversion Hstep; subst.
+  inversion Hstep; subst.
+  iDestruct "Hown" as "(?&Hown)".
+  iDestruct "Hown" as (mems disk0 disk1) "(Hown1&Hown2&?&?&Hp)".
+  iDestruct "Hp" as %(Heq_mem&?&Hsize&?).
+  iDestruct (gen_heap_valid with "Hown1 Hi") as %Hin_bound.
+  iModIntro. iSplitR "Hi HΦ".
+  - iFrame. iExists _, disk0, disk1. iFrame; iPureIntro; split_and!; eauto.
+    rewrite /state_wf. split_and; intuition; eauto.
+  - rewrite /lookup_mem/lookup_default -Heq_mem Hin_bound.
+    by iApply "HΦ".
+Qed.
+
+Lemma cas_non_stuck i v1 v2 σ:
+  ¬ TwoDisk.l.(step) (CAS i v1 v2) σ Err.
+Proof.
+  intros Hstuck. destruct Hstuck as [Hread|(v'&?&Hread&Hrest)].
+  - inversion Hread.
+  - destruct nat_eq_dec; subst; [apply bind_pure_no_err in Hrest|]; inversion Hrest.
+Qed.
+
+Lemma wp_cas_fail s E i v1 v2 v3 :
+  v1 ≠ v2 →
+  {{{ ▷ i m↦ v1 }}} cas i v2 v3 @ s; E {{{ RET v1; i m↦ v1 }}}.
+Proof.
+  iIntros (Hneq Φ) ">Hi HΦ". iApply wp_lift_call_step.
+  iIntros ((n, σ)) "Hown".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro. eapply snd_lift_non_err, cas_non_stuck. }
+  iIntros (e2 (n2, σ2) Hstep) "!>".
+  iDestruct "Hown" as "(?&Hown)".
+  iDestruct "Hown" as (mems disk0 disk1) "(Hown1&Hown2&?&?&Hp)".
+  iDestruct "Hp" as %(Heq_mem&?&Hsize&?).
+  iDestruct (gen_heap_valid with "Hown1 Hi") as %Hin_bound.
+  assert (Hlookup: σ.(mem_state) !! i = Some v1).
+  { rewrite -Heq_mem. apply Hin_bound. }
+  inversion Hstep; subst.
+  inversion H2 as (v'&σ2'&Hread&Hrest); subst.
+  rewrite /lookup_mem/lookup_default/reads Hlookup in Hread.
+  inversion Hread; subst.
+  destruct nat_eq_dec; first by exfalso.
+  inversion Hrest; subst.
+  iModIntro. iSplitR "Hi HΦ".
+  - iFrame. iExists _, disk0, disk1. iFrame; iPureIntro; split_and!; eauto.
+    split_and!; intuition eauto.
+  - by iApply "HΦ".
+Qed.
+
+Lemma wp_cas_suc s E i v1 v2 :
+  {{{ ▷ i m↦ v1 }}} cas i v1 v2 @ s; E {{{ RET v1; i m↦ v2 }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
+  iIntros ((n, σ)) "Hown".
+  iModIntro. iSplit.
+  { destruct s; auto using snd_lift_non_err, cas_non_stuck. }
+  iIntros (v2' (n2, σ2) Hstep) "!>".
+  iDestruct "Hown" as "(?&Hown)".
+  iDestruct "Hown" as (mems disk0 disk1) "(Hown1&Hown2&?&?&Hp)".
+  iDestruct "Hp" as %(Heq_mem&?&Hsize&?).
+  iDestruct (gen_heap_valid with "Hown1 Hi") as %Hin_bound.
+  assert (Hlookup: σ.(mem_state) !! i = Some v1).
+  { rewrite -Heq_mem. apply Hin_bound. }
+  inversion Hstep; subst.
+  inversion H2 as (v'&σ2'&Hread&Hrest); subst.
+  inversion Hread; subst.
+  rewrite /lookup_mem/lookup_default/reads Hlookup in Hread Hrest.
+  destruct nat_eq_dec; last by eauto.
+  destruct Hrest as ([]&?&Hputs&Hpure).
+  inversion Hpure; subst.
+  inversion Hputs; inversion Hpure; subst.
+  iMod (@gen_heap_update with "Hown1 Hi") as "(Hown1&Hi)".
+  iModIntro.
+  iSplitR "Hi HΦ".
+  - iFrame. iExists _, disk0, disk1. iFrame.
+    iPureIntro. split_and!.
+    * rewrite /upd_mem/upd_default//= Hin_bound //.
+    * done.
+    * split; intuition; eauto.
+      rewrite /upd_mem/upd_default//= => i'.
+      specialize (Hsize i').
+      destruct ((mem_state σ2') !! i) eqn:Heq; rewrite Heq.
+      ** case (decide (i = i')).
+         *** intros ->. simpl in *. rewrite -Hsize lookup_insert. split; eauto.
+         *** intros ?. rewrite lookup_insert_ne //=.
+      ** apply Hsize.
+  - iApply "HΦ". eauto.
+Qed.
+
+(*
+Lemma wp_write_disk0 s E i v' v :
+  {{{ ▷ i d0↦ v' }}} write_disk d0 i v @ s; E {{{ RET tt; i d0↦ v }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
+  iIntros ((n, σ)) "Hown".
+  iModIntro.
+  iSplit.
+  { destruct s; auto. iPureIntro. apply snd_lift_non_err.
+    inversion 1 as [H1|H1]; inversion H1; inversion H2; inversion H3.
+    inversion H5.
+  }
+  iIntros (e2 (n2, σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inversion H0 as ([]&?&Hhd&Htl).
+  inversion Htl; subst.
+  iDestruct "Hown" as "(?&Hown)".
+  iDestruct "Hown" as (mems disk0 disk1) "(Hmem&Hown0&Hown1&Hstatus&Hp)".
+  iDestruct "Hp" as %(Heq_mem&Heq_disk&?&Hsize).
+  iDestruct (gen_heap_valid with "Hown0 Hi") as %Hin_bound.
+  iMod (@gen_heap_update with "Hown0 Hi") as "[Hown0 Hi]".
+  iSplitR "Hi HΦ".
+  simpl in Heq_disk. destruct (σ.(disks_state)) as [?|?] eqn:Heq_state.
+  - simpl. rewrite Heq_state. iMod (disk_status_update_both with "Hstatus") as "$".
+    iFrame. iExists _, (<[i := v]>disk0), disk1. iFrame.
+    iFrame. simpl. intuition; eauto. subst.
+    inversion Hhd. iPureIntro.
+    split_and!; eauto.
+    inversion H2. subst. eauto.
+    inversion H2. subst. rewrite Heq_state => //=.
+    destruct x => //=. simpl.
+    simpl.
+    simpl in *. subst. simpl; intuition; eauto.
+    rewrite /upd_default.
+    * rewrite /upd_disk/upd_default Hin_bound //.
+    * split_and!; eauto. simpl in *. 
+    rewrite Heq_state.
+
+    split; eauto.
+    iExi
+
+  iModIntro. iSplitR "Hi HΦ".
+  - iFrame. iExists _, (<[i := v]>disk0), disk1. iFrame.
+    * inversion Hhd. inversion H2. subst.
+      destruct x. simpl. destruct disks_state0. simpl in *.
+      
+      simp.
+      simpl. simpl in *. destruct σ. destruct disks_state0. simpl in *.
+
+      ** inversion H2. subst.
+         simpl. rewrite /upd_disk/=. simpl.
+    iPureIntro. split_and!.
+    * done.
+    * rewrite /set_disk/upd_default -Heq_disk Hin_bound //.
+    * eauto.
+    * rewrite /set_disk/upd_default//= => i'.
+      specialize (Hsize i').
+      destruct ((disk_state σ) !! i) eqn:Heq; rewrite Heq.
+      ** case (decide (i = i')).
+         *** intros -> ?. apply Hsize; eauto.
+         *** intros ?. rewrite lookup_insert_ne //=.
+      ** apply Hsize.
+  - iApply "HΦ". eauto.
+Qed.
+
+Lemma wp_read_disk s E i v :
+  {{{ ▷ i d↦ v }}} read_disk i @ s; E {{{ RET v; i d↦ v }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
+  iIntros ((n, σ)) "Hown".
+  iModIntro. iSplit; first by destruct s.
+  iIntros (e2 (n2, σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inversion H0; subst.
+  iDestruct "Hown" as "(?&Hown)".
+  iDestruct "Hown" as (mems disks) "(Hown1&Hown2&Hp)".
+  iDestruct "Hp" as %(Heq_mem&Heq_disk&Hsize&?).
+  iDestruct (gen_heap_valid with "Hown2 Hi") as %Hin_bound.
+  iModIntro. iSplitR "Hi HΦ".
+  - iFrame. iExists _, _. iFrame; iPureIntro; split_and!; eauto.
+  - rewrite /get_disk/get_default -Heq_disk Hin_bound.
+    by iApply "HΦ".
+Qed.
+*)
+
+End lifting.
+
+(* Essentially the same as the verification of the spinlock in Iris heap_lang
+   except we don't allocate locks or pass the pointer to them; there is a dedicated
+   lock register. *)
+
+Class lockG Σ := LockG { lock_tokG :> inG Σ (exclR unitC) }.
+Definition lockΣ : gFunctors := #[GFunctor (exclR unitC)].
+Instance subG_lockΣ {Σ} : subG lockΣ Σ → lockG Σ.
+Proof. solve_inG. Qed.
+
+Section lock.
+  Context `{!exmachG Σ, !lockG Σ}.
+
+  Definition lock_inv (γ : gname) (i: addr) (P : iProp Σ) : iProp Σ :=
+    ((i m↦ 0 ∗ P ∗ own γ (Excl ())) ∨ (∃ v, i m↦ v ∗ ⌜ v ≠ 0 ⌝))%I.
+
+  Definition is_lock (N: namespace) (γ: gname) (i: addr) (P: iProp Σ) : iProp Σ :=
+    (inv N (lock_inv γ i P))%I.
+
+  Definition locked (γ: gname) : iProp Σ :=
+    own γ (Excl ()).
+
+  Global Instance is_lock_persistent N γ i R : Persistent (is_lock N γ i R).
+  Proof. apply _. Qed.
+
+  Global Instance locked_timless γ : Timeless (locked γ).
+  Proof. apply _. Qed.
+
+  Lemma lock_init N i v (R: iProp Σ) E : i m↦ v -∗ (⌜ v = 0 ⌝ -∗ R) ={E}=∗ ∃ γ, is_lock N γ i R.
+  Proof.
+    iIntros "Hl HR".
+    iMod (own_alloc (Excl ())) as (γ) "Hexcl"; first done.
+    iMod (inv_alloc N _ (lock_inv γ i R) with "[-]").
+    { iNext.
+      destruct (nat_eq_dec v 0).
+      * subst. iLeft; iFrame. iApply "HR"; auto.
+      * iRight. iExists _. iFrame. eauto.
+    }
+    iModIntro; iExists _; done.
+  Qed.
+
+  Lemma lock_init_unlocked N i (R: iProp Σ) E : i m↦ 0 -∗ R ={E}=∗ ∃ γ, is_lock N γ i R.
+  Proof.
+    iIntros "Hl HR".
+    iApply (lock_init with "Hl").
+    iIntros "_"; iFrame.
+  Qed.
+
+  Lemma lock_crack N i (R: iProp Σ) γ E :
+    ↑N ⊆ E →
+    is_lock N γ i R ={E, E ∖ ↑N}=∗ ▷ ∃ v, i m↦ v ∗ (⌜ v = 0 ⌝ -∗ R).
+  Proof.
+    intros. rewrite /is_lock. iIntros "Hinv".
+    iInv "Hinv" as "[(?&?&?)|HR]" "_".
+    - iModIntro. iExists 0. iNext. iFrame; iIntros; auto.
+    - iModIntro. iNext. iDestruct "HR" as (v) "(?&%)".
+      iExists v. iFrame. iIntros; congruence.
+  Qed.
+
+  Lemma wp_lock N γ i (R: iProp Σ):
+    {{{ is_lock N γ i R }}} lock i {{{ RET tt; locked γ ∗ R }}}.
+  Proof.
+    iIntros (Φ) "#Hlock HΦ". iLöb as "IH".
+    wp_loop; wp_bind.
+    iInv N as "[HL|>HUL]".
+    - iDestruct "HL" as "(>H&?&>?)".
+      iApply (wp_cas_suc with "[$]"). iIntros "!> Hl !>"; iFrame.
+      iSplitL "Hl".
+      { iRight. iNext. iExists _. iFrame. eauto. }
+      rewrite //=. wp_ret. wp_ret.
+      iApply "HΦ"; iFrame.
+    - iDestruct "HUL" as (v) "(?&%)".
+      iApply (wp_cas_fail with "[$]"); first done. iIntros "!> Hl !>"; iFrame.
+      iSplitL "Hl".
+      { iRight. iNext. iExists _. iFrame. eauto. }
+      rewrite //=. destruct nat_eq_dec; first by congruence. wp_ret. iApply "IH"; eauto.
+  Qed.
+
+  Lemma wp_unlock N γ i (R: iProp Σ):
+    {{{ is_lock N γ i R ∗ locked γ ∗ R }}} unlock i {{{ RET tt; True }}}.
+  Proof.
+    iIntros (Φ) "(#Hlock&Hlocked&HR) HΦ".
+    iInv N as "[HL|>HUL]".
+    - iDestruct "HL" as "(>H&?&>Htok)".
+      iDestruct (own_valid_2 with "Htok Hlocked") as %H => //=.
+    - iDestruct "HUL" as (v) "(?&%)".
+      iApply (wp_write_mem with "[$]"); iIntros "!> H !>".
+      iSplitR "HΦ"; last by iApply "HΦ".
+      iLeft. iFrame.
+  Qed.
+
+  Lemma wp_unlock' N γ i (R: iProp Σ):
+    is_lock N γ i R -∗ {{{ locked γ ∗ R }}} unlock i {{{ RET tt; True }}}.
+  Proof.
+    iIntros "#Hlock". iAlways.
+    iIntros (Φ) "(Hlocked&HR) HΦ".
+    iApply (wp_unlock with "[-HΦ]").
+    { iFrame "Hlock". iFrame. }
+    eauto.
+  Qed.
+End lock.
+
+(*
+Ltac wp_write_disk :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (write_disk ?loc ?val) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc d↦ _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
+        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
+        iApply (wp_write_disk with spat); iIntros ipat
+      end
+    end
+  end.
+
+Ltac wp_read_disk :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (read_disk ?loc) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc d↦ _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
+        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
+        iApply (wp_read_disk with spat); iIntros ipat
+      end
+    end
+  end.
+
+Ltac wp_write_mem :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (write_mem ?loc ?val) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc m↦ _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
+        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
+        iApply (wp_write_mem with spat); iIntros ipat
+      end
+    end
+  end.
+
+Ltac wp_read_mem :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (read_mem ?loc) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc m↦ _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
+        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
+        iApply (wp_read_mem with spat); iIntros ipat
+      end
+    end
+  end.
+
+Ltac wp_lock H :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (lock ?loc) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?Hlock) (is_lock _ _ ?loc _)] ] =>
+        let spat := constr:([(spec_patterns.SIdent (INamed Hlock) nil)]) in
+        iApply (wp_lock with spat); iIntros "!>"; iIntros H
+      end
+    end
+  end.
+
+(*
+  Try to make wp_step extensible using this pattern:
+  https://stackoverflow.com/questions/48868186/extensible-tactic-in-coq
+
+  I don't like this but it's pretty light weight to start with
+*)
+
+Ltac wp_step := first [ wp_read_disk | wp_write_disk | wp_read_mem | wp_write_mem | wp_ret ].
+
+Import spec_patterns.
+
+Definition spec_goal_extend (g: list (spec_patterns.spec_pat)) (s: ident) :=
+  match g with
+  | (SGoal g) :: nil =>
+    [SGoal {| spec_goal_kind := spec_goal_kind g;
+              spec_goal_negate := spec_goal_negate g;
+              spec_goal_frame := spec_goal_frame g;
+              spec_goal_hyps :=
+                match spec_goal_negate g with
+                | false => (s :: spec_goal_hyps g)
+                | _ => spec_goal_hyps g
+                end;
+              spec_goal_done := (spec_goal_done g) |}]
+  | _ => []
+  end.
+
+
+Ltac wp_unlock s :=
+  try wp_bind;
+  match goal with
+  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
+    match igoal with
+    | @wp _ _ _ _ _ _ _ (unlock ?loc) _  =>
+      match goal with
+      | [ |- context[ environments.Esnoc _ (INamed ?ilock) (is_lock _ ?name loc _)] ] =>
+        match goal with
+        | [ |- context[ environments.Esnoc _ (INamed ?ilocked) (locked name)] ] =>
+        let spat_parse := spec_patterns.spec_pat.parse s in
+        let spat' := eval vm_compute in (spec_goal_extend spat_parse ilocked) in
+        let spat := constr:((spec_patterns.SIdent (INamed ilock) nil) :: spat') in
+        let sel_frame_locked := constr:((sel_patterns.SelIdent (INamed ilocked)) :: nil) in
+        iApply (wp_unlock' with spat); [ iFrame sel_frame_locked | iIntros "!> _"]
+        end
+      end
+    end
+  end.
+*)

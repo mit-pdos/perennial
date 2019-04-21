@@ -79,8 +79,7 @@ Module TwoDisk.
 
   Inductive DisksState :=
   | BothDisks (d_0:disk) (d_1:disk)
-  | OnlyDisk0 (d_0:disk)
-  | OnlyDisk1 (d_1:disk).
+  | OnlyDisk (id: diskId) (d:disk).
 
   Inductive Op : Type -> Type :=
   | Read_Mem (i:addr) : Op nat
@@ -94,15 +93,15 @@ Module TwoDisk.
   Definition disk0 ds : option disk :=
     match disks_state ds with
     | BothDisks d_0 _ => Some d_0
-    | OnlyDisk0 d => Some d
-    | OnlyDisk1 _ => None
+    | OnlyDisk d0 d => Some d
+    | OnlyDisk d1 _ => None
     end.
 
   Definition disk1 ds : option disk :=
     match disks_state ds with
     | BothDisks _ d_1 => Some d_1
-    | OnlyDisk0 _ => None
-    | OnlyDisk1 d => Some d
+    | OnlyDisk d0 _ => None
+    | OnlyDisk d1 d => Some d
     end.
 
   Definition get_disk (i: diskId) (state: State) : option disk :=
@@ -146,13 +145,13 @@ Module TwoDisk.
     match i with
     | d0 => match state with
             | BothDisks _ d_1 => BothDisks d d_1
-            | OnlyDisk0 _ => OnlyDisk0 d
-            | OnlyDisk1 d_1 => BothDisks d d_1
+            | OnlyDisk d0 _ => OnlyDisk d0 d
+            | OnlyDisk d1 d_1 => BothDisks d d_1
             end
     | d1 => match state with
             | BothDisks d_0 _ => BothDisks d_0 d
-            | OnlyDisk0 d_0 => BothDisks d_0 d
-            | OnlyDisk1 _ => OnlyDisk1 d
+            | OnlyDisk d0 d_0 => BothDisks d_0 d
+            | OnlyDisk d1 _ => OnlyDisk d1 d
             end
     end.
 
@@ -160,11 +159,11 @@ Module TwoDisk.
   Definition maybe_fail_disk' (i:diskId) (state:DisksState) : DisksState :=
     match i with
     | d0 => match state with
-            | BothDisks _ d_1 => OnlyDisk1 d_1
+            | BothDisks _ d_1 => OnlyDisk d1 d_1
             | _ => state
             end
     | d1 => match state with
-            | BothDisks d_0 _ => OnlyDisk0 d_0
+            | BothDisks d_0 _ => OnlyDisk d0 d_0
             | _ => state
             end
     end.
@@ -203,7 +202,8 @@ Module TwoDisk.
 
   Definition crash_fun := (fun s => {| mem_state := init_zero; disks_state := disks_state s|}).
 
-  Definition disk_fail := rel_or (puts (maybe_fail_disk d0)) (puts (maybe_fail_disk d1)).
+  Definition disk_fail :=
+    rel_or (pure tt) (rel_or (puts (maybe_fail_disk d0)) (puts (maybe_fail_disk d1))).
 
   Definition dynamics : Dynamics Op State :=
     {| step T (op: Op T) :=
