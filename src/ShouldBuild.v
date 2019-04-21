@@ -5,6 +5,7 @@ From RecoveryRefinement Require Import Examples.AtomicPair.RefinementLog.
 From RecoveryRefinement Require Import Examples.Logging.LogRefinement.
 From RecoveryRefinement Require Import Examples.ReplicatedDisk.TwoDiskAPI.
 From RecoveryRefinement Require Import Examples.ReplicatedDisk.ReplicatedDiskImpl.
+From RecoveryRefinement Require Import Examples.ReplicatedDisk.WeakestPre.
 
 (* mailboat proof *)
 From RecoveryRefinement Require Import Examples.MailServer.MailRefinement.

@@ -444,10 +444,17 @@ Ltac inv_step :=
          | [ H : such_that _ _ _ |- _ ] => inversion H; subst; clear H
          | [ H : pure _ _ _ |- _ ] => inversion H; subst; clear H
          | [ H: puts _ _ _ |- _ ] => inversion H; subst; clear H
+         | [ H: reads _ _ _ |- _ ] => inversion H; subst; clear H
          | [ H : Some _ = Some _ |- _] => apply Some_inj in H; subst
          | [ H : Cinl _ = Cinl _ |- _] => inversion H; clear H; subst
          | [ H : (?a, ?b) = (?c, ?d) |- _] => apply pair_inj in H as (?&?); subst
          | [ H : disk_fail _ Err |- _] => exfalso; eapply disk_fail_non_err; eauto
+         | [ H: l.(Layer.sem).(Proc.step) ?op _ (Val _ _) |- _] =>
+           let Hhd := fresh "Hhd" in
+           let Htl := fresh "Htl" in
+           destruct H as (?&?&Hhd&Htl)
+         | [ H: l.(Layer.sem).(Proc.step) ?op _ (Val _ _) |- _] =>
+           inversion H; subst
          end; auto with twodb).
 
     Ltac inv_case :=
@@ -478,8 +485,7 @@ Proof.
   }
   iIntros (e2 (n2, σ2) Hstep) "!>".
   inversion Hstep; subst.
-  inversion H0 as ([]&?&Hhd&Htl).
-  inversion Htl; subst.
+  inv_step.
   iDestruct "Hown" as "(?&Hown)".
   iDestruct "Hown" as (mems disk0 disk1) "(Hmem&Hown0&Hown1&Hstatus&Hp)".
   iDestruct "Hp" as %(Heq_mem&Heq_disk&?&Hsize).
@@ -495,7 +501,7 @@ Proof.
     { iPureIntro.
       split_and!; eauto; inv_step .
       rewrite Heq_state => //=.
-      destruct x => //=.
+      destruct x0 => //=.
       simpl in *. subst. simpl; intuition; eauto.
       rewrite /upd_default.
       * rewrite /upd_disk/upd_default Hin_bound //.
@@ -523,7 +529,7 @@ Proof.
       iPureIntro.
       split_and!; eauto.
       ** rewrite /upd_disk/upd_default Heq_state => //=.
-         destruct x => //=.
+         destruct x0 => //=.
          simpl in *. subst. simpl; intuition; eauto.
          rewrite Hin_bound //.
       ** split_and!; intuition eauto with twodb.
@@ -536,33 +542,137 @@ Proof.
       iPureIntro.
       split_and!; eauto.
       ** rewrite /upd_disk/upd_default Heq_state => //=.
-         destruct x => //=.
+         destruct x0 => //=.
          simpl in *. subst. simpl; intuition; eauto.
       ** split_and!; intuition eauto with twodb.
   }
   by iApply "HΦ".
 Qed.
 
-(*
-Lemma wp_read_disk s E i v :
-  {{{ ▷ i d↦ v }}} read_disk i @ s; E {{{ RET v; i d↦ v }}}.
+Definition status_token (ds: DisksState) : iProp Σ :=
+  match ds with
+    | BothDisks _ _ => True%I
+    | OnlyDisk id _ => is_OnlyDisk id
+  end.
+
+Lemma disk_status_update σ σ' u:
+  disk_fail σ (Val σ' u) →
+  disk_status_ctx σ.(disks_state) ==∗
+  (disk_status_ctx σ'.(disks_state) ∗ status_token σ'.(disks_state)).
+Proof.
+  intros Hfail.
+  destruct σ as (?&[]).
+  * inversion Hfail; inv_step; try inv_case; inv_step; eauto => //=;
+    iIntros "H"; eauto; iMod (disk_status_update_both with "[$]") as "H"; eauto.
+  * eapply disk_fail_only_one in Hfail; subst; eauto.
+Qed.
+
+Lemma wp_read_disk0 s E i v :
+  {{{ ▷ i d0↦ v }}}
+    read_disk d0 i @ s; E
+  {{{ mv, RET mv;
+      i d0↦ v ∗ match mv with
+                | None => is_OnlyDisk d1
+                | Some v' => ⌜ v = v' ⌝
+                end }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
   iIntros ((n, σ)) "Hown".
-  iModIntro. iSplit; first by destruct s.
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro. apply snd_lift_non_err.
+    inversion 1; inv_step. repeat deex. inv_step.
+  }
   iIntros (e2 (n2, σ2) Hstep) "!>".
   inversion Hstep; subst.
-  inversion H0; subst.
+  inv_step.
   iDestruct "Hown" as "(?&Hown)".
-  iDestruct "Hown" as (mems disks) "(Hown1&Hown2&Hp)".
+  iDestruct "Hown" as (mems disk0 disk1) "(Hown_mem&Hown0&Hown1&Hstatus&Hp)".
   iDestruct "Hp" as %(Heq_mem&Heq_disk&Hsize&?).
-  iDestruct (gen_heap_valid with "Hown2 Hi") as %Hin_bound.
-  iModIntro. iSplitR "Hi HΦ".
-  - iFrame. iExists _, _. iFrame; iPureIntro; split_and!; eauto.
-  - rewrite /get_disk/get_default -Heq_disk Hin_bound.
-    by iApply "HΦ".
+  iDestruct (gen_heap_valid with "Hown0 Hi") as %Hin_bound.
+  simpl in Heq_disk.
+  iMod (disk_status_update with "Hstatus") as "($&Htok)"; first eauto.
+  destruct (σ.(disks_state)) as [?|?] eqn:Heq_state.
+  - simpl. iFrame. iSplitR "Hi HΦ Htok".
+    * iExists _, disk0, disk1. iFrame.
+      iFrame. simpl. intuition; eauto. subst.
+      inversion Hhd.
+      { iPureIntro.
+        split_and!; eauto; inv_step .
+        rewrite Heq_state => //=.
+        split_and!; intuition eauto with twodb.
+      }
+      inv_case; inv_step.
+      { iPureIntro.
+        split_and!; eauto.
+        subst; rewrite /maybe_fail_disk Heq_state => //=.
+        split_and!; intuition eauto with twodb.
+      }
+      { iPureIntro.
+        split_and!; eauto.
+        subst; rewrite /maybe_fail_disk Heq_state => //=.
+        split_and!; intuition eauto with twodb.
+      }
+    * inversion Hhd.
+      {
+        rewrite /lookup_disk/get_disk/TwoDisk.disk0. inv_step. rewrite Heq_state.
+        rewrite /lookup_default. intuition. subst. rewrite Hin_bound.
+        iApply "HΦ"; eauto.
+      }
+      inv_case; inv_step.
+      {
+        rewrite /lookup_disk/get_disk/maybe_fail_disk Heq_state //=.
+        iApply "HΦ"; eauto.
+      }
+      {
+        rewrite /lookup_disk/get_disk/maybe_fail_disk Heq_state //=.
+        rewrite /lookup_default. intuition. subst. rewrite Hin_bound.
+        iApply "HΦ"; eauto.
+      }
+  - eapply disk_fail_only_one in Hhd; eauto. subst.
+    simpl. iFrame. iSplitR "Hi HΦ Htok".
+    * iExists _, disk0, disk1. iFrame.
+      iFrame. simpl. intuition; eauto. subst.
+      iPureIntro.
+      split_and!; eauto.
+      subst; rewrite /maybe_fail_disk Heq_state => //=.
+      split_and!; intuition eauto with twodb.
+    * rewrite /lookup_disk/get_disk/TwoDisk.disk0/TwoDisk.disk1 ?Heq_state //=.
+      destruct id; rewrite /lookup_default; intuition; subst; rewrite ?Hin_bound;
+      iApply "HΦ"; eauto.
 Qed.
-*)
+
+Lemma wp_read_disk0_only0 s E i v :
+  {{{ ▷ i d0↦ v ∗ ▷ is_OnlyDisk d0 }}}
+    read_disk d0 i @ s; E
+  {{{ RET (Some v); i d0↦ v }}}.
+Proof.
+  iIntros (Φ) "(>Hi&>His_only) HΦ". iApply wp_lift_call_step.
+  iIntros ((n, σ)) "Hown".
+  iModIntro. iSplit.
+  { destruct s; auto. iPureIntro. apply snd_lift_non_err.
+    inversion 1; inv_step. repeat deex. inv_step.
+  }
+  iIntros (e2 (n2, σ2) Hstep) "!>".
+  inversion Hstep; subst.
+  inv_step.
+  iDestruct "Hown" as "(?&Hown)".
+  iDestruct "Hown" as (mems disk0 disk1) "(Hown_mem&Hown0&Hown1&Hstatus&Hp)".
+  iDestruct "Hp" as %(Heq_mem&Heq_disk&Hsize&?).
+  iDestruct (gen_heap_valid with "Hown0 Hi") as %Hin_bound.
+  iDestruct (disk_status_agree with "[$] [$]") as %Hstatus.
+  destruct Hstatus as (disk0'&Heq). simpl in *.
+  rewrite Heq in Heq_disk. subst.
+  eapply disk_fail_only_one in Hhd; eauto. subst.
+  iFrame. iSplitR "Hi HΦ".
+    * iExists _, disk0', disk1. iFrame.
+      iPureIntro.
+      split_and!; eauto; inv_step.
+      rewrite Heq => //=.
+      split_and!; intuition eauto with twodb.
+    * rewrite /lookup_disk/get_disk/TwoDisk.disk0. inv_step. rewrite Heq.
+      rewrite /lookup_default. intuition. subst. rewrite Hin_bound.
+      iApply "HΦ"; eauto.
+Qed.
 
 End lifting.
 
