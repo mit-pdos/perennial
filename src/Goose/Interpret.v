@@ -14,22 +14,6 @@ From RecoveryRefinement Require Import Goose.Machine Goose.Filesys Goose.Heap Go
 
 Import ProcNotations.
 
-Record natbyte : Type := Byte {
-                       b : nat;
-                       _ : b < 256;
-                     }.
-Definition natbyte0 : natbyte.
-Proof.
-  eapply Byte with (b := 0).
-  destruct (zerop 256); eauto. discriminate.
-Qed.
-
-Definition ascii_to_natbyte : Ascii.ascii -> natbyte.
-Proof.
-  intros a.
-  eapply Byte with (b := Ascii.nat_of_ascii a).
-Admitted.
-
 Instance goModel : GoModel :=
   { byte := unit;
     byte0 := tt;
@@ -50,6 +34,11 @@ Instance goModel : GoModel :=
 
 Declare Instance goModelWf : GoModelWf goModel.
 
+Definition es : Type := (@Proc.State Go.State).
+Definition gs : Type := Go.State.
+Definition fs : Type := FS.State.
+Definition ds : Type := Data.State.
+
 Module RTerm.
   Inductive t : Type -> Type -> Type -> Type :=
   | Pure A T : T -> t A A T
@@ -57,18 +46,22 @@ Module RTerm.
      specified, so we require one in the constructor. *)
   (* | Identity A T : T -> t A A T *)
   (* | None A B T : t A B T *)
-  | Reads A T : (A -> T) -> t A A T
-  | Puts A : (A -> A) -> t A A unit
+  | Reads T : (gs -> T) -> t gs gs T
+  | Puts : (gs -> gs) -> t gs gs unit
   | Error A B T : t A B T
-  | ReadSome A T : (A -> option T) -> t A A T
-  | ReadNone A T : (A -> option T) -> t A A unit
-  | AndThen A B C T1 T2 : t A B T1 -> (T1 -> t B C T2) -> t A C T2
+  | ReadSome T : (gs -> option T) -> t gs gs T
+  | ReadNone T : (gs -> option T) -> t gs gs unit
+  | AndThen T1 T2 : t gs gs T1 -> (T1 -> t gs gs T2) -> t gs gs T2
   | AllocPtr ty : Data.ptrRawModel ty -> t Go.State Go.State (goModel.(@Ptr) ty)
   | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t Go.State Go.State unit
   | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
   | FstLift A1 A2 B T : t A1 A2 T -> t (A1 * B) (A2 * B) T
   | SndLift A1 A2 B T : t A1 A2 T -> t (B * A1) (B * A2) T
   | NotImpl A B T (r: relation A B T) : t A B T
+
+  | Ret A T : T -> t A A T (* same as Pure, and we could just refl Rets to Pures *)
+  | Call T : t gs gs T -> t es es T
+  | Bind T1 T2 : t es es T1 -> (T1 -> t es es T2) -> t es es T2 (* Could be AndThens *)
   .
 End RTerm.
 
@@ -85,53 +78,64 @@ Arguments NotImpl {_ _}.
 Definition ptrMap := nat.
 Definition ptrMap_null : ptrMap := 1.
 
-Fixpoint interpret' (A B T : Type) (r : RTerm.t A B T) (X : A*ptrMap) : Output (B*ptrMap) T :=
-  match r in (RTerm.t A B T) return ((A * ptrMap) -> Output (B * ptrMap) T) with
-  | RTerm.Pure A t => fun x => Success x t
-  | RTerm.Reads f => fun x => Success x (f (fst x))
+Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output (gs*ptrMap) T :=
+  match r with
+  | RTerm.Pure A t => Success X t
+  | RTerm.Reads f => Success X (f (fst X))
   | RTerm.ReadSome f =>
-      fun x =>
-      let t' := f (fst x) in match t' with
-                        | Some t => Success x t
+      let t' := f (fst X) in match t' with
+                        | Some t => Success X t
                         | None => Error
                         end
   | RTerm.ReadNone f =>
-      fun x =>
-      let t' := f (fst x) in match t' with
+      let t' := f (fst X) in match t' with
                         | Some t => Error
-                        | None => Success x tt
+                        | None => Success X tt
                         end
-  | RTerm.Puts f => fun x => Success (f (fst x), snd x) tt
-  | RTerm.Error _ _ _ => (fun x => Error)
+  | RTerm.Puts f => Success (f (fst X), snd X) tt
+  | RTerm.Error _ _ _ => (Error)
   | RTerm.AllocPtr _ prm => 
-    fun x => let p := snd x
+    let p := snd X
                  in let f := (set Go.fs (set FS.heap (@set Data.State (DynMap goModel.(@Ptr) Data.ptrModel) Data.allocs _ (updDyn p (Unlocked, prm)))))
-                        in Success (f (fst x), (snd x) + 1) p
+                        in Success (f (fst X), (snd X) + 1) p
   | RTerm.UpdAllocs p pm =>
-    fun x => let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (updDyn p pm))))
-                        in Success (f (fst x), snd x) tt
+    let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (updDyn p pm))))
+                        in Success (f (fst X), snd X) tt
   | RTerm.DelAllocs p =>
-    fun x => let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (deleteDyn p))))
-                        in Success (f (fst x), snd x) tt
+    let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (deleteDyn p))))
+                        in Success (f (fst X), snd X) tt
   | RTerm.AndThen r f =>
-      fun x =>
-      let o := interpret' r x in
+      let o := interpret_gs r X in
       match o with
-      | Success b t => let r' := f t in let o' := interpret' r' b in o'
+      | Success b t => let r' := f t in let o' := interpret_gs r' b in o'
       | Error => Error
       | NotImpl => NotImpl
       end
-  | RTerm.FstLift _ _ => fun x => NotImpl
-  | RTerm.SndLift _ _ => fun x => NotImpl
-  | RTerm.NotImpl _ => fun x => NotImpl
-  end X.
+  | RTerm.FstLift _ _ => NotImpl
+  | RTerm.SndLift _ _ => NotImpl
+  | RTerm.NotImpl _ => NotImpl
+  | _ => NotImpl
+  end.
 
-Definition interpret (A B T : Type) (r: RTerm.t A B T) : A -> Output B T :=
-  fun a => match interpret' r (a, ptrMap_null) with
-           | Success x t => Success (fst x) t
-           | Error => Error
-           | NotImpl => NotImpl
-           end.
+Fixpoint interpret_es (T : Type) (r : RTerm.t es es T) (X : es*ptrMap) : Output (es*ptrMap) T :=
+  match r with
+  | RTerm.Ret A t => Success X t
+  | RTerm.Call r => let (e, pm) := X in
+                    let (thr, g) := e in
+                    match (interpret_gs r (g, pm)) with
+                    | Success (g', pm') t => Success ((thr, g'), pm') t
+                    | Error => Error                                                  
+                    | NotImpl => NotImpl                                                  
+                    end
+  | RTerm.Bind r f =>
+      let o := interpret_es r X in
+      match o with
+      | Success e t => let r' := f t in let o' := interpret_es r' e in o'
+      | Error => Error
+      | NotImpl => NotImpl
+      end
+  | _ => NotImpl
+  end.
 
 Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   match r with
@@ -148,12 +152,19 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.FstLift _ r => fst_lift (rtermDenote r)
   | RTerm.SndLift _ r => snd_lift (rtermDenote r)
   | RTerm.NotImpl r => r
+                         
+  | RTerm.Ret _ x => pure x
+  | RTerm.Bind r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
+  | RTerm.Call r => snd_lift (rtermDenote r)
   end.
 
 Ltac refl' RetB RetT e :=
   match eval simpl in e with
-  | fun x : ?T => @pure ?A _ (@?E x) =>
-    constr: (fun x => RTerm.Pure A (E x))
+  | fun x : ?T => @pure gs _ (@?E x) =>
+    constr: (fun x => RTerm.Pure gs (E x))
+
+  | fun x : ?T => @pure es _ (@?E x) =>
+    constr: (fun x => RTerm.Ret es (E x))
 
   | fun x : ?T => @reads ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
     constr: (fun x => RTerm.Reads (f x))
@@ -179,18 +190,27 @@ Ltac refl' RetB RetT e :=
   | fun x: ?T => @Data.delAllocs ?ty ?p =>
     constr: (fun x => RTerm.DelAllocs ty p)
 
-  | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
-    let f1 := refl' B T1 r1 in
-    let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
+  | fun x: ?T => @and_then gs gs gs ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
+    let f1 := refl' gs T1 r1 in
+    let f2 := refl' gs T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
     constr: (fun x => RTerm.AndThen (f1 x) (fun y => f2 (x, y)))
+
+  | fun x: ?T => @and_then es es es ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
+    let f1 := refl' es T1 r1 in
+    let f2 := refl' es T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
+    constr: (fun x => RTerm.Bind (f1 x) (fun y => f2 (x, y)))
 
   | fun x: ?T => @fst_lift ?A1 ?A2 ?B ?T (@?r x) =>
     let f := refl' A2 T r in
     constr: (fun x => RTerm.FstLift (f x))
+
+  | fun x: ?T => @snd_lift gs gs nat ?T (@?r x) =>
+    let f := refl' gs T r in
+    constr: (fun x => RTerm.Call (f x))
               
-  | fun x: ?T => @snd_lift ?A1 ?A2 ?B ?T (@?r x) =>
+(*  | fun x: ?T => @snd_lift ?A1 ?A2 ?B ?T (@?r x) =>
     let f := refl' A2 T r in
-    constr: (fun x => RTerm.SndLift (f x))
+    constr: (fun x => RTerm.SndLift (f x))*)
 
   | fun x : ?T => @?E x =>
     constr: (fun x => RTerm.NotImpl (E x))
@@ -208,6 +228,10 @@ Ltac test e :=
   let t := refl e in
   let e' := eval cbv [rtermDenote] in (rtermDenote t) in
   unify e e'.
+
+Ltac reflproc p :=
+  let t := eval cbv [Proc.exec_step] in (Proc.exec_step Go.sem p) in
+  refl t.
 
 Ltac reflop_fs o :=
   let t := eval cbv [FS.step] in (_zoom Go.fs (FS.step o)) in
@@ -237,6 +261,14 @@ Definition reify T {model : GoModel} {model_wf : GoModelWf model}
     | [ H : o = ?A |- _ ] => let x := reflop_glob A in exact x
     end.
 Qed.
+
+Definition reify_proc T {model : GoModel} {model_wf : GoModelWf model}
+           (proc : proc Op T)  : RTerm.t es es T.
+  destruct proc eqn:?;
+  match goal with
+  | [ H : proc = ?A |- _ ] => let x := reflproc A in idtac x
+  end.
+
 
 (* Prove Interpreter *)
 Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A),
