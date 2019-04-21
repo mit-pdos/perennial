@@ -357,7 +357,115 @@ Proof.
   - iApply "HΦ". eauto.
 Qed.
 
-(*
+Lemma wf_range_pres_update (m: gmap addr nat) i v:
+  wf_range m → wf_range (upd_default i v m).
+Proof.
+  intros Hwf i'. rewrite -Hwf.
+  rewrite /upd_default.
+  destruct (decide (i = i')).
+  - subst. destruct (m !! i') as [?|] eqn:Heq; rewrite Heq.
+    * rewrite lookup_insert //=. split; eauto.
+    * rewrite -Heq. eauto.
+  - destruct (m !! i) as [?|] eqn:Heq; rewrite ?Heq.
+    * rewrite lookup_insert_ne //=.
+    * eauto.
+Qed.
+
+Hint Resolve wf_range_pres_update : twodb.
+
+Lemma wf_disk0_update id0 i v x:
+  wf_disk (disk0 x) →
+  wf_disk (disk0 (upd_disk id0 i v x)).
+Proof.
+  destruct x as (?&ds).
+  destruct ds; try destruct id0; try destruct id; auto => //=; eauto with twodb.
+Qed.
+
+Lemma wf_disk1_update id0 i v x:
+  wf_disk (disk1 x) →
+  wf_disk (disk1 (upd_disk id0 i v x)).
+Proof.
+  destruct x as (?&ds).
+  destruct ds; try destruct id0; try destruct id; auto => //=; eauto with twodb.
+Qed.
+
+Lemma wf_disk0_fail id0 x:
+  wf_disk (disk0 x) →
+  wf_disk (disk0 (maybe_fail_disk id0 x)).
+Proof.
+  destruct x as (?&ds).
+  destruct ds; try destruct id0; try destruct id; auto => //=; eauto with twodb.
+Qed.
+
+Lemma wf_disk1_fail id0 x:
+  wf_disk (disk1 x) →
+  wf_disk (disk1 (maybe_fail_disk id0 x)).
+Proof.
+  destruct x as (?&ds).
+  destruct ds; try destruct id0; try destruct id; auto => //=; eauto with twodb.
+Qed.
+
+Lemma disk_fail_only_one σ σ' id d u:
+  disks_state σ = OnlyDisk id d →
+  disk_fail σ (Val σ' u) →
+  σ = σ'.
+Proof.
+  intros Hds.
+  inversion 1; inversion H1; subst; eauto.
+  - inversion H2. subst.
+  destruct σ. destruct disks_state0. subst.
+  simpl in *. congruence.
+  simpl in *. inversion Hds. subst. simpl.
+  destruct id; simpl; rewrite //=.
+  - inversion H2. subst.
+  destruct σ. destruct disks_state0. subst.
+  simpl in *. congruence.
+  simpl in *. inversion Hds. subst. simpl.
+  destruct id; simpl; rewrite //=.
+Qed.
+
+Lemma disk_fail_non_err σ:
+  ¬ disk_fail σ Err.
+Proof.
+  inversion 1 as [Hp|Hor]. inversion Hp.
+  inversion Hor as [Hp|Hp]; inversion Hp.
+Qed.
+
+Hint Resolve wf_disk0_fail wf_disk1_fail wf_disk0_update wf_disk1_update disk_fail_non_err : twodb.
+
+Ltac inv_step :=
+  repeat (match goal with
+         | [ H : unit |- _ ] => destruct H
+         | [ H : and_then _ _ _ Err  |- _ ] =>
+           let Hhd_err := fresh "Hhd_err" in
+           let Hhd := fresh "Hhd" in
+           let Htl_err := fresh "Htl_err" in
+           inversion H as [Hhd_err|(?&?&Hhd&Htl_err)]; clear H
+         | [ H : such_that _ _ _ |- _ ] => inversion H; subst; clear H
+         | [ H : pure _ _ _ |- _ ] => inversion H; subst; clear H
+         | [ H: puts _ _ _ |- _ ] => inversion H; subst; clear H
+         | [ H : Some _ = Some _ |- _] => apply Some_inj in H; subst
+         | [ H : Cinl _ = Cinl _ |- _] => inversion H; clear H; subst
+         | [ H : (?a, ?b) = (?c, ?d) |- _] => apply pair_inj in H as (?&?); subst
+         | [ H : disk_fail _ Err |- _] => exfalso; eapply disk_fail_non_err; eauto
+         end; auto with twodb).
+
+    Ltac inv_case :=
+      match goal with
+      | [ H : rel_or _ _ _ _ |- _ ] =>
+        let Hcase := fresh "Hcase" in
+        inversion H as [Hcase|Hcase]
+      end.
+
+      Lemma disk_status_ctx_upd id0 i v x:
+        disk_status_ctx (disks_state (upd_disk id0 i v x)) =
+        disk_status_ctx (disks_state x).
+      Proof.
+        rewrite /disk_status_ctx/to_status.
+        destruct x as (?&[]); destruct id0; try destruct id; rewrite //=.
+      Qed.
+
+Set Nested Proofs Allowed.
 Lemma wp_write_disk0 s E i v' v :
   {{{ ▷ i d0↦ v' }}} write_disk d0 i v @ s; E {{{ RET tt; i d0↦ v }}}.
 Proof.
@@ -366,8 +474,7 @@ Proof.
   iModIntro.
   iSplit.
   { destruct s; auto. iPureIntro. apply snd_lift_non_err.
-    inversion 1 as [H1|H1]; inversion H1; inversion H2; inversion H3.
-    inversion H5.
+    inversion 1; inv_step. repeat deex. inv_step.
   }
   iIntros (e2 (n2, σ2) Hstep) "!>".
   inversion Hstep; subst.
@@ -379,49 +486,64 @@ Proof.
   iDestruct (gen_heap_valid with "Hown0 Hi") as %Hin_bound.
   iMod (@gen_heap_update with "Hown0 Hi") as "[Hown0 Hi]".
   iSplitR "Hi HΦ".
+  {
   simpl in Heq_disk. destruct (σ.(disks_state)) as [?|?] eqn:Heq_state.
   - simpl. rewrite Heq_state. iMod (disk_status_update_both with "Hstatus") as "$".
     iFrame. iExists _, (<[i := v]>disk0), disk1. iFrame.
     iFrame. simpl. intuition; eauto. subst.
-    inversion Hhd. iPureIntro.
-    split_and!; eauto.
-    inversion H2. subst. eauto.
-    inversion H2. subst. rewrite Heq_state => //=.
-    destruct x => //=. simpl.
-    simpl.
-    simpl in *. subst. simpl; intuition; eauto.
-    rewrite /upd_default.
-    * rewrite /upd_disk/upd_default Hin_bound //.
-    * split_and!; eauto. simpl in *. 
-    rewrite Heq_state.
-
-    split; eauto.
-    iExi
-
-  iModIntro. iSplitR "Hi HΦ".
-  - iFrame. iExists _, (<[i := v]>disk0), disk1. iFrame.
-    * inversion Hhd. inversion H2. subst.
-      destruct x. simpl. destruct disks_state0. simpl in *.
-      
-      simp.
-      simpl. simpl in *. destruct σ. destruct disks_state0. simpl in *.
-
-      ** inversion H2. subst.
-         simpl. rewrite /upd_disk/=. simpl.
-    iPureIntro. split_and!.
-    * done.
-    * rewrite /set_disk/upd_default -Heq_disk Hin_bound //.
-    * eauto.
-    * rewrite /set_disk/upd_default//= => i'.
-      specialize (Hsize i').
-      destruct ((disk_state σ) !! i) eqn:Heq; rewrite Heq.
-      ** case (decide (i = i')).
-         *** intros -> ?. apply Hsize; eauto.
-         *** intros ?. rewrite lookup_insert_ne //=.
-      ** apply Hsize.
-  - iApply "HΦ". eauto.
+    inversion Hhd.
+    { iPureIntro.
+      split_and!; eauto; inv_step .
+      rewrite Heq_state => //=.
+      destruct x => //=.
+      simpl in *. subst. simpl; intuition; eauto.
+      rewrite /upd_default.
+      * rewrite /upd_disk/upd_default Hin_bound //.
+      * split_and!; intuition eauto with twodb.
+    }
+    inv_case; inv_step.
+    { iPureIntro.
+      split_and!; eauto.
+      subst; rewrite /maybe_fail_disk Heq_state => //=.
+      split_and!; intuition eauto with twodb.
+    }
+    { iPureIntro.
+      split_and!; eauto.
+      subst; rewrite /maybe_fail_disk Heq_state => //=.
+      * rewrite /upd_disk/upd_default Hin_bound //.
+      * split_and!; intuition eauto with twodb.
+    }
+  - destruct id.
+    * subst.
+      rewrite Heq_state. simpl. iFrame. simpl. rewrite /disk_state_interp.
+      iFrame. iExists _, (<[i := v]>d), disk1. iFrame.
+      iFrame. eapply disk_fail_only_one in Hhd; eauto. subst.
+      inv_step.
+      rewrite disk_status_ctx_upd Heq_state. iFrame.
+      iPureIntro.
+      split_and!; eauto.
+      ** rewrite /upd_disk/upd_default Heq_state => //=.
+         destruct x => //=.
+         simpl in *. subst. simpl; intuition; eauto.
+         rewrite Hin_bound //.
+      ** split_and!; intuition eauto with twodb.
+    * subst.
+      rewrite Heq_state. simpl. iFrame. simpl. rewrite /disk_state_interp.
+      iFrame. iExists _, (<[i := v]>disk0), d. iFrame.
+      iFrame. eapply disk_fail_only_one in Hhd; eauto. subst.
+      inv_step.
+      rewrite disk_status_ctx_upd Heq_state. iFrame.
+      iPureIntro.
+      split_and!; eauto.
+      ** rewrite /upd_disk/upd_default Heq_state => //=.
+         destruct x => //=.
+         simpl in *. subst. simpl; intuition; eauto.
+      ** split_and!; intuition eauto with twodb.
+  }
+  by iApply "HΦ".
 Qed.
 
+(*
 Lemma wp_read_disk s E i v :
   {{{ ▷ i d↦ v }}} read_disk i @ s; E {{{ RET v; i d↦ v }}}.
 Proof.
