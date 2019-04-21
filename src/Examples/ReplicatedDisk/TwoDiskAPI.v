@@ -87,9 +87,7 @@ Module TwoDisk.
   | Write_Mem (i:addr) (v:nat) : Op unit
   | CAS (i:addr) (vold: nat) (vnew:nat) : Op nat
   | Read_Disk (id: diskId) (i:addr) : Op (option nat)
-  | Write_Disk (id: diskId) (i:addr) (v:nat) : Op unit
-  | MaybeFailDisk : Op unit
-  | Fail : Op unit.
+  | Write_Disk (id: diskId) (i:addr) (v:nat) : Op unit.
 
   Record State := mkState { mem_state: gmap addr nat; disks_state: DisksState }.
 
@@ -205,17 +203,16 @@ Module TwoDisk.
 
   Definition crash_fun := (fun s => {| mem_state := init_zero; disks_state := disks_state s|}).
 
+  Definition disk_fail := rel_or (puts (maybe_fail_disk d0)) (puts (maybe_fail_disk d1)).
+
   Definition dynamics : Dynamics Op State :=
     {| step T (op: Op T) :=
          match op with
          | Read_Mem i => reads (lookup_mem i)
          | Write_Mem i v => puts (upd_mem i v)
-         | Read_Disk id i => reads (lookup_disk id i)
-         | Write_Disk id i v => puts (upd_disk id i v)
+         | Read_Disk id i => (disk_fail;; reads (lookup_disk id i))
+         | Write_Disk id i v => (disk_fail;; puts (upd_disk id i v))
          | CAS i vold vnew => cas_rel i vold vnew
-         | MaybeFailDisk => rel_or (puts (maybe_fail_disk d0))
-                                     (puts (maybe_fail_disk d1))
-         | Fail => error
          end;
        crash_step := puts crash_fun;
        finish_step := puts crash_fun |}.
@@ -245,7 +242,6 @@ Definition write_mem i v := Call (TwoDisk.Write_Mem i v).
 Definition read_disk id i := Call (TwoDisk.Read_Disk id i).
 Definition write_disk id i v := Call (TwoDisk.Write_Disk id i v).
 Definition cas i vold vnew := Call (TwoDisk.CAS i vold vnew).
-Definition assert (b: bool) := if b then (_ <- Ret (); Ret ())%proc else Call (TwoDisk.Fail).
 
 Definition lock i : proc TwoDisk.Op unit :=
   Loop (fun (_ : unit) =>
