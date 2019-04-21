@@ -523,12 +523,12 @@ Import Mail.
 
   Lemma open_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} :
     {{{ j ⤇ K (Call Open) ∗ Registered ∗ ExecInv }}}
-      MailServer.Open
+      MailServer.open
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
     iDestruct "Hrest" as (Γ γ) "(#Hsource&#Hinv)".
-    rewrite /MailServer.Open.
+    rewrite /MailServer.open.
     wp_bind.
     (* Take out the ghost variables needed to create the locks *)
     iInv "Hinv" as "H".

@@ -10,7 +10,7 @@ Module partialFile.
   Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
 End partialFile.
 
-Definition getUserDir {model:GoModel} (user:uint64) : proc string :=
+Definition GetUserDir {model:GoModel} (user:uint64) : proc string :=
   Ret ("user" ++ uint64_to_string user).
 
 Definition SpoolDir : string := "spool".
@@ -51,7 +51,7 @@ Definition Pickup {model:GoModel} (user:uint64) : proc (slice.t Message.t) :=
   ls <- Globals.getX;
   l <- Data.sliceRead ls user;
   _ <- Data.lockAcquire l Writer;
-  userDir <- getUserDir user;
+  userDir <- GetUserDir user;
   names <- FS.list userDir;
   messages <- Data.newPtr (slice.t Message.t);
   initMessages <- Data.newSlice Message.t 0;
@@ -105,7 +105,7 @@ Definition writeTmp {model:GoModel} (data:slice.t byte) : proc string :=
 (* Deliver stores a new message.
    Does not require holding the per-user pickup/delete lock. *)
 Definition Deliver {model:GoModel} (user:uint64) (msg:slice.t byte) : proc unit :=
-  userDir <- getUserDir user;
+  userDir <- GetUserDir user;
   tmpName <- writeTmp msg;
   initID <- Data.randomUint64;
   _ <- Loop (fun id =>
@@ -120,7 +120,7 @@ Definition Deliver {model:GoModel} (user:uint64) (msg:slice.t byte) : proc unit 
 (* Delete deletes a message for the current user.
    Requires the per-user lock, acquired with pickup. *)
 Definition Delete {model:GoModel} (user:uint64) (msgID:string) : proc unit :=
-  userDir <- getUserDir user;
+  userDir <- GetUserDir user;
   FS.delete userDir msgID.
 
 (* Lock acquires the lock for the current user *)
@@ -135,7 +135,7 @@ Definition Unlock {model:GoModel} (user:uint64) : proc unit :=
   l <- Data.sliceRead locks user;
   Data.lockRelease l Writer.
 
-Definition Open {model:GoModel} : proc unit :=
+Definition open {model:GoModel} : proc unit :=
   locks <- Data.newPtr (slice.t LockRef);
   initLocks <- Data.newSlice LockRef 0;
   _ <- Data.writePtr locks initLocks;
@@ -150,6 +150,9 @@ Definition Open {model:GoModel} : proc unit :=
           Continue (i + 1)) 0;
   finalLocks <- Data.readPtr locks;
   Globals.setX finalLocks.
+
+Definition init {model:GoModel} : proc unit :=
+  open.
 
 Definition Recover {model:GoModel} : proc unit :=
   spooled <- FS.list SpoolDir;
