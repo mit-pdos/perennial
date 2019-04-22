@@ -128,7 +128,9 @@ Definition DoSomething {model:GoModel} (s:string) : proc unit :=
 Definition conditionalInLoop {model:GoModel} : proc unit :=
   Loop (fun i =>
         _ <- if compare_to i 3 Lt
-        then DoSomething ("i is small")
+        then
+          _ <- DoSomething ("i is small");
+          Ret tt
         else Ret tt;
         if compare_to i 5 Gt
         then LoopRet tt
@@ -141,6 +143,46 @@ Definition returnTwoWrapper {model:GoModel} (data:slice.t byte) : proc (uint64 *
   let! (a, b) <- returnTwo data;
   Ret (a, b).
 
+Module Block.
+  Record t {model:GoModel} := mk {
+    Value: uint64;
+  }.
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _).
+End Block.
+
+Definition Disk1 : uint64 := 0.
+
+Definition Disk2 : uint64 := 0.
+
+Definition DiskSize : uint64 := 1000.
+
+(* TwoDiskWrite is a dummy function to represent the base layer's disk write *)
+Definition TwoDiskWrite {model:GoModel} (diskId:uint64) (a:uint64) (v:Block.t) : proc bool :=
+  Ret true.
+
+(* TwoDiskRead is a dummy function to represent the base layer's disk read *)
+Definition TwoDiskRead {model:GoModel} (diskId:uint64) (a:uint64) : proc (Block.t * bool) :=
+  Ret ({| Block.Value := 0; |}, true).
+
+(* TwoDiskLock is a dummy function to represent locking an address in the
+   base layer *)
+Definition TwoDiskLock {model:GoModel} (a:uint64) : proc unit :=
+  Ret tt.
+
+Definition ReplicatedDiskRecover {model:GoModel} : proc unit :=
+  Loop (fun a =>
+        if compare_to a DiskSize Gt
+        then LoopRet tt
+        else
+          let! (v, ok) <- TwoDiskRead Disk1 a;
+          _ <- if ok
+          then
+            _ <- TwoDiskWrite Disk2 a v;
+            Ret tt
+          else Ret tt;
+          Continue (a + 1)) 0.
+
 (* Skip is a placeholder for some impure code *)
 Definition Skip {model:GoModel} : proc unit :=
   Ret tt.
@@ -151,7 +193,9 @@ Definition simpleSpawn {model:GoModel} : proc unit :=
   _ <- Spawn (_ <- Data.lockAcquire l Reader;
          x <- Data.readPtr v;
          _ <- if compare_to x 0 Gt
-         then Skip
+         then
+           _ <- Skip;
+           Ret tt
          else Ret tt;
          Data.lockRelease l Reader);
   _ <- Data.lockAcquire l Writer;

@@ -322,7 +322,9 @@ Definition tablePutOldTable {model:GoModel} (w:tableWriter.t) (t:Table.t) (b:Map
         then
           let! (_, ok) <- Data.mapGet b e.(Entry.Key);
           _ <- if negb ok
-          then tablePut w e.(Entry.Key) e.(Entry.Value)
+          then
+            _ <- tablePut w e.(Entry.Key) e.(Entry.Value);
+            Ret tt
           else Ret tt;
           Continue {| lazyFileBuf.offset := buf.(lazyFileBuf.offset) + l;
                       lazyFileBuf.next := slice.skip l buf.(lazyFileBuf.next); |}
