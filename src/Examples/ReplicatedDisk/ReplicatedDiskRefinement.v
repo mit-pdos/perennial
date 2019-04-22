@@ -1,11 +1,15 @@
 From iris.algebra Require Import auth gmap list.
-Require Export CSL.Refinement CSL.NamedDestruct.
+Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
 Require Import OneDiskAPI ReplicatedDiskImpl ReplicatedDisk.WeakestPre ReplicatedDisk.RefinementAdequacy.
 Set Default Proof Using "All".
 Unset Implicit Arguments.
 
 Import agree.
 From Tactical Require Import UnfoldLemma.
+
+Definition addrset := dom (gset nat) init_zero.
+Opaque init_zero size.
+
 
 (* TODO: move out and re-use this *)
 Section gen_heap.
@@ -30,6 +34,16 @@ Proof.
     by iApply IHσ.
 Qed.
 
+Lemma gen_heap_bigOpM_dom (σ: gmap L V) (q: Qp):
+  ([∗ map] i↦v ∈ σ, mapsto i q v)
+    -∗ [∗ set] i ∈ dom (gset L) σ, ∃ v, ⌜ σ !! i = Some v ⌝ ∗ mapsto i q v .
+Proof.
+  iIntros "H". iApply big_sepM_dom.
+  iApply (big_sepM_mono with "H").
+  iIntros (k x Hlookup) "H".
+  iExists _. iFrame. eauto.
+Qed.
+
 Lemma gen_heap_bigOp_split (σ: gmap L V) (q: Qp):
   ([∗ map] i↦v ∈ σ, mapsto i q v)
     -∗ ([∗ map] i↦v ∈ σ, mapsto i (q/2) v) ∗ ([∗ map] i↦v ∈ σ, mapsto i (q/2) v).
@@ -39,14 +53,19 @@ Proof.
 Qed.
 End gen_heap.
 
-Definition gen_heap_ctx' {L V} `{Countable L} `{hG: gen_heapG L V Σ}
-  := (∃ σ, gen_heap_ctx σ)%I.
-Lemma gen_heap_update' {L V} `{Countable L} `{hG: gen_heapG L V Σ} l v1 v2:
+Definition gen_heap_ctx' {Σ V} {hG: gen_heapG nat V Σ}
+  := (∃ σ : gmap nat V, ⌜ dom (gset nat) σ = addrset ⌝ ∗ gen_heap_ctx σ)%I.
+Lemma gen_heap_update' {Σ V} {hG: gen_heapG nat V Σ} (l: nat) v1 v2:
     gen_heap_ctx' -∗ mapsto l 1 v1 ==∗ gen_heap_ctx' ∗ mapsto l 1 v2.
 Proof.
-  iIntros "Hctx Hmapsto". iDestruct "Hctx" as (σ) "H".
+  iIntros "Hctx Hmapsto". iDestruct "Hctx" as (σ Hdom) "H".
+  iDestruct (gen_heap_valid with "[$] [$]") as %Hlookup.
   iMod (gen_heap_update with "[$] [$]") as "(?&$)".
-  iExists _; eauto.
+  iExists _; iFrame.
+  iPureIntro. rewrite dom_insert_L -Hdom.
+  cut (l ∈ dom (gset nat) σ).
+  { set_solver+. }
+  apply elem_of_dom. eauto.
 Qed.
 
 Inductive addr_status :=
@@ -84,19 +103,20 @@ Section refinement_triples.
   Definition UnlockedInv (a: addr) :=
     (∃ v0 v1 vstat, a l0↦{1/2} v0 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} vstat)%I.
 
-  Definition status_interp (a: addr) v0 v1 (s: addr_status) :=
+  Definition status_interp (a: addr) v0 v1 (s: addr_status) P :=
     (match s with
      | Sync => ⌜ v0 = v1 ⌝
-     | Unsync j K => j ⤇ K (Call (OneDisk.Write_Disk a v0)) ∗ Registered
+     | Unsync j K => j ⤇ K (Call (OneDisk.Write_Disk a v0)) ∗ P
      end)%I.
 
-  Global Instance status_interp_timeless a v0 v1 s:
-    Timeless (status_interp a v0 v1 s).
+  Global Instance status_interp_timeless a v0 v1 s P:
+    Timeless P →
+    Timeless (status_interp a v0 v1 s P).
   Proof. destruct s; apply _. Qed.
 
-  Definition DurInv (a: addr) v1 :=
+  Definition DurInv (a: addr) v1 P :=
     (∃ v0 stat, a d0↦ v0 ∗ a d1↦ v1 ∗ a l0↦{1/2} v0 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} stat
-                  ∗ status_interp a v0 v1 stat)%I.
+                  ∗ status_interp a v0 v1 stat P)%I.
 
   Definition DurInvSync (a: addr) v1 :=
     (a d0↦ v1 ∗ a d1↦ v1 ∗ a l0↦{1/2} v1 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} Sync)%I.
@@ -104,29 +124,27 @@ Section refinement_triples.
   Definition durN : namespace := (nroot.@"dur_inv").
   Definition lockN : namespace := (nroot.@"lock_inv").
 
-  Definition addrset := dom (gset nat) init_zero.
-  Opaque init_zero size.
-
-  Definition DisksInv :=
+  Definition DisksInv P :=
     (∃ σ : OneDisk.State, ⌜ dom (gset _) (OneDisk.disk_state σ) = addrset ⌝ ∗ source_state σ
        ∗ gen_heap_ctx' (hG := hD0Lease)
        ∗ gen_heap_ctx' (hG := hD1Lease)
        ∗ gen_heap_ctx' (hG := hSync)
-       ∗ [∗ map] a↦v1 ∈ OneDisk.disk_state σ, DurInv a v1)%I.
+       ∗ [∗ map] a↦v1 ∈ OneDisk.disk_state σ, DurInv a v1 P)%I.
 
   Definition ExecInv :=
-    (source_ctx ∗ ([∗ set] a ∈ addrset, ∃ γ, is_lock lockN γ a (LockInv a)) ∗ inv durN DisksInv)%I.
+    (source_ctx ∗ ([∗ set] a ∈ addrset, ∃ γ, is_lock lockN γ a (LockInv a))
+                ∗ inv durN (DisksInv Registered))%I.
 
   Definition ExecInner :=
-    (([∗ set] a ∈ addrset, a m↦0 ∗ LockInv a) ∗ DisksInv)%I.
+    (([∗ set] a ∈ addrset, a m↦0 ∗ LockInv a) ∗ (DisksInv Registered))%I.
 
   Definition CrashInv :=
-    (source_ctx ∗ inv durN DisksInv)%I.
+    (source_ctx ∗ inv durN (DisksInv True))%I.
 
   Definition CrashStarter := ([∗ set] a ∈ addrset, a m↦0 ∗ UnlockedInv a)%I.
 
   Definition CrashInner :=
-    ((source_ctx ∗ DisksInv) ∗ CrashStarter)%I.
+    ((source_ctx ∗ (DisksInv True)) ∗ CrashStarter)%I.
 
   Global Instance addr_status_inhabited :
     Inhabited (addr_status).
@@ -212,7 +230,7 @@ Section refinement_triples.
     iDestruct "Hstat" as %Heq; subst.
     iApply (wp_write_disk0 with "[$]").
     iIntros "!> Hd0".
-    iMod (gen_heap_update' _ _ v with "Hctx0 [Hl0 Hl0_auth]") as "(?&Hl0)".
+    iMod (gen_heap_update' (hG := hD0Lease) _ _ v with "Hctx0 [Hl0 Hl0_auth]") as "(?&Hl0)".
     { iCombine "Hl0 Hl0_auth" as "$". }
     iDestruct "Hl0" as "(Hl0&Hl0_auth)".
     iMod (gen_heap_update' _ _ (Unsync j K) with "[$] [Hstatus Hstatus_auth]") as "(?&Hstatus)".
@@ -425,9 +443,6 @@ Proof.
       (exec_inv := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInv myΣ H2 _ H1 hL0 hL1 hS)%I)
       (exec_inner := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInner myΣ H2 H1 hL0 hL1 hS)%I)
       (crash_inner := fun H1 H2 => (∃ hL0 hL1 hS , @CrashInner myΣ H2 H1 hL0 hL1 hS)%I)
-      (*
-      (crash_param := fun H1 H2 => unit)
-       *)
       (crash_inv := fun H1 H2 ghosts =>
                       let '(hL0, hL1, hS) := ghosts in
                       @CrashInv myΣ H2 H1 hL0 hL1 hS)
@@ -455,7 +470,7 @@ Proof.
               else
                 a m↦0 ∗ @LockInv _ hL0 hL1 hS a))%I with "[Hstarter]" as "Hprogress".
     { iApply (big_sepS_mono with "Hstarter").
-      iIntros (a Hin) "Hunlcoked".
+      iIntros (a Hin) "Hunlocked".
       destruct lt_dec; first iFrame.
       exfalso. eapply not_lt_size_not_in_addrset; eauto.
     }
@@ -604,7 +619,7 @@ Proof.
       iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
       iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
       iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
-      iMod (gen_heap_update' _ _ v1'' with "Hctx0 [Hl0 Hl0_auth]") as "(Hctx0&Hl0)".
+      iMod (gen_heap_update' (hG := hL0) _ _ v1'' with "Hctx0 [Hl0 Hl0_auth]") as "(Hctx0&Hl0)".
       { iCombine "Hl0 Hl0_auth" as "$". }
       iDestruct "Hl0" as "(Hl0&Hl0_auth)".
       iMod (gen_heap_update' _ _ Sync with "Hctx_stat [Hstatus Hstatus_auth]") as
@@ -677,7 +692,7 @@ Proof.
     iSplitL "hL1".
     { iExists _. by iFrame. }
     iSplitL "hS".
-    { iExists _. by iFrame. }
+    { iExists _. iFrame "hS". rewrite dom_fmap_L. auto. }
     iModIntro.
     repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
     iApply (big_sepM_mono with "H").
@@ -694,15 +709,15 @@ Proof.
     iDestruct "Hdom1" as %Hdom1.
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
-    iDestruct "Hctx0" as (σL0) "Hctx0".
+    iDestruct "Hctx0" as (σL0 HdomL0) "Hctx0".
     iMod (gen_heap_strong_init σL0) as (hL0' <-) "(hL0&hL0frag)".
     iPoseProof (gen_heap_init_to_bigOp (hG := hL0') with "hL0frag") as "hL0frag".
 
-    iDestruct "Hctx1" as (σL1) "Hctx1".
-    iMod (gen_heap_strong_init init_zero) as (hL1' <-) "(hL1&hL1frag)".
+    iDestruct "Hctx1" as (σL1 HdomL1) "Hctx1".
+    iMod (gen_heap_strong_init σL1) as (hL1' <-) "(hL1&hL1frag)".
     iPoseProof (gen_heap_init_to_bigOp (hG := hL1') with "hL1frag") as "hL1frag".
 
-    iDestruct "Hctx_stat" as (σS) "Hctx_stat".
+    iDestruct "Hctx_stat" as (σS HdomS) "Hctx_stat".
     iMod (gen_heap_strong_init σS) as (hS' <-) "(hS&hSfrag)".
     iPoseProof (gen_heap_init_to_bigOp (hG := hS') with "hSfrag") as "hSfrag".
 
@@ -710,10 +725,64 @@ Proof.
     iDestruct (gen_heap_bigOp_split with "hL1frag") as "(hL1a&hL1b)".
     iDestruct (gen_heap_bigOp_split with "hSfrag") as "(hSa&hSb)".
 
+    iDestruct (gen_heap_bigOpM_dom with "hL0a") as "hL0a".
+    iDestruct (gen_heap_bigOpM_dom with "hL1a") as "hL1a".
+    iDestruct (gen_heap_bigOpM_dom with "hSa") as "hSa".
+    rewrite ?HdomL0 ?HdomL1 ?HdomS.
+    iDestruct (big_sepM_dom with "hL0a") as "hL0a".
+    iDestruct (big_sepM_dom with "hL1a") as "hL1a".
+    iDestruct (big_sepM_dom with "hSa") as "hSa".
+
     iExists hL0', hL1', hS'. iModIntro.
     rewrite /CrashInner/CrashInv/CrashStarter.
     iFrame "Hsrc".
     iSplitR "Hmem hL0a hL1a hSa"; last first.
     { iApply big_opM_dom.
       repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+      iApply (big_sepM_mono with "H").
+      iIntros (k x Hlookup) "(((Hs&Hl0)&Hl1)&?)".
+      iDestruct "Hs" as (??) "Hs".
+      iDestruct "Hl0" as (??) "Hl0".
+      iDestruct "Hl1" as (??) "Hl1".
+      rewrite (init_zero_lookup_is_zero k x); last auto.
+      iFrame. iExists _, _, _. iFrame.
+    }
+    iExists _. iFrame "Hstate".
+    iDestruct (gen_heap_bigOpM_dom with "hL0b") as "hL0b".
+    iDestruct (gen_heap_bigOpM_dom with "hL1b") as "hL1b".
+    iDestruct (gen_heap_bigOpM_dom with "hSb") as "hSb".
+    rewrite ?HdomL0 ?HdomL1 ?HdomS.
+    rewrite -?Hdom1.
+    iDestruct (big_sepM_dom with "hL0b") as "hL0b".
+    iDestruct (big_sepM_dom with "hL1b") as "hL1b".
+    iDestruct (big_sepM_dom with "hSb") as "hSb".
+    iSplitL "".
+    { iPureIntro. auto. }
+    iSplitL "hL0".
+    { iExists _. iFrame. by iPureIntro. }
+    iSplitL "hL1".
+    { iExists _. iFrame. by iPureIntro. }
+    iSplitL "hS".
+    { iExists _. iFrame. by iPureIntro. }
+    repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+    iCombine "Hctx0 Hctx1 Hctx_stat" as "Hctx".
+    iDestruct (big_sepM_mono_with_inv with "Hctx H") as "(?&$)".
+    iIntros (k x Hlookup) "H".
+    iDestruct "H" as "((Hctx0&Hctx1&Hctx_stat)&H&Hdur)".
+    iDestruct "H" as "((Hs&Hl0)&Hl1)".
+    iDestruct "Hs" as (??) "Hs".
+    iDestruct "Hl0" as (??) "Hl0".
+    iDestruct "Hl1" as (??) "Hl1".
+    iDestruct "Hdur" as (? stat) "(Hd0&Hd1&Hl0'&Hl1'&Hs'&Hstatus)".
+    iDestruct (@gen_heap_valid with "Hctx0 Hl0'") as %?.
+    iDestruct (@gen_heap_valid with "Hctx1 Hl1'") as %?.
+    iDestruct (@gen_heap_valid with "Hctx_stat Hs'") as %?.
+    repeat match goal with
+           |[ H1 : ?x = Some ?y, H2 : ?x = Some ?z |- _ ] =>
+            rewrite H1 in H2; inversion H2; clear H1 H2; subst
+           end.
+    iFrame. iExists _, _. iFrame.
+    destruct stat; auto.
+    iDestruct "Hstatus" as "(?&?)"; iFrame.
+  }
 Abort.

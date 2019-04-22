@@ -419,3 +419,42 @@ Section gset.
   Qed.
 End gset.
 End big_op.
+
+Section bi_big_op.
+Context {PROP : bi}.
+Implicit Types P Q : PROP.
+Implicit Types Ps Qs : list PROP.
+Implicit Types A : Type.
+Section map.
+  Context `{Countable K} {A : Type}.
+  Implicit Types m : gmap K A.
+  Implicit Types Φ Ψ : K → A → PROP.
+
+  Lemma big_sepM_mono_with_inv' P Φ Ψ m :
+    (∀ k x, m !! k = Some x → P ∗ Φ k x ⊢ P ∗ Ψ k x) →
+    P ∗ ([∗ map] k ↦ x ∈ m, Φ k x) ⊢ P ∗ [∗ map] k ↦ x ∈ m, Ψ k x.
+  Proof.
+    intros Hwand.
+    induction m as [|i x m ? IH] using map_ind; auto using big_sepM_empty'.
+    rewrite ?big_sepM_insert //.
+    iIntros "(HP&Hi&H)".
+    iDestruct (Hwand with "[$]") as "(?&$)".
+    { by rewrite lookup_insert. }
+    iApply IH; eauto.
+    { iIntros (k x' Hlookup). iApply Hwand.
+      destruct (decide (i = k)).
+      - subst. congruence.
+      - rewrite lookup_insert_ne //.
+    }
+    iFrame.
+  Qed.
+
+  Lemma big_sepM_mono_with_inv P Φ Ψ m :
+    (∀ k x, m !! k = Some x → P ∗ Φ k x ⊢ P ∗ Ψ k x) →
+    P -∗ ([∗ map] k ↦ x ∈ m, Φ k x) -∗ P ∗ [∗ map] k ↦ x ∈ m, Ψ k x.
+  Proof.
+    iIntros (?) "HP H". iApply (big_sepM_mono_with_inv' with "[HP H]"); eauto.
+    iFrame.
+  Qed.
+End map.
+End bi_big_op.
