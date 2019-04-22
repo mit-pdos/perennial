@@ -4,7 +4,40 @@ Require Import OneDiskAPI ReplicatedDiskImpl ReplicatedDisk.WeakestPre Replicate
 Set Default Proof Using "All".
 Unset Implicit Arguments.
 
+Import agree.
 From Tactical Require Import UnfoldLemma.
+
+(* TODO: move out and re-use this *)
+Section gen_heap.
+Context `{hG: gen_heapG L V Σ}.
+Lemma gen_heap_init_to_bigOp σ:
+  own (gen_heap_name hG) (◯ to_gen_heap σ)
+      -∗ [∗ map] i↦v ∈ σ, mapsto i 1 v .
+Proof.
+  induction σ using map_ind.
+  - iIntros. rewrite //=.
+  - iIntros "Hown".
+    rewrite big_opM_insert //.
+    iAssert (own (gen_heap_name hG) (◯ to_gen_heap m) ∗ (mapsto i 1 x))%I
+      with "[Hown]" as "[Hrest $]".
+    {
+      rewrite mapsto_eq /mapsto_def //.
+      rewrite to_gen_heap_insert.
+      rewrite (insert_singleton_op (to_gen_heap m) i (1%Qp, to_agree x));
+        last by apply lookup_to_gen_heap_None.
+      rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
+    }
+    by iApply IHσ.
+Qed.
+
+Lemma gen_heap_bigOp_split (σ: gmap L V) (q: Qp):
+  ([∗ map] i↦v ∈ σ, mapsto i q v)
+    -∗ ([∗ map] i↦v ∈ σ, mapsto i (q/2) v) ∗ ([∗ map] i↦v ∈ σ, mapsto i (q/2) v).
+Proof.
+  rewrite -big_sepM_sepM. apply big_sepM_mono.
+  iIntros (?? ?) "($&$)".
+Qed.
+End gen_heap.
 
 Definition gen_heap_ctx' {L V} `{Countable L} `{hG: gen_heapG L V Σ}
   := (∃ σ, gen_heap_ctx σ)%I.
@@ -93,7 +126,7 @@ Section refinement_triples.
   Definition CrashStarter := ([∗ set] a ∈ addrset, a m↦0 ∗ UnlockedInv a)%I.
 
   Definition CrashInner :=
-    (CrashInv ∗ CrashStarter)%I.
+    ((source_ctx ∗ DisksInv) ∗ CrashStarter)%I.
 
   Global Instance addr_status_inhabited :
     Inhabited (addr_status).
@@ -371,6 +404,14 @@ Definition init_absr σ1a σ1c :=
 
 Opaque size.
 
+Lemma init_zero_lookup_is_zero k x:
+  init_zero !! k = Some x → x = 0.
+Proof.
+  destruct (lt_dec k size).
+  - rewrite init_zero_lookup_lt_zero; congruence.
+  - rewrite init_zero_lookup_ge_None; congruence.
+Qed.
+
 Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OneDisk.Op T) :
   init_absr σ1a σ1c →
   wf_client_seq es →
@@ -606,4 +647,73 @@ Proof.
           iExists _, _, _. iFrame. }
       }
   }
+  { intros ?? (H&?). by inversion H. }
+  { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
+    iIntros "(Hmem&Hdisk0&Hdisk1&#?&Hstate)".
+    iMod (gen_heap_strong_init init_zero) as (hL0 <-) "(hL0&hL0frag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hL0) with "hL0frag") as "hL0frag".
+    iMod (gen_heap_strong_init init_zero) as (hL1 <-) "(hL1&hL1frag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hL1) with "hL1frag") as "hL1frag".
+    iMod (gen_heap_strong_init ((λ x, Sync) <$> init_zero)) as (hS <-) "(hS&hSfrag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hS) with "hSfrag") as "hSfrag".
+    iDestruct (gen_heap_bigOp_split with "hL0frag") as "(hL0a&hL0b)".
+    iDestruct (gen_heap_bigOp_split with "hL1frag") as "(hL1a&hL1b)".
+    iDestruct (gen_heap_bigOp_split with "hSfrag") as "(hSa&hSb)".
+    rewrite big_opM_fmap.
+    iExists hL0, hL1, hS.
+    rewrite /ExecInner.
+    iSplitL "Hmem hL0a hL1a hSa".
+    { iModIntro. iApply big_opM_dom.
+      repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+      iApply (big_sepM_mono with "H").
+      iIntros (k x Hlookup) "(((?&?)&?)&?)".
+      rewrite (init_zero_lookup_is_zero k x); last auto.
+      iFrame. iExists _. iFrame.
+    }
+    iExists _. iFrame "Hstate".
+    iSplitL ""; first by auto.
+    iSplitL "hL0".
+    { iExists _. by iFrame. }
+    iSplitL "hL1".
+    { iExists _. by iFrame. }
+    iSplitL "hS".
+    { iExists _. by iFrame. }
+    iModIntro.
+    repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+    iApply (big_sepM_mono with "H").
+    iIntros (k x Hlookup) "((((?&?)&?)&?)&?)".
+    rewrite (init_zero_lookup_is_zero k x); last auto.
+    iFrame. iExists _, _. iFrame.
+    auto.
+  }
+  {
+    iIntros (??) "H".
+    iDestruct "H" as (hL0 hL1 hS) "(#Hsrc&#Hlocks&#Hinv)".
+    iInv "Hinv" as "H" "_".
+    iDestruct "H" as (σ) "(>Hdom1&>Hstate&>Hctx0&>Hctx1&>Hctx_stat&>Hdur)".
+    iDestruct "Hdom1" as %Hdom1.
+    iApply fupd_mask_weaken; first by solve_ndisj.
+    iIntros (??) "Hmem".
+    iDestruct "Hctx0" as (σL0) "Hctx0".
+    iMod (gen_heap_strong_init σL0) as (hL0' <-) "(hL0&hL0frag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hL0') with "hL0frag") as "hL0frag".
+
+    iDestruct "Hctx1" as (σL1) "Hctx1".
+    iMod (gen_heap_strong_init init_zero) as (hL1' <-) "(hL1&hL1frag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hL1') with "hL1frag") as "hL1frag".
+
+    iDestruct "Hctx_stat" as (σS) "Hctx_stat".
+    iMod (gen_heap_strong_init σS) as (hS' <-) "(hS&hSfrag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hS') with "hSfrag") as "hSfrag".
+
+    iDestruct (gen_heap_bigOp_split with "hL0frag") as "(hL0a&hL0b)".
+    iDestruct (gen_heap_bigOp_split with "hL1frag") as "(hL1a&hL1b)".
+    iDestruct (gen_heap_bigOp_split with "hSfrag") as "(hSa&hSb)".
+
+    iExists hL0', hL1', hS'. iModIntro.
+    rewrite /CrashInner/CrashInv/CrashStarter.
+    iFrame "Hsrc".
+    iSplitR "Hmem hL0a hL1a hSa"; last first.
+    { iApply big_opM_dom.
+      repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
 Abort.
