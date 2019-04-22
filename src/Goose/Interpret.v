@@ -57,11 +57,13 @@ Module RTerm.
   | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
   | FstLift A1 A2 B T : t A1 A2 T -> t (A1 * B) (A2 * B) T
   | SndLift A1 A2 B T : t A1 A2 T -> t (B * A1) (B * A2) T
-  | NotImpl A B T (r: relation A B T) : t A B T
+  | ZoomFS T : t fs fs T -> t gs gs T
 
-  | Ret A T : T -> t A A T (* same as Pure, and we could just refl Rets to Pures *)
+  | Ret A T : T -> t A A T (* same as Pure, and we could just refl Rets to Pures? *)
   | Call T : t gs gs T -> t es es T
   | Bind T1 T2 : t es es T1 -> (T1 -> t es es T2) -> t es es T2 (* Could be AndThens *)
+
+  | NotImpl A B T (r: relation A B T) : t A B T
   .
 End RTerm.
 
@@ -77,6 +79,11 @@ Arguments NotImpl {_ _}.
 
 Definition ptrMap := nat.
 Definition ptrMap_null : ptrMap := 1.
+
+Fixpoint interpret_fs (T : Type) (r : RTerm.t fs fs T) (X : fs*ptrMap) : Output (fs*ptrMap) T :=
+  match r with
+    | _ => NotImpl
+  end.
 
 Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output (gs*ptrMap) T :=
   match r with
@@ -111,6 +118,13 @@ Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output 
       | Error => Error
       | NotImpl => NotImpl
       end
+  | RTerm.ZoomFS r => let (g, pm) := X in
+                      let f := Go.fs g in
+                      match (interpret_fs r (f, pm)) with
+                      | Success (f', pm') t => Success (g <| Go.fs := f' |>, pm') t
+                      | Error => Error
+                      | NotImpl => NotImpl
+                      end
   | RTerm.FstLift _ _ => NotImpl
   | RTerm.SndLift _ _ => NotImpl
   | RTerm.NotImpl _ => NotImpl
@@ -156,6 +170,7 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.Ret _ x => pure x
   | RTerm.Bind r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
   | RTerm.Call r => snd_lift (rtermDenote r)
+  | RTerm.ZoomFS r => _zoom Go.fs (rtermDenote r)
   end.
 
 Ltac refl' RetB RetT e :=
@@ -190,6 +205,10 @@ Ltac refl' RetB RetT e :=
   | fun x: ?T => @Data.delAllocs ?ty ?p =>
     constr: (fun x => RTerm.DelAllocs ty p)
 
+  | (fun x: ?T => @_zoom _ _ Go.fs _ ?T1 (@?r1 x)) =>
+    let f := refl' fs T1 r1 in
+    constr: (fun x: T => RTerm.ZoomFS (f x))
+
   | fun x: ?T => @and_then gs gs gs ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
     let f1 := refl' gs T1 r1 in
     let f2 := refl' gs T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
@@ -199,6 +218,11 @@ Ltac refl' RetB RetT e :=
     let f1 := refl' es T1 r1 in
     let f2 := refl' es T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
     constr: (fun x => RTerm.Bind (f1 x) (fun y => f2 (x, y)))
+
+  | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
+    let f1 := refl' B T1 r1 in
+    let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
+    constr: (fun x => RTerm.Error A C T2)
 
   | fun x: ?T => @fst_lift ?A1 ?A2 ?B ?T (@?r x) =>
     let f := refl' A2 T r in
@@ -210,7 +234,7 @@ Ltac refl' RetB RetT e :=
               
 (*  | fun x: ?T => @snd_lift ?A1 ?A2 ?B ?T (@?r x) =>
     let f := refl' A2 T r in
-    constr: (fun x => RTerm.SndLift (f x))*)
+    constr: (fun x => RTerm.SndLift (f x))  *)
 
   | fun x : ?T => @?E x =>
     constr: (fun x => RTerm.NotImpl (E x))
@@ -230,27 +254,26 @@ Ltac test e :=
   unify e e'.
 
 Ltac reflproc p :=
-  let t := eval cbv [Proc.exec_step] in (Proc.exec_step Go.sem p) in
+  let t := eval simpl in (Proc.exec_step Go.sem p) in
   refl t.
 
 Ltac reflop_fs o :=
-  let t := eval cbv [FS.step] in (_zoom Go.fs (FS.step o)) in
-  refl t.
+  let t := eval simpl in (Go.step (FilesysOp o)) in
+      refl t.
 
 Ltac reflop_data o :=
-  let t := eval simpl in (_zoom Go.fs (_zoom FS.heap (Data.step o))) in
+  let t := eval simpl in (Go.step (DataOp o)) in
   refl t.
 
 Ltac reflop_glob o :=
-  let t := eval simpl in (_zoom Go.maillocks (Globals.step o)) in
+  let t := eval simpl in (Go.step (LockGlobalOp o)) in
   refl t.
 
-Definition reify T {model : GoModel} {model_wf : GoModelWf model}
-           (op : Op T)  : RTerm.t Go.State Go.State T.
+Definition reify T (op : Op T)  : RTerm.t gs gs T.
   destruct op.
   - destruct o eqn:?;
     match goal with
-    | [ H : o = ?A |- _ ] => let x := reflop_fs A in exact x
+    | [ H : o = ?A |- _ ] => let x := reflop_fs A in idtac x; exact x
     end.
   - destruct o eqn:?;
     match goal with
@@ -258,30 +281,43 @@ Definition reify T {model : GoModel} {model_wf : GoModelWf model}
     end.
   - destruct o eqn:?;
     match goal with
-    | [ H : o = ?A |- _ ] => let x := reflop_glob A in exact x
+    | [ H : o = ?A |- _ ] => let x := reflop_glob A in idtac x; exact x
     end.
 Qed.
 
-Definition reify_proc T {model : GoModel} {model_wf : GoModelWf model}
-           (proc : proc Op T)  : RTerm.t es es T.
-  destruct proc eqn:?;
+Definition reify_proc T (proc : proc Op T)  : RTerm.t es es T.
+  destruct proc eqn:?.
+  - Set Printing All.
+    let t := eval simpl in (Proc.exec_step Go.sem (Call op)) in
+        let k := constr:(fun x: unit => t) in
+        let j := match k with
+
+                 | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
+                   let f1 := refl' B T1 r1 in
+                   let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
+                   constr: (fun x => RTerm.Bind (f1 x) (fun y => f2 (x, y)))
+                 end in idtac j.
+        let x := refl' es T constr:(fun r :unit => t) in idtac x.
+        let x' := (eval cbn beta in (x tt)) in pose x'.
   match goal with
   | [ H : proc = ?A |- _ ] => let x := reflproc A in idtac x
   end.
 
-
+Definition interpret (T : Type) (r: RTerm.t es es T) : es -> Output es T :=
+  fun a => match interpret_es r (a, ptrMap_null) with
+           | Success x t => Success (fst x) t
+           | Error => Error
+           | NotImpl => NotImpl
+           end.
+  
 (* Prove Interpreter *)
-Theorem interpret_ok : forall A B T (r: RTerm.t A B T) (a : A),
+Theorem interpret_ok : forall T (r: RTerm.t es es T) (a : es),
     match (interpret r a) with
     | NotImpl => True
     | Error => rtermDenote r a Err
     | Success b t => rtermDenote r a (Val b t)
     end.
-Proof.
-  intros.
-  pose (interpret r a).
-  inversion o.
-  - admit.
+Admitted.
 
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
