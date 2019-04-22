@@ -418,7 +418,10 @@ Proof.
       destruct lt_dec; first iFrame.
       exfalso. eapply not_lt_size_not_in_addrset; eauto.
     }
-    iInduction size as [| n] "IH".
+    assert (Hbound: size <= size) by lia.
+    remember size as n eqn:Heqn. rewrite {2}Heqn in Hbound.
+    clear Heqn.
+    iInduction n as [| n] "IH".
     - wp_ret.
       iInv "Hinv" as ">H" "_".
       iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx0&Hctx1&Hctx_stat&Hdur)".
@@ -456,5 +459,151 @@ Proof.
       iIntros (a' v' Hlookup) "(?&?&?&?&?)".
       iExists _, Sync. iFrame.
       auto.
-    - wp_bind. wp_bind.
+    - wp_bind.
+      rewrite /fixup.
+      iApply (wp_bind (λ x, Bind x _)).
+      assert (Hlt: n < size) by lia.
+      assert (Hin: n ∈ addrset).
+      { by apply lt_size_in_addrset. }
+      iDestruct (big_sepS_delete with "Hprogress") as "(Hcurr&Hrest)"; first eauto.
+      destruct lt_dec; last by lia.
+      iDestruct "Hcurr" as "(Hmem&Hcurr)".
+      iDestruct "Hcurr" as (v0 v1 ?) "(Hl0&Hl1&Hstatus)".
+
+    iInv "Hinv" as "H".
+    iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx0&Hctx1&Hctx_stat&>Hdur)".
+    iDestruct "Hdom1" as %Hdom1.
+    generalize Hin => Hdom2.
+    rewrite -Hdom1 in Hdom2.
+    rewrite elem_of_dom in Hdom2 *. intros [v1' Hlookup].
+    iDestruct (big_sepM_lookup_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
+    iDestruct "Hcurr" as (v0' stat) "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
+    iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
+    iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+    iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
+    iApply (wp_read_disk0 with "[$]").
+    iIntros (mv) "!> (Hd0&Hret)".
+    destruct mv as [v|].
+    * iSplitL "Hstate Hctx0 Hctx1 Hctx_stat Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hstat".
+      { iExists _. iFrame. iSplitL ""; first by iPureIntro.
+        iApply "Hdur". iExists _, _. by iFrame. }
+      iModIntro. wp_bind. wp_ret.
+      iInv "Hinv" as "H".
+      clear σ Hdom1 Hlookup.
+      iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx0&Hctx1&Hctx_stat&>Hdur)".
+      iDestruct "Hdom1" as %Hdom1.
+      generalize Hin => Hdom2.
+      rewrite -Hdom1 in Hdom2.
+      rewrite elem_of_dom in Hdom2 *. intros [v1'' Hlookup].
+      iDestruct (big_sepM_insert_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
+      iDestruct "Hcurr" as (v0'' stat') "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
+      iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
+      iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+      iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
+      iApply (wp_write_disk1 with "[$]").
+      iDestruct "Hret" as %Heq; subst.
+      iIntros "!> Hd1".
+      iMod (gen_heap_update' _ _ v with "Hctx1 [Hl1 Hl1_auth]") as "(Hctx1&Hl1)".
+      { iCombine "Hl1 Hl1_auth" as "$". }
+      iDestruct "Hl1" as "(Hl1&Hl1_auth)".
+      iMod (gen_heap_update' _ _ Sync with "Hctx_stat [Hstatus Hstatus_auth]") as "(Hctx_stat&Hstatus)".
+      { iCombine "Hstatus Hstatus_auth" as "$". }
+      iDestruct "Hstatus" as "(Hstatus&Hstatus_auth)".
+      iSplitL "Hstate Hctx0 Hctx1 Hctx_stat Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hstat".
+      { destruct stat'.
+        * iExists _. iFrame. iSplitL ""; first by iPureIntro.
+          iSpecialize ("Hdur" $! v1'').
+          rewrite insert_id; last auto.
+          iApply "Hdur".
+          iDestruct "Hstat" as %Heq; subst.
+          iExists _, _. by iFrame.
+        * iDestruct "Hstat" as "(Hj&Hreg')".
+          iMod (ghost_step_call with "Hj [$] [$]") as "(Hj&Hstate&_)".
+          { intros. do 2 eexists; split; last econstructor.
+            split; auto.
+            econstructor.
+          }
+          { solve_ndisj. }
+          iExists _. iFrame. rewrite upd_disk_dom. iSplitL ""; first by iPureIntro.
+          rewrite /OneDisk.upd_disk/OneDisk.upd_default Hlookup.
+          iApply "Hdur".
+          iExists _, _. by iFrame.
+      }
+      iModIntro. iApply ("IH" with "[] Hreg [Hrest Hl0 Hl1 Hstatus Hmem]").
+      { iPureIntro. lia. }
+      iApply big_sepS_delete; first eauto.
+      iSplitR "Hrest".
+      { destruct lt_dec; try lia; [].
+        iFrame. iExists _. iFrame. }
+      { iApply (big_sepS_mono with "Hrest").
+        iIntros (x Hin') "H".
+        assert (x ≠ n).
+        { apply elem_of_difference in Hin' as (?&Hsingle). intros Heq; subst.
+          apply Hsingle, elem_of_singleton; auto. }
+        do 2 destruct (lt_dec); auto.
+        { lia. }
+        { iDestruct "H" as "($&H)". iDestruct "H" as (?) "(?&?&?)".
+          iExists _, _, _. iFrame. }
+      }
+    * iSplitL "Hstate Hctx0 Hctx1 Hctx_stat Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hstat".
+      { iExists _. iFrame. iSplitL ""; first by iPureIntro.
+        iApply "Hdur". iExists _, _. by iFrame. }
+      iModIntro.
+      iApply (wp_write_disk0_only1 _ _ (⊤ ∖ ↑durN)  n v0' v1').
+      { trivial. }
+      iInv "Hinv" as "H" "Hclo".
+      clear σ Hdom1 Hlookup.
+      iDestruct "H" as (σ) "(>Hdom1&>Hstate&>Hctx0&Hctx1&>Hctx_stat&>Hdur)".
+      iDestruct "Hdom1" as %Hdom1.
+      generalize Hin => Hdom2.
+      rewrite -Hdom1 in Hdom2.
+      rewrite elem_of_dom in Hdom2 *. intros [v1'' Hlookup].
+      iDestruct (big_sepM_insert_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
+      iDestruct "Hcurr" as (v0'' stat') "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
+      iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
+      iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+      iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
+      iMod (gen_heap_update' _ _ v1'' with "Hctx0 [Hl0 Hl0_auth]") as "(Hctx0&Hl0)".
+      { iCombine "Hl0 Hl0_auth" as "$". }
+      iDestruct "Hl0" as "(Hl0&Hl0_auth)".
+      iMod (gen_heap_update' _ _ Sync with "Hctx_stat [Hstatus Hstatus_auth]") as
+          "(Hctx_stat&Hstatus)".
+      { iCombine "Hstatus Hstatus_auth" as "$". }
+      iDestruct "Hstatus" as "(Hstatus&Hstatus_auth)".
+      iModIntro. iFrame.
+      iIntros "Hd0".
+      iMod ("Hclo" with "[Hstate Hctx0 Hctx1 Hctx_stat Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hstat]").
+      { destruct stat'.
+        * iExists _. iFrame. iSplitL ""; first by iPureIntro.
+          iSpecialize ("Hdur" $! v1'').
+          rewrite insert_id; last auto.
+          iApply "Hdur".
+          iDestruct "Hstat" as %Heq; subst.
+          iExists _, _. by iFrame.
+        * iExists _. iFrame. iSplitL ""; first by iPureIntro.
+          iSpecialize ("Hdur" $! v1'').
+          rewrite insert_id; last auto.
+          iApply "Hdur".
+          iExists v1'', Sync. iFrame.
+          rewrite /status_interp.
+          auto.
+      }
+      wp_bind. wp_ret. wp_ret.
+      iModIntro. iApply ("IH" with "[] Hreg [Hrest Hl0 Hl1 Hstatus Hmem]").
+      { iPureIntro. lia. }
+      iApply big_sepS_delete; first eauto.
+      iSplitR "Hrest".
+      { destruct lt_dec; try lia; [].
+        iFrame. iExists _. iFrame. }
+      { iApply (big_sepS_mono with "Hrest").
+        iIntros (x Hin') "H".
+        assert (x ≠ n).
+        { apply elem_of_difference in Hin' as (?&Hsingle). intros Heq; subst.
+          apply Hsingle, elem_of_singleton; auto. }
+        do 2 destruct (lt_dec); auto.
+        { lia. }
+        { iDestruct "H" as "($&H)". iDestruct "H" as (?) "(?&?&?)".
+          iExists _, _, _. iFrame. }
+      }
+  }
 Abort.
