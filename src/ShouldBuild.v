@@ -3,9 +3,7 @@ From RecoveryRefinement Require Import Examples.StatDb.Refinement.
 From RecoveryRefinement Require Import Examples.AtomicPair.RefinementShadow.
 From RecoveryRefinement Require Import Examples.AtomicPair.RefinementLog.
 From RecoveryRefinement Require Import Examples.Logging.LogRefinement.
-From RecoveryRefinement Require Import Examples.ReplicatedDisk.TwoDiskAPI.
-From RecoveryRefinement Require Import Examples.ReplicatedDisk.ReplicatedDiskImpl.
-From RecoveryRefinement Require Import Examples.ReplicatedDisk.RefinementAdequacy.
+From RecoveryRefinement Require Import Examples.ReplicatedDisk.ReplicatedDiskRefinement.
 
 (* mailboat proof *)
 From RecoveryRefinement Require Import Examples.MailServer.MailRefinement.
