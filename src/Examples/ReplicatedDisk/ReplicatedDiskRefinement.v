@@ -517,7 +517,8 @@ Proof.
       auto.
     - wp_bind.
       rewrite /fixup.
-      iApply (wp_bind (λ x, Bind x _)).
+      unshelve (iApply (wp_bind (λ x, Bind x _))).
+      { apply _. }
       assert (Hlt: n < size) by lia.
       assert (Hin: n ∈ addrset).
       { by apply lt_size_in_addrset. }
@@ -867,4 +868,103 @@ Proof.
            end.
     iFrame. iExists _, _. iFrame.
   }
-Abort.
+  {
+    iIntros (??) "(H&?)".
+    iDestruct "H" as (hInv hL0 hL1 hS) "((_&Hinv)&?)".
+    iExists (hL0, hL1, hS). iFrame.
+    by iMod (@inv_alloc myΣ (exm_invG) durN _ _ with "Hinv") as "$".
+  }
+  {
+    iIntros (??) "(H&?)".
+    iDestruct "H" as (hInv hL0 hL1 hS) "(Hlocks&Hdur)".
+    iExists hL0, hL1, hS.
+    iFrame. iSplitR "Hdur".
+    - rewrite -fupd_big_sepS.
+      iApply (big_sepS_mono with "Hlocks").
+      iIntros (a Hin) "(Hmem&Hlock)".
+      iApply (lock_init with "Hmem [Hlock]"); auto.
+    - by iMod (@inv_alloc myΣ (exm_invG) durN _ _ with "Hdur") as "$".
+  }
+  {
+    iIntros (??) "Hdone H".
+    iDestruct "H" as (hL0 hL1 hS) "(#Hsrc&#Hlocks&#Hinv)".
+    iInv "Hinv" as "H" "_".
+    iDestruct "H" as (σ) "(>Hdom1&>Hstate&>Hctx0&>Hctx1&>Hctx_stat&>Hdur)".
+    iDestruct "Hdom1" as %Hdom1.
+    iApply fupd_mask_weaken; first by solve_ndisj.
+    iExists _, _. iFrame.
+    iSplitL "".
+    { iPureIntro. econstructor. }
+    iClear "Hsrc".
+    iIntros (????) "(Hctx&Hstate&Hmem)".
+    iMod (gen_heap_strong_init σ.(OneDisk.disk_state)) as (hL0' <-) "(hL0&hL0frag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hL0') with "hL0frag") as "hL0frag".
+
+    iMod (gen_heap_strong_init σ.(OneDisk.disk_state)) as (hL1' <-) "(hL1&hL1frag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hL1') with "hL1frag") as "hL1frag".
+
+    iMod (gen_heap_strong_init ((λ _, Sync) <$> init_zero)) as (hS' <-) "(hS&hSfrag)".
+    iPoseProof (gen_heap_init_to_bigOp (hG := hS') with "hSfrag") as "hSfrag".
+
+    iDestruct (gen_heap_bigOp_split with "hL0frag") as "(hL0a&hL0b)".
+    iDestruct (gen_heap_bigOp_split with "hL1frag") as "(hL1a&hL1b)".
+    iDestruct (gen_heap_bigOp_split with "hSfrag") as "(hSa&hSb)".
+
+    iDestruct (gen_heap_bigOpM_dom with "hL0a") as "hL0a".
+    iDestruct (gen_heap_bigOpM_dom with "hL1a") as "hL1a".
+    iDestruct (gen_heap_bigOpM_dom with "hSa") as "hSa".
+    rewrite ?Hdom1.
+    iDestruct (big_sepM_dom with "hL0a") as "hL0a".
+    iDestruct (big_sepM_dom with "hL1a") as "hL1a".
+    iDestruct (big_sepM_dom with "hSa") as "hSa".
+
+    iExists hL0', hL1', hS'.
+    iSplitL "Hmem hL0a hL1a hSa".
+    { iApply big_opM_dom.
+      rewrite big_sepM_fmap.
+      repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+      iApply (big_sepM_mono with "H").
+      iIntros (k x Hlookup) "(((Hs&Hl0)&Hl1)&?)".
+      iDestruct "Hs" as (? Hlookup') "Hs".
+      rewrite lookup_fmap in Hlookup'.
+      apply fmap_Some_1 in Hlookup' as (?&Heq1&Heq2).
+      subst.
+      rewrite (init_zero_lookup_is_zero k x); last auto.
+      iDestruct "Hl0" as (??) "Hl0".
+      iDestruct "Hl1" as (??) "Hl1".
+      repeat match goal with
+             |[ H1 : ?x = Some ?y, H2 : ?x = Some ?z |- _ ] =>
+              rewrite H1 in H2; inversion H2; clear H1 H2; subst
+             end.
+      iFrame. iExists _. iFrame.
+    }
+    rewrite big_sepM_fmap.
+    iDestruct (big_sepM_dom with "hSb") as "hSb".
+    replace (dom (gset addr) init_zero) with addrset; last trivial.
+    rewrite -{2}Hdom1.
+    iDestruct (big_sepM_dom with "hSb") as "hSb".
+    repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+    iExists _. iFrame.
+    iSplitL "".
+    { iPureIntro. auto. }
+    iSplitL "hL0".
+    { iExists _. iFrame. by iPureIntro. }
+    iSplitL "hL1".
+    { iExists _. iFrame. by iPureIntro. }
+    iSplitL "hS".
+    { iExists _. iFrame. iPureIntro. rewrite dom_fmap_L. auto. }
+    iDestruct (big_sepM_mono_with_inv with "Hdone H") as "(?&$)"; last by iPureIntro.
+    iIntros (k x Hlookup) "H".
+    iDestruct "H" as "(Hdone&H)".
+    iDestruct "H" as "(((Hs&Hl0)&Hl1)&Hdur)".
+    iDestruct "Hdur" as (? stat) "(Hd0&Hd1&Hl0'&Hl1'&Hs'&Hstatus)".
+    destruct stat; last first.
+    { iDestruct "Hstatus" as "(?&Hreg)".
+      iExFalso; iApply (@AllDone_Register_excl with "Hdone Hreg").
+    }
+    iFrame. iDestruct "Hstatus" as %Heq. subst.
+    iExists _, _. iFrame. eauto.
+  }
+Time Qed.
+
+Print Assumptions exmach_crash_refinement_seq.
