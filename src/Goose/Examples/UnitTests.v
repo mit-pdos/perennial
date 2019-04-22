@@ -170,6 +170,29 @@ Definition TwoDiskRead {model:GoModel} (diskId:uint64) (a:uint64) : proc (Block.
 Definition TwoDiskLock {model:GoModel} (a:uint64) : proc unit :=
   Ret tt.
 
+(* TwoDiskUnlock is a dummy function to represent unlocking an address in the
+   base layer *)
+Definition TwoDiskUnlock {model:GoModel} (a:uint64) : proc unit :=
+  Ret tt.
+
+Definition ReplicatedDiskRead {model:GoModel} (a:uint64) : proc Block.t :=
+  _ <- TwoDiskLock a;
+  let! (v, ok) <- TwoDiskRead Disk1 a;
+  if ok
+  then
+    _ <- TwoDiskUnlock a;
+    Ret v
+  else
+    let! (v2, _) <- TwoDiskRead Disk2 a;
+    _ <- TwoDiskUnlock a;
+    Ret v2.
+
+Definition ReplicatedDiskWrite {model:GoModel} (a:uint64) (v:Block.t) : proc unit :=
+  _ <- TwoDiskLock a;
+  _ <- TwoDiskWrite Disk1 a v;
+  _ <- TwoDiskWrite Disk2 a v;
+  TwoDiskUnlock a.
+
 Definition ReplicatedDiskRecover {model:GoModel} : proc unit :=
   Loop (fun a =>
         if compare_to a DiskSize Gt
