@@ -17,6 +17,19 @@ Implicit Types s : stuckness.
 Implicit Types σ : State Λ.
 Implicit Types P Q : iProp Σ.
 
+Lemma wp_lift_pre_step {T} s E Φ (e1: proc OpT T) :
+  to_val e1 = None →
+  (∀ σ1, state_interp σ1 ={E,E}=∗ state_interp σ1 ∗ WP e1 @ s; E {{ Φ }})
+  ⊢ WP e1 @ s; E {{ Φ }}.
+Proof.
+  rewrite {2}wp_unfold /wp_pre=> Heq. rewrite Heq.
+  iIntros "Hwand".
+  iIntros (σ) "H".
+  iMod ("Hwand" with "H") as "(Hinterp&Hwp)".
+  rewrite wp_unfold /wp_pre. rewrite Heq.
+  by iApply "Hwp".
+Qed.
+
 Lemma wp_lift_step_fupd {T} s E Φ (e1: proc OpT T) :
   to_val e1 = None →
   (∀ σ1, state_interp σ1 ={E,∅}=∗

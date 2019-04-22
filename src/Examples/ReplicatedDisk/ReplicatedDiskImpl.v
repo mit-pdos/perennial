@@ -39,10 +39,9 @@ Definition fixup (a: addr) : proc Op unit :=
    end)%proc.
 
 Fixpoint recover_at (a: addr) : proc Op unit :=
-  (_ <- fixup a;
-   match a with
+  (match a with
    | 0 => Ret tt
-   | S n => recover_at n
+   | S n => _ <- fixup n; recover_at n
    end)%proc.
 
 Definition recv := recover_at size.

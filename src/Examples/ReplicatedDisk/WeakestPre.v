@@ -825,6 +825,27 @@ Proof.
       iApply "HΦ"; eauto.
 Qed.
 
+(* Once disk0 has failed, we can do a "ghost write" to it at any point *)
+Lemma wp_write_disk0_only1 {T} s E i v v' (p: proc Op T) Φ:
+  to_val p = None →
+  (i d0↦ v ∗ is_OnlyDisk d1) -∗ (i d0↦ v' -∗ WP p @ s ; E {{ Φ }}) -∗ WP p @ s ; E {{ Φ }}.
+Proof.
+  iIntros (?) "(Hi&Honly) Hwand".
+  iApply wp_lift_pre_step; first auto.
+  iIntros ((n, σ)) "Hown".
+  iDestruct "Hown" as "(?&Hown)".
+  iDestruct "Hown" as (mems disk0 disk1) "(Hown_mem&Hown0&Hown1&Hstatus&Hp)".
+  iDestruct "Hp" as %(Heq_mem&Heq_disk&Hsize&?).
+  iDestruct (gen_heap_valid with "Hown0 Hi") as %Hin_bound.
+  iDestruct (disk_status_agree with "[$] [$]") as %Hstatus.
+  destruct Hstatus as (disk1'&Heq). simpl in *.
+  rewrite Heq in Heq_disk. subst.
+  iMod (@gen_heap_update with "Hown0 Hi") as "[Hown0 Hi]".
+  iSpecialize ("Hwand" with "Hi").
+  iFrame. iExists _, _, _; iFrame.
+  simpl. rewrite Heq. eauto.
+Qed.
+
 Lemma wp_read_disk1_only1 s E i v :
   {{{ ▷ i d1↦ v ∗ ▷ is_OnlyDisk d1 }}}
     read_disk d1 i @ s; E

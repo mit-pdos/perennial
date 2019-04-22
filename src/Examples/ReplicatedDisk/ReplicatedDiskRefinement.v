@@ -48,6 +48,9 @@ Section refinement_triples.
   Definition LockInv (a: addr) :=
     (∃ v, a l0↦{1/2} v ∗ a l1↦{1/2} v ∗ a s↦{1/2} Sync)%I.
 
+  Definition UnlockedInv (a: addr) :=
+    (∃ v0 v1 vstat, a l0↦{1/2} v0 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} vstat)%I.
+
   Definition status_interp (a: addr) v0 v1 (s: addr_status) :=
     (match s with
      | Sync => ⌜ v0 = v1 ⌝
@@ -61,6 +64,9 @@ Section refinement_triples.
   Definition DurInv (a: addr) v1 :=
     (∃ v0 stat, a d0↦ v0 ∗ a d1↦ v1 ∗ a l0↦{1/2} v0 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} stat
                   ∗ status_interp a v0 v1 stat)%I.
+
+  Definition DurInvSync (a: addr) v1 :=
+    (a d0↦ v1 ∗ a d1↦ v1 ∗ a l0↦{1/2} v1 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} Sync)%I.
 
   Definition durN : namespace := (nroot.@"dur_inv").
   Definition lockN : namespace := (nroot.@"lock_inv").
@@ -77,6 +83,17 @@ Section refinement_triples.
 
   Definition ExecInv :=
     (source_ctx ∗ ([∗ set] a ∈ addrset, ∃ γ, is_lock lockN γ a (LockInv a)) ∗ inv durN DisksInv)%I.
+
+  Definition ExecInner :=
+    (([∗ set] a ∈ addrset, a m↦0 ∗ LockInv a) ∗ DisksInv)%I.
+
+  Definition CrashInv :=
+    (source_ctx ∗ inv durN DisksInv)%I.
+
+  Definition CrashStarter := ([∗ set] a ∈ addrset, a m↦0 ∗ UnlockedInv a)%I.
+
+  Definition CrashInner :=
+    (CrashInv ∗ CrashStarter)%I.
 
   Global Instance addr_status_inhabited :
     Inhabited (addr_status).
@@ -343,3 +360,101 @@ Section refinement_triples.
   Qed.
 
 End refinement_triples.
+
+Definition myΣ : gFunctors := #[exmachΣ; @cfgΣ OneDisk.Op OneDisk.l;
+                                  lockΣ; gen_heapΣ addr addr_status].
+
+Existing Instance subG_cfgPreG.
+
+Definition init_absr σ1a σ1c :=
+  TwoDisk.l.(initP) σ1c ∧ OneDisk.l.(initP) σ1a.
+
+Opaque size.
+
+Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OneDisk.Op T) :
+  init_absr σ1a σ1c →
+  wf_client_seq es →
+  ¬ proc_exec_seq OneDisk.l es (rec_singleton (Ret ())) (1, σ1a) Err →
+  ∀ σ2c res, proc_exec_seq TwoDisk.l (compile_proc_seq ReplicatedDiskImpl.impl es)
+                                      (rec_singleton recv) (1, σ1c) (Val σ2c res) →
+  ∃ σ2a, proc_exec_seq OneDisk.l es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
+Proof.
+  eapply (exmach_crash_refinement_seq) with
+      (Σ := myΣ)
+      (exec_inv := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInv myΣ H2 _ H1 hL0 hL1 hS)%I)
+      (exec_inner := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInner myΣ H2 H1 hL0 hL1 hS)%I)
+      (crash_inner := fun H1 H2 => (∃ hL0 hL1 hS , @CrashInner myΣ H2 H1 hL0 hL1 hS)%I)
+      (*
+      (crash_param := fun H1 H2 => unit)
+       *)
+      (crash_inv := fun H1 H2 ghosts =>
+                      let '(hL0, hL1, hS) := ghosts in
+                      @CrashInv myΣ H2 H1 hL0 hL1 hS)
+      (crash_starter := fun H1 H2 ghosts =>
+                      let '(hL0, hL1, hS) := ghosts in
+                     (@CrashStarter myΣ H2 hL0 hL1 hS))
+      (E := nclose sourceN).
+  { apply _. }
+  { apply _. }
+  { intros. apply _. }
+  { intros ?? ((?&?)&?). apply _. }
+  { set_solver+. }
+  { intros. iIntros "(Hj&Hreg&H)". iDestruct "H" as (???) "H". destruct op.
+    - iApply (@read_refinement with "[$]"). eauto.
+    - iApply (@write_refinement with "[$]"). eauto.
+  }
+  { intros. iIntros "H". iDestruct "H" as (???) "(?&?)". eauto. }
+  {
+    (* recv triple *)
+    intros ? ? ((hL0&hL1)&hS). iIntros "(H&Hreg&Hstarter)". iDestruct "H" as "(#Hctx&#Hinv)".
+    rewrite /recv.
+    iAssert (([∗ set] a ∈ addrset,
+              if lt_dec a size then
+                a m↦0 ∗ @UnlockedInv _ hL0 hL1 hS a
+              else
+                a m↦0 ∗ @LockInv _ hL0 hL1 hS a))%I with "[Hstarter]" as "Hprogress".
+    { iApply (big_sepS_mono with "Hstarter").
+      iIntros (a Hin) "Hunlcoked".
+      destruct lt_dec; first iFrame.
+      exfalso. eapply not_lt_size_not_in_addrset; eauto.
+    }
+    iInduction size as [| n] "IH".
+    - wp_ret.
+      iInv "Hinv" as ">H" "_".
+      iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx0&Hctx1&Hctx_stat&Hdur)".
+      iDestruct "Hdom1" as %Hdom1.
+      iApply fupd_mask_weaken.
+      { solve_ndisj. }
+      iAssert ([∗ map] a↦v1 ∈ σ.(OneDisk.disk_state), @DurInvSync _ _ hL0 hL1 hS a v1
+                                                      ∗ (a m↦ 0 ∗ @LockInv _ hL0 hL1 hS a))%I
+        with "[Hprogress Hdur]" as "Hprogress".
+      {
+        rewrite -Hdom1. iDestruct (big_sepM_dom with "Hprogress") as "H".
+        iDestruct (big_sepM_sepM with "[H Hdur]") as "H".
+        { iFrame. }
+        iApply (big_sepM_mono with "H").
+        iIntros (a v Hlookup) "(Hd&(?&Hl))".
+        iDestruct "Hl" as (v') "(Hl0&Hl1&Hstatus)".
+        iDestruct "Hd" as (v0 stat) "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
+        iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
+        iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+        iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
+        iFrame. iExists _. iFrame.
+      }
+      iExists _, _. iFrame.
+      iSplitL "".
+      { iPureIntro. econstructor. }
+      iClear "Hctx".
+      iIntros (???) "(Hctx&Hstate)".
+      iDestruct (big_sepM_sepM with "Hprogress") as "(Hdur&Hprogress)".
+      iDestruct (big_sepM_dom with "Hprogress") as "Hprogress".
+      rewrite Hdom1.
+      iModIntro. iExists hL0, hL1, hS. iFrame.
+      iExists _; iFrame. eauto.
+      iSplitL ""; auto.
+      iApply (big_sepM_mono with "Hdur").
+      iIntros (a' v' Hlookup) "(?&?&?&?&?)".
+      iExists _, Sync. iFrame.
+      auto.
+    - wp_bind. wp_bind.
+Abort.
