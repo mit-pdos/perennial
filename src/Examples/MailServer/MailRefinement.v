@@ -12,7 +12,7 @@ From RecoveryRefinement.Goose Require Import GoZeroValues.
 Inductive compile_mail_base {gm: GoModel} : forall {T}, proc Mail.Op T → proc GoLayer.Op T → Prop :=
 | cm_open :
     compile_mail_base (Call Mail.Open)
-                      (MailServer.init)
+                      (MailServer.Open)
 | cm_pickup uid :
     compile_mail_base (Mail.pickup uid)
                       (MailServer.Pickup uid)

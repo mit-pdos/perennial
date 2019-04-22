@@ -135,7 +135,7 @@ Definition Unlock {model:GoModel} (user:uint64) : proc unit :=
   l <- Data.sliceRead locks user;
   Data.lockRelease l Writer.
 
-Definition open {model:GoModel} : proc unit :=
+Definition Open {model:GoModel} : proc unit :=
   locks <- Data.newPtr (slice.t LockRef);
   initLocks <- Data.newSlice LockRef 0;
   _ <- Data.writePtr locks initLocks;
@@ -150,9 +150,6 @@ Definition open {model:GoModel} : proc unit :=
           Continue (i + 1)) 0;
   finalLocks <- Data.readPtr locks;
   Globals.setX finalLocks.
-
-Definition init {model:GoModel} : proc unit :=
-  open.
 
 Definition Recover {model:GoModel} : proc unit :=
   spooled <- FS.list SpoolDir;
