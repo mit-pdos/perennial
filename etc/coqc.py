@@ -83,13 +83,13 @@ class CoqcFilter:
         return cls(None, db)
 
     def _read_vfile(self):
-        with open(self.vfile) as f:
+        with open(self.vfile, "rb") as f:
             self.contents = f.read()
 
     def chars(self, start, end):
         if not self.contents:
             self._read_vfile()
-        return self.contents[start:end]
+        return self.contents[start:end].decode("utf-8")
 
     def update_def(self, m):
         """Update current definition based on DEF_RE match."""
@@ -105,7 +105,7 @@ class CoqcFilter:
         if m:
             return self.update_def(m)
         code = self.chars(start, end)
-        if self.QED_RE.match(code):
+        if self.QED_RE.search(code):
             if self.curr_def is None:
                 print(
                     self.vfile,
@@ -115,6 +115,9 @@ class CoqcFilter:
                 return
             self.db.add_qed(self.vfile, self.curr_def, time)
             return
+        if "Qed" in code:
+            print("unmatched Qed {} - {}".format(start, end))
+            print(code)
 
     def line(self, l):
         """Process a line of output from coqc."""
