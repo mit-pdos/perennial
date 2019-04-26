@@ -27,40 +27,36 @@ class StdoutDb:
 class TimingDb:
     def __init__(self, conn):
         self.conn = conn
-        self.c = conn.cursor()
 
     @classmethod
     def from_file(cls, fname):
         initialized = path.exists(fname)
         conn = sqlite3.connect(fname)
         if not initialized:
-            c = conn.cursor()
-            c.execute(
+            conn.execute(
                 """CREATE TABLE qed_timings """
                 + """(fname text NOT NULL, ident text NOT NULL, time real NOT NULL, """
                 + """PRIMARY KEY (fname, ident) )"""
             )
-            c.execute(
+            conn.execute(
                 """CREATE TABLE file_timings """
                 + """(fname text NOT NULL PRIMARY KEY, time real)"""
             )
             conn.commit()
-            c.close()
         return cls(conn)
 
     def add_qed(self, fname, ident, time):
-        self.c.execute(
+        self.conn.execute(
             """INSERT OR REPLACE INTO qed_timings VALUES (?,?,?)""",
             (fname, ident, time),
         )
 
     def add_file(self, fname, time):
-        self.c.execute(
+        self.conn.execute(
             """INSERT OR REPLACE INTO file_timings VALUES (?,?)""", (fname, time)
         )
 
     def close(self):
-        self.c.close()
         self.conn.commit()
         self.conn.close()
 
@@ -116,17 +112,17 @@ class CoqcFilter:
 
     def line(self, l):
         """Process a line of output from coqc."""
-        # last line
-        if l == b"":
-            delta = (datetime.now() - self.start).total_seconds()
-            self.db.add_file(self.vfile, delta)
-            return
         line = l.decode("utf-8")
         m = self.TIME_RE.match(line)
         if m:
             return self.update_timing(m)
 
         print(line, end="")
+
+    def done(self):
+        delta = (datetime.now() - self.start).total_seconds()
+        self.db.add_file(self.vfile, delta)
+        self.db.close()
 
 
 def read_coqproject(fname):
@@ -176,7 +172,7 @@ try:
 except KeyboardInterrupt:
     p.kill()
     p.wait()
+    db.close()
     sys.exit(p.returncode)
-p.stdout.close()
-p.wait()
-db.close()
+filter.done()
+sys.exit(p.returncode)

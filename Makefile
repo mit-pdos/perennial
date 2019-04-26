@@ -65,6 +65,7 @@ clean:
 	@echo "CLEAN vo glob aux"
 	$(Q)rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob)
 	$(Q)find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
+	$(Q)rm -f timing.sqlite3
 	rm -f _CoqProject .coqdeps.d
 
 .PHONY: default test clean
