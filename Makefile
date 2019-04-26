@@ -63,6 +63,7 @@ endif
 
 .PHONY: ci
 ci: src/ShouldBuild.vo $(TEST_VO)
+	$(Q)./etc/timing-report.py timing.sqlite3
 
 clean-ext:
 	@echo "CLEAN ext"
