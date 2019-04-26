@@ -1,4 +1,4 @@
-From RecoveryRefinement Require Import Helpers.RelationAlgebra.
+From Transitions Require Import Relations.
 From RecordUpdate Require Import RecordSet.
 
 Generalizable All Variables.

@@ -12,7 +12,8 @@ From Tactical Require Import ProofAutomation.
 From stdpp Require Import base.
 
 Import ProcNotations.
-From RecoveryRefinement Require Import Helpers.RelationAlgebra.
+(* need to import later to shadow relation from Coq standard library *)
+From Transitions Require Import Relations.
 
 Set Implicit Arguments.
 

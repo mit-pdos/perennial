@@ -2,11 +2,11 @@
    used in Armada. (See external/iris-coq/theories/program_logic/weakestpre.v)
    *)
 
+From Transitions Require Import Relations Rewriting.
+
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Layer.
-Require Import Helpers.RelationAlgebra.
-Require Import Helpers.RelationRewriting.
 
 From iris.base_logic.lib Require Export fancy_updates.
 From iris.proofmode Require Import base tactics classes.

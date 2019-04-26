@@ -1,12 +1,12 @@
+Require FunctionalExtensionality.
+
+From Transitions Require Import Relations Rewriting.
+
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
-Require Import Helpers.RelationAlgebra.
-Require Import Helpers.RelationRewriting.
-Require Import Helpers.RelationTheorems.
 Require Import Tactical.ProofAutomation.
 
 Import RelationNotations.
-Require FunctionalExtensionality.
 
 Record Layer Op :=
   { OpState: Type;

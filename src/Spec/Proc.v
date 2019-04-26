@@ -1,5 +1,4 @@
-Require Import Helpers.RelationAlgebra.
-Require Import Helpers.RelationTheorems.
+From Transitions Require Import Relations.
 Require Import List.
 
 Global Set Implicit Arguments.

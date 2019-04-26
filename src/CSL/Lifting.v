@@ -1,10 +1,9 @@
+From Transitions Require Import Relations Rewriting.
+
 Require Export Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Export Spec.Layer.
 Require Export CSL.WeakestPre.
-Require Import Helpers.RelationAlgebra.
-Require Import Helpers.RelationTheorems.
-Require Import Helpers.RelationRewriting.
 From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
 Global Unset Implicit Arguments.

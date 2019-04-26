@@ -1,8 +1,8 @@
 From stdpp Require Import base.
 From RecordUpdate Require Import RecordUpdate.
 From Tactical Require Import ProofAutomation.
+From Transitions Require Import Relations.
 
-From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 From RecoveryRefinement Require Import Helpers.RecordZoom.
 
 From RecoveryRefinement Require Import Spec.Proc.

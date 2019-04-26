@@ -1,7 +1,6 @@
 (* TODO: figure out a way to make this mix-in-able for anything building on Heap *)
 
 From iris.algebra Require Import auth gmap frac agree.
-Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants.
 Require CSL.Count_Heap.

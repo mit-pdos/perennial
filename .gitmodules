@@ -16,3 +16,6 @@
 [submodule "vendor/record-update"]
 	path = vendor/record-update
 	url = https://github.com/tchajed/coq-record-update.git
+[submodule "vendor/transitions"]
+	path = vendor/transitions
+	url = https://github.com/tchajed/coq-transitions.git

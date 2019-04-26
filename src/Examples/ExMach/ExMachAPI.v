@@ -47,7 +47,7 @@ Module ExMach.
 
 
   Import RelationNotations.
-  Definition cas_rel (i: addr) (vold: nat) (vnew: nat): RelationAlgebra.relation State State nat :=
+  Definition cas_rel (i: addr) (vold: nat) (vnew: nat): relation State State nat :=
     v <- reads (get_mem i);
     if nat_eq_dec v vold then
         puts (set_mem i vnew);;
@@ -171,4 +171,4 @@ Definition lock i : proc ExMach.Op unit :=
                 else
                   ContinueOutcome tt)
        )%proc tt.
-Definition unlock i : proc ExMach.Op unit := write_mem i 0. 
+Definition unlock i : proc ExMach.Op unit := write_mem i 0.

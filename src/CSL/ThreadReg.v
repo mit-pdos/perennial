@@ -1,6 +1,7 @@
+From Transitions Require Import Relations.
+
 From iris.algebra Require Export auth functions csum.
 Require Export CSL.WeakestPre CSL.Lifting CSL.Counting.
-Require Import Helpers.RelationTheorems.
 From iris.proofmode Require Export tactics.
 From RecoveryRefinement Require Export Lib.
 

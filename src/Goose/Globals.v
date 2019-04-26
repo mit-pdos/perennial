@@ -1,10 +1,9 @@
 From RecordUpdate Require Import RecordUpdate.
+From Transitions Require Import Relations.
 
 From RecoveryRefinement Require Import Spec.Proc.
 From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement.Goose Require Import Machine.
-
-From RecoveryRefinement Require Import Helpers.RelationAlgebra.
 
 Set Implicit Arguments.
 

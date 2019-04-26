@@ -1,5 +1,4 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Import Helpers.RelationTheorems.
 Require Import ExMach.Adequacy.
 Import ExMach.
 Require Import Spec.Proc.

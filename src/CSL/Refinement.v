@@ -1,9 +1,7 @@
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Layer.
-Require Import Helpers.RelationAlgebra.
-Require Import Helpers.RelationTheorems.
-Require Import Helpers.RelationRewriting.
+From Transitions Require Import Relations.
 Require Import CSL.WeakestPre CSL.Lifting.
 From iris.algebra Require Import auth frac agree gmap list.
 From iris.base_logic.lib Require Import invariants.

@@ -1,7 +1,7 @@
 From Classes Require Import EqualDec.
 From stdpp Require Import base.
 
-From RecoveryRefinement Require Import Helpers.RelationAlgebra.
+From Transitions Require Import Relations.
 From RecoveryRefinement Require Import Spec.Proc.
 
 Set Implicit Arguments.

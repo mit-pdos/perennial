@@ -1,9 +1,8 @@
+From Transitions Require Import Relations Rewriting.
+
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Layer.
-Require Import Helpers.RelationAlgebra.
-Require Import Helpers.RelationTheorems.
-Require Import Helpers.RelationRewriting.
 Require Import CSL.WeakestPre.
 
 From stdpp Require Import namespaces.

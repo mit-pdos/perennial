@@ -1,9 +1,8 @@
+From Transitions Require Import Relations Rewriting.
+
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Layer.
-Require Import Helpers.RelationAlgebra.
-Require Import Helpers.RelationTheorems.
-Require Import Helpers.RelationRewriting.
 Require Export CSL.WeakestPre CSL.Refinement CSL.Adequacy.
 From iris.algebra Require Import auth frac agree gmap list.
 From iris.base_logic.lib Require Import invariants.
@@ -11,7 +10,7 @@ From iris.proofmode Require Import tactics.
 Unset Implicit Arguments.
 
 Import RelationNotations.
-Require Import Helpers.RelationAlgebra.
+From Transitions Require Import Relations.
 
 Definition wp_recovery_refinement {Ta Tc R OpTa OpTc} Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}

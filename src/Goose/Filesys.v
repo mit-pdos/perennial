@@ -13,7 +13,7 @@ From Classes Require Import EqualDec.
 From stdpp Require gmap.
 From stdpp Require Import fin_maps.
 
-From RecoveryRefinement Require Import Helpers.RelationAlgebra.
+From Transitions Require Import Relations.
 
 Import EqualDecNotation.
 

@@ -1,5 +1,4 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Import Helpers.RelationTheorems.
 Require Import Goose.Proof.Interp.
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.

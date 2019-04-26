@@ -2,9 +2,7 @@ Require Import Setoid.
 Require Import Morphisms.
 Require Import Proc.
 From Classes Require Import Classes.
-Require Import Helpers.RelationAlgebra.
-Require Import Helpers.RelationRewriting.
-Require Import Helpers.RelationTheorems.
+From Transitions Require Import Relations Rewriting.
 Require Import Tactical.ProofAutomation.
 Require Import List.
 

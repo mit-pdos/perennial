@@ -1,6 +1,5 @@
 From iris.algebra Require Import auth gmap frac agree.
 Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy.
-Require Import Helpers.RelationTheorems.
 From iris.algebra Require Export functions.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.
