@@ -20,9 +20,6 @@ class StdoutDb:
         if time > 0.1:
             print("{} {:0.2f}".format(fname, time))
 
-    def periodic_commit(self):
-        pass
-
     def close(self):
         pass
 
@@ -30,23 +27,19 @@ class StdoutDb:
 class TimingDb:
     def __init__(self, conn):
         self.conn = conn
-        self.last_commit = datetime.now()
 
     @classmethod
     def from_file(cls, fname):
-        initialized = path.exists(fname)
-        conn = sqlite3.connect(fname)
-        if not initialized:
-            conn.execute(
-                """CREATE TABLE qed_timings """
-                + """(fname text NOT NULL, ident text NOT NULL, time real NOT NULL, """
-                + """PRIMARY KEY (fname, ident) )"""
-            )
-            conn.execute(
-                """CREATE TABLE file_timings """
-                + """(fname text NOT NULL PRIMARY KEY, time real)"""
-            )
-            conn.commit()
+        conn = sqlite3.connect(fname, isolation_level=None)
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS qed_timings """
+            + """(fname text NOT NULL, ident text NOT NULL, time real NOT NULL, """
+            + """PRIMARY KEY (fname, ident) )"""
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS file_timings """
+            + """(fname text NOT NULL PRIMARY KEY, time real)"""
+        )
         return cls(conn)
 
     def add_qed(self, fname, ident, time):
@@ -60,28 +53,20 @@ class TimingDb:
             """INSERT OR REPLACE INTO file_timings VALUES (?,?)""", (fname, time)
         )
 
-    def _last_commit(self):
-        return (datetime.now() - self.last_commit).total_seconds()
-
-    def periodic_commit(self):
-        if self._last_commit() > 3:
-            self.conn.commit()
-            self.last_commit = datetime.now()
-
     def close(self):
-        self.conn.commit()
         self.conn.close()
 
 
 class CoqcFilter:
     DEF_RE = re.compile(
-        r"""\b(Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact)\s+"""
+        r"""(Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact)\s+"""
         + r"""(?P<ident>[a-zA-Z0-9'_]*)"""
     )
     TIME_RE = re.compile(
         r"""Chars (?P<start>[0-9]*) - (?P<end>[0-9]*) \[.*\] """
         + r"""(?P<time>[0-9.]*) secs .*"""
     )
+    QED_RE = re.compile(r"""(Time)?\s*Qed\.""")
 
     def __init__(self, vfile, db):
         self.vfile = vfile
@@ -119,13 +104,21 @@ class CoqcFilter:
         m = self.DEF_RE.search(code)
         if m:
             return self.update_def(m)
-        if self.chars(start, end) == "Qed.":
+        code = self.chars(start, end)
+        if self.QED_RE.match(code):
+            if self.curr_def is None:
+                print(
+                    self.vfile,
+                    "no proof ident {} - {}".format(start, end),
+                    file=sys.stderr,
+                )
+                return
             self.db.add_qed(self.vfile, self.curr_def, time)
+            return
 
     def line(self, l):
         """Process a line of output from coqc."""
         line = l.decode("utf-8")
-        self.db.periodic_commit()
         m = self.TIME_RE.match(line)
         if m:
             return self.update_timing(m)

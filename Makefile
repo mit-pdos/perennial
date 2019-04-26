@@ -27,6 +27,9 @@ join-with-comma = $(subst $(space),$(comma),$(strip $1))
 COQ_ARGS = -w $(call join-with-comma,$(COQ_WARN_LIST))
 #COQ_ARGS = -w $(call join-with-comma,$(COQ_WARN_LIST)) $(shell cat '_CoqProject')
 
+TIMED:=true
+TIMING_ARGS := $(if $(TIMED),--timing-db timing.sqlite3,)
+
 default: src/ShouldBuild.vo
 
 all: $(VFILES:.v=.vo)
@@ -56,7 +59,7 @@ endif
 
 %.vo: %.v _CoqProject
 	@echo "COQC $<"
-	$(Q)./etc/coqc.py --timing-db timing.sqlite3 $(COQ_ARGS) $< -o $@
+	$(Q)./etc/coqc.py $(TIMING_ARGS) $(COQ_ARGS) $< -o $@
 
 .PHONY: ci
 ci: src/ShouldBuild.vo $(TEST_VO)
@@ -70,10 +73,10 @@ clean:
 	@echo "CLEAN vo glob aux"
 	$(Q)rm -f $(PROJ_VFILES:.v=.vo) $(PROJ_VFILES:.v=.glob)
 	$(Q)find src -name ".*.aux" -exec rm {} \;
-	$(Q)rm -f timing.sqlite3
-	rm -f _CoqProject .coqdeps.d
 
 clean-all: clean-ext clean
+	$(Q)rm -f timing.sqlite3
+	rm -f _CoqProject .coqdeps.d
 
 .PHONY: default test clean
 .DELETE_ON_ERROR:
