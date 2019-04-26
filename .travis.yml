@@ -30,6 +30,7 @@ git:
 
 before_install:
   - git -c http.sslVerify=false submodule update --init --recursive
+  - pip install -r etc/requirements.txt
 
 install: |
   # Prepare the COQ container

@@ -1,6 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # coqc wrapper
+
+from __future__ import print_function
 
 from datetime import datetime
 from os import path
