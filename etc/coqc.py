@@ -20,6 +20,9 @@ class StdoutDb:
         if time > 0.1:
             print("{} {:0.2f}".format(fname, time))
 
+    def periodic_commit(self):
+        pass
+
     def close(self):
         pass
 
@@ -27,6 +30,7 @@ class StdoutDb:
 class TimingDb:
     def __init__(self, conn):
         self.conn = conn
+        self.last_commit = datetime.now()
 
     @classmethod
     def from_file(cls, fname):
@@ -55,6 +59,14 @@ class TimingDb:
         self.conn.execute(
             """INSERT OR REPLACE INTO file_timings VALUES (?,?)""", (fname, time)
         )
+
+    def _last_commit(self):
+        return (datetime.now() - self.last_commit).total_seconds()
+
+    def periodic_commit(self):
+        if self._last_commit() > 3:
+            self.conn.commit()
+            self.last_commit = datetime.now()
 
     def close(self):
         self.conn.commit()
@@ -113,6 +125,7 @@ class CoqcFilter:
     def line(self, l):
         """Process a line of output from coqc."""
         line = l.decode("utf-8")
+        self.db.periodic_commit()
         m = self.TIME_RE.match(line)
         if m:
             return self.update_timing(m)

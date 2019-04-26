@@ -61,12 +61,19 @@ endif
 .PHONY: ci
 ci: src/ShouldBuild.vo $(TEST_VO)
 
-clean:
-	@echo "CLEAN vo glob aux"
+clean-ext:
+	@echo "CLEAN ext"
 	$(Q)rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob)
 	$(Q)find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
+
+clean:
+	@echo "CLEAN vo glob aux"
+	$(Q)rm -f $(PROJ_VFILES:.v=.vo) $(PROJ_VFILES:.v=.glob)
+	$(Q)find src -name ".*.aux" -exec rm {} \;
 	$(Q)rm -f timing.sqlite3
 	rm -f _CoqProject .coqdeps.d
+
+clean-all: clean-ext clean
 
 .PHONY: default test clean
 .DELETE_ON_ERROR:
