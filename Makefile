@@ -24,7 +24,8 @@ comma := ,
 # Joins elements of a list with a comma
 join-with-comma = $(subst $(space),$(comma),$(strip $1))
 
-COQ_ARGS = -w $(call join-with-comma,$(COQ_WARN_LIST)) $(shell cat '_CoqProject')
+COQ_ARGS = -w $(call join-with-comma,$(COQ_WARN_LIST))
+#COQ_ARGS = -w $(call join-with-comma,$(COQ_WARN_LIST)) $(shell cat '_CoqProject')
 
 default: src/ShouldBuild.vo
 
@@ -55,7 +56,7 @@ endif
 
 %.vo: %.v _CoqProject
 	@echo "COQC $<"
-	$(Q)coqc $(COQ_ARGS) $< -o $@
+	$(Q)./etc/coqc.py --timing-db timing.sqlite3 $(COQ_ARGS) $< -o $@
 
 .PHONY: ci
 ci: src/ShouldBuild.vo $(TEST_VO)
