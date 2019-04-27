@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import argparse
 import sqlite3
-import pandas
+import pandas as pd
 
 def read_db(fname):
     conn = sqlite3.connect(fname)
@@ -20,9 +20,9 @@ def read_db(fname):
         file_timings.append((row["fname"], row["time"]))
     conn.close()
 
-    qed_df = pandas.DataFrame(qed_timings, columns=["fname", "ident", "time"])
+    qed_df = pd.DataFrame(qed_timings, columns=["fname", "ident", "time"])
     qed_sum = qed_df.groupby("fname").sum()
-    raw_file_df = pandas.DataFrame(file_timings, columns=["fname", "time"])
+    raw_file_df = pd.DataFrame(file_timings, columns=["fname", "time"])
     file_df = raw_file_df.join(qed_sum, rsuffix="_qed", on="fname")
     file_df.rename(mapper={"time_qed": "qed_time"}, axis='columns', inplace=True)
     return qed_df, file_df
@@ -36,6 +36,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     qed_df, file_df = read_db(args.db)
+    pd.set_option('display.max_rows', 100)
+    pd.set_option('display.max_columns', 10)
+    pd.set_option('display.width', 300)
     print("{:12s} {:>6.1f}".format("total", file_df["time"].sum()))
     print(
         "{:12s} {:>6.1f}".format(
