@@ -128,7 +128,7 @@ class CoqcFilter:
         if m:
             return self.update_timing(m)
 
-        print(line, end="")
+        sys.stdout.write(line)
 
     def done(self):
         delta = (datetime.now() - self.start).total_seconds()
