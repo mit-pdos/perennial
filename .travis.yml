@@ -63,6 +63,7 @@ script:
 - |
   docker exec COQ /bin/bash --login -c "
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
+    export LC_ALL=C.UTF-8
     set -ex
     make -j${NJOBS} -k ci
     "
