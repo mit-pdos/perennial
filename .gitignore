@@ -23,4 +23,4 @@
 .coqdeps.d
 _CoqProject
 
-timing.sqlite3
+/timing*.sqlite3

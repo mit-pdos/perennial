@@ -10,22 +10,21 @@ def read_db(fname):
     conn = sqlite3.connect(fname)
     conn.row_factory = sqlite3.Row
     qed_timings = []
-    for row in conn.execute("select fname, ident, time from qed_timings"):
+    for row in conn.execute("SELECT fname, ident, time FROM qed_timings"):
         qed_timings.append((row["fname"], row["ident"], row["time"]))
 
     file_timings = []
     for row in conn.execute(
-        """SELECT file_timings.fname as fname, time, qed_time FROM """
-        + """(file_timings INNER JOIN """
-        + """(SELECT fname, sum(time) AS qed_time FROM qed_timings group by fname) file_qeds """
-        + """on file_timings.fname = file_qeds.fname)"""
+        """SELECT fname, time FROM file_timings"""
     ):
-        file_timings.append((row["fname"], row["time"], row["qed_time"]))
-
+        file_timings.append((row["fname"], row["time"]))
     conn.close()
 
     qed_df = pandas.DataFrame(qed_timings, columns=["fname", "ident", "time"])
-    file_df = pandas.DataFrame(file_timings, columns=["fname", "time", "qed_time"])
+    qed_sum = qed_df.groupby("fname").sum()
+    raw_file_df = pandas.DataFrame(file_timings, columns=["fname", "time"])
+    file_df = raw_file_df.join(qed_sum, rsuffix="_qed", on="fname")
+    file_df.rename(mapper={"time_qed": "qed_time"}, axis='columns', inplace=True)
     return qed_df, file_df
 
 
