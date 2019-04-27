@@ -41,7 +41,7 @@ install: |
     set -ex  # -e = exit on failure; -x = trace for debug
     sudo apt-get update
     sudo apt-get install -y python3 python3-pip sqlite3
-    pip3 install -r lib/requirements.txt
+    pip3 install -r etc/requirements.txt
     #opam update -y
     opam switch \${COMPILER_EDGE}; eval \$(opam env)
     opam config list
