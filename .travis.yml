@@ -41,7 +41,7 @@ install: |
     set -ex  # -e = exit on failure; -x = trace for debug
     sudo apt-get update
     sudo apt-get install -y python3 python3-pip sqlite3
-    pip3 install -r etc/requirements.txt
+    pip3 install -r etc/requirements.txt -r etc/requirements-test.txt
     #opam update -y
     opam switch \${COMPILER_EDGE}; eval \$(opam env)
     opam config list
@@ -65,6 +65,7 @@ script:
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     export LC_ALL=C.UTF-8
     set -ex
+    pytest etc
     make -j${NJOBS} -k ci
     "
 - echo -en 'travis_fold:end:build\\r'
