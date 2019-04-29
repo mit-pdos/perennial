@@ -65,7 +65,7 @@ script:
     export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
     export LC_ALL=C.UTF-8
     set -ex
-    pytest etc
+    ~/.local/bin/pytest etc
     make -j${NJOBS} -k ci
     "
 - echo -en 'travis_fold:end:build\\r'
