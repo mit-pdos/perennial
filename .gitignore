@@ -24,3 +24,6 @@
 _CoqProject
 
 /timing*.sqlite3
+
+# Python
+__pycache__

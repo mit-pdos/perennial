@@ -1,0 +1,22 @@
+Chars 0 - 20 [Require~Import~Utf8.] 0. secs (0.u,0.s)
+Chars 21 - 109 [Definition~σ~:~forall~x~:~nat,...] 0.045 secs (0.031u,0.014s)
+σ = λ x : nat, eq_refl
+     : ∀ x : nat, x + 1000 = x + 1000
+
+Argument scope is [nat_scope]
+Chars 110 - 119 [Print~σ.] 0.009 secs (0.006u,0.002s)
+Chars 120 - 139 [Theorem~thm~:~True.] 0. secs (0.u,0.s)
+Chars 140 - 146 [Proof.] 0. secs (0.u,0.s)
+some output
+Chars 149 - 169 [idtac~"some~output".] 0. secs (0.u,0.s)
+Chars 172 - 180 [exact~I.] 0. secs (0.u,0.s)
+Chars 181 - 185 [Qed.] 0. secs (0.u,0.s)
+Chars 187 - 208 [Lemma~helpful~:~True.] 0. secs (0.u,0.s)
+Chars 209 - 215 [Proof.] 0. secs (0.u,0.s)
+Chars 218 - 258 [(pose~proof~(eq_refl~:~600~+~6...] 0.028 secs (0.019u,0.008s)
+Debug: (* debug auto: *)
+Debug: * assumption. (*fail*)
+Debug: * intro. (*fail*)
+Debug: * exact I (in core). (*success*)
+Chars 261 - 272 [debug~auto.] 0.001 secs (0.u,0.s)
+Chars 273 - 277 [Qed.] 0.035 secs (0.024u,0.01s)

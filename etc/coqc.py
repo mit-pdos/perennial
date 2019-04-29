@@ -59,30 +59,58 @@ class TimingDb:
         self.conn.close()
 
 
-class CoqcFilter:
+class Classify:
     DEF_RE = re.compile(
         r"""(Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact)\s+"""
-        + r"""(?P<ident>[a-zA-Z0-9'_]*)"""
+        + r"""(?P<ident>\w(\w|')*)"""
     )
     TIME_RE = re.compile(
-        r"""Chars (?P<start>[0-9]*) - (?P<end>[0-9]*) \[.*\] """
+        r"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """
         + r"""(?P<time>[0-9.]*) secs .*"""
     )
     QED_RE = re.compile(r"""(Time)?\s*Qed\.""")
 
-    def __init__(self, vfile, db):
+    @classmethod
+    def is_qed(cls, s):
+        return cls.QED_RE.match(s) is not None
+
+    @classmethod
+    def get_def(cls, s):
+        m = cls.DEF_RE.match(s)
+        if m is None:
+            return None
+        return m.group("ident")
+
+    @classmethod
+    def get_time(cls, s):
+        m = cls.TIME_RE.match(s)
+        if m is None:
+            return None
+        return (int(m.group("start")), int(m.group("end")), float(m.group("time")))
+
+
+class CoqcFilter:
+    def __init__(self, vfile, db, contents, start):
         self.vfile = vfile
+        self.contents = contents
         self.db = db
-        self.start = datetime.now()
-        self.contents = None
+        self.start = start
         self.curr_def = None
 
     @classmethod
-    def from_coqargs(cls, args, db):
+    def from_coqargs(cls, args, db, contents=None, start=None):
+        vfile = None
         for arg in args:
             if arg.endswith(".v"):
-                return cls(arg, db)
-        return cls(None, db)
+                vfile = arg
+                break
+        if start is None:
+            start = datetime.now()
+        return cls(vfile, db, contents, start)
+
+    @classmethod
+    def from_contents(cls, contents, db, start=None):
+        return cls("<in-memory>.v", db, contents, start)
 
     def _read_vfile(self):
         with open(self.vfile, "rb") as f:
@@ -93,21 +121,18 @@ class CoqcFilter:
             self._read_vfile()
         return self.contents[start:end].decode("utf-8")
 
-    def update_def(self, m):
-        """Update current definition based on DEF_RE match."""
-        self.curr_def = m.group("ident")
+    def update_def(self, ident):
+        """Update current definition to ident."""
+        self.curr_def = ident
 
-    def update_timing(self, m):
-        """Add new timing info based on TIME_RE match."""
-        start = int(m.group("start"))
-        end = int(m.group("end"))
-        time = float(m.group("time"))
+    def update_timing(self, timing_info):
+        """Add new timing info based on Classify.get_time."""
+        start, end, time = timing_info
         code = self.chars(start, end)
-        m = self.DEF_RE.search(code)
-        if m:
-            return self.update_def(m)
-        code = self.chars(start, end)
-        if self.QED_RE.search(code):
+        ident = Classify.get_def(code)
+        if ident:
+            return self.update_def(ident)
+        if Classify.is_qed(code):
             if self.curr_def is None:
                 print(
                     self.vfile,
@@ -117,21 +142,20 @@ class CoqcFilter:
                 return
             self.db.add_qed(self.vfile, self.curr_def, time)
             return
-        if "Qed" in code:
-            print("unmatched Qed {} - {}".format(start, end))
-            print(code)
 
     def line(self, l):
         """Process a line of output from coqc."""
         line = l.decode("utf-8")
-        m = self.TIME_RE.match(line)
-        if m:
-            return self.update_timing(m)
+        timing_info = Classify.get_time(line)
+        if timing_info:
+            return self.update_timing(timing_info)
 
         sys.stdout.write(line)
 
-    def done(self):
-        delta = (datetime.now() - self.start).total_seconds()
+    def done(self, end_t=None):
+        if end_t is None:
+            end_t = datetime.now()
+        delta = (end_t - self.start).total_seconds()
         self.db.add_file(self.vfile, delta)
         self.db.close()
 
@@ -144,46 +168,49 @@ def read_coqproject(fname):
     return args
 
 
-import argparse
+if __name__ == "__main__":
+    import argparse
 
-parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
-parser.add_argument(
-    "--proj", default=None, help="path to _CoqProject to use for options"
-)
+    parser.add_argument(
+        "--proj", default=None, help="path to _CoqProject to use for options"
+    )
 
-parser.add_argument("--timing-db", default=None, help="database to store timing info")
+    parser.add_argument(
+        "--timing-db", default=None, help="database to store timing info"
+    )
 
-args, coq_args = parser.parse_known_args()
+    args, coq_args = parser.parse_known_args()
 
-coqproject_file = args.proj
-if coqproject_file is None and path.exists("_CoqProject"):
-    coqproject_file = "_CoqProject"
-if path.exists(coqproject_file):
-    proj_args = read_coqproject(coqproject_file)
-else:
-    proj_args = []
+    coqproject_file = args.proj
+    if coqproject_file is None and path.exists("_CoqProject"):
+        coqproject_file = "_CoqProject"
+    if path.exists(coqproject_file):
+        proj_args = read_coqproject(coqproject_file)
+    else:
+        proj_args = []
 
-if args.timing_db:
-    db = TimingDb.from_file(args.timing_db)
-else:
-    db = StdoutDb()
+    if args.timing_db:
+        db = TimingDb.from_file(args.timing_db)
+    else:
+        db = StdoutDb()
 
-args = ["coqc"]
-args.extend(proj_args)
-args.append("-time")
-args.extend(coq_args)
+    args = ["coqc"]
+    args.extend(proj_args)
+    args.append("-time")
+    args.extend(coq_args)
 
-filter = CoqcFilter.from_coqargs(coq_args, db)
+    filter = CoqcFilter.from_coqargs(coq_args, db)
 
-p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=sys.stderr)
-try:
-    for line in iter(p.stdout.readline, b""):
-        filter.line(line)
-except KeyboardInterrupt:
-    p.kill()
-    p.wait()
-    db.close()
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=sys.stderr)
+    try:
+        for line in iter(p.stdout.readline, b""):
+            filter.line(line)
+    except KeyboardInterrupt:
+        p.kill()
+        p.wait()
+        db.close()
+        sys.exit(p.returncode)
+    filter.done()
     sys.exit(p.returncode)
-filter.done()
-sys.exit(p.returncode)
