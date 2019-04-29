@@ -11,14 +11,19 @@ class MemDb:
     def __init__(self):
         self.qeds = {}
         self.files = {}
+        self.closed = False
 
     def add_qed(self, fname, ident, time):
-        self.qeds[(fname, ident)] = time
+        key = (fname, ident)
+        assert self.qeds.get(key) is None
+        self.qeds[key] = time
 
     def add_file(self, fname, time):
+        assert self.files.get(fname) is None
         self.files[fname] = time
 
     def close(self):
+        assert not self.closed
         pass
 
 
