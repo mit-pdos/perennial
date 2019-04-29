@@ -1,0 +1,5 @@
+Chars 0 - 84 [#[local]~Lemma~abstract_away_h...] 0. secs (0.u,0.s)
+Chars 85 - 91 [Proof.] 0. secs (0.u,0.s)
+Chars 94 - 114 [(intros;~subst;~auto).] 0. secs (0.u,0.s)
+Chars 115 - 119 [Qed.] 0. secs (0.u,0.s)
+Chars 121 - 319 [Ltac~~abstract_term~t~:=~~~mat...] 0. secs (0.u,0.s)

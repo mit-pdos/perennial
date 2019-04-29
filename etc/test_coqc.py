@@ -64,7 +64,7 @@ def test_classify_time():
     )
 
 
-FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
+FIXTURE_DIR = join(os.path.dirname(os.path.realpath(__file__)), "test_coqc")
 
 
 def test_filter():
@@ -77,7 +77,17 @@ def test_filter():
             filter.line(line)
     end_t = start + timedelta(seconds=0.5)
     filter.done(end_t=end_t)
-    db.close()
 
     assert db.qeds == {(vfile, "thm"): 0.0, (vfile, "helpful"): 0.035}
     assert db.files[vfile] == 0.5
+
+    for fname, qeds in {"Abstract.v": {"abstract_away_helper": 0.0}}.items():
+        vfile = join(FIXTURE_DIR, fname)
+        db = MemDb()
+        filter = CoqcFilter(vfile, db, None, datetime.now())
+        with open(vfile + ".out", "rb") as f:
+            for line in f:
+                filter.line(line)
+        filter.done()
+        expected_qeds = dict(((vfile, ident), t) for ident, t in qeds.items())
+        assert db.qeds == expected_qeds

@@ -61,14 +61,14 @@ class TimingDb:
 
 class Classify:
     DEF_RE = re.compile(
-        r"""(Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact)\s+"""
+        r"""(Local\s*)?(Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact)\s+"""
         + r"""(?P<ident>\w(\w|')*)"""
     )
     TIME_RE = re.compile(
         r"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """
         + r"""(?P<time>[0-9.]*) secs .*"""
     )
-    QED_RE = re.compile(r"""(Time)?\s*Qed\.""")
+    QED_RE = re.compile(r"""(Time\s*)?Qed\.""")
 
     @classmethod
     def is_qed(cls, s):
