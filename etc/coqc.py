@@ -61,7 +61,7 @@ class TimingDb:
 
 class Classify:
     DEF_RE = re.compile(
-        r"""(Local\s*)?(Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact)\s+"""
+        r"""(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact)\s+"""
         + r"""(?P<ident>\w(\w|')*)"""
     )
     TIME_RE = re.compile(

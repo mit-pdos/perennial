@@ -75,10 +75,19 @@ def test_filter():
     with open(join(FIXTURE_DIR, "test.v.out"), "rb") as f:
         for line in f:
             filter.line(line)
+    assert (
+        filter.chars(21, 111)
+        == r"""Definition σ : forall (x:nat), x + 1000 = x + 1000 :=
+  fun x => eq_refl (x + (500+500))."""
+    )
     end_t = start + timedelta(seconds=0.5)
     filter.done(end_t=end_t)
 
-    assert db.qeds == {(vfile, "thm"): 0.0, (vfile, "helpful"): 0.035}
+    assert db.qeds == {
+        (vfile, "thm"): 0.0,
+        (vfile, "helpful"): 0.037,
+        (vfile, "thm'"): 0.0,
+    }
     assert db.files[vfile] == 0.5
 
     for fname, qeds in {"Abstract.v": {"abstract_away_helper": 0.0}}.items():
