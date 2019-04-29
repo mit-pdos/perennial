@@ -64,11 +64,13 @@ class Classify:
         r"""(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact)\s+"""
         + r"""(?P<ident>\w(\w|')*)"""
     )
+    OBLIGATION_RE = re.compile(r"""Next Obligation\.""")
     TIME_RE = re.compile(
         r"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """
         + r"""(?P<time>[0-9.]*) secs .*"""
     )
     QED_RE = re.compile(r"""(Time\s*)?Qed\.""")
+    obligation_count = 0
 
     @classmethod
     def is_qed(cls, s):
@@ -77,9 +79,13 @@ class Classify:
     @classmethod
     def get_def(cls, s):
         m = cls.DEF_RE.match(s)
-        if m is None:
-            return None
-        return m.group("ident")
+        if m is not None:
+            return m.group("ident")
+        m = cls.OBLIGATION_RE.match(s)
+        if m is not None:
+            cls.obligation_count += 1
+            return "<obligation {}>".format(cls.obligation_count)
+        return None
 
     @classmethod
     def get_time(cls, s):

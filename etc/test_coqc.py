@@ -67,7 +67,18 @@ def test_classify_time():
 FIXTURE_DIR = join(os.path.dirname(os.path.realpath(__file__)), "test_coqc")
 
 
-def test_filter():
+def run_filter(fname):
+    db = MemDb()
+    vfile = join(FIXTURE_DIR, fname)
+    filter = CoqcFilter(vfile, db, None, datetime.now())
+    with open(join(FIXTURE_DIR, fname + ".out"), "rb") as f:
+        for line in f:
+            filter.line(line)
+    filter.done()
+    return db
+
+
+def test_filter_unit_tests():
     db = MemDb()
     start = datetime.now()
     vfile = join(FIXTURE_DIR, "test.v")
@@ -82,7 +93,6 @@ def test_filter():
     )
     end_t = start + timedelta(seconds=0.5)
     filter.done(end_t=end_t)
-
     assert db.qeds == {
         (vfile, "thm"): 0.0,
         (vfile, "helpful"): 0.037,
@@ -90,13 +100,17 @@ def test_filter():
     }
     assert db.files[vfile] == 0.5
 
+
+def test_filter_integration_tests():
     for fname, qeds in {"Abstract.v": {"abstract_away_helper": 0.0}}.items():
+        db = run_filter(fname)
         vfile = join(FIXTURE_DIR, fname)
-        db = MemDb()
-        filter = CoqcFilter(vfile, db, None, datetime.now())
-        with open(vfile + ".out", "rb") as f:
-            for line in f:
-                filter.line(line)
-        filter.done()
         expected_qeds = dict(((vfile, ident), t) for ident, t in qeds.items())
         assert db.qeds == expected_qeds
+
+
+def test_infinite_v_handled(capsys):
+    run_filter("infinite.v")
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
