@@ -219,4 +219,5 @@ if __name__ == "__main__":
         db.close()
         sys.exit(p.returncode)
     filter.done()
+    p.wait()
     sys.exit(p.returncode)
