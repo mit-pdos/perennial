@@ -731,7 +731,7 @@ Proof.
   apply (zeroValue _).
   apply (zeroValue _).
   apply sigPtr_eq_dec.
+  idtac "Beginning final qed soon.".
   apply (zeroValue _).
-  idtac "Beginning final qed."
 Time Qed.
 Print Assumptions mail_crash_refinement_seq.

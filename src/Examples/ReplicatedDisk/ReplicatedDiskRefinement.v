@@ -59,8 +59,8 @@ Lemma gen_heap_update' {Σ V} {hG: gen_heapG nat V Σ} (l: nat) v1 v2:
     gen_heap_ctx' -∗ mapsto l 1 v1 ==∗ gen_heap_ctx' ∗ mapsto l 1 v2.
 Proof.
   iIntros "Hctx Hmapsto". iDestruct "Hctx" as (σ Hdom) "H".
-  iDestruct (gen_heap_valid with "[$] [$]") as %Hlookup.
-  iMod (gen_heap_update with "[$] [$]") as "(?&$)".
+  iDestruct (@gen_heap_valid with "[$] [$]") as %Hlookup.
+  iMod (@gen_heap_update with "[$] [$]") as "(?&$)".
   iExists _; iFrame.
   iPureIntro. rewrite dom_insert_L -Hdom.
   cut (l ∈ dom (gset nat) σ).
@@ -679,7 +679,7 @@ Proof.
     rewrite /ExecInner.
     iSplitL "Hmem hL0a hL1a hSa".
     { iModIntro. iApply big_opM_dom.
-      repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+      repeat (iDestruct (@big_sepM_sepM with "[$]") as "H").
       iApply (big_sepM_mono with "H").
       iIntros (k x Hlookup) "(((?&?)&?)&?)".
       rewrite (init_zero_lookup_is_zero k x); last auto.
@@ -694,7 +694,7 @@ Proof.
     iSplitL "hS".
     { iExists _. iFrame "hS". rewrite dom_fmap_L. auto. }
     iModIntro.
-    repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+    repeat (iDestruct (@big_sepM_sepM with "[$]") as "H").
     iApply (big_sepM_mono with "H").
     iIntros (k x Hlookup) "((((?&?)&?)&?)&?)".
     rewrite (init_zero_lookup_is_zero k x); last auto.
@@ -738,7 +738,7 @@ Proof.
     iFrame "Hsrc".
     iSplitR "Hmem hL0a hL1a hSa"; last first.
     { iApply big_opM_dom.
-      repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+      repeat (iDestruct (@big_sepM_sepM with "[$]") as "H").
       iApply (big_sepM_mono with "H").
       iIntros (k x Hlookup) "(((Hs&Hl0)&Hl1)&?)".
       iDestruct "Hs" as (??) "Hs".
@@ -764,7 +764,7 @@ Proof.
     { iExists _. iFrame. by iPureIntro. }
     iSplitL "hS".
     { iExists _. iFrame. by iPureIntro. }
-    repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+    repeat (iDestruct (@big_sepM_sepM with "[$]") as "H").
     iCombine "Hctx0 Hctx1 Hctx_stat" as "Hctx".
     iDestruct (big_sepM_mono_with_inv with "Hctx H") as "(?&$)".
     iIntros (k x Hlookup) "H".
@@ -822,7 +822,7 @@ Proof.
     iFrame "Hsrc".
     iSplitR "Hmem hL0a hL1a hSa"; last first.
     { iApply big_opM_dom.
-      repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+      repeat (iDestruct (@big_sepM_sepM with "[$]") as "H").
       iApply (big_sepM_mono with "H").
       iIntros (k x Hlookup) "(((Hs&Hl0)&Hl1)&?)".
       iDestruct "Hs" as (??) "Hs".
@@ -848,7 +848,7 @@ Proof.
     { iExists _. iFrame. by iPureIntro. }
     iSplitL "hS".
     { iExists _. iFrame. by iPureIntro. }
-    repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+    repeat (iDestruct (@big_sepM_sepM with "[$]") as "H").
     iCombine "Hctx0 Hctx1 Hctx_stat" as "Hctx".
     iDestruct (big_sepM_mono_with_inv with "Hctx H") as "(?&$)".
     iIntros (k x Hlookup) "H".
@@ -921,7 +921,7 @@ Proof.
     iSplitL "Hmem hL0a hL1a hSa".
     { iApply big_opM_dom.
       rewrite big_sepM_fmap.
-      repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+      repeat (iDestruct (@big_sepM_sepM with "[$]") as "H").
       iApply (big_sepM_mono with "H").
       iIntros (k x Hlookup) "(((Hs&Hl0)&Hl1)&?)".
       iDestruct "Hs" as (? Hlookup') "Hs".
@@ -942,7 +942,7 @@ Proof.
     replace (dom (gset addr) init_zero) with addrset; last trivial.
     rewrite -{2}Hdom1.
     iDestruct (big_sepM_dom with "hSb") as "hSb".
-    repeat (iDestruct (big_sepM_sepM with "[$]") as "H").
+    repeat (iDestruct (@big_sepM_sepM with "[$]") as "H").
     iExists _. iFrame.
     iSplitL "".
     { iPureIntro. auto. }

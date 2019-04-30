@@ -771,8 +771,8 @@ Import Mail.
     iIntros "Hn Htmp".
     rewrite /TmpInv.
     iDestruct "Htmp" as (tmp_map) "(?&?&Htmp_auth&Hpaths)".
-    iDestruct (gen_heap_valid with "[$] [$]") as %Hlookup.
-    iDestruct (big_sepM_lookup_acc with "[$]") as "(Hpath&Hpaths)"; eauto.
+    iDestruct (@gen_heap_valid with "[$] [$]") as %Hlookup.
+    iDestruct (@big_sepM_lookup_acc with "[$]") as "(Hpath&Hpaths)"; eauto.
     iFrame. iIntros. iExists _. iFrame. by iApply "Hpaths".
   Qed.
 
@@ -798,8 +798,8 @@ Import Mail.
     iIntros "Hn Htmp".
     rewrite /TmpInv.
     iDestruct "Htmp" as (tmp_map) "(?&?&Htmp_auth&Hpaths)".
-    iDestruct (gen_heap_valid with "[$] [$]") as %Hlookup.
-    iMod (gen_heap_dealloc with "[$] [$]") as "Htmp_auth".
+    iDestruct (@gen_heap_valid with "[$] [$]") as %Hlookup.
+    iMod (@gen_heap_dealloc with "[$] [$]") as "Htmp_auth".
     iDestruct (big_sepM_delete with "Hpaths") as "(Hcurr&Hpaths)"; eauto.
     iExists _. iFrame.
     iIntros "!> ??".

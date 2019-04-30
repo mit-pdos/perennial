@@ -50,10 +50,10 @@ Ltac non_err' :=
 Ltac non_err := (repeat non_err'; trivial).
 
 Ltac ghost_err :=
-  (iMod (ghost_step_err _ _ _ with "[$] [$] [$]") ||
+  (iMod (ghost_step_err with "[$] [$] [$]") ||
    match goal with
       | [ |- context[ (_ ⤇ ?K _)%I] ] =>
-        iMod (ghost_step_err _ _ (λ x, K (Bind x _))
+        iMod (@ghost_step_err _ _ _ _ _ _ _ _ _ _ (λ x, K (Bind x _))
                 with "[$] [$] [$]")
    end); eauto.
 

@@ -198,7 +198,7 @@ Import Mail.
       * iMod (store_start_step_inv_do j K with "Hj Hsource Hstate") as (s alloc Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2).
-        iDestruct (big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
+        iDestruct (@big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
         { eauto. }
         destruct s; try (simpl in Heq2; congruence); simpl; [].
         iApply (wp_ptrStore_start with "Hp").
@@ -210,7 +210,7 @@ Import Mail.
           as (s alloc alloc' Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2&Heq3).
-        iDestruct (big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
+        iDestruct (@big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
         { eauto. }
         destruct s; try (simpl in Heq3; congruence); simpl; [].
         destruct args.
@@ -223,7 +223,7 @@ Import Mail.
     - iMod (slice_append_step_inv j K with "Hj Hsource Hstate") as (s' alloc vs Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       destruct Heq as (He1&Heq2&Heq3).
-      iDestruct (big_sepDM_delete with "Hheap") as "((Hp&%)&Hheap)".
+      iDestruct (@big_sepDM_delete with "Hheap") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct s'; try (simpl in Heq3; congruence); simpl; [].
       iApply (wp_sliceAppend with "[Hp]").
@@ -293,7 +293,7 @@ Import Mail.
     - iMod (lock_acquire_step_inv j K with "Hj Hsource Hstate") as (s') "(Heq&Hj&Hstate)".
       { solve_ndisj. }
       iDestruct "Heq" as %Hget.
-      iDestruct (big_sepDM_insert_acc (T:= Ptr.Lock) with "Hheap") as "((Hp&%)&Hheap)".
+      iDestruct (@big_sepDM_insert_acc _ _ _ _ _ Ptr.Lock with "Hheap") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct l0.
       * iApply wp_lift_call_step.
@@ -387,7 +387,7 @@ Import Mail.
         iApply "Hheap". simpl. iFrame. eauto.
     - iMod (lock_release_step_inv_do j K with "Hj Hsource Hstate") as (s1 s2 (He1&He2)) "(Hj&Hstate)".
       { solve_ndisj. }
-      iDestruct (big_sepDM_insert_acc (T:= Ptr.Lock) with "Hheap") as "((Hp&%)&Hheap)".
+      iDestruct (@big_sepDM_insert_acc _ _ _ _ _ Ptr.Lock with "Hheap") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct l0.
       * iApply (wp_lockRelease_read_raw with "[Hp]"); first by eauto.
