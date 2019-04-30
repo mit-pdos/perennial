@@ -255,7 +255,6 @@ Import Mail.
     iDestruct (slice_agree with "Hlsptr Hlsptr'") as "(?&?)"; eauto.
   Qed.
 
-  Set Nested Proofs Allowed.
   Lemma InboxLockInv_set_msgs γ n S :
     InboxLockInv γ n ==∗ ghost_mapsto_auth γ (A := discreteC contents) S
                  ∗ ghost_mapsto (A := discreteC contents) γ O S.

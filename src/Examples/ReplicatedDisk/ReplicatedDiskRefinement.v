@@ -165,7 +165,6 @@ Section refinement_triples.
 
   Opaque addrset.
 
-  Set Nested Proofs Allowed.
   Lemma upd_disk_dom a v σ:
     dom (gset nat) (OneDisk.upd_disk a v σ).(OneDisk.disk_state) =
     dom (gset nat) σ.(OneDisk.disk_state).

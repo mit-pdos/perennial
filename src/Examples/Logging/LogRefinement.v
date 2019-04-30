@@ -26,32 +26,8 @@ Section refinement_triples.
   Definition txn_map start (txn: nat * nat) :=
     (start m↦ txn.1 ∗ (1+start) m↦ txn.2)%I.
 
-  Definition buffer_map (s:BufState) (txns: list (nat*nat)) :=
-    (match s with
-     | Empty => ⌜txns = []⌝
-     | Txn1 => (∃ txn, ⌜txns = [txn]⌝ ∗
-                                   txn_map txn1_start txn)
-     | Txn2 => (∃ txn, ⌜txns = [txn]⌝ ∗
-                                   txn_map txn2_start txn)
-     | Txn12 => (∃ txn1 txn2, ⌜txns = [txn1; txn2]⌝ ∗
-                                                 txn_map txn1_start txn1 ∗
-                                                 txn_map txn2_start txn2)
-     | Txn21 => ∃ txn1 txn2, ⌜txns = [txn2; txn1]⌝ ∗
-                                                txn_map txn1_start txn1 ∗
-                                                txn_map txn2_start txn2
-     end)%I.
-
   Definition txn_free start :=
     (∃ txn, txn_map start txn)%I.
-
-  Definition free_buffer_map (s:BufState) :=
-    (match s with
-     | Empty => txn_free txn1_start ∗ txn_free txn2_start
-     | Txn1 => txn_free txn2_start
-     | Txn2 => txn_free txn1_start
-     | Txn12 => emp
-     | Txn21 => emp
-     end)%I.
 
   Definition state_interp (s:BufState) (txns: list (nat*nat)) :=
     (match s with
@@ -905,8 +881,6 @@ Section refinement_triples.
          wp_bind.
          unfold put_state.
          wp_step.
-         (* NOTE: why do we never have to update the state ghost variable? is it
-         actually useless? *)
 
          wp_bind.
          wp_unlock "[Hownlog Hownlog_sh]".
@@ -1062,7 +1036,7 @@ Section refinement_triples.
     iIntros "Hmem".
     iPoseProof (mem_ptr_iter_split_aux 0 6 with "Hmem") as "(H&_)".
     { unfold size; lia. }
-    unfold state_interp, buffer_map, free_buffer_map, txn_free, txn_map.
+    unfold state_interp, txn_free, txn_map.
     do 6 iDestruct "H" as "(?&H)".
     iFrame.
     iSplitL ""; auto.
