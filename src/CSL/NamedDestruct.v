@@ -98,7 +98,7 @@ Ltac iDestructExRep H :=
 
 Ltac iDestructRepR H :=
   let H2 := iFresh in
-  let pat :=constr:(IList [cons (IAnom) (cons (IIdent H2) nil)]) in
+  let pat :=constr:(IList [cons (IFresh) (cons (IIdent H2) nil)]) in
   iDestruct H as pat; try (iDestructRepR H2).
 
 Ltac iDestructIntro :=
