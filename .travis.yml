@@ -19,9 +19,9 @@ env:
   global:
   - NJOBS="2"
   matrix:
-  - COQ_IMAGE="coqorg/coq:dev"
-  - COQ_IMAGE="coqorg/coq:8.9"
-  - COQ_IMAGE="coqorg/coq:dev" UPDATE_DEPS=true
+  - COQ_VERSION="dev"
+  - COQ_VERSION="8.9"
+  - COQ_VERSION="dev" UPDATE_DEPS=true
 
 # On Travis cloning the gitlab dependencies fails due to a certificate error. In
 # order to disable SSL verification for the submodule init, we have to tell
@@ -32,13 +32,13 @@ git:
 before_install:
   - git -c http.sslVerify=false submodule update --init --recursive
   - |
-    if [ "$UPDATE_DEPS" = "true" ]; then
+    if [ "${UPDATE_DEPS}" = "true" ]; then
       git -c http.sslVerify=false submodule update --init --remote
     fi
 
 install: |
   # Prepare the COQ container
-  docker run -d -i --init --name=COQ -v ${TRAVIS_BUILD_DIR}:/home/coq/demo -w /home/coq/demo ${COQ_IMAGE}
+  docker run -d -i --init --name=COQ -v ${TRAVIS_BUILD_DIR}:/home/coq/demo -w /home/coq/demo "coqorg/coq:${COQ_IMAGE}"
   docker exec COQ /bin/bash --login -c "
     # This bash script is double-quoted to interpolate Travis CI env vars:
     echo \"Build triggered by ${TRAVIS_EVENT_TYPE}\"
