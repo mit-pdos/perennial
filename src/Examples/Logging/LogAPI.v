@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 
-From RecoveryRefinement Require Export Lib.
+From Armada Require Export Lib.
 
 Import RelationNotations.
 

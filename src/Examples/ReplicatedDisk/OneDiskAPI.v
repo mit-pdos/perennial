@@ -1,8 +1,8 @@
 From Coq Require Import List.
 
 From stdpp Require Import gmap.
-From RecoveryRefinement Require Export Lib.
-From RecoveryRefinement Require Import TwoDiskAPI.
+From Armada Require Export Lib.
+From Armada Require Import TwoDiskAPI.
 
 Module OneDisk.
   Definition disk := gmap addr nat.

@@ -1,9 +1,9 @@
 From RecordUpdate Require Import RecordUpdate.
 From Transitions Require Import Relations.
 
-From RecoveryRefinement Require Import Spec.Proc.
-From RecoveryRefinement Require Import Spec.InjectOp.
-From RecoveryRefinement.Goose Require Import Machine.
+From Armada Require Import Spec.Proc.
+From Armada Require Import Spec.InjectOp.
+From Armada.Goose Require Import Machine.
 
 Set Implicit Arguments.
 

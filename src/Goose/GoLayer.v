@@ -3,12 +3,12 @@ From RecordUpdate Require Import RecordUpdate.
 From Tactical Require Import ProofAutomation.
 From Transitions Require Import Relations.
 
-From RecoveryRefinement Require Import Helpers.RecordZoom.
+From Armada Require Import Helpers.RecordZoom.
 
-From RecoveryRefinement Require Import Spec.Proc.
-From RecoveryRefinement Require Import Spec.InjectOp.
-From RecoveryRefinement Require Import Spec.Layer.
-From RecoveryRefinement.Goose Require Export Machine Heap Filesys Globals.
+From Armada Require Import Spec.Proc.
+From Armada Require Import Spec.InjectOp.
+From Armada Require Import Spec.Layer.
+From Armada.Goose Require Export Machine Heap Filesys Globals.
 
 Inductive Op `{GoModel} : Type -> Type :=
 | FilesysOp : forall T, FS.Op T -> Op T

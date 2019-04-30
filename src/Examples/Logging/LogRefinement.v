@@ -1,8 +1,8 @@
 From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement.
-From RecoveryRefinement.Examples.Logging Require Import LogAPI LogImpl.
-From RecoveryRefinement.Examples Require Import ExMach.WeakestPre ExMach.RefinementAdequacy.
-From RecoveryRefinement Require AtomicPair.Helpers.
+From Armada.Examples.Logging Require Import LogAPI LogImpl.
+From Armada.Examples Require Import ExMach.WeakestPre ExMach.RefinementAdequacy.
+From Armada Require AtomicPair.Helpers.
 From iris.base_logic.lib Require Export invariants gen_heap.
 
 Unset Implicit Arguments.

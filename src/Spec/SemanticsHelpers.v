@@ -2,7 +2,7 @@ From Classes Require Import EqualDec.
 From stdpp Require Import base.
 
 From Transitions Require Import Relations.
-From RecoveryRefinement Require Import Spec.Proc.
+From Armada Require Import Spec.Proc.
 
 Set Implicit Arguments.
 

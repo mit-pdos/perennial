@@ -1,13 +1,13 @@
 From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
-From RecoveryRefinement.Examples.MailServer Require Import MailAPI MailAPILemmas.
-From RecoveryRefinement.Goose.Examples Require Import MailServer.
-From RecoveryRefinement.Goose.Proof Require Import Interp.
+From Armada.Examples.MailServer Require Import MailAPI MailAPILemmas.
+From Armada.Goose.Examples Require Import MailServer.
+From Armada.Goose.Proof Require Import Interp.
 Require Import Goose.Proof.Interp.
-From RecoveryRefinement Require AtomicPair.Helpers.
-From RecoveryRefinement.Goose Require Import Machine GoZeroValues Heap GoLayer.
-From RecoveryRefinement.Goose Require Import Machine.
-From RecoveryRefinement.Goose Require Import GoZeroValues.
+From Armada Require AtomicPair.Helpers.
+From Armada.Goose Require Import Machine GoZeroValues Heap GoLayer.
+From Armada.Goose Require Import Machine.
+From Armada.Goose Require Import GoZeroValues.
 
 Unset Implicit Arguments.
 

@@ -1,7 +1,7 @@
 From Coq Require Import List.
 
 From stdpp Require Import gmap.
-From RecoveryRefinement Require Export Lib.
+From Armada Require Export Lib.
 
 Definition size := 1000.
 Definition addr := nat.

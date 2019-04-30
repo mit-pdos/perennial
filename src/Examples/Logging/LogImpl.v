@@ -1,5 +1,5 @@
-From RecoveryRefinement Require Import Examples.Logging.LogAPI.
-From RecoveryRefinement Require Import ExMach.ExMachAPI.
+From Armada Require Import Examples.Logging.LogAPI.
+From Armada Require Import ExMach.ExMachAPI.
 
 Import ProcNotations.
 Local Open Scope proc.

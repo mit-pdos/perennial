@@ -1,10 +1,10 @@
 From Classes Require Import EqualDec.
 
-From RecoveryRefinement Require Export Spec.Proc.
-From RecoveryRefinement Require Export Spec.LockDefs.
+From Armada Require Export Spec.Proc.
+From Armada Require Export Spec.LockDefs.
 
-From RecoveryRefinement.Goose Require Export GoZeroValues.
-From RecoveryRefinement.Goose Require Export GoLayer.
+From Armada.Goose Require Export GoZeroValues.
+From Armada.Goose Require Export GoLayer.
 
 Export EqualDecNotation.
 Export ProcNotations. Open Scope proc.

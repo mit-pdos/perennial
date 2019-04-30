@@ -1,6 +1,6 @@
 From Coq Require Import List.
 
-From RecoveryRefinement Require Export Lib.
+From Armada Require Export Lib.
 Require Import ExMach.ExMachAPI.
 
 

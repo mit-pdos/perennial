@@ -3,7 +3,7 @@ Require Import Goose.Proof.Interp.
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Layer.
-From RecoveryRefinement.Goose Require Import Machine GoZeroValues Heap GoLayer.
+From Armada.Goose Require Import Machine GoZeroValues Heap GoLayer.
 Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy.
 Import Data.
 Import Filesys.FS.

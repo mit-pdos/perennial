@@ -3,11 +3,11 @@
    a very common pattern for Armada examples. *)
 
 From iris.algebra Require Import auth agree functions csum.
-From RecoveryRefinement.CSL Require Import Counting.
+From Armada.CSL Require Import Counting.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
-Require Export RecoveryRefinement.Spec.LockDefs.
+Require Export Armada.Spec.LockDefs.
 
 Set Default Proof Using "Type".
 Import uPred.

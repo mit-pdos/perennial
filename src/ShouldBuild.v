@@ -1,14 +1,14 @@
 (* examples on top of concurrency framework *)
-From RecoveryRefinement Require Import Examples.StatDb.Refinement.
-From RecoveryRefinement Require Import Examples.AtomicPair.RefinementShadow.
-From RecoveryRefinement Require Import Examples.AtomicPair.RefinementLog.
-From RecoveryRefinement Require Import Examples.Logging.LogRefinement.
-From RecoveryRefinement Require Import Examples.ReplicatedDisk.ReplicatedDiskRefinement.
+From Armada Require Import Examples.StatDb.Refinement.
+From Armada Require Import Examples.AtomicPair.RefinementShadow.
+From Armada Require Import Examples.AtomicPair.RefinementLog.
+From Armada Require Import Examples.Logging.LogRefinement.
+From Armada Require Import Examples.ReplicatedDisk.ReplicatedDiskRefinement.
 
 (* mailboat proof *)
-From RecoveryRefinement Require Import Examples.MailServer.MailRefinement.
+From Armada Require Import Examples.MailServer.MailRefinement.
 
 (* goose output *)
-From RecoveryRefinement Require Import Goose.Examples.UnitTests.
-From RecoveryRefinement Require Import Goose.Examples.SimpleDb.
-From RecoveryRefinement Require Import Goose.Examples.MailServer.
+From Armada Require Import Goose.Examples.UnitTests.
+From Armada Require Import Goose.Examples.SimpleDb.
+From Armada Require Import Goose.Examples.MailServer.

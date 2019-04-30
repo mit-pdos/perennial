@@ -1,11 +1,11 @@
 From RecordUpdate Require Import RecordUpdate.
 
-From RecoveryRefinement Require Import Spec.Proc.
-From RecoveryRefinement Require Import Spec.InjectOp.
-From RecoveryRefinement Require Import Spec.SemanticsHelpers.
-From RecoveryRefinement Require Import Spec.LockDefs.
-From RecoveryRefinement.Goose Require Import Machine.
-From RecoveryRefinement.Goose Require Import GoZeroValues.
+From Armada Require Import Spec.Proc.
+From Armada Require Import Spec.InjectOp.
+From Armada Require Import Spec.SemanticsHelpers.
+From Armada Require Import Spec.LockDefs.
+From Armada.Goose Require Import Machine.
+From Armada.Goose Require Import GoZeroValues.
 
 From Tactical Require Import ProofAutomation.
 

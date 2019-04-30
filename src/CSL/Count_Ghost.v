@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth agree functions csum cmra.
-From RecoveryRefinement.CSL Require Import Counting.
+From Armada.CSL Require Import Counting.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.

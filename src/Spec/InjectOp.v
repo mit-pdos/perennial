@@ -1,4 +1,4 @@
-From RecoveryRefinement Require Import Spec.Proc.
+From Armada Require Import Spec.Proc.
 
 Set Implicit Arguments.
 

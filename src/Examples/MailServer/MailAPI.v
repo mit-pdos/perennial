@@ -2,11 +2,11 @@ From RecordUpdate Require Import RecordSet.
 From stdpp Require gmap.
 From stdpp Require Import fin_maps.
 
-From RecoveryRefinement Require Export Lib.
-From RecoveryRefinement Require Import Spec.SemanticsHelpers Spec.LockDefs.
-From RecoveryRefinement.Goose Require Import Machine Heap Examples.MailServer.
+From Armada Require Export Lib.
+From Armada Require Import Spec.SemanticsHelpers Spec.LockDefs.
+From Armada.Goose Require Import Machine Heap Examples.MailServer.
 
-From RecoveryRefinement.Helpers Require Import RecordZoom.
+From Armada.Helpers Require Import RecordZoom.
 
 From Transitions Require Import Relations.
 
