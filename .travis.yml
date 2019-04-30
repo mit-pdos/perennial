@@ -21,6 +21,7 @@ env:
   matrix:
   - COQ_IMAGE="coqorg/coq:dev"
   - COQ_IMAGE="coqorg/coq:8.9"
+  - COQ_IMAGE="coqorg/coq:dev" UPDATE_DEPS=true
 
 # On Travis cloning the gitlab dependencies fails due to a certificate error. In
 # order to disable SSL verification for the submodule init, we have to tell
@@ -30,6 +31,10 @@ git:
 
 before_install:
   - git -c http.sslVerify=false submodule update --init --recursive
+  - |
+    if [ "$UPDATE_DEPS" = "true" ]; then
+      git -c http.sslVerify=false submodule update --init --remote
+    fi
 
 install: |
   # Prepare the COQ container
