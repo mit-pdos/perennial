@@ -296,7 +296,7 @@ Section refinement.
   iFrame "Hstate0".
   iSplitL "Hpt0 Hreg".
   {  iPoseProof (@wp_mono with "[Hpt0 Hreg]") as "H"; swap 1 2.
-     { iApply refinement_triples. destruct (Hwf_seq) as (?&?). eauto. iFrame. iFrame "Hinv".
+     { iApply @refinement_triples. destruct (Hwf_seq) as (?&?). eauto. iFrame. iFrame "Hinv".
        iFrame "Hreg".
      }
      { reflexivity. }
