@@ -136,7 +136,7 @@ Section monoid.
     ([^o dmap] k↦x ∈ m, f _ k x `o` g _ k x )
     ≡ ([^o dmap] k↦x ∈ m, f _ k x) `o` ([^o dmap] k↦x ∈ m, g _ k x).
   Proof.
-    rewrite /big_opM -big_opL_opL. eapply big_opL_proper => k [??] Heq.
+    rewrite /big_opM -big_opL_op. eapply big_opL_proper => k [??] Heq.
     destruct (getDyn) => //=. by rewrite right_id.
   Qed.
 End monoid.
