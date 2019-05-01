@@ -53,7 +53,9 @@ _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 	@echo "COQDEP $@"
 	$(Q)coqdep -f _CoqProject $(ALL_VFILES) > $@
 
-ifneq ($(MAKECMDGOALS), clean)
+CLEAN_GOALS := clean clean-ext clean-all
+
+ifeq ($(filter $(MAKECMDGOALS),$(CLEAN_GOALS)),)
 -include .coqdeps.d
 endif
 
