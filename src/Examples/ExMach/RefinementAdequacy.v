@@ -5,6 +5,80 @@ Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Layer.
 
+Module Type exmach_refinement_type.
+  Context (OpT: Type → Type).
+  Context (Λa: Layer OpT).
+  Context (impl: LayerImpl ExMach.Op OpT).
+  Context (Σ: gFunctors).
+  Notation compile_op := (compile_op impl).
+  Notation compile_rec := (compile_rec impl).
+  Notation compile_seq := (compile_seq impl).
+  Notation compile := (compile impl).
+  Notation recover := (recover impl).
+  Notation compile_proc_seq := (compile_proc_seq impl).
+  Context `{CFG: cfgPreG OpT Λa Σ} `{exmachPreG Σ}.
+  Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
+  Context (exec_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
+  Context (crash_param: forall (_ : @cfgG OpT Λa Σ) (_ : exmachG Σ), Type).
+  Context (crash_inv: forall {H1 : @cfgG OpT Λa Σ} {H2 : exmachG Σ},
+              @crash_param _ H2 → iProp Σ).
+  Context (crash_starter: forall {H1 : @cfgG OpT Λa Σ} {H2 : exmachG Σ},
+              @crash_param _ H2 → iProp Σ).
+  Context (exec_inv: forall {_ : @cfgG OpT Λa Σ} {_ : exmachG Σ}, iProp Σ).
+  Context (einv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _},
+              Persistent (exec_inv H1 H2)).
+  Context (cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _}
+            {P: crash_param _ _}, Persistent (crash_inv H1 H2 P)).
+
+  Context (E: coPset).
+  Context (nameIncl: nclose sourceN ⊆ E).
+  (* TODO: we should get rid of rec_seq if we're not exploiting vertical comp anymore *)
+  Context (recv: proc ExMach.Op unit).
+  Context (recsingle: recover = rec_singleton recv).
+
+  Context (refinement_op_triples:
+             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
+               j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
+                 WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered  }}).
+
+  Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
+End exmach_refinement_type.
+
+Module exmach_refinement (eRT: exmach_refinement_type).
+
+  Import eRT.
+  Module RT : refinement_type.
+    Definition OpC := ExMach.Op.
+    Definition Λc := ExMach.l.
+    Definition OpT := OpT.
+    Definition Λa := Λa.
+    Definition impl := impl.
+    Definition exmachG := exmachG.
+    Definition Σ := Σ.
+    Definition CFG := CFG.
+    Definition Hinstance := @exmachG_irisG.
+    Definition Hinstance_reg := @exm_treg_inG.
+    Definition crash_inner := crash_inner.
+    Definition exec_inner := exec_inner.
+    Definition crash_inv := crash_inv.
+    Definition crash_param := crash_param.
+    Definition crash_starter := crash_starter.
+    Definition exec_inv := exec_inv.
+    Definition einv_persist := einv_persist.
+    Definition cinv_persist := cinv_persist.
+    Definition E := E.
+    Definition nameIncl := nameIncl.
+    Definition recv := recv.
+    Definition recsingle := recsingle.
+    Definition refinement_op_triples := refinement_op_triples.
+    Definition exec_inv_source_ctx := exec_inv_source_ctx.
+  End RT.
+
+  Module R := refinement RT.
+  Export R.
+End exmach_refinement.
+
+
 Section refinement.
   Context OpT (Λa: Layer OpT).
   Context (impl: LayerImpl ExMach.Op OpT).
@@ -46,6 +120,17 @@ Section refinement.
                j ⤇ K e ∗ Registered ∗ (@exec_inv H1 H2) ⊢
                  WP compile e {{ v, j ⤇ K (Ret v) ∗ Registered }}.
   Proof.
+    intros.
+    epose (@refinement_triples _ _ _ _ _ exmachG).
+    rewrite /RefinementIdempotence.exmachG in b.
+    simpl.
+    eapply @refinement_triples with (exmachG' := exmachG).
+
+
+    . (exmachG := exmachG Σ)). with (exmachG := exmachG Σ)).
+
+
+
     intros ???? j K Hctx e Hwf.
     iIntros "(Hj&Hreg&#Hinv)".
     iAssert (⌜∃ ea: State Λa, True⌝)%I as %[? _].
