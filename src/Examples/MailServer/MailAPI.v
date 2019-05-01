@@ -197,17 +197,43 @@ Module Mail.
         (uid < 100 -> s.(messages) !! uid = Some (MUnlocked, ∅)) /\
         (uid >= 100 -> s.(messages) !! uid = None)).
 
+  Lemma crash_step_val:
+    ∀ s1 : State, ∃ s2 : State, sem.(Proc.crash_step) s1 (Val s2 ()).
+  Proof.
+    intros s1.
+    do 3 eexists; split; econstructor.
+  Qed.
+
+  Lemma finish_step_val:
+    ∀ s1 : State, ∃ s2 : State, sem.(Proc.finish_step) s1 (Val s2 ()).
+  Proof.
+    intros s1.
+    do 3 eexists; split; econstructor.
+  Qed.
+
+  Lemma crash_step_non_err:
+    ∀ (s1 : State) (ret : Return State ()), sem.(Proc.crash_step) s1 ret → ret ≠ Err.
+  Proof.
+    intros s1 ret H.
+    destruct ret; inversion H; eauto.
+    repeat deex. inversion H1.
+  Qed.
+
+  Lemma finish_step_non_err:
+    ∀ (s1 : State) (ret : Return State ()), sem.(Proc.finish_step) s1 ret → ret ≠ Err.
+  Proof.
+    intros s1 ret H.
+    destruct ret; inversion H; eauto.
+    repeat deex. inversion H1.
+  Qed.
+
   Definition l : Layer Op.
     refine {| Layer.sem := sem;
               trace_proj := fun _ => nil;
               Layer.initP := initP;
-           |}; simpl; intros; auto.
-    - do 3 eexists; split; econstructor.
-    - do 3 eexists; split; econstructor.
-    - destruct ret; inversion H; eauto.
-      repeat deex. inversion H1.
-    - destruct ret; inversion H; eauto.
-      repeat deex. inversion H1.
+           |}; intros; try reflexivity;
+    eauto using crash_step_val, finish_step_val,
+    crash_step_non_err, finish_step_non_err.
   Defined.
 
   End GoModel.
