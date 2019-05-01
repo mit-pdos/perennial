@@ -32,6 +32,8 @@ def filter_df(df, col=None, pat=None):
 
 if __name__ == "__main__":
     import argparse
+    import os.path
+    import sys
 
     parser = argparse.ArgumentParser()
 
@@ -42,6 +44,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if not os.path.exists(args.db):
+        print("database file {} not found".format(args.db), file=sys.stderr)
+        sys.exit(1)
     qed_df, file_df = read_db(args.db)
     pd.set_option("display.max_rows", 100)
     pd.set_option("display.max_columns", 10)
