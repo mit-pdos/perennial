@@ -637,7 +637,7 @@ Import Mail.
       iSplitL "Hauth".
       { iExists Finished_Init. iFrame. eauto. }
       iDestruct (big_sepM_dom with "Hghosts") as "Hghosts".
-      iDestruct (big_sepM_sepM with "[Hm Hghosts]") as "Hm".
+      iDestruct (big_sepM_sep with "[Hm Hghosts]") as "Hm".
       { iFrame. }
       iModIntro. iNext.
       rewrite big_sepM_fmap.

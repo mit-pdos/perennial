@@ -548,9 +548,9 @@ Proof.
     rewrite big_opS_fmap; last first.
     { rewrite /UserDir. intros ?? Heq. apply string_app_inj, uint64_to_string_inj in Heq. auto. }
     iDestruct (big_sepM_dom with "Hdirlocks") as "Hdirlocks".
-    iDestruct (big_sepM_sepM with "[Hdirlocks Hmsgs]") as "Hmsgs".
+    iDestruct (big_sepM_sep with "[Hdirlocks Hmsgs]") as "Hmsgs".
     { iFrame. }
-    iDestruct (big_sepM_sepM with "[Hmsgs]") as "Hmsgs".
+    iDestruct (big_sepM_sep with "[Hmsgs]") as "Hmsgs".
     { iFrame. iFrame "HΓ'". }
     iApply (big_sepM_mono with "Hmsgs").
     iIntros (k x Hlookup) "((H1&H2)&H3)".
@@ -616,9 +616,9 @@ Proof.
     rewrite big_opS_fmap; last first.
     { rewrite /UserDir. intros ?? Heq. apply string_app_inj, uint64_to_string_inj in Heq. auto. }
     iDestruct (big_sepM_dom with "Hdirlocks") as "Hdirlocks".
-    iDestruct (big_sepM_sepM with "[Hdirlocks Hmsgs]") as "Hmsgs".
+    iDestruct (big_sepM_sep with "[Hdirlocks Hmsgs]") as "Hmsgs".
     { iFrame. }
-    iDestruct (big_sepM_sepM with "[Hmsgs]") as "Hmsgs".
+    iDestruct (big_sepM_sep with "[Hmsgs]") as "Hmsgs".
     { iFrame. iFrame "HΓ'". }
     iApply (big_sepM_mono with "Hmsgs").
     iIntros (k x Hlookup) "((H1&H2)&H3)".
@@ -710,9 +710,9 @@ Proof.
     rewrite big_opS_fmap; last first.
     { rewrite /UserDir. intros ?? Heq. apply string_app_inj, uint64_to_string_inj in Heq. auto. }
     iDestruct (big_sepM_dom with "Hdirlocks") as "Hdirlocks".
-    iDestruct (big_sepM_sepM with "[Hdirlocks Hmsgs]") as "Hmsgs".
+    iDestruct (big_sepM_sep with "[Hdirlocks Hmsgs]") as "Hmsgs".
     { iFrame. }
-    iDestruct (big_sepM_sepM with "[Hmsgs]") as "Hmsgs".
+    iDestruct (big_sepM_sep with "[Hmsgs]") as "Hmsgs".
     { iFrame. iFrame "HΓ'". }
     iApply (big_sepM_mono with "Hmsgs").
     iIntros (k x Hlookup) "((H1&H2)&H3)".
