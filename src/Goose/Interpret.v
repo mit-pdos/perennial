@@ -216,7 +216,7 @@ Ltac refl' RetB RetT e :=
   match eval simpl in e with
   | fun x : ?T => @reads ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
     constr: (fun x => RTerm.Reads (f x))
-  | fun x : ?T => @readSome ds ?T0 (fun (y: ds) => (@?f x y)) =>
+  | fun x : ?T => @readSome ds ?T0 (@?f x) =>
     constr: (fun x => RTerm.ReadSome (f x))
   | fun x : ?T => @readNone ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
     constr: (fun x => RTerm.ReadNone (f x))
