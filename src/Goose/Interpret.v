@@ -10,7 +10,8 @@ From RecoveryRefinement Require Import Spec.InjectOp.
 From RecoveryRefinement Require Import Spec.SemanticsHelpers.
 From RecoveryRefinement Require Import Spec.LockDefs.
 From RecoveryRefinement Require Import Spec.Layer.
-From RecoveryRefinement Require Import Goose.Machine Goose.Filesys Goose.Heap Goose.GoZeroValues Goose.GoLayer Goose.Globals.
+From RecoveryRefinement Require Import Goose.Machine Goose.Filesys
+     Goose.Heap Goose.GoZeroValues Goose.GoLayer Goose.Globals.
 
 From RecoveryRefinement Require Import Goose.Examples.UnitTests.
 From RecoveryRefinement Require Import Goose.base.
@@ -65,8 +66,7 @@ Module RTerm.
   | CallGS T : t gs gs T -> t es es T
   | ZoomFS T : t fs fs T -> t gs gs T
   | ZoomDS T : t ds ds T -> t fs fs T
-  | FstLift A1 A2 B T : t A1 A2 T -> t (A1 * B) (A2 * B) T
-  | SndLift A1 A2 B T : t A1 A2 T -> t (B * A1) (B * A2) T
+  | FstLiftES T : t nat nat T -> t es es T
 
   | Error A B T : t A B T
   | NotImpl A B T (r: relation A B T) : t A B T
@@ -158,8 +158,6 @@ Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output 
                       | Error => Error
                       | NotImpl => NotImpl
                       end
-  | RTerm.FstLift _ _ => NotImpl
-  | RTerm.SndLift _ _ => NotImpl
   | RTerm.Error _ _ _ => (Error)
   | RTerm.NotImpl _ => NotImpl
   | _ => NotImpl
@@ -182,6 +180,7 @@ Fixpoint interpret_es (T : Type) (r : RTerm.t es es T) (X : es*ptrMap) : Output 
       | Error => Error
       | NotImpl => NotImpl
       end
+  | RTerm.FstLiftES t => NotImpl (* TODO *)
   | _ => NotImpl
   end.
 
@@ -205,8 +204,7 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.CallGS r => snd_lift (rtermDenote r)
   | RTerm.ZoomFS r => _zoom Go.fs (rtermDenote r)
   | RTerm.ZoomDS r => _zoom FS.heap (rtermDenote r)
-  | RTerm.FstLift _ r => fst_lift (rtermDenote r)
-  | RTerm.SndLift _ r => snd_lift (rtermDenote r)
+  | RTerm.FstLiftES r => fst_lift (rtermDenote r)
 
   | RTerm.Error _ _ _ => error
   | RTerm.NotImpl r => r
@@ -214,20 +212,20 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
 
 Ltac refl' RetB RetT e :=
   match eval simpl in e with
-  | fun x : ?T => @reads ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
+  | fun x : ?T => @reads ?A ?T0 (@?f x) =>
     constr: (fun x => RTerm.Reads (f x))
   | fun x : ?T => @readSome ds ?T0 (@?f x) =>
     constr: (fun x => RTerm.ReadSome (f x))
-  | fun x : ?T => @readNone ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
+  | fun x : ?T => @readNone ?A ?T0 (@?f x) =>
     constr: (fun x => RTerm.ReadNone (f x))
-  | fun x : ?T => @puts fs (fun (y: fs) => (@?f x y)) =>
+  | fun x : ?T => @puts fs (@?f x) =>
     constr: (fun x => RTerm.Puts (f x))
               
-  | fun x: ?T => @Data.allocPtr ?ty ?prm =>
-    constr: (fun x => RTerm.AllocPtr ty prm)
-  | fun x: ?T => @Data.updAllocs ?ty ?p ?pm =>
+  | fun x: ?T => @Data.allocPtr _ _ (@?ty x) (@?prm x) =>
+    constr:(fun x => @RTerm.AllocPtr (ty x) (prm x))
+  | fun x: ?T => @Data.updAllocs _ _ ?ty ?p ?pm =>
     constr: (fun x => RTerm.UpdAllocs ty p pm)
-  | fun x: ?T => @Data.delAllocs ?ty ?p =>
+  | fun x: ?T => @Data.delAllocs _ _ ?ty ?p =>
     constr: (fun x => RTerm.DelAllocs ty p)
 
   | fun x : ?T => @pure ?A _ (@?E x) =>
@@ -261,19 +259,13 @@ Ltac refl' RetB RetT e :=
   | (fun x: ?T => @_zoom fs ds FS.heap _ ?T1 (@?r1 x)) =>
     let f := refl' ds T1 r1 in
     constr: (fun x: T => RTerm.ZoomDS (f x))
-(*  | fun x: ?T => @fst_lift ?A1 ?A2 ?B ?T (@?r x) =>
-    let f := refl' A2 T r in
-    constr: (fun x => RTerm.FstLift (f x))
-  | fun x: ?T => @snd_lift ?A1 ?A2 ?B ?T (@?r x) =>
-    let f := refl' A2 T r in
-    constr: (fun x => RTerm.SndLift (f x))  *)
+  (* TODO: FstLiftES *)
 
   | fun x : ?T => @error ?A ?B ?T0 =>
     constr: (fun x => RTerm.Error A B T0)
   | fun x : ?T => @?E x =>
     constr: (fun x => RTerm.NotImpl (E x))
   end.
-Check @snd_lift.
 
 Ltac refl e :=
   lazymatch type of e with
@@ -331,7 +323,7 @@ Definition reify_proc T (p : proc T)  : RTerm.t es es (proc T * thread_pool Op).
                                end
   end. *)
 Qed.
-
+    
 Definition interpret (T : Type) (r: RTerm.t es es T) : es -> Output es T :=
   fun a => match interpret_es r (a, ptrMap_null) with
            | Success x t => Success (fst x) t
@@ -348,6 +340,7 @@ Theorem interpret_ok : forall T (r: RTerm.t es es T) (a : es),
     end.
 Admitted.
 
+(* Tests *)    
 Definition testProgram {model:GoModel} : proc uint64 :=
   x <- Ret 3;
   Ret x.
@@ -369,25 +362,10 @@ Definition usePtr {model:GoModel} : proc unit :=
 Goal False.
   pose usePtr.
   let t := reflproc p in pose t.
+  Compute (interpret t).
 Admitted.
   
 Ltac test e :=
   let t := refl e in
   let e' := eval cbv [rtermDenote] in (rtermDenote t) in
   unify e e'.
-
-(* Tests *)    
-Ltac testPure := test (pure (A:=unit) 1).
-Ltac testReads := test (reads (A:=nat) (fun x : nat => x + 3)).                         
-Ltac testReadSome := test (and_then (pure 3) (fun x : nat => readSome (A:=nat) (T:=nat) (fun x0 : nat => Some (x0 + x)))).
-Ltac testReadNone := test (and_then (pure 3) (fun x : nat => readNone (A:=nat) (T:=nat) (fun x0 : nat => Some (x0 + x)))).
-Ltac testAndThen := test (and_then (pure 3) (fun _: nat => pure (A:=nat) 1)).
-
-Definition ex1 : RTerm.t nat nat nat :=
-  RTerm.AndThen (RTerm.Pure nat 3) (fun n => RTerm.ReadSome (fun x => Some (x+n))).
-Definition ex2 : RTerm.t nat nat nat :=
-  RTerm.AndThen (RTerm.Pure nat 3) (fun n => RTerm.Reads (fun x => (x+n))).
-Definition ex3 : RTerm.t nat nat nat :=
-  RTerm.AndThen (RTerm.ReadSome (fun x => Some (x+1))) (fun n => RTerm.Reads (fun x => (x+n))).
-Definition ex4 : RTerm.t nat nat unit :=
-  RTerm.AndThen (RTerm.Pure nat 3) (fun n => RTerm.Puts (fun x => x+n)).
