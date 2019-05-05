@@ -12,6 +12,8 @@ From RecoveryRefinement Require Import Spec.LockDefs.
 From RecoveryRefinement Require Import Spec.Layer.
 From RecoveryRefinement Require Import Goose.Machine Goose.Filesys Goose.Heap Goose.GoZeroValues Goose.GoLayer Goose.Globals.
 
+From RecoveryRefinement Require Import Goose.Examples.UnitTests.
+From RecoveryRefinement Require Import Goose.base.
 Import ProcNotations.
 
 Instance goModel : GoModel :=
@@ -42,16 +44,17 @@ Notation ds := Data.State.
 Module RTerm.
   Inductive t : Type -> Type -> Type -> Type :=
   (* atomic operations *)
-  | Reads T : (gs -> T) -> t gs gs T
+  | Reads T : (ds -> T) -> t ds ds T
   | Puts : (fs -> fs) -> t fs fs unit
-  | ReadSome T : (gs -> option T) -> t gs gs T
-  | ReadNone T : (gs -> option T) -> t gs gs unit
-  | AllocPtr ty : Data.ptrRawModel ty -> t Go.State Go.State (goModel.(@Ptr) ty)
-  | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t Go.State Go.State unit
-  | DelAllocs ty : Ptr ty -> t Go.State Go.State unit
+  | ReadSome T : (ds -> option T) -> t ds ds T
+  | ReadNone T : (ds -> option T) -> t ds ds unit
+
+  | AllocPtr ty : Data.ptrRawModel ty -> t ds ds (goModel.(@Ptr) ty)
+  | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t ds ds unit
+  | DelAllocs ty : Ptr ty -> t ds ds unit
 
   (* sequencing *)
-  | Pure T : T -> t gs gs T
+  | Pure A T : T -> t A A T
   | Ret T : T -> t es es T
   | BindES T1 T2 : t es es T1 -> (T1 -> t es es T2) -> t es es T2
   | AndThenGS T1 T2 : t gs gs T1 -> (T1 -> t gs gs T2) -> t gs gs T2
@@ -85,6 +88,18 @@ Definition ptrMap_null : ptrMap := 1.
 
 Fixpoint interpret_ds (T : Type) (r : RTerm.t ds ds T) (X : ds*ptrMap) : Output (ds*ptrMap) T :=
   match r with
+  | RTerm.Pure ds t => Success X t
+  | RTerm.Reads f => Success X (f (fst X))
+  | RTerm.ReadSome f =>
+      let t' := f (fst X) in match t' with
+                        | Some t => Success X t
+                        | None => Error
+                        end
+  | RTerm.ReadNone f =>
+      let t' := f (fst X) in match t' with
+                        | Some t => Error
+                        | None => Success X tt
+                        end
   | RTerm.AndThenDS r f =>
     let o := interpret_ds r X in
     match o with
@@ -92,11 +107,22 @@ Fixpoint interpret_ds (T : Type) (r : RTerm.t ds ds T) (X : ds*ptrMap) : Output 
     | Error => Error
     | NotImpl => NotImpl
     end
+  | RTerm.AllocPtr _ prm => 
+    let p := snd X
+                 in let f := @set ds (DynMap goModel.(@Ptr) Data.ptrModel) Data.allocs _ (updDyn p (Unlocked, prm))
+                        in Success (f (fst X), (snd X) + 1) p
+  | RTerm.UpdAllocs p pm =>
+    let f := @set Data.State _ Data.allocs _ (updDyn p pm)
+                        in Success (f (fst X), snd X) tt
+  | RTerm.DelAllocs p =>
+    let f := @set Data.State _ Data.allocs _ (deleteDyn p)
+                        in Success (f (fst X), snd X) tt
   | _ => NotImpl
   end.
 
 Fixpoint interpret_fs (T : Type) (r : RTerm.t fs fs T) (X : fs*ptrMap) : Output (fs*ptrMap) T :=
   match r with
+  | RTerm.Pure fs t => Success X t
   | RTerm.Puts f => Success (f (fst X), snd X) tt
   | RTerm.AndThenFS r f =>
     let o := interpret_fs r X in
@@ -117,29 +143,7 @@ Fixpoint interpret_fs (T : Type) (r : RTerm.t fs fs T) (X : fs*ptrMap) : Output 
 
 Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output (gs*ptrMap) T :=
   match r with
-  | RTerm.Reads f => Success X (f (fst X))
-  | RTerm.ReadSome f =>
-      let t' := f (fst X) in match t' with
-                        | Some t => Success X t
-                        | None => Error
-                        end
-  | RTerm.ReadNone f =>
-      let t' := f (fst X) in match t' with
-                        | Some t => Error
-                        | None => Success X tt
-                        end
-  | RTerm.Error _ _ _ => (Error)
-  | RTerm.AllocPtr _ prm => 
-    let p := snd X
-                 in let f := (set Go.fs (set FS.heap (@set Data.State (DynMap goModel.(@Ptr) Data.ptrModel) Data.allocs _ (updDyn p (Unlocked, prm)))))
-                        in Success (f (fst X), (snd X) + 1) p
-  | RTerm.UpdAllocs p pm =>
-    let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (updDyn p pm))))
-                        in Success (f (fst X), snd X) tt
-  | RTerm.DelAllocs p =>
-    let f := (set Go.fs (set FS.heap (@set Data.State _ Data.allocs _ (deleteDyn p))))
-                        in Success (f (fst X), snd X) tt
-  | RTerm.Pure t => Success X t
+  | RTerm.Pure gs t => Success X t
   | RTerm.AndThenGS r f =>
       let o := interpret_gs r X in
       match o with
@@ -156,6 +160,7 @@ Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output 
                       end
   | RTerm.FstLift _ _ => NotImpl
   | RTerm.SndLift _ _ => NotImpl
+  | RTerm.Error _ _ _ => (Error)
   | RTerm.NotImpl _ => NotImpl
   | _ => NotImpl
   end.
@@ -186,11 +191,11 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.ReadSome f => readSome f
   | RTerm.ReadNone f => readNone f
   | RTerm.Puts f => puts f
-  | RTerm.AllocPtr _ prm => _zoom Go.fs (_zoom FS.heap (Data.allocPtr _ prm))
-  | RTerm.UpdAllocs p pm => _zoom Go.fs (_zoom FS.heap (Data.updAllocs p pm))
-  | RTerm.DelAllocs  p => _zoom Go.fs (_zoom FS.heap (Data.delAllocs p))
+  | RTerm.AllocPtr _ prm => Data.allocPtr _ prm
+  | RTerm.UpdAllocs p pm => Data.updAllocs p pm
+  | RTerm.DelAllocs  p => Data.delAllocs p
 
-  | RTerm.Pure o0 => pure o0
+  | RTerm.Pure A o0 => pure o0
   | RTerm.Ret x => pure x
   | RTerm.BindES r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
   | RTerm.AndThenGS r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
@@ -207,19 +212,17 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.NotImpl r => r
   end.
 
-Check @_zoom.
-Check @puts.
-
 Ltac refl' RetB RetT e :=
   match eval simpl in e with
   | fun x : ?T => @reads ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
     constr: (fun x => RTerm.Reads (f x))
-  | fun x : ?T => @readSome ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
+  | fun x : ?T => @readSome ds ?T0 (fun (y: ds) => (@?f x y)) =>
     constr: (fun x => RTerm.ReadSome (f x))
   | fun x : ?T => @readNone ?A ?T0 (fun (y: ?A) => (@?f x y)) =>
     constr: (fun x => RTerm.ReadNone (f x))
   | fun x : ?T => @puts fs (fun (y: fs) => (@?f x y)) =>
     constr: (fun x => RTerm.Puts (f x))
+              
   | fun x: ?T => @Data.allocPtr ?ty ?prm =>
     constr: (fun x => RTerm.AllocPtr ty prm)
   | fun x: ?T => @Data.updAllocs ?ty ?p ?pm =>
@@ -227,9 +230,10 @@ Ltac refl' RetB RetT e :=
   | fun x: ?T => @Data.delAllocs ?ty ?p =>
     constr: (fun x => RTerm.DelAllocs ty p)
 
-  | fun x : ?T => @pure gs _ (@?E x) =>
-    constr: (fun x => RTerm.Pure gs (E x))
-  | fun x : ?T => @pure _ _ (@?E x) =>
+  | fun x : ?T => @pure ?A _ (@?E x) =>
+    constr: (fun x => RTerm.Pure A (E x))
+  (* TODO: pure not matching for es cases *)
+  | fun x : ?T => @pure es es (@?E x) =>
     constr: (fun x => RTerm.Ret es (E x))
 
   | fun x: ?T => @and_then Proc.State Proc.State Proc.State ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
@@ -322,12 +326,22 @@ Definition reify T (op : Op T)  : RTerm.t gs gs T.
     end.
 Qed.
 
-Definition reify_proc T (proc : proc Op T)  : RTerm.t es es T.
+Definition testProgram {model:GoModel} : proc uint64 :=
+  x <- Ret 3;
+  Ret x.
+
+(* TODO: Test for es matching *)
+Goal False.
+pose typedLiteral.
+let t := reflproc p in idtac t.
+Admitted.
+
+Definition reify_proc T (proc : proc T)  : RTerm.t es es T.
   destruct proc eqn:?.
   match goal with
   | [ H : proc = ?A |- _ ] => let x := reflproc A in idtac x
   end.
-  - Set Printing All.
+  - 
     let t := eval simpl in (Proc.exec_step Go.sem (Call op)) in
         let k := constr:(fun x: unit => t) in
         let j := match k with
@@ -335,7 +349,7 @@ Definition reify_proc T (proc : proc Op T)  : RTerm.t es es T.
                  | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
                    let f1 := refl' B T1 r1 in
                    let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
-                   constr: (fun x => RTerm.Bind (f1 x) (fun y => f2 (x, y)))
+                   constr: (fun x => RTerm.BindES (f1 x) (fun y => f2 (x, y)))
                  end in idtac j.
         let x := refl' es T constr:(fun r :unit => t) in idtac x.
         let x' := (eval cbn beta in (x tt)) in pose x'.
