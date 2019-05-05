@@ -236,9 +236,9 @@ Ltac refl' RetB RetT e :=
   | fun x : ?T => @pure es es (@?E x) =>
     constr: (fun x => RTerm.Ret es (E x))
 
-  | fun x: ?T => @and_then Proc.State Proc.State Proc.State ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
-    let f1 := refl' Proc.State T1 r1 in
-    let f2 := refl' Proc.State T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
+  | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
+    let f1 := refl' B T1 r1 in
+    let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
     constr: (fun x => RTerm.BindES (f1 x) (fun y => f2 (x, y)))
   | fun x: ?T => @and_then gs gs gs ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
     let f1 := refl' gs T1 r1 in
@@ -253,7 +253,7 @@ Ltac refl' RetB RetT e :=
     let f2 := refl' ds T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
     constr: (fun x => RTerm.AndThenDS (f1 x) (fun y => f2 (x, y)))
 
-  | fun x: ?T => @snd_lift gs gs nat ?T (@?r x) =>
+  | fun x: ?T => @snd_lift gs gs ?B ?T (@?r x) =>
     let f := refl' gs T r in
     constr: (fun x => RTerm.CallGS (f x))
   | (fun x: ?T => @_zoom gs fs Go.fs _ ?T1 (@?r1 x)) =>
@@ -274,6 +274,7 @@ Ltac refl' RetB RetT e :=
   | fun x : ?T => @?E x =>
     constr: (fun x => RTerm.NotImpl (E x))
   end.
+Check @snd_lift.
 
 Ltac refl e :=
   lazymatch type of e with
@@ -287,10 +288,6 @@ Ltac test e :=
   let t := refl e in
   let e' := eval cbv [rtermDenote] in (rtermDenote t) in
   unify e e'.
-
-Ltac reflproc p :=
-  let t := eval simpl in (Proc.exec_step Go.sem p) in
-  refl t.
 
 Ltac reflop_fs o :=
   let t := eval simpl in (Go.step (FilesysOp o)) in
@@ -314,15 +311,15 @@ Definition reify T (op : Op T)  : RTerm.t gs gs T.
   destruct op.
   - destruct o eqn:?;
     match goal with
-    | [ H : o = ?A |- _ ] => let x := reflop_fs A in idtac x; exact x
+    | [ H : o = ?A |- _ ] => let x := reflop_fs A in exact x
     end.
   - destruct o eqn:?;
     match goal with
-    | [ H : o = ?A |- _ ] => let x := reflop_data A in idtac x; exact x
+    | [ H : o = ?A |- _ ] => let x := reflop_data A in exact x
     end.
   - destruct o eqn:?;
     match goal with
-    | [ H : o = ?A |- _ ] => let x := reflop_glob A in idtac x; exact x
+    | [ H : o = ?A |- _ ] => let x := reflop_glob A in exact x
     end.
 Qed.
 
@@ -330,32 +327,16 @@ Definition testProgram {model:GoModel} : proc uint64 :=
   x <- Ret 3;
   Ret x.
 
-(* TODO: Test for es matching *)
-Goal False.
-pose typedLiteral.
-let t := reflproc p in idtac t.
-Admitted.
+Ltac reflproc p :=
+  let t := eval simpl in (Proc.exec_step Go.sem p) in
+  refl t.
 
-Definition reify_proc T (proc : proc T)  : RTerm.t es es T.
-  destruct proc eqn:?.
+Definition reify_proc T (p : proc T)  : RTerm.t es es (proc T * thread_pool Op).
+  destruct p eqn:?;
   match goal with
-  | [ H : proc = ?A |- _ ] => let x := reflproc A in idtac x
+  | [ H : p = ?A |- _ ] => let x := reflproc A in idtac x; exact x
   end.
-  - 
-    let t := eval simpl in (Proc.exec_step Go.sem (Call op)) in
-        let k := constr:(fun x: unit => t) in
-        let j := match k with
-
-                 | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
-                   let f1 := refl' B T1 r1 in
-                   let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
-                   constr: (fun x => RTerm.BindES (f1 x) (fun y => f2 (x, y)))
-                 end in idtac j.
-        let x := refl' es T constr:(fun r :unit => t) in idtac x.
-        let x' := (eval cbn beta in (x tt)) in pose x'.
-  match goal with
-  | [ H : proc = ?A |- _ ] => let x := reflproc A in idtac x
-  end.
+Qed.
 
 Definition interpret (T : Type) (r: RTerm.t es es T) : es -> Output es T :=
   fun a => match interpret_es r (a, ptrMap_null) with
