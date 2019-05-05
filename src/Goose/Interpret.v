@@ -231,10 +231,9 @@ Ltac refl' RetB RetT e :=
     constr: (fun x => RTerm.DelAllocs ty p)
 
   | fun x : ?T => @pure ?A _ (@?E x) =>
-    constr: (fun x => RTerm.Pure A (E x))
-  (* TODO: pure not matching for es cases *)
-  | fun x : ?T => @pure es es (@?E x) =>
     constr: (fun x => RTerm.Ret es (E x))
+  | fun x : ?T => @pure ?A _ (@?E x) =>
+    constr: (fun x => RTerm.Pure A (E x))
 
   | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
     let f1 := refl' B T1 r1 in
@@ -253,8 +252,8 @@ Ltac refl' RetB RetT e :=
     let f2 := refl' ds T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
     constr: (fun x => RTerm.AndThenDS (f1 x) (fun y => f2 (x, y)))
 
-  | fun x: ?T => @snd_lift gs gs ?B ?T (@?r x) =>
-    let f := refl' gs T r in
+  | fun x: ?T => @snd_lift ?A1 ?A2 ?B ?T1 (@?r x) =>
+    let f := refl' A2 T1 r in
     constr: (fun x => RTerm.CallGS (f x))
   | (fun x: ?T => @_zoom gs fs Go.fs _ ?T1 (@?r1 x)) =>
     let f := refl' fs T1 r1 in
@@ -284,11 +283,6 @@ Ltac refl e :=
     constr:(t')
   end.
 
-Ltac test e :=
-  let t := refl e in
-  let e' := eval cbv [rtermDenote] in (rtermDenote t) in
-  unify e e'.
-
 Ltac reflop_fs o :=
   let t := eval simpl in (Go.step (FilesysOp o)) in
       let t' := eval cbv [set] in t in (* expands puts of sets *)
@@ -302,30 +296,21 @@ Ltac reflop_glob o :=
   let t := eval simpl in (Go.step (LockGlobalOp o)) in
   refl t.
 
-
-Eval cbv [set] in (fun inode : FS.Inode => (puts (set FS.fds <[((), inode, tt).2:= (((), inode, tt).1.2, FS.Read)]>))).
-
-Check (fun inode : FS.Inode => (puts (set FS.fds <[((), inode, tt).2:= (((), inode, tt).1.2, FS.Read)]>))).
-
 Definition reify T (op : Op T)  : RTerm.t gs gs T.
   destruct op.
   - destruct o eqn:?;
     match goal with
-    | [ H : o = ?A |- _ ] => let x := reflop_fs A in exact x
+    | [ H : o = ?A |- _ ] => let x := reflop_fs A in idtac x; exact x
     end.
   - destruct o eqn:?;
     match goal with
-    | [ H : o = ?A |- _ ] => let x := reflop_data A in exact x
+    | [ H : o = ?A |- _ ] => let x := reflop_data A in idtac x; exact x
     end.
   - destruct o eqn:?;
     match goal with
-    | [ H : o = ?A |- _ ] => let x := reflop_glob A in exact x
+    | [ H : o = ?A |- _ ] => let x := reflop_glob A in idtac x; exact x
     end.
 Qed.
-
-Definition testProgram {model:GoModel} : proc uint64 :=
-  x <- Ret 3;
-  Ret x.
 
 Ltac reflproc p :=
   let t := eval simpl in (Proc.exec_step Go.sem p) in
@@ -336,6 +321,15 @@ Definition reify_proc T (p : proc T)  : RTerm.t es es (proc T * thread_pool Op).
   match goal with
   | [ H : p = ?A |- _ ] => let x := reflproc A in idtac x; exact x
   end.
+  (* match goal with
+  | [ H : p = ?A |- _ ] => let t := constr:(@snd_lift _ _ nat T (Go.step op)) in
+                               match constr:(fun _:unit => t) with
+                               | fun x: ?T => @snd_lift ?A1 ?A2 ?B ?T1 (@?r x) =>
+                                 let f := refl' A2 T1 r in
+                                 idtac r
+                               | _ => idtac t
+                               end
+  end. *)
 Qed.
 
 Definition interpret (T : Type) (r: RTerm.t es es T) : es -> Output es T :=
@@ -354,6 +348,34 @@ Theorem interpret_ok : forall T (r: RTerm.t es es T) (a : es),
     end.
 Admitted.
 
+Definition testProgram {model:GoModel} : proc uint64 :=
+  x <- Ret 3;
+  Ret x.
+
+Definition literalCast {model:GoModel} : proc uint64 :=
+  let x := 2 in
+  Ret (x + 2).
+
+Definition returnTwoWrapper {model:GoModel} (data:slice.t byte) : proc (uint64 * uint64) :=
+  let! (a, b) <- returnTwo data;
+  Ret (a, b).
+
+Definition usePtr {model:GoModel} : proc unit :=
+  p <- Data.newPtr uint64;
+  _ <- Data.writePtr p 1;
+  x <- Data.readPtr p;
+  Data.writePtr p x.
+
+Goal False.
+  pose usePtr.
+  let t := reflproc p in pose t.
+Admitted.
+  
+Ltac test e :=
+  let t := refl e in
+  let e' := eval cbv [rtermDenote] in (rtermDenote t) in
+  unify e e'.
+
 (* Tests *)    
 Ltac testPure := test (pure (A:=unit) 1).
 Ltac testReads := test (reads (A:=nat) (fun x : nat => x + 3)).                         
@@ -369,24 +391,3 @@ Definition ex3 : RTerm.t nat nat nat :=
   RTerm.AndThen (RTerm.ReadSome (fun x => Some (x+1))) (fun n => RTerm.Reads (fun x => (x+n))).
 Definition ex4 : RTerm.t nat nat unit :=
   RTerm.AndThen (RTerm.Pure nat 3) (fun n => RTerm.Puts (fun x => x+n)).
-
-Goal False.
-  testPure.
-  testReads.
-  testReadSome.
-  testReadNone.
-  testAndThen.
-  test (puts (fun x : nat => 3)).
-  test (puts (fun x : unit => tt)).
-  test (error: relation nat nat nat).
-  test (rtermDenote ex1).
-  test (rtermDenote ex2).
-  test (rtermDenote ex3).
-  test (rtermDenote ex4).
-Abort.
-
-Compute (interpret ex1 7).
-Compute (interpret ex2 7).
-Compute (interpret ex3 7).
-Compute (interpret ex4 7).
-Compute (interpret (RTerm.Error nat nat nat)).
