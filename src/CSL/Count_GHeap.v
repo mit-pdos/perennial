@@ -97,8 +97,9 @@ Proof.
 Qed.
 
 Lemma gen_heap_strong_init `{H: gen_heapPreG L V Σ} σs :
-  (|==> ∃ (H0 : gen_heapG L V Σ) (Hpf: gen_heap_inG = gen_heap_preG_inG), gen_heap_ctx σs ∗
-    own (gen_heap_name _) (◯ (to_gen_heap σs)))%I.
+  (|==> ∃ (H0 : gen_heapG L V Σ)
+          (Hpf: @gen_heap_inG _ _ _ _ _ H0 = gen_heap_preG_inG), gen_heap_ctx σs ∗
+    own (gen_heap_name H0) (◯ (to_gen_heap σs)))%I.
 Proof.
   iMod (own_alloc (● to_gen_heap σs ⋅ ◯ to_gen_heap σs)) as (γ) "(?&?)".
   { apply auth_valid_discrete_2; split; auto. exact: to_gen_heap_valid. }

@@ -121,8 +121,9 @@ Proof.
 Qed.
 
 Lemma gen_dir_strong_init `{gen_dirPreG L1 L2 V Σ} σ :
-  (|==> ∃ (H0 : gen_dirG L1 L2 V Σ) (Hpf: gen_dir_inG = gen_dir_preG_inG), gen_dir_ctx σ ∗
-    own (gen_dir_name _) (◯ (to_gen_dir σ)))%I.
+  (|==> ∃ (H0 : gen_dirG L1 L2 V Σ)
+          (Hpf: @gen_dir_inG _ _ _ _ _ _ _ _ H0  = gen_dir_preG_inG), gen_dir_ctx σ ∗
+    own (gen_dir_name H0) (◯ (to_gen_dir σ)))%I.
 Proof.
   iMod (own_alloc (● to_gen_dir σ ⋅ ◯ to_gen_dir σ)) as (γ) "(?&?)".
   { apply auth_valid_discrete_2; split; auto. exact: to_gen_dir_valid. }
