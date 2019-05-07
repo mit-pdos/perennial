@@ -41,6 +41,7 @@ Notation es := (@Proc.State Go.State).
 Notation gs := Go.State.
 Notation fs := FS.State.
 Notation ds := Data.State.
+Notation gbs := Globals.State.
 
 Module RTerm.
   Inductive t : Type -> Type -> Type -> Type :=
@@ -49,6 +50,7 @@ Module RTerm.
   | Puts : (fs -> fs) -> t fs fs unit
   | ReadSome T : (ds -> option T) -> t ds ds T
   | ReadNone T : (ds -> option T) -> t ds ds unit
+  | ReadSomeGBS T : (gbs -> option T) -> t gbs gbs T
 
   | AllocPtr ty : Data.ptrRawModel ty -> t ds ds (goModel.(@Ptr) ty)
   | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t ds ds unit
@@ -338,20 +340,13 @@ Theorem interpret_ok : forall T (r: RTerm.t es es T) (a : es),
     | Error => rtermDenote r a Err
     | Success b t => rtermDenote r a (Val b t)
     end.
+Proof.
 Admitted.
 
 (* Tests *)    
-Definition testProgram {model:GoModel} : proc uint64 :=
-  x <- Ret 3;
-  Ret x.
-
 Definition literalCast {model:GoModel} : proc uint64 :=
   let x := 2 in
   Ret (x + 2).
-
-Definition returnTwoWrapper {model:GoModel} (data:slice.t byte) : proc (uint64 * uint64) :=
-  let! (a, b) <- returnTwo data;
-  Ret (a, b).
 
 Definition usePtr {model:GoModel} : proc unit :=
   p <- Data.newPtr uint64;
@@ -359,10 +354,33 @@ Definition usePtr {model:GoModel} : proc unit :=
   x <- Data.readPtr p;
   Data.writePtr p x.
 
+Module Table.
+  (* A Table provides access to an immutable copy of data on the filesystem,
+     along with an index for fast random access. *)
+  Record t {model:GoModel} := mk {
+    Index: Map uint64;
+    File: File;
+  }.
+  Arguments mk {model}.
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
+End Table.
+
+(* CreateTable creates a new, empty table. *)
+Definition CreateTable {model:GoModel} (p:string) : proc Table.t :=
+  index <- Data.newMap uint64;
+  let! (f, _) <- FS.create "db" p;
+  _ <- FS.close f;
+  f2 <- FS.open "db" p;
+  Ret {| Table.Index := index;
+         Table.File := f2; |}.
+
 Goal False.
-  pose usePtr.
-  let t := reflproc p in pose t.
+  pose CreateTable.
+  let t := reflproc (p "table") in pose t.
   Compute (interpret t).
+  pose literalCast.
+  let t1 := reflproc p0 in pose t.
+  Compute (interpret t0).
 Admitted.
   
 Ltac test e :=
