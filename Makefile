@@ -13,7 +13,8 @@ COQ_WARN_LIST := -notation-overridden\
 -undeclared-scope\
 -solve_obligation_error\
 -auto-template\
--ambiguous-paths
+-ambiguous-paths\
+-convert_concl_no_check
 
 # A literal space.
 space :=
