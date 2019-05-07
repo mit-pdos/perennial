@@ -36,12 +36,13 @@ Instance goModel : GoModel :=
     }.
 
 Declare Instance goModelWf : GoModelWf goModel.
+Definition G := Type.
 
 Notation es := (@Proc.State Go.State).
 Notation gs := Go.State.
 Notation fs := FS.State.
 Notation ds := Data.State.
-Notation gbs := Globals.State.
+Notation gb := (@Globals.State G).
 
 Module RTerm.
   Inductive t : Type -> Type -> Type -> Type :=
@@ -50,7 +51,9 @@ Module RTerm.
   | Puts : (fs -> fs) -> t fs fs unit
   | ReadSome T : (ds -> option T) -> t ds ds T
   | ReadNone T : (ds -> option T) -> t ds ds unit
-  | ReadSomeGBS T : (gbs -> option T) -> t gbs gbs T
+                                       
+  | ReadsGB T : (gb -> T) -> t gb gb T
+  | ReadSomeGB T : (gb -> option T) -> t gb gb T
 
   | AllocPtr ty : Data.ptrRawModel ty -> t ds ds (goModel.(@Ptr) ty)
   | UpdAllocs ty : Ptr ty -> Data.ptrModel ty -> t ds ds unit
