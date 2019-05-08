@@ -36,7 +36,7 @@ Instance goModel : GoModel :=
     }.
 
 Declare Instance goModelWf : GoModelWf goModel.
-Definition G := Type.
+Notation G := (slice.t LockRef).
 
 Notation es := (@Proc.State Go.State).
 Notation gs := Go.State.
@@ -51,7 +51,6 @@ Module RTerm.
   | Puts : (fs -> fs) -> t fs fs unit
   | ReadSome T : (ds -> option T) -> t ds ds T
   | ReadNone T : (ds -> option T) -> t ds ds unit
-                                       
   | ReadsGB T : (gb -> T) -> t gb gb T
   | ReadSomeGB T : (gb -> option T) -> t gb gb T
 
@@ -66,11 +65,13 @@ Module RTerm.
   | AndThenGS T1 T2 : t gs gs T1 -> (T1 -> t gs gs T2) -> t gs gs T2
   | AndThenFS T1 T2 : t fs fs T1 -> (T1 -> t fs fs T2) -> t fs fs T2
   | AndThenDS T1 T2 : t ds ds T1 -> (T1 -> t ds ds T2) -> t ds ds T2
+  | AndThenGB T1 T2 : t gb gb T1 -> (T1 -> t gb gb T2) -> t gb gb T2
 
   (* zooms *)
   | CallGS T : t gs gs T -> t es es T
   | ZoomFS T : t fs fs T -> t gs gs T
   | ZoomDS T : t ds ds T -> t fs fs T
+  | ZoomGB T : t gb gb T -> t gs gs T
   | FstLiftES T : t nat nat T -> t es es T
 
   | Error A B T : t A B T
@@ -146,6 +147,24 @@ Fixpoint interpret_fs (T : Type) (r : RTerm.t fs fs T) (X : fs*ptrMap) : Output 
   | _ => NotImpl
   end.
 
+Fixpoint interpret_gb (T : Type) (r : RTerm.t gb gb T) (X : gb*ptrMap) : Output (gb*ptrMap) T :=
+  match r with
+  | RTerm.ReadsGB f => Success X (f (fst X))
+  | RTerm.ReadSomeGB f =>
+      let t' := f (fst X) in match t' with
+                        | Some t => Success X t
+                        | None => Error
+                        end
+  | RTerm.AndThenGB r f =>
+    let o := interpret_gb r X in
+    match o with
+    | Success b t => let r' := f t in let o' := interpret_gb r' b in o'
+    | Error => Error
+    | NotImpl => NotImpl
+    end
+  | _ => NotImpl
+  end.
+    
 Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output (gs*ptrMap) T :=
   match r with
   | RTerm.Pure gs t => Success X t
@@ -160,6 +179,13 @@ Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output 
                       let f := Go.fs g in
                       match (interpret_fs r (f, pm)) with
                       | Success (f', pm') t => Success (g <| Go.fs := f' |>, pm') t
+                      | Error => Error
+                      | NotImpl => NotImpl
+                      end
+  | RTerm.ZoomGB r => let (g, pm) := X in
+                      let b := Go.maillocks g in
+                      match (interpret_gb r (b, pm)) with
+                      | Success (b', pm') t => Success (g <| Go.maillocks := b' |>, pm') t
                       | Error => Error
                       | NotImpl => NotImpl
                       end
@@ -193,6 +219,8 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   match r with
   | RTerm.Reads f => reads f
   | RTerm.ReadSome f => readSome f
+  | RTerm.ReadsGB f => reads f
+  | RTerm.ReadSomeGB f => readSome f
   | RTerm.ReadNone f => readNone f
   | RTerm.Puts f => puts f
   | RTerm.AllocPtr _ prm => Data.allocPtr _ prm
@@ -205,10 +233,12 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
   | RTerm.AndThenGS r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
   | RTerm.AndThenFS r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
   | RTerm.AndThenDS r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
+  | RTerm.AndThenGB r1 f => and_then (rtermDenote r1) (fun x => (rtermDenote (f x)))
 
   | RTerm.CallGS r => snd_lift (rtermDenote r)
   | RTerm.ZoomFS r => _zoom Go.fs (rtermDenote r)
   | RTerm.ZoomDS r => _zoom FS.heap (rtermDenote r)
+  | RTerm.ZoomGB r => _zoom Go.maillocks (rtermDenote r)
   | RTerm.FstLiftES r => fst_lift (rtermDenote r)
 
   | RTerm.Error _ _ _ => error
@@ -217,10 +247,14 @@ Fixpoint rtermDenote A B T (r: RTerm.t A B T) : relation A B T :=
 
 Ltac refl' RetB RetT e :=
   match eval simpl in e with
-  | fun x : ?T => @reads ?A ?T0 (@?f x) =>
+  | fun x : ?T => @reads ds ?T0 (@?f x) =>
     constr: (fun x => RTerm.Reads (f x))
   | fun x : ?T => @readSome ds ?T0 (@?f x) =>
     constr: (fun x => RTerm.ReadSome (f x))
+  | fun x : ?T => @reads ?s ?T0 (@?f x) =>
+    constr: (fun x => RTerm.ReadsGB (f x))
+  | fun x : ?T => @readSome ?s ?T0 (@?f x) =>
+    constr: (fun x => RTerm.ReadSomeGB (f x))
   | fun x : ?T => @readNone ?A ?T0 (@?f x) =>
     constr: (fun x => RTerm.ReadNone (f x))
   | fun x : ?T => @puts fs (@?f x) =>
@@ -254,6 +288,10 @@ Ltac refl' RetB RetT e :=
     let f1 := refl' ds T1 r1 in
     let f2 := refl' ds T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
     constr: (fun x => RTerm.AndThenDS (f1 x) (fun y => f2 (x, y)))
+  | fun x: ?T => @and_then ?A ?B ?C ?T1 ?T2 (@?r1 x) (fun (y: ?T1) => (@?r2 x y)) =>
+    let f1 := refl' B T1 r1 in
+    let f2 := refl' C T2 (fun (p: T * T1) => (r2 (fst p) (snd p))) in
+    constr: (fun x => RTerm.AndThenGB (f1 x) (fun y => f2 (x, y)))
 
   | fun x: ?T => @snd_lift ?A1 ?A2 ?B ?T1 (@?r x) =>
     let f := refl' A2 T1 r in
@@ -264,6 +302,9 @@ Ltac refl' RetB RetT e :=
   | (fun x: ?T => @_zoom fs ds FS.heap _ ?T1 (@?r1 x)) =>
     let f := refl' ds T1 r1 in
     constr: (fun x: T => RTerm.ZoomDS (f x))
+  | (fun x: ?T => @_zoom ?s1 ?s2 Go.maillocks _ ?T1 (@?r1 x)) =>
+    let f := refl' s2 T1 r1 in
+    constr: (fun x: T => RTerm.ZoomGB (f x))
   (* TODO: FstLiftES *)
 
   | fun x : ?T => @error ?A ?B ?T0 =>
