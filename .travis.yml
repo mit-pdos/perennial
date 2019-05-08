@@ -11,6 +11,7 @@ branches:
     - master
       # for version tags of the form v0.1 or v0.1.1
     - /^v\d+\.\d+(\.\d+)?$/
+    - /^ci\//
 
 services:
   - docker
