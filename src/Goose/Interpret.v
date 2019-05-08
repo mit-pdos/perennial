@@ -194,6 +194,11 @@ Fixpoint interpret_gs (T : Type) (r : RTerm.t gs gs T) (X : gs*ptrMap) : Output 
   | _ => NotImpl
   end.
 
+Fixpoint interpret_nat (T : Type) (r : RTerm.t nat nat T) (X : nat*ptrMap) : Output (nat*ptrMap) T :=
+  match r with
+  | _ => NotImpl
+  end.
+
 Fixpoint interpret_es (T : Type) (r : RTerm.t es es T) (X : es*ptrMap) : Output (es*ptrMap) T :=
   match r with
   | RTerm.Ret t => Success X t
@@ -211,7 +216,13 @@ Fixpoint interpret_es (T : Type) (r : RTerm.t es es T) (X : es*ptrMap) : Output 
       | Error => Error
       | NotImpl => NotImpl
       end
-  | RTerm.FstLiftES t => NotImpl (* TODO *)
+  | RTerm.FstLiftES r => let (e, pm) := X in
+                    let (thr, g) := e in
+                    match (interpret_nat r (thr, pm)) with
+                    | Success (thr', pm') t => Success ((thr', g), pm') t
+                    | Error => Error                                                  
+                    | NotImpl => NotImpl                                                  
+                    end
   | _ => NotImpl
   end.
 
@@ -305,7 +316,9 @@ Ltac refl' RetB RetT e :=
   | (fun x: ?T => @_zoom ?s1 ?s2 Go.maillocks _ ?T1 (@?r1 x)) =>
     let f := refl' s2 T1 r1 in
     constr: (fun x: T => RTerm.ZoomGB (f x))
-  (* TODO: FstLiftES *)
+  | fun x: ?T => @fst_lift ?A1 ?A2 ?B ?T1 (@?r x) =>
+    let f := refl' A2 T1 r in
+    constr: (fun x => RTerm.FstLiftES (f x))
 
   | fun x : ?T => @error ?A ?B ?T0 =>
     constr: (fun x => RTerm.Error A B T0)
@@ -385,6 +398,11 @@ Theorem interpret_ok : forall T (r: RTerm.t es es T) (a : es),
     | Success b t => rtermDenote r a (Val b t)
     end.
 Proof.
+  intros.
+  pose (interpret r a).
+  destruct interpret.
+  - induct r.
+    admit.
 Admitted.
 
 (* Tests *)    
