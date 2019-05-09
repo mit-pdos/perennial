@@ -25,8 +25,8 @@ comma := ,
 # Joins elements of a list with a comma
 join-with-comma = $(subst $(space),$(comma),$(strip $1))
 
-COQ_ARGS = -w $(call join-with-comma,$(COQ_WARN_LIST))
-#COQ_ARGS = -w $(call join-with-comma,$(COQ_WARN_LIST)) $(shell cat '_CoqProject')
+COQ_WARN_ARG := $(call join-with-comma,$(COQ_WARN_LIST))
+COQ_ARGS :=
 
 TIMED:=true
 TIMING_ARGS := $(if $(TIMED),--timing-db timing.sqlite3,)
@@ -38,6 +38,7 @@ test: $(TEST_VO) $(VFILES:.v=.vo)
 
 _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 	@echo "-R src $$(cat libname)" > $@
+	@echo "-arg -w -arg ${COQ_WARN_ARG}" >> $@
 	@cat _CoqExt >> $@
 	$(Q)for libdir in $(wildcard vendor/*); do \
 	libname=$$(cat $$libdir/libname); \
@@ -62,7 +63,7 @@ endif
 
 %.vo: %.v _CoqProject
 	@echo "COQC $<"
-	$(Q)./etc/coqc.py $(TIMING_ARGS) $(COQ_ARGS) $< -o $@
+	$(Q)./etc/coqc.py --proj _CoqProject $(TIMING_ARGS) $(COQ_ARGS) $< -o $@
 
 .PHONY: ci
 ci: src/ShouldBuild.vo $(TEST_VO)

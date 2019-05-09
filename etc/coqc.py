@@ -171,7 +171,7 @@ def read_coqproject(fname):
     with open(fname) as f:
         for line in f:
             args.extend(line.rstrip().split(" "))
-    return args
+    return [arg for arg in args if arg != "-arg"]
 
 
 if __name__ == "__main__":
@@ -190,9 +190,7 @@ if __name__ == "__main__":
     args, coq_args = parser.parse_known_args()
 
     coqproject_file = args.proj
-    if coqproject_file is None and path.exists("_CoqProject"):
-        coqproject_file = "_CoqProject"
-    if path.exists(coqproject_file):
+    if coqproject_file is not None and path.exists(coqproject_file):
         proj_args = read_coqproject(coqproject_file)
     else:
         proj_args = []
