@@ -4,6 +4,7 @@ Import ExMach.
 Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Layer.
+    Import WeakestPre.
 
 Module Type exmach_refinement_type.
   Context (OpT: Type → Type).
@@ -16,7 +17,9 @@ Module Type exmach_refinement_type.
   Notation compile := (compile impl).
   Notation recover := (recover impl).
   Notation compile_proc_seq := (compile_proc_seq impl).
-  Context `{CFG: cfgPreG OpT Λa Σ} `{exmachPreG Σ}.
+  Context `{CFG: cfgPreG OpT Λa Σ} `{HEX: exmachPreG Σ}.
+  Context `{INV: Adequacy.invPreG Σ}.
+  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitC))))}.
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
   Context (exec_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
   Context (crash_param: forall (_ : @cfgG OpT Λa Σ) (_ : exmachG Σ), Type).
@@ -42,12 +45,63 @@ Module Type exmach_refinement_type.
                  WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered  }}).
 
   Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
+
+  Context (recv_triple:
+             forall {H1 H2} param,
+               (@crash_inv H1 H2 param) ∗ Registered ∗ (@crash_starter H1 H2 param) ⊢
+                    WP recv @ NotStuck; ⊤ {{ v, |={⊤,E}=> ∃ σ2a σ2a', source_state σ2a
+                    ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt)⌝ ∗
+                    ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) tr',
+                      source_ctx ∗ source_state σ2a'  ={⊤}=∗
+                      exec_inner Hcfg' (ExMachG Σ Hinv' exm_mem_inG exm_disk_inG tr')
+                                               }}).
+
+  Context (init_absr: Λa.(OpState) → ExMach.State → Prop).
+  Context (init_wf: ∀ σ1a σ1c, init_absr σ1a σ1c → state_wf σ1c).
+
+  Context (init_exec_inner: ∀ σ1a σ1c, init_absr σ1a σ1c →
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+          (([∗ map] i ↦ v ∈ mem_state σ1c, i m↦ v) ∗
+           ([∗ map] i ↦ v ∈ disk_state σ1c, i d↦ v) ∗
+           source_ctx ∗ source_state σ1a) ={⊤}=∗ exec_inner _ _)).
+
+  Context (exec_inv_preserve_crash:
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+          exec_inv Hcfg Hex ={⊤, E}=∗ ∀ Hmem' Hreg',
+          (let Hex := ExMachG Σ (exm_invG) Hmem' (exm_disk_inG) Hreg' in
+              ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex))).
+
+  Context (crash_inv_preserve_crash:
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} param,
+          crash_inv Hcfg Hex param ={⊤, E}=∗ ∀ Hmem' Hreg',
+          (let Hex := ExMachG Σ (exm_invG) Hmem' (exm_disk_inG) Hreg' in
+              ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex))).
+
+  Context (crash_inner_inv :
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+          (∃ Hinv, crash_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG) (exm_treg_inG))) ∗
+          source_ctx ={⊤}=∗ ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param)).
+
+  Context (exec_inner_inv :
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+          (∃ Hinv, exec_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG) (exm_treg_inG))) ∗
+          source_ctx ={⊤}=∗ exec_inv Hcfg Hex)).
+
+  Context (exec_inv_preserve_finish:
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+          AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
+          ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
+          ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hreg',
+            (let Hex := ExMachG Σ Hinv' Hmem' (exm_disk_inG) Hreg' in
+            source_ctx∗ source_state σ2a' ∗ ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={⊤}=∗
+               exec_inner Hcfg' Hex))%I).
+
 End exmach_refinement_type.
 
 Module exmach_refinement (eRT: exmach_refinement_type).
 
-  Import eRT.
-  Module RT : refinement_type.
+  Module RT <: refinement_type.
+    Import eRT.
     Definition OpC := ExMach.Op.
     Definition Λc := ExMach.l.
     Definition OpT := OpT.
@@ -56,6 +110,8 @@ Module exmach_refinement (eRT: exmach_refinement_type).
     Definition exmachG := exmachG.
     Definition Σ := Σ.
     Definition CFG := CFG.
+    Definition INV := INV.
+    Definition REG := REG.
     Definition Hinstance := @exmachG_irisG.
     Definition Hinstance_reg := @exm_treg_inG.
     Definition crash_inner := crash_inner.
@@ -72,10 +128,89 @@ Module exmach_refinement (eRT: exmach_refinement_type).
     Definition recsingle := recsingle.
     Definition refinement_op_triples := refinement_op_triples.
     Definition exec_inv_source_ctx := exec_inv_source_ctx.
+    Definition init_absr := init_absr.
+
+    Definition set_inv_reg Hex Hinv Hreg :=
+      ExMachG Σ Hinv (@exm_mem_inG _ Hex) (@exm_disk_inG _ Hex) Hreg.
+
   End RT.
 
+  Module RD := refinement_definitions RT.
+
+  Import RT RD.
+
+  Module RO : refinement_obligations RT.
+    Module RD := RD.
+    Import WeakestPre.
+    Import RT RD.
+
+    Lemma set_inv_reg_spec1:
+      ∀ Hex Hinv Hreg, @iris_invG _ _ _ (Hinstance _ (set_inv_reg Hex Hinv Hreg)) = Hinv.
+    Proof. trivial. Qed.
+
+    Lemma set_inv_reg_spec2:
+      ∀ Hex Hinv Hreg, Hinstance_reg _ (set_inv_reg Hex Hinv Hreg) = Hreg.
+    Proof. trivial. Qed.
+
+    Lemma set_inv_reg_spec3:
+      ∀ Hex Hinv Hreg, set_inv_reg (set_inv_reg Hex Hinv Hreg) Hinv Hreg =
+                       (set_inv_reg Hex Hinv Hreg).
+    Proof. trivial. Qed.
+    Lemma register_spec `{WeakestPre.exmachG Σ}: ∃ (Interp: OpState Λc → iProp Σ),
+                (∀ n σ, @state_interp _ _ _ (Hinstance _ _) (n, σ)
+                                     -∗ thread_count_interp n ∗ Interp σ) ∧
+                ∀ n σ, thread_count_interp n ∗ Interp σ -∗ state_interp (n, σ).
+    Proof. eexists. split; eauto using thread_reg1, thread_reg2. Qed.
+    Definition refinement_op_triples := refinement_op_triples.
+
+    (* This is just to convert from the old recv_triple style to the new one. *)
+    Lemma recv_triple : recv_triple_type.
+    Proof.
+      rewrite /recv_triple_type.
+      iIntros (???) "(#Hinv&Hreg&Hstart)".
+      iPoseProof @eRT.recv_triple as "H".
+      iSpecialize ("H" with "[$]").
+      iApply (wp_wand with "H").
+      iIntros (_) "H".
+      iMod "H" as (σ2a σ2a') "(?&%&H)".
+      iModIntro. iExists _, _. iFrame.
+      iSplitR; first by iPureIntro.
+      iIntros. rewrite /post_recv.
+      iIntros (????) "((_&Hstate)&Hthread)". iModIntro. iExists _. iFrame.
+      iIntros. iModIntro. by iMod ("H" with "[$]").
+    Qed.
+
+    Existing Instance eRT.HEX.
+    Lemma init_exec_inner : init_exec_inner_type.
+    Proof.
+      rewrite /init_exec_inner_type.
+      iIntros (σ1a σ1c Hinit ???).
+      iMod (gen_heap_strong_init (mem_state σ1c)) as (hM Hmpf_eq) "(Hmc&Hm)".
+      iMod (gen_heap_strong_init (disk_state σ1c)) as (hD Hdpf_eq) "(Hdc&Hd)".
+      iPoseProof (eRT.init_exec_inner σ1a σ1c Hinit (ExMachG Σ _ hM hD _) _) as "H".
+      iModIntro. iExists (ExMachG Σ _ hM hD _). iIntros "(Hsource1&Hsource2&Hthread)".
+      iMod ("H" with "[Hm Hd Hsource1 Hsource2]") as "Hinner".
+      { iFrame.  iSplitL "Hm".
+        { rewrite -Hmpf_eq. iApply mem_init_to_bigOp; auto. }
+        { rewrite -Hdpf_eq. iApply disk_init_to_bigOp; auto. }
+      }
+      iFrame. simpl.
+      iModIntro. iExists _, _. iFrame.
+      iPureIntro;
+      edestruct (eRT.init_wf) as (Hwf1&Hwf2); eauto.
+      split_and!; eauto; intros i.
+      * destruct (Hwf1 i); intuition.
+      * destruct (Hwf2 i); intuition.
+    Qed.
+
+  End RO.
+
   Module R := refinement RT.
+
+
+  Print R.
   Export R.
+
 End exmach_refinement.
 
 

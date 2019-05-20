@@ -15,9 +15,6 @@ Unset Implicit Arguments.
 Import RelationNotations.
 From Transitions Require Import Relations.
 
-Print tregG.
-SearchAbout "treg".
-
 Module Type refinement_type.
   Context (OpC OpT: Type → Type).
   Context (Λc: Layer OpC) (Λa: Layer OpT).
@@ -58,39 +55,18 @@ Module Type refinement_type.
   Context (recv: proc OpC unit).
   Context (recsingle: recover = rec_singleton recv).
 
-  Context (register_spec: ∀ {H: exmachG Σ}, ∃ (Interp: OpState Λc → iProp Σ),
-                (∀ n σ, @state_interp _ _ _ (Hinstance _ H) (n, σ)
-                                     -∗ thread_count_interp n ∗ Interp σ) ∧
-                ∀ n σ, thread_count_interp n ∗ Interp σ -∗ state_interp (n, σ)).
-
-  Context (refinement_op_triples:
-             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
-               j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
-                 WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered  }}).
-
   Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
-
-  (* There are types of transitions that change a "version number":
-
-     1) Recovery concludes -> Run user program
-     2) User program finishes -> Run new user program
-     3) Crash -> Run recovery
-
-     For transition 1, the layer state does not change, but we change
-     the version number for invariants and the number of registered threads.
-
-   *)
 
   (* TODO: probably should say that this has to be given using Tej's record setter stuff *)
   Context (set_inv_reg: exmachG Σ → invG Σ → tregG Σ → exmachG Σ).
-  Context (set_inv_reg_spec1:
-             ∀ Hex Hinv Hreg, @iris_invG _ _ _ (Hinstance _ (set_inv_reg Hex Hinv Hreg)) = Hinv).
-  Context (set_inv_reg_spec2:
-             ∀ Hex Hinv Hreg, Hinstance_reg _ (set_inv_reg Hex Hinv Hreg) = Hreg).
-  Context (set_inv_reg_spec3:
-             ∀ Hex Hinv Hreg, set_inv_reg (set_inv_reg Hex Hinv Hreg) Hinv Hreg =
-                              (set_inv_reg Hex Hinv Hreg)).
+  Context (init_absr: Λa.(OpState) → Λc.(OpState) → Prop).
 
+End refinement_type.
+
+Module refinement_definitions (RT: refinement_type).
+
+  Import RT.
+  Existing Instances Hinstance Hinstance_reg einv_persist cinv_persist.
   Definition post_crash {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
     (∀ n σ σ' (Hcrash: Λc.(crash_step) σ (Val σ' tt)) Hinv' Hreg',
         state_interp (n, σ) ==∗
@@ -105,25 +81,57 @@ Module Type refinement_type.
 
   Definition post_recv {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
     (∀ n σ Hinv' Hreg',
-        state_interp (n, σ) ==∗
+        state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1 ==∗
                      ∃ Hex', let _ := set_inv_reg Hex' Hinv' Hreg' in
                              state_interp (1, σ) ∗ P)%I.
 
-  Context (recv_triple: ∀ {H1 H2} param,
-           (@crash_inv H1 H2 param) ∗ Registered ∗ (@crash_starter H1 H2 param) ⊢
+  Definition recv_triple_type :=
+    ∀ {H1 H2} param,
+      (@crash_inv H1 H2 param) ∗ Registered ∗ (@crash_starter H1 H2 param) ⊢
               WP recv @ NotStuck; ⊤
                  {{ v, |={⊤,E}=> ∃ σ2a σ2a', source_state σ2a
                        ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt)⌝ ∗
                        ∀ `{Hcfg': cfgG OpT Λa Σ},
-                       post_recv (λ H, source_ctx ∗ source_state σ2a' ==∗ |={⊤}=> exec_inner Hcfg' H)}}).
+                         post_recv (λ H, source_ctx ∗ source_state σ2a' ==∗ |={⊤}=> exec_inner Hcfg' H
+                                    )}}.
 
-  Context (init_absr: Λa.(OpState) → Λc.(OpState) → Prop).
-
-  Context (init_exec_inner: ∀ σ1a σ1c, init_absr σ1a σ1c →
+  Definition init_exec_inner_type :=
+    ∀ σ1a σ1c, init_absr σ1a σ1c →
       (∀ `{Hinv: invG Σ} Hreg `{Hcfg: cfgG OpT Λa Σ},
-           |={⊤}=> ∃ (Hex': exmachG Σ), (source_ctx ∗ source_state σ1a) ={⊤}=∗
-             let _ := set_inv_reg Hex' Hinv Hreg in
-             exec_inner Hcfg _ ∗ state_interp (1, σ1c))%I).
+          |={⊤}=> ∃ (Hex': exmachG Σ),
+         (source_ctx ∗ source_state σ1a ∗ @thread_count_interp _ Hreg 1)
+           ={⊤}=∗ let _ := set_inv_reg Hex' Hinv Hreg in
+                  exec_inner Hcfg _ ∗ state_interp (1, σ1c))%I.
+
+End refinement_definitions.
+
+Module Type refinement_obligations (RT: refinement_type).
+
+  Import RT.
+  Module RD := refinement_definitions RT.
+  Import RD.
+
+  Context (set_inv_reg_spec1:
+             ∀ Hex Hinv Hreg, @iris_invG _ _ _ (Hinstance _ (set_inv_reg Hex Hinv Hreg)) = Hinv).
+  Context (set_inv_reg_spec2:
+             ∀ Hex Hinv Hreg, Hinstance_reg _ (set_inv_reg Hex Hinv Hreg) = Hreg).
+  Context (set_inv_reg_spec3:
+             ∀ Hex Hinv Hreg, set_inv_reg (set_inv_reg Hex Hinv Hreg) Hinv Hreg =
+                              (set_inv_reg Hex Hinv Hreg)).
+
+  Context (register_spec: ∀ {H: exmachG Σ}, ∃ (Interp: OpState Λc → iProp Σ),
+                (∀ n σ, @state_interp _ _ _ (Hinstance _ H) (n, σ)
+                                     -∗ thread_count_interp n ∗ Interp σ) ∧
+                ∀ n σ, thread_count_interp n ∗ Interp σ -∗ state_interp (n, σ)).
+
+  Context (refinement_op_triples:
+             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
+               j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
+                 WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered  }}).
+
+
+  Context (recv_triple: recv_triple_type).
+  Context (init_exec_inner: init_exec_inner_type).
 
   Context (exec_inv_preserve_crash:
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
@@ -150,11 +158,11 @@ Module Type refinement_type.
           ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
           ∀ `{Hcfg': cfgG OpT Λa Σ},
           post_finish (λ H, source_ctx ∗ source_state σ2a' ==∗ |={⊤}=> exec_inner Hcfg' H))).
+End refinement_obligations.
 
-End refinement_type.
 
-Module refinement (RT: refinement_type).
-  Import RT.
+Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
+  Import RT RO.
   Existing Instances Hinstance Hinstance_reg einv_persist cinv_persist.
 
   Import Reg_wp.
@@ -315,10 +323,10 @@ Module refinement (RT: refinement_type).
       set (Hreg' := {| treg_name := tR; treg_counter_inG := _ |}).
       iAssert (own tR (Cinl (Count 1)) ∗ own tR (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
       { rewrite /Registered -own_op Cinl_op counting_op' //=. }
-      iMod (init_exec_inner $! _ _ _) as (Hex') "H"; eauto.
+      iMod (init_exec_inner $! _ Hreg' _) as (Hex') "H"; eauto.
       iModIntro. unshelve (iExists Hex', Hreg', _); first by eauto.
       iIntros "#Hctx Hstate".
-      iMod ("H" with "[Hstate]") as "(Hexec&Hstate)".
+      iMod ("H" with "[Hstate Ht]") as "(Hexec&Hstate)".
       { iFrame. iExists _; eauto. }
       by iFrame.
     }
@@ -475,7 +483,7 @@ Module refinement (RT: refinement_type).
        { rewrite /Registered -own_op Cinl_op counting_op' //=. }
        set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
        destruct σ2c.
-       iMod ("Hfinish" $! H2 _ with "Hinterp") as (Hex') "(Hinterp&Hfinish)".
+       iMod ("Hfinish" $! H2 _ with "[$]") as (Hex') "(Hinterp&Hfinish)".
        unshelve (iExists _, _, _); first by auto.
        iFrame.
        iModIntro. simpl.
