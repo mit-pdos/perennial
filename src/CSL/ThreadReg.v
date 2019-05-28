@@ -1,6 +1,6 @@
 From Transitions Require Import Relations.
 
-From iris.algebra Require Export auth functions csum.
+From iris.algebra Require Export auth functions csum excl.
 Require Export CSL.WeakestPre CSL.Lifting CSL.Counting.
 From iris.proofmode Require Export tactics.
 From Armada Require Export Lib.
@@ -159,7 +159,8 @@ Proof.
     rewrite Cinl_op counting_op' //=.
   }
   iMod (own_update with "Hown") as "(Hdone&Hown)".
-  { apply cmra_update_exclusive with (y:=Cinr (◯ (Excl' tt)) ⋅ Cinr (● (Excl' tt))) => //=. }
+  { apply cmra_update_exclusive with (y:=Cinr (◯ (Excl' tt)) ⋅ Cinr (● (Excl' tt))) => //=.
+    rewrite Cinr_op comm. apply auth_both_valid; split; done. }
   iModIntro.
   iSplitL "Hown Hrest".
   { iApply Hinterp2; iFrame. }

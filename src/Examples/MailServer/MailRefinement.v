@@ -207,9 +207,7 @@ Proof.
   iModIntro.
   iDestruct "Hltmps" as %Hltmps.
 
-  iAssert (ghost_mapsto (A := discreteC (gset string))
-                        param 0 (tmps ∖ list_to_set (take 0 ltmps)))%I with "[Htmps_frag]"
-    as "Htmps_frag".
+  assert (tmps = tmps ∖ list_to_set (take 0 ltmps)) as ->.
   { by rewrite difference_empty_L. }
   iDestruct (slice_mapsto_len with "Hs") as %->.
   assert (0 <= length ltmps) as Hlen by lia.
@@ -295,7 +293,7 @@ Proof.
       rewrite dom_delete_L. rewrite Heq_dom'. iFrame.
     }
     wp_ret. iModIntro. iNext.
-    iApply ("IH" with "[] [$] [$] [$] [Hfrag]").
+    iApply ("IH" with "[] [$] [Hfrag] [$] [$]").
     { iPureIntro. inversion Hlen; try congruence; try lia. }
     rewrite dom_delete_L Heq_dom'.
     rewrite difference_difference_L.

@@ -44,7 +44,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as (l') ">(Htok&Hsource)".
     iDestruct (own_valid_2 with "Htok Hsource_tok")
-      as %[<-%Excl_included%leibniz_equiv _]%auth_valid_discrete_2.
+      as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto. econstructor. }
     { solve_ndisj. }
@@ -73,7 +73,7 @@ Section refinement_triples.
     wp_bind.
     iInv "Hinv" as (l') ">(Htok&Hsource)".
     iDestruct (own_valid_2 with "Htok Hsource_tok")
-      as %[<-%Excl_included%leibniz_equiv _]%auth_valid_discrete_2.
+      as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto. econstructor. }
     { solve_ndisj. }
@@ -156,7 +156,7 @@ Section refinement.
       wp_ret. iInv "Hinv" as (l) ">(?&?&?&?)" "_".
       rewrite /source_inv.
       iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2) "[Hauth Hfrag]".
-      { by eauto. }
+      { apply auth_both_valid; done. }
       iApply (fupd_mask_weaken _ _).
       { solve_ndisj. }
       iExists l, nil. iFrame.
@@ -171,7 +171,7 @@ Section refinement.
     { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
       iIntros "(Hmem&?&#?&Hstate)".
       iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2) "[Hauth Hfrag]".
-      { clear. by eauto. }
+      { apply auth_both_valid. split; done. }
       iPoseProof (init_mem_split with "Hmem") as "(?&?&?)".
       iModIntro. iExists _. iFrame. iExists γ2. iSplitR "Hauth Hstate"; iIntros; iExists nil; iFrame.
     }
@@ -222,11 +222,11 @@ Section refinement.
       iDestruct "H" as (v) "(?&?)".
       iApply fupd_mask_weaken; first by solve_ndisj.
       iExists _, nil; eauto.
-      iFrame. iSplitL ""; first by eauto. 
+      iFrame. iSplitL ""; first by eauto.
       iIntros (????) "(?&Hstate&Hmem)".
       iPoseProof (@init_mem_split with "Hmem") as "(?&?&?)".
       iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2') "[Hauth Hfrag]".
-      { by eauto. }
+      { apply auth_both_valid. split; done. }
       iModIntro. iExists O. iFrame.
       iExists γ2'. rewrite /DBInnerInv/DBLockInv.
       iSplitR "Hstate Hauth".

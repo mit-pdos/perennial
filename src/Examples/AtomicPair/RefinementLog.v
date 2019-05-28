@@ -354,7 +354,8 @@ Section refinement_triples.
     {{{
         source_ctx
         ∗ inv liN (CommitInner m Γ)
-        ∗ (named i1 (own Γ.(γflag) (◯ Excl' (S base, (j, existT _ (K (Call (AtomicPair.Write p))))))))
+        ∗ (named i1 (own Γ.(γflag) (◯ (Excl' (S base, (j, existT _ (K (Call (AtomicPair.Write p)))))
+             : (optionUR (exclR (prodC natC (prodC natC (procTC (AtomicPair.Op))))))))))
         ∗ (named i2 (own Γ.(γmain) (◯ Excl' p)))
         ∗ (named i3 (own Γ.(γsrc) (◯ Excl' p')))
     }}}

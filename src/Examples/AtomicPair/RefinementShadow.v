@@ -242,11 +242,11 @@ Proof.
   { intros. iIntros "((#Hctx&#Hinv)&_)".
     wp_ret. iInv "Hinv" as (ptr_val pcurr pother) ">(?&Hcase&?)" "_".
     iMod (own_alloc (● (Excl' ptr_val) ⋅ ◯ (Excl' ptr_val))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
-    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iMod (own_alloc (● (Excl' pcurr) ⋅ ◯ (Excl' pcurr))) as (γ2) "[Hauth_curr Hfrag_curr]".
-    { by eauto. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iMod (own_alloc (● (Excl' pother) ⋅ ◯ (Excl' pother))) as (γ3) "[Hauth_other Hfrag_other]".
-    { by eauto. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iApply (fupd_mask_weaken _ _).
     { solve_ndisj. }
     iExists pcurr, pcurr. iFrame.
@@ -261,11 +261,11 @@ Proof.
   { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
     iIntros "(Hmem&Hdisk&#?&Hstate)".
     iMod (own_alloc (● (Excl' 0) ⋅ ◯ (Excl' 0))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
-    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iMod (own_alloc (● (Excl' (0, 0)) ⋅ ◯ (Excl' (0, 0)))) as (γ2) "[Hauth_curr Hfrag_curr]".
-    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iMod (own_alloc (● (Excl' (0, 0)) ⋅ ◯ (Excl' (0, 0)))) as (γ3) "[Hauth_other Hfrag_other]".
-    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iPoseProof (init_mem_split with "Hmem") as "?".
     iPoseProof (init_disk_split with "Hdisk") as "(?&?&?&?&?)".
     iModIntro. iExists _. iFrame. iExists γ1, γ2, γ3.
@@ -325,13 +325,13 @@ Proof.
     iPoseProof (@init_mem_split with "Hmem") as "?".
     iExists _. iFrame. rewrite /ExecLockInv.
     iMod (own_alloc (● (Excl' ptr) ⋅ ◯ (Excl' ptr))) as (γ1') "[Hauth_ptr Hfrag_ptr]".
-    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iMod (own_alloc (● (Excl' (n1, n2)) ⋅ ◯ (Excl' (n1, n2))))
       as (γ2') "[Hauth_curr Hfrag_curr]".
-    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iMod (own_alloc (● (Excl' (n1', n2')) ⋅ ◯ (Excl' (n1', n2'))))
       as (γ3') "[Hauth_other Hfrag_other]".
-    { apply auth_valid_discrete_2; split; eauto. econstructor. }
+    { apply auth_both_valid; split; eauto. econstructor. }
     iExists γ1', γ2', γ3'. iFrame.
     iModIntro. rewrite /ExecInner. iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other".
     { iIntros. iExists _, _, _. iFrame. }

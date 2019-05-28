@@ -65,11 +65,11 @@ Section definitions.
 
   Definition mapsto_def (l : L) (n: Z) (s: LockStatus) (v: V) : iProp Σ :=
     own (gen_heap_name hG)
-        (◯ (fun l' =>
+        (◯ ((fun l' =>
               if l' == l then
                 Some (Count (n: Z), (to_lock s, to_agree (v : leibnizC V)))
               else
-                ε)).
+                ε) : gen_heapUR L V)).
   Definition mapsto_aux : seal (@mapsto_def). by eexists. Qed.
   Definition mapsto := mapsto_aux.(unseal).
   Definition mapsto_eq : @mapsto = @mapsto_def := mapsto_aux.(seal_eq).
@@ -168,7 +168,7 @@ Lemma gen_heap_init `{gen_heapPreG L V Σ} σ :
   (|==> ∃ _ : gen_heapG L V Σ, gen_heap_ctx σ)%I.
 Proof.
   iMod (own_alloc (● to_gen_heap σ)) as (γ) "Hh".
-  { apply: auth_auth_valid. exact: to_gen_heap_valid. }
+  { rewrite auth_auth_valid. exact: to_gen_heap_valid. }
   iModIntro. by iExists (GenHeapG L V Σ _ _ γ).
 Qed.
 
@@ -177,7 +177,7 @@ Lemma gen_heap_strong_init `{H: gen_heapPreG L V Σ} σs :
     own (gen_heap_name _) (◯ (to_gen_heap σs)))%I.
 Proof.
   iMod (own_alloc (● to_gen_heap σs ⋅ ◯ to_gen_heap σs)) as (γ) "(?&?)".
-  { apply auth_valid_discrete_2; split; auto. exact: to_gen_heap_valid. }
+  { apply auth_both_valid; split; auto. exact: to_gen_heap_valid. }
   iModIntro. unshelve (iExists (GenHeapG L V Σ _ _ γ), _); auto. iFrame.
 Qed.
 
@@ -244,7 +244,7 @@ Section gen_heap.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_own_valid /=.
+    f_equiv=> /auth_frag_proj_valid /=.
     intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
     destruct ((l == l)); last by congruence.
     rewrite -Some_op pair_op.
@@ -261,7 +261,7 @@ Section gen_heap.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_own_valid /=.
+    f_equiv=> /auth_frag_proj_valid /=.
     intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
     destruct ((l == l)); last by congruence.
     rewrite -Some_op pair_op.
@@ -278,7 +278,7 @@ Section gen_heap.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_own_valid /=.
+    f_equiv=> /auth_frag_proj_valid /=.
     intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
     destruct ((l == l)); last by congruence.
     rewrite -Some_op pair_op.
@@ -373,7 +373,8 @@ Section gen_heap.
     rewrite /to_gen_heap.
     apply auth_included; split; auto => //=.
     exists ε. rewrite right_id.
-    do 2 f_equiv. intros k. rewrite Hequiv; eauto.
+    do 2 f_equiv. intros k. apply to_agree_ne.
+    intros l. rewrite Hequiv; eauto.
   Qed.
 
   Lemma gen_heap_alloc σ l v :
@@ -414,7 +415,7 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl _]%auth_valid_discrete_2; auto.
+      as %[Hl _]%auth_both_valid; auto.
     apply gen_heap_singleton_full_included in Hl; eauto.
   Qed.
 
@@ -424,7 +425,7 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl _]%auth_valid_discrete_2; auto.
+      as %[Hl _]%auth_both_valid; auto.
     apply gen_heap_singleton_included in Hl; eauto.
   Qed.
 
@@ -433,7 +434,7 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[(s'&Hl&Hincl)%gen_heap_singleton_included _]%auth_valid_discrete_2; auto.
+      as %[(s'&Hl&Hincl)%gen_heap_singleton_included _]%auth_both_valid; auto.
     iExists s'; iPureIntro; split; auto.
     destruct s'; auto.
     rewrite //= in Hincl.
@@ -455,7 +456,7 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_heap_singleton_included _]%auth_valid_discrete_2.
+      as %[Hl%gen_heap_singleton_included _]%auth_both_valid.
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (s2, v2)]> σ)
                                 ⋅ ◯ <[l := (Count 0, (to_lock s2, to_agree v2))]>ε)
             with "Hσ Hl") as "[Hσ Hl]".
@@ -504,7 +505,7 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_heap_singleton_included _]%auth_valid_discrete_2.
+      as %[Hl%gen_heap_singleton_included _]%auth_both_valid.
     destruct Hl as (s&Hl&Hincl).
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (force_read_lock s, v)]> σ)
                                 ⋅ ◯ <[l := (Count q, (to_lock (ReadLocked 0), to_agree v))]>ε)
@@ -538,7 +539,7 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_heap_singleton_included _]%auth_valid_discrete_2.
+      as %[Hl%gen_heap_singleton_included _]%auth_both_valid.
     destruct Hl as (s&Hl&Hincl).
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (force_read_lock s, v)]> σ)
                                 ⋅ ◯ <[l := (Count q, (to_lock (ReadLocked (S n)), to_agree v))]>ε)
@@ -572,7 +573,7 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_heap_singleton_included _]%auth_valid_discrete_2.
+      as %[Hl%gen_heap_singleton_included _]%auth_both_valid.
     destruct Hl as (s&Hl&Hincl).
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (force_read_unlock s, v)]> σ)
                                 ⋅ ◯ <[l := (Count q, (to_lock (force_read_unlock (ReadLocked n)),

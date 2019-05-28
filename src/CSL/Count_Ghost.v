@@ -46,7 +46,7 @@ Proof.
   iMod (own_alloc (● (Some (Count 0, to_agree a)) ⋅
                    ◯ (Some (Count 0, to_agree a))))
     as (γ) "[H1 H2]".
-  { apply auth_valid_discrete_2; split; eauto. split; econstructor. }
+  { apply auth_both_valid; split; eauto. split; econstructor. }
   iModIntro. iExists γ. iFrame.
 Qed.
 
@@ -82,7 +82,7 @@ Lemma ghost_var_agree γ (a1 a2: A) q :
 Proof.
   iIntros "Hγ1 Hγ2".
   iDestruct (own_valid_2 with "Hγ1 Hγ2") as %Hval.
-  apply auth_valid_discrete_2 in Hval as (Hincl&?).
+  apply auth_both_valid in Hval as (Hincl&?).
   apply option_included in Hincl as [|(p1&p2&Heq1&Heq2&Hcase)]; first by congruence.
   inversion Heq1; subst. inversion Heq2; subst.
   destruct Hcase as [(Heq1'&Heq2')|Hincl].
@@ -95,8 +95,8 @@ Lemma ghost_var_auth_valid γ (a1 a2: A) :
 Proof.
   apply wand_intro_r. rewrite -own_op //=.
   rewrite /op/cmra_op//=/auth_op//=.
-  rewrite -Some_op /op/cmra_op//=/excl_op.
-  rewrite own_valid discrete_valid. iIntros ([]).
+  rewrite -Some_op /op/cmra_op//=/excl_op/prod_op//= frac_op'.
+  rewrite own_valid discrete_valid. iIntros ([]); exfalso; eauto.
 Qed.
 
 Lemma ghost_valid γ (q1 q2: Z) (v1 v2: A):
@@ -105,7 +105,7 @@ Proof.
   intros.
     apply wand_intro_r.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_own_valid /=. rewrite -Some_op pair_op.
+    f_equiv=> /auth_frag_proj_valid /=. rewrite -Some_op pair_op.
     intros [Hcount ?].
     rewrite counting_op' //= in Hcount.
     repeat destruct decide => //=. lia.
@@ -120,7 +120,7 @@ Lemma ghost_var_agree2 γ (a1 a2: A) q1 q2 :
 Proof.
   apply wand_intro_r.
   rewrite -own_op -auth_frag_op own_valid discrete_valid.
-  f_equiv=> /auth_own_valid /=.
+  f_equiv=> /auth_frag_proj_valid /=.
   rewrite -Some_op pair_op.
   intros [_ Heq%agree_op_invL']. eauto.
 Qed.

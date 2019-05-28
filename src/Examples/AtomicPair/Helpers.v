@@ -11,7 +11,7 @@ Lemma ghost_var_alloc (a: A) :
   (|==> ∃ γ, own γ (● (Excl' a)) ∗ own γ (◯ (Excl' a)))%I.
 Proof.
   iMod (own_alloc (● (Excl' a) ⋅ ◯ (Excl' a))) as (γ) "[H1 H2]".
-  { apply auth_valid_discrete_2; split; eauto. econstructor. }
+  { apply auth_both_valid; split; eauto. econstructor. }
   iModIntro. iExists γ. iFrame.
 Qed.
 
@@ -20,7 +20,7 @@ Lemma ghost_var_agree γ (a1 a2: A) :
 Proof.
   iIntros "Hγ1 Hγ2".
   iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
-  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_valid_discrete_2.
+  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
   done.
 Qed.
 

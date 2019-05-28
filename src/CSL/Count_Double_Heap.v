@@ -116,7 +116,7 @@ Lemma gen_dir_init `{gen_dirPreG L1 L2 V Σ} σ :
   (|==> ∃ _ : gen_dirG L1 L2 V Σ, gen_dir_ctx σ)%I.
 Proof.
   iMod (own_alloc (● to_gen_dir σ)) as (γ) "Hh".
-  { apply: auth_auth_valid. exact: to_gen_dir_valid. }
+  { rewrite auth_auth_valid. exact: to_gen_dir_valid. }
   iModIntro. by iExists (GenDirG L1 L2 V Σ _ _ _ _ _ γ).
 Qed.
 
@@ -126,7 +126,7 @@ Lemma gen_dir_strong_init `{gen_dirPreG L1 L2 V Σ} σ :
     own (gen_dir_name H0) (◯ (to_gen_dir σ)))%I.
 Proof.
   iMod (own_alloc (● to_gen_dir σ ⋅ ◯ to_gen_dir σ)) as (γ) "(?&?)".
-  { apply auth_valid_discrete_2; split; auto. exact: to_gen_dir_valid. }
+  { apply auth_both_valid; split; auto. exact: to_gen_dir_valid. }
   iModIntro. unshelve (iExists (GenDirG L1 L2 V Σ _ _ _ _ _ γ), _); auto. iFrame.
 Qed.
 
@@ -151,7 +151,7 @@ Section gen_dir.
     apply wand_intro_r.
     rewrite /read_mapsto mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_own_valid /=. rewrite ?op_singleton ?singleton_valid pair_op.
+    f_equiv=> /auth_frag_proj_valid /=. rewrite ?op_singleton ?singleton_valid pair_op.
     by intros [_ ?%agree_op_invL'].
   Qed.
 
@@ -162,7 +162,7 @@ Section gen_dir.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_own_valid /=. rewrite ?op_singleton ?singleton_valid pair_op.
+    f_equiv=> /auth_frag_proj_valid /=. rewrite ?op_singleton ?singleton_valid pair_op.
     intros [Hcount ?].
     rewrite counting_op' //= in Hcount.
     repeat destruct decide => //=. lia.
@@ -226,7 +226,7 @@ Section gen_dir.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_dir_singleton_included _]%auth_valid_discrete_2; auto.
+      as %[Hl%gen_dir_singleton_included _]%auth_both_valid; auto.
   Qed.
 
   Lemma gen_dir_valid_2 σ d f v :
@@ -239,7 +239,7 @@ Section gen_dir.
   Proof.
     iIntros (?) "Hσ Hl". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_dir_singleton_included _]%auth_valid_discrete_2.
+      as %[Hl%gen_dir_singleton_included _]%auth_both_valid.
     destruct Hl as (σd'&Hlookup&Hdf). assert (σd = σd') as <- by congruence.
     iMod (own_update_2 with "Hσ Hl") as "[Hσ Hl]".
     { eapply auth_update, singleton_local_update.

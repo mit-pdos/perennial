@@ -67,7 +67,7 @@ Lemma gen_heap_strong_init `{H: gen_heapPreG L V Σ} σs :
     own (gen_heap_name H0) (◯ (to_gen_heap σs)))%I.
 Proof.
   iMod (own_alloc (● to_gen_heap σs ⋅ ◯ to_gen_heap σs)) as (γ) "(?&?)".
-  { apply auth_valid_discrete_2; split; auto. exact: to_gen_heap_valid. }
+  { apply auth_both_valid; split; auto. exact: to_gen_heap_valid. }
   iModIntro. unshelve (iExists (GenHeapG L V Σ _ _ _ γ), _); auto. iFrame.
 Qed.
 
