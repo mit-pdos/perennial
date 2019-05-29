@@ -69,13 +69,13 @@ Module refinement_definitions (RT: refinement_type).
   Existing Instances Hinstance Hinstance_reg einv_persist cinv_persist.
   Definition post_crash {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
     (∀ n σ σ' (Hcrash: Λc.(crash_step) σ (Val σ' tt)) Hinv' Hreg',
-        state_interp (n, σ) ==∗
+        state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1 ==∗
                      ∃ Hex', let _ := set_inv_reg Hex' Hinv' Hreg' in
                              |={E}=> state_interp (1, σ') ∗ P)%I.
 
   Definition post_finish {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
     (∀ n σ σ' (Hcrash: Λc.(finish_step) σ (Val σ' tt)) Hinv' Hreg',
-        state_interp (n, σ) ==∗
+        state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1 ==∗
                      ∃ Hex', let _ := set_inv_reg Hex' Hinv' Hreg' in
                              |={E}=> state_interp (1, σ') ∗ P)%I.
 
@@ -102,6 +102,14 @@ Module refinement_definitions (RT: refinement_type).
          (source_ctx ∗ source_state σ1a ∗ @thread_count_interp _ Hreg 1)
            ={⊤}=∗ let _ := set_inv_reg Hex' Hinv Hreg in
                   exec_inner Hcfg _ ∗ state_interp (1, σ1c))%I.
+
+  Definition exec_inv_preserve_crash_type :=
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+          exec_inv Hcfg Hex ={⊤, E}=∗ post_crash (λ H, |={E}=> crash_inner Hcfg H)).
+
+  Definition crash_inv_preserve_crash_type :=
+      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} param,
+          crash_inv Hcfg Hex param ={⊤, E}=∗ post_crash (λ H, |==> crash_inner Hcfg H)).
 
 End refinement_definitions.
 
@@ -132,14 +140,8 @@ Module Type refinement_obligations (RT: refinement_type).
 
   Context (recv_triple: recv_triple_type).
   Context (init_exec_inner: init_exec_inner_type).
-
-  Context (exec_inv_preserve_crash:
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
-          exec_inv Hcfg Hex ={⊤, E}=∗ post_crash (λ H, |==> crash_inner Hcfg H))).
-
-  Context (crash_inv_preserve_crash:
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} param,
-          crash_inv Hcfg Hex param ={⊤, E}=∗ post_crash (λ H, |==> crash_inner Hcfg H))).
+  Context (exec_inv_preserve_crash: exec_inv_preserve_crash_type).
+  Context (crash_inv_preserve_crash: crash_inv_preserve_crash_type).
 
   (* TODO: Much of this business is just to capture the fact that exec_inner/crash_inner
      should not really mention invariants, because those old invariants are 'dead' *)
@@ -339,7 +341,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
                  |==> ∃ (Hex : exmachG Σ) (HEQ:(@Hinstance_reg _ Hex).(@treg_counter_inG Σ) = REG),
                  let Hex' := set_inv_reg Hex Hinv' (@Hinstance_reg _ Hex) in
                  |={E}=> state_interp (1, snd s') ∗
-                 own (treg_name _) (Cinl (Count 0)) ∗ crash_inner cfgG Hex')%I; auto.
+                 own (treg_name _) (Cinl (Count (-1)%Z)) ∗ crash_inner cfgG Hex')%I; auto.
   iIntros (invG0 Hcfg0).
   iMod ("Hpre" $! invG0 _ _) as (hEx Hreg HEQ) "H".
   iExists (@state_interp _ _ _ ((Hinstance Σ (set_inv_reg hEx invG0 Hreg)))). iModIntro.
@@ -388,12 +390,12 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
                     ∗ own tR_fresh' (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
        { rewrite /Registered -own_op Cinl_op counting_op' //=. }
        set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
-       iSpecialize ("Hfinish" $! _ _ _ with "[] [Hmach]").
+       iSpecialize ("Hfinish" $! _ _ _ with "[] [Hmach Ht]").
        { eauto. }
-       { simpl. iFrame.
+       { simpl.
          rewrite set_inv_reg_spec2.
          rewrite set_inv_reg_spec3.
-         eauto.
+         iFrame.
        }
        iMod "Hfinish" as (Hex') "H".
        iModIntro. iExists _. iExists tR'''. unshelve (iExists _); first by eauto.
@@ -415,11 +417,14 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     iMod "Hinv_post" as "Hinv_post".
     iMod (own_alloc (Cinl (Count 0))) as (tR_fresh') "Ht".
     { constructor. }
+    iAssert (own tR_fresh' (Cinl (Count 1))
+                 ∗ own tR_fresh' (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
+    { rewrite /Registered -own_op Cinl_op counting_op' //=. }
     set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
     iModIntro. iIntros.
     destruct σ2c as (?&σ2c).
-    iSpecialize ("Hinv_post" $! _ _ _ Hcrash Hinv' with "[Hmach]").
-    { rewrite set_inv_reg_spec2 set_inv_reg_spec3. eauto. }
+    iSpecialize ("Hinv_post" $! _ _ _ Hcrash Hinv' with "[Ht Hmach]").
+    { rewrite set_inv_reg_spec2 set_inv_reg_spec3. iFrame. }
     iMod ("Hinv_post") as (?) "H".
     iModIntro. unshelve (iExists (set_inv_reg H Hinv' tR'''), _).
     { rewrite set_inv_reg_spec2. eauto. }
@@ -449,10 +454,12 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
   iMod "Hcrash" as (param) "(#Hinv&Hstarter)".
   iModIntro.
   iFrame.
+  (*
   iAssert (own ((Hinstance_reg Σ HexmachG').(treg_name)) (Cinl (Count 1)) ∗
            own ((Hinstance_reg Σ HexmachG').(treg_name)) (Cinl (Count (-1))))%I
     with "[Hreg]" as "(Ht&Hreg)".
   { rewrite set_inv_reg_spec2. rewrite /Registered -own_op Cinl_op counting_op' //=. }
+   *)
   iSplitL "Hstarter Hinv Hreg".
   {
     iPoseProof (@wp_mono with "[Hinv Hreg Hstarter IH]") as "H"; swap 1 2.
@@ -502,12 +509,15 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     iMod ("Hinv_post") as "Hinv_post".
     iMod (own_alloc (Cinl (Count 0))) as (tR_fresh'') "Ht'".
     { constructor. }
+    iAssert (own tR_fresh'' (Cinl (Count 1))
+                 ∗ own tR_fresh'' (Cinl (Count (-1))))%I with "[Ht']" as "(Ht&Hreg)".
+    { rewrite /Registered -own_op Cinl_op counting_op' //=. }
     set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
     iModIntro. iIntros.
     destruct σ2c as (?&σ2c).
-    iSpecialize ("Hinv_post" with "[] [Hmach]").
+    iSpecialize ("Hinv_post" with "[] [Hmach Ht]").
     { iPureIntro. eauto. }
-    { eauto. }
+    { iFrame. }
     iMod ("Hinv_post") as (?) "H".
     iModIntro. unshelve (iExists (set_inv_reg _ Hinv' tR''''), _).
     { rewrite set_inv_reg_spec2. eauto. }

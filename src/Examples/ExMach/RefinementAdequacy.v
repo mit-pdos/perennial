@@ -114,7 +114,15 @@ Module exmach_refinement (eRT: exmach_refinement_type).
     Definition REG := REG.
     Definition Hinstance := @exmachG_irisG.
     Definition Hinstance_reg := @exm_treg_inG.
-    Definition crash_inner := crash_inner.
+    Definition set_inv_reg Hex Hinv Hreg :=
+      ExMachG Σ Hinv (@exm_mem_inG _ Hex) (@exm_disk_inG _ Hex) Hreg.
+
+    (* N.B. this definition reads funny, but it's to match the way ExMach
+       refinement adequacy was done before, probably for most layers going
+       forward the definition would be crash_inner := crash_inner *)
+    Definition crash_inner : cfgG eRT.Σ → WeakestPre.exmachG eRT.Σ → iProp eRT.Σ
+      := (λ H1 H2, ∃ Hinv Hreg, crash_inner H1 (set_inv_reg H2 Hinv Hreg))%I.
+
     Definition exec_inner := exec_inner.
     Definition crash_inv := crash_inv.
     Definition crash_param := crash_param.
@@ -130,8 +138,6 @@ Module exmach_refinement (eRT: exmach_refinement_type).
     Definition exec_inv_source_ctx := exec_inv_source_ctx.
     Definition init_absr := init_absr.
 
-    Definition set_inv_reg Hex Hinv Hreg :=
-      ExMachG Σ Hinv (@exm_mem_inG _ Hex) (@exm_disk_inG _ Hex) Hreg.
 
   End RT.
 
@@ -156,6 +162,7 @@ Module exmach_refinement (eRT: exmach_refinement_type).
       ∀ Hex Hinv Hreg, set_inv_reg (set_inv_reg Hex Hinv Hreg) Hinv Hreg =
                        (set_inv_reg Hex Hinv Hreg).
     Proof. trivial. Qed.
+
     Lemma register_spec `{WeakestPre.exmachG Σ}: ∃ (Interp: OpState Λc → iProp Σ),
                 (∀ n σ, @state_interp _ _ _ (Hinstance _ _) (n, σ)
                                      -∗ thread_count_interp n ∗ Interp σ) ∧
@@ -202,6 +209,60 @@ Module exmach_refinement (eRT: exmach_refinement_type).
       * destruct (Hwf1 i); intuition.
       * destruct (Hwf2 i); intuition.
     Qed.
+
+  Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
+  Proof.
+    rewrite /exec_inv_preserve_crash_type.
+    iIntros (??) "Hinv".
+    iPoseProof (eRT.exec_inv_preserve_crash with "Hinv") as "Hinv_post".
+    iMod (gen_heap_strong_init (init_zero)) as (hM Hmpf_eq) "(Hmc&Hm)".
+    iMod (own_alloc (Cinl (Count 0))) as (tR_fresh) "Ht".
+    { constructor. }
+    set (tR := {| treg_name := tR_fresh; treg_counter_inG := _ |}).
+    iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
+    { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    iMod "Hinv_post". iModIntro.
+    iIntros (n σ σ' Hcrash ??) "(Hmach&Hthread)".
+    iExists (ExMachG Σ a hM (@exm_disk_inG _ Hex)
+                     (@exm_treg_inG _ Hex)).
+    iModIntro. iFrame. iDestruct "Hmach" as "(?&Hdisk)".
+    inversion Hcrash. subst.
+    iDestruct "Hdisk" as (??) "(?&?&%&%&%&%)". iFrame.
+    iSplitR "Hinv_post".
+    - iExists _, _. iFrame.
+      iPureIntro; split_and!; [ auto | auto | | assumption ].
+      intros ? Hsome. apply not_le; intros Hge.
+      rewrite init_zero_lookup_ge_None in Hsome; last by lia.
+      apply is_Some_None in Hsome; auto.
+    - by iExists (@exm_invG _ Hex), tR.
+  Qed.
+
+  Lemma crash_inv_preserve_crash: crash_inv_preserve_crash_type.
+  Proof.
+    rewrite /crash_inv_preserve_crash_type.
+    iIntros (???) "Hinv".
+    iPoseProof (eRT.crash_inv_preserve_crash with "Hinv") as "Hinv_post".
+    iMod (gen_heap_strong_init (init_zero)) as (hM Hmpf_eq) "(Hmc&Hm)".
+    iMod (own_alloc (Cinl (Count 0))) as (tR_fresh) "Ht".
+    { constructor. }
+    set (tR := {| treg_name := tR_fresh; treg_counter_inG := _ |}).
+    iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
+    { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    iMod "Hinv_post". iModIntro.
+    iIntros (n σ σ' Hcrash ??) "(Hmach&Hthread)".
+    iExists (ExMachG Σ a hM (@exm_disk_inG _ Hex)
+                     (@exm_treg_inG _ Hex)).
+    iModIntro. iFrame. iDestruct "Hmach" as "(?&Hdisk)".
+    inversion Hcrash. subst.
+    iDestruct "Hdisk" as (??) "(?&?&%&%&%&%)". iFrame.
+    iSplitR "Hinv_post".
+    - iExists _, _. iFrame.
+      iPureIntro; split_and!; [ auto | auto | | assumption ].
+      intros ? Hsome. apply not_le; intros Hge.
+      rewrite init_zero_lookup_ge_None in Hsome; last by lia.
+      apply is_Some_None in Hsome; auto.
+    - by iExists (@exm_invG _ Hex), tR.
+  Qed.
 
   End RO.
 
