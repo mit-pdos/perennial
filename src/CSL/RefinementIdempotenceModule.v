@@ -67,17 +67,23 @@ Module refinement_definitions (RT: refinement_type).
 
   Import RT.
   Existing Instances Hinstance Hinstance_reg einv_persist cinv_persist.
+
+  Definition set_reg (Hex: exmachG Σ) (tR: tregG Σ) :=
+    set_inv_reg Hex _ tR.
+  Definition set_inv (Hex: exmachG Σ) (Hinv: invG Σ) :=
+    set_inv_reg Hex Hinv _.
+
   Definition post_crash {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
-    (∀ n σ σ' (Hcrash: Λc.(crash_step) σ (Val σ' tt)) Hinv' Hreg',
+    (∀ n σ σ' (Hcrash: Λc.(crash_step) σ (Val σ' tt)) Hreg',
         state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1 ==∗
-                     ∃ Hex', let _ := set_inv_reg Hex' Hinv' Hreg' in
-                             |={E}=> state_interp (1, σ') ∗ P)%I.
+                     ∃ Hex', let _ := set_reg Hex' Hreg' in
+                             state_interp (1, σ') ∗ P)%I.
 
   Definition post_finish {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
     (∀ n σ σ' (Hcrash: Λc.(finish_step) σ (Val σ' tt)) Hinv' Hreg',
         state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1 ==∗
                      ∃ Hex', let _ := set_inv_reg Hex' Hinv' Hreg' in
-                             |={E}=> state_interp (1, σ') ∗ P)%I.
+                             state_interp (1, σ') ∗ P)%I.
 
   Definition post_recv {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
     (∀ n σ Hinv' Hreg',
@@ -105,11 +111,15 @@ Module refinement_definitions (RT: refinement_type).
 
   Definition exec_inv_preserve_crash_type :=
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
-          exec_inv Hcfg Hex ={⊤, E}=∗ post_crash (λ H, |={E}=> crash_inner Hcfg H)).
+          exec_inv Hcfg Hex ={⊤, E}=∗ post_crash (λ H, |==> crash_inner Hcfg H)).
 
   Definition crash_inv_preserve_crash_type :=
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} param,
           crash_inv Hcfg Hex param ={⊤, E}=∗ post_crash (λ H, |==> crash_inner Hcfg H)).
+
+  Definition state_interp_no_inv_type :=
+      (∀ `{Hex: exmachG Σ} Hinv σ,
+           state_interp σ -∗ let _ := set_inv Hex Hinv in state_interp σ).
 
 End refinement_definitions.
 
@@ -119,12 +129,15 @@ Module Type refinement_obligations (RT: refinement_type).
   Module RD := refinement_definitions RT.
   Import RD.
 
+  Context (set_inv_reg_spec0:
+             ∀ Hex, (set_inv_reg Hex (Hinstance Σ Hex).(@iris_invG OpC (State Λc) Σ)
+                                                         (Hinstance_reg Σ Hex) = Hex)).
   Context (set_inv_reg_spec1:
              ∀ Hex Hinv Hreg, @iris_invG _ _ _ (Hinstance _ (set_inv_reg Hex Hinv Hreg)) = Hinv).
   Context (set_inv_reg_spec2:
              ∀ Hex Hinv Hreg, Hinstance_reg _ (set_inv_reg Hex Hinv Hreg) = Hreg).
   Context (set_inv_reg_spec3:
-             ∀ Hex Hinv Hreg, set_inv_reg (set_inv_reg Hex Hinv Hreg) Hinv Hreg =
+             ∀ Hex Hinv Hinv' Hreg Hreg', set_inv_reg (set_inv_reg Hex Hinv' Hreg') Hinv Hreg =
                               (set_inv_reg Hex Hinv Hreg)).
 
   Context (register_spec: ∀ {H: exmachG Σ}, ∃ (Interp: OpState Λc → iProp Σ),
@@ -137,6 +150,9 @@ Module Type refinement_obligations (RT: refinement_type).
                j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
                  WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered  }}).
 
+  (* State interpretations should not contain invariants *)
+
+  Context (state_interp_no_inv: state_interp_no_inv_type).
 
   Context (recv_triple: recv_triple_type).
   Context (init_exec_inner: init_exec_inner_type).
@@ -147,12 +163,13 @@ Module Type refinement_obligations (RT: refinement_type).
      should not really mention invariants, because those old invariants are 'dead' *)
   Context (crash_inner_inv :
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
-          crash_inner Hcfg Hex ∗ source_ctx ={⊤}=∗
+          (∃ Hinv, crash_inner Hcfg (set_inv Hex Hinv)) ∗ source_ctx ={⊤}=∗
           ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param)).
 
   Context (exec_inner_inv :
       (∀ {Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} Hinv,
-          exec_inner Hcfg Hex ∗ source_ctx ={⊤}=∗ exec_inv Hcfg (set_inv_reg Hex Hinv _))).
+          (∃ Hinv, exec_inner Hcfg (set_inv Hex Hinv))
+          ∗ source_ctx ={⊤}=∗ exec_inv Hcfg (set_inv_reg Hex Hinv _))).
 
   Context (exec_inv_preserve_finish:
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
@@ -337,18 +354,20 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
   iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre"; first by eauto.
   - iSplit; first by (eauto using nameIncl).
     iExists (fun cfgG (s: State Λc) => ∀ (s': State Λc)
-                  (Hcrash: Λc.(crash_step) (snd s) (Val (snd s') tt)) Hinv',
+                  (Hcrash: Λc.(crash_step) (snd s) (Val (snd s') tt)),
                  |==> ∃ (Hex : exmachG Σ) (HEQ:(@Hinstance_reg _ Hex).(@treg_counter_inG Σ) = REG),
-                 let Hex' := set_inv_reg Hex Hinv' (@Hinstance_reg _ Hex) in
-                 |={E}=> state_interp (1, snd s') ∗
-                 own (treg_name _) (Cinl (Count (-1)%Z)) ∗ crash_inner cfgG Hex')%I; auto.
+                 state_interp (1, snd s') ∗
+                 own (treg_name _) (Cinl (Count (-1)%Z)) ∗ crash_inner cfgG Hex)%I; auto.
   iIntros (invG0 Hcfg0).
   iMod ("Hpre" $! invG0 _ _) as (hEx Hreg HEQ) "H".
   iExists (@state_interp _ _ _ ((Hinstance Σ (set_inv_reg hEx invG0 Hreg)))). iModIntro.
   iIntros "(#Hsrc&Hpt0&Hstate)".
   iMod ("H" with "Hsrc Hstate") as "(Hinterp&Hreg&Hinv)".
-  iMod (@exec_inner_inv with "[Hinv]") as "#Hinv".
-  { iSplitR ""; last by (iExists _; iFrame). iFrame. }
+  iMod (@exec_inner_inv (set_inv_reg hEx invG0 Hreg) with "[Hinv]") as "#Hinv".
+  { iSplitR ""; last by (iExists _; iFrame). iExists _. iFrame. simpl. 
+    rewrite /RD.set_inv. rewrite set_inv_reg_spec2. rewrite set_inv_reg_spec3.
+    iFrame.
+  }
   iFrame.
   iSplitL "Hpt0 Hreg".
   {  iPoseProof (@wp_mono with "[Hpt0 Hreg]") as "H"; swap 1 2.
@@ -423,14 +442,14 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
     iModIntro. iIntros.
     destruct σ2c as (?&σ2c).
-    iSpecialize ("Hinv_post" $! _ _ _ Hcrash Hinv' with "[Ht Hmach]").
+    iSpecialize ("Hinv_post" $! _ _ _ Hcrash with "[Ht Hmach]").
     { rewrite set_inv_reg_spec2 set_inv_reg_spec3. iFrame. }
     iMod ("Hinv_post") as (?) "H".
-    iModIntro. unshelve (iExists (set_inv_reg H Hinv' tR'''), _).
+     unshelve (iExists (RD.set_reg H tR'''), _).
     { rewrite set_inv_reg_spec2. eauto. }
     rewrite ?set_inv_reg_spec2 ?set_inv_reg_spec1 ?set_inv_reg_spec3.
-    iMod ("H") as "(H&>H')".
-    iFrame.
+    iDestruct ("H") as "(H&H')".
+    iMod "H'". iFrame. iModIntro.
     eauto.
   }
   iClear "Hsrc".
@@ -440,15 +459,21 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
   subst.
   inversion Hcrash. subst.
   inversion H. subst.
-  unshelve (iMod ("Hinv0" $! (1, s') _ _) as "Hinv0"); [ eauto | |].
+  unshelve (iMod ("Hinv0" $! (1, s') _) as "Hinv0"); [ eauto | ].
   eauto.
   clear HEQ.
   iDestruct "Hinv0" as (HexmachG' HEQ) "H".
   iMod (fupd_mask_mono with "H") as "(H&Hfinish)"; first by set_solver.
   iExists (@state_interp _ _ _ (@Hinstance Σ (set_inv_reg HexmachG' invG (Hinstance_reg Σ HexmachG')))).
   iDestruct "Hfinish" as "(Hreg&Hcrash_inner)".
-  iPoseProof (@crash_inner_inv ((set_inv_reg HexmachG' invG (Hinstance_reg Σ HexmachG'))) _ with "[Hcrash_inner]") as "Hcrash".
-  { simpl. iFrame. iExists _. rewrite set_inv_reg_spec1. eauto. }
+  iPoseProof (@crash_inner_inv (RD.set_inv HexmachG' invG) _ with "[Hcrash_inner]") as "Hcrash".
+  { simpl. iFrame. iSplitL "Hcrash_inner".
+    rewrite /RD.set_inv.
+    * iExists (@iris_invG _ _ _ (Hinstance Σ HexmachG')).
+      rewrite /RD.set_inv. rewrite ?set_inv_reg_spec3 ?set_inv_reg_spec2.
+      rewrite set_inv_reg_spec0. eauto.
+    * iExists _.  rewrite set_inv_reg_spec1. eauto.
+  }
   rewrite set_inv_reg_spec1.
   iClear "Hinv".
   iMod "Hcrash" as (param) "(#Hinv&Hstarter)".
@@ -460,6 +485,11 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     with "[Hreg]" as "(Ht&Hreg)".
   { rewrite set_inv_reg_spec2. rewrite /Registered -own_op Cinl_op counting_op' //=. }
    *)
+  iSplitL "H".
+  {
+    iPoseProof (state_interp_no_inv with "H") as "H".
+    rewrite /RD.set_inv/RD.set_reg. eauto.
+  }
   iSplitL "Hstarter Hinv Hreg".
   {
     iPoseProof (@wp_mono with "[Hinv Hreg Hstarter IH]") as "H"; swap 1 2.
@@ -519,10 +549,10 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     { iPureIntro. eauto. }
     { iFrame. }
     iMod ("Hinv_post") as (?) "H".
-    iModIntro. unshelve (iExists (set_inv_reg _ Hinv' tR''''), _).
+    unshelve (iExists (RD.set_reg _ tR''''), _).
     { rewrite set_inv_reg_spec2. eauto. }
     rewrite ?set_inv_reg_spec2 ?set_inv_reg_spec1 ?set_inv_reg_spec3.
-    iMod ("H") as "(H&>H')".
+    iDestruct ("H") as "(H&>H')".
     iFrame.
     eauto.
   }
