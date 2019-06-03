@@ -41,21 +41,10 @@ Module Type refinement_type.
   Context (crash_starter: forall {H1 : @cfgG OpT Λa Σ} {H2 : exmachG Σ},
               @crash_param _ H2 → iProp Σ).
   Context (exec_inv: forall {_ : @cfgG OpT Λa Σ} {_ : exmachG Σ}, iProp Σ).
-  Context (einv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _},
-              Persistent (exec_inv H1 H2)).
-  Context (cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _}
-            {P: crash_param _ _}, Persistent (crash_inv H1 H2 P)).
-  (*
-  Context (init_prop: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
-   *)
 
   Context (E: coPset).
-  Context (nameIncl: nclose sourceN ⊆ E).
   (* TODO: we should get rid of rec_seq if we're not exploiting vertical comp anymore *)
   Context (recv: proc OpC unit).
-  Context (recsingle: recover = rec_singleton recv).
-
-  Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
 
   (* TODO: probably should say that this has to be given using Tej's record setter stuff *)
   Context (set_inv_reg: exmachG Σ → invG Σ → tregG Σ → exmachG Σ).
@@ -66,7 +55,7 @@ End refinement_type.
 Module refinement_definitions (RT: refinement_type).
 
   Import RT.
-  Existing Instances Hinstance Hinstance_reg einv_persist cinv_persist.
+  Existing Instances Hinstance Hinstance_reg.
 
   Definition set_reg (Hex: exmachG Σ) (tR: tregG Σ) :=
     set_inv_reg Hex _ tR.
@@ -145,6 +134,15 @@ Module Type refinement_obligations (RT: refinement_type).
   Import RT.
   Module RD := refinement_definitions RT.
   Import RD.
+
+  Context (einv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _},
+              Persistent (exec_inv H1 H2)).
+  Context (cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _}
+            {P: crash_param _ _}, Persistent (crash_inv H1 H2 P)).
+  Context (nameIncl: nclose sourceN ⊆ E).
+  Context (recsingle: recover = rec_singleton recv).
+  Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
+
 
   Context (set_inv_reg_spec0:
              ∀ Hex, (set_inv_reg Hex (Hinstance Σ Hex).(@iris_invG OpC (State Λc) Σ)
@@ -315,7 +313,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     by rewrite -Hinstance_eta set_inv_reg_spec2 set_inv_reg_spec3.
   Qed.
 
-  Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) :
+  Lemma crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) :
     init_absr σ1a σ1c →
     wf_client_seq es →
     ¬ proc_exec_seq Λa es (rec_singleton (Ret ())) (1, σ1a) Err →
