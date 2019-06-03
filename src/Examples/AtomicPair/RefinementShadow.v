@@ -195,6 +195,8 @@ Section refinement_triples.
 
 End refinement_triples.
 
+Module sRT <: exmach_refinement_type.
+
 Definition helperΣ : gFunctors := #[GFunctor (authR (optionUR (exclR (natC))));
                                      GFunctor (authR (optionUR (exclR (prodC natC natC))))].
 Instance subG_helperΣ : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (natC)))).
@@ -202,44 +204,74 @@ Proof. solve_inG. Qed.
 Instance subG_helperΣ' : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (prodC natC natC)))).
 Proof. solve_inG. Qed.
 
-Definition myΣ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ AtomicPair.Op AtomicPair.l; lockΣ; helperΣ].
-Existing Instance subG_cfgPreG.
+Definition Σ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ AtomicPair.Op AtomicPair.l; lockΣ; helperΣ].
 
 Definition init_absr σ1a σ1c :=
   ExMach.l.(initP) σ1c ∧ AtomicPair.l.(initP) σ1a.
 
+  Definition OpT := AtomicPair.Op.
+  Definition Λa := AtomicPair.l.
 
-Import ExMach.
-Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq AtomicPair.Op T) :
-  init_absr σ1a σ1c →
-  wf_client_seq es →
-  ¬ proc_exec_seq AtomicPair.l es (rec_singleton (Ret ())) (1, σ1a) Err →
-  ∀ σ2c res, proc_exec_seq ExMach.l (compile_proc_seq ImplShadow.impl es)
-                                      (rec_singleton recv) (1, σ1c) (Val σ2c res) →
-  ∃ σ2a, proc_exec_seq AtomicPair.l es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
-Proof.
-  eapply (exmach_crash_refinement_seq) with
-      (Σ := myΣ)
-      (exec_inv := fun H1 H2 => @ExecInv myΣ H2 _ H1 _ _)
-      (exec_inner := fun H1 H2 => (∃ v, lock_addr m↦ v ∗
-          (∃ γ1 γ2 γ3, (⌜ v = 0  ⌝ -∗ @ExecLockInv myΣ _ _ γ1 γ2 γ3)
-                        ∗ @ExecInner myΣ H2 H1 _ _ γ1 γ2 γ3))%I)
-      (crash_inner := fun H1 H2 => (@CrashInner myΣ H2 H1)%I)
-      (crash_param := fun H1 H2 => unit)
-      (crash_inv := fun H1 H2 _ => @CrashInv myΣ H2 H1)
-      (crash_starter := fun H1 H2 _ => True%I)
-      (E := nclose sourceN).
-  { apply _. }
-  { apply _. }
-  { intros. apply _. }
-  { intros. apply _. }
-  { set_solver+. }
-  { intros. iIntros "(?&?&?)". destruct op.
-    - iApply (write_refinement with "[$]"). eauto.
-    - iApply (read_refinement with "[$]"). eauto.
-  }
-  { intros. iIntros "(?&?)"; eauto. }
-  { intros. iIntros "((#Hctx&#Hinv)&_)".
+  Definition impl := ImplShadow.impl.
+  Existing Instance subG_cfgPreG.
+
+  Instance CFG : @cfgPreG AtomicPair.Op AtomicPair.l Σ. apply _. Qed.
+  Instance HEX : ExMach.Adequacy.exmachPreG Σ. apply _. Qed.
+  Instance INV : Adequacy.invPreG Σ. apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+
+  Definition exec_inv := fun H1 H2 => (@ExecInv Σ H2 _ H1 _ _)%I.
+  Definition exec_inner :=
+    fun H1 H2 => (∃ v, lock_addr m↦ v ∗
+          (∃ γ1 γ2 γ3, (⌜ v = 0  ⌝ -∗ @ExecLockInv Σ _ _ γ1 γ2 γ3)
+                        ∗ @ExecInner Σ H2 H1 _ _ γ1 γ2 γ3))%I.
+
+  Definition crash_param := fun (_ : @cfgG OpT Λa Σ) (_ : exmachG Σ) => unit.
+  Definition crash_inv := fun H1 H2 (_ : crash_param _ _) => @CrashInv Σ H2 H1.
+  Definition crash_starter :=
+    fun H1 H2 (_ : crash_param H1 H2) => (True%I : iProp Σ).
+  Definition crash_inner := fun H1 H2 => (@CrashInner Σ H2 H1)%I.
+  Definition E := nclose sourceN.
+
+  Definition recv: proc ExMach.Op unit := Ret tt.
+
+End sRT.
+
+Module sRD := exmach_refinement_definitions sRT.
+
+Module sRO : exmach_refinement_obligations sRT.
+
+  Module eRD := exmach_refinement_definitions sRT.
+  Import sRT.
+  Import sRD.
+
+  Lemma einv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _},
+      Persistent (exec_inv H1 H2).
+  Proof. apply _. Qed.
+
+  Lemma cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _} P,
+      Persistent (crash_inv H1 H2 P).
+  Proof. apply _. Qed.
+
+  Lemma nameIncl: nclose sourceN ⊆ E.
+  Proof. solve_ndisj. Qed.
+
+  Lemma recsingle: recover impl = rec_singleton recv.
+  Proof. trivial. Qed.
+
+  Lemma refinement_op_triples: refinement_op_triples_type.
+  Proof.
+    red. intros. iIntros "(?&?&HDB)". destruct op.
+    - iApply (write_refinement with "[$]"). iNext. iIntros (?) "H". iFrame.
+    - iApply (read_refinement with "[$]"). iNext. iIntros (?) "H". iFrame.
+  Qed.
+
+  Lemma exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx.
+  Proof. iIntros (??) "(?&?)"; eauto. Qed.
+
+  Lemma recv_triple: recv_triple_type.
+  Proof.
+    red. intros. iIntros "((#Hctx&#Hinv)&_)".
     wp_ret. iInv "Hinv" as (ptr_val pcurr pother) ">(?&Hcase&?)" "_".
     iMod (own_alloc (● (Excl' ptr_val) ⋅ ◯ (Excl' ptr_val))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
     { apply auth_both_valid; split; eauto. econstructor. }
@@ -256,9 +288,16 @@ Proof.
     iIntros (???) "(#Hctx&Hstate)".
     iModIntro. iExists _. iFrame. iExists γ1, γ2, γ3.
     iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other"; iIntros; iExists _, _, _; iFrame.
-  }
-  { intros ?? (H&?). inversion H. subst. eapply ExMach.init_state_wf. }
-  { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
+  Qed.
+
+  Lemma init_wf: ∀ σ1a σ1c, init_absr σ1a σ1c → ExMach.state_wf σ1c.
+  Proof.
+    intros ?? (H&?). inversion H. subst. eapply ExMach.init_state_wf.
+  Qed.
+
+  Lemma init_exec_inner : init_exec_inner_type.
+  Proof.
+    red. intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
     iIntros "(Hmem&Hdisk&#?&Hstate)".
     iMod (own_alloc (● (Excl' 0) ⋅ ◯ (Excl' 0))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
     { apply auth_both_valid; split; eauto. econstructor. }
@@ -271,8 +310,11 @@ Proof.
     iModIntro. iExists _. iFrame. iExists γ1, γ2, γ3.
     iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other"; iIntros; iExists _, _, _; iFrame.
     simpl. iFrame.
-  }
-  { intros. iIntros "(#Hctx&#Hinv)".
+  Qed.
+
+  Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
+  Proof.
+    red. intros. iIntros "(#Hctx&#Hinv)".
     iDestruct "Hinv" as (γlock γ1 γ2 γ3) "(#Hlock&#Hinv)".
     iInv "Hinv" as "Hopen" "_".
     destruct_einner "Hopen".
@@ -281,8 +323,11 @@ Proof.
     iModIntro. iExists _, _, _. iFrame.
     iPoseProof (@init_mem_split with "Hmem") as "?".
     iFrame.
-  }
-  { intros. iIntros "(#Hctx&#Hinv)".
+  Qed.
+
+  Lemma crash_inv_preserve_crash: crash_inv_preserve_crash_type.
+  Proof.
+    red. intros. iIntros "(#Hctx&#Hinv)".
     iInv "Hinv" as ">Hopen" "_".
     iDestruct "Hopen" as (???) "(?&?&_)".
     iApply fupd_mask_weaken; first by solve_ndisj.
@@ -290,26 +335,35 @@ Proof.
     iModIntro. iExists _, _, _. iFrame.
     iPoseProof (@init_mem_split with "Hmem") as "?".
     iFrame.
-  }
-  { intros. iIntros "(Hinv&#Hsrc)".
+  Qed.
+
+  Lemma crash_inner_inv : crash_inner_inv_type.
+  Proof.
+    red. intros. iIntros "(Hinv&#Hsrc)".
     iDestruct "Hinv" as (invG) "Hinv".
     iDestruct "Hinv" as (???) "(?&?&?)".
-    iMod (@inv_alloc myΣ (exm_invG) iN _ CrashInner with "[-]").
+    iMod (@inv_alloc Σ (exm_invG) iN _ CrashInner with "[-]").
     { iNext. iExists _, _, _; iFrame. }
     iModIntro. iFrame. iExists tt. iFrame "Hsrc".
-  }
-  { intros. iIntros "(Hinv&#Hsrc)".
+  Qed.
+
+  Lemma exec_inner_inv : exec_inner_inv_type.
+  Proof.
+    red. intros. iIntros "(Hinv&#Hsrc)".
     iDestruct "Hinv" as (invG v) "Hinv".
     iDestruct "Hinv" as "(?&Hinv)".
     iDestruct "Hinv" as (γ1 γ2 γ3) "(Hlock&Hinner)".
-    iMod (@lock_init myΣ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
+    iMod (@lock_init Σ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
                      lock_addr _ (ExecLockInv γ1 γ2 γ3) with "[$] [-Hinner]") as (γlock) "H".
     { iFrame. }
-    iMod (@inv_alloc myΣ (exm_invG) iN _ (ExecInner γ1 γ2 γ3) with "[Hinner]").
+    iMod (@inv_alloc Σ (exm_invG) iN _ (ExecInner γ1 γ2 γ3) with "[Hinner]").
     { iFrame. }
     iModIntro. iFrame "Hsrc". iExists _, _, _, _. iFrame.
-  }
-  { iIntros (??) "? (?&H)".
+  Qed.
+
+  Lemma exec_inv_preserve_finish : exec_inv_preserve_finish_type.
+  Proof.
+    iIntros (??) "? (?&H)".
     iDestruct "H" as (????) "(Hlock&Hinv)".
     iInv "Hinv" as "H" "_".
     iDestruct "H" as (ptr (n1&n2) (n1'&n2')) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";
@@ -336,5 +390,18 @@ Proof.
     iModIntro. rewrite /ExecInner. iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other".
     { iIntros. iExists _, _, _. iFrame. }
     { iIntros. iExists _, _, _. iFrame. }
-  }
-Qed.
+  Qed.
+
+End sRO.
+
+Module sR := exmach_refinement sRT sRO.
+Import sR.
+
+Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq AtomicPair.Op T) :
+  sRT.init_absr σ1a σ1c →
+  wf_client_seq es →
+  ¬ proc_exec_seq AtomicPair.l es (rec_singleton (Ret ())) (1, σ1a) Err →
+  ∀ σ2c res, proc_exec_seq ExMach.l (compile_proc_seq ImplShadow.impl es)
+                                      (rec_singleton recv) (1, σ1c) (Val σ2c res) →
+  ∃ σ2a, proc_exec_seq AtomicPair.l es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
+Proof. apply sR.R.crash_refinement_seq. Qed.
