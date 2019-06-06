@@ -411,7 +411,17 @@ Section refinement_triples.
 
 End refinement_triples.
 
-Definition myΣ : gFunctors := #[exmachΣ; @cfgΣ OneDisk.Op OneDisk.l;
+Lemma init_zero_lookup_is_zero k x:
+  init_zero !! k = Some x → x = 0.
+Proof.
+  destruct (lt_dec k size).
+  - rewrite init_zero_lookup_lt_zero; congruence.
+  - rewrite init_zero_lookup_ge_None; congruence.
+Qed.
+
+Module repRT <: twodisk_refinement_type.
+
+Definition Σ : gFunctors := #[exmachΣ; @cfgΣ OneDisk.Op OneDisk.l;
                                   lockΣ; gen_heapΣ addr addr_status].
 
 Existing Instance subG_cfgPreG.
@@ -421,45 +431,71 @@ Definition init_absr σ1a σ1c :=
 
 Opaque size.
 
-Lemma init_zero_lookup_is_zero k x:
-  init_zero !! k = Some x → x = 0.
-Proof.
-  destruct (lt_dec k size).
-  - rewrite init_zero_lookup_lt_zero; congruence.
-  - rewrite init_zero_lookup_ge_None; congruence.
-Qed.
+  Definition OpT := OneDisk.Op.
+  Definition Λa := OneDisk.l.
 
-Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OneDisk.Op T) :
-  init_absr σ1a σ1c →
-  wf_client_seq es →
-  ¬ proc_exec_seq OneDisk.l es (rec_singleton (Ret ())) (1, σ1a) Err →
-  ∀ σ2c res, proc_exec_seq TwoDisk.l (compile_proc_seq ReplicatedDiskImpl.impl es)
-                                      (rec_singleton recv) (1, σ1c) (Val σ2c res) →
-  ∃ σ2a, proc_exec_seq OneDisk.l es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
-Proof.
-  eapply (exmach_crash_refinement_seq) with
-      (Σ := myΣ)
-      (exec_inv := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInv myΣ H2 _ H1 hL0 hL1 hS)%I)
-      (exec_inner := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInner myΣ H2 H1 hL0 hL1 hS)%I)
-      (crash_inner := fun H1 H2 => (∃ hL0 hL1 hS , @CrashInner myΣ H2 H1 hL0 hL1 hS)%I)
-      (crash_inv := fun H1 H2 ghosts =>
+  Definition impl := ReplicatedDiskImpl.impl.
+  Import TwoDisk.
+
+  Instance from_exist_left_sep' {Σ} {A} (Φ : A → iProp Σ) Q :
+    FromExist ((∃ a, Φ a) ∗ Q) (λ a, Φ a ∗ Q)%I .
+  Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
+
+  Instance CFG : @cfgPreG OneDisk.Op OneDisk.l Σ. apply _. Qed.
+  Instance HEX : ReplicatedDisk.RefinementAdequacy.exmachPreG Σ. apply _. Qed.
+  Instance INV : Adequacy.invPreG Σ. apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+
+  Definition exec_inv := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInv Σ H2 _ H1 hL0 hL1 hS)%I.
+  Definition exec_inner := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInner Σ H2 H1 hL0 hL1 hS)%I.
+  Definition crash_inner := fun H1 H2 => (∃ hL0 hL1 hS , @CrashInner Σ H2 H1 hL0 hL1 hS)%I.
+  Definition crash_inv := fun H1 H2 ghosts =>
                       let '(hL0, hL1, hS) := ghosts in
-                      @CrashInv myΣ H2 H1 hL0 hL1 hS)
-      (crash_starter := fun H1 H2 ghosts =>
-                      let '(hL0, hL1, hS) := ghosts in
-                     (@CrashStarter myΣ H2 hL0 hL1 hS))
-      (E := nclose sourceN).
-  { apply _. }
-  { apply _. }
-  { intros. apply _. }
-  { intros ?? ((?&?)&?). apply _. }
-  { set_solver+. }
-  { intros. iIntros "(Hj&Hreg&H)". iDestruct "H" as (???) "H". destruct op.
+                      @CrashInv Σ H2 H1 hL0 hL1 hS.
+  Definition crash_param := fun (_ : @cfgG OpT Λa Σ) (_ : exmachG Σ) =>
+    (gen_heapG addr nat Σ * gen_heapG addr nat Σ * gen_heapG addr addr_status Σ)%type.
+  Definition crash_starter :=
+    fun (H1: @cfgG OpT Λa Σ) (H2: exmachG Σ) ghosts => let '(hL0, hL1, hS) := ghosts in
+                                     (@CrashStarter Σ H2 hL0 hL1 hS).
+  Definition E := nclose sourceN.
+  Definition recv := recv.
+End repRT.
+
+Module repRD := twodisk_refinement_definitions repRT.
+
+Module repRO : twodisk_refinement_obligations repRT.
+
+  Module eRD := repRD.
+  Import repRT repRD.
+
+  Lemma einv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _},
+      Persistent (exec_inv H1 H2).
+  Proof. apply _. Qed.
+
+  Lemma cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _} P,
+      Persistent (crash_inv H1 H2 P).
+  Proof. intros ?? ((?&?)&?). apply _. Qed.
+
+  Lemma nameIncl: nclose sourceN ⊆ E.
+  Proof. solve_ndisj. Qed.
+
+  Lemma recsingle: recover impl = rec_singleton recv.
+  Proof. trivial. Qed.
+
+  Lemma refinement_op_triples: refinement_op_triples_type.
+  Proof.
+    red. intros. iIntros "(Hj&Hreg&H)". iDestruct "H" as (???) "H". destruct op.
     - iApply (@read_refinement with "[$]"). eauto.
     - iApply (@write_refinement with "[$]"). eauto.
-  }
-  { intros. iIntros "H". iDestruct "H" as (???) "(?&?)". eauto. }
-  {
+  Qed.
+
+  Lemma exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx.
+  Proof.
+    red. intros. iIntros "H". iDestruct "H" as (???) "(?&?)". eauto.
+  Qed.
+
+  Lemma recv_triple: recv_triple_type.
+  Proof.
     (* recv triple *)
     intros ? ? ((hL0&hL1)&hS). iIntros "(H&Hreg&Hstarter)". iDestruct "H" as "(#Hctx&#Hinv)".
     rewrite /recv.
@@ -473,6 +509,7 @@ Proof.
       destruct lt_dec; first iFrame.
       exfalso. eapply not_lt_size_not_in_addrset; eauto.
     }
+    rewrite /ReplicatedDiskImpl.recv.
     assert (Hbound: size <= size) by lia.
     remember size as n eqn:Heqn. rewrite {2}Heqn in Hbound.
     clear Heqn.
@@ -661,9 +698,16 @@ Proof.
         { iDestruct "H" as "($&H)". iDestruct "H" as (?) "(?&?&?)".
           iExists _, _, _. iFrame. }
       }
-  }
-  { intros ?? (H&?). by inversion H. }
-  { intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
+  Qed.
+
+  Lemma init_wf: ∀ σ1a σ1c, init_absr σ1a σ1c → σ1c = TwoDisk.init_state.
+  Proof.
+    intros ?? (H&?). by inversion H.
+  Qed.
+
+  Lemma init_exec_inner : init_exec_inner_type.
+  Proof.
+    intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
     iIntros "(Hmem&Hdisk0&Hdisk1&#?&Hstate)".
     iMod (gen_heap_strong_init init_zero) as (hL0 <-) "(hL0&hL0frag)".
     iPoseProof (gen_heap_init_to_bigOp (hG := hL0) with "hL0frag") as "hL0frag".
@@ -700,8 +744,10 @@ Proof.
     rewrite (init_zero_lookup_is_zero k x); last auto.
     iFrame. iExists _, _. iFrame.
     auto.
-  }
-  {
+  Qed.
+
+  Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
+  Proof.
     iIntros (??) "H".
     iDestruct "H" as (hL0 hL1 hS) "(#Hsrc&#Hlocks&#Hinv)".
     iInv "Hinv" as "H" "_".
@@ -784,8 +830,10 @@ Proof.
     iFrame. iExists _, _. iFrame.
     destruct stat; auto.
     iDestruct "Hstatus" as "(?&?)"; iFrame.
-  }
-  {
+  Qed.
+
+  Lemma crash_inv_preserve_crash: crash_inv_preserve_crash_type.
+  Proof.
     iIntros (?? ((hL0&hL1)&hS)) "H".
     iDestruct "H" as "(#Hsrc&#Hinv)".
     iInv "Hinv" as "H" "_".
@@ -866,14 +914,18 @@ Proof.
             rewrite H1 in H2; inversion H2; clear H1 H2; subst
            end.
     iFrame. iExists _, _. iFrame.
-  }
-  {
-    iIntros (??) "(H&?)".
+  Qed.
+
+  Lemma crash_inner_inv : crash_inner_inv_type.
+  Proof.
+    red. iIntros (??) "(H&?)".
     iDestruct "H" as (hInv hL0 hL1 hS) "((_&Hinv)&?)".
     iExists (hL0, hL1, hS). iFrame.
-    by iMod (@inv_alloc myΣ (exm_invG) durN _ _ with "Hinv") as "$".
-  }
-  {
+    by iMod (@inv_alloc Σ (exm_invG) durN _ _ with "Hinv") as "$".
+  Qed.
+
+  Lemma exec_inner_inv : exec_inner_inv_type.
+  Proof.
     iIntros (??) "(H&?)".
     iDestruct "H" as (hInv hL0 hL1 hS) "(Hlocks&Hdur)".
     iExists hL0, hL1, hS.
@@ -882,9 +934,11 @@ Proof.
       iApply (big_sepS_mono with "Hlocks").
       iIntros (a Hin) "(Hmem&Hlock)".
       iApply (lock_init with "Hmem [Hlock]"); auto.
-    - by iMod (@inv_alloc myΣ (exm_invG) durN _ _ with "Hdur") as "$".
-  }
-  {
+    - by iMod (@inv_alloc Σ (exm_invG) durN _ _ with "Hdur") as "$".
+  Qed.
+
+  Lemma exec_inv_preserve_finish : exec_inv_preserve_finish_type.
+  Proof.
     iIntros (??) "Hdone H".
     iDestruct "H" as (hL0 hL1 hS) "(#Hsrc&#Hlocks&#Hinv)".
     iInv "Hinv" as "H" "_".
@@ -963,7 +1017,17 @@ Proof.
     }
     iFrame. iDestruct "Hstatus" as %Heq. subst.
     iExists _, _. iFrame. eauto.
-  }
-Time Qed.
+  Qed.
+End repRO.
 
-Print Assumptions exmach_crash_refinement_seq.
+Module repR := twodisk_refinement repRT repRO.
+Import repR.
+
+Lemma rep_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OneDisk.Op T) :
+  repRT.init_absr σ1a σ1c →
+  wf_client_seq es →
+  ¬ proc_exec_seq OneDisk.l es (rec_singleton (Ret ())) (1, σ1a) Err →
+  ∀ σ2c res, proc_exec_seq TwoDisk.l (compile_proc_seq ReplicatedDiskImpl.impl es)
+                                      (rec_singleton recv) (1, σ1c) (Val σ2c res) →
+  ∃ σ2a, proc_exec_seq OneDisk.l es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
+Proof. apply repR.R.crash_refinement_seq. Qed.
