@@ -81,7 +81,7 @@ Module refinement_definitions (RT: refinement_type).
                              state_interp (1, σ) ∗ P)%I.
 
   Definition recv_triple_type :=
-    ∀ {H1 H2} param,
+    ∀ H1 H2 param,
       (@crash_inv H1 H2 param) ∗ Registered ∗ (@crash_starter H1 H2 param) ⊢
               WP recv @ NotStuck; ⊤
                  {{ v, |={⊤,E}=> ∃ σ2a σ2a', source_state σ2a
@@ -99,29 +99,29 @@ Module refinement_definitions (RT: refinement_type).
                   exec_inner Hcfg _ ∗ state_interp (1, σ1c))%I.
 
   Definition exec_inv_preserve_crash_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           exec_inv Hcfg Hex ={⊤, E}=∗ post_crash (λ H, |==> crash_inner Hcfg H)).
 
   Definition crash_inv_preserve_crash_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} param,
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ) param,
           crash_inv Hcfg Hex param ={⊤, E}=∗ post_crash (λ H, |==> crash_inner Hcfg H)).
 
   Definition state_interp_no_inv_type :=
-      (∀ `{Hex: exmachG Σ} Hinv σ,
+      (∀ `(Hex: exmachG Σ) Hinv σ,
            state_interp σ -∗ let _ := set_inv Hex Hinv in state_interp σ).
 
   Definition crash_inner_inv_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           (∃ Hinv, crash_inner Hcfg (set_inv Hex Hinv)) ∗ source_ctx ={⊤}=∗
           ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param).
 
   Definition exec_inner_inv_type :=
-      (∀ {Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+      (∀ (Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           (∃ Hinv, exec_inner Hcfg (set_inv Hex Hinv))
           ∗ source_ctx ={⊤}=∗ exec_inv Hcfg Hex).
 
   Definition exec_inv_preserve_finish_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
           ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
           ∀ `{Hcfg': cfgG OpT Λa Σ},

@@ -39,7 +39,7 @@ Module exmach_refinement_definitions (eRT: exmach_refinement_type).
   Import eRT.
 
   Definition recv_triple_type :=
-             forall {H1 H2} param,
+             forall H1 H2 param,
                (@crash_inv H1 H2 param) ∗ Registered ∗ (@crash_starter H1 H2 param) ⊢
                     WP recv @ NotStuck; ⊤ {{ v, |={⊤,E}=> ∃ σ2a σ2a', source_state σ2a
                     ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt)⌝ ∗
@@ -48,7 +48,7 @@ Module exmach_refinement_definitions (eRT: exmach_refinement_type).
                       exec_inner Hcfg' (ExMachG Σ Hinv' exm_mem_inG exm_disk_inG tr')
                                                }}.
   Definition refinement_op_triples_type :=
-             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
+             forall H1 H2 T1 T2 j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
                j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
                  WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered  }}.
 
@@ -61,29 +61,29 @@ Module exmach_refinement_definitions (eRT: exmach_refinement_type).
            source_ctx ∗ source_state σ1a) ={⊤}=∗ exec_inner _ _).
 
   Definition exec_inv_preserve_crash_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           exec_inv Hcfg Hex ={⊤, E}=∗ ∀ Hmem' Hreg',
           (let Hex := ExMachG Σ (exm_invG) Hmem' (exm_disk_inG) Hreg' in
               ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex)).
 
   Definition crash_inv_preserve_crash_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ} param,
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ) param,
           crash_inv Hcfg Hex param ={⊤, E}=∗ ∀ Hmem' Hreg',
           (let Hex := ExMachG Σ (exm_invG) Hmem' (exm_disk_inG) Hreg' in
               ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex)).
 
   Definition crash_inner_inv_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           (∃ Hinv, crash_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG) (exm_treg_inG))) ∗
           source_ctx ={⊤}=∗ ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param).
 
   Definition exec_inner_inv_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           (∃ Hinv, exec_inner Hcfg (ExMachG Σ Hinv (exm_mem_inG) (exm_disk_inG) (exm_treg_inG))) ∗
           source_ctx ={⊤}=∗ exec_inv Hcfg Hex).
 
   Definition exec_inv_preserve_finish_type :=
-      (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
+      (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
           ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
           ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hreg',
