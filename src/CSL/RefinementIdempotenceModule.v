@@ -18,15 +18,14 @@ From Transitions Require Import Relations.
 Module Type refinement_type.
   Context (OpC OpT: Type → Type).
   Context (Λc: Layer OpC) (Λa: Layer OpT).
-  Context (impl: LayerImpl OpC OpT).
+  Context (impl: LayerImplRel OpC OpT).
   Context (Σ: gFunctors).
   Context (exmachG : gFunctors → Type).
   Existing Class exmachG.
-  Notation compile_op := (compile_op impl).
-  Notation compile_rec := (compile_rec impl).
-  Notation compile_seq := (compile_seq impl).
-  Notation compile := (compile impl).
-  Notation recover := (recover impl).
+  Notation compile_rel_base := (compile_rel_base impl).
+  Notation compile_rel_proc_seq := (compile_rel_proc_seq impl).
+  Notation compile_rel := (compile_rel impl).
+  Notation recover := (recover_rel impl).
   Notation compile_proc_seq := (compile_proc_seq impl).
   Context `{CFG: cfgPreG OpT Λa Σ}.
   Context `{INV: Adequacy.invPreG Σ}.
@@ -127,6 +126,12 @@ Module refinement_definitions (RT: refinement_type).
           ∀ `{Hcfg': cfgG OpT Λa Σ},
           post_finish (λ H, source_ctx ∗ source_state σ2a' ==∗ |={⊤}=> exec_inner Hcfg' H)).
 
+  Definition refinement_base_triples_type :=
+             forall H1 H2 T1 T2 j K `{LanguageCtx OpT T1 T2 Λa K} (p: proc OpT T1) p',
+               compile_rel_base p p' →
+               j ⤇ K p ∗ Registered ∗ (@exec_inv H1 H2) ⊢
+                 WP p' {{ v, j ⤇ K (Ret v) ∗ Registered }}.
+
 End refinement_definitions.
 
 Module Type refinement_obligations (RT: refinement_type).
@@ -160,13 +165,9 @@ Module Type refinement_obligations (RT: refinement_type).
                                      -∗ thread_count_interp n ∗ Interp σ) ∧
                 ∀ n σ, thread_count_interp n ∗ Interp σ -∗ state_interp (n, σ)).
 
-  Context (refinement_op_triples:
-             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
-               j ⤇ K (Call op) ∗ Registered ∗ (@exec_inv H1 H2) ⊢
-                 WP compile (Call op) {{ v, j ⤇ K (Ret v) ∗ Registered  }}).
+  Context (refinement_base_triples: refinement_base_triples_type).
 
   (* State interpretations should not contain invariants *)
-
   Context (state_interp_no_inv: state_interp_no_inv_type).
 
   Context (recv_triple: recv_triple_type).
@@ -207,12 +208,13 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
   Qed.
 
   Lemma refinement_triples:
-             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1),
+             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1) e',
                wf_client e →
+               compile_rel e e' →
                j ⤇ K e ∗ Registered ∗ (@exec_inv H1 H2) ⊢
-                 WP compile e {{ v, j ⤇ K (Ret v) ∗ Registered }}.
+                 WP e' {{ v, j ⤇ K (Ret v) ∗ Registered }}.
   Proof.
-    intros ???? j K Hctx e Hwf.
+    intros ???? j K Hctx e e' Hwf Hcompile.
     iIntros "(Hj&Hreg&#Hinv)".
     iAssert (⌜∃ ea: State Λa, True⌝)%I as %[? _].
     {
@@ -223,14 +225,15 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     { eexists. eauto. }
     assert (Inhabited Λa.(OpState)).
     { eexists. destruct x; eauto. }
-    iInduction e as [] "IH" forall (j T2 K Hctx).
-    - iApply refinement_op_triples; iFrame; eauto.
+    rename T2 into T2'.
+    iInduction Hcompile as [] "IH" forall (T2' j K Hctx Hwf).
+    - iApply refinement_base_triples; eauto. by iFrame.
     - wp_ret. iFrame.
     - wp_bind.
       iApply wp_wand_l. iSplitL ""; last first.
-      * unshelve (iApply ("IH1" $! _ _ _ (fun x => K (Bind x p2)) with "[] Hj"); try iFrame).
-        { eapply Hwf. }
+      * unshelve (iApply ("IH1" $! _ j (fun x => K (Bind x p1')) with "[] [] [Hj]"); try iFrame).
         { iPureIntro. apply comp_ctx; auto. apply _. }
+        { inversion Hwf; eauto. }
       * iIntros (?) "(Hj&Hreg)".
         iDestruct (exec_inv_source_ctx with "Hinv") as "#Hctx".
         iMod (ghost_step_bind_ret with "Hj []") as "Hj".
@@ -247,13 +250,13 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
       iApply wp_wand_l.
       iSplitL ""; last first.
       * rewrite /loop1. simpl.
-        unshelve (iApply ("IH" $! _ _ _ _ (fun x => K (Bind x
+        unshelve (iApply ("IH" $! _ _ _ (fun x => K (Bind x
                                (fun out => match out with
-                               | ContinueOutcome x => Loop body x
+                               | ContinueOutcome x => Loop b x
                                | DoneWithOutcome r => Ret r
-                               end))) with "[] Hj Hreg")%proc).
-        { eauto. }
+                               end))) with "[] [] Hj Hreg")%proc).
         { iPureIntro. apply comp_ctx; auto. apply _. }
+        { simpl in Hwf. eauto. }
       * iIntros (out) "(Hj&Hreg)".
         destruct out.
         ** iNext.
@@ -278,10 +281,10 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
      { iNext. iIntros "Hreg'".
        { wp_bind.
          iApply (wp_wand with "[Hj' Hreg'] []").
-         { unshelve (iApply ("IH" $! _ _ _ (fun x => Bind x (fun _ => Unregister))
-                               with "[] Hj' Hreg'")).
-           { eauto. }
+         { unshelve (iApply ("IH" $! _ _ (fun x => Bind x (fun _ => Unregister))
+                               with "[] [] Hj' Hreg'")).
            { iPureIntro. apply _. }
+           {  eauto. }
          }
          { iIntros (?) "(?&?)". iApply (wp_unregister with "[$]"). iIntros "!> ?". eauto. }
        }
@@ -313,14 +316,15 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     by rewrite -Hinstance_eta set_inv_reg_spec2 set_inv_reg_spec3.
   Qed.
 
-  Lemma crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) :
+  Lemma crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) es' :
     init_absr σ1a σ1c →
     wf_client_seq es →
+    compile_rel_proc_seq es es' →
     ¬ proc_exec_seq Λa es (rec_singleton (Ret ())) (1, σ1a) Err →
-    ∀ σ2c res, proc_exec_seq Λc (compile_proc_seq es) (rec_singleton recv) (1, σ1c) (Val σ2c res) →
+    ∀ σ2c res, proc_exec_seq Λc es' (rec_singleton recv) (1, σ1c) (Val σ2c res) →
     ∃ σ2a, proc_exec_seq Λa es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
   Proof.
-    rewrite /compile_proc_seq. intros Hinit Hwf_seq Hno_err σ2c0 ?.
+    intros Hinit Hwf_seq Hcompile Hno_err σ2c0 ?.
     unshelve (eapply wp_proc_seq_refinement_adequacy with
                   (Λc := Λc)
                   (φ := fun va vc _ _ => ⌜ va = vc ⌝%I)
@@ -350,7 +354,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     }
 
   clear Hinit.
-  iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre"; first by eauto.
+  iInduction Hcompile as [] "IH" forall (σ1a σ1c) "Hpre"; first by eauto.
   - iSplit; first by (eauto using nameIncl).
     iExists (fun cfgG (s: State Λc) => ∀ (s': State Λc)
                   (Hcrash: Λc.(crash_step) (snd s) (Val (snd s') tt)),
@@ -365,15 +369,17 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
   iPoseProof (@exec_inner_inv (set_inv_reg hEx invG0 Hreg)) as "Hinner".
   rewrite set_inv_reg_spec1.
   iMod ("Hinner" with "[Hinv]") as "#Hinv".
-  { iSplitR ""; last by (iExists _; iFrame). iExists _. iFrame. simpl. 
+  { iSplitR ""; last by (iExists _; iFrame). iExists _. iFrame. simpl.
     rewrite /RD.set_inv. rewrite set_inv_reg_spec2. rewrite set_inv_reg_spec3.
     iFrame.
   }
   iFrame.
   iSplitL "Hpt0 Hreg".
-  {  iPoseProof (@wp_mono with "[Hpt0 Hreg]") as "H"; swap 1 2.
-     {
-       iApply @refinement_triples. destruct (Hwf_seq) as (?&?). eauto. iFrame. iFrame "Hinv".
+  {  inversion H; subst. iPoseProof (@wp_mono with "[Hpt0 Hreg]") as "H"; swap 1 2.
+     { iApply @refinement_triples. destruct (Hwf_seq) as (?&?).
+       { eauto. }
+       { eauto. }
+       iFrame. iFrame "Hinv".
        rewrite ?set_inv_reg_spec2.
        rewrite /Registered. rewrite HEQ. auto.
      }
@@ -446,7 +452,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     iSpecialize ("Hinv_post" $! _ _ _ Hcrash with "[Ht Hmach]").
     {  iFrame. }
     iMod ("Hinv_post") as (?) "H".
-     unshelve (iExists (RD.set_reg H tR'''), _).
+     unshelve (iExists (RD.set_reg H1 tR'''), _).
     { rewrite set_inv_reg_spec2. eauto. }
     rewrite ?set_inv_reg_spec2 ?set_inv_reg_spec1 ?set_inv_reg_spec3.
     iDestruct ("H") as "(H&H')".
@@ -459,7 +465,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
   inversion Hputs.
   subst.
   inversion Hcrash. subst.
-  inversion H. subst.
+  inversion H1. subst.
   unshelve (iMod ("Hinv0" $! (1, s') _) as "Hinv0"); [ eauto | ].
   eauto.
   clear HEQ.
@@ -516,7 +522,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
        { rewrite /Registered -own_op Cinl_op counting_op' //=. }
        set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
        destruct σ2c.
-       iMod ("Hfinish" $! H2 _ with "[$]") as (Hex') "(Hinterp&Hfinish)".
+       iMod ("Hfinish" $! H4 _ with "[$]") as (Hex') "(Hinterp&Hfinish)".
        unshelve (iExists _, _, _); first by auto.
        iFrame.
        iModIntro. simpl.

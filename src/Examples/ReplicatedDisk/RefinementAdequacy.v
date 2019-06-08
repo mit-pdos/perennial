@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementIdempotenceModule.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementIdempotenceFunModule.
 Require Export ReplicatedDisk.TwoDiskAPI ReplicatedDisk.WeakestPre.
 Import TwoDisk.
 Require Import Spec.Proc.

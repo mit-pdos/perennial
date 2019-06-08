@@ -112,3 +112,8 @@ Inductive compile_rel_proc_seq {T Op C_Op} `(impl: LayerImplRel C_Op Op):
     compile_rel_whole impl p p' ->
     (forall x, compile_rel_proc_seq impl (f x) (f' x)) ->
     compile_rel_proc_seq impl (Proc_Seq_Bind p f) (Proc_Seq_Bind p' f').
+
+Definition LayerImpl_to_LayerImplRel {C_Op Op} (impl: LayerImpl C_Op Op): LayerImplRel C_Op Op :=
+  {| compile_rel_base {T} :=
+       fun p p' => exists (op: Op T), p = Call op /\ p' = compile impl (Call op);
+     recover_rel := recover impl |}.
