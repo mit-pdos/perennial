@@ -277,12 +277,13 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
     iModIntro. iIntros (?).
     iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
     { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    iIntros (n σ) "(Hmach&Hthread)".
     iModIntro.
-    iIntros (n σ σ' Hcrash) "(Hmach&Hthread)".
+    iIntros (σ' Hcrash).
     iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk0_inG _ Hex) (@exm_disk1_inG _ Hex)
                      (@exm_status_inG _ Hex)
                      (@exm_treg_inG _ Hex)).
-    iModIntro. iFrame. iDestruct "Hmach" as "(?&Hdisk)".
+    iFrame. iDestruct "Hmach" as "(?&Hdisk)".
     inversion Hcrash. subst.
     iDestruct "Hdisk" as (???) "(?&?&?&?&%&%&%&%)". iFrame.
     iSplitR ""; last done.
@@ -301,12 +302,13 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
     iModIntro. iIntros (?).
     iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
     { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    iIntros (n σ) "(Hmach&Hthread)".
     iModIntro.
-    iIntros (n σ σ' Hcrash) "(Hmach&Hthread)".
+    iIntros (σ' Hcrash).
     iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk0_inG _ Hex) (@exm_disk1_inG _ Hex)
                      (@exm_status_inG _ Hex)
                      (@exm_treg_inG _ Hex)).
-    iModIntro. iFrame. iDestruct "Hmach" as "(?&Hdisk)".
+    iFrame. iDestruct "Hmach" as "(?&Hdisk)".
     inversion Hcrash. subst.
     iDestruct "Hdisk" as (???) "(?&?&?&?&%&%&%&%)". iFrame.
     iSplitR ""; last done.

@@ -62,11 +62,12 @@ Module refinement_definitions (RT: refinement_type).
     set_inv_reg Hex Hinv _.
 
   Definition post_crash {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
-    (∀ Hreg', |={E}=> ∀ n σ σ' (Hcrash: Λc.(crash_step) σ (Val σ' tt)),
-        state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1 ==∗
-                     ∃ Hex', let _ := set_reg Hex' Hreg' in
-                             state_interp (1, σ') ∗ P)%I.
+    (∀ Hreg' n σ, state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1
+                   ={E}=∗ ∀ σ' (Hcrash: Λc.(crash_step) σ (Val σ' tt)),
+                        ∃ Hex', let _ := set_reg Hex' Hreg' in
+                                state_interp (1, σ') ∗ P)%I.
 
+  (* TODO: change to match order of quantifiers of post_crash *)
   Definition post_finish {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
     (∀ n σ σ' (Hcrash: Λc.(finish_step) σ (Val σ' tt)) Hinv' Hreg',
         state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1 ==∗
@@ -446,12 +447,11 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
     iSpecialize ("Hinv_post" $! tR''').
      rewrite set_inv_reg_spec1.
-    iMod "Hinv_post".
-    iModIntro. iIntros.
     destruct σ2c as (?&σ2c).
-    iSpecialize ("Hinv_post" $! _ _ _ Hcrash with "[Ht Hmach]").
-    {  iFrame. }
-    iMod ("Hinv_post") as (?) "H".
+    iMod ("Hinv_post" $! _ σ2c with "[Ht Hmach]") as "Hinv_post".
+    { iFrame. }
+    iModIntro. iIntros.
+    iDestruct ("Hinv_post" $! _ Hcrash) as (?) "H".
      unshelve (iExists (RD.set_reg H1 tR'''), _).
     { rewrite set_inv_reg_spec2. eauto. }
     rewrite ?set_inv_reg_spec2 ?set_inv_reg_spec1 ?set_inv_reg_spec3.
@@ -547,13 +547,12 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
     iSpecialize ("Hinv_post" $! tR'''').
     rewrite set_inv_reg_spec1.
-    iMod "Hinv_post".
-    iModIntro. iIntros.
     destruct σ2c as (?&σ2c).
-    iSpecialize ("Hinv_post" with "[] [Hmach Ht]").
-    { iPureIntro. eauto. }
+    iMod ("Hinv_post" $! _ σ2c with "[Ht Hmach]") as "Hinv_post".
     { iFrame. }
-    iMod ("Hinv_post") as (?) "H".
+    iModIntro. iIntros.
+    iDestruct ("Hinv_post" $! _ with "[]") as (?) "H".
+    { iPureIntro. eauto. }
     unshelve (iExists (RD.set_reg _ tR''''), _).
     { rewrite set_inv_reg_spec2. eauto. }
     rewrite ?set_inv_reg_spec2 ?set_inv_reg_spec1 ?set_inv_reg_spec3.

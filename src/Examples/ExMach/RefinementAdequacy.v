@@ -244,14 +244,15 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     iPoseProof (eRO.exec_inv_preserve_crash with "Hinv") as "Hinv_post".
     iMod (gen_heap_strong_init (init_zero)) as (hM Hmpf_eq) "(Hmc&Hm)".
     iMod ("Hinv_post") as "Hinv_post".
-    iModIntro. iIntros (?).
+    iModIntro. iIntros (? n σ).
     iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
     { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    iIntros "(Hmach&Hthread)".
     iModIntro.
-    iIntros (n σ σ' Hcrash) "(Hmach&Hthread)".
+    iIntros (σ' Hcrash).
     iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk_inG _ Hex)
                      (@exm_treg_inG _ Hex)).
-    iModIntro. iFrame. iDestruct "Hmach" as "(?&Hdisk)".
+    iFrame. iDestruct "Hmach" as "(?&Hdisk)".
     inversion Hcrash. subst.
     iDestruct "Hdisk" as (??) "(?&?&%&%&%&%)". iFrame.
     iSplitR ""; last done.
@@ -269,14 +270,15 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     iPoseProof (eRO.crash_inv_preserve_crash with "Hinv") as "Hinv_post".
     iMod (gen_heap_strong_init (init_zero)) as (hM Hmpf_eq) "(Hmc&Hm)".
     iMod ("Hinv_post") as "Hinv_post".
-    iModIntro. iIntros (?).
+    iModIntro. iIntros (? n σ).
     iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
     { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    iIntros "(Hmach&Hthread)".
     iModIntro.
-    iIntros (n σ σ' Hcrash) "(Hmach&Hthread)".
+    iIntros (σ' Hcrash).
     iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk_inG _ Hex)
                      (@exm_treg_inG _ Hex)).
-    iModIntro. iFrame. iDestruct "Hmach" as "(?&Hdisk)".
+    iFrame. iDestruct "Hmach" as "(?&Hdisk)".
     inversion Hcrash. subst.
     iDestruct "Hdisk" as (??) "(?&?&%&%&%&%)". iFrame.
     iSplitR ""; last done.
@@ -340,4 +342,3 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
   Export R.
 
 End exmach_refinement.
-

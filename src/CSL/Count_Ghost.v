@@ -3,7 +3,7 @@ From Armada.CSL Require Import Counting.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
-Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre CSL.ProofModeClasses.
+Require Export CSL.Refinement CSL.NamedDestruct CSL.ProofModeClasses.
 Require Eqdep.
 Import uPred.
 

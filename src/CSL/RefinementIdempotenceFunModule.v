@@ -64,10 +64,10 @@ Module refinement_definitions (RT: refinement_type).
     set_inv_reg Hex Hinv _.
 
   Definition post_crash {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
-    (∀ Hreg', |={E}=> ∀ n σ σ' (Hcrash: Λc.(crash_step) σ (Val σ' tt)),
-        state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1 ==∗
-                     ∃ Hex', let _ := set_reg Hex' Hreg' in
-                             state_interp (1, σ') ∗ P)%I.
+    (∀ Hreg' n σ, state_interp (n, σ) ∗ @thread_count_interp _ Hreg' 1
+                   ={E}=∗ ∀ σ' (Hcrash: Λc.(crash_step) σ (Val σ' tt)),
+                        ∃ Hex', let _ := set_reg Hex' Hreg' in
+                                state_interp (1, σ') ∗ P)%I.
 
   Definition post_finish {Hex: exmachG Σ} (P: ∀ {_: exmachG Σ}, iProp Σ) : iProp Σ :=
     (∀ n σ σ' (Hcrash: Λc.(finish_step) σ (Val σ' tt)) Hinv' Hreg',

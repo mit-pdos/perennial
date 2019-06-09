@@ -1,4 +1,9 @@
-Require Export CSL.Refinement ExMach.WeakestPre.
+Require Export CSL.Refinement CSL.WeakestPre.
+From iris.algebra Require Import auth gmap frac agree.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg.
+From iris.algebra Require Export functions csum.
+From iris.base_logic.lib Require Export invariants gen_heap.
+From iris.proofmode Require Export tactics.
 
 (* Extends the iExist tactic to make it easier to re-prove invariants after steps *)
 Global Instance from_exist_left_sep {Σ} {A} (Φ : A → iProp Σ) Q :

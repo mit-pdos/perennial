@@ -91,6 +91,8 @@ Section refinement_recovery_defs.
 
 End refinement_recovery_defs.
 
+Module mRT <: goose_refinement_type.
+
 Definition init_base `{@GoModelWf gm} (s: GoLayer.Go.State) :=
   s.(fs).(FS.heap) = ∅ ∧
   (forall (uid: uint64),
@@ -104,17 +106,59 @@ Definition init_base `{@GoModelWf gm} (s: GoLayer.Go.State) :=
   (∀ dir l, s.(fs).(FS.dirlocks) !! dir = Some l → fst l = Unlocked) ∧
   s.(maillocks) = None.
 
-Definition init_absr `{@GoModelWf gm} sa sc := Mail.initP sa ∧ init_base sc.
 
-Definition myΣ {gm} {Hgwf: GoModelWf gm} : gFunctors :=
-  #[@gooseΣ gm Hgwf; @cfgΣ Mail.Op Mail.l;
+(* We assume some instance of the GoModel axioms *)
+Context {gm : GoModel}.
+Context {gmWf : GoModelWf gm}.
+
+Definition init_absr sa sc := Mail.initP sa ∧ init_base sc.
+
+Definition Σ : gFunctors :=
+  #[@gooseΣ gm gmWf; @cfgΣ Mail.Op Mail.l;
     ghost_mapΣ ghost_init_statusC; ghost_mapΣ contentsC;
     gen_heapΣ string (Filesys.FS.Inode)].
 
 Existing Instance subG_goosePreG.
 Existing Instance subG_cfgPreG.
 
-Lemma init_dirs {gm} {Hgwf: GoModelWf gm} σ1a σ1c:
+  Definition OpT := Mail.Op.
+  Definition Λa := Mail.l.
+
+  Definition impl := mail_impl.
+
+  Instance from_exist_left_sep' {Σ} {A} (Φ : A → iProp Σ) Q :
+    FromExist ((∃ a, Φ a) ∗ Q) (λ a, Φ a ∗ Q)%I .
+  Proof. rewrite /FromExist. iIntros "H". iDestruct "H" as (?) "(?&$)". iExists _; eauto. Qed.
+
+  Instance CFG : @cfgPreG Mail.Op Mail.l Σ. apply _. Qed.
+  Instance HEX : RefinementAdequacy.goosePreG gm Σ. apply _. Defined.
+  Instance INV : Adequacy.invPreG Σ. apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+
+  Definition exec_inv :=
+    fun H1 H2 => (∃ hGTmp, @ExecInv gm _ Σ H2 H1 _ _ hGTmp)%I.
+  Definition exec_inner :=
+    fun H1 H2 => (∃ hGTmp, @ExecInner gm _ Σ H2 H1 _ _ hGTmp)%I.
+  Definition crash_inner :=
+    fun H1 H2 => @CrashInner gm _ Σ H2 H1 _ _.
+  Definition crash_param := fun (_ : @cfgG OpT Λa Σ) (_ : gooseG gm Σ) => gname.
+  Definition crash_inv :=
+    fun H1 H2 γ => @CrashInv _ _ Σ H2 H1 _ _ γ.
+  Definition crash_starter := fun (H1 : @cfgG OpT Λa Σ) H2 γ => @CrashStarter _ _ Σ H2 γ.
+  Definition E := nclose sourceN.
+  Definition recv := MailServer.Recover.
+
+End mRT.
+
+Module mRD := goose_refinement_definitions mRT.
+
+
+Module mRO : goose_refinement_obligations mRT.
+
+  Module eRD := mRD.
+  Import mRT mRD.
+
+Lemma init_dirs σ1a σ1c:
   init_absr σ1a σ1c →
   dom (gset string) σ1c.(fs).(dirents) =
                   (set_map UserDir (dom (gset uint64) σ1a.(messages)) ∪ {[SpoolDir]}).
@@ -151,7 +195,7 @@ Proof.
        eapply elem_of_dom; eauto.
 Qed.
 
-Lemma init_base_dirs_empty `{@GoModelWf gm} σ dir x:
+Lemma init_base_dirs_empty σ dir x:
   init_base σ →
   σ.(fs).(dirents) !! dir = Some x →
   x = ∅.
@@ -167,29 +211,52 @@ Proof.
     subst. rewrite Hsome' in Hsome; try lia. congruence.
 Qed.
 
-(* TODO: the goal statement here looks really confusing -- it's extracted from
-   one of the obligations from applying crash_refinement_seq below. I only break
-   it out to shorten the qed time of that proof below.
+  Lemma einv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _},
+      Persistent (exec_inv H1 H2).
+  Proof. apply _. Qed.
 
-   The explicit implicit arguments are needed or else the wrong things get resolved. *)
+  Lemma cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _} P,
+      Persistent (crash_inv H1 H2 P).
+  Proof. apply _. Qed.
 
-Program Lemma recovery_triple {gm} {Hgmwf: @GoModelWf gm}:
-  ∀ (H1 : cfgG myΣ) (H2 : gooseG gm myΣ) (param : gname),
-    (@CrashInv _ _ myΣ H2 H1 _ _ param) ∗ Registered ∗ (@CrashStarter _ _ myΣ H2 param)
-    -∗ WP Recover
-       {{ _, |={⊤,nclose sourceN}=>
-          ∃ σ2a σ2a' : l.(OpState),
-            source_state σ2a
-              ∗ ⌜l.(Proc.crash_step) σ2a (Val σ2a' tt)⌝
-              ∗ (∀ (Hcfg' : cfgG myΣ) (Hinv' : invG myΣ) (tr' : tregG myΣ),
-                    source_ctx ∗ source_state σ2a'
-                    ={⊤}=∗
-                        (λ H1 H2,
-                         ∃ hGTmp, @ExecInner gm Hgmwf myΣ H2 H1 _ _ hGTmp)
-                        Hcfg'
-                        (GooseG _ _ myΣ Hinv' go_heap_inG go_fs_inG go_global_inG tr')) }}.
-Proof.
-  intros. iIntros "(Hrest&Hreg&Hstarter)".
+  Lemma nameIncl: nclose sourceN ⊆ E.
+  Proof. solve_ndisj. Qed.
+
+  Lemma recsingle: recover_rel impl = rec_singleton recv.
+  Proof. trivial. Qed.
+
+  Lemma refinement_base_triples: refinement_base_triples_type.
+  Proof.
+    intros ???? j K Hctx p p' Hcompile. iIntros "(Hj&Hreg&Hexec)".
+    iDestruct "Hexec" as (hGTmp) "Hexec". inversion Hcompile; inj_pair2.
+    - iApply (open_refinement with "[$]"). iIntros "!>".
+      iIntros (?) "(?&?)"; iFrame.
+    - iApply (pickup_refinement with "[$]"). iIntros "!>".
+      iIntros (?) "(?&?)"; iFrame.
+    - iApply (deliver_refinement with "[$]"). iIntros "!>".
+      iIntros (?) "(?&?)"; iFrame.
+    - iApply (delete_refinement with "[$]"). iIntros "!>".
+      iIntros (?) "(?&?)"; iFrame.
+    - iApply (unlock_refinement with "[$]"). iIntros "!>".
+      iIntros (?) "(?&?)"; iFrame.
+    - iDestruct "Hexec" as (Γ γ) "(#Hsource&#Hinv)".
+      iInv "Hinv" as "H".
+      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+      iApply (data_op_refinement j K with "[$]").
+      { solve_ndisj. }
+      iIntros (v) "!> H".
+      iDestruct "H" as (h') "(Hj&Hreg&Hstate&Hheap)".
+      iModIntro. iFrame. iNext. iExists _. iFrame.
+  Qed.
+
+  Lemma exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx.
+  Proof.
+    intros. iIntros "H". iDestruct "H" as (hGTmp ??) "($&?)".
+  Qed.
+
+  Lemma recv_triple: recv_triple_type.
+  Proof.
+    red. intros H1 H2 param. iIntros "(Hrest&Hreg&Hstarter)".
   iDestruct "Hrest" as (Γ γ) "(#Hsource&#Hinv)".
   iDestruct "Hstarter" as (tmps) "(Htmps_frag&Hlock)".
   wp_bind. wp_bind.
@@ -198,7 +265,7 @@ Proof.
   iInv "Hinv" as "H".
   iDestruct "H" as (σ) "(>Hstate&>Hmsgs&>Hheap&>Htmp)".
   iDestruct "Htmp" as (tmps_map) "(Hdir&Hauth&Hpaths)".
-  iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom.
+  iDestruct (@ghost_var_agree (discreteC (gset string)) Σ with "Hauth [$]") as %Heq_dom.
   iApply (wp_list_finish with "[$]").
   iIntros (s ltmps) "!> (Hltmps&Hs&Htmps&Hlock)".
   iExists _.
@@ -235,7 +302,7 @@ Proof.
     iClear "Hsource".
     iIntros (???) "(#Hsource&Hstate)".
     iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
-    iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom.
+    iDestruct (@ghost_var_agree (discreteC (gset string)) Σ with "[$] [$]") as %Heq_dom.
     rewrite <-Heq_dom.
     iMod (gen_heap_init tmps_map') as (hGTmp) "Htmp".
     iExists hGTmp, Γ, γ, _.
@@ -257,7 +324,7 @@ Proof.
     clear σ.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
-    iDestruct (ghost_var_agree (A := discreteC (gset string)) with "[$] [$]") as %Heq_dom'.
+    iDestruct (@ghost_var_agree (discreteC (gset string)) Σ with "[$] [$]") as %Heq_dom'.
     rewrite Heq_dom'.
     assert (Hcurr_in: curr_name ∈ tmps ∖ list_to_set (take i ltmps)).
     {
@@ -285,7 +352,7 @@ Proof.
     iDestruct (big_sepM_delete with "Hpaths") as "(Hcurr&Hpaths)"; eauto.
     iApply (wp_delete with "[$]").
     iIntros "!> (Hdir&Hdirlock)".
-    iMod (ghost_var_update (A := discreteC (gset string)) with "Hauth [$]") as "(Hauth&Hfrag)".
+    iMod (@ghost_var_update (discreteC (gset string)) with "Hauth [$]") as "(Hauth&Hfrag)".
     iSplitL "Hstate Hmsgs Hheap Hpaths Hdir Hauth".
     {
       iExists _. iFrame.
@@ -306,68 +373,22 @@ Proof.
     rewrite list_to_set_app_L //= right_id_L //.
     Unshelve.
     eapply sigPtr_eq_dec.
-Qed.
+  Qed.
 
-Lemma mail_crash_refinement_seq {gm} {Hgmwf: @GoModelWf gm} {T} σ1c σ1a esa esc:
-  init_absr σ1a σ1c →
-  wf_client_seq esa →
-  compile_rel_proc_seq mail_impl esa esc →
-  ¬ proc_exec_seq Mail.l esa (rec_singleton (Ret ())) (1, σ1a) Err →
-  ∀ σ2c (res: T), proc_exec_seq GoLayer.Go.l esc
-                                      (rec_singleton MailServer.Recover) (1, σ1c) (Val σ2c res) →
-  ∃ σ2a, proc_exec_seq Mail.l esa (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
-Proof.
-  eapply (@exmach_crash_refinement_seq gm Hgmwf (@myΣ gm Hgmwf)) with
-      (Λa := Mail.l)
-      (es := esa)
-      (T := T)
-      (exec_inv := fun H1 H2 => (∃ hGTmp, @ExecInv gm Hgmwf myΣ H2 H1 _ _ hGTmp)%I)
-      (exec_inner := fun H1 H2 => (∃ hGTmp, @ExecInner gm Hgmwf myΣ H2 H1 _ _ hGTmp)%I)
-      (crash_inner := fun H1 H2 => @CrashInner gm Hgmwf myΣ H2 H1 _ _)
-      (crash_param := fun H1 H2 => gname)
-      (crash_inv := fun H1 H2 γ => @CrashInv _ _ myΣ H2 H1 _ _ γ)
-      (crash_starter := fun H1 H2 γ => @CrashStarter _ _ myΣ H2 γ)
-      (E := nclose sourceN).
-  { apply _. }
-  { apply _. }
-  { intros. apply _. }
-  { intros. apply _. }
-  { set_solver+. }
-  { idtac "obligation 1".
-    intros ???? j K Hctx p p' Hcompile. iIntros "(Hj&Hreg&Hexec)".
-    iDestruct "Hexec" as (hGTmp) "Hexec". inversion Hcompile; inj_pair2.
-    - iApply (open_refinement with "[$]"). iIntros "!>".
-      iIntros (?) "(?&?)"; iFrame.
-    - iApply (pickup_refinement with "[$]"). iIntros "!>".
-      iIntros (?) "(?&?)"; iFrame.
-    - iApply (deliver_refinement with "[$]"). iIntros "!>".
-      iIntros (?) "(?&?)"; iFrame.
-    - iApply (delete_refinement with "[$]"). iIntros "!>".
-      iIntros (?) "(?&?)"; iFrame.
-    - iApply (unlock_refinement with "[$]"). iIntros "!>".
-      iIntros (?) "(?&?)"; iFrame.
-    - iDestruct "Hexec" as (Γ γ) "(#Hsource&#Hinv)".
-      iInv "Hinv" as "H".
-      iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
-      iApply (data_op_refinement j K with "[$]").
-      { solve_ndisj. }
-      iIntros (v) "!> H".
-      iDestruct "H" as (h') "(Hj&Hreg&Hstate&Hheap)".
-      iModIntro. iFrame. iNext. iExists _. iFrame.
-  }
-  { intros. iIntros "H". iDestruct "H" as (hGTmp ??) "($&?)". }
-  { idtac "obligation 2".
-    eapply recovery_triple.
-  }
-  { rewrite /init_absr/initP/init_base. intuition. }
-  { idtac "obligation 3".
+  Lemma init_wf: init_wf_type.
+  Proof.
+    red. rewrite /init_absr/initP/init_base. intuition.
+  Qed.
+
+  Lemma init_exec_inner : init_exec_inner_type.
+  Proof.
     clear. iIntros (σ1a σ1c Hinit).
     iIntros (??) "(Hdirs&Hroot&Hdirlocks&Hsrc&Hstate&Hglobal)".
     pose proof (init_dirs _ _ Hinit) as Hdirs.
     destruct Hinit as (Hinita&Hinitc).
     iMod (gen_heap_init (∅: gmap string Inode)) as (hGTmp) "Htmp".
     iExists hGTmp.
-    iMod (ghost_var_alloc (A := @ghost_init_statusC gm Hgmwf) Uninit) as "H".
+    iMod (ghost_var_alloc (A := @ghost_init_statusC mRT.gm mRT.gmWf) Uninit) as "H".
     iDestruct "H" as (γ) "(Hauth&Hfrag)".
     iMod (ghost_var_bulk_alloc (A := contentsC) (σ1a.(messages)) (λ _ _, ∅)) as "H".
     iDestruct "H" as (Γ HΓdom) "HΓ".
@@ -485,9 +506,12 @@ Proof.
         simpl. iModIntro. by iApply big_sepDM_empty.
       - iExists ∅. iFrame. by iApply big_sepM_empty.
     }
-  }
-  {
-    idtac "obligation 4".
+    Unshelve.
+    apply sigPtr_eq_dec.
+  Qed.
+
+  Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
+  Proof.
     iIntros (??) "H".
     iDestruct "H" as (hGtmp_old) "Hrest".
     iDestruct "Hrest" as (Γold γold) "(#Hsource&#Hinv)".
@@ -503,19 +527,21 @@ Proof.
     iIntros (?????) "(Hroot'&Hglobal)".
     iDestruct "Hroot'" as (S) "(Hroot'&Hdirlocks)".
     iDestruct "Hroot" as "(Hroot&%)".
-    iDestruct (ghost_var_agree2 (A := discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
+    iDestruct (@ghost_var_agree2 (discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
 
 
     iDestruct "Htmp" as (tmp_map) "(Hdir&_&_&Hpaths)".
     iMod (gen_heap_init (tmp_map: gmap string Inode)) as (hGTmp) "Htmp".
-    iMod (ghost_var_alloc (A := @ghost_init_statusC gm Hgmwf) Uninit) as "H".
+    iMod (@ghost_var_alloc (@ghost_init_statusC _ mRT.gmWf) _ _ _ _  Uninit) as "H".
     iDestruct "H" as (γ) "(Hauth&Hfrag)".
     iMod (ghost_var_bulk_alloc (A := contentsC) (σ.(messages)) (λ _ _, ∅)) as "H".
     iDestruct "H" as (Γ HΓdom) "HΓ".
     iAssert ([∗ map] k↦_ ∈ σ.(messages), ∃ γ0 : gname, ⌜Γ !! k = Some γ0⌝)%I
             with "[HΓ]" as "#HΓ'".
     { iApply big_sepM_mono; last eauto. iIntros (???) "H". iDestruct "H" as (?) "(?&?)"; eauto. }
-    iMod (ghost_var_alloc (A := @discreteC (gset string)) (dom (gset _) tmp_map)) as "H".
+    iMod (@ghost_var_alloc (@discreteC (gset string)) _ _ _
+                           Hex.(@go_fs_inG mRT.gm mRT.gmWf Σ).(@go_fs_domalg_inG mRT.gm mRT.gmWf Σ)
+                           (dom (gset _) tmp_map)) as "H".
     iDestruct "H" as (γtmp) "(Hauth_tmp&Hfrag_tmp)".
 
     iModIntro.
@@ -524,7 +550,7 @@ Proof.
     iDestruct (big_sepS_delete with "Hdirlocks") as "(Hspoollock&Hdirlocks)".
     { by apply elem_of_union_r, elem_of_singleton. }
     iSplitR "Hfrag_tmp Hspoollock"; last first.
-    { iExists _. iFrame. }
+    { iExists _. iSplitL "Hfrag_tmp"; auto. }
     iExists [].
     rewrite /HeapInv.
     iSplitR "Htmp Hdir Hauth_tmp Hpaths"; last first.
@@ -559,10 +585,12 @@ Proof.
     iSplitL ""; eauto.
     iSplitL ""; eauto.
     iFrame. auto.
-  }
-  {
-    (* Idempotence *)
-    idtac "obligation 5 (idempotence)".
+    Unshelve.
+    apply (zeroValue _).
+  Qed.
+
+  Lemma crash_inv_preserve_crash: crash_inv_preserve_crash_type.
+  Proof.
     iIntros (?? γtmp) "Hcrash".
     iDestruct "Hcrash" as (??) "(#Hsrc&#Hinv)".
     iInv "Hinv" as "H" "_".
@@ -573,16 +601,18 @@ Proof.
     iIntros (?????) "(Hroot'&Hglobal)".
     iDestruct "Hroot'" as (S) "(Hroot'&Hdirlocks)".
     iDestruct "Hroot" as "(Hroot&%)".
-    iDestruct (ghost_var_agree2 (A := discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
+    iDestruct (@ghost_var_agree2 (discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
 
 
     iDestruct "Htmp" as (tmp_map) "(Hdir&_&Hpaths)".
     iMod (gen_heap_init (tmp_map: gmap string Inode)) as (hGTmp) "Htmp".
-    iMod (ghost_var_alloc (A := @ghost_init_statusC gm Hgmwf) Uninit) as "H".
+    iMod (ghost_var_alloc (A := @ghost_init_statusC _ mRT.gmWf) Uninit) as "H".
     iDestruct "H" as (γ) "(Hauth&Hfrag)".
     iMod (ghost_var_bulk_alloc (A := contentsC) (σ.(messages)) (λ _ _, ∅)) as "H".
     iDestruct "H" as (Γ HΓdom) "HΓ".
-    iMod (ghost_var_alloc (A := @discreteC (gset string)) (dom (gset _) tmp_map)) as "H".
+    iMod (@ghost_var_alloc (@discreteC (gset string)) _ _ _
+                           Hex.(@go_fs_inG mRT.gm mRT.gmWf Σ).(@go_fs_domalg_inG mRT.gm mRT.gmWf Σ)
+                           (dom (gset _) tmp_map)) as "H".
     iDestruct "H" as (γtmp') "(Hauth_tmp&Hfrag_tmp)".
     iAssert ([∗ map] k↦_ ∈ σ.(messages), ∃ γ0 : gname, ⌜Γ !! k = Some γ0⌝)%I
             with "[HΓ]" as "#HΓ'".
@@ -627,27 +657,35 @@ Proof.
     iSplitL ""; eauto.
     iSplitL ""; eauto.
     iFrame. auto.
-  }
-  { idtac "obligation 6".
+    Unshelve.
+    apply (zeroValue _).
+  Qed.
+
+  Lemma crash_inner_inv : crash_inner_inv_type.
+  Proof.
     iIntros (??) "(H1&H2)". iDestruct "H1" as (Hinv γtmp) "(H&Hstarter)".
     iDestruct "H" as (???) "(?&?&?)".
     iExists _. iFrame.
     iExists _, _. iFrame.
-    iMod (@inv_alloc myΣ (go_invG) execN _ _ with "[-]"); last eauto.
+    iMod (@inv_alloc Σ (go_invG) execN _ _ with "[-]"); last eauto.
     iNext. iExists _. iFrame.
-  }
-  { idtac "obligation 7".
+  Qed.
+
+  Lemma exec_inner_inv : exec_inner_inv_type.
+  Proof.
     iIntros (??) "(H1&H2)". iDestruct "H1" as (Hinv hGTmp ??? Hclosed) "(Hstate&Hmsgs&Heap&Htmps)".
     iExists hGTmp.
     iExists _, _. iFrame.
-    iMod (@inv_alloc myΣ (go_invG) execN _ _ with "[-]"); last eauto.
+    iMod (@inv_alloc Σ (go_invG) execN _ _ with "[-]"); last eauto.
     iNext. iExists _. iFrame "Hstate Heap Htmps".
     rewrite /MsgsInv.
     iDestruct "Hmsgs" as (?) "(Hglobal&Hroot&Hinit&Hmsgs)".
     iExists _. iFrame "Hglobal Hroot Hinit".
     rewrite Hclosed. eauto.
-  }
-  { idtac "obligation 8".
+  Qed.
+
+  Lemma exec_inv_preserve_finish : exec_inv_preserve_finish_type.
+  Proof.
     iIntros (??) "_ H".
     iDestruct "H" as (hGTmp Γ γ) "Hrest".
     iDestruct "Hrest" as "(#Hsource&#Hinv)".
@@ -669,12 +707,12 @@ Proof.
     iIntros (???????) "(#Hsource&Hstate&Hdirlocks&Hglobal)".
     iDestruct "Htmp" as (tmps_map') "(Hdir&Hdirlock&Hauth'&Hpaths)".
     iMod (gen_heap_init tmps_map') as (hGTmp') "Htmp".
-    iMod (ghost_var_alloc (A := @ghost_init_statusC gm Hgmwf) Uninit) as "H".
+    iMod (@ghost_var_alloc (@ghost_init_statusC _ mRT.gmWf) _ _ _ _ Uninit) as "H".
     iDestruct "H" as (γ') "(Hauth&Hfrag)".
     iMod (ghost_var_bulk_alloc (A := contentsC) (σ.(messages)) (λ _ _, ∅)) as "H".
     iDestruct "H" as (Γ' HΓdom) "HΓ".
     iDestruct "Hdirlocks" as (S) "(Hroot'&Hdirlocks)".
-    iDestruct (ghost_var_agree2 (A := discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
+    iDestruct (@ghost_var_agree2 (discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
     iAssert ([∗ map] k↦_ ∈ σ.(messages), ∃ γ0 : gname, ⌜Γ' !! k = Some γ0⌝)%I
             with "[HΓ]" as "#HΓ'".
     { iApply big_sepM_mono; last eauto. iIntros (???) "H". iDestruct "H" as (?) "(?&?)"; eauto. }
@@ -722,14 +760,24 @@ Proof.
     iSplitL ""; eauto.
     iSplitL ""; eauto.
     iFrame. auto.
-  }
-  (* TODO get rid of these *)
-  Unshelve.
-  apply sigPtr_eq_dec.
-  apply (zeroValue _).
-  apply (zeroValue _).
-  apply sigPtr_eq_dec.
-  idtac "Beginning final qed soon.".
-  apply (zeroValue _).
-Time Qed.
+    Unshelve.
+    apply sigPtr_eq_dec.
+    idtac "Beginning final qed soon.".
+    apply (zeroValue _).
+  Qed.
+
+End mRO.
+
+Module mR := goose_refinement mRT mRO.
+Import mR.
+
+Lemma mail_crash_refinement_seq {T} σ1c σ1a esa esc:
+  mRT.init_absr σ1a σ1c →
+  wf_client_seq esa →
+  compile_rel_proc_seq mail_impl esa esc →
+  ¬ proc_exec_seq Mail.l esa (rec_singleton (Ret ())) (1, σ1a) Err →
+  ∀ σ2c (res: T), proc_exec_seq GoLayer.Go.l esc
+                                      (rec_singleton MailServer.Recover) (1, σ1c) (Val σ2c res) →
+  ∃ σ2a, proc_exec_seq Mail.l esa (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
+Proof. apply mR.R.crash_refinement_seq. Qed.
 Print Assumptions mail_crash_refinement_seq.

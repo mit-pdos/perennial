@@ -4,7 +4,7 @@ Require Import Spec.Proc.
 Require Import Spec.ProcTheorems.
 Require Import Spec.Layer.
 From Armada.Goose Require Import Machine GoZeroValues Heap GoLayer.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy CSL.RefinementIdempotenceModule.
 Import Data.
 Import Filesys.FS.
 Import GoLayer.Go.
@@ -46,151 +46,61 @@ Definition gooseΣ (m: GoModel) {wf: GoModelWf m} : gFunctors :=
 Global Instance subG_goosePreG (m: GoModel) {wf: GoModelWf m} {Σ} : subG (gooseΣ m) Σ → goosePreG m Σ.
 Proof. solve_inG. Qed.
 
-
-Section refinement.
-  Context `{@goosePreG gm gmHwf Σ}.
-  Context OpT (Λa: Layer OpT).
-  Context `{cfgPreG OpT Λa Σ}.
+Module Type goose_refinement_type.
+  Context (OpT: Type → Type).
+  Context (Λa: Layer OpT).
+  Context (gm: GoModel).
+  Context (gmWf: GoModelWf gm).
   Context (impl: LayerImplRel GoLayer.Op OpT).
+  Context (Σ: gFunctors).
   Notation compile_rel_base := (compile_rel_base impl).
   Notation compile_rel_proc_seq := (compile_rel_proc_seq impl).
   Notation compile_rel := (compile_rel impl).
   Notation recover := (recover_rel impl).
+  Notation compile_proc_seq := (compile_proc_seq impl).
+  Context `{CFG: cfgPreG OpT Λa Σ} `{HEX: @goosePreG gm gmWf Σ}.
+  Context `{INV: Adequacy.invPreG Σ}.
+  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitC))))}.
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: gooseG gm Σ}, iProp Σ).
-  Context (exec_inner: forall {_ : @cfgG OpT Λa Σ} {_ : gooseG gm Σ}, iProp Σ).
+  Context (exec_inner: forall {_ : @cfgG OpT Λa Σ} {_: gooseG gm Σ}, iProp Σ).
   Context (crash_param: forall (_ : @cfgG OpT Λa Σ) (_ : gooseG gm Σ), Type).
-  Context (crash_inv: forall {H1 : @cfgG OpT Λa Σ} {H2 : gooseG gm Σ}, @crash_param _ _ → iProp Σ).
-  Context (crash_starter: forall {H1 : @cfgG OpT Λa Σ} {H2 : gooseG gm Σ}, @crash_param _ _ → iProp Σ).
+  Context (crash_inv: forall {H1 : @cfgG OpT Λa Σ} {H2 : gooseG gm Σ},
+              @crash_param _ H2 → iProp Σ).
+  Context (crash_starter: forall {H1 : @cfgG OpT Λa Σ} {H2 : gooseG gm Σ},
+              @crash_param _ H2 → iProp Σ).
   Context (exec_inv: forall {_ : @cfgG OpT Λa Σ} {_ : gooseG gm Σ}, iProp Σ).
 
-  Context (einv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : gooseG gm Σ}, Persistent (exec_inv H1 H2)).
-  Context (cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : gooseG gm Σ}
-            {P: crash_param _ _}, Persistent (crash_inv H1 H2 P)).
-
   Context (E: coPset).
-  Context (nameIncl: nclose sourceN ⊆ E).
-  (* TODO: we should get rid of rec_seq if we're not exploiting vertical comp anymore *)
   Context (recv: proc GoLayer.Op unit).
-  Context (recsingle: recover = rec_singleton recv).
+  Context (init_absr: Λa.(OpState) → State → Prop).
+End goose_refinement_type.
 
-  Context (refinement_base_triples:
-             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (p: proc OpT T1) p',
-               compile_rel_base p p' →
-               j ⤇ K p ∗ Registered ∗ (@exec_inv H1 H2) ⊢
-                 WP p' {{ v, j ⤇ K (Ret v) ∗ Registered }}).
+Module goose_refinement_definitions (eRT: goose_refinement_type).
+  Import eRT.
+  Existing Instances gm gmWf.
 
-  Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
-
-  Lemma refinement_triples:
-             forall {H1 H2 T1 T2} j K `{LanguageCtx OpT T1 T2 Λa K} (e: proc OpT T1) e',
-               wf_client e →
-               compile_rel e e' →
-
-               j ⤇ K e ∗ Registered ∗ (@exec_inv H1 H2) ⊢
-                 WP e' {{ v, j ⤇ K (Ret v) ∗ Registered }}.
-  Proof.
-    intros ???? j K Hctx e e' Hwf Hcompile.
-    iIntros "(Hj&Hreg&#Hinv)".
-    iAssert (⌜∃ ea: Layer.State Λa, True⌝)%I as %[? _].
-    {
-      iDestruct (exec_inv_source_ctx with "Hinv") as ((?&?)) "#Hctx".
-      eauto.
-    }
-    assert (Inhabited (Layer.State Λa)).
-    { eexists. eauto. }
-    assert (Inhabited Λa.(OpState)).
-    { eexists. destruct x; eauto. }
-    rename T2 into T2'.
-    iInduction Hcompile as [] "IH" forall (T2' j K Hctx Hwf).
-    - iApply refinement_base_triples; eauto. by iFrame.
-    - wp_ret. iFrame.
-    - wp_bind.
-      iApply wp_wand_l. iSplitL ""; last first.
-      * unshelve (iApply ("IH1" $! _ j (fun x => K (Bind x p1')) with "[] [] [Hj]"); try iFrame).
-        { iPureIntro. apply comp_ctx; auto. apply _. }
-        { inversion Hwf; eauto. }
-      * iIntros (?) "(Hj&Hreg)".
-        iDestruct (exec_inv_source_ctx with "Hinv") as "#Hctx".
-        iMod (ghost_step_bind_ret with "Hj []") as "Hj".
-        { set_solver+. }
-        { eauto. }
-        iApply ("IH" with "[] [] Hj Hreg"); auto.
-        { iPureIntro. eapply Hwf. }
-    - iLöb as "IHloop" forall (init Hwf).
-      iDestruct (exec_inv_source_ctx with "Hinv") as "#Hctx".
-      iMod (ghost_step_loop with "Hj []") as "Hj".
-      { set_solver+. }
-      { eauto. }
-      wp_loop.
-      iApply wp_wand_l.
-      iSplitL ""; last first.
-      * rewrite /loop1. simpl.
-        unshelve (iApply ("IH" $! _ _ _ (fun x => K (Bind x
-                               (fun out => match out with
-                               | ContinueOutcome x => Loop b x
-                               | DoneWithOutcome r => Ret r
-                               end))) with "[] [] Hj Hreg")%proc).
-        { iPureIntro. apply comp_ctx; auto. apply _. }
-        { simpl in Hwf. eauto. }
-      * iIntros (out) "(Hj&Hreg)".
-        destruct out.
-        ** iNext.
-           iMod (ghost_step_bind_ret with "Hj []") as "Hj".
-           { set_solver+. }
-           { eauto. }
-           iApply ("IHloop" with "[] Hj Hreg").
-           { eauto. }
-        ** iNext.
-           iMod (ghost_step_bind_ret with "Hj []") as "Hj".
-           { set_solver+. }
-           { eauto. }
-           wp_ret. iFrame.
-   - inversion Hwf.
-   - inversion Hwf.
-   - iDestruct (exec_inv_source_ctx with "Hinv") as "#Hctx".
-     iMod (ghost_step_spawn with "Hj []") as "(Hj&Hj')".
-     { set_solver+. }
-     { eauto. }
-     iDestruct "Hj'" as (j') "Hj'".
-     iApply (wp_spawn with "Hreg [Hj'] [Hj]").
-     { iNext. iIntros "Hreg'".
-       { wp_bind.
-         iApply (wp_wand with "[Hj' Hreg'] []").
-         { unshelve (iApply ("IH" $! _ _ (fun x => Bind x (fun _ => Unregister))
-                               with "[] [] Hj' Hreg'")).
-           { iPureIntro. apply _. }
-           { eauto. }
-         }
-         { iIntros (?) "(?&?)". iApply (wp_unregister with "[$]"). iIntros "!> ?". eauto. }
-       }
-     }
-     iIntros "!> ?". iFrame.
-  Qed.
-
-  Context (recv_triple:
-             forall {H1 H2} param,
+  Definition recv_triple_type :=
+             forall H1 H2 param,
                (@crash_inv H1 H2 param) ∗ Registered ∗ (@crash_starter H1 H2 param) ⊢
                     WP recv @ NotStuck; ⊤ {{ v, |={⊤,E}=> ∃ σ2a σ2a', source_state σ2a
                     ∗ ⌜Proc.crash_step Λa σ2a (Val σ2a' tt)⌝ ∗
                     ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) tr',
                       source_ctx ∗ source_state σ2a'  ={⊤}=∗
                       exec_inner Hcfg' (GooseG _ _ Σ Hinv' go_heap_inG go_fs_inG go_global_inG tr')
-                                               }}).
+                                               }}.
 
-  Context (init_absr: Λa.(OpState) → State → Prop).
-  Context (init_wf:
+  Definition refinement_base_triples_type :=
+             forall H1 H2 T1 T2 j K `{LanguageCtx OpT T1 T2 Λa K} (p: proc OpT T1) p',
+               compile_rel_base p p' →
+               j ⤇ K p ∗ Registered ∗ (@exec_inv H1 H2) ⊢
+                 WP p' {{ v, j ⤇ K (Ret v) ∗ Registered }}.
+
+  Definition init_wf_type :=
              ∀ σ1a σ1c, init_absr σ1a σ1c →
                         dom (gset string) σ1c.(fs).(dirents) =
                         dom (gset string) σ1c.(fs).(dirlocks) ∧
                         (∀ s l, σ1c.(fs).(dirlocks) !! s = Some l → fst l = Unlocked) ∧
-                        σ1c.(maillocks) = None).
-
-  Context (init_exec_inner: ∀ σ1a σ1c, init_absr σ1a σ1c →
-      (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ},
-          (([∗ map] d ↦ ents ∈ σ1c.(fs).(dirents), d ↦ dom (gset string) ents) ∗
-          rootdir ↦{-1} dom (gset string) σ1c.(fs).(dirents) ∗
-          ([∗ set] dir ∈ dom (gset string) σ1c.(fs).(dirents), dir ↦ Unlocked) ∗
-           source_ctx ∗ source_state σ1a ∗ global ↦ None) ={⊤}=∗ exec_inner _ _)).
+                        σ1c.(maillocks) = None.
 
   (* Helper to update collection of ghost algebra for file system to use new
      "generation" mapping for fds/dlocks post crash. *)
@@ -198,43 +108,220 @@ Section refinement.
     FsG _ _ _ newDirLocks (go_fs_dirs_inG) (go_fs_paths_inG) (go_fs_inodes_inG)
         newFds (go_fs_domalg_inG) (go_fs_dom_name).
 
-  Context (exec_inv_preserve_crash:
-      (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ},
+  Definition init_exec_inner_type := ∀ σ1a σ1c, init_absr σ1a σ1c →
+      (∀ (Hex: @gooseG gm gmWf Σ) `(Hcfg: cfgG OpT Λa Σ),
+          (([∗ map] d ↦ ents ∈ σ1c.(fs).(dirents), d ↦ dom (gset string) ents) ∗
+          rootdir ↦{-1} dom (gset string) σ1c.(fs).(dirents) ∗
+          ([∗ set] dir ∈ dom (gset string) σ1c.(fs).(dirents), dir ↦ Unlocked) ∗
+           source_ctx ∗ source_state σ1a ∗ global ↦ None) ={⊤}=∗ exec_inner _ _).
+
+  Definition exec_inv_preserve_crash_type :=
+      (∀ (Hex: @gooseG gm gmWf Σ) `(Hcfg: cfgG OpT Λa Σ),
           exec_inv Hcfg Hex ={⊤, E}=∗ ∀ Hmem' Hdlocks' Hfds' Hreg' Hglobal',
             (let Hex := GooseG _ _ Σ (go_invG) Hmem' (crash_fsG _ Hdlocks' Hfds') Hreg' Hglobal' in
            (∃ S, rootdir ↦{-1} S ∗ [∗ set] dir ∈ S, dir ↦ Unlocked) ∗
-           global ↦ None ={E}=∗ crash_inner Hcfg Hex))).
+           global ↦ None ={E}=∗ crash_inner Hcfg Hex)).
 
-  Context (crash_inv_preserve_crash:
-      (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ} param,
+  Definition crash_inv_preserve_crash_type :=
+      (∀ (Hex: @gooseG gm gmWf Σ) `(Hcfg: cfgG OpT Λa Σ) param,
           crash_inv Hcfg Hex param ={⊤, E}=∗ ∀ Hmem' Hdlocks' Hfds' Hreg' Hglobal',
           (let Hex := GooseG _ _ Σ (go_invG) Hmem' (crash_fsG _ Hdlocks' Hfds') Hreg' Hglobal' in
            (∃ S, rootdir ↦{-1} S ∗ [∗ set] dir ∈ S, dir ↦ Unlocked) ∗
-           global ↦ None ={E}=∗ crash_inner Hcfg Hex))).
+           global ↦ None ={E}=∗ crash_inner Hcfg Hex)).
 
-  (* TODO: Much of this business is just to capture the fact that exec_inner/crash_inner
-     should not really mention invariants, because those old invariants are 'dead' *)
-  Context (crash_inner_inv :
-      (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ},
+  Definition crash_inner_inv_type :=
+      (∀ (Hex: @gooseG gm gmWf Σ) `(Hcfg: cfgG OpT Λa Σ),
           (∃ Hinv, crash_inner Hcfg (GooseG _ _ Σ Hinv (go_heap_inG) (go_fs_inG)
                                             (go_global_inG) (go_treg_inG))) ∗
-          source_ctx ={⊤}=∗ ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param)).
+          source_ctx ={⊤}=∗ ∃ param, crash_inv Hcfg Hex param ∗ crash_starter Hcfg Hex param).
 
-  Context (exec_inner_inv :
-      (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ},
+  Definition exec_inner_inv_type :=
+      (∀ (Hex: @gooseG gm gmWf Σ) `(Hcfg: cfgG OpT Λa Σ),
           (∃ Hinv, exec_inner Hcfg (GooseG _ _ Σ Hinv (go_heap_inG) (go_fs_inG)
                                            (go_global_inG) (go_treg_inG))) ∗
-          source_ctx ={⊤}=∗ exec_inv Hcfg Hex)).
+          source_ctx ={⊤}=∗ exec_inv Hcfg Hex).
 
-  Context (exec_inv_preserve_finish:
-      (∀ `{Hex: @gooseG gm gmHwf Σ} `{Hcfg: cfgG OpT Λa Σ},
+  Definition exec_inv_preserve_finish_type :=
+      (∀ (Hex: @gooseG gm gmWf Σ) `(Hcfg: cfgG OpT Λa Σ),
           AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
           ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
           ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hdlocks' Hfds' Hreg' Hglobal',
             (let Hex := GooseG _ _ Σ Hinv' Hmem' (crash_fsG _ Hdlocks' Hfds') Hreg' Hglobal' in
              source_ctx ∗ source_state σ2a' ∗
              (∃ S, rootdir ↦{-1} S ∗ [∗ set] dir ∈ S, dir ↦ Unlocked) ∗
-             global ↦ None ={⊤}=∗ exec_inner Hcfg' Hex))%I).
+             global ↦ None ={⊤}=∗ exec_inner Hcfg' Hex))%I.
+
+End goose_refinement_definitions.
+
+
+
+Module Type goose_refinement_obligations (eRT: goose_refinement_type).
+
+  Module eRD := goose_refinement_definitions eRT.
+  Import eRT.
+  Import eRD.
+
+  Context (recsingle: recover = rec_singleton eRT.recv).
+
+  Context (nameIncl: nclose sourceN ⊆ eRT.E).
+  Context (einv_persist: forall {H1 : @cfgG OpT Λa eRT.Σ} {H2 : _},
+              Persistent (exec_inv H1 H2)).
+  Context (cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _}
+            {P: crash_param _ _}, Persistent (crash_inv H1 H2 P)).
+
+  Context (exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx).
+
+  Context (recv_triple: recv_triple_type).
+  Context (init_wf: init_wf_type).
+  Context (refinement_base_triples: refinement_base_triples_type).
+  Context (init_exec_inner: init_exec_inner_type).
+  Context (exec_inv_preserve_crash: exec_inv_preserve_crash_type).
+  Context (crash_inv_preserve_crash: crash_inv_preserve_crash_type).
+  Context (exec_inner_inv: exec_inner_inv_type).
+  Context (crash_inner_inv: crash_inner_inv_type).
+  Context (exec_inv_preserve_finish : exec_inv_preserve_finish_type).
+End goose_refinement_obligations.
+
+Module goose_refinement (eRT: goose_refinement_type) (eRO: goose_refinement_obligations eRT).
+  Module eRD := goose_refinement_definitions eRT.
+
+  Module RT <: refinement_type.
+    Import eRT.
+    Definition OpC := GoLayer.Op.
+    Definition Λc := GoLayer.Go.l.
+    Definition OpT := OpT.
+    Definition Λa := Λa.
+    Definition impl := impl.
+    Definition exmachG := @gooseG gm gmWf.
+    Definition Σ := Σ.
+    Definition CFG := CFG.
+    Definition INV := INV.
+    Definition REG := REG.
+    Definition Hinstance := @gooseG_irisG _ _.
+    Definition Hinstance_reg := @go_treg_inG _ _.
+    Definition set_inv_reg Hex Hinv Hreg :=
+      GooseG _ _ Σ Hinv (@go_heap_inG _ _ _ Hex) (@go_fs_inG _ _ _ Hex)
+             (@go_global_inG _ _ _ Hex) Hreg.
+
+    Definition crash_inner := crash_inner.
+    Definition exec_inner := exec_inner.
+    Definition crash_inv := crash_inv.
+    Definition crash_param := crash_param.
+    Definition crash_starter := crash_starter.
+    Definition exec_inv := exec_inv.
+    Definition E := E.
+    Definition recv := recv.
+    Definition init_absr := init_absr.
+
+  End RT.
+
+  Module RD := refinement_definitions RT.
+
+  Import RT RD.
+
+  Module RO : refinement_obligations RT.
+    Module RD := RD.
+    Import WeakestPre.
+    Import RT RD.
+
+    Definition nameIncl := eRO.nameIncl.
+    Definition einv_persist := eRO.einv_persist.
+    Definition cinv_persist := eRO.cinv_persist.
+    Existing Instances einv_persist cinv_persist.
+    Definition recsingle := eRO.recsingle.
+    Definition refinement_base_triples := eRO.refinement_base_triples.
+    Definition exec_inv_source_ctx := eRO.exec_inv_source_ctx.
+
+
+    Lemma set_inv_reg_spec0:
+             ∀ Hex, (set_inv_reg Hex (Hinstance Σ Hex).(@iris_invG OpC (Layer.State Λc) Σ)
+                                                         (Hinstance_reg Σ Hex) = Hex).
+    Proof. destruct Hex; auto. Qed.
+
+    Lemma set_inv_reg_spec1:
+      ∀ Hex Hinv Hreg, @iris_invG _ _ _ (Hinstance _ (set_inv_reg Hex Hinv Hreg)) = Hinv.
+    Proof. trivial. Qed.
+
+    Lemma set_inv_reg_spec2:
+      ∀ Hex Hinv Hreg, Hinstance_reg _ (set_inv_reg Hex Hinv Hreg) = Hreg.
+    Proof. trivial. Qed.
+
+    Lemma set_inv_reg_spec3:
+      ∀ Hex Hinv Hinv' Hreg Hreg', set_inv_reg (set_inv_reg Hex Hinv' Hreg') Hinv Hreg =
+                       (set_inv_reg Hex Hinv Hreg).
+    Proof. trivial. Qed.
+
+    Existing Instance Hinstance.
+    Lemma register_spec `{@gooseG eRT.gm _ Σ}: ∃ (Interp: OpState Λc → iProp Σ),
+                (∀ n σ, @state_interp _ _ _ (Hinstance _ _) (n, σ)
+                                     -∗ thread_count_interp n ∗ Interp σ) ∧
+                ∀ n σ, thread_count_interp n ∗ Interp σ -∗ state_interp (n, σ).
+    Proof. eexists. split; [ eapply Interp.thread_reg1 | eapply Interp.thread_reg2 ]. Qed.
+
+    (* This is just to convert from the old recv_triple style to the new one. *)
+    Lemma recv_triple : recv_triple_type.
+    Proof.
+      rewrite /recv_triple_type.
+      iIntros (???) "(#Hinv&Hreg&Hstart)".
+      iPoseProof @eRO.recv_triple as "H".
+      iSpecialize ("H" with "[$]").
+      iApply (wp_wand with "H").
+      iIntros (_) "H".
+      iMod "H" as (σ2a σ2a') "(?&%&H)".
+      iModIntro. iExists _, _. iFrame.
+      iSplitR; first by iPureIntro.
+      iIntros. rewrite /post_recv.
+      iIntros (????) "((_&Hstate)&Hthread)". iModIntro. iExists _. iFrame.
+      iIntros. iModIntro. by iMod ("H" with "[$]").
+    Qed.
+
+    Existing Instance eRT.HEX.
+    Lemma init_exec_inner : init_exec_inner_type.
+    Proof.
+      rewrite /init_exec_inner_type.
+      iIntros (σ1a σ1c Hinit ???).
+      iMod (gen_typed_heap_strong_init (σ1c.(fs).(heap).(allocs)))
+        as (hM Hmpf_eq) "(Hmc&Hm)".
+      iMod (gen_heap_strong_init (fmap (dom (gset string)) (σ1c.(fs).(dirents))))
+        as (hD Hdpf_eq) "(Hdc&Hd)".
+      iMod (gen_heap_strong_init (σ1c.(fs).(fds))) as (hFDs HFDpf_eq) "(Hfdc&Hfd)".
+      iMod (gen_heap_strong_init (σ1c.(fs).(inodes))) as (hIs HIpf_eq) "(Hidc&Hi)".
+      iMod (gen_dir_strong_init (σ1c.(fs).(dirents))) as (hP HPpf_eq) "(Hpc&Hp)".
+      iMod (Count_Heap.gen_heap_strong_init (λ s, (σ1c.(fs).(dirlocks)) !! s))
+        as (hL HLpf_eq) "(Hlc&Hl)".
+      iMod (ghost_var_alloc (A := discreteC (gset string))
+                            (dom (gset string) σ1c.(fs).(dirents))) as (hGD) "(HgdA&Hgd)".
+      replace 0%Z with (O :Z) by auto.
+      iPoseProof (Count_Ghost.read_split (A := discreteC (gset string)) hGD
+                    with "Hgd") as "(Hgd&Hgdr)".
+      iMod (ghost_var_alloc (A := discreteC sliceLockC)
+                            (σ1c.(maillocks))) as (hGL) "(HglA&Hgl)".
+      set (hFG := (FsG _ _ Σ hL hD hP hIs hFDs _ hGD)).
+      set (hGl := (GlobalG _ _ _ _ hGL)).
+      set (hG := (GooseG _ _ Σ _ hM hFG hGl _)).
+      iPoseProof (eRO.init_exec_inner σ1a σ1c Hinit hG _) as "H".
+      iExists hG. iModIntro. iIntros "(Hsource1&Hsource2&Hthread)".
+      iFrame.
+      iMod ("H" with "[-Hgd]") as "Hinner".
+      { iFrame.
+        edestruct (eRO.init_wf) as (?&?&->); eauto. iFrame.
+        iSplitL "Hd".
+        * iPoseProof (@gen_heap_init_to_bigOp _ _ _ _ _ hD with "[Hd]") as "?".
+          { by rewrite Hdpf_eq. }
+            by rewrite big_opM_fmap.
+        * iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ hL _ _ (σ1c.(fs).(dirlocks))
+                        with "[Hl]") as "Hl".
+          { intros s x. eapply eRO.init_wf; eauto. }
+          { by rewrite HLpf_eq. }
+          edestruct (eRO.init_wf) as (->&_&_); eauto.
+          iApply big_sepM_dom. iApply (big_sepM_mono with "Hl").
+          intros ? (?&[]); eauto.
+      }
+      iFrame. iModIntro.
+      iSplitL "Hgd".
+      - iExists _. iFrame.
+      - edestruct (eRO.init_wf) as (?&?); eauto.
+    Qed.
 
   Lemma goose_interp_split_read_dir `{gooseG Σ} σ2c:
     (goose_interp σ2c -∗
@@ -250,183 +337,22 @@ Section refinement.
     iExists (S n). eauto.
   Qed.
 
-  Lemma exmach_crash_refinement_seq {T} σ1c σ1a (es: proc_seq OpT T) es' :
-    init_absr σ1a σ1c →
-    wf_client_seq es →
-    compile_rel_proc_seq es es' →
-    ¬ proc_exec_seq Λa es (rec_singleton (Ret ())) (1, σ1a) Err →
-    ∀ σ2c res, proc_exec_seq GoLayer.Go.l es'
-                                        (rec_singleton recv) (1, σ1c) (Val σ2c res) →
-    ∃ σ2a, proc_exec_seq Λa es (rec_singleton (Ret tt)) (1, σ1a) (Val σ2a res).
+  Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
   Proof.
-    rewrite /compile_proc_seq. intros Hinit Hwf_seq Hcompile Hno_err σ2c0 ?.
-    unshelve (eapply wp_proc_seq_refinement_adequacy with
-                  (Λc := l)
-                  (φ := fun va vc _ _ => ⌜ va = vc ⌝%I)
-                  (E0 := E); eauto).
-    clear Hno_err.
-  iAssert (∀ invG H1 ρ, |={⊤}=>
-       ∃ hM hD hGl tR,
-             ((@state_interp _ _ _ (@gooseG_irisG _ _ _ (GooseG _ _ Σ _ hM hD hGl {| treg_name := tR; treg_counter_inG := _ |}))) (1, σ1c)) ∗
-         (source_ctx' (ρ, σ1a) -∗ source_state σ1a ={⊤}=∗
-         own tR (Cinl (Count (-1))) ∗
-          exec_inner H1 (GooseG _ _ Σ invG hM hD hGl {| treg_name := tR; treg_counter_inG := _ |})))%I
-      as "Hpre".
-  {
-  iIntros.
-  iMod (gen_typed_heap_strong_init (σ1c.(fs).(heap).(allocs))) as (hM Hmpf_eq) "(Hmc&Hm)".
-  iMod (gen_heap_strong_init (fmap (dom (gset string)) (σ1c.(fs).(dirents)))) as (hD Hdpf_eq) "(Hdc&Hd)".
-  iMod (gen_heap_strong_init (σ1c.(fs).(fds))) as (hFDs HFDpf_eq) "(Hfdc&Hfd)".
-  iMod (gen_heap_strong_init (σ1c.(fs).(inodes))) as (hIs HIpf_eq) "(Hidc&Hi)".
-  iMod (gen_dir_strong_init (σ1c.(fs).(dirents))) as (hP HPpf_eq) "(Hpc&Hp)".
-  iMod (Count_Heap.gen_heap_strong_init (λ s, (σ1c.(fs).(dirlocks)) !! s)) as (hL HLpf_eq) "(Hlc&Hl)".
-  iMod (own_alloc (Cinl (Count 0))) as (tR) "Ht".
-  { constructor. }
-  set (tR' := {| treg_name := tR; treg_counter_inG := _ |}).
-  iMod (ghost_var_alloc (A := discreteC (gset string))
-                        (dom (gset string) σ1c.(fs).(dirents))) as (hGD) "(HgdA&Hgd)".
-  replace 0%Z with (O :Z) by auto.
-  iPoseProof (Count_Ghost.read_split (A := discreteC (gset string)) hGD
-                with "Hgd") as "(Hgd&Hgdr)".
-  iMod (ghost_var_alloc (A := discreteC sliceLockC)
-                        (σ1c.(maillocks))) as (hGL) "(HglA&Hgl)".
-  iAssert (own tR (Cinl (Count 1)) ∗ own tR (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
-  { rewrite /Registered -own_op Cinl_op counting_op' //=. }
-  set (hFG := (FsG _ _ Σ hL hD hP hIs hFDs _ hGD)).
-  set (hGl := (GlobalG _ _ _ _ hGL)).
-  iModIntro. iExists hM, hFG, hGl, tR. (* Hmpf_eq, Hdpf_eq. *)
-  iSplitL "Hmc Hdc Hfdc Hidc Hpc Hlc Ht HglA Hgd".
-  { iFrame. simpl. iSplitL "Hgd". iExists 1; iFrame. iPureIntro. eapply init_wf; eauto. }
-  iIntros.
-  iPoseProof (init_exec_inner σ1a σ1c Hinit (GooseG _ _ Σ _ hM hFG hGl tR') _) as "H".
-  iMod ("H" with "[-Hreg]") as "$".
-  { edestruct (init_wf) as (?&?&->); eauto. iFrame.
-    iSplitL "Hd"; [| iSplitL "Hl"].
-    * iPoseProof (@gen_heap_init_to_bigOp _ _ _ _ _ hD with "[Hd]") as "?".
-      { by rewrite Hdpf_eq. }
-      by rewrite big_opM_fmap.
-    * iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ hL _ _ (σ1c.(fs).(dirlocks))
-                    with "[Hl]") as "Hl".
-      { intros s x. eapply init_wf; eauto. }
-      { by rewrite HLpf_eq. }
-      edestruct (init_wf) as (->&_&_); eauto.
-      iApply big_sepM_dom. iApply (big_sepM_mono with "Hl").
-      intros ? (?&[]); eauto.
-    * iExists _. eauto.
-  }
-  iFrame; eauto.
-  }
-
-  clear Hinit.
-  iInduction Hcompile as [] "IH" forall (σ1a σ1c) "Hpre"; first by eauto.
- (*
-  iInduction es as [|es] "IH" forall (σ1a σ1c) "Hpre". first by eauto.
-  *)
-  - iSplit; first by eauto.
-  iExists (fun cfgG s => ∃ (Hex : @gooseG gm gmHwf Σ), state_interp s ∗
-            (∃ hM hDlock' hGl' hFds'  tr,
-                gen_typed_heap_ctx ∅ ∗ own tr (Cinl (Count 0))
-                                   ∗ gen_heap_ctx (∅: gmap File (Inode * OpenMode))
-                                   ∗ ghost_mapsto_auth (hGMG := go_global_alg_inG)
-                                                       (go_global_name) None
-                                  ∗ Count_Heap.gen_heap_ctx
-                                  (λ k, ((λ _ : LockStatus * (), (Unlocked, ())) <$> (snd s).(fs).(dirlocks)) !! k)
-                                   ∗ crash_inner cfgG
-                                   (GooseG _ _ Σ _ hM (crash_fsG (go_fs_inG) hDlock' hFds') hGl'
- {| treg_name := tr; treg_counter_inG := _ |})))%I; auto.
-  iIntros (invG0 Hcfg0).
-  iMod ("Hpre" $! invG0 _ _) as (hM hD hGl' tr (* ?? *) ) "(Hstate0&H)".
-  set (tR' := {| treg_name := tr; treg_counter_inG := _ |}).
-  set (hG := (GooseG _ _ Σ _ hM hD hGl' tR')).
-  iExists (@state_interp _ _ _ (@gooseG_irisG _ _ _ hG)).
-  iIntros "!> (#Hsrc&Hpt0&Hstate)".
-  iMod ("H" with "Hsrc Hstate") as "(Hreg&Hinv)".
-  iMod (exec_inner_inv hG _ with "[Hinv]") as "#Hinv".
-  { iSplitR ""; last by (iExists _; iFrame). iExists _. iFrame. }
-  simpl.
-  iModIntro.
-  iFrame "Hstate0".
-  iSplitL "Hpt0 Hreg".
-  {
-       inversion H1; subst.
-       iPoseProof (@wp_mono with "[Hpt0 Hreg]") as "H"; swap 1 2.
-     { iApply refinement_triples. destruct (Hwf_seq) as (?&?); eauto; iFrame. eauto.
-       iFrame. iFrame "Hinv".  }
-     { reflexivity. }
-     wp_bind.
-     iApply (wp_wand with "H [Hinv]").
-     iIntros (v) "(Hpt0&Hreg)". iFrame.
-     wp_bind.
-     iApply (wp_wait with "Hreg").
-     iIntros "!> Hdone".
-     wp_ret. iFrame. iExists _. iFrame. iIntros (σ2c) "Hmach".
-     iMod (exec_inv_preserve_finish with "Hdone Hinv") as (σ2a σ2a') "(H&Hfina&Hfinish)".
-     iDestruct "Hfina" as %Hfina.
-     iModIntro. iExists _; iFrame; auto.
-     rewrite -/wp_proc_seq_refinement.
-     iIntros (σ2c'). iIntros.
-     unshelve (iExists σ2a', _); [eauto |]; [].
-     iApply "IH".
-     { iPureIntro. destruct Hwf_seq. eauto. }
-     { iIntros.
-       destruct σ2c as (n&σ2c). iDestruct "Hmach" as "(?&Hmach)".
-       iMod (gen_typed_heap_strong_init ∅) as (hM' Hmpf_eq') "(Hmc&Hm)".
-       iMod (gen_heap_strong_init (∅: gmap File (Inode * OpenMode)))
-         as (hFds' Hfds'_eq') "(Hfdsc&Hfd)".
-       iMod (Count_Heap.gen_heap_strong_init
-               (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ2c.(fs).(dirlocks)) !! s))
-         as (hDlocks' Hdlocks'_eq') "(Hdlocksc&Hlocks)".
-       iMod (own_alloc (Cinl (Count 0))) as (tR_fresh') "Ht".
-       { constructor. }
-       iMod (ghost_var_alloc (A := discreteC sliceLockC)
-                             None) as (hGl''_name) "(HglA&Hgl)".
-       iAssert (own tR_fresh' (Cinl (Count 1))
-                    ∗ own tR_fresh' (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
-       { rewrite /Registered -own_op Cinl_op counting_op' //=. }
-       set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
-       set (hGl'':= GlobalG _ _ _ _ hGl''_name).
-       iModIntro.
-       iExists hM'. iExists (crash_fsG hD hDlocks' hFds'). iExists hGl''. iExists tR_fresh'.
-       iFrame.
-       simpl.
-       iPoseProof (goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
-       iSplitL ("Hmc Hmach Hfdsc Hdlocksc HglA").
-       { iClear "IH".
-         iDestruct "Hmach" as "(?&(?&?&?&?&?&?)&?)".
-         repeat deex. inv_step.
-         simpl.
-         iFrame. simpl.
-         rewrite dom_fmap_L.
-         iFrame.
-       }
-       iIntros "Hctx' Hsrc'". iMod ("Hfinish" $! _ _ hM' with "[-]").
-       iSplitL "Hctx'"; first by (iExists _; iFrame). iFrame.
-       iExists _. iFrame.
-       iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ _ _ _ _
-                     with "[Hlocks]") as "Hl"; swap 1 2.
-       { rewrite Hdlocks'_eq'. eauto. }
-       { intros s x. rewrite lookup_fmap. by intros (?&?&->)%fmap_Some_1. }
-       iDestruct "Hdom_eq" as %->.
-       iApply big_sepM_dom. rewrite big_sepM_fmap. eauto.
-       eauto.
-     }
-  }
-  iSplit.
-  { iIntros (σ2c) "Hmach".
-    destruct σ2c as (n&σ2c). iDestruct "Hmach" as "(?&Hmach)".
-    iMod (exec_inv_preserve_crash with "Hinv") as "Hinv_post".
+    rewrite /exec_inv_preserve_crash_type.
+    iIntros (??) "Hinv".
+    iPoseProof (eRO.exec_inv_preserve_crash with "Hinv") as "Hinv_post".
+    iMod ("Hinv_post") as "Hinv_post".
+    iModIntro. iIntros (? n σ) "((?&Hmach)&Hthread)".
     iMod (gen_typed_heap_strong_init ∅) as (hM' Hmpf_eq') "(Hmc&Hm)".
     iMod (gen_heap_strong_init (∅: gmap File (Inode * OpenMode)))
       as (hFds' Hfds'_eq') "(Hfdsc&Hfd)".
     iMod (Count_Heap.gen_heap_strong_init
-            (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ2c.(fs).(dirlocks)) !! s))
+            (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ.(fs).(dirlocks)) !! s))
       as (hDlocks' Hdlocks'_eq') "(Hdlocksc&Hlocks)".
     iMod (ghost_var_alloc (A := discreteC sliceLockC)
                              None) as (hGl_name) "(HglA&Hgl)".
-    iMod (own_alloc (Cinl (Count 0))) as (tR_fresh') "Ht".
-    { constructor. }
     set (hGl := GlobalG _ _ _ _ hGl_name).
-    set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
     iPoseProof (goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
     iMod ("Hinv_post" with "[Hm Hgl Hlocks Hroot Hdom_eq]") as "Hinv'".
     { iFrame. iExists _. iFrame.
@@ -437,118 +363,51 @@ Section refinement.
        iDestruct "Hdom_eq" as %->.
        iApply big_sepM_dom. rewrite big_sepM_fmap. eauto.
     }
-    iIntros. iModIntro.
-    unfold hG.
-    simpl.
-
-
-    iExists (GooseG _ _ Σ (@go_invG _ _ _ hG) hM hD hGl' tR').
-    unfold hG. simpl. unfold gooseG_irisG. simpl.
-    simpl. iFrame.
-    iExists hM', _, hGl, _, tR_fresh'. iFrame.
-  }
-  iClear "Hsrc".
-  iModIntro. iIntros (invG Hcfg' ?? Hcrash) "(Hinv0&#Hsrc)".
-  iDestruct "Hinv0" as (HexmachG') "(Hinterp&Hinv0)".
-  iDestruct "Hinv0" as (hM' hDl' hGl_fresh' hFd' tR_fresh' (* Hmpf_eq' Hmdpf_eq' *)) "(Hmc'&Hreg&Hfdc'&Hglc'&Hlocks'&Hcrash_inner)".
-  iClear "Hinv".
-  set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
-  iMod (crash_inner_inv (GooseG _ _ Σ _
-                                 hM' (crash_fsG (go_fs_inG) hDl' hFd') hGl_fresh' tR''') Hcfg'
-                         with "[Hcrash_inner]") as (param) "(#Hinv&Hstarter)".
-  { iIntros. simpl. iSplitR ""; last by (iExists _; iFrame).
-    iExists (gooseG_irisG.(@iris_invG GoLayer.Op (Layer.State l) Σ)). iFrame. }
-  iModIntro.
-  iAssert (own tR_fresh' (Cinl (Count 1)) ∗ own tR_fresh' (Cinl (Count (-1))))%I
-    with "[Hreg]" as "(Ht&Hreg)".
-  { rewrite /Registered -own_op Cinl_op counting_op' //=. }
-  iExists (@state_interp _ _ _ (@gooseG_irisG _ _ _ (GooseG _ _ _ _ hM' (crash_fsG (@go_fs_inG _ _ _ HexmachG') hDl' hFd') hGl_fresh' tR'''))).
-  iSplitL "Hinterp Ht Hmc' Hfdc' Hglc' Hlocks'".
-  { (* shows ex_mach_interp is holds after crash for next gen *)
-    destruct a, a0.
-    iDestruct "Hinterp" as "(?&Hinterp)".
+    iModIntro.
+    iIntros (σ' Hcrash).
+    iExists ((GooseG _ _ _ (@go_invG _ _ _ Hex) hM'
+                     (eRO.eRD.crash_fsG (@go_fs_inG _ _ _ _) hDlocks' hFds') hGl _)).
     destruct Hcrash as ([]&(?&?)&Hput&Hrest).
+    (* TODO: need a better tactic for inverting the crash *)
     inversion Hput. subst. inv_step.
     inversion Hrest; subst.
-    match goal with
-      | [H: crash_step _ _ |- _ ] => inversion H
-    end.
-    subst.
+    simpl.
+    repeat inv_step.
+    inversion H.
     deex. inv_step.
-    inv_step. inversion H4. inv_step. inversion H5. subst.
-    inv_step. subst.
-    inversion H6. subst. deex. inv_step. subst.
-    inversion H4. subst.
+    inv_step. inversion H.
+    deex. inv_step.
+    unfold RecordSet.set in *. simpl.
+    inversion H. subst. simpl in *.
+    repeat deex. inv_step. subst.
+    iDestruct "Hmach" as "(?&(?&?&?&?&?&?)&?)".
     simpl.
-    iSplitL "Ht".
-    { iFrame. }
+    unfold RecordSet.set in *. simpl.
     iFrame.
     simpl.
-    iFrame.
-    unfold RecordSet.set. simpl.
-    iDestruct "Hinterp" as "(?&(?&?&?&?&?&?)&?)".
-    unfold crash_fsG. simpl. unfold fs_interp. simpl.
     iFrame.
     rewrite dom_fmap_L.
     auto.
-  }
-  iSplitL "Hinv Hreg Hstarter".
-  {
-    iPoseProof (@wp_mono with "[Hinv Hreg Hstarter IH]") as "H"; swap 1 2.
-    { iApply recv_triple. iFrame "Hstarter". iFrame. iApply "Hinv". }
-    { reflexivity. }
-    iApply (@wp_wand with "H [IH]").
-    iIntros (_) "H". iIntros (σ2c) "Hinterp".
-    iMod "H". iModIntro.
-    iDestruct "H" as (σ2a σ2a') "(Hsource&Hinner&Hfinish)".
-    iExists (1, σ2a), (1, σ2a'). iFrame.
-     rewrite -/wp_proc_seq_refinement.
-     iDestruct "Hinner" as %?.
-     iSplitL "".
-     { iPureIntro. exists tt, (1, σ2a); split; eauto. econstructor. split; eauto. eauto.
-       econstructor; eauto.
-     }
-     iApply "IH".
-     { destruct Hwf_seq. eauto. }
-     { iIntros.
-       iMod (@own_alloc _ _ H.(@goose_preG_treg_inG gm gmHwf Σ)
-                        (Cinl (Count 0))) as (tR_fresh'') "Ht".
-       { constructor. }
-       iAssert (@own _ _ H.(@goose_preG_treg_inG gm gmHwf Σ) tR_fresh'' (Cinl (Count 1))
-                    ∗ @own _ _ H.(@goose_preG_treg_inG gm gmHwf Σ) tR_fresh'' (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
-       { rewrite /Registered -own_op Cinl_op counting_op' //=. }
-       set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := H.(@goose_preG_treg_inG gm gmHwf Σ) |}).
-       iModIntro.
-       iExists hM'.
-       iExists (crash_fsG (HexmachG'.(@go_fs_inG _ _ Σ)) hDl' hFd').
-       iExists hGl_fresh'.
-       iExists tR_fresh''.
-       destruct σ2c.
-       iDestruct "Hinterp" as "(?&?&Hfs&?)".
-       iDestruct "Hfs" as "(?&?&?&?&?&?&?)".
-       iFrame. iIntros.
-       iFrame.
-       iMod ("Hfinish" with "[-]"). iSplitL ""; first by (iExists _; iFrame).
-       iFrame. simpl. unfold tR''''. eauto.
-     }
-  }
-  {
-    iIntros (σ2c) "Hmach".
-    destruct σ2c as (n&σ2c). iDestruct "Hmach" as "(?&Hmach)".
-    iMod (crash_inv_preserve_crash with "Hinv") as "Hinv_post".
-    iMod (gen_typed_heap_strong_init ∅) as (hM'' Hmpf_eq'') "(Hmc&Hm)".
+    iFrame. eauto.
+  Qed.
+
+  Lemma crash_inv_preserve_crash: crash_inv_preserve_crash_type.
+  Proof.
+    rewrite /crash_inv_preserve_crash_type.
+    iIntros (???) "Hinv".
+    iPoseProof (eRO.crash_inv_preserve_crash with "Hinv") as "Hinv_post".
+    iMod ("Hinv_post") as "Hinv_post".
+    iModIntro. iIntros (? n σ) "((?&Hmach)&Hthread)".
+    iMod (gen_typed_heap_strong_init ∅) as (hM' Hmpf_eq') "(Hmc&Hm)".
     iMod (gen_heap_strong_init (∅: gmap File (Inode * OpenMode)))
       as (hFds' Hfds'_eq') "(Hfdsc&Hfd)".
     iMod (Count_Heap.gen_heap_strong_init
-            (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ2c.(fs).(dirlocks)) !! s))
+            (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ.(fs).(dirlocks)) !! s))
       as (hDlocks' Hdlocks'_eq') "(Hdlocksc&Hlocks)".
     iMod (ghost_var_alloc (A := discreteC sliceLockC)
-                          None) as (hGl''_name) "(HglA&Hgl)".
-    iMod (own_alloc (Cinl (Count 0))) as (tR_fresh'') "Ht".
-    { constructor. }
-    set (hGl'':= GlobalG _ _ _ _ hGl''_name).
-    set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
-    iPoseProof (@goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
+                             None) as (hGl_name) "(HglA&Hgl)".
+    set (hGl := GlobalG _ _ _ _ hGl_name).
+    iPoseProof (goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
     iMod ("Hinv_post" with "[Hm Hgl Hlocks Hroot Hdom_eq]") as "Hinv'".
     { iFrame. iExists _. iFrame.
        iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ _ _ _ _
@@ -558,14 +417,105 @@ Section refinement.
        iDestruct "Hdom_eq" as %->.
        iApply big_sepM_dom. rewrite big_sepM_fmap. eauto.
     }
-    iIntros. iModIntro.
-    unfold hG.
+    iModIntro.
+    iIntros (σ' Hcrash).
+    iExists ((GooseG _ _ _ (@go_invG _ _ _ Hex) hM'
+                     (eRO.eRD.crash_fsG (@go_fs_inG _ _ _ _) hDlocks' hFds') hGl _)).
+    destruct Hcrash as ([]&(?&?)&Hput&Hrest).
+    (* TODO: need a better tactic for inverting the crash *)
+    inversion Hput. subst. inv_step.
+    inversion Hrest; subst.
     simpl.
+    repeat inv_step.
+    inversion H.
+    deex. inv_step.
+    inv_step. inversion H.
+    deex. inv_step.
+    unfold RecordSet.set in *. simpl.
+    inversion H. subst. simpl in *.
+    repeat deex. inv_step. subst.
     iDestruct "Hmach" as "(?&(?&?&?&?&?&?)&?)".
-    iExists (GooseG _ _ Σ invG hM'
-               (crash_fsG HexmachG'.(@go_fs_inG _ _ Σ) hDl' hFd') hGl_fresh' tR'''). iFrame.
-    iExists hM'', _, _, _, tR_fresh''. iFrame.
-  }
+    simpl.
+    unfold RecordSet.set in *. simpl.
+    iFrame.
+    simpl.
+    iFrame.
+    rewrite dom_fmap_L.
+    auto.
+    iFrame. eauto.
   Qed.
 
-End refinement.
+  Lemma state_interp_no_inv : state_interp_no_inv_type.
+  Proof. done. Qed.
+
+  Lemma crash_inner_inv : crash_inner_inv_type.
+  Proof.
+    iIntros (??) "Hinner".
+    iPoseProof (eRO.crash_inner_inv with "Hinner") as "Hinv".
+    eauto.
+  Qed.
+
+  Lemma exec_inner_inv : exec_inner_inv_type.
+  Proof.
+    iIntros (??) "Hinner".
+    iPoseProof (eRO.exec_inner_inv with "Hinner") as "Hinv".
+    eauto.
+  Qed.
+
+  Lemma exec_inv_preserve_finish : exec_inv_preserve_finish_type.
+  Proof.
+    iIntros (??) "Hdone Hinv".
+    iPoseProof (eRO.exec_inv_preserve_finish) as "H".
+    iMod ("H" $! _ _ with "[$] [$]") as (??) "(?&?&Hinv_post)".
+    iModIntro. iExists _, _. iFrame. iIntros.
+    iIntros (? σ2c σ2c' Hfinish ??) "((?&Hmach)&?)".
+    inversion Hfinish. subst.
+    iMod (gen_typed_heap_strong_init ∅) as (hM' Hmpf_eq') "(Hmc&Hm)".
+    iMod (gen_heap_strong_init (∅: gmap File (Inode * OpenMode)))
+      as (hFds' Hfds'_eq') "(Hfdsc&Hfd)".
+    iMod (Count_Heap.gen_heap_strong_init
+            (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ2c.(fs).(dirlocks)) !! s))
+      as (hDlocks' Hdlocks'_eq') "(Hdlocksc&Hlocks)".
+    iMod (ghost_var_alloc (A := discreteC sliceLockC)
+                          None) as (hGl''_name) "(HglA&Hgl)".
+    set (hGl'':= GlobalG _ _ _ _ hGl''_name).
+    iModIntro.
+    iExists ((GooseG _ _ _ (@go_invG _ _ _ Hex) hM'
+                     (eRO.eRD.crash_fsG (@go_fs_inG _ _ _ _) hDlocks' hFds') hGl'' _)).
+    iFrame.
+    simpl.
+    iPoseProof (goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
+    iSplitL ("Hmc Hmach Hfdsc Hdlocksc HglA").
+    {
+      iDestruct "Hmach" as "(?&(?&?&?&?&?&?)&?)".
+      repeat deex. inv_step.
+      inversion _z. inv_step.
+      inversion _z0. inv_step.
+      inversion H1.
+      inv_step.
+      deex.
+      inv_step.
+      unfold RecordSet.set. simpl.
+      iFrame. simpl.
+      rewrite dom_fmap_L.
+      iFrame.
+    }
+    iIntros "(Hctx'&Hsrc')". iModIntro. iMod ("Hinv_post" $! _ _ hM' with "[-]").
+    iFrame.
+    iExists _. iFrame.
+    iPoseProof (@Count_Heap.gen_heap_init_to_bigOp _ _ _ _ _ _ _ _
+                  with "[Hlocks]") as "Hl"; swap 1 2.
+    { rewrite Hdlocks'_eq'. eauto. }
+    { intros s ?. rewrite lookup_fmap. by intros (?&?&->)%fmap_Some_1. }
+    iDestruct "Hdom_eq" as %->.
+    iApply big_sepM_dom. rewrite big_sepM_fmap. eauto.
+    eauto.
+  Qed.
+  End RO.
+
+  Module R := refinement RT RO.
+
+
+  Export R.
+
+End goose_refinement.
