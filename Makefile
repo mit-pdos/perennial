@@ -69,8 +69,22 @@ endif
 	@echo "COQC $<"
 	$(Q)./etc/coqc.py --proj _CoqProject $(TIMING_ARGS) $(COQ_ARGS) $< -o $@
 
-.PHONY: ci
-ci: src/ShouldBuild.vo $(TEST_VO)
+.PHONY: no-qed ci
+
+SLOW_QED_FILES := src/Examples/MailServer/MailTriples.v\
+src/Examples/MailServer/MailRefinement.v\
+src/Examples/Logging/LogRefinement.v\
+src/Examples/AtomicPair/RefinementLog.v\
+src/Examples/AtomicPair/RefinementShadow.v\
+src/Goose/Proof/Interp.v
+
+skip-qed:
+	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
+
+unskip-qed:
+	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
+
+ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
 	$(Q)./etc/timing-report.py timing.sqlite3
 
 clean-ext:
