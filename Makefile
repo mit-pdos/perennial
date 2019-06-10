@@ -29,7 +29,11 @@ COQ_WARN_ARG := $(call join-with-comma,$(COQ_WARN_LIST))
 COQ_ARGS :=
 
 TIMED:=true
-TIMING_ARGS := $(if $(TIMED),--timing-db timing.sqlite3,)
+ifeq ($(TIMED), true)
+TIMING_ARGS := --timing-db timing.sqlite3
+else
+TIMING_ARGS := --no-timing
+endif
 
 default: src/ShouldBuild.vo
 

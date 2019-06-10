@@ -12,6 +12,17 @@ import subprocess
 import sys
 
 
+class NullDb:
+    def add_qed(self, fname, ident, time):
+        pass
+
+    def add_file(self, fname, time):
+        pass
+
+    def close(self):
+        pass
+
+
 class StdoutDb:
     def add_qed(self, fname, ident, time):
         base = path.basename(fname)
@@ -184,6 +195,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--no-timing", action="store_true", help="disable all timing tracking"
+    )
+
+    parser.add_argument(
         "--timing-db", default=None, help="database to store timing info"
     )
 
@@ -195,7 +210,9 @@ if __name__ == "__main__":
     else:
         proj_args = []
 
-    if args.timing_db:
+    if args.no_timing:
+        db = NullDb()
+    elif args.timing_db:
         db = TimingDb.from_file(args.timing_db)
     else:
         db = StdoutDb()
