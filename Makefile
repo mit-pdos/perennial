@@ -69,7 +69,7 @@ endif
 	@echo "COQC $<"
 	$(Q)./etc/coqc.py --proj _CoqProject $(TIMING_ARGS) $(COQ_ARGS) $< -o $@
 
-.PHONY: no-qed ci
+.PHONY: skip-qed unskip-qed ci
 
 SLOW_QED_FILES := src/Examples/MailServer/MailTriples.v\
 src/Examples/MailServer/MailRefinement.v\
