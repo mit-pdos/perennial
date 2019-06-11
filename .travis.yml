@@ -16,13 +16,13 @@ branches:
 services:
   - docker
 
-env:
-  global:
-  - NJOBS="2"
-  matrix:
-  - COQ_VERSION="dev"
-  - COQ_VERSION="8.9"
-  - COQ_VERSION="dev" UPDATE_DEPS=true
+matrix:
+  include:
+    - env: COQ_VERSION="dev"
+    - env: COQ_VERSION="8.9"
+    - env: COQ_VERSION="dev" UPDATE_DEPS=true
+  allow_failures:
+    - env: COQ_VERSION="dev" UPDATE_DEPS=true
 
 # On Travis cloning the gitlab dependencies fails due to a certificate error. In
 # order to disable SSL verification for the submodule init, we have to tell
@@ -71,7 +71,7 @@ script:
     export LC_ALL=C.UTF-8
     set -ex
     ~/.local/bin/pytest etc
-    make -j${NJOBS} -k ci
+    make -j2 -k ci
     "
 - echo -en 'travis_fold:end:build\\r'
 
