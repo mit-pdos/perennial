@@ -68,7 +68,10 @@ Lemma gen_heap_strong_init `{H: gen_heapPreG L V Σ} σs :
 Proof.
   iMod (own_alloc (● to_gen_heap σs ⋅ ◯ to_gen_heap σs)) as (γ) "(?&?)".
   { apply auth_both_valid; split; auto. exact: to_gen_heap_valid. }
-  iModIntro. unshelve (iExists (GenHeapG L V Σ _ _ _ γ), _); auto. iFrame.
+  iMod (own_alloc (● to_gen_meta ∅)) as (γm) "Hm".
+  { rewrite auth_auth_valid. exact: to_gen_meta_valid. }
+  iModIntro. iExists (GenHeapG L V Σ _ _ _ _ _ γ γm), eq_refl.
+  iFrame. iExists _. iFrame. eauto.
 Qed.
 
 Definition disk_state_interp {Σ}
