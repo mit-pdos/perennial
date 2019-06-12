@@ -15,17 +15,17 @@ inplace_edit() {
 }
 
 forward_repl() {
-    local search='^([[:space:]]*)(Time )?Qed\.$'
+    local search='([[:space:]]*)(Time )?Qed\.'
     local repl="\1Unshelve. Grab Existential Variables. Fail idtac. \2Admitted."
-    inplace_edit "s/${search}/${repl}/" "$@"
+    inplace_edit "s/^${search}$/${repl}/" "$@"
 }
 
 backward_repl() {
     local search="([[:space:]]*)"
-    search="${search}Unshelve\. Grab Existential Variables\. Fail idtac\."
+    search="${search}Unshelve\. Grab Existential Variables\. Fail idtac\. "
     search="${search}(Time )?Admitted\.$"
     local repl='\1\2Qed.'
-    inplace_edit "s/${search}/${repl}/" "$@"
+    inplace_edit "s/^${search}$/${repl}/" "$@"
 }
 
 
