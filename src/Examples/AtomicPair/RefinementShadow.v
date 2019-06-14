@@ -7,8 +7,9 @@ Unset Implicit Arguments.
 Existing Instance from_exist_left_sep_later.
 
 Local Ltac destruct_einner H :=
-  iDestruct H as (? (?&?) (?&?)) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";
+  iDestruct H as (? (?&?) (?&?)) ">(Hsource&Hmap)";
   iDestruct "Hmap" as "(Hptr&Hcase)";
+  repeat unify_lease;
   repeat unify_ghost.
 
 Set Default Proof Using "Type".
@@ -23,46 +24,44 @@ Section refinement_triples.
      copy, and a writer who holds the lock should be able to modify it freely
      without opening this invariant up prior to updating the pointer *)
   Definition ptr_map (ptr_val : nat) (pcurr: nat * nat) (pother: nat * nat) :=
-    (ptr_addr d↦ ptr_val ∗
-     (read_addrs ptr_val).1 d↦ pcurr.1 ∗
-     (read_addrs ptr_val).2 d↦ pcurr.2 ∗
-     (write_addrs ptr_val).1 d↦ pother.1 ∗
-     (write_addrs ptr_val).2 d↦ pother.2)%I.
+    (ptr_addr d↦ ptr_val
+     ∗ (read_addrs ptr_val).1 d↦ pcurr.1
+     ∗ (read_addrs ptr_val).2 d↦ pcurr.2
+     ∗ (write_addrs ptr_val).1 d↦ pother.1
+     ∗ (write_addrs ptr_val).2 d↦ pother.2)%I.
 
-  Definition ExecInner γ1 γ2 γ3 :=
+  Definition ExecInner :=
     (∃ (ptr_val : nat) (pcurr: nat * nat) (pother: nat * nat),
-        own γ1 (● (Excl' ptr_val))
-            ∗ own γ2 (● (Excl' pcurr))
-            ∗ own γ3 (● (Excl' pother))
-            ∗ source_state pcurr ∗
-            ptr_map ptr_val pcurr pother)%I.
-
+        source_state pcurr ∗ ptr_map ptr_val pcurr pother)%I.
 
   (* Holding the lock guarantees the value of the atomic pair/pointer will not
-     change out from underneath you -- this is enforced by granting ownership of
-     appropriate ghost variables *)
-  Definition ExecLockInv γ1 γ2 γ3 :=
-    (∃ ptr_val (pcurr : nat * nat) (pother: nat * nat),
-        own γ1 (◯ (Excl' ptr_val))
-            ∗ own γ2 (◯ (Excl' pcurr))
-            ∗ own γ3 (◯ (Excl' pother))
-    )%I.
+     change out from underneath you -- this is enforced by granting leases *)
+
+  Definition lease_map (ptr_val : nat) (pcurr: nat * nat) (pother: nat * nat) :=
+     (lease ptr_addr ptr_val
+      ∗ lease (read_addrs ptr_val).1 pcurr.1
+      ∗ lease (read_addrs ptr_val).2 pcurr.2
+      ∗ lease (write_addrs ptr_val).1 pother.1
+      ∗ lease (write_addrs ptr_val).2 pother.2)%I.
+
+  Definition ExecLockInv :=
+    (∃ (ptr_val : nat) (pcurr: nat * nat) pother,
+        lease_map ptr_val pcurr pother)%I.
 
   (* Post-crash, pre recovery we know the ptr mapping is in a good state w.r.t the
      abstract state, and the lock must have been reset 0 *)
 
   Definition CrashInner :=
     (∃ (ptr_val : nat) (pcurr: nat * nat) pother,
-        source_state pcurr ∗ ptr_map ptr_val pcurr pother ∗ lock_addr m↦ 0)%I.
+        source_state pcurr ∗ ptr_map ptr_val pcurr pother ∗ lease_map ptr_val pcurr pother
+                     ∗ lock_addr m↦ 0)%I.
 
   Definition lN : namespace := (nroot.@"lock").
   Definition iN : namespace := (nroot.@"inner").
 
   Definition ExecInv :=
-    (source_ctx ∗ ∃ γlock γ1 γ2 γ3, is_lock lN γlock lock_addr (ExecLockInv γ1 γ2 γ3)
-                                           ∗ inv iN (ExecInner γ1 γ2 γ3))%I.
+    (source_ctx ∗ ∃ γlock, is_lock lN γlock lock_addr ExecLockInv ∗ inv iN ExecInner)%I.
   Definition CrashInv := (source_ctx ∗ inv iN CrashInner)%I.
-
 
   Lemma read_of_swap ptr_val :
     (read_addrs (swap_ptr ptr_val)) = write_addrs ptr_val.
@@ -78,9 +77,10 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&#Hsource_inv&Hinv) HΦ".
-    iDestruct "Hinv" as (γlock γ1 γ2 γ3) "(#Hlockinv&#Hinv)".
+    iDestruct "Hinv" as (γlock) "(#Hlockinv&#Hinv)".
     wp_lock "(Hlocked&HEL)".
-    iDestruct "HEL" as (ptr_val pcurr pother) "(Hptr_ghost&Hpair_ghost&Hother_ghost)".
+    iDestruct "HEL" as (ptr_val pcurr pother)
+                         "(Hptr_ghost&Hpair1_ghost&Hpair2_ghost&Hother1_ghost&Hother2_ghost)".
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
@@ -88,14 +88,12 @@ Section refinement_triples.
     iModIntro; iExists _, _, _; iFrame.
     destruct p as (new_fst&new_snd).
 
-
     wp_bind.
     iFastInv "Hinv" "H".
     destruct_einner "H".
     iDestruct "Hcase" as "(?&?&Hfst&Hsnd)".
     wp_step.
-    iMod (ghost_var_update γ3 (new_fst, n2) with "Hown3 [$]") as "(Hown3&Hother_ghost)".
-    iExists ptr_val. simpl. iExists _, _; iFrame.
+    iExists ptr_val. simpl. iExists _, (new_fst, _); iFrame.
     simpl. iFrame.
 
     iModIntro.
@@ -104,7 +102,6 @@ Section refinement_triples.
     destruct_einner "H".
     iDestruct "Hcase" as "(Ho1&Ho2&Hfst&Hsnd)".
     wp_step.
-    iMod (ghost_var_update γ3 (new_fst, new_snd) with "Hown3 [$]") as "(Hown3&Hother_ghost)".
     iModIntro; iExists _, _; iFrame.
     simpl.
     iExists (_, _). iFrame.
@@ -112,9 +109,8 @@ Section refinement_triples.
     wp_bind.
     iFastInv "Hinv" "H".
     destruct_einner "H".
-    iMod (ghost_var_update γ1 (swap_ptr ptr_val) with "Hown1 [$]") as "(Hown1&Hptr_ghost)".
-    iMod (ghost_var_update γ2 (new_fst, new_snd) with "Hown2 [$]") as "(Hown2&Hpair_ghost)".
-    iMod (ghost_var_update γ3 (n, n0) with "Hown3 [$]") as "(Hown3&Hother_ghost)".
+    iDestruct "Hcase" as "(Ho1&Ho2&Hfst'&Hsnd')".
+    repeat unify_lease.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
       econstructor.
@@ -122,12 +118,14 @@ Section refinement_triples.
     { solve_ndisj. }
     wp_step.
     iExists (swap_ptr ptr_val). iExists _, _; iFrame.
-    iDestruct "Hcase" as "(Ho1&Ho2&Hfst'&Hsnd')".
     rewrite ?read_of_swap ?write_of_swap; iFrame.
 
     iModIntro.
     wp_unlock "[-HΦ Hreg Hj]"; iFrame.
-    { iExists _, _, _. iFrame. }
+    {
+      iExists _, (_, _), (_, _).
+      iFrame. rewrite ?read_of_swap ?write_of_swap; iFrame.
+    }
     iApply "HΦ"; iFrame.
   Qed.
 
@@ -137,9 +135,10 @@ Section refinement_triples.
     {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
   Proof.
     iIntros (Φ) "(Hj&Hreg&#Hsource_inv&Hinv) HΦ".
-    iDestruct "Hinv" as (γlock γ1 γ2 γ3) "(#Hlockinv&#Hinv)".
+    iDestruct "Hinv" as (γlock) "(#Hlockinv&#Hinv)".
     wp_lock "(Hlocked&HEL)".
-    iDestruct "HEL" as (ptr_val pcurr pother) "(Hptr_ghost&Hpair_ghost&Hother_ghost)".
+    iDestruct "HEL" as (ptr_val pcurr pother)
+                         "(Hptr_ghost&Hpair1_ghost&Hpair2_ghost&Hother1_ghost&Hother2_ghost)".
 
     wp_bind.
     iInv "Hinv" as "H".
@@ -151,13 +150,16 @@ Section refinement_triples.
     iInv "Hinv" as "H".
     destruct_einner "H".
     iDestruct "Hcase" as "(Hfst&Hsnd&?&?)".
+    simpl. repeat unify_lease.
     wp_step.
-    iModIntro; iExists _, _, _; iFrame.
+    iModIntro; iExists _, (_, _), (_, _); iFrame.
 
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
     iDestruct "Hcase" as "(Hfst&Hsnd&?&?)".
+    simpl. repeat unify_lease.
+    repeat unify_lease.
     wp_step.
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
     { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
@@ -165,7 +167,7 @@ Section refinement_triples.
     }
     { solve_ndisj. }
 
-    iModIntro; iExists _, _, _; iFrame.
+    iModIntro; iExists _, (_, _), (_, _); iFrame.
     wp_bind.
     wp_unlock "[-HΦ Hreg Hj]".
     { iExists _, _, _. iFrame. }
@@ -183,14 +185,19 @@ Section refinement_triples.
   Qed.
 
   Lemma init_disk_split:
-    (([∗ map] i↦v ∈ init_zero, i d↦ v)
-       -∗ ptr_addr d↦ 0 ∗ copy0_fst d↦ 0 ∗ copy0_snd d↦ 0
-          ∗ copy1_fst d↦ 0 ∗ copy1_snd d↦ 0)%I.
+    (([∗ map] i↦v ∈ init_zero, i d↦ v ∗ lease i v)
+       -∗ (ptr_addr d↦ 0
+          ∗ copy0_fst d↦ 0 ∗ copy0_snd d↦ 0
+          ∗ copy1_fst d↦ 0 ∗ copy1_snd d↦ 0)
+          ∗ lease ptr_addr 0
+          ∗ lease copy0_fst 0 ∗ lease copy0_snd 0
+          ∗ lease copy1_fst 0 ∗ lease copy1_snd 0)%I.
   Proof.
     iIntros "Hdisk".
     iPoseProof (disk_ptr_iter_split_aux O 4 with "Hdisk") as "H".
     { rewrite /size. lia. }
-    iDestruct "H" as "($&_)".
+    iDestruct "H" as "(H&_)".
+    repeat iDestruct "H" as "((?&?)&H)". iFrame.
   Qed.
 
 End refinement_triples.
@@ -229,11 +236,10 @@ Definition init_absr σ1a σ1c :=
   Global Instance inG_inst3: lockG Σ.
   Proof. apply _. Qed.
 
-  Definition exec_inv := fun H1 H2 => (@ExecInv Σ H2 _ H1 _ _)%I.
+  Definition exec_inv := fun H1 H2 => (@ExecInv Σ H2 _ H1)%I.
   Definition exec_inner :=
     fun H1 H2 => (∃ v, lock_addr m↦ v ∗
-          (∃ γ1 γ2 γ3, (⌜ v = 0  ⌝ -∗ @ExecLockInv Σ _ _ γ1 γ2 γ3)
-                        ∗ @ExecInner Σ H2 H1 _ _ γ1 γ2 γ3))%I.
+          ((⌜ v = 0  ⌝ -∗ @ExecLockInv Σ H2) ∗ @ExecInner Σ H2 H1))%I.
 
   Definition crash_param := fun (_ : @cfgG OpT Λa Σ) (_ : exmachG Σ) => unit.
   Definition crash_inv := fun H1 H2 (_ : crash_param _ _) => @CrashInv Σ H2 H1.
@@ -278,16 +284,19 @@ Module sRO : exmach_refinement_obligations sRT.
   Lemma exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx.
   Proof. iIntros (??) "(?&?)"; eauto. Qed.
 
+  Lemma ptr_map_next {H: exmachG Σ} Hinv Hmem Hreg ptr_val curr other:
+    ptr_map ptr_val curr other ==∗
+            let Hex := ExMachG Σ Hinv Hmem (next_leased_heapG (hG := (exm_disk_inG))) Hreg in
+            ptr_map ptr_val curr other ∗ lease_map ptr_val curr other.
+  Proof.
+    iIntros "(Hptr&Ho1&Ho2&Hc1&Hc2)".
+    by repeat iMod (disk_next with "[$]") as "($&$)".
+  Qed.
+
   Lemma recv_triple: recv_triple_type.
   Proof.
     red. intros. iIntros "((#Hctx&#Hinv)&_)".
-    wp_ret. iInv "Hinv" as (ptr_val pcurr pother) ">(?&Hcase&?)" "_".
-    iMod (own_alloc (● (Excl' ptr_val) ⋅ ◯ (Excl' ptr_val))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
-    { apply auth_both_valid; split; eauto. econstructor. }
-    iMod (own_alloc (● (Excl' pcurr) ⋅ ◯ (Excl' pcurr))) as (γ2) "[Hauth_curr Hfrag_curr]".
-    { apply auth_both_valid; split; eauto. econstructor. }
-    iMod (own_alloc (● (Excl' pother) ⋅ ◯ (Excl' pother))) as (γ3) "[Hauth_other Hfrag_other]".
-    { apply auth_both_valid; split; eauto. econstructor. }
+    wp_ret. iInv "Hinv" as (ptr_val pcurr pother) ">(?&Hcase&Hlease&?)" "_".
     iApply (fupd_mask_weaken _ _).
     { solve_ndisj. }
     iExists pcurr, pcurr. iFrame.
@@ -295,8 +304,9 @@ Module sRO : exmach_refinement_obligations sRT.
     { iPureIntro; econstructor. }
     iClear "Hctx Hinv".
     iIntros (???) "(#Hctx&Hstate)".
-    iModIntro. iExists _. iFrame. iExists γ1, γ2, γ3.
-    iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other"; iIntros; iExists _, _, _; iFrame.
+    iMod (ptr_map_next with "Hcase") as "(Hp&Hl)".
+    iExists 0. iFrame.
+    iSplitL "Hl"; iModIntro; iIntros; iExists _, _, _; iFrame.
   Qed.
 
   Lemma init_wf: ∀ σ1a σ1c, init_absr σ1a σ1c → ExMach.state_wf σ1c.
@@ -308,40 +318,36 @@ Module sRO : exmach_refinement_obligations sRT.
   Proof.
     red. intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
     iIntros "(Hmem&Hdisk&#?&Hstate)".
-    iMod (own_alloc (● (Excl' 0) ⋅ ◯ (Excl' 0))) as (γ1) "[Hauth_ptr Hfrag_ptr]".
-    { apply auth_both_valid; split; eauto. econstructor. }
-    iMod (own_alloc (● (Excl' (0, 0)) ⋅ ◯ (Excl' (0, 0)))) as (γ2) "[Hauth_curr Hfrag_curr]".
-    { apply auth_both_valid; split; eauto. econstructor. }
-    iMod (own_alloc (● (Excl' (0, 0)) ⋅ ◯ (Excl' (0, 0)))) as (γ3) "[Hauth_other Hfrag_other]".
-    { apply auth_both_valid; split; eauto. econstructor. }
     iPoseProof (init_mem_split with "Hmem") as "?".
-    iPoseProof (init_disk_split with "Hdisk") as "(?&?&?&?&?)".
-    iModIntro. iExists _. iFrame. iExists γ1, γ2, γ3.
-    iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other"; iIntros; iExists _, _, _; iFrame.
-    simpl. iFrame.
+    iPoseProof (init_disk_split with "Hdisk") as "(Hd&Hl)".
+    iModIntro. iExists _. iFrame.
+    iSplitL "Hl".
+    - iDestruct "Hl" as "(?&?&?&?&?)". iIntros "_". iExists 0, (_, _), (_, _). iFrame.
+    - iDestruct "Hd" as "(?&?&?&?&?)". iExists 0, (_, _), (_, _). iFrame.
   Qed.
 
   Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
   Proof.
     red. intros. iIntros "(#Hctx&#Hinv)".
-    iDestruct "Hinv" as (γlock γ1 γ2 γ3) "(#Hlock&#Hinv)".
+    iDestruct "Hinv" as (γlock) "(#Hlock&#Hinv)".
     iInv "Hinv" as "Hopen" "_".
     destruct_einner "Hopen".
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
-    iModIntro. iExists _, _, _. iFrame.
     iPoseProof (@init_mem_split with "Hmem") as "?".
-    iFrame.
+    iMod (ptr_map_next with "[Hptr Hcase]") as "(?&?)"; first by iFrame.
+    iModIntro. iExists _, (_ , _), (_, _). iFrame.
   Qed.
 
   Lemma crash_inv_preserve_crash: crash_inv_preserve_crash_type.
   Proof.
     red. intros. iIntros "(#Hctx&#Hinv)".
     iInv "Hinv" as ">Hopen" "_".
-    iDestruct "Hopen" as (???) "(?&?&_)".
+    iDestruct "Hopen" as (? (?&?) (?&?)) "(?&Hcase&_)".
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
-    iModIntro. iExists _, _, _. iFrame.
+    iMod (ptr_map_next with "Hcase") as "(?&?)".
+    iModIntro. iExists _, (_ , _), (_, _). iFrame.
     iPoseProof (@init_mem_split with "Hmem") as "?".
     iFrame.
   Qed.
@@ -361,44 +367,32 @@ Module sRO : exmach_refinement_obligations sRT.
     red. intros. iIntros "(Hinv&#Hsrc)".
     iDestruct "Hinv" as (invG v) "Hinv".
     iDestruct "Hinv" as "(?&Hinv)".
-    iDestruct "Hinv" as (γ1 γ2 γ3) "(Hlock&Hinner)".
+    iDestruct "Hinv" as "(Hlock&Hinner)".
     iMod (@lock_init Σ (ExMachG _ (exm_invG) (exm_mem_inG) (exm_disk_inG) _) _ lN
-                     lock_addr _ (ExecLockInv γ1 γ2 γ3) with "[$] [-Hinner]") as (γlock) "H".
+                     lock_addr _ (ExecLockInv) with "[$] [-Hinner]") as (γlock) "H".
     { iFrame. }
-    iMod (@inv_alloc Σ (exm_invG) iN _ (ExecInner γ1 γ2 γ3) with "[Hinner]").
+    iMod (@inv_alloc Σ (exm_invG) iN _ (ExecInner) with "[Hinner]").
     { iFrame. }
-    iModIntro. iFrame "Hsrc". iExists _, _, _, _. iFrame.
+    iModIntro. iFrame "Hsrc". iExists _. iFrame.
   Qed.
 
   Lemma exec_inv_preserve_finish : exec_inv_preserve_finish_type.
   Proof.
     iIntros (??) "? (?&H)".
-    iDestruct "H" as (????) "(Hlock&Hinv)".
+    iDestruct "H" as (?) "(Hlock&Hinv)".
     iInv "Hinv" as "H" "_".
-    iDestruct "H" as (ptr (n1&n2) (n1'&n2')) ">(Hown1&Hown2&Hown3&Hsource&Hmap)";
-      iDestruct "Hmap" as "(Hptr&Hcase)";
-      repeat unify_ghost.
+    iDestruct "H" as (ptr (n1&n2) (n1'&n2')) ">(Hsource&Hmap)".
     iMod (lock_crack with "Hlock") as ">H"; first by solve_ndisj.
     iDestruct "H" as (v) "(?&?)".
     iApply fupd_mask_weaken; first by solve_ndisj.
     iExists _, _; iFrame.
     iSplitL "".
     { iPureIntro. econstructor. }
-    iFrame. iIntros (????) "(?&?&Hmem)".
+    iIntros (????) "(?&?&Hmem)".
+    iMod (ptr_map_next with "Hmap") as "(Hp&Hl)".
     iPoseProof (@init_mem_split with "Hmem") as "?".
     iExists _. iFrame. rewrite /ExecLockInv.
-    iMod (own_alloc (● (Excl' ptr) ⋅ ◯ (Excl' ptr))) as (γ1') "[Hauth_ptr Hfrag_ptr]".
-    { apply auth_both_valid; split; eauto. econstructor. }
-    iMod (own_alloc (● (Excl' (n1, n2)) ⋅ ◯ (Excl' (n1, n2))))
-      as (γ2') "[Hauth_curr Hfrag_curr]".
-    { apply auth_both_valid; split; eauto. econstructor. }
-    iMod (own_alloc (● (Excl' (n1', n2')) ⋅ ◯ (Excl' (n1', n2'))))
-      as (γ3') "[Hauth_other Hfrag_other]".
-    { apply auth_both_valid; split; eauto. econstructor. }
-    iExists γ1', γ2', γ3'. iFrame.
-    iModIntro. rewrite /ExecInner. iSplitL "Hfrag_ptr Hfrag_curr Hfrag_other".
-    { iIntros. iExists _, _, _. iFrame. }
-    { iIntros. iExists _, _, _. iFrame. }
+    iSplitL "Hl"; iModIntro; iIntros; iExists _, (_, _), (_, _); iFrame.
   Qed.
 
 End sRO.

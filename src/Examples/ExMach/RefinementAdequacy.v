@@ -45,7 +45,9 @@ Module exmach_refinement_definitions (eRT: exmach_refinement_type).
                     ∗ ⌜Λa.(crash_step) σ2a (Val σ2a' tt)⌝ ∗
                     ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) tr',
                       source_ctx ∗ source_state σ2a' ={⊤}=∗
-                      exec_inner Hcfg' (ExMachG Σ Hinv' exm_mem_inG exm_disk_inG tr')
+                      exec_inner Hcfg' (ExMachG Σ Hinv' exm_mem_inG
+                                                (next_leased_heapG (hG := (exm_disk_inG)))
+                                                tr')
                                                }}.
   Definition refinement_op_triples_type :=
              forall H1 H2 T1 T2 j K `{LanguageCtx OpT T1 T2 Λa K} (op: OpT T1),
@@ -57,19 +59,19 @@ Module exmach_refinement_definitions (eRT: exmach_refinement_type).
     ∀ σ1a σ1c, init_absr σ1a σ1c →
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
           (([∗ map] i ↦ v ∈ mem_state σ1c, i m↦ v) ∗
-           ([∗ map] i ↦ v ∈ disk_state σ1c, i d↦ v) ∗
+           ([∗ map] i ↦ v ∈ disk_state σ1c, i d↦ v ∗ lease i v) ∗
            source_ctx ∗ source_state σ1a) ={⊤}=∗ exec_inner _ _).
 
   Definition exec_inv_preserve_crash_type :=
       (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           exec_inv Hcfg Hex ={⊤, E}=∗ ∀ Hmem' Hreg',
-          (let Hex := ExMachG Σ (exm_invG) Hmem' (exm_disk_inG) Hreg' in
+          (let Hex := ExMachG Σ (exm_invG) Hmem' (next_leased_heapG (hG := (exm_disk_inG))) Hreg' in
               ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex)).
 
   Definition crash_inv_preserve_crash_type :=
       (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ) param,
           crash_inv Hcfg Hex param ={⊤, E}=∗ ∀ Hmem' Hreg',
-          (let Hex := ExMachG Σ (exm_invG) Hmem' (exm_disk_inG) Hreg' in
+          (let Hex := ExMachG Σ (exm_invG) Hmem' (next_leased_heapG (hG := (exm_disk_inG))) Hreg' in
               ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex)).
 
   Definition crash_inner_inv_type :=
@@ -87,7 +89,7 @@ Module exmach_refinement_definitions (eRT: exmach_refinement_type).
           AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
           ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
           ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hreg',
-            (let Hex := ExMachG Σ Hinv' Hmem' (exm_disk_inG) Hreg' in
+            (let Hex := ExMachG Σ Hinv' Hmem' (next_leased_heapG (hG := (exm_disk_inG))) Hreg' in
             source_ctx∗ source_state σ2a' ∗ ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={⊤}=∗
                exec_inner Hcfg' Hex))%I.
 
@@ -210,8 +212,9 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
       iModIntro. iExists _, _. iFrame.
       iSplitR; first by iPureIntro.
       iIntros. rewrite /post_recv.
-      iIntros (????) "((_&Hstate)&Hthread)". iModIntro. iExists _. iFrame.
-      iIntros. iModIntro. by iMod ("H" with "[$]").
+      iIntros (????) "((_&Hstate)&Hthread)". iModIntro.
+      iExists (ExMachG Σ _ _ (next_leased_heapG) _).
+      iFrame. iIntros. iModIntro. by iMod ("H" with "[$]").
     Qed.
 
     Existing Instance eRT.HEX.
@@ -220,16 +223,15 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
       rewrite /init_exec_inner_type.
       iIntros (σ1a σ1c Hinit ???).
       iMod (gen_heap_strong_init (mem_state σ1c)) as (hM Hmpf_eq) "(Hmc&Hm)".
-      iMod (gen_heap_strong_init (disk_state σ1c)) as (hD Hdpf_eq) "(Hdc&Hd)".
+      iMod (leased_heap_strong_init (disk_state σ1c)) as (hD Hdpf_eq) "(Hdc&Hd)".
       iPoseProof (eRO.init_exec_inner σ1a σ1c Hinit (ExMachG Σ _ hM hD _) _) as "H".
       iModIntro. iExists (ExMachG Σ _ hM hD _). iIntros "(Hsource1&Hsource2&Hthread)".
       iMod ("H" with "[Hm Hd Hsource1 Hsource2]") as "Hinner".
-      { iFrame.  iSplitL "Hm".
+      { iFrame. iSplitL "Hm".
         { rewrite -Hmpf_eq. iApply mem_init_to_bigOp; auto. }
-        { rewrite -Hdpf_eq. iApply disk_init_to_bigOp; auto. }
+        {  iApply (big_sepM_mono with "Hd"). iIntros (???) "(?&?&?)". iFrame. }
       }
-      iFrame. simpl.
-      iModIntro. iExists _, _. iFrame.
+      iModIntro. iFrame. iExists _, _. iFrame.
       iPureIntro;
       edestruct (eRO.init_wf) as (Hwf1&Hwf2); eauto.
       split_and!; eauto; intros i.
@@ -250,7 +252,7 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     iIntros "(Hmach&Hthread)".
     iModIntro.
     iIntros (σ' Hcrash).
-    iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk_inG _ Hex)
+    iExists (ExMachG Σ (@exm_invG _ Hex) hM (next_leased_heapG (hG := (@exm_disk_inG _ Hex)))
                      (@exm_treg_inG _ Hex)).
     iFrame. iDestruct "Hmach" as "(?&Hdisk)".
     inversion Hcrash. subst.
@@ -276,7 +278,7 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     iIntros "(Hmach&Hthread)".
     iModIntro.
     iIntros (σ' Hcrash).
-    iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk_inG _ Hex)
+    iExists (ExMachG Σ (@exm_invG _ Hex) hM (next_leased_heapG (hG := (@exm_disk_inG _ Hex)))
                      (@exm_treg_inG _ Hex)).
     iFrame. iDestruct "Hmach" as "(?&Hdisk)".
     inversion Hcrash. subst.
@@ -306,7 +308,6 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     eauto.
   Qed.
 
-
   Lemma exec_inv_preserve_finish : exec_inv_preserve_finish_type.
   Proof.
     iIntros (??) "Hdone Hinv".
@@ -318,7 +319,7 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     iMod (gen_heap_strong_init (init_zero)) as (hM Hmpf_eq) "(Hmc&Hm)".
     iDestruct "Hdisk" as (??) "(_&?&%&%&%&%)". iFrame.
     iModIntro.
-    iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk_inG _ Hex)
+    iExists (ExMachG Σ (@exm_invG _ Hex) hM (next_leased_heapG (hG := (@exm_disk_inG _ Hex)))
                      (@exm_treg_inG _ Hex)).
     iSplitR "Hinv_post Hm".
     {

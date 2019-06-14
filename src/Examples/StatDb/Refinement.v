@@ -30,6 +30,13 @@ Section refinement_triples.
                                                      ∗ inv iN (DBInnerInv γ2))%I.
   Definition CrashInv := (source_ctx ∗ inv iN DBCrashInner)%I.
 
+  Lemma init_ghost_list :
+    (|==> ∃ γ, own γ ((● (Excl' (nil: list nat)) ⋅ ◯ (Excl' nil))) : iProp Σ)%I.
+  Proof.
+    iMod (@own_alloc _ _ _ (● (Excl' nil) ⋅ ◯ (Excl' nil))); eauto.
+    { apply auth_both_valid; done. }
+  Qed.
+
   (* TODO: write smart tactics for applying the wp_primitives *)
   Lemma add_refinement {T} j K `{LanguageCtx DB.Op unit T DB.l K} n:
     {{{ j ⤇ K (Call (DB.Add n)) ∗ Registered ∗ DBInv }}}
@@ -184,8 +191,7 @@ Module sRO : exmach_refinement_obligations sRT.
     intros. iIntros "((#Hctx&#Hinv)&_&_)".
     wp_ret. iInv "Hinv" as (l) ">(?&?&?&?)" "_".
     rewrite /source_inv.
-    iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2) "[Hauth Hfrag]".
-    { apply auth_both_valid; done. }
+    iMod (init_ghost_list) as (γ2) "[Hauth Hfrag]".
     iApply (fupd_mask_weaken _ _).
     { solve_ndisj. }
     iExists l, nil. iFrame.
@@ -206,8 +212,7 @@ Module sRO : exmach_refinement_obligations sRT.
     rewrite /init_exec_inner_type.
     intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
     iIntros "(Hmem&?&#?&Hstate)".
-    iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2) "[Hauth Hfrag]".
-    { apply auth_both_valid. split; done. }
+    iMod (init_ghost_list) as (γ2) "[Hauth Hfrag]".
     iPoseProof (init_mem_split with "Hmem") as "(?&?&?)".
     iModIntro. iExists _. iFrame. iExists γ2. iSplitR "Hauth Hstate"; iIntros; iExists nil; iFrame.
   Qed.
@@ -280,8 +285,7 @@ Module sRO : exmach_refinement_obligations sRT.
     iFrame. iSplitL ""; first by eauto.
     iIntros (????) "(?&Hstate&Hmem)".
     iPoseProof (@init_mem_split with "Hmem") as "(?&?&?)".
-    iMod (own_alloc (● (Excl' nil) ⋅ ◯ (Excl' nil))) as (γ2') "[Hauth Hfrag]".
-    { apply auth_both_valid. split; done. }
+    iMod (init_ghost_list) as (γ2') "[Hauth Hfrag]".
     iModIntro. iExists O. iFrame.
     iExists γ2'. rewrite /DBInnerInv/DBLockInv.
     iSplitR "Hstate Hauth".

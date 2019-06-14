@@ -78,8 +78,11 @@ Ltac iAssignNames :=
       iRename (IAnon x) into i
       end; unbundle_names.
 
+Tactic Notation "iNamedAux" tactic1(tac) :=
+  bundle_names; tac.
+
 Tactic Notation "iNamed" tactic1(tac) :=
-  bundle_names; tac; iAssignNames.
+  iNamedAux tac; iAssignNames.
 
 Ltac iDestructRep H :=
   let H1 := iFresh in

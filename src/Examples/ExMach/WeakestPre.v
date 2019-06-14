@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg CSL.Leased_Heap.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.
@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 Class exmachG Σ := ExMachG {
                      exm_invG : invG Σ;
                      exm_mem_inG :> gen_heapG nat nat Σ;
-                     exm_disk_inG :> gen_heapG nat nat Σ;
+                     exm_disk_inG :> leased_heapG nat nat Σ;
                      exm_treg_inG :> tregG Σ;
                    }.
 
@@ -28,16 +28,16 @@ Proof.
   iFrame. iExists _. iFrame. eauto.
 Qed.
 
-Definition disk_state_interp {Σ} (hM: gen_heapG addr nat Σ) (hD: gen_heapG addr nat Σ) :=
+Definition disk_state_interp {Σ} (hM: gen_heapG addr nat Σ) (hD: leased_heapG addr nat Σ) :=
   (λ s, ∃ mem disk, (gen_heap_ctx mem (hG := hM)) ∗
-                        (gen_heap_ctx disk (hG := hD)) ∗
+                        (gen_heap_ctx disk (hG := (leased_heap_heapG hD))) ∗
                         ⌜ mem = mem_state s ∧
                           disk = disk_state s ∧
                           (∀ i, is_Some (mem_state s !! i) → i < size) ∧
                           (∀ i, is_Some (disk_state s !! i) → i < size) ⌝)%I.
 
 
-Definition ex_mach_interp {Σ} {hM: gen_heapG addr nat Σ} {hD: gen_heapG addr nat Σ}
+Definition ex_mach_interp {Σ} {hM: gen_heapG addr nat Σ} {hD: leased_heapG addr nat Σ}
            {tr: tregG Σ}  :=
   (λ s, thread_count_interp (fst s) ∗ disk_state_interp hM hD (snd s))%I.
 
@@ -64,10 +64,12 @@ Global Notation "l m↦ v " :=
   (mapsto (hG := exm_mem_inG) l 1 v)
   (at level 20) : bi_scope.
 
-Global Notation "l d↦{ q } v " := (mapsto (hG := exm_disk_inG) l q v)
-  (at level 20, q at level 50, format "l  d↦{ q } v") : bi_scope.
+Global Notation "l d◯↦ v " :=
+  (mapsto (hG := leased_heap_heapG exm_disk_inG) l 1 v)
+  (at level 20) : bi_scope.
+
 Global Notation "l d↦ v " :=
-  (mapsto (hG := exm_disk_inG) l 1 v)
+  (mapsto (hG := leased_heap_heapG exm_disk_inG) l 1 v ∗ master l v)%I
   (at level 20) : bi_scope.
 
 Section lifting.
@@ -100,30 +102,6 @@ Proof.
       rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
     }
     by iApply IHmem.
-Qed.
-
-Lemma disk_init_to_bigOp disk:
-  own (i := @gen_heap_inG _ _ _ _ _ exm_disk_inG)
-      (gen_heap_name (exm_disk_inG))
-      (◯ to_gen_heap disk)
-      -∗
-  [∗ map] i↦v ∈ disk, i d↦ v .
-Proof.
-  induction disk using map_ind.
-  - iIntros. rewrite //=.
-  - iIntros "Hown".
-    rewrite big_opM_insert //.
-
-    iAssert (own (i := @gen_heap_inG _ _ _ _ _ exm_disk_inG) (gen_heap_name (exm_disk_inG))
-                 (◯ to_gen_heap m) ∗
-                 (i d↦ x))%I
-                    with "[Hown]" as "[Hrest $]".
-    {
-      rewrite mapsto_eq /mapsto_def //.
-      rewrite to_gen_heap_insert insert_singleton_op; last by apply lookup_to_gen_heap_None.
-      rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
-    }
-    by iApply IHdisk.
 Qed.
 
 Import Reg_wp.
@@ -278,8 +256,8 @@ Proof.
   - iApply "HΦ". eauto.
 Qed.
 
-Lemma wp_write_disk s E i v' v :
-  {{{ ▷ i d↦ v' }}} write_disk i v @ s; E {{{ RET tt; i d↦ v }}}.
+Lemma wp_write_disk' s E i v' v :
+  {{{ ▷ i d◯↦ v' }}} write_disk i v @ s; E {{{ RET tt; i d◯↦ v }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
   iIntros ((n, σ)) "Hown".
@@ -308,8 +286,8 @@ Proof.
   - iApply "HΦ". eauto.
 Qed.
 
-Lemma wp_read_disk s E i v :
-  {{{ ▷ i d↦ v }}} read_disk i @ s; E {{{ RET v; i d↦ v }}}.
+Lemma wp_read_disk' s E i v :
+  {{{ ▷ i d◯↦ v }}} read_disk i @ s; E {{{ RET v; i d◯↦ v }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
   iIntros ((n, σ)) "Hown".
@@ -327,12 +305,41 @@ Proof.
     by iApply "HΦ".
 Qed.
 
+Lemma wp_write_disk s E i v' v v0 :
+  {{{ ▷ i d↦ v' ∗ ▷ lease i v0 }}} write_disk i v @ s; E {{{ RET tt; i d↦ v ∗ lease i v}}}.
+Proof.
+  iIntros (Φ) "(>(Hi&Hmaster)&>Hlease) HΦ".
+  iMod (master_lease_update i v' v0 v with "[$] [$]") as "(?&?)".
+  iApply (wp_write_disk' with "[$]").
+  iNext. iIntros. iApply "HΦ"; iFrame.
+Qed.
+
+Lemma wp_read_disk s E i v :
+  {{{ ▷ i d↦ v }}} read_disk i @ s; E {{{ RET v; i d↦ v }}}.
+Proof.
+  iIntros (Φ) ">(Hi&?) HΦ".
+  iApply (wp_read_disk' with "[$]").
+  iNext. iIntros. iApply "HΦ"; iFrame.
+Qed.
+
 Lemma wp_assert s E b:
   b = true →
   {{{ True }}} assert b @ s; E {{{ RET (); True }}}.
 Proof.
   iIntros (Hb Φ) "_ HΦ". rewrite Hb -wp_bind_proc_val.
   iNext. wp_ret. by iApply "HΦ".
+Qed.
+
+Lemma disk_lease_agree i v1 v2:
+  i d↦ v1 -∗ lease i v2 -∗ ⌜v1 = v2⌝.
+Proof.
+  iIntros "(_&?) ?". iApply (master_lease_agree with "[$] [$]").
+Qed.
+
+Lemma disk_next i v:
+  i d↦ v ==∗ (i d◯↦ v ∗ next_master i v) ∗ next_lease i v.
+Proof.
+  iIntros "(?&?)". by iMod (master_next with "[$]") as "($&$)".
 Qed.
 
 Section PtrIter.
@@ -384,7 +391,7 @@ Section PtrIter.
 
 End PtrIter.
 
-Definition disk_ptr_iter_split_aux := gen_ptr_iter_split_aux (fun l v => l d↦ v)%I.
+Definition disk_ptr_iter_split_aux := gen_ptr_iter_split_aux (fun l v => l d↦ v ∗ lease l v)%I.
 Definition mem_ptr_iter_split_aux := gen_ptr_iter_split_aux (fun l v => l m↦ v)%I.
 
 End lifting.
@@ -490,6 +497,23 @@ Section lock.
   Qed.
 End lock.
 
+Import spec_patterns.
+
+Definition spec_goal_extend (g: list (spec_patterns.spec_pat)) (s: ident) :=
+  match g with
+  | (SGoal g) :: nil =>
+    [SGoal {| spec_goal_kind := spec_goal_kind g;
+              spec_goal_negate := spec_goal_negate g;
+              spec_goal_frame := spec_goal_frame g;
+              spec_goal_hyps :=
+                match spec_goal_negate g with
+                | false => (s :: spec_goal_hyps g)
+                | _ => spec_goal_hyps g
+                end;
+              spec_goal_done := (spec_goal_done g) |}]
+  | _ => []
+  end.
+
 Ltac wp_write_disk :=
   try wp_bind;
   match goal with
@@ -498,9 +522,17 @@ Ltac wp_write_disk :=
     | @wp _ _ _ _ _ _ _ (write_disk ?loc ?val) _  =>
       match goal with
       | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc d↦ _)] ] =>
-        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
-        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
-        iApply (wp_write_disk with spat); iIntros ipat
+        match goal with
+        [ |- context[ environments.Esnoc _ (INamed ?lh) (lease loc _)] ] =>
+        let spat_parse := spec_patterns.spec_pat.parse "[]" in
+        let spat' := eval vm_compute in (spec_goal_extend spat_parse pts) in
+        let spat'' := eval vm_compute in (spec_goal_extend spat' lh) in
+        let ipat := constr:([intro_patterns.IModalIntro;
+                             intro_patterns.IList [[(intro_patterns.IIdent (INamed pts));
+                                                    (intro_patterns.IIdent (INamed lh))]
+                           ]]) in
+        iApply (wp_write_disk with spat''); [ iFrame | iIntros ipat ]
+        end
       end
     end
   end.
@@ -573,24 +605,6 @@ Ltac wp_lock H :=
 
 Ltac wp_step := first [ wp_read_disk | wp_write_disk | wp_read_mem | wp_write_mem | wp_ret ].
 
-Import spec_patterns.
-
-Definition spec_goal_extend (g: list (spec_patterns.spec_pat)) (s: ident) :=
-  match g with
-  | (SGoal g) :: nil =>
-    [SGoal {| spec_goal_kind := spec_goal_kind g;
-              spec_goal_negate := spec_goal_negate g;
-              spec_goal_frame := spec_goal_frame g;
-              spec_goal_hyps :=
-                match spec_goal_negate g with
-                | false => (s :: spec_goal_hyps g)
-                | _ => spec_goal_hyps g
-                end;
-              spec_goal_done := (spec_goal_done g) |}]
-  | _ => []
-  end.
-
-
 Ltac wp_unlock s :=
   try wp_bind;
   match goal with
@@ -608,5 +622,16 @@ Ltac wp_unlock s :=
         iApply (wp_unlock' with spat); [ iFrame sel_frame_locked | iIntros "!> _"]
         end
       end
+    end
+  end.
+
+Ltac unify_lease :=
+  match goal with
+  | [ |- context[ environments.Esnoc _ (INamed ?auth_name) (?y d↦ ?x)] ] =>
+    match goal with
+    | [ |- context[ lease y x] ] => fail 1
+    | [ |- context[ environments.Esnoc _ (INamed ?frag_name) (lease y ?z)] ] =>
+      let pat := constr:([(SIdent (INamed auth_name) nil); (SIdent (INamed frag_name) nil)]) in
+      (iDestruct (disk_lease_agree with pat) as %Hp; inversion_clear Hp; subst; [])
     end
   end.

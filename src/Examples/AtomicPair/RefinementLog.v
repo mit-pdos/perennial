@@ -12,7 +12,7 @@ Local Ltac destruct_ex_commit_inner H :=
   iDestruct "H" as (????) "H".
 
 Local Ltac destruct_commit_inner' H :=
-  iLDestruct H; repeat unify_ghost.
+  iLDestruct H; repeat unify_ghost; repeat unify_lease.
 
 Local Ltac destruct_commit_inner H :=
   destruct_ex_commit_inner H;
@@ -27,6 +27,16 @@ Local Ltac recommit' :=
 Local Ltac recommit :=
   iExists _, _, _, _; iNamed (recommit').
 
+Local Ltac destruct_pairs :=
+    repeat match goal with
+    | [ H: nat * nat |- _ ] => destruct H; simpl fst; simpl snd
+    | [ |- nat * nat ] => eexists; shelve
+    end.
+
+Tactic Notation "handle_pairs" tactic(H) :=
+  destruct_pairs; unshelve H; destruct_pairs.
+
+
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (AtomicPair.Op) (AtomicPair.l) Σ,
             !inG Σ (authR (optionUR (exclR (prodC natC natC)))),
@@ -35,8 +45,6 @@ Section refinement_triples.
 
   Record ghost_names :=
     { γflag : gname;
-      γlog : gname;
-      γmain : gname;
       γsrc : gname }.
 
   Definition someone_writing P (p: nat * nat) (je: prodC natC (procTC (AtomicPair.Op))) :=
@@ -66,14 +74,12 @@ Section refinement_triples.
   Definition CommitOn P plog flagsnd :=
      (someone_writing P plog (flagsnd))%I.
 
-  Definition MainInv Γ (pcurr: nat * nat) :=
-    (named "Hmain_auth" (own (γmain Γ) (● (Excl' pcurr)))
-     ∗ named "Hmain_fst" (main_fst d↦ (fst pcurr))
-     ∗ named "Hmain_snd" (main_snd d↦ (snd pcurr)))%I.
+  Definition MainInv (pcurr: nat * nat) :=
+     (named "Hmain_fst" (main_fst d↦ (fst pcurr))
+      ∗ named "Hmain_snd" (main_snd d↦ (snd pcurr)))%I.
 
-  Definition LogInv Γ (plog: nat * nat) :=
-    (named "Hlog_auth" (own (γlog Γ) (● (Excl' plog)))
-     ∗ named "Hlog_fst" (log_fst d↦ (fst plog))
+  Definition LogInv (plog: nat * nat) :=
+    (named "Hlog_fst" (log_fst d↦ (fst plog))
      ∗ named "Hlog_snd" (log_snd d↦ (snd plog)))%I.
 
   Definition SrcInv Γ (psrc: nat * nat) :=
@@ -82,8 +88,8 @@ Section refinement_triples.
 
   Definition CommitInner' P (Γ: ghost_names) flag (plog pcurr psrc : nat * nat) :=
     (named "Hcommit_inv" (FlagInv Γ flag)
-     ∗ named "Hmain_inv" (MainInv Γ pcurr)
-     ∗ named "Hlog_inv" (LogInv Γ plog)
+     ∗ named "Hmain_inv" (MainInv pcurr)
+     ∗ named "Hlog_inv" (LogInv plog)
      ∗ named "Hsrc_inv" (SrcInv Γ psrc)
      ∗ named "Hsomewriter"
         (match fst flag with
@@ -101,12 +107,14 @@ Section refinement_triples.
      change out from underneath you -- this is enforced by granting ownership of
      appropriate ghost variables *)
   Definition MainLockInv Γ :=
-    (∃ (pcurr: nat * nat), own (γmain Γ) (◯ (Excl' pcurr))
+    (∃ (pcurr: nat * nat), lease main_fst (fst pcurr) ∗ lease main_snd (snd pcurr)
                                ∗ own (γsrc Γ) (◯ (Excl' pcurr)))%I.
 
   Definition LogLockInv Γ :=
     (∃ (plog: nat * nat), own (γflag Γ) (◯ (Excl' (0, (0, existT _ (Ret tt) : procTC _))))
-                              ∗ own (γlog Γ) (◯ (Excl' plog)))%I.
+                              ∗ lease log_commit 0
+                              ∗ lease log_fst (fst plog)
+                              ∗ lease log_snd (snd plog))%I.
 
   Definition mlN : namespace := (nroot.@"lock_main").
   Definition llN : namespace := (nroot.@"lock_log").
@@ -121,8 +129,11 @@ Section refinement_triples.
   Definition CrashStarter Γ :=
     (main_lock m↦ 0 ∗ log_lock m↦ 0 ∗
       ∃ flag (plog pcurr psrc : nat * nat),
-        own (γflag Γ) (◯ (Excl' flag)) ∗ own (γlog Γ) (◯ (Excl' plog))
-            ∗ own (γmain Γ) (◯ (Excl' pcurr)) ∗ own (γsrc Γ) (◯ (Excl' psrc)))%I.
+        own (γflag Γ) (◯ (Excl' flag))
+            ∗ lease log_commit (fst flag)
+            ∗ lease log_fst (fst plog) ∗ lease log_snd (snd plog)
+            ∗ lease main_fst (fst pcurr) ∗ lease main_snd (snd pcurr)
+            ∗ own (γsrc Γ) (◯ (Excl' psrc)))%I.
 
   Definition CrashInner Γ :=
     (CommitInner True Γ ∗ CrashStarter Γ)%I.
@@ -164,179 +175,149 @@ Section refinement_triples.
     IntoSepEnv P [(LAnon, P)] | 100.
   Proof. rewrite /IntoSepEnv//=. iFrame. eauto. Qed.
 
+  Ltac log_step Hinv :=
+    iInv Hinv as "H";
+    destruct_commit_inner "H";
+    iLDestruct "Hlog_inv";
+    iLDestruct "Hmain_inv";
+    iLDestruct "Hcommit_inv";
+    repeat unify_ghost;
+    repeat unify_lease;
+    wp_step;
+    (iModIntro; handle_pairs (recommit; iNamed (iFrame); iFrame));
+    iNamed (iFrame).
+
   Lemma write_log_fst (m: iProp Σ) {_: Timeless m}
-        Γ flagsnd (plog': nat * nat) x j i:
+        Γ flagsnd (plog1: nat) x j i:
     {{{
         inv liN (CommitInner m Γ)
-        ∗ (named i (own Γ.(γlog) (◯ Excl' plog')))
+        ∗ (named i (lease log_fst plog1))
         ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}
       write_disk log_fst x
     {{{
         RET tt;
-        named i (own Γ.(γlog) (◯ Excl' (x, plog'.2)))
+        named i (lease log_fst x)
         ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}.
   Proof.
     iIntros (Φ). iIntros "(Hinv&Hlog&Hflag) HΦ"; iAssignNames.
-    iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    iLDestruct "Hlog_inv";
-    iLDestruct "Hcommit_inv".
-    repeat unify_ghost. simpl.
-    iNamed (iMod (named_ghost_var_update (γlog Γ) (x, snd plog')
-            with "Hlog_auth [$]") as "(?&?)").
-    wp_step. iModIntro. recommit.
-    iNamed (iFrame). iFrame.
-    iApply "HΦ"; iFrame.
+    log_step "Hinv". by iApply "HΦ"; iFrame.
   Qed.
 
   Lemma write_log_snd (m: iProp Σ) {H': Timeless m}
-        Γ flagsnd (plog': nat * nat) x j i:
+        Γ flagsnd (plog2: nat) x j i:
     {{{
         inv liN (CommitInner m Γ)
-        ∗ (named i (own Γ.(γlog) (◯ Excl' plog')))
+        ∗ (named i (lease log_snd plog2))
         ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}
       write_disk log_snd x
     {{{
         RET tt;
-        named i (own Γ.(γlog) (◯ Excl' (plog'.1, x)))
+        named i (lease log_snd x)
         ∗ (named j (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}.
   Proof.
     iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ"; iAssignNames.
-    iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    iLDestruct "Hlog_inv";
-    iLDestruct "Hcommit_inv".
-    repeat unify_ghost.
-    iMod (ghost_var_update (γlog Γ) (fst plog', x)
-            with "Hlog_auth [$]") as "(Hlog_auth&Hlog_ghost)".
-    wp_step. iModIntro. recommit.
-    iNamed (iFrame). iFrame.
-    iApply "HΦ". iFrame.
+    log_step "Hinv". by iApply "HΦ"; iFrame.
   Qed.
 
   Lemma write_main_fst (m: iProp Σ) {H': Timeless m}
-        Γ base flagsnd (pcurr': nat * nat) x i j:
+        Γ base flagsnd (pcurr1: nat) x i j:
     {{{
         inv liN (CommitInner m Γ)
-        ∗ (named i (own Γ.(γmain) (◯ Excl' pcurr')))
+        ∗ (named i (lease main_fst pcurr1))
         ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
     }}}
       write_disk main_fst x
     {{{ RET tt;
-        named i (own Γ.(γmain) (◯ Excl' (x, pcurr'.2)))
+        named i (lease main_fst x)
         ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
     }}}.
   Proof.
     iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ"; iAssignNames.
-    iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    iLDestruct "Hmain_inv";
-    iLDestruct "Hcommit_inv".
-    repeat unify_ghost.
-    iMod (ghost_var_update (γmain Γ) (x, snd pcurr')
-            with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
-    wp_step. iModIntro; recommit.
-    iNamed (iFrame). iFrame.
-    iApply "HΦ". iFrame.
+    log_step "Hinv". by iApply "HΦ"; iFrame.
   Qed.
 
   Lemma write_main_snd (m: iProp Σ) {H': Timeless m}
-        Γ base flagsnd (pcurr': nat * nat) x i j:
+        Γ base flagsnd (pcurr2: nat) x i j:
     {{{
         inv liN (CommitInner m Γ)
-        ∗ (named i (own Γ.(γmain) (◯ Excl' pcurr')))
+        ∗ (named i (lease main_snd pcurr2))
         ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
     }}}
       write_disk main_snd x
     {{{ RET tt;
-        named i (own Γ.(γmain) (◯ Excl' (pcurr'.1, x)))
+        named i (lease main_snd x)
         ∗ (named j (own Γ.(γflag) (◯ Excl' (S base, flagsnd))))
     }}}.
   Proof.
     iIntros (Φ) "(Hinv&Hlog&Hflag) HΦ"; iAssignNames.
-    iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    iLDestruct "Hmain_inv";
-    iLDestruct "Hcommit_inv".
-    repeat unify_ghost.
-    iMod (ghost_var_update (γmain Γ) (fst pcurr', x)
-            with "Hmain_auth [$]") as "(Hmain_auth&Hmain_ghost)".
-    wp_step. iModIntro. recommit.
-    iNamed (iFrame). iFrame.
-    iApply "HΦ". iFrame.
+    log_step "Hinv". by iApply "HΦ"; iFrame.
   Qed.
 
   Lemma read_main_fst (m: iProp Σ) {H': Timeless m}
-        Γ (pcurr': nat * nat) i:
+        Γ pcurr i:
     {{{
         inv liN (CommitInner m Γ)
-        ∗ (named i (own Γ.(γmain) (◯ Excl' pcurr')))
+        ∗ (named i (lease main_fst pcurr))
     }}}
       read_disk main_fst
-    {{{ RET (fst pcurr');
-        named i (own Γ.(γmain) (◯ Excl' pcurr'))
+    {{{ RET (pcurr);
+        named i (lease main_fst pcurr)
     }}}.
   Proof.
     iIntros (Φ) "(Hinv&Hlog) HΦ"; iAssignNames.
-    iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    iLDestruct "Hmain_inv".
-    repeat unify_ghost.
-    wp_step. iModIntro. recommit.
-    iNamed (iFrame).
-    iApply "HΦ". iFrame.
+    log_step "Hinv". by iApply "HΦ"; iFrame.
   Qed.
 
   Lemma read_main_snd (m: iProp Σ) {H': Timeless m}
-        Γ (pcurr': nat * nat) i:
+        Γ pcurr i:
     {{{
         inv liN (CommitInner m Γ)
-        ∗ (named i (own Γ.(γmain) (◯ Excl' pcurr')))
+        ∗ (named i (lease main_snd pcurr))
     }}}
       read_disk main_snd
-    {{{ RET (snd pcurr');
-        named i (own Γ.(γmain) (◯ Excl' pcurr'))
+    {{{ RET (pcurr);
+        named i (lease main_snd pcurr)
     }}}.
   Proof.
     iIntros (Φ) "(Hinv&Hlog) HΦ"; iAssignNames.
-    iInv "Hinv" as "H".
-    destruct_commit_inner "H".
-    iLDestruct "Hmain_inv".
-    repeat unify_ghost.
-    wp_step. iModIntro. recommit.
-    iNamed (iFrame).
-    iApply "HΦ". iFrame.
+    log_step "Hinv". by iApply "HΦ"; iFrame.
   Qed.
 
   Lemma set_commit {T} (m: iProp Σ) {H': Timeless m}
-        Γ flagsnd (pcurr': nat * nat) i' i j
+        Γ flagsnd (pcurr': nat * nat) icommit ifst isnd i j x
         K `{LanguageCtx AtomicPair.Op unit T AtomicPair.l K} p:
     {{{
         inv liN (CommitInner m Γ)
         ∗ m
         ∗ j ⤇ K (Call (AtomicPair.Write p))
-        ∗ (named i' (own Γ.(γlog) (◯ Excl' p)))
+        ∗ (named icommit (lease log_commit x))
+        ∗ (named ifst (lease log_fst (fst p)))
+        ∗ (named isnd (lease log_snd (snd p)))
         ∗ (named i (own Γ.(γflag) (◯ Excl' (0, flagsnd))))
     }}}
       write_disk log_commit 1
     {{{ RET tt;
-        (named i' (own Γ.(γlog) (◯ Excl' p)))
+        (named icommit (lease log_commit 1))
+        ∗ (named ifst (lease log_fst (fst p)))
+        ∗ (named isnd (lease log_snd (snd p)))
         ∗ (named i (own Γ.(γflag) (◯ Excl' (1, (j, existT _ (K (Call (AtomicPair.Write p))))
                   : prodC natC (procTC AtomicPair.Op)))))
     }}}.
   Proof.
-    iIntros (Φ) "(Hinv&Hm&Hj&Hlog&Hflag) HΦ"; iAssignNames.
+    iIntros (Φ) "(Hinv&Hm&Hj&Hcommit_lease&Hlog1&Hlog2&Hflag) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
     destruct_commit_inner "H";
     iLDestruct "Hlog_inv";
     iLDestruct "Hcommit_inv".
-    unify_ghost.
+    repeat unify_ghost.
+    destruct p; simpl.
+    repeat unify_lease.
     iMod (ghost_var_update (γflag Γ)
-                           (1, (j, existT _ (K (Call (AtomicPair.Write p))))
+                           (1, (j, existT _ (K (Call (AtomicPair.Write _))))
                             : prodC natC (procTC AtomicPair.Op))
             with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
     wp_step. recommit.
@@ -344,38 +325,45 @@ Section refinement_triples.
     iNamed (iFrame). iFrame.
     iSplitL "Hm Hj".
     { iNext. iIntros. simpl. rewrite /CommitOn. rewrite someone_writing_unfold.
-      iExists K, _. iFrame. simpl. destruct p; eauto. }
+      iExists K, _. iFrame. simpl. destruct_pairs; auto. }
     iApply "HΦ". iFrame.
   Qed.
 
   Lemma unset_commit {T} (m: iProp Σ) {H': Timeless m}
-        Γ base (pcurr': nat * nat) i1 i2 i3 j
-        K `{LanguageCtx AtomicPair.Op unit T AtomicPair.l K} (p p': nat * nat):
+        Γ base (p p': nat * nat) i1 icommit ifst isnd j x isrc
+        K `{LanguageCtx AtomicPair.Op unit T AtomicPair.l K}:
     {{{
         source_ctx
         ∗ inv liN (CommitInner m Γ)
         ∗ (named i1 (own Γ.(γflag) (◯ (Excl' (S base, (j, existT _ (K (Call (AtomicPair.Write p)))))
              : (optionUR (exclR (prodC natC (prodC natC (procTC (AtomicPair.Op))))))))))
-        ∗ (named i2 (own Γ.(γmain) (◯ Excl' p)))
-        ∗ (named i3 (own Γ.(γsrc) (◯ Excl' p')))
+        ∗ (named icommit (lease log_commit x))
+        ∗ (named ifst (lease main_fst (fst p)))
+        ∗ (named isnd (lease main_snd (snd p)))
+        ∗ (named isrc (own Γ.(γsrc) (◯ (Excl' p'))))
     }}}
       write_disk log_commit 0
     {{{ RET tt;
         (named i1 (own Γ.(γflag) (◯ Excl' (0, (0, existT _ (Ret tt))
                   : prodC natC (procTC AtomicPair.Op)))))
-        ∗ (named i2 (own Γ.(γmain) (◯ Excl' p)))
-        ∗ (named i3 (own Γ.(γsrc) (◯ Excl' p)))
+        ∗ (named icommit (lease log_commit 0))
+        ∗ (named ifst (lease main_fst (fst p)))
+        ∗ (named isnd (lease main_snd (snd p)))
+        ∗ (named isrc (own Γ.(γsrc) (◯ (Excl' p))))
         ∗ m
         ∗ j ⤇ K (Ret tt)
     }}}.
   Proof.
-    iIntros (Φ) "(Hsource_inv&Hinv&Hflag&Hmain&Hsrc_ghost) HΦ"; iAssignNames.
+    iIntros (Φ) "(Hsource_inv&Hinv&Hflag&Hcommit_flag&Hmain1&Hmain2&Hsrc_ghost) HΦ"; iAssignNames.
     iInv "Hinv" as "H".
     destruct_commit_inner "H";
     iLDestruct "Hmain_inv";
     iLDestruct "Hcommit_inv";
     iLDestruct "Hsrc_inv".
+    destruct p as (p1, p2).
     repeat unify_ghost.
+    destruct_pairs.
+    repeat unify_lease.
     simpl. rewrite /CommitOn.
     rewrite someone_writing_unfold.
     iDestruct ("Hsomewriter") as (? K') "(Hreg&%&Hj)". simpl.
@@ -385,12 +373,74 @@ Section refinement_triples.
       econstructor.
     }
     { solve_ndisj. }
-    destruct p as (p1, p2).
-    iMod (ghost_var_update (γsrc Γ) (p1, p2) with "Hsrc_auth [$]") as "(Hsrc_auth&Hsrc_ghost)".
+    iMod (ghost_var_update (γsrc Γ) (p1, p2) with "Hsrc_auth Hsrc_ghost") as "(Hsrc_auth&Hsrc_ghost)".
     iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
             with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
     iModIntro.
-    recommit.
+    handle_pairs (recommit; iNamed (iFrame)). iNamed iFrame.
+    iSplitL "".
+    { iNext. rewrite /CommitOff. auto. }
+    iApply "HΦ". iFrame.
+  Qed.
+
+  Lemma unset_commit' {T} (m: iProp Σ) {H': Timeless m}
+        Γ base (p p': nat * nat) i1 icommit ifst isnd ifst' isnd' x isrc thd
+        `{LanguageCtx AtomicPair.Op unit T AtomicPair.l K}:
+    {{{
+        source_ctx
+        ∗ inv liN (CommitInner m Γ)
+        ∗ (named i1 (own Γ.(γflag) (◯ (Excl' (S base, thd)
+             : (optionUR (exclR (prodC natC (prodC natC (procTC (AtomicPair.Op))))))))))
+        ∗ (named icommit (lease log_commit x))
+        ∗ (named ifst (lease main_fst (fst p)))
+        ∗ (named isnd (lease main_snd (snd p)))
+        ∗ (named ifst' (lease log_fst (fst p)))
+        ∗ (named isnd' (lease log_snd (snd p)))
+        ∗ (named isrc (own Γ.(γsrc) (◯ (Excl' p'))))
+    }}}
+      write_disk log_commit 0
+    {{{ RET tt;
+        (named i1 (own Γ.(γflag) (◯ Excl' (0, (0, existT _ (Ret tt))
+                  : prodC natC (procTC AtomicPair.Op)))))
+        ∗ (named icommit (lease log_commit 0))
+        ∗ (named ifst (lease main_fst (fst p)))
+        ∗ (named isnd (lease main_snd (snd p)))
+        ∗ (named ifst' (lease log_fst (fst p)))
+        ∗ (named isnd' (lease log_snd (snd p)))
+        ∗ (named isrc (own Γ.(γsrc) (◯ (Excl' p))))
+        ∗ m
+    }}}.
+  Proof.
+    iIntros (Φ) "(Hsource_inv&Hinv&Hflag&Hcommit_flag&Hmain1&Hmain2&Hlog1&Hlog2&Hsrc_ghost) HΦ";
+      iAssignNames.
+    iInv "Hinv" as "H".
+    destruct_commit_inner "H";
+    iLDestruct "Hmain_inv";
+    iLDestruct "Hcommit_inv";
+    iLDestruct "Hlog_inv";
+    iLDestruct "Hsrc_inv".
+    destruct p as (p1, p2).
+    simpl.
+    destruct_pairs.
+    repeat unify_ghost.
+    repeat unify_lease.
+    simpl. rewrite /CommitOn.
+    rewrite someone_writing_unfold.
+    iDestruct ("Hsomewriter") as (? K') "(Hreg&%&Hj)". simpl.
+    wp_step.
+    destruct thd. simpl.
+     inversion H4. rewrite H6.
+    iMod (ghost_step_lifting with "Hj Hsource_inv Hsrc") as "(Hj&Hsrc&_)".
+    { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
+      econstructor.
+    }
+    { solve_ndisj. }
+    iMod (ghost_var_update (γsrc Γ) (p1, p2) with "Hsrc_auth Hsrc_ghost") as "(Hsrc_auth&Hsrc_ghost)".
+    iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
+            with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
+    iModIntro.
+    handle_pairs (recommit; iNamed (iFrame)). eexists; shelve.
+    rewrite /CommitInner'. iNamed (iFrame).
     iNamed (iFrame).
     iSplitL "".
     { iNext. rewrite /CommitOff. auto. }
@@ -429,22 +479,20 @@ Section refinement_triples.
     iDestruct "Hlog_lock" as (γlock_log) "#Hlockinv".
     iDestruct "Hmain_lock" as (γlock_main) "#Hmlockinv".
     wp_lock "(Hlocked&HLL)".
-    iDestruct "HLL" as (plog) "(Hflag_ghost&Hlog_ghost)".
+    iDestruct "HLL" as (plog) "(Hflag_ghost&Hcommit_lease&Hlog_l1&Hlog_l2)".
 
     repeat wp_step.
-    destruct p as (p1, p2). simpl.
-    iNamed (iApply (set_commit Registered with "[$]"); first (eauto); iIntros "!>"; iLIntro).
+    iNamed (iApply (set_commit Registered _ _ p with "[$]"); iIntros "!>"; iLIntro).
 
     wp_lock "(Hlocked'&HML)".
-    iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
-
+    iDestruct "HML" as (pmain) "(Hmain_lease1&Hmain_lease2&Hsrc_ghost)".
     repeat wp_step.
-    iNamed (iApply (unset_commit Registered with "[$]"); first (eauto); iIntros "!>"; iLIntro).
+    iNamed (iApply (unset_commit Registered _ _ p with "[$]"); iIntros "!>"; iLIntro).
 
-    wp_unlock "[Hlog_ghost Hflag_ghost]".
+    wp_unlock "[Hlog_l1 Hlog_l2 Hcommit_lease Hflag_ghost]".
     { iExists _; iFrame. }
 
-    wp_unlock "[Hmain_ghost Hsrc_ghost]".
+    wp_unlock "[Hmain_lease1 Hmain_lease2 Hsrc_ghost]".
     { iExists _; iFrame. }
 
     iApply "HΦ". iFrame.
@@ -460,7 +508,7 @@ Section refinement_triples.
     iDestruct "Hlog_lock" as (γlock_log) "#Hlockinv".
     iDestruct "Hmain_lock" as (γlock_main) "#Hmlockinv".
     wp_lock "(Hlocked'&HML)".
-    iDestruct "HML" as (pmain) "(Hmain_ghost&Hsrc_ghost)".
+    iDestruct "HML" as (pmain) "(Hmain1&Hmain2&Hsrc_ghost)".
 
     (* Simulate the step, since we know what it will be *)
     wp_bind.
@@ -474,7 +522,7 @@ Section refinement_triples.
       econstructor.
     }
     { solve_ndisj. }
-    iMod ("Hclose" with "[-Hj HΦ Hlocked' Hreg Hmain_ghost Hsrc_ghost]") as "_".
+    iMod ("Hclose" with "[-Hj HΦ Hlocked' Hreg Hmain1 Hmain2 Hsrc_ghost]") as "_".
     { recommit. iNamed (iFrame). }
 
     wp_step.
@@ -482,7 +530,7 @@ Section refinement_triples.
     wp_step.
 
     wp_bind.
-    wp_unlock "[Hmain_ghost Hsrc_ghost]".
+    wp_unlock "[Hmain1 Hmain2 Hsrc_ghost]".
     { iExists _; iFrame. }
 
     wp_ret. destruct pmain. simpl. iApply "HΦ". iFrame.
@@ -503,14 +551,19 @@ Section refinement_triples.
   Qed.
 
   Lemma init_disk_split:
-    (([∗ map] i↦v ∈ init_zero, i d↦ v)
-       -∗ log_commit d↦ 0 ∗ main_fst d↦ 0 ∗ main_snd d↦ 0
-          ∗ log_fst d↦ 0 ∗ log_snd d↦ 0)%I.
+    (([∗ map] i↦v ∈ init_zero, i d↦ v ∗ lease i v)
+       -∗ (log_commit d↦ 0
+           ∗ main_fst d↦ 0 ∗ main_snd d↦ 0
+           ∗ log_fst d↦ 0 ∗ log_snd d↦ 0)
+          ∗ (lease log_commit 0
+             ∗ lease main_fst 0 ∗ lease main_snd 0
+             ∗ lease log_fst 0 ∗ lease log_snd 0))%I.
   Proof.
     iIntros "Hdisk".
     iPoseProof (disk_ptr_iter_split_aux O 4 with "Hdisk") as "H".
     { rewrite /size. lia. }
-    iDestruct "H" as "($&_)".
+    iDestruct "H" as "(H&_)".
+    repeat iDestruct "H" as "((?&?)&H)". iFrame.
   Qed.
 
 End refinement_triples.
@@ -584,7 +637,7 @@ Definition init_absr σ1a σ1c :=
   Definition exec_inv := fun H1 H2 => @ExecInv Σ H2 _ H1 _ _.
   Definition exec_inner := fun H1 H2 =>
                        (∃ Γ v1 v2, main_lock m↦ v1 ∗log_lock m↦ v2 ∗
-                                       (⌜ v1 = 0  ⌝ -∗ @MainLockInv Σ _ Γ) ∗
+                                       (⌜ v1 = 0  ⌝ -∗ @MainLockInv Σ _ _ Γ) ∗
                                        (⌜ v2 = 0  ⌝ -∗ @LogLockInv Σ _ _ Γ) ∗
                                        @ExecInner Σ H2 H1 _ _ Γ)%I.
   Definition crash_inner := fun H1 H2 => (∃ Γ, @CrashInner Σ H2 H1 _ _ Γ)%I.
@@ -634,7 +687,8 @@ Module lRO : exmach_refinement_obligations lRT.
   Proof.
     intros ? ? Γ. iIntros "(H&Hreg&Hstarter)". iDestruct "H" as "(#Hctx&#Hinv)".
     iDestruct "Hstarter" as "(Hmain_lock&Hlog_lock&Hrest)".
-    iDestruct "Hrest" as (flag plog pcurr psrc) "(Hflag_ghost&Hlog_ghost&Hmain_ghost&Hsrc_ghost)".
+    iDestruct "Hrest" as (flag plog pcurr psrc)
+                           "(Hflag_ghost&Hcommit_lease&Hlog1&Hlog2&Hmain1&Hmain2&Hsrc_ghost)".
     wp_bind.
     iInv "Hinv" as "H".
     destruct_commit_inner "H".
@@ -654,7 +708,11 @@ Module lRO : exmach_refinement_obligations lRT.
       iLDestruct "Hsrc_inv".
       iLDestruct "Hcommit_inv".
       iLDestruct "Hmain_inv".
+      iLDestruct "Hlog_inv".
+      simpl.
       repeat unify_ghost.
+      do 5 unify_lease.
+      simpl. rewrite /CommitOff.
       iDestruct ("Hsomewriter") as %Hpeq; subst.
 
       iApply fupd_mask_weaken.
@@ -665,19 +723,24 @@ Module lRO : exmach_refinement_obligations lRT.
 
       iClear "Hctx Hinv".
       iIntros (???) "(#Hctx&Hsrc)".
-      iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
-              with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
-
-
+      iMod (@ghost_var_update _ _ _
+                              (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
+              with "Hflag_auth Hflag_ghost") as "(Hflag_auth&Hflag_ghost)".
+      iClear "Hmain1 Hmain2 Hlog1 Hlog2 Hcommit_lease".
+      iMod (disk_next with "Hmain_fst") as "(Hmain_fst&Hmain1)".
+      iMod (disk_next with "Hmain_snd") as "(Hmain_snd&Hmain2)".
+      iMod (disk_next with "Hlog_fst") as "(Hlog_fst&Hlog1)".
+      iMod (disk_next with "Hlog_snd") as "(Hlog_snd&Hlog2)".
+      iMod (disk_next with "Hcommit") as "(Hcommit&Hcommit_lease)".
       iModIntro. iExists Γ, 0, 0. iFrame.
-      rewrite /MainLockInv.
-      iSplitL "Hmain_ghost Hsrc_ghost".
+      iSplitL "Hmain1 Hmain2 Hsrc_ghost".
       { iIntros; iExists _; iFrame. }
-      iSplitL "Hlog_ghost".
+      iSplitL "Hlog1 Hlog2".
       { iIntros; iExists _; iFrame. }
 
-      recommit. iNamed (iFrame); auto.
+      recommit. rewrite /CommitInner'/FlagInv. iNamed(iFrame). iNamed (iFrame); auto.
     * (* commit bit set *)
+      destruct plog as (plog1&plog2).
       recommit. iNamed (iFrame). iFrame.
       iModIntro.
 
@@ -685,7 +748,9 @@ Module lRO : exmach_refinement_obligations lRT.
       iFastInv "Hinv" "H".
       destruct_commit_inner "H".
       iLDestruct "Hlog_inv".
-      unify_ghost.
+      destruct_pairs.
+      repeat unify_ghost.
+      repeat unify_lease.
       wp_step.
       iModIntro. recommit. iNamed (iFrame). iFrame.
 
@@ -693,48 +758,27 @@ Module lRO : exmach_refinement_obligations lRT.
       iFastInv "Hinv" "H".
       destruct_commit_inner "H".
       iLDestruct "Hlog_inv".
-      unify_ghost.
+      destruct_pairs.
+      repeat unify_ghost.
+      repeat unify_lease.
       wp_step.
       iModIntro. recommit. iNamed (iFrame). iFrame.
 
       repeat wp_step.
-
-      iFastInv "Hinv" "H".
-      destruct_commit_inner "H".
-      iLDestruct "Hmain_inv".
-      iLDestruct "Hcommit_inv".
-      iLDestruct "Hsrc_inv".
-      iLDestruct "Hlog_inv".
-      repeat unify_ghost.
-      destruct thd. simpl.
-      simpl. rewrite /CommitOn.
-      rewrite someone_writing_unfold.
-      iDestruct ("Hsomewriter") as (K' ?) "(_&Heq&Hj)".
-      iDestruct "Heq" as %Heq.
-      rewrite Heq.
-      wp_step.
-      iMod (ghost_step_lifting with "Hj Hctx Hsrc") as "(Hj&Hsrc&_)".
-      { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
-        econstructor.
-      }
-      { solve_ndisj. }
-      iMod (ghost_var_update (γsrc Γ) plog with "Hsrc_auth [$]") as "(Hsrc_auth&Hsrc_ghost)".
-      iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
-              with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
-      iModIntro. recommit.
-      rewrite /CommitInner'/FlagInv.
-      unbundle_names. iFrame.
-      iNamed (iFrame).
-      destruct plog as (plog1&plog2); iFrame.
-      iSplitR; first by auto.
+      iNamedAux (iApply (unset_commit' True%I _ _ (plog1, plog2) with "[-Hmain_lock Hlog_lock]")).
+      { iFrame. iFrame "Hctx". iFrame "Hinv". }
+      iIntros "!> "; iLIntro.
 
       iInv "Hinv" as "H" "_".
       destruct_commit_inner "H".
+      simpl.
       iLDestruct "Hmain_inv".
       iLDestruct "Hcommit_inv".
       iLDestruct "Hsrc_inv".
       iLDestruct "Hlog_inv".
+      destruct_pairs.
       repeat unify_ghost.
+      do 4 unify_lease.
       iDestruct ("Hsomewriter") as %Hpeq.
 
       iApply fupd_mask_weaken.
@@ -745,23 +789,24 @@ Module lRO : exmach_refinement_obligations lRT.
 
       iClear "Hctx Hinv".
       iIntros (???) "(#Hctx&Hsrc)".
-      iMod (ghost_var_update (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
+      iMod (@ghost_var_update _ _ _ (γflag Γ) (0, (0, existT _ (Ret tt) : procTC _))
               with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
 
-
+      iClear "Hmain1 Hmain2 Hcommit_lease".
+      iMod (disk_next with "Hmain_fst") as "(Hmain_fst&Hmain1)".
+      iMod (disk_next with "Hmain_snd") as "(Hmain_snd&Hmain2)".
+      iMod (disk_next with "Hlog_fst") as "(Hlog_fst&Hlog1')".
+      iMod (disk_next with "Hlog_snd") as "(Hlog_snd&Hlog2')".
+      iMod (disk_next with "Hcommit") as "(Hcommit&Hcommit_lease)".
       iModIntro. iExists Γ, 0, 0. iFrame.
-      rewrite /MainLockInv.
-      iSplitL "Hmain_ghost Hsrc_ghost".
-      { iIntros; iExists _; iFrame.  }
-      iSplitL "Hlog_ghost".
-      { iIntros; iExists _; iFrame. }
+      iSplitL "Hmain1 Hmain2 Hsrc_ghost".
+      { iIntros; iExists (_, _); iFrame. }
+      iSplitL "Hlog1' Hlog2'".
+      { iIntros; iExists (_, _); iFrame. }
 
-      recommit.
-      rewrite /CommitInner'/FlagInv.
-      unbundle_names. iFrame.
-      iNamed (iFrame).
-      simpl. auto.
 
+      iExists _, (_, _), (_, _), (_, _). recommit'.
+      rewrite /CommitInner'/FlagInv. iNamed(iFrame). iNamed (iFrame); auto.
   Time Qed.
 
   Lemma init_wf: ∀ σ1a σ1c, init_absr σ1a σ1c → ExMach.state_wf σ1c.
@@ -773,29 +818,27 @@ Module lRO : exmach_refinement_obligations lRT.
   Proof.
     intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
     iIntros "(Hmem&Hdisk&#?&Hstate)".
-    iMod (ghost_var_alloc (0, (0, existT _ (Ret tt) : procTC _)))
+    iMod (@ghost_var_alloc _ _ _ _
+            (0, (0, existT _ (Ret tt) : procTC _)))
       as (γflag) "[Hflag_auth Hflag_ghost]".
     iMod (ghost_var_alloc (0, 0))
-      as (γlog) "[Hlog_auth Hlog_ghost]".
-    iMod (ghost_var_alloc (0, 0))
       as (γsrc) "[Hsrc_auth Hsrc_ghost]".
-    iMod (ghost_var_alloc (0, 0))
-      as (γmain) "[Hmain_auth Hmain_ghost]".
 
-    iModIntro. iExists {| γflag := γflag; γlog := γlog; γsrc := γsrc; γmain := γmain|}.
+    iModIntro. iExists {| γflag := γflag; γsrc := γsrc |}.
     iExists 0, 0.
     iPoseProof (init_mem_split with "Hmem") as "(?&?)".
-    iPoseProof (init_disk_split with "Hdisk") as "(?&?&?&?&?)".
+    iPoseProof (init_disk_split with "Hdisk") as "((?&?&?&?&?)&Hcommit&Hmain1&Hmain2&Hlog1&Hlog2)".
 
     iFrame.
-    iSplitL "Hmain_ghost Hsrc_ghost".
+    iSplitL "Hmain1 Hmain2 Hsrc_ghost".
     { iIntros; iExists _; iFrame.  }
-    iSplitL "Hlog_ghost".
-    { iIntros; iExists _; iFrame. }
+    iSplitL "Hlog1 Hlog2".
+    { iIntros; iExists (_, _); iFrame. }
 
-    iExists _, _, _, _.
+    iExists _, (0, 0), (0, 0), (0, 0).
     rewrite /CommitInner'/FlagInv.
     unbundle_names. iFrame.
+    rewrite /MainInv/LogInv/CommitOff.
     iNamed (iFrame).
     simpl. iFrame. auto.
   Qed.
@@ -814,21 +857,22 @@ Module lRO : exmach_refinement_obligations lRT.
     iLDestruct "Hcommit_inv".
     iLDestruct "Hsrc_inv".
     iLDestruct "Hlog_inv".
-    iClear "Hmain_auth Hflag_auth Hlog_auth Hsrc_auth".
+    iClear "Hflag_auth Hsrc_auth".
 
     iMod (ghost_var_alloc flag)
       as (γflag) "[Hflag_auth Hflag_ghost]".
-    iMod (ghost_var_alloc plog)
-      as (γlog) "[Hlog_auth Hlog_ghost]".
     iMod (ghost_var_alloc psrc)
       as (γsrc) "[Hsrc_auth Hsrc_ghost]".
-    iMod (ghost_var_alloc pmain)
-      as (γmain) "[Hmain_auth Hmain_ghost]".
+    iMod (disk_next with "Hmain_fst") as "(Hmain_fst&Hmain1)".
+    iMod (disk_next with "Hmain_snd") as "(Hmain_snd&Hmain2)".
+    iMod (disk_next with "Hlog_fst") as "(Hlog_fst&Hlog1')".
+    iMod (disk_next with "Hlog_snd") as "(Hlog_snd&Hlog2')".
+    iMod (disk_next with "Hcommit") as "(Hcommit&Hcommit_lease)".
 
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
     iPoseProof (@init_mem_split with "Hmem") as "(?&?)".
-    iModIntro. iExists {| γflag := γflag; γlog := γlog; γsrc := γsrc; γmain := γmain|}.
+    iModIntro. iExists {| γflag := γflag; γsrc := γsrc |}.
     rewrite /CrashInner/ExecInner/CommitInner.
     recommit.
       rewrite /CommitInner'/FlagInv.
@@ -855,21 +899,22 @@ Module lRO : exmach_refinement_obligations lRT.
     iLDestruct "Hcommit_inv".
     iLDestruct "Hsrc_inv".
     iLDestruct "Hlog_inv".
-    iClear "Hmain_auth Hflag_auth Hlog_auth Hsrc_auth".
+    iClear "Hflag_auth Hsrc_auth".
 
     iMod (ghost_var_alloc flag)
       as (γflag) "[Hflag_auth Hflag_ghost]".
-    iMod (ghost_var_alloc plog)
-      as (γlog) "[Hlog_auth Hlog_ghost]".
     iMod (ghost_var_alloc psrc)
       as (γsrc) "[Hsrc_auth Hsrc_ghost]".
-    iMod (ghost_var_alloc pmain)
-      as (γmain) "[Hmain_auth Hmain_ghost]".
+    iMod (disk_next with "Hmain_fst") as "(Hmain_fst&Hmain1)".
+    iMod (disk_next with "Hmain_snd") as "(Hmain_snd&Hmain2)".
+    iMod (disk_next with "Hlog_fst") as "(Hlog_fst&Hlog1')".
+    iMod (disk_next with "Hlog_snd") as "(Hlog_snd&Hlog2')".
+    iMod (disk_next with "Hcommit") as "(Hcommit&Hcommit_lease)".
 
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
     iPoseProof (@init_mem_split with "Hmem") as "(?&?)".
-    iModIntro. iExists {| γflag := γflag; γlog := γlog; γsrc := γsrc; γmain := γmain|}.
+    iModIntro. iExists {| γflag := γflag; γsrc := γsrc|}.
     rewrite /CrashInner/ExecInner/CommitInner.
     iAssignNames.
     iExists flag, plog, pmain, psrc. simpl.
@@ -933,28 +978,28 @@ Module lRO : exmach_refinement_obligations lRT.
       iExFalso. iApply (@AllDone_Register_excl with "Had Hreg").
     }
     iDestruct ("Hsomewriter") as %hp. subst.
-    iMod (ghost_var_alloc (0, (0, existT _ (Ret tt) : procTC _)))
+    iMod (@ghost_var_alloc _ _ _ _
+                           (0, (0, existT _ (Ret tt) : procTC _)))
       as (γflag) "[Hflag_auth' Hflag_ghost']".
-    evar (log : (nat * nat)%type).
-    iMod (ghost_var_alloc log)
-      as (γlog) "[Hlog_auth' Hlog_ghost']".
-    evar (src : (nat * nat)%type).
-    iMod (ghost_var_alloc src)
+    iMod (ghost_var_alloc psrc)
       as (γsrc) "[Hsrc_auth' Hsrc_ghost']".
-    iMod (ghost_var_alloc src)
-      as (γmain) "[Hmain_auth' Hmain_ghost']".
+    iMod (disk_next with "Hmain_fst") as "(Hmain_fst&Hmain1)".
+    iMod (disk_next with "Hmain_snd") as "(Hmain_snd&Hmain2)".
+    iMod (disk_next with "Hlog_fst") as "(Hlog_fst&Hlog1')".
+    iMod (disk_next with "Hlog_snd") as "(Hlog_snd&Hlog2')".
+    iMod (disk_next with "Hcommit") as "(Hcommit&Hcommit_lease)".
 
     iPoseProof (@init_mem_split with "Hmem") as "(?&?)".
-    iExists {| γflag := γflag; γlog := γlog; γsrc := γsrc; γmain := γmain|}.
+    iExists {| γflag := γflag; γsrc := γsrc |}.
     iExists _, _. iFrame.
     rewrite /MainLockInv.
-    iSplitL "Hmain_ghost' Hsrc_ghost'".
-    { iModIntro; iIntros. iExists _. iFrame. }
+    iSplitL "Hmain1 Hmain2 Hsrc_ghost'".
+    { iModIntro; iIntros. iExists psrc. iFrame. }
 
-    iSplitL "Hlog_ghost'".
-    { iModIntro; iIntros. iExists _. iFrame. }
+    iSplitL "Hlog1' Hlog2'".
+    { iModIntro; iIntros. iExists plog. iFrame. }
 
-    iModIntro. iExists _, _, _, _. unfold log, src.
+    iModIntro. iExists _, _, _, _.
     rewrite /CommitInner'/FlagInv/MainInv/LogInv/SrcInv. unbundle_names.
     iFrame.
     simpl. auto.
