@@ -85,7 +85,9 @@ unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
 ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
-	$(Q)./etc/timing-report.py timing.sqlite3
+	$(Q)if [ ${TIMED} = "true" ]; then \
+		./etc/timing-report.py timing.sqlite3; \
+		fi
 
 clean-ext:
 	@echo "CLEAN ext"
