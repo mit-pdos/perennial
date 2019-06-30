@@ -23,6 +23,8 @@ def read_db(fname):
     raw_file_df = pd.DataFrame(file_timings, columns=["fname", "time"])
     file_df = raw_file_df.join(qed_sum, rsuffix="_qed", on="fname")
     file_df.rename(mapper={"time_qed": "qed_time"}, axis="columns", inplace=True)
+    file_df.drop(columns=["ident"], inplace=True)
+    file_df.fillna(value={"qed_time": 0.0}, inplace=True)
     return qed_df, file_df
 
 
@@ -71,6 +73,7 @@ if __name__ == "__main__":
         print("slow files:")
         print(file_df.nlargest(args.max, "time"))
 
-        print()
-        print("slow QEDs:")
-        print(qed_df.nlargest(args.max, "time"))
+        if len(qed_df) > 0:
+            print()
+            print("slow QEDs:")
+            print(qed_df.nlargest(args.max, "time"))
