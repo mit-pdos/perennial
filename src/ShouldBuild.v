@@ -2,7 +2,7 @@
 From Armada Require Import Examples.StatDb.Refinement.
 From Armada Require Import Examples.AtomicPair.RefinementShadow.
 From Armada Require Import Examples.AtomicPair.RefinementLog.
-From Armada Require Import Examples.Logging.LogRefinement.
+(* From Armada Require Import Examples.Logging.LogRefinement. *)
 From Armada Require Import Examples.ReplicatedDisk.ReplicatedDiskRefinement.
 
 (* mailboat proof *)
