@@ -339,21 +339,25 @@ Import Mail.
     {{{ RET tt; f ↦ (inode, Write) ∗ inode ↦ (bs1 ++ bs2) ∗ data ↦{q} (bs0, bs2) }}}.
   Proof.
     rewrite /writeBuf.
-    generalize 4096 => k.
+    rewrite -MAX_WRITE_LEN_unfold.
     iIntros (Φ) "(Hf&Hinode&Hdata) HΦ".
     iLöb as "IH" forall (data bs1 bs2 q).
     wp_loop.
     destruct compare_to.
     - wp_bind.
-      iApply (wp_append with "[$]").
+      iAssert (⌜ length bs2 < MAX_WRITE_LEN ⌝)%I with "[-]" as "%".
+      { iDestruct "Hdata" as "(%&?)".
+        iPureIntro. erewrite getSliceModel_len_inv; eauto. }
+      iApply (wp_append with "[$]"); first by lia.
       iIntros "!> H". do 2 wp_ret. by iApply "HΦ".
     - wp_bind.
-      iDestruct (slice_take_split k with "Hdata") as "(Htake&Hwand)"; first by lia.
+      iDestruct (slice_take_split MAX_WRITE_LEN with "Hdata") as "(Htake&Hwand)"; first by lia.
       iApply (wp_append with "[$]").
+      { rewrite take_length. lia. }
       iIntros "!> (Hf&Hinode&Hdata)".
       iDestruct ("Hwand" with "Hdata") as "Hdata".
       wp_ret.
-      iDestruct (slice_skip_split k with "Hdata") as "(Hdrop&Hwand)"; first by lia.
+      iDestruct (slice_skip_split MAX_WRITE_LEN with "Hdata") as "(Hdrop&Hwand)"; first by lia.
       iApply ("IH" with "Hf Hinode Hdrop [HΦ Hwand]").
       iIntros "!> (Hf&Hinode&Hdata)".
       iDestruct ("Hwand" with "Hdata") as "Hdata".

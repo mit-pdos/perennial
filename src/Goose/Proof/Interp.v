@@ -203,8 +203,8 @@ Lemma readSome_Some_inv {A T : Type} (f : A → option T) (s : A) s' t :
   readSome f s (Val s' t) → s = s' ∧ f s = Some t.
 Proof. rewrite /readSome. destruct (f s); auto; try inversion 1; subst; split; congruence. Qed.
 
-Ltac inv_step :=
-  repeat (inj_pair2; match goal with
+Ltac inv_step1 :=
+  inj_pair2; match goal with
          | [ H : unit |- _ ] => destruct H
          | [ H: l.(Layer.sem).(Proc.step) ?op _ (Val _ _) |- _] =>
            let op := eval compute in op in
@@ -330,7 +330,9 @@ Ltac inv_step :=
            let pfresh := fresh "p" in
            destruct (σ.(heap).(allocs).(SemanticsHelpers.dynMap) p) as [([]&pfresh)|] eqn:Heqσ;
            inversion H; subst; try destruct pfresh
-         end); inj_pair2.
+         end.
+
+Ltac inv_step := repeat inv_step1; inj_pair2.
 
 Import Reg_wp.
 Section lifting.
@@ -545,6 +547,7 @@ Proof.
 Qed.
 
 Lemma wp_append fh (inode: Inode) (p': slice.t byte) (bs bs1 bs2: Datatypes.list byte) q1 q2 s E :
+  length bs2 <= MAX_WRITE_LEN →
   {{{ fh ↦{q1} (inode, Write)
       ∗ inode ↦ bs
       ∗ p' ↦{q2} (bs1, bs2)
@@ -556,7 +559,7 @@ Lemma wp_append fh (inode: Inode) (p': slice.t byte) (bs bs1 bs2: Datatypes.list
       ∗ p' ↦{q2} (bs1, bs2)
   }}}.
 Proof.
-  iIntros (Φ) "(Hfh&Hi&Hp) HΦ".
+  iIntros (Hlen Φ) "(Hfh&Hi&Hp) HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&HFS&?)".
   iDestruct "Hp" as (Heq Hnonnull) "Hp".
@@ -567,8 +570,11 @@ Proof.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; try unfold readFd in *; inv_step; try congruence;
+    inv_step; try unfold readFd in *; inv_step; try congruence;
     (destruct equal; last by congruence); inv_step; try congruence.
     * unfold unwrap in Hhd_err. rewrite Heq in Hhd_err. inv_step.
+    * unfold unwrap in Hhd0. rewrite Heq in Hhd0; inv_step.
+      destruct le_dec; [ inversion Hhd_err | eauto ].
     * unfold unwrap in Hhd_err. destruct l0; try congruence; inv_step.
   }
   iIntros (e2 (n', σ2) Hstep) "!>".
@@ -576,7 +582,9 @@ Proof.
   inv_step.
   unfold readFd in *. unfold unwrap in *.
   inv_step. destruct equal; last by congruence.
-  inv_step. rewrite lock_available_reader_succ // in Hhd1.
+  inv_step. destruct (le_dec); last by eauto.
+  inversion Hhd1; subst.
+  rewrite lock_available_reader_succ // in Hhd2.
   rewrite Heq in Hhd0.
   inv_step.
   iMod (gen_heap_update with "Hinodes Hi") as "($&?)".

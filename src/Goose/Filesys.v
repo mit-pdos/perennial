@@ -118,6 +118,9 @@ Module FS.
          if m == m' then lookup inodes inode
          else error.
 
+  Definition assert S P (pf: {P} + {¬ P}) : relation S S unit :=
+    if pf then pure tt else error.
+
   Definition unwrap S A (e: option A) : relation S S A :=
     match e with
     | Some v => pure v
@@ -129,6 +132,10 @@ Module FS.
     | Some _ => error
     | None => pure tt
     end.
+
+  Definition MAX_WRITE_LEN := 4096.
+  Definition MAX_WRITE_LEN_unfold : MAX_WRITE_LEN = 4096 := eq_refl.
+  Opaque MAX_WRITE_LEN.
 
   Definition step T (op:Op T) : relation State State T :=
     match op in Op T return relation State State T with
@@ -184,6 +191,9 @@ Module FS.
       bs <- readFd fh Write;
       let! (s, alloc) <- readSome (fun st => Data.getAlloc p'.(slice.ptr) st.(heap));
            bs' <- unwrap (Data.getSliceModel p' alloc);
+           (* Appends larger than 4096 bytes are undefined. Alternatively, such
+           larger writes could be treated as non-atomic. *)
+           _ <- assert (le_dec (length bs') MAX_WRITE_LEN);
            _ <- unwrap (lock_available Reader s);
            puts (set inodes <[ inode := bs ++ bs' ]>)
 
