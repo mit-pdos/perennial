@@ -446,6 +446,9 @@ Opaque size.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
   Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
 
+  Global Instance inst_inG1: lockG Σ.
+  Proof. apply _. Qed.
+
   Definition exec_inv := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInv Σ H2 _ H1 hL0 hL1 hS)%I.
   Definition exec_inner := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInner Σ H2 H1 hL0 hL1 hS)%I.
   Definition crash_inner := fun H1 H2 => (∃ hL0 hL1 hS , @CrashInner Σ H2 H1 hL0 hL1 hS)%I.

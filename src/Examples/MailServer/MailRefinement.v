@@ -135,6 +135,12 @@ Existing Instance subG_cfgPreG.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
   Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
 
+  Global Instance inG_inst1: ghost_mapG contentsC Σ.
+  Proof. apply _. Qed.
+
+  Global Instance inG_inst2: ghost_mapG ghost_init_statusC Σ.
+  Proof. apply _. Qed.
+
   Definition exec_inv :=
     fun H1 H2 => (∃ hGTmp, @ExecInv gm _ Σ H2 H1 _ _ hGTmp)%I.
   Definition exec_inner :=

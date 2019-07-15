@@ -1098,6 +1098,19 @@ Opaque init_zero.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
   Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
 
+  Instance ingΣ1 : inG Σ (authR (optionUR (exclR (prodC natC natC)))).
+  Proof. apply _. Qed.
+  Instance ingΣ2 : inG Σ (authR (optionUR (exclR (listC (prodC natC natC))))).
+  Proof. apply _. Qed.
+  Instance ingΣ3 : inG Σ (authR (optionUR (exclR (listC natC)))).
+  Proof. apply _. Qed.
+  Instance ingΣ4 : inG Σ (authR (optionUR (exclR natC))).
+  Proof. apply _. Qed.
+  Instance ingΣ5 : inG Σ (authR (optionUR (exclR boolC))).
+  Proof. apply _. Qed.
+  Instance ingΣ6 : lockG Σ.
+  Proof. apply _. Qed.
+
   Definition exec_inv := fun H1 H2 => @ExecInv Σ H2 _ H1 _ _ _.
   Definition exec_inner := fun H1 H2 =>
                        (∃ Γ, @ExecInner Σ H2 H1 _ _ _ Γ)%I.

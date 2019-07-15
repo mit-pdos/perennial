@@ -220,6 +220,15 @@ Definition init_absr σ1a σ1c :=
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
   Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
 
+  Global Instance inG_inst1: inG Σ (authR (optionUR (exclR (prodC natC natC)))).
+  Proof. apply _. Qed.
+
+  Global Instance inG_inst2: inG Σ (authR (optionUR (exclR natC))).
+  Proof. apply _. Qed.
+
+  Global Instance inG_inst3: lockG Σ.
+  Proof. apply _. Qed.
+
   Definition exec_inv := fun H1 H2 => (@ExecInv Σ H2 _ H1 _ _)%I.
   Definition exec_inner :=
     fun H1 H2 => (∃ v, lock_addr m↦ v ∗
