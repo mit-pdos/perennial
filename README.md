@@ -10,4 +10,6 @@ We develop Armada using Coq master. It should be compatible with Coq v8.9.0, whi
 
 This project uses git submodules to include several dependencies. You can either use `git clone --recurse-submodules` or (after cloning) `git submodule update --init --recursive` to set that up.
 
+We compile with [coqc.py](etc/coqc.py), a Python wrapper around `coqc` to get timing information; due to limitations in the Makefile, this wrapper is required to pass the right flags to Coq even if not using the timing information. You'll need Python3 and the `argparse` library (`pip3 install argparse`) to run the wrapper.
+
 To compile just run `make` with Coq on your `$PATH`.
