@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementIdempotenceFunModule.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementIdempotenceFunModule CSL.Leased_Heap.
 Require Export ReplicatedDisk.TwoDiskAPI ReplicatedDisk.WeakestPre.
 Import TwoDisk.
 Require Import Spec.Proc.
@@ -9,12 +9,12 @@ Require Import Spec.Layer.
 Class exmachPreG Σ := ExMachPreG {
   exm_preG_iris :> invPreG Σ;
   exm_preG_mem :> gen_heapPreG nat nat Σ;
-  exm_preG_disk :> gen_heapPreG nat nat Σ;
+  exm_preG_disk :> leased_heapPreG nat nat Σ;
   exm_preG_status_inG :> inG Σ (csumR (exclR unitC) (agreeR (diskIdC)));
   exm_preG_treg_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitC))));
 }.
 
-Definition exmachΣ : gFunctors := #[invΣ; gen_heapΣ nat nat; gen_heapΣ nat nat;
+Definition exmachΣ : gFunctors := #[invΣ; gen_heapΣ nat nat; leased_heapΣ nat nat;
                                     GFunctor (csumR (exclR unitC) (agreeR (diskIdC)));
                                     GFunctor (csumR countingR (authR (optionUR (exclR unitC))))].
 Instance subG_exmachPreG {Σ} : subG exmachΣ Σ → exmachPreG Σ.
@@ -74,15 +74,17 @@ Module twodisk_refinement_definitions (eRT: twodisk_refinement_type).
     ∀ σ1a σ1c, init_absr σ1a σ1c →
       (∀ `{Hex: exmachG Σ} `{Hcfg: cfgG OpT Λa Σ},
           (([∗ map] i ↦ v ∈ init_zero, i m↦ v) ∗
-           ([∗ map] i ↦ v ∈ init_zero, i d0↦ v) ∗
-           ([∗ map] i ↦ v ∈ init_zero, i d1↦ v) ∗
+           ([∗ map] i ↦ v ∈ init_zero, i d0↦ v ∗ lease0 i v) ∗
+           ([∗ map] i ↦ v ∈ init_zero, i d1↦ v ∗ lease1 i v) ∗
            source_ctx ∗ source_state σ1a) ={⊤}=∗ exec_inner _ _).
 
   Definition exec_inv_preserve_crash_type :=
       (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ),
           exec_inv Hcfg Hex ={⊤, E}=∗ ∀ Hmem' Hreg',
           (let Hex := ExMachG Σ (exm_invG) Hmem'
-                              (exm_disk0_inG) (exm_disk1_inG) (exm_status_inG)
+                              (next_leased_heapG (hG := (exm_disk0_inG)))
+                              (next_leased_heapG (hG := (exm_disk1_inG)))
+                              (exm_status_inG)
                               Hreg' in
               ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex)).
 
@@ -90,7 +92,9 @@ Module twodisk_refinement_definitions (eRT: twodisk_refinement_type).
       (∀ `(Hex: exmachG Σ) `(Hcfg: cfgG OpT Λa Σ) param,
           crash_inv Hcfg Hex param ={⊤, E}=∗ ∀ Hmem' Hreg',
           (let Hex := ExMachG Σ (exm_invG) Hmem'
-                              (exm_disk0_inG) (exm_disk1_inG) (exm_status_inG)
+                              (next_leased_heapG (hG := (exm_disk0_inG)))
+                              (next_leased_heapG (hG := (exm_disk1_inG)))
+                              (exm_status_inG)
                               Hreg' in
               ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={E}=∗ crash_inner Hcfg Hex)).
 
@@ -113,7 +117,10 @@ Module twodisk_refinement_definitions (eRT: twodisk_refinement_type).
           AllDone -∗ exec_inv Hcfg Hex ={⊤, E}=∗ ∃ (σ2a σ2a' : Λa.(OpState)), source_state σ2a
           ∗ ⌜Λa.(finish_step) σ2a (Val σ2a' tt)⌝ ∗
           ∀ `{Hcfg': cfgG OpT Λa Σ} (Hinv': invG Σ) Hmem' Hreg',
-            (let Hex := ExMachG Σ Hinv' Hmem' (exm_disk0_inG) (exm_disk1_inG) (exm_status_inG)
+            (let Hex := ExMachG Σ Hinv' Hmem'
+                                (next_leased_heapG (hG := (exm_disk0_inG)))
+                                (next_leased_heapG (hG := (exm_disk1_inG)))
+                                (exm_status_inG)
                                 Hreg' in
             source_ctx∗ source_state σ2a' ∗ ([∗ map] i ↦ v ∈ init_zero, i m↦ v) ={⊤}=∗
                exec_inner Hcfg' Hex))%I.
@@ -245,8 +252,8 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
       rewrite /init_exec_inner_type.
       iIntros (σ1a σ1c Hinit ???).
       iMod (gen_heap_strong_init (mem_state σ1c)) as (hM Hmpf_eq) "(Hmc&Hm)".
-      iMod (gen_heap_strong_init init_zero) as (hD0 Hdpf_eq0) "(Hdc0&Hd0)".
-      iMod (gen_heap_strong_init init_zero) as (hD1 Hdpf_eq1) "(Hdc1&Hd1)".
+      iMod (leased_heap_strong_init init_zero) as (hD0 Hdpf_eq0) "(Hdc0&Hd0)".
+      iMod (leased_heap_strong_init init_zero) as (hD1 Hdpf_eq1) "(Hdc1&Hd1)".
       iMod (own_alloc (Cinl (Excl tt))) as (status_name) "Hstat".
       { constructor. }
       set (hStatus := {| disk_status_name := status_name; disk_status_inG := _ |}).
@@ -258,8 +265,8 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
         rewrite !(eRO.init_wf _ _ Hinit).
         iSplitL "Hm"; [| iSplitL "Hd0"].
         { rewrite -Hmpf_eq. iApply mem_init_to_bigOp; auto. }
-        { rewrite -Hdpf_eq0. iApply disk0_init_to_bigOp; auto. }
-        { rewrite -Hdpf_eq1. iApply disk1_init_to_bigOp; auto. }
+        { iApply (big_sepM_mono with "Hd0"). iIntros (???) "(?&?&?)". iFrame. }
+        { iApply (big_sepM_mono with "Hd1"). iIntros (???) "(?&?&?)". iFrame. }
       }
       rewrite !(eRO.init_wf _ _ Hinit); auto.
       iFrame. simpl.
@@ -280,7 +287,9 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
     iIntros (n σ) "(Hmach&Hthread)".
     iModIntro.
     iIntros (σ' Hcrash).
-    iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk0_inG _ Hex) (@exm_disk1_inG _ Hex)
+    iExists (ExMachG Σ (@exm_invG _ Hex) hM
+                     (next_leased_heapG (hG := (@exm_disk0_inG _ Hex)))
+                     (next_leased_heapG (hG := (@exm_disk1_inG _ Hex)))
                      (@exm_status_inG _ Hex)
                      (@exm_treg_inG _ Hex)).
     iFrame. iDestruct "Hmach" as "(?&Hdisk)".
@@ -305,7 +314,9 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
     iIntros (n σ) "(Hmach&Hthread)".
     iModIntro.
     iIntros (σ' Hcrash).
-    iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk0_inG _ Hex) (@exm_disk1_inG _ Hex)
+    iExists (ExMachG Σ (@exm_invG _ Hex) hM
+                     (next_leased_heapG (hG := (@exm_disk0_inG _ Hex)))
+                     (next_leased_heapG (hG := (@exm_disk1_inG _ Hex)))
                      (@exm_status_inG _ Hex)
                      (@exm_treg_inG _ Hex)).
     iFrame. iDestruct "Hmach" as "(?&Hdisk)".
@@ -345,7 +356,9 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
     iMod (gen_heap_strong_init (init_zero)) as (hM Hmpf_eq) "(Hmc&Hm)".
     iDestruct "Hdisk" as (???) "(_&?&?&?&%&%&%&%)". iFrame.
     iModIntro.
-    iExists (ExMachG Σ (@exm_invG _ Hex) hM (@exm_disk0_inG _ Hex) (@exm_disk1_inG _ Hex)
+    iExists (ExMachG Σ (@exm_invG _ Hex) hM
+                     (next_leased_heapG (hG := (@exm_disk0_inG _ Hex)))
+                     (next_leased_heapG (hG := (@exm_disk1_inG _ Hex)))
                      (@exm_status_inG _ Hex)
                      (@exm_treg_inG _ Hex)).
     iSplitR "Hinv_post Hm".

@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth gmap frac agree csum excl.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg.
+Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg CSL.Leased_Heap.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.
@@ -55,8 +55,8 @@ End disk_status.
 Class exmachG Σ := ExMachG {
                      exm_invG : invG Σ;
                      exm_mem_inG :> gen_heapG nat nat Σ;
-                     exm_disk0_inG :> gen_heapG nat nat Σ;
-                     exm_disk1_inG :> gen_heapG nat nat Σ;
+                     exm_disk0_inG :> leased_heapG nat nat Σ;
+                     exm_disk1_inG :> leased_heapG nat nat Σ;
                      exm_status_inG :> disk_statusG Σ;
                      exm_treg_inG :> tregG Σ;
                    }.
@@ -75,10 +75,10 @@ Proof.
 Qed.
 
 Definition disk_state_interp {Σ}
-           (hM: gen_heapG addr nat Σ) (hD0 hD1: gen_heapG addr nat Σ) (hStatus: disk_statusG Σ)  :=
+           (hM: gen_heapG addr nat Σ) (hD0 hD1: leased_heapG addr nat Σ) (hStatus: disk_statusG Σ)  :=
   (λ s, ∃ mem disk0 disk1, (gen_heap_ctx mem (hG := hM)) ∗
-                     (gen_heap_ctx disk0 (hG := hD0)) ∗
-                     (gen_heap_ctx disk1 (hG := hD1)) ∗
+                     (gen_heap_ctx disk0 (hG := (leased_heap_heapG hD0))) ∗
+                     (gen_heap_ctx disk1 (hG := (leased_heap_heapG hD1))) ∗
                       disk_status_ctx (disks_state s) ∗
                         ⌜ mem = mem_state s ∧
                            match disks_state s with
@@ -87,7 +87,7 @@ Definition disk_state_interp {Σ}
                            | OnlyDisk d1 disk1' => disk1 = disk1'
                            end ∧ state_wf s⌝)%I.
 
-Definition ex_mach_interp {Σ} {hM: gen_heapG addr nat Σ} {hD0 hD1: gen_heapG addr nat Σ} hS
+Definition ex_mach_interp {Σ} {hM: gen_heapG addr nat Σ} {hD0 hD1: leased_heapG addr nat Σ} hS
            {tr: tregG Σ}  :=
   (λ s, thread_count_interp (fst s) ∗ disk_state_interp hM hD0 hD1 hS (snd s))%I.
 
@@ -107,12 +107,39 @@ Definition mem_mapsto_vs k v k' :=
   | Gt => Some 0
   end.
 
+(*
+Definition master0 `{exmachG Σ} := (master (hG := exm_disk0_inG)).
+Definition master1 `{exmachG Σ} := (master (hG := exm_disk1_inG)).
+*)
+
 Global Notation "l m↦{ q } v " := (mapsto (hG := exm_mem_inG) l q v)
   (at level 20, q at level 50, format "l  m↦{ q } v") : bi_scope.
 Global Notation "l m↦ v " :=
   (mapsto (hG := exm_mem_inG) l 1 v)
   (at level 20) : bi_scope.
 
+Global Notation "l d0◯↦ v " :=
+  (mapsto (hG := leased_heap_heapG exm_disk0_inG) l 1 v)
+  (at level 20) : bi_scope.
+
+Global Notation "l d0↦ v " :=
+  (mapsto (hG := leased_heap_heapG exm_disk0_inG) l 1 v ∗
+   master (hG := exm_disk0_inG) l v)%I
+  (at level 20) : bi_scope.
+
+Global Notation "l d1◯↦ v " :=
+  (mapsto (hG := leased_heap_heapG exm_disk1_inG) l 1 v)
+  (at level 20) : bi_scope.
+
+Global Notation "l d1↦ v " :=
+  (mapsto (hG := leased_heap_heapG exm_disk1_inG) l 1 v ∗
+   master (hG := exm_disk1_inG) l v)%I
+  (at level 20) : bi_scope.
+
+Definition lease0 `{exmachG Σ} := (lease (hG := exm_disk0_inG)).
+Definition lease1 `{exmachG Σ} := (lease (hG := exm_disk1_inG)).
+
+(*
 Global Notation "l d0↦{ q } v " := (mapsto (hG := exm_disk0_inG) l q v)
   (at level 20, q at level 50, format "l  d0↦{ q } v") : bi_scope.
 Global Notation "l d0↦ v " :=
@@ -123,6 +150,7 @@ Global Notation "l d1↦{ q } v " := (mapsto (hG := exm_disk1_inG) l q v)
 Global Notation "l d1↦ v " :=
   (mapsto (hG := exm_disk1_inG) l 1 v)
   (at level 20) : bi_scope.
+*)
 
 Section lifting.
 Context `{exmachG Σ}.
@@ -156,6 +184,7 @@ Proof.
     by iApply IHmem.
 Qed.
 
+(*
 Lemma disk0_init_to_bigOp disk:
   own (i := @gen_heap_inG _ _ _ _ _ exm_disk0_inG)
       (gen_heap_name (exm_disk0_inG))
@@ -203,6 +232,7 @@ Proof.
     }
     by iApply IHdisk.
 Qed.
+*)
 
 Import Reg_wp.
 Lemma thread_reg1:
@@ -494,9 +524,8 @@ Proof.
 Qed.
 
 
-Set Nested Proofs Allowed.
-Lemma wp_write_disk0 s E i v' v :
-  {{{ ▷ i d0↦ v' }}} write_disk d0 i v @ s; E {{{ RET tt; i d0↦ v }}}.
+Lemma wp_write_disk0' s E i v' v :
+  {{{ ▷ i d0◯↦ v' }}} write_disk d0 i v @ s; E {{{ RET tt; i d0◯↦ v }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
   iIntros ((n, σ)) "Hown".
@@ -571,11 +600,21 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_read_disk0 s E i v :
-  {{{ ▷ i d0↦ v }}}
+Lemma wp_write_disk0 s E i v' v v0 :
+  {{{ ▷ i d0↦ v' ∗ ▷ lease0 i v0 }}} write_disk d0 i v @ s; E {{{ RET tt; i d0↦ v ∗ lease0 i v }}}.
+Proof.
+  iIntros (Φ) "(>(Hi&Hmaster)&>Hlease) HΦ".
+  rewrite /lease0.
+  iMod (master_lease_update (hG := exm_disk0_inG) i v' v0 v with "[$] [$]") as "(?&?)".
+  iApply (wp_write_disk0' with "[$]").
+  iNext. iIntros. iApply "HΦ"; iFrame.
+Qed.
+
+Lemma wp_read_disk0' s E i v :
+  {{{ ▷ i d0◯↦ v }}}
     read_disk d0 i @ s; E
   {{{ mv, RET mv;
-      i d0↦ v ∗ match mv with
+      i d0◯↦ v ∗ match mv with
                 | None => is_OnlyDisk d1
                 | Some v' => ⌜ v = v' ⌝
                 end }}}.
@@ -645,10 +684,10 @@ Proof.
       iApply "HΦ"; eauto.
 Qed.
 
-Lemma wp_read_disk0_only0 s E i v :
-  {{{ ▷ i d0↦ v ∗ ▷ is_OnlyDisk d0 }}}
+Lemma wp_read_disk0_only0' s E i v :
+  {{{ ▷ i d0◯↦ v ∗ ▷ is_OnlyDisk d0 }}}
     read_disk d0 i @ s; E
-  {{{ RET (Some v); i d0↦ v }}}.
+  {{{ RET (Some v); i d0◯↦ v }}}.
 Proof.
   iIntros (Φ) "(>Hi&>His_only) HΦ". iApply wp_lift_call_step.
   iIntros ((n, σ)) "Hown".
@@ -678,8 +717,32 @@ Proof.
       iApply "HΦ"; eauto.
 Qed.
 
-Lemma wp_write_disk1 s E i v' v :
-  {{{ ▷ i d1↦ v' }}} write_disk d1 i v @ s; E {{{ RET tt; i d1↦ v }}}.
+Lemma wp_read_disk0 s E i v :
+  {{{ ▷ i d0↦ v }}}
+    read_disk d0 i @ s; E
+  {{{ mv, RET mv;
+      i d0↦ v ∗ match mv with
+                | None => is_OnlyDisk d1
+                | Some v' => ⌜ v = v' ⌝
+                end }}}.
+Proof.
+  iIntros (Φ) ">(Hi&?) HΦ".
+  iApply (wp_read_disk0' with "[$]").
+  iNext. iIntros (?) "(?&?)". iApply "HΦ"; iFrame.
+Qed.
+
+Lemma wp_read_disk0_only0 s E i v :
+  {{{ ▷ i d0↦ v ∗ ▷ is_OnlyDisk d0 }}}
+    read_disk d0 i @ s; E
+  {{{ RET (Some v); i d0↦ v }}}.
+Proof.
+  iIntros (Φ) "(>(Hi&?)&?) HΦ".
+  iApply (wp_read_disk0_only0' with "[$]").
+  iNext. iIntros "?". iApply "HΦ"; iFrame.
+Qed.
+
+Lemma wp_write_disk1' s E i v' v :
+  {{{ ▷ i d1◯↦ v' }}} write_disk d1 i v @ s; E {{{ RET tt; i d1◯↦ v }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". iApply wp_lift_call_step.
   iIntros ((n, σ)) "Hown".
@@ -754,11 +817,20 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_read_disk1 s E i v :
-  {{{ ▷ i d1↦ v }}}
+Lemma wp_write_disk1 s E i v' v v0 :
+  {{{ ▷ i d1↦ v' ∗ ▷ lease1 i v0 }}} write_disk d1 i v @ s; E {{{ RET tt; i d1↦ v ∗ lease1 i v }}}.
+Proof.
+  iIntros (Φ) "(>(Hi&Hmaster)&>Hlease) HΦ".
+  iMod (master_lease_update i v' v0 v with "[$] [$]") as "(?&?)".
+  iApply (wp_write_disk1' with "[$]").
+  iNext. iIntros. iApply "HΦ"; iFrame.
+Qed.
+
+Lemma wp_read_disk1' s E i v :
+  {{{ ▷ i d1◯↦ v }}}
     read_disk d1 i @ s; E
   {{{ mv, RET mv;
-      i d1↦ v ∗ match mv with
+      i d1◯↦ v ∗ match mv with
                 | None => is_OnlyDisk d0
                 | Some v' => ⌜ v = v' ⌝
                 end }}}.
@@ -828,10 +900,24 @@ Proof.
       iApply "HΦ"; eauto.
 Qed.
 
+Lemma wp_read_disk1 s E i v :
+  {{{ ▷ i d1↦ v }}}
+    read_disk d1 i @ s; E
+  {{{ mv, RET mv;
+      i d1↦ v ∗ match mv with
+                | None => is_OnlyDisk d0
+                | Some v' => ⌜ v = v' ⌝
+                end }}}.
+Proof.
+  iIntros (Φ) ">(Hi&?) HΦ".
+  iApply (wp_read_disk1' with "[$]").
+  iNext. iIntros (?) "(?&?)". iApply "HΦ"; iFrame.
+Qed.
+
 (* Once disk0 has failed, we can do a "ghost write" to it at any point *)
-Lemma wp_write_disk0_only1 {T} s E1 E2 i v v' (p: proc Op T) Φ:
+Lemma wp_write_disk0_only1' {T} s E1 E2 i v v' (p: proc Op T) Φ:
   to_val p = None →
-  (|={E1, E2}=> (i d0↦ v ∗ is_OnlyDisk d1) ∗ (i d0↦ v' -∗ |={E2, E1}=> WP p @ s ; E1 {{ Φ }}))
+  (|={E1, E2}=> (i d0◯↦ v ∗ is_OnlyDisk d1) ∗ (i d0◯↦ v' -∗ |={E2, E1}=> WP p @ s ; E1 {{ Φ }}))
     -∗ WP p @ s ; E1 {{ Φ }}.
 Proof.
   iIntros (?) "Hfupd".
@@ -852,10 +938,23 @@ Proof.
   simpl. rewrite Heq. eauto.
 Qed.
 
-Lemma wp_read_disk1_only1 s E i v :
-  {{{ ▷ i d1↦ v ∗ ▷ is_OnlyDisk d1 }}}
+(* Once disk0 has failed, we can do a "ghost write" to it at any point *)
+Lemma wp_write_disk0_only1 {T} s E1 E2 i v v' v0 (p: proc Op T) Φ:
+  to_val p = None →
+  (|={E1, E2}=> (i d0↦ v ∗ lease0 i v0 ∗ is_OnlyDisk d1)
+                  ∗ ((i d0◯↦ v' ∗ lease0 i v') -∗ |={E2, E1}=> WP p @ s ; E1 {{ Φ }}))
+    -∗ WP p @ s ; E1 {{ Φ }}.
+Proof.
+  iIntros (?) "H". iApply wp_write_disk0_only1'; auto.
+  iMod "H" as "(((?&?)&?&?)&Hwand)".
+  iMod (master_lease_update (hG := exm_disk0_inG) i v v0 v' with "[$] [$]") as "(?&?)".
+  iModIntro. iFrame. iIntros. iApply "Hwand". iFrame.
+Qed.
+
+Lemma wp_read_disk1_only1' s E i v :
+  {{{ ▷ i d1◯↦ v ∗ ▷ is_OnlyDisk d1 }}}
     read_disk d1 i @ s; E
-  {{{ RET (Some v); i d1↦ v }}}.
+  {{{ RET (Some v); i d1◯↦ v }}}.
 Proof.
   iIntros (Φ) "(>Hi&>His_only) HΦ". iApply wp_lift_call_step.
   iIntros ((n, σ)) "Hown".
@@ -883,6 +982,16 @@ Proof.
     * rewrite /lookup_disk/get_disk/TwoDisk.disk1. inv_step. rewrite Heq.
       rewrite /lookup_default. intuition. subst. rewrite Hin_bound.
       iApply "HΦ"; eauto.
+Qed.
+
+Lemma wp_read_disk1_only1 s E i v :
+  {{{ ▷ i d1↦ v ∗ ▷ is_OnlyDisk d1 }}}
+    read_disk d1 i @ s; E
+  {{{ RET (Some v); i d1↦ v }}}.
+Proof.
+  iIntros (Φ) "(>(Hi&?)&?) HΦ".
+  iApply (wp_read_disk1_only1' with "[$]").
+  iNext. iIntros "?". iApply "HΦ"; iFrame.
 Qed.
 
 End lifting.
@@ -987,126 +1096,3 @@ Section lock.
     eauto.
   Qed.
 End lock.
-
-(*
-Ltac wp_write_disk :=
-  try wp_bind;
-  match goal with
-  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
-    match igoal with
-    | @wp _ _ _ _ _ _ _ (write_disk ?loc ?val) _  =>
-      match goal with
-      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc d↦ _)] ] =>
-        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
-        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
-        iApply (wp_write_disk with spat); iIntros ipat
-      end
-    end
-  end.
-
-Ltac wp_read_disk :=
-  try wp_bind;
-  match goal with
-  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
-    match igoal with
-    | @wp _ _ _ _ _ _ _ (read_disk ?loc) _  =>
-      match goal with
-      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc d↦ _)] ] =>
-        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
-        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
-        iApply (wp_read_disk with spat); iIntros ipat
-      end
-    end
-  end.
-
-Ltac wp_write_mem :=
-  try wp_bind;
-  match goal with
-  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
-    match igoal with
-    | @wp _ _ _ _ _ _ _ (write_mem ?loc ?val) _  =>
-      match goal with
-      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc m↦ _)] ] =>
-        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
-        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
-        iApply (wp_write_mem with spat); iIntros ipat
-      end
-    end
-  end.
-
-Ltac wp_read_mem :=
-  try wp_bind;
-  match goal with
-  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
-    match igoal with
-    | @wp _ _ _ _ _ _ _ (read_mem ?loc) _  =>
-      match goal with
-      | [ |- context[ environments.Esnoc _ (INamed ?pts) (loc m↦ _)] ] =>
-        let spat := constr:([(spec_patterns.SIdent (INamed pts) nil)]) in
-        let ipat := constr:([intro_patterns.IModalIntro; (intro_patterns.IIdent (INamed pts))]) in
-        iApply (wp_read_mem with spat); iIntros ipat
-      end
-    end
-  end.
-
-Ltac wp_lock H :=
-  try wp_bind;
-  match goal with
-  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
-    match igoal with
-    | @wp _ _ _ _ _ _ _ (lock ?loc) _  =>
-      match goal with
-      | [ |- context[ environments.Esnoc _ (INamed ?Hlock) (is_lock _ _ ?loc _)] ] =>
-        let spat := constr:([(spec_patterns.SIdent (INamed Hlock) nil)]) in
-        iApply (wp_lock with spat); iIntros "!>"; iIntros H
-      end
-    end
-  end.
-
-(*
-  Try to make wp_step extensible using this pattern:
-  https://stackoverflow.com/questions/48868186/extensible-tactic-in-coq
-
-  I don't like this but it's pretty light weight to start with
-*)
-
-Ltac wp_step := first [ wp_read_disk | wp_write_disk | wp_read_mem | wp_write_mem | wp_ret ].
-
-Import spec_patterns.
-
-Definition spec_goal_extend (g: list (spec_patterns.spec_pat)) (s: ident) :=
-  match g with
-  | (SGoal g) :: nil =>
-    [SGoal {| spec_goal_kind := spec_goal_kind g;
-              spec_goal_negate := spec_goal_negate g;
-              spec_goal_frame := spec_goal_frame g;
-              spec_goal_hyps :=
-                match spec_goal_negate g with
-                | false => (s :: spec_goal_hyps g)
-                | _ => spec_goal_hyps g
-                end;
-              spec_goal_done := (spec_goal_done g) |}]
-  | _ => []
-  end.
-
-
-Ltac wp_unlock s :=
-  try wp_bind;
-  match goal with
-  | [ |- context[environments.envs_entails ?x ?igoal] ] =>
-    match igoal with
-    | @wp _ _ _ _ _ _ _ (unlock ?loc) _  =>
-      match goal with
-      | [ |- context[ environments.Esnoc _ (INamed ?ilock) (is_lock _ ?name loc _)] ] =>
-        match goal with
-        | [ |- context[ environments.Esnoc _ (INamed ?ilocked) (locked name)] ] =>
-        let spat_parse := spec_patterns.spec_pat.parse s in
-        let spat' := eval vm_compute in (spec_goal_extend spat_parse ilocked) in
-        let spat := constr:((spec_patterns.SIdent (INamed ilock) nil) :: spat') in
-        let sel_frame_locked := constr:((sel_patterns.SelIdent (INamed ilocked)) :: nil) in
-        iApply (wp_unlock' with spat); [ iFrame sel_frame_locked | iIntros "!> _"]
-        end
-      end
-    end
-  end.
-*)
