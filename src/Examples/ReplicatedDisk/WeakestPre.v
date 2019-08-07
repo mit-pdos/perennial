@@ -942,7 +942,7 @@ Qed.
 Lemma wp_write_disk0_only1 {T} s E1 E2 i v v' v0 (p: proc Op T) Φ:
   to_val p = None →
   (|={E1, E2}=> (i d0↦ v ∗ lease0 i v0 ∗ is_OnlyDisk d1)
-                  ∗ ((i d0◯↦ v' ∗ lease0 i v') -∗ |={E2, E1}=> WP p @ s ; E1 {{ Φ }}))
+                  ∗ ((i d0↦ v' ∗ lease0 i v') -∗ |={E2, E1}=> WP p @ s ; E1 {{ Φ }}))
     -∗ WP p @ s ; E1 {{ Φ }}.
 Proof.
   iIntros (?) "H". iApply wp_write_disk0_only1'; auto.
@@ -992,6 +992,32 @@ Proof.
   iIntros (Φ) "(>(Hi&?)&?) HΦ".
   iApply (wp_read_disk1_only1' with "[$]").
   iNext. iIntros "?". iApply "HΦ"; iFrame.
+Qed.
+
+Lemma disk0_lease_agree i v1 v2:
+  i d0↦ v1 -∗ lease0 i v2 -∗ ⌜v1 = v2⌝.
+Proof.
+  iIntros "(_&?) ?". iApply (master_lease_agree with "[$] [$]").
+Qed.
+
+Lemma disk0_next i v:
+  i d0↦ v ==∗
+    (i d0◯↦ v ∗ next_master (hG := exm_disk0_inG) i v) ∗ next_lease (hG := exm_disk0_inG) i v.
+Proof.
+  iIntros "(?&?)". by iMod (master_next with "[$]") as "($&$)".
+Qed.
+
+Lemma disk1_lease_agree i v1 v2:
+  i d1↦ v1 -∗ lease1 i v2 -∗ ⌜v1 = v2⌝.
+Proof.
+  iIntros "(_&?) ?". iApply (master_lease_agree with "[$] [$]").
+Qed.
+
+Lemma disk1_next i v:
+  i d1↦ v ==∗
+    (i d1◯↦ v ∗ next_master (hG := exm_disk1_inG) i v) ∗ next_lease (hG := exm_disk1_inG) i v.
+Proof.
+  iIntros "(?&?)". by iMod (master_next with "[$]") as "($&$)".
 Qed.
 
 End lifting.

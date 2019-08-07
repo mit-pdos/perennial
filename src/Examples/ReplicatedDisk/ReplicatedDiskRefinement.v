@@ -10,6 +10,32 @@ From Tactical Require Import UnfoldLemma.
 Definition addrset := dom (gset nat) init_zero.
 Opaque init_zero size.
 
+Definition addrset_unfold:= unfold_lemma addrset.
+
+Lemma not_lt_size_not_in_addrset a:
+  ¬ a < size → a ∉ addrset.
+Proof. intros. apply not_elem_of_dom, init_zero_lookup_ge_None; lia. Qed.
+
+Lemma lt_size_in_addrset a:
+  a < size → a ∈ addrset.
+Proof. intros. apply elem_of_dom. eexists. apply init_zero_lookup_lt_zero; lia. Qed.
+
+Global Instance odstate_inhaibted:
+  Inhabited (OneDisk.State).
+Proof. econstructor. exact {| OneDisk.disk_state := init_zero |}. Qed.
+
+Lemma upd_disk_dom a v σ:
+  dom (gset nat) (OneDisk.upd_disk a v σ).(OneDisk.disk_state) =
+  dom (gset nat) σ.(OneDisk.disk_state).
+Proof.
+  rewrite /OneDisk.upd_disk//=/OneDisk.upd_default//=.
+  destruct (_ !! a) as [?|] eqn:Hlookup.
+  - rewrite dom_insert_L.
+    assert (a ∈ dom (gset nat) σ.(OneDisk.disk_state)).
+    { apply elem_of_dom; eauto. }
+    set_solver.
+  - auto.
+Qed.
 
 (* TODO: move out and re-use this *)
 Section gen_heap.
@@ -77,31 +103,25 @@ Canonical Structure addr_statusC :=
 Canonical Structure addr_statusF :=
   discreteC addr_status.
 
+Global Instance addr_status_inhabited :
+  Inhabited (addr_status).
+Proof. econstructor. exact Sync. Qed.
+
+
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (OneDisk.Op) (OneDisk.l) Σ}.
   Context {hD0Lease:  gen_heapG addr nat Σ}.
   Context {hD1Lease:  gen_heapG addr nat Σ}.
   Context {hSync: gen_heapG addr addr_status Σ}.
 
-  Notation "l l0↦{ q } v " := (mapsto (hG := hD0Lease) l q v)
-    (at level 20, q at level 50, format "l  l0↦{ q }  v") : bi_scope.
-  Notation "l l0↦ v " :=
-    (mapsto (hG := hD0Lease) l 1 v)
-    (at level 20) : bi_scope.
-  Notation "l l1↦{ q } v " := (mapsto (hG := hD1Lease) l q v)
-    (at level 20, q at level 50, format "l  l1↦{ q }  v ") : bi_scope.
-  Notation "l l1↦ v " :=
-    (mapsto (hG := hD1Lease) l 1 v)
-    (at level 20) : bi_scope.
-
   Notation "l s↦{ q } v " := (mapsto (hG := hSync) l q v)
     (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
 
   Definition LockInv (a: addr) :=
-    (∃ v, a l0↦{1/2} v ∗ a l1↦{1/2} v ∗ a s↦{1/2} Sync)%I.
+    (∃ v, lease0 a v ∗ lease1 a v ∗ a s↦{1/2} Sync)%I.
 
   Definition UnlockedInv (a: addr) :=
-    (∃ v0 v1 vstat, a l0↦{1/2} v0 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} vstat)%I.
+    (∃ v0 v1 vstat, lease0 a v0 ∗ lease1 a v1 ∗ a s↦{1/2} vstat)%I.
 
   Definition status_interp (a: addr) v0 v1 (s: addr_status) P :=
     (match s with
@@ -115,19 +135,17 @@ Section refinement_triples.
   Proof. destruct s; apply _. Qed.
 
   Definition DurInv (a: addr) v1 P :=
-    (∃ v0 stat, a d0↦ v0 ∗ a d1↦ v1 ∗ a l0↦{1/2} v0 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} stat
+    (∃ v0 stat, a d0↦ v0 ∗ a d1↦ v1 ∗ a s↦{1/2} stat
                   ∗ status_interp a v0 v1 stat P)%I.
 
   Definition DurInvSync (a: addr) v1 :=
-    (a d0↦ v1 ∗ a d1↦ v1 ∗ a l0↦{1/2} v1 ∗ a l1↦{1/2} v1 ∗ a s↦{1/2} Sync)%I.
+    (a d0↦ v1 ∗ a d1↦ v1 ∗ a s↦{1/2} Sync)%I.
 
   Definition durN : namespace := (nroot.@"dur_inv").
   Definition lockN : namespace := (nroot.@"lock_inv").
 
   Definition DisksInv P :=
     (∃ σ : OneDisk.State, ⌜ dom (gset _) (OneDisk.disk_state σ) = addrset ⌝ ∗ source_state σ
-       ∗ gen_heap_ctx' (hG := hD0Lease)
-       ∗ gen_heap_ctx' (hG := hD1Lease)
        ∗ gen_heap_ctx' (hG := hSync)
        ∗ [∗ map] a↦v1 ∈ OneDisk.disk_state σ, DurInv a v1 P)%I.
 
@@ -146,37 +164,7 @@ Section refinement_triples.
   Definition CrashInner :=
     ((source_ctx ∗ (DisksInv True)) ∗ CrashStarter)%I.
 
-  Global Instance addr_status_inhabited :
-    Inhabited (addr_status).
-  Proof. econstructor. exact Sync. Qed.
-
-  Global Instance odstate_inhaibted:
-    Inhabited (OneDisk.State).
-  Proof. econstructor. exact {| OneDisk.disk_state := init_zero |}. Qed.
-
-
-  Lemma not_lt_size_not_in_addrset a:
-    ¬ a < size → a ∉ addrset.
-  Proof. intros. apply not_elem_of_dom, init_zero_lookup_ge_None; lia. Qed.
-
-  Lemma lt_size_in_addrset a:
-    a < size → a ∈ addrset.
-  Proof. intros. apply elem_of_dom. eexists. apply init_zero_lookup_lt_zero; lia. Qed.
-
   Opaque addrset.
-
-  Lemma upd_disk_dom a v σ:
-    dom (gset nat) (OneDisk.upd_disk a v σ).(OneDisk.disk_state) =
-    dom (gset nat) σ.(OneDisk.disk_state).
-  Proof.
-    rewrite /OneDisk.upd_disk//=/OneDisk.upd_default//=.
-    destruct (_ !! a) as [?|] eqn:Hlookup.
-    - rewrite dom_insert_L.
-      assert (a ∈ dom (gset nat) σ.(OneDisk.disk_state)).
-      { apply elem_of_dom; eauto. }
-      set_solver.
-    - auto.
-  Qed.
 
   Lemma write_refinement {T} j K `{LanguageCtx OneDisk.Op unit T OneDisk.l K} a v:
     {{{ j ⤇ K (Call (OneDisk.Write_Disk a v)) ∗ Registered ∗ ExecInv }}}
@@ -216,27 +204,24 @@ Section refinement_triples.
     iIntros "!> (Hlocked&Hlockinv)".
     wp_bind. iDestruct "Hlockinv" as (v') "(Hl0&Hl1&Hstatus)".
     iInv "Hinv" as "H".
-    iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx0&Hctx1&Hctx_stat&>Hdur)".
+    iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx_stat&>Hdur)".
     iDestruct "Hdom1" as %Hdom1.
     generalize Hlt => Hdom2.
     rewrite -Hdom1 in Hdom2.
     rewrite elem_of_dom in Hdom2 *. intros [v1 Hlookup].
     iDestruct (big_sepM_lookup_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
-    iDestruct "Hcurr" as (v0 stat) "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
-    iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
-    iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+    iDestruct "Hcurr" as (v0 stat) "(Hd0&Hd1&Hstatus_auth&Hstat)".
+    iDestruct (disk0_lease_agree with "Hd0 Hl0") as %Heq; subst.
+    iDestruct (disk1_lease_agree with "Hd1 Hl1") as %Heq; subst.
     iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
     iDestruct "Hstat" as %Heq; subst.
     iApply (wp_write_disk0 with "[$]").
-    iIntros "!> Hd0".
-    iMod (gen_heap_update' (hG := hD0Lease) _ _ v with "Hctx0 [Hl0 Hl0_auth]") as "(?&Hl0)".
-    { iCombine "Hl0 Hl0_auth" as "$". }
-    iDestruct "Hl0" as "(Hl0&Hl0_auth)".
+    iIntros "!> (Hd0&Hl0)".
     iMod (gen_heap_update' _ _ (Unsync j K) with "[$] [Hstatus Hstatus_auth]") as "(?&Hstatus)".
     { iCombine "Hstatus Hstatus_auth" as "$". }
     iDestruct "Hstatus" as "(Hstatus&Hstatus_auth)".
     iExists _. iFrame.
-    iSplitL "Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hj Hreg".
+    iSplitL "Hdur Hd0 Hd1 Hstatus_auth Hj Hreg".
     { iSplitL ""; first by iPureIntro.
       iApply "Hdur". iExists _, _. iFrame.
       iFrame. clear. iClear "Hlocks". auto. }
@@ -244,21 +229,18 @@ Section refinement_triples.
 
     iInv "Hinv" as "H".
     clear σ Hdom1 Hlookup Heq.
-    iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx0&Hctx1&Hctx_stat&>Hdur)".
+    iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx_stat&>Hdur)".
     iDestruct "Hdom1" as %Hdom1.
     generalize Hlt => Hdom2.
     rewrite -Hdom1 in Hdom2.
     rewrite elem_of_dom in Hdom2 *. intros [v1' Hlookup].
     iDestruct (big_sepM_insert_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
-    iDestruct "Hcurr" as (? ?) "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
-    iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %<-; subst.
-    iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+    iDestruct "Hcurr" as (? ?) "(Hd0&Hd1&Hstatus_auth&Hstat)".
+    iDestruct (disk0_lease_agree with "Hd0 Hl0") as %Heq; subst.
+    iDestruct (disk1_lease_agree with "Hd1 Hl1") as %Heq; subst.
     iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
     iApply (wp_write_disk1 with "[$]").
-    iIntros "!> Hd1".
-    iMod (gen_heap_update' _ _ v with "[$] [Hl1 Hl1_auth]") as "(?&Hl1)".
-    { iCombine "Hl1 Hl1_auth" as "$". }
-    iDestruct "Hl1" as "(Hl1&Hl1_auth)".
+    iIntros "!> (Hd1&Hl1)".
     iMod (gen_heap_update' _ _ Sync with "[$] [Hstatus Hstatus_auth]") as "(?&Hstatus)".
     { iCombine "Hstatus Hstatus_auth" as "$". }
     iDestruct "Hstatus" as "(Hstatus&Hstatus_auth)".
@@ -272,7 +254,7 @@ Section refinement_triples.
     iExists _. iFrame.
 
     rewrite upd_disk_dom.
-    iSplitL "Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth".
+    iSplitL "Hdur Hd0 Hd1 Hstatus_auth".
     { iSplitL ""; first by iPureIntro.
       iModIntro. iNext.
       rewrite /OneDisk.upd_disk/OneDisk.upd_default /= Hlookup.
@@ -322,15 +304,15 @@ Section refinement_triples.
     wp_bind. iDestruct "Hlockinv" as (v') "(Hl0&Hl1&Hstatus)".
     wp_bind.
     iInv "Hinv" as "H".
-    iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx0&Hctx1&Hctx_stat&>Hdur)".
+    iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx_stat&>Hdur)".
     iDestruct "Hdom1" as %Hdom1.
     generalize Hlt => Hdom2.
     rewrite -Hdom1 in Hdom2.
     rewrite elem_of_dom in Hdom2 *. intros [v1 Hlookup].
     iDestruct (big_sepM_lookup_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
-    iDestruct "Hcurr" as (v0 stat) "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
-    iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
-    iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+    iDestruct "Hcurr" as (? ?) "(Hd0&Hd1&Hstatus_auth&Hstat)".
+    iDestruct (disk0_lease_agree with "Hd0 Hl0") as %Heq; subst.
+    iDestruct (disk1_lease_agree with "Hd1 Hl1") as %Heq; subst.
     iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
     iDestruct "Hstat" as %Heq; subst.
     iApply (wp_read_disk0 with "[$]").
@@ -345,7 +327,7 @@ Section refinement_triples.
       { solve_ndisj. }
       iDestruct "Hret" as %Heq'; subst.
       iExists _. iFrame.
-      iSplitL "Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth".
+      iSplitL "Hdur Hd0 Hd1 Hstatus_auth".
       { iSplitL ""; first by iPureIntro.
         iApply "Hdur". iExists _, _. iFrame.
         iFrame. clear. iClear "Hlocks". auto. }
@@ -363,7 +345,7 @@ Section refinement_triples.
       iFrame.
     - (* Disk0 read failed, but that means we know the read from Disk1 must succeed *)
       iExists _. iFrame.
-      iSplitL "Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth".
+      iSplitL "Hdur Hd0 Hd1 Hstatus_auth".
       { iSplitL ""; first by iPureIntro.
         iApply "Hdur". iExists _, _. iFrame.
         iFrame. clear. iClear "Hlocks". auto. }
@@ -371,15 +353,15 @@ Section refinement_triples.
       wp_bind.
       iInv "Hinv" as "H".
       clear σ Hdom1 Hlookup Heq.
-      iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx0&Hctx1&Hctx_stat&>Hdur)".
+      iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx_stat&>Hdur)".
       iDestruct "Hdom1" as %Hdom1.
       generalize Hlt => Hdom2.
       rewrite -Hdom1 in Hdom2.
-      rewrite elem_of_dom in Hdom2 *. intros [v1' Hlookup].
+      rewrite elem_of_dom in Hdom2 *. intros [v1 Hlookup].
       iDestruct (big_sepM_lookup_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
-      iDestruct "Hcurr" as (v0 stat) "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
-      iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
-      iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+      iDestruct "Hcurr" as (? ?) "(Hd0&Hd1&Hstatus_auth&Hstat)".
+      iDestruct (disk0_lease_agree with "Hd0 Hl0") as %Heq; subst.
+      iDestruct (disk1_lease_agree with "Hd1 Hl1") as %Heq; subst.
       iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
       iDestruct "Hstat" as %Heq; subst.
       iApply (wp_read_disk1_only1 with "[$]").
@@ -391,7 +373,7 @@ Section refinement_triples.
       }
       { solve_ndisj. }
       iExists _. iFrame.
-      iSplitL "Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth".
+      iSplitL "Hdur Hd0 Hd1 Hstatus_auth".
       { iSplitL ""; first by iPureIntro.
         iApply "Hdur". iExists _, _. iFrame.
         iFrame. clear. iClear "Hlocks". auto. }
@@ -401,13 +383,16 @@ Section refinement_triples.
       iApply (wp_unlock with "[Hl0 Hl1 Hstatus Hlocked]").
       { iFrame "Hlock". iFrame. iExists _; iFrame. }
       iIntros "!> _". wp_ret. iApply "HΦ". iFrame.
-      assert ((OneDisk.lookup_disk a σ) = v1') as ->.
+      assert ((OneDisk.lookup_disk a σ) = v') as ->.
       {  destruct σ as [d].
          rewrite /OneDisk.lookup_disk/OneDisk.lookup_default.
            by rewrite Hlookup.
       }
       iFrame.
   Qed.
+
+  Global Instance DisksInv_Timeless (P: iProp Σ) {HT: Timeless P} : Timeless (DisksInv P).
+  Proof. apply _. Qed.
 
 End refinement_triples.
 
@@ -449,17 +434,15 @@ Opaque size.
   Global Instance inst_inG1: lockG Σ.
   Proof. apply _. Qed.
 
-  Definition exec_inv := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInv Σ H2 _ H1 hL0 hL1 hS)%I.
-  Definition exec_inner := fun H1 H2 => (∃ hL0 hL1 hS, @ExecInner Σ H2 H1 hL0 hL1 hS)%I.
-  Definition crash_inner := fun H1 H2 => (∃ hL0 hL1 hS , @CrashInner Σ H2 H1 hL0 hL1 hS)%I.
-  Definition crash_inv := fun H1 H2 ghosts =>
-                      let '(hL0, hL1, hS) := ghosts in
-                      @CrashInv Σ H2 H1 hL0 hL1 hS.
+  Definition exec_inv := fun H1 H2 => (∃ hS, @ExecInv Σ H2 _ H1 hS)%I.
+  Definition exec_inner := fun H1 H2 => (∃ hS, @ExecInner Σ H2 H1 hS)%I.
+  Definition crash_inner := fun H1 H2 => (∃ hS, @CrashInner Σ H2 H1 hS)%I.
+  Definition crash_inv := fun H1 H2 hS =>
+                      @CrashInv Σ H2 H1 hS.
   Definition crash_param := fun (_ : @cfgG OpT Λa Σ) (_ : exmachG Σ) =>
-    (gen_heapG addr nat Σ * gen_heapG addr nat Σ * gen_heapG addr addr_status Σ)%type.
+    (gen_heapG addr addr_status Σ)%type.
   Definition crash_starter :=
-    fun (H1: @cfgG OpT Λa Σ) (H2: exmachG Σ) ghosts => let '(hL0, hL1, hS) := ghosts in
-                                     (@CrashStarter Σ H2 hL0 hL1 hS).
+    fun (H1: @cfgG OpT Λa Σ) (H2: exmachG Σ) hS => (@CrashStarter Σ H2 hS).
   Definition E := nclose sourceN.
   Definition recv := recv.
 End repRT.
@@ -477,7 +460,7 @@ Module repRO : twodisk_refinement_obligations repRT.
 
   Lemma cinv_persist: forall {H1 : @cfgG OpT Λa Σ} {H2 : _} P,
       Persistent (crash_inv H1 H2 P).
-  Proof. intros ?? ((?&?)&?). apply _. Qed.
+  Proof. intros ?? ?. apply _. Qed.
 
   Lemma nameIncl: nclose sourceN ⊆ E.
   Proof. solve_ndisj. Qed.
@@ -487,26 +470,27 @@ Module repRO : twodisk_refinement_obligations repRT.
 
   Lemma refinement_op_triples: refinement_op_triples_type.
   Proof.
-    red. intros. iIntros "(Hj&Hreg&H)". iDestruct "H" as (???) "H". destruct op.
+    red. intros. iIntros "(Hj&Hreg&H)". iDestruct "H" as (?) "H". destruct op.
     - iApply (@read_refinement with "[$]"). eauto.
     - iApply (@write_refinement with "[$]"). eauto.
   Qed.
 
   Lemma exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx.
   Proof.
-    red. intros. iIntros "H". iDestruct "H" as (???) "(?&?)". eauto.
+    red. intros. iIntros "H". iDestruct "H" as (?) "(?&?)". eauto.
   Qed.
+
 
   Lemma recv_triple: recv_triple_type.
   Proof.
     (* recv triple *)
-    intros ? ? ((hL0&hL1)&hS). iIntros "(H&Hreg&Hstarter)". iDestruct "H" as "(#Hctx&#Hinv)".
+    intros ? ? hS. iIntros "(H&Hreg&Hstarter)". iDestruct "H" as "(#Hctx&#Hinv)".
     rewrite /recv.
     iAssert (([∗ set] a ∈ addrset,
               if lt_dec a size then
-                a m↦0 ∗ @UnlockedInv _ hL0 hL1 hS a
+                a m↦0 ∗ @UnlockedInv _ _ hS a
               else
-                a m↦0 ∗ @LockInv _ hL0 hL1 hS a))%I with "[Hstarter]" as "Hprogress".
+                a m↦0 ∗ @LockInv _ _ hS a))%I with "[Hstarter]" as "Hprogress".
     { iApply (big_sepS_mono with "Hstarter").
       iIntros (a Hin) "Hunlocked".
       destruct lt_dec; first iFrame.
@@ -519,12 +503,12 @@ Module repRO : twodisk_refinement_obligations repRT.
     iInduction n as [| n] "IH".
     - wp_ret.
       iInv "Hinv" as ">H" "_".
-      iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx0&Hctx1&Hctx_stat&Hdur)".
+      iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx_stat&Hdur)".
       iDestruct "Hdom1" as %Hdom1.
       iApply fupd_mask_weaken.
       { solve_ndisj. }
-      iAssert ([∗ map] a↦v1 ∈ σ.(OneDisk.disk_state), @DurInvSync _ _ hL0 hL1 hS a v1
-                                                      ∗ (a m↦ 0 ∗ @LockInv _ hL0 hL1 hS a))%I
+      iAssert ([∗ map] a↦v1 ∈ σ.(OneDisk.disk_state), @DurInvSync _ _ hS a v1
+                                                      ∗ (a m↦ 0 ∗ @LockInv _ _ hS a))%I
         with "[Hprogress Hdur]" as "Hprogress".
       {
         rewrite -Hdom1. iDestruct (big_sepM_dom with "Hprogress") as "H".
@@ -533,9 +517,9 @@ Module repRO : twodisk_refinement_obligations repRT.
         iApply (big_sepM_mono with "H").
         iIntros (a v Hlookup) "(Hd&(?&Hl))".
         iDestruct "Hl" as (v') "(Hl0&Hl1&Hstatus)".
-        iDestruct "Hd" as (v0 stat) "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
-        iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
-        iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+        iDestruct "Hd" as (v0 stat) "(Hd0&Hd1&Hstatus_auth&Hstat)".
+        iDestruct (disk0_lease_agree with "Hd0 Hl0") as %Heq; subst.
+        iDestruct (disk1_lease_agree with "Hd1 Hl1") as %Heq; subst.
         iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
         iFrame. iExists _. iFrame.
       }
@@ -547,11 +531,11 @@ Module repRO : twodisk_refinement_obligations repRT.
       iDestruct (big_sepM_sep with "Hprogress") as "(Hdur&Hprogress)".
       iDestruct (big_sepM_dom with "Hprogress") as "Hprogress".
       rewrite Hdom1.
-      iModIntro. iExists hL0, hL1, hS. iFrame.
+      iModIntro. iExists hS. iFrame.
       iExists _; iFrame. eauto.
       iSplitL ""; auto.
       iApply (big_sepM_mono with "Hdur").
-      iIntros (a' v' Hlookup) "(?&?&?&?&?)".
+      iIntros (a' v' Hlookup) "(?&?&?)".
       iExists _, Sync. iFrame.
       auto.
     - wp_bind.
@@ -566,52 +550,49 @@ Module repRO : twodisk_refinement_obligations repRT.
       iDestruct "Hcurr" as "(Hmem&Hcurr)".
       iDestruct "Hcurr" as (v0 v1 ?) "(Hl0&Hl1&Hstatus)".
 
-    iInv "Hinv" as "H".
-    iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx0&Hctx1&Hctx_stat&>Hdur)".
+    iInv "Hinv" as ">H".
+    iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx_stat&Hdur)".
     iDestruct "Hdom1" as %Hdom1.
     generalize Hin => Hdom2.
     rewrite -Hdom1 in Hdom2.
     rewrite elem_of_dom in Hdom2 *. intros [v1' Hlookup].
     iDestruct (big_sepM_lookup_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
-    iDestruct "Hcurr" as (v0' stat) "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
-    iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
-    iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+    iDestruct "Hcurr" as (v0' stat) "(Hd0&Hd1&Hstatus_auth&Hstat)".
+    iDestruct (disk0_lease_agree with "Hd0 Hl0") as %Heq; subst.
+    iDestruct (disk1_lease_agree with "Hd1 Hl1") as %Heq; subst.
     iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
     iApply (wp_read_disk0 with "[$]").
     iIntros (mv) "!> (Hd0&Hret)".
     destruct mv as [v|].
-    * iSplitL "Hstate Hctx0 Hctx1 Hctx_stat Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hstat".
+    * iSplitL "Hstate Hctx_stat Hdur Hd0 Hd1 Hstatus_auth Hstat".
       { iExists _. iFrame. iSplitL ""; first by iPureIntro.
         iApply "Hdur". iExists _, _. by iFrame. }
       iModIntro. wp_bind. wp_ret.
-      iInv "Hinv" as "H".
+      iInv "Hinv" as ">H".
       clear σ Hdom1 Hlookup.
-      iDestruct "H" as (σ) "(>Hdom1&>Hstate&Hctx0&Hctx1&Hctx_stat&>Hdur)".
+      iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx_stat&Hdur)".
       iDestruct "Hdom1" as %Hdom1.
       generalize Hin => Hdom2.
       rewrite -Hdom1 in Hdom2.
       rewrite elem_of_dom in Hdom2 *. intros [v1'' Hlookup].
       iDestruct (big_sepM_insert_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
-      iDestruct "Hcurr" as (v0'' stat') "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
-      iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
-      iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+      iDestruct "Hcurr" as (v0'' stat') "(Hd0&Hd1&Hstatus_auth&Hstat)".
+      iDestruct (disk0_lease_agree with "Hd0 Hl0") as %Heq; subst.
+      iDestruct (disk1_lease_agree with "Hd1 Hl1") as %Heq; subst.
       iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
       iApply (wp_write_disk1 with "[$]").
       iDestruct "Hret" as %Heq; subst.
-      iIntros "!> Hd1".
-      iMod (gen_heap_update' _ _ v with "Hctx1 [Hl1 Hl1_auth]") as "(Hctx1&Hl1)".
-      { iCombine "Hl1 Hl1_auth" as "$". }
-      iDestruct "Hl1" as "(Hl1&Hl1_auth)".
+      iIntros "!> (Hd1&Hl1)".
       iMod (gen_heap_update' _ _ Sync with "Hctx_stat [Hstatus Hstatus_auth]") as "(Hctx_stat&Hstatus)".
       { iCombine "Hstatus Hstatus_auth" as "$". }
       iDestruct "Hstatus" as "(Hstatus&Hstatus_auth)".
-      iSplitL "Hstate Hctx0 Hctx1 Hctx_stat Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hstat".
+      iSplitL "Hstate Hctx_stat Hdur Hd0 Hd1 Hstatus_auth Hstat".
       { destruct stat'.
-        * iExists _. iFrame. iSplitL ""; first by iPureIntro.
-          iSpecialize ("Hdur" $! v1'').
+        * iExists σ. iFrame. iSplitL ""; first by iPureIntro.
+          iSpecialize ("Hdur" $! v).
+          iDestruct "Hstat" as %Heq; subst.
           rewrite insert_id; last auto.
           iApply "Hdur".
-          iDestruct "Hstat" as %Heq; subst.
           iExists _, _. by iFrame.
         * iDestruct "Hstat" as "(Hj&Hreg')".
           iMod (ghost_step_call with "Hj [$] [$]") as "(Hj&Hstate&_)".
@@ -620,7 +601,8 @@ Module repRO : twodisk_refinement_obligations repRT.
             econstructor.
           }
           { solve_ndisj. }
-          iExists _. iFrame. rewrite upd_disk_dom. iSplitL ""; first by iPureIntro.
+          iExists _. iFrame.
+          rewrite @upd_disk_dom. iSplitL ""; first by iPureIntro.
           rewrite /OneDisk.upd_disk/OneDisk.upd_default Hlookup.
           iApply "Hdur".
           iExists _, _. by iFrame.
@@ -641,46 +623,43 @@ Module repRO : twodisk_refinement_obligations repRT.
         { iDestruct "H" as "($&H)". iDestruct "H" as (?) "(?&?&?)".
           iExists _, _, _. iFrame. }
       }
-    * iSplitL "Hstate Hctx0 Hctx1 Hctx_stat Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hstat".
+    * iSplitL "Hstate Hctx_stat Hdur Hd0 Hd1 Hstatus_auth Hstat".
       { iExists _. iFrame. iSplitL ""; first by iPureIntro.
         iApply "Hdur". iExists _, _. by iFrame. }
       iModIntro.
-      iApply (wp_write_disk0_only1 _ _ (⊤ ∖ ↑durN)  n v0' v1').
+      iApply (wp_write_disk0_only1 _ _ (⊤ ∖ ↑durN)  n v0 v1).
       { trivial. }
-      iInv "Hinv" as "H" "Hclo".
+      iInv "Hinv" as ">H" "Hclo".
       clear σ Hdom1 Hlookup.
-      iDestruct "H" as (σ) "(>Hdom1&>Hstate&>Hctx0&Hctx1&>Hctx_stat&>Hdur)".
+      iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx_stat&Hdur)".
       iDestruct "Hdom1" as %Hdom1.
       generalize Hin => Hdom2.
       rewrite -Hdom1 in Hdom2.
       rewrite elem_of_dom in Hdom2 *. intros [v1'' Hlookup].
       iDestruct (big_sepM_insert_acc with "Hdur") as "(Hcurr&Hdur)"; first eauto.
-      iDestruct "Hcurr" as (v0'' stat') "(Hd0&Hd1&Hl0_auth&Hl1_auth&Hstatus_auth&Hstat)".
-      iDestruct (mapsto_agree with "Hl0 Hl0_auth") as %Heq; subst.
-      iDestruct (mapsto_agree with "Hl1 Hl1_auth") as %Heq; subst.
+      iDestruct "Hcurr" as (v0'' stat') "(Hd0&Hd1&Hstatus_auth&Hstat)".
+      iDestruct (disk0_lease_agree with "Hd0 Hl0") as %Heq; subst.
+      iDestruct (disk1_lease_agree with "Hd1 Hl1") as %Heq; subst.
       iDestruct (mapsto_agree with "Hstatus Hstatus_auth") as %Heq; subst.
-      iMod (gen_heap_update' (hG := hL0) _ _ v1'' with "Hctx0 [Hl0 Hl0_auth]") as "(Hctx0&Hl0)".
-      { iCombine "Hl0 Hl0_auth" as "$". }
-      iDestruct "Hl0" as "(Hl0&Hl0_auth)".
       iMod (gen_heap_update' _ _ Sync with "Hctx_stat [Hstatus Hstatus_auth]") as
           "(Hctx_stat&Hstatus)".
       { iCombine "Hstatus Hstatus_auth" as "$". }
       iDestruct "Hstatus" as "(Hstatus&Hstatus_auth)".
       iModIntro. iFrame.
-      iIntros "Hd0".
-      iMod ("Hclo" with "[Hstate Hctx0 Hctx1 Hctx_stat Hdur Hd0 Hd1 Hl0_auth Hl1_auth Hstatus_auth Hstat]").
+      iIntros "(Hd0&Hl0)".
+      iMod ("Hclo" with "[Hstate Hctx_stat Hdur Hd0 Hd1 Hstatus_auth Hstat]").
       { destruct stat'.
         * iExists _. iFrame. iSplitL ""; first by iPureIntro.
-          iSpecialize ("Hdur" $! v1'').
+          iSpecialize ("Hdur" $! v1).
           rewrite insert_id; last auto.
           iApply "Hdur".
           iDestruct "Hstat" as %Heq; subst.
           iExists _, _. by iFrame.
         * iExists _. iFrame. iSplitL ""; first by iPureIntro.
-          iSpecialize ("Hdur" $! v1'').
+          iSpecialize ("Hdur" $! v1).
           rewrite insert_id; last auto.
           iApply "Hdur".
-          iExists v1'', Sync. iFrame.
+          iExists v1, Sync. iFrame.
           rewrite /status_interp.
           auto.
       }
@@ -712,19 +691,17 @@ Module repRO : twodisk_refinement_obligations repRT.
   Proof.
     intros ?? (H&Hinit) ??. inversion H. inversion Hinit. subst.
     iIntros "(Hmem&Hdisk0&Hdisk1&#?&Hstate)".
-    iMod (gen_heap_strong_init init_zero) as (hL0 <-) "(hL0&hL0frag)".
-    iPoseProof (gen_heap_init_to_bigOp (hG := hL0) with "hL0frag") as "hL0frag".
-    iMod (gen_heap_strong_init init_zero) as (hL1 <-) "(hL1&hL1frag)".
-    iPoseProof (gen_heap_init_to_bigOp (hG := hL1) with "hL1frag") as "hL1frag".
     iMod (gen_heap_strong_init ((λ x, Sync) <$> init_zero)) as (hS <-) "(hS&hSfrag)".
     iPoseProof (gen_heap_init_to_bigOp (hG := hS) with "hSfrag") as "hSfrag".
-    iDestruct (gen_heap_bigOp_split with "hL0frag") as "(hL0a&hL0b)".
-    iDestruct (gen_heap_bigOp_split with "hL1frag") as "(hL1a&hL1b)".
+    iEval (rewrite big_sepM_sep) in "Hdisk0".
+    iDestruct "Hdisk0" as "(Hd0&HL0)".
+    iEval (rewrite big_sepM_sep) in "Hdisk1".
+    iDestruct "Hdisk1" as "(Hd1&HL1)".
     iDestruct (gen_heap_bigOp_split with "hSfrag") as "(hSa&hSb)".
     rewrite big_opM_fmap.
-    iExists hL0, hL1, hS.
+    iExists hS.
     rewrite /ExecInner.
-    iSplitL "Hmem hL0a hL1a hSa".
+    iSplitL "Hmem HL0 HL1 hSa".
     { iModIntro. iApply big_opM_dom.
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       iApply (big_sepM_mono with "H").
@@ -734,10 +711,6 @@ Module repRO : twodisk_refinement_obligations repRT.
     }
     iExists _. iFrame "Hstate".
     iSplitL ""; first by auto.
-    iSplitL "hL0".
-    { iExists _. by iFrame. }
-    iSplitL "hL1".
-    { iExists _. by iFrame. }
     iSplitL "hS".
     { iExists _. iFrame "hS". rewrite dom_fmap_L. auto. }
     iModIntro.
@@ -752,79 +725,72 @@ Module repRO : twodisk_refinement_obligations repRT.
   Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
   Proof.
     iIntros (??) "H".
-    iDestruct "H" as (hL0 hL1 hS) "(#Hsrc&#Hlocks&#Hinv)".
-    iInv "Hinv" as "H" "_".
-    iDestruct "H" as (σ) "(>Hdom1&>Hstate&>Hctx0&>Hctx1&>Hctx_stat&>Hdur)".
+    iDestruct "H" as (hS) "(#Hsrc&#Hlocks&#Hinv)".
+    iInv "Hinv" as ">H" "_".
+    iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx_stat&Hdur)".
     iDestruct "Hdom1" as %Hdom1.
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
-    iDestruct "Hctx0" as (σL0 HdomL0) "Hctx0".
-    iMod (gen_heap_strong_init σL0) as (hL0' <-) "(hL0&hL0frag)".
-    iPoseProof (gen_heap_init_to_bigOp (hG := hL0') with "hL0frag") as "hL0frag".
-
-    iDestruct "Hctx1" as (σL1 HdomL1) "Hctx1".
-    iMod (gen_heap_strong_init σL1) as (hL1' <-) "(hL1&hL1frag)".
-    iPoseProof (gen_heap_init_to_bigOp (hG := hL1') with "hL1frag") as "hL1frag".
-
     iDestruct "Hctx_stat" as (σS HdomS) "Hctx_stat".
     iMod (gen_heap_strong_init σS) as (hS' <-) "(hS&hSfrag)".
     iPoseProof (gen_heap_init_to_bigOp (hG := hS') with "hSfrag") as "hSfrag".
-
-    iDestruct (gen_heap_bigOp_split with "hL0frag") as "(hL0a&hL0b)".
-    iDestruct (gen_heap_bigOp_split with "hL1frag") as "(hL1a&hL1b)".
     iDestruct (gen_heap_bigOp_split with "hSfrag") as "(hSa&hSb)".
-
-    iDestruct (gen_heap_bigOpM_dom with "hL0a") as "hL0a".
-    iDestruct (gen_heap_bigOpM_dom with "hL1a") as "hL1a".
     iDestruct (gen_heap_bigOpM_dom with "hSa") as "hSa".
-    rewrite ?HdomL0 ?HdomL1 ?HdomS.
-    iDestruct (big_sepM_dom with "hL0a") as "hL0a".
-    iDestruct (big_sepM_dom with "hL1a") as "hL1a".
+    rewrite ?HdomS.
     iDestruct (big_sepM_dom with "hSa") as "hSa".
-
-    iExists hL0', hL1', hS'. iModIntro.
+    iPoseProof (big_sepM_mono _
+                              (λ k v, |={E}=> (∃ v0 stat, _)
+                                                ∗ (∃ v0 v1, next_lease (hG := exm_disk0_inG) k v0 ∗
+                                                            next_lease (hG := _) k v1))%I
+                                   with "Hdur") as "Hdur".
+    {
+      iIntros (?? Heq) "Hinv". rewrite /DurInv.
+      iDestruct "Hinv" as (v0 stat) "(Hd0&Hd1&Hstat&Hinterp)".
+      iMod (disk0_next with "[$]") as "(Hd0&Hl0)".
+      iMod (disk1_next with "[$]") as "(Hd1&Hl1)".
+      iModIntro.
+      iCombine "Hd0 Hd1 Hstat Hinterp" as "Hleft".
+      iCombine "Hl0 Hl1" as "Hright".
+      iSplitL "Hleft".
+      * iExists v0, stat. iApply "Hleft".
+      * iExists v0, _. iApply "Hright".
+    }
+    iMod (fupd_big_sepM with "Hdur") as "Hdur".
+    rewrite big_sepM_sep.
+    iDestruct "Hdur" as "(Hdur&Hl)".
+    iDestruct (big_sepM_dom with "Hl") as "Hl".
+    iExists hS'. iModIntro.
     rewrite /CrashInner/CrashInv/CrashStarter.
     iFrame "Hsrc".
-    iSplitR "Hmem hL0a hL1a hSa"; last first.
-    { iApply big_opM_dom.
+    iSplitR "Hmem Hl hSa"; last first.
+    {
+      rewrite Hdom1 addrset_unfold.
+      iApply big_opM_dom.
+      iEval (rewrite -big_opM_dom) in "Hl".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
+      rewrite /UnlockedInv.
       iApply (big_sepM_mono with "H").
-      iIntros (k x Hlookup) "(((Hs&Hl0)&Hl1)&?)".
-      iDestruct "Hs" as (??) "Hs".
-      iDestruct "Hl0" as (??) "Hl0".
-      iDestruct "Hl1" as (??) "Hl1".
+      iIntros (k x Hlookup) "((Hs&Hl)&H2)".
+      iDestruct "Hs" as (?) "(%&Hs)".
+      iDestruct "Hl" as (v1 v2) "(Hl0&Hl1)".
       rewrite (init_zero_lookup_is_zero k x); last auto.
       iFrame. iExists _, _, _. iFrame.
     }
     iExists _. iFrame "Hstate".
-    iDestruct (gen_heap_bigOpM_dom with "hL0b") as "hL0b".
-    iDestruct (gen_heap_bigOpM_dom with "hL1b") as "hL1b".
     iDestruct (gen_heap_bigOpM_dom with "hSb") as "hSb".
     rewrite ?HdomL0 ?HdomL1 ?HdomS.
     rewrite -?Hdom1.
-    iDestruct (big_sepM_dom with "hL0b") as "hL0b".
-    iDestruct (big_sepM_dom with "hL1b") as "hL1b".
     iDestruct (big_sepM_dom with "hSb") as "hSb".
     iSplitL "".
     { iPureIntro. auto. }
-    iSplitL "hL0".
-    { iExists _. iFrame. by iPureIntro. }
-    iSplitL "hL1".
-    { iExists _. iFrame. by iPureIntro. }
     iSplitL "hS".
     { iExists _. iFrame. by iPureIntro. }
     repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
-    iCombine "Hctx0 Hctx1 Hctx_stat" as "Hctx".
-    iDestruct (big_sepM_mono_with_inv with "Hctx H") as "(?&$)".
+    iDestruct (big_sepM_mono_with_inv with "Hctx_stat H") as "(?&$)".
     iIntros (k x Hlookup) "H".
-    iDestruct "H" as "((Hctx0&Hctx1&Hctx_stat)&H&Hdur)".
-    iDestruct "H" as "((Hs&Hl0)&Hl1)".
-    iDestruct "Hs" as (??) "Hs".
-    iDestruct "Hl0" as (??) "Hl0".
-    iDestruct "Hl1" as (??) "Hl1".
-    iDestruct "Hdur" as (? stat) "(Hd0&Hd1&Hl0'&Hl1'&Hs'&Hstatus)".
-    iDestruct (@gen_heap_valid with "Hctx0 Hl0'") as %?.
-    iDestruct (@gen_heap_valid with "Hctx1 Hl1'") as %?.
+    iDestruct "H" as "(Hctx_stat&H&Hdur)".
+    iDestruct "H" as (stat0) "(%&Hs)".
+    iDestruct "Hdur" as (? stat) "(Hd0&Hd1&Hs'&Hstatus)".
     iDestruct (@gen_heap_valid with "Hctx_stat Hs'") as %?.
     repeat match goal with
            |[ H1 : ?x = Some ?y, H2 : ?x = Some ?z |- _ ] =>
@@ -837,80 +803,76 @@ Module repRO : twodisk_refinement_obligations repRT.
 
   Lemma crash_inv_preserve_crash: crash_inv_preserve_crash_type.
   Proof.
-    iIntros (?? ((hL0&hL1)&hS)) "H".
+    iIntros (?? hS) "H".
     iDestruct "H" as "(#Hsrc&#Hinv)".
-    iInv "Hinv" as "H" "_".
-    iDestruct "H" as (σ) "(>Hdom1&>Hstate&>Hctx0&>Hctx1&>Hctx_stat&>Hdur)".
+    iInv "Hinv" as ">H" "_".
+    iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx_stat&Hdur)".
     iDestruct "Hdom1" as %Hdom1.
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
-    iDestruct "Hctx0" as (σL0 HdomL0) "Hctx0".
-    iMod (gen_heap_strong_init σL0) as (hL0' <-) "(hL0&hL0frag)".
-    iPoseProof (gen_heap_init_to_bigOp (hG := hL0') with "hL0frag") as "hL0frag".
-
-    iDestruct "Hctx1" as (σL1 HdomL1) "Hctx1".
-    iMod (gen_heap_strong_init σL1) as (hL1' <-) "(hL1&hL1frag)".
-    iPoseProof (gen_heap_init_to_bigOp (hG := hL1') with "hL1frag") as "hL1frag".
 
     iDestruct "Hctx_stat" as (σS HdomS) "Hctx_stat".
     iMod (gen_heap_strong_init σS) as (hS' <-) "(hS&hSfrag)".
     iPoseProof (gen_heap_init_to_bigOp (hG := hS') with "hSfrag") as "hSfrag".
 
-    iDestruct (gen_heap_bigOp_split with "hL0frag") as "(hL0a&hL0b)".
-    iDestruct (gen_heap_bigOp_split with "hL1frag") as "(hL1a&hL1b)".
     iDestruct (gen_heap_bigOp_split with "hSfrag") as "(hSa&hSb)".
 
-    iDestruct (gen_heap_bigOpM_dom with "hL0a") as "hL0a".
-    iDestruct (gen_heap_bigOpM_dom with "hL1a") as "hL1a".
     iDestruct (gen_heap_bigOpM_dom with "hSa") as "hSa".
-    rewrite ?HdomL0 ?HdomL1 ?HdomS.
-    iDestruct (big_sepM_dom with "hL0a") as "hL0a".
-    iDestruct (big_sepM_dom with "hL1a") as "hL1a".
+    rewrite ?HdomS.
     iDestruct (big_sepM_dom with "hSa") as "hSa".
-
-    iExists hL0', hL1', hS'. iModIntro.
+    iPoseProof (big_sepM_mono _
+                              (λ k v, |={E}=> (∃ v0 stat, _)
+                                                ∗ (∃ v0 v1, next_lease (hG := exm_disk0_inG) k v0 ∗
+                                                            next_lease (hG := _) k v1))%I
+                                   with "Hdur") as "Hdur".
+    {
+      iIntros (?? Heq) "Hinv". rewrite /DurInv.
+      iDestruct "Hinv" as (v0 stat) "(Hd0&Hd1&Hstat&Hinterp)".
+      iMod (disk0_next with "[$]") as "(Hd0&Hl0)".
+      iMod (disk1_next with "[$]") as "(Hd1&Hl1)".
+      iModIntro.
+      iCombine "Hd0 Hd1 Hstat Hinterp" as "Hleft".
+      iCombine "Hl0 Hl1" as "Hright".
+      iSplitL "Hleft".
+      * iExists v0, stat. iApply "Hleft".
+      * iExists v0, _. iApply "Hright".
+    }
+    iMod (fupd_big_sepM with "Hdur") as "Hdur".
+    rewrite big_sepM_sep.
+    iDestruct "Hdur" as "(Hdur&Hl)".
+    iDestruct (big_sepM_dom with "Hl") as "Hl".
+    iExists hS'. iModIntro.
     rewrite /CrashInner/CrashInv/CrashStarter.
     iFrame "Hsrc".
-    iSplitR "Hmem hL0a hL1a hSa"; last first.
-    { iApply big_opM_dom.
+    iSplitR "Hmem Hl hSa"; last first.
+    {
+      rewrite Hdom1 addrset_unfold.
+      iApply big_opM_dom.
+      iEval (rewrite -big_opM_dom) in "Hl".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
+      rewrite /UnlockedInv.
       iApply (big_sepM_mono with "H").
-      iIntros (k x Hlookup) "(((Hs&Hl0)&Hl1)&?)".
-      iDestruct "Hs" as (??) "Hs".
-      iDestruct "Hl0" as (??) "Hl0".
-      iDestruct "Hl1" as (??) "Hl1".
+      iIntros (k x Hlookup) "((Hs&Hl)&H2)".
+      iDestruct "Hs" as (?) "(%&Hs)".
+      iDestruct "Hl" as (v1 v2) "(Hl0&Hl1)".
       rewrite (init_zero_lookup_is_zero k x); last auto.
       iFrame. iExists _, _, _. iFrame.
     }
     iExists _. iFrame "Hstate".
-    iDestruct (gen_heap_bigOpM_dom with "hL0b") as "hL0b".
-    iDestruct (gen_heap_bigOpM_dom with "hL1b") as "hL1b".
     iDestruct (gen_heap_bigOpM_dom with "hSb") as "hSb".
     rewrite ?HdomL0 ?HdomL1 ?HdomS.
     rewrite -?Hdom1.
-    iDestruct (big_sepM_dom with "hL0b") as "hL0b".
-    iDestruct (big_sepM_dom with "hL1b") as "hL1b".
     iDestruct (big_sepM_dom with "hSb") as "hSb".
     iSplitL "".
     { iPureIntro. auto. }
-    iSplitL "hL0".
-    { iExists _. iFrame. by iPureIntro. }
-    iSplitL "hL1".
-    { iExists _. iFrame. by iPureIntro. }
     iSplitL "hS".
     { iExists _. iFrame. by iPureIntro. }
     repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
-    iCombine "Hctx0 Hctx1 Hctx_stat" as "Hctx".
-    iDestruct (big_sepM_mono_with_inv with "Hctx H") as "(?&$)".
+    iDestruct (big_sepM_mono_with_inv with "Hctx_stat H") as "(?&$)".
     iIntros (k x Hlookup) "H".
-    iDestruct "H" as "((Hctx0&Hctx1&Hctx_stat)&H&Hdur)".
-    iDestruct "H" as "((Hs&Hl0)&Hl1)".
-    iDestruct "Hs" as (??) "Hs".
-    iDestruct "Hl0" as (??) "Hl0".
-    iDestruct "Hl1" as (??) "Hl1".
-    iDestruct "Hdur" as (? stat) "(Hd0&Hd1&Hl0'&Hl1'&Hs'&Hstatus)".
-    iDestruct (@gen_heap_valid with "Hctx0 Hl0'") as %?.
-    iDestruct (@gen_heap_valid with "Hctx1 Hl1'") as %?.
+    iDestruct "H" as "(Hctx_stat&H&Hdur)".
+    iDestruct "H" as (stat0) "(%&Hs)".
+    iDestruct "Hdur" as (? stat) "(Hd0&Hd1&Hs'&Hstatus)".
     iDestruct (@gen_heap_valid with "Hctx_stat Hs'") as %?.
     repeat match goal with
            |[ H1 : ?x = Some ?y, H2 : ?x = Some ?z |- _ ] =>
@@ -922,16 +884,16 @@ Module repRO : twodisk_refinement_obligations repRT.
   Lemma crash_inner_inv : crash_inner_inv_type.
   Proof.
     red. iIntros (??) "(H&?)".
-    iDestruct "H" as (hInv hL0 hL1 hS) "((_&Hinv)&?)".
-    iExists (hL0, hL1, hS). iFrame.
+    iDestruct "H" as (hInv hS) "((_&Hinv)&?)".
+    iExists hS. iFrame.
     by iMod (@inv_alloc Σ (exm_invG) durN _ _ with "Hinv") as "$".
   Qed.
 
   Lemma exec_inner_inv : exec_inner_inv_type.
   Proof.
     iIntros (??) "(H&?)".
-    iDestruct "H" as (hInv hL0 hL1 hS) "(Hlocks&Hdur)".
-    iExists hL0, hL1, hS.
+    iDestruct "H" as (hInv hS) "(Hlocks&Hdur)".
+    iExists hS.
     iFrame. iSplitR "Hdur".
     - rewrite -fupd_big_sepS.
       iApply (big_sepS_mono with "Hlocks").
@@ -943,9 +905,9 @@ Module repRO : twodisk_refinement_obligations repRT.
   Lemma exec_inv_preserve_finish : exec_inv_preserve_finish_type.
   Proof.
     iIntros (??) "Hdone H".
-    iDestruct "H" as (hL0 hL1 hS) "(#Hsrc&#Hlocks&#Hinv)".
-    iInv "Hinv" as "H" "_".
-    iDestruct "H" as (σ) "(>Hdom1&>Hstate&>Hctx0&>Hctx1&>Hctx_stat&>Hdur)".
+    iDestruct "H" as (hS) "(#Hsrc&#Hlocks&#Hinv)".
+    iInv "Hinv" as ">H" "_".
+    iDestruct "H" as (σ) "(Hdom1&Hstate&Hctx_stat&Hdur)".
     iDestruct "Hdom1" as %Hdom1.
     iApply fupd_mask_weaken; first by solve_ndisj.
     iExists _, _. iFrame.
@@ -953,46 +915,61 @@ Module repRO : twodisk_refinement_obligations repRT.
     { iPureIntro. econstructor. }
     iClear "Hsrc".
     iIntros (????) "(Hctx&Hstate&Hmem)".
-    iMod (gen_heap_strong_init σ.(OneDisk.disk_state)) as (hL0' <-) "(hL0&hL0frag)".
-    iPoseProof (gen_heap_init_to_bigOp (hG := hL0') with "hL0frag") as "hL0frag".
-
-    iMod (gen_heap_strong_init σ.(OneDisk.disk_state)) as (hL1' <-) "(hL1&hL1frag)".
-    iPoseProof (gen_heap_init_to_bigOp (hG := hL1') with "hL1frag") as "hL1frag".
-
     iMod (gen_heap_strong_init ((λ _, Sync) <$> init_zero)) as (hS' <-) "(hS&hSfrag)".
     iPoseProof (gen_heap_init_to_bigOp (hG := hS') with "hSfrag") as "hSfrag".
-
-    iDestruct (gen_heap_bigOp_split with "hL0frag") as "(hL0a&hL0b)".
-    iDestruct (gen_heap_bigOp_split with "hL1frag") as "(hL1a&hL1b)".
     iDestruct (gen_heap_bigOp_split with "hSfrag") as "(hSa&hSb)".
 
-    iDestruct (gen_heap_bigOpM_dom with "hL0a") as "hL0a".
-    iDestruct (gen_heap_bigOpM_dom with "hL1a") as "hL1a".
     iDestruct (gen_heap_bigOpM_dom with "hSa") as "hSa".
-    rewrite ?Hdom1.
-    iDestruct (big_sepM_dom with "hL0a") as "hL0a".
-    iDestruct (big_sepM_dom with "hL1a") as "hL1a".
+    rewrite ?HdomS.
     iDestruct (big_sepM_dom with "hSa") as "hSa".
+    iPoseProof (big_sepM_mono_with_inv _ _
+                                       (λ k v, |={⊤}=>
+                                        ((k d0◯↦ v ∗ next_master (hG := exm_disk0_inG) k v) ∗
+                                         (k d1◯↦ v ∗ next_master (hG := exm_disk1_inG) k v) ∗
+                                          _)
+                                                ∗ (∃ v, next_lease (hG := exm_disk0_inG) k v ∗
+                                                        next_lease (hG := _) k v))%I
+                                   with "Hdone Hdur") as "(Hdone&Hdur)".
+    {
+      iIntros (?? Heq) "(Hdone&Hinv)". rewrite /DurInv.
+      iDestruct "Hinv" as (v0 stat) "(Hd0&Hd1&Hstat&Hinterp)".
+      destruct stat; last first.
+      { iDestruct "Hinterp" as "(?&Hreg)".
+        iExFalso; iApply (@AllDone_Register_excl with "Hdone Hreg").
+      }
+      iFrame.
+      iMod (disk0_next with "[$]") as "(Hd0&Hl0)".
+      iMod (disk1_next with "[$]") as "(Hd1&Hl1)".
+      iModIntro.
+      iDestruct "Hinterp" as %H. subst.
+      iCombine "Hd0 Hd1 Hstat" as "Hleft".
+      iCombine "Hl0 Hl1" as "Hright".
+      iSplitL "Hleft".
+      * iApply "Hleft".
+      * iExists _. iApply "Hright".
+    }
+    iMod (fupd_big_sepM with "Hdur") as "Hdur".
+    rewrite big_sepM_sep.
+    iDestruct "Hdur" as "(Hdur&Hl)".
+    iDestruct (big_sepM_dom with "Hl") as "Hl".
+    iExists hS'. iModIntro.
 
-    iExists hL0', hL1', hS'.
-    iSplitL "Hmem hL0a hL1a hSa".
-    { iApply big_opM_dom.
-      rewrite big_sepM_fmap.
+    iSplitL "Hmem Hl hSa".
+    {
+      rewrite Hdom1 addrset_unfold.
+      iApply big_opM_dom.
+      iEval (rewrite -big_opM_dom) in "Hl".
+      iEval (rewrite big_opM_dom dom_fmap_L -big_opM_dom) in "hSa".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
+      rewrite /LockInv.
       iApply (big_sepM_mono with "H").
-      iIntros (k x Hlookup) "(((Hs&Hl0)&Hl1)&?)".
+      iIntros (k x Hlookup) "((Hs&Hl)&H2)".
       iDestruct "Hs" as (? Hlookup') "Hs".
+      iDestruct "Hl" as (v) "(Hl0&Hl1)".
       rewrite lookup_fmap in Hlookup'.
       apply fmap_Some_1 in Hlookup' as (?&Heq1&Heq2).
-      subst.
       rewrite (init_zero_lookup_is_zero k x); last auto.
-      iDestruct "Hl0" as (??) "Hl0".
-      iDestruct "Hl1" as (??) "Hl1".
-      repeat match goal with
-             |[ H1 : ?x = Some ?y, H2 : ?x = Some ?z |- _ ] =>
-              rewrite H1 in H2; inversion H2; clear H1 H2; subst
-             end.
-      iFrame. iExists _. iFrame.
+      iFrame. subst. iExists _; iFrame.
     }
     rewrite big_sepM_fmap.
     iDestruct (big_sepM_dom with "hSb") as "hSb".
@@ -1003,22 +980,13 @@ Module repRO : twodisk_refinement_obligations repRT.
     iExists _. iFrame.
     iSplitL "".
     { iPureIntro. auto. }
-    iSplitL "hL0".
-    { iExists _. iFrame. by iPureIntro. }
-    iSplitL "hL1".
-    { iExists _. iFrame. by iPureIntro. }
     iSplitL "hS".
     { iExists _. iFrame. iPureIntro. rewrite dom_fmap_L. auto. }
-    iDestruct (big_sepM_mono_with_inv with "Hdone H") as "(?&$)"; last by iPureIntro.
+    iDestruct (big_sepM_mono_with_inv with "Hdone H") as "(?&$)".
     iIntros (k x Hlookup) "H".
     iDestruct "H" as "(Hdone&H)".
-    iDestruct "H" as "(((Hs&Hl0)&Hl1)&Hdur)".
-    iDestruct "Hdur" as (? stat) "(Hd0&Hd1&Hl0'&Hl1'&Hs'&Hstatus)".
-    destruct stat; last first.
-    { iDestruct "Hstatus" as "(?&Hreg)".
-      iExFalso; iApply (@AllDone_Register_excl with "Hdone Hreg").
-    }
-    iFrame. iDestruct "Hstatus" as %Heq. subst.
+    iDestruct "H" as "(?&Hd0&Hd1&Hdur)".
+    iFrame.
     iExists _, _. iFrame. eauto.
   Qed.
 End repRO.
