@@ -37,6 +37,15 @@ have one set of performance numbers that don't reproduce well in a VM, but this
 is not the core of the paper's claims. It is also possible to run part of that
 experiment using only Go.
 
+Here are some details on the virtual machine:
+
+- The virtual machine appliance is around 3.5GB, and 12GB when extracted.
+- The default login is `ubuntu` with no password.
+- The default user has sudo access without a password.
+- The VM has port forwarding from host port 11737 to SSH in the VM; all you need
+  to do is `ssh -p 11737 ubuntu@localhost` to SSH to the virtual machine.
+- The default user's shell is a slightly customized zsh.
+
 ## Code and dependencies
 
 As a quick reference, here's the code the artifact covers:
