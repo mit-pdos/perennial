@@ -1,38 +1,33 @@
 #!/bin/bash
 
+set -e
+
 ## Put together artifact tarball
 
-src="$1"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+src="$DIR"
 out="/tmp/armada-artifact"
 out_dir="$PWD"
-
-if [ -z "$src" ]; then
-  echo "Usage: $0 <path to armada src>"
-  exit 1
-fi
 
 rm -rf "$out"
 mkdir "$out"
 
-make -C "$src/artifact"
+# build the artifact HTML
+make -C "$src"
 
 src=$(realpath "$src")
 pushd "$out" || exit 1
-# package up armada.tar.gz
-"$src"/release.sh "$src" >/dev/null
-tar -xf armada.tar.gz
-rm armada.tar.gz
 
 # package up the rest of the artifact
-cp "$src/artifact/README.html" ./
-cp "$src/artifact/loc.sh" ./
+mkdir -p armada-paper
+cp "$src"/{README,EXPERIMENTS}.html ./
+cp "$src/paper-scripts/"* ./armada-paper
 popd || exit 1
-find "$out" -type f -name '._*' -delete
 
 # Note that the uploaded artifact needs to be a zip file because HotCRP
 # doesn't preserve the tar part of the filename for compressed tarballs.
 pushd "$out/.." || exit 1
 rm -f "$out_dir/armada-artifact.zip"
-zip -r "$out_dir/armada-artifact.zip" $(basename "$out")
+zip -r "$out_dir/armada-artifact.zip" "$(basename "$out")"
 popd || exit 1
 rm -r "$out"
