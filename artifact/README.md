@@ -85,10 +85,11 @@ Finally, we installed the code, which means:
 - Clone the Armada and CSPEC repos into the home directory.
 - Install the Go dependencies with
 
-    ```
-    go get -u github.com/tchajed/goose/...
-    go get -u github.com/tchajed/mailboat/...
-    ```
+  ```
+  go get -u github.com/tchajed/goose/...
+  go get -u github.com/tchajed/mailboat/...
+  ```
 
   Go clones the source code to `~/go/src/github.com/tchajed/` and also compiles
-  and installs the binaries, `goose` and `mailboat-server`.
+  and installs the binaries, `goose` and `mailboat-server`. We added symlinks to
+  the two cloned repos in `~ubuntu`.
