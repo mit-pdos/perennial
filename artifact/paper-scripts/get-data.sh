@@ -22,4 +22,4 @@ fi
 script_name=$(basename "$script")
 echo "# $script_name $num_cores"
 echo
-GOGC=200 "$script" "$num_cores" 2>&1 | sed -r -n -e '/^real/s/real ([0-9.]*).*/\1/p' | nl -w1
+GOGC=200 "$script" "$num_cores" 2>&1 | sed -r -n -e '/^real/s/real ([0-9.]*).*/\1/p' | awk '{print NR " " $0}'
