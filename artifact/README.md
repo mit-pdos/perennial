@@ -39,11 +39,20 @@ experiment using only Go.
 
 Here are some details on the virtual machine:
 
-- The virtual machine appliance is around 3.5GB, and 12GB when extracted.
+- The virtual machine appliance is around 3.5GB, and 13GB when extracted.
 - The default login is `ubuntu` with no password.
 - The default user has sudo access without a password.
 - The VM has port forwarding from host port 11737 to SSH in the VM; all you need
-  to do is `ssh -p 11737 ubuntu@localhost` to SSH to the virtual machine.
+  to do is `ssh -p 11737 ubuntu@localhost` to SSH to the virtual machine. You
+  can make this more convenient by adding this to your `~/.ssh/config`:
+  ```
+  # armada artifact VM
+  Host armada-vm
+    HostName localhost
+    Port 11737
+    User ubuntu
+  ```
+  and then using `ssh armada-vm`.
 - The default user's shell is a slightly customized zsh.
 
 ## Code and dependencies
@@ -93,3 +102,20 @@ Finally, we installed the code, which means:
   Go clones the source code to `~/go/src/github.com/tchajed/` and also compiles
   and installs the binaries, `goose` and `mailboat-server`. We added symlinks to
   the two cloned repos in `~ubuntu`.
+
+To reduce the file size of the resulting VM, we ran
+
+```sh
+# inside VM
+sudo apt clean
+dd if=/dev/zero of=zeros bs=4M; sync zeros; rm zeros
+
+# on host
+VBoxManage modifymedium disk ~/"VirtualBox VMs/armada-vm/armada-vm-disk001.vdi" --compact
+```
+
+and finally exported as a VirtualBox appliance:
+
+```sh
+VBoxManage export 'armada-vm' -o armada-vm.ova
+```
