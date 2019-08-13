@@ -22,6 +22,7 @@ pushd "$out" || exit 1
 mkdir -p armada-paper
 cp "$src"/{README,EXPERIMENTS}.html ./
 cp "$src/paper-scripts/"* ./armada-paper
+cp "$src/user-list" ./
 popd || exit 1
 
 # Note that the uploaded artifact needs to be a zip file because HotCRP

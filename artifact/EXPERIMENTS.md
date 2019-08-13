@@ -93,3 +93,15 @@ servers. Note that this tests both the verified mail server library as well as
 the unverified server code, including SMTP and POP3 handling. We didn't find
 bugs in the verified component by running postal, but our initial server
 implementation unsurprisingly didn't work with postal.
+
+We provide a user-list with the first five users in the artifact release.
+
+```sh
+$ mailboat-server
+$ postal -t 2 -r 120 -p 2525 -s 0 -c 100 localhost user-list
+$ # kill postal at some point
+$ rabid -p 1 -r 120 -s 0 -i 0 -d 100:0 -z debug '[localhost]2110' user-list
+$ # kill rabid at some point
+```
+
+You can also restart the server by killing it and running `mailboat-server --recover`.
