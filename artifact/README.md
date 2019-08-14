@@ -32,14 +32,18 @@ This artifact is licensed under the Creative Commons Attribution license.
 
 # Getting started
 
-The easiest way to use the artifact is to use the provided VirtualBox image. We
-have one set of performance numbers that don't reproduce well in a VM, but this
-is not the core of the paper's claims. It is also possible to run part of that
-experiment using only Go.
+The easiest way to use the artifact is to use the provided [VirtualBox
+appliance](https://www.dropbox.com/s/tmb9cv8lazuk37c/armada-vm.ova?dl=0) (also
+provided as the Artifact Link). We have one set of performance numbers that
+don't reproduce well in a VM, but this is not the core of the paper's claims. It
+is also possible to run most of that experiment using only Go.
 
 Here are some details on the virtual machine:
 
 - The virtual machine appliance is around 3.5GB, and 13GB when extracted.
+- The default configuration is 4GB of RAM and two cores. You could get by with
+  one core, or can increase these if you want to work in the VM with a graphical
+  interface. Only compilation is RAM-intensive.
 - The default login is `ubuntu` with no password.
 - The default user has sudo access without a password.
 - The VM has port forwarding from host port 11737 to SSH in the VM; all you need
