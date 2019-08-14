@@ -96,6 +96,11 @@ conveniences such as a terminal and ZSH setup) manually.
 Finally, we installed the code, which means:
 
 - Clone the Armada and CSPEC repos into the home directory.
+  We've compiled Armada, but you can do so yourself by running `make clean-all;
+  make -j2`. The build takes around 20 minutes. Compiling Armada only builds the
+  proofs and prints the assumptions of the final refinement theorem.
+
+  We also compiled CSPEC.
 - Install the Go dependencies with
 
   ```
