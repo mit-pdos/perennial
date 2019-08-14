@@ -57,11 +57,11 @@ Here are some details on the virtual machine:
 
 ## Code and dependencies
 
-As a quick reference, here's the code the artifact covers:
+Here's the code the artifact covers:
 
-- Armada, which includes mailboat as an example
-- Goose
-- Mailboat (a Go mail server, written in the Goose subset)
+- [Armada](https://github.com/mit-pdos/armada), which includes mailboat as an example
+- [Goose](https://github.com/tchajed/goose), the translator and Go support libraries
+- [Mailboat](https://github.com/tchajed/mailboat) (a Go mail server, written in the Goose subset)
 
 Here are the dependencies for the artifact (just for reference; all of these are
 in the VM image):
@@ -102,6 +102,8 @@ Finally, we installed the code, which means:
   Go clones the source code to `~/go/src/github.com/tchajed/` and also compiles
   and installs the binaries, `goose` and `mailboat-server`. We added symlinks to
   the two cloned repos in `~ubuntu`.
+- Compiled the artifact documentation within the VM and put the result in
+  `~/armada-artifact`. Here you'll find a README.html and EXPERIMENTS.html.
 
 To reduce the file size of the resulting VM, we ran
 
