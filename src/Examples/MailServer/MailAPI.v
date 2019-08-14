@@ -23,6 +23,7 @@ Module Mail.
   | Deliver_Start uid (msg: slice.t byte) : Op unit
   | Deliver_End uid (msg: slice.t byte) : Op unit
   | Delete uid (msgID: string) : Op unit
+  | Lock uid : Op unit
   | Unlock uid : Op unit
   | DataOp T (op: Data.Op T) : Op T
   .
@@ -150,6 +151,10 @@ Module Mail.
                puts (set messages <[ uid := (s, delete msg msgs) ]>)
            | _ => error
            end
+    | Lock uid =>
+      let! (s, msgs) <- lookup messages uid;
+           s <- Filesys.FS.unwrap (mailbox_lock_acquire s);
+           puts (set messages <[uid := (s, msgs)]>)
     | Unlock uid =>
       let! (s, msgs) <- lookup messages uid;
            s <- Filesys.FS.unwrap (mailbox_lock_release s);

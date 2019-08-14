@@ -142,6 +142,18 @@ Context `{@gooseG gmodel gmodelHwf Σ, !@cfgG (Mail.Op) (Mail.l) Σ}.
     - solve_err.
   Qed.
 
+  Lemma lock_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
+    nclose sourceN ⊆ E →
+    j ⤇ K (Call (Lock uid)) -∗ source_ctx -∗ source_state σ
+    ={E}=∗
+        ∃ v, ⌜ σ.(messages) !! uid = Some (MUnlocked, v) ⌝ ∗
+        j ⤇ K (Call (Lock uid)) ∗ source_state σ.
+  Proof.
+    iIntros. non_err.
+    - destruct p as ([]&?); try (by iFrame; eauto); solve_err.
+    - solve_err.
+  Qed.
+
   Lemma unlock_step_inv {T} j K `{LanguageCtx _ _ T Mail.l K} uid (σ: l.(OpState)) E:
     nclose sourceN ⊆ E →
     j ⤇ K (Call (Unlock uid)) -∗ source_ctx -∗ source_state σ

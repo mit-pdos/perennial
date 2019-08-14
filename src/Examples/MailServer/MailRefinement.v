@@ -22,6 +22,9 @@ Inductive compile_mail_base {gm: GoModel} : forall {T}, proc Mail.Op T → proc 
 | cm_delete uid msg :
     compile_mail_base (Call (Mail.Delete uid msg))
                       (MailServer.Delete uid msg)
+| cm_lock uid :
+    compile_mail_base (Call (Mail.Lock uid))
+                      (MailServer.Lock uid)
 | cm_unlock uid :
     compile_mail_base (Call (Mail.Unlock uid))
                       (MailServer.Unlock uid)
@@ -242,6 +245,8 @@ Qed.
     - iApply (deliver_refinement with "[$]"). iIntros "!>".
       iIntros (?) "(?&?)"; iFrame.
     - iApply (delete_refinement with "[$]"). iIntros "!>".
+      iIntros (?) "(?&?)"; iFrame.
+    - iApply (lock_refinement with "[$]"). iIntros "!>".
       iIntros (?) "(?&?)"; iFrame.
     - iApply (unlock_refinement with "[$]"). iIntros "!>".
       iIntros (?) "(?&?)"; iFrame.

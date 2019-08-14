@@ -1052,6 +1052,62 @@ Import Mail.
     - iApply "HΦ". iFrame.
   Qed.
 
+  Lemma lock_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
+    {{{ j ⤇ K (Call (Lock uid)) ∗ Registered ∗ ExecInv }}}
+      MailServer.Lock uid
+    {{{ v, RET v; j ⤇ K (Ret v) ∗ Registered }}}.
+  Proof.
+    iIntros (Φ) "(Hj&Hreg&Hrest) HΦ".
+    iDestruct "Hrest" as (Γ γinit) "(#Hsource&#Hinv)".
+    wp_bind.
+    iInv "Hinv" as "H".
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
+    rewrite /MsgsInv ?Hopen.
+    iDestruct "Hmsgs" as (ls) "(>Hglobal&Hrootdir&Hinit&Hm)".
+    iDestruct (GlobalInv_split with "Hglobal") as "(Hglobal&Hread)".
+    iDestruct "Hread" as (lsptr) "(Hglobal_read&Hlsptr)".
+    iApply (wp_getX with "[$]"); iIntros "!> Hglobal_read".
+    iMod (lock_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
+    { solve_ndisj. }
+    iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
+    iDestruct "Huid" as (lk γ) "(%&%&#Hlock&Hinbox)".
+    iDestruct "Hinbox" as "(Hmbox&Hdircontents&Hmsgs)".
+    iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
+    { intros. econstructor. eexists; split; last by econstructor.
+      econstructor; eauto. eapply opened_step; auto. econstructor.
+      eexists. split.
+      - rewrite /lookup/readSome. rewrite Heq. eauto.
+      - simpl. do 2 eexists; split; constructor.
+    }
+    { solve_ndisj. }
+    iExists _. iFrame.
+    iExists _.
+    simpl open. rewrite Hopen. iFrame.
+    (*
+    iDestruct "Hmbox" as "(Hwlock&Hlockinv&Hunlocked)".
+    iSplitL "Hm Hmsgs Hdircontents Hstatus Hrootdir Hinit".
+    { iModIntro.  iNext.
+      iDestruct (InitInv_open_update with "[$]") as "$"; auto.
+      iSplitL "Hrootdir".
+      { rewrite /RootDirInv//=. rewrite dom_insert_L_in; eauto.
+        eapply elem_of_dom; eauto. }
+      iApply "Hm". iExists _, _.
+      do 2 (iSplitL ""; eauto).
+      iFrame. iFrame "Hlock".
+    }
+    iModIntro.
+    wp_bind. iApply (wp_sliceRead with "[$]").
+    { eauto. }
+    iIntros "!> Hlsptr".
+    iApply (wp_lockRelease_writer with "[Hwlock Hlockinv]"); swap 1 2.
+    { iFrame "Hlock"; iFrame. }
+    { set_solver+. }
+    iIntros "!> _". iApply "HΦ". iFrame. *)
+  Admitted.
+
   Lemma unlock_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
     {{{ j ⤇ K (Call (Unlock uid)) ∗ Registered ∗ ExecInv }}}
       MailServer.Unlock uid
