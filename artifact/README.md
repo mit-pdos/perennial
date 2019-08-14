@@ -2,29 +2,7 @@
 title: "Verifying concurrent storage systems with Armada"
 ---
 
-<table>
-<tr>
-<th>Armada</th>
-<th>Goose</th>
-<th>Mailboat</th>
-<th>Artifact</th>
-</tr>
-
-<tr>
-<td>
-[![Build Status](https://travis-ci.org/mit-pdos/armada.svg?branch=master)](https://travis-ci.org/mit-pdos/armada)
-</td>
-<td>
-[![Build Status](https://travis-ci.org/tchajed/goose.svg?branch=master)](https://travis-ci.org/tchajed/goose)
-</td>
-<td>
-[![Build Status](https://travis-ci.com/tchajed/mailboat.svg?branch=master)](https://travis-ci.com/tchajed/mailboat)
-</td>
-<td>
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
-</td>
-</tr>
-</table>
 
 The code is licensed under the MIT license.
 
@@ -33,10 +11,10 @@ This artifact is licensed under the Creative Commons Attribution license.
 # Getting started
 
 The easiest way to use the artifact is to use the provided [VirtualBox
-appliance](https://www.dropbox.com/s/tmb9cv8lazuk37c/armada-vm.ova?dl=0) (also
-provided as the Artifact Link). We have one set of performance numbers that
-don't reproduce well in a VM, but this is not the core of the paper's claims. It
-is also possible to run most of that experiment using only Go.
+appliance](https://www.dropbox.com/s/tmb9cv8lazuk37c/armada-vm.ova?dl=0). We
+have one set of performance numbers that don't reproduce well in a VM, but this
+is not the core of the paper's claims. It is also possible to run most of that
+experiment using only Go.
 
 Here are some details on the virtual machine:
 
