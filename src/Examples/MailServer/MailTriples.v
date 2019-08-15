@@ -1072,9 +1072,54 @@ Import Mail.
     iApply (wp_getX with "[$]"); iIntros "!> Hglobal_read".
     iMod (lock_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
     { solve_ndisj. }
+    iDestruct (MsgsInv_pers_split with "Hm") as "#Huid"; first eauto.
+    iDestruct "Huid" as (lk γ HΓlookup Hnth) "#Hlock".
+
+    (* re-do invariant *)
+    iExists _. iFrame. iExists _. rewrite Hopen. iFrame.
+
+    iModIntro.
+    wp_bind. iApply (wp_sliceRead with "[$]").
+    { eauto. }
+    iIntros "!> Hlsptr".
+
+    (* We need to simulate the step *after* the lock acquisition. So we
+       need to allow a view shift in the post-condition with the following: *)
+    iApply wp_fupd.
+
+    iApply (wp_lockAcquire_writer with "Hlock").
+    { set_solver+. }
+    iIntros "!> (Hlockinv&Hlocked)".
+
+    iInv "Hinv" as "H".
+    clear σ Hopen Heq v.
+    iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
+    iMod (is_opened_step_inv with "[$] [$] [$]") as (Hopen) "(Hj&Hstate)"; auto.
+    { simpl; auto. }
+    { solve_ndisj. }
+    rewrite /MsgsInv ?Hopen.
+    iDestruct "Hmsgs" as (ls') "(>Hglobal&Hrootdir&Hinit&Hm)".
+    iMod (lock_step_inv with "Hj Hsource Hstate") as (v Heq) "(Hj&Hstate)".
+    { solve_ndisj. }
+
+    iDestruct (GlobalInv_unify with "[$] [$] [$]") as %<-.
     iDestruct (big_sepM_insert_acc with "Hm") as "(Huid&Hm)"; eauto.
-    iDestruct "Huid" as (lk γ) "(%&%&#Hlock&Hinbox)".
-    iDestruct "Hinbox" as "(Hmbox&Hdircontents&Hmsgs)".
+    iDestruct "Huid" as (lk' γ') "(>Heq1&>Heq2&Hinbox)".
+    iDestruct "Heq1" as %Heq1.
+    iDestruct "Heq2" as %Heq2.
+    iDestruct "Hinbox" as "(_&Hmbox&Hdircontents&Hmsgs)".
+    assert (lk' = lk) by congruence. subst.
+    assert (γ' = γ) by congruence. subst.
+    iDestruct "Hmbox" as "[>Hmbox|Hmbox]"; last first.
+    { iDestruct "Hmbox" as ">(Hlocked'&Hauth)".
+      iDestruct "Hauth" as (S ?) "(Hauth&?)".
+      iExFalso.
+      iDestruct "Hlockinv" as (S' ?) "(Hauth'&?)".
+      iApply (@ghost_var_auth_valid contentsC with "Hauth Hauth'").
+    }
+
+
+
     iMod (ghost_step_call with "Hj Hsource Hstate") as "(Hj&Hstate&_)".
     { intros. econstructor. eexists; split; last by econstructor.
       econstructor; eauto. eapply opened_step; auto. econstructor.
@@ -1083,30 +1128,25 @@ Import Mail.
       - simpl. do 2 eexists; split; constructor.
     }
     { solve_ndisj. }
-    iExists _. iFrame.
-    iExists _.
-    simpl open. rewrite Hopen. iFrame.
-    (*
-    iDestruct "Hmbox" as "(Hwlock&Hlockinv&Hunlocked)".
-    iSplitL "Hm Hmsgs Hdircontents Hstatus Hrootdir Hinit".
-    { iModIntro.  iNext.
-      iDestruct (InitInv_open_update with "[$]") as "$"; auto.
+
+    iExists _. iFrame. simpl open. rewrite Hopen.
+    iSplitR "Hj HΦ Hreg".
+    { iModIntro. iNext.
+      iExists _. iFrame.
       iSplitL "Hrootdir".
-      { rewrite /RootDirInv//=. rewrite dom_insert_L_in; eauto.
-        eapply elem_of_dom; eauto. }
-      iApply "Hm". iExists _, _.
-      do 2 (iSplitL ""; eauto).
-      iFrame. iFrame "Hlock".
+      { rewrite /RootDirInv //=. rewrite dom_insert_L_in //.
+        eapply elem_of_dom. eauto.
+      }
+      iSplitL "Hinit".
+      { iApply InitInv_open_update; eauto. }
+      iApply "Hm".
+      rewrite /MsgInv. iExists _, _.
+      iSplitL ""; first by done.
+      iSplitL ""; first by done.
+      rewrite /InboxInv. by iFrame.
     }
-    iModIntro.
-    wp_bind. iApply (wp_sliceRead with "[$]").
-    { eauto. }
-    iIntros "!> Hlsptr".
-    iApply (wp_lockRelease_writer with "[Hwlock Hlockinv]"); swap 1 2.
-    { iFrame "Hlock"; iFrame. }
-    { set_solver+. }
-    iIntros "!> _". iApply "HΦ". iFrame. *)
-  Admitted.
+    iModIntro. iModIntro. iApply "HΦ". by iFrame.
+  Qed.
 
   Lemma unlock_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid:
     {{{ j ⤇ K (Call (Unlock uid)) ∗ Registered ∗ ExecInv }}}
