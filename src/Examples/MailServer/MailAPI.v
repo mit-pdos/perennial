@@ -40,6 +40,13 @@ Module Mail.
     | MUnlocked => Some MPickingUp
     end.
 
+  Definition mailbox_lock_acquire_full (s: MailboxStatus) : option MailboxStatus :=
+    match s with
+    | MPickingUp => None
+    | MLocked => None
+    | MUnlocked => Some MLocked
+    end.
+
   Definition mailbox_finish_pickup (s: MailboxStatus) : option MailboxStatus :=
     match s with
     | MPickingUp => Some MLocked
@@ -153,7 +160,7 @@ Module Mail.
            end
     | Lock uid =>
       let! (s, msgs) <- lookup messages uid;
-           s <- Filesys.FS.unwrap (mailbox_lock_acquire s);
+           s <- Filesys.FS.unwrap (mailbox_lock_acquire_full s);
            puts (set messages <[uid := (s, msgs)]>)
     | Unlock uid =>
       let! (s, msgs) <- lookup messages uid;
