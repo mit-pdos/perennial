@@ -87,9 +87,24 @@ Definition nat64_from_le (digits: list {x | x < 256}) : nat :=
 Definition bounded_to_ascii (x:{x | x < 256}) : Ascii.ascii :=
   Ascii.ascii_of_nat (proj1_sig x).
 
+(* for compatibility with Coq v8.9, copy [N_ascii_bounded] and
+[nat_ascii_bounded]. *)
+Theorem N_ascii_bounded : forall a, (Ascii.N_of_ascii a < 256)%N.
+Proof.
+  destruct a as [[|][|][|][|][|][|][|][|]]; vm_compute; reflexivity.
+Qed.
+
+Theorem nat_ascii_bounded : forall a, Ascii.nat_of_ascii a < 256.
+Proof.
+  intro a; unfold Ascii.nat_of_ascii.
+  change 256 with (N.to_nat 256).
+  rewrite <- Nat.compare_lt_iff, <- N2Nat.inj_compare, N.compare_lt_iff.
+  apply N_ascii_bounded.
+Qed.
+
 Definition ascii_to_bounded (a:Ascii.ascii) : {x | x < 256}.
   refine (exist _ (Ascii.nat_of_ascii a) _).
-  apply Ascii.nat_ascii_bounded.
+  apply nat_ascii_bounded.
 Defined.
 
 Instance aModel : GoModel.
