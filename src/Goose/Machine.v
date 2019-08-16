@@ -44,6 +44,7 @@ Module Ptr.
   | Lock
   .
 End Ptr.
+Declare Instance type_dec : EqualDec Ptr.ty.
 
 Class GoModel : Type :=
   { byte : Type;
@@ -60,15 +61,11 @@ Class GoModel : Type :=
 
     (*! File handles *)
     File : Type;
-    (* TODO: rename this, its should be an invalid fd (unfortunately its the
-    zero value for File, which is the valid Fd 0) *)
     nilFile : File;
 
     (*! Pointers *)
     Ptr : Ptr.ty -> Type;
     nullptr : forall ty, Ptr ty;
-
-
   }.
 
 Class GoModelWf (model:GoModel) :=

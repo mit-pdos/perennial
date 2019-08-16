@@ -9,6 +9,7 @@ From Armada Require Import Examples.ReplicatedDisk.ReplicatedDiskRefinement.
 From Armada Require Import Examples.MailServer.MailRefinement.
 
 (* goose output *)
+From Armada Require Import Goose.ExplicitModel.
 From Armada Require Import Goose.Examples.UnitTests.
 From Armada Require Import Goose.Examples.SimpleDb.
 From Armada Require Import Goose.Examples.MailServer.
