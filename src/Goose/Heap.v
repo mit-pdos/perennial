@@ -368,8 +368,7 @@ Module Data.
                        updAllocs p.(slice.ptr) (s', alloc)
            | FinishArgs _ => s' <- readSome (fun _ => lock_release Reader s);
                               _ <- updAllocs p.(slice.ptr) (s', alloc);
-                              x <- readSome (fun _ => uint64_from_le (list.take 8 val));
-                              pure x
+                              pure (uint64_from_le (list.take 8 val))
            end
     | Uint64Put p x ph =>
       let! (s, alloc) <- readSome (getAlloc p.(slice.ptr));
@@ -379,7 +378,7 @@ Module Data.
                 | Begin => s' <- readSome (fun _ => lock_acquire Writer s);
                             updAllocs p.(slice.ptr) (s', alloc)
                 | FinishArgs _ => s' <- readSome (fun _ => lock_release Writer s);
-                                   let enc := uint64_to_le x in
+                                   enc <- readSome (fun _ => uint64_to_le x);
                                    updAllocs p.(slice.ptr) (s', enc ++ list.drop 8 alloc)
                 end
     | BytesToString p =>

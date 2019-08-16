@@ -33,9 +33,9 @@ Definition compare_to x y (c: comparison)
   - destruct (lt_dec y x); auto; right; abstract omega.
 Defined.
 
-Record FixedLengthEncoder bytes intTy byteTy (enc:intTy -> list byteTy) (dec:list byteTy -> option intTy) :=
-  { encode_length_ok : forall x, length (enc x) = bytes;
-    encode_decode_ok : forall x, dec (enc x) = Some x; }.
+Record FixedLengthEncoder bytes intTy byteTy (enc:intTy -> option (list byteTy)) (dec:list byteTy -> intTy) :=
+  { encode_length_ok : forall x bs, enc x = Some bs -> length bs = bytes;
+    encode_decode_ok : forall x bs, enc x = Some bs -> dec bs = x; }.
 
 Module Ptr.
   Inductive ty : Type :=
@@ -56,8 +56,8 @@ Class GoModel : Type :=
     byte_to_ascii : byte -> Ascii.ascii;
 
     (*! Pure model of uint64 little-endian encoding. *)
-    uint64_to_le : uint64 -> list byte;
-    uint64_from_le : list byte -> option uint64;
+    uint64_to_le : uint64 -> option (list byte);
+    uint64_from_le : list byte -> uint64;
 
     (*! File handles *)
     File : Type;

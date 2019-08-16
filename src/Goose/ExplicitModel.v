@@ -64,9 +64,11 @@ Definition bounded0 : {x | x < 256}.
   apply Nat.lt_0_succ.
 Defined.
 
-Definition nat64_to_le (x:nat) : list {x | x < 256} :=
+Definition nat64_to_le (x:nat) : option (list {x | x < 256}) :=
   let digits := nat_to_le 254 x in
-  digits ++ repeat bounded0 (8 - length digits).
+  if nat_le_dec (length digits) 8 then
+    Some (digits ++ repeat bounded0 (8 - length digits))
+  else None.
 
 Theorem nat_from_le_zeros base_m2 digits zero_v n :
   proj1_sig zero_v = 0 ->
@@ -79,10 +81,8 @@ Proof.
   lia.
 Qed.
 
-Definition nat64_from_le (digits: list {x | x < 256}) : option nat :=
-  if nat_eq_dec (length digits) 8
-  then Some (nat_from_le digits)
-  else None.
+Definition nat64_from_le (digits: list {x | x < 256}) : nat :=
+  nat_from_le digits.
 
 Definition bounded_to_ascii (x:{x | x < 256}) : Ascii.ascii :=
   Ascii.ascii_of_nat (proj1_sig x).
@@ -124,11 +124,19 @@ Proof.
     unfold ascii_to_bounded, bounded_to_ascii; simpl.
     apply ProofIrrelevanceTheory.subset_eq_compat.
     rewrite Ascii.nat_ascii_embedding; auto.
-  - constructor.
-    (* TODO: encoder has the error on the wrong side; encoding can fail, not
-    decoding *)
-    admit.
-    admit.
+  - simpl; constructor;
+      unfold nat64_to_le, nat64_from_le; intros;
+      match goal with
+      | [ H: context[nat_le_dec ?n ?m] |- _ ] =>
+        destruct (nat_le_dec n m);
+          try congruence
+      end.
+    + inversion H; subst.
+      rewrite app_length, repeat_length.
+      lia.
+    + inversion H; subst.
+      rewrite nat_from_le_zeros; auto.
+      rewrite nat_le_inverse; auto.
   - simpl.
     typeclasses eauto.
   - simpl.
@@ -137,4 +145,4 @@ Proof.
     decide equality; subst.
     decide equality; subst.
     destruct (x0 == x1); auto.
-Admitted.
+Qed.

@@ -14,7 +14,9 @@ COQ_WARN_LIST := -notation-overridden\
 -solve_obligation_error\
 -auto-template\
 -ambiguous-paths\
--convert_concl_no_check
+-convert_concl_no_check\
+-funind-cannot-define-graph\
+-funind-cannot-build-inversion
 
 # A literal space.
 space :=
