@@ -8,6 +8,7 @@ From Armada Require AtomicPair.Helpers.
 From Armada.Goose Require Import Machine GoZeroValues Heap GoLayer.
 From Armada.Goose Require Import Machine.
 From Armada.Goose Require Import GoZeroValues.
+From Armada.Goose Require Import ExplicitModel.
 
 Inductive compile_mail_base {gm: GoModel} : forall {T}, proc Mail.Op T → proc GoLayer.Op T → Prop :=
 | cm_open :
@@ -110,9 +111,8 @@ Definition init_base `{@GoModelWf gm} (s: GoLayer.Go.State) :=
   s.(maillocks) = None.
 
 
-(* We assume some instance of the GoModel axioms *)
-Context {gm : GoModel}.
-Context {gmWf : GoModelWf gm}.
+Instance gm : GoModel := aModel.
+Instance gmWf : GoModelWf gm := aModel_wf.
 
 Definition init_absr sa sc := Mail.initP sa ∧ init_base sc.
 
@@ -518,7 +518,7 @@ Qed.
       - iExists ∅. iFrame. by iApply big_sepM_empty.
     }
     Unshelve.
-    apply sigPtr_eq_dec.
+    apply: sigPtr_eq_dec.
   Qed.
 
   Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
