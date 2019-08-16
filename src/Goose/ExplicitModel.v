@@ -78,7 +78,7 @@ Proof.
   intros.
   induction digits; simpl; auto.
   induction n; simpl; auto.
-  lia.
+  rewrite H, IHn; simpl; auto.
 Qed.
 
 Definition nat64_from_le (digits: list {x | x < 256}) : nat :=
