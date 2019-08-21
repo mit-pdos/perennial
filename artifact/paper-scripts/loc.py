@@ -19,7 +19,7 @@ class LineCountDb:
     def count_lines(cls, src_dir):
         conn = sqlite3.connect(":memory:")
         done = subprocess.run(
-            ["cloc", "--quiet", "--sql=-", "--include-ext=v,go", "."],
+            ["cloc", "--quiet", "--sql=-", "--include-lang=Coq,Go", "."],
             capture_output=True,
             # run in Armada source directory
             cwd=src_dir,
