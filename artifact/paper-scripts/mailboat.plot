@@ -9,10 +9,11 @@ set ylabel "requests / sec"
 set format y '%.0s%c'
 set xlabel "# cores"
 set key top left
+if (!exists("numcores")) numcores=12
 
 set style data line
 
 plot \
-  "mailboat.data" using 1:(1200000/$2) with linespoints title 'Mailboat', \
-  "gomail.data" using 1:(1200000/$2) with linespoints title 'GoMail', \
-  "cmail.data"  using 1:(1200000/$2) with linespoints title 'CMAIL',
+  "mailboat.data" using 1:(numcores*100000/$2) with linespoints title 'Mailboat', \
+  "gomail.data" using 1:(numcores*100000/$2) with linespoints title 'GoMail', \
+  "cmail.data"  using 1:(numcores*100000/$2) with linespoints title 'CMAIL',
