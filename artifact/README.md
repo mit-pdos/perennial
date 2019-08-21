@@ -37,6 +37,15 @@ Here are some details on the virtual machine:
   and then using `ssh armada-vm`.
 - The default user's shell is a slightly customized zsh.
 
+We have an [EXPERIMENTS](EXPERIMENTS.md) file that details how to run the
+experiments and reproduce the evaluation in the paper. Below are some details on
+the artifact and VM for reference; they should not be necessary to use the
+artifact.
+
+Our code is open source; please feel free to share anything in this artifact or
+the codebase (although please point people to GitHub rather than this static
+artifact).
+
 ## Code and dependencies
 
 Here's the code the artifact covers:
@@ -57,10 +66,6 @@ in the VM image):
 - gnuplot
 - postal (a mail server benchmarking library)
 
-Our code is open source; please feel free to share anything in this artifact or
-the codebase (although please point people to GitHub rather than this static
-artifact).
-
 # About this artifact
 
 The artifact documentation was prepared by using `armada/artifact/prepare.sh`.
@@ -74,11 +79,11 @@ conveniences such as a terminal and ZSH setup) manually.
 Finally, we installed the code, which means:
 
 - Clone the Armada and CSPEC repos into the home directory.
-  We've compiled Armada, but you can do so yourself by running `make clean-all;
-  make -j2`. The build takes around 20 minutes. Compiling Armada only builds the
+  We've compiled Armada, but you can do so yourself by running `make clean-all; make -j2`. The build takes around 20 minutes. Compiling Armada only builds the
   proofs and prints the assumptions of the final refinement theorem.
 
   We also compiled CSPEC.
+
 - Install the Go dependencies with
 
   ```
@@ -89,6 +94,7 @@ Finally, we installed the code, which means:
   Go clones the source code to `~/go/src/github.com/tchajed/` and also compiles
   and installs the binaries, `goose` and `mailboat-server`. We added symlinks to
   the two cloned repos in `~ubuntu`.
+
 - Compiled the artifact documentation within the VM and put the result in
   `~/armada-artifact`. Here you'll find a README.html and EXPERIMENTS.html.
 
