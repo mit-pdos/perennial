@@ -11,23 +11,22 @@ the paper's evaluation and how you might evaluate them.
 ## Implementation lines of code
 
 Table 2 and Table 3 divide Armada into several groups and list lines of code for
-each. You can generate these tables by running `armada-paper/loc.py armada
-~/go/src/github.com/tchajed/goose`. The lines-of-code script takes a `--debug`
+each. You can generate these tables by running `~/armada-artifact/armada-paper/loc.py ~/armada ~/go/src/github.com/tchajed/goose`. The lines-of-code script takes a `--debug`
 flag to print all of the matching files for each category.
 
 ## Crash safety examples
 
 Section 8.1 talks about several verified examples, which are in
-`armada/src/Examples`.
+`~/armada/src/Examples`.
 
 ## Trusted computing base
 
 Section 8.2 discusses what assumptions the correctness proof relies on. One
 assumption to check is to look over the Goose semantics (described in the paper
 in Section 6.2) and compare it to an informal understanding of Go. These
-semantics are defined in `armada/src/Goose`, especially `Heap.v` and
+semantics are defined in `~/armada/src/Goose`, especially `Heap.v` and
 `Filesys.v`. For `Filesys.v`, compare against the Goose file-system library at
-`goose/machine/filesys`, especially `dir.go` which implements the file-system
+`~/goose/machine/filesys`, especially `dir.go` which implements the file-system
 API using syscalls to the operating system (as opposed to an in-memory
 filesystem we use only for internal tests). The Go part of the implementation is
 small; the real trust is in the semantics of the underlying filesystem.
@@ -35,14 +34,14 @@ small; the real trust is in the semantics of the underlying filesystem.
 Another component of the TCB is Goose. The Goose implementation attempts to
 carefully narrow the scope of supported code so that the model is faithful. One
 to evaluate this is to look over the test suite for Goose. The examples are run
-via `goose/examples_test.go`. There are two types of tests: `testdata/` has
+via `~/goose/examples_test.go`. There are two types of tests: `testdata/` has
 negative tests that Goose should reject (along with annotations for the correct
 error message), and `internal/examples` has three packages that Goose should
 build along with expected golden output. `examples/unittest` has a variety of
 small functions, `mailserver` is a copy of Mailboat, and `simpledb` is a
 key-value store we were working on but which has no proof.
 
-The goose output for these examples is also in `armada/src/Goose/Examples/`,
+The goose output for these examples is also in `~/armada/src/Goose/Examples/`,
 where it builds with Coq using the Armada Makefile. Some of the checks necessary
 for the Goose model to be accurate aren't performed in the translation but
 produce code that doesn't type check in Coq.
@@ -50,11 +49,11 @@ produce code that doesn't type check in Coq.
 ## Mailboat
 
 One useful evaluation of Mailboat is to read its specification, which is at
-`armada/src/Examples/MailServer/MailAPI.v`.
+`~/armada/src/Examples/MailServer/MailAPI.v`.
 
 Note that Goose isn't technically part of the Mailboat build process - instead,
 for convenience, we commit the output of Goose to
-`armada/src/Goose/Examples/MailServer.v`. You should re-run Goose, which will
+`~/armada/src/Goose/Examples/MailServer.v`. You should re-run Goose, which will
 re-generate the file exactly:
 
 ```
@@ -105,6 +104,7 @@ We provide a user-list with the first five users in the artifact release.
 
 ```sh
 $ mailboat-server
+$ # in another shell instance
 $ postal -t 2 -r 120 -p 2525 -s 0 -c 100 localhost user-list
 $ # kill postal at some point
 $ rabid -p 2 -i 0 -d 100:0 -z debug '[localhost]2110' user-list
