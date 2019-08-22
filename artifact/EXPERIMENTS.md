@@ -96,7 +96,11 @@ threads. In that case, replace the number of cores in the call to `gnuplot`
 The two bugs mentioned in the paper are
 https://github.com/tchajed/mailboat/commit/15e15a3a (resulting in an infinite
 loop in `Pickup`) and https://github.com/tchajed/mailboat/commit/e80f1eb2
-(resulting in running out of file descriptors after delivering too many messages).
+(resulting in running out of file descriptors after delivering too many
+messages). The first bug comes with a test case which will fail by running out
+of memory if you revert the fix. You can introduce the bug in
+`~/mailboat/mailboat.go` and then run `go test github.com/tchajed/mailboat`. The
+second bug isn't as easy to reproduce, but it's pretty easy to see what went wrong.
 
 ## Mailboat compatibility
 
