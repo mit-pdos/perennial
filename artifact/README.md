@@ -42,6 +42,10 @@ experiments and reproduce the evaluation in the paper. Below are some details on
 the artifact and VM for reference; they should not be necessary to use the
 artifact.
 
+To update the build of the artifact in the VM, first run `git -C ~/armada pull`
+and then run `~/update-artifact.sh`. This will re-compile the HTML files and
+update everything in `~/armada-artifact`.
+
 Our code is open source; please feel free to share anything in this artifact or
 the codebase (although please point people to GitHub rather than this static
 artifact).
