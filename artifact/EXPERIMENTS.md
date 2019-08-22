@@ -91,7 +91,14 @@ You can also replace 12 with a smaller number to test up to a smaller number of
 threads. In that case, replace the number of cores in the call to `gnuplot`
 (this only affects the scaling of requests/sec).
 
-## Bugs
+## Bugs discussion
+
+The two bugs mentioned in the paper are
+https://github.com/tchajed/mailboat/commit/15e15a3a (resulting in an infinite
+loop in `Pickup`) and https://github.com/tchajed/mailboat/commit/e80f1eb2
+(resulting in running out of file descriptors after delivering too many messages).
+
+## Mailboat compatibility
 
 We tested the mailboat server by running postal, a benchmark suite for mail
 servers. Note that this tests both the verified mail server library as well as
@@ -104,15 +111,38 @@ We provide a user-list with the first five users in the artifact release.
 
 ```sh
 $ mailboat-server
-$ # in another shell instance
-$ postal -t 2 -r 120 -p 2525 -s 0 -c 100 localhost user-list
-$ # kill postal at some point
-$ rabid -p 2 -i 0 -d 100:0 -z debug '[localhost]2110' user-list
+$ # in another shell instance:
+$ postal -t 2 -r 120 -p 2525 -s 0 -c 100 localhost ~/armada-artifact/user-list
+$ # kill postal at some point, then run:
+$ rabid -p 2 -i 0 -d 100:0 -z debug '[localhost]2110' ~/armada-artifact/user-list
 $ # kill rabid at some point
+$ # run this to also mix in some deletes (70%/30% split of downloads and deletes)
+$ rabid -p 2 -i 0 -d 70:30 -z debug '[localhost]2110' ~/armada-artifact/user-list
 ```
 
-You can also restart the server by killing it and running `mailboat-server --recover`.
+You can also restart the server by killing it and running `mailboat-server --recover`, especially between running postal to deliver mail and rabid to
+retrieve it.
 
 The files `postal.log` and `rabid.log` record what each tool is doing. Postal
 records the MD5 of the email it sends, while rabid just records a sequence of
 MD5 hashes it has retrieved.
+
+You can check that things are working by looking at the output of `postal`,
+which should emit a status line every minute of the form:
+
+```
+time,messages,data(K),errors,connections,SSL connections
+01:17,10,62,0,2,0
+```
+
+The third column from the right should be 0 (no errors), and it should deliver a
+few messages.
+
+Rabid doesn't print anything out (not sure why), but the file `rabid.log` should
+have a list of hashes of the mail rabid retrieved, and `debug:1` and
+`debug:2` have a detailed log of all POP3 traffic.
+
+If you want to see the internal details, the terminal with `mailboat-server`
+will also print some logging messages, and you can see the stored messages in
+`/tmp/mailboat/user[0-4]`. The messages are briefly spooled in
+`/tmp/mailboat/spool`.
