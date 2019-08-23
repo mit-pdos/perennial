@@ -34,6 +34,13 @@ where those numbers come from.
 Section 8.1 talks about several verified examples, which are in
 `~/armada/src/Examples`.
 
+We mention that recovery reclaims space by deleting temp file; the code for this
+is at
+https://github.com/tchajed/mailboat/blob/d7e4be5abf767edfa178efbbcfed8179a3a39afd/mailboat.go#L173-L184.
+The specification can't capture this, and write crash-testing infrastructure to
+directly exercise it, but the code is fairly simple and the proof shows that
+these deletes are essentially invisible to the user.
+
 ## Trusted computing base
 
 Section 8.2 discusses what assumptions the correctness proof relies on. One
