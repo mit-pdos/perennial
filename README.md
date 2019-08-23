@@ -6,7 +6,7 @@ Verifying refinement for systems with both concurrency and crash-safety requirem
 
 ## Compiling
 
-We develop Armada using Coq master. It should be compatible with Coq v8.9.0, which is also tested as part of continuous integration.
+We develop Armada using Coq master. We also maintain compatibility with Coq v8.9.1, which is tested as part of continuous integration.
 
 This project uses git submodules to include several dependencies. You can either use `git clone --recurse-submodules` or (after cloning) `git submodule update --init --recursive` to set that up.
 
