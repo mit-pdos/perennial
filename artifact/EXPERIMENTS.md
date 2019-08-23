@@ -14,6 +14,21 @@ Table 2 and Table 3 divide Armada into several groups and list lines of code for
 each. You can generate these tables by running `~/armada-artifact/armada-paper/loc.py ~/armada ~/go/src/github.com/tchajed/goose`. The lines-of-code script takes a `--debug`
 flag to print all of the matching files for each category.
 
+Table 4 compares lines of code between Mailboat and CMAIL. The Mailboat numbers
+come from the following:
+
+- Implementation: `cloc ~/mailboat/mailboat.go`
+- Proof: `~/armada-artifact/armada-paper/loc.py --debug ~/armada ~/go/src/github.com/tchajed/goose` includes a section for "Mailboat proof",
+  though this is not automatically emitted to LaTeX.
+- Framework: round the Armada total from Table 2.
+
+The CMAIL numbers are derived from the [CSPEC
+paper](https://pdos.csail.mit.edu/papers/cspec.pdf). We did some post-processing
+on Figure 14 and Figure 18. To run these calculations run
+`~/armada-artifact/armada-paper/cmail_loc.py`, and run
+`~/armada-artifact/armada-paper/cmail_loc.py --help` to get a description of
+where those numbers come from.
+
 ## Crash safety examples
 
 Section 8.1 talks about several verified examples, which are in
