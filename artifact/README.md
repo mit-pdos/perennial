@@ -4,9 +4,12 @@ title: "Verifying concurrent storage systems with Armada"
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
-The code is licensed under the MIT license.
+The text in the artifact is licensed under the Creative Commons Attribution
+license, while the scripts in the artifact are under the MIT license (the same
+as the Armada license).
 
-This artifact is licensed under the Creative Commons Attribution license.
+As indicated in each of their repositories, Armada, Goose, and Mailboat are all
+MIT licensed.
 
 # Getting started
 
