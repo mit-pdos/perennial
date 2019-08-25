@@ -104,7 +104,7 @@ the paper. To run the benchmark and re-generate the data, run:
 
 ```
 ~/armada-artifact/armada-paper/get-data.sh ~/mailboat/scripts/run-mailboat.sh 12 > ~/armada-artifact/armada-paper/mailboat.data
-~/armada-artifact/armada-paper/get-data.sh ~/cspec/scripts/run-mailserver.sh 12 > ~/armada-artifact/armada-paper/cspec.data
+~/armada-artifact/armada-paper/get-data.sh ~/cspec/scripts/run-mailserver.sh 12 > ~/armada-artifact/armada-paper/cmail.data
 ~/armada-artifact/armada-paper/get-data.sh ~/cspec/scripts/run-gomail.sh 12 > ~/armada-artifact/armada-paper/gomail.data
 ```
 
