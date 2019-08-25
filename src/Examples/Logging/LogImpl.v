@@ -96,9 +96,6 @@ Definition commit : proc bool :=
         | Txn12 => _ <- write_mem_txn txn1_start l;
                     write_mem_txn txn2_start (2 + l)
         | Txn21 =>
-          (* technically the order is irrelevant since they're
-           committing together, but this should be easier to prove
-           correct *)
           _ <- write_mem_txn txn2_start l;
             write_mem_txn txn1_start (2 + l)
         end;
