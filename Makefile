@@ -1,5 +1,5 @@
 Q:=@
-SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external')
+SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external') replicated-disk
 ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
@@ -70,6 +70,11 @@ endif
 %.vo: %.v _CoqProject
 	@echo "COQC $<"
 	$(Q)./etc/coqc.py --proj _CoqProject $(TIMING_ARGS) $(COQ_ARGS) $< -o $@
+
+extract: replicated-disk/extract/ReplicatedDiskImpl.hs
+
+replicated-disk/extract/ReplicatedDiskImpl.hs: replicated-disk/Extract.vo
+	./scripts/add-preprocess.sh replicated-disk/extract/*.hs
 
 .PHONY: skip-qed unskip-qed ci
 

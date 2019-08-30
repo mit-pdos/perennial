@@ -1,0 +1,28 @@
+name: replicated-disk
+version: 0.1.0.0
+github: "mit-pdos/armada"
+license: MIT
+author: "Armada authors"
+maintainer: "tchajed@mit.edu"
+copyright: "2019 Armada authors"
+
+description: Please see the Armada README on GitHub at <https://github.com/mit-pdos/armada>
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs:
+    - src
+    - extract
+
+tests:
+  replicated-disk-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - replicated-disk
