@@ -9,9 +9,13 @@ notifications:
 branches:
   only:
     - master
-      # for version tags of the form v0.1 or v0.1.1
+    # for version tags of the form v0.1 or v0.1.1
     - /^v\d+\.\d+(\.\d+)?$/
     - /^ci\//
+
+cache:
+  directories:
+    - $HOME/.stack
 
 services:
   - docker
@@ -35,7 +39,10 @@ before_install:
   - |
     if [ "${UPDATE_DEPS}" = "true" ]; then
       git -c http.sslVerify=false submodule update --init --remote
-    fi
+  # Download and unpack the stack executable
+  - mkdir -p ~/.local/bin
+  - export PATH=$HOME/.local/bin:$PATH
+  - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
 install: |
   # Prepare the COQ container
@@ -56,24 +63,27 @@ install: |
     echo \"git log: https://github.com/coq/coq/commits/\$(opam info -f source-hash coq)\"
     "
 before_script:
-- |
-  docker exec COQ /bin/bash --login -c "
-    export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
-    sudo chown -R coq:coq /home/coq/demo
-    "
-- source ./etc/ci/travis_keep_alive.sh
+  - |
+    docker exec COQ /bin/bash --login -c "
+      export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
+      sudo chown -R coq:coq /home/coq/demo
+      "
+  - source ./etc/ci/travis_keep_alive.sh
 
 script:
-- echo -e "${ANSI_YELLOW}Building ${TRAVIS_REPO_SLUG}...${ANSI_RESET}" && echo -en 'travis_fold:start:build\\r'
-- |
-  docker exec COQ /bin/bash --login -c "
-    export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
-    export LC_ALL=C.UTF-8
-    set -ex
-    ~/.local/bin/pytest etc
-    make -j2 -k ci
-    "
-- echo -en 'travis_fold:end:build\\r'
+  - echo -e "${ANSI_YELLOW}Building ${TRAVIS_REPO_SLUG}...${ANSI_RESET}" && echo -en 'travis_fold:start:build\\r'
+  - |
+    docker exec COQ /bin/bash --login -c "
+      export PS4='+ \e[33;1m(\$0 @ line \$LINENO) \$\e[0m '
+      export LC_ALL=C.UTF-8
+      set -ex
+      ~/.local/bin/pytest etc
+      make -j2 -k ci
+      chmod -R a+rw replicated-disk
+      "
+  - cd replicated-disk
+  - stack --allow-different-user test
+  - echo -en 'travis_fold:end:build\\r'
 
 after_script:
   - docker stop COQ

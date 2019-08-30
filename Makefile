@@ -91,7 +91,7 @@ skip-qed:
 unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
-ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
+ci: skip-qed src/ShouldBuild.vo $(TEST_VO) extract
 	$(Q)if [ ${TIMED} = "true" ]; then \
 		./etc/timing-report.py timing.sqlite3; \
 		fi
