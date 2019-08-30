@@ -39,6 +39,7 @@ before_install:
   - |
     if [ "${UPDATE_DEPS}" = "true" ]; then
       git -c http.sslVerify=false submodule update --init --remote
+    fi
   # Download and unpack the stack executable
   - mkdir -p ~/.local/bin
   - export PATH=$HOME/.local/bin:$PATH
