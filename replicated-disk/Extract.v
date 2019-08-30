@@ -1,7 +1,7 @@
 Cd "replicated-disk/extract/".
 
 From Coq Require Extraction.
-Require Import ExtrHaskellNatInteger.
+Require Import ExtrHaskellNatInt.
 Require Import ExtrHaskellBasic.
 
 From Armada Require Import Examples.ReplicatedDisk.ReplicatedDiskImpl.

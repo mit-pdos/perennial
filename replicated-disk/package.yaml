@@ -10,6 +10,11 @@ description: Please see the Armada README on GitHub at <https://github.com/mit-p
 
 dependencies:
   - base >= 4.7 && < 5
+  - bytestring
+  - mtl
+  - unix
+  - unix-bytestring
+  - directory
 
 library:
   source-dirs:
