@@ -1,11 +1,12 @@
 module TwoDiskEnvironmentSpec where
 
-import           TwoDiskEnvironment
-import           TwoDiskAPI                     ( TwoDisk__Coq_diskId(..) )
-import           Test.Hspec
 import           Control.Exception
 import           Control.Monad.Trans
 import           System.Directory
+import           Test.Hspec
+
+import           TwoDiskAPI                     ( TwoDisk__Coq_diskId(..) )
+import           TwoDiskEnvironment
 
 {-# ANN module "HLint: ignore Redundant do" #-}
 

@@ -19,25 +19,26 @@ module TwoDiskEnvironment
   )
 where
 
-import           System.Directory               ( doesFileExist )
+import           Control.Arrow                  ( (>>>) )
 import           Control.Concurrent             ( forkIO )
 import           Control.Concurrent.MVar
-import           System.Posix.Types
 import           Control.Monad.Reader
-import qualified Data.ByteString               as BS
+import           Data.Binary.Get
+import           Data.Binary.Put
 import           Data.ByteString                ( ByteString )
-import qualified TwoDiskAPI
-import           TwoDiskAPI                     ( TwoDisk__Coq_diskId(..) )
-import           Control.Arrow                  ( (>>>) )
+import qualified Data.ByteString               as BS
+import qualified Data.ByteString.Lazy          as BSL
+import           System.Directory               ( doesFileExist )
+import           System.Posix.Files
+import           System.Posix.IO
 import "unix-bytestring" System.Posix.IO.ByteString
                                                 ( fdPwrite
                                                 , fdPread
                                                 )
-import           System.Posix.IO
-import           System.Posix.Files
-import qualified Data.ByteString.Lazy          as BSL
-import           Data.Binary.Put
-import           Data.Binary.Get
+import           System.Posix.Types
+
+import qualified TwoDiskAPI
+import           TwoDiskAPI                     ( TwoDisk__Coq_diskId(..) )
 
 type Value = Int
 
