@@ -1,5 +1,6 @@
 module ReplicatedDiskSpec where
 
+import           Control.Concurrent.MVar
 import           Control.Exception
 import           Control.Monad
 import           Control.Monad.Trans
@@ -43,10 +44,17 @@ spec = do
       read 1 `shouldProduce` 100
       read 2 `shouldProduce` 200
     it "should support concurrency" $ withEnv $ do
-      forM_ [0 .. 999] $ \a -> forkProc $ do
-        write a 0
-        write a 1
-        write a a
+      vars <- forM [0 .. 999] $ \a -> do
+        v <- liftIO newEmptyMVar
+        forkProc $ do
+          write a 0
+          write a 1
+          write a a
+          liftIO $ putMVar v ()
+        return v
+      liftIO $ forM_ vars takeMVar
+      forM_ [0 .. 999] $ \a -> do
+        read a `shouldProduce` a
     it "should restore env from one disk" $ do
       env <- newEnv "/tmp/disk"
       runProc env (write 1 100)
