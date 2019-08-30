@@ -11,6 +11,9 @@ module TwoDiskEnvironment
   , casMem
   , readDisk
   , writeDisk
+  -- to make testing easier
+  , encodeValue
+  , decodeValue
   )
 where
 
@@ -30,6 +33,9 @@ import "unix-bytestring" System.Posix.IO.ByteString
                                                 )
 import           System.Posix.IO
 import           System.Posix.Files
+import qualified Data.ByteString.Lazy          as BSL
+import           Data.Binary.Put
+import           Data.Binary.Get
 
 type Value = Int
 
@@ -102,11 +108,13 @@ writeDiskRange did off bs = do
       return ()
     Nothing -> return ()
 
-encodeValue :: Int -> ByteString
-encodeValue x = undefined
+encodeValue :: Value -> ByteString
+encodeValue = putInthost >>> runPut >>> BSL.toStrict
 
-decodeValue :: ByteString -> Maybe Int
-decodeValue bs = Just undefined
+decodeValue :: ByteString -> Maybe Value
+decodeValue bs = if BS.length bs /= 8
+  then Nothing
+  else Just $ (BSL.fromStrict >>> runGet getInthost) bs
 
 -- op implementations
 

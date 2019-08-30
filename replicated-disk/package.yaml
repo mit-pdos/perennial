@@ -15,6 +15,7 @@ dependencies:
   - unix
   - unix-bytestring
   - directory
+  - binary
 
 library:
   source-dirs:
@@ -22,12 +23,6 @@ library:
     - extract
 
 tests:
-  replicated-disk-test:
-    main: Spec.hs
-    source-dirs: test
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - replicated-disk
+  spec:
+    defaults: hspec/hspec@master
+    dependencies: replicated-disk
