@@ -55,12 +55,13 @@ spec = do
       liftIO $ forM_ vars takeMVar
       forM_ [0 .. 999] $ \a -> do
         read a `shouldProduce` a
-    it "should restore env from one disk" $ do
+    it "should recover after a disk failure" $ do
       env <- newEnv "/tmp/disk"
       runProc env (write 1 100)
       removeLink "/tmp/disk.0"
       closeEnv env
       env <- newEnv "/tmp/disk"
+      runProc env recv
       runProc env (read 1) `shouldReturn` 100
       runProc env (read 2) `shouldReturn` 0
       closeEnv env
