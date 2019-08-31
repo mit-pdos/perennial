@@ -8,9 +8,9 @@ Set Default Proof Using "Type".
 
 Import TwoDisk.
 
-Canonical Structure diskIdC := leibnizC diskId.
+Canonical Structure diskIdC := leibnizO diskId.
 Class disk_statusG (Σ: gFunctors) : Set :=
-  Disk_statusG { disk_status_inG :> inG Σ (csumR (exclR unitC) (agreeR (diskIdC)));
+  Disk_statusG { disk_status_inG :> inG Σ (csumR (exclR unitO) (agreeR (diskIdC)));
                  disk_status_name: gname}.
 Arguments disk_status_name {_}.
 
@@ -33,7 +33,7 @@ Section disk_status.
     disk_status_ctx ds -∗ is_OnlyDisk id -∗ ∃ d, ⌜ ds = OnlyDisk id d ⌝.
   Proof.
     iIntros "H1 H2". iDestruct (own_valid_2 with "H1 H2") as %H.
-    destruct ds; eauto. rewrite Cinr_op in H. apply agree_op_inv' in H. inversion H; subst.
+    destruct ds; eauto. rewrite -Cinr_op in H. apply agree_op_inv' in H. inversion H; subst.
     eauto.
   Qed.
 
@@ -1026,8 +1026,8 @@ End lifting.
    except we don't allocate locks or pass the pointer to them; there is a dedicated
    lock register. *)
 
-Class lockG Σ := LockG { lock_tokG :> inG Σ (exclR unitC) }.
-Definition lockΣ : gFunctors := #[GFunctor (exclR unitC)].
+Class lockG Σ := LockG { lock_tokG :> inG Σ (exclR unitO) }.
+Definition lockΣ : gFunctors := #[GFunctor (exclR unitO)].
 Instance subG_lockΣ {Σ} : subG lockΣ Σ → lockG Σ.
 Proof. solve_inG. Qed.
 

@@ -10,13 +10,13 @@ Class exmachPreG Σ := ExMachPreG {
   exm_preG_iris :> invPreG Σ;
   exm_preG_mem :> gen_heapPreG nat nat Σ;
   exm_preG_disk :> leased_heapPreG nat nat Σ;
-  exm_preG_status_inG :> inG Σ (csumR (exclR unitC) (agreeR (diskIdC)));
-  exm_preG_treg_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitC))));
+  exm_preG_status_inG :> inG Σ (csumR (exclR unitO) (agreeR (diskIdC)));
+  exm_preG_treg_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitO))));
 }.
 
 Definition exmachΣ : gFunctors := #[invΣ; gen_heapΣ nat nat; leased_heapΣ nat nat;
-                                    GFunctor (csumR (exclR unitC) (agreeR (diskIdC)));
-                                    GFunctor (csumR countingR (authR (optionUR (exclR unitC))))].
+                                    GFunctor (csumR (exclR unitO) (agreeR (diskIdC)));
+                                    GFunctor (csumR countingR (authR (optionUR (exclR unitO))))].
 Instance subG_exmachPreG {Σ} : subG exmachΣ Σ → exmachPreG Σ.
 Proof. solve_inG. Qed.
 
@@ -35,7 +35,7 @@ Module Type twodisk_refinement_type.
   Notation compile_proc_seq := (compile_proc_seq impl).
   Context `{CFG: cfgPreG OpT Λa Σ} `{HEX: exmachPreG Σ}.
   Context `{INV: Adequacy.invPreG Σ}.
-  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitC))))}.
+  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitO))))}.
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
   Context (exec_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
   Context (crash_param: forall (_ : @cfgG OpT Λa Σ) (_ : exmachG Σ), Type).

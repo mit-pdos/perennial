@@ -22,7 +22,7 @@ Global Instance partial_fn_delete (A T : Type) `{EqualDec A} : Delete A (A → o
     if b == a then None else f b.
 
 Definition lockR :=
-  csumR natR (agreeR unitC).
+  csumR natR (agreeR unitO).
 
 Definition to_lock (s: LockStatus) : lockR :=
   match s with
@@ -32,12 +32,12 @@ Definition to_lock (s: LockStatus) : lockR :=
   end.
 
 Definition gen_heapUR (L V: Type) `{EqualDec L}: ucmraT :=
-  ofe_funUR (fun (a: L) => optionUR (prodR countingR (prodR lockR (agreeR (leibnizC V))))).
+  discrete_funUR (fun (a: L) => optionUR (prodR countingR (prodR lockR (agreeR (leibnizO V))))).
 Definition to_gen_heap {L V} `{EqualDec L} (f: L → option (LockStatus * V))
   : gen_heapUR L V :=
   λ k, match (f k) with
        | None => None
-       | Some (s, v) => Some (Count 0, (to_lock s, to_agree (v: leibnizC V)))
+       | Some (s, v) => Some (Count 0, (to_lock s, to_agree (v: leibnizO V)))
        end.
 
 (** The CMRA we need. *)
@@ -67,7 +67,7 @@ Section definitions.
     own (gen_heap_name hG)
         (◯ ((fun l' =>
               if l' == l then
-                Some (Count (n: Z), (to_lock s, to_agree (v : leibnizC V)))
+                Some (Count (n: Z), (to_lock s, to_agree (v : leibnizO V)))
               else
                 ε) : gen_heapUR L V)).
   Definition mapsto_aux : seal (@mapsto_def). by eexists. Qed.
@@ -103,12 +103,12 @@ Section to_gen_heap.
   Proof. rewrite /to_gen_heap. by case (σ l). Qed.
   Lemma gen_heap_singleton_included σ l q s v :
     ((fun l' => if l' == l then
-                  Some (Count q, (to_lock s, to_agree (v : leibnizC V)))
+                  Some (Count q, (to_lock s, to_agree (v : leibnizO V)))
                 else
                   ε) : gen_heapUR L V) ≼ to_gen_heap σ → ∃ s', σ l = Some (s', v) ∧
                                                                to_lock s ≼ to_lock s'.
   Proof.
-    intros Hincl. apply (ofe_fun_included_spec_1 _ _ l) in Hincl.
+    intros Hincl. apply (discrete_fun_included_spec_1 _ _ l) in Hincl.
     move: Hincl. rewrite /to_gen_heap.
     destruct (l == l); last congruence.
     destruct (σ l) as [(s'&v')|].
@@ -129,11 +129,11 @@ Section to_gen_heap.
 
   Lemma gen_heap_singleton_full_included σ l s v :
     ((fun l' => if l' == l then
-                  Some (Count 0, (to_lock s, to_agree (v : leibnizC V)))
+                  Some (Count 0, (to_lock s, to_agree (v : leibnizO V)))
                 else
                   ε) : gen_heapUR L V) ≼ to_gen_heap σ → σ l = Some (s, v).
   Proof.
-    intros Hincl. apply (ofe_fun_included_spec_1 _ _ l) in Hincl.
+    intros Hincl. apply (discrete_fun_included_spec_1 _ _ l) in Hincl.
     move: Hincl. rewrite /to_gen_heap.
     destruct (l == l); last congruence.
     destruct (σ l) as [(s'&v')|].
@@ -149,7 +149,7 @@ Section to_gen_heap.
   Qed.
   Lemma to_gen_heap_insert l s v σ :
     to_gen_heap (<[l:=(s, v)]> σ)
-                ≡ <[l:=(Count 0, (to_lock s, to_agree (v:leibnizC V)))]> (to_gen_heap σ).
+                ≡ <[l:=(Count 0, (to_lock s, to_agree (v:leibnizO V)))]> (to_gen_heap σ).
   Proof.
     rewrite /to_gen_heap=> k//=.
     rewrite /insert/partial_fn_insert.
@@ -225,7 +225,7 @@ Section gen_heap.
         rewrite -own_op.
         iApply (own_proper with "Hown'").
         rewrite -auth_frag_op. f_equiv. intros k.
-        rewrite ofe_fun_lookup_op.
+        rewrite discrete_fun_lookup_op.
         rewrite /insert/partial_fn_insert//=.
         destruct (k == i).
         - subst. rewrite lookup_to_gen_heap_None //.
@@ -245,9 +245,9 @@ Section gen_heap.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
     f_equiv=> /auth_frag_proj_valid /=.
-    intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
+    intros Hval. move: (Hval l). rewrite discrete_fun_lookup_op.
     destruct ((l == l)); last by congruence.
-    rewrite -Some_op pair_op.
+    rewrite -Some_op -pair_op.
     by intros [_ [_ ?%agree_op_invL']].
   Qed.
 
@@ -262,9 +262,9 @@ Section gen_heap.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
     f_equiv=> /auth_frag_proj_valid /=.
-    intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
+    intros Hval. move: (Hval l). rewrite discrete_fun_lookup_op.
     destruct ((l == l)); last by congruence.
-    rewrite -Some_op pair_op.
+    rewrite -Some_op -pair_op.
     intros [Hcount ?].
     rewrite counting_op' //= in Hcount.
     repeat destruct decide => //=. lia.
@@ -279,9 +279,9 @@ Section gen_heap.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
     f_equiv=> /auth_frag_proj_valid /=.
-    intros Hval. move: (Hval l). rewrite ofe_fun_lookup_op.
+    intros Hval. move: (Hval l). rewrite discrete_fun_lookup_op.
     destruct ((l == l)); last by congruence.
-    rewrite -Some_op pair_op.
+    rewrite -Some_op -pair_op.
     intros [Hcount ?].
     rewrite counting_op' //= in Hcount.
   Qed.
@@ -292,10 +292,10 @@ Section gen_heap.
   Proof.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op.
-    f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
+    f_equiv. split => //= l'. rewrite discrete_fun_lookup_op.
     destruct ((l' == l)) => //=.
-    rewrite -Some_op ?pair_op.
-    rewrite counting_op' //= Cinl_op.
+    rewrite -Some_op -?pair_op.
+    rewrite counting_op' //= -Cinl_op.
     replace (S q + (-1))%Z with (q : Z) by lia.
     assert (0 ⋅ S n = (S n)) as Hop by auto.
     replace (S q + (-1))%Z with (q : Z) by lia.
@@ -310,10 +310,10 @@ Section gen_heap.
   Proof.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op.
-    f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
+    f_equiv. split => //= l'. rewrite discrete_fun_lookup_op.
     destruct ((l' == l)) => //=.
-    rewrite -Some_op ?pair_op.
-    rewrite counting_op' //= Cinl_op.
+    rewrite -Some_op -?pair_op.
+    rewrite counting_op' //= -Cinl_op.
     replace (S q + (-1))%Z with (q : Z) by lia.
     assert (S n ⋅ 0 = (S n)) as Hop by auto.
     replace (S q + (-1))%Z with (q : Z) by lia.
@@ -328,10 +328,10 @@ Section gen_heap.
   Proof.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op.
-    f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
+    f_equiv. split => //= l'. rewrite discrete_fun_lookup_op.
     destruct ((l' == l)) => //=.
-    rewrite -Some_op ?pair_op.
-    rewrite counting_op' //= Cinr_op.
+    rewrite -Some_op -?pair_op.
+    rewrite counting_op' //= -Cinr_op.
     replace (S q + (-1))%Z with (q : Z) by lia.
     repeat (destruct (decide)); try lia.
     rewrite ?agree_idemp //=.
@@ -341,26 +341,26 @@ Section gen_heap.
   Proof.
     rewrite /read_mapsto mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op.
-    f_equiv. split => //= l'. rewrite ofe_fun_lookup_op.
+    f_equiv. split => //= l'. rewrite discrete_fun_lookup_op.
     destruct ((l' == l)) => //=.
-    rewrite -Some_op ?pair_op.
-    rewrite counting_op' //= Cinl_op.
+    rewrite -Some_op -?pair_op.
+    rewrite counting_op' //= -Cinl_op.
     replace (S q + (-1))%Z with (q : Z) by lia.
     repeat (destruct (decide)); try lia.
     rewrite agree_idemp //=.
   Qed.
 
   (* TODO move *)
-  Lemma ofe_fun_local_update `{EqualDec A} {B: A → ucmraT} f1 f2 f1' f2' :
+  Lemma discrete_fun_local_update `{EqualDec A} {B: A → ucmraT} f1 f2 f1' f2' :
     (∀ x, (f1 x, f2 x) ~l~> (f1' x , f2' x)) →
-    (f1 : ofe_fun B, f2) ~l~> (f1', f2').
+    (f1 : discrete_fun B, f2) ~l~> (f1', f2').
   Proof.
     intros Hupd.
     apply local_update_unital=> n mf Hmv Hm; simpl in *.
     split.
-    - intros k. specialize (Hupd k). specialize (Hm k). rewrite ofe_fun_lookup_op in Hm.
+    - intros k. specialize (Hupd k). specialize (Hm k). rewrite discrete_fun_lookup_op in Hm.
       edestruct (Hupd n (Some (mf k))); eauto.
-    - intros k. specialize (Hupd k). specialize (Hm k). rewrite ofe_fun_lookup_op in Hm.
+    - intros k. specialize (Hupd k). specialize (Hm k). rewrite discrete_fun_lookup_op in Hm.
       edestruct (Hupd n (Some (mf k))); eauto.
   Qed.
 
@@ -384,14 +384,14 @@ Section gen_heap.
     iMod (own_update _ _ (● to_gen_heap (<[l := (Unlocked, v)]> σ) ⋅
                             ◯ <[l := (Count 0, (Cinl 0, to_agree v))]>ε)
             with "Hσ") as "[Hσ Hl]".
-    { eapply auth_update_alloc. apply ofe_fun_local_update => k.
+    { eapply auth_update_alloc. apply discrete_fun_local_update => k.
       rewrite /to_gen_heap.
       rewrite /insert/partial_fn_insert.
       destruct ((k == l)).
       * subst. rewrite /insert/partial_fn_insert. destruct ((l == l)); last by congruence.
         rewrite Hnone.
-        rewrite ofe_fun_lookup_empty.
-        apply (alloc_option_local_update (Count 0, (to_lock Unlocked, to_agree (v:leibnizC _))))=> //.
+        rewrite discrete_fun_lookup_empty.
+        apply (alloc_option_local_update (Count 0, (to_lock Unlocked, to_agree (v:leibnizO _))))=> //.
       * reflexivity.
     }
     by iFrame.
@@ -403,7 +403,7 @@ Section gen_heap.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     rewrite to_gen_heap_delete. iApply (own_update_2 with "Hσ Hl").
     eapply auth_update_dealloc.
-    apply ofe_fun_local_update => k.
+    apply discrete_fun_local_update => k.
     rewrite /delete/partial_fn_delete.
     destruct ((k == l)).
     * apply delete_option_local_update; apply _.
@@ -460,7 +460,7 @@ Section gen_heap.
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (s2, v2)]> σ)
                                 ⋅ ◯ <[l := (Count 0, (to_lock s2, to_agree v2))]>ε)
             with "Hσ Hl") as "[Hσ Hl]".
-    { eapply auth_update, ofe_fun_local_update => k.
+    { eapply auth_update, discrete_fun_local_update => k.
       rewrite /to_gen_heap/insert/partial_fn_insert//=.
       destruct ((k == l)).
       * subst. destruct Hl as (s'&Hl&?). rewrite Hl.
@@ -510,7 +510,7 @@ Section gen_heap.
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (force_read_lock s, v)]> σ)
                                 ⋅ ◯ <[l := (Count q, (to_lock (ReadLocked 0), to_agree v))]>ε)
             with "Hσ Hl") as "[Hσ Hl]".
-    { eapply auth_update, ofe_fun_local_update => k.
+    { eapply auth_update, discrete_fun_local_update => k.
       rewrite /to_gen_heap/insert/partial_fn_insert//=.
       destruct ((k == l)).
       * subst. rewrite Hl.
@@ -544,7 +544,7 @@ Section gen_heap.
     iMod (own_update_2 _ _ _ (● to_gen_heap (<[l := (force_read_lock s, v)]> σ)
                                 ⋅ ◯ <[l := (Count q, (to_lock (ReadLocked (S n)), to_agree v))]>ε)
             with "Hσ Hl") as "[Hσ Hl]".
-    { eapply auth_update, ofe_fun_local_update => k.
+    { eapply auth_update, discrete_fun_local_update => k.
       rewrite /to_gen_heap/insert/partial_fn_insert//=.
       destruct ((k == l)).
       * subst. rewrite Hl.
@@ -579,7 +579,7 @@ Section gen_heap.
                                 ⋅ ◯ <[l := (Count q, (to_lock (force_read_unlock (ReadLocked n)),
                                                       to_agree v))]>ε)
             with "Hσ Hl") as "[Hσ Hl]".
-    { eapply auth_update, ofe_fun_local_update => k.
+    { eapply auth_update, discrete_fun_local_update => k.
       rewrite /to_gen_heap/insert/partial_fn_insert//=.
       destruct ((k == l)).
       * subst. rewrite Hl.

@@ -15,8 +15,8 @@ Local Ltac destruct_einner H :=
 Set Default Proof Using "Type".
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (AtomicPair.Op) (AtomicPair.l) Σ,
-            !inG Σ (authR (optionUR (exclR (prodC natC natC)))),
-            !inG Σ (authR (optionUR (exclR natC)))}.
+            !inG Σ (authR (optionUR (exclR (prodO natO natO)))),
+            !inG Σ (authR (optionUR (exclR natO)))}.
   Import ExMach.
 
   (* TODO: this should work, but the invariant is too global: ideally,
@@ -204,11 +204,11 @@ End refinement_triples.
 
 Module sRT <: exmach_refinement_type.
 
-Definition helperΣ : gFunctors := #[GFunctor (authR (optionUR (exclR (natC))));
-                                     GFunctor (authR (optionUR (exclR (prodC natC natC))))].
-Instance subG_helperΣ : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (natC)))).
+Definition helperΣ : gFunctors := #[GFunctor (authR (optionUR (exclR (natO))));
+                                     GFunctor (authR (optionUR (exclR (prodO natO natO))))].
+Instance subG_helperΣ : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (natO)))).
 Proof. solve_inG. Qed.
-Instance subG_helperΣ' : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (prodC natC natC)))).
+Instance subG_helperΣ' : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (prodO natO natO)))).
 Proof. solve_inG. Qed.
 
 Definition Σ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ AtomicPair.Op AtomicPair.l; lockΣ; helperΣ].
@@ -225,12 +225,12 @@ Definition init_absr σ1a σ1c :=
   Instance CFG : @cfgPreG AtomicPair.Op AtomicPair.l Σ. apply _. Qed.
   Instance HEX : ExMach.Adequacy.exmachPreG Σ. apply _. Qed.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
-  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitO)))). apply _. Qed.
 
-  Global Instance inG_inst1: inG Σ (authR (optionUR (exclR (prodC natC natC)))).
+  Global Instance inG_inst1: inG Σ (authR (optionUR (exclR (prodO natO natO)))).
   Proof. apply _. Qed.
 
-  Global Instance inG_inst2: inG Σ (authR (optionUR (exclR natC))).
+  Global Instance inG_inst2: inG Σ (authR (optionUR (exclR natO))).
   Proof. apply _. Qed.
 
   Global Instance inG_inst3: lockG Σ.

@@ -31,7 +31,7 @@ Module Type refinement_type.
   Notation compile_proc_seq := (compile_proc_seq impl).
   Context `{CFG: cfgPreG OpT Λa Σ}.
   Context `{INV: Adequacy.invPreG Σ}.
-  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitC))))}.
+  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitO))))}.
   Context {Hinstance: ∀ Σ, exmachG Σ → irisG OpC Λc Σ}.
   Context {Hinstance_reg: ∀ Σ, exmachG Σ → tregG Σ}.
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).

@@ -16,11 +16,11 @@ Set Default Goal Selector "!".
 Set Default Proof Using "Type".
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (Log.Op) (Log.l) Σ,
-            !inG Σ (authR (optionUR (exclR (prodC natC natC)))),
-            !inG Σ (authR (optionUR (exclR (listC (prodC natC natC))))),
-            !inG Σ (authR (optionUR (exclR (listC natC)))),
-            !inG Σ (authR (optionUR (exclR natC))),
-            !inG Σ (authR (optionUR (exclR boolC)))}.
+            !inG Σ (authR (optionUR (exclR (prodO natO natO)))),
+            !inG Σ (authR (optionUR (exclR (listO (prodO natO natO))))),
+            !inG Σ (authR (optionUR (exclR (listO natO)))),
+            !inG Σ (authR (optionUR (exclR natO))),
+            !inG Σ (authR (optionUR (exclR boolO)))}.
   Import ExMach.
 
   Definition txn_map start (txn: nat * nat) :=
@@ -1050,27 +1050,27 @@ Module lRT <: exmach_refinement_type.
 
 Definition helperΣ : gFunctors :=
   #[
-      GFunctor (authR (optionUR (exclR (prodC natC natC))));
-        GFunctor (authR (optionUR (exclR (listC (prodC natC natC)))));
-        GFunctor (authR (optionUR (exclR (listC natC))));
-        GFunctor (authR (optionUR (exclR natC)));
-        GFunctor (authR (optionUR (exclR boolC)))
+      GFunctor (authR (optionUR (exclR (prodO natO natO))));
+        GFunctor (authR (optionUR (exclR (listO (prodO natO natO)))));
+        GFunctor (authR (optionUR (exclR (listO natO))));
+        GFunctor (authR (optionUR (exclR natO)));
+        GFunctor (authR (optionUR (exclR boolO)))
     ].
 
 Instance subG_helperΣ1 : subG helperΣ Σ → inG Σ
-                                              (authR (optionUR (exclR (prodC natC natC)))).
+                                              (authR (optionUR (exclR (prodO natO natO)))).
 Proof. solve_inG. Qed.
 Instance subG_helperΣ2 : subG helperΣ Σ → inG Σ
-                                              (authR (optionUR (exclR (listC (prodC natC natC))))).
+                                              (authR (optionUR (exclR (listO (prodO natO natO))))).
 Proof. solve_inG. Qed.
 Instance subG_helperΣ3 : subG helperΣ Σ → inG Σ
-                                              (authR (optionUR (exclR (listC natC)))).
+                                              (authR (optionUR (exclR (listO natO)))).
 Proof. solve_inG. Qed.
 Instance subG_helperΣ4 : subG helperΣ Σ → inG Σ
-                                              (authR (optionUR (exclR natC))).
+                                              (authR (optionUR (exclR natO))).
 Proof. solve_inG. Qed.
 Instance subG_helperΣ5 : subG helperΣ Σ → inG Σ
-                                              (authR (optionUR (exclR boolC))).
+                                              (authR (optionUR (exclR boolO))).
 Proof. solve_inG. Qed.
 
 Definition Σ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ Log.Op Log.l; lockΣ; helperΣ].
@@ -1096,17 +1096,17 @@ Opaque init_zero.
   Instance CFG : @cfgPreG Log.Op Log.l Σ. apply _. Qed.
   Instance HEX : ExMach.Adequacy.exmachPreG Σ. apply _. Qed.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
-  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitO)))). apply _. Qed.
 
-  Instance ingΣ1 : inG Σ (authR (optionUR (exclR (prodC natC natC)))).
+  Instance ingΣ1 : inG Σ (authR (optionUR (exclR (prodO natO natO)))).
   Proof. apply _. Qed.
-  Instance ingΣ2 : inG Σ (authR (optionUR (exclR (listC (prodC natC natC))))).
+  Instance ingΣ2 : inG Σ (authR (optionUR (exclR (listO (prodO natO natO))))).
   Proof. apply _. Qed.
-  Instance ingΣ3 : inG Σ (authR (optionUR (exclR (listC natC)))).
+  Instance ingΣ3 : inG Σ (authR (optionUR (exclR (listO natO)))).
   Proof. apply _. Qed.
-  Instance ingΣ4 : inG Σ (authR (optionUR (exclR natC))).
+  Instance ingΣ4 : inG Σ (authR (optionUR (exclR natO))).
   Proof. apply _. Qed.
-  Instance ingΣ5 : inG Σ (authR (optionUR (exclR boolC))).
+  Instance ingΣ5 : inG Σ (authR (optionUR (exclR boolO))).
   Proof. apply _. Qed.
   Instance ingΣ6 : lockG Σ.
   Proof. apply _. Qed.

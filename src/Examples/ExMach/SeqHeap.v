@@ -8,7 +8,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Definition seq_heapUR (L V : Type) `{Countable L}: ucmraT :=
-  ofe_funUR (fun (_ : nat) => (gen_heapUR L V)).
+  discrete_funUR (fun (_ : nat) => (gen_heapUR L V)).
 
 Class seq_heapG (L V: Type) (Σ : gFunctors) `{Countable L} := SeqHeapG {
   seq_heap_inG :> inG Σ (authR (seq_heapUR L V));
@@ -40,7 +40,7 @@ Section definitions.
     own (seq_heap_name hG)
         (◯ (fun n =>
               match vs n with
-              | Some v => {[ l := (q, to_agree (v : leibnizC V)) ]}
+              | Some v => {[ l := (q, to_agree (v : leibnizO V)) ]}
               | None => ε
               end)).
 
@@ -79,28 +79,28 @@ Section to_seq_heap.
   Proof. by rewrite /to_seq_heap lookup_fmap=> ->. Qed.
   Lemma seq_heap_singleton_included σs l q vs :
     ((fun n => match vs n with
-              | Some v => {[ l := (q, to_agree (v : leibnizC V)) ]}
+              | Some v => {[ l := (q, to_agree (v : leibnizO V)) ]}
               | None => ε
               end) : seq_heapUR L V) ≼ to_seq_heap σs →
     (∀ k v, vs k = Some v → σs k !! l = Some v).
   Proof.
-    intros Hincl k v Hsubst. apply (ofe_fun_included_spec_1 _ _ k) in Hincl.
+    intros Hincl k v Hsubst. apply (discrete_fun_included_spec_1 _ _ k) in Hincl.
     move: Hincl. rewrite Hsubst singleton_included=> -[[q' av] []].
     rewrite /to_seq_heap lookup_fmap fmap_Some_equiv => -[v' [Hl [/= -> ->]]].
     move=> /Some_pair_included_total_2 [_] /to_agree_included /leibniz_equiv_iff -> //.
   Qed.
   Lemma seq_heap_singleton_included' σs k l q v :
-    ofe_fun_singleton k {[l := (q, to_agree v)]} ≼ to_seq_heap σs → σs k !! l = Some v.
+    discrete_fun_singleton k {[l := (q, to_agree v)]} ≼ to_seq_heap σs → σs k !! l = Some v.
   Proof.
-    intros Hincl. apply (ofe_fun_included_spec_1 _ _ k) in Hincl.
-    rewrite ofe_fun_lookup_singleton in Hincl.
+    intros Hincl. apply (discrete_fun_included_spec_1 _ _ k) in Hincl.
+    rewrite discrete_fun_lookup_singleton in Hincl.
     move: Hincl. rewrite singleton_included=> -[[q' av] []].
     rewrite /to_seq_heap lookup_fmap fmap_Some_equiv => -[v' [Hl [/= -> ->]]].
     move=> /Some_pair_included_total_2 [_] /to_agree_included /leibniz_equiv_iff -> //.
   Qed.
   Lemma to_seq_heap_insert (l: L) vs σs :
     to_seq_heap (fun n => <[l:=vs n]> (σs n)) ≡
-    fun n => <[l:=(1%Qp, to_agree (vs n:leibnizC V))]> (to_gen_heap (σs n)).
+    fun n => <[l:=(1%Qp, to_agree (vs n:leibnizO V))]> (to_gen_heap (σs n)).
   Proof.  rewrite /to_seq_heap => k. rewrite to_gen_heap_insert. done. Qed.
   Lemma to_seq_heap_insert_maybe (l: L) vs σs :
     to_seq_heap (fun n =>
@@ -110,7 +110,7 @@ Section to_seq_heap.
                    end) ≡
     (fun n =>
        match vs n with
-       | Some v => <[l:=(1%Qp, to_agree (v:leibnizC V))]> (to_gen_heap (σs n))
+       | Some v => <[l:=(1%Qp, to_agree (v:leibnizO V))]> (to_gen_heap (σs n))
        | None => to_gen_heap (σs n)
        end).
   Proof.
@@ -169,7 +169,7 @@ Section seq_heap.
     rewrite mapsto_fun_eq /mapsto_fun_def -own_op -auth_frag_op own_valid discrete_valid.
     f_equiv=> /auth_own_valid /=. intros Hval n ?? Heq1 Heq2.
     specialize (Hval n).
-    rewrite ofe_fun_lookup_op Heq1 Heq2 op_singleton singleton_valid pair_op in Hval *.
+    rewrite discrete_fun_lookup_op Heq1 Heq2 op_singleton singleton_valid pair_op in Hval *.
     by intros [_ ?%agree_op_invL'].
   Qed.
 
@@ -184,7 +184,7 @@ Section seq_heap.
     apply own_mono.
     unshelve (apply: auth_frag_mono).
     exists ε. rewrite right_id.
-    intros i. rewrite ofe_fun_lookup_op.
+    intros i. rewrite discrete_fun_lookup_op.
     specialize (Hlookup i).
     specialize (Hnon_overlap1 i).
     specialize (Hnon_overlap2 i).
@@ -261,16 +261,16 @@ Section seq_heap.
     iPureIntro; intuition.
   Qed.
 
-  Lemma ofe_fun_local_update `{EqDecision A} {B: A → ucmraT} f1 f2 f1' f2' :
+  Lemma discrete_fun_local_update `{EqDecision A} {B: A → ucmraT} f1 f2 f1' f2' :
     (∀ x, (f1 x, f2 x) ~l~> (f1' x , f2' x)) →
-    (f1 : ofe_fun B, f2) ~l~> (f1', f2').
+    (f1 : discrete_fun B, f2) ~l~> (f1', f2').
   Proof.
     intros. 
     apply local_update_unital=> n mf Hmv Hm; simpl in *.
     split.
-    - intros k. specialize (H1 k). specialize (Hm k). rewrite ofe_fun_lookup_op in Hm.
+    - intros k. specialize (H1 k). specialize (Hm k). rewrite discrete_fun_lookup_op in Hm.
       edestruct (H1 n (Some (mf k))); eauto.
-    - intros k. specialize (H1 k). specialize (Hm k). rewrite ofe_fun_lookup_op in Hm.
+    - intros k. specialize (H1 k). specialize (Hm k). rewrite discrete_fun_lookup_op in Hm.
       edestruct (H1 n (Some (mf k))); eauto.
   Qed.
 
@@ -291,11 +291,11 @@ Section seq_heap.
                                       | None => ε
                                       end)))
             with "Hσ") as "[Hσ Hl]".
-    { eapply auth_update_alloc, ofe_fun_local_update => k.
+    { eapply auth_update_alloc, discrete_fun_local_update => k.
       specialize (Hnone k) as Hs1. rewrite /to_seq_heap.
       destruct (vs k) as [v|].
       - rewrite /to_gen_heap fmap_insert //=. rewrite -/to_gen_heap.
-        eapply (alloc_singleton_local_update _ _ (1%Qp, to_agree (v:leibnizC _)))=> //.
+        eapply (alloc_singleton_local_update _ _ (1%Qp, to_agree (v:leibnizO _)))=> //.
           by apply lookup_to_gen_heap_None.
       - reflexivity.
     }
@@ -320,11 +320,11 @@ Section seq_heap.
                                       | None => ε
                                       end)))
             with "Hσ") as "[Hσ Hl]".
-    { eapply auth_update_alloc, ofe_fun_local_update => k.
+    { eapply auth_update_alloc, discrete_fun_local_update => k.
       specialize (Hnone k) as Hs1. rewrite /to_seq_heap.
       destruct (vs k) as [v|].
       - rewrite /to_gen_heap fmap_insert //=. rewrite -/to_gen_heap.
-        eapply (alloc_singleton_local_update _ _ (1%Qp, to_agree (v:leibnizC _)))=> //.
+        eapply (alloc_singleton_local_update _ _ (1%Qp, to_agree (v:leibnizO _)))=> //.
           by apply lookup_to_gen_heap_None.
       - reflexivity.
     }
@@ -361,16 +361,16 @@ Section seq_heap.
                                       | None => ε
                                       end)))
             with "Hσ Hl") as "[Hσ Hl]".
-    { eapply auth_update, ofe_fun_local_update => k.
+    { eapply auth_update, discrete_fun_local_update => k.
       specialize (Hnone k) as (Hs1&Hs2). rewrite /to_seq_heap. rewrite /to_seq_heap in Hl.
-      apply (ofe_fun_included_spec_1 _ _ k) in Hl. simpl in Hl.
+      apply (discrete_fun_included_spec_1 _ _ k) in Hl. simpl in Hl.
       destruct (vs1 k); destruct (vs2 k);
         try (exfalso; eapply is_Some_None; eauto; fail).
       - apply gen_heap_singleton_included in Hl. 
         rewrite /to_gen_heap fmap_insert //=.
         rewrite -/to_gen_heap.
         eapply (singleton_local_update (to_gen_heap (σs k)) l),
-        (exclusive_local_update _ (1%Qp, to_agree (_:leibnizC _)))=> //.
+        (exclusive_local_update _ (1%Qp, to_agree (_:leibnizO _)))=> //.
           by rewrite /to_gen_heap lookup_fmap Hl.
       - reflexivity.
     }

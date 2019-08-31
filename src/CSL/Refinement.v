@@ -14,8 +14,8 @@ Global Unset Implicit Arguments.
 Set Nested Proofs Allowed.
 
 Definition procT {OpT} := {T : Type & proc OpT T}.
-Canonical Structure procTC OpT := leibnizC (@procT OpT).
-Canonical Structure StateC OpT (Λ: Layer OpT) := leibnizC (OpState Λ).
+Canonical Structure procTC OpT := leibnizO (@procT OpT).
+Canonical Structure StateC OpT (Λ: Layer OpT) := leibnizO (OpState Λ).
 
 Section ghost.
 Context {OpT: Type → Type}.

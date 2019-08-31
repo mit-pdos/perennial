@@ -74,7 +74,7 @@ Section refinement_recovery_defs.
 
   Definition TmpInv_crash γtmp : iProp Σ :=
     (∃ tmps_map, SpoolDir ↦ dom (gset string) tmps_map
-                 ∗ ghost_mapsto_auth (A := discreteC (gset string)) γtmp (dom (gset _) tmps_map)
+                 ∗ ghost_mapsto_auth (A := discreteO (gset string)) γtmp (dom (gset _) tmps_map)
                           ∗ [∗ map] name↦inode ∈ tmps_map,
                                       path.mk SpoolDir name ↦ inode)%I.
 
@@ -84,7 +84,7 @@ Section refinement_recovery_defs.
               ∗ HeapInv_crash σ ∗ TmpInv_crash γtmp))%I.
 
   Definition CrashStarter γtmp :=
-    (∃ tmps : gset string, ghost_mapsto (A := discreteC (gset string)) γtmp 0 tmps
+    (∃ tmps : gset string, ghost_mapsto (A := discreteO (gset string)) γtmp 0 tmps
                                                         ∗ SpoolDir ↦ Unlocked)%I.
 
   Definition CrashInner : iProp Σ :=
@@ -136,7 +136,7 @@ Existing Instance subG_cfgPreG.
   Instance CFG : @cfgPreG Mail.Op Mail.l Σ. apply _. Qed.
   Instance HEX : RefinementAdequacy.goosePreG gm Σ. apply _. Defined.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
-  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitO)))). apply _. Qed.
 
   Global Instance inG_inst1: ghost_mapG contentsC Σ.
   Proof. apply _. Qed.
@@ -276,7 +276,7 @@ Qed.
   iInv "Hinv" as "H".
   iDestruct "H" as (σ) "(>Hstate&>Hmsgs&>Hheap&>Htmp)".
   iDestruct "Htmp" as (tmps_map) "(Hdir&Hauth&Hpaths)".
-  iDestruct (@ghost_var_agree (discreteC (gset string)) Σ with "Hauth [$]") as %Heq_dom.
+  iDestruct (@ghost_var_agree (discreteO (gset string)) Σ with "Hauth [$]") as %Heq_dom.
   iApply (wp_list_finish with "[$]").
   iIntros (s ltmps) "!> (Hltmps&Hs&Htmps&Hlock)".
   iExists _.
@@ -313,7 +313,7 @@ Qed.
     iClear "Hsource".
     iIntros (???) "(#Hsource&Hstate)".
     iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
-    iDestruct (@ghost_var_agree (discreteC (gset string)) Σ with "[$] [$]") as %Heq_dom.
+    iDestruct (@ghost_var_agree (discreteO (gset string)) Σ with "[$] [$]") as %Heq_dom.
     rewrite <-Heq_dom.
     iMod (gen_heap_init tmps_map') as (hGTmp) "Htmp".
     iExists hGTmp, Γ, γ, _.
@@ -335,7 +335,7 @@ Qed.
     clear σ.
     iDestruct "H" as (σ) "(>Hstate&Hmsgs&>Hheap&>Htmp)".
     iDestruct "Htmp" as (tmps_map') "(Hdir&Hauth&Hpaths)".
-    iDestruct (@ghost_var_agree (discreteC (gset string)) Σ with "[$] [$]") as %Heq_dom'.
+    iDestruct (@ghost_var_agree (discreteO (gset string)) Σ with "[$] [$]") as %Heq_dom'.
     rewrite Heq_dom'.
     assert (Hcurr_in: curr_name ∈ tmps ∖ list_to_set (take i ltmps)).
     {
@@ -363,7 +363,7 @@ Qed.
     iDestruct (big_sepM_delete with "Hpaths") as "(Hcurr&Hpaths)"; eauto.
     iApply (wp_delete with "[$]").
     iIntros "!> (Hdir&Hdirlock)".
-    iMod (@ghost_var_update (discreteC (gset string)) with "Hauth [$]") as "(Hauth&Hfrag)".
+    iMod (@ghost_var_update (discreteO (gset string)) with "Hauth [$]") as "(Hauth&Hfrag)".
     iSplitL "Hstate Hmsgs Hheap Hpaths Hdir Hauth".
     {
       iExists _. iFrame.
@@ -538,7 +538,7 @@ Qed.
     iIntros (?????) "(Hroot'&Hglobal)".
     iDestruct "Hroot'" as (S) "(Hroot'&Hdirlocks)".
     iDestruct "Hroot" as "(Hroot&%)".
-    iDestruct (@ghost_var_agree2 (discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
+    iDestruct (@ghost_var_agree2 (discreteO (gset string))_ with "Hroot Hroot'") as %Heq_dom.
 
 
     iDestruct "Htmp" as (tmp_map) "(Hdir&_&_&Hpaths)".
@@ -550,7 +550,7 @@ Qed.
     iAssert ([∗ map] k↦_ ∈ σ.(messages), ∃ γ0 : gname, ⌜Γ !! k = Some γ0⌝)%I
             with "[HΓ]" as "#HΓ'".
     { iApply big_sepM_mono; last eauto. iIntros (???) "H". iDestruct "H" as (?) "(?&?)"; eauto. }
-    iMod (@ghost_var_alloc (@discreteC (gset string)) _ _ _
+    iMod (@ghost_var_alloc (@discreteO (gset string)) _ _ _
                            Hex.(@go_fs_inG mRT.gm mRT.gmWf Σ).(@go_fs_domalg_inG mRT.gm mRT.gmWf Σ)
                            (dom (gset _) tmp_map)) as "H".
     iDestruct "H" as (γtmp) "(Hauth_tmp&Hfrag_tmp)".
@@ -612,7 +612,7 @@ Qed.
     iIntros (?????) "(Hroot'&Hglobal)".
     iDestruct "Hroot'" as (S) "(Hroot'&Hdirlocks)".
     iDestruct "Hroot" as "(Hroot&%)".
-    iDestruct (@ghost_var_agree2 (discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
+    iDestruct (@ghost_var_agree2 (discreteO (gset string))_ with "Hroot Hroot'") as %Heq_dom.
 
 
     iDestruct "Htmp" as (tmp_map) "(Hdir&_&Hpaths)".
@@ -621,7 +621,7 @@ Qed.
     iDestruct "H" as (γ) "(Hauth&Hfrag)".
     iMod (ghost_var_bulk_alloc (A := contentsC) (σ.(messages)) (λ _ _, ∅)) as "H".
     iDestruct "H" as (Γ HΓdom) "HΓ".
-    iMod (@ghost_var_alloc (@discreteC (gset string)) _ _ _
+    iMod (@ghost_var_alloc (@discreteO (gset string)) _ _ _
                            Hex.(@go_fs_inG mRT.gm mRT.gmWf Σ).(@go_fs_domalg_inG mRT.gm mRT.gmWf Σ)
                            (dom (gset _) tmp_map)) as "H".
     iDestruct "H" as (γtmp') "(Hauth_tmp&Hfrag_tmp)".
@@ -723,7 +723,7 @@ Qed.
     iMod (ghost_var_bulk_alloc (A := contentsC) (σ.(messages)) (λ _ _, ∅)) as "H".
     iDestruct "H" as (Γ' HΓdom) "HΓ".
     iDestruct "Hdirlocks" as (S) "(Hroot'&Hdirlocks)".
-    iDestruct (@ghost_var_agree2 (discreteC (gset string))_ with "Hroot Hroot'") as %Heq_dom.
+    iDestruct (@ghost_var_agree2 (discreteO (gset string))_ with "Hroot Hroot'") as %Heq_dom.
     iAssert ([∗ map] k↦_ ∈ σ.(messages), ∃ γ0 : gname, ⌜Γ' !! k = Some γ0⌝)%I
             with "[HΓ]" as "#HΓ'".
     { iApply big_sepM_mono; last eauto. iIntros (???) "H". iDestruct "H" as (?) "(?&?)"; eauto. }

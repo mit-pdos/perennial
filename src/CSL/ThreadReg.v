@@ -6,7 +6,7 @@ From iris.proofmode Require Export tactics.
 From Armada Require Export Lib.
 
 Class tregG Σ := TRegG {
-                     treg_counter_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitC))));
+                     treg_counter_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitO))));
                      treg_name: gname
                    }.
 Arguments treg_name {_}.
@@ -77,7 +77,7 @@ Proof.
   iAssert (own (treg_name _) (Cinl (Count (S n))) ∗ Registered)%I
           with "[Hown]" as "(Hown&Hreg')".
   {
-    rewrite -own_op Cinl_op counting_op' //=.
+    rewrite -own_op -Cinl_op counting_op' //=.
     repeat destruct decide; try lia. replace (S n + (-1))%Z with (n : Z) by lia. done.
   }
   iModIntro. simpl. iFrame.
@@ -120,7 +120,7 @@ Proof.
           with "[Hown Hreg]" as "Hown".
   {
     iCombine "Hown Hreg" as "Hown".
-    rewrite Cinl_op counting_op' //=.
+    rewrite -Cinl_op counting_op' //=.
     repeat destruct decide; try lia. replace (S n' + (-1))%Z with (n' : Z) by lia. done.
   }
   iModIntro. simpl. iFrame. iSplitL "Hown Hrest".
@@ -156,11 +156,11 @@ Proof.
           with "[Hown Hreg]" as "Hown".
   {
     iCombine "Hown Hreg" as "Hown".
-    rewrite Cinl_op counting_op' //=.
+    rewrite -Cinl_op counting_op' //=.
   }
   iMod (own_update with "Hown") as "(Hdone&Hown)".
   { apply cmra_update_exclusive with (y:=Cinr (◯ (Excl' tt)) ⋅ Cinr (● (Excl' tt))) => //=.
-    rewrite Cinr_op comm. apply auth_both_valid; split; done. }
+    rewrite -Cinr_op comm. apply auth_both_valid; split; done. }
   iModIntro.
   iSplitL "Hown Hrest".
   { iApply Hinterp2; iFrame. }

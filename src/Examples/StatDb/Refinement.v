@@ -8,7 +8,7 @@ Definition recv : proc ExMach.Op _ := Ret tt.
 Set Default Proof Using "Type".
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (DB.Op) (DB.l) Σ,
-            !inG Σ (authR (optionUR (exclR (listC natC))))}.
+            !inG Σ (authR (optionUR (exclR (listO natO))))}.
   Import ExMach.
 
   Definition DBInnerInv γ :=
@@ -123,8 +123,8 @@ Module sRT <: exmach_refinement_type.
   Definition OpT := DB.Op.
   Definition Λa := DB.l.
 
-  Definition helperΣ : gFunctors := #[GFunctor (authR (optionUR (exclR (listC natC))))].
-  Instance subG_helperΣ : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (listC natC)))).
+  Definition helperΣ : gFunctors := #[GFunctor (authR (optionUR (exclR (listO natO))))].
+  Instance subG_helperΣ : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (listO natO)))).
   Proof. solve_inG. Qed.
 
   Definition Σ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ DB.Op DB.l; lockΣ; helperΣ].
@@ -134,7 +134,7 @@ Module sRT <: exmach_refinement_type.
   Instance CFG : @cfgPreG DB.Op DB.l Σ. apply _. Qed.
   Instance HEX : ExMach.Adequacy.exmachPreG Σ. apply _. Qed.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
-  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitO)))). apply _. Qed.
 
   Definition crash_inner := fun H1 H2 => (@DBCrashInner Σ H2 H1)%I.
   Definition exec_inner := fun (H1: @cfgG OpT Λa Σ) H2 => (∃ v, lock_addr m↦ v ∗

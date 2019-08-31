@@ -121,8 +121,8 @@ Global Opaque iris_invG.
 
 
 Definition wp_pre {OpT} `{Λ: Layer OpT} `{irisG OpT Λ Σ} (s : stuckness)
-    (wp : ofe_funC (λ T, coPset -c> proc OpT T -c> (T -c> iProp Σ) -c> iProp Σ)) :
-  ofe_funC (λ T, coPset -c> proc OpT T -c> (T -c> iProp Σ) -c> iProp Σ) := λ T E e1 Φ,
+    (wp : discrete_funO (λ T, coPset -d> proc OpT T -d> (T -d> iProp Σ) -d> iProp Σ)) :
+  discrete_funO (λ T, coPset -d> proc OpT T -d> (T -d> iProp Σ) -d> iProp Σ) := λ T E e1 Φ,
   match to_val e1 with
   | Some v => |={E}=> Φ v
   | None => ∀ σ1,

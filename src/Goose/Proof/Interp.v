@@ -27,15 +27,15 @@ Class fsG (m: GoModel) {wf: GoModelWf m} Σ :=
       go_fs_paths_inG :> gen_dirG string string (Inode) Σ;
       go_fs_inodes_inG :> gen_heapG Inode (List.list byte) Σ;
       go_fs_fds_inG :> gen_heapG File (Inode * OpenMode) Σ;
-      go_fs_domalg_inG :> ghost_mapG (discreteC (gset string)) Σ;
+      go_fs_domalg_inG :> ghost_mapG (discreteO (gset string)) Σ;
       go_fs_dom_name : gname;
      }.
 
-Canonical Structure sliceLockC {m: GoModel} {wf: GoModelWf m} := leibnizC (option (slice.t LockRef)).
+Canonical Structure sliceLockC {m: GoModel} {wf: GoModelWf m} := leibnizO (option (slice.t LockRef)).
 
 Class globalG (m: GoModel) {wf: GoModelWf m} Σ :=
   GlobalG {
-      go_global_alg_inG :> ghost_mapG (discreteC sliceLockC) Σ;
+      go_global_alg_inG :> ghost_mapG (discreteO sliceLockC) Σ;
       go_global_name : gname;
     }.
 
@@ -58,13 +58,13 @@ Definition fs_interp {Σ model hwf} (F: @fsG model hwf Σ) : FS.State → iProp 
    ∗ (gen_dir_ctx (hG := go_fs_paths_inG) s.(dirents))
    ∗ (gen_heap_ctx (hG := go_fs_inodes_inG) s.(inodes))
    ∗ (gen_heap_ctx (hG := go_fs_fds_inG) s.(fds))
-   ∗ (∃ n: nat, ghost_mapsto (A := discreteC (gset string))
+   ∗ (∃ n: nat, ghost_mapsto (A := discreteO (gset string))
                              (go_fs_dom_name) n (dom (gset string) s.(dirents)))
    ∗ ⌜ dom (gset string) s.(dirents) = dom (gset string) s.(dirlocks) ⌝)%I.
 
 Definition global_interp {m Hwf Σ} (G: @globalG m Hwf Σ) :
   Globals.State (slice.t LockRef) → iProp Σ :=
-  λ s, ghost_mapsto_auth (A := discreteC (@sliceLockC m Hwf)) (go_global_name) s.
+  λ s, ghost_mapsto_auth (A := discreteO (@sliceLockC m Hwf)) (go_global_name) s.
 
 Definition goose_interp {m Hwf Σ} {G: @gooseG m Hwf Σ} :=
   (λ (s: State), heap_interp (go_heap_inG) (fs s) ∗ fs_interp (go_fs_inG) (fs s)
@@ -142,11 +142,11 @@ Instance ghost_gen_mapsto {A} `{gooseG Σ} : GenericMapsTo gname A
 
 Program Instance global_gen_mapsto `{gooseG Σ} : GenericMapsTo GLOBAL (option (slice.t LockRef))
   := {| generic_mapsto := λ _ q v,
-                          (ghost_mapsto (A := discreteC (@sliceLockC _ _)) (go_global_name) q v)|}.
+                          (ghost_mapsto (A := discreteO (@sliceLockC _ _)) (go_global_name) q v)|}.
 
 Program Instance rootdir_gen_mapsto `{gooseG Σ} : GenericMapsTo ROOTDIR (gset string)
   := {| generic_mapsto := λ _ q v,
-                          (ghost_mapsto (A := discreteC (gset string)) (go_fs_dom_name) q v)|}.
+                          (ghost_mapsto (A := discreteO (gset string)) (go_fs_dom_name) q v)|}.
 
 Instance dir_gen_mapsto `{gooseG Σ} : GenericMapsTo (string) (gset string)
   := {| generic_mapsto := dir_mapsto; |}.
@@ -368,7 +368,7 @@ Proof.
   iIntros (Φ) "Hp HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&?&HG)".
-  iDestruct (ghost_var_agree (A := discreteC sliceLockC) with "HG Hp") as %Heq.
+  iDestruct (ghost_var_agree (A := discreteO sliceLockC) with "HG Hp") as %Heq.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; try congruence.
@@ -377,7 +377,7 @@ Proof.
   iIntros (e2 (n', σ2) Hstep) "!>".
   inversion Hstep; subst.
   inv_step. inversion Hhd; subst. rewrite Heq in Htl. inv_step.
-  iMod (ghost_var_update (A := discreteC sliceLockC) _ (Some l) with "HG Hp") as "(HG&HP)".
+  iMod (ghost_var_update (A := discreteO sliceLockC) _ (Some l) with "HG Hp") as "(HG&HP)".
   iFrame. by iApply "HΦ".
 Qed.
 
@@ -389,7 +389,7 @@ Proof.
   iIntros (Φ) "Hp HΦ".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&?&?&HG)".
-  iDestruct (ghost_var_agree (A := discreteC sliceLockC) with "HG Hp") as %Heq.
+  iDestruct (ghost_var_agree (A := discreteO sliceLockC) with "HG Hp") as %Heq.
   iModIntro. iSplit.
   { destruct s; auto. iPureIntro.
     inv_step; try congruence.

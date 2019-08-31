@@ -49,14 +49,14 @@ Set Default Goal Selector "!".
 
 Notation contents := (gmap string (Datatypes.list byte)).
 Canonical Structure contentsC {m: GoModel} {wf: GoModelWf m} :=
-  leibnizC contents.
+  leibnizO contents.
 Canonical Structure contentsF {m: GoModel} {wf: GoModelWf m} :=
-  discreteC contents.
+  discreteO contents.
 
 Canonical Structure ghost_init_statusC {m: GoModel} {wf: GoModelWf m} :=
-  leibnizC ghost_init_status.
+  leibnizO ghost_init_status.
 Canonical Structure ghost_init_statusF {m: GoModel} {wf: GoModelWf m} :=
-  discreteC ghost_init_status.
+  discreteO ghost_init_status.
 
 Definition UserDir {model: GoModel} (user:uint64) :=
   ("user" ++ uint64_to_string user)%string.
@@ -73,8 +73,8 @@ Import Mail.
 
 
   Definition InboxLockInv (γ: gname) (n: nat) :=
-    (∃ S1 S2, ghost_mapsto_auth γ (A := discreteC contents) S1
-      ∗ ghost_mapsto (A := discreteC contents) γ O S2)%I.
+    (∃ S1 S2, ghost_mapsto_auth γ (A := discreteO contents) S1
+      ∗ ghost_mapsto (A := discreteO contents) γ O S2)%I.
 
 
   Definition MailboxStatusInterp (uid: uint64) (lk: LockRef) (γ: gname)
@@ -250,17 +250,17 @@ Import Mail.
     iIntros "Hgptr Hlsptr HG".
     iDestruct "HG" as (lsptr' ?) "(Hgptr'&Hlsptr')".
     rewrite //=.
-    iDestruct (ghost_var_agree2 (A := discreteC sliceLockC) with "Hgptr Hgptr'") as %Heq.
+    iDestruct (ghost_var_agree2 (A := discreteO sliceLockC) with "Hgptr Hgptr'") as %Heq.
     inversion Heq; subst.
     iDestruct (slice_agree with "Hlsptr Hlsptr'") as "(?&?)"; eauto.
   Qed.
 
   Lemma InboxLockInv_set_msgs γ n S :
-    InboxLockInv γ n ==∗ ghost_mapsto_auth γ (A := discreteC contents) S
-                 ∗ ghost_mapsto (A := discreteC contents) γ O S.
+    InboxLockInv γ n ==∗ ghost_mapsto_auth γ (A := discreteO contents) S
+                 ∗ ghost_mapsto (A := discreteO contents) γ O S.
   Proof.
     iIntros "Hlockinv". iDestruct "Hlockinv" as (??) "(H1&H2)".
-      by iMod (ghost_var_update (A := discreteC contents) with "H1 H2") as "($&$)".
+      by iMod (ghost_var_update (A := discreteO contents) with "H1 H2") as "($&$)".
   Qed.
 
   Lemma slice_mapsto_len {T} (s: slice.t T) (ls0 ls: Datatypes.list T) :

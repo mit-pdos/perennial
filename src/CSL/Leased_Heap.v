@@ -9,7 +9,7 @@ Import uPred.
 
 Class leased_heapG (L V : Type) (Σ : gFunctors) `{Countable L} := LeasedHeapG {
   leased_heap_heapG :> gen_heapG L V Σ;
-  leased_heap_exclG :> inG Σ (authR (optionUR (exclR (leibnizC V))));
+  leased_heap_exclG :> inG Σ (authR (optionUR (exclR (leibnizO V))));
   leased_heap_gen : namespace;
 }.
 Arguments leased_heap_heapG {_ _ _ _ _} _ : assert.
@@ -18,11 +18,11 @@ Arguments leased_heap_gen {_ _ _ _ _} _ : assert.
 
 Class leased_heapPreG (L V : Type) (Σ : gFunctors) `{Countable L} := {
   leased_heap_heapPreG :> gen_heapPreG L V Σ;
-  leased_heap_exclPreG :> inG Σ (authR (optionUR (exclR (leibnizC V))));
+  leased_heap_exclPreG :> inG Σ (authR (optionUR (exclR (leibnizO V))));
 }.
 
 Definition leased_heapΣ (L V : Type) `{Countable L} : gFunctors := #[
-  gen_heapΣ L V; GFunctor (authR (optionUR (exclR (leibnizC V))))
+  gen_heapΣ L V; GFunctor (authR (optionUR (exclR (leibnizO V))))
 ].
 
 Instance subG_leased_heapPreG {Σ L V} `{Countable L} :
@@ -45,13 +45,13 @@ Section definitions.
 
   Definition lease (l: L) (v : V) :=
     (∃ γ : gname, meta l (current_gen (leased_heap_gen hG)) γ
-                  ∗ own γ (◯ (Excl' (v: leibnizC V))))%I.
+                  ∗ own γ (◯ (Excl' (v: leibnizO V))))%I.
 
   (* TODO: alternate name possibilities: 'deed' or 'title'? *)
   Definition master (l: L) (v: V) :=
     (∃ γ : gname, meta l (current_gen (leased_heap_gen hG)) γ
                   ∗ meta_token l (↑ next_gen (leased_heap_gen hG))
-                  ∗ own γ (● (Excl' (v: leibnizC V))))%I.
+                  ∗ own γ (● (Excl' (v: leibnizO V))))%I.
 End definitions.
 
 Local Notation "l ↦{ q } v" := (mapsto l q v)
@@ -109,7 +109,7 @@ Section lease_heap.
     master l v ==∗ next_master l v ∗ next_lease l v.
   Proof.
     iDestruct 1 as (γ) "(Hγ&Hrest&Hown)".
-    iMod (own_alloc (● (Excl' (v: leibnizC V)) ⋅ ◯ (Excl' (v: leibnizC V)))) as (γ') "[H1 H2]".
+    iMod (own_alloc (● (Excl' (v: leibnizO V)) ⋅ ◯ (Excl' (v: leibnizO V)))) as (γ') "[H1 H2]".
     { apply auth_both_valid; split; eauto. econstructor. }
     iMod (meta_lease_init _ _ γ' with "Hrest") as "(#Hset&Hrest)".
     iModIntro. iSplitL "Hrest H1"; by iExists _; iFrame.
@@ -119,7 +119,7 @@ Section lease_heap.
     meta_token l ⊤ ==∗ master l v ∗ lease l v.
   Proof.
     iIntros "H".
-    iMod (own_alloc (● (Excl' (v: leibnizC V)) ⋅ ◯ (Excl' (v: leibnizC V)))) as (γ) "[H1 H2]".
+    iMod (own_alloc (● (Excl' (v: leibnizO V)) ⋅ ◯ (Excl' (v: leibnizO V)))) as (γ) "[H1 H2]".
     { apply auth_both_valid; split; eauto. econstructor. }
     rewrite (union_difference_L (↑ leased_heap_gen hG) ⊤); last by solve_ndisj.
     iDestruct (meta_token_union with "H") as "(H&_)"; first set_solver.
@@ -142,7 +142,7 @@ Section lease_heap.
   Proof.
     iDestruct 1 as (γm1) "(Hγ1&Hrest&Hown1)"; iDestruct 1 as (γm2) "(Hγ2&Hown2)".
     iDestruct (meta_agree with "Hγ1 Hγ2") as %->.
-    iMod (own_update_2 _ _ _ (● Excl' (v': leibnizC V) ⋅ ◯ Excl' (v': leibnizC V))
+    iMod (own_update_2 _ _ _ (● Excl' (v': leibnizO V) ⋅ ◯ Excl' (v': leibnizO V))
             with "Hown1 Hown2") as "[Hown1 Hown2]".
     { by apply auth_update, option_local_update, exclusive_local_update. }
     iModIntro.

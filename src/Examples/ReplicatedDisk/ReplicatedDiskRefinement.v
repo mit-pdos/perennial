@@ -99,9 +99,9 @@ Inductive addr_status :=
 | Unsync (j: nat) {T2} K `{LanguageCtx _ unit T2 OneDisk.l K}.
 
 Canonical Structure addr_statusC :=
-  leibnizC addr_status.
+  leibnizO addr_status.
 Canonical Structure addr_statusF :=
-  discreteC addr_status.
+  discreteO addr_status.
 
 Global Instance addr_status_inhabited :
   Inhabited (addr_status).
@@ -429,7 +429,7 @@ Opaque size.
   Instance CFG : @cfgPreG OneDisk.Op OneDisk.l Σ. apply _. Qed.
   Instance HEX : ReplicatedDisk.RefinementAdequacy.exmachPreG Σ. apply _. Qed.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
-  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitO)))). apply _. Qed.
 
   Global Instance inst_inG1: lockG Σ.
   Proof. apply _. Qed.
@@ -755,7 +755,7 @@ Module repRO : twodisk_refinement_obligations repRT.
       * iExists v0, stat. iApply "Hleft".
       * iExists v0, _. iApply "Hright".
     }
-    iMod (fupd_big_sepM with "Hdur") as "Hdur".
+    iMod (big_sepM_fupd with "Hdur") as "Hdur".
     rewrite big_sepM_sep.
     iDestruct "Hdur" as "(Hdur&Hl)".
     iDestruct (big_sepM_dom with "Hl") as "Hl".
@@ -837,7 +837,7 @@ Module repRO : twodisk_refinement_obligations repRT.
       * iExists v0, stat. iApply "Hleft".
       * iExists v0, _. iApply "Hright".
     }
-    iMod (fupd_big_sepM with "Hdur") as "Hdur".
+    iMod (big_sepM_fupd with "Hdur") as "Hdur".
     rewrite big_sepM_sep.
     iDestruct "Hdur" as "(Hdur&Hl)".
     iDestruct (big_sepM_dom with "Hl") as "Hl".
@@ -895,7 +895,7 @@ Module repRO : twodisk_refinement_obligations repRT.
     iDestruct "H" as (hInv hS) "(Hlocks&Hdur)".
     iExists hS.
     iFrame. iSplitR "Hdur".
-    - rewrite -fupd_big_sepS.
+    - rewrite -big_sepS_fupd.
       iApply (big_sepS_mono with "Hlocks").
       iIntros (a Hin) "(Hmem&Hlock)".
       iApply (lock_init with "Hmem [Hlock]"); auto.
@@ -948,7 +948,7 @@ Module repRO : twodisk_refinement_obligations repRT.
       * iApply "Hleft".
       * iExists _. iApply "Hright".
     }
-    iMod (fupd_big_sepM with "Hdur") as "Hdur".
+    iMod (big_sepM_fupd with "Hdur") as "Hdur".
     rewrite big_sepM_sep.
     iDestruct "Hdur" as "(Hdur&Hl)".
     iDestruct (big_sepM_dom with "Hl") as "Hl".

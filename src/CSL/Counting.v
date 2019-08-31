@@ -22,7 +22,7 @@ Instance counting_op : Op counting :=
       Count (z1 + z2)
   | _, _ => CountBot
   end.
-Canonical Structure countingC := leibnizC counting.
+Canonical Structure countingC := leibnizO counting.
 
 Local Ltac by_cases :=
   repeat (match goal with

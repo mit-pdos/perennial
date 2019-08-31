@@ -14,12 +14,12 @@ Import uPred.
 
 (* Global functor setup *)
 Definition invΣ : gFunctors :=
-  #[GFunctor (authRF (gmapURF positive (agreeRF (laterCF idCF))));
+  #[GFunctor (authRF (gmapURF positive (agreeRF (laterOF idOF))));
     GFunctor coPset_disjUR;
     GFunctor (gset_disjUR positive)].
 
 Class invPreG (Σ : gFunctors) : Set := WsatPreG {
-  inv_inPreG :> inG Σ (authR (gmapUR positive (agreeR (laterC (iPreProp Σ)))));
+  inv_inPreG :> inG Σ (authR (gmapUR positive (agreeR (laterO (iPreProp Σ)))));
   enabled_inPreG :> inG Σ coPset_disjR;
   disabled_inPreG :> inG Σ (gset_disjR positive);
 }.

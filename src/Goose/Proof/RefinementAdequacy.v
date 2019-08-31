@@ -17,7 +17,7 @@ Class fsPreG (m: GoModel) {wf: GoModelWf m} Σ :=
       go_fs_paths_preG :> gen_dirPreG string string (Inode) Σ;
       go_fs_inodes_preG :> gen_heapPreG Inode (List.list byte) Σ;
       go_fs_fds_preG :> gen_heapPreG File (Inode * OpenMode) Σ;
-      go_fs_domalg_preG :> ghost_mapG (discreteC (gset string)) Σ;
+      go_fs_domalg_preG :> ghost_mapG (discreteO (gset string)) Σ;
 }.
 
 Definition fsΣ (m: GoModel) {wf: GoModelWf m} : gFunctors :=
@@ -26,7 +26,7 @@ Definition fsΣ (m: GoModel) {wf: GoModelWf m} : gFunctors :=
     gen_dirΣ string string (Inode);
     gen_heapΣ Inode (List.list byte);
     gen_heapΣ File (Inode * OpenMode);
-    ghost_mapΣ (discreteC (gset string))
+    ghost_mapΣ (discreteO (gset string))
    ].
 
 Global Instance subG_fsPreG m {wf: GoModelWf m} {Σ} : subG (fsΣ m) Σ → (fsPreG m) Σ.
@@ -36,13 +36,13 @@ Class goosePreG (goose_model: GoModel) {wf: GoModelWf goose_model} Σ := GoosePr
   goose_preG_iris :> invPreG Σ;
   goose_preG_heap :> Count_Heap.gen_heapPreG (sigT Ptr) (sigT ptrRawModel) Σ;
   goose_preG_fs :> fsPreG goose_model Σ;
-  goose_preG_global :> ghost_mapG (discreteC (sliceLockC)) Σ;
-  goose_preG_treg_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitC))));
+  goose_preG_global :> ghost_mapG (discreteO (sliceLockC)) Σ;
+  goose_preG_treg_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitO))));
 }.
 
 Definition gooseΣ (m: GoModel) {wf: GoModelWf m} : gFunctors :=
-  #[invΣ; fsΣ m; gen_typed_heapΣ Ptr ptrRawModel; ghost_mapΣ (discreteC (sliceLockC));
-      GFunctor (csumR countingR (authR (optionUR (exclR unitC))))].
+  #[invΣ; fsΣ m; gen_typed_heapΣ Ptr ptrRawModel; ghost_mapΣ (discreteO (sliceLockC));
+      GFunctor (csumR countingR (authR (optionUR (exclR unitO))))].
 Global Instance subG_goosePreG (m: GoModel) {wf: GoModelWf m} {Σ} : subG (gooseΣ m) Σ → goosePreG m Σ.
 Proof. solve_inG. Qed.
 
@@ -60,7 +60,7 @@ Module Type goose_refinement_type.
   Notation compile_proc_seq := (compile_proc_seq impl).
   Context `{CFG: cfgPreG OpT Λa Σ} `{HEX: @goosePreG gm gmWf Σ}.
   Context `{INV: Adequacy.invPreG Σ}.
-  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitC))))}.
+  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitO))))}.
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: gooseG gm Σ}, iProp Σ).
   Context (exec_inner: forall {_ : @cfgG OpT Λa Σ} {_: gooseG gm Σ}, iProp Σ).
   Context (crash_param: forall (_ : @cfgG OpT Λa Σ) (_ : gooseG gm Σ), Type).
@@ -289,12 +289,12 @@ Module goose_refinement (eRT: goose_refinement_type) (eRO: goose_refinement_obli
       iMod (gen_dir_strong_init (σ1c.(fs).(dirents))) as (hP HPpf_eq) "(Hpc&Hp)".
       iMod (Count_Heap.gen_heap_strong_init (λ s, (σ1c.(fs).(dirlocks)) !! s))
         as (hL HLpf_eq) "(Hlc&Hl)".
-      iMod (ghost_var_alloc (A := discreteC (gset string))
+      iMod (ghost_var_alloc (A := discreteO (gset string))
                             (dom (gset string) σ1c.(fs).(dirents))) as (hGD) "(HgdA&Hgd)".
       replace 0%Z with (O :Z) by auto.
-      iPoseProof (Count_Ghost.read_split (A := discreteC (gset string)) hGD
+      iPoseProof (Count_Ghost.read_split (A := discreteO (gset string)) hGD
                     with "Hgd") as "(Hgd&Hgdr)".
-      iMod (ghost_var_alloc (A := discreteC sliceLockC)
+      iMod (ghost_var_alloc (A := discreteO sliceLockC)
                             (σ1c.(maillocks))) as (hGL) "(HglA&Hgl)".
       set (hFG := (FsG _ _ Σ hL hD hP hIs hFDs _ hGD)).
       set (hGl := (GlobalG _ _ _ _ hGL)).
@@ -350,7 +350,7 @@ Module goose_refinement (eRT: goose_refinement_type) (eRO: goose_refinement_obli
     iMod (Count_Heap.gen_heap_strong_init
             (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ.(fs).(dirlocks)) !! s))
       as (hDlocks' Hdlocks'_eq') "(Hdlocksc&Hlocks)".
-    iMod (ghost_var_alloc (A := discreteC sliceLockC)
+    iMod (ghost_var_alloc (A := discreteO sliceLockC)
                              None) as (hGl_name) "(HglA&Hgl)".
     set (hGl := GlobalG _ _ _ _ hGl_name).
     iPoseProof (goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
@@ -404,7 +404,7 @@ Module goose_refinement (eRT: goose_refinement_type) (eRO: goose_refinement_obli
     iMod (Count_Heap.gen_heap_strong_init
             (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ.(fs).(dirlocks)) !! s))
       as (hDlocks' Hdlocks'_eq') "(Hdlocksc&Hlocks)".
-    iMod (ghost_var_alloc (A := discreteC sliceLockC)
+    iMod (ghost_var_alloc (A := discreteO sliceLockC)
                              None) as (hGl_name) "(HglA&Hgl)".
     set (hGl := GlobalG _ _ _ _ hGl_name).
     iPoseProof (goose_interp_split_read_dir with "Hmach") as "(Hmach&Hroot&Hdom_eq)".
@@ -476,7 +476,7 @@ Module goose_refinement (eRT: goose_refinement_type) (eRO: goose_refinement_obli
     iMod (Count_Heap.gen_heap_strong_init
             (λ s, ((λ _ : LockStatus * (), (Unlocked, ())) <$> σ2c.(fs).(dirlocks)) !! s))
       as (hDlocks' Hdlocks'_eq') "(Hdlocksc&Hlocks)".
-    iMod (ghost_var_alloc (A := discreteC sliceLockC)
+    iMod (ghost_var_alloc (A := discreteO sliceLockC)
                           None) as (hGl''_name) "(HglA&Hgl)".
     set (hGl'':= GlobalG _ _ _ _ hGl''_name).
     iModIntro.

@@ -105,7 +105,7 @@ Proof.
   intros.
     apply wand_intro_r.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_frag_proj_valid /=. rewrite -Some_op pair_op.
+    f_equiv=> /auth_frag_proj_valid /=. rewrite -Some_op -pair_op.
     intros [Hcount ?].
     rewrite counting_op' //= in Hcount.
     repeat destruct decide => //=. lia.
@@ -121,7 +121,7 @@ Proof.
   apply wand_intro_r.
   rewrite -own_op -auth_frag_op own_valid discrete_valid.
   f_equiv=> /auth_frag_proj_valid /=.
-  rewrite -Some_op pair_op.
+  rewrite -Some_op -pair_op.
   intros [_ Heq%agree_op_invL']. eauto.
 Qed.
 
@@ -129,7 +129,7 @@ Lemma read_split_join γ (n: nat) (v: A):
   γ ↦{n} v ⊣⊢ γ ↦{S n} v ∗ γ ↦{-1} v.
 Proof.
   rewrite -own_op -auth_frag_op /ghost_mapsto.
-  f_equiv. rewrite -Some_op ?pair_op.
+  f_equiv. rewrite -Some_op -?pair_op.
   rewrite counting_op' //=.
   replace (S n + (-1))%Z with (n : Z) by lia.
   assert (0 ⋅ S n = (S n)) as Hop by auto.

@@ -16,7 +16,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Definition gen_dirUR (L1 L2 V : Type) `{Countable L1} `{Countable L2} : ucmraT :=
-  gmapUR L1 (gmapUR L2 (prodR countingR (agreeR (leibnizC V)))).
+  gmapUR L1 (gmapUR L2 (prodR countingR (agreeR (leibnizO V)))).
 Definition to_gen_dir {L1 L2 V} `{Countable L1} `{Countable L2} :
   gmap L1 (gmap L2 V) → gen_dirUR L1 L2 V :=
   fmap (λ m, to_gen_heap m).
@@ -45,7 +45,7 @@ Section definitions.
     own (gen_dir_name hG) (● (to_gen_dir σ)).
 
   Definition mapsto_def (l1 : L1) (l2: L2) (n: Z) (v: V) : iProp Σ :=
-    own (gen_dir_name hG) (◯ {[ l1 := {[ l2 := (Count n, to_agree (v : leibnizC V)) ]} ]}).
+    own (gen_dir_name hG) (◯ {[ l1 := {[ l2 := (Count n, to_agree (v : leibnizO V)) ]} ]}).
   Definition mapsto_aux : seal (@mapsto_def). by eexists. Qed.
   Definition mapsto := mapsto_aux.(unseal).
   Definition mapsto_eq : @mapsto = @mapsto_def := mapsto_aux.(seal_eq).
@@ -102,7 +102,7 @@ Section to_gen_dir.
   Proof. by rewrite /to_gen_dir fmap_insert. Qed.
   Lemma to_gen_dir_insert2 l1 l2 v (m: gmap L2 V) σ :
     to_gen_dir (<[l1 := <[l2 := v]> m]> σ) =
-    <[l1:= (<[l2 := (Count 0, to_agree (v: leibnizC V))]> (to_gen_heap m))]> (to_gen_dir σ).
+    <[l1:= (<[l2 := (Count 0, to_agree (v: leibnizO V))]> (to_gen_heap m))]> (to_gen_dir σ).
   Proof. by rewrite to_gen_dir_insert1 to_gen_heap_insert. Qed.
   Lemma to_gen_dir_delete1 l σ :
     to_gen_dir (delete l σ) = delete l (to_gen_dir σ).
@@ -151,7 +151,7 @@ Section gen_dir.
     apply wand_intro_r.
     rewrite /read_mapsto mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_frag_proj_valid /=. rewrite ?op_singleton ?singleton_valid pair_op.
+    f_equiv=> /auth_frag_proj_valid /=. rewrite ?op_singleton ?singleton_valid -pair_op.
     by intros [_ ?%agree_op_invL'].
   Qed.
 
@@ -162,7 +162,7 @@ Section gen_dir.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_frag_proj_valid /=. rewrite ?op_singleton ?singleton_valid pair_op.
+    f_equiv=> /auth_frag_proj_valid /=. rewrite ?op_singleton ?singleton_valid -pair_op.
     intros [Hcount ?].
     rewrite counting_op' //= in Hcount.
     repeat destruct decide => //=. lia.
@@ -172,7 +172,7 @@ Section gen_dir.
   Proof.
     rewrite /read_mapsto mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op.
-    rewrite ?op_singleton pair_op.
+    rewrite ?op_singleton -pair_op.
     rewrite counting_op' //=.
     repeat destruct decide => //=. lia.
     replace (S q + (-1))%Z with (q : Z) by lia.
@@ -185,7 +185,7 @@ Section gen_dir.
     iIntros (?) "Hσ". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
     iMod (own_update with "Hσ") as "[Hσ Hl]".
     { eapply auth_update_alloc,
-        (alloc_singleton_local_update _ _ {[ f := (Count 0, to_agree (v:leibnizC _))]})=> //.
+        (alloc_singleton_local_update _ _ {[ f := (Count 0, to_agree (v:leibnizO _))]})=> //.
         - by apply lookup_to_gen_dir_None.
         - by apply singleton_valid.
     }
@@ -203,7 +203,7 @@ Section gen_dir.
       eapply insert_alloc_local_update.
       - by apply lookup_to_gen_dir_Some.
       - rewrite //=.
-      - eapply (alloc_singleton_local_update _ _ (Count 0, to_agree (v:leibnizC _))) => //=.
+      - eapply (alloc_singleton_local_update _ _ (Count 0, to_agree (v:leibnizO _))) => //=.
         by apply lookup_to_gen_heap_None.
     }
     iModIntro. rewrite to_gen_dir_insert1 to_gen_heap_insert. iFrame.
@@ -245,7 +245,7 @@ Section gen_dir.
     { eapply auth_update, singleton_local_update.
       { by eapply lookup_to_gen_dir_Some. }
       eapply singleton_local_update,
-        (exclusive_local_update _ (Count 0, to_agree (v2:leibnizC _)))=> //.
+        (exclusive_local_update _ (Count 0, to_agree (v2:leibnizO _)))=> //.
       by rewrite /to_gen_dir lookup_fmap Hdf. }
     iModIntro. rewrite to_gen_dir_insert2. iFrame.
   Qed.

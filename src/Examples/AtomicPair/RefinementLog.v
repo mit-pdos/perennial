@@ -39,15 +39,15 @@ Tactic Notation "handle_pairs" tactic(H) :=
 
 Section refinement_triples.
   Context `{!exmachG Σ, lockG Σ, !@cfgG (AtomicPair.Op) (AtomicPair.l) Σ,
-            !inG Σ (authR (optionUR (exclR (prodC natC natC)))),
-            !inG Σ (authR (optionUR (exclR (prodC natC (prodC natC (procTC (AtomicPair.Op)))))))}.
+            !inG Σ (authR (optionUR (exclR (prodO natO natO)))),
+            !inG Σ (authR (optionUR (exclR (prodO natO (prodO natO (procTC (AtomicPair.Op)))))))}.
   Import ExMach.
 
   Record ghost_names :=
     { γflag : gname;
       γsrc : gname }.
 
-  Definition someone_writing P (p: nat * nat) (je: prodC natC (procTC (AtomicPair.Op))) :=
+  Definition someone_writing P (p: nat * nat) (je: prodO natO (procTC (AtomicPair.Op))) :=
     (∃ (K: proc AtomicPair.Op unit → proc AtomicPair.Op (projT1 (snd je)))
         `{LanguageCtx AtomicPair.Op unit (projT1 (snd je)) AtomicPair.l K},
      P ∗  ⌜ projT2 (snd je) = K (Call (AtomicPair.Write p)) ⌝ ∗
@@ -305,7 +305,7 @@ Section refinement_triples.
         ∗ (named ifst (lease log_fst (fst p)))
         ∗ (named isnd (lease log_snd (snd p)))
         ∗ (named i (own Γ.(γflag) (◯ Excl' (1, (j, existT _ (K (Call (AtomicPair.Write p))))
-                  : prodC natC (procTC AtomicPair.Op)))))
+                  : prodO natO (procTC AtomicPair.Op)))))
     }}}.
   Proof.
     iIntros (Φ) "(Hinv&Hm&Hj&Hcommit_lease&Hlog1&Hlog2&Hflag) HΦ"; iAssignNames.
@@ -318,7 +318,7 @@ Section refinement_triples.
     repeat unify_lease.
     iMod (ghost_var_update (γflag Γ)
                            (1, (j, existT _ (K (Call (AtomicPair.Write _))))
-                            : prodC natC (procTC AtomicPair.Op))
+                            : prodO natO (procTC AtomicPair.Op))
             with "Hflag_auth [$]") as "(Hflag_auth&Hflag_ghost)".
     wp_step. recommit.
     iModIntro.
@@ -336,7 +336,7 @@ Section refinement_triples.
         source_ctx
         ∗ inv liN (CommitInner m Γ)
         ∗ (named i1 (own Γ.(γflag) (◯ (Excl' (S base, (j, existT _ (K (Call (AtomicPair.Write p)))))
-             : (optionUR (exclR (prodC natC (prodC natC (procTC (AtomicPair.Op))))))))))
+             : (optionUR (exclR (prodO natO (prodO natO (procTC (AtomicPair.Op))))))))))
         ∗ (named icommit (lease log_commit x))
         ∗ (named ifst (lease main_fst (fst p)))
         ∗ (named isnd (lease main_snd (snd p)))
@@ -345,7 +345,7 @@ Section refinement_triples.
       write_disk log_commit 0
     {{{ RET tt;
         (named i1 (own Γ.(γflag) (◯ Excl' (0, (0, existT _ (Ret tt))
-                  : prodC natC (procTC AtomicPair.Op)))))
+                  : prodO natO (procTC AtomicPair.Op)))))
         ∗ (named icommit (lease log_commit 0))
         ∗ (named ifst (lease main_fst (fst p)))
         ∗ (named isnd (lease main_snd (snd p)))
@@ -390,7 +390,7 @@ Section refinement_triples.
         source_ctx
         ∗ inv liN (CommitInner m Γ)
         ∗ (named i1 (own Γ.(γflag) (◯ (Excl' (S base, thd)
-             : (optionUR (exclR (prodC natC (prodC natC (procTC (AtomicPair.Op))))))))))
+             : (optionUR (exclR (prodO natO (prodO natO (procTC (AtomicPair.Op))))))))))
         ∗ (named icommit (lease log_commit x))
         ∗ (named ifst (lease main_fst (fst p)))
         ∗ (named isnd (lease main_snd (snd p)))
@@ -401,7 +401,7 @@ Section refinement_triples.
       write_disk log_commit 0
     {{{ RET tt;
         (named i1 (own Γ.(γflag) (◯ Excl' (0, (0, existT _ (Ret tt))
-                  : prodC natC (procTC AtomicPair.Op)))))
+                  : prodO natO (procTC AtomicPair.Op)))))
         ∗ (named icommit (lease log_commit 0))
         ∗ (named ifst (lease main_fst (fst p)))
         ∗ (named isnd (lease main_snd (snd p)))
@@ -593,14 +593,14 @@ Ltac wp_step :=
       end.
 
 Definition helperΣ : gFunctors :=
-#[GFunctor (authR (optionUR (exclR (prodC natC (prodC natC (procTC (AtomicPair.Op)))))));
-    GFunctor (authR (optionUR (exclR (prodC natC natC))))].
+#[GFunctor (authR (optionUR (exclR (prodO natO (prodO natO (procTC (AtomicPair.Op)))))));
+    GFunctor (authR (optionUR (exclR (prodO natO natO))))].
 
 Instance subG_helperΣ :
   subG helperΣ Σ →
-  inG Σ (authR (optionUR (exclR (prodC natC (prodC natC (procTC (AtomicPair.Op))))))).
+  inG Σ (authR (optionUR (exclR (prodO natO (prodO natO (procTC (AtomicPair.Op))))))).
 Proof. solve_inG. Qed.
-Instance subG_helperΣ' : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (prodC natC natC)))).
+Instance subG_helperΣ' : subG helperΣ Σ → inG Σ (authR (optionUR (exclR (prodO natO natO)))).
 Proof. solve_inG. Qed.
 
 Definition Σ : gFunctors := #[Adequacy.exmachΣ; @cfgΣ AtomicPair.Op AtomicPair.l; lockΣ; helperΣ].
@@ -622,13 +622,13 @@ Definition init_absr σ1a σ1c :=
   Instance CFG : @cfgPreG AtomicPair.Op AtomicPair.l Σ. apply _. Qed.
   Instance HEX : ExMach.Adequacy.exmachPreG Σ. apply _. Qed.
   Instance INV : Adequacy.invPreG Σ. apply _. Qed.
-  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitC)))). apply _. Qed.
+  Instance REG : inG Σ (csumR countingR (authR (optionUR (exclR unitO)))). apply _. Qed.
 
-  Global Instance inG_inst1: inG Σ (authR (optionUR (exclR (prodC natC natC)))).
+  Global Instance inG_inst1: inG Σ (authR (optionUR (exclR (prodO natO natO)))).
   Proof. apply _. Qed.
 
   Global Instance inG_inst2:
-    inG Σ (authR (optionUR (exclR (prodC natC (prodC natC (procTC AtomicPair.Op)))))).
+    inG Σ (authR (optionUR (exclR (prodO natO (prodO natO (procTC AtomicPair.Op)))))).
   Proof. apply _. Qed.
 
   Global Instance inG_inst3: lockG Σ.

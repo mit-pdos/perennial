@@ -29,7 +29,7 @@ Module Type refinement_type.
   Notation compile_proc_seq := (compile_proc_seq impl).
   Context `{CFG: cfgPreG OpT Λa Σ}.
   Context `{INV: Adequacy.invPreG Σ}.
-  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitC))))}.
+  Context `{REG: inG Σ (csumR countingR (authR (optionUR (exclR unitO))))}.
   Context {Hinstance: ∀ Σ, exmachG Σ → irisG OpC Λc Σ}.
   Context {Hinstance_reg: ∀ Σ, exmachG Σ → tregG Σ}.
   Context (crash_inner: forall {_ : @cfgG OpT Λa Σ} {_: exmachG Σ}, iProp Σ).
@@ -345,7 +345,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
       { constructor. }
       set (Hreg' := {| treg_name := tR; treg_counter_inG := _ |}).
       iAssert (own tR (Cinl (Count 1)) ∗ own tR (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
-      { rewrite /Registered -own_op Cinl_op counting_op' //=. }
+      { rewrite /Registered -own_op -Cinl_op counting_op' //=. }
       iMod (init_exec_inner $! _ Hreg' _) as (Hex') "H"; eauto.
       iModIntro. unshelve (iExists Hex', Hreg', _); first by eauto.
       iIntros "#Hctx Hstate".
@@ -416,7 +416,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
        { constructor. }
        iAssert (own tR_fresh' (Cinl (Count 1))
                     ∗ own tR_fresh' (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
-       { rewrite /Registered -own_op Cinl_op counting_op' //=. }
+       { rewrite /Registered -own_op -Cinl_op counting_op' //=. }
        set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
        iSpecialize ("Hfinish" $! _ _ _ with "[] [Hmach Ht]").
        { eauto. }
@@ -443,7 +443,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     { constructor. }
     iAssert (own tR_fresh' (Cinl (Count 1))
                  ∗ own tR_fresh' (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
-    { rewrite /Registered -own_op Cinl_op counting_op' //=. }
+    { rewrite /Registered -own_op -Cinl_op counting_op' //=. }
     set (tR''' := {| treg_name := tR_fresh'; treg_counter_inG := _ |}).
     iSpecialize ("Hinv_post" $! tR''').
      rewrite set_inv_reg_spec1.
@@ -519,7 +519,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
        { constructor. }
        iAssert (own tR_fresh'' (Cinl (Count 1))
                     ∗ own tR_fresh'' (Cinl (Count (-1))))%I with "[Ht]" as "(Ht&Hreg)".
-       { rewrite /Registered -own_op Cinl_op counting_op' //=. }
+       { rewrite /Registered -own_op -Cinl_op counting_op' //=. }
        set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
        destruct σ2c.
        iMod ("Hfinish" $! H4 _ with "[$]") as (Hex') "(Hinterp&Hfinish)".
@@ -543,7 +543,7 @@ Module refinement (RT: refinement_type) (RO: refinement_obligations RT).
     { constructor. }
     iAssert (own tR_fresh'' (Cinl (Count 1))
                  ∗ own tR_fresh'' (Cinl (Count (-1))))%I with "[Ht']" as "(Ht&Hreg)".
-    { rewrite /Registered -own_op Cinl_op counting_op' //=. }
+    { rewrite /Registered -own_op -Cinl_op counting_op' //=. }
     set (tR'''' := {| treg_name := tR_fresh''; treg_counter_inG := _ |}).
     iSpecialize ("Hinv_post" $! tR'''').
     rewrite set_inv_reg_spec1.
