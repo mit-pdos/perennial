@@ -26,6 +26,9 @@ h2, h3, h4 {
     font-size: 1.5em;
 }
 code {
-    font-family: "Lucida Console", Monaco, monospace
+    font-family: "Lucida Console", Monaco, monospace;
+}
+pre {
+    background-color: #ebebeb;
 }
 </style>

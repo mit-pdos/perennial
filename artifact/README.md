@@ -1,6 +1,4 @@
----
-title: "Verifying concurrent storage systems with Armada"
----
+# Verifying concurrent crash-safe systems with Armada
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
@@ -11,7 +9,7 @@ as the Armada license).
 As indicated in each of their repositories, Armada, Goose, and Mailboat are all
 MIT licensed.
 
-# Getting started
+## Getting started
 
 The easiest way to use the artifact is to use the provided [VirtualBox
 appliance](https://www.dropbox.com/s/tmb9cv8lazuk37c/armada-vm.ova?dl=0). We
@@ -53,7 +51,7 @@ Our code is open source; please feel free to share anything in this artifact or
 the codebase (although please point people to GitHub rather than this static
 artifact).
 
-## Code and dependencies
+### Code and dependencies
 
 Here's the code the artifact covers:
 
@@ -73,7 +71,7 @@ in the VM image):
 - gnuplot
 - postal (a mail server benchmarking library)
 
-# About this artifact
+## About this artifact
 
 The artifact documentation was prepared by using `armada/artifact/prepare.sh`.
 The artifact distribution also includes a few scripts from the paper's source
