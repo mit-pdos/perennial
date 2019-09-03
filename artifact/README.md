@@ -1,4 +1,4 @@
-# Verifying concurrent crash-safe systems with Armada
+# Verifying concurrent, crash-safe systems with Armada
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
@@ -8,6 +8,11 @@ as the Armada license).
 
 As indicated in each of their repositories, Armada, Goose, and Mailboat are all
 MIT licensed.
+
+**Note:** we renamed the system from Armada to Perennial after the artifact
+evaluation. Where this artifact refers to Armada, we mean Perennial. If you want
+to use the artifact and this makes things difficult, let us know and we can
+update it.
 
 ## Getting started
 
