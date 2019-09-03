@@ -105,6 +105,9 @@ clean:
 	@echo "CLEAN vo glob aux"
 	$(Q)rm -f $(PROJ_VFILES:.v=.vo) $(PROJ_VFILES:.v=.glob)
 	$(Q)find src -name ".*.aux" -exec rm {} \;
+	$(Q)find src -name ".lia.cache" -exec rm {} \;
+	@echo "CLEAN extract"
+	$(Q)rm -f replicated-disk/extract/*.hs
 
 clean-all: clean-ext clean
 	$(Q)rm -f timing.sqlite3
