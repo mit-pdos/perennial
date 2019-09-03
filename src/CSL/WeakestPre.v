@@ -1,5 +1,5 @@
 (* This is a port of weakestpre.v from the Iris Project to the shallow embedding
-   used in Armada. (See external/iris-coq/theories/program_logic/weakestpre.v)
+   used in Perennial. (See external/iris-coq/theories/program_logic/weakestpre.v)
    *)
 
 From Transitions Require Import Relations Rewriting.

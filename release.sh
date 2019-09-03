@@ -5,10 +5,10 @@
 set -e
 
 src="$1"
-output_dir=/tmp/armada
+output_dir=/tmp/perennial
 
 if [ -z "$src" ]; then
-  echo "Usage: $0 <armada src>"
+  echo "Usage: $0 <perennial src>"
   exit 1
 fi
 
@@ -32,5 +32,5 @@ find "$output_dir" -name '.gitignore' -exec rm {} \;
 
 # package
 find "$output_dir" -type f -name '._*' -delete
-tar -czvf armada.tar.gz -C "$(dirname "$output_dir")" "$(basename "$output_dir")"
+tar -czvf perennial.tar.gz -C "$(dirname "$output_dir")" "$(basename "$output_dir")"
 rm -r "$output_dir"

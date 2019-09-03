@@ -4,7 +4,7 @@ From Coq Require Extraction.
 Require Import ExtrHaskellNatInt.
 Require Import ExtrHaskellBasic.
 
-From Armada Require Import Examples.ReplicatedDisk.ReplicatedDiskImpl.
+From Perennial Require Import Examples.ReplicatedDisk.ReplicatedDiskImpl.
 
 Extraction Language Haskell.
 

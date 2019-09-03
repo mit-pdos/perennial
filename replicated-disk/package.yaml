@@ -1,12 +1,12 @@
 name: replicated-disk
 version: 0.1.0.0
-github: "mit-pdos/armada"
+github: "mit-pdos/perennial"
 license: MIT
-author: "Armada authors"
+author: "Perennial authors"
 maintainer: "tchajed@mit.edu"
-copyright: "2019 Armada authors"
+copyright: "2019 Perennial authors"
 
-description: Please see the Armada README on GitHub at <https://github.com/mit-pdos/armada>
+description: Please see the Perennial README on GitHub at <https://github.com/mit-pdos/perennial>
 
 dependencies:
   - base >= 4.7 && < 5

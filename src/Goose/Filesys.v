@@ -1,13 +1,13 @@
 From RecordUpdate Require Import RecordSet.
 From Tactical Require Import ProofAutomation.
 
-From Armada Require Import Spec.Proc.
-From Armada Require Import Spec.InjectOp.
-From Armada Require Import Spec.SemanticsHelpers.
-From Armada Require Import Spec.LockDefs.
-From Armada.Goose Require Import Machine.
-From Armada.Goose Require Import GoZeroValues.
-From Armada.Goose Require Import Heap.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.InjectOp.
+From Perennial Require Import Spec.SemanticsHelpers.
+From Perennial Require Import Spec.LockDefs.
+From Perennial.Goose Require Import Machine.
+From Perennial.Goose Require Import GoZeroValues.
+From Perennial.Goose Require Import Heap.
 
 From Classes Require Import EqualDec.
 From stdpp Require gmap.

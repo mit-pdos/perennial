@@ -8,7 +8,7 @@
    doesn't work the same way here, and you lose Leibniz Equality. *)
 
 From iris.algebra Require Import auth gmap agree.
-From Armada.CSL Require Import Counting Count_GHeap.
+From Perennial.CSL Require Import Counting Count_GHeap.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.

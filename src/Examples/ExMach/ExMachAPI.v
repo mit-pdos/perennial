@@ -1,7 +1,7 @@
 From Coq Require Import List.
 
 From stdpp Require Import gmap.
-From Armada Require Export Lib.
+From Perennial Require Export Lib.
 
 Module ExMach.
   Definition size := 1000.

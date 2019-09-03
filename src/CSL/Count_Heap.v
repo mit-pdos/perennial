@@ -1,13 +1,13 @@
 (* This is a modification of the Iris 'gen_heap'.v file to using counting
    permissions and arbitrary function maps instead of fractional permissions and gmaps
-   a very common pattern for Armada examples. *)
+   a very common pattern for Perennial examples. *)
 
 From iris.algebra Require Import auth agree functions csum.
-From Armada.CSL Require Import Counting.
+From Perennial.CSL Require Import Counting.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
-Require Export Armada.Spec.LockDefs.
+From Perennial Require Export Spec.LockDefs.
 
 Set Default Proof Using "Type".
 Import uPred.

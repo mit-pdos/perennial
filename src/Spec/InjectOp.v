@@ -1,4 +1,4 @@
-From Armada Require Import Spec.Proc.
+From Perennial Require Import Spec.Proc.
 
 Set Implicit Arguments.
 

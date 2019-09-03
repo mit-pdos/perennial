@@ -3,7 +3,7 @@
    a very common pattern for Argosy examples. *)
 (* TODO: this could be derived from Count_Heap.v, which is more generic *)
 From iris.algebra Require Import auth gmap agree.
-From Armada.CSL Require Import Counting.
+From Perennial.CSL Require Import Counting.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.

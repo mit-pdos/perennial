@@ -1,14 +1,14 @@
 From iris.algebra Require Import auth gmap list.
 Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
-From Armada.Examples.MailServer Require Import MailAPI MailAPILemmas MailHeap MailTriples.
-From Armada.Goose.Examples Require Import MailServer.
-From Armada.Goose.Proof Require Import Interp.
+From Perennial.Examples.MailServer Require Import MailAPI MailAPILemmas MailHeap MailTriples.
+From Perennial.Goose.Examples Require Import MailServer.
+From Perennial.Goose.Proof Require Import Interp.
 Require Import Goose.Proof.RefinementAdequacy.
-From Armada Require AtomicPair.Helpers.
-From Armada.Goose Require Import Machine GoZeroValues Heap GoLayer.
-From Armada.Goose Require Import Machine.
-From Armada.Goose Require Import GoZeroValues.
-From Armada.Goose Require Import ExplicitModel.
+From Perennial Require AtomicPair.Helpers.
+From Perennial.Goose Require Import Machine GoZeroValues Heap GoLayer.
+From Perennial.Goose Require Import Machine.
+From Perennial.Goose Require Import GoZeroValues.
+From Perennial.Goose Require Import ExplicitModel.
 
 Inductive compile_mail_base {gm: GoModel} : forall {T}, proc Mail.Op T → proc GoLayer.Op T → Prop :=
 | cm_open :

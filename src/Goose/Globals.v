@@ -1,9 +1,9 @@
 From RecordUpdate Require Import RecordUpdate.
 From Transitions Require Import Relations.
 
-From Armada Require Import Spec.Proc.
-From Armada Require Import Spec.InjectOp.
-From Armada.Goose Require Import Machine.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.InjectOp.
+From Perennial.Goose Require Import Machine.
 
 Set Implicit Arguments.
 

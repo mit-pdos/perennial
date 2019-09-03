@@ -3,12 +3,12 @@ From RecordUpdate Require Import RecordUpdate.
 From Tactical Require Import ProofAutomation.
 From Transitions Require Import Relations.
 
-From Armada Require Import Helpers.RecordZoom.
+From Perennial Require Import Helpers.RecordZoom.
 
-From Armada Require Import Spec.Proc.
-From Armada Require Import Spec.InjectOp.
-From Armada Require Import Spec.Layer.
-From Armada.Goose Require Export Machine Heap Filesys Globals.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.InjectOp.
+From Perennial Require Import Spec.Layer.
+From Perennial.Goose Require Export Machine Heap Filesys Globals.
 
 Inductive Op `{GoModel} : Type -> Type :=
 | FilesysOp : forall T, FS.Op T -> Op T

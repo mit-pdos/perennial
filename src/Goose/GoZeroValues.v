@@ -1,4 +1,4 @@
-From Armada.Goose Require Import Machine.
+From Perennial.Goose Require Import Machine.
 
 Class HasGoZero (T:Type) := zeroValue : T.
 

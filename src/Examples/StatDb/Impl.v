@@ -1,6 +1,6 @@
 From Coq Require Import List.
 
-From Armada Require Export Lib.
+From Perennial Require Export Lib.
 Require Import ExMach.ExMachAPI.
 
 

@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 
-From Armada Require Export Lib.
+From Perennial Require Export Lib.
 
 Import RelationNotations.
 

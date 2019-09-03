@@ -1,5 +1,5 @@
-From Armada Require Import Examples.Logging.LogAPI.
-From Armada Require Import ExMach.ExMachAPI.
+From Perennial Require Import Examples.Logging.LogAPI.
+From Perennial Require Import ExMach.ExMachAPI.
 
 Import ProcNotations.
 Local Open Scope proc.

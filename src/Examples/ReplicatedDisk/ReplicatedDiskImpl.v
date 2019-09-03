@@ -1,8 +1,8 @@
 From Coq Require Import List.
 
 From stdpp Require Import gmap.
-From Armada Require Export Lib.
-From Armada Require Import TwoDiskAPI OneDiskAPI.
+From Perennial Require Export Lib.
+From Perennial Require Import TwoDiskAPI OneDiskAPI.
 Import TwoDisk.
 
 Definition write (addr: nat) (v: nat) :=

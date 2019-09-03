@@ -8,7 +8,7 @@ From stdpp Require Import decidable countable.
 From Classes Require Import EqualDec.
 Import EqualDecNotation.
 
-From Armada Require Import Goose.Machine.
+From Perennial Require Import Goose.Machine.
 From Coq Require Import List.
 
 Set Implicit Arguments.

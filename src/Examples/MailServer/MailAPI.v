@@ -2,11 +2,11 @@ From RecordUpdate Require Import RecordSet.
 From stdpp Require gmap.
 From stdpp Require Import fin_maps.
 
-From Armada Require Export Lib.
-From Armada Require Import Spec.SemanticsHelpers Spec.LockDefs.
-From Armada.Goose Require Import Machine Heap Examples.MailServer.
+From Perennial Require Export Lib.
+From Perennial Require Import Spec.SemanticsHelpers Spec.LockDefs.
+From Perennial.Goose Require Import Machine Heap Examples.MailServer.
 
-From Armada.Helpers Require Import RecordZoom.
+From Perennial.Helpers Require Import RecordZoom.
 
 From Transitions Require Import Relations.
 

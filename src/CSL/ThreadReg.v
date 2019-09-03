@@ -3,7 +3,7 @@ From Transitions Require Import Relations.
 From iris.algebra Require Export auth functions csum excl.
 Require Export CSL.WeakestPre CSL.Lifting CSL.Counting.
 From iris.proofmode Require Export tactics.
-From Armada Require Export Lib.
+From Perennial Require Export Lib.
 
 Class tregG Σ := TRegG {
                      treg_counter_inG :> inG Σ (csumR countingR (authR (optionUR (exclR unitO))));

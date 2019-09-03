@@ -8,9 +8,9 @@ Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.Count_Ghost
                CSL.Count_Typed_Heap CSL.ThreadReg CSL.Count_Double_Heap CSL.Count_GHeap.
 From iris.proofmode Require Export tactics.
 
-From Armada.Goose Require Import Machine GoZeroValues Heap GoLayer.
-From Armada.Goose Require Import Machine.
-From Armada.Goose Require Import GoZeroValues.
+From Perennial.Goose Require Import Machine GoZeroValues Heap GoLayer.
+From Perennial.Goose Require Import Machine.
+From Perennial.Goose Require Import GoZeroValues.
 
 Set Default Proof Using "Type".
 
