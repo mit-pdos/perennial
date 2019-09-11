@@ -13,3 +13,7 @@ This project uses git submodules to include several dependencies. You can either
 We compile with [coqc.py](etc/coqc.py), a Python wrapper around `coqc` to get timing information; due to limitations in the Makefile, this wrapper is required to pass the right flags to Coq even if not using the timing information. You'll need Python3 and the `argparse` library (`pip3 install argparse`) to run the wrapper.
 
 To compile just run `make` with Coq on your `$PATH`.
+
+## Publications
+
+Perennial is described in an upcoming SOSP paper, "[Verifying concurrent, crash-safe systems with Perennial](https://www.chajed.io/papers/perennial:sosp2019.pdf)".
