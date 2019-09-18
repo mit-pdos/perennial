@@ -12,6 +12,10 @@ From Perennial.Goose Require Import Machine GoZeroValues Heap GoLayer.
 From Perennial.Goose Require Import Machine.
 From Perennial.Goose Require Import GoZeroValues.
 
+(* adjust some defaults by overwriting imports *)
+From Transitions Require Import Relations.
+Import List.
+
 Set Default Proof Using "Type".
 
 Import Data.

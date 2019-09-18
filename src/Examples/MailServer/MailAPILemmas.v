@@ -26,6 +26,8 @@ Import Filesys.FS.
 Import GoLayer.Go.
 Import Mail.
 
+Import Transitions.Relations Coq.Lists.List.
+
 Ltac non_err' :=
   (match goal with
   | [ |- context[?x = Some _ ]] =>

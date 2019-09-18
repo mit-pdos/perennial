@@ -3,7 +3,7 @@ From Coq Require Import List.
 From stdpp Require Import gmap.
 From Perennial Require Export Lib.
 From Perennial Require Import TwoDiskAPI OneDiskAPI.
-Import TwoDisk.
+Import TwoDisk TwoDiskAPI.
 
 Definition write (addr: nat) (v: nat) :=
   (if lt_dec addr size then

@@ -22,6 +22,8 @@ Import Filesys.FS.
 Import GoLayer.Go.
 Import Mail.
 
+Import Transitions.Relations Coq.Lists.List.
+
   (* Every pointer in the abstract state should have a matching
      pointer with the same value in the concrete state. *)
   Definition HeapInv' (σ : DynMap gmodel.(@Ptr) Data.ptrModel) : iProp Σ :=
