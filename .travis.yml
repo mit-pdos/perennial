@@ -4,7 +4,7 @@ language: minimal
 notifications:
   email:
     - tchajed@mit.edu
-    - jtassaro@andrew.cmu.edu
+    - joseph.tassarotti@bc.edu
 
 branches:
   only:
