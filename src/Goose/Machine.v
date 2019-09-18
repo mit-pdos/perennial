@@ -33,8 +33,8 @@ Definition compare_to (c: comparison) x y
   - destruct (lt_dec y x); auto; right; abstract omega.
 Defined.
 
-Definition uint64_le (x y:uint64) := lt_dec.
-Definition uint64_ge (x y:uint64) := ge_dec.
+Definition uint64_le (x y:uint64) := lt_dec x y.
+Definition uint64_ge (x y:uint64) := ge_dec x y.
 
 Record FixedLengthEncoder bytes intTy byteTy (enc:intTy -> option (list byteTy)) (dec:list byteTy -> intTy) :=
   { encode_length_ok : forall x bs, enc x = Some bs -> length bs = bytes;

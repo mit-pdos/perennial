@@ -145,6 +145,9 @@ Definition returnTwoWrapper {model:GoModel} (data:slice.t byte) : proc (uint64 *
   let! (a, b) <- returnTwo data;
   Ret (a, b).
 
+Definition PanicAtTheDisco {model:GoModel} : proc unit :=
+  Data.panic.
+
 Module Block.
   Record t {model:GoModel} := mk {
     Value: uint64;

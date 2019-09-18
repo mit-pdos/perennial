@@ -59,6 +59,7 @@ Module Data.
   (* TODO: doesn't really belong in a heap model, but very few operations are
   non-deterministic but don't depend on the heap *)
   | RandomUint64 : Op uint64
+  | Panic : Op unit
   .
 
   Definition nonAtomicOp {Op Op'} {i:Injectable Op Op'} {T}
@@ -170,6 +171,7 @@ Module Data.
     Definition stringToBytes s := Call! StringToBytes s.
 
     Definition randomUint64 := Call! RandomUint64.
+    Definition panic := Call! Panic.
   End OpWrappers.
 
 
@@ -392,6 +394,7 @@ Module Data.
                 slice.offset := 0;
                 slice.length := String.length s; |}
     | RandomUint64 => such_that (fun _ (r:uint64) => True)
+    | Panic => error
     end.
 
   Global Instance empty_heap : Empty State := {| allocs := ∅ |}.
