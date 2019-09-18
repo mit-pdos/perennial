@@ -704,7 +704,7 @@ Module repRO : twodisk_refinement_obligations repRT.
     iExists hS.
     rewrite /ExecInner.
     iSplitL "Hmem HL0 HL1 hSa".
-    { iModIntro. iApply ?big_sepM_dom.
+    { iModIntro. iApply big_sepM_dom.
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       iApply (big_sepM_mono with "H").
       iIntros (k x Hlookup) "(((?&?)&?)&?)".
@@ -767,8 +767,8 @@ Module repRO : twodisk_refinement_obligations repRT.
     iSplitR "Hmem Hl hSa"; last first.
     {
       rewrite Hdom1 addrset_unfold.
-      iApply big_opM_dom.
-      iEval (rewrite -big_opM_dom) in "Hl".
+      iApply big_sepM_dom.
+      iEval (rewrite -big_sepM_dom) in "Hl".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       rewrite /UnlockedInv.
       iApply (big_sepM_mono with "H").
@@ -849,8 +849,8 @@ Module repRO : twodisk_refinement_obligations repRT.
     iSplitR "Hmem Hl hSa"; last first.
     {
       rewrite Hdom1 addrset_unfold.
-      iApply big_opM_dom.
-      iEval (rewrite -big_opM_dom) in "Hl".
+      iApply big_sepM_dom.
+      iEval (rewrite -big_sepM_dom) in "Hl".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       rewrite /UnlockedInv.
       iApply (big_sepM_mono with "H").
@@ -959,9 +959,9 @@ Module repRO : twodisk_refinement_obligations repRT.
     iSplitL "Hmem Hl hSa".
     {
       rewrite Hdom1 addrset_unfold.
-      iApply big_opM_dom.
-      iEval (rewrite -big_opM_dom) in "Hl".
-      iEval (rewrite big_opM_dom dom_fmap_L -big_opM_dom) in "hSa".
+      iApply big_sepM_dom.
+      iEval (rewrite -big_sepM_dom) in "Hl".
+      iEval (rewrite big_sepM_dom dom_fmap_L -big_sepM_dom) in "hSa".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       rewrite /LockInv.
       iApply (big_sepM_mono with "H").
