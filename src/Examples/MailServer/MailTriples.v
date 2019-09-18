@@ -281,7 +281,7 @@ Import Mail.
 
   Definition writeBuf {model:GoModel} f (data:slice.t byte) :=
     (Loop (fun buf =>
-            if compare_to (slice.length buf) 4096 Lt
+            if compare_to Lt (slice.length buf) 4096
             then
               _ <- FS.append f buf;
                 LoopRet tt
@@ -372,7 +372,7 @@ Import Mail.
   _ <- Loop (fun pf =>
         buf <- FS.readAt f pf.(partialFile.off) 512;
         newData <- Data.sliceAppendSlice pf.(partialFile.data) buf;
-        if compare_to (slice.length buf) 512 Lt
+        if compare_to Lt (slice.length buf) 512
         then
           _ <- Data.writePtr fileContents newData;
           LoopRet tt

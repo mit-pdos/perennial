@@ -24,6 +24,8 @@ Definition UntypedStringConstant : string := "bar".
 
 Definition TypedInt : uint64 := 32.
 
+Definition ConstWithArith : uint64 := 4 + 3 * TypedInt.
+
 Definition typedLiteral {model:GoModel} : proc uint64 :=
   Ret 3.
 
@@ -127,12 +129,12 @@ Definition DoSomething {model:GoModel} (s:string) : proc unit :=
 
 Definition conditionalInLoop {model:GoModel} : proc unit :=
   Loop (fun i =>
-        _ <- if compare_to i 3 Lt
+        _ <- if compare_to Lt i 3
         then
           _ <- DoSomething ("i is small");
           Ret tt
         else Ret tt;
-        if compare_to i 5 Gt
+        if compare_to Gt i 5
         then LoopRet tt
         else Continue (i + 1)) 0.
 
@@ -195,7 +197,7 @@ Definition ReplicatedDiskWrite {model:GoModel} (a:uint64) (v:Block.t) : proc uni
 
 Definition ReplicatedDiskRecover {model:GoModel} : proc unit :=
   Loop (fun a =>
-        if compare_to a DiskSize Gt
+        if compare_to Gt a DiskSize
         then LoopRet tt
         else
           let! (v, ok) <- TwoDiskRead Disk1 a;
@@ -215,7 +217,7 @@ Definition simpleSpawn {model:GoModel} : proc unit :=
   v <- Data.newPtr uint64;
   _ <- Spawn (_ <- Data.lockAcquire l Reader;
          x <- Data.readPtr v;
-         _ <- if compare_to x 0 Gt
+         _ <- if compare_to Gt x 0
          then
            _ <- Skip;
            Ret tt
@@ -230,7 +232,7 @@ Definition threadCode {model:GoModel} (tid:uint64) : proc unit :=
 
 Definition loopSpawn {model:GoModel} : proc unit :=
   _ <- Loop (fun i =>
-        if compare_to i 10 Gt
+        if compare_to Gt i 10
         then LoopRet tt
         else
           _ <- Spawn (threadCode i);

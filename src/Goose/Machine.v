@@ -16,7 +16,7 @@ Instance eqdecision `{dec:EqualDec A} : EqDecision A := dec.
 
 Definition uint64 := nat.
 
-Definition compare_to x y (c: comparison)
+Definition compare_to (c: comparison) x y
   : {match c with
      | Lt => x < y
      | Gt => y < x
@@ -32,6 +32,9 @@ Definition compare_to x y (c: comparison)
   - destruct (lt_dec x y); auto; right; abstract omega.
   - destruct (lt_dec y x); auto; right; abstract omega.
 Defined.
+
+Definition uint64_le (x y:uint64) := lt_dec.
+Definition uint64_ge (x y:uint64) := ge_dec.
 
 Record FixedLengthEncoder bytes intTy byteTy (enc:intTy -> option (list byteTy)) (dec:list byteTy -> intTy) :=
   { encode_length_ok : forall x bs, enc x = Some bs -> length bs = bytes;

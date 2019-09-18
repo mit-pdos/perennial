@@ -24,7 +24,7 @@ Definition readMessage {model:GoModel} (userDir:string) (name:string) : proc str
   _ <- Loop (fun pf =>
         buf <- FS.readAt f pf.(partialFile.off) 512;
         newData <- Data.sliceAppendSlice pf.(partialFile.data) buf;
-        if compare_to (slice.length buf) 512 Lt
+        if compare_to Lt (slice.length buf) 512
         then
           _ <- Data.writePtr fileContents newData;
           LoopRet tt
@@ -92,7 +92,7 @@ Definition createTmp {model:GoModel} : proc (File * string) :=
 Definition writeTmp {model:GoModel} (data:slice.t byte) : proc string :=
   let! (f, name) <- createTmp;
   _ <- Loop (fun buf =>
-        if compare_to (slice.length buf) 4096 Lt
+        if compare_to Lt (slice.length buf) 4096
         then
           _ <- FS.append f buf;
           LoopRet tt

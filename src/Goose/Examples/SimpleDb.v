@@ -45,7 +45,7 @@ End Entry.
    The uint64 represents the number of bytes consumed; if 0,
    then decoding failed, and the value of type T should be ignored. *)
 Definition DecodeUInt64 {model:GoModel} (p:slice.t byte) : proc (uint64 * uint64) :=
-  if compare_to (slice.length p) 8 Lt
+  if compare_to Lt (slice.length p) 8
   then Ret (0, 0)
   else
     n <- Data.uint64Get p;
@@ -65,7 +65,7 @@ Definition DecodeEntry {model:GoModel} (data:slice.t byte) : proc (Entry.t * uin
       Ret ({| Entry.Key := 0;
               Entry.Value := slice.nil _; |}, 0)
     else
-      if compare_to (slice.length data) (l1 + l2 + valueLen) Lt
+      if compare_to Lt (slice.length data) (l1 + l2 + valueLen)
       then
         Ret ({| Entry.Key := 0;
                 Entry.Value := slice.nil _; |}, 0)
@@ -87,7 +87,7 @@ End lazyFileBuf.
 Definition readTableIndex {model:GoModel} (f:File) (index:Map uint64) : proc unit :=
   Loop (fun buf =>
         let! (e, l) <- DecodeEntry buf.(lazyFileBuf.next);
-        if compare_to l 0 Gt
+        if compare_to Gt l 0
         then
           _ <- Data.mapAlter index e.(Entry.Key) (fun _ => Some (8 + buf.(lazyFileBuf.offset)));
           Continue {| lazyFileBuf.offset := buf.(lazyFileBuf.offset) + l;
@@ -119,7 +119,7 @@ Definition readValue {model:GoModel} (f:File) (off:uint64) : proc (slice.t byte)
   totalBytes <- Data.uint64Get startBuf;
   let buf := slice.skip 8 startBuf in
   let haveBytes := slice.length buf in
-  if compare_to haveBytes totalBytes Lt
+  if compare_to Lt haveBytes totalBytes
   then
     buf2 <- FS.readAt f (off + 512) (totalBytes - haveBytes);
     newBuf <- Data.sliceAppendSlice buf buf2;
@@ -318,7 +318,7 @@ Definition tablePutBuffer {model:GoModel} (w:tableWriter.t) (buf:Map (slice.t by
 Definition tablePutOldTable {model:GoModel} (w:tableWriter.t) (t:Table.t) (b:Map (slice.t byte)) : proc unit :=
   Loop (fun buf =>
         let! (e, l) <- DecodeEntry buf.(lazyFileBuf.next);
-        if compare_to l 0 Gt
+        if compare_to Gt l 0
         then
           let! (_, ok) <- Data.mapGet b e.(Entry.Key);
           _ <- if negb ok

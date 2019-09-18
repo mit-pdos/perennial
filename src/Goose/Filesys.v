@@ -18,6 +18,7 @@ From Transitions Require Import Relations.
 Import EqualDecNotation.
 
 Module FS.
+  (* TODO: can we delete this? we now use a pair of strings directly *)
   Module path.
     Record t :=
       mk { dir: string;
