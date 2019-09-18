@@ -7,6 +7,8 @@ Unset Implicit Arguments.
 Import agree.
 From Tactical Require Import UnfoldLemma.
 
+Import TwoDiskAPI.
+
 Definition addrset := dom (gset nat) init_zero.
 Opaque init_zero size.
 
@@ -702,7 +704,7 @@ Module repRO : twodisk_refinement_obligations repRT.
     iExists hS.
     rewrite /ExecInner.
     iSplitL "Hmem HL0 HL1 hSa".
-    { iModIntro. iApply big_opM_dom.
+    { iModIntro. iApply ?big_sepM_dom.
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       iApply (big_sepM_mono with "H").
       iIntros (k x Hlookup) "(((?&?)&?)&?)".

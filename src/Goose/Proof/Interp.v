@@ -364,6 +364,15 @@ Lemma wp_wait s E :
   {{{ ▷ Registered }}} Wait @ s; E {{{ RET tt; AllDone }}}.
 Proof. eapply wp_wait; eauto using thread_reg1, thread_reg2. Qed.
 
+Lemma wp_panic s E:
+  {{{ False }}}
+     panic @ s ; E
+  {{{ RET tt; False }}}.
+Proof.
+  iIntros (Φ Hpre) "HΦ".
+  destruct Hpre.
+Qed.
+
 Lemma wp_setX (l: slice.t LockRef) s E :
   {{{ global ↦ None }}}
     Globals.setX l @ s; E

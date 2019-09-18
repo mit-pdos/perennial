@@ -10,6 +10,8 @@ From Perennial.Goose Require Import Machine.
 From Perennial.Goose Require Import GoZeroValues.
 From Perennial.Goose Require Import ExplicitModel.
 
+Import stdpp.base.
+
 Inductive compile_mail_base {gm: GoModel} : forall {T}, proc Mail.Op T → proc GoLayer.Op T → Prop :=
 | cm_open :
     compile_mail_base (Call Mail.Open)
@@ -345,7 +347,8 @@ Qed.
         eapply nth_error_In; eauto.
       - rewrite elem_of_list_to_set. rewrite elem_of_list_In.
         assert (NoDup ltmps) as HNoDup.
-        { rewrite Hltmps. apply NoDup_elements. }
+        { rewrite Hltmps.
+          apply NoDup_elements. }
         eapply nth_error_split in Heq_curr_name as (l1&l2&Hsplit&Hlen').
         rewrite Hsplit. rewrite -Hlen' take_app.
         rewrite Hsplit in HNoDup.
@@ -413,8 +416,8 @@ Qed.
     }
     iSplitL "".
     { iPureIntro. destruct Hinita as (?&->&?); auto. }
-    iDestruct (big_opS_delete with "Hdirlocks") as "(Hlock&Hdirlocks)"; eauto.
-    iDestruct (big_opM_delete with "Hdirs") as "(Hspool&Hdirs)".
+    iDestruct (big_sepS_delete with "Hdirlocks") as "(Hlock&Hdirlocks)"; eauto.
+    iDestruct (big_sepM_delete with "Hdirs") as "(Hspool&Hdirs)".
     { rewrite /init_base in Hinitc. intuition. eauto. }
     iSplitR "Htmp Hlock Hspool".
     { rewrite /MsgsInv. iExists [].

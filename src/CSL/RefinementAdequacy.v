@@ -11,6 +11,7 @@ Unset Implicit Arguments.
 
 Import RelationNotations.
 From Transitions Require Import Relations.
+Import Adequacy.
 
 Definition wp_recovery_refinement {Ta Tc R OpTa OpTc} Σ (Λa: Layer OpTa) (Λc: Layer OpTc)
         `{invPreG Σ} `{cfgPreG OpTa Λa Σ}
