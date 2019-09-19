@@ -48,6 +48,8 @@ Module Disk.
   End OpWrappers.
 
   Record State :=
+    (* TODO: this isn't accurate since a Block is an alias for a slice, whereas
+    the state of the disk is the underlying data *)
     mkState { blocks: list Block; }.
 
   Global Instance _eta : Settable State :=
@@ -55,8 +57,20 @@ Module Disk.
 
   Import RelationNotations.
 
+  Definition inBounds a : relation State State unit :=
+    readSome (fun s => nth_error s.(blocks) a);; pure tt.
+
   Definition step T (op:Op T) : relation State State T :=
-    error.
+    match op with
+    (* TODO: these semantics don't make sense, they need to mediate between the
+    heap and the disk *)
+    | Read a => inBounds a;;
+                        such_that (fun s r => nth_error s.(blocks) a = Some r)
+    | Write a v => inBounds a;;
+                           puts (set blocks (list_insert a v))
+    | Size => reads (fun s => length s.(blocks))
+    | Barrier => pure tt (* TODO: track buffers *)
+    end.
 
   Definition crash_step : relation State State unit :=
     pure tt.
