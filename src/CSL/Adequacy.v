@@ -19,7 +19,7 @@ Definition invΣ : gFunctors :=
     GFunctor (gset_disjUR positive)].
 
 Class invPreG (Σ : gFunctors) : Set := WsatPreG {
-  inv_inPreG :> inG Σ (authR (gmapUR positive (agreeR (laterO (iPreProp Σ)))));
+  inv_inPreG :> inG Σ (authR (gmapUR positive (agreeR (laterO (iPrePropO Σ)))));
   enabled_inPreG :> inG Σ coPset_disjR;
   disabled_inPreG :> inG Σ (gset_disjR positive);
 }.

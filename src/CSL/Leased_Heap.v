@@ -72,7 +72,7 @@ Definition next_master `{hG: leased_heapG L V Σ} (l: L) (v : V) :=
 Section lease_heap.
   Context {L V} `{Countable L, hG: !leased_heapG L V Σ}.
 
-  Implicit Types P Q : iProp Σ.
+  Implicit Types P Q : iPropO Σ.
   Implicit Types Φ : V → iProp Σ.
   Implicit Types σ : gmap L V.
   Implicit Types m : gmap L gname.
