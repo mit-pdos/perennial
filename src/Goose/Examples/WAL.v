@@ -8,11 +8,12 @@ Definition logLength : uint64 := 1 + 2 * MaxTxnWrites.
 
 Module Log.
   Record t {model:GoModel} := mk {
+    l: LockRef;
     cache: Map Block;
     length: ptr uint64;
   }.
   Arguments mk {model}.
-  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _).
+  Global Instance t_zero {model:GoModel} : HasGoZero t := mk (zeroValue _) (zeroValue _) (zeroValue _).
 End Log.
 
 Definition intToBlock {model:GoModel} (a:uint64) : proc Block :=
@@ -37,26 +38,43 @@ Definition New {model:GoModel} : proc Log.t :=
   _ <- Disk.write 0 header;
   lengthPtr <- Data.newPtr uint64;
   _ <- Data.writePtr lengthPtr 0;
+  l <- Data.newLock;
   Ret {| Log.cache := cache;
-         Log.length := lengthPtr; |}.
+         Log.length := lengthPtr;
+         Log.l := l; |}.
+
+Definition lock {model:GoModel} (l:Log.t) : proc unit :=
+  Data.lockAcquire l.(Log.l) Writer.
+
+Definition unlock {model:GoModel} (l:Log.t) : proc unit :=
+  Data.lockRelease l.(Log.l) Writer.
 
 (* BeginTxn allocates space for a new transaction in the log.
 
    Returns true if the allocation succeeded. *)
 Definition BeginTxn {model:GoModel} (l:Log.t) : proc bool :=
+  _ <- lock l;
   length <- Data.readPtr l.(Log.length);
   if length == 0
-  then Ret true
-  else Ret false.
+  then
+    _ <- unlock l;
+    Ret true
+  else
+    _ <- unlock l;
+    Ret false.
 
 (* Read from the logical disk.
 
    Reads must go through the log to return committed but un-applied writes. *)
 Definition Read {model:GoModel} (l:Log.t) (a:uint64) : proc Block :=
+  _ <- lock l;
   let! (v, ok) <- Data.mapGet l.(Log.cache) a;
   if ok
-  then Ret v
+  then
+    _ <- unlock l;
+    Ret v
   else
+    _ <- unlock l;
     dv <- Disk.read (logLength + a);
     Ret dv.
 
@@ -66,6 +84,7 @@ Definition Size {model:GoModel} (l:Log.t) : proc uint64 :=
 
 (* Write to the disk through the log. *)
 Definition Write {model:GoModel} (l:Log.t) (a:uint64) (v:Block) : proc unit :=
+  _ <- lock l;
   length <- Data.readPtr l.(Log.length);
   _ <- if uint64_ge length MaxTxnWrites
   then
@@ -77,11 +96,14 @@ Definition Write {model:GoModel} (l:Log.t) (a:uint64) (v:Block) : proc unit :=
   _ <- Disk.write nextAddr aBlock;
   _ <- Disk.write (nextAddr + 1) v;
   _ <- Data.mapAlter l.(Log.cache) a (fun _ => Some v);
-  Data.writePtr l.(Log.length) (length + 1).
+  _ <- Data.writePtr l.(Log.length) (length + 1);
+  unlock l.
 
 (* Commit the current transaction. *)
 Definition Commit {model:GoModel} (l:Log.t) : proc unit :=
+  _ <- lock l;
   length <- Data.readPtr l.(Log.length);
+  _ <- unlock l;
   header <- intToBlock length;
   Disk.write 0 header.
 
@@ -92,6 +114,7 @@ Definition getLogEntry {model:GoModel} (logOffset:uint64) : proc (uint64 * Block
   v <- Disk.read (diskAddr + 1);
   Ret (a, v).
 
+(* applyLog assumes we are running sequentially *)
 Definition applyLog {model:GoModel} (length:uint64) : proc unit :=
   Loop (fun i =>
         if compare_to Lt i length
@@ -109,10 +132,12 @@ Definition clearLog {model:GoModel} : proc unit :=
 
    Frees all the space in the log. *)
 Definition Apply {model:GoModel} (l:Log.t) : proc unit :=
+  _ <- lock l;
   length <- Data.readPtr l.(Log.length);
   _ <- applyLog length;
   _ <- clearLog;
-  Data.writePtr l.(Log.length) 0.
+  _ <- Data.writePtr l.(Log.length) 0;
+  unlock l.
 
 (* Open recovers the log following a crash or shutdown *)
 Definition Open {model:GoModel} : proc Log.t :=
@@ -123,5 +148,7 @@ Definition Open {model:GoModel} : proc Log.t :=
   cache <- Data.newMap Block;
   lengthPtr <- Data.newPtr uint64;
   _ <- Data.writePtr lengthPtr 0;
+  l <- Data.newLock;
   Ret {| Log.cache := cache;
-         Log.length := lengthPtr; |}.
+         Log.length := lengthPtr;
+         Log.l := l; |}.
