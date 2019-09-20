@@ -9,12 +9,16 @@ Import EqualDecNotation.
 Inductive GoTy : Type :=
 | uint64Ty
 | byteTy
+| voidTy
 | structTy (desc:structDesc)
 | pair (tyL tyR:GoTy)
 with structDesc : Type :=
 | emptyStruct
 | fieldCons (name: string) (ty:GoTy) (s:structDesc)
 .
+
+(* TODO: I believe we need to make a mutual induction principle to support
+   induction over types *)
 
 Section GoModel.
   Context {model:GoModel}.
@@ -23,6 +27,7 @@ Section GoModel.
     match ty with
     | uint64Ty => uint64
     | byteTy => byte
+    | voidTy => unit
     | structTy desc => structRep desc
     | pair tyL tyR => rep tyL * rep tyR
     end
