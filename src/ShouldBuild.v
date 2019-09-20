@@ -13,3 +13,4 @@ From Perennial Require Import Goose.ExplicitModel.
 From Perennial Require Import Goose.Examples.UnitTests.
 From Perennial Require Import Goose.Examples.SimpleDb.
 From Perennial Require Import Goose.Examples.MailServer.
+From Perennial Require Import Goose.Examples.WAL.
