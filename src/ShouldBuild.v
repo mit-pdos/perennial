@@ -8,6 +8,9 @@ From Perennial Require Import Examples.ReplicatedDisk.ReplicatedDiskRefinement.
 (* mailboat proof *)
 From Perennial Require Import Examples.MailServer.MailRefinement.
 
+(* work-in-progress on goose *)
+From Perennial Require Import Goose.TypeSystem.
+
 (* goose output *)
 From Perennial Require Import Goose.ExplicitModel.
 From Perennial Require Import Goose.Examples.UnitTests.
