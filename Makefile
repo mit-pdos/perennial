@@ -96,22 +96,17 @@ ci: skip-qed src/ShouldBuild.vo $(TEST_VO) extract
 		./etc/timing-report.py timing.sqlite3; \
 		fi
 
-clean-ext:
-	@echo "CLEAN ext"
+clean-src:
+
+clean: clean-src
+	@echo "CLEAN vo glob aux"
 	$(Q)rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob)
 	$(Q)find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
-
-clean:
-	@echo "CLEAN vo glob aux"
-	$(Q)rm -f $(PROJ_VFILES:.v=.vo) $(PROJ_VFILES:.v=.glob)
-	$(Q)find src -name ".*.aux" -exec rm {} \;
-	$(Q)find src -name ".lia.cache" -exec rm {} \;
+	$(Q)find . $(SRC_DIRS) -name ".lia.cache" -exec rm {} \;
 	@echo "CLEAN extract"
 	$(Q)rm -f replicated-disk/extract/*.hs
-
-clean-all: clean-ext clean
 	$(Q)rm -f timing.sqlite3
 	rm -f _CoqProject .coqdeps.d
 
-.PHONY: default test clean
+.PHONY: default test clean clean-src
 .DELETE_ON_ERROR:
