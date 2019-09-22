@@ -477,8 +477,7 @@ Import Transitions.Relations Coq.Lists.List.
       iModIntro. iApply "HΦ".
       iExists _. iFrame.
       destruct σ; simpl. iFrame.
-    - admit. (* oops, there really shouldn't be a way to simulate a panic step (other than proving false) *)
-      Unshelve. Fail idtac.
-  Time Admitted.
+    - ghost_err. err_start. econstructor.
+  Time Qed.
 
 End refinement_heap_triples.
