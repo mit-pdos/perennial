@@ -1,4 +1,5 @@
 (* examples on top of concurrency framework *)
+From Perennial Require Import Examples.StatDbDataRefinement.Impl.
 From Perennial Require Import Examples.StatDb.Refinement.
 From Perennial Require Import Examples.AtomicPair.RefinementShadow.
 From Perennial Require Import Examples.AtomicPair.RefinementLog.
