@@ -36,8 +36,6 @@ Module DB.
     dynamics.(crash_step) s ret -> ret ≠ Err.
   Proof. inversion 1; congruence. Qed.
 
-  Print TypedLayer.
-
   Inductive OpTy :=
     | dbTy | natTy.
 
