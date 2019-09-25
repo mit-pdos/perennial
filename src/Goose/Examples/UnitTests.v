@@ -279,6 +279,11 @@ End C.
 Definition Add {model:GoModel} (c:C.t) (z:uint64) : proc uint64 :=
   Ret (c.(C.x) + c.(C.y) + z).
 
+Definition GetField {model:GoModel} (c:C.t) : proc uint64 :=
+  let x := c.(C.x) in
+  let y := c.(C.y) in
+  Ret (x + y).
+
 Definition UseAdd {model:GoModel} : proc uint64 :=
   let c := {| C.x := 2;
      C.y := 3; |} in

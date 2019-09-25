@@ -10,7 +10,7 @@ Module Log.
   Record t {model:GoModel} := mk {
     l: LockRef;
     addrs: ptr (slice.t uint64);
-    cache: ptr (Map Block);
+    cache: Map Block;
     length: ptr uint64;
   }.
   Arguments mk {model}.
@@ -38,8 +38,6 @@ Definition New {model:GoModel} : proc Log.t :=
   addrPtr <- Data.newPtr (slice.t uint64);
   _ <- Data.writePtr addrPtr addrs;
   cache <- Data.newMap Block;
-  cachePtr <- Data.newPtr (Map Block);
-  _ <- Data.writePtr cachePtr cache;
   header <- intToBlock 0;
   _ <- Disk.write 0 header;
   lengthPtr <- Data.newPtr uint64;
@@ -47,7 +45,7 @@ Definition New {model:GoModel} : proc Log.t :=
   l <- Data.newLock;
   Ret {| Log.l := l;
          Log.addrs := addrPtr;
-         Log.cache := cachePtr;
+         Log.cache := cache;
          Log.length := lengthPtr; |}.
 
 Definition lock {model:GoModel} (l:Log.t) : proc unit :=
@@ -75,8 +73,7 @@ Definition BeginTxn {model:GoModel} (l:Log.t) : proc bool :=
    Reads must go through the log to return committed but un-applied writes. *)
 Definition Read {model:GoModel} (l:Log.t) (a:uint64) : proc Block :=
   _ <- lock l;
-  cache <- Data.readPtr l.(Log.cache);
-  let! (v, ok) <- Data.mapGet cache a;
+  let! (v, ok) <- Data.mapGet l.(Log.cache) a;
   if ok
   then
     _ <- unlock l;
@@ -93,8 +90,7 @@ Definition Size {model:GoModel} (l:Log.t) : proc uint64 :=
 (* Write to the disk through the log. *)
 Definition Write {model:GoModel} (l:Log.t) (a:uint64) (v:Block) : proc unit :=
   _ <- lock l;
-  cache <- Data.readPtr l.(Log.cache);
-  let! (_, ok) <- Data.mapGet cache a;
+  let! (_, ok) <- Data.mapGet l.(Log.cache) a;
   if ok
   then
     _ <- unlock l;
@@ -111,7 +107,7 @@ Definition Write {model:GoModel} (l:Log.t) (a:uint64) (v:Block) : proc unit :=
     newAddrs <- Data.sliceAppend addrs a;
     _ <- Data.writePtr l.(Log.addrs) newAddrs;
     _ <- Disk.write (nextAddr + 1) v;
-    _ <- Data.mapAlter cache a (fun _ => Some v);
+    _ <- Data.mapAlter l.(Log.cache) a (fun _ => Some v);
     _ <- Data.writePtr l.(Log.length) (length + 1);
     unlock l.
 
@@ -182,8 +178,8 @@ Definition Apply {model:GoModel} (l:Log.t) : proc unit :=
   _ <- applyLog addrs;
   newAddrs <- Data.newSlice uint64 0;
   _ <- Data.writePtr l.(Log.addrs) newAddrs;
-  newCache <- Data.newMap Block;
-  _ <- Data.writePtr l.(Log.cache) newCache;
+  let cache := l.(Log.cache) in
+  _ <- Data.mapClear cache;
   _ <- clearLog;
   _ <- Data.writePtr l.(Log.length) 0;
   unlock l.
@@ -198,12 +194,10 @@ Definition Open {model:GoModel} : proc Log.t :=
   _ <- applyLog addrs;
   _ <- clearLog;
   cache <- Data.newMap Block;
-  cachePtr <- Data.newPtr (Map Block);
-  _ <- Data.writePtr cachePtr cache;
   lengthPtr <- Data.newPtr uint64;
   _ <- Data.writePtr lengthPtr 0;
   l <- Data.newLock;
   Ret {| Log.l := l;
          Log.addrs := addrPtr;
-         Log.cache := cachePtr;
+         Log.cache := cache;
          Log.length := lengthPtr; |}.
