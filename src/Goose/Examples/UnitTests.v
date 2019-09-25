@@ -127,6 +127,19 @@ Definition oddLiterals {model:GoModel} : proc allTheLiterals.t :=
 Definition DoSomething {model:GoModel} (s:string) : proc unit :=
   Ret tt.
 
+Definition standardForLoop {model:GoModel} (s:slice.t uint64) : proc uint64 :=
+  sumPtr <- Data.newPtr uint64;
+  _ <- Loop (fun i =>
+        if compare_to Lt i (slice.length s)
+        then
+          sum <- Data.readPtr sumPtr;
+          x <- Data.sliceRead s i;
+          _ <- Data.writePtr sumPtr (sum + x);
+          Continue (i + 1)
+        else LoopRet tt) 0;
+  sum <- Data.readPtr sumPtr;
+  Ret sum.
+
 Definition conditionalInLoop {model:GoModel} : proc unit :=
   Loop (fun i =>
         _ <- if compare_to Lt i 3
@@ -137,6 +150,14 @@ Definition conditionalInLoop {model:GoModel} : proc unit :=
         if compare_to Gt i 5
         then LoopRet tt
         else Continue (i + 1)) 0.
+
+Definition clearMap {model:GoModel} (m:Map uint64) : proc unit :=
+  Data.mapClear m.
+
+Definition IterateMapKeys {model:GoModel} (m:Map uint64) (sum:ptr uint64) : proc unit :=
+  Data.mapIter m (fun k _ =>
+    oldSum <- Data.readPtr sum;
+    Data.writePtr sum (oldSum + k)).
 
 Definition returnTwo {model:GoModel} (p:slice.t byte) : proc (uint64 * uint64) :=
   Ret (0, 0).
