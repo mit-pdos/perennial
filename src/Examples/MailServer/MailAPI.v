@@ -172,7 +172,7 @@ Module Mail.
       match op with
       | Data.NewMap _ => error
       | Data.MapLookup _ _ => error
-      | Data.MapAlter _ _ _ _ => error
+      | Data.MapUpdate _ _ _ => error
       | Data.MapStartIter _ => error
       | Data.MapEndIter _ => error
       | Data.Uint64Get _ _ => error

@@ -1610,9 +1610,9 @@ Proof.
   iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
-Lemma wp_mapAlter_start {T} s E (p: Map T) (m: gmap uint64 T) k f :
+Lemma wp_mapUpdate_start {T} s E (p: Map T) (m: gmap uint64 T) f :
   {{{ ▷ p ↦ m }}}
-   Call (InjectOp.inject (MapAlter p k f SemanticsHelpers.Begin)) @ s ; E
+   Call (InjectOp.inject (MapUpdate p f SemanticsHelpers.Begin)) @ s ; E
    {{{ RET tt; Count_Typed_Heap.mapsto p 0 Locked m }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ".
@@ -1635,12 +1635,12 @@ Lemma map_mapsto_non_null {T} (p: Map T) (v: gmap uint64 T):
     (p ↦ v -∗ ⌜ p ≠ nullptr _ ⌝)%I.
 Proof. iIntros "(?&?)"; eauto. Qed.
 
-Lemma wp_mapAlter {T} s E (p: Map T) (m: gmap uint64 T) k f :
-  {{{ ▷ p ↦ m }}} mapAlter p k f @ s; E {{{ RET tt; p ↦ (partial_alter f k m) }}}.
+Lemma wp_mapUpdate {T} s E (p: Map T) (m: gmap uint64 T) f :
+  {{{ ▷ p ↦ m }}} nonAtomicWriteOp (MapUpdate p f) @ s; E {{{ RET tt; p ↦ (f m) }}}.
 Proof.
   iIntros (Φ) ">Hi HΦ". rewrite /mapAlter/nonAtomicWriteOp.
   iDestruct (map_mapsto_non_null with "Hi") as %Hnonnull.
-  wp_bind. iApply (wp_mapAlter_start with "Hi"); eauto.
+  wp_bind. iApply (wp_mapUpdate_start with "Hi"); eauto.
   iNext. iIntros "Hi".
   iApply wp_lift_call_step.
   iIntros ((n, σ)) "(?&Hσ&?)".
@@ -1654,6 +1654,20 @@ Proof.
   inv_step. subst; simpl in *.
   iMod (gen_typed_heap_update (Ptr.Map T) with "Hσ Hi") as "[$ Hi]".
   iFrame. iApply "HΦ". inv_step; by iFrame.
+Qed.
+
+Lemma wp_mapAlter {T} s E (p: Map T) (m: gmap uint64 T) k f :
+  {{{ ▷ p ↦ m }}} mapAlter p k f @ s; E {{{ RET tt; p ↦ (partial_alter f k m) }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". rewrite /mapAlter.
+  by iApply (wp_mapUpdate with "Hi").
+Qed.
+
+Lemma wp_mapClear {T} s E (p: Map T) (m: gmap uint64 T) :
+  {{{ ▷ p ↦ m }}} mapClear p @ s; E {{{ RET tt; p ↦ ∅ }}}.
+Proof.
+  iIntros (Φ) ">Hi HΦ". rewrite /mapAlter.
+  by iApply (wp_mapUpdate with "Hi").
 Qed.
 
 Lemma wp_mapLookup {T} s E (p: Map T) (m: gmap uint64 T) q k:

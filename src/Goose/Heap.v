@@ -40,7 +40,7 @@ Module Data.
   | SliceAppendSlice T (s:slice.t T) (s':slice.t T) na : Op (retT na (slice.t T))
   *)
   | NewMap V : Op (Map V)
-  | MapAlter `(m:Map V) (off:uint64) (f:option V -> option V) na : Op unit
+  | MapUpdate `(m:Map V) (f: gmap.gmap uint64 V -> gmap.gmap uint64 V) na : Op unit
   | MapLookup `(m:Map V) (k:uint64) : Op (option V)
   | MapStartIter `(m:Map V) : Op (list (uint64*V))
   | MapEndIter `(m:Map V) : Op unit
@@ -137,8 +137,11 @@ Module Data.
 
     Definition newMap V := Call! NewMap V.
 
-    Definition mapAlter V m (k: uint64) (f: option V -> option V) : proc _ :=
-      nonAtomicWriteOp (@MapAlter V m k f).
+    Definition mapAlter {V} m (k: uint64) (f: option V -> option V) : proc _ :=
+      nonAtomicWriteOp (MapUpdate m (partial_alter f k)).
+
+    Definition mapClear {V} (m: Map V) : proc unit :=
+      nonAtomicWriteOp (MapUpdate m (fun _ => ∅)).
 
     Definition mapLookup {V} m k := Call! @MapLookup V m k.
 
@@ -322,13 +325,13 @@ Module Data.
       let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
            _ <- readSome (fun _ => lock_available Reader s);
         pure (m !! k)
-    | MapAlter r k f ph =>
+    | MapUpdate r f ph =>
       let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
       match ph with
       | Begin => s' <- readSome (fun _ => lock_acquire Writer s);
                   updAllocs r (s', m)
       | FinishArgs _ => s' <- readSome (fun _ => lock_release Writer s);
-                              updAllocs r (s', partial_alter f k m)
+                              updAllocs r (s', f m)
       end
     | MapStartIter r =>
       let! (s, m) <- readSome (fun s => getDyn s.(allocs) r);
