@@ -7,6 +7,8 @@ Unset Implicit Arguments.
 
 From Tactical Require Import UnfoldLemma.
 
+Import ImplLog2.
+
 Local Ltac destruct_einner H :=
   iDestruct H as (? ? ?) ">(Hsource&Hmap)";
   iDestruct "Hmap" as "(Hlen&Hptr&Hb0&Hb1)";

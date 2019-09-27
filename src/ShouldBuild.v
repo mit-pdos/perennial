@@ -4,6 +4,7 @@ From Perennial Require Import Examples.StatDb.Refinement.
 From Perennial Require Import Examples.AtomicPair.RefinementShadow.
 From Perennial Require Import Examples.AtomicPair.RefinementLog.
 (* From Perennial Require Import Examples.Logging.LogRefinement. *)
+From Perennial Require Import Examples.Logging2.RefinementLog2.
 From Perennial Require Import Examples.ReplicatedDisk.ReplicatedDiskRefinement.
 
 (* mailboat proof *)
