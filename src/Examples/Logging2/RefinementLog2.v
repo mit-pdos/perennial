@@ -7,11 +7,9 @@ Unset Implicit Arguments.
 
 From Tactical Require Import UnfoldLemma.
 
-Import ImplLog2.
-
 Local Ltac destruct_einner H :=
-  iDestruct H as (? ? ?) ">(Hsource&Hmap)";
-  iDestruct "Hmap" as "(Hlen&Hptr&Hb0&Hb1)";
+  iDestruct H as (? ?) ">(Hsource&Hmap)";
+  iDestruct "Hmap" as "(Hlen&Hptr&Hbs)";
   repeat unify_lease;
   repeat unify_ghost.
 
@@ -21,46 +19,190 @@ Section refinement_triples.
             !inG Σ (authR (optionUR (exclR (listO natO))))}.
   Import ExMach.
 
-  Definition ptr_map (len_val : nat) (b0 : nat) (b1 : nat) :=
-    (log_commit d↦ len_val
-     ∗ log_fst d↦ b0
-     ∗ log_snd d↦ b1)%I.
+  Definition ptr_map (len_val : nat) (blocks : list nat) :=
+    ( log_commit d↦ len_val ∗
+      [∗ list] pos ↦ b ∈ blocks, log_data pos d↦ b
+    )%I.
 
   Definition ExecInner :=
-    (∃ (len_val : nat) (b0 b1 : nat),
-        source_state (firstn len_val [b0; b1]) ∗
-        ⌜ len_val <= 2 ⌝ ∗
-        ptr_map len_val b0 b1)%I.
+    (∃ (len_val : nat) (bs : list nat),
+        source_state (firstn len_val bs) ∗
+        ⌜ len_val <= length bs /\ length bs = log_size ⌝ ∗
+        ptr_map len_val bs)%I.
 
   (* Holding the lock guarantees the value of the log length will not
      change out from underneath you -- this is enforced by granting leases *)
 
-  Definition lease_map (len_val : nat) (b0 b1 : nat) :=
-     (lease log_commit len_val
-      ∗ lease log_fst b0
-      ∗ lease log_snd b1)%I.
+  Definition lease_map (len_val : nat) (blocks : list nat) :=
+    ( lease log_commit len_val ∗
+      [∗ list] pos ↦ b ∈ blocks, lease (log_data pos) b
+    )%I.
 
   Definition ExecLockInv :=
-    (∃ (len_val : nat) (b0 b1 : nat),
-        lease_map len_val b0 b1)%I.
+    (∃ (len_val : nat) (bs : list nat),
+        lease_map len_val bs)%I.
 
   (* Post-crash, pre recovery we know the ptr mapping is in a good state w.r.t the
      abstract state, and the lock must have been reset 0 *)
 
   Definition CrashInner :=
-    (∃ (len_val : nat) (b0 b1 : nat),
-        source_state (firstn len_val [b0; b1]) ∗
-        ⌜ len_val <= 2 ⌝ ∗
-        ptr_map len_val b0 b1 ∗
-        lease_map len_val b0 b1 ∗
+    (∃ (len_val : nat) (bs : list nat),
+        source_state (firstn len_val bs) ∗
+        ⌜ len_val <= length bs /\ length bs = log_size ⌝ ∗
+        ptr_map len_val bs ∗
+        lease_map len_val bs ∗
         log_lock m↦ 0)%I.
 
   Definition lN : namespace := (nroot.@"lock").
   Definition iN : namespace := (nroot.@"inner").
 
   Definition ExecInv :=
-    (source_ctx ∗ ∃ γlock, is_lock lN γlock log_lock ExecLockInv ∗ inv iN ExecInner)%I.
+    ( source_ctx ∗
+      ∃ γlock, is_lock lN γlock log_lock ExecLockInv ∗
+      inv iN ExecInner)%I.
   Definition CrashInv := (source_ctx ∗ inv iN CrashInner)%I.
+
+  Lemma big_sepL_list_insert {A: Type} {P: nat -> A -> iPropI Σ} v i x' x'':
+    ⌜v !! i = Some x'⌝ -∗
+    ( ([∗ list] k ↦ x ∈ v, if decide (k = i) then emp else P k x) ∗
+      P i x'' ) -∗
+    ([∗ list] k ↦ x ∈ <[i:=x'']> v, P k x).
+  Proof.
+    iIntros "% HList".
+    assert (i < length v)%nat as HLength by (apply lookup_lt_is_Some_1; eauto).
+    assert (i = (length (take i v) + 0)%nat) as HCidLen.
+    { rewrite take_length_le. by rewrite -plus_n_O. lia. }
+    replace (insert i) with (@insert _ _ _ (@list_insert A) (length (take i v) + 0)%nat) by auto.
+    remember (length _ + 0)%nat as K.
+    replace v with (take i v ++ [x'] ++ drop (S i) v) by (rewrite take_drop_middle; auto).
+    subst K.
+    rewrite big_opL_app.
+    rewrite big_opL_app. simpl.
+    rewrite insert_app_r.
+    rewrite big_opL_app.
+    replace (x' :: drop (S i) v) with ([x'] ++ drop (S i) v) by reflexivity.
+    rewrite insert_app_l; [| simpl; lia ].
+    rewrite big_opL_app. simpl.
+    rewrite -HCidLen.
+    iDestruct "HList" as "[[HListPre [HListMid HListSuf]] HVal]".
+    iFrame.
+    iSplitL "HListPre".
+    {
+      iApply big_sepL_proper; iFrame.
+      iIntros.
+      apply lookup_lt_Some in x1.
+      pose proof (firstn_le_length i v).
+      destruct (decide (x = i)); try lia.
+      iSplit; iIntros; iFrame.
+    }
+    {
+      iApply big_sepL_proper; iFrame.
+      iIntros.
+      destruct (decide (strings.length (take i v) + S x = i)); try lia.
+      iSplit; iIntros; iFrame.
+    }
+  Qed.
+
+  Lemma write_blocks_ok bs p off len_val:
+    (
+      ( ExecInv ∗
+        ⌜ off + length p <= log_size /\ length bs = log_size /\ off >= len_val ⌝ ∗
+        lease log_commit len_val ∗
+        [∗ list] pos↦b ∈ bs, lease (log_data pos) b )
+      -∗
+      WP write_blocks p off {{
+        v,
+        [∗ list] pos↦b ∈ (firstn off bs) ++ (p) ++ (skipn (off+length p) bs), lease (log_data pos) b
+      }}
+    )%I.
+  Proof.
+    iIntros "((Hsource_inv&Hinv)&Hinbound&Hleaselen&Hlease)".
+    iDestruct "Hinv" as (γlock) "(#Hlockinv&#Hinv)".
+    iLöb as "IH" forall (p off bs).
+    destruct p; simpl.
+    - wp_ret.
+      replace (off+0) with off by lia.
+      rewrite firstn_skipn.
+      iFrame.
+
+    - wp_bind.
+
+      iInv "Hinv" as "H".
+      destruct_einner "H".
+
+      iPure "Hinbound" as [Hinbound [Hbslen Hoffpastlen]].
+      iPure "Hlen" as [Hlenle Hleneq].
+
+      assert (off < length H2) as Hoff by lia.
+      apply lookup_lt_is_Some_2 in Hoff. destruct Hoff as [voff Hoff].
+      rewrite (big_sepL_delete _ H2 off); try eassumption.
+
+      assert (off < length bs) as Hoffbs by lia.
+      apply lookup_lt_is_Some_2 in Hoffbs. destruct Hoffbs as [boff Hoffbs].
+      rewrite (big_sepL_delete _ bs off); try eassumption.
+
+      iDestruct "Hlease" as "(Hleaseoff&Hleaseother)".
+      iDestruct "Hbs" as "(Hbsoff&Hbsother)".
+      wp_step.
+
+      iModIntro.
+      iExists _, (<[off:=n]> H2); iFrame.
+      iSplitL "Hsource Hbsoff Hbsother".
+      { iNext.
+        iSplitL "Hsource".
+        { rewrite take_insert; try lia.
+          iFrame. }
+        iSplitR.
+        { iPureIntro.
+          rewrite insert_length.
+          intuition. }
+        { iApply big_sepL_list_insert.
+          auto.
+          iFrame. }
+      }
+
+      iSpecialize ("IH" $! p (off + 1) (<[off:=n]> bs)).
+      iApply wp_mono.
+      2: iApply "IH".
+
+      {
+        intros.
+        iIntros "H".
+        repeat rewrite big_sepL_app.
+        simpl.
+        repeat rewrite big_sepL_app.
+        simpl.
+
+        iDestruct "H" as "[Hleft [Hmid Hright]]".
+
+        rewrite (@app_removelast_last _ (take (off + 1) (<[off:=n]> bs)) 0).
+        admit.
+        admit.
+      }
+
+      {
+        (* XXX how do we get "Hsource_ctx" to this subgoal? *)
+        admit.
+      }
+
+      {
+        iPureIntro.
+        intuition. lia.
+        erewrite insert_length. lia. lia.
+      }
+
+      {
+        (* XXX how do we get the right separation logic stmt here? *)
+        admit.
+      }
+
+      {
+        iApply big_sepL_list_insert.
+        eauto.
+
+        iFrame.
+      }
+  Admitted.
 
   Lemma append_refinement {T} j K `{LanguageCtx Log2.Op _ T Log2.l K} p:
     {{{ j ⤇ K (Call (Log2.Append p)) ∗ Registered ∗ ExecInv }}}
@@ -71,259 +213,68 @@ Section refinement_triples.
     iDestruct "Hinv" as (γlock) "(#Hlockinv&#Hinv)".
 
     wp_lock "(Hlocked&HEL)".
-    iDestruct "HEL" as (len_val b0 b1)
-                         "(Hlen_ghost&Hb0_ghost&Hb1_ghost)".
+    iDestruct "HEL" as (len_val bs)
+                         "(Hlen_ghost&Hbs_ghost)".
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
+    wp_step.
 
-    destruct (gt_dec (len_val + strings.length p) 2).
+    destruct (gt_dec (len_val + strings.length p) log_size).
 
-    - wp_step.
-      iPure "Hlen" as Hlen.
-      destruct (gt_dec (len_val + strings.length p) 2); try lia.
-
+    - iPure "Hlen" as Hlen. intuition.
       iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
       { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
         econstructor.
-        exists (take len_val [b0; b1]).
+        eexists.
         econstructor.
         econstructor.
         rewrite firstn_length_le; try (simpl; lia).
-        destruct (gt_dec (len_val + strings.length p) 2); try lia.
+        destruct (gt_dec (len_val + strings.length p) log_size); try lia.
         econstructor.
       }
       { solve_ndisj. }
-      iModIntro; iExists _, _, _; iFrame.
+      iModIntro; iExists _, _; iFrame.
       iSplit.
       { iPureIntro. auto. }
 
       wp_bind.
       wp_unlock "[-HΦ Hreg Hj]"; iFrame.
       {
-        iExists _, _, _.
+        iExists _, _.
         iFrame.
       }
 
       wp_ret.
       iApply "HΦ"; iFrame.
 
-    - wp_step.
-      iPure "Hlen" as Hlen.
-      destruct (gt_dec (len_val + strings.length p) 2); try lia.
+    - iModIntro; iExists _, _; iFrame.
+      wp_bind.
 
-      destruct p.
-      {
-        iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
-        { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
-          econstructor.
-          exists (take len_val [b0; b1]).
-          econstructor.
-          econstructor.
-          rewrite firstn_length_le; try (simpl; lia).
-          destruct (gt_dec (len_val + strings.length nil) 2); try lia.
-          econstructor.
-          eexists.
-          econstructor.
-          econstructor.
-          econstructor.
-        }
-        { solve_ndisj. }
+      iApply wp_mono.
+      2: iApply write_blocks_ok.
 
-        rewrite app_nil_r.
-        iModIntro; iExists _, _, _; iFrame.
-        iSplit.
-        { iPureIntro. auto. }
+      intros.
+      iIntros.
 
-        wp_bind.
-        wp_unlock "[-HΦ Hreg Hj]"; iFrame.
-        {
-          iExists _, _, _.
-          iFrame.
-        }
+      admit.
+      admit.
+  Admitted.
 
-        wp_ret.
-        iApply "HΦ"; iFrame.
-      }
+  (**
+    Problem 0: how to think about the -* operator?
 
-      destruct p.
-      {
-        simpl in *.
-        iModIntro; iExists _, _, _; iFrame.
-        iSplit.
-        { iPureIntro. auto. }
+    Problem 1: how to deal with [* list] stuff above?
 
-        wp_bind.
+    Problem 2: how to invoke write_blocks_ok without losing separation logic facts?
 
-        destruct len_val; simpl.
-        {
-          iInv "Hinv" as "H".
-          destruct_einner "H".
-          wp_step.
-          iModIntro; iExists _, _, _; iFrame.
+    Problem 3: how to define a helper thread for batch commit?
+      Does the top-level API need to define a "helper noop" that
+      seems to have no effect but in practice implements the
+      group commit helper?
 
-          wp_bind.
-
-          iInv "Hinv" as "H".
-          destruct_einner "H".
-          wp_step.
-
-          iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
-          { simpl.
-            intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
-            econstructor.
-            eexists.
-            econstructor.
-            econstructor.
-            simpl.
-            exists tt.
-            eexists.
-            econstructor.
-            econstructor.
-            econstructor.
-          }
-          { solve_ndisj. }
-
-          simpl.
-          iModIntro; iExists _, _, _; iFrame.
-
-          simpl.
-          iFrame.
-
-          iSplit.
-          { iPureIntro. lia. }
-
-          wp_bind.
-          wp_unlock "[-HΦ Hreg Hj]"; iFrame.
-          {
-            iExists _, _, _.
-            iFrame.
-          }
-
-          wp_ret.
-          iApply "HΦ"; iFrame.
-        }
-
-        destruct len_val; simpl.
-        {
-          iInv "Hinv" as "H".
-          destruct_einner "H".
-          wp_step.
-          iModIntro; iExists _, _, _; iFrame.
-
-          wp_bind.
-
-          iInv "Hinv" as "H".
-          destruct_einner "H".
-          wp_step.
-
-          iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
-          { simpl.
-            intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
-            econstructor.
-            eexists.
-            econstructor.
-            econstructor.
-            simpl.
-            exists tt.
-            eexists.
-            econstructor.
-            econstructor.
-            econstructor.
-          }
-          { solve_ndisj. }
-
-          simpl.
-          iModIntro; iExists _, _, _; iFrame.
-
-          simpl.
-          iFrame.
-
-          iSplit.
-          { iPureIntro. lia. }
-
-          wp_bind.
-          wp_unlock "[-HΦ Hreg Hj]"; iFrame.
-          {
-            iExists _, _, _.
-            iFrame.
-          }
-
-          wp_ret.
-          iApply "HΦ"; iFrame.
-        }
-
-        lia.
-      }
-
-      destruct p.
-      {
-        simpl in *.
-        iModIntro; iExists _, _, _; iFrame.
-        iSplit.
-        { iPureIntro. auto. }
-        destruct len_val; simpl; try lia.
-
-        wp_bind.
-
-        iInv "Hinv" as "H".
-        destruct_einner "H".
-        wp_step.
-        iModIntro; iExists _, _, _; iFrame.
-
-        wp_bind.
-
-        iInv "Hinv" as "H".
-        destruct_einner "H".
-        replace (write_disk 2) with (write_disk log_snd) by reflexivity.
-        wp_step.
-        iModIntro; iExists _, _, _; iFrame.
-
-        wp_bind.
-
-        iInv "Hinv" as "H".
-        destruct_einner "H".
-        wp_step.
-
-        iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
-        { simpl.
-          intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
-          econstructor.
-          eexists.
-          econstructor.
-          econstructor.
-          simpl.
-          exists tt.
-          eexists.
-          econstructor.
-          econstructor.
-          econstructor.
-        }
-        { solve_ndisj. }
-
-        simpl.
-        iModIntro; iExists _, _, _; iFrame.
-
-        simpl.
-        iFrame.
-
-        iSplit.
-        { iPureIntro. lia. }
-
-        wp_bind.
-        wp_unlock "[-HΦ Hreg Hj]"; iFrame.
-        {
-          iExists _, _, _.
-          iFrame.
-        }
-
-        wp_ret.
-        iApply "HΦ"; iFrame.
-      }
-
-      simpl in *.
-      lia.
-  Qed.
+    Problem 4: What is "Registered"?
+  *)
 
   Lemma read_refinement {T} j K `{LanguageCtx Log2.Op (list nat) T Log2.l K}:
     {{{ j ⤇ K (Call (Log2.Read)) ∗ Registered ∗ ExecInv }}}

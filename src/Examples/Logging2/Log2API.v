@@ -3,6 +3,8 @@ From Coq Require Import List.
 From Perennial Require Export Lib.
 Import RelationNotations.
 
+Axiom log_size : nat.
+
 Module Log2.
 
   Inductive Op : Type -> Type :=
@@ -16,7 +18,7 @@ Module Log2.
          match op with
          | Append l' =>
             curl <- reads (fun l => l);
-            if gt_dec (length curl + length l') 2 then
+            if gt_dec (length curl + length l') log_size then
               pure false
             else
               _ <- puts (fun l => l ++ l'); pure true

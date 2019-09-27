@@ -3,67 +3,54 @@ Require Import ExMach.ExMachAPI.
 
 (* On-Disk Addresses *)
 Definition log_commit := 0.
-Definition log_fst := 1.
-Definition log_snd := 2.
+Definition log_start := 1.
 
 (* Memory addresses *)
 Definition log_lock := 0.
 
-Definition next_block (count : nat) :=
-  match count with
-  | 0 => log_fst
-  | 1 => log_snd
-  | _ => 0
-  end.
+Definition log_data (pos : nat) :=
+  log_start + pos.
+
+Fixpoint write_blocks (l : list nat) (pos : nat) :=
+  (
+    match l with
+    | nil =>
+      Ret tt
+    | b :: l' =>
+      _ <- write_disk (log_data pos) b;
+      write_blocks l' (pos+1)
+    end
+  )%proc.
 
 Definition append (l : list nat) :=
   ( _ <- lock log_lock;
-    hdr <- read_disk log_commit;
-    if gt_dec (hdr + length l) 2 then
+    len <- read_disk log_commit;
+    if gt_dec (len + length l) log_size then
       _ <- unlock log_lock;
       Ret false
     else
-      match l with
-      | nil =>
-        _ <- unlock log_lock;
-        Ret true
-      | x :: nil =>
-        _ <- write_disk (next_block hdr) x;
-        _ <- write_disk log_commit (hdr+1);
-        _ <- unlock log_lock;
-        Ret true
-      | x :: y :: nil =>
-        _ <- write_disk (next_block hdr) x;
-        _ <- write_disk (next_block hdr+1) y;
-        _ <- write_disk log_commit (hdr+2);
-        _ <- unlock log_lock;
-        Ret true
-      | _ =>
-        _ <- unlock log_lock;
-        Ret false
-      end
+      _ <- write_blocks l len;
+      _ <- write_disk log_commit (len+length l);
+      _ <- unlock log_lock;
+      Ret true
+  )%proc.
+
+Fixpoint read_blocks (count : nat) (pos : nat) (res : list nat) :=
+  (
+    match count with
+    | 0 => Ret res
+    | S count' =>
+      b <- read_disk (log_data pos);
+      read_blocks count' (pos+1) (res ++ [b])
+    end
   )%proc.
 
 Definition read :=
   ( _ <- lock log_lock;
-    hdr <- read_disk log_commit;
-    match hdr with
-    | 0 =>
-      _ <- unlock log_lock;
-      Ret nil
-    | 1 =>
-      x <- read_disk log_fst;
-      _ <- unlock log_lock;
-      Ret (x :: nil)
-    | 2 =>
-      x <- read_disk log_fst;
-      y <- read_disk log_snd;
-      _ <- unlock log_lock;
-      Ret (x :: y :: nil)
-    | _ =>
-      _ <- unlock log_lock;
-      Ret nil
-    end
+    len <- read_disk log_commit;
+    res <- read_blocks len 0 nil;
+    _ <- unlock log_lock;
+    Ret res
   )%proc.
 
 Definition recv : proc ExMach.Op _ := Ret tt.
