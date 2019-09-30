@@ -265,8 +265,10 @@ Section refinement_triples.
     Problem 0: how to think about the -* operator?
 
     Problem 1: how to deal with [* list] stuff above?
+      use big_sepM_insert_acc
 
     Problem 2: how to invoke write_blocks_ok without losing separation logic facts?
+      wp_wand
 
     Problem 3: how to define a helper thread for batch commit?
       Does the top-level API need to define a "helper noop" that
@@ -274,6 +276,7 @@ Section refinement_triples.
       group commit helper?
 
     Problem 4: What is "Registered"?
+      thread existence
   *)
 
   Lemma read_refinement {T} j K `{LanguageCtx Log2.Op (list nat) T Log2.l K}:
