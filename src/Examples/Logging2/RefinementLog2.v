@@ -117,6 +117,13 @@ Section refinement_triples.
     }
   Qed.
 
+  Fixpoint list_inserts {T} (l : list T) (off : nat) (vs : list T) :=
+    match vs with
+    | nil => l
+    | v :: vs' =>
+      list_inserts (<[off:=v]> l) (off+1) vs'
+    end.
+
   Lemma write_blocks_ok bs p off len_val:
     (
       ( ExecInv ∗
@@ -126,7 +133,8 @@ Section refinement_triples.
       -∗
       WP write_blocks p off {{
         v,
-        [∗ list] pos↦b ∈ (firstn off bs) ++ (p) ++ (skipn (off+length p) bs), lease (log_data pos) b
+        lease log_commit len_val ∗
+        [∗ list] pos↦b ∈ (list_inserts bs off p), lease (log_data pos) b
       }}
     )%I.
   Proof.
@@ -136,7 +144,6 @@ Section refinement_triples.
     destruct p; simpl.
     - wp_ret.
       replace (off+0) with off by lia.
-      rewrite firstn_skipn.
       iFrame.
 
     - wp_bind.
@@ -160,17 +167,17 @@ Section refinement_triples.
       wp_step.
 
       iModIntro.
-      iExists _, (<[off:=n]> H2); iFrame.
-      iSplitL "Hsource Hbsoff Hbsother".
+      iExists _, (<[off:=n]> H2).
+      iSplitL "Hsource Hbsoff Hbsother Hptr".
       { iNext.
         iSplitL "Hsource".
         { rewrite take_insert; try lia.
-          iFrame. }
+          iFrame. lia. }
         iSplitR.
         { iPureIntro.
           rewrite insert_length.
           intuition. }
-        { iApply big_sepL_list_insert.
+        { iFrame. iApply big_sepL_list_insert.
           eauto.
           iFrame. }
       }
@@ -191,27 +198,8 @@ Section refinement_triples.
       }
 
       iIntros "% H".
-
-      (* Maybe we should re-phrase the overall spec without firstn/lastn.
-         Instead, define a fixpoint version of [insert] for an entire
-         list of values. *)
-      admit.
-
-      (*
-        intros.
-        iIntros "H".
-        repeat rewrite big_sepL_app.
-        simpl.
-        repeat rewrite big_sepL_app.
-        simpl.
-
-        iDestruct "H" as "[Hleft [Hmid Hright]]".
-
-        rewrite (@app_removelast_last _ (take (off + 1) (<[off:=n]> bs)) 0).
-        admit.
-        admit.
-      *)
-  Admitted.
+      iFrame.
+  Qed.
 
   Lemma append_refinement {T} j K `{LanguageCtx Log2.Op _ T Log2.l K} p:
     {{{ j ⤇ K (Call (Log2.Append p)) ∗ Registered ∗ ExecInv }}}
@@ -260,14 +248,46 @@ Section refinement_triples.
     - iModIntro; iExists _, _; iFrame.
       wp_bind.
 
-      iApply wp_mono.
-      2: iApply write_blocks_ok.
+      iApply (wp_wand with "[Hlen_ghost Hbs_ghost]").
+      {
+        iApply write_blocks_ok.
+        iFrame.
+        iSplitL.
+        - unfold ExecInv. iSplitL. iApply "Hsource_inv". iExists _. iSplitL. iApply "Hlockinv". iApply "Hinv".
+          (* XXX how to automate that? *)
+        - iPureIntro. intuition. lia.
+          admit.
+      }
 
-      intros.
-      iIntros.
+      iIntros "% [Hleaselen Hleaseblocks]".
 
-      admit.
-      admit.
+      wp_bind.
+
+      iInv "Hinv" as "H".
+      destruct_einner "H".
+      iPure "Hlen" as Hlen. intuition.
+      wp_step.
+
+      iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
+      { intros. eexists. do 2 eexists; split; last by eauto. econstructor; eauto.
+        econstructor.
+        eexists.
+        econstructor.
+        econstructor.
+        rewrite firstn_length_le; try (simpl; lia).
+        destruct (gt_dec (len_val + strings.length p) log_size); try lia.
+        econstructor.
+        eexists.
+        econstructor.
+        econstructor.
+        econstructor.
+      }
+      { solve_ndisj. }
+      iModIntro.
+      iExists (len_val + length p).
+      iExists (H5).
+
+      (* XXX need to deduce that H5's blocks at len_val onwards match p... *)
   Admitted.
 
   (**
