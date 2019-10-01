@@ -62,6 +62,20 @@ Section refinement_triples.
       inv iN ExecInner)%I.
   Definition CrashInv := (source_ctx ∗ inv iN CrashInner)%I.
 
+  Lemma big_sepM_insert {A: Type} {P: nat -> A -> iPropI Σ} m i x :
+    m !! i = None →
+    ([∗ map] k↦y ∈ <[i:=x]> m, P k y) ⊣⊢ P i x ∗ [∗ map] k↦y ∈ m, P k y.
+  Proof. apply big_opM_insert. Qed.
+
+  Lemma big_sepL_insert_acc {A: Type} {P: nat -> A -> iPropI Σ} m i x :
+    m !! i = Some x →
+    ([∗ list] k↦y ∈ m, P k y) ⊢
+      P i x ∗ (∀ x', P i x' -∗ ([∗ list] k↦y ∈ <[i:=x']> m, P k y)).
+  Proof.
+    intros.
+    rewrite big_sepL_delete //.
+  Admitted.
+
   Lemma big_sepL_list_insert {A: Type} {P: nat -> A -> iPropI Σ} v i x' x'':
     ⌜v !! i = Some x'⌝ -∗
     ( ([∗ list] k ↦ x ∈ v, if decide (k = i) then emp else P k x) ∗
@@ -162,6 +176,7 @@ Section refinement_triples.
       }
 
       iSpecialize ("IH" $! p (off + 1) (<[off:=n]> bs)).
+      (* XXX wp_wand has the same problem as wp_mono... *)
       iApply wp_mono.
       2: iApply "IH".
 
