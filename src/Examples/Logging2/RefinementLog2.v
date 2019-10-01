@@ -77,7 +77,7 @@ Section refinement_triples.
   Admitted.
 
   Lemma big_sepL_list_insert {A: Type} {P: nat -> A -> iPropI Σ} v i x' x'':
-    ⌜v !! i = Some x'⌝ -∗
+    v !! i = Some x' ->
     ( ([∗ list] k ↦ x ∈ v, if decide (k = i) then emp else P k x) ∗
       P i x'' ) -∗
     ([∗ list] k ↦ x ∈ <[i:=x'']> v, P k x).
@@ -130,7 +130,7 @@ Section refinement_triples.
       }}
     )%I.
   Proof.
-    iIntros "((Hsource_inv&Hinv)&Hinbound&Hleaselen&Hlease)".
+    iIntros "((#Hsource_inv&Hinv)&Hinbound&Hleaselen&Hlease)".
     iDestruct "Hinv" as (γlock) "(#Hlockinv&#Hinv)".
     iLöb as "IH" forall (p off bs).
     destruct p; simpl.
@@ -171,16 +171,33 @@ Section refinement_triples.
           rewrite insert_length.
           intuition. }
         { iApply big_sepL_list_insert.
-          auto.
+          eauto.
           iFrame. }
       }
 
       iSpecialize ("IH" $! p (off + 1) (<[off:=n]> bs)).
-      (* XXX wp_wand has the same problem as wp_mono... *)
-      iApply wp_mono.
-      2: iApply "IH".
+      iApply (wp_wand with "[Hleaselen Hleaseother Hleaseoff] []").
+      iApply ("IH" with "[%] [$Hleaselen]").
 
       {
+        erewrite insert_length.
+        intuition lia.
+      }
+
+      {
+        iApply big_sepL_list_insert.
+        eauto.
+        iFrame.
+      }
+
+      iIntros "% H".
+
+      (* Maybe we should re-phrase the overall spec without firstn/lastn.
+         Instead, define a fixpoint version of [insert] for an entire
+         list of values. *)
+      admit.
+
+      (*
         intros.
         iIntros "H".
         repeat rewrite big_sepL_app.
@@ -193,30 +210,7 @@ Section refinement_triples.
         rewrite (@app_removelast_last _ (take (off + 1) (<[off:=n]> bs)) 0).
         admit.
         admit.
-      }
-
-      {
-        (* XXX how do we get "Hsource_ctx" to this subgoal? *)
-        admit.
-      }
-
-      {
-        iPureIntro.
-        intuition. lia.
-        erewrite insert_length. lia. lia.
-      }
-
-      {
-        (* XXX how do we get the right separation logic stmt here? *)
-        admit.
-      }
-
-      {
-        iApply big_sepL_list_insert.
-        eauto.
-
-        iFrame.
-      }
+      *)
   Admitted.
 
   Lemma append_refinement {T} j K `{LanguageCtx Log2.Op _ T Log2.l K} p:
