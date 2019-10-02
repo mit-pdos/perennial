@@ -40,7 +40,8 @@ Section refinement_triples.
 
   Definition ExecLockInv :=
     (∃ (len_val : nat) (bs : list nat),
-        lease_map len_val bs)%I.
+        lease_map len_val bs  ∗
+        ⌜ len_val <= length bs /\ length bs = log_size ⌝)%I.
 
   (* Post-crash, pre recovery we know the ptr mapping is in a good state w.r.t the
      abstract state, and the lock must have been reset 0 *)
@@ -125,33 +126,74 @@ Section refinement_triples.
     iApply "HΦ"; iFrame.
   Qed.
 
-(*
-  Lemma wp_read_disk_data v pos :
-    pos < log_size ->
-    {{{ inv iN ExecInner ∗ ▷ lease (log_data pos) v }}} read_disk (log_data pos) {{{ RET v; lease (log_data pos) v }}}.
-  Proof.
-    iIntros (Hpos Φ) "[#Hinv >Hlease] HΦ".
-    iInv "Hinv" as "H".
-    destruct_einner "H".
-    iPure "Hlen" as Hlen; intuition.
-
-(*
-    wp_step.
-    iModIntro.
-    iExists _, _.
-    iFrame.
-    iApply "HΦ"; iFrame.
-  Qed.
-*)
-  Admitted.
-*)
-
   Fixpoint list_inserts {T} (l : list T) (off : nat) (vs : list T) :=
     match vs with
     | nil => l
     | v :: vs' =>
       list_inserts (<[off:=v]> l) (off+1) vs'
     end.
+
+  Lemma insert_list_insert_commute {T} : forall (p : list T) off v off' l,
+    off < off' ->
+    list_inserts (<[off:=v]> l) off' p = <[off:=v]> (list_inserts l off' p).
+  Proof.
+    induction p; simpl; intros; auto.
+    rewrite <- IHp; try lia.
+    rewrite list_insert_commute; try lia.
+    reflexivity.
+  Qed.
+
+  Lemma list_inserts_length {T} : forall vs (l : list T) off,
+    length (list_inserts l off vs) = length l.
+  Proof.
+    induction vs; simpl; intros; auto.
+    rewrite IHvs.
+    rewrite insert_length.
+    auto.
+  Qed.
+
+  Lemma take_list_inserts_le {T} : forall (p : list T) off off' l,
+    off <= off' ->
+    take off (list_inserts l off' p) = take off l.
+  Proof.
+    induction p; simpl; intros; auto.
+    rewrite insert_list_insert_commute; try lia.
+    rewrite take_insert; auto.
+    rewrite IHp; auto.
+    lia.
+  Qed.
+
+  Lemma take_list_inserts {T} : forall (p : list T) off bs,
+    off + length p <= length bs ->
+    take (off + length p) (list_inserts bs off p) = take off (list_inserts bs off p) ++ p.
+  Proof.
+    induction p; simpl; intros.
+    - rewrite app_nil_r. replace (off+0) with off by lia. auto.
+    - replace (off + S (length p)) with (S off + length p) by lia.
+      replace (off + 1) with (S off) by lia.
+      rewrite IHp; clear IHp.
+      2: {
+        rewrite insert_length. lia.
+      }
+      rewrite take_list_inserts_le; try lia.
+      rewrite take_list_inserts_le; try lia.
+      replace (a :: p) with ([a] ++ p) by reflexivity.
+      rewrite app_assoc.
+      f_equal.
+
+      assert (off < length bs) by lia.
+      pose proof (list_lookup_insert _ _ a H2).
+
+      apply take_drop_middle in H3.
+      rewrite <- H3 at 1.
+      replace (S off) with (off + 1) by lia.
+      rewrite take_plus_app.
+      2: {
+        rewrite firstn_length_le; auto.
+        rewrite insert_length. lia.
+      }
+      reflexivity.
+  Qed.
 
   Lemma write_blocks_ok bs p off len_val:
     (
@@ -240,8 +282,8 @@ Section refinement_triples.
     - destruct l2; simpl; intros; try lia.
       iIntros "[Hpts0 HptsS]".
       iIntros "[Hlease0 HleaseS]".
-      iDestruct (disk_lease_agree with "Hpts0 Hlease0") as "Hagree".
-      iPure "Hagree" as Hagree. subst.
+
+      iDestruct (disk_lease_agree with "Hpts0 Hlease0") as %Hagree. subst.
 
       inversion H1.
       specialize (IHl1 l2 (S off) H3).
@@ -249,8 +291,7 @@ Section refinement_triples.
       simpl in IHl1.
       setoid_rewrite plus_n_Sm in IHl1.
 
-      iDestruct (IHl1 with "HptsS HleaseS") as "Hind".
-      iPure "Hind" as Hind. subst.
+      iDestruct (IHl1 with "HptsS HleaseS") as %Hind. subst.
       done.
   Qed.
 
@@ -264,8 +305,10 @@ Section refinement_triples.
 
     wp_lock "(Hlocked&HEL)".
     iDestruct "HEL" as (len_val bs)
-                         "(Hlen_ghost&Hbs_ghost)".
+                         "((Hlen_ghost&Hbs_ghost)&Hbs_bounds)".
+    iPure "Hbs_bounds" as Hbs_bounds.
     wp_bind.
+
     iInv "Hinv" as "H".
     destruct_einner "H".
     wp_step.
@@ -293,6 +336,7 @@ Section refinement_triples.
       {
         iExists _, _.
         iFrame.
+        iPureIntro. lia.
       }
 
       wp_ret.
@@ -309,7 +353,6 @@ Section refinement_triples.
         - unfold ExecInv. iSplitL. iApply "Hsource_inv". iExists _. iSplitL. iApply "Hlockinv". iApply "Hinv".
           (* XXX how to automate that? *)
         - iPureIntro. intuition. lia.
-          admit.
       }
 
       iIntros "% [Hleaselen Hleaseblocks]".
@@ -340,8 +383,31 @@ Section refinement_triples.
       iExists (len_val + length p).
       iExists (H5).
 
-      (* XXX need to deduce that H5's blocks at len_val onwards match p... *)
-  Admitted.
+      iDestruct (disk_lease_agree_log_data with "Hbs Hleaseblocks") as %Hx; subst.
+      rewrite list_inserts_length. lia.
+
+      iFrame.
+      iSplitL "Hsource".
+      {
+        iSplitL "Hsource".
+        { rewrite take_list_inserts. iFrame. lia. }
+
+        iPureIntro.
+        intuition lia.
+      }
+
+      wp_bind.
+      wp_unlock "[-HΦ Hreg Hj]".
+      {
+        iExists _, _.
+        iFrame.
+        iPureIntro.
+        lia.
+      }
+
+      wp_ret.
+      iApply "HΦ"; iFrame.
+  Qed.
 
   (**
     Problem 0: how to think about the -* operator?
