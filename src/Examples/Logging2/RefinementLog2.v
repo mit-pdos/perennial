@@ -452,12 +452,16 @@ Section refinement_triples.
 
     wp_lock "(Hlocked&HEL)".
     iDestruct "HEL" as (len_val bs)
-                         "(Hlen_ghost&Hbs_ghost)".
+                         "((Hlen_ghost&Hbs_ghost)&Hlenbound)".
+    iPure "Hlenbound" as Hlenbound.
 
     wp_bind.
     iInv "Hinv" as "H".
     destruct_einner "H".
     wp_step.
+
+    iPure "Hlen" as Hlen. intuition.
+    iDestruct (disk_lease_agree_log_data with "Hbs Hbs_ghost") as %Hx; subst. lia.
 
     iMod (ghost_step_lifting with "Hj Hsource_inv Hsource") as "(Hj&Hsource&_)".
     { simpl.
@@ -465,73 +469,38 @@ Section refinement_triples.
       econstructor.
     }
     { solve_ndisj. }
-    iModIntro; iExists _, _, _; iFrame.
+    iModIntro; iExists _, _; iFrame.
 
-    destruct len_val.
+    iSplit.
     {
-      wp_bind.
-      wp_unlock "[-HΦ Hreg Hj]"; iFrame.
-      {
-        iExists _, _, _.
-        iFrame.
-      }
-
-      wp_ret.
-      iApply "HΦ"; iFrame.
-    }
-
-    destruct len_val.
-    {
-      wp_bind.
-
-      iInv "Hinv" as "H".
-      destruct_einner "H".
-      wp_step.
-      iModIntro; iExists _, _, _; iFrame.
-
-      wp_bind.
-      wp_unlock "[-HΦ Hreg Hj]"; iFrame.
-      {
-        iExists _, _, _.
-        iFrame.
-      }
-
-      wp_ret.
-      iApply "HΦ"; iFrame.
-    }
-
-    destruct len_val.
-    {
-      wp_bind.
-
-      iInv "Hinv" as "H".
-      destruct_einner "H".
-      wp_step.
-      iModIntro; iExists _, _, _; iFrame.
-
-      wp_bind.
-
-      iInv "Hinv" as "H".
-      destruct_einner "H".
-      wp_step.
-      iModIntro; iExists _, _, _; iFrame.
-
-      wp_bind.
-      wp_unlock "[-HΦ Hreg Hj]"; iFrame.
-      {
-        iExists _, _, _.
-        iFrame.
-      }
-
-      wp_ret.
-      iApply "HΦ"; iFrame.
+      iNext. iPureIntro. lia.
     }
 
     wp_bind.
-    iInv "Hinv" as "H".
-    destruct_einner "H".
-    iPure "Hlen" as Hlen.
-    lia.
+    iApply (wp_wand with "[Hbs_ghost]").
+    {
+      iApply read_blocks_ok.
+      iFrame.
+      iSplit.
+      - unfold ExecInv. iSplitL. iApply "Hsource_inv". iExists _. iSplitL. iApply "Hlockinv". iApply "Hinv".
+        (* XXX how to automate that? *)
+      - iPureIntro. intuition.
+    }
+
+    iIntros "% [Hres Hleaseblocks]".
+    iPure "Hres" as Hres. subst. simpl.
+    rewrite drop_0.
+
+    wp_bind.
+    wp_unlock "[-HΦ Hreg Hj]"; iFrame.
+    {
+      iExists _, _.
+      iFrame.
+      iPureIntro. lia.
+    }
+
+    wp_ret.
+    iApply "HΦ"; iFrame.
   Qed.
 
   Lemma init_mem_split:
