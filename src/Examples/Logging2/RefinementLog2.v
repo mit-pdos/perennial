@@ -112,46 +112,39 @@ Section refinement_triples.
     }
   Qed.
 
-  Lemma big_sepL_list_insert {A: Type} {P: nat -> A -> iPropI Σ} v i x' x'':
-    v !! i = Some x' ->
-    ( ([∗ list] k ↦ x ∈ v, if decide (k = i) then emp else P k x) ∗
-      P i x'' ) -∗
-    ([∗ list] k ↦ x ∈ <[i:=x'']> v, P k x).
+  Lemma wp_read_disk_commit v :
+    {{{ inv iN ExecInner ∗ ▷ lease log_commit v }}} read_disk log_commit {{{ RET v; lease log_commit v }}}.
   Proof.
-    iIntros "% HList".
-    assert (i < length v)%nat as HLength by (apply lookup_lt_is_Some_1; eauto).
-    assert (i = (length (take i v) + 0)%nat) as HCidLen.
-    { rewrite take_length_le. by rewrite -plus_n_O. lia. }
-    replace (insert i) with (@insert _ _ _ (@list_insert A) (length (take i v) + 0)%nat) by auto.
-    remember (length _ + 0)%nat as K.
-    replace v with (take i v ++ [x'] ++ drop (S i) v) by (rewrite take_drop_middle; auto).
-    subst K.
-    rewrite big_opL_app.
-    rewrite big_opL_app. simpl.
-    rewrite insert_app_r.
-    rewrite big_opL_app.
-    replace (x' :: drop (S i) v) with ([x'] ++ drop (S i) v) by reflexivity.
-    rewrite insert_app_l; [| simpl; lia ].
-    rewrite big_opL_app. simpl.
-    rewrite -HCidLen.
-    iDestruct "HList" as "[[HListPre [HListMid HListSuf]] HVal]".
+    iIntros (Φ) "[#Hinv >Hlease] HΦ".
+    iInv "Hinv" as "H".
+    destruct_einner "H".
+    wp_step.
+    iModIntro.
+    iExists _, _.
     iFrame.
-    iSplitL "HListPre".
-    {
-      iApply big_sepL_proper; iFrame.
-      iIntros.
-      apply lookup_lt_Some in x1.
-      pose proof (firstn_le_length i v).
-      destruct (decide (x = i)); try lia.
-      iSplit; iIntros; iFrame.
-    }
-    {
-      iApply big_sepL_proper; iFrame.
-      iIntros.
-      destruct (decide (strings.length (take i v) + S x = i)); try lia.
-      iSplit; iIntros; iFrame.
-    }
+    iApply "HΦ"; iFrame.
   Qed.
+
+(*
+  Lemma wp_read_disk_data v pos :
+    pos < log_size ->
+    {{{ inv iN ExecInner ∗ ▷ lease (log_data pos) v }}} read_disk (log_data pos) {{{ RET v; lease (log_data pos) v }}}.
+  Proof.
+    iIntros (Hpos Φ) "[#Hinv >Hlease] HΦ".
+    iInv "Hinv" as "H".
+    destruct_einner "H".
+    iPure "Hlen" as Hlen; intuition.
+
+(*
+    wp_step.
+    iModIntro.
+    iExists _, _.
+    iFrame.
+    iApply "HΦ"; iFrame.
+  Qed.
+*)
+  Admitted.
+*)
 
   Fixpoint list_inserts {T} (l : list T) (off : nat) (vs : list T) :=
     match vs with
@@ -192,14 +185,12 @@ Section refinement_triples.
 
       assert (off < length H2) as Hoff by lia.
       apply lookup_lt_is_Some_2 in Hoff. destruct Hoff as [voff Hoff].
-      rewrite (big_sepL_delete _ H2 off); try eassumption.
+      iDestruct (big_sepL_insert_acc with "Hbs") as "[Hbsoff Hbsother]". apply Hoff.
 
       assert (off < length bs) as Hoffbs by lia.
       apply lookup_lt_is_Some_2 in Hoffbs. destruct Hoffbs as [boff Hoffbs].
-      rewrite (big_sepL_delete _ bs off); try eassumption.
+      iDestruct (big_sepL_insert_acc with "Hlease") as "[Hleaseoff Hleaseother]". apply Hoffbs.
 
-      iDestruct "Hlease" as "(Hleaseoff&Hleaseother)".
-      iDestruct "Hbs" as "(Hbsoff&Hbsother)".
       wp_step.
 
       iModIntro.
@@ -213,8 +204,8 @@ Section refinement_triples.
         { iPureIntro.
           rewrite insert_length.
           intuition. }
-        { iFrame. iApply big_sepL_list_insert.
-          eauto.
+        { iFrame.
+          iApply "Hbsother".
           iFrame. }
       }
 
@@ -228,8 +219,7 @@ Section refinement_triples.
       }
 
       {
-        iApply big_sepL_list_insert.
-        eauto.
+        iApply "Hleaseother".
         iFrame.
       }
 
