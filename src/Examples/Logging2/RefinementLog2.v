@@ -344,6 +344,21 @@ Section refinement_triples.
       thread existence
   *)
 
+  Lemma read_blocks_ok nblocks off res bs:
+    (
+      ( ExecInv ∗
+        ⌜ off + nblocks <= length bs ⌝ ∗
+        [∗ list] pos↦b ∈ bs, lease (log_data pos) b )
+      -∗
+      WP read_blocks nblocks off res {{
+        v,
+        ⌜ v = res ++ firstn nblocks (skipn off bs) ⌝ ∗
+        [∗ list] pos↦b ∈ bs, lease (log_data pos) b
+      }}
+    )%I.
+  Proof.
+  Admitted.
+
   Lemma read_refinement {T} j K `{LanguageCtx Log2.Op (list nat) T Log2.l K}:
     {{{ j ⤇ K (Call (Log2.Read)) ∗ Registered ∗ ExecInv }}}
       read
@@ -353,8 +368,8 @@ Section refinement_triples.
     iDestruct "Hinv" as (γlock) "(#Hlockinv&#Hinv)".
 
     wp_lock "(Hlocked&HEL)".
-    iDestruct "HEL" as (len_val b0 b1)
-                         "(Hlen_ghost&Hb0_ghost&Hb1_ghost)".
+    iDestruct "HEL" as (len_val bs)
+                         "(Hlen_ghost&Hbs_ghost)".
 
     wp_bind.
     iInv "Hinv" as "H".
