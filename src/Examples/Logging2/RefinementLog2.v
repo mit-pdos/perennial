@@ -227,6 +227,33 @@ Section refinement_triples.
       iFrame.
   Qed.
 
+  Lemma disk_lease_agree_log_data : forall l1 l2 off,
+    length l1 = length l2 ->
+    ( ( [∗ list] pos↦b ∈ l1, (off + pos) d↦ b ) -∗
+      ( [∗ list] pos↦b ∈ l2, lease (off + pos) b ) -∗
+      ⌜l1 = l2⌝ )%I.
+  Proof.
+    induction l1.
+    - destruct l2; simpl; intros; try lia.
+      iIntros.
+      done.
+    - destruct l2; simpl; intros; try lia.
+      iIntros "[Hpts0 HptsS]".
+      iIntros "[Hlease0 HleaseS]".
+      iDestruct (disk_lease_agree with "Hpts0 Hlease0") as "Hagree".
+      iPure "Hagree" as Hagree. subst.
+
+      inversion H1.
+      specialize (IHl1 l2 (S off) H3).
+
+      simpl in IHl1.
+      setoid_rewrite plus_n_Sm in IHl1.
+
+      iDestruct (IHl1 with "HptsS HleaseS") as "Hind".
+      iPure "Hind" as Hind. subst.
+      done.
+  Qed.
+
   Lemma append_refinement {T} j K `{LanguageCtx Log2.Op _ T Log2.l K} p:
     {{{ j ⤇ K (Call (Log2.Append p)) ∗ Registered ∗ ExecInv }}}
       append p
