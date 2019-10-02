@@ -574,16 +574,17 @@ Section refinement_triples.
   Lemma init_disk_split:
     (([∗ map] i↦v ∈ init_zero, i d↦ v ∗ lease i v)
        -∗ (log_commit d↦ 0
-          ∗ log_fst d↦ 0 ∗ log_snd d↦ 0)
+          ∗ [∗ list] pos ↦ b ∈ (repeat 0 log_size), log_data pos d↦ b)
           ∗ lease log_commit 0
-          ∗ lease log_fst 0 ∗ lease log_snd 0)%I.
+          ∗ [∗ list] pos ↦ b ∈ (repeat 0 log_size), lease (log_data pos) b).
   Proof.
     iIntros "Hdisk".
-    iPoseProof (disk_ptr_iter_split_aux O 2 with "Hdisk") as "H".
+    iPoseProof (disk_ptr_iter_split_aux 0 0 with "Hdisk") as "H".
     { rewrite /size. lia. }
-    iDestruct "H" as "(H&_)".
-    repeat iDestruct "H" as "((?&?)&H)". iFrame.
-  Qed.
+    iDestruct "H" as "(Hcommit&Hdata)".
+    repeat iDestruct "Hcommit" as "((?&?)&H)". iFrame.
+    admit.
+  Admitted.
 
 End refinement_triples.
 
@@ -671,31 +672,33 @@ Module sRO : exmach_refinement_obligations sRT.
   Lemma exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx.
   Proof. iIntros (??) "(?&?)"; eauto. Qed.
 
-  Lemma ptr_map_next {H: exmachG Σ} Hinv Hmem Hreg len_val b0 b1:
-    ptr_map len_val b0 b1 ==∗
+  Lemma ptr_map_next {H: exmachG Σ} Hinv Hmem Hreg len_val bs:
+    ptr_map len_val bs ==∗
             let Hex := ExMachG Σ Hinv Hmem (next_leased_heapG (hG := (exm_disk_inG))) Hreg in
-            ptr_map len_val b0 b1 ∗ lease_map len_val b0 b1.
+            ptr_map len_val bs ∗ lease_map len_val bs.
   Proof.
-    iIntros "(Hlen&Hb0&Hb1)".
+    iIntros "(Hlen&Hbs)".
+(*
     by repeat iMod (disk_next with "[$]") as "($&$)".
-  Qed.
+*)
+  Admitted.
 
   Lemma recv_triple: recv_triple_type.
   Proof.
     red. intros. iIntros "((#Hctx&#Hinv)&_)".
-    wp_ret. iInv "Hinv" as (len_val b0 b1) ">(?&Hlen&Hcase&Hlease&?)" "_".
+    wp_ret. iInv "Hinv" as (len_val bs) ">(?&Hlen&Hcase&Hlease&?)" "_".
     iApply (fupd_mask_weaken _ _).
     { solve_ndisj. }
-    iExists (firstn len_val [b0;b1]). iFrame.
-    iExists (firstn len_val [b0;b1]).
+    iExists (firstn len_val bs). iFrame.
+    iExists (firstn len_val bs).
     iSplitL "".
     { iPureIntro; econstructor. }
     iClear "Hctx Hinv".
     iIntros (???) "(#Hctx&Hstate)".
     iMod (ptr_map_next with "Hcase") as "(Hp&Hl)".
     iExists 0. iFrame.
-    iSplitL "Hl"; iModIntro; iIntros; iExists _, _, _; iFrame.
-  Qed.
+    iSplitL "Hl"; iModIntro; iIntros; iExists _, _; iFrame.
+  Admitted.
 
   Lemma init_wf: ∀ σ1a σ1c, init_absr σ1a σ1c → ExMach.state_wf σ1c.
   Proof.
@@ -710,9 +713,10 @@ Module sRO : exmach_refinement_obligations sRT.
     iPoseProof (init_disk_split with "Hdisk") as "(Hd&Hl)".
     iModIntro. iExists _. iFrame.
     iSplitL "Hl".
-    - iDestruct "Hl" as "(?&?&?)". iIntros "_". iExists 0, _, _. iFrame.
-    - iDestruct "Hd" as "(?&?&?)". iExists 0, _, _. iFrame.
-      iPureIntro. lia.
+    - iDestruct "Hl" as "(?&?)". iIntros "_". iExists 0, _. iFrame.
+      iPureIntro. intuition. lia. rewrite repeat_length. lia.
+    - iDestruct "Hd" as "(?&?)". iExists 0, _. iFrame.
+      iPureIntro. intuition. lia. rewrite repeat_length. lia.
   Qed.
 
   Lemma exec_inv_preserve_crash: exec_inv_preserve_crash_type.
@@ -724,19 +728,19 @@ Module sRO : exmach_refinement_obligations sRT.
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
     iPoseProof (@init_mem_split with "Hmem") as "?".
-    iMod (ptr_map_next with "[Hptr Hb0 Hb1]") as "(?&?)"; first by iFrame.
-    iModIntro. iExists _, _, _. iFrame.
+    iMod (ptr_map_next with "[Hptr Hbs]") as "(?&?)"; first by iFrame.
+    iModIntro. iExists _, _. iFrame.
   Qed.
 
   Lemma crash_inv_preserve_crash: crash_inv_preserve_crash_type.
   Proof.
     red. intros. iIntros "(#Hctx&#Hinv)".
     iInv "Hinv" as ">Hopen" "_".
-    iDestruct "Hopen" as (? ? ?) "(?&Hlen&Hptr&Hlease&Hlock)".
+    iDestruct "Hopen" as (? ?) "(?&Hlen&Hptr&Hlease&Hlock)".
     iApply fupd_mask_weaken; first by solve_ndisj.
     iIntros (??) "Hmem".
     iMod (ptr_map_next with "Hptr") as "(?&?)".
-    iModIntro. iExists _, _, _. iFrame.
+    iModIntro. iExists _, _. iFrame.
     iPoseProof (@init_mem_split with "Hmem") as "?".
     iFrame.
   Qed.
@@ -745,9 +749,9 @@ Module sRO : exmach_refinement_obligations sRT.
   Proof.
     red. intros. iIntros "(Hinv&#Hsrc)".
     iDestruct "Hinv" as (invG) "Hinv".
-    iDestruct "Hinv" as (???) "(?&?&?)".
+    iDestruct "Hinv" as (??) "(?&?&?)".
     iMod (@inv_alloc Σ (exm_invG) iN _ CrashInner with "[-]").
-    { iNext. iExists _, _, _; iFrame. }
+    { iNext. iExists _, _; iFrame. }
     iModIntro. iFrame. iExists tt. iFrame "Hsrc".
   Qed.
 
@@ -770,7 +774,7 @@ Module sRO : exmach_refinement_obligations sRT.
     iIntros (??) "? (?&H)".
     iDestruct "H" as (?) "(Hlock&Hinv)".
     iInv "Hinv" as "H" "_".
-    iDestruct "H" as (ptr b0 b1) ">(Hsource&Hlen&Hmap)".
+    iDestruct "H" as (ptr bs) ">(Hsource&Hlen&Hmap)".
     iMod (lock_crack with "Hlock") as ">H"; first by solve_ndisj.
     iDestruct "H" as (v) "(?&?)".
     iApply fupd_mask_weaken; first by solve_ndisj.
@@ -781,8 +785,8 @@ Module sRO : exmach_refinement_obligations sRT.
     iMod (ptr_map_next with "Hmap") as "(Hp&Hl)".
     iPoseProof (@init_mem_split with "Hmem") as "?".
     iExists _. iFrame. rewrite /ExecLockInv.
-    iSplitL "Hl"; iModIntro; iIntros; iExists _, _, _; iFrame.
-  Qed.
+    iSplitL "Hl"; iModIntro; iIntros; iExists _, _; iFrame.
+  Admitted.
 
 End sRO.
 
