@@ -430,7 +430,7 @@ Section refinement_triples.
   Lemma read_blocks_ok nblocks off res bs:
     (
       ( ExecInv ∗
-        ⌜ off + nblocks <= length bs ⌝ ∗
+        ⌜ off + nblocks <= length bs /\ length bs = log_size ⌝ ∗
         [∗ list] pos↦b ∈ bs, lease (log_data pos) b )
       -∗
       WP read_blocks nblocks off res {{
@@ -440,7 +440,65 @@ Section refinement_triples.
       }}
     )%I.
   Proof.
-  Admitted.
+    iIntros "((#Hsource_inv&Hinv)&Hinbound&Hlease)".
+    iDestruct "Hinv" as (γlock) "(#Hlockinv&#Hinv)".
+    iLöb as "IH" forall (nblocks off res).
+    destruct nblocks; simpl.
+    - wp_ret.
+      rewrite firstn_O. rewrite app_nil_r. iFrame. iPureIntro. auto.
+    - wp_bind.
+
+      iInv "Hinv" as "H".
+      destruct_einner "H".
+
+      iPure "Hinbound" as ?; intuition.
+      iPure "Hlen" as ?; intuition.
+      iDestruct (disk_lease_agree_log_data with "Hbs Hlease") as %Hx; subst. lia.
+
+      assert (off < length bs) as Hoffbs by lia.
+      apply lookup_lt_is_Some_2 in Hoffbs. destruct Hoffbs as [boff Hoffbs].
+
+      iDestruct (big_sepL_lookup_acc with "Hbs") as "[Hbsoff Hbsother]". apply Hoffbs.
+      iDestruct (big_sepL_lookup_acc with "Hlease") as "[Hleaseoff Hleaseother]". apply Hoffbs.
+      wp_step.
+
+      iModIntro.
+      iExists _, _.
+      iFrame.
+      iSplitL "Hbsoff Hbsother".
+      {
+        iSplit.
+        {
+          iNext. iPureIntro. intuition.
+        }
+
+        iApply "Hbsother".
+        iFrame.
+      }
+
+      iSpecialize ("IH" $! nblocks (off+1) (res ++ [boff])).
+      iApply (wp_wand with "[Hleaseoff Hleaseother] []").
+      {
+        iApply ("IH" with "[%] [Hleaseoff Hleaseother]").
+        { lia. }
+        iApply "Hleaseother". iFrame.
+      }
+
+      iIntros "% [Hres Hlease]".
+      iFrame.
+      iPure "Hres" as Hres.
+      iPureIntro.
+      subst.
+
+      apply take_drop_middle in Hoffbs.
+      rewrite <- Hoffbs at 2.
+      rewrite drop_app_alt. simpl.
+      rewrite <- app_assoc. simpl.
+      replace (off+1) with (S off) by lia.
+      reflexivity.
+      rewrite firstn_length_le.
+      lia. lia.
+  Qed.
 
   Lemma read_refinement {T} j K `{LanguageCtx Log2.Op (list nat) T Log2.l K}:
     {{{ j ⤇ K (Call (Log2.Read)) ∗ Registered ∗ ExecInv }}}
