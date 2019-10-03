@@ -672,6 +672,23 @@ Module sRO : exmach_refinement_obligations sRT.
   Lemma exec_inv_source_ctx: ∀ {H1 H2}, exec_inv H1 H2 ⊢ source_ctx.
   Proof. iIntros (??) "(?&?)"; eauto. Qed.
 
+  Lemma list_next {H: exmachG Σ} Hinv Hmem Hreg : forall bs off,
+    ([∗ list] pos↦b ∈ bs, (off + pos) d↦ b) ==∗
+      let Hex := ExMachG Σ Hinv Hmem (next_leased_heapG (hG := (exm_disk_inG))) Hreg in
+      (([∗ list] pos↦b ∈ bs, (off + pos) d↦ b) ∗ ([∗ list] pos↦b ∈ bs, lease (off + pos) b)).
+  Proof.
+    simpl.
+    induction bs.
+    - simpl. iIntros. done.
+    - simpl. iIntros (off) "(Hthis&Hnext)".
+      iMod (disk_next with "[$]") as "($&$)".
+      setoid_rewrite <- plus_n_Sm.
+      setoid_rewrite <- plus_Sn_m.
+      specialize (IHbs (S off)).
+      iDestruct (IHbs with "Hnext") as "Hnext".
+      iFrame.
+  Qed.
+
   Lemma ptr_map_next {H: exmachG Σ} Hinv Hmem Hreg len_val bs:
     ptr_map len_val bs ==∗
             let Hex := ExMachG Σ Hinv Hmem (next_leased_heapG (hG := (exm_disk_inG))) Hreg in
@@ -679,10 +696,9 @@ Module sRO : exmach_refinement_obligations sRT.
   Proof.
     iIntros "(Hlen&Hbs)".
     iMod (disk_next with "[$]") as "($&$)".
-(*
-    by repeat iMod (disk_next with "[$]") as "($&$)".
-*)
-  Admitted.
+    iDestruct (list_next with "Hbs") as "Hbs".
+    iFrame.
+  Qed.
 
   Lemma recv_triple: recv_triple_type.
   Proof.
