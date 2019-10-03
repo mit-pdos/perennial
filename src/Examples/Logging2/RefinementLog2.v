@@ -678,6 +678,7 @@ Module sRO : exmach_refinement_obligations sRT.
             ptr_map len_val bs ∗ lease_map len_val bs.
   Proof.
     iIntros "(Hlen&Hbs)".
+    iMod (disk_next with "[$]") as "($&$)".
 (*
     by repeat iMod (disk_next with "[$]") as "($&$)".
 *)
@@ -697,8 +698,11 @@ Module sRO : exmach_refinement_obligations sRT.
     iIntros (???) "(#Hctx&Hstate)".
     iMod (ptr_map_next with "Hcase") as "(Hp&Hl)".
     iExists 0. iFrame.
+    iPure "Hlen" as Hlen; intuition.
     iSplitL "Hl"; iModIntro; iIntros; iExists _, _; iFrame.
-  Admitted.
+    iPureIntro; intuition.
+    iPureIntro; intuition.
+  Qed.
 
   Lemma init_wf: ∀ σ1a σ1c, init_absr σ1a σ1c → ExMach.state_wf σ1c.
   Proof.
@@ -785,8 +789,11 @@ Module sRO : exmach_refinement_obligations sRT.
     iMod (ptr_map_next with "Hmap") as "(Hp&Hl)".
     iPoseProof (@init_mem_split with "Hmem") as "?".
     iExists _. iFrame. rewrite /ExecLockInv.
+    iPure "Hlen" as Hlen. intuition.
     iSplitL "Hl"; iModIntro; iIntros; iExists _, _; iFrame.
-  Admitted.
+    iPureIntro; intuition.
+    iPureIntro; intuition.
+  Qed.
 
 End sRO.
 
