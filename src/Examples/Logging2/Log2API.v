@@ -1,9 +1,11 @@
 From Coq Require Import List.
 
 From Perennial Require Export Lib.
+Require Import ExMach.ExMachAPI.
 Import RelationNotations.
 
 Axiom log_size : nat.
+Axiom log_size_ok : log_size + 1 ≤ ExMach.size.
 
 Module Log2.
 

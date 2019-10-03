@@ -571,6 +571,39 @@ Section refinement_triples.
     iFrame.
   Qed.
 
+  Lemma rep_delete_init_zero:
+    forall off (P : nat -> nat -> iPropI Σ),
+      off < size ->
+      ([∗ map] k↦x ∈ rep_delete off init_zero, P k x) -∗
+        P off 0 ∗ [∗ map] k↦x ∈ rep_delete (S off) init_zero, P k x.
+  Proof.
+    intros.
+    simpl rep_delete.
+    iIntros "H".
+    iDestruct (big_sepM_delete with "H") as "H".
+    2: iFrame.
+    rewrite rep_delete_lookup; try lia.
+    apply init_zero_lookup_lt_zero.
+    lia.
+  Qed.
+
+  Lemma rep_delete_init_zero_list:
+    forall (P : nat -> nat -> iPropI Σ) n off,
+      (n + off) <= size ->
+      ([∗ map] k↦x ∈ rep_delete off init_zero, P k x) -∗
+        ([∗ list] pos↦b ∈ repeat 0 n, P (off+pos) b) ∗
+        [∗ map] k↦x ∈ rep_delete (n + off) init_zero, P k x.
+  Proof.
+    induction n.
+    - simpl. iIntros. iFrame.
+    - simpl. iIntros (off Hoff) "H".
+      iDestruct (rep_delete_init_zero with "H") as "[Hoff Hmore]". lia.
+      replace (off+0) with off by lia. iFrame.
+      iDestruct (IHn with "Hmore") as "[Hl Htail]". lia.
+      rewrite <- plus_n_Sm. simpl. iFrame.
+      setoid_rewrite <- plus_n_Sm. iFrame.
+  Qed.
+
   Lemma init_disk_split:
     (([∗ map] i↦v ∈ init_zero, i d↦ v ∗ lease i v)
        -∗ (log_commit d↦ 0
@@ -583,8 +616,13 @@ Section refinement_triples.
     { rewrite /size. lia. }
     iDestruct "H" as "(Hcommit&Hdata)".
     repeat iDestruct "Hcommit" as "((?&?)&H)". iFrame.
-    admit.
-  Admitted.
+    iDestruct (big_sepM_sep with "Hdata") as "(Hpts&Hlease)".
+    pose proof log_size_ok.
+    iDestruct (rep_delete_init_zero_list with "Hpts") as "[Hpts Hpts']".
+    2: iFrame. lia.
+    iDestruct (rep_delete_init_zero_list with "Hlease") as "[Hlease Hlease']".
+    2: iFrame. lia.
+  Qed.
 
 End refinement_triples.
 
