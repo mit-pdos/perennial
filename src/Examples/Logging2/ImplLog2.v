@@ -8,9 +8,8 @@ Definition log_start := 1.
 (* Memory addresses *)
 Definition log_lock := 0.
 Definition mem_lock := 1.
-Definition mem_count_in_memory := 2.
-Definition mem_count_on_disk := 3.
-Definition mem_start := 4.
+Definition mem_count := 2.
+Definition mem_start := 3.
 
 Definition log_data (pos : nat) :=
   log_start + pos.
@@ -53,17 +52,15 @@ Fixpoint read_mem_blocks (count : nat) (pos : nat) (res : list nat) :=
 Definition disk_append :=
   ( _ <- lock log_lock;
 
-    _ <- lock mem_lock;
-    memlen <- read_mem mem_count_in_memory;
-    l <- read_mem_blocks memlen 0 nil;
-    _ <- write_mem mem_count_in_memory 0;
+    disklen <- read_disk log_commit;
 
-    disklen <- read_mem mem_count_on_disk;
-    _ <- write_mem mem_count_on_disk (disklen+memlen);
+    _ <- lock mem_lock;
+    memlen <- read_mem mem_count;
+    l <- read_mem_blocks (memlen-disklen) disklen nil;
     _ <- unlock mem_lock;
 
     _ <- write_blocks l disklen;
-    _ <- write_disk log_commit (disklen+memlen);
+    _ <- write_disk log_commit memlen;
 
     _ <- unlock log_lock;
     Ret tt
@@ -71,14 +68,13 @@ Definition disk_append :=
 
 Definition mem_append (l : list nat) :=
   ( _ <- lock mem_lock;
-    memlen <- read_mem mem_count_in_memory;
-    disklen <- read_mem mem_count_on_disk;
-    if gt_dec (disklen + memlen + length l) log_size then
-      _ <- unlock log_lock;
+    memlen <- read_mem mem_count;
+    if gt_dec (memlen + length l) log_size then
+      _ <- unlock mem_lock;
       Ret false
     else
       _ <- write_mem_blocks l memlen;
-      _ <- write_mem mem_count_in_memory (memlen + length l);
+      _ <- write_mem mem_count (memlen + length l);
       _ <- unlock mem_lock;
       Ret true
   )%proc.
