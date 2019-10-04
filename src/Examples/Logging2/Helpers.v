@@ -63,6 +63,6 @@ Ltac unify_ghost :=
     | [ |- context[ own y (◯ (Excl' x))] ] => fail 1
     | [ |- context[ environments.Esnoc _ (INamed ?frag_name) (own y (◯ (Excl' ?z)))] ] =>
       let pat := constr:([(SIdent (INamed auth_name) nil); (SIdent (INamed frag_name) nil)]) in
-      (iDestruct (ghost_var_agree with pat) as %Hp; inversion_clear Hp; subst; [])
+      (iDestruct (ghost_var_agree with pat) as %Hp; subst; try inversion_clear Hp; [])
     end
   end.
