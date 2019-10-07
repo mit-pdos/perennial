@@ -458,11 +458,11 @@ Inductive ectx_item :=
   | AppLCtx (v2 : val)
   | AppRCtx (e1 : expr)
   | UnOpCtx (op : un_op)
-  | BinOpLCtx (op : bin_op) (v2 : val)
-  | BinOpRCtx (op : bin_op) (e1 : expr)
+  | BinOpLCtx (op : bin_op) (e2 : expr)
+  | BinOpRCtx (op : bin_op) (v1 : val)
   | IfCtx (e1 e2 : expr)
-  | PairLCtx (v2 : val)
-  | PairRCtx (e1 : expr)
+  | PairLCtx (e2 : expr)
+  | PairRCtx (v1 : val)
   | FstCtx
   | SndCtx
   | InjLCtx
@@ -471,14 +471,14 @@ Inductive ectx_item :=
   | AllocNLCtx (v2 : val)
   | AllocNRCtx (e1 : expr)
   | LoadCtx
-  | StoreLCtx (v2 : val)
-  | StoreRCtx (e1 : expr)
+  | StoreLCtx (e2 : expr)
+  | StoreRCtx (v1 : val)
   | ExternalOpCtx (op : external)
-  | CmpXchgLCtx (v1 : val) (v2 : val)
-  | CmpXchgMCtx (e0 : expr) (v2 : val)
-  | CmpXchgRCtx (e0 : expr) (e1 : expr)
-  | FaaLCtx (v2 : val)
-  | FaaRCtx (e1 : expr)
+  | CmpXchgLCtx (e1 : expr) (e2 : expr)
+  | CmpXchgMCtx (v1 : val) (e2 : expr)
+  | CmpXchgRCtx (v1 : val) (v2 : val)
+  | FaaLCtx (e2 : expr)
+  | FaaRCtx (v1 : val)
   | ResolveLCtx (ctx : ectx_item) (v1 : val) (v2 : val)
   | ResolveMCtx (e0 : expr) (v2 : val)
   | ResolveRCtx (e0 : expr) (e1 : expr).
@@ -495,11 +495,11 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | AppLCtx v2 => App e (of_val v2)
   | AppRCtx e1 => App e1 e
   | UnOpCtx op => UnOp op e
-  | BinOpLCtx op v2 => BinOp op e (Val v2)
-  | BinOpRCtx op e1 => BinOp op e1 e
+  | BinOpLCtx op e2 => BinOp op e e2
+  | BinOpRCtx op v1 => BinOp op (Val v1) e
   | IfCtx e1 e2 => If e e1 e2
-  | PairLCtx v2 => Pair e (Val v2)
-  | PairRCtx e1 => Pair e1 e
+  | PairLCtx e2 => Pair e e2
+  | PairRCtx v1 => Pair (Val v1) e
   | FstCtx => Fst e
   | SndCtx => Snd e
   | InjLCtx => InjL e
@@ -508,14 +508,14 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | AllocNLCtx v2 => AllocN e (Val v2)
   | AllocNRCtx e1 => AllocN e1 e
   | LoadCtx => Load e
-  | StoreLCtx v2 => Store e (Val v2)
-  | StoreRCtx e1 => Store e1 e
+  | StoreLCtx e2 => Store e e2
+  | StoreRCtx v1 => Store (Val v1) e
   | ExternalOpCtx op => ExternalOp op e
-  | CmpXchgLCtx v1 v2 => CmpXchg e (Val v1) (Val v2)
-  | CmpXchgMCtx e0 v2 => CmpXchg e0 e (Val v2)
-  | CmpXchgRCtx e0 e1 => CmpXchg e0 e1 e
-  | FaaLCtx v2 => FAA e (Val v2)
-  | FaaRCtx e1 => FAA e1 e
+  | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
+  | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
+  | CmpXchgRCtx v0 v1 => CmpXchg (Val v0) (Val v1) e
+  | FaaLCtx e2 => FAA e e2
+  | FaaRCtx v1 => FAA (Val v1) e
   | ResolveLCtx K v1 v2 => Resolve (fill_item K e) (Val v1) (Val v2)
   | ResolveMCtx ex v2 => Resolve ex e (Val v2)
   | ResolveRCtx ex e1 => Resolve ex e1 e
