@@ -17,6 +17,9 @@ From Perennial Require Import Examples.MailServer.MailRefinement.
 (* work-in-progress on goose *)
 From Perennial Require Import Goose.TypeSystem.
 
+(* work-in-progress on Go deep embedding based on heap_lang *)
+From Perennial Require Import go_lang.adequacy.
+
 (* goose output *)
 From Perennial Require Import Goose.ExplicitModel.
 From Perennial Require Import Goose.Examples.UnitTests.
