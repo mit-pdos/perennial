@@ -61,7 +61,7 @@ Open Scope Z_scope.
 Definition proph_id := positive.
 
 Inductive base_lit : Set :=
-  | LitInt (n : Z) | LitBool (b : bool) | LitUnit | LitErased
+  | LitInt (n : Z) | LitBool (b : bool) | LitByte (n : Z) | LitUnit | LitErased
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
   | NegOp | MinusUnOp.
@@ -107,7 +107,8 @@ with val :=
   | RecV (f x : binder) (e : expr)
   | PairV (v1 v2 : val)
   | InjLV (v : val)
-  | InjRV (v : val).
+  | InjRV (v : val)
+  | MapV (v: list (Z * val)).
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
@@ -169,7 +170,7 @@ Definition val_is_unboxed (v : val) : Prop :=
 Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
 Proof. destruct l; simpl; exact (decide _). Defined.
 Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
-Proof. destruct v as [ | | | [] | [] ]; simpl; exact (decide _). Defined.
+Proof. destruct v as [ | | | [] | [] | ]; simpl; exact (decide _). Defined.
 
 (** We just compare the word-sized representation of two values, without looking
 into boxed data.  This works out fine if at least one of the to-be-compared
@@ -204,68 +205,91 @@ Proof. solve_decision. Defined.
 Instance expr_eq_dec : EqDecision expr.
 Proof.
   refine (
-   fix go (e1 e2 : expr) {struct e1} : Decision (e1 = e2) :=
-     match e1, e2 with
-     | Val v, Val v' => cast_if (decide (v = v'))
-     | Var x, Var x' => cast_if (decide (x = x'))
-     | Rec f x e, Rec f' x' e' =>
+      fix go (e1 e2 : expr) {struct e1} : Decision (e1 = e2) :=
+      match e1, e2 with
+      | Val v, Val v' => cast_if (decide (v = v'))
+      | Var x, Var x' => cast_if (decide (x = x'))
+      | Rec f x e, Rec f' x' e' =>
         cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
-     | App e1 e2, App e1' e2' => cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-     | UnOp o e, UnOp o' e' => cast_if_and (decide (o = o')) (decide (e = e'))
-     | BinOp o e1 e2, BinOp o' e1' e2' =>
+      | App e1 e2, App e1' e2' => cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
+      | UnOp o e, UnOp o' e' => cast_if_and (decide (o = o')) (decide (e = e'))
+      | BinOp o e1 e2, BinOp o' e1' e2' =>
         cast_if_and3 (decide (o = o')) (decide (e1 = e1')) (decide (e2 = e2'))
-     | If e0 e1 e2, If e0' e1' e2' =>
+      | If e0 e1 e2, If e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-     | Pair e1 e2, Pair e1' e2' =>
+      | Pair e1 e2, Pair e1' e2' =>
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-     | Fst e, Fst e' => cast_if (decide (e = e'))
-     | Snd e, Snd e' => cast_if (decide (e = e'))
-     | InjL e, InjL e' => cast_if (decide (e = e'))
-     | InjR e, InjR e' => cast_if (decide (e = e'))
-     | Case e0 e1 e2, Case e0' e1' e2' =>
+      | Fst e, Fst e' => cast_if (decide (e = e'))
+      | Snd e, Snd e' => cast_if (decide (e = e'))
+      | InjL e, InjL e' => cast_if (decide (e = e'))
+      | InjR e, InjR e' => cast_if (decide (e = e'))
+      | Case e0 e1 e2, Case e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-     | Fork e, Fork e' => cast_if (decide (e = e'))
-     | AllocN e1 e2, AllocN e1' e2' =>
+      | Fork e, Fork e' => cast_if (decide (e = e'))
+      | AllocN e1 e2, AllocN e1' e2' =>
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-     | Load e, Load e' => cast_if (decide (e = e'))
-     | Store e1 e2, Store e1' e2' =>
+      | Load e, Load e' => cast_if (decide (e = e'))
+      | Store e1 e2, Store e1' e2' =>
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-     | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
+      | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-     | FAA e1 e2, FAA e1' e2' =>
+      | FAA e1 e2, FAA e1' e2' =>
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-     | NewProph, NewProph => left _
-     | Resolve e0 e1 e2, Resolve e0' e1' e2' =>
+      | NewProph, NewProph => left _
+      | Resolve e0 e1 e2, Resolve e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-     | _, _ => right _
-     end
-   with gov (v1 v2 : val) {struct v1} : Decision (v1 = v2) :=
+      | _, _ => right _
+      end
+          with gov (v1 v2 : val) {struct v1} : Decision (v1 = v2) :=
+      match v1, v2 with
+      | LitV l, LitV l' => cast_if (decide (l = l'))
+      | RecV f x e, RecV f' x' e' =>
+        cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
+      | PairV e1 e2, PairV e1' e2' =>
+        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
+      | InjLV e, InjLV e' => cast_if (decide (e = e'))
+      | InjRV e, InjRV e' => cast_if (decide (e = e'))
+      | MapV e, MapV e' => cast_if (decide (e = e'))
+      | _, _ => right _
+      end
+        for go); try (clear go gov; abstract intuition congruence).
+  assert (EqDecision (Z * val)).
+  solve_decision.
+  solve_decision.
+Defined.
+Instance val_eq_dec : EqDecision val.
+Proof.
+  refine
+    (fix go (v1 v2:val) : Decision (v1 = v2) :=
      match v1, v2 with
      | LitV l, LitV l' => cast_if (decide (l = l'))
      | RecV f x e, RecV f' x' e' =>
-        cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
+       cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
      | PairV e1 e2, PairV e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
+       cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
      | InjLV e, InjLV e' => cast_if (decide (e = e'))
      | InjRV e, InjRV e' => cast_if (decide (e = e'))
+     | MapV e, MapV e' => cast_if (decide (e = e'))
      | _, _ => right _
-     end
-   for go); try (clear go gov; abstract intuition congruence).
+     end); try abstract intuition congruence.
+  assert (EqDecision (Z * val)).
+  solve_decision.
+  solve_decision.
 Defined.
-Instance val_eq_dec : EqDecision val.
-Proof. solve_decision. Defined.
 
 Instance base_lit_countable : Countable base_lit.
 Proof.
  refine (inj_countable' (λ l, match l with
-  | LitInt n => (inl (inl n), None)
+  | LitInt n => (inl (inl (inl n)), None)
+  | LitByte n => (inl (inl (inr n)), None)
   | LitBool b => (inl (inr b), None)
   | LitUnit => (inr (inl false), None)
   | LitErased => (inr (inl true), None)
   | LitLoc l => (inr (inr l), None)
   | LitProphecy p => (inr (inl false), Some p)
   end) (λ l, match l with
-  | (inl (inl n), None) => LitInt n
+  | (inl (inl (inl n)), None) => LitInt n
+  | (inl (inl (inr n)), None) => LitByte n
   | (inl (inr b), None) => LitBool b
   | (inr (inl false), None) => LitUnit
   | (inr (inl true), None) => LitErased
@@ -325,6 +349,7 @@ Proof.
      | PairV v1 v2 => GenNode 1 [gov v1; gov v2]
      | InjLV v => GenNode 2 [gov v]
      | InjRV v => GenNode 3 [gov v]
+     | MapV kvs => GenNode 4 (flat_map (fun '(k, v) => [GenLeaf (inr (inl (LitInt k))); gov v]) kvs)
      end
    for go).
  set (dec :=
@@ -360,6 +385,7 @@ Proof.
      | GenNode 1 [v1; v2] => PairV (gov v1) (gov v2)
      | GenNode 2 [v] => InjLV (gov v)
      | GenNode 3 [v] => InjRV (gov v)
+     | GenNode 4 vs => (* TODO: this is super complicated *) MapV []
      | _ => LitV LitUnit (* dummy *)
      end
    for go).
@@ -367,8 +393,9 @@ Proof.
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
  - destruct e as [v| | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
      [exact (gov v)|done..].
- - destruct v; by f_equal.
-Qed.
+ - destruct v; try by f_equal.
+   admit. (* TODO: decode maps *)
+Admitted.
 Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
