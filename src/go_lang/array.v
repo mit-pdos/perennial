@@ -84,10 +84,10 @@ Proof.
 Qed.
 
 Lemma wp_allocN s E v n :
-  0 < n →
+  (0 < u64_Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); l ↦∗ replicate (Z.to_nat n) v ∗
-         [∗ list] i ∈ seq 0 (Z.to_nat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
+  {{{ l, RET LitV (LitLoc l); l ↦∗ replicate (Word.wordToNat n) v ∗
+         [∗ list] i ∈ seq 0 (Word.wordToNat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply wp_allocN_seq; [done..|]. iNext.
   iIntros (l) "Hlm". iApply "HΦ".
@@ -95,10 +95,10 @@ Proof.
   by iApply mapsto_seq_array.
 Qed.
 Lemma twp_allocN s E v n :
-  0 < n →
+  (0 < u64_Z n)%Z →
   [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  [[{ l, RET LitV (LitLoc l); l ↦∗ replicate (Z.to_nat n) v ∗
-         [∗ list] i ∈ seq 0 (Z.to_nat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
+  [[{ l, RET LitV (LitLoc l); l ↦∗ replicate (Word.wordToNat n) v ∗
+         [∗ list] i ∈ seq 0 (Word.wordToNat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply twp_allocN_seq; [done..|].
   iIntros (l) "Hlm". iApply "HΦ".
@@ -107,21 +107,22 @@ Proof.
 Qed.
 
 Lemma wp_allocN_vec s E v n :
-  0 < n →
+  (0 < u64_Z n)%Z →
   {{{ True }}}
-    AllocN #n v @ s ; E
-  {{{ l, RET #l; l ↦∗ vreplicate (Z.to_nat n) v ∗
-         [∗ list] i ∈ seq 0 (Z.to_nat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
+    (* TODO: the coercion from u64 to base_lit doesn't work, which we should probably fix *)
+    AllocN #(LitInt n) v @ s ; E
+  {{{ l, RET #l; l ↦∗ vreplicate (Word.wordToNat n) v ∗
+         [∗ list] i ∈ seq 0 (Word.wordToNat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply wp_allocN; [ lia | done | .. ]. iNext.
   iIntros (l) "[Hl Hm]". iApply "HΦ". rewrite vec_to_list_replicate. iFrame.
 Qed.
 Lemma twp_allocN_vec s E v n :
-  0 < n →
+  (0 < u64_Z n)%Z →
   [[{ True }]]
-    AllocN #n v @ s ; E
-  [[{ l, RET #l; l ↦∗ vreplicate (Z.to_nat n) v ∗
-         [∗ list] i ∈ seq 0 (Z.to_nat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
+    AllocN #(LitInt n) v @ s ; E
+  [[{ l, RET #l; l ↦∗ vreplicate (Word.wordToNat n) v ∗
+         [∗ list] i ∈ seq 0 (Word.wordToNat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply twp_allocN; [ lia | done | .. ].
   iIntros (l) "[Hl Hm]". iApply "HΦ". rewrite vec_to_list_replicate. iFrame.
@@ -210,10 +211,11 @@ Lemma wp_cmpxchg_fail_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v1 v2
   {{{ RET (vs !!! off, #false); l ↦∗ vs }}}.
 Proof. intros. eapply wp_cmpxchg_fail_offset=> //. by apply vlookup_lookup. Qed.
 
-Lemma wp_faa_offset s E l off vs (i1 i2 : Z) :
-  vs !! off = Some #i1 →
-  {{{ ▷ l ↦∗ vs }}} FAA #(l +ₗ off) #i2 @ s; E
-  {{{ RET LitV (LitInt i1); l ↦∗ <[off:=#(i1 + i2)]> vs }}}.
+(*
+Lemma wp_faa_offset s E l off vs (i1 i2 : u64) :
+  vs !! off = Some #(LitInt i1) →
+  {{{ ▷ l ↦∗ vs }}} FAA #(l +ₗ off) #(LitInt i2) @ s; E
+  {{{ RET LitV (LitInt i1); l ↦∗ <[off:=#(LitInt $ Word.wplus i1 i2)]> vs }}}.
 Proof.
   iIntros (Hlookup Φ) "Hl HΦ".
   iDestruct (update_array l _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
@@ -228,7 +230,7 @@ Lemma wp_faa_offset_vec s E l sz (off : fin sz) (vs : vec val sz) (i1 i2 : Z) :
 Proof.
   intros. setoid_rewrite vec_to_list_insert. apply wp_faa_offset=> //.
   by apply vlookup_lookup.
-Qed.
+Qed. *)
 
 End lifting.
 

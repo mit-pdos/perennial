@@ -184,10 +184,10 @@ Implicit Types v : val.
 Implicit Types z : Z.
 
 Lemma tac_wp_allocN Δ Δ' s E j K v n Φ :
-  0 < n →
+  (0 < u64_Z n)%Z →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (array l (replicate (Z.to_nat n) v))) Δ' = Some Δ'' ∧
+    envs_app false (Esnoc Enil j (array l (replicate (Word.wordToNat n) v))) Δ' = Some Δ'' ∧
     envs_entails Δ'' (WP fill K (Val $ LitV $ LitLoc l) @ s; E {{ Φ }})) →
   envs_entails Δ (WP fill K (AllocN (Val $ LitV $ LitInt n) (Val v)) @ s; E {{ Φ }}).
 Proof.
@@ -198,9 +198,9 @@ Proof.
   apply wand_intro_l. by rewrite (sep_elim_l (l ↦∗ _)%I) right_id wand_elim_r.
 Qed.
 Lemma tac_twp_allocN Δ s E j K v n Φ :
-  0 < n →
+  (0 < u64_Z n)%Z →
   (∀ l, ∃ Δ',
-    envs_app false (Esnoc Enil j (array l (replicate (Z.to_nat n) v))) Δ
+    envs_app false (Esnoc Enil j (array l (replicate (Word.wordToNat n) v))) Δ
     = Some Δ' ∧
     envs_entails Δ' (WP fill K (Val $ LitV $ LitLoc l) @ s; E [{ Φ }])) →
   envs_entails Δ (WP fill K (AllocN (Val $ LitV $ LitInt n) (Val v)) @ s; E [{ Φ }]).
@@ -379,12 +379,13 @@ Proof.
   rewrite right_id. by apply sep_mono_r, wand_mono.
 Qed.
 
-Lemma tac_wp_faa Δ Δ' Δ'' s E i K l z1 z2 Φ :
+(*
+Lemma tac_wp_faa Δ Δ' Δ'' s E i K l (z1 z2:u64) Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ LitV z1)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ LitV (z1 + z2))) Δ' = Some Δ'' →
-  envs_entails Δ'' (WP fill K (Val $ LitV z1) @ s; E {{ Φ }}) →
-  envs_entails Δ (WP fill K (FAA (LitV l) (LitV z2)) @ s; E {{ Φ }}).
+  envs_lookup i Δ' = Some (false, l ↦ LitV (LitInt z1))%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ LitV (LitInt $ Word.wplus z1 z2))) Δ' = Some Δ'' →
+  envs_entails Δ'' (WP fill K (Val $ LitV (LitInt z1)) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP fill K (FAA (LitV l) (LitV (LitInt z2))) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_eq=> ????.
   rewrite -wp_bind. eapply wand_apply; first exact: (wp_faa _ _ _ z1 z2).
@@ -401,7 +402,7 @@ Proof.
   rewrite -twp_bind. eapply wand_apply; first exact: (twp_faa _ _ _ z1 z2).
   rewrite envs_simple_replace_sound //; simpl.
   rewrite right_id. by apply sep_mono_r, wand_mono.
-Qed.
+Qed. *)
 End heap.
 
 (** Evaluate [lem] to a hypothesis [H] that can be applied, and then run
@@ -618,6 +619,7 @@ Tactic Notation "wp_cmpxchg_suc" :=
   | _ => fail "wp_cmpxchg_suc: not a 'wp'"
   end.
 
+(*
 Tactic Notation "wp_faa" :=
   let solve_mapsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
@@ -640,4 +642,4 @@ Tactic Notation "wp_faa" :=
     |pm_reflexivity
     |wp_finish]
   | _ => fail "wp_faa: not a 'wp'"
-  end.
+  end. *)

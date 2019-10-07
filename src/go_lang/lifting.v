@@ -253,36 +253,58 @@ Proof.
   rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
 Qed.
 
+Set Printing Coercions.
+
+Theorem u64_Z_through_nat : forall (x:u64), Z.of_nat (Word.wordToNat x) = u64_Z x.
+Proof.
+  unfold u64_Z; intros.
+  rewrite Word.wordToN_nat.
+  rewrite nat_N_Z; auto.
+Qed.
+
+Theorem u64_nat_through_Z : forall (x:u64), Z.to_nat (u64_Z x) = Word.wordToNat x.
+Proof.
+  unfold u64_Z; intros.
+  rewrite N_Z_nat_conversions.N_to_Z_to_nat.
+  rewrite Word.wordToN_to_nat; auto.
+Qed.
+
+Unset Printing Coercions.
+
 Lemma wp_allocN_seq s E v n :
-  0 < n →
+  (0 < u64_Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (Z.to_nat n),
+  {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (Word.wordToNat n),
       (l +ₗ (i : nat)) ↦ v ∗ meta_token (l +ₗ (i : nat)) ⊤ }}}.
 Proof.
   iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (@gen_heap_alloc_gen with "Hσ") as "(Hσ & Hl & Hm)".
-  { apply (heap_array_map_disjoint _ l (replicate (Z.to_nat n) v)); eauto.
-    rewrite replicate_length Z2Nat.id; auto with lia. }
-  iModIntro; iSplit; first done. iFrame "Hσ Hκs". iApply "HΦ".
+  { apply (heap_array_map_disjoint _ l (replicate (Word.wordToNat n) v)); eauto.
+    rewrite replicate_length u64_Z_through_nat; auto with lia. }
+  iModIntro; iSplit; first done.
+  rewrite u64_nat_through_Z.
+  iFrame "Hσ Hκs". iApply "HΦ".
   iApply big_sepL_sep. iSplitL "Hl".
   - by iApply heap_array_to_seq_mapsto.
   - iApply (heap_array_to_seq_meta with "Hm"). by rewrite replicate_length.
 Qed.
 Lemma twp_allocN_seq s E v n :
-  0 < n →
+  (0 < u64_Z n)%Z →
   [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  [[{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (Z.to_nat n),
+  [[{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (Word.wordToNat n),
       (l +ₗ (i : nat)) ↦ v ∗ meta_token (l +ₗ (i : nat)) ⊤ }]].
 Proof.
   iIntros (Hn Φ) "_ HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs k) "[Hσ Hκs] !>"; iSplit; first by destruct n; auto with lia.
+  iIntros (σ1 κs k) "[Hσ Hκs] !>"; iSplit; first by destruct_with_eqn (u64_Z n); auto with lia.
   iIntros (κ v2 σ2 efs Hstep); inv_head_step.
   iMod (@gen_heap_alloc_gen with "Hσ") as "(Hσ & Hl & Hm)".
-  { apply (heap_array_map_disjoint _ l (replicate (Z.to_nat n) v)); eauto.
-    rewrite replicate_length Z2Nat.id; auto with lia. }
-  iModIntro; do 2 (iSplit; first done). iFrame "Hσ Hκs". iApply "HΦ".
+  { apply (heap_array_map_disjoint _ l (replicate (Word.wordToNat n) v)); eauto.
+    rewrite replicate_length u64_Z_through_nat; auto with lia. }
+  iModIntro; do 2 (iSplit; first done).
+  rewrite u64_nat_through_Z.
+  iFrame "Hσ Hκs". iApply "HΦ".
   iApply big_sepL_sep. iSplitL "Hl".
   - by iApply heap_array_to_seq_mapsto.
   - iApply (heap_array_to_seq_meta with "Hm"). by rewrite replicate_length.
@@ -292,12 +314,14 @@ Lemma wp_alloc s E v :
   {{{ True }}} Alloc (Val v) @ s; E {{{ l, RET LitV (LitLoc l); l ↦ v ∗ meta_token l ⊤ }}}.
 Proof.
   iIntros (Φ) "_ HΦ". iApply wp_allocN_seq; auto with lia.
+  constructor.
   iIntros "!>" (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
 Qed.
 Lemma twp_alloc s E v :
   [[{ True }]] Alloc (Val v) @ s; E [[{ l, RET LitV (LitLoc l); l ↦ v ∗ meta_token l ⊤ }]].
 Proof.
   iIntros (Φ) "_ HΦ". iApply twp_allocN_seq; auto with lia.
+  constructor.
   iIntros (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
 Qed.
 
@@ -389,6 +413,7 @@ Proof.
   iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
 
+(*
 Lemma wp_faa s E l i1 i2 :
   {{{ ▷ l ↦ LitV (LitInt i1) }}} FAA (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt i2) @ s; E
   {{{ RET LitV (LitInt i1); l ↦ LitV (LitInt (i1 + i2)) }}}.
@@ -408,7 +433,7 @@ Proof.
   iSplit; first by eauto. iIntros (κ e2 σ2 efs Hstep); inv_head_step.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
-Qed.
+Qed. *)
 
 Lemma wp_new_proph s E :
   {{{ True }}}

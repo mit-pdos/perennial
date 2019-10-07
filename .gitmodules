@@ -19,3 +19,6 @@
 [submodule "vendor/transitions"]
 	path = vendor/transitions
 	url = https://github.com/tchajed/coq-transitions.git
+[submodule "external/bbv"]
+	path = external/bbv
+	url = https://github.com/mit-plv/bbv

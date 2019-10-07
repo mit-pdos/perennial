@@ -3,6 +3,7 @@ From stdpp Require Import gmap.
 From iris.algebra Require Export ofe.
 From iris.program_logic Require Export language ectx_language ectxi_language.
 From Perennial.go_lang Require Export locations.
+From Perennial Require Export Helpers.Integers.
 Set Default Proof Using "Type".
 
 (** heap_lang.  A fairly simple language used for common Iris examples.
@@ -55,7 +56,6 @@ Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
 Module heap_lang.
-Open Scope Z_scope.
 
 (** Expressions and vals. *)
 Definition proph_id := positive.
@@ -67,7 +67,7 @@ Declare Instance external_eq_dec : EqDecision external.
 Declare Instance external_countable : Countable external.
 
 Inductive base_lit : Set :=
-  | LitInt (n : Z) | LitBool (b : bool) | LitByte (n : Z) | LitUnit | LitErased
+  | LitInt (n : u64) | LitBool (b : bool) | LitByte (n : byte) | LitUnit | LitErased
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
   | NegOp | MinusUnOp.
@@ -118,7 +118,7 @@ with val :=
   | InjRV (v : val)
   (* TODO: might want to split this into MapNilV and MapConsV, to avoid the
      nested inductive *)
-  | MapV (v: list (Z * val)).
+  | MapV (v: list (u64 * val)).
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
@@ -226,7 +226,19 @@ Instance of_val_inj : Inj (=) (=) of_val.
 Proof. intros ??. congruence. Qed.
 
 Instance base_lit_eq_dec : EqDecision base_lit.
-Proof. solve_decision. Defined.
+Proof. refine (
+           fun e1 e2 =>
+             match e1, e2 with
+             | LitInt x, LitInt x' => cast_if (decide (x = x'))
+             | LitBool x, LitBool x' => cast_if (decide (x = x'))
+             | LitByte x, LitByte x' => cast_if (decide (x = x'))
+             | LitUnit, LitUnit => left _
+             | LitErased, LitErased => left _
+             | LitLoc l, LitLoc l' => cast_if (decide (l = l'))
+             | LitProphecy i, LitProphecy i' => cast_if (decide (i = i'))
+             | _ , _ => right _
+             end); abstract intuition congruence.
+Defined.
 Instance un_op_eq_dec : EqDecision un_op.
 Proof. solve_decision. Defined.
 Instance bin_op_eq_dec : EqDecision bin_op.
@@ -283,7 +295,7 @@ Proof.
       | _, _ => right _
       end
         for go); try (clear go gov; abstract intuition congruence).
-  assert (EqDecision (Z * val)).
+  assert (EqDecision (u64 * val)).
   solve_decision.
   solve_decision.
 Defined.
@@ -302,7 +314,7 @@ Proof.
      | MapV e, MapV e' => cast_if (decide (e = e'))
      | _, _ => right _
      end); try abstract intuition congruence.
-  assert (EqDecision (Z * val)).
+  assert (EqDecision (u64 * val)).
   solve_decision.
   solve_decision.
 Defined.
@@ -544,25 +556,24 @@ Definition subst' (mx : binder) (v : val) : expr → expr :=
 Definition un_op_eval (op : un_op) (v : val) : option val :=
   match op, v with
   | NegOp, LitV (LitBool b) => Some $ LitV $ LitBool (negb b)
-  | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (Z.lnot n)
-  | MinusUnOp, LitV (LitInt n) => Some $ LitV $ LitInt (- n)
+  | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (Word.wnot n)
   | _, _ => None
   end.
 
-Definition bin_op_eval_int (op : bin_op) (n1 n2 : Z) : option base_lit :=
+Definition bin_op_eval_int (op : bin_op) (n1 n2 : u64) : option base_lit :=
   match op with
-  | PlusOp => Some $ LitInt (n1 + n2)
-  | MinusOp => Some $ LitInt (n1 - n2)
-  | MultOp => Some $ LitInt (n1 * n2)
-  | QuotOp => Some $ LitInt (n1 `quot` n2)
-  | RemOp => Some $ LitInt (n1 `rem` n2)
-  | AndOp => Some $ LitInt (Z.land n1 n2)
-  | OrOp => Some $ LitInt (Z.lor n1 n2)
-  | XorOp => Some $ LitInt (Z.lxor n1 n2)
-  | ShiftLOp => Some $ LitInt (n1 ≪ n2)
-  | ShiftROp => Some $ LitInt (n1 ≫ n2)
-  | LeOp => Some $ LitBool (bool_decide (n1 ≤ n2))
-  | LtOp => Some $ LitBool (bool_decide (n1 < n2))
+  | PlusOp => Some $ LitInt (Word.wplus n1 n2)
+  | MinusOp => Some $ LitInt (Word.wminus n1 n2)
+  | MultOp => Some $ LitInt (Word.wmult n1 n2)
+  | QuotOp => Some $ LitInt (Word.wdiv n1 n2)
+  | RemOp => Some $ LitInt (Word.wmod n1 n2)
+  | AndOp => Some $ LitInt (Word.wand n1 n2)
+  | OrOp => Some $ LitInt (Word.wor n1 n2)
+  | XorOp => Some $ LitInt (Word.wxor n1 n2)
+  | ShiftLOp => Some $ LitInt (Word.wlshift n1 (Word.wordToNat n2))
+  | ShiftROp => Some $ LitInt (Word.wrshift n1 (Word.wordToNat n2))
+  | LeOp => Some $ LitBool (bool_decide (~Word.wlt n2 n1))
+  | LtOp => Some $ LitBool (bool_decide (Word.wlt n1 n2))
   | EqOp => Some $ LitBool (bool_decide (n1 = n2))
   | OffsetOp => None (* Pointer arithmetic *)
   end.
@@ -579,6 +590,9 @@ Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=
   | OffsetOp => None (* Pointer arithmetic *)
   end.
 
+Definition u64_Z (x:u64) : Z :=
+  Z.of_N (Word.wordToN x).
+
 Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
   if decide (op = EqOp) then
     (* Crucially, this compares the same way as [CmpXchg]! *)
@@ -590,7 +604,8 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     match v1, v2 with
     | LitV (LitInt n1), LitV (LitInt n2) => LitV <$> bin_op_eval_int op n1 n2
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
-    | LitV (LitLoc l), LitV (LitInt off) => Some $ LitV $ LitLoc (l +ₗ off)
+    (* note that we go through N since we want off to be interpreted unsigned *)
+    | LitV (LitLoc l), LitV (LitInt off) => Some $ LitV $ LitLoc (l +ₗ u64_Z off)
     | _, _ => None
     end.
 
@@ -610,6 +625,8 @@ Fixpoint heap_array (l : loc) (vs : list val) : gmap loc val :=
 
 Lemma heap_array_singleton l v : heap_array l [v] = {[l := v]}.
 Proof. by rewrite /heap_array right_id. Qed.
+
+Open Scope Z.
 
 Lemma heap_array_lookup l vs w k :
   heap_array l vs !! k = Some w ↔
@@ -640,6 +657,8 @@ Proof.
   intros (j&?&->&Hj%lookup_lt_Some%inj_lt)%heap_array_lookup.
   move: Hj. rewrite Z2Nat.id // => ?. by rewrite Hdisj.
 Qed.
+
+Close Scope Z.
 
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)
 Definition state_init_heap (l : loc) (n : Z) (v : val) (σ : state) : state :=
@@ -685,11 +704,11 @@ Inductive head_step : expr → state → list observation → expr → state →
   | ForkS e σ:
      head_step (Fork e) σ [] (Val $ LitV LitUnit) σ [e]
   | AllocNS n v σ l :
-     0 < n →
-     (∀ i, 0 ≤ i → i < n → σ.(heap) !! (l +ₗ i) = None) →
+     (0 < u64_Z n)%Z →
+     (∀ i, 0 ≤ i → i < u64_Z n → σ.(heap) !! (l +ₗ i) = None)%Z →
      head_step (AllocN (Val $ LitV $ LitInt n) (Val v)) σ
                []
-               (Val $ LitV $ LitLoc l) (state_init_heap l n v σ)
+               (Val $ LitV $ LitLoc l) (state_init_heap l (u64_Z n) v σ)
                []
   | LoadS l v σ :
      σ.(heap) !! l = Some v →
@@ -719,7 +738,7 @@ Inductive head_step : expr → state → list observation → expr → state →
      σ.(heap) !! l = Some (LitV (LitInt i1)) →
      head_step (FAA (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt i2)) σ
                []
-               (Val $ LitV $ LitInt i1) (state_upd_heap <[l:=LitV (LitInt (i1 + i2))]>σ)
+               (Val $ LitV $ LitInt i1) (state_upd_heap <[l:=LitV (LitInt (Word.wplus i1 i2))]>σ)
                []
   | NewProphS σ p :
      p ∉ σ.(used_proph_id) →
@@ -754,9 +773,9 @@ Proof. revert Ki1. induction Ki2, Ki1; naive_solver eauto with f_equal. Qed.
 
 Lemma alloc_fresh v n σ :
   let l := fresh_locs (dom (gset loc) σ.(heap)) in
-  0 < n →
+  (0 < u64_Z n)%Z →
   head_step (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ []
-            (Val $ LitV $ LitLoc l) (state_init_heap l n v σ) [].
+            (Val $ LitV $ LitLoc l) (state_init_heap l (u64_Z n) v σ) [].
 Proof.
   intros.
   apply AllocNS; first done.

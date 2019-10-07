@@ -6,7 +6,11 @@ Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
 (** Coercions to make programs easier to type. *)
-Coercion LitInt : Z >-> base_lit.
+Definition LitIntN (n:N) : base_lit :=
+  LitInt (Word.NToWord _ n).
+Coercion LitIntN : N >-> base_lit.
+(* TODO: LitInt as a coercion from u64 to base_lit apparently doesn't satisfy
+the uniform inheritance criterion, and it doesn't seem to work *)
 Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.
 Coercion LitProphecy : proph_id >-> base_lit.
@@ -24,7 +28,7 @@ Notation LamV x e := (RecV BAnon x e) (only parsing).
 Notation LetCtx x e2 := (AppRCtx (LamV x e2)) (only parsing).
 Notation SeqCtx e2 := (LetCtx BAnon e2) (only parsing).
 Notation Match e0 x1 e1 x2 e2 := (Case e0 (Lam x1 e1) (Lam x2 e2)) (only parsing).
-Notation Alloc e := (AllocN (Val $ LitV $ LitInt 1) e) (only parsing).
+Notation Alloc e := (AllocN (Val $ LitV $ LitInt (Word.NToWord n64 1%N)) e) (only parsing).
 (** Compare-and-set (CAS) returns just a boolean indicating success or failure. *)
 Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
 
