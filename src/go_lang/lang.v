@@ -60,6 +60,12 @@ Open Scope Z_scope.
 (** Expressions and vals. *)
 Definition proph_id := positive.
 
+(* these are just codes for external operations (which all take a single val as
+   an argument and evaluate to a value) *)
+Axiom external : Set.
+Declare Instance external_eq_dec : EqDecision external.
+Declare Instance external_countable : Countable external.
+
 Inductive base_lit : Set :=
   | LitInt (n : Z) | LitBool (b : bool) | LitByte (n : Z) | LitUnit | LitErased
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
@@ -99,6 +105,8 @@ Inductive expr :=
   | Store (e1 : expr) (e2 : expr)
   | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
   | FAA (e1 : expr) (e2 : expr) (* Fetch-and-add *)
+  (* External FFI *)
+  | ExternalOp (op: external) (e: expr)
   (* Prophecy *)
   | NewProph
   | Resolve (e0 : expr) (e1 : expr) (e2 : expr) (* wrapped expr, proph, val *)
@@ -108,10 +116,37 @@ with val :=
   | PairV (v1 v2 : val)
   | InjLV (v : val)
   | InjRV (v : val)
+  (* TODO: might want to split this into MapNilV and MapConsV, to avoid the
+     nested inductive *)
   | MapV (v: list (Z * val)).
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
+
+Axiom ffi_state : Type.
+Declare Instance ffi_state_inhabitant : Inhabited ffi_state.
+
+(** The state: heaps of vals. *)
+Record state : Type := {
+  heap: gmap loc val;
+  world: ffi_state;
+  used_proph_id: gset proph_id;
+}.
+(* Note that external_step takes a val, which is itself parameterized by the
+external type, so the semantics of external operations depend on a definition of
+the syntax of heap_lang. Similarly, it "returns" an expression, the result of
+evaluating the external operation.
+
+It also takes an entire state record, which is also parameterized by ffi_state,
+since external operations can read and modify the heap.
+
+(this makes sense because the FFI semantics has to pull out arguments from a
+heap_lang val, and it must produce a return value in expr)
+
+we produce an expr because we might as well, but most semantics will probably
+just produce a value directly
+ *)
+Axiom external_step : external -> val (* external *) -> state -> expr (* external *) -> state -> Prop.
 
 (** An observation associates a prophecy variable (identifier) to a pair of
 values. The first value is the one that was returned by the (atomic) operation
@@ -180,12 +215,6 @@ Definition vals_compare_safe (vl v1 : val) : Prop :=
   val_is_unboxed vl ∨ val_is_unboxed v1.
 Arguments vals_compare_safe !_ !_ /.
 
-(** The state: heaps of vals. *)
-Record state : Type := {
-  heap: gmap loc val;
-  used_proph_id: gset proph_id;
-}.
-
 (** Equality and other typeclass stuff *)
 Lemma to_of_val v : to_val (of_val v) = Some v.
 Proof. by destruct v. Qed.
@@ -231,6 +260,7 @@ Proof.
       | Load e, Load e' => cast_if (decide (e = e'))
       | Store e1 e2, Store e1' e2' =>
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
+      | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | FAA e1 e2, FAA e1' e2' =>
@@ -324,7 +354,7 @@ Proof.
      | Rec f x e => GenNode 1 [GenLeaf (inl (inr f)); GenLeaf (inl (inr x)); go e]
      | App e1 e2 => GenNode 2 [go e1; go e2]
      | UnOp op e => GenNode 3 [GenLeaf (inr (inr (inl op))); go e]
-     | BinOp op e1 e2 => GenNode 4 [GenLeaf (inr (inr (inr op))); go e1; go e2]
+     | BinOp op e1 e2 => GenNode 4 [GenLeaf (inr (inr (inr (inl op)))); go e1; go e2]
      | If e0 e1 e2 => GenNode 5 [go e0; go e1; go e2]
      | Pair e1 e2 => GenNode 6 [go e1; go e2]
      | Fst e => GenNode 7 [go e]
@@ -336,6 +366,7 @@ Proof.
      | AllocN e1 e2 => GenNode 13 [go e1; go e2]
      | Load e => GenNode 14 [go e]
      | Store e1 e2 => GenNode 15 [go e1; go e2]
+     | ExternalOp op e => GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
      | FAA e1 e2 => GenNode 17 [go e1; go e2]
      | NewProph => GenNode 18 []
@@ -360,7 +391,7 @@ Proof.
      | GenNode 1 [GenLeaf (inl (inr f)); GenLeaf (inl (inr x)); e] => Rec f x (go e)
      | GenNode 2 [e1; e2] => App (go e1) (go e2)
      | GenNode 3 [GenLeaf (inr (inr (inl op))); e] => UnOp op (go e)
-     | GenNode 4 [GenLeaf (inr (inr (inr op))); e1; e2] => BinOp op (go e1) (go e2)
+     | GenNode 4 [GenLeaf (inr (inr (inr (inl op)))); e1; e2] => BinOp op (go e1) (go e2)
      | GenNode 5 [e0; e1; e2] => If (go e0) (go e1) (go e2)
      | GenNode 6 [e1; e2] => Pair (go e1) (go e2)
      | GenNode 7 [e] => Fst (go e)
@@ -372,6 +403,7 @@ Proof.
      | GenNode 13 [e1; e2] => AllocN (go e1) (go e2)
      | GenNode 14 [e] => Load (go e)
      | GenNode 15 [e1; e2] => Store (go e1) (go e2)
+     | GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
      | GenNode 17 [e1; e2] => FAA (go e1) (go e2)
      | GenNode 18 [] => NewProph
@@ -391,7 +423,7 @@ Proof.
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
- - destruct e as [v| | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+ - destruct e as [v| | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
      [exact (gov v)|done..].
  - destruct v; try by f_equal.
    admit. (* TODO: decode maps *)
@@ -400,7 +432,7 @@ Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Instance state_inhabited : Inhabited state :=
-  populate {| heap := inhabitant; used_proph_id := inhabitant |}.
+  populate {| heap := inhabitant; world := inhabitant; used_proph_id := inhabitant |}.
 Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
@@ -429,6 +461,7 @@ Inductive ectx_item :=
   | LoadCtx
   | StoreLCtx (v2 : val)
   | StoreRCtx (e1 : expr)
+  | ExternalOpCtx (op : external)
   | CmpXchgLCtx (v1 : val) (v2 : val)
   | CmpXchgMCtx (e0 : expr) (v2 : val)
   | CmpXchgRCtx (e0 : expr) (e1 : expr)
@@ -465,6 +498,7 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | LoadCtx => Load e
   | StoreLCtx v2 => Store e (Val v2)
   | StoreRCtx e1 => Store e1 e
+  | ExternalOpCtx op => ExternalOp op e
   | CmpXchgLCtx v1 v2 => CmpXchg e (Val v1) (Val v2)
   | CmpXchgMCtx e0 v2 => CmpXchg e0 e (Val v2)
   | CmpXchgRCtx e0 e1 => CmpXchg e0 e1 e
@@ -496,6 +530,7 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | AllocN e1 e2 => AllocN (subst x v e1) (subst x v e2)
   | Load e => Load (subst x v e)
   | Store e1 e2 => Store (subst x v e1) (subst x v e2)
+  | ExternalOp op e => ExternalOp op (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | FAA e1 e2 => FAA (subst x v e1) (subst x v e2)
   | NewProph => NewProph
@@ -560,11 +595,11 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     end.
 
 Definition state_upd_heap (f: gmap loc val → gmap loc val) (σ: state) : state :=
-  {| heap := f σ.(heap); used_proph_id := σ.(used_proph_id) |}.
+  {| heap := f σ.(heap); world := σ.(world); used_proph_id := σ.(used_proph_id) |}.
 Arguments state_upd_heap _ !_ /.
 
 Definition state_upd_used_proph_id (f: gset proph_id → gset proph_id) (σ: state) : state :=
-  {| heap := σ.(heap); used_proph_id := f σ.(used_proph_id) |}.
+  {| heap := σ.(heap); world := σ.(world); used_proph_id := f σ.(used_proph_id) |}.
 Arguments state_upd_used_proph_id _ !_ /.
 
 Fixpoint heap_array (l : loc) (vs : list val) : gmap loc val :=
@@ -664,6 +699,12 @@ Inductive head_step : expr → state → list observation → expr → state →
      head_step (Store (Val $ LitV $ LitLoc l) (Val v)) σ
                []
                (Val $ LitV LitUnit) (state_upd_heap <[l:=v]> σ)
+               []
+  | ExternalS op v σ e' σ' :
+     external_step op v σ e' σ' ->
+     head_step (ExternalOp op (Val v)) σ
+               []
+               e' σ'
                []
   | CmpXchgS l v1 v2 vl σ b :
      σ.(heap) !! l = Some vl →
