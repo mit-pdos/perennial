@@ -22,7 +22,7 @@ Lemma lt_size_in_addrset a:
   a < size → a ∈ addrset.
 Proof. intros. apply elem_of_dom. eexists. apply init_zero_lookup_lt_zero; lia. Qed.
 
-Global Instance odstate_inhaibted:
+Global Instance odstate_inhabited:
   Inhabited (OneDisk.State).
 Proof. econstructor. exact {| OneDisk.disk_state := init_zero |}. Qed.
 

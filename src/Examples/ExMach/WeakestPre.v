@@ -486,6 +486,19 @@ Section lock.
       iLeft. iFrame.
   Qed.
 
+  Lemma wp_unlock_open N γ i (R: iProp Σ) s E:
+    ↑N ⊆ E ->
+    is_lock N γ i R -∗ locked γ -∗ R -∗ WP unlock i @ s; E  {{ tt, True }}.
+  Proof.
+    iIntros (HNE) "#Hlock Hlocked HR".
+    iInv N as "[HL|>HUL]".
+    - iDestruct "HL" as "(>H&?&>Htok)".
+      iDestruct (own_valid_2 with "Htok Hlocked") as %H => //=.
+    - iDestruct "HUL" as (v) "(?&%)".
+      iApply (wp_write_mem with "[$]"); iIntros "!> H !>".
+      iSplitL. iLeft. iFrame. done.
+  Qed.
+
   Lemma wp_unlock' N γ i (R: iProp Σ):
     is_lock N γ i R -∗ {{{ locked γ ∗ R }}} unlock i {{{ RET tt; True }}}.
   Proof.

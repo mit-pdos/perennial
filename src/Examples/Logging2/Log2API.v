@@ -1,9 +1,11 @@
 From Coq Require Import List.
 
 From Perennial Require Export Lib.
+Require Import ExMach.ExMachAPI.
 Import RelationNotations.
 
 Axiom log_size : nat.
+Axiom log_size_ok : log_size + 1 ≤ ExMach.size.
 
 Module Log2.
 
@@ -18,10 +20,8 @@ Module Log2.
          match op with
          | Append l' =>
             curl <- reads (fun l => l);
-            if gt_dec (length curl + length l') log_size then
-              pure false
-            else
-              _ <- puts (fun l => l ++ l'); pure true
+            ( pure false ) + 
+            ( _ <- puts (fun l => l ++ l'); pure true )
          | Read => reads (fun l => l)
          end;
        crash_step := pure tt;
