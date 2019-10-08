@@ -188,18 +188,75 @@ Proof.
   iIntros "(#Hinv&H)". iDestruct (wp_wpc with "H") as "H". iApply wpc_inv; by iFrame.
 Qed.
 
-(*
-Lemma wpc_value' s E Φ v : Φ v ⊢ WP of_val v @ s; E {{ Φ }}.
-Proof. iIntros "HΦ". rewrite wp_unfold /wp_pre to_of_val. auto. Qed.
-Lemma wp_value_inv' s E Φ v : WP of_val v @ s; E {{ Φ }} ={E}=∗ Φ v.
-Proof. by rewrite wp_unfold /wp_pre to_of_val. Qed.
-
-Lemma fupd_wp s E e Φ : (|={E}=> WP e @ s; E {{ Φ }}) ⊢ WP e @ s; E {{ Φ }}.
+Lemma wpc_value' s E1 E2 Φ Φc v : Φ v ∧ Φc ⊢ WPC of_val v @ s; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  rewrite wp_unfold /wp_pre. iIntros "H". destruct (to_val e) as [v|] eqn:?.
-  { by iMod "H". }
-  iIntros (σ1 κ κs n) "Hσ1". iMod "H". by iApply "H".
+  rewrite wpc_unfold /wpc_pre to_of_val. iApply and_mono; auto.
+  iIntros. iApply fupd_mask_weaken; first by auto. iFrame.
 Qed.
+
+Lemma wpc_value_inv' s E1 E2 Φ Φc v : WPC of_val v @ s; E1; E2 {{ Φ }} {{ Φc }} ={E1}=∗ Φ v.
+Proof. rewrite wpc_unfold /wpc_pre to_of_val. iIntros "(?&_)"; auto. Qed.
+
+Lemma fupd_wpc s E1 E2 e Φ Φc:
+  (|={E1}=> WPC e @ s; E1 ; E2 {{ Φ }} {{ Φc }}) ⊢ WPC e @ s; E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  rewrite wpc_unfold /wpc_pre. iIntros "H". iSplit.
+  - destruct (to_val e) as [v|] eqn:?.
+    { by iMod "H" as "(?&_)". }
+    iIntros (σ1 κ κs n) "Hσ1". iMod "H". by iApply "H".
+  - iIntros. iApply (fupd_trans ⊤ ⊤).
+    iApply fupd_mask_mono; last (iMod "H" as "(_&H)"); first by set_solver+.
+    iModIntro. by iApply "H".
+Qed.
+
+Lemma wpc_inv_disj (N: namespace) s E1 E2 e Φ P Q :
+  ↑N ⊆ E2 →
+  (▷ P ∗ ▷ P -∗ False) →
+  (▷ Q ∗ ▷ Q -∗ False) →
+  inv N (P ∨ Q) ∗ WPC e @ s ; E1; E2 {{ Φ }} {{ ▷ P }} ⊢ WPC e @ s; E1 ; E2 {{ Φ }} {{ ▷ Q }}.
+Proof.
+  iIntros (HN HPP HQQ) "(#Hinv&H)".
+  iApply (wpc_strong_mono with "H"); auto.
+  iSplit; first auto.
+  iIntros "HP". iInv "Hinv" as "H"; first auto.
+  iModIntro.
+  iDestruct "H" as "[HP'|HQ]".
+  { iExFalso. iApply HPP. iFrame. }
+  iSplitL "HP".
+  { iNext. auto. }
+  { eauto. }
+Qed.
+
+Lemma wpc_inv_disj' (N: namespace) s E1 E2 e Φ P Q :
+  ↑N ⊆ E1 →
+  ↑N ⊆ E2 →
+  (▷ P ∗ ▷ P -∗ False) →
+  (▷ Q ∗ ▷ Q -∗ False) →
+  inv N (P ∨ Q) ∗ (▷ P -∗ WPC e @ s ; E1; E2 {{ Φ }} {{ ▷ P }}) ⊢ (Q -∗ WPC e @ s; E1 ; E2 {{ Φ }} {{ ▷ Q }}).
+Proof.
+  iIntros (HN1 HN2 HPP HQQ) "(#Hinv&H) HQ".
+  iApply (wpc_strong_mono with "[H HQ]").
+  { eauto. }
+  { reflexivity. }
+  { reflexivity. }
+  { iApply fupd_wpc. iInv "Hinv" as "HI".
+    iDestruct "HI" as "[HP|HQ']"; last first.
+    { iExFalso. iApply HQQ. iFrame. }
+    iSplitL "HQ".
+    { iModIntro. by iRight. }
+    by iApply "H".
+  }
+  iSplit; first auto.
+  iIntros "HP". iInv "Hinv" as "H"; first auto.
+  iModIntro.
+  iDestruct "H" as "[HP'|HQ]".
+  { iExFalso. iApply HPP. iFrame. }
+  iSplitL "HP".
+  { iNext. auto. }
+  { eauto. }
+Qed.
+
+(*
 Lemma wp_fupd s E e Φ : WP e @ s; E {{ v, |={E}=> Φ v }} ⊢ WP e @ s; E {{ Φ }}.
 Proof. iIntros "H". iApply (wp_strong_mono s s E with "H"); auto. Qed.
 
