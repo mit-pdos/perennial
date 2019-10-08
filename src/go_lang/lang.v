@@ -590,9 +590,6 @@ Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=
   | OffsetOp => None (* Pointer arithmetic *)
   end.
 
-Definition u64_Z (x:u64) : Z :=
-  Z.of_N (Word.wordToN x).
-
 Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
   if decide (op = EqOp) then
     (* Crucially, this compares the same way as [CmpXchg]! *)

@@ -253,24 +253,6 @@ Proof.
   rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
 Qed.
 
-Set Printing Coercions.
-
-Theorem u64_Z_through_nat : forall (x:u64), Z.of_nat (Word.wordToNat x) = u64_Z x.
-Proof.
-  unfold u64_Z; intros.
-  rewrite Word.wordToN_nat.
-  rewrite nat_N_Z; auto.
-Qed.
-
-Theorem u64_nat_through_Z : forall (x:u64), Z.to_nat (u64_Z x) = Word.wordToNat x.
-Proof.
-  unfold u64_Z; intros.
-  rewrite N_Z_nat_conversions.N_to_Z_to_nat.
-  rewrite Word.wordToN_to_nat; auto.
-Qed.
-
-Unset Printing Coercions.
-
 Lemma wp_allocN_seq s E v n :
   (0 < u64_Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
