@@ -209,53 +209,6 @@ Proof.
     iModIntro. by iApply "H".
 Qed.
 
-Lemma wpc_inv_disj (N: namespace) s E1 E2 e Φ P Q :
-  ↑N ⊆ E2 →
-  (▷ P ∗ ▷ P -∗ False) →
-  (▷ Q ∗ ▷ Q -∗ False) →
-  inv N (P ∨ Q) ∗ WPC e @ s ; E1; E2 {{ Φ }} {{ ▷ P }} ⊢ WPC e @ s; E1 ; E2 {{ Φ }} {{ ▷ Q }}.
-Proof.
-  iIntros (HN HPP HQQ) "(#Hinv&H)".
-  iApply (wpc_strong_mono with "H"); auto.
-  iSplit; first auto.
-  iIntros "HP". iInv "Hinv" as "H"; first auto.
-  iModIntro.
-  iDestruct "H" as "[HP'|HQ]".
-  { iExFalso. iApply HPP. iFrame. }
-  iSplitL "HP".
-  { iNext. auto. }
-  { eauto. }
-Qed.
-
-Lemma wpc_inv_disj' (N: namespace) s E1 E2 e Φ P Q :
-  ↑N ⊆ E1 →
-  ↑N ⊆ E2 →
-  (▷ P ∗ ▷ P -∗ False) →
-  (▷ Q ∗ ▷ Q -∗ False) →
-  inv N (P ∨ Q) ∗ (▷ P -∗ WPC e @ s ; E1; E2 {{ Φ }} {{ ▷ P }}) ⊢ (Q -∗ WPC e @ s; E1 ; E2 {{ Φ }} {{ ▷ Q }}).
-Proof.
-  iIntros (HN1 HN2 HPP HQQ) "(#Hinv&H) HQ".
-  iApply (wpc_strong_mono with "[H HQ]").
-  { eauto. }
-  { reflexivity. }
-  { reflexivity. }
-  { iApply fupd_wpc. iInv "Hinv" as "HI".
-    iDestruct "HI" as "[HP|HQ']"; last first.
-    { iExFalso. iApply HQQ. iFrame. }
-    iSplitL "HQ".
-    { iModIntro. by iRight. }
-    by iApply "H".
-  }
-  iSplit; first auto.
-  iIntros "HP". iInv "Hinv" as "H"; first auto.
-  iModIntro.
-  iDestruct "H" as "[HP'|HQ]".
-  { iExFalso. iApply HPP. iFrame. }
-  iSplitL "HP".
-  { iNext. auto. }
-  { eauto. }
-Qed.
-
 (*
 Lemma wp_fupd s E e Φ : WP e @ s; E {{ v, |={E}=> Φ v }} ⊢ WP e @ s; E {{ Φ }}.
 Proof. iIntros "H". iApply (wp_strong_mono s s E with "H"); auto. Qed.
