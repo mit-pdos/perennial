@@ -35,6 +35,9 @@ Proof. apply _. Qed.
 Global Instance crash_closed_timeless Γ : Timeless (crash_closed Γ).
 Proof. apply _. Qed.
 
+Global Instance crash_inv_ne Γ : NonExpansive (crash_inv Γ).
+Proof. rewrite /crash_inv/crash_inv_raw. solve_proper. Qed.
+
 Lemma crash_inv_alloc E R:
   ▷ R ={E}=∗ ∃ Γ, crash_inv Γ R ∗ crash_closed Γ.
 Proof.
@@ -95,7 +98,7 @@ Lemma wpc_inv_disj' s E1 E2 e Φ P Q :
   ↑N ⊆ E2 →
   (▷ P ∗ ▷ P ={∅}=∗ False) →
   (▷ Q ∗ ▷ Q ={∅}=∗ False) →
-  inv N (P ∨ Q) ∗ (▷ P -∗ WPC e @ s ; E1; E2 {{ Φ }} {{ ▷ P }}) ⊢ (Q -∗ WPC e @ s; E1 ; E2 {{ Φ }} {{ ▷ Q }}).
+  inv N (P ∨ Q) ∗ (▷ P -∗ WPC e @ s ; E1; E2 {{ Φ }} {{ ▷ P }}) ⊢ (▷ Q -∗ WPC e @ s; E1 ; E2 {{ Φ }} {{ ▷ Q }}).
 Proof.
   iIntros (HN1 HN2 HPP HQQ) "(#Hinv&H) HQ".
   iApply (wpc_strong_mono with "[H HQ]").
@@ -126,7 +129,7 @@ Qed.
 
 Lemma wpc_crash_inv_open s E e Φ Γ P:
   ↑N ⊆ E →
-  crash_inv Γ P ∗ crash_closed Γ ∗ (▷ (crash_open Γ ∗ P)
+  crash_inv Γ P ∗ ▷ crash_closed Γ ∗ (▷ (crash_open Γ ∗ P)
                                         -∗ WPC e @ s ; E; ↑N {{ Φ }} {{ ▷ (crash_open Γ ∗ P) }}) -∗
     WPC e @ s ; E ; ↑N {{ Φ }} {{ ▷ crash_closed Γ }}.
 Proof.
@@ -145,33 +148,25 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma wpc_inv_disj'' s E1 E2 e Φ P Q :
-  ↑N ⊆ E1 →
-  ↑N ⊆ E2 →
-  (▷ P ∗ ▷ P -∗ False) →
-  (▷ Q ∗ ▷ Q -∗ False) →
-  inv N (P ∨ Q) ∗ (▷ P -∗ WPC e @ s ; E1; E2 {{ Φ }} {{ ▷ P }}) ⊢ (Q -∗ WPC e @ s; E1 ; E2 {{ Φ }} {{ True }}).
+Lemma wpc_crash_inv_close s E e Φ Γ P:
+  ↑N ⊆ E →
+  crash_inv Γ P ∗ ▷ (crash_open Γ ∗ P) ∗ (WPC e @ s ; E; ↑N {{ Φ }} {{ ▷ crash_closed Γ }}) -∗
+    WPC e @ s ; E ; ↑N {{ Φ }} {{ ▷ (crash_open Γ ∗ P) }}.
 Proof.
-  iIntros (HN1 HN2 HPP HQQ) "(#Hinv&H) HQ".
-  iApply (wpc_strong_mono with "[H HQ]").
-  { eauto. }
+  iIntros (HE) "(#Hinv&Hclo&H)".
+  rewrite /crash_inv/crash_inv_raw.
+  iApply (wpc_inv_disj' _ _ _ _ _ (crash_closed Γ) (crash_open Γ ∗ P)%I with "[H] [Hclo]").
+  { auto. }
   { reflexivity. }
-  { reflexivity. }
-  { iApply fupd_wpc. iInv "Hinv" as "HI".
-    iDestruct "HI" as "[HP|HQ']"; last first.
-    { iExFalso. iApply HQQ. iFrame. }
-    iSplitL "HQ".
-    { iModIntro. by iRight. }
-    by iApply "H".
+  { iIntros "(>?&>?)".
+    iModIntro. iApply (crash_closed_exclusive with "[$] [$]"). }
+  { iIntros "((>?&?)&(>?&?))".
+    iModIntro. iApply (crash_open_exclusive with "[$] [$]"). }
+  { iSplitL "Hinv".
+    { by rewrite comm. }
+    iIntros. by iApply "H".
   }
-  iSplit; first auto.
-  iIntros "HP". iInv "Hinv" as "H"; first auto.
-  iModIntro.
-  iDestruct "H" as "[HP'|HQ]".
-  { iExFalso. iApply HPP. iFrame. }
-  iSplitL "HP".
-  { iNext. auto. }
-  { eauto. }
+  by iFrame.
 Qed.
 
 End crash_inv.
