@@ -17,7 +17,7 @@ Definition wpc_pre `{!irisG Λ Σ} (s : stuckness)
         ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ ={∅,∅,E1}▷=∗
           state_interp σ2 κs (length efs + n) ∗
           wpc E1 E2 e2 Φ Φc ∗
-          [∗ list] i ↦ ef ∈ efs, wpc ⊤ ⊤ ef fork_post True
+          [∗ list] i ↦ ef ∈ efs, wpc ⊤ ∅ ef fork_post True
    end ∧
    ∀ σ κs n, state_interp σ κs n ={⊤, E2}=∗ Φc ∗ state_interp σ κs n)%I.
 
@@ -278,6 +278,28 @@ Proof.
   iModIntro. iFrame "Hσ Hefs". by iApply "IH".
 Qed.
 
+Lemma wpc_bind_inv K `{!LanguageCtx K} s E1 E2 e Φ Φc :
+  WPC K e @ s; E1; E2 {{ Φ }} {{ Φc }} ⊢ WPC e @ s; E1 ; E2 {{ v, WPC K (of_val v) @ s; E1; E2 {{ Φ }} {{ Φc }} }} {{Φc }}.
+Proof.
+  iIntros "H". iLöb as "IH" forall (E1 E2 e Φ Φc). rewrite !wpc_unfold /wpc_pre.
+  destruct (to_val e) as [v|] eqn:He.
+  { apply of_to_val in He as <-. rewrite !wpc_unfold /wpc_pre. iSplit.
+    - iModIntro. eauto.
+    - iDestruct "H" as "(_&$)".
+  }
+  rewrite fill_not_val //.
+  iSplit.
+  - iDestruct "H" as "(H&_)".
+    iIntros (σ1 κ κs n) "Hσ". iMod ("H" with "[$]") as "[% H]". iModIntro; iSplit.
+    { destruct s; eauto using reducible_fill. }
+    iIntros (e2 σ2 efs Hstep).
+    iMod ("H" $! (K e2) σ2 efs with "[]") as "H"; [by eauto using fill_step|].
+    iIntros "!>!>". iMod "H" as "(Hσ & H & Hefs)".
+    iModIntro. iFrame "Hσ Hefs". by iApply "IH".
+  - iIntros. iDestruct "H" as "(_&H)".
+    by iMod ("H" with "[$]").
+Qed.
+
 Lemma wpc_lift_step_fupd s E E' Φ Φc e1 :
   to_val e1 = None →
   (∀ σ1 κ κs n, state_interp σ1 (κ ++ κs) n ={E,∅}=∗
@@ -285,7 +307,7 @@ Lemma wpc_lift_step_fupd s E E' Φ Φc e1 :
     ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ ={∅,∅,E}▷=∗
       state_interp σ2 κs (length efs + n) ∗
       WPC e2 @ s; E; E' {{ Φ }} {{ Φc }} ∗
-      [∗ list] ef ∈ efs, WPC ef @ s; ⊤; ⊤ {{ fork_post }} {{ True }})
+      [∗ list] ef ∈ efs, WPC ef @ s; ⊤; ∅ {{ fork_post }} {{ True }})
   ∧ Φc
   ⊢ WPC e1 @ s; E; E' {{ Φ }} {{ Φc }}.
 Proof.
@@ -304,7 +326,7 @@ Lemma wpc_lift_step s E1 E2 Φ Φc e1 :
     ▷ ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ ={∅,E1}=∗
       state_interp σ2 κs (length efs + n) ∗
       WPC e2 @ s; E1; E2 {{ Φ }} {{ Φc }} ∗
-      [∗ list] ef ∈ efs, WPC ef @ s; ⊤; ⊤ {{ fork_post }} {{ True }})
+      [∗ list] ef ∈ efs, WPC ef @ s; ⊤; ∅ {{ fork_post }} {{ True }})
   ∧ Φc
   ⊢ WPC e1 @ s; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
