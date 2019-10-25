@@ -18,7 +18,7 @@ To compile just run `make` with Coq on your `$PATH`.
 
 ## Verifying systems written in Go
 
-We reason about Go code by importing it into a model in Coq that Perennial supports, using a tool called Goose available at <https://github.com/tchajed/goose>. To be self-contained this repository has a committed version of the `goose`-generated Coq model for Mailboat, whose implementation is at <https://tchajed/tchajed/mailboat>.
+We reason about Go code by importing it into a model in Coq that Perennial supports, using a tool called Goose available at <https://github.com/tchajed/goose>. To be self-contained this repository has a committed version of the `goose`-generated Coq model for Mailboat, whose implementation is at <https://github.com/tchajed/mailboat>.
 
 ## Publications
 
