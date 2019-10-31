@@ -5,17 +5,17 @@ From iris.program_logic Require Export weakestpre adequacy.
 From Perennial.go_lang Require Import proofmode notation.
 Set Default Proof Using "Type".
 
-Class heapPreG Σ := HeapPreG {
+Class heapPreG `{ffi_sem: ext_semantics} Σ := HeapPreG {
   heap_preG_iris :> invPreG Σ;
   heap_preG_heap :> gen_heapPreG loc val Σ;
   heap_preG_proph :> proph_mapPreG proph_id (val * val) Σ
 }.
 
-Definition heapΣ : gFunctors := #[invΣ; gen_heapΣ loc val; proph_mapΣ proph_id (val * val)].
-Instance subG_heapPreG {Σ} : subG heapΣ Σ → heapPreG Σ.
+Definition heapΣ `{ffi_sem: ext_semantics} : gFunctors := #[invΣ; gen_heapΣ loc val; proph_mapΣ proph_id (val * val)].
+Instance subG_heapPreG `{ffi_sem: ext_semantics} {Σ} : subG heapΣ Σ → heapPreG Σ.
 Proof. solve_inG. Qed.
 
-Definition heap_adequacy Σ `{!heapPreG Σ} s e σ φ :
+Definition heap_adequacy `{ffi_sem: ext_semantics} Σ `{!heapPreG Σ} s e σ φ :
   (∀ `{!heapG Σ}, WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
   adequate s e σ (λ v _, φ v).
 Proof.

@@ -9,6 +9,9 @@ Set Default Proof Using "Type".
 with lists of values. It also contains array versions of the basic heap
 operations of HeapLand. *)
 
+Section go_lang.
+  Context {ext: ext_op} {ffi: ffi_model} {ffi_semantics: ext_semantics ext ffi}.
+
 Definition array `{!heapG Σ} (l : loc) (vs : list val) : iProp Σ :=
   ([∗ list] i ↦ v ∈ vs, (l +ₗ i) ↦ v)%I.
 Notation "l ↦∗ vs" := (array l vs)
@@ -233,5 +236,8 @@ Proof.
 Qed. *)
 
 End lifting.
+End go_lang.
 
+Notation "l ↦∗ vs" := (array l vs)
+  (at level 20, format "l  ↦∗  vs") : bi_scope.
 Typeclasses Opaque array.

@@ -9,19 +9,6 @@ From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import tactics notation.
 Set Default Proof Using "Type".
 
-Class heapG Σ := HeapG {
-  heapG_invG : invG Σ;
-  heapG_gen_heapG :> gen_heapG loc val Σ;
-  heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ
-}.
-
-Instance heapG_irisG `{!heapG Σ} : irisG heap_lang Σ := {
-  iris_invG := heapG_invG;
-  state_interp σ κs _ :=
-    (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id))%I;
-  fork_post _ := True%I;
-}.
-
 (** Override the notations so that scopes and coercions work out *)
 Notation "l ↦{ q } v" := (mapsto (L:=loc) (V:=val) l q v%V)
   (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
@@ -30,6 +17,24 @@ Notation "l ↦ v" :=
 Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
+
+Section go_lang.
+  Context {ext: ext_op} {ffi: ffi_model} {ffi_semantics: ext_semantics ext ffi}.
+  Notation val := (@heap_lang.val ext).
+
+Class heapG Σ := HeapG {
+  heapG_invG : invG Σ;
+  heapG_gen_heapG :> gen_heapG loc val Σ;
+  heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ
+}.
+
+Global Instance heapG_irisG `{!heapG Σ} :
+  irisG (heap_lang (ffi_semantics:=ffi_semantics)) Σ := {
+  iris_invG := heapG_invG;
+  state_interp σ κs _ :=
+    (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id))%I;
+  fork_post _ := True%I;
+}.
 
 (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
 [head_step]. The tactic will discharge head-reductions starting from values, and
@@ -56,9 +61,9 @@ Local Hint Extern 0 (head_step (AllocN _ _) _ _ _ _ _) => apply alloc_fresh : co
 Local Hint Extern 0 (head_step NewProph _ _ _ _ _) => apply new_proph_id_fresh : core.
 Local Hint Resolve to_of_val : core.
 
-Instance into_val_val v : IntoVal (Val v) v.
+Global Instance into_val_val v : IntoVal (Val v) v.
 Proof. done. Qed.
-Instance as_val_val v : AsVal (Val v).
+Global Instance as_val_val v : AsVal (Val v).
 Proof. by eexists. Qed.
 
 Local Ltac solve_atomic :=
@@ -66,26 +71,26 @@ Local Ltac solve_atomic :=
     [inversion 1; naive_solver
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
 
-Instance alloc_atomic s v w : Atomic s (AllocN (Val v) (Val w)).
+Global Instance alloc_atomic s v w : Atomic s (AllocN (Val v) (Val w)).
 Proof. solve_atomic. Qed.
-Instance load_atomic s v : Atomic s (Load (Val v)).
+Global Instance load_atomic s v : Atomic s (Load (Val v)).
 Proof. solve_atomic. Qed.
-Instance store_atomic s v1 v2 : Atomic s (Store (Val v1) (Val v2)).
+Global Instance store_atomic s v1 v2 : Atomic s (Store (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
-Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
+Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
-Instance faa_atomic s v1 v2 : Atomic s (FAA (Val v1) (Val v2)).
+Global Instance faa_atomic s v1 v2 : Atomic s (FAA (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
-Instance fork_atomic s e : Atomic s (Fork e).
+Global Instance fork_atomic s e : Atomic s (Fork e).
 Proof. solve_atomic. Qed.
-Instance skip_atomic s  : Atomic s Skip.
+Global Instance skip_atomic s  : Atomic s Skip.
 Proof. solve_atomic. Qed.
-Instance new_proph_atomic s : Atomic s NewProph.
+Global Instance new_proph_atomic s : Atomic s NewProph.
 Proof. solve_atomic. Qed.
-Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
+Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 
-Instance proph_resolve_atomic s e v1 v2 :
+Global Instance proph_resolve_atomic s e v1 v2 :
   Atomic s e → Atomic s (Resolve e (Val v1) (Val v2)).
 Proof.
   rename e into e1. intros H σ1 e2 κ σ2 efs [Ks e1' e2' Hfill -> step].
@@ -104,7 +109,7 @@ Proof.
     + econstructor 1 with (K := Ks ++ [K]); try done. simpl. by rewrite fill_app.
 Qed.
 
-Instance resolve_proph_atomic s v1 v2 : Atomic s (ResolveProph (Val v1) (Val v2)).
+Global Instance resolve_proph_atomic s v1 v2 : Atomic s (ResolveProph (Val v1) (Val v2)).
 Proof. by apply proph_resolve_atomic, skip_atomic. Qed.
 
 Local Ltac solve_exec_safe := intros; subst; do 3 eexists; econstructor; eauto.
@@ -134,32 +139,32 @@ Definition AsRecV_recv f x e : AsRecV (RecV f x e) f x e := eq_refl.
 Hint Extern 0 (AsRecV (RecV _ _ _) _ _ _) =>
   apply AsRecV_recv : typeclass_instances.
 
-Instance pure_recc f x (erec : expr) :
+Global Instance pure_recc f x (erec : expr) :
   PureExec True 1 (Rec f x erec) (Val $ RecV f x erec).
 Proof. solve_pure_exec. Qed.
-Instance pure_pairc (v1 v2 : val) :
+Global Instance pure_pairc (v1 v2 : val) :
   PureExec True 1 (Pair (Val v1) (Val v2)) (Val $ PairV v1 v2).
 Proof. solve_pure_exec. Qed.
-Instance pure_injlc (v : val) :
+Global Instance pure_injlc (v : val) :
   PureExec True 1 (InjL $ Val v) (Val $ InjLV v).
 Proof. solve_pure_exec. Qed.
-Instance pure_injrc (v : val) :
+Global Instance pure_injrc (v : val) :
   PureExec True 1 (InjR $ Val v) (Val $ InjRV v).
 Proof. solve_pure_exec. Qed.
 
-Instance pure_beta f x (erec : expr) (v1 v2 : val) `{!AsRecV v1 f x erec} :
+Global Instance pure_beta f x (erec : expr) (v1 v2 : val) `{!AsRecV v1 f x erec} :
   PureExec True 1 (App (Val v1) (Val v2)) (subst' x v2 (subst' f v1 erec)).
 Proof. unfold AsRecV in *. solve_pure_exec. Qed.
 
-Instance pure_unop op v v' :
+Global Instance pure_unop op v v' :
   PureExec (un_op_eval op v = Some v') 1 (UnOp op (Val v)) (Val v').
 Proof. solve_pure_exec. Qed.
 
-Instance pure_binop op v1 v2 v' :
+Global Instance pure_binop op v1 v2 v' :
   PureExec (bin_op_eval op v1 v2 = Some v') 1 (BinOp op (Val v1) (Val v2)) (Val v') | 10.
 Proof. solve_pure_exec. Qed.
 (* Higher-priority instance for EqOp. *)
-Instance pure_eqop v1 v2 :
+Global Instance pure_eqop v1 v2 :
   PureExec (vals_compare_safe v1 v2) 1
     (BinOp EqOp (Val v1) (Val v2))
     (Val $ LitV $ LitBool $ bool_decide (v1 = v2)) | 1.
@@ -170,25 +175,25 @@ Proof.
   rewrite /bin_op_eval /= decide_True //.
 Qed.
 
-Instance pure_if_true e1 e2 : PureExec True 1 (If (Val $ LitV $ LitBool true) e1 e2) e1.
+Global Instance pure_if_true e1 e2 : PureExec True 1 (If (Val $ LitV $ LitBool true) e1 e2) e1.
 Proof. solve_pure_exec. Qed.
 
-Instance pure_if_false e1 e2 : PureExec True 1 (If (Val $ LitV  $ LitBool false) e1 e2) e2.
+Global Instance pure_if_false e1 e2 : PureExec True 1 (If (Val $ LitV  $ LitBool false) e1 e2) e2.
 Proof. solve_pure_exec. Qed.
 
-Instance pure_fst v1 v2 :
+Global Instance pure_fst v1 v2 :
   PureExec True 1 (Fst (Val $ PairV v1 v2)) (Val v1).
 Proof. solve_pure_exec. Qed.
 
-Instance pure_snd v1 v2 :
+Global Instance pure_snd v1 v2 :
   PureExec True 1 (Snd (Val $ PairV v1 v2)) (Val v2).
 Proof. solve_pure_exec. Qed.
 
-Instance pure_case_inl v e1 e2 :
+Global Instance pure_case_inl v e1 e2 :
   PureExec True 1 (Case (Val $ InjLV v) e1 e2) (App e1 (Val v)).
 Proof. solve_pure_exec. Qed.
 
-Instance pure_case_inr v e1 e2 :
+Global Instance pure_case_inr v e1 e2 :
   PureExec True 1 (Case (Val $ InjRV v) e1 e2) (App e2 (Val v)).
 Proof. solve_pure_exec. Qed.
 
@@ -533,3 +538,4 @@ Proof.
 Qed.
 
 End lifting.
+End go_lang.

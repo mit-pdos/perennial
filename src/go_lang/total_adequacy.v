@@ -4,7 +4,7 @@ From Perennial.go_lang Require Export adequacy.
 From Perennial.go_lang Require Import proofmode notation.
 Set Default Proof Using "Type".
 
-Definition heap_total Σ `{!heapPreG Σ} s e σ φ :
+Definition heap_total `{ffi_sem: ext_semantics} Σ `{!heapPreG Σ} s e σ φ :
   (∀ `{!heapG Σ}, WP e @ s; ⊤ [{ v, ⌜φ v⌝ }]%I) →
   sn erased_step ([e], σ).
 Proof.

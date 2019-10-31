@@ -60,11 +60,24 @@ Module heap_lang.
 (** Expressions and vals. *)
 Definition proph_id := positive.
 
+Class ext_op :=
+  mkExtOp {
+      external: Set;
+      external_eq_dec :> EqDecision external;
+      external_countable :> Countable external;
+    }.
+
+Class ffi_model :=
+  mkFfiModel {
+      ffi_state : Type;
+      ffi_state_inhabited :> Inhabited ffi_state;
+    }.
+
+Section external.
+
 (* these are just codes for external operations (which all take a single val as
    an argument and evaluate to a value) *)
-Axiom external : Set.
-Declare Instance external_eq_dec : EqDecision external.
-Declare Instance external_countable : Countable external.
+Context {ext : ext_op}.
 
 Inductive base_lit : Set :=
   | LitInt (n : u64) | LitBool (b : bool) | LitByte (n : byte) | LitUnit | LitErased
@@ -123,8 +136,7 @@ with val :=
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
 
-Axiom ffi_state : Type.
-Declare Instance ffi_state_inhabitant : Inhabited ffi_state.
+Context {ffi : ffi_model}.
 
 (** The state: heaps of vals. *)
 Record state : Type := {
@@ -146,7 +158,13 @@ heap_lang val, and it must produce a return value in expr)
 we produce an expr because we might as well, but most semantics will probably
 just produce a value directly
  *)
-Axiom external_step : external -> val (* external *) -> state -> expr (* external *) -> state -> Prop.
+Class ext_semantics :=
+  {
+    ext_step : external -> val -> state -> expr -> state -> Prop;
+  }.
+Context {ffi_semantics: ext_semantics}.
+(* TODO: this is for backwards compatibility, should remove *)
+Notation external_step := (ext_step).
 
 (** An observation associates a prophecy variable (identifier) to a pair of
 values. The first value is the one that was returned by the (atomic) operation
@@ -202,9 +220,9 @@ Definition val_is_unboxed (v : val) : Prop :=
   | _ => False
   end.
 
-Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
+Global Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
 Proof. destruct l; simpl; exact (decide _). Defined.
-Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
+Global Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
 Proof. destruct v as [ | | | [] | [] | ]; simpl; exact (decide _). Defined.
 
 (** We just compare the word-sized representation of two values, without looking
@@ -213,7 +231,7 @@ values is unboxed (exploiting the fact that an unboxed and a boxed value can
 never be equal because these are disjoint sets). *)
 Definition vals_compare_safe (vl v1 : val) : Prop :=
   val_is_unboxed vl ∨ val_is_unboxed v1.
-Arguments vals_compare_safe !_ !_ /.
+Global Arguments vals_compare_safe !_ !_ /.
 
 (** Equality and other typeclass stuff *)
 Lemma to_of_val v : to_val (of_val v) = Some v.
@@ -222,10 +240,10 @@ Proof. by destruct v. Qed.
 Lemma of_to_val e v : to_val e = Some v → of_val v = e.
 Proof. destruct e=>//=. by intros [= <-]. Qed.
 
-Instance of_val_inj : Inj (=) (=) of_val.
+Global Instance of_val_inj : Inj (=) (=) of_val.
 Proof. intros ??. congruence. Qed.
 
-Instance base_lit_eq_dec : EqDecision base_lit.
+Global Instance base_lit_eq_dec : EqDecision base_lit.
 Proof. refine (
            fun e1 e2 =>
              match e1, e2 with
@@ -239,12 +257,13 @@ Proof. refine (
              | _ , _ => right _
              end); abstract intuition congruence.
 Defined.
-Instance un_op_eq_dec : EqDecision un_op.
+Global Instance un_op_eq_dec : EqDecision un_op.
 Proof. solve_decision. Defined.
-Instance bin_op_eq_dec : EqDecision bin_op.
+Global Instance bin_op_eq_dec : EqDecision bin_op.
 Proof. solve_decision. Defined.
-Instance expr_eq_dec : EqDecision expr.
-Proof.
+Global Instance expr_eq_dec : EqDecision expr.
+Proof using ext.
+  clear ffi_semantics ffi.
   refine (
       fix go (e1 e2 : expr) {struct e1} : Decision (e1 = e2) :=
       match e1, e2 with
@@ -299,8 +318,9 @@ Proof.
   solve_decision.
   solve_decision.
 Defined.
-Instance val_eq_dec : EqDecision val.
-Proof.
+Global Instance val_eq_dec : EqDecision val.
+Proof using ext.
+  clear ffi_semantics ffi.
   refine
     (fix go (v1 v2:val) : Decision (v1 = v2) :=
      match v1, v2 with
@@ -319,7 +339,7 @@ Proof.
   solve_decision.
 Defined.
 
-Instance base_lit_countable : Countable base_lit.
+Global Instance base_lit_countable : Countable base_lit.
 Proof.
  refine (inj_countable' (λ l, match l with
   | LitInt n => (inl (inl (inl n)), None)
@@ -339,12 +359,12 @@ Proof.
   | (_, Some p) => LitProphecy p
   end) _); by intros [].
 Qed.
-Instance un_op_finite : Countable un_op.
+Global Instance un_op_finite : Countable un_op.
 Proof.
  refine (inj_countable' (λ op, match op with NegOp => 0 | MinusUnOp => 1 end)
   (λ n, match n with 0 => NegOp | _ => MinusUnOp end) _); by intros [].
 Qed.
-Instance bin_op_countable : Countable bin_op.
+Global Instance bin_op_countable : Countable bin_op.
 Proof.
  refine (inj_countable' (λ op, match op with
   | PlusOp => 0 | MinusOp => 1 | MultOp => 2 | QuotOp => 3 | RemOp => 4
@@ -356,8 +376,9 @@ Proof.
   | 10 => LeOp | 11 => LtOp | 12 => EqOp | _ => OffsetOp
   end) _); by intros [].
 Qed.
-Instance expr_countable : Countable expr.
-Proof.
+Global Instance expr_countable : Countable expr.
+Proof using ext.
+  clear ffi_semantics ffi.
  set (enc :=
    fix go e :=
      match e with
@@ -440,13 +461,13 @@ Proof.
  - destruct v; try by f_equal.
    admit. (* TODO: decode maps *)
 Admitted.
-Instance val_countable : Countable val.
+Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
-Instance state_inhabited : Inhabited state :=
+Global Instance state_inhabited : Inhabited state :=
   populate {| heap := inhabitant; world := inhabitant; used_proph_id := inhabitant |}.
-Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
-Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
+Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
+Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
 Canonical Structure stateO := leibnizO state.
 Canonical Structure locO := leibnizO loc.
@@ -608,11 +629,11 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
 
 Definition state_upd_heap (f: gmap loc val → gmap loc val) (σ: state) : state :=
   {| heap := f σ.(heap); world := σ.(world); used_proph_id := σ.(used_proph_id) |}.
-Arguments state_upd_heap _ !_ /.
+Global Arguments state_upd_heap _ !_ /.
 
 Definition state_upd_used_proph_id (f: gset proph_id → gset proph_id) (σ: state) : state :=
   {| heap := σ.(heap); world := σ.(world); used_proph_id := f σ.(used_proph_id) |}.
-Arguments state_upd_used_proph_id _ !_ /.
+Global Arguments state_upd_used_proph_id _ !_ /.
 
 Fixpoint heap_array (l : loc) (vs : list val) : gmap loc val :=
   match vs with
@@ -749,7 +770,7 @@ Inductive head_step : expr → state → list observation → expr → state →
                (κs ++ [(p, (v, w))]) (Val v) σ' ts.
 
 (** Basic properties about the language *)
-Instance fill_item_inj Ki : Inj (=) (=) (fill_item Ki).
+Global Instance fill_item_inj Ki : Inj (=) (=) (fill_item Ki).
 Proof. induction Ki; intros ???; simplify_eq/=; auto with f_equal. Qed.
 
 Lemma fill_item_val Ki e :
@@ -766,7 +787,8 @@ Proof. revert κ e2. induction Ki; inversion_clear 1; simplify_option_eq; eauto.
 Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :
   to_val e1 = None → to_val e2 = None →
   fill_item Ki1 e1 = fill_item Ki2 e2 → Ki1 = Ki2.
-Proof. revert Ki1. induction Ki2, Ki1; naive_solver eauto with f_equal. Qed.
+Proof using ext. clear ffi_semantics ffi.
+       revert Ki1. induction Ki2, Ki1; naive_solver eauto with f_equal. Qed.
 
 Lemma alloc_fresh v n σ :
   let l := fresh_locs (dom (gset loc) σ.(heap)) in
@@ -790,15 +812,23 @@ Proof.
   split; apply _ || eauto using to_of_val, of_to_val, val_head_stuck,
     fill_item_val, fill_item_no_val_inj, head_ctx_step_val.
 Qed.
+End external.
 End heap_lang.
 
 (** Language *)
-Canonical Structure heap_ectxi_lang := EctxiLanguage heap_lang.heap_lang_mixin.
-Canonical Structure heap_ectx_lang := EctxLanguageOfEctxi heap_ectxi_lang.
-Canonical Structure heap_lang := LanguageOfEctx heap_ectx_lang.
 
 (* Prefer heap_lang names over ectx_language names. *)
 Export heap_lang.
+
+Arguments ext_semantics ext ffi : clear implicits.
+Arguments heap_lang.heap_lang_mixin {ext} {ffi} ffi_semantics.
+
+Section go_lang.
+  Context {ext: ext_op} {ffi: ffi_model}
+          {ffi_semantics: ext_semantics ext ffi}.
+  Canonical Structure heap_ectxi_lang := (EctxiLanguage (heap_lang.heap_lang_mixin ffi_semantics)).
+  Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
+  Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
 
 (* The following lemma is not provable using the axioms of [ectxi_language].
 The proof requires a case analysis over context items ([destruct i] on the
@@ -818,7 +848,7 @@ Proof.
 Qed.
 
 Lemma prim_step_to_val_is_head_step e σ1 κs w σ2 efs :
-  prim_step e σ1 κs (Val w) σ2 efs → head_step e σ1 κs (Val w) σ2 efs.
+  prim_step e σ1 κs (Val w) σ2 efs → head_step (ffi_semantics:=ffi_semantics) e σ1 κs (Val w) σ2 efs.
 Proof.
   intro H. destruct H as [K e1 e2 H1 H2].
   assert (to_val (fill K e2) = Some w) as H3; first by rewrite -H2.
@@ -840,3 +870,5 @@ Proof.
     apply (H κs (fill_item K (foldl (flip fill_item) e2' Ks)) σ' efs).
     econstructor 1 with (K := Ks ++ [K]); last done; simpl; by rewrite fill_app.
 Qed.
+
+End go_lang.
