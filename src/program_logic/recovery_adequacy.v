@@ -153,13 +153,13 @@ Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofeT) (Σ : gFunct
 }.
 
 Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness)
-    (wpr : pbundleG T -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> (pbundleG T -d> iPropO Σ) -d> iPropO Σ) :
-  pbundleG T -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> (pbundleG T -d> iPropO Σ) -d> iPropO Σ :=
+    (wpr : pbundleG T -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> (pbundleG T -d> val Λ -d> iPropO Σ) -d> iPropO Σ) :
+  pbundleG T -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> (pbundleG T -d> val Λ -d> iPropO Σ) -d> iPropO Σ :=
   λ t E e rec Φ Φr,
   (WPC e @ s ; E ; ∅
      {{ Φ }}
      {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') κs n,
-        state_interp σ κs n ={∅}=∗  ▷ ∃ t, state_interp σ' [] 0 ∗ wpr t E rec rec (λ _, Φr t) (λ t', Φr t')}})%I.
+        state_interp σ κs n ={∅}=∗  ▷ ∃ t, state_interp σ' [] 0 ∗ wpr t E rec rec (λ v, Φr t v) Φr}})%I.
 
 Local Instance wpr_pre_contractive `{!perennialG Λ CS T Σ} s : Contractive (wpr_pre s).
 Proof.
@@ -168,7 +168,7 @@ Proof.
 Qed.
 
 Definition wpr_def `{!perennialG Λ CS T Σ} (s : stuckness) :
-  pbundleG T → coPset → expr Λ → expr Λ → (val Λ → iProp Σ) → (pbundleG T → iProp Σ) → iProp Σ := fixpoint (wpr_pre s).
+  pbundleG T → coPset → expr Λ → expr Λ → (val Λ → iProp Σ) → (pbundleG T → val Λ → iProp Σ) → iProp Σ := fixpoint (wpr_pre s).
 Definition wpr_aux `{!perennialG Λ CS T Σ} : seal (@wpr_def Λ CS T Σ _). by eexists. Qed.
 Definition wpr `{!perennialG Λ CS T Σ} := wpr_aux.(unseal).
 Definition wpr_eq `{!perennialG Λ CS T Σ} : wpr = @wpr_def Λ CS T Σ _ := wpr_aux.(seal_eq).
@@ -178,7 +178,7 @@ Context `{!perennialG Λ CS T Σ}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
-Implicit Types Φc : pbundleG T → iProp Σ.
+Implicit Types Φc : pbundleG T → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
@@ -189,7 +189,7 @@ Proof. rewrite wpr_eq. apply (fixpoint_unfold (wpr_pre s)). Qed.
 (* There's a stronger version of this *)
 Lemma wpr_strong_mono s t E e rec Φ Ψ Φr Ψr :
   wpr s t E e rec Φ Φr -∗
-  (∀ v, Φ v ==∗ Ψ v) ∧ (∀ t, Φr t ==∗ Ψr t) -∗
+  (∀ v, Φ v ==∗ Ψ v) ∧ (∀ t v, Φr t v ==∗ Ψr t v) -∗
   wpr s t E e rec Ψ Ψr.
 Proof.
   iIntros "H HΦ". iLöb as "IH" forall (e t E Φ Ψ Φr Ψr).
@@ -210,7 +210,7 @@ Lemma idempotence_wpr s E e rec Φx Φrx Φcx t:
   ((WPC e @ s ; E ; ∅ {{ Φx t }} {{ Φcx t }}) -∗
    (□ ∀ (t: pbundleG T) σ σ' (HC: crash_prim_step CS σ σ') κs n,
         Φcx t -∗ state_interp σ κs n ={∅}=∗
-        ▷ ∃ t', state_interp σ' [] 0 ∗ WPC rec @ s ; E ; ∅ {{ (λ _, Φrx t') }} {{ Φcx t' }}) -∗
+        ▷ ∃ t', state_interp σ' [] 0 ∗ WPC rec @ s ; E ; ∅ {{ Φrx t' }} {{ Φcx t' }}) -∗
     wpr s t E e rec (Φx t) Φrx)%I.
 Proof.
   iLöb as "IH" forall (E e t Φx).
@@ -222,9 +222,33 @@ Proof.
   { eauto. }
   iModIntro. iNext. iDestruct "H" as (t') "(?&Hc)".
   iExists _. iFrame.
-  iApply ("IH" $! E rec t' (λ t _, Φrx t)%I with "[Hc]").
+  iApply ("IH" $! E rec t' (λ t v, Φrx t v)%I with "[Hc]").
   { iApply (wpc_strong_mono with "Hc"); auto. }
   eauto.
 Qed.
 
 End wpr.
+
+Section recovery_adequacy.
+Context `{!perennialG Λ CS T Σ}.
+Implicit Types s : stuckness.
+Implicit Types P : iProp Σ.
+Implicit Types Φ : val Λ → iProp Σ.
+Implicit Types Φc : pbundleG T → iProp Σ.
+Implicit Types v : val Λ.
+Implicit Types e : expr Λ.
+End recovery_adequacy.
+
+Record recv_adequate {Λ CS} (s : stuckness) (e1 r1: expr Λ) (σ1 : state Λ)
+    (φ φr: val Λ → state Λ → Prop) := {
+  recv_adequate_result_normal t2 σ2 v2 :
+   erased_rsteps (CS := CS) r1 ([e1], σ1) (of_val v2 :: t2, σ2) Normal →
+   φ v2 σ2;
+  recv_adequate_result_crashed t2 σ2 v2 :
+   erased_rsteps (CS := CS) r1 ([e1], σ1) (of_val v2 :: t2, σ2) Crashed →
+   φr v2 σ2;
+  recv_adequate_not_stuck t2 σ2 e2 stat :
+   s = NotStuck →
+   erased_rsteps (CS := CS) r1 ([e1], σ1) (t2, σ2) stat →
+   e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2)
+}.

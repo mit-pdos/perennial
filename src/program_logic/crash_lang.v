@@ -15,59 +15,32 @@ Section crash_language.
   Context {CS: crash_semantics Λ}.
 
   Inductive status : Set :=
-  | Pending
-  | Crash
-  | Finish.
+  | Crashed
+  | Normal.
 
-  (* This relation either:
-     (1) simulates a step (cstep_step)
-     (2) marks a process as finished (if parent is a vlaue) (cstep_finish)
-     (3) marks a process as about to crash (cstep_crash)
-   *)
-  Inductive cstep (ρ1 : cfg Λ) (κ : list (observation Λ)) (ρ2 : cfg Λ) : status → Prop :=
-  | cstep_step :
-      step ρ1 κ ρ2 →
-      cstep ρ1 κ ρ2 Pending
-  | cstep_finish v t σ :
-      ρ1 = (of_val v :: t, σ) →
-      ρ2 = ρ1 →
-      cstep ρ1 κ ρ2 Finish
-  | cstep_crash t σ1 :
-      ρ1 = (t, σ1) →
-      ρ2 = ρ1 →
-      cstep ρ1 κ ρ2 Crash.
+  (* Execution with a recovery procedure *)
+  Inductive nrsteps (r: expr Λ) : nat → cfg Λ → list (observation Λ) → cfg Λ → status → Prop :=
+  | nrsteps_normal n ρ1 ρ2 κs:
+      nsteps n ρ1 κs ρ2 →
+      nrsteps r n ρ1 κs ρ2 Normal
+  | nrsteps_crash n1 n2 ρ1 ρ2 ρ3 σ κs1 κs2 s:
+      nsteps n1 ρ1 κs1 ρ2 →
+      crash_prim_step CS (ρ2.2) σ →
+      nrsteps r n2 ([r], σ) κs2 ρ3 s →
+      nrsteps r (n1 + n2) ρ1 (κs1 ++ κs2) ρ3 Crashed.
 
-  (* XXX: consider using kleene algebra combinators for these. however, even in
-          the shallow embedding, ultimately had to define alternate forms that
-          count the number of steps taken, in order to do the step-indexing
-          proof, and then I proved an equivalence.
-          (though maybe that means that the true right thing to do is
-          define a model of the Kleene Algebra transitions that counts the steps
-          *)
-
-  (* Repeatedly do cstep, so long as still pending, and count
-     total number of steps taken *)
-  Inductive ncsteps : nat → cfg Λ → list (observation Λ) → cfg Λ → status → Prop :=
-    | ncsteps_refl ρ stat :
-       ncsteps 0 ρ [] ρ stat
-    | ncsteps_l n ρ1 ρ2 ρ3 κ κs stat :
-       cstep ρ1 κ ρ2 Pending →
-       ncsteps n ρ2 κs ρ3 stat →
-       ncsteps (S n) ρ1 (κ ++ κs) ρ3 stat.
-
-  (* A complete execution of a recovery procedure, with possibly several
-     intermediate crashes *)
-  Inductive rexec (r: expr Λ) : nat → state Λ → list (observation Λ) → cfg Λ → Prop :=
-  | rexec_fin n σ1 ρ2 κs:
-      ncsteps n ([r], σ1) κs ρ2 Finish →
-      rexec r n σ1 κs ρ2
-  | rexec_crash n1 n2 σ1 σ2 ρ2 ρ3 κs1 κs2:
-      ncsteps n1 ([r], σ1) κs1 ρ2 Crash →
-      crash_prim_step CS (ρ2.2) σ2 →
-      rexec r n2 σ2 κs2 ρ3 →
-      rexec r (n1 + n2) σ1 (κs1 ++ κs2) ρ3.
+  Inductive erased_rsteps (r: expr Λ) : cfg Λ → cfg Λ → status → Prop :=
+  | erased_rsteps_normal ρ1 ρ2:
+      rtc erased_step ρ1 ρ2 →
+      erased_rsteps r ρ1 ρ2 Normal
+  | erased_rsteps_crash ρ1 ρ2 ρ3 σ s:
+      rtc erased_step ρ1 ρ2 →
+      crash_prim_step CS (ρ2.2) σ →
+      erased_rsteps r ([r], σ) ρ3 s →
+      erased_rsteps r ρ1 ρ3 Crashed.
 
   (* XXX: the sequence of programs to execute is non-adaptive in response to whether you crashed or not *)
+  (*
   Inductive exec_seq (r: expr Λ) : nat →  list (expr Λ) → state Λ → list (observation Λ) → cfg Λ → Prop :=
   | exec_seq_empty σ:
       exec_seq r 0 [] σ [] ([], σ)
@@ -81,4 +54,5 @@ Section crash_language.
       rexec r n2 (ρ2.2) κs2 ρ3 →
       exec_seq r n3 es (ρ3.2) κs3 ρ4 →
       exec_seq r (n1 + n2 + n3) (e1 :: es) σ1 (κs1 ++ κs2 ++ κs3) ρ4.
+   *)
 End crash_language.
