@@ -10,8 +10,9 @@ Defined.
 
 Definition disk_op : ext_op.
 Proof.
-  refine (mkExtOp DiskOp _ _).
-  apply (countable.inj_countable
+  unshelve refine (mkExtOp DiskOp _ _).
+  - apply _.
+  - apply (countable.inj_countable
            (fun op => match op with
                    | Read => 0
                    | Write => 1
@@ -21,7 +22,7 @@ Proof.
                   | 1 => Some Write
                   | _ => None
                   end)).
-  destruct x; auto.
+    destruct x; auto.
 Defined.
 
 Definition block_bytes: nat := N.to_nat 4096.
