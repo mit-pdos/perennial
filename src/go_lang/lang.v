@@ -144,7 +144,7 @@ Record state : Type := {
   world: ffi_state;
   used_proph_id: gset proph_id;
 }.
-(* Note that external_step takes a val, which is itself parameterized by the
+(* Note that ext_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
 the syntax of heap_lang. Similarly, it "returns" an expression, the result of
 evaluating the external operation.
@@ -155,16 +155,13 @@ since external operations can read and modify the heap.
 (this makes sense because the FFI semantics has to pull out arguments from a
 heap_lang val, and it must produce a return value in expr)
 
-we produce an expr because we might as well, but most semantics will probably
-just produce a value directly
+we produce a val to make external operations atomic
  *)
 Class ext_semantics :=
   {
-    ext_step : external -> val -> state -> expr -> state -> Prop;
+    ext_step : external -> val -> state -> val -> state -> Prop;
   }.
 Context {ffi_semantics: ext_semantics}.
-(* TODO: this is for backwards compatibility, should remove *)
-Notation external_step := (ext_step).
 
 (** An observation associates a prophecy variable (identifier) to a pair of
 values. The first value is the one that was returned by the (atomic) operation
@@ -737,11 +734,11 @@ Inductive head_step : expr → state → list observation → expr → state →
                []
                (Val $ LitV LitUnit) (state_upd_heap <[l:=v]> σ)
                []
-  | ExternalS op v σ e' σ' :
-     external_step op v σ e' σ' ->
+  | ExternalS op v σ v' σ' :
+     ext_step op v σ v' σ' ->
      head_step (ExternalOp op (Val v)) σ
                []
-               e' σ'
+               (Val v') σ'
                []
   | CmpXchgS l v1 v2 vl σ b :
      σ.(heap) !! l = Some vl →
@@ -872,3 +869,6 @@ Proof.
 Qed.
 
 End go_lang.
+
+Bind Scope expr_scope with expr.
+Bind Scope val_scope with val.

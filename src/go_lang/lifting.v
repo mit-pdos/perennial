@@ -89,6 +89,8 @@ Global Instance new_proph_atomic s : Atomic s NewProph.
 Proof. solve_atomic. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
+Global Instance ext_atomic s op v : Atomic s (ExternalOp op (Val v)).
+Proof. solve_atomic. Qed.
 
 Global Instance proph_resolve_atomic s e v1 v2 :
   Atomic s e → Atomic s (Resolve e (Val v1) (Val v2)).
