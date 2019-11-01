@@ -18,16 +18,17 @@ Section crash_language.
   | Crashed
   | Normal.
 
-  (* Execution with a recovery procedure *)
-  Inductive nrsteps (r: expr Λ) : nat → cfg Λ → list (observation Λ) → cfg Λ → status → Prop :=
+  (* Execution with a recovery procedure. list nat argument counts
+     steps in-between each crash. *)
+  Inductive nrsteps (r: expr Λ) : list nat → cfg Λ → list (observation Λ) → cfg Λ → status → Prop :=
   | nrsteps_normal n ρ1 ρ2 κs:
       nsteps n ρ1 κs ρ2 →
-      nrsteps r n ρ1 κs ρ2 Normal
-  | nrsteps_crash n1 n2 ρ1 ρ2 ρ3 σ κs1 κs2 s:
+      nrsteps r [n] ρ1 κs ρ2 Normal
+  | nrsteps_crash n1 ns ρ1 ρ2 ρ3 σ κs1 κs2 s:
       nsteps n1 ρ1 κs1 ρ2 →
       crash_prim_step CS (ρ2.2) σ →
-      nrsteps r n2 ([r], σ) κs2 ρ3 s →
-      nrsteps r (n1 + n2) ρ1 (κs1 ++ κs2) ρ3 Crashed.
+      nrsteps r ns ([r], σ) κs2 ρ3 s →
+      nrsteps r (n1 :: ns) ρ1 (κs1 ++ κs2) ρ3 Crashed.
 
   Inductive erased_rsteps (r: expr Λ) : cfg Λ → cfg Λ → status → Prop :=
   | erased_rsteps_normal ρ1 ρ2:

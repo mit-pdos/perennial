@@ -78,7 +78,7 @@ Proof.
   iMod (fupd_plain_mask with "H") as %?; eauto.
 Qed.
 
-Lemma wptp_strong_adequacy Φ Φc κs' s n e1 t1 κs e2 t2 σ1 σ2 :
+Lemma wptp_strong_adequacy Φ Φc κs' s n e1 t1 κs t2 σ1 σ2 :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗
   WPC e1 @ s; ⊤; ∅ {{ Φ }} {{ Φc }} -∗
@@ -113,7 +113,7 @@ Proof.
     + by iApply "IH".
 Qed.
 
-Lemma wptp_strong_crash_adequacy Φ Φc κs' s n e1 t1 κs e2 t2 σ1 σ2 :
+Lemma wptp_strong_crash_adequacy Φ Φc κs' s n e1 t1 κs t2 σ1 σ2 :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗
   WPC e1 @ s; ⊤; ∅ {{ Φ }} {{ Φc }} -∗
@@ -159,7 +159,7 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness)
   (WPC e @ s ; E ; ∅
      {{ Φ }}
      {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') κs n,
-        state_interp σ κs n ={∅}=∗  ▷ ∃ t, state_interp σ' [] 0 ∗ wpr t E rec rec (λ v, Φr t v) Φr}})%I.
+        state_interp σ κs n ={∅}=∗  ▷ ∃ t, state_interp σ' κs 0 ∗ wpr t E rec rec (λ v, Φr t v) Φr}})%I.
 
 Local Instance wpr_pre_contractive `{!perennialG Λ CS T Σ} s : Contractive (wpr_pre s).
 Proof.
@@ -210,7 +210,7 @@ Lemma idempotence_wpr s E e rec Φx Φrx Φcx t:
   ((WPC e @ s ; E ; ∅ {{ Φx t }} {{ Φcx t }}) -∗
    (□ ∀ (t: pbundleG T) σ σ' (HC: crash_prim_step CS σ σ') κs n,
         Φcx t -∗ state_interp σ κs n ={∅}=∗
-        ▷ ∃ t', state_interp σ' [] 0 ∗ WPC rec @ s ; E ; ∅ {{ Φrx t' }} {{ Φcx t' }}) -∗
+        ▷ ∃ t', state_interp σ' κs 0 ∗ WPC rec @ s ; E ; ∅ {{ Φrx t' }} {{ Φcx t' }}) -∗
     wpr s t E e rec (Φx t) Φrx)%I.
 Proof.
   iLöb as "IH" forall (E e t Φx).
@@ -237,6 +237,78 @@ Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φc : pbundleG T → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
+
+Notation wptp s t := ([∗ list] ef ∈ t, WPC ef @ s; ⊤; ∅ {{ fork_post }} {{ True }})%I.
+
+Lemma wptp_recv_strong_adequacy Φ Φr κs' s t n ns r1 e1 t1 κs t2 σ1 σ2 :
+  nrsteps (CS := CS) r1 (n :: ns) (e1 :: t1, σ1) κs (t2, σ2) Normal →
+  state_interp σ1 (κs ++ κs') (length t1) -∗
+  wpr s t ⊤ e1 r1 Φ Φr -∗
+  wptp s t1 ={⊤,∅}▷=∗^(S n) (∃ e2 t2',
+    ⌜ t2 = e2 :: t2' ⌝ ∗
+    ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
+    state_interp σ2 κs' (length t2') ∗
+    from_option Φ True (to_val e2) ∗
+    ([∗ list] v ∈ omap to_val t2', fork_post v)).
+Proof.
+  iIntros (Hstep) "Hσ He Ht".
+  inversion Hstep. subst.
+  iApply (wptp_strong_adequacy with "[$] [He]"); eauto.
+  rewrite wpr_unfold /wpr_pre. iApply "He".
+Qed.
+
+Fixpoint step_fupdN_fresh (ns: list nat) t0 (P: pbundleG T → iProp Σ) :=
+  match ns with
+  | [] => P t0
+  | (n :: ns) =>
+    (|={⊤, ∅}▷=>^(S n) |={⊤, ∅}=> ▷
+     (∃ t' : pbundleG T, step_fupdN_fresh ns t' P))%I
+  end.
+
+(*
+Notation "|={ E }=>_( t ) Q" := (fupd (FUpd := t) E E Q)
+ (at level 99) : bi_scope.
+Notation "P ={ E }=∗_ t Q" := (P -∗ |={E}=>_(t) Q)%I
+ (at level 99) : bi_scope.
+*)
+
+Lemma wptp_recv_strong_crash_adequacy Φ Φr κs' s t ns r1 e1 t1 κs t2 σ1 σ2 :
+  nrsteps (CS := CS) r1 ns (e1 :: t1, σ1) κs (t2, σ2) Crashed →
+  state_interp σ1 (κs ++ κs') (length t1) -∗
+  wpr s t ⊤ e1 r1 Φ Φr -∗
+  wptp s t1 -∗ step_fupdN_fresh ns t (λ t', ∃ e2 t2',
+    ⌜ t2 = e2 :: t2' ⌝ ∗
+    ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
+    state_interp σ2 κs' (length t2') ∗
+    from_option (Φr t') True (to_val e2) ∗
+    ([∗ list] v ∈ omap to_val t2', fork_post v)).
+Proof.
+  revert t e1 t1 κs κs' t2 σ1 σ2 Φ.
+  induction ns as [|n ns' IH] => t e1 t1 κs κs' t2 σ1 σ2 Φ.
+  { inversion_clear 1. }
+  iIntros (Hsteps) "Hσ He Ht".
+  inversion_clear Hsteps as [|?? [t1' σ1'] ????? s0].
+  rewrite {1}/step_fupdN_fresh -/step_fupdN_fresh.
+  destruct ρ2 as (?&σ2_pre_crash).
+  iApply (step_fupdN_wand with "[-]").
+  { rewrite -assoc wpr_unfold /wpr_pre.
+    iApply (wptp_strong_crash_adequacy with "[$] [$]"); eauto.
+  }
+  iIntros "H". iMod "H" as (e2 t2' ?) "(H&Hσ)".
+  iMod ("H" with "[//] Hσ") as "H". iModIntro. iNext.
+  iDestruct "H" as (t') "(Hσ&Hr)".
+  destruct s0.
+  - iPoseProof (IH with "[Hσ] Hr []") as "H"; eauto.
+  - iExists t'. subst. inversion H1; subst.
+    rewrite /step_fupdN_fresh.
+    iPoseProof (wptp_strong_adequacy with "[Hσ] [Hr] []") as "H"; eauto.
+    { rewrite wpr_unfold /wpr_pre. iApply "Hr". }
+    iApply (step_fupdN_wand with "H").
+    iIntros "H". iDestruct "H" as (????) "(Hσ&?&?)".
+    iApply (fupd_mask_weaken _ ∅); first by set_solver+.
+    iNext. iExists t', _, _. iFrame.
+    iSplitL ""; eauto.
+Qed.
 End recovery_adequacy.
 
 Record recv_adequate {Λ CS} (s : stuckness) (e1 r1: expr Λ) (σ1 : state Λ)
