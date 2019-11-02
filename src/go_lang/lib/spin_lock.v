@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
+  Context `{!ffi_interp ffi}.
 
   (* Coercion Var : string >-> expr. *)
   Definition Var' s : @expr ext := Var s.
@@ -100,6 +101,6 @@ End go_lang.
 
 Typeclasses Opaque is_lock locked.
 
-Canonical Structure spin_lock `{ffi_sem: ext_semantics} `{!heapG Σ, !lockG Σ} : lock Σ :=
+Canonical Structure spin_lock `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ, !lockG Σ} : lock Σ :=
   {| lock.locked_exclusive := locked_exclusive; lock.newlock_spec := newlock_spec;
      lock.acquire_spec := acquire_spec; lock.release_spec := release_spec |}.

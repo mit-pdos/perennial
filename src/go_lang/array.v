@@ -10,8 +10,11 @@ with lists of values. It also contains array versions of the basic heap
 operations of HeapLand. *)
 
 Section go_lang.
-  Context {ext: ext_op} {ffi: ffi_model} {ffi_semantics: ext_semantics ext ffi}.
+  Context `{ffi_semantics: ext_semantics}.
+  Context `{!ffi_interp ffi}.
 
+(* technically the definition of array doesn't depend on a state interp, only
+the ffiG type; fixing this would require unbundling ffi_interp *)
 Definition array `{!heapG Σ} (l : loc) (vs : list val) : iProp Σ :=
   ([∗ list] i ↦ v ∈ vs, (l +ₗ i) ↦ v)%I.
 Notation "l ↦∗ vs" := (array l vs)

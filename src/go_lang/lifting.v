@@ -18,21 +18,28 @@ Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
 
+Class ffi_interp (ffi: ffi_model) :=
+  { ffiG: gFunctors -> Set;
+    ffi_ctx: forall `{ffiG Σ}, ffi_state -> iProp Σ; }.
+
+Arguments ffi_ctx {ffi FfiInterp Σ} fG : rename.
+
 Section go_lang.
-  Context {ext: ext_op} {ffi: ffi_model} {ffi_semantics: ext_semantics ext ffi}.
-  Notation val := (@heap_lang.val ext).
+  Context `{ffi_semantics: ext_semantics}.
+  Context `{!ffi_interp ffi}.
 
 Class heapG Σ := HeapG {
   heapG_invG : invG Σ;
+  heapG_ffiG : ffiG Σ;
   heapG_gen_heapG :> gen_heapG loc val Σ;
   heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ
 }.
 
 Global Instance heapG_irisG `{!heapG Σ} :
-  irisG (heap_lang (ffi_semantics:=ffi_semantics)) Σ := {
+  irisG heap_lang Σ := {
   iris_invG := heapG_invG;
   state_interp σ κs _ :=
-    (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id))%I;
+    (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world))%I;
   fork_post _ := True%I;
 }.
 
@@ -430,7 +437,7 @@ Lemma wp_new_proph s E :
   {{{ pvs p, RET (LitV (LitProphecy p)); proph p pvs }}}.
 Proof.
   iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ HR] !>". iSplit; first by eauto.
+  iIntros (σ1 κ κs n) "(Hσ&HR&Hffi) !>". iSplit; first by eauto.
   iNext; iIntros (v2 σ2 efs Hstep). inv_head_step.
   iMod (proph_map_new_proph p with "HR") as "[HR Hp]"; first done.
   iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
@@ -485,21 +492,22 @@ Proof.
   (* TODO we should try to use a generic lifting lemma (and avoid [wp_unfold])
      here, since this breaks the WP abstraction. *)
   iIntros (A He) "Hp WPe". rewrite !wp_unfold /wp_pre /= He. simpl in *.
-  iIntros (σ1 κ κs n) "[Hσ Hκ]". destruct κ as [|[p' [w' v']] κ' _] using rev_ind.
-  - iMod ("WPe" $! σ1 [] κs n with "[$Hσ $Hκ]") as "[Hs WPe]". iModIntro. iSplit.
+  iIntros (σ1 κ κs n) "(Hσ&Hκ&Hw)". destruct κ as [|[p' [w' v']] κ' _] using rev_ind.
+  - iMod ("WPe" $! σ1 [] κs n with "[$Hσ $Hκ $Hw]") as "[Hs WPe]". iModIntro. iSplit.
     { iDestruct "Hs" as "%". iPureIntro. destruct s; [ by apply resolve_reducible | done]. }
     iIntros (e2 σ2 efs step). exfalso. apply step_resolve in step; last done.
     inversion step. match goal with H: ?κs ++ [_] = [] |- _ => by destruct κs end.
   - rewrite -app_assoc.
-    iMod ("WPe" $! σ1 _ _ n with "[$Hσ $Hκ]") as "[Hs WPe]". iModIntro. iSplit.
+    iMod ("WPe" $! σ1 _ _ n with "[$Hσ $Hκ $Hw]") as "[Hs WPe]". iModIntro. iSplit.
     { iDestruct "Hs" as %?. iPureIntro. destruct s; [ by apply resolve_reducible | done]. }
     iIntros (e2 σ2 efs step). apply step_resolve in step; last done.
     inversion step; simplify_list_eq.
     iMod ("WPe" $! (Val w') σ2 efs with "[%]") as "WPe".
     { by eexists [] _ _. }
-    iModIntro. iNext. iMod "WPe" as "[[$ Hκ] WPe]".
+    iModIntro. iNext. iMod "WPe" as "[[$ (Hκ&Hw)] WPe]".
     iMod (proph_map_resolve_proph p' (w',v') κs with "[$Hκ $Hp]") as (vs' ->) "[$ HPost]".
     iModIntro. rewrite !wp_unfold /wp_pre /=. iDestruct "WPe" as "[HΦ $]".
+    iFrame.
     iMod "HΦ". iModIntro. by iApply "HΦ".
 Qed.
 
