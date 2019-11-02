@@ -1,5 +1,6 @@
 dist: bionic
 language: minimal
+os: linux
 
 notifications:
   email:
@@ -21,7 +22,7 @@ cache:
 services:
   - docker
 
-matrix:
+jobs:
   include:
     - env: COQ_VERSION="dev"
     - env: COQ_VERSION="8.9"
