@@ -45,6 +45,15 @@ Defined.
 Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
   map (λ b, LitV (LitByte b)) (vec_to_list bl).
 
+Lemma length_Block_to_vals {ext: ext_op} b :
+    length (Block_to_vals b) = block_bytes.
+Proof.
+  unfold Block_to_vals.
+  rewrite map_length.
+  rewrite vec_to_list_length.
+  reflexivity.
+Qed.
+
 Class diskG Σ :=
   { diskG_gen_heapG :> gen_heapG u64 Block Σ; }.
 
@@ -106,36 +115,46 @@ lemmas. *)
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
-           end.
+        | H : ext_step _ _ _ _ _ |- _ =>
+          inversion H; subst; clear H
+        end.
+
+  Theorem read_fresh : forall σ a b,
+      let l := fresh_locs (dom (gset loc) (heap σ)) in
+      σ.(world) !! a = Some b ->
+      ext_step Read (LitV $ LitInt a) σ (LitV $ LitLoc $ l) (state_insert_block l b σ).
+  Proof.
+    intros.
+    constructor; auto; intros.
+    apply (not_elem_of_dom (D := gset loc)).
+      by apply fresh_locs_fresh.
+  Qed.
+
+  Hint Resolve read_fresh : core.
+  Hint Extern 1 (head_step (ExternalOp _ _) _ _ _ _ _) => econstructor; simpl : core.
 
   Lemma wp_Read s E a q b :
     {{{ ▷ a d↦{q} b }}}
       ExternalOp Read (Val $ LitV $ LitInt a) @ s; E
     {{{ l, RET LitV (LitLoc l); a d↦{q} b ∗
-                                  [∗ map] i ↦ v ∈ Block_map b, (l +ₗ i) ↦{1} v ∗
-                                  meta_token (l +ₗ i) ⊤ }}}.
+                                  [∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{1} v ∗
+                                  meta_token l ⊤ }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
     iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd) !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
-    (* TODO: do something like alloc_fresh to show that we can step (by
-    finding a location to allocate at) *)
-    (*
-    iMod (gen_heap_alloc_gen _ (heap_array l (Block_to_vals b)) with "Hσ")
-      as "(Hσ & Hl & Hm)".
+    iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+    iMod (gen_heap_alloc_gen _ (heap_array l' (Block_to_vals b)) with "Hσ")
+    as "(Hσ & Hl & Hm)".
     { apply heap_array_map_disjoint.
-      rewrite replicate_length u64_Z_through_nat; auto with lia. }
-    iSplit.
-    - iPureIntro.
-      eexists _, _, _, _; simpl.
-      constructor.
-      simpl; eauto.
-
-    iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-    iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
-  Qed. *)
-  Abort.
+      rewrite length_Block_to_vals; eauto. }
+  iModIntro; iSplit; first done.
+  iFrame "Hσ Hκs Hd". iApply "HΦ".
+  iFrame "Ha".
+  iApply big_sepM_sep. iFrame.
+  Qed.
   End proof.
 
 End disk.
