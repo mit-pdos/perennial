@@ -276,8 +276,9 @@ Proof.
   iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_alloc_gen with "Hσ") as "(Hσ & Hl & Hm)".
-  { apply (heap_array_map_disjoint _ l (replicate (Word.wordToNat n) v)); eauto.
+    iMod (gen_heap_alloc_gen _ (heap_array l (replicate (Word.wordToNat n) v)) with "Hσ")
+    as "(Hσ & Hl & Hm)".
+  { apply heap_array_map_disjoint.
     rewrite replicate_length u64_Z_through_nat; auto with lia. }
   iModIntro; iSplit; first done.
   rewrite u64_nat_through_Z.
@@ -295,8 +296,9 @@ Proof.
   iIntros (Hn Φ) "_ HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κs k) "[Hσ Hκs] !>"; iSplit; first by destruct_with_eqn (u64_Z n); auto with lia.
   iIntros (κ v2 σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_alloc_gen with "Hσ") as "(Hσ & Hl & Hm)".
-  { apply (heap_array_map_disjoint _ l (replicate (Word.wordToNat n) v)); eauto.
+  iMod (gen_heap_alloc_gen _ (heap_array l (replicate (Word.wordToNat n) v)) with "Hσ")
+    as "(Hσ & Hl & Hm)".
+  { apply heap_array_map_disjoint.
     rewrite replicate_length u64_Z_through_nat; auto with lia. }
   iModIntro; do 2 (iSplit; first done).
   rewrite u64_nat_through_Z.

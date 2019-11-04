@@ -1,6 +1,9 @@
 From stdpp Require Import gmap.
 From stdpp Require Import vector.
-From Perennial.go_lang Require Import lang.
+From iris.proofmode Require Import tactics.
+From iris.program_logic Require Import ectx_lifting.
+
+From Perennial.go_lang Require Import lang lifting.
 
 Inductive DiskOp := Read | Write.
 Instance eq_DiskOp : EqDecision DiskOp.
@@ -28,6 +31,10 @@ Defined.
 Definition block_bytes: nat := N.to_nat 4096.
 Definition Block := vec byte block_bytes.
 
+Definition Block_map {ext:ext_op} (b:Block) : gmap Z val.
+Proof.
+Admitted.
+
 Definition disk_state := gmap u64 Block.
 
 Definition disk_model : ffi_model.
@@ -38,7 +45,10 @@ Defined.
 Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
   map (λ b, LitV (LitByte b)) (vec_to_list bl).
 
-Section semantics.
+Class diskG Σ :=
+  { diskG_gen_heapG :> gen_heapG u64 Block Σ; }.
+
+Section disk.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the disk model *)
   Existing Instances disk_op disk_model.
@@ -62,14 +72,70 @@ Section semantics.
 
   .
 
-  (*
-  Lemma wp_Read s E a q v :
-    {{{ ▷ l ↦{q} v }}} ExternalOp Read (Val $ LitV $ LitInt a) @ s; E {{{ RET v; l ↦{q} v }}}.
+  Hint Constructors ext_step : core.
+
+  (* these instances are also local (to the outer section) *)
+  Instance disk_semantics : ext_semantics disk_op disk_model :=
+    { ext_step := ext_step; }.
+
+  Instance disk_interp: ffi_interp disk_model :=
+    {| ffiG := diskG;
+       ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap_ctx d; |}.
+
+  Section proof.
+  Context `{!heapG Σ}.
+  Instance diskG0 : diskG Σ := heapG_ffiG.
+
+  Notation "l ↦{ q } v" := (mapsto (L:=loc) (V:=val) l q v%V)
+                             (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
+  Notation "l d↦{ q } v" := (mapsto (L:=u64) (V:=Block) l q v%V)
+                             (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
+  Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
+  Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
+
+  (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
+[head_step]. The tactic will discharge head-reductions starting from values, and
+simplifies hypothesis related to conversions from and to values, and finite map
+operations. This tactic is slightly ad-hoc and tuned for proving our lifting
+lemmas. *)
+  Ltac inv_head_step :=
+    repeat match goal with
+        | _ => progress simplify_map_eq/= (* simplify memory stuff *)
+        | H : to_val _ = Some _ |- _ => apply of_to_val in H
+        | H : head_step ?e _ _ _ _ _ |- _ =>
+          try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
+     and can thus better be avoided. *)
+          inversion H; subst; clear H
+           end.
+
+  Lemma wp_Read s E a q b :
+    {{{ ▷ a d↦{q} b }}}
+      ExternalOp Read (Val $ LitV $ LitInt a) @ s; E
+    {{{ l, RET LitV (LitLoc l); a d↦{q} b ∗
+                                  [∗ map] i ↦ v ∈ Block_map b, (l +ₗ i) ↦{1} v ∗
+                                  meta_token (l +ₗ i) ⊤ }}}.
   Proof.
-    iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-    iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-    iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+    iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
+    iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd) !>".
+    cbv [ffi_ctx disk_interp].
+    iDestruct (@gen_heap_valid with "Hd Ha") as %?.
+    (* TODO: do something like alloc_fresh to show that we can step (by
+    finding a location to allocate at) *)
+    (*
+    iMod (gen_heap_alloc_gen _ (heap_array l (Block_to_vals b)) with "Hσ")
+      as "(Hσ & Hl & Hm)".
+    { apply heap_array_map_disjoint.
+      rewrite replicate_length u64_Z_through_nat; auto with lia. }
+    iSplit.
+    - iPureIntro.
+      eexists _, _, _, _; simpl.
+      constructor.
+      simpl; eauto.
+
+    iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
     iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
   Qed. *)
+  Abort.
+  End proof.
 
-End semantics.
+End disk.
