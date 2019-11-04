@@ -31,10 +31,6 @@ Defined.
 Definition block_bytes: nat := N.to_nat 4096.
 Definition Block := vec byte block_bytes.
 
-Definition Block_map {ext:ext_op} (b:Block) : gmap Z val.
-Proof.
-Admitted.
-
 Definition disk_state := gmap u64 Block.
 
 Definition disk_model : ffi_model.
