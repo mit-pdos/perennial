@@ -5,6 +5,10 @@ From iris.program_logic Require Import ectx_lifting.
 
 From Perennial.go_lang Require Import lang lifting.
 
+(* this is purely cosmetic but it makes printing line up with how the code is
+usually written *)
+Set Printing Projections.
+
 Inductive DiskOp := Read | Write.
 Instance eq_DiskOp : EqDecision DiskOp.
 Proof.
@@ -39,13 +43,13 @@ Proof.
 Defined.
 
 Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
-  map (λ b, LitV (LitByte b)) (vec_to_list bl).
+  fmap (λ b, LitV (LitByte b)) (vec_to_list bl).
 
 Lemma length_Block_to_vals {ext: ext_op} b :
     length (Block_to_vals b) = block_bytes.
 Proof.
   unfold Block_to_vals.
-  rewrite map_length.
+  rewrite fmap_length.
   rewrite vec_to_list_length.
   reflexivity.
 Qed.
@@ -68,7 +72,7 @@ Section disk.
       ext_step Read (LitV (LitInt a)) σ (LitV (LitLoc l'))
                (state_insert_block l' b σ)
   | WriteS : forall (a: u64) (l: loc) (b0 b: Block) (σ: state),
-      σ.(world) !! a = Some b0 ->
+      is_Some (σ.(world) !! a) ->
       (forall (i:Z), 0 <= i -> i < 4096 ->
                 σ.(heap) !! (l +ₗ i) =
                 Block_to_vals b !! Z.to_nat i)%Z ->
@@ -129,28 +133,115 @@ lemmas. *)
   Hint Resolve read_fresh : core.
   Hint Extern 1 (head_step (ExternalOp _ _) _ _ _ _ _) => econstructor; simpl : core.
 
+  Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
+    ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
+
   Lemma wp_Read s E a q b :
     {{{ ▷ a d↦{q} b }}}
       ExternalOp Read (Val $ LitV $ LitInt a) @ s; E
     {{{ l, RET LitV (LitLoc l); a d↦{q} b ∗
-                                  [∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{1} v ∗
-                                  meta_token l ⊤ }}}.
+                                  mapsto_block l 1 b ∗
+                                  [∗ map] l ↦ _ ∈ heap_array l (Block_to_vals b), meta_token l ⊤ }}}.
   Proof.
-    iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
+    iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd) !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+    iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
     iMod (gen_heap_alloc_gen _ (heap_array l' (Block_to_vals b)) with "Hσ")
-    as "(Hσ & Hl & Hm)".
+      as "(Hσ & Hl & Hm)".
     { apply heap_array_map_disjoint.
       rewrite length_Block_to_vals; eauto. }
-  iModIntro; iSplit; first done.
-  iFrame "Hσ Hκs Hd". iApply "HΦ".
-  iFrame "Ha".
-  iApply big_sepM_sep. iFrame.
+    iModIntro; iSplit; first done.
+    iFrame "Hσ Hκs Hd". iApply "HΦ".
+    iFrame.
   Qed.
+
+  Theorem block_byte_index {ext: ext_op} (b: Block) (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) :
+    Block_to_vals b !! Z.to_nat i = Some (match Block_to_vals b !! Z.to_nat i with
+                                       | Some v => v
+                                       | None => LitV LitUnit
+                                          end).
+  Proof.
+    unfold Block_to_vals.
+    (* TODO: rewrite lookup_fmap fails due to type class inference *)
+  Admitted.
+
+  Theorem mapsto_block_extract i l q b :
+    (0 <= i)%Z ->
+    (i < 4096)%Z ->
+    (mapsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝)%I.
+  Proof.
+    unfold mapsto_block; intros Hlow Hhi.
+    iIntros "Hm".
+    pose proof (block_byte_index b i ltac:(auto) ltac:(auto)) as Hi.
+    assert (heap_array l (Block_to_vals b) !! (l +ₗ i) =
+            Some
+              match Block_to_vals b !! Z.to_nat i with
+           | Some v => v
+           | None => LitV LitUnit
+              end) as Hha.
+    { apply heap_array_lookup; eauto. }
+    iDestruct (big_sepM_lookup_acc _ _ _ _ Hha with "Hm") as "(Hmi&_)".
+    iExists _.
+    iFrame "Hmi".
+    destruct_with_eqn (Block_to_vals b !! Z.to_nat i); auto.
+  Qed.
+
+  Theorem heap_valid_block l b q σ :
+    gen_heap_ctx σ -∗ mapsto_block l q b -∗
+    ⌜ (forall (i:Z), (0 <= i)%Z -> (i < 4096)%Z ->
+                σ !! (l +ₗ i) = Block_to_vals b !! Z.to_nat i) ⌝.
+  Proof.
+    iIntros "Hσ Hm".
+    iIntros (i Hbound1 Hbound2).
+    iDestruct (mapsto_block_extract i with "Hm") as (v) "[Hi %]"; eauto.
+    iDestruct (@gen_heap_valid with "Hσ Hi") as %?.
+    iPureIntro; congruence.
+  Qed.
+
+  Theorem Block_to_vals_ext_eq b1 b2 :
+    (forall (i:Z), (0 <= i)%Z -> (i < 4096)%Z ->
+              Block_to_vals b1 !! Z.to_nat i = Block_to_vals b2 !! Z.to_nat i) ->
+    b1 = b2.
+  Proof.
+    intros.
+    assert (Block_to_vals b1 = Block_to_vals b2).
+    admit.
+    admit.
+  Admitted.
+
+  Lemma wp_Write s E a b q l :
+    {{{ ▷ ∃ b0, a d↦{1} b0 ∗ mapsto_block l q b }}}
+      ExternalOp Write (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
+    {{{ RET LitV LitUnit; a d↦{1} b ∗ mapsto_block l q b}}}.
+  Proof.
+    iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
+    iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd) !>".
+    cbv [ffi_ctx disk_interp].
+    iDestruct (@gen_heap_valid with "Hd Ha") as %?.
+    iDestruct (heap_valid_block with "Hσ Hl") as %?.
+    iSplit.
+    { iPureIntro.
+      eexists _, _, _, _; simpl.
+      econstructor; simpl.
+      (* TODO: for some reason eauto doesn't apply this *)
+      eapply WriteS; eauto. }
+    iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+    iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
+    assert (b = b2); [ | subst b2 ].
+    { apply Block_to_vals_ext_eq; intros.
+      rewrite <- H0 by auto.
+      rewrite <- H4 by auto.
+      reflexivity. }
+    iModIntro; iSplit; first done.
+    iFrame.
+    iApply "Hϕ".
+    iFrame.
+  Qed.
+
   End proof.
 
 End disk.
