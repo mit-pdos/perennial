@@ -1,5 +1,5 @@
 From stdpp Require Import gmap.
-From stdpp Require Import vector.
+From stdpp Require Import vector fin_maps.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Import ectx_lifting.
 
@@ -158,15 +158,23 @@ lemmas. *)
     iFrame.
   Qed.
 
+  Definition bindex_of_Z (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) : fin block_bytes.
+    assert (Z.to_nat i < 4096)%nat.
+    change 4096%nat with (Z.to_nat 4096%Z).
+    abstract (apply Z2Nat.inj_lt; auto; vm_compute; inversion 1).
+    exact (fin_of_nat H).
+  Defined.
+
   Theorem block_byte_index {ext: ext_op} (b: Block) (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) :
-    Block_to_vals b !! Z.to_nat i = Some (match Block_to_vals b !! Z.to_nat i with
-                                       | Some v => v
-                                       | None => LitV LitUnit
-                                          end).
+    Block_to_vals b !! Z.to_nat i = Some (LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi).
   Proof.
     unfold Block_to_vals.
-    (* TODO: rewrite lookup_fmap fails due to type class inference *)
-  Admitted.
+    rewrite ?list_lookup_fmap.
+    Search _ vec_to_list.
+    unfold bindex_of_Z.
+    destruct (vlookup_lookup' b (Z.to_nat i) (b !!! bindex_of_Z i Hlow Hhi)) as [H _].
+    rewrite H; eauto.
+  Qed.
 
   Theorem mapsto_block_extract i l q b :
     (0 <= i)%Z ->
@@ -177,11 +185,7 @@ lemmas. *)
     iIntros "Hm".
     pose proof (block_byte_index b i ltac:(auto) ltac:(auto)) as Hi.
     assert (heap_array l (Block_to_vals b) !! (l +ₗ i) =
-            Some
-              match Block_to_vals b !! Z.to_nat i with
-           | Some v => v
-           | None => LitV LitUnit
-              end) as Hha.
+            Some $ LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi) as Hha.
     { apply heap_array_lookup; eauto. }
     iDestruct (big_sepM_lookup_acc _ _ _ _ Hha with "Hm") as "(Hmi&_)".
     iExists _.
