@@ -205,6 +205,33 @@ lemmas. *)
     iPureIntro; congruence.
   Qed.
 
+  Theorem list_ext_eq' A (l1 l2: list A) :
+    (forall i, l1 !! i = l2 !! i) ->
+    l1 = l2.
+  Proof.
+    revert l2.
+    induction l1; simpl; intros.
+    - destruct l2; simpl; auto.
+      specialize (H 0%nat); inversion H.
+    - destruct l2.
+      + specialize (H 0%nat); inversion H.
+      + pose proof (H 0%nat) as H0; inversion H0; subst; clear H0.
+        f_equal.
+        apply IHl1; intros.
+        specialize (H (1+i)%nat); simpl in H; auto.
+  Qed.
+
+  Theorem list_ext_eq A (l1 l2: list A) :
+    length l1 = length l2 ->
+    (forall i, (i < length l1)%nat -> l1 !! i = l2 !! i) ->
+    l1 = l2.
+  Proof.
+    intros.
+    apply list_ext_eq'; intros.
+    destruct (decide (i < length l1)%nat); auto.
+    rewrite ?lookup_ge_None_2; try lia; auto.
+  Qed.
+
   Theorem Block_to_vals_ext_eq b1 b2 :
     (forall (i:Z), (0 <= i)%Z -> (i < 4096)%Z ->
               Block_to_vals b1 !! Z.to_nat i = Block_to_vals b2 !! Z.to_nat i) ->
@@ -212,9 +239,18 @@ lemmas. *)
   Proof.
     intros.
     assert (Block_to_vals b1 = Block_to_vals b2).
-    admit.
-    admit.
-  Admitted.
+    apply list_ext_eq.
+    rewrite ?length_Block_to_vals; auto.
+    intros.
+    rewrite <- (Nat2Z.id i).
+    rewrite length_Block_to_vals in H0.
+    change block_bytes with 4096%nat in *.
+    apply H; lia.
+    apply vec_to_list_inj2.
+    apply fmap_inj in H0; auto.
+    hnf; intros.
+    inversion H1; subst; auto.
+  Qed.
 
   Lemma wp_Write s E a b q l :
     {{{ ▷ ∃ b0, a d↦{1} b0 ∗ mapsto_block l q b }}}
