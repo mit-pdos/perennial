@@ -38,8 +38,6 @@ Ltac reshape_expr e tac :=
     | CmpXchg (Val ?v0) (Val ?v1) ?e2 => add_item (CmpXchgRCtx v0 v1) vs K e2
     | CmpXchg (Val ?v0) ?e1 ?e2       => add_item (CmpXchgMCtx v0 e2) vs K e1
     | CmpXchg ?e0 ?e1 ?e2             => add_item (CmpXchgLCtx e1 e2) vs K e0
-    | FAA ?e (Val ?v)                 => add_item (FaaLCtx v) vs K e
-    | FAA ?e1 ?e2                     => add_item (FaaRCtx e1) vs K e2
     (* TODO: fix for left-to-right evaluation order *)
     | Resolve ?ex (Val ?v1) (Val ?v2) => go K ((v1,v2) :: vs) ex
     | Resolve ?ex ?e1 (Val ?v2)       => add_item (ResolveMCtx ex v2) vs K e1

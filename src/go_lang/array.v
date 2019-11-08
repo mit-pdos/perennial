@@ -217,27 +217,6 @@ Lemma wp_cmpxchg_fail_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v1 v2
   {{{ RET (vs !!! off, #false); l ↦∗ vs }}}.
 Proof. intros. eapply wp_cmpxchg_fail_offset=> //. by apply vlookup_lookup. Qed.
 
-(*
-Lemma wp_faa_offset s E l off vs (i1 i2 : u64) :
-  vs !! off = Some #(LitInt i1) →
-  {{{ ▷ l ↦∗ vs }}} FAA #(l +ₗ off) #(LitInt i2) @ s; E
-  {{{ RET LitV (LitInt i1); l ↦∗ <[off:=#(LitInt $ Word.wplus i1 i2)]> vs }}}.
-Proof.
-  iIntros (Hlookup Φ) "Hl HΦ".
-  iDestruct (update_array l _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  iApply (wp_faa with "Hl1").
-  iNext. iIntros "Hl1". iApply "HΦ". iApply "Hl2". iApply "Hl1".
-Qed.
-
-Lemma wp_faa_offset_vec s E l sz (off : fin sz) (vs : vec val sz) (i1 i2 : Z) :
-  vs !!! off = #i1 →
-  {{{ ▷ l ↦∗ vs }}} FAA #(l +ₗ off) #i2 @ s; E
-  {{{ RET LitV (LitInt i1); l ↦∗ vinsert off #(i1 + i2) vs }}}.
-Proof.
-  intros. setoid_rewrite vec_to_list_insert. apply wp_faa_offset=> //.
-  by apply vlookup_lookup.
-Qed. *)
-
 End lifting.
 End go_lang.
 

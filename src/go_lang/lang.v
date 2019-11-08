@@ -122,7 +122,6 @@ Inductive expr :=
   | Load (e : expr)
   | Store (e1 : expr) (e2 : expr)
   | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
-  | FAA (e1 : expr) (e2 : expr) (* Fetch-and-add *)
   (* External FFI *)
   | ExternalOp (op: external) (e: expr)
   (* Prophecy *)
@@ -296,8 +295,6 @@ Proof using ext.
       | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-      | FAA e1 e2, FAA e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
       | NewProph, NewProph => left _
       | Resolve e0 e1 e2, Resolve e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
@@ -403,7 +400,6 @@ Proof using ext.
      | Store e1 e2 => GenNode 15 [go e1; go e2]
      | ExternalOp op e => GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
-     | FAA e1 e2 => GenNode 17 [go e1; go e2]
      | NewProph => GenNode 18 []
      | Resolve e0 e1 e2 => GenNode 19 [go e0; go e1; go e2]
      end
@@ -440,7 +436,6 @@ Proof using ext.
      | GenNode 15 [e1; e2] => Store (go e1) (go e2)
      | GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
-     | GenNode 17 [e1; e2] => FAA (go e1) (go e2)
      | GenNode 18 [] => NewProph
      | GenNode 19 [e0; e1; e2] => Resolve (go e0) (go e1) (go e2)
      | _ => Val $ LitV LitUnit (* dummy *)
@@ -458,7 +453,7 @@ Proof using ext.
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
- - destruct e as [v| | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+ - destruct e as [v| | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
      [exact (gov v)|done..].
  - destruct v; try by f_equal.
    admit. (* TODO: decode maps *)
@@ -500,8 +495,6 @@ Inductive ectx_item :=
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
   | CmpXchgRCtx (v1 : val) (v2 : val)
-  | FaaLCtx (e2 : expr)
-  | FaaRCtx (v1 : val)
   | ResolveLCtx (ctx : ectx_item) (v1 : val) (v2 : val)
   | ResolveMCtx (e0 : expr) (v2 : val)
   | ResolveRCtx (e0 : expr) (e1 : expr).
@@ -537,8 +530,6 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
   | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
   | CmpXchgRCtx v0 v1 => CmpXchg (Val v0) (Val v1) e
-  | FaaLCtx e2 => FAA e e2
-  | FaaRCtx v1 => FAA (Val v1) e
   | ResolveLCtx K v1 v2 => Resolve (fill_item K e) (Val v1) (Val v2)
   | ResolveMCtx ex v2 => Resolve ex e (Val v2)
   | ResolveRCtx ex e1 => Resolve ex e1 e
@@ -567,7 +558,6 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | Store e1 e2 => Store (subst x v e1) (subst x v e2)
   | ExternalOp op e => ExternalOp op (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
-  | FAA e1 e2 => FAA (subst x v e1) (subst x v e2)
   | NewProph => NewProph
   | Resolve ex e1 e2 => Resolve (subst x v ex) (subst x v e1) (subst x v e2)
   end.
@@ -757,12 +747,6 @@ Inductive head_step : expr → state → list observation → expr → state →
      head_step (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) σ
                []
                (Val $ PairV vl (LitV $ LitBool b)) (if b then state_upd_heap <[l:=v2]> σ else σ)
-               []
-  | FaaS l i1 i2 σ :
-     σ.(heap) !! l = Some (LitV (LitInt i1)) →
-     head_step (FAA (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt i2)) σ
-               []
-               (Val $ LitV $ LitInt i1) (state_upd_heap <[l:=LitV (LitInt (Word.wplus i1 i2))]>σ)
                []
   | NewProphS σ p :
      p ∉ σ.(used_proph_id) →

@@ -86,8 +86,6 @@ Global Instance store_atomic s v1 v2 : Atomic s (Store (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
-Global Instance faa_atomic s v1 v2 : Atomic s (FAA (Val v1) (Val v2)).
-Proof. solve_atomic. Qed.
 Global Instance fork_atomic s e : Atomic s (Fork e).
 Proof. solve_atomic. Qed.
 Global Instance skip_atomic s  : Atomic s Skip.
@@ -410,28 +408,6 @@ Proof.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
-
-(*
-Lemma wp_faa s E l i1 i2 :
-  {{{ ▷ l ↦ LitV (LitInt i1) }}} FAA (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt i2) @ s; E
-  {{{ RET LitV (LitInt i1); l ↦ LitV (LitInt (i1 + i2)) }}}.
-Proof.
-  iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto. iNext; iIntros (v2' σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
-  iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
-Qed.
-Lemma twp_faa s E l i1 i2 :
-  [[{ l ↦ LitV (LitInt i1) }]] FAA (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt i2) @ s; E
-  [[{ RET LitV (LitInt i1); l ↦ LitV (LitInt (i1 + i2)) }]].
-Proof.
-  iIntros (Φ) "Hl HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto. iIntros (κ e2 σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
-  iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
-Qed. *)
 
 Lemma wp_new_proph s E :
   {{{ True }}}
