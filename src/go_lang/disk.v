@@ -170,7 +170,6 @@ lemmas. *)
   Proof.
     unfold Block_to_vals.
     rewrite ?list_lookup_fmap.
-    Search _ vec_to_list.
     unfold bindex_of_Z.
     destruct (vlookup_lookup' b (Z.to_nat i) (b !!! bindex_of_Z i Hlow Hhi)) as [H _].
     rewrite H; eauto.
