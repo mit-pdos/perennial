@@ -121,6 +121,8 @@ Inductive expr :=
   | AllocN (e1 e2 : expr) (* array length (positive number), initial value *)
   | Load (e : expr)
   | Store (e1 : expr) (e2 : expr)
+  | MapGet (e1 : expr) (e2 : expr) (* map loc, key *)
+  | MapInsert (e1 : expr) (e2 : expr) (e3: expr) (* map loc, key, value *)
   | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
   (* External FFI *)
   | ExternalOp (op: external) (e: expr)
@@ -133,9 +135,9 @@ with val :=
   | PairV (v1 v2 : val)
   | InjLV (v : val)
   | InjRV (v : val)
-  (* TODO: might want to split this into MapNilV and MapConsV, to avoid the
-     nested inductive *)
-  | MapV (v: list (u64 * val)).
+  | MapNilV (def: val)
+  | MapConsV (k: u64) (v : val) (m : val)
+.
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
@@ -224,7 +226,7 @@ Definition val_is_unboxed (v : val) : Prop :=
 Global Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
 Proof. destruct l; simpl; exact (decide _). Defined.
 Global Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
-Proof. destruct v as [ | | | [] | [] | ]; simpl; exact (decide _). Defined.
+Proof. destruct v as [ | | | [] | [] | | ]; simpl; exact (decide _). Defined.
 
 (** We just compare the word-sized representation of two values, without looking
 into boxed data.  This works out fine if at least one of the to-be-compared
@@ -292,6 +294,10 @@ Proof using ext.
       | Load e, Load e' => cast_if (decide (e = e'))
       | Store e1 e2, Store e1' e2' =>
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
+      | MapGet e1 e2, MapGet e1' e2' =>
+        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
+      | MapInsert e0 e1 e2, MapInsert e0' e1' e2' =>
+        cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
@@ -309,13 +315,11 @@ Proof using ext.
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
       | InjLV e, InjLV e' => cast_if (decide (e = e'))
       | InjRV e, InjRV e' => cast_if (decide (e = e'))
-      | MapV e, MapV e' => cast_if (decide (e = e'))
+      | MapNilV e, MapNilV e' => cast_if (decide (e = e'))
+      | MapConsV k e1 e2, MapConsV k' e1' e2' => cast_if_and3 (decide (k = k')) (decide (e1 = e1')) (decide (e2 = e2'))
       | _, _ => right _
       end
         for go); try (clear go gov; abstract intuition congruence).
-  assert (EqDecision (u64 * val)).
-  solve_decision.
-  solve_decision.
 Defined.
 Global Instance val_eq_dec : EqDecision val.
 Proof using ext.
@@ -330,12 +334,10 @@ Proof using ext.
        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
      | InjLV e, InjLV e' => cast_if (decide (e = e'))
      | InjRV e, InjRV e' => cast_if (decide (e = e'))
-     | MapV e, MapV e' => cast_if (decide (e = e'))
+     | MapNilV e, MapNilV e' => cast_if (decide (e = e'))
+     | MapConsV k e1 e2, MapConsV k' e1' e2' => cast_if_and3 (decide (k = k')) (decide (e1 = e1')) (decide (e2 = e2'))
      | _, _ => right _
      end); try abstract intuition congruence.
-  assert (EqDecision (u64 * val)).
-  solve_decision.
-  solve_decision.
 Defined.
 
 Global Instance base_lit_countable : Countable base_lit.
@@ -398,6 +400,8 @@ Proof using ext.
      | AllocN e1 e2 => GenNode 13 [go e1; go e2]
      | Load e => GenNode 14 [go e]
      | Store e1 e2 => GenNode 15 [go e1; go e2]
+     | MapGet e1 e2 => GenNode 21 [go e1; go e2]
+     | MapInsert e1 e2 e3 => GenNode 22 [go e1; go e2; go e3]
      | ExternalOp op e => GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
      | NewProph => GenNode 18 []
@@ -411,7 +415,8 @@ Proof using ext.
      | PairV v1 v2 => GenNode 1 [gov v1; gov v2]
      | InjLV v => GenNode 2 [gov v]
      | InjRV v => GenNode 3 [gov v]
-     | MapV kvs => GenNode 4 (flat_map (fun '(k, v) => [GenLeaf (inr (inl (LitInt k))); gov v]) kvs)
+     | MapNilV v => GenNode 4 [gov v]
+     | MapConsV k v1 v2 => GenNode 5 [GenLeaf (inr (inl (LitInt k))); gov v1; gov v2]
      end
    for go).
  set (dec :=
@@ -434,6 +439,8 @@ Proof using ext.
      | GenNode 13 [e1; e2] => AllocN (go e1) (go e2)
      | GenNode 14 [e] => Load (go e)
      | GenNode 15 [e1; e2] => Store (go e1) (go e2)
+     | GenNode 21 [e1; e2] => MapGet (go e1) (go e2)
+     | GenNode 22 [e1; e2; e3] => MapInsert (go e1) (go e2) (go e3)
      | GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
      | GenNode 18 [] => NewProph
@@ -447,17 +454,17 @@ Proof using ext.
      | GenNode 1 [v1; v2] => PairV (gov v1) (gov v2)
      | GenNode 2 [v] => InjLV (gov v)
      | GenNode 3 [v] => InjRV (gov v)
-     | GenNode 4 vs => (* TODO: this is super complicated *) MapV []
+     | GenNode 4 [v] => MapNilV (gov v)
+     | GenNode 5 [GenLeaf (inr (inl (LitInt k))); v1; v2] => MapConsV k (gov v1) (gov v2)
      | _ => LitV LitUnit (* dummy *)
      end
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
- - destruct e as [v| | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+ - destruct e as [v| | | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
      [exact (gov v)|done..].
- - destruct v; try by f_equal.
-   admit. (* TODO: decode maps *)
-Admitted.
+ - destruct v; by f_equal.
+Qed.
 Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
@@ -491,6 +498,11 @@ Inductive ectx_item :=
   | LoadCtx
   | StoreLCtx (e2 : expr)
   | StoreRCtx (v1 : val)
+  | MapGetLCtx (e2 : expr)
+  | MapGetRCtx (v1 : val)
+  | MapInsertLCtx (e1 : expr) (e2 : expr)
+  | MapInsertMCtx (v0 : val) (e2 : expr)
+  | MapInsertRCtx (v0 : val) (v1 : val)
   | ExternalOpCtx (op : external)
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
@@ -526,6 +538,11 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | LoadCtx => Load e
   | StoreLCtx e2 => Store e e2
   | StoreRCtx v1 => Store (Val v1) e
+  | MapGetLCtx e2 => MapGet e e2
+  | MapGetRCtx v1 => MapGet (Val v1) e
+  | MapInsertLCtx e1 e2 => MapInsert e e1 e2
+  | MapInsertMCtx v0 e1 => MapInsert (Val v0) e e1
+  | MapInsertRCtx v0 v1 => MapInsert (Val v0) (Val v1) e
   | ExternalOpCtx op => ExternalOp op e
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
   | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
@@ -556,6 +573,8 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | AllocN e1 e2 => AllocN (subst x v e1) (subst x v e2)
   | Load e => Load (subst x v e)
   | Store e1 e2 => Store (subst x v e1) (subst x v e2)
+  | MapGet e1 e2 => MapGet (subst x v e1) (subst x v e2)
+  | MapInsert e1 e2 e3 => MapInsert (subst x v e1) (subst x v e2) (subst x v e3)
   | ExternalOp op e => ExternalOp op (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
@@ -685,6 +704,16 @@ Proof.
   rewrite right_id insert_union_singleton_l. done.
 Qed.
 
+Fixpoint map_val (v: val) : option (gmap u64 val * val) :=
+  match v with
+  | MapNilV def => Some (∅, def)
+  | MapConsV k v vs => match map_val vs with
+                      | Some (m, def) => Some (<[ k := v ]> m, def)
+                      | None => None
+                      end
+  | _ => None
+  end.
+
 Inductive head_step : expr → state → list observation → expr → state → list expr → Prop :=
   | RecS f x e σ :
      head_step (Rec f x e) σ [] (Val $ RecV f x e) σ []
@@ -732,6 +761,22 @@ Inductive head_step : expr → state → list observation → expr → state →
      head_step (Store (Val $ LitV $ LitLoc l) (Val v)) σ
                []
                (Val $ LitV LitUnit) (state_upd_heap <[l:=v]> σ)
+               []
+  | MapGetS l k vs m def r ok σ :
+     σ.(heap) !! l = Some vs ->
+     map_val vs = Some (m, def) ->
+     r = default def (m !! k) ->
+     ok = bool_decide (is_Some (m !! k)) ->
+     head_step (MapGet (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt $ k)) σ
+               []
+               (Val $ PairV r (LitV $ LitBool $ ok)) σ
+               []
+  | MapInsertS l k vs v m def σ :
+     σ.(heap) !! l = Some vs ->
+     map_val vs = Some (m, def) ->
+     head_step (MapInsert (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt $ k) (Val $ v)) σ
+               []
+               (Val $ LitV LitUnit) (state_upd_heap <[l := MapConsV k v vs ]> σ)
                []
   | ExternalS op v σ v' σ' :
      ext_step op v σ v' σ' ->
