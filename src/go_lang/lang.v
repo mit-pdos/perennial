@@ -714,6 +714,16 @@ Fixpoint map_val (v: val) : option (gmap u64 val * val) :=
   | _ => None
   end.
 
+Definition map_get (m_def: gmap u64 val * val) (k: u64) : (val*bool) :=
+  let (m, def) := m_def in
+  let r := default def (m !! k) in
+  let ok := bool_decide (is_Some (m !! k)) in
+  (r, ok).
+
+Definition map_insert (m_def: gmap u64 val * val) (k: u64) (v: val) : gmap u64 val * val :=
+  let (m, def) := m_def in
+  (<[ k := v ]> m, def).
+
 Inductive head_step : expr → state → list observation → expr → state → list expr → Prop :=
   | RecS f x e σ :
      head_step (Rec f x e) σ [] (Val $ RecV f x e) σ []
@@ -762,18 +772,17 @@ Inductive head_step : expr → state → list observation → expr → state →
                []
                (Val $ LitV LitUnit) (state_upd_heap <[l:=v]> σ)
                []
-  | MapGetS l k vs m def r ok σ :
+  | MapGetS l k vs m_def r ok σ :
      σ.(heap) !! l = Some vs ->
-     map_val vs = Some (m, def) ->
-     r = default def (m !! k) ->
-     ok = bool_decide (is_Some (m !! k)) ->
+     map_val vs = Some m_def ->
+     (r, ok) = map_get m_def k ->
      head_step (MapGet (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt $ k)) σ
                []
-               (Val $ PairV r (LitV $ LitBool $ ok)) σ
+               (Val $ PairV r (LitV $ LitBool ok)) σ
                []
-  | MapInsertS l k vs v m def σ :
+  | MapInsertS l k vs v m_def σ :
      σ.(heap) !! l = Some vs ->
-     map_val vs = Some (m, def) ->
+     map_val vs = Some m_def ->
      head_step (MapInsert (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt $ k) (Val $ v)) σ
                []
                (Val $ LitV LitUnit) (state_upd_heap <[l := MapConsV k v vs ]> σ)
