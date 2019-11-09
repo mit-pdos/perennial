@@ -126,6 +126,9 @@ Inductive expr :=
   | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
   (* External FFI *)
   | ExternalOp (op: external) (e: expr)
+  (* Encoding/Decoding *)
+  | EncodeInt (e1 : expr) (e2 : expr) (* int, loc to store to *)
+  | DecodeInt (e1 : expr) (* loc to load from *)
   (* Prophecy *)
   | NewProph
   | Resolve (e0 : expr) (e1 : expr) (e2 : expr) (* wrapped expr, proph, val *)
@@ -299,6 +302,9 @@ Proof using ext.
       | MapInsert e0 e1 e2, MapInsert e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
+      | EncodeInt e1 e2, EncodeInt e1' e2' =>
+        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
+      | DecodeInt e, DecodeInt e' => cast_if (decide (e = e'))
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | NewProph, NewProph => left _
@@ -403,6 +409,8 @@ Proof using ext.
      | MapGet e1 e2 => GenNode 21 [go e1; go e2]
      | MapInsert e1 e2 e3 => GenNode 22 [go e1; go e2; go e3]
      | ExternalOp op e => GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); go e]
+     | EncodeInt e1 e2 => GenNode 23 [go e1; go e2]
+     | DecodeInt e => GenNode 24 [go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
      | NewProph => GenNode 18 []
      | Resolve e0 e1 e2 => GenNode 19 [go e0; go e1; go e2]
@@ -442,6 +450,8 @@ Proof using ext.
      | GenNode 21 [e1; e2] => MapGet (go e1) (go e2)
      | GenNode 22 [e1; e2; e3] => MapInsert (go e1) (go e2) (go e3)
      | GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); e] => ExternalOp op (go e)
+     | GenNode 23 [e1; e2] => EncodeInt (go e1) (go e2)
+     | GenNode 24 [e] => DecodeInt (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
      | GenNode 18 [] => NewProph
      | GenNode 19 [e0; e1; e2] => Resolve (go e0) (go e1) (go e2)
@@ -461,7 +471,7 @@ Proof using ext.
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
- - destruct e as [v| | | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+ - destruct e as [v| | | | | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
      [exact (gov v)|done..].
  - destruct v; by f_equal.
 Qed.
@@ -576,6 +586,8 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | MapGet e1 e2 => MapGet (subst x v e1) (subst x v e2)
   | MapInsert e1 e2 e3 => MapInsert (subst x v e1) (subst x v e2) (subst x v e3)
   | ExternalOp op e => ExternalOp op (subst x v e)
+  | EncodeInt e1 e2 => EncodeInt (subst x v e1) (subst x v e2)
+  | DecodeInt e => DecodeInt (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
   | Resolve ex e1 e2 => Resolve (subst x v ex) (subst x v e1) (subst x v e2)

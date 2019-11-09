@@ -48,3 +48,36 @@ Definition byte := (word 8).
 
 (* we don't actually do anything with a byte except use its zero value and
 encode integers into bytes, so nothing operates on bytes for now. *)
+
+Definition u32_le (x:word 32) : list byte :=
+  let (b1, x) := (@split1 8 24 x, @split2 8 24 x) in
+  let (b2, x) := (@split1 8 16 x, @split2 8 16 x) in
+  let (b3, b4) := (@split1 8 8 x, @split2 8 8 x) in
+  [b4;b3;b2;b1].
+
+Fixpoint mul' (n m:nat) :=
+  match n with
+  | O => 0
+  | S n => mul' n m + m
+  end%nat.
+
+Fixpoint le_to_word (l: list byte) : word (mul' (length l) 8).
+  destruct l.
+  - exact WO.
+  - exact (Word.combine (le_to_word l) b).
+Defined.
+
+Theorem u32_le_to_word : forall x,
+    le_to_word (u32_le x) = x.
+Proof.
+Admitted.
+
+Definition u64_le (x:u64) : list byte :=
+  let (h32, l32) := (@split1 32 32 x, @split2 32 32 x) in
+  let (h, l) := (u32_le h32, u32_le l32) in
+  l ++ h.
+
+Theorem u64_le_to_word : forall x,
+    le_to_word (u64_le x) = x.
+Proof.
+Admitted.
