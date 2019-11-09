@@ -10,9 +10,8 @@ Section go_lang.
   Context `{ffi_sem: ext_semantics}.
   Context `{!ffi_interp ffi}.
 
-  (* Coercion Var : string >-> expr. *)
   Definition Var' s : @expr ext := Var s.
-  Coercion Var' : string >-> expr.
+  Local Coercion Var' : string >-> expr.
 
 Definition newlock : val := λ: <>, ref #false.
 Definition try_acquire : val := λ: "l", CAS "l" #false #true.
