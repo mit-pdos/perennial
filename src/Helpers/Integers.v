@@ -1,6 +1,7 @@
 From Coq Require Export BinNat.
 
 From stdpp Require Import decidable countable.
+(* TODO: replace bbv.Word with coqutil.Word *)
 From bbv Require Import Word.
 
 Open Scope N_scope.
@@ -48,6 +49,9 @@ Definition byte := (word 8).
 
 (* we don't actually do anything with a byte except use its zero value and
 encode integers into bytes, so nothing operates on bytes for now. *)
+
+(* TODO: all of this is provided by coqutil (using a length-indexed tuple for
+   the bytes) *)
 
 Definition u32_le (x:word 32) : list byte :=
   let (b1, x) := (@split1 8 24 x, @split2 8 24 x) in
