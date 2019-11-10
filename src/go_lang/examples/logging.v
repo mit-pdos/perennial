@@ -63,3 +63,11 @@ Definition reset: val :=
   let: "new_log" := (#0, DiskSize "log") in
   write_hdr "new_log";;
   "new_log".
+
+Definition recover: val :=
+  λ: <>,
+     let: "hdr" := ExternalOp Read #0 in
+     let: "log_sz" := DecodeInt "hdr" in
+     let: "disk_sz" := DecodeInt ("hdr" +ₗ #8) in
+     let: "log" := ("log_sz", "disk_sz") in
+     "log".
