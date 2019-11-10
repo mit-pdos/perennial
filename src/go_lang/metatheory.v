@@ -4,17 +4,21 @@ From Perennial.go_lang Require Export lang.
 (* This file contains some metatheory about the heap_lang language,
   which is not needed for verifying programs. *)
 
+Section go_lang.
+  Context `{ffi_semantics: ext_semantics}.
 (* Closed expressions and values. *)
 Fixpoint is_closed_expr (X : list string) (e : expr) : bool :=
   match e with
   | Val v => is_closed_val v
   | Var x => bool_decide (x ∈ X)
   | Rec f x e => is_closed_expr (f :b: x :b: X) e
-  | UnOp _ e | Fst e | Snd e | InjL e | InjR e | Fork e | Load e =>
+  | UnOp _ e | Fst e | Snd e | InjL e | InjR e | Fork e | Load e
+  | ExternalOp _ e | DecodeInt e =>
      is_closed_expr X e
-  | App e1 e2 | BinOp _ e1 e2 | Pair e1 e2 | AllocN e1 e2 | Store e1 e2 | FAA e1 e2 =>
+  | App e1 e2 | BinOp _ e1 e2 | Pair e1 e2 | AllocN e1 e2 | Store e1 e2
+  | MapGet e1 e2 | EncodeInt e1 e2 =>
      is_closed_expr X e1 && is_closed_expr X e2
-  | If e0 e1 e2 | Case e0 e1 e2 | CmpXchg e0 e1 e2 | Resolve e0 e1 e2 =>
+  | If e0 e1 e2 | Case e0 e1 e2 | CmpXchg e0 e1 e2 | Resolve e0 e1 e2 | MapInsert e0 e1 e2 =>
      is_closed_expr X e0 && is_closed_expr X e1 && is_closed_expr X e2
   | NewProph => true
   end
@@ -24,6 +28,8 @@ with is_closed_val (v : val) : bool :=
   | RecV f x e => is_closed_expr (f :b: x :b: []) e
   | PairV v1 v2 => is_closed_val v1 && is_closed_val v2
   | InjLV v | InjRV v => is_closed_val v
+  | MapNilV v => is_closed_val v
+  | MapConsV _ v1 v2 => is_closed_val v1 && is_closed_val v2
   end.
 
 Lemma is_closed_weaken X Y e : is_closed_expr X e → X ⊆ Y → is_closed_expr Y e.
@@ -93,10 +99,10 @@ Proof.
 Qed.
 
 Lemma heap_closed_alloc σ l n w :
-  0 < n →
+  (0 < n)%Z →
   is_closed_val w →
   map_Forall (λ _ v, is_closed_val v) (heap σ) →
-  (∀ i : Z, 0 ≤ i → i < n → heap σ !! (l +ₗ i) = None) →
+  (∀ i : Z, (0 ≤ i)%Z → (i < n)%Z → heap σ !! (l +ₗ i) = None) →
   map_Forall (λ _ v, is_closed_val v)
              (heap_array l (replicate (Z.to_nat n) w) ∪ heap σ).
 Proof.
@@ -129,7 +135,7 @@ Lemma head_step_is_closed e1 σ1 obs e2 σ2 es :
   map_Forall (λ _ v, is_closed_val v) σ2.(heap).
 Proof.
   intros Cl1 Clσ1 STEP.
-  induction STEP; simpl in *; split_and!;
+  induction STEP; simpl in *; split_and!.
     try apply map_Forall_insert_2; try by naive_solver.
   - subst. repeat apply is_closed_subst'; naive_solver.
   - unfold un_op_eval in *. repeat case_match; naive_solver.
@@ -171,7 +177,6 @@ Fixpoint subst_map (vs : gmap string val) (e : expr) : expr :=
   | Load e => Load (subst_map vs e)
   | Store e1 e2 => Store (subst_map vs e1) (subst_map vs e2)
   | CmpXchg e0 e1 e2 => CmpXchg (subst_map vs e0) (subst_map vs e1) (subst_map vs e2)
-  | FAA e1 e2 => FAA (subst_map vs e1) (subst_map vs e2)
   | NewProph => NewProph
   | Resolve e0 e1 e2 => Resolve (subst_map vs e0) (subst_map vs e1) (subst_map vs e2)
   end.
@@ -222,3 +227,4 @@ Qed.
 
 Lemma subst_map_is_closed_nil e vs : is_closed_expr [] e → subst_map vs e = e.
 Proof. intros. apply subst_map_is_closed with []; set_solver. Qed.
+End go_lang.
