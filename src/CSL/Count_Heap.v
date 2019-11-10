@@ -369,7 +369,7 @@ Section gen_heap.
     gen_heap_ctx σ -∗ gen_heap_ctx σ'.
   Proof.
     intros Hequiv. rewrite /gen_heap_ctx.
-    iApply (own_mono (Hin := gen_heap_inG)).
+    iApply own_mono.
     rewrite /to_gen_heap.
     apply auth_included; split; auto => //=.
     exists ε. rewrite right_id.
