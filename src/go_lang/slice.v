@@ -7,13 +7,19 @@ From Perennial.go_lang Require Import notation struct.
     soundly approximates slices as never having extra capacity.
  *)
 
-Definition sliceS := struct ["p"; "len"].
+Module slice.
+  Definition sliceS := mkStruct ["p"; "len"].
+  Section fields.
+    Context {ext:ext_op}.
+    Definition ptr := structF! sliceS "p".
+    Definition len: val := structF! sliceS "len".
+  End fields.
+End slice.
 
 (*
 Eval compute in get_field sliceS "p".
 Eval compute in get_field sliceS "len".
 *)
-
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
 
@@ -24,9 +30,6 @@ Definition NewByteSlice: val :=
   λ: "sz",
   let: "p" := AllocN "sz" #(LitByte 0) in
   ("p", "sz").
-
-Definition SlicePtr: val := structF! sliceS "p".
-Definition SliceLen: val := structF! sliceS "len".
 
 Definition MemCpy: val :=
   λ: "dst" "src" "n",
@@ -42,23 +45,23 @@ Definition MemCpy_rec: val :=
          "memcpy" ("dst" +ₗ #1) ("src" +ₗ #1) ("n" - #1).
 
 Definition SliceSkip: val :=
-  λ: "s" "n", (SlicePtr "s" +ₗ "n", SliceLen "s" - "n").
+  λ: "s" "n", (slice.ptr "s" +ₗ "n", slice.len "s" - "n").
 
 Definition SliceTake: val :=
-  λ: "s" "n", if: SliceLen "s" < "n"
+  λ: "s" "n", if: slice.len "s" < "n"
               then #() (* TODO: this should be Panic *)
-              else (SlicePtr "s", "n").
+              else (slice.ptr "s", "n").
 
 Definition SliceGet: val :=
   λ: "s" "i",
-  !(SlicePtr "s" +ₗ "i").
+  !(slice.ptr "s" +ₗ "i").
 
 Definition SliceAppend: val :=
   λ: "s1" "s2",
-  let: "p" := AllocN (SliceLen "s1" + SliceLen "s2") #() in
-  MemCpy "p" (SlicePtr "s1");;
-  MemCpy ("p" +ₗ SliceLen "s2") (SlicePtr "s2");;
+  let: "p" := AllocN (slice.len "s1" + slice.len "s2") #() in
+  MemCpy "p" (slice.ptr "s1");;
+  MemCpy ("p" +ₗ slice.len "s2") (slice.ptr "s2");;
   (* TODO: unsound, need to de-allocate s1.p *)
-  ("p", SliceLen "s1" + SliceLen "s2").
+  ("p", slice.len "s1" + slice.len "s2").
 
 End go_lang.

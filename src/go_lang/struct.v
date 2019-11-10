@@ -6,7 +6,7 @@ From Perennial.go_lang Require Import notation.
     Access field offsets within pairs by name rather than using Fst and Snd. *)
 
 Record descriptor :=
-  struct { fields: list string; }.
+  mkStruct { fields: list string; }.
 
 (* Check eq_refl : (#0, #1, #2)%E = ((#0, #1), #2)%E. *)
 
@@ -37,4 +37,4 @@ Ltac make_structF desc fname :=
       end.
 
 Notation "'structF!' desc fname" := (ltac:(make_structF desc fname))
-                                    (at level 0, desc, fname at next level, only parsing) : val_scope.
+                                    (at level 0, desc, fname at next level, only parsing).

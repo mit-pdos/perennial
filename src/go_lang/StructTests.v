@@ -1,13 +1,18 @@
 From Perennial.go_lang Require Import notation struct.
 
+Module three.
+  Definition threeS := mkStruct ["foo"; "bar"; "baz"].
+  Section fields.
+    Context {ext:ext_op}.
+    Definition foo := structF! threeS "foo".
+    Definition bar := structF! threeS "bar".
+    Definition baz := structF! threeS "baz".
+    Fail Definition quux := structF! threeS "quux".
+  End fields.
+End three.
+
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
-
-  Definition threeS := struct ["foo"; "bar"; "baz"].
-
-  Definition Foo: val := structF! threeS "foo".
-  Definition Bar: val := structF! threeS "bar".
-  Fail Definition Quux: val := structF! threeS "quux".
 
   Ltac goal_is_exactly_equal :=
     lazymatch goal with
@@ -16,15 +21,15 @@ Section go_lang.
     | _ => fail "unexpected goal"
     end.
 
-  Theorem Foo_is : Foo = (λ: "v", Fst (Fst (Var' "v")))%V.
+  Theorem foo_is : three.foo = (λ: "v", Fst (Fst (Var' "v")))%V.
   Proof.
-    unfold Foo.
+    unfold three.foo.
     goal_is_exactly_equal.
   Qed.
 
-  Theorem Bar_is : Bar = (λ: "v", Fst (Snd (Var' "v")))%V.
+  Theorem bar_is : three.bar = (λ: "v", Fst (Snd (Var' "v")))%V.
   Proof.
-    unfold Bar.
+    unfold three.bar.
     goal_is_exactly_equal.
   Qed.
 End go_lang.

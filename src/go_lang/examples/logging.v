@@ -15,9 +15,16 @@ Local Coercion Var' (s: string) : expr := Var s.
     the number of valid blocks in the log.
  *)
 
-Definition logS := struct ["log_sz"; "disk_sz"].
-Definition LogSize: val := structF! logS "log_sz".
-Definition DiskSize: val := structF! logS "disk_sz".
+Module log.
+  Definition logS := mkStruct ["log_sz"; "disk_sz"].
+  Section fields.
+    Context {ext:ext_op}.
+    Definition log_sz := structF! logS "log_sz".
+    Definition disk_sz := structF! logS "disk_sz".
+  End fields.
+End log.
+
+Import log.
 
 Definition write_hdr: val :=
   λ: "log",
@@ -36,31 +43,31 @@ Definition init: val :=
 
 Definition get: val :=
   λ: "log" "i",
-  let: "sz" := LogSize "log" in
+  let: "sz" := log.log_sz "log" in
   if: "i" < "sz"
   then SOME (ExternalOp Read (#1+"i"))
   else NONE.
 
 Definition write_all: val :=
   λ: "bks" "off",
-  let: "len" := SliceLen "bks" in
+  let: "len" := slice.len "bks" in
   for: "i" < "len" :=
     let: "bk" := SliceGet "bks" "i" in
     ExternalOp Write ("off" + "i", "bk").
 
 Definition append: val :=
   λ: "log" "bks",
-  if: #1 + LogSize "log" + SliceLen "bks" ≥ DiskSize "log" then
+  if: #1 + log.log_sz "log" + slice.len "bks" ≥ log.disk_sz "log" then
     NONEV
   else
-    write_all "bks" (#1 + LogSize "log");;
-    let: "new_log" := (LogSize "log" + SliceLen "bks", DiskSize "log") in
+    write_all "bks" (#1 + log.log_sz "log");;
+    let: "new_log" := (log.log_sz "log" + slice.len "bks", log.disk_sz "log") in
     write_hdr "new_log";;
     SOME "new_log".
 
 Definition reset: val :=
   λ: "log",
-  let: "new_log" := (#0, DiskSize "log") in
+  let: "new_log" := (#0, log.disk_sz "log") in
   write_hdr "new_log";;
   "new_log".
 
