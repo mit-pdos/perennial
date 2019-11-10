@@ -395,8 +395,7 @@ Proof.
     iIntros "Hσ Hmap".
     iModIntro.
     iSplitL "Hσ"; auto.
-    (* TODO: surely this isn't how you use this theorem *)
-    rewrite LeftId_instance_2; auto.
+    rewrite left_id_L //.
   - destruct vs2; simpl in *; try congruence.
     unfold mapsto_vals; simpl.
     rewrite IHvs1; eauto.
