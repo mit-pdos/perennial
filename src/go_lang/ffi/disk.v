@@ -62,15 +62,12 @@ Section disk.
   suddenly cause all FFI parameters to be inferred as the disk model *)
   Existing Instances disk_op disk_model.
 
-  Definition state_insert_block (l: loc) (b: Block) (σ: state): state :=
-    state_upd_heap (λ h, heap_array l (Block_to_vals b) ∪ h) σ.
-
   Inductive ext_step : DiskOp -> val -> state -> val -> state -> Prop :=
   | ReadS : forall (a: u64) (b: Block) (σ: state) l',
       σ.(world) !! a = Some b ->
       (forall (i:Z), 0 <= i -> i < 4096 -> σ.(heap) !! (l' +ₗ i) = None)%Z ->
       ext_step Read (LitV (LitInt a)) σ (LitV (LitLoc l'))
-               (state_insert_block l' b σ)
+               (state_insert_list l' (Block_to_vals b) σ)
   | WriteS : forall (a: u64) (l: loc) (b0 b: Block) (σ: state),
       is_Some (σ.(world) !! a) ->
       (forall (i:Z), 0 <= i -> i < 4096 ->
@@ -122,7 +119,7 @@ lemmas. *)
   Theorem read_fresh : forall σ a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
       σ.(world) !! a = Some b ->
-      ext_step Read (LitV $ LitInt a) σ (LitV $ LitLoc $ l) (state_insert_block l b σ).
+      ext_step Read (LitV $ LitInt a) σ (LitV $ LitLoc $ l) (state_insert_list l (Block_to_vals b) σ).
   Proof.
     intros.
     constructor; auto; intros.
@@ -147,7 +144,11 @@ lemmas. *)
     iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd) !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
-    iSplit; first by eauto.
+    iSplit.
+    { iPureIntro.
+      eexists _, _, _, _; simpl.
+      econstructor; simpl.
+      apply read_fresh; eauto. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
     iMod (gen_heap_alloc_gen _ (heap_array l' (Block_to_vals b)) with "Hσ")
       as "(Hσ & Hl & Hm)".

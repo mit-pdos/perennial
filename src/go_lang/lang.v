@@ -514,6 +514,9 @@ Inductive ectx_item :=
   | MapInsertMCtx (v0 : val) (e2 : expr)
   | MapInsertRCtx (v0 : val) (v1 : val)
   | ExternalOpCtx (op : external)
+  | EncodeIntLCtx (e2 : expr)
+  | EncodeIntRCtx (v1 : val)
+  | DecodeIntCtx
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
   | CmpXchgRCtx (v1 : val) (v2 : val)
@@ -548,6 +551,9 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | LoadCtx => Load e
   | StoreLCtx e2 => Store e e2
   | StoreRCtx v1 => Store (Val v1) e
+  | EncodeIntLCtx e2 => EncodeInt e e2
+  | EncodeIntRCtx v1 => EncodeInt (Val v1) e
+  | DecodeIntCtx => DecodeInt e
   | MapGetLCtx e2 => MapGet e e2
   | MapGetRCtx v1 => MapGet (Val v1) e
   | MapInsertLCtx e1 e2 => MapInsert e e1 e2
@@ -705,14 +711,17 @@ Qed.
 
 Close Scope Z.
 
+Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
+  state_upd_heap (λ h, heap_array l vs ∪ h) σ.
+
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)
 Definition state_init_heap (l : loc) (n : Z) (v : val) (σ : state) : state :=
-  state_upd_heap (λ h, heap_array l (replicate (Z.to_nat n) v) ∪ h) σ.
+  state_insert_list l (replicate (Z.to_nat n) v) σ.
 
 Lemma state_init_heap_singleton l v σ :
   state_init_heap l 1 v σ = state_upd_heap <[l:=v]> σ.
 Proof.
-  destruct σ as [h p]. rewrite /state_init_heap /=. f_equiv.
+  destruct σ as [h p]. rewrite /state_init_heap /state_insert_list /=. f_equiv.
   rewrite right_id insert_union_singleton_l. done.
 Qed.
 
@@ -735,6 +744,9 @@ Definition map_get (m_def: gmap u64 val * val) (k: u64) : (val*bool) :=
 Definition map_insert (m_def: gmap u64 val * val) (k: u64) (v: val) : gmap u64 val * val :=
   let (m, def) := m_def in
   (<[ k := v ]> m, def).
+
+Definition u64_le_vals (x:u64) : list val :=
+  (λ b, LitV (LitByte b)) <$> u64_le x.
 
 Inductive head_step : expr → state → list observation → expr → state → list expr → Prop :=
   | RecS f x e σ :
@@ -804,6 +816,20 @@ Inductive head_step : expr → state → list observation → expr → state →
      head_step (ExternalOp op (Val v)) σ
                []
                (Val v') σ'
+               []
+  | EncodeIntS v l σ :
+     (forall i, (i < 8)%Z -> is_Some (σ.(heap) !! (l +ₗ i))) ->
+     head_step (EncodeInt (Val $ LitV $ LitInt v) (Val $ LitV $ LitLoc l)) σ
+               []
+               (Val $ LitV LitUnit) (state_insert_list l (u64_le_vals v) σ)
+               []
+  | DecodeIntS l v σ :
+     (* TODO: this should probably be expressed in terms of bytes rather than
+     requiring a little-endian encoding *)
+     (forall i, (i < 8)%Z -> σ.(heap) !! (l +ₗ i) = u64_le_vals v !! Z.to_nat i) ->
+     head_step (DecodeInt (Val $ LitV $ LitLoc l)) σ
+               []
+               (Val $ LitV $ LitInt v) σ
                []
   | CmpXchgS l v1 v2 vl σ b :
      σ.(heap) !! l = Some vl →
