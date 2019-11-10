@@ -81,6 +81,11 @@ Definition u64_le (x:u64) : list byte :=
   let (h, l) := (u32_le h32, u32_le l32) in
   l ++ h.
 
+Theorem u64_le_length x : length (u64_le x) = 8%nat.
+Proof.
+  reflexivity.
+Qed.
+
 Theorem u64_le_to_word : forall x,
     le_to_word (u64_le x) = x.
 Proof.

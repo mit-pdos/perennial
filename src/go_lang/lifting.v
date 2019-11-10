@@ -361,6 +361,64 @@ Proof.
   iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
 
+Definition mapsto_vals (l: loc) (q: Qp) (vs: list val) :=
+  ([∗ map] l ↦ v ∈ heap_array l vs, l ↦{q} v)%I.
+
+Theorem gen_heap_valid_map (σ: gmap _ _) l q vs :
+  gen_heap_ctx σ -∗
+               ([∗ map] l↦v ∈ heap_array l vs, l ↦{q} v) -∗
+               ⌜forall i, (i < (length vs))%nat -> is_Some (σ !! (l +ₗ i))⌝.
+Proof.
+  iIntros "Hctx Hmap".
+  iIntros (i Hi).
+  apply lookup_lt_is_Some_2 in Hi.
+  destruct Hi as [v ?].
+  assert (heap_array l vs !! (l +ₗ i) = Some v).
+  apply heap_array_lookup.
+  exists (Z.of_nat i).
+  rewrite Nat2Z.id; intuition eauto.
+  lia.
+  iDestruct (big_sepM_lookup _ _ _ _ H0 with "[$Hmap]") as "H".
+  iDestruct (gen_heap_valid with "Hctx H") as %?.
+  eauto.
+Qed.
+
+Theorem gen_heap_update_map : ∀ (σ : gmap loc val) (l: loc) vs1 vs2,
+    length vs1 = length vs2 ->
+    gen_heap_ctx σ -∗
+      mapsto_vals l 1 vs1 ==∗
+      gen_heap_ctx (heap_array l vs2 ∪ σ) ∗ mapsto_vals l 1 vs2.
+Proof.
+  induction vs1; simpl; intros.
+  - destruct vs2; simpl in *; try congruence.
+    unfold mapsto_vals; simpl.
+    iIntros "Hσ Hmap".
+    iModIntro.
+    iSplitL "Hσ"; auto.
+    (* TODO: surely this isn't how you use this theorem *)
+    rewrite LeftId_instance_2; auto.
+  - destruct vs2; simpl in *; try congruence.
+    unfold mapsto_vals; simpl.
+    rewrite IHvs1; eauto.
+    iIntros "IHvs1 Hmap".
+Admitted.
+
+Lemma wp_encode_int s E l vs (x: u64) :
+  {{{ ▷ mapsto_vals l 1 vs ∗ ⌜length vs = 8%nat⌝ }}} EncodeInt (Val $ LitV $ LitInt x) (Val $ LitV (LitLoc l)) @ s; E
+  {{{ RET LitV LitUnit; mapsto_vals l 1 (u64_le_vals x) }}}.
+Proof.
+  iIntros (Φ) "(>Hl&%) HΦ".
+  iApply wp_lift_atomic_head_step_no_fork; auto.
+  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iEval (unfold mapsto_vals) in "Hl".
+  iDestruct (@gen_heap_valid_map with "Hσ Hl") as %Hsome.
+  rewrite H in Hsome.
+  iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep).
+  inversion Hstep; subst; clear Hstep.
+  iMod (@gen_heap_update_map with "Hσ Hl") as "[$ Hl]".
+  { rewrite u64_le_vals_length //. }
+  iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
+Qed.
+
 Theorem MapGetS' l k vs m_def σ :
      σ.(heap) !! l = Some vs ->
      map_val vs = Some m_def ->

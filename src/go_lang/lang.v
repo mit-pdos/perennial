@@ -748,6 +748,11 @@ Definition map_insert (m_def: gmap u64 val * val) (k: u64) (v: val) : gmap u64 v
 Definition u64_le_vals (x:u64) : list val :=
   (λ b, LitV (LitByte b)) <$> u64_le x.
 
+Theorem u64_le_vals_length x : length (u64_le_vals x) = 8%nat.
+Proof.
+  rewrite /u64_le_vals fmap_length u64_le_length //.
+Qed.
+
 Inductive head_step : expr → state → list observation → expr → state → list expr → Prop :=
   | RecS f x e σ :
      head_step (Rec f x e) σ [] (Val $ RecV f x e) σ []
@@ -818,7 +823,7 @@ Inductive head_step : expr → state → list observation → expr → state →
                (Val v') σ'
                []
   | EncodeIntS v l σ :
-     (forall i, (i < 8)%Z -> is_Some (σ.(heap) !! (l +ₗ i))) ->
+     (forall i, (i < 8)%nat -> is_Some (σ.(heap) !! (l +ₗ i))) ->
      head_step (EncodeInt (Val $ LitV $ LitInt v) (Val $ LitV $ LitLoc l)) σ
                []
                (Val $ LitV LitUnit) (state_insert_list l (u64_le_vals v) σ)
@@ -826,7 +831,7 @@ Inductive head_step : expr → state → list observation → expr → state →
   | DecodeIntS l v σ :
      (* TODO: this should probably be expressed in terms of bytes rather than
      requiring a little-endian encoding *)
-     (forall i, (i < 8)%Z -> σ.(heap) !! (l +ₗ i) = u64_le_vals v !! Z.to_nat i) ->
+     (forall i, (i < 8)%nat -> σ.(heap) !! (l +ₗ i) = u64_le_vals v !! i) ->
      head_step (DecodeInt (Val $ LitV $ LitLoc l)) σ
                []
                (Val $ LitV $ LitInt v) σ
