@@ -64,4 +64,12 @@ Definition SliceAppend: val :=
   (* TODO: unsound, need to de-allocate s1.p *)
   ("p", slice.len "s1" + slice.len "s2").
 
+Definition UInt64Put: val :=
+  λ: "p" "n",
+  EncodeInt "n" (slice.ptr "p").
+
+Definition UInt64Get: val :=
+  λ: "p",
+  DecodeInt (slice.ptr "p").
+
 End go_lang.

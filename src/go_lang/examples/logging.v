@@ -8,7 +8,7 @@ Existing Instances disk_op disk_model disk_semantics disk_interp.
 
 Local Coercion Var' (s: string) : expr := Var s.
 
-(** * Append-only, seqeuntial, crash-safe log.
+(** * Append-only, sequential, crash-safe log.
 
     The main interesting feature is that the log supports multi-block atomic
     appends, which are implemented by atomically updating an on-disk header with
@@ -28,25 +28,27 @@ Import log.
 
 Definition write_hdr: val :=
   λ: "log",
-    let: "hdr" := AllocN #4096 #(LitByte 0) in
-    EncodeInt "log_sz" "hdr";;
-    EncodeInt "disk_sz" ("hdr" +ₗ #8);;
+    let: "hdr" := NewByteSlice #4096 in
+    UInt64Put "log_sz" "hdr";;
+    UInt64Put "disk_sz" ("hdr" +ₗ #8);;
     ExternalOp Write (#0, "hdr").
 
 Definition init: val :=
   λ: "disk_sz",
-  if: "disk_sz" < #1 then NONE
+  (* TODO: need to return a zero value for the log (ideally systematically) *)
+  if: "disk_sz" < #1 then (#(), #false)
   else
     let: "log" := (#0, "disk_sz") in
     write_hdr "log";;
-    SOME "log".
+    ("log", #true).
 
 Definition get: val :=
   λ: "log" "i",
   let: "sz" := log.log_sz "log" in
   if: "i" < "sz"
-  then SOME (ExternalOp Read (#1+"i"))
-  else NONE.
+  then (ExternalOp Read (#1+"i"), #true)
+         (* TODO: need an invalid pointer value *)
+  else (#(), #false).
 
 Definition write_all: val :=
   λ: "bks" "off",
@@ -56,25 +58,29 @@ Definition write_all: val :=
     ExternalOp Write ("off" + "i", "bk").
 
 Definition append: val :=
-  λ: "log" "bks",
-  if: #1 + log.log_sz "log" + slice.len "bks" ≥ log.disk_sz "log" then
-    NONEV
+  λ: "logp" "bks",
+  let: "log" := !"logp" in
+  let: "sz" := log.log_sz "log" in
+  if: #1 + "sz" + slice.len "bks" ≥ log.disk_sz "log" then
+    #false
   else
-    write_all "bks" (#1 + log.log_sz "log");;
-    let: "new_log" := (log.log_sz "log" + slice.len "bks", log.disk_sz "log") in
+    write_all "bks" (#1 + "sz");;
+    let: "new_log" := ("sz" + slice.len "bks", log.disk_sz "log") in
     write_hdr "new_log";;
-    SOME "new_log".
+    "logp" <- "new_log";;
+    #true.
 
 Definition reset: val :=
-  λ: "log",
-  let: "new_log" := (#0, log.disk_sz "log") in
+  λ: "logp",
+  let: "new_log" := (#0, log.disk_sz !"log") in
   write_hdr "new_log";;
-  "new_log".
+  "logp" <- "new_log";;
+  #().
 
 Definition recover: val :=
   λ: <>,
      let: "hdr" := ExternalOp Read #0 in
-     let: "log_sz" := DecodeInt "hdr" in
-     let: "disk_sz" := DecodeInt ("hdr" +ₗ #8) in
+     let: "log_sz" := UInt64Get ("hdr", #8) in
+     let: "disk_sz" := UInt64Get (("hdr" +ₗ #8), #8) in
      let: "log" := ("log_sz", "disk_sz") in
      "log".
