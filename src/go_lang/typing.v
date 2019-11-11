@@ -22,7 +22,7 @@ Proof.
                  | BNamed x => fun Γ => fun x' => if String.eqb x x'
                                            then Some t
                                            else Γ x'
-                 | BAnon => id
+                 | BAnon => fun Γ => Γ
                  end).
 Defined.
 Instance ctx_lookup : Lookup string ty Ctx := fun x Γ => Γ x.
@@ -122,42 +122,49 @@ Section go_lang.
 
 End go_lang.
 
+Delimit Scope heap_types with T.
+Notation "Γ ⊢ e : A" := (expr_hasTy Γ e A) : heap_types.
+Notation "Γ ⊢v v : A" := (val_hasTy Γ v A) : heap_types.
+Notation "⊢ v : A" := (base_lit_hasTy v A) (at level 90, only printing) : heap_types.
+Notation "⊢ e : A" := (expr_hasTy ∅ e A) (at level 90, e at next level, A at next level) : heap_types.
+
 From Perennial.go_lang Require Import slice.
 Definition sliceT t : ty := prodT (refT t) intT.
+
+Theorem insert_anon t : (<[BAnon := t]> : Ctx -> Ctx) = (fun Γ => Γ).
+Proof.
+  reflexivity.
+Qed.
+
+Local Ltac simp := unfold For; simpl; rewrite ?insert_anon.
+Local Ltac type_step :=
+  match goal with
+  | [ |- expr_hasTy _ _ _ ] => econstructor
+  | [ |- expr_hasTy _ (Rec _ _ _) (arrowT _ _) ] => eapply rec_expr_hasTy_eq
+  | [ |- val_hasTy _ _ _ ] => econstructor
+  | [ |- base_lit_hasTy _ _ ] => econstructor
+  end; simp.
+
+Ltac typecheck :=
+  repeat (type_step; try match goal with
+                         | [ |- _ = _ ] => cbv; reflexivity
+                         end).
 
 Module slice_types.
 Section go_lang.
   Context {ext:ext_op}.
-  Notation "Γ ⊢ e : A" := (expr_hasTy Γ e A).
 
   Opaque Z_to_byte.
   Opaque Z_to_u64.
 
-  Theorem insert_anon t : (<[BAnon := t]> : Ctx -> Ctx) = (fun Γ => Γ).
-  Proof.
-    reflexivity.
-  Qed.
+  Open Scope heap_types.
 
-  Ltac simp := unfold For; simpl; rewrite ?insert_anon.
-  Ltac type_step :=
-    match goal with
-    | [ |- expr_hasTy _ _ _ ] => econstructor
-    | [ |- expr_hasTy _ (Rec _ _ _) (arrowT _ _) ] => eapply rec_expr_hasTy_eq
-    | [ |- val_hasTy _ _ _ ] => econstructor
-    | [ |- base_lit_hasTy _ _ ] => econstructor
-    end; simp.
-
-  Ltac typecheck :=
-    repeat (type_step; try match goal with
-                           | [ |- _ = _ ] => cbv; reflexivity
-                           end).
-
-  Theorem NewByteSlice_t : ∅ ⊢ NewByteSlice : arrowT intT (sliceT byteT).
+  Theorem NewByteSlice_t : ⊢ NewByteSlice : arrowT intT (sliceT byteT).
   Proof.
     typecheck.
   Qed.
 
-  Theorem MemCpy_t t : ∅ ⊢ MemCpy :
+  Theorem MemCpy_t t : ⊢ MemCpy :
       (* refT t -> refT t -> intT -> unitT *)
       arrowT (refT t)
              (arrowT (refT t)
