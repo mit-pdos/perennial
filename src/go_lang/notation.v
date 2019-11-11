@@ -173,7 +173,10 @@ Notation "'resolve_proph:' p 'to:' v" := (ResolveProph p v) (at level 100) : exp
 
 Definition For {ext:ext_op} (v:string) (bound:expr) (body:expr) : expr :=
   (rec: "__loop" v :=
-     if: Var v < bound then body (Var v);; (Var "__loop") (Var v + #1) else #()) #0.
+     if: Var v < bound
+     then body;;
+          (Var "__loop") (Var v + #1)
+     else #()) #0.
 Notation "'for:' v < b := e" := (For v%string b%E e%E)
   (at level 200, v at level 1, b at level 1, e at level 200,
    format "'[' 'for:'  v  <  b  :=  '/  ' e ']'") : expr_scope.
