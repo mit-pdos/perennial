@@ -81,9 +81,14 @@ Proof.
 Qed.
 
 Definition SliceTake: val :=
-  λ: "s" "n", if: slice.len "s" < "n"
-              then #() (* TODO: this should be Panic *)
+  λ: "s" "n", if: slice.len "s" ≤ "n"
+              then Panic "slice index out-of-bounds"
               else (slice.ptr "s", "n").
+
+Theorem SliceTake_t Γ t : Γ ⊢ SliceTake : (slice.T t -> intT -> slice.T t).
+Proof.
+  typecheck.
+Qed.
 
 Definition SliceGet: val :=
   λ: "s" "i",

@@ -103,6 +103,8 @@ Inductive expr :=
   | Var (x : string)
   | Rec (f x : binder) (e : expr)
   | App (e1 e2 : expr)
+  (* a stuck expression, to represent undefined behavior *)
+  | Panic (s: string)
   (* Base types and their operations *)
   | UnOp (op : un_op) (e : expr)
   | BinOp (op : bin_op) (e1 e2 : expr)
@@ -278,6 +280,7 @@ Proof using ext.
       | Rec f x e, Rec f' x' e' =>
         cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
       | App e1 e2, App e1' e2' => cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
+      | Panic s, Panic s' => cast_if (decide (s = s'))
       | UnOp o e, UnOp o' e' => cast_if_and (decide (o = o')) (decide (e = e'))
       | BinOp o e1 e2, BinOp o' e1' e2' =>
         cast_if_and3 (decide (o = o')) (decide (e1 = e1')) (decide (e2 = e2'))
@@ -393,6 +396,7 @@ Proof using ext.
      | Var x => GenLeaf (inl (inl x))
      | Rec f x e => GenNode 1 [GenLeaf (inl (inr f)); GenLeaf (inl (inr x)); go e]
      | App e1 e2 => GenNode 2 [go e1; go e2]
+     | Panic s => GenNode 25 [GenLeaf (inl (inl s))]
      | UnOp op e => GenNode 3 [GenLeaf (inr (inr (inl op))); go e]
      | BinOp op e1 e2 => GenNode 4 [GenLeaf (inr (inr (inr (inl op)))); go e1; go e2]
      | If e0 e1 e2 => GenNode 5 [go e0; go e1; go e2]
@@ -434,6 +438,7 @@ Proof using ext.
      | GenLeaf (inl (inl x)) => Var x
      | GenNode 1 [GenLeaf (inl (inr f)); GenLeaf (inl (inr x)); e] => Rec f x (go e)
      | GenNode 2 [e1; e2] => App (go e1) (go e2)
+     | GenNode 25 [GenLeaf (inl (inl s))] => Panic s
      | GenNode 3 [GenLeaf (inr (inr (inl op))); e] => UnOp op (go e)
      | GenNode 4 [GenLeaf (inr (inr (inr (inl op)))); e1; e2] => BinOp op (go e1) (go e2)
      | GenNode 5 [e0; e1; e2] => If (go e0) (go e1) (go e2)
@@ -471,7 +476,7 @@ Proof using ext.
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
- - destruct e as [v| | | | | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+ - destruct e as [v| | | | | | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
      [exact (gov v)|done..].
  - destruct v; by f_equal.
 Qed.
@@ -576,6 +581,7 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | Rec f y e =>
      Rec f y $ if decide (BNamed x ≠ f ∧ BNamed x ≠ y) then subst x v e else e
   | App e1 e2 => App (subst x v e1) (subst x v e2)
+  | Panic s => Panic s
   | UnOp op e => UnOp op (subst x v e)
   | BinOp op e1 e2 => BinOp op (subst x v e1) (subst x v e2)
   | If e0 e1 e2 => If (subst x v e0) (subst x v e1) (subst x v e2)

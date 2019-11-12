@@ -213,6 +213,12 @@ Implicit Types σ : state.
 Implicit Types v : val.
 Implicit Types l : loc.
 
+Lemma wp_panic s msg E r :
+  {{{ ▷ False }}} Panic msg @ s; E {{{ RET r; True }}}.
+Proof.
+  iIntros (Φ) ">[] HΦ".
+Qed.
+
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ (LitV LitUnit) -∗ WP Fork e @ s; E {{ Φ }}.

@@ -68,6 +68,8 @@ Section go_lang.
   | rec_expr_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e : t2 ->
       Γ ⊢ Rec f x e : arrowT t1 t2
+  | panic_expr_hasTy msg t :
+      Γ ⊢ Panic msg : t
   | offset_op_hasTy e1 e2 t :
       Γ ⊢ e1 : refT t ->
       Γ ⊢ e2 : intT ->
