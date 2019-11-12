@@ -2,6 +2,7 @@ From stdpp Require Import countable numbers gmap.
 From iris.algebra Require Import base.
 
 Record loc := { loc_car : Z }.
+Definition null := {| loc_car := 0 |}.
 
 Instance loc_eq_decision : EqDecision loc.
 Proof. solve_decision. Qed.
@@ -40,6 +41,24 @@ Proof.
   { intros help Hf%help. simpl in *. lia. }
   apply (set_fold_ind_L (λ r ls, ∀ l, l ∈ ls → (loc_car l < r + i)%Z));
     set_solver by eauto with lia.
+Qed.
+
+Lemma fresh_locs_non_negative ls :
+  (0 < loc_car (fresh_locs ls))%Z.
+Proof.
+  simpl.
+  apply (set_fold_ind_L (λ r (ls: gset loc), (0 < r)%Z));
+    intros; lia.
+Qed.
+
+Lemma fresh_locs_non_null ls i :
+  (0 <= i)%Z -> fresh_locs ls +ₗ i <> null.
+Proof.
+  intros.
+  pose proof (fresh_locs_non_negative ls); simpl in *.
+  let H := fresh in
+  intros H; inversion H; clear H.
+  lia.
 Qed.
 
 Global Opaque fresh_locs.
