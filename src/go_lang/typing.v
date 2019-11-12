@@ -6,6 +6,7 @@ Inductive ty :=
 | boolT
 | unitT
 | prodT (t1 t2: ty)
+| sumT (t1 t2: ty)
 | arrowT (t1 t2: ty)
 | refT (t: ty)
 .
@@ -22,9 +23,10 @@ Instance ctx_insert : Insert binder ty Ctx.
 Proof.
   hnf.
   exact (fun b t => match b with
-                 | BNamed x => fun Γ => fun x' => if String.eqb x x'
-                                           then Some t
-                                           else Γ x'
+                 | BNamed x => fun Γ =>
+                                fun x' => if String.eqb x x'
+                                       then Some t
+                                       else Γ x'
                  | BAnon => fun Γ => Γ
                  end).
 Defined.
@@ -85,6 +87,17 @@ Section go_lang.
   | snd_hasTy e t1 t2 :
       Γ ⊢ e : prodT t1 t2 ->
       Γ ⊢ Snd e : t2
+  | inl_hasTy e t1 t2 :
+      Γ ⊢ e : t1 ->
+      Γ ⊢ InjL e : sumT t1 t2
+  | inr_hasTy e t1 t2 :
+      Γ ⊢ e : t2 ->
+      Γ ⊢ InjR e : sumT t1 t2
+  | case_hasTy cond e1 e2 t1 t2 t :
+      Γ ⊢ cond : sumT t1 t2 ->
+      Γ ⊢ e1 : arrowT t1 t ->
+      Γ ⊢ e2 : arrowT t2 t ->
+      Γ ⊢ Case cond e1 e2 : t
   | if_hasTy cond e1 e2 t :
       Γ ⊢ cond : boolT ->
       Γ ⊢ e1 : t ->
