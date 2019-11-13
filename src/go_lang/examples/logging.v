@@ -1,10 +1,6 @@
-From iris.proofmode Require Import tactics.
-From iris.program_logic Require Export weakestpre.
-From Perennial.go_lang Require Export lang struct slice typing.
-From Perennial.go_lang Require Export ffi.disk.
-From Perennial.go_lang Require Import proofmode notation.
-
-Existing Instances disk_op disk_model disk_ty disk_semantics disk_interp.
+From Perennial.go_lang Require Import prelude.
+From Perennial.go_lang Require Import ffi.disk.
+Existing Instances disk_op disk_model disk_ty.
 
 Local Coercion Var' (s: string) : expr := Var s.
 

@@ -20,7 +20,7 @@ From Perennial Require Import Goose.TypeSystem.
 
 (* work-in-progress on Go deep embedding based on heap_lang *)
 From Perennial.go_lang Require Import
-     adequacy total_adequacy lib.spin_lock examples.logging typing.
+     adequacy total_adequacy lib.spin_lock examples.logging.
 
 (* goose output *)
 From Perennial.Goose Require Import ExplicitModel.
