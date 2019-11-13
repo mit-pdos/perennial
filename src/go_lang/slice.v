@@ -43,12 +43,12 @@ Section go_lang.
   Definition Var' s : @expr ext := Var s.
   Local Coercion Var' : string >-> expr.
 
-Definition NewByteSlice: val :=
-  λ: (annot "sz" intT),
-  let: "p" := AllocN "sz" #(LitByte 0) in
+Definition NewSlice (t: ty): val :=
+  λ: "sz",
+  let: "p" := AllocN "sz" (zero_val t) in
   ("p", "sz").
 
-Theorem NewByteSlice_t Γ : Γ ⊢ NewByteSlice : (intT -> slice.T byteT).
+Theorem NewSlice_t : `(Γ ⊢ NewSlice t : (intT -> slice.T t)).
 Proof.
   typecheck.
 Qed.
@@ -103,6 +103,15 @@ Proof.
   typecheck.
 Qed.
 
+Definition SliceSet: val :=
+  λ: "s" "i" "v",
+  (slice.ptr "s" +ₗ "i") <- "v".
+
+Theorem SliceSet_t : `(Γ ⊢ SliceSet : (slice.T t -> intT -> t -> unitT)).
+Proof.
+  typecheck.
+Qed.
+
 Definition SliceAppend: val :=
   λ: "s1" "s2",
   let: "p" := AllocN (slice.len "s1" + slice.len "s2") #() in
@@ -137,6 +146,6 @@ Qed.
 
 End go_lang.
 
-Hint Resolve NewByteSlice_t
-     SliceTake_t SliceSkip_t SliceGet_t
+Hint Resolve NewSlice_t
+     SliceTake_t SliceSkip_t SliceGet_t SliceSet_t
      UInt64Put_t UInt64Get_t : types.

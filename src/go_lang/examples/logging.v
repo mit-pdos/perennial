@@ -39,7 +39,7 @@ Import log.
 
 Definition write_hdr: val :=
   λ: "log",
-    let: "hdr" := NewByteSlice #4096 in
+    let: "hdr" := NewSlice byteT #4096 in
     UInt64Put (log_sz "log") "hdr";;
     UInt64Put (disk_sz "log") (SliceSkip "hdr" #8);;
     Write #0 "hdr".

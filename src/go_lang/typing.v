@@ -240,6 +240,7 @@ Qed.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
+Hint Resolve zero_val_ty : types.
 
 Local Ltac simp := unfold For; simpl; rewrite ?insert_anon.
 Ltac type_step :=
@@ -253,6 +254,7 @@ Ltac type_step :=
   end; simp.
 
 Ltac typecheck :=
+  intros;
   repeat (type_step; try match goal with
                          | [ |- _ = _ ] => cbv; reflexivity
                          end).
