@@ -3,13 +3,13 @@ From stdpp Require Import vector fin_maps.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Import ectx_lifting.
 
-From Perennial.go_lang Require Import lang lifting.
+From Perennial.go_lang Require Import lang lifting slice typing.
 
 (* this is purely cosmetic but it makes printing line up with how the code is
 usually written *)
 Set Printing Projections.
 
-Inductive DiskOp := Read | Write.
+Inductive DiskOp := ReadOp | WriteOp.
 Instance eq_DiskOp : EqDecision DiskOp.
 Proof.
   intros x y; hnf; decide equality.
@@ -21,16 +21,23 @@ Proof.
   - apply _.
   - apply (countable.inj_countable
            (fun op => match op with
-                   | Read => 0
-                   | Write => 1
+                   | ReadOp => 0
+                   | WriteOp => 1
                    end)
            (fun n => match n with
-                  | 0 => Some Read
-                  | 1 => Some Write
+                  | 0 => Some ReadOp
+                  | 1 => Some WriteOp
                   | _ => None
                   end)).
     destruct x; auto.
 Defined.
+
+Definition disk_ty: ext_types disk_op :=
+  {| get_ext_tys (op: @external disk_op) :=
+       match op with
+    | ReadOp => (intT, refT byteT)
+    | WriteOp => (prodT intT (refT byteT), unitT)
+       end; |}.
 
 Definition block_bytes: nat := N.to_nat 4096.
 Definition Block := vec byte block_bytes.
@@ -60,20 +67,39 @@ Class diskG Σ :=
 Section disk.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the disk model *)
-  Existing Instances disk_op disk_model.
+  Existing Instances disk_op disk_model disk_ty.
+
+  Definition Read: val :=
+    λ: "a",
+    let: "p" := ExternalOp ReadOp (Var "a") in
+    (Var "p", #4096).
+
+  Theorem Read_t Γ : Γ ⊢ Read : (intT -> slice.T byteT).
+  Proof.
+    typecheck.
+  Qed.
+
+  Definition Write: val :=
+    λ: "a" "b",
+    ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
+
+  Theorem Write_t Γ : Γ ⊢ Write : (intT -> slice.T byteT -> unitT).
+  Proof.
+    typecheck.
+  Qed.
 
   Inductive ext_step : DiskOp -> val -> state -> val -> state -> Prop :=
-  | ReadS : forall (a: u64) (b: Block) (σ: state) l',
+  | ReadOpS : forall (a: u64) (b: Block) (σ: state) l',
       σ.(world) !! a = Some b ->
       (forall (i:Z), 0 <= i -> i < 4096 -> σ.(heap) !! (l' +ₗ i) = None)%Z ->
-      ext_step Read (LitV (LitInt a)) σ (LitV (LitLoc l'))
+      ext_step ReadOp (LitV (LitInt a)) σ (LitV (LitLoc l'))
                (state_insert_list l' (Block_to_vals b) σ)
-  | WriteS : forall (a: u64) (l: loc) (b0 b: Block) (σ: state),
+  | WriteOpS : forall (a: u64) (l: loc) (b0 b: Block) (σ: state),
       is_Some (σ.(world) !! a) ->
       (forall (i:Z), 0 <= i -> i < 4096 ->
                 σ.(heap) !! (l +ₗ i) =
                 Block_to_vals b !! Z.to_nat i)%Z ->
-      ext_step Write (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
+      ext_step WriteOp (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
                (LitV LitUnit) (state_upd_world <[ a := b ]> σ)
 
   .
@@ -119,7 +145,7 @@ lemmas. *)
   Theorem read_fresh : forall σ a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
       σ.(world) !! a = Some b ->
-      ext_step Read (LitV $ LitInt a) σ (LitV $ LitLoc $ l) (state_insert_list l (Block_to_vals b) σ).
+      ext_step ReadOp (LitV $ LitInt a) σ (LitV $ LitLoc $ l) (state_insert_list l (Block_to_vals b) σ).
   Proof.
     intros.
     constructor; auto; intros.
@@ -133,9 +159,9 @@ lemmas. *)
   Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
     ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
 
-  Lemma wp_Read s E a q b :
+  Lemma wp_ReadOp s E a q b :
     {{{ ▷ a d↦{q} b }}}
-      ExternalOp Read (Val $ LitV $ LitInt a) @ s; E
+      ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
     {{{ l, RET LitV (LitLoc l); a d↦{q} b ∗
                                   mapsto_block l 1 b ∗
                                   [∗ map] l ↦ _ ∈ heap_array l (Block_to_vals b), meta_token l ⊤ }}}.
@@ -222,9 +248,9 @@ lemmas. *)
     inversion H1; subst; auto.
   Qed.
 
-  Lemma wp_Write s E a b q l :
+  Lemma wp_WriteOp s E a b q l :
     {{{ ▷ ∃ b0, a d↦{1} b0 ∗ mapsto_block l q b }}}
-      ExternalOp Write (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
+      ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
     {{{ RET LitV LitUnit; a d↦{1} b ∗ mapsto_block l q b}}}.
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
@@ -238,7 +264,7 @@ lemmas. *)
       eexists _, _, _, _; simpl.
       econstructor; simpl.
       (* TODO: for some reason eauto doesn't apply this *)
-      eapply WriteS; eauto. }
+      eapply WriteOpS; eauto. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
     assert (b = b2); [ | subst b2 ].
@@ -255,3 +281,7 @@ lemmas. *)
   End proof.
 
 End disk.
+
+Global Opaque Write.
+Global Opaque Read.
+Hint Resolve Write_t Read_t : types.

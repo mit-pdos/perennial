@@ -8,7 +8,7 @@ Delimit Scope val_scope with V.
 (** Coercions to make programs easier to type. *)
 Coercion Z_to_u64 (x:Z) : u64 := Word.ZToWord n64 x.
 Coercion Z_to_byte (x:Z) : byte := Word.ZToWord 8 x.
-Coercion LitZ (x:Z) : base_lit := LitInt (Word.ZToWord n64 x).
+Coercion LitZ (x:Z) : base_lit := LitInt (Z_to_u64 x).
 
 (* TODO: LitInt as a coercion from u64 to base_lit apparently doesn't satisfy
 the uniform inheritance criterion, and it doesn't seem to work *)

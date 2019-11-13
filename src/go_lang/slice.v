@@ -13,7 +13,7 @@ Module slice.
   Definition sliceS := mkStruct ["p"; "len"].
   Definition T t := prodT (refT t) intT.
   Section fields.
-    Context {ext:ext_op}.
+    Context `{ext_ty:ext_types}.
     Definition ptr := structF! sliceS "p".
     Definition len: val := structF! sliceS "len".
     Theorem ptr_t t Γ : Γ ⊢ ptr : (T t -> refT t).
@@ -25,16 +25,19 @@ Module slice.
       typecheck.
     Qed.
   End fields.
+
+  Definition nil {ext:ext_op} : val := (#null, #0).
+  Theorem nil_t `{ext_ty:ext_types} Γ t : Γ ⊢ nil : T t.
+  Proof.
+    typecheck.
+  Qed.
 End slice.
 
-Hint Resolve slice.ptr_t slice.len_t : types.
+Hint Resolve slice.ptr_t slice.len_t slice.nil_t : types.
 
-(*
-Eval compute in get_field sliceS "p".
-Eval compute in get_field sliceS "len".
-*)
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
+  Context {ext_ty:ext_types ext}.
 
   Definition Var' s : @expr ext := Var s.
   Local Coercion Var' : string >-> expr.
@@ -117,8 +120,25 @@ Definition UInt64Put: val :=
   λ: "p" "n",
   EncodeInt "n" (slice.ptr "p").
 
+Theorem UInt64Put_t Γ : Γ ⊢ UInt64Put : (slice.T byteT -> intT -> unitT).
+Proof.
+  typecheck.
+Qed.
+
 Definition UInt64Get: val :=
   λ: "p",
   DecodeInt (slice.ptr "p").
 
+Theorem UInt64Get_t Γ : Γ ⊢ UInt64Get : (slice.T byteT -> intT).
+Proof.
+  typecheck.
+Qed.
+
 End go_lang.
+
+Global Opaque NewByteSlice
+       SliceTake SliceSkip SliceGet
+       UInt64Put UInt64Get.
+Hint Resolve NewByteSlice_t
+     SliceTake_t SliceSkip_t SliceGet_t
+     UInt64Put_t UInt64Get_t : types.

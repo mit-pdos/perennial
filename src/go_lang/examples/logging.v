@@ -1,10 +1,10 @@
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export weakestpre.
-From Perennial.go_lang Require Export lang struct slice.
+From Perennial.go_lang Require Export lang struct slice typing.
 From Perennial.go_lang Require Export ffi.disk.
 From Perennial.go_lang Require Import proofmode notation.
 
-Existing Instances disk_op disk_model disk_semantics disk_interp.
+Existing Instances disk_op disk_model disk_ty disk_semantics disk_interp.
 
 Local Coercion Var' (s: string) : expr := Var s.
 
@@ -17,6 +17,7 @@ Local Coercion Var' (s: string) : expr := Var s.
 
 Module log.
   Definition logS := mkStruct ["log_sz"; "disk_sz"].
+  Definition T: ty := intT * intT.
   Section fields.
     Context {ext:ext_op}.
     Definition log_sz := structF! logS "log_sz".
@@ -31,12 +32,11 @@ Definition write_hdr: val :=
     let: "hdr" := NewByteSlice #4096 in
     UInt64Put "log_sz" "hdr";;
     UInt64Put "disk_sz" ("hdr" +ₗ #8);;
-    ExternalOp Write (#0, "hdr").
+    Write #0 "hdr".
 
 Definition init: val :=
   λ: "disk_sz",
-  (* TODO: need to return a zero value for the log (ideally systematically) *)
-  if: "disk_sz" < #1 then (#(), #false)
+  if: "disk_sz" < #1 then (zero_val log.T, #false)
   else
     let: "log" := (#0, "disk_sz") in
     write_hdr "log";;
@@ -46,16 +46,15 @@ Definition get: val :=
   λ: "log" "i",
   let: "sz" := log.log_sz "log" in
   if: "i" < "sz"
-  then (ExternalOp Read (#1+"i"), #true)
-         (* TODO: need an invalid pointer value *)
-  else (#(), #false).
+  then (Read (#1+"i"), #true)
+  else (slice.nil, #false).
 
 Definition write_all: val :=
   λ: "bks" "off",
   let: "len" := slice.len "bks" in
   for: "i" < "len" :=
     let: "bk" := SliceGet "bks" "i" in
-    ExternalOp Write ("off" + "i", "bk").
+    Write ("off" + "i") "bk".
 
 Definition append: val :=
   λ: "logp" "bks",
@@ -79,7 +78,7 @@ Definition reset: val :=
 
 Definition recover: val :=
   λ: <>,
-     let: "hdr" := ExternalOp Read #0 in
+     let: "hdr" := Read #0 in
      let: "log_sz" := UInt64Get ("hdr", #8) in
      let: "disk_sz" := UInt64Get (("hdr" +ₗ #8), #8) in
      let: "log" := ("log_sz", "disk_sz") in

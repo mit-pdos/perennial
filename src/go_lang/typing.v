@@ -32,8 +32,24 @@ Proof.
 Defined.
 Instance ctx_lookup : Lookup string ty Ctx := fun x Γ => Γ x.
 
+Class ext_types (ext:ext_op) :=
+  { get_ext_tys: external -> ty * ty; (* the argument type and return type *)
+  }.
+
 Section go_lang.
-  Context {ext:ext_op}.
+  Context `{ext_ty: ext_types}.
+
+  Fixpoint zero_val (t:ty) : val :=
+    match t with
+    | intT => #0
+    | byteT => #(LitByte 0)
+    | boolT => #false
+    | unitT => #()
+    | prodT t1 t2 => (zero_val t1, zero_val t2)
+    | sumT t1 t2 => InjLV (zero_val t1)
+    | arrowT t1 t2 => λ: "x", zero_val t2
+    | refT t => #null
+    end.
 
   Inductive base_lit_hasTy : base_lit -> ty -> Prop :=
   | int_hasTy x : base_lit_hasTy (LitInt x) intT
@@ -46,11 +62,10 @@ Section go_lang.
   | loc_hasT t l : base_lit_hasTy (LitLoc l) (refT t)
   .
 
-  (* TODO: this structure doesn't quite work since Eq is polymorphic *)
   Definition bin_op_ty (op:bin_op) : option (ty * ty * ty) :=
     match op with
     | PlusOp | MinusOp | MultOp | QuotOp | RemOp => Some (intT, intT, intT)
-    | LtOp | EqOp | LeOp => Some (intT, intT, boolT)
+    | LtOp | LeOp => Some (intT, intT, boolT)
     | _ => None
     end.
 
@@ -61,10 +76,10 @@ Section go_lang.
   | app_hasTy f x t1 t2 :
       Γ ⊢ f : arrowT t1 t2 ->
       Γ ⊢ x : t1 ->
-      Γ ⊢ (App f x) : t2
+      Γ ⊢ App f x : t2
   | val_expr_hasTy v t :
       val_hasTy Γ v t ->
-      Γ ⊢ (Val v) : t
+      Γ ⊢ Val v : t
   | rec_expr_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e : t2 ->
       Γ ⊢ Rec f x e : arrowT t1 t2
@@ -74,6 +89,10 @@ Section go_lang.
       Γ ⊢ e1 : refT t ->
       Γ ⊢ e2 : intT ->
       Γ ⊢ BinOp OffsetOp e1 e2 : refT t
+  | eq_op_hasTy e1 e2 t :
+      Γ ⊢ e1 : t ->
+      Γ ⊢ e2 : t ->
+      Γ ⊢ BinOp EqOp e1 e2 : boolT
   | bin_op_hasTy op e1 e2 t1 t2 t :
       bin_op_ty op = Some (t1, t2, t) ->
       Γ ⊢ e1 : t1 ->
@@ -104,38 +123,94 @@ Section go_lang.
       Γ ⊢ cond : boolT ->
       Γ ⊢ e1 : t ->
       Γ ⊢ e2 : t ->
-      Γ ⊢ (If cond e1 e2) : t
+      Γ ⊢ If cond e1 e2 : t
   | alloc_hasTy n v t :
       Γ ⊢ n : intT ->
       Γ ⊢ v : t ->
-      Γ ⊢ (AllocN n v) : (refT t)
+      Γ ⊢ AllocN n v : refT t
   | load_hasTy l t :
-      Γ ⊢ l : (refT t) ->
-      Γ ⊢ (Load l) : t
+      Γ ⊢ l : refT t ->
+      Γ ⊢ Load l : t
   | store_hasTy l v t :
-      Γ ⊢ l : (refT t) ->
+      Γ ⊢ l : refT t ->
       Γ ⊢ v : t ->
-      Γ ⊢ (Store l v) : unitT
+      Γ ⊢ Store l v : unitT
+  | external_hasTy op e t1 t2 :
+      get_ext_tys op = (t1, t2) ->
+      Γ ⊢ e : t1 ->
+      Γ ⊢ ExternalOp op e : t2
+  | encode_hasTy n p :
+      Γ ⊢ n : intT ->
+      Γ ⊢ p : refT byteT ->
+      Γ ⊢ EncodeInt n p : unitT
+  | decode_hasTy p :
+      Γ ⊢ p : refT byteT ->
+      Γ ⊢ DecodeInt p : intT
   where "Γ ⊢ e : A" := (expr_hasTy Γ e A)
   with val_hasTy (Γ: Ctx) : val -> ty -> Prop :=
   | val_base_lit_hasTy v t :
       base_lit_hasTy v t -> val_hasTy Γ (LitV v) t
-  | val_pair_hasT v1 v2 t1 t2 :
+  | val_pair_hasTy v1 v2 t1 t2 :
       Γ ⊢v v1 : t1 ->
       Γ ⊢v v2 : t2 ->
       Γ ⊢v PairV v1 v2 : prodT t1 t2
+  | val_injL_hasTy v1 t1 t2 :
+      Γ ⊢v v1 : t1 ->
+      Γ ⊢v InjLV v1 : sumT t1 t2
+  | val_injR_hasTy v2 t1 t2 :
+      Γ ⊢v v2 : t2 ->
+      Γ ⊢v InjRV v2 : sumT t1 t2
   | rec_val_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e : t2 ->
       Γ ⊢v RecV f x e : arrowT t1 t2
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
+  Hint Constructors expr_hasTy val_hasTy base_lit_hasTy.
+
+  Theorem zero_val_ty ty Γ :
+    Γ ⊢v zero_val ty : ty.
+  Proof.
+    generalize dependent Γ.
+    induction ty; simpl; eauto.
+    repeat econstructor.
+  Qed.
+
+  Lemma extend_context_add:
+    ∀ Γ Γ' : string → option ty,
+      (∀ (x : string) (t0 : ty), Γ x = Some t0 → Γ' x = Some t0)
+      → ∀ (x : binder) (t: ty) (x0 : string) (t0 : ty),
+        (<[x:=t]> Γ) x0 = Some t0
+        → (<[x:=t]> Γ') x0 = Some t0.
+  Proof.
+    intros Γ Γ' Heq f t x t0 HΓ.
+    unfold insert, ctx_insert in *.
+    destruct f; eauto.
+    destruct (s =? x)%string; eauto.
+  Qed.
+
+  Hint Resolve extend_context_add.
+  Ltac inv H := inversion H; subst; clear H.
+
+  Theorem context_extension Γ Γ' (t: ty) : forall e,
+      (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
+      Γ ⊢ e : t ->
+      Γ' ⊢ e : t
+    with val_context_extension Γ Γ' (t: ty) : forall v,
+        (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
+        Γ ⊢v v : t ->
+        Γ' ⊢v v : t.
+  Proof.
+    - intros e Heq Hty; inv Hty; try solve [ (repeat econstructor); eauto ].
+    - intros v Heq Hty; inv Hty; try solve [ (repeat econstructor); eauto ].
+  Abort.
+
   Theorem rec_expr_hasTy_eq t1 t2 Γ Γ' f x e :
     Γ' = (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ->
     Γ' ⊢ e : t2 ->
     Γ ⊢ Rec f x e : arrowT t1 t2.
   Proof.
-    intros; subst; econstructor; eauto.
+    intros; subst; eauto.
   Qed.
 
   Inductive type_annot :=
@@ -150,6 +225,8 @@ Coercion annot_e : type_annot >-> string.
 
 Delimit Scope heap_types with T.
 Delimit Scope heap_type with ht.
+Bind Scope heap_type with ty.
+
 Notation "Γ ⊢ e : A" := (expr_hasTy Γ%ht e A%ht) : heap_types.
 Notation "Γ ⊢v v : A" := (val_hasTy Γ%ht v A%ht) : heap_types.
 Notation "⊢ v : A" := (base_lit_hasTy v%V A%ht) (at level 90, only printing) : heap_types.
