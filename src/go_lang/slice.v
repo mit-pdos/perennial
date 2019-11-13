@@ -11,9 +11,10 @@ Open Scope heap_types.
 
 Module slice.
   Definition sliceS := mkStruct ["p"; "len"].
-  Definition T t := prodT (refT t) intT.
+  Definition T t : ty := refT t * intT.
   Section fields.
     Context `{ext_ty:ext_types}.
+
     Definition ptr := structF! sliceS "p".
     Definition len: val := structF! sliceS "len".
     Theorem ptr_t t Γ : Γ ⊢ ptr : (T t -> refT t).
@@ -117,10 +118,10 @@ Proof.
 Qed. *)
 
 Definition UInt64Put: val :=
-  λ: "p" "n",
+  λ: "n" "p",
   EncodeInt "n" (slice.ptr "p").
 
-Theorem UInt64Put_t Γ : Γ ⊢ UInt64Put : (slice.T byteT -> intT -> unitT).
+Theorem UInt64Put_t Γ : Γ ⊢ UInt64Put : (intT -> slice.T byteT -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -136,9 +137,6 @@ Qed.
 
 End go_lang.
 
-Global Opaque NewByteSlice
-       SliceTake SliceSkip SliceGet
-       UInt64Put UInt64Get.
 Hint Resolve NewByteSlice_t
      SliceTake_t SliceSkip_t SliceGet_t
      UInt64Put_t UInt64Get_t : types.

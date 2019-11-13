@@ -74,8 +74,8 @@ Section go_lang.
       Γ !! x = Some t ->
       Γ ⊢ Var x : t
   | app_hasTy f x t1 t2 :
-      Γ ⊢ f : arrowT t1 t2 ->
       Γ ⊢ x : t1 ->
+      Γ ⊢ f : arrowT t1 t2 ->
       Γ ⊢ App f x : t2
   | val_expr_hasTy v t :
       val_hasTy Γ v t ->
@@ -241,7 +241,7 @@ Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
 
-Local Ltac simp := unfold For; cbv -[insert Z_to_byte Z_to_u64 annot_e]; rewrite ?insert_anon.
+Local Ltac simp := unfold For; simpl; rewrite ?insert_anon.
 Ltac type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]
