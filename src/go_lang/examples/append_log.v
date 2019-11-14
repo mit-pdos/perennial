@@ -50,7 +50,12 @@ Definition Get: val :=
 
 Definition writeAll: val :=
   λ: "bks" "off",
-    #().
+    let: "numBks" := slice.len "bks" in
+    let: "i" := ref #0 in
+    for: (!"i" < "numBks"); ("i" <- !"i" + #1) :=
+      let: "bk" := SliceGet "bks" !"i" in
+      disk.Write ("off" + !"i") "bk";;
+      #true.
 
 Definition Append: val :=
   λ: "log" "bks",
