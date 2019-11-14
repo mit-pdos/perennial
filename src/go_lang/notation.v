@@ -147,7 +147,7 @@ Notation "'let:' x := e1 'in' e2" := (Lam x%binder e2%E e1%E)
    format "'[' 'let:'  x  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
 Notation "e1 ;; e2" := (Lam BAnon e2%E e1%E)
   (at level 100, e2 at level 200,
-   format "'[' '[hv' '[' e1 ']'  ;;  ']' '/' e2 ']'") : expr_scope.
+   format "'[' '[hv' '[' e1 ']' ;;  ']' '/' e2 ']'") : expr_scope.
 
 (* Shortcircuit Boolean connectives *)
 Notation "e1 && e2" :=
