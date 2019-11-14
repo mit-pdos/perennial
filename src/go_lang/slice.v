@@ -17,18 +17,19 @@ Module slice.
 
     Definition ptr := structF! sliceS "p".
     Definition len: val := structF! sliceS "len".
-    Theorem ptr_t t Γ : Γ ⊢ ptr : (T t -> refT t).
+
+    Theorem ptr_t t : ⊢ ptr : (T t -> refT t).
     Proof.
       typecheck.
     Qed.
-    Theorem len_t t Γ : Γ ⊢ len : (T t -> intT).
+    Theorem len_t t : ⊢ len : (T t -> intT).
     Proof.
       typecheck.
     Qed.
   End fields.
 
   Definition nil {ext:ext_op} : val := (#null, #0).
-  Theorem nil_t `{ext_ty:ext_types} Γ t : Γ ⊢ nil : T t.
+  Theorem nil_t `{ext_ty:ext_types} t : ⊢ nil : T t.
   Proof.
     typecheck.
   Qed.
@@ -48,7 +49,7 @@ Definition NewSlice (t: ty): val :=
   let: "p" := AllocN "sz" (zero_val t) in
   ("p", "sz").
 
-Theorem NewSlice_t : `(Γ ⊢ NewSlice t : (intT -> slice.T t)).
+Theorem NewSlice_t t : ⊢ NewSlice t : (intT -> slice.T t).
 Proof.
   typecheck.
 Qed.
@@ -58,7 +59,7 @@ Definition MemCpy: val :=
     for: "i" < "n" :=
     ("dst" +ₗ "i") <- !("src" +ₗ "i").
 
-Theorem MemCpy_t Γ t : Γ ⊢ MemCpy : (refT t -> refT t -> intT -> unitT).
+Theorem MemCpy_t t : ⊢ MemCpy : (refT t -> refT t -> intT -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -71,7 +72,7 @@ Definition MemCpy_rec: val :=
     else "dst" <- !"src";;
          "memcpy" ("dst" +ₗ #1) ("src" +ₗ #1) ("n" - #1).
 
-Theorem MemCpy_rec_t Γ t : Γ ⊢ MemCpy_rec : (refT t -> refT t -> intT -> unitT).
+Theorem MemCpy_rec_t t : ⊢ MemCpy_rec : (refT t -> refT t -> intT -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -79,7 +80,7 @@ Qed.
 Definition SliceSkip: val :=
   λ: "s" "n", (slice.ptr "s" +ₗ "n", slice.len "s" - "n").
 
-Theorem SliceSkip_t Γ t : Γ ⊢ SliceSkip : (slice.T t -> intT -> slice.T t).
+Theorem SliceSkip_t t : ⊢ SliceSkip : (slice.T t -> intT -> slice.T t).
 Proof.
   typecheck.
 Qed.
@@ -89,7 +90,7 @@ Definition SliceTake: val :=
               then Panic "slice index out-of-bounds"
               else (slice.ptr "s", "n").
 
-Theorem SliceTake_t Γ t : Γ ⊢ SliceTake : (slice.T t -> intT -> slice.T t).
+Theorem SliceTake_t t : ⊢ SliceTake : (slice.T t -> intT -> slice.T t).
 Proof.
   typecheck.
 Qed.
@@ -98,7 +99,7 @@ Definition SliceGet: val :=
   λ: "s" "i",
   !(slice.ptr "s" +ₗ "i").
 
-Theorem SliceGet_t Γ t : Γ ⊢ SliceGet : (slice.T t -> intT -> t).
+Theorem SliceGet_t t : ⊢ SliceGet : (slice.T t -> intT -> t).
 Proof.
   typecheck.
 Qed.
@@ -107,7 +108,7 @@ Definition SliceSet: val :=
   λ: "s" "i" "v",
   (slice.ptr "s" +ₗ "i") <- "v".
 
-Theorem SliceSet_t : `(Γ ⊢ SliceSet : (slice.T t -> intT -> t -> unitT)).
+Theorem SliceSet_t t : ⊢ SliceSet : (slice.T t -> intT -> t -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -130,7 +131,7 @@ Definition UInt64Put: val :=
   λ: "n" "p",
   EncodeInt "n" (slice.ptr "p").
 
-Theorem UInt64Put_t Γ : Γ ⊢ UInt64Put : (intT -> slice.T byteT -> unitT).
+Theorem UInt64Put_t : ⊢ UInt64Put : (intT -> slice.T byteT -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -139,7 +140,7 @@ Definition UInt64Get: val :=
   λ: "p",
   DecodeInt (slice.ptr "p").
 
-Theorem UInt64Get_t Γ : Γ ⊢ UInt64Get : (slice.T byteT -> intT).
+Theorem UInt64Get_t : ⊢ UInt64Get : (slice.T byteT -> intT).
 Proof.
   typecheck.
 Qed.

@@ -190,20 +190,37 @@ Section go_lang.
   Qed.
 
   Hint Resolve extend_context_add.
-  Ltac inv H := inversion H; subst; clear H.
 
-  Theorem context_extension Γ Γ' (t: ty) : forall e,
-      (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
+  Theorem context_extension Γ (t: ty) e :
       Γ ⊢ e : t ->
+      forall Γ', (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
       Γ' ⊢ e : t
-    with val_context_extension Γ Γ' (t: ty) : forall v,
-        (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
+    with val_context_extension Γ (t: ty) v :
         Γ ⊢v v : t ->
+        forall Γ', (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
         Γ' ⊢v v : t.
   Proof.
-    - intros e Heq Hty; inv Hty; try solve [ (repeat econstructor); eauto ].
-    - intros v Heq Hty; inv Hty; try solve [ (repeat econstructor); eauto ].
-  Abort.
+    - inversion 1; subst; try solve [ (repeat econstructor); eauto ].
+    - inversion 1; subst; try solve [ (repeat econstructor); eauto ].
+  Qed.
+
+  Theorem empty_context_to_any e t :
+    ∅ ⊢ e : t ->
+    forall Γ, Γ ⊢ e : t.
+  Proof.
+    intros.
+    eapply context_extension; eauto.
+    inversion 1.
+  Qed.
+
+  Theorem empty_context_to_any_val v t :
+    ∅ ⊢v v : t ->
+    forall Γ, Γ ⊢v v : t.
+  Proof.
+    intros.
+    eapply val_context_extension; eauto.
+    inversion 1.
+  Qed.
 
   Theorem rec_expr_hasTy_eq t1 t2 Γ Γ' f x e :
     Γ' = (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ->
@@ -211,6 +228,14 @@ Section go_lang.
     Γ ⊢ Rec f x e : arrowT t1 t2.
   Proof.
     intros; subst; eauto.
+  Qed.
+
+  Theorem hasTy_ty_congruence v t1 t2 :
+    ∅ ⊢v v : t1 ->
+    t1 = t2 ->
+    ∅ ⊢v v : t2.
+  Proof.
+    intros ? ->; auto.
   Qed.
 
   Inductive type_annot :=
@@ -230,13 +255,15 @@ Bind Scope heap_type with ty.
 Notation "Γ ⊢ e : A" := (expr_hasTy Γ%ht e A%ht) : heap_types.
 Notation "Γ ⊢v v : A" := (val_hasTy Γ%ht v A%ht) : heap_types.
 Notation "⊢ v : A" := (base_lit_hasTy v%V A%ht) (at level 90, only printing) : heap_types.
-Notation "⊢ e : A" := (expr_hasTy ∅ e%E A%ht) (at level 90, e at next level, A at next level) : heap_types.
+Notation "⊢ e : A" := (val_hasTy ∅ e%V A%ht) (at level 90, e at next level, A at next level) : heap_types.
 
 Theorem insert_anon t : (<[BAnon := t]> : Ctx -> Ctx) = (fun Γ => Γ).
 Proof.
   reflexivity.
 Qed.
 
+Hint Resolve empty_context_to_any empty_context_to_any_val : types.
+Hint Resolve hasTy_ty_congruence : types.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
@@ -246,6 +273,7 @@ Local Ltac simp := unfold For; simpl; rewrite ?insert_anon.
 Ltac type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]
+  | [ |- val_hasTy _ _ _ ] => solve [eauto with types]
   | [ |- expr_hasTy _ _ _ ] => econstructor
   | [ |- expr_hasTy _ (Rec _ (annot_e (annot _ ?t)) _) (arrowT _ _) ] => eapply (rec_expr_hasTy_eq t)
   | [ |- expr_hasTy _ (Rec _ _ _) (arrowT _ _) ] => eapply rec_expr_hasTy_eq

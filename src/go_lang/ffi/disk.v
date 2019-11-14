@@ -74,7 +74,7 @@ Section disk.
     let: "p" := ExternalOp ReadOp (Var "a") in
     (Var "p", #4096).
 
-  Theorem Read_t Γ : Γ ⊢ Read : (intT -> slice.T byteT).
+  Theorem Read_t : ⊢ Read : (intT -> slice.T byteT).
   Proof.
     typecheck.
   Qed.
@@ -83,7 +83,7 @@ Section disk.
     λ: "a" "b",
     ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
 
-  Theorem Write_t Γ : Γ ⊢ Write : (intT -> slice.T byteT -> unitT).
+  Theorem Write_t : ⊢ Write : (intT -> slice.T byteT -> unitT).
   Proof.
     typecheck.
   Qed.

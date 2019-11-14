@@ -18,11 +18,11 @@ Module log.
     Context `{ext_ty:ext_types}.
     Definition sz := structF! S "sz".
     Definition disk_sz := structF! S "disk_sz".
-    Theorem sz_t Γ : Γ ⊢ sz : (T -> intT).
+    Theorem sz_t : ⊢ sz : (T -> intT).
     Proof.
       typecheck.
     Qed.
-    Theorem disk_sz_t Γ : Γ ⊢ disk_sz : (T -> intT).
+    Theorem disk_sz_t : ⊢ disk_sz : (T -> intT).
     Proof.
       typecheck.
     Qed.
@@ -38,7 +38,7 @@ Definition write_hdr: val :=
     UInt64Put (log.disk_sz "log") (SliceSkip "hdr" #8);;
     Write #0 "hdr".
 
-Theorem write_hdr_t Γ : Γ ⊢ write_hdr : (log.T -> unitT).
+Theorem write_hdr_t : ⊢ write_hdr : (log.T -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -51,7 +51,7 @@ Definition init: val :=
     write_hdr "log";;
     ("log", #true).
 
-Theorem init_t Γ : Γ ⊢ init : (intT -> log.T * boolT).
+Theorem init_t : ⊢ init : (intT -> log.T * boolT).
 Proof.
   typecheck.
 Qed.
@@ -63,7 +63,7 @@ Definition get: val :=
   then (Read (#1+"i"), #true)
   else (slice.nil, #false).
 
-Theorem get_t Γ : Γ ⊢ get : (log.T -> intT -> slice.T byteT * boolT).
+Theorem get_t : ⊢ get : (log.T -> intT -> slice.T byteT * boolT).
 Proof.
   typecheck.
 Qed.
@@ -75,7 +75,7 @@ Definition write_all: val :=
     let: "bk" := SliceGet "bks" "i" in
     Write ("off" + "i") "bk".
 
-Theorem write_all_t Γ : Γ ⊢ write_all : (slice.T (slice.T byteT) -> intT -> unitT).
+Theorem write_all_t : ⊢ write_all : (slice.T (slice.T byteT) -> intT -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -95,7 +95,7 @@ Definition append: val :=
     "logp" <- "new_log";;
     #true.
 
-Theorem append_t Γ : Γ ⊢ append : (refT log.T -> slice.T (slice.T byteT) -> boolT).
+Theorem append_t : ⊢ append : (refT log.T -> slice.T (slice.T byteT) -> boolT).
 Proof.
   typecheck.
 Qed.
@@ -107,7 +107,7 @@ Definition reset: val :=
   "logp" <- "new_log";;
   #().
 
-Theorem reset_t Γ : Γ ⊢ reset : (refT log.T -> unitT).
+Theorem reset_t : ⊢ reset : (refT log.T -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -120,7 +120,7 @@ Definition recover: val :=
      let: "log" := ("log_sz", "disk_sz") in
      "log".
 
-Theorem recover_t Γ : Γ ⊢ recover : (unitT -> log.T).
+Theorem recover_t : ⊢ recover : (unitT -> log.T).
 Proof.
   typecheck.
 Qed.
