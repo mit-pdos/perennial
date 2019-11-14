@@ -56,10 +56,10 @@ Section go_lang.
   | byte_hasTy x : base_lit_hasTy (LitByte x) byteT
   | bool_hasTy x : base_lit_hasTy (LitBool x) boolT
   | unit_hasTy : base_lit_hasTy (LitUnit) unitT
-  (* hmm seems like locs need to track the type they came from or the
-  type-checking doesn't really work *)
-  (* maybe we don't need a rule for locs at all? *)
-  | loc_hasT t l : base_lit_hasTy (LitLoc l) (refT t)
+  (* to get a type for a location, the typing judgement should keep track of it
+  from its allocation and then throughout the program; null is the only special
+  case of a location value the programmer can directly and legally refer to *)
+  | loc_null_hasTy t : base_lit_hasTy (LitLoc null) (refT t)
   .
 
   Definition bin_op_ty (op:bin_op) : option (ty * ty * ty) :=
