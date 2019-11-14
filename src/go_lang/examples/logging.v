@@ -71,9 +71,11 @@ Qed.
 Definition write_all: val :=
   λ: "bks" "off",
   let: "len" := slice.len "bks" in
-  for: "i" < "len" :=
-    let: "bk" := SliceGet "bks" "i" in
-    Write ("off" + "i") "bk".
+  let: "i" := ref #0 in
+  for: (!"i" < "len") ; ("i" <- !"i" + #1) :=
+    let: "bk" := SliceGet "bks" !"i" in
+    Write ("off" + !"i") "bk";;
+    #true.
 
 Theorem write_all_t : ⊢ write_all : (slice.T (slice.T byteT) -> intT -> unitT).
 Proof.

@@ -56,8 +56,8 @@ Qed.
 
 Definition MemCpy: val :=
   λ: "dst" "src" (annot "n" intT),
-    for: "i" < "n" :=
-    ("dst" +ₗ "i") <- !("src" +ₗ "i").
+    for-range: "i" < "n" :=
+      ("dst" +ₗ "i") <- !("src" +ₗ "i").
 
 Theorem MemCpy_t t : ⊢ MemCpy : (refT t -> refT t -> intT -> unitT).
 Proof.
