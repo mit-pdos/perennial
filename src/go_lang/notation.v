@@ -145,6 +145,17 @@ Notation "λ: x y .. z , e" := (LamV x%binder (Lam y%binder .. (Lam z%binder e%E
 Notation "'let:' x := e1 'in' e2" := (Lam x%binder e2%E e1%E)
   (at level 200, x at level 1, e1, e2 at level 200,
    format "'[' 'let:'  x  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
+(* TODO: this notation is not hygienic because it introduces __p into e1's scope
+
+we could do slightly better by using a variable that can't appear in Go (eg, one
+with spaces), but we would probably still handle nested destructuring
+incorrectly *)
+Notation "'let:' ( x , y ) := e1 'in' e2" :=
+  (Lam "__p"
+       (Lam x%binder (Lam y%binder e2%E (Snd "__p")) (Fst "__p"))
+       e1%E)
+  (at level 200, x at level 1, e1, e2 at level 200,
+   format "'[' 'let:'  ( x ,  y )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
 Notation "e1 ;; e2" := (Lam BAnon e2%E e1%E)
   (at level 100, e2 at level 200,
    format "'[' '[hv' '[' e1 ']' ;;  ']' '/' e2 ']'") : expr_scope.
