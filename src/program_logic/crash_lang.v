@@ -49,8 +49,8 @@ Section crash_language.
     destruct ns; simpl in *; congruence.
   Qed.
 
-  Lemma nrsteps_crashed_snoc r ns ρ1 κ ρ2:
-    nrsteps r (ns) ρ1 κ ρ2 Crashed →
+  Lemma nrsteps_snoc r ns ρ1 κ ρ2 s:
+    nrsteps r (ns) ρ1 κ ρ2 s →
     ∃ ns' n, ns = ns' ++ [n].
   Proof.
     destruct ns using rev_ind.

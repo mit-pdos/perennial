@@ -242,33 +242,6 @@ Implicit Types e : expr Λ.
 
 Notation wptp s t := ([∗ list] ef ∈ t, WPC ef @ s; ⊤; ∅ {{ fork_post }} {{ True }})%I.
 
-Lemma wptp_recv_strong_adequacy Φ Φr κs' s Hi t n ns r1 e1 t1 κs t2 σ1 σ2 :
-  nrsteps (CS := CS) r1 (n :: ns) (e1 :: t1, σ1) κs (t2, σ2) Normal →
-  state_interp σ1 (κs ++ κs') (length t1) -∗
-  wpr s Hi t ⊤ e1 r1 Φ Φr -∗
-  wptp s t1 ={⊤,∅}▷=∗^(S n) (∃ e2 t2',
-    ⌜ t2 = e2 :: t2' ⌝ ∗
-    ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
-    state_interp σ2 κs' (length t2') ∗
-    from_option Φ True (to_val e2) ∗
-    ([∗ list] v ∈ omap to_val t2', fork_post v)).
-Proof.
-  iIntros (Hstep) "Hσ He Ht".
-  inversion Hstep. subst.
-  iPoseProof (wptp_strong_adequacy with "Hσ [He] Ht") as "H".
-  { eauto. }
-  {rewrite wpr_unfold /wpr_pre. iApply "He". }
-  rewrite perennial_invG.
-  iApply "H".
-Qed.
-
-Fixpoint fupd_fresh (ns: list nat) Hi0 (P: invG Σ → iProp Σ) :=
-  match ns with
-  | [] => P Hi0
-  | (n :: ns) =>
-    (|={⊤}=> ∀ Hi', fupd_fresh ns Hi' P)%I
-  end.
-
 Fixpoint step_fupdN_fresh (ns: list nat) Hi0 t0 (P: invG Σ → pbundleG T Σ → iProp Σ) :=
   match ns with
   | [] => P Hi0 t0
@@ -276,7 +249,6 @@ Fixpoint step_fupdN_fresh (ns: list nat) Hi0 t0 (P: invG Σ → pbundleG T Σ �
     (|={⊤, ∅}▷=>^(S n) |={⊤, ∅}=> ▷
      ∀ Hi', (∃ t' : pbundleG T Σ, step_fupdN_fresh ns Hi' t' P))%I
   end.
-
 
 Lemma step_fupdN_fresh_snoc (ns: list nat) n Hi0 t0 Q:
   step_fupdN_fresh (ns ++ [n]) Hi0 t0 Q ≡
@@ -333,39 +305,6 @@ Proof.
     iExists _. iApply (IHns with "H"). eauto.
 Qed.
 
-Lemma step_fupdN_fresh_snoc_plain ns n Hinv t0 P `{!Plain P}:
-  step_fupdN_fresh (ns ++ [n]) Hinv t0 (λ (x : invG Σ) (t : pbundleG T Σ), P) -∗
-  step_fupdN_fresh ns Hinv t0
-    (λ (x : invG Σ) (t : pbundleG T Σ), |={⊤}=> ▷^(S (S n)) P).
-Proof.
-  iIntros "H".
-  rewrite ?step_fupdN_fresh_snoc.
-  iApply (step_fupdN_fresh_wand with "H").
-  { iIntros (Hinv' ?) "H".
-   iDestruct (step_fupdN_wand _ _ _ _ (|={⊤}=> ▷ P)%I with "H []") as "H'".
-   { iIntros "H". iApply fupd_plain_mask_empty.  iMod "H". iModIntro.
-     iNext. iDestruct ("H" $! Hinv') as (_) "$". }
-   rewrite -step_fupdN_S_fupd.
-   iMod (step_fupdN_plain with "H'") as "Hφ". iModIntro. simpl. iNext.
-   rewrite -later_laterN laterN_later.
-   iNext. by iMod "Hφ".
-  }
-Qed.
-
-Lemma fupd_fresh_plain_1 `{!invPreG Σ} P `{!Plain P} ns:
-  (∀ Hinv', fupd_fresh ns Hinv' (λ _, P)) ==∗ ◇ P.
-Proof.
-  iIntros "H".
-  iInduction ns as [| n ns] "IH".
-  - simpl. iMod wsat_alloc as (Hinv) "(Hw&HE)". iApply ("H" $! Hinv).
-  - iMod wsat_alloc as (Hinv) "(Hw&HE)".
-    iSpecialize ("H" $! Hinv).
-    simpl.
-    rewrite uPred_fupd_eq /uPred_fupd_def.
-    iMod ("H" with "[$]") as "[Hw [HE H]]".
-    iMod "H". by iApply "IH".
-Qed.
-
 Fixpoint fresh_later_count (ns: list nat) :=
   match ns with
   | [] => 2
@@ -373,33 +312,6 @@ Fixpoint fresh_later_count (ns: list nat) :=
   end.
 
 Lemma step_fupdN_fresh_plain `{!invPreG Σ} P `{!Plain P} ns n:
-  (∀ Hinv', ∃ t, step_fupdN_fresh ns Hinv' t
-                  (λ _ _, |={⊤, ∅}▷=>^(S n) |={⊤, ∅}=> P)) -∗
-  ▷^(fresh_later_count ns + n) P.
-Proof.
-  iIntros "H".
-  iInduction ns as [| n' ns] "IH".
-  - rewrite /step_fupdN_fresh.
-    iApply (bupd_plain (▷^((S (S n))) P)%I); try (iPureIntro; apply _).
-    iMod wsat_alloc as (Hinv) "(Hw&HE)". iDestruct ("H" $! Hinv) as (_) "H".
-    iDestruct (step_fupdN_fresh_pattern_plain _ (P)%I with "[H]") as "H".
-    iApply (step_fupdN_wand with "H").
-    iIntros "H". iMod "H". iModIntro. by iNext.
-    rewrite {1}uPred_fupd_eq {1}/uPred_fupd_def.
-    by iMod ("H" with "[$]") as "[Hw [HE >$]]".
-  - iMod wsat_alloc as (Hinv) "(Hw&HE)".
-    iSpecialize ("H" $! Hinv).
-    iDestruct "H" as (t) "H".
-    rewrite /step_fupdN_fresh -/step_fupdN_fresh.
-    iDestruct (step_fupdN_fresh_pattern_wand with "H IH") as "H".
-    iDestruct (step_fupdN_fresh_pattern_plain with "H") as "H".
-    rewrite {1}uPred_fupd_eq {1}/uPred_fupd_def.
-    iMod ("H" with "[$]") as "[Hw [HE >H]]".
-    simpl.
-    by rewrite ?laterN_plus.
-Qed.
-
-Lemma step_fupdN_fresh_plain2 `{!invPreG Σ} P `{!Plain P} ns n:
   (∀ Hinv', |={⊤}=> ∃ t, step_fupdN_fresh ns Hinv' t
                   (λ _ _, |={⊤, ∅}▷=>^(S n) |={⊤, ∅}=> P)) -∗
   ▷^(fresh_later_count ns + n) P.
@@ -435,36 +347,7 @@ Proof.
     by rewrite ?laterN_plus.
 Qed.
 
-Lemma fupd_fresh_plain_soundness `{!invPreG Σ} (P: iProp Σ) `{!Plain P} ns:
-  (∀ `{Hinv: !invG Σ}, bi_emp_valid (fupd_fresh ns Hinv (λ _, P))) →
-  bi_emp_valid P.
-Proof.
-  iIntros (Hfupd).
-  apply later_soundness.
-  iAssert (∀ Hinv, fupd_fresh ns Hinv (λ _: invG Σ, P))%I as "H".
-  { iIntros. iApply Hfupd. }
-  clear Hfupd.
-  iInduction ns as [| n ns] "IH".
-  - simpl. iMod wsat_alloc as (Hinv) "_". iApply ("H" $! Hinv).
-  - iMod wsat_alloc as (Hinv) "[Hw HE]".
-    iSpecialize ("H" $! Hinv).
-    simpl.
-    rewrite uPred_fupd_eq /uPred_fupd_def.
-    iMod ("H" with "[$]") as "[Hw [HE >H']]".
-    iApply ("IH" with "H'").
-Qed.
-
-Lemma step_fupdN_fresh_soundness' `{!invPreG Σ} (φ : Prop) ns n:
-  (∀ Hinv : invG Σ, (∃ t0, step_fupdN_fresh ns Hinv t0
-                             (λ _ _, |={⊤, ∅}▷=>^(S n) |={⊤, ∅}=> ⌜φ⌝))%I) →
-  φ.
-Proof.
-  intros Hiter.
-  apply (soundness (M:=iResUR Σ) _  (fresh_later_count ns + n)); simpl.
-  iApply step_fupdN_fresh_plain. iIntros (Hinv). iApply Hiter.
-Qed.
-
-Lemma step_fupdN_fresh_soundness2 `{!invPreG Σ} (φ : Prop) ns n:
+Lemma step_fupdN_fresh_soundness `{!invPreG Σ} (φ : Prop) ns n:
   (∀ Hinv : invG Σ, (|={⊤}=> (∃ t0, step_fupdN_fresh ns Hinv t0
                              (λ _ _, |={⊤, ∅}▷=>^(S n) |={⊤, ∅}=> ▷ ⌜φ⌝)))%I) →
   φ.
@@ -472,9 +355,8 @@ Proof.
   intros Hiter.
   apply (soundness (M:=iResUR Σ) _  (fresh_later_count ns + n + 1)); simpl.
   rewrite laterN_plus.
-  iApply step_fupdN_fresh_plain2. iIntros (Hinv). iApply Hiter.
+  iApply step_fupdN_fresh_plain. iIntros (Hinv). iApply Hiter.
 Qed.
-
 
 (*
 Notation "|={ E }=>_( t ) Q" := (fupd (FUpd := t) E E Q)
@@ -482,6 +364,35 @@ Notation "|={ E }=>_( t ) Q" := (fupd (FUpd := t) E E Q)
 Notation "P ={ E }=∗_ t Q" := (P -∗ |={E}=>_(t) Q)%I
  (at level 99) : bi_scope.
 *)
+
+Lemma wptp_recv_strong_adequacy Φ Φr κs' s Hi t n ns r1 e1 t1 κs t2 σ1 σ2 :
+  nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, σ1) κs (t2, σ2) Normal →
+  state_interp σ1 (κs ++ κs') (length t1) -∗
+  wpr s Hi t ⊤ e1 r1 Φ Φr -∗
+  wptp s t1 -∗ step_fupdN_fresh ns Hi t (λ Hi' t',
+    ⌜ Hi' = Hi ∧ t' = t ⌝ ∗
+    (|={⊤, ∅}▷=>^(S n) |={⊤, ∅}=> ▷ ∃ e2 t2',
+    ⌜ t2 = e2 :: t2' ⌝ ∗
+    ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
+    state_interp σ2 κs' (length t2') ∗
+    from_option Φ True (to_val e2) ∗
+    ([∗ list] v ∈ omap to_val t2', fork_post v))).
+Proof.
+  iIntros (Hstep) "Hσ He Ht".
+  inversion Hstep. subst.
+  iPoseProof (wptp_strong_adequacy with "Hσ [He] Ht") as "H".
+  { eauto. }
+  {rewrite wpr_unfold /wpr_pre. iApply "He". }
+  assert (ns = []) as ->;
+    first by (eapply nrsteps_normal_empty_prefix; eauto).
+  inversion H. subst.
+  rewrite /step_fupdN_fresh.
+  rewrite perennial_invG.
+  iSplitL ""; first by eauto.
+  iApply (step_fupdN_wand with "H").
+  iIntros. iApply fupd_mask_weaken; first by set_solver+.
+  iNext. eauto.
+Qed.
 
 Lemma wptp_recv_strong_crash_adequacy Φ Φr κs' s Hi t ns n r1 e1 t1 κs t2 σ1 σ2 :
   nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, σ1) κs (t2, σ2) Crashed →
@@ -520,20 +431,12 @@ Proof.
     iPoseProof (IH with "[Hσ] Hr []") as "H"; eauto.
   - iIntros (Hi').
     iDestruct ("H" $! Hi') as (t') "(Hσ&Hr)".
-    iExists t'. subst.
-    assert (ns' = []) as ->;
-      first by (eapply nrsteps_normal_empty_prefix; eauto).
-    rewrite app_nil_l in H1.
-    inversion H1; subst.
-    rewrite /step_fupdN_fresh.
-    iPoseProof (wptp_strong_adequacy with "[Hσ] [Hr] []") as "H"; eauto.
-    { rewrite wpr_unfold /wpr_pre. iApply "Hr". }
-    rewrite perennial_invG.
-    iApply (step_fupdN_wand with "H").
-    iIntros "H". iDestruct "H" as (????) "(Hσ&?&?)".
-    iApply (fupd_mask_weaken _ ∅); first by set_solver+.
-    iNext. iExists _, _. iFrame.
-    iSplitL ""; eauto.
+    iExists t'.
+    iDestruct (wptp_recv_strong_adequacy with "[Hσ] [Hr] []") as "H"; eauto.
+    iApply (step_fupdN_fresh_wand with "H").
+    iIntros (??) "H".
+    iDestruct "H" as ((?&?)) "H". subst.
+    iApply "H".
 Qed.
 
 End recovery_adequacy.
@@ -569,10 +472,11 @@ Corollary wp_recv_adequacy Σ Λ CS (T: ofeT) `{!invPreG Σ} s e r σ φ φr :
   recv_adequate (CS := CS) s e r σ (λ v _, φ v) (λ v _, φr v) .
 Proof.
   intros Hwp. split.
-  - intros t2 σ2 v2 [n [κs ?]]%erased_rsteps_nrsteps.
-    inversion H. subst.
-    eapply (step_fupdN_soundness' _ (S (S n0)))=> Hinv. rewrite Nat_iter_S.
+  - intros t2 σ2 v2 [n [κs H]]%erased_rsteps_nrsteps.
+    destruct (nrsteps_snoc _ _ _ _ _ _ H) as (ns'&n'&->).
+    eapply (step_fupdN_fresh_soundness _ ns' n')=> Hinv.
     iMod (Hwp Hinv κs) as (t stateI Hfork_post Hpf) "(Hw&H)".
+    iModIntro. iExists _.
     iDestruct (wptp_recv_strong_adequacy
                  (perennialG0 :=
             PerennialG _ _ T Σ
@@ -580,13 +484,15 @@ Proof.
                IrisG Λ Σ Hi (λ σ κs _, stateI t σ κs)
                     (Hfork_post t)) Hpf) _ _ [] with "[Hw] [H] []") as "H"; eauto.
     { rewrite app_nil_r. eauto. }
-    iApply step_fupd_intro; first by eauto.
-    iNext. iApply (step_fupdN_mono with "H").
-    iIntros "H". iDestruct "H" as (?? Heq Hnot_stuck) "(H&Hφ&?)".
+    iApply (step_fupdN_fresh_wand with "H").
+    iIntros (??) "(?&H)".
+    iApply (step_fupdN_mono with "H").
+    iIntros "H". iMod "H". iModIntro. iNext.
+    iDestruct "H" as (?? Heq Hnot_stuck) "(H&Hφ&?)".
     inversion Heq; subst. rewrite to_of_val. iApply "Hφ".
   - intros t2 σ2 v2 [ns [κs H]]%erased_rsteps_nrsteps.
-    destruct (nrsteps_crashed_snoc _ _ _ _ _ H) as (ns'&n'&->).
-    eapply (step_fupdN_fresh_soundness2 _ ns' n')=> Hinv.
+    destruct (nrsteps_snoc _ _ _ _ _ _ H) as (ns'&n'&->).
+    eapply (step_fupdN_fresh_soundness _ ns' n')=> Hinv.
     iMod (Hwp Hinv κs) as (t stateI Hfork_post Hpf) "(Hw&H)".
     iModIntro. iExists t.
     iDestruct (wptp_recv_strong_crash_adequacy
@@ -602,25 +508,29 @@ Proof.
     iIntros "H". iMod "H". iModIntro. iNext.
     iDestruct "H" as (?? Heq Hnot_stuck) "(H&Hφ&?)".
     inversion Heq; subst. rewrite to_of_val. iApply "Hφ".
-  - intros t2 σ2 v2 stat NS [ns [κs H]]%erased_rsteps_nrsteps Hin.
+  - intros ??? stat NS [ns [κs H]]%erased_rsteps_nrsteps Hin.
     destruct stat; last first.
-    * inversion H. subst.
-      eapply (step_fupdN_soundness' _ (S (S n)))=> Hinv. rewrite Nat_iter_S.
-      iMod (Hwp Hinv κs) as (t stateI Hfork_post Hpf) "(Hw&H)".
-      iDestruct (wptp_recv_strong_adequacy
-                   (perennialG0 :=
-              PerennialG _ _ T Σ
-                (λ Hi t,
-                 IrisG Λ Σ Hi (λ σ κs _, stateI t σ κs)
-                      (Hfork_post t)) Hpf) _ _ [] with "[Hw] [H] []") as "H"; eauto.
-      { rewrite app_nil_r. eauto. }
-      iApply step_fupd_intro; first by eauto.
-      iNext. iApply (step_fupdN_mono with "H").
-      iIntros "H". iDestruct "H" as (?? Heq Hnot_stuck) "(H&Hφ&?)".
-      inversion Heq; subst. iPureIntro. apply Hnot_stuck; eauto.
     *
-    destruct (nrsteps_crashed_snoc _ _ _ _ _ H) as (ns'&n'&->).
-    eapply (step_fupdN_fresh_soundness2 _ ns' n')=> Hinv.
+    destruct (nrsteps_snoc _ _ _ _ _ _ H) as (ns'&n'&->).
+    eapply (step_fupdN_fresh_soundness _ ns' n')=> Hinv.
+    iMod (Hwp Hinv κs) as (t stateI Hfork_post Hpf) "(Hw&H)".
+    iModIntro. iExists _.
+    iDestruct (wptp_recv_strong_adequacy
+                 (perennialG0 :=
+            PerennialG _ _ T Σ
+              (λ Hi t,
+               IrisG Λ Σ Hi (λ σ κs _, stateI t σ κs)
+                    (Hfork_post t)) Hpf) _ _ [] with "[Hw] [H] []") as "H"; eauto.
+    { rewrite app_nil_r. eauto. }
+    iApply (step_fupdN_fresh_wand with "H").
+    iIntros (??) "(?&H)".
+    iApply (step_fupdN_mono with "H").
+    iIntros "H". iMod "H". iModIntro. iNext.
+    iDestruct "H" as (?? Heq Hnot_stuck) "(H&Hφ&?)".
+    inversion Heq; subst. iPureIntro. apply Hnot_stuck; eauto.
+    *
+    destruct (nrsteps_snoc _ _ _ _ _ _ H) as (ns'&n'&->).
+    eapply (step_fupdN_fresh_soundness _ ns' n')=> Hinv.
     iMod (Hwp Hinv κs) as (t stateI Hfork_post Hpf) "(Hw&H)".
     iModIntro. iExists t.
     iDestruct (wptp_recv_strong_crash_adequacy
