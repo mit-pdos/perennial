@@ -31,3 +31,5 @@ Module FS.
     Definition atomicCreate: val := λ: <>, #().
   End go_lang.
 End FS.
+
+Definition lockRefT := refT intT.

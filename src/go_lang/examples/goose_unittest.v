@@ -303,7 +303,7 @@ Definition simpleSpawn: val :=
   λ: <>,
     let: "l" := Data.newLock #() in
     let: "v" := ref (zero_val intT) in
-    Fork (λ: <>, Data.lockAcquire Reader "l";;
+    Fork (Data.lockAcquire Reader "l";;
           let: "x" := !"v" in
           if: "x" > #0
           then
@@ -327,7 +327,7 @@ Definition loopSpawn: val :=
       if: !"i" > #10
       then Break
       else
-        Fork (λ: <>, threadCode !"i");;
+        Fork (threadCode !"i");;
         "i" <- !"i" + #1;;
         Continue;;
     let: "dummy" := ref #true in

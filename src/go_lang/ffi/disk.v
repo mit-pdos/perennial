@@ -9,7 +9,7 @@ From Perennial.go_lang Require Import lang lifting slice typing.
 usually written *)
 Set Printing Projections.
 
-Inductive DiskOp := ReadOp | WriteOp.
+Inductive DiskOp := ReadOp | WriteOp | SizeOp.
 Instance eq_DiskOp : EqDecision DiskOp.
 Proof.
   intros x y; hnf; decide equality.
@@ -23,10 +23,12 @@ Proof.
            (fun op => match op with
                    | ReadOp => 0
                    | WriteOp => 1
+                   | SizeOp => 2
                    end)
            (fun n => match n with
                   | 0 => Some ReadOp
                   | 1 => Some WriteOp
+                  | 2 => Some SizeOp
                   | _ => None
                   end)).
     destruct x; auto.
@@ -37,10 +39,12 @@ Definition disk_ty: ext_types disk_op :=
        match op with
     | ReadOp => (intT, refT byteT)
     | WriteOp => (prodT intT (refT byteT), unitT)
+    | SizeOp => (unitT, intT)
        end; |}.
 
 Definition block_bytes: nat := N.to_nat 4096.
 Definition Block := vec byte block_bytes.
+Definition blockT: ty := slice.T byteT.
 
 Definition disk_state := gmap u64 Block.
 
@@ -74,7 +78,7 @@ Section disk.
     let: "p" := ExternalOp ReadOp (Var "a") in
     (Var "p", #4096).
 
-  Theorem Read_t : ⊢ Read : (intT -> slice.T byteT).
+  Theorem Read_t : ⊢ Read : (intT -> blockT).
   Proof.
     typecheck.
   Qed.
@@ -84,6 +88,15 @@ Section disk.
     ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
 
   Theorem Write_t : ⊢ Write : (intT -> slice.T byteT -> unitT).
+  Proof.
+    typecheck.
+  Qed.
+
+  Definition Size: val :=
+    λ: <>,
+       ExternalOp SizeOp #().
+
+  Theorem Size_t : ⊢ Size : (unitT -> intT).
   Proof.
     typecheck.
   Qed.
@@ -101,7 +114,7 @@ Section disk.
                 Block_to_vals b !! Z.to_nat i)%Z ->
       ext_step WriteOp (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
                (LitV LitUnit) (state_upd_world <[ a := b ]> σ)
-
+  (* TODO: size semantics *)
   .
 
   Hint Constructors ext_step : core.
@@ -282,6 +295,5 @@ lemmas. *)
 
 End disk.
 
-Global Opaque Write.
-Global Opaque Read.
-Hint Resolve Write_t Read_t : types.
+Global Opaque Write Read Size.
+Hint Resolve Write_t Read_t Size_t : types.

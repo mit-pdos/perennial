@@ -10,6 +10,7 @@ Inductive ty :=
 | sumT (t1 t2: ty)
 | arrowT (t1 t2: ty)
 | refT (t: ty)
+| mapValT (t: ty) (* keys are always uint64, for now *)
 .
 
 Infix "*" := prodT : heap_type.
@@ -47,6 +48,7 @@ Section go_lang.
     | boolT => #false
     | unitT => #()
     | stringT => #(str"")
+    | mapValT vt => MapNilV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
     | sumT t1 t2 => InjLV (zero_val t1)
     | arrowT t1 t2 => λ: <>, zero_val t2
@@ -180,6 +182,9 @@ Section go_lang.
   | rec_val_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e : t2 ->
       Γ ⊢v RecV f x e : arrowT t1 t2
+  | mapNil_hasTy v t :
+      Γ ⊢v v : t ->
+      Γ ⊢v MapNilV v : mapValT t
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
