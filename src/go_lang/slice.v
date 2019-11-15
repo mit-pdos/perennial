@@ -95,6 +95,17 @@ Proof.
   typecheck.
 Qed.
 
+Definition SliceSubslice: val :=
+  λ: "s" "n1" "n2",
+  if: slice.len "s" ≤ "n2" - "n1"
+  then Panic "slice index out-of-bounds"
+  else (slice.ptr "s" +ₗ "n1", "n2" - "n1").
+
+Theorem SliceSubslice_t t : ⊢ SliceSubslice : (slice.T t -> intT -> intT -> slice.T t).
+Proof.
+  typecheck.
+Qed.
+
 Definition SliceGet: val :=
   λ: "s" "i",
   !(slice.ptr "s" +ₗ "i").
@@ -148,5 +159,5 @@ Qed.
 End go_lang.
 
 Hint Resolve NewSlice_t
-     SliceTake_t SliceSkip_t SliceGet_t SliceSet_t
+     SliceTake_t SliceSkip_t SliceSubslice_t SliceGet_t SliceSet_t
      UInt64Put_t UInt64Get_t : types.
