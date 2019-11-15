@@ -101,6 +101,10 @@ Section go_lang.
       Γ ⊢ e1 : t1 ->
       Γ ⊢ e2 : t2 ->
       Γ ⊢ BinOp op e1 e2 : t
+  | str_plus_hasTy e1 e2 :
+      Γ ⊢ e1 : stringT ->
+      Γ ⊢ e2 : stringT ->
+      Γ ⊢ BinOp PlusOp e1 e2 : stringT
   | pair_hasTy e1 e2 t1 t2 :
       Γ ⊢ e1 : t1 ->
       Γ ⊢ e2 : t2 ->
@@ -277,6 +281,8 @@ Ltac type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]
   | [ |- val_hasTy _ _ _ ] => solve [eauto with types]
+  | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ solve [eauto with types] | ]
+  | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ | solve [eauto with types] ]
   | [ |- expr_hasTy _ _ _ ] => econstructor
   | [ |- expr_hasTy _ (Rec _ (annot_e (annot _ ?t)) _) (arrowT _ _) ] => eapply (rec_expr_hasTy_eq t)
   | [ |- expr_hasTy _ (Rec _ _ _) (arrowT _ _) ] => eapply rec_expr_hasTy_eq
