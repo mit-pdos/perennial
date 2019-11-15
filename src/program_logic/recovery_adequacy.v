@@ -375,7 +375,7 @@ Lemma step_fupdN_fresh_plain `{!invPreG Σ} P `{!Plain P} ns:
 Proof.
   iIntros "H".
   iInduction ns as [| n' ns] "IH".
-  - simpl. iApply bupd_plain; try (iPureIntro; apply _).
+  - simpl. iApply (bupd_plain (▷ ▷ P)%I); try (iPureIntro; apply _).
     iMod wsat_alloc as (Hinv) "(Hw&HE)". by iDestruct ("H" $! Hinv) as (_) "$".
   - iMod wsat_alloc as (Hinv) "(Hw&HE)".
     iSpecialize ("H" $! Hinv).
