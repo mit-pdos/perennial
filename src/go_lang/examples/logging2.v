@@ -35,20 +35,14 @@ Definition writeHdr: val :=
 
 Definition Init: val :=
   λ: "logSz",
-    let: "memLenPtr" := ref (zero_val intT) in
-    "memLenPtr" <- #0;;
-    let: "memTxnNxtPtr" := ref (zero_val intT) in
-    "memTxnNxtPtr" <- #0;;
-    let: "logTxnNxtPtr" := ref (zero_val intT) in
-    "logTxnNxtPtr" <- #0;;
     let: "log" := buildStruct Log.S [
       "logLock" ::= Data.newLock #();
       "memLock" ::= Data.newLock #();
       "logSz" ::= "logSz";
       "memLog" ::= ref (zero_val (slice.T blockT));
-      "memLen" ::= "memLenPtr";
-      "memTxnNxt" ::= "memTxnNxtPtr";
-      "logTxnNxt" ::= "logTxnNxtPtr"
+      "memLen" ::= ref (zero_val intT);
+      "memTxnNxt" ::= ref (zero_val intT);
+      "logTxnNxt" ::= ref (zero_val intT)
     ] in
     writeHdr "log" #0;;
     "log".
@@ -65,18 +59,13 @@ Definition readBlocks: val :=
     let: "initblks" := NewSlice blockT #0 in
     "blks" <- "initblks";;
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" < "len"
-      then
-        let: "blk" := disk.Read ("LogStart" + !"i") in
-        let: "oldblks" := !"blks" in
-        let: "newblks" := SliceAppend "oldblks" "blk" in
-        "blks" <- "newblks";;
-        "i" <- !"i" + #1;;
-        Continue
-      else Break;;
-    let: "blocks" := !"blks" in
-    "blocks".
+    for: (!"i" < "len"); ("i" <- !"i" + #1) :=
+      let: "blk" := disk.Read ("LogStart" + !"i") in
+      let: "oldblks" := !"blks" in
+      let: "newblks" := SliceAppend "oldblks" "blk" in
+      "blks" <- "newblks";;
+      Continue;;
+    !"blks".
 
 Definition Read: val :=
   λ: "log",
@@ -88,16 +77,11 @@ Definition Read: val :=
 
 Definition memWrite: val :=
   λ: "log" "l",
+    let: "n" := slice.len "l" in
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" < slice.len "l"
-      then
-        let: "oldblks" := !Log.memLog "log" in
-        let: "newblks" := SliceAppend "oldblks" (SliceGet "l" !"i") in
-        Log.memLog "log" <- "newblks";;
-        "i" <- !"i" + #1;;
-        Continue
-      else Break.
+    for: (!"i" < "n"); ("i" <- !"i" + #1) :=
+      Log.memLog "log" <- SliceAppend (!Log.memLog "log") (SliceGet "l" !"i");;
+      Continue.
 
 Definition memAppend: val :=
   λ: "log" "l",
@@ -124,14 +108,12 @@ Definition readLogTxnNxt: val :=
 
 Definition diskAppendWait: val :=
   λ: "log" "txn",
-    let: "done" := ref #false in
+    Skip;;
     for: (#true); (Skip) :=
-      if: !"done"
+      let: "logtxn" := readLogTxnNxt "log" in
+      if: "txn" < "logtxn"
       then Break
-      else
-        let: "logtxn" := readLogTxnNxt "log" in
-        "done" <- "txn" < "logtxn";;
-        Continue.
+      else Continue.
 
 Definition Append: val :=
   λ: "log" "l",
@@ -169,8 +151,7 @@ Definition diskAppend: val :=
 
 Definition Logger: val :=
   λ: "log",
-    let: "dummy" := ref #true in
+    Skip;;
     for: (#true); (Skip) :=
       diskAppend "log";;
-      "dummy" <- ~ !"dummy";;
       Continue.
