@@ -31,7 +31,7 @@ Notation LetCtx x e2 := (AppRCtx (LamV x e2)) (only parsing).
 Notation SeqCtx e2 := (LetCtx BAnon e2) (only parsing).
 Notation Match e0 x1 e1 x2 e2 := (Case e0 (Lam x1 e1) (Lam x2 e2)) (only parsing).
 Notation Alloc e := (AllocN (Val $ LitV $ LitInt (Word.NToWord n64 1%N)) e) (only parsing).
-Notation NewMap v := (Alloc (MapNilV v)) (only parsing).
+Notation AllocMap v := (Alloc (MapNilV v)) (only parsing).
 (** Compare-and-set (CAS) returns just a boolean indicating success or failure. *)
 Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
 
