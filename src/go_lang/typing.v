@@ -72,6 +72,12 @@ Section go_lang.
     | _ => None
     end.
 
+  Definition un_op_ty (op:un_op) : option (ty * ty) :=
+    match op with
+    | NegOp => Some (boolT, boolT)
+    | _ => None
+    end.
+
   Inductive expr_hasTy (Γ: Ctx) : expr -> ty -> Prop :=
   | var_hasTy x t :
       Γ !! x = Some t ->
@@ -88,6 +94,10 @@ Section go_lang.
       Γ ⊢ Rec f x e : arrowT t1 t2
   | panic_expr_hasTy msg t :
       Γ ⊢ Panic msg : t
+  | un_op_hasTy op e1 t1 t :
+      un_op_ty op = Some (t1, t) ->
+      Γ ⊢ e1 : t1 ->
+      Γ ⊢ UnOp op e1 : t
   | offset_op_hasTy e1 e2 t :
       Γ ⊢ e1 : refT t ->
       Γ ⊢ e2 : intT ->
