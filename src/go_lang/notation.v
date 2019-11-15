@@ -15,7 +15,7 @@ the uniform inheritance criterion, and it doesn't seem to work *)
 Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.
 Coercion LitProphecy : proph_id >-> base_lit.
-
+Notation "'str' s" := (LitString s) (at level 30, format "'str' s") : val_scope.
 
 Coercion App : expr >-> Funclass.
 

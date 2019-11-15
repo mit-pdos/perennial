@@ -85,7 +85,7 @@ with anything. This is useful for erasure proofs: if we erased things to unit,
 behavior. So we erase to the poison value instead, making sure that no legal
 comparisons could be affected. *)
 Inductive base_lit : Set :=
-  | LitInt (n : u64) | LitBool (b : bool) | LitByte (n : byte) | LitUnit | LitPoison
+  | LitInt (n : u64) | LitBool (b : bool) | LitByte (n : byte) | LitString (s : string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
   | NegOp | MinusUnOp.
@@ -258,6 +258,7 @@ Proof. refine (
              | LitInt x, LitInt x' => cast_if (decide (x = x'))
              | LitBool x, LitBool x' => cast_if (decide (x = x'))
              | LitByte x, LitByte x' => cast_if (decide (x = x'))
+             | LitString x, LitString x' => cast_if (decide (x = x'))
              | LitUnit, LitUnit => left _
              | LitPoison, LitPoison => left _
              | LitLoc l, LitLoc l' => cast_if (decide (l = l'))
@@ -356,16 +357,18 @@ Proof.
   | LitByte n => (inl (inl (inr n)), None)
   | LitBool b => (inl (inr b), None)
   | LitUnit => (inr (inl false), None)
+  | LitString s => (inr (inr (inr s)), None)
   | LitPoison => (inr (inl true), None)
-  | LitLoc l => (inr (inr l), None)
+  | LitLoc l => (inr (inr (inl l)), None)
   | LitProphecy p => (inr (inl false), Some p)
   end) (λ l, match l with
   | (inl (inl (inl n)), None) => LitInt n
   | (inl (inl (inr n)), None) => LitByte n
   | (inl (inr b), None) => LitBool b
   | (inr (inl false), None) => LitUnit
+  | (inr (inr (inr s)), None) => LitString s
   | (inr (inl true), None) => LitPoison
-  | (inr (inr l), None) => LitLoc l
+  | (inr (inr (inl l)), None) => LitLoc l
   | (_, Some p) => LitProphecy p
   end) _); by intros [].
 Qed.
@@ -646,6 +649,12 @@ Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=
   | OffsetOp => None (* Pointer arithmetic *)
   end.
 
+Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :=
+  match op with
+  | PlusOp => Some $ LitString (s1 ++ s2)
+  | _ => None
+  end.
+
 Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
   if decide (op = EqOp) then
     (* Crucially, this compares the same way as [CmpXchg]! *)
@@ -657,6 +666,7 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     match v1, v2 with
     | LitV (LitInt n1), LitV (LitInt n2) => LitV <$> bin_op_eval_int op n1 n2
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
+    | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
     (* note that we go through N since we want off to be interpreted unsigned *)
     | LitV (LitLoc l), LitV (LitInt off) => Some $ LitV $ LitLoc (l +ₗ u64_Z off)
     | _, _ => None

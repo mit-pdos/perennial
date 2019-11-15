@@ -5,6 +5,7 @@ Inductive ty :=
 | byteT
 | boolT
 | unitT
+| stringT
 | prodT (t1 t2: ty)
 | sumT (t1 t2: ty)
 | arrowT (t1 t2: ty)
@@ -45,9 +46,10 @@ Section go_lang.
     | byteT => #(LitByte 0)
     | boolT => #false
     | unitT => #()
+    | stringT => #(str"")
     | prodT t1 t2 => (zero_val t1, zero_val t2)
     | sumT t1 t2 => InjLV (zero_val t1)
-    | arrowT t1 t2 => λ: "x", zero_val t2
+    | arrowT t1 t2 => λ: <>, zero_val t2
     | refT t => #null
     end.
 
@@ -56,6 +58,7 @@ Section go_lang.
   | byte_hasTy x : base_lit_hasTy (LitByte x) byteT
   | bool_hasTy x : base_lit_hasTy (LitBool x) boolT
   | unit_hasTy : base_lit_hasTy (LitUnit) unitT
+  | string_hasTy s : base_lit_hasTy (LitString s) stringT
   (* to get a type for a location, the typing judgement should keep track of it
   from its allocation and then throughout the program; null is the only special
   case of a location value the programmer can directly and legally refer to *)
