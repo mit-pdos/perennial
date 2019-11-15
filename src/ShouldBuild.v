@@ -20,9 +20,10 @@ From Perennial Require Import Goose.TypeSystem.
 
 (* work-in-progress on Go deep embedding based on heap_lang *)
 From Perennial.go_lang Require Import
-     adequacy total_adequacy lib.spin_lock.
+     adequacy total_adequacy lib.spin_lock examples.logging.
+(* goose deep output *)
 From Perennial.go_lang.examples Require Import
-     logging append_log goose_unittest wal.
+     goose_unittest append_log wal mailserver.
 
 (* goose output *)
 From Perennial.Goose Require Import ExplicitModel.

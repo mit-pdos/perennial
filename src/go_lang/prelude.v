@@ -28,8 +28,28 @@ End Data.
 Module FS.
   Section go_lang.
     Context {ext:ext_op}.
+    Definition open: val := λ: <>, #().
+    Definition close: val := λ: <>, #().
+    Definition list: val := λ: <>, #().
+    Definition size: val := λ: <>, #().
+    Definition readAt: val := λ: <>, #().
+    Definition create: val := λ: <>, #().
+    Definition append: val := λ: <>, #().
+    Definition delete: val := λ: <>, #().
+    Definition rename: val := λ: <>, #().
+    Definition truncate: val := λ: <>, #().
     Definition atomicCreate: val := λ: <>, #().
+    Definition link: val := λ: <>, #().
   End go_lang.
 End FS.
+Definition fileT: ty := unitT.
+
+Module Globals.
+  Section go_lang.
+    Context {ext:ext_op}.
+    Definition getX: val := λ: <>, #().
+    Definition setX: val := λ: <>, #().
+  End go_lang.
+End Globals.
 
 Definition lockRefT := refT intT.
