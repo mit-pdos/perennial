@@ -23,7 +23,7 @@ From Perennial.go_lang Require Import
      adequacy total_adequacy lib.spin_lock examples.logging.
 (* goose deep output *)
 From Perennial.go_lang.examples Require Import
-     goose_unittest append_log wal mailserver simpledb.
+     goose_unittest append_log wal mailserver simpledb logging2.
 
 (* goose output *)
 From Perennial.Goose Require Import ExplicitModel.
