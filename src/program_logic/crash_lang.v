@@ -40,6 +40,21 @@ Section crash_language.
       erased_rsteps r ([r], σ) ρ3 s →
       erased_rsteps r ρ1 ρ3 Crashed.
 
+  Lemma erased_rsteps_nrsteps r ρ1 ρ2 s :
+   erased_rsteps r ρ1 ρ2 s ↔ ∃ n κs, nrsteps r n ρ1 κs ρ2 s.
+  Proof.
+    split.
+    - induction 1 as [?? H| ????? H Hcrash ? IH].
+      * eapply erased_steps_nsteps in H as (n&κs&H).
+        exists [n], κs. econstructor; eauto.
+      * destruct IH as (ns&κs2&IH).
+        eapply erased_steps_nsteps in H as (n1&κs1&H).
+        exists (n1 :: ns), (κs1 ++ κs2).
+        econstructor; eauto.
+    - intros (n&κs&Hsteps).
+      induction Hsteps; econstructor; eauto; eapply erased_steps_nsteps; eauto.
+  Qed.
+
   (* XXX: the sequence of programs to execute is non-adaptive in response to whether you crashed or not *)
   (*
   Inductive exec_seq (r: expr Λ) : nat →  list (expr Λ) → state Λ → list (observation Λ) → cfg Λ → Prop :=
