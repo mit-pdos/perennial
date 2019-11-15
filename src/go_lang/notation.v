@@ -193,6 +193,10 @@ Notation "'for-range:' v < b := e" := (ForRange v%string b%E e%E)
   (at level 200, v at level 1, b at level 1, e at level 200,
    format "'[' 'for-range:'  v  <  b  :=  '/  ' e ']'") : expr_scope.
 
+(* idiomatic wrappers for loop control flow *)
+Definition Continue {ext:ext_op}: val := #true.
+Definition Break {ext:ext_op}: val := #false.
+
 Definition For {ext:ext_op} (cond:expr) (body:expr) (post:expr) : expr :=
   (rec: "__loop" BAnon :=
      if: cond

@@ -75,7 +75,7 @@ Definition write_all: val :=
   for: (!"i" < "len") ; ("i" <- !"i" + #1) :=
     let: "bk" := SliceGet "bks" !"i" in
     Write ("off" + !"i") "bk";;
-    #true.
+    Continue.
 
 Theorem write_all_t : ⊢ write_all : (slice.T (slice.T byteT) -> intT -> unitT).
 Proof.
@@ -95,7 +95,7 @@ Definition append: val :=
     let: "new_log" := ("sz" + slice.len "bks", log.disk_sz "log") in
     write_hdr "new_log";;
     "logp" <- "new_log";;
-    #true.
+    Continue.
 
 Theorem append_t : ⊢ append : (refT log.T -> slice.T (slice.T byteT) -> boolT).
 Proof.
