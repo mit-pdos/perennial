@@ -55,7 +55,7 @@ Definition writeAll: val :=
     for: (!"i" < "numBks"); ("i" <- !"i" + #1) :=
       let: "bk" := SliceGet "bks" !"i" in
       disk.Write ("off" + !"i") "bk";;
-      #true.
+      Continue.
 
 Definition Append: val :=
   λ: "log" "bks",
