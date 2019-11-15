@@ -283,11 +283,11 @@ Ltac type_step :=
   | [ |- val_hasTy _ _ _ ] => solve [eauto with types]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ solve [eauto with types] | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ | solve [eauto with types] ]
-  | [ |- expr_hasTy _ _ _ ] => econstructor
   | [ |- expr_hasTy _ (Rec _ (annot_e (annot _ ?t)) _) (arrowT _ _) ] => eapply (rec_expr_hasTy_eq t)
   | [ |- expr_hasTy _ (Rec _ _ _) (arrowT _ _) ] => eapply rec_expr_hasTy_eq
-  | [ |- val_hasTy _ _ _ ] => solve [eauto with types] || econstructor
-  | [ |- base_lit_hasTy _ _ ] => solve [eauto with types] || econstructor
+  | [ |- expr_hasTy _ _ _ ] => econstructor
+  | [ |- val_hasTy _ _ _ ] => econstructor
+  | [ |- base_lit_hasTy _ _ ] =>  econstructor
   end; simp.
 
 Ltac typecheck :=
