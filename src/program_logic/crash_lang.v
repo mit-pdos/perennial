@@ -40,8 +40,26 @@ Section crash_language.
       erased_rsteps r ([r], σ) ρ3 s →
       erased_rsteps r ρ1 ρ3 Crashed.
 
+  Lemma nrsteps_normal_empty_prefix r ns n ρ1 κ ρ2:
+    nrsteps r (ns ++ [n]) ρ1 κ ρ2 Normal →
+    ns = [].
+  Proof.
+    destruct ns as [| ? ns]; first eauto.
+    inversion 1. subst.
+    destruct ns; simpl in *; congruence.
+  Qed.
+
+  Lemma nrsteps_crashed_snoc r ns ρ1 κ ρ2:
+    nrsteps r (ns) ρ1 κ ρ2 Crashed →
+    ∃ ns' n, ns = ns' ++ [n].
+  Proof.
+    destruct ns using rev_ind.
+    - inversion 1.
+    - eauto.
+  Qed.
+
   Lemma erased_rsteps_nrsteps r ρ1 ρ2 s :
-   erased_rsteps r ρ1 ρ2 s ↔ ∃ n κs, nrsteps r n ρ1 κs ρ2 s.
+    erased_rsteps r ρ1 ρ2 s ↔ ∃ n κs, nrsteps r n ρ1 κs ρ2 s.
   Proof.
     split.
     - induction 1 as [?? H| ????? H Hcrash ? IH].
