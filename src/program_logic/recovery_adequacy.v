@@ -153,8 +153,6 @@ Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofeT) (Σ : gFunct
   perennial_invG: ∀ H t, @iris_invG _ _ (perennial_irisG H t) = H
 }.
 
-Print wp_pre.
-
 Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness)
     (wpr : invG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
                      (invG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ) :
@@ -377,7 +375,7 @@ Lemma step_fupdN_fresh_plain `{!invPreG Σ} P `{!Plain P} ns:
 Proof.
   iIntros "H".
   iInduction ns as [| n' ns] "IH".
-  - simpl. iApply bupd_plain; first by (iPureIntro; apply _).
+  - simpl. iApply bupd_plain; try (iPureIntro; apply _).
     iMod wsat_alloc as (Hinv) "(Hw&HE)". by iDestruct ("H" $! Hinv) as (_) "$".
   - iMod wsat_alloc as (Hinv) "(Hw&HE)".
     iSpecialize ("H" $! Hinv).
