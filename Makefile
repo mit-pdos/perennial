@@ -41,6 +41,7 @@ default: src/ShouldBuild.vo
 
 all: $(VFILES:.v=.vo)
 test: $(TEST_VO) $(VFILES:.v=.vo)
+vos: $(VFILES:.v=.vos)
 
 _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 	@echo "-R src $$(cat libname)" > $@
@@ -71,6 +72,14 @@ endif
 	@echo "COQC $<"
 	$(Q)./etc/coqc.py --proj _CoqProject $(TIMING_ARGS) $(COQ_ARGS) $< -o $@
 
+%.vos: %.v _CoqProject
+	@echo "COQC -vos $<"
+	$(Q)./etc/coqc.py --proj _CoqProject $(TIMING_ARGS) -vos $(COQ_ARGS) $< -o $@
+
+%.vok: %.v _CoqProject
+	@echo "COQC -vok $<"
+	$(Q)./etc/coqc.py --proj _CoqProject $(TIMING_ARGS) -vok $(COQ_ARGS) $< -o $@
+
 extract: replicated-disk/extract/ReplicatedDiskImpl.hs
 
 replicated-disk/extract/ReplicatedDiskImpl.hs: replicated-disk/Extract.vo
@@ -100,7 +109,7 @@ clean-src:
 
 clean: clean-src
 	@echo "CLEAN vo glob aux"
-	$(Q)rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob)
+	$(Q)rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.vos) $(ALL_VFILES:.v=.vok) $(ALL_VFILES:.v=.glob)
 	$(Q)find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
 	$(Q)find . $(SRC_DIRS) -name ".lia.cache" -exec rm {} \;
 	@echo "CLEAN extract"
