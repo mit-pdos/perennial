@@ -8,9 +8,10 @@ Local Coercion Var' (s: string) := Var s.
 
 Module Log.
   Definition S := struct.new [
-    "sz"; "diskSz"
+    "sz" :: intT;
+    "diskSz" :: intT
   ].
-  Definition T: ty := intT * intT.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.

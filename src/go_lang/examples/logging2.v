@@ -12,9 +12,15 @@ Definition LogStart : expr := #1.
 
 Module Log.
   Definition S := struct.new [
-    "logLock"; "memLock"; "logSz"; "memLog"; "memLen"; "memTxnNxt"; "logTxnNxt"
+    "logLock" :: lockRefT;
+    "memLock" :: lockRefT;
+    "logSz" :: intT;
+    "memLog" :: refT (slice.T blockT);
+    "memLen" :: refT intT;
+    "memTxnNxt" :: refT intT;
+    "logTxnNxt" :: refT intT
   ].
-  Definition T: ty := (lockRefT * lockRefT * intT * refT (slice.T blockT) * refT intT * refT intT * refT intT)%ht.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.

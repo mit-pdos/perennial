@@ -1,12 +1,13 @@
 From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import notation.
+From Perennial.go_lang Require Import typing.
 
 (** * Lightweight struct library
 
     Access field offsets within pairs by name rather than using Fst and Snd. *)
 
 Record descriptor :=
-  mkStruct { fields: list string; }.
+  mkStruct { fields: list (string*ty); }.
 
 (* Check eq_refl : (#0, #1, #2)%E = ((#0, #1), #2)%E. *)
 
@@ -16,11 +17,11 @@ Section go_lang.
   Definition Var' s : @expr ext := Var s.
   Local Coercion Var' : string >-> expr.
 
-Fixpoint getField_e (f0: string) (rev_fields: list string): expr :=
+Fixpoint getField_e (f0: string) (rev_fields: list (string*ty)): expr :=
   match rev_fields with
   | [] => LitV LitUnit
-  | [f] => if String.eqb f f0 then "v" else #()
-  | f::fs => if String.eqb f f0 then Snd "v" else Fst (getField_e f0 fs)
+  | [f] => if String.eqb (fst f) f0 then "v" else #()
+  | f::fs => if String.eqb (fst f) f0 then Snd "v" else Fst (getField_e f0 fs)
   end.
 
 Definition getField (d:descriptor) f : val :=
@@ -34,11 +35,11 @@ Fixpoint assocl_lookup {A} (field_vals: list (string * A)) (f0: string) : option
 
 Fixpoint build_struct_val
          (field_vals: list (string * expr))
-         (rev_fields: list string) : option expr :=
+         (rev_fields: list (string * ty)) : option expr :=
   match rev_fields with
   | [] => None
-  | [f] => assocl_lookup field_vals f
-  | f::fs => match assocl_lookup field_vals f with
+  | [f] => assocl_lookup field_vals (fst f)
+  | f::fs => match assocl_lookup field_vals (fst f) with
            | Some v => match build_struct_val field_vals fs with
                       | Some vs => Some (vs, v)%E
                       | None => None
@@ -52,6 +53,16 @@ Definition buildStruct (d:descriptor) (fvs: list (string*expr)) : expr :=
   | Some v => v
   | None => LitV LitUnit
   end.
+
+Fixpoint struct_ty_prod (rev_fields: list (string*ty)) : ty :=
+  match rev_fields with
+  | nil => unitT
+  | [f] => snd f
+  | f::fs => struct_ty_prod fs * snd f
+  end.
+
+Definition structTy (d:descriptor) : ty :=
+  struct_ty_prod (rev (fields d)).
 
 End go_lang.
 
@@ -76,9 +87,11 @@ Module struct.
   Notation new := mkStruct.
   Notation mk := buildStruct.
   Notation get := getField.
+  Notation t := structTy.
 End struct.
 
 Notation "'structF!' desc fname" := (ltac:(make_structF desc fname))
                                     (at level 0, desc, fname at next level, only parsing).
 
+Notation "f :: t" := (@pair string ty f%string t%ht).
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.

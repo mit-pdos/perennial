@@ -10,13 +10,13 @@ From Perennial.go_lang Require Import struct typing.
 Open Scope heap_types.
 
 Module slice.
-  Definition sliceS := mkStruct ["p"; "len"].
+  Definition S t := mkStruct ["p" :: refT t; "len" :: intT].
   Definition T t : ty := refT t * intT.
   Section fields.
     Context `{ext_ty:ext_types}.
 
-    Definition ptr := structF! sliceS "p".
-    Definition len: val := structF! sliceS "len".
+    Definition ptr: val := λ: "s", Fst (Var "s").
+    Definition len: val := λ: "s", Snd (Var "s").
 
     Theorem ptr_t t : ⊢ ptr : (T t -> refT t).
     Proof.

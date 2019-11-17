@@ -17,9 +17,10 @@ Module Table.
   (* A Table provides access to an immutable copy of data on the filesystem,
      along with an index for fast random access. *)
   Definition S := struct.new [
-    "Index"; "File"
+    "Index" :: mapT intT;
+    "File" :: fileT
   ].
-  Definition T: ty := mapT intT * fileT.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
@@ -41,9 +42,10 @@ Definition CreateTable: val :=
 Module Entry.
   (* Entry represents a (key, value) pair. *)
   Definition S := struct.new [
-    "Key"; "Value"
+    "Key" :: intT;
+    "Value" :: slice.T byteT
   ].
-  Definition T: ty := intT * slice.T byteT.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
@@ -98,9 +100,10 @@ Definition DecodeEntry: val :=
 
 Module lazyFileBuf.
   Definition S := struct.new [
-    "offset"; "next"
+    "offset" :: intT;
+    "next" :: slice.T byteT
   ].
-  Definition T: ty := intT * slice.T byteT.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
@@ -177,9 +180,10 @@ Definition tableRead: val :=
 
 Module bufFile.
   Definition S := struct.new [
-    "file"; "buf"
+    "file" :: fileT;
+    "buf" :: refT (slice.T byteT)
   ].
-  Definition T: ty := fileT * refT (slice.T byteT).
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
@@ -216,9 +220,12 @@ Definition bufClose: val :=
 
 Module tableWriter.
   Definition S := struct.new [
-    "index"; "name"; "file"; "offset"
+    "index" :: mapT intT;
+    "name" :: stringT;
+    "file" :: bufFile.T;
+    "offset" :: refT intT
   ].
-  Definition T: ty := (mapT intT * stringT * bufFile.T * refT intT)%ht.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
@@ -280,9 +287,15 @@ Definition tablePut: val :=
 Module Database.
   (* Database is a handle to an open database. *)
   Definition S := struct.new [
-    "wbuffer"; "rbuffer"; "bufferL"; "table"; "tableName"; "tableL"; "compactionL"
+    "wbuffer" :: refT (mapT (slice.T byteT));
+    "rbuffer" :: refT (mapT (slice.T byteT));
+    "bufferL" :: lockRefT;
+    "table" :: refT Table.T;
+    "tableName" :: refT stringT;
+    "tableL" :: lockRefT;
+    "compactionL" :: lockRefT
   ].
-  Definition T: ty := (refT (mapT (slice.T byteT)) * refT (mapT (slice.T byteT)) * lockRefT * refT Table.T * refT stringT * lockRefT * lockRefT)%ht.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.

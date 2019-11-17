@@ -8,9 +8,10 @@ Local Coercion Var' (s: string) := Var s.
 
 Module partialFile.
   Definition S := struct.new [
-    "off"; "data"
+    "off" :: intT;
+    "data" :: slice.T byteT
   ].
-  Definition T: ty := intT * slice.T byteT.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
@@ -54,9 +55,10 @@ Definition readMessage: val :=
 
 Module Message.
   Definition S := struct.new [
-    "Id"; "Contents"
+    "Id" :: stringT;
+    "Contents" :: stringT
   ].
-  Definition T: ty := stringT * stringT.
+  Definition T: ty := struct.t S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
