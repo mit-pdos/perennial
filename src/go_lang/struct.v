@@ -66,7 +66,7 @@ Definition structTy (d:descriptor) : ty :=
 
 End go_lang.
 
-Declare Reduction getField := cbv [getField rev app getField_e fields String.eqb Ascii.eqb eqb].
+Declare Reduction getField := cbv [getField rev fst snd app getField_e fields String.eqb Ascii.eqb eqb].
 
 Ltac make_structF desc fname :=
   let f := eval unfold desc in (getField desc fname) in

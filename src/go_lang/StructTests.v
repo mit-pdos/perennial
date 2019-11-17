@@ -1,13 +1,13 @@
-From Perennial.go_lang Require Import notation struct.
+From Perennial.go_lang Require Import notation struct typing.
 
 Module three.
-  Definition threeS := mkStruct ["foo"; "bar"; "baz"].
+  Definition S := struct.new ["foo" :: intT; "bar" :: boolT; "baz" :: refT intT].
   Section fields.
     Context {ext:ext_op}.
-    Definition foo := structF! threeS "foo".
-    Definition bar := structF! threeS "bar".
-    Definition baz := structF! threeS "baz".
-    Fail Definition quux := structF! threeS "quux".
+    Definition foo := structF! S "foo".
+    Definition bar := structF! S "bar".
+    Definition baz := structF! S "baz".
+    Fail Definition quux := structF! S "quux".
   End fields.
 End three.
 
