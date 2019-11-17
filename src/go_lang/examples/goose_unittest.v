@@ -11,10 +11,12 @@ Module importantStruct.
 
      This is despite it being empty. *)
   Definition S := struct.new [
-
   ].
-  Definition T: ty := unitT.
-  Definition get := struct.get S.
+  Definition T: ty := struct.t S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End importantStruct.
 
 (* doSubtleThings does a number of subtle things:
@@ -121,10 +123,15 @@ Definition emptyReturn: val :=
 
 Module allTheLiterals.
   Definition S := struct.new [
-    "int"; "s"; "b"
+    "int" :: intT;
+    "s" :: stringT;
+    "b" :: boolT
   ].
-  Definition T: ty := (intT * stringT * boolT)%ht.
-  Definition get := struct.get S.
+  Definition T: ty := struct.t S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End allTheLiterals.
 
 Definition normalLiterals: val :=
@@ -212,10 +219,14 @@ Definition PanicAtTheDisco: val :=
 
 Module composite.
   Definition S := struct.new [
-    "a"; "b"
+    "a" :: intT;
+    "b" :: intT
   ].
-  Definition T: ty := intT * intT.
-  Definition get := struct.get S.
+  Definition T: ty := struct.t S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End composite.
 
 Definition ReassignVars: val :=
@@ -231,14 +242,17 @@ Definition ReassignVars: val :=
       "a" ::= "y";
       "b" ::= !"x"
     ];;
-    "x" <- struct.get composite.S "a" !"z".
+    "x" <- composite.get "a" !"z".
 
 Module Block.
   Definition S := struct.new [
-    "Value"
+    "Value" :: intT
   ].
-  Definition T: ty := intT.
-  Definition get := struct.get S.
+  Definition T: ty := struct.t S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End Block.
 
 Definition Disk1 : expr := #0.
@@ -350,20 +364,24 @@ Definition stringAppend: val :=
 
 Module C.
   Definition S := struct.new [
-    "x"; "y"
+    "x" :: intT;
+    "y" :: intT
   ].
-  Definition T: ty := intT * intT.
-  Definition get := struct.get S.
+  Definition T: ty := struct.t S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End C.
 
 Definition Add: val :=
   λ: "c" "z",
-    struct.get C.S "x" "c" + struct.get C.S "y" "c" + "z".
+    C.get "x" "c" + C.get "y" "c" + "z".
 
 Definition GetField: val :=
   λ: "c",
-    let: "x" := struct.get C.S "x" "c" in
-    let: "y" := struct.get C.S "y" "c" in
+    let: "x" := C.get "x" "c" in
+    let: "y" := C.get "y" "c" in
     "x" + "y".
 
 Definition UseAdd: val :=
