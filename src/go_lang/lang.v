@@ -1,3 +1,4 @@
+From Coq Require Import Program.Equality.
 From stdpp Require Export binders strings.
 From stdpp Require Import gmap.
 From iris.algebra Require Export ofe.
@@ -96,6 +97,20 @@ Inductive bin_op : Set :=
   | LeOp | LtOp | EqOp (* Relations *)
   | OffsetOp. (* Pointer offset *)
 
+Inductive arity : Set := args0 | args1 | args2 | args3.
+
+Inductive prim_op : arity -> Set :=
+  (* a stuck expression, to represent undefined behavior *)
+  | PanicOp (s: string) : prim_op args0
+  | AllocNOp : prim_op args2 (* array length (positive number), initial value *)
+  | StoreOp : prim_op args2 (* pointer, value *)
+  | LoadOp : prim_op args1
+  | MapGetOp : prim_op args2 (* map loc, key *)
+  | MapInsertOp : prim_op args3 (* map loc, key *)
+  | EncodeIntOp : prim_op args2 (* int, loc to store to *)
+  | DecodeIntOp : prim_op args1 (* loc to load from *)
+.
+
 Inductive expr :=
   (* Values *)
   | Val (v : val)
@@ -103,8 +118,6 @@ Inductive expr :=
   | Var (x : string)
   | Rec (f x : binder) (e : expr)
   | App (e1 e2 : expr)
-  (* a stuck expression, to represent undefined behavior *)
-  | Panic (s: string)
   (* Base types and their operations *)
   | UnOp (op : un_op) (e : expr)
   | BinOp (op : bin_op) (e1 e2 : expr)
@@ -119,18 +132,14 @@ Inductive expr :=
   | Case (e0 : expr) (e1 : expr) (e2 : expr)
   (* Concurrency *)
   | Fork (e : expr)
-  (* Heap *)
-  | AllocN (e1 e2 : expr) (* array length (positive number), initial value *)
-  | Load (e : expr)
-  | Store (e1 : expr) (e2 : expr)
-  | MapGet (e1 : expr) (e2 : expr) (* map loc, key *)
-  | MapInsert (e1 : expr) (e2 : expr) (e3: expr) (* map loc, key, value *)
+  (* Heap-based primitives *)
+  | Primitive0 (op: prim_op args0)
+  | Primitive1 (op: prim_op args1) (e : expr)
+  | Primitive2 (op: prim_op args2) (e1 e2 : expr)
+  | Primitive3 (op: prim_op args3) (e0 e1 e2 : expr)
   | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
   (* External FFI *)
   | ExternalOp (op: external) (e: expr)
-  (* Encoding/Decoding *)
-  | EncodeInt (e1 : expr) (e2 : expr) (* int, loc to store to *)
-  | DecodeInt (e1 : expr) (* loc to load from *)
   (* Prophecy *)
   | NewProph
   | Resolve (e0 : expr) (e1 : expr) (e2 : expr) (* wrapped expr, proph, val *)
@@ -146,6 +155,15 @@ with val :=
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
+
+Definition Panic s := Primitive0 (PanicOp s).
+Notation AllocN := (Primitive2 AllocNOp).
+Notation Store := (Primitive2 StoreOp).
+Notation Load := (Primitive1 LoadOp).
+Notation MapGet := (Primitive2 MapGetOp).
+Notation MapInsert := (Primitive3 MapInsertOp).
+Notation EncodeInt := (Primitive2 EncodeIntOp).
+Notation DecodeInt := (Primitive1 DecodeIntOp).
 
 Context {ffi : ffi_model}.
 
@@ -270,6 +288,17 @@ Global Instance un_op_eq_dec : EqDecision un_op.
 Proof. solve_decision. Defined.
 Global Instance bin_op_eq_dec : EqDecision bin_op.
 Proof. solve_decision. Defined.
+Global Instance arity_eq_dec : EqDecision arity.
+Proof. solve_decision. Defined.
+Global Instance prim_op_eq_dec ar : EqDecision (prim_op ar).
+Proof.
+  hnf; intros; hnf.
+  (* TODO: there's probably a very simple proof directly using a dependent
+  pattern match *)
+  destruct x; dependent destruction y; eauto.
+  destruct (decide (s = s0));
+    [ subst; left | right; inversion 1]; done.
+Defined.
 Global Instance expr_eq_dec : EqDecision expr.
 Proof using ext.
   clear ffi_semantics ffi.
@@ -281,7 +310,13 @@ Proof using ext.
       | Rec f x e, Rec f' x' e' =>
         cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
       | App e1 e2, App e1' e2' => cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | Panic s, Panic s' => cast_if (decide (s = s'))
+      | Primitive0 op, Primitive0 op' => cast_if (decide (op = op'))
+      | Primitive1 op e, Primitive1 op' e' =>
+        cast_if_and (decide (op = op')) (decide (e = e'))
+      | Primitive2 op e1 e2, Primitive2 op' e1' e2' =>
+        cast_if_and3 (decide (op = op')) (decide (e1 = e1')) (decide (e2 = e2'))
+      | Primitive3 op e0 e1 e2, Primitive3 op' e0' e1' e2' =>
+        cast_if_and4 (decide (op = op')) (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | UnOp o e, UnOp o' e' => cast_if_and (decide (o = o')) (decide (e = e'))
       | BinOp o e1 e2, BinOp o' e1' e2' =>
         cast_if_and3 (decide (o = o')) (decide (e1 = e1')) (decide (e2 = e2'))
@@ -296,19 +331,7 @@ Proof using ext.
       | Case e0 e1 e2, Case e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | Fork e, Fork e' => cast_if (decide (e = e'))
-      | AllocN e1 e2, AllocN e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | Load e, Load e' => cast_if (decide (e = e'))
-      | Store e1 e2, Store e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | MapGet e1 e2, MapGet e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | MapInsert e0 e1 e2, MapInsert e0' e1' e2' =>
-        cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
-      | EncodeInt e1 e2, EncodeInt e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | DecodeInt e, DecodeInt e' => cast_if (decide (e = e'))
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | NewProph, NewProph => left _
@@ -389,6 +412,121 @@ Proof.
   | 10 => LeOp | 11 => LtOp | 12 => EqOp | _ => OffsetOp
   end) _); by intros [].
 Qed.
+
+Inductive prim_op' := | a_prim_op {ar} (op: prim_op ar).
+Instance prim_op_prim_op'_iso ar : Inj eq eq (@a_prim_op ar).
+Proof.
+  hnf; intros.
+  inversion H.
+  apply Eqdep_dec.inj_pair2_eq_dec; auto.
+  intros x0 y0; destruct (decide (x0 = y0)); auto.
+Qed.
+Instance prim_op'_eq_dec : EqDecision prim_op'.
+hnf; intros; hnf.
+destruct x as [ar op], y as [ar' op'].
+destruct (decide (ar = ar')); subst.
+- destruct (decide (op = op')); subst; auto.
+  right; intro.
+  apply prim_op_prim_op'_iso in H; auto.
+- right.
+  inversion 1; auto.
+Qed.
+
+Global Instance prim_op'_countable : Countable prim_op'.
+Proof.
+  refine (inj_countable' (λ op, let 'a_prim_op op := op in
+                                match op with
+                                | PanicOp s => inl s
+                                | AllocNOp => inr 0
+                                | StoreOp => inr 1
+                                | LoadOp => inr 2
+                                | MapGetOp => inr 3
+                                | MapInsertOp => inr 4
+                                | EncodeIntOp => inr 5
+                                | DecodeIntOp => inr 6
+                                end )
+                         (λ v, match v with
+                               | inl s => a_prim_op (PanicOp s)
+                               | inr 0 => a_prim_op AllocNOp
+                               | inr 1 => a_prim_op StoreOp
+                               | inr 2 => a_prim_op LoadOp
+                               | inr 3 => a_prim_op MapGetOp
+                               | inr 4 => a_prim_op MapInsertOp
+                               | inr 5 => a_prim_op EncodeIntOp
+                               | inr _ => a_prim_op DecodeIntOp
+                               end) _); by intros [_ []].
+Qed.
+
+Inductive basic_type :=
+  | stringVal (s:string)
+  | binderVal (b:binder)
+  | intVal (z:u64)
+  | litVal (l: base_lit)
+  | un_opVal (op:un_op)
+  | bin_opVal (op:bin_op)
+  | primOpVal (op:prim_op')
+  | externOp (op:external)
+.
+
+Instance basic_type_eq_dec : EqDecision basic_type.
+Proof. solve_decision. Defined.
+Instance basic_type_countable : Countable basic_type.
+Proof.
+  refine (inj_countable' (λ x, match x with
+                              | stringVal s => inl s
+                              | binderVal b => inr (inl b)
+                              | intVal z => inr (inr (inl z))
+                              | litVal l => inr (inr (inr (inl l)))
+                              | un_opVal op => inr (inr (inr (inr (inl op))))
+                              | bin_opVal op => inr (inr (inr (inr (inr (inl op)))))
+                              | primOpVal op => inr (inr (inr (inr (inr (inr (inl op))))))
+                              | externOp op => inr (inr (inr (inr (inr (inr (inr op))))))
+                              end)
+                         (λ x, match x with
+                              | inl s => stringVal s
+                              | inr (inl b) => binderVal b
+                              | inr (inr (inl z)) => intVal z
+                              | inr (inr (inr (inl l))) => litVal l
+                              | inr (inr (inr (inr (inl op)))) => un_opVal op
+                              | inr (inr (inr (inr (inr (inl op))))) => bin_opVal op
+                              | inr (inr (inr (inr (inr (inr (inl op)))))) => primOpVal op
+                              | inr (inr (inr (inr (inr (inr (inr op)))))) => externOp op
+                               end) _); by intros [].
+Qed.
+
+Definition from_prim_op' ar (op: prim_op') : prim_op ar :=
+  let 'a_prim_op op := op in
+  match ar return prim_op ar with
+  | args0 => match op with
+            | PanicOp s => PanicOp s
+            | _ => PanicOp ""
+            end
+  | args1 => match op with
+            | LoadOp => LoadOp
+            | DecodeIntOp => DecodeIntOp
+            | _ => LoadOp
+            end
+  | args2 => match op with
+            | AllocNOp => AllocNOp
+            | StoreOp => StoreOp
+            | MapGetOp => MapGetOp
+            | EncodeIntOp => EncodeIntOp
+            | _ => AllocNOp
+            end
+  | args3 => match op with
+            | MapInsertOp => MapInsertOp
+            | _ => MapInsertOp
+            end
+  end.
+
+Theorem from_prim_op'_id : forall ar (op: prim_op ar),
+    from_prim_op' ar (a_prim_op op) = op.
+Proof.
+  destruct op; simpl; auto.
+Qed.
+
+Opaque from_prim_op'.
+
 Global Instance expr_countable : Countable expr.
 Proof using ext.
   clear ffi_semantics ffi.
@@ -396,12 +534,15 @@ Proof using ext.
    fix go e :=
      match e with
      | Val v => GenNode 0 [gov v]
-     | Var x => GenLeaf (inl (inl x))
-     | Rec f x e => GenNode 1 [GenLeaf (inl (inr f)); GenLeaf (inl (inr x)); go e]
+     | Var x => GenLeaf (stringVal x)
+     | Rec f x e => GenNode 1 [GenLeaf $ binderVal f; GenLeaf $ binderVal x; go e]
      | App e1 e2 => GenNode 2 [go e1; go e2]
-     | Panic s => GenNode 25 [GenLeaf (inl (inl s))]
-     | UnOp op e => GenNode 3 [GenLeaf (inr (inr (inl op))); go e]
-     | BinOp op e1 e2 => GenNode 4 [GenLeaf (inr (inr (inr (inl op)))); go e1; go e2]
+     | Primitive0 op => GenNode 21 [GenLeaf $ primOpVal $ a_prim_op op]
+     | Primitive1 op e => GenNode 22 [GenLeaf $ primOpVal $ a_prim_op op; go e]
+     | Primitive2 op e1 e2 => GenNode 23 [GenLeaf $ primOpVal $ a_prim_op op; go e1; go e2]
+     | Primitive3 op e0 e1 e2 => GenNode 24 [GenLeaf $ primOpVal $ a_prim_op op; go e0; go e1; go e2]
+     | UnOp op e => GenNode 3 [GenLeaf $ un_opVal op; go e]
+     | BinOp op e1 e2 => GenNode 4 [GenLeaf $ bin_opVal op; go e1; go e2]
      | If e0 e1 e2 => GenNode 5 [go e0; go e1; go e2]
      | Pair e1 e2 => GenNode 6 [go e1; go e2]
      | Fst e => GenNode 7 [go e]
@@ -410,40 +551,36 @@ Proof using ext.
      | InjR e => GenNode 10 [go e]
      | Case e0 e1 e2 => GenNode 11 [go e0; go e1; go e2]
      | Fork e => GenNode 12 [go e]
-     | AllocN e1 e2 => GenNode 13 [go e1; go e2]
-     | Load e => GenNode 14 [go e]
-     | Store e1 e2 => GenNode 15 [go e1; go e2]
-     | MapGet e1 e2 => GenNode 21 [go e1; go e2]
-     | MapInsert e1 e2 e3 => GenNode 22 [go e1; go e2; go e3]
-     | ExternalOp op e => GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); go e]
-     | EncodeInt e1 e2 => GenNode 23 [go e1; go e2]
-     | DecodeInt e => GenNode 24 [go e]
+     | ExternalOp op e => GenNode 20 [GenLeaf $ externOp op; go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
      | NewProph => GenNode 18 []
      | Resolve e0 e1 e2 => GenNode 19 [go e0; go e1; go e2]
      end
    with gov v :=
      match v with
-     | LitV l => GenLeaf (inr (inl l))
+     | LitV l => GenLeaf $ litVal l
      | RecV f x e =>
-        GenNode 0 [GenLeaf (inl (inr f)); GenLeaf (inl (inr x)); go e]
+        GenNode 0 [GenLeaf $ binderVal f; GenLeaf $ binderVal x; go e]
      | PairV v1 v2 => GenNode 1 [gov v1; gov v2]
      | InjLV v => GenNode 2 [gov v]
      | InjRV v => GenNode 3 [gov v]
      | MapNilV v => GenNode 4 [gov v]
-     | MapConsV k v1 v2 => GenNode 5 [GenLeaf (inr (inl (LitInt k))); gov v1; gov v2]
+     | MapConsV k v1 v2 => GenNode 5 [GenLeaf $ intVal k; gov v1; gov v2]
      end
    for go).
  set (dec :=
    fix go e :=
      match e with
      | GenNode 0 [v] => Val (gov v)
-     | GenLeaf (inl (inl x)) => Var x
-     | GenNode 1 [GenLeaf (inl (inr f)); GenLeaf (inl (inr x)); e] => Rec f x (go e)
+     | GenLeaf (stringVal x) => Var x
+     | GenNode 1 [GenLeaf (binderVal f); GenLeaf (binderVal x); e] => Rec f x (go e)
      | GenNode 2 [e1; e2] => App (go e1) (go e2)
-     | GenNode 25 [GenLeaf (inl (inl s))] => Panic s
-     | GenNode 3 [GenLeaf (inr (inr (inl op))); e] => UnOp op (go e)
-     | GenNode 4 [GenLeaf (inr (inr (inr (inl op)))); e1; e2] => BinOp op (go e1) (go e2)
+     | GenNode 21 [GenLeaf (primOpVal op)] => Primitive0 (from_prim_op' args0 op)
+     | GenNode 22 [GenLeaf (primOpVal op); e] => Primitive1 (from_prim_op' args1 op) (go e)
+     | GenNode 23 [GenLeaf (primOpVal op); e1; e2] => Primitive2 (from_prim_op' args2 op) (go e1) (go e2)
+     | GenNode 24 [GenLeaf (primOpVal op); e0; e1; e2] => Primitive3 (from_prim_op' args3 op) (go e0) (go e1) (go e2)
+     | GenNode 3 [GenLeaf (un_opVal op); e] => UnOp op (go e)
+     | GenNode 4 [GenLeaf (bin_opVal op); e1; e2] => BinOp op (go e1) (go e2)
      | GenNode 5 [e0; e1; e2] => If (go e0) (go e1) (go e2)
      | GenNode 6 [e1; e2] => Pair (go e1) (go e2)
      | GenNode 7 [e] => Fst (go e)
@@ -452,14 +589,7 @@ Proof using ext.
      | GenNode 10 [e] => InjR (go e)
      | GenNode 11 [e0; e1; e2] => Case (go e0) (go e1) (go e2)
      | GenNode 12 [e] => Fork (go e)
-     | GenNode 13 [e1; e2] => AllocN (go e1) (go e2)
-     | GenNode 14 [e] => Load (go e)
-     | GenNode 15 [e1; e2] => Store (go e1) (go e2)
-     | GenNode 21 [e1; e2] => MapGet (go e1) (go e2)
-     | GenNode 22 [e1; e2; e3] => MapInsert (go e1) (go e2) (go e3)
-     | GenNode 20 [GenLeaf (inr (inr (inr (inr op)))); e] => ExternalOp op (go e)
-     | GenNode 23 [e1; e2] => EncodeInt (go e1) (go e2)
-     | GenNode 24 [e] => DecodeInt (go e)
+     | GenNode 20 [GenLeaf (externOp op); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
      | GenNode 18 [] => NewProph
      | GenNode 19 [e0; e1; e2] => Resolve (go e0) (go e1) (go e2)
@@ -467,20 +597,21 @@ Proof using ext.
      end
    with gov v :=
      match v with
-     | GenLeaf (inr (inl l)) => LitV l
-     | GenNode 0 [GenLeaf (inl (inr f)); GenLeaf (inl (inr x)); e] => RecV f x (go e)
+     | GenLeaf (litVal l) => LitV l
+     | GenNode 0 [GenLeaf (binderVal f); GenLeaf (binderVal x); e] => RecV f x (go e)
      | GenNode 1 [v1; v2] => PairV (gov v1) (gov v2)
      | GenNode 2 [v] => InjLV (gov v)
      | GenNode 3 [v] => InjRV (gov v)
      | GenNode 4 [v] => MapNilV (gov v)
-     | GenNode 5 [GenLeaf (inr (inl (LitInt k))); v1; v2] => MapConsV k (gov v1) (gov v2)
+     | GenNode 5 [GenLeaf (intVal k); v1; v2] => MapConsV k (gov v1) (gov v2)
      | _ => LitV LitUnit (* dummy *)
      end
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
- - destruct e as [v| | | | | | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
-     [exact (gov v)|done..].
+  - destruct e as [v| | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+      rewrite ?from_prim_op'_id;
+      [exact (gov v)|done..].
  - destruct v; by f_equal.
 Qed.
 Global Instance val_countable : Countable val.
@@ -511,20 +642,13 @@ Inductive ectx_item :=
   | InjLCtx
   | InjRCtx
   | CaseCtx (e1 : expr) (e2 : expr)
-  | AllocNLCtx (v2 : val)
-  | AllocNRCtx (e1 : expr)
-  | LoadCtx
-  | StoreLCtx (e2 : expr)
-  | StoreRCtx (v1 : val)
-  | MapGetLCtx (e2 : expr)
-  | MapGetRCtx (v1 : val)
-  | MapInsertLCtx (e1 : expr) (e2 : expr)
-  | MapInsertMCtx (v0 : val) (e2 : expr)
-  | MapInsertRCtx (v0 : val) (v1 : val)
+  | Primitive1Ctx  (op: prim_op args1)
+  | Primitive2LCtx (op: prim_op args2) (v2 : val)
+  | Primitive2RCtx (op: prim_op args2) (e1 : expr)
+  | Primitive3LCtx (op: prim_op args3) (e1 : expr) (e2 : expr)
+  | Primitive3MCtx (op: prim_op args3) (v0 : val) (e2 : expr)
+  | Primitive3RCtx (op: prim_op args3) (v0 : val) (v1 : val)
   | ExternalOpCtx (op : external)
-  | EncodeIntLCtx (e2 : expr)
-  | EncodeIntRCtx (v1 : val)
-  | DecodeIntCtx
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
   | CmpXchgRCtx (v1 : val) (v2 : val)
@@ -554,19 +678,12 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | InjLCtx => InjL e
   | InjRCtx => InjR e
   | CaseCtx e1 e2 => Case e e1 e2
-  | AllocNLCtx v2 => AllocN e (Val v2)
-  | AllocNRCtx e1 => AllocN e1 e
-  | LoadCtx => Load e
-  | StoreLCtx e2 => Store e e2
-  | StoreRCtx v1 => Store (Val v1) e
-  | EncodeIntLCtx e2 => EncodeInt e e2
-  | EncodeIntRCtx v1 => EncodeInt (Val v1) e
-  | DecodeIntCtx => DecodeInt e
-  | MapGetLCtx e2 => MapGet e e2
-  | MapGetRCtx v1 => MapGet (Val v1) e
-  | MapInsertLCtx e1 e2 => MapInsert e e1 e2
-  | MapInsertMCtx v0 e1 => MapInsert (Val v0) e e1
-  | MapInsertRCtx v0 v1 => MapInsert (Val v0) (Val v1) e
+  | Primitive1Ctx op => Primitive1 op e
+  | Primitive2LCtx op v2 => Primitive2 op e (Val v2)
+  | Primitive2RCtx op e1 => Primitive2 op e1 e
+  | Primitive3LCtx op e1 e2 => Primitive3 op e e1 e2
+  | Primitive3MCtx op v0 e1 => Primitive3 op (Val v0) e e1
+  | Primitive3RCtx op v0 v1 => Primitive3 op (Val v0) (Val v1) e
   | ExternalOpCtx op => ExternalOp op e
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
   | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
@@ -584,7 +701,6 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | Rec f y e =>
      Rec f y $ if decide (BNamed x ≠ f ∧ BNamed x ≠ y) then subst x v e else e
   | App e1 e2 => App (subst x v e1) (subst x v e2)
-  | Panic s => Panic s
   | UnOp op e => UnOp op (subst x v e)
   | BinOp op e1 e2 => BinOp op (subst x v e1) (subst x v e2)
   | If e0 e1 e2 => If (subst x v e0) (subst x v e1) (subst x v e2)
@@ -595,14 +711,11 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | InjR e => InjR (subst x v e)
   | Case e0 e1 e2 => Case (subst x v e0) (subst x v e1) (subst x v e2)
   | Fork e => Fork (subst x v e)
-  | AllocN e1 e2 => AllocN (subst x v e1) (subst x v e2)
-  | Load e => Load (subst x v e)
-  | Store e1 e2 => Store (subst x v e1) (subst x v e2)
-  | MapGet e1 e2 => MapGet (subst x v e1) (subst x v e2)
-  | MapInsert e1 e2 e3 => MapInsert (subst x v e1) (subst x v e2) (subst x v e3)
+  | Primitive0 op => Primitive0 op
+  | Primitive1 op e => Primitive1 op (subst x v e)
+  | Primitive2 op e1 e2 => Primitive2 op (subst x v e1) (subst x v e2)
+  | Primitive3 op e1 e2 e3 => Primitive3 op (subst x v e1) (subst x v e2) (subst x v e3)
   | ExternalOp op e => ExternalOp op (subst x v e)
-  | EncodeInt e1 e2 => EncodeInt (subst x v e1) (subst x v e2)
-  | DecodeInt e => DecodeInt (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
   | Resolve ex e1 e2 => Resolve (subst x v ex) (subst x v e1) (subst x v e2)
@@ -978,3 +1091,11 @@ End go_lang.
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
+
+Notation AllocN := (Primitive2 AllocNOp).
+Notation Store := (Primitive2 StoreOp).
+Notation Load := (Primitive1 LoadOp).
+Notation MapGet := (Primitive2 MapGetOp).
+Notation MapInsert := (Primitive3 MapInsertOp).
+Notation EncodeInt := (Primitive2 EncodeIntOp).
+Notation DecodeInt := (Primitive1 DecodeIntOp).
