@@ -11,19 +11,13 @@ Definition LogCommit : expr := #0.
 Definition LogStart : expr := #1.
 
 Module Log.
-  Definition S := mkStruct [
+  Definition S := struct.new [
     "logLock"; "memLock"; "logSz"; "memLog"; "memLen"; "memTxnNxt"; "logTxnNxt"
   ].
   Definition T: ty := (lockRefT * lockRefT * intT * refT (slice.T blockT) * refT intT * refT intT * refT intT)%ht.
   Section fields.
     Context `{ext_ty: ext_types}.
-    Definition logLock := structF! S "logLock".
-    Definition memLock := structF! S "memLock".
-    Definition logSz := structF! S "logSz".
-    Definition memLog := structF! S "memLog".
-    Definition memLen := structF! S "memLen".
-    Definition memTxnNxt := structF! S "memTxnNxt".
-    Definition logTxnNxt := structF! S "logTxnNxt".
+    Definition get := struct.get S.
   End fields.
 End Log.
 
@@ -35,7 +29,7 @@ Definition writeHdr: val :=
 
 Definition Init: val :=
   λ: "logSz",
-    let: "log" := buildStruct Log.S [
+    let: "log" := struct.mk Log.S [
       "logLock" ::= Data.newLock #();
       "memLock" ::= Data.newLock #();
       "logSz" ::= "logSz";
@@ -55,24 +49,20 @@ Definition readHdr: val :=
 
 Definition readBlocks: val :=
   λ: "log" "len",
-    let: "blks" := ref (zero_val (slice.T blockT)) in
-    let: "initblks" := NewSlice blockT #0 in
-    "blks" <- "initblks";;
+    let: "blks" := ref (NewSlice blockT #0) in
     let: "i" := ref #0 in
     for: (!"i" < "len"); ("i" <- !"i" + #1) :=
       let: "blk" := disk.Read ("LogStart" + !"i") in
-      let: "oldblks" := !"blks" in
-      let: "newblks" := SliceAppend "oldblks" "blk" in
-      "blks" <- "newblks";;
+      "blks" <- SliceAppend !"blks" "blk";;
       Continue;;
     !"blks".
 
 Definition Read: val :=
   λ: "log",
-    Data.lockAcquire Writer (Log.logLock "log");;
+    Data.lockAcquire Writer (Log.get "logLock" "log");;
     let: "disklen" := readHdr "log" in
     let: "blks" := readBlocks "log" "disklen" in
-    Data.lockRelease Writer (Log.logLock "log");;
+    Data.lockRelease Writer (Log.get "logLock" "log");;
     "blks".
 
 Definition memWrite: val :=
@@ -80,30 +70,30 @@ Definition memWrite: val :=
     let: "n" := slice.len "l" in
     let: "i" := ref #0 in
     for: (!"i" < "n"); ("i" <- !"i" + #1) :=
-      Log.memLog "log" <- SliceAppend (!Log.memLog "log") (SliceGet "l" !"i");;
+      Log.get "memLog" "log" <- SliceAppend (!(Log.get "memLog" "log")) (SliceGet "l" !"i");;
       Continue.
 
 Definition memAppend: val :=
   λ: "log" "l",
-    Data.lockAcquire Writer (Log.memLock "log");;
-    if: !Log.memLen "log" + slice.len "l" ≥ Log.logSz "log"
+    Data.lockAcquire Writer (Log.get "memLock" "log");;
+    if: !(Log.get "memLen" "log") + slice.len "l" ≥ Log.get "logSz" "log"
     then
-      Data.lockRelease Writer (Log.memLock "log");;
+      Data.lockRelease Writer (Log.get "memLock" "log");;
       (#false, #0)
     else
-      let: "txn" := !Log.memTxnNxt "log" in
-      let: "n" := !Log.memLen "log" + slice.len "l" in
-      Log.memLen "log" <- "n";;
-      Log.memTxnNxt "log" <- !Log.memTxnNxt "log" + #1;;
-      Data.lockRelease Writer (Log.memLock "log");;
+      let: "txn" := !(Log.get "memTxnNxt" "log") in
+      let: "n" := !(Log.get "memLen" "log") + slice.len "l" in
+      Log.get "memLen" "log" <- "n";;
+      Log.get "memTxnNxt" "log" <- !(Log.get "memTxnNxt" "log") + #1;;
+      Data.lockRelease Writer (Log.get "memLock" "log");;
       (#true, "txn").
 
 (* XXX just an atomic read? *)
 Definition readLogTxnNxt: val :=
   λ: "log",
-    Data.lockAcquire Writer (Log.memLock "log");;
-    let: "n" := !Log.logTxnNxt "log" in
-    Data.lockRelease Writer (Log.memLock "log");;
+    Data.lockAcquire Writer (Log.get "memLock" "log");;
+    let: "n" := !(Log.get "logTxnNxt" "log") in
+    Data.lockRelease Writer (Log.get "memLock" "log");;
     "n".
 
 Definition diskAppendWait: val :=
@@ -136,18 +126,18 @@ Definition writeBlocks: val :=
 
 Definition diskAppend: val :=
   λ: "log",
-    Data.lockAcquire Writer (Log.logLock "log");;
+    Data.lockAcquire Writer (Log.get "logLock" "log");;
     let: "disklen" := readHdr "log" in
-    Data.lockAcquire Writer (Log.memLock "log");;
-    let: "memlen" := !Log.memLen "log" in
-    let: "allblks" := !Log.memLog "log" in
+    Data.lockAcquire Writer (Log.get "memLock" "log");;
+    let: "memlen" := !(Log.get "memLen" "log") in
+    let: "allblks" := !(Log.get "memLog" "log") in
     let: "blks" := SliceSkip "allblks" "disklen" in
-    let: "memnxt" := !Log.memTxnNxt "log" in
-    Data.lockRelease Writer (Log.memLock "log");;
+    let: "memnxt" := !(Log.get "memTxnNxt" "log") in
+    Data.lockRelease Writer (Log.get "memLock" "log");;
     writeBlocks "log" "blks" "disklen";;
     writeHdr "log" "memlen";;
-    Log.logTxnNxt "log" <- "memnxt";;
-    Data.lockRelease Writer (Log.logLock "log").
+    Log.get "logTxnNxt" "log" <- "memnxt";;
+    Data.lockRelease Writer (Log.get "logLock" "log").
 
 Definition Logger: val :=
   λ: "log",

@@ -16,15 +16,15 @@ Section go_lang.
   Definition Var' s : @expr ext := Var s.
   Local Coercion Var' : string >-> expr.
 
-Fixpoint get_field_e (f0: string) (rev_fields: list string): expr :=
+Fixpoint getField_e (f0: string) (rev_fields: list string): expr :=
   match rev_fields with
   | [] => LitV LitUnit
   | [f] => if String.eqb f f0 then "v" else #()
-  | f::fs => if String.eqb f f0 then Snd "v" else Fst (get_field_e f0 fs)
+  | f::fs => if String.eqb f f0 then Snd "v" else Fst (getField_e f0 fs)
   end.
 
-Definition get_field (d:descriptor) f : val :=
-  λ: "v", get_field_e f (rev d.(fields)).
+Definition getField (d:descriptor) f : val :=
+  λ: "v", getField_e f (rev d.(fields)).
 
 Fixpoint assocl_lookup {A} (field_vals: list (string * A)) (f0: string) : option A :=
   match field_vals with
@@ -55,11 +55,11 @@ Definition buildStruct (d:descriptor) (fvs: list (string*expr)) : expr :=
 
 End go_lang.
 
-Declare Reduction get_field := cbv [get_field rev app get_field_e fields String.eqb Ascii.eqb eqb].
+Declare Reduction getField := cbv [getField rev app getField_e fields String.eqb Ascii.eqb eqb].
 
 Ltac make_structF desc fname :=
-  let f := eval unfold desc in (get_field desc fname) in
-  let f := eval get_field in f in
+  let f := eval unfold desc in (getField desc fname) in
+  let f := eval getField in f in
       lazymatch f with
       | context[LitUnit] => fail "struct" desc "does not have field" fname
       | _ => exact f
@@ -71,6 +71,12 @@ Declare Reduction buildStruct :=
        build_struct_val
        rev app assocl_lookup
        String.eqb Ascii.eqb eqb].
+
+Module struct.
+  Notation new := mkStruct.
+  Notation mk := buildStruct.
+  Notation get := getField.
+End struct.
 
 Notation "'structF!' desc fname" := (ltac:(make_structF desc fname))
                                     (at level 0, desc, fname at next level, only parsing).

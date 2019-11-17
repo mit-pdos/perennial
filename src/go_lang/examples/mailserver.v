@@ -7,14 +7,13 @@ Existing Instances disk_op disk_model disk_ty.
 Local Coercion Var' (s: string) := Var s.
 
 Module partialFile.
-  Definition S := mkStruct [
+  Definition S := struct.new [
     "off"; "data"
   ].
   Definition T: ty := intT * slice.T byteT.
   Section fields.
     Context `{ext_ty: ext_types}.
-    Definition off := structF! S "off".
-    Definition data := structF! S "data".
+    Definition get := struct.get S.
   End fields.
 End partialFile.
 
@@ -31,20 +30,20 @@ Definition readMessage: val :=
     let: "f" := FS.open "userDir" "name" in
     let: "fileContents" := ref (zero_val (slice.T byteT)) in
     let: "initData" := NewSlice byteT #0 in
-    let: "pf" := ref (buildStruct partialFile.S [
+    let: "pf" := ref (struct.mk partialFile.S [
       "off" ::= #0;
       "data" ::= "initData"
     ]) in
     for: (#true); (Skip) :=
-      let: "buf" := FS.readAt "f" (partialFile.off !"pf") #512 in
-      let: "newData" := Data.sliceAppendSlice (partialFile.data !"pf") "buf" in
+      let: "buf" := FS.readAt "f" (partialFile.get "off" !"pf") #512 in
+      let: "newData" := Data.sliceAppendSlice (partialFile.get "data" !"pf") "buf" in
       if: slice.len "buf" < #512
       then
         "fileContents" <- "newData";;
         Break
       else
-        "pf" <- buildStruct partialFile.S [
-          "off" ::= partialFile.off !"pf" + slice.len "buf";
+        "pf" <- struct.mk partialFile.S [
+          "off" ::= partialFile.get "off" !"pf" + slice.len "buf";
           "data" ::= "newData"
         ];;
         Continue;;
@@ -54,14 +53,13 @@ Definition readMessage: val :=
     "fileStr".
 
 Module Message.
-  Definition S := mkStruct [
+  Definition S := struct.new [
     "Id"; "Contents"
   ].
   Definition T: ty := stringT * stringT.
   Section fields.
     Context `{ext_ty: ext_types}.
-    Definition Id := structF! S "Id".
-    Definition Contents := structF! S "Contents".
+    Definition get := struct.get S.
   End fields.
 End Message.
 
@@ -84,7 +82,7 @@ Definition Pickup: val :=
         let: "name" := SliceGet "names" !"i" in
         let: "msg" := readMessage "userDir" "name" in
         let: "oldMessages" := !"messages" in
-        let: "newMessages" := SliceAppend "oldMessages" (buildStruct Message.S [
+        let: "newMessages" := SliceAppend "oldMessages" (struct.mk Message.S [
           "Id" ::= "name";
           "Contents" ::= "msg"
         ]) in
@@ -127,8 +125,8 @@ Definition writeTmp: val :=
         FS.append "f" !"buf";;
         Break
       else
-        FS.append "f" (SliceTake #4096 !"buf");;
-        "buf" <- SliceSkip #4096 !"buf";;
+        FS.append "f" (SliceTake !"buf" #4096);;
+        "buf" <- SliceSkip !"buf" #4096;;
         Continue;;
     FS.close "f";;
     "name".

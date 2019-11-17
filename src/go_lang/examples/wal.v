@@ -12,15 +12,13 @@ Definition MaxTxnWrites : expr := #10.
 Definition logLength : expr := #1 + #2 * "MaxTxnWrites".
 
 Module Log.
-  Definition S := mkStruct [
+  Definition S := struct.new [
     "l"; "cache"; "length"
   ].
   Definition T: ty := (lockRefT * mapT blockT * refT intT)%ht.
   Section fields.
     Context `{ext_ty: ext_types}.
-    Definition l := structF! S "l".
-    Definition cache := structF! S "cache".
-    Definition length := structF! S "length".
+    Definition get := struct.get S.
   End fields.
 End Log.
 
@@ -50,7 +48,7 @@ Definition New: val :=
     let: "lengthPtr" := ref (zero_val intT) in
     "lengthPtr" <- #0;;
     let: "l" := Data.newLock #() in
-    buildStruct Log.S [
+    struct.mk Log.S [
       "cache" ::= "cache";
       "length" ::= "lengthPtr";
       "l" ::= "l"
@@ -58,11 +56,11 @@ Definition New: val :=
 
 Definition lock: val :=
   λ: "l",
-    Data.lockAcquire Writer (Log.l "l").
+    Data.lockAcquire Writer (Log.get "l" "l").
 
 Definition unlock: val :=
   λ: "l",
-    Data.lockRelease Writer (Log.l "l").
+    Data.lockRelease Writer (Log.get "l" "l").
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -70,7 +68,7 @@ Definition unlock: val :=
 Definition BeginTxn: val :=
   λ: "l",
     lock "l";;
-    let: "length" := !Log.length "l" in
+    let: "length" := !(Log.get "length" "l") in
     if: "length" = #0
     then
       unlock "l";;
@@ -85,7 +83,7 @@ Definition BeginTxn: val :=
 Definition Read: val :=
   λ: "l" "a",
     lock "l";;
-    let: ("v", "ok") := MapGet (Log.cache "l") "a" in
+    let: ("v", "ok") := MapGet (Log.get "cache" "l") "a" in
     if: "ok"
     then
       unlock "l";;
@@ -104,7 +102,7 @@ Definition Size: val :=
 Definition Write: val :=
   λ: "l" "a" "v",
     lock "l";;
-    let: "length" := !Log.length "l" in
+    let: "length" := !(Log.get "length" "l") in
     if: "length" ≥ "MaxTxnWrites"
     then
       Panic ("transaction is at capacity");;
@@ -114,15 +112,15 @@ Definition Write: val :=
     let: "nextAddr" := #1 + #2 * "length" in
     disk.Write "nextAddr" "aBlock";;
     disk.Write ("nextAddr" + #1) "v";;
-    MapInsert (Log.cache "l") "a" "v";;
-    Log.length "l" <- "length" + #1;;
+    MapInsert (Log.get "cache" "l") "a" "v";;
+    Log.get "length" "l" <- "length" + #1;;
     unlock "l".
 
 (* Commit the current transaction. *)
 Definition Commit: val :=
   λ: "l",
     lock "l";;
-    let: "length" := !Log.length "l" in
+    let: "length" := !(Log.get "length" "l") in
     unlock "l";;
     let: "header" := intToBlock "length" in
     disk.Write #0 "header".
@@ -159,10 +157,10 @@ Definition clearLog: val :=
 Definition Apply: val :=
   λ: "l",
     lock "l";;
-    let: "length" := !Log.length "l" in
+    let: "length" := !(Log.get "length" "l") in
     applyLog "length";;
     clearLog #();;
-    Log.length "l" <- #0;;
+    Log.get "length" "l" <- #0;;
     unlock "l".
 
 (* Open recovers the log following a crash or shutdown *)
@@ -176,7 +174,7 @@ Definition Open: val :=
     let: "lengthPtr" := ref (zero_val intT) in
     "lengthPtr" <- #0;;
     let: "l" := Data.newLock #() in
-    buildStruct Log.S [
+    struct.mk Log.S [
       "cache" ::= "cache";
       "length" ::= "lengthPtr";
       "l" ::= "l"

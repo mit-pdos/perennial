@@ -10,13 +10,11 @@ Module importantStruct.
   (* This struct is very important.
 
      This is despite it being empty. *)
-  Definition S := mkStruct [
+  Definition S := struct.new [
 
   ].
   Definition T: ty := unitT.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-  End fields.
+  Definition get := struct.get S.
 End importantStruct.
 
 (* doSubtleThings does a number of subtle things:
@@ -122,21 +120,16 @@ Definition emptyReturn: val :=
     "tt".
 
 Module allTheLiterals.
-  Definition S := mkStruct [
+  Definition S := struct.new [
     "int"; "s"; "b"
   ].
   Definition T: ty := (intT * stringT * boolT)%ht.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition int := structF! S "int".
-    Definition s := structF! S "s".
-    Definition b := structF! S "b".
-  End fields.
+  Definition get := struct.get S.
 End allTheLiterals.
 
 Definition normalLiterals: val :=
   λ: <>,
-    buildStruct allTheLiterals.S [
+    struct.mk allTheLiterals.S [
       "int" ::= #0;
       "s" ::= #(str"foo");
       "b" ::= #true
@@ -144,7 +137,7 @@ Definition normalLiterals: val :=
 
 Definition specialLiterals: val :=
   λ: <>,
-    buildStruct allTheLiterals.S [
+    struct.mk allTheLiterals.S [
       "int" ::= #4096;
       "s" ::= #(str"");
       "b" ::= #false
@@ -152,7 +145,7 @@ Definition specialLiterals: val :=
 
 Definition oddLiterals: val :=
   λ: <>,
-    buildStruct allTheLiterals.S [
+    struct.mk allTheLiterals.S [
       "int" ::= #5;
       "s" ::= #(str"backquote string");
       "b" ::= #false
@@ -217,15 +210,35 @@ Definition PanicAtTheDisco: val :=
   λ: <>,
     Panic "disco".
 
+Module composite.
+  Definition S := struct.new [
+    "a"; "b"
+  ].
+  Definition T: ty := intT * intT.
+  Definition get := struct.get S.
+End composite.
+
+Definition ReassignVars: val :=
+  λ: <>,
+    let: "x" := zero_val intT in
+    let: "y" := #0 in
+    "x" <- #3;;
+    let: "z" := ref (struct.mk composite.S [
+      "a" ::= !"x";
+      "b" ::= "y"
+    ]) in
+    "z" <- struct.mk composite.S [
+      "a" ::= "y";
+      "b" ::= !"x"
+    ];;
+    "x" <- struct.get composite.S "a" !"z".
+
 Module Block.
-  Definition S := mkStruct [
+  Definition S := struct.new [
     "Value"
   ].
   Definition T: ty := intT.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition Value := structF! S "Value".
-  End fields.
+  Definition get := struct.get S.
 End Block.
 
 Definition Disk1 : expr := #0.
@@ -242,7 +255,7 @@ Definition TwoDiskWrite: val :=
 (* TwoDiskRead is a dummy function to represent the base layer's disk read *)
 Definition TwoDiskRead: val :=
   λ: "diskId" "a",
-    (buildStruct Block.S [
+    (struct.mk Block.S [
        "Value" ::= #0
      ], #true).
 
@@ -322,14 +335,10 @@ Definition threadCode: val :=
 Definition loopSpawn: val :=
   λ: <>,
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      let: "i" := ref !"i" in
-      if: !"i" > #10
-      then Break
-      else
-        Fork (threadCode !"i");;
-        "i" <- !"i" + #1;;
-        Continue;;
+    for: (!"i" < #10); ("i" <- !"i" + #1) :=
+      let: "i" := !"i" in
+      Fork (threadCode "i");;
+      Continue;;
     let: "dummy" := ref #true in
     for: (#true); (Skip) :=
       "dummy" <- ~ !"dummy";;
@@ -340,30 +349,26 @@ Definition stringAppend: val :=
     #(str"prefix ") + "s" + #(str" ") + uint64_to_string "x".
 
 Module C.
-  Definition S := mkStruct [
+  Definition S := struct.new [
     "x"; "y"
   ].
   Definition T: ty := intT * intT.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition x := structF! S "x".
-    Definition y := structF! S "y".
-  End fields.
+  Definition get := struct.get S.
 End C.
 
 Definition Add: val :=
   λ: "c" "z",
-    C.x "c" + C.y "c" + "z".
+    struct.get C.S "x" "c" + struct.get C.S "y" "c" + "z".
 
 Definition GetField: val :=
   λ: "c",
-    let: "x" := C.x "c" in
-    let: "y" := C.y "c" in
+    let: "x" := struct.get C.S "x" "c" in
+    let: "y" := struct.get C.S "y" "c" in
     "x" + "y".
 
 Definition UseAdd: val :=
   λ: <>,
-    let: "c" := buildStruct C.S [
+    let: "c" := struct.mk C.S [
       "x" ::= #2;
       "y" ::= #3
     ] in
@@ -372,7 +377,7 @@ Definition UseAdd: val :=
 
 Definition UseAddWithLiteral: val :=
   λ: <>,
-    let: "r" := Add (buildStruct C.S [
+    let: "r" := Add (struct.mk C.S [
       "x" ::= #2;
       "y" ::= #3
     ]) #4 in
