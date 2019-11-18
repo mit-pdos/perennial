@@ -10,7 +10,7 @@ Definition LOGSTART : expr := #1.
 
 Definition LOGMAXBLK : expr := #510.
 
-Definition LOGEND : expr := "LOGMAXBLK" + "LOGSTART".
+Definition LOGEND : expr := LOGMAXBLK + LOGSTART.
 
 Module Log.
   Definition S := struct.new [
@@ -33,7 +33,10 @@ Definition Log__writeHdr: val :=
   λ: "log" "len",
     let: "hdr" := NewSlice byteT #4096 in
     UInt64Put "hdr" "len";;
-    disk.Write "LOGCOMMIT" "hdr".
+    disk.Write LOGCOMMIT "hdr".
+Theorem Log__writeHdr_t: ⊢ Log__writeHdr : (Log.T -> intT -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__writeHdr_t : types.
 
 Definition Init: val :=
   λ: "logSz",
@@ -48,22 +51,31 @@ Definition Init: val :=
     ] in
     Log__writeHdr "log" #0;;
     "log".
+Theorem Init_t: ⊢ Init : (intT -> Log.T).
+Proof. typecheck. Qed.
+Hint Resolve Init_t : types.
 
 Definition Log__readHdr: val :=
   λ: "log",
-    let: "hdr" := disk.Read "LOGCOMMIT" in
+    let: "hdr" := disk.Read LOGCOMMIT in
     let: "disklen" := UInt64Get "hdr" in
     "disklen".
+Theorem Log__readHdr_t: ⊢ Log__readHdr : (Log.T -> intT).
+Proof. typecheck. Qed.
+Hint Resolve Log__readHdr_t : types.
 
 Definition Log__readBlocks: val :=
   λ: "log" "len",
     let: "blks" := ref (NewSlice disk.blockT #0) in
     let: "i" := ref #0 in
     for: (!"i" < "len"); ("i" <- !"i" + #1) :=
-      let: "blk" := disk.Read ("LOGSTART" + !"i") in
+      let: "blk" := disk.Read (LOGSTART + !"i") in
       "blks" <- SliceAppend !"blks" "blk";;
       Continue;;
     !"blks".
+Theorem Log__readBlocks_t: ⊢ Log__readBlocks : (Log.T -> intT -> slice.T disk.blockT).
+Proof. typecheck. Qed.
+Hint Resolve Log__readBlocks_t : types.
 
 Definition Log__Read: val :=
   λ: "log",
@@ -72,6 +84,9 @@ Definition Log__Read: val :=
     let: "blks" := Log__readBlocks "log" "disklen" in
     Data.lockRelease Writer (Log.get "logLock" "log");;
     "blks".
+Theorem Log__Read_t: ⊢ Log__Read : (Log.T -> slice.T disk.blockT).
+Proof. typecheck. Qed.
+Hint Resolve Log__Read_t : types.
 
 Definition Log__memWrite: val :=
   λ: "log" "l",
@@ -80,6 +95,9 @@ Definition Log__memWrite: val :=
     for: (!"i" < "n"); ("i" <- !"i" + #1) :=
       Log.get "memLog" "log" <- SliceAppend (!(Log.get "memLog" "log")) (SliceGet "l" !"i");;
       Continue.
+Theorem Log__memWrite_t: ⊢ Log__memWrite : (Log.T -> slice.T disk.blockT -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__memWrite_t : types.
 
 Definition Log__memAppend: val :=
   λ: "log" "l",
@@ -95,6 +113,9 @@ Definition Log__memAppend: val :=
       Log.get "memTxnNxt" "log" <- !(Log.get "memTxnNxt" "log") + #1;;
       Data.lockRelease Writer (Log.get "memLock" "log");;
       (#true, "txn").
+Theorem Log__memAppend_t: ⊢ Log__memAppend : (Log.T -> slice.T disk.blockT -> (boolT * intT)).
+Proof. typecheck. Qed.
+Hint Resolve Log__memAppend_t : types.
 
 (* XXX just an atomic read? *)
 Definition Log__readLogTxnNxt: val :=
@@ -103,6 +124,9 @@ Definition Log__readLogTxnNxt: val :=
     let: "n" := !(Log.get "logTxnNxt" "log") in
     Data.lockRelease Writer (Log.get "memLock" "log");;
     "n".
+Theorem Log__readLogTxnNxt_t: ⊢ Log__readLogTxnNxt : (Log.T -> intT).
+Proof. typecheck. Qed.
+Hint Resolve Log__readLogTxnNxt_t : types.
 
 Definition Log__diskAppendWait: val :=
   λ: "log" "txn",
@@ -112,6 +136,9 @@ Definition Log__diskAppendWait: val :=
       if: "txn" < "logtxn"
       then Break
       else Continue.
+Theorem Log__diskAppendWait_t: ⊢ Log__diskAppendWait : (Log.T -> intT -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__diskAppendWait_t : types.
 
 Definition Log__Append: val :=
   λ: "log" "l",
@@ -122,6 +149,9 @@ Definition Log__Append: val :=
       #()
     else #();;
     "ok".
+Theorem Log__Append_t: ⊢ Log__Append : (Log.T -> slice.T disk.blockT -> boolT).
+Proof. typecheck. Qed.
+Hint Resolve Log__Append_t : types.
 
 Definition Log__writeBlocks: val :=
   λ: "log" "l" "pos",
@@ -131,6 +161,9 @@ Definition Log__writeBlocks: val :=
       let: "bk" := SliceGet "l" !"i" in
       disk.Write ("pos" + !"i") "bk";;
       Continue.
+Theorem Log__writeBlocks_t: ⊢ Log__writeBlocks : (Log.T -> slice.T disk.blockT -> intT -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__writeBlocks_t : types.
 
 Definition Log__diskAppend: val :=
   λ: "log",
@@ -146,6 +179,9 @@ Definition Log__diskAppend: val :=
     Log__writeHdr "log" "memlen";;
     Log.get "logTxnNxt" "log" <- "memnxt";;
     Data.lockRelease Writer (Log.get "logLock" "log").
+Theorem Log__diskAppend_t: ⊢ Log__diskAppend : (Log.T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__diskAppend_t : types.
 
 Definition Log__Logger: val :=
   λ: "log",
@@ -153,6 +189,9 @@ Definition Log__Logger: val :=
     for: (#true); (Skip) :=
       Log__diskAppend "log";;
       Continue.
+Theorem Log__Logger_t: ⊢ Log__Logger : (Log.T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__Logger_t : types.
 
 Module Txn.
   Definition S := struct.new [
@@ -174,6 +213,9 @@ Definition Begin: val :=
       "blks" ::= ref (zero_val (mapT disk.blockT))
     ] in
     "txn".
+Theorem Begin_t: ⊢ Begin : (refT Log.T -> Txn.T).
+Proof. typecheck. Qed.
+Hint Resolve Begin_t : types.
 
 Definition Txn__Write: val :=
   λ: "txn" "addr" "blk",
@@ -185,19 +227,25 @@ Definition Txn__Write: val :=
     else #();;
     if: ~ "ok"
     then
-      if: "addr" = "LOGMAXBLK"
+      if: "addr" = LOGMAXBLK
       then #false
       else MapInsert (!(Txn.get "blks" "txn")) "addr" !"blk";;
       #()
     else #();;
     #true.
+Theorem Txn__Write_t: ⊢ Txn__Write : (Txn.T -> intT -> refT disk.blockT -> boolT).
+Proof. typecheck. Qed.
+Hint Resolve Txn__Write_t : types.
 
 Definition Txn__Read: val :=
   λ: "txn" "addr",
     let: ("v", "ok") := MapGet (!(Txn.get "blks" "txn")) "addr" in
     if: "ok"
     then "v"
-    else disk.Read ("addr" + "LOGEND").
+    else disk.Read ("addr" + LOGEND).
+Theorem Txn__Read_t: ⊢ Txn__Read : (Txn.T -> intT -> disk.blockT).
+Proof. typecheck. Qed.
+Hint Resolve Txn__Read_t : types.
 
 Definition Txn__Commit: val :=
   λ: "txn",
@@ -206,3 +254,6 @@ Definition Txn__Commit: val :=
       "blks" <- SliceAppend !"blks" "v");;
     let: "ok" := Log__Append (!(Txn.get "log" "txn")) !"blks" in
     "ok".
+Theorem Txn__Commit_t: ⊢ Txn__Commit : (Txn.T -> boolT).
+Proof. typecheck. Qed.
+Hint Resolve Txn__Commit_t : types.

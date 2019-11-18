@@ -7,7 +7,7 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
 (* 10 is completely arbitrary *)
 Definition MaxTxnWrites : expr := #10.
 
-Definition logLength : expr := #1 + #2 * "MaxTxnWrites".
+Definition logLength : expr := #1 + #2 * MaxTxnWrites.
 
 Module Log.
   Definition S := struct.new [
@@ -37,7 +37,7 @@ Definition blockToInt: val :=
 Definition New: val :=
   λ: <>,
     let: "diskSize" := disk.Size #() in
-    if: "diskSize" ≤ "logLength"
+    if: "diskSize" ≤ logLength
     then
       Panic ("disk is too small to host log");;
       #()
@@ -90,20 +90,20 @@ Definition Log__Read: val :=
       "v"
     else
       Log__unlock "l";;
-      let: "dv" := disk.Read ("logLength" + "a") in
+      let: "dv" := disk.Read (logLength + "a") in
       "dv".
 
 Definition Log__Size: val :=
   λ: "l",
     let: "sz" := disk.Size #() in
-    "sz" - "logLength".
+    "sz" - logLength.
 
 (* Write to the disk through the log. *)
 Definition Log__Write: val :=
   λ: "l" "a" "v",
     Log__lock "l";;
     let: "length" := !(Log.get "length" "l") in
-    if: "length" ≥ "MaxTxnWrites"
+    if: "length" ≥ MaxTxnWrites
     then
       Panic ("transaction is at capacity");;
       #()
@@ -141,7 +141,7 @@ Definition applyLog: val :=
       if: !"i" < "length"
       then
         let: ("a", "v") := getLogEntry !"i" in
-        disk.Write ("logLength" + "a") "v";;
+        disk.Write (logLength + "a") "v";;
         "i" <- !"i" + #1;;
         Continue
       else Break.

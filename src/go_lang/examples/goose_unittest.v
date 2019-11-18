@@ -31,7 +31,7 @@ Definition UntypedStringConstant : expr := #(str"bar").
 
 Definition TypedInt : expr := #32.
 
-Definition ConstWithArith : expr := #4 + #3 * "TypedInt".
+Definition ConstWithArith : expr := #4 + #3 * TypedInt.
 
 Definition typedLiteral: val :=
   λ: <>,
@@ -286,34 +286,34 @@ Definition TwoDiskUnlock: val :=
 Definition ReplicatedDiskRead: val :=
   λ: "a",
     TwoDiskLock "a";;
-    let: ("v", "ok") := TwoDiskRead "Disk1" "a" in
+    let: ("v", "ok") := TwoDiskRead Disk1 "a" in
     if: "ok"
     then
       TwoDiskUnlock "a";;
       "v"
     else
-      let: ("v2", <>) := TwoDiskRead "Disk2" "a" in
+      let: ("v2", <>) := TwoDiskRead Disk2 "a" in
       TwoDiskUnlock "a";;
       "v2".
 
 Definition ReplicatedDiskWrite: val :=
   λ: "a" "v",
     TwoDiskLock "a";;
-    TwoDiskWrite "Disk1" "a" "v";;
-    TwoDiskWrite "Disk2" "a" "v";;
+    TwoDiskWrite Disk1 "a" "v";;
+    TwoDiskWrite Disk2 "a" "v";;
     TwoDiskUnlock "a".
 
 Definition ReplicatedDiskRecover: val :=
   λ: <>,
     let: "a" := ref #0 in
     for: (#true); (Skip) :=
-      if: !"a" > "DiskSize"
+      if: !"a" > DiskSize
       then Break
       else
-        let: ("v", "ok") := TwoDiskRead "Disk1" !"a" in
+        let: ("v", "ok") := TwoDiskRead Disk1 !"a" in
         if: "ok"
         then
-          TwoDiskWrite "Disk2" !"a" "v";;
+          TwoDiskWrite Disk2 !"a" "v";;
           #()
         else #();;
         "a" <- !"a" + #1;;

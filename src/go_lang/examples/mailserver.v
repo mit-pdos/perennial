@@ -100,7 +100,7 @@ Definition createTmp: val :=
     let: "id" := ref "initID" in
     for: (#true); (Skip) :=
       let: "fname" := uint64_to_string !"id" in
-      let: ("f", "ok") := FS.create "SpoolDir" "fname" in
+      let: ("f", "ok") := FS.create SpoolDir "fname" in
       if: "ok"
       then
         "finalFile" <- "f";;
@@ -140,7 +140,7 @@ Definition Deliver: val :=
     let: "initID" := Data.randomUint64 #() in
     let: "id" := ref "initID" in
     for: (#true); (Skip) :=
-      let: "ok" := FS.link "SpoolDir" "tmpName" "userDir" (#(str"msg") + uint64_to_string !"id") in
+      let: "ok" := FS.link SpoolDir "tmpName" "userDir" (#(str"msg") + uint64_to_string !"id") in
       if: "ok"
       then Break
       else
@@ -148,7 +148,7 @@ Definition Deliver: val :=
         "id" <- "newID";;
         Continue;;
       Continue;;
-    FS.delete "SpoolDir" "tmpName".
+    FS.delete SpoolDir "tmpName".
 
 (* Delete deletes a message for the current user.
    Requires the per-user lock, acquired with pickup. *)
@@ -178,7 +178,7 @@ Definition open: val :=
     "locks" <- "initLocks";;
     let: "i" := ref #0 in
     for: (#true); (Skip) :=
-      if: !"i" = "NumUsers"
+      if: !"i" = NumUsers
       then Break
       else
         let: "oldLocks" := !"locks" in
@@ -196,13 +196,13 @@ Definition init: val :=
 
 Definition Recover: val :=
   λ: <>,
-    let: "spooled" := FS.list "SpoolDir" in
+    let: "spooled" := FS.list SpoolDir in
     let: "i" := ref #0 in
     for: (#true); (Skip) :=
       if: !"i" = slice.len "spooled"
       then Break
       else
         let: "name" := SliceGet "spooled" !"i" in
-        FS.delete "SpoolDir" "name";;
+        FS.delete SpoolDir "name";;
         "i" <- !"i" + #1;;
         Continue.
