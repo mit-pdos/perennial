@@ -24,6 +24,9 @@ Definition writeHdr: val :=
     UInt64Put "hdr" (Log.get "sz" "log");;
     UInt64Put (SliceSkip "hdr" #8) (Log.get "sz" "log");;
     disk.Write #0 "hdr".
+Definition writeHdr_t: ⊢ writeHdr : (Log.T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve writeHdr_t : types.
 
 Definition Init: val :=
   λ: "diskSz",
@@ -40,6 +43,9 @@ Definition Init: val :=
       ] in
       writeHdr "log";;
       ("log", #true).
+Definition Init_t: ⊢ Init : (intT -> (Log.T * boolT)).
+Proof. typecheck. Qed.
+Hint Resolve Init_t : types.
 
 Definition Get: val :=
   λ: "log" "i",
@@ -47,6 +53,9 @@ Definition Get: val :=
     if: "i" < "sz"
     then (disk.Read (#1 + "i"), #true)
     else (slice.nil, #false).
+Definition Get_t: ⊢ Get : (Log.T -> intT -> (blockT * boolT)).
+Proof. typecheck. Qed.
+Hint Resolve Get_t : types.
 
 Definition writeAll: val :=
   λ: "bks" "off",
@@ -56,6 +65,9 @@ Definition writeAll: val :=
       let: "bk" := SliceGet "bks" !"i" in
       disk.Write ("off" + !"i") "bk";;
       Continue.
+Definition writeAll_t: ⊢ writeAll : (slice.T blockT -> intT -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve writeAll_t : types.
 
 Definition Append: val :=
   λ: "log" "bks",
@@ -71,6 +83,9 @@ Definition Append: val :=
       writeHdr "newLog";;
       "log" <- "newLog";;
       #true.
+Definition Append_t: ⊢ Append : (refT Log.T -> slice.T blockT -> boolT).
+Proof. typecheck. Qed.
+Hint Resolve Append_t : types.
 
 Definition Reset: val :=
   λ: "log",
@@ -80,3 +95,6 @@ Definition Reset: val :=
     ] in
     writeHdr "newLog";;
     "log" <- "newLog".
+Definition Reset_t: ⊢ Reset : (refT Log.T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Reset_t : types.
