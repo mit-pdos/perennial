@@ -444,7 +444,7 @@ Proof.
                                 | MapInsertOp => inr 4
                                 | EncodeIntOp => inr 5
                                 | DecodeIntOp => inr 6
-                                end )
+                                end)
                          (λ v, match v with
                                | inl s => a_prim_op (PanicOp s)
                                | inr 0 => a_prim_op AllocNOp
@@ -494,38 +494,16 @@ Proof.
                                end) _); by intros [].
 Qed.
 
-Definition from_prim_op' ar (op: prim_op') : prim_op ar :=
-  let 'a_prim_op op := op in
-  match ar return prim_op ar with
-  | args0 => match op with
-            | PanicOp s => PanicOp s
-            | _ => PanicOp ""
-            end
-  | args1 => match op with
-            | LoadOp => LoadOp
-            | DecodeIntOp => DecodeIntOp
-            | _ => LoadOp
-            end
-  | args2 => match op with
-            | AllocNOp => AllocNOp
-            | StoreOp => StoreOp
-            | MapGetOp => MapGetOp
-            | EncodeIntOp => EncodeIntOp
-            | _ => AllocNOp
-            end
-  | args3 => match op with
-            | MapInsertOp => MapInsertOp
-            | _ => MapInsertOp
-            end
-  end.
-
-Theorem from_prim_op'_id : forall ar (op: prim_op ar),
-    from_prim_op' ar (a_prim_op op) = op.
-Proof.
-  destruct op; simpl; auto.
+Definition to_prim_op : {f: forall ar (op: prim_op'), prim_op ar | forall ar op, f ar (a_prim_op op) = op}.
+  unshelve refine (exist _ (fun (ar: arity) op => let 'a_prim_op op := op in
+                                   ltac:(destruct ar, op)) _);
+    (* solve equality cases by unification *)
+    [..|destruct op; eauto];
+    (* solve default cases with an arbitrary value *)
+    solve [ constructor; auto using "" ].
 Qed.
 
-Opaque from_prim_op'.
+Definition to_prim_op_correct := proj2_sig to_prim_op.
 
 Global Instance expr_countable : Countable expr.
 Proof using ext.
@@ -575,10 +553,10 @@ Proof using ext.
      | GenLeaf (stringVal x) => Var x
      | GenNode 1 [GenLeaf (binderVal f); GenLeaf (binderVal x); e] => Rec f x (go e)
      | GenNode 2 [e1; e2] => App (go e1) (go e2)
-     | GenNode 21 [GenLeaf (primOpVal op)] => Primitive0 (from_prim_op' args0 op)
-     | GenNode 22 [GenLeaf (primOpVal op); e] => Primitive1 (from_prim_op' args1 op) (go e)
-     | GenNode 23 [GenLeaf (primOpVal op); e1; e2] => Primitive2 (from_prim_op' args2 op) (go e1) (go e2)
-     | GenNode 24 [GenLeaf (primOpVal op); e0; e1; e2] => Primitive3 (from_prim_op' args3 op) (go e0) (go e1) (go e2)
+     | GenNode 21 [GenLeaf (primOpVal op)] => Primitive0 (`to_prim_op args0 op)
+     | GenNode 22 [GenLeaf (primOpVal op); e] => Primitive1 (`to_prim_op args1 op) (go e)
+     | GenNode 23 [GenLeaf (primOpVal op); e1; e2] => Primitive2 (`to_prim_op args2 op) (go e1) (go e2)
+     | GenNode 24 [GenLeaf (primOpVal op); e0; e1; e2] => Primitive3 (`to_prim_op args3 op) (go e0) (go e1) (go e2)
      | GenNode 3 [GenLeaf (un_opVal op); e] => UnOp op (go e)
      | GenNode 4 [GenLeaf (bin_opVal op); e1; e2] => BinOp op (go e1) (go e2)
      | GenNode 5 [e0; e1; e2] => If (go e0) (go e1) (go e2)
@@ -610,7 +588,7 @@ Proof using ext.
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
   - destruct e as [v| | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
-      rewrite ?from_prim_op'_id;
+      rewrite ?to_prim_op_correct;
       [exact (gov v)|done..].
  - destruct v; by f_equal.
 Qed.
