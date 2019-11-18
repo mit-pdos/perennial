@@ -291,7 +291,7 @@ Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
 Hint Resolve zero_val_ty : types.
 
-Local Ltac simp := unfold For; simpl; rewrite ?insert_anon.
+Local Ltac simp := unfold For; rewrite ?insert_anon.
 Ltac type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]

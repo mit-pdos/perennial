@@ -28,7 +28,7 @@ Hint Resolve Log__writeHdr_t : types.
 
 Definition Init: val :=
   λ: "diskSz",
-    if: "diskSz" < #1
+    (if: "diskSz" < #1
     then
       (struct.mk Log.S [
          "sz" ::= #0;
@@ -40,7 +40,7 @@ Definition Init: val :=
         "diskSz" ::= "diskSz"
       ] in
       Log__writeHdr "log";;
-      ("log", #true).
+      ("log", #true)).
 Theorem Init_t: ⊢ Init : (intT -> (Log.T * boolT)).
 Proof. typecheck. Qed.
 Hint Resolve Init_t : types.
@@ -48,9 +48,9 @@ Hint Resolve Init_t : types.
 Definition Log__Get: val :=
   λ: "log" "i",
     let: "sz" := Log.get "sz" "log" in
-    if: "i" < "sz"
+    (if: "i" < "sz"
     then (disk.Read (#1 + "i"), #true)
-    else (slice.nil, #false).
+    else (slice.nil, #false)).
 Theorem Log__Get_t: ⊢ Log__Get : (Log.T -> intT -> (disk.blockT * boolT)).
 Proof. typecheck. Qed.
 Hint Resolve Log__Get_t : types.
@@ -59,10 +59,10 @@ Definition writeAll: val :=
   λ: "bks" "off",
     let: "numBks" := slice.len "bks" in
     let: "i" := ref #0 in
-    for: (!"i" < "numBks"); ("i" <- !"i" + #1) :=
+    (for: (!"i" < "numBks"); ("i" <- !"i" + #1) :=
       let: "bk" := SliceGet "bks" !"i" in
       disk.Write ("off" + !"i") "bk";;
-      Continue.
+      Continue).
 Theorem writeAll_t: ⊢ writeAll : (slice.T disk.blockT -> intT -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve writeAll_t : types.
@@ -70,7 +70,7 @@ Hint Resolve writeAll_t : types.
 Definition Log__Append: val :=
   λ: "log" "bks",
     let: "sz" := Log.get "sz" !"log" in
-    if: #1 + "sz" + slice.len "bks" ≥ Log.get "diskSz" !"log"
+    (if: #1 + "sz" + slice.len "bks" ≥ Log.get "diskSz" !"log"
     then #false
     else
       writeAll "bks" (#1 + "sz");;
@@ -80,7 +80,7 @@ Definition Log__Append: val :=
       ] in
       Log__writeHdr "newLog";;
       "log" <- "newLog";;
-      #true.
+      #true).
 Theorem Log__Append_t: ⊢ Log__Append : (refT Log.T -> slice.T disk.blockT -> boolT).
 Proof. typecheck. Qed.
 Hint Resolve Log__Append_t : types.

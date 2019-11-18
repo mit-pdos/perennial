@@ -58,17 +58,17 @@ End Entry.
    then decoding failed, and the value of type T should be ignored. *)
 Definition DecodeUInt64: val :=
   λ: "p",
-    if: slice.len "p" < #8
+    (if: slice.len "p" < #8
     then (#0, #0)
     else
       let: "n" := UInt64Get "p" in
-      ("n", #8).
+      ("n", #8)).
 
 (* DecodeEntry is a Decoder(Entry) *)
 Definition DecodeEntry: val :=
   λ: "data",
     let: ("key", "l1") := DecodeUInt64 "data" in
-    if: "l1" = #0
+    (if: "l1" = #0
     then
       (struct.mk Entry.S [
          "Key" ::= #0;
@@ -76,14 +76,14 @@ Definition DecodeEntry: val :=
        ], #0)
     else
       let: ("valueLen", "l2") := DecodeUInt64 (SliceSkip "data" "l1") in
-      if: "l2" = #0
+      (if: "l2" = #0
       then
         (struct.mk Entry.S [
            "Key" ::= #0;
            "Value" ::= slice.nil
          ], #0)
       else
-        if: slice.len "data" < "l1" + "l2" + "valueLen"
+        (if: slice.len "data" < "l1" + "l2" + "valueLen"
         then
           (struct.mk Entry.S [
              "Key" ::= #0;
@@ -94,7 +94,7 @@ Definition DecodeEntry: val :=
           (struct.mk Entry.S [
              "Key" ::= "key";
              "Value" ::= "value"
-           ], "l1" + "l2" + "valueLen").
+           ], "l1" + "l2" + "valueLen")))).
 
 Module lazyFileBuf.
   Definition S := struct.new [
@@ -115,9 +115,9 @@ Definition readTableIndex: val :=
       "offset" ::= #0;
       "next" ::= slice.nil
     ]) in
-    for: (#true); (Skip) :=
+    (for: (#true); (Skip) :=
       let: ("e", "l") := DecodeEntry (lazyFileBuf.get "next" !"buf") in
-      if: "l" > #0
+      (if: "l" > #0
       then
         MapInsert "index" (Entry.get "Key" "e") (#8 + lazyFileBuf.get "offset" !"buf");;
         "buf" <- struct.mk lazyFileBuf.S [
@@ -127,7 +127,7 @@ Definition readTableIndex: val :=
         Continue
       else
         let: "p" := FS.readAt "f" (lazyFileBuf.get "offset" !"buf" + slice.len (lazyFileBuf.get "next" !"buf")) #4096 in
-        if: slice.len "p" = #0
+        (if: slice.len "p" = #0
         then Break
         else
           let: "newBuf" := Data.sliceAppendSlice (lazyFileBuf.get "next" !"buf") "p" in
@@ -135,8 +135,8 @@ Definition readTableIndex: val :=
             "offset" ::= lazyFileBuf.get "offset" !"buf";
             "next" ::= "newBuf"
           ];;
-          Continue;;
-      Continue.
+          Continue));;
+      Continue).
 
 (* RecoverTable restores a table from disk on startup. *)
 Definition RecoverTable: val :=
@@ -160,21 +160,21 @@ Definition readValue: val :=
     let: "totalBytes" := UInt64Get "startBuf" in
     let: "buf" := SliceSkip "startBuf" #8 in
     let: "haveBytes" := slice.len "buf" in
-    if: "haveBytes" < "totalBytes"
+    (if: "haveBytes" < "totalBytes"
     then
       let: "buf2" := FS.readAt "f" ("off" + #512) ("totalBytes" - "haveBytes") in
       let: "newBuf" := Data.sliceAppendSlice "buf" "buf2" in
       "newBuf"
-    else SliceTake "buf" "totalBytes".
+    else SliceTake "buf" "totalBytes").
 
 Definition tableRead: val :=
   λ: "t" "k",
     let: ("off", "ok") := MapGet (Table.get "Index" "t") "k" in
-    if: ~ "ok"
+    (if: ~ "ok"
     then (slice.nil, #false)
     else
       let: "p" := readValue (Table.get "File" "t") "off" in
-      ("p", #true).
+      ("p", #true)).
 
 Module bufFile.
   Definition S := struct.new [
@@ -199,11 +199,11 @@ Definition newBuf: val :=
 Definition bufFlush: val :=
   λ: "f",
     let: "buf" := !(bufFile.get "buf" "f") in
-    if: slice.len "buf" = #0
+    (if: slice.len "buf" = #0
     then "tt"
     else
       FS.append (bufFile.get "file" "f") "buf";;
-      bufFile.get "buf" "f" <- slice.nil.
+      bufFile.get "buf" "f" <- slice.nil).
 
 Definition bufAppend: val :=
   λ: "f" "p",
@@ -342,14 +342,14 @@ Definition Read: val :=
     Data.lockAcquire Reader (Database.get "bufferL" "db");;
     let: "buf" := !(Database.get "wbuffer" "db") in
     let: ("v", "ok") := MapGet "buf" "k" in
-    if: "ok"
+    (if: "ok"
     then
       Data.lockRelease Reader (Database.get "bufferL" "db");;
       ("v", #true)
     else
       let: "rbuf" := !(Database.get "rbuffer" "db") in
       let: ("v2", "ok") := MapGet "rbuf" "k" in
-      if: "ok"
+      (if: "ok"
       then
         Data.lockRelease Reader (Database.get "bufferL" "db");;
         ("v2", #true)
@@ -359,7 +359,7 @@ Definition Read: val :=
         let: ("v3", "ok") := tableRead "tbl" "k" in
         Data.lockRelease Reader (Database.get "tableL" "db");;
         Data.lockRelease Reader (Database.get "bufferL" "db");;
-        ("v3", "ok").
+        ("v3", "ok"))).
 
 (* Write sets a key to a new value.
 
@@ -376,12 +376,12 @@ Definition Write: val :=
 
 Definition freshTable: val :=
   λ: "p",
-    if: "p" = #(str"table.0")
+    (if: "p" = #(str"table.0")
     then #(str"table.1")
     else
-      if: "p" = #(str"table.1")
+      (if: "p" = #(str"table.1")
       then #(str"table.0")
-      else "p".
+      else "p")).
 
 Definition tablePutBuffer: val :=
   λ: "w" "buf",
@@ -396,16 +396,16 @@ Definition tablePutOldTable: val :=
       "offset" ::= #0;
       "next" ::= slice.nil
     ]) in
-    for: (#true); (Skip) :=
+    (for: (#true); (Skip) :=
       let: ("e", "l") := DecodeEntry (lazyFileBuf.get "next" !"buf") in
-      if: "l" > #0
+      (if: "l" > #0
       then
         let: (<>, "ok") := MapGet "b" (Entry.get "Key" "e") in
-        if: ~ "ok"
+        (if: ~ "ok"
         then
           tablePut "w" (Entry.get "Key" "e") (Entry.get "Value" "e");;
           #()
-        else #();;
+        else #());;
         "buf" <- struct.mk lazyFileBuf.S [
           "offset" ::= lazyFileBuf.get "offset" !"buf" + "l";
           "next" ::= SliceSkip (lazyFileBuf.get "next" !"buf") "l"
@@ -413,7 +413,7 @@ Definition tablePutOldTable: val :=
         Continue
       else
         let: "p" := FS.readAt (Table.get "File" "t") (lazyFileBuf.get "offset" !"buf" + slice.len (lazyFileBuf.get "next" !"buf")) #4096 in
-        if: slice.len "p" = #0
+        (if: slice.len "p" = #0
         then Break
         else
           let: "newBuf" := Data.sliceAppendSlice (lazyFileBuf.get "next" !"buf") "p" in
@@ -421,8 +421,8 @@ Definition tablePutOldTable: val :=
             "offset" ::= lazyFileBuf.get "offset" !"buf";
             "next" ::= "newBuf"
           ];;
-          Continue;;
-      Continue.
+          Continue));;
+      Continue).
 
 (* Build a new shadow table that incorporates the current table and a
    (write) buffer wbuf.
@@ -480,26 +480,26 @@ Definition recoverManifest: val :=
 (* delete 'name' if it isn't tableName or "manifest" *)
 Definition deleteOtherFile: val :=
   λ: "name" "tableName",
-    if: "name" = "tableName"
+    (if: "name" = "tableName"
     then "tt"
     else
-      if: "name" = #(str"manifest")
+      (if: "name" = #(str"manifest")
       then "tt"
-      else FS.delete #(str"db") "name".
+      else FS.delete #(str"db") "name")).
 
 Definition deleteOtherFiles: val :=
   λ: "tableName",
     let: "files" := FS.list #(str"db") in
     let: "nfiles" := slice.len "files" in
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" = "nfiles"
+    (for: (#true); (Skip) :=
+      (if: !"i" = "nfiles"
       then Break
       else
         let: "name" := SliceGet "files" !"i" in
         deleteOtherFile "name" "tableName";;
         "i" <- !"i" + #1;;
-        Continue.
+        Continue)).
 
 (* Recover restores a previously created database after a crash or shutdown. *)
 Definition Recover: val :=

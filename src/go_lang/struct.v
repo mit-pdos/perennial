@@ -18,7 +18,7 @@ Fixpoint getField_e (f0: string) (rev_fields: list (string*ty)) (se: expr): expr
   match rev_fields with
   | [] => LitV LitUnit
   | [f] => if String.eqb (fst f) f0 then se else #()
-  | f::fs => if String.eqb (fst f) f0 then Snd se else Fst (getField_e f0 fs se)
+  | f::fs => if String.eqb (fst f) f0 then Snd se else getField_e f0 fs (Fst se)
   end.
 
 Definition getField (d:descriptor) f : val :=

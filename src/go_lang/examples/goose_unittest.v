@@ -74,9 +74,9 @@ Definition useMap: val :=
     let: "m" := NewMap (slice.T byteT) in
     MapInsert "m" #1 slice.nil;;
     let: ("x", "ok") := MapGet "m" #2 in
-    if: "ok"
+    (if: "ok"
     then "tt"
-    else MapInsert "m" #3 "x".
+    else MapInsert "m" #3 "x").
 
 Definition usePtr: val :=
   λ: <>,
@@ -165,32 +165,32 @@ Definition standardForLoop: val :=
   λ: "s",
     let: "sumPtr" := ref (zero_val intT) in
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" < slice.len "s"
+    (for: (#true); (Skip) :=
+      (if: !"i" < slice.len "s"
       then
         let: "sum" := !"sumPtr" in
         let: "x" := SliceGet "s" !"i" in
         "sumPtr" <- "sum" + "x";;
         "i" <- !"i" + #1;;
         Continue
-      else Break;;
+      else Break));;
     let: "sum" := !"sumPtr" in
     "sum".
 
 Definition conditionalInLoop: val :=
   λ: <>,
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" < #3
+    (for: (#true); (Skip) :=
+      (if: !"i" < #3
       then
         DoSomething (#(str"i is small"));;
         #()
-      else #();;
-      if: !"i" > #5
+      else #());;
+      (if: !"i" > #5
       then Break
       else
         "i" <- !"i" + #1;;
-        Continue.
+        Continue)).
 
 Definition clearMap: val :=
   λ: "m",
@@ -287,14 +287,14 @@ Definition ReplicatedDiskRead: val :=
   λ: "a",
     TwoDiskLock "a";;
     let: ("v", "ok") := TwoDiskRead Disk1 "a" in
-    if: "ok"
+    (if: "ok"
     then
       TwoDiskUnlock "a";;
       "v"
     else
       let: ("v2", <>) := TwoDiskRead Disk2 "a" in
       TwoDiskUnlock "a";;
-      "v2".
+      "v2").
 
 Definition ReplicatedDiskWrite: val :=
   λ: "a" "v",
@@ -306,18 +306,18 @@ Definition ReplicatedDiskWrite: val :=
 Definition ReplicatedDiskRecover: val :=
   λ: <>,
     let: "a" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"a" > DiskSize
+    (for: (#true); (Skip) :=
+      (if: !"a" > DiskSize
       then Break
       else
         let: ("v", "ok") := TwoDiskRead Disk1 !"a" in
-        if: "ok"
+        (if: "ok"
         then
           TwoDiskWrite Disk2 !"a" "v";;
           #()
-        else #();;
+        else #());;
         "a" <- !"a" + #1;;
-        Continue.
+        Continue)).
 
 (* Skip is a placeholder for some impure code *)
 Definition Skip: val :=
@@ -330,11 +330,11 @@ Definition simpleSpawn: val :=
     let: "v" := ref (zero_val intT) in
     Fork (Data.lockAcquire Reader "l";;
           let: "x" := !"v" in
-          if: "x" > #0
+          (if: "x" > #0
           then
             Skip #();;
             #()
-          else #();;
+          else #());;
           Data.lockRelease Reader "l");;
     Data.lockAcquire Writer "l";;
     "v" <- #1;;
@@ -347,14 +347,14 @@ Definition threadCode: val :=
 Definition loopSpawn: val :=
   λ: <>,
     let: "i" := ref #0 in
-    for: (!"i" < #10); ("i" <- !"i" + #1) :=
+    (for: (!"i" < #10); ("i" <- !"i" + #1) :=
       let: "i" := !"i" in
       Fork (threadCode "i");;
-      Continue;;
+      Continue);;
     let: "dummy" := ref #true in
-    for: (#true); (Skip) :=
+    (for: (#true); (Skip) :=
       "dummy" <- ~ !"dummy";;
-      Continue.
+      Continue).
 
 Definition stringAppend: val :=
   λ: "s" "x",

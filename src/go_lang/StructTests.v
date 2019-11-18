@@ -1,7 +1,11 @@
-From Perennial.go_lang Require Import lang notation struct typing.
+From Perennial.go_lang Require Import
+     lang notation struct typing.
+
+Open Scope heap_types.
 
 Module three.
   Definition S := struct.new ["foo" :: intT; "bar" :: boolT; "baz" :: refT intT].
+  Definition T := struct.t S.
   Section fields.
     Context {ext:ext_op}.
     Definition foo := structF! S "foo".
@@ -12,7 +16,7 @@ Module three.
 End three.
 
 Section go_lang.
-  Context `{ffi_sem: ext_semantics}.
+  Context `{ext_ty: ext_types}.
   Coercion Var' (s:string) : expr := Var s.
 
   Ltac goal_is_exactly_equal :=
@@ -22,17 +26,31 @@ Section go_lang.
     | _ => fail "unexpected goal"
     end.
 
+  Theorem t_is : three.T = (intT * boolT * refT intT)%ht.
+  Proof.
+    reflexivity.
+  Qed.
+
   Theorem foo_is : three.foo = (λ: "v", Fst (Fst (Var "v")))%V.
   Proof.
     unfold three.foo.
     goal_is_exactly_equal.
   Qed.
 
-  Theorem bar_is : three.bar = (λ: "v", Fst (Snd (Var "v")))%V.
+  Theorem bar_is : three.bar = (λ: "v", Snd (Fst (Var "v")))%V.
   Proof.
     unfold three.bar.
     goal_is_exactly_equal.
   Qed.
+
+  Theorem foo_t : ⊢ three.foo : (three.T -> intT).
+  Proof. typecheck. Qed.
+
+  Theorem bar_t : ⊢ three.bar : (three.T -> boolT).
+  Proof. typecheck. Qed.
+
+  Theorem baz_t : ⊢ three.baz : (three.T -> refT intT).
+  Proof. typecheck. Qed.
 
   Theorem load_ty_is1 : load_ty (intT * intT * intT)%ht "v" =
                        (!"v", !("v" +ₗ #1), !("v" +ₗ #2))%E.

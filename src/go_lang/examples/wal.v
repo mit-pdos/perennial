@@ -37,11 +37,11 @@ Definition blockToInt: val :=
 Definition New: val :=
   λ: <>,
     let: "diskSize" := disk.Size #() in
-    if: "diskSize" ≤ logLength
+    (if: "diskSize" ≤ logLength
     then
       Panic ("disk is too small to host log");;
       #()
-    else #();;
+    else #());;
     let: "cache" := NewMap disk.blockT in
     let: "header" := intToBlock #0 in
     disk.Write #0 "header";;
@@ -69,13 +69,13 @@ Definition Log__BeginTxn: val :=
   λ: "l",
     Log__lock "l";;
     let: "length" := !(Log.get "length" "l") in
-    if: "length" = #0
+    (if: "length" = #0
     then
       Log__unlock "l";;
       #true
     else
       Log__unlock "l";;
-      #false.
+      #false).
 
 (* Read from the logical disk.
 
@@ -84,14 +84,14 @@ Definition Log__Read: val :=
   λ: "l" "a",
     Log__lock "l";;
     let: ("v", "ok") := MapGet (Log.get "cache" "l") "a" in
-    if: "ok"
+    (if: "ok"
     then
       Log__unlock "l";;
       "v"
     else
       Log__unlock "l";;
       let: "dv" := disk.Read (logLength + "a") in
-      "dv".
+      "dv").
 
 Definition Log__Size: val :=
   λ: "l",
@@ -103,11 +103,11 @@ Definition Log__Write: val :=
   λ: "l" "a" "v",
     Log__lock "l";;
     let: "length" := !(Log.get "length" "l") in
-    if: "length" ≥ MaxTxnWrites
+    (if: "length" ≥ MaxTxnWrites
     then
       Panic ("transaction is at capacity");;
       #()
-    else #();;
+    else #());;
     let: "aBlock" := intToBlock "a" in
     let: "nextAddr" := #1 + #2 * "length" in
     disk.Write "nextAddr" "aBlock";;
@@ -137,14 +137,14 @@ Definition getLogEntry: val :=
 Definition applyLog: val :=
   λ: "length",
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" < "length"
+    (for: (#true); (Skip) :=
+      (if: !"i" < "length"
       then
         let: ("a", "v") := getLogEntry !"i" in
         disk.Write (logLength + "a") "v";;
         "i" <- !"i" + #1;;
         Continue
-      else Break.
+      else Break)).
 
 Definition clearLog: val :=
   λ: <>,

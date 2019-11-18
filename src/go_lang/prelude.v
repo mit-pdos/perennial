@@ -8,10 +8,11 @@ From Perennial.go_lang Require Export
 
 Inductive LockMode := Reader | Writer.
 Definition uint64_to_string {ext: ext_op}: val := λ: <>, #().
+Definition lockRefT := refT intT.
 
 Module Data.
   Section go_lang.
-    Context {ext:ext_op}.
+    Context `{ext_ty:ext_types}.
     Definition stringToBytes: val := λ: <>, #().
     Definition bytesToString: val := λ: <>, #().
     Definition sliceAppendSlice: val := λ: <>, #().
@@ -19,11 +20,29 @@ Module Data.
     Definition mapIter: val := λ: <>, #().
     Definition mapClear: val := λ: <>, #().
     Definition randomUint64: val := λ: <>, #().
-    Definition newLock: val := λ: <>, #().
+
+    Definition newLock: val := λ: <>, ref #0.
+    Theorem newLock_t: ⊢ newLock : (unitT -> lockRefT).
+    Proof.
+      typecheck.
+    Qed.
+
     Definition lockRelease (m: LockMode): val := λ: <>, #().
+    Theorem lockRelease_t m: ⊢ lockRelease m : (lockRefT -> unitT).
+    Proof.
+      typecheck.
+    Qed.
+
     Definition lockAcquire (m: LockMode): val := λ: <>, #().
+    Theorem lockAcquire_t m: ⊢ lockAcquire m : (lockRefT -> unitT).
+    Proof.
+      typecheck.
+    Qed.
   End go_lang.
 End Data.
+
+Opaque Data.newLock Data.lockRelease Data.lockAcquire.
+Hint Resolve Data.newLock_t Data.lockRelease_t Data.lockAcquire_t : types.
 
 Module FS.
   Section go_lang.
@@ -51,5 +70,3 @@ Module Globals.
     Definition setX: val := λ: <>, #().
   End go_lang.
 End Globals.
-
-Definition lockRefT := refT intT.

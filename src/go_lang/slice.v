@@ -41,8 +41,18 @@ Section go_lang.
   Context `{ffi_sem: ext_semantics}.
   Context {ext_ty:ext_types ext}.
 
+  Set Default Proof Using "ext ext_ty".
+
   Definition Var' s : @expr ext := Var s.
   Local Coercion Var' : string >-> expr.
+
+Definition raw_slice (t: ty): val :=
+  λ: "p" "sz", ("p", "sz").
+
+Theorem raw_slice_t t : ⊢ raw_slice t : (refT t -> intT -> slice.T t).
+Proof.
+  typecheck.
+Qed.
 
 Definition NewSlice (t: ty): val :=
   λ: "sz",
@@ -125,6 +135,19 @@ Proof.
 Qed.
 
 Definition SliceAppend: val :=
+  λ: "s1" "x",
+  let: "p" := AllocN (slice.len "s1" + #1) #() in
+  MemCpy "p" (slice.ptr "s1");;
+  ("p" +ₗ slice.len "s1") <- "x";;
+  (* TODO: unsound, need to de-allocate s1.p *)
+  ("p", slice.len "s1" + #1).
+
+(* TODO: doesn't work since initial value is of wrong type *)
+Theorem SliceAppend_t t : ⊢ SliceAppend : (slice.T t -> t -> slice.T t).
+Proof.
+Admitted.
+
+Definition SliceAppendSlice: val :=
   λ: "s1" "s2",
   let: "p" := AllocN (slice.len "s1" + slice.len "s2") #() in
   MemCpy "p" (slice.ptr "s1");;
@@ -132,11 +155,10 @@ Definition SliceAppend: val :=
   (* TODO: unsound, need to de-allocate s1.p *)
   ("p", slice.len "s1" + slice.len "s2").
 
-(* doesn't work since initial value is of wrong type
-Theorem SliceAppend_t Γ t : Γ ⊢ SliceAppend : (slice.T t -> slice.T t -> slice.T t).
+(* TODO: doesn't work since initial value is of wrong type *)
+Theorem SliceAppendSlice_t t : ⊢ SliceAppendSlice : (slice.T t -> slice.T t -> slice.T t).
 Proof.
-  typecheck.
-Qed. *)
+Admitted.
 
 Definition UInt64Put: val :=
   λ: "p" "n",
@@ -158,6 +180,9 @@ Qed.
 
 End go_lang.
 
-Hint Resolve NewSlice_t
+Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.
+
+Hint Resolve raw_slice_t NewSlice_t
      SliceTake_t SliceSkip_t SliceSubslice_t SliceGet_t SliceSet_t
+     SliceAppend_t SliceAppendSlice_t
      UInt64Put_t UInt64Get_t : types.

@@ -76,7 +76,7 @@ Section disk.
   Definition Read: val :=
     λ: "a",
     let: "p" := ExternalOp ReadOp (Var "a") in
-    (Var "p", #4096).
+    raw_slice byteT (Var "p") #4096.
 
   Theorem Read_t : ⊢ Read : (intT -> blockT).
   Proof.

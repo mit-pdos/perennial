@@ -33,10 +33,10 @@ Definition readMessage: val :=
       "off" ::= #0;
       "data" ::= "initData"
     ]) in
-    for: (#true); (Skip) :=
+    (for: (#true); (Skip) :=
       let: "buf" := FS.readAt "f" (partialFile.get "off" !"pf") #512 in
       let: "newData" := Data.sliceAppendSlice (partialFile.get "data" !"pf") "buf" in
-      if: slice.len "buf" < #512
+      (if: slice.len "buf" < #512
       then
         "fileContents" <- "newData";;
         Break
@@ -45,7 +45,7 @@ Definition readMessage: val :=
           "off" ::= partialFile.get "off" !"pf" + slice.len "buf";
           "data" ::= "newData"
         ];;
-        Continue;;
+        Continue));;
     let: "fileData" := !"fileContents" in
     let: "fileStr" := Data.bytesToString "fileData" in
     FS.close "f";;
@@ -75,8 +75,8 @@ Definition Pickup: val :=
     let: "initMessages" := NewSlice Message.T #0 in
     "messages" <- "initMessages";;
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" = slice.len "names"
+    (for: (#true); (Skip) :=
+      (if: !"i" = slice.len "names"
       then Break
       else
         let: "name" := SliceGet "names" !"i" in
@@ -88,7 +88,7 @@ Definition Pickup: val :=
         ]) in
         "messages" <- "newMessages";;
         "i" <- !"i" + #1;;
-        Continue;;
+        Continue));;
     let: "msgs" := !"messages" in
     "msgs".
 
@@ -98,10 +98,10 @@ Definition createTmp: val :=
     let: "finalFile" := ref (zero_val fileT) in
     let: "finalName" := ref (zero_val stringT) in
     let: "id" := ref "initID" in
-    for: (#true); (Skip) :=
+    (for: (#true); (Skip) :=
       let: "fname" := uint64_to_string !"id" in
       let: ("f", "ok") := FS.create SpoolDir "fname" in
-      if: "ok"
+      (if: "ok"
       then
         "finalFile" <- "f";;
         "finalName" <- "fname";;
@@ -109,8 +109,8 @@ Definition createTmp: val :=
       else
         let: "newID" := Data.randomUint64 #() in
         "id" <- "newID";;
-        Continue;;
-      Continue;;
+        Continue);;
+      Continue);;
     let: "f" := !"finalFile" in
     let: "name" := !"finalName" in
     ("f", "name").
@@ -119,15 +119,15 @@ Definition writeTmp: val :=
   λ: "data",
     let: ("f", "name") := createTmp #() in
     let: "buf" := ref "data" in
-    for: (#true); (Skip) :=
-      if: slice.len !"buf" < #4096
+    (for: (#true); (Skip) :=
+      (if: slice.len !"buf" < #4096
       then
         FS.append "f" !"buf";;
         Break
       else
         FS.append "f" (SliceTake !"buf" #4096);;
         "buf" <- SliceSkip !"buf" #4096;;
-        Continue;;
+        Continue));;
     FS.close "f";;
     "name".
 
@@ -139,15 +139,15 @@ Definition Deliver: val :=
     let: "tmpName" := writeTmp "msg" in
     let: "initID" := Data.randomUint64 #() in
     let: "id" := ref "initID" in
-    for: (#true); (Skip) :=
+    (for: (#true); (Skip) :=
       let: "ok" := FS.link SpoolDir "tmpName" "userDir" (#(str"msg") + uint64_to_string !"id") in
-      if: "ok"
+      (if: "ok"
       then Break
       else
         let: "newID" := Data.randomUint64 #() in
         "id" <- "newID";;
-        Continue;;
-      Continue;;
+        Continue);;
+      Continue);;
     FS.delete SpoolDir "tmpName".
 
 (* Delete deletes a message for the current user.
@@ -177,8 +177,8 @@ Definition open: val :=
     let: "initLocks" := NewSlice lockRefT #0 in
     "locks" <- "initLocks";;
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" = NumUsers
+    (for: (#true); (Skip) :=
+      (if: !"i" = NumUsers
       then Break
       else
         let: "oldLocks" := !"locks" in
@@ -186,7 +186,7 @@ Definition open: val :=
         let: "newLocks" := SliceAppend "oldLocks" "l" in
         "locks" <- "newLocks";;
         "i" <- !"i" + #1;;
-        Continue;;
+        Continue));;
     let: "finalLocks" := !"locks" in
     Globals.setX "finalLocks".
 
@@ -198,11 +198,11 @@ Definition Recover: val :=
   λ: <>,
     let: "spooled" := FS.list SpoolDir in
     let: "i" := ref #0 in
-    for: (#true); (Skip) :=
-      if: !"i" = slice.len "spooled"
+    (for: (#true); (Skip) :=
+      (if: !"i" = slice.len "spooled"
       then Break
       else
         let: "name" := SliceGet "spooled" !"i" in
         FS.delete SpoolDir "name";;
         "i" <- !"i" + #1;;
-        Continue.
+        Continue)).
