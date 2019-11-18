@@ -2,9 +2,7 @@
 From Perennial.go_lang Require Import prelude.
 
 (* disk FFI *)
-From Perennial.go_lang Require Import ffi.disk.
-Existing Instances disk_op disk_model disk_ty.
-Local Coercion Var' (s: string) := Var s.
+From Perennial.go_lang Require Import ffi.disk_prelude.
 
 Module importantStruct.
   (* This struct is very important.
@@ -374,11 +372,11 @@ Module C.
   End fields.
 End C.
 
-Definition Add: val :=
+Definition C__Add: val :=
   λ: "c" "z",
     C.get "x" "c" + C.get "y" "c" + "z".
 
-Definition GetField: val :=
+Definition C__GetField: val :=
   λ: "c",
     let: "x" := C.get "x" "c" in
     let: "y" := C.get "y" "c" in
@@ -390,12 +388,12 @@ Definition UseAdd: val :=
       "x" ::= #2;
       "y" ::= #3
     ] in
-    let: "r" := Add "c" #4 in
+    let: "r" := C__Add "c" #4 in
     "r".
 
 Definition UseAddWithLiteral: val :=
   λ: <>,
-    let: "r" := Add (struct.mk C.S [
+    let: "r" := C__Add (struct.mk C.S [
       "x" ::= #2;
       "y" ::= #3
     ]) #4 in

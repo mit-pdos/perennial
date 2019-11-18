@@ -2,9 +2,7 @@
 From Perennial.go_lang Require Import prelude.
 
 (* disk FFI *)
-From Perennial.go_lang Require Import ffi.disk.
-Existing Instances disk_op disk_model disk_ty.
-Local Coercion Var' (s: string) := Var s.
+From Perennial.go_lang Require Import ffi.disk_prelude.
 
 (* 10 is completely arbitrary *)
 Definition MaxTxnWrites : expr := #10.
@@ -14,7 +12,7 @@ Definition logLength : expr := #1 + #2 * "MaxTxnWrites".
 Module Log.
   Definition S := struct.new [
     "l" :: lockRefT;
-    "cache" :: mapT blockT;
+    "cache" :: mapT disk.blockT;
     "length" :: refT intT
   ].
   Definition T: ty := struct.t S.
@@ -44,7 +42,7 @@ Definition New: val :=
       Panic ("disk is too small to host log");;
       #()
     else #();;
-    let: "cache" := NewMap blockT in
+    let: "cache" := NewMap disk.blockT in
     let: "header" := intToBlock #0 in
     disk.Write #0 "header";;
     let: "lengthPtr" := ref (zero_val intT) in
@@ -56,54 +54,54 @@ Definition New: val :=
       "l" ::= "l"
     ].
 
-Definition lock: val :=
+Definition Log__lock: val :=
   λ: "l",
     Data.lockAcquire Writer (Log.get "l" "l").
 
-Definition unlock: val :=
+Definition Log__unlock: val :=
   λ: "l",
     Data.lockRelease Writer (Log.get "l" "l").
 
 (* BeginTxn allocates space for a new transaction in the log.
 
    Returns true if the allocation succeeded. *)
-Definition BeginTxn: val :=
+Definition Log__BeginTxn: val :=
   λ: "l",
-    lock "l";;
+    Log__lock "l";;
     let: "length" := !(Log.get "length" "l") in
     if: "length" = #0
     then
-      unlock "l";;
+      Log__unlock "l";;
       #true
     else
-      unlock "l";;
+      Log__unlock "l";;
       #false.
 
 (* Read from the logical disk.
 
    Reads must go through the log to return committed but un-applied writes. *)
-Definition Read: val :=
+Definition Log__Read: val :=
   λ: "l" "a",
-    lock "l";;
+    Log__lock "l";;
     let: ("v", "ok") := MapGet (Log.get "cache" "l") "a" in
     if: "ok"
     then
-      unlock "l";;
+      Log__unlock "l";;
       "v"
     else
-      unlock "l";;
+      Log__unlock "l";;
       let: "dv" := disk.Read ("logLength" + "a") in
       "dv".
 
-Definition Size: val :=
+Definition Log__Size: val :=
   λ: "l",
     let: "sz" := disk.Size #() in
     "sz" - "logLength".
 
 (* Write to the disk through the log. *)
-Definition Write: val :=
+Definition Log__Write: val :=
   λ: "l" "a" "v",
-    lock "l";;
+    Log__lock "l";;
     let: "length" := !(Log.get "length" "l") in
     if: "length" ≥ "MaxTxnWrites"
     then
@@ -116,14 +114,14 @@ Definition Write: val :=
     disk.Write ("nextAddr" + #1) "v";;
     MapInsert (Log.get "cache" "l") "a" "v";;
     Log.get "length" "l" <- "length" + #1;;
-    unlock "l".
+    Log__unlock "l".
 
 (* Commit the current transaction. *)
-Definition Commit: val :=
+Definition Log__Commit: val :=
   λ: "l",
-    lock "l";;
+    Log__lock "l";;
     let: "length" := !(Log.get "length" "l") in
-    unlock "l";;
+    Log__unlock "l";;
     let: "header" := intToBlock "length" in
     disk.Write #0 "header".
 
@@ -156,14 +154,14 @@ Definition clearLog: val :=
 (* Apply all the committed transactions.
 
    Frees all the space in the log. *)
-Definition Apply: val :=
+Definition Log__Apply: val :=
   λ: "l",
-    lock "l";;
+    Log__lock "l";;
     let: "length" := !(Log.get "length" "l") in
     applyLog "length";;
     clearLog #();;
     Log.get "length" "l" <- #0;;
-    unlock "l".
+    Log__unlock "l".
 
 (* Open recovers the log following a crash or shutdown *)
 Definition Open: val :=
@@ -172,7 +170,7 @@ Definition Open: val :=
     let: "length" := blockToInt "header" in
     applyLog "length";;
     clearLog #();;
-    let: "cache" := NewMap blockT in
+    let: "cache" := NewMap disk.blockT in
     let: "lengthPtr" := ref (zero_val intT) in
     "lengthPtr" <- #0;;
     let: "l" := Data.newLock #() in

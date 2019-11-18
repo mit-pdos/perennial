@@ -2,9 +2,7 @@
 From Perennial.go_lang Require Import prelude.
 
 (* disk FFI *)
-From Perennial.go_lang Require Import ffi.disk.
-Existing Instances disk_op disk_model disk_ty.
-Local Coercion Var' (s: string) := Var s.
+From Perennial.go_lang Require Import ffi.disk_prelude.
 
 Module Log.
   Definition S := struct.new [
@@ -18,15 +16,15 @@ Module Log.
   End fields.
 End Log.
 
-Definition writeHdr: val :=
+Definition Log__writeHdr: val :=
   λ: "log",
     let: "hdr" := NewSlice byteT #4096 in
     UInt64Put "hdr" (Log.get "sz" "log");;
     UInt64Put (SliceSkip "hdr" #8) (Log.get "sz" "log");;
     disk.Write #0 "hdr".
-Theorem writeHdr_t: ⊢ writeHdr : (Log.T -> unitT).
+Theorem Log__writeHdr_t: ⊢ Log__writeHdr : (Log.T -> unitT).
 Proof. typecheck. Qed.
-Hint Resolve writeHdr_t : types.
+Hint Resolve Log__writeHdr_t : types.
 
 Definition Init: val :=
   λ: "diskSz",
@@ -41,21 +39,21 @@ Definition Init: val :=
         "sz" ::= #0;
         "diskSz" ::= "diskSz"
       ] in
-      writeHdr "log";;
+      Log__writeHdr "log";;
       ("log", #true).
 Theorem Init_t: ⊢ Init : (intT -> (Log.T * boolT)).
 Proof. typecheck. Qed.
 Hint Resolve Init_t : types.
 
-Definition Get: val :=
+Definition Log__Get: val :=
   λ: "log" "i",
     let: "sz" := Log.get "sz" "log" in
     if: "i" < "sz"
     then (disk.Read (#1 + "i"), #true)
     else (slice.nil, #false).
-Theorem Get_t: ⊢ Get : (Log.T -> intT -> (blockT * boolT)).
+Theorem Log__Get_t: ⊢ Log__Get : (Log.T -> intT -> (disk.blockT * boolT)).
 Proof. typecheck. Qed.
-Hint Resolve Get_t : types.
+Hint Resolve Log__Get_t : types.
 
 Definition writeAll: val :=
   λ: "bks" "off",
@@ -65,11 +63,11 @@ Definition writeAll: val :=
       let: "bk" := SliceGet "bks" !"i" in
       disk.Write ("off" + !"i") "bk";;
       Continue.
-Theorem writeAll_t: ⊢ writeAll : (slice.T blockT -> intT -> unitT).
+Theorem writeAll_t: ⊢ writeAll : (slice.T disk.blockT -> intT -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve writeAll_t : types.
 
-Definition Append: val :=
+Definition Log__Append: val :=
   λ: "log" "bks",
     let: "sz" := Log.get "sz" !"log" in
     if: #1 + "sz" + slice.len "bks" ≥ Log.get "diskSz" !"log"
@@ -80,21 +78,21 @@ Definition Append: val :=
         "sz" ::= "sz" + slice.len "bks";
         "diskSz" ::= Log.get "diskSz" !"log"
       ] in
-      writeHdr "newLog";;
+      Log__writeHdr "newLog";;
       "log" <- "newLog";;
       #true.
-Theorem Append_t: ⊢ Append : (refT Log.T -> slice.T blockT -> boolT).
+Theorem Log__Append_t: ⊢ Log__Append : (refT Log.T -> slice.T disk.blockT -> boolT).
 Proof. typecheck. Qed.
-Hint Resolve Append_t : types.
+Hint Resolve Log__Append_t : types.
 
-Definition Reset: val :=
+Definition Log__Reset: val :=
   λ: "log",
     let: "newLog" := struct.mk Log.S [
       "sz" ::= #0;
       "diskSz" ::= Log.get "diskSz" !"log"
     ] in
-    writeHdr "newLog";;
+    Log__writeHdr "newLog";;
     "log" <- "newLog".
-Theorem Reset_t: ⊢ Reset : (refT Log.T -> unitT).
+Theorem Log__Reset_t: ⊢ Log__Reset : (refT Log.T -> unitT).
 Proof. typecheck. Qed.
-Hint Resolve Reset_t : types.
+Hint Resolve Log__Reset_t : types.

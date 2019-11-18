@@ -2,9 +2,7 @@
 From Perennial.go_lang Require Import prelude.
 
 (* disk FFI *)
-From Perennial.go_lang Require Import ffi.disk.
-Existing Instances disk_op disk_model disk_ty.
-Local Coercion Var' (s: string) := Var s.
+From Perennial.go_lang Require Import ffi.disk_prelude.
 
 Module partialFile.
   Definition S := struct.new [
