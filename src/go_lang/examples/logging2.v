@@ -6,9 +6,13 @@ From Perennial.go_lang Require Import ffi.disk.
 Existing Instances disk_op disk_model disk_ty.
 Local Coercion Var' (s: string) := Var s.
 
-Definition LogCommit : expr := #0.
+Definition LOGCOMMIT : expr := #0.
 
-Definition LogStart : expr := #1.
+Definition LOGSTART : expr := #1.
+
+Definition LOGMAXBLK : expr := #510.
+
+Definition LOGEND : expr := "LOGMAXBLK" + "LOGSTART".
 
 Module Log.
   Definition S := struct.new [
@@ -31,7 +35,7 @@ Definition writeHdr: val :=
   λ: "log" "len",
     let: "hdr" := NewSlice byteT #4096 in
     UInt64Put "hdr" "len";;
-    disk.Write "LogCommit" "hdr".
+    disk.Write "LOGCOMMIT" "hdr".
 
 Definition Init: val :=
   λ: "logSz",
@@ -49,7 +53,7 @@ Definition Init: val :=
 
 Definition readHdr: val :=
   λ: "log",
-    let: "hdr" := disk.Read "LogCommit" in
+    let: "hdr" := disk.Read "LOGCOMMIT" in
     let: "disklen" := UInt64Get "hdr" in
     "disklen".
 
@@ -58,7 +62,7 @@ Definition readBlocks: val :=
     let: "blks" := ref (NewSlice blockT #0) in
     let: "i" := ref #0 in
     for: (!"i" < "len"); ("i" <- !"i" + #1) :=
-      let: "blk" := disk.Read ("LogStart" + !"i") in
+      let: "blk" := disk.Read ("LOGSTART" + !"i") in
       "blks" <- SliceAppend !"blks" "blk";;
       Continue;;
     !"blks".
@@ -151,3 +155,56 @@ Definition Logger: val :=
     for: (#true); (Skip) :=
       diskAppend "log";;
       Continue.
+
+Module Txn.
+  Definition S := struct.new [
+    "log" :: refT Log.T;
+    "blks" :: refT (mapT blockT)
+  ].
+  Definition T: ty := struct.t S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
+End Txn.
+
+(* XXX wait if cannot reserve space in log *)
+Definition Begin: val :=
+  λ: "log",
+    let: "txn" := struct.mk Txn.S [
+      "log" ::= "log";
+      "blks" ::= ref (zero_val (mapT blockT))
+    ] in
+    "txn".
+
+Definition Write: val :=
+  λ: "txn" "addr" "blk",
+    let: (<>, "ok") := MapGet (!(Txn.get "blks" "txn")) "addr" in
+    if: "ok"
+    then
+      MapInsert (!(Txn.get "blks" "txn")) "addr" !"blk";;
+      #()
+    else #();;
+    if: ~ "ok"
+    then
+      if: "addr" = "LOGMAXBLK"
+      then #false
+      else MapInsert (!(Txn.get "blks" "txn")) "addr" !"blk";;
+      #()
+    else #();;
+    #true.
+
+Definition Read: val :=
+  λ: "txn" "addr",
+    let: ("v", "ok") := MapGet (!(Txn.get "blks" "txn")) "addr" in
+    if: "ok"
+    then "v"
+    else disk.Read ("addr" + "LOGEND").
+
+Definition Commit: val :=
+  λ: "txn",
+    let: "blks" := ref (zero_val (slice.T blockT)) in
+    Data.mapIter !(Txn.get "blks" "txn") (λ: <> "v",
+      "blks" <- SliceAppend !"blks" "v");;
+    let: "ok" := Append (!(Txn.get "log" "txn")) !"blks" in
+    "ok".
