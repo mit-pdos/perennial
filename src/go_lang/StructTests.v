@@ -1,4 +1,4 @@
-From Perennial.go_lang Require Import notation struct typing.
+From Perennial.go_lang Require Import lang notation struct typing.
 
 Module three.
   Definition S := struct.new ["foo" :: intT; "bar" :: boolT; "baz" :: refT intT].
@@ -13,6 +13,7 @@ End three.
 
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
+  Coercion Var' (s:string) : expr := Var s.
 
   Ltac goal_is_exactly_equal :=
     lazymatch goal with
@@ -21,15 +22,44 @@ Section go_lang.
     | _ => fail "unexpected goal"
     end.
 
-  Theorem foo_is : three.foo = (λ: "v", Fst (Fst (Var' "v")))%V.
+  Theorem foo_is : three.foo = (λ: "v", Fst (Fst (Var "v")))%V.
   Proof.
     unfold three.foo.
     goal_is_exactly_equal.
   Qed.
 
-  Theorem bar_is : three.bar = (λ: "v", Fst (Snd (Var' "v")))%V.
+  Theorem bar_is : three.bar = (λ: "v", Fst (Snd (Var "v")))%V.
   Proof.
     unfold three.bar.
     goal_is_exactly_equal.
   Qed.
+
+  Theorem load_ty_is1 : load_ty (intT * intT * intT)%ht "v" =
+                       (!"v", !("v" +ₗ #1), !("v" +ₗ #2))%E.
+  Proof.
+    cbv -[LitZ].
+    reflexivity.
+  Qed.
+
+  Theorem load_ty_is2 : load_ty (intT * (intT * intT) * intT)%ht "v" =
+                       (!"v", (!("v" +ₗ #1), !("v" +ₗ #1 +ₗ #1)), !("v" +ₗ #3))%E.
+  Proof.
+    cbv -[LitZ].
+    reflexivity.
+  Qed.
+
+  Theorem load_field_is1 : loadField three.S "bar" =
+                          (λ: "p", !("p" +ₗ #1))%V.
+  Proof.
+    cbv -[LitZ].
+    reflexivity.
+  Qed.
+
+  Theorem load_field_is2 : loadField three.S "baz" =
+                          (λ: "p", !("p" +ₗ #2))%V.
+  Proof.
+    cbv -[LitZ].
+    reflexivity.
+  Qed.
+
 End go_lang.
