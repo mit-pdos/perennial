@@ -103,6 +103,7 @@ Inductive prim_op : arity -> Set :=
   (* a stuck expression, to represent undefined behavior *)
   | PanicOp (s: string) : prim_op args0
   | AllocNOp : prim_op args2 (* array length (positive number), initial value *)
+  | AllocStructOp : prim_op args1 (* struct val *)
   | StoreOp : prim_op args2 (* pointer, value *)
   | LoadOp : prim_op args1
   | MapGetOp : prim_op args2 (* map loc, key *)
@@ -158,12 +159,19 @@ Bind Scope val_scope with val.
 
 Definition Panic s := Primitive0 (PanicOp s).
 Notation AllocN := (Primitive2 AllocNOp).
+Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation Store := (Primitive2 StoreOp).
 Notation Load := (Primitive1 LoadOp).
 Notation MapGet := (Primitive2 MapGetOp).
 Notation MapInsert := (Primitive3 MapInsertOp).
 Notation EncodeInt := (Primitive2 EncodeIntOp).
 Notation DecodeInt := (Primitive1 DecodeIntOp).
+
+Fixpoint flatten_struct (v: val) : list val :=
+  match v with
+  | PairV v1 v2 => flatten_struct v1 ++ flatten_struct v2
+  | _ => [v]
+  end.
 
 Context {ffi : ffi_model}.
 
@@ -438,6 +446,7 @@ Proof.
                                 match op with
                                 | PanicOp s => inl s
                                 | AllocNOp => inr 0
+                                | AllocStructOp => inr 7
                                 | StoreOp => inr 1
                                 | LoadOp => inr 2
                                 | MapGetOp => inr 3
@@ -448,6 +457,7 @@ Proof.
                          (λ v, match v with
                                | inl s => a_prim_op (PanicOp s)
                                | inr 0 => a_prim_op AllocNOp
+                               | inr 7 => a_prim_op AllocStructOp
                                | inr 1 => a_prim_op StoreOp
                                | inr 2 => a_prim_op LoadOp
                                | inr 3 => a_prim_op MapGetOp
@@ -899,6 +909,12 @@ Inductive head_step : expr → state → list observation → expr → state →
                []
                (Val $ LitV $ LitLoc l) (state_init_heap l (u64_Z n) v σ)
                []
+  | AllocStructS v σ l :
+     (∀ i, 0 ≤ i → i < length (flatten_struct v) → σ.(heap) !! (l +ₗ i) = None)%Z →
+     head_step (AllocStruct (Val v)) σ
+               []
+               (Val $ LitV $ LitLoc l) (state_insert_list l (flatten_struct v) σ)
+               []
   | LoadS l v σ :
      σ.(heap) !! l = Some v →
      head_step (Load (Val $ LitV $ LitLoc l)) σ [] (of_val v) σ []
@@ -1071,6 +1087,7 @@ Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
 
 Notation AllocN := (Primitive2 AllocNOp).
+Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation Store := (Primitive2 StoreOp).
 Notation Load := (Primitive1 LoadOp).
 Notation MapGet := (Primitive2 MapGetOp).
