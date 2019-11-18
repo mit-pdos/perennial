@@ -1,5 +1,5 @@
 From Perennial.go_lang Require Export
-     lang notation slice map struct typing.
+     lang notation slice struct typing.
 
 (* We provide stubs here for primitive operations to make the Goose unit tests
    compile. *)
@@ -17,7 +17,8 @@ Module Data.
     Definition bytesToString: val := λ: <>, #().
     Definition sliceAppendSlice: val := λ: <>, #().
     Definition mapAlter: val := λ: <>, #().
-    Definition mapIter: val := λ: <>, #().
+    Axiom mapIter: val.
+    Axiom mapIter_t : forall vt, ⊢ mapIter : (mapT vt -> (intT -> vt -> unitT) -> unitT).
     Definition mapClear: val := λ: <>, #().
     Definition randomUint64: val := λ: <>, #().
 
@@ -43,6 +44,7 @@ End Data.
 
 Opaque Data.newLock Data.lockRelease Data.lockAcquire.
 Hint Resolve Data.newLock_t Data.lockRelease_t Data.lockAcquire_t : types.
+Hint Resolve Data.mapIter_t : types.
 
 Module FS.
   Section go_lang.

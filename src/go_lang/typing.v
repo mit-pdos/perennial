@@ -13,6 +13,8 @@ Inductive ty :=
 | mapValT (t: ty) (* keys are always uint64, for now *)
 .
 
+Definition mapT (vt:ty) : ty := refT (mapValT vt).
+
 Infix "*" := prodT : heap_type.
 Infix "->" := arrowT : heap_type.
 
@@ -158,6 +160,15 @@ Section go_lang.
       get_ext_tys op = (t1, t2) ->
       Γ ⊢ e : t1 ->
       Γ ⊢ ExternalOp op e : t2
+  | mapGet_hasTy m k vt :
+      Γ ⊢ m : mapT vt ->
+      Γ ⊢ k : intT ->
+      Γ ⊢ MapGet m k : prodT vt boolT
+  | mapInsert_hasTy m k v vt :
+      Γ ⊢ m : mapT vt ->
+      Γ ⊢ k : intT ->
+      Γ ⊢ v : vt ->
+      Γ ⊢ MapInsert m k v : unitT
   | encode_hasTy n p :
       Γ ⊢ n : intT ->
       Γ ⊢ p : refT byteT ->
@@ -196,6 +207,14 @@ Section go_lang.
     generalize dependent Γ.
     induction ty; simpl; eauto.
     repeat econstructor.
+  Qed.
+
+  Definition NewMap (t:ty) : expr := AllocMap (zero_val t).
+  Theorem NewMap_t t Γ : Γ ⊢ NewMap t : mapT t.
+  Proof.
+    unfold NewMap.
+    repeat econstructor.
+    apply zero_val_ty.
   Qed.
 
   Lemma extend_context_add:
@@ -285,6 +304,7 @@ Proof.
 Qed.
 
 Hint Resolve empty_context_to_any empty_context_to_any_val : types.
+Hint Resolve NewMap_t : types.
 Hint Resolve hasTy_ty_congruence : types.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
