@@ -24,14 +24,20 @@ End Log.
 
 Definition intToBlock: val :=
   λ: "a",
-    let: "b" := NewSlice byteT "Disk.BlockSize" in
+    let: "b" := NewSlice byteT disk.BlockSize in
     UInt64Put "b" "a";;
     "b".
+Theorem intToBlock_t: ⊢ intToBlock : (intT -> disk.blockT).
+Proof. typecheck. Qed.
+Hint Resolve intToBlock_t : types.
 
 Definition blockToInt: val :=
   λ: "v",
     let: "a" := UInt64Get "v" in
     "a".
+Theorem blockToInt_t: ⊢ blockToInt : (disk.blockT -> intT).
+Proof. typecheck. Qed.
+Hint Resolve blockToInt_t : types.
 
 (* New initializes a fresh log *)
 Definition New: val :=
@@ -53,14 +59,23 @@ Definition New: val :=
       "length" ::= "lengthPtr";
       "l" ::= "l"
     ].
+Theorem New_t: ⊢ New : (unitT -> Log.T).
+Proof. typecheck. Qed.
+Hint Resolve New_t : types.
 
 Definition Log__lock: val :=
   λ: "l",
     Data.lockAcquire Writer (Log.get "l" "l").
+Theorem Log__lock_t: ⊢ Log__lock : (Log.T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__lock_t : types.
 
 Definition Log__unlock: val :=
   λ: "l",
     Data.lockRelease Writer (Log.get "l" "l").
+Theorem Log__unlock_t: ⊢ Log__unlock : (Log.T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__unlock_t : types.
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -76,6 +91,9 @@ Definition Log__BeginTxn: val :=
     else
       Log__unlock "l";;
       #false).
+Theorem Log__BeginTxn_t: ⊢ Log__BeginTxn : (Log.T -> boolT).
+Proof. typecheck. Qed.
+Hint Resolve Log__BeginTxn_t : types.
 
 (* Read from the logical disk.
 
@@ -92,11 +110,17 @@ Definition Log__Read: val :=
       Log__unlock "l";;
       let: "dv" := disk.Read (logLength + "a") in
       "dv").
+Theorem Log__Read_t: ⊢ Log__Read : (Log.T -> intT -> disk.blockT).
+Proof. typecheck. Qed.
+Hint Resolve Log__Read_t : types.
 
 Definition Log__Size: val :=
   λ: "l",
     let: "sz" := disk.Size #() in
     "sz" - logLength.
+Theorem Log__Size_t: ⊢ Log__Size : (Log.T -> intT).
+Proof. typecheck. Qed.
+Hint Resolve Log__Size_t : types.
 
 (* Write to the disk through the log. *)
 Definition Log__Write: val :=
@@ -115,6 +139,9 @@ Definition Log__Write: val :=
     MapInsert (Log.get "cache" "l") "a" "v";;
     Log.get "length" "l" <- "length" + #1;;
     Log__unlock "l".
+Theorem Log__Write_t: ⊢ Log__Write : (Log.T -> intT -> disk.blockT -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__Write_t : types.
 
 (* Commit the current transaction. *)
 Definition Log__Commit: val :=
@@ -124,6 +151,9 @@ Definition Log__Commit: val :=
     Log__unlock "l";;
     let: "header" := intToBlock "length" in
     disk.Write #0 "header".
+Theorem Log__Commit_t: ⊢ Log__Commit : (Log.T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__Commit_t : types.
 
 Definition getLogEntry: val :=
   λ: "logOffset",
@@ -132,6 +162,9 @@ Definition getLogEntry: val :=
     let: "a" := blockToInt "aBlock" in
     let: "v" := disk.Read ("diskAddr" + #1) in
     ("a", "v").
+Theorem getLogEntry_t: ⊢ getLogEntry : (intT -> (intT * disk.blockT)).
+Proof. typecheck. Qed.
+Hint Resolve getLogEntry_t : types.
 
 (* applyLog assumes we are running sequentially *)
 Definition applyLog: val :=
@@ -145,11 +178,17 @@ Definition applyLog: val :=
         "i" <- !"i" + #1;;
         Continue
       else Break)).
+Theorem applyLog_t: ⊢ applyLog : (intT -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve applyLog_t : types.
 
 Definition clearLog: val :=
   λ: <>,
     let: "header" := intToBlock #0 in
     disk.Write #0 "header".
+Theorem clearLog_t: ⊢ clearLog : (unitT -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve clearLog_t : types.
 
 (* Apply all the committed transactions.
 
@@ -162,6 +201,9 @@ Definition Log__Apply: val :=
     clearLog #();;
     Log.get "length" "l" <- #0;;
     Log__unlock "l".
+Theorem Log__Apply_t: ⊢ Log__Apply : (Log.T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Log__Apply_t : types.
 
 (* Open recovers the log following a crash or shutdown *)
 Definition Open: val :=
@@ -179,3 +221,6 @@ Definition Open: val :=
       "length" ::= "lengthPtr";
       "l" ::= "l"
     ].
+Theorem Open_t: ⊢ Open : (unitT -> Log.T).
+Proof. typecheck. Qed.
+Hint Resolve Open_t : types.

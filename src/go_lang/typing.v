@@ -279,6 +279,11 @@ Section go_lang.
     intros ? ->; auto.
   Qed.
 
+  Theorem Panic_unit_t Γ s : Γ ⊢ Panic s : unitT.
+  Proof.
+    econstructor.
+  Qed.
+
   Inductive type_annot :=
   | annot (e:string) (t:ty).
 
@@ -309,6 +314,9 @@ Hint Resolve hasTy_ty_congruence : types.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
+(* note that this has to be after [Hint Constructors expr_hasTy] to get higher
+priority than Panic_hasTy *)
+Hint Resolve Panic_unit_t : types.
 Hint Resolve zero_val_ty : types.
 
 Local Ltac simp := unfold For; rewrite ?insert_anon.
@@ -330,3 +338,14 @@ Ltac typecheck :=
   repeat (type_step; try match goal with
                          | [ |- _ = _ ] => cbv; reflexivity
                          end).
+
+Module test.
+Section go_lang.
+  Context `{ext_ty: ext_types}.
+  Local Open Scope heap_types.
+  Theorem panic_test Γ : Γ ⊢ (Panic "";; #())%E : unitT.
+  Proof.
+    typecheck.
+  Qed.
+End go_lang.
+End test.

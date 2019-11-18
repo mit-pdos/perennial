@@ -43,6 +43,7 @@ Definition disk_ty: ext_types disk_op :=
        end; |}.
 
 Definition block_bytes: nat := N.to_nat 4096.
+Definition BlockSize {ext: ext_op}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT: ty := slice.T byteT.
 
