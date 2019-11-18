@@ -92,7 +92,9 @@ src/Examples/MailServer/MailRefinement.v\
 src/Examples/Logging/LogRefinement.v\
 src/Examples/AtomicPair/RefinementLog.v\
 src/Examples/AtomicPair/RefinementShadow.v\
-src/Goose/Proof/Interp.v
+src/Examples/ReplicatedDisk/ReplicatedDiskRefinement.v\
+src/Goose/Proof/Interp.v\
+src/Goose/Proof/RefinementAdequacy.v
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
