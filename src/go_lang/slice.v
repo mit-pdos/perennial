@@ -139,10 +139,10 @@ Proof.
 Qed. *)
 
 Definition UInt64Put: val :=
-  λ: "n" "p",
+  λ: "p" "n",
   EncodeInt "n" (slice.ptr "p").
 
-Theorem UInt64Put_t : ⊢ UInt64Put : (intT -> slice.T byteT -> unitT).
+Theorem UInt64Put_t : ⊢ UInt64Put : (slice.T byteT -> intT -> unitT).
 Proof.
   typecheck.
 Qed.
