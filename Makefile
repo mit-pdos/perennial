@@ -37,10 +37,10 @@ else
 TIMING_ARGS := --no-timing
 endif
 
-default: src/ShouldBuild.vo
+default: src/ShouldBuild.vo test
 
 all: $(VFILES:.v=.vo)
-test: $(TEST_VO) $(VFILES:.v=.vo)
+test: $(TEST_VO)
 vos: $(VFILES:.v=.vos)
 
 _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)

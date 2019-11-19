@@ -4,7 +4,7 @@ From Perennial.go_lang Require Import
 Open Scope heap_types.
 
 Module three.
-  Definition S := struct.new ["foo" :: intT; "bar" :: boolT; "baz" :: refT intT].
+  Definition S := struct.decl ["foo" :: intT; "bar" :: boolT; "baz" :: refT intT].
   Definition T := struct.t S.
   Section fields.
     Context {ext:ext_op}.
@@ -52,18 +52,18 @@ Section go_lang.
   Theorem baz_t : ⊢ three.baz : (three.T -> refT intT).
   Proof. typecheck. Qed.
 
-  Theorem load_ty_is1 : load_ty (intT * intT * intT)%ht "v" =
-                       (!"v", !("v" +ₗ #1), !("v" +ₗ #2))%E.
+  Theorem load_ty_is1 : load_ty (intT * intT * intT)%ht "v" 0 =
+                       (!("v" +ₗ #0), !("v" +ₗ #1), !("v" +ₗ #2))%E.
   Proof.
     cbv -[LitZ].
-    reflexivity.
+    goal_is_exactly_equal.
   Qed.
 
-  Theorem load_ty_is2 : load_ty (intT * (intT * intT) * intT)%ht "v" =
-                       (!"v", (!("v" +ₗ #1), !("v" +ₗ #1 +ₗ #1)), !("v" +ₗ #3))%E.
+  Theorem load_ty_is2 : load_ty (intT * (intT * intT) * intT)%ht "v" 0 =
+                       (!("v" +ₗ #0), (!("v" +ₗ #1), !("v" +ₗ #2)), !("v" +ₗ #3))%E.
   Proof.
     cbv -[LitZ].
-    reflexivity.
+    goal_is_exactly_equal.
   Qed.
 
   Theorem load_field_is1 : loadField three.S "bar" =
