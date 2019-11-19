@@ -13,7 +13,7 @@ Definition LOGMAXBLK : expr := #510.
 Definition LOGEND : expr := LOGMAXBLK + LOGSTART.
 
 Module Log.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "logLock" :: lockRefT;
     "memLock" :: lockRefT;
     "logSz" :: intT;
@@ -23,9 +23,11 @@ Module Log.
     "logTxnNxt" :: refT intT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End Log.
 
@@ -194,14 +196,16 @@ Proof. typecheck. Qed.
 Hint Resolve Log__Logger_t : types.
 
 Module Txn.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "log" :: refT Log.T;
     "blks" :: mapT disk.blockT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End Txn.
 

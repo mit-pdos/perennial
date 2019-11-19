@@ -10,6 +10,7 @@ Inductive ty :=
 | sumT (t1 t2: ty)
 | arrowT (t1 t2: ty)
 | refT (t: ty)
+| structRefT (ts: list ty)
 | mapValT (t: ty) (* keys are always uint64, for now *)
 .
 
@@ -55,6 +56,7 @@ Section go_lang.
     | sumT t1 t2 => InjLV (zero_val t1)
     | arrowT t1 t2 => λ: <>, zero_val t2
     | refT t => #null
+    | structRefT ts => #null
     end.
 
   Inductive base_lit_hasTy : base_lit -> ty -> Prop :=
@@ -67,6 +69,7 @@ Section go_lang.
   from its allocation and then throughout the program; null is the only special
   case of a location value the programmer can directly and legally refer to *)
   | loc_null_hasTy t : base_lit_hasTy (LitLoc null) (refT t)
+  | structRef_null_hasTy ts : base_lit_hasTy (LitLoc null) (structRefT ts)
   .
 
   Definition bin_op_ty (op:bin_op) : option (ty * ty * ty) :=
@@ -80,6 +83,12 @@ Section go_lang.
     match op with
     | NegOp => Some (boolT, boolT)
     | _ => None
+    end.
+
+  Fixpoint flatten_ty (t: ty) : list ty :=
+    match t with
+    | prodT t1 t2 => flatten_ty t1 ++ flatten_ty t2
+    | _ => [t]
     end.
 
   Inductive expr_hasTy (Γ: Ctx) : expr -> ty -> Prop :=
@@ -106,6 +115,9 @@ Section go_lang.
       Γ ⊢ e1 : refT t ->
       Γ ⊢ e2 : intT ->
       Γ ⊢ BinOp OffsetOp e1 e2 : refT t
+  | struct_offset_op_hasTy e1 (v: Z) ts :
+      Γ ⊢ e1 : structRefT ts ->
+      Γ ⊢ BinOp OffsetOp e1 #v : structRefT (skipn (Z.to_nat v) ts)
   | eq_op_hasTy e1 e2 t :
       Γ ⊢ e1 : t ->
       Γ ⊢ e2 : t ->
@@ -119,7 +131,7 @@ Section go_lang.
       Γ ⊢ e1 : stringT ->
       Γ ⊢ e2 : stringT ->
       Γ ⊢ BinOp PlusOp e1 e2 : stringT
-  | pair_hasTy e1 e2 t1 t2 :
+ | pair_hasTy e1 e2 t1 t2 :
       Γ ⊢ e1 : t1 ->
       Γ ⊢ e2 : t2 ->
       Γ ⊢ Pair e1 e2 : prodT t1 t2
@@ -152,9 +164,17 @@ Section go_lang.
   | load_hasTy l t :
       Γ ⊢ l : refT t ->
       Γ ⊢ Load l : t
+  | load_struct_hasTy l t ts :
+      Γ ⊢ l : structRefT (t::ts) ->
+      Γ ⊢ Load l : t
   | store_hasTy l v t :
       Γ ⊢ l : refT t ->
       Γ ⊢ v : t ->
+      Γ ⊢ Store l v : unitT
+  | store_struct_hasTy l v t ts :
+      Γ ⊢ l : structRefT ts ->
+      Γ ⊢ v : t ->
+      flatten_ty t = ts ->
       Γ ⊢ Store l v : unitT
   | external_hasTy op e t1 t2 :
       get_ext_tys op = (t1, t2) ->
@@ -271,6 +291,14 @@ Section go_lang.
     intros; subst; eauto.
   Qed.
 
+  Theorem struct_offset_op_hasTy_eq Γ e1 (v: Z) ts ts' :
+      Γ ⊢ e1 : structRefT ts ->
+      ts' = skipn (Z.to_nat v) ts ->
+      Γ ⊢ BinOp OffsetOp e1 #v : structRefT ts'.
+  Proof.
+    intros; subst; eauto.
+  Qed.
+
   Theorem hasTy_ty_congruence v t1 t2 :
     ∅ ⊢v v : t1 ->
     t1 = t2 ->
@@ -336,7 +364,7 @@ Ltac type_step :=
 Ltac typecheck :=
   intros;
   repeat (type_step; try match goal with
-                         | [ |- _ = _ ] => cbv; reflexivity
+                         | [ |- _ = _ ] => reflexivity
                          end).
 
 Module test.

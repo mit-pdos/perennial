@@ -8,12 +8,14 @@ Module importantStruct.
   (* This struct is very important.
 
      This is despite it being empty. *)
-  Definition S := struct.new [
+  Definition S := struct.decl [
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End importantStruct.
 
@@ -120,15 +122,17 @@ Definition emptyReturn: val :=
     "tt".
 
 Module allTheLiterals.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "int" :: intT;
     "s" :: stringT;
     "b" :: boolT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End allTheLiterals.
 
@@ -216,14 +220,16 @@ Definition PanicAtTheDisco: val :=
     Panic "disco".
 
 Module composite.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "a" :: intT;
     "b" :: intT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End composite.
 
@@ -243,13 +249,15 @@ Definition ReassignVars: val :=
     "x" <- composite.get "a" !"z".
 
 Module Block.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "Value" :: intT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End Block.
 
@@ -361,14 +369,16 @@ Definition stringAppend: val :=
     #(str"prefix ") + "s" + #(str" ") + uint64_to_string "x".
 
 Module C.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "x" :: intT;
     "y" :: intT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End C.
 

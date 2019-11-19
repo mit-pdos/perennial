@@ -5,14 +5,16 @@ From Perennial.go_lang Require Import prelude.
 From Perennial.go_lang Require Import ffi.disk_prelude.
 
 Module partialFile.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "off" :: intT;
     "data" :: slice.T byteT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End partialFile.
 
@@ -52,14 +54,16 @@ Definition readMessage: val :=
     "fileStr".
 
 Module Message.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "Id" :: stringT;
     "Contents" :: stringT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End Message.
 

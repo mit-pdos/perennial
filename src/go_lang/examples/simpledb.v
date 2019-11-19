@@ -14,14 +14,16 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
 Module Table.
   (* A Table provides access to an immutable copy of data on the filesystem,
      along with an index for fast random access. *)
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "Index" :: mapT intT;
     "File" :: fileT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End Table.
 
@@ -39,14 +41,16 @@ Definition CreateTable: val :=
 
 Module Entry.
   (* Entry represents a (key, value) pair. *)
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "Key" :: intT;
     "Value" :: slice.T byteT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End Entry.
 
@@ -97,14 +101,16 @@ Definition DecodeEntry: val :=
            ], "l1" + "l2" + "valueLen")))).
 
 Module lazyFileBuf.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "offset" :: intT;
     "next" :: slice.T byteT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End lazyFileBuf.
 
@@ -177,14 +183,16 @@ Definition tableRead: val :=
       ("p", #true)).
 
 Module bufFile.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "file" :: fileT;
     "buf" :: refT (slice.T byteT)
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End bufFile.
 
@@ -217,16 +225,18 @@ Definition bufClose: val :=
     FS.close (bufFile.get "file" "f").
 
 Module tableWriter.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "index" :: mapT intT;
     "name" :: stringT;
     "file" :: bufFile.T;
     "offset" :: refT intT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End tableWriter.
 
@@ -284,7 +294,7 @@ Definition tablePut: val :=
 
 Module Database.
   (* Database is a handle to an open database. *)
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "wbuffer" :: refT (mapT (slice.T byteT));
     "rbuffer" :: refT (mapT (slice.T byteT));
     "bufferL" :: lockRefT;
@@ -294,9 +304,11 @@ Module Database.
     "compactionL" :: lockRefT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End Database.
 

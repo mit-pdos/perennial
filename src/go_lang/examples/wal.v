@@ -10,15 +10,17 @@ Definition MaxTxnWrites : expr := #10.
 Definition logLength : expr := #1 + #2 * MaxTxnWrites.
 
 Module Log.
-  Definition S := struct.new [
+  Definition S := struct.decl [
     "l" :: lockRefT;
     "cache" :: mapT disk.blockT;
     "length" :: refT intT
   ].
   Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
   End fields.
 End Log.
 
