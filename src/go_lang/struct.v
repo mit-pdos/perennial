@@ -199,8 +199,10 @@ Proof.
     rewrite ty_size_flatten.
     generalize dependent (flatten_ty t1); intros l1 **.
     generalize dependent (flatten_ty t2); intros l2 **.
-    replace (Z.to_nat (n + length l1)) with (Z.to_nat n + length l1)%nat; [ | lia ].
+    replace (Z.to_nat (n + length l1)) with (Z.to_nat n + length l1)%nat.
     eapply take_app_drop1; eauto.
+    (* [lia] doesn't solve this goal on its own in Coq 8.9 *)
+    rewrite ?Z2Nat.inj_add ?Nat2Z.id; lia.
 Qed.
 
 Theorem field_offset1_gt_0 : forall fs f t,
@@ -245,7 +247,8 @@ Proof.
       rewrite H1.
       pose proof (field_offset1_gt_0 fs f t0); intuition.
       rewrite Heqp in H3; simpl in *.
-      lia.
+      (* [lia] doesn't solve this goal on its own in Coq 8.9 *)
+      rewrite ?Z2Nat.inj_add ?Nat2Z.id; lia.
 Qed.
 
 Theorem loadField_t : forall d f t,
