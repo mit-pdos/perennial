@@ -423,3 +423,11 @@ Definition makeLock: val :=
   λ: <>,
     let: "l" := Data.newLock #() in
     DoSomeLocking "l".
+
+Definition u64: ty := intT.
+
+Definition Timestamp: ty := intT.
+
+Definition UseTypeAbbrev: ty := u64.
+
+Definition UseNamedType: ty := Timestamp.
