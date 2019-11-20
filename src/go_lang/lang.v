@@ -726,16 +726,17 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
 Definition bin_op_eval_int (op : bin_op) (n1 n2 : u64) : option base_lit :=
   match op with
   | PlusOp => Some $ LitInt (int.add n1 n2)
-                  (*
-  | MinusOp => Some $ LitInt (Word.wminus n1 n2)
-  | MultOp => Some $ LitInt (Word.wmult n1 n2)
-  | QuotOp => Some $ LitInt (Word.wdiv n1 n2)
-  | RemOp => Some $ LitInt (Word.wmod n1 n2)
-  | AndOp => Some $ LitInt (Word.wand n1 n2)
-  | OrOp => Some $ LitInt (Word.wor n1 n2)
-  | XorOp => Some $ LitInt (Word.wxor n1 n2)
-  | ShiftLOp => Some $ LitInt (Word.wlshift n1 (Word.wordToNat n2))
-  | ShiftROp => Some $ LitInt (Word.wrshift n1 (Word.wordToNat n2)) *)
+  | MinusOp => Some $ LitInt (int.sub n1 n2)
+  | MultOp => Some $ LitInt (int.mul n1 n2)
+  (*
+  | QuotOp => Some $ LitInt (int.div n1 n2)
+  | RemOp => Some $ LitInt (int.mod n1 n2)
+  | AndOp => Some $ LitInt (int.and n1 n2)
+  | OrOp => Some $ LitInt (int.or n1 n2)
+  | XorOp => Some $ LitInt (int.xor n1 n2)
+  | ShiftLOp => Some $ LitInt (int.shl n1 (Word.wordToNat n2))
+  | ShiftROp => Some $ LitInt (int.shr n1 (Word.wordToNat n2))
+   *)
   | LeOp => Some $ LitBool (int.leb n1 n2)
   | LtOp => Some $ LitBool (int.ltb n1 n2)
   | EqOp => Some $ LitBool (int.eqb n2 n2)

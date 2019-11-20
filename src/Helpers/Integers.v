@@ -96,6 +96,8 @@ Module int.
       nat := (fun x => Z.to_nat (val x));
       of_Z: Z -> w;
       add: w -> w -> w;
+      mul: w -> w -> w;
+      sub: w -> w -> w;
       eqb: w -> w -> bool;
       ltb: w -> w -> bool;
       leb := fun w1 w2 => ltb w1 w2 || eqb w1 w2;
@@ -107,39 +109,53 @@ Module int.
     }.
 End int.
 
-Instance u64_arith : int.arith u64 :=
-  {|
-    int.val := fun (w: u64) => word.unsigned w;
-    int.of_Z := fun z => Word64 (word.of_Z z);
-    int.add := fun w1 w2 => Word64 (word.add w1 w2);
-    int.eqb := word.eqb;
-    int.ltb := word.ltu;
-  |}.
+Section arith64.
+  Notation "'lift1' f" := (fun w => Word64 (f w)) (at level 0, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word64 (f w1 w2)) (at level 0, only parsing).
 
-Instance u64_arith_ok : int.arith_ok 64 u64_arith.
-Proof.
-  constructor.
-  - intros x.
-    pose proof (unsigned_in_range x).
-    simpl; lia.
-Qed.
+  Global Instance u64_arith : int.arith u64 :=
+    {|
+      int.val := fun (w: u64) => word.unsigned w;
+      int.of_Z := lift1 word.of_Z;
+      int.add := lift2 word.add;
+      int.sub := lift2 word.sub;
+      int.mul := lift2 word.mul;
+      int.eqb := word.eqb;
+      int.ltb := word.ltu;
+    |}.
 
-Instance u32_arith : int.arith u32 :=
-  {|
-    int.val := fun (w: u32) => word.unsigned w;
-    int.of_Z := fun z => Word32 (word.of_Z z);
-    int.add := fun w1 w2 => Word32 (word.add w1 w2);
-    int.eqb := word.eqb;
-    int.ltb := word.ltu;
-  |}.
+  Global Instance u64_arith_ok : int.arith_ok 64 u64_arith.
+  Proof.
+    constructor.
+    - intros x.
+      pose proof (unsigned_in_range x).
+      simpl; lia.
+  Qed.
+End arith64.
 
-Instance u32_arith_ok : int.arith_ok 32 u32_arith.
-Proof.
-  constructor.
-  - intros x.
-    pose proof (unsigned_in_range x).
-    simpl; lia.
-Qed.
+Section arith32.
+  Notation "'lift1' f" := (fun w => Word32 (f w)) (at level 0, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word32 (f w1 w2)) (at level 0, only parsing).
+
+  Global Instance u32_arith : int.arith u32 :=
+    {|
+      int.val := fun (w: u32) => word.unsigned w;
+      int.of_Z := lift1 word.of_Z;
+      int.add := lift2 word.add;
+      int.sub := lift2 word.sub;
+      int.mul := lift2 word.mul;
+      int.eqb := word.eqb;
+      int.ltb := word.ltu;
+    |}.
+
+  Global Instance u32_arith_ok : int.arith_ok 32 u32_arith.
+  Proof.
+    constructor.
+    - intros x.
+      pose proof (unsigned_in_range x).
+      simpl; lia.
+  Qed.
+End arith32.
 
 Theorem u64_Z_through_nat (x:u64) : Z.of_nat (int.nat x) = int.val x.
 Proof.
