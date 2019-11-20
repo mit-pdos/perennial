@@ -15,7 +15,7 @@ Module Table.
   (* A Table provides access to an immutable copy of data on the filesystem,
      along with an index for fast random access. *)
   Definition S := struct.decl [
-    "Index" :: mapT intT;
+    "Index" :: mapT uint64T;
     "File" :: fileT
   ].
   Definition T: ty := struct.t S.
@@ -30,7 +30,7 @@ End Table.
 (* CreateTable creates a new, empty table. *)
 Definition CreateTable: val :=
   λ: "p",
-    let: "index" := NewMap intT in
+    let: "index" := NewMap uint64T in
     let: ("f", <>) := FS.create #(str"db") "p" in
     FS.close "f";;
     let: "f2" := FS.open #(str"db") "p" in
@@ -42,7 +42,7 @@ Definition CreateTable: val :=
 Module Entry.
   (* Entry represents a (key, value) pair. *)
   Definition S := struct.decl [
-    "Key" :: intT;
+    "Key" :: uint64T;
     "Value" :: slice.T byteT
   ].
   Definition T: ty := struct.t S.
@@ -102,7 +102,7 @@ Definition DecodeEntry: val :=
 
 Module lazyFileBuf.
   Definition S := struct.decl [
-    "offset" :: intT;
+    "offset" :: uint64T;
     "next" :: slice.T byteT
   ].
   Definition T: ty := struct.t S.
@@ -147,7 +147,7 @@ Definition readTableIndex: val :=
 (* RecoverTable restores a table from disk on startup. *)
 Definition RecoverTable: val :=
   λ: "p",
-    let: "index" := NewMap intT in
+    let: "index" := NewMap uint64T in
     let: "f" := FS.open #(str"db") "p" in
     readTableIndex "f" "index";;
     struct.mk Table.S [
@@ -226,10 +226,10 @@ Definition bufClose: val :=
 
 Module tableWriter.
   Definition S := struct.decl [
-    "index" :: mapT intT;
+    "index" :: mapT uint64T;
     "name" :: stringT;
     "file" :: bufFile.T;
-    "offset" :: refT intT
+    "offset" :: refT uint64T
   ].
   Definition T: ty := struct.t S.
   Definition Ptr: ty := struct.ptrT S.
@@ -242,10 +242,10 @@ End tableWriter.
 
 Definition newTableWriter: val :=
   λ: "p",
-    let: "index" := NewMap intT in
+    let: "index" := NewMap uint64T in
     let: ("f", <>) := FS.create #(str"db") "p" in
     let: "buf" := newBuf "f" in
-    let: "off" := ref (zero_val intT) in
+    let: "off" := ref (zero_val uint64T) in
     struct.mk tableWriter.S [
       "index" ::= "index";
       "name" ::= "p";

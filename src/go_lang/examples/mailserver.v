@@ -6,7 +6,7 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
 
 Module partialFile.
   Definition S := struct.decl [
-    "off" :: intT;
+    "off" :: uint64T;
     "data" :: slice.T byteT
   ].
   Definition T: ty := struct.t S.

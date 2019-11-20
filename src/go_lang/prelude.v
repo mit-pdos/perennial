@@ -8,7 +8,7 @@ From Perennial.go_lang Require Export
 
 Inductive LockMode := Reader | Writer.
 Definition uint64_to_string {ext: ext_op}: val := λ: <>, #().
-Definition lockRefT := refT intT.
+Definition lockRefT := refT uint64T.
 
 Module Data.
   Section go_lang.
@@ -18,7 +18,7 @@ Module Data.
     Definition sliceAppendSlice: val := λ: <>, #().
     Definition mapAlter: val := λ: <>, #().
     Axiom mapIter: val.
-    Axiom mapIter_t : forall vt, ⊢ mapIter : (mapT vt -> (intT -> vt -> unitT) -> unitT).
+    Axiom mapIter_t : forall vt, ⊢ mapIter : (mapT vt -> (uint64T -> vt -> unitT) -> unitT).
     Definition mapClear: val := λ: <>, #().
     Definition randomUint64: val := λ: <>, #().
 

@@ -37,9 +37,9 @@ Defined.
 Definition disk_ty: ext_types disk_op :=
   {| get_ext_tys (op: @external disk_op) :=
        match op with
-    | ReadOp => (intT, refT byteT)
-    | WriteOp => (prodT intT (refT byteT), unitT)
-    | SizeOp => (unitT, intT)
+    | ReadOp => (uint64T, refT byteT)
+    | WriteOp => (prodT uint64T (refT byteT), unitT)
+    | SizeOp => (unitT, uint64T)
        end; |}.
 
 Definition block_bytes: nat := N.to_nat 4096.
@@ -79,7 +79,7 @@ Section disk.
     let: "p" := ExternalOp ReadOp (Var "a") in
     raw_slice byteT (Var "p") #4096.
 
-  Theorem Read_t : ⊢ Read : (intT -> blockT).
+  Theorem Read_t : ⊢ Read : (uint64T -> blockT).
   Proof.
     typecheck.
   Qed.
@@ -88,7 +88,7 @@ Section disk.
     λ: "a" "b",
     ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
 
-  Theorem Write_t : ⊢ Write : (intT -> slice.T byteT -> unitT).
+  Theorem Write_t : ⊢ Write : (uint64T -> slice.T byteT -> unitT).
   Proof.
     typecheck.
   Qed.
@@ -97,7 +97,7 @@ Section disk.
     λ: <>,
        ExternalOp SizeOp #().
 
-  Theorem Size_t : ⊢ Size : (unitT -> intT).
+  Theorem Size_t : ⊢ Size : (unitT -> uint64T).
   Proof.
     typecheck.
   Qed.

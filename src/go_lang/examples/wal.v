@@ -13,7 +13,7 @@ Module Log.
   Definition S := struct.decl [
     "l" :: lockRefT;
     "cache" :: mapT disk.blockT;
-    "length" :: refT intT
+    "length" :: refT uint64T
   ].
   Definition T: ty := struct.t S.
   Definition Ptr: ty := struct.ptrT S.
@@ -29,7 +29,7 @@ Definition intToBlock: val :=
     let: "b" := NewSlice byteT disk.BlockSize in
     UInt64Put "b" "a";;
     "b".
-Theorem intToBlock_t: ⊢ intToBlock : (intT -> disk.blockT).
+Theorem intToBlock_t: ⊢ intToBlock : (uint64T -> disk.blockT).
 Proof. typecheck. Qed.
 Hint Resolve intToBlock_t : types.
 
@@ -37,7 +37,7 @@ Definition blockToInt: val :=
   λ: "v",
     let: "a" := UInt64Get "v" in
     "a".
-Theorem blockToInt_t: ⊢ blockToInt : (disk.blockT -> intT).
+Theorem blockToInt_t: ⊢ blockToInt : (disk.blockT -> uint64T).
 Proof. typecheck. Qed.
 Hint Resolve blockToInt_t : types.
 
@@ -53,7 +53,7 @@ Definition New: val :=
     let: "cache" := NewMap disk.blockT in
     let: "header" := intToBlock #0 in
     disk.Write #0 "header";;
-    let: "lengthPtr" := ref (zero_val intT) in
+    let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <- #0;;
     let: "l" := Data.newLock #() in
     struct.mk Log.S [
@@ -112,7 +112,7 @@ Definition Log__Read: val :=
       Log__unlock "l";;
       let: "dv" := disk.Read (logLength + "a") in
       "dv").
-Theorem Log__Read_t: ⊢ Log__Read : (Log.T -> intT -> disk.blockT).
+Theorem Log__Read_t: ⊢ Log__Read : (Log.T -> uint64T -> disk.blockT).
 Proof. typecheck. Qed.
 Hint Resolve Log__Read_t : types.
 
@@ -120,7 +120,7 @@ Definition Log__Size: val :=
   λ: "l",
     let: "sz" := disk.Size #() in
     "sz" - logLength.
-Theorem Log__Size_t: ⊢ Log__Size : (Log.T -> intT).
+Theorem Log__Size_t: ⊢ Log__Size : (Log.T -> uint64T).
 Proof. typecheck. Qed.
 Hint Resolve Log__Size_t : types.
 
@@ -141,7 +141,7 @@ Definition Log__Write: val :=
     MapInsert (Log.get "cache" "l") "a" "v";;
     Log.get "length" "l" <- "length" + #1;;
     Log__unlock "l".
-Theorem Log__Write_t: ⊢ Log__Write : (Log.T -> intT -> disk.blockT -> unitT).
+Theorem Log__Write_t: ⊢ Log__Write : (Log.T -> uint64T -> disk.blockT -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve Log__Write_t : types.
 
@@ -164,7 +164,7 @@ Definition getLogEntry: val :=
     let: "a" := blockToInt "aBlock" in
     let: "v" := disk.Read ("diskAddr" + #1) in
     ("a", "v").
-Theorem getLogEntry_t: ⊢ getLogEntry : (intT -> (intT * disk.blockT)).
+Theorem getLogEntry_t: ⊢ getLogEntry : (uint64T -> (uint64T * disk.blockT)).
 Proof. typecheck. Qed.
 Hint Resolve getLogEntry_t : types.
 
@@ -180,7 +180,7 @@ Definition applyLog: val :=
         "i" <- !"i" + #1;;
         Continue
       else Break)).
-Theorem applyLog_t: ⊢ applyLog : (intT -> unitT).
+Theorem applyLog_t: ⊢ applyLog : (uint64T -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve applyLog_t : types.
 
@@ -215,7 +215,7 @@ Definition Open: val :=
     applyLog "length";;
     clearLog #();;
     let: "cache" := NewMap disk.blockT in
-    let: "lengthPtr" := ref (zero_val intT) in
+    let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <- #0;;
     let: "l" := Data.newLock #() in
     struct.mk Log.S [

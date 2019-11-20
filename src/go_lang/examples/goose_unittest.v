@@ -66,7 +66,7 @@ Definition useSlice: val :=
 
 Definition useSliceIndexing: val :=
   λ: <>,
-    let: "s" := NewSlice intT #2 in
+    let: "s" := NewSlice uint64T #2 in
     SliceSet "s" #1 #2;;
     let: "x" := SliceGet "s" #0 in
     "x".
@@ -82,14 +82,14 @@ Definition useMap: val :=
 
 Definition usePtr: val :=
   λ: <>,
-    let: "p" := ref (zero_val intT) in
+    let: "p" := ref (zero_val uint64T) in
     "p" <- #1;;
     let: "x" := !"p" in
     "p" <- "x".
 
 Definition iterMapKeysAndValues: val :=
   λ: "m",
-    let: "sumPtr" := ref (zero_val intT) in
+    let: "sumPtr" := ref (zero_val uint64T) in
     Data.mapIter "m" (λ: "k" "v",
       let: "sum" := !"sumPtr" in
       "sumPtr" <- "sum" + "k" + "v");;
@@ -98,8 +98,8 @@ Definition iterMapKeysAndValues: val :=
 
 Definition iterMapKeys: val :=
   λ: "m",
-    let: "keysSlice" := NewSlice intT #0 in
-    let: "keysRef" := ref (zero_val (slice.T intT)) in
+    let: "keysSlice" := NewSlice uint64T #0 in
+    let: "keysRef" := ref (zero_val (slice.T uint64T)) in
     "keysRef" <- "keysSlice";;
     Data.mapIter "m" (λ: "k" <>,
       let: "keys" := !"keysRef" in
@@ -123,7 +123,7 @@ Definition emptyReturn: val :=
 
 Module allTheLiterals.
   Definition S := struct.decl [
-    "int" :: intT;
+    "int" :: uint64T;
     "s" :: stringT;
     "b" :: boolT
   ].
@@ -167,7 +167,7 @@ Definition DoSomething: val :=
 
 Definition standardForLoop: val :=
   λ: "s",
-    let: "sumPtr" := ref (zero_val intT) in
+    let: "sumPtr" := ref (zero_val uint64T) in
     let: "i" := ref #0 in
     (for: (#true); (Skip) :=
       (if: !"i" < slice.len "s"
@@ -221,8 +221,8 @@ Definition PanicAtTheDisco: val :=
 
 Module composite.
   Definition S := struct.decl [
-    "a" :: intT;
-    "b" :: intT
+    "a" :: uint64T;
+    "b" :: uint64T
   ].
   Definition T: ty := struct.t S.
   Definition Ptr: ty := struct.ptrT S.
@@ -235,7 +235,7 @@ End composite.
 
 Definition ReassignVars: val :=
   λ: <>,
-    let: "x" := zero_val intT in
+    let: "x" := zero_val uint64T in
     let: "y" := #0 in
     "x" <- #3;;
     let: "z" := ref (struct.mk composite.S [
@@ -250,7 +250,7 @@ Definition ReassignVars: val :=
 
 Module Block.
   Definition S := struct.decl [
-    "Value" :: intT
+    "Value" :: uint64T
   ].
   Definition T: ty := struct.t S.
   Definition Ptr: ty := struct.ptrT S.
@@ -329,7 +329,7 @@ Definition ReplicatedDiskRecover: val :=
 
 Definition sliceOps: val :=
   λ: <>,
-    let: "x" := NewSlice intT #10 in
+    let: "x" := NewSlice uint64T #10 in
     let: "v1" := SliceGet "x" #2 in
     let: "v2" := SliceSubslice "x" #2 #3 in
     let: "v3" := SliceTake "x" #3 in
@@ -344,7 +344,7 @@ Definition Skip: val :=
 Definition simpleSpawn: val :=
   λ: <>,
     let: "l" := Data.newLock #() in
-    let: "v" := ref (zero_val intT) in
+    let: "v" := ref (zero_val uint64T) in
     Fork (Data.lockAcquire Reader "l";;
           let: "x" := !"v" in
           (if: "x" > #0
@@ -379,8 +379,8 @@ Definition stringAppend: val :=
 
 Module C.
   Definition S := struct.decl [
-    "x" :: intT;
-    "y" :: intT
+    "x" :: uint64T;
+    "y" :: uint64T
   ].
   Definition T: ty := struct.t S.
   Definition Ptr: ty := struct.ptrT S.
@@ -420,8 +420,8 @@ Definition UseAddWithLiteral: val :=
 
 Module TwoInts.
   Definition S := struct.decl [
-    "x" :: intT;
-    "y" :: intT
+    "x" :: uint64T;
+    "y" :: uint64T
   ].
   Definition T: ty := struct.t S.
   Definition Ptr: ty := struct.ptrT S.
@@ -434,7 +434,7 @@ End TwoInts.
 
 Module S.
   Definition S := struct.decl [
-    "a" :: intT;
+    "a" :: uint64T;
     "b" :: TwoInts.T;
     "c" :: boolT
   ].
@@ -493,9 +493,9 @@ Definition makeLock: val :=
     let: "l" := Data.newLock #() in
     DoSomeLocking "l".
 
-Definition u64: ty := intT.
+Definition u64: ty := uint64T.
 
-Definition Timestamp: ty := intT.
+Definition Timestamp: ty := uint64T.
 
 Definition UseTypeAbbrev: ty := u64.
 

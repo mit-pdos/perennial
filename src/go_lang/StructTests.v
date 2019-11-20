@@ -4,7 +4,7 @@ From Perennial.go_lang Require Import
 Open Scope heap_types.
 
 Module three.
-  Definition S := struct.decl ["foo" :: intT; "bar" :: boolT; "baz" :: refT intT].
+  Definition S := struct.decl ["foo" :: uint64T; "bar" :: boolT; "baz" :: refT uint64T].
   Definition T := struct.t S.
   Section fields.
     Context {ext:ext_op}.
@@ -26,7 +26,7 @@ Section go_lang.
     | _ => fail "unexpected goal"
     end.
 
-  Theorem t_is : three.T = (intT * boolT * refT intT)%ht.
+  Theorem t_is : three.T = (uint64T * boolT * refT uint64T)%ht.
   Proof.
     reflexivity.
   Qed.
@@ -43,23 +43,23 @@ Section go_lang.
     goal_is_exactly_equal.
   Qed.
 
-  Theorem foo_t : ⊢ three.foo : (three.T -> intT).
+  Theorem foo_t : ⊢ three.foo : (three.T -> uint64T).
   Proof. typecheck. Qed.
 
   Theorem bar_t : ⊢ three.bar : (three.T -> boolT).
   Proof. typecheck. Qed.
 
-  Theorem baz_t : ⊢ three.baz : (three.T -> refT intT).
+  Theorem baz_t : ⊢ three.baz : (three.T -> refT uint64T).
   Proof. typecheck. Qed.
 
-  Theorem load_ty_is1 : load_ty (intT * intT * intT)%ht "v" 0 =
+  Theorem load_ty_is1 : load_ty (uint64T * uint64T * uint64T)%ht "v" 0 =
                        (!("v" +ₗ #0), !("v" +ₗ #1), !("v" +ₗ #2))%E.
   Proof.
     cbv -[U64].
     goal_is_exactly_equal.
   Qed.
 
-  Theorem load_ty_is2 : load_ty (intT * (intT * intT) * intT)%ht "v" 0 =
+  Theorem load_ty_is2 : load_ty (uint64T * (uint64T * uint64T) * uint64T)%ht "v" 0 =
                        (!("v" +ₗ #0), (!("v" +ₗ #1), !("v" +ₗ #2)), !("v" +ₗ #3))%E.
   Proof.
     cbv -[U64].

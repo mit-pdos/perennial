@@ -6,8 +6,8 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
 
 Module Log.
   Definition S := struct.decl [
-    "sz" :: intT;
-    "diskSz" :: intT
+    "sz" :: uint64T;
+    "diskSz" :: uint64T
   ].
   Notation T := (struct.t S).
   Notation Ptr := (struct.ptrT S).
@@ -40,7 +40,7 @@ Definition Init: val :=
       ] in
       Log__writeHdr "log";;
       ("log", #true)).
-Theorem Init_t: ⊢ Init : (intT -> (Log.T * boolT)).
+Theorem Init_t: ⊢ Init : (uint64T -> (Log.T * boolT)).
 Proof. typecheck. Qed.
 Hint Resolve Init_t : types.
 
@@ -50,7 +50,7 @@ Definition Log__Get: val :=
     (if: "i" < "sz"
     then (disk.Read (#1 + "i"), #true)
     else (slice.nil, #false)).
-Theorem Log__Get_t: ⊢ Log__Get : (Log.T -> intT -> (disk.blockT * boolT)).
+Theorem Log__Get_t: ⊢ Log__Get : (Log.T -> uint64T -> (disk.blockT * boolT)).
 Proof. typecheck. Qed.
 Hint Resolve Log__Get_t : types.
 
@@ -62,7 +62,7 @@ Definition writeAll: val :=
       let: "bk" := SliceGet "bks" !"i" in
       disk.Write ("off" + !"i") "bk";;
       Continue).
-Theorem writeAll_t: ⊢ writeAll : (slice.T disk.blockT -> intT -> unitT).
+Theorem writeAll_t: ⊢ writeAll : (slice.T disk.blockT -> uint64T -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve writeAll_t : types.
 

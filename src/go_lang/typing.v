@@ -1,7 +1,7 @@
 From Perennial.go_lang Require Import lang notation.
 
 Inductive ty :=
-| intT
+| uint64T
 | byteT
 | boolT
 | unitT
@@ -46,7 +46,7 @@ Section go_lang.
 
   Fixpoint zero_val (t:ty) : val :=
     match t with
-    | intT => #0
+    | uint64T => #0
     | byteT => #(LitByte 0)
     | boolT => #false
     | unitT => #()
@@ -60,7 +60,7 @@ Section go_lang.
     end.
 
   Inductive base_lit_hasTy : base_lit -> ty -> Prop :=
-  | int_hasTy x : base_lit_hasTy (LitInt x) intT
+  | int_hasTy x : base_lit_hasTy (LitInt x) uint64T
   | byte_hasTy x : base_lit_hasTy (LitByte x) byteT
   | bool_hasTy x : base_lit_hasTy (LitBool x) boolT
   | unit_hasTy : base_lit_hasTy (LitUnit) unitT
@@ -74,8 +74,8 @@ Section go_lang.
 
   Definition bin_op_ty (op:bin_op) : option (ty * ty * ty) :=
     match op with
-    | PlusOp | MinusOp | MultOp | QuotOp | RemOp => Some (intT, intT, intT)
-    | LtOp | LeOp => Some (intT, intT, boolT)
+    | PlusOp | MinusOp | MultOp | QuotOp | RemOp => Some (uint64T, uint64T, uint64T)
+    | LtOp | LeOp => Some (uint64T, uint64T, boolT)
     | _ => None
     end.
 
@@ -113,7 +113,7 @@ Section go_lang.
       Γ ⊢ UnOp op e1 : t
   | offset_op_hasTy e1 e2 t :
       Γ ⊢ e1 : refT t ->
-      Γ ⊢ e2 : intT ->
+      Γ ⊢ e2 : uint64T ->
       Γ ⊢ BinOp OffsetOp e1 e2 : refT t
   | struct_offset_op_hasTy e1 (v: Z) ts :
       Γ ⊢ e1 : structRefT ts ->
@@ -158,7 +158,7 @@ Section go_lang.
       Γ ⊢ e2 : t ->
       Γ ⊢ If cond e1 e2 : t
   | alloc_hasTy n v t :
-      Γ ⊢ n : intT ->
+      Γ ⊢ n : uint64T ->
       Γ ⊢ v : t ->
       Γ ⊢ AllocN n v : refT t
   | alloc_struct_hasTy v t :
@@ -185,20 +185,20 @@ Section go_lang.
       Γ ⊢ ExternalOp op e : t2
   | mapGet_hasTy m k vt :
       Γ ⊢ m : mapT vt ->
-      Γ ⊢ k : intT ->
+      Γ ⊢ k : uint64T ->
       Γ ⊢ MapGet m k : prodT vt boolT
   | mapInsert_hasTy m k v vt :
       Γ ⊢ m : mapT vt ->
-      Γ ⊢ k : intT ->
+      Γ ⊢ k : uint64T ->
       Γ ⊢ v : vt ->
       Γ ⊢ MapInsert m k v : unitT
   | encode_hasTy n p :
-      Γ ⊢ n : intT ->
+      Γ ⊢ n : uint64T ->
       Γ ⊢ p : refT byteT ->
       Γ ⊢ EncodeInt n p : unitT
   | decode_hasTy p :
       Γ ⊢ p : refT byteT ->
-      Γ ⊢ DecodeInt p : intT
+      Γ ⊢ DecodeInt p : uint64T
   where "Γ ⊢ e : A" := (expr_hasTy Γ e A)
   with val_hasTy (Γ: Ctx) : val -> ty -> Prop :=
   | val_base_lit_hasTy v t :

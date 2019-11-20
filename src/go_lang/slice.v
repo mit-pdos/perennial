@@ -10,8 +10,8 @@ From Perennial.go_lang Require Import struct typing.
 Open Scope heap_types.
 
 Module slice.
-  Definition S t := mkStruct ["p" :: refT t; "len" :: intT].
-  Definition T t : ty := refT t * intT.
+  Definition S t := mkStruct ["p" :: refT t; "len" :: uint64T].
+  Definition T t : ty := refT t * uint64T.
   Section fields.
     Context `{ext_ty:ext_types}.
 
@@ -22,7 +22,7 @@ Module slice.
     Proof.
       typecheck.
     Qed.
-    Theorem len_t t : ⊢ len : (T t -> intT).
+    Theorem len_t t : ⊢ len : (T t -> uint64T).
     Proof.
       typecheck.
     Qed.
@@ -49,7 +49,7 @@ Section go_lang.
 Definition raw_slice (t: ty): val :=
   λ: "p" "sz", ("p", "sz").
 
-Theorem raw_slice_t t : ⊢ raw_slice t : (refT t -> intT -> slice.T t).
+Theorem raw_slice_t t : ⊢ raw_slice t : (refT t -> uint64T -> slice.T t).
 Proof.
   typecheck.
 Qed.
@@ -59,17 +59,17 @@ Definition NewSlice (t: ty): val :=
   let: "p" := AllocN "sz" (zero_val t) in
   ("p", "sz").
 
-Theorem NewSlice_t t : ⊢ NewSlice t : (intT -> slice.T t).
+Theorem NewSlice_t t : ⊢ NewSlice t : (uint64T -> slice.T t).
 Proof.
   typecheck.
 Qed.
 
 Definition MemCpy: val :=
-  λ: "dst" "src" (annot "n" intT),
+  λ: "dst" "src" (annot "n" uint64T),
     for-range: "i" < "n" :=
       ("dst" +ₗ "i") <- !("src" +ₗ "i").
 
-Theorem MemCpy_t t : ⊢ MemCpy : (refT t -> refT t -> intT -> unitT).
+Theorem MemCpy_t t : ⊢ MemCpy : (refT t -> refT t -> uint64T -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -82,7 +82,7 @@ Definition MemCpy_rec: val :=
     else "dst" <- !"src";;
          "memcpy" ("dst" +ₗ #1) ("src" +ₗ #1) ("n" - #1).
 
-Theorem MemCpy_rec_t t : ⊢ MemCpy_rec : (refT t -> refT t -> intT -> unitT).
+Theorem MemCpy_rec_t t : ⊢ MemCpy_rec : (refT t -> refT t -> uint64T -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -93,7 +93,7 @@ Definition SliceRef: val :=
               then (slice.ptr "s" +ₗ "i")
               else Panic "slice index out-of-bounds".
 
-Theorem SliceRef_t t : ⊢ SliceRef : (slice.T t -> intT -> refT t).
+Theorem SliceRef_t t : ⊢ SliceRef : (slice.T t -> uint64T -> refT t).
 Proof.
   typecheck.
 Qed.
@@ -101,7 +101,7 @@ Qed.
 Definition SliceSkip: val :=
   λ: "s" "n", (slice.ptr "s" +ₗ "n", slice.len "s" - "n").
 
-Theorem SliceSkip_t t : ⊢ SliceSkip : (slice.T t -> intT -> slice.T t).
+Theorem SliceSkip_t t : ⊢ SliceSkip : (slice.T t -> uint64T -> slice.T t).
 Proof.
   typecheck.
 Qed.
@@ -111,7 +111,7 @@ Definition SliceTake: val :=
               then Panic "slice index out-of-bounds"
               else (slice.ptr "s", "n").
 
-Theorem SliceTake_t t : ⊢ SliceTake : (slice.T t -> intT -> slice.T t).
+Theorem SliceTake_t t : ⊢ SliceTake : (slice.T t -> uint64T -> slice.T t).
 Proof.
   typecheck.
 Qed.
@@ -122,7 +122,7 @@ Definition SliceSubslice: val :=
   then Panic "slice index out-of-bounds"
   else (slice.ptr "s" +ₗ "n1", "n2" - "n1").
 
-Theorem SliceSubslice_t t : ⊢ SliceSubslice : (slice.T t -> intT -> intT -> slice.T t).
+Theorem SliceSubslice_t t : ⊢ SliceSubslice : (slice.T t -> uint64T -> uint64T -> slice.T t).
 Proof.
   typecheck.
 Qed.
@@ -131,7 +131,7 @@ Definition SliceGet: val :=
   λ: "s" "i",
   !(slice.ptr "s" +ₗ "i").
 
-Theorem SliceGet_t t : ⊢ SliceGet : (slice.T t -> intT -> t).
+Theorem SliceGet_t t : ⊢ SliceGet : (slice.T t -> uint64T -> t).
 Proof.
   typecheck.
 Qed.
@@ -140,7 +140,7 @@ Definition SliceSet: val :=
   λ: "s" "i" "v",
   (slice.ptr "s" +ₗ "i") <- "v".
 
-Theorem SliceSet_t t : ⊢ SliceSet : (slice.T t -> intT -> t -> unitT).
+Theorem SliceSet_t t : ⊢ SliceSet : (slice.T t -> uint64T -> t -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -175,7 +175,7 @@ Definition UInt64Put: val :=
   λ: "p" "n",
   EncodeInt "n" (slice.ptr "p").
 
-Theorem UInt64Put_t : ⊢ UInt64Put : (slice.T byteT -> intT -> unitT).
+Theorem UInt64Put_t : ⊢ UInt64Put : (slice.T byteT -> uint64T -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -184,7 +184,7 @@ Definition UInt64Get: val :=
   λ: "p",
   DecodeInt (slice.ptr "p").
 
-Theorem UInt64Get_t : ⊢ UInt64Get : (slice.T byteT -> intT).
+Theorem UInt64Get_t : ⊢ UInt64Get : (slice.T byteT -> uint64T).
 Proof.
   typecheck.
 Qed.
