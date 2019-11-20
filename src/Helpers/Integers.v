@@ -40,6 +40,32 @@ Proof.
   by rewrite word.of_Z_unsigned.
 Qed.
 
+Lemma unsigned_in_range {width} (x: word width) :
+  0 < width ->
+  0 <= unsigned x < 2 ^ width.
+Proof.
+  intros.
+  assert (0 < 2^width).
+  { assert (2^0 < 2^width).
+    { apply Z.pow_lt_mono_r; lia. }
+    lia. }
+  destruct x; simpl.
+  apply Z.mod_small_iff in _unsigned_in_range; intuition lia.
+Qed.
+
+Theorem unsigned_mod_bound width (x: word width) :
+  unsigned x `mod` 2 ^ width = unsigned x.
+Proof.
+  destruct x; simpl; auto.
+Qed.
+
+Theorem word_unsigned_mod_bound width (x: word width) :
+  word.unsigned x `mod` 2 ^ width = word.unsigned x.
+Proof.
+  simpl.
+  rewrite unsigned_mod_bound; auto.
+Qed.
+
 Definition width64_ok : 0 < 64 := eq_refl.
 Definition width32_ok : 0 < 32 := eq_refl.
 Definition width8_ok : 0 < 8 := eq_refl.
@@ -89,7 +115,29 @@ Instance u64_arith : int.arith u64 :=
   |}.
 
 Instance u64_arith_ok : int.arith_ok 64 u64_arith.
-Admitted.
+Proof.
+  constructor.
+  - intros x.
+    pose proof (unsigned_in_range x).
+    simpl; lia.
+Qed.
+
+Instance u32_arith : int.arith u32 :=
+  {|
+    int.val := fun (w: u32) => word.unsigned w;
+    int.of_Z := fun z => U32 (word.of_Z z);
+    int.add := fun w1 w2 => U32 (word.add w1 w2);
+    int.eqb := word.eqb;
+    int.ltb := word.ltu;
+  |}.
+
+Instance u32_arith_ok : int.arith_ok 32 u32_arith.
+Proof.
+  constructor.
+  - intros x.
+    pose proof (unsigned_in_range x).
+    simpl; lia.
+Qed.
 
 Theorem u64_Z_through_nat (x:u64) : Z.of_nat (int.nat x) = int.val x.
 Proof.
@@ -138,21 +186,6 @@ Proof.
   f_equal.
 Qed.
 
-Theorem unsigned_mod_bound width (x: word width) :
-  0 < width ->
-  word.unsigned x `mod` 2 ^ width = word.unsigned x.
-Proof.
-  intros.
-  assert (0 < 2^width).
-  { assert (2^0 < 2^width).
-    { apply Z.pow_lt_mono_r; lia. }
-    lia. }
-
-  rewrite Z.mod_small; auto.
-  destruct x; simpl.
-  apply Z.mod_small_iff in _unsigned_in_range; intuition lia.
-Qed.
-
 Theorem u64_le_to_word : forall x,
     le_to_u64 (u64_le x) = x.
 Proof.
@@ -164,6 +197,6 @@ Proof.
   rewrite tuple_of_to_list8.
   rewrite combine_split.
   change (8%nat * 8) with 64.
-  rewrite unsigned_mod_bound by lia.
+  rewrite word_unsigned_mod_bound by lia.
   by rewrite word.of_Z_unsigned.
 Qed.
