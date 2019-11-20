@@ -727,23 +727,20 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
 
 Definition bin_op_eval_int (op : bin_op) (n1 n2 : u64) : option base_lit :=
   match op with
-  | PlusOp => Some $ LitInt (int.add n1 n2)
-  | MinusOp => Some $ LitInt (int.sub n1 n2)
-  | MultOp => Some $ LitInt (int.mul n1 n2)
-  (*
-  | QuotOp => Some $ LitInt (int.div n1 n2)
-  | RemOp => Some $ LitInt (int.mod n1 n2)
-  | AndOp => Some $ LitInt (int.and n1 n2)
-  | OrOp => Some $ LitInt (int.or n1 n2)
-  | XorOp => Some $ LitInt (int.xor n1 n2)
-  | ShiftLOp => Some $ LitInt (int.shl n1 (Word.wordToNat n2))
-  | ShiftROp => Some $ LitInt (int.shr n1 (Word.wordToNat n2))
-   *)
-  | LeOp => Some $ LitBool (int.leb n1 n2)
-  | LtOp => Some $ LitBool (int.ltb n1 n2)
-  | EqOp => Some $ LitBool (int.eqb n2 n2)
+  | PlusOp => Some $ LitInt (word.add (word:=u64_instance.u64_word) n1 n2)
+  | MinusOp => Some $ LitInt (word.sub (word:=u64_instance.u64_word) n1 n2)
+  | MultOp => Some $ LitInt (word.mul (word:=u64_instance.u64_word) n1 n2)
+  | QuotOp => Some $ LitInt (word.divu (word:=u64_instance.u64_word) n1 n2)
+  | RemOp => Some $ LitInt (word.modu (word:=u64_instance.u64_word) n1 n2)
+  | AndOp => Some $ LitInt (word.and (word:=u64_instance.u64_word) n1 n2)
+  | OrOp => Some $ LitInt (word.or (word:=u64_instance.u64_word) n1 n2)
+  | XorOp => Some $ LitInt (word.xor (word:=u64_instance.u64_word) n1 n2)
+  | ShiftLOp => Some $ LitInt (word.slu (word:=u64_instance.u64_word) n1 n2)
+  | ShiftROp => Some $ LitInt (word.sru (word:=u64_instance.u64_word) n1 n2)
+  | LeOp => Some $ LitBool (word.ltu n1 n2)
+  | LtOp => Some $ LitBool (word.ltu n1 n2)
+  | EqOp => Some $ LitBool (word.eqb n2 n2)
   | OffsetOp => None (* Pointer arithmetic *)
-  | _ => None
   end.
 
 Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=

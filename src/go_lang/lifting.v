@@ -271,7 +271,7 @@ Proof.
   rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
 Qed.
 
-Lemma wp_allocN_seq s E v n :
+Lemma wp_allocN_seq s E v (n: u64) :
   (0 < int.val n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
@@ -291,7 +291,7 @@ Proof.
   - by iApply heap_array_to_seq_mapsto.
   - iApply (heap_array_to_seq_meta with "Hm"). by rewrite replicate_length.
 Qed.
-Lemma twp_allocN_seq s E v n :
+Lemma twp_allocN_seq s E v (n: u64) :
   (0 < int.val n)%Z →
   [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   [[{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),

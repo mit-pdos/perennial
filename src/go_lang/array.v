@@ -89,7 +89,7 @@ Proof.
   setoid_rewrite <-loc_add_assoc. iApply "IH". done.
 Qed.
 
-Lemma wp_allocN s E v n :
+Lemma wp_allocN s E v (n: u64) :
   (0 < int.val n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); l ↦∗ replicate (int.nat n) v ∗
@@ -100,7 +100,7 @@ Proof.
   iDestruct (big_sepL_sep with "Hlm") as "[Hl $]".
   by iApply mapsto_seq_array.
 Qed.
-Lemma twp_allocN s E v n :
+Lemma twp_allocN s E v (n: u64) :
   (0 < int.val n)%Z →
   [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   [[{ l, RET LitV (LitLoc l); l ↦∗ replicate (int.nat n) v ∗
@@ -112,21 +112,20 @@ Proof.
   by iApply mapsto_seq_array.
 Qed.
 
-Lemma wp_allocN_vec s E v n :
+Lemma wp_allocN_vec s E v (n: u64) :
   (0 < int.val n)%Z →
   {{{ True }}}
-    (* TODO: the coercion from u64 to base_lit doesn't work, which we should probably fix *)
-    AllocN #(LitInt n) v @ s ; E
+    AllocN #n v @ s ; E
   {{{ l, RET #l; l ↦∗ vreplicate (int.nat n) v ∗
          [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply wp_allocN; [ lia | done | .. ]. iNext.
   iIntros (l) "[Hl Hm]". iApply "HΦ". rewrite vec_to_list_replicate. iFrame.
 Qed.
-Lemma twp_allocN_vec s E v n :
+Lemma twp_allocN_vec s E v (n: u64) :
   (0 < int.val n)%Z →
   [[{ True }]]
-    AllocN #(LitInt n) v @ s ; E
+    AllocN #n v @ s ; E
   [[{ l, RET #l; l ↦∗ vreplicate (int.nat n) v ∗
          [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
 Proof.

@@ -183,7 +183,7 @@ Implicit Types Δ : envs (uPredI (iResUR Σ)).
 Implicit Types v : val.
 Implicit Types z : Z.
 
-Lemma tac_wp_allocN Δ Δ' s E j K v n Φ :
+Lemma tac_wp_allocN Δ Δ' s E j K v (n: u64) Φ :
   (0 < int.val n)%Z →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   (∀ l, ∃ Δ'',
@@ -197,7 +197,7 @@ Proof.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
   apply wand_intro_l. by rewrite (sep_elim_l (l ↦∗ _)%I) right_id wand_elim_r.
 Qed.
-Lemma tac_twp_allocN Δ s E j K v n Φ :
+Lemma tac_twp_allocN Δ s E j K v (n: u64) Φ :
   (0 < int.val n)%Z →
   (∀ l, ∃ Δ',
     envs_app false (Esnoc Enil j (array l (replicate (int.nat n) v))) Δ

@@ -6,7 +6,7 @@ Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
 (** Coercions to make programs easier to type. *)
-Coercion Z_to_byte (x:Z) : byte := U8 (Word.Interface.word.of_Z x).
+Coercion Z_to_byte (x:Z) : byte := Word8 (Word.Interface.word.of_Z x).
 (* integers by default turn into u64 literals
 
    note that we can't also make U32 a coercion because otherwise we would have
@@ -34,7 +34,7 @@ Notation LamV x e := (RecV BAnon x e) (only parsing).
 Notation LetCtx x e2 := (AppRCtx (LamV x e2)) (only parsing).
 Notation SeqCtx e2 := (LetCtx BAnon e2) (only parsing).
 Notation Match e0 x1 e1 x2 e2 := (Case e0 (Lam x1 e1) (Lam x2 e2)) (only parsing).
-Notation Alloc e := (AllocN (Val $ LitV $ LitInt (int.of_Z 1)) e) (only parsing).
+Notation Alloc e := (AllocN (Val $ LitV $ LitInt (word.of_Z (word:=u64_instance.u64_word) 1)) e) (only parsing).
 Notation AllocMap v := (Alloc (MapNilV v)) (only parsing).
 (** Compare-and-set (CAS) returns just a boolean indicating success or failure. *)
 Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
