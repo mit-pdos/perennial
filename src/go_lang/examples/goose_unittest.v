@@ -409,6 +409,66 @@ Definition UseAddWithLiteral: val :=
     ]) #4 in
     "r".
 
+Module TwoInts.
+  Definition S := struct.decl [
+    "x" :: intT;
+    "y" :: intT
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
+  End fields.
+End TwoInts.
+
+Module S.
+  Definition S := struct.decl [
+    "a" :: intT;
+    "b" :: TwoInts.T;
+    "c" :: boolT
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
+  End fields.
+End S.
+
+Definition NewS: val :=
+  λ: <>,
+    struct.new S.S [
+      "a" ::= #2;
+      "b" ::= struct.mk TwoInts.S [
+        "x" ::= #1;
+        "y" ::= #2
+      ];
+      "c" ::= #true
+    ].
+
+Definition S__readA: val :=
+  λ: "s",
+    S.loadF "a" "s".
+
+Definition S__readB: val :=
+  λ: "s",
+    S.loadF "b" "s".
+
+Definition S__readBVal: val :=
+  λ: "s",
+    S.get "b" "s".
+
+Definition S__writeB: val :=
+  λ: "s" "two",
+    struct.storeF S.S "b" "s" "two".
+
+Definition S__negateC: val :=
+  λ: "s",
+    struct.storeF S.S "c" "s" (~ (S.loadF "c" "s")).
+
 (* DoSomeLocking uses the entire lock API *)
 Definition DoSomeLocking: val :=
   λ: "l",
