@@ -194,12 +194,22 @@ Definition u32_from_u64 (x:u64) : u32 := U32 (int.val x).
 
 Theorem u32_to_u64_val x : int.val (u32_to_u64 x) = int.val x.
 Proof.
-Admitted.
+  simpl.
+  rewrite word.unsigned_of_Z.
+  unfold word.wrap.
+  pose proof (word.unsigned_range x).
+  rewrite Z.mod_small by lia; auto.
+Qed.
 
 Theorem u32_from_u64_val (x: u64) : int.val x < 2^32 ->
                                     int.val (u32_from_u64 x) = int.val x.
 Proof.
-Admitted.
+  simpl; intros.
+  rewrite word.unsigned_of_Z.
+  unfold word.wrap.
+  pose proof (word.unsigned_range x).
+  rewrite Z.mod_small by lia; auto.
+Qed.
 
 Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x.(u64_car) in
