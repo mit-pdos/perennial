@@ -2,6 +2,7 @@ From Perennial.go_lang Require Import lang notation.
 
 Inductive ty :=
 | uint64T
+| uint32T
 | byteT
 | boolT
 | unitT
@@ -47,6 +48,7 @@ Section go_lang.
   Fixpoint zero_val (t:ty) : val :=
     match t with
     | uint64T => #0
+    | uint32T => #(U32 0)
     | byteT => #(LitByte 0)
     | boolT => #false
     | unitT => #()
@@ -60,7 +62,8 @@ Section go_lang.
     end.
 
   Inductive base_lit_hasTy : base_lit -> ty -> Prop :=
-  | int_hasTy x : base_lit_hasTy (LitInt x) uint64T
+  | uint64_hasTy x : base_lit_hasTy (LitInt x) uint64T
+  | uint32_hasTy x : base_lit_hasTy (LitInt32 x) uint32T
   | byte_hasTy x : base_lit_hasTy (LitByte x) byteT
   | bool_hasTy x : base_lit_hasTy (LitBool x) boolT
   | unit_hasTy : base_lit_hasTy (LitUnit) unitT
@@ -72,16 +75,17 @@ Section go_lang.
   | structRef_null_hasTy ts : base_lit_hasTy (LitLoc null) (structRefT ts)
   .
 
-  Definition bin_op_ty (op:bin_op) : option (ty * ty * ty) :=
+  Definition bin_op_ty (op:bin_op) (t:ty) : option (ty * ty * ty) :=
     match op with
-    | PlusOp | MinusOp | MultOp | QuotOp | RemOp => Some (uint64T, uint64T, uint64T)
-    | LtOp | LeOp => Some (uint64T, uint64T, boolT)
+    | PlusOp | MinusOp | MultOp | QuotOp | RemOp => Some (t, t, t)
+    | LtOp | LeOp => Some (t, t, boolT)
     | _ => None
     end.
 
   Definition un_op_ty (op:un_op) : option (ty * ty) :=
     match op with
     | NegOp => Some (boolT, boolT)
+    | ToUInt64Op => Some (uint32T, uint64T)
     | _ => None
     end.
 
@@ -122,8 +126,13 @@ Section go_lang.
       Γ ⊢ e1 : t ->
       Γ ⊢ e2 : t ->
       Γ ⊢ BinOp EqOp e1 e2 : boolT
-  | bin_op_hasTy op e1 e2 t1 t2 t :
-      bin_op_ty op = Some (t1, t2, t) ->
+  | bin_op_64_hasTy op e1 e2 t1 t2 t :
+      bin_op_ty op uint64T = Some (t1, t2, t) ->
+      Γ ⊢ e1 : t1 ->
+      Γ ⊢ e2 : t2 ->
+      Γ ⊢ BinOp op e1 e2 : t
+  | bin_op_32_hasTy op e1 e2 t1 t2 t :
+      bin_op_ty op uint32T = Some (t1, t2, t) ->
       Γ ⊢ e1 : t1 ->
       Γ ⊢ e2 : t2 ->
       Γ ⊢ BinOp op e1 e2 : t

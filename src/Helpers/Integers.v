@@ -170,6 +170,26 @@ Proof.
   reflexivity.
 Qed.
 
+Definition u32_to_u64 (x:u32) : u64 := U64 (int.val x).
+Definition u32_from_u64 (x:u64) : u32 := U32 (int.val x).
+
+Theorem u32_to_u64_val x : int.val (u32_to_u64 x) = int.val x.
+Proof.
+  simpl.
+  pose proof (unsigned_in_range x eq_refl).
+  rewrite Z.mod_small; auto.
+  lia.
+Qed.
+
+Theorem u32_from_u64_val x : int.val x < 2^32 ->
+                             int.val (u32_from_u64 x) = int.val x.
+Proof.
+  simpl; intros.
+  pose proof (unsigned_in_range x eq_refl).
+  rewrite Z.mod_small; auto.
+  lia.
+Qed.
+
 Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x.(u64_car) in
   let t := split (byte:=Naive.word8) 8 n in

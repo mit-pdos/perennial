@@ -89,7 +89,7 @@ Inductive base_lit : Type :=
   | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : byte) | LitString (s : string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
-  | NegOp | MinusUnOp.
+  | NegOp | MinusUnOp | ToUInt64Op.
 Inductive bin_op : Set :=
   | PlusOp | MinusOp | MultOp | QuotOp | RemOp (* Arithmetic *)
   | AndOp | OrOp | XorOp (* Bitwise *)
@@ -408,8 +408,8 @@ Proof.
 Qed.
 Global Instance un_op_finite : Countable un_op.
 Proof.
- refine (inj_countable' (λ op, match op with NegOp => 0 | MinusUnOp => 1 end)
-  (λ n, match n with 0 => NegOp | _ => MinusUnOp end) _); by intros [].
+ refine (inj_countable' (λ op, match op with NegOp => 0 | MinusUnOp => 1 | ToUInt64Op => 2 end)
+  (λ n, match n with 0 => NegOp | 1 => MinusUnOp | _ => ToUInt64Op end) _); by intros [].
 Qed.
 Global Instance bin_op_countable : Countable bin_op.
 Proof.
@@ -719,6 +719,8 @@ Definition subst' (mx : binder) (v : val) : expr → expr :=
 Definition un_op_eval (op : un_op) (v : val) : option val :=
   match op, v with
   | NegOp, LitV (LitBool b) => Some $ LitV $ LitBool (negb b)
+  | ToUInt64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (u32_to_u64 v)
+  | ToUInt64Op, LitV (LitInt v) => Some $ LitV $ LitInt v
   (* | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (Word.wnot n) *)
   | _, _ => None
   end.
