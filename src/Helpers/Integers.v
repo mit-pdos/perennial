@@ -1,92 +1,169 @@
-From Coq Require Export BinNat.
-
 From stdpp Require Import decidable countable.
-(* TODO: replace bbv.Word with coqutil.Word *)
-From bbv Require Import Word.
+From coqutil Require Import Datatypes.HList.
+From coqutil Require Import Word.Interface.
+From coqutil Require Import Word.Naive.
+From coqutil Require Import Word.LittleEndian.
 
-Open Scope N_scope.
+Open Scope Z_scope.
 
-(* this is sort of a big number *)
-Definition n64: nat := 64.
-Notation u64 := (word n64).
-
-(* TODO: to make minimal changes to heap_lang we use Z as the "model" for
-integers in several places; these should be replaced by u64 itself where
-possible and N elsewhere. *)
-Definition u64_Z (x:u64) : Z :=
-  Z.of_N (Word.wordToN x).
-
-Set Printing Coercions.
-
-Theorem u64_Z_through_nat : forall (x:u64), Z.of_nat (Word.wordToNat x) = u64_Z x.
-Proof.
-  unfold u64_Z; intros.
-  rewrite Word.wordToN_nat.
-  rewrite nat_N_Z; auto.
-Qed.
-
-Theorem u64_nat_through_Z : forall (x:u64), Z.to_nat (u64_Z x) = Word.wordToNat x.
-Proof.
-  unfold u64_Z; intros.
-  rewrite N_Z_nat_conversions.N_to_Z_to_nat.
-  rewrite Word.wordToN_to_nat; auto.
-Qed.
-
-Unset Printing Coercions.
-
-Instance word_eq_dec sz : EqDecision (word sz) := @weq sz.
-Instance word_countable sz : Countable (word sz).
-Proof.
-  apply (inj_countable
-           (@wordToN sz)
-           (fun n => Some (NToWord sz n))); intros.
-  by rewrite NToWord_wordToN.
-Qed.
-
-Instance wlt_decide sz : Decision (@wlt sz x y) := @wlt_dec sz.
-
-Definition byte := (word 8).
-
+Record u64 := U64 { u64_car :> word64 }.
+Record u32 := U32 { u32_car :> word32 }.
 (* we don't actually do anything with a byte except use its zero value and
 encode integers into bytes, so nothing operates on bytes for now. *)
+Record byte := U8 { u8_car: word8 }.
 
-(* TODO: all of this is provided by coqutil (using a length-indexed tuple for
-   the bytes) *)
-
-Definition u32_le (x:word 32) : list byte :=
-  let (b1, x) := (@split1 8 24 x, @split2 8 24 x) in
-  let (b2, x) := (@split1 8 16 x, @split2 8 16 x) in
-  let (b3, b4) := (@split1 8 8 x, @split2 8 8 x) in
-  [b4;b3;b2;b1].
-
-Fixpoint mul' (n m:nat) :=
-  match n with
-  | O => 0
-  | S n => mul' n m + m
-  end%nat.
-
-Fixpoint le_to_word (l: list byte) : word (mul' (length l) 8).
-  destruct l.
-  - exact WO.
-  - exact (Word.combine (le_to_word l) b).
+Instance naive_word_eq_dec width : EqDecision (word width).
+Proof.
+  hnf; intros; hnf.
+  destruct (decide (unsigned x = unsigned y)); [ left | right ].
+  - apply eq_unsigned in e; auto.
+  - abstract congruence.
 Defined.
 
-Theorem u32_le_to_word : forall x,
-    le_to_word (u32_le x) = x.
+Instance u64_eq_dec : EqDecision u64.
+Proof. solve_decision. Qed.
+
+Instance u32_eq_dec : EqDecision u32.
+Proof. solve_decision. Qed.
+
+Instance byte_eq_dec : EqDecision byte.
+Proof. solve_decision. Defined.
+
+Instance word_countable width (H: 0 < width) : Countable (word width).
 Proof.
+  assert (word.ok (word width)).
+  { apply Naive.ok.
+    auto. }
+  apply (inj_countable'
+           word.unsigned
+           (fun z => word.of_Z z)); intros.
+  by rewrite word.of_Z_unsigned.
+Qed.
+
+Definition width64_ok : 0 < 64 := eq_refl.
+Definition width32_ok : 0 < 32 := eq_refl.
+Definition width8_ok : 0 < 8 := eq_refl.
+
+Hint Resolve width64_ok width32_ok width8_ok : typeclass_instances.
+
+Instance u64_countable : Countable u64.
+Proof.
+  apply (inj_countable' u64_car U64); by intros [].
+Qed.
+
+Instance u32_countable : Countable u32.
+Proof.
+  apply (inj_countable' u32_car U32); by intros [].
+Qed.
+
+Instance byte_countable : Countable byte.
+Proof.
+  apply (inj_countable' u8_car U8); by intros [].
+Qed.
+
+Module int.
+  Class arith (w:Type) :=
+    {
+      val: w -> Z;
+      nat := (fun x => Z.to_nat (val x));
+      of_Z: Z -> w;
+      add: w -> w -> w;
+      eqb: w -> w -> bool;
+      ltb: w -> w -> bool;
+      leb := fun w1 w2 => ltb w1 w2 || eqb w1 w2;
+    }.
+
+  Class arith_ok width {w} (a: arith w) :=
+    {
+      val_bound : forall x, 0 <= val x < 2 ^ width;
+    }.
+End int.
+
+Instance u64_arith : int.arith u64 :=
+  {|
+    int.val := fun (w: u64) => word.unsigned w;
+    int.of_Z := fun z => U64 (word.of_Z z);
+    int.add := fun w1 w2 => U64 (word.add w1 w2);
+    int.eqb := word.eqb;
+    int.ltb := word.ltu;
+  |}.
+
+Instance u64_arith_ok : int.arith_ok 64 u64_arith.
 Admitted.
 
-Definition u64_le (x:u64) : list byte :=
-  let (h32, l32) := (@split1 32 32 x, @split2 32 32 x) in
-  let (h, l) := (u32_le h32, u32_le l32) in
-  l ++ h.
+Theorem u64_Z_through_nat (x:u64) : Z.of_nat (int.nat x) = int.val x.
+Proof.
+  unfold int.nat; intros.
+  rewrite Z2Nat.id; auto.
+  pose proof int.val_bound x; lia.
+Qed.
+
+Theorem u64_nat_through_Z (x:u64) : Z.to_nat (int.val x) = int.nat x.
+Proof.
+  unfold int.nat; intros.
+  reflexivity.
+Qed.
+
+Definition u64_le (x: u64) : list byte :=
+  let n := word.unsigned x.(u64_car) in
+  let t := split (byte:=Naive.word8) 8 n in
+  let word8s := tuple.to_list t in
+  map U8 word8s.
+
+Definition le_to_u64 (l: list byte) : u64.
+Proof.
+  refine (U64 (word.of_Z _)).
+  set (t := tuple.of_list (map u8_car l)).
+  exact (combine (byte:=Naive.word8) _ t).
+Defined.
 
 Theorem u64_le_length x : length (u64_le x) = 8%nat.
 Proof.
   reflexivity.
 Qed.
 
-Theorem u64_le_to_word : forall x,
-    le_to_word (u64_le x) = x.
+Theorem tuple_to_list_length A n (t: tuple A n) :
+  length (tuple.to_list t) = n.
 Proof.
-Admitted.
+  induction n; simpl; auto.
+Qed.
+
+Theorem tuple_of_to_list8 A (t: tuple A 8) :
+  tuple.of_list (tuple.to_list t) = t.
+Proof.
+  unfold tuple in t.
+  repeat match goal with
+         | [ t: hlist _ |- _ ] => destruct t
+         end.
+  f_equal.
+Qed.
+
+Theorem unsigned_mod_bound width (x: word width) :
+  0 < width ->
+  word.unsigned x `mod` 2 ^ width = word.unsigned x.
+Proof.
+  intros.
+  assert (0 < 2^width).
+  { assert (2^0 < 2^width).
+    { apply Z.pow_lt_mono_r; lia. }
+    lia. }
+
+  rewrite Z.mod_small; auto.
+  destruct x; simpl.
+  apply Z.mod_small_iff in _unsigned_in_range; intuition lia.
+Qed.
+
+Theorem u64_le_to_word : forall x,
+    le_to_u64 (u64_le x) = x.
+Proof.
+  intros [x]; simpl.
+  unfold le_to_u64, u64_le.
+  f_equal.
+  cbv [u64_car].
+  rewrite map_map, map_id.
+  rewrite tuple_of_to_list8.
+  rewrite combine_split.
+  change (8%nat * 8) with 64.
+  rewrite unsigned_mod_bound by lia.
+  by rewrite word.of_Z_unsigned.
+Qed.

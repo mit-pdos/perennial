@@ -200,10 +200,10 @@ lemmas. *)
   Qed.
 
   Definition bindex_of_Z (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) : fin block_bytes.
-    assert (Z.to_nat i < 4096)%nat.
+    cut (Z.to_nat i < 4096)%nat.
+    { apply fin_of_nat. }
     change 4096%nat with (Z.to_nat 4096%Z).
     abstract (apply Z2Nat.inj_lt; auto; vm_compute; inversion 1).
-    exact (fin_of_nat H).
   Defined.
 
   Theorem block_byte_index {ext: ext_op} (b: Block) (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) :
@@ -252,10 +252,10 @@ lemmas. *)
   Proof.
     intros.
     assert (Block_to_vals b1 = Block_to_vals b2).
-    apply (list_eq_same_length _ _ 4096%nat);
-      rewrite ?length_Block_to_vals; auto; intros.
-    rewrite <- (Nat2Z.id i) in H1, H2.
-    rewrite H in H1; try lia; congruence.
+    { apply (list_eq_same_length _ _ 4096%nat);
+        rewrite ?length_Block_to_vals; auto; intros.
+      rewrite <- (Nat2Z.id i) in H1, H2.
+      rewrite H in H1; try lia; congruence. }
     apply vec_to_list_inj2.
     apply fmap_inj in H0; auto.
     hnf; intros.

@@ -85,7 +85,7 @@ with anything. This is useful for erasure proofs: if we erased things to unit,
 [<erased> == unit] would evaluate to true after erasure, changing program
 behavior. So we erase to the poison value instead, making sure that no legal
 comparisons could be affected. *)
-Inductive base_lit : Set :=
+Inductive base_lit : Type :=
   | LitInt (n : u64) | LitBool (b : bool) | LitByte (n : byte) | LitString (s : string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
@@ -205,7 +205,7 @@ values. The first value is the one that was returned by the (atomic) operation
 during which the prophecy resolution happened (typically, a boolean when the
 wrapped operation is a CmpXchg). The second value is the one that the prophecy
 variable was actually resolved to. *)
-Definition observation : Set := proph_id * (val * val).
+Definition observation : Type := proph_id * (val * val).
 
 Notation of_val := Val (only parsing).
 
@@ -716,13 +716,14 @@ Definition subst' (mx : binder) (v : val) : expr → expr :=
 Definition un_op_eval (op : un_op) (v : val) : option val :=
   match op, v with
   | NegOp, LitV (LitBool b) => Some $ LitV $ LitBool (negb b)
-  | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (Word.wnot n)
+  (* | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (Word.wnot n) *)
   | _, _ => None
   end.
 
 Definition bin_op_eval_int (op : bin_op) (n1 n2 : u64) : option base_lit :=
   match op with
-  | PlusOp => Some $ LitInt (Word.wplus n1 n2)
+  | PlusOp => Some $ LitInt (int.add n1 n2)
+                  (*
   | MinusOp => Some $ LitInt (Word.wminus n1 n2)
   | MultOp => Some $ LitInt (Word.wmult n1 n2)
   | QuotOp => Some $ LitInt (Word.wdiv n1 n2)
@@ -731,11 +732,12 @@ Definition bin_op_eval_int (op : bin_op) (n1 n2 : u64) : option base_lit :=
   | OrOp => Some $ LitInt (Word.wor n1 n2)
   | XorOp => Some $ LitInt (Word.wxor n1 n2)
   | ShiftLOp => Some $ LitInt (Word.wlshift n1 (Word.wordToNat n2))
-  | ShiftROp => Some $ LitInt (Word.wrshift n1 (Word.wordToNat n2))
-  | LeOp => Some $ LitBool (bool_decide (~Word.wlt n2 n1))
-  | LtOp => Some $ LitBool (bool_decide (Word.wlt n1 n2))
-  | EqOp => Some $ LitBool (bool_decide (n1 = n2))
+  | ShiftROp => Some $ LitInt (Word.wrshift n1 (Word.wordToNat n2)) *)
+  | LeOp => Some $ LitBool (int.leb n1 n2)
+  | LtOp => Some $ LitBool (int.ltb n1 n2)
+  | EqOp => Some $ LitBool (int.eqb n2 n2)
   | OffsetOp => None (* Pointer arithmetic *)
+  | _ => None
   end.
 
 Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=
@@ -768,8 +770,7 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | LitV (LitInt n1), LitV (LitInt n2) => LitV <$> bin_op_eval_int op n1 n2
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
-    (* note that we go through N since we want off to be interpreted unsigned *)
-    | LitV (LitLoc l), LitV (LitInt off) => Some $ LitV $ LitLoc (l +ₗ u64_Z off)
+    | LitV (LitLoc l), LitV (LitInt off) => Some $ LitV $ LitLoc (l +ₗ int.val off)
     | _, _ => None
     end.
 
@@ -902,12 +903,12 @@ Inductive head_step : expr → state → list observation → expr → state →
      head_step (Case (Val $ InjRV v) e1 e2) σ [] (App e2 (Val v)) σ []
   | ForkS e σ:
      head_step (Fork e) σ [] (Val $ LitV LitUnit) σ [e]
-  | AllocNS n v σ l :
-     (0 < u64_Z n)%Z →
-     (∀ i, 0 ≤ i → i < u64_Z n → σ.(heap) !! (l +ₗ i) = None)%Z →
+  | AllocNS (n: u64) v σ l :
+     (0 < int.val n)%Z →
+     (∀ i, 0 ≤ i → i < int.val n → σ.(heap) !! (l +ₗ i) = None)%Z →
      head_step (AllocN (Val $ LitV $ LitInt n) (Val v)) σ
                []
-               (Val $ LitV $ LitLoc l) (state_init_heap l (u64_Z n) v σ)
+               (Val $ LitV $ LitLoc l) (state_init_heap l (int.val n) v σ)
                []
   | AllocStructS v σ l :
      (∀ i, 0 ≤ i → i < length (flatten_struct v) → σ.(heap) !! (l +ₗ i) = None)%Z →
@@ -1000,11 +1001,11 @@ Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :
 Proof using ext. clear ffi_semantics ffi.
        revert Ki1. induction Ki2, Ki1; naive_solver eauto with f_equal. Qed.
 
-Lemma alloc_fresh v n σ :
+Lemma alloc_fresh v (n: u64) σ :
   let l := fresh_locs (dom (gset loc) σ.(heap)) in
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   head_step (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ []
-            (Val $ LitV $ LitLoc l) (state_init_heap l (u64_Z n) v σ) [].
+            (Val $ LitV $ LitLoc l) (state_init_heap l (int.val n) v σ) [].
 Proof.
   intros.
   apply AllocNS; first done.

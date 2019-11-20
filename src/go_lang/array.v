@@ -90,10 +90,10 @@ Proof.
 Qed.
 
 Lemma wp_allocN s E v n :
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); l ↦∗ replicate (Word.wordToNat n) v ∗
-         [∗ list] i ∈ seq 0 (Word.wordToNat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
+  {{{ l, RET LitV (LitLoc l); l ↦∗ replicate (int.nat n) v ∗
+         [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply wp_allocN_seq; [done..|]. iNext.
   iIntros (l) "Hlm". iApply "HΦ".
@@ -101,10 +101,10 @@ Proof.
   by iApply mapsto_seq_array.
 Qed.
 Lemma twp_allocN s E v n :
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  [[{ l, RET LitV (LitLoc l); l ↦∗ replicate (Word.wordToNat n) v ∗
-         [∗ list] i ∈ seq 0 (Word.wordToNat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
+  [[{ l, RET LitV (LitLoc l); l ↦∗ replicate (int.nat n) v ∗
+         [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply twp_allocN_seq; [done..|].
   iIntros (l) "Hlm". iApply "HΦ".
@@ -113,22 +113,22 @@ Proof.
 Qed.
 
 Lemma wp_allocN_vec s E v n :
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   {{{ True }}}
     (* TODO: the coercion from u64 to base_lit doesn't work, which we should probably fix *)
     AllocN #(LitInt n) v @ s ; E
-  {{{ l, RET #l; l ↦∗ vreplicate (Word.wordToNat n) v ∗
-         [∗ list] i ∈ seq 0 (Word.wordToNat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
+  {{{ l, RET #l; l ↦∗ vreplicate (int.nat n) v ∗
+         [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply wp_allocN; [ lia | done | .. ]. iNext.
   iIntros (l) "[Hl Hm]". iApply "HΦ". rewrite vec_to_list_replicate. iFrame.
 Qed.
 Lemma twp_allocN_vec s E v n :
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   [[{ True }]]
     AllocN #(LitInt n) v @ s ; E
-  [[{ l, RET #l; l ↦∗ vreplicate (Word.wordToNat n) v ∗
-         [∗ list] i ∈ seq 0 (Word.wordToNat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
+  [[{ l, RET #l; l ↦∗ vreplicate (int.nat n) v ∗
+         [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply twp_allocN; [ lia | done | .. ].
   iIntros (l) "[Hl Hm]". iApply "HΦ". rewrite vec_to_list_replicate. iFrame.

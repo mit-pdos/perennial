@@ -184,10 +184,10 @@ Implicit Types v : val.
 Implicit Types z : Z.
 
 Lemma tac_wp_allocN Δ Δ' s E j K v n Φ :
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (array l (replicate (Word.wordToNat n) v))) Δ' = Some Δ'' ∧
+    envs_app false (Esnoc Enil j (array l (replicate (int.nat n) v))) Δ' = Some Δ'' ∧
     envs_entails Δ'' (WP fill K (Val $ LitV $ LitLoc l) @ s; E {{ Φ }})) →
   envs_entails Δ (WP fill K (AllocN (Val $ LitV $ LitInt n) (Val v)) @ s; E {{ Φ }}).
 Proof.
@@ -198,9 +198,9 @@ Proof.
   apply wand_intro_l. by rewrite (sep_elim_l (l ↦∗ _)%I) right_id wand_elim_r.
 Qed.
 Lemma tac_twp_allocN Δ s E j K v n Φ :
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   (∀ l, ∃ Δ',
-    envs_app false (Esnoc Enil j (array l (replicate (Word.wordToNat n) v))) Δ
+    envs_app false (Esnoc Enil j (array l (replicate (int.nat n) v))) Δ
     = Some Δ' ∧
     envs_entails Δ' (WP fill K (Val $ LitV $ LitLoc l) @ s; E [{ Φ }])) →
   envs_entails Δ (WP fill K (AllocN (Val $ LitV $ LitInt n) (Val v)) @ s; E [{ Φ }]).

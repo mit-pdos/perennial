@@ -201,12 +201,12 @@ Proof.
   - apply IHt1; auto.
     eapply take_app_take1; eauto.
   - apply IHt2; auto.
-    pose proof (ty_size_gt_0 t1); lia.
+    { pose proof (ty_size_gt_0 t1); lia. }
     rewrite ty_size_flatten.
     generalize dependent (flatten_ty t1); intros l1 **.
     generalize dependent (flatten_ty t2); intros l2 **.
     replace (Z.to_nat (n + length l1)) with (Z.to_nat n + length l1)%nat.
-    eapply take_app_drop1; eauto.
+    { eapply take_app_drop1; eauto. }
     (* [lia] doesn't solve this goal on its own in Coq 8.9 *)
     rewrite ?Z2Nat.inj_add ?Nat2Z.id; lia.
 Qed.
@@ -247,14 +247,14 @@ Proof.
       destruct H2 as (ts1&ts2&?&?).
       rewrite H0.
       eexists (flatten_ty t' ++ ts1), _; intuition eauto.
-      rewrite <- app_assoc; auto.
-      rewrite app_length.
-      rewrite ty_size_flatten.
-      rewrite H1.
-      pose proof (field_offset1_gt_0 fs f t0); intuition.
-      rewrite Heqp in H3; simpl in *.
-      (* [lia] doesn't solve this goal on its own in Coq 8.9 *)
-      rewrite ?Z2Nat.inj_add ?Nat2Z.id; lia.
+      * rewrite <- app_assoc; auto.
+      * rewrite app_length.
+        rewrite ty_size_flatten.
+        rewrite H1.
+        pose proof (field_offset1_gt_0 fs f t0); intuition.
+        rewrite Heqp in H3; simpl in *.
+        (* [lia] doesn't solve this goal on its own in Coq 8.9 *)
+        rewrite ?Z2Nat.inj_add ?Nat2Z.id; lia.
 Qed.
 
 Theorem loadField_t : forall d f t,
@@ -270,8 +270,8 @@ Proof.
   destruct H2 as (t1&t2&?&?).
   rewrite H0.
   eapply load_ty_t.
-  pose proof (field_offset1_gt_0 fs f t); intuition.
-  { rewrite Heqp in H3; simpl in *; lia. }
+  { pose proof (field_offset1_gt_0 fs f t); intuition.
+    rewrite Heqp in H3; simpl in *; lia. }
   rewrite drop_app_alt; [ | lia ].
   rewrite take_app; auto.
 Qed.

@@ -88,24 +88,24 @@ Proof.
   type_step; eauto.
   type_step; eauto.
   type_step; eauto.
-  typecheck.
+  { typecheck. }
   type_step; eauto.
   type_step; eauto.
-  typecheck.
-  typecheck.
+  { typecheck. }
+  { typecheck. }
   type_step; eauto.
-  typecheck.
-  type_step; eauto.
-  type_step; eauto.
-  typecheck.
+  { typecheck. }
   type_step; eauto.
   type_step; eauto.
-  typecheck.
+  { typecheck. }
   type_step; eauto.
   type_step; eauto.
-  eapply store_struct_hasTy; [ | typecheck | eauto ].
-  typecheck.
-  typecheck.
+  { typecheck. }
+  type_step; eauto.
+  type_step; eauto.
+  { eapply store_struct_hasTy; [ | typecheck | eauto ].
+    typecheck. }
+  { typecheck. }
 Qed.
 Hint Resolve Log__Append_t : types.
 
@@ -121,12 +121,12 @@ Theorem Log__Reset_t: ⊢ Log__Reset : (Log.Ptr -> unitT).
 Proof.
   type_step; eauto.
   type_step; eauto.
-  typecheck.
+  { typecheck. }
   type_step; eauto.
   type_step; eauto.
-  typecheck.
+  { typecheck. }
   type_step; eauto.
   eapply store_struct_hasTy; [ | typecheck | eauto ].
-  typecheck.
+  { typecheck. }
 Qed.
 Hint Resolve Log__Reset_t : types.

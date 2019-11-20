@@ -272,15 +272,15 @@ Proof.
 Qed.
 
 Lemma wp_allocN_seq s E v n :
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (Word.wordToNat n),
+  {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
       (l +ₗ (i : nat)) ↦ v ∗ meta_token (l +ₗ (i : nat)) ⊤ }}}.
 Proof.
   iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-    iMod (gen_heap_alloc_gen _ (heap_array l (replicate (Word.wordToNat n) v)) with "Hσ")
+    iMod (gen_heap_alloc_gen _ (heap_array l (replicate (int.nat n) v)) with "Hσ")
     as "(Hσ & Hl & Hm)".
   { apply heap_array_map_disjoint.
     rewrite replicate_length u64_Z_through_nat; auto with lia. }
@@ -292,15 +292,15 @@ Proof.
   - iApply (heap_array_to_seq_meta with "Hm"). by rewrite replicate_length.
 Qed.
 Lemma twp_allocN_seq s E v n :
-  (0 < u64_Z n)%Z →
+  (0 < int.val n)%Z →
   [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  [[{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (Word.wordToNat n),
+  [[{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
       (l +ₗ (i : nat)) ↦ v ∗ meta_token (l +ₗ (i : nat)) ⊤ }]].
 Proof.
   iIntros (Hn Φ) "_ HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs k) "[Hσ Hκs] !>"; iSplit; first by destruct_with_eqn (u64_Z n); auto with lia.
+  iIntros (σ1 κs k) "[Hσ Hκs] !>"; iSplit; first by destruct_with_eqn (int.val n); auto with lia.
   iIntros (κ v2 σ2 efs Hstep); inv_head_step.
-  iMod (gen_heap_alloc_gen _ (heap_array l (replicate (Word.wordToNat n) v)) with "Hσ")
+  iMod (gen_heap_alloc_gen _ (heap_array l (replicate (int.nat n) v)) with "Hσ")
     as "(Hσ & Hl & Hm)".
   { apply heap_array_map_disjoint.
     rewrite replicate_length u64_Z_through_nat; auto with lia. }
@@ -316,14 +316,14 @@ Lemma wp_alloc s E v :
   {{{ True }}} Alloc (Val v) @ s; E {{{ l, RET LitV (LitLoc l); l ↦ v ∗ meta_token l ⊤ }}}.
 Proof.
   iIntros (Φ) "_ HΦ". iApply wp_allocN_seq; auto with lia.
-  constructor.
+  { constructor. }
   iIntros "!>" (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
 Qed.
 Lemma twp_alloc s E v :
   [[{ True }]] Alloc (Val v) @ s; E [[{ l, RET LitV (LitLoc l); l ↦ v ∗ meta_token l ⊤ }]].
 Proof.
   iIntros (Φ) "_ HΦ". iApply twp_allocN_seq; auto with lia.
-  constructor.
+  { constructor. }
   iIntros (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
 Qed.
 
@@ -380,10 +380,10 @@ Proof.
   apply lookup_lt_is_Some_2 in Hi.
   destruct Hi as [v ?].
   assert (heap_array l vs !! (l +ₗ i) = Some v).
-  apply heap_array_lookup.
-  exists (Z.of_nat i).
-  rewrite Nat2Z.id; intuition eauto.
-  lia.
+  { apply heap_array_lookup.
+    exists (Z.of_nat i).
+    rewrite Nat2Z.id; intuition eauto.
+    lia. }
   iDestruct (big_sepM_lookup _ _ _ _ H0 with "[$Hmap]") as "H".
   iDestruct (gen_heap_valid with "Hctx H") as %?.
   eauto.
