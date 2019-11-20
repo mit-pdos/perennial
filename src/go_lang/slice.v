@@ -87,6 +87,17 @@ Proof.
   typecheck.
 Qed.
 
+(* this models &s[i] (which looks a little like a get but is very different) *)
+Definition SliceRef: val :=
+  λ: "s" "i", if: "i" < slice.len "s"
+              then (slice.ptr "s" +ₗ "i")
+              else Panic "slice index out-of-bounds".
+
+Theorem SliceRef_t t : ⊢ SliceRef : (slice.T t -> intT -> refT t).
+Proof.
+  typecheck.
+Qed.
+
 Definition SliceSkip: val :=
   λ: "s" "n", (slice.ptr "s" +ₗ "n", slice.len "s" - "n").
 

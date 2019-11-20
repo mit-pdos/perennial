@@ -327,6 +327,15 @@ Definition ReplicatedDiskRecover: val :=
         "a" <- !"a" + #1;;
         Continue)).
 
+Definition sliceOps: val :=
+  λ: <>,
+    let: "x" := NewSlice intT #10 in
+    let: "v1" := SliceGet "x" #2 in
+    let: "v2" := SliceSubslice "x" #2 #3 in
+    let: "v3" := SliceTake "x" #3 in
+    let: "v4" := SliceRef "x" #2 in
+    "v1" + SliceGet "v2" #0 + SliceGet "v3" #1 + !"v4".
+
 (* Skip is a placeholder for some impure code *)
 Definition Skip: val :=
   λ: <>,
