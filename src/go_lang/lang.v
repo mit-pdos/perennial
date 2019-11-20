@@ -86,7 +86,7 @@ with anything. This is useful for erasure proofs: if we erased things to unit,
 behavior. So we erase to the poison value instead, making sure that no legal
 comparisons could be affected. *)
 Inductive base_lit : Type :=
-  | LitInt (n : u64) | LitBool (b : bool) | LitByte (n : byte) | LitString (s : string) | LitUnit | LitPoison
+  | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : byte) | LitString (s : string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
   | NegOp | MinusUnOp.
@@ -282,6 +282,7 @@ Proof. refine (
            fun e1 e2 =>
              match e1, e2 with
              | LitInt x, LitInt x' => cast_if (decide (x = x'))
+             | LitInt32 x, LitInt32 x' => cast_if (decide (x = x'))
              | LitBool x, LitBool x' => cast_if (decide (x = x'))
              | LitByte x, LitByte x' => cast_if (decide (x = x'))
              | LitString x, LitString x' => cast_if (decide (x = x'))
@@ -384,7 +385,8 @@ Defined.
 Global Instance base_lit_countable : Countable base_lit.
 Proof.
  refine (inj_countable' (λ l, match l with
-  | LitInt n => (inl (inl (inl n)), None)
+  | LitInt n => (inl (inl (inl (inl n))), None)
+  | LitInt32 n => (inl (inl (inl (inr n))), None)
   | LitByte n => (inl (inl (inr n)), None)
   | LitBool b => (inl (inr b), None)
   | LitUnit => (inr (inl false), None)
@@ -393,7 +395,8 @@ Proof.
   | LitLoc l => (inr (inr (inl l)), None)
   | LitProphecy p => (inr (inl false), Some p)
   end) (λ l, match l with
-  | (inl (inl (inl n)), None) => LitInt n
+  | (inl (inl (inl (inl n))), None) => LitInt n
+  | (inl (inl (inl (inr n))), None) => LitInt32 n
   | (inl (inl (inr n)), None) => LitByte n
   | (inl (inr b), None) => LitBool b
   | (inr (inl false), None) => LitUnit

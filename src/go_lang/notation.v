@@ -6,14 +6,14 @@ Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
 (** Coercions to make programs easier to type. *)
-Coercion Z_to_u64 (x:Z) : u64 := int.of_Z x.
 Coercion Z_to_byte (x:Z) : byte := U8 (Word.Interface.word.of_Z x).
-Coercion LitZ (x:Z) : base_lit := LitInt (Z_to_u64 x).
+(* integers by default turn into u64 literals *)
+Coercion IntZ (x:Z) : u64 := int.of_Z x.
 
-(* TODO: LitInt as a coercion from u64 to base_lit apparently doesn't satisfy
-the uniform inheritance criterion, and it doesn't seem to work *)
 Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.
+Coercion LitInt : u64 >-> base_lit.
+Coercion LitInt32 : u32 >-> base_lit.
 Coercion LitProphecy : proph_id >-> base_lit.
 Notation "'str' s" := (LitString s) (at level 30, format "'str' s") : val_scope.
 

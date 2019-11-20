@@ -55,28 +55,28 @@ Section go_lang.
   Theorem load_ty_is1 : load_ty (intT * intT * intT)%ht "v" 0 =
                        (!("v" +ₗ #0), !("v" +ₗ #1), !("v" +ₗ #2))%E.
   Proof.
-    cbv -[LitZ].
+    cbv -[IntZ].
     goal_is_exactly_equal.
   Qed.
 
   Theorem load_ty_is2 : load_ty (intT * (intT * intT) * intT)%ht "v" 0 =
                        (!("v" +ₗ #0), (!("v" +ₗ #1), !("v" +ₗ #2)), !("v" +ₗ #3))%E.
   Proof.
-    cbv -[LitZ].
+    cbv -[IntZ].
     goal_is_exactly_equal.
   Qed.
 
   Theorem load_field_is1 : loadField three.S "bar" =
                           (λ: "p", !("p" +ₗ #1))%V.
   Proof.
-    cbv -[LitZ].
+    cbv -[IntZ].
     reflexivity.
   Qed.
 
   Theorem load_field_is2 : loadField three.S "baz" =
                           (λ: "p", !("p" +ₗ #2))%V.
   Proof.
-    cbv -[LitZ].
+    cbv -[IntZ].
     reflexivity.
   Qed.
 

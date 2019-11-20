@@ -229,7 +229,6 @@ Section go_lang.
   Proof.
     generalize dependent Γ.
     induction ty; simpl; eauto.
-    repeat econstructor.
   Qed.
 
   Definition NewMap (t:ty) : expr := AllocMap (zero_val t).
