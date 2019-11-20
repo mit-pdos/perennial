@@ -35,6 +35,8 @@ Definition TypedInt : expr := #32.
 
 Definition ConstWithArith : expr := #4 + #3 * TypedInt.
 
+Definition TypedInt32 : expr := #(U32 3).
+
 Definition typedLiteral: val :=
   λ: <>,
     #3.
@@ -120,6 +122,15 @@ Definition empty: val :=
 Definition emptyReturn: val :=
   λ: <>,
     "tt".
+
+Definition useInts: val :=
+  λ: "x" "y",
+    let: "z" := zero_val uint64T in
+    "z" <- to_u64 "y";;
+    "z" <- !"z" + #1;;
+    let: "y2" := zero_val uint32T in
+    "y2" <- "y" + #(U32 3);;
+    (!"z", !"y2").
 
 Module allTheLiterals.
   Definition S := struct.decl [
@@ -335,6 +346,36 @@ Definition sliceOps: val :=
     let: "v3" := SliceTake "x" #3 in
     let: "v4" := SliceRef "x" #2 in
     "v1" + SliceGet "v2" #0 + SliceGet "v3" #1 + !"v4".
+
+Module thing.
+  Definition S := struct.decl [
+    "x" :: uint64T
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
+  End fields.
+End thing.
+
+Module sliceOfThings.
+  Definition S := struct.decl [
+    "things" :: slice.T thing.T
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
+  End fields.
+End sliceOfThings.
+
+Definition sliceOfThings__getThingRef: val :=
+  λ: "ts" "i",
+    SliceRef (sliceOfThings.get "things" "ts") "i".
 
 (* Skip is a placeholder for some impure code *)
 Definition Skip: val :=
