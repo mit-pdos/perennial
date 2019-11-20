@@ -7,8 +7,12 @@ Delimit Scope val_scope with V.
 
 (** Coercions to make programs easier to type. *)
 Coercion Z_to_byte (x:Z) : byte := U8 (Word.Interface.word.of_Z x).
-(* integers by default turn into u64 literals *)
-Coercion IntZ (x:Z) : u64 := int.of_Z x.
+(* integers by default turn into u64 literals
+
+   note that we can't also make U32 a coercion because otherwise we would have
+   ambiguous paths between Z and base_lit.
+ *)
+Coercion U64 : Z >-> u64.
 
 Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.

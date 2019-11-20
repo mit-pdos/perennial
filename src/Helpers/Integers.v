@@ -6,8 +6,10 @@ From coqutil Require Import Word.LittleEndian.
 
 Open Scope Z_scope.
 
-Record u64 := U64 { u64_car :> word64 }.
-Record u32 := U32 { u32_car :> word32 }.
+Record u64 := Word64 { u64_car :> word64 }.
+Record u32 := Word32 { u32_car :> word32 }.
+Definition U64 (x:Z) : u64 := Word64 (word.of_Z x).
+Definition U32 (x:Z) : u32 := Word32 (word.of_Z x).
 (* we don't actually do anything with a byte except use its zero value and
 encode integers into bytes, so nothing operates on bytes for now. *)
 Record byte := U8 { u8_car: word8 }.
@@ -74,12 +76,12 @@ Hint Resolve width64_ok width32_ok width8_ok : typeclass_instances.
 
 Instance u64_countable : Countable u64.
 Proof.
-  apply (inj_countable' u64_car U64); by intros [].
+  apply (inj_countable' u64_car Word64); by intros [].
 Qed.
 
 Instance u32_countable : Countable u32.
 Proof.
-  apply (inj_countable' u32_car U32); by intros [].
+  apply (inj_countable' u32_car Word32); by intros [].
 Qed.
 
 Instance byte_countable : Countable byte.
@@ -108,8 +110,8 @@ End int.
 Instance u64_arith : int.arith u64 :=
   {|
     int.val := fun (w: u64) => word.unsigned w;
-    int.of_Z := fun z => U64 (word.of_Z z);
-    int.add := fun w1 w2 => U64 (word.add w1 w2);
+    int.of_Z := fun z => Word64 (word.of_Z z);
+    int.add := fun w1 w2 => Word64 (word.add w1 w2);
     int.eqb := word.eqb;
     int.ltb := word.ltu;
   |}.
@@ -125,8 +127,8 @@ Qed.
 Instance u32_arith : int.arith u32 :=
   {|
     int.val := fun (w: u32) => word.unsigned w;
-    int.of_Z := fun z => U32 (word.of_Z z);
-    int.add := fun w1 w2 => U32 (word.add w1 w2);
+    int.of_Z := fun z => Word32 (word.of_Z z);
+    int.add := fun w1 w2 => Word32 (word.add w1 w2);
     int.eqb := word.eqb;
     int.ltb := word.ltu;
   |}.
@@ -160,7 +162,7 @@ Definition u64_le (x: u64) : list byte :=
 
 Definition le_to_u64 (l: list byte) : u64.
 Proof.
-  refine (U64 (word.of_Z _)).
+  refine (Word64 (word.of_Z _)).
   set (t := tuple.of_list (map u8_car l)).
   exact (combine (byte:=Naive.word8) _ t).
 Defined.
