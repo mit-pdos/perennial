@@ -110,6 +110,12 @@ Fixpoint fieldTy (fs:list (string*ty)) (f0: string) : option ty :=
   | (f,t)::fs => if String.eqb f f0 then Some t else fieldTy fs f0
   end.
 
+(* TODO: implement these, ideally while re-using infrastructure for loadField
+(although storing is more complicated since it requires traversing through
+struct and the value being assigned) *)
+Axiom storeStruct : descriptor -> val.
+Axiom storeField : descriptor -> string -> val.
+
 Context {ext_ty: ext_types ext}.
 Set Default Proof Using "ext ext_ty".
 
@@ -270,6 +276,21 @@ Proof.
   rewrite take_app; auto.
 Qed.
 
+Theorem storeStruct_t : forall Γ d p e,
+  (Γ ⊢ p : structRefTy d ->
+   Γ ⊢ e : structTy d ->
+   Γ ⊢ storeStruct d p e : unitT)%T.
+Proof.
+Abort.
+
+Theorem storeField_t : forall Γ d f p v t,
+  fieldTy d.(fields) f = Some t ->
+  (Γ ⊢ p : structRefTy d ->
+   Γ ⊢ v : t ->
+   Γ ⊢ storeField d f p v : unitT)%T.
+Proof.
+Abort.
+
 End go_lang.
 
 Declare Reduction getField := cbv [getField rev fst snd app getField_e fields String.eqb Ascii.eqb eqb].
@@ -299,6 +320,8 @@ Module struct.
   Notation loadF := loadField.
   Notation t := structTy.
   Notation ptrT := structRefTy.
+  Notation store := storeStruct.
+  Notation storeF := storeField.
 End struct.
 
 Notation "'structF!' desc fname" := (ltac:(make_structF desc fname))

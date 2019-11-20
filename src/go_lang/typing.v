@@ -161,6 +161,9 @@ Section go_lang.
       Γ ⊢ n : intT ->
       Γ ⊢ v : t ->
       Γ ⊢ AllocN n v : refT t
+  | alloc_struct_hasTy v t :
+      Γ ⊢ v : t ->
+      Γ ⊢ AllocStruct v : structRefT (flatten_ty t)
   | load_hasTy l t :
       Γ ⊢ l : refT t ->
       Γ ⊢ Load l : t
