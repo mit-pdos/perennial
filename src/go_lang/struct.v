@@ -148,38 +148,9 @@ Qed.
 
 Hint Resolve load_structRef_off : types.
 
-Theorem take_1_drop_is_lookup n : forall A (l: list A) x,
-  take 1 (drop n l) = [x] ->
-  l !! n = Some x.
-Proof.
-  induction n; destruct l; simpl in *; auto; intros; try congruence.
-Qed.
-
-Hint Resolve take_1_drop_is_lookup : types.
-
-Lemma take_app_take1:
-  ∀ l1 l2 ts' : list ty,
-  take (strings.length l1 + strings.length l2) ts' = l1 ++ l2 ->
-  take (strings.length l1) ts' = l1.
-Proof.
-  intros l1 l2 ts' H.
-  replace (take (strings.length l1) ts') with (take (strings.length l1) (take (strings.length l1 + strings.length l2) ts')).
-  - rewrite H.
-    rewrite take_app; auto.
-  - rewrite take_take.
-    rewrite Min.min_l; try lia; auto.
-Qed.
-
 Theorem ty_size_gt_0 : forall t, (0 <= ty_size t)%Z.
 Proof.
   induction t; simpl; lia.
-Qed.
-
-Theorem ty_size_flatten t : ty_size t = length (flatten_ty t).
-Proof.
-  induction t; simpl; auto.
-  rewrite app_length; auto.
-  lia.
 Qed.
 
 Theorem ty_size_length t : Z.to_nat (ty_size t) = length (flatten_ty t).
@@ -193,18 +164,6 @@ Qed.
 
 Hint Rewrite ty_size_length : ty.
 
-Lemma take_app_drop1:
-  ∀ (ts l1 l2 : list ty) (n' : nat),
-  take (strings.length l1 + strings.length l2) (drop n' ts) = l1 ++ l2
-  → take (strings.length l2) (drop (n' + strings.length l1) ts) = l2.
-Proof.
-  intros ts l1 l2 n' H.
-  rewrite <- drop_drop.
-  rewrite take_drop_commute.
-  rewrite H.
-  rewrite drop_app; auto.
-Qed.
-
 Theorem struct_offset_0_hasTy Γ ts e :
   Γ ⊢ e : structRefT ts ->
   Γ ⊢ (e +ₗ #0) : structRefT ts.
@@ -214,7 +173,7 @@ Qed.
 
 Hint Resolve load_hasTy struct_singleton_hasTy.
 
-Hint Rewrite @take_app @drop_app : ty.
+Hint Rewrite @drop_app : ty.
 
 Theorem load_ty_t : forall Γ t e,
   Γ ⊢ e : structRefT (flatten_ty t) ->
