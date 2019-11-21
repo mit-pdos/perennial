@@ -445,9 +445,10 @@ Qed.
           assert (x = (MUnlocked, ∅)) as ->; last by auto.
           destruct (lt_dec k 100) as [Hlt|Hnlt].
           * destruct (Hrange k) as (Hrange1&?).
-            feed pose proof (Hrange1); first by lia. congruence.
+            specialize (Hrange1 Hlt). rewrite Hin in Hrange1. congruence.
           * destruct (Hrange k) as (?&Hgt).
-            feed pose proof (Hgt); first by lia. congruence.
+            efeed pose proof Hgt as Heq; first by lia. rewrite Hin in Heq.
+            congruence.
         }
         iAssert ([∗ map] k↦y ∈ base.delete SpoolDir σ1c.(fs).(dirents), k ↦ ∅)%I
           with "[Hdirs]" as "Hdirs".
