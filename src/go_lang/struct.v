@@ -67,14 +67,8 @@ Fixpoint struct_ty_prod (rev_fields: list (string*ty)) : ty :=
 Definition structTy (d:descriptor) : ty :=
   struct_ty_prod (rev (fields d)).
 
-Fixpoint fieldTypes (fields: list (string*ty)) : list ty :=
-  match fields with
-  | [] => []
-  | (_,t)::fs => flatten_ty t ++ fieldTypes fs
-  end.
-
 Definition structRefTy (d:descriptor) : ty :=
-  structRefT (fieldTypes d.(fields)).
+  structRefT (flatten_ty (structTy d)).
 
 Fixpoint ty_size (t:ty) : Z :=
   match t with
@@ -83,43 +77,61 @@ Fixpoint ty_size (t:ty) : Z :=
   | _ => 1
   end.
 
-Fixpoint load_ty (t:ty) (e:expr) (off:Z) : expr :=
+Fixpoint load_ty (t:ty) (e:expr) : expr :=
   match t with
-  | prodT t1 t2 => (load_ty t1 e off, load_ty t2 e (off + ty_size t1))
-  | _ => !(e +ₗ #off)
+  | prodT t1 t2 => (load_ty t1 e, load_ty t2 (e +ₗ #(ty_size t1)))
+  | _ => !e
   end.
 
 Definition loadStruct (d:descriptor) : val :=
-  λ: "p", load_ty (structTy d) (Var "p") 0.
+  λ: "p", load_ty (structTy d) (Var "p").
 
-Fixpoint field_offset (fields: list (string*ty)) f0 : (Z * ty) :=
+Fixpoint field_offset (fields: list (string*ty)) f0 : option (Z * ty) :=
   match fields with
-  | nil => (-1, unitT)
-  | f::fs => if String.eqb (fst f) f0 then (0, snd f)
-           else let (off, t) := field_offset fs f0 in
-                (ty_size (snd f) + off, t)
+  | nil => None
+  | (f,t)::fs => if String.eqb f f0 then Some (0, t)
+               else match field_offset fs f0 with
+                    | Some (off, t') => Some (ty_size t + off, t')
+                    | None => None
+                    end
   end%Z.
 
 Definition loadField (d:descriptor) (f:string) : val :=
-  let (off, t) := field_offset d.(fields) f in
-  λ: "p", load_ty t (Var "p") off.
-
-Fixpoint fieldTy (fs:list (string*ty)) (f0: string) : option ty :=
-  match fs with
-  | [] => None
-  | (f,t)::fs => if String.eqb f f0 then Some t else fieldTy fs f0
+  match field_offset d.(fields) f with
+  | Some (off, t) => λ: "p", load_ty t (Var "p" +ₗ #off)
+  | None => λ: <>, #()
   end.
 
 (* TODO: implement these, ideally while re-using infrastructure for loadField
 (although storing is more complicated since it requires traversing through
 struct and the value being assigned) *)
-Axiom storeStruct : descriptor -> val.
-Axiom storeField : descriptor -> string -> val.
+Axiom store_ty : ty -> expr -> expr -> val.
+
+Definition storeStruct d : val :=
+  λ: "p" "x", store_ty (structTy d) (Var "p") (Var "x").
+
+Definition storeField d f : val :=
+  match field_offset d.(fields) f with
+  | Some (off, t) => λ: "p" "x", store_ty t (Var "p" +ₗ #off) (Var "x")
+  | None => λ: <> <>, #()
+  end.
 
 Context {ext_ty: ext_types ext}.
 Set Default Proof Using "ext ext_ty".
 
 Hint Resolve struct_offset_op_hasTy_eq : types.
+
+Local Open Scope heap_types.
+
+Theorem load_struct_ref_hasTy Γ l t ts :
+  Γ ⊢ l : structRefT (t::ts) ->
+  Γ ⊢ !l : t.
+Proof.
+  intros.
+  apply load_hasTy.
+  apply struct_singleton_hasTy.
+  eapply struct_weaken_hasTy; simpl; eauto.
+Qed.
 
 Theorem load_structRef_off : forall Γ e ts n t,
   ts !! Z.to_nat n = Some t ->
@@ -129,7 +141,7 @@ Proof.
   intros.
   destruct (elem_of_list_split_length ts (Z.to_nat n) t)
     as [l1 [l2 (?&?)]]; auto; subst.
-  eapply load_struct_hasTy.
+  eapply load_struct_ref_hasTy.
   eapply struct_offset_op_hasTy_eq; eauto.
   rewrite drop_app_alt; auto.
 Qed.
@@ -158,12 +170,28 @@ Proof.
     rewrite Min.min_l; try lia; auto.
 Qed.
 
+Theorem ty_size_gt_0 : forall t, (0 <= ty_size t)%Z.
+Proof.
+  induction t; simpl; lia.
+Qed.
+
 Theorem ty_size_flatten t : ty_size t = length (flatten_ty t).
 Proof.
   induction t; simpl; auto.
   rewrite app_length; auto.
   lia.
 Qed.
+
+Theorem ty_size_length t : Z.to_nat (ty_size t) = length (flatten_ty t).
+Proof.
+  induction t; simpl; auto.
+  pose proof (ty_size_gt_0 t1).
+  pose proof (ty_size_gt_0 t2).
+  rewrite app_length; auto.
+  rewrite Z2Nat.inj_add; lia.
+Qed.
+
+Hint Rewrite ty_size_length : ty.
 
 Lemma take_app_drop1:
   ∀ (ts l1 l2 : list ty) (n' : nat),
@@ -177,103 +205,101 @@ Proof.
   rewrite drop_app; auto.
 Qed.
 
-Theorem ty_size_gt_0 : forall t, (0 <= ty_size t)%Z.
+Theorem struct_offset_0_hasTy Γ ts e :
+  Γ ⊢ e : structRefT ts ->
+  Γ ⊢ (e +ₗ #0) : structRefT ts.
 Proof.
-  induction t; simpl; lia.
+  apply struct_offset_op_hasTy.
 Qed.
 
-Theorem load_ty_t : forall Γ t ts n,
-  (0 <= n)%Z ->
-  firstn (length (flatten_ty t)) (drop (Z.to_nat n) ts) = flatten_ty t ->
-  (Γ ⊢ (λ: "p", load_ty t (Var "p") n)%V : (structRefT ts -> t))%T.
+Hint Resolve load_hasTy struct_singleton_hasTy.
+
+Hint Rewrite @take_app @drop_app : ty.
+
+Theorem load_ty_t : forall Γ t e,
+  Γ ⊢ e : structRefT (flatten_ty t) ->
+  Γ ⊢ load_ty t e : t.
+Proof.
+  induction t; simpl; intros; eauto.
+  econstructor.
+  - apply IHt1.
+    eauto using struct_weaken_hasTy.
+  - apply IHt2.
+    eapply struct_offset_op_hasTy_eq; eauto.
+    autorewrite with ty; auto.
+Qed.
+
+Theorem loadStruct_hasTy Γ d :
+  Γ ⊢v loadStruct d : (structRefTy d -> structTy d).
+Proof.
+  unfold loadStruct, structRefTy, structTy.
+  econstructor.
+  rewrite insert_anon.
+  apply load_ty_t.
+  constructor; auto.
+Qed.
+
+Theorem concat_fields_cons_eq f fs :
+  concat (map (λ ft : string * ty, flatten_ty ft.2) (f::fs)) =
+  flatten_ty (struct_ty_prod (rev (f::fs))).
+Proof.
+  revert f.
+  induction fs; intros.
+  - simpl. rewrite app_nil_r; auto.
+  - change (concat (map (λ ft : string * ty, flatten_ty ft.2) (f :: a :: fs)))
+      with (flatten_ty f.2 ++ concat (map (λ ft : string * ty, flatten_ty ft.2) (a :: fs))).
+    rewrite IHfs.
+Admitted.
+
+Theorem concat_fields_eq f x fs :
+  field_offset fs f = Some x ->
+  concat (map (λ ft : string * ty, flatten_ty ft.2) fs) =
+  flatten_ty (struct_ty_prod (rev fs)).
+Proof.
+  destruct fs; intros.
+  - simpl in H; congruence.
+  - apply concat_fields_cons_eq.
+Qed.
+
+Theorem fieldOffset_t Γ fs f z t e :
+  field_offset fs f = Some (z, t) ->
+  Γ ⊢ e : structRefT (flatten_ty (struct_ty_prod (rev fs))) ->
+  Γ ⊢ (e +ₗ #z) : structRefT (flatten_ty t).
 Proof.
   intros.
-  apply empty_context_to_any.
-  constructor.
-  constructor.
-  rewrite insert_anon.
-  generalize dependent n.
-  generalize dependent ts.
-  induction t; simpl; intros;
-    eauto with types.
-  rewrite app_length in H0.
-  constructor.
-  - apply IHt1; auto.
-    eapply take_app_take1; eauto.
-  - apply IHt2; auto.
-    { pose proof (ty_size_gt_0 t1); lia. }
-    rewrite ty_size_flatten.
-    generalize dependent (flatten_ty t1); intros l1 **.
-    generalize dependent (flatten_ty t2); intros l2 **.
-    replace (Z.to_nat (n + length l1)) with (Z.to_nat n + length l1)%nat.
-    { eapply take_app_drop1; eauto. }
-    (* [lia] doesn't solve this goal on its own in Coq 8.9 *)
-    rewrite ?Z2Nat.inj_add ?Nat2Z.id; lia.
-Qed.
-
-Theorem field_offset1_gt_0 : forall fs f t,
-  fieldTy fs f = Some t ->
-  (0 <= (field_offset fs f).1)%Z.
-Proof.
-  induction fs; simpl; intros; eauto.
-  - congruence.
-  - destruct a as [f0 t']; simpl.
-    destruct (f0 =? f)%string; simpl in *; try lia.
-    + destruct_with_eqn (field_offset fs f).
-      eapply IHfs in H.
-      rewrite Heqp in H; simpl in *.
-      pose proof (ty_size_gt_0 t').
-      lia.
-Qed.
-
-Theorem field_offset_to_fieldTy : forall fs f z t0 t,
-  fieldTy fs f = Some t0 ->
-  field_offset fs f = (z, t) ->
-  t = t0 /\
-  exists ts1 ts2, fieldTypes fs = ts1 ++ flatten_ty t ++ ts2 /\
-             length ts1 = Z.to_nat z.
-Proof.
+  erewrite <- concat_fields_eq in H0 by eauto.
+  generalize dependent e.
+  generalize dependent z.
+  generalize dependent t.
   induction fs; simpl; intros.
   - congruence.
-  - destruct a as [f0 t']; simpl in *.
-    destruct (f0 =? f)%string.
-    + inversion H0; subst; clear H0.
+  - destruct a as [f' t']; simpl in H0.
+    destruct (f' =? f)%string.
+    + inversion H; subst; clear H.
+      apply struct_offset_0_hasTy.
+      eapply struct_weaken_hasTy; eauto.
+    + destruct_with_eqn (field_offset fs f); try congruence.
+      destruct p as [off t''].
       inversion H; subst; clear H.
-      intuition.
-      eexists nil, _; simpl; eauto.
-    + destruct_with_eqn (field_offset fs f).
-      inversion H0; subst; clear H0.
-      pose proof (IHfs _ _ _ _ H Heqp); intuition subst.
-      destruct H2 as (ts1&ts2&?&?).
-      rewrite H0.
-      eexists (flatten_ty t' ++ ts1), _; intuition eauto.
-      * rewrite <- app_assoc; auto.
-      * rewrite app_length.
-        rewrite ty_size_flatten.
-        rewrite H1.
-        pose proof (field_offset1_gt_0 fs f t0); intuition.
-        rewrite Heqp in H3; simpl in *.
-        (* [lia] doesn't solve this goal on its own in Coq 8.9 *)
-        rewrite ?Z2Nat.inj_add ?Nat2Z.id; lia.
+      assert (Γ ⊢ e +ₗ #(ty_size t') : structRefT (concat (map (λ ft : string * ty, flatten_ty ft.2) fs))).
+      { eapply struct_offset_op_hasTy_eq; eauto.
+        autorewrite with ty; auto. }
+      eapply IHfs in H; eauto.
+      apply struct_offset_op_collapse_hasTy; auto.
 Qed.
 
-Theorem loadField_t : forall d f t,
-  fieldTy d.(fields) f = Some t ->
+Theorem loadField_t : forall d f t z,
+  field_offset d.(fields) f = Some (z, t) ->
   forall Γ, (Γ ⊢ loadField d f : (structRefTy d -> t))%T.
 Proof.
-  destruct d as [fs].
   unfold structRefTy, loadField; simpl.
   intros.
-  destruct_with_eqn (field_offset fs f).
-  pose proof (field_offset_to_fieldTy _ _ _ _ _ H Heqp);
-    intuition subst.
-  destruct H2 as (t1&t2&?&?).
-  rewrite H0.
+  rewrite H; simpl.
+  econstructor.
+  econstructor.
   eapply load_ty_t.
-  { pose proof (field_offset1_gt_0 fs f t); intuition.
-    rewrite Heqp in H3; simpl in *; lia. }
-  rewrite drop_app_alt; [ | lia ].
-  rewrite take_app; auto.
+  eapply fieldOffset_t; eauto.
+  econstructor; auto.
 Qed.
 
 Theorem storeStruct_t : forall Γ d p e,
@@ -283,8 +309,8 @@ Theorem storeStruct_t : forall Γ d p e,
 Proof.
 Abort.
 
-Theorem storeField_t : forall Γ d f p v t,
-  fieldTy d.(fields) f = Some t ->
+Theorem storeField_t : forall Γ d f p v z t,
+  field_offset d.(fields) f = Some (z, t) ->
   (Γ ⊢ p : structRefTy d ->
    Γ ⊢ v : t ->
    Γ ⊢ storeField d f p v : unitT)%T.

@@ -52,15 +52,15 @@ Section go_lang.
   Theorem baz_t : ⊢ three.baz : (three.T -> refT uint64T).
   Proof. typecheck. Qed.
 
-  Theorem load_ty_is1 : load_ty (uint64T * uint64T * uint64T)%ht "v" 0 =
-                       (!("v" +ₗ #0), !("v" +ₗ #1), !("v" +ₗ #2))%E.
+  Theorem load_ty_is1 : load_ty (uint64T * uint64T * uint64T)%ht "v" =
+                       (!"v", !("v" +ₗ #1), !("v" +ₗ #2))%E.
   Proof.
     cbv -[U64].
     goal_is_exactly_equal.
   Qed.
 
-  Theorem load_ty_is2 : load_ty (uint64T * (uint64T * uint64T) * uint64T)%ht "v" 0 =
-                       (!("v" +ₗ #0), (!("v" +ₗ #1), !("v" +ₗ #2)), !("v" +ₗ #3))%E.
+  Theorem load_ty_is2 : load_ty (uint64T * (uint64T * uint64T) * uint64T)%ht "v" =
+                       (!"v", (!("v" +ₗ #1), !("v" +ₗ #1 +ₗ #1)), !("v" +ₗ #3))%E.
   Proof.
     cbv -[U64].
     goal_is_exactly_equal.

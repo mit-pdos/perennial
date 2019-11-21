@@ -122,6 +122,9 @@ Section go_lang.
   | struct_offset_op_hasTy e1 (v: Z) ts :
       Γ ⊢ e1 : structRefT ts ->
       Γ ⊢ BinOp OffsetOp e1 #v : structRefT (skipn (Z.to_nat v) ts)
+  | struct_offset_op_collapse_hasTy e1 (v1 v2: Z) ts :
+      Γ ⊢ BinOp OffsetOp (BinOp OffsetOp e1 #v1) #v2 : structRefT ts ->
+      Γ ⊢ BinOp OffsetOp e1 #(v1 + v2) : structRefT ts
   | eq_op_hasTy e1 e2 t :
       Γ ⊢ e1 : t ->
       Γ ⊢ e2 : t ->
@@ -176,9 +179,6 @@ Section go_lang.
   | load_hasTy l t :
       Γ ⊢ l : refT t ->
       Γ ⊢ Load l : t
-  | load_struct_hasTy l t ts :
-      Γ ⊢ l : structRefT (t::ts) ->
-      Γ ⊢ Load l : t
   | store_hasTy l v t :
       Γ ⊢ l : refT t ->
       Γ ⊢ v : t ->
@@ -208,6 +208,12 @@ Section go_lang.
   | decode_hasTy p :
       Γ ⊢ p : refT byteT ->
       Γ ⊢ DecodeInt p : uint64T
+  | struct_weaken_hasTy e ts1 ts2 :
+      Γ ⊢ e : structRefT (ts1 ++ ts2) ->
+      Γ ⊢ e : structRefT ts1
+  | struct_singleton_hasTy e t :
+      Γ ⊢ e : structRefT [t] ->
+      Γ ⊢ e : refT t
   where "Γ ⊢ e : A" := (expr_hasTy Γ e A)
   with val_hasTy (Γ: Ctx) : val -> ty -> Prop :=
   | val_base_lit_hasTy v t :
@@ -272,8 +278,8 @@ Section go_lang.
         forall Γ', (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
         Γ' ⊢v v : t.
   Proof.
-    - inversion 1; subst; try solve [ (repeat econstructor); eauto ].
-    - inversion 1; subst; try solve [ (repeat econstructor); eauto ].
+    - inversion 1; subst; solve [ econstructor; eauto ].
+    - inversion 1; subst; solve [ econstructor; eauto ].
   Qed.
 
   Theorem empty_context_to_any e t :
