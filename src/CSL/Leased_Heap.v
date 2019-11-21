@@ -202,7 +202,7 @@ Proof.
   iMod (gen_heap_alloc_gen ∅ σ with "H") as "(Hctx&Hheap&Hmeta)".
   { apply map_disjoint_empty_r. }
   rewrite right_id_L.
-  iMod (big_sepM_master_lease_alloc σ with "Hmeta").
+  iMod (big_sepM_master_lease_alloc σ with "[$Hmeta]").
   iModIntro.
   iExists hL, eq_refl.
   iFrame. iApply big_sepM_sep. iFrame.

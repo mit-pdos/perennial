@@ -246,6 +246,15 @@ Implicit Types Ps Qs : list PROP.
     ([∗ dmap] k↦y ∈ m, Φ _ k y) ⊣⊢ Φ _ i x ∗ [∗ dmap] k↦y ∈ deleteDyn (dec:=dec) i m, Φ _ k y.
   Proof. apply big_opDM_delete. Qed.
 
+  Lemma big_sepDM_delete_1 {T} Φ m (i: Ref T) x :
+    getDyn m i = Some x →
+    ([∗ dmap] k↦y ∈ m, Φ _ k y) ⊢ Φ _ i x ∗ [∗ dmap] k↦y ∈ deleteDyn (dec:=dec) i m, Φ _ k y.
+  Proof.
+    intros.
+    iDestruct (big_sepDM_delete Φ _ _ H) as "(H&_)".
+    iApply "H".
+  Qed.
+
   Lemma big_sepDM_updDyn_2 {T} Φ m (i: Ref T) x :
     TCOr (∀ x, Affine (Φ _ i x)) (Absorbing (Φ _ i x)) →
     Φ _ i x -∗ ([∗ dmap] k↦y ∈ m, Φ _ k y) -∗ [∗ dmap] k↦y ∈ updDyn (dec:=dec) i x m, Φ _ k y.

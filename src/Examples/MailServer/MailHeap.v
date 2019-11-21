@@ -59,7 +59,7 @@ Import Transitions.Relations Coq.Lists.List.
     iIntros (??) "Hsli Hheap".
     rewrite /HeapInv.
     iDestruct (big_sepDM_lookup (dec := sigPtr_eq_dec) with "Hheap") as "(Hlookup&%)".
-    { eauto. }
+    { unfold Data.getAlloc in *; eauto. }
     iAssert (∃ s q, Count_Typed_Heap.mapsto sli.(slice.ptr) s q alloc')%I
       with "[Hlookup]" as (??) "Hlookup".
     { destruct status; eauto. }
@@ -79,7 +79,7 @@ Import Transitions.Relations Coq.Lists.List.
     destruct (getDyn σ lk) as [v|] eqn:Heq_get; last by done.
     iExFalso.
     iPoseProof (big_sepDM_lookup (T:=(Ptr.Lock))
-                                 (dec := sigPtr_eq_dec) with "Hheap") as "(Hheap&%)"; eauto.
+                                 (dec := sigPtr_eq_dec) with "[$Hheap]") as "(Hheap&%)"; eauto.
     destruct v as ([]&?);
       iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hp] Hheap"); try iFrame;
         eauto with lia.
@@ -97,7 +97,7 @@ Import Transitions.Relations Coq.Lists.List.
     rewrite /HeapInv.
     rewrite /Data.getAlloc in Heq_get.
     iPoseProof (big_sepDM_lookup (T:=(Ptr.Heap A))
-                                 (dec := sigPtr_eq_dec) with "Hheap") as "(Hheap&%)"; eauto.
+                                 (dec := sigPtr_eq_dec) with "[$Hheap]") as "(Hheap&%)"; eauto.
     destruct v as ([]&?);
       iApply (Count_Typed_Heap.mapsto_valid_generic with "[Hp] Hheap"); try iFrame;
         eauto with lia.
@@ -177,7 +177,7 @@ Import Transitions.Relations Coq.Lists.List.
     - iMod (deref_step_inv_do with "Hj Hsource Hstate") as (s alloc v Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       destruct Heq as (Heq1&Heq2&Heq3).
-      iDestruct (big_sepDM_lookup_acc (dec := sigPtr_eq_dec) with "Hheap") as "((Hp&%)&Hheap)".
+      iDestruct (big_sepDM_lookup_acc (dec := sigPtr_eq_dec) with "[$Hheap]") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct s; try (simpl in Heq2; congruence); simpl.
       * iApply (wp_ptrDeref' with "Hp").
@@ -200,7 +200,7 @@ Import Transitions.Relations Coq.Lists.List.
       * iMod (store_start_step_inv_do j K with "Hj Hsource Hstate") as (s alloc Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2).
-        iDestruct (@big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
+        iDestruct (@big_sepDM_insert_acc with "[$Hheap]") as "((Hp&%)&Hheap)".
         { eauto. }
         destruct s; try (simpl in Heq2; congruence); simpl; [].
         iApply (wp_ptrStore_start with "Hp").
@@ -212,7 +212,7 @@ Import Transitions.Relations Coq.Lists.List.
           as (s alloc alloc' Heq) "(Hj&Hstate)".
         { solve_ndisj. }
         destruct Heq as (Heq1&Heq2&Heq3).
-        iDestruct (@big_sepDM_insert_acc with "Hheap") as "((Hp&%)&Hheap)".
+        iDestruct (@big_sepDM_insert_acc with "[$Hheap]") as "((Hp&%)&Hheap)".
         { eauto. }
         destruct s; try (simpl in Heq3; congruence); simpl; [].
         destruct args.
@@ -225,8 +225,8 @@ Import Transitions.Relations Coq.Lists.List.
     - iMod (slice_append_step_inv j K with "Hj Hsource Hstate") as (s' alloc vs Heq) "(Hj&Hstate)".
       { solve_ndisj. }
       destruct Heq as (He1&Heq2&Heq3).
-      iDestruct (@big_sepDM_delete with "Hheap") as "((Hp&%)&Hheap)".
-      { eauto. }
+      iDestruct (@big_sepDM_delete_1 with "[$Hheap]") as "((Hp&%)&Hheap)".
+      { exact He1. }
       destruct s'; try (simpl in Heq3; congruence); simpl; [].
       iApply (wp_sliceAppend with "[Hp]").
       { iNext. iFrame. iPureIntro. split; eauto. }
@@ -295,7 +295,7 @@ Import Transitions.Relations Coq.Lists.List.
     - iMod (lock_acquire_step_inv j K with "Hj Hsource Hstate") as (s') "(Heq&Hj&Hstate)".
       { solve_ndisj. }
       iDestruct "Heq" as %Hget.
-      iDestruct (@big_sepDM_insert_acc _ _ _ _ _ Ptr.Lock with "Hheap") as "((Hp&%)&Hheap)".
+      iDestruct (@big_sepDM_insert_acc _ _ _ _ _ Ptr.Lock with "[$Hheap]") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct l0.
       * iApply wp_lift_call_step.
@@ -389,7 +389,7 @@ Import Transitions.Relations Coq.Lists.List.
         iApply "Hheap". simpl. iFrame. eauto.
     - iMod (lock_release_step_inv_do j K with "Hj Hsource Hstate") as (s1 s2 (He1&He2)) "(Hj&Hstate)".
       { solve_ndisj. }
-      iDestruct (@big_sepDM_insert_acc _ _ _ _ _ Ptr.Lock with "Hheap") as "((Hp&%)&Hheap)".
+      iDestruct (@big_sepDM_insert_acc _ _ _ _ _ Ptr.Lock with "[$Hheap]") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct l0.
       * iApply (wp_lockRelease_read_raw with "[Hp]"); first by eauto.
@@ -410,7 +410,7 @@ Import Transitions.Relations Coq.Lists.List.
                                                                            "(Hj&Hstate)".
       { solve_ndisj. }
       iDestruct (big_sepDM_lookup_acc (dec := sigPtr_eq_dec) (T:=(Ptr.Heap byte))
-                   with "Hheap") as "((Hp&%)&Hheap)".
+                   with "[$Hheap]") as "((Hp&%)&Hheap)".
       { eauto. }
       destruct s; try (simpl in He3; congruence); simpl; [|].
       * iApply (wp_bytesToString with "[Hp]").
