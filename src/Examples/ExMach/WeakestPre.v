@@ -80,27 +80,30 @@ Proof. intros. by apply nat_compare_lt. Qed.
 Lemma nat_compare_gt_Gt: ∀ n m : nat, n > m → (n ?= m) = Gt.
 Proof. intros. by apply nat_compare_gt. Qed.
 
-Lemma mem_init_to_bigOp mem:
-  own (i := @gen_heap_inG _ _ _ _ _ exm_mem_inG)
-      (gen_heap_name (exm_mem_inG))
+Lemma mem_init_to_bigOp Hpf Hn mem:
+  Hpf = (@gen_heap_inG _ _ _ _ _ exm_mem_inG) →
+  Hn = (gen_heap_name (exm_mem_inG)) →
+  own (i := Hpf)
+      Hn
       (◯ to_gen_heap mem)
       -∗
   [∗ map] i↦v ∈ mem, i m↦ v .
 Proof.
+  intros Heq_pf Heq_name.
   induction mem using map_ind.
   - iIntros. rewrite //=.
   - iIntros "Hown".
     rewrite big_opM_insert //.
-
-    iAssert (own (i := @gen_heap_inG _ _ _ _ _ exm_mem_inG) (gen_heap_name (exm_mem_inG))
+    iAssert (own (i := Hpf) (gen_heap_name (exm_mem_inG))
                  (◯ to_gen_heap m) ∗
                  (i m↦ x))%I
                     with "[Hown]" as "[Hrest $]".
     {
-      rewrite mapsto_eq /mapsto_def //.
+      rewrite mapsto_eq /mapsto_def // Heq_pf Heq_name.
       rewrite to_gen_heap_insert insert_singleton_op; last by apply lookup_to_gen_heap_None.
       rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
     }
+    rewrite -Heq_name.
     by iApply IHmem.
 Qed.
 

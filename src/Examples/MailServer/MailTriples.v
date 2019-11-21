@@ -846,8 +846,11 @@ Import Mail.
     { solve_ndisj. }
     destruct Heq as (Heq1&Heq2&Heq3).
     iExists _. iFrame.
-    iDestruct (big_sepDM_insert_acc (dec := sigPtr_eq_dec) with "Hheap") as "((Hp&%)&Hheap)".
-    { eauto. }
+    rewrite /HeapInv.
+    iDestruct (big_sepDM_insert_acc (dec := sigPtr_eq_dec) with "[Hheap]")
+      as "H"; eauto.
+    { rewrite /Data.getAlloc in Heq1. eapply Heq1. }
+    iDestruct "H" as "((Hp&%)&Hheap)".
     iAssert (▷ HeapInv (RecordSet.set heap
                           (RecordSet.set Data.allocs (updDyn msg.(slice.ptr) (s', alloc))) σ)
                ∗ msg.(slice.ptr) ↦{-1} alloc)%I
@@ -928,7 +931,7 @@ Import Mail.
       iIntros "!> (Hpath&Hpathnew&Hdircontents)".
       iDestruct ("Htmp" with "Hpath") as "Htmp".
       iDestruct (big_sepM_insert_2 with "[Hpathnew Hinode] Hmsgs") as "Hmsgs".
-      { simpl.  iExists _, _. iFrame. replace (0 : Z) with (O: Z) by auto. iFrame. }
+      { simpl. iExists inode, 0. iFrame. }
       iDestruct ("Hm" $! (mstat, <[ ("msg" ++ (uint64_to_string) id)%string := vs]> mbox)
                    with "[Hmsgs Hmbox Hdircontents]") as "Hm".
       { iExists _, _. iFrame.
@@ -967,9 +970,9 @@ Import Mail.
       {
         iExists _. iFrame.
         simpl open. rewrite Hopen. iFrame.
-        iDestruct (big_sepDM_insert_acc (dec := sigPtr_eq_dec) with "Hheap")
-          as "((Hlookup&%)&Hclose)".
-        { eauto. }
+        iDestruct (big_sepDM_insert_acc _ _ (msg.(slice.ptr)) Heq2 (dec := sigPtr_eq_dec) with "[Hheap]")
+          as "H"; eauto.
+        iDestruct "H" as "((Hlookup&%)&Hclose)".
         iDestruct (InitInv_open_update with "[$]") as "$"; auto.
         iSplitL "Hrootdir".
         { iModIntro. rewrite /RootDirInv. simpl.

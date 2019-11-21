@@ -547,7 +547,8 @@ Module repRO : twodisk_refinement_obligations repRT.
       assert (Hlt: n < size) by lia.
       assert (Hin: n ∈ addrset).
       { by apply lt_size_in_addrset. }
-      iDestruct (big_sepS_delete with "Hprogress") as "(Hcurr&Hrest)"; first eauto.
+      iPoseProof (big_sepS_delete _ addrset _ Hin) as "(HsepS&_)".
+      iDestruct ("HsepS" with "Hprogress") as "(Hcurr&Hrest)".
       destruct lt_dec; last by lia.
       iDestruct "Hcurr" as "(Hmem&Hcurr)".
       iDestruct "Hcurr" as (v0 v1 ?) "(Hl0&Hl1&Hstatus)".
@@ -611,7 +612,7 @@ Module repRO : twodisk_refinement_obligations repRT.
       }
       iModIntro. iApply ("IH" with "[] Hreg [Hrest Hl0 Hl1 Hstatus Hmem]").
       { iPureIntro. lia. }
-      iApply big_sepS_delete; first eauto.
+      iApply (big_sepS_delete with "[-]"); first eauto.
       iSplitR "Hrest".
       { destruct lt_dec; try lia; [].
         iFrame. iExists _. iFrame. }
@@ -668,7 +669,7 @@ Module repRO : twodisk_refinement_obligations repRT.
       wp_bind. wp_ret. wp_ret.
       iModIntro. iApply ("IH" with "[] Hreg [Hrest Hl0 Hl1 Hstatus Hmem]").
       { iPureIntro. lia. }
-      iApply big_sepS_delete; first eauto.
+      iApply (big_sepS_delete with "[-]"); first eauto.
       iSplitR "Hrest".
       { destruct lt_dec; try lia; [].
         iFrame. iExists _. iFrame. }
@@ -704,7 +705,10 @@ Module repRO : twodisk_refinement_obligations repRT.
     iExists hS.
     rewrite /ExecInner.
     iSplitL "Hmem HL0 HL1 hSa".
-    { iModIntro. iApply big_sepM_dom.
+    { iModIntro. rewrite /addrset.
+      iPoseProof (big_sepM_dom (λ a : nat, a m↦ 0 ∗ LockInv a)%I
+                               init_zero) as "(Hpf&_)".
+      iApply ("Hpf" with "[-]").
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       iApply (big_sepM_mono with "H").
       iIntros (k x Hlookup) "(((?&?)&?)&?)".
@@ -767,7 +771,8 @@ Module repRO : twodisk_refinement_obligations repRT.
     iSplitR "Hmem Hl hSa"; last first.
     {
       rewrite Hdom1 addrset_unfold.
-      iApply big_sepM_dom.
+      iPoseProof (big_sepM_dom) as "(Hpf&_)".
+      iApply ("Hpf" with "[-]").
       iEval (rewrite -big_sepM_dom) in "Hl".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       rewrite /UnlockedInv.
@@ -849,7 +854,7 @@ Module repRO : twodisk_refinement_obligations repRT.
     iSplitR "Hmem Hl hSa"; last first.
     {
       rewrite Hdom1 addrset_unfold.
-      iApply big_sepM_dom.
+      iPoseProof (big_sepM_dom) as "(Hpf&_)". iApply ("Hpf" with "[-]").
       iEval (rewrite -big_sepM_dom) in "Hl".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
       rewrite /UnlockedInv.
@@ -900,7 +905,8 @@ Module repRO : twodisk_refinement_obligations repRT.
     - rewrite -big_sepS_fupd.
       iApply (big_sepS_mono with "Hlocks").
       iIntros (a Hin) "(Hmem&Hlock)".
-      iApply (lock_init with "Hmem [Hlock]"); auto.
+      iPoseProof (@lock_init _ Hex inst_inG1 _ _ _ (LockInv a) with "Hmem [Hlock]")
+        as "H"; auto.
     - by iMod (@inv_alloc Σ (exm_invG) durN _ _ with "Hdur") as "$".
   Qed.
 
@@ -959,7 +965,8 @@ Module repRO : twodisk_refinement_obligations repRT.
     iSplitL "Hmem Hl hSa".
     {
       rewrite Hdom1 addrset_unfold.
-      iApply big_sepM_dom.
+      iPoseProof (big_sepM_dom) as "(Hpf&_)".
+      iApply ("Hpf" with "[-]").
       iEval (rewrite -big_sepM_dom) in "Hl".
       iEval (rewrite big_sepM_dom dom_fmap_L -big_sepM_dom) in "hSa".
       repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
@@ -974,11 +981,14 @@ Module repRO : twodisk_refinement_obligations repRT.
       iFrame. subst. iExists _; iFrame.
     }
     rewrite big_sepM_fmap.
-    iDestruct (big_sepM_dom with "hSb") as "hSb".
+    iPoseProof (big_sepM_dom) as "(Hpf&_)".
+    iDestruct ("Hpf" with "hSb") as "hSb".
     replace (dom (gset addr) init_zero) with addrset; last trivial.
+    iClear "Hpf".
     rewrite -{2}Hdom1.
     iDestruct (big_sepM_dom with "hSb") as "hSb".
-    repeat (iDestruct (@big_sepM_sep with "[$]") as "H").
+    iDestruct (big_sepM_sep with "[Hdur hSb]") as "H".
+    { iFrame. }
     iExists _. iFrame.
     iSplitL "".
     { iPureIntro. auto. }
