@@ -516,7 +516,9 @@ Definition to_prim_op : {f: forall ar (op: prim_op'), prim_op ar |
     [..|destruct op; eauto];
     (* solve default cases with an arbitrary value *)
     solve [ constructor; auto using "" ].
-Defined.
+(* intentionally opaque since the type signature gives the only needed
+correctness condition *)
+Qed.
 
 Definition to_prim_op_correct := proj2_sig to_prim_op.
 
