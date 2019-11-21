@@ -507,14 +507,16 @@ Proof.
                                end) _); by intros [].
 Qed.
 
-Definition to_prim_op : {f: forall ar (op: prim_op'), prim_op ar | forall ar op, f ar (a_prim_op op) = op}.
-  unshelve refine (exist _ (fun (ar: arity) op => let 'a_prim_op op := op in
-                                   ltac:(destruct ar, op)) _);
+Definition to_prim_op : {f: forall ar (op: prim_op'), prim_op ar |
+                         forall ar op, f ar (a_prim_op op) = op}.
+  unshelve refine (exist _
+                         (fun (ar: arity) '(a_prim_op op) =>
+                            ltac:(destruct ar, op)) _);
     (* solve equality cases by unification *)
     [..|destruct op; eauto];
     (* solve default cases with an arbitrary value *)
     solve [ constructor; auto using "" ].
-Qed.
+Defined.
 
 Definition to_prim_op_correct := proj2_sig to_prim_op.
 
