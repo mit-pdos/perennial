@@ -384,7 +384,7 @@ Proof.
     exists (Z.of_nat i).
     rewrite Nat2Z.id; intuition eauto.
     lia. }
-  iDestruct (big_sepM_lookup _ _ _ _ H0 with "[$Hmap]") as "H".
+  iDestruct (big_sepM_lookup _ _ _ _ H0 with "Hmap") as "H".
   iDestruct (gen_heap_valid with "Hctx H") as %?.
   eauto.
 Qed.
