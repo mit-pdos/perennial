@@ -57,15 +57,20 @@ Definition allocStruct (d:descriptor) (fvs: list (string*expr)) : expr :=
   | None => LitV LitUnit
   end.
 
-Fixpoint struct_ty_prod (rev_fields: list (string*ty)) : ty :=
-  match rev_fields with
-  | nil => unitT
-  | [f] => snd f
-  | f::fs => struct_ty_prod fs * snd f
+Fixpoint struct_ty_aux (accum: ty) (fs: list (string*ty)) : ty :=
+  match fs with
+  | [] => accum
+  | f::fs => struct_ty_aux (accum*f.2) fs
+  end.
+
+Definition struct_ty_prod fs : ty :=
+  match fs with
+  | [] => unitT
+  | f::fs => struct_ty_aux f.2 fs
   end.
 
 Definition structTy (d:descriptor) : ty :=
-  struct_ty_prod (rev (fields d)).
+  struct_ty_prod d.(fields).
 
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
@@ -203,22 +208,35 @@ Proof.
   constructor; auto.
 Qed.
 
-Theorem concat_fields_cons_eq f fs :
-  concat (map (λ ft : string * ty, flatten_ty ft.2) (f::fs)) =
-  flatten_ty (struct_ty_prod (rev (f::fs))).
+Lemma flatten_ty_struct_prod fs : forall  a f,
+  flatten_ty (struct_ty_aux (f * a) fs) =
+  flatten_ty f ++ flatten_ty (struct_ty_aux a fs).
 Proof.
-  revert f.
+  induction fs; intros.
+  - simpl; auto.
+  - rewrite ?IHfs.
+    simpl.
+    rewrite <- app_assoc; auto.
+Qed.
+
+Theorem concat_fields_cons_eq fs : forall f,
+  concat (map (λ ft : string * ty, flatten_ty ft.2) (f::fs)) =
+  flatten_ty (struct_ty_aux f.2 fs).
+Proof.
   induction fs; intros.
   - simpl. rewrite app_nil_r; auto.
-  - change (concat (map (λ ft : string * ty, flatten_ty ft.2) (f :: a :: fs)))
-      with (flatten_ty f.2 ++ concat (map (λ ft : string * ty, flatten_ty ft.2) (a :: fs))).
+  - set (mapf:=fun ft => flatten_ty ft.2) in *.
+    change (concat (map mapf (f :: a :: fs))) with
+        (flatten_ty f.2 ++ concat (map mapf (a::fs))).
     rewrite IHfs.
-Admitted.
+    simpl.
+    rewrite flatten_ty_struct_prod; auto.
+Qed.
 
 Theorem concat_fields_eq f x fs :
   field_offset fs f = Some x ->
   concat (map (λ ft : string * ty, flatten_ty ft.2) fs) =
-  flatten_ty (struct_ty_prod (rev fs)).
+  flatten_ty (struct_ty_prod fs).
 Proof.
   destruct fs; intros.
   - simpl in H; congruence.
@@ -227,7 +245,7 @@ Qed.
 
 Theorem fieldOffset_t Γ fs f z t e :
   field_offset fs f = Some (z, t) ->
-  Γ ⊢ e : structRefT (flatten_ty (struct_ty_prod (rev fs))) ->
+  Γ ⊢ e : structRefT (flatten_ty (struct_ty_prod fs)) ->
   Γ ⊢ (e +ₗ #z) : structRefT (flatten_ty t).
 Proof.
   intros.
