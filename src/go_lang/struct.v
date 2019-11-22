@@ -105,7 +105,12 @@ Definition loadField (d:descriptor) (f:string) : val :=
 (* TODO: implement these, ideally while re-using infrastructure for loadField
 (although storing is more complicated since it requires traversing through
 struct and the value being assigned) *)
-Axiom store_ty : ty -> expr -> expr -> val.
+Fixpoint store_ty (t:ty) (e:expr) (v:expr) : expr :=
+  match t with
+  | prodT t1 t2 => store_ty t1 e (Fst v);;
+                  store_ty t2 (e +ₗ #(ty_size t1)) (Snd v)
+  | _ => e <- v
+  end.
 
 Definition storeStruct d : val :=
   λ: "p" "x", store_ty (structTy d) (Var "p") (Var "x").
@@ -261,20 +266,44 @@ Proof.
   econstructor; auto.
 Qed.
 
-Theorem storeStruct_t : forall Γ d p e,
-  (Γ ⊢ p : structRefTy d ->
-   Γ ⊢ e : structTy d ->
-   Γ ⊢ storeStruct d p e : unitT)%T.
+Hint Constructors expr_hasTy.
+
+Theorem store_ty_t : forall Γ t e v,
+  Γ ⊢ e : structRefT (flatten_ty t) ->
+  Γ ⊢ v : t ->
+  Γ ⊢ store_ty t e v : unitT.
 Proof.
-Abort.
+  induction t; simpl; intros; eauto.
+  econstructor.
+  - apply IHt1; eauto.
+  - econstructor; rewrite ?insert_anon.
+    apply IHt2; eauto.
+    eapply struct_offset_op_hasTy_eq; eauto.
+    autorewrite with ty; auto.
+Qed.
+
+Theorem storeStruct_t : forall Γ d p e,
+  Γ ⊢ p : structRefTy d ->
+  Γ ⊢ e : structTy d ->
+  Γ ⊢ storeStruct d p e : unitT.
+Proof.
+  unfold structRefTy, storeStruct; intros.
+  repeat (econstructor; rewrite ?insert_anon; eauto).
+  apply store_ty_t; eauto.
+Qed.
 
 Theorem storeField_t : forall Γ d f p v z t,
   field_offset d.(fields) f = Some (z, t) ->
-  (Γ ⊢ p : structRefTy d ->
-   Γ ⊢ v : t ->
-   Γ ⊢ storeField d f p v : unitT)%T.
+  Γ ⊢ p : structRefTy d ->
+  Γ ⊢ v : t ->
+  Γ ⊢ storeField d f p v : unitT.
 Proof.
-Abort.
+  unfold storeField; intros.
+  rewrite H.
+  repeat (econstructor; rewrite ?insert_anon; eauto).
+  apply store_ty_t; eauto.
+  eapply fieldOffset_t; eauto.
+Qed.
 
 End go_lang.
 
