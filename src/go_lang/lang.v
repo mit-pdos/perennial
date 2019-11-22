@@ -152,8 +152,6 @@ with val :=
   | PairV (v1 v2 : val)
   | InjLV (v : val)
   | InjRV (v : val)
-  | MapNilV (def: val)
-  | MapConsV (k: u64) (v : val) (m : val)
 .
 
 Bind Scope expr_scope with expr.
@@ -261,7 +259,7 @@ Definition val_is_unboxed (v : val) : Prop :=
 Global Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
 Proof. destruct l; simpl; exact (decide _). Defined.
 Global Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
-Proof. destruct v as [ | | | [] | [] | | ]; simpl; exact (decide _). Defined.
+Proof. destruct v as [ | | | [] | [] ]; simpl; exact (decide _). Defined.
 
 (** We just compare the word-sized representation of two values, without looking
 into boxed data.  This works out fine if at least one of the to-be-compared
@@ -361,8 +359,6 @@ Proof using ext.
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
       | InjLV e, InjLV e' => cast_if (decide (e = e'))
       | InjRV e, InjRV e' => cast_if (decide (e = e'))
-      | MapNilV e, MapNilV e' => cast_if (decide (e = e'))
-      | MapConsV k e1 e2, MapConsV k' e1' e2' => cast_if_and3 (decide (k = k')) (decide (e1 = e1')) (decide (e2 = e2'))
       | _, _ => right _
       end
         for go); try (clear go gov; abstract intuition congruence).
@@ -380,8 +376,6 @@ Proof using ext.
        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
      | InjLV e, InjLV e' => cast_if (decide (e = e'))
      | InjRV e, InjRV e' => cast_if (decide (e = e'))
-     | MapNilV e, MapNilV e' => cast_if (decide (e = e'))
-     | MapConsV k e1 e2, MapConsV k' e1' e2' => cast_if_and3 (decide (k = k')) (decide (e1 = e1')) (decide (e2 = e2'))
      | _, _ => right _
      end); try abstract intuition congruence.
 Defined.
@@ -567,8 +561,6 @@ Proof using ext.
      | PairV v1 v2 => GenNode 1 [gov v1; gov v2]
      | InjLV v => GenNode 2 [gov v]
      | InjRV v => GenNode 3 [gov v]
-     | MapNilV v => GenNode 4 [gov v]
-     | MapConsV k v1 v2 => GenNode 5 [GenLeaf $ intVal k; gov v1; gov v2]
      end
    for go).
  set (dec :=
@@ -605,8 +597,6 @@ Proof using ext.
      | GenNode 1 [v1; v2] => PairV (gov v1) (gov v2)
      | GenNode 2 [v] => InjLV (gov v)
      | GenNode 3 [v] => InjRV (gov v)
-     | GenNode 4 [v] => MapNilV (gov v)
-     | GenNode 5 [GenLeaf (intVal k); v1; v2] => MapConsV k (gov v1) (gov v2)
      | _ => LitV LitUnit (* dummy *)
      end
    for go).
@@ -858,15 +848,43 @@ Proof.
   rewrite right_id insert_union_singleton_l. done.
 Qed.
 
+Notation MapConsV k v m := (InjRV (PairV (PairV (LitV (LitInt k)) v) m)).
+Notation MapNilV def := (InjLV def).
+
 Fixpoint map_val (v: val) : option (gmap u64 val * val) :=
   match v with
+  | MapConsV k v m =>
+    match map_val m with
+    | Some (m, def) => Some (<[ k := v ]> m, def)
+    | None => None
+    end
   | MapNilV def => Some (∅, def)
-  | MapConsV k v vs => match map_val vs with
-                      | Some (m, def) => Some (<[ k := v ]> m, def)
-                      | None => None
-                      end
   | _ => None
   end.
+
+Definition val_of_map (m_def: gmap u64 val * val) : val :=
+  let (m, def) := m_def in
+  fold_right (λ '(k, v) mv, MapConsV k v mv)
+             (MapNilV def)
+             (map_to_list m).
+
+Theorem map_val_id : forall v m_def,
+    map_val v = Some m_def ->
+    val_of_map m_def = v.
+Proof.
+  induction v; intros [m def]; try solve [ inversion 1 ]; simpl; intros H.
+  - inversion H; subst; clear H.
+    rewrite map_to_list_empty; simpl; auto.
+  - destruct v; try congruence.
+    destruct v1; try congruence.
+    destruct v1_1; try congruence.
+    destruct l; try congruence.
+    destruct_with_eqn (map_val v2); try congruence.
+    specialize (IHv p).
+    destruct p as [m' def'].
+    inversion H; subst; clear H.
+    (* oops, the normal val induction principle is too weak to prove this *)
+Abort.
 
 Definition map_get (m_def: gmap u64 val * val) (k: u64) : (val*bool) :=
   let (m, def) := m_def in

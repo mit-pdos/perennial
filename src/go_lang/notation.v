@@ -34,6 +34,8 @@ Notation LamV x e := (RecV BAnon x e) (only parsing).
 Notation LetCtx x e2 := (AppRCtx (LamV x e2)) (only parsing).
 Notation SeqCtx e2 := (LetCtx BAnon e2) (only parsing).
 Notation Match e0 x1 e1 x2 e2 := (Case e0 (Lam x1 e1) (Lam x2 e2)) (only parsing).
+Notation MapConsV k v m := (InjRV (PairV (PairV (LitV (LitInt k)) v) m)).
+Notation MapNilV def := (InjLV def).
 Notation Alloc e := (AllocN (Val $ LitV $ LitInt (word.of_Z (word:=u64_instance.u64_word) 1)) e) (only parsing).
 Notation AllocMap v := (Alloc (MapNilV v)) (only parsing).
 (** Compare-and-set (CAS) returns just a boolean indicating success or failure. *)

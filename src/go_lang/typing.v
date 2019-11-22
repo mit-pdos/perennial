@@ -12,7 +12,8 @@ Inductive ty :=
 | arrowT (t1 t2: ty)
 | refT (t: ty)
 | structRefT (ts: list ty)
-| mapValT (t: ty) (* keys are always uint64, for now *)
+(* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
+| mapValT (vt: ty) (* keys are always uint64, for now *)
 .
 
 Definition mapT (vt:ty) : ty := refT (mapValT vt).
