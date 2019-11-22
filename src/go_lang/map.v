@@ -56,19 +56,31 @@ Definition map_insert (m_def: gmap u64 val * val) (k: u64) (v: val) : gmap u64 v
 
 Definition MapGet: val :=
   λ: "mref" "k",
-  let: "mapGet" := (rec: "mapGet" "m" :=
-                      match: "m" with
-                        InjL "def" => ("def", #false)
-                      | InjR "kvm" =>
-                        let: "kv" := Fst "kvm" in
-                        let: "m2" := Snd "kvm" in
-                        if: "k" = (Fst "kv") then (Snd "kv", #true)
-                        else "mapGet" "m2"
-                      end) in
-  "mapGet" !"mref".
+  (rec: "mapGet" "m" :=
+     match: "m" with
+       InjL "def" => ("def", #false)
+     | InjR "kvm" =>
+       let: "kv" := Fst "kvm" in
+       let: "m2" := Snd "kvm" in
+       if: "k" = (Fst "kv") then (Snd "kv", #true)
+       else "mapGet" "m2"
+     end) (!"mref").
 
 Definition MapInsert: val :=
   λ: "mref" "k" "v",
   "mref" <- InjR ("k", "v", !"mref").
+
+Definition mapGetDef: val :=
+  rec: "mapGetDef" "m" :=
+     match: "m" with
+       InjL "def" => "def"
+     | InjR "kvm" =>
+       "mapGetDef" (Snd "kvm")
+     end.
+
+Definition MapClear: val :=
+  λ: "mref",
+  let: "def" := mapGetDef !"mref" in
+  "mref" <- InjL "def".
 
 End go_lang.

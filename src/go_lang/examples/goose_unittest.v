@@ -15,7 +15,6 @@ Module importantStruct.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End importantStruct.
 
@@ -132,14 +131,13 @@ Module Enc.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Enc.
 
 Definition Enc__consume: val :=
   λ: "e" "n",
-    let: "b" := SliceTake (Enc.loadF "p" "e") "n" in
-    struct.storeF Enc.S "p" "e" (SliceSkip (Enc.loadF "p" "e") "n");;
+    let: "b" := SliceTake (struct.loadF Enc.S "p" "e") "n" in
+    struct.storeF Enc.S "p" "e" (SliceSkip (struct.loadF Enc.S "p" "e") "n");;
     "b".
 
 Definition Enc__UInt64: val :=
@@ -159,14 +157,13 @@ Module Dec.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Dec.
 
 Definition Dec__consume: val :=
   λ: "d" "n",
-    let: "b" := SliceTake (Dec.loadF "p" "d") "n" in
-    struct.storeF Dec.S "p" "d" (SliceSkip (Dec.loadF "p" "d") "n");;
+    let: "b" := SliceTake (struct.loadF Dec.S "p" "d") "n" in
+    struct.storeF Dec.S "p" "d" (SliceSkip (struct.loadF Dec.S "p" "d") "n");;
     "b".
 
 Definition Dec__UInt64: val :=
@@ -197,7 +194,6 @@ Module allTheLiterals.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End allTheLiterals.
 
@@ -263,7 +259,7 @@ Definition conditionalInLoop: val :=
 
 Definition clearMap: val :=
   λ: "m",
-    Data.mapClear "m".
+    MapClear "m".
 
 Definition IterateMapKeys: val :=
   λ: "m" "sum",
@@ -294,7 +290,6 @@ Module composite.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End composite.
 
@@ -322,7 +317,6 @@ Module Block.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Block.
 
@@ -410,7 +404,6 @@ Module thing.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End thing.
 
@@ -423,7 +416,6 @@ Module sliceOfThings.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End sliceOfThings.
 
@@ -482,7 +474,6 @@ Module C.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End C.
 
@@ -523,7 +514,6 @@ Module TwoInts.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End TwoInts.
 
@@ -538,7 +528,6 @@ Module S.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End S.
 
@@ -555,11 +544,11 @@ Definition NewS: val :=
 
 Definition S__readA: val :=
   λ: "s",
-    S.loadF "a" "s".
+    struct.loadF S.S "a" "s".
 
 Definition S__readB: val :=
   λ: "s",
-    S.loadF "b" "s".
+    struct.loadF S.S "b" "s".
 
 Definition S__readBVal: val :=
   λ: "s",
@@ -571,7 +560,7 @@ Definition S__writeB: val :=
 
 Definition S__negateC: val :=
   λ: "s",
-    struct.storeF S.S "c" "s" (~ (S.loadF "c" "s")).
+    struct.storeF S.S "c" "s" (~ (struct.loadF S.S "c" "s")).
 
 (* DoSomeLocking uses the entire lock API *)
 Definition DoSomeLocking: val :=

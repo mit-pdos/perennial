@@ -19,7 +19,6 @@ Module Data.
     Definition mapAlter: val := λ: <>, #().
     Axiom mapIter: val.
     Axiom mapIter_t : forall vt, ⊢ mapIter : (mapT vt -> (uint64T -> vt -> unitT) -> unitT).
-    Definition mapClear: val := λ: <>, #().
     Definition randomUint64: val := λ: <>, #().
 
     Definition newLock: val := λ: <>, ref #0.

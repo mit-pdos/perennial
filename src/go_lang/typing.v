@@ -154,6 +154,9 @@ Section go_lang.
   | snd_hasTy e t1 t2 :
       Γ ⊢ e : prodT t1 t2 ->
       Γ ⊢ Snd e : t2
+  | mapNil_hasTy def vt :
+      Γ ⊢ def : vt ->
+      Γ ⊢ InjL def : mapValT vt
   | mapCons_hasTy k v vt m :
       Γ ⊢ k : uint64T ->
       Γ ⊢ v : vt ->
@@ -240,7 +243,7 @@ Section go_lang.
   | rec_val_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e : t2 ->
       Γ ⊢v RecV f x e : arrowT t1 t2
-  | mapNil_hasTy v t :
+  | mapNilV_hasTy v t :
       Γ ⊢v v : t ->
       Γ ⊢v MapNilV v : mapValT t
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
@@ -405,9 +408,21 @@ Section go_lang.
   Proof.
     typecheck.
   Qed.
+
+  Theorem mapGetDef_t Γ vt : Γ ⊢ mapGetDef : (mapValT vt -> vt).
+  Proof.
+    typecheck.
+  Qed.
+
+  Hint Resolve mapGetDef_t : types.
+
+  Theorem MapClear_t Γ vt : Γ ⊢ MapClear : (mapT vt -> unitT).
+  Proof.
+    typecheck.
+  Qed.
 End go_lang.
 
-Hint Resolve MapGet_t MapInsert_t : types.
+Hint Resolve MapGet_t MapInsert_t MapClear_t : types.
 
 Module test.
 Section go_lang.
