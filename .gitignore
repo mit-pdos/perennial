@@ -18,6 +18,8 @@
 
 # Coq compiled files
 *.vo
+*.vos
+*.vok
 *.v.d
 *.glob
 .coqdeps.d
