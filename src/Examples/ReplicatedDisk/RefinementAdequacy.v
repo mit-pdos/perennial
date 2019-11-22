@@ -264,7 +264,7 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
       { iFrame.
         rewrite !(eRO.init_wf _ _ Hinit).
         iSplitL "Hm"; [| iSplitL "Hd0"].
-        { rewrite -Hmpf_eq. iApply mem_init_to_bigOp; auto. }
+        { rewrite -Hmpf_eq. iApply (mem_init_to_bigOp with "Hm"); auto. }
         { iApply (big_sepM_mono with "Hd0"). iIntros (???) "(?&?&?)". iFrame. }
         { iApply (big_sepM_mono with "Hd1"). iIntros (???) "(?&?&?)". iFrame. }
       }
@@ -283,7 +283,7 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
     iMod ("Hinv_post") as "Hinv_post".
     iModIntro. iIntros (?).
     iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
-    { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    { rewrite -Hmpf_eq. iApply (mem_init_to_bigOp with "Hm"); auto. }
     iIntros (n σ) "(Hmach&Hthread)".
     iModIntro.
     iIntros (σ' Hcrash).
@@ -310,7 +310,7 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
     iMod ("Hinv_post") as "Hinv_post".
     iModIntro. iIntros (?).
     iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
-    { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    { rewrite -Hmpf_eq. iApply (mem_init_to_bigOp with "Hm"); auto. }
     iIntros (n σ) "(Hmach&Hthread)".
     iModIntro.
     iIntros (σ' Hcrash).
@@ -370,7 +370,7 @@ Module twodisk_refinement (eRT: twodisk_refinement_type) (eRO: twodisk_refinemen
     }
     iIntros "Hstate". iSpecialize ("Hinv_post" with "[Hstate Hm]").
     { iFrame. iDestruct "Hstate" as "(?&?)". iFrame.
-      rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+      rewrite -Hmpf_eq. iApply (mem_init_to_bigOp with "Hm"); auto. }
     eauto.
   Qed.
   End RO.

@@ -248,7 +248,9 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     iMod ("Hinv_post") as "Hinv_post".
     iModIntro. iIntros (? n σ).
     iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
-    { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    {
+      iApply (mem_init_to_bigOp with "Hm"); eauto.
+    }
     iIntros "(Hmach&Hthread)".
     iModIntro.
     iIntros (σ' Hcrash).
@@ -274,7 +276,7 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     iMod ("Hinv_post") as "Hinv_post".
     iModIntro. iIntros (? n σ).
     iMod ("Hinv_post" with "[Hm]") as "Hinv_post".
-    { rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+    { iApply (mem_init_to_bigOp with "Hm"); auto. }
     iIntros "(Hmach&Hthread)".
     iModIntro.
     iIntros (σ' Hcrash).
@@ -332,7 +334,7 @@ Module exmach_refinement (eRT: exmach_refinement_type) (eRO: exmach_refinement_o
     }
     iIntros "Hstate". iSpecialize ("Hinv_post" with "[Hstate Hm]").
     { iFrame. iDestruct "Hstate" as "(?&?)". iFrame.
-      rewrite -Hmpf_eq. iApply @mem_init_to_bigOp; auto. }
+      rewrite -Hmpf_eq. iApply (mem_init_to_bigOp with "Hm"); auto. }
     eauto.
   Qed.
   End RO.
