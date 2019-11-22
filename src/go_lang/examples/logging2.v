@@ -255,5 +255,8 @@ Definition Txn__Commit: val :=
     let: "blks" := ref (zero_val (slice.T disk.blockT)) in
     MapIter (Txn.get "blks" "txn") (λ: <> "v",
       "blks" <- SliceAppend !"blks" "v");;
-    let: "ok" := Log__Append (!(Txn.get "log" "txn")) !"blks" in
+    let: "ok" := Log__Append (struct.load Log.S (Txn.get "log" "txn")) !"blks" in
     "ok".
+Theorem Txn__Commit_t: ⊢ Txn__Commit : (Txn.T -> boolT).
+Proof. typecheck. Qed.
+Hint Resolve Txn__Commit_t : types.
