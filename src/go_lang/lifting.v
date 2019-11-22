@@ -32,7 +32,8 @@ Class heapG Σ := HeapG {
   heapG_invG : invG Σ;
   heapG_ffiG : ffiG Σ;
   heapG_gen_heapG :> gen_heapG loc val Σ;
-  heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ
+  heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
+  (* TODO: probably want to say something about the trace *)
 }.
 
 Global Instance heapG_irisG `{!heapG Σ} :
@@ -95,6 +96,8 @@ Proof. solve_atomic. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance ext_atomic s op v : Atomic s (ExternalOp op (Val v)).
+Proof. solve_atomic. Qed.
+Global Instance observe_atomic s v : Atomic s (Observe (Val v)).
 Proof. solve_atomic. Qed.
 
 Global Instance proph_resolve_atomic s e v1 v2 :
@@ -217,6 +220,16 @@ Lemma wp_panic s msg E r :
   {{{ ▷ False }}} Panic msg @ s; E {{{ RET r; True }}}.
 Proof.
   iIntros (Φ) ">[] HΦ".
+Qed.
+
+(* TODO: note that this doesn't say anything because there is nothing in the
+state interpretation about the trace *)
+Lemma wp_observe s E v Φ :
+  ▷ Φ (LitV LitUnit) -∗ WP Observe v @ s; E {{ Φ }}.
+Proof.
+  iIntros "HΦ". iApply wp_lift_atomic_head_step; [done|].
+  iIntros (σ1 κ κs n) "Hσ !>"; iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. by iFrame.
 Qed.
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)

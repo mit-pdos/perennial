@@ -112,6 +112,7 @@ Inductive prim_op : arity -> Set :=
   | DecodeInt64Op : prim_op args1 (* loc to load from *)
   | EncodeInt32Op : prim_op args2 (* int, loc to store to *)
   | DecodeInt32Op : prim_op args1 (* loc to load from *)
+  | ObserveOp : prim_op args1
 .
 
 Inductive expr :=
@@ -166,6 +167,7 @@ Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
 Notation DecodeInt64 := (Primitive1 DecodeInt64Op).
 Notation EncodeInt32 := (Primitive2 EncodeInt32Op).
 Notation DecodeInt32 := (Primitive1 DecodeInt32Op).
+Notation Observe := (Primitive1 ObserveOp).
 
 Fixpoint flatten_struct (v: val) : list val :=
   match v with
@@ -179,10 +181,11 @@ Context {ffi : ffi_model}.
 Record state : Type := {
   heap: gmap loc val;
   world: ffi_state;
+  trace: list val;
   used_proph_id: gset proph_id;
 }.
 
-Global Instance eta_state : Settable _ := settable! Build_state <heap; world; used_proph_id>.
+Global Instance eta_state : Settable _ := settable! Build_state <heap; world; trace; used_proph_id>.
 
 (* Note that ext_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
@@ -455,6 +458,7 @@ Proof.
                                 | DecodeInt64Op => inr 6
                                 | EncodeInt32Op => inr 8
                                 | DecodeInt32Op => inr 9
+                                | ObserveOp => inr 10
                                 end)
                          (λ v, match v with
                                | inl s => a_prim_op (PanicOp s)
@@ -465,7 +469,8 @@ Proof.
                                | inr 5 => a_prim_op EncodeInt64Op
                                | inr 6 => a_prim_op DecodeInt64Op
                                | inr 8 => a_prim_op EncodeInt32Op
-                               | inr _ => a_prim_op DecodeInt32Op
+                               | inr 9 => a_prim_op DecodeInt32Op
+                               | inr _ => a_prim_op ObserveOp
                                end) _); by intros [_ []].
 Qed.
 
@@ -608,7 +613,7 @@ Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Global Instance state_inhabited : Inhabited state :=
-  populate {| heap := inhabitant; world := inhabitant; used_proph_id := inhabitant |}.
+  populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; used_proph_id := inhabitant |}.
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
@@ -901,6 +906,11 @@ Inductive head_step : expr → state → list observation → expr → state →
                []
                (Val v') σ'
                []
+  | ObserveS v σ :
+     head_step (Observe (Val v)) σ
+               []
+               (Val $ LitV LitUnit) (set trace (fun tr => tr ++ [v]) σ)
+               []
   | EncodeInt64S v l σ :
      (forall i, (i < 8)%nat -> is_Some (σ.(heap) !! (l +ₗ i))) ->
      head_step (EncodeInt64 (Val $ LitV $ LitInt v) (Val $ LitV $ LitLoc l)) σ
@@ -1060,3 +1070,4 @@ Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
 Notation DecodeInt64 := (Primitive1 DecodeInt64Op).
 Notation EncodeInt32 := (Primitive2 EncodeInt32Op).
 Notation DecodeInt32 := (Primitive1 DecodeInt32Op).
+Notation Observe := (Primitive1 ObserveOp).
