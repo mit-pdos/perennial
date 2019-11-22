@@ -51,7 +51,11 @@ Definition buildStruct (d:descriptor) (fvs: list (string*expr)) : expr :=
   | None => LitV LitUnit
   end.
 
-Definition allocStruct (d:descriptor) (fvs: list (string*expr)) : expr :=
+(* wraps AllocStruct for typechecking *)
+Definition allocStruct (d:descriptor) : val :=
+  λ: "v", AllocStruct (Var "v").
+
+Definition allocStructLit (d:descriptor) (fvs: list (string*expr)) : expr :=
   match build_struct_val fvs (rev d.(fields)) with
   | Some v => AllocStruct v
   | None => LitV LitUnit
@@ -132,6 +136,11 @@ Set Default Proof Using "ext ext_ty".
 Hint Resolve struct_offset_op_hasTy_eq : types.
 
 Local Open Scope heap_types.
+
+Theorem allocStruct_t d Γ : Γ ⊢ allocStruct d : (structTy d -> structRefTy d).
+Proof.
+  typecheck.
+Qed.
 
 Theorem load_struct_ref_hasTy Γ l t ts :
   Γ ⊢ l : structRefT (t::ts) ->
@@ -327,7 +336,8 @@ Declare Reduction buildStruct :=
 Module struct.
   Notation decl := mkStruct.
   Notation mk := buildStruct.
-  Notation new := allocStruct.
+  Notation new := allocStructLit.
+  Notation alloc := allocStruct.
   Notation get := getField.
   (* TODO: load/loadF could probably use better names *)
   Notation load := loadStruct.
@@ -346,5 +356,5 @@ Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scop
 
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)
-Global Opaque loadStruct loadField storeStruct storeField.
-Hint Resolve loadStruct_t loadField_t storeStruct_t storeField_t : types.
+Global Opaque allocStruct loadStruct loadField storeStruct storeField.
+Hint Resolve allocStruct_t loadStruct_t loadField_t storeStruct_t storeField_t : types.
