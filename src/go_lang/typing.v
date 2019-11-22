@@ -420,9 +420,14 @@ Section go_lang.
   Proof.
     typecheck.
   Qed.
+
+  Theorem MapIter_t vt Γ : Γ ⊢ MapIter : (mapT vt -> (uint64T -> vt -> unitT) -> unitT).
+  Proof.
+    typecheck.
+  Qed.
 End go_lang.
 
-Hint Resolve MapGet_t MapInsert_t MapClear_t : types.
+Hint Resolve MapGet_t MapInsert_t MapClear_t MapIter_t : types.
 
 Module test.
 Section go_lang.

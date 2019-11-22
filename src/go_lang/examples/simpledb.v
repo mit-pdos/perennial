@@ -23,7 +23,6 @@ Module Table.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Table.
 
@@ -50,7 +49,6 @@ Module Entry.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Entry.
 
@@ -110,7 +108,6 @@ Module lazyFileBuf.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End lazyFileBuf.
 
@@ -192,7 +189,6 @@ Module bufFile.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End bufFile.
 
@@ -236,7 +232,6 @@ Module tableWriter.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End tableWriter.
 
@@ -298,7 +293,7 @@ Module Database.
     "wbuffer" :: refT (mapT (slice.T byteT));
     "rbuffer" :: refT (mapT (slice.T byteT));
     "bufferL" :: lockRefT;
-    "table" :: refT Table.T;
+    "table" :: struct.ptrT Table.S;
     "tableName" :: refT stringT;
     "tableL" :: lockRefT;
     "compactionL" :: lockRefT
@@ -308,7 +303,6 @@ Module Database.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Database.
 
@@ -329,8 +323,8 @@ Definition NewDb: val :=
     let: "tableNameRef" := ref (zero_val stringT) in
     "tableNameRef" <- "tableName";;
     let: "table" := CreateTable "tableName" in
-    let: "tableRef" := ref (zero_val Table.T) in
-    "tableRef" <- "table";;
+    let: "tableRef" := struct.new (zero_val Table.T) in
+    struct.store Table.S "tableRef" "table";;
     let: "tableL" := Data.newLock #() in
     let: "compactionL" := Data.newLock #() in
     struct.mk Database.S [
@@ -397,7 +391,7 @@ Definition freshTable: val :=
 
 Definition tablePutBuffer: val :=
   λ: "w" "buf",
-    Data.mapIter "buf" (λ: "k" "v",
+    MapIter "buf" (λ: "k" "v",
       tablePut "w" "k" "v").
 
 (* add all of table t to the table w being created; skip any keys in the (read)
@@ -472,7 +466,7 @@ Definition Compact: val :=
     let: "newTable" := freshTable "oldTableName" in
     Data.lockRelease Reader (Database.get "tableL" "db");;
     Data.lockAcquire Writer (Database.get "tableL" "db");;
-    Database.get "table" "db" <- "t";;
+    struct.store Table.S (Database.get "table" "db") "t";;
     Database.get "tableName" "db" <- "newTable";;
     let: "manifestData" := Data.stringToBytes "newTable" in
     FS.atomicCreate #(str"db") #(str"manifest") "manifestData";;
@@ -518,8 +512,8 @@ Definition Recover: val :=
   λ: <>,
     let: "tableName" := recoverManifest #() in
     let: "table" := RecoverTable "tableName" in
-    let: "tableRef" := ref (zero_val Table.T) in
-    "tableRef" <- "table";;
+    let: "tableRef" := struct.new (zero_val Table.T) in
+    struct.store Table.S "tableRef" "table";;
     let: "tableNameRef" := ref (zero_val stringT) in
     "tableNameRef" <- "tableName";;
     deleteOtherFiles "tableName";;

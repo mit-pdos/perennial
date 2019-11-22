@@ -253,7 +253,7 @@ Hint Resolve Txn__Read_t : types.
 Definition Txn__Commit: val :=
   λ: "txn",
     let: "blks" := ref (zero_val (slice.T disk.blockT)) in
-    Data.mapIter (Txn.get "blks" "txn") (λ: <> "v",
+    MapIter (Txn.get "blks" "txn") (λ: <> "v",
       "blks" <- SliceAppend !"blks" "v");;
     let: "ok" := Log__Append (!(Txn.get "log" "txn")) !"blks" in
     "ok".

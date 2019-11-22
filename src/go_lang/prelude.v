@@ -16,9 +16,6 @@ Module Data.
     Definition stringToBytes: val := λ: <>, #().
     Definition bytesToString: val := λ: <>, #().
     Definition sliceAppendSlice: val := λ: <>, #().
-    Definition mapAlter: val := λ: <>, #().
-    Axiom mapIter: val.
-    Axiom mapIter_t : forall vt, ⊢ mapIter : (mapT vt -> (uint64T -> vt -> unitT) -> unitT).
     Definition randomUint64: val := λ: <>, #().
 
     Definition newLock: val := λ: <>, ref #0.
@@ -43,7 +40,6 @@ End Data.
 
 Opaque Data.newLock Data.lockRelease Data.lockAcquire.
 Hint Resolve Data.newLock_t Data.lockRelease_t Data.lockAcquire_t : types.
-Hint Resolve Data.mapIter_t : types.
 
 Module FS.
   Section go_lang.

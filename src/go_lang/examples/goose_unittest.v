@@ -91,7 +91,7 @@ Definition usePtr: val :=
 Definition iterMapKeysAndValues: val :=
   λ: "m",
     let: "sumPtr" := ref (zero_val uint64T) in
-    Data.mapIter "m" (λ: "k" "v",
+    MapIter "m" (λ: "k" "v",
       let: "sum" := !"sumPtr" in
       "sumPtr" <- "sum" + "k" + "v");;
     let: "sum" := !"sumPtr" in
@@ -102,7 +102,7 @@ Definition iterMapKeys: val :=
     let: "keysSlice" := NewSlice uint64T #0 in
     let: "keysRef" := ref (zero_val (slice.T uint64T)) in
     "keysRef" <- "keysSlice";;
-    Data.mapIter "m" (λ: "k" <>,
+    MapIter "m" (λ: "k" <>,
       let: "keys" := !"keysRef" in
       let: "newKeys" := SliceAppend "keys" "k" in
       "keysRef" <- "newKeys");;
@@ -263,7 +263,7 @@ Definition clearMap: val :=
 
 Definition IterateMapKeys: val :=
   λ: "m" "sum",
-    Data.mapIter "m" (λ: "k" <>,
+    MapIter "m" (λ: "k" <>,
       let: "oldSum" := !"sum" in
       "sum" <- "oldSum" + "k").
 

@@ -83,4 +83,18 @@ Definition MapClear: val :=
   let: "def" := mapGetDef !"mref" in
   "mref" <- InjL "def".
 
+Definition MapIter: val :=
+  λ: "mref" "body",
+  (rec: "mapIter" "m" :=
+     (* TODO: the iteration order should really be non-deterministic *)
+     match: "m" with
+       InjL "def" => #()
+     | InjR "kvm" =>
+       let: "k" := Fst (Fst "kvm") in
+       let: "v" := Snd (Fst "kvm") in
+       let: "m_rest" := Snd "kvm" in
+       "body" "k" "v";;
+       "mapIter" "m_rest"
+     end) (!"mref").
+
 End go_lang.
