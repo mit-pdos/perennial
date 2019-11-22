@@ -1,5 +1,6 @@
 From stdpp Require Import gmap.
 From stdpp Require Import vector fin_maps.
+From RecordUpdate Require Import RecordSet.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Import ectx_lifting.
 
@@ -114,7 +115,7 @@ Section disk.
                 σ.(heap) !! (l +ₗ i) =
                 Block_to_vals b !! Z.to_nat i)%Z ->
       ext_step WriteOp (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
-               (LitV LitUnit) (state_upd_world <[ a := b ]> σ)
+               (LitV LitUnit) (set world <[ a := b ]> σ)
   (* TODO: size semantics *)
   .
 

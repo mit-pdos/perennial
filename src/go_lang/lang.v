@@ -1,4 +1,5 @@
 From Coq Require Import Program.Equality.
+From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders strings.
 From stdpp Require Import gmap.
 From iris.algebra Require Export ofe.
@@ -180,6 +181,9 @@ Record state : Type := {
   world: ffi_state;
   used_proph_id: gset proph_id;
 }.
+
+Global Instance eta_state : Settable _ := settable! Build_state <heap; world; used_proph_id>.
+
 (* Note that ext_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
 the syntax of heap_lang. Similarly, it "returns" an expression, the result of
@@ -772,18 +776,6 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | _, _ => None
     end.
 
-Definition state_upd_heap (f: gmap loc val → gmap loc val) (σ: state) : state :=
-  {| heap := f σ.(heap); world := σ.(world); used_proph_id := σ.(used_proph_id) |}.
-Global Arguments state_upd_heap _ !_ /.
-
-Definition state_upd_world (f: ffi_state → ffi_state) (σ: state) : state :=
-  {| heap := σ.(heap); world := f σ.(world); used_proph_id := σ.(used_proph_id) |}.
-Global Arguments state_upd_world _ !_ /.
-
-Definition state_upd_used_proph_id (f: gset proph_id → gset proph_id) (σ: state) : state :=
-  {| heap := σ.(heap); world := σ.(world); used_proph_id := f σ.(used_proph_id) |}.
-Global Arguments state_upd_used_proph_id _ !_ /.
-
 Fixpoint heap_array (l : loc) (vs : list val) : gmap loc val :=
   match vs with
   | [] => ∅
@@ -828,16 +820,16 @@ Qed.
 Close Scope Z.
 
 Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
-  state_upd_heap (λ h, heap_array l vs ∪ h) σ.
+  set heap (λ h, heap_array l vs ∪ h) σ.
 
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)
 Definition state_init_heap (l : loc) (n : Z) (v : val) (σ : state) : state :=
   state_insert_list l (replicate (Z.to_nat n) v) σ.
 
 Lemma state_init_heap_singleton l v σ :
-  state_init_heap l 1 v σ = state_upd_heap <[l:=v]> σ.
+  state_init_heap l 1 v σ = set heap <[l:=v]> σ.
 Proof.
-  destruct σ as [h p]. rewrite /state_init_heap /state_insert_list /=. f_equiv.
+  destruct σ as [h p]. rewrite /state_init_heap /state_insert_list /set /=. f_equiv.
   rewrite right_id insert_union_singleton_l. done.
 Qed.
 
@@ -901,7 +893,7 @@ Inductive head_step : expr → state → list observation → expr → state →
      is_Some (σ.(heap) !! l) →
      head_step (Store (Val $ LitV $ LitLoc l) (Val v)) σ
                []
-               (Val $ LitV LitUnit) (state_upd_heap <[l:=v]> σ)
+               (Val $ LitV LitUnit) (set heap <[l:=v]> σ)
                []
   | ExternalS op v σ v' σ' :
      ext_step op v σ v' σ' ->
@@ -940,13 +932,13 @@ Inductive head_step : expr → state → list observation → expr → state →
      b = bool_decide (vl = v1) →
      head_step (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) σ
                []
-               (Val $ PairV vl (LitV $ LitBool b)) (if b then state_upd_heap <[l:=v2]> σ else σ)
+               (Val $ PairV vl (LitV $ LitBool b)) (if b then set heap <[l:=v2]> σ else σ)
                []
   | NewProphS σ p :
      p ∉ σ.(used_proph_id) →
      head_step NewProph σ
                []
-               (Val $ LitV $ LitProphecy p) (state_upd_used_proph_id ({[ p ]} ∪.) σ)
+               (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ)
                []
   | ResolveS p v e σ w σ' κs ts :
      head_step e σ κs (Val v) σ' ts →
@@ -988,7 +980,7 @@ Qed.
 
 Lemma new_proph_id_fresh σ :
   let p := fresh σ.(used_proph_id) in
-  head_step NewProph σ [] (Val $ LitV $ LitProphecy p) (state_upd_used_proph_id ({[ p ]} ∪.) σ) [].
+  head_step NewProph σ [] (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ) [].
 Proof. constructor. apply is_fresh. Qed.
 
 Lemma heap_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step.
