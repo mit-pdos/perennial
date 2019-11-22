@@ -768,6 +768,10 @@ Import Mail.
       wp_bind.
       iApply (wp_readPtr with "HfinalFile").
       iIntros "!> _". wp_ret. iApply "HΦ"; by iFrame.
+
+      Grab Existential Variables.
+      (* TODO: this should not be necessary *)
+      all: typeclasses eauto.
   Qed.
 
   Lemma TmpInv_path_acc name inode:
@@ -1001,6 +1005,9 @@ Import Mail.
       iDestruct ("Hwand" with "[$] [$]") as "Htmp".
       iExists _. iFrame.
       iApply "HΦ". by iFrame.
+
+      Grab Existential Variables.
+      all: typeclasses eauto.
   Qed.
 
   Lemma delete_refinement {T} j K `{LanguageCtx _ _ T Mail.l K} uid msg:
