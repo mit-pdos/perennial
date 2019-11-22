@@ -219,28 +219,15 @@ Proof.
     rewrite <- app_assoc; auto.
 Qed.
 
-Theorem concat_fields_cons_eq fs : forall f,
-  concat (map (λ ft : string * ty, flatten_ty ft.2) (f::fs)) =
-  flatten_ty (struct_ty_aux f.2 fs).
+Theorem flatten_ty_struct_aux fs : forall t,
+  flatten_ty (struct_ty_aux t fs) = flatten_ty t ++ match fs with
+                                                    | [] => []
+                                                    | f::fs => flatten_ty (struct_ty_aux f.2 fs)
+                                                    end.
 Proof.
-  induction fs; intros.
-  - simpl. rewrite app_nil_r; auto.
-  - set (mapf:=fun ft => flatten_ty ft.2) in *.
-    change (concat (map mapf (f :: a :: fs))) with
-        (flatten_ty f.2 ++ concat (map mapf (a::fs))).
-    rewrite IHfs.
-    simpl.
-    rewrite flatten_ty_struct_prod; auto.
-Qed.
-
-Theorem concat_fields_eq f x fs :
-  field_offset fs f = Some x ->
-  concat (map (λ ft : string * ty, flatten_ty ft.2) fs) =
-  flatten_ty (struct_ty_prod fs).
-Proof.
-  destruct fs; intros.
-  - simpl in H; congruence.
-  - apply concat_fields_cons_eq.
+  destruct fs; simpl; intros.
+  - rewrite app_nil_r; auto.
+  - rewrite flatten_ty_struct_prod; auto.
 Qed.
 
 Theorem fieldOffset_t Γ fs f z t e :
@@ -248,26 +235,26 @@ Theorem fieldOffset_t Γ fs f z t e :
   Γ ⊢ e : structRefT (flatten_ty (struct_ty_prod fs)) ->
   Γ ⊢ (e +ₗ #z) : structRefT (flatten_ty t).
 Proof.
-  intros.
-  erewrite <- concat_fields_eq in H0 by eauto.
-  generalize dependent e.
-  generalize dependent z.
-  generalize dependent t.
+  revert e z t.
   induction fs; simpl; intros.
   - congruence.
   - destruct a as [f' t']; simpl in H0.
     destruct (f' =? f)%string.
     + inversion H; subst; clear H.
       apply struct_offset_0_hasTy.
+      rewrite flatten_ty_struct_aux in H0.
       eapply struct_weaken_hasTy; eauto.
     + destruct_with_eqn (field_offset fs f); try congruence.
       destruct p as [off t''].
       inversion H; subst; clear H.
-      assert (Γ ⊢ e +ₗ #(ty_size t') : structRefT (concat (map (λ ft : string * ty, flatten_ty ft.2) fs))).
-      { eapply struct_offset_op_hasTy_eq; eauto.
-        autorewrite with ty; auto. }
-      eapply IHfs in H; eauto.
+
       apply struct_offset_op_collapse_hasTy; auto.
+      eapply IHfs; eauto.
+
+      eapply struct_offset_op_hasTy_eq; eauto.
+      rewrite flatten_ty_struct_aux.
+      autorewrite with ty.
+      destruct fs; simpl in *; congruence.
 Qed.
 
 Theorem loadField_t : forall d f t z,
