@@ -123,6 +123,60 @@ Definition emptyReturn: val :=
   λ: <>,
     "tt".
 
+Module Enc.
+  Definition S := struct.decl [
+    "p" :: slice.T byteT
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
+  End fields.
+End Enc.
+
+Definition Enc__consume: val :=
+  λ: "e" "n",
+    let: "b" := SliceTake (Enc.loadF "p" "e") "n" in
+    struct.storeF Enc.S "p" "e" (SliceSkip (Enc.loadF "p" "e") "n");;
+    "b".
+
+Definition Enc__UInt64: val :=
+  λ: "e" "x",
+    UInt64Put (Enc__consume "e" #8) "x".
+
+Definition Enc__UInt32: val :=
+  λ: "e" "x",
+    UInt32Put (Enc__consume "e" #4) "x".
+
+Module Dec.
+  Definition S := struct.decl [
+    "p" :: slice.T byteT
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+    Definition loadF := struct.loadF S.
+  End fields.
+End Dec.
+
+Definition Dec__consume: val :=
+  λ: "d" "n",
+    let: "b" := SliceTake (Dec.loadF "p" "d") "n" in
+    struct.storeF Dec.S "p" "d" (SliceSkip (Dec.loadF "p" "d") "n");;
+    "b".
+
+Definition Dec__UInt64: val :=
+  λ: "d",
+    UInt64Get (Dec__consume "d" #8).
+
+Definition Dec__UInt32: val :=
+  λ: "d",
+    UInt32Get (Dec__consume "d" #4).
+
 Definition useInts: val :=
   λ: "x" "y",
     let: "z" := zero_val uint64T in
