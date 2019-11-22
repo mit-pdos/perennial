@@ -408,9 +408,9 @@ Proof.
     iIntros "IHvs1 Hmap".
 Admitted.
 
-Lemma wp_encode_int s E l vs (x: u64) :
-  {{{ ▷ mapsto_vals l 1 vs ∗ ⌜length vs = 8%nat⌝ }}} EncodeInt (Val $ LitV $ LitInt x) (Val $ LitV (LitLoc l)) @ s; E
-  {{{ RET LitV LitUnit; mapsto_vals l 1 (u64_le_vals x) }}}.
+Lemma wp_encode_int64 s E l vs (x: u64) :
+  {{{ ▷ mapsto_vals l 1 vs ∗ ⌜length vs = 8%nat⌝ }}} EncodeInt64 (Val $ LitV $ LitInt x) (Val $ LitV (LitLoc l)) @ s; E
+  {{{ RET LitV LitUnit; mapsto_vals l 1 (byte_vals (u64_le x)) }}}.
 Proof.
   iIntros (Φ) "(>Hl&%) HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
@@ -420,7 +420,7 @@ Proof.
   iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep).
   inversion Hstep; subst; clear Hstep.
   iMod (@gen_heap_update_map with "Hσ Hl") as "[$ Hl]".
-  { rewrite u64_le_vals_length //. }
+  { rewrite byte_vals_length u64_le_length //. }
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
 

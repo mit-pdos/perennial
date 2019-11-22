@@ -211,6 +211,12 @@ Proof.
   rewrite Z.mod_small by lia; auto.
 Qed.
 
+Theorem tuple_to_list_length A n (t: tuple A n) :
+  length (tuple.to_list t) = n.
+Proof.
+  induction n; simpl; auto.
+Qed.
+
 Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x.(u64_car) in
   let t := split (byte:=Naive.word8) 8 n in
@@ -227,12 +233,6 @@ Defined.
 Theorem u64_le_length x : length (u64_le x) = 8%nat.
 Proof.
   reflexivity.
-Qed.
-
-Theorem tuple_to_list_length A n (t: tuple A n) :
-  length (tuple.to_list t) = n.
-Proof.
-  induction n; simpl; auto.
 Qed.
 
 Theorem tuple_of_to_list8 A (t: tuple A 8) :
@@ -256,6 +256,49 @@ Proof.
   rewrite tuple_of_to_list8.
   rewrite combine_split.
   change (8%nat * 8) with 64.
+  rewrite word.wrap_unsigned by lia.
+  by rewrite word.of_Z_unsigned.
+Qed.
+
+Definition u32_le (x: u32) : list byte :=
+  let n := word.unsigned x.(u32_car) in
+  let t := split (byte:=Naive.word8) 4 n in
+  let words := tuple.to_list t in
+  map Word8 words.
+
+Definition le_to_u32 (l: list byte) : u32.
+Proof.
+  refine (Word32 (word.of_Z _)).
+  set (t := tuple.of_list (map u8_car l)).
+  exact (combine (byte:=Naive.word8) _ t).
+Defined.
+
+Theorem u32_le_length x : length (u32_le x) = 4%nat.
+Proof.
+  reflexivity.
+Qed.
+
+Theorem tuple_of_to_list4 A (t: tuple A 4) :
+  tuple.of_list (tuple.to_list t) = t.
+Proof.
+  unfold tuple in t.
+  repeat match goal with
+         | [ t: hlist _ |- _ ] => destruct t
+         end.
+  f_equal.
+Qed.
+
+Theorem u32_le_to_word : forall x,
+    le_to_u32 (u32_le x) = x.
+Proof.
+  intros [x]; simpl.
+  unfold le_to_u32, u32_le.
+  f_equal.
+  cbv [u32_car].
+  rewrite map_map, map_id.
+  rewrite tuple_of_to_list4.
+  rewrite combine_split.
+  change (4%nat * 8) with 32.
   rewrite word.wrap_unsigned by lia.
   by rewrite word.of_Z_unsigned.
 Qed.

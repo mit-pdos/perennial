@@ -204,10 +204,17 @@ Section go_lang.
   | encode_hasTy n p :
       Γ ⊢ n : uint64T ->
       Γ ⊢ p : refT byteT ->
-      Γ ⊢ EncodeInt n p : unitT
+      Γ ⊢ EncodeInt64 n p : unitT
   | decode_hasTy p :
       Γ ⊢ p : refT byteT ->
-      Γ ⊢ DecodeInt p : uint64T
+      Γ ⊢ DecodeInt64 p : uint64T
+  | encode32_hasTy n p :
+      Γ ⊢ n : uint32T ->
+      Γ ⊢ p : refT byteT ->
+      Γ ⊢ EncodeInt32 n p : unitT
+  | decode32_hasTy p :
+      Γ ⊢ p : refT byteT ->
+      Γ ⊢ DecodeInt32 p : uint32T
   | struct_weaken_hasTy e ts1 ts2 :
       Γ ⊢ e : structRefT (ts1 ++ ts2) ->
       Γ ⊢ e : structRefT ts1
