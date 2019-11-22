@@ -9,10 +9,12 @@ Module Log.
     "sz" :: uint64T;
     "diskSz" :: uint64T
   ].
-  Notation T := (struct.t S).
-  Notation Ptr := (struct.ptrT S).
-  Notation get := (struct.get S).
-  Notation loadF := (struct.loadF S).
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End Log.
 
 Definition Log__writeHdr: val :=
@@ -68,65 +70,30 @@ Hint Resolve writeAll_t : types.
 
 Definition Log__Append: val :=
   λ: "log" "bks",
-    let: "sz" := Log.loadF "sz" "log" in
-    (if: #1 + "sz" + slice.len "bks" ≥ Log.loadF "diskSz" "log"
+    let: "sz" := struct.loadF Log.S "sz" "log" in
+    (if: #1 + "sz" + slice.len "bks" ≥ struct.loadF Log.S "diskSz" "log"
     then #false
     else
       writeAll "bks" (#1 + "sz");;
       let: "newLog" := struct.mk Log.S [
         "sz" ::= "sz" + slice.len "bks";
-        "diskSz" ::= Log.loadF "diskSz" "log"
+        "diskSz" ::= struct.loadF Log.S "diskSz" "log"
       ] in
       Log__writeHdr "newLog";;
-      "log" <- "newLog";;
+      struct.store Log.S "log" "newLog";;
       #true).
-
-Hint Extern 1 (expr_hasTy _ (Val (loadField _ _)) _) => eapply loadField_t; simpl : types.
-
-Theorem Log__Append_t: ⊢ Log__Append : (Log.Ptr -> slice.T disk.blockT -> boolT).
-Proof.
-  type_step; eauto.
-  type_step; eauto.
-  type_step; eauto.
-  { typecheck. }
-  type_step; eauto.
-  type_step; eauto.
-  { typecheck. }
-  { typecheck. }
-  type_step; eauto.
-  { typecheck. }
-  type_step; eauto.
-  type_step; eauto.
-  { typecheck. }
-  type_step; eauto.
-  type_step; eauto.
-  { typecheck. }
-  type_step; eauto.
-  type_step; eauto.
-  { eapply store_struct_hasTy; [ | typecheck | eauto ].
-    typecheck. }
-  { typecheck. }
-Qed.
+Theorem Log__Append_t: ⊢ Log__Append : (struct.ptrT Log.S -> slice.T disk.blockT -> boolT).
+Proof. typecheck. Qed.
 Hint Resolve Log__Append_t : types.
 
 Definition Log__Reset: val :=
   λ: "log",
     let: "newLog" := struct.mk Log.S [
       "sz" ::= #0;
-      "diskSz" ::= Log.loadF "diskSz" "log"
+      "diskSz" ::= struct.loadF Log.S "diskSz" "log"
     ] in
     Log__writeHdr "newLog";;
-    "log" <- "newLog".
-Theorem Log__Reset_t: ⊢ Log__Reset : (Log.Ptr -> unitT).
-Proof.
-  type_step; eauto.
-  type_step; eauto.
-  { typecheck. }
-  type_step; eauto.
-  type_step; eauto.
-  { typecheck. }
-  type_step; eauto.
-  eapply store_struct_hasTy; [ | typecheck | eauto ].
-  { typecheck. }
-Qed.
+    struct.store Log.S "log" "newLog".
+Theorem Log__Reset_t: ⊢ Log__Reset : (struct.ptrT Log.S -> unitT).
+Proof. typecheck. Qed.
 Hint Resolve Log__Reset_t : types.

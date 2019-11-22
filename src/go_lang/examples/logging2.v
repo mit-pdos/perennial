@@ -27,7 +27,6 @@ Module Log.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Log.
 
@@ -197,7 +196,7 @@ Hint Resolve Log__Logger_t : types.
 
 Module Txn.
   Definition S := struct.decl [
-    "log" :: refT Log.T;
+    "log" :: struct.ptrT Log.S;
     "blks" :: mapT disk.blockT
   ].
   Definition T: ty := struct.t S.
@@ -205,7 +204,6 @@ Module Txn.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Txn.
 
@@ -217,7 +215,7 @@ Definition Begin: val :=
       "blks" ::= NewMap disk.blockT
     ] in
     "txn".
-Theorem Begin_t: ⊢ Begin : (refT Log.T -> Txn.T).
+Theorem Begin_t: ⊢ Begin : (struct.ptrT Log.S -> Txn.T).
 Proof. typecheck. Qed.
 Hint Resolve Begin_t : types.
 
@@ -259,6 +257,3 @@ Definition Txn__Commit: val :=
       "blks" <- SliceAppend !"blks" "v");;
     let: "ok" := Log__Append (!(Txn.get "log" "txn")) !"blks" in
     "ok".
-Theorem Txn__Commit_t: ⊢ Txn__Commit : (Txn.T -> boolT).
-Proof. typecheck. Qed.
-Hint Resolve Txn__Commit_t : types.

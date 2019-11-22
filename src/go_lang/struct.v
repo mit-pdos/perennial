@@ -198,7 +198,7 @@ Proof.
     autorewrite with ty; auto.
 Qed.
 
-Theorem loadStruct_hasTy Γ d :
+Theorem loadStruct_t Γ d :
   Γ ⊢v loadStruct d : (structRefTy d -> structTy d).
 Proof.
   unfold loadStruct, structRefTy, structTy.
@@ -259,12 +259,11 @@ Qed.
 
 Theorem loadField_t : forall d f t z,
   field_offset d.(fields) f = Some (z, t) ->
-  forall Γ, (Γ ⊢ loadField d f : (structRefTy d -> t))%T.
+  forall Γ, (Γ ⊢v loadField d f : (structRefTy d -> t))%T.
 Proof.
   unfold structRefTy, loadField; simpl.
   intros.
   rewrite H; simpl.
-  econstructor.
   econstructor.
   eapply load_ty_t.
   eapply fieldOffset_t; eauto.
@@ -287,21 +286,17 @@ Proof.
     autorewrite with ty; auto.
 Qed.
 
-Theorem storeStruct_t : forall Γ d p e,
-  Γ ⊢ p : structRefTy d ->
-  Γ ⊢ e : structTy d ->
-  Γ ⊢ storeStruct d p e : unitT.
+Theorem storeStruct_t : forall Γ d,
+  Γ ⊢v storeStruct d : (structRefTy d -> structTy d -> unitT).
 Proof.
   unfold structRefTy, storeStruct; intros.
   repeat (econstructor; rewrite ?insert_anon; eauto).
   apply store_ty_t; eauto.
 Qed.
 
-Theorem storeField_t : forall Γ d f p v z t,
+Theorem storeField_t : forall Γ d f z t,
   field_offset d.(fields) f = Some (z, t) ->
-  Γ ⊢ p : structRefTy d ->
-  Γ ⊢ v : t ->
-  Γ ⊢ storeField d f p v : unitT.
+  Γ ⊢v storeField d f : (structRefTy d -> t -> unitT).
 Proof.
   unfold storeField; intros.
   rewrite H.
@@ -348,3 +343,8 @@ Notation "'structF!' desc fname" := (ltac:(make_structF desc fname))
 
 Notation "f :: t" := (@pair string ty f%string t%ht).
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
+
+(* TODO: we'll again need to unfold these to prove theorems about them, but
+for typechecking they should be opaque *)
+Global Opaque loadStruct loadField storeStruct storeField.
+Hint Resolve loadStruct_t loadField_t storeStruct_t storeField_t : types.
