@@ -95,9 +95,10 @@ Inductive bin_op : Set :=
   | AndOp | OrOp | XorOp (* Bitwise *)
   | ShiftLOp | ShiftROp (* Shifts *)
   | LeOp | LtOp | EqOp (* Relations *)
-  | OffsetOp. (* Pointer offset *)
+  | OffsetOp (* Pointer offset *)
+.
 
-Inductive arity : Set := args0 | args1 | args2 | args3.
+Inductive arity : Set := args0 | args1 | args2.
 
 Inductive prim_op : arity -> Set :=
   (* a stuck expression, to represent undefined behavior *)
@@ -106,8 +107,6 @@ Inductive prim_op : arity -> Set :=
   | AllocStructOp : prim_op args1 (* struct val *)
   | StoreOp : prim_op args2 (* pointer, value *)
   | LoadOp : prim_op args1
-  | MapGetOp : prim_op args2 (* map loc, key *)
-  | MapInsertOp : prim_op args3 (* map loc, key *)
   | EncodeInt64Op : prim_op args2 (* int, loc to store to *)
   | DecodeInt64Op : prim_op args1 (* loc to load from *)
   | EncodeInt32Op : prim_op args2 (* int, loc to store to *)
@@ -139,7 +138,7 @@ Inductive expr :=
   | Primitive0 (op: prim_op args0)
   | Primitive1 (op: prim_op args1) (e : expr)
   | Primitive2 (op: prim_op args2) (e1 e2 : expr)
-  | Primitive3 (op: prim_op args3) (e0 e1 e2 : expr)
+  (* | Primitive3 (op: prim_op args3) (e0 e1 e2 : expr) *)
   | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
   (* External FFI *)
   | ExternalOp (op: external) (e: expr)
@@ -162,8 +161,6 @@ Notation AllocN := (Primitive2 AllocNOp).
 Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation Store := (Primitive2 StoreOp).
 Notation Load := (Primitive1 LoadOp).
-Notation MapGet := (Primitive2 MapGetOp).
-Notation MapInsert := (Primitive3 MapInsertOp).
 Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
 Notation DecodeInt64 := (Primitive1 DecodeInt64Op).
 Notation EncodeInt32 := (Primitive2 EncodeInt32Op).
@@ -326,8 +323,8 @@ Proof using ext.
         cast_if_and (decide (op = op')) (decide (e = e'))
       | Primitive2 op e1 e2, Primitive2 op' e1' e2' =>
         cast_if_and3 (decide (op = op')) (decide (e1 = e1')) (decide (e2 = e2'))
-      | Primitive3 op e0 e1 e2, Primitive3 op' e0' e1' e2' =>
-        cast_if_and4 (decide (op = op')) (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
+      (* | Primitive3 op e0 e1 e2, Primitive3 op' e0' e1' e2' =>
+        cast_if_and4 (decide (op = op')) (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2')) *)
       | UnOp o e, UnOp o' e' => cast_if_and (decide (o = o')) (decide (e = e'))
       | BinOp o e1 e2, BinOp o' e1' e2' =>
         cast_if_and3 (decide (o = o')) (decide (e1 = e1')) (decide (e2 = e2'))
@@ -450,8 +447,6 @@ Proof.
                                 | AllocStructOp => inr 7
                                 | StoreOp => inr 1
                                 | LoadOp => inr 2
-                                | MapGetOp => inr 3
-                                | MapInsertOp => inr 4
                                 | EncodeInt64Op => inr 5
                                 | DecodeInt64Op => inr 6
                                 | EncodeInt32Op => inr 8
@@ -463,8 +458,6 @@ Proof.
                                | inr 7 => a_prim_op AllocStructOp
                                | inr 1 => a_prim_op StoreOp
                                | inr 2 => a_prim_op LoadOp
-                               | inr 3 => a_prim_op MapGetOp
-                               | inr 4 => a_prim_op MapInsertOp
                                | inr 5 => a_prim_op EncodeInt64Op
                                | inr 6 => a_prim_op DecodeInt64Op
                                | inr 8 => a_prim_op EncodeInt32Op
@@ -537,7 +530,7 @@ Proof using ext.
      | Primitive0 op => GenNode 21 [GenLeaf $ primOpVal $ a_prim_op op]
      | Primitive1 op e => GenNode 22 [GenLeaf $ primOpVal $ a_prim_op op; go e]
      | Primitive2 op e1 e2 => GenNode 23 [GenLeaf $ primOpVal $ a_prim_op op; go e1; go e2]
-     | Primitive3 op e0 e1 e2 => GenNode 24 [GenLeaf $ primOpVal $ a_prim_op op; go e0; go e1; go e2]
+     (* | Primitive3 op e0 e1 e2 => GenNode 24 [GenLeaf $ primOpVal $ a_prim_op op; go e0; go e1; go e2] *)
      | UnOp op e => GenNode 3 [GenLeaf $ un_opVal op; go e]
      | BinOp op e1 e2 => GenNode 4 [GenLeaf $ bin_opVal op; go e1; go e2]
      | If e0 e1 e2 => GenNode 5 [go e0; go e1; go e2]
@@ -573,7 +566,7 @@ Proof using ext.
      | GenNode 21 [GenLeaf (primOpVal op)] => Primitive0 (`to_prim_op args0 op)
      | GenNode 22 [GenLeaf (primOpVal op); e] => Primitive1 (`to_prim_op args1 op) (go e)
      | GenNode 23 [GenLeaf (primOpVal op); e1; e2] => Primitive2 (`to_prim_op args2 op) (go e1) (go e2)
-     | GenNode 24 [GenLeaf (primOpVal op); e0; e1; e2] => Primitive3 (`to_prim_op args3 op) (go e0) (go e1) (go e2)
+     (* | GenNode 24 [GenLeaf (primOpVal op); e0; e1; e2] => Primitive3 (`to_prim_op args3 op) (go e0) (go e1) (go e2) *)
      | GenNode 3 [GenLeaf (un_opVal op); e] => UnOp op (go e)
      | GenNode 4 [GenLeaf (bin_opVal op); e1; e2] => BinOp op (go e1) (go e2)
      | GenNode 5 [e0; e1; e2] => If (go e0) (go e1) (go e2)
@@ -602,7 +595,7 @@ Proof using ext.
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
-  - destruct e as [v| | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+  - destruct e as [v| | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
       rewrite ?to_prim_op_correct;
       [exact (gov v)|done..].
  - destruct v; by f_equal.
@@ -638,9 +631,9 @@ Inductive ectx_item :=
   | Primitive1Ctx  (op: prim_op args1)
   | Primitive2LCtx (op: prim_op args2) (v2 : val)
   | Primitive2RCtx (op: prim_op args2) (e1 : expr)
-  | Primitive3LCtx (op: prim_op args3) (e1 : expr) (e2 : expr)
+  (* | Primitive3LCtx (op: prim_op args3) (e1 : expr) (e2 : expr)
   | Primitive3MCtx (op: prim_op args3) (v0 : val) (e2 : expr)
-  | Primitive3RCtx (op: prim_op args3) (v0 : val) (v1 : val)
+  | Primitive3RCtx (op: prim_op args3) (v0 : val) (v1 : val) *)
   | ExternalOpCtx (op : external)
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
@@ -674,9 +667,9 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | Primitive1Ctx op => Primitive1 op e
   | Primitive2LCtx op v2 => Primitive2 op e (Val v2)
   | Primitive2RCtx op e1 => Primitive2 op e1 e
-  | Primitive3LCtx op e1 e2 => Primitive3 op e e1 e2
+  (* | Primitive3LCtx op e1 e2 => Primitive3 op e e1 e2
   | Primitive3MCtx op v0 e1 => Primitive3 op (Val v0) e e1
-  | Primitive3RCtx op v0 v1 => Primitive3 op (Val v0) (Val v1) e
+  | Primitive3RCtx op v0 v1 => Primitive3 op (Val v0) (Val v1) e *)
   | ExternalOpCtx op => ExternalOp op e
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
   | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
@@ -707,7 +700,7 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | Primitive0 op => Primitive0 op
   | Primitive1 op e => Primitive1 op (subst x v e)
   | Primitive2 op e1 e2 => Primitive2 op (subst x v e1) (subst x v e2)
-  | Primitive3 op e1 e2 e3 => Primitive3 op (subst x v e1) (subst x v e2) (subst x v e3)
+  (* | Primitive3 op e1 e2 e3 => Primitive3 op (subst x v e1) (subst x v e2) (subst x v e3) *)
   | ExternalOp op e => ExternalOp op (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
@@ -848,54 +841,6 @@ Proof.
   rewrite right_id insert_union_singleton_l. done.
 Qed.
 
-Notation MapConsV k v m := (InjRV (PairV (PairV (LitV (LitInt k)) v) m)).
-Notation MapNilV def := (InjLV def).
-
-Fixpoint map_val (v: val) : option (gmap u64 val * val) :=
-  match v with
-  | MapConsV k v m =>
-    match map_val m with
-    | Some (m, def) => Some (<[ k := v ]> m, def)
-    | None => None
-    end
-  | MapNilV def => Some (∅, def)
-  | _ => None
-  end.
-
-Definition val_of_map (m_def: gmap u64 val * val) : val :=
-  let (m, def) := m_def in
-  fold_right (λ '(k, v) mv, MapConsV k v mv)
-             (MapNilV def)
-             (map_to_list m).
-
-Theorem map_val_id : forall v m_def,
-    map_val v = Some m_def ->
-    val_of_map m_def = v.
-Proof.
-  induction v; intros [m def]; try solve [ inversion 1 ]; simpl; intros H.
-  - inversion H; subst; clear H.
-    rewrite map_to_list_empty; simpl; auto.
-  - destruct v; try congruence.
-    destruct v1; try congruence.
-    destruct v1_1; try congruence.
-    destruct l; try congruence.
-    destruct_with_eqn (map_val v2); try congruence.
-    specialize (IHv p).
-    destruct p as [m' def'].
-    inversion H; subst; clear H.
-    (* oops, the normal val induction principle is too weak to prove this *)
-Abort.
-
-Definition map_get (m_def: gmap u64 val * val) (k: u64) : (val*bool) :=
-  let (m, def) := m_def in
-  let r := default def (m !! k) in
-  let ok := bool_decide (is_Some (m !! k)) in
-  (r, ok).
-
-Definition map_insert (m_def: gmap u64 val * val) (k: u64) (v: val) : gmap u64 val * val :=
-  let (m, def) := m_def in
-  (<[ k := v ]> m, def).
-
 Definition byte_vals : list byte -> list val :=
    fmap (λ b, LitV (LitByte b)).
 
@@ -957,21 +902,6 @@ Inductive head_step : expr → state → list observation → expr → state →
      head_step (Store (Val $ LitV $ LitLoc l) (Val v)) σ
                []
                (Val $ LitV LitUnit) (state_upd_heap <[l:=v]> σ)
-               []
-  | MapGetS l k vs m_def r ok σ :
-     σ.(heap) !! l = Some vs ->
-     map_val vs = Some m_def ->
-     (r, ok) = map_get m_def k ->
-     head_step (MapGet (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt $ k)) σ
-               []
-               (Val $ PairV r (LitV $ LitBool ok)) σ
-               []
-  | MapInsertS l k vs v m_def σ :
-     σ.(heap) !! l = Some vs ->
-     map_val vs = Some m_def ->
-     head_step (MapInsert (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt $ k) (Val $ v)) σ
-               []
-               (Val $ LitV LitUnit) (state_upd_heap <[l := MapConsV k v vs ]> σ)
                []
   | ExternalS op v σ v' σ' :
      ext_step op v σ v' σ' ->
@@ -1134,8 +1064,6 @@ Notation AllocN := (Primitive2 AllocNOp).
 Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation Store := (Primitive2 StoreOp).
 Notation Load := (Primitive1 LoadOp).
-Notation MapGet := (Primitive2 MapGetOp).
-Notation MapInsert := (Primitive3 MapInsertOp).
 Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
 Notation DecodeInt64 := (Primitive1 DecodeInt64Op).
 Notation EncodeInt32 := (Primitive2 EncodeInt32Op).

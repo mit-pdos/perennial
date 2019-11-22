@@ -1,4 +1,4 @@
-From Perennial.go_lang Require Import lang notation.
+From Perennial.go_lang Require Import lang notation map.
 
 Inductive ty :=
 | uint64T
@@ -154,6 +154,16 @@ Section go_lang.
   | snd_hasTy e t1 t2 :
       Γ ⊢ e : prodT t1 t2 ->
       Γ ⊢ Snd e : t2
+  | mapCons_hasTy k v vt m :
+      Γ ⊢ k : uint64T ->
+      Γ ⊢ v : vt ->
+      Γ ⊢ m : mapValT vt ->
+      Γ ⊢ InjR (Pair (Pair k v) m) : mapValT vt
+  | case_map_hasTy cond e1 e2 vt t :
+      Γ ⊢ cond : mapValT vt ->
+      Γ ⊢ e1 : arrowT vt t ->
+      Γ ⊢ e2 : arrowT (prodT (prodT uint64T vt ) (mapValT vt)) t ->
+      Γ ⊢ Case cond e1 e2 : t
   | inl_hasTy e t1 t2 :
       Γ ⊢ e : t1 ->
       Γ ⊢ InjL e : sumT t1 t2
@@ -193,15 +203,6 @@ Section go_lang.
       get_ext_tys op = (t1, t2) ->
       Γ ⊢ e : t1 ->
       Γ ⊢ ExternalOp op e : t2
-  | mapGet_hasTy m k vt :
-      Γ ⊢ m : mapT vt ->
-      Γ ⊢ k : uint64T ->
-      Γ ⊢ MapGet m k : prodT vt boolT
-  | mapInsert_hasTy m k v vt :
-      Γ ⊢ m : mapT vt ->
-      Γ ⊢ k : uint64T ->
-      Γ ⊢ v : vt ->
-      Γ ⊢ MapInsert m k v : unitT
   | encode_hasTy n p :
       Γ ⊢ n : uint64T ->
       Γ ⊢ p : refT byteT ->
@@ -391,6 +392,22 @@ Ltac typecheck :=
   repeat (type_step; try match goal with
                          | [ |- _ = _ ] => reflexivity
                          end).
+
+Section go_lang.
+  Context `{ext_ty: ext_types}.
+  Local Open Scope heap_types.
+  Theorem MapGet_t Γ vt : Γ ⊢ MapGet : (mapT vt -> uint64T -> vt * boolT).
+  Proof.
+    typecheck.
+  Qed.
+
+  Theorem MapInsert_t Γ vt : Γ ⊢ MapInsert : (mapT vt -> uint64T -> vt -> unitT).
+  Proof.
+    typecheck.
+  Qed.
+End go_lang.
+
+Hint Resolve MapGet_t MapInsert_t : types.
 
 Module test.
 Section go_lang.

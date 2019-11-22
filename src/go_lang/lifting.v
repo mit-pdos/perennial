@@ -6,7 +6,7 @@ From iris.base_logic.lib Require Export proph_map.
 From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import ectx_lifting total_ectx_lifting.
 From Perennial.go_lang Require Export lang.
-From Perennial.go_lang Require Import tactics notation.
+From Perennial.go_lang Require Import tactics notation map.
 Set Default Proof Using "Type".
 
 (** Override the notations so that scopes and coercions work out *)
@@ -424,21 +424,6 @@ Proof.
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
 
-Theorem MapGetS' l k vs m_def σ :
-     σ.(heap) !! l = Some vs ->
-     map_val vs = Some m_def ->
-     head_step (MapGet (Val $ LitV $ LitLoc l) (Val $ LitV $ LitInt $ k)) σ
-               []
-               (Val $ PairV (fst (map_get m_def k)) (LitV $ LitBool (snd (map_get m_def k)))) σ
-               [].
-Proof.
-  intros.
-  destruct_with_eqn (map_get m_def k).
-  eapply MapGetS; eauto.
-Qed.
-
-Hint Resolve MapGetS' : core.
-
 Definition map_mapsto l q m_def :=
   (∃ vs, l ↦{q} vs ∗ ⌜ map_val vs = Some m_def ⌝)%I.
 
@@ -449,17 +434,7 @@ Proof.
   iIntros (Φ) ">Hl HΦ".
   iDestruct "Hl" as (vs) "(Hl&Hmap)".
   iDestruct "Hmap" as %Hmap.
-  iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit.
-  { iPureIntro.
-    eexists _, _, _, _; simpl.
-    eapply MapGetS'; eauto. }
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-  iModIntro. iSplit=>//. iFrame. iApply "HΦ".
-  iSplit; first by eauto.
-  iExists vs; by iFrame.
-Qed.
+Abort.
 
 Theorem map_cons_insert k v vs m_def :
   map_val vs = Some m_def ->
@@ -476,15 +451,7 @@ Proof.
   iIntros (Φ) ">Hl HΦ".
   iDestruct "Hl" as (vs) "(Hl&Hmap)".
   iDestruct "Hmap" as %Hmap.
-  iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
-  iModIntro. iSplit=>//. iFrame. iApply "HΦ".
-  iExists _; iFrame.
-  erewrite map_cons_insert by eauto; auto.
-Qed.
+Abort.
 
 Lemma wp_cmpxchg_fail s E l q v' v1 v2 :
   v' ≠ v1 → vals_compare_safe v' v1 →
