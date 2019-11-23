@@ -37,6 +37,8 @@ End slice.
 
 Hint Resolve slice.ptr_t slice.len_t slice.nil_t : types.
 
+Definition arrayT (t:ty) := refT t.
+
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
   Context {ext_ty:ext_types ext}.
@@ -207,12 +209,35 @@ Proof.
   typecheck.
 Qed.
 
+Definition zero_array (t:ty): val :=
+  λ: "sz", AllocN "sz" (zero_val t).
+
+Definition ArrayCopy (t:ty): val :=
+  λ: "sz" "a",
+  let: "p" := zero_array t "sz" in
+  MemCpy "p" "a" "sz";;
+  "p".
+
+Theorem zero_array_t t Γ : Γ ⊢ zero_array t : (uint64T -> arrayT t).
+Proof.
+  typecheck.
+Qed.
+
+Hint Resolve zero_array_t MemCpy_t : types.
+
+Theorem ArrayCopy_t t Γ : Γ ⊢ ArrayCopy t : (uint64T -> arrayT t -> arrayT t).
+Proof.
+  typecheck.
+Qed.
+
 End go_lang.
 
 Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.
 
 Hint Resolve raw_slice_t NewSlice_t
      SliceTake_t SliceSkip_t SliceSubslice_t SliceGet_t SliceSet_t
-     SliceAppend_t SliceAppendSlice_t
+     SliceAppend_t SliceAppendSlice_t : types.
+Hint Resolve
      UInt64Put_t UInt64Get_t
      UInt32Put_t UInt32Get_t : types.
+Hint Resolve zero_array_t ArrayCopy_t : types.
