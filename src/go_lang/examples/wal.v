@@ -6,8 +6,12 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
 
 (* 10 is completely arbitrary *)
 Definition MaxTxnWrites : expr := #10.
+Theorem MaxTxnWrites_t Γ : Γ ⊢ MaxTxnWrites : uint64T.
+Proof. typecheck. Qed.
 
 Definition logLength : expr := #1 + #2 * MaxTxnWrites.
+Theorem logLength_t Γ : Γ ⊢ logLength : uint64T.
+Proof. typecheck. Qed.
 
 Module Log.
   Definition S := struct.decl [
@@ -20,7 +24,6 @@ Module Log.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Log.
 

@@ -183,6 +183,12 @@ Definition useInts: val :=
     "y2" <- "y" + #(U32 3);;
     (!"z", !"y2").
 
+Definition u32: ty := uint32T.
+
+Definition also_u32: ty := u32.
+
+Definition ConstWithAbbrevType : expr := #(U32 3).
+
 Module allTheLiterals.
   Definition S := struct.decl [
     "int" :: uint64T;

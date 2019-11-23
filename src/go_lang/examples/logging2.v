@@ -5,12 +5,20 @@ From Perennial.go_lang Require Import prelude.
 From Perennial.go_lang Require Import ffi.disk_prelude.
 
 Definition LOGCOMMIT : expr := #0.
+Theorem LOGCOMMIT_t Γ : Γ ⊢ LOGCOMMIT : uint64T.
+Proof. typecheck. Qed.
 
 Definition LOGSTART : expr := #1.
+Theorem LOGSTART_t Γ : Γ ⊢ LOGSTART : uint64T.
+Proof. typecheck. Qed.
 
 Definition LOGMAXBLK : expr := #510.
+Theorem LOGMAXBLK_t Γ : Γ ⊢ LOGMAXBLK : uint64T.
+Proof. typecheck. Qed.
 
 Definition LOGEND : expr := LOGMAXBLK + LOGSTART.
+Theorem LOGEND_t Γ : Γ ⊢ LOGEND : uint64T.
+Proof. typecheck. Qed.
 
 Module Log.
   Definition S := struct.decl [
