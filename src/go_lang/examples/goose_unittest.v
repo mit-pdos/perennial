@@ -227,6 +227,18 @@ Definition oddLiterals: val :=
       "b" ::= #false
     ].
 
+Definition ToBeDebugged: val :=
+  λ: "x",
+    (* log.Println("starting function") *)
+    (* log.Printf("called with %d", x) *)
+    (* log.Println("ending function") *)
+    "x".
+
+Definition DoNothing: val :=
+  λ: <>,
+    (* log.Println("doing nothing") *)
+    #().
+
 (* DoSomething is an impure function *)
 Definition DoSomething: val :=
   λ: "s",
