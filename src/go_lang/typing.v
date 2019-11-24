@@ -14,6 +14,7 @@ Inductive ty :=
 | structRefT (ts: list ty)
 (* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
 | mapValT (vt: ty) (* keys are always uint64, for now *)
+| anyT
 .
 
 Definition mapT (vt:ty) : ty := refT (mapValT vt).
@@ -60,6 +61,7 @@ Section go_lang.
     | arrowT t1 t2 => λ: <>, zero_val t2
     | refT t => #null
     | structRefT ts => #null
+    | anyT => #()
     end.
 
   Inductive base_lit_hasTy : base_lit -> ty -> Prop :=
@@ -226,6 +228,9 @@ Section go_lang.
   | struct_singleton_hasTy e t :
       Γ ⊢ e : structRefT [t] ->
       Γ ⊢ e : refT t
+  | e_any_hasTy e t :
+      Γ ⊢ e : t ->
+      Γ ⊢ e : anyT
   where "Γ ⊢ e : A" := (expr_hasTy Γ e A)
   with val_hasTy (Γ: Ctx) : val -> ty -> Prop :=
   | val_base_lit_hasTy v t :
@@ -246,16 +251,20 @@ Section go_lang.
   | mapNilV_hasTy v t :
       Γ ⊢v v : t ->
       Γ ⊢v MapNilV v : mapValT t
+  | val_any_hasTy v t :
+      Γ ⊢v v : t ->
+      Γ ⊢v v : anyT
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
-  Hint Constructors expr_hasTy val_hasTy base_lit_hasTy.
+  Hint Constructors base_lit_hasTy expr_hasTy val_hasTy base_lit_hasTy.
+  Remove Hints e_any_hasTy val_any_hasTy.
 
   Theorem zero_val_ty ty Γ :
     Γ ⊢v zero_val ty : ty.
   Proof.
     generalize dependent Γ.
-    induction ty; simpl; eauto.
+    induction ty; simpl; eauto using val_any_hasTy.
   Qed.
 
   Definition NewMap (t:ty) : expr := AllocMap (zero_val t).
@@ -371,10 +380,14 @@ Hint Resolve hasTy_ty_congruence : types.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
+Remove Hints e_any_hasTy val_any_hasTy : types.
 (* note that this has to be after [Hint Constructors expr_hasTy] to get higher
 priority than Panic_hasTy *)
 Hint Resolve Panic_unit_t : types.
 Hint Resolve zero_val_ty : types.
+
+Hint Extern 2 (expr_hasTy _ _ anyT) => eapply e_any_hasTy : types.
+Hint Extern 2 (val_hasTy _ _ anyT) => eapply val_any_hasTy : types.
 
 Local Ltac simp := unfold For; rewrite ?insert_anon.
 Ltac type_step :=
