@@ -204,6 +204,12 @@ Class ext_semantics :=
   {
     ext_step : external -> val -> state -> val -> state -> Prop;
   }.
+
+Class ext_interprable :=
+  {
+    (* fuel, operation, command, starting state, returns ending state *)
+    ext_interpret : nat -> external -> val -> state -> option state;
+  }.
 Context {ffi_semantics: ext_semantics}.
 
 (** An observation associates a prophecy variable (identifier) to a pair of
