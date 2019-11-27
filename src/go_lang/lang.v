@@ -205,10 +205,13 @@ Class ext_semantics :=
     ext_step : external -> val -> state -> val -> state -> Prop;
   }.
 
-Class ext_interprable :=
+(* The analog of ext_semantics for an interpretable external
+operation. An ext_step isn't strong enough to let us interpret
+ExternalOps. *)
+Class ext_interpretable :=
   {
-    (* fuel, operation, command, starting state, returns ending state *)
-    ext_interpret : nat -> external -> val -> state -> option state;
+    (* fuel, operation, argument, starting state, returns ending val and state *)
+    ext_interpret : nat -> external -> val -> state -> option (val * state);
   }.
 Context {ffi_semantics: ext_semantics}.
 
