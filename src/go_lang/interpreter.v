@@ -1,3 +1,4 @@
+From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders strings.
 From stdpp Require Import gmap.
 From iris.algebra Require Export ofe.
@@ -25,6 +26,27 @@ Section go_lang_int.
 (* Interpreter *)  
 Notation "x <- p1 ; p2" := (mbind (fun x => p2) p1) 
                               (at level 60, right associativity).
+
+Check Z.max.
+
+Fixpoint biggest_loc_rec (s: list (prod loc val)) : loc :=
+  match s with
+    | [] => null
+    | (cons a rest) =>
+      let other_addr := (loc_car (biggest_loc_rec rest)) in
+      match a with
+        | (k,_) => let addr := loc_car k in
+                  loc_add null (Z.max other_addr addr)
+      end
+  end.
+
+Definition biggest_loc (σ: state) : loc :=
+  let s := gmap_to_list σ.(heap) in
+  biggest_loc_rec s.
+  
+(* Finds the biggest loc in state and adds 1 to it, independent of size *)
+Definition find_alloc_location (σ: state) (size: Z) : loc :=
+  loc_add (biggest_loc σ) 1.
 
 (* http://hackage.haskell.org/package/mtl-2.2.2/docs/Control-Monad-State-Lazy.html#t:StateT *)
 (* This is a state monad transformer, which takes a pre-existing monad M and produces a new monad StateT M. *)
@@ -175,9 +197,60 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
       end
 
     | Fork e => mfail
-    | Primitive0 op => mfail
-    | Primitive1 op e => mfail
-    | Primitive2 op e1 e2 => mfail
+
+    | Primitive0 (PanicOp s) => mfail (* eventually we will mfail with s *)
+
+    (* In head_step, alloc nondeterministically allocates at any valid location. For us, we'll just pick the first valid location *)
+    | Primitive1 AllocStructOp e =>
+      structv <- interpret n e;
+      s <- mget;
+      let l := find_alloc_location s (length (flatten_struct structv)) in
+      _ <- mput (state_insert_list l (flatten_struct structv) s);
+      mret (LitV (LitLoc l))
+    | Primitive2 AllocNOp e1 e2 =>
+      lenv <- interpret n e1;
+      match lenv with
+      | LitV (LitInt lenz) => 
+        initv <- interpret n e2;
+          (* we must allocate a list of length lenz where every entry is initv *)
+          s <- mget;
+          let l := find_alloc_location s (int.val lenz) in
+          _ <- mput (state_init_heap l (int.val n) initv s);
+          mret (LitV (LitLoc l))
+      | _ => mfail
+      end
+    | Primitive1 LoadOp e =>
+      addrv <- interpret n e;
+        match addrv with
+          | LitV (LitLoc l) => 
+            s <- mget;
+            (* since Load of an address with nothing doesn't step, we
+            can lift from the option monad into the StateT option
+            monad here (we mfail if v is None) *)
+            v <- mlift (s.(heap) !! l);
+            mret v
+          | _ => mfail
+        end
+    | Primitive2 StoreOp e1 e2 =>
+      addrv <- interpret n e1;
+      val <- interpret n e2;
+        match addrv with
+          | LitV (LitLoc l) => 
+            s <- mget;
+            _ <- mput (set heap <[l:=val]> s);
+            mret (LitV LitUnit)
+          | _ => mfail
+        end
+    | Primitive1 DecodeInt64Op e => mfail
+    | Primitive2 EncodeInt64Op e1 e2 => mfail
+    | Primitive1 DecodeInt32Op e => mfail
+    | Primitive2 EncodeInt32Op e1 e2 => mfail
+    | Primitive1 ObserveOp e => mfail
+
+    | Primitive0 _ => mfail
+    | Primitive1 _ _ => mfail
+    | Primitive2 _ _ _ => mfail
+
     | ExternalOp op e => mfail
     | CmpXchg e0 e1 e2 => mfail
     | NewProph => mfail (* ignore *)
@@ -225,7 +298,8 @@ Compute (runStateT (interpret 10 (returnTwoWrapper #3)) inhabitant).
 Compute (runStateT (interpret 10 (testRec _)) inhabitant).
 Compute (runStateT (interpret 10 ConstWithArith) inhabitant).
 Compute (runStateT (interpret 10 (literalCast _)) inhabitant).
-Compute (runStateT (interpret 10 (useMap _)) inhabitant).
+Compute (runStateT (interpret 0 (useMap _)) inhabitant).
+Compute (runStateT (interpret 100 (ReassignVars _)) inhabitant).
 Compute (runStateT (interpret 10 (ifStatement _)) inhabitant).
 Compute (runStateT (interpret 10 (matchtest (InjL #2))) inhabitant).
 Compute (runStateT (interpret 10 (matchtest (InjR #2))) inhabitant).
