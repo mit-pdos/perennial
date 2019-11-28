@@ -602,3 +602,11 @@ Definition Timestamp: ty := uint64T.
 Definition UseTypeAbbrev: ty := u64.
 
 Definition UseNamedType: ty := Timestamp.
+
+(* Added for interpreter testing (I can't get this notation to work in
+the interpret.v file). *)
+Definition testStore: val :=
+  λ: <>,
+    let: "x" := zero_val uint64T in
+    "x" <- #3;;
+    !"x".
