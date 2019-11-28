@@ -27,8 +27,6 @@ Section go_lang_int.
 Notation "x <- p1 ; p2" := (mbind (fun x => p2) p1) 
                               (at level 60, right associativity).
 
-Check Z.max.
-
 Fixpoint biggest_loc_rec (s: list (prod loc val)) : loc :=
   match s with
     | [] => null
@@ -88,21 +86,49 @@ Definition StateT_bind M (mf: FMap M) (mj: MJoin M) (mb: MBind M) : MBind (State
 Definition StateT_ret M (mr: MRet M) : MRet (StateT M) :=
   (fun _ v => StateFn _ _ (fun s => mret (v, s))).
 
+Inductive Error (X: Type) : Type :=
+| Works (v: X)
+| Fail (s: string)
+.
+
+Instance Error_fmap : FMap Error :=
+  fun A B f => (fun err => match err with
+                     | Works _ x => Works _ (f x)
+                     | Fail _ s => Fail _ s
+                     end).
+  
+Instance Error_ret : MRet Error := Works.
+
+(* eex : Error Error A *)
+Instance Error_join : MJoin Error :=
+  fun A eex => match eex with
+            | Works _ (Fail _ s) => Fail _ s
+            | Works _ (Works _ x) => Works _ x
+            | Fail _ s => Fail _ s
+            end.
+
+Instance Error_bind : MBind Error :=
+  (fun _ _ f a => mjoin (f <$> a)).
+
 (* Bind and Ret instances for StateT option, using the instance keyword so that the _ <- _ ; _ notation and mret work properly *)
 Instance statet_option_bind : MBind (StateT option) :=
   StateT_bind option option_fmap option_join option_bind.
 Instance statet_option_ret : MRet (StateT option) :=
   StateT_ret option option_ret.
 
-Definition mfail {X: Type} : StateT option X :=
-  StateFn _ _ (fun (s: state) => None).
+Instance statet_error_bind : MBind (StateT Error) :=
+  StateT_bind Error Error_fmap Error_join Error_bind.
+Instance statet_error_ret : MRet (StateT Error) :=
+  StateT_ret Error Error_ret.
 
-(* Turns a normal option X into a StateT option X *)
-Definition mlift {X : Type} (err_x: option X) : StateT option X :=
+Definition mfail {X: Type} (msg: string) : StateT Error X :=
+  StateFn _ _ (fun (s: state) => Fail _ msg).
 
+(* Turns a normal option X into a StateT Error X *)
+Definition mlift {X : Type} (err_x: option X) : StateT Error X :=
   StateFn _ _ (fun (s: state) => match err_x with
-                              | None => None
-                              | Some x => Some (x, s)
+                              | None => Fail _ "None: mlift"
+                              | Some x => Works _ (x, s)
                               end).
 
 Definition mget {M} {_: MRet M} : StateT M state :=
@@ -116,13 +142,13 @@ Definition mupdate {M} {_: FMap M} {_: MRet M} {_: MBind M} {_: MJoin M} (f: sta
   s <- mget;
   mput (f s).
 
-Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
+Fixpoint interpret (fuel: nat) (e: expr) : StateT Error val :=
   match fuel with
-  | O => mfail
+  | O => mfail "Fuel depleted"
   | S n =>
     match e with
     | Val v => mret v
-    | Var y => mfail
+    | Var y => mfail ("Unbound variable: " ++ y)
     | Rec f y e => mret (RecV f y e)
     | App e1 e2 => 
       e1' <- interpret n e1;
@@ -139,7 +165,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
           v <- interpret n e2;
             let e3 := subst f e1' (subst y v ex) in
             interpret n e3
-        | _ => mfail
+        | _ => mfail "App applied to non-function"
         end
           
     | UnOp op e =>
@@ -156,7 +182,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
         match c with
         | LitV (LitBool true) => interpret n e1
         | LitV (LitBool false) => interpret n e2
-        | _ => mfail
+        | _ => mfail "If applied to non-bool"
         end
 
     | Pair e1 e2 =>
@@ -168,14 +194,14 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
       e' <- interpret n e;
       match e' with
       | PairV v1 v2 => mret v1
-      | _ => mfail
+      | _ => mfail "Fst applied to non-PairV"
       end
 
     | Snd e =>
       e' <- interpret n e;
       match e' with
       | PairV v1 v2 => mret v2
-      | _ => mfail
+      | _ => mfail "Snd applied to non-PairV"
       end
       
     | InjL e =>
@@ -193,14 +219,15 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
         interpret n (App e1 (Val v'))
       | InjRV v' =>
         interpret n (App e2 (Val v'))
-      | _ => mfail
+      | _ => mfail "Case of non-Inj"
       end
 
-    | Fork e => mfail
+    | Fork e => mfail "NotImpl: fork"
 
-    | Primitive0 (PanicOp s) => mfail (* eventually we will mfail with s *)
+    | Primitive0 (PanicOp s) => mfail ("Panic: " ++ s)
 
-    (* In head_step, alloc nondeterministically allocates at any valid location. For us, we'll just pick the first valid location *)
+    (* In head_step, alloc nondeterministically allocates at any valid
+    location. For us, we'll just pick the first valid location *)
     | Primitive1 AllocStructOp e =>
       structv <- interpret n e;
       s <- mget;
@@ -217,7 +244,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
           let l := find_alloc_location s (int.val lenz) in
           _ <- mput (state_init_heap l (int.val n) initv s);
           mret (LitV (LitLoc l))
-      | _ => mfail
+      | _ => mfail "Alloc with non-integer argument"
       end
     | Primitive1 LoadOp e =>
       addrv <- interpret n e;
@@ -226,10 +253,10 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
             s <- mget;
             (* since Load of an address with nothing doesn't step, we
             can lift from the option monad into the StateT option
-            monad here (we mfail if v is None) *)
+            monad here (we mfail "NotImpl" if v is None) *)
             v <- mlift (s.(heap) !! l);
             mret v
-          | _ => mfail
+          | _ => mfail "Load with non-location argument"
         end
     | Primitive2 StoreOp e1 e2 =>
       addrv <- interpret n e1;
@@ -239,22 +266,22 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT option val :=
             s <- mget;
             _ <- mput (set heap <[l:=val]> s);
             mret (LitV LitUnit)
-          | _ => mfail
+          | _ => mfail "Store with non-location argument"
         end
-    | Primitive1 DecodeInt64Op e => mfail
-    | Primitive2 EncodeInt64Op e1 e2 => mfail
-    | Primitive1 DecodeInt32Op e => mfail
-    | Primitive2 EncodeInt32Op e1 e2 => mfail
-    | Primitive1 ObserveOp e => mfail
+    | Primitive1 DecodeInt64Op e => mfail "NotImpl: decode"
+    | Primitive2 EncodeInt64Op e1 e2 => mfail "NotImpl: encode"
+    | Primitive1 DecodeInt32Op e => mfail "NotImpl decode"
+    | Primitive2 EncodeInt32Op e1 e2 => mfail "NotImpl: encode"
+    | Primitive1 ObserveOp e => mfail "NotImpl: observe"
 
-    | Primitive0 _ => mfail
-    | Primitive1 _ _ => mfail
-    | Primitive2 _ _ _ => mfail
+    | Primitive0 _ => mfail "NotImpl: unrecognized primitive0"
+    | Primitive1 _ _ => mfail "NotImpl: unrecognized primitive1"
+    | Primitive2 _ _ _ => mfail "NotImpl: unrecognized primitive2"
 
-    | ExternalOp op e => mfail
-    | CmpXchg e0 e1 e2 => mfail
-    | NewProph => mfail (* ignore *)
-    | Resolve ex e1 e2 => mfail
+    | ExternalOp op e => mfail "NotImpl: externalop"
+    | CmpXchg e0 e1 e2 => mfail "NotImpl: cmpxchg"
+    | NewProph => mfail "NotImpl: prophecy variable" (* ignore *)
+    | Resolve ex e1 e2 => mfail "NotImpl: resolve"
     end
   end.
 
@@ -299,7 +326,9 @@ Compute (runStateT (interpret 10 (testRec _)) inhabitant).
 Compute (runStateT (interpret 10 ConstWithArith) inhabitant).
 Compute (runStateT (interpret 10 (literalCast _)) inhabitant).
 Compute (runStateT (interpret 0 (useMap _)) inhabitant).
+
 Compute (runStateT (interpret 100 (ReassignVars _)) inhabitant).
+
 Compute (runStateT (interpret 10 (ifStatement _)) inhabitant).
 Compute (runStateT (interpret 10 (matchtest (InjL #2))) inhabitant).
 Compute (runStateT (interpret 10 (matchtest (InjR #2))) inhabitant).
