@@ -15,6 +15,30 @@ Set Default Proof Using "Type".
 Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
+Inductive Error (X: Type) : Type :=
+| Works (v: X)
+| Fail (s: string)
+.
+
+Instance Error_fmap : FMap Error :=
+  fun A B f => (fun err => match err with
+                     | Works _ x => Works _ (f x)
+                     | Fail _ s => Fail _ s
+                     end).
+
+Instance Error_ret : MRet Error := Works.
+
+(* eex : Error Error A *)
+Instance Error_join : MJoin Error :=
+  fun A eex => match eex with
+            | Works _ (Fail _ s) => Fail _ s
+            | Works _ (Works _ x) => Works _ x
+            | Fail _ s => Fail _ s
+            end.
+
+Instance Error_bind : MBind Error :=
+  (fun _ _ f a => mjoin (f <$> a)).
+
 Fixpoint Zpos_to_str (z : positive) : string :=
   match z with
   | xI p => "i" ++ (Zpos_to_str p)
@@ -31,6 +55,15 @@ Definition u64_to_str (x: Integers.u64) : string :=
   | Zneg p => "-" ++ (Zpos_to_str p)
   end.
 
+(* The analog of ext_semantics for an interpretable external
+operation. An ext_step isn't strong enough to let us interpret
+ExternalOps. *)
+Class ext_interpretable (ext: ext_op) (ffi: ffi_model) :=
+  {
+    (* fuel, operation, argument, starting state, returns ending val and state *)
+    ext_interpret : nat -> external -> val -> state -> Error (val * state);
+  }.
+
 Section go_lang_int.
   Context {ext: ext_op} {ffi: ffi_model}
           {ffi_semantics: ext_semantics ext ffi}
@@ -42,6 +75,26 @@ Section go_lang_int.
 (* Interpreter Helper Stuff *)  
 Notation "x <- p1 ; p2" := (mbind (fun x => p2) p1) 
                               (at level 60, right associativity).
+
+Definition byte_val (v: val) : option byte :=
+  match v with
+  | LitV (LitByte b) => Some b
+  | _ => None
+  end.
+
+Fixpoint state_readn (s: state) (l: loc) (n: nat) : option (list val) :=
+  match n with
+  | O => mret []
+  | S m => v <- s.(heap) !! l;
+          ls <- state_readn s (loc_add l 1) m;
+          mret ([v]++ ls)
+  end.
+
+Fixpoint commute_option_list X (a : list (option X)) : option (list X) :=
+  match a with
+  | [] => Some []
+  | cons h t => r <- h; s <- commute_option_list _ t; mret ([r] ++ s)
+  end.
 
 Fixpoint biggest_loc_rec (s: list (prod loc val)) : loc :=
   match s with
@@ -102,30 +155,6 @@ Definition StateT_bind M (mf: FMap M) (mj: MJoin M) (mb: MBind M) : MBind (State
 
 Definition StateT_ret M (mr: MRet M) : MRet (StateT M) :=
   (fun _ v => StateFn _ _ (fun s => mret (v, s))).
-
-Inductive Error (X: Type) : Type :=
-| Works (v: X)
-| Fail (s: string)
-.
-
-Instance Error_fmap : FMap Error :=
-  fun A B f => (fun err => match err with
-                     | Works _ x => Works _ (f x)
-                     | Fail _ s => Fail _ s
-                     end).
-  
-Instance Error_ret : MRet Error := Works.
-
-(* eex : Error Error A *)
-Instance Error_join : MJoin Error :=
-  fun A eex => match eex with
-            | Works _ (Fail _ s) => Fail _ s
-            | Works _ (Works _ x) => Works _ x
-            | Fail _ s => Fail _ s
-            end.
-
-Instance Error_bind : MBind Error :=
-  (fun _ _ f a => mjoin (f <$> a)).
 
 (* Bind and Ret instances for StateT option, using the instance
 keyword so that the _ <- _ ; _ notation and mret work properly *)
@@ -193,9 +222,9 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT Error val :=
         mlift (un_op_eval op e') "Unop failed"
                    
     | BinOp op e1 e2 =>
-      e1' <- interpret n e1;
-        e2' <- interpret n e2;
-        mlift (bin_op_eval op e1' e2') "binop failed"
+      v2 <- interpret n e2;
+      v1 <- interpret n e1;
+      mlift (bin_op_eval op v1 v2) "binop failed"
                     
     | If e0 e1 e2 =>
       c <- interpret n e0;
@@ -264,7 +293,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT Error val :=
           is initv. state_init_heap does most of the work. *)
           s <- mget;
           let l := find_alloc_location s (int.val lenz) in
-          _ <- mput (state_init_heap l (int.val n) initv s);
+          _ <- mput (state_init_heap l (int.val lenz) initv s);
           mret (LitV (LitLoc l))
       | _ => mfail "Alloc with non-integer argument"
       end
@@ -304,8 +333,38 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT Error val :=
           | _ => mfail "Store with non-location argument"
         end
           
-    | Primitive1 DecodeInt64Op e => mfail "NotImpl: decode"
-    | Primitive2 EncodeInt64Op e1 e2 => mfail "NotImpl: encode"
+    | Primitive1 DecodeInt64Op e =>
+      v <- interpret n e;
+        l <- mlift (match v with
+                   | LitV (LitLoc l) => Some l
+                   | _ => None
+                   end)
+          "DecodeInt64Op argument not a LitLoc";
+        s <- mget;
+        vs <- mlift (
+             rs <- state_readn s l 8;
+             commute_option_list _ (map byte_val rs)
+           ) "DecodeInt64Op: Read failed";
+        (* vs is list byte *)
+       mret (LitV $ LitInt (le_to_u64 vs))
+    | Primitive2 EncodeInt64Op e1 e2 =>
+      v2 <- interpret n e2;
+      v1 <- interpret n e1;
+      s <- mget;
+      v <- mlift (match v1 with
+                 | LitV (LitInt v) => Some v
+                 | _ => None
+                 end)
+        "EncodeInt64Op 1st arg not LitInt";
+      l <- mlift (match v2 with
+                 | LitV (LitLoc l) => Some l
+                 | _ => None
+                 end)
+        "EncodeInt64Op 2nd arg not LitLoc";
+      (* TODO: Check all 8 places are already in the heap? *)
+      _ <- mput (state_insert_list l (byte_vals $ u64_le v) s);
+        mret (LitV LitUnit)
+
     | Primitive1 DecodeInt32Op e => mfail "NotImpl decode"
     | Primitive2 EncodeInt32Op e1 e2 => mfail "NotImpl: encode"
     | Primitive1 ObserveOp e =>
@@ -317,7 +376,9 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT Error val :=
     | Primitive1 _ _ => mfail "NotImpl: unrecognized primitive1"
     | Primitive2 _ _ _ => mfail "NotImpl: unrecognized primitive2"
 
-    | ExternalOp op e => mfail "NotImpl: externalop"
+    | ExternalOp op e =>
+      v <- interpret n e;
+      StateFn _ _ (ext_interpret n op v)
     | CmpXchg e0 e1 e2 => mfail "NotImpl: cmpxchg"
     | NewProph => mfail "NotImpl: prophecy variable" (* ignore *)
     | Resolve ex e1 e2 => mfail "NotImpl: resolve"
@@ -353,18 +414,27 @@ Definition testMatch: val :=
 
 End go_lang_int.
 
-Compute (runStateT (interpret 10 (returnTwoWrapper #3)) inhabitant).
-Compute (runStateT (interpret 10 (testStore #0)) inhabitant).
-Compute (runStateT (interpret 10 (testRec #0)) inhabitant).
-Compute (runStateT (interpret 10 ConstWithArith) inhabitant).
-Compute (runStateT (interpret 10 (literalCast #0)) inhabitant).
+Definition startstate : state := inhabitant.
 
-Compute (runStateT (interpret 10 (testIfStatement #0)) inhabitant).
-Compute (runStateT (interpret 10 (testMatch (InjL #2))) inhabitant).
-Compute (runStateT (interpret 10 (testMatch (InjR #2))) inhabitant).
 
-(* works with 16 fuel, but really slow *)
-Compute (runStateT (interpret 15 (useMap #0)) inhabitant).
+Compute (runStateT (interpret 10 (AllocN #1 (zero_val uint32T))) startstate).
+Compute (runStateT (interpret 10 (useSlice2 #0)) startstate).
+Compute (runStateT (interpret 10 (returnTwoWrapper #3)) startstate).
 
-(* works with 10 fuel, but really slow *)
-Compute (runStateT (interpret 9 (ReassignVars #0)) inhabitant).
+Compute (runStateT (interpret 10 (testStore #0)) startstate).
+Compute (runStateT (interpret 10 (testRec #0)) startstate).
+Compute (runStateT (interpret 10 ConstWithArith) startstate).
+Compute (runStateT (interpret 10 (literalCast #0)) startstate).
+
+Compute (fst <$> (runStateT (interpret 15 (useSliceIndexing #0)) startstate)).
+Compute (fst <$> (runStateT (interpret 7 (testLongSlice #0)) startstate)).
+(* Compute the pmap heap but not the proofs *)
+Compute ((fun p => (fst p, (snd p).(heap).(gmap_car).(pmap.pmap_car))) <$> (runStateT (interpret 21 (testUInt64EncDec #3214405)) startstate)).
+
+Compute (runStateT (interpret 10 (testIfStatement #0)) startstate).
+Compute (runStateT (interpret 10 (testMatch (InjL #2))) startstate).
+Compute (runStateT (interpret 10 (testMatch (InjR #2))) startstate).
+
+Compute (runStateT (interpret 16 (useMap #0)) startstate).
+
+Compute (runStateT (interpret 10 (ReassignVars #0)) startstate).

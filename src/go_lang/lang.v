@@ -204,15 +204,6 @@ Class ext_semantics :=
   {
     ext_step : external -> val -> state -> val -> state -> Prop;
   }.
-
-(* The analog of ext_semantics for an interpretable external
-operation. An ext_step isn't strong enough to let us interpret
-ExternalOps. *)
-Class ext_interpretable :=
-  {
-    (* fuel, operation, argument, starting state, returns ending val and state *)
-    ext_interpret : nat -> external -> val -> state -> option (val * state);
-  }.
 Context {ffi_semantics: ext_semantics}.
 
 (** An observation associates a prophecy variable (identifier) to a pair of
@@ -393,9 +384,8 @@ Proof using ext.
      end); try abstract intuition congruence.
 Defined.
 
-Global Instance base_lit_countable : Countable base_lit.
-Proof.
- refine (inj_countable' (λ l, match l with
+Definition enc_base_lit :=
+(λ l, match l with
   | LitInt n => (inl (inl (inl (inl n))), None)
   | LitInt32 n => (inl (inl (inl (inr n))), None)
   | LitByte n => (inl (inl (inr n)), None)
@@ -405,7 +395,10 @@ Proof.
   | LitPoison => (inr (inl true), None)
   | LitLoc l => (inr (inr (inl l)), None)
   | LitProphecy p => (inr (inl false), Some p)
-  end) (λ l, match l with
+  end).
+
+Definition dec_base_lit :=
+(λ l, match l with
   | (inl (inl (inl (inl n))), None) => LitInt n
   | (inl (inl (inl (inr n))), None) => LitInt32 n
   | (inl (inl (inr n)), None) => LitByte n
@@ -415,25 +408,49 @@ Proof.
   | (inr (inl true), None) => LitPoison
   | (inr (inr (inl l)), None) => LitLoc l
   | (_, Some p) => LitProphecy p
-  end) _); by intros [].
-Qed.
-Global Instance un_op_finite : Countable un_op.
+  end).
+
+Definition base_lit_enc_retract : forall l, dec_base_lit (enc_base_lit l) = l.
 Proof.
- refine (inj_countable' (λ op, match op with NegOp => 0 | MinusUnOp => 1 | ToUInt64Op => 2 end)
-  (λ n, match n with 0 => NegOp | 1 => MinusUnOp | _ => ToUInt64Op end) _); by intros [].
+  by intros [].
 Qed.
-Global Instance bin_op_countable : Countable bin_op.
+
+Global Instance base_lit_countable : Countable base_lit :=
+  inj_countable' enc_base_lit dec_base_lit base_lit_enc_retract.
+
+Definition enc_un_op :=
+(λ op, match op with NegOp => 0 | MinusUnOp => 1 | ToUInt64Op => 2 end).
+
+Definition dec_un_op :=
+(λ n, match n with 0 => NegOp | 1 => MinusUnOp | _ => ToUInt64Op end).
+
+Definition un_op_enc_retract : forall o, dec_un_op (enc_un_op o) = o.
 Proof.
- refine (inj_countable' (λ op, match op with
+    by intros [].
+Qed.
+
+Global Instance un_op_finite : Countable un_op := inj_countable' enc_un_op dec_un_op un_op_enc_retract.
+
+Definition enc_bin_op :=
+(λ op, match op with
   | PlusOp => 0 | MinusOp => 1 | MultOp => 2 | QuotOp => 3 | RemOp => 4
   | AndOp => 5 | OrOp => 6 | XorOp => 7 | ShiftLOp => 8 | ShiftROp => 9
   | LeOp => 10 | LtOp => 11 | EqOp => 12 | OffsetOp => 13
-  end) (λ n, match n with
+  end).
+
+Definition dec_bin_op :=
+(λ n, match n with
   | 0 => PlusOp | 1 => MinusOp | 2 => MultOp | 3 => QuotOp | 4 => RemOp
   | 5 => AndOp | 6 => OrOp | 7 => XorOp | 8 => ShiftLOp | 9 => ShiftROp
   | 10 => LeOp | 11 => LtOp | 12 => EqOp | _ => OffsetOp
-  end) _); by intros [].
+  end).
+
+Definition bin_op_enc_retract : forall o, dec_bin_op (enc_bin_op o) = o.
+Proof.
+    by intros [].
 Qed.
+
+Global Instance bin_op_countable : Countable bin_op := inj_countable' enc_bin_op dec_bin_op bin_op_enc_retract.
 
 Inductive prim_op' := | a_prim_op {ar} (op: prim_op ar).
 Instance prim_op_prim_op'_iso ar : Inj eq eq (@a_prim_op ar).
@@ -623,6 +640,7 @@ Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Global Instance state_inhabited : Inhabited state :=
   populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; used_proph_id := inhabitant |}.
+
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
