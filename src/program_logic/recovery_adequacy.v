@@ -31,7 +31,7 @@ Proof.
   rewrite Nat_iter_add Nat_iter_S.
   iMod ("H" $! σ1 with "Hσ") as "H".
   do 4 iModIntro. iApply (step_fupdN_wand with "H").
-  iIntros "(H&_)". rewrite Nat_iter_S.
+  iIntros "H". rewrite Nat_iter_S.
   iMod "H" as "(_ & H)".
   iMod ("H" $! e2 σ2 efs with "[//]") as "H".
   iIntros "!> !>". by iMod "H".
@@ -89,7 +89,7 @@ Proof.
   iSpecialize ("H" $! σ [] κs with "Hσ").
   iMod (step_fupdN_inner_plain with "[H]") as "H".
   2: { iMod "H". iApply (step_fupdN_wand with "H").
-       iModIntro. iIntros "(H&_)". iMod "H" as "(H&_)".
+       iModIntro. iIntros "H". iMod "H" as "(H&_)".
        iApply "H". }
   { apply _. }
   iModIntro; eauto.

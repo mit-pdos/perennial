@@ -135,11 +135,6 @@ Proof.
     iModIntro.
     iApply (step_fupdN_wand with "H").
     iIntros "H".
-    iSplit; last first.
-    { iDestruct "H" as "(_&H)".
-      iMod "H" as "(($&?)&$)". eauto.
-    }
-    iDestruct "H" as "(H&_)".
     iMod "H". iModIntro.
     iDestruct "H" as "(%&H)".
     iSplitL "".
@@ -244,9 +239,7 @@ Proof.
   iApply (step_fupdN_wand with "Hwp").
   iIntros "Hwp".
   iModIntro. iNext. iModIntro.
-  iSplit.
-  *
-  iDestruct "Hwp" as "(H&_)".
+  iDestruct "Hwp" as "H".
   iMod "H". iModIntro.
   iDestruct "H" as "(%&H)".
   iSplitL "".
@@ -295,8 +288,6 @@ Proof.
     - iAlways. iIntros "H". iApply (big_sepL_mono with "H").
       iIntros. iApply (wpc_strong_mono with "[$]"); eauto.
   }
-  * iDestruct "Hwp" as "(_&H)".
-    iMod "H" as "(($&_)&$)". eauto.
 Qed.
 
 
