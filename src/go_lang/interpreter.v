@@ -7,37 +7,15 @@ From Perennial.go_lang Require Export locations.
 From Perennial.go_lang Require Export lang.
 From Perennial Require Export Helpers.Integers.
 From Perennial.go_lang Require Import prelude.
+From Perennial.go_lang Require Import interpret_types.
 
 From Perennial.go_lang.examples Require Import goose_unittest.
+From Perennial.go_lang.ffi Require Import disk.
 
 Set Default Proof Using "Type".
 
 Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
-
-Inductive Error (X: Type) : Type :=
-| Works (v: X)
-| Fail (s: string)
-.
-
-Instance Error_fmap : FMap Error :=
-  fun A B f => (fun err => match err with
-                     | Works _ x => Works _ (f x)
-                     | Fail _ s => Fail _ s
-                     end).
-
-Instance Error_ret : MRet Error := Works.
-
-(* eex : Error Error A *)
-Instance Error_join : MJoin Error :=
-  fun A eex => match eex with
-            | Works _ (Fail _ s) => Fail _ s
-            | Works _ (Works _ x) => Works _ x
-            | Fail _ s => Fail _ s
-            end.
-
-Instance Error_bind : MBind Error :=
-  (fun _ _ f a => mjoin (f <$> a)).
 
 Fixpoint Zpos_to_str (z : positive) : string :=
   match z with
@@ -58,10 +36,10 @@ Definition u64_to_str (x: Integers.u64) : string :=
 (* The analog of ext_semantics for an interpretable external
 operation. An ext_step isn't strong enough to let us interpret
 ExternalOps. *)
-Class ext_interpretable (ext: ext_op) (ffi: ffi_model) :=
+Class ext_interpretable {ext: ext_op} {ffi: ffi_model} :=
   {
     (* fuel, operation, argument, starting state, returns ending val and state *)
-    ext_interpret : nat -> external -> val -> state -> Error (val * state);
+    ext_interpret : nat -> external -> val -> StateT state Error val;
   }.
 
 Section go_lang_int.
@@ -72,9 +50,17 @@ Section go_lang_int.
   Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
   Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
 
-(* Interpreter Helper Stuff *)  
-Notation "x <- p1 ; p2" := (mbind (fun x => p2) p1) 
-                              (at level 60, right associativity).
+(* Bind and Ret instances for StateT option, using the instance
+keyword so that the _ <- _ ; _ notation and mret work properly *)
+Instance statet_option_bind : MBind (StateT state option) :=
+  StateT_bind option option_fmap option_join option_bind.
+Instance statet_option_ret : MRet (StateT state option) :=
+  StateT_ret option option_ret.
+
+Instance statet_error_bind : MBind (StateT state Error) :=
+  StateT_bind Error Error_fmap Error_join Error_bind.
+Instance statet_error_ret : MRet (StateT state Error) :=
+  StateT_ret Error Error_ret.
 
 Definition byte_val (v: val) : option byte :=
   match v with
@@ -85,15 +71,41 @@ Definition byte_val (v: val) : option byte :=
 Fixpoint state_readn (s: state) (l: loc) (n: nat) : option (list val) :=
   match n with
   | O => mret []
-  | S m => v <- s.(heap) !! l;
-          ls <- state_readn s (loc_add l 1) m;
-          mret ([v]++ ls)
+  | S m => v <- s.(heap) !! (loc_add l m);
+          ls <- state_readn s l m;
+          mret (ls ++ [v])
+  end.
+
+Definition vec_ugh (m : nat) : vec val (m + 1) -> vec val (S m).
+intros.
+assert ((m + 1)%nat = S m) by lia.
+rewrite H in X.
+exact X.
+Defined.
+
+(* (forall vs, state_readn s l n = Some vs -> length vs = n) is possible to
+prove, but (exists vs, state_readn s l n = Some vs /\ length vs = n)
+\/ (state_readn s l n = None) was not for some typing reasons (nonconstructive?).
+It is simpler to just re-define the same function with a
+vector type as state_readn_vec *)
+Fixpoint state_readn_vec (s: state) (l: loc) (n: nat) : option (vec val n) :=
+  match n with
+  | O => mret vnil
+  | S m => v <- s.(heap) !! (loc_add l m);
+            vtl <- state_readn_vec s l m;
+            mret (vec_ugh m $ vapp vtl (vcons v vnil))
   end.
 
 Fixpoint commute_option_list X (a : list (option X)) : option (list X) :=
   match a with
   | [] => Some []
   | cons h t => r <- h; s <- commute_option_list _ t; mret ([r] ++ s)
+  end.
+
+Fixpoint commute_option_vec X {n: nat} (a : vec (option X) n) : option (vec X n) :=
+  match a with
+  | vnil => Some vnil
+  | vcons h t => r <- h; s <- commute_option_vec _ t; mret (vcons r s)
   end.
 
 Fixpoint biggest_loc_rec (s: list (prod loc val)) : loc :=
@@ -115,82 +127,9 @@ Definition biggest_loc (σ: state) : loc :=
 Definition find_alloc_location (σ: state) (size: Z) : loc :=
   loc_add (biggest_loc σ) 1.
 
-(* http://hackage.haskell.org/package/mtl-2.2.2/docs/Control-Monad-State-Lazy.html#t:StateT *)
-(* This is a state monad transformer, which takes a pre-existing monad
-M and produces a new monad StateT M. *)
-Inductive StateT M (X: Type) : Type :=
-| StateFn (f : (state -> M (prod X state)))
-.
-
-(* Turns a StateT M X back into a function (input state) -> M (X, ending state) *)
-Definition runStateT {M} {X: Type} (mf: StateT M X) (s: state) : M (prod X state) :=
-  match mf with
-  | StateFn _ _ f => f s
-  end.
-
-(* fmap, join, bind, and ret definitions for the monad StateT M,
- * defined in terms of the corresponding monad operations for the monad M. *)
-Definition StateT_fmap M (mf : FMap M) : FMap (StateT M) :=
-  (fun A B f => (fun sa => match sa with
-                 | StateFn _ _ sf =>
-                   StateFn _ _ (fun s => (mf _ _ (fun p => match p with
-                                             | (x, s') => (f x, s')
-                                             end))(sf s))
-                 end)).
-
-Definition StateT_join M (mf : FMap M) (mj : MJoin M) : MJoin (StateT M) :=
-  (fun A ssm => match ssm with
-             | StateFn _ _ ssf =>
-               StateFn _ _ (fun st =>
-                              mjoin ((fun (p : (StateT M A * state)%type) =>
-                                        match p with
-                                        | (StateFn _ _ sf, st') => (sf st')
-                                        end) <$> (ssf st)))
-             end).
-
-Definition StateT_bind M (mf: FMap M) (mj: MJoin M) (mb: MBind M) : MBind (StateT M) :=
-  (let sj := StateT_join M mf mj in
-   let sf := StateT_fmap M mf in
-  (fun _ _ f a => mjoin (f <$> a))).
-
-Definition StateT_ret M (mr: MRet M) : MRet (StateT M) :=
-  (fun _ v => StateFn _ _ (fun s => mret (v, s))).
-
-(* Bind and Ret instances for StateT option, using the instance
-keyword so that the _ <- _ ; _ notation and mret work properly *)
-Instance statet_option_bind : MBind (StateT option) :=
-  StateT_bind option option_fmap option_join option_bind.
-Instance statet_option_ret : MRet (StateT option) :=
-  StateT_ret option option_ret.
-
-Instance statet_error_bind : MBind (StateT Error) :=
-  StateT_bind Error Error_fmap Error_join Error_bind.
-Instance statet_error_ret : MRet (StateT Error) :=
-  StateT_ret Error Error_ret.
-
-Definition mfail {X: Type} (msg: string) : StateT Error X :=
-  StateFn _ _ (fun (s: state) => Fail _ msg).
-
-(* Turns a normal option X into a StateT Error X *)
-Definition mlift {X : Type} (err_x: option X) (msg: string) : StateT Error X :=
-  StateFn _ _ (fun (s: state) => match err_x with
-                              | None => Fail _ msg
-                              | Some x => Works _ (x, s)
-                              end).
-
-Definition mget {M} {_: MRet M} : StateT M state :=
-  StateFn _ _ (fun (s: state) => mret (s, s)).
-
-Definition mput {M} {_: MRet M} (newstate: state) : StateT M () :=
-  StateFn _ _ (fun (s: state) => mret ((), newstate)).
-
-Definition mupdate {M} {_: FMap M} {_: MRet M} {_: MBind M} {_: MJoin M} (f: state -> state) : StateT M () :=
-  let _ := StateT_bind M _ _ _ in
-  s <- mget;
-  mput (f s).
 
 (* Interpreter *)
-Fixpoint interpret (fuel: nat) (e: expr) : StateT Error val :=
+Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
   match fuel with
   | O => mfail "Fuel depleted"
   | S n =>
@@ -347,6 +286,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT Error val :=
            ) "DecodeInt64Op: Read failed";
         (* vs is list byte *)
        mret (LitV $ LitInt (le_to_u64 vs))
+            
     | Primitive2 EncodeInt64Op e1 e2 =>
       v2 <- interpret n e2;
       v1 <- interpret n e1;
@@ -378,7 +318,8 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT Error val :=
 
     | ExternalOp op e =>
       v <- interpret n e;
-      StateFn _ _ (ext_interpret n op v)
+      ext_interpret n op v
+              
     | CmpXchg e0 e1 e2 => mfail "NotImpl: cmpxchg"
     | NewProph => mfail "NotImpl: prophecy variable" (* ignore *)
     | Resolve ex e1 e2 => mfail "NotImpl: resolve"
@@ -416,6 +357,48 @@ End go_lang_int.
 
 Definition startstate : state := inhabitant.
 
+Instance statet_disk_option_bind : MBind (StateT state option) :=
+  StateT_bind option option_fmap option_join option_bind.
+Instance statet_disk_option_ret : MRet (StateT state option) :=
+  StateT_ret option option_ret.
+
+Instance statet_disk_error_bind : MBind (StateT state Error) :=
+  StateT_bind Error Error_fmap Error_join Error_bind.
+Instance statet_disk_error_ret : MRet (StateT state Error) :=
+  StateT_ret Error Error_ret.
+
+Definition read_block_from_state (σ: state) (l: loc) : option Block.
+  pose (vs <- state_readn σ l block_bytes; commute_option_list _ (map byte_val vs)) as maybe_list.
+
+Fixpoint disk_interpret (fuel: nat) (op: DiskOp) (v: val) : StateT state Error val :=
+  match fuel with
+    | O => mfail "Fuel depleted"
+    | S n =>
+      match (op, v) with
+      | (ReadOp, (LitV (LitInt a))) => 
+        σ <- mget;
+        b <- mlift (σ.(world) !! a) ("ReadOp: No block at address " ++ (u64_to_str a));
+        let l := find_alloc_location σ 4096 in
+        _ <- mput (state_insert_list l (Block_to_vals b) σ);
+        mret (LitV (LitLoc l))
+      | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
+        σ <- mget;
+        b <- mlift (
+            (* A block must be a vec of length 4096, so we need to use
+               state_readn_vec to preserve the length information *)
+            (* vs : vec val 4096 *)
+             vs <- state_readn_vec σ l 4096;
+             (* (vmap byte_val vs) : vec (option byte) 4096 *)
+               commute_option_vec _ (vmap byte_val vs)
+           ) "WriteOp: Read from heap failed";
+        _ <- mput (set world <[ a := b ]> σ);
+          mret (LitV (LitUnit))
+       | _ => mfail "NotImpl disk_interpret"
+      end
+  end.
+
+Instance disk_interpretable : @ext_interpretable disk_op disk_model :=
+  { ext_interpret := disk_interpret; }.
 
 Compute (runStateT (interpret 10 (AllocN #1 (zero_val uint32T))) startstate).
 Compute (runStateT (interpret 10 (useSlice2 #0)) startstate).
@@ -428,6 +411,7 @@ Compute (runStateT (interpret 10 (literalCast #0)) startstate).
 
 Compute (fst <$> (runStateT (interpret 15 (useSliceIndexing #0)) startstate)).
 Compute (fst <$> (runStateT (interpret 7 (testLongSlice #0)) startstate)).
+
 (* Compute the pmap heap but not the proofs *)
 Compute ((fun p => (fst p, (snd p).(heap).(gmap_car).(pmap.pmap_car))) <$> (runStateT (interpret 21 (testUInt64EncDec #3214405)) startstate)).
 
