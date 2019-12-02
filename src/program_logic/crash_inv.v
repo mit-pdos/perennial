@@ -10,6 +10,12 @@ Section ci.
 Context `{!irisG Λ Σ}.
 Context `{!stagedG Σ}.
 Context `{inG Σ (exclR unitO)}.
+Implicit Types s : stuckness.
+Implicit Types P : iProp Σ.
+Implicit Types Φ : val Λ → iProp Σ.
+Implicit Types Φc : iProp Σ.
+Implicit Types v : val Λ.
+Implicit Types e : expr Λ.
 
 Definition Tok (γ: gname) :=
   own γ (Excl ()).
@@ -22,6 +28,78 @@ Proof. rewrite /Tok. apply _. Qed.
 
 Definition ci_staged k E1 E2 P : iProp Σ :=
   (|={E1, ∅}=> |={∅, ∅}▷=>^k |={∅, E2}=> P)%I.
+
+Lemma wpc_strong_mono_frame s1 s2 k1 k2 E1 E2 E e Ψ Φc R:
+  s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 →
+  WPC e @ s1; k1; E1 ; E {{ Ψ }} {{ Φc }} -∗
+  (|={E2,E1}_(k2 - k1)=> R) -∗
+  WPC e @ s2; k2; E2 ; E {{ Ψ }} {{ Φc ∗ R }}.
+Proof.
+  iIntros (?? HE) "H HΦ".
+  iLöb as "IH" forall (e E1 E2 E HE Ψ Φc R).
+  rewrite !wpc_unfold /wpc_pre.
+  iSplit.
+  - destruct (to_val e) as [v|] eqn:?.
+    {
+      iDestruct "H" as "(H&_)".
+      iMod (fupd_intro_mask' _ E1) as "Hclo"; first by auto.
+      iMod "H". iMod "Hclo" as "_". eauto.
+    }
+    iIntros (σ1 κ κs n) "Hσ".
+    iDestruct "H" as "(H&_)".
+    iMod (fupd_intro_mask' _ E1) as "Hclo"; first auto.
+    iMod ("H" with "[$]") as "H".
+    iModIntro.
+    iApply (step_fupdN_le (S k1)); eauto.
+    { lia. }
+    iApply (step_fupdN_wand with "H"). iIntros "H".
+    iMod "H" as "(%&H)".
+      iModIntro.
+      iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 efs Hstep).
+      iMod ("H" with "[//]") as "H". iIntros "!> !>".
+      iMod "H".
+      iMod "Hclo".
+      iModIntro.
+      iApply (step_fupdN_inner_wand with "H"); auto.
+      { lia. }
+      iIntros "(Hσ & H & Hefs)". iFrame.
+      iSplitR "Hefs".
+      ** iApply ("IH" with "[] [H] [HΦ]"); auto.
+      ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
+         iIntros "H". iApply (wpc_strong_mono' with "H"); eauto.
+  - iDestruct "H" as "(_&H)".
+    replace (S k2) with ((k2 - k1) + (S k1)) by lia.
+    rewrite Nat_iter_add.
+    iMod "HΦ". iModIntro.
+    iApply (step_fupdN_wand with "HΦ"). iIntros "HΦ".
+    iEval (rewrite Nat_iter_S).
+    iMod "HΦ".
+    iMod "H".
+    iApply (step_fupdN_wand with "H"). iIntros "H".
+    iMod "H" as "($&H)". iModIntro. iFrame.
+Qed.
+
+Lemma wpc_ci_inv s k N E1 e Φ Φc P γ :
+  ↑N ⊆ E1 →
+  staged_inv N γ (ci_staged (((S (S k)))) (E1 ∖ ↑N) (E1 ∖ ↑N) P) ∗
+  WPC e @ s; (S (S k)); E1; E1 {{ Φ }} {{ Φc }} ⊢
+  WPC e @ s; (2 * (S (S (S k)))); E1; (E1 ∖ ↑N) {{ Φ }} {{ Φc ∗ P }}.
+Proof.
+  iIntros (?) "(#Hinv&H)".
+  iApply (wpc_strong_mono s s _ _ E1 _ _ with "H"); try auto.
+  { lia. }
+  iModIntro; iSplit; first auto.
+  iIntros "HΦc".
+  iMod (staged_inv_weak_open with "Hinv") as "H"; auto.
+  rewrite /ci_staged.
+  iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver+.
+  replace (2 * S (S (S k)) - S (S k)) with (S (S (S (S k)))) by lia.
+  iEval (rewrite Nat_iter_S). do 4 iModIntro.
+  iEval (rewrite Nat_iter_S). do 2 iModIntro.
+  iMod "Hclo" as "_".
+  iApply (step_fupdN_inner_wand with "H"); auto.
+  iIntros; by iFrame.
+Qed.
 
 Lemma wpc_staged_invariant_aux s k E1 E2 E1' E2' e Φ Φc P Q1 R1 Q2 R2 N γ' :
   ↑N ⊆ E1 →
@@ -176,7 +254,7 @@ Proof.
     iApply ("IH" with "Hclo' [] []").
     { iAlways. iIntros "H". eauto. }
     { iAlways. iIntros "H". iApply (big_sepL_mono with "H").
-      iIntros. iApply (wpc_strong_mono with "[$]"); eauto.
+      iIntros. iApply (wpc_strong_mono' with "[$]"); eauto.
     }
   - iIntros.
     iMod (staged_inv_open with "[$]") as "(H&Hclo')".
@@ -286,7 +364,7 @@ Proof.
     iSplit.
     - eauto.
     - iAlways. iIntros "H". iApply (big_sepL_mono with "H").
-      iIntros. iApply (wpc_strong_mono with "[$]"); eauto.
+      iIntros. iApply (wpc_strong_mono' with "[$]"); eauto.
   }
 Qed.
 

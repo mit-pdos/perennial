@@ -224,7 +224,7 @@ Lemma wpr_strong_mono s k Hi t E e rec Φ Ψ Φr Ψr :
 Proof.
   iIntros "H HΦ". iLöb as "IH" forall (e t Hi E Φ Ψ Φr Ψr).
   rewrite ?wpr_unfold /wpr_pre.
-  iApply (wpc_strong_mono with "H") ; auto.
+  iApply (wpc_strong_mono' with "H") ; auto.
   iSplit.
   { iDestruct "HΦ" as "(H&_)". iIntros. iMod ("H" with "[$]"); eauto. }
   iIntros "H".
@@ -246,14 +246,14 @@ Proof.
   iLöb as "IH" forall (E e Hi t Φx).
   iIntros "He #Hidemp".
   rewrite wpr_unfold. rewrite /wpr_pre.
-  iApply (wpc_strong_mono with "He"); [ auto | auto | auto | auto | ].
+  iApply (wpc_strong_mono' with "He"); [ auto | auto | auto | ].
   iSplit; first auto. iIntros "Hcx". iModIntro.
   iIntros. iMod ("Hidemp" with "[ ] [$] [$]") as "H".
   { eauto. }
   iModIntro. iNext. iIntros (Hi'). iDestruct ("H" $! Hi') as (t') "(?&Hc)".
   iExists _. iFrame.
   iApply ("IH" $! E rec Hi' t' (λ t v, Φrx Hi' t v)%I with "[Hc]").
-  { iApply (wpc_strong_mono with "Hc"); auto. }
+  { iApply (wpc_strong_mono' with "Hc"); auto. }
   eauto.
 Qed.
 
