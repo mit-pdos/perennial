@@ -59,11 +59,15 @@ Definition byteSliceToString: val :=
     let: "s" := Data.bytesToString "p" in
     "s".
 
+Definition atomicCreateStub: val :=
+  λ: "dir" "fname" "data",
+    #().
+
 Definition useSlice: val :=
   λ: <>,
     let: "s" := NewSlice byteT #1 in
     let: "s1" := Data.sliceAppendSlice "s" "s" in
-    FS.atomicCreate #(str"dir") #(str"file") "s1".
+    atomicCreateStub #(str"dir") #(str"file") "s1".
 
 Definition useSliceIndexing: val :=
   λ: <>,
@@ -78,7 +82,7 @@ Definition useMap: val :=
     MapInsert "m" #1 slice.nil;;
     let: ("x", "ok") := MapGet "m" #2 in
     (if: "ok"
-    then "tt"
+    then #()
     else MapInsert "m" #3 "x").
 
 Definition usePtr: val :=
@@ -120,7 +124,7 @@ Definition empty: val :=
 
 Definition emptyReturn: val :=
   λ: <>,
-    "tt".
+    #().
 
 Module Enc.
   Definition S := struct.decl [
@@ -176,10 +180,10 @@ Definition Dec__UInt32: val :=
 
 Definition useInts: val :=
   λ: "x" "y",
-    let: "z" := zero_val uint64T in
+    let: "z" := ref (zero_val uint64T) in
     "z" <- to_u64 "y";;
     "z" <- !"z" + #1;;
-    let: "y2" := zero_val uint32T in
+    let: "y2" := ref (zero_val uint32T) in
     "y2" <- "y" + #(U32 3);;
     (!"z", !"y2").
 
@@ -294,6 +298,10 @@ Definition returnTwoWrapper: val :=
     let: ("a", "b") := returnTwo "data" in
     ("a", "b").
 
+Definition multipleVar: val :=
+  λ: "x" "y",
+    #().
+
 Definition PanicAtTheDisco: val :=
   λ: <>,
     Panic "disco".
@@ -313,7 +321,7 @@ End composite.
 
 Definition ReassignVars: val :=
   λ: <>,
-    let: "x" := zero_val uint64T in
+    let: "x" := ref (zero_val uint64T) in
     let: "y" := #0 in
     "x" <- #3;;
     let: "z" := ref (struct.mk composite.S [
