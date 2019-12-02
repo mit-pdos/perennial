@@ -385,6 +385,7 @@ Remove Hints e_any_hasTy val_any_hasTy : types.
 priority than Panic_hasTy *)
 Hint Resolve Panic_unit_t : types.
 Hint Resolve zero_val_ty : types.
+Hint Resolve var_hasTy : types.
 
 Hint Extern 2 (expr_hasTy _ _ anyT) => eapply e_any_hasTy : types.
 Hint Extern 2 (val_hasTy _ _ anyT) => eapply val_any_hasTy : types.
@@ -394,8 +395,10 @@ Ltac type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]
   | [ |- val_hasTy _ _ _ ] => solve [eauto with types]
-  | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ solve [eauto with types] | ]
-  | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ | solve [eauto with types] ]
+  | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ solve [eauto with types] | | ]
+  | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ | solve [eauto with types] | ]
+  | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply bin_op_32_hasTy; [ reflexivity | solve [eauto with types] | ]
+  | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply bin_op_32_hasTy; [ reflexivity | | solve [eauto with types] ]
   | [ |- expr_hasTy _ (Rec _ (annot_e (annot _ ?t)) _) (arrowT _ _) ] => eapply (rec_expr_hasTy_eq t)
   | [ |- expr_hasTy _ (Rec _ _ _) (arrowT _ _) ] => eapply rec_expr_hasTy_eq
   | [ |- expr_hasTy _ _ _ ] => econstructor

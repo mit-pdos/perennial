@@ -13,10 +13,17 @@ Definition lockRefT := refT uint64T.
 Module Data.
   Section go_lang.
     Context `{ext_ty:ext_types}.
-    Definition stringToBytes: val := λ: <>, #().
-    Definition bytesToString: val := λ: <>, #().
-    Definition sliceAppendSlice: val := λ: <>, #().
-    Definition randomUint64: val := λ: <>, #().
+    Axiom stringToBytes: val.
+    Axiom bytesToString: val.
+    Axiom stringToBytes_t : ⊢ stringToBytes : (stringT -> slice.T byteT).
+    Axiom bytesToString_t : ⊢ bytesToString : (slice.T byteT -> stringT).
+    Axiom sliceAppendSlice: val.
+    Axiom sliceAppendSlice_t: forall t, ⊢ sliceAppendSlice : (slice.T t -> slice.T t -> slice.T t).
+    Definition randomUint64: val := λ: <>, #0.
+    Theorem randomUint64_t: ⊢ randomUint64 : (unitT -> uint64T).
+    Proof.
+      typecheck.
+    Qed.
 
     Definition newLock: val := λ: <>, ref #0.
     Theorem newLock_t: ⊢ newLock : (unitT -> lockRefT).
@@ -37,6 +44,11 @@ Module Data.
     Qed.
   End go_lang.
 End Data.
+
+Hint Resolve Data.stringToBytes_t Data.bytesToString_t Data.sliceAppendSlice_t : types.
+
+Opaque Data.randomUint64.
+Hint Resolve Data.randomUint64_t : types.
 
 Opaque Data.newLock Data.lockRelease Data.lockAcquire.
 Hint Resolve Data.newLock_t Data.lockRelease_t Data.lockAcquire_t : types.
