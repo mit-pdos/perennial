@@ -50,8 +50,7 @@ Section go_lang_int.
   Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
   Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
 
-(* Bind and Ret instances for StateT option, using the instance
-keyword so that the _ <- _ ; _ notation and mret work properly *)
+(* Probably don't need these since we switched to using Error *)
 Instance statet_option_bind : MBind (StateT state option) :=
   StateT_bind option option_fmap option_join option_bind.
 Instance statet_option_ret : MRet (StateT state option) :=
@@ -62,6 +61,7 @@ Instance statet_error_bind : MBind (StateT state Error) :=
 Instance statet_error_ret : MRet (StateT state Error) :=
   StateT_ret Error Error_ret.
 
+(* Helper Functions *)
 Definition byte_val (v: val) : option byte :=
   match v with
   | LitV (LitByte b) => Some b
@@ -76,6 +76,8 @@ Fixpoint state_readn (s: state) (l: loc) (n: nat) : option (list val) :=
           mret (ls ++ [v])
   end.
 
+(* Why is this necessary? I dont understand why I had to do this to
+get the types to work. *)
 Definition vec_ugh (m : nat) : vec val (m + 1) -> vec val (S m).
 intros.
 assert ((m + 1)%nat = S m) by lia.
@@ -86,6 +88,7 @@ Defined.
 (* (forall vs, state_readn s l n = Some vs -> length vs = n) is possible to
 prove, but (exists vs, state_readn s l n = Some vs /\ length vs = n)
 \/ (state_readn s l n = None) was not for some typing reasons (nonconstructive?).
+
 It is simpler to just re-define the same function with a
 vector type as state_readn_vec *)
 Fixpoint state_readn_vec (s: state) (l: loc) (n: nat) : option (vec val n) :=
@@ -108,6 +111,7 @@ Fixpoint commute_option_vec X {n: nat} (a : vec (option X) n) : option (vec X n)
   | vcons h t => r <- h; s <- commute_option_vec _ t; mret (vcons r s)
   end.
 
+
 Fixpoint biggest_loc_rec (s: list (prod loc val)) : loc :=
   match s with
     | [] => null
@@ -128,6 +132,7 @@ Definition find_alloc_location (σ: state) (size: Z) : loc :=
   loc_add (biggest_loc σ) 1.
 
 
+
 (* Interpreter *)
 Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
   match fuel with
@@ -139,7 +144,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | Rec f y e => mret (RecV f y e)
                        
     | App e1 e2 => 
-      (* RtL evaluated, so interpret e2 first *)
+      (* RtL evaluated, so interpret e2 first. *)
       v <- interpret n e2;
       e1' <- interpret n e1;
         match e1' with
@@ -153,24 +158,26 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
         | RecV (BNamed f) (BNamed y) ex =>
           let e3 := subst f e1' (subst y v ex) in
           interpret n e3
-        | _ => mfail "App applied to non-function"
+        | _ => mfail "App applied to non-function."
         end
           
     | UnOp op e =>
       e' <- interpret n e;
-        mlift (un_op_eval op e') "Unop failed"
+        (* mlift because up_op_eval returns an optional *)
+        mlift (un_op_eval op e') "UnOp failed."
                    
     | BinOp op e1 e2 =>
       v2 <- interpret n e2;
       v1 <- interpret n e1;
-      mlift (bin_op_eval op v1 v2) "binop failed"
+      (* mlift because up_op_eval returns an optional *)
+      mlift (bin_op_eval op v1 v2) "BinOp failed."
                     
     | If e0 e1 e2 =>
       c <- interpret n e0;
         match c with
         | LitV (LitBool true) => interpret n e1
         | LitV (LitBool false) => interpret n e2
-        | _ => mfail "If applied to non-bool"
+        | _ => mfail "If applied to non-bool."
         end
 
     | Pair e1 e2 =>
@@ -182,14 +189,14 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
       e' <- interpret n e;
       match e' with
       | PairV v1 v2 => mret v1
-      | _ => mfail "Fst applied to non-PairV"
+      | _ => mfail "Fst applied to non-PairV."
       end
 
     | Snd e =>
       e' <- interpret n e;
       match e' with
       | PairV v1 v2 => mret v2
-      | _ => mfail "Snd applied to non-PairV"
+      | _ => mfail "Snd applied to non-PairV."
       end
       
     | InjL e =>
@@ -207,15 +214,15 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
         interpret n (App e1 (Val v'))
       | InjRV v' =>
         interpret n (App e2 (Val v'))
-      | _ => mfail "Case of non-Inj"
+      | _ => mfail "Case of non-inj."
       end
 
-    | Fork e => mfail "NotImpl: fork"
+    | Fork e => mfail "NotImpl: fork."
 
     | Primitive0 (PanicOp s) => mfail ("Panic: " ++ s)
 
     (* In head_step, alloc nondeterministically allocates at any valid
-    location. We'll just pick the first valid location *)
+    location. We'll just pick the first valid location. *)
     | Primitive1 AllocStructOp e =>
       structv <- interpret n e;
       s <- mget;
@@ -234,7 +241,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
           let l := find_alloc_location s (int.val lenz) in
           _ <- mput (state_init_heap l (int.val lenz) initv s);
           mret (LitV (LitLoc l))
-      | _ => mfail "Alloc with non-integer argument"
+      | _ => mfail "Alloc with non-integer argument."
       end
         
     | Primitive1 LoadOp e =>
@@ -251,9 +258,9 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
           but the unit tests all use LitInt? *)
           | LitV (LitLoc l) => 
             s <- mget;
-            v <- mlift (s.(heap) !! l) "Load Failed loc";
+            v <- mlift (s.(heap) !! l) "Load failed, LitLoc case.";
             mret v
-          | _ => mfail "Load with non-location argument"
+          | _ => mfail "Load with non-location argument."
         end
           
     | Primitive2 StoreOp e1 e2 =>
@@ -269,7 +276,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
             s <- mget;
             _ <- mput (set heap <[l:=val]> s);
             mret (LitV LitUnit)
-          | _ => mfail "Store with non-location argument"
+          | _ => mfail "Store with non-location argument."
         end
           
     | Primitive1 DecodeInt64Op e =>
@@ -278,14 +285,14 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
                    | LitV (LitLoc l) => Some l
                    | _ => None
                    end)
-          "DecodeInt64Op argument not a LitLoc";
+          "DecodeInt64Op argument not a LitLoc.";
         s <- mget;
         vs <- mlift (
              rs <- state_readn s l 8;
              commute_option_list _ (map byte_val rs)
-           ) "DecodeInt64Op: Read failed";
+           ) "DecodeInt64Op: Read failed.";
         (* vs is list byte *)
-       mret (LitV $ LitInt (le_to_u64 vs))
+        mret (LitV $ LitInt (le_to_u64 vs))
             
     | Primitive2 EncodeInt64Op e1 e2 =>
       v2 <- interpret n e2;
@@ -305,31 +312,30 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
       _ <- mput (state_insert_list l (byte_vals $ u64_le v) s);
         mret (LitV LitUnit)
 
-    | Primitive1 DecodeInt32Op e => mfail "NotImpl decode"
-    | Primitive2 EncodeInt32Op e1 e2 => mfail "NotImpl: encode"
+    | Primitive1 DecodeInt32Op e => mfail "NotImpl: decode."
+    | Primitive2 EncodeInt32Op e1 e2 => mfail "NotImpl: encode."
+                                             
     | Primitive1 ObserveOp e =>
       v <- interpret n e;
       _ <- mupdate (set trace (fun tr => tr ++ [v]));
       mret (LitV LitUnit)
 
-    | Primitive0 _ => mfail "NotImpl: unrecognized primitive0"
-    | Primitive1 _ _ => mfail "NotImpl: unrecognized primitive1"
-    | Primitive2 _ _ _ => mfail "NotImpl: unrecognized primitive2"
+    | Primitive0 _ => mfail "NotImpl: unrecognized primitive0."
+    | Primitive1 _ _ => mfail "NotImpl: unrecognized primitive1."
+    | Primitive2 _ _ _ => mfail "NotImpl: unrecognized primitive2."
 
     | ExternalOp op e =>
       v <- interpret n e;
       ext_interpret n op v
-              
-    | CmpXchg e0 e1 e2 => mfail "NotImpl: cmpxchg"
-    | NewProph => mfail "NotImpl: prophecy variable" (* ignore *)
-    | Resolve ex e1 e2 => mfail "NotImpl: resolve"
+
+    (* Won't interpret anything involving prophecy variables. *)
+    | CmpXchg e0 e1 e2 => mfail "NotImpl: cmpxchg."   (* ignore *)
+    | NewProph => mfail "NotImpl: prophecy variable." (* ignore *)
+    | Resolve ex e1 e2 => mfail "NotImpl: resolve."   (* ignore *)
     end
   end.
 
 (* Testing *)
-Definition TypedInt : expr := #32.
-Definition ConstWithArith : expr := #4 + #3 * TypedInt.
-
 Definition testRec : expr :=
   (rec: BAnon BAnon :=
      #3 + #3).
