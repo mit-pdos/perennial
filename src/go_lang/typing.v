@@ -10,13 +10,14 @@ Inductive ty :=
 | prodT (t1 t2: ty)
 | sumT (t1 t2: ty)
 | arrowT (t1 t2: ty)
-| refT (t: ty)
+| arrayT (t: ty)
 | structRefT (ts: list ty)
 (* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
 | mapValT (vt: ty) (* keys are always uint64, for now *)
 | anyT
 .
 
+Definition refT (t:ty) : ty := structRefT [t].
 Definition mapT (vt:ty) : ty := refT (mapValT vt).
 
 Infix "*" := prodT : heap_type.
@@ -59,7 +60,7 @@ Section go_lang.
     | prodT t1 t2 => (zero_val t1, zero_val t2)
     | sumT t1 t2 => InjLV (zero_val t1)
     | arrowT t1 t2 => λ: <>, zero_val t2
-    | refT t => #null
+    | arrayT t => #null
     | structRefT ts => #null
     | anyT => #()
     end.
@@ -74,9 +75,14 @@ Section go_lang.
   (* to get a type for a location, the typing judgement should keep track of it
   from its allocation and then throughout the program; null is the only special
   case of a location value the programmer can directly and legally refer to *)
-  | loc_null_hasTy t : base_lit_hasTy (LitLoc null) (refT t)
+  | loc_null_hasTy t : base_lit_hasTy (LitLoc null) (arrayT t)
   | structRef_null_hasTy ts : base_lit_hasTy (LitLoc null) (structRefT ts)
   .
+
+  Theorem array_null_hasTy t : base_lit_hasTy (LitLoc null) (refT t).
+  Proof.
+    apply structRef_null_hasTy.
+  Qed.
 
   Definition bin_op_ty (op:bin_op) (t:ty) : option (ty * ty * ty) :=
     match op with
@@ -119,9 +125,9 @@ Section go_lang.
       Γ ⊢ e1 : t1 ->
       Γ ⊢ UnOp op e1 : t
   | offset_op_hasTy e1 e2 t :
-      Γ ⊢ e1 : refT t ->
+      Γ ⊢ e1 : arrayT t ->
       Γ ⊢ e2 : uint64T ->
-      Γ ⊢ BinOp OffsetOp e1 e2 : refT t
+      Γ ⊢ BinOp OffsetOp e1 e2 : arrayT t
   | struct_offset_op_hasTy e1 (v: Z) ts :
       Γ ⊢ e1 : structRefT ts ->
       Γ ⊢ BinOp OffsetOp e1 #v : structRefT (skipn (Z.to_nat v) ts)
@@ -188,7 +194,7 @@ Section go_lang.
   | alloc_hasTy n v t :
       Γ ⊢ n : uint64T ->
       Γ ⊢ v : t ->
-      Γ ⊢ AllocN n v : refT t
+      Γ ⊢ AllocN n v : arrayT t
   | alloc_struct_hasTy v t :
       Γ ⊢ v : t ->
       Γ ⊢ AllocStruct v : structRefT (flatten_ty t)
@@ -210,23 +216,23 @@ Section go_lang.
       Γ ⊢ ExternalOp op e : t2
   | encode_hasTy n p :
       Γ ⊢ n : uint64T ->
-      Γ ⊢ p : refT byteT ->
+      Γ ⊢ p : arrayT byteT ->
       Γ ⊢ EncodeInt64 n p : unitT
   | decode_hasTy p :
-      Γ ⊢ p : refT byteT ->
+      Γ ⊢ p : arrayT byteT ->
       Γ ⊢ DecodeInt64 p : uint64T
   | encode32_hasTy n p :
       Γ ⊢ n : uint32T ->
-      Γ ⊢ p : refT byteT ->
+      Γ ⊢ p : arrayT byteT ->
       Γ ⊢ EncodeInt32 n p : unitT
   | decode32_hasTy p :
-      Γ ⊢ p : refT byteT ->
+      Γ ⊢ p : arrayT byteT ->
       Γ ⊢ DecodeInt32 p : uint32T
   | struct_weaken_hasTy e ts1 ts2 :
       Γ ⊢ e : structRefT (ts1 ++ ts2) ->
       Γ ⊢ e : structRefT ts1
-  | struct_singleton_hasTy e t :
-      Γ ⊢ e : structRefT [t] ->
+  | array_ref_hasTy e t :
+      Γ ⊢ e : arrayT t ->
       Γ ⊢ e : refT t
   | e_any_hasTy e t :
       Γ ⊢ e : t ->
@@ -257,8 +263,34 @@ Section go_lang.
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
+  Theorem load_array_hasTy Γ l t :
+      Γ ⊢ l : arrayT t ->
+      Γ ⊢ Load l : t.
+  Proof.
+    intros.
+    apply load_hasTy.
+    apply array_ref_hasTy; auto.
+  Qed.
+
+  Theorem store_array_hasTy Γ l v t :
+      Γ ⊢ l : arrayT t ->
+      Γ ⊢ v : t ->
+      Γ ⊢ Store l v : unitT.
+  Proof.
+    intros.
+    eapply store_hasTy; eauto.
+    apply array_ref_hasTy; eauto.
+  Qed.
+
   Hint Constructors base_lit_hasTy expr_hasTy val_hasTy base_lit_hasTy.
   Remove Hints e_any_hasTy val_any_hasTy.
+
+  Theorem ref_hasTy Γ v t :
+    Γ ⊢ v : t ->
+    Γ ⊢ ref v : refT t.
+  Proof.
+    eauto.
+  Qed.
 
   Theorem zero_val_ty ty Γ :
     Γ ⊢v zero_val ty : ty.
@@ -270,7 +302,8 @@ Section go_lang.
   Definition NewMap (t:ty) : expr := AllocMap (zero_val t).
   Theorem NewMap_t t Γ : Γ ⊢ NewMap t : mapT t.
   Proof.
-    unfold NewMap.
+    unfold NewMap, mapT.
+    eapply array_ref_hasTy.
     repeat econstructor.
     apply zero_val_ty.
   Qed.
@@ -380,21 +413,26 @@ Hint Resolve hasTy_ty_congruence : types.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
-Remove Hints e_any_hasTy val_any_hasTy : types.
+Remove Hints array_ref_hasTy e_any_hasTy val_any_hasTy : types.
 (* note that this has to be after [Hint Constructors expr_hasTy] to get higher
 priority than Panic_hasTy *)
 Hint Resolve Panic_unit_t : types.
 Hint Resolve zero_val_ty : types.
 Hint Resolve var_hasTy : types.
+Hint Resolve ref_hasTy load_array_hasTy store_array_hasTy array_null_hasTy : types.
 
+Hint Extern 1 (expr_hasTy _ _ _) => apply var_hasTy; reflexivity : types.
 Hint Extern 2 (expr_hasTy _ _ anyT) => eapply e_any_hasTy : types.
 Hint Extern 2 (val_hasTy _ _ anyT) => eapply val_any_hasTy : types.
 
 Local Ltac simp := unfold For; rewrite ?insert_anon.
-Ltac type_step :=
+Ltac _type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]
   | [ |- val_hasTy _ _ _ ] => solve [eauto with types]
+  | [ |- expr_hasTy _ (Store _ _) _ ] => eapply store_array_hasTy; [ solve [eauto with types] | ]
+  | [ |- expr_hasTy _ (Load _) _ ] => eapply load_array_hasTy; [ solve [eauto with types] ]
+  | [ |- expr_hasTy _ (ref _) _ ] => eapply ref_hasTy
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ solve [eauto with types] | | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ | solve [eauto with types] | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply bin_op_32_hasTy; [ reflexivity | solve [eauto with types] | ]
@@ -406,11 +444,14 @@ Ltac type_step :=
   | [ |- base_lit_hasTy _ _ ] =>  econstructor
   end; simp.
 
+Ltac type_step := _type_step;
+                  try lazymatch goal with
+                      | [ |- _ = _ ] => reflexivity
+                      end.
+
 Ltac typecheck :=
   intros;
-  repeat (type_step; try match goal with
-                         | [ |- _ = _ ] => reflexivity
-                         end).
+  repeat type_step.
 
 Section go_lang.
   Context `{ext_ty: ext_types}.

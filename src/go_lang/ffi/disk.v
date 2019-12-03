@@ -38,8 +38,8 @@ Defined.
 Definition disk_ty: ext_types disk_op :=
   {| get_ext_tys (op: @external disk_op) :=
        match op with
-    | ReadOp => (uint64T, refT byteT)
-    | WriteOp => (prodT uint64T (refT byteT), unitT)
+    | ReadOp => (uint64T, arrayT byteT)
+    | WriteOp => (prodT uint64T (arrayT byteT), unitT)
     | SizeOp => (unitT, uint64T)
        end; |}.
 

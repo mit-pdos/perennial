@@ -28,6 +28,8 @@ Module Data.
     Definition newLock: val := λ: <>, ref #0.
     Theorem newLock_t: ⊢ newLock : (unitT -> lockRefT).
     Proof.
+      type_step.
+      type_step.
       typecheck.
     Qed.
 

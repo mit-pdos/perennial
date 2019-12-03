@@ -11,14 +11,14 @@ Open Scope heap_types.
 
 Module slice.
   Definition S t := mkStruct ["p" :: refT t; "len" :: uint64T].
-  Definition T t : ty := refT t * uint64T.
+  Definition T t : ty := arrayT t * uint64T.
   Section fields.
     Context `{ext_ty:ext_types}.
 
     Definition ptr: val := λ: "s", Fst (Var "s").
     Definition len: val := λ: "s", Snd (Var "s").
 
-    Theorem ptr_t t : ⊢ ptr : (T t -> refT t).
+    Theorem ptr_t t : ⊢ ptr : (T t -> arrayT t).
     Proof.
       typecheck.
     Qed.
@@ -37,8 +37,6 @@ End slice.
 
 Hint Resolve slice.ptr_t slice.len_t slice.nil_t : types.
 
-Definition arrayT (t:ty) := refT t.
-
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
   Context {ext_ty:ext_types ext}.
@@ -51,7 +49,7 @@ Section go_lang.
 Definition raw_slice (t: ty): val :=
   λ: "p" "sz", ("p", "sz").
 
-Theorem raw_slice_t t : ⊢ raw_slice t : (refT t -> uint64T -> slice.T t).
+Theorem raw_slice_t t : ⊢ raw_slice t : (arrayT t -> uint64T -> slice.T t).
 Proof.
   typecheck.
 Qed.
@@ -71,7 +69,7 @@ Definition MemCpy: val :=
     for-range: "i" < "n" :=
       ("dst" +ₗ "i") <- !("src" +ₗ "i").
 
-Theorem MemCpy_t t : ⊢ MemCpy : (refT t -> refT t -> uint64T -> unitT).
+Theorem MemCpy_t t : ⊢ MemCpy : (arrayT t -> arrayT t -> uint64T -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -84,7 +82,7 @@ Definition MemCpy_rec: val :=
     else "dst" <- !"src";;
          "memcpy" ("dst" +ₗ #1) ("src" +ₗ #1) ("n" - #1).
 
-Theorem MemCpy_rec_t t : ⊢ MemCpy_rec : (refT t -> refT t -> uint64T -> unitT).
+Theorem MemCpy_rec_t t : ⊢ MemCpy_rec : (arrayT t -> arrayT t -> uint64T -> unitT).
 Proof.
   typecheck.
 Qed.
@@ -95,7 +93,7 @@ Definition SliceRef: val :=
               then (slice.ptr "s" +ₗ "i")
               else Panic "slice index out-of-bounds".
 
-Theorem SliceRef_t t : ⊢ SliceRef : (slice.T t -> uint64T -> refT t).
+Theorem SliceRef_t t : ⊢ SliceRef : (slice.T t -> uint64T -> arrayT t).
 Proof.
   typecheck.
 Qed.

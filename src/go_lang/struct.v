@@ -148,7 +148,6 @@ Theorem load_struct_ref_hasTy Γ l t ts :
 Proof.
   intros.
   apply load_hasTy.
-  apply struct_singleton_hasTy.
   eapply struct_weaken_hasTy; simpl; eauto.
 Qed.
 
@@ -190,7 +189,7 @@ Proof.
   apply struct_offset_op_hasTy.
 Qed.
 
-Hint Resolve load_hasTy struct_singleton_hasTy.
+Hint Resolve load_hasTy.
 
 Hint Rewrite @drop_app : ty.
 
