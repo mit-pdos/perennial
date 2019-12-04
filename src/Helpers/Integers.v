@@ -217,9 +217,14 @@ Proof.
   induction n; simpl; auto.
 Qed.
 
+(* these make sure that s/64/32/ changes 64-bit code to 32-bit code *)
+Notation u64_bytes := 8%nat (only parsing).
+Notation u32_bytes := 4%nat (only parsing).
+
+(** 64-bit encoding *)
 Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x.(u64_car) in
-  let t := split (byte:=Naive.word8) 8 n in
+  let t := split (byte:=Naive.word8) u64_bytes n in
   let words := tuple.to_list t in
   map Word8 words.
 
@@ -230,12 +235,12 @@ Proof.
   exact (combine (byte:=Naive.word8) _ t).
 Defined.
 
-Theorem u64_le_length x : length (u64_le x) = 8%nat.
+Theorem u64_le_length x : length (u64_le x) = u64_bytes.
 Proof.
   reflexivity.
 Qed.
 
-Theorem tuple_of_to_list8 A (t: tuple A 8) :
+Theorem tuple_of_to_list_u64 A (t: tuple A u64_bytes) :
   tuple.of_list (tuple.to_list t) = t.
 Proof.
   unfold tuple in t.
@@ -253,16 +258,19 @@ Proof.
   f_equal.
   cbv [u64_car].
   rewrite map_map, map_id.
-  rewrite tuple_of_to_list8.
+  rewrite tuple_of_to_list_u64.
   rewrite combine_split.
-  change (8%nat * 8) with 64.
+  change (u64_bytes%nat * 8) with 64.
   rewrite word.wrap_unsigned by lia.
   by rewrite word.of_Z_unsigned.
 Qed.
+(* end 64-bit code *)
 
+(* this block is a copy-paste of the above with s/64/32/ *)
+(** 32-bit encoding *)
 Definition u32_le (x: u32) : list byte :=
   let n := word.unsigned x.(u32_car) in
-  let t := split (byte:=Naive.word8) 4 n in
+  let t := split (byte:=Naive.word8) u32_bytes n in
   let words := tuple.to_list t in
   map Word8 words.
 
@@ -273,12 +281,12 @@ Proof.
   exact (combine (byte:=Naive.word8) _ t).
 Defined.
 
-Theorem u32_le_length x : length (u32_le x) = 4%nat.
+Theorem u32_le_length x : length (u32_le x) = u32_bytes.
 Proof.
   reflexivity.
 Qed.
 
-Theorem tuple_of_to_list4 A (t: tuple A 4) :
+Theorem tuple_of_to_list_u32 A (t: tuple A u32_bytes) :
   tuple.of_list (tuple.to_list t) = t.
 Proof.
   unfold tuple in t.
@@ -296,9 +304,14 @@ Proof.
   f_equal.
   cbv [u32_car].
   rewrite map_map, map_id.
-  rewrite tuple_of_to_list4.
+  rewrite tuple_of_to_list_u32.
   rewrite combine_split.
-  change (4%nat * 8) with 32.
+  change (u32_bytes%nat * 8) with 32.
   rewrite word.wrap_unsigned by lia.
   by rewrite word.of_Z_unsigned.
 Qed.
+(* end 32-bit code *)
+
+Eval cbv [u32_le map split tuple.to_list] in u32_le.
+Eval cbv [le_to_u32 map combine length tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2]
+  in (fun v1 v2 v3 v4 => le_to_u32 [v1;v2;v3;v4]).

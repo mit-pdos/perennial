@@ -106,6 +106,7 @@ Inductive prim_op : arity -> Set :=
   | PanicOp (s: string) : prim_op args0
   | AllocNOp : prim_op args2 (* array length (positive number), initial value *)
   | AllocStructOp : prim_op args1 (* struct val *)
+  | PrepareWriteOp : prim_op args1 (* loc *)
   | StoreOp : prim_op args2 (* pointer, value *)
   | LoadOp : prim_op args1
   | EncodeInt64Op : prim_op args2 (* int, loc to store to *)
@@ -159,9 +160,10 @@ with val :=
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
 
-Definition Panic s := Primitive0 (PanicOp s).
+Notation Panic s := (Primitive0 (PanicOp s)).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation AllocStruct := (Primitive1 AllocStructOp).
+Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation Store := (Primitive2 StoreOp).
 Notation Load := (Primitive1 LoadOp).
 Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
@@ -179,6 +181,10 @@ Fixpoint flatten_struct (v: val) : list val :=
 
 Context {ffi : ffi_model}.
 
+Inductive nonAtomic T := Free (v:T) | Writing (v:T).
+Global Arguments Free {T}.
+Global Arguments Writing {T}.
+
 Inductive event :=
   | In_ev (sel v:val)
   | Out_ev (v:val)
@@ -186,7 +192,7 @@ Inductive event :=
 
 (** The state: heaps of vals. *)
 Record state : Type := {
-  heap: gmap loc val;
+  heap: gmap loc (nonAtomic val);
   world: ffi_state;
   trace: list event;
   used_proph_id: gset proph_id;
@@ -459,6 +465,7 @@ Proof.
                                 | PanicOp s => inl s
                                 | AllocNOp => inr 0
                                 | AllocStructOp => inr 7
+                                | PrepareWriteOp => inr 12
                                 | StoreOp => inr 1
                                 | LoadOp => inr 2
                                 | EncodeInt64Op => inr 5
@@ -472,6 +479,7 @@ Proof.
                                | inl s => a_prim_op (PanicOp s)
                                | inr 0 => a_prim_op AllocNOp
                                | inr 7 => a_prim_op AllocStructOp
+                               | inr 12 => a_prim_op PrepareWriteOp
                                | inr 1 => a_prim_op StoreOp
                                | inr 2 => a_prim_op LoadOp
                                | inr 5 => a_prim_op EncodeInt64Op
@@ -481,7 +489,7 @@ Proof.
                                | inr 10 => a_prim_op InputOp
                                | inr 11 => a_prim_op OutputOp
                                | _ => a_prim_op (PanicOp "")
-                               end) _); by intros [_ []].
+                               end) _); intros [_ []]; trivial.
 Qed.
 
 Inductive basic_type :=
@@ -791,18 +799,18 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | _, _ => None
     end.
 
-Fixpoint heap_array (l : loc) (vs : list val) : gmap loc val :=
+Fixpoint heap_array {V} (l : loc) (vs : list V) : gmap loc V :=
   match vs with
   | [] => ∅
   | v :: vs' => {[l := v]} ∪ heap_array (l +ₗ 1) vs'
   end.
 
-Lemma heap_array_singleton l v : heap_array l [v] = {[l := v]}.
+Lemma heap_array_singleton V l (v:V) : heap_array l [v] = {[l := v]}.
 Proof. by rewrite /heap_array right_id. Qed.
 
 Open Scope Z.
 
-Lemma heap_array_lookup l vs w k :
+Lemma heap_array_lookup V l (vs: list V) w k :
   heap_array l vs !! k = Some w ↔
   ∃ j, 0 ≤ j ∧ k = l +ₗ j ∧ vs !! (Z.to_nat j) = Some w.
 Proof.
@@ -823,7 +831,7 @@ Proof.
     auto with lia.
 Qed.
 
-Lemma heap_array_map_disjoint (h : gmap loc val) (l : loc) (vs : list val) :
+Lemma heap_array_map_disjoint {V} (h : gmap loc V) (l : loc) (vs : list V) :
   (∀ i, (0 ≤ i) → (i < length vs) → h !! (l +ₗ i) = None) →
   (heap_array l vs) ##ₘ h.
 Proof.
@@ -834,15 +842,15 @@ Qed.
 
 Close Scope Z.
 
-Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
-  set heap (λ h, heap_array l vs ∪ h) σ.
-
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)
+Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
+  set heap (λ h, heap_array l (map Free vs) ∪ h) σ.
+
 Definition state_init_heap (l : loc) (n : Z) (v : val) (σ : state) : state :=
   state_insert_list l (replicate (Z.to_nat n) v) σ.
 
 Lemma state_init_heap_singleton l v σ :
-  state_init_heap l 1 v σ = set heap <[l:=v]> σ.
+  state_init_heap l 1 v σ = set heap <[l:=Free v]> σ.
 Proof.
   destruct σ as [h p]. rewrite /state_init_heap /state_insert_list /set /=. f_equiv.
   rewrite right_id insert_union_singleton_l. done.
@@ -855,6 +863,24 @@ Theorem byte_vals_length bs : length (byte_vals bs) = length bs.
 Proof.
   rewrite /byte_vals fmap_length //.
 Qed.
+
+Definition is_Free {A} (mna: option (nonAtomic A)) := exists x, mna = Some (Free x).
+Global Instance is_Free_dec A (x: option (nonAtomic A)) : Decision (is_Free x).
+Proof.
+  hnf; unfold is_Free.
+  destruct x; [ | right; abstract (destruct 1; congruence) ].
+  destruct n; [ left | right; abstract (destruct 1; congruence) ].
+  eauto.
+Defined.
+
+Definition is_Writing {A} (mna: option (nonAtomic A)) := exists x, mna = Some (Writing x).
+Global Instance is_Writing_dec A (x: option (nonAtomic A)) : Decision (is_Writing x).
+Proof.
+  hnf; unfold is_Writing.
+  destruct x; [ | right; abstract (destruct 1; congruence) ].
+  destruct n; [ right; abstract (destruct 1; congruence) | left ].
+  eauto.
+Defined.
 
 Inductive head_step : expr → state → list observation → expr → state → list expr → Prop :=
   | RecS f x e σ :
@@ -901,14 +927,21 @@ Inductive head_step : expr → state → list observation → expr → state →
                []
                (Val $ LitV $ LitLoc l) (state_insert_list l (flatten_struct v) σ)
                []
+  | PrepareWriteS l v σ :
+     σ.(heap) !! l = Some $ Free v ->
+     head_step (PrepareWrite (Val $ LitV $ LitLoc l)) σ
+               []
+               (Val $ LitV $ LitUnit) (set heap <[l:=Writing v]> σ)
+               []
   | LoadS l v σ :
-     σ.(heap) !! l = Some v →
-     head_step (Load (Val $ LitV $ LitLoc l)) σ [] (of_val v) σ []
+     σ.(heap) !! l = Some $ Free v →
+     head_step (Load (Val $ LitV $ LitLoc l)) σ [] (of_val v)
+               σ []
   | StoreS l v σ :
-     is_Some (σ.(heap) !! l) →
+     is_Writing (σ.(heap) !! l) ->
      head_step (Store (Val $ LitV $ LitLoc l) (Val v)) σ
                []
-               (Val $ LitV LitUnit) (set heap <[l:=v]> σ)
+               (Val $ LitV LitUnit) (set heap <[l:=Free v]> σ)
                []
   | ExternalS op v σ v' σ' :
      ext_step op v σ v' σ' ->
@@ -928,37 +961,43 @@ Inductive head_step : expr → state → list observation → expr → state →
                (Val $ LitV LitUnit) (set trace (fun tr => tr ++ [Out_ev v]) σ)
                []
   | EncodeInt64S v l σ :
-     (forall i, (i < 8)%nat -> is_Some (σ.(heap) !! (l +ₗ i))) ->
+     (forall i, (i < u64_bytes)%nat -> is_Free (σ.(heap) !! (l +ₗ i))) ->
      head_step (EncodeInt64 (Val $ LitV $ LitInt v) (Val $ LitV $ LitLoc l)) σ
                []
                (Val $ LitV LitUnit) (state_insert_list l (byte_vals $ u64_le v) σ)
                []
   | DecodeInt64S l vs σ :
-     (forall i, (i < 8)%nat -> σ.(heap) !! (l +ₗ i) = byte_vals vs !! i) ->
+     (forall i, (i < u64_bytes)%nat -> match σ.(heap) !! (l +ₗ i) with
+                       | Some (Free v) => byte_vals vs !! i = Some v
+                       | _ => False
+                       end) ->
      head_step (DecodeInt64 (Val $ LitV $ LitLoc l)) σ
                []
                (Val $ LitV $ LitInt (le_to_u64 vs)) σ
                []
   | EncodeInt32S v l σ :
-     (forall i, (i < 4)%nat -> is_Some (σ.(heap) !! (l +ₗ i))) ->
+     (forall i, (i < u32_bytes)%nat -> is_Free (σ.(heap) !! (l +ₗ i))) ->
      head_step (EncodeInt32 (Val $ LitV $ LitInt32 v) (Val $ LitV $ LitLoc l)) σ
                []
                (Val $ LitV LitUnit) (state_insert_list l (byte_vals $ u32_le v) σ)
                []
   | DecodeInt32S l vs σ :
-     (forall i, (i < 8)%nat -> σ.(heap) !! (l +ₗ i) = byte_vals vs !! i) ->
+     (forall i, (i < u32_bytes)%nat -> match σ.(heap) !! (l +ₗ i) with
+                       | Some (Free v) => byte_vals vs !! i = Some v
+                       | _ => False
+                       end) ->
      head_step (DecodeInt32 (Val $ LitV $ LitLoc l)) σ
                []
                (Val $ LitV $ LitInt32 (le_to_u32 vs)) σ
                []
   | CmpXchgS l v1 v2 vl σ b :
-     σ.(heap) !! l = Some vl →
+     σ.(heap) !! l = Some $ Free vl →
      (* Crucially, this compares the same way as [EqOp]! *)
      vals_compare_safe vl v1 →
      b = bool_decide (vl = v1) →
      head_step (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) σ
                []
-               (Val $ PairV vl (LitV $ LitBool b)) (if b then set heap <[l:=v2]> σ else σ)
+               (Val $ PairV vl (LitV $ LitBool b)) (if b then set heap <[l:=Free v2]> σ else σ)
                []
   | NewProphS σ p :
      p ∉ σ.(used_proph_id) →
@@ -1078,8 +1117,10 @@ End go_lang.
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
 
+Notation Panic s := (Primitive0 (PanicOp s)).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation AllocStruct := (Primitive1 AllocStructOp).
+Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation Store := (Primitive2 StoreOp).
 Notation Load := (Primitive1 LoadOp).
 Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
