@@ -421,22 +421,41 @@ Proof.
   | (_, Some p) => LitProphecy p
   end) _); by intros [].
 Qed.
+
+Ltac count t_rec :=
+  let rec go num f :=
+      (let t := type of f in
+       let t := eval cbv beta in t in
+           lazymatch t with
+           | nat -> _ => go constr:(S num) constr:(f num)
+           | _ => f
+           end) in
+  go constr:(0%nat) constr:(t_rec (fun _ => nat)).
+
+Ltac match_n num :=
+  lazymatch num with
+  | 0%nat => uconstr:(fun (n:nat) => _)
+  | _ => let num' := (eval cbv in (Nat.pred num)) in
+        let match_n' := match_n num' in
+        uconstr:(fun (n:nat) => match n with
+                       | O => _
+                       | S n' => match_n' n'
+                       end)
+  end.
+
+Ltac solve_countable rec num :=
+  let inj := count rec in
+  let dec := match_n num in
+  unshelve (refine (inj_countable' inj dec _); intros []; reflexivity);
+  constructor.
+
 Global Instance un_op_finite : Countable un_op.
 Proof.
- refine (inj_countable' (λ op, match op with NegOp => 0 | MinusUnOp => 1 | ToUInt64Op => 2 end)
-  (λ n, match n with 0 => NegOp | 1 => MinusUnOp | _ => ToUInt64Op end) _); by intros [].
+  solve_countable un_op_rec 4%nat.
 Qed.
 Global Instance bin_op_countable : Countable bin_op.
 Proof.
- refine (inj_countable' (λ op, match op with
-  | PlusOp => 0 | MinusOp => 1 | MultOp => 2 | QuotOp => 3 | RemOp => 4
-  | AndOp => 5 | OrOp => 6 | XorOp => 7 | ShiftLOp => 8 | ShiftROp => 9
-  | LeOp => 10 | LtOp => 11 | EqOp => 12 | OffsetOp => 13
-  end) (λ n, match n with
-  | 0 => PlusOp | 1 => MinusOp | 2 => MultOp | 3 => QuotOp | 4 => RemOp
-  | 5 => AndOp | 6 => OrOp | 7 => XorOp | 8 => ShiftLOp | 9 => ShiftROp
-  | 10 => LeOp | 11 => LtOp | 12 => EqOp | _ => OffsetOp
-  end) _); by intros [].
+  solve_countable bin_op_rec 13%nat.
 Qed.
 
 Inductive prim_op' := | a_prim_op {ar} (op: prim_op ar).
