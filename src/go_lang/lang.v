@@ -112,7 +112,8 @@ Inductive prim_op : arity -> Set :=
   | DecodeInt64Op : prim_op args1 (* loc to load from *)
   | EncodeInt32Op : prim_op args2 (* int, loc to store to *)
   | DecodeInt32Op : prim_op args1 (* loc to load from *)
-  | ObserveOp : prim_op args1
+  | InputOp : prim_op args1
+  | OutputOp : prim_op args1
 .
 
 Inductive expr :=
@@ -167,7 +168,8 @@ Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
 Notation DecodeInt64 := (Primitive1 DecodeInt64Op).
 Notation EncodeInt32 := (Primitive2 EncodeInt32Op).
 Notation DecodeInt32 := (Primitive1 DecodeInt32Op).
-Notation Observe := (Primitive1 ObserveOp).
+Notation Input := (Primitive1 InputOp).
+Notation Output := (Primitive1 OutputOp).
 
 Fixpoint flatten_struct (v: val) : list val :=
   match v with
@@ -177,11 +179,16 @@ Fixpoint flatten_struct (v: val) : list val :=
 
 Context {ffi : ffi_model}.
 
+Inductive event :=
+  | In_ev (sel v:val)
+  | Out_ev (v:val)
+.
+
 (** The state: heaps of vals. *)
 Record state : Type := {
   heap: gmap loc val;
   world: ffi_state;
-  trace: list val;
+  trace: list event;
   used_proph_id: gset proph_id;
 }.
 
@@ -458,7 +465,8 @@ Proof.
                                 | DecodeInt64Op => inr 6
                                 | EncodeInt32Op => inr 8
                                 | DecodeInt32Op => inr 9
-                                | ObserveOp => inr 10
+                                | InputOp => inr 10
+                                | OutputOp => inr 11
                                 end)
                          (λ v, match v with
                                | inl s => a_prim_op (PanicOp s)
@@ -470,7 +478,9 @@ Proof.
                                | inr 6 => a_prim_op DecodeInt64Op
                                | inr 8 => a_prim_op EncodeInt32Op
                                | inr 9 => a_prim_op DecodeInt32Op
-                               | inr _ => a_prim_op ObserveOp
+                               | inr 10 => a_prim_op InputOp
+                               | inr 11 => a_prim_op OutputOp
+                               | _ => a_prim_op (PanicOp "")
                                end) _); by intros [_ []].
 Qed.
 
@@ -906,10 +916,16 @@ Inductive head_step : expr → state → list observation → expr → state →
                []
                (Val v') σ'
                []
-  | ObserveS v σ :
-     head_step (Observe (Val v)) σ
+  | ObserveInputS v x σ :
+     head_step (Input (Val v)) σ
                []
-               (Val $ LitV LitUnit) (set trace (fun tr => tr ++ [v]) σ)
+               (Val $ LitV $ LitInt x)
+               (set trace (fun tr => tr ++ [In_ev v (LitV $ LitInt x)]) σ)
+               []
+  | ObserveOutputS v σ :
+     head_step (Output (Val v)) σ
+               []
+               (Val $ LitV LitUnit) (set trace (fun tr => tr ++ [Out_ev v]) σ)
                []
   | EncodeInt64S v l σ :
      (forall i, (i < 8)%nat -> is_Some (σ.(heap) !! (l +ₗ i))) ->
@@ -1070,4 +1086,5 @@ Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
 Notation DecodeInt64 := (Primitive1 DecodeInt64Op).
 Notation EncodeInt32 := (Primitive2 EncodeInt32Op).
 Notation DecodeInt32 := (Primitive1 DecodeInt32Op).
-Notation Observe := (Primitive1 ObserveOp).
+Notation Input := (Primitive1 InputOp).
+Notation Output := (Primitive1 OutputOp).

@@ -97,7 +97,9 @@ Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance ext_atomic s op v : Atomic s (ExternalOp op (Val v)).
 Proof. solve_atomic. Qed.
-Global Instance observe_atomic s v : Atomic s (Observe (Val v)).
+Global Instance input_atomic s v : Atomic s (Input (Val v)).
+Proof. solve_atomic. Qed.
+Global Instance output_atomic s v : Atomic s (Output (Val v)).
 Proof. solve_atomic. Qed.
 
 Global Instance proph_resolve_atomic s e v1 v2 :
@@ -224,8 +226,8 @@ Qed.
 
 (* TODO: note that this doesn't say anything because there is nothing in the
 state interpretation about the trace *)
-Lemma wp_observe s E v Φ :
-  ▷ Φ (LitV LitUnit) -∗ WP Observe v @ s; E {{ Φ }}.
+Lemma wp_output s E v Φ :
+  ▷ Φ (LitV LitUnit) -∗ WP Output v @ s; E {{ Φ }}.
 Proof.
   iIntros "HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "Hσ !>"; iSplit; first by eauto.
