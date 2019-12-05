@@ -8,9 +8,7 @@ Open Scope Z_scope.
 
 Record u64 := Word64 { u64_car :> Naive.word64 }.
 Record u32 := Word32 { u32_car :> Naive.word32 }.
-(* we don't actually do anything with a byte except use its zero value and
-encode integers into bytes, so nothing operates on bytes for now. *)
-Record byte := Word8 { u8_car: Naive.word8 }.
+Record byte := Word8 { u8_car :> Naive.word8 }.
 
 Definition width64_ok : 0 < 64 := eq_refl.
 Definition width32_ok : 0 < 32 := eq_refl.
@@ -125,6 +123,59 @@ Module u32_instance.
 End u32_instance.
 Import u32_instance.
 
+Module u8_instance.
+  Import Interface.word.
+  Notation "'lift1' f" := (fun w => Word8 (f w)) (at level 10, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word8 (f w1 w2)) (at level 10, only parsing).
+  Instance u8_word : word 8 :=
+    {|
+      rep := byte;
+      unsigned := unsigned;
+      signed := signed;
+      of_Z z := Word8 (of_Z z);
+
+      add := lift2 add;
+      sub := lift2 sub;
+      opp := lift1 opp;
+
+      or := lift2 or;
+      and := lift2 and;
+      xor := lift2 xor;
+      not := lift1 not;
+      ndn := lift2 ndn;
+
+      mul := lift2 mul;
+      mulhss := lift2 mulhss;
+      mulhsu := lift2 mulhsu;
+      mulhuu := lift2 mulhuu;
+
+      divu := lift2 divu;
+      divs := lift2 divs;
+      modu := lift2 modu;
+      mods := lift2 mods;
+
+      slu := lift2 slu;
+      sru := lift2 sru;
+      srs := lift2 srs;
+
+      eqb w1 w2 := eqb w1 w2;
+      ltu w1 w2 := ltu w1 w2;
+      lts w1 w2 := lts w1 w2;
+
+      sextend width' := lift1 (sextend width');
+    |}.
+
+  Global Instance u8_word_ok : word.ok u8_word.
+  Proof.
+    destruct (_ : word.ok (Naive.word 8)).
+    constructor; simpl; eauto.
+    - intros []; simpl.
+      rewrite of_Z_unsigned; auto.
+  Qed.
+
+End u8_instance.
+Import u8_instance.
+
 (* does this make sense? *)
 (*
 Canonical Structure u64_word.
@@ -133,6 +184,7 @@ Canonical Structure u32_word.
 
 Definition U64 (x:Z) : u64 := word.of_Z (word:=u64_word) x.
 Definition U32 (x:Z) : u32 := word.of_Z (word:=u32_word) x.
+Definition U8 (x:Z) : byte := word.of_Z (word:=u8_word) x.
 
 Instance word_eq_dec {width} (word: word width) {word_ok: word.ok word} : EqDecision word.
 Proof.
@@ -144,6 +196,7 @@ Defined.
 
 Instance u64_eq_dec : EqDecision u64 := word_eq_dec u64_word.
 Instance u32_eq_dec : EqDecision u32 := word_eq_dec u32_word.
+Instance u8_eq_dec : EqDecision byte := word_eq_dec u8_word.
 
 Instance byte_eq_dec : EqDecision byte.
 Proof. solve_decision. Defined.
@@ -162,10 +215,8 @@ Proof. apply (word_countable u64_word). Qed.
 Instance u32_countable : Countable u32.
 Proof. apply (word_countable u32_word). Qed.
 
-Instance byte_countable : Countable byte.
-Proof.
-  apply (inj_countable' u8_car Word8); by intros [].
-Qed.
+Instance u8_countable : Countable byte.
+Proof. apply (word_countable u8_word). Qed.
 
 (* int and the u64_through* theorems are for backwards compatibility *)
 
@@ -189,8 +240,15 @@ Proof.
   reflexivity.
 Qed.
 
+(* conversions up *)
+Definition u8_to_u32 (x:byte) : u32 := U32 (int.val x).
+Definition u8_to_u64 (x:byte) : u64 := U64 (int.val x).
 Definition u32_to_u64 (x:u32) : u64 := U64 (int.val x).
+
+(* conversions down *)
 Definition u32_from_u64 (x:u64) : u32 := U32 (int.val x).
+Definition u8_from_u64 (x:u64) : byte := U8 (int.val x).
+Definition u8_from_u32 (x:u32) : byte := U8 (int.val x).
 
 Theorem u32_to_u64_val x : int.val (u32_to_u64 x) = int.val x.
 Proof.

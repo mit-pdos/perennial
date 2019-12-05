@@ -90,7 +90,7 @@ Inductive base_lit : Type :=
   | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : byte) | LitString (s : string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
-  | NegOp | MinusUnOp | ToUInt64Op.
+  | NegOp | MinusUnOp | ToUInt64Op | ToUInt32Op | ToUInt8Op.
 Inductive bin_op : Set :=
   | PlusOp | MinusOp | MultOp | QuotOp | RemOp (* Arithmetic *)
   | AndOp | OrOp | XorOp (* Bitwise *)
@@ -109,10 +109,6 @@ Inductive prim_op : arity -> Set :=
   | PrepareWriteOp : prim_op args1 (* loc *)
   | StoreOp : prim_op args2 (* pointer, value *)
   | LoadOp : prim_op args1
-  | EncodeInt64Op : prim_op args2 (* int, loc to store to *)
-  | DecodeInt64Op : prim_op args1 (* loc to load from *)
-  | EncodeInt32Op : prim_op args2 (* int, loc to store to *)
-  | DecodeInt32Op : prim_op args1 (* loc to load from *)
   | InputOp : prim_op args1
   | OutputOp : prim_op args1
 .
@@ -166,10 +162,6 @@ Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation Store := (Primitive2 StoreOp).
 Notation Load := (Primitive1 LoadOp).
-Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
-Notation DecodeInt64 := (Primitive1 DecodeInt64Op).
-Notation EncodeInt32 := (Primitive2 EncodeInt32Op).
-Notation DecodeInt32 := (Primitive1 DecodeInt32Op).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
 
@@ -487,10 +479,6 @@ Proof.
                                 | PrepareWriteOp => inr 12
                                 | StoreOp => inr 1
                                 | LoadOp => inr 2
-                                | EncodeInt64Op => inr 5
-                                | DecodeInt64Op => inr 6
-                                | EncodeInt32Op => inr 8
-                                | DecodeInt32Op => inr 9
                                 | InputOp => inr 10
                                 | OutputOp => inr 11
                                 end)
@@ -501,10 +489,6 @@ Proof.
                                | inr 12 => a_prim_op PrepareWriteOp
                                | inr 1 => a_prim_op StoreOp
                                | inr 2 => a_prim_op LoadOp
-                               | inr 5 => a_prim_op EncodeInt64Op
-                               | inr 6 => a_prim_op DecodeInt64Op
-                               | inr 8 => a_prim_op EncodeInt32Op
-                               | inr 9 => a_prim_op DecodeInt32Op
                                | inr 10 => a_prim_op InputOp
                                | inr 11 => a_prim_op OutputOp
                                | _ => a_prim_op (PanicOp "")
@@ -760,28 +744,40 @@ Definition subst' (mx : binder) (v : val) : expr → expr :=
 Definition un_op_eval (op : un_op) (v : val) : option val :=
   match op, v with
   | NegOp, LitV (LitBool b) => Some $ LitV $ LitBool (negb b)
-  | ToUInt64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (u32_to_u64 v)
   | ToUInt64Op, LitV (LitInt v) => Some $ LitV $ LitInt v
+  | ToUInt64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (u32_to_u64 v)
+  | ToUInt64Op, LitV (LitByte v) => Some $ LitV $ LitInt (u8_to_u64 v)
+  | ToUInt32Op, LitV (LitInt v) => Some $ LitV $ LitInt32 (u32_from_u64 v)
+  | ToUInt32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 v
+  | ToUInt32Op, LitV (LitByte v) => Some $ LitV $ LitInt32 (u8_to_u32 v)
+  | ToUInt8Op, LitV (LitInt v) => Some $ LitV $ LitByte (u8_from_u64 v)
+  | ToUInt8Op, LitV (LitInt32 v) => Some $ LitV $ LitByte (u8_from_u32 v)
+  | ToUInt8Op, LitV (LitByte v) => Some $ LitV $ LitInt32 (u8_to_u32 v)
   (* | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (Word.wnot n) *)
   | _, _ => None
   end.
 
-Definition bin_op_eval_int (op : bin_op) (n1 n2 : u64) : option base_lit :=
+Definition bin_op_eval_word (op : bin_op) {width} {word: Interface.word width} (n1 n2 : word) : option word :=
   match op with
-  | PlusOp => Some $ LitInt (word.add (word:=u64_instance.u64_word) n1 n2)
-  | MinusOp => Some $ LitInt (word.sub (word:=u64_instance.u64_word) n1 n2)
-  | MultOp => Some $ LitInt (word.mul (word:=u64_instance.u64_word) n1 n2)
-  | QuotOp => Some $ LitInt (word.divu (word:=u64_instance.u64_word) n1 n2)
-  | RemOp => Some $ LitInt (word.modu (word:=u64_instance.u64_word) n1 n2)
-  | AndOp => Some $ LitInt (word.and (word:=u64_instance.u64_word) n1 n2)
-  | OrOp => Some $ LitInt (word.or (word:=u64_instance.u64_word) n1 n2)
-  | XorOp => Some $ LitInt (word.xor (word:=u64_instance.u64_word) n1 n2)
-  | ShiftLOp => Some $ LitInt (word.slu (word:=u64_instance.u64_word) n1 n2)
-  | ShiftROp => Some $ LitInt (word.sru (word:=u64_instance.u64_word) n1 n2)
-  | LeOp => Some $ LitBool (word.ltu n1 n2)
-  | LtOp => Some $ LitBool (word.ltu n1 n2)
-  | EqOp => Some $ LitBool (word.eqb n2 n2)
-  | OffsetOp => None (* Pointer arithmetic *)
+  | PlusOp => Some $ word.add (word:=word) n1 n2
+  | MinusOp => Some $ word.sub (word:=word) n1 n2
+  | MultOp => Some $ (word.mul (word:=word) n1 n2)
+  | QuotOp => Some $ (word.divu (word:=word) n1 n2)
+  | RemOp => Some $ (word.modu (word:=word) n1 n2)
+  | AndOp => Some $ (word.and (word:=word) n1 n2)
+  | OrOp => Some $ (word.or (word:=word) n1 n2)
+  | XorOp => Some $ (word.xor (word:=word) n1 n2)
+  | ShiftLOp => Some $ (word.slu (word:=word) n1 n2)
+  | ShiftROp => Some $ (word.sru (word:=word) n1 n2)
+  | _ => None
+  end.
+
+Definition bin_op_eval_compare (op : bin_op) {width} {word: Interface.word width} (n1 n2 : word) : option bool :=
+  match op with
+  | LeOp => Some $ word.ltu n1 n2
+  | LtOp => Some $ word.ltu n1 n2
+  | EqOp => Some $ word.eqb n2 n2
+  | _ => None
   end.
 
 Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=
@@ -811,7 +807,12 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
       None
   else
     match v1, v2 with
-    | LitV (LitInt n1), LitV (LitInt n2) => LitV <$> bin_op_eval_int op n1 n2
+    | LitV (LitInt n1), LitV (LitInt n2) => LitV <$> ((LitInt <$> bin_op_eval_word op (word:=u64_instance.u64_word) n1 n2)
+                                                       ∪ (LitBool <$> bin_op_eval_compare op (word:=u64_instance.u64_word) n1 n2))
+    | LitV (LitInt32 n1), LitV (LitInt32 n2) => LitV <$> ((LitInt32 <$> bin_op_eval_word op (word:=u32_instance.u32_word) n1 n2)
+                                                       ∪ (LitBool <$> bin_op_eval_compare op (word:=u32_instance.u32_word) n1 n2))
+    | LitV (LitByte n1), LitV (LitByte n2) => LitV <$> ((LitByte <$> bin_op_eval_word op (word:=u8_instance.u8_word) n1 n2)
+                                                       ∪ (LitBool <$> bin_op_eval_compare op (word:=u8_instance.u8_word) n1 n2))
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
     | LitV (LitLoc l), LitV (LitInt off) => Some $ LitV $ LitLoc (l +ₗ int.val off)
@@ -979,36 +980,6 @@ Inductive head_step : expr → state → list observation → expr → state →
                []
                (Val $ LitV LitUnit) (set trace (fun tr => tr ++ [Out_ev v]) σ)
                []
-  | EncodeInt64S v l σ :
-     (forall i, (i < u64_bytes)%nat -> is_Free (σ.(heap) !! (l +ₗ i))) ->
-     head_step (EncodeInt64 (Val $ LitV $ LitInt v) (Val $ LitV $ LitLoc l)) σ
-               []
-               (Val $ LitV LitUnit) (state_insert_list l (byte_vals $ u64_le v) σ)
-               []
-  | DecodeInt64S l vs σ :
-     (forall i, (i < u64_bytes)%nat -> match σ.(heap) !! (l +ₗ i) with
-                       | Some (Free v) => byte_vals vs !! i = Some v
-                       | _ => False
-                       end) ->
-     head_step (DecodeInt64 (Val $ LitV $ LitLoc l)) σ
-               []
-               (Val $ LitV $ LitInt (le_to_u64 vs)) σ
-               []
-  | EncodeInt32S v l σ :
-     (forall i, (i < u32_bytes)%nat -> is_Free (σ.(heap) !! (l +ₗ i))) ->
-     head_step (EncodeInt32 (Val $ LitV $ LitInt32 v) (Val $ LitV $ LitLoc l)) σ
-               []
-               (Val $ LitV LitUnit) (state_insert_list l (byte_vals $ u32_le v) σ)
-               []
-  | DecodeInt32S l vs σ :
-     (forall i, (i < u32_bytes)%nat -> match σ.(heap) !! (l +ₗ i) with
-                       | Some (Free v) => byte_vals vs !! i = Some v
-                       | _ => False
-                       end) ->
-     head_step (DecodeInt32 (Val $ LitV $ LitLoc l)) σ
-               []
-               (Val $ LitV $ LitInt32 (le_to_u32 vs)) σ
-               []
   | CmpXchgS l v1 v2 vl σ b :
      σ.(heap) !! l = Some $ Free vl →
      (* Crucially, this compares the same way as [EqOp]! *)
@@ -1142,9 +1113,5 @@ Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation Store := (Primitive2 StoreOp).
 Notation Load := (Primitive1 LoadOp).
-Notation EncodeInt64 := (Primitive2 EncodeInt64Op).
-Notation DecodeInt64 := (Primitive1 DecodeInt64Op).
-Notation EncodeInt32 := (Primitive2 EncodeInt32Op).
-Notation DecodeInt32 := (Primitive1 DecodeInt32Op).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).

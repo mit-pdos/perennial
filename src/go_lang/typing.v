@@ -86,7 +86,8 @@ Section go_lang.
 
   Definition bin_op_ty (op:bin_op) (t:ty) : option (ty * ty * ty) :=
     match op with
-    | PlusOp | MinusOp | MultOp | QuotOp | RemOp => Some (t, t, t)
+    | PlusOp | MinusOp | MultOp | QuotOp | RemOp
+    | ShiftLOp | ShiftROp | OrOp | AndOp => Some (t, t, t)
     | LtOp | LeOp => Some (t, t, boolT)
     | _ => None
     end.
@@ -94,8 +95,15 @@ Section go_lang.
   Definition un_op_ty (op:un_op) : option (ty * ty) :=
     match op with
     | NegOp => Some (boolT, boolT)
-    | ToUInt64Op => Some (uint32T, uint64T)
     | _ => None
+    end.
+
+  Definition is_intTy (t: ty) : bool :=
+    match t with
+    | uint64T => true
+    | uint32T => true
+    | byteT => true
+    | _ => false
     end.
 
   Fixpoint flatten_ty (t: ty) : list ty :=
@@ -120,6 +128,18 @@ Section go_lang.
       Γ ⊢ Rec f x e : arrowT t1 t2
   | panic_expr_hasTy msg t :
       Γ ⊢ Panic msg : t
+  | cast_u64_op_hasTy e1 t :
+      Γ ⊢ e1 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp ToUInt64Op e1 : uint64T
+  | cast_u32_op_hasTy e1 t :
+      Γ ⊢ e1 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp ToUInt32Op e1 : uint32T
+  | cast_u8_op_hasTy e1 t :
+      Γ ⊢ e1 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp ToUInt8Op e1 : byteT
   | un_op_hasTy op e1 t1 t :
       un_op_ty op = Some (t1, t) ->
       Γ ⊢ e1 : t1 ->
@@ -214,20 +234,6 @@ Section go_lang.
       get_ext_tys op = (t1, t2) ->
       Γ ⊢ e : t1 ->
       Γ ⊢ ExternalOp op e : t2
-  | encode_hasTy n p :
-      Γ ⊢ n : uint64T ->
-      Γ ⊢ p : arrayT byteT ->
-      Γ ⊢ EncodeInt64 n p : unitT
-  | decode_hasTy p :
-      Γ ⊢ p : arrayT byteT ->
-      Γ ⊢ DecodeInt64 p : uint64T
-  | encode32_hasTy n p :
-      Γ ⊢ n : uint32T ->
-      Γ ⊢ p : arrayT byteT ->
-      Γ ⊢ EncodeInt32 n p : unitT
-  | decode32_hasTy p :
-      Γ ⊢ p : arrayT byteT ->
-      Γ ⊢ DecodeInt32 p : uint32T
   | struct_weaken_hasTy e ts1 ts2 :
       Γ ⊢ e : structRefT (ts1 ++ ts2) ->
       Γ ⊢ e : structRefT ts1
@@ -433,6 +439,12 @@ Ltac _type_step :=
   | [ |- expr_hasTy _ (Store _ _) _ ] => eapply store_array_hasTy; [ solve [eauto with types] | ]
   | [ |- expr_hasTy _ (Load _) _ ] => eapply load_array_hasTy; [ solve [eauto with types] ]
   | [ |- expr_hasTy _ (ref _) _ ] => eapply ref_hasTy
+  | [ |- expr_hasTy _ (UnOp ToUInt64Op _) _ ] => eapply cast_u64_op_hasTy
+  | [ |- expr_hasTy _ (UnOp ToUInt32Op _) _ ] => eapply cast_u32_op_hasTy
+  | [ |- expr_hasTy _ (UnOp ToUInt8Op _) _ ] => eapply cast_u8_op_hasTy
+  | [ |- expr_hasTy _ (BinOp _ _ _) uint32T ] => eapply bin_op_32_hasTy; [ reflexivity | | ]
+  | [ |- expr_hasTy _ (BinOp _ _ _) uint64T ] => eapply bin_op_64_hasTy; [ reflexivity | | ]
+  | [ |- expr_hasTy _ (BinOp _ _ _) uint32T ] => eapply bin_op_32_hasTy; [ reflexivity | | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ solve [eauto with types] | | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ | solve [eauto with types] | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply bin_op_32_hasTy; [ reflexivity | solve [eauto with types] | ]
@@ -451,7 +463,10 @@ Ltac type_step := _type_step;
 
 Ltac typecheck :=
   intros;
-  repeat type_step.
+  repeat type_step;
+  try lazymatch goal with
+      | [ |- _ = _ ] => reflexivity
+      end.
 
 Section go_lang.
   Context `{ext_ty: ext_types}.

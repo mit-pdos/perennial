@@ -18,6 +18,7 @@ Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.
 Coercion LitInt : u64 >-> base_lit.
 Coercion LitInt32 : u32 >-> base_lit.
+Coercion LitByte : byte >-> base_lit.
 Coercion LitProphecy : proph_id >-> base_lit.
 Notation "'str' s" := (LitString s) (at level 30, format "'str' s") : val_scope.
 
@@ -87,11 +88,15 @@ Notation "! e" := (Load e%E) (at level 9, right associativity) : expr_scope.
 Notation "'ref' e" := (Alloc e%E) (at level 10) : expr_scope.
 Notation "- e" := (UnOp MinusUnOp e%E) : expr_scope.
 Notation "'to_u64' e" := (UnOp ToUInt64Op e%E) (at level 10) : expr_scope.
+Notation "'to_u32' e" := (UnOp ToUInt32Op e%E) (at level 10) : expr_scope.
+Notation "'to_u8' e" := (UnOp ToUInt8Op e%E) (at level 10) : expr_scope.
 
 Notation "e1 + e2" := (BinOp PlusOp e1%E e2%E) : expr_scope.
 Notation "e1 +ₗ e2" := (BinOp OffsetOp e1%E e2%E) : expr_scope.
 Notation "e1 - e2" := (BinOp MinusOp e1%E e2%E) : expr_scope.
 Notation "e1 * e2" := (BinOp MultOp e1%E e2%E) : expr_scope.
+Notation "e1 ∥ e2" := (BinOp OrOp e1%E e2%E) (at level 40) : expr_scope.
+Notation "e1 && e2" := (BinOp AndOp e1%E e2%E) : expr_scope.
 Notation "e1 `quot` e2" := (BinOp QuotOp e1%E e2%E) : expr_scope.
 Notation "e1 `rem` e2" := (BinOp RemOp e1%E e2%E) : expr_scope.
 Notation "e1 ≪ e2" := (BinOp ShiftLOp e1%E e2%E) : expr_scope.

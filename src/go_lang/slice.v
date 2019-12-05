@@ -171,42 +171,6 @@ Theorem SliceAppendSlice_t t : ⊢ SliceAppendSlice : (slice.T t -> slice.T t ->
 Proof.
 Admitted.
 
-Definition UInt64Put: val :=
-  λ: "p" "n",
-  EncodeInt64 "n" (slice.ptr "p").
-
-Theorem UInt64Put_t : ⊢ UInt64Put : (slice.T byteT -> uint64T -> unitT).
-Proof.
-  typecheck.
-Qed.
-
-Definition UInt64Get: val :=
-  λ: "p",
-  DecodeInt64 (slice.ptr "p").
-
-Theorem UInt64Get_t : ⊢ UInt64Get : (slice.T byteT -> uint64T).
-Proof.
-  typecheck.
-Qed.
-
-Definition UInt32Put: val :=
-  λ: "p" "n",
-  EncodeInt32 "n" (slice.ptr "p").
-
-Theorem UInt32Put_t : ⊢ UInt32Put : (slice.T byteT -> uint32T -> unitT).
-Proof.
-  typecheck.
-Qed.
-
-Definition UInt32Get: val :=
-  λ: "p",
-  DecodeInt32 (slice.ptr "p").
-
-Theorem UInt32Get_t : ⊢ UInt32Get : (slice.T byteT -> uint32T).
-Proof.
-  typecheck.
-Qed.
-
 Definition zero_array (t:ty): val :=
   λ: "sz", AllocN "sz" (zero_val t).
 
@@ -235,7 +199,4 @@ Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.
 Hint Resolve raw_slice_t NewSlice_t
      SliceTake_t SliceSkip_t SliceSubslice_t SliceGet_t SliceSet_t
      SliceAppend_t SliceAppendSlice_t : types.
-Hint Resolve
-     UInt64Put_t UInt64Get_t
-     UInt32Put_t UInt32Get_t : types.
 Hint Resolve zero_array_t ArrayCopy_t : types.
