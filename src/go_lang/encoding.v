@@ -1,9 +1,15 @@
+From iris.proofmode Require Import tactics.
 From Perennial.go_lang Require Import lang notation.
 From Perennial.go_lang Require Import struct typing slice.
+From Perennial.go_lang Require Import lifting array.
+From Perennial.go_lang Require Import proofmode tactics notation map.
 
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
   Context {ext_ty:ext_types ext}.
+
+  Context `{!ffi_interp ffi}.
+  Context `{!heapG Σ}.
 
   Set Default Proof Using "ext ext_ty".
 
@@ -34,6 +40,39 @@ Section go_lang.
   Proof.
     typecheck.
   Qed.
+
+  Lemma word_sru_0 width (word: Interface.word width) (ok: word.ok word)
+        (x: word) s : int.val s = 0 -> word.sru x s = x.
+  Proof.
+    intros.
+    apply Properties.word.unsigned_inj.
+    rewrite word.unsigned_sru.
+    - rewrite H.
+      rewrite Z.shiftr_0_r.
+      unfold word.wrap.
+      rewrite Properties.word.wrap_unsigned.
+      auto.
+    - rewrite H.
+      apply word.width_pos.
+  Qed.
+
+  Opaque word.sru.
+
+  Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
+    {{{ l ↦∗ vs }}}
+      EncodeUInt32 #x #l @ s ; E
+    {{{ RET #(); l ↦∗ ((λ (b: byte), #b) <$> u32_le x) }}}.
+  Proof.
+    iIntros (Φ) "Hl HΦ".
+    unfold EncodeUInt32.
+    wp_lam.
+    wp_let.
+    wp_pures.
+    rewrite Zmod_0_l.
+    rewrite loc_add_0.
+    change (0 * 8) with 0.
+    rewrite word_sru_0; [ | simpl; rewrite Zmod_0_l; auto ].
+  Abort.
 
   Definition EncodeUInt64: val :=
     λ: "n" "p",
@@ -68,6 +107,8 @@ Section go_lang.
   Proof.
     typecheck.
   Qed.
+
+  Hint Resolve EncodeUInt64_t EncodeUInt32_t DecodeUInt64_t DecodeUInt32_t : types.
 
   Definition UInt64Put: val :=
     λ: "p" "n",
