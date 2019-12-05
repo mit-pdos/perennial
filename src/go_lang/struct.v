@@ -280,6 +280,17 @@ Qed.
 
 Hint Constructors expr_hasTy.
 
+Theorem store_struct_singleton Γ e v t :
+  Γ ⊢ e : structRefT [t] ->
+  Γ ⊢ v : t ->
+  Γ ⊢ (e <- v) : unitT.
+Proof.
+  intros.
+  eapply store_hasTy; eauto.
+Qed.
+
+Hint Resolve store_struct_singleton.
+
 Theorem store_ty_t : forall Γ t e v,
   Γ ⊢ e : structRefT (flatten_ty t) ->
   Γ ⊢ v : t ->

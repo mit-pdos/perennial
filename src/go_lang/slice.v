@@ -142,6 +142,11 @@ Definition SliceSet: val :=
 
 Theorem SliceSet_t t : ⊢ SliceSet : (slice.T t -> uint64T -> t -> unitT).
 Proof.
+  type_step.
+  type_step.
+  type_step.
+  eapply store_array_hasTy.
+  { typecheck. }
   typecheck.
 Qed.
 

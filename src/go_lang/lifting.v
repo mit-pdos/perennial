@@ -87,7 +87,7 @@ Global Instance prepare_write_atomic s v : Atomic s (PrepareWrite (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance load_atomic s v : Atomic s (Load (Val v)).
 Proof. solve_atomic. Qed.
-Global Instance store_atomic s v1 v2 : Atomic s (Store (Val v1) (Val v2)).
+Global Instance finish_store_atomic s v1 v2 : Atomic s (FinishStore (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
@@ -376,8 +376,31 @@ Qed.
 
 Hint Resolve is_Writing_Some.
 
-Lemma wp_store s E l v' v :
-  {{{ ▷ l ↦ Writing v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
+Lemma wp_prepare_write s E l v :
+  {{{ ▷ l ↦ Free v }}} PrepareWrite (Val $ LitV (LitLoc l)) @ s; E
+  {{{ RET LitV LitUnit; l ↦ Writing v }}}.
+Proof.
+  iIntros (Φ) ">Hl HΦ".
+  iApply wp_lift_atomic_head_step_no_fork; auto.
+  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
+  iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
+  iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
+Qed.
+Lemma twp_prepare_write s E l v :
+  [[{ l ↦ Free v }]] PrepareWrite (Val $ LitV $ LitLoc l) @ s; E
+  [[{ RET LitV LitUnit; l ↦ Writing v }]].
+Proof.
+  iIntros (Φ) "Hl HΦ".
+  iApply twp_lift_atomic_head_step_no_fork; auto.
+  iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
+  iSplit; first by eauto. iIntros (κ v2 σ2 efs Hstep); inv_head_step.
+  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
+  iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
+Qed.
+
+Lemma wp_finish_store s E l v' v :
+  {{{ ▷ l ↦ Writing v' }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
   {{{ RET LitV LitUnit; l ↦ Free v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
@@ -387,8 +410,8 @@ Proof.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
-Lemma twp_store s E l v' v :
-  [[{ l ↦ Writing v' }]] Store (Val $ LitV $ LitLoc l) (Val v) @ s; E
+Lemma twp_finish_store s E l v' v :
+  [[{ l ↦ Writing v' }]] FinishStore (Val $ LitV $ LitLoc l) (Val v) @ s; E
   [[{ RET LitV LitUnit; l ↦ Free v }]].
 Proof.
   iIntros (Φ) "Hl HΦ".

@@ -107,7 +107,7 @@ Inductive prim_op : arity -> Set :=
   | AllocNOp : prim_op args2 (* array length (positive number), initial value *)
   | AllocStructOp : prim_op args1 (* struct val *)
   | PrepareWriteOp : prim_op args1 (* loc *)
-  | StoreOp : prim_op args2 (* pointer, value *)
+  | FinishStoreOp : prim_op args2 (* pointer, value *)
   | LoadOp : prim_op args1
   | InputOp : prim_op args1
   | OutputOp : prim_op args1
@@ -160,7 +160,7 @@ Notation Panic s := (Primitive0 (PanicOp s)).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
-Notation Store := (Primitive2 StoreOp).
+Notation FinishStore := (Primitive2 FinishStoreOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
@@ -477,7 +477,7 @@ Proof.
                                 | AllocNOp => inr 0
                                 | AllocStructOp => inr 7
                                 | PrepareWriteOp => inr 12
-                                | StoreOp => inr 1
+                                | FinishStoreOp => inr 1
                                 | LoadOp => inr 2
                                 | InputOp => inr 10
                                 | OutputOp => inr 11
@@ -487,7 +487,7 @@ Proof.
                                | inr 0 => a_prim_op AllocNOp
                                | inr 7 => a_prim_op AllocStructOp
                                | inr 12 => a_prim_op PrepareWriteOp
-                               | inr 1 => a_prim_op StoreOp
+                               | inr 1 => a_prim_op FinishStoreOp
                                | inr 2 => a_prim_op LoadOp
                                | inr 10 => a_prim_op InputOp
                                | inr 11 => a_prim_op OutputOp
@@ -957,9 +957,9 @@ Inductive head_step : expr → state → list observation → expr → state →
      σ.(heap) !! l = Some $ Free v →
      head_step (Load (Val $ LitV $ LitLoc l)) σ [] (of_val v)
                σ []
-  | StoreS l v σ :
+  | FinishStoreS l v σ :
      is_Writing (σ.(heap) !! l) ->
-     head_step (Store (Val $ LitV $ LitLoc l) (Val v)) σ
+     head_step (FinishStore (Val $ LitV $ LitLoc l) (Val v)) σ
                []
                (Val $ LitV LitUnit) (set heap <[l:=Free v]> σ)
                []
@@ -1111,7 +1111,7 @@ Notation Panic s := (Primitive0 (PanicOp s)).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
-Notation Store := (Primitive2 StoreOp).
+Notation FinishStore := (Primitive2 FinishStoreOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).

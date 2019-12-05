@@ -221,15 +221,13 @@ Section go_lang.
   | load_hasTy l t :
       Γ ⊢ l : refT t ->
       Γ ⊢ Load l : t
-  | store_hasTy l v t :
+  | prepare_write_hasTy l t :
+      Γ ⊢ l : refT t ->
+      Γ ⊢ PrepareWrite l : unitT
+  | finish_store_hasTy l v t :
       Γ ⊢ l : refT t ->
       Γ ⊢ v : t ->
-      Γ ⊢ Store l v : unitT
-  | store_struct_hasTy l v t ts :
-      Γ ⊢ l : structRefT ts ->
-      Γ ⊢ v : t ->
-      flatten_ty t = ts ->
-      Γ ⊢ Store l v : unitT
+      Γ ⊢ FinishStore l v : unitT
   | external_hasTy op e t1 t2 :
       get_ext_tys op = (t1, t2) ->
       Γ ⊢ e : t1 ->
@@ -278,6 +276,22 @@ Section go_lang.
     apply array_ref_hasTy; auto.
   Qed.
 
+  Theorem store_hasTy Γ l v t :
+    Γ ⊢ l : refT t ->
+    Γ ⊢ v : t ->
+    Γ ⊢ Store l v : unitT.
+  Proof.
+    intros.
+    repeat (econstructor; eauto).
+  Qed.
+
+  Theorem store_val_hasTy Γ t :
+    Γ ⊢v Store : (arrowT (refT t) (arrowT t unitT)).
+  Proof.
+    intros.
+    repeat (econstructor; eauto).
+  Qed.
+
   Theorem store_array_hasTy Γ l v t :
       Γ ⊢ l : arrayT t ->
       Γ ⊢ v : t ->
@@ -286,6 +300,24 @@ Section go_lang.
     intros.
     eapply store_hasTy; eauto.
     apply array_ref_hasTy; eauto.
+  Qed.
+
+  Theorem store_array_val_hasTy Γ t :
+      Γ ⊢v Store : (arrowT (arrayT t) (arrowT t unitT)).
+  Proof.
+    intros.
+    econstructor; eauto.
+    econstructor; eauto.
+    econstructor; eauto.
+    econstructor; eauto.
+    - econstructor; eauto.
+      apply array_ref_hasTy.
+      econstructor; eauto.
+    - econstructor; eauto.
+      econstructor; eauto.
+      + apply array_ref_hasTy.
+        econstructor; eauto.
+      + econstructor; eauto.
   Qed.
 
   Hint Constructors base_lit_hasTy expr_hasTy val_hasTy base_lit_hasTy.
@@ -426,6 +458,7 @@ Hint Resolve Panic_unit_t : types.
 Hint Resolve zero_val_ty : types.
 Hint Resolve var_hasTy : types.
 Hint Resolve ref_hasTy load_array_hasTy store_array_hasTy array_null_hasTy : types.
+Hint Resolve store_val_hasTy store_array_val_hasTy : types.
 
 Hint Extern 1 (expr_hasTy _ _ _) => apply var_hasTy; reflexivity : types.
 Hint Extern 2 (expr_hasTy _ _ anyT) => eapply e_any_hasTy : types.
@@ -476,9 +509,12 @@ Section go_lang.
     typecheck.
   Qed.
 
-  Theorem MapInsert_t Γ vt : Γ ⊢ MapInsert : (mapT vt -> uint64T -> vt -> unitT).
+  Theorem MapInsert_t Γ vt : Γ ⊢v MapInsert : (mapT vt -> uint64T -> vt -> unitT).
   Proof.
-    typecheck.
+    type_step.
+    type_step.
+    type_step.
+    eapply store_hasTy; typecheck.
   Qed.
 
   Theorem mapGetDef_t Γ vt : Γ ⊢ mapGetDef : (mapValT vt -> vt).
@@ -490,7 +526,12 @@ Section go_lang.
 
   Theorem MapClear_t Γ vt : Γ ⊢ MapClear : (mapT vt -> unitT).
   Proof.
-    typecheck.
+    type_step.
+    type_step.
+    type_step.
+    { typecheck. }
+    type_step.
+    eapply store_hasTy; typecheck.
   Qed.
 
   Theorem MapIter_t vt Γ : Γ ⊢ MapIter : (mapT vt -> (uint64T -> vt -> unitT) -> unitT).
@@ -499,6 +540,7 @@ Section go_lang.
   Qed.
 End go_lang.
 
+Opaque MapGet MapInsert MapClear MapIter.
 Hint Resolve MapGet_t MapInsert_t MapClear_t MapIter_t : types.
 
 Module test.

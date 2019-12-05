@@ -260,9 +260,24 @@ Proof.
   by apply sep_mono_r, wand_mono.
 Qed.
 
+Lemma wp_store s E l v v' :
+  {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
+  {{{ RET LitV LitUnit; l ↦ Free v }}}.
+Proof.
+  iIntros (Φ) "Hl HΦ".
+  unfold Store.
+Admitted.
+Lemma twp_store s E l v v' :
+  [[{ l ↦ Free v' }]] Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
+  [[{ RET LitV LitUnit; l ↦ Free v }]].
+Proof.
+  iIntros (Φ) "Hl HΦ".
+  unfold Store.
+Admitted.
+
 Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ Writing v)%I →
+  envs_lookup i Δ' = Some (false, l ↦ Free v)%I →
   envs_simple_replace i false (Esnoc Enil i (l ↦ Free v')) Δ' = Some Δ'' →
   envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
@@ -273,7 +288,7 @@ Proof.
   rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
 Qed.
 Lemma tac_twp_store Δ Δ' s E i K l v v' Φ :
-  envs_lookup i Δ = Some (false, l ↦ Writing v)%I →
+  envs_lookup i Δ = Some (false, l ↦ Free v)%I →
   envs_simple_replace i false (Esnoc Enil i (l ↦ Free v')) Δ = Some Δ' →
   envs_entails Δ' (WP fill K (Val $ LitV LitUnit) @ s; E [{ Φ }]) →
   envs_entails Δ (WP fill K (Store (LitV l) v') @ s; E [{ Φ }]).

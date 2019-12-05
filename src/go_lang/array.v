@@ -150,7 +150,6 @@ Lemma wp_load_offset_vec s E l sz (off : fin sz) (vs : vec val sz) :
   {{{ ▷ l ↦∗ vs }}} ! #(l +ₗ off) @ s; E {{{ RET vs !!! off; l ↦∗ vs }}}.
 Proof. apply wp_load_offset. by apply vlookup_lookup. Qed.
 
-(* TODO: this theorem should be for a complete store, not just the finish *)
 Lemma wp_store_offset s E l off vs v0 v :
   is_Some (vs !! off) →
   {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ <[off:=v]> vs }}}.
