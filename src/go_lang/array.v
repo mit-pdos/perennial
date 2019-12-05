@@ -16,7 +16,7 @@ Section go_lang.
 (* technically the definition of array doesn't depend on a state interp, only
 the ffiG type; fixing this would require unbundling ffi_interp *)
 Definition array `{!heapG Σ} (l : loc) (vs : list val) : iProp Σ :=
-  ([∗ list] i ↦ v ∈ vs, (l +ₗ i) ↦ v)%I.
+  ([∗ list] i ↦ v ∈ vs, (l +ₗ i) ↦ Free v)%I.
 Notation "l ↦∗ vs" := (array l vs)
   (at level 20, format "l  ↦∗  vs") : bi_scope.
 
@@ -39,7 +39,7 @@ Global Instance array_timeless l vs : Timeless (array l vs) := _.
 Lemma array_nil l : l ↦∗ [] ⊣⊢ emp.
 Proof. by rewrite /array. Qed.
 
-Lemma array_singleton l v : l ↦∗ [v] ⊣⊢ l ↦ v.
+Lemma array_singleton l v : l ↦∗ [v] ⊣⊢ l ↦ Free v.
 Proof. by rewrite /array /= right_id loc_add_0. Qed.
 
 Lemma array_app l vs ws :
@@ -50,7 +50,7 @@ Proof.
   by setoid_rewrite loc_add_assoc.
 Qed.
 
-Lemma array_cons l v vs : l ↦∗ (v :: vs) ⊣⊢ l ↦ v ∗ (l +ₗ 1) ↦∗ vs.
+Lemma array_cons l v vs : l ↦∗ (v :: vs) ⊣⊢ l ↦ Free v ∗ (l +ₗ 1) ↦∗ vs.
 Proof.
   rewrite /array big_sepL_cons loc_add_0.
   setoid_rewrite loc_add_assoc.
@@ -60,7 +60,7 @@ Qed.
 
 Lemma update_array l vs off v :
   vs !! off = Some v →
-  (l ↦∗ vs -∗ ((l +ₗ off) ↦ v ∗ ∀ v', (l +ₗ off) ↦ v' -∗ l ↦∗ <[off:=v']>vs))%I.
+  (l ↦∗ vs -∗ ((l +ₗ off) ↦ Free v ∗ ∀ v', (l +ₗ off) ↦ Free v' -∗ l ↦∗ <[off:=v']>vs))%I.
 Proof.
   iIntros (Hlookup) "Hl".
   rewrite -[X in (l ↦∗ X)%I](take_drop_middle _ off v); last done.
@@ -79,7 +79,7 @@ Qed.
 
 (** Allocation *)
 Lemma mapsto_seq_array l v n :
-  ([∗ list] i ∈ seq 0 n, (l +ₗ (i : nat)) ↦ v) -∗
+  ([∗ list] i ∈ seq 0 n, (l +ₗ (i : nat)) ↦ Free v) -∗
   l ↦∗ replicate n v.
 Proof.
   rewrite /array. iInduction n as [|n'] "IH" forall (l); simpl.
@@ -150,22 +150,24 @@ Lemma wp_load_offset_vec s E l sz (off : fin sz) (vs : vec val sz) :
   {{{ ▷ l ↦∗ vs }}} ! #(l +ₗ off) @ s; E {{{ RET vs !!! off; l ↦∗ vs }}}.
 Proof. apply wp_load_offset. by apply vlookup_lookup. Qed.
 
-Lemma wp_store_offset s E l off vs v :
+(* TODO: this theorem should be for a complete store, not just the finish *)
+Lemma wp_store_offset s E l off vs v0 v :
   is_Some (vs !! off) →
   {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ <[off:=v]> vs }}}.
 Proof.
   iIntros ([w Hlookup] Φ) ">Hl HΦ".
   iDestruct (update_array l _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  iApply (wp_store with "Hl1"). iNext. iIntros "Hl1".
+  (* iApply (wp_store with "Hl1"). iNext. iIntros "Hl1".
   iApply "HΦ". iApply "Hl2". iApply "Hl1".
-Qed.
+Qed. *)
+Abort.
 
-Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :
+(* Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :
   {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ vinsert off v vs }}}.
 Proof.
   setoid_rewrite vec_to_list_insert. apply wp_store_offset.
   eexists. by apply vlookup_lookup.
-Qed.
+Qed. *)
 
 Lemma wp_cmpxchg_suc_offset s E l off vs v' v1 v2 :
   vs !! off = Some v' →

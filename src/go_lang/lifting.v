@@ -275,7 +275,7 @@ Proof.
 Qed.
 
 Lemma heap_array_to_seq_mapsto l v (n : nat) :
-  ([∗ map] l' ↦ vm ∈ heap_array l (map Free (replicate n v)), l' ↦ vm) -∗
+  ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (replicate n v)), l' ↦ vm) -∗
   [∗ list] i ∈ seq 0 n, (l +ₗ (i : nat)) ↦ Free v.
 Proof.
   iIntros "Hvs". iInduction n as [|n] "IH" forall (l); simpl.
@@ -301,7 +301,7 @@ Proof.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (gen_heap_alloc_gen
           _ (heap_array
-               l (map Free (replicate (int.nat n) v))) with "Hσ")
+               l (fmap Free (replicate (int.nat n) v))) with "Hσ")
     as "(Hσ & Hl & Hm)".
   { apply heap_array_map_disjoint.
     rewrite map_length replicate_length u64_Z_through_nat; auto with lia. }
@@ -323,7 +323,7 @@ Proof.
   iIntros (κ v2 σ2 efs Hstep); inv_head_step.
   iMod (gen_heap_alloc_gen
           _ (heap_array
-               l (map Free (replicate (int.nat n) v))) with "Hσ")
+               l (fmap Free (replicate (int.nat n) v))) with "Hσ")
     as "(Hσ & Hl & Hm)".
   { apply heap_array_map_disjoint.
     rewrite map_length replicate_length u64_Z_through_nat; auto with lia. }

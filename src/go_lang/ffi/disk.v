@@ -16,23 +16,24 @@ Proof.
   intros x y; hnf; decide equality.
 Defined.
 
+Instance DiskOp_fin : Countable DiskOp.
+Proof.
+  refine (countable.inj_countable'
+            (fun op => match op with
+                 | ReadOp => 0
+                 | WriteOp => 1
+                 | SizeOp => 2
+                    end)
+            (fun n => match n with
+                | 0 => ReadOp
+                | 1 => WriteOp
+                | _ => SizeOp
+                   end) _); by intros [].
+Qed.
+
 Definition disk_op : ext_op.
 Proof.
-  unshelve refine (mkExtOp DiskOp _ _).
-  - apply _.
-  - apply (countable.inj_countable
-           (fun op => match op with
-                   | ReadOp => 0
-                   | WriteOp => 1
-                   | SizeOp => 2
-                   end)
-           (fun n => match n with
-                  | 0 => Some ReadOp
-                  | 1 => Some WriteOp
-                  | 2 => Some SizeOp
-                  | _ => None
-                  end)).
-    destruct x; auto.
+  refine (mkExtOp DiskOp _ _).
 Defined.
 
 Definition disk_ty: ext_types disk_op :=
@@ -56,15 +57,12 @@ Proof.
 Defined.
 
 Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
-  fmap (λ b, LitV (LitByte b)) (vec_to_list bl).
+  fmap (λ b, LitV $ LitByte b) (vec_to_list bl).
 
 Lemma length_Block_to_vals {ext: ext_op} b :
     length (Block_to_vals b) = block_bytes.
 Proof.
-  unfold Block_to_vals.
-  rewrite fmap_length.
-  rewrite vec_to_list_length.
-  reflexivity.
+  rewrite /Block_to_vals fmap_length vec_to_list_length //.
 Qed.
 
 Class diskG Σ :=
@@ -112,8 +110,10 @@ Section disk.
   | WriteOpS : forall (a: u64) (l: loc) (b0 b: Block) (σ: state),
       is_Some (σ.(world) !! a) ->
       (forall (i:Z), 0 <= i -> i < 4096 ->
-                σ.(heap) !! (l +ₗ i) =
-                Block_to_vals b !! Z.to_nat i)%Z ->
+                match σ.(heap) !! (l +ₗ i) with
+             | Some (Free v) => Block_to_vals b !! Z.to_nat i = Some v
+             | _ => False
+                end)%Z ->
       ext_step WriteOp (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
                (LitV LitUnit) (set world <[ a := b ]> σ)
   (* TODO: size semantics *)
@@ -133,8 +133,6 @@ Section disk.
   Context `{!heapG Σ}.
   Instance diskG0 : diskG Σ := heapG_ffiG.
 
-  Notation "l ↦{ q } v" := (mapsto (L:=loc) (V:=val) l q v%V)
-                             (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
   Notation "l d↦{ q } v" := (mapsto (L:=u64) (V:=Block) l q v%V)
                              (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
   Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
@@ -172,14 +170,14 @@ lemmas. *)
   Hint Extern 1 (head_step (ExternalOp _ _) _ _ _ _ _) => econstructor; simpl : core.
 
   Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
-    ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
+    ([∗ map] l ↦ v ∈ heap_array l (fmap Free $ Block_to_vals b), l ↦{q} v)%I.
 
   Lemma wp_ReadOp s E a q b :
     {{{ ▷ a d↦{q} b }}}
       ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
     {{{ l, RET LitV (LitLoc l); a d↦{q} b ∗
                                   mapsto_block l 1 b ∗
-                                  [∗ map] l ↦ _ ∈ heap_array l (Block_to_vals b), meta_token l ⊤ }}}.
+                                  [∗ map] l ↦ _ ∈ heap_array l (fmap Free $ Block_to_vals b), meta_token l ⊤ }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd) !>".
@@ -191,10 +189,10 @@ lemmas. *)
       econstructor; simpl.
       apply read_fresh; eauto. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-    iMod (gen_heap_alloc_gen _ (heap_array l' (Block_to_vals b)) with "Hσ")
+    iMod (gen_heap_alloc_gen _ (heap_array l' (map Free $ Block_to_vals b)) with "Hσ")
       as "(Hσ & Hl & Hm)".
     { apply heap_array_map_disjoint.
-      rewrite length_Block_to_vals; eauto. }
+      rewrite map_length length_Block_to_vals; eauto. }
     iModIntro; iSplit; first done.
     iFrame "Hσ Hκs Hd". iApply "HΦ".
     iFrame.
@@ -220,14 +218,17 @@ lemmas. *)
   Theorem mapsto_block_extract i l q b :
     (0 <= i)%Z ->
     (i < 4096)%Z ->
-    (mapsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝)%I.
+    (mapsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} Free v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝)%I.
   Proof.
     unfold mapsto_block; intros Hlow Hhi.
     iIntros "Hm".
     pose proof (block_byte_index b i ltac:(auto) ltac:(auto)) as Hi.
-    assert (heap_array l (Block_to_vals b) !! (l +ₗ i) =
-            Some $ LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi) as Hha.
-    { apply heap_array_lookup; eauto. }
+    assert (heap_array l (fmap Free $ Block_to_vals b) !! (l +ₗ i) =
+            Some $ Free $ LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi) as Hha.
+    { apply heap_array_lookup.
+      eexists; intuition eauto.
+      rewrite list_lookup_fmap.
+      rewrite Hi; simpl; auto. }
     iDestruct (big_sepM_lookup_acc _ _ _ _ Hha with "Hm") as "(Hmi&_)".
     iExists _.
     iFrame "Hmi".
@@ -237,13 +238,17 @@ lemmas. *)
   Theorem heap_valid_block l b q σ :
     gen_heap_ctx σ -∗ mapsto_block l q b -∗
     ⌜ (forall (i:Z), (0 <= i)%Z -> (i < 4096)%Z ->
-                σ !! (l +ₗ i) = Block_to_vals b !! Z.to_nat i) ⌝.
+                match σ !! (l +ₗ i) with
+             | Some (Free v) => Block_to_vals b !! Z.to_nat i = Some v
+             | _ => False
+                end) ⌝.
   Proof.
     iIntros "Hσ Hm".
     iIntros (i Hbound1 Hbound2).
     iDestruct (mapsto_block_extract i with "Hm") as (v) "[Hi %]"; eauto.
     iDestruct (@gen_heap_valid with "Hσ Hi") as %?.
-    iPureIntro; congruence.
+    iPureIntro.
+    rewrite H0; auto.
   Qed.
 
   Theorem Block_to_vals_ext_eq b1 b2 :
@@ -284,9 +289,10 @@ lemmas. *)
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
     assert (b = b2); [ | subst b2 ].
     { apply Block_to_vals_ext_eq; intros.
-      rewrite <- H0 by auto.
-      rewrite <- H4 by auto.
-      reflexivity. }
+      specialize (H0 i); specialize (H4 i); intuition.
+      destruct_with_eqn (σ1.(heap) !! (l +ₗ i)); try contradiction.
+      destruct n0; try contradiction.
+      congruence. }
     iModIntro; iSplit; first done.
     iFrame.
     iApply "Hϕ".

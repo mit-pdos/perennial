@@ -215,7 +215,7 @@ Qed.
 Lemma tac_wp_alloc Δ Δ' s E j K v Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (l ↦ v)) Δ' = Some Δ'' ∧
+    envs_app false (Esnoc Enil j (l ↦ Free v)) Δ' = Some Δ'' ∧
     envs_entails Δ'' (WP fill K (Val $ LitV l) @ s; E {{ Φ }})) →
   envs_entails Δ (WP fill K (Alloc (Val v)) @ s; E {{ Φ }}).
 Proof.
@@ -223,11 +223,11 @@ Proof.
   rewrite -wp_bind. eapply wand_apply; first exact: wp_alloc.
   rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
-  apply wand_intro_l. by rewrite (sep_elim_l (l ↦ v)%I) right_id wand_elim_r.
+  apply wand_intro_l. by rewrite (sep_elim_l (l ↦ Free v)%I) right_id wand_elim_r.
 Qed.
 Lemma tac_twp_alloc Δ s E j K v Φ :
   (∀ l, ∃ Δ',
-    envs_app false (Esnoc Enil j (l ↦ v)) Δ = Some Δ' ∧
+    envs_app false (Esnoc Enil j (l ↦ Free v)) Δ = Some Δ' ∧
     envs_entails Δ' (WP fill K (Val $ LitV $ LitLoc l) @ s; E [{ Φ }])) →
   envs_entails Δ (WP fill K (Alloc (Val v)) @ s; E [{ Φ }]).
 Proof.
@@ -235,12 +235,12 @@ Proof.
   rewrite -twp_bind. eapply wand_apply; first exact: twp_alloc.
   rewrite left_id. apply forall_intro=> l.
   destruct (HΔ l) as (Δ'&?&HΔ'). rewrite envs_app_sound //; simpl.
-  apply wand_intro_l. by rewrite (sep_elim_l (l ↦ v)%I) right_id wand_elim_r.
+  apply wand_intro_l. by rewrite (sep_elim_l (l ↦ Free v)%I) right_id wand_elim_r.
 Qed.
 
 Lemma tac_wp_load Δ Δ' s E i K l q v Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦{q} v)%I →
+  envs_lookup i Δ' = Some (false, l ↦{q} Free v)%I →
   envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (Load (LitV l)) @ s; E {{ Φ }}).
 Proof.
@@ -250,7 +250,7 @@ Proof.
   by apply later_mono, sep_mono_r, wand_mono.
 Qed.
 Lemma tac_twp_load Δ s E i K l q v Φ :
-  envs_lookup i Δ = Some (false, l ↦{q} v)%I →
+  envs_lookup i Δ = Some (false, l ↦{q} Free v)%I →
   envs_entails Δ (WP fill K (Val v) @ s; E [{ Φ }]) →
   envs_entails Δ (WP fill K (Load (LitV l)) @ s; E [{ Φ }]).
 Proof.
@@ -262,8 +262,8 @@ Qed.
 
 Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ v')) Δ' = Some Δ'' →
+  envs_lookup i Δ' = Some (false, l ↦ Writing v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v')) Δ' = Some Δ'' →
   envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
 Proof.
@@ -273,8 +273,8 @@ Proof.
   rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
 Qed.
 Lemma tac_twp_store Δ Δ' s E i K l v v' Φ :
-  envs_lookup i Δ = Some (false, l ↦ v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ v')) Δ = Some Δ' →
+  envs_lookup i Δ = Some (false, l ↦ Writing v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v')) Δ = Some Δ' →
   envs_entails Δ' (WP fill K (Val $ LitV LitUnit) @ s; E [{ Φ }]) →
   envs_entails Δ (WP fill K (Store (LitV l) v') @ s; E [{ Φ }]).
 Proof.
@@ -286,8 +286,8 @@ Qed.
 
 Lemma tac_wp_cmpxchg Δ Δ' Δ'' s E i K l v v1 v2 Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ v2)) Δ' = Some Δ'' →
+  envs_lookup i Δ' = Some (false, l ↦ Free v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v2)) Δ' = Some Δ'' →
   vals_compare_safe v v1 →
   (v = v1 →
    envs_entails Δ'' (WP fill K (Val $ PairV v (LitV $ LitBool true)) @ s; E {{ Φ }})) →
@@ -307,8 +307,8 @@ Proof.
     apply later_mono, sep_mono_r. apply wand_mono; auto.
 Qed.
 Lemma tac_twp_cmpxchg Δ Δ' s E i K l v v1 v2 Φ :
-  envs_lookup i Δ = Some (false, l ↦ v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ v2)) Δ = Some Δ' →
+  envs_lookup i Δ = Some (false, l ↦ Free v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v2)) Δ = Some Δ' →
   vals_compare_safe v v1 →
   (v = v1 →
    envs_entails Δ' (WP fill K (Val $ PairV v (LitV $ LitBool true)) @ s; E [{ Φ }])) →
@@ -330,7 +330,7 @@ Qed.
 
 Lemma tac_wp_cmpxchg_fail Δ Δ' s E i K l q v v1 v2 Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦{q} v)%I →
+  envs_lookup i Δ' = Some (false, l ↦{q} Free v)%I →
   v ≠ v1 → vals_compare_safe v v1 →
   envs_entails Δ' (WP fill K (Val $ PairV v (LitV $ LitBool false)) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E {{ Φ }}).
@@ -341,7 +341,7 @@ Proof.
   by apply later_mono, sep_mono_r, wand_mono.
 Qed.
 Lemma tac_twp_cmpxchg_fail Δ s E i K l q v v1 v2 Φ :
-  envs_lookup i Δ = Some (false, l ↦{q} v)%I →
+  envs_lookup i Δ = Some (false, l ↦{q} Free v)%I →
   v ≠ v1 → vals_compare_safe v v1 →
   envs_entails Δ (WP fill K (Val $ PairV v (LitV $ LitBool false)) @ s; E [{ Φ }]) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E [{ Φ }]).
@@ -353,8 +353,8 @@ Qed.
 
 Lemma tac_wp_cmpxchg_suc Δ Δ' Δ'' s E i K l v v1 v2 Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ v2)) Δ' = Some Δ'' →
+  envs_lookup i Δ' = Some (false, l ↦ Free v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v2)) Δ' = Some Δ'' →
   v = v1 → vals_compare_safe v v1 →
   envs_entails Δ'' (WP fill K (Val $ PairV v (LitV $ LitBool true)) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E {{ Φ }}).
@@ -366,8 +366,8 @@ Proof.
   rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
 Qed.
 Lemma tac_twp_cmpxchg_suc Δ Δ' s E i K l v v1 v2 Φ :
-  envs_lookup i Δ = Some (false, l ↦ v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ v2)) Δ = Some Δ' →
+  envs_lookup i Δ = Some (false, l ↦ Free v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v2)) Δ = Some Δ' →
   v = v1 → vals_compare_safe v v1 →
   envs_entails Δ' (WP fill K (Val $ PairV v (LitV $ LitBool true)) @ s; E [{ Φ }]) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E [{ Φ }]).

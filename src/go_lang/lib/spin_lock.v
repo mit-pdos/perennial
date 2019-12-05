@@ -17,7 +17,7 @@ Definition newlock : val := λ: <>, ref #false.
 Definition try_acquire : val := λ: "l", CAS "l" #false #true.
 Definition acquire : val :=
   rec: "acquire" "l" := if: try_acquire "l" then #() else "acquire" "l".
-Definition release : val := λ: "l", "l" <- #false.
+Definition release : val := λ: "l", CmpXchg "l" #true #false;; #().
 
 (** The CMRA we need. *)
 (* Not bundling heapG, as it may be shared with other users. *)
@@ -31,7 +31,7 @@ Section proof.
   Context `{!heapG Σ, !lockG Σ} (N : namespace).
 
   Definition lock_inv (γ : gname) (l : loc) (R : iProp Σ) : iProp Σ :=
-    (∃ b : bool, l ↦ #b ∗ if b then True else own γ (Excl ()) ∗ R)%I.
+    (∃ b : bool, l ↦ Free #b ∗ if b then True else own γ (Excl ()) ∗ R)%I.
 
   Definition is_lock (γ : gname) (lk : val) (R : iProp Σ) : iProp Σ :=
     (∃ l: loc, ⌜lk = #l⌝ ∧ inv N (lock_inv γ l R))%I.
@@ -91,9 +91,18 @@ Section proof.
   Proof.
     iIntros (Φ) "(Hlock & Hlocked & HR) HΦ".
     iDestruct "Hlock" as (l ->) "#Hinv".
-    rewrite /release /=. wp_lam. iInv N as (b) "[Hl _]".
-    wp_store. iSplitR "HΦ"; last by iApply "HΦ".
-    iModIntro. iNext. iExists false. by iFrame.
+    rewrite /release /=. wp_lam.
+    wp_bind (CmpXchg _ _ _).
+    iInv N as (b) "[Hl _]".
+    destruct b.
+    - wp_cmpxchg_suc.
+      iModIntro.
+      iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
+      iNext. iExists false. by iFrame.
+    - wp_cmpxchg_fail.
+      iModIntro.
+      iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
+      iNext. iExists false. by iFrame.
   Qed.
 End proof.
 End go_lang.

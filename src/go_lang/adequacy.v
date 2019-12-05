@@ -21,14 +21,14 @@ Hint Resolve subG_ffiPreG : typeclass_instances.
 
 Class heapPreG `{ext: ext_op} `{ffi_interp_adequacy} Σ := HeapPreG {
   heap_preG_iris :> invPreG Σ;
-  heap_preG_heap :> gen_heapPreG loc val Σ;
+  heap_preG_heap :> gen_heapPreG loc (nonAtomic val) Σ;
   heap_preG_proph :> proph_mapPreG proph_id (val * val) Σ;
   heap_preG_ffi : ffi_preG Σ;
 }.
 
 Hint Resolve heap_preG_ffi : typeclass_instances.
 
-Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors := #[invΣ; gen_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val)].
+Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors := #[invΣ; gen_heapΣ loc (nonAtomic val); ffiΣ; proph_mapΣ proph_id (val * val)].
 Instance subG_heapPreG `{ext: ext_op} `{ffi_interp_adequacy} {Σ} : subG heapΣ Σ → heapPreG Σ.
 Proof. solve_inG. Qed.
 

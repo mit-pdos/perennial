@@ -864,7 +864,7 @@ Close Scope Z.
 
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)
 Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
-  set heap (λ h, heap_array l (map Free vs) ∪ h) σ.
+  set heap (λ h, heap_array l (fmap Free vs) ∪ h) σ.
 
 Definition state_init_heap (l : loc) (n : Z) (v : val) (σ : state) : state :=
   state_insert_list l (replicate (Z.to_nat n) v) σ.

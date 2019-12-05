@@ -1,5 +1,5 @@
 From Perennial.go_lang Require Export
-     lang notation slice map struct typing.
+     lang notation slice map struct typing encoding.
 
 (* We provide stubs here for primitive operations to make the Goose unit tests
    compile. *)
