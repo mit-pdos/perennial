@@ -264,16 +264,22 @@ Lemma wp_store s E l v v' :
   {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
   {{{ RET LitV LitUnit; l ↦ Free v }}}.
 Proof.
-  iIntros (Φ) "Hl HΦ".
-  unfold Store.
-Admitted.
+  iIntros (Φ) "Hl HΦ". unfold Store.
+  wp_lam. wp_let. wp_bind (PrepareWrite _).
+  iApply (wp_prepare_write with "Hl").
+  iModIntro. iIntros "Hl".
+  wp_seq. by iApply (wp_finish_store with "Hl").
+Qed.
 Lemma twp_store s E l v v' :
   [[{ l ↦ Free v' }]] Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
   [[{ RET LitV LitUnit; l ↦ Free v }]].
 Proof.
-  iIntros (Φ) "Hl HΦ".
-  unfold Store.
-Admitted.
+  iIntros (Φ) "Hl HΦ". unfold Store.
+  wp_lam. wp_let. wp_bind (PrepareWrite _).
+  iApply (twp_prepare_write with "Hl").
+  iIntros "Hl".
+  wp_seq. by iApply (twp_finish_store with "Hl").
+Qed.
 
 Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →

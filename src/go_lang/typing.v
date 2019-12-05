@@ -309,7 +309,6 @@ Section go_lang.
     econstructor; eauto.
     econstructor; eauto.
     econstructor; eauto.
-    econstructor; eauto.
     - econstructor; eauto.
       apply array_ref_hasTy.
       econstructor; eauto.
