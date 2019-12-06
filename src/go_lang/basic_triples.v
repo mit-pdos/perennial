@@ -250,6 +250,30 @@ Proof.
       * admit.
 Admitted.
 
+Lemma wp_slice_get s E v sl vs (i: u64) v0 :
+  {{{ is_slice v sl vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+    SliceGet v #i @ s; E
+  {{{ RET v0; is_slice v sl vs }}}.
+Proof.
+  iIntros (Φ) "[Hsl %] HΦ".
+  destruct sl as [ptr sz].
+  wp_lam.
+  wp_let.
+  iDestruct "Hsl" as "[-> [Hsl %]]".
+  cbv [Slice.ptr Slice.sz].
+  wp_lam.
+  wp_pures.
+  iDestruct (update_array ptr _ _ _ H with "Hsl") as "[Hi Hsl']".
+  rewrite Z2Nat.id.
+  { wp_load.
+    iApply "HΦ".
+    iApply is_slice_intro.
+    iSplitR ""; eauto.
+    iDestruct ("Hsl'" with "Hi") as "Hsl".
+    erewrite list_insert_id by eauto; auto. }
+  pose proof (Properties.word.unsigned_range i); lia.
+Qed.
+
 Lemma word_sru_0 width (word: Interface.word width) (ok: word.ok word)
       (x: word) s : int.val s = 0 -> word.sru x s = x.
 Proof.
