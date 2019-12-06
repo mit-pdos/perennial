@@ -659,8 +659,8 @@ Inductive ectx_item :=
   | InjRCtx
   | CaseCtx (e1 : expr) (e2 : expr)
   | Primitive1Ctx  (op: prim_op args1)
-  | Primitive2LCtx (op: prim_op args2) (v2 : val)
-  | Primitive2RCtx (op: prim_op args2) (e1 : expr)
+  | Primitive2LCtx (op: prim_op args2) (e2 : expr)
+  | Primitive2RCtx (op: prim_op args2) (v1 : val)
   (* | Primitive3LCtx (op: prim_op args3) (e1 : expr) (e2 : expr)
   | Primitive3MCtx (op: prim_op args3) (v0 : val) (e2 : expr)
   | Primitive3RCtx (op: prim_op args3) (v0 : val) (v1 : val) *)
@@ -695,8 +695,8 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | InjRCtx => InjR e
   | CaseCtx e1 e2 => Case e e1 e2
   | Primitive1Ctx op => Primitive1 op e
-  | Primitive2LCtx op v2 => Primitive2 op e (Val v2)
-  | Primitive2RCtx op e1 => Primitive2 op e1 e
+  | Primitive2LCtx op e2 => Primitive2 op e e2
+  | Primitive2RCtx op v1 => Primitive2 op (Val v1) e
   (* | Primitive3LCtx op e1 e2 => Primitive3 op e e1 e2
   | Primitive3MCtx op v0 e1 => Primitive3 op (Val v0) e e1
   | Primitive3RCtx op v0 v1 => Primitive3 op (Val v0) (Val v1) e *)

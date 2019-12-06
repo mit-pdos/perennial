@@ -164,6 +164,92 @@ Proof.
   rewrite replicate_length //.
 Qed.
 
+(* TODO: this should be bidirectional but I'm not sure how to do that in the
+proof mode *)
+Lemma array_app_split l vs1 vs2 :
+  array l (vs1 ++ vs2) -∗
+        array l vs1 ∗ array (l +ₗ (length vs1)) vs2.
+Proof.
+  revert vs2.
+  revert l.
+  induction vs1; simpl.
+  - iIntros (l vs2) "Hl".
+    rewrite loc_add_0.
+    rewrite array_nil; iFrame.
+  - iIntros (l vs2) "Hl".
+    iDestruct (array_cons with "Hl") as "[Hl Hl1]".
+    rewrite array_cons.
+    iFrame.
+    iDestruct (IHvs1 with "Hl1") as "[Hl Hvs2]".
+    rewrite loc_add_assoc.
+    replace (1 + length vs1) with (Z.of_nat (S (length vs1))); last by lia.
+    iFrame.
+Qed.
+
+Lemma array_split (n:Z) l vs :
+  0 <= n ->
+  Z.to_nat n < length vs ->
+  array l vs -∗
+        array l (take (Z.to_nat n) vs) ∗ array (l +ₗ n) (drop (Z.to_nat n) vs).
+Proof.
+  iIntros (Hn Hlength) "Hl".
+  (* TODO: this is super slow *)
+  rewrite <- (take_drop (Z.to_nat n) vs) at 1.
+  iDestruct (array_app_split with "Hl") as "[H1 H2]".
+  iSplitL "H1"; iFrame.
+  rewrite take_length.
+  rewrite Nat.min_l; last lia.
+  rewrite Z2Nat.id; last lia.
+  iFrame.
+Qed.
+
+Opaque word.unsigned word.ltu word.sub u64_instance.u64_word.
+
+(* TODO: for now we drop the remainder of the slice on the floor *)
+Lemma wp_subslice s E v sl vs (n1 n2: u64) :
+  {{{ is_slice v sl vs ∗ ⌜ int.nat n1 ≤ int.nat n2 /\ int.nat n2 < int.nat (Slice.sz sl) ⌝ }}}
+    SliceSubslice v #n1 #n2 @ s; E
+  {{{ sl' v', RET v'; is_slice v' sl' (take (int.nat n2 - int.nat n1) (drop (int.nat n1) vs)) }}}.
+Proof.
+  iIntros (Φ) "[Hsl (%&%)] HΦ".
+  wp_lam.
+  wp_let.
+  wp_pures.
+  wp_lam.
+  iDestruct "Hsl" as "[-> [Hsl %]]".
+  wp_lam.
+  wp_pures.
+  destruct_with_eqn (word.ltu (word:=u64_instance.u64_word)
+                              (Slice.sz sl)
+                              (word.sub (word:=u64_instance.u64_word) n2 n1));
+    wp_if.
+  - rewrite word.unsigned_ltu word.unsigned_sub in Heqb.
+    admit. (* TODO: need to derive a contradiction *)
+  - wp_lam.
+    wp_pures.
+    iApply "HΦ".
+    iApply is_slice_intro; iFrame.
+    rewrite take_length drop_length.
+    iSplitL.
+    + iDestruct (array_split (int.val n1) with "Hsl") as "[Hsl1 Hsl2]".
+      * pose proof (Properties.word.unsigned_range n1); lia.
+      * unfold int.nat in *; lia.
+      * iDestruct (array_split (int.val n1 - int.val n2) with "Hsl2") as "[Hsl2 Hsl3]".
+        -- admit.
+        -- rewrite drop_length.
+           admit.
+        -- fold (int.nat n1) (int.nat n2).
+          replace (Z.to_nat (int.val n1 - int.val n2))
+             with (int.nat n2 - int.nat n1)%nat.
+          { iFrame. }
+          admit.
+    + iPureIntro.
+      unfold int.nat.
+      rewrite Nat.min_l.
+      * admit.
+      * admit.
+Admitted.
+
 Lemma word_sru_0 width (word: Interface.word width) (ok: word.ok word)
       (x: word) s : int.val s = 0 -> word.sru x s = x.
 Proof.
@@ -210,18 +296,16 @@ Proof.
   wp_lam.
   wp_let.
   wp_pures.
-  rewrite Zmod_small; last lia.
   wp_bind (Store _ _).
-  change 0 with (Z.of_nat 0).
+  change (int.val 0) with (Z.of_nat 0).
   iApply (wp_store_offset with "Hl").
   { apply lookup_lt_is_Some_2; lia. }
 
   iIntros "!> Hl".
   wp_seq.
   wp_pures.
-  rewrite Zmod_small; last lia.
   wp_bind (Store _ _).
-  change 1 with (Z.of_nat 1).
+  change (int.val 1) with (Z.of_nat 1).
   iApply (wp_store_offset with "Hl").
   { apply lookup_lt_is_Some_2.
     rewrite ?insert_length; lia. }
@@ -229,9 +313,8 @@ Proof.
   iIntros "!> Hl".
   wp_seq.
   wp_pures.
-  rewrite Zmod_small; last lia.
   wp_bind (Store _ _).
-  change 2 with (Z.of_nat 2).
+  change (int.val 2) with (Z.of_nat 2).
   iApply (wp_store_offset with "Hl").
   { apply lookup_lt_is_Some_2.
     rewrite ?insert_length; lia. }
@@ -239,8 +322,7 @@ Proof.
   iIntros "!> Hl".
   wp_seq.
   wp_pures.
-  rewrite Zmod_small; last lia.
-  change 3 with (Z.of_nat 3).
+  change (int.val 3) with (Z.of_nat 3).
   iApply (wp_store_offset with "Hl").
   { apply lookup_lt_is_Some_2.
     rewrite ?insert_length; lia. }
