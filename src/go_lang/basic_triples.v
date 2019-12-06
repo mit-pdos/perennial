@@ -274,6 +274,43 @@ Proof.
   pose proof (Properties.word.unsigned_range i); lia.
 Qed.
 
+Lemma wp_memcpy s E v dst vs1 src vs2 (n: u64) :
+  {{{ array dst vs1 ∗ array src vs2 ∗
+            ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
+    MemCpy #dst #src #n @ s; E
+  {{{ RET #(); array dst (take (int.nat n) vs2) ∗ array src vs2 }}}.
+Proof.
+  iIntros (Φ) "(Hvs1&Hvs2&%) HΦ".
+  wp_lam.
+  wp_let.
+  wp_let.
+  wp_pures.
+  iRevert (vs1 vs2 H) "Hvs1 Hvs2 HΦ".
+  iLöb as "IH".
+  iIntros (vs1 vs2) "(%&%) Hdst Hsrc HΦ".
+  wp_rec.
+  wp_pures.
+  destruct_with_eqn (word.ltu (word:=u64_instance.u64_word) (U64 0) n); wp_if.
+  - wp_pures.
+    destruct vs2.
+    { admit. }
+    destruct vs1.
+    { admit. }
+    change (int.val 0) with 0.
+    rewrite loc_add_0.
+    iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
+    wp_load.
+    wp_pures.
+    rewrite loc_add_0.
+    iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
+    wp_bind (Store _ _).
+    iApply (wp_store with "Hdst").
+    iIntros "!> Hdst".
+    wp_seq.
+    wp_pures.
+    change (word.add (word:=u64_instance.u64_word) (U64 0) (U64 1)) with (U64 1).
+Abort.
+
 Lemma wp_slice_set s E v sl vs (i: u64) (x: val) :
   {{{ is_slice v sl vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
     SliceSet v #i x @ s; E
