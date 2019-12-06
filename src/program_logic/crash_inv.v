@@ -18,15 +18,6 @@ Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Definition Tok (γ: gname) :=
-  own γ (Excl ()).
-
-Lemma Tok_Tok γ: Tok γ ∗ Tok γ -∗ False.
-Proof. iIntros "(H1&H2)". by iDestruct (own_valid_2 with "H1 H2") as %?. Qed.
-
-Instance timeless_Tok γ: Timeless (Tok γ).
-Proof. rewrite /Tok. apply _. Qed.
-
 Lemma wpc_ci_inv s k N E1 e Φ Φc P γ γ' :
   ↑N ⊆ E1 →
   staged_inv N k (E1 ∖ ↑N) (E1 ∖ ↑N) γ γ' P ∗
@@ -50,12 +41,12 @@ Proof.
   { by iDestruct (own_valid_2 with "H H'") as %?. }
 Qed.
 
-Lemma wpc_staged_invariant_aux s k E1 E1' e Φ Φc P N γ γ' :
+Lemma wpc_staged_invariant_aux s k E1 E1' e Φ Φc P Q N γ γ' :
   E1 ⊆ E1' →
   ↑N ⊆ E1 →
   staged_inv N (2 * (S k)) (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   NC ∗
-  staged_value N γ (WPC e @ k; E1 ∖ ↑N;∅ {{ v, (Φ v ∧ Φc) ∗ P }}{{Φc ∗ P}}) Φc
+  staged_value N γ (WPC e @ k; E1 ∖ ↑N;∅ {{ v, Q v ∗ □ (Q v -∗ P) ∗ (staged_value N γ (Q v) True -∗ Φ v ∧ Φc)}}{{Φc ∗ P}}) Φc
   ⊢ |={E1,E1}_(S (2 * S (S k)))=>
      WPC e @ s; 2 * S (S k); E1; ∅ {{ v, Φ v }} {{Φc}} ∗ NC.
 Proof.
@@ -84,16 +75,16 @@ Proof.
       rewrite wpc_unfold /wpc_pre.
       rewrite Hval.
       iDestruct "H" as "(H&_)".
-      iMod ("H" with "[$]") as "((HΦ&HP)&HNC)".
-      iMod ("Hclo'" $! _ True%I with "[HP]").
-      { iSplitL. iApply "HP". iAlways.
+      iMod ("H" with "[$]") as "((HQ&#HQP&HΦ)&HNC)".
+      iMod ("Hclo'" $! _ True%I with "[HQ]").
+      { iSplitL. iApply "HQ". iAlways.
         iIntros. iApply step_fupdN_inner_later; first auto.
-        iNext. eauto.
+        iNext. iSplitL; last eauto. iApply "HQP"; eauto.
       }
       iModIntro. iSplitR "HNC"; last by iFrame.
       iSplit.
-      - iDestruct "HΦ" as "($&_)". eauto.
-      - iDestruct "HΦ" as "(_&HΦ)".
+      - iIntros "HNC". iDestruct ("HΦ" with "[$]") as "($&_)". eauto.
+      - iDestruct ("HΦ" with "[$]") as "(_&HΦ)".
         iIntros "HC".
         iApply step_fupdN_inner_later; first by set_solver.
         repeat iNext.
@@ -251,13 +242,13 @@ Proof.
     iApply step_fupdN_inner_later; auto.
 Qed.
 
-Lemma wpc_staged_invariant s k E1 E1' e Φ Φc Q Qrest P N γ γ' :
+Lemma wpc_staged_invariant s k E1 E1' e Φ Φc Q Qrest Qnew P N γ γ' :
   E1 ⊆ E1' →
   ↑N ⊆ E1 →
   to_val e = None →
   staged_inv N (2 * (S k)) (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   staged_value N γ Q Qrest ∗
-  (Φc ∧ (▷ (Q) -∗ WPC e @ NotStuck; k; (E1 ∖ ↑N); ∅ {{ λ v, (Φ v ∧ Φc) ∗ P}} {{ Φc ∗ P }})) ⊢
+  (Φc ∧ (▷ (Q) -∗ WPC e @ NotStuck; k; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
   WPC e @ s; (2 * S (S k)); E1; ∅ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (?? Hval) "(#Hinv&Hval&Hwp)".
@@ -311,7 +302,8 @@ Proof.
   iMod "H".
   iDestruct "H" as "(Hσ&H&Hefs&HNC)".
   iSpecialize ("Hclo" $!
-               (WPC e2 @ k; E1 ∖ ↑N;∅ {{ v, (Φ v ∧ Φc) ∗ P }}{{Φc ∗ P}})%I
+                      (WPC e2 @ k; E1 ∖ ↑N;∅
+                        {{ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗ Φ v ∧ Φc) }}{{Φc ∗ P}})%I
                Φc with "[H]").
   { iSplitL "H".
     - iNext. iFrame.
@@ -336,7 +328,7 @@ Proof.
   iModIntro. iModIntro. iNext. iMod "Hclo''" as "_".
   iModIntro.
   iPoseProof (wpc_staged_invariant_aux s k E1 E1'
-                _ Φ Φc P N γ with "[Hclo HNC]") as "H"; try assumption.
+                _ Φ Φc P Qnew N γ with "[Hclo HNC]") as "H"; try assumption.
   { iIntros. iFrame "Hinv". iFrame. }
   iApply (step_fupdN_inner_wand with "H"); auto.
   iIntros "(?&?)". iFrame.
