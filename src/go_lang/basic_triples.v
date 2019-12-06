@@ -123,23 +123,85 @@ Proof.
     apply word.width_pos.
 Qed.
 
+Canonical Structure u32_instance.u32_word.
+Canonical Structure u8_instance.u8_word.
+
+Theorem u32_le_to_sru (x: u32) :
+  (λ (b:byte), #b) <$> u32_le x =
+  cons #(u8_from_u32 (word.sru x (U32 (0%nat * 8))))
+       (cons #(u8_from_u32 (word.sru x (U32 (1%nat * 8))))
+             (cons #(u8_from_u32 (word.sru x (U32 (2%nat * 8))))
+                   (cons #(u8_from_u32 (word.sru x (U32 (3%nat * 8))))
+                         nil))).
+Proof.
+  Print u32_le.
+  cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
+  repeat f_equal.
+  - apply Properties.word.unsigned_inj.
+    unfold u8_from_u32, U8.
+    rewrite word.unsigned_of_Z.
+    rewrite word.unsigned_sru.
+Admitted.
+
 Opaque word.sru.
 
 Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
-  {{{ l ↦∗ vs }}}
+  {{{ ▷ l ↦∗ vs ∗ ⌜ length vs = u32_bytes ⌝ }}}
     EncodeUInt32 #x #l @ s ; E
   {{{ RET #(); l ↦∗ ((λ (b: byte), #b) <$> u32_le x) }}}.
 Proof.
-  iIntros (Φ) "Hl HΦ".
+  iIntros (Φ) "(>Hl & %) HΦ".
   unfold EncodeUInt32.
   wp_lam.
   wp_let.
   wp_pures.
-  rewrite Zmod_0_l.
-  rewrite loc_add_0.
-  change (0 * 8) with 0.
-  rewrite word_sru_0; [ | simpl; rewrite Zmod_0_l; auto ].
-Abort.
+  rewrite Zmod_small; last lia.
+  (* change (0 * 8) with 0.
+  rewrite word_sru_0; [ | simpl; rewrite Zmod_0_l; auto ]. *)
+  wp_bind (Store _ _).
+  change 0 with (Z.of_nat 0).
+  iApply (wp_store_offset with "Hl").
+  { apply lookup_lt_is_Some_2; lia. }
+
+  iModIntro.
+  iIntros "Hl".
+  wp_seq.
+  wp_pures.
+  rewrite Zmod_small; last lia.
+  wp_bind (Store _ _).
+  change 1 with (Z.of_nat 1).
+  iApply (wp_store_offset with "Hl").
+  { apply lookup_lt_is_Some_2.
+    rewrite ?insert_length; lia. }
+
+  iModIntro.
+  iIntros "Hl".
+  wp_seq.
+  wp_pures.
+  rewrite Zmod_small; last lia.
+  wp_bind (Store _ _).
+  change 2 with (Z.of_nat 2).
+  iApply (wp_store_offset with "Hl").
+  { apply lookup_lt_is_Some_2.
+    rewrite ?insert_length; lia. }
+
+  iModIntro.
+  iIntros "Hl".
+  wp_seq.
+  wp_pures.
+  rewrite Zmod_small; last lia.
+  change 3 with (Z.of_nat 3).
+  iApply (wp_store_offset with "Hl").
+  { apply lookup_lt_is_Some_2.
+    rewrite ?insert_length; lia. }
+
+  iModIntro. iIntros "Hl".
+  iApply "HΦ".
+  rewrite u32_le_to_sru.
+  do 5 (destruct vs; try (simpl in H; lia)).
+  simpl.
+  iApply "Hl".
+Qed.
 
 End heap.
 

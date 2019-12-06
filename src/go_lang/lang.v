@@ -815,7 +815,9 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
                                                        ∪ (LitBool <$> bin_op_eval_compare op (word:=u8_instance.u8_word) n1 n2))
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
-    | LitV (LitLoc l), LitV (LitInt off) => Some $ LitV $ LitLoc (l +ₗ int.val off)
+    | LitV (LitLoc l), LitV (LitInt off) => if decide (op = OffsetOp)
+                                           then Some $ LitV $ LitLoc (l +ₗ int.val off)
+                                           else None
     | _, _ => None
     end.
 
