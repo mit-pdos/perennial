@@ -2,7 +2,7 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl.
 From iris.program_logic Require Export weakestpre.
 From Perennial.go_lang Require Export lang.
-From Perennial.go_lang Require Import proofmode notation.
+From Perennial.go_lang Require Import proofmode basic_triples notation.
 From Perennial.go_lang.lib Require Import lock.
 Set Default Proof Using "Type".
 

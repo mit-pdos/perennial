@@ -150,24 +150,6 @@ Lemma wp_load_offset_vec s E l sz (off : fin sz) (vs : vec val sz) :
   {{{ ▷ l ↦∗ vs }}} ! #(l +ₗ off) @ s; E {{{ RET vs !!! off; l ↦∗ vs }}}.
 Proof. apply wp_load_offset. by apply vlookup_lookup. Qed.
 
-Lemma wp_store_offset s E l off vs v0 v :
-  is_Some (vs !! off) →
-  {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ <[off:=v]> vs }}}.
-Proof.
-  iIntros ([w Hlookup] Φ) ">Hl HΦ".
-  iDestruct (update_array l _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  (* iApply (wp_store with "Hl1"). iNext. iIntros "Hl1".
-  iApply "HΦ". iApply "Hl2". iApply "Hl1".
-Qed. *)
-Abort.
-
-(* Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :
-  {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ vinsert off v vs }}}.
-Proof.
-  setoid_rewrite vec_to_list_insert. apply wp_store_offset.
-  eexists. by apply vlookup_lookup.
-Qed. *)
-
 Lemma wp_cmpxchg_suc_offset s E l off vs v' v1 v2 :
   vs !! off = Some v' →
   v' = v1 →
