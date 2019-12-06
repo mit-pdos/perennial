@@ -274,6 +274,31 @@ Proof.
   pose proof (Properties.word.unsigned_range i); lia.
 Qed.
 
+Lemma wp_slice_set s E v sl vs (i: u64) (x: val) :
+  {{{ is_slice v sl vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
+    SliceSet v #i x @ s; E
+  {{{ RET #(); is_slice v sl (<[int.nat i:=x]> vs) }}}.
+Proof.
+  iIntros (Φ) "[Hsl %] HΦ".
+  destruct sl as [ptr sz].
+  wp_lam.
+  wp_let.
+  wp_let.
+  wp_lam.
+  iDestruct "Hsl" as "[-> [Hptr %]]".
+  cbv [Slice.ptr Slice.sz] in *.
+  wp_pures.
+  replace (int.val i) with (Z.of_nat (int.nat i)).
+  - iApply (wp_store_offset with "Hptr"); auto.
+    iIntros "!> Hptr".
+    iApply "HΦ".
+    iApply is_slice_intro; iFrame.
+    iPureIntro.
+    rewrite insert_length; auto.
+  - rewrite Z2Nat.id; auto.
+    pose proof (Properties.word.unsigned_range i); lia.
+Qed.
+
 Lemma word_sru_0 width (word: Interface.word width) (ok: word.ok word)
       (x: word) s : int.val s = 0 -> word.sru x s = x.
 Proof.
