@@ -1,11 +1,19 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
 From iris.program_logic Require Export weakestpre.
-From Perennial.go_lang Require Export lang notation tactics lifting proofmode array.
-From Perennial.go_lang Require Import encoding.
+From Perennial.go_lang Require Export
+     lang notation array typing
+     tactics lifting proofmode.
+From Perennial.go_lang Require Import slice encoding.
 Import uPred.
 
 Set Default Proof Using "Type".
+
+Module Slice.
+  Record t :=
+    mk { ptr: loc;
+         sz: u64; }.
+End Slice.
 
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
@@ -53,7 +61,7 @@ Proof.
   iIntros (Φ) "Hl HΦ". unfold Store.
   wp_lam. wp_let. wp_bind (PrepareWrite _).
   iApply (wp_prepare_write with "Hl").
-  iModIntro. iIntros "Hl".
+  iIntros "!> Hl".
   wp_seq. by iApply (wp_finish_store with "Hl").
 Qed.
 Lemma twp_store s E l v v' :
@@ -108,6 +116,54 @@ Proof.
   eexists. by apply vlookup_lookup.
 Qed.
 
+Definition is_slice (v: val) (s: Slice.t) (vs: list val): iProp Σ :=
+  ⌜ v = (#s.(Slice.ptr), #s.(Slice.sz))%V ⌝ ∗
+  array s.(Slice.ptr) vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+
+Lemma is_slice_intro l (sz: u64) vs :
+  l ↦∗ vs ∗ ⌜length vs = int.nat sz⌝ -∗
+  is_slice (#l, #sz) (Slice.mk l sz) vs.
+Proof.
+  iIntros "H".
+  by iSplitR.
+Qed.
+
+(* TODO: order commands so primitives are opaque only after proofs *)
+Transparent raw_slice.
+
+Lemma wp_raw_slice s E l vs (sz: u64) t :
+  {{{ array l vs ∗ ⌜length vs = int.nat sz⌝ }}}
+    raw_slice t #l #sz @ s; E
+  {{{ sl v, RET v; is_slice v sl vs }}}.
+Proof.
+  iIntros (Φ) "Hslice HΦ".
+  rewrite /raw_slice.
+  wp_lam.
+  wp_let.
+  wp_pures.
+  iApply "HΦ".
+  by iApply is_slice_intro.
+Qed.
+
+Lemma wp_new_slice s E t (sz: u64) :
+  {{{ ⌜ 0 < int.val sz ⌝ }}}
+    NewSlice t #sz @ s; E
+  {{{ sl v, RET v; is_slice v sl (replicate (int.nat sz) (zero_val t)) }}}.
+Proof.
+  iIntros (Φ) "% HΦ".
+  wp_lam.
+  wp_bind (AllocN _ _).
+  iApply wp_allocN; eauto.
+  iIntros (l) "!> [Hl _Hmeta]".
+  wp_pures.
+  wp_lam.
+  wp_pures.
+  iApply "HΦ".
+  iApply is_slice_intro; iFrame.
+  iPureIntro.
+  rewrite replicate_length //.
+Qed.
+
 Lemma word_sru_0 width (word: Interface.word width) (ok: word.ok word)
       (x: word) s : int.val s = 0 -> word.sru x s = x.
 Proof.
@@ -134,7 +190,6 @@ Theorem u32_le_to_sru (x: u32) :
                    (cons #(u8_from_u32 (word.sru x (U32 (3%nat * 8))))
                          nil))).
 Proof.
-  Print u32_le.
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   repeat f_equal.
   - apply Properties.word.unsigned_inj.
@@ -156,15 +211,12 @@ Proof.
   wp_let.
   wp_pures.
   rewrite Zmod_small; last lia.
-  (* change (0 * 8) with 0.
-  rewrite word_sru_0; [ | simpl; rewrite Zmod_0_l; auto ]. *)
   wp_bind (Store _ _).
   change 0 with (Z.of_nat 0).
   iApply (wp_store_offset with "Hl").
   { apply lookup_lt_is_Some_2; lia. }
 
-  iModIntro.
-  iIntros "Hl".
+  iIntros "!> Hl".
   wp_seq.
   wp_pures.
   rewrite Zmod_small; last lia.
@@ -174,8 +226,7 @@ Proof.
   { apply lookup_lt_is_Some_2.
     rewrite ?insert_length; lia. }
 
-  iModIntro.
-  iIntros "Hl".
+  iIntros "!> Hl".
   wp_seq.
   wp_pures.
   rewrite Zmod_small; last lia.
@@ -185,8 +236,7 @@ Proof.
   { apply lookup_lt_is_Some_2.
     rewrite ?insert_length; lia. }
 
-  iModIntro.
-  iIntros "Hl".
+  iIntros "!> Hl".
   wp_seq.
   wp_pures.
   rewrite Zmod_small; last lia.
@@ -195,7 +245,7 @@ Proof.
   { apply lookup_lt_is_Some_2.
     rewrite ?insert_length; lia. }
 
-  iModIntro. iIntros "Hl".
+  iIntros "!> Hl".
   iApply "HΦ".
   rewrite u32_le_to_sru.
   do 5 (destruct vs; try (simpl in H; lia)).
