@@ -405,7 +405,10 @@ Proof.
     rewrite word.unsigned_add.
     unfold word.wrap.
     change (int.val 1) with 1.
-    rewrite Zmod_small; lia.
+    rewrite Zmod_small; try lia.
+    rewrite Z2Nat.inj_add; try lia.
+    change (Z.to_nat 1) with (1%nat).
+    lia.
   - rewrite take_replicate drop_replicate.
     rewrite Nat.min_l; last admit.
     { match goal with
