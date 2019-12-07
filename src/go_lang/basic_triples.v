@@ -311,6 +311,66 @@ Proof.
     change (word.add (word:=u64_instance.u64_word) (U64 0) (U64 1)) with (U64 1).
 Abort.
 
+Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = U64 0.
+Proof.
+Admitted.
+
+Lemma wp_memcpy_rec s E v dst vs1 src vs2 (n: u64) :
+  {{{ array dst vs1 ∗ array src vs2 ∗
+            ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
+    MemCpy_rec #dst #src #n @ s; E
+  {{{ RET #(); array dst (take (int.nat n) vs2) ∗ array src vs2 }}}.
+Proof.
+  iIntros (Φ) "(Hdst&Hsrc&(%&%)) HΦ".
+  iRevert (vs1 vs2 n dst src H H0) "Hdst Hsrc HΦ".
+  iLöb as "IH".
+  iIntros (vs1 vs2 n dst src Hvs1 Hvs2) "Hdst Hsrc HΦ".
+  wp_rec.
+  wp_let.
+  wp_let.
+  wp_pures.
+  destruct_with_eqn (bool_decide (#n = #0)); wp_if.
+  - apply bool_decide_eq_true in Heqb.
+    inversion Heqb; subst.
+    change (int.nat 0) with 0%nat.
+    iEval (rewrite firstn_O array_nil) in "HΦ" .
+    iApply "HΦ"; iFrame.
+  - apply bool_decide_eq_false in Heqb.
+    assert (n ≠ 0).
+    { congruence. }
+    destruct vs1.
+    { apply u64_nat_0 in Hvs1.
+      congruence. }
+    destruct vs2.
+    { assert (n = U64 0); subst; try congruence.
+      apply u64_nat_0.
+      simpl in *.
+      lia. }
+    iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
+    iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
+    wp_load.
+    wp_bind (Store _ _).
+    iApply (wp_store with "Hdst").
+    iIntros "!> Hdst".
+    wp_seq.
+    wp_pures.
+    wp_apply ("IH" $! vs1 vs2 with "[] [] [Hvs1] [Hvs2]");
+      iFrame;
+      try iPureIntro.
+    + admit.
+    + admit.
+    + iIntros "(Hdst'&Hsrc')".
+      iApply "HΦ".
+      rewrite array_cons; iFrame.
+      replace (take (int.nat n) (v1 :: vs2)) with
+          (v1 :: take (int.nat n - 1) vs2).
+      { replace (int.nat n - 1)%nat with (int.nat (word.sub n 1)).
+        { rewrite array_cons; iFrame. }
+        admit.
+      }
+      admit.
+Admitted.
+
 Lemma wp_slice_set s E v sl vs (i: u64) (x: val) :
   {{{ is_slice v sl vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
     SliceSet v #i x @ s; E
