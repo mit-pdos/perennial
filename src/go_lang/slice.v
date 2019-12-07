@@ -153,7 +153,7 @@ Qed.
 Definition SliceAppend: val :=
   λ: "s1" "x",
   let: "p" := AllocN (slice.len "s1" + #1) #() in
-  MemCpy "p" (slice.ptr "s1");;
+  MemCpy_rec "p" (slice.ptr "s1") (slice.len "s1");;
   ("p" +ₗ slice.len "s1") <- "x";;
   (* TODO: unsound, need to de-allocate s1.p *)
   ("p", slice.len "s1" + #1).

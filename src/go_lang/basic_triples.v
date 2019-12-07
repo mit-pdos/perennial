@@ -309,13 +309,13 @@ Proof.
     wp_seq.
     wp_pures.
     change (word.add (word:=u64_instance.u64_word) (U64 0) (U64 1)) with (U64 1).
-Abort.
+Admitted.
 
 Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = U64 0.
 Proof.
 Admitted.
 
-Lemma wp_memcpy_rec s E v dst vs1 src vs2 (n: u64) :
+Lemma wp_memcpy_rec s E dst vs1 src vs2 (n: u64) :
   {{{ array dst vs1 ∗ array src vs2 ∗
             ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
     MemCpy_rec #dst #src #n @ s; E
@@ -362,11 +362,99 @@ Proof.
     + iIntros "(Hdst'&Hsrc')".
       iApply "HΦ".
       rewrite array_cons; iFrame.
-      replace (take (int.nat n) (v1 :: vs2)) with
-          (v1 :: take (int.nat n - 1) vs2).
+      replace (take (int.nat n) (v0 :: vs2)) with
+          (v0 :: take (int.nat n - 1) vs2).
       { replace (int.nat n - 1)%nat with (int.nat (word.sub n 1)).
         { rewrite array_cons; iFrame. }
         admit.
+      }
+      admit.
+Admitted.
+
+Transparent SliceAppend.
+
+Lemma wp_slice_append s E v sl vs x :
+  {{{ is_slice v sl vs ∗ ⌜int.val sl.(Slice.sz) + 1 < 2^64⌝ }}}
+    SliceAppend v x @ s; E
+  {{{ v' sl', RET v'; is_slice v' sl' (vs ++ [x]) }}}.
+Proof.
+  iIntros (Φ) "[Hsl %] HΦ".
+  wp_lam.
+  wp_let.
+  iDestruct "Hsl" as "[-> [Hptr %]]".
+  pose proof (Properties.word.unsigned_range (Slice.sz sl)).
+  wp_lam.
+  wp_pures.
+  wp_bind (AllocN _ _).
+  iApply wp_allocN; auto.
+  {  rewrite word.unsigned_add.
+     unfold word.wrap.
+     change (int.val 1) with 1.
+     rewrite Zmod_small; lia. }
+  iIntros "!>".
+  iIntros (l) "[Halloc Hmeta]".
+  wp_let.
+  wp_lam.
+  wp_pures.
+  wp_lam.
+  wp_pures.
+  iDestruct (array_split (int.val (Slice.sz sl)) with "Halloc") as "[Halloc_sz Halloc1]".
+  - lia.
+  - rewrite replicate_length.
+    unfold int.nat.
+    rewrite word.unsigned_add.
+    unfold word.wrap.
+    change (int.val 1) with 1.
+    rewrite Zmod_small; lia.
+  - rewrite take_replicate drop_replicate.
+    rewrite Nat.min_l; last admit.
+    { match goal with
+      | |- context[replicate ?x] =>
+        match x with
+        | (_ - _)%nat => replace x with 1%nat
+        end
+      end.
+      { simpl.
+        rewrite array_singleton.
+        wp_apply (wp_memcpy_rec with "[$Halloc_sz $Hptr]").
+        { iPureIntro.
+          rewrite replicate_length.
+          replace (length vs).
+          intuition.
+          unfold int.nat.
+          lia.
+        }
+        iIntros "[Hvs Hsrc]".
+        rewrite firstn_all2; last lia.
+        wp_seq.
+        wp_lam.
+        wp_pures.
+        wp_bind (Store _ _).
+        wp_apply (wp_store with "Halloc1").
+        iIntros "Hlast".
+        wp_seq.
+        wp_lam.
+        wp_pures.
+        iApply "HΦ".
+        iApply is_slice_intro.
+        iSplitL "Hvs Hlast".
+        - rewrite array_app.
+          iFrame.
+          rewrite H0.
+          rewrite array_singleton.
+          rewrite Z2Nat.id; last lia; iFrame.
+        - iPureIntro.
+          rewrite app_length; simpl.
+          unfold int.nat.
+          rewrite word.unsigned_add.
+          change (int.val 1) with 1.
+          unfold word.wrap.
+          rewrite Zmod_small; last lia.
+          rewrite H0.
+          rewrite Z2Nat.inj_add; try lia.
+          change (Z.to_nat 1) with 1%nat.
+          unfold int.nat.
+          auto.
       }
       admit.
 Admitted.
