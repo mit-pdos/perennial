@@ -4,6 +4,7 @@ From iris.heap_lang Require Import proofmode notation.
 From iris.heap_lang Require Import spin_lock.
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
+From Perennial.heap_lang Require Import wpc_proofmode.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -76,27 +77,72 @@ Section proof.
      "v")%E.
 
   Lemma with_lock_spec K `{!LanguageCtx K} k γ Φ Φ' Φc (R Rcrash : iProp Σ) lk e:
+    to_val e = None →
     is_crash_lock (2 * (S k)) γ lk R Rcrash ∗
     (Φc ∧ (▷ R -∗ WPC e @ k; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φ' v ∧ Φc) ∗ R }} {{ Φc ∗ Rcrash }})) ∗
     (∀ v, Φ' v -∗ WPC (K (of_val v)) @ (2 * (S (S k)))%nat; ⊤; ∅ {{ Φ }} {{ Φc }}) ⊢
     WPC K (with_lock lk e) @  (2 * (S (S k)))%nat; ⊤; ∅ {{ Φ }} {{ Φc }}.
   Proof.
-    iIntros "(#Hcrash&Hwp&HK)".
+    iIntros (?) "(#Hcrash&Hwp&HK)".
     rewrite /is_crash_lock.
     iDestruct "Hcrash" as (??) "(#Hr&Hinv&His_lock)".
     iApply wpc_bind.
     rewrite /with_lock.
-    (* XXX: need tactics for wpc_bind *)
-    set (K' := [AppRCtx (λ: <>, let: "v" := e in release lk;; "v")]).
-    iPoseProof (wpc_bind (λ e, fill K' e) _ _ _ _ (acquire lk)) as "H".
-    simpl. iApply "H"; iClear "H".
+    wpc_bind (acquire lk).
     iApply wp_wpc_frame'.
-    iSplitR "Hwp"; [| iSplitR "Hwp"; [| iApply "Hwp"]].
+    iSplitR "Hwp HK"; [| iSplitR "Hwp"; [| iApply "Hwp"]].
     { iAlways; iIntros "($&_)". }
     iApply (spin_lock.acquire_spec with "His_lock").
     iNext. iIntros "(Hlocked&Hstaged) Hwp".
+    wpc_pure _.
+    { iDestruct "Hwp" as "($&_)". }
+    wpc_pure _.
+    { iDestruct "Hwp" as "($&_)". }
 
-    clear K'.
-    set (K' := [AppRCtx (λ: <>, let: "v" := e in release lk;; "v")]).
-  Abort.
+    wpc_bind e.
+
+    iApply (wpc_staged_invariant with "[Hwp HK Hlocked Hstaged]"); try iFrame.
+    { reflexivity. }
+    { set_solver+. }
+    { eauto. }
+    iFrame "Hinv".
+    iSplit.
+    { iDestruct "Hwp" as "($&_)". }
+    iIntros "HR". iDestruct "Hwp" as "(_&H)".
+    iSpecialize ("H" with "[$]").
+    iApply (wpc_strong_mono with "H"); eauto.
+    iSplit; last first.
+    { iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto. }
+    iIntros (?) "(H&?)". iModIntro. iFrame "Hr".
+    iFrame. iIntros "Hval".
+    iSplit; last first.
+    { iDestruct "H" as "(_&H)". eauto. }
+
+    wpc_pure _.
+    { iDestruct "H" as "(_&H)". eauto. }
+
+    wpc_pure _.
+    { iDestruct "H" as "(_&H)". eauto. }
+
+    wpc_bind (release _).
+    iApply wp_wpc_frame'.
+    iSplitR "H Hval Hlocked HK"; [| iSplitR "H"; [| iApply "H"]].
+    { iAlways; iIntros "(_&$)". }
+
+    iApply (release_spec with "[Hlocked His_lock Hval]").
+    { iFrame "His_lock". iFrame. }
+    iNext. iIntros "_ H".
+
+
+    wpc_pure _.
+    { iDestruct "H" as "(_&H)". eauto. }
+
+    wpc_pure _.
+    { iDestruct "H" as "(_&H)". eauto. }
+
+    iApply "HK".
+    { iDestruct "H" as "($&_)". }
+    { iDestruct "H" as "(_&$)". }
+  Qed.
+
 End proof.
