@@ -406,9 +406,7 @@ Proof.
     unfold word.wrap.
     change (int.val 1) with 1.
     rewrite Zmod_small.
-    { rewrite Z2Nat.inj_add; try lia.
-      change (Z.to_nat 1) with (1%nat).
-      lia. }
+    { rewrite Z2Nat.inj_add; change (Z.to_nat 1) with (1%nat); lia. }
     lia.
   - rewrite take_replicate drop_replicate.
     rewrite Nat.min_l; last admit.
