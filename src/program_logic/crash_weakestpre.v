@@ -669,6 +669,29 @@ Proof.
   - iIntros "?". iMod (fupd_intro_mask' _ ∅); first by set_solver+. by iApply HΦc.
 Qed.
 
+Lemma wp_wpc_frame' s E1 E2 e Φ Φc Φc' k:
+  □ (Φc' -∗ Φc) ∗
+  WP e @ s ; E1 {{ λ v, Φc' -∗ Φ v }} ∗ Φc' ⊢ WPC e @ s ; k ; E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "(#HΦc_imp&Hwp&HΦc)".
+  iApply (wpc_strong_mono' s s k k E1 E1 E2 E2 _ (λ v, Φc' ∗ (Φc' -∗ Φ v))%I _ (Φc' ∗ True)%I
+         with "[-]"); auto.
+  { iApply wpc_frame_l; iFrame.
+    iApply wp_wpc; eauto. }
+  iSplit.
+  - iIntros (?). rewrite wand_elim_r. iIntros; eauto.
+  - iIntros "(H&?)". iApply (fupd_mask_weaken); eauto. set_solver+.
+    iApply "HΦc_imp". eauto.
+Qed.
+
+Lemma wp_wpc_frame s E1 E2 e Φ Φc k:
+  WP e @ s ; E1 {{ λ v, Φc -∗ Φ v }} ∗ Φc ⊢ WPC e @ s ; k ; E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "(Hwp&Φc)".
+  iApply wp_wpc_frame'.
+  iFrame. eauto.
+Qed.
+
 (*
 Lemma wp_stuck_mono s1 s2 E e Φ :
   s1 ⊑ s2 → WP e @ s1; E {{ Φ }} ⊢ WP e @ s2; E {{ Φ }}.
@@ -743,35 +766,33 @@ End wpc.
 
 (** Proofmode class instances *)
 Section proofmode_classes.
-  Context `{!irisG Λ Σ}.
+  Context `{!irisG Λ Σ, !crashG Σ}.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : val Λ → iProp Σ.
 
-  (*
   Global Instance frame_wpc p s k E1 E2 e R Φ Ψ Φc Ψc :
     (∀ v, Frame p R (Φ v) (Ψ v)) →
      Frame p R Φc Ψc →
     Frame p R (WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}) (WPC e @ s; k; E1; E2 {{ Ψ }} {{ Ψc }}).
   Proof. rewrite /Frame=> HR HRc. rewrite wpc_frame_l. apply wpc_mono; [ apply HR | apply HRc ]. Qed.
 
-  Global Instance is_except_0_wpc s E1 E2 e Φ Φc : IsExcept0 (WPC e @ s; E1 ; E2 {{ Φ }} {{ Φc }}).
+  Global Instance is_except_0_wpc s k E1 E2 e Φ Φc : IsExcept0 (WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}).
   Proof. by rewrite /IsExcept0 -{2}fupd_wpc -except_0_fupd -fupd_intro. Qed.
 
-  Global Instance elim_modal_bupd_wpc p s E1 E2 e P Φ Φc:
-    ElimModal True p false (|==> P) P (WPC e @ s; E1; E2 {{ Φ }} {{ Φc }}) (WPC e @ s; E1; E2 {{ Φ }} {{ Φc }}).
+  Global Instance elim_modal_bupd_wpc p s k E1 E2 e P Φ Φc:
+    ElimModal True p false (|==> P) P (WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}) (WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}).
   Proof.
     by rewrite /ElimModal intuitionistically_if_elim
       (bupd_fupd E1) fupd_frame_r wand_elim_r fupd_wpc.
   Qed.
 
-  Global Instance elim_modal_fupd_wpc p s E1 E2 e P Φ Φc :
-    ElimModal True p false (|={E1}=> P) P (WPC e @ s; E1 ; E2 {{ Φ }} {{ Φc }})
-              (WPC e @ s; E1 ; E2 {{ Φ }} {{ Φc }}).
+  Global Instance elim_modal_fupd_wpc p s k E1 E2 e P Φ Φc :
+    ElimModal True p false (|={E1}=> P) P (WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }})
+              (WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}).
   Proof.
     by rewrite /ElimModal intuitionistically_if_elim
       fupd_frame_r wand_elim_r fupd_wpc.
   Qed.
-   *)
 
   (*
   Global Instance elim_modal_fupd_wp_atomic p s E1 E2 e P Φ :
