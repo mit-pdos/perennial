@@ -4,6 +4,8 @@ From Perennial.go_lang Require Import prelude.
 (* disk FFI *)
 From Perennial.go_lang Require Import ffi.disk_prelude.
 
+(* comments.go *)
+
 Module importantStruct.
   (* This struct is very important.
 
@@ -25,6 +27,8 @@ Definition doSubtleThings: val :=
   λ: <>,
     #().
 
+(* const.go *)
+
 Definition GlobalConstant : expr := #(str"foo").
 
 (* an untyped string *)
@@ -35,6 +39,8 @@ Definition TypedInt : expr := #32.
 Definition ConstWithArith : expr := #4 + #3 * TypedInt.
 
 Definition TypedInt32 : expr := #(U32 3).
+
+(* conversions.go *)
 
 Definition typedLiteral: val :=
   λ: <>,
@@ -58,6 +64,8 @@ Definition byteSliceToString: val :=
   λ: "p",
     let: "s" := Data.bytesToString "p" in
     "s".
+
+(* data_structures.go *)
 
 Definition atomicCreateStub: val :=
   λ: "dir" "fname" "data",
@@ -118,6 +126,8 @@ Definition getRandom: val :=
     let: "r" := Data.randomUint64 #() in
     "r".
 
+(* empty_functions.go *)
+
 Definition empty: val :=
   λ: <>,
     #().
@@ -125,6 +135,8 @@ Definition empty: val :=
 Definition emptyReturn: val :=
   λ: <>,
     #().
+
+(* encoding.go *)
 
 Module Enc.
   Definition S := struct.decl [
@@ -178,6 +190,8 @@ Definition Dec__UInt32: val :=
   λ: "d",
     UInt32Get (Dec__consume "d" #4).
 
+(* ints.go *)
+
 Definition useInts: val :=
   λ: "x" "y",
     let: "z" := ref (zero_val uint64T) in
@@ -192,6 +206,8 @@ Definition u32: ty := uint32T.
 Definition also_u32: ty := u32.
 
 Definition ConstWithAbbrevType : expr := #(U32 3).
+
+(* literals.go *)
 
 Module allTheLiterals.
   Definition S := struct.decl [
@@ -231,6 +247,8 @@ Definition oddLiterals: val :=
       "b" ::= #false
     ].
 
+(* log_debugging.go *)
+
 Definition ToBeDebugged: val :=
   λ: "x",
     (* log.Println("starting function") *)
@@ -242,6 +260,8 @@ Definition DoNothing: val :=
   λ: <>,
     (* log.Println("doing nothing") *)
     #().
+
+(* loops.go *)
 
 (* DoSomething is an impure function *)
 Definition DoSomething: val :=
@@ -279,15 +299,55 @@ Definition conditionalInLoop: val :=
         "i" <- !"i" + #1;;
         Continue)).
 
+Definition ImplicitLoopContinue: val :=
+  λ: <>,
+    let: "i" := ref #0 in
+    (for: (#true); (Skip) :=
+      (if: !"i" < #4
+      then "i" <- #0
+      else #());;
+      Continue).
+
+Definition nestedLoops: val :=
+  λ: <>,
+    let: "i" := ref #0 in
+    (for: (#true); (Skip) :=
+      let: "j" := ref #0 in
+      (for: (#true); (Skip) :=
+        (if: #true
+        then Break
+        else
+          "j" <- !"j" + #1;;
+          Continue));;
+      "i" <- !"i" + #1;;
+      Continue).
+
+Definition nestedGoStyleLoops: val :=
+  λ: <>,
+    let: "i" := ref #0 in
+    (for: (!"i" < #10); ("i" <- !"i" + #1) :=
+      let: "j" := ref #0 in
+      (for: (!"j" < !"i"); ("j" <- !"j" + #1) :=
+        (if: #true
+        then Break
+        else Continue));;
+      Continue).
+
+(* map_clear.go *)
+
 Definition clearMap: val :=
   λ: "m",
     MapClear "m".
+
+(* map_keyiter.go *)
 
 Definition IterateMapKeys: val :=
   λ: "m" "sum",
     MapIter "m" (λ: "k" <>,
       let: "oldSum" := !"sum" in
       "sum" <- "oldSum" + "k").
+
+(* multiple.go *)
 
 Definition returnTwo: val :=
   λ: "p",
@@ -302,9 +362,13 @@ Definition multipleVar: val :=
   λ: "x" "y",
     #().
 
+(* panic.go *)
+
 Definition PanicAtTheDisco: val :=
   λ: <>,
     Panic "disco".
+
+(* reassign.go *)
 
 Module composite.
   Definition S := struct.decl [
@@ -333,6 +397,8 @@ Definition ReassignVars: val :=
       "b" ::= !"x"
     ];;
     "x" <- composite.get "a" !"z".
+
+(* replicated_disk.go *)
 
 Module Block.
   Definition S := struct.decl [
@@ -412,6 +478,8 @@ Definition ReplicatedDiskRecover: val :=
         "a" <- !"a" + #1;;
         Continue)).
 
+(* slices.go *)
+
 Definition sliceOps: val :=
   λ: <>,
     let: "x" := NewSlice uint64T #10 in
@@ -448,6 +516,8 @@ End sliceOfThings.
 Definition sliceOfThings__getThingRef: val :=
   λ: "ts" "i",
     SliceRef (sliceOfThings.get "things" "ts") "i".
+
+(* spawn.go *)
 
 (* Skip is a placeholder for some impure code *)
 Definition Skip: val :=
@@ -486,9 +556,13 @@ Definition loopSpawn: val :=
       "dummy" <- ~ !"dummy";;
       Continue).
 
+(* strings.go *)
+
 Definition stringAppend: val :=
   λ: "s" "x",
     #(str"prefix ") + "s" + #(str" ") + uint64_to_string "x".
+
+(* struct_method.go *)
 
 Module C.
   Definition S := struct.decl [
@@ -529,6 +603,8 @@ Definition UseAddWithLiteral: val :=
       "y" ::= #3
     ]) #4 in
     "r".
+
+(* struct_pointers.go *)
 
 Module TwoInts.
   Definition S := struct.decl [
@@ -588,6 +664,8 @@ Definition S__negateC: val :=
   λ: "s",
     struct.storeF S.S "c" "s" (~ (struct.loadF S.S "c" "s")).
 
+(* synchronization.go *)
+
 (* DoSomeLocking uses the entire lock API *)
 Definition DoSomeLocking: val :=
   λ: "l",
@@ -602,6 +680,8 @@ Definition makeLock: val :=
   λ: <>,
     let: "l" := Data.newLock #() in
     DoSomeLocking "l".
+
+(* type_alias.go *)
 
 Definition u64: ty := uint64T.
 
