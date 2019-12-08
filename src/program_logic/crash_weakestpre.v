@@ -410,7 +410,7 @@ Proof.
     do 2 iNext.
     * rewrite wpc_unfold wp_unfold /wpc_pre /wp_pre.
       destruct (to_val e2) as [v2|] eqn:He2.
-      ** iFrame "Hσ". iSplitL "H". 
+      ** iFrame "Hσ". iSplitL "H".
          { iSplit.
            * iIntros. iMod "H" as "(?&_)". iFrame.
            * iIntros. iMod "H" as "(_&H)". iApply step_fupdN_inner_later; auto.
@@ -507,7 +507,7 @@ Lemma wpc_lift_step_fupd s k E E' Φ Φc e1 :
       (state_interp σ2 κs (length efs + n) ∗
        WPC e2 @ s; k; E; E' {{ Φ }} {{ Φc }} ∗
        [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})))
-  ∧ |={E}=> |={E', ∅}=> Φc)%I
+  ∧ |={E}=> ▷ |={E', ∅}=> Φc)%I
  ⊢ WPC e1 @ s; k; E; E' {{ Φ }} {{ Φc }}.
 Proof.
   rewrite wpc_unfold /wpc_pre=>->. iIntros "H".
@@ -538,7 +538,7 @@ Lemma wpc_lift_step s k E1 E2 Φ Φc e1 :
       state_interp σ2 κs (length efs + n) ∗
       WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }} ∗
       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})
-  ∧ Φc
+  ∧ ▷ Φc
   ⊢ WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (?) "H". iApply wpc_lift_step_fupd; [done|].
@@ -552,7 +552,7 @@ Qed.
 Lemma wpc_lift_pure_step_no_fork `{!Inhabited (state Λ)} s k E1 E1' E2 Φ Φc e1 :
   (∀ σ1, if s is NotStuck then reducible e1 σ1 else to_val e1 = None) →
   (∀ κ σ1 e2 σ2 efs, prim_step e1 σ1 κ e2 σ2 efs → κ = [] ∧ σ2 = σ1 ∧ efs = []) →
-  (|={E1,E1'}▷=> ∀ κ e2 efs σ, ⌜prim_step e1 σ κ e2 σ efs⌝ → WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ Φc
+  (|={E1,E1'}▷=> ∀ κ e2 efs σ, ⌜prim_step e1 σ κ e2 σ efs⌝ → WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
   ⊢ WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hsafe Hstep) "H". iApply wpc_lift_step.
@@ -572,7 +572,7 @@ Lemma wpc_lift_pure_det_step_no_fork `{!Inhabited (state Λ)} {s k E1 E1' E2 Φ 
   (∀ σ1, if s is NotStuck then reducible e1 σ1 else to_val e1 = None) →
   (∀ σ1 κ e2' σ2 efs', prim_step e1 σ1 κ e2' σ2 efs' →
     κ = [] ∧ σ2 = σ1 ∧ e2' = e2 ∧ efs' = []) →
-  (|={E1,E1'}▷=> WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ Φc
+  (|={E1,E1'}▷=> WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
   ⊢ WPC e1 @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (? Hpuredet) "H". iApply (wpc_lift_pure_step_no_fork s k E1 E1' E2); try done.
@@ -587,7 +587,7 @@ Qed.
 Lemma wpc_pure_step_fupd `{!Inhabited (state Λ)} s k E1 E2 e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
-  (|={E1,E1}▷=>^1 WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ Φc
+  (|={E1,E1}▷=>^1 WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
   ⊢ WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hexec Hφ) "Hwp". specialize (Hexec Hφ).
@@ -602,7 +602,7 @@ Qed.
 Lemma wpc_pure_step_later `{!Inhabited (state Λ)} s k E1 E2 e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
-  ▷^1 WPC e2 @ s; k; E1 ; E2 {{ Φ }} {{ Φc }} ∧ Φc
+  ▷^1 WPC e2 @ s; k; E1 ; E2 {{ Φ }} {{ Φc }} ∧ ▷^1 Φc
   ⊢ WPC e1 @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   intros Hexec ?. rewrite -wpc_pure_step_fupd //. clear Hexec.

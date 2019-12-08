@@ -8,6 +8,15 @@ From Perennial.heap_lang Require Import wpc_proofmode.
 Set Default Proof Using "Type".
 Import uPred.
 
+From iris.proofmode Require Import coq_tactics reduction.
+From iris.proofmode Require Export tactics.
+From iris.program_logic Require Export weakestpre total_weakestpre.
+From iris.program_logic Require Import atomic.
+From iris.heap_lang Require Export tactics lifting array.
+From iris.heap_lang Require Import notation.
+From Perennial.program_logic Require Import crash_weakestpre staged_invariant.
+From Perennial.heap_lang Require Import wpc_proofmode.
+
 Section proof.
   Context `{!heapG Σ, !lockG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
 
@@ -94,9 +103,7 @@ Section proof.
     { iAlways; iIntros "($&_)". }
     iApply (spin_lock.acquire_spec with "His_lock").
     iNext. iIntros "(Hlocked&Hstaged) Hwp".
-    wpc_pure _.
-    { iDestruct "Hwp" as "($&_)". }
-    wpc_pure _.
+    wpc_pures.
     { iDestruct "Hwp" as "($&_)". }
 
     wpc_bind e.
@@ -118,10 +125,7 @@ Section proof.
     iSplit; last first.
     { iDestruct "H" as "(_&H)". eauto. }
 
-    wpc_pure _.
-    { iDestruct "H" as "(_&H)". eauto. }
-
-    wpc_pure _.
+    wpc_pures.
     { iDestruct "H" as "(_&H)". eauto. }
 
     wpc_bind (release _).
@@ -133,16 +137,11 @@ Section proof.
     { iFrame "His_lock". iFrame. }
     iNext. iIntros "_ H".
 
-
-    wpc_pure _.
-    { iDestruct "H" as "(_&H)". eauto. }
-
-    wpc_pure _.
+    wpc_pures.
     { iDestruct "H" as "(_&H)". eauto. }
 
     iApply "HK".
     { iDestruct "H" as "($&_)". }
-    { iDestruct "H" as "(_&$)". }
   Qed.
 
 End proof.

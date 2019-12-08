@@ -25,14 +25,15 @@ Lemma tac_wpc_pure `{!heapG Σ, !crashG Σ} Δ Δ' s k E1 E2 e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_entails Δ Φc →
-  envs_entails Δ' (WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) →
+  envs_entails Δ' Φc →
+  (envs_entails Δ' Φc → envs_entails Δ' (WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }})) →
   envs_entails Δ (WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}).
 Proof.
-  rewrite envs_entails_eq=> ???? HΔ'.
+  rewrite envs_entails_eq=> ??? Hcrash HΔ'.
   rewrite -wpc_pure_step_later //. apply and_intro; auto.
   rewrite into_laterN_env_sound /=.
   rewrite HΔ' //.
+  rewrite into_laterN_env_sound /= -Hcrash //.
 Qed.
 
 Lemma tac_wpc_value `{!heapG Σ, !crashG Σ} Δ s k E1 E2 Φ Φc v :
@@ -51,9 +52,9 @@ Ltac wpc_expr_simpl := wpc_expr_eval simpl.
 Ltac wpc_value_head :=
   first [eapply tac_wpc_value ].
 
-Ltac wpc_finish :=
+Ltac wpc_finish H :=
   wpc_expr_simpl;      (* simplify occurences of subst/fill *)
-  try wpc_value_head;  (* in case we have reached a value, get rid of the WP *)
+  try (wpc_value_head; try apply H);  (* in case we have reached a value, get rid of the WP *)
   pm_prettify.         (* prettify ▷s caused by [MaybeIntoLaterNEnvs] and
                          λs caused by wp_value *)
 
@@ -70,7 +71,8 @@ for an [EIf _ _ _] in the expression, and reduce it.
 The use of [open_constr] in this tactic is essential. It will convert all holes
 (i.e. [_]s) into evars, that later get unified when an occurences is found
 (see [unify e' efoc] in the code below). *)
-Tactic Notation "wpc_pure" open_constr(efoc) :=
+
+Tactic Notation "wpc_pure" open_constr(efoc) simple_intropattern(H) :=
   iStartProof;
   lazymatch goal with
   | |- envs_entails _ (wpc ?s ?k ?E1 ?E2 ?e ?Q ?Qc) =>
@@ -81,20 +83,18 @@ Tactic Notation "wpc_pure" open_constr(efoc) :=
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |iSolveTC                       (* IntoLaters *)
-      |                               (* crash condition *)
-      |wpc_finish                      (* new goal *)
+      | try (apply H)                 (* crash condition, try to re-use existing proof *)
+      | first [ intros H || intros _]; wpc_finish H (* new goal *)
       ])
     || fail "wpc_pure: cannot find" efoc "in" e "or" efoc "is not a redex"
   | _ => fail "wpc_pure: not a 'wpc'"
   end.
 
-(* TODO: do this in one go, without [repeat]. *)
-(* XXX: for WPC, it is even more important to do this without [repeat], since we have to keep proving
-   the side condition otherwise... *)
+
 Ltac wpc_pures :=
   iStartProof;
-  repeat (wpc_pure _; []). (* The `;[]` makes sure that no side-condition
-                             magically spawns. *)
+  let Hcrash := fresh "Hcrash" in
+  wpc_pure _ Hcrash; [.. | repeat (wpc_pure _ Hcrash; []); clear Hcrash].
 
 Lemma tac_wpc_bind `{!heapG Σ, !crashG Σ} K Δ s k E1 E2 Φ Φc e f :
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
