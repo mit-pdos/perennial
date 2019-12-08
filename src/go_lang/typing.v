@@ -48,6 +48,22 @@ Class ext_types (ext:ext_op) :=
 Section go_lang.
   Context `{ext_ty: ext_types}.
 
+  Definition ShiftL (t:ty) (e1: expr) (e2: expr): expr :=
+    match t with
+    | uint64T => to_u64 e1 ≪ to_u64 e2
+    | uint32T => to_u32 e1 ≪ to_u32 e2
+    | byteT => to_u8 e1 ≪ to_u8 e2
+    | _ => #()
+    end.
+
+  Definition ShiftR (t:ty) (e1: expr) (e2: expr): expr :=
+    match t with
+    | uint64T => to_u64 e1 ≫ to_u64 e2
+    | uint32T => to_u32 e1 ≫ to_u32 e2
+    | byteT => to_u8 e1 ≫ to_u8 e2
+    | _ => #()
+    end.
+
   Fixpoint zero_val (t:ty) : val :=
     match t with
     | uint64T => #0
