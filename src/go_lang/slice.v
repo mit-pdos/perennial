@@ -165,11 +165,12 @@ Admitted.
 
 Definition SliceAppendSlice: val :=
   λ: "s1" "s2",
-  let: "p" := AllocN (slice.len "s1" + slice.len "s2") #() in
-  MemCpy "p" (slice.ptr "s1");;
-  MemCpy ("p" +ₗ slice.len "s2") (slice.ptr "s2");;
+  let: "new_sz" := slice.len "s1" + slice.len "s2" in
+  let: "p" := AllocN "new_sz" #() in
+  MemCpy "p" (slice.ptr "s1") (slice.len "s1");;
+  MemCpy ("p" +ₗ slice.len "s2") (slice.ptr "s2") "new_sz";;
   (* TODO: unsound, need to de-allocate s1.p *)
-  ("p", slice.len "s1" + slice.len "s2").
+  ("p", "new_sz").
 
 (* TODO: doesn't work since initial value is of wrong type *)
 Theorem SliceAppendSlice_t t : ⊢ SliceAppendSlice : (slice.T t -> slice.T t -> slice.T t).

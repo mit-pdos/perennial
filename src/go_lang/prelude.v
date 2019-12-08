@@ -17,8 +17,6 @@ Module Data.
     Axiom bytesToString: val.
     Axiom stringToBytes_t : ⊢ stringToBytes : (stringT -> slice.T byteT).
     Axiom bytesToString_t : ⊢ bytesToString : (slice.T byteT -> stringT).
-    Axiom sliceAppendSlice: val.
-    Axiom sliceAppendSlice_t: forall t, ⊢ sliceAppendSlice : (slice.T t -> slice.T t -> slice.T t).
     Definition randomUint64: val := λ: <>, #0.
     Theorem randomUint64_t: ⊢ randomUint64 : (unitT -> uint64T).
     Proof.
@@ -47,7 +45,7 @@ Module Data.
   End go_lang.
 End Data.
 
-Hint Resolve Data.stringToBytes_t Data.bytesToString_t Data.sliceAppendSlice_t : types.
+Hint Resolve Data.stringToBytes_t Data.bytesToString_t : types.
 
 Opaque Data.randomUint64.
 Hint Resolve Data.randomUint64_t : types.
