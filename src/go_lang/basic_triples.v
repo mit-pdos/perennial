@@ -448,9 +448,7 @@ Proof.
           unfold word.wrap.
           rewrite Zmod_small; last lia.
           rewrite H0.
-          rewrite Z2Nat.inj_add; try lia.
-          change (Z.to_nat 1) with 1%nat.
-          auto.
+          rewrite Z2Nat.inj_add; change (Z.to_nat 1) with 1%nat; lia.
       }
       admit.
 Admitted.
