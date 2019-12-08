@@ -744,6 +744,9 @@ Definition subst' (mx : binder) (v : val) : expr → expr :=
 Definition un_op_eval (op : un_op) (v : val) : option val :=
   match op, v with
   | NegOp, LitV (LitBool b) => Some $ LitV $ LitBool (negb b)
+  | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.not (word:=u64_instance.u64_word) n)
+  | NegOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.not (word:=u32_instance.u32_word) n)
+  | NegOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.not (word:=u8_instance.u8_word) n)
   | ToUInt64Op, LitV (LitInt v) => Some $ LitV $ LitInt v
   | ToUInt64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (u32_to_u64 v)
   | ToUInt64Op, LitV (LitByte v) => Some $ LitV $ LitInt (u8_to_u64 v)
@@ -753,7 +756,6 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | ToUInt8Op, LitV (LitInt v) => Some $ LitV $ LitByte (u8_from_u64 v)
   | ToUInt8Op, LitV (LitInt32 v) => Some $ LitV $ LitByte (u8_from_u32 v)
   | ToUInt8Op, LitV (LitByte v) => Some $ LitV $ LitInt32 (u8_to_u32 v)
-  (* | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (Word.wnot n) *)
   | _, _ => None
   end.
 

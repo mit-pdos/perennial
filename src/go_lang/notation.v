@@ -97,6 +97,7 @@ Notation "e1 - e2" := (BinOp MinusOp e1%E e2%E) : expr_scope.
 Notation "e1 * e2" := (BinOp MultOp e1%E e2%E) : expr_scope.
 Notation "e1 ∥ e2" := (BinOp OrOp e1%E e2%E) (at level 40) : expr_scope.
 Notation "e1 && e2" := (BinOp AndOp e1%E e2%E) : expr_scope.
+Notation "e1 ^^ e2" := (BinOp XorOp e1%E e2%E) (at level 40) : expr_scope.
 Notation "e1 `quot` e2" := (BinOp QuotOp e1%E e2%E) : expr_scope.
 Notation "e1 `rem` e2" := (BinOp RemOp e1%E e2%E) : expr_scope.
 Notation "e1 ≪ e2" := (BinOp ShiftLOp e1%E e2%E) : expr_scope.
