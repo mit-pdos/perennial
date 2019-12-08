@@ -203,7 +203,7 @@ Proof.
   iFrame.
 Qed.
 
-Opaque word.unsigned word.ltu word.sub u64_instance.u64_word.
+Opaque word.unsigned word.ltu word.sub.
 
 (* TODO: for now we drop the remainder of the slice on the floor *)
 Lemma wp_subslice s E v sl vs (n1 n2: u64) :
@@ -219,9 +219,8 @@ Proof.
   iDestruct "Hsl" as "[-> [Hsl %]]".
   wp_lam.
   wp_pures.
-  destruct_with_eqn (word.ltu (word:=u64_instance.u64_word)
-                              (Slice.sz sl)
-                              (word.sub (word:=u64_instance.u64_word) n2 n1));
+  destruct_with_eqn (word.ltu (Slice.sz sl)
+                              (word.sub n2 n1));
     wp_if.
   - rewrite word.unsigned_ltu word.unsigned_sub in Heqb.
     admit. (* TODO: need to derive a contradiction *)
@@ -233,7 +232,7 @@ Proof.
     iSplitL.
     + iDestruct (array_split (int.val n1) with "Hsl") as "[Hsl1 Hsl2]".
       * pose proof (Properties.word.unsigned_range n1); lia.
-      * unfold int.nat in *; lia.
+      * lia.
       * iDestruct (array_split (int.val n1 - int.val n2) with "Hsl2") as "[Hsl2 Hsl3]".
         -- admit.
         -- rewrite drop_length.
@@ -244,7 +243,6 @@ Proof.
           { iFrame. }
           admit.
     + iPureIntro.
-      unfold int.nat.
       rewrite Nat.min_l.
       * admit.
       * admit.
@@ -290,7 +288,7 @@ Proof.
   iIntros (vs1 vs2) "(%&%) Hdst Hsrc HΦ".
   wp_rec.
   wp_pures.
-  destruct_with_eqn (word.ltu (word:=u64_instance.u64_word) (U64 0) n); wp_if.
+  destruct_with_eqn (word.ltu (U64 0) n); wp_if.
   - wp_pures.
     destruct vs2.
     { admit. }
@@ -308,7 +306,7 @@ Proof.
     iIntros "!> Hdst".
     wp_seq.
     wp_pures.
-    change (word.add (word:=u64_instance.u64_word) (U64 0) (U64 1)) with (U64 1).
+    change (word.add (U64 0) (U64 1)) with (U64 1).
 Admitted.
 
 Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = U64 0.
@@ -401,7 +399,6 @@ Proof.
   iDestruct (array_split (int.val (Slice.sz sl)) with "Halloc") as "[Halloc_sz Halloc1]".
   - lia.
   - rewrite replicate_length.
-    unfold int.nat.
     rewrite word.unsigned_add.
     unfold word.wrap.
     change (int.val 1) with 1.
@@ -423,7 +420,6 @@ Proof.
           rewrite replicate_length.
           replace (length vs).
           intuition.
-          unfold int.nat.
           lia.
         }
         iIntros "[Hvs Hsrc]".
@@ -447,7 +443,6 @@ Proof.
           rewrite Z2Nat.id; last lia; iFrame.
         - iPureIntro.
           rewrite app_length; simpl.
-          unfold int.nat.
           rewrite word.unsigned_add.
           change (int.val 1) with 1.
           unfold word.wrap.
@@ -455,7 +450,6 @@ Proof.
           rewrite H0.
           rewrite Z2Nat.inj_add; try lia.
           change (Z.to_nat 1) with 1%nat.
-          unfold int.nat.
           auto.
       }
       admit.
@@ -479,6 +473,7 @@ Proof.
   - iApply (wp_store_offset with "Hptr"); auto.
     iIntros "!> Hptr".
     iApply "HΦ".
+    rewrite u64_Z_through_nat.
     iApply is_slice_intro; iFrame.
     iPureIntro.
     rewrite insert_length; auto.
@@ -500,9 +495,6 @@ Proof.
   - rewrite H.
     apply word.width_pos.
 Qed.
-
-Canonical Structure u32_instance.u32_word.
-Canonical Structure u8_instance.u8_word.
 
 Theorem u32_le_to_sru (x: u32) :
   (λ (b:byte), #b) <$> u32_le x =

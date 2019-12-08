@@ -6,9 +6,9 @@ From coqutil.Word Require Import Properties LittleEndian.
 
 Open Scope Z_scope.
 
-Record u64 := Word64 { u64_car :> Naive.word64 }.
-Record u32 := Word32 { u32_car :> Naive.word32 }.
-Record byte := Word8 { u8_car :> Naive.word8 }.
+Record u64_rep := Word64 { u64_car : Naive.word64 }.
+Record u32_rep := Word32 { u32_car : Naive.word32 }.
+Record u8_rep := Word8 { u8_car : Naive.word8 }.
 
 Definition width64_ok : 0 < 64 := eq_refl.
 Definition width32_ok : 0 < 32 := eq_refl.
@@ -18,49 +18,49 @@ Hint Resolve width64_ok width32_ok width8_ok : typeclass_instances.
 
 Opaque Naive.word.
 
+(* this instance is named u64 because we always refer to the type as u64.(rep),
+where the rep is implicitly inserted since it's a word >-> Sortclass
+coercion.
+
+(and the same for u32 and u8)
+ *)
+
 Module u64_instance.
   Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word64 (f w)) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word64 (f w1 w2)) (at level 10, only parsing).
-  Instance u64_word : word 64 :=
+  Notation "'lift1' f" := (fun w => Word64 (f w.(u64_car))) (at level 10, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word64 (f w1.(u64_car) w2.(u64_car))) (at level 10, only parsing).
+  Instance u64 : word 64 :=
     {|
-      rep := u64;
-      unsigned := unsigned;
-      signed := signed;
+      rep := u64_rep;
+      unsigned w := unsigned w.(u64_car);
+      signed w := signed (w.(u64_car));
       of_Z z := Word64 (of_Z z);
-
       add := lift2 add;
       sub := lift2 sub;
       opp := lift1 opp;
-
       or := lift2 or;
       and := lift2 and;
       xor := lift2 xor;
       not := lift1 not;
       ndn := lift2 ndn;
-
       mul := lift2 mul;
       mulhss := lift2 mulhss;
       mulhsu := lift2 mulhsu;
       mulhuu := lift2 mulhuu;
-
       divu := lift2 divu;
       divs := lift2 divs;
       modu := lift2 modu;
       mods := lift2 mods;
-
       slu := lift2 slu;
       sru := lift2 sru;
       srs := lift2 srs;
-
-      eqb w1 w2 := eqb w1 w2;
-      ltu w1 w2 := ltu w1 w2;
-      lts w1 w2 := lts w1 w2;
-
+      eqb w1 w2 := eqb w1.(u64_car) w2.(u64_car);
+      ltu w1 w2 := ltu w1.(u64_car) w2.(u64_car);
+      lts w1 w2 := lts w1.(u64_car) w2.(u64_car);
       sextend width' := lift1 (sextend width');
     |}.
 
-  Global Instance u64_word_ok : word.ok u64_word.
+  Global Instance u64_word_ok : word.ok u64.
   Proof.
     destruct (_ : word.ok (Naive.word 64)).
     constructor; simpl; eauto.
@@ -69,103 +69,88 @@ Module u64_instance.
   Qed.
 
 End u64_instance.
-Import u64_instance.
 
 Module u32_instance.
   Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word32 (f w)) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word32 (f w1 w2)) (at level 10, only parsing).
-  Instance u32_word : word 32 :=
+  Notation "'lift1' f" := (fun w => Word32 (f w.(u32_car))) (at level 10, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word32 (f w1.(u32_car) w2.(u32_car))) (at level 10, only parsing).
+  Instance u32 : word 32 :=
     {|
-      rep := u32;
-      unsigned := unsigned;
-      signed := signed;
+      rep := u32_rep;
+      unsigned w := unsigned w.(u32_car);
+      signed w := signed (w.(u32_car));
       of_Z z := Word32 (of_Z z);
-
       add := lift2 add;
       sub := lift2 sub;
       opp := lift1 opp;
-
       or := lift2 or;
       and := lift2 and;
       xor := lift2 xor;
       not := lift1 not;
       ndn := lift2 ndn;
-
       mul := lift2 mul;
       mulhss := lift2 mulhss;
       mulhsu := lift2 mulhsu;
       mulhuu := lift2 mulhuu;
-
       divu := lift2 divu;
       divs := lift2 divs;
       modu := lift2 modu;
       mods := lift2 mods;
-
       slu := lift2 slu;
       sru := lift2 sru;
       srs := lift2 srs;
-
-      eqb w1 w2 := eqb w1 w2;
-      ltu w1 w2 := ltu w1 w2;
-      lts w1 w2 := lts w1 w2;
-
+      eqb w1 w2 := eqb w1.(u32_car) w2.(u32_car);
+      ltu w1 w2 := ltu w1.(u32_car) w2.(u32_car);
+      lts w1 w2 := lts w1.(u32_car) w2.(u32_car);
       sextend width' := lift1 (sextend width');
     |}.
 
-  Global Instance u32_word_ok : word.ok u32_word.
+  Global Instance u32_word_ok : word.ok u32.
   Proof.
     destruct (_ : word.ok (Naive.word 32)).
     constructor; simpl; eauto.
     - intros []; simpl.
       rewrite of_Z_unsigned; auto.
   Qed.
+
 End u32_instance.
-Import u32_instance.
 
 Module u8_instance.
   Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word8 (f w)) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word8 (f w1 w2)) (at level 10, only parsing).
-  Instance u8_word : word 8 :=
+  Notation "'lift1' f" := (fun w => Word8 (f w.(u8_car))) (at level 10, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word8 (f w1.(u8_car) w2.(u8_car))) (at level 10, only parsing).
+  Instance u8 : word 8 :=
     {|
-      rep := byte;
-      unsigned := unsigned;
-      signed := signed;
+      rep := u8_rep;
+      unsigned w := unsigned w.(u8_car);
+      signed w := signed (w.(u8_car));
       of_Z z := Word8 (of_Z z);
-
       add := lift2 add;
       sub := lift2 sub;
       opp := lift1 opp;
-
       or := lift2 or;
       and := lift2 and;
       xor := lift2 xor;
       not := lift1 not;
       ndn := lift2 ndn;
-
       mul := lift2 mul;
       mulhss := lift2 mulhss;
       mulhsu := lift2 mulhsu;
       mulhuu := lift2 mulhuu;
-
       divu := lift2 divu;
       divs := lift2 divs;
       modu := lift2 modu;
       mods := lift2 mods;
-
       slu := lift2 slu;
       sru := lift2 sru;
       srs := lift2 srs;
-
-      eqb w1 w2 := eqb w1 w2;
-      ltu w1 w2 := ltu w1 w2;
-      lts w1 w2 := lts w1 w2;
-
+      eqb w1 w2 := eqb w1.(u8_car) w2.(u8_car);
+      ltu w1 w2 := ltu w1.(u8_car) w2.(u8_car);
+      lts w1 w2 := lts w1.(u8_car) w2.(u8_car);
       sextend width' := lift1 (sextend width');
     |}.
 
-  Global Instance u8_word_ok : word.ok u8_word.
+  Global Instance u8_word_ok : word.ok u8.
   Proof.
     destruct (_ : word.ok (Naive.word 8)).
     constructor; simpl; eauto.
@@ -174,17 +159,23 @@ Module u8_instance.
   Qed.
 
 End u8_instance.
-Import u8_instance.
 
-(* does this make sense? *)
-(*
-Canonical Structure u64_word.
-Canonical Structure u32_word.
-*)
+Global Opaque u64_instance.u64 u32_instance.u32 u8_instance.u8.
 
-Definition U64 (x:Z) : u64 := word.of_Z (word:=u64_word) x.
-Definition U32 (x:Z) : u32 := word.of_Z (word:=u32_word) x.
-Definition U8 (x:Z) : byte := word.of_Z (word:=u8_word) x.
+(* these are identity coercions to make notation.v work out (this is still black
+magic to me) *)
+
+Global SubClass u64 := @word.rep _ u64_instance.u64.
+Global SubClass u32 := @word.rep _ u32_instance.u32.
+Global SubClass u8 := @word.rep _ u8_instance.u8.
+
+(* TODO: ideally this is rarely or never used, but it's useful for backwards
+compatibility while we're still experimenting *)
+Notation byte := u8 (only parsing).
+
+Definition U64 (x:Z) : u64 := word.of_Z x.
+Definition U32 (x:Z) : u32 := word.of_Z x.
+Definition U8 (x:Z)  : u8  := word.of_Z x.
 
 Instance word_eq_dec {width} (word: word width) {word_ok: word.ok word} : EqDecision word.
 Proof.
@@ -194,14 +185,14 @@ Proof.
     [ left | right]; inversion H; auto.
 Defined.
 
-Instance u64_eq_dec : EqDecision u64 := word_eq_dec u64_word.
-Instance u32_eq_dec : EqDecision u32 := word_eq_dec u32_word.
-Instance u8_eq_dec : EqDecision byte := word_eq_dec u8_word.
+Instance u64_eq_dec : EqDecision u64 := _.
+Instance u32_eq_dec : EqDecision u32 := _.
+Instance u8_eq_dec : EqDecision u8 := _.
 
 Instance byte_eq_dec : EqDecision byte.
 Proof. solve_decision. Defined.
 
-Instance word_countable {width} (word: word.word width) {word_ok: word.ok word} : Countable word.
+Instance word_countable `(word: Interface.word width) {word_ok: word.ok word} : Countable word.
 Proof.
   apply (inj_countable'
            word.unsigned
@@ -209,34 +200,26 @@ Proof.
   by rewrite word.of_Z_unsigned.
 Qed.
 
-Instance u64_countable : Countable u64.
-Proof. apply (word_countable u64_word). Qed.
-
-Instance u32_countable : Countable u32.
-Proof. apply (word_countable u32_word). Qed.
-
-Instance u8_countable : Countable byte.
-Proof. apply (word_countable u8_word). Qed.
+Instance u64_countable : Countable u64 := _.
+Instance u32_countable : Countable u32 := _.
+Instance u8_countable : Countable byte := _.
 
 (* int and the u64_through* theorems are for backwards compatibility *)
 
 Module int.
   Notation val := word.unsigned.
 
-  Definition nat {width} {word: word.word width} (x: word) :=
-    Z.to_nat (word.unsigned x).
+  Notation nat x := (Z.to_nat (word.unsigned x)).
 End int.
 
 Theorem u64_Z_through_nat (x:u64) : Z.of_nat (int.nat x) = int.val x.
 Proof.
-  unfold int.nat; intros.
   rewrite Z2Nat.id; auto.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
 Theorem u64_nat_through_Z (x:u64) : Z.to_nat (int.val x) = int.nat x.
 Proof.
-  unfold int.nat; intros.
   reflexivity.
 Qed.
 
@@ -250,23 +233,29 @@ Definition u32_from_u64 (x:u64) : u32 := U32 (int.val x).
 Definition u8_from_u64 (x:u64) : byte := U8 (int.val x).
 Definition u8_from_u32 (x:u32) : byte := U8 (int.val x).
 
+Theorem wrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
+  0 <= x < 2^width ->
+  word.wrap x = x.
+Proof.
+  unfold word.wrap; intros.
+  rewrite Zmod_small; auto.
+Qed.
+
 Theorem u32_to_u64_val x : int.val (u32_to_u64 x) = int.val x.
 Proof.
-  simpl.
+  unfold u32_to_u64, U64.
   rewrite word.unsigned_of_Z.
-  unfold word.wrap.
-  pose proof (word.unsigned_range x).
-  rewrite Z.mod_small by lia; auto.
+  rewrite wrap_small; auto.
+  pose proof (word.unsigned_range x); lia.
 Qed.
 
 Theorem u32_from_u64_val (x: u64) : int.val x < 2^32 ->
                                     int.val (u32_from_u64 x) = int.val x.
 Proof.
-  simpl; intros.
+  unfold u32_from_u64, U32; intros.
   rewrite word.unsigned_of_Z.
-  unfold word.wrap.
-  pose proof (word.unsigned_range x).
-  rewrite Z.mod_small by lia; auto.
+  rewrite wrap_small; auto.
+  pose proof (word.unsigned_range x); lia.
 Qed.
 
 Theorem tuple_to_list_length A n (t: tuple A n) :
@@ -282,15 +271,14 @@ Notation u32_bytes := 4%nat (only parsing).
 (** 64-bit encoding *)
 Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x.(u64_car) in
-  let t := split (byte:=Naive.word8) u64_bytes n in
-  let words := tuple.to_list t in
-  map Word8 words.
+  let t := split (byte:=u8_instance.u8) u64_bytes n in
+  tuple.to_list t.
 
 Definition le_to_u64 (l: list byte) : u64.
 Proof.
   refine (Word64 (word.of_Z _)).
-  set (t := tuple.of_list (map u8_car l)).
-  exact (combine (byte:=Naive.word8) _ t).
+  set (t := tuple.of_list l).
+  exact (combine (byte:=u8_instance.u8) _ t).
 Defined.
 
 Theorem u64_le_length x : length (u64_le x) = u64_bytes.
@@ -315,7 +303,6 @@ Proof.
   unfold le_to_u64, u64_le.
   f_equal.
   cbv [u64_car].
-  rewrite map_map, map_id.
   rewrite tuple_of_to_list_u64.
   rewrite combine_split.
   change (u64_bytes%nat * 8) with 64.
@@ -328,15 +315,14 @@ Qed.
 (** 32-bit encoding *)
 Definition u32_le (x: u32) : list byte :=
   let n := word.unsigned x.(u32_car) in
-  let t := split (byte:=Naive.word8) u32_bytes n in
-  let words := tuple.to_list t in
-  map Word8 words.
+  let t := split (byte:=u8_instance.u8) u32_bytes n in
+  tuple.to_list t.
 
 Definition le_to_u32 (l: list byte) : u32.
 Proof.
   refine (Word32 (word.of_Z _)).
-  set (t := tuple.of_list (map u8_car l)).
-  exact (combine (byte:=Naive.word8) _ t).
+  set (t := tuple.of_list l).
+  exact (combine (byte:=u8_instance.u8) _ t).
 Defined.
 
 Theorem u32_le_length x : length (u32_le x) = u32_bytes.
@@ -361,7 +347,6 @@ Proof.
   unfold le_to_u32, u32_le.
   f_equal.
   cbv [u32_car].
-  rewrite map_map, map_id.
   rewrite tuple_of_to_list_u32.
   rewrite combine_split.
   change (u32_bytes%nat * 8) with 32.

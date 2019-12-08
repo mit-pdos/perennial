@@ -306,7 +306,6 @@ Proof.
   { apply heap_array_map_disjoint.
     rewrite map_length replicate_length u64_Z_through_nat; auto with lia. }
   iModIntro; iSplit; first done.
-  rewrite u64_nat_through_Z.
   iFrame "Hσ Hκs". iApply "HΦ".
   iApply big_sepL_sep. iSplitL "Hl".
   - by iApply heap_array_to_seq_mapsto.
@@ -328,7 +327,6 @@ Proof.
   { apply heap_array_map_disjoint.
     rewrite map_length replicate_length u64_Z_through_nat; auto with lia. }
   iModIntro; do 2 (iSplit; first done).
-  rewrite u64_nat_through_Z.
   iFrame "Hσ Hκs". iApply "HΦ".
   iApply big_sepL_sep. iSplitL "Hl".
   - by iApply heap_array_to_seq_mapsto.

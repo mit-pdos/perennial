@@ -87,7 +87,7 @@ with anything. This is useful for erasure proofs: if we erased things to unit,
 behavior. So we erase to the poison value instead, making sure that no legal
 comparisons could be affected. *)
 Inductive base_lit : Type :=
-  | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : byte) | LitString (s : string) | LitUnit | LitPoison
+  | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : u8) | LitString (s : string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
   | NegOp | MinusUnOp | ToUInt64Op | ToUInt32Op | ToUInt8Op.
@@ -744,9 +744,9 @@ Definition subst' (mx : binder) (v : val) : expr → expr :=
 Definition un_op_eval (op : un_op) (v : val) : option val :=
   match op, v with
   | NegOp, LitV (LitBool b) => Some $ LitV $ LitBool (negb b)
-  | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.not (word:=u64_instance.u64_word) n)
-  | NegOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.not (word:=u32_instance.u32_word) n)
-  | NegOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.not (word:=u8_instance.u8_word) n)
+  | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.not n)
+  | NegOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.not n)
+  | NegOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.not n)
   | ToUInt64Op, LitV (LitInt v) => Some $ LitV $ LitInt v
   | ToUInt64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (u32_to_u64 v)
   | ToUInt64Op, LitV (LitByte v) => Some $ LitV $ LitInt (u8_to_u64 v)
@@ -809,16 +809,19 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
       None
   else
     match v1, v2 with
-    | LitV (LitInt n1), LitV (LitInt n2) => LitV <$> ((LitInt <$> bin_op_eval_word op (word:=u64_instance.u64_word) n1 n2)
-                                                       ∪ (LitBool <$> bin_op_eval_compare op (word:=u64_instance.u64_word) n1 n2))
-    | LitV (LitInt32 n1), LitV (LitInt32 n2) => LitV <$> ((LitInt32 <$> bin_op_eval_word op (word:=u32_instance.u32_word) n1 n2)
-                                                       ∪ (LitBool <$> bin_op_eval_compare op (word:=u32_instance.u32_word) n1 n2))
-    | LitV (LitByte n1), LitV (LitByte n2) => LitV <$> ((LitByte <$> bin_op_eval_word op (word:=u8_instance.u8_word) n1 n2)
-                                                       ∪ (LitBool <$> bin_op_eval_compare op (word:=u8_instance.u8_word) n1 n2))
+    | LitV (LitInt n1), LitV (LitInt n2) =>
+      LitV <$> ((LitInt <$> bin_op_eval_word op n1 n2)
+                  ∪ (LitBool <$> bin_op_eval_compare op n1 n2))
+    | LitV (LitInt32 n1), LitV (LitInt32 n2) =>
+      LitV <$> ((LitInt32 <$> bin_op_eval_word op n1 n2)
+                  ∪ (LitBool <$> bin_op_eval_compare op n1 n2))
+    | LitV (LitByte n1), LitV (LitByte n2) =>
+      LitV <$> ((LitByte <$> bin_op_eval_word op n1 n2)
+                  ∪ (LitBool <$> bin_op_eval_compare op n1 n2))
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
     | LitV (LitLoc l), LitV (LitInt off) => if decide (op = OffsetOp)
-                                           then Some $ LitV $ LitLoc (l +ₗ int.val off)
+                                           then Some $ LitV $ LitLoc (l +ₗ int.val (off: u64))
                                            else None
     | _, _ => None
     end.
