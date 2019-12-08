@@ -74,7 +74,7 @@ Definition atomicCreateStub: val :=
 Definition useSlice: val :=
   λ: <>,
     let: "s" := NewSlice byteT #1 in
-    let: "s1" := Data.sliceAppendSlice "s" "s" in
+    let: "s1" := SliceAppendSlice "s" "s" in
     atomicCreateStub #(str"dir") #(str"file") "s1".
 
 Definition useSliceIndexing: val :=

@@ -133,7 +133,7 @@ Definition readTableIndex: val :=
         (if: slice.len "p" = #0
         then Break
         else
-          let: "newBuf" := Data.sliceAppendSlice (lazyFileBuf.get "next" !"buf") "p" in
+          let: "newBuf" := SliceAppendSlice (lazyFileBuf.get "next" !"buf") "p" in
           "buf" <- struct.mk lazyFileBuf.S [
             "offset" ::= lazyFileBuf.get "offset" !"buf";
             "next" ::= "newBuf"
@@ -166,7 +166,7 @@ Definition readValue: val :=
     (if: "haveBytes" < "totalBytes"
     then
       let: "buf2" := FS.readAt "f" ("off" + #512) ("totalBytes" - "haveBytes") in
-      let: "newBuf" := Data.sliceAppendSlice "buf" "buf2" in
+      let: "newBuf" := SliceAppendSlice "buf" "buf2" in
       "newBuf"
     else SliceTake "buf" "totalBytes").
 
@@ -204,7 +204,7 @@ Definition bufFlush: val :=
   λ: "f",
     let: "buf" := !(bufFile.get "buf" "f") in
     (if: slice.len "buf" = #0
-    then "tt"
+    then #()
     else
       FS.append (bufFile.get "file" "f") "buf";;
       bufFile.get "buf" "f" <- slice.nil).
@@ -212,7 +212,7 @@ Definition bufFlush: val :=
 Definition bufAppend: val :=
   λ: "f" "p",
     let: "buf" := !(bufFile.get "buf" "f") in
-    let: "buf2" := Data.sliceAppendSlice "buf" "p" in
+    let: "buf2" := SliceAppendSlice "buf" "p" in
     bufFile.get "buf" "f" <- "buf2".
 
 Definition bufClose: val :=
@@ -268,14 +268,14 @@ Definition EncodeUInt64: val :=
   λ: "x" "p",
     let: "tmp" := NewSlice byteT #8 in
     UInt64Put "tmp" "x";;
-    let: "p2" := Data.sliceAppendSlice "p" "tmp" in
+    let: "p2" := SliceAppendSlice "p" "tmp" in
     "p2".
 
 (* EncodeSlice is an Encoder([]byte) *)
 Definition EncodeSlice: val :=
   λ: "data" "p",
     let: "p2" := EncodeUInt64 (slice.len "data") "p" in
-    let: "p3" := Data.sliceAppendSlice "p2" "data" in
+    let: "p3" := SliceAppendSlice "p2" "data" in
     "p3".
 
 Definition tablePut: val :=
@@ -422,7 +422,7 @@ Definition tablePutOldTable: val :=
         (if: slice.len "p" = #0
         then Break
         else
-          let: "newBuf" := Data.sliceAppendSlice (lazyFileBuf.get "next" !"buf") "p" in
+          let: "newBuf" := SliceAppendSlice (lazyFileBuf.get "next" !"buf") "p" in
           "buf" <- struct.mk lazyFileBuf.S [
             "offset" ::= lazyFileBuf.get "offset" !"buf";
             "next" ::= "newBuf"
@@ -487,10 +487,10 @@ Definition recoverManifest: val :=
 Definition deleteOtherFile: val :=
   λ: "name" "tableName",
     (if: "name" = "tableName"
-    then "tt"
+    then #()
     else
       (if: "name" = #(str"manifest")
-      then "tt"
+      then #()
       else FS.delete #(str"db") "name")).
 
 Definition deleteOtherFiles: val :=

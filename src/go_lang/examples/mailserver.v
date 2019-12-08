@@ -14,7 +14,6 @@ Module partialFile.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End partialFile.
 
@@ -37,7 +36,7 @@ Definition readMessage: val :=
     ]) in
     (for: (#true); (Skip) :=
       let: "buf" := FS.readAt "f" (partialFile.get "off" !"pf") #512 in
-      let: "newData" := Data.sliceAppendSlice (partialFile.get "data" !"pf") "buf" in
+      let: "newData" := SliceAppendSlice (partialFile.get "data" !"pf") "buf" in
       (if: slice.len "buf" < #512
       then
         "fileContents" <- "newData";;
@@ -63,7 +62,6 @@ Module Message.
   Section fields.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
-    Definition loadF := struct.loadF S.
   End fields.
 End Message.
 
