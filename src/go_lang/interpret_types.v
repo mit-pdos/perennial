@@ -66,6 +66,27 @@ Definition StateT_bind {Σ: Type} M (mf: FMap M) (mj: MJoin M) (mb: MBind M) : M
    let sf := StateT_fmap M mf in
   (fun _ _ f a => mjoin (f <$> a))).
 
+Lemma runStateT_Error_bind {Σ: Type} :
+  forall X Y (ma: StateT Σ Error X) v σ σ' f,
+  (runStateT ma σ = Works _ (v, σ')) ->
+  runStateT (@mbind (StateT Σ Error) (StateT_bind Error Error_fmap Error_join Error_bind) X Y f ma) σ = runStateT (f v) σ'. 
+Proof.
+  intros. unfold runStateT.
+  unfold runStateT in H.
+  destruct ma as [maf].
+  unfold mbind.
+  unfold StateT_bind.
+  unfold mjoin.
+  unfold StateT_join.
+  unfold fmap.
+  unfold StateT_fmap.
+  rewrite H.
+  simpl.
+  destruct (f v).
+  destruct (f0 σ'); reflexivity.
+Qed.
+Hint Resolve runStateT_Error_bind : core.
+
 Definition StateT_ret {Σ: Type} M (mr: MRet M) : MRet (StateT Σ M) :=
   (fun _ v => StateFn _ _ _ (fun s => mret (v, s))).
 

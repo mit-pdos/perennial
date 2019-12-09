@@ -17,6 +17,7 @@ Set Default Proof Using "Type".
 Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
+(* Debugging helper, ignore. *)
 Fixpoint Zpos_to_str (z : positive) : string :=
   match z with
   | xI p => "i" ++ (Zpos_to_str p)
@@ -45,7 +46,7 @@ Class ext_interpretable {ext: ext_op} {ffi: ffi_model} :=
 Section go_lang_int.
   Context {ext: ext_op} {ffi: ffi_model}
           {ffi_semantics: ext_semantics ext ffi}
-          {ffi_interpretable: @ext_interpretable ext ffi}.
+          {Ffi_interpretable: @ext_interpretable ext ffi}.
   Canonical Structure heap_ectxi_lang := (EctxiLanguage (heap_lang.heap_lang_mixin ffi_semantics)).
   Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
   Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
@@ -131,7 +132,7 @@ Definition biggest_loc (σ: state) : loc :=
 Definition find_alloc_location (σ: state) (size: Z) : loc :=
   loc_add (biggest_loc σ) 1.
 
-
+Print mfail.
 
 (* Interpreter *)
 Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
@@ -251,7 +252,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
             s <- mget;
             (* Since Load of an address with nothing doesn't step, we
             can lift from the option monad into the StateT option
-            monad here (we mfail "NotImpl" if v is None). *)
+            monad here (we mfail if v is None). *)
             let l' := (loc_add null (int.val l)) in
             mlift (s.(heap) !! l') ("Load Failed: " ++ (u64_to_str l))
           (* head_step in lang.v says we should expect a LitLoc here,
@@ -334,6 +335,133 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | Resolve ex e1 e2 => mfail "NotImpl: resolve."   (* ignore *)
     end
   end.
+
+Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state),
+    (((runStateT (interpret n e) σ) = Works _ (v, σ')) ->
+     exists m l, @nsteps heap_lang m ([e], σ) l ([Val v], σ')).
+Proof.
+  intros n. induction n.
+  { by intros []. }
+
+  intros e σ v σ' interp. destruct e; simpl; inversion interp; simpl.
+    
+  (* Val *)
+  { eexists. eexists. apply nsteps_refl. }
+  (* Var *)
+  
+  (* Rec *)
+  { do 2 eexists. eapply nsteps_l.
+    (* Always apply step_atomic with t1, t2 as [] since we don't care
+    about threading. *)
+    { eapply step_atomic with (t1:=[]) (t2:=[]).
+      { simpl. reflexivity. }
+      { simpl. reflexivity. }
+      apply head_prim_step.
+      apply RecS.
+    }
+    apply nsteps_refl.
+  }
+  
+  (* App *)
+  { pose (IHn e2 σ) as step1.
+    { admit. }
+  }
+  (* UnOp *)
+  { destruct (runStateT (interpret n e) σ) eqn:interp_e.
+    { destruct v0. pose (IHn e σ v0 s interp_e) as IH.
+      rewrite (runStateT_Error_bind _ _ _ _ _ _ (fun x => mlift (un_op_eval op x) "UnOp failed.") interp_e) in H0.
+      inversion H0.
+      destruct (un_op_eval op v0) eqn:uo_eval; inversion H1.
+      do 2 eexists.
+      (* need to show nsteps_transitive *)
+      admit.
+    }
+    admit.
+  }
+
+      (* 
+      destruct e; simpl; try trivial.
+      { destruct (un_op_eval op v) eqn:ret.
+        { do 2 eexists. eapply nsteps_l.
+          { eapply step_atomic with (t1:=[]) (t2:=[]).
+            { simpl. reflexivity. }
+            { simpl. reflexivity. }
+            apply head_prim_step.
+            apply UnOpS.
+            apply ret.
+            }
+          apply nsteps_refl.
+          }
+        trivial.
+      } 
+       *)
+
+  (* BinOp *)
+  { admit. }
+  
+  (* If *)
+  { admit. }
+
+  (* Pair *)
+  { admit. }
+
+  (* Fst *)
+  { admit. }
+
+  (* Snd *)
+  { admit. }
+
+  (* InjL *)
+  { admit. }
+    
+  (* InjR *)
+  { admit. }
+
+  (* Case *)
+  { admit. }
+
+  (* Fork *)
+  { trivial. }
+  
+  (* Primitive0 *)
+  { destruct runStateT.
+    { admit. }
+    { trivial. }
+  }
+  
+  (* Primitive1 *)
+  { admit. }
+  
+  (* Primitive2 *)
+  { admit. }
+
+  (* CmpXchg *)
+  { trivial. }
+
+  (* ExternalOp *)
+  { admit. }
+
+  (* NewProph *)
+  { trivial. }
+
+  (* Resolve *)
+  { trivial. }
+Admitted.
+
+     
+(* First attempt at a theorem statement. Above Theorem probably better. *)
+Theorem interpret_ok_2 : forall (n: nat) (e: expr) (σ: state),
+    match (runStateT (interpret n e) σ) with
+    | Fail _ _ => True
+    (* Why are heap_lang exprs the same as expr here? They're both
+    parameterized, but I don't know where heap_lang sets it to be the
+    same. *)
+    (* l is a list of observations, which we don't care about right now?
+       m the number of steps it takes the expr to resolve using heap_lang steps. *)
+    | Works _ (v, σ') => exists m l, @nsteps heap_lang m ([e], σ) l ([Val v], σ')
+    end.
+Proof.
+Admitted.
 
 (* Testing *)
 Definition testRec : expr :=
