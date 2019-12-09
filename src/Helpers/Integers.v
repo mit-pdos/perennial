@@ -1,8 +1,8 @@
 From stdpp Require Import decidable countable.
 From coqutil Require Import Datatypes.HList.
 From coqutil.Word Require Naive.
-From coqutil.Word Require Export Interface.
-From coqutil.Word Require Import Properties LittleEndian.
+From coqutil.Word Require Export Interface Properties.
+From coqutil.Word Require Import LittleEndian.
 
 Open Scope Z_scope.
 
@@ -270,13 +270,13 @@ Notation u32_bytes := 4%nat (only parsing).
 
 (** 64-bit encoding *)
 Definition u64_le (x: u64) : list byte :=
-  let n := word.unsigned x.(u64_car) in
+  let n := word.unsigned x in
   let t := split (byte:=u8_instance.u8) u64_bytes n in
   tuple.to_list t.
 
 Definition le_to_u64 (l: list byte) : u64.
 Proof.
-  refine (Word64 (word.of_Z _)).
+  refine (word.of_Z _).
   set (t := tuple.of_list l).
   exact (combine (byte:=u8_instance.u8) _ t).
 Defined.
@@ -299,10 +299,9 @@ Qed.
 Theorem u64_le_to_word : forall x,
     le_to_u64 (u64_le x) = x.
 Proof.
-  intros [x]; simpl.
+  intros x; simpl.
   unfold le_to_u64, u64_le.
   f_equal.
-  cbv [u64_car].
   rewrite tuple_of_to_list_u64.
   rewrite combine_split.
   change (u64_bytes%nat * 8) with 64.
@@ -314,13 +313,13 @@ Qed.
 (* this block is a copy-paste of the above with s/64/32/ *)
 (** 32-bit encoding *)
 Definition u32_le (x: u32) : list byte :=
-  let n := word.unsigned x.(u32_car) in
+  let n := word.unsigned x in
   let t := split (byte:=u8_instance.u8) u32_bytes n in
   tuple.to_list t.
 
 Definition le_to_u32 (l: list byte) : u32.
 Proof.
-  refine (Word32 (word.of_Z _)).
+  refine (word.of_Z _).
   set (t := tuple.of_list l).
   exact (combine (byte:=u8_instance.u8) _ t).
 Defined.
@@ -343,10 +342,9 @@ Qed.
 Theorem u32_le_to_word : forall x,
     le_to_u32 (u32_le x) = x.
 Proof.
-  intros [x]; simpl.
+  intros x; simpl.
   unfold le_to_u32, u32_le.
   f_equal.
-  cbv [u32_car].
   rewrite tuple_of_to_list_u32.
   rewrite combine_split.
   change (u32_bytes%nat * 8) with 32.

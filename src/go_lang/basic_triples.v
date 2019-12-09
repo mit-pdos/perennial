@@ -164,28 +164,6 @@ Proof.
   rewrite replicate_length //.
 Qed.
 
-(* TODO: this should be bidirectional but I'm not sure how to do that in the
-proof mode *)
-Lemma array_app_split l vs1 vs2 :
-  array l (vs1 ++ vs2) -∗
-        array l vs1 ∗ array (l +ₗ (length vs1)) vs2.
-Proof.
-  revert vs2.
-  revert l.
-  induction vs1; simpl.
-  - iIntros (l vs2) "Hl".
-    rewrite loc_add_0.
-    rewrite array_nil; iFrame.
-  - iIntros (l vs2) "Hl".
-    iDestruct (array_cons with "Hl") as "[Hl Hl1]".
-    rewrite array_cons.
-    iFrame.
-    iDestruct (IHvs1 with "Hl1") as "[Hl Hvs2]".
-    rewrite loc_add_assoc.
-    replace (1 + length vs1) with (Z.of_nat (S (length vs1))); last by lia.
-    iFrame.
-Qed.
-
 Lemma array_split (n:Z) l vs :
   0 <= n ->
   Z.to_nat n < length vs ->
@@ -195,15 +173,13 @@ Proof.
   iIntros (Hn Hlength) "Hl".
   (* TODO: this is super slow *)
   rewrite <- (take_drop (Z.to_nat n) vs) at 1.
-  iDestruct (array_app_split with "Hl") as "[H1 H2]".
+  iDestruct (array_app with "Hl") as "[H1 H2]".
   iSplitL "H1"; iFrame.
   rewrite take_length.
   rewrite Nat.min_l; last lia.
   rewrite Z2Nat.id; last lia.
   iFrame.
 Qed.
-
-Opaque word.unsigned word.ltu word.sub.
 
 (* TODO: for now we drop the remainder of the slice on the floor *)
 Lemma wp_subslice s E v sl vs (n1 n2: u64) :
@@ -231,7 +207,7 @@ Proof.
     rewrite take_length drop_length.
     iSplitL.
     + iDestruct (array_split (int.val n1) with "Hsl") as "[Hsl1 Hsl2]".
-      * pose proof (Properties.word.unsigned_range n1); lia.
+      * pose proof (word.unsigned_range n1); lia.
       * lia.
       * iDestruct (array_split (int.val n1 - int.val n2) with "Hsl2") as "[Hsl2 Hsl3]".
         -- admit.
@@ -269,7 +245,7 @@ Proof.
     iSplitR ""; eauto.
     iDestruct ("Hsl'" with "Hi") as "Hsl".
     erewrite list_insert_id by eauto; auto. }
-  pose proof (Properties.word.unsigned_range i); lia.
+  pose proof (word.unsigned_range i); lia.
 Qed.
 
 Lemma wp_memcpy s E v dst vs1 src vs2 (n: u64) :
@@ -311,7 +287,13 @@ Admitted.
 
 Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = U64 0.
 Proof.
-Admitted.
+  intros.
+  apply (f_equal Z.of_nat) in H.
+  rewrite u64_Z_through_nat in H.
+  apply word.unsigned_inj.
+  rewrite <- H.
+  reflexivity.
+Qed.
 
 Lemma wp_memcpy_rec s E dst vs1 src vs2 (n: u64) :
   {{{ array dst vs1 ∗ array src vs2 ∗
@@ -380,7 +362,7 @@ Proof.
   wp_lam.
   wp_let.
   iDestruct "Hsl" as "[-> [Hptr %]]".
-  pose proof (Properties.word.unsigned_range (Slice.sz sl)).
+  pose proof (word.unsigned_range (Slice.sz sl)).
   wp_lam.
   wp_pures.
   wp_bind (AllocN _ _).
@@ -476,23 +458,45 @@ Proof.
     iPureIntro.
     rewrite insert_length; auto.
   - rewrite Z2Nat.id; auto.
-    pose proof (Properties.word.unsigned_range i); lia.
+    pose proof (word.unsigned_range i); lia.
 Qed.
 
 Lemma word_sru_0 width (word: Interface.word width) (ok: word.ok word)
       (x: word) s : int.val s = 0 -> word.sru x s = x.
 Proof.
   intros.
-  apply Properties.word.unsigned_inj.
+  apply word.unsigned_inj.
   rewrite word.unsigned_sru.
   - rewrite H.
     rewrite Z.shiftr_0_r.
     unfold word.wrap.
-    rewrite Properties.word.wrap_unsigned.
+    rewrite word.wrap_unsigned.
     auto.
   - rewrite H.
     apply word.width_pos.
 Qed.
+
+Theorem word_wrap_wrap `{word1: Interface.word width1} `{word2: Interface.word width2}
+        {ok1: word.ok word1}
+        {ok2: word.ok word2} z :
+  width1 <= width2 ->
+  word.wrap (word:=word1) (word.wrap (word:=word2) z) = word.wrap (word:=word1) z.
+Proof.
+  unfold word.wrap; intros.
+  pose proof (@word.width_pos width1 _ _).
+  pose proof (@word.width_pos width2 _ _).
+  pose proof (Z.pow_pos_nonneg 2 width1 ltac:(lia) ltac:(lia)).
+  pose proof (Z.pow_pos_nonneg 2 width2 ltac:(lia) ltac:(lia)).
+  rewrite <- Znumtheory.Zmod_div_mod; try lia.
+  exists (2 ^ (width2 - width1)).
+  rewrite <- Z.pow_add_r; try lia.
+  f_equal.
+  lia.
+Qed.
+
+Hint Rewrite word.unsigned_of_Z : word.
+Hint Rewrite word.unsigned_sru : word.
+Hint Rewrite word_wrap_wrap : word.
 
 Theorem u32_le_to_sru (x: u32) :
   (λ (b:byte), #b) <$> u32_le x =
@@ -502,15 +506,46 @@ Theorem u32_le_to_sru (x: u32) :
                    (cons #(u8_from_u32 (word.sru x (U32 (3%nat * 8))))
                          nil))).
 Proof.
+  change (0%nat * 8) with 0.
+  change (1%nat * 8) with 8.
+  change (2%nat * 8) with 16.
+  change (3%nat * 8) with 24.
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   repeat f_equal.
-  - apply Properties.word.unsigned_inj.
+  - apply word.unsigned_inj.
     unfold u8_from_u32, U8.
-    rewrite word.unsigned_of_Z.
-    rewrite word.unsigned_sru.
-Admitted.
-
-Opaque word.sru.
+    autorewrite with word.
+    rewrite word.unsigned_sru;
+      change (int.val (U32 0)) with 0;
+      last lia.
+    rewrite Z.shiftr_0_r.
+    rewrite word_wrap_wrap; last lia.
+    reflexivity.
+  - apply word.unsigned_inj.
+    unfold u8_from_u32, U8.
+    autorewrite with word.
+    rewrite word.unsigned_sru;
+      change (int.val (U32 8)) with 8;
+      last lia.
+    rewrite word_wrap_wrap; last lia.
+    reflexivity.
+  - apply word.unsigned_inj.
+    unfold u8_from_u32, U8.
+    autorewrite with word.
+    rewrite word.unsigned_sru;
+      change (int.val (U32 16)) with 16;
+      last lia.
+    rewrite word_wrap_wrap; last lia.
+    reflexivity.
+  - apply word.unsigned_inj.
+    unfold u8_from_u32, U8.
+    autorewrite with word.
+    rewrite word.unsigned_sru;
+      change (int.val (U32 24)) with 24;
+      last lia.
+    rewrite word_wrap_wrap; last lia.
+    reflexivity.
+Qed.
 
 Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
   {{{ ▷ l ↦∗ vs ∗ ⌜ length vs = u32_bytes ⌝ }}}
