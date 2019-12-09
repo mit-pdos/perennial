@@ -318,7 +318,7 @@ End composite.
 
 Definition ReassignVars: val :=
   λ: <>,
-    let: "x" := zero_val uint64T in
+    let: "x" := ref (zero_val uint64T) in
     let: "y" := #0 in
     "x" <- #3;;
     let: "z" := ref (struct.mk composite.S [
@@ -612,7 +612,7 @@ Definition UseNamedType: ty := Timestamp.
 the interpret.v file). *)
 Definition testStore: val :=
   λ: <>,
-    let: "x" := zero_val uint64T in
+    let: "x" := ref (zero_val uint64T) in
     "x" <- #3;;
     !"x".
 

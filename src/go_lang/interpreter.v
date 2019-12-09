@@ -1,6 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders strings.
 From stdpp Require Import gmap.
+From stdpp Require Import pretty.
 From iris.algebra Require Export ofe.
 From iris.program_logic Require Export language ectx_language ectxi_language.
 From Perennial.go_lang Require Export locations.
@@ -17,21 +18,11 @@ Set Default Proof Using "Type".
 Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
-Fixpoint Zpos_to_str (z : positive) : string :=
-  match z with
-  | xI p => "i" ++ (Zpos_to_str p)
-  | xO p => "o" ++ (Zpos_to_str p)
-  | xH => "h"
-  end.
+Instance pretty_u64 : Pretty Integers.u64 :=
+  fun x => pretty (word.unsigned x).
 
-(* This is a terrible function for debugging only. *)
-Definition u64_to_str (x: Integers.u64) : string :=
-  let z := int.val x in
-  match z with
-  | Z0 => "0"
-  | Zpos p => Zpos_to_str p
-  | Zneg p => "-" ++ (Zpos_to_str p)
-  end.
+Instance pretty_loc : Pretty loc :=
+  fun x => pretty x.(loc_car).
 
 (* The analog of ext_semantics for an interpretable external
 operation. An ext_step isn't strong enough to let us interpret
@@ -247,18 +238,14 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | Primitive1 LoadOp e =>
       addrv <- interpret n e;
         match addrv with
-          | LitV (LitInt l) => 
-            s <- mget;
+        | LitV (LitInt l) =>
+          mfail "Load at int instead of loc"
+          | LitV (LitLoc l) =>
             (* Since Load of an address with nothing doesn't step, we
             can lift from the option monad into the StateT option
             monad here (we mfail "NotImpl" if v is None). *)
-            let l' := (loc_add null (int.val l)) in
-            mlift (s.(heap) !! l') ("Load Failed: " ++ (u64_to_str l))
-          (* head_step in lang.v says we should expect a LitLoc here,
-          but the unit tests all use LitInt? *)
-          | LitV (LitLoc l) => 
             s <- mget;
-            v <- mlift (s.(heap) !! l) "Load failed, LitLoc case.";
+            v <- mlift (s.(heap) !! l) ("Load Failed: " ++ (pretty l));
             mret v
           | _ => mfail "Load with non-location argument."
         end
@@ -375,6 +362,7 @@ Instance statet_disk_error_ret : MRet (StateT state Error) :=
 
 Definition read_block_from_state (σ: state) (l: loc) : option Block.
   pose (vs <- state_readn σ l block_bytes; commute_option_list _ (map byte_val vs)) as maybe_list.
+Abort.
 
 Fixpoint disk_interpret (fuel: nat) (op: DiskOp) (v: val) : StateT state Error val :=
   match fuel with
@@ -383,7 +371,7 @@ Fixpoint disk_interpret (fuel: nat) (op: DiskOp) (v: val) : StateT state Error v
       match (op, v) with
       | (ReadOp, (LitV (LitInt a))) => 
         σ <- mget;
-        b <- mlift (σ.(world) !! a) ("ReadOp: No block at address " ++ (u64_to_str a));
+        b <- mlift (σ.(world) !! a) ("ReadOp: No block at address " ++ (pretty a));
         let l := find_alloc_location σ 4096 in
         _ <- mput (state_insert_list l (Block_to_vals b) σ);
         mret (LitV (LitLoc l))
@@ -412,6 +400,14 @@ Compute (runStateT (interpret 10 (returnTwoWrapper #3)) startstate).
 
 Compute (runStateT (interpret 10 (testStore #0)) startstate).
 Compute (runStateT (interpret 10 (testRec #0)) startstate).
+
+Definition runs_to (p: expr) (v: val) :=
+  exists σ, runStateT (interpret 100 p) startstate = Works (val*state) (v, σ).
+Notation "p ~~> v" := (ex_intro _ _ eq_refl : runs_to p v) (at level 70).
+
+Example run_testStore := testStore #0 ~~> #3.
+Example run_testRec := testRec #0 ~~> #6.
+
 Compute (runStateT (interpret 10 ConstWithArith) startstate).
 Compute (runStateT (interpret 10 (literalCast #0)) startstate).
 

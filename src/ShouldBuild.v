@@ -26,6 +26,9 @@ From Perennial.go_lang Require Import
 From Perennial.go_lang.examples Require Import
      goose_unittest append_log wal mailserver simpledb logging2 rfc1813.
 
+(* interpreter *)
+From Perennial.go_lang Require Import interpreter.
+
 (* goose output *)
 From Perennial.Goose Require Import ExplicitModel.
 From Perennial.Goose.Examples Require Import
