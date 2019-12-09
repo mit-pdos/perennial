@@ -494,9 +494,21 @@ Proof.
   lia.
 Qed.
 
+Theorem word_wrap_wrap' `{word1: Interface.word width1} `{word2: Interface.word width2}
+        {ok1: word.ok word1}
+        {ok2: word.ok word2} z :
+  width2 <= width1 ->
+  word.wrap (word:=word1) (word.wrap (word:=word2) z) = word.wrap (word:=word2) z.
+Proof.
+  unfold word.wrap; intros.
+  pose proof (@word.width_pos width1 _ _).
+  pose proof (@word.width_pos width2 _ _).
+  pose proof (Z.pow_pos_nonneg 2 width1 ltac:(lia) ltac:(lia)).
+  pose proof (Z.pow_pos_nonneg 2 width2 ltac:(lia) ltac:(lia)).
+Admitted.
+
 Hint Rewrite word.unsigned_of_Z : word.
 Hint Rewrite word.unsigned_sru : word.
-Hint Rewrite word_wrap_wrap : word.
 
 Theorem u32_le_to_sru (x: u32) :
   (λ (b:byte), #b) <$> u32_le x =
@@ -594,6 +606,101 @@ Proof.
   do 5 (destruct vs; try (simpl in H; lia)).
   simpl.
   iApply "Hl".
+Qed.
+
+Eval cbv [le_to_u32 map LittleEndian.combine length Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2]
+  in (fun (v1 v2 v3 v4:u8) => le_to_u32 [v1;v2;v3;v4]).
+
+Hint Rewrite word.unsigned_or_nowrap : word.
+Hint Rewrite word.unsigned_slu : word.
+
+Theorem val_u32 z :
+  0 <= z < 2 ^ 32 ->
+  int.val (U32 z) = z.
+Proof.
+  intros.
+  unfold U32.
+  rewrite word.unsigned_of_Z.
+  rewrite wrap_small; auto.
+Qed.
+
+Ltac eval_term t :=
+  let t' := (eval cbv in t) in change t with t'.
+
+Ltac eval_u32 :=
+  match goal with
+  | |- context[int.val (U32 ?z)] =>
+    rewrite  (val_u32 z ltac:(lia))
+  end.
+
+Theorem u8_to_from_u32 x :
+  int.val (u8_to_u32 (u8_from_u32 x)) =
+  int.val x `mod` 2 ^ 8.
+Proof.
+  unfold u8_to_u32, u8_from_u32, U8, U32.
+  autorewrite with word.
+  rewrite word.unsigned_of_Z.
+  rewrite word_wrap_wrap'; last lia.
+  reflexivity.
+Qed.
+
+Lemma val_u8_to_u32 x :
+  int.val (u8_to_u32 x) = int.val x.
+Proof.
+  unfold u8_to_u32, U32.
+  rewrite word.unsigned_of_Z.
+  pose proof (word.unsigned_range x).
+  rewrite wrap_small; lia.
+Qed.
+
+Theorem decode_encode x :
+  word.or (u8_to_u32 (word.of_Z (int.val x)))
+          (word.slu
+             (word.or (u8_to_u32 (word.of_Z (int.val x ≫ 8)))
+                      (word.slu
+                         (word.or (u8_to_u32 (word.of_Z ((int.val x ≫ 8) ≫ 8)))
+                                  (word.slu (u8_to_u32 (word.of_Z (((int.val x ≫ 8) ≫ 8) ≫ 8))) (U32 8)))
+                         (U32 8))) (U32 8)) = x.
+Proof.
+  apply word.unsigned_inj.
+  pose proof (u32_le_to_word x).
+  cbv [le_to_u32 u32_le map LittleEndian.combine LittleEndian.split length Datatypes.HList.tuple.to_list Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2] in H.
+  rewrite Z.shiftl_0_l in H.
+  rewrite Z.lor_0_r in H.
+  rewrite ?word.unsigned_of_Z in H.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u32; try lia.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u32; try lia.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u32; try lia.
+  rewrite ?val_u8_to_u32.
+  rewrite <- H at 5.
+  rewrite ?word.unsigned_of_Z.
+Admitted.
+
+Theorem wp_DecodeUInt32 (l: loc) (x: u32) vs s E :
+  {{{ ▷ l ↦∗ ((λ (b: byte), #b) <$> u32_le x) }}}
+    DecodeUInt32 #l @ s ; E
+  {{{ RET #x; l ↦∗ ((λ (b: byte), #b) <$> u32_le x) }}}.
+Proof.
+  iIntros (Φ) ">Hl HΦ".
+  cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
+  rewrite ?array_cons ?loc_add_assoc.
+  wp_lam.
+  wp_pures.
+  iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hemp)".
+  wp_load.
+  wp_pures; wp_lam.
+  wp_load.
+  wp_pures; wp_lam.
+  wp_load.
+  wp_pures; wp_lam.
+  wp_load.
+  wp_pures; wp_lam.
+  wp_pures.
+  rewrite decode_encode.
+  iApply "HΦ"; iFrame.
 Qed.
 
 End heap.

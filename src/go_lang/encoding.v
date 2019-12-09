@@ -22,11 +22,11 @@ Section go_lang.
 
   Definition DecodeUInt32: val :=
     λ: "p",
-    to_u32 (!("p" +ₗ #0)) ≪ #(U32 $ 0*8) ∥
-    to_u32 (!("p" +ₗ #1)) ≪ #(U32 $ 1*8) ∥
-    to_u32 (!("p" +ₗ #2)) ≪ #(U32 $ 2*8) ∥
-    to_u32 (!("p" +ₗ #3)) ≪ #(U32 $ 3*8)
-  .
+    let: "v0" := to_u32 !"p" in
+    let: "v1" := to_u32 !("p" +ₗ #1) in
+    let: "v2" := to_u32 !("p" +ₗ #2) in
+    let: "v3" := to_u32 !("p" +ₗ #3) in
+    "v0" ∥ ((("v1" ∥ (("v2" ∥ ("v3" ≪ #(U32 8))) ≪ #(U32 8)))) ≪ #(U32 8)).
 
   Theorem DecodeUInt32_t : (⊢ DecodeUInt32 : (arrayT byteT -> uint32T))%T.
   Proof.
