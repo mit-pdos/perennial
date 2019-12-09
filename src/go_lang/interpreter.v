@@ -382,58 +382,7 @@ Proof.
       } 
        *)
 
-  (* BinOp *)
-  { admit. }
-  
-  (* If *)
-  { admit. }
-
-  (* Pair *)
-  { admit. }
-
-  (* Fst *)
-  { admit. }
-
-  (* Snd *)
-  { admit. }
-
-  (* InjL *)
-  { admit. }
-    
-  (* InjR *)
-  { admit. }
-
-  (* Case *)
-  { admit. }
-
-  (* Fork *)
-  { trivial. }
-  
-  (* Primitive0 *)
-  { destruct runStateT.
-    { admit. }
-    { trivial. }
-  }
-  
-  (* Primitive1 *)
-  { admit. }
-  
-  (* Primitive2 *)
-  { admit. }
-
-  (* CmpXchg *)
-  { trivial. }
-
-  (* ExternalOp *)
-  { admit. }
-
-  (* NewProph *)
-  { trivial. }
-
-  (* Resolve *)
-  { trivial. }
 Admitted.
-
      
 (* First attempt at a theorem statement. Above Theorem probably better. *)
 Theorem interpret_ok_2 : forall (n: nat) (e: expr) (σ: state),
