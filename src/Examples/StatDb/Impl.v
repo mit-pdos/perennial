@@ -1,7 +1,7 @@
 From Coq Require Import List.
 
 From Perennial Require Export Lib.
-Require Import ExMach.ExMachAPI.
+From Perennial.Examples Require Import ExMach.ExMachAPI.
 
 
 Module DB.

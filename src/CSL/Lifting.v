@@ -1,9 +1,9 @@
 From Transitions Require Import Relations Rewriting.
 
-Require Export Spec.Proc.
-Require Import Spec.ProcTheorems.
-Require Export Spec.Layer.
-Require Export CSL.WeakestPre.
+From Perennial Require Export Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
+From Perennial Require Export Spec.Layer.
+From Perennial Require Export CSL.WeakestPre.
 From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
 Global Unset Implicit Arguments.

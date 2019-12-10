@@ -1,10 +1,10 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy CSL.RefinementIdempotenceFunModule.
-Require Export CSL.Leased_Heap.
+From Perennial Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy CSL.RefinementIdempotenceFunModule.
+From Perennial Require Export CSL.Leased_Heap.
 From iris.algebra Require Export functions.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.
-Require Export ExMach.ExMachAPI ExMach.WeakestPre.
+From Perennial.Examples Require Export ExMach.ExMachAPI ExMach.WeakestPre.
 
 Class exmachPreG Σ := ExMachPreG {
   exm_preG_iris :> invPreG Σ;

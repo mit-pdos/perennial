@@ -1,6 +1,6 @@
 Require Import Setoid.
 Require Import Morphisms.
-Require Import Proc.
+From Perennial Require Import Spec.Proc.
 From Classes Require Import Classes.
 From Transitions Require Import Relations Rewriting.
 Require Import Tactical.ProofAutomation.

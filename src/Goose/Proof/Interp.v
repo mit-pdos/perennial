@@ -3,8 +3,8 @@
 From iris.algebra Require Import auth gmap frac agree.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants.
-Require CSL.Count_Heap.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.Count_Ghost
+From Perennial Require CSL.Count_Heap.
+From Perennial Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.Count_Ghost
                CSL.Count_Typed_Heap CSL.ThreadReg CSL.Count_Double_Heap CSL.Count_GHeap.
 From iris.proofmode Require Export tactics.
 

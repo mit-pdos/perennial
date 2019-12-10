@@ -2,8 +2,8 @@ Require FunctionalExtensionality.
 
 From Transitions Require Import Relations Rewriting.
 
-Require Import Spec.Proc.
-Require Import Spec.ProcTheorems.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
 Require Import Tactical.ProofAutomation.
 
 Import RelationNotations.

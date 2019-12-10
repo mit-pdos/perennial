@@ -1,6 +1,6 @@
-Require Export CSL.Refinement CSL.WeakestPre.
+From Perennial Require Export CSL.Refinement CSL.WeakestPre.
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg.
+From Perennial Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.

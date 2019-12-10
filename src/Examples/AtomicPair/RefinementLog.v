@@ -1,7 +1,7 @@
 From iris.algebra Require Import auth gmap list.
-Require Export CSL.Refinement CSL.NamedDestruct.
-Require Import AtomicPairAPI AtomicPair.ImplLog ExMach.WeakestPre ExMach.RefinementAdequacy.
-Require Import AtomicPair.Helpers.
+From Perennial Require Export CSL.Refinement CSL.NamedDestruct.
+From Perennial Require Import AtomicPairAPI AtomicPair.ImplLog ExMach.WeakestPre ExMach.RefinementAdequacy.
+From Perennial Require Import AtomicPair.Helpers.
 Set Default Proof Using "All".
 Unset Implicit Arguments.
 

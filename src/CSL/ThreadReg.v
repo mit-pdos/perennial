@@ -1,7 +1,7 @@
 From Transitions Require Import Relations.
 
 From iris.algebra Require Export auth functions csum excl.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting.
+From Perennial Require Export CSL.WeakestPre CSL.Lifting CSL.Counting.
 From iris.proofmode Require Export tactics.
 From Perennial Require Export Lib.
 

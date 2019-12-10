@@ -1,10 +1,10 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Import ExMach.Adequacy.
+From Perennial.Examples Require Import ExMach.Adequacy.
 Import ExMach.
-Require Import Spec.Proc.
-Require Import Spec.ProcTheorems.
-Require Import Spec.Layer.
-    Import WeakestPre.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
+From Perennial Require Import Spec.Layer.
+Import WeakestPre.
 
 Module Type exmach_refinement_type.
   Context (OpT: Type → Type).

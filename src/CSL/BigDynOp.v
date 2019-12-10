@@ -6,8 +6,8 @@ Local Existing Instances monoid_ne monoid_assoc monoid_comm
   monoid_homomorphism_rel_po monoid_homomorphism_rel_proper
   monoid_homomorphism_op_proper
   monoid_homomorphism_ne weak_monoid_homomorphism_proper.
-Require Import EqualDec.
-Require Export SemanticsHelpers.
+From Classes Require Import EqualDec.
+From Perennial Require Export Spec.SemanticsHelpers.
 
 (* Adapted from the big_op.v files from Iris. Extends those operators to work over DynMaps *)
 

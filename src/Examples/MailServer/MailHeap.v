@@ -1,9 +1,9 @@
 From iris.algebra Require Import auth gmap list.
-Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
+From Perennial Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
 From Perennial.Examples.MailServer Require Import MailAPI MailAPILemmas.
 From Perennial.Goose.Examples Require Import MailServer.
 From Perennial.Goose.Proof Require Import Interp.
-Require Import Goose.Proof.Interp.
+From Perennial Require Import Goose.Proof.Interp.
 From Perennial Require AtomicPair.Helpers.
 From Perennial.Goose Require Import Machine GoZeroValues Heap GoLayer.
 From Perennial.Goose Require Import Machine.

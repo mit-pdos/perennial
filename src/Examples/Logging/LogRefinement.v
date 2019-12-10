@@ -1,8 +1,8 @@
 From iris.algebra Require Import auth gmap list.
-Require Export CSL.Refinement.
+From Perennial Require Export CSL.Refinement.
 From Perennial.Examples.Logging Require Import LogAPI LogImpl.
 From Perennial.Examples Require Import ExMach.WeakestPre ExMach.RefinementAdequacy.
-From Perennial Require AtomicPair.Helpers.
+From Perennial.Examples Require AtomicPair.Helpers.
 From iris.base_logic.lib Require Export invariants gen_heap.
 
 Unset Implicit Arguments.

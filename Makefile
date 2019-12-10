@@ -44,7 +44,7 @@ test: $(TEST_VO)
 vos: $(VFILES:.v=.vos)
 
 _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
-	@echo "-R src $$(cat libname)" > $@
+	@echo "-Q src $$(cat libname)" > $@
 	@echo "-arg -w -arg ${COQ_WARN_ARG}" >> $@
 	@cat _CoqExt >> $@
 	$(Q)for libdir in $(wildcard vendor/*); do \

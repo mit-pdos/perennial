@@ -1,4 +1,4 @@
-Require Import Spec.Proc.
+From Perennial Require Import Spec.Proc.
 
 Import ProcNotations.
 Local Open Scope proc.

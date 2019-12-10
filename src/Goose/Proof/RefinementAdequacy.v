@@ -1,10 +1,10 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Import Goose.Proof.Interp.
-Require Import Spec.Proc.
-Require Import Spec.ProcTheorems.
-Require Import Spec.Layer.
+From Perennial Require Import Goose.Proof.Interp.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
+From Perennial Require Import Spec.Layer.
 From Perennial.Goose Require Import Machine GoZeroValues Heap GoLayer.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy CSL.RefinementIdempotenceModule.
+From Perennial Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementAdequacy CSL.RefinementIdempotenceModule.
 Import Data.
 Import Filesys.FS.
 Import GoLayer.Go.

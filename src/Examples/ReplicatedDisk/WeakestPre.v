@@ -1,9 +1,9 @@
 From iris.algebra Require Import auth gmap frac agree csum excl.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg CSL.Leased_Heap.
+From Perennial Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg CSL.Leased_Heap.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.
-Require Export TwoDiskAPI.
+From Perennial.Examples Require Export TwoDiskAPI.
 Set Default Proof Using "Type".
 
 Import TwoDisk.

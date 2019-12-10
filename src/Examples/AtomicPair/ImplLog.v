@@ -1,5 +1,5 @@
-Require Import AtomicPair.AtomicPairAPI.
-Require Import ExMach.ExMachAPI.
+From Perennial.Examples Require Import AtomicPair.AtomicPairAPI.
+From Perennial.Examples Require Import ExMach.ExMachAPI.
 
 (* On-Disk Addresses *)
 Definition log_commit := 0.

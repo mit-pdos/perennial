@@ -1,7 +1,7 @@
 From iris.algebra Require Import auth gmap list.
-Require Export CSL.Refinement.
-Require Import AtomicPairAPI AtomicPair.ImplShadow ExMach.WeakestPre ExMach.RefinementAdequacy.
-Require Import AtomicPair.Helpers.
+From Perennial Require Export CSL.Refinement.
+From Perennial Require Import AtomicPairAPI AtomicPair.ImplShadow ExMach.WeakestPre ExMach.RefinementAdequacy.
+From Perennial Require Import AtomicPair.Helpers.
 Unset Implicit Arguments.
 
 Existing Instance from_exist_left_sep_later.

@@ -1,8 +1,8 @@
-Require Import Spec.Proc.
-Require Import Spec.ProcTheorems.
-Require Import Spec.Layer.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
+From Perennial Require Import Spec.Layer.
 From Transitions Require Import Relations.
-Require Import CSL.WeakestPre CSL.Lifting.
+From Perennial Require Import CSL.WeakestPre CSL.Lifting.
 From iris.algebra Require Import auth frac agree gmap list excl.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.

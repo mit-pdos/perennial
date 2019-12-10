@@ -11,7 +11,7 @@ From stdpp Require Import namespaces.
 From iris.proofmode Require Export classes notation tactics.
 From stdpp Require Import hlist pretty.
 
-Require Import CSL.ProofModeClasses.
+From Perennial Require Import CSL.ProofModeClasses.
 Set Default Proof Using "Type".
 Export ident.
 

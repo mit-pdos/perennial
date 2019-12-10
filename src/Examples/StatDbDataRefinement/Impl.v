@@ -1,6 +1,6 @@
 From Coq Require Import List.
 
-Require Import ExMach.ExMachAPI.
+From Perennial.Examples Require Import ExMach.ExMachAPI.
 From Perennial Require Export Lib Spec.TypedLayer.
 
 

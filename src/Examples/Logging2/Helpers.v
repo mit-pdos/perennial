@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth.
-Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre CSL.ProofModeClasses.
+From Perennial Require Export CSL.Refinement CSL.NamedDestruct ExMach.WeakestPre CSL.ProofModeClasses.
 Unset Implicit Arguments.
 
 (* TODO: move *)

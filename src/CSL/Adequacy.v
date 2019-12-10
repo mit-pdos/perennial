@@ -1,9 +1,9 @@
 From Transitions Require Import Relations Rewriting.
 
-Require Import Spec.Proc.
-Require Import Spec.ProcTheorems.
-Require Import Spec.Layer.
-Require Import CSL.WeakestPre.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
+From Perennial Require Import Spec.Layer.
+From Perennial Require Import CSL.WeakestPre.
 
 From stdpp Require Import namespaces.
 From iris.algebra Require Import gmap auth agree gset coPset.

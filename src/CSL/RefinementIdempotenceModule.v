@@ -3,10 +3,10 @@
 
 From Transitions Require Import Relations Rewriting.
 
-Require Import Spec.Proc.
-Require Import Spec.ProcTheorems.
-Require Import Spec.Layer.
-Require Export CSL.WeakestPre CSL.Refinement CSL.Adequacy CSL.RefinementAdequacy CSL.ThreadReg.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
+From Perennial Require Import Spec.Layer.
+From Perennial Require Export CSL.WeakestPre CSL.Refinement CSL.Adequacy CSL.RefinementAdequacy CSL.ThreadReg.
 From iris.algebra Require Import auth frac agree gmap list.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.

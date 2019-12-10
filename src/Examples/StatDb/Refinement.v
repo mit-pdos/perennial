@@ -1,6 +1,6 @@
 From iris.algebra Require Import auth gmap list.
-Require Export CSL.Refinement.
-Require Import StatDb.Impl ExMach.WeakestPre ExMach.RefinementAdequacy.
+From Perennial Require Export CSL.Refinement.
+From Perennial.Examples Require Import StatDb.Impl ExMach.WeakestPre ExMach.RefinementAdequacy.
 Unset Implicit Arguments.
 
 Definition recv : proc ExMach.Op _ := Ret tt.

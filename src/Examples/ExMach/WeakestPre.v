@@ -1,9 +1,9 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg CSL.Leased_Heap.
+From Perennial Require Export CSL.WeakestPre CSL.Lifting CSL.Counting CSL.ThreadReg CSL.Leased_Heap.
 From iris.algebra Require Export functions csum.
 From iris.base_logic.lib Require Export invariants gen_heap.
 From iris.proofmode Require Export tactics.
-Require Export ExMach.ExMachAPI.
+From Perennial Require Export ExMach.ExMachAPI.
 Set Default Proof Using "Type".
 
 Class exmachG Σ := ExMachG {

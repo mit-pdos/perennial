@@ -3,9 +3,9 @@ From Perennial.CSL Require Import Counting.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
-Require Import SemanticsHelpers.
+From Perennial Require Import SemanticsHelpers.
 From Perennial Require Export Spec.LockDefs.
-Require Import Count_Heap.
+From Perennial Require Import CSL.Count_Heap.
 Unset Implicit Arguments.
 
 Set Default Proof Using "Type".

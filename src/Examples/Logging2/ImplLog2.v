@@ -1,5 +1,5 @@
-Require Import Logging2.Log2API.
-Require Import ExMach.ExMachAPI.
+From Perennial.Examples Require Import Logging2.Log2API.
+From Perennial.Examples Require Import ExMach.ExMachAPI.
 
 (* On-Disk Addresses *)
 Definition log_commit := 0.

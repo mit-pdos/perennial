@@ -1,10 +1,10 @@
 From iris.algebra Require Import auth gmap frac agree.
-Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementIdempotenceFunModule CSL.Leased_Heap.
-Require Export ReplicatedDisk.TwoDiskAPI ReplicatedDisk.WeakestPre.
+From Perennial Require Export CSL.WeakestPre CSL.Lifting CSL.Adequacy CSL.RefinementIdempotenceFunModule CSL.Leased_Heap.
+From Perennial.Examples Require Export ReplicatedDisk.TwoDiskAPI ReplicatedDisk.WeakestPre.
 Import TwoDisk.
-Require Import Spec.Proc.
-Require Import Spec.ProcTheorems.
-Require Import Spec.Layer.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
+From Perennial Require Import Spec.Layer.
 
 Class exmachPreG Σ := ExMachPreG {
   exm_preG_iris :> invPreG Σ;

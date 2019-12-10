@@ -4,9 +4,9 @@
 
 From Transitions Require Import Relations Rewriting.
 
-Require Import Spec.Proc.
-Require Import Spec.ProcTheorems.
-Require Import Spec.Layer.
+From Perennial Require Import Spec.Proc.
+From Perennial Require Import Spec.ProcTheorems.
+From Perennial Require Import Spec.Layer.
 
 From iris.base_logic.lib Require Export fancy_updates.
 From iris.proofmode Require Import base tactics classes.

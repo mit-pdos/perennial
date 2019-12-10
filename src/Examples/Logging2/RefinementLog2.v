@@ -1,7 +1,7 @@
 From iris.algebra Require Import auth gmap list.
-Require Export CSL.Refinement CSL.NamedDestruct.
-Require Import Log2API ImplLog2 ExMach.WeakestPre ExMach.RefinementAdequacy.
-Require Import Logging2.Helpers.
+From Perennial Require Export CSL.Refinement CSL.NamedDestruct.
+From Perennial.Examples Require Import Log2API ImplLog2 ExMach.WeakestPre ExMach.RefinementAdequacy.
+From Perennial.Examples Require Import Logging2.Helpers.
 Set Default Proof Using "All".
 Unset Implicit Arguments.
 

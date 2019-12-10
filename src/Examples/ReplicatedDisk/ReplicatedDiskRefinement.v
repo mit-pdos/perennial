@@ -1,6 +1,6 @@
 From iris.algebra Require Import auth gmap list.
-Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
-Require Import OneDiskAPI ReplicatedDiskImpl ReplicatedDisk.WeakestPre ReplicatedDisk.RefinementAdequacy.
+From Perennial Require Export CSL.Refinement CSL.NamedDestruct CSL.BigDynOp.
+From Perennial.Examples Require Import OneDiskAPI ReplicatedDiskImpl ReplicatedDisk.WeakestPre ReplicatedDisk.RefinementAdequacy.
 Set Default Proof Using "All".
 Unset Implicit Arguments.
 
