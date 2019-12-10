@@ -4,6 +4,7 @@ From stdpp Require Export binders strings.
 From stdpp Require Import gmap.
 From iris.algebra Require Export ofe.
 From iris.program_logic Require Export language ectx_language ectxi_language.
+From Perennial.program_logic Require Export crash_lang.
 From Perennial.go_lang Require Export locations.
 From Perennial Require Export Helpers.Integers.
 Set Default Proof Using "Type".
@@ -208,8 +209,24 @@ we produce a val to make external operations atomic
 Class ext_semantics :=
   {
     ext_step : external -> val -> state -> val -> state -> Prop;
+    ext_crash : ffi_state -> ffi_state -> Prop;
+    ext_close : ffi_state -> ffi_state -> Prop;
   }.
 Context {ffi_semantics: ext_semantics}.
+
+Inductive heap_crash : state -> state -> Prop :=
+  | HeapCrash σ w w' :
+     w = σ.(world) ->
+     ext_crash w w' ->
+     heap_crash σ (set world (fun _ => w') σ)
+.
+
+Inductive heap_close : state -> state -> Prop :=
+  | HeapClose σ w w' :
+     w = σ.(world) ->
+     ext_close w w' ->
+     heap_close σ (set world (fun _ => w') σ)
+.
 
 (** An observation associates a prophecy variable (identifier) to a pair of
 values. The first value is the one that was returned by the (atomic) operation
@@ -1050,6 +1067,7 @@ Proof.
   split; apply _ || eauto using to_of_val, of_to_val, val_head_stuck,
     fill_item_val, fill_item_no_val_inj, head_ctx_step_val.
 Qed.
+
 End external.
 End heap_lang.
 
@@ -1067,6 +1085,9 @@ Section go_lang.
   Canonical Structure heap_ectxi_lang := (EctxiLanguage (heap_lang.heap_lang_mixin ffi_semantics)).
   Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
   Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
+  Canonical Structure heap_crash_lang : crash_semantics heap_lang :=
+    {| crash_prim_step := heap_crash;
+       close_prim_step := heap_close; |}.
 
 (* The following lemma is not provable using the axioms of [ectxi_language].
 The proof requires a case analysis over context items ([destruct i] on the
