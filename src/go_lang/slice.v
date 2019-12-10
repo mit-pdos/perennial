@@ -99,7 +99,9 @@ Proof.
 Qed.
 
 Definition SliceSkip: val :=
-  λ: "s" "n", (slice.ptr "s" +ₗ "n", slice.len "s" - "n").
+  λ: "s" "n", if: "n" ≤ slice.len "s"
+              then (slice.ptr "s" +ₗ "n", slice.len "s" - "n")
+              else Panic "skip: slice index out-of-bounds".
 
 Theorem SliceSkip_t t : ⊢ SliceSkip : (slice.T t -> uint64T -> slice.T t).
 Proof.

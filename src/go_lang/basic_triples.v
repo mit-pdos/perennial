@@ -15,6 +15,8 @@ Module Slice.
          sz: u64; }.
 End Slice.
 
+Set Printing Projections.
+
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Implicit Types P Q : iProp Σ.
@@ -179,6 +181,52 @@ Proof.
   rewrite Nat.min_l; last lia.
   rewrite Z2Nat.id; last lia.
   iFrame.
+Qed.
+
+Definition slice_skip (sl: Slice.t) (n: u64) : Slice.t :=
+  {| Slice.ptr := sl.(Slice.ptr) +ₗ int.val n;
+     Slice.sz := word.sub sl.(Slice.sz) n |}.
+
+Lemma wp_skip s E v sl vs (n: u64) :
+  {{{ is_slice v sl vs ∗ ⌜ int.nat n < int.nat (Slice.sz sl) ⌝ }}}
+    SliceSkip v #n @ s; E
+  {{{ v', RET v'; is_slice v' (slice_skip sl n) (drop (int.nat n) vs) ∗
+                  (* TODO: need a way to turn this into is_slice for SliceTake *)
+                  array sl.(Slice.ptr) (take (int.nat n) vs) }}}.
+Proof.
+  iIntros (Φ) "[Hsl %] HΦ".
+  wp_lam.
+  wp_let.
+  wp_pures.
+  wp_lam.
+  iDestruct "Hsl" as "[-> [Hsl %]]".
+  wp_pures.
+  wp_if_destruct.
+  - wp_lam.
+    wp_pures.
+    wp_lam.
+    wp_pures.
+    iApply "HΦ".
+    iDestruct (array_split (int.val n) with "Hsl") as "[Hsl1 Hsl2]".
+    + pose proof (word.unsigned_range n); lia.
+    + lia.
+    + iFrame.
+      iPureIntro; split; auto.
+      rewrite drop_length.
+      rewrite /= word.unsigned_sub.
+      pose proof (word.unsigned_range n).
+      pose proof (word.unsigned_range sl.(Slice.sz)).
+      rewrite wrap_small.
+      { rewrite Z2Nat.inj_sub; last lia.
+        congruence. }
+      repeat (rewrite Z2Nat.id in H; last lia).
+      lia.
+  - pose proof (word.unsigned_range n).
+    pose proof (word.unsigned_range sl.(Slice.sz)).
+    repeat (rewrite Z2Nat.id in H; last lia).
+    rewrite word.unsigned_ltu in Heqb.
+    apply Z.ltb_ge in Heqb.
+    lia.
 Qed.
 
 (* TODO: for now we drop the remainder of the slice on the floor *)

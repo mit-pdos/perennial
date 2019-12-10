@@ -127,6 +127,13 @@ Tactic Notation "wp_rec" :=
 Tactic Notation "wp_if" := wp_pure (If _ _ _).
 Tactic Notation "wp_if_true" := wp_pure (If (LitV (LitBool true)) _ _).
 Tactic Notation "wp_if_false" := wp_pure (If (LitV (LitBool false)) _ _).
+(* TODO: why are these notations instead of Ltac? *)
+Tactic Notation "wp_if_destruct" :=
+  match goal with
+  | |- envs_entails _ (wp _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _) =>
+    destruct cond eqn:?;
+             [ wp_if_true | wp_if_false ]
+  end.
 Tactic Notation "wp_unop" := wp_pure (UnOp _ _).
 Tactic Notation "wp_binop" := wp_pure (BinOp _ _ _).
 Tactic Notation "wp_op" := wp_unop || wp_binop.
