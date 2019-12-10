@@ -53,7 +53,7 @@ _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 	  echo "Do you need to run git submodule update --init --recursive?" 1>&2; \
 		exit 1; \
 	fi; \
-	echo "-R $$libdir/src $$(cat $$libdir/libname)" >> $@; \
+	echo "-Q $$libdir/src $$(cat $$libdir/libname)" >> $@; \
 	done
 	@echo "_CoqProject:"
 	@cat $@
