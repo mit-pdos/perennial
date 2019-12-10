@@ -85,21 +85,19 @@ Section proof.
      release lk;;
      "v")%E.
 
-  Lemma with_lock_spec K `{!LanguageCtx K} k γ Φ Φ' Φc (R Rcrash : iProp Σ) lk e:
+  Lemma with_lock_spec k γ Φ Φc (R Rcrash : iProp Σ) lk e:
     to_val e = None →
     is_crash_lock (2 * (S k)) γ lk R Rcrash ∗
-    (Φc ∧ (▷ R -∗ WPC e @ k; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φ' v ∧ Φc) ∗ R }} {{ Φc ∗ Rcrash }})) ∗
-    (∀ v, Φ' v -∗ WPC (K (of_val v)) @ (2 * (S (S k)))%nat; ⊤; ∅ {{ Φ }} {{ Φc }}) ⊢
-    WPC K (with_lock lk e) @  (2 * (S (S k)))%nat; ⊤; ∅ {{ Φ }} {{ Φc }}.
+    (Φc ∧ (▷ R -∗ WPC e @ k; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φ v ∧ Φc) ∗ R }} {{ Φc ∗ Rcrash }})) ⊢
+    WPC (with_lock lk e) @  (2 * (S (S k)))%nat; ⊤; ∅ {{ Φ }} {{ Φc }}.
   Proof.
-    iIntros (?) "(#Hcrash&Hwp&HK)".
+    iIntros (?) "(#Hcrash&Hwp)".
     rewrite /is_crash_lock.
     iDestruct "Hcrash" as (??) "(#Hr&Hinv&His_lock)".
-    iApply wpc_bind.
     rewrite /with_lock.
     wpc_bind (acquire lk).
     iApply wp_wpc_frame'.
-    iSplitR "Hwp HK"; [| iSplitR "Hwp"; [| iApply "Hwp"]].
+    iSplitR "Hwp"; [| iSplitR "Hwp"; [| iApply "Hwp"]].
     { iAlways; iIntros "($&_)". }
     iApply (spin_lock.acquire_spec with "His_lock").
     iNext. iIntros "(Hlocked&Hstaged) Hwp".
@@ -108,7 +106,7 @@ Section proof.
 
     wpc_bind e.
 
-    iApply (wpc_staged_invariant with "[Hwp HK Hlocked Hstaged]"); try iFrame.
+    iApply (wpc_staged_invariant with "[Hwp Hlocked Hstaged]"); try iFrame.
     { reflexivity. }
     { set_solver+. }
     { eauto. }
@@ -130,7 +128,7 @@ Section proof.
 
     wpc_bind (release _).
     iApply wp_wpc_frame'.
-    iSplitR "H Hval Hlocked HK"; [| iSplitR "H"; [| iApply "H"]].
+    iSplitR "H Hval Hlocked"; [| iSplitR "H"; [| iApply "H"]].
     { iAlways; iIntros "(_&$)". }
 
     iApply (release_spec with "[Hlocked His_lock Hval]").
@@ -139,9 +137,105 @@ Section proof.
 
     wpc_pures.
     { iDestruct "H" as "(_&H)". eauto. }
-
-    iApply "HK".
     { iDestruct "H" as "($&_)". }
   Qed.
 
 End proof.
+
+Section demo.
+  Context `{!heapG Σ, !lockG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
+
+  (* Lock protecting two memory locations, crash invariant is that the first is always either
+     equal to the second, or 1 more. (Of course it doesn't make sense to do crash conditions
+     about memory exclusively but it's just to illustrate). *)
+
+  Definition counter_inv l1 l2 :=
+    (∃ (z: Z), l1 ↦ #z ∗ l2 ↦ #z)%I.
+
+  Definition counter_crash_inv l1 l2 :=
+    (∃ (z: Z), l1 ↦ #z ∗ (l2 ↦ #z ∨ l2 ↦ #(z-1)))%I.
+
+  (*
+  Definition incr (lk: val) (l1 l2 : val) :=
+    (acquire lk;;
+     let: "v1" := !l1 in
+     l1 <- "v1" + #1;;
+     let: "v2" := !l2 in
+     l2 <- "v2" + #1;;
+     release lk)%E.
+   *)
+
+  Definition incr (lk: val) (l1 l2 : val) :=
+    with_lock lk (
+     let: "v1" := !l1 in
+     l1 <- "v1" + #1;;
+     let: "v2" := !l2 in
+     l2 <- "v2" + #1)%E.
+
+  Lemma incr_spec (lk : val) (l1 l2: loc) γ k :
+    is_crash_lock Nlock Ncrash (2 * (S k)) γ lk (counter_inv l1 l2) (counter_crash_inv l1 l2) ⊢
+    WPC incr lk #l1 #l2 @ (2 * (S (S k)))%nat; ⊤; ∅ {{ λ _, True }} {{ True }}.
+  Proof.
+    iIntros "H".
+    rewrite /incr.
+    iApply (with_lock_spec with "[H]"); first trivial.
+    iFrame "H".
+    iSplit; auto.
+    iIntros "H".
+    iDestruct "H" as (z) ">(?&?)".
+
+    wpc_bind (! #l1)%E.
+    iApply wpc_atomic; iSplit.
+    { iModIntro; iNext. rewrite left_id. iExists _. iFrame. }
+    wp_load.
+
+    (* XXX: the ordering in the conjunction here is really annoying, should probably prefer that obligations
+       relaated to crash conditions come first in all rules ?*)
+    iSplit; iModIntro; last first.
+    { rewrite left_id. iExists _. iFrame. }
+
+    wpc_pures.
+    { iSplitL ""; try iExists _; by iFrame. }
+
+
+    wpc_bind (#l1 <- _)%E.
+    iApply wpc_atomic; iSplit.
+    { iModIntro; iNext. rewrite left_id. iExists _. iFrame. }
+
+    wp_store.
+    iSplit; iModIntro; last first.
+    { rewrite left_id. iExists (z+1). iFrame. iRight.
+      replace (z + 1 - 1) with z by lia. iFrame. }
+
+    wpc_pures.
+    { rewrite left_id. iExists (z+1). iFrame. iRight.
+      replace (z + 1 - 1) with z by lia. iFrame. }
+
+
+    wpc_bind (! #l2)%E.
+    iApply wpc_atomic; iSplit.
+    { iModIntro; iNext. rewrite left_id. iExists (z + 1).
+      replace (z + 1 - 1) with z by lia. iFrame. }
+    wp_load.
+
+
+    iSplit; iModIntro; last first.
+    { rewrite left_id. iExists (z + 1).
+      replace (z + 1 - 1) with z by lia. iFrame. }
+
+    wpc_pures.
+    { rewrite left_id. iExists (z + 1).
+      replace (z + 1 - 1) with z by lia. iFrame. }
+
+
+    iApply wpc_atomic; iSplit.
+    { iModIntro; iNext. rewrite left_id. iExists (z + 1).
+      replace (z + 1 - 1) with z by lia. iFrame. }
+
+    wp_store.
+    iSplit.
+    { iModIntro; iSplitL ""; eauto. iExists _; iFrame. }
+    { iModIntro; iSplitL ""; eauto. iExists _; iFrame. }
+  Qed.
+End demo.
+
