@@ -150,71 +150,6 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_new_slice s E t (sz: u64) :
-  {{{ ⌜ 0 < int.val sz ⌝ }}}
-    NewSlice t #sz @ s; E
-  {{{ sl, RET slice_val sl; is_slice sl (replicate (int.nat sz) (zero_val t)) }}}.
-Proof.
-  iIntros (Φ) "% HΦ".
-  repeat wp_step.
-  wp_apply wp_allocN; eauto.
-  iIntros (l) "[Hl _Hmeta]".
-  repeat wp_step.
-  rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
-  iFrame.
-  iPureIntro.
-  rewrite replicate_length //.
-Qed.
-
-Lemma array_split (n:Z) l vs :
-  0 <= n ->
-  Z.to_nat n <= length vs ->
-  array l vs ⊣⊢
-        array l (take (Z.to_nat n) vs) ∗ array (l +ₗ n) (drop (Z.to_nat n) vs).
-Proof.
-  intros Hn Hlength.
-  rewrite <- (take_drop (Z.to_nat n) vs) at 1.
-  rewrite array_app.
-  rewrite take_length.
-  rewrite Nat.min_l; last lia.
-  rewrite Z2Nat.id; last lia.
-  auto.
-Qed.
-
-Definition slice_take (sl: Slice.t) (n: u64) : Slice.t :=
-  {| Slice.ptr := sl.(Slice.ptr);
-     Slice.sz := n |}.
-
-Definition slice_skip (sl: Slice.t) (n: u64) : Slice.t :=
-  {| Slice.ptr := sl.(Slice.ptr) +ₗ int.val n;
-     Slice.sz := word.sub sl.(Slice.sz) n |}.
-
-Lemma slice_split sl (n: u64) vs :
-  0 <= int.val n ->
-  int.nat n <= length vs ->
-  is_slice sl vs -∗ is_slice (slice_take sl n) (take (int.nat n) vs) ∗
-           is_slice (slice_skip sl n) (drop (int.nat n) vs).
-Proof.
-  intros Hpos Hbound.
-  rewrite /is_slice /slice_take /slice_skip /=.
-  rewrite take_length drop_length.
-  rewrite Nat.min_l; last lia.
-  rewrite word.unsigned_sub.
-  rewrite (array_split (int.val n)); try lia.
-  iIntros "[(Htake&Hdrop) %]".
-  iFrame.
-  iPureIntro; intuition auto.
-  rewrite wrap_small.
-  { rewrite Z2Nat.inj_sub; last lia.
-    lia. }
-  pose proof (word.unsigned_range sl.(Slice.sz)).
-  split; try lia.
-  rewrite H in Hbound.
-  rewrite Z2Nat.id in Hbound; last lia.
-  rewrite Z2Nat.id in Hbound; last lia.
-  lia.
-Qed.
-
 Ltac nat2Z_1 :=
   match goal with
   | |- @eq nat _ _ => apply Nat2Z.inj
@@ -242,6 +177,67 @@ Ltac nat2Z_1 :=
   end.
 
 Ltac nat2Z := repeat nat2Z_1.
+
+Lemma wp_new_slice s E t (sz: u64) :
+  {{{ ⌜ 0 < int.val sz ⌝ }}}
+    NewSlice t #sz @ s; E
+  {{{ sl, RET slice_val sl; is_slice sl (replicate (int.nat sz) (zero_val t)) }}}.
+Proof.
+  iIntros (Φ) "% HΦ".
+  repeat wp_step.
+  wp_apply wp_allocN; eauto.
+  iIntros (l) "[Hl _Hmeta]".
+  repeat wp_step.
+  rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
+  iFrame.
+  iPureIntro.
+  rewrite replicate_length //.
+Qed.
+
+Lemma array_split (n:Z) l vs :
+  0 <= n ->
+  Z.to_nat n <= length vs ->
+  array l vs ⊣⊢
+        array l (take (Z.to_nat n) vs) ∗ array (l +ₗ n) (drop (Z.to_nat n) vs).
+Proof.
+  intros Hn Hlength.
+  rewrite <- (take_drop (Z.to_nat n) vs) at 1.
+  rewrite array_app.
+  rewrite take_length.
+  rewrite Nat.min_l; last lia.
+  nat2Z.
+  auto.
+Qed.
+
+Definition slice_take (sl: Slice.t) (n: u64) : Slice.t :=
+  {| Slice.ptr := sl.(Slice.ptr);
+     Slice.sz := n |}.
+
+Definition slice_skip (sl: Slice.t) (n: u64) : Slice.t :=
+  {| Slice.ptr := sl.(Slice.ptr) +ₗ int.val n;
+     Slice.sz := word.sub sl.(Slice.sz) n |}.
+
+Lemma slice_split sl (n: u64) vs :
+  0 <= int.val n ->
+  int.nat n <= length vs ->
+  is_slice sl vs -∗ is_slice (slice_take sl n) (take (int.nat n) vs) ∗
+           is_slice (slice_skip sl n) (drop (int.nat n) vs).
+Proof.
+  intros Hpos Hbound.
+  rewrite /is_slice /slice_take /slice_skip /=.
+  rewrite take_length drop_length.
+  rewrite Nat.min_l; last lia.
+  rewrite word.unsigned_sub.
+  rewrite (array_split (int.val n)); try lia.
+  iIntros "[(Htake&Hdrop) %]".
+  iFrame.
+  iPureIntro; intuition auto.
+  rewrite wrap_small; nat2Z.
+  { rewrite Z2Nat.inj_sub; last lia.
+    lia. }
+  pose proof (word.unsigned_range sl.(Slice.sz)).
+  nat2Z.
+Qed.
 
 Lemma slice_combine sl (n: u64) vs :
   0 <= int.val n ->
