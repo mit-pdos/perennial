@@ -49,7 +49,7 @@ Definition BlockSize {ext: ext_op}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT: ty := slice.T byteT.
 
-Definition disk_state := gmap u64 Block.
+Definition disk_state := gmap Z Block.
 
 Definition disk_model : ffi_model.
 Proof.
@@ -66,7 +66,7 @@ Proof.
 Qed.
 
 Class diskG Σ :=
-  { diskG_gen_heapG :> gen_heapG u64 Block Σ; }.
+  { diskG_gen_heapG :> gen_heapG Z Block Σ; }.
 
 Section disk.
   (* these are local instances on purpose, so that importing this files doesn't
@@ -103,19 +103,19 @@ Section disk.
 
   Inductive ext_step : DiskOp -> val -> state -> val -> state -> Prop :=
   | ReadOpS : forall (a: u64) (b: Block) (σ: state) l',
-      σ.(world) !! a = Some b ->
+      σ.(world) !! int.val a = Some b ->
       (forall (i:Z), 0 <= i -> i < 4096 -> σ.(heap) !! (l' +ₗ i) = None)%Z ->
       ext_step ReadOp (LitV (LitInt a)) σ (LitV (LitLoc l'))
                (state_insert_list l' (Block_to_vals b) σ)
   | WriteOpS : forall (a: u64) (l: loc) (b0 b: Block) (σ: state),
-      is_Some (σ.(world) !! a) ->
+      is_Some (σ.(world) !! int.val a) ->
       (forall (i:Z), 0 <= i -> i < 4096 ->
                 match σ.(heap) !! (l +ₗ i) with
              | Some (Free v) => Block_to_vals b !! Z.to_nat i = Some v
              | _ => False
                 end)%Z ->
       ext_step WriteOp (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
-               (LitV LitUnit) (set world <[ a := b ]> σ)
+               (LitV LitUnit) (set world <[ int.val a := b ]> σ)
   (* TODO: size semantics *)
   .
 
@@ -135,7 +135,7 @@ Section disk.
   Context `{!heapG Σ}.
   Instance diskG0 : diskG Σ := heapG_ffiG.
 
-  Notation "l d↦{ q } v" := (mapsto (L:=u64) (V:=Block) l q v%V)
+  Notation "l d↦{ q } v" := (mapsto (L:=Z) (V:=Block) l q v%V)
                              (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
   Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
   Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
@@ -159,7 +159,7 @@ lemmas. *)
 
   Theorem read_fresh : forall σ a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
-      σ.(world) !! a = Some b ->
+      σ.(world) !! int.val a = Some b ->
       ext_step ReadOp (LitV $ LitInt a) σ (LitV $ LitLoc $ l) (state_insert_list l (Block_to_vals b) σ).
   Proof.
     intros.
@@ -174,10 +174,10 @@ lemmas. *)
   Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
     ([∗ map] l ↦ v ∈ heap_array l (fmap Free $ Block_to_vals b), l ↦{q} v)%I.
 
-  Lemma wp_ReadOp s E a q b :
-    {{{ ▷ a d↦{q} b }}}
+  Lemma wp_ReadOp s E (a: u64) q b :
+    {{{ ▷ int.val a d↦{q} b }}}
       ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
-    {{{ l, RET LitV (LitLoc l); a d↦{q} b ∗
+    {{{ l, RET LitV (LitLoc l); int.val a d↦{q} b ∗
                                   mapsto_block l 1 b ∗
                                   [∗ map] l ↦ _ ∈ heap_array l (fmap Free $ Block_to_vals b), meta_token l ⊤ }}}.
   Proof.
@@ -270,10 +270,10 @@ lemmas. *)
     inversion H1; subst; auto.
   Qed.
 
-  Lemma wp_WriteOp s E a b q l :
-    {{{ ▷ ∃ b0, a d↦{1} b0 ∗ mapsto_block l q b }}}
+  Lemma wp_WriteOp s E (a: u64) b q l :
+    {{{ ▷ ∃ b0, int.val a d↦{1} b0 ∗ mapsto_block l q b }}}
       ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
-    {{{ RET LitV LitUnit; a d↦{1} b ∗ mapsto_block l q b}}}.
+    {{{ RET LitV LitUnit; int.val a d↦{1} b ∗ mapsto_block l q b}}}.
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -301,9 +301,40 @@ lemmas. *)
     iFrame.
   Qed.
 
+  Definition disk_array (l: Z) (q: Qp) (vs: list Block): iProp Σ :=
+    ([∗ list] i ↦ b ∈ vs, (l + i) d↦{q} b)%I.
+
+  Theorem disk_array_app l q vs1 vs2 :
+    disk_array l q (vs1 ++ vs2) ⊣⊢
+               disk_array l q vs1 ∗ disk_array (l + length vs1) q vs2.
+  Proof.
+    rewrite /disk_array big_sepL_app.
+    setoid_rewrite Nat2Z.inj_add.
+    by setoid_rewrite Z.add_assoc.
+  Qed.
+
+  Theorem disk_array_split l q z vs :
+    0 <= z <= Z.of_nat (length vs) ->
+    disk_array l q vs ⊣⊢
+               disk_array l q (take (Z.to_nat z) vs) ∗
+               disk_array (l + z) q (drop (Z.to_nat z) vs).
+  Proof.
+    intros.
+    rewrite -[vs in (disk_array _ _ vs)](take_drop (Z.to_nat z)).
+    rewrite disk_array_app take_length.
+    rewrite Nat2Z.inj_min.
+    rewrite Z.min_l; last lia.
+    rewrite Z2Nat.id; last lia.
+    auto.
+  Qed.
   End proof.
 
 End disk.
 
 Global Opaque Write Read Size.
 Hint Resolve Write_t Read_t Size_t : types.
+
+Notation "l d↦{ q } v" := (mapsto (L:=Z) (V:=Block) l q%Qp v%V)
+                            (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
+Notation "l d↦ v" := (mapsto (L:=Z) (V:=Block) l 1%Qp v%V)
+                       (at level 20, format "l  d↦  v") : bi_scope.

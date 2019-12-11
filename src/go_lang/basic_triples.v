@@ -665,6 +665,53 @@ Proof.
   iApply "Hl".
 Qed.
 
+Definition u64_le_bytes (x: u64) : list val :=
+  (λ (b: byte), #b) <$> u64_le x.
+
+Lemma u64_le_bytes_length x : length (u64_le_bytes x) = u64_bytes.
+Proof.
+  rewrite fmap_length //.
+Qed.
+
+Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
+  {{{ ▷ l ↦∗ vs ∗ ⌜ length vs = u64_bytes ⌝ }}}
+    EncodeUInt64 #x #l @ stk ; E
+  {{{ RET #(); l ↦∗ ((λ (b: byte), #b) <$> u64_le x) }}}.
+Proof.
+Admitted.
+
+Theorem is_slice_elim s vs :
+  is_slice s vs -∗ array s.(Slice.ptr) vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Proof.
+  rewrite /is_slice.
+  auto.
+Qed.
+
+Theorem wp_UInt64Put stk E s x vs :
+  {{{ is_slice s vs ∗ ⌜length vs >= u64_bytes⌝ }}}
+    UInt64Put (slice_val s) #x @ stk; E
+  {{{ RET #(); is_slice s (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
+Proof.
+  iIntros (Φ) "[Hsl %] HΦ".
+  wp_lam.
+  wp_let.
+  wp_lam.
+  wp_pures.
+  iDestruct (is_slice_elim with "Hsl") as "[Hptr %]".
+  iDestruct (array_split 8 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
+  wp_apply (wp_EncodeUInt64 with "[$Henc]").
+  { iPureIntro.
+    rewrite take_length; lia. }
+  iIntros "Henc".
+  change (Z.to_nat 8) with 8%nat.
+  iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
+  iApply "HΦ".
+  iFrame.
+  rewrite app_length drop_length u64_le_bytes_length.
+  iPureIntro.
+  lia.
+Qed.
+
 Eval cbv [le_to_u32 map LittleEndian.combine length Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2]
   in (fun (v1 v2 v3 v4:u8) => le_to_u32 [v1;v2;v3;v4]).
 
