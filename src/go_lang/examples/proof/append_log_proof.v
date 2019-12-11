@@ -26,8 +26,8 @@ Definition is_log (v:val) (vs:list Block): iProp Σ :=
   ∃ (sz: u64) (disk_sz: u64),
     ⌜v = (#sz, #disk_sz)%V⌝ ∗
     is_hdr sz disk_sz ∗
-    disk_array 1 vs ∗ ⌜length vs = int.nat sz⌝ ∗
-    (∃ (free: list Block), disk_array (1 + length vs) free ∗
+    1 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ ∗
+    (∃ (free: list Block), (1 + length vs) d↦∗ free ∗
     ⌜ (1 + length vs + length free)%Z = int.val disk_sz ⌝)
 .
 

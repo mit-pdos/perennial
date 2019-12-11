@@ -338,3 +338,5 @@ Notation "l d↦{ q } v" := (mapsto (L:=Z) (V:=Block) l q%Qp v%V)
                             (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
 Notation "l d↦ v" := (mapsto (L:=Z) (V:=Block) l 1%Qp v%V)
                        (at level 20, format "l  d↦  v") : bi_scope.
+Notation "l d↦∗ vs" := (disk_array l 1%Qp vs%V)
+                       (at level 20, format "l  d↦∗  vs") : bi_scope.
