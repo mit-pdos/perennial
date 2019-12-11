@@ -118,182 +118,201 @@ Proof.
   eexists. by apply vlookup_lookup.
 Qed.
 
-Definition is_slice (v: val) (s: Slice.t) (vs: list val): iProp Σ :=
-  ⌜ v = (#s.(Slice.ptr), #s.(Slice.sz))%V ⌝ ∗
-  array s.(Slice.ptr) vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Coercion slice_val (s: Slice.t) : val := (#s.(Slice.ptr), #s.(Slice.sz)).
+
+Definition is_slice (s: Slice.t) (vs: list val): iProp Σ :=
+  s.(Slice.ptr) ↦∗ vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
 
 Lemma is_slice_intro l (sz: u64) vs :
-  l ↦∗ vs ∗ ⌜length vs = int.nat sz⌝ -∗
-  is_slice (#l, #sz) (Slice.mk l sz) vs.
+  l ↦∗ vs -∗ ⌜length vs = int.nat sz⌝ -∗
+  is_slice (Slice.mk l sz) vs.
 Proof.
-  iIntros "H".
-  by iSplitR.
+  iIntros "H1 H2"; rewrite /is_slice; iFrame.
 Qed.
+
+Definition slice_val_fold (ptr: loc) (sz: u64) :
+  (#ptr, #sz)%V = slice_val (Slice.mk ptr sz) := eq_refl.
 
 (* TODO: order commands so primitives are opaque only after proofs *)
 Transparent raw_slice.
 
+Ltac wp_step := wp_lam || wp_let || wp_pures.
+
 Lemma wp_raw_slice s E l vs (sz: u64) t :
   {{{ array l vs ∗ ⌜length vs = int.nat sz⌝ }}}
     raw_slice t #l #sz @ s; E
-  {{{ sl v, RET v; is_slice v sl vs }}}.
+  {{{ sl, RET slice_val sl; is_slice sl vs }}}.
 Proof.
   iIntros (Φ) "Hslice HΦ".
   rewrite /raw_slice.
-  wp_lam.
-  wp_let.
-  wp_pures.
-  iApply "HΦ".
-  by iApply is_slice_intro.
+  repeat wp_step.
+  rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
+  iFrame.
 Qed.
 
 Lemma wp_new_slice s E t (sz: u64) :
   {{{ ⌜ 0 < int.val sz ⌝ }}}
     NewSlice t #sz @ s; E
-  {{{ sl v, RET v; is_slice v sl (replicate (int.nat sz) (zero_val t)) }}}.
+  {{{ sl, RET slice_val sl; is_slice sl (replicate (int.nat sz) (zero_val t)) }}}.
 Proof.
   iIntros (Φ) "% HΦ".
-  wp_lam.
-  wp_bind (AllocN _ _).
-  iApply wp_allocN; eauto.
-  iIntros (l) "!> [Hl _Hmeta]".
-  wp_pures.
-  wp_lam.
-  wp_pures.
-  iApply "HΦ".
-  iApply is_slice_intro; iFrame.
+  repeat wp_step.
+  wp_apply wp_allocN; eauto.
+  iIntros (l) "[Hl _Hmeta]".
+  repeat wp_step.
+  rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
+  iFrame.
   iPureIntro.
   rewrite replicate_length //.
 Qed.
 
 Lemma array_split (n:Z) l vs :
   0 <= n ->
-  Z.to_nat n < length vs ->
-  array l vs -∗
+  Z.to_nat n <= length vs ->
+  array l vs ⊣⊢
         array l (take (Z.to_nat n) vs) ∗ array (l +ₗ n) (drop (Z.to_nat n) vs).
 Proof.
-  iIntros (Hn Hlength) "Hl".
-  (* TODO: this is super slow *)
+  intros Hn Hlength.
   rewrite <- (take_drop (Z.to_nat n) vs) at 1.
-  iDestruct (array_app with "Hl") as "[H1 H2]".
-  iSplitL "H1"; iFrame.
+  rewrite array_app.
   rewrite take_length.
   rewrite Nat.min_l; last lia.
   rewrite Z2Nat.id; last lia.
-  iFrame.
+  auto.
 Qed.
+
+Definition slice_take (sl: Slice.t) (n: u64) : Slice.t :=
+  {| Slice.ptr := sl.(Slice.ptr);
+     Slice.sz := n |}.
 
 Definition slice_skip (sl: Slice.t) (n: u64) : Slice.t :=
   {| Slice.ptr := sl.(Slice.ptr) +ₗ int.val n;
      Slice.sz := word.sub sl.(Slice.sz) n |}.
 
-Lemma wp_skip s E v sl vs (n: u64) :
-  {{{ is_slice v sl vs ∗ ⌜ int.nat n < int.nat (Slice.sz sl) ⌝ }}}
-    SliceSkip v #n @ s; E
-  {{{ v', RET v'; is_slice v' (slice_skip sl n) (drop (int.nat n) vs) ∗
-                  (* TODO: need a way to turn this into is_slice for SliceTake *)
-                  array sl.(Slice.ptr) (take (int.nat n) vs) }}}.
+Lemma slice_split sl (n: u64) vs :
+  0 <= int.val n ->
+  int.nat n <= length vs ->
+  is_slice sl vs -∗ is_slice (slice_take sl n) (take (int.nat n) vs) ∗
+           is_slice (slice_skip sl n) (drop (int.nat n) vs).
 Proof.
-  iIntros (Φ) "[Hsl %] HΦ".
-  wp_lam.
-  wp_let.
-  wp_pures.
-  wp_lam.
-  iDestruct "Hsl" as "[-> [Hsl %]]".
-  wp_pures.
-  wp_if_destruct.
-  - wp_lam.
-    wp_pures.
-    wp_lam.
-    wp_pures.
-    iApply "HΦ".
-    iDestruct (array_split (int.val n) with "Hsl") as "[Hsl1 Hsl2]".
-    + pose proof (word.unsigned_range n); lia.
-    + lia.
-    + iFrame.
-      iPureIntro; split; auto.
-      rewrite drop_length.
-      rewrite /= word.unsigned_sub.
-      pose proof (word.unsigned_range n).
-      pose proof (word.unsigned_range sl.(Slice.sz)).
-      rewrite wrap_small.
-      { rewrite Z2Nat.inj_sub; last lia.
-        congruence. }
-      repeat (rewrite Z2Nat.id in H; last lia).
-      lia.
-  - pose proof (word.unsigned_range n).
-    pose proof (word.unsigned_range sl.(Slice.sz)).
-    repeat (rewrite Z2Nat.id in H; last lia).
-    rewrite word.unsigned_ltu in Heqb.
-    apply Z.ltb_ge in Heqb.
-    lia.
+  intros Hpos Hbound.
+  rewrite /is_slice /slice_take /slice_skip /=.
+  rewrite take_length drop_length.
+  rewrite Nat.min_l; last lia.
+  rewrite word.unsigned_sub.
+  rewrite (array_split (int.val n)); try lia.
+  iIntros "[(Htake&Hdrop) %]".
+  iFrame.
+  iPureIntro; intuition auto.
+  rewrite wrap_small.
+  { rewrite Z2Nat.inj_sub; last lia.
+    lia. }
+  pose proof (word.unsigned_range sl.(Slice.sz)).
+  split; try lia.
+  rewrite H in Hbound.
+  rewrite Z2Nat.id in Hbound; last lia.
+  rewrite Z2Nat.id in Hbound; last lia.
+  lia.
 Qed.
 
-(* TODO: for now we drop the remainder of the slice on the floor *)
-Lemma wp_subslice s E v sl vs (n1 n2: u64) :
-  {{{ is_slice v sl vs ∗ ⌜ int.nat n1 ≤ int.nat n2 /\ int.nat n2 < int.nat (Slice.sz sl) ⌝ }}}
-    SliceSubslice v #n1 #n2 @ s; E
-  {{{ sl' v', RET v'; is_slice v' sl' (take (int.nat n2 - int.nat n1) (drop (int.nat n1) vs)) }}}.
+Ltac nat2Z_1 :=
+  match goal with
+  | |- @eq nat _ _ => apply Nat2Z.inj
+  | [ H: @eq nat _ _ |- _ ] => apply Nat2Z.inj_iff in H
+  | |- le _ _ => apply Nat2Z.inj_le
+  | [ |- context[Z.of_nat (Z.to_nat ?z)] ] =>
+    rewrite (Z2Nat.id z); [ | lia ]
+  | [ |- context[Z.to_nat (Z.of_nat ?n)] ] =>
+    rewrite (Nat2Z.id n)
+  | [ H: context[Z.of_nat (Z.to_nat ?z)] |- _ ] =>
+    rewrite (Z2Nat.id z) in H; [ | lia ]
+  | [ H: context[Z.to_nat (Z.of_nat ?n)] |- _ ] =>
+    rewrite (Nat2Z.id n) in H; [ | lia ]
+  | [ H: context[Z.of_nat (?n - ?m)%nat] |- _ ] =>
+    rewrite (Nat2Z.inj_sub n m) in H; [ | apply Nat2Z.inj_le; lia ]
+  | [ H: context[Z.of_nat (?n + ?m)%nat] |- _ ] =>
+    rewrite (Nat2Z.inj_add n m) in H; [ | apply Nat2Z.inj_le; lia ]
+  | [ H: context[Z.to_nat (?n - ?m)%Z] |- _ ] =>
+    rewrite (Nat2Z.inj_sub n m) in H; [ | apply Nat2Z.inj_le ]
+  | [ H: context[Z.to_nat (?n + ?m)%Z] |- _ ] =>
+    rewrite (Z2Nat.inj_add n m) in H; [ | lia | lia ]
+  | [ H: context[Z.to_nat (?n - ?m)%Z] |- _ ] =>
+    rewrite (Z2Nat.inj_sub n m) in H; [ | lia ]
+  | _ => lia
+  end.
+
+Ltac nat2Z := repeat nat2Z_1.
+
+Lemma slice_combine sl (n: u64) vs :
+  0 <= int.val n ->
+  int.nat n <= length vs ->
+  int.val n <= int.val sl.(Slice.sz) ->
+  is_slice (slice_take sl n) (take (int.nat n) vs) ∗
+           is_slice (slice_skip sl n) (drop (int.nat n) vs) -∗
+           is_slice sl vs.
 Proof.
-  iIntros (Φ) "[Hsl (%&%)] HΦ".
-  wp_lam.
-  wp_let.
-  wp_pures.
-  wp_lam.
-  iDestruct "Hsl" as "[-> [Hsl %]]".
-  wp_lam.
-  wp_pures.
-  destruct_with_eqn (word.ltu (Slice.sz sl)
-                              (word.sub n2 n1));
-    wp_if.
-  - rewrite word.unsigned_ltu word.unsigned_sub in Heqb.
-    admit. (* TODO: need to derive a contradiction *)
-  - wp_lam.
-    wp_pures.
-    iApply "HΦ".
-    iApply is_slice_intro; iFrame.
-    rewrite take_length drop_length.
-    iSplitL.
-    + iDestruct (array_split (int.val n1) with "Hsl") as "[Hsl1 Hsl2]".
-      * pose proof (word.unsigned_range n1); lia.
-      * lia.
-      * iDestruct (array_split (int.val n1 - int.val n2) with "Hsl2") as "[Hsl2 Hsl3]".
-        -- admit.
-        -- rewrite drop_length.
-           admit.
-        -- fold (int.nat n1) (int.nat n2).
-          replace (Z.to_nat (int.val n1 - int.val n2))
-             with (int.nat n2 - int.nat n1)%nat.
-          { iFrame. }
-          admit.
-    + iPureIntro.
-      rewrite Nat.min_l.
-      * admit.
-      * admit.
+  intros Hpos Hbound Hsz_bound.
+  rewrite /is_slice /slice_take /slice_skip /=.
+  rewrite take_length drop_length.
+  iIntros "((Htake&%)&(Hdrop&%))".
+  iSplitL.
+  { iApply (array_split (int.val n)); try lia; iFrame. }
+  iPureIntro.
+  rewrite Nat.min_l in H; last lia.
+  rewrite word.unsigned_sub in H0.
+  rewrite wrap_small in H0; nat2Z.
+  { rewrite Nat2Z.inj_sub in H0; nat2Z. }
+  pose proof (word.unsigned_range sl.(Slice.sz)).
+  lia.
+Qed.
+
+Lemma wp_skip s E v sl vs (n: u64) :
+  {{{ is_slice (slice_skip sl n) (drop (int.nat n) vs) }}}
+    SliceSkip sl #n @ s; E
+  {{{ RET slice_val (slice_skip sl n);
+      is_slice (slice_skip sl n) (drop (int.nat n) vs) }}}.
+Proof.
+  iIntros (Φ) "[Hskip %] HΦ".
+  repeat wp_step.
+  wp_if_destruct.
+  - repeat wp_step.
+    rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
+    iFrame.
+    iPureIntro; auto.
+  - wp_apply wp_panic.
+    iPureIntro.
+    pose proof (word.unsigned_range n).
+    pose proof (word.unsigned_range sl.(Slice.sz)).
+    rewrite word.unsigned_ltu in Heqb.
+    apply Z.ltb_ge in Heqb.
+    rewrite drop_length /= word.unsigned_sub in H.
+    rewrite wrap_small in H; nat2Z.
+    { admit. }
+    intuition; nat2Z.
 Admitted.
 
-Lemma wp_slice_get s E v sl vs (i: u64) v0 :
-  {{{ is_slice v sl vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
-    SliceGet v #i @ s; E
-  {{{ RET v0; is_slice v sl vs }}}.
+Lemma wp_slice_get s E sl vs (i: u64) v0 :
+  {{{ is_slice sl vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+    SliceGet sl #i @ s; E
+  {{{ RET v0; is_slice sl vs }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
   destruct sl as [ptr sz].
-  wp_lam.
-  wp_let.
-  iDestruct "Hsl" as "[-> [Hsl %]]".
-  cbv [Slice.ptr Slice.sz].
-  wp_lam.
-  wp_pures.
+  repeat wp_step.
+  iDestruct "Hsl" as "[Hsl %]".
+  cbv [Slice.ptr Slice.sz] in *.
+  repeat wp_step.
   iDestruct (update_array ptr _ _ _ H with "Hsl") as "[Hi Hsl']".
-  rewrite Z2Nat.id.
-  { wp_load.
-    iApply "HΦ".
-    iApply is_slice_intro.
-    iSplitR ""; eauto.
-    iDestruct ("Hsl'" with "Hi") as "Hsl".
+  pose proof (word.unsigned_range i).
+  nat2Z.
+  wp_load.
+  iApply "HΦ".
+  rewrite /is_slice /=.
+  iSplitR "".
+  { iDestruct ("Hsl'" with "Hi") as "Hsl".
     erewrite list_insert_id by eauto; auto. }
-  pose proof (word.unsigned_range i); lia.
+  iPureIntro.
+  nat2Z.
 Qed.
 
 Lemma wp_memcpy s E v dst vs1 src vs2 (n: u64) :
@@ -353,11 +372,8 @@ Proof.
   iRevert (vs1 vs2 n dst src H H0) "Hdst Hsrc HΦ".
   iLöb as "IH".
   iIntros (vs1 vs2 n dst src Hvs1 Hvs2) "Hdst Hsrc HΦ".
-  wp_rec.
-  wp_let.
-  wp_let.
-  wp_pures.
-  destruct_with_eqn (bool_decide (#n = #0)); wp_if.
+  repeat wp_step.
+  wp_if_destruct.
   - apply bool_decide_eq_true in Heqb.
     inversion Heqb; subst.
     change (int.nat 0) with 0%nat.
@@ -399,20 +415,18 @@ Proof.
       admit.
 Admitted.
 
+Opaque MemCpy_rec.
 Transparent SliceAppend.
 
-Lemma wp_slice_append s E v sl vs x :
-  {{{ is_slice v sl vs ∗ ⌜int.val sl.(Slice.sz) + 1 < 2^64⌝ }}}
-    SliceAppend v x @ s; E
-  {{{ v' sl', RET v'; is_slice v' sl' (vs ++ [x]) }}}.
+Lemma wp_slice_append s E sl vs x :
+  {{{ is_slice sl vs ∗ ⌜int.val sl.(Slice.sz) + 1 < 2^64⌝ }}}
+    SliceAppend sl x @ s; E
+  {{{ sl', RET slice_val sl'; is_slice sl' (vs ++ [x]) }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
-  wp_lam.
-  wp_let.
-  iDestruct "Hsl" as "[-> [Hptr %]]".
+  repeat wp_step.
+  iDestruct "Hsl" as "[Hptr %]".
   pose proof (word.unsigned_range (Slice.sz sl)).
-  wp_lam.
-  wp_pures.
   wp_bind (AllocN _ _).
   iApply wp_allocN; auto.
   {  rewrite word.unsigned_add.
@@ -421,11 +435,8 @@ Proof.
      rewrite Zmod_small; lia. }
   iIntros "!>".
   iIntros (l) "[Halloc Hmeta]".
-  wp_let.
-  wp_lam.
-  wp_pures.
-  wp_lam.
-  wp_pures.
+  repeat wp_step.
+
   iDestruct (array_split (int.val (Slice.sz sl)) with "Halloc") as "[Halloc_sz Halloc1]".
   - lia.
   - rewrite replicate_length.
@@ -437,56 +448,63 @@ Proof.
     lia.
   - rewrite take_replicate drop_replicate.
     rewrite Nat.min_l; last admit.
-    { match goal with
-      | |- context[replicate ?x] =>
-        match x with
-        | (_ - _)%nat => replace x with 1%nat
-        end
-      end.
-      { simpl.
-        rewrite array_singleton.
-        wp_apply (wp_memcpy_rec with "[$Halloc_sz $Hptr]").
-        { iPureIntro.
-          rewrite replicate_length.
-          replace (length vs).
-          intuition.
-          lia.
-        }
-        iIntros "[Hvs Hsrc]".
-        rewrite firstn_all2; last lia.
-        wp_seq.
-        wp_lam.
-        wp_pures.
-        wp_bind (Store _ _).
-        wp_apply (wp_store with "Halloc1").
-        iIntros "Hlast".
-        wp_seq.
-        wp_lam.
-        wp_pures.
-        iApply "HΦ".
-        iApply is_slice_intro.
-        iSplitL "Hvs Hlast".
-        - rewrite array_app.
-          iFrame.
-          rewrite H0.
-          rewrite array_singleton.
-          rewrite Z2Nat.id; last lia; iFrame.
-        - iPureIntro.
-          rewrite app_length; simpl.
-          rewrite word.unsigned_add.
-          change (int.val 1) with 1.
-          unfold word.wrap.
-          rewrite Zmod_small; last lia.
-          rewrite H0.
-          rewrite Z2Nat.inj_add; change (Z.to_nat 1) with 1%nat; lia.
+    match goal with
+    | |- context[replicate ?x] =>
+      match x with
+      | (_ - _)%nat => replace x with 1%nat
+      end
+    end.
+    { simpl.
+      rewrite array_singleton.
+      wp_apply (wp_memcpy_rec with "[$Halloc_sz $Hptr]").
+      { iPureIntro.
+        rewrite replicate_length.
+        replace (length vs).
+        intuition.
+        lia.
       }
-      admit.
-Admitted.
+      iIntros "[Hvs Hsrc]".
+      rewrite firstn_all2; last lia.
+      wp_seq.
+      wp_lam.
+      wp_pures.
+      wp_bind (Store _ _).
+      wp_apply (wp_store with "Halloc1").
+      iIntros "Hlast".
+      repeat wp_step.
 
-Lemma wp_slice_set s E v sl vs (i: u64) (x: val) :
-  {{{ is_slice v sl vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
-    SliceSet v #i x @ s; E
-  {{{ RET #(); is_slice v sl (<[int.nat i:=x]> vs) }}}.
+      rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice /=.
+      iSplitL "Hvs Hlast".
+      - rewrite array_app.
+        iFrame.
+        rewrite H0.
+        rewrite array_singleton.
+        nat2Z.
+        iFrame.
+      - iPureIntro.
+        rewrite app_length; simpl.
+        rewrite word.unsigned_add.
+        change (int.val 1) with 1.
+        unfold word.wrap.
+        rewrite Zmod_small; last lia.
+        rewrite H0.
+        rewrite Z2Nat.inj_add; change (Z.to_nat 1) with 1%nat; lia.
+    }
+    nat2Z.
+    rewrite word.unsigned_add.
+    rewrite wrap_small; change (int.val 1) with 1; nat2Z.
+    rewrite Z2Nat.inj_add; [ | lia | lia ].
+    change (Z.to_nat 1) with 1%nat.
+    lia.
+    Grab Existential Variables.
+    rewrite word.unsigned_add.
+    rewrite wrap_small; change (int.val 1) with 1; nat2Z.
+Qed.
+
+Lemma wp_slice_set s E sl vs (i: u64) (x: val) :
+  {{{ is_slice sl vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
+    SliceSet sl #i x @ s; E
+  {{{ RET #(); is_slice sl (<[int.nat i:=x]> vs) }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
   destruct sl as [ptr sz].
@@ -494,7 +512,7 @@ Proof.
   wp_let.
   wp_let.
   wp_lam.
-  iDestruct "Hsl" as "[-> [Hptr %]]".
+  iDestruct "Hsl" as "[Hptr %]".
   cbv [Slice.ptr Slice.sz] in *.
   wp_pures.
   replace (int.val i) with (Z.of_nat (int.nat i)).
@@ -502,7 +520,7 @@ Proof.
     iIntros "!> Hptr".
     iApply "HΦ".
     rewrite u64_Z_through_nat.
-    iApply is_slice_intro; iFrame.
+    iFrame.
     iPureIntro.
     rewrite insert_length; auto.
   - rewrite Z2Nat.id; auto.

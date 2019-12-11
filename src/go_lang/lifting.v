@@ -222,10 +222,10 @@ Implicit Types σ : state.
 Implicit Types v : val.
 Implicit Types l : loc.
 
-Lemma wp_panic s msg E r :
-  {{{ ▷ False }}} Panic msg @ s; E {{{ RET r; True }}}.
+Lemma wp_panic s msg E Φ :
+  ▷ False -∗ WP Panic msg @ s; E {{ Φ }}.
 Proof.
-  iIntros (Φ) ">[] HΦ".
+  iIntros ">[] HΦ".
 Qed.
 
 (* TODO: note that this doesn't say anything because there is nothing in the
