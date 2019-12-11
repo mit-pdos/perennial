@@ -25,8 +25,7 @@ services:
 jobs:
   include:
     - env: COQ_VERSION="dev"
-    - env: COQ_VERSION="8.10"
-    - env: COQ_VERSION="8.9"
+    - env: COQ_VERSION="8.11"
     - env: COQ_VERSION="dev" UPDATE_DEPS=true
   allow_failures:
     - env: COQ_VERSION="dev" UPDATE_DEPS=true

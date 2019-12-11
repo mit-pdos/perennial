@@ -152,6 +152,8 @@ Qed.
 
 Ltac nat2Z_1 :=
   match goal with
+  | _ => lia (* TODO: this only makes sense on Coq master where lia doesn't
+    need any of the help below *)
   | |- @eq nat _ _ => apply Nat2Z.inj
   | [ H: @eq nat _ _ |- _ ] => apply Nat2Z.inj_iff in H
   | |- le _ _ => apply Nat2Z.inj_le
@@ -173,7 +175,6 @@ Ltac nat2Z_1 :=
     rewrite (Z2Nat.inj_add n m) in H; [ | lia | lia ]
   | [ H: context[Z.to_nat (?n - ?m)%Z] |- _ ] =>
     rewrite (Z2Nat.inj_sub n m) in H; [ | lia ]
-  | _ => lia
   end.
 
 Ltac nat2Z := repeat nat2Z_1.
@@ -233,10 +234,8 @@ Proof.
   iFrame.
   iPureIntro; intuition auto.
   rewrite wrap_small; nat2Z.
-  { rewrite Z2Nat.inj_sub; last lia.
-    lia. }
   pose proof (word.unsigned_range sl.(Slice.sz)).
-  nat2Z.
+  lia.
 Qed.
 
 Lemma slice_combine sl (n: u64) vs :
@@ -257,7 +256,6 @@ Proof.
   rewrite Nat.min_l in H; last lia.
   rewrite word.unsigned_sub in H0.
   rewrite wrap_small in H0; nat2Z.
-  { rewrite Nat2Z.inj_sub in H0; nat2Z. }
   pose proof (word.unsigned_range sl.(Slice.sz)).
   lia.
 Qed.
@@ -489,9 +487,6 @@ Proof.
     nat2Z.
     rewrite word.unsigned_add.
     rewrite wrap_small; change (int.val 1) with 1; nat2Z.
-    rewrite Z2Nat.inj_add; [ | lia | lia ].
-    change (Z.to_nat 1) with 1%nat.
-    lia.
     Grab Existential Variables.
     rewrite word.unsigned_add.
     rewrite wrap_small; change (int.val 1) with 1; nat2Z.
