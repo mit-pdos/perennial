@@ -1,3 +1,4 @@
+From coqutil Require Import Z.BitOps Word.LittleEndian.
 From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.go_lang.examples Require Import append_log.
 From Perennial.go_lang Require Import basic_triples.
@@ -157,6 +158,83 @@ Proof.
   { rewrite u64_le_bytes_length; mia. }
 Admitted.
 
+Lemma combine_unfold byte (ok: word.ok byte) n b (t: HList.tuple byte n) :
+  LittleEndian.combine (S n) {| PrimitivePair.pair._1 := b; PrimitivePair.pair._2 := t |} =
+  Z.lor (int.val b) (LittleEndian.combine n t ≪ 8).
+Proof.
+  reflexivity.
+Qed.
+
+Theorem combine_bound {byte: word 8} {ok: word.ok byte} n t :
+  0 <= LittleEndian.combine n t < 2 ^ (8 * n).
+Proof.
+  induction n; simpl.
+  - cbv; split; congruence.
+  - destruct t as [b t].
+    let T := type of t in change T with (HList.tuple byte n) in *.
+    rewrite combine_unfold.
+    rewrite BitOps.or_to_plus.
+    { pose proof (IHn t).
+      pose proof (word.unsigned_range b).
+      split.
+      { unfold Z.shiftl; simpl. lia. }
+      { unfold Z.shiftl; simpl.
+        replace (2 ^ (8 * S n)) with (2^8 * 2 ^ (8 * n)); try lia.
+        replace (8 * S n) with (8 + 8*n) by lia.
+        rewrite <- Z.pow_add_r; lia. } }
+    pose proof (word.unsigned_range b).
+    admit.
+Admitted.
+
+Lemma le_to_u64_le bs :
+  length bs = 8%nat ->
+  u64_le (le_to_u64 bs) = bs.
+Proof.
+  intros.
+  do 8 (destruct bs; [ simpl in H; lia | ]).
+  destruct bs; [ clear H | simpl in H; lia ].
+  rewrite /u64_le /le_to_u64.
+  rewrite word.unsigned_of_Z.
+  rewrite wrap_small.
+  { rewrite LittleEndian.split_combine.
+    simpl; auto. }
+  cbv [length].
+  match goal with
+  | |- context[LittleEndian.combine ?n ?t] =>
+    pose proof (combine_bound n t)
+  end.
+  lia.
+Qed.
+
+Lemma block_to_is_hdr b :
+  0 d↦ b -∗ ∃ sz disk_sz, is_hdr sz disk_sz.
+Proof.
+  iIntros "Hd0".
+  rewrite /is_hdr.
+  iExists (le_to_u64 (take 8 $ vec_to_list b)).
+  iExists (le_to_u64 (take 8 $ drop 8 $ vec_to_list b)).
+  iExists _; iFrame.
+  iPureIntro; split.
+  - rewrite /u64_le_bytes.
+    rewrite le_to_u64_le; last first.
+    { rewrite take_length.
+      rewrite Nat.min_l; auto.
+      rewrite vec_to_list_length.
+      change block_bytes with 4096%nat; lia. }
+    unfold Block_to_vals.
+    rewrite fmap_take.
+    auto.
+  - rewrite /u64_le_bytes.
+    rewrite le_to_u64_le; last first.
+    { rewrite take_length drop_length.
+      rewrite Nat.min_l; auto.
+      rewrite vec_to_list_length.
+      change block_bytes with 4096%nat; lia. }
+    unfold Block_to_vals.
+    rewrite fmap_take fmap_drop.
+    auto.
+Qed.
+
 Theorem wp_init stk E (sz: u64) vs :
   {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
     Init #sz @ stk; E
@@ -171,6 +249,29 @@ Proof.
   - rewrite word.unsigned_ltu in Heqb.
     apply Z.ltb_ge in Heqb.
     wp_lam.
-Abort.
+    destruct vs.
+    { simpl in *.
+      change (int.val 1) with 1 in Heqb.
+      lia. }
+    iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
+    iDestruct (block_to_is_hdr with "Hd0") as (sz0 disk_sz0) "Hhdr".
+    wp_apply (wp_write_hdr with "Hhdr").
+    iIntros "Hhdr".
+    wp_steps.
+    iApply "HΦ".
+    iIntros "_".
+    rewrite /is_log.
+    change (0 + 1) with 1.
+    simpl.
+    iExists _, _; iFrame.
+    rewrite disk_array_emp.
+    iSplitR; first by auto.
+    iSplitR; first by auto.
+    iSplitR; first by auto.
+    iExists vs; iFrame.
+    iPureIntro.
+    simpl in H.
+    lia.
+Qed.
 
 End heap.

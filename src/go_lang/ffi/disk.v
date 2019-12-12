@@ -313,6 +313,17 @@ lemmas. *)
   Definition disk_array (l: Z) (q: Qp) (vs: list Block): iProp Σ :=
     ([∗ list] i ↦ b ∈ vs, (l + i) d↦{q} b)%I.
 
+  Theorem disk_array_cons l q b vs :
+    disk_array l q (b::vs) ⊣⊢
+               mapsto l q b ∗ disk_array (l + 1) q vs.
+  Proof.
+    rewrite /disk_array big_sepL_cons.
+    rewrite Z.add_0_r.
+    assert (forall l k, l + S k = l + 1 + k) by lia.
+    setoid_rewrite H.
+    reflexivity.
+  Qed.
+
   Theorem disk_array_app l q vs1 vs2 :
     disk_array l q (vs1 ++ vs2) ⊣⊢
                disk_array l q vs1 ∗ disk_array (l + length vs1) q vs2.
@@ -321,6 +332,10 @@ lemmas. *)
     setoid_rewrite Nat2Z.inj_add.
     by setoid_rewrite Z.add_assoc.
   Qed.
+
+  Theorem disk_array_emp l q :
+    disk_array l q [] ⊣⊢ emp.
+  Proof. by rewrite /disk_array. Qed.
 
   Theorem disk_array_split l q z vs :
     0 <= z <= Z.of_nat (length vs) ->
