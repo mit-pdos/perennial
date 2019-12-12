@@ -157,26 +157,6 @@ Proof.
   { rewrite u64_le_bytes_length; mia. }
 Admitted.
 
-Lemma le_to_u64_le bs :
-  length bs = 8%nat ->
-  u64_le (le_to_u64 bs) = bs.
-Proof.
-  intros.
-  do 8 (destruct bs; [ simpl in H; lia | ]).
-  destruct bs; [ clear H | simpl in H; lia ].
-  rewrite /u64_le /le_to_u64.
-  rewrite word.unsigned_of_Z.
-  rewrite wrap_small.
-  { rewrite LittleEndian.split_combine.
-    simpl; auto. }
-  cbv [length].
-  match goal with
-  | |- context[LittleEndian.combine ?n ?t] =>
-    pose proof (combine_bound n t)
-  end.
-  lia.
-Qed.
-
 Lemma block_to_is_hdr b :
   0 d↦ b -∗ ∃ sz disk_sz, is_hdr sz disk_sz.
 Proof.
