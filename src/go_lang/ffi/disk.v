@@ -62,12 +62,10 @@ Definition disk_ty: ext_types disk_op :=
     | SizeOp => (unitT, uint64T)
        end; |}.
 
-Canonical Structure disk_ty.
-
 Definition block_bytes: nat := N.to_nat 4096.
 Definition BlockSize {ext: ext_op}: val := #4096.
 Definition Block := vec byte block_bytes.
-Definition blockT: ty := slice.T byteT.
+Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
 
 Definition disk_state := gmap Z Block.
 
