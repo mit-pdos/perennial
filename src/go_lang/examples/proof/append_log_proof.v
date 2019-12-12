@@ -1,4 +1,3 @@
-From coqutil Require Import Z.BitOps Word.LittleEndian.
 From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.go_lang.examples Require Import append_log.
 From Perennial.go_lang Require Import basic_triples.
@@ -156,34 +155,6 @@ Proof.
     admit. }
   { rewrite u64_le_bytes_length; mia. }
   { rewrite u64_le_bytes_length; mia. }
-Admitted.
-
-Lemma combine_unfold byte (ok: word.ok byte) n b (t: HList.tuple byte n) :
-  LittleEndian.combine (S n) {| PrimitivePair.pair._1 := b; PrimitivePair.pair._2 := t |} =
-  Z.lor (int.val b) (LittleEndian.combine n t ≪ 8).
-Proof.
-  reflexivity.
-Qed.
-
-Theorem combine_bound {byte: word 8} {ok: word.ok byte} n t :
-  0 <= LittleEndian.combine n t < 2 ^ (8 * n).
-Proof.
-  induction n; simpl.
-  - cbv; split; congruence.
-  - destruct t as [b t].
-    let T := type of t in change T with (HList.tuple byte n) in *.
-    rewrite combine_unfold.
-    rewrite BitOps.or_to_plus.
-    { pose proof (IHn t).
-      pose proof (word.unsigned_range b).
-      split.
-      { unfold Z.shiftl; simpl. lia. }
-      { unfold Z.shiftl; simpl.
-        replace (2 ^ (8 * S n)) with (2^8 * 2 ^ (8 * n)); try lia.
-        replace (8 * S n) with (8 + 8*n) by lia.
-        rewrite <- Z.pow_add_r; lia. } }
-    pose proof (word.unsigned_range b).
-    admit.
 Admitted.
 
 Lemma le_to_u64_le bs :

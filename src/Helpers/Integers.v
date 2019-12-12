@@ -1,5 +1,6 @@
 From stdpp Require Import decidable countable.
 From coqutil Require Import Datatypes.HList.
+From coqutil.Z Require Import BitOps.
 From coqutil.Word Require Naive.
 From coqutil.Word Require Export Interface Properties.
 From coqutil.Word Require Import LittleEndian.
@@ -356,3 +357,73 @@ Qed.
 Eval cbv [u32_le map split tuple.to_list] in u32_le.
 Eval cbv [le_to_u32 map combine length tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2]
   in (fun v1 v2 v3 v4 => le_to_u32 [v1;v2;v3;v4]).
+
+Lemma combine_unfold n b (t: HList.tuple byte n) :
+  combine (S n) {| PrimitivePair.pair._1 := b; PrimitivePair.pair._2 := t |} =
+  Z.lor (int.val b) (combine n t ≪ 8).
+Proof.
+  reflexivity.
+Qed.
+
+Theorem Zmod_small_bits_high p z n :
+  0 <= z < 2 ^ p ->
+  0 <= p <= n ->
+  Z.testbit z n = false.
+Proof.
+  intros.
+  rewrite <- (Z.mod_small z (2^p)) by lia.
+  rewrite Z.mod_pow2_bits_high; auto; lia.
+Qed.
+
+Theorem combine_bound n t :
+  0 <= combine n t < 2 ^ (8 * n).
+Proof.
+  induction n; simpl.
+  - cbv; split; congruence.
+  - destruct t as [b t].
+    let T := type of t in change T with (HList.tuple byte n) in *.
+    rewrite combine_unfold.
+    rewrite BitOps.or_to_plus.
+    { pose proof (IHn t).
+      pose proof (word.unsigned_range b).
+      split.
+      { unfold Z.shiftl; simpl. lia. }
+      { unfold Z.shiftl; simpl.
+        replace (2 ^ (8 * S n)) with (2^8 * 2 ^ (8 * n)); try lia.
+        replace (8 * S n) with (8 + 8*n) by lia.
+        rewrite <- Z.pow_add_r; lia. } }
+    pose proof (word.unsigned_range b).
+    apply Z.bits_inj.
+    unfold Z.eqf; intros.
+    rewrite Z.land_spec.
+    rewrite Z.bits_0.
+    destruct (decide (n0 < 0)).
+    { rewrite Z.testbit_neg_r; [ | lia ].
+      rewrite andb_false_l; auto.
+    }
+    destruct (decide (n0 < 8)).
+    + rewrite Z.shiftl_spec_low; [ | lia ].
+      rewrite andb_false_r; auto.
+    + rewrite (Zmod_small_bits_high 8); [ | lia | lia ].
+      rewrite andb_false_l; auto.
+Qed.
+
+Lemma le_to_u64_le bs :
+  length bs = 8%nat ->
+  u64_le (le_to_u64 bs) = bs.
+Proof.
+  intros.
+  do 8 (destruct bs; [ simpl in H; lia | ]).
+  destruct bs; [ clear H | simpl in H; lia ].
+  unfold u64_le, le_to_u64.
+  rewrite word.unsigned_of_Z.
+  rewrite wrap_small.
+  { rewrite LittleEndian.split_combine.
+    simpl; auto. }
+  cbv [length].
+  match goal with
+  | |- context[LittleEndian.combine ?n ?t] =>
+    pose proof (combine_bound n t)
+  end.
+  lia.
+Qed.
