@@ -4,6 +4,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Import ectx_lifting.
 
+From Perennial.Helpers Require Import CountableTactics.
 From Perennial.go_lang Require Import lang lifting slice typing.
 
 (* this is purely cosmetic but it makes printing line up with how the code is
@@ -13,22 +14,12 @@ Set Printing Projections.
 Inductive DiskOp := ReadOp | WriteOp | SizeOp.
 Instance eq_DiskOp : EqDecision DiskOp.
 Proof.
-  intros x y; hnf; decide equality.
+  solve_decision.
 Defined.
 
 Instance DiskOp_fin : Countable DiskOp.
 Proof.
-  refine (countable.inj_countable'
-            (fun op => match op with
-                 | ReadOp => 0
-                 | WriteOp => 1
-                 | SizeOp => 2
-                    end)
-            (fun n => match n with
-                | 0 => ReadOp
-                | 1 => WriteOp
-                | _ => SizeOp
-                   end) _); by intros [].
+  solve_countable DiskOp_rec 3%nat.
 Qed.
 
 Inductive Disk_val := .
@@ -62,7 +53,7 @@ Definition disk_ty: ext_types disk_op :=
     | SizeOp => (unitT, uint64T)
        end; |}.
 
-Definition block_bytes: nat := N.to_nat 4096.
+Definition block_bytes: nat := Z.to_nat 4096.
 Definition BlockSize {ext: ext_op}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
