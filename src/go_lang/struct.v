@@ -6,13 +6,15 @@ From Perennial.go_lang Require Import typing.
 
     Access field offsets within pairs by name rather than using Fst and Snd. *)
 
-Record descriptor :=
-  mkStruct { fields: list (string*ty); }.
-
 (* Check eq_refl : (#0, #1, #2)%E = ((#0, #1), #2)%E. *)
 
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
+  Context {ext_ty: ext_types ext}.
+  Set Default Proof Using "ext ext_ty".
+
+Record descriptor :=
+  mkStruct { fields: list (string*ty); }.
 
 Fixpoint getField_e (f0: string) (rev_fields: list (string*ty)) (se: expr): expr :=
   match rev_fields with
@@ -129,9 +131,6 @@ Definition storeField d f : val :=
   | Some (off, t) => λ: "p" "x", store_ty t (Var "p" +ₗ #off) (Var "x")
   | None => λ: <> <>, #()
   end.
-
-Context {ext_ty: ext_types ext}.
-Set Default Proof Using "ext ext_ty".
 
 Hint Resolve struct_offset_op_hasTy_eq : types.
 

@@ -4,15 +4,15 @@ From Perennial.go_lang Require Import
 Open Scope heap_types.
 
 Module three.
-  Definition S := struct.decl ["foo" :: uint64T; "bar" :: boolT; "baz" :: refT uint64T].
-  Definition T := struct.t S.
-  Section fields.
-    Context {ext:ext_op}.
+  Section types.
+    Context {ext:ext_op} {ext_ty: ext_types ext}.
+    Definition S := struct.decl ["foo" :: uint64T; "bar" :: boolT; "baz" :: refT uint64T].
+    Definition T := struct.t S.
     Definition foo := structF! S "foo".
     Definition bar := structF! S "bar".
     Definition baz := structF! S "baz".
     Fail Definition quux := structF! S "quux".
-  End fields.
+  End types.
 End three.
 
 Section go_lang.

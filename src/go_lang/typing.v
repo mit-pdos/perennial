@@ -1,24 +1,46 @@
 From Perennial.go_lang Require Import lang notation map.
 
-Inductive ty :=
-| uint64T
-| uint32T
-| byteT
-| boolT
-| unitT
-| stringT
-| prodT (t1 t2: ty)
-| sumT (t1 t2: ty)
-| arrowT (t1 t2: ty)
-| arrayT (t: ty)
-| structRefT (ts: list ty)
-(* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
-| mapValT (vt: ty) (* keys are always uint64, for now *)
-| anyT
-.
+Class val_types :=
+  { ext_tys: Type; }.
 
-Definition refT (t:ty) : ty := structRefT [t].
-Definition mapT (vt:ty) : ty := refT (mapValT vt).
+Section val_types.
+  Context {val_tys: val_types}.
+  Inductive ty :=
+  | uint64T
+  | uint32T
+  | byteT
+  | boolT
+  | unitT
+  | stringT
+  | prodT (t1 t2: ty)
+  | sumT (t1 t2: ty)
+  | arrowT (t1 t2: ty)
+  | arrayT (t: ty)
+  | structRefT (ts: list ty)
+  (* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
+  | mapValT (vt: ty) (* keys are always uint64, for now *)
+  | anyT
+  | extT (x: ext_tys)
+  .
+
+  Definition refT (t:ty) : ty := structRefT [t].
+  Definition mapT (vt:ty) : ty := refT (mapValT vt).
+
+  Definition Ctx := string -> option ty.
+  Global Instance empty_ctx : Empty Ctx := fun _ => None.
+  Global Instance ctx_insert : Insert binder ty Ctx.
+  Proof using Type.
+    hnf.
+    exact (fun b t => match b with
+                   | BNamed x => fun Γ =>
+                                  fun x' => if String.eqb x x'
+                                         then Some t
+                                         else Γ x'
+                   | BAnon => fun Γ => Γ
+                   end).
+  Defined.
+  Global Instance ctx_lookup : Lookup string ty Ctx := fun x Γ => Γ x.
+End val_types.
 
 Infix "*" := prodT : heap_type.
 Infix "->" := arrowT : heap_type.
@@ -26,23 +48,10 @@ Infix "->" := arrowT : heap_type.
 Reserved Notation "Γ ⊢ e : A" (at level 74, e, A at next level).
 Reserved Notation "Γ '⊢v' v : A" (at level 74, v, A at next level).
 
-Definition Ctx := string -> option ty.
-Instance empty_ctx : Empty Ctx := fun _ => None.
-Instance ctx_insert : Insert binder ty Ctx.
-Proof.
-  hnf.
-  exact (fun b t => match b with
-                 | BNamed x => fun Γ =>
-                                fun x' => if String.eqb x x'
-                                       then Some t
-                                       else Γ x'
-                 | BAnon => fun Γ => Γ
-                 end).
-Defined.
-Instance ctx_lookup : Lookup string ty Ctx := fun x Γ => Γ x.
-
 Class ext_types (ext:ext_op) :=
-  { get_ext_tys: external -> ty * ty; (* the argument type and return type *)
+  { val_tys :> val_types;
+    val_ty_def : ext_tys -> val;
+    get_ext_tys: external -> ty * ty; (* the argument type and return type *)
   }.
 
 Section go_lang.
@@ -79,6 +88,7 @@ Section go_lang.
     | arrayT t => #null
     | structRefT ts => #null
     | anyT => #()
+    | extT x => val_ty_def x
     end.
 
   Inductive base_lit_hasTy : base_lit -> ty -> Prop :=
@@ -280,6 +290,8 @@ Section go_lang.
   | val_any_hasTy v t :
       Γ ⊢v v : t ->
       Γ ⊢v v : anyT
+  | ext_def_hasTy x :
+      Γ ⊢v val_ty_def x : extT x
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
@@ -455,7 +467,7 @@ Notation "Γ ⊢v v : A" := (val_hasTy Γ%ht v A%ht) : heap_types.
 Notation "⊢ v : A" := (base_lit_hasTy v%V A%ht) (at level 90, only printing) : heap_types.
 Notation "⊢ e : A" := (val_hasTy ∅ e%V A%ht) (at level 90, e at next level, A at next level) : heap_types.
 
-Theorem insert_anon t : (<[BAnon := t]> : Ctx -> Ctx) = (fun Γ => Γ).
+Theorem insert_anon `{ext_ty: ext_types} t : (<[BAnon := t]> : Ctx -> Ctx) = (fun Γ => Γ).
 Proof.
   reflexivity.
 Qed.

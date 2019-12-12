@@ -10,10 +10,10 @@ From Perennial.go_lang Require Import struct typing.
 Open Scope heap_types.
 
 Module slice.
-  Definition S t := mkStruct ["p" :: refT t; "len" :: uint64T].
-  Definition T t : ty := arrayT t * uint64T.
-  Section fields.
-    Context `{ext_ty:ext_types}.
+  Section types.
+    Context `{ext_ty: ext_types}.
+    Definition S t := mkStruct ["p" :: refT t; "len" :: uint64T].
+    Definition T t : ty := arrayT t * uint64T.
 
     Definition ptr: val := λ: "s", Fst (Var "s").
     Definition len: val := λ: "s", Snd (Var "s").
@@ -26,13 +26,13 @@ Module slice.
     Proof.
       typecheck.
     Qed.
-  End fields.
 
-  Definition nil {ext:ext_op} : val := (#null, #0).
-  Theorem nil_t `{ext_ty:ext_types} t : ⊢ nil : T t.
-  Proof.
-    typecheck.
-  Qed.
+    Definition nil : val := (#null, #0).
+    Theorem nil_t t : ⊢ nil : T t.
+    Proof.
+      typecheck.
+    Qed.
+  End types.
 End slice.
 
 Hint Resolve slice.ptr_t slice.len_t slice.nil_t : types.

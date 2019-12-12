@@ -31,18 +31,38 @@ Proof.
                    end) _); by intros [].
 Qed.
 
-Definition disk_op : ext_op.
+Inductive Disk_val := .
+Instance eq_Disk_val : EqDecision Disk_val.
 Proof.
-  refine (mkExtOp DiskOp _ _).
+  intros [].
 Defined.
 
+Instance eq_Disk_fin : Countable Disk_val.
+Proof.
+  refine {| encode := fun (x: Disk_val) => match x with end;
+            decode := fun x => None; |}.
+  intros [].
+Qed.
+
+Definition disk_op : ext_op.
+Proof.
+  refine (mkExtOp DiskOp _ _ Disk_val _ _).
+Defined.
+
+Instance disk_val_ty: val_types :=
+  {| ext_tys := Empty_set; |}.
+
 Definition disk_ty: ext_types disk_op :=
-  {| get_ext_tys (op: @external disk_op) :=
+  {| val_tys := disk_val_ty;
+     val_ty_def x := match x with end;
+     get_ext_tys (op: @external disk_op) :=
        match op with
     | ReadOp => (uint64T, arrayT byteT)
     | WriteOp => (prodT uint64T (arrayT byteT), unitT)
     | SizeOp => (unitT, uint64T)
        end; |}.
+
+Local Canonical Structure disk_ty.
 
 Definition block_bytes: nat := N.to_nat 4096.
 Definition BlockSize {ext: ext_op}: val := #4096.
