@@ -425,5 +425,5 @@ Proof.
   | |- context[LittleEndian.combine ?n ?t] =>
     pose proof (combine_bound n t)
   end.
-  lia.
+  exact H.
 Qed.
