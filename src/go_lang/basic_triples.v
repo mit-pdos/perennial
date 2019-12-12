@@ -136,8 +136,6 @@ Definition slice_val_fold (ptr: loc) (sz: u64) :
 (* TODO: order commands so primitives are opaque only after proofs *)
 Transparent raw_slice.
 
-Ltac wp_step := wp_lam || wp_let || wp_pures.
-
 Lemma wp_raw_slice s E l vs (sz: u64) t :
   {{{ array l vs ∗ ⌜length vs = int.nat sz⌝ }}}
     raw_slice t #l #sz @ s; E
@@ -146,6 +144,7 @@ Proof.
   iIntros (Φ) "Hslice HΦ".
   rewrite /raw_slice.
   repeat wp_step.
+  wp_lam; repeat wp_step.
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
   iFrame.
 Qed.
@@ -186,6 +185,7 @@ Lemma wp_new_slice s E t (sz: u64) :
 Proof.
   iIntros (Φ) "% HΦ".
   repeat wp_step.
+  wp_lam; repeat wp_step.
   wp_apply wp_allocN; eauto.
   iIntros (l) "[Hl _Hmeta]".
   repeat wp_step.
@@ -260,30 +260,28 @@ Proof.
   lia.
 Qed.
 
-Lemma wp_skip s E v sl vs (n: u64) :
-  {{{ is_slice (slice_skip sl n) (drop (int.nat n) vs) }}}
-    SliceSkip sl #n @ s; E
-  {{{ RET slice_val (slice_skip sl n);
-      is_slice (slice_skip sl n) (drop (int.nat n) vs) }}}.
+Lemma wp_SliceSkip stk E s vs (n: u64) :
+  {{{ is_slice s vs ∗ ⌜int.val n <= Z.of_nat (length vs)⌝ }}}
+    SliceSkip s #n @ stk; E
+  {{{ RET slice_val (slice_skip s n);
+      is_slice (slice_skip s n) (drop (int.nat n) vs) ∗
+               array s.(Slice.ptr) (take (int.nat n) vs) }}}.
 Proof.
-  iIntros (Φ) "[Hskip %] HΦ".
-  repeat wp_step.
-  wp_if_destruct.
-  - repeat wp_step.
-    rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
-    iFrame.
-    iPureIntro; auto.
-  - wp_apply wp_panic.
-    iPureIntro.
-    pose proof (word.unsigned_range n).
-    pose proof (word.unsigned_range sl.(Slice.sz)).
-    rewrite word.unsigned_ltu in Heqb.
-    apply Z.ltb_ge in Heqb.
-    rewrite drop_length /= word.unsigned_sub in H.
-    rewrite wrap_small in H; nat2Z.
-    { admit. }
-    intuition; nat2Z.
-Admitted.
+  iIntros (Φ) "[[Hs %] %] HΦ".
+  wp_lam; repeat wp_step.
+  wp_lam; repeat wp_step.
+  repeat (wp_lam || wp_step).
+  rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
+  pose proof (word.unsigned_range n).
+  pose proof (word.unsigned_range s.(Slice.sz)).
+  iDestruct (array_split (int.nat n) with "Hs") as "[Htake Hskip]"; try lia.
+  rewrite Z2Nat.id; last lia.
+  iFrame.
+  iPureIntro.
+  rewrite drop_length /=.
+  rewrite word.unsigned_sub.
+  rewrite wrap_small; lia.
+Qed.
 
 Lemma wp_slice_get s E sl vs (i: u64) v0 :
   {{{ is_slice sl vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
@@ -295,7 +293,7 @@ Proof.
   repeat wp_step.
   iDestruct "Hsl" as "[Hsl %]".
   cbv [Slice.ptr Slice.sz] in *.
-  repeat wp_step.
+  repeat (wp_lam || wp_step).
   iDestruct (update_array ptr _ _ _ H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
   nat2Z.
@@ -366,6 +364,7 @@ Proof.
   iRevert (vs1 vs2 n dst src H H0) "Hdst Hsrc HΦ".
   iLöb as "IH".
   iIntros (vs1 vs2 n dst src Hvs1 Hvs2) "Hdst Hsrc HΦ".
+  wp_lam.
   repeat wp_step.
   wp_if_destruct.
   - apply bool_decide_eq_true in Heqb.
@@ -409,7 +408,6 @@ Proof.
       admit.
 Admitted.
 
-Opaque MemCpy_rec.
 Transparent SliceAppend.
 
 Lemma wp_slice_append s E sl vs x :
@@ -418,10 +416,12 @@ Lemma wp_slice_append s E sl vs x :
   {{{ sl', RET slice_val sl'; is_slice sl' (vs ++ [x]) }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
+  wp_lam; repeat wp_step.
   repeat wp_step.
   iDestruct "Hsl" as "[Hptr %]".
   pose proof (word.unsigned_range (Slice.sz sl)).
   wp_bind (AllocN _ _).
+  wp_lam; repeat wp_step.
   iApply wp_allocN; auto.
   {  rewrite word.unsigned_add.
      unfold word.wrap.
@@ -430,6 +430,8 @@ Proof.
   iIntros "!>".
   iIntros (l) "[Halloc Hmeta]".
   repeat wp_step.
+  wp_lam; repeat wp_step.
+  wp_lam; repeat wp_step.
 
   iDestruct (array_split (int.val (Slice.sz sl)) with "Halloc") as "[Halloc_sz Halloc1]".
   - lia.
@@ -466,6 +468,7 @@ Proof.
       wp_apply (wp_store with "Halloc1").
       iIntros "Hlast".
       repeat wp_step.
+      wp_lam; repeat wp_step.
 
       rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice /=.
       iSplitL "Hvs Hlast".

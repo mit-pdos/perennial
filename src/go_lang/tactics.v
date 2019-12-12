@@ -33,6 +33,7 @@ Ltac reshape_expr e tac :=
     | Primitive2 ?op (Val ?v) ?e      => add_item (@Primitive2RCtx _ op v) vs K e
     | Primitive2 ?op ?e1 ?e2          => add_item (@Primitive2LCtx _ op e2) vs K e1
     | Primitive1 ?op ?e               => add_item (@Primitive1Ctx _ op) vs K e
+    | ExternalOp ?op ?e               => add_item (@ExternalOpCtx _ op) vs K e
     (* | Primitive3 ?op (Val ?v0) (Val ?v1) ?e2 => add_item (Primitive3RCtx op v0 v1) vs K e2
     | Primitive3 ?op (Val ?v0) ?e1 ?e2     => add_item (Primitive3MCtx op v0 e2) vs K e1
     | Primitive3 ?op ?e0 ?e1 ?e2           => add_item (Primitive3LCtx op e1 e2) vs K e0 *)

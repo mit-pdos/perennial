@@ -146,6 +146,9 @@ Tactic Notation "wp_match" := wp_case; wp_pure (Rec _ _ _); wp_lam.
 Tactic Notation "wp_inj" := wp_pure (InjL _) || wp_pure (InjR _).
 Tactic Notation "wp_pair" := wp_pure (Pair _ _).
 Tactic Notation "wp_closure" := wp_pure (Rec _ _ _).
+Ltac wp_step := wp_pure (App _ _) || wp_let || wp_seq || wp_pures.
+Ltac wp_steps := repeat wp_step.
+Ltac wp_call := wp_lam; wp_steps.
 
 Lemma tac_wp_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} K Δ s E Φ e f :
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
