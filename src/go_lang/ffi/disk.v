@@ -351,6 +351,31 @@ lemmas. *)
     rewrite Z2Nat.id; last lia.
     auto.
   Qed.
+
+  Lemma update_disk_array (l: Z) bs (z: Z) b q :
+    0 <= z ->
+    bs !! Z.to_nat z = Some b →
+    disk_array l q bs -∗ ((l + z) d↦{q} b ∗
+                          ∀ b', (l + z) d↦{q} b' -∗
+                                                disk_array l q (<[Z.to_nat z:=b']>bs))%I.
+  Proof.
+    iIntros (Hpos Hlookup) "Hl".
+    rewrite -[X in (disk_array l q X)](take_drop_middle _ (Z.to_nat z) b); last done.
+    iDestruct (disk_array_app with "Hl") as "[Hl1 Hl]".
+    iDestruct (disk_array_cons with "Hl") as "[Hl2 Hl3]".
+    assert (Z.to_nat z < length bs)%nat as H by (apply lookup_lt_is_Some; by eexists).
+    rewrite take_length min_l; last by lia.
+    rewrite Z2Nat.id; auto. iFrame "Hl2".
+    iIntros (w) "Hl2".
+    clear Hlookup. assert (<[Z.to_nat z:=w]> bs !! Z.to_nat z = Some w) as Hlookup.
+    { apply list_lookup_insert. lia. }
+    rewrite -[in (disk_array l q (<[Z.to_nat z:=w]> bs))](take_drop_middle (<[Z.to_nat z:=w]> bs) (Z.to_nat z) w Hlookup).
+    iApply disk_array_app. rewrite take_insert; last by lia. iFrame.
+    iApply disk_array_cons. rewrite take_length min_l; last by lia. iFrame.
+    rewrite drop_insert; last by lia.
+    rewrite Z2Nat.id; auto. iFrame.
+  Qed.
+
   End proof.
 
 End disk.

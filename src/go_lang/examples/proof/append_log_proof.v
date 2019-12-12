@@ -46,6 +46,26 @@ Proof.
   by iApply slice_to_block_array.
 Qed.
 
+Lemma wp_Read stk E (a: u64) q b :
+  {{{ ▷ int.val a d↦{q} b }}}
+    Read #a @ stk; E
+  {{{ s, RET slice_val s;
+      int.val a d↦{q} b ∗
+      is_slice s (Block_to_vals b) }}}.
+Proof.
+  iIntros (Φ) ">Hda HΦ".
+  wp_call.
+  wp_apply (wp_ReadOp with "Hda").
+  iIntros (l) "(Hda&Hl&_)".
+  iDestruct (slice_to_block_array (Slice.mk l 4096) with "Hl") as "Hs".
+  wp_pures.
+  wp_call.
+  wp_apply (wp_raw_slice with "Hs").
+  iIntros (s) "Hs".
+  iApply "HΦ".
+  iFrame.
+Qed.
+
 Definition val_to_byte (v: val): u8 :=
   match v with
   | LitV (LitByte x) => x
@@ -70,14 +90,17 @@ Definition is_hdr (sz disk_sz: u64): iProp Σ :=
        ⌜take 8 (Block_to_vals b) = u64_le_bytes sz⌝ ∗
        ⌜take 8 (drop 8 (Block_to_vals b)) = u64_le_bytes disk_sz⌝.
 
+Definition is_log' (v:val) (sz disk_sz: u64) (vs:list Block): iProp Σ :=
+  is_hdr sz disk_sz ∗
+  1 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ ∗
+  (∃ (free: list Block), (1 + length vs) d↦∗ free ∗
+  ⌜ (1 + length vs + length free)%Z = int.val disk_sz ⌝)
+.
+
 Definition is_log (v:val) (vs:list Block): iProp Σ :=
   ∃ (sz: u64) (disk_sz: u64),
     ⌜v = (#sz, #disk_sz)%V⌝ ∗
-    is_hdr sz disk_sz ∗
-    1 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ ∗
-    (∃ (free: list Block), (1 + length vs) d↦∗ free ∗
-    ⌜ (1 + length vs + length free)%Z = int.val disk_sz ⌝)
-.
+    is_log' v sz disk_sz vs.
 
 Ltac mia :=
   change (int.val 1) with 1;
@@ -211,7 +234,7 @@ Proof.
     wp_steps.
     iApply "HΦ".
     iIntros "_".
-    rewrite /is_log.
+    rewrite /is_log /is_log'.
     change (0 + 1) with 1.
     simpl.
     iExists _, _; iFrame.
@@ -224,5 +247,120 @@ Proof.
     simpl in H.
     lia.
 Qed.
+
+Lemma is_log_elim v bs :
+  is_log v bs -∗ ∃ (sz disk_sz: u64),
+      ⌜v = (#sz, #disk_sz)%V⌝ ∗
+      is_log (#sz, #disk_sz) bs.
+Proof.
+  iIntros "Hlog".
+  iDestruct "Hlog" as (sz disk_sz) "[-> Hlog']".
+  rewrite /is_log.
+  iExists _, _.
+  iSplitR; eauto.
+Qed.
+
+Theorem is_log'_sz v sz disk_sz bs :
+  is_log' v sz disk_sz bs -∗ ⌜length bs = int.nat sz⌝.
+Proof.
+  iIntros "(_&_&%&_)"; auto.
+Qed.
+
+Theorem is_log_sz (sz disk_sz: u64) bs :
+  is_log (#sz, #disk_sz)%V bs -∗ ⌜length bs = int.nat sz⌝.
+Proof.
+  iIntros "Hlog".
+  iDestruct "Hlog" as (sz' disk_sz') "[% Hlog']".
+  iDestruct (is_log'_sz with "Hlog'") as "%".
+  iPureIntro.
+  congruence.
+Qed.
+
+Instance word_inhabited width (word: Interface.word width) : Inhabited word.
+Proof.
+  constructor.
+  exact (word.of_Z 0).
+Qed.
+
+Theorem is_log_read (i: u64) (sz disk_sz: u64) bs :
+  int.val i < int.val sz ->
+  is_log (#sz, #disk_sz) bs -∗
+    ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗
+         (1 + int.val i) d↦ b ∗
+         ((1 + int.val i) d↦ b -∗ is_log (#sz, #disk_sz) bs).
+Proof.
+  iIntros (Hi) "Hlog".
+  iDestruct "Hlog" as (sz' disk_sz') "[% Hlog]".
+  symmetry in H; inversion H; subst; clear H.
+  destruct_with_eqn (bs !! int.nat i).
+  - iExists b.
+    iSplitR; eauto.
+    iDestruct "Hlog" as "(Hhdr & Hlog & % & free)".
+    iDestruct (update_disk_array 1 bs (int.val i) with "Hlog") as "(Hdi&Hupd)"; eauto.
+    { pose proof (word.unsigned_range i); lia. }
+    iFrame.
+    iIntros "Hdi"; iDestruct ("Hupd" with "Hdi") as "Hlog".
+    rewrite /is_log.
+    iExists _, _; iSplitR; eauto.
+    rewrite /is_log'.
+    iFrame.
+    rewrite list_insert_id; eauto.
+  - apply lookup_ge_None in Heqo.
+    apply Nat2Z.inj_le in Heqo.
+    pose proof (word.unsigned_range i).
+    rewrite Z2Nat.id in Heqo; try lia.
+    iDestruct (is_log'_sz with "Hlog") as "%".
+    lia.
+Qed.
+
+Theorem wp_Log__Get stk E v bs (i: u64) :
+  {{{ is_log v bs }}}
+    Log__Get v #i @ stk; E
+  {{{ b s (ok: bool), RET (slice_val s, #ok);
+      (⌜ok⌝ -∗ ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s (Block_to_vals b)) ∗
+      (⌜negb ok⌝ -∗ ⌜bs !! int.nat i = None⌝) ∗
+      is_log v bs }}}.
+Proof.
+  iIntros (Φ) "Hlog HΦ".
+  iDestruct (is_log_elim with "Hlog") as (sz disk_sz) "[-> Hlog]".
+  wp_call.
+  wp_call.
+  wp_call.
+  wp_if_destruct.
+  - rewrite word.unsigned_ltu in Heqb.
+    apply Z.ltb_lt in Heqb.
+    iDestruct (is_log_read i with "Hlog") as (b) "(%& Hdi&Hupd)"; auto.
+    wp_apply (wp_Read with "[Hdi]").
+    { rewrite word.unsigned_add.
+      (* TODO: does something imply this doesn't overflow? *)
+      rewrite wrap_small; [ | admit ].
+      iFrame. }
+    iIntros (s) "[Hdi Hs]".
+    wp_steps.
+    iApply "HΦ".
+    iSplitL "Hs"; eauto.
+    iSplitR; eauto.
+    iApply "Hupd".
+    rewrite word.unsigned_add.
+    rewrite wrap_small; [ | admit ].
+    iFrame.
+  - wp_steps.
+    rewrite /slice.nil.
+    rewrite slice_val_fold.
+    iApply "HΦ".
+    iDestruct (is_log_sz with "Hlog") as "%".
+    rewrite word.unsigned_ltu in Heqb.
+    apply Z.ltb_ge in Heqb.
+    iFrame.
+    iSplit.
+    + iIntros ([]).
+    + iIntros "_".
+      iPureIntro.
+      apply lookup_ge_None.
+      lia.
+
+      Grab Existential Variables.
+      { refine inhabitant. }
+Admitted.
 
 End heap.
