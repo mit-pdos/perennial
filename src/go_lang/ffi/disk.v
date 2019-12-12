@@ -62,7 +62,7 @@ Definition disk_ty: ext_types disk_op :=
     | SizeOp => (unitT, uint64T)
        end; |}.
 
-Local Canonical Structure disk_ty.
+Canonical Structure disk_ty.
 
 Definition block_bytes: nat := N.to_nat 4096.
 Definition BlockSize {ext: ext_op}: val := #4096.
