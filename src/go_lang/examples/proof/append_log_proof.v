@@ -710,4 +710,36 @@ Proof.
     mia.
 Admitted.
 
+Theorem wp_Log__Reset stk E l vs :
+  {{{ ptsto_log l vs }}}
+    Log__Reset #l @ stk; E
+  {{{ RET #(); ptsto_log l [] }}}.
+Proof.
+  iIntros (Φ) "Hlog HΦ".
+  iDestruct "Hlog" as (sz disk_sz) "[[Hf0 Hf1] Hlog]".
+  wp_call.
+  wp_call.
+  wp_load.
+  wp_steps.
+  wp_call.
+  iDestruct "Hlog" as "(Hhdr&Hlog&%&Hfree)".
+  iDestruct "Hfree" as (free) "[Hfree %]".
+  wp_apply (wp_write_hdr with "Hhdr"); iIntros "Hhdr".
+  wp_steps.
+  wp_call.
+  rewrite loc_add_0.
+  wp_store.
+  wp_store.
+  iApply "HΦ".
+  iExists _, _; rewrite loc_add_0; iFrame.
+  rewrite disk_array_emp.
+  iSplitL ""; auto.
+  iSplitL ""; auto.
+  iDestruct (disk_array_app with "[$Hlog $Hfree]") as "Hfree".
+  iExists _; iFrame.
+  iPureIntro.
+  rewrite app_length.
+  simpl; mia.
+Qed.
+
 End heap.
