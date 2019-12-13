@@ -423,16 +423,47 @@ Proof.
   auto.
 Qed.
 
-(* TODO: needs some things to be in-bounds *)
-Lemma take_drop_insert_new {A} i x (l1 l2: list A) :
+Lemma insert_0_drop {A} l (x: A) :
+  (0 < length l)%nat ->
+  <[0%nat:=x]> l = [x] ++ (drop 1 l).
+Proof.
+  intros.
+  destruct l; simpl in *.
+  - lia.
+  - rewrite drop_0; auto.
+Qed.
+
+Lemma list_copy_new {A} (i: nat) x0 x (l1 l2: list A) :
+  l2 !! i = Some x0 ->
+  l1 !! i = Some x ->
   <[i:=x]> (take i l1 ++ drop i l2) =
   take (i + 1) l1 ++ drop (i + 1) (<[i:=x]> l2).
 Proof.
-  rewrite insert_app_r_alt.
-  { admit. }
+  intros.
+  apply lookup_lt_Some in H.
+  rewrite insert_app_r_alt; last first.
+  { rewrite take_length; lia. }
+  assert (i < length l1)%nat.
+  { apply lookup_lt_Some in H0; auto. }
   rewrite take_length.
-  lia.
-Admitted.
+  rewrite Nat.min_l; last lia.
+  replace (i - i)%nat with 0%nat by lia.
+  rewrite drop_insert; last lia.
+  replace (i + 1)%nat with (S i) at 1 by lia.
+  erewrite take_S_r; eauto.
+  rewrite insert_0_drop; last first.
+  { rewrite drop_length; lia. }
+  destruct l2; [ simpl in *; lia | ].
+  rewrite drop_drop.
+  rewrite app_assoc.
+  simpl.
+  destruct i.
+  - simpl.
+    rewrite drop_0; auto.
+  - simpl.
+    rewrite <- app_assoc.
+    auto.
+Qed.
 
 Theorem wp_writeAll stk E bk_s bks bs0 bs (off: u64) :
   {{{ blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs0 ∗ ⌜length bs0 = length bs⌝ }}}
@@ -541,8 +572,7 @@ Proof.
       rewrite Z2Nat.inj_add; [ | mia | mia ].
       change (int.nat 1) with 1%nat.
       replace (int.val z).
-      rewrite <- take_drop_insert_new.
-      iFrame.
+      erewrite <- list_copy_new; eauto.
     }
     { rewrite /U64.
       rewrite word.of_Z_unsigned.
