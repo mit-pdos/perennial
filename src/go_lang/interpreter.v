@@ -135,31 +135,30 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | Rec f y e => mret (RecV f y e)
                        
     | App e1 e2 => 
-      (* RtL evaluated, so interpret e2 first. *)
-      v <- interpret n e2;
-      e1' <- interpret n e1;
-        match e1' with
+      v1 <- interpret n e1;
+      v2 <- interpret n e2;
+        match v1 with
         | RecV BAnon BAnon ex => interpret n ex
         | RecV BAnon (BNamed y) ex =>
-          let e3 := subst y v ex in
+          let e3 := subst y v2 ex in
           interpret n e3
         | RecV (BNamed f) BAnon ex =>
-          let e3 := subst f e1' ex in
+          let e3 := subst f v1 ex in
           interpret n e3
         | RecV (BNamed f) (BNamed y) ex =>
-          let e3 := subst f e1' (subst y v ex) in
+          let e3 := subst f v1 (subst y v2 ex) in
           interpret n e3
         | _ => mfail "App applied to non-function."
         end
           
     | UnOp op e =>
-      e' <- interpret n e;
+      v <- interpret n e;
         (* mlift because up_op_eval returns an optional *)
-        mlift (un_op_eval op e') "UnOp failed."
+        mlift (un_op_eval op v) "UnOp failed."
                    
     | BinOp op e1 e2 =>
-      v2 <- interpret n e2;
       v1 <- interpret n e1;
+      v2 <- interpret n e2;
       (* mlift because up_op_eval returns an optional *)
       mlift (bin_op_eval op v1 v2) "BinOp failed."
                     
@@ -177,15 +176,15 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
         mret (PairV a b)
             
     | Fst e =>
-      e' <- interpret n e;
-      match e' with
+      v <- interpret n e;
+      match v with
       | PairV v1 v2 => mret v1
       | _ => mfail "Fst applied to non-PairV."
       end
 
     | Snd e =>
-      e' <- interpret n e;
-      match e' with
+      v <- interpret n e;
+      match v with
       | PairV v1 v2 => mret v2
       | _ => mfail "Snd applied to non-PairV."
       end
@@ -251,8 +250,8 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
         end
           
     | Primitive2 StoreOp e1 e2 =>
-      val <- interpret n e2;
       addrv <- interpret n e1;
+      val <- interpret n e2;
         match addrv with
         | LitV (LitInt l) =>
           let l' := loc_add null (int.val l) in
@@ -282,8 +281,8 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
         mret (LitV $ LitInt (le_to_u64 vs))
             
     | Primitive2 EncodeInt64Op e1 e2 =>
-      v2 <- interpret n e2;
       v1 <- interpret n e1;
+      v2 <- interpret n e2;
       s <- mget;
       v <- mlift (match v1 with
                  | LitV (LitInt v) => Some v
