@@ -46,6 +46,16 @@ Proof.
   by iApply slice_to_block_array.
 Qed.
 
+Theorem wp_Write' stk E (z: Z) (a: u64) s b :
+  {{{ ⌜int.val a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ is_slice s (Block_to_vals b) }}}
+    Write #a (slice_val s) @ stk; E
+  {{{ RET #(); z d↦ b ∗ is_slice s (Block_to_vals b) }}}.
+Proof.
+  iIntros (Φ) "[<- >Hpre] HΦ".
+  iApply (wp_Write with "[$Hpre]").
+  eauto.
+Qed.
+
 Lemma wp_Read stk E (a: u64) q b :
   {{{ ▷ int.val a d↦{q} b }}}
     Read #a @ stk; E
@@ -313,6 +323,26 @@ Proof.
     lia.
 Qed.
 
+Lemma list_lookup_lt A (l: list A) (i: nat) :
+  (i < length l)%nat ->
+  exists x, l !! i = Some x.
+Proof.
+  intros.
+  destruct_with_eqn (l !! i); eauto.
+  exfalso.
+  apply lookup_ge_None in Heqo.
+  lia.
+Qed.
+
+Lemma list_lookup_Z_lt {A} (l: list A) (i: Z) :
+  (0 <= i < Z.of_nat (length l)) ->
+  exists x, l !! Z.to_nat i = Some x.
+Proof.
+  intros.
+  apply list_lookup_lt.
+  apply Nat2Z.inj_le; lia.
+Qed.
+
 Theorem wp_Log__Get stk E v bs (i: u64) :
   {{{ is_log v bs }}}
     Log__Get v #i @ stk; E
@@ -332,7 +362,8 @@ Proof.
     iDestruct (is_log_read i with "Hlog") as (b) "(%& Hdi&Hupd)"; auto.
     wp_apply (wp_Read with "[Hdi]").
     { rewrite word.unsigned_add.
-      (* TODO: does something imply this doesn't overflow? *)
+      (* TODO: need to assume this! get is actually incorrect if getting from
+      the (2^64-1)th index from a disk of size 2^64 *)
       rewrite wrap_small; [ | admit ].
       iFrame. }
     iIntros (s) "[Hdi Hs]".
@@ -361,6 +392,174 @@ Proof.
 
       Grab Existential Variables.
       { refine inhabitant. }
+Admitted.
+
+Lemma is_slice_sz s vs :
+  is_slice s vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Proof.
+  iIntros "[_ %]".
+  auto.
+Qed.
+
+Definition blocks_slice (bk_s: Slice.t) (bks: list Slice.t) (bs: list Block): iProp Σ :=
+  is_slice bk_s (fmap slice_val bks) ∗
+   [∗ list] _ ↦ b_s;b ∈ bks;bs , is_slice b_s (Block_to_vals b).
+
+Lemma blocks_slice_length bk_s bks bs :
+  blocks_slice bk_s bks bs -∗ ⌜length bks = length bs⌝.
+Proof.
+  iIntros "(_&Hslices)".
+  iDestruct (big_sepL2_length with "Hslices") as "%".
+  auto.
+Qed.
+
+Lemma blocks_slice_length' bk_s bks bs :
+  blocks_slice bk_s bks bs -∗ ⌜length bks = int.nat bk_s.(Slice.sz)⌝.
+Proof.
+  iIntros "(Hs&_)".
+  iDestruct (is_slice_sz with "Hs") as "%".
+  iPureIntro.
+  rewrite fmap_length in H.
+  auto.
+Qed.
+
+(* TODO: needs some things to be in-bounds *)
+Lemma take_drop_insert_new {A} i x (l1 l2: list A) :
+  <[i:=x]> (take i l1 ++ drop i l2) =
+  take (i + 1) l1 ++ drop (i + 1) (<[i:=x]> l2).
+Proof.
+  rewrite insert_app_r_alt.
+  { admit. }
+  rewrite take_length.
+  lia.
+Admitted.
+
+Theorem wp_writeAll stk E bk_s bks bs0 bs (off: u64) :
+  {{{ blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs0 ∗ ⌜length bs0 = length bs⌝ }}}
+    writeAll (slice_val bk_s) #off @ stk; E
+  {{{ RET #(); blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs }}}.
+Proof.
+  iIntros (Φ) "(Hbs&Hd&%) HΦ".
+  wp_call.
+  wp_call.
+  wp_call.
+  wp_alloc i as "Hi".
+  wp_let.
+  (* FIXME: 1-1 is a hack to get generalization to work *)
+  (* TODO: should probably be stated in terms of (U64 0), not z *)
+  assert ((1-1) <= 0) by lia.
+  assert (0 <= int.val (Slice.sz bk_s)) by
+      (pose proof (word.unsigned_range (Slice.sz bk_s)); lia).
+  replace bs0 with (take (Z.to_nat 0) bs ++
+                         drop (Z.to_nat 0) bs0);
+    last first.
+  { change (Z.to_nat 0) with 0%nat.
+    simpl.
+    destruct bs0; auto. }
+  generalize dependent 0.
+  change (1-1) with 0.
+  intros.
+  wp_pures.
+  (iLöb as "IH" forall (bs0 H z H0 H1) "Hi").
+  wp_call.
+  wp_load.
+  wp_pures.
+  assert (int.val (U64 z) = z) as Hzval.
+  { rewrite word.unsigned_of_Z.
+    rewrite wrap_small; auto.
+    pose proof (word.unsigned_range bk_s.(Slice.sz)).
+    lia. }
+  wp_if_destruct.
+  - rewrite word.unsigned_ltu in Heqb.
+    apply Z.ltb_lt in Heqb.
+    wp_load.
+    wp_bind (SliceGet _ _).
+    iDestruct (blocks_slice_length with "Hbs") as "%".
+    iDestruct "Hbs" as "[Hbk_s Hbs]".
+    iDestruct (is_slice_sz with "Hbk_s") as "%".
+    rewrite fmap_length in H3.
+    pose proof (word.unsigned_range off).
+    destruct (list_lookup_Z_lt bks z) as [bk_z Hlookup_bk]; first lia.
+    wp_apply (wp_slice_get with "[$Hbk_s]").
+    { iPureIntro.
+      rewrite list_lookup_fmap.
+      rewrite Hzval; eauto.
+      rewrite Hlookup_bk.
+      eauto. }
+    iIntros "Hbk_s".
+    wp_steps.
+    wp_load.
+    wp_steps.
+
+    destruct (list_lookup_Z_lt bs0 z) as [b0_z Hlookup_b0]; first lia.
+    destruct (list_lookup_Z_lt bs z) as [b_z Hlookup_b]; first lia.
+    iDestruct (update_disk_array (int.val off) _ z with "Hd")
+      as "[Hdz Hd_rest]"; eauto.
+    { rewrite lookup_app_r.
+      - rewrite take_length.
+        rewrite Nat.min_l; last lia.
+        rewrite lookup_drop.
+        replace (Z.to_nat z - Z.to_nat z)%nat with 0%nat by lia.
+        rewrite Nat.add_0_r.
+        eauto.
+      - rewrite take_length.
+        rewrite Nat.min_l; last lia.
+        lia. }
+    iDestruct (big_sepL2_lookup_acc _ _ _ (Z.to_nat z) with "Hbs")
+      as "[Hbsz Hbs_rest]"; eauto.
+    wp_apply (wp_Write' with "[Hdz $Hbsz]").
+    { iSplitR.
+      - iPureIntro.
+        rewrite word.unsigned_add.
+        rewrite wrap_small.
+        + replace (int.val z).
+          reflexivity.
+        + split; try lia.
+          admit. (* TODO: need to know all disk addresses being used are < 2^64 *)
+      - iExists _; iFrame. }
+    iIntros "[Hdz Hbsz]".
+    wp_steps.
+    wp_load.
+    wp_store.
+    iDestruct ("Hd_rest" with "Hdz") as "Hd".
+    iDestruct ("Hbs_rest" with "Hbsz") as "Hbs".
+    (* FIXME: need this binding to make sure Insert typeclass is resolved *)
+    let l := constr:(<[Z.to_nat z:=b_z]> bs0) in
+    iSpecialize ("IH" $! l with "[]").
+    { rewrite insert_length; auto. }
+    iSpecialize ("IH" $! (int.val (word.add z 1)) with "[] []").
+    { iPureIntro.
+      pose proof (word.unsigned_range (word.add z 1)).
+      lia. }
+    { iPureIntro.
+      rewrite word.unsigned_add.
+      admit. (* TODO: need to think about this bound *) }
+    iSpecialize ("IH" with "[Hbk_s Hbs] [Hd] [$HΦ] [Hi]").
+    { iFrame. }
+    { rewrite word.unsigned_add.
+      rewrite wrap_small; last admit.
+      rewrite Z2Nat.inj_add; [ | mia | mia ].
+      change (int.nat 1) with 1%nat.
+      replace (int.val z).
+      rewrite <- take_drop_insert_new.
+      iFrame.
+    }
+    { rewrite /U64.
+      rewrite word.of_Z_unsigned.
+      iFrame. }
+    iApply "IH".
+  - rewrite word.unsigned_ltu in Heqb.
+    apply Z.ltb_ge in Heqb.
+    assert (z = int.val bk_s.(Slice.sz)) by lia.
+    subst z.
+    iDestruct (blocks_slice_length with "Hbs") as "%".
+    iDestruct (blocks_slice_length' with "Hbs") as "%".
+    rewrite skipn_all2; last lia.
+    rewrite firstn_all2; last lia.
+    rewrite app_nil_r.
+    iApply "HΦ"; iFrame.
+
+    Fail idtac.
 Admitted.
 
 End heap.
