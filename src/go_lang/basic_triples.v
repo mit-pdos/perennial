@@ -179,6 +179,22 @@ Ltac nat2Z_1 :=
 
 Ltac nat2Z := repeat nat2Z_1.
 
+Lemma wp_slice_len stk E (s: Slice.t) (Φ: val -> iProp Σ) :
+    Φ #(s.(Slice.sz)) -∗ WP slice.len (slice_val s) @ stk; E {{ v, Φ v }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  iApply "HΦ".
+Qed.
+
+Lemma wp_slice_ptr stk E (s: Slice.t) (Φ: val -> iProp Σ) :
+    Φ #(s.(Slice.ptr)) -∗ WP slice.ptr (slice_val s) @ stk; E {{ v, Φ v }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  iApply "HΦ".
+Qed.
+
 Lemma wp_new_slice s E t (sz: u64) :
   {{{ ⌜ 0 < int.val sz ⌝ }}}
     NewSlice t #sz @ s; E
@@ -284,7 +300,7 @@ Proof.
   rewrite wrap_small; lia.
 Qed.
 
-Lemma wp_slice_get s E sl vs (i: u64) v0 :
+Lemma wp_SliceGet s E sl vs (i: u64) v0 :
   {{{ is_slice sl vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
     SliceGet sl #i @ s; E
   {{{ RET v0; is_slice sl vs }}}.
@@ -308,7 +324,7 @@ Proof.
   nat2Z.
 Qed.
 
-Lemma wp_memcpy s E v dst vs1 src vs2 (n: u64) :
+Lemma wp_MemCpy s E v dst vs1 src vs2 (n: u64) :
   {{{ array dst vs1 ∗ array src vs2 ∗
             ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
     MemCpy #dst #src #n @ s; E
@@ -355,7 +371,7 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma wp_memcpy_rec s E dst vs1 src vs2 (n: u64) :
+Lemma wp_MemCpy_rec s E dst vs1 src vs2 (n: u64) :
   {{{ array dst vs1 ∗ array src vs2 ∗
             ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
     MemCpy_rec #dst #src #n @ s; E
@@ -411,16 +427,16 @@ Admitted.
 
 Transparent SliceAppend.
 
-Lemma wp_slice_append s E sl vs x :
-  {{{ is_slice sl vs ∗ ⌜int.val sl.(Slice.sz) + 1 < 2^64⌝ }}}
-    SliceAppend sl x @ s; E
-  {{{ sl', RET slice_val sl'; is_slice sl' (vs ++ [x]) }}}.
+Lemma wp_SliceAppend stk E s vs x :
+  {{{ is_slice s vs ∗ ⌜int.val s.(Slice.sz) + 1 < 2^64⌝ }}}
+    SliceAppend s x @ stk; E
+  {{{ s', RET slice_val s'; is_slice s' (vs ++ [x]) }}}.
 Proof.
-  iIntros (Φ) "[Hsl %] HΦ".
+  iIntros (Φ) "[Hs %] HΦ".
   wp_lam; repeat wp_step.
   repeat wp_step.
-  iDestruct "Hsl" as "[Hptr %]".
-  pose proof (word.unsigned_range (Slice.sz sl)).
+  iDestruct "Hs" as "[Hptr %]".
+  pose proof (word.unsigned_range (Slice.sz s)).
   wp_bind (AllocN _ _).
   wp_lam; repeat wp_step.
   iApply wp_allocN; auto.
@@ -434,7 +450,7 @@ Proof.
   wp_lam; repeat wp_step.
   wp_lam; repeat wp_step.
 
-  iDestruct (array_split (int.val (Slice.sz sl)) with "Halloc") as "[Halloc_sz Halloc1]".
+  iDestruct (array_split (int.val (Slice.sz s)) with "Halloc") as "[Halloc_sz Halloc1]".
   - lia.
   - rewrite replicate_length.
     rewrite word.unsigned_add.
@@ -453,7 +469,7 @@ Proof.
     end.
     { simpl.
       rewrite array_singleton.
-      wp_apply (wp_memcpy_rec with "[$Halloc_sz $Hptr]").
+      wp_apply (wp_MemCpy_rec with "[$Halloc_sz $Hptr]").
       { iPureIntro.
         rewrite replicate_length.
         replace (length vs).
@@ -496,18 +512,18 @@ Proof.
     rewrite wrap_small; change (int.val 1) with 1; nat2Z.
 Qed.
 
-Lemma wp_slice_set s E sl vs (i: u64) (x: val) :
-  {{{ is_slice sl vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
-    SliceSet sl #i x @ s; E
-  {{{ RET #(); is_slice sl (<[int.nat i:=x]> vs) }}}.
+Lemma wp_SliceSet stk E s vs (i: u64) (x: val) :
+  {{{ is_slice s vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
+    SliceSet s #i x @ stk; E
+  {{{ RET #(); is_slice s (<[int.nat i:=x]> vs) }}}.
 Proof.
-  iIntros (Φ) "[Hsl %] HΦ".
-  destruct sl as [ptr sz].
+  iIntros (Φ) "[Hs %] HΦ".
+  destruct s as [ptr sz].
   wp_lam.
   wp_let.
   wp_let.
   wp_lam.
-  iDestruct "Hsl" as "[Hptr %]".
+  iDestruct "Hs" as "[Hptr %]".
   cbv [Slice.ptr Slice.sz] in *.
   wp_pures.
   replace (int.val i) with (Z.of_nat (int.nat i)).
@@ -795,20 +811,63 @@ Proof.
   iIntros (Φ) ">Hl HΦ".
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
-  wp_lam.
-  wp_pures.
   iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hemp)".
-  wp_load.
-  wp_pures; wp_lam.
-  wp_load.
-  wp_pures; wp_lam.
-  wp_load.
-  wp_pures; wp_lam.
-  wp_load.
-  wp_pures; wp_lam.
-  wp_pures.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_pures.
+  iSpecialize ("HΦ" with "[$]").
   rewrite decode_encode.
-  iApply "HΦ"; iFrame.
+  iApply "HΦ".
+Qed.
+
+Theorem wp_DecodeUInt64 (l: loc) (x: u64) s E :
+  {{{ ▷ l ↦∗ ((λ (b: byte), #b) <$> u64_le x) }}}
+    DecodeUInt64 #l @ s ; E
+  {{{ RET #x; l ↦∗ ((λ (b: byte), #b) <$> u64_le x) }}}.
+Proof.
+  iIntros (Φ) ">Hl HΦ".
+  cbv [u64_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
+  rewrite ?array_cons ?loc_add_assoc.
+  iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hl4&Hl5&Hl6&Hl7&Hemp)".
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_load; wp_steps.
+  wp_lam; wp_pures.
+  iSpecialize ("HΦ" with "[$]").
+Admitted.
+
+Theorem wp_UInt64Get stk E s (x: u64) vs :
+  {{{ is_slice s vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
+    UInt64Get (slice_val s) @ stk; E
+  {{{ RET #x; is_slice s (u64_le_bytes x ++ drop 8 vs) }}}.
+Proof.
+  iIntros (Φ) "[Hs %] HΦ".
+  assert (vs = u64_le_bytes x ++ drop 8 vs).
+  { rewrite -{1}(take_drop 8 vs).
+    congruence. }
+  rewrite [vs in is_slice _ vs](H0).
+  wp_call.
+  wp_apply wp_slice_ptr.
+  iDestruct "Hs" as "[Hptr %]".
+  iDestruct (array_app with "Hptr") as "[Htake Hrest]"; try lia;
+    rewrite u64_le_bytes_length.
+  wp_apply (wp_DecodeUInt64 with "[$Htake]").
+  iIntros "Htake".
+  iDestruct (array_app with "[$Htake Hrest]") as "Hptr".
+  { rewrite fmap_length u64_le_length.
+    iFrame. }
+  iApply "HΦ".
+  iFrame.
+  iPureIntro.
+  rewrite app_length u64_le_bytes_length drop_length in H1 |- *.
+  lia.
 Qed.
 
 End heap.

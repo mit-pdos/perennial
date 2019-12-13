@@ -119,6 +119,12 @@ Ltac mia :=
   change (int.val 4096) with 4096 in *;
   lia.
 
+Hint Rewrite app_length @drop_length @take_length @fmap_length
+     @replicate_length u64_le_bytes_length : len.
+Hint Rewrite @vec_to_list_length : len.
+
+Ltac len := autorewrite with len; try mia.
+
 Theorem wp_write_hdr stk E (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 }}}
     Log__writeHdr (#sz, #disk_sz)%V @ stk; E
@@ -136,31 +142,29 @@ Proof.
   rewrite slice_val_fold.
   wp_apply (wp_UInt64Put with "[Hs]").
   { iFrame.
-    rewrite replicate_length /=.
-    iPureIntro; mia. }
+    iPureIntro.
+    simpl; len. }
   iIntros "Hs".
   wp_steps.
   wp_call.
   wp_bind (SliceSkip _ _).
   wp_apply (wp_SliceSkip with "[$Hs]").
-  { iPureIntro.
-    rewrite app_length drop_length replicate_length u64_le_bytes_length.
-    mia. }
+  { iPureIntro; len. }
   cbv [Slice.ptr Slice.sz slice_skip].
   iIntros "[Hrest Htake]".
-  rewrite take_app_le ?drop_app_ge.
+  rewrite take_app_le ?drop_app_ge; [ | len .. ].
   { wp_bind (UInt64Put _ _).
     wp_apply (wp_UInt64Put with "[Hrest]").
     { iSplitL.
       { rewrite drop_drop drop_replicate.
-        rewrite u64_le_bytes_length.
+        len.
         match goal with
         | |- context[replicate ?n _] => change n with (Z.to_nat 4088)
         end.
         change (word.sub 4096 8) with (U64 4088).
         iExact "Hrest". }
       iPureIntro.
-      rewrite replicate_length; mia.
+      len.
     }
     rewrite drop_replicate.
     change (Z.to_nat 4088 - 8)%nat with (Z.to_nat 4080).
@@ -168,12 +172,11 @@ Proof.
     wp_steps.
     iDestruct "Hrest" as "[Hskip _]".
     cbv [Slice.ptr].
-    rewrite firstn_all2; rewrite ?u64_le_bytes_length; last mia.
+    rewrite firstn_all2; len.
     iDestruct (array_app with "[$Htake $Hskip]") as "Hl".
     iDestruct (array_to_block with "[$Hl]") as (Hlength) "Hb".
     { iPureIntro.
-      rewrite ?app_length ?u64_le_bytes_length replicate_length.
-      reflexivity. }
+      len. }
     wp_apply (wp_Write with "[Hd0 Hb]").
     { iExists b.
       iModIntro.
@@ -186,8 +189,6 @@ Proof.
     iExists _; iFrame "Hd0".
     iPureIntro.
     admit. }
-  { rewrite u64_le_bytes_length; mia. }
-  { rewrite u64_le_bytes_length; mia. }
 Admitted.
 
 Lemma block_to_is_hdr b :
@@ -201,18 +202,15 @@ Proof.
   iPureIntro; split.
   - rewrite /u64_le_bytes.
     rewrite le_to_u64_le; last first.
-    { rewrite take_length.
-      rewrite Nat.min_l; auto.
-      rewrite vec_to_list_length.
+    { len. rewrite Nat.min_l; auto.
       change block_bytes with 4096%nat; lia. }
     unfold Block_to_vals.
     rewrite fmap_take.
     auto.
   - rewrite /u64_le_bytes.
     rewrite le_to_u64_le; last first.
-    { rewrite take_length drop_length.
+    { len.
       rewrite Nat.min_l; auto.
-      rewrite vec_to_list_length.
       change block_bytes with 4096%nat; lia. }
     unfold Block_to_vals.
     rewrite fmap_take fmap_drop.
@@ -440,18 +438,16 @@ Lemma list_copy_new {A} (i: nat) x0 x (l1 l2: list A) :
 Proof.
   intros.
   apply lookup_lt_Some in H.
-  rewrite insert_app_r_alt; last first.
-  { rewrite take_length; lia. }
+  rewrite insert_app_r_alt; last len.
   assert (i < length l1)%nat.
   { apply lookup_lt_Some in H0; auto. }
-  rewrite take_length.
+  len.
   rewrite Nat.min_l; last lia.
   replace (i - i)%nat with 0%nat by lia.
   rewrite drop_insert; last lia.
   replace (i + 1)%nat with (S i) at 1 by lia.
   erewrite take_S_r; eauto.
-  rewrite insert_0_drop; last first.
-  { rewrite drop_length; lia. }
+  rewrite insert_0_drop; last len.
   destruct l2; [ simpl in *; lia | ].
   rewrite drop_drop.
   rewrite app_assoc.
@@ -510,7 +506,7 @@ Proof.
     rewrite fmap_length in H3.
     pose proof (word.unsigned_range off).
     destruct (list_lookup_Z_lt bks z) as [bk_z Hlookup_bk]; first lia.
-    wp_apply (wp_slice_get with "[$Hbk_s]").
+    wp_apply (wp_SliceGet with "[$Hbk_s]").
     { iPureIntro.
       rewrite list_lookup_fmap.
       rewrite Hzval; eauto.
@@ -525,16 +521,12 @@ Proof.
     destruct (list_lookup_Z_lt bs z) as [b_z Hlookup_b]; first lia.
     iDestruct (update_disk_array (int.val off) _ z with "Hd")
       as "[Hdz Hd_rest]"; eauto.
-    { rewrite lookup_app_r.
-      - rewrite take_length.
-        rewrite Nat.min_l; last lia.
-        rewrite lookup_drop.
-        replace (Z.to_nat z - Z.to_nat z)%nat with 0%nat by lia.
-        rewrite Nat.add_0_r.
-        eauto.
-      - rewrite take_length.
-        rewrite Nat.min_l; last lia.
-        lia. }
+    { rewrite lookup_app_r; len.
+      rewrite Nat.min_l; last lia.
+      rewrite lookup_drop.
+      replace (Z.to_nat z - Z.to_nat z)%nat with 0%nat by lia.
+      rewrite Nat.add_0_r.
+      eauto. }
     iDestruct (big_sepL2_lookup_acc _ _ _ (Z.to_nat z) with "Hbs")
       as "[Hbsz Hbs_rest]"; eauto.
     wp_apply (wp_Write' with "[Hdz $Hbsz]").
@@ -591,22 +583,6 @@ Proof.
     Fail idtac.
 Admitted.
 
-Lemma wp_slice_len stk E (s: Slice.t) (Φ: val -> iProp Σ) :
-    Φ #(s.(Slice.sz)) -∗ WP slice.len (slice_val s) @ stk; E {{ v, Φ v }}.
-Proof.
-  iIntros "HΦ".
-  wp_call.
-  iApply "HΦ".
-Qed.
-
-Lemma wp_slice_ptr stk E (s: Slice.t) (Φ: val -> iProp Σ) :
-    Φ #(s.(Slice.ptr)) -∗ WP slice.ptr (slice_val s) @ stk; E {{ v, Φ v }}.
-Proof.
-  iIntros "HΦ".
-  wp_call.
-  iApply "HΦ".
-Qed.
-
 Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
   ∃ (sz: u64) (disk_sz: u64),
     (l ↦ Free #sz ∗
@@ -620,7 +596,6 @@ Notation length := strings.length.
 Theorem wp_Log__Append stk E l bs0 bk_s bks bs :
   {{{ ptsto_log l bs0 ∗ blocks_slice bk_s bks bs }}}
     Log__Append #l (slice_val bk_s) @ stk; E
- (* TODO: should also return the blocks_slice  *)
   {{{ (ok: bool), RET #ok; ((⌜ok⌝ -∗ ptsto_log l (bs0 ++ bs)) ∗
                             (⌜negb ok⌝ -∗ ptsto_log l bs0)) ∗
                            blocks_slice bk_s bks bs }}}.
@@ -664,8 +639,7 @@ Proof.
       replace (int.val 1 + int.val sz) with (1 + length bs0) by mia.
       iFrame.
       iPureIntro.
-      rewrite take_length.
-      rewrite Nat.min_l; mia. }
+      len. }
     (* TODO: need a general strategy for re-using these in-bounds proofs,
     maybe as soon as we see a u64 expression (rather than waiting to see
     int.val) *)
@@ -697,17 +671,16 @@ Proof.
     iFrame.
     iSplitR.
     { iPureIntro.
-      rewrite app_length.
+      len.
       rewrite word.unsigned_add.
       rewrite wrap_small; last admit.
       mia. }
-    rewrite app_length.
+    len.
     iExists _; iFrame.
     replace (1 + (length bs0 + length bs)%nat) with (1 + length bs0 + length bs) by lia.
     iFrame.
     iPureIntro.
-    rewrite drop_length.
-    mia.
+    len.
 Admitted.
 
 Theorem wp_Log__Reset stk E l vs :
@@ -737,7 +710,7 @@ Proof.
   iDestruct (disk_array_app with "[$Hlog $Hfree]") as "Hfree".
   iExists _; iFrame.
   iPureIntro.
-  rewrite app_length.
+  len.
   simpl; mia.
 Qed.
 
@@ -758,6 +731,39 @@ Proof.
   wp_steps.
   iApply "HΦ".
   iExists _, _; by iFrame.
+Qed.
+
+Theorem wp_Open stk E sz disk_sz vs :
+  {{{ is_log' sz disk_sz vs }}}
+    Open #() @ stk; E
+  {{{ v, RET v; is_log v vs }}}.
+Proof.
+  iIntros (Φ) "Hlog HΦ".
+  iDestruct "Hlog" as "[Hhdr Hlog_rest]".
+  wp_call.
+  iDestruct "Hhdr" as (b) "[Hd0 (%&%)]".
+  wp_apply (wp_Read with "[Hd0]").
+  { change (int.val 0) with 0.
+    iFrame. }
+  iIntros (s) "[Hd0 Hs]".
+  wp_steps.
+  wp_apply (wp_UInt64Get with "[$Hs]"); eauto.
+  iIntros "Hs".
+  wp_steps.
+  wp_apply (wp_SliceSkip with "[$Hs]").
+  { iPureIntro.
+    len. }
+  (* we start dropping the parts of the slice since we can deallocate the buffer
+  from UInt64Get *)
+  iIntros "[Hs Hfirst]"; iClear "Hfirst".
+  wp_apply (wp_UInt64Get with "[$Hs]"); eauto; iIntros "Hskip".
+  iClear "Hskip".
+  wp_steps.
+  iApply "HΦ".
+  rewrite /is_log.
+  iExists _, _; iFrame.
+  iSplitR; eauto.
+  iExists _; by iFrame.
 Qed.
 
 End heap.

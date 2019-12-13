@@ -52,15 +52,16 @@ Section go_lang.
 
   Definition DecodeUInt64: val :=
     λ: "p",
-    to_u64 (!("p" +ₗ #0)) ≪ #(U64 $ 0*8) ∥
-    to_u64 (!("p" +ₗ #1)) ≪ #(U64 $ 1*8) ∥
-    to_u64 (!("p" +ₗ #2)) ≪ #(U64 $ 2*8) ∥
-    to_u64 (!("p" +ₗ #3)) ≪ #(U64 $ 3*8) ∥
-    to_u64 (!("p" +ₗ #4)) ≪ #(U64 $ 4*8) ∥
-    to_u64 (!("p" +ₗ #5)) ≪ #(U64 $ 5*8) ∥
-    to_u64 (!("p" +ₗ #6)) ≪ #(U64 $ 6*8) ∥
-    to_u64 (!("p" +ₗ #7)) ≪ #(U64 $ 7*8)
-  .
+    let: "v0" := to_u64 !"p" in
+    let: "v1" := to_u64 !("p" +ₗ #1) in
+    let: "v2" := to_u64 !("p" +ₗ #2) in
+    let: "v3" := to_u64 !("p" +ₗ #3) in
+    let: "v4" := to_u64 !("p" +ₗ #4) in
+    let: "v5" := to_u64 !("p" +ₗ #5) in
+    let: "v6" := to_u64 !("p" +ₗ #6) in
+    let: "v7" := to_u64 !("p" +ₗ #7) in
+    "v0" ∥ ("v1" ∥ ("v2" ∥ ("v3" ∥ ("v4" ∥ ("v5" ∥ ("v6" ∥ "v7"
+      ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)).
 
   Theorem DecodeUInt64_t : (⊢ DecodeUInt64 : (arrayT byteT -> uint64T))%T.
   Proof.
