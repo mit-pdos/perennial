@@ -211,7 +211,7 @@ Definition forSlice: val :=
          "__loop" ("__i" + #1)
        else #()) #0.
 
-Definition ForSlice (iv: string) (xv: string) (s: expr) (body: expr): expr :=
+Definition ForSlice (iv: binder) (xv: binder) (s: expr) (body: expr): expr :=
   forSlice (λ: iv xv, body)%E s.
 
 End go_lang.

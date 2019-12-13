@@ -77,9 +77,8 @@ Hint Resolve Log__Get_t : types.
 
 Definition writeAll: val :=
   λ: "bks" "off",
-  (* FIXME: this is not auto-generated, add actual support to goose *)
-  ForSlice "i" "bk" "bks"
-           (disk.Write ("off" + "i") "bk").
+    ForSlice "i" "bk" "bks"
+      (disk.Write ("off" + "i") "bk").
 Theorem writeAll_t: ⊢ writeAll : (slice.T disk.blockT -> uint64T -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve writeAll_t : types.
