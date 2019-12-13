@@ -200,18 +200,19 @@ Proof.
   typecheck.
 Qed.
 
-Definition forSlice (body: val): val :=
-  λ: "__s",
+(* TODO: this is now an ordinary program and doesn't need these __ variables *)
+Definition forSlice: val :=
+  λ: "__body" "__s",
   let: "__len" := slice.len "__s" in
   (rec: "__loop" "__i" :=
        if: ("__i" < "__len") then
          let: "__x" := SliceGet "__s" "__i" in
-         body "__i" "__x";;
+         "__body" "__i" "__x";;
          "__loop" ("__i" + #1)
        else #()) #0.
 
 Definition ForSlice (iv: string) (xv: string) (s: expr) (body: expr): expr :=
-  forSlice (λ: iv xv, body) s.
+  forSlice (λ: iv xv, body)%E s.
 
 End go_lang.
 

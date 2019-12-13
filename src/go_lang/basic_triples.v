@@ -351,7 +351,7 @@ Proof.
   auto.
 Qed.
 
-Theorem wp_forSlice stk E s vs (body: val) (I: u64 -> iProp Σ) :
+Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s vs (body: val) :
   (∀ (i: u64) (x: val),
       {{{ I i ∗ ⌜int.val i < int.val s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
