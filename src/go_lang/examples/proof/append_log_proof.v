@@ -609,7 +609,7 @@ Qed.
 
 Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
   ∃ (sz: u64) (disk_sz: u64),
-    ((l +ₗ 0) ↦ Free #sz ∗
+    (l ↦ Free #sz ∗
      (l +ₗ 1) ↦ Free #disk_sz) ∗
     is_log' sz disk_sz vs.
 
@@ -630,6 +630,7 @@ Proof.
   wp_call.
   unfold struct.loadField; simpl.
   wp_call.
+  rewrite loc_add_0.
   wp_load.
   wp_steps.
   wp_call.
@@ -685,7 +686,6 @@ Proof.
     iIntros "Hhdr".
     wp_steps.
     wp_call.
-    rewrite loc_add_0.
     wp_store.
     wp_steps.
     wp_store.
@@ -694,7 +694,7 @@ Proof.
     iSplitL; iIntros ([]).
     rewrite /ptsto_log.
     iExists _, _; iFrame.
-    rewrite loc_add_0; iFrame.
+    iFrame.
     iSplitR.
     { iPureIntro.
       rewrite app_length.
@@ -727,11 +727,10 @@ Proof.
   wp_apply (wp_write_hdr with "Hhdr"); iIntros "Hhdr".
   wp_steps.
   wp_call.
-  rewrite loc_add_0.
   wp_store.
   wp_store.
   iApply "HΦ".
-  iExists _, _; rewrite loc_add_0; iFrame.
+  iExists _, _; iFrame.
   rewrite disk_array_emp.
   iSplitL ""; auto.
   iSplitL ""; auto.
@@ -740,6 +739,25 @@ Proof.
   iPureIntro.
   rewrite app_length.
   simpl; mia.
+Qed.
+
+Transparent struct.loadStruct.
+
+(* TODO: this should be proven generically on top of a shallow representation of
+the struct *)
+Theorem wp_loadLog stk E l vs :
+  {{{ ptsto_log l vs }}}
+    struct.loadStruct Log.S #l @ stk; E
+  {{{ v, RET v; is_log v vs }}}.
+Proof.
+  iIntros (Φ) "Hptsto_log HΦ".
+  iDestruct "Hptsto_log" as (sz disk_sz) "[[Hf0 Hf1] Hlog]".
+  wp_call.
+  wp_load.
+  wp_load.
+  wp_steps.
+  iApply "HΦ".
+  iExists _, _; by iFrame.
 Qed.
 
 End heap.
