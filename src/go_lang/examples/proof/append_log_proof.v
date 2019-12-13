@@ -100,7 +100,7 @@ Definition is_hdr (sz disk_sz: u64): iProp Σ :=
        ⌜take 8 (Block_to_vals b) = u64_le_bytes sz⌝ ∗
        ⌜take 8 (drop 8 (Block_to_vals b)) = u64_le_bytes disk_sz⌝.
 
-Definition is_log' (v:val) (sz disk_sz: u64) (vs:list Block): iProp Σ :=
+Definition is_log' (sz disk_sz: u64) (vs:list Block): iProp Σ :=
   is_hdr sz disk_sz ∗
   1 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ ∗
   (∃ (free: list Block), (1 + length vs) d↦∗ free ∗
@@ -110,13 +110,13 @@ Definition is_log' (v:val) (sz disk_sz: u64) (vs:list Block): iProp Σ :=
 Definition is_log (v:val) (vs:list Block): iProp Σ :=
   ∃ (sz: u64) (disk_sz: u64),
     ⌜v = (#sz, #disk_sz)%V⌝ ∗
-    is_log' v sz disk_sz vs.
+   is_log' sz disk_sz vs.
 
 Ltac mia :=
-  change (int.val 1) with 1;
-  change (int.val 4) with 4;
-  change (int.val 8) with 8;
-  change (int.val 4096) with 4096;
+  change (int.val 1) with 1 in *;
+  change (int.val 4) with 4 in *;
+  change (int.val 8) with 8 in *;
+  change (int.val 4096) with 4096 in *;
   lia.
 
 Theorem wp_write_hdr stk E (sz0 disk_sz0 sz disk_sz:u64) :
@@ -235,8 +235,7 @@ Proof.
     wp_lam.
     destruct vs.
     { simpl in *.
-      change (int.val 1) with 1 in Heqb.
-      lia. }
+      mia. }
     iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
     iDestruct (block_to_is_hdr with "Hd0") as (sz0 disk_sz0) "Hhdr".
     wp_apply (wp_write_hdr with "Hhdr").
@@ -270,8 +269,8 @@ Proof.
   iSplitR; eauto.
 Qed.
 
-Theorem is_log'_sz v sz disk_sz bs :
-  is_log' v sz disk_sz bs -∗ ⌜length bs = int.nat sz⌝.
+Theorem is_log'_sz sz disk_sz bs :
+  is_log' sz disk_sz bs -∗ ⌜length bs = int.nat sz⌝.
 Proof.
   iIntros "(_&_&%&_)"; auto.
 Qed.
@@ -590,6 +589,125 @@ Proof.
     iApply "HΦ"; iFrame.
 
     Fail idtac.
+Admitted.
+
+Lemma wp_slice_len stk E (s: Slice.t) (Φ: val -> iProp Σ) :
+    Φ #(s.(Slice.sz)) -∗ WP slice.len (slice_val s) @ stk; E {{ v, Φ v }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  iApply "HΦ".
+Qed.
+
+Lemma wp_slice_ptr stk E (s: Slice.t) (Φ: val -> iProp Σ) :
+    Φ #(s.(Slice.ptr)) -∗ WP slice.ptr (slice_val s) @ stk; E {{ v, Φ v }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  iApply "HΦ".
+Qed.
+
+Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
+  ∃ (sz: u64) (disk_sz: u64),
+    ((l +ₗ 0) ↦ Free #sz ∗
+     (l +ₗ 1) ↦ Free #disk_sz) ∗
+    is_log' sz disk_sz vs.
+
+Transparent struct.loadField struct.storeStruct.
+
+Notation length := strings.length.
+
+Theorem wp_Log__Append stk E l bs0 bk_s bks bs :
+  {{{ ptsto_log l bs0 ∗ blocks_slice bk_s bks bs }}}
+    Log__Append #l (slice_val bk_s) @ stk; E
+ (* TODO: should also return the blocks_slice  *)
+  {{{ (ok: bool), RET #ok; ((⌜ok⌝ -∗ ptsto_log l (bs0 ++ bs)) ∗
+                            (⌜negb ok⌝ -∗ ptsto_log l bs0)) ∗
+                           blocks_slice bk_s bks bs }}}.
+Proof.
+  iIntros (Φ) "[Hptsto_log Hbs] HΦ".
+  iDestruct "Hptsto_log" as (sz disk_sz) "[(Hf0&Hf1) Hlog]".
+  wp_call.
+  unfold struct.loadField; simpl.
+  wp_call.
+  wp_load.
+  wp_steps.
+  wp_call.
+  wp_load.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_if_destruct; wp_pures; rewrite word.unsigned_ltu in Heqb.
+  - apply Z.ltb_lt in Heqb.
+    iApply "HΦ".
+    iFrame.
+    iSplitR; [ iIntros ([]) | iIntros ([]) ].
+    rewrite /ptsto_log.
+    iExists _, _; iFrame.
+  - apply Z.ltb_ge in Heqb.
+    iDestruct "Hlog" as "(Hhdr & Hlog & % & Hfree)".
+    iDestruct "Hfree" as (free) "[Hfree %]".
+    iDestruct (blocks_slice_length with "Hbs") as %Hlenbks.
+    iDestruct (blocks_slice_length' with "Hbs") as %Hlenbk_s.
+    pose proof (word.unsigned_range disk_sz).
+    pose proof (word.unsigned_range sz).
+    pose proof (word.unsigned_range bk_s.(Slice.sz)).
+    rewrite word.unsigned_add in Heqb.
+    rewrite word.unsigned_add in Heqb.
+    rewrite wrap_small in Heqb; last admit.
+    rewrite wrap_small in Heqb; last admit.
+    iDestruct (disk_array_split _ _ (length bs) with "Hfree") as "[Halloc Hfree]".
+    { mia. }
+    wp_apply (wp_writeAll with "[Halloc $Hbs]").
+    { rewrite word.unsigned_add.
+      rewrite wrap_small; last admit.
+      replace (int.val 1 + int.val sz) with (1 + length bs0) by mia.
+      iFrame.
+      iPureIntro.
+      rewrite take_length.
+      rewrite Nat.min_l; mia. }
+    (* TODO: need a general strategy for re-using these in-bounds proofs,
+    maybe as soon as we see a u64 expression (rather than waiting to see
+    int.val) *)
+    rewrite word.unsigned_add.
+    rewrite wrap_small; last admit.
+    iIntros "[Hbs Hnew]".
+    iDestruct (disk_array_app with "[$Hlog Hnew]") as "Hlog".
+    { replace (1 + length bs0) with (int.val 1 + int.val sz) by mia.
+      iFrame. }
+    wp_steps.
+    wp_apply wp_slice_len.
+    wp_steps.
+    wp_call.
+    wp_load.
+    wp_steps.
+    wp_call.
+    wp_apply (wp_write_hdr with "Hhdr").
+    iIntros "Hhdr".
+    wp_steps.
+    wp_call.
+    rewrite loc_add_0.
+    wp_store.
+    wp_steps.
+    wp_store.
+    iApply "HΦ".
+    iFrame.
+    iSplitL; iIntros ([]).
+    rewrite /ptsto_log.
+    iExists _, _; iFrame.
+    rewrite loc_add_0; iFrame.
+    iSplitR.
+    { iPureIntro.
+      rewrite app_length.
+      rewrite word.unsigned_add.
+      rewrite wrap_small; last admit.
+      mia. }
+    rewrite app_length.
+    iExists _; iFrame.
+    replace (1 + (length bs0 + length bs)%nat) with (1 + length bs0 + length bs) by lia.
+    iFrame.
+    iPureIntro.
+    rewrite drop_length.
+    mia.
 Admitted.
 
 End heap.
