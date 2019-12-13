@@ -320,26 +320,6 @@ Proof.
     lia.
 Qed.
 
-Lemma list_lookup_lt A (l: list A) (i: nat) :
-  (i < length l)%nat ->
-  exists x, l !! i = Some x.
-Proof.
-  intros.
-  destruct_with_eqn (l !! i); eauto.
-  exfalso.
-  apply lookup_ge_None in Heqo.
-  lia.
-Qed.
-
-Lemma list_lookup_Z_lt {A} (l: list A) (i: Z) :
-  (0 <= i < Z.of_nat (length l)) ->
-  exists x, l !! Z.to_nat i = Some x.
-Proof.
-  intros.
-  apply list_lookup_lt.
-  apply Nat2Z.inj_le; lia.
-Qed.
-
 Theorem wp_Log__Get stk E v bs (i: u64) :
   {{{ is_log v bs }}}
     Log__Get v #i @ stk; E

@@ -200,6 +200,19 @@ Proof.
   typecheck.
 Qed.
 
+Definition forSlice (body: val): val :=
+  λ: "__s",
+  let: "__len" := slice.len "__s" in
+  (rec: "__loop" "__i" :=
+       if: ("__i" < "__len") then
+         let: "__x" := SliceGet "__s" "__i" in
+         body "__i" "__x";;
+         "__loop" ("__i" + #1)
+       else #()) #0.
+
+Definition ForSlice (iv: string) (xv: string) (s: expr) (body: expr): expr :=
+  forSlice (λ: iv xv, body) s.
+
 End go_lang.
 
 Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.

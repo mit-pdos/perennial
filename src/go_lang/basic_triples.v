@@ -324,6 +324,93 @@ Proof.
   nat2Z.
 Qed.
 
+Lemma list_lookup_lt A (l: list A) (i: nat) :
+  (i < length l)%nat ->
+  exists x, l !! i = Some x.
+Proof.
+  intros.
+  destruct_with_eqn (l !! i); eauto.
+  exfalso.
+  apply lookup_ge_None in Heqo.
+  lia.
+Qed.
+
+Lemma list_lookup_Z_lt {A} (l: list A) (i: Z) :
+  (0 <= i < Z.of_nat (length l)) ->
+  exists x, l !! Z.to_nat i = Some x.
+Proof.
+  intros.
+  apply list_lookup_lt.
+  apply Nat2Z.inj_le; lia.
+Qed.
+
+Lemma is_slice_sz s vs :
+  is_slice s vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Proof.
+  iIntros "[_ %]".
+  auto.
+Qed.
+
+Theorem wp_forSlice stk E s vs (body: val) (I: u64 -> iProp Σ) :
+  (∀ (i: u64) (x: val),
+      {{{ I i ∗ ⌜int.val i < int.val s.(Slice.sz)⌝ ∗
+                ⌜vs !! int.nat i = Some x⌝ }}}
+        body #i x @ stk; E
+      {{{ RET #(); I (word.add i (U64 1)) }}}) -∗
+    {{{ I (U64 0) ∗ is_slice s vs }}}
+      forSlice body (slice_val s) @ stk; E
+    {{{ RET #(); I s.(Slice.sz) ∗ is_slice s vs }}}.
+Proof.
+  iIntros "#Hind".
+  iIntros (Φ) "!> [Hi0 Hs] HΦ".
+  wp_call.
+  wp_apply wp_slice_len.
+  wp_steps.
+  assert (1-1 <= 0 <= int.val s.(Slice.sz)).
+  { pose proof (word.unsigned_range s.(Slice.sz)); lia. }
+  iDestruct (is_slice_sz with "Hs") as %Hslen.
+  generalize dependent 0.
+  change (1-1) with 0.
+  intros z Hzrange.
+  pose proof (word.unsigned_range s.(Slice.sz)).
+  assert (int.val (U64 z) = z).
+  { unfold U64; rewrite word.unsigned_of_Z.
+    rewrite wrap_small; lia. }
+  iRename "Hi0" into "Hiz".
+  (iLöb as "IH" forall (z Hzrange H0) "Hiz").
+  wp_call.
+  wp_if_destruct; rewrite word.unsigned_ltu in Heqb.
+  - apply Z.ltb_lt in Heqb.
+    destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first lia.
+    wp_apply (wp_SliceGet with "[$Hs]").
+    { replace (int.val z); eauto. }
+    iIntros "Hs".
+    wp_steps.
+    wp_apply ("Hind" with "[$Hiz]").
+    { iPureIntro; split; eauto.
+      replace (int.val z); eauto. }
+    iIntros "Hiz1".
+    wp_steps.
+    assert (int.val (z + 1) = int.val z + 1).
+    { rewrite word.unsigned_of_Z.
+      rewrite wrap_small; try lia. }
+    replace (word.add z 1) with (U64 (z + 1)); last first.
+    { apply word.unsigned_inj.
+      rewrite word.unsigned_add.
+      change (int.val 1) with 1.
+      rewrite wrap_small; try lia. }
+    iSpecialize ("IH" $! (z+1) with "[] []").
+    { iPureIntro; lia. }
+    { iPureIntro; lia. }
+    wp_apply ("IH" with "Hs HΦ Hiz1").
+  - apply Z.ltb_ge in Heqb.
+    assert (z = int.val s.(Slice.sz)) by lia; subst z.
+    iApply "HΦ"; iFrame.
+    replace (U64 (int.val s.(Slice.sz))) with s.(Slice.sz); auto.
+    unfold U64.
+    rewrite word.of_Z_unsigned; auto.
+Qed.
+
 Lemma wp_MemCpy s E v dst vs1 src vs2 (n: u64) :
   {{{ array dst vs1 ∗ array src vs2 ∗
             ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
