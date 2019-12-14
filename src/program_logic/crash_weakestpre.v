@@ -344,6 +344,13 @@ Lemma wpc_value_inv' s k E1 E2 Φ Φc v :
   WPC of_val v @ s; k; E1; E2 {{ Φ }} {{ Φc }} -∗ NC ={E1}=∗ Φ v ∗ NC.
 Proof. rewrite wpc_unfold /wpc_pre to_of_val. iIntros "(?&_)"; auto. Qed.
 
+Lemma wpc_value_inv_option s k E1 E2 Φ Φc e :
+  WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }} -∗ NC ={E1}=∗ from_option Φ True (to_val e) ∗ NC.
+Proof.
+  iIntros. destruct (to_val e) as [v|] eqn:He; last by iFrame.
+  apply of_to_val in He as <-. by iMod (wpc_value_inv' with "[$] [$]") as "($&$)".
+Qed.
+
 Lemma fupd_wpc s k E1 E2 e Φ Φc:
   (|={E1}=> WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}) ⊢ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.

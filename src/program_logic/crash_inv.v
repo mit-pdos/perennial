@@ -33,14 +33,6 @@ Proof.
   iApply (staged_inv_weak_open); eauto.
 Qed.
 
-Lemma NC_C: NC -∗ C -∗ False.
-Proof.
- rewrite /C C_aux.(seal_eq).
- rewrite /NC NC_aux.(seal_eq).
-  iIntros "H H'".
-  { by iDestruct (own_valid_2 with "H H'") as %?. }
-Qed.
-
 Lemma wpc_staged_invariant_aux s k E1 E1' e Φ Φc P Q N γ γ' :
   E1 ⊆ E1' →
   ↑N ⊆ E1 →
