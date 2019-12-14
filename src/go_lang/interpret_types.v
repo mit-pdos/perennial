@@ -85,6 +85,26 @@ Proof.
   destruct (f v).
   destruct (f0 σ'); reflexivity.
 Qed.
+
+Lemma runStateT_Error_bind_false {Σ: Type} :
+  forall X Y (ma: StateT Σ Error X) σ f s,
+  (runStateT ma σ = Fail _ s) ->
+  runStateT (@mbind (StateT Σ Error) (StateT_bind Error Error_fmap Error_join Error_bind) X Y f ma) σ = Fail _ s. 
+Proof.
+  intros. unfold runStateT.
+  unfold runStateT in H.
+  destruct ma as [maf].
+  unfold mbind.
+  unfold StateT_bind.
+  unfold mjoin.
+  unfold StateT_join.
+  unfold fmap.
+  unfold StateT_fmap.
+  rewrite H.
+  simpl.
+  reflexivity.
+Qed.
+
 Hint Resolve runStateT_Error_bind : core.
 
 Definition StateT_ret {Σ: Type} M (mr: MRet M) : MRet (StateT Σ M) :=

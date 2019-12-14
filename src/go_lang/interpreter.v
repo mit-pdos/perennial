@@ -133,7 +133,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | Val v => mret v
     | Var y => mfail ("Unbound variable: " ++ y)
     | Rec f y e => mret (RecV f y e)
-                       
+
     | App e1 e2 => 
       v1 <- interpret n e1;
       v2 <- interpret n e2;
@@ -321,6 +321,17 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     end
   end.
 
+Lemma nsteps_transitive : forall L n m p1 p2 p3 l1 l2,
+    @nsteps L n p1 l1 p2 ->
+    @nsteps L m p2 l2 p3 ->
+    @nsteps L (n + m) p1 (l1 ++ l2) p3.
+Admitted.
+Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ σ' l:
+@nsteps Λ n ([e1], σ) l ([e2], σ') →
+@nsteps Λ n ([K e1], σ) l ([K e2], σ').
+Proof.
+Admitted.
+
 Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state),
     (((runStateT (interpret n e) σ) = Works _ (v, σ')) ->
      exists m l, @nsteps heap_lang m ([e], σ) l ([Val v], σ')).
@@ -335,16 +346,14 @@ Proof.
   (* Var *)
   
   (* Rec *)
-  { do 2 eexists. eapply nsteps_l.
+  { do 2 eexists. eapply nsteps_l; [|apply nsteps_refl].
     (* Always apply step_atomic with t1, t2 as [] since we don't care
     about threading. *)
-    { eapply step_atomic with (t1:=[]) (t2:=[]).
-      { simpl. reflexivity. }
-      { simpl. reflexivity. }
-      apply head_prim_step.
-      apply RecS.
-    }
-    apply nsteps_refl.
+    eapply step_atomic with (t1:=[]) (t2:=[]).
+    { simpl. reflexivity. }
+    { simpl. reflexivity. }
+    apply head_prim_step.
+    apply RecS.
   }
   
   (* App *)
@@ -357,11 +366,33 @@ Proof.
       rewrite (runStateT_Error_bind _ _ _ _ _ _ (fun x => mlift (un_op_eval op x) "UnOp failed.") interp_e) in H0.
       inversion H0.
       destruct (un_op_eval op v0) eqn:uo_eval; inversion H1.
+      destruct IH as (m & IH').
+      destruct IH' as (l & e_to_v0).
       do 2 eexists.
-      (* need to show nsteps_transitive *)
-      admit.
+      eapply nsteps_transitive.
+      { (* [UnOp op e] -> [UnOp op v0] *)
+        eapply nsteps_ctx.
+        apply e_to_v0.
+      }
+      {
+        (* [UnOp op v0] -> [v1] *)
+        eapply nsteps_l; [|apply nsteps_refl].
+        eapply step_atomic with (t1:=[]) (t2:=[]).
+        { simpl. reflexivity. }
+        { simpl. reflexivity. }
+        apply head_prim_step.
+        rewrite H3.
+        apply UnOpS.
+        rewrite H2 in uo_eval.
+        apply uo_eval.
+      }
     }
-    admit.
+    {
+      inversion interp_e.
+      pose proof (runStateT_Error_bind_false _ _ _ _ (fun x => mlift (un_op_eval op x) "UnOp failed.") s interp_e) as failure.
+      rewrite H0 in failure.
+      inversion failure.
+    }
   }
 
       (* 
