@@ -326,11 +326,75 @@ Lemma nsteps_transitive : forall L n m p1 p2 p3 l1 l2,
     @nsteps L m p2 l2 p3 ->
     @nsteps L (n + m) p1 (l1 ++ l2) p3.
 Admitted.
-Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ σ' l:
-@nsteps Λ n ([e1], σ) l ([e2], σ') →
-@nsteps Λ n ([K e1], σ) l ([K e2], σ').
-Proof.
+
+Lemma nsteps_no_thread_destroy `{!@LanguageCtx Λ K} n ρ e σ l:
+  @nsteps Λ n ρ l ([e], σ) ->
+  exists e' σ', ρ = ([e'], σ').
 Admitted.
+
+Lemma list_empty_surroundings : forall X (e:X) (e':X) (t1:list X) (t2:list X),
+    [e] = t1 ++ e' :: t2 ->
+    (t1 = []) /\ (t2 = []) /\ (e = e').
+Proof.
+  intros.
+  assert (t1 = []).
+  {
+    destruct t1; [trivial|].
+    inversion H.
+    pose proof (app_cons_not_nil t1 t2 e').
+    contradiction.
+  }
+  rewrite H0 in H.
+  split; [exact H0|].
+  assert (t2 = []).
+  {
+    destruct t2; [trivial|].
+    inversion H.
+  }
+  rewrite H1 in H.
+  inversion H.
+  split; eauto.
+Qed.
+
+Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ1 σ2 l:
+@nsteps Λ n ([e1], σ1) l ([e2], σ2) →
+@nsteps Λ n ([K e1], σ1) l ([K e2], σ2).
+Proof using Ffi_interpretable ext ffi ffi_semantics. (*coq told me to do this*)
+  generalize e1 e2 σ1 σ2 l.
+  induction n.
+  { (* n = 0 *)
+    intros e e' σ σ' l' nstep_ooc; inversion nstep_ooc. (*nsteps hypothesis out-of-context*)
+    apply nsteps_refl. }
+  { (* S n *)
+    intros e e' σ σ' l' nstep_ooc.
+    inversion nstep_ooc as [|n' ρ1 ρ2 ρ3 κ κs step_ooc nstep_ooc_rest].
+    pose proof (nsteps_no_thread_destroy _ _ _ _ _ nstep_ooc_rest) as intermediate_cfg_has_one_thread.
+    inversion intermediate_cfg_has_one_thread as (e'' & (σ'' & P)).
+    rewrite P in nstep_ooc_rest.
+    pose proof (IHn _ _ _ _ _ nstep_ooc_rest) as nstep_ic_rest. (*nsteps in-context*)
+    rewrite P in step_ooc.
+    inversion step_ooc as [e_s σ_s e''_s σ''_s spawned_threads t1 t2 Pes Pe''s prim_step_e_e''].
+    inversion Pes as [Pe].
+    rewrite <- H4.
+    rewrite <- H4 in prim_step_e_e''.
+    pose proof (list_empty_surroundings _ _ _ _ _ Pe).
+    inversion H5.
+    inversion H7.
+    rewrite <- H9 in prim_step_e_e''.
+    inversion Pe''s as [Pe''].
+    rewrite <- H10 in prim_step_e_e''.
+    pose proof (list_empty_surroundings _ _ _ _ _ Pe'').
+    inversion H11.
+    inversion H13.
+    pose proof (app_eq_nil t2 spawned_threads H14).
+    inversion H16.
+    rewrite <- H15 in prim_step_e_e''.
+    rewrite H18 in prim_step_e_e''.
+    pose proof (fill_step _ _ _ _ _ _ prim_step_e_e'') as prim_step_ic.
+    eapply nsteps_l; [|exact nstep_ic_rest].
+    eapply step_atomic with (t3 := []) (t4 := []); [| |exact prim_step_ic]; eauto.
+  }
+Qed.
 
 Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state),
     (((runStateT (interpret n e) σ) = Works _ (v, σ')) ->
