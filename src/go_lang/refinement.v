@@ -104,6 +104,53 @@ Proof.
   iFrame. eauto.
 Qed.
 
+(* TODO: this is a copy and paste from lifting.v, because of type classes the form there is not matching *)
+Lemma heap_array_to_seq_mapsto l v (n : nat) :
+  ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (replicate n v)), l' ↦ vm) -∗
+  [∗ list] i ∈ seq 0 n, (l +ₗ (i : nat)) ↦ Free v.
+Proof.
+  iIntros "Hvs". iInduction n as [|n] "IH" forall (l); simpl.
+  { done. }
+  rewrite big_opM_union; last first.
+  { apply map_disjoint_spec=> l' v1 v2 /lookup_singleton_Some [-> _].
+    intros (j&?&Hjl&_)%heap_array_lookup.
+    rewrite loc_add_assoc -{1}[l']loc_add_0 in Hjl. simplify_eq; lia. }
+  rewrite loc_add_0 -fmap_seq big_sepL_fmap.
+  setoid_rewrite Nat2Z.inj_succ. setoid_rewrite <-Z.add_1_l.
+  setoid_rewrite <-loc_add_assoc.
+  rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
+Qed.
+
+Lemma ghost_allocN_seq j K E v (n: u64):
+  (0 < int.val n)%Z →
+  nclose sourceN_root ⊆ E →
+  spec_ctx -∗
+  j ⤇ fill K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) ={E}=∗
+  ∃ l, ([∗ list] i ∈ seq 0 (int.nat n),
+       (l +ₗ (i : nat)) s↦ Free v)
+       ∗ j ⤇ fill K (#l).
+Proof.
+  iIntros (??) "(#Hctx&#Hstate) Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  set (l := fresh_locs (dom (gset loc) σ.(heap))).
+  iMod (gen_heap_alloc_gen
+          _ (heap_array
+               l (fmap Free (replicate (int.nat n) v))) with "Hσ")
+    as "(Hσ & Hl & Hm)".
+  { apply heap_array_map_disjoint.
+    rewrite map_length replicate_length u64_Z_through_nat; auto with lia.
+    intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step; econstructor; eauto.
+    intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
+  { eauto. }
+  iMod ("Hclo" with "[Hσ H Hrest]").
+  { iNext. iExists _. iFrame "H". iFrame. }
+  iExists _; iFrame. iModIntro.
+  by iApply heap_array_to_seq_mapsto.
+Qed.
+
 End go_ghost_step.
 
 End go_refinement.
