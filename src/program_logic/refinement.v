@@ -1,5 +1,3 @@
-
-
 From iris.algebra Require Import auth frac agree gmap list excl.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
@@ -17,7 +15,6 @@ From iris.program_logic Require Import lifting.
 
 Section ghost.
 Context {Λ: language}.
-Definition specN := nroot .@ "spec".
 
 (** The CMRA for the heap of the specification. *)
 Definition tpoolUR : ucmraT := gmapUR nat (exclR (exprO Λ)).
@@ -37,7 +34,8 @@ Fixpoint tpool_to_map_aux (tp: list (language.expr Λ)) (id: nat) : gmap nat (la
 Definition tpool_to_map tp := tpool_to_map_aux tp O.
 Definition tpool_to_res tp := (Excl <$> (tpool_to_map tp) : tpoolUR).
 
-Definition sourceN := nroot .@ "source".
+Definition sourceN_root := nroot .@ "source".
+Definition sourceN := nroot .@ "source".@ "base".
 
 Section ghost_spec.
   Context `{cfgG Σ, invG Σ}.

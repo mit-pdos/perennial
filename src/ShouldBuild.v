@@ -5,7 +5,7 @@ From Perennial Require Import program_logic.recovery_adequacy.
 From Perennial Require Import program_logic.crash_inv.
 
 From Perennial.go_lang Require Import
-     adequacy total_adequacy lib.spin_lock.
+     adequacy refinement total_adequacy lib.spin_lock.
 From Perennial.go_lang.examples Require Import
      proof.append_log_proof.
 (* goose deep output *)
