@@ -60,10 +60,10 @@ Global Instance spec_ctx_persistent : Persistent (spec_ctx).
 Proof. apply _. Qed.
 
 (** Override the notations so that scopes and coercions work out *)
-Notation "l s↦{ q } v" := (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_heapG) l q v%V)
+Notation "l s↦{ q } v" := (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l q v%V)
   (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_heapG) l 1 v%V) (at level 20) : bi_scope.
+  (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l 1 v%V) (at level 20) : bi_scope.
 Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
@@ -88,9 +88,9 @@ Hint Resolve sourceN_sub_minus_state.
 Lemma ghost_load j K E l q v:
   nclose sourceN_root ⊆ E →
   spec_ctx -∗
-  l ↦{q} Free v -∗
+  l s↦{q} Free v -∗
   j ⤇ fill K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
-  l ↦{q} Free v ∗ j ⤇ fill K v.
+  l s↦{q} Free v ∗ j ⤇ fill K v.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
