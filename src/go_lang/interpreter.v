@@ -458,6 +458,66 @@ Proof.
       inversion failure.
     }
   }
+  (* BinOp *)
+  {
+    destruct (runStateT (interpret n e1) σ) eqn:interp_e1.
+    { (* e1 works *)
+      destruct v0. pose proof (IHn e1 σ v0 s interp_e1) as IHe1.
+      rewrite (runStateT_Error_bind _ _ _ _ _ _ (fun x => v2 <- interpret n e2; mlift (bin_op_eval op x v2) "BinOp failed.") interp_e1) in H0.
+      destruct (runStateT (interpret n e2) s) eqn:interp_e2.
+      { (* e2 works *)
+        destruct v1. pose proof (IHn e2 s v1 s0 interp_e2) as IHe2.
+        rewrite (runStateT_Error_bind _ _ _ _ _ _ (fun x => mlift (bin_op_eval op v0 x) "BinOp failed.") interp_e2) in H0.
+        inversion H0.
+        destruct (bin_op_eval op v0 v1) eqn:bo_eval; inversion H1.
+        destruct IHe1 as (m & IHe1').
+        destruct IHe2 as (m' & IHe2').
+        destruct IHe1' as (l & e1_to_v0).
+        destruct IHe2' as (l' & e2_to_v1).
+        do 2 eexists.
+        eapply nsteps_transitive.
+        { (* [BinOp op e1 e2] -> [BinOp op v0 e2] *)
+          pose proof (@nsteps_ctx _ (fill [(BinOpLCtx op e2)]) _ m e1 v0 σ s l e1_to_v0) as e1_to_v0_ctx.
+          simpl in e1_to_v0_ctx.
+          exact e1_to_v0_ctx.
+        }
+        { (* [BinOp op v0 e2] -> [v] *)
+          eapply nsteps_transitive.
+          { (* [BinOp op v0 e2] -> [BinOp op v0 v1] *)
+            pose proof (@nsteps_ctx _ (fill [(BinOpRCtx op v0)]) _ m' e2 v1 s s0 l' e2_to_v1) as e2_to_v1_ctx.
+            simpl in e2_to_v1_ctx.
+            exact e2_to_v1_ctx.
+          }
+          { (* [BinOp op v0 v1] -> [v] *)
+            eapply nsteps_l; [|apply nsteps_refl].
+            eapply step_atomic with (t1:=[]) (t2:=[]).
+            { simpl. reflexivity. }
+            { simpl. reflexivity. }
+            apply head_prim_step.
+            rewrite H3.
+            apply BinOpS.
+            rewrite H2 in bo_eval.
+            apply bo_eval.
+          }
+        }
+      }
+      { (* e2 fails *)
+        inversion interp_e2.
+        pose proof (runStateT_Error_bind_false _ _ _ _ (fun x => mlift (bin_op_eval op v0 x) "BinOp failed.") s0 H1) as failure.
+        rewrite H0 in failure.
+        inversion failure.
+      }
+    }
+    { (* e1 fails *)
+        inversion interp_e1.
+        pose proof (runStateT_Error_bind_false _ _ _ _ (fun x => v2 <- interpret n e2; mlift (bin_op_eval op x v2) "BinOp failed.") s H1) as failure.
+        rewrite H0 in failure.
+        inversion failure.
+    }
+  }
+
+        
+  }
 
       (* 
       destruct e; simpl; try trivial.
