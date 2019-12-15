@@ -191,7 +191,7 @@ lemmas. *)
                                   [∗ map] l ↦ _ ∈ heap_array l (fmap Free $ Block_to_vals b), meta_token l ⊤ }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd) !>".
+    iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iSplit.
@@ -205,7 +205,7 @@ lemmas. *)
     { apply heap_array_map_disjoint.
       rewrite map_length length_Block_to_vals; eauto. }
     iModIntro; iSplit; first done.
-    iFrame "Hσ Hκs Hd". iApply "HΦ".
+    iFrame "Hσ Hκs Hd Htr". iApply "HΦ".
     iFrame.
   Qed.
 
@@ -286,7 +286,7 @@ lemmas. *)
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd) !>".
+    iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iDestruct (heap_valid_block with "Hσ Hl") as %?.

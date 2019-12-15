@@ -1,6 +1,6 @@
 From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
-From iris.algebra Require Import auth gmap.
+From iris.algebra Require Import auth gmap excl.
 From iris.base_logic Require Export gen_heap.
 From iris.base_logic.lib Require Export proph_map.
 From iris.program_logic Require Export weakestpre.
@@ -28,19 +28,68 @@ Section go_lang.
   Context `{ffi_semantics: ext_semantics}.
   Context `{!ffi_interp ffi}.
 
+Definition traceO := leibnizO (list event).
+Class traceG (Σ: gFunctors) := {
+  trace_inG :> inG Σ (authR (optionUR (exclR traceO)));
+  trace_name : gname
+}.
+Arguments trace_name {_} _.
+
+Class trace_preG (Σ: gFunctors) := {
+  trace_preG_inG :> inG Σ (authR (optionUR (exclR traceO)));
+}.
+
+Definition traceΣ : gFunctors :=
+  #[GFunctor (authR (optionUR (exclR traceO)))].
+
+Global Instance subG_crashG {Σ} : subG traceΣ Σ → trace_preG Σ.
+Proof. solve_inG. Qed.
+
+Definition trace_auth `{hT: traceG Σ} (l: list event) :=
+  own (trace_name hT) (● (Excl' (l: traceO))).
+Definition trace_frag `{hT: traceG Σ} (l: list event) :=
+  own (trace_name hT) (◯ (Excl' (l: traceO))).
+
+Lemma trace_init `{hT: trace_preG Σ} (l: list event):
+  (|==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l)%I.
+Proof.
+  iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
+  { apply auth_both_valid; split; eauto. econstructor. }
+  iModIntro. iExists {| trace_name := γ |}. iFrame.
+Qed.
+
+Lemma trace_update `{hT: traceG Σ} (l: list event) (x: event):
+  trace_auth l -∗ trace_frag l ==∗ trace_auth (l ++ [x]) ∗ trace_frag (l ++ [x]).
+Proof.
+  iIntros "Hγ● Hγ◯".
+  iMod (own_update_2 _ _ _ (● Excl' _ ⋅ ◯ Excl' _) with "Hγ● Hγ◯") as "[$$]".
+  { by apply auth_update, option_local_update, exclusive_local_update. }
+  done.
+Qed.
+
+Lemma trace_agree `{hT: traceG Σ} (l l': list event):
+  trace_auth l -∗ trace_frag l' -∗ ⌜ l = l' ⌝.
+Proof.
+  iIntros "Hγ1 Hγ2".
+  iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
+  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
+  done.
+Qed.
+
 Class heapG Σ := HeapG {
   heapG_invG : invG Σ;
   heapG_ffiG : ffiG Σ;
   heapG_gen_heapG :> gen_heapG loc (nonAtomic val) Σ;
   heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
-  (* TODO: probably want to say something about the trace *)
+  heapG_traceG :> traceG Σ;
 }.
 
 Global Instance heapG_irisG `{!heapG Σ} :
   irisG heap_lang Σ := {
   iris_invG := heapG_invG;
   state_interp σ κs _ :=
-    (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world))%I;
+    (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
+      ∗ trace_auth σ.(trace))%I;
   fork_post _ := True%I;
 }.
 
@@ -228,14 +277,31 @@ Proof.
   iIntros ">[] HΦ".
 Qed.
 
-(* TODO: note that this doesn't say anything because there is nothing in the
-state interpretation about the trace *)
-Lemma wp_output s E v Φ :
-  ▷ Φ (LitV LitUnit) -∗ WP Output v @ s; E {{ Φ }}.
+Lemma wp_output s E tr v :
+  {{{ trace_frag tr }}}
+     Output v @ s; E
+  {{{ RET (LitV LitUnit); trace_frag (tr ++ [Out_ev v])}}}.
 Proof.
-  iIntros "HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 κ κs n) "Hσ !>"; iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. by iFrame.
+  iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
+  iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth) !>"; iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
+  iDestruct (trace_agree with "[$] [$]") as %?; subst.
+  iMod (trace_update with "[$] [$]") as "(?&?)".
+  iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
+Qed.
+
+Lemma wp_input s E tr v :
+  {{{ trace_frag tr }}}
+     Input v @ s; E
+  {{{ x, RET (LitV (LitInt x)); trace_frag (tr ++ [In_ev v (LitV $ LitInt x)])}}}.
+Proof.
+  iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
+  iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth) !>"; iSplit.
+  { iPureIntro. unshelve (by eauto); apply (U64 0). }
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
+  iDestruct (trace_agree with "[$] [$]") as %?; subst.
+  iMod (trace_update with "[$] [$]") as "(?&?)".
+  iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
 Qed.
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
