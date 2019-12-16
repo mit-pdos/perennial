@@ -325,12 +325,25 @@ Lemma nsteps_transitive : forall L n m p1 p2 p3 l1 l2,
     @nsteps L n p1 l1 p2 ->
     @nsteps L m p2 l2 p3 ->
     @nsteps L (n + m) p1 (l1 ++ l2) p3.
-Admitted.
-
-Lemma nsteps_no_thread_destroy `{!@LanguageCtx Λ K} n ρ e σ l:
-  @nsteps Λ n ρ l ([e], σ) ->
-  exists e' σ', ρ = ([e'], σ').
-Admitted.
+Proof.
+  induction n.
+  { (* n = 0 *)
+    intros.
+    inversion H.
+    simpl.
+    exact H0.
+  }
+  { (* S n *)
+    intros.
+    inversion H.
+    rewrite <- app_assoc.
+    eapply nsteps_l.
+    {
+      exact H2.
+    }
+    eapply IHn; [exact H3|exact H0].
+  }
+Qed.
 
 Lemma list_empty_surroundings : forall X (e:X) (e':X) (t1:list X) (t2:list X),
     [e] = t1 ++ e' :: t2 ->
@@ -354,6 +367,62 @@ Proof.
   rewrite H1 in H.
   inversion H.
   split; eauto.
+Qed.
+
+Lemma list_empty_surroundings_strong : forall X (e:X) (e':X) (t1:list X) (t2:list X) (efs:list X),
+    [e] = t1 ++ e' :: t2 ++ efs ->
+    (t1 = []) /\ (t2 = []) /\ (efs = []) /\ (e = e').
+Proof.
+  intros.
+  assert (t1 = []).
+  {
+    destruct t1; [trivial|].
+    inversion H.
+    pose proof (app_cons_not_nil t1 (t2 ++ efs) e').
+    contradiction.
+  }
+  rewrite H0 in H.
+  split; [exact H0|].
+  assert (t2 = []).
+  {
+    destruct t2; [trivial|].
+    inversion H.
+  }
+  rewrite H1 in H.
+  inversion H.
+  split; eauto.
+Qed.
+
+Lemma nsteps_no_thread_destroy `{!@LanguageCtx Λ K} n ρ e σ l:
+  @nsteps Λ n ρ l ([e], σ) ->
+  exists e' σ', ρ = ([e'], σ').
+Proof.
+  generalize ρ l e σ.
+  induction n.
+  {
+    intros.
+    inversion H0.
+    do 2 eexists; reflexivity.
+  }
+  {
+    intros.
+    inversion H0; try eauto.
+    rewrite <- H4 in *.
+    pose proof (IHn _ _ _ _ H3) as IH.
+    destruct IH as (e' & IH').
+    destruct IH' as (σ' & IH'').
+    rewrite IH'' in H2.
+    inversion H2.
+    inversion H8.
+    pose proof (list_empty_surroundings_strong _ _ _ _ _ _ H11) as one_thread.
+    inversion one_thread.
+    inversion H13.
+    inversion H15.
+    rewrite H10 in H7.
+    rewrite H14 in H7.
+    simpl in H7.
+    do 2 eexists; exact H7.
+  }
 Qed.
 
 Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ1 σ2 l:
