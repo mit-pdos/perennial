@@ -427,3 +427,22 @@ Proof.
   end.
   exact H.
 Qed.
+
+Ltac word_cleanup :=
+  rewrite ?word.unsigned_add, ?word.unsigned_sub, ?word.unsigned_of_Z, ?word.of_Z_unsigned;
+  change (int.val 0) with 0;
+  change (int.val 1) with 1;
+  repeat match goal with
+         | [ |- context[int.val ?x] ] =>
+           lazymatch goal with
+           | [ H: 0 <= int.val x < 2^64 |- _ ] => idtac
+           | _ => pose proof (word.unsigned_range x)
+           end
+         end;
+  repeat match goal with
+         | |- context[@word.wrap _ ?word ?ok ?z] =>
+           rewrite (@wrap_small _ word ok z); [ | lia ]
+         end;
+  try lia.
+
+Ltac word := solve [ word_cleanup ].
