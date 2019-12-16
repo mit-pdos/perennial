@@ -66,6 +66,16 @@ Definition MapGet: val :=
        else "mapGet" "m2"
      end) (!"mref").
 
+Definition MapLen: val :=
+  λ: "mref",
+  (rec: "mapLen" "m" :=
+     match: "m" with
+       InjL <> => #0
+     | InjR "kvm" =>
+       let: "m2" := Snd "kvm" in
+       #1 + "mapLen" "m2"
+     end) (!"mref").
+
 Definition MapInsert: val :=
   λ: "mref" "k" "v",
   "mref" <- InjR ("k", "v", !"mref").

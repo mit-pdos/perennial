@@ -333,19 +333,21 @@ Definition nestedGoStyleLoops: val :=
         else Continue));;
       Continue).
 
-(* map_clear.go *)
+(* maps.go *)
 
 Definition clearMap: val :=
   λ: "m",
     MapClear "m".
-
-(* map_keyiter.go *)
 
 Definition IterateMapKeys: val :=
   λ: "m" "sum",
     MapIter "m" (λ: "k" <>,
       let: "oldSum" := !"sum" in
       "sum" <- "oldSum" + "k").
+
+Definition MapSize: val :=
+  λ: "m",
+    MapLen "m".
 
 (* multiple.go *)
 
@@ -361,6 +363,20 @@ Definition returnTwoWrapper: val :=
 Definition multipleVar: val :=
   λ: "x" "y",
     #().
+
+(* operators.go *)
+
+Definition LogicalOperators: val :=
+  λ: "b1" "b2",
+    "b1" && "b2" ∥ "b1" && ~ #false.
+
+Definition ArithmeticShifts: val :=
+  λ: "x" "y",
+    to_u64 ("x" ≪ #3) + "y" ≪ to_u64 "x" + "y" ≪ #1.
+
+Definition BitwiseOps: val :=
+  λ: "x" "y",
+    to_u64 "x" ∥ to_u64 (to_u32 "y") && #43.
 
 (* panic.go *)
 
