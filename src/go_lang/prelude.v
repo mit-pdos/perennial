@@ -9,6 +9,7 @@ From Perennial.go_lang Require Export
 Inductive LockMode := Reader | Writer.
 Definition uint64_to_string {ext: ext_op}: val := λ: <>, #().
 Definition lockRefT {val_tys: val_types} := refT uint64T.
+Definition strLen {ext: ext_op}: val := λ: "s", #0.
 
 Module Data.
   Section go_lang.

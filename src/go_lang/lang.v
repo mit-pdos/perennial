@@ -93,9 +93,11 @@ with anything. This is useful for erasure proofs: if we erased things to unit,
 behavior. So we erase to the poison value instead, making sure that no legal
 comparisons could be affected. *)
 Inductive base_lit : Type :=
-  | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : u8) | LitString (s : string) | LitUnit | LitPoison
+  | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : u8)
+  | LitString (s : string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
+  (* TODO: operation to take length of string *)
   | NegOp | MinusUnOp | ToUInt64Op | ToUInt32Op | ToUInt8Op.
 Inductive bin_op : Set :=
   | PlusOp | MinusOp | MultOp | QuotOp | RemOp (* Arithmetic *)
