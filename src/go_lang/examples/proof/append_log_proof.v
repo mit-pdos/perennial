@@ -17,12 +17,62 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types stk : stuckness.
 
-Lemma slice_to_block_array s b :
-  is_slice s (Block_to_vals b) ⊣⊢ mapsto_block s.(Slice.ptr) 1 b.
+Lemma loc_add_Sn l n :
+  l +ₗ S n = (l +ₗ 1) +ₗ n.
 Proof.
-  rewrite /mapsto_block /is_slice /array.
-  (* TODO: how to relate two different big_ops? *)
+  rewrite loc_add_assoc.
+  f_equal.
+  lia.
+Qed.
+
+Lemma array_to_block_array l b :
+  array l (Block_to_vals b) ⊣⊢ mapsto_block l 1 b.
+Proof.
+  rewrite /mapsto_block /array.
+  generalize dependent (Block_to_vals b).
+  intros vs.
+  iInduction (vs) as [| v vs] "IH" forall (l).
+  - simpl.
+    rewrite big_sepM_empty.
+    auto.
+  - simpl.
+    rewrite loc_add_0.
+    setoid_rewrite loc_add_Sn.
+    rewrite big_sepM_union.
+    { rewrite big_sepM_singleton.
+      iSplit.
+      + iIntros "(Hl&Hvs)"; iFrame.
+        iDestruct ("IH" $! (l +ₗ 1) with "Hvs") as "Hvs"; iFrame.
+      + iIntros "(Hl&Hvs)"; iFrame.
+        iDestruct ("IH" $! (l +ₗ 1) with "Hvs") as "Hvs"; iFrame.
+    }
+    symmetry.
+    apply heap_array_map_disjoint; intros.
+    apply (not_elem_of_dom (D := gset loc)).
+    rewrite dom_singleton.
+    intros ?%elem_of_singleton.
+    rewrite loc_add_assoc in H2.
+    (* surely this is easy *)
 Admitted.
+
+Lemma slice_to_block_array s b :
+  is_slice s (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) 1 b.
+Proof.
+  iIntros "(Ha&_)".
+  by iApply array_to_block_array.
+Qed.
+
+Lemma block_array_to_slice l b :
+  mapsto_block l 1 b -∗ is_slice (Slice.mk l 4096) (Block_to_vals b).
+Proof.
+  iIntros "Hm".
+  iSplitL.
+  { by iApply array_to_block_array. }
+  iPureIntro.
+  rewrite length_Block_to_vals.
+  simpl.
+  reflexivity.
+Qed.
 
 Transparent disk.Read disk.Write.
 
@@ -35,6 +85,7 @@ Proof.
   iDestruct "Hpre" as (b0) "[Hda Hs]".
   wp_call.
   wp_call.
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
   wp_apply (wp_WriteOp with "[Hda Hs]").
   { iIntros "!>".
     iExists b0.
@@ -43,7 +94,8 @@ Proof.
   iIntros "[Hda Hmapsto]".
   iApply "HΦ".
   iFrame.
-  by iApply slice_to_block_array.
+  iSplitL; auto.
+  by iApply array_to_block_array.
 Qed.
 
 Theorem wp_Write' stk E (z: Z) (a: u64) s b :
@@ -67,7 +119,7 @@ Proof.
   wp_call.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl&_)".
-  iDestruct (slice_to_block_array (Slice.mk l 4096) with "Hl") as "Hs".
+  iDestruct (block_array_to_slice with "Hl") as "Hs".
   wp_pures.
   wp_call.
   wp_apply (wp_raw_slice with "Hs").
@@ -181,7 +233,7 @@ Proof.
     { iExists b.
       iModIntro.
       iSplitL "Hd0"; [ iFrame | ].
-      iDestruct (slice_to_block_array (Slice.mk l 4096) with "[$Hb]") as "Hs".
+      iDestruct (block_array_to_slice with "Hb") as "Hs".
       iExact "Hs". }
     iIntros "[Hd0 Hs]".
     iApply "HΦ".

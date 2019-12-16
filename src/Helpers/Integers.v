@@ -432,6 +432,10 @@ Ltac word_cleanup :=
   rewrite ?word.unsigned_add, ?word.unsigned_sub, ?word.unsigned_of_Z, ?word.of_Z_unsigned;
   change (int.val 0) with 0;
   change (int.val 1) with 1;
+  change (int.val 2) with 2;
+  change (int.val 4) with 4;
+  change (int.val 8) with 8;
+  change (int.val 4096) with 4096;
   repeat match goal with
          | [ |- context[int.val ?x] ] =>
            lazymatch goal with
