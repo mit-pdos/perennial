@@ -378,6 +378,32 @@ Definition BitwiseOps: val :=
   λ: "x" "y",
     to_u64 "x" ∥ to_u64 (to_u32 "y") && #43.
 
+Definition Comparison: val :=
+  λ: "x" "y",
+    (if: "x" < "y"
+    then #true
+    else
+      (if: "x" = "y"
+      then #true
+      else
+        (if: "x" ≠ "y"
+        then #true
+        else
+          (if: "x" > "y"
+          then #true
+          else
+            (if: "x" + #1 > "y" - #2
+            then #true
+            else #false))))).
+
+Definition AssignOps: val :=
+  λ: <>,
+    let: "x" := ref (zero_val uint64T) in
+    "x" <- !"x" + #3;;
+    "x" <- !"x" - #3;;
+    "x" <- !"x" + #1;;
+    "x" <- !"x" - #1.
+
 (* panic.go *)
 
 Definition PanicAtTheDisco: val :=
@@ -496,6 +522,8 @@ Definition ReplicatedDiskRecover: val :=
 
 (* slices.go *)
 
+Definition SliceAlias: ty := slice.T boolT.
+
 Definition sliceOps: val :=
   λ: <>,
     let: "x" := NewSlice uint64T #10 in
@@ -532,6 +560,10 @@ End sliceOfThings.
 Definition sliceOfThings__getThingRef: val :=
   λ: "ts" "i",
     SliceRef (sliceOfThings.get "things" "ts") "i".
+
+Definition makeAlias: val :=
+  λ: <>,
+    NewSlice boolT #10.
 
 (* spawn.go *)
 
@@ -577,6 +609,10 @@ Definition loopSpawn: val :=
 Definition stringAppend: val :=
   λ: "s" "x",
     #(str"prefix ") + "s" + #(str" ") + uint64_to_string "x".
+
+Definition stringLength: val :=
+  λ: "s",
+    strLen "s".
 
 (* struct_method.go *)
 
