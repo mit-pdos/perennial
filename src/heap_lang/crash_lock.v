@@ -185,7 +185,7 @@ Section demo.
 
     wpc_bind (! #l1)%E.
     iApply wpc_atomic; iSplit.
-    { iModIntro; iNext. rewrite left_id. iExists _. iFrame. }
+    { iModIntro. rewrite left_id. iExists _. iFrame. }
     wp_load.
 
     (* XXX: the ordering in the conjunction here is really annoying, should probably prefer that obligations
@@ -199,7 +199,7 @@ Section demo.
 
     wpc_bind (#l1 <- _)%E.
     iApply wpc_atomic; iSplit.
-    { iModIntro; iNext. rewrite left_id. iExists _. iFrame. }
+    { iModIntro. rewrite left_id. iExists _. iFrame. }
 
     wp_store.
     iSplit; iModIntro; last first.
@@ -213,7 +213,7 @@ Section demo.
 
     wpc_bind (! #l2)%E.
     iApply wpc_atomic; iSplit.
-    { iModIntro; iNext. rewrite left_id. iExists (z + 1).
+    { iModIntro. rewrite left_id. iExists (z + 1).
       replace (z + 1 - 1) with z by lia. iFrame. }
     wp_load.
 
@@ -228,7 +228,7 @@ Section demo.
 
 
     iApply wpc_atomic; iSplit.
-    { iModIntro; iNext. rewrite left_id. iExists (z + 1).
+    { iModIntro. rewrite left_id. iExists (z + 1).
       replace (z + 1 - 1) with z by lia. iFrame. }
 
     wp_store.
