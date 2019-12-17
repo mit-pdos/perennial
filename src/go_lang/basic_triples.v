@@ -142,8 +142,7 @@ Lemma wp_raw_slice s E l vs (sz: u64) t :
 Proof.
   iIntros (Φ) "Hslice HΦ".
   rewrite /raw_slice.
-  repeat wp_step.
-  wp_lam; repeat wp_step.
+  wp_steps.
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
   iFrame.
 Qed.
@@ -369,7 +368,6 @@ Proof.
   assert (int.val (U64 z) = z) by (rewrite /U64; word).
   iRename "Hi0" into "Hiz".
   (iLöb as "IH" forall (z Hzrange H0) "Hiz").
-  wp_call.
   wp_if_destruct; rewrite word.unsigned_ltu in Heqb.
   - apply Z.ltb_lt in Heqb.
     destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
@@ -414,7 +412,6 @@ Proof.
   iRevert (vs1 vs2 H) "Hvs1 Hvs2 HΦ".
   iLöb as "IH".
   iIntros (vs1 vs2) "(%&%) Hdst Hsrc HΦ".
-  wp_rec.
   wp_pures.
   destruct_with_eqn (word.ltu (U64 0) n); wp_if.
   - wp_pures.
@@ -864,11 +861,8 @@ Proof.
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
   iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hemp)".
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_pures.
+  rewrite /DecodeUInt32.
+  do 4 (wp_load; wp_steps).
   iSpecialize ("HΦ" with "[$]").
   rewrite decode_encode.
   iApply "HΦ".
@@ -883,15 +877,8 @@ Proof.
   cbv [u64_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
   iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hl4&Hl5&Hl6&Hl7&Hemp)".
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_load; wp_steps.
-  wp_lam; wp_pures.
+  rewrite /DecodeUInt64.
+  do 8 (wp_load; wp_steps).
   iSpecialize ("HΦ" with "[$]").
 Admitted.
 

@@ -703,3 +703,6 @@ Qed.
 
 End lifting.
 End go_lang.
+
+Hint Extern 0 (AsRecV (RecV _ _ _) _ _ _) =>
+  apply AsRecV_recv : typeclass_instances.

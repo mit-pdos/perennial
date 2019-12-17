@@ -121,7 +121,6 @@ Proof.
   iIntros (l) "(Hda&Hl&_)".
   iDestruct (block_array_to_slice with "Hl") as "Hs".
   wp_pures.
-  wp_call.
   wp_apply (wp_raw_slice with "Hs").
   iIntros (s) "Hs".
   iApply "HΦ".
@@ -188,7 +187,6 @@ Proof.
   wp_call.
   wp_alloc l as "Hs"; first mia.
   wp_steps.
-  wp_call.
   wp_call.
   wp_bind (UInt64Put _ _).
   rewrite slice_val_fold.
@@ -282,7 +280,6 @@ Proof.
     iIntros ([]).
   - rewrite word.unsigned_ltu in Heqb.
     apply Z.ltb_ge in Heqb.
-    wp_lam.
     destruct vs.
     { simpl in *.
       mia. }
@@ -382,7 +379,6 @@ Theorem wp_Log__Get stk E v bs (i: u64) :
 Proof.
   iIntros (Φ) "Hlog HΦ".
   iDestruct (is_log_elim with "Hlog") as (sz disk_sz) "[-> Hlog]".
-  wp_call.
   wp_call.
   wp_call.
   wp_if_destruct.
@@ -498,9 +494,8 @@ Theorem wp_writeAll stk E bk_s bks bs0 bs (off: u64) :
   {{{ RET #(); blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs }}}.
 Proof.
   iIntros (Φ) "(Hbs&Hd&%) HΦ".
-  rewrite /writeAll; wp_steps.
-  wp_lam; wp_pures.
-  wp_lam; wp_pures.
+  rewrite /writeAll.
+  wp_pures.
   iDestruct (blocks_slice_length with "Hbs") as %Hbs_len.
   iDestruct (blocks_slice_length' with "Hbs") as %Hbk_s_sz.
   iDestruct "Hbs" as "[Hbk_s Hbks]".
@@ -577,7 +572,6 @@ Proof.
   rewrite loc_add_0.
   wp_load.
   wp_steps.
-  wp_call.
   wp_load.
   wp_apply wp_slice_len.
   wp_pures.
@@ -621,10 +615,8 @@ Proof.
     wp_steps.
     wp_apply wp_slice_len.
     wp_steps.
-    wp_call.
     wp_load.
     wp_steps.
-    wp_call.
     wp_apply (wp_write_hdr with "Hhdr").
     iIntros "Hhdr".
     wp_steps.
@@ -663,7 +655,6 @@ Proof.
   wp_call.
   wp_load.
   wp_steps.
-  wp_call.
   iDestruct "Hlog" as "(Hhdr&Hlog&%&Hfree)".
   iDestruct "Hfree" as (free) "[Hfree %]".
   wp_apply (wp_write_hdr with "Hhdr"); iIntros "Hhdr".
