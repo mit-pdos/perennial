@@ -2,9 +2,9 @@ From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
 From iris.program_logic Require Export weakestpre total_weakestpre.
 From iris.program_logic Require Import atomic.
-From Perennial.go_lang Require Export tactics lifting array.
+From Perennial.go_lang Require Import tactics lifting array.
 From Perennial.go_lang Require Import notation.
-From Perennial.program_logic Require Import crash_weakestpre staged_invariant.
+From Perennial.program_logic Require Export crash_weakestpre staged_invariant.
 Set Default Proof Using "Type".
 Import uPred.
 

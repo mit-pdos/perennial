@@ -438,6 +438,39 @@ Proof.
   iModIntro. iApply step_fupdN_later; auto.
 Qed.
 
+(* note that this also reverses the postcondition and crash condition, so we
+prove the crash condition first *)
+Lemma wpc_atomic_no_mask s k E1 E2 e Φ Φc `{!Atomic StronglyAtomic e} :
+  Φc ∧ WP e @ s; E1 {{ v, (|={E2}=> Φc) ∧ (|={E1}=> Φ v) }} ⊢
+  WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "Hc_wp".
+  iApply wpc_atomic.
+  iSplit.
+  - iApply fupd_mask_weaken; [ set_solver+ | ].
+    iDestruct "Hc_wp" as "[$ _]".
+  - iDestruct "Hc_wp" as "[_ Hwp]".
+    iApply wp_mono; iFrame.
+    iIntros (x) "HΦ".
+    iSplit.
+    + iDestruct "HΦ" as "[>HΦ _]".
+      iApply fupd_mask_weaken; [ set_solver+ | ]; iFrame.
+    + iDestruct "HΦ" as "[_ >HΦc]".
+      iApply fupd_mask_weaken; [ set_solver+ | ]; iFrame.
+Qed.
+
+(* written to match the premise of wpc_bind *)
+Lemma wpc_atomic_from_bind K `{!LanguageCtx K} s k E1 E2 e Φ Φc `{!Atomic StronglyAtomic e} :
+  Φc ∧ WP e @ s; E1 {{ v, (|={E1}=> WPC K (of_val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }}) }} ⊢
+  WPC e @ s; k; E1 ; E2 {{ v, WPC K (of_val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }} }} {{ Φc }}.
+Proof.
+  iIntros "Hwp".
+  iApply wpc_atomic_no_mask.
+  iSplit.
+  - iDestruct "Hwp" as "[$ _]".
+  - iDestruct "Hwp" as "[_ Hwp]".
+Admitted.
+
 Lemma wpc_bind K `{!LanguageCtx K} s k E1 E2 e Φ Φc :
   WPC e @ s; k; E1 ; E2 {{ v, WPC K (of_val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }} }} {{ Φc }}
                      ⊢ WPC K e @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
