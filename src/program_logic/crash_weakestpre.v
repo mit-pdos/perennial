@@ -49,15 +49,15 @@ Definition wpc_eq `{!irisG Λ Σ} `{crashG Σ} : wpc = @wpc_def Λ Σ _ _ := wpc
 (** Notations for partial crash weakest preconditions *)
 (** Notations without binder -- only parsing because they overlap with the
 notations with binder. *)
-Notation "'WPC' e @ s ; k ; E1 ; E2 {{ Φ } } {{ Φc } }" := (wpc s k E1 E2 e%E Φ Φc)
+Notation "'WPC' e @ s ; k ; E1 ; E2 {{ Φ } } {{ Φc } }" := (wpc s k%nat E1 E2 e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
-Notation "'WPC' e @ k ; E1 ; E2 {{ Φ } } {{ Φc } }" := (wpc NotStuck k E1 E2 e%E Φ Φc)
+Notation "'WPC' e @ k ; E1 ; E2 {{ Φ } } {{ Φc } }" := (wpc NotStuck k%nat E1 E2 e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
 (*
 Notation "'WPC' e @ E1 ; E2 ? {{ Φ } } {{ Φc } }" := (wpc MaybeStuck E1 E2 e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
 *)
-Notation "'WPC' e @ k {{ Φ } } {{ Φc } }" := (wpc NotStuck k ⊤ ∅ e%E Φ Φc)
+Notation "'WPC' e @ k {{ Φ } } {{ Φc } }" := (wpc NotStuck k%nat ⊤ ∅ e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
 (*
 Notation "'WPC' e ? {{ Φ } } {{ Φc } }" := (wpc MaybeStuck ⊤ ∅ e%E Φ Φc)
@@ -67,10 +67,10 @@ Notation "'WPC' e ? {{ Φ } } {{ Φc } }" := (wpc MaybeStuck ⊤ ∅ e%E Φ Φc)
 (** Notations with binder.  The indentation for the inner format block is chosen
 such that *if* one has a single-character mask (e.g. [E]), the second line
 should align with the binder(s) on the first line. *)
-Notation "'WPC' e @ s ; k ; E1 ; E2 {{ v , Q } } {{ R } }" := (wpc s k E1 E2 e%E (λ v, Q) R)
+Notation "'WPC' e @ s ; k ; E1 ; E2 {{ v , Q } } {{ R } }" := (wpc s k%nat E1 E2 e%E (λ v, Q) R)
   (at level 20, e, Q, R at level 200,
    format "'[' 'WPC'  e  '/' '[          ' @  s ;  k ;  E1 ;  E2  {{  v ,  Q  } }  {{ R } } ']' ']'") : bi_scope.
-Notation "'WPC' e @ k ; E1 ; E2 {{ v , Q } } {{ R } }" := (wpc NotStuck k E1 E2 e%E (λ v, Q) R)
+Notation "'WPC' e @ k ; E1 ; E2 {{ v , Q } } {{ R } }" := (wpc NotStuck k%nat E1 E2 e%E (λ v, Q) R)
   (at level 20, e, Q, R at level 200,
    format "'[' 'WPC'  e  '/' '[       ' @  k ;  E1 ; E2  {{  v ,  Q  } } {{ R } } ']' ']'") : bi_scope.
 
