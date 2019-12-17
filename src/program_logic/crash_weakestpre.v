@@ -453,9 +453,9 @@ Proof.
     iApply wp_mono; iFrame.
     iIntros (x) "HΦ".
     iSplit.
-    + iDestruct "HΦ" as "[>HΦ _]".
-      iApply fupd_mask_weaken; [ set_solver+ | ]; iFrame.
     + iDestruct "HΦ" as "[_ >HΦc]".
+      iApply fupd_mask_weaken; [ set_solver+ | ]; iFrame.
+    + iDestruct "HΦ" as "[>HΦ _]".
       iApply fupd_mask_weaken; [ set_solver+ | ]; iFrame.
 Qed.
 
