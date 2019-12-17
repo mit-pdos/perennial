@@ -2,13 +2,14 @@ From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
 From iris.program_logic Require Export weakestpre total_weakestpre.
 From iris.program_logic Require Import atomic.
-From iris.heap_lang Require Export tactics lifting array.
-From iris.heap_lang Require Import notation.
+From Perennial.go_lang Require Export tactics lifting array.
+From Perennial.go_lang Require Import notation.
 From Perennial.program_logic Require Import crash_weakestpre staged_invariant.
 Set Default Proof Using "Type".
 Import uPred.
 
-Lemma tac_wpc_expr_eval `{!heapG Σ, !crashG Σ} Δ (s: stuckness) (k: nat) E1 E2 Φ (Φc: iProp Σ) e e' :
+Lemma tac_wpc_expr_eval `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+      `{!heapG Σ, !crashG Σ} Δ (s: stuckness) (k: nat) E1 E2 Φ (Φc: iProp Σ) e e' :
   (∀ (e'':=e'), e = e'') →
   envs_entails Δ (WPC e' @ s; k; E1; E2 {{ Φ }} {{ Φc }}) → envs_entails Δ (WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}).
 Proof. by intros ->. Qed.
@@ -21,7 +22,8 @@ Tactic Notation "wpc_expr_eval" tactic(t) :=
       [let x := fresh in intros x; t; unfold x; reflexivity|]
   end.
 
-Lemma tac_wpc_pure `{!heapG Σ, !crashG Σ} Δ Δ' s k E1 E2 e1 e2 φ Φ Φc :
+Lemma tac_wpc_pure `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+      `{!heapG Σ, !crashG Σ} Δ Δ' s k E1 E2 e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -36,7 +38,8 @@ Proof.
   - rewrite into_laterN_env_sound /= -Hcrash //.
 Qed.
 
-Lemma tac_wpc_value `{!heapG Σ, !crashG Σ} Δ s k E1 E2 Φ Φc v :
+Lemma tac_wpc_value `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+      `{!heapG Σ, !crashG Σ} Δ s k E1 E2 Φ Φc v :
   envs_entails Δ (Φ v) →
   envs_entails Δ (Φc) →
   envs_entails Δ (WPC (Val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }}).
@@ -96,7 +99,8 @@ Ltac wpc_pures :=
   let Hcrash := fresh "Hcrash" in
   wpc_pure _ Hcrash; [.. | repeat (wpc_pure _ Hcrash; []); clear Hcrash].
 
-Lemma tac_wpc_bind `{!heapG Σ, !crashG Σ} K Δ s k E1 E2 Φ Φc e f :
+Lemma tac_wpc_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+      `{!heapG Σ, !crashG Σ} K Δ s k E1 E2 Φ Φc e f :
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
   envs_entails Δ (WPC e @ s; k; E1; E2 {{ v, WPC f (Val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }} }} {{ Φc }})%I →
   envs_entails Δ (WPC fill K e @ s; k; E1; E2 {{ Φ }} {{ Φc }}).
@@ -116,4 +120,3 @@ Tactic Notation "wpc_bind" open_constr(efoc) :=
     || fail "wpc_bind: cannot find" efoc "in" e
   | _ => fail "wp_bind: not a 'wp'"
   end.
-
