@@ -74,6 +74,84 @@ Notation "'WPC' e @ k ; E1 ; E2 {{ v , Q } } {{ R } }" := (wpc NotStuck k%nat E1
   (at level 20, e, Q, R at level 200,
    format "'[' 'WPC'  e  '/' '[       ' @  k ;  E1 ; E2  {{  v ,  Q  } } {{ R } } ']' ']'") : bi_scope.
 
+(* Texan triples *)
+Notation "'{{{' P } } } e @ s ; k ; E1 ; E2 {{{ x .. y , 'RET' pat ; Q } } } {{{ Qc } } }" :=
+  (□ ∀ Φ Φc,
+      P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ (Qc -∗ Φc) -∗ WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }})%I
+    (at level 20, x closed binder, y closed binder,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  s ; k ;  E1 ; E2 '/' {{{  x  ..  y ,  RET  pat ;  Q  } } } '/' {{{ Qc } } } ']'") : bi_scope.
+(*
+Notation "'{{{' P } } } e @ E {{{ x .. y , 'RET' pat ; Q } } }" :=
+  (□ ∀ Φ,
+      P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WP e @ E {{ Φ }})%I
+    (at level 20, x closed binder, y closed binder,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  E  {{{  x  ..  y ,  RET  pat ;  Q  } } } ']'") : bi_scope.
+Notation "'{{{' P } } } e @ E ? {{{ x .. y , 'RET' pat ; Q } } }" :=
+  (□ ∀ Φ,
+      P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WP e @ E ?{{ Φ }})%I
+    (at level 20, x closed binder, y closed binder,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  E  ? {{{  x  ..  y ,  RET  pat ;  Q  } } } ']'") : bi_scope.
+Notation "'{{{' P } } } e {{{ x .. y , 'RET' pat ; Q } } }" :=
+  (□ ∀ Φ,
+      P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WP e {{ Φ }})%I
+    (at level 20, x closed binder, y closed binder,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' {{{  x  ..  y ,  RET  pat ;  Q  } } } ']'") : bi_scope.
+Notation "'{{{' P } } } e ? {{{ x .. y , 'RET' pat ; Q } } }" :=
+  (□ ∀ Φ,
+      P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WP e ?{{ Φ }})%I
+    (at level 20, x closed binder, y closed binder,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' ? {{{  x  ..  y ,   RET  pat ;  Q  } } } ']'") : bi_scope.
+*)
+
+Notation "'{{{' P } } } e @ s ; k ; E1 ; E2 {{{ 'RET' pat ; Q } } } {{{ Qc } } }" :=
+  (□ ∀ Φ Φc, P -∗ ▷ (Q -∗ Φ pat%V) -∗ (Qc -∗ Φc) -∗ WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }})%I
+    (at level 20,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  s ; k ;  E1 ; E2 '/' {{{  RET  pat ;  Q  } } } '/' {{{ Qc } } } ']'") : bi_scope.
+(*
+Notation "'{{{' P } } } e @ E {{{ 'RET' pat ; Q } } }" :=
+  (□ ∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e @ E {{ Φ }})%I
+    (at level 20,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  E  {{{  RET  pat ;  Q  } } } ']'") : bi_scope.
+Notation "'{{{' P } } } e @ E ? {{{ 'RET' pat ; Q } } }" :=
+  (□ ∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e @ E ?{{ Φ }})%I
+    (at level 20,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  E  ? {{{  RET  pat ;  Q  } } } ']'") : bi_scope.
+Notation "'{{{' P } } } e {{{ 'RET' pat ; Q } } }" :=
+  (□ ∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e {{ Φ }})%I
+    (at level 20,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' {{{  RET  pat ;  Q  } } } ']'") : bi_scope.
+Notation "'{{{' P } } } e ? {{{ 'RET' pat ; Q } } }" :=
+  (□ ∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e ?{{ Φ }})%I
+    (at level 20,
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' ? {{{  RET  pat ;  Q  } } } ']'") : bi_scope.
+*)
+
+(** Aliases for stdpp scope -- they inherit the levels and format from above. *)
+Notation "'{{{' P } } } e @ s ; k ; E1 ; E2 {{{ x .. y , 'RET' pat ; Q } } } {{{ Qc } } }" :=
+  (∀ Φ Φc, P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ (Qc -∗ Φc) -∗ WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}) : stdpp_scope.
+(*
+Notation "'{{{' P } } } e @ E {{{ x .. y , 'RET' pat ; Q } } }" :=
+  (∀ Φ, P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WP e @ E {{ Φ }}) : stdpp_scope.
+Notation "'{{{' P } } } e @ E ? {{{ x .. y , 'RET' pat ; Q } } }" :=
+  (∀ Φ, P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WP e @ E ?{{ Φ }}) : stdpp_scope.
+Notation "'{{{' P } } } e {{{ x .. y , 'RET' pat ; Q } } }" :=
+  (∀ Φ, P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WP e {{ Φ }}) : stdpp_scope.
+Notation "'{{{' P } } } e ? {{{ x .. y , 'RET' pat ; Q } } }" :=
+  (∀ Φ, P -∗ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WP e ?{{ Φ }}) : stdpp_scope.
+*)
+Notation "'{{{' P } } } e @ s ; k ; E1 ; E2 {{{ 'RET' pat ; Q } } } {{{ Qc } } }" :=
+  (∀ Φ Φc, P -∗ ▷ (Q -∗ Φ pat%V) -∗ (Qc -∗ Φc) -∗ WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}) : stdpp_scope.
+(*
+Notation "'{{{' P } } } e @ E {{{ 'RET' pat ; Q } } }" :=
+  (∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e @ E {{ Φ }}) : stdpp_scope.
+Notation "'{{{' P } } } e @ E ? {{{ 'RET' pat ; Q } } }" :=
+  (∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e @ E ?{{ Φ }}) : stdpp_scope.
+Notation "'{{{' P } } } e {{{ 'RET' pat ; Q } } }" :=
+  (∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e {{ Φ }}) : stdpp_scope.
+Notation "'{{{' P } } } e ? {{{ 'RET' pat ; Q } } }" :=
+  (∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e ?{{ Φ }}) : stdpp_scope.
+*)
+
 Section wpc.
 Context `{!irisG Λ Σ} `{crashG Σ}.
 Implicit Types s : stuckness.
@@ -222,6 +300,19 @@ Proof.
   - iIntros. iDestruct "H" as "(_&H)".
     iMod ("H" with "[$]").
     iApply step_fupdN_inner_later; auto.
+Qed.
+
+Theorem wpc_crash_mono k stk E1 E2 e Φ Φc Φc' :
+  (Φc' -∗ Φc) -∗
+  WPC e @ stk; k; E1; E2 {{ Φ }} {{ Φc' }} -∗
+  WPC e @ stk; k; E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "Hweaken Hwpc".
+  iApply (wpc_strong_mono' with "Hwpc"); eauto.
+  iSplit; eauto.
+  rewrite difference_diag_L.
+  iIntros "Hc'".
+  by iApply "Hweaken".
 Qed.
 
 Lemma wpc_strong_crash_frame s1 s2 k1 k2 E1 E2 e Φ Φc Ψc :

@@ -120,3 +120,34 @@ Tactic Notation "wpc_bind" open_constr(efoc) :=
     || fail "wpc_bind: cannot find" efoc "in" e
   | _ => fail "wp_bind: not a 'wp'"
   end.
+
+(** Evaluate [lem] to a hypothesis [H] that can be applied, and then run
+[wp_bind K; tac H] for every possible evaluation context.  [tac] can do
+[iApplyHyp H] to actually apply the hypothesis.  TC resolution of [lem] premises
+happens *after* [tac H] got executed. *)
+Tactic Notation "wpc_apply_core" open_constr(lem) tactic(tac) :=
+  iPoseProofCore lem as false (fun H =>
+    lazymatch goal with
+    | |- envs_entails _ (wpc ?s ?k ?E1 ?E2 ?e ?Q ?Qc) =>
+      reshape_expr e ltac:(fun K e' =>
+        wpc_bind_core K; tac H) ||
+      lazymatch iTypeOf H with
+      | Some (_,?P) => fail "wp_apply: cannot apply" P
+      end
+    | _ => fail "wpc_apply: not a 'wpc'"
+    end).
+Tactic Notation "wpc_apply" open_constr(lem) :=
+  wpc_apply_core lem (fun H => iApplyHyp H; try iNext).
+
+Tactic Notation "wpc_if_destruct" :=
+  match goal with
+  | |- envs_entails _ (wpc _ _ _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _ _) =>
+    destruct cond eqn:?;
+             repeat match goal with
+                    | [ H: context[(word.ltu ?x ?y)] |- _ ] => rewrite (word.unsigned_ltu x y) in H
+                    | [ H: (?x <? ?y)%Z = true |- _ ] => apply Z.ltb_lt in H
+                    | [ H: (?x <? ?y)%Z = false |- _ ] => apply Z.ltb_ge in H
+                    | [ H: (?x <=? ?y)%Z = true |- _ ] => apply Z.leb_le in H
+                    | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
+                    end
+  end.

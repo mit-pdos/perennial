@@ -359,18 +359,17 @@ Proof.
   wp_call.
   wp_apply wp_slice_len.
   wp_steps.
-  assert (1-1 <= 0 <= int.val s.(Slice.sz)) by word.
+  remember 0 as z.
+  assert (0 <= z <= int.val s.(Slice.sz)) by word.
   iDestruct (is_slice_sz with "Hs") as %Hslen.
-  generalize dependent 0.
-  change (1-1) with 0.
+  clear Heqz; generalize dependent z.
   intros z Hzrange.
   pose proof (word.unsigned_range s.(Slice.sz)).
   assert (int.val (U64 z) = z) by (rewrite /U64; word).
   iRename "Hi0" into "Hiz".
   (iLöb as "IH" forall (z Hzrange H0) "Hiz").
-  wp_if_destruct; rewrite word.unsigned_ltu in Heqb.
-  - apply Z.ltb_lt in Heqb.
-    destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
+  wp_if_destruct.
+  - destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
     wp_apply (wp_SliceGet with "[$Hs]").
     { replace (int.val z); eauto. }
     iIntros "Hs".
@@ -390,8 +389,7 @@ Proof.
     { iPureIntro; lia. }
     { iPureIntro; lia. }
     wp_apply ("IH" with "Hs HΦ Hiz1").
-  - apply Z.ltb_ge in Heqb.
-    assert (z = int.val s.(Slice.sz)) by lia; subst z.
+  - assert (z = int.val s.(Slice.sz)) by lia; subst z.
     iApply "HΦ"; iFrame.
     replace (U64 (int.val s.(Slice.sz))) with s.(Slice.sz); auto.
     unfold U64.

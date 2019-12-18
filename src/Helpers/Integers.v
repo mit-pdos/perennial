@@ -430,12 +430,10 @@ Qed.
 
 Ltac word_cleanup :=
   rewrite ?word.unsigned_add, ?word.unsigned_sub, ?word.unsigned_of_Z, ?word.of_Z_unsigned;
-  change (int.val 0) with 0;
-  change (int.val 1) with 1;
-  change (int.val 2) with 2;
-  change (int.val 4) with 4;
-  change (int.val 8) with 8;
-  change (int.val 4096) with 4096;
+  repeat match goal with
+         | [ H: context[word.unsigned (U64 (Zpos ?x))] |- _ ] => change (int.val (Zpos x)) with (Zpos x) in *
+         | [ |- context[word.unsigned (U64 (Zpos ?x))] ] => change (int.val (Zpos x)) with (Zpos x)
+         end;
   repeat match goal with
          | [ |- context[int.val ?x] ] =>
            lazymatch goal with
@@ -446,6 +444,8 @@ Ltac word_cleanup :=
   repeat match goal with
          | |- context[@word.wrap _ ?word ?ok ?z] =>
            rewrite (@wrap_small _ word ok z); [ | lia ]
+         | |- context[Z.of_nat (Z.to_nat ?z)] =>
+           rewrite (Z2Nat.id z); [ | lia ]
          end;
   try lia.
 

@@ -1,5 +1,6 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.go_lang.examples Require Import append_log.
+From Perennial.go_lang Require Import wpc_proofmode.
 From Perennial.go_lang Require Import basic_triples.
 From Perennial.go_lang Require Import slice encoding.
 From Perennial.go_lang Require Import ffi.disk.
@@ -8,6 +9,7 @@ Import uPred.
 
 Section heap.
 Context `{!heapG Σ}.
+Context `{!crashG Σ}.
 Existing Instance diskG0.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
@@ -163,6 +165,8 @@ Definition is_log (v:val) (vs:list Block): iProp Σ :=
     ⌜v = (#sz, #disk_sz)%V⌝ ∗
    is_log' sz disk_sz vs.
 
+Open Scope Z.
+
 Ltac mia :=
   change (int.val 1) with 1 in *;
   change (int.val 4) with 4 in *;
@@ -278,9 +282,7 @@ Proof.
   wp_if_destruct; wp_pures.
   - iApply "HΦ".
     iIntros ([]).
-  - rewrite word.unsigned_ltu in Heqb.
-    apply Z.ltb_ge in Heqb.
-    destruct vs.
+  - destruct vs.
     { simpl in *.
       mia. }
     iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
@@ -373,8 +375,9 @@ Theorem wp_Log__Get stk E v bs (i: u64) :
   {{{ is_log v bs }}}
     Log__Get v #i @ stk; E
   {{{ b s (ok: bool), RET (slice_val s, #ok);
-      (⌜ok⌝ -∗ ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s (Block_to_vals b)) ∗
-      (⌜negb ok⌝ -∗ ⌜bs !! int.nat i = None⌝) ∗
+      (if ok
+       then ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s (Block_to_vals b)
+       else ⌜bs !! int.nat i = None⌝) ∗
       is_log v bs }}}.
 Proof.
   iIntros (Φ) "Hlog HΦ".
@@ -382,9 +385,7 @@ Proof.
   wp_call.
   wp_call.
   wp_if_destruct.
-  - rewrite word.unsigned_ltu in Heqb.
-    apply Z.ltb_lt in Heqb.
-    iDestruct (is_log_read i with "Hlog") as (b) "(%& Hdi&Hupd)"; auto.
+  - iDestruct (is_log_read i with "Hlog") as (b) "(%& Hdi&Hupd)"; auto.
     wp_apply (wp_Read with "[Hdi]").
     { rewrite word.unsigned_add.
       (* TODO: need to assume this! get is actually incorrect if getting from
@@ -394,8 +395,7 @@ Proof.
     iIntros (s) "[Hdi Hs]".
     wp_steps.
     iApply "HΦ".
-    iSplitL "Hs"; eauto.
-    iSplitR; eauto.
+    iSplitR "Hupd Hdi"; eauto.
     iApply "Hupd".
     rewrite word.unsigned_add.
     rewrite wrap_small; [ | admit ].
@@ -405,18 +405,13 @@ Proof.
     rewrite slice_val_fold.
     iApply "HΦ".
     iDestruct (is_log_sz with "Hlog") as "%".
-    rewrite word.unsigned_ltu in Heqb.
-    apply Z.ltb_ge in Heqb.
     iFrame.
-    iSplit.
-    + iIntros ([]).
-    + iIntros "_".
-      iPureIntro.
-      apply lookup_ge_None.
-      lia.
+    iPureIntro.
+    apply lookup_ge_None.
+    lia.
 
-      Grab Existential Variables.
-      { refine inhabitant. }
+    Grab Existential Variables.
+    { refine inhabitant. }
 Admitted.
 
 Lemma is_slice_sz s vs :
@@ -488,57 +483,288 @@ Proof.
     auto.
 Qed.
 
-Theorem wp_writeAll stk E bk_s bks bs0 bs (off: u64) :
-  {{{ blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs0 ∗ ⌜length bs0 = length bs⌝ }}}
-    writeAll (slice_val bk_s) #off @ stk; E
-  {{{ RET #(); blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs }}}.
+(* TODO: move to basic_triples *)
+Lemma wpc_slice_len k stk E1 E2 s Φ Φc :
+  Φc ∧ Φ #(Slice.sz s)-∗
+  WPC slice.len (slice_val s) @ stk; k; E1; E2 {{ v, Φ v }} {{ Φc }}.
 Proof.
-  iIntros (Φ) "(Hbs&Hd&%) HΦ".
+  iIntros "HΦc_Φ".
+  rewrite /slice.len.
+  wpc_pures.
+  { iDestruct "HΦc_Φ" as "[$ _]". }
+  { iDestruct "HΦc_Φ" as "[_ $]". }
+Qed.
+
+Lemma wpc_SliceGet stk k E1 E2 s vs (i: u64) v0 :
+  {{{ is_slice s vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+    SliceGet (slice_val s) #i @ stk; k; E1; E2
+  {{{ RET v0; is_slice s vs }}}
+  {{{ is_slice s vs }}}.
+Proof.
+  iIntros (Φ Φc) "[Hs %] HΦ HΦc".
+  iApply (wpc_crash_mono with "HΦc").
+  rewrite /SliceGet /slice.ptr.
+  wpc_pures; first by iFrame.
+  iApply wpc_atomic_no_mask.
+  iSplit; first by iFrame.
+  destruct s as [ptr sz].
+  iDestruct "Hs" as "[Ha %]".
+  cbv [Slice.ptr Slice.sz] in *.
+  iDestruct (update_array ptr _ _ _ H with "Ha") as "[Hi Ha']".
+  word_cleanup.
+  wp_load.
+  iAssert (is_slice (Slice.mk ptr sz) vs)
+    with "[Hi Ha']" as "Hs".
+  - rewrite /is_slice /=.
+    iSplitR ""; eauto.
+    iDestruct ("Ha'" with "Hi") as "Ha".
+    erewrite list_insert_id by eauto; auto.
+  - iSplit; iFrame.
+    + by iPureIntro.
+    + iApply ("HΦ" with "Hs").
+Qed.
+
+Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s vs (body: val) :
+  (∀ (i: u64) (x: val),
+      {{{ I i ∗ ⌜int.val i < int.val s.(Slice.sz)⌝ ∗
+                ⌜vs !! int.nat i = Some x⌝ }}}
+        body #i x @ stk; k; E1; E2
+      {{{ RET #(); I (word.add i (U64 1)) }}}
+      {{{ Φc' }}}) -∗
+    □ (I (U64 0) -∗ Φc') -∗
+    {{{ I (U64 0) ∗ is_slice s vs }}}
+      forSlice body (slice_val s) @ stk; k; E1; E2
+    {{{ RET #(); I s.(Slice.sz) ∗ is_slice s vs }}}
+    {{{ Φc' }}}.
+Proof.
+  iIntros "#Hind #HΦc0".
+  iIntros (Φ Φc) "!> [Hi0 Hs] HΦ HΦc".
+  iApply (wpc_crash_mono with "HΦc").
+  rewrite /forSlice.
+  wpc_pures.
+  { iApply ("HΦc0" with "[$]"). }
+  wpc_apply wpc_slice_len.
+  iSplit.
+  { iApply ("HΦc0" with "[$]"). }
+  wpc_pures.
+  { iApply ("HΦc0" with "[$]"). }
+  iAssert (I 0 ∧ Φc')%I with "[Hi0]" as "Hi0".
+  { iSplit; iFrame.
+    iApply ("HΦc0" with "[$]"). }
+  iClear "HΦc0".
+  remember 0 as z.
+  assert (0 <= z <= int.val s.(Slice.sz)) by word.
+  iDestruct (is_slice_sz with "Hs") as %Hslen.
+  clear Heqz; generalize dependent z.
+  intros z Hzrange.
+  pose proof (word.unsigned_range s.(Slice.sz)).
+  assert (int.val (U64 z) = z) by (rewrite /U64; word).
+  iRename "Hi0" into "Hiz".
+  (iLöb as "IH" forall (z Hzrange H0) "Hiz").
+  wpc_if_destruct.
+  - wpc_pures.
+    { iDestruct "Hiz" as "[_ $]". }
+    destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
+    wpc_apply (wpc_SliceGet with "[Hs] [HΦ Hiz] []"); swap 2 3.
+    { replace (int.val z); eauto. }
+    { iIntros "_".
+      admit. (* TODO: manage Φc' better *) }
+    iIntros "!> Hs".
+    wpc_pures.
+    { iDestruct "Hiz" as "[_ $]". }
+    wpc_apply ("Hind" with "[Hiz] [HΦ Hs] []"); swap 2 3.
+    { iDestruct "Hiz" as "[$ _]".
+      iPureIntro; split; eauto.
+      word_cleanup.
+      replace (int.val z); eauto. }
+    { auto. }
+    iIntros "!> Hiz1".
+    wpc_pures.
+    { admit. (* TODO: we've lost Φc' because it was in an ∧ *) }
+    assert (int.val (z + 1) = int.val z + 1).
+    { rewrite word.unsigned_of_Z.
+      rewrite wrap_small; try lia. }
+    replace (word.add z 1) with (U64 (z + 1)); last first.
+    { apply word.unsigned_inj.
+      word. }
+    iSpecialize ("IH" $! (z+1) with "[] []").
+    { iPureIntro; word. }
+    { iPureIntro; word. }
+    wpc_apply ("IH" with "Hs HΦ [Hiz1]").
+    iSplit; auto.
+    admit. (* again, lost Φc *)
+  - assert (z = int.val s.(Slice.sz)) by lia; subst z.
+    wpc_pures.
+    { iDestruct "Hiz" as "[_ $]". }
+    iApply "HΦ"; iFrame.
+    replace (U64 (int.val s.(Slice.sz))) with s.(Slice.sz).
+    { iDestruct "Hiz" as "[$ _]". }
+    unfold U64.
+    rewrite word.of_Z_unsigned; auto.
+Admitted.
+
+Theorem wpc_Write stk k E1 E2 (a: u64) s b :
+  {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice s (Block_to_vals b) }}}
+    Write #a (slice_val s) @ stk; k; E1; E2
+  {{{ RET #(); int.val a d↦ b ∗ is_slice s (Block_to_vals b) }}}
+  {{{ ∃ b', int.val a d↦ b' ∗ is_slice s (Block_to_vals b) }}}.
+Proof.
+  iIntros (Φ Φc) ">Hpre HΦ HΦc".
+  iApply (wpc_crash_mono with "HΦc").
+  iDestruct "Hpre" as (b0) "[Hda Hs]".
+  rewrite /Write /slice.ptr.
+  wpc_pures.
+  { iExists b0; iFrame. }
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  iApply wpc_atomic_no_mask.
+  iSplit.
+  { iExists b0; iFrame. }
+  wp_apply (wp_WriteOp with "[Hda Hs]").
+  { iIntros "!>".
+    iExists b0.
+    iFrame.
+    by iApply slice_to_block_array. }
+  iIntros "[Hda Hmapsto]".
+  iSplit.
+  - iModIntro.
+    iExists b; iFrame.
+    destruct s; simpl in Hsz.
+    replace sz with (U64 4096).
+    + by iApply block_array_to_slice.
+    + rewrite length_Block_to_vals in Hsz.
+      change block_bytes with (Z.to_nat 4096) in Hsz.
+      apply word.unsigned_inj.
+      word.
+  - iApply "HΦ".
+    iFrame.
+    iSplitL; auto.
+    by iApply array_to_block_array.
+Qed.
+
+Theorem wpc_frame (s : stuckness) (k : nat) (E1 E2 : coPset)
+        (e: expr) (Φ Φ': val -> iProp Σ) (Φc Φc': iProp Σ) (R : iPropI Σ) :
+    R -∗
+    WPC e @ s; k; E1; E2 {{ v, Φ v }} {{Φc}} -∗
+    (R ∗ Φc -∗ Φc') -∗
+    (∀ v, R ∗ Φ v -∗ Φ' v) -∗
+    WPC e @ s; k; E1; E2 {{ v, Φ' v }} {{Φc'}}.
+Proof.
+  iIntros "F Hwpc HΦc' HΦ'".
+  iDestruct (wpc_frame_l with "[F $Hwpc]") as "Hwpc".
+  { iExact "F". }
+  iApply (wpc_strong_mono' with "Hwpc"); eauto.
+  iSplit.
+  - iIntros (v) "HΦ".
+    iApply ("HΦ'" with "HΦ").
+  - iIntros "HΦc".
+    iApply fupd_mask_weaken; [ set_solver+ | ].
+    iApply ("HΦc'" with "HΦc").
+Qed.
+
+Theorem wpc_WriteArray stk k E1 E2 l bs (s: Slice.t) b (off: u64) :
+  {{{ l d↦∗ bs ∗ is_slice s (Block_to_vals b) ∗ ⌜0 <= int.val off - l < Z.of_nat (length bs)⌝ }}}
+    Write #off (slice_val s) @ stk; k; E1; E2
+  {{{ RET #(); l d↦∗ <[Z.to_nat (int.val off - l) := b]> bs ∗ is_slice s (Block_to_vals b) }}}
+  {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ ∗ is_slice s (Block_to_vals b) }}}.
+Proof.
+  iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ HΦc".
+  iApply (wpc_crash_mono with "HΦc").
+  destruct (list_lookup_lt _ bs (Z.to_nat (int.val off - l))) as [b0 Hlookup].
+  { word. }
+  unshelve iDestruct (update_disk_array _ _ _ _ _ _ Hlookup with "[$Hda]") as "[Hoff Hda_rest]".
+  { word. }
+  replace (l + (int.val off - l)) with (int.val off) by lia.
+  iApply (wpc_frame with "Hda_rest [Hs Hoff] [] [HΦ]").
+  { iApply (wpc_Write with "[Hoff Hs] [] []").
+    - iExists _; iFrame.
+    - iIntros "!> Hpost".
+      instantiate (1 := λ v, (⌜v = #()⌝ ∗ _)%I); simpl.
+      iSplitR; eauto.
+      iExact "Hpost".
+    - iIntros "Hcrash".
+      iExact "Hcrash".
+  }
+  { iIntros "(Hda_rest&Hwrite_crash)".
+    iDestruct "Hwrite_crash" as (b') "(Hoff&Hs)".
+    iExists _; iFrame.
+    iSplitL.
+    { iApply "Hda_rest"; iFrame. }
+    iPureIntro.
+    rewrite insert_length //.
+  }
+  simpl.
+  iIntros (v).
+  iIntros "(Hda_rest&Hwrite_post)".
+  iDestruct "Hwrite_post" as "(->&Hoff&Hs)".
+  (* TODO: how do we strip this later? *)
+  iAssert (l d↦∗ <[Z.to_nat (int.val off - l):=b]> bs ∗ is_slice s (Block_to_vals b) -∗ Φ #())%I
+         with "[HΦ]" as "HΦ".
+  { admit. }
+  iApply "HΦ"; iFrame.
+  iApply "Hda_rest"; iFrame.
+Admitted.
+
+Theorem wpc_writeAll stk (k: nat) E1 E2 bk_s bks bs0 bs (off: u64) :
+  {{{ blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs0 ∗ ⌜length bs0 = length bs⌝ }}}
+    writeAll (slice_val bk_s) #off @ stk; k; E1; E2
+  {{{ RET #(); blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs }}}
+  {{{ ∃ bs', int.val off d↦∗ bs' ∗ ⌜length bs' = length bs0⌝ }}}.
+Proof.
+  iIntros (Φ Φc) "(Hbs&Hd&%) HΦ HΦc".
   rewrite /writeAll.
-  wp_pures.
+  iApply (wpc_crash_mono with "HΦc").
+  wpc_pures.
+  { iExists bs0; iFrame. auto. }
   iDestruct (blocks_slice_length with "Hbs") as %Hbs_len.
   iDestruct (blocks_slice_length' with "Hbs") as %Hbk_s_sz.
   iDestruct "Hbs" as "[Hbk_s Hbks]".
-  iApply (wp_forSlice (fun i =>
+  iApply (wpc_forSlice (fun i =>
                          (([∗ list] b_s;b ∈ bks;bs, is_slice b_s (Block_to_vals b)) ∗
                          int.val off d↦∗ (take (int.nat i) bs ++ drop (int.nat i) bs0))%I)
-            with "[] [Hbk_s Hbks Hd]"); swap 1 2.
-  - iFrame.
+            with "[] [] [$Hbk_s $Hbks $Hd] [HΦ]");
+    [ | | | eauto ].
   - iIntros (i bk_z_val).
     pose proof (word.unsigned_range i).
-    iIntros (Φ') "!> ((Hbks&Hd)&%&%) HΦ'".
-    wp_call.
+    iIntros (Φ' Φc') "!> ((Hbks&Hd)&%&%) HΦ' HΦc'".
+    iApply (wpc_crash_mono with "HΦc'").
+    wpc_pures.
+    { iExists _; iFrame.
+      iPureIntro.
+      rewrite app_length take_length drop_length; lia. }
     destruct (list_lookup_Z_lt bs0 (int.val i)) as [b0_z Hlookup_b0]; first lia.
     destruct (list_lookup_Z_lt bs (int.val i)) as [b_z Hlookup_b]; first lia.
     rewrite list_lookup_fmap in H2.
     apply fmap_Some_1 in H2; destruct H2 as [bk_z (H2&->)].
-    iDestruct (update_disk_array (int.val off) _ (int.val i) with "Hd")
-      as "[Hdz Hd_rest]"; try lia.
-    { rewrite lookup_app_r; len.
-      rewrite Nat.min_l; last lia.
-      rewrite lookup_drop.
-      replace (int.nat i - int.nat i)%nat with 0%nat by lia.
-      rewrite Nat.add_0_r.
-      eauto. }
     iDestruct (big_sepL2_lookup_acc _ _ _ (int.nat i) with "Hbks")
       as "[Hbsz Hbs_rest]"; eauto.
-    wp_apply (wp_Write' with "[Hdz $Hbsz]").
-    { rewrite word.unsigned_add.
-      rewrite wrap_small; last admit. (* TODO: u64 overflow assumptions *)
-      eauto. }
-    iIntros "[Hdz Hbsz]".
-    iDestruct ("Hd_rest" with "Hdz") as "Hd".
-    iDestruct ("Hbs_rest" with "Hbsz") as "Hbs".
-    iApply "HΦ'".
-    iFrame.
-    { rewrite word.unsigned_add.
+    word_cleanup.
+
+    wpc_apply (wpc_WriteArray with "[$Hd $Hbsz] [Hbs_rest HΦ'] []"); swap 2 3.
+    + iPureIntro.
+      len; word_cleanup.
+      rewrite -> Nat.min_l by lia.
+      admit.
+    + len.
+      iIntros "Hcrash".
+      iDestruct "Hcrash" as (bs') "(Hd&%&_)".
+      iExists _; iFrame.
+      iPureIntro.
+      lia.
+    + iIntros "!> [Hdz Hbsz]".
+      iDestruct ("Hbs_rest" with "Hbsz") as "Hbs".
+      word_cleanup.
       rewrite wrap_small; last admit.
-      rewrite Z2Nat.inj_add; [ | mia | mia ].
-      change (int.nat 1) with 1%nat.
+      rewrite wrap_small; last admit.
+      replace (int.val off + int.val i - int.val off) with (int.val i) by lia.
       erewrite list_copy_new; eauto.
       rewrite drop_insert; last lia.
-      iFrame.
-    }
+      rewrite Z2Nat.inj_add; [ | word | word ].
+      iApply "HΦ'"; iFrame.
+  - iIntros "!> (Hs&Hd)".
+    change (int.nat 0) with 0%nat.
+    simpl.
+    rewrite drop_0.
+    iExists _; iFrame; eauto.
   - iIntros "!> [Hbks Hbk_s]".
     iApply "HΦ"; iFrame.
     rewrite skipn_all2; last lia.
@@ -557,32 +783,79 @@ Transparent struct.loadField struct.storeStruct.
 
 Notation length := strings.length.
 
-Theorem wp_Log__Append stk E l bs0 bk_s bks bs :
-  {{{ ptsto_log l bs0 ∗ blocks_slice bk_s bks bs }}}
-    Log__Append #l (slice_val bk_s) @ stk; E
-  {{{ (ok: bool), RET #ok; ((⌜ok⌝ -∗ ptsto_log l (bs0 ++ bs)) ∗
-                            (⌜negb ok⌝ -∗ ptsto_log l bs0)) ∗
-                           blocks_slice bk_s bks bs }}}.
+Lemma is_log_intro sz disk_sz bs :
+  is_log' sz disk_sz bs -∗ is_log (#sz, #disk_sz)%V bs.
 Proof.
-  iIntros (Φ) "[Hptsto_log Hbs] HΦ".
+  iIntros "Hlog".
+  iExists _, _; iFrame; eauto.
+Qed.
+
+Lemma is_log_crash_l sz disk_sz bs (Q: val -> iProp Σ) :
+  is_log' sz disk_sz bs -∗ ∃ v, is_log v bs ∨ (Q v).
+Proof.
+  iIntros "Hlog".
+  iExists _.
+  iLeft.
+  iApply (is_log_intro with "Hlog").
+Qed.
+
+Theorem wpc_Log__Append k stk E1 E2 l bs0 bk_s bks bs :
+  ∀ Φ Φc,
+  ptsto_log l bs0 ∗ blocks_slice bk_s bks bs -∗
+  (∀ (ok: bool), (ptsto_log l (if ok then bs0 ++ bs else bs0)) ∗
+                  blocks_slice bk_s bks bs -∗ Φ #ok ) -∗
+  ((∃ v, is_log v bs0 ∨ is_log v (bs0 ++ bs)) -∗ Φc) -∗
+  WPC Log__Append #l (slice_val bk_s) @ stk; k; E1; E2
+    {{ v, Φ v }}
+    {{ Φc }}.
+Proof.
+  iIntros (Φ Φc) "[Hptsto_log Hbs] HΦ HΦc".
   iDestruct "Hptsto_log" as (sz disk_sz) "[(Hf0&Hf1) Hlog]".
-  wp_call.
+  rewrite /Log__Append.
   unfold struct.loadField; simpl.
-  wp_call.
+  iApply (wpc_crash_mono with "HΦc").
+  wpc_pures.
+  { iApply (is_log_crash_l with "Hlog"). }
   rewrite loc_add_0.
+
+  wpc_bind (Load _).
+  iApply wpc_atomic_no_mask.
+  iSplit.
+  { iApply (is_log_crash_l with "Hlog"). }
   wp_load.
-  wp_steps.
+  iSplit.
+  { iApply (is_log_crash_l with "Hlog"). }
+  iModIntro.
+  wpc_pures.
+  { iApply (is_log_crash_l with "Hlog"). }
+
+  wpc_bind (Load _).
+  iApply wpc_atomic_no_mask.
+  iSplit.
+  { iApply (is_log_crash_l with "Hlog"). }
   wp_load.
-  wp_apply wp_slice_len.
-  wp_pures.
-  wp_if_destruct; wp_pures; rewrite word.unsigned_ltu in Heqb.
-  - apply Z.ltb_lt in Heqb.
+  iSplit.
+  { iApply (is_log_crash_l with "Hlog"). }
+  iModIntro.
+  wpc_pures.
+  { iApply (is_log_crash_l with "Hlog"). }
+
+  wpc_apply wpc_slice_len.
+  iSplit.
+  { iApply (is_log_crash_l with "Hlog"). }
+
+  wpc_pures.
+  { iApply (is_log_crash_l with "Hlog"). }
+
+  wpc_if_destruct.
+  - wpc_pures.
+    { iApply (is_log_crash_l with "Hlog"). }
     iApply "HΦ".
     iFrame.
-    iSplitR; [ iIntros ([]) | iIntros ([]) ].
     rewrite /ptsto_log.
     iExists _, _; iFrame.
-  - apply Z.ltb_ge in Heqb.
+  - wpc_pures.
+    { iApply (is_log_crash_l with "Hlog"). }
     iDestruct "Hlog" as "(Hhdr & Hlog & % & Hfree)".
     iDestruct "Hfree" as (free) "[Hfree %]".
     iDestruct (blocks_slice_length with "Hbs") as %Hlenbks.
@@ -593,56 +866,69 @@ Proof.
     rewrite word.unsigned_add in Heqb.
     rewrite word.unsigned_add in Heqb.
     rewrite wrap_small in Heqb; last admit.
-    rewrite wrap_small in Heqb; last admit.
+    rewrite wrap_small in Heqb; last word.
     iDestruct (disk_array_split _ _ (length bs) with "Hfree") as "[Halloc Hfree]".
-    { mia. }
-    wp_apply (wp_writeAll with "[Halloc $Hbs]").
-    { rewrite word.unsigned_add.
-      rewrite wrap_small; last admit.
-      replace (int.val 1 + int.val sz) with (1 + length bs0) by mia.
+    { word. }
+    wpc_apply (wpc_writeAll with "[Halloc $Hbs]"); swap 2 3.
+    + word_cleanup.
+      replace (1 + int.val sz) with (1 + length bs0) by mia.
       iFrame.
       iPureIntro.
-      len. }
-    (* TODO: need a general strategy for re-using these in-bounds proofs,
-    maybe as soon as we see a u64 expression (rather than waiting to see
-    int.val) *)
-    rewrite word.unsigned_add.
-    rewrite wrap_small; last admit.
-    iIntros "[Hbs Hnew]".
-    iDestruct (disk_array_app with "[$Hlog Hnew]") as "Hlog".
-    { replace (1 + length bs0) with (int.val 1 + int.val sz) by mia.
-      iFrame. }
-    wp_steps.
-    wp_apply wp_slice_len.
-    wp_steps.
-    wp_load.
-    wp_steps.
-    wp_apply (wp_write_hdr with "Hhdr").
-    iIntros "Hhdr".
-    wp_steps.
-    wp_call.
-    wp_store.
-    wp_steps.
-    wp_store.
-    iApply "HΦ".
-    iFrame.
-    iSplitL; iIntros ([]).
-    rewrite /ptsto_log.
-    iExists _, _; iFrame.
-    iFrame.
-    iSplitR.
-    { iPureIntro.
       len.
-      rewrite word.unsigned_add.
-      rewrite wrap_small; last admit.
-      mia. }
-    len.
-    iExists _; iFrame.
-    replace (1 + (length bs0 + length bs)%nat) with (1 + length bs0 + length bs) by lia.
-    iFrame.
-    iPureIntro.
-    len.
-Admitted.
+    + len; word_cleanup.
+      rewrite Nat.min_l; last lia.
+      iIntros "Hcrash".
+      iDestruct "Hcrash" as (bs') "(Hfree0&%)".
+      iApply (is_log_crash_l with "[$Hhdr $Hlog Hfree Hfree0]").
+      iSplitR.
+      { iPureIntro.
+        lia. }
+      iExists (bs' ++ drop (Z.to_nat (length bs)) free).
+      iDestruct (disk_array_app with "[$Hfree0 Hfree]") as "Hfree".
+      { replace (1 + int.val sz + length bs') with (1 + length bs0 + length bs) by lia.
+        iFrame. }
+      replace (1 + length bs0) with (1 + int.val sz) by lia.
+      iFrame.
+      iPureIntro.
+      len.
+    + (* TODO: wpc_frame log into both post and crash condition *)
+      iIntros "[Hbs Hnew]".
+      (*
+      iDestruct (disk_array_app with "[$Hlog Hnew]") as "Hlog".
+      { replace (1 + length bs0) with (int.val 1 + int.val sz) by mia.
+        iFrame. }
+      wp_steps.
+      wp_apply wp_slice_len.
+      wp_steps.
+      wp_load.
+      wp_steps.
+      wp_apply (wp_write_hdr with "Hhdr").
+      iIntros "Hhdr".
+      wp_steps.
+      wp_call.
+      wp_store.
+      wp_steps.
+      wp_store.
+      iApply "HΦ".
+      iFrame.
+      iSplitL; iIntros ([]).
+      rewrite /ptsto_log.
+      iExists _, _; iFrame.
+      iFrame.
+      iSplitR.
+      { iPureIntro.
+        len.
+        rewrite word.unsigned_add.
+        rewrite wrap_small; last admit.
+        mia. }
+      len.
+      iExists _; iFrame.
+      replace (1 + (length bs0 + length bs)%nat) with (1 + length bs0 + length bs) by lia.
+      iFrame.
+      iPureIntro.
+      len.
+*)
+Abort.
 
 Theorem wp_Log__Reset stk E l vs :
   {{{ ptsto_log l vs }}}
