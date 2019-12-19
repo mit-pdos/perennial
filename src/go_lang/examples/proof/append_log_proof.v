@@ -167,19 +167,12 @@ Definition is_log (v:val) (vs:list Block): iProp Σ :=
 
 Open Scope Z.
 
-Ltac mia :=
-  change (int.val 1) with 1 in *;
-  change (int.val 4) with 4 in *;
-  change (int.val 8) with 8 in *;
-  change (int.val 4096) with 4096 in *;
-  lia.
-
 Hint Rewrite app_length @drop_length @take_length @fmap_length
      @replicate_length u64_le_bytes_length : len.
 Hint Rewrite @vec_to_list_length : len.
 Hint Rewrite @insert_length : len.
 
-Ltac len := autorewrite with len; try mia.
+Ltac len := autorewrite with len; try word.
 
 Theorem wp_write_hdr stk E (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 }}}
@@ -190,7 +183,7 @@ Proof.
   iDestruct "Hhdr" as (b) "(Hd0&%&%)".
   wp_call.
   wp_call.
-  wp_alloc l as "Hs"; first mia.
+  wp_alloc l as "Hs"; first word.
   wp_steps.
   wp_call.
   wp_bind (UInt64Put _ _).
@@ -285,7 +278,7 @@ Proof.
     iIntros ([]).
   - destruct vs.
     { simpl in *.
-      mia. }
+      word. }
     iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
     iDestruct (block_to_is_hdr with "Hd0") as (sz0 disk_sz0) "Hhdr".
     wp_apply (wp_write_hdr with "Hhdr").
@@ -849,7 +842,7 @@ Proof.
     { word. }
     wpc_apply (wpc_writeAll with "[Halloc $Hbs]").
     + word_cleanup.
-      replace (1 + int.val sz) with (1 + length bs0) by mia.
+      replace (1 + int.val sz) with (1 + length bs0) by word.
       iFrame.
       iPureIntro.
       len.
@@ -933,7 +926,7 @@ Proof.
         len.
         rewrite word.unsigned_add.
         rewrite wrap_small; last admit.
-        mia. }
+        word. }
       len.
       iExists _; iFrame.
       replace (1 + (length bs0 + length bs)%nat) with (1 + length bs0 + length bs) by lia.
@@ -970,7 +963,7 @@ Proof.
   iExists _; iFrame.
   iPureIntro.
   len.
-  simpl; mia.
+  simpl; word.
 Qed.
 
 Transparent struct.loadStruct.
