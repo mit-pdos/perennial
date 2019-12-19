@@ -93,11 +93,19 @@ Tactic Notation "wpc_pure" open_constr(efoc) simple_intropattern(H) :=
   | _ => fail "wpc_pure: not a 'wpc'"
   end.
 
+Ltac crash_case :=
+  try lazymatch goal with
+      | [ |- envs_entails (Envs ?ienv ?senv _) ?Φc ] =>
+        is_var Φc;
+        lazymatch senv with
+        | context[Esnoc _ ?H ((_ -∗ Φc) ∧ _)%I] => iApply H
+        end
+      end.
 
 Ltac wpc_pures :=
   iStartProof;
   let Hcrash := fresh "Hcrash" in
-  wpc_pure _ Hcrash; [.. | repeat (wpc_pure _ Hcrash; []); clear Hcrash].
+  wpc_pure _ Hcrash; [crash_case ..  | repeat (wpc_pure _ Hcrash; []); clear Hcrash].
 
 Lemma tac_wpc_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} K Δ s k E1 E2 Φ Φc e f :
@@ -118,8 +126,13 @@ Tactic Notation "wpc_bind" open_constr(efoc) :=
   | |- envs_entails _ (wpc ?s ?k ?E1 ?E2 ?e ?Q1 ?Q2) =>
     reshape_expr e ltac:(fun K e' => unify e' efoc; wpc_bind_core K)
     || fail "wpc_bind: cannot find" efoc "in" e
-  | _ => fail "wp_bind: not a 'wp'"
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) => fail "wpc_bind: 'wp', not a 'wpc'"
+  | _ => fail "wpc_bind: not a 'wpc'"
   end.
+
+Tactic Notation "wpc_atomic" :=
+  iApply wpc_atomic_no_mask;
+  iSplit; [ crash_case | ].
 
 (** Evaluate [lem] to a hypothesis [H] that can be applied, and then run
 [wp_bind K; tac H] for every possible evaluation context.  [tac] can do
@@ -151,3 +164,9 @@ Tactic Notation "wpc_if_destruct" :=
                     | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
                     end
   end.
+
+(* TODO: this is an utter hack, surely there's a better way? *)
+Tactic Notation "iLeft" "in" constr(H) := let pat := constr:("[" +:+ H +:+ " _]") in
+                                          iDestruct H as pat.
+Tactic Notation "iRight" "in" constr(H) := let pat := constr:("[_ " +:+ H +:+ "]") in
+                                          iDestruct H as pat.

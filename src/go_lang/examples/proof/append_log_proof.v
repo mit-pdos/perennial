@@ -177,6 +177,7 @@ Ltac mia :=
 Hint Rewrite app_length @drop_length @take_length @fmap_length
      @replicate_length u64_le_bytes_length : len.
 Hint Rewrite @vec_to_list_length : len.
+Hint Rewrite @insert_length : len.
 
 Ltac len := autorewrite with len; try mia.
 
@@ -485,14 +486,14 @@ Qed.
 
 (* TODO: move to basic_triples *)
 Lemma wpc_slice_len k stk E1 E2 s Φ Φc :
-  Φc ∧ Φ #(Slice.sz s)-∗
+  Φc ∧ Φ #(Slice.sz s) -∗
   WPC slice.len (slice_val s) @ stk; k; E1; E2 {{ v, Φ v }} {{ Φc }}.
 Proof.
-  iIntros "HΦc_Φ".
+  iIntros "HΦ".
   rewrite /slice.len.
   wpc_pures.
-  { iDestruct "HΦc_Φ" as "[$ _]". }
-  { iDestruct "HΦc_Φ" as "[_ $]". }
+  { iDestruct "HΦ" as "[$ _]". }
+  { iDestruct "HΦ" as "[_ $]". }
 Qed.
 
 Lemma wpc_SliceGet stk k E1 E2 s vs (i: u64) v0 :
@@ -501,15 +502,10 @@ Lemma wpc_SliceGet stk k E1 E2 s vs (i: u64) v0 :
   {{{ RET v0; is_slice s vs }}}
   {{{ is_slice s vs }}}.
 Proof.
-  iIntros (Φ Φc) "[Hs %] HΦ_Φc".
+  iIntros (Φ Φc) "[Hs %] HΦ".
   rewrite /SliceGet /slice.ptr.
-  wpc_pures.
-  { iDestruct "HΦ_Φc" as "[HΦc _]".
-    iApply ("HΦc" with "Hs"). }
-  iApply wpc_atomic_no_mask.
-  iSplit.
-  { iDestruct "HΦ_Φc" as "[HΦc _]".
-    iApply ("HΦc" with "Hs"). }
+  wpc_pures; first by iFrame.
+  wpc_atomic; first by iFrame.
   destruct s as [ptr sz].
   iDestruct "Hs" as "[Ha %]".
   cbv [Slice.ptr Slice.sz] in *.
@@ -522,29 +518,9 @@ Proof.
     iSplitR ""; eauto.
     iDestruct ("Ha'" with "Hi") as "Ha".
     erewrite list_insert_id by eauto; auto.
-  - iSplit; iFrame.
-    + iDestruct "HΦ_Φc" as "[HΦc _]".
-      iApply ("HΦc" with "[$]").
-    + iDestruct "HΦ_Φc" as "[_ HΦc]".
-      iApply ("HΦc" with "Hs").
+  - iSplit; iModIntro; crash_case; iFrame.
+    iApply ("HΦ" with "Hs").
 Qed.
-
-(* TODO: this is an utter hack, surely there's a better way? *)
-Tactic Notation "iLeft" "in" constr(H) := let pat := constr:("[" +:+ H +:+ " _]") in
-                                          iDestruct H as pat.
-Tactic Notation "iRight" "in" constr(H) := let pat := constr:("[_ " +:+ H +:+ "]") in
-                                          iDestruct H as pat.
-
-Ltac crash_case :=
-  try lazymatch goal with
-      | [ |- envs_entails (Envs ?ienv ?senv _) ?Φc ] =>
-        is_var Φc;
-        lazymatch senv with
-        | context[Esnoc _ ?H ((_ -∗ Φc) ∧ _)%I] => iApply H
-        end
-      end.
-
-Ltac wpc_pures := wpc_proofmode.wpc_pures; crash_case.
 
 Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s vs (body: val) :
   (∀ (i: u64) (x: val),
@@ -638,8 +614,7 @@ Proof.
   wpc_pures.
   { iExists b0; iFrame. }
   iDestruct (is_slice_sz with "Hs") as %Hsz.
-  iApply wpc_atomic_no_mask.
-  iSplit; crash_case.
+  wpc_atomic.
   { iExists b0; iFrame. }
   wp_apply (wp_WriteOp with "[Hda Hs]").
   { iIntros "!>".
@@ -662,28 +637,6 @@ Proof.
     by iApply array_to_block_array.
 Qed.
 
-(* this theorem is true but no longer used *)
-Theorem wpc_frame (s : stuckness) (k : nat) (E1 E2 : coPset)
-        (e: expr) (Φ Φ': val -> iProp Σ) (Φc Φc': iProp Σ) (R : iPropI Σ) :
-    R -∗
-    WPC e @ s; k; E1; E2 {{ v, Φ v }} {{Φc}} -∗
-    (R ∗ Φc -∗ Φc') -∗
-    (∀ v, R ∗ Φ v -∗ Φ' v) -∗
-    WPC e @ s; k; E1; E2 {{ v, Φ' v }} {{Φc'}}.
-Proof.
-  iIntros "F Hwpc HΦc' HΦ'".
-  iDestruct (wpc_frame_l with "[F $Hwpc]") as "Hwpc".
-  { iExact "F". }
-  iApply (wpc_strong_mono' with "Hwpc"); eauto.
-  iSplit.
-  - iIntros (v) "HΦ".
-    iApply ("HΦ'" with "HΦ").
-  - iIntros "HΦc".
-    iApply fupd_mask_weaken; [ set_solver+ | ].
-    iApply ("HΦc'" with "HΦc").
-Qed.
-
-Hint Rewrite @insert_length : len.
 
 Theorem wpc_WriteArray stk k E1 E2 l bs (s: Slice.t) b (off: u64) :
   {{{ l d↦∗ bs ∗ is_slice s (Block_to_vals b) ∗ ⌜0 <= int.val off - l < Z.of_nat (length bs)⌝ }}}
@@ -846,8 +799,7 @@ Proof.
   rewrite loc_add_0.
 
   wpc_bind (Load _).
-  iApply wpc_atomic_no_mask.
-  iSplit; crash_case.
+  wpc_atomic.
   { iApply (is_log_crash_l with "Hlog"). }
   wp_load.
   iSplit.
@@ -857,8 +809,7 @@ Proof.
   { iApply (is_log_crash_l with "Hlog"). }
 
   wpc_bind (Load _).
-  iApply wpc_atomic_no_mask.
-  iSplit; crash_case.
+  wpc_atomic.
   { iApply (is_log_crash_l with "Hlog"). }
   wp_load.
   iSplit.
@@ -942,8 +893,7 @@ Proof.
           len. }
         change (int.val (1 + 0)) with 1.
         wpc_bind (Load _).
-        iApply wpc_atomic_no_mask.
-        iSplit; crash_case.
+        wpc_atomic.
         { iApply is_log_crash_l.
           iApply (is_log_split with "[$] [$] Hnew Hfree").
           iPureIntro.

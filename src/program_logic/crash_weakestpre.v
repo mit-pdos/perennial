@@ -379,6 +379,26 @@ Lemma wpc_frame_l s k E1 E2 e Φ Φc R :
   R ∗ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }} ⊢ WPC e @ s; k; E1 ; E2 {{ v, R ∗ Φ v }} {{ R ∗ Φc }}.
 Proof. iIntros "[? H]". iApply (wpc_strong_mono' with "H"); rewrite ?difference_diag_L; auto with iFrame. Qed.
 
+Theorem wpc_frame (s : stuckness) (k : nat) (E1 E2 : coPset)
+        (e: expr Λ) (Φ Φ': val Λ -> iProp Σ) (Φc Φc': iProp Σ) (R : iPropI Σ) :
+    R -∗
+    WPC e @ s; k; E1; E2 {{ v, Φ v }} {{Φc}} -∗
+    (R ∗ Φc -∗ Φc') -∗
+    (∀ v, R ∗ Φ v -∗ Φ' v) -∗
+    WPC e @ s; k; E1; E2 {{ v, Φ' v }} {{Φc'}}.
+Proof.
+  iIntros "F Hwpc HΦc' HΦ'".
+  iDestruct (wpc_frame_l with "[F $Hwpc]") as "Hwpc".
+  { iExact "F". }
+  iApply (wpc_strong_mono' with "Hwpc"); eauto.
+  iSplit.
+  - iIntros (v) "HΦ".
+    iApply ("HΦ'" with "HΦ").
+  - iIntros "HΦc".
+    iApply fupd_mask_weaken; [ set_solver+ | ].
+    iApply ("HΦc'" with "HΦc").
+Qed.
+
 Lemma wpc_fupd_crash_shift s k E1 E2 E2' e Φ Φc :
   E2 ## E2' →
   WPC e @ s; k ; E1 ; E2 {{ Φ }} {{ |={E2', ∅}=> Φc }} ⊢ WPC e @ s; k; E1 ; (E2 ∪ E2') {{ Φ }} {{ Φc }}.
