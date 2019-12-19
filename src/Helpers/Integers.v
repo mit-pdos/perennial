@@ -428,11 +428,35 @@ Proof.
   exact H.
 Qed.
 
+Lemma unsigned_U64 z : int.val (U64 z) = word.wrap (word:=u64_instance.u64) z.
+Proof.
+  unfold U64; rewrite word.unsigned_of_Z; auto.
+Qed.
+
+Lemma unsigned_U32 z : int.val (U32 z) = word.wrap (word:=u32_instance.u32) z.
+Proof.
+  unfold U32; rewrite word.unsigned_of_Z; auto.
+Qed.
+
+Lemma unsigned_U64_0 : int.val (U64 0) = 0.
+Proof.
+  reflexivity.
+Qed.
+
+Lemma unsigned_U32_0 : int.val (U32 0) = 0.
+Proof.
+  reflexivity.
+Qed.
+
 Ltac word_cleanup :=
-  rewrite ?word.unsigned_add, ?word.unsigned_sub, ?word.unsigned_of_Z, ?word.of_Z_unsigned;
+  rewrite ?word.unsigned_add, ?word.unsigned_sub,
+  ?unsigned_U64_0, ?unsigned_U32_0,
+  ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
   repeat match goal with
          | [ H: context[word.unsigned (U64 (Zpos ?x))] |- _ ] => change (int.val (Zpos x)) with (Zpos x) in *
          | [ |- context[word.unsigned (U64 (Zpos ?x))] ] => change (int.val (Zpos x)) with (Zpos x)
+         | [ H: context[word.unsigned (U32 (Zpos ?x))] |- _ ] => change (int.val (U32 (Zpos x))) with (Zpos x) in *
+         | [ |- context[word.unsigned (U32 (Zpos ?x))] ] => change (int.val (U32 (Zpos x))) with (Zpos x)
          end;
   repeat match goal with
          | [ |- context[int.val ?x] ] =>
@@ -443,9 +467,9 @@ Ltac word_cleanup :=
          end;
   repeat match goal with
          | |- context[@word.wrap _ ?word ?ok ?z] =>
-           rewrite (@wrap_small _ word ok z); [ | lia ]
+           rewrite (@wrap_small _ word ok z) by lia
          | |- context[Z.of_nat (Z.to_nat ?z)] =>
-           rewrite (Z2Nat.id z); [ | lia ]
+           rewrite (Z2Nat.id z) by lia
          end;
   try lia.
 
