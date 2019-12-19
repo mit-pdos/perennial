@@ -77,7 +77,7 @@ Section go_lang.
     match t with
     | uint64T => #0
     | uint32T => #(U32 0)
-    | byteT => #(LitByte 0)
+    | byteT => #(U8 0)
     | boolT => #false
     | unitT => #()
     | stringT => #(str"")

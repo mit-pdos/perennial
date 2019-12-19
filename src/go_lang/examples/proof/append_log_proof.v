@@ -132,7 +132,7 @@ Qed.
 Definition val_to_byte (v: val): u8 :=
   match v with
   | LitV (LitByte x) => x
-  | _ => 0
+  | _ => U8 0
   end.
 
 Definition list_to_block (l: list val) (H: length l = Z.to_nat 4096) : Block :=

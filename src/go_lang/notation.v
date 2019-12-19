@@ -6,7 +6,6 @@ Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
 (** Coercions to make programs easier to type. *)
-Coercion Z_to_byte (x:Z) : u8 := Word8 (word.of_Z x).
 (* integers by default turn into u64 literals
 
    note that we can't also make U32 a coercion because otherwise we would have
