@@ -461,7 +461,12 @@ Ltac word_cleanup :=
   repeat match goal with
          | [ |- context[int.val ?x] ] =>
            lazymatch goal with
-           | [ H: 0 <= int.val x < 2^64 |- _ ] => idtac
+           | [ H': 0 <= int.val x < 2^64 |- _ ] => fail
+           | _ => pose proof (word.unsigned_range x)
+           end
+         | [ H: context[int.val ?x] |- _ ] =>
+           lazymatch goal with
+           | [ H': 0 <= int.val x < 2^64 |- _ ] => fail
            | _ => pose proof (word.unsigned_range x)
            end
          end;
