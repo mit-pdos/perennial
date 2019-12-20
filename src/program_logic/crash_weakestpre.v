@@ -223,6 +223,21 @@ Proof.
     iIntros "!#" (? ef _) "H". by iApply "IH".
 Qed.
 
+Lemma wpc_wp s E1 E2 e Φ Φc k:
+  WPC e @ s ; k; E1; E2 {{ Φ }} {{ Φc }} ⊢ NC -∗ WP e @ s ; E1 {{ Φ }}.
+Proof.
+  iIntros "H HNC". (iLöb as "IH" forall (E1 E2 e Φ)).
+  rewrite wp_unfold wpc_unfold /wp_pre /wpc_pre.
+  destruct (to_val e) as [v|]=>//.
+  - iDestruct "H" as "[H _]".
+    iDestruct ("H" with "HNC") as ">[$ _]".
+    auto.
+  - iIntros (σ κ κs n) "Hinterp".
+    iDestruct "H" as "[H _]".
+    iMod ("H" with "Hinterp [$]") as "H".
+    (* oops, H is under (S k) laters so probably isn't usable *)
+Abort.
+
 Lemma wpc_strong_mono s1 s2 k1 k2 E1 E2 E1' E2' e Φ Ψ Φc Ψc :
   s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 → E1' ⊆ E2' →
   WPC e @ s1; k1; E1 ; E1' {{ Φ }} {{ Φc }} -∗
