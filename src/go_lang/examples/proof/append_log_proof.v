@@ -468,33 +468,29 @@ Proof.
 Qed.
 
 Theorem wp_Log__Get stk E v bs (i: u64) :
-  {{{ is_log v bs }}}
+  {{{ is_log v bs ∗ ⌜int.val i < 2^64-1⌝ }}}
     Log__Get v #i @ stk; E
-  {{{ b s (ok: bool), RET (slice_val s, #ok);
+  {{{ s (ok: bool), RET (slice_val s, #ok);
       (if ok
-       then ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s (Block_to_vals b)
+       then ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s (Block_to_vals b)
        else ⌜bs !! int.nat i = None⌝) ∗
       is_log v bs }}}.
 Proof.
-  iIntros (Φ) "Hlog HΦ".
+  iIntros (Φ) "[Hlog %] HΦ".
   iDestruct (is_log_elim with "Hlog") as (sz disk_sz) "[-> Hlog]".
   wp_call.
   wp_call.
   wp_if_destruct.
   - iDestruct (is_log_read i with "Hlog") as (b) "(%& Hdi&Hupd)"; auto.
     wp_apply (wp_Read with "[Hdi]").
-    { rewrite word.unsigned_add.
-      (* TODO: need to assume this! get is actually incorrect if getting from
-      the (2^64-1)th index from a disk of size 2^64 *)
-      rewrite wrap_small; [ | admit ].
+    { word_cleanup.
       iFrame. }
     iIntros (s) "[Hdi Hs]".
     wp_steps.
     iApply "HΦ".
     iSplitR "Hupd Hdi"; eauto.
     iApply "Hupd".
-    rewrite word.unsigned_add.
-    rewrite wrap_small; [ | admit ].
+    word_cleanup.
     iFrame.
   - wp_steps.
     rewrite /slice.nil.
@@ -505,10 +501,7 @@ Proof.
     iPureIntro.
     apply lookup_ge_None.
     lia.
-
-    Grab Existential Variables.
-    { refine inhabitant. }
-Admitted.
+Qed.
 
 Lemma is_slice_sz s vs :
   is_slice s vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
@@ -958,9 +951,6 @@ Proof.
           iApply (is_log_split with "[$] [$] Hnew Hfree").
           iPureIntro.
           len. }
-
-        (* TODO: need a crash spec for writeHdr (which is annoying because
-        it's essentially atomic, except for pure steps on pairs) *)
 
         wpc_apply (wpc_write_hdr with "Hhdr").
         iSplit.
