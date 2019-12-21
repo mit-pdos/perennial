@@ -7,6 +7,43 @@ From Perennial.go_lang Require Import ffi.disk.
 From Perennial.go_lang Require Import ffi.disk_prelude.
 Import uPred.
 
+Lemma loc_add_Sn l n :
+  l +ₗ S n = (l +ₗ 1) +ₗ n.
+Proof.
+  rewrite loc_add_assoc.
+  f_equal.
+  lia.
+Qed.
+
+Theorem heap_array_to_list {Σ} {A} l0 (vs: list A) (P: loc -> A -> iProp Σ) :
+  ([∗ map] l↦v ∈ heap_array l0 vs, P l v) ⊣⊢
+  ([∗ list] i↦v ∈ vs, P (l0 +ₗ i) v).
+Proof.
+  (iInduction (vs) as [| v vs] "IH" forall (l0)).
+  - simpl.
+    rewrite big_sepM_empty.
+    auto.
+  - simpl.
+    rewrite loc_add_0.
+    rewrite big_sepM_union.
+    { rewrite big_sepM_singleton.
+      setoid_rewrite loc_add_Sn.
+      iSpecialize ("IH" $! (l0 +ₗ 1)).
+      iSplit.
+      + iIntros "($&Hm)".
+        iApply ("IH" with "Hm").
+      + iIntros "($&Hl)".
+        iApply ("IH" with "Hl").
+    }
+    symmetry.
+    apply heap_array_map_disjoint; intros.
+    apply (not_elem_of_dom (D := gset loc)).
+    rewrite dom_singleton.
+    intros ?%elem_of_singleton.
+    rewrite loc_add_assoc in H2.
+    apply loc_add_ne in H2; auto; lia.
+Qed.
+
 Section heap.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
@@ -19,43 +56,14 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types stk : stuckness.
 
-Lemma loc_add_Sn l n :
-  l +ₗ S n = (l +ₗ 1) +ₗ n.
-Proof.
-  rewrite loc_add_assoc.
-  f_equal.
-  lia.
-Qed.
-
 Lemma array_to_block_array l b :
   array l (Block_to_vals b) ⊣⊢ mapsto_block l 1 b.
 Proof.
   rewrite /mapsto_block /array.
-  generalize dependent (Block_to_vals b).
-  intros vs.
-  iInduction (vs) as [| v vs] "IH" forall (l).
-  - simpl.
-    rewrite big_sepM_empty.
-    auto.
-  - simpl.
-    rewrite loc_add_0.
-    setoid_rewrite loc_add_Sn.
-    rewrite big_sepM_union.
-    { rewrite big_sepM_singleton.
-      iSplit.
-      + iIntros "(Hl&Hvs)"; iFrame.
-        iDestruct ("IH" $! (l +ₗ 1) with "Hvs") as "Hvs"; iFrame.
-      + iIntros "(Hl&Hvs)"; iFrame.
-        iDestruct ("IH" $! (l +ₗ 1) with "Hvs") as "Hvs"; iFrame.
-    }
-    symmetry.
-    apply heap_array_map_disjoint; intros.
-    apply (not_elem_of_dom (D := gset loc)).
-    rewrite dom_singleton.
-    intros ?%elem_of_singleton.
-    rewrite loc_add_assoc in H2.
-    (* surely this is easy *)
-Admitted.
+  rewrite heap_array_to_list.
+  rewrite big_sepL_fmap.
+  auto.
+Qed.
 
 Lemma slice_to_block_array s b :
   is_slice s (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) 1 b.

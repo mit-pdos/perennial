@@ -28,6 +28,12 @@ Proof. destruct l; rewrite /loc_add /=; f_equal; lia. Qed.
 Lemma loc_add_0 l : l +ₗ 0 = l.
 Proof. destruct l; rewrite /loc_add /=; f_equal; lia. Qed.
 
+Lemma loc_add_eq_inv l i : l +ₗ i = l -> i = 0.
+Proof. destruct l; rewrite /=; inversion 1; lia. Qed.
+
+Lemma loc_add_ne l i : (0 < i)%Z -> l +ₗ i <> l.
+Proof. intros H Heq%loc_add_eq_inv; lia. Qed.
+
 Instance loc_add_inj l : Inj eq eq (loc_add l).
 Proof. destruct l; rewrite /Inj /loc_add /=; intros; simplify_eq; lia. Qed.
 
