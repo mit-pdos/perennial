@@ -95,6 +95,7 @@ Definition MapClear: val :=
 
 Definition MapIter: val :=
   λ: "mref" "body",
+  let: "mv" := StartRead "mref" in
   (rec: "mapIter" "m" :=
      (* TODO: the iteration order should really be non-deterministic *)
      match: "m" with
@@ -105,6 +106,7 @@ Definition MapIter: val :=
        let: "m_rest" := Snd "kvm" in
        "body" "k" "v";;
        "mapIter" "m_rest"
-     end) (!"mref").
+     end) "mv";;
+  FinishRead "mref".
 
 End go_lang.

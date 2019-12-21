@@ -431,18 +431,18 @@ Proof.
   iModIntro; iSplit=> //. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
 
-Theorem is_Writing_Some A (v: A) mna :
-  mna = Some (Writing v) ->
+Theorem is_Writing_Some A (mna: option (nonAtomic A)) :
+  mna = Some Writing ->
   is_Writing mna.
 Proof.
-  intros; hnf; eauto.
+  rewrite /is_Writing; auto.
 Qed.
 
 Hint Resolve is_Writing_Some.
 
 Lemma wp_prepare_write s E l v :
   {{{ ▷ l ↦ Free v }}} PrepareWrite (Val $ LitV (LitLoc l)) @ s; E
-  {{{ RET LitV LitUnit; l ↦ Writing v }}}.
+  {{{ RET LitV LitUnit; l ↦ Writing }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
@@ -453,7 +453,7 @@ Proof.
 Qed.
 Lemma twp_prepare_write s E l v :
   [[{ l ↦ Free v }]] PrepareWrite (Val $ LitV $ LitLoc l) @ s; E
-  [[{ RET LitV LitUnit; l ↦ Writing v }]].
+  [[{ RET LitV LitUnit; l ↦ Writing }]].
 Proof.
   iIntros (Φ) "Hl HΦ".
   iApply twp_lift_atomic_head_step_no_fork; auto.
@@ -463,8 +463,8 @@ Proof.
   iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
 
-Lemma wp_finish_store s E l v' v :
-  {{{ ▷ l ↦ Writing v' }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
+Lemma wp_finish_store s E l v :
+  {{{ ▷ l ↦ Writing }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
   {{{ RET LitV LitUnit; l ↦ Free v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
@@ -474,8 +474,8 @@ Proof.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
-Lemma twp_finish_store s E l v' v :
-  [[{ l ↦ Writing v' }]] FinishStore (Val $ LitV $ LitLoc l) (Val v) @ s; E
+Lemma twp_finish_store s E l v :
+  [[{ l ↦ Writing }]] FinishStore (Val $ LitV $ LitLoc l) (Val v) @ s; E
   [[{ RET LitV LitUnit; l ↦ Free v }]].
 Proof.
   iIntros (Φ) "Hl HΦ".

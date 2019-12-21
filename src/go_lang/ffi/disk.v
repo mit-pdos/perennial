@@ -120,7 +120,7 @@ Section disk.
       is_Some (σ.(world) !! int.val a) ->
       (forall (i:Z), 0 <= i -> i < 4096 ->
                 match σ.(heap) !! (l +ₗ i) with
-             | Some (Free v) => Block_to_vals b !! Z.to_nat i = Some v
+             | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
              | _ => False
                 end)%Z ->
       ext_step WriteOp (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
@@ -250,7 +250,7 @@ lemmas. *)
     gen_heap_ctx σ -∗ mapsto_block l q b -∗
     ⌜ (forall (i:Z), (0 <= i)%Z -> (i < 4096)%Z ->
                 match σ !! (l +ₗ i) with
-             | Some (Free v) => Block_to_vals b !! Z.to_nat i = Some v
+             | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
              | _ => False
                 end) ⌝.
   Proof.

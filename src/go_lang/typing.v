@@ -254,6 +254,12 @@ Section go_lang.
       Γ ⊢ l : refT t ->
       Γ ⊢ v : t ->
       Γ ⊢ FinishStore l v : unitT
+  | start_read_hasTy l t :
+      Γ ⊢ l : refT t ->
+      Γ ⊢ StartRead l : t
+  | finish_read_hasTy l t :
+      Γ ⊢ l : refT t ->
+      Γ ⊢ FinishRead l : unitT
   | external_hasTy op e t1 t2 :
       get_ext_tys op = (t1, t2) ->
       Γ ⊢ e : t1 ->

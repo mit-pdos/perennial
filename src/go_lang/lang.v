@@ -116,6 +116,10 @@ Inductive prim_op : arity -> Set :=
   | AllocStructOp : prim_op args1 (* struct val *)
   | PrepareWriteOp : prim_op args1 (* loc *)
   | FinishStoreOp : prim_op args2 (* pointer, value *)
+  (* non-atomic loads (which conflict with stores) *)
+  | StartReadOp : prim_op args1 (* loc *)
+  | FinishReadOp : prim_op args1 (* loc *)
+  (* atomic loads (which still conflict with non-atomic stores) *)
   | LoadOp : prim_op args1
   | InputOp : prim_op args1
   | OutputOp : prim_op args1
@@ -170,6 +174,8 @@ Notation AllocN := (Primitive2 AllocNOp).
 Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
+Notation StartRead := (Primitive1 StartReadOp).
+Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
@@ -182,9 +188,11 @@ Fixpoint flatten_struct (v: val) : list val :=
 
 Context {ffi : ffi_model}.
 
-Inductive nonAtomic T := Free (v:T) | Writing (v:T).
-Global Arguments Free {T}.
+Inductive nonAtomic T := Writing | Reading (v:T) (n:nat).
 Global Arguments Writing {T}.
+Global Arguments Reading {T}.
+(* TODO: Free should really be called something else - quiescent? just value?  *)
+Definition Free {T} (v:T): nonAtomic T := Reading v 0.
 
 Inductive event :=
   | In_ev (sel v:val)
@@ -478,6 +486,8 @@ Proof.
                                 | AllocStructOp => inr 7
                                 | PrepareWriteOp => inr 12
                                 | FinishStoreOp => inr 1
+                                | StartReadOp => inr 13
+                                | FinishReadOp => inr 14
                                 | LoadOp => inr 2
                                 | InputOp => inr 10
                                 | OutputOp => inr 11
@@ -488,6 +498,8 @@ Proof.
                                | inr 7 => a_prim_op AllocStructOp
                                | inr 12 => a_prim_op PrepareWriteOp
                                | inr 1 => a_prim_op FinishStoreOp
+                               | inr 13 => a_prim_op StartReadOp
+                               | inr 14 => a_prim_op FinishReadOp
                                | inr 2 => a_prim_op LoadOp
                                | inr 10 => a_prim_op InputOp
                                | inr 11 => a_prim_op OutputOp
@@ -899,19 +911,18 @@ Qed.
 Definition is_Free {A} (mna: option (nonAtomic A)) := exists x, mna = Some (Free x).
 Global Instance is_Free_dec A (x: option (nonAtomic A)) : Decision (is_Free x).
 Proof.
-  hnf; unfold is_Free.
+  hnf; rewrite /is_Free /Free.
   destruct x; [ | right; abstract (destruct 1; congruence) ].
-  destruct n; [ left | right; abstract (destruct 1; congruence) ].
-  eauto.
+  destruct n; [ right; abstract (destruct 1; congruence) | ].
+  destruct (decide (n = 0)); [ subst; left; eauto | right; abstract (destruct 1; congruence) ].
 Defined.
 
-Definition is_Writing {A} (mna: option (nonAtomic A)) := exists x, mna = Some (Writing x).
+Definition is_Writing {A} (mna: option (nonAtomic A)) := mna = Some Writing.
 Global Instance is_Writing_dec A (x: option (nonAtomic A)) : Decision (is_Writing x).
 Proof.
-  hnf; unfold is_Writing.
-  destruct x; [ | right; abstract (destruct 1; congruence) ].
-  destruct n; [ right; abstract (destruct 1; congruence) | left ].
-  eauto.
+  hnf; rewrite /is_Writing.
+  destruct x; [ | right; abstract (inversion 1) ].
+  destruct n; [ left; eauto | right; abstract (inversion 1) ].
 Defined.
 
 Inductive head_step : expr → state → list observation → expr → state → list expr → Prop :=
@@ -963,7 +974,19 @@ Inductive head_step : expr → state → list observation → expr → state →
      σ.(heap) !! l = Some $ Free v ->
      head_step (PrepareWrite (Val $ LitV $ LitLoc l)) σ
                []
-               (Val $ LitV $ LitUnit) (set heap <[l:=Writing v]> σ)
+               (Val $ LitV $ LitUnit) (set heap <[l:=Writing]> σ)
+               []
+  | StartReadS l v n σ :
+     σ.(heap) !! l = Some $ Reading v n ->
+     head_step (StartRead (Val $ LitV $ LitLoc l)) σ
+               []
+               (of_val v) (set heap <[l:=Reading v (S n)]> σ)
+               []
+  | FinishReadS l v n σ :
+     σ.(heap) !! l = Some $ Reading v (S n) ->
+     head_step (StartRead (Val $ LitV $ LitLoc l)) σ
+               []
+               (Val $ LitV $ LitUnit) (set heap <[l:=Reading v n]> σ)
                []
   | LoadS l v σ :
      σ.(heap) !! l = Some $ Free v →
@@ -1128,6 +1151,8 @@ Notation AllocN := (Primitive2 AllocNOp).
 Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
+Notation StartRead := (Primitive1 StartReadOp).
+Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
