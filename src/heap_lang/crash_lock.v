@@ -56,9 +56,8 @@ Section proof.
     rewrite /is_crash_lock.
     iDestruct "Hcrash" as (??) "(#Hr&Hinv&His_lock)".
     iApply wpc_bind.
-    iApply wp_wpc_frame'.
-    iSplitR "Hwp"; [| iSplitR "Hwp"; [| iApply "Hwp"]].
-    { iAlways; iIntros "($&_)". }
+    wpc_frame "Hwp".
+    { iIntros "($&_)". }
     iApply (acquire_spec with "His_lock").
     iNext. iIntros "(Hlocked&Hstaged) H".
     iApply (wpc_staged_invariant with "[-]"); try iFrame.
@@ -95,9 +94,8 @@ Section proof.
     iDestruct "Hcrash" as (??) "(#Hr&Hinv&His_lock)".
     rewrite /with_lock.
     wpc_bind (acquire lk).
-    iApply wp_wpc_frame'.
-    iSplitR "Hwp"; [| iSplitR "Hwp"; [| iApply "Hwp"]].
-    { iAlways; iIntros "($&_)". }
+    wpc_frame "Hwp".
+    { iIntros "($&_)". }
     iApply (spin_lock.acquire_spec with "His_lock").
     iNext. iIntros "(Hlocked&Hstaged) Hwp".
     wpc_pures.
@@ -126,12 +124,10 @@ Section proof.
     { iDestruct "H" as "(_&H)". eauto. }
 
     wpc_bind (release _).
-    iApply wp_wpc_frame'.
-    iSplitR "H Hval Hlocked"; [| iSplitR "H"; [| iApply "H"]].
-    { iAlways; iIntros "(_&$)". }
-
-    iApply (release_spec with "[Hlocked His_lock Hval]").
-    { iFrame "His_lock". iFrame. }
+    wpc_frame "H".
+    { iIntros "(_&$)". }
+    iApply (release_spec with "[Hlocked Hval]").
+    { iFrame "His_lock ∗". }
     iNext. iIntros "_ H".
 
     wpc_pures.

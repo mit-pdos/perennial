@@ -170,3 +170,7 @@ Tactic Notation "iLeft" "in" constr(H) := let pat := constr:("[" +:+ H +:+ " _]"
                                           iDestruct H as pat.
 Tactic Notation "iRight" "in" constr(H) := let pat := constr:("[_ " +:+ H +:+ "]") in
                                           iDestruct H as pat.
+
+Tactic Notation "wpc_frame" constr(pat) :=
+  iApply wp_wpc_frame';
+  iSplitL pat; [ iAccu | iSplitR; [ iModIntro | ] ].

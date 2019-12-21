@@ -117,3 +117,6 @@ Tactic Notation "wpc_bind" open_constr(efoc) :=
   | _ => fail "wp_bind: not a 'wp'"
   end.
 
+Tactic Notation "wpc_frame" constr(pat) :=
+  iApply wp_wpc_frame';
+  iSplitL pat; [ iAccu | iSplitR; [ iModIntro | ] ].

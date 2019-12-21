@@ -240,13 +240,6 @@ Proof.
     by iApply array_to_block_array.
 Qed.
 
-Tactic Notation "wpc_frame" constr(pat) :=
-  (* TODO: this tactic moves the hypotheses in pat to the first goal, but via an
-  accumulate, which is silly; we should get them split apart and named
-  appropriately (and then duplicated as part of the remaining goal) *)
-  iApply wp_wpc_frame';
-  iSplitR; [ iModIntro | iSplitR pat; [ | iAccu ] ].
-
 Theorem wpc_write_hdr stk k E1 E2 (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 }}}
     Log__writeHdr (#sz, #disk_sz)%V @ stk; k; E1; E2
