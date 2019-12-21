@@ -165,11 +165,14 @@ Tactic Notation "wpc_if_destruct" :=
                     end
   end.
 
-(* TODO: this is an utter hack, surely there's a better way? *)
-Tactic Notation "iLeft" "in" constr(H) := let pat := constr:("[" +:+ H +:+ " _]") in
+(* TODO: this works, but maybe we can do better *)
+Tactic Notation "iLeft" "in" constr(H) := let pat := constr:(intro_patterns.IList [[intro_patterns.IIdent H; intro_patterns.IDrop]]) in
                                           iDestruct H as pat.
-Tactic Notation "iRight" "in" constr(H) := let pat := constr:("[_ " +:+ H +:+ "]") in
-                                          iDestruct H as pat.
+Tactic Notation "iRight" "in" constr(H) := let pat := constr:(intro_patterns.IList [[intro_patterns.IDrop; intro_patterns.IIdent H]]) in
+                                           iDestruct H as pat.
+
+(* TODO: fix this to use a tac_ theorem; look at tac_wp_allocN for an example of
+env splitting *)
 
 Tactic Notation "wpc_frame" constr(pat) :=
   iApply wp_wpc_frame';
