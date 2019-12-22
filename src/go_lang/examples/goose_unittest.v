@@ -568,6 +568,10 @@ Definition sliceOps: val :=
     let: "v4" := SliceRef "x" #2 in
     "v1" + SliceGet "v2" #0 + SliceGet "v3" #1 + !"v4".
 
+Definition makeSingletonSlice: val :=
+  λ: "x",
+    SliceSingleton "x".
+
 Module thing.
   Definition S := struct.decl [
     "x" :: uint64T
@@ -750,6 +754,22 @@ Definition S__writeB: val :=
 Definition S__negateC: val :=
   λ: "s",
     struct.storeF S.S "c" "s" (~ (struct.loadF S.S "c" "s")).
+
+Definition S__refC: val :=
+  λ: "s",
+    struct.fieldRef S.S "c" "s".
+
+Definition localSRef: val :=
+  λ: <>,
+    let: "s" := ref (zero_val S.T) in
+    struct.fieldRef S.S "b" "s".
+
+Definition setField: val :=
+  λ: <>,
+    let: "s" := ref (zero_val S.T) in
+    struct.storeF S.S "a" "s" #0;;
+    struct.storeF S.S "c" "s" #true;;
+    !"s".
 
 (* synchronization.go *)
 
