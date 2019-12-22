@@ -64,6 +64,20 @@ Proof.
   typecheck.
 Qed.
 
+Definition SliceSingleton: val :=
+  λ: "x",
+  let: "p" := AllocN #1 "x" in
+  ("p", #1).
+
+Theorem SliceSingleton_t t : ⊢ SliceSingleton : (t -> slice.T t).
+Proof.
+  type_step.
+  type_step.
+  { instantiate (1 := arrayT t).
+    typecheck. }
+  typecheck.
+Qed.
+
 Definition MemCpy: val :=
   λ: "dst" "src" (annot "n" uint64T),
     for-range: "i" < "n" :=

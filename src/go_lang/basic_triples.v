@@ -209,6 +209,22 @@ Proof.
   rewrite replicate_length //.
 Qed.
 
+Theorem wp_SliceSingleton Φ stk E x :
+  (∀ s, is_slice s [x] -∗ Φ (slice_val s)) -∗
+  WP SliceSingleton x @ stk; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  wp_apply wp_allocN; eauto.
+  { word. }
+  iIntros (l) "(Hl&_)".
+  wp_steps.
+  rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
+  iFrame.
+  iPureIntro.
+  simpl; word.
+Qed.
+
 Lemma array_split (n:Z) l vs :
   0 <= n ->
   Z.to_nat n <= length vs ->
