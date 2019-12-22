@@ -107,15 +107,23 @@ Fixpoint field_offset (fields: list (string*ty)) f0 : option (Z * ty) :=
                     end
   end%Z.
 
+(** A function that computes the address of field f given a base address for a
+struct of type d.
+
+Note that the resulting function simply takes a location and constant pointer
+arithmetic on it (which is pre-computed based on the field and descriptor). *)
+Definition structFieldRef (d:descriptor) (f:string): val :=
+  match field_offset d.(fields) f with
+  | Some (off, _) => λ: "p", (Var "p" +ₗ #off)
+  | None => λ: "p", Var "p"
+  end.
+
 Definition loadField (d:descriptor) (f:string) : val :=
   match field_offset d.(fields) f with
   | Some (off, t) => λ: "p", load_ty t (Var "p" +ₗ #off)
   | None => λ: <>, #()
   end.
 
-(* TODO: implement these, ideally while re-using infrastructure for loadField
-(although storing is more complicated since it requires traversing through
-struct and the value being assigned) *)
 Fixpoint store_ty (t:ty) (e:expr) (v:expr) : expr :=
   match t with
   | prodT t1 t2 => store_ty t1 e (Fst v);;
@@ -271,10 +279,22 @@ Proof.
   unfold structRefTy, loadField; simpl.
   intros.
   rewrite H; simpl.
-  econstructor.
+  type_step.
   eapply load_ty_t.
   eapply fieldOffset_t; eauto.
-  econstructor; auto.
+  typecheck.
+Qed.
+
+Theorem structFieldRef_t Γ d f t z :
+  field_offset d.(fields) f = Some (z, t) ->
+  Γ ⊢v structFieldRef d f : (structRefTy d -> structRefT (flatten_ty t)).
+Proof.
+  unfold structRefTy, structFieldRef.
+  intros.
+  rewrite H.
+  type_step.
+  eapply fieldOffset_t; eauto.
+  typecheck.
 Qed.
 
 Hint Constructors expr_hasTy.
@@ -348,6 +368,7 @@ Module struct.
   Notation new := allocStructLit.
   Notation alloc := allocStruct.
   Notation get := getField.
+  Notation fieldRef := structFieldRef.
   (* TODO: load/loadF could probably use better names *)
   Notation load := loadStruct.
   Notation loadF := loadField.
@@ -365,5 +386,5 @@ Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scop
 
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)
-Global Opaque allocStruct loadStruct loadField storeStruct storeField.
-Hint Resolve allocStruct_t loadStruct_t loadField_t storeStruct_t storeField_t : types.
+Global Opaque allocStruct structFieldRef loadStruct loadField storeStruct storeField.
+Hint Resolve allocStruct_t structFieldRef_t loadStruct_t loadField_t storeStruct_t storeField_t : types.
