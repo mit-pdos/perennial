@@ -1,11 +1,9 @@
 From iris.proofmode Require Import base tactics classes.
 From iris.base_logic Require Export invariants.
 From iris.program_logic Require Export weakestpre.
-From Perennial.program_logic Require Import staged_invariant.
+From Perennial.program_logic Require Import crash_token step_fupd_extra.
 Set Default Proof Using "Type".
 Import uPred.
-
-
 
 (* Define a weakestpre with an explicit crash invariant (i.e. there is a postcondition and a crash condition *)
 
