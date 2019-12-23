@@ -43,6 +43,24 @@ Module Data.
     Proof.
       typecheck.
     Qed.
+
+    (* a cond var is modeled with the underlying lock *)
+    Definition newCondVar: val := λ: "l", (Var "l").
+    (* no-op in the model, only affects scheduling *)
+    Definition condSignal: val := λ: "l", #().
+    Definition condBroadcast: val := λ: "l", #().
+    Definition condWait: val := λ: "l", lockRelease Writer (Var "l");;
+                                        (* actual cond var waits for a signal
+                                        here, but the model does not take this
+                                        into account *)
+                                        lockAcquire Writer (Var "l").
+    (* TODO: prove triples for cond var
+
+       is_cond l I ≜ is_lock l I (* transparent, since caller will continue to use the lock *)
+       {is_lock l I} newCondVar {r. r = l ∗ is_cond r I}
+       {is_cond l I} condSignal l {is_cond l I}
+       {I ∗ is_cond l I} condWait l {I ∗ is_cond l I}
+     *)
   End go_lang.
 End Data.
 

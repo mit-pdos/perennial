@@ -282,6 +282,23 @@ Definition oddLiterals: val :=
       "b" ::= #false
     ].
 
+(* locks.go *)
+
+Definition useLocks: val :=
+  λ: <>,
+    let: "m" := Data.newLock #() in
+    Data.lockAcquire Writer "m";;
+    Data.lockRelease Writer "m".
+
+Definition useCondVar: val :=
+  λ: <>,
+    let: "m" := Data.newLock #() in
+    let: "c" := Data.newCondVar "m" in
+    Data.lockAcquire Writer "m";;
+    Data.condSignal "c";;
+    Data.condWait "c";;
+    Data.lockRelease Writer "m".
+
 (* log_debugging.go *)
 
 Definition ToBeDebugged: val :=
