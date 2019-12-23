@@ -154,6 +154,9 @@ Section go_lang.
       Γ ⊢ Rec f x e : arrowT t1 t2
   | panic_expr_hasTy msg t :
       Γ ⊢ Panic msg : t
+  | fork_hasTy e t :
+      Γ ⊢ e : t ->
+      Γ ⊢ Fork e : unitT
   | cast_u64_op_hasTy e1 t :
       Γ ⊢ e1 : t ->
       is_intTy t = true ->
