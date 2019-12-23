@@ -134,9 +134,11 @@ Qed.
 
 Definition SliceSubslice: val :=
   λ: "s" "n1" "n2",
-  if: slice.len "s" ≤ "n2" - "n1"
-  then Panic "slice index out-of-bounds"
-  else (slice.ptr "s" +ₗ "n1", "n2" - "n1").
+  if: "n2" < "n1"
+  then Panic "slice indices out of order"
+  else if: slice.len "s" ≤ "n2" - "n1"
+       then Panic "slice index out-of-bounds"
+       else (slice.ptr "s" +ₗ "n1", "n2" - "n1").
 
 Theorem SliceSubslice_t t : ⊢ SliceSubslice : (slice.T t -> uint64T -> uint64T -> slice.T t).
 Proof.

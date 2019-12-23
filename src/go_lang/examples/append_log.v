@@ -10,6 +10,78 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
    appends, which are implemented by atomically updating an on-disk header with
    the number of valid blocks in the log. *)
 
+Module Enc.
+  (* TODO: use this instead of encoding manually *)
+  Definition S := struct.decl [
+    "b" :: disk.blockT;
+    "off" :: refT uint64T
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
+End Enc.
+
+Definition NewEnc: val :=
+  λ: <>,
+    struct.mk Enc.S [
+      "b" ::= NewSlice byteT disk.BlockSize;
+      "off" ::= ref (zero_val uint64T)
+    ].
+Theorem NewEnc_t: ⊢ NewEnc : (unitT -> Enc.T).
+Proof. typecheck. Qed.
+Hint Resolve NewEnc_t : types.
+
+Definition Enc__PutInt: val :=
+  λ: "enc" "x",
+    let: "off" := !(Enc.get "off" "enc") in
+    UInt64Put (SliceSkip (Enc.get "b" "enc") "off") "x";;
+    Enc.get "off" "enc" <- !(Enc.get "off" "enc") + #8.
+Theorem Enc__PutInt_t: ⊢ Enc__PutInt : (Enc.T -> uint64T -> unitT).
+Proof. typecheck. Qed.
+Hint Resolve Enc__PutInt_t : types.
+
+Definition Enc__Finish: val :=
+  λ: "enc",
+    Enc.get "b" "enc".
+Theorem Enc__Finish_t: ⊢ Enc__Finish : (Enc.T -> disk.blockT).
+Proof. typecheck. Qed.
+Hint Resolve Enc__Finish_t : types.
+
+Module Dec.
+  Definition S := struct.decl [
+    "b" :: disk.blockT;
+    "off" :: refT uint64T
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
+End Dec.
+
+Definition NewDec: val :=
+  λ: "b",
+    struct.mk Dec.S [
+      "b" ::= "b";
+      "off" ::= ref (zero_val uint64T)
+    ].
+Theorem NewDec_t: ⊢ NewDec : (disk.blockT -> Dec.T).
+Proof. typecheck. Qed.
+Hint Resolve NewDec_t : types.
+
+Definition Dec__GetInt: val :=
+  λ: "dec",
+    let: "off" := !(Dec.get "off" "dec") in
+    Dec.get "off" "dec" <- !(Dec.get "off" "dec") + #8;;
+    UInt64Get (SliceSkip (Dec.get "b" "dec") "off").
+Theorem Dec__GetInt_t: ⊢ Dec__GetInt : (Dec.T -> uint64T).
+Proof. typecheck. Qed.
+Hint Resolve Dec__GetInt_t : types.
+
 Module Log.
   Definition S := struct.decl [
     "sz" :: uint64T;

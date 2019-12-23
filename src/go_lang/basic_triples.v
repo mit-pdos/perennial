@@ -309,6 +309,52 @@ Proof.
   word.
 Qed.
 
+Lemma wp_SliceSkip' Φ stk E s (n: u64):
+  ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
+  Φ (slice_val (slice_skip s n)) -∗
+  WP (SliceSkip (slice_val s) #n) @ stk; E {{ Φ }}.
+Proof.
+  iIntros "% HΦ".
+  wp_call.
+  wp_call.
+  wp_call.
+  iApply "HΦ".
+Qed.
+
+Lemma wp_SliceTake Φ stk E s vs (n: u64):
+  ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
+  Φ (slice_val (slice_take s n)) -∗
+  WP (SliceTake (slice_val s) #n) @ stk; E {{ Φ }}.
+Proof.
+  iIntros "% HΦ".
+  wp_call.
+  wp_call.
+  wp_if_destruct.
+  - exfalso.
+    word.
+  - wp_call.
+    iApply "HΦ".
+Qed.
+
+Lemma wp_SliceSubslice Φ stk E s (n1 n2: u64):
+  ⌜int.val n1 ≤ int.val n2 ∧ int.val n2 ≤ int.val s.(Slice.sz)⌝ -∗
+  Φ (slice_val (Slice.mk (s.(Slice.ptr) +ₗ int.val n1) (word.sub n2 n1))) -∗
+  WP (SliceSubslice (slice_val s) #n1 #n2) @ stk; E {{ Φ }}.
+Proof.
+  iIntros "% HΦ".
+  wp_call.
+  wp_if_destruct.
+  - word.
+  - wp_call.
+    wp_if_destruct.
+    + exfalso.
+      rewrite word.unsigned_sub in Heqb0.
+      rewrite -> wrap_small in Heqb0 by word.
+      word.
+    + wp_call.
+      iApply "HΦ".
+Qed.
+
 Lemma wp_SliceGet s E sl vs (i: u64) v0 :
   {{{ is_slice sl vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
     SliceGet sl #i @ s; E

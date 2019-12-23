@@ -7,6 +7,27 @@ From Perennial.go_lang Require Import ffi.disk.
 From Perennial.go_lang Require Import ffi.disk_prelude.
 Import uPred.
 
+(* TODO: use this throughout (including replacing slice_val) *)
+Class GoData T := to_val: forall {ext:ext_op}, T -> val.
+Hint Mode GoData !.
+
+Instance u64_data: GoData u64 := λ {_} x, #x.
+Instance byte_data: GoData u8 := λ {_} x, #x.
+Instance bool_data: GoData bool := λ {_} x, #x.
+Instance slice_data: GoData Slice.t := λ {_} s, slice_val s.
+
+Module EncM.
+  Record t := mk { s: Slice.t;
+                   off: loc; }.
+  Definition to_val (x:t) : val :=
+    (slice_val x.(s), #x.(off))%V.
+  Lemma to_val_intro s (off: loc) :
+    (slice_val s, #off)%V = to_val (mk s off).
+  Proof.
+    reflexivity.
+  Qed.
+End EncM.
+
 Lemma loc_add_Sn l n :
   l +ₗ S n = (l +ₗ 1) +ₗ n.
 Proof.
@@ -84,6 +105,217 @@ Proof.
   reflexivity.
 Qed.
 
+Notation length := strings.length.
+
+Hint Rewrite app_length @drop_length @take_length @fmap_length
+     @replicate_length u64_le_bytes_length : len.
+Hint Rewrite @vec_to_list_length : len.
+Hint Rewrite @insert_length : len.
+Hint Rewrite u64_le_length : len.
+
+Ltac word := try lazymatch goal with
+                 | |- envs_entails _ _ => iPureIntro
+                 end; Integers.word.
+
+Ltac len := autorewrite with len; try word.
+
+(* trying out a new pattern for struct rep invariants - note that is_EncM is
+entirely derived while is_enc is entirely "high-level" (scare quotes due to
+still dealing with locations) *)
+
+Definition is_EncM v enc: iProp Σ :=
+  ⌜v = EncM.to_val enc⌝.
+
+Definition is_enc (enc: EncM.t) (vs: list u64): iProp Σ :=
+  ⌜int.val enc.(EncM.s).(Slice.sz) = 4096⌝ ∗
+  let encoded := concat (u64_le <$> vs) in
+  let encoded_len := Z.of_nat (length encoded) in
+  enc.(EncM.off) ↦ (Free #(U64 encoded_len)) ∗
+  enc.(EncM.s).(Slice.ptr) ↦∗ fmap (λ (b:u8), #b) encoded ∗
+  ∃ (free: list u8),
+    (enc.(EncM.s).(Slice.ptr) +ₗ encoded_len) ↦∗ fmap (λ (b:u8), #b) free ∗
+    ⌜(length encoded + length free)%nat = Z.to_nat 4096⌝.
+
+Theorem wp_new_enc stk E :
+  {{{ True }}}
+    NewEnc #() @ stk; E
+  {{{ enc, RET EncM.to_val enc; is_enc enc [] }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  rewrite /NewEnc.
+  rewrite /struct.buildStruct /Enc.S /=.
+  wp_call.
+  wp_apply wp_new_slice; [ word | ].
+  iIntros (sl) "[Ha %]".
+  rewrite replicate_length in H.
+  change (int.nat 4096) with (Z.to_nat 4096) in H.
+  wp_apply wp_alloc; auto.
+  iIntros (l) "(Hl&_)".
+  wp_steps.
+  rewrite EncM.to_val_intro.
+  iApply "HΦ".
+  rewrite /is_enc.
+  simpl.
+  iSplitR; [ word | ].
+  iFrame.
+  rewrite array_nil.
+  iSplitR; auto.
+  rewrite loc_add_0.
+  iExists (replicate (int.nat 4096) (U8 0)).
+  rewrite fmap_replicate; iFrame.
+  len.
+Qed.
+
+Ltac iFramePtsTo_core t :=
+  match goal with
+  | [ |- envs_entails ?Δ ((?l +ₗ ?z) ↦∗ ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j ((l +ₗ ?z') ↦∗ ?v')] =>
+      unify v v';
+      replace z with z';
+      [ iExact j | t ]
+    end
+  | [ |- envs_entails ?Δ (?l ↦ ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j (l ↦ ?v')] =>
+      replace v with v';
+      [ iExact j | t ]
+    end
+  end.
+
+Tactic Notation "iFramePtsTo" := iFramePtsTo_core ltac:(idtac).
+Tactic Notation "iFramePtsTo" "by" tactic(t) := iFramePtsTo_core ltac:(by t).
+
+Theorem wp_Enc__PutInt stk E enc vs (x: u64) :
+  {{{ is_enc enc vs ∗ ⌜length (concat (u64_le <$> vs)) + 8 <= 4096⌝ }}}
+    Enc__PutInt (EncM.to_val enc) #x @ stk; E
+  {{{ RET #(); is_enc enc (vs ++ [x]) }}}.
+Proof.
+  iIntros (Φ) "(Henc&%) HΦ".
+  iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
+  iDestruct "Hfree" as (free) "(Hfree&%)".
+  wp_call.
+  rewrite /Enc.get /struct.getField /Enc.S /=.
+  wp_steps.
+  wp_load.
+  wp_steps.
+  wp_apply wp_SliceSkip'.
+  { iPureIntro.
+    word. }
+  wp_apply (wp_UInt64Put with "[Hfree]").
+  { rewrite /is_slice /=.
+    iSplitL; [ iSplitL | ].
+    - iFramePtsTo by word.
+    - len.
+    - len.
+  }
+  iIntros "(Ha&%)".
+  wp_steps.
+  wp_load.
+  wp_steps.
+  wp_store.
+  iApply "HΦ".
+  cbn [slice_skip Slice.ptr].
+  rewrite /is_enc.
+  iSplitR; [ iPureIntro; auto | ].
+  iSplitL "Hoff".
+  {
+    iFramePtsTo.
+    repeat f_equal.
+    apply word.unsigned_inj.
+    rewrite fmap_app concat_app; len.
+    simpl.
+    word. }
+  iDestruct (array_app with "Ha") as "[Hx Hfree]".
+  iDestruct (array_app with "[$Henc Hx]") as "Henc".
+  { iFramePtsTo by len. }
+  iSplitL "Henc".
+  { rewrite /u64_le_bytes !fmap_app !concat_app.
+    rewrite -fmap_app -concat_app.
+    iFrame. }
+  iExists _; iFrame.
+  iSplitL.
+  { rewrite -fmap_drop.
+    rewrite loc_add_assoc.
+    iFramePtsTo.
+    rewrite fmap_app concat_app.
+    len.
+    simpl.
+    len.
+  }
+  rewrite !fmap_app !concat_app.
+  len.
+  simpl.
+  len.
+Qed.
+
+Instance word_inhabited width (word: Interface.word width) : Inhabited word.
+Proof.
+  constructor.
+  exact (word.of_Z 0).
+Qed.
+
+Instance Block0: Inhabited Block := _.
+
+Definition list_to_block (l: list u8) : Block :=
+  match decide (length l = Z.to_nat 4096) with
+  | left H => eq_rect _ _ (list_to_vec l) _ H
+  | _ => inhabitant
+  end.
+
+Lemma vec_to_list_of_list_eq_rect A (l: list A) n (H: length l = n) :
+  vec_to_list (eq_rect _ _ (list_to_vec l) _ H) = l.
+Proof.
+  rewrite <- H; simpl.
+  rewrite vec_to_list_of_list.
+  auto.
+Qed.
+
+Definition list_to_block_to_vals l :
+  length l = Z.to_nat 4096 ->
+  Block_to_vals (list_to_block l) = (λ (b:u8), #b) <$> l.
+Proof.
+  intros H.
+  rewrite /list_to_block /Block_to_vals.
+  rewrite decide_left.
+  f_equal.
+  rewrite vec_to_list_of_list_eq_rect; auto.
+Qed.
+
+Lemma array_to_block l (bs: list byte) :
+  length bs = Z.to_nat 4096 ->
+  l ↦∗ ((λ (b:u8), #b) <$> bs) -∗ mapsto_block l 1 (list_to_block bs).
+Proof.
+  rewrite /array /mapsto_block /Block_to_vals /list_to_block.
+  iIntros (H) "Hl".
+  rewrite decide_left.
+  rewrite heap_array_to_list.
+  rewrite !big_sepL_fmap.
+  rewrite vec_to_list_of_list_eq_rect.
+  iFrame.
+Qed.
+
+Theorem wp_Enc__Finish stk E enc vs :
+  {{{ is_enc enc vs }}}
+    Enc__Finish (EncM.to_val enc) @ stk; E
+  {{{ s (extra: list u8), RET (slice_val s);
+      mapsto_block s.(Slice.ptr) 1 (list_to_block $ concat (u64_le <$> vs) ++ extra) ∗
+      ⌜int.val s.(Slice.sz) = 4096⌝ }}}.
+Proof.
+  iIntros (Φ) "Henc HΦ".
+  wp_call.
+  wp_call.
+  iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
+  iDestruct "Hfree" as (free) "(Hfree&%)".
+  iDestruct (array_app with "[$Henc Hfree]") as "Hblock".
+  { iFramePtsTo by len. }
+  rewrite -fmap_app.
+  iApply "HΦ".
+  iSplit; [ | len ].
+  iApply (array_to_block with "Hblock").
+  len.
+Qed.
+
 Transparent disk.Read disk.Write.
 
 Theorem wp_Write stk E (a: u64) s b :
@@ -137,19 +369,19 @@ Proof.
   iFrame.
 Qed.
 
-Definition val_to_byte (v: val): u8 :=
+Definition val_to_byte (v: val) : u8 :=
   match v with
   | LitV (LitByte x) => x
   | _ => U8 0
   end.
 
-Definition list_to_block (l: list val) (H: length l = Z.to_nat 4096) : Block :=
+Definition val_list_to_block (l: list val) (H: length l = Z.to_nat 4096) : Block :=
   eq_rect _ _ (vmap val_to_byte (Vector.of_list l)) _ H.
 
-Lemma array_to_block l vs :
+Lemma array_to_block_val l vs :
   (* TODO: only true if vs are all actually bytes (otherwise roundtripping
   produces #(U8 0) and not the original value) *)
-  l ↦∗ vs ∗ ⌜length vs = Z.to_nat 4096⌝ -∗ ∃ H, mapsto_block l 1 (list_to_block vs H).
+  l ↦∗ vs ∗ ⌜length vs = Z.to_nat 4096⌝ -∗ ∃ H, mapsto_block l 1 (val_list_to_block vs H).
 Proof.
   rewrite /array /mapsto_block /Block_to_vals /list_to_block.
   iIntros "[Hl %]".
@@ -174,13 +406,6 @@ Definition is_log (v:val) (vs:list Block): iProp Σ :=
    is_log' sz disk_sz vs.
 
 Open Scope Z.
-
-Hint Rewrite app_length @drop_length @take_length @fmap_length
-     @replicate_length u64_le_bytes_length : len.
-Hint Rewrite @vec_to_list_length : len.
-Hint Rewrite @insert_length : len.
-
-Ltac len := autorewrite with len; try word.
 
 Theorem wpc_Write stk k E1 E2 (a: u64) s b :
   {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice s (Block_to_vals b) }}}
@@ -303,10 +528,8 @@ Proof.
   iDestruct (array_app with "[$Htake Hs]") as "Hl".
   { iDestruct "Hs" as "[Ha _]".
     iFrame. }
-  iDestruct (array_to_block with "[$Hl]") as (Hlength) "Hb".
-  { len.
-    iPureIntro.
-    reflexivity. }
+  iDestruct (array_to_block_val with "[$Hl]") as (Hlength) "Hb".
+  { len. }
   iDestruct (block_array_to_slice with "Hb") as "Hs".
   replace s with (Slice.mk (Slice.ptr s) 4096); last first.
   { destruct s; simpl in Hsz; f_equal.
@@ -429,12 +652,6 @@ Proof.
   iDestruct (is_log'_sz with "Hlog'") as "%".
   iPureIntro.
   congruence.
-Qed.
-
-Instance word_inhabited width (word: Interface.word width) : Inhabited word.
-Proof.
-  constructor.
-  exact (word.of_Z 0).
 Qed.
 
 Theorem is_log_read (i: u64) (sz disk_sz: u64) bs :
@@ -777,8 +994,6 @@ Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
     is_log' sz disk_sz vs.
 
 Transparent struct.loadField struct.storeStruct.
-
-Notation length := strings.length.
 
 Lemma is_log_intro sz disk_sz bs :
   is_log' sz disk_sz bs -∗ is_log (#sz, #disk_sz)%V bs.
