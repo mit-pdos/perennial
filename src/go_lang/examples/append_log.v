@@ -95,12 +95,19 @@ Module Log.
   End fields.
 End Log.
 
+Definition Log__mkHdr: val :=
+  λ: "log",
+    let: "enc" := NewEnc #() in
+    Enc__PutInt "enc" (Log.get "sz" "log");;
+    Enc__PutInt "enc" (Log.get "diskSz" "log");;
+    Enc__Finish "enc".
+Theorem Log__mkHdr_t: ⊢ Log__mkHdr : (Log.T -> disk.blockT).
+Proof. typecheck. Qed.
+Hint Resolve Log__mkHdr_t : types.
+
 Definition Log__writeHdr: val :=
   λ: "log",
-    let: "hdr" := NewSlice byteT #4096 in
-    UInt64Put "hdr" (Log.get "sz" "log");;
-    UInt64Put (SliceSkip "hdr" #8) (Log.get "diskSz" "log");;
-    disk.Write #0 "hdr".
+    disk.Write #0 (Log__mkHdr "log").
 Theorem Log__writeHdr_t: ⊢ Log__writeHdr : (Log.T -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve Log__writeHdr_t : types.
@@ -127,8 +134,9 @@ Hint Resolve Init_t : types.
 Definition Open: val :=
   λ: <>,
     let: "hdr" := disk.Read #0 in
-    let: "sz" := UInt64Get "hdr" in
-    let: "diskSz" := UInt64Get (SliceSkip "hdr" #8) in
+    let: "dec" := NewDec "hdr" in
+    let: "sz" := Dec__GetInt "dec" in
+    let: "diskSz" := Dec__GetInt "dec" in
     struct.mk Log.S [
       "sz" ::= "sz";
       "diskSz" ::= "diskSz"

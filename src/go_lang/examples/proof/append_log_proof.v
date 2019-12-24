@@ -308,7 +308,9 @@ Theorem wp_Enc__Finish stk E enc vs :
     Enc__Finish (EncM.to_val enc) @ stk; E
   {{{ s (extra: list u8), RET (slice_val s);
       mapsto_block s.(Slice.ptr) 1 (list_to_block $ concat (u64_le <$> vs) ++ extra) ∗
-      ⌜int.val s.(Slice.sz) = 4096⌝ }}}.
+      ⌜int.val s.(Slice.sz) = 4096⌝ ∗
+     ⌜(length (concat (u64_le <$> vs)) + length extra)%Z = 4096⌝
+  }}}.
 Proof.
   iIntros (Φ) "Henc HΦ".
   wp_call.
@@ -319,8 +321,9 @@ Proof.
   { iFramePtsTo by len. }
   rewrite -fmap_app.
   iApply "HΦ".
-  iSplit; [ | len ].
-  iApply (array_to_block with "Hblock").
+  iSplit.
+  { iApply (array_to_block with "Hblock").
+    len. }
   len.
 Qed.
 
@@ -458,29 +461,12 @@ Proof.
   iFrame.
 Qed.
 
-Definition val_to_byte (v: val) : u8 :=
-  match v with
-  | LitV (LitByte x) => x
-  | _ => U8 0
-  end.
-
-Definition val_list_to_block (l: list val) (H: length l = Z.to_nat 4096) : Block :=
-  eq_rect _ _ (vmap val_to_byte (Vector.of_list l)) _ H.
-
-Lemma array_to_block_val l vs :
-  (* TODO: only true if vs are all actually bytes (otherwise roundtripping
-  produces #(U8 0) and not the original value) *)
-  l ↦∗ vs ∗ ⌜length vs = Z.to_nat 4096⌝ -∗ ∃ H, mapsto_block l 1 (val_list_to_block vs H).
-Proof.
-  rewrite /array /mapsto_block /Block_to_vals /list_to_block.
-  iIntros "[Hl %]".
-  iExists H.
-Admitted.
+Definition is_hdr_block (sz disk_sz: u64) (b: Block) :=
+∃ extra, Block_to_vals b = (λ (b: u8), #b) <$> concat (u64_le <$> [sz; disk_sz]) ++ extra.
 
 Definition is_hdr (sz disk_sz: u64): iProp Σ :=
   ∃ b, 0 d↦ b ∗
-       ⌜take 8 (Block_to_vals b) = u64_le_bytes sz⌝ ∗
-       ⌜take 8 (drop 8 (Block_to_vals b)) = u64_le_bytes disk_sz⌝.
+       ⌜is_hdr_block sz disk_sz b⌝.
 
 Definition is_log' (sz disk_sz: u64) (vs:list Block): iProp Σ :=
   is_hdr sz disk_sz ∗
@@ -562,6 +548,50 @@ Proof.
     by iApply array_to_block_array.
 Qed.
 
+Theorem wp_mkHdr stk E (sz disk_sz:u64) :
+  {{{ True }}}
+    Log__mkHdr (#sz, #disk_sz)%V @ stk; E
+  {{{ l b, RET (slice_val (Slice.mk l 4096)); mapsto_block l 1 b ∗ ⌜is_hdr_block sz disk_sz b⌝ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  wp_apply wp_new_enc; [ auto | ].
+  iIntros (enc) "Henc".
+  wp_steps.
+  wp_call.
+  wp_apply (wp_Enc__PutInt with "[$Henc]").
+  { simpl; len. }
+  iIntros "Henc".
+  wp_steps.
+  wp_call.
+  wp_apply (wp_Enc__PutInt with "[$Henc]").
+  { simpl; len. }
+  iIntros "Henc".
+  wp_steps.
+  wp_apply (wp_Enc__Finish with "[$Henc]").
+  iIntros (s extra) "(Hb&%&%)".
+  cbn [fmap list_fmap concat app] in H0 |- *.
+  rewrite app_nil_r -app_assoc in H0 |- *.
+  autorewrite with len in H0.
+  destruct s.
+  replace sz0 with (U64 4096).
+  { iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    rewrite /is_hdr_block.
+    exists extra.
+    cbn [fmap list_fmap concat app].
+    rewrite app_nil_r.
+    rewrite fmap_app.
+    rewrite -> list_to_block_to_vals by len.
+    rewrite -fmap_app.
+    rewrite -app_assoc.
+    auto. }
+  apply word.unsigned_inj.
+  simpl in H.
+  word.
+Qed.
+
 Theorem wpc_write_hdr stk k E1 E2 (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 }}}
     Log__writeHdr (#sz, #disk_sz)%V @ stk; k; E1; E2
@@ -571,62 +601,15 @@ Proof.
   iIntros (Φ Φc) "Hhdr HΦ".
   rewrite /Log__writeHdr.
   wpc_pures; eauto.
-  wpc_bind (NewSlice _ _).
+  wpc_bind (Log__mkHdr _).
   wpc_frame "Hhdr HΦ".
   { iIntros "(Hhdr&HΦ)"; crash_case; iFrame. }
-  wp_apply wp_new_slice.
-  { iPureIntro; word. }
-  iIntros (s) "Hs [Hhdr HΦc]".
-  iDestruct (is_slice_sz with "Hs") as %Hsz_nat.
-  autorewrite with len in Hsz_nat.
-  assert (int.val (Slice.sz s) = 4096) as Hsz by word.
-
-  wpc_pures; iFrame.
-  wpc_bind (UInt64Put _ _).
-  wpc_frame "Hhdr HΦc".
-  { iIntros "(Hhdr&HΦ)"; crash_case; iFrame. }
-
-  wp_call.
-  wp_apply (wp_UInt64Put with "[$Hs]").
-  { iPureIntro.
-    len. }
-  iIntros "Hs [Hhdr HΦc]".
-
-  wpc_pures; iFrame.
-  wpc_bind (Log.get _ _).
-  wpc_frame "Hhdr HΦc".
-  { iIntros "(Hhdr&HΦc)"; crash_case; iFrame. }
-  wp_call.
-  iIntros "[Hhdr HΦc]".
-  wpc_bind (SliceSkip _ _).
-  wpc_frame "Hhdr HΦc".
-  { iIntros "(Hhdr&HΦc)"; crash_case; iFrame. }
-  wp_apply (wp_SliceSkip with "[$Hs]").
-  { iPureIntro; len. }
-  iIntros "[Hs Htake] [Hhdr HΦ]".
-  rewrite !take_app_le; [ | len .. ].
-
-  wpc_bind (UInt64Put _ _).
-  wpc_frame "Hhdr HΦ".
-  { iIntros "(Hhdr&HΦ)"; crash_case; iFrame. }
-  wp_apply (wp_UInt64Put with "[$Hs]").
-  { iPureIntro; len. }
-  rewrite drop_drop drop_replicate.
-  iIntros "Hs [Hhdr HΦ]".
-  wpc_pures; iFrame.
-  iDestruct (array_app with "[$Htake Hs]") as "Hl".
-  { iDestruct "Hs" as "[Ha _]".
-    iFrame. }
-  iDestruct (array_to_block_val with "[$Hl]") as (Hlength) "Hb".
-  { len. }
-  iDestruct (block_array_to_slice with "Hb") as "Hs".
-  replace s with (Slice.mk (Slice.ptr s) 4096); last first.
-  { destruct s; simpl in Hsz; f_equal.
-    apply word.unsigned_inj; word. }
-  iDestruct "Hhdr" as (b0) "[Hd0 %]".
-  wpc_apply (wpc_Write' with "[$Hs Hd0]").
-  { word_cleanup; iFrame. }
-  cbn [Slice.ptr].
+  wp_apply wp_mkHdr; [ auto | ].
+  iIntros (l b) "(Hb&%) (Hhdr&HΦ)".
+  iDestruct "Hhdr" as (b0) "(Hd0&%)".
+  wpc_apply (wpc_Write' with "[Hd0 Hb]").
+  { iFrame.
+    iApply (block_array_to_slice with "Hb"). }
   iSplit.
   - iIntros "Hcrash".
     iDestruct "Hcrash" as "[Hd0 _]".
@@ -636,48 +619,64 @@ Proof.
       iExists _; by iFrame.
     + iApply "HΦ".
       iRight.
-      (* TODO: prove new header is correct *)
-      admit.
+      rewrite /is_hdr.
+      iExists _; iFrame.
+      eauto.
   - iIntros "!> [Hd0 _]".
     iApply "HΦ".
     rewrite /is_hdr.
-    iExists _; iFrame.
-    iPureIntro.
-    admit.
-Admitted.
+    iExists _; iFrame; eauto.
+Qed.
 
 Theorem wp_write_hdr stk E (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 }}}
     Log__writeHdr (#sz, #disk_sz)%V @ stk; E
   {{{ RET #(); is_hdr sz disk_sz }}}.
 Proof.
-  (* TODO: derive this from wpc *)
-Admitted.
+  iIntros (Φ) "Hhdr HΦ".
+  wp_call.
+  wp_apply wp_mkHdr; [ auto | ].
+  iIntros (l b) "(Hb&%)".
+  iDestruct "Hhdr" as (b0) "(Hd0&%)".
+  wp_apply (wp_Write with "[Hd0 Hb]").
+  { iExists _; iFrame.
+    iApply (block_array_to_slice with "Hb"). }
+  iIntros "(Hd0&_)".
+  iApply "HΦ".
+  rewrite /is_hdr.
+  iExists _; iFrame; eauto.
+Qed.
+
+Lemma block_to_is_hdr_block b :
+  ∃ sz disk_sz, is_hdr_block sz disk_sz b.
+Proof.
+  exists (le_to_u64 (take 8 $ vec_to_list b)).
+  exists (le_to_u64 (take 8 $ drop 8 $ vec_to_list b)).
+  rewrite /is_hdr_block /Block_to_vals.
+  exists (drop 16 $ vec_to_list b).
+  f_equal.
+  cbn [fmap list_fmap concat].
+  rewrite app_nil_r.
+  rewrite !le_to_u64_le; len.
+  { rewrite -{1}(take_drop 8 b) -app_assoc.
+    f_equal.
+    rewrite -{1}(take_drop 8 (drop 8 b)) drop_drop.
+    auto.
+  }
+  { change block_bytes with 4096%nat.
+    lia. }
+  { change block_bytes with 4096%nat.
+    lia. }
+Qed.
 
 Lemma block_to_is_hdr b :
   0 d↦ b -∗ ∃ sz disk_sz, is_hdr sz disk_sz.
 Proof.
   iIntros "Hd0".
   rewrite /is_hdr.
-  iExists (le_to_u64 (take 8 $ vec_to_list b)).
-  iExists (le_to_u64 (take 8 $ drop 8 $ vec_to_list b)).
-  iExists _; iFrame.
-  iPureIntro; split.
-  - rewrite /u64_le_bytes.
-    rewrite le_to_u64_le; last first.
-    { len. rewrite Nat.min_l; auto.
-      change block_bytes with 4096%nat; lia. }
-    unfold Block_to_vals.
-    rewrite fmap_take.
-    auto.
-  - rewrite /u64_le_bytes.
-    rewrite le_to_u64_le; last first.
-    { len.
-      rewrite Nat.min_l; auto.
-      change block_bytes with 4096%nat; lia. }
-    unfold Block_to_vals.
-    rewrite fmap_take fmap_drop.
-    auto.
+  destruct (block_to_is_hdr_block b) as (sz&disk_sz&His_hdr).
+  iExists _, _, _; iFrame.
+  eauto.
 Qed.
 
 Theorem wp_init stk E (sz: u64) vs :
@@ -1369,29 +1368,35 @@ Proof.
   iIntros (Φ) "Hlog HΦ".
   iDestruct "Hlog" as "[Hhdr Hlog_rest]".
   wp_call.
-  iDestruct "Hhdr" as (b) "[Hd0 (%&%)]".
+  iDestruct "Hhdr" as (b) "[Hd0 %]".
   wp_apply (wp_Read with "[Hd0]").
   { change (int.val 0) with 0.
     iFrame. }
   iIntros (s) "[Hd0 Hs]".
   wp_steps.
-  wp_apply (wp_UInt64Get with "[$Hs]"); eauto.
-  iIntros "Hs".
-  wp_steps.
-  wp_apply (wp_SliceSkip with "[$Hs]").
-  { iPureIntro.
-    len. }
-  (* we start dropping the parts of the slice since we can deallocate the buffer
-  from UInt64Get *)
-  iIntros "[Hs Hfirst]"; iClear "Hfirst".
-  wp_apply (wp_UInt64Get with "[$Hs]"); eauto; iIntros "Hskip".
-  iClear "Hskip".
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  rewrite length_Block_to_vals in Hsz.
+  assert (int.val s.(Slice.sz) = 4096).
+  { change block_bytes with 4096%nat in Hsz; lia. }
+  pose proof H.
+  destruct H as (extra&Hb).
+  rewrite Hb.
+  wp_apply (wp_NewDec with "[$Hs]").
+  { word. }
+  iIntros (dec) "Hdec".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "_".
   wp_steps.
   iApply "HΦ".
   rewrite /is_log.
   iExists _, _; iFrame.
-  iSplitR; eauto.
-  iExists _; by iFrame.
+  iSplitR; [ auto | ].
+  rewrite /is_hdr.
+  iExists _; iFrame.
+  eauto.
 Qed.
 
 End heap.
