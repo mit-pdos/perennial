@@ -133,8 +133,7 @@ Section disk.
   (* these instances are also local (to the outer section) *)
   Instance disk_semantics : ext_semantics disk_op disk_model :=
     { ext_step := ext_step;
-      ext_crash := eq;
-      ext_close := eq; }.
+      ext_crash := eq; }.
 
   Instance disk_interp: ffi_interp disk_model :=
     {| ffiG := diskG;

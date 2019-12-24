@@ -4,11 +4,9 @@ Set Default Proof Using "Type".
 Structure crash_semantics (Λ: language) :=
   CrashSemantics {
       crash_prim_step : state Λ → state Λ → Prop;
-      close_prim_step : state Λ → state Λ → Prop
   }.
 
 Arguments crash_prim_step {_}.
-Arguments close_prim_step {_}.
 
 Section crash_language.
   Context {Λ: language}.
@@ -18,8 +16,8 @@ Section crash_language.
   | Crashed
   | Normal.
 
-  (* Execution with a recovery procedure. list nat argument counts
-     steps in-between each crash. *)
+  (* Execution with crashes and a fresh procedure to run. list nat argument counts
+     steps in-between each crash. The mneominic is now that "r" stands for "resume" *)
   Inductive nrsteps (r: expr Λ) : list nat → cfg Λ → list (observation Λ) → cfg Λ → status → Prop :=
   | nrsteps_normal n ρ1 ρ2 κs:
       nsteps n ρ1 κs ρ2 →
@@ -73,20 +71,4 @@ Section crash_language.
       induction Hsteps; econstructor; eauto; eapply erased_steps_nsteps; eauto.
   Qed.
 
-  (* XXX: the sequence of programs to execute is non-adaptive in response to whether you crashed or not *)
-  (*
-  Inductive exec_seq (r: expr Λ) : nat →  list (expr Λ) → state Λ → list (observation Λ) → cfg Λ → Prop :=
-  | exec_seq_empty σ:
-      exec_seq r 0 [] σ [] ([], σ)
-  | exec_seq_hd_finish n1 n2 e1 es σ1 σ2 ρ2 ρ3 κs1 κs2:
-      ncsteps n1 ([e1], σ1) κs1 ρ2 Finish →
-      close_prim_step CS (ρ2.2) σ2 →
-      exec_seq r n2 es (ρ2.2) κs2 ρ3 →
-      exec_seq r (n1 + n2) (e1 :: es) σ1 (κs1 ++ κs2) ρ3
-  | exec_seq_hd_crash n1 n2 n3 e1 es σ1 ρ2 ρ3 ρ4 κs1 κs2 κs3:
-      ncsteps n1 ([e1], σ1) κs1 ρ2 Finish →
-      rexec r n2 (ρ2.2) κs2 ρ3 →
-      exec_seq r n3 es (ρ3.2) κs3 ρ4 →
-      exec_seq r (n1 + n2 + n3) (e1 :: es) σ1 (κs1 ++ κs2 ++ κs3) ρ4.
-   *)
 End crash_language.

@@ -243,7 +243,6 @@ Class ext_semantics :=
   {
     ext_step : external -> val -> state -> val -> state -> Prop;
     ext_crash : ffi_state -> ffi_state -> Prop;
-    ext_close : ffi_state -> ffi_state -> Prop;
   }.
 Context {ffi_semantics: ext_semantics}.
 
@@ -254,12 +253,6 @@ Inductive heap_crash : state -> state -> Prop :=
      heap_crash σ (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ)))
 .
 
-Inductive heap_close : state -> state -> Prop :=
-  | HeapClose σ w w' :
-     w = σ.(world) ->
-     ext_close w w' ->
-     heap_close σ (set world (fun _ => w') σ)
-.
 
 (** An observation associates a prophecy variable (identifier) to a pair of
 values. The first value is the one that was returned by the (atomic) operation
@@ -1116,8 +1109,7 @@ Section go_lang.
   Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
   Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
   Canonical Structure heap_crash_lang : crash_semantics heap_lang :=
-    {| crash_prim_step := heap_crash;
-       close_prim_step := heap_close; |}.
+    {| crash_prim_step := heap_crash |}.
 
 (* The following lemma is not provable using the axioms of [ectxi_language].
 The proof requires a case analysis over context items ([destruct i] on the
