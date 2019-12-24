@@ -286,18 +286,18 @@ Definition oddLiterals: val :=
 
 Definition useLocks: val :=
   λ: <>,
-    let: "m" := Data.newLock #() in
-    Data.lockAcquire Writer "m";;
-    Data.lockRelease Writer "m".
+    let: "m" := lock.new #() in
+    lock.acquire "m";;
+    lock.release "m".
 
 Definition useCondVar: val :=
   λ: <>,
-    let: "m" := Data.newLock #() in
-    let: "c" := Data.newCondVar "m" in
-    Data.lockAcquire Writer "m";;
-    Data.condSignal "c";;
-    Data.condWait "c";;
-    Data.lockRelease Writer "m".
+    let: "m" := lock.new #() in
+    let: "c" := lock.newCond "m" in
+    lock.acquire "m";;
+    lock.condSignal "c";;
+    lock.condWait "c";;
+    lock.release "m".
 
 (* log_debugging.go *)
 
@@ -630,19 +630,19 @@ Definition Skip: val :=
 
 Definition simpleSpawn: val :=
   λ: <>,
-    let: "l" := Data.newLock #() in
+    let: "l" := lock.new #() in
     let: "v" := ref (zero_val uint64T) in
-    Fork (Data.lockAcquire Reader "l";;
+    Fork (lock.acquire "l";;
           let: "x" := !"v" in
           (if: "x" > #0
           then
             Skip #();;
             #()
           else #());;
-          Data.lockRelease Reader "l");;
-    Data.lockAcquire Writer "l";;
+          lock.release "l");;
+    lock.acquire "l";;
     "v" <- #1;;
-    Data.lockRelease Writer "l".
+    lock.release "l".
 
 Definition threadCode: val :=
   λ: "tid",
@@ -793,16 +793,12 @@ Definition setField: val :=
 (* DoSomeLocking uses the entire lock API *)
 Definition DoSomeLocking: val :=
   λ: "l",
-    Data.lockAcquire Writer "l";;
-    Data.lockRelease Writer "l";;
-    Data.lockAcquire Reader "l";;
-    Data.lockAcquire Reader "l";;
-    Data.lockRelease Reader "l";;
-    Data.lockRelease Reader "l".
+    lock.acquire "l";;
+    lock.release "l".
 
 Definition makeLock: val :=
   λ: <>,
-    let: "l" := Data.newLock #() in
+    let: "l" := lock.new #() in
     DoSomeLocking "l".
 
 (* type_alias.go *)

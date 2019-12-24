@@ -70,7 +70,7 @@ Definition Pickup: val :=
   λ: "user",
     let: "ls" := Globals.getX #() in
     let: "l" := SliceGet "ls" "user" in
-    Data.lockAcquire Writer "l";;
+    lock.acquire "l";;
     let: "userDir" := GetUserDir "user" in
     let: "names" := FS.list "userDir" in
     let: "messages" := ref (zero_val (slice.T Message.T)) in
@@ -164,14 +164,14 @@ Definition Lock: val :=
   λ: "user",
     let: "locks" := Globals.getX #() in
     let: "l" := SliceGet "locks" "user" in
-    Data.lockAcquire Writer "l".
+    lock.acquire "l".
 
 (* Unlock releases the lock for the current user. *)
 Definition Unlock: val :=
   λ: "user",
     let: "locks" := Globals.getX #() in
     let: "l" := SliceGet "locks" "user" in
-    Data.lockRelease Writer "l".
+    lock.release "l".
 
 Definition open: val :=
   λ: <>,
@@ -184,7 +184,7 @@ Definition open: val :=
       then Break
       else
         let: "oldLocks" := !"locks" in
-        let: "l" := Data.newLock #() in
+        let: "l" := lock.new #() in
         let: "newLocks" := SliceAppend "oldLocks" "l" in
         "locks" <- "newLocks";;
         "i" <- !"i" + #1;;

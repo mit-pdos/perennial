@@ -4,6 +4,8 @@ From Perennial.go_lang Require Import prelude.
 (* disk FFI *)
 From Perennial.go_lang Require Import ffi.disk_prelude.
 
+(* logging2.go *)
+
 Definition LOGCOMMIT : expr := #0.
 Theorem LOGCOMMIT_t Γ : Γ ⊢ LOGCOMMIT : uint64T.
 Proof. typecheck. Qed.
@@ -50,8 +52,8 @@ Hint Resolve Log__writeHdr_t : types.
 Definition Init: val :=
   λ: "logSz",
     let: "log" := struct.mk Log.S [
-      "logLock" ::= Data.newLock #();
-      "memLock" ::= Data.newLock #();
+      "logLock" ::= lock.new #();
+      "memLock" ::= lock.new #();
       "logSz" ::= "logSz";
       "memLog" ::= ref (zero_val (slice.T disk.blockT));
       "memLen" ::= ref (zero_val uint64T);
@@ -88,10 +90,10 @@ Hint Resolve Log__readBlocks_t : types.
 
 Definition Log__Read: val :=
   λ: "log",
-    Data.lockAcquire Writer (Log.get "logLock" "log");;
+    lock.acquire (Log.get "logLock" "log");;
     let: "disklen" := Log__readHdr "log" in
     let: "blks" := Log__readBlocks "log" "disklen" in
-    Data.lockRelease Writer (Log.get "logLock" "log");;
+    lock.release (Log.get "logLock" "log");;
     "blks".
 Theorem Log__Read_t: ⊢ Log__Read : (Log.T -> slice.T disk.blockT).
 Proof. typecheck. Qed.
@@ -110,17 +112,17 @@ Hint Resolve Log__memWrite_t : types.
 
 Definition Log__memAppend: val :=
   λ: "log" "l",
-    Data.lockAcquire Writer (Log.get "memLock" "log");;
+    lock.acquire (Log.get "memLock" "log");;
     (if: !(Log.get "memLen" "log") + slice.len "l" ≥ Log.get "logSz" "log"
     then
-      Data.lockRelease Writer (Log.get "memLock" "log");;
+      lock.release (Log.get "memLock" "log");;
       (#false, #0)
     else
       let: "txn" := !(Log.get "memTxnNxt" "log") in
       let: "n" := !(Log.get "memLen" "log") + slice.len "l" in
       Log.get "memLen" "log" <- "n";;
       Log.get "memTxnNxt" "log" <- !(Log.get "memTxnNxt" "log") + #1;;
-      Data.lockRelease Writer (Log.get "memLock" "log");;
+      lock.release (Log.get "memLock" "log");;
       (#true, "txn")).
 Theorem Log__memAppend_t: ⊢ Log__memAppend : (Log.T -> slice.T disk.blockT -> (boolT * uint64T)).
 Proof. typecheck. Qed.
@@ -129,9 +131,9 @@ Hint Resolve Log__memAppend_t : types.
 (* XXX just an atomic read? *)
 Definition Log__readLogTxnNxt: val :=
   λ: "log",
-    Data.lockAcquire Writer (Log.get "memLock" "log");;
+    lock.acquire (Log.get "memLock" "log");;
     let: "n" := !(Log.get "logTxnNxt" "log") in
-    Data.lockRelease Writer (Log.get "memLock" "log");;
+    lock.release (Log.get "memLock" "log");;
     "n".
 Theorem Log__readLogTxnNxt_t: ⊢ Log__readLogTxnNxt : (Log.T -> uint64T).
 Proof. typecheck. Qed.
@@ -176,18 +178,18 @@ Hint Resolve Log__writeBlocks_t : types.
 
 Definition Log__diskAppend: val :=
   λ: "log",
-    Data.lockAcquire Writer (Log.get "logLock" "log");;
+    lock.acquire (Log.get "logLock" "log");;
     let: "disklen" := Log__readHdr "log" in
-    Data.lockAcquire Writer (Log.get "memLock" "log");;
+    lock.acquire (Log.get "memLock" "log");;
     let: "memlen" := !(Log.get "memLen" "log") in
     let: "allblks" := !(Log.get "memLog" "log") in
     let: "blks" := SliceSkip "allblks" "disklen" in
     let: "memnxt" := !(Log.get "memTxnNxt" "log") in
-    Data.lockRelease Writer (Log.get "memLock" "log");;
+    lock.release (Log.get "memLock" "log");;
     Log__writeBlocks "log" "blks" "disklen";;
     Log__writeHdr "log" "memlen";;
     Log.get "logTxnNxt" "log" <- "memnxt";;
-    Data.lockRelease Writer (Log.get "logLock" "log").
+    lock.release (Log.get "logLock" "log").
 Theorem Log__diskAppend_t: ⊢ Log__diskAppend : (Log.T -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve Log__diskAppend_t : types.
@@ -201,6 +203,8 @@ Definition Log__Logger: val :=
 Theorem Log__Logger_t: ⊢ Log__Logger : (Log.T -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve Log__Logger_t : types.
+
+(* txn.go *)
 
 Module Txn.
   Definition S := struct.decl [

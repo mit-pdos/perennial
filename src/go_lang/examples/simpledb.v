@@ -318,15 +318,15 @@ Definition NewDb: val :=
   λ: <>,
     let: "wbuf" := makeValueBuffer #() in
     let: "rbuf" := makeValueBuffer #() in
-    let: "bufferL" := Data.newLock #() in
+    let: "bufferL" := lock.new #() in
     let: "tableName" := #(str"table.0") in
     let: "tableNameRef" := ref (zero_val stringT) in
     "tableNameRef" <- "tableName";;
     let: "table" := CreateTable "tableName" in
     let: "tableRef" := struct.alloc Table.S (zero_val Table.T) in
     struct.store Table.S "tableRef" "table";;
-    let: "tableL" := Data.newLock #() in
-    let: "compactionL" := Data.newLock #() in
+    let: "tableL" := lock.new #() in
+    let: "compactionL" := lock.new #() in
     struct.mk Database.S [
       "wbuffer" ::= "wbuf";
       "rbuffer" ::= "rbuf";
@@ -345,26 +345,26 @@ Definition NewDb: val :=
    Reflects any completed in-memory writes. *)
 Definition Read: val :=
   λ: "db" "k",
-    Data.lockAcquire Reader (Database.get "bufferL" "db");;
+    lock.acquire (Database.get "bufferL" "db");;
     let: "buf" := !(Database.get "wbuffer" "db") in
     let: ("v", "ok") := MapGet "buf" "k" in
     (if: "ok"
     then
-      Data.lockRelease Reader (Database.get "bufferL" "db");;
+      lock.release (Database.get "bufferL" "db");;
       ("v", #true)
     else
       let: "rbuf" := !(Database.get "rbuffer" "db") in
       let: ("v2", "ok") := MapGet "rbuf" "k" in
       (if: "ok"
       then
-        Data.lockRelease Reader (Database.get "bufferL" "db");;
+        lock.release (Database.get "bufferL" "db");;
         ("v2", #true)
       else
-        Data.lockAcquire Reader (Database.get "tableL" "db");;
+        lock.acquire (Database.get "tableL" "db");;
         let: "tbl" := struct.load Table.S (Database.get "table" "db") in
         let: ("v3", "ok") := tableRead "tbl" "k" in
-        Data.lockRelease Reader (Database.get "tableL" "db");;
-        Data.lockRelease Reader (Database.get "bufferL" "db");;
+        lock.release (Database.get "tableL" "db");;
+        lock.release (Database.get "bufferL" "db");;
         ("v3", "ok"))).
 
 (* Write sets a key to a new value.
@@ -375,10 +375,10 @@ Definition Read: val :=
    The new value is buffered in memory. To persist it, call db.Compact(). *)
 Definition Write: val :=
   λ: "db" "k" "v",
-    Data.lockAcquire Writer (Database.get "bufferL" "db");;
+    lock.acquire (Database.get "bufferL" "db");;
     let: "buf" := !(Database.get "wbuffer" "db") in
     MapInsert "buf" "k" "v";;
-    Data.lockRelease Writer (Database.get "bufferL" "db").
+    lock.release (Database.get "bufferL" "db").
 
 Definition freshTable: val :=
   λ: "p",
@@ -453,27 +453,25 @@ Definition constructNewTable: val :=
    writes with existing writes. *)
 Definition Compact: val :=
   λ: "db",
-    Data.lockAcquire Writer (Database.get "compactionL" "db");;
-    Data.lockAcquire Writer (Database.get "bufferL" "db");;
+    lock.acquire (Database.get "compactionL" "db");;
+    lock.acquire (Database.get "bufferL" "db");;
     let: "buf" := !(Database.get "wbuffer" "db") in
     let: "emptyWbuffer" := NewMap (slice.T byteT) in
     Database.get "wbuffer" "db" <- "emptyWbuffer";;
     Database.get "rbuffer" "db" <- "buf";;
-    Data.lockRelease Writer (Database.get "bufferL" "db");;
-    Data.lockAcquire Reader (Database.get "tableL" "db");;
+    lock.release (Database.get "bufferL" "db");;
+    lock.acquire (Database.get "tableL" "db");;
     let: "oldTableName" := !(Database.get "tableName" "db") in
     let: ("oldTable", "t") := constructNewTable "db" "buf" in
     let: "newTable" := freshTable "oldTableName" in
-    Data.lockRelease Reader (Database.get "tableL" "db");;
-    Data.lockAcquire Writer (Database.get "tableL" "db");;
     struct.store Table.S (Database.get "table" "db") "t";;
     Database.get "tableName" "db" <- "newTable";;
     let: "manifestData" := Data.stringToBytes "newTable" in
     FS.atomicCreate #(str"db") #(str"manifest") "manifestData";;
     CloseTable "oldTable";;
     FS.delete #(str"db") "oldTableName";;
-    Data.lockRelease Writer (Database.get "tableL" "db");;
-    Data.lockRelease Writer (Database.get "compactionL" "db").
+    lock.release (Database.get "tableL" "db");;
+    lock.release (Database.get "compactionL" "db").
 
 Definition recoverManifest: val :=
   λ: <>,
@@ -519,9 +517,9 @@ Definition Recover: val :=
     deleteOtherFiles "tableName";;
     let: "wbuffer" := makeValueBuffer #() in
     let: "rbuffer" := makeValueBuffer #() in
-    let: "bufferL" := Data.newLock #() in
-    let: "tableL" := Data.newLock #() in
-    let: "compactionL" := Data.newLock #() in
+    let: "bufferL" := lock.new #() in
+    let: "tableL" := lock.new #() in
+    let: "compactionL" := lock.new #() in
     struct.mk Database.S [
       "wbuffer" ::= "wbuffer";
       "rbuffer" ::= "rbuffer";
@@ -538,12 +536,12 @@ Definition Recover: val :=
    cleanly closing any open files. *)
 Definition Shutdown: val :=
   λ: "db",
-    Data.lockAcquire Writer (Database.get "bufferL" "db");;
-    Data.lockAcquire Writer (Database.get "compactionL" "db");;
+    lock.acquire (Database.get "bufferL" "db");;
+    lock.acquire (Database.get "compactionL" "db");;
     let: "t" := struct.load Table.S (Database.get "table" "db") in
     CloseTable "t";;
-    Data.lockRelease Writer (Database.get "compactionL" "db");;
-    Data.lockRelease Writer (Database.get "bufferL" "db").
+    lock.release (Database.get "compactionL" "db");;
+    lock.release (Database.get "bufferL" "db").
 
 (* Close closes an open database cleanly, flushing any in-memory writes.
 

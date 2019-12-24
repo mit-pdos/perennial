@@ -263,6 +263,11 @@ Section go_lang.
   | finish_read_hasTy l t :
       Γ ⊢ l : refT t ->
       Γ ⊢ FinishRead l : unitT
+  | cmpxchg_hasTy l v1 v2 t :
+      Γ ⊢ l : refT t ->
+      Γ ⊢ v1 : t ->
+      Γ ⊢ v2 : t ->
+      Γ ⊢ CmpXchg l v1 v2 : prodT t boolT
   | external_hasTy op e t1 t2 :
       get_ext_tys op = (t1, t2) ->
       Γ ⊢ e : t1 ->

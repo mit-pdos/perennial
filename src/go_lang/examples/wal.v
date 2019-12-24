@@ -58,7 +58,7 @@ Definition New: val :=
     disk.Write #0 "header";;
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <- #0;;
-    let: "l" := Data.newLock #() in
+    let: "l" := lock.new #() in
     struct.mk Log.S [
       "cache" ::= "cache";
       "length" ::= "lengthPtr";
@@ -70,14 +70,14 @@ Hint Resolve New_t : types.
 
 Definition Log__lock: val :=
   λ: "l",
-    Data.lockAcquire Writer (Log.get "l" "l").
+    lock.acquire (Log.get "l" "l").
 Theorem Log__lock_t: ⊢ Log__lock : (Log.T -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve Log__lock_t : types.
 
 Definition Log__unlock: val :=
   λ: "l",
-    Data.lockRelease Writer (Log.get "l" "l").
+    lock.release (Log.get "l" "l").
 Theorem Log__unlock_t: ⊢ Log__unlock : (Log.T -> unitT).
 Proof. typecheck. Qed.
 Hint Resolve Log__unlock_t : types.
@@ -220,7 +220,7 @@ Definition Open: val :=
     let: "cache" := NewMap disk.blockT in
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <- #0;;
-    let: "l" := Data.newLock #() in
+    let: "l" := lock.new #() in
     struct.mk Log.S [
       "cache" ::= "cache";
       "length" ::= "lengthPtr";
