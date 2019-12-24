@@ -131,17 +131,59 @@ Ltac word := try lazymatch goal with
 
 Ltac len := autorewrite with len; try word.
 
+Inductive encodable :=
+| EncUInt64 (x:u64)
+| EncBytes (bs:list u8)
+.
+
+(* a record (not a descriptor) *)
+Definition Rec := list encodable.
+
+Definition encode1 (e:encodable) : list u8 :=
+  match e with
+  | EncUInt64 x => u64_le x
+  | EncBytes bs => bs
+  end.
+
+Definition encode (es:Rec): list u8 := concat (encode1 <$> es).
+
+Definition encode1_length (e:encodable): nat :=
+  match e with
+  | EncUInt64 _ => 8%nat
+  | EncBytes bs => length bs
+  end.
+
+Theorem encode1_length_ok e :
+  encode1_length e = length $ encode1 e.
+Proof.
+  destruct e; auto.
+Qed.
+
+Fixpoint encode_length (es:Rec): nat :=
+  match es with
+  | [] => 0%nat
+  | e::es => (encode1_length e + encode_length es)%nat
+  end.
+
+Theorem encode_length_ok es :
+  encode_length es = length $ encode es.
+Proof.
+  induction es; simpl; auto.
+  rewrite IHes encode1_length_ok /encode.
+  cbn [concat list_fmap fmap]; len.
+Qed.
+
 (* trying out a new pattern for struct rep invariants - the idea is that the EncM module is
 entirely derived while is_enc is what the user defines *)
 
-Definition is_enc (enc: EncM.t) (vs: list u64): iProp Σ :=
+Definition is_enc (enc: EncM.t) (vs: Rec): iProp Σ :=
   ⌜int.val enc.(EncM.s).(Slice.sz) = 4096⌝ ∗
-  let encoded := concat (u64_le <$> vs) in
+  let encoded := encode vs in
   let encoded_len := Z.of_nat (length encoded) in
   enc.(EncM.off) ↦ (Free #(U64 encoded_len)) ∗
-  enc.(EncM.s).(Slice.ptr) ↦∗ fmap (λ (b:u8), #b) encoded ∗
+  enc.(EncM.s).(Slice.ptr) ↦∗ fmap b2val encoded ∗
   ∃ (free: list u8),
-    (enc.(EncM.s).(Slice.ptr) +ₗ encoded_len) ↦∗ fmap (λ (b:u8), #b) free ∗
+    (enc.(EncM.s).(Slice.ptr) +ₗ encoded_len) ↦∗ fmap b2val free ∗
     ⌜(length encoded + length free)%nat = Z.to_nat 4096⌝.
 
 Theorem wp_new_enc stk E :
@@ -194,10 +236,50 @@ Ltac iFramePtsTo_core t :=
 Tactic Notation "iFramePtsTo" := iFramePtsTo_core ltac:(idtac).
 Tactic Notation "iFramePtsTo" "by" tactic(t) := iFramePtsTo_core ltac:(by t).
 
+Lemma encode_app es1 es2 :
+  encode (es1 ++ es2) = encode es1 ++ encode es2.
+Proof.
+  rewrite /encode fmap_app concat_app //.
+Qed.
+
+Lemma encode_cons e es :
+  encode (e::es) = encode1 e ++ encode es.
+Proof.
+  done.
+Qed.
+
+Lemma encode_app_length es1 es2 :
+  length (encode (es1 ++ es2)) = (length (encode es1) + length (encode es2))%nat.
+Proof.
+  rewrite encode_app app_length //.
+Qed.
+
+Lemma encode_singleton e :
+  encode [e] = encode1 e.
+Proof.
+  rewrite /encode /=.
+  rewrite app_nil_r.
+  auto.
+Qed.
+
+Lemma encode_singleton_length e :
+  length (encode [e]) = match e with
+                        | EncUInt64 _ => 8%nat
+                        | EncBytes bs => length bs
+                        end.
+Proof.
+  rewrite encode_singleton.
+  destruct e; auto.
+Qed.
+
+Hint Rewrite encode_app_length : len.
+Hint Rewrite encode_singleton_length : len.
+Hint Rewrite <- encode1_length_ok : len.
+
 Theorem wp_Enc__PutInt stk E enc vs (x: u64) :
-  {{{ is_enc enc vs ∗ ⌜length (concat (u64_le <$> vs)) + 8 <= 4096⌝ }}}
+  {{{ is_enc enc vs ∗ ⌜encode_length vs + 8 <= 4096⌝ }}}
     Enc__PutInt (EncM.to_val enc) #x @ stk; E
-  {{{ RET #(); is_enc enc (vs ++ [x]) }}}.
+  {{{ RET #(); is_enc enc (vs ++ [EncUInt64 x]) }}}.
 Proof.
   iIntros (Φ) "(Henc&%) HΦ".
   iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
@@ -215,7 +297,8 @@ Proof.
     iSplitL; [ iSplitL | ].
     - iFramePtsTo by word.
     - len.
-    - len.
+    - rewrite encode_length_ok in H.
+      len.
   }
   iIntros "(Ha&%)".
   wp_steps.
@@ -231,29 +314,25 @@ Proof.
     iFramePtsTo.
     repeat f_equal.
     apply word.unsigned_inj.
-    rewrite fmap_app concat_app; len.
-    simpl.
-    word. }
+    len. }
   iDestruct (array_app with "Ha") as "[Hx Hfree]".
   iDestruct (array_app with "[$Henc Hx]") as "Henc".
   { iFramePtsTo by len. }
   iSplitL "Henc".
-  { rewrite /u64_le_bytes !fmap_app !concat_app.
-    rewrite -fmap_app -concat_app.
+  { rewrite encode_app encode_singleton /=.
+    rewrite /u64_le_bytes.
+    rewrite -fmap_app.
     iFrame. }
   iExists _; iFrame.
   iSplitL.
   { rewrite -fmap_drop.
     rewrite loc_add_assoc.
     iFramePtsTo.
-    rewrite fmap_app concat_app.
+    rewrite encode_app encode_singleton.
     len.
-    simpl.
-    len.
+    simpl; len.
   }
-  rewrite !fmap_app !concat_app.
-  len.
-  simpl.
+  rewrite encode_length_ok in H.
   len.
 Qed.
 
@@ -281,7 +360,7 @@ Qed.
 
 Definition list_to_block_to_vals l :
   length l = Z.to_nat 4096 ->
-  Block_to_vals (list_to_block l) = (λ (b:u8), #b) <$> l.
+  Block_to_vals (list_to_block l) = b2val <$> l.
 Proof.
   intros H.
   rewrite /list_to_block /Block_to_vals.
@@ -292,7 +371,7 @@ Qed.
 
 Lemma array_to_block l (bs: list byte) :
   length bs = Z.to_nat 4096 ->
-  l ↦∗ ((λ (b:u8), #b) <$> bs) -∗ mapsto_block l 1 (list_to_block bs).
+  l ↦∗ (b2val <$> bs) -∗ mapsto_block l 1 (list_to_block bs).
 Proof.
   rewrite /array /mapsto_block /Block_to_vals /list_to_block.
   iIntros (H) "Hl".
@@ -307,9 +386,9 @@ Theorem wp_Enc__Finish stk E enc vs :
   {{{ is_enc enc vs }}}
     Enc__Finish (EncM.to_val enc) @ stk; E
   {{{ s (extra: list u8), RET (slice_val s);
-      mapsto_block s.(Slice.ptr) 1 (list_to_block $ concat (u64_le <$> vs) ++ extra) ∗
+      mapsto_block s.(Slice.ptr) 1 (list_to_block $ encode vs ++ extra) ∗
       ⌜int.val s.(Slice.sz) = 4096⌝ ∗
-     ⌜(length (concat (u64_le <$> vs)) + length extra)%Z = 4096⌝
+     ⌜(encode_length vs + length extra)%Z = 4096⌝
   }}}.
 Proof.
   iIntros (Φ) "Henc HΦ".
@@ -324,19 +403,20 @@ Proof.
   iSplit.
   { iApply (array_to_block with "Hblock").
     len. }
+  rewrite encode_length_ok.
   len.
 Qed.
 
-Definition is_dec (dec: DecM.t) (vs: list u64): iProp Σ :=
+Definition is_dec (dec: DecM.t) vs: iProp Σ :=
   ⌜int.val dec.(DecM.s).(Slice.sz) = 4096⌝ ∗
   ∃ (off: u64) (extra: list u8), dec.(DecM.off) ↦ Free #off ∗
-    let encoded := concat (u64_le <$> vs) in
+    let encoded := encode vs in
   (dec.(DecM.s).(Slice.ptr) +ₗ int.val off) ↦∗
-    ((λ (b: u8), #b) <$> (encoded ++ extra)) ∗
+    (b2val <$> (encoded ++ extra)) ∗
   ⌜(int.val off + length encoded + Z.of_nat (length extra))%Z = 4096⌝.
 
-Theorem wp_NewDec stk E s (vs: list u64) (extra: list u8) :
-  {{{ is_slice s ((λ (b:u8), #b) <$> concat (u64_le <$> vs) ++ extra) ∗ ⌜int.val s.(Slice.sz)= 4096⌝ }}}
+Theorem wp_NewDec stk E s vs (extra: list u8) :
+  {{{ is_slice s (b2val <$> encode vs ++ extra) ∗ ⌜int.val s.(Slice.sz)= 4096⌝ }}}
     NewDec (slice_val s) @ stk; E
   {{{ dec, RET (DecM.to_val dec); is_dec dec vs }}}.
 Proof.
@@ -356,8 +436,8 @@ Proof.
   len.
 Qed.
 
-Theorem wp_Dec__GetInt stk E dec x (vs: list u64) :
-  {{{ is_dec dec (x::vs) }}}
+Theorem wp_Dec__GetInt stk E dec x vs :
+  {{{ is_dec dec (EncUInt64 x::vs) }}}
     Dec__GetInt (DecM.to_val dec) @ stk; E
   {{{ RET #x; is_dec dec vs }}}.
 Proof.
@@ -365,9 +445,8 @@ Proof.
   iDestruct "Hdec" as (Hdecsz off extra) "(Hoff&Hvs&%)".
   rewrite fmap_app.
   iDestruct (array_app with "Hvs") as "[Hxvs Hextra]".
-  cbn [fmap list_fmap concat].
   len.
-  rewrite fmap_app.
+  rewrite encode_cons fmap_app.
   iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
   wp_call.
   wp_call.
@@ -399,12 +478,19 @@ Proof.
   { rewrite fmap_app.
     iApply array_app.
     iSplitR "Hextra".
-    - iFramePtsTo by len.
+    - iFramePtsTo.
+      len.
+      simpl.
+      len.
     - rewrite loc_add_assoc.
-      iFramePtsTo by len.
+      iFramePtsTo.
+      len.
+      simpl.
+      len.
   }
   cbn [concat fmap list_fmap] in H.
-  autorewrite with len in H.
+  rewrite -encode_length_ok /= in H.
+  rewrite -encode_length_ok.
   len.
 Qed.
 
@@ -462,7 +548,7 @@ Proof.
 Qed.
 
 Definition is_hdr_block (sz disk_sz: u64) (b: Block) :=
-∃ extra, Block_to_vals b = (λ (b: u8), #b) <$> concat (u64_le <$> [sz; disk_sz]) ++ extra.
+∃ extra, Block_to_vals b = b2val <$> encode [EncUInt64 sz; EncUInt64 disk_sz] ++ extra.
 
 Definition is_hdr (sz disk_sz: u64): iProp Σ :=
   ∃ b, 0 d↦ b ∗
@@ -570,9 +656,7 @@ Proof.
   wp_steps.
   wp_apply (wp_Enc__Finish with "[$Henc]").
   iIntros (s extra) "(Hb&%&%)".
-  cbn [fmap list_fmap concat app] in H0 |- *.
-  rewrite app_nil_r -app_assoc in H0 |- *.
-  autorewrite with len in H0.
+  cbn [app encode_length encode1_length] in H0 |- *.
   destruct s.
   replace sz0 with (U64 4096).
   { iApply "HΦ".
@@ -580,13 +664,10 @@ Proof.
     iPureIntro.
     rewrite /is_hdr_block.
     exists extra.
-    cbn [fmap list_fmap concat app].
-    rewrite app_nil_r.
-    rewrite fmap_app.
-    rewrite -> list_to_block_to_vals by len.
-    rewrite -fmap_app.
-    rewrite -app_assoc.
-    auto. }
+    rewrite -> list_to_block_to_vals; auto.
+    len.
+    rewrite -encode_length_ok /=.
+    lia. }
   apply word.unsigned_inj.
   simpl in H.
   word.
@@ -655,17 +736,16 @@ Proof.
   rewrite /is_hdr_block /Block_to_vals.
   exists (drop 16 $ vec_to_list b).
   f_equal.
-  cbn [fmap list_fmap concat].
-  rewrite app_nil_r.
+  rewrite !encode_cons app_nil_r.
+  cbn [encode encode1].
   rewrite !le_to_u64_le; len.
-  { rewrite -{1}(take_drop 8 b) -app_assoc.
+  { rewrite -[b in b = _](take_drop 8 b) -app_assoc.
     f_equal.
-    rewrite -{1}(take_drop 8 (drop 8 b)) drop_drop.
-    auto.
+    rewrite -[lhs in lhs = _](take_drop 8 (drop 8 b)) drop_drop //.
   }
-  { change block_bytes with 4096%nat.
+  { change block_bytes with (Z.to_nat 4096).
     lia. }
-  { change block_bytes with 4096%nat.
+  { change block_bytes with (Z.to_nat 4096).
     lia. }
 Qed.
 

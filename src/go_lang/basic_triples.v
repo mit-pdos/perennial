@@ -696,8 +696,10 @@ Admitted.
 Hint Rewrite word.unsigned_of_Z : word.
 Hint Rewrite word.unsigned_sru : word.
 
+Definition b2val: u8 -> val := λ (b:u8), #b.
+
 Theorem u32_le_to_sru (x: u32) :
-  (λ (b:byte), #b) <$> u32_le x =
+  b2val <$> u32_le x =
   cons #(u8_from_u32 (word.sru x (U32 (0%nat * 8))))
        (cons #(u8_from_u32 (word.sru x (U32 (1%nat * 8))))
              (cons #(u8_from_u32 (word.sru x (U32 (2%nat * 8))))
@@ -708,6 +710,7 @@ Proof.
   change (1%nat * 8) with 8.
   change (2%nat * 8) with 16.
   change (3%nat * 8) with 24.
+  rewrite /b2val.
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   repeat f_equal.
   - apply word.unsigned_inj.
@@ -748,7 +751,7 @@ Qed.
 Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
   {{{ ▷ l ↦∗ vs ∗ ⌜ length vs = u32_bytes ⌝ }}}
     EncodeUInt32 #x #l @ s ; E
-  {{{ RET #(); l ↦∗ ((λ (b: byte), #b) <$> u32_le x) }}}.
+  {{{ RET #(); l ↦∗ (b2val <$> u32_le x) }}}.
 Proof.
   iIntros (Φ) "(>Hl & %) HΦ".
   unfold EncodeUInt32.
@@ -795,7 +798,7 @@ Proof.
 Qed.
 
 Definition u64_le_bytes (x: u64) : list val :=
-  (λ (b: byte), #b) <$> u64_le x.
+  b2val <$> u64_le x.
 
 Lemma u64_le_bytes_length x : length (u64_le_bytes x) = u64_bytes.
 Proof.
@@ -805,7 +808,7 @@ Qed.
 Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
   {{{ ▷ l ↦∗ vs ∗ ⌜ length vs = u64_bytes ⌝ }}}
     EncodeUInt64 #x #l @ stk ; E
-  {{{ RET #(); l ↦∗ ((λ (b: byte), #b) <$> u64_le x) }}}.
+  {{{ RET #(); l ↦∗ (b2val <$> u64_le x) }}}.
 Proof.
 Admitted.
 
@@ -913,9 +916,9 @@ Proof.
 Admitted.
 
 Theorem wp_DecodeUInt32 (l: loc) (x: u32) vs s E :
-  {{{ ▷ l ↦∗ ((λ (b: byte), #b) <$> u32_le x) }}}
+  {{{ ▷ l ↦∗ (b2val <$> u32_le x) }}}
     DecodeUInt32 #l @ s ; E
-  {{{ RET #x; l ↦∗ ((λ (b: byte), #b) <$> u32_le x) }}}.
+  {{{ RET #x; l ↦∗ (b2val <$> u32_le x) }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
@@ -929,9 +932,9 @@ Proof.
 Qed.
 
 Theorem wp_DecodeUInt64 (l: loc) (x: u64) s E :
-  {{{ ▷ l ↦∗ ((λ (b: byte), #b) <$> u64_le x) }}}
+  {{{ ▷ l ↦∗ (b2val <$> u64_le x) }}}
     DecodeUInt64 #l @ s ; E
-  {{{ RET #x; l ↦∗ ((λ (b: byte), #b) <$> u64_le x) }}}.
+  {{{ RET #x; l ↦∗ (b2val <$> u64_le x) }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   cbv [u64_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
