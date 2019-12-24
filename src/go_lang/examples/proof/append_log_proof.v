@@ -1311,34 +1311,88 @@ Proof.
         iApply (is_log'_append with "[$] [$] [$] [$] [%]"); [len].
 Qed.
 
-Theorem wp_Log__Reset stk E l vs :
-  {{{ ptsto_log l vs }}}
-    Log__Reset #l @ stk; E
-  {{{ RET #(); ptsto_log l [] }}}.
+Lemma is_log_reset disk_sz vs free :
+  is_hdr 0 disk_sz -∗
+  1 d↦∗ vs -∗
+  (1 + length vs) d↦∗ free -∗
+  ⌜(1 + length vs + length free)%Z = int.val disk_sz⌝ -∗
+  is_log' (U64 0) disk_sz [].
 Proof.
-  iIntros (Φ) "Hlog HΦ".
+  iIntros "Hhdr Hold Hfree %".
+  iDestruct (disk_array_app with "[$Hold $Hfree]") as "Hfree".
+  rewrite /is_log' /=; iFrame.
+  rewrite disk_array_emp.
+  iSplitR; auto.
+  iSplitR; auto.
+  iExists _; iFrame.
+  len.
+Qed.
+
+Theorem wpc_Log__Reset stk k E1 E2 l vs :
+  {{{ ptsto_log l vs }}}
+    Log__Reset #l @ stk; k; E1; E2
+  {{{ RET #(); ptsto_log l [] }}}
+  {{{ ∃ v, is_log v vs ∨ is_log v [] }}}.
+Proof.
+  iIntros (Φ Φc) "Hlog HΦ".
   iDestruct "Hlog" as (sz disk_sz) "[[Hf0 Hf1] Hlog]".
-  wp_call.
+  rewrite /Log__Reset.
+  wpc_pures.
+  { iApply (is_log_crash_l with "[$]"). }
+  wpc_bind (struct.loadField _ _ _).
+  wpc_frame "Hlog HΦ".
+  { iIntros "(Hlog&HΦ)".
+    crash_case.
+    iApply (is_log_crash_l with "[$]"). }
   wp_call.
   wp_load.
-  wp_steps.
+  iIntros "(Hlog&HΦ)".
+  wpc_pures.
+  { iApply (is_log_crash_l with "[$]"). }
   iDestruct "Hlog" as "(Hhdr&Hlog&%&Hfree)".
   iDestruct "Hfree" as (free) "[Hfree %]".
-  wp_apply (wp_write_hdr with "Hhdr"); iIntros "Hhdr".
-  wp_steps.
-  wp_call.
-  wp_store.
-  wp_store.
-  iApply "HΦ".
-  iExists _, _; iFrame.
-  rewrite disk_array_emp.
-  iSplitL ""; auto.
-  iSplitL ""; auto.
-  iDestruct (disk_array_app with "[$Hlog $Hfree]") as "Hfree".
-  iExists _; iFrame.
-  iPureIntro.
-  len.
-  simpl; word.
+  wpc_apply (wpc_write_hdr with "Hhdr").
+  iSplit.
+  - iIntros "[Hhdr | Hhdr]"; crash_case.
+    + iApply is_log_crash_l.
+      rewrite /is_log'.
+      iFrame.
+      iSplitR; [ auto | ].
+      iExists _; by iFrame.
+    + iExists _.
+      iRight.
+      rewrite /is_log.
+      iExists _, _; iSplitR; [ eauto | ].
+      by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
+  - iIntros "!> Hhdr".
+    wpc_pures.
+    { iExists _.
+      iRight.
+      rewrite /is_log.
+      iExists _, _; iSplitR; [ eauto | ].
+      by iApply (is_log_reset with "Hhdr Hlog Hfree [%]"). }
+    rewrite /struct.storeStruct.
+    simpl.
+    wpc_pures.
+    { iExists _.
+      iRight.
+      rewrite /is_log.
+      iExists _, _; iSplitR; [ eauto | ].
+      by iApply (is_log_reset with "Hhdr Hlog Hfree [%]"). }
+    wpc_frame "Hhdr Hlog Hfree HΦ".
+    { iIntros "(Hhdr&Hlog&Hfree&HΦ)"; crash_case.
+      iExists _.
+      iRight.
+      rewrite /is_log.
+      iExists _, _; iSplitR; [ eauto | ].
+      by iApply (is_log_reset with "Hhdr Hlog Hfree [%]"). }
+    wp_store.
+    wp_store.
+    iIntros "(Hhdr&Hlog&Hfree&HΦ)".
+    iApply "HΦ".
+    rewrite /ptsto_log.
+    iExists _, _; iFrame "Hf0 Hf1".
+    by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
 Qed.
 
 Transparent struct.loadStruct.
