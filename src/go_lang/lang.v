@@ -197,20 +197,18 @@ Definition Free {T} (v:T): nonAtomic T := Reading v 0.
 Inductive event :=
   | In_ev (sel v:val)
   | Out_ev (v:val)
+  | Crash_ev
 .
-(* this is the only event encoding we fix (everything else is determined by
-the FFI semantics) *)
-Definition crash_event: val := LitV LitUnit.
 
 (* a trace is a list of events, stored in reverse order *)
 Definition Trace := list event.
 
-Definition add_event (ts: Trace) (ev: event) : Trace := cons ev ts.
+Definition add_event (ev: event) (ts: Trace) : Trace := cons ev ts.
 
 Definition add_crash (ts: Trace) : Trace :=
   match ts with
-  | Out_ev (LitV LitUnit)::ts' => ts'
-  | _ => add_event ts (Out_ev (LitV LitUnit))
+  | Crash_ev::ts' => ts'
+  | _ => add_event Crash_ev ts
   end.
 
 Definition Oracle := Trace -> forall (sel:val), u64.
@@ -253,7 +251,7 @@ Inductive heap_crash : state -> state -> Prop :=
   | HeapCrash σ w w' :
      w = σ.(world) ->
      ext_crash w w' ->
-     heap_crash σ (set world (fun _ => w') σ)
+     heap_crash σ (set trace add_crash (set world (fun _ => w') σ))
 .
 
 Inductive heap_close : state -> state -> Prop :=
@@ -1029,12 +1027,12 @@ Inductive head_step : expr → state → list observation → expr → state →
      head_step (Input (Val selv)) σ
                []
                (Val v)
-               (set trace (fun tr => tr ++ [In_ev selv v]) σ)
+               (set trace (add_event (In_ev selv v)) σ)
                []
   | ObserveOutputS v σ :
      head_step (Output (Val v)) σ
                []
-               (Val $ LitV LitUnit) (set trace (fun tr => tr ++ [Out_ev v]) σ)
+               (Val $ LitV LitUnit) (set trace (fun tr => add_event (Out_ev v) tr) σ)
                []
   | CmpXchgS l v1 v2 vl σ b :
      σ.(heap) !! l = Some $ Free vl →

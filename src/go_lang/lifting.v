@@ -45,9 +45,9 @@ Definition traceΣ : gFunctors :=
 Global Instance subG_crashG {Σ} : subG traceΣ Σ → trace_preG Σ.
 Proof. solve_inG. Qed.
 
-Definition trace_auth `{hT: traceG Σ} (l: list event) :=
+Definition trace_auth `{hT: traceG Σ} (l: Trace) :=
   own (trace_name hT) (● (Excl' (l: traceO))).
-Definition trace_frag `{hT: traceG Σ} (l: list event) :=
+Definition trace_frag `{hT: traceG Σ} (l: Trace) :=
   own (trace_name hT) (◯ (Excl' (l: traceO))).
 
 Lemma trace_init `{hT: trace_preG Σ} (l: list event):
@@ -58,8 +58,8 @@ Proof.
   iModIntro. iExists {| trace_name := γ |}. iFrame.
 Qed.
 
-Lemma trace_update `{hT: traceG Σ} (l: list event) (x: event):
-  trace_auth l -∗ trace_frag l ==∗ trace_auth (l ++ [x]) ∗ trace_frag (l ++ [x]).
+Lemma trace_update `{hT: traceG Σ} (l: Trace) (x: event):
+  trace_auth l -∗ trace_frag l ==∗ trace_auth (add_event x l) ∗ trace_frag (add_event x l).
 Proof.
   iIntros "Hγ● Hγ◯".
   iMod (own_update_2 _ _ _ (● Excl' _ ⋅ ◯ Excl' _) with "Hγ● Hγ◯") as "[$$]".
@@ -280,7 +280,7 @@ Qed.
 Lemma wp_output s E tr v :
   {{{ trace_frag tr }}}
      Output v @ s; E
-  {{{ RET (LitV LitUnit); trace_frag (tr ++ [Out_ev v])}}}.
+  {{{ RET (LitV LitUnit); trace_frag (add_event (Out_ev v) tr)}}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth) !>"; iSplit; first by eauto.
@@ -290,10 +290,11 @@ Proof.
   iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
 Qed.
 
+(* TODO: we also know the output matches what the oracle says *)
 Lemma wp_input s E tr v :
   {{{ trace_frag tr }}}
      Input v @ s; E
-  {{{ x, RET (LitV (LitInt x)); trace_frag (tr ++ [In_ev v (LitV $ LitInt x)])}}}.
+  {{{ x, RET (LitV (LitInt x)); trace_frag (add_event (In_ev v (LitV $ LitInt x)) tr)}}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth) !>"; iSplit.
