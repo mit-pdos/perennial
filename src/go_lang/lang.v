@@ -251,7 +251,7 @@ Inductive heap_crash : state -> state -> Prop :=
   | HeapCrash σ w w' :
      w = σ.(world) ->
      ext_crash w w' ->
-     heap_crash σ (set trace add_crash (set world (fun _ => w') σ))
+     heap_crash σ (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ)))
 .
 
 Inductive heap_close : state -> state -> Prop :=
