@@ -18,18 +18,10 @@ Module Data.
     Axiom bytesToString: val.
     Axiom stringToBytes_t : ⊢ stringToBytes : (stringT -> slice.T byteT).
     Axiom bytesToString_t : ⊢ bytesToString : (slice.T byteT -> stringT).
-    (* this function can actually return any uint64, in the model *)
-    Definition randomUint64: val := λ: <>,
-                                       let: "r" := ref #0 in
-                                       Fork ((rec: "inc" <> :=
-                                               (Var "r") <- !(Var "r") + #1;;
-                                               (Var "inc") #()) #());;
-                                       !(Var "r").
+    Definition randomUint64: val := λ: <>, #0.
     Theorem randomUint64_t: ⊢ randomUint64 : (unitT -> uint64T).
     Proof.
       typecheck.
-      Grab Existential Variables.
-      all: constructor.
     Qed.
 
     Definition newLock: val := λ: <>, ref #0.
