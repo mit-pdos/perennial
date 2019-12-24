@@ -969,6 +969,18 @@ Proof.
   lia.
 Qed.
 
+Theorem wp_UInt64Get' stk E s (x: u64) :
+  {{{ s.(Slice.ptr) ↦∗ u64_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 8⌝ }}}
+    UInt64Get (slice_val s) @ stk; E
+  {{{ RET #x; s.(Slice.ptr) ↦∗ u64_le_bytes x }}}.
+Proof.
+  iIntros (Φ) "[Ha %] HΦ".
+  wp_call.
+  wp_call.
+  wp_apply (wp_DecodeUInt64 with "Ha").
+  iApply "HΦ".
+Qed.
+
 End heap.
 
 Tactic Notation "wp_store" :=

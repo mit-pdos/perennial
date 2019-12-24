@@ -28,6 +28,18 @@ Module EncM.
   Qed.
 End EncM.
 
+Module DecM.
+  Record t := mk { s: Slice.t;
+                   off: loc; }.
+  Definition to_val (x:t) : val :=
+    (slice_val x.(s), #x.(off))%V.
+  Lemma to_val_intro s (off: loc) :
+    (slice_val s, #off)%V = to_val (mk s off).
+  Proof.
+    reflexivity.
+  Qed.
+End DecM.
+
 Lemma loc_add_Sn l n :
   l +ₗ S n = (l +ₗ 1) +ₗ n.
 Proof.
@@ -119,12 +131,8 @@ Ltac word := try lazymatch goal with
 
 Ltac len := autorewrite with len; try word.
 
-(* trying out a new pattern for struct rep invariants - note that is_EncM is
-entirely derived while is_enc is entirely "high-level" (scare quotes due to
-still dealing with locations) *)
-
-Definition is_EncM v enc: iProp Σ :=
-  ⌜v = EncM.to_val enc⌝.
+(* trying out a new pattern for struct rep invariants - the idea is that the EncM module is
+entirely derived while is_enc is what the user defines *)
 
 Definition is_enc (enc: EncM.t) (vs: list u64): iProp Σ :=
   ⌜int.val enc.(EncM.s).(Slice.sz) = 4096⌝ ∗
@@ -313,6 +321,87 @@ Proof.
   iApply "HΦ".
   iSplit; [ | len ].
   iApply (array_to_block with "Hblock").
+  len.
+Qed.
+
+Definition is_dec (dec: DecM.t) (vs: list u64): iProp Σ :=
+  ⌜int.val dec.(DecM.s).(Slice.sz) = 4096⌝ ∗
+  ∃ (off: u64) (extra: list u8), dec.(DecM.off) ↦ Free #off ∗
+    let encoded := concat (u64_le <$> vs) in
+  (dec.(DecM.s).(Slice.ptr) +ₗ int.val off) ↦∗
+    ((λ (b: u8), #b) <$> (encoded ++ extra)) ∗
+  ⌜(int.val off + length encoded + Z.of_nat (length extra))%Z = 4096⌝.
+
+Theorem wp_NewDec stk E s (vs: list u64) (extra: list u8) :
+  {{{ is_slice s ((λ (b:u8), #b) <$> concat (u64_le <$> vs) ++ extra) ∗ ⌜int.val s.(Slice.sz)= 4096⌝ }}}
+    NewDec (slice_val s) @ stk; E
+  {{{ dec, RET (DecM.to_val dec); is_dec dec vs }}}.
+Proof.
+  iIntros (Φ) "(Hs&%) HΦ".
+  iDestruct "Hs" as "(Ha&%)".
+  autorewrite with len in H0.
+  wp_call.
+  wp_alloc off as "Hoff".
+  wp_steps.
+  rewrite DecM.to_val_intro.
+  iApply "HΦ".
+  rewrite /is_dec /=.
+  iSplitR; eauto.
+  iExists _, _; iFrame.
+  rewrite loc_add_0.
+  iFrame.
+  len.
+Qed.
+
+Theorem wp_Dec__GetInt stk E dec x (vs: list u64) :
+  {{{ is_dec dec (x::vs) }}}
+    Dec__GetInt (DecM.to_val dec) @ stk; E
+  {{{ RET #x; is_dec dec vs }}}.
+Proof.
+  iIntros (Φ) "Hdec HΦ".
+  iDestruct "Hdec" as (Hdecsz off extra) "(Hoff&Hvs&%)".
+  rewrite fmap_app.
+  iDestruct (array_app with "Hvs") as "[Hxvs Hextra]".
+  cbn [fmap list_fmap concat].
+  len.
+  rewrite fmap_app.
+  iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
+  wp_call.
+  wp_call.
+  wp_load.
+  wp_steps.
+  wp_call.
+  wp_load.
+  wp_steps.
+  wp_call.
+  wp_store.
+  wp_call.
+  wp_apply wp_SliceSkip'; [ word | ].
+  wp_apply (wp_UInt64Get' with "[Hx]").
+  { iSplitL.
+    - cbn [Slice.ptr slice_skip].
+      iFramePtsTo by word.
+    - simpl.
+      simpl in H.
+      word.
+  }
+  iIntros "Hx".
+  cbn [Slice.ptr slice_skip].
+  iApply "HΦ".
+  rewrite /is_dec.
+  iSplitR; eauto.
+  iExists _, _; iFrame.
+  rewrite !loc_add_assoc.
+  iSplitL.
+  { rewrite fmap_app.
+    iApply array_app.
+    iSplitR "Hextra".
+    - iFramePtsTo by len.
+    - rewrite loc_add_assoc.
+      iFramePtsTo by len.
+  }
+  cbn [concat fmap list_fmap] in H.
+  autorewrite with len in H.
   len.
 Qed.
 
