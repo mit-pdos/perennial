@@ -198,16 +198,35 @@ Inductive event :=
   | In_ev (sel v:val)
   | Out_ev (v:val)
 .
+(* this is the only event encoding we fix (everything else is determined by
+the FFI semantics) *)
+Definition crash_event: val := LitV LitUnit.
+
+(* a trace is a list of events, stored in reverse order *)
+Definition Trace := list event.
+
+Definition add_event (ts: Trace) (ev: event) : Trace := cons ev ts.
+
+Definition add_crash (ts: Trace) : Trace :=
+  match ts with
+  | Out_ev (LitV LitUnit)::ts' => ts'
+  | _ => add_event ts (Out_ev (LitV LitUnit))
+  end.
+
+Definition Oracle := Trace -> forall (sel:val), u64.
+
+Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0).
 
 (** The state: heaps of vals. *)
 Record state : Type := {
   heap: gmap loc (nonAtomic val);
-  world: ffi_state;
-  trace: list event;
   used_proph_id: gset proph_id;
+  world: ffi_state;
+  trace: Trace;
+  oracle: Oracle;
 }.
 
-Global Instance eta_state : Settable _ := settable! Build_state <heap; world; trace; used_proph_id>.
+Global Instance eta_state : Settable _ := settable! Build_state <heap; used_proph_id; world; trace; oracle>.
 
 (* Note that ext_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
@@ -651,7 +670,7 @@ Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Global Instance state_inhabited : Inhabited state :=
-  populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; used_proph_id := inhabitant |}.
+  populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; used_proph_id := inhabitant |}.
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
@@ -896,7 +915,7 @@ Definition state_init_heap (l : loc) (n : Z) (v : val) (σ : state) : state :=
 Lemma state_init_heap_singleton l v σ :
   state_init_heap l 1 v σ = set heap <[l:=Free v]> σ.
 Proof.
-  destruct σ as [h p]. rewrite /state_init_heap /state_insert_list /set /=. f_equiv.
+  destruct σ as [h p]. rewrite /state_init_heap /state_insert_list /set /=. f_equal.
   rewrite right_id insert_union_singleton_l. done.
 Qed.
 
@@ -1004,11 +1023,13 @@ Inductive head_step : expr → state → list observation → expr → state →
                []
                (Val v') σ'
                []
-  | ObserveInputS v x σ :
-     head_step (Input (Val v)) σ
+  | ObserveInputS selv σ :
+     let x := σ.(oracle) σ.(trace) selv in
+     let v := LitV $ LitInt $ x in
+     head_step (Input (Val selv)) σ
                []
-               (Val $ LitV $ LitInt x)
-               (set trace (fun tr => tr ++ [In_ev v (LitV $ LitInt x)]) σ)
+               (Val v)
+               (set trace (fun tr => tr ++ [In_ev selv v]) σ)
                []
   | ObserveOutputS v σ :
      head_step (Output (Val v)) σ
