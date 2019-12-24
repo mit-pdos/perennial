@@ -9,6 +9,8 @@ From Perennial.go_lang Require Import
      adequacy refinement total_adequacy lib.spin_lock.
 From Perennial.go_lang.examples Require Import
      proof.append_log_proof.
+From Perennial.go_lang Require Import
+     ffi.append_log_ffi.
 (* goose deep output *)
 From Perennial.go_lang.examples Require Import
      goose_unittest append_log wal mailserver simpledb logging2 rfc1813.
