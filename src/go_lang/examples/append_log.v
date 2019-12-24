@@ -166,7 +166,7 @@ Hint Resolve writeAll_t : types.
 Definition Log__Append: val :=
   λ: "log" "bks",
     let: "sz" := struct.loadF Log.S "sz" "log" in
-    (if: #1 + "sz" + slice.len "bks" ≥ struct.loadF Log.S "diskSz" "log"
+    (if: slice.len "bks" ≥ struct.loadF Log.S "diskSz" "log" - #1 - "sz"
     then #false
     else
       writeAll "bks" (#1 + "sz");;

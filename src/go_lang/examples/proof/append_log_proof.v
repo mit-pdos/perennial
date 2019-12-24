@@ -1217,9 +1217,9 @@ Proof.
     iDestruct "Hfree" as (free) "[Hfree %]".
     iDestruct (blocks_slice_length with "Hbs") as %Hlenbks.
     iDestruct (blocks_slice_length' with "Hbs") as %Hlenbk_s.
-    rewrite word.unsigned_add in Heqb.
-    rewrite word.unsigned_add in Heqb.
-    rewrite wrap_small in Heqb; last admit.
+    rewrite word.unsigned_sub in Heqb.
+    rewrite word.unsigned_sub in Heqb.
+    rewrite wrap_small in Heqb; last word.
     rewrite wrap_small in Heqb; last word.
     iDestruct (disk_array_split _ _ (length bs) with "Hfree") as "[Halloc Hfree]".
     { word. }
@@ -1309,7 +1309,7 @@ Proof.
         iSplitR "Hbs"; [ | iFrame ].
         iExists _, _; iFrame "Hf0 Hf1".
         iApply (is_log'_append with "[$] [$] [$] [$] [%]"); [len].
-Admitted.
+Qed.
 
 Theorem wp_Log__Reset stk E l vs :
   {{{ ptsto_log l vs }}}
