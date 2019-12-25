@@ -22,8 +22,14 @@ Section translate.
   Notation sval := (@val spec_op).
   Notation iexpr := (@expr impl_op).
   Notation ival := (@val impl_op).
-
   Notation sty := (@ty (@val_tys _ spec_ty)).
+
+  Context (spec_val_trans : sval -> ival).
+  Context (spec_op_trans : @external spec_op -> iexpr).
+  (* XXX: need some assumptions that the previous two arguments make sense
+     in particular, should be total in the sense that all well typed extension rules
+     should have a translation rule *)
+
   Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
   Reserved Notation "Γ ⊢ e1 -- e2 : A" (at level 74, e1, e2, A at next level).
@@ -168,13 +174,10 @@ Section translate.
       Γ ⊢ v1 -- v1' : t ->
       Γ ⊢ v2 -- v2' : t ->
       Γ ⊢ CmpXchg l v1 v2 -- CmpXchg l' v1' v2' : prodT t boolT
-  (* XXX: this translation must be a section parameter *)
-  (*
-  | external_transTy op e t1 t2 :
+  | external_transTy op e e' t1 t2 :
       get_ext_tys op = (t1, t2) ->
-      Γ ⊢ e : t1 ->
-      Γ ⊢ ExternalOp op e : t2
-  *)
+      Γ ⊢ e -- e' : t1 ->
+      Γ ⊢ ExternalOp op e -- (spec_op_trans op) e' : t2
   (* Is this sound given the rules about flattening? *)
   | struct_weaken_transTy e e' ts1 ts2 :
       Γ ⊢ e -- e' : structRefT (ts1 ++ ts2) ->
@@ -214,10 +217,8 @@ Section translate.
       Γ ⊢v v : t ->
       Γ ⊢v v : anyT
   *)
-  (* XXX: this translation must be a section parameter *)
-  (*
-  | ext_def_transTy x :
-      Γ ⊢v val_ty_def x : extT x *)
+  | ext_def_transTy x:
+      Γ ⊢v val_ty_def x -- (spec_val_trans (val_ty_def x)) : extT x
   where "Γ ⊢v v1 -- v2 : A" := (val_transTy Γ v1 v2 A).
 
 End translate.
