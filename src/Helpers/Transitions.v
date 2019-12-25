@@ -136,14 +136,21 @@ Module relation.
     Definition ret {T} (v:T): t T :=
       runF (fun s => (s, v)).
 
+    Theorem inv_runF {T} (f:Σ -> Σ*T) :
+      forall s1 s2 v', runF f s1 s2 v' ->
+                  s2 = fst (f s1) /\ v' = snd (f s1).
+    Proof.
+      intros.
+      inversion H; subst.
+      destruct (f s1); inversion H0; subst; auto.
+    Qed.
+
     Theorem inv_ret {T} (v:T) :
       forall s1 s2 v', ret v s1 s2 v' ->
                   s2 = s1 /\ v' = v.
     Proof.
       intros.
-      inversion H; subst.
-      inversion H0; subst.
-      auto.
+      apply inv_runF in H; intuition subst.
     Qed.
 
     Definition fmap {T1 T2} (f: T1 -> T2) (r: t T1): t T2 :=
@@ -262,6 +269,25 @@ Module relation.
         econstructor; eauto.
         { eapply Heq1; eauto. }
         { eapply Heq2; eauto. }
+    Qed.
+
+    Theorem bind_runF_runF T1 T2 (f: Σ -> Σ * T1) (rx: T1 -> Σ -> Σ * T2) :
+      bind (runF f) (fun x => runF (rx x)) ≡
+           runF (fun s => let '(s', x) := f s in
+                       rx x s').
+    Proof.
+      intros s1 s2 v.
+      split; intros.
+      - inv H.
+        inv H0.
+        inv H1.
+        econstructor.
+        replace (f s1).
+        auto.
+      - inv H.
+        destruct_with_eqn (f s1).
+        inv Heqp.
+        eauto using bind_runs, runF_runs.
     Qed.
 
   End state.

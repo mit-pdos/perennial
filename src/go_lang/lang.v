@@ -1071,12 +1071,47 @@ Lemma fill_item_val Ki e :
   is_Some (to_val (fill_item Ki e)) → is_Some (to_val e).
 Proof. intros [v ?]. induction Ki; simplify_option_eq; eauto. Qed.
 
+Lemma suchThat_false state T (s1 s2: state) (v: T) :
+  relation.suchThat (fun _ _ => False) s1 s2 v -> False.
+Proof.
+  inversion 1; auto.
+Qed.
+
+Hint Resolve suchThat_false.
+
 Lemma val_head_stuck e1 σ1 κ e2 σ2 efs : head_step e1 σ1 κ e2 σ2 efs → to_val e1 = None.
-Proof. destruct 1; naive_solver. Qed.
+Proof.
+  rewrite /head_step; intros.
+  destruct e1; auto; simpl.
+  exfalso.
+  simpl in H; eapply suchThat_false; eauto.
+Qed.
 
 Lemma head_ctx_step_val Ki e σ1 κ e2 σ2 efs :
   head_step (fill_item Ki e) σ1 κ e2 σ2 efs → is_Some (to_val e).
-Proof. revert κ e2. induction Ki; inversion_clear 1; simplify_option_eq; eauto. Qed.
+Proof. revert κ e2.
+       induction Ki; intros;
+       rewrite /head_step /= in H;
+       repeat match type of H with
+              | relation.denote (match ?e with
+                                 | _ => _
+                                 end) _ _ _ =>
+                destruct e; simpl in H; eauto; try solve [ eapply suchThat_false in H; contradiction ]
+              end.
+       inversion H; subst; clear H.
+       destruct x as [[κ' e'] ts'].
+       rewrite /head_step in IHKi.
+       match type of H1 with
+       | relation.denote (match ?e with
+                          | _ => _
+                          end) _ _ _ =>
+         destruct e; simpl in H1; eauto; try solve [ eapply suchThat_false in H1; contradiction ]
+       end.
+       apply relation.inv_runF in H1; intuition subst.
+       simpl in H2.
+       inversion H2; subst; clear H2.
+       eapply IHKi; eauto.
+Qed.
 
 Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :
   to_val e1 = None → to_val e2 = None →
@@ -1091,15 +1126,33 @@ Lemma alloc_fresh v (n: u64) σ :
             (Val $ LitV $ LitLoc l) (state_init_heap l (int.val n) v σ) [].
 Proof.
   intros.
-  apply AllocNS; first done.
-  intros. apply (not_elem_of_dom (D := gset loc)).
-  by apply fresh_locs_fresh.
+  rewrite /head_step /=.
+  apply relation.bind_assoc.
+  apply relation.bind_assoc.
+  rewrite /check.
+  rewrite decide_left; simpl.
+  apply relation.bind_id.
+  eapply relation.bind_runs with σ l.
+  { econstructor.
+    hnf; intros.
+    apply (not_elem_of_dom (D := gset loc)).
+      by apply fresh_locs_fresh.
+  }
+  apply relation.bind_runF_runF.
+  econstructor; eauto.
 Qed.
 
 Lemma new_proph_id_fresh σ :
   let p := fresh σ.(used_proph_id) in
   head_step NewProph σ [] (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ) [].
-Proof. constructor. apply is_fresh. Qed.
+Proof. intro p.
+       rewrite /head_step /=.
+       eapply relation.bind_runs with σ p.
+       { econstructor.
+         apply is_fresh. }
+       apply relation.bind_runF_runF.
+       econstructor; eauto.
+Qed.
 
 Lemma heap_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step.
 Proof.
