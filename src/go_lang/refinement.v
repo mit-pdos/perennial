@@ -48,7 +48,7 @@ Context `{invG Σ}.
 
 Definition spec_interp σ : iProp Σ :=
     (gen_heap_ctx σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world)
-      ∗ trace_auth σ.(trace))%I.
+      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I.
 
 Definition spec_stateN := nroot .@ "source".@  "state".
 

@@ -34,16 +34,16 @@ Instance subG_heapPreG `{ext: ext_op} `{ffi_interp_adequacy} {Σ} : subG heapΣ 
 Proof. solve_inG. Qed.
 
 Definition heap_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} s e σ φ :
-  (∀ `{!heapG Σ}, trace_frag σ.(trace) -∗ WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
+  (∀ `{!heapG Σ}, trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗ WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
   adequate s e σ (λ v _, φ v).
 Proof.
   intros Hwp; eapply (wp_adequacy _ _); iIntros (??) "".
   iMod (gen_heap_init σ.(heap)) as (?) "Hh".
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
   iMod (ffi_init _ _ σ.(world)) as (HffiG) "Hw".
-  iMod (trace_init σ.(trace)) as (HtraceG) "(Htr&?)".
+  iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&?&Hor&?)".
   iModIntro. iExists
-    (λ σ κs, (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx HffiG σ.(world) ∗ trace_auth σ.(trace))%I),
+    (λ σ κs, (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx HffiG σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
     (λ _, True%I).
-  iFrame. iApply (Hwp (HeapG _ _ _ _ _ _)); iFrame.
+  iFrame. by iApply (Hwp (HeapG _ _ HffiG _ _ _ HtraceG) with "[$] [$]").
 Qed.

@@ -29,18 +29,24 @@ Section go_lang.
   Context `{!ffi_interp ffi}.
 
 Definition traceO := leibnizO (list event).
+Definition OracleO := leibnizO (Oracle).
 Class traceG (Σ: gFunctors) := {
   trace_inG :> inG Σ (authR (optionUR (exclR traceO)));
-  trace_name : gname
+  oracle_inG :> inG Σ (authR (optionUR (exclR OracleO)));
+  trace_name : gname;
+  oracle_name : gname
 }.
 Arguments trace_name {_} _.
+Arguments oracle_name {_} _.
 
 Class trace_preG (Σ: gFunctors) := {
   trace_preG_inG :> inG Σ (authR (optionUR (exclR traceO)));
+  oracle_preG_inG :> inG Σ (authR (optionUR (exclR OracleO)));
 }.
 
 Definition traceΣ : gFunctors :=
-  #[GFunctor (authR (optionUR (exclR traceO)))].
+  #[GFunctor (authR (optionUR (exclR traceO)));
+      GFunctor (authR (optionUR (exclR OracleO)))].
 
 Global Instance subG_crashG {Σ} : subG traceΣ Σ → trace_preG Σ.
 Proof. solve_inG. Qed.
@@ -49,13 +55,19 @@ Definition trace_auth `{hT: traceG Σ} (l: Trace) :=
   own (trace_name hT) (● (Excl' (l: traceO))).
 Definition trace_frag `{hT: traceG Σ} (l: Trace) :=
   own (trace_name hT) (◯ (Excl' (l: traceO))).
+Definition oracle_auth `{hT: traceG Σ} (o: Oracle) :=
+  own (oracle_name hT) (● (Excl' (o: OracleO))).
+Definition oracle_frag `{hT: traceG Σ} (o: Oracle) :=
+  own (oracle_name hT) (◯ (Excl' (o: OracleO))).
 
-Lemma trace_init `{hT: trace_preG Σ} (l: list event):
-  (|==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l)%I.
+Lemma trace_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
+  (|==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o)%I.
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
   { apply auth_both_valid; split; eauto. econstructor. }
-  iModIntro. iExists {| trace_name := γ |}. iFrame.
+  iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
+  { apply auth_both_valid; split; eauto. econstructor. }
+  iModIntro. iExists {| trace_name := γ; oracle_name := γ' |}. iFrame.
 Qed.
 
 Lemma trace_update `{hT: traceG Σ} (l: Trace) (x: event):
@@ -76,11 +88,21 @@ Proof.
   done.
 Qed.
 
+Lemma oracle_agree `{hT: traceG Σ} (o o': Oracle):
+  oracle_auth o -∗ oracle_frag o' -∗ ⌜ o = o' ⌝.
+Proof.
+  iIntros "Hγ1 Hγ2".
+  iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
+  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
+  done.
+Qed.
+
 Class heapG Σ := HeapG {
   heapG_invG : invG Σ;
   heapG_ffiG : ffiG Σ;
   heapG_gen_heapG :> gen_heapG loc (nonAtomic val) Σ;
   heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
+  heapG_oracleG :> proph_mapG proph_id (val * val) Σ;
   heapG_traceG :> traceG Σ;
 }.
 
@@ -89,7 +111,7 @@ Global Instance heapG_irisG `{!heapG Σ} :
   iris_invG := heapG_invG;
   state_interp σ κs _ :=
     (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
-      ∗ trace_auth σ.(trace))%I;
+      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
   fork_post _ := True%I;
 }.
 
@@ -283,7 +305,7 @@ Lemma wp_output s E tr v :
   {{{ RET (LitV LitUnit); trace_frag (add_event (Out_ev v) tr)}}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth) !>"; iSplit; first by eauto.
+  iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth&?) !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (trace_update with "[$] [$]") as "(?&?)".
@@ -297,7 +319,7 @@ Lemma wp_input s E tr v :
   {{{ x, RET (LitV (LitInt x)); trace_frag (add_event (In_ev v (LitV $ LitInt x)) tr)}}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth) !>"; iSplit.
+  iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth&?) !>"; iSplit.
   { iPureIntro. unshelve (by eauto); apply (U64 0). }
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
