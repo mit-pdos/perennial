@@ -53,17 +53,22 @@ Section transition.
   Definition plus {T} (r1 r2: transition T): transition T :=
     bind (any bool) (fun b => if b then r1 else r2).
 
+  Definition ifThenElse P `{!Decision P} {T} (tr1 tr2: transition T): transition T :=
+    if (decide P) then tr1 else tr2.
+
+  Arguments ifThenElse P {_} {T}.
+
   Definition check P `{!Decision P}: transition unit :=
-    if (decide P) then ret tt else undefined.
+    ifThenElse P (ret tt) (undefined).
 
   Definition checkNot P `{!Decision P}: transition unit :=
-    if (decide P) then undefined else ret tt.
+    ifThenElse P (undefined) (ret tt).
 
-  Definition ifThen {T} P `{!Decision P} (r: transition T): transition T :=
-    if (decide P) then r else undefined.
+  Definition when P `{!Decision P} (r: transition unit): transition unit :=
+    ifThenElse P r (ret tt).
 
-  Definition ifNot {T} P `{!Decision P} (r: transition T): transition T :=
-    if (decide P) then undefined else r.
+  Definition unless P `{!Decision P} (r: transition unit): transition unit :=
+    ifThenElse P (ret tt) (r).
 
   Definition unwrap {T} (mx: option T): transition T :=
     match mx with
@@ -71,21 +76,21 @@ Section transition.
     | None => undefined
     end.
 
-  Theorem check_ok P `{!Decision P} :
+  Theorem ifThenElse_if P `{!Decision P} {T} (r1 r2: transition T) :
     P ->
-    @check P _ = ret tt.
+    ifThenElse P r1 r2 = r1.
   Proof.
     intros H.
-    unfold check.
+    unfold ifThenElse.
     destruct (decide P); auto || contradiction.
   Qed.
 
-  Theorem check_fails P `{!Decision P} :
+  Theorem ifThenElse_else P `{!Decision P} {T} (r1 r2: transition T) :
     ~P ->
-    @check P _ = undefined.
+    ifThenElse P r1 r2 = r2.
   Proof.
     intros H.
-    unfold check.
+    unfold ifThenElse.
     destruct (decide P); auto || contradiction.
   Qed.
 
@@ -117,9 +122,7 @@ Arguments transition Σ T : clear implicits.
 Arguments suchThat {Σ T} pred {gen}.
 Arguments any {Σ} T {gen}.
 Arguments check {Σ} P {_}.
-Arguments checkNot {Σ} P {_}.
-Arguments ifThen {Σ T} P {_}.
-Arguments ifNot {Σ T} P {_}.
+Arguments when {Σ} P {_}.
 
 Module relation.
   Section state.
@@ -369,10 +372,12 @@ Module relation.
   End state.
 End relation.
 
-Arguments check_ok {Σ} P {_} _.
-Arguments check_fails {Σ} P {_} _.
+Arguments ifThenElse {Σ} P {_} {T} tr1 tr2.
+Arguments ifThenElse_if {Σ} P {_} {T} r1 r2.
+Arguments ifThenElse_else {Σ} P {_} {T} r1 r2.
 
 Ltac monad_simpl :=
+  unfold check, when;
   repeat match goal with
          | |- relation.bind (relation.bind _ _) _ ?s1 ?s2 ?v =>
            apply relation.bind_assoc
@@ -382,8 +387,10 @@ Ltac monad_simpl :=
            try solve [ econstructor; eauto ]
          | [ H: ?mx = Some ?x |- context[unwrap ?mx] ] =>
            rewrite H; cbn [unwrap]
-         | [ |- context[relation.denote (check ?P)] ] =>
-           rewrite -> (check_ok P) by eauto; cbn [relation.denote ret undefined]
+         | [ |- context[relation.denote (ifThenElse ?P _ _)] ] =>
+           rewrite -> (ifThenElse_if P) by eauto; cbn [relation.denote ret undefined]
+         | [ |- context[relation.denote (ifThenElse ?P _ _)] ] =>
+           rewrite -> (ifThenElse_else P) by eauto; cbn [relation.denote ret undefined]
          end.
 
 Ltac monad_inv :=
@@ -411,8 +418,12 @@ Ltac monad_inv :=
            end
          | [ H: ?mx = Some ?x, H': context[unwrap ?mx] |- _ ] =>
            rewrite H in H'; cbn [unwrap] in H'
-         | [ H': context[relation.denote (check ?P)] |- _ ] =>
-           rewrite -> (check_ok P) in H' by eauto; cbn [relation.denote ret undefined] in H'
-         | [ H: ~ ?P, H': context[relation.denote (check ?P)] |- _ ] =>
-           rewrite -> (check_fails P) in H' by eauto; cbn [relation.denote ret undefined] in H'
+         | [ H: context[relation.denote (check ?P)] |- _ ] =>
+           unfold check in H
+         | [ H: context[relation.denote (when ?P _)] |- _ ] =>
+           unfold when in H
+         | [ H: context[relation.denote (ifThenElse ?P _ _)] |- _ ] =>
+           rewrite -> (ifThenElse_if P) in H by eauto; cbn [relation.denote ret undefined] in H
+         | [ H: context[relation.denote (ifThenElse ?P _ _)] |- _ ] =>
+           rewrite -> (ifThenElse_else P) in H by eauto; cbn [relation.denote ret undefined] in H
          end.

@@ -1046,9 +1046,8 @@ Fixpoint head_trans (e: expr) :
       | Reading vl 0 =>
       (* Crucially, this compares the same way as [EqOp]! *)
         check (vals_compare_safe vl v1);;
-        let b := bool_decide (vl = v1) in
-        ifThen b (modify (set heap <[l:=Free v2]>));;
-        ret $ LitV $ LitBool b
+        when (vl = v1) (modify (set heap <[l:=Free v2]>));;
+        ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
       | _ => undefined
       end)
   | NewProph =>
