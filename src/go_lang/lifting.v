@@ -104,16 +104,17 @@ Ltac inv_head_step :=
   | _ => progress simplify_map_eq/= (* simplify memory stuff *)
   | H : to_val _ = Some _ |- _ => apply of_to_val in H
   | H : head_step ?e _ _ _ _ _ |- _ =>
-     try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
-     and can thus better be avoided. *)
-     inversion H; subst; clear H
+    rewrite /head_step /= in H;
+    monad_inv; repeat (simpl in H; monad_inv)
   end.
 
 Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
 Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
 
 (* [simpl apply] is too stupid, so we need extern hints here. *)
-Local Hint Extern 1 (head_step _ _ _ _ _ _) => econstructor : core.
+Local Hint Extern 1 (head_step _ _ _ _ _ _) => rewrite /head_step /= : core.
+Local Hint Extern 1 (relation.bind _ _ _ _ _) => monad_simpl; simpl : core.
+Local Hint Extern 1 (relation.runF _ _ _ _) => monad_simpl; simpl : core.
 (* Local Hint Extern 0 (head_step (CmpXchg _ _ _) _ _ _ _ _) => eapply CmpXchgS : core. *)
 Local Hint Extern 0 (head_step (AllocN _ _) _ _ _ _ _) => apply alloc_fresh : core.
 Local Hint Extern 0 (head_step NewProph _ _ _ _ _) => apply new_proph_id_fresh : core.
@@ -175,14 +176,12 @@ Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) 
 Proof. solve_atomic. Qed.
 Global Instance fork_atomic s e : Atomic s (Fork e).
 Proof. solve_atomic.
-       inversion_clear H.
-       inversion_clear H0.
+       simpl in H; monad_inv.
        eexists; eauto.
 Qed.
 Global Instance skip_atomic s  : Atomic s Skip.
 Proof. solve_atomic.
-       inversion_clear H.
-       inversion_clear H0.
+       simpl in H; monad_inv.
        eexists; eauto.
 Qed.
 Global Instance new_proph_atomic s : Atomic s NewProph.
@@ -227,8 +226,8 @@ Qed.
 Global Instance resolve_proph_atomic s v1 v2 : Atomic s (ResolveProph (Val v1) (Val v2)).
 Proof. by apply proph_resolve_atomic, skip_atomic. Qed.
 
-Local Ltac solve_exec_safe := intros; subst; do 3 eexists; econstructor; eauto.
-Local Ltac solve_exec_puredet := simpl; intros; by inv_head_step.
+Local Ltac solve_exec_safe := intros; subst; do 3 eexists; cbn; repeat (monad_simpl; simpl).
+Local Ltac solve_exec_puredet := rewrite /= /head_step /=; intros; repeat (monad_inv; simpl in * ); eauto.
 Local Ltac solve_pure_exec :=
   subst; intros ?; apply nsteps_once, pure_head_step_pure_step;
     constructor; [solve_exec_safe | solve_exec_puredet].
@@ -470,7 +469,7 @@ Lemma wp_load s E l q v :
 Proof.
   iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
 Qed.
 Lemma twp_load s E l q v :
@@ -478,7 +477,7 @@ Lemma twp_load s E l q v :
 Proof.
   iIntros (Φ) "Hl HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto. iIntros (κ v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iIntros (κ v2 σ2 efs Hstep); inv_head_step.
   iModIntro; iSplit=> //. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
 
@@ -498,7 +497,7 @@ Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
@@ -509,7 +508,7 @@ Proof.
   iIntros (Φ) "Hl HΦ".
   iApply twp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto. iIntros (κ v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iIntros (κ v2 σ2 efs Hstep); inv_head_step.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
@@ -521,7 +520,7 @@ Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 10. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.

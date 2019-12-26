@@ -71,6 +71,24 @@ Section transition.
     | None => undefined
     end.
 
+  Theorem check_ok P `{!Decision P} :
+    P ->
+    @check P _ = ret tt.
+  Proof.
+    intros H.
+    unfold check.
+    destruct (decide P); auto || contradiction.
+  Qed.
+
+  Theorem check_fails P `{!Decision P} :
+    ~P ->
+    @check P _ = undefined.
+  Proof.
+    intros H.
+    unfold check.
+    destruct (decide P); auto || contradiction.
+  Qed.
+
   Definition next_hint (hints: list Z): Z * list Z :=
     match hints with
     | z::hints' => (z, hints')
@@ -153,6 +171,14 @@ Module relation.
       apply inv_runF in H; intuition subst.
     Qed.
 
+    Theorem inv_suchThat {T} (pred:Σ -> T -> Prop) :
+      forall s1 s2 v', suchThat pred s1 s2 v' ->
+                  s2 = s1 /\ pred s1 v'.
+    Proof.
+      intros.
+      inversion H; subst; eauto.
+    Qed.
+
     Definition fmap {T1 T2} (f: T1 -> T2) (r: t T1): t T2 :=
       bind r (fun x => ret (f x)).
 
@@ -162,6 +188,16 @@ Module relation.
       | Transitions.suchThat pred => suchThat pred
       | Transitions.bind r rx => bind (denote r) (fun x => denote (rx x))
       end.
+
+    Theorem suchThat_interpret_run {T} (pred: Σ -> T -> Prop) {gen: GenPred T Σ pred} (hint:Z) :
+      forall s v H,
+      gen hint s = Some (exist _ v H) ->
+      denote (Transitions.suchThat pred) s s v.
+    Proof.
+      intros.
+      simpl.
+      constructor; eauto.
+    Qed.
 
     Instance requiv {T}: Equiv (t T) :=
       fun r1 r2 => forall s1 s2 v, r1 s1 s2 v <-> r2 s1 s2 v.
@@ -226,14 +262,21 @@ Module relation.
         econstructor; eauto.
     Qed.
 
+    Theorem bind_bind {T1 T2 T3} (r1:  t T1) (r2: T1 -> t T2) (r3: T2 -> t T3) :
+      forall s1 s2 v, bind (bind r1 r2) r3 s1 s2 v -> bind r1 (fun x => bind (r2 x) r3) s1 s2 v.
+    Proof.
+      intros s1 s2 v H.
+      inv H.
+      inv H0.
+      eauto using bind_runs.
+    Qed.
+
     Theorem bind_assoc {T1 T2 T3} (r1:  t T1) (r2: T1 -> t T2) (r3: T2 -> t T3) :
       bind (bind r1 r2) r3 ≡ bind r1 (fun x => bind (r2 x) r3).
     Proof.
       intros s1 s2 v.
       split; intros.
-      - inv H.
-        inv H0.
-        eauto using bind_runs.
+      - eauto using bind_bind.
       - inv H.
         inv H1.
         eauto using bind_runs.
@@ -271,6 +314,39 @@ Module relation.
         { eapply Heq2; eauto. }
     Qed.
 
+    Theorem bind_runF T1 T2 (f: Σ -> Σ * T1) (r: T1 -> t T2) :
+      forall s1 s2 v,
+        r (f s1).2 (f s1).1 s2 v ->
+        bind (runF f) r s1 s2 v.
+    Proof.
+      intros.
+      destruct_with_eqn (f s1); simpl in H.
+      eapply bind_runs; eauto.
+      econstructor; eauto.
+    Qed.
+
+    Theorem inv_bind_runF T1 T2 (f: Σ -> Σ * T1) (r: T1 -> t T2) :
+      forall s1 s2 v,
+        bind (runF f) r s1 s2 v ->
+        r (f s1).2 (f s1).1 s2 v.
+    Proof.
+      intros.
+      inv H.
+      inv H0.
+      replace (f s1); auto.
+    Qed.
+
+    Theorem inv_bind_suchThat T1 T2 (pred: Σ -> T1 -> Prop) (r: T1 -> t T2) :
+      forall s1 s2 v,
+        bind (suchThat pred) r s1 s2 v ->
+        exists x, pred s1 x /\ r x s1 s2 v.
+    Proof.
+      intros.
+      inv H.
+      inv H0.
+      eauto.
+    Qed.
+
     Theorem bind_runF_runF T1 T2 (f: Σ -> Σ * T1) (rx: T1 -> Σ -> Σ * T2) :
       bind (runF f) (fun x => runF (rx x)) ≡
            runF (fun s => let '(s', x) := f s in
@@ -292,3 +368,46 @@ Module relation.
 
   End state.
 End relation.
+
+Ltac monad_simpl :=
+  repeat match goal with
+         | |- relation.bind (relation.bind _ _) _ ?s1 ?s2 ?v =>
+           apply relation.bind_assoc
+         | |- relation.bind (relation.runF _) _ ?s1 ?s2 ?v =>
+           apply relation.bind_runF
+         | |- relation.runF _ ?s1 ?s2 ?v =>
+           try solve [ econstructor; eauto ]
+         | [ H: ?mx = Some ?x |- context[unwrap ?mx] ] =>
+           rewrite H; cbn [unwrap]
+         end.
+
+Ltac monad_inv :=
+  repeat match goal with
+         | [ H: (_, _) = (_, _) |- _ ] =>
+           inversion H; subst; clear H
+         | [ H: relation.bind (relation.runF _) _ ?s1 ?s2 ?v |- _ ] =>
+           apply relation.inv_bind_runF in H
+         | [ H: relation.runF _ ?s1 ?s2 ?v |- _ ] =>
+           apply relation.inv_runF in H; simpl in H; destruct H; subst
+         | [ H: relation.suchThat (fun _ _ => False) ?s1 ?s2 ?v |- _ ] =>
+           inversion H; contradiction
+         | [ H: relation.suchThat _ ?s1 ?s2 ?v |- _ ] =>
+           apply relation.inv_suchThat in H; destruct H; subst
+         | [ H: relation.bind (relation.bind _ _) _ ?s1 ?s2 ?v |- _ ] =>
+           apply relation.bind_bind in H
+         | [ H: relation.bind (relation.suchThat ?pred) _ ?s1 ?s2 ?v |- _ ] =>
+           let pred := (eval hnf in pred) in
+           lazymatch pred with
+           | fun _ x => _ =>
+             let x' := fresh x in
+             let H' := fresh in
+             apply relation.inv_bind_suchThat in H;
+             destruct H as [x [H' H]]
+           end
+         | [ H: ?mx = Some ?x, H': context[unwrap ?mx] |- _ ] =>
+           rewrite H in H'; cbn [unwrap] in H'
+         | [ H: ?P, H': context[relation.denote (check ?P)] |- _ ] =>
+           rewrite (check_ok H) in H'; cbn [relation.denote ret undefined] in H'
+         | [ H: ~ ?P, H': context[relation.denote (check ?P)] |- _ ] =>
+           rewrite (check_fails H) in H'; cbn [relation.denote ret undefined] in H'
+         end.

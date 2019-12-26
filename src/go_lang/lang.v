@@ -1110,9 +1110,8 @@ Proof. revert κ e2.
        destruct x as [[κ' e'] ts'].
        repeat inv_undefined.
        rewrite /head_step in IHKi.
-       apply relation.inv_runF in H1; intuition subst.
-       simpl in H2.
-       inversion H2; subst; clear H2.
+       simpl in H1.
+       monad_inv.
        eapply IHKi; eauto.
 Qed.
 
@@ -1121,27 +1120,6 @@ Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :
   fill_item Ki1 e1 = fill_item Ki2 e2 → Ki1 = Ki2.
 Proof using ext. clear ffi_semantics ffi.
        revert Ki1. induction Ki2, Ki1; naive_solver eauto with f_equal. Qed.
-
-Theorem relation_bind_runF Σ T1 T2 (f: Σ -> Σ * T1) (r: T1 -> relation.t Σ T2) :
-  forall s1 s2 v,
-    r (f s1).2 (f s1).1 s2 v ->
-    relation.bind (relation.runF f) r s1 s2 v.
-Proof.
-  intros.
-  destruct_with_eqn (f s1); simpl in H.
-  eapply relation.bind_runs; eauto.
-  econstructor; eauto.
-Qed.
-
-Ltac monad_simpl :=
-  repeat match goal with
-         | |- relation.bind (relation.bind _ _) _ ?s1 ?s2 ?v =>
-           apply relation.bind_assoc
-         | |- relation.bind (relation.runF _) _ ?s1 ?s2 ?v =>
-           apply relation_bind_runF
-         | |- relation.runF _ ?s1 ?s2 ?v =>
-           try solve [ econstructor; eauto ]
-         end.
 
 Lemma alloc_fresh v (n: u64) σ :
   let l := fresh_locs (dom (gset loc) σ.(heap)) in
