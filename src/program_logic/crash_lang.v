@@ -38,6 +38,10 @@ Section crash_language.
       erased_rsteps r ([r], σ) ρ3 s →
       erased_rsteps r ρ1 ρ3 Crashed.
 
+  Definition never_stuck (e1 r1: expr Λ) (σ1: state Λ) :=
+    (∀ e2 σ2 t2 stat, erased_rsteps r1 ([e1], σ1) (t2, σ2) stat →
+      e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2)).
+
   Lemma nrsteps_normal_empty_prefix r ns n ρ1 κ ρ2:
     nrsteps r (ns ++ [n]) ρ1 κ ρ2 Normal →
     ns = [].

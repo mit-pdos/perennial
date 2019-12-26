@@ -1152,6 +1152,9 @@ Proof.
     econstructor 1 with (K := Ks ++ [K]); last done; simpl; by rewrite fill_app.
 Qed.
 
+Definition trace_observable e r σ tr :=
+  ∃ σ2 t2 stat, erased_rsteps (CS:=heap_crash_lang) r ([e], σ) (t2, σ2) stat ∧ σ2.(trace) = tr.
+
 End go_lang.
 
 Bind Scope expr_scope with expr.

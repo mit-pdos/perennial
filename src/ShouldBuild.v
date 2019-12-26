@@ -6,7 +6,7 @@ From Perennial Require Import program_logic.crash_inv.
 From Perennial Require Import heap_lang.crash_lock.
 
 From Perennial.go_lang Require Import
-     adequacy spec_assert total_adequacy lib.spin_lock.
+     adequacy spec_assert total_adequacy lib.spin_lock refinement.
 From Perennial.go_lang.examples Require Import
      proof.append_log_proof.
 From Perennial.go_lang Require Import
