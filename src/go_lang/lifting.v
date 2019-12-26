@@ -5,6 +5,7 @@ From iris.base_logic Require Export gen_heap.
 From iris.base_logic.lib Require Export proph_map.
 From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import ectx_lifting total_ectx_lifting.
+From Perennial.Helpers Require Import Transitions.
 From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import tactics notation map.
 Set Default Proof Using "Type".
@@ -113,7 +114,7 @@ Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core
 
 (* [simpl apply] is too stupid, so we need extern hints here. *)
 Local Hint Extern 1 (head_step _ _ _ _ _ _) => econstructor : core.
-Local Hint Extern 0 (head_step (CmpXchg _ _ _) _ _ _ _ _) => eapply CmpXchgS : core.
+(* Local Hint Extern 0 (head_step (CmpXchg _ _ _) _ _ _ _ _) => eapply CmpXchgS : core. *)
 Local Hint Extern 0 (head_step (AllocN _ _) _ _ _ _ _) => apply alloc_fresh : core.
 Local Hint Extern 0 (head_step NewProph _ _ _ _ _) => apply new_proph_id_fresh : core.
 Local Hint Resolve to_of_val : core.
@@ -123,13 +124,45 @@ Proof. done. Qed.
 Global Instance as_val_val v : AsVal (Val v).
 Proof. by eexists. Qed.
 
+Theorem heap_head_atomic e :
+  (forall σ κ e' σ' efs,
+      relation.denote (head_trans e) σ σ' (κ, e', efs) -> is_Some (to_val e')) ->
+  head_atomic StronglyAtomic e.
+Proof.
+  intros Hdenote.
+  hnf; intros * H%Hdenote.
+  auto.
+Qed.
+
+Theorem atomically_is_val Σ (tr: transition Σ val) σ σ' κ e' efs :
+  relation.denote (atomically tr) σ σ' (κ, e', efs) ->
+  is_Some (to_val e').
+Proof.
+  intros.
+  inversion H; subst; clear H.
+  inversion H1; subst; clear H1.
+  inversion H; subst.
+  eexists; eauto.
+Qed.
+
+Ltac inv_undefined :=
+  match goal with
+  | [ H: relation.denote (match ?e with | _ => _ end) _ _ _ |- _ ] =>
+    destruct e; try (apply suchThat_false in H; contradiction)
+  end.
+
 Local Ltac solve_atomic :=
   apply strongly_atomic_atomic, ectx_language_atomic;
-    [inversion 1; naive_solver
+  [ apply heap_head_atomic; cbn [relation.denote head_trans]; intros * H;
+    repeat inv_undefined;
+    try solve [ apply atomically_is_val in H; auto ]
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
 
 Global Instance alloc_atomic s v w : Atomic s (AllocN (Val v) (Val w)).
-Proof. solve_atomic. Qed.
+Proof.
+  solve_atomic.
+Qed.
+
 (* PrepareWrite and Store are individually atomic, but the two need to be
 combined to actually write to the heap and that is not atomic. *)
 Global Instance prepare_write_atomic s v : Atomic s (PrepareWrite (Val v)).
@@ -141,9 +174,17 @@ Proof. solve_atomic. Qed.
 Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance fork_atomic s e : Atomic s (Fork e).
-Proof. solve_atomic. Qed.
+Proof. solve_atomic.
+       inversion_clear H.
+       inversion_clear H0.
+       eexists; eauto.
+Qed.
 Global Instance skip_atomic s  : Atomic s Skip.
-Proof. solve_atomic. Qed.
+Proof. solve_atomic.
+       inversion_clear H.
+       inversion_clear H0.
+       eexists; eauto.
+Qed.
 Global Instance new_proph_atomic s : Atomic s NewProph.
 Proof. solve_atomic. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
@@ -160,11 +201,20 @@ Global Instance proph_resolve_atomic s e v1 v2 :
 Proof.
   rename e into e1. intros H σ1 e2 κ σ2 efs [Ks e1' e2' Hfill -> step].
   simpl in *. induction Ks as [|K Ks _] using rev_ind; simpl in Hfill.
-  - subst. inversion_clear step. by apply (H σ1 (Val v) κs σ2 efs), head_prim_step.
+  - subst. rewrite /head_step /= in step.
+    repeat inv_undefined.
+    inversion_clear step.
+    repeat inv_undefined.
+    inversion_clear H1.
+    inversion_clear H2.
+    destruct s.
+    + eexists; eauto.
+    + eapply val_irreducible; simpl.
+      eexists; eauto.
   - rewrite fill_app. rewrite fill_app in Hfill.
     assert (∀ v, Val v = fill Ks e1' → False) as fill_absurd.
     { intros v Hv. assert (to_val (fill Ks e1') = Some v) as Htv by by rewrite -Hv.
-      apply to_val_fill_some in Htv. destruct Htv as [-> ->]. inversion step. }
+      apply to_val_fill_some in Htv. destruct Htv as [-> ->]. inversion step; contradiction. }
     destruct K; (inversion Hfill; clear Hfill; subst; try
       match goal with | H : Val ?v = fill Ks e1' |- _ => by apply fill_absurd in H end).
     refine (_ (H σ1 (fill (Ks ++ [K]) e2') _ σ2 efs _)).
