@@ -1,12 +1,12 @@
 From Perennial Require Import program_logic.crash_lang.
 From Perennial Require Import program_logic.crash_weakestpre.
-From Perennial Require Import program_logic.refinement.
+From Perennial Require Import program_logic.spec_assert.
 From Perennial Require Import program_logic.recovery_adequacy.
 From Perennial Require Import program_logic.crash_inv.
 From Perennial Require Import heap_lang.crash_lock.
 
 From Perennial.go_lang Require Import
-     adequacy refinement total_adequacy lib.spin_lock.
+     adequacy spec_assert total_adequacy lib.spin_lock.
 From Perennial.go_lang.examples Require Import
      proof.append_log_proof.
 From Perennial.go_lang Require Import

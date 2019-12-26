@@ -3,7 +3,7 @@ From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
-From Perennial.program_logic Require Import refinement.
+From Perennial.program_logic Require Import spec_assert.
 From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import tactics notation map lifting.
 
