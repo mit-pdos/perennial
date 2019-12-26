@@ -179,12 +179,16 @@ lemmas. *)
   Theorem read_fresh : forall σ a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
       σ.(world) !! int.val a = Some b ->
-      ext_step ReadOp (LitV $ LitInt a) σ (LitV $ LitLoc $ l) (state_insert_list l (Block_to_vals b) σ).
+      relation.denote (ext_step ReadOp (LitV $ LitInt a)) σ (state_insert_list l (Block_to_vals b) σ) (LitV $ LitLoc $ l).
   Proof.
     intros.
-    constructor; auto; intros.
-    apply (not_elem_of_dom (D := gset loc)).
-      by apply fresh_locs_fresh.
+    simpl.
+    monad_simpl.
+    rewrite H; simpl.
+    monad_simpl.
+    econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
+    apply relation.bind_runF.
+    econstructor; eauto.
   Qed.
 
   Hint Resolve read_fresh : core.
@@ -207,10 +211,17 @@ lemmas. *)
     iSplit.
     { iPureIntro.
       eexists _, _, _, _; simpl.
-      econstructor; simpl.
-      apply read_fresh; eauto. }
+      rewrite /head_step /=.
+      monad_simpl.
+      rewrite H; simpl.
+      monad_simpl.
+      econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
+      monad_simpl. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-    iMod (gen_heap_alloc_gen _ (heap_array l' (map Free $ Block_to_vals b)) with "Hσ")
+    monad_inv.
+    simpl in H0.
+    rewrite H /= in H0; monad_inv.
+    iMod (gen_heap_alloc_gen _ (heap_array l (map Free $ Block_to_vals b)) with "Hσ")
       as "(Hσ & Hl & Hm)".
     { apply heap_array_map_disjoint.
       rewrite map_length length_Block_to_vals; eauto. }
@@ -302,22 +313,25 @@ lemmas. *)
     iDestruct (heap_valid_block with "Hσ Hl") as %?.
     iSplit.
     { iPureIntro.
-      eexists _, _, _, _; simpl.
-      econstructor; simpl.
-      (* TODO: for some reason eauto doesn't apply this *)
-      eapply WriteOpS; eauto. }
+      eexists _, _, _, _; cbn.
+      repeat (monad_simpl; cbn).
+      rewrite H; cbn; monad_simpl.
+      econstructor; eauto; [ | monad_simpl ].
+      econstructor; eauto. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+    monad_inv.
+    rewrite H /= in H1; monad_inv.
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
-    assert (b = b2); [ | subst b2 ].
+    assert (b = b1); [ | subst b1 ].
     { apply Block_to_vals_ext_eq; intros.
-      specialize (H0 i); specialize (H4 i); intuition.
+      specialize (H0 i); specialize (H2 i); intuition.
+      simpl in H4.
       destruct_with_eqn (σ1.(heap) !! (l +ₗ i)); try contradiction.
       destruct n0; try contradiction.
       congruence. }
     iModIntro; iSplit; first done.
     iFrame.
-    iApply "Hϕ".
-    iFrame.
+    iApply ("Hϕ" with "[$]").
   Qed.
 
   Definition disk_array (l: Z) (q: Qp) (vs: list Block): iProp Σ :=

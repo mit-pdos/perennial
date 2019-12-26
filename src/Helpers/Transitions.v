@@ -192,14 +192,23 @@ Module relation.
       | Transitions.bind r rx => bind (denote r) (fun x => denote (rx x))
       end.
 
-    Theorem suchThat_interpret_run {T} (pred: Σ -> T -> Prop) {gen: GenPred T Σ pred} (hint:Z) :
+    Theorem suchThat_gen_run {T} (pred: Σ -> T -> Prop) {gen: GenPred T Σ pred} (hint:Z) :
       forall s v H,
       gen hint s = Some (exist _ v H) ->
-      denote (Transitions.suchThat pred) s s v.
+      suchThat pred s s v.
     Proof.
       intros.
       simpl.
       constructor; eauto.
+    Qed.
+
+    Theorem suchThat_gen0 {T} (pred: Σ -> T -> Prop) {gen: GenPred T Σ pred} :
+      forall s v H,
+      gen 0%Z s = Some (exist _ v H) ->
+      suchThat pred s s v.
+    Proof.
+      intros.
+      eapply suchThat_gen_run; eauto.
     Qed.
 
     Instance requiv {T}: Equiv (t T) :=
@@ -339,6 +348,15 @@ Module relation.
       replace (f s1); auto.
     Qed.
 
+    Theorem bind_suchThat T1 T2 (pred: Σ -> T1 -> Prop) (r: T1 -> t T2) :
+      forall s1 s2 v x,
+        pred s1 x -> r x s1 s2 v ->
+        bind (suchThat pred) r s1 s2 v.
+    Proof.
+      intros.
+      econstructor; eauto using suchThat_runs.
+    Qed.
+
     Theorem inv_bind_suchThat T1 T2 (pred: Σ -> T1 -> Prop) (r: T1 -> t T2) :
       forall s1 s2 v,
         bind (suchThat pred) r s1 s2 v ->
@@ -384,9 +402,9 @@ Ltac monad_simpl :=
          | |- relation.bind (relation.runF _) _ ?s1 ?s2 ?v =>
            apply relation.bind_runF
          | |- relation.runF _ ?s1 ?s2 ?v =>
-           try solve [ econstructor; eauto ]
+           solve [ econstructor; eauto ]
          | [ H: ?mx = Some ?x |- context[unwrap ?mx] ] =>
-           rewrite H; cbn [unwrap]
+           rewrite H; cbn [unwrap fst snd]
          | [ |- context[relation.denote (ifThenElse ?P _ _)] ] =>
            rewrite -> (ifThenElse_if P) by eauto; cbn [relation.denote ret undefined]
          | [ |- context[relation.denote (ifThenElse ?P _ _)] ] =>
@@ -411,13 +429,13 @@ Ltac monad_inv :=
            let pred := (eval hnf in pred) in
            lazymatch pred with
            | fun _ x => _ =>
-             let x' := fresh x in
+             let x := fresh x in
              let H' := fresh in
              apply relation.inv_bind_suchThat in H;
              destruct H as [x [H' H]]
            end
          | [ H: ?mx = Some ?x, H': context[unwrap ?mx] |- _ ] =>
-           rewrite H in H'; cbn [unwrap] in H'
+           rewrite H in H'; cbn [fst snd unwrap] in H'
          | [ H: context[relation.denote (check ?P)] |- _ ] =>
            unfold check in H
          | [ H: context[relation.denote (when ?P _)] |- _ ] =>

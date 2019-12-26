@@ -939,7 +939,7 @@ Definition atomically {state} (tr: transition state val): transition state (list
 Definition isFreshTo (bound:Z) (σ: state) (l: loc) :=
   (forall i, 0 <= i -> i < bound -> σ.(heap) !! (l +ₗ i) = None)%Z.
 
-Instance alloc_gen bound : GenPred loc state (isFreshTo bound).
+Global Instance alloc_gen bound : GenPred loc state (isFreshTo bound).
 Proof.
   refine (fun _ σ => Some (exist _ (fresh_locs (dom (gset loc) σ.(heap))) _)).
   hnf; intros.
@@ -950,7 +950,7 @@ Defined.
 Definition allocateN (bound:Z): transition state loc :=
   suchThat (isFreshTo bound).
 
-Instance newProphId_gen: GenPred proph_id state (fun σ p => p ∉ σ.(used_proph_id)).
+Global Instance newProphId_gen: GenPred proph_id state (fun σ p => p ∉ σ.(used_proph_id)).
 Proof.
   refine (fun _ σ => Some (exist _ (fresh σ.(used_proph_id)) _)).
   apply is_fresh.
