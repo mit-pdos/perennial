@@ -4,7 +4,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Import ectx_lifting.
 
-From Perennial.Helpers Require Import CountableTactics.
+From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.go_lang Require Import lang lifting slice typing.
 
 (* this is purely cosmetic but it makes printing line up with how the code is
@@ -66,7 +66,7 @@ Proof.
 Defined.
 
 Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
-  fmap (λ b, LitV $ LitByte b) (vec_to_list bl).
+  fmap b2val (vec_to_list bl).
 
 Lemma length_Block_to_vals {ext: ext_op} b :
     length (Block_to_vals b) = block_bytes.
@@ -110,25 +110,36 @@ Section disk.
     typecheck.
   Qed.
 
-  Inductive ext_step : DiskOp -> val -> state -> val -> state -> Prop :=
-  | ReadOpS : forall (a: u64) (b: Block) (σ: state) l',
-      σ.(world) !! int.val a = Some b ->
-      (forall (i:Z), 0 <= i -> i < 4096 -> σ.(heap) !! (l' +ₗ i) = None)%Z ->
-      ext_step ReadOp (LitV (LitInt a)) σ (LitV (LitLoc l'))
-               (state_insert_list l' (Block_to_vals b) σ)
-  | WriteOpS : forall (a: u64) (l: loc) (b0 b: Block) (σ: state),
-      is_Some (σ.(world) !! int.val a) ->
-      (forall (i:Z), 0 <= i -> i < 4096 ->
-                match σ.(heap) !! (l +ₗ i) with
-             | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
-             | _ => False
-                end)%Z ->
-      ext_step WriteOp (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
-               (LitV LitUnit) (set world <[ int.val a := b ]> σ)
-  (* TODO: size semantics *)
-  .
+  Existing Instances r_mbind r_fmap.
 
-  Hint Constructors ext_step : core.
+  Definition highest_addr (addrs: gset Z): Z :=
+    set_fold (λ k r, k `max` r)%Z 0%Z addrs.
+
+  Definition disk_size (d: gmap Z Block): Z :=
+    1 + highest_addr (dom _ d).
+
+  Definition ext_step (op: DiskOp) (v: val): transition state val :=
+    match op, v with
+    | ReadOp, LitV (LitInt a) =>
+      b ← reads (λ σ, σ.(world) !! int.val a) ≫= unwrap;
+      l ← allocateN 4096;
+      modify (state_insert_list l (Block_to_vals b));;
+      ret $ #(LitLoc l)
+    | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
+      _ ← reads (λ σ, σ.(world) !! int.val a) ≫= unwrap;
+        (* TODO: this is executable, need to implement that *)
+      b ← suchThat (λ σ b, (forall (i:Z), 0 <= i -> i < 4096 ->
+                match σ.(heap) !! (l +ₗ i) with
+                | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
+                | _ => False
+                end));
+      modify (set world <[ int.val a := b ]>);;
+      ret #()
+    | SizeOp, LitV LitUnit =>
+      sz ← reads (λ σ, disk_size σ.(world));
+      ret $ LitV $ LitInt (word.of_Z sz)
+    | _, _ => undefined
+    end.
 
   (* these instances are also local (to the outer section) *)
   Instance disk_semantics : ext_semantics disk_op disk_model :=

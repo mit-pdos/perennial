@@ -696,8 +696,6 @@ Admitted.
 Hint Rewrite word.unsigned_of_Z : word.
 Hint Rewrite word.unsigned_sru : word.
 
-Definition b2val: u8 -> val := λ (b:u8), #b.
-
 Theorem u32_le_to_sru (x: u32) :
   b2val <$> u32_le x =
   cons #(u8_from_u32 (word.sru x (U32 (0%nat * 8))))
