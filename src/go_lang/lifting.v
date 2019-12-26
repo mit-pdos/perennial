@@ -299,10 +299,10 @@ Proof.
   iIntros ">[] HΦ".
 Qed.
 
-Lemma wp_output s E tr v :
+Lemma wp_output s E tr lit :
   {{{ trace_frag tr }}}
-     Output v @ s; E
-  {{{ RET (LitV LitUnit); trace_frag (add_event (Out_ev v) tr)}}}.
+     Output (LitV lit) @ s; E
+  {{{ RET (LitV LitUnit); trace_frag (add_event (Out_ev lit) tr)}}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth&?) !>"; iSplit; first by eauto.
@@ -312,18 +312,18 @@ Proof.
   iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
 Qed.
 
-(* TODO: we also know the output matches what the oracle says *)
-Lemma wp_input s E tr v :
-  {{{ trace_frag tr }}}
-     Input v @ s; E
-  {{{ x, RET (LitV (LitInt x)); trace_frag (add_event (In_ev v (LitV $ LitInt x)) tr)}}}.
+Lemma wp_input s E tr sel Or :
+  {{{ trace_frag tr ∗ oracle_frag Or }}}
+     Input (LitV sel) @ s; E
+  {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr)}}}.
 Proof.
-  iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth&?) !>"; iSplit.
+  iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_head_step; [done|].
+  iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth&Hor_auth) !>"; iSplit.
   { iPureIntro. unshelve (by eauto); apply (U64 0). }
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
-  iMod (trace_update with "[$] [$]") as "(?&?)".
+  iDestruct (oracle_agree with "[$] [$]") as %?; subst.
+  iFrame. iMod (trace_update with "[$] [$]") as "(?&?)".
   iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
 Qed.
 

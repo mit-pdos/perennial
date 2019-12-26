@@ -30,16 +30,9 @@ Section go_refinement.
   Canonical Structure impl_crash_lang : crash_semantics impl_lang :=
     @heap_crash_lang (impl_op) (impl_ffi) (impl_semantics).
 
-  (* XXX: this is awkward to define since the type of Traces depends on an ext_op,
-     should we tweak to make traces lists of *literals* rather than values? We never want
-     to allow traces to contain non-literals anyway. *)
-  Definition trace_prefix (tr: @Trace impl_op) (tr': @Trace spec_op) : Prop := False.
-
   Definition trace_refines (e r: iexpr) (σ: istate) (e' r': sexpr) (σ': sstate) :=
     @never_stuck spec_lang spec_crash_lang e' r' σ' →
     @never_stuck impl_lang impl_crash_lang e r σ ∧
     (∀ tr, trace_observable e r σ tr → ∃ tr', trace_observable e' r' σ' tr' ∧ trace_prefix tr tr').
-
-
 
 End go_refinement.

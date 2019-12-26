@@ -195,8 +195,8 @@ Global Arguments Reading {T}.
 Definition Free {T} (v:T): nonAtomic T := Reading v 0.
 
 Inductive event :=
-  | In_ev (sel v:val)
-  | Out_ev (v:val)
+  | In_ev (sel v:base_lit)
+  | Out_ev (v:base_lit)
   | Crash_ev
 .
 
@@ -211,7 +211,7 @@ Definition add_crash (ts: Trace) : Trace :=
   | _ => add_event Crash_ev ts
   end.
 
-Definition Oracle := Trace -> forall (sel:val), u64.
+Definition Oracle := Trace -> forall (sel:base_lit), u64.
 
 Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0).
 
@@ -1017,13 +1017,13 @@ Inductive head_step : expr → state → list observation → expr → state →
   | ObserveInputS selv σ :
      let x := σ.(oracle) σ.(trace) selv in
      let v := LitV $ LitInt $ x in
-     head_step (Input (Val selv)) σ
+     head_step (Input (Val (LitV selv))) σ
                []
                (Val v)
-               (set trace (add_event (In_ev selv v)) σ)
+               (set trace (add_event (In_ev selv (LitInt x))) σ)
                []
   | ObserveOutputS v σ :
-     head_step (Output (Val v)) σ
+     head_step (Output (Val (LitV v))) σ
                []
                (Val $ LitV LitUnit) (set trace (fun tr => add_event (Out_ev v) tr) σ)
                []
@@ -1154,6 +1154,9 @@ Qed.
 
 Definition trace_observable e r σ tr :=
   ∃ σ2 t2 stat, erased_rsteps (CS:=heap_crash_lang) r ([e], σ) (t2, σ2) stat ∧ σ2.(trace) = tr.
+
+Definition trace_prefix (tr: Trace) (tr': Trace) : Prop :=
+  prefix tr tr'.
 
 End go_lang.
 
