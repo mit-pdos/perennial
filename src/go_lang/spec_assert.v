@@ -3,6 +3,7 @@ From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
+From Perennial.Helpers Require Export Transitions.
 From Perennial.program_logic Require Import spec_assert.
 From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import tactics notation map lifting.
@@ -97,7 +98,10 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step; econstructor; eauto. }
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_simpl; simpl).
+  }
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _. iFrame. }
@@ -142,8 +146,10 @@ Proof.
     rewrite map_length replicate_length u64_Z_through_nat; auto with lia.
     intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step; econstructor; eauto.
-    intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
+  { eapply head_prim_step.
+    rewrite /= /head_step /=; monad_simpl.
+    econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
+    monad_simpl. }
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _. iFrame "H". iFrame. }

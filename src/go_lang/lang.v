@@ -5,6 +5,7 @@ From stdpp Require Import gmap.
 From iris.algebra Require Export ofe.
 From iris.program_logic Require Export language ectx_language ectxi_language.
 From Perennial.Helpers Require Import CountableTactics.
+From Perennial.Helpers Require Import Transitions.
 From Perennial.program_logic Require Export crash_lang.
 From Perennial.go_lang Require Export locations.
 From Perennial Require Export Helpers.Integers.
@@ -241,7 +242,7 @@ we produce a val to make external operations atomic
  *)
 Class ext_semantics :=
   {
-    ext_step : external -> val -> state -> val -> state -> Prop;
+    ext_step : external -> val -> transition state val;
     ext_crash : ffi_state -> ffi_state -> Prop;
   }.
 Context {ffi_semantics: ext_semantics}.
@@ -910,14 +911,6 @@ Proof.
   rewrite right_id insert_union_singleton_l. done.
 Qed.
 
-Definition byte_vals : list byte -> list val :=
-   fmap (λ b, LitV (LitByte b)).
-
-Theorem byte_vals_length bs : length (byte_vals bs) = length bs.
-Proof.
-  rewrite /byte_vals fmap_length //.
-Qed.
-
 Definition is_Free {A} (mna: option (nonAtomic A)) := exists x, mna = Some (Free x).
 Global Instance is_Free_dec A (x: option (nonAtomic A)) : Decision (is_Free x).
 Proof.
@@ -935,117 +928,145 @@ Proof.
   destruct n; [ left; eauto | right; abstract (inversion 1) ].
 Defined.
 
-Inductive head_step : expr → state → list observation → expr → state → list expr → Prop :=
-  | RecS f x e σ :
-     head_step (Rec f x e) σ [] (Val $ RecV f x e) σ []
-  | PairS v1 v2 σ :
-     head_step (Pair (Val v1) (Val v2)) σ [] (Val $ PairV v1 v2) σ []
-  | InjLS v σ :
-     head_step (InjL $ Val v) σ [] (Val $ InjLV v) σ []
-  | InjRS v σ :
-     head_step (InjR $ Val v) σ [] (Val $ InjRV v) σ []
-  | BetaS f x e1 v2 e' σ :
-     e' = subst' x v2 (subst' f (RecV f x e1) e1) →
-     head_step (App (Val $ RecV f x e1) (Val v2)) σ [] e' σ []
-  | UnOpS op v v' σ :
-     un_op_eval op v = Some v' →
-     head_step (UnOp op (Val v)) σ [] (Val v') σ []
-  | BinOpS op v1 v2 v' σ :
-     bin_op_eval op v1 v2 = Some v' →
-     head_step (BinOp op (Val v1) (Val v2)) σ [] (Val v') σ []
-  | IfTrueS e1 e2 σ :
-     head_step (If (Val $ LitV $ LitBool true) e1 e2) σ [] e1 σ []
-  | IfFalseS e1 e2 σ :
-     head_step (If (Val $ LitV $ LitBool false) e1 e2) σ [] e2 σ []
-  | FstS v1 v2 σ :
-     head_step (Fst (Val $ PairV v1 v2)) σ [] (Val v1) σ []
-  | SndS v1 v2 σ :
-     head_step (Snd (Val $ PairV v1 v2)) σ [] (Val v2) σ []
-  | CaseLS v e1 e2 σ :
-     head_step (Case (Val $ InjLV v) e1 e2) σ [] (App e1 (Val v)) σ []
-  | CaseRS v e1 e2 σ :
-     head_step (Case (Val $ InjRV v) e1 e2) σ [] (App e2 (Val v)) σ []
-  | ForkS e σ:
-     head_step (Fork e) σ [] (Val $ LitV LitUnit) σ [e]
-  | AllocNS (n: u64) v σ l :
-     (0 < int.val n)%Z →
-     (∀ i, 0 ≤ i → i < int.val n → σ.(heap) !! (l +ₗ i) = None)%Z →
-     head_step (AllocN (Val $ LitV $ LitInt n) (Val v)) σ
-               []
-               (Val $ LitV $ LitLoc l) (state_init_heap l (int.val n) v σ)
-               []
-  | AllocStructS v σ l :
-     (∀ i, 0 ≤ i → i < length (flatten_struct v) → σ.(heap) !! (l +ₗ i) = None)%Z →
-     head_step (AllocStruct (Val v)) σ
-               []
-               (Val $ LitV $ LitLoc l) (state_insert_list l (flatten_struct v) σ)
-               []
-  | PrepareWriteS l v σ :
-     σ.(heap) !! l = Some $ Free v ->
-     head_step (PrepareWrite (Val $ LitV $ LitLoc l)) σ
-               []
-               (Val $ LitV $ LitUnit) (set heap <[l:=Writing]> σ)
-               []
-  | StartReadS l v n σ :
-     σ.(heap) !! l = Some $ Reading v n ->
-     head_step (StartRead (Val $ LitV $ LitLoc l)) σ
-               []
-               (of_val v) (set heap <[l:=Reading v (S n)]> σ)
-               []
-  | FinishReadS l v n σ :
-     σ.(heap) !! l = Some $ Reading v (S n) ->
-     head_step (StartRead (Val $ LitV $ LitLoc l)) σ
-               []
-               (Val $ LitV $ LitUnit) (set heap <[l:=Reading v n]> σ)
-               []
-  | LoadS l v σ :
-     σ.(heap) !! l = Some $ Free v →
-     head_step (Load (Val $ LitV $ LitLoc l)) σ [] (of_val v)
-               σ []
-  | FinishStoreS l v σ :
-     is_Writing (σ.(heap) !! l) ->
-     head_step (FinishStore (Val $ LitV $ LitLoc l) (Val v)) σ
-               []
-               (Val $ LitV LitUnit) (set heap <[l:=Free v]> σ)
-               []
-  | ExternalS op v σ v' σ' :
-     ext_step op v σ v' σ' ->
-     head_step (ExternalOp op (Val v)) σ
-               []
-               (Val v') σ'
-               []
-  | ObserveInputS selv σ :
-     let x := σ.(oracle) σ.(trace) selv in
-     let v := LitV $ LitInt $ x in
-     head_step (Input (Val (LitV selv))) σ
-               []
-               (Val v)
-               (set trace (add_event (In_ev selv (LitInt x))) σ)
-               []
-  | ObserveOutputS v σ :
-     head_step (Output (Val (LitV v))) σ
-               []
-               (Val $ LitV LitUnit) (set trace (fun tr => add_event (Out_ev v) tr) σ)
-               []
-  | CmpXchgS l v1 v2 vl σ b :
-     σ.(heap) !! l = Some $ Free vl →
-     (* Crucially, this compares the same way as [EqOp]! *)
-     vals_compare_safe vl v1 →
-     b = bool_decide (vl = v1) →
-     head_step (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) σ
-               []
-               (Val $ PairV vl (LitV $ LitBool b)) (if b then set heap <[l:=Free v2]> σ else σ)
-               []
-  | NewProphS σ p :
-     p ∉ σ.(used_proph_id) →
-     head_step NewProph σ
-               []
-               (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ)
-               []
-  | ResolveS p v e σ w σ' κs ts :
-     head_step e σ κs (Val v) σ' ts →
-     head_step (Resolve e (Val $ LitV $ LitProphecy p) (Val w)) σ
-               (κs ++ [(p, (v, w))]) (Val v) σ' ts.
+Existing Instances r_mbind r_mret r_fmap.
+
+Definition ret_expr {state} (e:expr): transition state (list observation * expr * list expr) :=
+  ret ([],e,[]).
+
+Definition atomically {state} (tr: transition state val): transition state (list observation * expr * list expr) :=
+  (λ v, ([], Val v, [])) <$> tr.
+
+Definition isFreshTo (bound:Z) (σ: state) (l: loc) :=
+  (forall i, 0 <= i -> i < bound -> σ.(heap) !! (l +ₗ i) = None)%Z.
+
+Global Instance alloc_gen bound : GenPred loc state (isFreshTo bound).
+Proof.
+  refine (fun _ σ => Some (exist _ (fresh_locs (dom (gset loc) σ.(heap))) _)).
+  hnf; intros.
+  apply (not_elem_of_dom (D := gset loc)).
+    by apply fresh_locs_fresh.
+Defined.
+
+Definition allocateN (bound:Z): transition state loc :=
+  suchThat (isFreshTo bound).
+
+Global Instance newProphId_gen: GenPred proph_id state (fun σ p => p ∉ σ.(used_proph_id)).
+Proof.
+  refine (fun _ σ => Some (exist _ (fresh σ.(used_proph_id)) _)).
+  apply is_fresh.
+Defined.
+
+Definition newProphId: transition state proph_id :=
+  suchThat (fun σ p => p ∉ σ.(used_proph_id)).
+
+Fixpoint head_trans (e: expr) :
+ transition state (list observation * expr * list expr) :=
+  match e with
+  | Rec f x e => atomically $ ret $ RecV f x e
+  | Pair (Val v1) (Val v2) => atomically $ ret $ PairV v1 v2
+  | InjL (Val v) => atomically $ ret $ InjLV v
+  | InjR (Val v) => atomically $ ret $ InjRV v
+  | App (Val (RecV f x e1)) (Val v2) =>
+    ret_expr $ subst' x v2 (subst' f (RecV f x e1) e1)
+  | UnOp op (Val v) => atomically $ unwrap $ un_op_eval op v
+  | BinOp op (Val v1) (Val v2) => atomically $ unwrap $ bin_op_eval op v1 v2
+  | If (Val (LitV (LitBool b))) e1 e2 => ret_expr $ if b then e1 else e2
+  | Fst (Val (PairV v1 v2)) => atomically $ ret v1
+  | Snd (Val (PairV v1 v2)) => atomically $ ret v2
+  | Case (Val (InjLV v)) e1 e2 => ret_expr $ App e1 (Val v)
+  | Case (Val (InjRV v)) e1 e2 => ret_expr $ App e2 (Val v)
+  | Fork e => ret ([], Val $ LitV LitUnit, [e])
+  | AllocN (Val (LitV (LitInt n))) (Val v) =>
+    atomically
+      (check (0 < int.val n)%Z;;
+       l ← allocateN (int.val n);
+       modify (state_init_heap l (int.val n) v);;
+       ret $ LitV $ LitLoc l)
+  | AllocStruct (Val v) =>
+    atomically
+      (let vs := flatten_struct v in
+      l ← allocateN (Z.of_nat (length vs));
+      modify (state_insert_list l (flatten_struct v));;
+      ret $ LitV $ LitLoc l)
+  | PrepareWrite (Val (LitV (LitLoc l))) =>
+    atomically
+      (v ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+        match v with
+        | Reading _ 0 =>
+          modify (set heap <[l:=Writing]>);;
+          ret $ LitV $ LitUnit
+        | _ => undefined
+        end)
+   | StartRead (Val (LitV (LitLoc l))) =>
+     atomically
+       (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+        match nav with
+        | Reading v n =>
+          modify (set heap <[l:=Reading v (S n)]>);;
+          ret v
+        | _ => undefined
+        end)
+   | FinishRead (Val (LitV (LitLoc l))) =>
+     atomically
+       (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+        match nav with
+        | Reading v (S n) =>
+          modify (set heap <[l:=Reading v n]>);;
+                 ret $ LitV $ LitUnit
+        | _ => undefined
+        end)
+   | Load (Val (LitV (LitLoc l))) =>
+     atomically
+       (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+        match nav with
+        | Reading v 0 => ret v
+        | _ => undefined
+        end)
+  | FinishStore (Val (LitV (LitLoc l))) (Val v) =>
+    atomically
+      (nav ← reads (λ σ, σ.(heap) !! l);
+       check (is_Writing nav);;
+       modify (set heap <[l:=Free v]>);;
+       ret $ LitV $ LitUnit)
+  | ExternalOp op (Val v) => atomically $ ext_step op v
+  | Input (Val (LitV selv)) =>
+    atomically
+      (x ← reads (λ σ, σ.(oracle) σ.(trace) selv);
+      modify (set trace (add_event (In_ev selv (LitInt x))));;
+      ret $ LitV $ LitInt $ x)
+  | Output (Val (LitV v)) =>
+    atomically
+      (modify (set trace (add_event (Out_ev v)));;
+       ret $ LitV $ LitUnit)
+  | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>
+    atomically
+      (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+      match nav with
+      | Reading vl 0 =>
+      (* Crucially, this compares the same way as [EqOp]! *)
+        check (vals_compare_safe vl v1);;
+        when (vl = v1) (modify (set heap <[l:=Free v2]>));;
+        ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
+      | _ => undefined
+      end)
+  | NewProph =>
+    atomically
+      (p ← newProphId;
+       modify (set used_proph_id ({[ p ]} ∪.));;
+       ret $ LitV $ LitProphecy p)
+  | Resolve e (Val (LitV (LitProphecy p))) (Val w) =>
+    bind (head_trans e)
+         (fun '(κs,e',ts) =>
+            match e' with
+            | Val v => ret (κs ++ [(p, (v, w))], Val v, ts)
+            | _ => undefined
+            end)
+  | _ => undefined
+  end.
+
+Definition head_step: expr -> state -> list observation -> expr -> state -> list expr -> Prop :=
+  fun e s κs e' s' efs =>
+    relation.denote (head_trans e) s s' (κs, e', efs).
 
 (** Basic properties about the language *)
 Global Instance fill_item_inj Ki : Inj (=) (=) (fill_item Ki).
@@ -1055,12 +1076,42 @@ Lemma fill_item_val Ki e :
   is_Some (to_val (fill_item Ki e)) → is_Some (to_val e).
 Proof. intros [v ?]. induction Ki; simplify_option_eq; eauto. Qed.
 
+Lemma suchThat_false state T (s1 s2: state) (v: T) :
+  relation.suchThat (fun _ _ => False) s1 s2 v -> False.
+Proof.
+  inversion 1; auto.
+Qed.
+
+Hint Resolve suchThat_false.
+
 Lemma val_head_stuck e1 σ1 κ e2 σ2 efs : head_step e1 σ1 κ e2 σ2 efs → to_val e1 = None.
-Proof. destruct 1; naive_solver. Qed.
+Proof.
+  rewrite /head_step; intros.
+  destruct e1; auto; simpl.
+  exfalso.
+  simpl in H; eapply suchThat_false; eauto.
+Qed.
+
+Ltac inv_undefined :=
+  match goal with
+  | [ H: relation.denote (match ?e with | _ => _ end) _ _ _ |- _ ] =>
+    destruct e; try (apply suchThat_false in H; contradiction)
+  end.
 
 Lemma head_ctx_step_val Ki e σ1 κ e2 σ2 efs :
   head_step (fill_item Ki e) σ1 κ e2 σ2 efs → is_Some (to_val e).
-Proof. revert κ e2. induction Ki; inversion_clear 1; simplify_option_eq; eauto. Qed.
+Proof. revert κ e2.
+       induction Ki; intros;
+       rewrite /head_step /= in H;
+       repeat inv_undefined; eauto.
+       inversion H; subst; clear H.
+       destruct x as [[κ' e'] ts'].
+       repeat inv_undefined.
+       rewrite /head_step in IHKi.
+       simpl in H1.
+       monad_inv.
+       eapply IHKi; eauto.
+Qed.
 
 Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :
   to_val e1 = None → to_val e2 = None →
@@ -1075,15 +1126,28 @@ Lemma alloc_fresh v (n: u64) σ :
             (Val $ LitV $ LitLoc l) (state_init_heap l (int.val n) v σ) [].
 Proof.
   intros.
-  apply AllocNS; first done.
-  intros. apply (not_elem_of_dom (D := gset loc)).
-  by apply fresh_locs_fresh.
+  rewrite /head_step /=.
+  monad_simpl.
+  eapply relation.bind_runs with σ l.
+  { econstructor.
+    hnf; intros.
+    apply (not_elem_of_dom (D := gset loc)).
+      by apply fresh_locs_fresh.
+  }
+  monad_simpl.
 Qed.
 
 Lemma new_proph_id_fresh σ :
   let p := fresh σ.(used_proph_id) in
   head_step NewProph σ [] (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ) [].
-Proof. constructor. apply is_fresh. Qed.
+Proof. intro p.
+       rewrite /head_step /=.
+       monad_simpl.
+       eapply relation.bind_runs with σ p.
+       { econstructor.
+         apply is_fresh. }
+       monad_simpl.
+Qed.
 
 Lemma heap_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step.
 Proof.
@@ -1141,13 +1205,19 @@ Lemma irreducible_resolve e v1 v2 σ :
 Proof.
   intros H κs ** [Ks e1' e2' Hfill -> step]. simpl in *.
   induction Ks as [|K Ks _] using rev_ind; simpl in Hfill.
-  - subst e1'. inversion step. eapply H. by apply head_prim_step.
+  - subst e1'.
+    rewrite /head_step /= in step.
+    destruct v1; try (eapply suchThat_false in step; contradiction).
+    destruct l; try (eapply suchThat_false in step; contradiction).
+    inversion step; subst; clear step.
+    destruct x as [[κs' e'] efs'].
+    eapply H. apply head_prim_step; eauto.
   - rewrite fill_app /= in Hfill.
     destruct K; (inversion Hfill; subst; clear Hfill; try
       match goal with | H : Val ?v = fill Ks ?e |- _ =>
         (assert (to_val (fill Ks e) = Some v) as HEq by rewrite -H //);
         apply to_val_fill_some in HEq; destruct HEq as [-> ->]; inversion step
-      end).
+      end); try contradiction.
     apply (H κs (fill_item K (foldl (flip fill_item) e2' Ks)) σ' efs).
     econstructor 1 with (K := Ks ++ [K]); last done; simpl; by rewrite fill_app.
 Qed.

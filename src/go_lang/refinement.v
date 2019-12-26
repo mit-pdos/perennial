@@ -1,4 +1,5 @@
 From iris.program_logic Require Export language.
+From Perennial.Helpers Require Import Transitions.
 From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import tactics notation map lifting.
 

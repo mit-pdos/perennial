@@ -4,7 +4,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Import ectx_lifting.
 
-From Perennial.Helpers Require Import CountableTactics.
+From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.go_lang Require Import lang lifting slice typing.
 
 (* this is purely cosmetic but it makes printing line up with how the code is
@@ -66,7 +66,7 @@ Proof.
 Defined.
 
 Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
-  fmap (λ b, LitV $ LitByte b) (vec_to_list bl).
+  fmap b2val (vec_to_list bl).
 
 Lemma length_Block_to_vals {ext: ext_op} b :
     length (Block_to_vals b) = block_bytes.
@@ -110,25 +110,36 @@ Section disk.
     typecheck.
   Qed.
 
-  Inductive ext_step : DiskOp -> val -> state -> val -> state -> Prop :=
-  | ReadOpS : forall (a: u64) (b: Block) (σ: state) l',
-      σ.(world) !! int.val a = Some b ->
-      (forall (i:Z), 0 <= i -> i < 4096 -> σ.(heap) !! (l' +ₗ i) = None)%Z ->
-      ext_step ReadOp (LitV (LitInt a)) σ (LitV (LitLoc l'))
-               (state_insert_list l' (Block_to_vals b) σ)
-  | WriteOpS : forall (a: u64) (l: loc) (b0 b: Block) (σ: state),
-      is_Some (σ.(world) !! int.val a) ->
-      (forall (i:Z), 0 <= i -> i < 4096 ->
-                match σ.(heap) !! (l +ₗ i) with
-             | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
-             | _ => False
-                end)%Z ->
-      ext_step WriteOp (PairV (LitV (LitInt a)) (LitV (LitLoc l))) σ
-               (LitV LitUnit) (set world <[ int.val a := b ]> σ)
-  (* TODO: size semantics *)
-  .
+  Existing Instances r_mbind r_fmap.
 
-  Hint Constructors ext_step : core.
+  Definition highest_addr (addrs: gset Z): Z :=
+    set_fold (λ k r, k `max` r)%Z 0%Z addrs.
+
+  Definition disk_size (d: gmap Z Block): Z :=
+    1 + highest_addr (dom _ d).
+
+  Definition ext_step (op: DiskOp) (v: val): transition state val :=
+    match op, v with
+    | ReadOp, LitV (LitInt a) =>
+      b ← reads (λ σ, σ.(world) !! int.val a) ≫= unwrap;
+      l ← allocateN 4096;
+      modify (state_insert_list l (Block_to_vals b));;
+      ret $ #(LitLoc l)
+    | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
+      _ ← reads (λ σ, σ.(world) !! int.val a) ≫= unwrap;
+        (* TODO: this is executable, need to implement that *)
+      b ← suchThat (λ σ b, (forall (i:Z), 0 <= i -> i < 4096 ->
+                match σ.(heap) !! (l +ₗ i) with
+                | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
+                | _ => False
+                end));
+      modify (set world <[ int.val a := b ]>);;
+      ret #()
+    | SizeOp, LitV LitUnit =>
+      sz ← reads (λ σ, disk_size σ.(world));
+      ret $ LitV $ LitInt (word.of_Z sz)
+    | _, _ => undefined
+    end.
 
   (* these instances are also local (to the outer section) *)
   Instance disk_semantics : ext_semantics disk_op disk_model :=
@@ -168,12 +179,16 @@ lemmas. *)
   Theorem read_fresh : forall σ a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
       σ.(world) !! int.val a = Some b ->
-      ext_step ReadOp (LitV $ LitInt a) σ (LitV $ LitLoc $ l) (state_insert_list l (Block_to_vals b) σ).
+      relation.denote (ext_step ReadOp (LitV $ LitInt a)) σ (state_insert_list l (Block_to_vals b) σ) (LitV $ LitLoc $ l).
   Proof.
     intros.
-    constructor; auto; intros.
-    apply (not_elem_of_dom (D := gset loc)).
-      by apply fresh_locs_fresh.
+    simpl.
+    monad_simpl.
+    rewrite H; simpl.
+    monad_simpl.
+    econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
+    apply relation.bind_runF.
+    econstructor; eauto.
   Qed.
 
   Hint Resolve read_fresh : core.
@@ -196,10 +211,17 @@ lemmas. *)
     iSplit.
     { iPureIntro.
       eexists _, _, _, _; simpl.
-      econstructor; simpl.
-      apply read_fresh; eauto. }
+      rewrite /head_step /=.
+      monad_simpl.
+      rewrite H; simpl.
+      monad_simpl.
+      econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
+      monad_simpl. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-    iMod (gen_heap_alloc_gen _ (heap_array l' (map Free $ Block_to_vals b)) with "Hσ")
+    monad_inv.
+    simpl in H0.
+    rewrite H /= in H0; monad_inv.
+    iMod (gen_heap_alloc_gen _ (heap_array l (map Free $ Block_to_vals b)) with "Hσ")
       as "(Hσ & Hl & Hm)".
     { apply heap_array_map_disjoint.
       rewrite map_length length_Block_to_vals; eauto. }
@@ -291,22 +313,25 @@ lemmas. *)
     iDestruct (heap_valid_block with "Hσ Hl") as %?.
     iSplit.
     { iPureIntro.
-      eexists _, _, _, _; simpl.
-      econstructor; simpl.
-      (* TODO: for some reason eauto doesn't apply this *)
-      eapply WriteOpS; eauto. }
+      eexists _, _, _, _; cbn.
+      repeat (monad_simpl; cbn).
+      rewrite H; cbn; monad_simpl.
+      econstructor; eauto; [ | monad_simpl ].
+      econstructor; eauto. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+    monad_inv.
+    rewrite H /= in H1; monad_inv.
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
-    assert (b = b2); [ | subst b2 ].
+    assert (b = b1); [ | subst b1 ].
     { apply Block_to_vals_ext_eq; intros.
-      specialize (H0 i); specialize (H4 i); intuition.
+      specialize (H0 i); specialize (H2 i); intuition.
+      simpl in H4.
       destruct_with_eqn (σ1.(heap) !! (l +ₗ i)); try contradiction.
       destruct n0; try contradiction.
       congruence. }
     iModIntro; iSplit; first done.
     iFrame.
-    iApply "Hϕ".
-    iFrame.
+    iApply ("Hϕ" with "[$]").
   Qed.
 
   Definition disk_array (l: Z) (q: Qp) (vs: list Block): iProp Σ :=
