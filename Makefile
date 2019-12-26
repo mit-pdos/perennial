@@ -60,7 +60,7 @@ _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
-	$(Q)coqdep -f _CoqProject $(ALL_VFILES) > $@
+	$(Q)coqdep -vos -f _CoqProject $(ALL_VFILES) > $@
 
 CLEAN_GOALS := clean clean-ext clean-all
 
