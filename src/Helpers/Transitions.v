@@ -369,6 +369,9 @@ Module relation.
   End state.
 End relation.
 
+Arguments check_ok {Σ} P {_} _.
+Arguments check_fails {Σ} P {_} _.
+
 Ltac monad_simpl :=
   repeat match goal with
          | |- relation.bind (relation.bind _ _) _ ?s1 ?s2 ?v =>
@@ -379,6 +382,8 @@ Ltac monad_simpl :=
            try solve [ econstructor; eauto ]
          | [ H: ?mx = Some ?x |- context[unwrap ?mx] ] =>
            rewrite H; cbn [unwrap]
+         | [ |- context[relation.denote (check ?P)] ] =>
+           rewrite -> (check_ok P) by eauto; cbn [relation.denote ret undefined]
          end.
 
 Ltac monad_inv :=
@@ -406,8 +411,8 @@ Ltac monad_inv :=
            end
          | [ H: ?mx = Some ?x, H': context[unwrap ?mx] |- _ ] =>
            rewrite H in H'; cbn [unwrap] in H'
-         | [ H: ?P, H': context[relation.denote (check ?P)] |- _ ] =>
-           rewrite (check_ok H) in H'; cbn [relation.denote ret undefined] in H'
+         | [ H': context[relation.denote (check ?P)] |- _ ] =>
+           rewrite -> (check_ok P) in H' by eauto; cbn [relation.denote ret undefined] in H'
          | [ H: ~ ?P, H': context[relation.denote (check ?P)] |- _ ] =>
-           rewrite (check_fails H) in H'; cbn [relation.denote ret undefined] in H'
+           rewrite -> (check_fails P) in H' by eauto; cbn [relation.denote ret undefined] in H'
          end.

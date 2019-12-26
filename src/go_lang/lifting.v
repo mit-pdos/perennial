@@ -520,7 +520,7 @@ Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto 10. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.

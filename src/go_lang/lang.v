@@ -1130,8 +1130,6 @@ Proof.
   intros.
   rewrite /head_step /=.
   monad_simpl.
-  rewrite /check decide_left /=.
-  monad_simpl.
   eapply relation.bind_runs with σ l.
   { econstructor.
     hnf; intros.
