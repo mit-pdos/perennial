@@ -1,16 +1,25 @@
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.Helpers Require Import CountableTactics.
+From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.go_lang Require Import lang lifting slice typing.
 From Perennial.go_lang Require ffi.disk.
 
 (* TODO: move this out, it's completely general *)
-Inductive RecoverableState {state: Type} :=
+Inductive RecoverableState {Σ: Type} :=
 | UnInit
-| Closed (s:state)
-| Opened (s:state)
+| Closed (s:Σ)
+| Opened (s:Σ)
 .
-Arguments RecoverableState state : clear implicits.
+Arguments RecoverableState Σ : clear implicits.
+
+Definition recoverable_model (Σ: Type) : ffi_model :=
+  mkFfiModel (RecoverableState Σ) (populate UnInit).
+
+Definition openΣ {ext:ext_op} {Σ: Type} : transition (@state ext (recoverable_model Σ)) Σ :=
+  bind (reads id) (λ (rs: @state _ (recoverable_model Σ)), match rs.(world) with
+                         | Opened s => ret s
+                         | _ => undefined
+                         end).
 
 Instance Recoverable_inhabited state : Inhabited (RecoverableState state) := populate UnInit.
 
@@ -79,22 +88,20 @@ Section log.
 
   Definition log_state := RecoverableState (list disk.Block).
 
-  Instance log_model : ffi_model.
-  Proof.
-    refine (mkFfiModel log_state _).
-  Defined.
+  Instance log_model : ffi_model := recoverable_model (list disk.Block).
 
-  (* TODO: this is really hard to write down without combinators for the heap (eg,
-semantics for append needs to get a list of pointers, then load all of them as
-blocks before it can append them to the log state) *)
-  Inductive log_step : LogOp -> val -> state -> val -> state -> Prop :=
-  | GetOpS : forall (a: u64) (b: disk.Block) (σ: state) (log: list disk.Block) l',
-      σ.(world) = Opened log ->
-      log !! int.nat a = Some b ->
-      (forall (i:Z), 0 <= i -> i < 4096 -> σ.(heap) !! (l' +ₗ i) = None)%Z ->
-      log_step GetOp (LitV (LitInt a)) σ (LitV (LitLoc l'))
-               (state_insert_list l' (disk.Block_to_vals b) σ)
-  .
+  Existing Instances r_mbind r_fmap.
+
+  Definition log_step (op:LogOp) (v:val) : transition state val :=
+    match op, v with
+    | GetOp, LitV (LitInt a) =>
+      log ← openΣ;
+      b ← unwrap (log !! int.nat a);
+      l ← allocateN 4096;
+      modify (state_insert_list l (disk.Block_to_vals b));;
+      ret $ #(LitLoc l)
+    | _, _ => undefined
+    end.
 
   Instance log_semantics : ext_semantics log_op log_model :=
     {| ext_step := log_step;
