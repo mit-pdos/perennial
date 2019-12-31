@@ -519,8 +519,9 @@ Proof.
     do 2 eexists.
     eapply nsteps_transitive.
     { (* [UnOp op e] -> [UnOp op v0] *)
-      eapply nsteps_ctx.
-      apply e_to_v0.
+      pose proof (@nsteps_ctx _ (fill [(UnOpCtx op)]) _ m e v0 σ s l e_to_v0) as e_to_v0_ctx.
+      simpl in e_to_v0_ctx.
+      exact e_to_v0_ctx.
     }
     {
       (* [UnOp op v0] -> [v1] *)
@@ -573,7 +574,55 @@ Proof.
   }
 
   (* If *)
-  { admit. }
+  { destruct (runStateT (interpret n e1) σ) eqn:interp_e; [|interpret_bind].
+    destruct v0.
+    pose (IHn e1 σ v0 s interp_e) as IH.
+    interpret_bind.
+    destruct v0; simpl in H0; try inversion H0.
+    destruct l; simpl in H0; try inversion H0.
+    destruct IH as (m & IH').
+    destruct IH' as (l & e1_to_b).
+    destruct b.
+    { (* v0 = true *)
+      pose (IHn e2 s v σ' H0) as IH2.
+      destruct IH2 as (m' & IH2').
+      destruct IH2' as (l' & e2_to_v).
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [if e1 e2 e3] -> [if true e2 e3] *)
+        pose proof (@nsteps_ctx _ (fill [(IfCtx e2 e3)]) _ m e1 #true σ s l e1_to_b) as e1_to_b_ctx.
+        simpl in e1_to_b_ctx.
+        exact e1_to_b_ctx.
+      }
+      eapply nsteps_transitive.
+      { (* [if #true e2 e3] -> [e2] *)
+        single_step.
+        apply IfTrueS.
+      }
+      (* [e2] -> [v] *)
+      exact e2_to_v.
+    }
+
+    { (* v0 = false *)
+      pose (IHn e3 s v σ' H0) as IH3.
+      destruct IH3 as (m' & IH3').
+      destruct IH3' as (l' & e3_to_v).
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [if e1 e2 e3] -> [if false e2 e3] *)
+        pose proof (@nsteps_ctx _ (fill [(IfCtx e2 e3)]) _ m e1 #false σ s l e1_to_b) as e1_to_b_ctx.
+        simpl in e1_to_b_ctx.
+        exact e1_to_b_ctx.
+      }
+      eapply nsteps_transitive.
+      { (* [if #false e2 e3] -> [e3] *)
+        single_step.
+        apply IfFalseS.
+      }
+      (* [e3] -> [v] *)
+      exact e3_to_v.
+    }
+  }
 
   (* Pair *)
   { admit. }
