@@ -465,6 +465,12 @@ Proof using Ffi_interpretable ext ffi ffi_semantics. (*coq told me to do this*)
   }
 Qed.
 
+(* Always apply step_atomic with t1, t2 as [] since we don't care
+    about threading. *)
+Ltac single_step :=
+  eapply nsteps_l; [|apply nsteps_refl];
+  eapply step_atomic with (t1:=[]) (t2:=[]); [simpl; reflexivity|simpl; reflexivity|apply head_prim_step].
+
 Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state),
     (((runStateT (interpret n e) σ) = Works _ (v, σ')) ->
      exists m l, @nsteps heap_lang m ([e], σ) l ([Val v], σ')).
@@ -479,13 +485,8 @@ Proof.
   (* Var *)
   
   (* Rec *)
-  { do 2 eexists. eapply nsteps_l; [|apply nsteps_refl].
-    (* Always apply step_atomic with t1, t2 as [] since we don't care
-    about threading. *)
-    eapply step_atomic with (t1:=[]) (t2:=[]).
-    { simpl. reflexivity. }
-    { simpl. reflexivity. }
-    apply head_prim_step.
+  { do 2 eexists.
+    single_step.
     apply RecS.
   }
   
@@ -493,6 +494,7 @@ Proof.
   { pose (IHn e2 σ) as step1.
     { admit. }
   }
+
   (* UnOp *)
   { destruct (runStateT (interpret n e) σ) eqn:interp_e.
     { destruct v0. pose (IHn e σ v0 s interp_e) as IH.
@@ -509,11 +511,7 @@ Proof.
       }
       {
         (* [UnOp op v0] -> [v1] *)
-        eapply nsteps_l; [|apply nsteps_refl].
-        eapply step_atomic with (t1:=[]) (t2:=[]).
-        { simpl. reflexivity. }
-        { simpl. reflexivity. }
-        apply head_prim_step.
+        single_step.
         rewrite H3.
         apply UnOpS.
         rewrite H2 in uo_eval.
@@ -527,6 +525,7 @@ Proof.
       inversion failure.
     }
   }
+
   (* BinOp *)
   {
     destruct (runStateT (interpret n e1) σ) eqn:interp_e1.
@@ -558,11 +557,7 @@ Proof.
             exact e2_to_v1_ctx.
           }
           { (* [BinOp op v0 v1] -> [v] *)
-            eapply nsteps_l; [|apply nsteps_refl].
-            eapply step_atomic with (t1:=[]) (t2:=[]).
-            { simpl. reflexivity. }
-            { simpl. reflexivity. }
-            apply head_prim_step.
+            single_step.
             rewrite H3.
             apply BinOpS.
             rewrite H2 in bo_eval.
@@ -585,25 +580,89 @@ Proof.
     }
   }
 
-        
+  (* If *)
+  { admit. }
+
+  (* Pair *)
+  { admit. }
+
+  (* Fst *)
+  { destruct (runStateT (interpret n e) σ) eqn:interp_e.
+    { destruct v0.
+      pose (IHn e σ v0 s interp_e) as IH.
+      rewrite (runStateT_Error_bind
+                 _ _ _ _ _ _ (fun x => match x with
+                                    | (v1, _)%V => mret v1
+                                    | _ => mfail "Fst applied to non-PairV."
+                                    end) interp_e) in H0.
+      inversion H0.
+      destruct (v0) eqn:v0_eval; inversion H1.
+      destruct IH as (m & IH').
+      destruct IH' as (l & e_to_v0).
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [Fst e] -> [Fst v0] *)
+        eapply nsteps_ctx.
+        apply e_to_v0.
+      }
+      {
+        (* [Fst v0] -> [v] *)
+        single_step.
+        rewrite H2.
+        rewrite H3.
+        apply FstS.
+      }
+    }
+    { (* e fails *)
+      pose proof (runStateT_Error_bind_false
+                    _ _ _ _ (fun x => match x with
+                                   | (v1, _)%V => mret v1
+                                   | _ => mfail "Fst applied to non-PairV."
+                                   end) s interp_e) as failure.
+      rewrite H0 in failure.
+      inversion failure.
+    }
   }
 
-      (* 
-      destruct e; simpl; try trivial.
-      { destruct (un_op_eval op v) eqn:ret.
-        { do 2 eexists. eapply nsteps_l.
-          { eapply step_atomic with (t1:=[]) (t2:=[]).
-            { simpl. reflexivity. }
-            { simpl. reflexivity. }
-            apply head_prim_step.
-            apply UnOpS.
-            apply ret.
-            }
-          apply nsteps_refl.
-          }
-        trivial.
-      } 
-       *)
+  (* Snd *)
+  { destruct (runStateT (interpret n e) σ) eqn:interp_e.
+    { destruct v0.
+      pose (IHn e σ v0 s interp_e) as IH.
+      rewrite (runStateT_Error_bind
+                 _ _ _ _ _ _ (fun x => match x with
+                                    | (_, v2)%V => mret v2
+                                    | _ => mfail "Snd applied to non-PairV."
+                                    end) interp_e) in H0.
+      inversion H0.
+      destruct (v0) eqn:v0_eval; inversion H1.
+      destruct IH as (m & IH').
+      destruct IH' as (l & e_to_v0).
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [Snd e] -> [Snd v0] *)
+        eapply nsteps_ctx.
+        apply e_to_v0.
+      }
+      {
+        (* [Snd v0] -> [v] *)
+        single_step.
+        rewrite H2.
+        rewrite H3.
+        apply SndS.
+      }
+    }
+    { (* e fails *)
+      pose proof (runStateT_Error_bind_false
+                    _ _ _ _ (fun x => match x with
+                                   | (_, v2)%V => mret v2
+                                   | _ => mfail "Snd applied to non-PairV."
+                                   end) s interp_e) as failure.
+      rewrite H0 in failure.
+      inversion failure.
+    }
+  }
+    
+  }
 
 Admitted.
      
