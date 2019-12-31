@@ -639,8 +639,8 @@ Proof.
     do 2 eexists.
     eapply nsteps_transitive.
     { (* [Fst e] -> [Fst v0] *)
-      eapply nsteps_ctx.
-      apply e_to_v0.
+      pose proof (@nsteps_ctx _ (fill [FstCtx]) _ m e (v1_1, v1_2)%V σ s l e_to_v0) as e_to_v0_ctx.
+      apply e_to_v0_ctx.
     }
     {
       (* [Fst v0] -> [v] *)
@@ -663,8 +663,8 @@ Proof.
     do 2 eexists.
     eapply nsteps_transitive.
     { (* [Snd e] -> [Snd v0] *)
-      eapply nsteps_ctx.
-      apply e_to_v0.
+      pose proof (@nsteps_ctx _ (fill [SndCtx]) _ m e (v1_1, v1_2)%V σ s l e_to_v0) as e_to_v0_ctx.
+      apply e_to_v0_ctx.
     }
     {
       (* [Snd v0] -> [v] *)
@@ -675,24 +675,57 @@ Proof.
     }
   }
     
+  (* InjL *)
+  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
+    destruct v0.
+    pose (IHn e σ v0 s interp_e) as IH.
+    interpret_bind.
+    inversion H0.
+    destruct IH as (m & IH').
+    destruct IH' as (l & e_to_v0).
+    do 2 eexists.
+    eapply nsteps_transitive.
+    { (* [InjL e] -> [InjL v0] *)
+      pose proof (@nsteps_ctx _ (fill [InjLCtx]) _ m e v0 σ s l e_to_v0) as e_to_v0_ctx.
+      simpl in e_to_v0_ctx.
+      apply e_to_v0_ctx.
+    }
+    {
+      (* [InjL v0] -> [v] *)
+      single_step.
+      rewrite H2.
+      apply InjLS.
+    }
   }
+  
+  (* InjR *)
+  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
+    destruct v0.
+    pose (IHn e σ v0 s interp_e) as IH.
+    interpret_bind.
+    inversion H0.
+    destruct IH as (m & IH').
+    destruct IH' as (l & e_to_v0).
+    do 2 eexists.
+    eapply nsteps_transitive.
+    { (* [InjR e] -> [InjR v0] *)
+      pose proof (@nsteps_ctx _ (fill [InjRCtx]) _ m e v0 σ s l e_to_v0) as e_to_v0_ctx.
+      simpl in e_to_v0_ctx.
+      apply e_to_v0_ctx.
+    }
+    {
+      (* [InjR v0] -> [v] *)
+      single_step.
+      rewrite H2.
+      apply InjRS.
+    }
+  }
+
+  (* Case *)
+  { admit. }
 
 Admitted.
      
-(* First attempt at a theorem statement. Above Theorem probably better. *)
-Theorem interpret_ok_2 : forall (n: nat) (e: expr) (σ: state),
-    match (runStateT (interpret n e) σ) with
-    | Fail _ _ => True
-    (* Why are heap_lang exprs the same as expr here? They're both
-    parameterized, but I don't know where heap_lang sets it to be the
-    same. *)
-    (* l is a list of observations, which we don't care about right now?
-       m the number of steps it takes the expr to resolve using heap_lang steps. *)
-    | Works _ (v, σ') => exists m l, @nsteps heap_lang m ([e], σ) l ([Val v], σ')
-    end.
-Proof.
-Admitted.
-
 (* Testing *)
 Definition testRec : expr :=
   (rec: BAnon BAnon :=
