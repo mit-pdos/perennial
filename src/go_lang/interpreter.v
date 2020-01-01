@@ -322,9 +322,9 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
   end.
 
 Lemma nsteps_transitive : forall L n m p1 p2 p3 l1 l2,
-    @nsteps L n p1 l1 p2 ->
-    @nsteps L m p2 l2 p3 ->
-    @nsteps L (n + m) p1 (l1 ++ l2) p3.
+    @language.nsteps L n p1 l1 p2 ->
+    @language.nsteps L m p2 l2 p3 ->
+    @language.nsteps L (n + m) p1 (l1 ++ l2) p3.
 Proof.
   induction n.
   { (* n = 0 *)
@@ -337,7 +337,7 @@ Proof.
     intros.
     inversion H.
     rewrite <- app_assoc.
-    eapply nsteps_l.
+    eapply language.nsteps_l.
     {
       exact H2.
     }
@@ -394,7 +394,7 @@ Proof.
 Qed.
 
 Lemma nsteps_no_thread_destroy `{!@LanguageCtx Λ K} n ρ e σ l:
-  @nsteps Λ n ρ l ([e], σ) ->
+  @language.nsteps Λ n ρ l ([e], σ) ->
   exists e' σ', ρ = ([e'], σ').
 Proof.
   generalize ρ l e σ.
@@ -426,14 +426,14 @@ Proof.
 Qed.
 
 Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ1 σ2 l:
-@nsteps Λ n ([e1], σ1) l ([e2], σ2) →
-@nsteps Λ n ([K e1], σ1) l ([K e2], σ2).
+@language.nsteps Λ n ([e1], σ1) l ([e2], σ2) →
+@language.nsteps Λ n ([K e1], σ1) l ([K e2], σ2).
 Proof using Ffi_interpretable ext ffi ffi_semantics. (*coq told me to do this*)
   generalize e1 e2 σ1 σ2 l.
   induction n.
   { (* n = 0 *)
     intros e e' σ σ' l' nstep_ooc; inversion nstep_ooc. (*nsteps hypothesis out-of-context*)
-    apply nsteps_refl. }
+    apply language.nsteps_refl. }
   { (* S n *)
     intros e e' σ σ' l' nstep_ooc.
     inversion nstep_ooc as [|n' ρ1 ρ2 ρ3 κ κs step_ooc nstep_ooc_rest].
@@ -460,7 +460,7 @@ Proof using Ffi_interpretable ext ffi ffi_semantics. (*coq told me to do this*)
     rewrite <- H15 in prim_step_e_e''.
     rewrite H18 in prim_step_e_e''.
     pose proof (fill_step _ _ _ _ _ _ prim_step_e_e'') as prim_step_ic.
-    eapply nsteps_l; [|exact nstep_ic_rest].
+    eapply language.nsteps_l; [|exact nstep_ic_rest].
     eapply step_atomic with (t3 := []) (t4 := []); [| |exact prim_step_ic]; eauto.
   }
 Qed.
@@ -468,7 +468,7 @@ Qed.
 (* Always apply step_atomic with t1, t2 as [] since we don't care
     about threading. *)
 Ltac single_step :=
-  eapply nsteps_l; [|apply nsteps_refl];
+  eapply language.nsteps_l; [|apply language.nsteps_refl];
   eapply step_atomic with (t1:=[]) (t2:=[]); [simpl; reflexivity|simpl; reflexivity|apply head_prim_step].
 
 Ltac interpret_bind :=
@@ -486,7 +486,7 @@ Ltac interpret_bind :=
 
 Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state),
     (((runStateT (interpret n e) σ) = Works _ (v, σ')) ->
-     exists m l, @nsteps heap_lang m ([e], σ) l ([Val v], σ')).
+     exists m l, @language.nsteps heap_lang m ([e], σ) l ([Val v], σ')).
 Proof.
   intros n. induction n.
   { by intros []. }
@@ -494,7 +494,7 @@ Proof.
   intros e σ v σ' interp. destruct e; simpl; inversion interp; simpl.
     
   (* Val *)
-  { eexists. eexists. apply nsteps_refl. }
+  { eexists. eexists. apply language.nsteps_refl. }
   (* Var *)
   
   (* Rec *)
