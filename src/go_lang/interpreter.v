@@ -122,8 +122,6 @@ Definition biggest_loc (σ: state) : loc :=
 Definition find_alloc_location (σ: state) (size: Z) : loc :=
   loc_add (biggest_loc σ) 1.
 
-Print mfail.
-
 (* Interpreter *)
 Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
   match fuel with
@@ -135,18 +133,11 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | Rec f y e => mret (RecV f y e)
 
     | App e1 e2 => 
-      v1 <- interpret n e1;
       v2 <- interpret n e2;
+      v1 <- interpret n e1;
         match v1 with
-        | RecV BAnon BAnon ex => interpret n ex
-        | RecV BAnon (BNamed y) ex =>
-          let e3 := subst y v2 ex in
-          interpret n e3
-        | RecV (BNamed f) BAnon ex =>
-          let e3 := subst f v1 ex in
-          interpret n e3
-        | RecV (BNamed f) (BNamed y) ex =>
-          let e3 := subst f v1 (subst y v2 ex) in
+        | RecV f y ex =>
+          let e3 := subst' y v2 (subst' f v1 ex) in
           interpret n e3
         | _ => mfail "App applied to non-function."
         end
@@ -209,106 +200,105 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
 
     | Fork e => mfail "NotImpl: fork."
 
-    | Primitive0 (PanicOp s) => mfail ("Panic: " ++ s)
-
-    (* In head_step, alloc nondeterministically allocates at any valid
-    location. We'll just pick the first valid location. *)
-    | Primitive1 AllocStructOp e =>
-      structv <- interpret n e;
-      s <- mget;
-      let l := find_alloc_location s (length (flatten_struct structv)) in
-      _ <- mput (state_insert_list l (flatten_struct structv) s);
-        mret (LitV (LitLoc l))
-             
-    | Primitive2 AllocNOp e1 e2 =>
-      initv <- interpret n e2;
-      lenv <- interpret n e1;
-      match lenv with
-      | LitV (LitInt lenz) => 
-          (* We must allocate a list of length lenz where every entry
-          is initv. state_init_heap does most of the work. *)
-          s <- mget;
-          let l := find_alloc_location s (int.val lenz) in
-          _ <- mput (state_init_heap l (int.val lenz) initv s);
-          mret (LitV (LitLoc l))
-      | _ => mfail "Alloc with non-integer argument."
+    | Primitive0 p =>
+      match p in (prim_op args0) with
+      | PanicOp s => mfail ("Panic: " ++ s)
       end
-        
-    | Primitive1 LoadOp e =>
-      addrv <- interpret n e;
-        match addrv with
-        | LitV (LitInt l) =>
-          mfail "Load at int instead of loc"
+
+    | Primitive1 p e =>
+      match p in (prim_op args1) return (StateT state Error _) with
+      | AllocStructOp =>
+        (* In head_step, alloc nondeterministically allocates at any
+           valid location. We'll just pick the first valid location. *)
+        structv <- interpret n e;
+          s <- mget;
+          let l := find_alloc_location s (length (flatten_struct structv)) in
+          _ <- mput (state_insert_list l (flatten_struct structv) s);
+            mret (LitV (LitLoc l))
+      | LoadOp =>
+        addrv <- interpret n e;
+          match addrv with
+          | LitV (LitInt l) =>
+            mfail "Load at int instead of loc"
           | LitV (LitLoc l) =>
             (* Since Load of an address with nothing doesn't step, we
             can lift from the option monad into the StateT option
             monad here (we mfail "NotImpl" if v is None). *)
             s <- mget;
-            v <- mlift (s.(heap) !! l) ("Load Failed: " ++ (pretty l));
-            mret v
+              v <- mlift (s.(heap) !! l) ("Load Failed: " ++ (pretty l));
+              mret v
           | _ => mfail "Load with non-location argument."
-        end
-          
-    | Primitive2 StoreOp e1 e2 =>
-      addrv <- interpret n e1;
-      val <- interpret n e2;
-        match addrv with
-        | LitV (LitInt l) =>
-          let l' := loc_add null (int.val l) in
+          end
+      | DecodeInt64Op =>
+        v <- interpret n e;
+          l <- mlift (match v with
+                     | LitV (LitLoc l) => Some l
+                     | _ => None
+                     end)
+            "DecodeInt64Op argument not a LitLoc.";
+          s <- mget;
+          vs <- mlift (
+               rs <- state_readn s l 8;
+                 commute_option_list _ (map byte_val rs)
+             ) "DecodeInt64Op: Read failed.";
+          (* vs is list byte *)
+          mret (LitV $ LitInt (le_to_u64 vs))
+      | DecodeInt32Op => mfail "NotImpl: decode."
+      | ObserveOp =>
+        v <- interpret n e;
+          _ <- mupdate (set trace (fun tr => tr ++ [v]));
+          mret (LitV LitUnit)
+      end
+
+    | Primitive2 p e1 e2 =>
+      match p in (prim_op args2) return (StateT state Error _) with
+      | AllocNOp =>
+        initv <- interpret n e2;
+          lenv <- interpret n e1;
+          match lenv with
+          | LitV (LitInt lenz) => 
+            (* We must allocate a list of length lenz where every entry
+          is initv. state_init_heap does most of the work. *)
             s <- mget;
-            _ <- mput (set heap <[l':=val]> s);
-            mret (LitV LitUnit)
+              let l := find_alloc_location s (int.val lenz) in
+              _ <- mput (state_init_heap l (int.val lenz) initv s);
+                mret (LitV (LitLoc l))
+          | _ => @mfail state _ "Alloc with non-integer argument."
+          end
+      | StoreOp =>
+        addrv <- interpret n e1;
+          val <- interpret n e2;
+          match addrv with
+          | LitV (LitInt l) =>
+            let l' := loc_add null (int.val l) in
+            s <- mget;
+              _ <- mput (set heap <[l':=val]> s);
+              mret (LitV LitUnit)
           | LitV (LitLoc l) => 
             s <- mget;
-            _ <- mput (set heap <[l:=val]> s);
-            mret (LitV LitUnit)
-          | _ => mfail "Store with non-location argument."
-        end
-          
-    | Primitive1 DecodeInt64Op e =>
-      v <- interpret n e;
-        l <- mlift (match v with
-                   | LitV (LitLoc l) => Some l
-                   | _ => None
-                   end)
-          "DecodeInt64Op argument not a LitLoc.";
-        s <- mget;
-        vs <- mlift (
-             rs <- state_readn s l 8;
-             commute_option_list _ (map byte_val rs)
-           ) "DecodeInt64Op: Read failed.";
-        (* vs is list byte *)
-        mret (LitV $ LitInt (le_to_u64 vs))
-            
-    | Primitive2 EncodeInt64Op e1 e2 =>
-      v1 <- interpret n e1;
-      v2 <- interpret n e2;
-      s <- mget;
-      v <- mlift (match v1 with
-                 | LitV (LitInt v) => Some v
-                 | _ => None
-                 end)
-        "EncodeInt64Op 1st arg not LitInt";
-      l <- mlift (match v2 with
-                 | LitV (LitLoc l) => Some l
-                 | _ => None
-                 end)
-        "EncodeInt64Op 2nd arg not LitLoc";
-      (* TODO: Check all 8 places are already in the heap? *)
-      _ <- mput (state_insert_list l (byte_vals $ u64_le v) s);
-        mret (LitV LitUnit)
-
-    | Primitive1 DecodeInt32Op e => mfail "NotImpl: decode."
-    | Primitive2 EncodeInt32Op e1 e2 => mfail "NotImpl: encode."
-                                             
-    | Primitive1 ObserveOp e =>
-      v <- interpret n e;
-      _ <- mupdate (set trace (fun tr => tr ++ [v]));
-      mret (LitV LitUnit)
-
-    | Primitive0 _ => mfail "NotImpl: unrecognized primitive0."
-    | Primitive1 _ _ => mfail "NotImpl: unrecognized primitive1."
-    | Primitive2 _ _ _ => mfail "NotImpl: unrecognized primitive2."
+              _ <- mput (set heap <[l:=val]> s);
+              mret (LitV LitUnit)
+          | _ => @mfail state _ "Store with non-location argument."
+          end
+      | EncodeInt64Op =>
+        v1 <- interpret n e1;
+          v2 <- interpret n e2;
+          s <- mget;
+          v <- mlift (match v1 with
+                     | LitV (LitInt v) => Some v
+                     | _ => None
+                     end)
+            "EncodeInt64Op 1st arg not LitInt";
+          l <- mlift (match v2 with
+                     | LitV (LitLoc l) => Some l
+                     | _ => None
+                     end)
+            "EncodeInt64Op 2nd arg not LitLoc";
+          (* TODO: Check all 8 places are already in the heap? *)
+          _ <- mput (state_insert_list l (byte_vals $ u64_le v) s);
+          mret (LitV LitUnit)
+      | EncodeInt32Op => @mfail state _ "NotImpl: encode."
+      end
 
     | ExternalOp op e =>
       v <- interpret n e;
@@ -504,8 +494,43 @@ Proof.
   }
   
   (* App *)
-  { pose (IHn e2 σ) as step1.
-    { admit. }
+  { 
+    (* If e2 doesn't work, interpret_bind finds contradiction with H0 *)
+    destruct (runStateT (interpret n e2) σ) eqn:interp_e2; [|interpret_bind].
+    destruct v0. pose proof (IHn e2 σ v0 s interp_e2) as IHe2.
+    interpret_bind.
+    (* Same for e1 *)
+    destruct (runStateT (interpret n e1) s) eqn:interp_e1; [|interpret_bind].
+    destruct v1. pose proof (IHn e1 s v1 s0 interp_e1) as IHe1.
+    interpret_bind.
+    destruct IHe2 as (m & IHe2').
+    destruct IHe1 as (m' & IHe1').
+    destruct IHe2' as (l & e2_to_v0).
+    destruct IHe1' as (l' & e1_to_v1).
+    destruct v1; simpl in H0; try by inversion H0.
+    pose proof (IHn _ _ _ _ H0) as IHapp.
+    destruct IHapp as (k & IHapp').
+    destruct IHapp' as (l'' & app_to_v).
+    do 2 eexists.
+    eapply nsteps_transitive.
+    { (* [App e1 e2] -> [App e1 v0] *)
+      pose proof (@nsteps_ctx _ (fill [(AppRCtx e1)]) _ m e2 _ σ s l e2_to_v0) as e2_to_v0_ctx.
+      simpl in e2_to_v0_ctx.
+      exact e2_to_v0_ctx.
+    }
+    eapply nsteps_transitive.
+    { (* [App e1 v0] -> [App (rec f x := e) v0] *)
+      pose proof (@nsteps_ctx _ (fill [(AppLCtx v0)]) _ m' e1 _ s s0 l' e1_to_v1) as e1_to_v1_ctx.
+      simpl in e1_to_v1_ctx.
+      exact e1_to_v1_ctx.
+    }
+    eapply nsteps_transitive.
+    {
+      single_step.
+      apply BetaS.
+      reflexivity.
+    }
+    exact app_to_v.
   }
 
   (* UnOp *)
@@ -625,7 +650,37 @@ Proof.
   }
 
   (* Pair *)
-  { admit. }
+  { 
+    (* If e1 doesn't work, interpret_bind finds contradiction with H0 *)
+    destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
+    destruct v0. pose proof (IHn e1 σ v0 s interp_e1) as IHe1.
+    interpret_bind.
+    (* Same for e2 *)
+    destruct (runStateT (interpret n e2) s) eqn:interp_e2; [|interpret_bind].
+    destruct v1. pose proof (IHn e2 s v1 s0 interp_e2) as IHe2.
+    interpret_bind.
+    inversion H0.
+    destruct IHe1 as (m & IHe1').
+    destruct IHe2 as (m' & IHe2').
+    destruct IHe1' as (l & e1_to_v0).
+    destruct IHe2' as (l' & e2_to_v1).
+    do 2 eexists.
+    eapply nsteps_transitive.
+    { (* [Pair e1 e2] -> [Pair v0 e2] *)
+      pose proof (@nsteps_ctx _ (fill [(PairLCtx e2)]) _ m e1 v0 σ s l e1_to_v0) as e1_to_v0_ctx.
+      simpl in e1_to_v0_ctx.
+      exact e1_to_v0_ctx.
+    }
+    eapply nsteps_transitive.
+    { (* [Pair v0 e2] -> [Pair v0 v1] *)
+      pose proof (@nsteps_ctx _ (fill [(PairRCtx v0)]) _ m' e2 v1 s s0 l' e2_to_v1) as e2_to_v1_ctx.
+      simpl in e2_to_v1_ctx.
+      exact e2_to_v1_ctx.
+    }
+    single_step.
+    rewrite <- H2.
+    apply PairS.
+  }
 
   (* Fst *)
   { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
@@ -723,6 +778,27 @@ Proof.
 
   (* Case *)
   { admit. }
+
+  (* Primitive0 *)
+  { admit. }
+
+  (* Primitive1 *)
+  { admit. }
+
+  (* Primitive2 *)
+  { admit. }
+
+  (* ExternalOp *)
+  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
+    destruct v0.
+    interpret_bind.
+    pose proof (IHn _ _ _ _ interp_e) as IHe.
+    destruct IHe as (m & IHe').
+    destruct IHe' as (l & e_to_v0).
+    destruct (ext_interpret n op v0) eqn:ei_eval.
+    (* TODO: ext_interpret_ok *)
+    admit.
+  }
 
 Admitted.
      
