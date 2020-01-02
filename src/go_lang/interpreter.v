@@ -115,13 +115,87 @@ Fixpoint biggest_loc_rec (s: list (prod loc val)) : loc :=
       end
   end.
 
+Lemma biggest_loc_rec_ok ps :
+  forall l l' v,
+    ({| loc_car := l |}, v) ∈ ps ->
+    biggest_loc_rec ps = {| loc_car := l' |} ->
+    l' >= l.
+Proof.
+  induction ps as [|hd].
+  { (* empty list *)
+    intros.
+    inversion H.
+  }
+  { (* hd :: ps *)
+    intros l l' v.
+    unfold elem_of.
+    unfold elem_of in IHps.
+    pose ({| loc_car := l |}, v) as p.
+    fold p.
+    intros p_in_ps.
+    pose proof (elem_of_cons ps p hd) as where_is_p.
+    rewrite -> where_is_p in p_in_ps.
+    destruct p_in_ps.
+    { (* p :: ps *)
+      rewrite <- H.
+      simpl.
+      intros.
+      inversion H0.
+      lia.
+    }
+    { (* hd :: (p in here) *)
+      unfold p, elem_of in H.
+      simpl.
+      destruct (biggest_loc_rec ps) as [l_old] eqn:bloc_old.
+      pose proof (IHps l l_old _ H).
+      assert (l_old >= l) by (apply H0; reflexivity).
+      intros.
+      destruct hd.
+      inversion H2.
+      lia.
+    }
+  }
+Qed.
+
 Definition biggest_loc (σ: state) : loc :=
   let s := gmap_to_list σ.(heap) in
   biggest_loc_rec s.
+
+Lemma biggest_loc_ok (σ: state) :
+  forall l l' v,
+  ({| loc_car := l |}, v) ∈ gmap_to_list (heap σ) ->
+  biggest_loc σ = {| loc_car := l' |} ->
+  l' >= l.
+Proof using Ffi_interpretable ext ffi ffi_semantics.
+  intros l l' v elem bloc.
+  unfold biggest_loc in bloc.
+  apply (biggest_loc_rec_ok _ _ _ _ elem bloc).
+Qed.
   
 (* Finds the biggest loc in state and adds 1 to it, independent of size *)
 Definition find_alloc_location (σ: state) (size: Z) : loc :=
   loc_add (biggest_loc σ) 1.
+
+Lemma find_alloc_location_ok (v0 : val) :
+  ∀ s (i : Z) ,
+    0 ≤ i →
+    i < strings.length (flatten_struct v0) →
+    heap s !! (find_alloc_location s (strings.length (flatten_struct v0)) +ₗ i) =
+        None.
+Proof using Ffi_interpretable ext ffi ffi_semantics.
+  intros s i i_gt_z i_lt_len.
+  destruct (find_alloc_location s (strings.length (flatten_struct v0)) +ₗ i) as [l] eqn:fal.
+  destruct (heap s !! {| loc_car := l |}) eqn:s_val; [|by reflexivity].
+  unfold find_alloc_location in fal.
+  pose proof elem_of_map_to_list (heap s) {| loc_car := l |} v as mtl_iff.
+  pose proof s_val as mtl_val.
+  rewrite <- mtl_iff in mtl_val.
+  unfold map_to_list in mtl_val.
+  destruct (biggest_loc s) as [l'] eqn:blocs.
+  pose proof biggest_loc_ok s _ _ _ mtl_val blocs as blok.
+  inversion fal.
+  lia.
+Qed.
 
 (* Interpreter *)
 Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
@@ -836,8 +910,27 @@ Proof.
   {
     dependent destruction op.
     { (* AllocStruct *)
-      admit.
+      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
+      destruct v0.
+      pose proof (IHn e σ v0 s interp_e) as IH.
+      destruct IH as (m & IH').
+      destruct IH' as (l & e_to_v0).
+      interpret_bind.
+      simpl in H0.
+      inversion H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [AllocStruct e] -> [AllocStruct v0] *)
+        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx AllocStructOp)]) _ m e _ σ s l e_to_v0) as e_to_v0_ctx.
+        simpl in e_to_v0_ctx.
+        exact e_to_v0_ctx.
+      }
+      single_step.
+      apply AllocStructS.
+      (* Must prove the location find_alloc_location found is adequate *)
+      apply find_alloc_location_ok.
     }
+
     { (* Load *)
       destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
       destruct v0.
