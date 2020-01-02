@@ -12,6 +12,7 @@ From Perennial.go_lang Require Import interpret_types.
 
 From Perennial.go_lang.examples Require Import goose_unittest.
 From Perennial.go_lang.ffi Require Import disk.
+Require Import Program.
 
 Set Default Proof Using "Type".
 
@@ -201,12 +202,12 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | Fork e => mfail "NotImpl: fork."
 
     | Primitive0 p =>
-      match p in (prim_op args0) with
+      match p in (prim_op args0) return StateT state Error val with
       | PanicOp s => mfail ("Panic: " ++ s)
       end
 
     | Primitive1 p e =>
-      match p in (prim_op args1) return (StateT state Error _) with
+      match p in (prim_op args1) return StateT state Error val with
       | AllocStructOp =>
         (* In head_step, alloc nondeterministically allocates at any
            valid location. We'll just pick the first valid location. *)
@@ -251,7 +252,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
       end
 
     | Primitive2 p e1 e2 =>
-      match p in (prim_op args2) return (StateT state Error _) with
+      match p in (prim_op args2) return StateT state Error val with
       | AllocNOp =>
         initv <- interpret n e2;
           lenv <- interpret n e1;
@@ -780,13 +781,69 @@ Proof.
   { admit. }
 
   (* Primitive0 *)
-  { admit. }
+  {
+    (* TODO: Remove dependent destruction using
+       https://jamesrwilcox.com/dep-destruct.html technique *)
+    dependent destruction op.
+    inversion H0.
+  }
 
   (* Primitive1 *)
-  { admit. }
+  {
+    dependent destruction op.
+    { (* AllocStruct *)
+      admit.
+    }
+    { (* Load *)
+      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
+      destruct v0.
+      pose proof (IHn e σ v0 s interp_e) as IH.
+      destruct IH as (m & IH').
+      destruct IH' as (l & e_to_l0).
+      interpret_bind.
+      destruct v0; simpl in H0; try by inversion H0.
+      destruct l0; simpl in H0; try by inversion H0.
+      destruct (heap s !! l0) eqn:heap_at_l0; simpl in H0; inversion H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      {
+        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx LoadOp)]) _ m e _ σ s l e_to_l0) as e_to_l0_ctx.
+        simpl in e_to_l0_ctx.
+        exact e_to_l0_ctx.
+      }
+      single_step.
+      rewrite <- H2.
+      rewrite <- H1.
+      eapply LoadS.
+      exact heap_at_l0.
+    }
+
+    { (* DecodeInt64 *)
+      admit.
+    }
+    { (* DecodeInt32 *)
+      admit.
+    }
+    { (* Observe *)
+      admit.
+    }
+  }
 
   (* Primitive2 *)
-  { admit. }
+  { dependent destruction op.
+    { (* AllocN *)
+      admit.
+    }
+    { (* Store *)
+      admit.
+    }
+    { (* EncodeInt64 *)
+      admit.
+    }
+    { (* EncodeInt32 *)
+      admit.
+    }
+  }
 
   (* ExternalOp *)
   { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
