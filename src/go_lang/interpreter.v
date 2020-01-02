@@ -175,15 +175,11 @@ Qed.
 Definition find_alloc_location (σ: state) (size: Z) : loc :=
   loc_add (biggest_loc σ) 1.
 
-Lemma find_alloc_location_ok (v0 : val) :
-  ∀ s (i : Z) ,
-    0 ≤ i →
-    i < strings.length (flatten_struct v0) →
-    heap s !! (find_alloc_location s (strings.length (flatten_struct v0)) +ₗ i) =
-        None.
+Lemma find_alloc_location_fresh :
+  forall s bound, isFreshTo bound s (find_alloc_location s bound).
 Proof using Ffi_interpretable ext ffi ffi_semantics.
-  intros s i i_gt_z i_lt_len.
-  destruct (find_alloc_location s (strings.length (flatten_struct v0)) +ₗ i) as [l] eqn:fal.
+  intros s bound i i_gt_z i_lt_len.
+  destruct (find_alloc_location s bound +ₗ i) as [l] eqn:fal.
   destruct (heap s !! {| loc_car := l |}) eqn:s_val; [|by reflexivity].
   unfold find_alloc_location in fal.
   pose proof elem_of_map_to_list (heap s) {| loc_car := l |} n as mtl_iff.
@@ -194,6 +190,18 @@ Proof using Ffi_interpretable ext ffi ffi_semantics.
   pose proof biggest_loc_ok s _ _ _ mtl_val blocs as blok.
   inversion fal.
   lia.
+Qed.
+
+Lemma find_alloc_location_ok (v0 : val) :
+  ∀ s (i : Z) ,
+    0 ≤ i →
+    i < strings.length (flatten_struct v0) →
+    heap s !! (find_alloc_location s (strings.length (flatten_struct v0)) +ₗ i) =
+        None.
+Proof using Ffi_interpretable ext ffi ffi_semantics.
+  intros.
+  pose proof (find_alloc_location_fresh s (strings.length (flatten_struct v0))).
+  eauto.
 Qed.
 
 (* Interpreter *)
@@ -325,7 +333,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
           | LitV selv =>
             σ <- mget;
               let x := σ.(oracle) σ.(trace) selv in
-            _ <- mupdate (set trace (fun tr => tr ++ [In_ev selv (LitInt x)]));
+            _ <- mupdate (set trace (fun tr => [In_ev selv (LitInt x)] ++ tr));
             mret (LitV (LitInt x))
           | _ => mfail "Input with non-literal selector."
           end
@@ -333,7 +341,7 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
         v <- interpret n e;
         match v with
         | LitV v =>
-            _ <- mupdate (set trace (fun tr => tr ++ [Out_ev v]));
+            _ <- mupdate (set trace (fun tr => [Out_ev v] ++ tr));
             mret (LitV LitUnit)
         | _ => mfail "Output with non-literal value"
         end
@@ -343,13 +351,16 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | Primitive2 p e1 e2 =>
       match p in (prim_op args2) return StateT state Error val with
       | AllocNOp =>
-        initv <- interpret n e2;
           lenv <- interpret n e1;
+        initv <- interpret n e2;
           match lenv with
           | LitV (LitInt lenz) => 
-            (* We must allocate a list of length lenz where every entry
+            if (Z.leb (int.val lenz) 0) then
+              mfail "AllocN with size 0 or lower."
+            else
+              (* We must allocate a list of length lenz where every entry
           is initv. state_init_heap does most of the work. *)
-            s <- mget;
+              s <- mget;
               let l := find_alloc_location s (int.val lenz) in
               _ <- mput (state_init_heap l (int.val lenz) initv s);
                 mret (LitV (LitLoc l))
@@ -913,7 +924,28 @@ Proof.
     }
 
     { (* PrepareWrite *)
-      admit. }
+      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
+      destruct v0.
+      pose proof (IHn e σ v0 s interp_e) as IH.
+      destruct IH as (m & IH').
+      destruct IH' as (l & e_to_v0).
+      interpret_bind.
+      destruct v0; simpl in H0; try by inversion H0.
+      destruct l0; simpl in H0; try by inversion H0.
+      destruct (heap s !! l0) as [heap_na_val|] eqn:hv; simpl in H0; [|by inversion H0].
+      destruct heap_na_val as [|heap_val n0]; simpl in H0; try by inversion H0.
+      destruct n0; simpl in H0; inversion H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [PrepareWrite e] -> [PrepareWrite #l0] *)
+        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx PrepareWriteOp)]) _ m e _ σ s l e_to_v0) as e_to_v0_ctx.
+        simpl in e_to_v0_ctx.
+        exact e_to_v0_ctx.
+      }
+      rewrite <- H2.
+      single_step.
+    }
+
     { (* StartRead *)
       by inversion H0. }
     { (* FinishRead *)
@@ -943,18 +975,85 @@ Proof.
     }
 
     { (* Input *)
-      admit.
+      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
+      destruct v0.
+      pose proof (IHn e σ v0 s interp_e) as IH.
+      destruct IH as (m & IH').
+      destruct IH' as (l & e_to_l0).
+      interpret_bind.
+      destruct v0; simpl in H0; inversion H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      {
+        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx InputOp)]) _ m e _ σ s l e_to_l0) as e_to_l0_ctx.
+        simpl in e_to_l0_ctx.
+        exact e_to_l0_ctx.
+      }
+      single_step.
     }
+
     { (* Output *)
-      admit.
+      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
+      destruct v0.
+      pose proof (IHn e σ v0 s interp_e) as IH.
+      destruct IH as (m & IH').
+      destruct IH' as (l & e_to_l0).
+      interpret_bind.
+      destruct v0; simpl in H0; inversion H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      {
+        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx OutputOp)]) _ m e _ σ s l e_to_l0) as e_to_l0_ctx.
+        simpl in e_to_l0_ctx.
+        exact e_to_l0_ctx.
+      }
+      single_step.
     }
   }
 
   (* Primitive2 *)
   { dependent destruction op.
     { (* AllocN *)
-      admit.
+      destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
+      destruct v0.
+      pose proof (IHn e1 _ _ _ interp_e1) as IHe1.
+      destruct IHe1 as (m & IHe1').
+      destruct IHe1' as (l & e1_to_v0).
+      interpret_bind.
+      destruct (runStateT (interpret n e2) s) eqn:interp_e2; [|interpret_bind].
+      destruct v1.
+      pose proof (IHn e2 _ _ _ interp_e2) as IHe2.
+      destruct IHe2 as (m' & IHe2').
+      destruct IHe2' as (l' & e2_to_v1).
+      interpret_bind.
+      destruct v0; simpl in H0; try by inversion H0.
+      destruct l0; simpl in H0; inversion H0.
+      destruct (int.val n0 <=? 0) eqn:n0_int; simpl in H0; inversion H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      {
+        pose proof (@nsteps_ctx _ (fill [(Primitive2LCtx AllocNOp e2)]) _ m e1 _ σ s l e1_to_v0) as e1_to_v0_ctx.
+        simpl in e1_to_v0_ctx.
+        exact e1_to_v0_ctx.
+      }
+      eapply nsteps_transitive.
+      {
+        pose proof (@nsteps_ctx _ (fill [(Primitive2RCtx AllocNOp #n0)]) _ m' e2 _ s s0 l' e2_to_v1) as e2_to_v1_ctx.
+        simpl in e2_to_v1_ctx.
+        exact e2_to_v1_ctx.
+      }
+      single_step.
+      rewrite -> ifThenElse_if; [|(rewrite -> Z.leb_nle in n0_int; lia)].
+      simpl.
+      monad_simpl.
+      pose proof (find_alloc_location_fresh s0 (int.val n0)) as loc_fresh.
+      eapply relation.bind_suchThat.
+      {
+        apply loc_fresh.
+      }
+      monad_simpl.
     }
+
     { (* FinishStore *)
       admit.
     }
