@@ -435,9 +435,8 @@ Proof using ext.
      end); try abstract intuition congruence.
 Defined.
 
-Global Instance base_lit_countable : Countable base_lit.
-Proof.
- refine (inj_countable' (λ l, match l with
+Definition enc_base_lit :=
+(λ l, match l with
   | LitInt n => (inl (inl (inl (inl n))), None)
   | LitInt32 n => (inl (inl (inl (inr n))), None)
   | LitByte n => (inl (inl (inr n)), None)
@@ -447,7 +446,10 @@ Proof.
   | LitPoison => (inr (inl true), None)
   | LitLoc l => (inr (inr (inl l)), None)
   | LitProphecy p => (inr (inl false), Some p)
-  end) (λ l, match l with
+  end).
+
+Definition dec_base_lit :=
+(λ l, match l with
   | (inl (inl (inl (inl n))), None) => LitInt n
   | (inl (inl (inl (inr n))), None) => LitInt32 n
   | (inl (inl (inr n)), None) => LitByte n
@@ -457,16 +459,24 @@ Proof.
   | (inr (inl true), None) => LitPoison
   | (inr (inr (inl l)), None) => LitLoc l
   | (_, Some p) => LitProphecy p
-  end) _); by intros [].
+  end).
+
+Definition base_lit_enc_retract : forall l, dec_base_lit (enc_base_lit l) = l.
+Proof.
+  by intros [].
 Qed.
+
+Global Instance base_lit_countable : Countable base_lit :=
+  inj_countable' enc_base_lit dec_base_lit base_lit_enc_retract.
 
 Global Instance un_op_finite : Countable un_op.
 Proof.
-  solve_countable un_op_rec 4%nat.
+  solve_countable un_op_rec 15%nat.
 Qed.
+
 Global Instance bin_op_countable : Countable bin_op.
 Proof.
-  solve_countable bin_op_rec 13%nat.
+  solve_countable bin_op_rec 15%nat.
 Qed.
 
 Inductive prim_op' := | a_prim_op {ar} (op: prim_op ar).

@@ -9,8 +9,15 @@ Proof. solve_decision. Qed.
 
 Instance loc_inhabited : Inhabited loc := populate {|loc_car := 0 |}.
 
-Instance loc_countable : Countable loc.
-Proof. by apply (inj_countable' loc_car (λ i, {| loc_car := i |})); intros []. Qed.
+(* loc_countable was originally given with a non-constructive proof,
+so we define loc_car_inj and give a constructive definition for
+loc_countable in order to be able to actually interpret heap
+operations. *)
+Lemma loc_car_inj : forall x : loc, {| loc_car := loc_car x |} = x.
+  by intros [].
+Qed.
+Instance loc_countable : Countable loc :=
+  inj_countable' loc_car (fun i => {| loc_car := i |}) loc_car_inj.
 
 Program Instance loc_infinite : Infinite loc :=
   inj_infinite (λ p, {| loc_car := p |}) (λ l, Some (loc_car l)) _.
