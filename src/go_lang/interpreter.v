@@ -778,7 +778,51 @@ Proof.
   }
 
   (* Case *)
-  { admit. }
+  { 
+    destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
+    destruct v0.
+    interpret_bind.
+    pose proof (IHn _ _ _ _ interp_e1) as IHe1.
+    destruct IHe1 as (m & IHe1').
+    destruct IHe1' as (l & e1_to_v0).
+    destruct v0 eqn:v0_type; simpl in H0; try by inversion H0.
+    { (* InjL *)
+      pose proof (IHn _ _ _ _ H0) as IHe2.
+      destruct IHe2 as (m' & IHe2').
+      destruct IHe2' as (l' & e2_to_v).
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [Case e1 e2 e3] -> [Case (InjLV v1) e2 e3] *)
+        pose proof (@nsteps_ctx _ (fill [(CaseCtx e2 e3)]) _ m e1 _ σ s l e1_to_v0) as e1_to_v0_ctx.
+        simpl in e1_to_v0_ctx.
+        exact e1_to_v0_ctx.
+      }
+      eapply nsteps_transitive.
+      {
+        single_step.
+        apply CaseLS.
+      }
+      exact e2_to_v.
+    }
+    { (* InjR *)
+      pose proof (IHn _ _ _ _ H0) as IHe3.
+      destruct IHe3 as (m' & IHe3').
+      destruct IHe3' as (l' & e3_to_v).
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [Case e1 e2 e3] -> [Case (InjRV v1) e2 e3] *)
+        pose proof (@nsteps_ctx _ (fill [(CaseCtx e2 e3)]) _ m e1 _ σ s l e1_to_v0) as e1_to_v0_ctx.
+        simpl in e1_to_v0_ctx.
+        exact e1_to_v0_ctx.
+      }
+      eapply nsteps_transitive.
+      {
+        single_step.
+        apply CaseRS.
+      }
+      exact e3_to_v.
+    }
+  }
 
   (* Primitive0 *)
   {
