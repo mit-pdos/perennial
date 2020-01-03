@@ -366,19 +366,24 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
                 mret (LitV (LitLoc l))
           | _ => @mfail state _ "Alloc with non-integer argument."
           end
-      | StoreOp =>
+      | FinishStoreOp =>
         addrv <- interpret n e1;
           val <- interpret n e2;
           match addrv with
-          | LitV (LitInt l) =>
+          (* | LitV (LitInt l) =>
             let l' := loc_add null (int.val l) in
             s <- mget;
               _ <- mput (set heap <[l':=Free val]> s);
-              mret (LitV LitUnit)
+              mret (LitV LitUnit) *)
           | LitV (LitLoc l) => 
             s <- mget;
-              _ <- mput (set heap <[l:=Free val]> s);
-              mret (LitV LitUnit)
+              nav <- mlift (s.(heap) !! l) ("Load Failed: " ++ (pretty l));
+              match nav with
+                | Writing => 
+                  _ <- mput (set heap <[l:=Free val]> s);
+                    mret (LitV LitUnit)
+              | _ => mfail "FinishStoreOp on non-writing location."
+              end
           | _ => @mfail state _ "Store with non-location argument."
           end
       end
@@ -946,9 +951,9 @@ Proof.
       single_step.
     }
 
-    { (* StartRead *)
+    { (* TODO: StartRead *)
       by inversion H0. }
-    { (* FinishRead *)
+    { (* TODO: FinishRead *)
       by inversion H0. }
 
     { (* Load *)
@@ -1055,7 +1060,36 @@ Proof.
     }
 
     { (* FinishStore *)
-      admit.
+      destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
+      destruct v0.
+      pose proof (IHn e1 _ _ _ interp_e1) as IHe1.
+      destruct IHe1 as (m & IHe1').
+      destruct IHe1' as (l & e1_to_v0).
+      interpret_bind.
+      destruct (runStateT (interpret n e2) s) eqn:interp_e2; [|interpret_bind].
+      destruct v1.
+      pose proof (IHn e2 _ _ _ interp_e2) as IHe2.
+      destruct IHe2 as (m' & IHe2').
+      destruct IHe2' as (l' & e2_to_v1).
+      interpret_bind.
+      destruct v0; simpl in H0; try by inversion H0.
+      destruct l0; simpl in H0; try by inversion H0.
+      destruct (heap s0 !! l0) eqn:heap_at_l0; simpl in H0; try by inversion H0.
+      destruct n0 eqn:n0_is_writing; simpl in H0; inversion H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      { (* [FinishStore e1 e2] -> [FinishStore #l0 e2] *)
+        pose proof (@nsteps_ctx _ (fill [(Primitive2LCtx FinishStoreOp e2)]) _ m e1 _ σ s l e1_to_v0) as e1_to_v0_ctx.
+        simpl in e1_to_v0_ctx.
+        exact e1_to_v0_ctx.
+      }
+      eapply nsteps_transitive.
+      { (* [FinishStore #l0 e2] -> [FinishStore #l0 v1] *)
+        pose proof (@nsteps_ctx _ (fill [(Primitive2RCtx FinishStoreOp #l0)]) _ m' e2 _ s s0 l' e2_to_v1) as e2_to_v1_ctx.
+        simpl in e2_to_v1_ctx.
+        exact e2_to_v1_ctx.
+      }
+      single_step.
     }
   }
 
