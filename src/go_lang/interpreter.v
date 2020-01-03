@@ -565,6 +565,42 @@ Ltac interpret_bind :=
   | _ => fail
   end.
 
+Ltac run_next_interpret IHn :=
+  match goal with
+  | [H : runStateT (mbind (fun x => @?F x) (interpret ?n ?e)) ?σ = _ |- _] =>
+    let interp_e := fresh "interp_e" in
+    let IHe := fresh "IHe" in
+    let IHe' := fresh "IHe'" in
+    let e_to_v := fresh "nsteps_interp" in
+    let v0 := fresh "v" in
+    let m := fresh "m" in
+    let l := fresh "l" in
+    let v := fresh "v" in
+    let s := fresh "s" in
+    destruct (runStateT (interpret n e) σ) as [v0|] eqn:interp_e; [|interpret_bind];
+    destruct v0 as (v & s);
+    pose (IHn e σ v s interp_e) as IHe;
+    destruct IHe as (m & IHe');
+    destruct IHe' as (l & e_to_v);
+    interpret_bind
+    | _ => fail
+  end. 
+
+Ltac ctx_step ctx_expr :=
+  match goal with
+  | [ nsteps_interp : nsteps _ ([?e], ?s) _ (_, _) |- _ ] =>
+    let r := eval simpl in (ctx_expr e) in
+        match goal with
+        | [ |- nsteps _ ([r], s) _ _ ] =>
+          let H := fresh "nsteps_interp_ctx" in
+          pose proof (@nsteps_ctx _ ctx_expr _ _ _ _ _ _ _ nsteps_interp) as H;
+          simpl in H;
+          exact H
+        | _ => fail
+        end
+  | _ => fail
+  end.
+
 Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state),
     (((runStateT (interpret n e) σ) = Works _ (v, σ')) ->
      exists m l, @language.nsteps heap_lang m ([e], σ) l ([Val v], σ')).
@@ -585,34 +621,20 @@ Proof.
   
   (* App *)
   { 
-    (* If e2 doesn't work, interpret_bind finds contradiction with H0 *)
-    destruct (runStateT (interpret n e2) σ) eqn:interp_e2; [|interpret_bind].
-    destruct v0. pose proof (IHn e2 σ v0 s interp_e2) as IHe2.
-    interpret_bind.
-    (* Same for e1 *)
-    destruct (runStateT (interpret n e1) s) eqn:interp_e1; [|interpret_bind].
-    destruct v1. pose proof (IHn e1 s v1 s0 interp_e1) as IHe1.
-    interpret_bind.
-    destruct IHe2 as (m & IHe2').
-    destruct IHe1 as (m' & IHe1').
-    destruct IHe2' as (l & e2_to_v0).
-    destruct IHe1' as (l' & e1_to_v1).
-    destruct v1; simpl in H0; try by inversion H0.
+    run_next_interpret IHn.
+    run_next_interpret IHn.
+    destruct v2; simpl in H0; try by inversion H0.
     pose proof (IHn _ _ _ _ H0) as IHapp.
     destruct IHapp as (k & IHapp').
     destruct IHapp' as (l'' & app_to_v).
     do 2 eexists.
     eapply nsteps_transitive.
-    { (* [App e1 e2] -> [App e1 v0] *)
-      pose proof (@nsteps_ctx _ (fill [(AppRCtx e1)]) _ m e2 _ σ s l e2_to_v0) as e2_to_v0_ctx.
-      simpl in e2_to_v0_ctx.
-      exact e2_to_v0_ctx.
+    { (* [App e1 e2] -> [App e1 v1] *)
+      ctx_step (fill [(AppRCtx e1)]).
     }
     eapply nsteps_transitive.
-    { (* [App e1 v0] -> [App (rec f x := e) v0] *)
-      pose proof (@nsteps_ctx _ (fill [(AppLCtx v0)]) _ m' e1 _ s s0 l' e1_to_v1) as e1_to_v1_ctx.
-      simpl in e1_to_v1_ctx.
-      exact e1_to_v1_ctx.
+    { (* [App e1 v1] -> [App (rec f x := e) v1] *)
+      ctx_step (fill [(AppLCtx v1)]).
     }
     eapply nsteps_transitive.
     {
@@ -622,83 +644,54 @@ Proof.
   }
 
   (* UnOp *)
-  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-    destruct v0. pose (IHn e σ v0 s interp_e) as IH.
-    interpret_bind.
+  { run_next_interpret IHn.
     inversion H0.
-    destruct (un_op_eval op v0) eqn:uo_eval; inversion H1; subst; clear H1.
-    destruct IH as (m & IH').
-    destruct IH' as (l & e_to_v0).
+    destruct (un_op_eval op v1) eqn:uo_eval; inversion H1; subst; clear H1.
     do 2 eexists.
     eapply nsteps_transitive.
-    { (* [UnOp op e] -> [UnOp op v0] *)
-      pose proof (@nsteps_ctx _ (fill [(UnOpCtx op)]) _ m e v0 σ σ' l e_to_v0) as e_to_v0_ctx.
-      simpl in e_to_v0_ctx.
-      exact e_to_v0_ctx.
+    { (* [UnOp op e] -> [UnOp op v1] *)
+      ctx_step (fill [(UnOpCtx op)]).
     }
     {
-      (* [UnOp op v0] -> [v1] *)
+      (* [UnOp op v1] -> [v] *)
       single_step.
     }
   }
 
   (* BinOp *)
   {
-    (* If e1 doesn't work, interpret_bind finds contradiction with H0 *)
-    destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
-    destruct v0. pose proof (IHn e1 σ v0 s interp_e1) as IHe1.
-    interpret_bind.
-    (* Same for e2 *)
-    destruct (runStateT (interpret n e2) s) eqn:interp_e2; [|interpret_bind].
-    destruct v1. pose proof (IHn e2 s v1 s0 interp_e2) as IHe2.
-    interpret_bind.
+    run_next_interpret IHn.
+    run_next_interpret IHn.
     inversion H0.
-    destruct (bin_op_eval op v0 v1) eqn:bo_eval; inversion H1.
-    destruct IHe1 as (m & IHe1').
-    destruct IHe2 as (m' & IHe2').
-    destruct IHe1' as (l & e1_to_v0).
-    destruct IHe2' as (l' & e2_to_v1).
+    destruct (bin_op_eval op v2 v1) eqn:bo_eval; inversion H1.
     do 2 eexists.
     eapply nsteps_transitive.
-    { (* [BinOp op e1 e2] -> [BinOp op v0 e2] *)
-      pose proof (@nsteps_ctx _ (fill [(BinOpLCtx op e2)]) _ m e1 v0 σ s l e1_to_v0) as e1_to_v0_ctx.
-      simpl in e1_to_v0_ctx.
-      exact e1_to_v0_ctx.
+    { (* [BinOp op e1 e2] -> [BinOp op v2 e2] *)
+      ctx_step (fill [(BinOpLCtx op e2)]).
     }
-    { (* [BinOp op v0 e2] -> [v] *)
-      eapply nsteps_transitive.
-      { (* [BinOp op v0 e2] -> [BinOp op v0 v1] *)
-        pose proof (@nsteps_ctx _ (fill [(BinOpRCtx op v0)]) _ m' e2 v1 s s0 l' e2_to_v1) as e2_to_v1_ctx.
-        simpl in e2_to_v1_ctx.
-        exact e2_to_v1_ctx.
-      }
-      { (* [BinOp op v0 v1] -> [v] *)
-        subst.
-        single_step.
-      }
+    eapply nsteps_transitive.
+    { (* [BinOp op v2 e2] -> [BinOp op v2 v1] *)
+      ctx_step (fill [(BinOpRCtx op v2)]).
+    }
+    { (* [BinOp op v2 v1] -> [v] *)
+      subst.
+      single_step.
     }
   }
 
   (* If *)
-  { destruct (runStateT (interpret n e1) σ) eqn:interp_e; [|interpret_bind].
-    destruct v0.
-    pose (IHn e1 σ v0 s interp_e) as IH.
-    interpret_bind.
-    destruct v0; simpl in H0; try inversion H0.
-    destruct l; simpl in H0; try inversion H0.
-    destruct IH as (m & IH').
-    destruct IH' as (l & e1_to_b).
+  { run_next_interpret IHn.
+    destruct v1; simpl in H0; try by inversion H0.
+    destruct l0; simpl in H0; try by inversion H0.
     destruct b.
-    { (* v0 = true *)
-      pose (IHn e2 s v σ' H0) as IH2.
+    { (* v1 = true *)
+      pose (IHn _ _ _ _ H0) as IH2.
       destruct IH2 as (m' & IH2').
       destruct IH2' as (l' & e2_to_v).
       do 2 eexists.
       eapply nsteps_transitive.
       { (* [if e1 e2 e3] -> [if true e2 e3] *)
-        pose proof (@nsteps_ctx _ (fill [(IfCtx e2 e3)]) _ m e1 #true σ s l e1_to_b) as e1_to_b_ctx.
-        simpl in e1_to_b_ctx.
-        exact e1_to_b_ctx.
+        ctx_step (fill [(IfCtx e2 e3)]).
       }
       eapply nsteps_transitive.
       { (* [if #true e2 e3] -> [e2] *)
@@ -708,16 +701,14 @@ Proof.
       exact e2_to_v.
     }
 
-    { (* v0 = false *)
-      pose (IHn e3 s v σ' H0) as IH3.
+    { (* v1 = false *)
+      pose (IHn _ _ _ _ H0) as IH3.
       destruct IH3 as (m' & IH3').
       destruct IH3' as (l' & e3_to_v).
       do 2 eexists.
       eapply nsteps_transitive.
       { (* [if e1 e2 e3] -> [if false e2 e3] *)
-        pose proof (@nsteps_ctx _ (fill [(IfCtx e2 e3)]) _ m e1 #false σ s l e1_to_b) as e1_to_b_ctx.
-        simpl in e1_to_b_ctx.
-        exact e1_to_b_ctx.
+        ctx_step (fill [(IfCtx e2 e3)]).
       }
       eapply nsteps_transitive.
       { (* [if #false e2 e3] -> [e3] *)
@@ -730,143 +721,87 @@ Proof.
 
   (* Pair *)
   { 
-    (* If e1 doesn't work, interpret_bind finds contradiction with H0 *)
-    destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
-    destruct v0. pose proof (IHn e1 σ v0 s interp_e1) as IHe1.
-    interpret_bind.
-    (* Same for e2 *)
-    destruct (runStateT (interpret n e2) s) eqn:interp_e2; [|interpret_bind].
-    destruct v1. pose proof (IHn e2 s v1 s0 interp_e2) as IHe2.
-    interpret_bind.
+    run_next_interpret IHn.
+    run_next_interpret IHn.
     inversion H0.
-    destruct IHe1 as (m & IHe1').
-    destruct IHe2 as (m' & IHe2').
-    destruct IHe1' as (l & e1_to_v0).
-    destruct IHe2' as (l' & e2_to_v1).
     do 2 eexists.
     eapply nsteps_transitive.
-    { (* [Pair e1 e2] -> [Pair v0 e2] *)
-      pose proof (@nsteps_ctx _ (fill [(PairLCtx e2)]) _ m e1 v0 σ s l e1_to_v0) as e1_to_v0_ctx.
-      simpl in e1_to_v0_ctx.
-      exact e1_to_v0_ctx.
+    { (* [Pair e1 e2] -> [Pair v1 e2] *)
+      ctx_step (fill [(PairLCtx e2)]).
     }
     eapply nsteps_transitive.
-    { (* [Pair v0 e2] -> [Pair v0 v1] *)
-      pose proof (@nsteps_ctx _ (fill [(PairRCtx v0)]) _ m' e2 v1 s s0 l' e2_to_v1) as e2_to_v1_ctx.
-      simpl in e2_to_v1_ctx.
-      exact e2_to_v1_ctx.
+    { (* [Pair v1 e2] -> [Pair v1 v2] *)
+      ctx_step (fill [(PairRCtx v1)]).
     }
     subst.
     single_step.
   }
 
   (* Fst *)
-  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-    destruct v0.
-    pose (IHn e σ v0 s interp_e) as IH.
-    interpret_bind.
-    inversion H0.
-    destruct (v0) eqn:v0_eval; inversion H1.
-    destruct IH as (m & IH').
-    destruct IH' as (l & e_to_v0).
+  { run_next_interpret IHn.
+    destruct v1; simpl in H0; inversion H0.
     do 2 eexists.
     eapply nsteps_transitive.
     { (* [Fst e] -> [Fst v0] *)
-      pose proof (@nsteps_ctx _ (fill [FstCtx]) _ m e (v1_1, v1_2)%V σ s l e_to_v0) as e_to_v0_ctx.
-      apply e_to_v0_ctx.
+      ctx_step (fill [FstCtx]).
+    }
+    subst.
+    single_step.
+  }
+
+  (* Snd *)
+  { run_next_interpret IHn.
+    destruct v1; simpl in H0; inversion H0.
+    do 2 eexists.
+    eapply nsteps_transitive.
+    { (* [Snd e] -> [Snd v0] *)
+      ctx_step (fill [SndCtx]).
+    }
+    subst.
+    single_step.
+  }
+    
+  (* InjL *)
+  { run_next_interpret IHn.
+    inversion H0.
+    do 2 eexists.
+    eapply nsteps_transitive.
+    { (* [InjL e] -> [InjL v1] *)
+      ctx_step (fill [InjLCtx]).
     }
     {
-      (* [Fst v0] -> [v] *)
+      (* [InjL v1] -> [v] *)
       subst.
       single_step.
     }
   }
 
-  (* Snd *)
-  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-    destruct v0.
-    pose (IHn e σ v0 s interp_e) as IH.
-    interpret_bind.
-    inversion H0.
-    destruct (v0) eqn:v0_eval; inversion H1.
-    destruct IH as (m & IH').
-    destruct IH' as (l & e_to_v0).
-    do 2 eexists.
-    eapply nsteps_transitive.
-    { (* [Snd e] -> [Snd v0] *)
-      pose proof (@nsteps_ctx _ (fill [SndCtx]) _ m e (v1_1, v1_2)%V σ s l e_to_v0) as e_to_v0_ctx.
-      apply e_to_v0_ctx.
-    }
-    {
-      (* [Snd v0] -> [v] *)
-      subst.
-      single_step.
-    }
-  }
-    
-  (* InjL *)
-  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-    destruct v0.
-    pose (IHn e σ v0 s interp_e) as IH.
-    interpret_bind.
-    inversion H0.
-    destruct IH as (m & IH').
-    destruct IH' as (l & e_to_v0).
-    do 2 eexists.
-    eapply nsteps_transitive.
-    { (* [InjL e] -> [InjL v0] *)
-      pose proof (@nsteps_ctx _ (fill [InjLCtx]) _ m e v0 σ s l e_to_v0) as e_to_v0_ctx.
-      simpl in e_to_v0_ctx.
-      apply e_to_v0_ctx.
-    }
-    {
-      (* [InjL v0] -> [v] *)
-      subst.
-      single_step.
-    }
-  }
-  
   (* InjR *)
-  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-    destruct v0.
-    pose (IHn e σ v0 s interp_e) as IH.
-    interpret_bind.
+  { run_next_interpret IHn.
     inversion H0.
-    destruct IH as (m & IH').
-    destruct IH' as (l & e_to_v0).
     do 2 eexists.
     eapply nsteps_transitive.
-    { (* [InjR e] -> [InjR v0] *)
-      pose proof (@nsteps_ctx _ (fill [InjRCtx]) _ m e v0 σ s l e_to_v0) as e_to_v0_ctx.
-      simpl in e_to_v0_ctx.
-      apply e_to_v0_ctx.
+    { (* [InjR e] -> [InjR v1] *)
+      ctx_step (fill [InjRCtx]).
     }
     {
-      (* [InjR v0] -> [v] *)
+      (* [InjR v1] -> [v] *)
       subst.
       single_step.
     }
   }
 
   (* Case *)
-  { 
-    destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
-    destruct v0.
-    interpret_bind.
-    pose proof (IHn _ _ _ _ interp_e1) as IHe1.
-    destruct IHe1 as (m & IHe1').
-    destruct IHe1' as (l & e1_to_v0).
-    destruct v0 eqn:v0_type; simpl in H0; try by inversion H0.
+  { run_next_interpret IHn.
+    destruct v1 eqn:v1_type; simpl in H0; try by inversion H0.
     { (* InjL *)
       pose proof (IHn _ _ _ _ H0) as IHe2.
       destruct IHe2 as (m' & IHe2').
       destruct IHe2' as (l' & e2_to_v).
       do 2 eexists.
       eapply nsteps_transitive.
-      { (* [Case e1 e2 e3] -> [Case (InjLV v1) e2 e3] *)
-        pose proof (@nsteps_ctx _ (fill [(CaseCtx e2 e3)]) _ m e1 _ σ s l e1_to_v0) as e1_to_v0_ctx.
-        simpl in e1_to_v0_ctx.
-        exact e1_to_v0_ctx.
+      { (* [Case e1 e2 e3] -> [Case (InjLV v0) e2 e3] *)
+        ctx_step (fill [(CaseCtx e2 e3)]).
       }
       eapply nsteps_transitive.
       {
@@ -880,10 +815,8 @@ Proof.
       destruct IHe3' as (l' & e3_to_v).
       do 2 eexists.
       eapply nsteps_transitive.
-      { (* [Case e1 e2 e3] -> [Case (InjRV v1) e2 e3] *)
-        pose proof (@nsteps_ctx _ (fill [(CaseCtx e2 e3)]) _ m e1 _ σ s l e1_to_v0) as e1_to_v0_ctx.
-        simpl in e1_to_v0_ctx.
-        exact e1_to_v0_ctx.
+      { (* [Case e1 e2 e3] -> [Case (InjRV v0) e2 e3] *)
+        ctx_step (fill [(CaseCtx e2 e3)]).
       }
       eapply nsteps_transitive.
       {
@@ -905,20 +838,13 @@ Proof.
   {
     dependent destruction op.
     { (* AllocStruct *)
-      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-      destruct v0.
-      pose proof (IHn e σ v0 s interp_e) as IH.
-      destruct IH as (m & IH').
-      destruct IH' as (l & e_to_v0).
-      interpret_bind.
+      run_next_interpret IHn.
       simpl in H0.
       inversion H0.
       do 2 eexists.
       eapply nsteps_transitive.
       { (* [AllocStruct e] -> [AllocStruct v0] *)
-        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx AllocStructOp)]) _ m e _ σ s l e_to_v0) as e_to_v0_ctx.
-        simpl in e_to_v0_ctx.
-        exact e_to_v0_ctx.
+        ctx_step (fill [(Primitive1Ctx AllocStructOp)]).
       }
       single_step.
       eapply relation.bind_suchThat.
@@ -929,13 +855,8 @@ Proof.
     }
 
     { (* PrepareWrite *)
-      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-      destruct v0.
-      pose proof (IHn e σ v0 s interp_e) as IH.
-      destruct IH as (m & IH').
-      destruct IH' as (l & e_to_v0).
-      interpret_bind.
-      destruct v0; simpl in H0; try by inversion H0.
+      run_next_interpret IHn.
+      destruct v1; simpl in H0; try by inversion H0.
       destruct l0; simpl in H0; try by inversion H0.
       destruct (heap s !! l0) as [heap_na_val|] eqn:hv; simpl in H0; [|by inversion H0].
       destruct heap_na_val as [|heap_val n0]; simpl in H0; try by inversion H0.
@@ -943,9 +864,7 @@ Proof.
       do 2 eexists.
       eapply nsteps_transitive.
       { (* [PrepareWrite e] -> [PrepareWrite #l0] *)
-        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx PrepareWriteOp)]) _ m e _ σ s l e_to_v0) as e_to_v0_ctx.
-        simpl in e_to_v0_ctx.
-        exact e_to_v0_ctx.
+        ctx_step (fill [(Primitive1Ctx PrepareWriteOp)]).
       }
       rewrite <- H2.
       single_step.
@@ -957,13 +876,8 @@ Proof.
       by inversion H0. }
 
     { (* Load *)
-      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-      destruct v0.
-      pose proof (IHn e σ v0 s interp_e) as IH.
-      destruct IH as (m & IH').
-      destruct IH' as (l & e_to_l0).
-      interpret_bind.
-      destruct v0; simpl in H0; try by inversion H0.
+      run_next_interpret IHn.
+      destruct v1; simpl in H0; try by inversion H0.
       destruct l0; simpl in H0; try by inversion H0.
       destruct (heap s !! l0) eqn:heap_at_l0; try by inversion H0.
       destruct n0; simpl in H0; try by inversion H0.
@@ -972,45 +886,29 @@ Proof.
       do 2 eexists.
       eapply nsteps_transitive.
       {
-        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx LoadOp)]) _ m e _ σ σ' l e_to_l0) as e_to_l0_ctx.
-        simpl in e_to_l0_ctx.
-        exact e_to_l0_ctx.
+        ctx_step (fill [(Primitive1Ctx LoadOp)]).
       }
       single_step.
     }
 
     { (* Input *)
-      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-      destruct v0.
-      pose proof (IHn e σ v0 s interp_e) as IH.
-      destruct IH as (m & IH').
-      destruct IH' as (l & e_to_l0).
-      interpret_bind.
-      destruct v0; simpl in H0; inversion H0.
+      run_next_interpret IHn.
+      destruct v1; simpl in H0; inversion H0.
       do 2 eexists.
       eapply nsteps_transitive.
       {
-        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx InputOp)]) _ m e _ σ s l e_to_l0) as e_to_l0_ctx.
-        simpl in e_to_l0_ctx.
-        exact e_to_l0_ctx.
+        ctx_step (fill [(Primitive1Ctx InputOp)]).
       }
       single_step.
     }
 
     { (* Output *)
-      destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-      destruct v0.
-      pose proof (IHn e σ v0 s interp_e) as IH.
-      destruct IH as (m & IH').
-      destruct IH' as (l & e_to_l0).
-      interpret_bind.
-      destruct v0; simpl in H0; inversion H0.
+      run_next_interpret IHn.
+      destruct v1; simpl in H0; inversion H0.
       do 2 eexists.
       eapply nsteps_transitive.
       {
-        pose proof (@nsteps_ctx _ (fill [(Primitive1Ctx OutputOp)]) _ m e _ σ s l e_to_l0) as e_to_l0_ctx.
-        simpl in e_to_l0_ctx.
-        exact e_to_l0_ctx.
+        ctx_step (fill [(Primitive1Ctx OutputOp)]).
       }
       single_step.
     }
@@ -1019,33 +917,19 @@ Proof.
   (* Primitive2 *)
   { dependent destruction op.
     { (* AllocN *)
-      destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
-      destruct v0.
-      pose proof (IHn e1 _ _ _ interp_e1) as IHe1.
-      destruct IHe1 as (m & IHe1').
-      destruct IHe1' as (l & e1_to_v0).
-      interpret_bind.
-      destruct (runStateT (interpret n e2) s) eqn:interp_e2; [|interpret_bind].
-      destruct v1.
-      pose proof (IHn e2 _ _ _ interp_e2) as IHe2.
-      destruct IHe2 as (m' & IHe2').
-      destruct IHe2' as (l' & e2_to_v1).
-      interpret_bind.
-      destruct v0; simpl in H0; try by inversion H0.
-      destruct l0; simpl in H0; inversion H0.
+      run_next_interpret IHn.
+      run_next_interpret IHn.
+      destruct v1; simpl in H0; try by inversion H0.
+      destruct l1; simpl in H0; inversion H0.
       destruct (int.val n0 <=? 0) eqn:n0_int; simpl in H0; inversion H0.
       do 2 eexists.
       eapply nsteps_transitive.
       {
-        pose proof (@nsteps_ctx _ (fill [(Primitive2LCtx AllocNOp e2)]) _ m e1 _ σ s l e1_to_v0) as e1_to_v0_ctx.
-        simpl in e1_to_v0_ctx.
-        exact e1_to_v0_ctx.
+        ctx_step (fill [(Primitive2LCtx AllocNOp e2)]).
       }
       eapply nsteps_transitive.
       {
-        pose proof (@nsteps_ctx _ (fill [(Primitive2RCtx AllocNOp #n0)]) _ m' e2 _ s s0 l' e2_to_v1) as e2_to_v1_ctx.
-        simpl in e2_to_v1_ctx.
-        exact e2_to_v1_ctx.
+        ctx_step (fill [(Primitive2RCtx AllocNOp #n0)]).
       }
       single_step.
       rewrite -> ifThenElse_if; [|(rewrite -> Z.leb_nle in n0_int; lia)].
@@ -1060,47 +944,27 @@ Proof.
     }
 
     { (* FinishStore *)
-      destruct (runStateT (interpret n e1) σ) eqn:interp_e1; [|interpret_bind].
-      destruct v0.
-      pose proof (IHn e1 _ _ _ interp_e1) as IHe1.
-      destruct IHe1 as (m & IHe1').
-      destruct IHe1' as (l & e1_to_v0).
-      interpret_bind.
-      destruct (runStateT (interpret n e2) s) eqn:interp_e2; [|interpret_bind].
-      destruct v1.
-      pose proof (IHn e2 _ _ _ interp_e2) as IHe2.
-      destruct IHe2 as (m' & IHe2').
-      destruct IHe2' as (l' & e2_to_v1).
-      interpret_bind.
-      destruct v0; simpl in H0; try by inversion H0.
-      destruct l0; simpl in H0; try by inversion H0.
-      destruct (heap s0 !! l0) eqn:heap_at_l0; simpl in H0; try by inversion H0.
+      do 2 run_next_interpret IHn.
+      destruct v1; simpl in H0; try by inversion H0.
+      destruct l1; simpl in H0; try by inversion H0.
+      destruct (heap s0 !! l1) eqn:heap_at_l1; simpl in H0; try by inversion H0.
       destruct n0 eqn:n0_is_writing; simpl in H0; inversion H0.
       do 2 eexists.
       eapply nsteps_transitive.
-      { (* [FinishStore e1 e2] -> [FinishStore #l0 e2] *)
-        pose proof (@nsteps_ctx _ (fill [(Primitive2LCtx FinishStoreOp e2)]) _ m e1 _ σ s l e1_to_v0) as e1_to_v0_ctx.
-        simpl in e1_to_v0_ctx.
-        exact e1_to_v0_ctx.
+      { (* [FinishStore e1 e2] -> [FinishStore #l1 e2] *)
+        ctx_step (fill [(Primitive2LCtx FinishStoreOp e2)]).
       }
       eapply nsteps_transitive.
-      { (* [FinishStore #l0 e2] -> [FinishStore #l0 v1] *)
-        pose proof (@nsteps_ctx _ (fill [(Primitive2RCtx FinishStoreOp #l0)]) _ m' e2 _ s s0 l' e2_to_v1) as e2_to_v1_ctx.
-        simpl in e2_to_v1_ctx.
-        exact e2_to_v1_ctx.
+      { (* [FinishStore #l0 e2] -> [FinishStore #l1 v2] *)
+        ctx_step (fill [(Primitive2RCtx FinishStoreOp #l1)]).
       }
       single_step.
     }
   }
 
   (* ExternalOp *)
-  { destruct (runStateT (interpret n e) σ) eqn:interp_e; [|interpret_bind].
-    destruct v0.
-    interpret_bind.
-    pose proof (IHn _ _ _ _ interp_e) as IHe.
-    destruct IHe as (m & IHe').
-    destruct IHe' as (l & e_to_v0).
-    destruct (ext_interpret n op v0) eqn:ei_eval.
+  { run_next_interpret IHn.
+    destruct (ext_interpret n op v1) eqn:ei_eval.
     (* TODO: ext_interpret_ok *)
     admit.
   }
