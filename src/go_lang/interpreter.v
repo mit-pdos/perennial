@@ -345,7 +345,33 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
             mret (LitV LitUnit)
         | _ => mfail "Output with non-literal value"
         end
-      | StartReadOp | FinishReadOp => mfail "non-atomic reads unimplemented"
+      | StartReadOp =>
+        addrv <- interpret n e;
+          match addrv with
+          | LitV (LitLoc l) =>
+            s <- mget;
+              nav <- mlift (s.(heap) !! l) ("StartReadOp Failed: " ++ (pretty l));
+              match nav with
+              | Reading v n => _ <- mupdate (set heap <[l:=Reading v (S n)]>);
+                                mret v
+              | _ => mfail "StartReadOp: Race while writing."
+              end
+          | _ => mfail "StartReadOp with non-location argument."
+          end
+      | FinishReadOp =>
+        addrv <- interpret n e;
+          match addrv with
+          | LitV (LitLoc l) =>
+            s <- mget;
+              nav <- mlift (s.(heap) !! l) ("FinishReadOp Failed: " ++ (pretty l));
+              match nav with
+              | Reading v (S n) => _ <- mupdate (set heap <[l:=Reading v n]>);
+                                mret (LitV LitUnit)
+              | Reading v 0 => mfail "FinishReadOp: Not being read."
+              | _ => mfail "FinishReadOp: Race while writing."
+              end
+          | _ => mfail "FinishReadOp with non-location argument."
+          end
       end
 
     | Primitive2 p e1 e2 =>
@@ -584,7 +610,7 @@ Ltac run_next_interpret IHn :=
     destruct IHe' as (l & e_to_v);
     interpret_bind
     | _ => fail
-  end. 
+  end.
 
 Ltac ctx_step ctx_expr :=
   match goal with
@@ -870,10 +896,36 @@ Proof.
       single_step.
     }
 
-    { (* TODO: StartRead *)
-      by inversion H0. }
-    { (* TODO: FinishRead *)
-      by inversion H0. }
+    { (* StartRead *)
+      run_next_interpret IHn.
+      destruct v1; simpl in H0; try by inversion H0.
+      destruct l0; simpl in H0; try by inversion H0.
+      destruct (heap s !! l0) eqn:heap_at_l0; try by inversion H0.
+      destruct n0; simpl in H0; try by inversion H0.
+      inversion H0; subst; clear H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      {
+        ctx_step (fill [(Primitive1Ctx StartReadOp)]).
+      }
+      single_step.
+    }
+
+    { (* FinishRead *)
+      run_next_interpret IHn.
+      destruct v1; simpl in H0; try by inversion H0.
+      destruct l0; simpl in H0; try by inversion H0.
+      destruct (heap s !! l0) eqn:heap_at_l0; try by inversion H0.
+      destruct n0; simpl in H0; try by inversion H0.
+      destruct n0; simpl in H0; try by inversion H0.
+      inversion H0; subst; clear H0.
+      do 2 eexists.
+      eapply nsteps_transitive.
+      {
+        ctx_step (fill [(Primitive1Ctx FinishReadOp)]).
+      }
+      single_step.
+    }
 
     { (* Load *)
       run_next_interpret IHn.
