@@ -1083,28 +1083,30 @@ Definition read_block_from_state (σ: state) (l: loc) : option Block.
   (* pose (vs <- state_readn σ l block_bytes; commute_option_list _ (map byte_val vs)) as maybe_list. *)
 Admitted.
 
-Fixpoint disk_interpret (fuel: nat) (op: DiskOp) (v: val) : StateT state Error val :=
-  match fuel with
-    | O => mfail "Fuel depleted"
-    | S n =>
-      match (op, v) with
-      | (ReadOp, (LitV (LitInt a))) => 
-        σ <- mget;
-        b <- mlift (σ.(world) !! int.val a) ("ReadOp: No block at address " ++ (pretty a));
-        let l := find_alloc_location σ 4096 in
-        _ <- mput (state_insert_list l (Block_to_vals b) σ);
-        mret (LitV (LitLoc l))
-      | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
-        σ <- mget;
-        b <- mlift (read_block_from_state σ l) "WriteOp: Read from heap failed";
-        _ <- mput (set world <[ int.val a := b ]> σ);
-          mret (LitV (LitUnit))
-       | _ => mfail "NotImpl disk_interpret"
-      end
+Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
+  match (op, v) with
+  | (ReadOp, (LitV (LitInt a))) =>
+    σ <- mget;
+      b <- mlift (σ.(world) !! int.val a) ("ReadOp: No block at address " ++ (pretty a));
+      let l := find_alloc_location σ 4096 in
+      _ <- mput (state_insert_list l (Block_to_vals b) σ);
+        mret (Val $ LitV (LitLoc l))
+  | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
+    σ <- mget;
+      b <- mlift (read_block_from_state σ l) "WriteOp: Read from heap failed";
+      _ <- mput (set world <[ int.val a := b ]> σ);
+      mret (Val $ LitV (LitUnit))
+  | _ => mfail "NotImpl disk_interpret"
   end.
 
-Instance disk_interpretable : @ext_interpretable disk_op disk_model :=
-  { ext_interpret := disk_interpret; }.
+Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ' σ'': state),
+        (runStateT (disk_interpret_step eop arg) σ = Works _ (result, σ')) ->
+        exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ').
+Admitted.
+
+Instance disk_interpretable : @ext_interpretable disk_op disk_model disk_semantics :=
+  { ext_interpret_step := disk_interpret_step;
+    ext_interpret_ok := disk_interpret_ok }.
 
 Compute (runStateT (interpret 10 (AllocN #1 (zero_val uint32T))) startstate).
 Compute (runStateT (interpret 10 (useSlice2 #0)) startstate).
