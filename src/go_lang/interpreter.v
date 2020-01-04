@@ -28,19 +28,23 @@ Instance pretty_loc : Pretty loc :=
 (* The analog of ext_semantics for an interpretable external
 operation. An ext_step isn't strong enough to let us interpret
 ExternalOps. *)
-Class ext_interpretable {ext: ext_op} {ffi: ffi_model} :=
-  {
-    (* fuel, operation, argument, starting state, returns ending val and state *)
-    ext_interpret : nat -> external -> val -> StateT state Error val;
-  }.
-
 Section go_lang_int.
   Context {ext: ext_op} {ffi: ffi_model}
-          {ffi_semantics: ext_semantics ext ffi}
-          {Ffi_interpretable: @ext_interpretable ext ffi}.
+          {ffi_semantics: ext_semantics ext ffi}.
   Canonical Structure heap_ectxi_lang := (EctxiLanguage (heap_lang.heap_lang_mixin ffi_semantics)).
   Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
   Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
+
+  Class ext_interpretable :=
+  {
+    (* fuel, operation, argument, starting state, returns ending val and state *)
+    ext_interpret_step : external -> val -> StateT state Error expr;
+    ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ' σ'': state),
+        (runStateT (ext_interpret_step eop arg) σ = Works _ (result, σ')) ->
+        exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ');
+  }.
+
+  Context {ext_interpretable : ext_interpretable}.
 
 (* Probably don't need these since we switched to using Error *)
 Instance statet_option_bind : MBind (StateT state option) :=
@@ -165,7 +169,7 @@ Lemma biggest_loc_ok (σ: state) :
   ({| loc_car := l |}, v) ∈ gmap_to_list (heap σ) ->
   biggest_loc σ = {| loc_car := l' |} ->
   l' >= l.
-Proof using Ffi_interpretable ext ffi ffi_semantics.
+Proof using ext ffi ffi_semantics.
   intros l l' v elem bloc.
   unfold biggest_loc in bloc.
   apply (biggest_loc_rec_ok _ _ _ _ elem bloc).
@@ -177,7 +181,7 @@ Definition find_alloc_location (σ: state) (size: Z) : loc :=
 
 Lemma find_alloc_location_fresh :
   forall s bound, isFreshTo bound s (find_alloc_location s bound).
-Proof using Ffi_interpretable ext ffi ffi_semantics.
+Proof using ext ffi ffi_semantics.
   intros s bound i i_gt_z i_lt_len.
   destruct (find_alloc_location s bound +ₗ i) as [l] eqn:fal.
   destruct (heap s !! {| loc_car := l |}) eqn:s_val; [|by reflexivity].
@@ -198,7 +202,7 @@ Lemma find_alloc_location_ok (v0 : val) :
     i < strings.length (flatten_struct v0) →
     heap s !! (find_alloc_location s (strings.length (flatten_struct v0)) +ₗ i) =
         None.
-Proof using Ffi_interpretable ext ffi ffi_semantics.
+Proof using ext ffi ffi_semantics.
   intros.
   pose proof (find_alloc_location_fresh s (strings.length (flatten_struct v0))).
   eauto.
@@ -416,7 +420,8 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
 
     | ExternalOp op e =>
       v <- interpret n e;
-      ext_interpret n op v
+      e' <- ext_interpret_step op v;
+      interpret n e'
 
     (* Won't interpret anything involving prophecy variables. *)
     | CmpXchg e0 e1 e2 => mfail "NotImpl: cmpxchg."   (* ignore *)
@@ -532,7 +537,7 @@ Qed.
 Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ1 σ2 l:
 @language.nsteps Λ n ([e1], σ1) l ([e2], σ2) →
 @language.nsteps Λ n ([K e1], σ1) l ([K e2], σ2).
-Proof using Ffi_interpretable ext ffi ffi_semantics. (*coq told me to do this*)
+Proof using ext ffi ffi_semantics. (*coq told me to do this*)
   generalize e1 e2 σ1 σ2 l.
   induction n.
   { (* n = 0 *)
@@ -1016,13 +1021,26 @@ Proof.
 
   (* ExternalOp *)
   { run_next_interpret IHn.
-    destruct (ext_interpret n op v1) eqn:ei_eval.
-    (* TODO: ext_interpret_ok *)
-    admit.
+    destruct (runStateT (ext_interpret_step op v1) s) as [e_result|] eqn:ext_interp_v1; [|interpret_bind].
+    destruct e_result as (e' & s').
+    pose proof (ext_interpret_ok _ _ _ _ _ s ext_interp_v1) as ei_ok.
+    destruct ei_ok as (m' & (l' & nstep_ext_interp)).
+    interpret_bind.
+    pose proof (IHn _ _ _ _ H0).
+    destruct H as (m'' & (l'' & rest_nstep)).
+    do 2 eexists.
+    eapply nsteps_transitive.
+    {
+      ctx_step (fill ([ExternalOpCtx op])).
+    }
+    eapply nsteps_transitive.
+    {
+      exact nstep_ext_interp.
+    }
+    exact rest_nstep.
   }
+Qed.
 
-Admitted.
-     
 (* Testing *)
 Definition testRec : expr :=
   (rec: BAnon BAnon :=
