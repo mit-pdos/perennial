@@ -61,7 +61,7 @@ Section go_lang.
     let: "v6" := to_u64 !("p" +ₗ #6) in
     let: "v7" := to_u64 !("p" +ₗ #7) in
     "v0" ∥ ("v1" ∥ ("v2" ∥ ("v3" ∥ ("v4" ∥ ("v5" ∥ ("v6" ∥ "v7"
-      ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)).
+      ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8).
 
   Theorem DecodeUInt64_t : (⊢ DecodeUInt64 : (arrayT byteT -> uint64T))%T.
   Proof.

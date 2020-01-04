@@ -1116,8 +1116,8 @@ Compute (runStateT (interpret 10 (testStore #0)) startstate).
 Compute (runStateT (interpret 10 (testRec #0)) startstate).
 
 Definition runs_to (p: expr) (v: val) :=
-  exists σ, runStateT (interpret 100 p) startstate = Works (val*state) (v, σ).
-Notation "p ~~> v" := (ex_intro _ _ eq_refl : runs_to p v) (at level 70).
+  (fst <$> runStateT (interpret 100 p) startstate) = Works _ v.
+Notation "p ~~> v" := (eq_refl : runs_to p v) (at level 70).
 
 Example run_testStore := testStore #0 ~~> #3.
 Example run_testRec := testRec #0 ~~> #6.
@@ -1128,9 +1128,12 @@ Compute (runStateT (interpret 10 (literalCast #0)) startstate).
 Compute (fst <$> (runStateT (interpret 15 (useSliceIndexing #0)) startstate)).
 Compute (fst <$> (runStateT (interpret 7 (testLongSlice #0)) startstate)).
 
+Example run_encdec1 := testUInt64EncDec #1 ~~> #1.
+Example run_encdec2 := testUInt64EncDec #256 ~~> #256.
+Example run_encdec3 := testUInt64EncDec #65536 ~~> #65536.
+Example run_encdec4 := testUInt64EncDec #3214405 ~~> #3214405.
+
 (* Compute the pmap heap but not the proofs *)
-(* TODO: this no longer round-trips, probably encode or decode is implemented
-incorrectly *)
 Compute ((fun p => (fst p, (snd p).(heap).(gmap_car).(pmap.pmap_car))) <$> (runStateT (interpret 30 (testUInt64EncDec #3214405)) startstate)).
 
 Compute (runStateT (interpret 10 (testIfStatement #0)) startstate).
