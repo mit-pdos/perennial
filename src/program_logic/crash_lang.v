@@ -38,6 +38,28 @@ Section crash_language.
       erased_rsteps r ([r], σ) ρ3 s →
       erased_rsteps r ρ1 ρ3 Crashed.
 
+  Inductive erased_steps_list: cfg Λ → cfg Λ → list (state Λ) → Prop :=
+  | eslist_refl ρ σ:
+      ρ.2 = σ →
+      erased_steps_list ρ ρ [σ]
+  | eslist_r ρ1 ρ2 ρ3 σs σ:
+      erased_steps_list ρ1 ρ2 σs →
+      erased_step ρ2 ρ3 →
+      ρ3.2 = σ →
+      erased_steps_list ρ1 ρ3 (σs ++ [σ]).
+
+  Lemma eslist_l ρ1 ρ2 ρ3 σs σ:
+    erased_step ρ1 ρ2 →
+    erased_steps_list ρ2 ρ3 σs →
+    ρ1.2 = σ →
+    erased_steps_list ρ1 ρ3 (σ :: σs).
+  Proof.
+    intros Hstep Hsteps. revert ρ1 Hstep. induction Hsteps.
+    - intros. replace (σ :: _) with ([σ] ++ [σ0]) by eauto. econstructor; eauto.
+      econstructor; auto.
+    - intros. rewrite app_comm_cons. econstructor; eauto.
+  Qed.
+
   Definition never_stuck (e1 r1: expr Λ) (σ1: state Λ) :=
     (∀ e2 σ2 t2 stat, erased_rsteps r1 ([e1], σ1) (t2, σ2) stat →
       e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2)).

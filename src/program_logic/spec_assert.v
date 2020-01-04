@@ -1,29 +1,36 @@
-From iris.algebra Require Import auth frac agree gmap list excl.
+From iris.algebra Require Import auth frac agree gmap list excl functions.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
+From Perennial.program_logic Require Export crash_lang.
 
 (*
 
    Encoding of an abstract source program as a ghost resource, in order to use
    Iris to prove refinements. This encoding is based on that of the one used in
    iris-examples/theories/logrel/rules_binary.v for the logical relations proofs
-   by Timany et al.
+   by Timany et al., but generalized to account for crashes and recovery.
 
 *)
 
 Section ghost.
 Context {Λ: language}.
+Context {CS : crash_semantics Λ}.
 
-(** The CMRA for the heap of the specification. *)
+Definition natmapUR (A: ucmraT) : ucmraT :=
+  discrete_funUR (fun (_: nat) => A).
+
+(** The CMRA for the specification. *)
 Definition tpoolUR : ucmraT := gmapUR nat (exclR (exprO Λ)).
-Definition stateUR := optionUR (exclR (stateO Λ)).
+Definition stateUR := natmapUR (optionUR (exclR (stateO Λ))).
 Definition cfgUR := prodUR tpoolUR stateUR.
 
+Definition genUR := natmapUR (optionUR (authUR cfgUR)).
+
 Class cfgPreG (Σ : gFunctors) :=
-  { cfg_preG_inG :> inG Σ (authR cfgUR) }.
-Class cfgG Σ := { cfg_inG :> inG Σ (authR cfgUR); cfg_name : gname }.
+  { cfg_preG_inG :> inG Σ genUR }.
+Class cfgG Σ := { cfg_inG :> inG Σ genUR; cfg_name : gname }.
 
 Fixpoint tpool_to_map_aux (tp: list (language.expr Λ)) (id: nat) : gmap nat (language.expr Λ) :=
   match tp with
@@ -40,26 +47,78 @@ Definition sourceN := nroot .@ "source".@ "base".
 Section ghost_spec.
   Context `{cfgG Σ, invG Σ}.
 
-  Definition tpool_mapsto (j: nat) (e: language.expr Λ) : iProp Σ :=
-    own cfg_name (◯ ({[ j := Excl e]}, ε)).
+  Definition tpool_mapsto_aux (k: nat) (j: nat) (e: language.expr Λ) : genUR :=
+    discrete_fun_singleton k (Some (◯ ({[ j := Excl e]}, ε))).
+
+  Definition tpool_mapsto k (j: nat) (e: language.expr Λ) : iProp Σ :=
+    own cfg_name $ tpool_mapsto_aux k j e.
 
   (* ownership of this does not mean there aren't other threads not in (fst ρ) *)
-  Definition source_cfg (ρ: (list (language.expr Λ)) * language.state Λ) : iProp Σ :=
+  (*
+  Definition source_cfg k (ρ: (list (language.expr Λ)) * language.state Λ) : iProp Σ :=
     own cfg_name (◯ (tpool_to_res (fst ρ), Some (Excl (snd ρ)))).
+   *)
 
-  Definition source_state (σ: language.state Λ) : iProp Σ :=
-    own cfg_name (◯ (∅ : tpoolUR, Some (Excl σ))).
+  Definition source_state_aux k (j: nat) (σ: language.state Λ) : genUR :=
+    discrete_fun_singleton k (Some (◯ (∅ : tpoolUR, discrete_fun_singleton j (Some (Excl σ))))).
 
+  Definition source_state k (j: nat) (σ: language.state Λ) : iProp Σ :=
+    own cfg_name $ source_state_aux k j σ.
+
+  (*
   Definition source_pool_map (tp: gmap nat (language.expr Λ)) : iProp Σ :=
     own cfg_name (◯ (Excl <$> tp : tpoolUR, ε)).
+   *)
 
   Definition safe (ρ: cfg Λ) :=
     ∀ t2 σ2 e2, rtc erased_step ρ (t2, σ2) → e2 ∈ t2 → not_stuck e2 σ2.
 
+  (*
   Definition source_inv tp σ : iProp Σ :=
     (∃ tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
                    ⌜ rtc erased_step (tp, σ) (tp', σ')
                      ∧ safe (tp, σ) ⌝)%I.
+   *)
+
+(* Brainstorming how to extend trace from before the crash if we have no dedicated recovery procedure
+
+Idea 1:
+------
+  ∀ tp1'' σ1'', ⌜ rtc erased_step (tp1', σ1') (tp1'', σ1'') ⌝ -∗
+              own cfg_name (● (tpool_to_res tp1'', Some (Excl σ1''))) -∗
+              ∃ σ2 tp2' σ2' , ⌜ crash_step σ1'' σ2  ∧
+              ⌜ rtc erased_step ([r], σ2) (tp2', σ2') ⌝ ∗ own cgg_name ...
+
+  seems not to work.
+
+Idea 2:
+----
+
+Need to have a map from (crash generation, step number within a generation) to source state at
+that time.  so we can argue that, say, heap location l contained value v at
+some given step when we did a read, even if the state at the start of this generation changes (because
+an extra operation is completed from previous generation)
+
+For thread pool, should not need to retroactively record the thread
+expression, only the latest within each crash generation.
+
+For a given generation, the invariant should say something like
+
+(∃ σs, [∗ i, σ ∈ σs] own ?? (● (i, Some (excl σ)))) ∗
+∃ tp2', (∀ σs, [∗ i, σ ∈ σs] own ?? (● (i, Some (excl σ))) -∗
+       ⌜ rtc erased_step ([r], σs[0]) (tp2', σs[-1]) ⌝ ∗ own ?? (● (tpool_to_res tp2')))
+
+Instead of (rtc erased_step), should define a version of erased step that takes a list of states
+and says there's a sequence of transitions going through each list in that trace.
+
+For multiple generations, we probably need a list of (lists of sigmas * tp2') and fold over the above.
+in between each generation I guess we also stipulate a proof of crash_step?
+
+(∃ σss, [∗ i1, i2, σ ∈ σs] own ?? (● (i1, i2, Some (excl σ)))) ∗
+∃ tp2', (∀ σs, [∗ i, σ ∈ σs] own ?? (● (i, Some (excl σ))) -∗
+       ⌜ rtc erased_rstep ([r], σss[0][0]) (tp2', σs[-1][-1]) ⌝ ∗ own ?? (● (tpool_to_res tp2')))
+
+*)
 
   Definition source_ctx' ρ : iProp Σ :=
     inv sourceN (source_inv (fst ρ) (snd ρ)).
