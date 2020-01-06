@@ -25,6 +25,172 @@ Instance pretty_u64 : Pretty Integers.u64 :=
 Instance pretty_loc : Pretty loc :=
   fun x => pretty x.(loc_car).
 
+Lemma nsteps_transitive : forall L n m p1 p2 p3 l1 l2,
+    @language.nsteps L n p1 l1 p2 ->
+    @language.nsteps L m p2 l2 p3 ->
+    @language.nsteps L (n + m) p1 (l1 ++ l2) p3.
+Proof.
+  induction n.
+  { (* n = 0 *)
+    intros.
+    inversion H.
+    simpl.
+    exact H0.
+  }
+  { (* S n *)
+    intros.
+    inversion H.
+    rewrite <- app_assoc.
+    eapply language.nsteps_l.
+    {
+      exact H2.
+    }
+    eapply IHn; [exact H3|exact H0].
+  }
+Qed.
+
+Lemma list_empty_surroundings : forall X (e:X) (e':X) (t1:list X) (t2:list X),
+    [e] = t1 ++ e' :: t2 ->
+    (t1 = []) /\ (t2 = []) /\ (e = e').
+Proof.
+  intros.
+  assert (t1 = []).
+  {
+    destruct t1; [trivial|].
+    inversion H.
+    pose proof (app_cons_not_nil t1 t2 e').
+    contradiction.
+  }
+  rewrite H0 in H.
+  split; [exact H0|].
+  assert (t2 = []).
+  {
+    destruct t2; [trivial|].
+    inversion H.
+  }
+  rewrite H1 in H.
+  inversion H.
+  split; eauto.
+Qed.
+
+Lemma list_empty_surroundings_strong : forall X (e:X) (e':X) (t1:list X) (t2:list X) (efs:list X),
+    [e] = t1 ++ e' :: t2 ++ efs ->
+    (t1 = []) /\ (t2 = []) /\ (efs = []) /\ (e = e').
+Proof.
+  intros.
+  assert (t1 = []).
+  {
+    destruct t1; [trivial|].
+    inversion H.
+    pose proof (app_cons_not_nil t1 (t2 ++ efs) e').
+    contradiction.
+  }
+  rewrite H0 in H.
+  split; [exact H0|].
+  assert (t2 = []).
+  {
+    destruct t2; [trivial|].
+    inversion H.
+  }
+  rewrite H1 in H.
+  inversion H.
+  split; eauto.
+Qed.
+
+Lemma nsteps_no_thread_destroy `{!@LanguageCtx Λ K} n ρ e σ l:
+  @language.nsteps Λ n ρ l ([e], σ) ->
+  exists e' σ', ρ = ([e'], σ').
+Proof.
+  generalize ρ l e σ.
+  induction n.
+  {
+    intros.
+    inversion H0.
+    do 2 eexists; reflexivity.
+  }
+  {
+    intros.
+    inversion H0; try eauto.
+    rewrite <- H4 in *.
+    pose proof (IHn _ _ _ _ H3) as IH.
+    destruct IH as (e' & IH').
+    destruct IH' as (σ' & IH'').
+    rewrite IH'' in H2.
+    inversion H2.
+    inversion H8.
+    pose proof (list_empty_surroundings_strong _ _ _ _ _ _ H11) as one_thread.
+    inversion one_thread.
+    inversion H13.
+    inversion H15.
+    rewrite H10 in H7.
+    rewrite H14 in H7.
+    simpl in H7.
+    do 2 eexists; exact H7.
+  }
+Qed.
+
+Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ1 σ2 l:
+@language.nsteps Λ n ([e1], σ1) l ([e2], σ2) →
+@language.nsteps Λ n ([K e1], σ1) l ([K e2], σ2).
+Proof.
+  generalize e1 e2 σ1 σ2 l.
+  induction n.
+  { (* n = 0 *)
+    intros e e' σ σ' l' nstep_ooc; inversion nstep_ooc. (*nsteps hypothesis out-of-context*)
+    apply language.nsteps_refl. }
+  { (* S n *)
+    intros e e' σ σ' l' nstep_ooc.
+    inversion nstep_ooc as [|n' ρ1 ρ2 ρ3 κ κs step_ooc nstep_ooc_rest].
+    pose proof (nsteps_no_thread_destroy _ _ _ _ _ nstep_ooc_rest) as intermediate_cfg_has_one_thread.
+    inversion intermediate_cfg_has_one_thread as (e'' & (σ'' & P)).
+    rewrite P in nstep_ooc_rest.
+    pose proof (IHn _ _ _ _ _ nstep_ooc_rest) as nstep_ic_rest. (*nsteps in-context*)
+    rewrite P in step_ooc.
+    inversion step_ooc as [e_s σ_s e''_s σ''_s spawned_threads t1 t2 Pes Pe''s prim_step_e_e''].
+    inversion Pes as [Pe].
+    rewrite <- H4.
+    rewrite <- H4 in prim_step_e_e''.
+    pose proof (list_empty_surroundings _ _ _ _ _ Pe).
+    inversion H5.
+    inversion H7.
+    rewrite <- H9 in prim_step_e_e''.
+    inversion Pe''s as [Pe''].
+    rewrite <- H10 in prim_step_e_e''.
+    pose proof (list_empty_surroundings _ _ _ _ _ Pe'').
+    inversion H11.
+    inversion H13.
+    pose proof (app_eq_nil t2 spawned_threads H14).
+    inversion H16.
+    rewrite <- H15 in prim_step_e_e''.
+    rewrite H18 in prim_step_e_e''.
+    pose proof (fill_step _ _ _ _ _ _ prim_step_e_e'') as prim_step_ic.
+    eapply language.nsteps_l; [|exact nstep_ic_rest].
+    eapply step_atomic with (t3 := []) (t4 := []); [| |exact prim_step_ic]; eauto.
+  }
+Qed.
+
+Ltac head_step :=
+  rewrite /= /head_step /=; repeat (monad_simpl; simpl).
+
+(* Always apply step_atomic with t1, t2 as [] since we don't care
+    about threading. *)
+Ltac single_step :=
+  eapply language.nsteps_l; [|apply language.nsteps_refl];
+  eapply step_atomic with (t1:=[]) (t2:=[]); [simpl; reflexivity|simpl; reflexivity|apply head_prim_step; head_step].
+
+Ltac interpret_bind :=
+  match goal with
+  | [H : runStateT (mbind (fun x => @?F x) ?ma) ?σ = _ |- _] =>
+    match goal with
+    | [ma_result : runStateT ma σ = Works _ (?v, ?σ') |- _] =>
+      try rewrite (runStateT_Error_bind _ _ _ _ _ _ F ma_result) in H
+    | [ma_result : runStateT ma σ = Fail _ ?s |- _] =>
+      try rewrite (runStateT_Error_bind_false _ _ _ _ F s ma_result) in H; try inversion H
+    | _ => fail
+    end
+  | _ => fail
+  end.
+
 (* The analog of ext_semantics for an interpretable external
 operation. An ext_step isn't strong enough to let us interpret
 ExternalOps. *)
@@ -39,7 +205,7 @@ Section go_lang_int.
   {
     (* fuel, operation, argument, starting state, returns ending val and state *)
     ext_interpret_step : external -> val -> StateT state Error expr;
-    ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ' σ'': state),
+    ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ': state),
         (runStateT (ext_interpret_step eop arg) σ = Works _ (result, σ')) ->
         exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ');
   }.
@@ -428,172 +594,6 @@ Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     | NewProph => mfail "NotImpl: prophecy variable." (* ignore *)
     | Resolve ex e1 e2 => mfail "NotImpl: resolve."   (* ignore *)
     end
-  end.
-
-Lemma nsteps_transitive : forall L n m p1 p2 p3 l1 l2,
-    @language.nsteps L n p1 l1 p2 ->
-    @language.nsteps L m p2 l2 p3 ->
-    @language.nsteps L (n + m) p1 (l1 ++ l2) p3.
-Proof.
-  induction n.
-  { (* n = 0 *)
-    intros.
-    inversion H.
-    simpl.
-    exact H0.
-  }
-  { (* S n *)
-    intros.
-    inversion H.
-    rewrite <- app_assoc.
-    eapply language.nsteps_l.
-    {
-      exact H2.
-    }
-    eapply IHn; [exact H3|exact H0].
-  }
-Qed.
-
-Lemma list_empty_surroundings : forall X (e:X) (e':X) (t1:list X) (t2:list X),
-    [e] = t1 ++ e' :: t2 ->
-    (t1 = []) /\ (t2 = []) /\ (e = e').
-Proof.
-  intros.
-  assert (t1 = []).
-  {
-    destruct t1; [trivial|].
-    inversion H.
-    pose proof (app_cons_not_nil t1 t2 e').
-    contradiction.
-  }
-  rewrite H0 in H.
-  split; [exact H0|].
-  assert (t2 = []).
-  {
-    destruct t2; [trivial|].
-    inversion H.
-  }
-  rewrite H1 in H.
-  inversion H.
-  split; eauto.
-Qed.
-
-Lemma list_empty_surroundings_strong : forall X (e:X) (e':X) (t1:list X) (t2:list X) (efs:list X),
-    [e] = t1 ++ e' :: t2 ++ efs ->
-    (t1 = []) /\ (t2 = []) /\ (efs = []) /\ (e = e').
-Proof.
-  intros.
-  assert (t1 = []).
-  {
-    destruct t1; [trivial|].
-    inversion H.
-    pose proof (app_cons_not_nil t1 (t2 ++ efs) e').
-    contradiction.
-  }
-  rewrite H0 in H.
-  split; [exact H0|].
-  assert (t2 = []).
-  {
-    destruct t2; [trivial|].
-    inversion H.
-  }
-  rewrite H1 in H.
-  inversion H.
-  split; eauto.
-Qed.
-
-Lemma nsteps_no_thread_destroy `{!@LanguageCtx Λ K} n ρ e σ l:
-  @language.nsteps Λ n ρ l ([e], σ) ->
-  exists e' σ', ρ = ([e'], σ').
-Proof.
-  generalize ρ l e σ.
-  induction n.
-  {
-    intros.
-    inversion H0.
-    do 2 eexists; reflexivity.
-  }
-  {
-    intros.
-    inversion H0; try eauto.
-    rewrite <- H4 in *.
-    pose proof (IHn _ _ _ _ H3) as IH.
-    destruct IH as (e' & IH').
-    destruct IH' as (σ' & IH'').
-    rewrite IH'' in H2.
-    inversion H2.
-    inversion H8.
-    pose proof (list_empty_surroundings_strong _ _ _ _ _ _ H11) as one_thread.
-    inversion one_thread.
-    inversion H13.
-    inversion H15.
-    rewrite H10 in H7.
-    rewrite H14 in H7.
-    simpl in H7.
-    do 2 eexists; exact H7.
-  }
-Qed.
-
-Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ1 σ2 l:
-@language.nsteps Λ n ([e1], σ1) l ([e2], σ2) →
-@language.nsteps Λ n ([K e1], σ1) l ([K e2], σ2).
-Proof using ext ffi ffi_semantics. (*coq told me to do this*)
-  generalize e1 e2 σ1 σ2 l.
-  induction n.
-  { (* n = 0 *)
-    intros e e' σ σ' l' nstep_ooc; inversion nstep_ooc. (*nsteps hypothesis out-of-context*)
-    apply language.nsteps_refl. }
-  { (* S n *)
-    intros e e' σ σ' l' nstep_ooc.
-    inversion nstep_ooc as [|n' ρ1 ρ2 ρ3 κ κs step_ooc nstep_ooc_rest].
-    pose proof (nsteps_no_thread_destroy _ _ _ _ _ nstep_ooc_rest) as intermediate_cfg_has_one_thread.
-    inversion intermediate_cfg_has_one_thread as (e'' & (σ'' & P)).
-    rewrite P in nstep_ooc_rest.
-    pose proof (IHn _ _ _ _ _ nstep_ooc_rest) as nstep_ic_rest. (*nsteps in-context*)
-    rewrite P in step_ooc.
-    inversion step_ooc as [e_s σ_s e''_s σ''_s spawned_threads t1 t2 Pes Pe''s prim_step_e_e''].
-    inversion Pes as [Pe].
-    rewrite <- H4.
-    rewrite <- H4 in prim_step_e_e''.
-    pose proof (list_empty_surroundings _ _ _ _ _ Pe).
-    inversion H5.
-    inversion H7.
-    rewrite <- H9 in prim_step_e_e''.
-    inversion Pe''s as [Pe''].
-    rewrite <- H10 in prim_step_e_e''.
-    pose proof (list_empty_surroundings _ _ _ _ _ Pe'').
-    inversion H11.
-    inversion H13.
-    pose proof (app_eq_nil t2 spawned_threads H14).
-    inversion H16.
-    rewrite <- H15 in prim_step_e_e''.
-    rewrite H18 in prim_step_e_e''.
-    pose proof (fill_step _ _ _ _ _ _ prim_step_e_e'') as prim_step_ic.
-    eapply language.nsteps_l; [|exact nstep_ic_rest].
-    eapply step_atomic with (t3 := []) (t4 := []); [| |exact prim_step_ic]; eauto.
-  }
-Qed.
-
-Ltac head_step :=
-  rewrite /= /head_step /=; repeat (monad_simpl; simpl).
-
-(* Always apply step_atomic with t1, t2 as [] since we don't care
-    about threading. *)
-Ltac single_step :=
-  eapply language.nsteps_l; [|apply language.nsteps_refl];
-  eapply step_atomic with (t1:=[]) (t2:=[]); [simpl; reflexivity|simpl; reflexivity|apply head_prim_step; head_step].
-
-Ltac interpret_bind :=
-  match goal with
-  | [H : runStateT (mbind (fun x => @?F x) ?ma) ?σ = _ |- _] =>
-    match goal with
-    | [ma_result : runStateT ma σ = Works _ (?v, ?σ') |- _] =>
-      try rewrite (runStateT_Error_bind _ _ _ _ _ _ F ma_result) in H
-    | [ma_result : runStateT ma σ = Fail _ ?s |- _] =>
-      try rewrite (runStateT_Error_bind_false _ _ _ _ F s ma_result) in H; try inversion H
-    | _ => fail
-    end
-  | _ => fail
   end.
 
 Ltac run_next_interpret IHn :=
@@ -1023,7 +1023,7 @@ Proof.
   { run_next_interpret IHn.
     destruct (runStateT (ext_interpret_step op v1) s) as [e_result|] eqn:ext_interp_v1; [|interpret_bind].
     destruct e_result as (e' & s').
-    pose proof (ext_interpret_ok _ _ _ _ _ s ext_interp_v1) as ei_ok.
+    pose proof (ext_interpret_ok _ _ _ _ _ ext_interp_v1) as ei_ok.
     destruct ei_ok as (m' & (l' & nstep_ext_interp)).
     interpret_bind.
     pose proof (IHn _ _ _ _ H0).
@@ -1079,8 +1079,28 @@ Instance statet_disk_error_bind : MBind (StateT state Error) :=
 Instance statet_disk_error_ret : MRet (StateT state Error) :=
   StateT_ret Error Error_ret.
 
-Definition read_block_from_state (σ: state) (l: loc) : option Block.
-  (* pose (vs <- state_readn σ l block_bytes; commute_option_list _ (map byte_val vs)) as maybe_list. *)
+Definition free_val {A} (x: nonAtomic A) : option A :=
+  match x with
+  | Reading y 0 => Some y
+  | _ => None
+  end.
+
+Definition read_block_from_state (σ: state) (l: loc) : option Block :=
+  navs <- state_readn_vec σ l block_bytes;
+  (* list (nonAtomic val) -> list (option val) -> option (list val) -> list val *)
+    vs <- commute_option_vec _ (vmap free_val navs);
+    commute_option_vec _ (vmap byte_val vs).
+
+Lemma read_block_from_state_ok (σ: state) (l: loc) (b: Block) :
+  (read_block_from_state σ l = Some b) ->
+  (forall (i:Z), 0 <= i -> i < 4096 ->
+            match σ.(heap) !! (l +ₗ i) with
+            | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
+            | _ => False
+            end).
+Proof.
+  intros.
+  unfold read_block_from_state in H.
 Admitted.
 
 Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
@@ -1093,16 +1113,62 @@ Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
         mret (Val $ LitV (LitLoc l))
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
     σ <- mget;
+      _ <- mlift (σ.(world) !! int.val a) ("WriteOp: No block at write address " ++ (pretty a));
       b <- mlift (read_block_from_state σ l) "WriteOp: Read from heap failed";
       _ <- mput (set world <[ int.val a := b ]> σ);
       mret (Val $ LitV (LitUnit))
   | _ => mfail "NotImpl disk_interpret"
   end.
 
-Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ' σ'': state),
+Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state),
         (runStateT (disk_interpret_step eop arg) σ = Works _ (result, σ')) ->
         exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ').
-Admitted.
+Proof.
+  intros eop arg result σ σ' H.
+  destruct eop; inversion H.
+  { (* ReadOp *)
+    destruct arg; try by inversion H1.
+    destruct l; try by inversion H1.
+    simpl in H1.
+    destruct (world σ !! int.val n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1.
+    simpl in H1.
+    inversion H1.
+    do 2 eexists.
+    single_step.
+    rewrite disk_at_n.
+    simpl.
+    monad_simpl.
+    pose proof (find_alloc_location_fresh σ 4096) as fresh.
+    {
+      eapply relation.bind_suchThat.
+      {
+        simpl.
+        exact fresh.
+      }
+      monad_simpl.
+    }
+  }
+  { (* WriteOp *)
+    destruct arg; try by inversion H1.
+    destruct arg1; try by inversion H1.
+    destruct l; try by inversion H1.
+    destruct arg2; try by inversion H1.
+    destruct l; try by inversion H1. (* takes a very long time (why?) *)
+    simpl in H1.
+    destruct (world σ !! int.val n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1. (* also takes a long time *)
+    destruct (read_block_from_state σ l) eqn:block_at_l; try by inversion H1.
+    simpl in H1.
+    inversion H1.
+    do 2 eexists.
+    single_step.
+    rewrite disk_at_n.
+    simpl.
+    monad_simpl.
+    pose proof (read_block_from_state_ok _ _ _ block_at_l) as rbfsok.
+    eapply relation.bind_suchThat; [exact rbfsok|].
+    monad_simpl.
+  }
+Qed.
 
 Instance disk_interpretable : @ext_interpretable disk_op disk_model disk_semantics :=
   { ext_interpret_step := disk_interpret_step;
