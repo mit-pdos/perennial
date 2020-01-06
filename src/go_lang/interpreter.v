@@ -1085,14 +1085,45 @@ Definition free_val {A} (x: nonAtomic A) : option A :=
   | _ => None
   end.
 
-Definition read_block_from_state (σ: state) (l: loc) : option Block :=
+Definition read_block_from_heap (σ: state) (l: loc) : option Block :=
   navs <- state_readn_vec σ l block_bytes;
   (* list (nonAtomic val) -> list (option val) -> option (list val) -> list val *)
     vs <- commute_option_vec _ (vmap free_val navs);
     commute_option_vec _ (vmap byte_val vs).
 
-Lemma read_block_from_state_ok (σ: state) (l: loc) (b: Block) :
-  (read_block_from_state σ l = Some b) ->
+Lemma commute_option_vec_ok {A} : forall n (ov: vec (option A) n) (v: vec A n),
+  (commute_option_vec A ov = Some v) ->
+  (forall (i:fin n),
+           ov !!! i = Some (v !!! i)).
+Proof.
+  induction n.
+  {
+    intros.
+    inversion i.
+  }
+  {
+    intros.
+    dependent destruction ov.
+    simpl in H.
+    destruct h as [a|]; [simpl in H|by inversion H].
+    destruct (commute_option_vec A ov) as [v'|] eqn:cov_tail; [unfold mret, option_ret in H; simpl in H|by inversion H].
+    pose proof (IHn _ _ cov_tail) as IH_tail.
+    inversion H.
+    inv_fin i.
+    {
+      simpl.
+      reflexivity.
+    }
+    {
+      intros i.
+      simpl.
+      exact (IH_tail i).
+    }
+  }
+Qed.
+
+Lemma read_block_from_heap_ok (σ: state) (l: loc) (b: Block) :
+  (read_block_from_heap σ l = Some b) ->
   (forall (i:Z), 0 <= i -> i < 4096 ->
             match σ.(heap) !! (l +ₗ i) with
             | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
@@ -1100,7 +1131,11 @@ Lemma read_block_from_state_ok (σ: state) (l: loc) (b: Block) :
             end).
 Proof.
   intros.
-  unfold read_block_from_state in H.
+  unfold read_block_from_heap in H.
+  unfold mbind in H.
+  unfold option_bind in H.
+  destruct (state_readn_vec σ l block_bytes) as [navs|] eqn:vec_at_l; try by inversion H.
+  destruct (commute_option_vec val (vmap free_val navs)) as [v|] eqn:all_free; try by inversion H.
 Admitted.
 
 Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
@@ -1114,7 +1149,7 @@ Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
     σ <- mget;
       _ <- mlift (σ.(world) !! int.val a) ("WriteOp: No block at write address " ++ (pretty a));
-      b <- mlift (read_block_from_state σ l) "WriteOp: Read from heap failed";
+      b <- mlift (read_block_from_heap σ l) "WriteOp: Read from heap failed";
       _ <- mput (set world <[ int.val a := b ]> σ);
       mret (Val $ LitV (LitUnit))
   | _ => mfail "NotImpl disk_interpret"
@@ -1156,7 +1191,7 @@ Proof.
     destruct l; try by inversion H1. (* takes a very long time (why?) *)
     simpl in H1.
     destruct (world σ !! int.val n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1. (* also takes a long time *)
-    destruct (read_block_from_state σ l) eqn:block_at_l; try by inversion H1.
+    destruct (read_block_from_heap σ l) eqn:block_at_l; try by inversion H1.
     simpl in H1.
     inversion H1.
     do 2 eexists.
@@ -1164,7 +1199,7 @@ Proof.
     rewrite disk_at_n.
     simpl.
     monad_simpl.
-    pose proof (read_block_from_state_ok _ _ _ block_at_l) as rbfsok.
+    pose proof (read_block_from_heap_ok _ _ _ block_at_l) as rbfsok.
     eapply relation.bind_suchThat; [exact rbfsok|].
     monad_simpl.
   }
