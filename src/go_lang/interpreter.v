@@ -1091,6 +1091,57 @@ Definition read_block_from_heap (σ: state) (l: loc) : option Block :=
     vs <- commute_option_vec _ (vmap free_val navs);
     commute_option_vec _ (vmap byte_val vs).
 
+Lemma vec_ugh_ok {A} : forall n (v: vec A (n + 1)) (i:nat),
+    vec_ugh n v !!! i = v !!! i.
+
+(* If state_readn_vec succeeds, for each i in the range requested, the
+heap at l + i should be some nonatomic value and that nav should be at
+the return value in index i. *)
+Lemma state_readn_vec_ok : forall σ l n v,
+  (state_readn_vec σ l n = Some v) ->
+  (forall (i:fin n),
+      match σ.(heap) !! (l +ₗ i) with
+      | Some nav => nav = v !!! i
+      | _ => False
+      end).
+Proof.
+  induction n.
+  {
+    intros.
+    inversion i.
+  }
+  {
+    intros.
+    dependent destruction v.
+    simpl in H.
+    destruct (heap σ !! (l +ₗ n)) as [nav|] eqn:heap_at_ln; try by inversion H.
+    simpl in H.
+    destruct (state_readn_vec σ l n) as [vtl|] eqn:srv_ind; try by inversion H.
+    simpl in H.
+    unfold mret in H.
+    inversion H.
+    pose proof (IHn vtl eq_refl) as srv_ih.
+    inv_fin i.
+    {
+      simpl.
+      destruct n.
+      {
+        admit.
+      }
+      {
+        rewrite H1.
+        pose proof (srv_ih 0%fin).
+        destruct (heap σ !! (l +ₗ 0%fin)) eqn:heap_at_l0; try by inversion H0.
+        rewrite heap_at_l0.
+        simpl.
+        rewrite H0.
+        unfold vec_ugh in H1.
+        simpl.
+      exact (srv_ih (0%fin:fin n)).
+
+
+Admitted.
+
 Lemma commute_option_vec_ok {A} : forall n (ov: vec (option A) n) (v: vec A n),
   (commute_option_vec A ov = Some v) ->
   (forall (i:fin n),
@@ -1135,8 +1186,53 @@ Proof.
   unfold mbind in H.
   unfold option_bind in H.
   destruct (state_readn_vec σ l block_bytes) as [navs|] eqn:vec_at_l; try by inversion H.
+  unfold block_bytes in *.
   destruct (commute_option_vec val (vmap free_val navs)) as [v|] eqn:all_free; try by inversion H.
-Admitted.
+  assert ((Z.to_nat i < 4096)%nat) as fin_i by lia.
+  pose proof (commute_option_vec_ok _ _ _ H (fin_of_nat fin_i)) as cov_ok_v.
+  pose proof (commute_option_vec_ok _ _ _ all_free (fin_of_nat fin_i)) as cov_ok_navs.
+  pose proof (state_readn_vec_ok _ _ _ _ vec_at_l (fin_of_nat fin_i)) as srv_ok_l.
+  destruct (heap σ !! (l +ₗ fin_of_nat fin_i)) as [nav|] eqn:heap_at_fin_i; [|rewrite heap_at_fin_i in srv_ok_l; contradiction].
+  assert ((l +ₗ i) = (l +ₗ fin_of_nat fin_i)).
+  {
+    unfold loc_add.
+    replace (loc_car l + (fin_of_nat fin_i)) with (loc_car l + i); [reflexivity|].
+    pose proof (fin_to_of_nat _ _ fin_i).
+    rewrite H2.
+    lia.
+  }
+  {
+    rewrite -> H2.
+    rewrite heap_at_fin_i in srv_ok_l.
+    rewrite heap_at_fin_i.
+    rewrite srv_ok_l.
+    rewrite -> (vlookup_map free_val navs (fin_of_nat fin_i)) in cov_ok_navs.
+    unfold free_val in cov_ok_navs.
+    destruct (navs !!! fin_of_nat fin_i) as [|nav'] eqn:navs_at_fin_i; inversion cov_ok_navs.
+    destruct n eqn:n_is_free; inversion cov_ok_navs.
+    clear cov_ok_navs navs_at_fin_i heap_at_fin_i H4 H5 H2 srv_ok_l nav' n n_is_free nav all_free H navs vec_at_l.
+    unfold block_bytes in cov_ok_v. (* even though it doesn't display, block_bytes is there *)
+    rewrite -> (vlookup_map byte_val v (fin_of_nat fin_i)) in cov_ok_v.
+    destruct (v !!! fin_of_nat fin_i) eqn:v_at_fin_i; try by inversion cov_ok_v.
+    unfold Block_to_vals.
+    pose proof (list_lookup_fmap b2val b (Z.to_nat i)).
+    rewrite H.
+    simpl in cov_ok_v.
+    destruct l0; try by inversion cov_ok_v.
+    inversion cov_ok_v as [b_at_fin_i].
+    rewrite <- b_at_fin_i.
+    pose proof (vlookup_lookup' b (Z.to_nat i) n) as vll.
+    assert ((b : list u8) !! Z.to_nat i = Some n).
+    {
+      apply vll.
+      exists fin_i.
+      rewrite b_at_fin_i; reflexivity.
+    }
+    rewrite H2.
+    unfold b2val.
+    simpl; reflexivity.
+  }
+Qed.
 
 Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
   match (op, v) with
