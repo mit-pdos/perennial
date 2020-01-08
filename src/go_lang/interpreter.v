@@ -238,14 +238,6 @@ Fixpoint state_readn (s: state) (l: loc) (n: nat) : option (list (nonAtomic val)
           mret (ls ++ [v])
   end.
 
-(* Why is this necessary? I dont understand why I had to do this to
-get the types to work. *)
-Definition vec_ugh {X} (m : nat) (v:vec X (m + 1)) : vec X (S m).
-assert ((m + 1)%nat = S m) by lia.
-rewrite H in v.
-exact v.
-Defined.
-
 (* (forall vs, state_readn s l n = Some vs -> length vs = n) is possible to
 prove, but (exists vs, state_readn s l n = Some vs /\ length vs = n)
 \/ (state_readn s l n = None) was not for some typing reasons (nonconstructive?).
@@ -255,9 +247,9 @@ vector type as state_readn_vec *)
 Fixpoint state_readn_vec (s: state) (l: loc) (n: nat) : option (vec (nonAtomic val) n) :=
   match n with
   | O => mret vnil
-  | S m => v <- s.(heap) !! (loc_add l m);
-            vtl <- state_readn_vec s l m;
-            mret (vec_ugh m $ vapp vtl (vcons v vnil))
+  | S m => v <- s.(heap) !! l;
+            vtl <- state_readn_vec s (loc_add l 1) m;
+            mret (vcons v vtl)
   end.
 
 Fixpoint commute_option_list X (a : list (option X)) : option (list X) :=
@@ -1091,13 +1083,10 @@ Definition read_block_from_heap (σ: state) (l: loc) : option Block :=
     vs <- commute_option_vec _ (vmap free_val navs);
     commute_option_vec _ (vmap byte_val vs).
 
-Lemma vec_ugh_ok {A} : forall n (v: vec A (n + 1)) (i:nat),
-    vec_ugh n v !!! i = v !!! i.
-
 (* If state_readn_vec succeeds, for each i in the range requested, the
 heap at l + i should be some nonatomic value and that nav should be at
 the return value in index i. *)
-Lemma state_readn_vec_ok : forall σ l n v,
+Lemma state_readn_vec_ok : forall n σ l v,
   (state_readn_vec σ l n = Some v) ->
   (forall (i:fin n),
       match σ.(heap) !! (l +ₗ i) with
@@ -1114,33 +1103,48 @@ Proof.
     intros.
     dependent destruction v.
     simpl in H.
-    destruct (heap σ !! (l +ₗ n)) as [nav|] eqn:heap_at_ln; try by inversion H.
+    destruct (heap σ !! l) as [nav|] eqn:heap_at_l; try by inversion H.
     simpl in H.
-    destruct (state_readn_vec σ l n) as [vtl|] eqn:srv_ind; try by inversion H.
+    destruct (state_readn_vec σ (l +ₗ 1) n) as [vtl|] eqn:srv_ind; try by inversion H.
     simpl in H.
     unfold mret in H.
     inversion H.
-    pose proof (IHn vtl eq_refl) as srv_ih.
     inv_fin i.
     {
       simpl.
-      destruct n.
+      assert (l +ₗ 0%nat = l) as plus_zero.
       {
-        admit.
+        unfold loc_add.
+        rewrite Zplus_0_r.
+        destruct l.
+        simpl.
+        reflexivity.
       }
+      rewrite plus_zero heap_at_l; by exact H1.
+    }
+    {
+      intros.
+      assert (l +ₗ FS i = (l +ₗ 1) +ₗ i) as l_plus_one.
       {
-        rewrite H1.
-        pose proof (srv_ih 0%fin).
-        destruct (heap σ !! (l +ₗ 0%fin)) eqn:heap_at_l0; try by inversion H0.
-        rewrite heap_at_l0.
+        unfold loc_add.
+        destruct l.
         simpl.
-        rewrite H0.
-        unfold vec_ugh in H1.
-        simpl.
-      exact (srv_ih (0%fin:fin n)).
-
-
-Admitted.
+        replace (loc_car + S i) with (loc_car + 1 + i); [reflexivity|].
+        lia.
+      }
+      rewrite l_plus_one.
+      pose proof (IHn σ (l +ₗ 1) vtl srv_ind i).
+      destruct (heap σ !! (l +ₗ 1 +ₗ i)) as [navi|] eqn:heap_at_l1i; [|contradiction].
+      simpl.
+      rewrite H0.
+      apply Eqdep_dec.inj_pair2_eq_dec in H2.
+      {
+        rewrite H2; reflexivity.
+      }
+      exact Nat.eq_dec.
+    }
+  }
+Qed.
 
 Lemma commute_option_vec_ok {A} : forall n (ov: vec (option A) n) (v: vec A n),
   (commute_option_vec A ov = Some v) ->
