@@ -1252,7 +1252,10 @@ Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
       b <- mlift (read_block_from_heap σ l) "WriteOp: Read from heap failed";
       _ <- mput (set world <[ int.val a := b ]> σ);
       mret (Val $ LitV (LitUnit))
-  | _ => mfail "NotImpl disk_interpret"
+  | (SizeOp, LitV LitUnit) =>
+    σ <- mget;
+      mret (Val $ LitV $ LitInt (U64 (disk_size σ.(world))))
+  | _ => mfail "DiskOp: Not a valid disk op and arg"
   end.
 
 Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state),
@@ -1303,6 +1306,14 @@ Proof.
     eapply relation.bind_suchThat; [exact rbfsok|].
     monad_simpl.
   }
+  { (* SizeOp *)
+    destruct arg; try by inversion H1.
+    destruct l; try by inversion H1.
+    simpl in H1.
+    inversion H1.
+    do 2 eexists.
+    single_step.
+  }
 Qed.
 
 Instance disk_interpretable : @ext_interpretable disk_op disk_model disk_semantics :=
@@ -1335,7 +1346,7 @@ Example run_encdec3 := testUInt64EncDec #65536 ~~> #65536.
 Example run_encdec4 := testUInt64EncDec #3214405 ~~> #3214405.
 
 (* Compute the pmap heap but not the proofs *)
-Compute ((fun p => (fst p, (snd p).(heap).(gmap_car).(pmap.pmap_car))) <$> (runStateT (interpret 30 (testUInt64EncDec #3214405)) startstate)).
+Compute ((fun p => (fst p, (snd p).(heap).(gmap_car).(pmap.pmap_car))) <$> (runStateT (interpret 80 (testUInt64EncDec #3214405)) startstate)).
 
 Compute (runStateT (interpret 10 (testIfStatement #0)) startstate).
 Compute (runStateT (interpret 10 (testMatch (InjL #2))) startstate).
