@@ -6,6 +6,7 @@ From Perennial.go_lang Require Import typing.
 Import uPred.
 
 Definition lockRefT {ext} {ext_ty: ext_types ext} := refT boolT.
+Definition condvarRefT {ext} {ext_ty: ext_types ext} := refT lockRefT.
 
 Module lock.
   Section go_lang.
