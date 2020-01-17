@@ -1069,7 +1069,7 @@ Section go_lang_int.
       }
       exact rest_nstep.
     }
-  Qed.
+  Admitted.
 
   (* Testing *)
   Definition testRec : expr :=
