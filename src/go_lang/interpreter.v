@@ -569,7 +569,7 @@ Section go_lang_int.
             match addrv with
             | LitV (LitLoc l) => 
               s <- mget;
-                nav <- mlift (s.(heap) !! l) ("Load Failed: " ++ (pretty l));
+                nav <- mlift (s.(heap) !! l) ("Load failed: " ++ (pretty l));
                 match nav with
                 | Writing => 
                   _ <- mput (set heap <[l:=Free val]> s);
@@ -585,8 +585,29 @@ Section go_lang_int.
           e' <- ext_interpret_step op v;
           interpret n e'
 
+      | CmpXchg e0 e1 e2 =>
+          addrv <- interpret n e0;
+            v1 <- interpret n e1;
+            v2 <- interpret n e2;
+            match addrv with
+            | LitV (LitLoc l) =>
+              s <- mget;
+                nav <- mlift (s.(heap) !! l) ("CmpXchg load failed: " ++ (pretty l));
+                match nav with
+                | Reading vl 0 =>
+                  b <- mlift (bin_op_eval EqOp vl v1) "CmpXchg BinOp failed";
+                  match b with
+                  | LitV (LitBool true) => _ <- mput (set heap <[l:=Free v2]> s);
+                           mret (PairV vl #true)
+                  | LitV (LitBool false) => mret (PairV vl #false)
+                  | _ => mfail "CmpXchg EqOp did not return a boolean"
+                  end
+                | _ => mfail "Race while reading CmpXchg location"
+                end
+            | _ => mfail "CmpXchg with non-location argument"
+            end
+
       (* Won't interpret anything involving prophecy variables. *)
-      | CmpXchg e0 e1 e2 => mfail "NotImpl: cmpxchg."   (* ignore *)
       | NewProph => mfail "NotImpl: prophecy variable." (* ignore *)
       | Resolve ex e1 e2 => mfail "NotImpl: resolve."   (* ignore *)
       end
@@ -1021,6 +1042,11 @@ Section go_lang_int.
         }
         single_step.
       }
+    }
+
+    (* CmpXchg *)
+    {
+      admit.
     }
 
     (* ExternalOp *)
