@@ -841,3 +841,15 @@ Definition testUInt64EncDec: val :=
                             ] in
      Enc__UInt64 "e" "x";;
      Dec__UInt64 "d".
+
+Definition testUInt64EncDec_retBool: val :=
+  λ: "x",
+     let: "r" := NewSlice byteT #8 in
+     let: "e" := struct.new Enc.S [
+                             "p" ::= "r"
+                           ] in
+     let: "d" := struct.new Dec.S [
+                              "p" ::= "r"
+                            ] in
+     Enc__UInt64 "e" "x";;
+     "x" = Dec__UInt64 "d".

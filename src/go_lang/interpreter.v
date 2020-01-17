@@ -1373,3 +1373,21 @@ Compute (runStateT (interpret 10 (testMatch (InjL #2))) startstate).
 Compute (runStateT (interpret 10 (testMatch (InjR #2))) startstate).
 Compute (runStateT (interpret 16 (useMap #0)) startstate).
 Compute (runStateT (interpret 10 (ReassignVars #0)) startstate).
+
+Definition test_case (p: expr) :=
+  match (fst <$> runStateT (interpret 100 p) startstate) with
+  | Works _ (LitV (LitBool true)) => true
+  | _ => false
+  end.
+
+Definition tc1 := (test_case (testUInt64EncDec_retBool #333)).
+
+(* Extraction testing:
+
+Require Coq.extraction.Extraction.
+Extraction Language Haskell.
+Extract Inductive bool => "GHC.Base.Bool" [ "GHC.Base.True" "GHC.Base.False" ].
+
+Extraction "tc1.hs" tc1.
+
+*)
