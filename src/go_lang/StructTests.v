@@ -43,6 +43,13 @@ Section go_lang.
     goal_is_exactly_equal.
   Qed.
 
+  Theorem fieldOffset_is l : struct.fieldPointer three.S "bar" l = fieldPointer three.S "bar" l.
+  Proof.
+    goal_is_exactly_equal.
+  Qed.
+
+  Fail Example fieldOffset_check l : fieldOffset three.S "foobar" l = l.
+
   Theorem foo_t : ⊢ three.foo : (three.T -> uint64T).
   Proof. typecheck. Qed.
 

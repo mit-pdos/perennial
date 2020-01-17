@@ -107,16 +107,20 @@ Fixpoint field_offset (fields: list (string*ty)) f0 : option (Z * ty) :=
                     end
   end%Z.
 
-(** A function that computes the address of field f given a base address for a
-struct of type d.
+Definition fieldPointer (d:descriptor) (f:string) (l:loc): loc :=
+  match field_offset d.(fields) f with
+  | Some (off, _) => l +ₗ off
+  | None => null
+  end.
 
-Note that the resulting function simply takes a location and constant pointer
+(** structFieldRef gives a function that takes a location and constant pointer
 arithmetic on it (which is pre-computed based on the field and descriptor). *)
 Definition structFieldRef (d:descriptor) (f:string): val :=
   match field_offset d.(fields) f with
   | Some (off, _) => λ: "p", (Var "p" +ₗ #off)
   | None => λ: "p", Var "p"
   end.
+
 
 Definition loadField (d:descriptor) (f:string) : val :=
   match field_offset d.(fields) f with
@@ -369,6 +373,14 @@ Module struct.
   Notation alloc := allocStruct.
   Notation get := getField.
   Notation fieldRef := structFieldRef.
+  (** Computes the address of field f given a base address for a struct of type d;
+produces fieldPointer if the field exists and an error otherwise. *)
+  Notation fieldPointer d f l :=
+    (ltac:(let e := (eval cbv in (field_offset d.(fields) f)) in
+           match e with
+           | Some _ => exact (fieldPointer d f l)
+           | None => fail "non-existent field" f
+           end)) (only parsing).
   (* TODO: load/loadF could probably use better names *)
   Notation load := loadStruct.
   Notation loadF := loadField.
