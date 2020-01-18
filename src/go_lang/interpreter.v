@@ -1046,7 +1046,62 @@ Section go_lang_int.
 
     (* CmpXchg *)
     {
-      admit.
+      do 3 run_next_interpret IHn.
+      destruct v1; simpl in H0; try by inversion H0.
+      destruct l2; simpl in H0; try by inversion H0.
+      destruct (heap s1 !! l2) as [x|] eqn:heap_at_l2; simpl in H0; try by inversion H0.
+      destruct x as [|vl] eqn:x_is; simpl in H0; try by inversion H0.
+      destruct n0 eqn:n0_is_0; simpl in H0; try by inversion H0.
+      destruct (bin_op_eval EqOp vl v2) as [some_b|] eqn:boe; simpl in H0; try by inversion H0.
+      destruct some_b; simpl in H0; try by inversion H0.
+      destruct l3; simpl in H0; try by inversion H0.
+      destruct b; simpl in H0; inversion H0.
+      { (* CmpXchg succeeds (true case) *)
+        do 2 eexists.
+        eapply nsteps_transitive.
+        {
+          ctx_step (fill ([CmpXchgLCtx e2 e3])).
+        }
+        eapply nsteps_transitive.
+        {
+          ctx_step (fill ([CmpXchgMCtx #l2 e3])).
+        }
+        eapply nsteps_transitive.
+        {
+          ctx_step (fill ([CmpXchgRCtx #l2 v2])).
+        }
+        single_step.
+        unfold bin_op_eval in boe; simpl in boe.
+
+        destruct (decide (vals_compare_safe vl v2)) eqn:vcs; inversion boe.
+        monad_simpl.
+        case_bool_decide; inversion H3.
+        repeat (monad_simpl; simpl).
+      }
+      { (* CmpXchg fails (false case) *)
+        do 2 eexists.
+        eapply nsteps_transitive.
+        {
+          ctx_step (fill ([CmpXchgLCtx e2 e3])).
+        }
+        eapply nsteps_transitive.
+        {
+          ctx_step (fill ([CmpXchgMCtx #l2 e3])).
+        }
+        eapply nsteps_transitive.
+        {
+          ctx_step (fill ([CmpXchgRCtx #l2 v2])).
+        }
+        single_step.
+        unfold bin_op_eval in boe; simpl in boe.
+        destruct (decide (vals_compare_safe vl v2)) eqn:vcs; inversion boe.
+        monad_simpl.
+        case_bool_decide; inversion H3.
+        repeat (monad_simpl; simpl).
+        constructor.
+        rewrite H2.
+        reflexivity.
+      }
     }
 
     (* ExternalOp *)
@@ -1069,7 +1124,7 @@ Section go_lang_int.
       }
       exact rest_nstep.
     }
-  Admitted.
+  Qed.
 
   (* Testing *)
   Definition testRec : expr :=
