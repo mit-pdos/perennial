@@ -55,11 +55,11 @@ Definition buildStruct (d:descriptor) (fvs: list (string*expr)) : expr :=
 
 (* wraps AllocStruct for typechecking *)
 Definition allocStruct (d:descriptor) : val :=
-  λ: "v", AllocStruct (Var "v").
+  λ: "v", Alloc (Var "v").
 
 Definition allocStructLit (d:descriptor) (fvs: list (string*expr)) : expr :=
   match build_struct_val fvs (rev d.(fields)) with
-  | Some v => AllocStruct v
+  | Some v => Alloc v
   | None => LitV LitUnit
   end.
 
@@ -140,11 +140,6 @@ Definition storeField d f : val :=
 Hint Resolve struct_offset_op_hasTy_eq : types.
 
 Local Open Scope heap_types.
-
-Theorem allocStruct_t d Γ : Γ ⊢ allocStruct d : (structTy d -> structRefTy d).
-Proof.
-  typecheck.
-Qed.
 
 Theorem load_struct_ref_hasTy Γ l t ts :
   Γ ⊢ l : structRefT (t::ts) ->
@@ -392,4 +387,4 @@ Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scop
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)
 Global Opaque allocStruct structFieldRef loadStruct loadField storeStruct storeField.
-Hint Resolve allocStruct_t structFieldRef_t loadStruct_t loadField_t storeStruct_t storeField_t : types.
+Hint Resolve structFieldRef_t loadStruct_t loadField_t storeStruct_t storeField_t : types.

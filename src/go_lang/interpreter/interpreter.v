@@ -451,14 +451,6 @@ Section interpreter.
 
       | Primitive1 p e =>
         match p in (prim_op args1) return StateT state Error val with
-        | AllocStructOp =>
-          (* In head_trans, alloc nondeterministically allocates at any
-           valid location. We'll just pick the first valid location. *)
-          structv <- interpret n e;
-            s <- mget;
-            let l := find_alloc_location s (length (flatten_struct structv)) in
-            _ <- mput (state_insert_list l (flatten_struct structv) s);
-              mret (LitV (LitLoc l))
         | PrepareWriteOp =>
           addrv <- interpret n e;
             match addrv with
@@ -884,23 +876,6 @@ Section interpreter.
     (* Primitive1 *)
     {
       dependent destruction op.
-      { (* AllocStruct *)
-        run_next_interpret IHn.
-        simpl in H0.
-        inversion H0.
-        do 2 eexists.
-        eapply nsteps_transitive.
-        { (* [AllocStruct e] -> [AllocStruct v0] *)
-          ctx_step (fill [(Primitive1Ctx AllocStructOp)]).
-        }
-        single_step.
-        eapply relation.bind_suchThat.
-        (* Must prove the location find_alloc_location found is adequate *)
-        { intros i ? ?.
-          eapply find_alloc_location_ok; eauto. }
-        monad_simpl.
-      }
-
       { (* PrepareWrite *)
         run_next_interpret IHn.
         destruct v1; simpl in H0; try by inversion H0.
@@ -1117,4 +1092,3 @@ Section interpreter.
     }
   Qed.
 End interpreter.
-

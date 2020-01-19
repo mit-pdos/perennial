@@ -6,12 +6,18 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
 
 (* comments.go *)
 
-(* This struct is very important.
-
-   This is despite it being empty. *)
 Module importantStruct.
+  (* This struct is very important.
+
+     This is despite it being empty. *)
   Definition S := struct.decl [
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End importantStruct.
 
 (* doSubtleThings does a number of subtle things:
@@ -171,6 +177,12 @@ Module Enc.
   Definition S := struct.decl [
     "p" :: slice.T byteT
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End Enc.
 
 Definition Enc__consume: val :=
@@ -191,6 +203,12 @@ Module Dec.
   Definition S := struct.decl [
     "p" :: slice.T byteT
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End Dec.
 
 Definition Dec__consume: val :=
@@ -206,38 +224,6 @@ Definition Dec__UInt64: val :=
 Definition Dec__UInt32: val :=
   λ: "d",
     UInt32Get (Dec__consume "d" #4).
-
-Definition roundtripEncDec32: val :=
-  λ: "x",
-    let: "r" := NewSlice byteT #4 in
-    let: "e" := struct.new Enc.S [
-      "p" ::= "r"
-    ] in
-    let: "d" := struct.new Dec.S [
-      "p" ::= "r"
-    ] in
-    Enc__UInt32 "e" "x";;
-    Dec__UInt32 "d".
-
-Definition EncDec32: val :=
-  λ: "x",
-    (roundtripEncDec32 "x" = "x").
-
-Definition roundtripEncDec64: val :=
-  λ: "x",
-    let: "r" := NewSlice byteT #8 in
-    let: "e" := struct.new Enc.S [
-      "p" ::= "r"
-    ] in
-    let: "d" := struct.new Dec.S [
-      "p" ::= "r"
-    ] in
-    Enc__UInt64 "e" "x";;
-    Dec__UInt64 "d".
-
-Definition EncDec64: val :=
-  λ: "x",
-    (roundtripEncDec64 "x" = "x").
 
 (* ints.go *)
 
@@ -264,6 +250,12 @@ Module allTheLiterals.
     "s" :: stringT;
     "b" :: boolT
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End allTheLiterals.
 
 Definition normalLiterals: val :=
@@ -311,6 +303,12 @@ Module hasCondVar.
   Definition S := struct.decl [
     "cond" :: condvarRefT
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End hasCondVar.
 
 (* log_debugging.go *)
@@ -438,7 +436,7 @@ Definition LogicalOperators: val :=
 
 Definition LogicalAndEqualityOperators: val :=
   λ: "b1" "x",
-    ("x" = #3) && ("b1" = #true).
+    "x" = #3 && "b1" = #true.
 
 Definition ArithmeticShifts: val :=
   λ: "x" "y",
@@ -453,7 +451,7 @@ Definition Comparison: val :=
     (if: "x" < "y"
     then #true
     else
-      (if: ("x" = "y")
+      (if: "x" = "y"
       then #true
       else
         (if: "x" ≠ "y"
@@ -487,6 +485,12 @@ Module composite.
     "a" :: uint64T;
     "b" :: uint64T
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End composite.
 
 Definition ReassignVars: val :=
@@ -502,7 +506,7 @@ Definition ReassignVars: val :=
       "a" ::= "y";
       "b" ::= !"x"
     ];;
-    "x" <- struct.get composite.S "a" !"z".
+    "x" <- composite.get "a" !"z".
 
 (* replicated_disk.go *)
 
@@ -510,6 +514,12 @@ Module Block.
   Definition S := struct.decl [
     "Value" :: uint64T
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End Block.
 
 Definition Disk1 : expr := #0.
@@ -599,17 +609,29 @@ Module thing.
   Definition S := struct.decl [
     "x" :: uint64T
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End thing.
 
 Module sliceOfThings.
   Definition S := struct.decl [
-    "things" :: slice.T (struct.t thing.S)
+    "things" :: slice.T thing.T
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End sliceOfThings.
 
 Definition sliceOfThings__getThingRef: val :=
   λ: "ts" "i",
-    SliceRef (struct.get sliceOfThings.S "things" "ts") "i".
+    SliceRef (sliceOfThings.get "things" "ts") "i".
 
 Definition makeAlias: val :=
   λ: <>,
@@ -666,35 +688,41 @@ Definition stringLength: val :=
 
 (* struct_method.go *)
 
-Module Point.
+Module C.
   Definition S := struct.decl [
     "x" :: uint64T;
     "y" :: uint64T
   ].
-End Point.
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
+End C.
 
-Definition Point__Add: val :=
+Definition C__Add: val :=
   λ: "c" "z",
-    struct.get Point.S "x" "c" + struct.get Point.S "y" "c" + "z".
+    C.get "x" "c" + C.get "y" "c" + "z".
 
-Definition Point__GetField: val :=
+Definition C__GetField: val :=
   λ: "c",
-    let: "x" := struct.get Point.S "x" "c" in
-    let: "y" := struct.get Point.S "y" "c" in
+    let: "x" := C.get "x" "c" in
+    let: "y" := C.get "y" "c" in
     "x" + "y".
 
 Definition UseAdd: val :=
   λ: <>,
-    let: "c" := struct.mk Point.S [
+    let: "c" := struct.mk C.S [
       "x" ::= #2;
       "y" ::= #3
     ] in
-    let: "r" := Point__Add "c" #4 in
+    let: "r" := C__Add "c" #4 in
     "r".
 
 Definition UseAddWithLiteral: val :=
   λ: <>,
-    let: "r" := Point__Add (struct.mk Point.S [
+    let: "r" := C__Add (struct.mk C.S [
       "x" ::= #2;
       "y" ::= #3
     ]) #4 in
@@ -707,14 +735,26 @@ Module TwoInts.
     "x" :: uint64T;
     "y" :: uint64T
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End TwoInts.
 
 Module S.
   Definition S := struct.decl [
     "a" :: uint64T;
-    "b" :: struct.t TwoInts.S;
+    "b" :: TwoInts.T;
     "c" :: boolT
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End S.
 
 Definition NewS: val :=
@@ -738,7 +778,7 @@ Definition S__readB: val :=
 
 Definition S__readBVal: val :=
   λ: "s",
-    struct.get S.S "b" "s".
+    S.get "b" "s".
 
 Definition S__writeB: val :=
   λ: "s" "two",
@@ -754,12 +794,12 @@ Definition S__refC: val :=
 
 Definition localSRef: val :=
   λ: <>,
-    let: "s" := ref (zero_val (struct.t S.S)) in
+    let: "s" := ref (zero_val S.T) in
     struct.fieldRef S.S "b" "s".
 
 Definition setField: val :=
   λ: <>,
-    let: "s" := ref (zero_val (struct.t S.S)) in
+    let: "s" := ref (zero_val S.T) in
     struct.storeF S.S "a" "s" #0;;
     struct.storeF S.S "c" "s" #true;;
     !"s".
@@ -786,8 +826,3 @@ Definition Timestamp: ty := uint64T.
 Definition UseTypeAbbrev: ty := u64.
 
 Definition UseNamedType: ty := Timestamp.
-
-Definition convertToAlias: val :=
-  λ: <>,
-    let: "x" := #2 in
-    "x".

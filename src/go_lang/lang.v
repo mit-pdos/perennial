@@ -114,7 +114,6 @@ Inductive prim_op : arity -> Set :=
   (* a stuck expression, to represent undefined behavior *)
   | PanicOp (s: string) : prim_op args0
   | AllocNOp : prim_op args2 (* array length (positive number), initial value *)
-  | AllocStructOp : prim_op args1 (* struct val *)
   | PrepareWriteOp : prim_op args1 (* loc *)
   | FinishStoreOp : prim_op args2 (* pointer, value *)
   (* non-atomic loads (which conflict with stores) *)
@@ -172,7 +171,6 @@ Bind Scope val_scope with val.
 
 Notation Panic s := (Primitive0 (PanicOp s)).
 Notation AllocN := (Primitive2 AllocNOp).
-Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
 Notation StartRead := (Primitive1 StartReadOp).
@@ -536,14 +534,13 @@ Proof.
                                 match op with
                                 | PanicOp s => inl s
                                 | AllocNOp => inr 0
-                                | AllocStructOp => inr 1
-                                | PrepareWriteOp => inr 2
-                                | FinishStoreOp => inr 3
-                                | StartReadOp => inr 4
-                                | FinishReadOp => inr 5
-                                | LoadOp => inr 6
-                                | InputOp => inr 7
-                                | OutputOp => inr 8
+                                | PrepareWriteOp => inr 1
+                                | FinishStoreOp => inr 2
+                                | StartReadOp => inr 3
+                                | FinishReadOp => inr 4
+                                | LoadOp => inr 5
+                                | InputOp => inr 6
+                                | OutputOp => inr 7
                                 end)
                          (λ v, match v with
                                | inl s => a_prim_op _
@@ -555,7 +552,6 @@ Proof.
                                | inr 5 => a_prim_op _
                                | inr 6 => a_prim_op _
                                | inr 7 => a_prim_op _
-                               | inr 8 => a_prim_op _
                                | _ => a_prim_op (PanicOp "")
                                end) _); intros [_ []]; trivial.
 Qed.
@@ -945,14 +941,17 @@ Close Scope Z.
 Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
   set heap (λ h, heap_array l (fmap Free vs) ∪ h) σ.
 
+Definition concat_replicate {A} (n: nat) (l: list A): list A :=
+  concat (replicate n l).
+
 Definition state_init_heap (l : loc) (n : Z) (v : val) (σ : state) : state :=
-  state_insert_list l (replicate (Z.to_nat n) v) σ.
+  state_insert_list l (concat_replicate (Z.to_nat n) (flatten_struct v)) σ.
 
 Lemma state_init_heap_singleton l v σ :
-  state_init_heap l 1 v σ = set heap <[l:=Free v]> σ.
+  state_init_heap l 1 v σ = state_insert_list l (flatten_struct v) σ.
 Proof.
-  destruct σ as [h p]. rewrite /state_init_heap /state_insert_list /set /=. f_equal.
-  rewrite right_id insert_union_singleton_l. done.
+  destruct σ as [h p]. rewrite /state_init_heap /concat_replicate /state_insert_list /set /=. f_equal.
+  rewrite right_id. done.
 Qed.
 
 Definition is_Free {A} (mna: option (nonAtomic A)) := exists x, mna = Some (Free x).
@@ -1026,12 +1025,6 @@ Fixpoint head_trans (e: expr) :
        l ← allocateN (int.val n);
        modify (state_init_heap l (int.val n) v);;
        ret $ LitV $ LitLoc l)
-  | AllocStruct (Val v) =>
-    atomically
-      (let vs := flatten_struct v in
-      l ← allocateN (Z.of_nat (length vs));
-      modify (state_insert_list l (flatten_struct v));;
-      ret $ LitV $ LitLoc l)
   | PrepareWrite (Val (LitV (LitLoc l))) =>
     atomically
       (v ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
@@ -1279,7 +1272,6 @@ Bind Scope val_scope with val.
 
 Notation Panic s := (Primitive0 (PanicOp s)).
 Notation AllocN := (Primitive2 AllocNOp).
-Notation AllocStruct := (Primitive1 AllocStructOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
 Notation StartRead := (Primitive1 StartReadOp).

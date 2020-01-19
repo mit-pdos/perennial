@@ -247,13 +247,11 @@ Section go_lang.
       Γ ⊢ e1 : t ->
       Γ ⊢ e2 : t ->
       Γ ⊢ If cond e1 e2 : t
+  (* TODO: extend to handle structs *)
   | alloc_hasTy n v t :
       Γ ⊢ n : uint64T ->
       Γ ⊢ v : t ->
       Γ ⊢ AllocN n v : arrayT t
-  | alloc_struct_hasTy v t :
-      Γ ⊢ v : t ->
-      Γ ⊢ AllocStruct v : structRefT (flatten_ty t)
   | load_hasTy l t :
       Γ ⊢ l : refT t ->
       Γ ⊢ Load l : t

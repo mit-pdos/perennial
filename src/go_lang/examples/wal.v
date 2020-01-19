@@ -6,12 +6,8 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
 
 (* 10 is completely arbitrary *)
 Definition MaxTxnWrites : expr := #10.
-Theorem MaxTxnWrites_t Γ : Γ ⊢ MaxTxnWrites : uint64T.
-Proof. typecheck. Qed.
 
 Definition logLength : expr := #1 + #2 * MaxTxnWrites.
-Theorem logLength_t Γ : Γ ⊢ logLength : uint64T.
-Proof. typecheck. Qed.
 
 Module Log.
   Definition S := struct.decl [
@@ -19,6 +15,12 @@ Module Log.
     "cache" :: mapT disk.blockT;
     "length" :: refT uint64T
   ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
 End Log.
 
 Definition intToBlock: val :=
@@ -26,17 +28,11 @@ Definition intToBlock: val :=
     let: "b" := NewSlice byteT disk.BlockSize in
     UInt64Put "b" "a";;
     "b".
-Theorem intToBlock_t: ⊢ intToBlock : (uint64T -> disk.blockT).
-Proof. typecheck. Qed.
-Hint Resolve intToBlock_t : types.
 
 Definition blockToInt: val :=
   λ: "v",
     let: "a" := UInt64Get "v" in
     "a".
-Theorem blockToInt_t: ⊢ blockToInt : (disk.blockT -> uint64T).
-Proof. typecheck. Qed.
-Hint Resolve blockToInt_t : types.
 
 (* New initializes a fresh log *)
 Definition New: val :=
@@ -58,23 +54,14 @@ Definition New: val :=
       "length" ::= "lengthPtr";
       "l" ::= "l"
     ].
-Theorem New_t: ⊢ New : (unitT -> struct.t Log.S).
-Proof. typecheck. Qed.
-Hint Resolve New_t : types.
 
 Definition Log__lock: val :=
   λ: "l",
-    lock.acquire (struct.get Log.S "l" "l").
-Theorem Log__lock_t: ⊢ Log__lock : (struct.t Log.S -> unitT).
-Proof. typecheck. Qed.
-Hint Resolve Log__lock_t : types.
+    lock.acquire (Log.get "l" "l").
 
 Definition Log__unlock: val :=
   λ: "l",
-    lock.release (struct.get Log.S "l" "l").
-Theorem Log__unlock_t: ⊢ Log__unlock : (struct.t Log.S -> unitT).
-Proof. typecheck. Qed.
-Hint Resolve Log__unlock_t : types.
+    lock.release (Log.get "l" "l").
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -82,17 +69,14 @@ Hint Resolve Log__unlock_t : types.
 Definition Log__BeginTxn: val :=
   λ: "l",
     Log__lock "l";;
-    let: "length" := !(struct.get Log.S "length" "l") in
-    (if: ("length" = #0)
+    let: "length" := !(Log.get "length" "l") in
+    (if: "length" = #0
     then
       Log__unlock "l";;
       #true
     else
       Log__unlock "l";;
       #false).
-Theorem Log__BeginTxn_t: ⊢ Log__BeginTxn : (struct.t Log.S -> boolT).
-Proof. typecheck. Qed.
-Hint Resolve Log__BeginTxn_t : types.
 
 (* Read from the logical disk.
 
@@ -100,7 +84,7 @@ Hint Resolve Log__BeginTxn_t : types.
 Definition Log__Read: val :=
   λ: "l" "a",
     Log__lock "l";;
-    let: ("v", "ok") := MapGet (struct.get Log.S "cache" "l") "a" in
+    let: ("v", "ok") := MapGet (Log.get "cache" "l") "a" in
     (if: "ok"
     then
       Log__unlock "l";;
@@ -109,23 +93,17 @@ Definition Log__Read: val :=
       Log__unlock "l";;
       let: "dv" := disk.Read (logLength + "a") in
       "dv").
-Theorem Log__Read_t: ⊢ Log__Read : (struct.t Log.S -> uint64T -> disk.blockT).
-Proof. typecheck. Qed.
-Hint Resolve Log__Read_t : types.
 
 Definition Log__Size: val :=
   λ: "l",
     let: "sz" := disk.Size #() in
     "sz" - logLength.
-Theorem Log__Size_t: ⊢ Log__Size : (struct.t Log.S -> uint64T).
-Proof. typecheck. Qed.
-Hint Resolve Log__Size_t : types.
 
 (* Write to the disk through the log. *)
 Definition Log__Write: val :=
   λ: "l" "a" "v",
     Log__lock "l";;
-    let: "length" := !(struct.get Log.S "length" "l") in
+    let: "length" := !(Log.get "length" "l") in
     (if: "length" ≥ MaxTxnWrites
     then
       Panic ("transaction is at capacity");;
@@ -135,24 +113,18 @@ Definition Log__Write: val :=
     let: "nextAddr" := #1 + #2 * "length" in
     disk.Write "nextAddr" "aBlock";;
     disk.Write ("nextAddr" + #1) "v";;
-    MapInsert (struct.get Log.S "cache" "l") "a" "v";;
-    struct.get Log.S "length" "l" <- "length" + #1;;
+    MapInsert (Log.get "cache" "l") "a" "v";;
+    Log.get "length" "l" <- "length" + #1;;
     Log__unlock "l".
-Theorem Log__Write_t: ⊢ Log__Write : (struct.t Log.S -> uint64T -> disk.blockT -> unitT).
-Proof. typecheck. Qed.
-Hint Resolve Log__Write_t : types.
 
 (* Commit the current transaction. *)
 Definition Log__Commit: val :=
   λ: "l",
     Log__lock "l";;
-    let: "length" := !(struct.get Log.S "length" "l") in
+    let: "length" := !(Log.get "length" "l") in
     Log__unlock "l";;
     let: "header" := intToBlock "length" in
     disk.Write #0 "header".
-Theorem Log__Commit_t: ⊢ Log__Commit : (struct.t Log.S -> unitT).
-Proof. typecheck. Qed.
-Hint Resolve Log__Commit_t : types.
 
 Definition getLogEntry: val :=
   λ: "logOffset",
@@ -161,9 +133,6 @@ Definition getLogEntry: val :=
     let: "a" := blockToInt "aBlock" in
     let: "v" := disk.Read ("diskAddr" + #1) in
     ("a", "v").
-Theorem getLogEntry_t: ⊢ getLogEntry : (uint64T -> (uint64T * disk.blockT)).
-Proof. typecheck. Qed.
-Hint Resolve getLogEntry_t : types.
 
 (* applyLog assumes we are running sequentially *)
 Definition applyLog: val :=
@@ -177,17 +146,11 @@ Definition applyLog: val :=
         "i" <- !"i" + #1;;
         Continue
       else Break)).
-Theorem applyLog_t: ⊢ applyLog : (uint64T -> unitT).
-Proof. typecheck. Qed.
-Hint Resolve applyLog_t : types.
 
 Definition clearLog: val :=
   λ: <>,
     let: "header" := intToBlock #0 in
     disk.Write #0 "header".
-Theorem clearLog_t: ⊢ clearLog : (unitT -> unitT).
-Proof. typecheck. Qed.
-Hint Resolve clearLog_t : types.
 
 (* Apply all the committed transactions.
 
@@ -195,14 +158,11 @@ Hint Resolve clearLog_t : types.
 Definition Log__Apply: val :=
   λ: "l",
     Log__lock "l";;
-    let: "length" := !(struct.get Log.S "length" "l") in
+    let: "length" := !(Log.get "length" "l") in
     applyLog "length";;
     clearLog #();;
-    struct.get Log.S "length" "l" <- #0;;
+    Log.get "length" "l" <- #0;;
     Log__unlock "l".
-Theorem Log__Apply_t: ⊢ Log__Apply : (struct.t Log.S -> unitT).
-Proof. typecheck. Qed.
-Hint Resolve Log__Apply_t : types.
 
 (* Open recovers the log following a crash or shutdown *)
 Definition Open: val :=
@@ -220,6 +180,3 @@ Definition Open: val :=
       "length" ::= "lengthPtr";
       "l" ::= "l"
     ].
-Theorem Open_t: ⊢ Open : (unitT -> struct.t Log.S).
-Proof. typecheck. Qed.
-Hint Resolve Open_t : types.
