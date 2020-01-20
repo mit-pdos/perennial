@@ -1426,28 +1426,24 @@ Instance disk_interpretable : @ext_interpretable disk_op disk_model disk_semanti
 Compute (runStateT (interpret 10 (AllocN #1 (zero_val uint32T))) startstate).
 Compute (runStateT (interpret 10 (useSlice2 #0)) startstate).
 Compute (runStateT (interpret 10 (returnTwoWrapper #3)) startstate).
-Compute (runStateT (interpret 10 (testStore #0)) startstate).
 Compute (runStateT (interpret 10 (testRec #0)) startstate).
 
 Definition runs_to (p: expr) (v: val) :=
   (fst <$> runStateT (interpret 100 p) startstate) = Works _ v.
 Notation "p ~~> v" := (eq_refl : runs_to p v) (at level 70).
 
-Example run_testStore := testStore #0 ~~> #3.
 Example run_testRec := testRec #0 ~~> #6.
 
 Compute (runStateT (interpret 10 ConstWithArith) startstate).
 Compute (runStateT (interpret 10 (literalCast #0)) startstate).
 Compute (fst <$> (runStateT (interpret 15 (useSliceIndexing #0)) startstate)).
-Compute (fst <$> (runStateT (interpret 7 (testLongSlice #0)) startstate)).
 
+(*
 Example run_encdec1 := testUInt64EncDec #1 ~~> #1.
 Example run_encdec2 := testUInt64EncDec #256 ~~> #256.
 Example run_encdec3 := testUInt64EncDec #65536 ~~> #65536.
 Example run_encdec4 := testUInt64EncDec #3214405 ~~> #3214405.
-
-(* Compute the pmap heap but not the proofs *)
-Compute ((fun p => (fst p, (snd p).(heap).(gmap_car).(pmap.pmap_car))) <$> (runStateT (interpret 80 (testUInt64EncDec #3214405)) startstate)).
+*)
 
 Compute (runStateT (interpret 10 (testIfStatement #0)) startstate).
 Compute (runStateT (interpret 10 (testMatch (InjL #2))) startstate).
@@ -1461,7 +1457,10 @@ Definition test_case (p: expr) :=
   | _ => false
   end.
 
-Definition tc1 := (test_case (testUInt64EncDec_retBool #333)).
+Compute (test_case (EncDec64 #333)).
+Compute (test_case (EncDec32 #333)).
+
+Definition tc1 := (test_case (EncDec64 #333)).
 
 (* Extraction testing:
 

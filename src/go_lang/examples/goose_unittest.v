@@ -230,6 +230,30 @@ Definition Dec__UInt32: val :=
   λ: "d",
     UInt32Get (Dec__consume "d" #4).
 
+Definition EncDec32: val :=
+  λ: "x",
+    let: "r" := NewSlice byteT #4 in
+    let: "e" := struct.new Enc.S [
+      "p" ::= "r"
+    ] in
+    let: "d" := struct.new Dec.S [
+      "p" ::= "r"
+    ] in
+    Enc__UInt32 "e" "x";;
+    ("x" = Dec__UInt32 "d").
+
+Definition EncDec64: val :=
+  λ: "x",
+    let: "r" := NewSlice byteT #8 in
+    let: "e" := struct.new Enc.S [
+      "p" ::= "r"
+    ] in
+    let: "d" := struct.new Dec.S [
+      "p" ::= "r"
+    ] in
+    Enc__UInt64 "e" "x";;
+    ("x" = Dec__UInt64 "d").
+
 (* ints.go *)
 
 Definition useInts: val :=
@@ -815,41 +839,3 @@ Definition Timestamp: ty := uint64T.
 Definition UseTypeAbbrev: ty := u64.
 
 Definition UseNamedType: ty := Timestamp.
-
-(* Added for interpreter testing (I can't get this notation to work in
-the interpret.v file). *)
-Definition testStore: val :=
-  λ: <>,
-    let: "x" := ref (zero_val uint64T) in
-    "x" <- #3;;
-    !"x".
-
-Definition testLongSlice: val :=
-  λ: <>,
-     let: "x" := #72 in
-     let: "e" := NewSlice byteT #8 in
-     "e".
-
-Definition testUInt64EncDec: val :=
-  λ: "x",
-     let: "r" := NewSlice byteT #8 in
-     let: "e" := struct.new Enc.S [
-                             "p" ::= "r"
-                           ] in
-     let: "d" := struct.new Dec.S [
-                              "p" ::= "r"
-                            ] in
-     Enc__UInt64 "e" "x";;
-     Dec__UInt64 "d".
-
-Definition testUInt64EncDec_retBool: val :=
-  λ: "x",
-     let: "r" := NewSlice byteT #8 in
-     let: "e" := struct.new Enc.S [
-                             "p" ::= "r"
-                           ] in
-     let: "d" := struct.new Dec.S [
-                              "p" ::= "r"
-                            ] in
-     Enc__UInt64 "e" "x";;
-     "x" = Dec__UInt64 "d".
