@@ -8,6 +8,7 @@ From iris.program_logic Require Import ectx_lifting total_ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import tactics notation map.
+From Perennial.go_lang Require Import typing.
 Set Default Proof Using "Type".
 
 (** Override the notations so that scopes and coercions work out *)
@@ -21,25 +22,37 @@ Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
 
 Section StructMapsto.
   Context {ext:ext_op}.
-  Context {Σ} {hG: gen_heapG loc (nonAtomic val) Σ}.
-  Definition struct_mapsto l q (v: val): iProp Σ :=
-    ([∗ list] j↦v ∈ flatten_struct v, (l +ₗ j) ↦{q} Free v)%I.
+  Context {ext_ty:ext_types ext}.
+  Fixpoint ty_len (t:ty) : nat :=
+    match t with
+    | prodT t1 t2 => ty_len t1 + ty_len t2
+    | _ => 1
+    end.
+  Definition val_ty (v: val) (t:ty) := length (flatten_struct v) = (ty_len t).
 
-  Theorem struct_mapsto_singleton l q v v0 :
+  Context {Σ} {hG: gen_heapG loc (nonAtomic val) Σ}.
+
+  Definition struct_mapsto l q (t:ty) (v: val): iProp Σ :=
+    (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{q} Free vj) ∗ ⌜val_ty v t⌝)%I.
+
+  Theorem struct_mapsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
-    struct_mapsto l q v -∗ l ↦{q} Free v0.
+    struct_mapsto l q t v -∗ l ↦{q} Free v0.
   Proof.
     intros Hv.
     rewrite /struct_mapsto Hv /=.
-    rewrite loc_add_0 right_id //.
+    rewrite loc_add_0 right_id.
+    by iIntros "[$ _]".
   Qed.
 
 End StructMapsto.
 
-Notation "l ↦s{ q } v" := (struct_mapsto l q v%V)
-  (at level 20, q at level 50, format "l  ↦s{ q }  v") : bi_scope.
-Notation "l ↦s v" :=
-  (struct_mapsto l 1 v%V) (at level 20) : bi_scope.
+Notation "l ↦[ ty ]{ q } v" := (struct_mapsto l q ty v%V)
+                                  (at level 20, q at level 50, ty at level 50,
+                                   format "l  ↦[ ty ]{ q }  v") : bi_scope.
+Notation "l ↦[ ty ] v" := (struct_mapsto l 1 ty v%V)
+                             (at level 20, ty at level 50,
+                              format "l  ↦[ ty ]  v") : bi_scope.
 
 Class ffi_interp (ffi: ffi_model) :=
   { ffiG: gFunctors -> Set;
@@ -49,6 +62,7 @@ Arguments ffi_ctx {ffi FfiInterp Σ} fG : rename.
 
 Section go_lang.
   Context `{ffi_semantics: ext_semantics}.
+  Context {ext_tys: ext_types ext}.
   Context `{!ffi_interp ffi}.
 
 Definition traceO := leibnizO (list event).
@@ -505,13 +519,14 @@ Proof using Type.
     admit. (* need to move between seq 0 and seq 1 *)
 Admitted.
 
-Lemma wp_allocN_seq s E v (n: u64) :
+Lemma wp_allocN_seq s E ty v (n: u64) :
   (0 < int.val n)%Z →
+  val_ty v ty ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
-                              ((l +ₗ (i * length (flatten_struct v))%nat) ↦s v) }}}.
+                              ((l +ₗ (i * ty_len ty)%nat) ↦[ty] v) }}}.
 Proof using Type.
-  iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
+  iIntros (Hn Hty Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (gen_heap_alloc_gen
@@ -523,7 +538,11 @@ Proof using Type.
   iModIntro; iSplit; first done.
   iFrame "Hσ Hκs". iApply "HΦ".
   unfold struct_mapsto.
-  iApply (heap_array_replicate_to_nested_mapsto with "Hl").
+  iDestruct (heap_array_replicate_to_nested_mapsto with "Hl") as "Hl".
+  rewrite Hty.
+  iApply (big_sepL_mono with "Hl").
+  iIntros (k0 j _) "H".
+  by iFrame.
 Qed.
 (*
 Lemma twp_allocN_seq s E v (n: u64) :
@@ -549,10 +568,11 @@ Proof using Type.
 Qed.
 *)
 
-Lemma wp_alloc s E v :
-  {{{ True }}} Alloc (Val v) @ s; E {{{ l, RET LitV (LitLoc l); l ↦s v }}}.
+Lemma wp_alloc stk E ty v :
+  val_ty v ty ->
+  {{{ True }}} Alloc (Val v) @ stk; E {{{ l, RET LitV (LitLoc l); l ↦[ty] v }}}.
 Proof using Type.
-  iIntros (Φ) "_ HΦ". iApply wp_allocN_seq; auto with lia.
+  iIntros (Hty Φ) "_ HΦ". iApply wp_allocN_seq; eauto with lia.
   { constructor. }
   iIntros "!>" (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
 Qed.

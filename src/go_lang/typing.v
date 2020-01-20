@@ -98,6 +98,13 @@ Section go_lang.
     | extT x => val_ty_def x
     end.
 
+  Fixpoint ty_size (t:ty) : Z :=
+    match t with
+    | prodT t1 t2 => ty_size t1 + ty_size t2
+    (* this gives unit values space, which seems fine *)
+    | _ => 1
+    end.
+
   Inductive base_lit_hasTy : base_lit -> ty -> Prop :=
   | uint64_hasTy x : base_lit_hasTy (LitInt x) uint64T
   | uint32_hasTy x : base_lit_hasTy (LitInt32 x) uint32T
