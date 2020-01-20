@@ -1424,7 +1424,6 @@ Instance disk_interpretable : @ext_interpretable disk_op disk_model disk_semanti
     ext_interpret_ok := disk_interpret_ok }.
 
 Compute (runStateT (interpret 10 (AllocN #1 (zero_val uint32T))) startstate).
-Compute (runStateT (interpret 10 (useSlice2 #0)) startstate).
 Compute (runStateT (interpret 10 (returnTwoWrapper #3)) startstate).
 Compute (runStateT (interpret 10 (testRec #0)) startstate).
 

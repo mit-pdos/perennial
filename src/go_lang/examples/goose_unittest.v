@@ -119,11 +119,6 @@ Definition useSliceIndexing: val :=
     let: "x" := SliceGet "s" #0 in
     "x".
 
-Definition useSlice2: val :=
-  λ: <>,
-    let: "s" := NewSlice byteT #1 in
-    "s".
-
 Definition useMap: val :=
   λ: <>,
     let: "m" := NewMap (slice.T byteT) in
@@ -230,7 +225,7 @@ Definition Dec__UInt32: val :=
   λ: "d",
     UInt32Get (Dec__consume "d" #4).
 
-Definition EncDec32: val :=
+Definition roundtripEncDec32: val :=
   λ: "x",
     let: "r" := NewSlice byteT #4 in
     let: "e" := struct.new Enc.S [
@@ -240,9 +235,13 @@ Definition EncDec32: val :=
       "p" ::= "r"
     ] in
     Enc__UInt32 "e" "x";;
-    ("x" = Dec__UInt32 "d").
+    Dec__UInt32 "d".
 
-Definition EncDec64: val :=
+Definition EncDec32: val :=
+  λ: "x",
+    (roundtripEncDec32 "x" = "x").
+
+Definition roundtripEncDec64: val :=
   λ: "x",
     let: "r" := NewSlice byteT #8 in
     let: "e" := struct.new Enc.S [
@@ -252,7 +251,11 @@ Definition EncDec64: val :=
       "p" ::= "r"
     ] in
     Enc__UInt64 "e" "x";;
-    ("x" = Dec__UInt64 "d").
+    Dec__UInt64 "d".
+
+Definition EncDec64: val :=
+  λ: "x",
+    (roundtripEncDec64 "x" = "x").
 
 (* ints.go *)
 
@@ -327,6 +330,18 @@ Definition useCondVar: val :=
     lock.condSignal "c";;
     lock.condWait "c";;
     lock.release "m".
+
+Module hasCondVar.
+  Definition S := struct.decl [
+    "cond" :: condvarRefT
+  ].
+  Definition T: ty := struct.t S.
+  Definition Ptr: ty := struct.ptrT S.
+  Section fields.
+    Context `{ext_ty: ext_types}.
+    Definition get := struct.get S.
+  End fields.
+End hasCondVar.
 
 (* log_debugging.go *)
 
@@ -451,6 +466,10 @@ Definition LogicalOperators: val :=
   λ: "b1" "b2",
     "b1" && "b2" ∥ "b1" && ~ #false.
 
+Definition LogicalAndEqualityOperators: val :=
+  λ: "b1" "x",
+    ("x" = #3) && ("b1" = #true).
+
 Definition ArithmeticShifts: val :=
   λ: "x" "y",
     to_u64 ("x" ≪ #3) + "y" ≪ to_u64 "x" + "y" ≪ #1.
@@ -464,7 +483,7 @@ Definition Comparison: val :=
     (if: "x" < "y"
     then #true
     else
-      (if: "x" = "y"
+      (if: ("x" = "y")
       then #true
       else
         (if: "x" ≠ "y"
@@ -701,7 +720,7 @@ Definition stringLength: val :=
 
 (* struct_method.go *)
 
-Module C.
+Module Point.
   Definition S := struct.decl [
     "x" :: uint64T;
     "y" :: uint64T
@@ -712,30 +731,30 @@ Module C.
     Context `{ext_ty: ext_types}.
     Definition get := struct.get S.
   End fields.
-End C.
+End Point.
 
-Definition C__Add: val :=
+Definition Point__Add: val :=
   λ: "c" "z",
-    C.get "x" "c" + C.get "y" "c" + "z".
+    Point.get "x" "c" + Point.get "y" "c" + "z".
 
-Definition C__GetField: val :=
+Definition Point__GetField: val :=
   λ: "c",
-    let: "x" := C.get "x" "c" in
-    let: "y" := C.get "y" "c" in
+    let: "x" := Point.get "x" "c" in
+    let: "y" := Point.get "y" "c" in
     "x" + "y".
 
 Definition UseAdd: val :=
   λ: <>,
-    let: "c" := struct.mk C.S [
+    let: "c" := struct.mk Point.S [
       "x" ::= #2;
       "y" ::= #3
     ] in
-    let: "r" := C__Add "c" #4 in
+    let: "r" := Point__Add "c" #4 in
     "r".
 
 Definition UseAddWithLiteral: val :=
   λ: <>,
-    let: "r" := C__Add (struct.mk C.S [
+    let: "r" := Point__Add (struct.mk Point.S [
       "x" ::= #2;
       "y" ::= #3
     ]) #4 in
@@ -839,3 +858,8 @@ Definition Timestamp: ty := uint64T.
 Definition UseTypeAbbrev: ty := u64.
 
 Definition UseNamedType: ty := Timestamp.
+
+Definition convertToAlias: val :=
+  λ: <>,
+    let: "x" := #2 in
+    "x".
