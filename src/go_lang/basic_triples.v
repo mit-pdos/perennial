@@ -30,7 +30,7 @@ Lemma tac_wp_allocN Δ Δ' s E j K v (n: u64) Φ :
   (0 < int.val n)%Z →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (array l (replicate (int.nat n) v))) Δ' = Some Δ'' ∧
+    envs_app false (Esnoc Enil j (array l (concat_replicate (int.nat n) (flatten_struct v)))) Δ' = Some Δ'' ∧
     envs_entails Δ'' (WP fill K (Val $ LitV $ LitLoc l) @ s; E {{ Φ }})) →
   envs_entails Δ (WP fill K (AllocN (Val $ LitV $ LitInt n) (Val v)) @ s; E {{ Φ }}).
 Proof.
@@ -38,8 +38,9 @@ Proof.
   rewrite -wp_bind. eapply wand_apply; first exact: wp_allocN.
   rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
-  apply wand_intro_l. by rewrite (sep_elim_l (l ↦∗ _)%I) right_id wand_elim_r.
+  apply wand_intro_l. by rewrite right_id wand_elim_r.
 Qed.
+(*
 Lemma tac_twp_allocN Δ s E j K v (n: u64) Φ :
   (0 < int.val n)%Z →
   (∀ l, ∃ Δ',
@@ -54,6 +55,7 @@ Proof.
   destruct (HΔ l) as (Δ'&?&HΔ'). rewrite envs_app_sound //; simpl.
   apply wand_intro_l. by rewrite (sep_elim_l (l ↦∗ _)%I) right_id wand_elim_r.
 Qed.
+*)
 
 Lemma wp_store s E l v v' :
   {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
@@ -195,18 +197,18 @@ Qed.
 Lemma wp_new_slice s E t (sz: u64) :
   {{{ ⌜ 0 < int.val sz ⌝ }}}
     NewSlice t #sz @ s; E
-  {{{ sl, RET slice_val sl; is_slice sl (replicate (int.nat sz) (zero_val t)) }}}.
+  {{{ sl, RET slice_val sl; is_slice sl (concat_replicate (int.nat sz) (flatten_struct $ zero_val t)) }}}.
 Proof.
   iIntros (Φ) "% HΦ".
   repeat wp_step.
   wp_lam; repeat wp_step.
   wp_apply wp_allocN; eauto.
-  iIntros (l) "[Hl _Hmeta]".
+  iIntros (l) "Hl".
   repeat wp_step.
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
   iFrame.
   iPureIntro.
-  rewrite replicate_length //.
+  rewrite concat_replicate_length /=.
 Qed.
 
 Theorem wp_SliceSingleton Φ stk E x :

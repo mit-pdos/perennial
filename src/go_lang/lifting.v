@@ -19,6 +19,28 @@ Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
 
+Section StructMapsto.
+  Context {ext:ext_op}.
+  Context {Σ} {hG: gen_heapG loc (nonAtomic val) Σ}.
+  Definition struct_mapsto l q (v: val): iProp Σ :=
+    ([∗ list] j↦v ∈ flatten_struct v, (l +ₗ j) ↦{q} Free v)%I.
+
+  Theorem struct_mapsto_singleton l q v v0 :
+    flatten_struct v = [v0] ->
+    struct_mapsto l q v -∗ l ↦{q} Free v0.
+  Proof.
+    intros Hv.
+    rewrite /struct_mapsto Hv /=.
+    rewrite loc_add_0 right_id //.
+  Qed.
+
+End StructMapsto.
+
+Notation "l ↦s{ q } v" := (struct_mapsto l q v%V)
+  (at level 20, q at level 50, format "l  ↦s{ q }  v") : bi_scope.
+Notation "l ↦s v" :=
+  (struct_mapsto l 1 v%V) (at level 20) : bi_scope.
+
 Class ffi_interp (ffi: ffi_model) :=
   { ffiG: gFunctors -> Set;
     ffi_ctx: forall `{ffiG Σ}, ffi_state -> iProp Σ; }.
@@ -412,43 +434,98 @@ Proof using Type.
   rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
 Qed.
 
-Lemma heap_array_to_seq_mapsto l v (n : nat) :
-  ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (replicate n v)), l' ↦ vm) -∗
-  [∗ list] i ∈ seq 0 n, (l +ₗ (i : nat)) ↦ Free v.
+Theorem heap_array_app V l (vs1 vs2: list V) :
+  heap_array l (vs1 ++ vs2) = heap_array l vs1 ∪ heap_array (l +ₗ (length vs1)) vs2.
+Proof.
+  revert l.
+  induction vs1; simpl; intros.
+  - rewrite left_id loc_add_0 //.
+  - rewrite IHvs1.
+    rewrite loc_add_assoc.
+    replace (1 + strings.length vs1) with (Z.of_nat (S (strings.length vs1))) by lia.
+    (* true, but only due to disjointness *)
+    admit.
+Admitted.
+
+Theorem concat_replicate_S A n (vs: list A) :
+  concat_replicate (S n) vs = vs ++ concat_replicate n vs.
+Proof.
+  reflexivity.
+Qed.
+
+Theorem concat_replicate_length A n (vs: list A) :
+  length (concat_replicate n vs) = (n * length vs)%nat.
+Proof.
+  induction n; simpl; auto.
+  rewrite concat_replicate_S app_length IHn //.
+Qed.
+
+Lemma heap_array_to_seq_mapsto l vs :
+  ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free vs), l' ↦ vm) -∗
+  [∗ list] j ↦ v ∈ vs, (l +ₗ j) ↦ Free v.
 Proof using Type.
-  iIntros "Hvs". iInduction n as [|n] "IH" forall (l); simpl.
+  iIntros "Hvs". iInduction vs as [|vs] "IH" forall (l); simpl.
   { done. }
   rewrite big_opM_union; last first.
   { apply map_disjoint_spec=> l' v1 v2 /lookup_singleton_Some [-> _].
     intros (j&?&Hjl&_)%heap_array_lookup.
     rewrite loc_add_assoc -{1}[l']loc_add_0 in Hjl. simplify_eq; lia. }
-  rewrite loc_add_0 -fmap_seq big_sepL_fmap.
+  rewrite loc_add_0.
   setoid_rewrite Nat2Z.inj_succ. setoid_rewrite <-Z.add_1_l.
   setoid_rewrite <-loc_add_assoc.
   rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
 Qed.
 
+Theorem big_opL_add (M: ofeT) (o: M -> M -> M) {mon:monoid.Monoid o} f start off n :
+  big_opL o f (seq (start + off) n) ≡
+  big_opL o (fun i x => f i (x + off)%nat) (seq start n).
+Proof.
+  revert start off.
+  induction n; simpl; auto; intros.
+  (* seems not the right proof strategy; also don't seem to know that op is
+  proper *)
+Abort.
+
+Lemma heap_array_replicate_to_nested_mapsto l vs (n : nat) :
+  ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (concat_replicate n vs)), l' ↦ vm) -∗
+  [∗ list] i ∈ seq 0 n, [∗ list] j ↦ v ∈ vs, (l +ₗ ((i : nat) * length vs)%nat +ₗ j)%nat ↦ Free v.
+Proof using Type.
+  iIntros "Hmap".
+  iDestruct (heap_array_to_seq_mapsto with "Hmap") as "Hvs".
+  iInduction n as [|n] "IH" forall (l); simpl.
+  { done. }
+  rewrite concat_replicate_S.
+  iDestruct (big_sepL_app with "Hvs") as "[Hvs Hconcat]".
+  iSplitL "Hvs".
+  - rewrite loc_add_0.
+    iFrame.
+  - setoid_rewrite Nat2Z.inj_add.
+    setoid_rewrite <- loc_add_assoc.
+    iDestruct ("IH" with "Hconcat") as "Hseq".
+    admit. (* need to move between seq 0 and seq 1 *)
+Admitted.
+
 Lemma wp_allocN_seq s E v (n: u64) :
   (0 < int.val n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
-      (l +ₗ (i : nat)) ↦ Free v ∗ meta_token (l +ₗ (i : nat)) ⊤ }}}.
+                              ((l +ₗ (i * length (flatten_struct v))%nat) ↦s v) }}}.
 Proof using Type.
   iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (gen_heap_alloc_gen
           _ (heap_array
-               l (fmap Free (replicate (int.nat n) v))) with "Hσ")
+               l (fmap Free (concat_replicate (int.nat n) (flatten_struct v)))) with "Hσ")
     as "(Hσ & Hl & Hm)".
   { apply heap_array_map_disjoint.
-    rewrite map_length replicate_length u64_Z_through_nat; auto with lia. }
+    rewrite map_length concat_replicate_length. auto with lia. }
   iModIntro; iSplit; first done.
   iFrame "Hσ Hκs". iApply "HΦ".
-  iApply big_sepL_sep. iSplitL "Hl".
-  - by iApply heap_array_to_seq_mapsto.
-  - iApply (heap_array_to_seq_meta with "Hm"). by rewrite map_length replicate_length.
+  unfold struct_mapsto.
+  iApply (heap_array_replicate_to_nested_mapsto with "Hl").
 Qed.
+(*
 Lemma twp_allocN_seq s E v (n: u64) :
   (0 < int.val n)%Z →
   [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
@@ -470,14 +547,16 @@ Proof using Type.
   - by iApply heap_array_to_seq_mapsto.
   - iApply (heap_array_to_seq_meta with "Hm"). by rewrite map_length replicate_length.
 Qed.
+*)
 
 Lemma wp_alloc s E v :
-  {{{ True }}} Alloc (Val v) @ s; E {{{ l, RET LitV (LitLoc l); l ↦ Free v ∗ meta_token l ⊤ }}}.
+  {{{ True }}} Alloc (Val v) @ s; E {{{ l, RET LitV (LitLoc l); l ↦s v }}}.
 Proof using Type.
   iIntros (Φ) "_ HΦ". iApply wp_allocN_seq; auto with lia.
   { constructor. }
   iIntros "!>" (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
 Qed.
+(*
 Lemma twp_alloc s E v :
   [[{ True }]] Alloc (Val v) @ s; E [[{ l, RET LitV (LitLoc l); l ↦ Free v ∗ meta_token l ⊤ }]].
 Proof using Type.
@@ -485,6 +564,7 @@ Proof using Type.
   { constructor. }
   iIntros (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
 Qed.
+*)
 
 Lemma wp_load s E l q v :
   {{{ ▷ l ↦{q} Free v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; l ↦{q} Free v }}}.

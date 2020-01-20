@@ -89,17 +89,30 @@ Proof.
   setoid_rewrite <-loc_add_assoc. iApply "IH". done.
 Qed.
 
+Lemma mapsto_seq_struct_array l v n :
+  ([∗ list] i ∈ seq 0 n, (l +ₗ (i * length (flatten_struct v))%nat) ↦s v) -∗
+  l ↦∗ concat_replicate n (flatten_struct v).
+Proof.
+  rewrite /array. iInduction n as [|n'] "IH" forall (l); simpl.
+  { done. }
+  rewrite concat_replicate_S loc_add_0.
+  iIntros "[$ Hl]". rewrite -fmap_seq big_sepL_fmap.
+  simpl.
+  setoid_rewrite Nat2Z.inj_add.
+  setoid_rewrite <-loc_add_assoc.
+  iApply "IH". done.
+Qed.
+
 Lemma wp_allocN s E v (n: u64) :
   (0 < int.val n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); l ↦∗ replicate (int.nat n) v ∗
-         [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
+  {{{ l, RET LitV (LitLoc l); l ↦∗ concat_replicate (int.nat n) (flatten_struct v) }}}.
 Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply wp_allocN_seq; [done..|]. iNext.
   iIntros (l) "Hlm". iApply "HΦ".
-  iDestruct (big_sepL_sep with "Hlm") as "[Hl $]".
-  by iApply mapsto_seq_array.
+  by iApply mapsto_seq_struct_array.
 Qed.
+(*
 Lemma twp_allocN s E v (n: u64) :
   (0 < int.val n)%Z →
   [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
@@ -111,7 +124,9 @@ Proof.
   iDestruct (big_sepL_sep with "Hlm") as "[Hl $]".
   by iApply mapsto_seq_array.
 Qed.
+*)
 
+(*
 Lemma wp_allocN_vec s E v (n: u64) :
   (0 < int.val n)%Z →
   {{{ True }}}
@@ -132,6 +147,7 @@ Proof.
   iIntros (Hzs Φ) "_ HΦ". iApply twp_allocN; [ lia | done | .. ].
   iIntros (l) "[Hl Hm]". iApply "HΦ". rewrite vec_to_list_replicate. iFrame.
 Qed.
+*)
 
 (** Access to array elements *)
 

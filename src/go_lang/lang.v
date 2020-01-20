@@ -1022,7 +1022,7 @@ Fixpoint head_trans (e: expr) :
   | AllocN (Val (LitV (LitInt n))) (Val v) =>
     atomically
       (check (0 < int.val n)%Z;;
-       l ← allocateN (int.val n);
+       l ← allocateN (int.val n * length (flatten_struct v));
        modify (state_init_heap l (int.val n) v);;
        ret $ LitV $ LitLoc l)
   | PrepareWrite (Val (LitV (LitLoc l))) =>

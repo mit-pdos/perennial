@@ -203,7 +203,7 @@ Implicit Types z : Z.
 Lemma tac_wp_alloc Δ Δ' s E j K v Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (l ↦ Free v)) Δ' = Some Δ'' ∧
+    envs_app false (Esnoc Enil j (l ↦s v)) Δ' = Some Δ'' ∧
     envs_entails Δ'' (WP fill K (Val $ LitV l) @ s; E {{ Φ }})) →
   envs_entails Δ (WP fill K (Alloc (Val v)) @ s; E {{ Φ }}).
 Proof.
@@ -211,8 +211,9 @@ Proof.
   rewrite -wp_bind. eapply wand_apply; first exact: wp_alloc.
   rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
-  apply wand_intro_l. by rewrite (sep_elim_l (l ↦ Free v)%I) right_id wand_elim_r.
+  apply wand_intro_l. by rewrite right_id wand_elim_r.
 Qed.
+(*
 Lemma tac_twp_alloc Δ s E j K v Φ :
   (∀ l, ∃ Δ',
     envs_app false (Esnoc Enil j (l ↦ Free v)) Δ = Some Δ' ∧
@@ -225,6 +226,7 @@ Proof.
   destruct (HΔ l) as (Δ'&?&HΔ'). rewrite envs_app_sound //; simpl.
   apply wand_intro_l. by rewrite (sep_elim_l (l ↦ Free v)%I) right_id wand_elim_r.
 Qed.
+*)
 
 Lemma tac_wp_load Δ Δ' s E i K l q v Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
