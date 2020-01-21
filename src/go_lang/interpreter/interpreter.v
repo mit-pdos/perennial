@@ -1,17 +1,10 @@
 From RecordUpdate Require Import RecordSet.
-From stdpp Require Export binders strings.
-From stdpp Require Import gmap.
-From stdpp Require Import pretty.
-From iris.algebra Require Export ofe.
+From stdpp Require Export binders strings gmap pretty.
 From iris.program_logic Require Export language ectx_language ectxi_language.
 From Perennial.Helpers Require Import Integers Transitions.
-From Perennial.go_lang Require Export locations.
-From Perennial.go_lang Require Export lang.
-From Perennial.go_lang Require Import prelude.
+From Perennial.go_lang Require Export locations lang prelude.
 From Perennial.go_lang Require Import interpret_types.
 
-From Perennial.go_lang.examples Require Import goose_unittest.
-From Perennial.go_lang.ffi Require Import disk.
 Require Import Program.
 
 Set Default Proof Using "Type".
@@ -26,10 +19,9 @@ Instance pretty_loc : Pretty loc :=
   fun x => pretty x.(loc_car).
 
 (* The step relation is transitive. Doing n steps and then m steps is
-the same as doing (n + m) steps.
-
-Useful in interpret_ok for splitting goals like [If e0 e1 e2] ~~> [v]
-into [If e0 e1 e2] ~~> [If #true e1 e2] and [If #true e1 e2] ~~> [v]. *)
+the same as doing (n + m) steps. Useful in interpret_ok for splitting
+goals like [If e0 e1 e2] ~~> [v] into [If e0 e1 e2] ~~> [If #true e1
+e2] and [If #true e1 e2] ~~> [v]. *)
 Lemma nsteps_transitive : forall L n m p1 p2 p3 l1 l2,
     @language.nsteps L n p1 l1 p2 ->
     @language.nsteps L m p2 l2 p3 ->
@@ -53,7 +45,6 @@ Proof.
     eapply IHn; [exact H3|exact H0].
   }
 Qed.
-
 
 (* Helper used for proving that no threads are spawned during an interpreter
 step (this applies to any step except [Fork], which we don't
@@ -378,11 +369,11 @@ Section interpreter.
   (* Interpreter *)
   Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
     match fuel with
-    | O => mfail "Fuel depleted"
+    | O => mfail "Interpret failed: Fuel depleted"
     | S n =>
       match e with
       | Val v => mret v
-      | Var y => mfail ("Unbound variable: " ++ y)
+      | Var y => mfail ("Interpret failed: unbound variable " ++ y)
       | Rec f y e => mret (RecV f y e)
 
       | App e1 e2 => 
@@ -392,26 +383,26 @@ Section interpreter.
           | RecV f y ex =>
             let e3 := subst' y v2 (subst' f v1 ex) in
             interpret n e3
-          | _ => mfail "App applied to non-function"
+          | _ => mfail "Interpret failed: App applied to a non-function"
           end
             
       | UnOp op e =>
         v <- interpret n e;
           (* mlift because up_op_eval returns an optional *)
-          mlift (un_op_eval op v) "UnOp failed"
+          mlift (un_op_eval op v) "Interpret failed: UnOp eval returned None"
                 
       | BinOp op e1 e2 =>
         v1 <- interpret n e1;
           v2 <- interpret n e2;
           (* mlift because up_op_eval returns an optional *)
-          mlift (bin_op_eval op v1 v2) "BinOp failed"
+          mlift (bin_op_eval op v1 v2) "Interpret failed: BinOp eval returned None"
                 
       | If e0 e1 e2 =>
         c <- interpret n e0;
           match c with
           | LitV (LitBool true) => interpret n e1
           | LitV (LitBool false) => interpret n e2
-          | _ => mfail "If applied to non-Bool"
+          | _ => mfail "Interpret failed: If applied to non-Bool"
           end
 
       | Pair e1 e2 =>
@@ -423,14 +414,14 @@ Section interpreter.
         v <- interpret n e;
           match v with
           | PairV v1 v2 => mret v1
-          | _ => mfail "Fst applied to non-PairV"
+          | _ => mfail "Interpret failed: Fst applied to non-PairV"
           end
 
       | Snd e =>
         v <- interpret n e;
           match v with
           | PairV v1 v2 => mret v2
-          | _ => mfail "Snd applied to non-PairV"
+          | _ => mfail "Interpret failed: Snd applied to non-PairV"
           end
             
       | InjL e =>
@@ -448,14 +439,14 @@ Section interpreter.
             interpret n (App e1 (Val v'))
           | InjRV v' =>
             interpret n (App e2 (Val v'))
-          | _ => mfail "Case of non-Inj"
+          | _ => mfail "Interpret failed: Tried to Case on a non-Inj term"
           end
 
-      | Fork e => mfail "NotImpl: Fork"
+      | Fork e => mfail "Interpret failed: Fork operation not supported"
 
       | Primitive0 p =>
         match p in (prim_op args0) return StateT state Error val with
-        | PanicOp s => mfail ("Panic: " ++ s)
+        | PanicOp s => mfail ("Interpret panic: " ++ s)
         end
 
       | Primitive1 p e =>
@@ -473,30 +464,30 @@ Section interpreter.
             match addrv with
             | LitV (LitLoc l) =>
               s <- mget;
-                nav <- mlift (s.(heap) !! l) ("Load Failed: " ++ (pretty l));
+                nav <- mlift (s.(heap) !! l) ("Interpret failed: Load failed for location " ++ (pretty l));
                 match nav with
                 | Reading v 0 => _ <- mupdate (set heap <[l:=Writing]>);
                                   mret (LitV LitUnit)
-                | _ => mfail "Race while writing"
+                | _ => mfail ("Interpret failed: Race occurred during write at location " ++ (pretty l))
                 end
-            | _ => mfail "Load with non-location argument"
+            | _ => mfail "Interpret failed: Attempted Load with a non-location argument"
             end
         | LoadOp =>
           addrv <- interpret n e;
             match addrv with
             | LitV (LitInt l) =>
-              mfail "Load at int instead of loc"
+              mfail ("Interpret failed: Attempted load at Int " ++ (pretty l) ++ " instead of a Loc")
             | LitV (LitLoc l) =>
               (* Since Load of an address with nothing doesn't step,
                  we can lift from the option monad into the StateT option
                  monad here (we mfail "NotImpl" if v is None). *)
               s <- mget;
-                nav <- mlift (s.(heap) !! l) ("Load Failed: " ++ (pretty l));
+                nav <- mlift (s.(heap) !! l) ("Interpret failed: Load failed at location " ++ (pretty l));
                 match nav with
                 | Reading v 0 => mret v
-                | _ => mfail "Race while reading"
+                | _ => mfail ("Interpret failed: Race detected while reading at location " ++ (pretty l))
                 end
-            | _ => mfail "Load with non-location argument"
+            | _ => mfail "Interpret failed: attempted Load with non-location argument"
             end
         | InputOp =>
           v <- interpret n e;
@@ -506,7 +497,7 @@ Section interpreter.
                 let x := σ.(oracle) σ.(trace) selv in
                 _ <- mupdate (set trace (fun tr => [In_ev selv (LitInt x)] ++ tr));
                   mret (LitV (LitInt x))
-            | _ => mfail "Input with non-literal selector"
+            | _ => mfail "Interpret failed: attempted InputOp with non-literal selector"
             end
         | OutputOp =>
           v <- interpret n e;
@@ -514,34 +505,34 @@ Section interpreter.
             | LitV v =>
               _ <- mupdate (set trace (fun tr => [Out_ev v] ++ tr));
                 mret (LitV LitUnit)
-            | _ => mfail "Output with non-literal value"
+            | _ => mfail "Interpret failed: attempted Output with non-literal value"
             end
         | StartReadOp =>
           addrv <- interpret n e;
             match addrv with
             | LitV (LitLoc l) =>
               s <- mget;
-                nav <- mlift (s.(heap) !! l) ("StartReadOp Failed: " ++ (pretty l));
+                nav <- mlift (s.(heap) !! l) ("Interpret failed: StartReadOp failed at location " ++ (pretty l));
                 match nav with
                 | Reading v n => _ <- mupdate (set heap <[l:=Reading v (S n)]>);
                                   mret v
-                | _ => mfail "StartReadOp: Race while writing"
+                | _ => mfail ("Interpret failed: race detected during StartReadOp at location " ++ (pretty l))
                 end
-            | _ => mfail "StartReadOp with non-location argument"
+            | _ => mfail "Interpret failed: StartReadOp called with non-location argument"
             end
         | FinishReadOp =>
           addrv <- interpret n e;
             match addrv with
             | LitV (LitLoc l) =>
               s <- mget;
-                nav <- mlift (s.(heap) !! l) ("FinishReadOp Failed: " ++ (pretty l));
+                nav <- mlift (s.(heap) !! l) ("Interpret failed: FinishReadOp failed at location " ++ (pretty l));
                 match nav with
                 | Reading v (S n) => _ <- mupdate (set heap <[l:=Reading v n]>);
                                       mret (LitV LitUnit)
-                | Reading v 0 => mfail "FinishReadOp: Not being read"
-                | _ => mfail "FinishReadOp: Race while writing"
+                | Reading v 0 => mfail ("Interpret failed: FinishReadOp attempted with no reads occurring at location " ++ (pretty l))
+                | _ => mfail ("Interpret failed: attempted FinishReadOp while writing at location " ++ (pretty l))
                 end
-            | _ => mfail "FinishReadOp with non-location argument"
+            | _ => mfail "Interpret failed: attempted FinishReadOp with non-location argument"
             end
         end
 
@@ -553,7 +544,7 @@ Section interpreter.
             match lenv with
             | LitV (LitInt lenz) => 
               if (Z.leb (int.val lenz) 0) then
-                mfail "AllocN with size 0 or lower"
+                mfail ("Interpret failed: AllocN called with invalid size " ++ (pretty lenz))
               else
                 (* We must allocate a list of length lenz where every entry
                    is initv. state_init_heap does most of the work. *)
@@ -561,7 +552,7 @@ Section interpreter.
                 let l := find_alloc_location s (int.val lenz) in
                 _ <- mput (state_init_heap l (int.val lenz) initv s);
                   mret (LitV (LitLoc l))
-            | _ => @mfail state _ "Alloc with non-integer argument"
+            | _ => @mfail state _ "Interpret failed: AllocN called with with non-integer argument"
             end
         | FinishStoreOp =>
           addrv <- interpret n e1;
@@ -569,14 +560,14 @@ Section interpreter.
             match addrv with
             | LitV (LitLoc l) => 
               s <- mget;
-                nav <- mlift (s.(heap) !! l) ("Load failed: " ++ (pretty l));
+                nav <- mlift (s.(heap) !! l) ("Interpret failed: Load failed at location " ++ (pretty l));
                 match nav with
                 | Writing => 
                   _ <- mput (set heap <[l:=Free val]> s);
                     mret (LitV LitUnit)
-                | _ => mfail "FinishStoreOp on non-writing location"
+                | _ => mfail ("Interpret failed: FinishStoreOp attempted on non-Writing location " ++ (pretty l))
                 end
-            | _ => @mfail state _ "Store with non-location argument"
+            | _ => @mfail state _ "Interpret failed: attempted Store with non-location argument"
             end
         end
 
@@ -592,19 +583,19 @@ Section interpreter.
             match addrv with
             | LitV (LitLoc l) =>
               s <- mget;
-                nav <- mlift (s.(heap) !! l) ("CmpXchg load failed: " ++ (pretty l));
+                nav <- mlift (s.(heap) !! l) ("Interpret failed: CmpXchg load failed at location " ++ (pretty l));
                 match nav with
                 | Reading vl 0 =>
-                  b <- mlift (bin_op_eval EqOp vl v1) "CmpXchg BinOp failed";
+                  b <- mlift (bin_op_eval EqOp vl v1) "Interpret failed: CmpXchg BinOp returned None";
                   match b with
                   | LitV (LitBool true) => _ <- mput (set heap <[l:=Free v2]> s);
                            mret (PairV vl #true)
                   | LitV (LitBool false) => mret (PairV vl #false)
-                  | _ => mfail "CmpXchg EqOp did not return a boolean"
+                  | _ => mfail "Interpret failed: CmpXchg EqOp did not return a boolean"
                   end
-                | _ => mfail "Race while reading CmpXchg location"
+                | _ => mfail ("Interpret failed: Race detected while reading CmpXchg location " ++ (pretty l))
                 end
-            | _ => mfail "CmpXchg with non-location argument"
+            | _ => mfail "Interpret failed: CmpXchg attempted with non-location argument"
             end
 
       (* Won't interpret anything involving prophecy variables. *)

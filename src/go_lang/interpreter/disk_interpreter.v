@@ -1,24 +1,14 @@
 From RecordUpdate Require Import RecordSet.
-From stdpp Require Export binders strings.
-From stdpp Require Import gmap.
-From stdpp Require Import pretty.
-From iris.algebra Require Export ofe.
-From iris.program_logic Require Export language ectx_language ectxi_language.
+From stdpp Require Export binders strings gmap pretty.
 From Perennial.Helpers Require Import Integers Transitions.
-From Perennial.go_lang Require Export locations.
-From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import prelude.
 
-From Perennial.go_lang Require Import interpret_types.
-From Perennial.go_lang Require Import interpreter.
+From Perennial.go_lang.interpreter Require Import interpret_types.
+From Perennial.go_lang.interpreter Require Import interpreter.
+From Perennial.go_lang.examples Require Import goose_unittest.
 
 From Perennial.go_lang.ffi Require Import disk.
 Require Import Program.
-
-Set Default Proof Using "Type".
-
-Delimit Scope expr_scope with E.
-Delimit Scope val_scope with V.
 
 Instance statet_disk_error_bind : MBind (StateT state Error) :=
   StateT_bind Error Error_fmap Error_join Error_bind.
@@ -201,24 +191,25 @@ Proof.
   simpl; reflexivity.
 Qed.
 
+(* Single-step interpreter for external disk operations. *)
 Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
   match (op, v) with
   | (ReadOp, (LitV (LitInt a))) =>
     σ <- mget;
-      b <- mlift (σ.(world) !! int.val a) ("ReadOp: No block at address " ++ (pretty a));
+      b <- mlift (σ.(world) !! int.val a) ("Disk ReadOp failed: No block at address " ++ (pretty a));
       let l := find_alloc_location σ 4096 in
       _ <- mput (state_insert_list l (Block_to_vals b) σ);
         mret (Val $ LitV (LitLoc l))
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
     σ <- mget;
-      _ <- mlift (σ.(world) !! int.val a) ("WriteOp: No block at write address " ++ (pretty a));
-      b <- mlift (read_block_from_heap σ l) "WriteOp: Read from heap failed";
+      _ <- mlift (σ.(world) !! int.val a) ("Disk WriteOp failed: No block at write address " ++ (pretty a));
+      b <- mlift (read_block_from_heap σ l) ("Disk WriteOp failed: Read from heap failed at location " ++ (pretty l));
       _ <- mput (set world <[ int.val a := b ]> σ);
       mret (Val $ LitV (LitUnit))
   | (SizeOp, LitV LitUnit) =>
     σ <- mget;
       mret (Val $ LitV $ LitInt (U64 (disk_size σ.(world))))
-  | _ => mfail "DiskOp: Not a valid disk op and arg"
+  | _ => mfail "DiskOp failed: Invalid pair of operation and argument types"
   end.
 
 Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state),
@@ -254,9 +245,9 @@ Proof.
     destruct arg1; try by inversion H1.
     destruct l; try by inversion H1.
     destruct arg2; try by inversion H1.
-    destruct l; try by inversion H1. (* takes a very long time (why?) *)
+    destruct l; try by inversion H1.
     simpl in H1.
-    destruct (world σ !! int.val n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1. (* also takes a long time *)
+    destruct (world σ !! int.val n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1.
     destruct (read_block_from_heap σ l) eqn:block_at_l; try by inversion H1.
     simpl in H1.
     inversion H1.
