@@ -47,7 +47,7 @@ Section monoid.
     (∀ {T} (k: Ref T) x, getDyn m k = Some x → R (f _ k x) (g _ k x)) →
     R ([^o dmap] k ↦ x ∈ m, f _ k x) ([^o dmap] k ↦ x ∈ m, g _ k x).
   Proof.
-    intros ?? Hf. apply (big_opL_forall R); auto.
+    intros ?? Hf. apply (big_opL_gen_proper R); auto.
     intros k [i x] (v&Heq)%dynMap_dom_lookup; eauto.
     rewrite Heq; eauto.
   Qed.
@@ -174,7 +174,7 @@ Section homomorphisms.
     R (h ([^o1 dmap] k↦x ∈ m, f _ k x)) ([^o2 dmap] k↦x ∈ m, h (f _ k x)).
   Proof.
     rewrite /big_opDM. rewrite big_opL_commute.
-    apply big_opL_forall; try apply _.
+    apply big_opL_gen_proper; try apply _.
     intros. by rewrite morphism_commute_lookup.
   Qed.
 
@@ -183,7 +183,7 @@ Section homomorphisms.
     m ≢ ∅ → R (h ([^o1 dmap] k↦x ∈ m, f _ k x)) ([^o2 dmap] k↦x ∈ m, h (f _ k x)).
   Proof.
     intros. rewrite /big_opDM big_opL_commute1.
-    - apply big_opL_forall; try apply _.
+    - apply big_opL_gen_proper; try apply _.
       intros ?? (v&->)%dynMap_dom_lookup. reflexivity.
     - by rewrite -dynMap_dom_empty_iff.
   Qed.
@@ -417,7 +417,7 @@ Section gset.
     ([^o set] x ∈ set_map h X, g x) ≡ ([^o set] x ∈ X, g (h x)).
   Proof.
     intros Hinj.
-    induction X as [|x X ? IH] using set_ind_L => //=.
+    induction X as [|x X ? IH] using set_ind_L => //=; [ by rewrite big_opS_eq | ].
     rewrite set_map_union_singleton.
     rewrite ?big_opS_union.
     - rewrite ?big_opS_singleton IH //.
@@ -445,6 +445,7 @@ Section map.
   Proof.
     intros Hwand.
     induction m as [|i x m ? IH] using map_ind; auto using big_sepM_empty'.
+    by rewrite big_opM_eq.
     rewrite ?big_sepM_insert //.
     iIntros "(HP&Hi&H)".
     iDestruct (Hwand with "[$]") as "(?&$)".

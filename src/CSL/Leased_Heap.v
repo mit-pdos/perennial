@@ -131,7 +131,7 @@ Section lease_heap.
     ([∗ map] l↦v ∈ σ, meta_token l ⊤) ==∗ ([∗ map] l↦v ∈ σ, master l v ∗ lease l v).
   Proof.
     iIntros "H".
-    iApply (big_opM_forall (λ P Q, P ==∗ Q)); auto using bupd_intro.
+    iApply (big_opM_gen_proper (λ P Q, P ==∗ Q)); auto using bupd_intro.
     { intros P1 P2 HP Q1 Q2 HQ. by rewrite HP HQ -bupd_sep. }
     iApply big_sepM_mono; last by eauto.
     intros; by iApply master_lease_alloc.
