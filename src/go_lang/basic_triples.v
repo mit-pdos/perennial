@@ -889,12 +889,12 @@ Qed.
 
 Theorem decode_encode x :
   word.or (u8_to_u32 (word.of_Z (int.val x)))
-          (word.slu
-             (word.or (u8_to_u32 (word.of_Z (int.val x ≫ 8)))
-                      (word.slu
-                         (word.or (u8_to_u32 (word.of_Z ((int.val x ≫ 8) ≫ 8)))
-                                  (word.slu (u8_to_u32 (word.of_Z (((int.val x ≫ 8) ≫ 8) ≫ 8))) (U32 8)))
-                         (U32 8))) (U32 8)) = x.
+        (word.slu
+           (word.or (u8_to_u32 (word.of_Z (int.val x ≫ 8)))
+              (word.slu
+                 (word.or (u8_to_u32 (word.of_Z ((int.val x ≫ 8) ≫ 8)))
+                    (word.slu (u8_to_u32 (word.of_Z (((int.val x ≫ 8) ≫ 8) ≫ 8))) (U32 8)))
+                 (U32 8))) (U32 8)) = x.
 Proof.
   apply word.unsigned_inj.
   pose proof (u32_le_to_word x).

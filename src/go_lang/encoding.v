@@ -26,7 +26,7 @@ Section go_lang.
     let: "v1" := to_u32 !("p" +ₗ #1) in
     let: "v2" := to_u32 !("p" +ₗ #2) in
     let: "v3" := to_u32 !("p" +ₗ #3) in
-    "v0" ∥ ((("v1" ∥ (("v2" ∥ ("v3" ≪ #(U32 8))) ≪ #(U32 8)))) ≪ #(U32 8)).
+    "v0" ∥ ("v1" ∥ ("v2" ∥ "v3" ≪ #(U32 8)) ≪ #(U32 8)) ≪ #(U32 8).
 
   Theorem DecodeUInt32_t : (⊢ DecodeUInt32 : (arrayT byteT -> uint32T))%T.
   Proof.
