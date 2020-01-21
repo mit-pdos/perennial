@@ -18,8 +18,8 @@ Section go_lang.
 the ffiG type; fixing this would require unbundling ffi_interp *)
 Definition array `{!heapG Σ} (l : loc) (t:ty) (vs : list val) : iProp Σ :=
   ([∗ list] i ↦ v ∈ vs, (l +ₗ (i * ty_size t)) ↦[t] v)%I.
-Notation "l  ↦∗[ t ]  vs" := (array l t vs)
-  (at level 20) : bi_scope.
+Notation "l ↦∗[ t ] vs" := (array l t vs)
+  (at level 20, format "l  ↦∗[ t ]  vs") : bi_scope.
 
 (** We have no [FromSep] or [IntoSep] instances to remain forwards compatible
 with a fractional array assertion, that will split the fraction, not the

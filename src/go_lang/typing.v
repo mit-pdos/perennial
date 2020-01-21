@@ -29,13 +29,6 @@ Section val_types.
   Definition refT (t:ty) : ty := structRefT [t].
   Definition mapT (vt:ty) : ty := refT (mapValT vt).
 
-  Fixpoint ty_size (t:ty) : Z :=
-    match t with
-    | prodT t1 t2 => ty_size t1 + ty_size t2
-    (* this gives unit values space, which seems fine *)
-    | _ => 1
-    end.
-
   Definition Ctx := string -> option ty.
   Global Instance empty_ctx : Empty Ctx := fun _ => None.
   Global Instance ctx_insert : Insert binder ty Ctx.

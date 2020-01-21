@@ -114,10 +114,10 @@ Qed.
 
 (* TODO: it would be nice if we could panic in the model if this goes
 out-of-bounds, but it seems we need to unfold the definition to use it *)
-Definition SliceSkip: val :=
-  λ: "s" "n", (slice.ptr "s" +ₗ "n", slice.len "s" - "n").
+Definition SliceSkip t: val :=
+  λ: "s" "n", (slice.ptr "s" +ₗ "n" * #(ty_size t), slice.len "s" - "n").
 
-Theorem SliceSkip_t t : ⊢ SliceSkip : (slice.T t -> uint64T -> slice.T t).
+Theorem SliceSkip_t t : ⊢ SliceSkip t : (slice.T t -> uint64T -> slice.T t).
 Proof.
   typecheck.
 Qed.

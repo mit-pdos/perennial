@@ -130,12 +130,12 @@ Qed.
 
 Coercion slice_val (s: Slice.t) : val := (#s.(Slice.ptr), #s.(Slice.sz)).
 
-Definition is_slice (s: Slice.t) (vs: list val): iProp Σ :=
-  s.(Slice.ptr) ↦∗ vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Definition is_slice (s: Slice.t) (t:ty) (vs: list val): iProp Σ :=
+  s.(Slice.ptr) ↦∗[t] vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
 
-Lemma is_slice_intro l (sz: u64) vs :
-  l ↦∗ vs -∗ ⌜length vs = int.nat sz⌝ -∗
-  is_slice (Slice.mk l sz) vs.
+Lemma is_slice_intro l t (sz: u64) vs :
+  l ↦∗[t] vs -∗ ⌜length vs = int.nat sz⌝ -∗
+  is_slice (Slice.mk l sz) t vs.
 Proof.
   iIntros "H1 H2"; rewrite /is_slice; iFrame.
 Qed.
@@ -147,9 +147,9 @@ Definition slice_val_fold (ptr: loc) (sz: u64) :
 Transparent raw_slice.
 
 Lemma wp_raw_slice s E l vs (sz: u64) t :
-  {{{ array l vs ∗ ⌜length vs = int.nat sz⌝ }}}
+  {{{ array l t vs ∗ ⌜length vs = int.nat sz⌝ }}}
     raw_slice t #l #sz @ s; E
-  {{{ sl, RET slice_val sl; is_slice sl vs }}}.
+  {{{ sl, RET slice_val sl; is_slice sl t vs }}}.
 Proof.
   iIntros (Φ) "Hslice HΦ".
   rewrite /raw_slice.
@@ -206,29 +206,33 @@ Qed.
 Lemma wp_new_slice s E t (sz: u64) :
   {{{ ⌜ 0 < int.val sz ⌝ }}}
     NewSlice t #sz @ s; E
-  {{{ sl, RET slice_val sl; is_slice sl (concat_replicate (int.nat sz) (flatten_struct $ zero_val t)) }}}.
+  {{{ sl, RET slice_val sl; is_slice sl t (replicate (int.nat sz) (zero_val t)) }}}.
 Proof.
   iIntros (Φ) "% HΦ".
   repeat wp_step.
   wp_lam; repeat wp_step.
-  wp_apply wp_allocN; eauto.
+  wp_apply (wp_allocN _ _ _ t); eauto.
+  { hnf.
+    eapply zero_val_ty. }
   iIntros (l) "Hl".
   repeat wp_step.
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
   iFrame.
   iPureIntro.
-  rewrite concat_replicate_length /=.
+  rewrite replicate_length //.
 Qed.
 
-Theorem wp_SliceSingleton Φ stk E x :
-  (∀ s, is_slice s [x] -∗ Φ (slice_val s)) -∗
+Theorem wp_SliceSingleton Φ stk E t x :
+  val_ty x t ->
+  (∀ s, is_slice s t [x] -∗ Φ (slice_val s)) -∗
   WP SliceSingleton x @ stk; E {{ Φ }}.
 Proof.
-  iIntros "HΦ".
+  iIntros (Hty) "HΦ".
   wp_call.
-  wp_apply wp_allocN; eauto.
+  wp_apply (wp_allocN _ _ _ t); eauto.
   { word. }
-  iIntros (l) "(Hl&_)".
+  change (replicate (int.nat 1) x) with [x].
+  iIntros (l) "Hl".
   wp_steps.
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
   iFrame.
@@ -236,11 +240,11 @@ Proof.
   simpl; word.
 Qed.
 
-Lemma array_split (n:Z) l vs :
+Lemma array_split (n:Z) l t vs :
   0 <= n ->
   Z.to_nat n <= length vs ->
-  array l vs ⊣⊢
-        array l (take (Z.to_nat n) vs) ∗ array (l +ₗ n) (drop (Z.to_nat n) vs).
+  array l t vs ⊣⊢
+        array l t (take (Z.to_nat n) vs) ∗ array (l +ₗ n * ty_size t) t (drop (Z.to_nat n) vs).
 Proof.
   intros Hn Hlength.
   rewrite <- (take_drop (Z.to_nat n) vs) at 1.
@@ -251,19 +255,19 @@ Proof.
   auto.
 Qed.
 
-Definition slice_take (sl: Slice.t) (n: u64) : Slice.t :=
+Definition slice_take (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
   {| Slice.ptr := sl.(Slice.ptr);
      Slice.sz := n |}.
 
-Definition slice_skip (sl: Slice.t) (n: u64) : Slice.t :=
-  {| Slice.ptr := sl.(Slice.ptr) +ₗ int.val n;
+Definition slice_skip (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
+  {| Slice.ptr := sl.(Slice.ptr) +ₗ int.val n * ty_size t;
      Slice.sz := word.sub sl.(Slice.sz) n |}.
 
-Lemma slice_split sl (n: u64) vs :
+Lemma slice_split sl (n: u64) t vs :
   0 <= int.val n ->
   int.nat n <= length vs ->
-  is_slice sl vs -∗ is_slice (slice_take sl n) (take (int.nat n) vs) ∗
-           is_slice (slice_skip sl n) (drop (int.nat n) vs).
+  is_slice sl t vs -∗ is_slice (slice_take sl t n) t (take (int.nat n) vs) ∗
+           is_slice (slice_skip sl t n) t (drop (int.nat n) vs).
 Proof.
   intros Hpos Hbound.
   rewrite /is_slice /slice_take /slice_skip /=.
@@ -277,13 +281,13 @@ Proof.
   word.
 Qed.
 
-Lemma slice_combine sl (n: u64) vs :
+Lemma slice_combine sl (n: u64) t vs :
   0 <= int.val n ->
   int.nat n <= length vs ->
   int.val n <= int.val sl.(Slice.sz) ->
-  is_slice (slice_take sl n) (take (int.nat n) vs) ∗
-           is_slice (slice_skip sl n) (drop (int.nat n) vs) -∗
-           is_slice sl vs.
+  is_slice (slice_take sl t n) t (take (int.nat n) vs) ∗
+           is_slice (slice_skip sl t n) t (drop (int.nat n) vs) -∗
+           is_slice sl t vs.
 Proof.
   intros Hpos Hbound Hsz_bound.
   rewrite /is_slice /slice_take /slice_skip /=.
@@ -298,18 +302,30 @@ Proof.
   rewrite wrap_small in H0; nat2Z.
 Qed.
 
-Lemma wp_SliceSkip stk E s vs (n: u64) :
-  {{{ is_slice s vs ∗ ⌜int.val n <= Z.of_nat (length vs)⌝ }}}
-    SliceSkip s #n @ stk; E
-  {{{ RET slice_val (slice_skip s n);
-      is_slice (slice_skip s n) (drop (int.nat n) vs) ∗
-               array s.(Slice.ptr) (take (int.nat n) vs) }}}.
+Lemma wp_SliceSkip stk E s t vs (n: u64) :
+  {{{ is_slice s t vs ∗ ⌜int.val n <= Z.of_nat (length vs)⌝
+                      ∗ ⌜int.val n * ty_size t < 2^64⌝ }}}
+    SliceSkip t s #n @ stk; E
+  {{{ RET slice_val (slice_skip s t n);
+      is_slice (slice_skip s t n) t (drop (int.nat n) vs) ∗
+               array s.(Slice.ptr) t (take (int.nat n) vs) }}}.
 Proof.
-  iIntros (Φ) "[[Hs %] %] HΦ".
+  iIntros (Φ) "((Hs&%)&%&%) HΦ".
   wp_lam; repeat wp_step.
   wp_lam; repeat wp_step.
   rewrite Z.mul_1_r.
   repeat (wp_lam || wp_step).
+  rewrite word.unsigned_mul.
+  rewrite unsigned_U64.
+  (* ugh need to assume type size fits in 2^64... *)
+  assert (word.wrap (word:=u64_instance.u64) (ty_size t) = ty_size t) by admit.
+  rewrite H2.
+  rewrite wrap_small; first last.
+  { pose proof (ty_size_gt0 t).
+    pose proof word.unsigned_range n.
+    pose proof word.unsigned_range (ty_size t).
+    lia.
+  }
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
   pose proof (word.unsigned_range n).
   pose proof (word.unsigned_range s.(Slice.sz)).
@@ -319,18 +335,21 @@ Proof.
   iPureIntro.
   rewrite drop_length /=.
   word.
-Qed.
+Admitted.
 
-Lemma wp_SliceSkip' Φ stk E s (n: u64):
+Lemma wp_SliceSkip' Φ stk E s t (n: u64):
   ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
-  Φ (slice_val (slice_skip s n)) -∗
-  WP (SliceSkip (slice_val s) #n) @ stk; E {{ Φ }}.
+  Φ (slice_val (slice_skip s t n)) -∗
+  WP (SliceSkip t (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof.
   iIntros "% HΦ".
   wp_call.
   wp_call.
   wp_call.
-  rewrite Z.mul_1_r.
+  rewrite word.unsigned_mul.
+  (* TODO: this wrapping is annoying since it doesn't even happen in the code
+  but only in the model's location calculation; it would be ok for this to
+  happen without overflow *)
   iApply "HΦ".
 Qed.
 
