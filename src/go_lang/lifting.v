@@ -23,12 +23,23 @@ Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
 Section StructMapsto.
   Context {ext:ext_op}.
   Context {ext_ty:ext_types ext}.
-  Fixpoint ty_len (t:ty) : nat :=
-    match t with
-    | prodT t1 t2 => ty_len t1 + ty_len t2
-    | _ => 1
-    end.
-  Definition val_ty (v: val) (t:ty) := length (flatten_struct v) = (ty_len t).
+
+  Theorem ty_size_gt0 t : 0 <= ty_size t.
+  Proof.
+    induction t; simpl; lia.
+  Qed.
+
+  Definition val_ty (v: val) (t:ty) := val_hasTy ∅ v t.
+
+  Theorem val_ty_len {v t} : val_ty v t -> length (flatten_struct v) = Z.to_nat (ty_size t).
+  Proof.
+    unfold val_ty; intros H.
+    induction H; simpl; rewrite -> ?app_length in *; auto.
+    - inversion H; subst; auto.
+    - pose proof (ty_size_gt0 t1).
+      pose proof (ty_size_gt0 t2).
+      lia.
+  Qed.
 
   Context {Σ} {hG: gen_heapG loc (nonAtomic val) Σ}.
 
@@ -502,7 +513,7 @@ Abort.
 
 Lemma heap_array_replicate_to_nested_mapsto l vs (n : nat) :
   ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (concat_replicate n vs)), l' ↦ vm) -∗
-  [∗ list] i ∈ seq 0 n, [∗ list] j ↦ v ∈ vs, (l +ₗ ((i : nat) * length vs)%nat +ₗ j)%nat ↦ Free v.
+  [∗ list] i ∈ seq 0 n, [∗ list] j ↦ v ∈ vs, (l +ₗ ((i : nat) * Z.of_nat (length vs)) +ₗ j)%nat ↦ Free v.
 Proof using Type.
   iIntros "Hmap".
   iDestruct (heap_array_to_seq_mapsto with "Hmap") as "Hvs".
@@ -524,7 +535,7 @@ Lemma wp_allocN_seq s E ty v (n: u64) :
   val_ty v ty ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
-                              ((l +ₗ (i * ty_len ty)%nat) ↦[ty] v) }}}.
+                              ((l +ₗ (Z.of_nat i * ty_size ty)) ↦[ty] v) }}}.
 Proof using Type.
   iIntros (Hn Hty Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
@@ -539,10 +550,12 @@ Proof using Type.
   iFrame "Hσ Hκs". iApply "HΦ".
   unfold struct_mapsto.
   iDestruct (heap_array_replicate_to_nested_mapsto with "Hl") as "Hl".
-  rewrite Hty.
+  rewrite (val_ty_len Hty).
   iApply (big_sepL_mono with "Hl").
   iIntros (k0 j _) "H".
-  by iFrame.
+  setoid_rewrite Z2Nat.id.
+  { by iFrame. }
+  apply ty_size_gt0.
 Qed.
 (*
 Lemma twp_allocN_seq s E v (n: u64) :

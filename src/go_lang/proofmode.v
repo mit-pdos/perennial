@@ -3,7 +3,7 @@ From iris.proofmode Require Export tactics.
 From iris.program_logic Require Export weakestpre total_weakestpre.
 From iris.program_logic Require Import atomic.
 From Perennial.go_lang Require Export tactics lifting.
-From Perennial.go_lang Require Import notation.
+From Perennial.go_lang Require Import notation typing.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -194,21 +194,26 @@ Tactic Notation "wp_bind" open_constr(efoc) :=
 (** Heap tactics *)
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context {ext_tys: ext_types ext}.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types Δ : envs (uPredI (iResUR Σ)).
 Implicit Types v : val.
 Implicit Types z : Z.
 
-Lemma tac_wp_alloc Δ Δ' s E j K v Φ :
+(** allocation with a type annotation *)
+Definition AllocAt (t:ty) (e:expr) := Alloc e.
+
+Lemma tac_wp_alloc Δ Δ' s E j K v t Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
+  val_ty v t ->
   (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (l ↦s v)) Δ' = Some Δ'' ∧
+    envs_app false (Esnoc Enil j (l ↦[t] v)) Δ' = Some Δ'' ∧
     envs_entails Δ'' (WP fill K (Val $ LitV l) @ s; E {{ Φ }})) →
-  envs_entails Δ (WP fill K (Alloc (Val v)) @ s; E {{ Φ }}).
+  envs_entails Δ (WP fill K (AllocAt t (Val v)) @ s; E {{ Φ }}).
 Proof.
-  rewrite envs_entails_eq=> ? HΔ.
-  rewrite -wp_bind. eapply wand_apply; first exact: wp_alloc.
+  rewrite envs_entails_eq=> ? Hty HΔ.
+  rewrite -wp_bind /AllocAt. eapply wand_apply; first exact: wp_alloc.
   rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
   apply wand_intro_l. by rewrite right_id wand_elim_r.

@@ -19,9 +19,12 @@ Section val_types.
   | structRefT (ts: list ty)
   (* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
   | mapValT (vt: ty) (* keys are always uint64, for now *)
-  | anyT
   | extT (x: ext_tys)
   .
+
+  (* for backwards compatibility; need a sound plan for dealing with recursive
+  structs *)
+  Definition anyT : ty := unitT.
 
   Definition refT (t:ty) : ty := structRefT [t].
   Definition mapT (vt:ty) : ty := refT (mapValT vt).
@@ -57,7 +60,7 @@ Reserved Notation "Γ '⊢v' v : A" (at level 74, v, A at next level).
 
 Class ext_types (ext:ext_op) :=
   { val_tys :> val_types;
-    val_ty_def : ext_tys -> val;
+    val_ty_def : ext_tys -> ext_val;
     get_ext_tys: external -> ty * ty; (* the argument type and return type *)
   }.
 
@@ -94,14 +97,14 @@ Section go_lang.
     | arrowT t1 t2 => λ: <>, zero_val t2
     | arrayT t => #null
     | structRefT ts => #null
-    | anyT => #()
-    | extT x => val_ty_def x
+    | extT x => ExtV (val_ty_def x)
     end.
 
   Fixpoint ty_size (t:ty) : Z :=
     match t with
     | prodT t1 t2 => ty_size t1 + ty_size t2
-    (* this gives unit values space, which seems fine *)
+    | extT x => 1 (* all external values are base literals *)
+    | unitT => 1
     | _ => 1
     end.
 
@@ -290,9 +293,6 @@ Section go_lang.
   | array_ref_hasTy e t :
       Γ ⊢ e : arrayT t ->
       Γ ⊢ e : refT t
-  | e_any_hasTy e t :
-      Γ ⊢ e : t ->
-      Γ ⊢ e : anyT
   where "Γ ⊢ e : A" := (expr_hasTy Γ e A)
   with val_hasTy (Γ: Ctx) : val -> ty -> Prop :=
   | val_base_lit_hasTy v t :
@@ -313,11 +313,8 @@ Section go_lang.
   | mapNilV_hasTy v t :
       Γ ⊢v v : t ->
       Γ ⊢v MapNilV v : mapValT t
-  | val_any_hasTy v t :
-      Γ ⊢v v : t ->
-      Γ ⊢v v : anyT
   | ext_def_hasTy x :
-      Γ ⊢v val_ty_def x : extT x
+      Γ ⊢v (ExtV (val_ty_def x)) : extT x
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
@@ -374,7 +371,6 @@ Section go_lang.
   Qed.
 
   Hint Constructors base_lit_hasTy expr_hasTy val_hasTy base_lit_hasTy.
-  Remove Hints e_any_hasTy val_any_hasTy.
 
   Theorem ref_hasTy Γ v t :
     Γ ⊢ v : t ->
@@ -387,7 +383,7 @@ Section go_lang.
     Γ ⊢v zero_val ty : ty.
   Proof.
     generalize dependent Γ.
-    induction ty; simpl; eauto using val_any_hasTy.
+    induction ty; simpl; eauto.
   Qed.
 
   Definition NewMap (t:ty) : expr := AllocMap (zero_val t).
@@ -504,7 +500,7 @@ Hint Resolve hasTy_ty_congruence : types.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
-Remove Hints array_ref_hasTy e_any_hasTy val_any_hasTy : types.
+Remove Hints array_ref_hasTy : types.
 (* note that this has to be after [Hint Constructors expr_hasTy] to get higher
 priority than Panic_hasTy *)
 Hint Resolve Panic_unit_t : types.
@@ -514,8 +510,6 @@ Hint Resolve ref_hasTy load_array_hasTy store_array_hasTy array_null_hasTy : typ
 Hint Resolve store_val_hasTy store_array_val_hasTy : types.
 
 Hint Extern 1 (expr_hasTy _ _ _) => apply var_hasTy; reflexivity : types.
-Hint Extern 2 (expr_hasTy _ _ anyT) => eapply e_any_hasTy : types.
-Hint Extern 2 (val_hasTy _ _ anyT) => eapply val_any_hasTy : types.
 
 Local Ltac simp := unfold For; rewrite ?insert_anon.
 Ltac _type_step :=
