@@ -1427,28 +1427,30 @@ Compute (runStateT (interpret 10 (AllocN #1 (zero_val uint32T))) startstate).
 Compute (runStateT (interpret 10 (returnTwoWrapper #3)) startstate).
 Compute (runStateT (interpret 10 (testRec #0)) startstate).
 
+Definition run (p: expr): Error val :=
+  fst <$> runStateT (interpret 100 p) startstate.
+
+Notation check_run p := (ltac:(let x := (eval vm_compute in (run p)) in
+                               lazymatch x with
+                               | Works _ ?v => exact v
+                               | Fail _ ?msg => fail "interpreter failed on" p msg
+                               end)) (only parsing).
+
 Definition runs_to (p: expr) (v: val) :=
-  (fst <$> runStateT (interpret 100 p) startstate) = Works _ v.
+  run p = Works _ v.
 Notation "p ~~> v" := (eq_refl : runs_to p v) (at level 70).
 
 Example run_testRec := testRec #0 ~~> #6.
 
-Compute (runStateT (interpret 10 ConstWithArith) startstate).
-Compute (runStateT (interpret 10 (literalCast #0)) startstate).
-Compute (fst <$> (runStateT (interpret 15 (useSliceIndexing #0)) startstate)).
+Compute (check_run ConstWithArith).
+Compute (check_run (literalCast #())).
+Compute (check_run (useSliceIndexing #())).
 
-(*
-Example run_encdec1 := testUInt64EncDec #1 ~~> #1.
-Example run_encdec2 := testUInt64EncDec #256 ~~> #256.
-Example run_encdec3 := testUInt64EncDec #65536 ~~> #65536.
-Example run_encdec4 := testUInt64EncDec #3214405 ~~> #3214405.
-*)
-
-Compute (runStateT (interpret 10 (testIfStatement #0)) startstate).
-Compute (runStateT (interpret 10 (testMatch (InjL #2))) startstate).
-Compute (runStateT (interpret 10 (testMatch (InjR #2))) startstate).
-Compute (runStateT (interpret 16 (useMap #0)) startstate).
-Compute (runStateT (interpret 10 (ReassignVars #0)) startstate).
+Compute (check_run (testIfStatement #())).
+Compute (check_run (testMatch (InjL #2))).
+Compute (check_run (testMatch (InjR #2))).
+Compute (check_run (useMap #())).
+Compute (check_run (ReassignVars #())).
 
 Definition test_case (p: expr) :=
   match (fst <$> runStateT (interpret 100 p) startstate) with
@@ -1456,10 +1458,12 @@ Definition test_case (p: expr) :=
   | _ => false
   end.
 
-Compute (test_case (EncDec64 #333)).
-Compute (test_case (EncDec32 #333)).
-
+(* fails because #333 is a uint64 *)
+Fail Compute (check_run (EncDec32 #333)).
 Definition tc1 := (test_case (EncDec64 #333)).
+Definition tc2 := (test_case (EncDec32 #(U32 333))).
+Example tc1_ok : tc1 = true := eq_refl.
+Example tc2_ok : tc2 = true := eq_refl.
 
 (* Extraction testing:
 
