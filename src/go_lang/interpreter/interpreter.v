@@ -217,7 +217,7 @@ Ltac runStateT_bind :=
   | _ => fail
   end.
 
-Section go_lang_int.
+Section interpreter.
   Context {ext: ext_op} {ffi: ffi_model}
           {ffi_semantics: ext_semantics ext ffi}.
   Canonical Structure heap_ectxi_lang := (EctxiLanguage (heap_lang.heap_lang_mixin ffi_semantics)).
@@ -1125,30 +1125,5 @@ Section go_lang_int.
       exact rest_nstep.
     }
   Qed.
-
-  (* Testing *)
-  Definition testRec : expr :=
-    (rec: BAnon BAnon :=
-       #3 + #3).
-  
-  Definition literalCast: expr :=
-    λ: <>,
-       let: "x" := #2 in
-       (Var "x") + #2.
-
-  Definition testIfStatement: expr :=
-    λ: <>,
-       let: "m" := #2 in
-       (if: (Var "m") > #3
-        then #3
-        else #1).
-
-  Definition testMatch: val :=
-    λ: "x",
-    match: (Var "x") with
-      InjL "x1" => #3 + (Var "x1")
-    | InjR "x1" => #4 + (Var "x1")
-    end.
-
-End go_lang_int.
+End interpreter.
 

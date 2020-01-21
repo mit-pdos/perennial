@@ -8,10 +8,10 @@ From Perennial.Helpers Require Import Integers Transitions.
 From Perennial.go_lang Require Export locations.
 From Perennial.go_lang Require Export lang.
 From Perennial.go_lang Require Import prelude.
+
 From Perennial.go_lang Require Import interpret_types.
 From Perennial.go_lang Require Import interpreter.
 
-From Perennial.go_lang.examples Require Import goose_unittest.
 From Perennial.go_lang.ffi Require Import disk.
 Require Import Program.
 
@@ -20,14 +20,6 @@ Set Default Proof Using "Type".
 Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
-Definition startstate : state := inhabitant.
-
-(* More instances of mbind and mret, this time outside of the
-go_lang_int section. *)
-Instance statet_disk_option_bind : MBind (StateT state option) :=
-  StateT_bind option option_fmap option_join option_bind.
-Instance statet_disk_option_ret : MRet (StateT state option) :=
-  StateT_ret option option_ret.
 Instance statet_disk_error_bind : MBind (StateT state Error) :=
   StateT_bind Error Error_fmap Error_join Error_bind.
 Instance statet_disk_error_ret : MRet (StateT state Error) :=
