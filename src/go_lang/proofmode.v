@@ -202,7 +202,7 @@ Implicit Types v : val.
 Implicit Types z : Z.
 
 (** allocation with a type annotation *)
-Definition AllocAt (t:ty) (e:expr) := Alloc e.
+Definition Alloc_at (t:ty) (e:expr) := Alloc e.
 
 Lemma tac_wp_alloc Δ Δ' s E j K v t Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -210,10 +210,10 @@ Lemma tac_wp_alloc Δ Δ' s E j K v t Φ :
   (∀ l, ∃ Δ'',
     envs_app false (Esnoc Enil j (l ↦[t] v)) Δ' = Some Δ'' ∧
     envs_entails Δ'' (WP fill K (Val $ LitV l) @ s; E {{ Φ }})) →
-  envs_entails Δ (WP fill K (AllocAt t (Val v)) @ s; E {{ Φ }}).
+  envs_entails Δ (WP fill K (Alloc_at t (Val v)) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_eq=> ? Hty HΔ.
-  rewrite -wp_bind /AllocAt. eapply wand_apply; first exact: wp_alloc.
+  rewrite -wp_bind /Alloc_at. eapply wand_apply; first exact: wp_alloc.
   rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
   apply wand_intro_l. by rewrite right_id wand_elim_r.

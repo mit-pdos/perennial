@@ -26,15 +26,19 @@ Implicit Types vs : list val.
 Implicit Types z : Z.
 Implicit Types off : nat.
 
-Lemma tac_wp_allocN Δ Δ' s E j K v (n: u64) Φ :
+(* TODO: this should probably be a val, or it's going to cause problems... *)
+Definition AllocN_at (t:ty) (len:expr) (e:expr) := AllocN len e.
+
+Lemma tac_wp_allocN Δ Δ' s E j K v t (n: u64) Φ :
   (0 < int.val n)%Z →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
+  val_ty v t ->
   (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (array l (concat_replicate (int.nat n) (flatten_struct v)))) Δ' = Some Δ'' ∧
+    envs_app false (Esnoc Enil j (array l t (replicate (int.nat n) v))) Δ' = Some Δ'' ∧
     envs_entails Δ'' (WP fill K (Val $ LitV $ LitLoc l) @ s; E {{ Φ }})) →
-  envs_entails Δ (WP fill K (AllocN (Val $ LitV $ LitInt n) (Val v)) @ s; E {{ Φ }}).
+  envs_entails Δ (WP fill K (AllocN_at t (Val $ LitV $ LitInt n) (Val v)) @ s; E {{ Φ }}).
 Proof.
-  rewrite envs_entails_eq=> ? ? HΔ.
+  rewrite envs_entails_eq=> ? ? Hty HΔ.
   rewrite -wp_bind. eapply wand_apply; first exact: wp_allocN.
   rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
@@ -102,22 +106,27 @@ Proof.
   rewrite right_id. by apply sep_mono_r, wand_mono.
 Qed.
 
-Lemma wp_store_offset s E l off vs v :
+(* TODO: this is only true for type-based store *)
+Lemma wp_store_offset s E l off vs t v :
   is_Some (vs !! off) →
-  {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ <[off:=v]> vs }}}.
+  {{{ ▷ l ↦∗[t] vs }}} #(l +ₗ off * ty_size t) <- v @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
 Proof.
   iIntros ([w Hlookup] Φ) ">Hl HΦ".
-  iDestruct (update_array l _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
+  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
+  (*
   iApply (wp_store with "Hl1"). iNext. iIntros "Hl1".
   iApply "HΦ". iApply "Hl2". iApply "Hl1".
-Qed.
+*)
+Abort.
 
+(*
 Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :
   {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ vinsert off v vs }}}.
 Proof.
   setoid_rewrite vec_to_list_insert. apply wp_store_offset.
   eexists. by apply vlookup_lookup.
 Qed.
+*)
 
 Coercion slice_val (s: Slice.t) : val := (#s.(Slice.ptr), #s.(Slice.sz)).
 
