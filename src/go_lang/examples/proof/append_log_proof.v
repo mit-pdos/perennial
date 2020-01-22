@@ -285,7 +285,7 @@ Proof.
   iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   wp_call.
-  rewrite /Enc.get /struct.getField /Enc.S /=.
+  rewrite /struct.getField /Enc.S /=.
   wp_steps.
   wp_load.
   wp_steps.
