@@ -297,6 +297,7 @@ Proof.
   iIntros (Φ) "[[Hs %] %] HΦ".
   wp_lam; repeat wp_step.
   wp_lam; repeat wp_step.
+  rewrite Z.mul_1_r.
   repeat (wp_lam || wp_step).
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
   pose proof (word.unsigned_range n).
@@ -318,6 +319,7 @@ Proof.
   wp_call.
   wp_call.
   wp_call.
+  rewrite Z.mul_1_r.
   iApply "HΦ".
 Qed.
 
@@ -352,6 +354,7 @@ Proof.
       rewrite -> wrap_small in Heqb0 by word.
       word.
     + wp_call.
+      rewrite Z.mul_1_r.
       iApply "HΦ".
 Qed.
 
@@ -369,6 +372,7 @@ Proof.
   iDestruct (update_array ptr _ _ _ H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
   nat2Z.
+  rewrite Z.mul_1_r.
   wp_load.
   iApply "HΦ".
   rewrite /is_slice /=.
@@ -601,6 +605,7 @@ Proof.
       wp_lam.
       wp_pures.
       wp_bind (Store _ _).
+      rewrite Z.mul_1_r.
       wp_apply (wp_store with "Halloc1").
       iIntros "Hlast".
       repeat wp_step.
@@ -635,6 +640,7 @@ Proof.
   iDestruct "Hs" as "[Hptr %]".
   cbv [Slice.ptr Slice.sz] in *.
   wp_pures.
+  rewrite Z.mul_1_r.
   replace (int.val i) with (Z.of_nat (int.nat i)).
   - iApply (wp_store_offset with "Hptr"); auto.
     iIntros "!> Hptr".
@@ -756,6 +762,7 @@ Proof.
   wp_lam.
   wp_let.
   wp_pures.
+  rewrite Z.mul_1_r.
   wp_bind (Store _ _).
   change (int.val 0) with (Z.of_nat 0).
   iApply (wp_store_offset with "Hl").
@@ -764,6 +771,7 @@ Proof.
   iIntros "!> Hl".
   wp_seq.
   wp_pures.
+  rewrite Z.mul_1_r.
   wp_bind (Store _ _).
   change (int.val 1) with (Z.of_nat 1).
   iApply (wp_store_offset with "Hl").
@@ -773,6 +781,7 @@ Proof.
   iIntros "!> Hl".
   wp_seq.
   wp_pures.
+  rewrite Z.mul_1_r.
   wp_bind (Store _ _).
   change (int.val 2) with (Z.of_nat 2).
   iApply (wp_store_offset with "Hl").
@@ -782,6 +791,7 @@ Proof.
   iIntros "!> Hl".
   wp_seq.
   wp_pures.
+  rewrite Z.mul_1_r.
   change (int.val 3) with (Z.of_nat 3).
   iApply (wp_store_offset with "Hl").
   { apply lookup_lt_is_Some_2.

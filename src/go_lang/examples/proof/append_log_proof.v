@@ -285,7 +285,7 @@ Proof.
   iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   wp_call.
-  rewrite /Enc.get /struct.getField /Enc.S /=.
+  rewrite /struct.getField /Enc.S /=.
   wp_steps.
   wp_load.
   wp_steps.
@@ -977,6 +977,7 @@ Proof.
   rewrite /SliceGet /slice.ptr.
   wpc_pures; first by iFrame.
   wpc_atomic; first by iFrame.
+  rewrite Z.mul_1_r.
   destruct s as [ptr sz].
   iDestruct "Hs" as "[Ha %]".
   cbv [Slice.ptr Slice.sz] in *.

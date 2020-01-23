@@ -9,12 +9,6 @@ Module partialFile.
     "off" :: uint64T;
     "data" :: slice.T byteT
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End partialFile.
 
 Definition GetUserDir: val :=
@@ -35,15 +29,15 @@ Definition readMessage: val :=
       "data" ::= "initData"
     ]) in
     (for: (#true); (Skip) :=
-      let: "buf" := FS.readAt "f" (partialFile.get "off" !"pf") #512 in
-      let: "newData" := SliceAppendSlice (partialFile.get "data" !"pf") "buf" in
+      let: "buf" := FS.readAt "f" (struct.get partialFile.S "off" !"pf") #512 in
+      let: "newData" := SliceAppendSlice (struct.get partialFile.S "data" !"pf") "buf" in
       (if: slice.len "buf" < #512
       then
         "fileContents" <- "newData";;
         Break
       else
         "pf" <- struct.mk partialFile.S [
-          "off" ::= partialFile.get "off" !"pf" + slice.len "buf";
+          "off" ::= struct.get partialFile.S "off" !"pf" + slice.len "buf";
           "data" ::= "newData"
         ];;
         Continue));;
@@ -57,12 +51,6 @@ Module Message.
     "Id" :: stringT;
     "Contents" :: stringT
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End Message.
 
 (* Pickup reads all stored messages and acquires a per-user lock. *)
@@ -73,12 +61,12 @@ Definition Pickup: val :=
     lock.acquire "l";;
     let: "userDir" := GetUserDir "user" in
     let: "names" := FS.list "userDir" in
-    let: "messages" := ref (zero_val (slice.T Message.T)) in
-    let: "initMessages" := NewSlice Message.T #0 in
+    let: "messages" := ref (zero_val (slice.T (struct.t Message.S))) in
+    let: "initMessages" := NewSlice (struct.t Message.S) #0 in
     "messages" <- "initMessages";;
     let: "i" := ref #0 in
     (for: (#true); (Skip) :=
-      (if: !"i" = slice.len "names"
+      (if: (!"i" = slice.len "names")
       then Break
       else
         let: "name" := SliceGet "names" !"i" in
@@ -180,7 +168,7 @@ Definition open: val :=
     "locks" <- "initLocks";;
     let: "i" := ref #0 in
     (for: (#true); (Skip) :=
-      (if: !"i" = NumUsers
+      (if: (!"i" = NumUsers)
       then Break
       else
         let: "oldLocks" := !"locks" in
@@ -201,7 +189,7 @@ Definition Recover: val :=
     let: "spooled" := FS.list SpoolDir in
     let: "i" := ref #0 in
     (for: (#true); (Skip) :=
-      (if: !"i" = slice.len "spooled"
+      (if: (!"i" = slice.len "spooled")
       then Break
       else
         let: "name" := SliceGet "spooled" !"i" in

@@ -95,7 +95,7 @@ Notation "'to_u32' e" := (UnOp ToUInt32Op e%E) (at level 10) : expr_scope.
 Notation "'to_u8' e" := (UnOp ToUInt8Op e%E) (at level 10) : expr_scope.
 
 Notation "e1 + e2" := (BinOp PlusOp e1%E e2%E) : expr_scope.
-Notation "e1 +ₗ e2" := (BinOp OffsetOp e1%E e2%E) : expr_scope.
+Notation "e1 +ₗ e2" := (BinOp (OffsetOp 1) e1%E e2%E) : expr_scope.
 Notation "e1 - e2" := (BinOp MinusOp e1%E e2%E) : expr_scope.
 Notation "e1 * e2" := (BinOp MultOp e1%E e2%E) : expr_scope.
 Notation "e1 ∥ e2" := (BinOp OrOp e1%E e2%E) (at level 40) : expr_scope.

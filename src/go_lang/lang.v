@@ -105,7 +105,7 @@ Inductive bin_op : Set :=
   | AndOp | OrOp | XorOp (* Bitwise *)
   | ShiftLOp | ShiftROp (* Shifts *)
   | LeOp | LtOp | EqOp (* Relations *)
-  | OffsetOp (* Pointer offset *)
+  | OffsetOp (k:Z) (* Pointer offset *)
 .
 
 Inductive arity : Set := args0 | args1 | args2.
@@ -476,7 +476,39 @@ Qed.
 
 Global Instance bin_op_countable : Countable bin_op.
 Proof.
-  solve_countable bin_op_rec 15%nat.
+  refine (inj_countable' (λ op, match op with
+                                | PlusOp => inl 0
+                                | MinusOp => inl 1
+                                | MultOp => inl 2
+                                | QuotOp => inl 3
+                                | RemOp => inl 4
+                                | AndOp => inl 5
+                                | OrOp => inl 6
+                                | XorOp => inl 7
+                                | ShiftLOp => inl 8
+                                | ShiftROp => inl 9
+                                | LeOp => inl 10
+                                | LtOp => inl 11
+                                | EqOp => inl 12
+                                | OffsetOp k => inr k
+                                end)
+                         (λ x, match x with
+                               | inl 0 => _
+                               | inl 1 => _
+                               | inl 2 => _
+                               | inl 3 => _
+                               | inl 4 => _
+                               | inl 5 => _
+                               | inl 6 => _
+                               | inl 7 => _
+                               | inl 8 => _
+                               | inl 9 => _
+                               | inl 10 => _
+                               | inl 11 => _
+                               | inl 12 => _
+                               | inl _ => PlusOp
+                               | inr k => OffsetOp k
+                               end) _); by intros [].
 Qed.
 
 Inductive prim_op' := | a_prim_op {ar} (op: prim_op ar).
@@ -504,26 +536,26 @@ Proof.
                                 match op with
                                 | PanicOp s => inl s
                                 | AllocNOp => inr 0
-                                | AllocStructOp => inr 7
-                                | PrepareWriteOp => inr 12
-                                | FinishStoreOp => inr 1
-                                | StartReadOp => inr 13
-                                | FinishReadOp => inr 14
-                                | LoadOp => inr 2
-                                | InputOp => inr 10
-                                | OutputOp => inr 11
+                                | AllocStructOp => inr 1
+                                | PrepareWriteOp => inr 2
+                                | FinishStoreOp => inr 3
+                                | StartReadOp => inr 4
+                                | FinishReadOp => inr 5
+                                | LoadOp => inr 6
+                                | InputOp => inr 7
+                                | OutputOp => inr 8
                                 end)
                          (λ v, match v with
-                               | inl s => a_prim_op (PanicOp s)
-                               | inr 0 => a_prim_op AllocNOp
-                               | inr 7 => a_prim_op AllocStructOp
-                               | inr 12 => a_prim_op PrepareWriteOp
-                               | inr 1 => a_prim_op FinishStoreOp
-                               | inr 13 => a_prim_op StartReadOp
-                               | inr 14 => a_prim_op FinishReadOp
-                               | inr 2 => a_prim_op LoadOp
-                               | inr 10 => a_prim_op InputOp
-                               | inr 11 => a_prim_op OutputOp
+                               | inl s => a_prim_op _
+                               | inr 0 => a_prim_op _
+                               | inr 1 => a_prim_op _
+                               | inr 2 => a_prim_op _
+                               | inr 3 => a_prim_op _
+                               | inr 4 => a_prim_op _
+                               | inr 5 => a_prim_op _
+                               | inr 6 => a_prim_op _
+                               | inr 7 => a_prim_op _
+                               | inr 8 => a_prim_op _
                                | _ => a_prim_op (PanicOp "")
                                end) _); intros [_ []]; trivial.
 Qed.
@@ -829,7 +861,7 @@ Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=
   | ShiftLOp | ShiftROp => None (* Shifts *)
   | LeOp | LtOp => None (* InEquality *)
   | EqOp => Some (LitBool (bool_decide (b1 = b2)))
-  | OffsetOp => None (* Pointer arithmetic *)
+  | OffsetOp _ => None (* Pointer arithmetic *)
   end.
 
 Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :=
@@ -858,9 +890,11 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
                   ∪ (LitBool <$> bin_op_eval_compare op n1 n2))
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
-    | LitV (LitLoc l), LitV (LitInt off) => if decide (op = OffsetOp)
-                                           then Some $ LitV $ LitLoc (l +ₗ int.val (off: u64))
-                                           else None
+    | LitV (LitLoc l), LitV (LitInt off) => match op with
+                                           | OffsetOp k =>
+                                             Some $ LitV $ LitLoc (l +ₗ int.val (off: u64) * k)
+                                           | _ => None
+                                           end
     | _, _ => None
     end.
 
