@@ -4,6 +4,7 @@ From Perennial.Helpers Require Import Integers Transitions.
 From Perennial.go_lang Require Import prelude.
 
 From Perennial.go_lang.interpreter Require Import interpret_types.
+From Perennial.go_lang.interpreter Require Import pretty_types.
 From Perennial.go_lang.interpreter Require Import interpreter.
 From Perennial.go_lang.examples Require Import goose_unittest.
 
@@ -191,6 +192,13 @@ Proof.
   simpl; reflexivity.
 Qed.
 
+Instance pretty_disk_op : Pretty DiskOp :=
+  fun x => match x with
+        | ReadOp => "ReadOp"
+        | WriteOp => "WriteOp"
+        | SizeOp => "SizeOp"
+        end.
+
 (* Single-step interpreter for external disk operations. *)
 Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
   match (op, v) with
@@ -209,7 +217,7 @@ Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
   | (SizeOp, LitV LitUnit) =>
     σ <- mget;
       mret (Val $ LitV $ LitInt (U64 (disk_size σ.(world))))
-  | _ => mfail "DiskOp failed: Invalid pair of operation and argument types"
+  | _ => mfail ("DiskOp failed: Invalid argument types for " ++ (pretty op))
   end.
 
 Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state),

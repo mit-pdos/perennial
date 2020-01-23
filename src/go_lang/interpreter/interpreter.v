@@ -4,6 +4,7 @@ From iris.program_logic Require Export language ectx_language ectxi_language.
 From Perennial.Helpers Require Import Integers Transitions.
 From Perennial.go_lang Require Export locations lang prelude.
 From Perennial.go_lang Require Import interpret_types.
+From Perennial.go_lang Require Import pretty_types.
 
 Require Import Program.
 
@@ -11,52 +12,6 @@ Set Default Proof Using "Type".
 
 Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
-
-Instance pretty_u64 : Pretty Integers.u64 :=
-  fun x => pretty (word.unsigned x).
-
-Instance pretty_loc : Pretty loc :=
-  fun x => pretty x.(loc_car).
-
-Instance pretty_lit : Pretty base_lit :=
-  fun x => match x with
-        | LitInt n => "LitInt"
-        | LitInt32 n => "LitInt32"
-        | LitBool b => "LitBool"
-        | LitByte b => "LitByte"
-        | LitString s => "LitString"
-        | LitUnit => "LitUnit"
-        | LitPoison => "LitPoison"
-        | LitLoc l => "LitLoc"
-        | LitProphecy p => "LitProphecy"
-        end.
-
-Instance pretty_un_op : Pretty un_op := 
-  fun x => match x with
-  | NegOp => "NegOp"
-  | MinusUnOp => "MinusUnOp"
-  | ToUInt64Op => "ToUInt64Op"
-  | ToUInt32Op => "ToUInt32Op"
-  | ToUInt8Op => "ToUInt8Op"
-  end.
-
-Instance pretty_bin_op : Pretty bin_op :=
-  fun x => match x with
-        | PlusOp => "PlusOp"
-        | MinusOp => "MinusOp"
-        | MultOp => "MultOp"
-        | QuotOp => "QuotOp"
-        | RemOp => "RemOp"
-        | AndOp => "AndOp"
-        | OrOp => "OrOp"
-        | XorOp => "XorOp"
-        | ShiftLOp => "ShiftLOp"
-        | ShiftROp => "ShiftROp"
-        | LeOp => "LeOp"
-        | LtOp => "LtOp"
-        | EqOp => "EqOp"
-        | OffsetOp => "OffsetOp"
-        end.
 
 (* The step relation is transitive. Doing n steps and then m steps is
 the same as doing (n + m) steps. Useful in interpret_ok for splitting
@@ -286,7 +241,7 @@ Section interpreter.
     end.
   Instance pretty_val : Pretty val := print_val.
 
-   (* Given a location l, reads n places from the heap starting at l
+  (* Given a location l, reads n places from the heap starting at l
    and returns a vec.
    
    Used for disk writes. Blocks on the disk are vecs, so when we read
@@ -1171,4 +1126,3 @@ Section interpreter.
     }
   Qed.
 End interpreter.
-
