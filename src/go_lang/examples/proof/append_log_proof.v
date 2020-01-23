@@ -977,6 +977,7 @@ Proof.
   rewrite /SliceGet /slice.ptr.
   wpc_pures; first by iFrame.
   wpc_atomic; first by iFrame.
+  rewrite Z.mul_1_r.
   destruct s as [ptr sz].
   iDestruct "Hs" as "[Ha %]".
   cbv [Slice.ptr Slice.sz] in *.
