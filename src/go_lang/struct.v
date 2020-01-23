@@ -81,13 +81,6 @@ Definition structTy (d:descriptor) : ty :=
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
-Fixpoint ty_size (t:ty) : Z :=
-  match t with
-  | prodT t1 t2 => ty_size t1 + ty_size t2
-  (* this gives unit values space, which seems fine *)
-  | _ => 1
-  end.
-
 Fixpoint load_ty (t:ty) (e:expr) : expr :=
   match t with
   | prodT t1 t2 => (load_ty t1 e, load_ty t2 (e +ₗ #(ty_size t1)))

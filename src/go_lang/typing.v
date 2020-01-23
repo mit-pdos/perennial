@@ -26,6 +26,13 @@ Section val_types.
   Definition refT (t:ty) : ty := structRefT [t].
   Definition mapT (vt:ty) : ty := refT (mapValT vt).
 
+  Fixpoint ty_size (t:ty) : Z :=
+    match t with
+    | prodT t1 t2 => ty_size t1 + ty_size t2
+    (* this gives unit values space, which seems fine *)
+    | _ => 1
+    end.
+
   Definition Ctx := string -> option ty.
   Global Instance empty_ctx : Empty Ctx := fun _ => None.
   Global Instance ctx_insert : Insert binder ty Ctx.
@@ -173,16 +180,16 @@ Section go_lang.
       un_op_ty op = Some (t1, t) ->
       Γ ⊢ e1 : t1 ->
       Γ ⊢ UnOp op e1 : t
-  | offset_op_hasTy e1 e2 t :
+  | offset_op_hasTy e1 e2 k t :
       Γ ⊢ e1 : arrayT t ->
       Γ ⊢ e2 : uint64T ->
-      Γ ⊢ BinOp OffsetOp e1 e2 : arrayT t
+      Γ ⊢ BinOp (OffsetOp k) e1 e2 : arrayT t
   | struct_offset_op_hasTy e1 (v: Z) ts :
       Γ ⊢ e1 : structRefT ts ->
-      Γ ⊢ BinOp OffsetOp e1 #v : structRefT (skipn (Z.to_nat v) ts)
-  | struct_offset_op_collapse_hasTy e1 (v1 v2: Z) ts :
-      Γ ⊢ BinOp OffsetOp (BinOp OffsetOp e1 #v1) #v2 : structRefT ts ->
-      Γ ⊢ BinOp OffsetOp e1 #(v1 + v2) : structRefT ts
+      Γ ⊢ BinOp (OffsetOp 1) e1 #v : structRefT (skipn (Z.to_nat v) ts)
+  | struct_offset_op_collapse_hasTy e1 (v1 v2: Z) k ts :
+      Γ ⊢ BinOp (OffsetOp k) (BinOp (OffsetOp k) e1 #v1) #v2 : structRefT ts ->
+      Γ ⊢ BinOp (OffsetOp k) e1 #(v1 + v2) : structRefT ts
   | eq_op_hasTy e1 e2 t :
       Γ ⊢ e1 : t ->
       Γ ⊢ e2 : t ->
@@ -444,7 +451,7 @@ Section go_lang.
   Theorem struct_offset_op_hasTy_eq Γ e1 (v: Z) ts ts' :
       Γ ⊢ e1 : structRefT ts ->
       ts' = skipn (Z.to_nat v) ts ->
-      Γ ⊢ BinOp OffsetOp e1 #v : structRefT ts'.
+      Γ ⊢ BinOp (OffsetOp 1) e1 #v : structRefT ts'.
   Proof.
     intros; subst; eauto.
   Qed.
@@ -541,6 +548,8 @@ Ltac typecheck :=
   try lazymatch goal with
       | [ |- _ = _ ] => reflexivity
       end.
+
+Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E) (at level 50, left associativity): expr_scope .
 
 Section go_lang.
   Context `{ext_ty: ext_types}.
