@@ -50,5 +50,5 @@ Instance pretty_bin_op : Pretty bin_op :=
         | LeOp => "LeOp"
         | LtOp => "LtOp"
         | EqOp => "EqOp"
-        | OffsetOp => "OffsetOp"
+        | OffsetOp k => ("OffsetOp(" ++ pretty k ++ ")")%string
         end.
