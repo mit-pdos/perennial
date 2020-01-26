@@ -207,38 +207,6 @@ Definition Dec__UInt32: val :=
   λ: "d",
     UInt32Get (Dec__consume "d" #4).
 
-Definition roundtripEncDec32: val :=
-  λ: "x",
-    let: "r" := NewSlice byteT #4 in
-    let: "e" := struct.new Enc.S [
-      "p" ::= "r"
-    ] in
-    let: "d" := struct.new Dec.S [
-      "p" ::= "r"
-    ] in
-    Enc__UInt32 "e" "x";;
-    Dec__UInt32 "d".
-
-Definition EncDec32: val :=
-  λ: "x",
-    (roundtripEncDec32 "x" = "x").
-
-Definition roundtripEncDec64: val :=
-  λ: "x",
-    let: "r" := NewSlice byteT #8 in
-    let: "e" := struct.new Enc.S [
-      "p" ::= "r"
-    ] in
-    let: "d" := struct.new Dec.S [
-      "p" ::= "r"
-    ] in
-    Enc__UInt64 "e" "x";;
-    Dec__UInt64 "d".
-
-Definition EncDec64: val :=
-  λ: "x",
-    (roundtripEncDec64 "x" = "x").
-
 (* ints.go *)
 
 Definition useInts: val :=
@@ -577,6 +545,245 @@ Definition ReplicatedDiskRecover: val :=
         else #());;
         "a" <- !"a" + #1;;
         Continue)).
+
+(* semantics.go *)
+
+(* test that encoding and decoding roundtrips *)
+Definition roundtripEncDec32: val :=
+  λ: "x",
+    let: "r" := NewSlice byteT #4 in
+    let: "e" := struct.new Enc.S [
+      "p" ::= "r"
+    ] in
+    let: "d" := struct.new Dec.S [
+      "p" ::= "r"
+    ] in
+    Enc__UInt32 "e" "x";;
+    Dec__UInt32 "d".
+
+Definition testEncDec32: val :=
+  λ: "x",
+    (roundtripEncDec32 "x" = "x").
+
+Definition roundtripEncDec64: val :=
+  λ: "x",
+    let: "r" := NewSlice byteT #8 in
+    let: "e" := struct.new Enc.S [
+      "p" ::= "r"
+    ] in
+    let: "d" := struct.new Dec.S [
+      "p" ::= "r"
+    ] in
+    Enc__UInt64 "e" "x";;
+    Dec__UInt64 "d".
+
+Definition testEncDec64: val :=
+  λ: "x",
+    (roundtripEncDec64 "x" = "x").
+
+(* test that y defaults to 0 and subtraction always reverses addition *)
+Definition reverseAssignOps64: val :=
+  λ: "x",
+    let: "y" := ref (zero_val uint64T) in
+    "y" <- !"y" + "x";;
+    "y" <- !"y" - "x";;
+    "y" <- !"y" + #1;;
+    "y" <- !"y" - #1;;
+    !"y".
+
+Definition testReverseAssignOps64: val :=
+  λ: "x",
+    (reverseAssignOps64 "x" = #0).
+
+Definition reverseAssignOps32: val :=
+  λ: "x",
+    let: "y" := ref (zero_val uint32T) in
+    "y" <- !"y" + "x";;
+    "y" <- !"y" - "x";;
+    "y" <- !"y" + #1;;
+    "y" <- !"y" - #1;;
+    !"y".
+
+Definition testReverseAssignOps32: val :=
+  λ: "x",
+    (reverseAssignOps32 "x" = #(U32 0)).
+
+(* test shortcircuiting behaviors for logical operators *)
+Module BoolTest.
+  Definition S := struct.decl [
+    "t" :: boolT;
+    "f" :: boolT;
+    "tc" :: uint64T;
+    "fc" :: uint64T
+  ].
+End BoolTest.
+
+Definition CheckTrue: val :=
+  λ: "b",
+    struct.storeF BoolTest.S "tc" "b" (struct.loadF BoolTest.S "tc" "b" + #1);;
+    struct.loadF BoolTest.S "t" "b".
+
+Definition CheckFalse: val :=
+  λ: "b",
+    struct.storeF BoolTest.S "fc" "b" (struct.loadF BoolTest.S "fc" "b" + #1);;
+    struct.loadF BoolTest.S "f" "b".
+
+Definition testShortcircuitAndTF: val :=
+  λ: <>,
+    let: "b" := struct.mk BoolTest.S [
+      "t" ::= #true;
+      "f" ::= #false;
+      "tc" ::= #0;
+      "fc" ::= #0
+    ] in
+    (if: CheckTrue "b" && CheckFalse "b"
+    then #false
+    else (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #1)).
+
+Definition testShortcircuitAndFT: val :=
+  λ: <>,
+    let: "b" := struct.mk BoolTest.S [
+      "t" ::= #true;
+      "f" ::= #false;
+      "tc" ::= #0;
+      "fc" ::= #0
+    ] in
+    (if: CheckFalse "b" && CheckTrue "b"
+    then #false
+    else (struct.get BoolTest.S "tc" "b" = #0) && (struct.get BoolTest.S "fc" "b" = #1)).
+
+Definition testShortcircuitOrTF: val :=
+  λ: <>,
+    let: "b" := struct.mk BoolTest.S [
+      "t" ::= #true;
+      "f" ::= #false;
+      "tc" ::= #0;
+      "fc" ::= #0
+    ] in
+    (if: CheckTrue "b" ∥ CheckFalse "b"
+    then (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #0)
+    else #false).
+
+Definition testShortcircuitOrFT: val :=
+  λ: <>,
+    let: "b" := struct.mk BoolTest.S [
+      "t" ::= #true;
+      "f" ::= #false;
+      "tc" ::= #0;
+      "fc" ::= #0
+    ] in
+    (if: CheckFalse "b" ∥ CheckTrue "b"
+    then (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #1)
+    else #false).
+
+(* test integer overflow and underflow *)
+Definition testAdd64Equals: val :=
+  λ: "x" "y" "z",
+    ("x" + "y" = "z").
+
+Definition testMinus64Equals: val :=
+  λ: "x" "y" "z",
+    ("x" - "y" = "z").
+
+(* test side-effects on array writes from multiple accessors *)
+Module ArrayEditor.
+  Definition S := struct.decl [
+    "s" :: slice.T uint64T;
+    "next_val" :: uint64T
+  ].
+End ArrayEditor.
+
+Definition ArrayEditor__Advance: val :=
+  λ: "ae" "arr" "next",
+    SliceSet "arr" #0 (SliceGet "arr" #0 + #1);;
+    SliceSet (struct.loadF ArrayEditor.S "s" "ae") #0 (struct.loadF ArrayEditor.S "next_val" "ae");;
+    struct.storeF ArrayEditor.S "next_val" "ae" "next";;
+    struct.storeF ArrayEditor.S "s" "ae" (SliceSkip (struct.loadF ArrayEditor.S "s" "ae") #1).
+
+Definition testOverwriteArray: val :=
+  λ: <>,
+    let: "arr" := ref (NewSlice uint64T #4) in
+    let: "ae1" := struct.mk ArrayEditor.S [
+      "s" ::= SliceSkip !"arr" #0;
+      "next_val" ::= #1
+    ] in
+    let: "ae2" := struct.mk ArrayEditor.S [
+      "s" ::= SliceSkip !"arr" #1;
+      "next_val" ::= #102
+    ] in
+    ArrayEditor__Advance "ae2" !"arr" #103;;
+    ArrayEditor__Advance "ae2" !"arr" #104;;
+    ArrayEditor__Advance "ae2" !"arr" #105;;
+    ArrayEditor__Advance "ae1" !"arr" #2;;
+    ArrayEditor__Advance "ae1" !"arr" #3;;
+    ArrayEditor__Advance "ae1" !"arr" #4;;
+    ArrayEditor__Advance "ae1" !"arr" #5;;
+    (if: SliceGet !"arr" #0 + SliceGet !"arr" #1 + SliceGet !"arr" #2 + SliceGet !"arr" #3 ≥ #100
+    then #false
+    else (SliceGet !"arr" #3 = #4) && (SliceGet !"arr" #0 = #4)).
+
+(* advances the array editor, and returns the value it wrote, storing "next" in next_val *)
+Definition ArrayEditor__AdvanceReturn: val :=
+  λ: "ae" "next",
+    let: "tmp" := ref (struct.loadF ArrayEditor.S "next_val" "ae") in
+    SliceSet (struct.loadF ArrayEditor.S "s" "ae") #0 !"tmp";;
+    struct.storeF ArrayEditor.S "next_val" "ae" "next";;
+    struct.storeF ArrayEditor.S "s" "ae" (SliceSkip (struct.loadF ArrayEditor.S "s" "ae") #1);;
+    !"tmp".
+
+(* we call this function with side-effectful function calls as arguments,
+   its implementation is unimportant *)
+Definition addFour64: val :=
+  λ: "a" "b" "c" "d",
+    "a" + "b" + "c" + "d".
+
+Module Pair.
+  Definition S := struct.decl [
+    "x" :: uint64T;
+    "y" :: uint64T
+  ].
+End Pair.
+
+Definition testFunctionOrdering: val :=
+  λ: <>,
+    let: "arr" := ref (NewSlice uint64T #5) in
+    let: "ae1" := struct.mk ArrayEditor.S [
+      "s" ::= SliceSkip !"arr" #0;
+      "next_val" ::= #1
+    ] in
+    let: "ae2" := struct.mk ArrayEditor.S [
+      "s" ::= SliceSkip !"arr" #0;
+      "next_val" ::= #101
+    ] in
+    (if: ArrayEditor__AdvanceReturn "ae1" #2 + ArrayEditor__AdvanceReturn "ae2" #102 ≠ #102
+    then #false
+    else
+      (if: SliceGet !"arr" #0 ≠ #101
+      then #false
+      else
+        (if: addFour64 (ArrayEditor__AdvanceReturn "ae1" #3) (ArrayEditor__AdvanceReturn "ae2" #103) (ArrayEditor__AdvanceReturn "ae2" #104) (ArrayEditor__AdvanceReturn "ae1" #4) ≠ #210
+        then #false
+        else
+          (if: SliceGet !"arr" #1 ≠ #102
+          then #false
+          else
+            (if: SliceGet !"arr" #2 ≠ #3
+            then #false
+            else
+              let: "p" := struct.mk Pair.S [
+                "x" ::= ArrayEditor__AdvanceReturn "ae1" #5;
+                "y" ::= ArrayEditor__AdvanceReturn "ae2" #105
+              ] in
+              (if: SliceGet !"arr" #3 ≠ #104
+              then #false
+              else
+                let: "q" := struct.mk Pair.S [
+                  "y" ::= ArrayEditor__AdvanceReturn "ae1" #6;
+                  "x" ::= ArrayEditor__AdvanceReturn "ae2" #106
+                ] in
+                (if: SliceGet !"arr" #4 ≠ #105
+                then #false
+                else (struct.get Pair.S "x" "p" + struct.get Pair.S "x" "q" = #109)))))))).
 
 (* slices.go *)
 

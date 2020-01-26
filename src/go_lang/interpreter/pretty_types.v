@@ -10,19 +10,23 @@ Set Default Proof Using "Type".
 Instance pretty_u64 : Pretty Integers.u64 :=
   fun x => pretty (word.unsigned x).
 
+Instance pretty_u32 : Pretty Integers.u32 :=
+  fun x => pretty (word.unsigned x).
+
 Instance pretty_loc : Pretty loc :=
   fun x => pretty x.(loc_car).
 
 Instance pretty_lit : Pretty base_lit :=
   fun x => match x with
-        | LitInt n => "LitInt"
-        | LitInt32 n => "LitInt32"
-        | LitBool b => "LitBool"
+        | LitInt n => ("LitInt(" ++ pretty n ++ ")")%string
+        | LitInt32 n => ("LitInt32" ++ pretty n ++ ")")%string
+        | LitBool true => "LitBool #t"
+        | LitBool false => "LitBool #f"
         | LitByte b => "LitByte"
         | LitString s => "LitString"
         | LitUnit => "LitUnit"
         | LitPoison => "LitPoison"
-        | LitLoc l => "LitLoc"
+        | LitLoc l => ("LitLoc" ++ pretty l ++ ")")%string
         | LitProphecy p => "LitProphecy"
         end.
 

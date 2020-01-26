@@ -62,6 +62,13 @@ Compute (check_run (useMap #())).
 Compute (check_run (useSliceIndexing #())).
 Compute (check_run (ReassignVars #())).
 
+(* TODO: all currently fail and shouldn't:
+Compute (check_run (testShortcircuitAndTF #())).
+Compute (check_run (testShortcircuitAndFT #())).
+Compute (check_run (testShortcircuitOrTF #())).
+Compute (check_run (testShortcircuitOrFT #())).
+*)
+
 Definition test_case (p: expr) :=
   match (fst <$> runStateT (interpret 100 p) startstate) with
   | Works _ (LitV (LitBool true)) => true
@@ -70,10 +77,13 @@ Definition test_case (p: expr) :=
 
 (* fails because #333 is a uint64 *)
 Fail Compute (check_run (EncDec32 #333)).
-Definition tc1 := (test_case (EncDec64 #333)).
-Definition tc2 := (test_case (EncDec32 #(U32 333))).
+Definition tc1 := (test_case (testEncDec64 #333)).
+Definition tc2 := (test_case (testEncDec32 #(U32 333))).
+Definition tc3 := (test_case (testReverseAssignOps64 #333)).
+
 Example tc1_ok : tc1 = true := eq_refl.
 Example tc2_ok : tc2 = true := eq_refl.
+Example tc3_ok : tc3 = true := eq_refl.
 
 (* Extraction testing:
 
@@ -84,3 +94,4 @@ Extract Inductive bool => "GHC.Base.Bool" [ "GHC.Base.True" "GHC.Base.False" ].
 Extraction "tc1.hs" tc1.
 
 *)
+
