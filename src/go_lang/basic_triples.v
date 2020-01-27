@@ -562,7 +562,7 @@ Qed.
 Lemma wp_SliceGet s E sl t vs (i: u64) v0 :
   {{{ is_slice sl t vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
     SliceGet t sl #i @ s; E
-  {{{ RET v0; is_slice sl t vs }}}.
+  {{{ RET v0; is_slice sl t vs ∗ ⌜val_ty v0 t⌝ }}}.
 Proof using Type.
   iIntros (Φ) "[Hsl %] HΦ".
   destruct sl as [ptr sz].
@@ -573,9 +573,11 @@ Proof using Type.
   iDestruct (update_array ptr _ _ _ _ H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
   nat2Z.
+  iDestruct (struct_mapsto_ty with "Hi") as %Hty.
   iApply (wp_LoadAt with "Hi"); iIntros "!> Hi".
   iApply "HΦ".
   rewrite /is_slice /=.
+  iSplitR ""; last by auto.
   iSplitR "".
   { iDestruct ("Hsl'" with "Hi") as "Hsl".
     erewrite list_insert_id by eauto; auto. }
@@ -637,7 +639,8 @@ Proof using Type.
   - destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
     wp_apply (wp_SliceGet with "[$Hs]").
     { replace (int.val z); eauto. }
-    iIntros "Hs".
+    iIntros "[Hs Hty]".
+    iDestruct "Hty" as %Hty.
     wp_steps.
     wp_apply ("Hind" with "[$Hiz]").
     { iPureIntro; split; eauto.

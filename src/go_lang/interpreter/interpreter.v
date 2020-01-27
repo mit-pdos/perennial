@@ -983,7 +983,7 @@ Section interpreter.
         rewrite -> ifThenElse_if; [|(rewrite -> Z.leb_nle in n0_int; lia)].
         simpl.
         monad_simpl.
-        pose proof (find_alloc_location_fresh s0 (int.val n0)) as loc_fresh.
+        pose proof (find_alloc_location_fresh s0 (int.val n0 * length (flatten_struct v2))) as loc_fresh.
         eapply relation.bind_suchThat.
         {
           apply loc_fresh.
