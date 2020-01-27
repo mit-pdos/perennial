@@ -541,9 +541,12 @@ Ltac typecheck :=
       | [ |- _ = _ ] => reflexivity
       end.
 
-Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E)
-                              (at level 50, left associativity,
-                               format "e1  +ₗ[ t ]  e2"): expr_scope .
+(* the first notation is a location offset in the model (a pure function over
+locations) while the second is a GooseLang expression; the second evaluates to
+the first according to the GooseLang semantics. *)
+Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +ₗ[ t ]  z").
+Notation "l +ₗ[ t ] z" := (l +ₗ ty_size t * z) : stdpp_scope .
+Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E) : expr_scope .
 
 Section go_lang.
   Context `{ext_ty: ext_types}.

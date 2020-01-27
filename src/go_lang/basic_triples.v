@@ -148,6 +148,25 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
+Theorem struct_mapsto_ty l v t :
+  l ↦[t] v -∗ ⌜val_ty v t⌝.
+Proof.
+  iIntros "[_ %] !%//".
+Qed.
+
+Lemma wp_load_offset s E l off t vs v :
+  vs !! off = Some v →
+  {{{ l ↦∗[t] vs }}} load_ty t #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t] vs ∗ ⌜val_ty v t⌝ }}}.
+Proof.
+  iIntros (Hlookup Φ) "Hl HΦ".
+  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
+  iApply (wp_LoadAt with "Hl1"). iIntros "!> Hl1". iApply "HΦ".
+  iDestruct ("Hl2" $! v) as "Hl2". rewrite list_insert_id; last done.
+  iDestruct (struct_mapsto_ty with "Hl1") as %Hty.
+  iSplitL; eauto.
+  iApply ("Hl2" with "[$]").
+Qed.
+
 Lemma wp_store s E l v v' :
   {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
   {{{ RET LitV LitUnit; l ↦ Free v }}}.
@@ -271,18 +290,16 @@ Proof.
       iApply ("HΦ" with "[$]").
 Qed.
 
-(* TODO: this is only true for type-based store *)
 Lemma wp_store_offset s E l off vs t v :
   is_Some (vs !! off) →
-  {{{ ▷ l ↦∗[t] vs }}} #(l +ₗ off * ty_size t) <- v @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
+  val_ty v t ->
+  {{{ ▷ l ↦∗[t] vs }}} store_ty t #(l +ₗ[t] off) v @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
 Proof using Type.
-  iIntros ([w Hlookup] Φ) ">Hl HΦ".
+  iIntros ([w Hlookup] Hty Φ) ">Hl HΦ".
   iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  (*
-  iApply (wp_store with "Hl1"). iNext. iIntros "Hl1".
-  iApply "HΦ". iApply "Hl2". iApply "Hl1".
-*)
-Abort.
+  iApply (wp_StoreAt _ _ _ _ _ _ Hty with "Hl1"). iIntros "!> Hl1".
+  iApply "HΦ". iApply ("Hl2" with "Hl1").
+Qed.
 
 (*
 Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :

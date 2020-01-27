@@ -9,6 +9,8 @@ Set Default Proof Using "Type".
 with lists of values. It also contains array versions of the basic heap
 operations of HeapLand. *)
 
+Reserved Notation "l ↦∗[ t ] vs" (at level 20, format "l  ↦∗[ t ]  vs").
+
 Section go_lang.
   Context `{ffi_semantics: ext_semantics}.
   Context {ext_tys:ext_types ext}.
@@ -17,9 +19,8 @@ Section go_lang.
 (* technically the definition of array doesn't depend on a state interp, only
 the ffiG type; fixing this would require unbundling ffi_interp *)
 Definition array `{!heapG Σ} (l : loc) (t:ty) (vs : list val) : iProp Σ :=
-  ([∗ list] i ↦ v ∈ vs, (l +ₗ (i * ty_size t)) ↦[t] v)%I.
-Notation "l ↦∗[ t ] vs" := (array l t vs)
-  (at level 20, format "l  ↦∗[ t ]  vs") : bi_scope.
+  ([∗ list] i ↦ v ∈ vs, (l +ₗ[t] i) ↦[t] v)%I.
+Notation "l ↦∗[ t ] vs" := (array l t vs) : bi_scope.
 
 (** We have no [FromSep] or [IntoSep] instances to remain forwards compatible
 with a fractional array assertion, that will split the fraction, not the
@@ -42,30 +43,30 @@ Lemma array_nil l t : l ↦∗[t] [] ⊣⊢ emp.
 Proof. by rewrite /array. Qed.
 
 Lemma array_singleton l t v : l ↦∗[t] [v] ⊣⊢ l ↦[t] v.
-Proof. by rewrite /array /= right_id loc_add_0. Qed.
+Proof. by rewrite /array /= right_id Z.mul_0_r loc_add_0. Qed.
 
 Lemma array_app l t vs ws :
-  l ↦∗[t] (vs ++ ws) ⊣⊢ l ↦∗[t] vs ∗ (l +ₗ length vs * ty_size t) ↦∗[t] ws.
+  l ↦∗[t] (vs ++ ws) ⊣⊢ l ↦∗[t] vs ∗ (l +ₗ[t] length vs) ↦∗[t] ws.
 Proof.
   rewrite /array big_sepL_app.
   setoid_rewrite Nat2Z.inj_add.
   setoid_rewrite loc_add_assoc.
-  setoid_rewrite Z.mul_add_distr_r.
+  setoid_rewrite Z.mul_add_distr_l.
   done.
 Qed.
 
 Lemma array_cons l v t vs : l ↦∗[t] (v :: vs) ⊣⊢ l ↦[t] v ∗ (l +ₗ ty_size t) ↦∗[t] vs.
 Proof.
-  rewrite /array big_sepL_cons loc_add_0.
+  rewrite /array big_sepL_cons Z.mul_0_r loc_add_0.
   f_equiv.
   setoid_rewrite loc_add_assoc.
-  assert (forall i, S i * ty_size t = ty_size t + i * ty_size t) as Hoff; [ lia | ].
+  assert (forall i, ty_size t * S i = ty_size t + ty_size t * i) as Hoff; [ lia | ].
   by setoid_rewrite Hoff.
 Qed.
 
 Lemma update_array l vs off t v :
   vs !! off = Some v →
-  (l ↦∗[t] vs -∗ ((l +ₗ off * ty_size t) ↦[t] v ∗ ∀ v', (l +ₗ off * ty_size t) ↦[t] v' -∗ l ↦∗[t] <[off:=v']>vs))%I.
+  (l ↦∗[t] vs -∗ ((l +ₗ[t] off) ↦[t] v ∗ ∀ v', (l +ₗ[t] off) ↦[t] v' -∗ l ↦∗[t] <[off:=v']>vs))%I.
 Proof.
   iIntros (Hlookup) "Hl".
   rewrite -[X in (l ↦∗[_] X)%I](take_drop_middle _ off v); last done.
@@ -84,34 +85,34 @@ Qed.
 
 (** Allocation *)
 Lemma mapsto_seq_array l v t n :
-  ([∗ list] i ∈ seq 0 n, (l +ₗ (i : nat) * ty_size t) ↦[t] v) -∗
+  ([∗ list] i ∈ seq 0 n, (l +ₗ[t] (i : nat)) ↦[t] v) -∗
   l ↦∗[t] replicate n v.
 Proof.
   rewrite /array. iInduction n as [|n'] "IH" forall (l); simpl.
   { done. }
   iIntros "[$ Hl]". rewrite -fmap_seq big_sepL_fmap.
   setoid_rewrite Nat2Z.inj_succ. setoid_rewrite <-Z.add_1_l.
-  setoid_rewrite Z.mul_add_distr_r.
-  setoid_rewrite Z.mul_1_l.
+  setoid_rewrite Z.mul_add_distr_l.
+  setoid_rewrite Z.mul_1_r.
   setoid_rewrite <-loc_add_assoc. iApply "IH". done.
 Qed.
 
-Lemma Zmul_S_l (n: nat) z : S n * z = z + n * z.
+Lemma Zmul_S_r (n: nat) z : z * S n = z + z * n.
 Proof.
   lia.
 Qed.
 
 Lemma mapsto_seq_struct_array l v t n :
-  ([∗ list] i ∈ seq 0 n, (l +ₗ ((i:nat) * ty_size t)) ↦[t] v) -∗
+  ([∗ list] i ∈ seq 0 n, (l +ₗ[t] (i:nat)) ↦[t] v) -∗
   l ↦∗[t] replicate n v.
 Proof.
   rewrite /array. iInduction n as [|n'] "IH" forall (l); simpl.
   { done. }
-  rewrite loc_add_0.
+  rewrite Z.mul_0_r loc_add_0.
   iIntros "[$ Hl]". rewrite -fmap_seq big_sepL_fmap.
-  setoid_rewrite Zmul_S_l.
+  setoid_rewrite Zmul_S_r.
   setoid_rewrite <-loc_add_assoc.
-  iApply "IH". done.
+  by iApply "IH".
 Qed.
 
 Lemma wp_allocN s E v t (n: u64) :
@@ -162,26 +163,7 @@ Qed.
 *)
 
 (** Access to array elements *)
-
-(* not true - only holds for type-based load at t *)
-Lemma wp_load_offset s E l off t vs v :
-  vs !! off = Some v →
-  {{{ ▷ l ↦∗[t] vs }}} ! #(l +ₗ off * ty_size t) @ s; E {{{ RET v; l ↦∗[t] vs }}}.
-Proof.
-  iIntros (Hlookup Φ) "Hl HΦ".
-  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  (*
-  iApply (wp_load with "Hl1"). iIntros "!> Hl1". iApply "HΦ".
-  iDestruct ("Hl2" $! v) as "Hl2". rewrite list_insert_id; last done.
-  iApply "Hl2". iApply "Hl1".
-   *)
-Abort.
-
-(*
-Lemma wp_load_offset_vec s E l sz (off : fin sz) (vs : vec val sz) :
-  {{{ ▷ l ↦∗ vs }}} ! #(l +ₗ off) @ s; E {{{ RET vs !!! off; l ↦∗ vs }}}.
-Proof. apply wp_load_offset. by apply vlookup_lookup. Qed.
-*)
+(* moved to basic_triples *)
 
 (*
 Lemma wp_cmpxchg_suc_offset s E l off vs v' v1 v2 :
@@ -237,6 +219,5 @@ Proof. intros. eapply wp_cmpxchg_fail_offset=> //. by apply vlookup_lookup. Qed.
 End lifting.
 End go_lang.
 
-Notation "l  ↦∗[ t ]  vs" := (array l t vs)
-  (at level 20) : bi_scope.
+Notation "l  ↦∗[ t ]  vs" := (array l t vs) : bi_scope.
 Typeclasses Opaque array.

@@ -530,12 +530,12 @@ Proof using Type.
     admit. (* need to move between seq 0 and seq 1 *)
 Admitted.
 
-Lemma wp_allocN_seq s E ty v (n: u64) :
+Lemma wp_allocN_seq s E t v (n: u64) :
   (0 < int.val n)%Z →
-  val_ty v ty ->
+  val_ty v t ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
-                              ((l +ₗ (Z.of_nat i * ty_size ty)) ↦[ty] v) }}}.
+                              ((l +ₗ[t] Z.of_nat i) ↦[t] v) }}}.
 Proof using Type.
   iIntros (Hn Hty Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
@@ -553,6 +553,7 @@ Proof using Type.
   rewrite (val_ty_len Hty).
   iApply (big_sepL_mono with "Hl").
   iIntros (k0 j _) "H".
+  setoid_rewrite Z.mul_comm at 1.
   setoid_rewrite Z2Nat.id.
   { by iFrame. }
   apply ty_size_gt0.
@@ -587,7 +588,7 @@ Lemma wp_alloc stk E ty v :
 Proof using Type.
   iIntros (Hty Φ) "_ HΦ". iApply wp_allocN_seq; eauto with lia.
   { constructor. }
-  iIntros "!>" (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
+  iIntros "!>" (l) "/= (? & _)". rewrite Z.mul_0_r loc_add_0. iApply "HΦ"; iFrame.
 Qed.
 (*
 Lemma twp_alloc s E v :
