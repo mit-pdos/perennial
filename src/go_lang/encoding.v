@@ -16,7 +16,7 @@ Section go_lang.
     "p" +ₗ #3 <- to_u8 ("n" ≫ #(U32 $ 3*8)).
 
   Theorem EncodeUInt32_t : (⊢ EncodeUInt32 : (uint32T -> arrayT byteT -> unitT))%T.
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -29,7 +29,7 @@ Section go_lang.
     "v0" ∥ ("v1" ∥ ("v2" ∥ "v3" ≪ #(U32 8)) ≪ #(U32 8)) ≪ #(U32 8).
 
   Theorem DecodeUInt32_t : (⊢ DecodeUInt32 : (arrayT byteT -> uint32T))%T.
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -46,7 +46,7 @@ Section go_lang.
   .
 
   Theorem EncodeUInt64_t : (⊢ EncodeUInt64 : (uint64T -> arrayT byteT -> unitT))%T.
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -64,7 +64,7 @@ Section go_lang.
       ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8).
 
   Theorem DecodeUInt64_t : (⊢ DecodeUInt64 : (arrayT byteT -> uint64T))%T.
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -75,7 +75,7 @@ Section go_lang.
     EncodeUInt64 "n" (slice.ptr "p").
 
   Theorem UInt64Put_t : ⊢ UInt64Put : (slice.T byteT -> uint64T -> unitT).
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -84,7 +84,7 @@ Section go_lang.
     DecodeUInt64 (slice.ptr "p").
 
   Theorem UInt64Get_t : ⊢ UInt64Get : (slice.T byteT -> uint64T).
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -93,7 +93,7 @@ Section go_lang.
     EncodeUInt32 "n" (slice.ptr "p").
 
   Theorem UInt32Put_t : ⊢ UInt32Put : (slice.T byteT -> uint32T -> unitT).
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -102,7 +102,7 @@ Section go_lang.
     DecodeUInt32 (slice.ptr "p").
 
   Theorem UInt32Get_t : ⊢ UInt32Get : (slice.T byteT -> uint32T).
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 

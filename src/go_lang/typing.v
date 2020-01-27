@@ -541,7 +541,9 @@ Ltac typecheck :=
       | [ |- _ = _ ] => reflexivity
       end.
 
-Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E) (at level 50, left associativity): expr_scope .
+Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E)
+                              (at level 50, left associativity,
+                               format "e1  +ₗ[ t ]  e2"): expr_scope .
 
 Section go_lang.
   Context `{ext_ty: ext_types}.

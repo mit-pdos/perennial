@@ -888,7 +888,7 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
     | LitV (LitLoc l), LitV (LitInt off) => match op with
                                            | OffsetOp k =>
-                                             Some $ LitV $ LitLoc (l +ₗ int.val (off: u64) * k)
+                                             Some $ LitV $ LitLoc (l +ₗ (int.val (off: u64)) * k)
                                            | _ => None
                                            end
     | _, _ => None

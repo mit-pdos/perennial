@@ -115,7 +115,7 @@ Qed.
 (* TODO: it would be nice if we could panic in the model if this goes
 out-of-bounds, but it seems we need to unfold the definition to use it *)
 Definition SliceSkip t: val :=
-  λ: "s" "n", (slice.ptr "s" +ₗ "n" * #(ty_size t), slice.len "s" - "n").
+  λ: "s" "n", (slice.ptr "s" +ₗ[t] "n", slice.len "s" - "n").
 
 Theorem SliceSkip_t t : ⊢ SliceSkip t : (slice.T t -> uint64T -> slice.T t).
 Proof.
@@ -145,11 +145,11 @@ Proof.
   typecheck.
 Qed.
 
-Definition SliceGet: val :=
+Definition SliceGet t: val :=
   λ: "s" "i",
-  !(slice.ptr "s" +ₗ "i").
+  !(slice.ptr "s" +ₗ[t] "i").
 
-Theorem SliceGet_t t : ⊢ SliceGet : (slice.T t -> uint64T -> t).
+Theorem SliceGet_t t : ⊢ SliceGet t : (slice.T t -> uint64T -> t).
 Proof.
   typecheck.
 Qed.
@@ -216,19 +216,19 @@ Proof.
   typecheck.
 Qed.
 
-(* TODO: this is now an ordinary program and doesn't need these __ variables *)
-Definition forSlice: val :=
-  λ: "__body" "__s",
-  let: "__len" := slice.len "__s" in
-  (rec: "__loop" "__i" :=
-       if: ("__i" < "__len") then
-         let: "__x" := SliceGet "__s" "__i" in
-         "__body" "__i" "__x";;
-         "__loop" ("__i" + #1)
+Definition forSlice t: val :=
+  λ: "body" "s",
+  let: "len" := slice.len "s" in
+  (rec: "loop" "i" :=
+       if: ("i" < "len") then
+         let: "x" := SliceGet t "s" "i" in
+         "body" "i" "x";;
+         "loop" ("i" + #1)
        else #()) #0.
 
-Definition ForSlice (iv: binder) (xv: binder) (s: expr) (body: expr): expr :=
-  forSlice (λ: iv xv, body)%E s.
+(* TODO: this is super subtle to use, do we really need it? *)
+Definition ForSlice t (iv: binder) (xv: binder) (s: expr) (body: expr): expr :=
+  forSlice t (λ: iv xv, body)%E s.
 
 End go_lang.
 

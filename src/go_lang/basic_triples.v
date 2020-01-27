@@ -2,7 +2,7 @@ From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
 From iris.program_logic Require Export weakestpre.
 From Perennial.go_lang Require Export
-     lang notation array typing
+     lang notation array typing struct
      tactics lifting proofmode.
 From Perennial.go_lang Require Import slice encoding.
 Import uPred.
@@ -60,6 +60,93 @@ Proof using Type.
   apply wand_intro_l. by rewrite (sep_elim_l (l ↦∗ _)%I) right_id wand_elim_r.
 Qed.
 *)
+
+Theorem val_hasTy_flatten_length Γ v t :
+  (Γ ⊢v v : t) ->
+  length (flatten_struct v) = length (flatten_ty t).
+Proof.
+  induction 1; simpl; auto.
+  - inversion H; subst; auto.
+  - rewrite ?app_length.
+    lia.
+Qed.
+
+Theorem ty_size_offset t l j : l +ₗ (length (flatten_ty t) + j)%nat = l +ₗ ty_size t +ₗ j.
+Proof.
+  rewrite loc_add_assoc.
+  f_equal.
+  rewrite <- ty_size_length.
+  pose proof (ty_size_gt0 t).
+  lia.
+Qed.
+
+Theorem struct_ptsto_pair_split l v1 t1 v2 t2 :
+  l ↦[t1 * t2] (v1, v2) ⊣⊢ l ↦[t1] v1 ∗ (l +ₗ ty_size t1) ↦[t2] v2.
+Proof.
+  rewrite /struct_mapsto /= big_opL_app.
+  rewrite /val_ty.
+  iSplit.
+  - iIntros "[[Hv1 Hv2] %]".
+    inversion H; subst; clear H.
+    iSplitL "Hv1"; iFrame; eauto.
+    iSplitL; eauto.
+    erewrite val_hasTy_flatten_length by eauto.
+    setoid_rewrite ty_size_offset.
+    iFrame.
+  - iIntros "[[Hv1 %] [Hv2 %]]".
+    erewrite val_hasTy_flatten_length by eauto.
+    setoid_rewrite ty_size_offset.
+    iFrame.
+    iPureIntro.
+    constructor; auto.
+Qed.
+
+Lemma wp_LoadAt stk E l t v :
+  {{{ l ↦[t] v }}}
+    load_ty t #l @ stk; E
+  {{{ RET v; l ↦[t] v }}}.
+Proof.
+  iIntros (Φ) "Hl HΦ".
+  iDestruct "Hl" as "[Hl %]".
+  hnf in H.
+  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ Free vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
+  { iIntros "!> HPost".
+    iApply "HΦ".
+    iSplit; eauto. }
+  (iInduction H as [ | | | | | | ] "IH" forall (l Φ));
+    simpl;
+    rewrite ?loc_add_0 ?right_id;
+    wp_pures.
+  - inversion H; subst; clear H; simpl; wp_load; iApply ("HΦ" with "[$]").
+  - rewrite big_opL_app.
+    iDestruct "Hl" as "[Hv1 Hv2]".
+    wp_bind (load_ty t1 _).
+    iApply ("IH" with "Hv1").
+    iIntros "!> Hv1".
+    wp_pures.
+    rewrite Z.mul_1_l.
+    wp_bind (load_ty t2 _).
+    iApply ("IH1" with "[Hv2]").
+    + erewrite val_hasTy_flatten_length; eauto.
+      setoid_rewrite ty_size_offset.
+      iFrame.
+    + iIntros "!> Hv2".
+      wp_pures.
+      iApply "HΦ"; iFrame.
+      erewrite val_hasTy_flatten_length by eauto.
+      setoid_rewrite ty_size_offset.
+      iFrame.
+  - wp_load.
+    iApply ("HΦ" with "[$]").
+  - wp_load.
+    iApply ("HΦ" with "[$]").
+  - wp_load.
+    iApply ("HΦ" with "[$]").
+  - wp_load.
+    iApply ("HΦ" with "[$]").
+  - wp_load.
+    iApply ("HΦ" with "[$]").
+Qed.
 
 Lemma wp_store s E l v v' :
   {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
@@ -303,29 +390,17 @@ Proof using Type.
 Qed.
 
 Lemma wp_SliceSkip stk E s t vs (n: u64) :
-  {{{ is_slice s t vs ∗ ⌜int.val n <= Z.of_nat (length vs)⌝
-                      ∗ ⌜int.val n * ty_size t < 2^64⌝ }}}
+  {{{ is_slice s t vs ∗ ⌜int.val n <= Z.of_nat (length vs)⌝ }}}
     SliceSkip t s #n @ stk; E
   {{{ RET slice_val (slice_skip s t n);
       is_slice (slice_skip s t n) t (drop (int.nat n) vs) ∗
                array s.(Slice.ptr) t (take (int.nat n) vs) }}}.
-Proof.
-  iIntros (Φ) "((Hs&%)&%&%) HΦ".
+Proof using Type.
+  iIntros (Φ) "((Hs&%)&%) HΦ".
   wp_lam; repeat wp_step.
   wp_lam; repeat wp_step.
-  rewrite Z.mul_1_r.
   repeat (wp_lam || wp_step).
-  rewrite word.unsigned_mul.
-  rewrite unsigned_U64.
-  (* ugh need to assume type size fits in 2^64... *)
-  assert (word.wrap (word:=u64_instance.u64) (ty_size t) = ty_size t) by admit.
-  rewrite H2.
-  rewrite wrap_small; first last.
-  { pose proof (ty_size_gt0 t).
-    pose proof word.unsigned_range n.
-    pose proof word.unsigned_range (ty_size t).
-    lia.
-  }
+
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
   pose proof (word.unsigned_range n).
   pose proof (word.unsigned_range s.(Slice.sz)).
@@ -335,7 +410,7 @@ Proof.
   iPureIntro.
   rewrite drop_length /=.
   word.
-Admitted.
+Qed.
 
 Lemma wp_SliceSkip' Φ stk E s t (n: u64):
   ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
@@ -346,16 +421,12 @@ Proof using Type.
   wp_call.
   wp_call.
   wp_call.
-  rewrite word.unsigned_mul.
-  (* TODO: this wrapping is annoying since it doesn't even happen in the code
-  but only in the model's location calculation; it would be ok for this to
-  happen without overflow *)
   iApply "HΦ".
 Qed.
 
-Lemma wp_SliceTake Φ stk E s vs (n: u64):
+Lemma wp_SliceTake Φ stk E s t vs (n: u64):
   ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
-  Φ (slice_val (slice_take s n)) -∗
+  Φ (slice_val (slice_take s t n)) -∗
   WP (SliceTake (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof using Type.
   iIntros "% HΦ".
@@ -388,21 +459,20 @@ Proof using Type.
       iApply "HΦ".
 Qed.
 
-Lemma wp_SliceGet s E sl vs (i: u64) v0 :
-  {{{ is_slice sl vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
-    SliceGet sl #i @ s; E
-  {{{ RET v0; is_slice sl vs }}}.
-Proof.
+Lemma wp_SliceGet s E sl t vs (i: u64) v0 :
+  {{{ is_slice sl t vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+    SliceGet t sl #i @ s; E
+  {{{ RET v0; is_slice sl t vs }}}.
+Proof using Type.
   iIntros (Φ) "[Hsl %] HΦ".
   destruct sl as [ptr sz].
   repeat wp_step.
   iDestruct "Hsl" as "[Hsl %]".
   cbv [Slice.ptr Slice.sz] in *.
   repeat (wp_lam || wp_step).
-  iDestruct (update_array ptr _ _ _ H with "Hsl") as "[Hi Hsl']".
+  iDestruct (update_array ptr _ _ _ _ H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
   nat2Z.
-  rewrite Z.mul_1_r.
   wp_load.
   iApply "HΦ".
   rewrite /is_slice /=.

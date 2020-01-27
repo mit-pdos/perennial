@@ -81,21 +81,13 @@ Definition structTy (d:descriptor) : ty :=
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
-Fixpoint ty_size (t:ty) : Z :=
+Fixpoint load_ty (t:ty): val :=
   match t with
-  | prodT t1 t2 => ty_size t1 + ty_size t2
-  (* this gives unit values space, which seems fine *)
-  | _ => 1
+  | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))
+  | _ => λ: "l", !(Var "l")
   end.
 
-Fixpoint load_ty (t:ty) (e:expr) : expr :=
-  match t with
-  | prodT t1 t2 => (load_ty t1 e, load_ty t2 (e +ₗ #(ty_size t1)))
-  | _ => !e
-  end.
-
-Definition loadStruct (d:descriptor) : val :=
-  λ: "p", load_ty (structTy d) (Var "p").
+Definition loadStruct (d:descriptor) : val := load_ty (structTy d).
 
 Fixpoint field_offset (fields: list (string*ty)) f0 : option (Z * ty) :=
   match fields with
@@ -200,27 +192,42 @@ Hint Resolve load_hasTy.
 
 Hint Rewrite @drop_app : ty.
 
-Theorem load_ty_t : forall Γ t e,
-  Γ ⊢ e : structRefT (flatten_ty t) ->
-  Γ ⊢ load_ty t e : t.
+Theorem load_ty_val_t : forall Γ t,
+  Γ ⊢v load_ty t : (structRefT (flatten_ty t) -> t).
 Proof.
-  induction t; simpl; intros; eauto.
-  econstructor.
-  - apply IHt1.
-    eauto using struct_weaken_hasTy.
-  - apply IHt2.
-    eapply struct_offset_op_hasTy_eq; eauto.
-    autorewrite with ty; auto.
+  induction t; simpl; intros; eauto;
+     try solve [ typecheck ].
+  type_step.
+  type_step.
+  - econstructor.
+    + eapply struct_weaken_hasTy.
+      constructor.
+      reflexivity.
+    + eapply context_extension; intros; eauto.
+      admit. (* this seems fishy; shouldn't matter if Γ binds "l" because
+      load_ty is closed... *)
+  - econstructor.
+    + admit. (* TODO: not enough typing rules to do this *)
+      (* eapply struct_offset_op_hasTy_eq; eauto.
+      constructor.
+      reflexivity. *)
+    + autorewrite with ty.
+      eapply context_extension; intros; eauto.
+      admit.
+Admitted.
+
+Theorem load_ty_t : forall Γ t,
+  Γ ⊢ load_ty t : (structRefT (flatten_ty t) -> t).
+Proof.
+  constructor.
+  apply load_ty_val_t.
 Qed.
 
 Theorem loadStruct_t Γ d :
   Γ ⊢v loadStruct d : (structRefTy d -> structTy d).
 Proof.
-  unfold loadStruct, structRefTy, structTy.
-  econstructor.
-  rewrite insert_anon.
-  apply load_ty_t.
-  constructor; auto.
+  unfold loadStruct.
+  apply load_ty_val_t.
 Qed.
 
 Lemma flatten_ty_struct_prod fs : forall  a f,
@@ -280,7 +287,7 @@ Proof.
   intros.
   rewrite H; simpl.
   type_step.
-  eapply load_ty_t.
+  econstructor; [ | apply load_ty_t ].
   eapply fieldOffset_t; eauto.
   typecheck.
 Qed.
