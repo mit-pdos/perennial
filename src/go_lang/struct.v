@@ -120,15 +120,16 @@ Definition loadField (d:descriptor) (f:string) : val :=
   | None => λ: <>, #()
   end.
 
-Fixpoint store_ty (t:ty) (e:expr) (v:expr) : expr :=
+(* TODO: fix this to not be a macro *)
+Fixpoint store_ty (t:ty) : val :=
   match t with
-  | prodT t1 t2 => store_ty t1 e (Fst v);;
-                  store_ty t2 (e +ₗ #(ty_size t1)) (Snd v)
-  | _ => e <- v
+  | prodT t1 t2 => λ: "p" "v",
+                  store_ty t1 (Var "p") (Fst (Var "v"));;
+                  store_ty t2 (Var "p" +ₗ[t1] #1) (Snd (Var "v"))
+  | _ => λ: "p" "v", Var "p" <- Var "v"
   end.
 
-Definition storeStruct d : val :=
-  λ: "p" "x", store_ty (structTy d) (Var "p") (Var "x").
+Definition storeStruct (d: descriptor) : val := store_ty (structTy d).
 
 Definition storeField d f : val :=
   match field_offset d.(fields) f with
@@ -194,7 +195,7 @@ Hint Rewrite @drop_app : ty.
 
 Theorem load_ty_val_t : forall Γ t,
   Γ ⊢v load_ty t : (structRefT (flatten_ty t) -> t).
-Proof.
+Proof using Type.
   induction t; simpl; intros; eauto;
      try solve [ typecheck ].
   type_step.
@@ -256,7 +257,7 @@ Theorem fieldOffset_t Γ fs f z t e :
   field_offset fs f = Some (z, t) ->
   Γ ⊢ e : structRefT (flatten_ty (struct_ty_prod fs)) ->
   Γ ⊢ (e +ₗ #z) : structRefT (flatten_ty t).
-Proof.
+Proof using Type.
   revert e z t.
   induction fs; simpl; intros.
   - congruence.
@@ -317,26 +318,51 @@ Qed.
 
 Hint Resolve store_struct_singleton.
 
-Theorem store_ty_t : forall Γ t e v,
-  Γ ⊢ e : structRefT (flatten_ty t) ->
-  Γ ⊢ v : t ->
-  Γ ⊢ store_ty t e v : unitT.
-Proof.
+Theorem store_ty_val_t : forall Γ t,
+  Γ ⊢v store_ty t : (structRefT (flatten_ty t) -> t -> unitT).
+Proof using Type.
   induction t; simpl; intros; eauto.
-  econstructor.
-  - apply IHt1; eauto.
-  - econstructor; rewrite ?insert_anon.
-    apply IHt2; eauto.
-    eapply struct_offset_op_hasTy_eq; eauto.
-    autorewrite with ty; auto.
+  - typecheck.
+  - typecheck.
+  - typecheck.
+  - typecheck.
+  - typecheck.
+  - typecheck.
+  - type_step.
+    type_step.
+    type_step.
+    + eapply app_hasTy; [ typecheck | ].
+      eapply app_hasTy.
+      { eapply struct_weaken_hasTy.
+        typecheck. }
+      eapply context_extension; intros; eauto.
+      admit.
+    + type_step.
+      eapply app_hasTy; [ typecheck | ].
+      type_step.
+      * admit.
+      * eapply context_extension; intros; eauto.
+        admit.
+  - typecheck.
+  - typecheck.
+  - typecheck.
+  - typecheck.
+  - typecheck.
+  - typecheck.
+Admitted.
+
+Theorem store_ty_t Γ t :
+  Γ ⊢ store_ty t : (structRefT (flatten_ty t) -> t -> unitT).
+Proof.
+  constructor.
+  apply store_ty_val_t.
 Qed.
 
 Theorem storeStruct_t : forall Γ d,
   Γ ⊢v storeStruct d : (structRefTy d -> structTy d -> unitT).
 Proof.
-  unfold structRefTy, storeStruct; intros.
-  repeat (econstructor; rewrite ?insert_anon; eauto).
-  apply store_ty_t; eauto.
+  unfold storeStruct; intros.
+  apply store_ty_val_t.
 Qed.
 
 Theorem storeField_t : forall Γ d f z t,
@@ -345,9 +371,12 @@ Theorem storeField_t : forall Γ d f z t,
 Proof.
   unfold storeField; intros.
   rewrite H.
-  repeat (econstructor; rewrite ?insert_anon; eauto).
+  type_step.
+  type_step.
+  eapply app_hasTy; [ typecheck | ].
+  eapply app_hasTy.
+  { eapply fieldOffset_t; eauto. }
   apply store_ty_t; eauto.
-  eapply fieldOffset_t; eauto.
 Qed.
 
 End go_lang.

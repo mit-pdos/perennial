@@ -193,6 +193,84 @@ Proof using Type.
   rewrite right_id. by apply sep_mono_r, wand_mono.
 Qed.
 
+(* local version just for this file *)
+Tactic Notation "wp_store" :=
+  let solve_mapsto _ :=
+    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
+    iAssumptionCore || fail "wp_store: cannot find" l "↦ ?" in
+  wp_pures;
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ _ _ K))
+      |fail 1 "wp_store: cannot find 'Store' in" e];
+    [iSolveTC
+    |solve_mapsto ()
+    |pm_reflexivity
+    |first [wp_seq|wp_finish]]
+  | _ => fail "wp_store: not a 'wp'"
+  end.
+
+(* TODO: move this to common tactics *)
+Ltac invc H := inversion H; subst; clear H.
+
+Lemma wp_StoreAt stk E l t v0 v :
+  val_ty v t ->
+  {{{ l ↦[t] v0 }}}
+    store_ty t #l v @ stk; E
+  {{{ RET #(); l ↦[t] v }}}.
+Proof.
+  intros Hty; hnf in Hty.
+  iIntros (Φ) "[Hl %] HΦ".
+  hnf in H.
+  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ Free vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
+  { iIntros "!> HPost".
+    iApply "HΦ".
+    iSplit; eauto. }
+  rename v into v'.
+  (iInduction H as [ | | | | | | ] "IH" forall (v' Hty l Φ));
+    simpl;
+    rewrite ?loc_add_0 ?right_id;
+    wp_pures;
+    try wp_store.
+  - invc H; invc Hty;
+      simpl;
+      rewrite ?loc_add_0 ?right_id;
+      wp_store;
+      iApply ("HΦ" with "[$]").
+  - rewrite big_opL_app.
+    erewrite val_hasTy_flatten_length by eauto.
+    setoid_rewrite ty_size_offset.
+    invc Hty.
+    { by invc H1. (* can't be a pair and a base literal *) }
+    iDestruct "Hl" as "[Hv1 Hv2]".
+    wp_pures.
+    wp_bind (store_ty t1 _ _).
+    iApply ("IH" with "[//] Hv1").
+    iIntros "!> Hv1".
+    wp_pures.
+    rewrite Z.mul_1_l.
+    iApply ("IH1" with "[//] Hv2").
+    iIntros "!> Hv2".
+    iApply "HΦ".
+    simpl.
+    rewrite big_opL_app.
+    iFrame.
+    erewrite val_hasTy_flatten_length by eauto.
+    setoid_rewrite ty_size_offset.
+    iFrame.
+  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
+      iApply ("HΦ" with "[$]").
+  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
+      iApply ("HΦ" with "[$]").
+  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
+      iApply ("HΦ" with "[$]").
+  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
+      iApply ("HΦ" with "[$]").
+  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
+      iApply ("HΦ" with "[$]").
+Qed.
+
 (* TODO: this is only true for type-based store *)
 Lemma wp_store_offset s E l off vs t v :
   is_Some (vs !! off) →
