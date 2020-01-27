@@ -10,61 +10,61 @@ Section go_lang.
 
   Definition EncodeUInt32: val :=
     λ: "n" "p",
-    "p" +ₗ #0 <- to_u8 ("n" ≫ #(U32 $ 0*8));;
-    "p" +ₗ #1 <- to_u8 ("n" ≫ #(U32 $ 1*8));;
-    "p" +ₗ #2 <- to_u8 ("n" ≫ #(U32 $ 2*8));;
-    "p" +ₗ #3 <- to_u8 ("n" ≫ #(U32 $ 3*8)).
+    "p" +ₗ #0 <-[u8T] to_u8 ("n" ≫ #(U32 $ 0*8));;
+    "p" +ₗ #1 <-[u8T] to_u8 ("n" ≫ #(U32 $ 1*8));;
+    "p" +ₗ #2 <-[u8T] to_u8 ("n" ≫ #(U32 $ 2*8));;
+    "p" +ₗ #3 <-[u8T] to_u8 ("n" ≫ #(U32 $ 3*8)).
 
   Theorem EncodeUInt32_t : (⊢ EncodeUInt32 : (uint32T -> arrayT byteT -> unitT))%T.
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
   Definition DecodeUInt32: val :=
     λ: "p",
-    let: "v0" := to_u32 !"p" in
-    let: "v1" := to_u32 !("p" +ₗ #1) in
-    let: "v2" := to_u32 !("p" +ₗ #2) in
-    let: "v3" := to_u32 !("p" +ₗ #3) in
+    let: "v0" := to_u32 ![u8T]"p" in
+    let: "v1" := to_u32 ![u8T]("p" +ₗ #1) in
+    let: "v2" := to_u32 ![u8T]("p" +ₗ #2) in
+    let: "v3" := to_u32 ![u8T]("p" +ₗ #3) in
     "v0" ∥ ("v1" ∥ ("v2" ∥ "v3" ≪ #(U32 8)) ≪ #(U32 8)) ≪ #(U32 8).
 
   Theorem DecodeUInt32_t : (⊢ DecodeUInt32 : (arrayT byteT -> uint32T))%T.
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
   Definition EncodeUInt64: val :=
     λ: "n" "p",
-    "p" +ₗ #0 <- to_u8 ("n" ≫ #(0*8));;
-    "p" +ₗ #1 <- to_u8 ("n" ≫ #(1*8));;
-    "p" +ₗ #2 <- to_u8 ("n" ≫ #(2*8));;
-    "p" +ₗ #3 <- to_u8 ("n" ≫ #(3*8));;
-    "p" +ₗ #4 <- to_u8 ("n" ≫ #(4*8));;
-    "p" +ₗ #5 <- to_u8 ("n" ≫ #(5*8));;
-    "p" +ₗ #6 <- to_u8 ("n" ≫ #(6*8));;
-    "p" +ₗ #7 <- to_u8 ("n" ≫ #(7*8))
+    "p" +ₗ #0 <-[u8T] to_u8 ("n" ≫ #(0*8));;
+    "p" +ₗ #1 <-[u8T] to_u8 ("n" ≫ #(1*8));;
+    "p" +ₗ #2 <-[u8T] to_u8 ("n" ≫ #(2*8));;
+    "p" +ₗ #3 <-[u8T] to_u8 ("n" ≫ #(3*8));;
+    "p" +ₗ #4 <-[u8T] to_u8 ("n" ≫ #(4*8));;
+    "p" +ₗ #5 <-[u8T] to_u8 ("n" ≫ #(5*8));;
+    "p" +ₗ #6 <-[u8T] to_u8 ("n" ≫ #(6*8));;
+    "p" +ₗ #7 <-[u8T] to_u8 ("n" ≫ #(7*8))
   .
 
   Theorem EncodeUInt64_t : (⊢ EncodeUInt64 : (uint64T -> arrayT byteT -> unitT))%T.
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
   Definition DecodeUInt64: val :=
     λ: "p",
-    let: "v0" := to_u64 !"p" in
-    let: "v1" := to_u64 !("p" +ₗ #1) in
-    let: "v2" := to_u64 !("p" +ₗ #2) in
-    let: "v3" := to_u64 !("p" +ₗ #3) in
-    let: "v4" := to_u64 !("p" +ₗ #4) in
-    let: "v5" := to_u64 !("p" +ₗ #5) in
-    let: "v6" := to_u64 !("p" +ₗ #6) in
-    let: "v7" := to_u64 !("p" +ₗ #7) in
+    let: "v0" := to_u64 ![u8T]"p" in
+    let: "v1" := to_u64 ![u8T]("p" +ₗ #1) in
+    let: "v2" := to_u64 ![u8T]("p" +ₗ #2) in
+    let: "v3" := to_u64 ![u8T]("p" +ₗ #3) in
+    let: "v4" := to_u64 ![u8T]("p" +ₗ #4) in
+    let: "v5" := to_u64 ![u8T]("p" +ₗ #5) in
+    let: "v6" := to_u64 ![u8T]("p" +ₗ #6) in
+    let: "v7" := to_u64 ![u8T]("p" +ₗ #7) in
     "v0" ∥ ("v1" ∥ ("v2" ∥ ("v3" ∥ ("v4" ∥ ("v5" ∥ ("v6" ∥ "v7"
       ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8).
 
   Theorem DecodeUInt64_t : (⊢ DecodeUInt64 : (arrayT byteT -> uint64T))%T.
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -75,7 +75,7 @@ Section go_lang.
     EncodeUInt64 "n" (slice.ptr "p").
 
   Theorem UInt64Put_t : ⊢ UInt64Put : (slice.T byteT -> uint64T -> unitT).
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -84,7 +84,7 @@ Section go_lang.
     DecodeUInt64 (slice.ptr "p").
 
   Theorem UInt64Get_t : ⊢ UInt64Get : (slice.T byteT -> uint64T).
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -93,7 +93,7 @@ Section go_lang.
     EncodeUInt32 "n" (slice.ptr "p").
 
   Theorem UInt32Put_t : ⊢ UInt32Put : (slice.T byteT -> uint32T -> unitT).
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 
@@ -102,7 +102,7 @@ Section go_lang.
     DecodeUInt32 (slice.ptr "p").
 
   Theorem UInt32Get_t : ⊢ UInt32Get : (slice.T byteT -> uint32T).
-  Proof.
+  Proof using Type.
     typecheck.
   Qed.
 

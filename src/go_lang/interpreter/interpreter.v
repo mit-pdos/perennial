@@ -459,14 +459,6 @@ Section interpreter.
 
       | Primitive1 p e =>
         match p in (prim_op args1) return StateT state Error val with
-        | AllocStructOp =>
-          (* In head_trans, alloc nondeterministically allocates at any
-           valid location. We'll just pick the first valid location. *)
-          structv <- interpret n e;
-            s <- mget;
-            let l := find_alloc_location s (length (flatten_struct structv)) in
-            _ <- mput (state_insert_list l (flatten_struct structv) s);
-              mret (LitV (LitLoc l))
         | PrepareWriteOp =>
           addrv <- interpret n e;
             match addrv with
@@ -852,20 +844,6 @@ Ltac runStateT_inv :=
     (* Primitive1 *)
     {
       dependent destruction op.
-      { (* AllocStruct *)
-        run_next_interpret IHn.
-        runStateT_inv.
-        do 2 eexists.
-        (* [AllocStruct e] -> [AllocStruct v0] *)
-        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx AllocStructOp)])|].
-        single_step.
-        eapply relation.bind_suchThat.
-        (* Must prove the location find_alloc_location found is adequate *)
-        { intros i ? ?.
-          eapply find_alloc_location_ok; eauto. }
-        monad_simpl.
-      }
-
       { (* PrepareWrite *)
         run_next_interpret IHn.
         runStateT_inv.
@@ -930,7 +908,7 @@ Ltac runStateT_inv :=
         single_step.
         rewrite -> ifThenElse_if; [|(rewrite -> Z.leb_nle in Heqb0; lia)].
         simpl; monad_simpl.
-        pose proof (find_alloc_location_fresh s0 (int.val n0)) as loc_fresh.
+        pose proof (find_alloc_location_fresh s0 ((int.val n0) * length (flatten_struct v2))) as loc_fresh.
         eapply relation.bind_suchThat; [apply loc_fresh|].
         monad_simpl.
       }

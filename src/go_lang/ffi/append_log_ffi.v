@@ -75,7 +75,7 @@ Section log.
   Instance log_ty: ext_types log_op :=
     {| val_tys := log_val_ty;
        val_ty_def t := match t with
-                       | LogT => ExtV (Log [] : @ext_val log_op)
+                       | LogT => Log []
                        end;
        get_ext_tys (op: @external log_op) :=
          match op with

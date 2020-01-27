@@ -29,19 +29,19 @@ Definition readMessage: val :=
       "data" ::= "initData"
     ]) in
     (for: (#true); (Skip) :=
-      let: "buf" := FS.readAt "f" (struct.get partialFile.S "off" !"pf") #512 in
-      let: "newData" := SliceAppendSlice (struct.get partialFile.S "data" !"pf") "buf" in
+      let: "buf" := FS.readAt "f" (struct.get partialFile.S "off" (![struct.t partialFile.S] "pf")) #512 in
+      let: "newData" := SliceAppendSlice byteT (struct.get partialFile.S "data" (![struct.t partialFile.S] "pf")) "buf" in
       (if: slice.len "buf" < #512
       then
-        "fileContents" <- "newData";;
+        "fileContents" <-[refT (slice.T byteT)] "newData";;
         Break
       else
-        "pf" <- struct.mk partialFile.S [
-          "off" ::= struct.get partialFile.S "off" !"pf" + slice.len "buf";
+        "pf" <-[struct.t partialFile.S] struct.mk partialFile.S [
+          "off" ::= struct.get partialFile.S "off" (![struct.t partialFile.S] "pf") + slice.len "buf";
           "data" ::= "newData"
         ];;
         Continue));;
-    let: "fileData" := !"fileContents" in
+    let: "fileData" := ![slice.T byteT] "fileContents" in
     let: "fileStr" := Data.bytesToString "fileData" in
     FS.close "f";;
     "fileStr".
@@ -57,29 +57,29 @@ End Message.
 Definition Pickup: val :=
   λ: "user",
     let: "ls" := Globals.getX #() in
-    let: "l" := SliceGet "ls" "user" in
+    let: "l" := SliceGet lockRefT "ls" "user" in
     lock.acquire "l";;
     let: "userDir" := GetUserDir "user" in
     let: "names" := FS.list "userDir" in
     let: "messages" := ref (zero_val (slice.T (struct.t Message.S))) in
     let: "initMessages" := NewSlice (struct.t Message.S) #0 in
-    "messages" <- "initMessages";;
+    "messages" <-[refT (slice.T (struct.t Message.S))] "initMessages";;
     let: "i" := ref #0 in
     (for: (#true); (Skip) :=
-      (if: (!"i" = slice.len "names")
+      (if: (![uint64T] "i" = slice.len "names")
       then Break
       else
-        let: "name" := SliceGet "names" !"i" in
+        let: "name" := SliceGet stringT "names" (![uint64T] "i") in
         let: "msg" := readMessage "userDir" "name" in
-        let: "oldMessages" := !"messages" in
-        let: "newMessages" := SliceAppend "oldMessages" (struct.mk Message.S [
+        let: "oldMessages" := ![slice.T (struct.t Message.S)] "messages" in
+        let: "newMessages" := SliceAppend (struct.t Message.S) "oldMessages" (struct.mk Message.S [
           "Id" ::= "name";
           "Contents" ::= "msg"
         ]) in
-        "messages" <- "newMessages";;
-        "i" <- !"i" + #1;;
+        "messages" <-[refT (slice.T (struct.t Message.S))] "newMessages";;
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue));;
-    let: "msgs" := !"messages" in
+    let: "msgs" := ![slice.T (struct.t Message.S)] "messages" in
     "msgs".
 
 Definition createTmp: val :=
@@ -89,20 +89,20 @@ Definition createTmp: val :=
     let: "finalName" := ref (zero_val stringT) in
     let: "id" := ref "initID" in
     (for: (#true); (Skip) :=
-      let: "fname" := uint64_to_string !"id" in
+      let: "fname" := uint64_to_string (![uint64T] "id") in
       let: ("f", "ok") := FS.create SpoolDir "fname" in
       (if: "ok"
       then
-        "finalFile" <- "f";;
-        "finalName" <- "fname";;
+        "finalFile" <-[refT fileT] "f";;
+        "finalName" <-[refT stringT] "fname";;
         Break
       else
         let: "newID" := Data.randomUint64 #() in
-        "id" <- "newID";;
+        "id" <-[uint64T] "newID";;
         Continue);;
       Continue);;
-    let: "f" := !"finalFile" in
-    let: "name" := !"finalName" in
+    let: "f" := ![fileT] "finalFile" in
+    let: "name" := ![stringT] "finalName" in
     ("f", "name").
 
 Definition writeTmp: val :=
@@ -110,13 +110,13 @@ Definition writeTmp: val :=
     let: ("f", "name") := createTmp #() in
     let: "buf" := ref "data" in
     (for: (#true); (Skip) :=
-      (if: slice.len !"buf" < #4096
+      (if: slice.len (![slice.T byteT] "buf") < #4096
       then
-        FS.append "f" !"buf";;
+        FS.append "f" (![slice.T byteT] "buf");;
         Break
       else
-        FS.append "f" (SliceTake !"buf" #4096);;
-        "buf" <- SliceSkip !"buf" #4096;;
+        FS.append "f" (SliceTake (![slice.T byteT] "buf") #4096);;
+        "buf" <-[slice.T byteT] SliceSkip byteT (![slice.T byteT] "buf") #4096;;
         Continue));;
     FS.close "f";;
     "name".
@@ -130,12 +130,12 @@ Definition Deliver: val :=
     let: "initID" := Data.randomUint64 #() in
     let: "id" := ref "initID" in
     (for: (#true); (Skip) :=
-      let: "ok" := FS.link SpoolDir "tmpName" "userDir" (#(str"msg") + uint64_to_string !"id") in
+      let: "ok" := FS.link SpoolDir "tmpName" "userDir" (#(str"msg") + uint64_to_string (![uint64T] "id")) in
       (if: "ok"
       then Break
       else
         let: "newID" := Data.randomUint64 #() in
-        "id" <- "newID";;
+        "id" <-[uint64T] "newID";;
         Continue);;
       Continue);;
     FS.delete SpoolDir "tmpName".
@@ -151,33 +151,33 @@ Definition Delete: val :=
 Definition Lock: val :=
   λ: "user",
     let: "locks" := Globals.getX #() in
-    let: "l" := SliceGet "locks" "user" in
+    let: "l" := SliceGet lockRefT "locks" "user" in
     lock.acquire "l".
 
 (* Unlock releases the lock for the current user. *)
 Definition Unlock: val :=
   λ: "user",
     let: "locks" := Globals.getX #() in
-    let: "l" := SliceGet "locks" "user" in
+    let: "l" := SliceGet lockRefT "locks" "user" in
     lock.release "l".
 
 Definition open: val :=
   λ: <>,
     let: "locks" := ref (zero_val (slice.T lockRefT)) in
     let: "initLocks" := NewSlice lockRefT #0 in
-    "locks" <- "initLocks";;
+    "locks" <-[refT (slice.T lockRefT)] "initLocks";;
     let: "i" := ref #0 in
     (for: (#true); (Skip) :=
-      (if: (!"i" = NumUsers)
+      (if: (![uint64T] "i" = NumUsers)
       then Break
       else
-        let: "oldLocks" := !"locks" in
+        let: "oldLocks" := ![slice.T lockRefT] "locks" in
         let: "l" := lock.new #() in
-        let: "newLocks" := SliceAppend "oldLocks" "l" in
-        "locks" <- "newLocks";;
-        "i" <- !"i" + #1;;
+        let: "newLocks" := SliceAppend lockRefT "oldLocks" "l" in
+        "locks" <-[refT (slice.T lockRefT)] "newLocks";;
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue));;
-    let: "finalLocks" := !"locks" in
+    let: "finalLocks" := ![slice.T lockRefT] "locks" in
     Globals.setX "finalLocks".
 
 Definition init: val :=
@@ -189,10 +189,10 @@ Definition Recover: val :=
     let: "spooled" := FS.list SpoolDir in
     let: "i" := ref #0 in
     (for: (#true); (Skip) :=
-      (if: (!"i" = slice.len "spooled")
+      (if: (![uint64T] "i" = slice.len "spooled")
       then Break
       else
-        let: "name" := SliceGet "spooled" !"i" in
+        let: "name" := SliceGet stringT "spooled" (![uint64T] "i") in
         FS.delete SpoolDir "name";;
-        "i" <- !"i" + #1;;
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue)).

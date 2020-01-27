@@ -12,6 +12,7 @@ Definition condvarRefT {ext} {ext_ty: ext_types ext} := refT lockRefT.
 Module lock.
   Section go_lang.
   Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} `{!lockG Σ}.
+  Context {ext_tys: ext_types ext}.
 
   Local Coercion Var' (s:string) : expr := Var s.
 
@@ -37,14 +38,18 @@ Module lock.
   Theorem wp_newCond N γ lk R :
     {{{ is_lock N γ lk R }}}
       newCond lk
-      {{{ c, RET #c; is_cond N γ c R }}}.
+    {{{ c, RET #c; is_cond N γ c R }}}.
   Proof.
     iIntros (Φ) "Hl HΦ".
     wp_call.
-    wp_alloc c as "Hc".
+    iDestruct (is_lock_ty with "Hl") as %Hlkty.
+    wp_apply wp_alloc; auto.
+    { eauto. }
+    iIntros (c) "Hc".
     iApply "HΦ".
     iExists _; iFrame.
-  Qed.
+    iDestruct "Hc" as "[Hc _]".
+  Admitted.
 
   Theorem wp_condSignal N γ c R :
     {{{ is_cond N γ c R }}}

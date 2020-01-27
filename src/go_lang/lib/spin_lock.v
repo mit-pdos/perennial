@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 Section go_lang.
   Context `{ffi_sem: ext_semantics}.
   Context `{!ffi_interp ffi}.
+  Context {ext_tys: ext_types ext}.
 
   Definition Var' s : @expr ext := Var s.
   Local Coercion Var' : string >-> expr.
@@ -34,7 +35,7 @@ Section proof.
     (∃ b : bool, l ↦ Free #b ∗ if b then True else own γ (Excl ()) ∗ R)%I.
 
   Definition is_lock (γ : gname) (lk : val) (R : iProp Σ) : iProp Σ :=
-    (∃ l: loc, ⌜lk = #l⌝ ∧ inv N (lock_inv γ l R))%I.
+    (∃ l: loc, ⌜lk = #l ∧ val_ty lk (refT boolT)⌝ ∧ inv N (lock_inv γ l R))%I.
 
   Definition locked (γ : gname) : iProp Σ := own γ (Excl ()).
 
@@ -52,22 +53,43 @@ Section proof.
   Global Instance locked_timeless γ : Timeless (locked γ).
   Proof. apply _. Qed.
 
+  Theorem is_lock_ty γ lk R :
+    is_lock γ lk R -∗ ⌜val_ty lk (refT boolT)⌝.
+  Proof.
+    iIntros "Hl". iDestruct "Hl" as (l) "[(%&%) _]".
+    auto.
+  Qed.
+
+  (* TODO: this isn't necessary; locks don't need to use typed allocation
+  theorems *)
+  Axiom loc_hasTy : forall Γ (l:loc) t, val_hasTy Γ #l (refT t).
+
   Lemma newlock_spec (R : iProp Σ):
     {{{ R }}} newlock #() {{{ lk γ, RET lk; is_lock γ lk R }}}.
-  Proof.
+  Proof using ext_tys.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /newlock /=.
-    wp_lam. wp_alloc l as "Hl".
+    wp_lam. wp_apply wp_alloc. (* TODO: to restore wp_alloc tactic, need a
+    type hint in the code *)
+    { repeat constructor. }
+    { auto. }
+    iIntros (l) "Hl".
     iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
     iMod (inv_alloc N _ (lock_inv γ l R) with "[-HΦ]") as "#?".
-    { iIntros "!>". iExists false. by iFrame. }
-    iModIntro. iApply "HΦ". iExists l. eauto.
+    { iIntros "!>". iExists false. iFrame.
+      iDestruct "Hl" as "[[Hl _] %]".
+      rewrite loc_add_0.
+      by iFrame. }
+    iModIntro. iApply "HΦ". iExists l. iSplit; eauto.
+    iPureIntro.
+    split; auto.
+    apply loc_hasTy.
   Qed.
 
   Lemma try_acquire_spec γ lk R :
     {{{ is_lock γ lk R }}} try_acquire lk
     {{{ b, RET #b; if b is true then locked γ ∗ R else True }}}.
   Proof.
-    iIntros (Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
+    iIntros (Φ) "#Hl HΦ". iDestruct "Hl" as (l [-> _]) "#Hinv".
     wp_rec.
     wp_bind (CmpXchg _ _ _). iInv N as ([]) "[Hl HR]".
     - wp_cmpxchg_fail. iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
@@ -90,7 +112,7 @@ Section proof.
     {{{ is_lock γ lk R ∗ locked γ ∗ R }}} release lk {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock & Hlocked & HR) HΦ".
-    iDestruct "Hlock" as (l ->) "#Hinv".
+    iDestruct "Hlock" as (l [-> _]) "#Hinv".
     rewrite /release /=. wp_lam.
     wp_bind (CmpXchg _ _ _).
     iInv N as (b) "[Hl _]".
@@ -109,6 +131,6 @@ End go_lang.
 
 Typeclasses Opaque is_lock locked.
 
-Canonical Structure spin_lock `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ, !lockG Σ} : lock Σ :=
+Canonical Structure spin_lock `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {ext_tys:ext_types ext} `{!heapG Σ, !lockG Σ} : lock Σ :=
   {| lock.locked_exclusive := locked_exclusive; lock.newlock_spec := newlock_spec;
      lock.acquire_spec := acquire_spec; lock.release_spec := release_spec |}.

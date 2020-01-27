@@ -148,9 +148,6 @@ Section translate.
       Γ ⊢ n -- n' : uint64T ->
       Γ ⊢ v -- v' : t ->
       Γ ⊢ AllocN n v -- AllocN n' v': arrayT t
-  | alloc_struct_transTy v v' t :
-      Γ ⊢ v -- v' : t ->
-      Γ ⊢ AllocStruct v -- AllocStruct v': structRefT (flatten_ty t)
   | load_transTy l l' t :
       Γ ⊢ l -- l' : refT t ->
       Γ ⊢ Load l -- Load l' : t
