@@ -422,6 +422,11 @@ produces fieldPointer if the field exists and an error otherwise. *)
   Notation storeF := storeField.
 End struct.
 
+Notation "![ t ] e" := (load_ty t e%E)
+                         (at level 9, right associativity, format "![ t ]  e") : expr_scope.
+Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E)
+                             (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
+
 Notation "'structF!' desc fname" := (ltac:(make_structF desc fname))
                                     (at level 0, desc, fname at next level, only parsing).
 

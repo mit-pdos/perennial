@@ -21,6 +21,7 @@ Section val_types.
   | mapValT (vt: ty) (* keys are always uint64, for now *)
   | extT (x: ext_tys)
   .
+  Definition u8T := byteT.
 
   (* for backwards compatibility; need a sound plan for dealing with recursive
   structs *)

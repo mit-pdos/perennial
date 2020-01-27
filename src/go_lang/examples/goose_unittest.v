@@ -6,18 +6,12 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
 
 (* comments.go *)
 
-Module importantStruct.
-  (* This struct is very important.
+(* This struct is very important.
 
-     This is despite it being empty. *)
+   This is despite it being empty. *)
+Module importantStruct.
   Definition S := struct.decl [
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End importantStruct.
 
 (* doSubtleThings does a number of subtle things:
@@ -94,6 +88,10 @@ Definition stringToByteSlice: val :=
 Definition byteSliceToString: val :=
   λ: "p",
     let: "s" := Data.bytesToString "p" in
+    "s".
+
+Definition stringToStringWrapper: val :=
+  λ: "s",
     "s".
 
 Definition stringWrapperToString: val :=
@@ -177,12 +175,6 @@ Module Enc.
   Definition S := struct.decl [
     "p" :: slice.T byteT
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End Enc.
 
 Definition Enc__consume: val :=
@@ -203,12 +195,6 @@ Module Dec.
   Definition S := struct.decl [
     "p" :: slice.T byteT
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End Dec.
 
 Definition Dec__consume: val :=
@@ -250,12 +236,6 @@ Module allTheLiterals.
     "s" :: stringT;
     "b" :: boolT
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End allTheLiterals.
 
 Definition normalLiterals: val :=
@@ -303,12 +283,6 @@ Module hasCondVar.
   Definition S := struct.decl [
     "cond" :: condvarRefT
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End hasCondVar.
 
 (* log_debugging.go *)
@@ -436,7 +410,7 @@ Definition LogicalOperators: val :=
 
 Definition LogicalAndEqualityOperators: val :=
   λ: "b1" "x",
-    "x" = #3 && "b1" = #true.
+    ("x" = #3) && ("b1" = #true).
 
 Definition ArithmeticShifts: val :=
   λ: "x" "y",
@@ -451,7 +425,7 @@ Definition Comparison: val :=
     (if: "x" < "y"
     then #true
     else
-      (if: "x" = "y"
+      (if: ("x" = "y")
       then #true
       else
         (if: "x" ≠ "y"
@@ -485,12 +459,6 @@ Module composite.
     "a" :: uint64T;
     "b" :: uint64T
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End composite.
 
 Definition ReassignVars: val :=
@@ -506,7 +474,7 @@ Definition ReassignVars: val :=
       "a" ::= "y";
       "b" ::= !"x"
     ];;
-    "x" <- composite.get "a" !"z".
+    "x" <- struct.get composite.S "a" !"z".
 
 (* replicated_disk.go *)
 
@@ -514,12 +482,6 @@ Module Block.
   Definition S := struct.decl [
     "Value" :: uint64T
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End Block.
 
 Definition Disk1 : expr := #0.
@@ -588,6 +550,245 @@ Definition ReplicatedDiskRecover: val :=
         "a" <- !"a" + #1;;
         Continue)).
 
+(* semantics.go *)
+
+(* test that encoding and decoding roundtrips *)
+Definition roundtripEncDec32: val :=
+  λ: "x",
+    let: "r" := NewSlice byteT #4 in
+    let: "e" := struct.new Enc.S [
+      "p" ::= "r"
+    ] in
+    let: "d" := struct.new Dec.S [
+      "p" ::= "r"
+    ] in
+    Enc__UInt32 "e" "x";;
+    Dec__UInt32 "d".
+
+Definition testEncDec32: val :=
+  λ: "x",
+    (roundtripEncDec32 "x" = "x").
+
+Definition roundtripEncDec64: val :=
+  λ: "x",
+    let: "r" := NewSlice byteT #8 in
+    let: "e" := struct.new Enc.S [
+      "p" ::= "r"
+    ] in
+    let: "d" := struct.new Dec.S [
+      "p" ::= "r"
+    ] in
+    Enc__UInt64 "e" "x";;
+    Dec__UInt64 "d".
+
+Definition testEncDec64: val :=
+  λ: "x",
+    (roundtripEncDec64 "x" = "x").
+
+(* test that y defaults to 0 and subtraction always reverses addition *)
+Definition reverseAssignOps64: val :=
+  λ: "x",
+    let: "y" := ref (zero_val uint64T) in
+    "y" <- !"y" + "x";;
+    "y" <- !"y" - "x";;
+    "y" <- !"y" + #1;;
+    "y" <- !"y" - #1;;
+    !"y".
+
+Definition testReverseAssignOps64: val :=
+  λ: "x",
+    (reverseAssignOps64 "x" = #0).
+
+Definition reverseAssignOps32: val :=
+  λ: "x",
+    let: "y" := ref (zero_val uint32T) in
+    "y" <- !"y" + "x";;
+    "y" <- !"y" - "x";;
+    "y" <- !"y" + #1;;
+    "y" <- !"y" - #1;;
+    !"y".
+
+Definition testReverseAssignOps32: val :=
+  λ: "x",
+    (reverseAssignOps32 "x" = #(U32 0)).
+
+(* test shortcircuiting behaviors for logical operators *)
+Module BoolTest.
+  Definition S := struct.decl [
+    "t" :: boolT;
+    "f" :: boolT;
+    "tc" :: uint64T;
+    "fc" :: uint64T
+  ].
+End BoolTest.
+
+Definition CheckTrue: val :=
+  λ: "b",
+    struct.storeF BoolTest.S "tc" "b" (struct.loadF BoolTest.S "tc" "b" + #1);;
+    struct.loadF BoolTest.S "t" "b".
+
+Definition CheckFalse: val :=
+  λ: "b",
+    struct.storeF BoolTest.S "fc" "b" (struct.loadF BoolTest.S "fc" "b" + #1);;
+    struct.loadF BoolTest.S "f" "b".
+
+Definition testShortcircuitAndTF: val :=
+  λ: <>,
+    let: "b" := struct.mk BoolTest.S [
+      "t" ::= #true;
+      "f" ::= #false;
+      "tc" ::= #0;
+      "fc" ::= #0
+    ] in
+    (if: CheckTrue "b" && CheckFalse "b"
+    then #false
+    else (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #1)).
+
+Definition testShortcircuitAndFT: val :=
+  λ: <>,
+    let: "b" := struct.mk BoolTest.S [
+      "t" ::= #true;
+      "f" ::= #false;
+      "tc" ::= #0;
+      "fc" ::= #0
+    ] in
+    (if: CheckFalse "b" && CheckTrue "b"
+    then #false
+    else (struct.get BoolTest.S "tc" "b" = #0) && (struct.get BoolTest.S "fc" "b" = #1)).
+
+Definition testShortcircuitOrTF: val :=
+  λ: <>,
+    let: "b" := struct.mk BoolTest.S [
+      "t" ::= #true;
+      "f" ::= #false;
+      "tc" ::= #0;
+      "fc" ::= #0
+    ] in
+    (if: CheckTrue "b" ∥ CheckFalse "b"
+    then (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #0)
+    else #false).
+
+Definition testShortcircuitOrFT: val :=
+  λ: <>,
+    let: "b" := struct.mk BoolTest.S [
+      "t" ::= #true;
+      "f" ::= #false;
+      "tc" ::= #0;
+      "fc" ::= #0
+    ] in
+    (if: CheckFalse "b" ∥ CheckTrue "b"
+    then (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #1)
+    else #false).
+
+(* test integer overflow and underflow *)
+Definition testAdd64Equals: val :=
+  λ: "x" "y" "z",
+    ("x" + "y" = "z").
+
+Definition testMinus64Equals: val :=
+  λ: "x" "y" "z",
+    ("x" - "y" = "z").
+
+(* test side-effects on array writes from multiple accessors *)
+Module ArrayEditor.
+  Definition S := struct.decl [
+    "s" :: slice.T uint64T;
+    "next_val" :: uint64T
+  ].
+End ArrayEditor.
+
+Definition ArrayEditor__Advance: val :=
+  λ: "ae" "arr" "next",
+    SliceSet "arr" #0 (SliceGet "arr" #0 + #1);;
+    SliceSet (struct.loadF ArrayEditor.S "s" "ae") #0 (struct.loadF ArrayEditor.S "next_val" "ae");;
+    struct.storeF ArrayEditor.S "next_val" "ae" "next";;
+    struct.storeF ArrayEditor.S "s" "ae" (SliceSkip (struct.loadF ArrayEditor.S "s" "ae") #1).
+
+Definition testOverwriteArray: val :=
+  λ: <>,
+    let: "arr" := ref (NewSlice uint64T #4) in
+    let: "ae1" := struct.mk ArrayEditor.S [
+      "s" ::= SliceSkip !"arr" #0;
+      "next_val" ::= #1
+    ] in
+    let: "ae2" := struct.mk ArrayEditor.S [
+      "s" ::= SliceSkip !"arr" #1;
+      "next_val" ::= #102
+    ] in
+    ArrayEditor__Advance "ae2" !"arr" #103;;
+    ArrayEditor__Advance "ae2" !"arr" #104;;
+    ArrayEditor__Advance "ae2" !"arr" #105;;
+    ArrayEditor__Advance "ae1" !"arr" #2;;
+    ArrayEditor__Advance "ae1" !"arr" #3;;
+    ArrayEditor__Advance "ae1" !"arr" #4;;
+    ArrayEditor__Advance "ae1" !"arr" #5;;
+    (if: SliceGet !"arr" #0 + SliceGet !"arr" #1 + SliceGet !"arr" #2 + SliceGet !"arr" #3 ≥ #100
+    then #false
+    else (SliceGet !"arr" #3 = #4) && (SliceGet !"arr" #0 = #4)).
+
+(* advances the array editor, and returns the value it wrote, storing "next" in next_val *)
+Definition ArrayEditor__AdvanceReturn: val :=
+  λ: "ae" "next",
+    let: "tmp" := ref (struct.loadF ArrayEditor.S "next_val" "ae") in
+    SliceSet (struct.loadF ArrayEditor.S "s" "ae") #0 !"tmp";;
+    struct.storeF ArrayEditor.S "next_val" "ae" "next";;
+    struct.storeF ArrayEditor.S "s" "ae" (SliceSkip (struct.loadF ArrayEditor.S "s" "ae") #1);;
+    !"tmp".
+
+(* we call this function with side-effectful function calls as arguments,
+   its implementation is unimportant *)
+Definition addFour64: val :=
+  λ: "a" "b" "c" "d",
+    "a" + "b" + "c" + "d".
+
+Module Pair.
+  Definition S := struct.decl [
+    "x" :: uint64T;
+    "y" :: uint64T
+  ].
+End Pair.
+
+Definition testFunctionOrdering: val :=
+  λ: <>,
+    let: "arr" := ref (NewSlice uint64T #5) in
+    let: "ae1" := struct.mk ArrayEditor.S [
+      "s" ::= SliceSkip !"arr" #0;
+      "next_val" ::= #1
+    ] in
+    let: "ae2" := struct.mk ArrayEditor.S [
+      "s" ::= SliceSkip !"arr" #0;
+      "next_val" ::= #101
+    ] in
+    (if: ArrayEditor__AdvanceReturn "ae1" #2 + ArrayEditor__AdvanceReturn "ae2" #102 ≠ #102
+    then #false
+    else
+      (if: SliceGet !"arr" #0 ≠ #101
+      then #false
+      else
+        (if: addFour64 (ArrayEditor__AdvanceReturn "ae1" #3) (ArrayEditor__AdvanceReturn "ae2" #103) (ArrayEditor__AdvanceReturn "ae2" #104) (ArrayEditor__AdvanceReturn "ae1" #4) ≠ #210
+        then #false
+        else
+          (if: SliceGet !"arr" #1 ≠ #102
+          then #false
+          else
+            (if: SliceGet !"arr" #2 ≠ #3
+            then #false
+            else
+              let: "p" := struct.mk Pair.S [
+                "x" ::= ArrayEditor__AdvanceReturn "ae1" #5;
+                "y" ::= ArrayEditor__AdvanceReturn "ae2" #105
+              ] in
+              (if: SliceGet !"arr" #3 ≠ #104
+              then #false
+              else
+                let: "q" := struct.mk Pair.S [
+                  "y" ::= ArrayEditor__AdvanceReturn "ae1" #6;
+                  "x" ::= ArrayEditor__AdvanceReturn "ae2" #106
+                ] in
+                (if: SliceGet !"arr" #4 ≠ #105
+                then #false
+                else (struct.get Pair.S "x" "p" + struct.get Pair.S "x" "q" = #109)))))))).
+
 (* slices.go *)
 
 Definition SliceAlias: ty := slice.T boolT.
@@ -609,29 +810,17 @@ Module thing.
   Definition S := struct.decl [
     "x" :: uint64T
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End thing.
 
 Module sliceOfThings.
   Definition S := struct.decl [
-    "things" :: slice.T thing.T
+    "things" :: slice.T (struct.t thing.S)
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End sliceOfThings.
 
 Definition sliceOfThings__getThingRef: val :=
   λ: "ts" "i",
-    SliceRef (sliceOfThings.get "things" "ts") "i".
+    SliceRef (struct.get sliceOfThings.S "things" "ts") "i".
 
 Definition makeAlias: val :=
   λ: <>,
@@ -688,41 +877,35 @@ Definition stringLength: val :=
 
 (* struct_method.go *)
 
-Module C.
+Module Point.
   Definition S := struct.decl [
     "x" :: uint64T;
     "y" :: uint64T
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
-End C.
+End Point.
 
-Definition C__Add: val :=
+Definition Point__Add: val :=
   λ: "c" "z",
-    C.get "x" "c" + C.get "y" "c" + "z".
+    struct.get Point.S "x" "c" + struct.get Point.S "y" "c" + "z".
 
-Definition C__GetField: val :=
+Definition Point__GetField: val :=
   λ: "c",
-    let: "x" := C.get "x" "c" in
-    let: "y" := C.get "y" "c" in
+    let: "x" := struct.get Point.S "x" "c" in
+    let: "y" := struct.get Point.S "y" "c" in
     "x" + "y".
 
 Definition UseAdd: val :=
   λ: <>,
-    let: "c" := struct.mk C.S [
+    let: "c" := struct.mk Point.S [
       "x" ::= #2;
       "y" ::= #3
     ] in
-    let: "r" := C__Add "c" #4 in
+    let: "r" := Point__Add "c" #4 in
     "r".
 
 Definition UseAddWithLiteral: val :=
   λ: <>,
-    let: "r" := C__Add (struct.mk C.S [
+    let: "r" := Point__Add (struct.mk Point.S [
       "x" ::= #2;
       "y" ::= #3
     ]) #4 in
@@ -735,26 +918,14 @@ Module TwoInts.
     "x" :: uint64T;
     "y" :: uint64T
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End TwoInts.
 
 Module S.
   Definition S := struct.decl [
     "a" :: uint64T;
-    "b" :: TwoInts.T;
+    "b" :: struct.t TwoInts.S;
     "c" :: boolT
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End S.
 
 Definition NewS: val :=
@@ -778,7 +949,7 @@ Definition S__readB: val :=
 
 Definition S__readBVal: val :=
   λ: "s",
-    S.get "b" "s".
+    struct.get S.S "b" "s".
 
 Definition S__writeB: val :=
   λ: "s" "two",
@@ -794,12 +965,12 @@ Definition S__refC: val :=
 
 Definition localSRef: val :=
   λ: <>,
-    let: "s" := ref (zero_val S.T) in
+    let: "s" := ref (zero_val (struct.t S.S)) in
     struct.fieldRef S.S "b" "s".
 
 Definition setField: val :=
   λ: <>,
-    let: "s" := ref (zero_val S.T) in
+    let: "s" := ref (zero_val (struct.t S.S)) in
     struct.storeF S.S "a" "s" #0;;
     struct.storeF S.S "c" "s" #true;;
     !"s".
@@ -826,3 +997,8 @@ Definition Timestamp: ty := uint64T.
 Definition UseTypeAbbrev: ty := u64.
 
 Definition UseNamedType: ty := Timestamp.
+
+Definition convertToAlias: val :=
+  λ: <>,
+    let: "x" := #2 in
+    "x".

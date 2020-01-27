@@ -66,6 +66,23 @@ Admitted.
 Hint Rewrite word.unsigned_of_Z : word.
 Hint Rewrite word.unsigned_sru : word.
 
+Theorem word_byte_extract (x:u32) k :
+  0 <= k < 4 ->
+  word.of_Z (int.val x ≫ (k*8)) = u8_from_u32 (word.sru x (U32 (k*8))).
+Proof.
+  intros.
+  apply word.unsigned_inj.
+  unfold u8_from_u32, U8.
+  autorewrite with word.
+  rewrite word.unsigned_sru;
+    rewrite unsigned_U32.
+  { rewrite word_wrap_wrap; last lia.
+    rewrite [word.wrap (k * _)]wrap_small; last lia.
+    reflexivity.
+  }
+  rewrite wrap_small; lia.
+Qed.
+
 Theorem u32_le_to_sru (x: u32) :
   b2val <$> u32_le x =
   cons #(u8_from_u32 (word.sru x (U32 (0%nat * 8))))
@@ -74,46 +91,13 @@ Theorem u32_le_to_sru (x: u32) :
                    (cons #(u8_from_u32 (word.sru x (U32 (3%nat * 8))))
                          nil))).
 Proof using Type.
-  change (0%nat * 8) with 0.
-  change (1%nat * 8) with 8.
-  change (2%nat * 8) with 16.
-  change (3%nat * 8) with 24.
   rewrite /b2val.
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
-  repeat f_equal.
-  - apply word.unsigned_inj.
-    unfold u8_from_u32, U8.
-    autorewrite with word.
-    rewrite word.unsigned_sru;
-      change (int.val (U32 0)) with 0;
-      last lia.
-    rewrite Z.shiftr_0_r.
-    rewrite word_wrap_wrap; last lia.
-    reflexivity.
-  - apply word.unsigned_inj.
-    unfold u8_from_u32, U8.
-    autorewrite with word.
-    rewrite word.unsigned_sru;
-      change (int.val (U32 8)) with 8;
-      last lia.
-    rewrite word_wrap_wrap; last lia.
-    reflexivity.
-  - apply word.unsigned_inj.
-    unfold u8_from_u32, U8.
-    autorewrite with word.
-    rewrite word.unsigned_sru;
-      change (int.val (U32 16)) with 16;
-      last lia.
-    rewrite word_wrap_wrap; last lia.
-    reflexivity.
-  - apply word.unsigned_inj.
-    unfold u8_from_u32, U8.
-    autorewrite with word.
-    rewrite word.unsigned_sru;
-      change (int.val (U32 24)) with 24;
-      last lia.
-    rewrite word_wrap_wrap; last lia.
-    reflexivity.
+  rewrite -word_byte_extract; last lia.
+  rewrite -word_byte_extract; last lia.
+  rewrite -word_byte_extract; last lia.
+  rewrite -word_byte_extract; last lia.
+  reflexivity.
 Qed.
 
 Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
@@ -123,51 +107,46 @@ Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
 Proof using Type.
   iIntros (Φ) "(>Hl & %) HΦ".
   unfold EncodeUInt32.
-  wp_lam.
-  wp_let.
-  wp_pures.
-  rewrite Z.mul_1_l.
-  wp_bind (Store _ _).
-  change (int.val 0) with (Z.of_nat 0).
-  rewrite Z.mul_1_l.
-  iApply (wp_store_offset with "Hl").
-  { apply lookup_lt_is_Some_2; lia. }
-
-  iIntros "!> Hl".
-  wp_seq.
-  wp_pures.
-  rewrite Z.mul_1_r.
-  wp_bind (Store _ _).
-  change (int.val 1) with (Z.of_nat 1).
-  iApply (wp_store_offset with "Hl").
-  { apply lookup_lt_is_Some_2.
-    rewrite ?insert_length; lia. }
-
-  iIntros "!> Hl".
-  wp_seq.
-  wp_pures.
-  rewrite Z.mul_1_r.
-  wp_bind (Store _ _).
-  change (int.val 2) with (Z.of_nat 2).
-  iApply (wp_store_offset with "Hl").
-  { apply lookup_lt_is_Some_2.
-    rewrite ?insert_length; lia. }
-
-  iIntros "!> Hl".
-  wp_seq.
-  wp_pures.
-  rewrite Z.mul_1_r.
-  change (int.val 3) with (Z.of_nat 3).
-  iApply (wp_store_offset with "Hl").
-  { apply lookup_lt_is_Some_2.
-    rewrite ?insert_length; lia. }
-
-  iIntros "!> Hl".
-  iApply "HΦ".
-  rewrite u32_le_to_sru.
-  do 5 (destruct vs; try (simpl in H; lia)).
+  repeat (destruct vs; simpl in H; [ congruence | ]).
+  destruct vs; [ | simpl in H; congruence ]; clear H.
+  remember u8T.
   simpl.
-  iApply "Hl".
+  cbv [array].
+  iDestruct "Hl" as "(Hv&Hv0&Hv1&Hv2&_)".
+  wp_pures.
+  rewrite ?Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv0]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv0".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv1]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv1".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv2]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv2".
+
+  iApply "HΦ".
+  change (U32 8) with (U32 (1 * 8)).
+  rewrite -?word_byte_extract; try lia.
+  subst.
+  simpl.
+  iFrame.
 Qed.
 
 Definition u64_le_bytes (x: u64) : list val :=
@@ -179,16 +158,16 @@ Proof using Type.
 Qed.
 
 Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
-  {{{ ▷ l ↦∗ vs ∗ ⌜ length vs = u64_bytes ⌝ }}}
+  {{{ ▷ l ↦∗[byteT] vs ∗ ⌜ length vs = u64_bytes ⌝ }}}
     EncodeUInt64 #x #l @ stk ; E
-  {{{ RET #(); l ↦∗ (b2val <$> u64_le x) }}}.
+  {{{ RET #(); l ↦∗[byteT] (b2val <$> u64_le x) }}}.
 Proof using Type.
 Admitted.
 
 Theorem wp_UInt64Put stk E s x vs :
-  {{{ is_slice s vs ∗ ⌜length vs >= u64_bytes⌝ }}}
+  {{{ is_slice s byteT vs ∗ ⌜length vs >= u64_bytes⌝ }}}
     UInt64Put (slice_val s) #x @ stk; E
-  {{{ RET #(); is_slice s (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
+  {{{ RET #(); is_slice s byteT (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
 Proof using Type.
   iIntros (Φ) "[Hsl %] HΦ".
   wp_lam.
@@ -282,45 +261,62 @@ Proof using Type.
 Admitted.
 
 Theorem wp_DecodeUInt32 (l: loc) (x: u32) vs s E :
-  {{{ ▷ l ↦∗ (b2val <$> u32_le x) }}}
+  {{{ ▷ l ↦∗[byteT] (b2val <$> u32_le x) }}}
     DecodeUInt32 #l @ s ; E
-  {{{ RET #x; l ↦∗ (b2val <$> u32_le x) }}}.
+  {{{ RET #x; l ↦∗[byteT] (b2val <$> u32_le x) }}}.
 Proof using Type.
   iIntros (Φ) ">Hl HΦ".
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
   iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hemp)".
   rewrite /DecodeUInt32.
-  do 4 (wp_load; wp_steps).
-  iSpecialize ("HΦ" with "[$]").
+  remember u8T.
+  wp_pures.
+  wp_apply (wp_LoadAt with "[Hl0]"); [ subst; iFrame | iIntros "Hl0" ].
+  wp_apply (wp_LoadAt with "[Hl1]"); [ subst; iFrame | iIntros "Hl1" ].
+  wp_apply (wp_LoadAt with "[Hl2]"); [ subst; iFrame | iIntros "Hl2" ].
+  wp_apply (wp_LoadAt with "[Hl3]"); [ subst; iFrame | iIntros "Hl3" ].
+  wp_pures.
   rewrite decode_encode.
   iApply "HΦ".
+  subst; simpl.
+  iFrame.
 Qed.
 
 Theorem wp_DecodeUInt64 (l: loc) (x: u64) s E :
-  {{{ ▷ l ↦∗ (b2val <$> u64_le x) }}}
+  {{{ ▷ l ↦∗[byteT] (b2val <$> u64_le x) }}}
     DecodeUInt64 #l @ s ; E
-  {{{ RET #x; l ↦∗ (b2val <$> u64_le x) }}}.
+  {{{ RET #x; l ↦∗[byteT] (b2val <$> u64_le x) }}}.
 Proof using Type.
   iIntros (Φ) ">Hl HΦ".
   cbv [u64_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
   iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hl4&Hl5&Hl6&Hl7&Hemp)".
   rewrite /DecodeUInt64.
-  do 8 (wp_load; wp_steps).
-  iSpecialize ("HΦ" with "[$]").
+  remember u8T.
+  wp_apply (wp_LoadAt with "[Hl0]"); [ subst; iFrame | iIntros "Hl0" ].
+  wp_apply (wp_LoadAt with "[Hl1]"); [ subst; iFrame | iIntros "Hl1" ].
+  wp_apply (wp_LoadAt with "[Hl2]"); [ subst; iFrame | iIntros "Hl2" ].
+  wp_apply (wp_LoadAt with "[Hl3]"); [ subst; iFrame | iIntros "Hl3" ].
+  wp_apply (wp_LoadAt with "[Hl4]"); [ subst; iFrame | iIntros "Hl4" ].
+  wp_apply (wp_LoadAt with "[Hl5]"); [ subst; iFrame | iIntros "Hl5" ].
+  wp_apply (wp_LoadAt with "[Hl6]"); [ subst; iFrame | iIntros "Hl6" ].
+  wp_apply (wp_LoadAt with "[Hl7]"); [ subst; iFrame | iIntros "Hl7" ].
+  wp_pures.
+  cbv [ty_size].
+  rewrite ?Z.mul_1_l.
 Admitted.
 
 Theorem wp_UInt64Get stk E s (x: u64) vs :
-  {{{ is_slice s vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
+  {{{ is_slice s byteT vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
     UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; is_slice s (u64_le_bytes x ++ drop 8 vs) }}}.
+  {{{ RET #x; is_slice s byteT (u64_le_bytes x ++ drop 8 vs) }}}.
 Proof using Type.
   iIntros (Φ) "[Hs %] HΦ".
   assert (vs = u64_le_bytes x ++ drop 8 vs).
   { rewrite -{1}(take_drop 8 vs).
     congruence. }
-  rewrite [vs in is_slice _ vs](H0).
+  rewrite [vs in is_slice _ _ vs](H0).
   wp_call.
   wp_apply wp_slice_ptr.
   iDestruct "Hs" as "[Hptr %]".
@@ -339,9 +335,9 @@ Proof using Type.
 Qed.
 
 Theorem wp_UInt64Get' stk E s (x: u64) :
-  {{{ s.(Slice.ptr) ↦∗ u64_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 8⌝ }}}
+  {{{ s.(Slice.ptr) ↦∗[byteT] u64_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 8⌝ }}}
     UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; s.(Slice.ptr) ↦∗ u64_le_bytes x }}}.
+  {{{ RET #x; s.(Slice.ptr) ↦∗[byteT] u64_le_bytes x }}}.
 Proof using Type.
   iIntros (Φ) "[Ha %] HΦ".
   wp_call.
