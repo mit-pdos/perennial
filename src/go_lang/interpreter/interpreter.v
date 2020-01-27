@@ -654,6 +654,45 @@ Section interpreter.
     | _ => fail
     end.
 
+  Ltac inv_works :=
+    try match goal with
+    | [H : Works _ _ = Works _ _ |- _] => inversion H; clear H; subst
+    | [H : mret _ = Works _ _ |- _] => inversion H; clear H; subst
+    | _ => fail
+    end.
+
+Ltac runStateT_inv_once :=
+  match goal with
+  | [H : runStateT (match ?v with _ => _ end) _ = _ |- _] =>
+    destruct v eqn:?; simpl in H; try by inversion H
+  | [H : runStateT _ _ = _ |- _] =>
+    simpl in H; try by inversion H
+  | _ => fail
+  end; inv_works.
+
+Ltac match_inv_once :=
+  match goal with
+  | [H : match (match ?v with _ => _ end) with | (StateFn _ _ _ _) => _ end = Works _ _ |- _] =>
+    destruct v eqn:?; simpl in H; try by inversion H
+  | [H : match (if ?b then _ else _) with | (StateFn _ _ _ _) => _ end = Works _ _ |- _] =>
+    destruct b eqn:?; simpl in H; try by inversion H
+  | [H : match ?v with | (Works _ _) => _ | (Fail _ _) => _ end = Works _ _ |- _] =>
+    destruct v eqn:?; simpl in H; try by inversion H
+  | [H : match ?v with | (Some _) => _ | None => _ end = Works _ _ |- _] =>
+    destruct v eqn:?; simpl in H; try by inversion H
+  | _ => fail
+  end; inv_works.
+
+Ltac mjoin_inv_once :=
+  match goal with
+    | [H : mjoin (_ <$> _ match ?v with _ => _ end) = _ |- _] =>
+      destruct v eqn:?; simpl in H; try by inversion H
+    | _ => fail
+  end; inv_works.
+
+Ltac runStateT_inv :=
+  repeat (runStateT_inv_once || match_inv_once || mjoin_inv_once).
+
   (* For any expression e that we can successfully interpret to a
   value v, there exists some number m of steps in the heap transition
   function that steps e to v. *)
@@ -679,206 +718,126 @@ Section interpreter.
     { 
       run_next_interpret IHn.
       run_next_interpret IHn.
-      destruct v2; simpl in H0; try by inversion H0.
+      runStateT_inv.
       pose proof (IHn _ _ _ _ H0) as IHapp.
-      destruct IHapp as (k & IHapp').
-      destruct IHapp' as (l'' & app_to_v).
+      destruct IHapp as (k & l' & app_to_v).
       do 2 eexists.
-      eapply nsteps_transitive.
-      { (* [App e1 e2] -> [App e1 v1] *)
-        ctx_step (fill [(AppRCtx e1)]).
-      }
-      eapply nsteps_transitive.
-      { (* [App e1 v1] -> [App (rec f x := e) v1] *)
-        ctx_step (fill [(AppLCtx v1)]).
-      }
-      eapply nsteps_transitive.
-      {
-        single_step.
-      }
-      exact app_to_v.
+      (* [App e1 e2] -> [App e1 v1] *)
+      eapply nsteps_transitive; [ctx_step (fill [(AppRCtx e1)])|].
+      (* [App e1 v1] -> [App (rec f x := e) v1] *)
+      eapply nsteps_transitive; [ctx_step (fill [(AppLCtx v1)])|].
+      eapply nsteps_transitive; [single_step | exact app_to_v].
     }
 
     (* UnOp *)
     { run_next_interpret IHn.
-      inversion H0.
-      destruct (un_op_eval op v1) eqn:uo_eval; inversion H1; subst; clear H1.
+      runStateT_inv.
       do 2 eexists.
-      eapply nsteps_transitive.
-      { (* [UnOp op e] -> [UnOp op v1] *)
-        ctx_step (fill [(UnOpCtx op)]).
-      }
-      {
-        (* [UnOp op v1] -> [v] *)
-        single_step.
-      }
+      (* [UnOp op e] -> [UnOp op v1] *)
+      eapply nsteps_transitive; [ctx_step (fill [(UnOpCtx op)])|].
+      (* [UnOp op v1] -> [v] *)
+      single_step.
     }
 
     (* BinOp *)
     {
       run_next_interpret IHn.
       run_next_interpret IHn.
-      inversion H0.
-      destruct (bin_op_eval op v2 v1) eqn:bo_eval; inversion H1.
+      runStateT_inv.
       do 2 eexists.
-      eapply nsteps_transitive.
-      { (* [BinOp op e1 e2] -> [BinOp op v2 e2] *)
-        ctx_step (fill [(BinOpLCtx op e2)]).
-      }
-      eapply nsteps_transitive.
-      { (* [BinOp op v2 e2] -> [BinOp op v2 v1] *)
-        ctx_step (fill [(BinOpRCtx op v2)]).
-      }
-      { (* [BinOp op v2 v1] -> [v] *)
-        subst.
-        single_step.
-      }
+      (* [BinOp op e1 e2] -> [BinOp op v2 e2] *)
+      eapply nsteps_transitive; [ctx_step (fill [(BinOpLCtx op e2)])|].
+      (* [BinOp op v2 e2] -> [BinOp op v2 v1] *)
+      eapply nsteps_transitive; [ctx_step (fill [(BinOpRCtx op v2)])|].
+      (* [BinOp op v2 v1] -> [v] *)
+      single_step.
     }
 
     (* If *)
     { run_next_interpret IHn.
-      destruct v1; simpl in H0; try by inversion H0.
-      destruct l0; simpl in H0; try by inversion H0.
-      destruct b.
-      { (* v1 = true *)
-        pose (IHn _ _ _ _ H0) as IH2.
-        destruct IH2 as (m' & IH2').
-        destruct IH2' as (l' & e2_to_v).
-        do 2 eexists.
-        eapply nsteps_transitive.
-        { (* [if e1 e2 e3] -> [if #true e2 e3] *)
-          ctx_step (fill [(IfCtx e2 e3)]).
-        }
-        eapply nsteps_transitive.
-        { (* [if #true e2 e3] -> [e2] *)
-          single_step.
-        }
-        (* [e2] -> [v] *)
-        exact e2_to_v.
-      }
-
-      { (* v1 = false *)
-        pose (IHn _ _ _ _ H0) as IH3.
-        destruct IH3 as (m' & IH3').
-        destruct IH3' as (l' & e3_to_v).
-        do 2 eexists.
-        eapply nsteps_transitive.
-        { (* [if e1 e2 e3] -> [if #false e2 e3] *)
-          ctx_step (fill [(IfCtx e2 e3)]).
-        }
-        eapply nsteps_transitive.
-        { (* [if #false e2 e3] -> [e3] *)
-          single_step.
-        }
-        (* [e3] -> [v] *)
-        exact e3_to_v.
-      }
+      runStateT_inv;
+      ( (* v1 = true or false *)
+        pose (IHn _ _ _ _ H0) as IH';
+        destruct IH' as (m' & l' & er_to_v);
+        do 2 eexists;
+        (* [If e1 e2 e3] -> [If #val e2 e3] *)
+        eapply nsteps_transitive; [ctx_step (fill [(IfCtx e2 e3)])|];
+        (* [If #val e2 e3] -> [er] and [er] -> [v] *)
+        eapply nsteps_transitive; [single_step | exact er_to_v]
+      ).
     }
 
     (* Pair *)
     { 
       run_next_interpret IHn.
       run_next_interpret IHn.
-      inversion H0.
+      runStateT_inv.
       do 2 eexists.
-      eapply nsteps_transitive.
-      { (* [Pair e1 e2] -> [Pair v1 e2] *)
-        ctx_step (fill [(PairLCtx e2)]).
-      }
-      eapply nsteps_transitive.
-      { (* [Pair v1 e2] -> [Pair v1 v2] *)
-        ctx_step (fill [(PairRCtx v1)]).
-      }
-      subst.
+      (* [Pair e1 e2] -> [Pair v1 e2] *)
+      eapply nsteps_transitive; [ctx_step (fill [(PairLCtx e2)])|].
+      (* [Pair v1 e2] -> [Pair v1 v2] *)
+      eapply nsteps_transitive; [ctx_step (fill [(PairRCtx v1)])|].
       single_step.
     }
 
     (* Fst *)
     { run_next_interpret IHn.
-      destruct v1; simpl in H0; inversion H0.
+      runStateT_inv.
       do 2 eexists.
-      eapply nsteps_transitive.
-      { (* [Fst e] -> [Fst v0] *)
-        ctx_step (fill [FstCtx]).
-      }
-      subst.
+      (* [Fst e] -> [Fst v0] *)
+      eapply nsteps_transitive; [ctx_step (fill [FstCtx])|].
       single_step.
     }
 
     (* Snd *)
     { run_next_interpret IHn.
-      destruct v1; simpl in H0; inversion H0.
+      runStateT_inv.
       do 2 eexists.
-      eapply nsteps_transitive.
-      { (* [Snd e] -> [Snd v0] *)
-        ctx_step (fill [SndCtx]).
-      }
-      subst.
+      (* [Snd e] -> [Snd v0] *)
+      eapply nsteps_transitive; [ctx_step (fill [SndCtx])|].
       single_step.
     }
     
     (* InjL *)
     { run_next_interpret IHn.
-      inversion H0.
+      runStateT_inv.
       do 2 eexists.
-      eapply nsteps_transitive.
-      { (* [InjL e] -> [InjL v1] *)
-        ctx_step (fill [InjLCtx]).
-      }
-      {
-        (* [InjL v1] -> [v] *)
-        subst.
-        single_step.
-      }
+      (* [InjL e] -> [InjR v1] *)
+      eapply nsteps_transitive; [ctx_step (fill [InjLCtx])|].
+      (* [InjL v1] -> [v] *)
+      subst.
+      single_step.
     }
 
     (* InjR *)
     { run_next_interpret IHn.
-      inversion H0.
+      runStateT_inv.
       do 2 eexists.
-      eapply nsteps_transitive.
-      { (* [InjR e] -> [InjR v1] *)
-        ctx_step (fill [InjRCtx]).
-      }
-      {
-        (* [InjR v1] -> [v] *)
-        subst.
-        single_step.
-      }
+      (* [InjR e] -> [InjR v1] *)
+      eapply nsteps_transitive; [ctx_step (fill [InjRCtx])|].
+      (* [InjR v1] -> [v] *)
+      subst.
+      single_step.
     }
 
     (* Case *)
     { run_next_interpret IHn.
-      destruct v1 eqn:v1_type; simpl in H0; try by inversion H0.
+      runStateT_inv.
       { (* InjL *)
         pose proof (IHn _ _ _ _ H0) as IHe2.
-        destruct IHe2 as (m' & IHe2').
-        destruct IHe2' as (l' & e2_to_v).
+        destruct IHe2 as (m' & l' & e2_to_v).
         do 2 eexists.
-        eapply nsteps_transitive.
-        { (* [Case e1 e2 e3] -> [Case (InjLV v0) e2 e3] *)
-          ctx_step (fill [(CaseCtx e2 e3)]).
-        }
-        eapply nsteps_transitive.
-        {
-          single_step.
-        }
-        exact e2_to_v.
+        (* [Case e1 e2 e3] -> [Case (InjLV v0) e2 e3] *)
+        eapply nsteps_transitive; [ctx_step (fill [(CaseCtx e2 e3)])|].
+        eapply nsteps_transitive; [single_step | exact e2_to_v].
       }
       { (* InjR *)
         pose proof (IHn _ _ _ _ H0) as IHe3.
-        destruct IHe3 as (m' & IHe3').
-        destruct IHe3' as (l' & e3_to_v).
+        destruct IHe3 as (m' & l' & e3_to_v).
         do 2 eexists.
-        eapply nsteps_transitive.
-        { (* [Case e1 e2 e3] -> [Case (InjRV v0) e2 e3] *)
-          ctx_step (fill [(CaseCtx e2 e3)]).
-        }
-        eapply nsteps_transitive.
-        {
-          single_step.
-        }
-        exact e3_to_v.
+        (* [Case e1 e2 e3] -> [Case (InjRV v0) e2 e3] *)
+        eapply nsteps_transitive; [ctx_step (fill [(CaseCtx e2 e3)])|].
+        eapply nsteps_transitive; [single_step | exact e3_to_v].
       }
     }
 
@@ -895,13 +854,10 @@ Section interpreter.
       dependent destruction op.
       { (* AllocStruct *)
         run_next_interpret IHn.
-        simpl in H0.
-        inversion H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        { (* [AllocStruct e] -> [AllocStruct v0] *)
-          ctx_step (fill [(Primitive1Ctx AllocStructOp)]).
-        }
+        (* [AllocStruct e] -> [AllocStruct v0] *)
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx AllocStructOp)])|].
         single_step.
         eapply relation.bind_suchThat.
         (* Must prove the location find_alloc_location found is adequate *)
@@ -912,86 +868,50 @@ Section interpreter.
 
       { (* PrepareWrite *)
         run_next_interpret IHn.
-        destruct v1; simpl in H0; try by inversion H0.
-        destruct l0; simpl in H0; try by inversion H0.
-        destruct (heap s !! l0) as [heap_na_val|] eqn:hv; simpl in H0; [|by inversion H0].
-        destruct heap_na_val as [|heap_val n0]; simpl in H0; try by inversion H0.
-        destruct n0; simpl in H0; inversion H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        { (* [PrepareWrite e] -> [PrepareWrite #l0] *)
-          ctx_step (fill [(Primitive1Ctx PrepareWriteOp)]).
-        }
-        rewrite <- H2.
+        (* [PrepareWrite e] -> [PrepareWrite #l0] *)
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx PrepareWriteOp)])|].
         single_step.
       }
 
       { (* StartRead *)
         run_next_interpret IHn.
-        destruct v1; simpl in H0; try by inversion H0.
-        destruct l0; simpl in H0; try by inversion H0.
-        destruct (heap s !! l0) eqn:heap_at_l0; try by inversion H0.
-        destruct n0; simpl in H0; try by inversion H0.
-        inversion H0; subst; clear H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill [(Primitive1Ctx StartReadOp)]).
-        }
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx StartReadOp)])|].
         single_step.
       }
 
       { (* FinishRead *)
         run_next_interpret IHn.
-        destruct v1; simpl in H0; try by inversion H0.
-        destruct l0; simpl in H0; try by inversion H0.
-        destruct (heap s !! l0) eqn:heap_at_l0; try by inversion H0.
-        destruct n0; simpl in H0; try by inversion H0.
-        destruct n0; simpl in H0; try by inversion H0.
-        inversion H0; subst; clear H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill [(Primitive1Ctx FinishReadOp)]).
-        }
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx FinishReadOp)])|].
         single_step.
       }
 
       { (* Load *)
         run_next_interpret IHn.
-        destruct v1; simpl in H0; try by inversion H0.
-        destruct l0; simpl in H0; try by inversion H0.
-        destruct (heap s !! l0) eqn:heap_at_l0; try by inversion H0.
-        destruct n0; simpl in H0; try by inversion H0.
-        destruct n0; simpl in H0; try by inversion H0.
-        inversion H0; subst; clear H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill [(Primitive1Ctx LoadOp)]).
-        }
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx LoadOp)])|].
         single_step.
       }
 
       { (* Input *)
         run_next_interpret IHn.
-        destruct v1; simpl in H0; inversion H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill [(Primitive1Ctx InputOp)]).
-        }
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx InputOp)])|].
         single_step.
       }
 
       { (* Output *)
         run_next_interpret IHn.
-        destruct v1; simpl in H0; inversion H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill [(Primitive1Ctx OutputOp)]).
-        }
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx OutputOp)])|].
         single_step.
       }
     }
@@ -1001,45 +921,30 @@ Section interpreter.
       { (* AllocN *)
         run_next_interpret IHn.
         run_next_interpret IHn.
-        destruct v1; simpl in H0; try by inversion H0.
-        destruct l1; simpl in H0; inversion H0.
-        destruct (int.val n0 <=? 0) eqn:n0_int; simpl in H0; inversion H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill [(Primitive2LCtx AllocNOp e2)]).
-        }
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill [(Primitive2RCtx AllocNOp #n0)]).
-        }
+        eapply nsteps_transitive;
+          [ctx_step (fill [(Primitive2LCtx AllocNOp e2)])|].
+        eapply nsteps_transitive;
+          [ctx_step (fill [(Primitive2RCtx AllocNOp #n0)])|].
         single_step.
-        rewrite -> ifThenElse_if; [|(rewrite -> Z.leb_nle in n0_int; lia)].
-        simpl.
-        monad_simpl.
+        rewrite -> ifThenElse_if; [|(rewrite -> Z.leb_nle in Heqb0; lia)].
+        simpl; monad_simpl.
         pose proof (find_alloc_location_fresh s0 (int.val n0)) as loc_fresh.
-        eapply relation.bind_suchThat.
-        {
-          apply loc_fresh.
-        }
+        eapply relation.bind_suchThat; [apply loc_fresh|].
         monad_simpl.
       }
 
       { (* FinishStore *)
         do 2 run_next_interpret IHn.
-        destruct v1; simpl in H0; try by inversion H0.
-        destruct l1; simpl in H0; try by inversion H0.
-        destruct (heap s0 !! l1) eqn:heap_at_l1; simpl in H0; try by inversion H0.
-        destruct n0 eqn:n0_is_writing; simpl in H0; inversion H0.
+        runStateT_inv.
         do 2 eexists.
-        eapply nsteps_transitive.
-        { (* [FinishStore e1 e2] -> [FinishStore #l1 e2] *)
-          ctx_step (fill [(Primitive2LCtx FinishStoreOp e2)]).
-        }
-        eapply nsteps_transitive.
-        { (* [FinishStore #l0 e2] -> [FinishStore #l1 v2] *)
-          ctx_step (fill [(Primitive2RCtx FinishStoreOp #l1)]).
-        }
+        (* [FinishStore e1 e2] -> [FinishStore #l1 e2] *)
+        eapply nsteps_transitive;
+          [ctx_step (fill [(Primitive2LCtx FinishStoreOp e2)])|].
+        (* [FinishStore #l0 e2] -> [FinishStore #l1 v2] *)
+        eapply nsteps_transitive;
+          [ctx_step (fill [(Primitive2RCtx FinishStoreOp #l2)])|].
         single_step.
       }
     }
@@ -1047,61 +952,20 @@ Section interpreter.
     (* CmpXchg *)
     {
       do 3 run_next_interpret IHn.
-      destruct v1; simpl in H0; try by inversion H0.
-      destruct l2; simpl in H0; try by inversion H0.
-      destruct (heap s1 !! l2) as [x|] eqn:heap_at_l2; simpl in H0; try by inversion H0.
-      destruct x as [|vl] eqn:x_is; simpl in H0; try by inversion H0.
-      destruct n0 eqn:n0_is_0; simpl in H0; try by inversion H0.
-      destruct (bin_op_eval EqOp vl v2) as [some_b|] eqn:boe; simpl in H0; try by inversion H0.
-      destruct some_b; simpl in H0; try by inversion H0.
-      destruct l3; simpl in H0; try by inversion H0.
-      destruct b; simpl in H0; inversion H0.
-      { (* CmpXchg succeeds (true case) *)
-        do 2 eexists.
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill ([CmpXchgLCtx e2 e3])).
-        }
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill ([CmpXchgMCtx #l2 e3])).
-        }
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill ([CmpXchgRCtx #l2 v2])).
-        }
-        single_step.
-        unfold bin_op_eval in boe; simpl in boe.
+      runStateT_inv;
+      ( (* CmpXchg succeeds OR fails *)
+        do 2 eexists;
+        eapply nsteps_transitive; [ctx_step (fill ([CmpXchgLCtx e2 e3]))|];
+        eapply nsteps_transitive; [ctx_step (fill ([CmpXchgMCtx #l3 e3]))|];
+        eapply nsteps_transitive; [ctx_step (fill ([CmpXchgRCtx #l3 v2]))|];
+        single_step;
+        unfold bin_op_eval in Heqo0; simpl in Heqo0;
 
-        destruct (decide (vals_compare_safe vl v2)) eqn:vcs; inversion boe.
-        monad_simpl.
-        case_bool_decide; inversion H3.
-        repeat (monad_simpl; simpl).
-      }
-      { (* CmpXchg fails (false case) *)
-        do 2 eexists.
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill ([CmpXchgLCtx e2 e3])).
-        }
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill ([CmpXchgMCtx #l2 e3])).
-        }
-        eapply nsteps_transitive.
-        {
-          ctx_step (fill ([CmpXchgRCtx #l2 v2])).
-        }
-        single_step.
-        unfold bin_op_eval in boe; simpl in boe.
-        destruct (decide (vals_compare_safe vl v2)) eqn:vcs; inversion boe.
-        monad_simpl.
-        case_bool_decide; inversion H3.
-        repeat (monad_simpl; simpl).
-        constructor.
-        rewrite H2.
-        reflexivity.
-      }
+        destruct (decide (vals_compare_safe v0 v2)) eqn:vcs; inversion Heqo0;
+        monad_simpl;
+        case_bool_decide; try by inversion H0;
+        repeat (monad_simpl; simpl)
+        ).
     }
 
     (* ExternalOp *)
@@ -1114,15 +978,8 @@ Section interpreter.
       pose proof (IHn _ _ _ _ H0).
       destruct H as (m'' & (l'' & rest_nstep)).
       do 2 eexists.
-      eapply nsteps_transitive.
-      {
-        ctx_step (fill ([ExternalOpCtx op])).
-      }
-      eapply nsteps_transitive.
-      {
-        exact nstep_ext_interp.
-      }
-      exact rest_nstep.
+      eapply nsteps_transitive; [ctx_step (fill ([ExternalOpCtx op]))|].
+      eapply nsteps_transitive; [exact nstep_ext_interp | exact rest_nstep].
     }
   Qed.
 End interpreter.
