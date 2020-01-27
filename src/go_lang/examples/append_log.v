@@ -10,18 +10,12 @@ From Perennial.go_lang Require Import ffi.disk_prelude.
    appends, which are implemented by atomically updating an on-disk header with
    the number of valid blocks in the log. *)
 
+(* Enc is a stateful encoder for a single disk block. *)
 Module Enc.
-  (* TODO: use this instead of encoding manually *)
   Definition S := struct.decl [
     "b" :: disk.blockT;
     "off" :: refT uint64T
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End Enc.
 
 Definition NewEnc: val :=
@@ -33,25 +27,21 @@ Definition NewEnc: val :=
 
 Definition Enc__PutInt: val :=
   λ: "enc" "x",
-    let: "off" := !(Enc.get "off" "enc") in
-    UInt64Put (SliceSkip (Enc.get "b" "enc") "off") "x";;
-    Enc.get "off" "enc" <- !(Enc.get "off" "enc") + #8.
+    let: "off" := ![uint64T] (struct.get Enc.S "off" "enc") in
+    UInt64Put (SliceSkip byteT (struct.get Enc.S "b" "enc") "off") "x";;
+    struct.get Enc.S "off" "enc" <-[refT uint64T] ![uint64T] (struct.get Enc.S "off" "enc") + #8.
 
 Definition Enc__Finish: val :=
   λ: "enc",
-    Enc.get "b" "enc".
+    struct.get Enc.S "b" "enc".
 
+(* Dec is a stateful decoder that returns values encoded
+   sequentially in a single disk block. *)
 Module Dec.
   Definition S := struct.decl [
     "b" :: disk.blockT;
     "off" :: refT uint64T
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End Dec.
 
 Definition NewDec: val :=
@@ -63,28 +53,22 @@ Definition NewDec: val :=
 
 Definition Dec__GetInt: val :=
   λ: "dec",
-    let: "off" := !(Dec.get "off" "dec") in
-    Dec.get "off" "dec" <- !(Dec.get "off" "dec") + #8;;
-    UInt64Get (SliceSkip (Dec.get "b" "dec") "off").
+    let: "off" := ![uint64T] (struct.get Dec.S "off" "dec") in
+    struct.get Dec.S "off" "dec" <-[refT uint64T] ![uint64T] (struct.get Dec.S "off" "dec") + #8;;
+    UInt64Get (SliceSkip byteT (struct.get Dec.S "b" "dec") "off").
 
 Module Log.
   Definition S := struct.decl [
     "sz" :: uint64T;
     "diskSz" :: uint64T
   ].
-  Definition T: ty := struct.t S.
-  Definition Ptr: ty := struct.ptrT S.
-  Section fields.
-    Context `{ext_ty: ext_types}.
-    Definition get := struct.get S.
-  End fields.
 End Log.
 
 Definition Log__mkHdr: val :=
   λ: "log",
     let: "enc" := NewEnc #() in
-    Enc__PutInt "enc" (Log.get "sz" "log");;
-    Enc__PutInt "enc" (Log.get "diskSz" "log");;
+    Enc__PutInt "enc" (struct.get Log.S "sz" "log");;
+    Enc__PutInt "enc" (struct.get Log.S "diskSz" "log");;
     Enc__Finish "enc".
 
 Definition Log__writeHdr: val :=
@@ -120,14 +104,14 @@ Definition Open: val :=
 
 Definition Log__Get: val :=
   λ: "log" "i",
-    let: "sz" := Log.get "sz" "log" in
+    let: "sz" := struct.get Log.S "sz" "log" in
     (if: "i" < "sz"
     then (disk.Read (#1 + "i"), #true)
     else (slice.nil, #false)).
 
 Definition writeAll: val :=
   λ: "bks" "off",
-    ForSlice "i" "bk" "bks"
+    ForSlice (slice.T byteT) "i" "bk" "bks"
       (disk.Write ("off" + "i") "bk").
 
 Definition Log__Append: val :=
