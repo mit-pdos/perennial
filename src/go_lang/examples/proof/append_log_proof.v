@@ -1,7 +1,7 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.go_lang.examples Require Import append_log.
 From Perennial.go_lang Require Import wpc_proofmode.
-From Perennial.go_lang Require Import basic_triples.
+From Perennial.go_lang Require Import basic_triples encoding_proof.
 From Perennial.go_lang Require Import slice encoding.
 From Perennial.go_lang Require Import ffi.disk.
 From Perennial.go_lang Require Import ffi.disk_prelude.

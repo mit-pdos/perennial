@@ -4,7 +4,7 @@ From iris.program_logic Require Export weakestpre.
 From Perennial.go_lang Require Export
      lang notation array typing struct
      tactics lifting proofmode.
-From Perennial.go_lang Require Import slice encoding.
+From Perennial.go_lang Require Import slice.
 Import uPred.
 
 Set Default Proof Using "Type".
@@ -124,7 +124,7 @@ Proof.
     iApply ("IH" with "Hv1").
     iIntros "!> Hv1".
     wp_pures.
-    rewrite Z.mul_1_l.
+    rewrite Z.mul_1_r.
     wp_bind (load_ty t2 _).
     iApply ("IH1" with "[Hv2]").
     + erewrite val_hasTy_flatten_length; eauto.
@@ -268,7 +268,7 @@ Proof.
     iApply ("IH" with "[//] Hv1").
     iIntros "!> Hv1".
     wp_pures.
-    rewrite Z.mul_1_l.
+    rewrite Z.mul_1_r.
     iApply ("IH1" with "[//] Hv2").
     iIntros "!> Hv2".
     iApply "HΦ".
@@ -320,6 +320,12 @@ Lemma is_slice_intro l t (sz: u64) vs :
   is_slice (Slice.mk l sz) t vs.
 Proof using Type.
   iIntros "H1 H2"; rewrite /is_slice; iFrame.
+Qed.
+
+Theorem is_slice_elim s t vs :
+  is_slice s t vs -∗ s.(Slice.ptr) ↦∗[t] vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Proof using Type.
+  rewrite /is_slice //.
 Qed.
 
 Definition slice_val_fold (ptr: loc) (sz: u64) :
@@ -426,7 +432,7 @@ Lemma array_split (n:Z) l t vs :
   0 <= n ->
   Z.to_nat n <= length vs ->
   array l t vs ⊣⊢
-        array l t (take (Z.to_nat n) vs) ∗ array (l +ₗ n * ty_size t) t (drop (Z.to_nat n) vs).
+        array l t (take (Z.to_nat n) vs) ∗ array (l +ₗ[t] n) t (drop (Z.to_nat n) vs).
 Proof using Type.
   intros Hn Hlength.
   rewrite <- (take_drop (Z.to_nat n) vs) at 1.
@@ -442,7 +448,7 @@ Definition slice_take (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
      Slice.sz := n |}.
 
 Definition slice_skip (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
-  {| Slice.ptr := sl.(Slice.ptr) +ₗ int.val n * ty_size t;
+  {| Slice.ptr := sl.(Slice.ptr) +ₗ[t] int.val n;
      Slice.sz := word.sub sl.(Slice.sz) n |}.
 
 Lemma slice_split sl (n: u64) t vs :
@@ -534,10 +540,10 @@ Proof using Type.
     iApply "HΦ".
 Qed.
 
-Lemma wp_SliceSubslice Φ stk E s (n1 n2: u64):
+Lemma wp_SliceSubslice Φ stk E s t (n1 n2: u64):
   ⌜int.val n1 ≤ int.val n2 ∧ int.val n2 ≤ int.val s.(Slice.sz)⌝ -∗
-  Φ (slice_val (Slice.mk (s.(Slice.ptr) +ₗ int.val n1) (word.sub n2 n1))) -∗
-  WP (SliceSubslice (slice_val s) #n1 #n2) @ stk; E {{ Φ }}.
+  Φ (slice_val (Slice.mk (s.(Slice.ptr) +ₗ[t] int.val n1) (word.sub n2 n1))) -∗
+  WP (SliceSubslice t (slice_val s) #n1 #n2) @ stk; E {{ Φ }}.
 Proof using Type.
   iIntros "% HΦ".
   wp_call.
@@ -550,7 +556,6 @@ Proof using Type.
       rewrite -> wrap_small in Heqb0 by word.
       word.
     + wp_call.
-      rewrite Z.mul_1_r.
       iApply "HΦ".
 Qed.
 
@@ -568,7 +573,7 @@ Proof using Type.
   iDestruct (update_array ptr _ _ _ _ H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
   nat2Z.
-  wp_load.
+  iApply (wp_LoadAt with "Hi"); iIntros "!> Hi".
   iApply "HΦ".
   rewrite /is_slice /=.
   iSplitR "".
@@ -598,22 +603,21 @@ Proof using Type.
   apply Nat2Z.inj_le; lia.
 Qed.
 
-Lemma is_slice_sz s vs :
-  is_slice s vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Lemma is_slice_sz s t vs :
+  is_slice s t vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
 Proof using Type.
-  iIntros "[_ %]".
-  auto.
+  iIntros "[_ %] !%//".
 Qed.
 
-Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s vs (body: val) :
+Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t vs (body: val) :
   (∀ (i: u64) (x: val),
       {{{ I i ∗ ⌜int.val i < int.val s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
         body #i x @ stk; E
       {{{ RET #(); I (word.add i (U64 1)) }}}) -∗
-    {{{ I (U64 0) ∗ is_slice s vs }}}
-      forSlice body (slice_val s) @ stk; E
-    {{{ RET #(); I s.(Slice.sz) ∗ is_slice s vs }}}.
+    {{{ I (U64 0) ∗ is_slice s t vs }}}
+      forSlice t body (slice_val s) @ stk; E
+    {{{ RET #(); I s.(Slice.sz) ∗ is_slice s t vs }}}.
 Proof using Type.
   iIntros "#Hind".
   iIntros (Φ) "!> [Hi0 Hs] HΦ".
@@ -657,42 +661,6 @@ Proof using Type.
     rewrite word.of_Z_unsigned; auto.
 Qed.
 
-Lemma wp_MemCpy s E v dst vs1 src vs2 (n: u64) :
-  {{{ array dst vs1 ∗ array src vs2 ∗
-            ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
-    MemCpy #dst #src #n @ s; E
-  {{{ RET #(); array dst (take (int.nat n) vs2) ∗ array src vs2 }}}.
-Proof using Type.
-  iIntros (Φ) "(Hvs1&Hvs2&%) HΦ".
-  wp_lam.
-  wp_let.
-  wp_let.
-  wp_pures.
-  iRevert (vs1 vs2 H) "Hvs1 Hvs2 HΦ".
-  iLöb as "IH".
-  iIntros (vs1 vs2) "(%&%) Hdst Hsrc HΦ".
-  wp_pures.
-  destruct_with_eqn (word.ltu (U64 0) n); wp_if.
-  - wp_pures.
-    destruct vs2.
-    { admit. }
-    destruct vs1.
-    { admit. }
-    change (int.val 0) with 0.
-    rewrite loc_add_0.
-    iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
-    wp_load.
-    wp_pures.
-    rewrite loc_add_0.
-    iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
-    wp_bind (Store _ _).
-    iApply (wp_store with "Hdst").
-    iIntros "!> Hdst".
-    wp_seq.
-    wp_pures.
-    change (word.add (U64 0) (U64 1)) with (U64 1).
-Admitted.
-
 Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = U64 0.
 Proof using Type.
   intros.
@@ -703,11 +671,11 @@ Proof using Type.
   reflexivity.
 Qed.
 
-Lemma wp_MemCpy_rec s E dst vs1 src vs2 (n: u64) :
-  {{{ array dst vs1 ∗ array src vs2 ∗
+Lemma wp_MemCpy_rec s E t dst vs1 src vs2 (n: u64) :
+  {{{ dst ↦∗[t] vs1 ∗ src ↦∗[t] vs2 ∗
             ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
-    MemCpy_rec #dst #src #n @ s; E
-  {{{ RET #(); array dst (take (int.nat n) vs2) ∗ array src vs2 }}}.
+    MemCpy_rec t #dst #src #n @ s; E
+  {{{ RET #(); dst ↦∗[t] (take (int.nat n) vs2) ∗ src ↦∗[t] vs2 }}}.
 Proof using Type.
   iIntros (Φ) "(Hdst&Hsrc&Hbounds) HΦ".
   iDestruct "Hbounds" as %(Hvs1&Hvs2).
@@ -733,12 +701,13 @@ Proof using Type.
     simpl in Hvs1, Hvs2.
     iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
     iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
-    wp_load.
-    wp_bind (Store _ _).
-    iApply (wp_store with "Hdst").
-    iIntros "!> Hdst".
-    wp_seq.
+    (* TODO: add support for typed load to wp_load *)
+    wp_apply (wp_LoadAt with "Hsrc"); iIntros "Hsrc".
+    wp_bind (store_ty _ _ _).
+    iDestruct (struct_mapsto_ty with "Hsrc") as %Hv0ty.
+    wp_apply (wp_StoreAt with "Hdst"); [ done | iIntros "Hdst" ].
     wp_pures.
+    rewrite Z.mul_1_r.
     wp_apply ("IH" $! vs1 vs2 with "[] [] [Hvs1] [Hvs2]");
       iFrame;
       try iPureIntro.
@@ -757,12 +726,13 @@ Qed.
 
 Transparent SliceAppend.
 
-Lemma wp_SliceAppend stk E s vs x :
-  {{{ is_slice s vs ∗ ⌜int.val s.(Slice.sz) + 1 < 2^64⌝ }}}
-    SliceAppend s x @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' (vs ++ [x]) }}}.
+Lemma wp_SliceAppend stk E s t vs x :
+  {{{ is_slice s t vs ∗ ⌜int.val s.(Slice.sz) + 1 < 2^64⌝ ∗ ⌜val_ty x t⌝ }}}
+    SliceAppend t s x @ stk; E
+  {{{ s', RET slice_val s'; is_slice s' t (vs ++ [x]) }}}.
 Proof using Type.
   iIntros (Φ) "[Hs %] HΦ".
+  destruct H as [Hbound Hty].
   wp_lam; repeat wp_step.
   repeat wp_step.
   iDestruct "Hs" as "[Hptr %]".
@@ -770,8 +740,9 @@ Proof using Type.
   wp_lam; repeat wp_step.
   iApply wp_allocN; auto.
   { word. }
+  { apply zero_val_ty. }
   iIntros "!>".
-  iIntros (l) "[Halloc Hmeta]".
+  iIntros (l) "Halloc".
   repeat wp_step.
   wp_lam; repeat wp_step.
   wp_lam; repeat wp_step.
@@ -799,10 +770,8 @@ Proof using Type.
       wp_seq.
       wp_lam.
       wp_pures.
-      wp_bind (Store _ _).
-      rewrite Z.mul_1_r.
-      wp_apply (wp_store with "Halloc1").
-      iIntros "Hlast".
+      wp_bind (store_ty _ _ _).
+      wp_apply (wp_StoreAt with "Halloc1"); [ done | iIntros "Hlast" ].
       repeat wp_step.
       wp_lam; repeat wp_step.
 
@@ -810,7 +779,7 @@ Proof using Type.
       iSplitL "Hvs Hlast".
       - rewrite array_app.
         iFrame.
-        rewrite H0.
+        rewrite H.
         rewrite array_singleton.
         rewrite Z2Nat.id; last word.
         iFrame.
@@ -821,12 +790,13 @@ Proof using Type.
     word.
 Qed.
 
-Lemma wp_SliceSet stk E s vs (i: u64) (x: val) :
-  {{{ is_slice s vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
-    SliceSet s #i x @ stk; E
-  {{{ RET #(); is_slice s (<[int.nat i:=x]> vs) }}}.
+Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :
+  {{{ is_slice s t vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
+    SliceSet t s #i x @ stk; E
+  {{{ RET #(); is_slice s t (<[int.nat i:=x]> vs) }}}.
 Proof using Type.
   iIntros (Φ) "[Hs %] HΦ".
+  destruct H as [Hlookup Hty].
   destruct s as [ptr sz].
   wp_lam.
   wp_let.
@@ -835,356 +805,14 @@ Proof using Type.
   iDestruct "Hs" as "[Hptr %]".
   cbv [Slice.ptr Slice.sz] in *.
   wp_pures.
-  rewrite Z.mul_1_r.
   replace (int.val i) with (Z.of_nat (int.nat i)).
-  - iApply (wp_store_offset with "Hptr"); auto.
-    iIntros "!> Hptr".
+  - wp_apply (wp_store_offset with "Hptr"); [ | done | iIntros "Hptr" ]; auto.
     iApply "HΦ".
     rewrite u64_Z_through_nat.
     iFrame.
     iPureIntro.
     rewrite insert_length; auto.
-  - rewrite Z2Nat.id; auto.
-    word.
-Qed.
-
-Lemma word_sru_0 width (word: Interface.word width) (ok: word.ok word)
-      (x: word) s : int.val s = 0 -> word.sru x s = x.
-Proof using Type.
-  intros.
-  apply word.unsigned_inj.
-  rewrite word.unsigned_sru.
-  - rewrite H.
-    rewrite Z.shiftr_0_r.
-    unfold word.wrap.
-    rewrite word.wrap_unsigned.
-    auto.
-  - rewrite H.
-    apply word.width_pos.
-Qed.
-
-Theorem word_wrap_wrap `{word1: Interface.word width1} `{word2: Interface.word width2}
-        {ok1: word.ok word1}
-        {ok2: word.ok word2} z :
-  width1 <= width2 ->
-  word.wrap (word:=word1) (word.wrap (word:=word2) z) = word.wrap (word:=word1) z.
-Proof using Type.
-  unfold word.wrap; intros.
-  pose proof (@word.width_pos width1 _ _).
-  pose proof (@word.width_pos width2 _ _).
-  pose proof (Z.pow_pos_nonneg 2 width1 ltac:(lia) ltac:(lia)).
-  pose proof (Z.pow_pos_nonneg 2 width2 ltac:(lia) ltac:(lia)).
-  rewrite <- Znumtheory.Zmod_div_mod; try lia.
-  exists (2 ^ (width2 - width1)).
-  rewrite <- Z.pow_add_r; try lia.
-  f_equal.
-  lia.
-Qed.
-
-Theorem word_wrap_wrap' `{word1: Interface.word width1} `{word2: Interface.word width2}
-        {ok1: word.ok word1}
-        {ok2: word.ok word2} z :
-  width2 <= width1 ->
-  word.wrap (word:=word1) (word.wrap (word:=word2) z) = word.wrap (word:=word2) z.
-Proof using Type.
-  unfold word.wrap; intros.
-  pose proof (@word.width_pos width1 _ _).
-  pose proof (@word.width_pos width2 _ _).
-  pose proof (Z.pow_pos_nonneg 2 width1 ltac:(lia) ltac:(lia)).
-  pose proof (Z.pow_pos_nonneg 2 width2 ltac:(lia) ltac:(lia)).
-Admitted.
-
-Hint Rewrite word.unsigned_of_Z : word.
-Hint Rewrite word.unsigned_sru : word.
-
-Theorem u32_le_to_sru (x: u32) :
-  b2val <$> u32_le x =
-  cons #(u8_from_u32 (word.sru x (U32 (0%nat * 8))))
-       (cons #(u8_from_u32 (word.sru x (U32 (1%nat * 8))))
-             (cons #(u8_from_u32 (word.sru x (U32 (2%nat * 8))))
-                   (cons #(u8_from_u32 (word.sru x (U32 (3%nat * 8))))
-                         nil))).
-Proof using Type.
-  change (0%nat * 8) with 0.
-  change (1%nat * 8) with 8.
-  change (2%nat * 8) with 16.
-  change (3%nat * 8) with 24.
-  rewrite /b2val.
-  cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
-  repeat f_equal.
-  - apply word.unsigned_inj.
-    unfold u8_from_u32, U8.
-    autorewrite with word.
-    rewrite word.unsigned_sru;
-      change (int.val (U32 0)) with 0;
-      last lia.
-    rewrite Z.shiftr_0_r.
-    rewrite word_wrap_wrap; last lia.
-    reflexivity.
-  - apply word.unsigned_inj.
-    unfold u8_from_u32, U8.
-    autorewrite with word.
-    rewrite word.unsigned_sru;
-      change (int.val (U32 8)) with 8;
-      last lia.
-    rewrite word_wrap_wrap; last lia.
-    reflexivity.
-  - apply word.unsigned_inj.
-    unfold u8_from_u32, U8.
-    autorewrite with word.
-    rewrite word.unsigned_sru;
-      change (int.val (U32 16)) with 16;
-      last lia.
-    rewrite word_wrap_wrap; last lia.
-    reflexivity.
-  - apply word.unsigned_inj.
-    unfold u8_from_u32, U8.
-    autorewrite with word.
-    rewrite word.unsigned_sru;
-      change (int.val (U32 24)) with 24;
-      last lia.
-    rewrite word_wrap_wrap; last lia.
-    reflexivity.
-Qed.
-
-Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
-  {{{ ▷ l ↦∗ vs ∗ ⌜ length vs = u32_bytes ⌝ }}}
-    EncodeUInt32 #x #l @ s ; E
-  {{{ RET #(); l ↦∗ (b2val <$> u32_le x) }}}.
-Proof using Type.
-  iIntros (Φ) "(>Hl & %) HΦ".
-  unfold EncodeUInt32.
-  wp_lam.
-  wp_let.
-  wp_pures.
-  rewrite Z.mul_1_r.
-  wp_bind (Store _ _).
-  change (int.val 0) with (Z.of_nat 0).
-  iApply (wp_store_offset with "Hl").
-  { apply lookup_lt_is_Some_2; lia. }
-
-  iIntros "!> Hl".
-  wp_seq.
-  wp_pures.
-  rewrite Z.mul_1_r.
-  wp_bind (Store _ _).
-  change (int.val 1) with (Z.of_nat 1).
-  iApply (wp_store_offset with "Hl").
-  { apply lookup_lt_is_Some_2.
-    rewrite ?insert_length; lia. }
-
-  iIntros "!> Hl".
-  wp_seq.
-  wp_pures.
-  rewrite Z.mul_1_r.
-  wp_bind (Store _ _).
-  change (int.val 2) with (Z.of_nat 2).
-  iApply (wp_store_offset with "Hl").
-  { apply lookup_lt_is_Some_2.
-    rewrite ?insert_length; lia. }
-
-  iIntros "!> Hl".
-  wp_seq.
-  wp_pures.
-  rewrite Z.mul_1_r.
-  change (int.val 3) with (Z.of_nat 3).
-  iApply (wp_store_offset with "Hl").
-  { apply lookup_lt_is_Some_2.
-    rewrite ?insert_length; lia. }
-
-  iIntros "!> Hl".
-  iApply "HΦ".
-  rewrite u32_le_to_sru.
-  do 5 (destruct vs; try (simpl in H; lia)).
-  simpl.
-  iApply "Hl".
-Qed.
-
-Definition u64_le_bytes (x: u64) : list val :=
-  b2val <$> u64_le x.
-
-Lemma u64_le_bytes_length x : length (u64_le_bytes x) = u64_bytes.
-Proof using Type.
-  rewrite fmap_length //.
-Qed.
-
-Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
-  {{{ ▷ l ↦∗ vs ∗ ⌜ length vs = u64_bytes ⌝ }}}
-    EncodeUInt64 #x #l @ stk ; E
-  {{{ RET #(); l ↦∗ (b2val <$> u64_le x) }}}.
-Proof using Type.
-Admitted.
-
-Theorem is_slice_elim s vs :
-  is_slice s vs -∗ array s.(Slice.ptr) vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
-Proof using Type.
-  rewrite /is_slice.
-  auto.
-Qed.
-
-Theorem wp_UInt64Put stk E s x vs :
-  {{{ is_slice s vs ∗ ⌜length vs >= u64_bytes⌝ }}}
-    UInt64Put (slice_val s) #x @ stk; E
-  {{{ RET #(); is_slice s (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
-Proof using Type.
-  iIntros (Φ) "[Hsl %] HΦ".
-  wp_lam.
-  wp_let.
-  wp_lam.
-  wp_pures.
-  iDestruct (is_slice_elim with "Hsl") as "[Hptr %]".
-  iDestruct (array_split 8 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
-  wp_apply (wp_EncodeUInt64 with "[$Henc]").
-  { iPureIntro.
-    rewrite take_length; lia. }
-  iIntros "Henc".
-  change (Z.to_nat 8) with 8%nat.
-  iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
-  iApply "HΦ".
-  iFrame.
-  rewrite app_length drop_length u64_le_bytes_length.
-  iPureIntro.
-  lia.
-Qed.
-
-Eval cbv [le_to_u32 map LittleEndian.combine length Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2]
-  in (fun (v1 v2 v3 v4:u8) => le_to_u32 [v1;v2;v3;v4]).
-
-Hint Rewrite word.unsigned_or_nowrap : word.
-Hint Rewrite word.unsigned_slu : word.
-
-Theorem val_u32 z :
-  0 <= z < 2 ^ 32 ->
-  int.val (U32 z) = z.
-Proof using Type.
-  intros.
-  unfold U32.
-  rewrite word.unsigned_of_Z.
-  rewrite wrap_small; auto.
-Qed.
-
-Ltac eval_term t :=
-  let t' := (eval cbv in t) in change t with t'.
-
-Ltac eval_u32 :=
-  match goal with
-  | |- context[int.val (U32 ?z)] =>
-    rewrite  (val_u32 z ltac:(lia))
-  end.
-
-Theorem u8_to_from_u32 x :
-  int.val (u8_to_u32 (u8_from_u32 x)) =
-  int.val x `mod` 2 ^ 8.
-Proof using Type.
-  unfold u8_to_u32, u8_from_u32, U8, U32.
-  autorewrite with word.
-  rewrite word.unsigned_of_Z.
-  rewrite word_wrap_wrap'; last lia.
-  reflexivity.
-Qed.
-
-Lemma val_u8_to_u32 x :
-  int.val (u8_to_u32 x) = int.val x.
-Proof using Type.
-  unfold u8_to_u32, U32.
-  rewrite word.unsigned_of_Z.
-  pose proof (word.unsigned_range x).
-  rewrite wrap_small; lia.
-Qed.
-
-Theorem decode_encode x :
-  word.or (u8_to_u32 (word.of_Z (int.val x)))
-        (word.slu
-           (word.or (u8_to_u32 (word.of_Z (int.val x ≫ 8)))
-              (word.slu
-                 (word.or (u8_to_u32 (word.of_Z ((int.val x ≫ 8) ≫ 8)))
-                    (word.slu (u8_to_u32 (word.of_Z (((int.val x ≫ 8) ≫ 8) ≫ 8))) (U32 8)))
-                 (U32 8))) (U32 8)) = x.
-Proof using Type.
-  apply word.unsigned_inj.
-  pose proof (u32_le_to_word x).
-  cbv [le_to_u32 u32_le map LittleEndian.combine LittleEndian.split length Datatypes.HList.tuple.to_list Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2] in H.
-  rewrite Z.shiftl_0_l in H.
-  rewrite Z.lor_0_r in H.
-  rewrite ?word.unsigned_of_Z in H.
-  rewrite word.unsigned_or_nowrap.
-  rewrite word.unsigned_slu; eval_u32; try lia.
-  rewrite word.unsigned_or_nowrap.
-  rewrite word.unsigned_slu; eval_u32; try lia.
-  rewrite word.unsigned_or_nowrap.
-  rewrite word.unsigned_slu; eval_u32; try lia.
-  rewrite ?val_u8_to_u32.
-  rewrite <- H at 5.
-  rewrite ?word.unsigned_of_Z.
-Admitted.
-
-Theorem wp_DecodeUInt32 (l: loc) (x: u32) vs s E :
-  {{{ ▷ l ↦∗ (b2val <$> u32_le x) }}}
-    DecodeUInt32 #l @ s ; E
-  {{{ RET #x; l ↦∗ (b2val <$> u32_le x) }}}.
-Proof using Type.
-  iIntros (Φ) ">Hl HΦ".
-  cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
-  rewrite ?array_cons ?loc_add_assoc.
-  iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hemp)".
-  rewrite /DecodeUInt32.
-  do 4 (wp_load; wp_steps).
-  iSpecialize ("HΦ" with "[$]").
-  rewrite decode_encode.
-  iApply "HΦ".
-Qed.
-
-Theorem wp_DecodeUInt64 (l: loc) (x: u64) s E :
-  {{{ ▷ l ↦∗ (b2val <$> u64_le x) }}}
-    DecodeUInt64 #l @ s ; E
-  {{{ RET #x; l ↦∗ (b2val <$> u64_le x) }}}.
-Proof using Type.
-  iIntros (Φ) ">Hl HΦ".
-  cbv [u64_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
-  rewrite ?array_cons ?loc_add_assoc.
-  iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hl4&Hl5&Hl6&Hl7&Hemp)".
-  rewrite /DecodeUInt64.
-  do 8 (wp_load; wp_steps).
-  iSpecialize ("HΦ" with "[$]").
-Admitted.
-
-Theorem wp_UInt64Get stk E s (x: u64) vs :
-  {{{ is_slice s vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
-    UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; is_slice s (u64_le_bytes x ++ drop 8 vs) }}}.
-Proof using Type.
-  iIntros (Φ) "[Hs %] HΦ".
-  assert (vs = u64_le_bytes x ++ drop 8 vs).
-  { rewrite -{1}(take_drop 8 vs).
-    congruence. }
-  rewrite [vs in is_slice _ vs](H0).
-  wp_call.
-  wp_apply wp_slice_ptr.
-  iDestruct "Hs" as "[Hptr %]".
-  iDestruct (array_app with "Hptr") as "[Htake Hrest]"; try lia;
-    rewrite u64_le_bytes_length.
-  wp_apply (wp_DecodeUInt64 with "[$Htake]").
-  iIntros "Htake".
-  iDestruct (array_app with "[$Htake Hrest]") as "Hptr".
-  { rewrite fmap_length u64_le_length.
-    iFrame. }
-  iApply "HΦ".
-  iFrame.
-  iPureIntro.
-  rewrite app_length u64_le_bytes_length drop_length in H1 |- *.
-  lia.
-Qed.
-
-Theorem wp_UInt64Get' stk E s (x: u64) :
-  {{{ s.(Slice.ptr) ↦∗ u64_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 8⌝ }}}
-    UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; s.(Slice.ptr) ↦∗ u64_le_bytes x }}}.
-Proof using Type.
-  iIntros (Φ) "[Ha %] HΦ".
-  wp_call.
-  wp_call.
-  wp_apply (wp_DecodeUInt64 with "Ha").
-  iApply "HΦ".
+  - word.
 Qed.
 
 End heap.
@@ -1201,13 +829,6 @@ Tactic Notation "wp_store" :=
       |fail 1 "wp_store: cannot find 'Store' in" e];
     [iSolveTC
     |solve_mapsto ()
-    |pm_reflexivity
-    |first [wp_seq|wp_finish]]
-  | |- envs_entails _ (twp ?s ?E ?e ?Q) =>
-    first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_twp_store _ _ _ _ _ K))
-      |fail 1 "wp_store: cannot find 'Store' in" e];
-    [solve_mapsto ()
     |pm_reflexivity
     |first [wp_seq|wp_finish]]
   | _ => fail "wp_store: not a 'wp'"
@@ -1244,19 +865,6 @@ Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
           |fail 1 "wp_alloc: cannot find 'Alloc' in" e];
         [idtac|iSolveTC
          |finish ()]
-    in (process_single ()) || (process_array ())
-  | |- envs_entails _ (twp ?s ?E ?e ?Q) =>
-    let process_single _ :=
-        first
-          [reshape_expr e ltac:(fun K e' => eapply (tac_twp_alloc _ _ _ Htmp K))
-          |fail 1 "wp_alloc: cannot find 'Alloc' in" e];
-        finish ()
-    in
-    let process_array _ :=
-        first
-          [reshape_expr e ltac:(fun K e' => eapply (tac_twp_allocN _ _ _ Htmp K))
-          |fail 1 "wp_alloc: cannot find 'Alloc' in" e];
-        finish ()
     in (process_single ()) || (process_array ())
   | _ => fail "wp_alloc: not a 'wp'"
   end.
