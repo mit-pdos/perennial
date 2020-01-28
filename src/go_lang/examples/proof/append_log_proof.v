@@ -377,7 +377,7 @@ Theorem big_sepL_impl A (f g: nat -> A -> iProp Σ) (l: list A) :
   ([∗ list] i↦x ∈ l, g i x).
 Proof.
   intros Himpl.
-  apply big_opL_forall; auto.
+  apply big_opL_gen_proper; auto.
   typeclasses eauto.
 Qed.
 
