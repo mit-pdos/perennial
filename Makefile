@@ -87,14 +87,11 @@ replicated-disk/extract/ReplicatedDiskImpl.hs: replicated-disk/Extract.vo
 
 .PHONY: skip-qed unskip-qed ci
 
-SLOW_QED_FILES := src/Examples/MailServer/MailTriples.v\
-src/Examples/MailServer/MailRefinement.v\
-src/Examples/Logging/LogRefinement.v\
-src/Examples/AtomicPair/RefinementLog.v\
-src/Examples/AtomicPair/RefinementShadow.v\
-src/Examples/ReplicatedDisk/ReplicatedDiskRefinement.v\
-src/Goose/Proof/Interp.v\
-src/Goose/Proof/RefinementAdequacy.v
+SLOW_QED_FILES := src/program_logic/crash_weakestpre.v\
+	src/program_logic/crash_adequacy.v\
+	src/program_logic/recovery_adequacy.v\
+	src/program_logic/crash_inv.v\
+	src/goose_lang/interpreter/interpreter.v
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
