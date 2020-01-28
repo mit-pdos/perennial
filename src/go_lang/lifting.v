@@ -432,14 +432,6 @@ Proof using Type.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. by iFrame.
 Qed.
 
-Lemma twp_fork s E e Φ :
-  WP e @ s; ⊤ [{ _, True }] -∗ Φ (LitV LitUnit) -∗ WP Fork e @ s; E [{ Φ }].
-Proof using Type.
-  iIntros "He HΦ". iApply twp_lift_atomic_head_step; [done|].
-  iIntros (σ1 κs n) "Hσ !>"; iSplit; first by eauto.
-  iIntros (κ v2 σ2 efs Hstep); inv_head_step. by iFrame.
-Qed.
-
 (** Heap *)
 (** The "proper" [allocN] are derived in [array]. *)
 
@@ -558,29 +550,6 @@ Proof using Type.
   { by iFrame. }
   apply ty_size_gt0.
 Qed.
-(*
-Lemma twp_allocN_seq s E v (n: u64) :
-  (0 < int.val n)%Z →
-  [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  [[{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
-      (l +ₗ (i : nat)) ↦ Free v ∗ meta_token (l +ₗ (i : nat)) ⊤ }]].
-Proof using Type.
-  iIntros (Hn Φ) "_ HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs k) "[Hσ Hκs] !>"; iSplit; first by destruct_with_eqn (int.val n); auto with lia.
-  iIntros (κ v2 σ2 efs Hstep); inv_head_step.
-  iMod (gen_heap_alloc_gen
-          _ (heap_array
-               l (fmap Free (replicate (int.nat n) v))) with "Hσ")
-    as "(Hσ & Hl & Hm)".
-  { apply heap_array_map_disjoint.
-    rewrite map_length replicate_length u64_Z_through_nat; auto with lia. }
-  iModIntro; do 2 (iSplit; first done).
-  iFrame "Hσ Hκs". iApply "HΦ".
-  iApply big_sepL_sep. iSplitL "Hl".
-  - by iApply heap_array_to_seq_mapsto.
-  - iApply (heap_array_to_seq_meta with "Hm"). by rewrite map_length replicate_length.
-Qed.
-*)
 
 Lemma wp_alloc stk E ty v :
   val_ty v ty ->
@@ -590,15 +559,6 @@ Proof using Type.
   { constructor. }
   iIntros "!>" (l) "/= (? & _)". rewrite Z.mul_0_r loc_add_0. iApply "HΦ"; iFrame.
 Qed.
-(*
-Lemma twp_alloc s E v :
-  [[{ True }]] Alloc (Val v) @ s; E [[{ l, RET LitV (LitLoc l); l ↦ Free v ∗ meta_token l ⊤ }]].
-Proof using Type.
-  iIntros (Φ) "_ HΦ". iApply twp_allocN_seq; auto with lia.
-  { constructor. }
-  iIntros (l) "/= (? & _)". rewrite loc_add_0. iApply "HΦ"; iFrame.
-Qed.
-*)
 
 Lemma wp_alloc_untyped stk E v v0 :
   flatten_struct v = [v0] ->
@@ -632,14 +592,6 @@ Proof using Type.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
 Qed.
-Lemma twp_load s E l q v :
-  [[{ l ↦{q} Free v }]] Load (Val $ LitV $ LitLoc l) @ s; E [[{ RET v; l ↦{q} Free v }]].
-Proof using Type.
-  iIntros (Φ) "Hl HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto 8. iIntros (κ v2 σ2 efs Hstep); inv_head_step.
-  iModIntro; iSplit=> //. iSplit; first done. iFrame. by iApply "HΦ".
-Qed.
 
 Theorem is_Writing_Some A (mna: option (nonAtomic A)) :
   mna = Some Writing ->
@@ -661,17 +613,6 @@ Proof using Type.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
-Lemma twp_prepare_write s E l v :
-  [[{ l ↦ Free v }]] PrepareWrite (Val $ LitV $ LitLoc l) @ s; E
-  [[{ RET LitV LitUnit; l ↦ Writing }]].
-Proof using Type.
-  iIntros (Φ) "Hl HΦ".
-  iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto 8. iIntros (κ v2 σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
-  iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
-Qed.
 
 Lemma wp_finish_store s E l v :
   {{{ ▷ l ↦ Writing }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
@@ -683,17 +624,6 @@ Proof using Type.
   iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
-Qed.
-Lemma twp_finish_store s E l v :
-  [[{ l ↦ Writing }]] FinishStore (Val $ LitV $ LitLoc l) (Val v) @ s; E
-  [[{ RET LitV LitUnit; l ↦ Free v }]].
-Proof using Type.
-  iIntros (Φ) "Hl HΦ".
-  iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto. iIntros (κ v2 σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
-  iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
 
 Definition mapsto_vals (l: loc) (q: Qp) (vs: list (nonAtomic val)) :=
@@ -758,17 +688,6 @@ Proof using Type.
   rewrite bool_decide_false //.
   iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
 Qed.
-Lemma twp_cmpxchg_fail s E l q v' v1 v2 :
-  v' ≠ v1 → vals_compare_safe v' v1 →
-  [[{ l ↦{q} Free v' }]] CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
-  [[{ RET PairV v' (LitV $ LitBool false); l ↦{q} Free v' }]].
-Proof using Type.
-  iIntros (?? Φ) "Hl HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto 8. iIntros (κ v2' σ2 efs Hstep); inv_head_step.
-  rewrite bool_decide_false //.
-  iModIntro; iSplit=> //. iSplit; first done. iFrame. by iApply "HΦ".
-Qed.
 
 Lemma wp_cmpxchg_suc s E l v1 v2 v' :
   v' = v1 → vals_compare_safe v' v1 →
@@ -781,18 +700,6 @@ Proof using Type.
   rewrite bool_decide_true //.
   iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
-Qed.
-Lemma twp_cmpxchg_suc s E l v1 v2 v' :
-  v' = v1 → vals_compare_safe v' v1 →
-  [[{ l ↦ Free v' }]] CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
-  [[{ RET PairV v' (LitV $ LitBool true); l ↦ Free v2 }]].
-Proof using Type.
-  iIntros (?? Φ) "Hl HΦ". iApply twp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto 8. iIntros (κ v2' σ2 efs Hstep); inv_head_step.
-  rewrite bool_decide_true //.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
-  iModIntro. iSplit=>//. iSplit; first done. iFrame. by iApply "HΦ".
 Qed.
 
 Lemma wp_new_proph s E :

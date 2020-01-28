@@ -125,42 +125,6 @@ Proof.
   iIntros (l) "Hlm". iApply "HΦ".
   by iApply mapsto_seq_struct_array.
 Qed.
-(*
-Lemma twp_allocN s E v (n: u64) :
-  (0 < int.val n)%Z →
-  [[{ True }]] AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  [[{ l, RET LitV (LitLoc l); l ↦∗ replicate (int.nat n) v ∗
-         [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
-Proof.
-  iIntros (Hzs Φ) "_ HΦ". iApply twp_allocN_seq; [done..|].
-  iIntros (l) "Hlm". iApply "HΦ".
-  iDestruct (big_sepL_sep with "Hlm") as "[Hl $]".
-  by iApply mapsto_seq_array.
-Qed.
-*)
-
-(*
-Lemma wp_allocN_vec s E v (n: u64) :
-  (0 < int.val n)%Z →
-  {{{ True }}}
-    AllocN #n v @ s ; E
-  {{{ l, RET #l; l ↦∗ vreplicate (int.nat n) v ∗
-         [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }}}.
-Proof.
-  iIntros (Hzs Φ) "_ HΦ". iApply wp_allocN; [ lia | done | .. ]. iNext.
-  iIntros (l) "[Hl Hm]". iApply "HΦ". rewrite vec_to_list_replicate. iFrame.
-Qed.
-Lemma twp_allocN_vec s E v (n: u64) :
-  (0 < int.val n)%Z →
-  [[{ True }]]
-    AllocN #n v @ s ; E
-  [[{ l, RET #l; l ↦∗ vreplicate (int.nat n) v ∗
-         [∗ list] i ∈ seq 0 (int.nat n), meta_token (l +ₗ (i : nat)) ⊤ }]].
-Proof.
-  iIntros (Hzs Φ) "_ HΦ". iApply twp_allocN; [ lia | done | .. ].
-  iIntros (l) "[Hl Hm]". iApply "HΦ". rewrite vec_to_list_replicate. iFrame.
-Qed.
-*)
 
 (** Access to array elements *)
 (* moved to basic_triples *)

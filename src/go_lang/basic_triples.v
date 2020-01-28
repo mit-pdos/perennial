@@ -44,22 +44,6 @@ Proof using Type.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
   apply wand_intro_l. by rewrite right_id wand_elim_r.
 Qed.
-(*
-Lemma tac_twp_allocN Δ s E j K v (n: u64) Φ :
-  (0 < int.val n)%Z →
-  (∀ l, ∃ Δ',
-    envs_app false (Esnoc Enil j (array l (replicate (int.nat n) v))) Δ
-    = Some Δ' ∧
-    envs_entails Δ' (WP fill K (Val $ LitV $ LitLoc l) @ s; E [{ Φ }])) →
-  envs_entails Δ (WP fill K (AllocN (Val $ LitV $ LitInt n) (Val v)) @ s; E [{ Φ }]).
-Proof using Type.
-  rewrite envs_entails_eq=> ? HΔ.
-  rewrite -twp_bind. eapply wand_apply; first exact: twp_allocN.
-  rewrite left_id. apply forall_intro=> l.
-  destruct (HΔ l) as (Δ'&?&HΔ'). rewrite envs_app_sound //; simpl.
-  apply wand_intro_l. by rewrite (sep_elim_l (l ↦∗ _)%I) right_id wand_elim_r.
-Qed.
-*)
 
 Theorem val_hasTy_flatten_length Γ v t :
   (Γ ⊢v v : t) ->
@@ -177,16 +161,6 @@ Proof using Type.
   iIntros "!> Hl".
   wp_seq. by iApply (wp_finish_store with "Hl").
 Qed.
-Lemma twp_store s E l v v' :
-  [[{ l ↦ Free v' }]] Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
-  [[{ RET LitV LitUnit; l ↦ Free v }]].
-Proof using Type.
-  iIntros (Φ) "Hl HΦ". unfold Store.
-  wp_lam. wp_let. wp_bind (PrepareWrite _).
-  iApply (twp_prepare_write with "Hl").
-  iIntros "Hl".
-  wp_seq. by iApply (twp_finish_store with "Hl").
-Qed.
 
 Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -199,17 +173,6 @@ Proof using Type.
   rewrite -wp_bind. eapply wand_apply; first by eapply wp_store.
   rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
   rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
-Qed.
-Lemma tac_twp_store Δ Δ' s E i K l v v' Φ :
-  envs_lookup i Δ = Some (false, l ↦ Free v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v')) Δ = Some Δ' →
-  envs_entails Δ' (WP fill K (Val $ LitV LitUnit) @ s; E [{ Φ }]) →
-  envs_entails Δ (WP fill K (Store (LitV l) v') @ s; E [{ Φ }]).
-Proof using Type.
-  rewrite envs_entails_eq. intros. rewrite -twp_bind.
-  eapply wand_apply; first by eapply twp_store.
-  rewrite envs_simple_replace_sound //; simpl.
-  rewrite right_id. by apply sep_mono_r, wand_mono.
 Qed.
 
 (* local version just for this file *)
@@ -846,9 +809,8 @@ Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
         |iDestructHyp Htmp as H; wp_finish] in
   wp_pures;
   (** The code first tries to use allocation lemma for a single reference,
-     ie, [tac_wp_alloc] (respectively, [tac_twp_alloc]).
-     If that fails, it tries to use the lemma [tac_wp_allocN]
-     (respectively, [tac_twp_allocN]) for allocating an array.
+     ie, [tac_wp_alloc].
+     If that fails, it tries to use the lemma [tac_wp_allocN] for allocating an array.
      Notice that we could have used the array allocation lemma also for single
      references. However, that would produce the resource l ↦∗ [v] instead of
      l ↦ v for single references. These are logically equivalent assertions
