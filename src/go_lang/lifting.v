@@ -600,6 +600,30 @@ Proof using Type.
 Qed.
 *)
 
+Lemma wp_alloc_untyped stk E v v0 :
+  flatten_struct v = [v0] ->
+  {{{ True }}} ref (Val v) @ stk; E
+  {{{ l, RET LitV (LitLoc l); l ↦ Free v0 }}}.
+Proof using Type.
+  assert (0 < int.val (U64 1)) by (change (int.val 1) with 1; lia).
+  iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
+  iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iMod (gen_heap_alloc_gen
+          _ (heap_array
+               l [Free v0]) with "Hσ")
+    as "(Hσ & Hl & Hm)".
+  { apply heap_array_map_disjoint.
+    rewrite Z.mul_1_l Hn /= in H0.
+    simpl; auto with lia. }
+  iModIntro; iSplit; first done.
+  change (int.nat 1) with 1%nat; simpl.
+  replace (flatten_struct v); simpl.
+  iFrame "Hσ Hκs". iApply "HΦ".
+  rewrite right_id.
+  rewrite big_sepM_singleton; iFrame.
+Qed.
+
 Lemma wp_load s E l q v :
   {{{ ▷ l ↦{q} Free v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; l ↦{q} Free v }}}.
 Proof using Type.

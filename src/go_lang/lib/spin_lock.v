@@ -35,7 +35,13 @@ Section proof.
     (∃ b : bool, l ↦ Free #b ∗ if b then True else own γ (Excl ()) ∗ R)%I.
 
   Definition is_lock (γ : gname) (lk : val) (R : iProp Σ) : iProp Σ :=
-    (∃ l: loc, ⌜lk = #l ∧ val_ty lk (refT boolT)⌝ ∧ inv N (lock_inv γ l R))%I.
+    (∃ l: loc, ⌜lk = #l⌝ ∧ inv N (lock_inv γ l R))%I.
+
+  Theorem is_lock_flat γ lk R :
+    is_lock γ lk R -∗ ⌜∃ (l:loc), lk = #l⌝.
+  Proof.
+    iIntros "Hl"; iDestruct "Hl" as (l) "[-> _]"; eauto.
+  Qed.
 
   Definition locked (γ : gname) : iProp Σ := own γ (Excl ()).
 
@@ -53,17 +59,6 @@ Section proof.
   Global Instance locked_timeless γ : Timeless (locked γ).
   Proof. apply _. Qed.
 
-  Theorem is_lock_ty γ lk R :
-    is_lock γ lk R -∗ ⌜val_ty lk (refT boolT)⌝.
-  Proof.
-    iIntros "Hl". iDestruct "Hl" as (l) "[(%&%) _]".
-    auto.
-  Qed.
-
-  (* TODO: this isn't necessary; locks don't need to use typed allocation
-  theorems *)
-  Axiom loc_hasTy : forall Γ (l:loc) t, val_hasTy Γ #l (refT t).
-
   Lemma newlock_spec (R : iProp Σ):
     {{{ R }}} newlock #() {{{ lk γ, RET lk; is_lock γ lk R }}}.
   Proof using ext_tys.
@@ -80,16 +75,13 @@ Section proof.
       rewrite loc_add_0.
       by iFrame. }
     iModIntro. iApply "HΦ". iExists l. iSplit; eauto.
-    iPureIntro.
-    split; auto.
-    apply loc_hasTy.
   Qed.
 
   Lemma try_acquire_spec γ lk R :
     {{{ is_lock γ lk R }}} try_acquire lk
     {{{ b, RET #b; if b is true then locked γ ∗ R else True }}}.
   Proof.
-    iIntros (Φ) "#Hl HΦ". iDestruct "Hl" as (l [-> _]) "#Hinv".
+    iIntros (Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
     wp_rec.
     wp_bind (CmpXchg _ _ _). iInv N as ([]) "[Hl HR]".
     - wp_cmpxchg_fail. iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
@@ -112,7 +104,7 @@ Section proof.
     {{{ is_lock γ lk R ∗ locked γ ∗ R }}} release lk {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock & Hlocked & HR) HΦ".
-    iDestruct "Hlock" as (l [-> _]) "#Hinv".
+    iDestruct "Hlock" as (l ->) "#Hinv".
     rewrite /release /=. wp_lam.
     wp_bind (CmpXchg _ _ _).
     iInv N as (b) "[Hl _]".

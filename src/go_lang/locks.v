@@ -42,19 +42,17 @@ Module lock.
   Proof.
     iIntros (Φ) "Hl HΦ".
     wp_call.
-    iDestruct (is_lock_ty with "Hl") as %Hlkty.
-    wp_apply wp_alloc; auto.
-    { eauto. }
+    iDestruct (is_lock_flat with "Hl") as %[l ->].
+    wp_apply wp_alloc_untyped; auto.
     iIntros (c) "Hc".
     iApply "HΦ".
     iExists _; iFrame.
-    iDestruct "Hc" as "[Hc _]".
-  Admitted.
+  Qed.
 
   Theorem wp_condSignal N γ c R :
     {{{ is_cond N γ c R }}}
       condSignal #c
-      {{{ RET #(); is_cond N γ c R }}}.
+    {{{ RET #(); is_cond N γ c R }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
     wp_call.
@@ -64,7 +62,7 @@ Module lock.
   Theorem wp_condBroadcast N γ c R :
     {{{ is_cond N γ c R }}}
       condBroadcast #c
-      {{{ RET #(); is_cond N γ c R }}}.
+    {{{ RET #(); is_cond N γ c R }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
     wp_call.
@@ -74,7 +72,7 @@ Module lock.
   Theorem wp_condWait N γ c R :
     {{{ is_cond N γ c R ∗ spin_lock.locked γ ∗ R }}}
       condWait #c
-      {{{ RET #(); is_cond N γ c R ∗ spin_lock.locked γ ∗ R }}}.
+    {{{ RET #(); is_cond N γ c R ∗ spin_lock.locked γ ∗ R }}}.
   Proof.
     iIntros (Φ) "(Hc&Hlocked&HR) HΦ".
     iDestruct "Hc" as (lk) "(Hcptr&#Hc)".

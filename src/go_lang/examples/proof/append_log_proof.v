@@ -191,7 +191,7 @@ Theorem wp_new_enc stk E :
   {{{ True }}}
     NewEnc #() @ stk; E
   {{{ enc, RET EncM.to_val enc; is_enc enc [] }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "_ HΦ".
   rewrite /NewEnc.
   rewrite /struct.buildStruct /Enc.S /=.
@@ -282,7 +282,7 @@ Theorem wp_Enc__PutInt stk E enc vs (x: u64) :
   {{{ is_enc enc vs ∗ ⌜encode_length vs + 8 <= 4096⌝ }}}
     Enc__PutInt (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt64 x]) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "(Henc&%) HΦ".
   iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
@@ -407,7 +407,7 @@ Theorem wp_Enc__Finish stk E enc vs :
       ⌜int.val s.(Slice.sz) = 4096⌝ ∗
      ⌜(encode_length vs + length extra)%Z = 4096⌝
   }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "Henc HΦ".
   wp_call.
   wp_call.
@@ -437,7 +437,7 @@ Theorem wp_NewDec stk E s vs (extra: list u8) :
   {{{ is_slice s byteT (b2val <$> encode vs ++ extra) ∗ ⌜int.val s.(Slice.sz)= 4096⌝ }}}
     NewDec (slice_val s) @ stk; E
   {{{ dec, RET (DecM.to_val dec); is_dec dec vs }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "(Hs&%) HΦ".
   iDestruct "Hs" as "(Ha&%)".
   autorewrite with len in H0.
@@ -460,7 +460,7 @@ Theorem wp_Dec__GetInt stk E dec x vs :
   {{{ is_dec dec (EncUInt64 x::vs) }}}
     Dec__GetInt (DecM.to_val dec) @ stk; E
   {{{ RET #x; is_dec dec vs }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "Hdec HΦ".
   iDestruct "Hdec" as (Hdecsz off extra) "(Hoff&Hvs&%)".
   rewrite fmap_app.
@@ -521,7 +521,7 @@ Theorem wp_Write stk E (a: u64) s b :
   {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice s byteT (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; E
   {{{ RET #(); int.val a d↦ b ∗ is_slice s byteT (Block_to_vals b) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) ">Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
   wp_call.
@@ -543,7 +543,7 @@ Theorem wp_Write' stk E (z: Z) (a: u64) s b :
   {{{ ⌜int.val a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ is_slice s byteT (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; E
   {{{ RET #(); z d↦ b ∗ is_slice s byteT (Block_to_vals b) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "[<- >Hpre] HΦ".
   iApply (wp_Write with "[$Hpre]").
   eauto.
@@ -555,7 +555,7 @@ Lemma wp_Read stk E (a: u64) q b :
   {{{ s, RET slice_val s;
       int.val a d↦{q} b ∗
       is_slice s byteT (Block_to_vals b) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) ">Hda HΦ".
   wp_call.
   wp_apply (wp_ReadOp with "Hda").
@@ -594,7 +594,7 @@ Theorem wpc_Write stk k E1 E2 (a: u64) s b :
     Write #a (slice_val s) @ stk; k; E1; E2
   {{{ RET #(); int.val a d↦ b ∗ is_slice s byteT (Block_to_vals b) }}}
   {{{ ∃ b', int.val a d↦ b' ∗ is_slice s byteT (Block_to_vals b) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ Φc) ">Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
   rewrite /Write /slice.ptr.
@@ -629,7 +629,7 @@ Theorem wpc_Write' stk k E1 E2 (a: u64) s b0 b :
     Write #a (slice_val s) @ stk; k; E1; E2
   {{{ RET #(); int.val a d↦ b ∗ is_slice s byteT (Block_to_vals b) }}}
   {{{ (int.val a d↦ b0 ∨ int.val a d↦ b) ∗ is_slice s byteT (Block_to_vals b) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ Φc) "[>Hda Hs] HΦ".
   rewrite /Write /slice.ptr.
   wpc_pures; iFrame.
@@ -659,7 +659,7 @@ Theorem wp_mkHdr stk E (sz disk_sz:u64) :
   {{{ True }}}
     Log__mkHdr (#sz, #disk_sz)%V @ stk; E
   {{{ l b, RET (slice_val (Slice.mk l 4096)); mapsto_block l 1 b ∗ ⌜is_hdr_block sz disk_sz b⌝ }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "_ HΦ".
   wp_call.
   wp_apply wp_new_enc; [ auto | ].
@@ -699,7 +699,7 @@ Theorem wpc_write_hdr stk k E1 E2 (sz0 disk_sz0 sz disk_sz:u64) :
     Log__writeHdr (#sz, #disk_sz)%V @ stk; k; E1; E2
   {{{ RET #(); is_hdr sz disk_sz }}}
   {{{ is_hdr sz0 disk_sz0 ∨ is_hdr sz disk_sz }}}.
-Proof.
+Proof using Type.
   iIntros (Φ Φc) "Hhdr HΦ".
   rewrite /Log__writeHdr.
   wpc_pures; eauto.
@@ -734,7 +734,7 @@ Theorem wp_write_hdr stk E (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 }}}
     Log__writeHdr (#sz, #disk_sz)%V @ stk; E
   {{{ RET #(); is_hdr sz disk_sz }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "Hhdr HΦ".
   wp_call.
   wp_apply wp_mkHdr; [ auto | ].
@@ -784,7 +784,7 @@ Theorem wp_init stk E (sz: u64) vs :
   {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
     Init #sz @ stk; E
   {{{ v (ok: bool), RET (v, #ok); ⌜ok⌝ -∗ is_log v [] }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "[Hdisk %] HΦ".
   wp_lam.
   wp_pures.
@@ -879,7 +879,7 @@ Theorem wp_Log__Get stk E v bs (i: u64) :
        then ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s byteT (Block_to_vals b)
        else ⌜bs !! int.nat i = None⌝) ∗
       is_log v bs }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "[Hlog %] HΦ".
   iDestruct (is_log_elim with "Hlog") as (sz disk_sz) "[-> Hlog]".
   wp_call.
@@ -1023,7 +1023,7 @@ Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s t vs (body: val) :
       forSlice t body (slice_val s) @ stk; k; E1; E2
     {{{ RET #(); I s.(Slice.sz) ∗ is_slice s t vs }}}
     {{{ Φc' }}}.
-Proof.
+Proof using Type.
   iIntros "#Hind #HΦcI".
   iIntros (Φ Φc) "!> [Hi0 Hs] HΦ".
   rewrite /forSlice.
@@ -1086,7 +1086,7 @@ Theorem wpc_WriteArray stk k E1 E2 l bs (s: Slice.t) b (off: u64) :
     Write #off (slice_val s) @ stk; k; E1; E2
   {{{ RET #(); l d↦∗ <[Z.to_nat (int.val off - l) := b]> bs ∗ is_slice s byteT (Block_to_vals b) }}}
   {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ ∗ is_slice s byteT (Block_to_vals b) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ".
   destruct (list_lookup_lt _ bs (Z.to_nat (int.val off - l))) as [b0 Hlookup].
   { word. }
@@ -1114,7 +1114,7 @@ Theorem wpc_writeAll stk (k: nat) E1 E2 bk_s bks bs0 bs (off: u64) :
     writeAll (slice_val bk_s) #off @ stk; k; E1; E2
   {{{ RET #(); blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs }}}
   {{{ ∃ bs', int.val off d↦∗ bs' ∗ ⌜length bs' = length bs0⌝ }}}.
-Proof.
+Proof using Type.
   iIntros (Φ Φc) "(Hbs&Hd&%&%) HΦ".
   rewrite /writeAll.
   wpc_pures.
@@ -1266,7 +1266,7 @@ Theorem wpc_Log__Append k stk E1 E2 l bs0 bk_s bks bs :
   {{{ (ok: bool), RET #ok; (ptsto_log l (if ok then bs0 ++ bs else bs0)) ∗
                           blocks_slice bk_s bks bs }}}
   {{{ ∃ v, is_log v bs0 ∨ is_log v (bs0 ++ bs) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ Φc) "[Hptsto_log Hbs] HΦ".
   iDestruct "Hptsto_log" as (sz disk_sz) "[(Hf0&Hf1) Hlog]".
   rewrite /Log__Append.
@@ -1431,7 +1431,7 @@ Theorem wpc_Log__Reset stk k E1 E2 l vs :
     Log__Reset #l @ stk; k; E1; E2
   {{{ RET #(); ptsto_log l [] }}}
   {{{ ∃ v, is_log v vs ∨ is_log v [] }}}.
-Proof.
+Proof using Type.
   iIntros (Φ Φc) "Hlog HΦ".
   iDestruct "Hlog" as (sz disk_sz) "[[Hf0 Hf1] Hlog]".
   rewrite /Log__Reset.
@@ -1516,7 +1516,7 @@ Theorem wp_Open stk E sz disk_sz vs :
   {{{ is_log' sz disk_sz vs }}}
     Open #() @ stk; E
   {{{ v, RET v; is_log v vs }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "Hlog HΦ".
   iDestruct "Hlog" as "[Hhdr Hlog_rest]".
   wp_call.

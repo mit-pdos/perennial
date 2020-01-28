@@ -691,7 +691,7 @@ Ltac runStateT_inv :=
   Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state),
       (((runStateT (interpret n e) σ) = Works _ (v, σ')) ->
        exists m l, @language.nsteps heap_lang m ([e], σ) l ([Val v], σ')).
-  Proof.
+  Proof using Type.
     intros n. induction n.
     { by intros []. }
 
