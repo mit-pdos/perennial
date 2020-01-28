@@ -634,7 +634,7 @@ Definition CheckFalse: val :=
 
 Definition testShortcircuitAndTF: val :=
   λ: <>,
-    let: "b" := struct.mk BoolTest.S [
+    let: "b" := struct.new BoolTest.S [
       "t" ::= #true;
       "f" ::= #false;
       "tc" ::= #0;
@@ -642,11 +642,11 @@ Definition testShortcircuitAndTF: val :=
     ] in
     (if: CheckTrue "b" && CheckFalse "b"
     then #false
-    else (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #1)).
+    else (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #1)).
 
 Definition testShortcircuitAndFT: val :=
   λ: <>,
-    let: "b" := struct.mk BoolTest.S [
+    let: "b" := struct.new BoolTest.S [
       "t" ::= #true;
       "f" ::= #false;
       "tc" ::= #0;
@@ -654,30 +654,30 @@ Definition testShortcircuitAndFT: val :=
     ] in
     (if: CheckFalse "b" && CheckTrue "b"
     then #false
-    else (struct.get BoolTest.S "tc" "b" = #0) && (struct.get BoolTest.S "fc" "b" = #1)).
+    else (struct.loadF BoolTest.S "tc" "b" = #0) && (struct.loadF BoolTest.S "fc" "b" = #1)).
 
 Definition testShortcircuitOrTF: val :=
   λ: <>,
-    let: "b" := struct.mk BoolTest.S [
+    let: "b" := struct.new BoolTest.S [
       "t" ::= #true;
       "f" ::= #false;
       "tc" ::= #0;
       "fc" ::= #0
     ] in
     (if: CheckTrue "b" ∥ CheckFalse "b"
-    then (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #0)
+    then (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #0)
     else #false).
 
 Definition testShortcircuitOrFT: val :=
   λ: <>,
-    let: "b" := struct.mk BoolTest.S [
+    let: "b" := struct.new BoolTest.S [
       "t" ::= #true;
       "f" ::= #false;
       "tc" ::= #0;
       "fc" ::= #0
     ] in
     (if: CheckFalse "b" ∥ CheckTrue "b"
-    then (struct.get BoolTest.S "tc" "b" = #1) && (struct.get BoolTest.S "fc" "b" = #1)
+    then (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #1)
     else #false).
 
 (* test integer overflow and underflow *)

@@ -61,27 +61,20 @@ Compute (check_run (useMap #())).
 Compute (check_run (useSliceIndexing #())).
 Compute (check_run (ReassignVars #())).
 
-(* TODO: all currently fail and shouldn't: *)
-Fail Compute (check_run (testShortcircuitAndTF #())).
-Fail Compute (check_run (testShortcircuitAndFT #())).
-Fail Compute (check_run (testShortcircuitOrTF #())).
-Fail Compute (check_run (testShortcircuitOrFT #())).
-
-Definition test_case (p: expr) :=
-  match (fst <$> runStateT (interpret 100 p) startstate) with
-  | Works _ (LitV (LitBool true)) => true
-  | _ => false
-  end.
-
 (* fails because #333 is a uint64 *)
 Fail Compute (check_run (EncDec32 #333)).
-Definition tc1 := (test_case (testEncDec64 #333)).
-Definition tc2 := (test_case (testEncDec32 #(U32 333))).
-Definition tc3 := (test_case (testReverseAssignOps64 #333)).
+Example tc1 := testEncDec64 #333 ~~> #true.
+Example tc2 := testEncDec32 #(U32 333) ~~> #true.
+Example tc3 := testReverseAssignOps64 #333 ~~> #true.
 
-Example tc1_ok : tc1 = true := eq_refl.
-Example tc2_ok : tc2 = true := eq_refl.
-Example tc3_ok : tc3 = true := eq_refl.
+Example tc4 := testShortcircuitAndTF #() ~~> #true.
+Example tc5 := testShortcircuitAndFT #() ~~> #true.
+
+(* TODO: fix evaluation order *)
+Fail Example tc6 := testShortcircuitOrTF #() ~~> #true.
+Example tc6 := testShortcircuitOrTF #() ~~> #false.
+
+Example tc6 := testShortcircuitOrFT #() ~~> #true.
 
 (* Extraction testing:
 
