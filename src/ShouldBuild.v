@@ -16,5 +16,5 @@ From Perennial.goose_lang.examples Require Import
      goose_unittest append_log wal mailserver simpledb logging2 rfc1813.
 
 (* interpreter *)
-From Perennial.goose_lang.interpreter Require Import interpreter.
+From Perennial.goose_lang.interpreter Require Import interpreter tests.
 From Perennial.goose_lang.interpreter Require Import disk_interpreter.

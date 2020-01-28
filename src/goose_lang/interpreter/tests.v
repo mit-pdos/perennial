@@ -5,7 +5,6 @@ From Perennial.goose_lang.interpreter Require Import disk_interpreter.
 
 From Perennial.goose_lang.examples Require Import goose_unittest.
 From Perennial.goose_lang.ffi Require Import disk.
-Require Import Program.
 
 Definition startstate : state := inhabitant.
 
@@ -32,10 +31,6 @@ Definition testMatch: val :=
   | InjR "x1" => #4 + (Var "x1")
   end.
 
-Compute (runStateT (interpret 10 (AllocN #1 (zero_val uint32T))) startstate).
-Compute (runStateT (interpret 10 (returnTwoWrapper #3)) startstate).
-Compute (runStateT (interpret 10 (testRec #0)) startstate).
-
 Definition run (p: expr): Error val :=
   fst <$> runStateT (interpret 100 p) startstate.
 
@@ -44,6 +39,10 @@ Notation check_run p := (ltac:(let x := (eval vm_compute in (run p)) in
                                | Works _ ?v => exact v
                                | Fail _ ?msg => fail "interpreter failed on" p msg
                                end)) (only parsing).
+
+Compute check_run (AllocN #1 (zero_val uint32T)).
+Compute check_run (returnTwoWrapper #3).
+Compute check_run (testRec #0).
 
 Definition runs_to (p: expr) (v: val) :=
   run p = Works _ v.
@@ -62,12 +61,11 @@ Compute (check_run (useMap #())).
 Compute (check_run (useSliceIndexing #())).
 Compute (check_run (ReassignVars #())).
 
-(* TODO: all currently fail and shouldn't:
-Compute (check_run (testShortcircuitAndTF #())).
-Compute (check_run (testShortcircuitAndFT #())).
-Compute (check_run (testShortcircuitOrTF #())).
-Compute (check_run (testShortcircuitOrFT #())).
-*)
+(* TODO: all currently fail and shouldn't: *)
+Fail Compute (check_run (testShortcircuitAndTF #())).
+Fail Compute (check_run (testShortcircuitAndFT #())).
+Fail Compute (check_run (testShortcircuitOrTF #())).
+Fail Compute (check_run (testShortcircuitOrFT #())).
 
 Definition test_case (p: expr) :=
   match (fst <$> runStateT (interpret 100 p) startstate) with
