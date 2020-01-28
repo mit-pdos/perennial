@@ -66,15 +66,10 @@ Fail Compute (check_run (EncDec32 #333)).
 Example tc1 := testEncDec64 #333 ~~> #true.
 Example tc2 := testEncDec32 #(U32 333) ~~> #true.
 Example tc3 := testReverseAssignOps64 #333 ~~> #true.
-
 Example tc4 := testShortcircuitAndTF #() ~~> #true.
 Example tc5 := testShortcircuitAndFT #() ~~> #true.
-
-(* TODO: fix evaluation order *)
-Fail Example tc6 := testShortcircuitOrTF #() ~~> #true.
-Example tc6 := testShortcircuitOrTF #() ~~> #false.
-
-Example tc6 := testShortcircuitOrFT #() ~~> #true.
+Example tc6 := testShortcircuitOrTF #() ~~> #true.
+Example tc7 := testShortcircuitOrFT #() ~~> #true.
 
 (* Extraction testing:
 

@@ -406,7 +406,7 @@ Definition multipleVar: val :=
 
 Definition LogicalOperators: val :=
   λ: "b1" "b2",
-    "b1" && "b2" ∥ "b1" && ~ #false.
+    "b1" && "b2" || "b1" && ~ #false.
 
 Definition LogicalAndEqualityOperators: val :=
   λ: "b1" "x",
@@ -418,7 +418,7 @@ Definition ArithmeticShifts: val :=
 
 Definition BitwiseOps: val :=
   λ: "x" "y",
-    to_u64 "x" ∥ to_u64 (to_u32 "y") && #43.
+    to_u64 "x" || to_u64 (to_u32 "y") && #43.
 
 Definition Comparison: val :=
   λ: "x" "y",
@@ -664,7 +664,7 @@ Definition testShortcircuitOrTF: val :=
       "tc" ::= #0;
       "fc" ::= #0
     ] in
-    (if: CheckTrue "b" ∥ CheckFalse "b"
+    (if: CheckTrue "b" || CheckFalse "b"
     then (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #0)
     else #false).
 
@@ -676,7 +676,7 @@ Definition testShortcircuitOrFT: val :=
       "tc" ::= #0;
       "fc" ::= #0
     ] in
-    (if: CheckFalse "b" ∥ CheckTrue "b"
+    (if: CheckFalse "b" || CheckTrue "b"
     then (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #1)
     else #false).
 
