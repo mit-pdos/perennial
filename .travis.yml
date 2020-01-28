@@ -15,10 +15,6 @@ branches:
     - /^ci\//
     - deep
 
-cache:
-  directories:
-    - $HOME/.stack
-
 services:
   - docker
 
@@ -42,10 +38,6 @@ before_install:
     if [ "${UPDATE_DEPS}" = "true" ]; then
       git -c http.sslVerify=false submodule update --init --remote
     fi
-  # Download and unpack the stack executable
-  - mkdir -p ~/.local/bin
-  - export PATH=$HOME/.local/bin:$PATH
-  - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
 install: |
   # Prepare the COQ container
@@ -82,10 +74,7 @@ script:
       set -ex
       ~/.local/bin/pytest etc
       make -j2 -k ci
-      chmod -R a+rw replicated-disk
       "
-  - cd replicated-disk
-  - stack --allow-different-user test
   - echo -en 'travis_fold:end:build\\r'
 
 after_script:

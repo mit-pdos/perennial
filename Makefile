@@ -1,5 +1,5 @@
 Q:=@
-SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external') replicated-disk
+SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external')
 ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
@@ -80,11 +80,6 @@ endif
 	@echo "COQC -vok $<"
 	$(Q)./etc/coqc.py --proj _CoqProject $(TIMING_ARGS) -vok $(COQ_ARGS) $< -o $@
 
-extract: replicated-disk/extract/ReplicatedDiskImpl.hs
-
-replicated-disk/extract/ReplicatedDiskImpl.hs: replicated-disk/Extract.vo
-	./scripts/add-preprocess.sh replicated-disk/extract/*.hs
-
 .PHONY: skip-qed unskip-qed ci
 
 SLOW_QED_FILES := src/program_logic/crash_weakestpre.v\
@@ -99,7 +94,7 @@ skip-qed:
 unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
-ci: skip-qed src/ShouldBuild.vo $(TEST_VO) extract
+ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
 	$(Q)if [ ${TIMED} = "true" ]; then \
 		./etc/timing-report.py timing.sqlite3; \
 		fi
@@ -112,7 +107,6 @@ clean: clean-src
 	$(Q)find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
 	$(Q)find . $(SRC_DIRS) -name ".lia.cache" -exec rm {} \;
 	@echo "CLEAN extract"
-	$(Q)rm -f replicated-disk/extract/*.hs
 	$(Q)rm -f timing.sqlite3
 	rm -f _CoqProject .coqdeps.d
 
