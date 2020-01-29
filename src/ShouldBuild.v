@@ -13,7 +13,7 @@ From Perennial.goose_lang Require Import
      ffi.append_log_ffi.
 (* goose deep output *)
 From Perennial.goose_lang.examples Require Import
-     goose_unittest append_log wal mailserver simpledb logging2 rfc1813.
+     goose_unittest append_log wal simpledb logging2 rfc1813.
 
 (* interpreter *)
 From Perennial.goose_lang.interpreter Require Import interpreter tests.
