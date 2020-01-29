@@ -70,9 +70,9 @@ Definition Dec__GetInt32: val :=
 
 Definition Dec__GetInts: val :=
   λ: "dec" "num",
-    let: "xs" := NewSlice uint64T "num" in
+    let: "xs" := ref (zero_val (slice.T uint64T)) in
     let: "i" := ref #0 in
     (for: (λ: <>, ![uint64T] "i" < "num"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      SliceSet uint64T "xs" (![uint64T] "i") (Dec__GetInt "dec");;
+      "xs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "xs") (Dec__GetInt "dec");;
       Continue);;
-    "xs".
+    ![slice.T uint64T] "xs".

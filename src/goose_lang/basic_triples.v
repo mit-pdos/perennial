@@ -70,7 +70,7 @@ Tactic Notation "wp_store" :=
 
 Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (max:u64) (l:loc) (body: val) :
   (∀ (i:u64),
-      {{{ I i ∗ l ↦ Free #i ∗ ⌜int.val i <= int.val max⌝ }}}
+      {{{ I i ∗ l ↦ Free #i ∗ ⌜int.val i < int.val max⌝ }}}
         body #() @ stk; E
       {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦ Free #i }}}) -∗
   {{{ I 0 ∗ l ↦ Free #0 }}}
