@@ -1,3 +1,4 @@
 -Q external/iris-coq/theories iris
 -Q external/stdpp/theories stdpp
 -Q external/coqutil/src/coqutil coqutil
+-Q external/Goose Goose

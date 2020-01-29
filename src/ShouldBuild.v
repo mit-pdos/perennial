@@ -15,6 +15,9 @@ From Perennial.goose_lang Require Import
 From Perennial.goose_lang.examples Require Import
      goose_unittest append_log wal simpledb logging2 rfc1813.
 
+(* more goose output *)
+From Goose Require github_com.tchajed.marshal.
+
 (* interpreter *)
 From Perennial.goose_lang.interpreter Require Import interpreter tests.
 From Perennial.goose_lang.interpreter Require Import disk_interpreter.
