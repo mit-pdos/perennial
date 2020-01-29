@@ -25,6 +25,12 @@ Definition Enc__PutInt: val :=
     UInt64Put (SliceSkip byteT (struct.get Enc.S "b" "enc") "off") "x";;
     struct.get Enc.S "off" "enc" <-[refT uint64T] ![uint64T] (struct.get Enc.S "off" "enc") + #8.
 
+Definition Enc__PutInt32: val :=
+  λ: "enc" "x",
+    let: "off" := ![uint64T] (struct.get Enc.S "off" "enc") in
+    UInt32Put (SliceSkip byteT (struct.get Enc.S "b" "enc") "off") "x";;
+    struct.get Enc.S "off" "enc" <-[refT uint64T] ![uint64T] (struct.get Enc.S "off" "enc") + #4.
+
 Definition Enc__Finish: val :=
   λ: "enc",
     struct.get Enc.S "b" "enc".
@@ -50,3 +56,9 @@ Definition Dec__GetInt: val :=
     let: "off" := ![uint64T] (struct.get Dec.S "off" "dec") in
     struct.get Dec.S "off" "dec" <-[refT uint64T] ![uint64T] (struct.get Dec.S "off" "dec") + #8;;
     UInt64Get (SliceSkip byteT (struct.get Dec.S "b" "dec") "off").
+
+Definition Dec__GetInt32: val :=
+  λ: "dec",
+    let: "off" := ![uint64T] (struct.get Dec.S "off" "dec") in
+    struct.get Dec.S "off" "dec" <-[refT uint64T] ![uint64T] (struct.get Dec.S "off" "dec") + #4;;
+    UInt32Get (SliceSkip byteT (struct.get Dec.S "b" "dec") "off").

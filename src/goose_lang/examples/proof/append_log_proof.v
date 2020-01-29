@@ -60,18 +60,6 @@ Qed.
 
 Notation length := strings.length.
 
-Hint Rewrite app_length @drop_length @take_length @fmap_length
-     @replicate_length u64_le_bytes_length : len.
-Hint Rewrite @vec_to_list_length : len.
-Hint Rewrite @insert_length : len.
-Hint Rewrite u64_le_length : len.
-
-Ltac word := try lazymatch goal with
-                 | |- envs_entails _ _ => iPureIntro
-                 end; Integers.word.
-
-Ltac len := autorewrite with len; try word.
-
 Transparent disk.Read disk.Write.
 
 Theorem wp_Write stk E (a: u64) s b :

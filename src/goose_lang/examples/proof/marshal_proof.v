@@ -7,6 +7,128 @@ From Perennial.goose_lang Require Import ffi.disk.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 Import uPred.
 
+(* The specification for encoding is based on this encodable inductive, which
+represents a single encodable bundle.
+
+The high-level specs look like this:
+
+{True}
+  NewEnc()
+{enc. is_enc enc []}
+
+{is_enc enc es ∗ ⌜x fits⌝}
+  enc.PutInt(x)
+{is_enc enc (es ++ [EncUInt64 x])}
+
+{is_enc enc es}
+  enc.Finish()
+{b. b ↦∗ to_bytes es}
+
+The idea is that an Enc builds up a list of encoded items and maintains free
+space (totalling 4096 bytes). The list of items is a dynamically-typed bundle,
+an [encodable].
+
+Symmetrically, Dec can extract an encoded list, popping elements (of the right
+type) one at a time:
+
+{b ↦∗ to_bytes es}
+  NewDec(b)
+{dec. is_dec dec es}
+
+{is_dec (EncUInt64 x::es)}
+  dec.GetInt()
+{x. is_dec es}
+ *)
+
+Inductive encodable :=
+| EncUInt64 (x:u64)
+| EncUInt32 (x:u32)
+| EncBytes (bs:list u8)
+.
+
+(* a record (not a descriptor) *)
+Definition Rec := list encodable.
+
+Definition encode1 (e:encodable) : list u8 :=
+  match e with
+  | EncUInt64 x => u64_le x
+  | EncUInt32 x => u32_le x
+  | EncBytes bs => bs
+  end.
+
+Definition encode (es:Rec): list u8 := concat (encode1 <$> es).
+
+Definition encode1_length (e:encodable): nat :=
+  match e with
+  | EncUInt64 _ => 8%nat
+  | EncUInt32 _ => 4%nat
+  | EncBytes bs => length bs
+  end.
+
+Theorem encode1_length_ok e :
+  encode1_length e = length $ encode1 e.
+Proof.
+  destruct e; auto.
+Qed.
+
+Fixpoint encode_length (es:Rec): nat :=
+  match es with
+  | [] => 0%nat
+  | e::es => (encode1_length e + encode_length es)%nat
+  end.
+
+Hint Rewrite app_length @drop_length @take_length @fmap_length
+     @replicate_length u64_le_bytes_length : len.
+Hint Rewrite @vec_to_list_length : len.
+Hint Rewrite @insert_length : len.
+Hint Rewrite u64_le_length : len.
+
+Ltac word := try lazymatch goal with
+                 | |- envs_entails _ _ => iPureIntro
+                 end; Integers.word.
+
+Ltac len := autorewrite with len; try word.
+
+Theorem encode_length_ok es :
+  encode_length es = length $ encode es.
+Proof.
+  induction es; simpl; auto.
+  rewrite IHes encode1_length_ok /encode.
+  cbn [concat list_fmap fmap]; len.
+Qed.
+
+Lemma encode_app es1 es2 :
+  encode (es1 ++ es2) = encode es1 ++ encode es2.
+Proof.
+  rewrite /encode fmap_app concat_app //.
+Qed.
+
+Lemma encode_cons e es :
+  encode (e::es) = encode1 e ++ encode es.
+Proof.
+  done.
+Qed.
+
+Lemma encode_app_length es1 es2 :
+  length (encode (es1 ++ es2)) = (length (encode es1) + length (encode es2))%nat.
+Proof.
+  rewrite encode_app app_length //.
+Qed.
+
+Lemma encode_singleton e :
+  encode [e] = encode1 e.
+Proof.
+  rewrite /encode /=.
+  rewrite app_nil_r //.
+Qed.
+
+Lemma encode_singleton_length e :
+  length (encode [e]) = ltac:(let x := (eval hnf in (encode1_length e)) in exact x).
+Proof.
+  rewrite encode_singleton.
+  destruct e; auto.
+Qed.
+
 Module EncM.
   Record t := mk { s: Slice.t;
                    off: loc; }.
@@ -82,62 +204,9 @@ Implicit Types stk : stuckness.
 
 Notation length := strings.length.
 
-Hint Rewrite app_length @drop_length @take_length @fmap_length
-     @replicate_length u64_le_bytes_length : len.
-Hint Rewrite @vec_to_list_length : len.
-Hint Rewrite @insert_length : len.
-Hint Rewrite u64_le_length : len.
-
-Ltac word := try lazymatch goal with
-                 | |- envs_entails _ _ => iPureIntro
-                 end; Integers.word.
-
-Ltac len := autorewrite with len; try word.
-
-Inductive encodable :=
-| EncUInt64 (x:u64)
-| EncBytes (bs:list u8)
-.
-
-(* a record (not a descriptor) *)
-Definition Rec := list encodable.
-
-Definition encode1 (e:encodable) : list u8 :=
-  match e with
-  | EncUInt64 x => u64_le x
-  | EncBytes bs => bs
-  end.
-
-Definition encode (es:Rec): list u8 := concat (encode1 <$> es).
-
-Definition encode1_length (e:encodable): nat :=
-  match e with
-  | EncUInt64 _ => 8%nat
-  | EncBytes bs => length bs
-  end.
-
-Theorem encode1_length_ok e :
-  encode1_length e = length $ encode1 e.
-Proof.
-  destruct e; auto.
-Qed.
-
-Fixpoint encode_length (es:Rec): nat :=
-  match es with
-  | [] => 0%nat
-  | e::es => (encode1_length e + encode_length es)%nat
-  end.
-
-Theorem encode_length_ok es :
-  encode_length es = length $ encode es.
-Proof.
-  induction es; simpl; auto.
-  rewrite IHes encode1_length_ok /encode.
-  cbn [concat list_fmap fmap]; len.
-Qed.
-
-(* trying out a new pattern for struct rep invariants - the idea is that the EncM module is
-entirely derived while is_enc is what the user defines *)
+Hint Rewrite encode_app_length : len.
+Hint Rewrite encode_singleton_length : len.
+Hint Rewrite <- encode1_length_ok : len.
 
 Definition is_enc (enc: EncM.t) (vs: Rec): iProp Σ :=
   ⌜int.val enc.(EncM.s).(Slice.sz) = 4096⌝ ∗
@@ -180,46 +249,6 @@ Proof.
   len.
 Qed.
 
-Lemma encode_app es1 es2 :
-  encode (es1 ++ es2) = encode es1 ++ encode es2.
-Proof.
-  rewrite /encode fmap_app concat_app //.
-Qed.
-
-Lemma encode_cons e es :
-  encode (e::es) = encode1 e ++ encode es.
-Proof.
-  done.
-Qed.
-
-Lemma encode_app_length es1 es2 :
-  length (encode (es1 ++ es2)) = (length (encode es1) + length (encode es2))%nat.
-Proof.
-  rewrite encode_app app_length //.
-Qed.
-
-Lemma encode_singleton e :
-  encode [e] = encode1 e.
-Proof.
-  rewrite /encode /=.
-  rewrite app_nil_r.
-  auto.
-Qed.
-
-Lemma encode_singleton_length e :
-  length (encode [e]) = match e with
-                        | EncUInt64 _ => 8%nat
-                        | EncBytes bs => length bs
-                        end.
-Proof.
-  rewrite encode_singleton.
-  destruct e; auto.
-Qed.
-
-Hint Rewrite encode_app_length : len.
-Hint Rewrite encode_singleton_length : len.
-Hint Rewrite <- encode1_length_ok : len.
-
 Theorem wp_Enc__PutInt stk E enc vs (x: u64) :
   {{{ is_enc enc vs ∗ ⌜encode_length vs + 8 <= 4096⌝ }}}
     Enc__PutInt (EncM.to_val enc) #x @ stk; E
@@ -237,6 +266,66 @@ Proof.
   { iPureIntro.
     word. }
   wp_apply (wp_UInt64Put with "[Hfree]").
+  { rewrite /is_slice /=.
+    iSplitL; [ iSplitL | ].
+    - iFramePtsTo by word.
+    - len.
+    - rewrite encode_length_ok in H.
+      len.
+  }
+  iIntros "(Ha&%)".
+  wp_steps.
+  wp_load.
+  wp_steps.
+  wp_store.
+  iApply "HΦ".
+  cbn [slice_skip Slice.ptr].
+  rewrite /is_enc.
+  iSplitR; [ iPureIntro; auto | ].
+  iSplitL "Hoff".
+  {
+    iFramePtsTo.
+    repeat f_equal.
+    apply word.unsigned_inj.
+    len.
+  }
+  iDestruct (array_app with "Ha") as "[Hx Hfree]".
+  iDestruct (array_app with "[$Henc Hx]") as "Henc".
+  { iFramePtsTo by len. }
+  iSplitL "Henc".
+  { rewrite encode_app encode_singleton /=.
+    rewrite /u64_le_bytes.
+    rewrite -fmap_app.
+    iFrame. }
+  iExists _; iFrame.
+  iSplitL.
+  { rewrite -fmap_drop.
+    rewrite loc_add_assoc.
+    iFramePtsTo.
+    len.
+    simpl; len.
+  }
+  rewrite encode_length_ok in H.
+  len.
+Qed.
+
+Theorem wp_Enc__PutInt32 stk E enc vs (x: u32) :
+  {{{ is_enc enc vs ∗ ⌜encode_length vs + 4 <= 4096⌝ }}}
+    Enc__PutInt32 (EncM.to_val enc) #x @ stk; E
+  {{{ RET #(); is_enc enc (vs ++ [EncUInt32 x]) }}}.
+Proof.
+  iIntros (Φ) "(Henc&%) HΦ".
+  iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
+  iDestruct "Hfree" as (free) "(Hfree&%)".
+  wp_call.
+  rewrite /struct.getField /Enc.S /=.
+  wp_steps.
+  wp_load.
+  wp_steps.
+  wp_apply wp_SliceSkip'.
+  { iPureIntro.
+    word. }
+  wp_apply (wp_UInt32Put with "[Hfree]").
   { rewrite /is_slice /=.
     iSplitL; [ iSplitL | ].
     - iFramePtsTo by word.
@@ -457,4 +546,62 @@ Proof.
   len.
 Qed.
 
+Theorem wp_Dec__GetInt32 stk E dec (x: u32) vs :
+  {{{ is_dec dec (EncUInt32 x::vs) }}}
+    Dec__GetInt32 (DecM.to_val dec) @ stk; E
+  {{{ RET #x; is_dec dec vs }}}.
+Proof.
+  iIntros (Φ) "Hdec HΦ".
+  iDestruct "Hdec" as (Hdecsz off extra) "(Hoff&Hvs&%)".
+  rewrite fmap_app.
+  iDestruct (array_app with "Hvs") as "[Hxvs Hextra]".
+  len.
+  rewrite encode_cons fmap_app.
+  iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
+  wp_call.
+  wp_call.
+  wp_load.
+  wp_steps.
+  wp_call.
+  wp_load.
+  wp_steps.
+  wp_call.
+  wp_store.
+  wp_call.
+  wp_apply wp_SliceSkip'; [ word | ].
+  wp_apply (wp_UInt32Get' with "[Hx]").
+  { iSplitL.
+    - cbn [Slice.ptr slice_skip].
+      rewrite Z.mul_1_l.
+      iFramePtsTo by word.
+    - simpl.
+      simpl in H.
+      word.
+  }
+  iIntros "Hx".
+  cbn [Slice.ptr slice_skip].
+  iApply "HΦ".
+  rewrite /is_dec.
+  iSplitR; eauto.
+  iExists _, _; iFrame.
+  rewrite !loc_add_assoc.
+  iSplitL.
+  { rewrite fmap_app.
+    iApply array_app.
+    iSplitR "Hextra".
+    - iFramePtsTo.
+      len.
+      simpl.
+      len.
+    - rewrite loc_add_assoc.
+      iFramePtsTo.
+      len.
+      simpl.
+      len.
+  }
+  cbn [concat fmap list_fmap] in H.
+  rewrite -encode_length_ok /= in H.
+  rewrite -encode_length_ok.
+  len.
+Qed.
 End heap.

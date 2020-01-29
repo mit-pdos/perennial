@@ -189,6 +189,39 @@ Proof using Type.
   lia.
 Qed.
 
+Definition u32_le_bytes (x: u32) : list val :=
+  b2val <$> u32_le x.
+
+Lemma u32_le_bytes_length x : length (u32_le_bytes x) = u32_bytes.
+Proof using Type.
+  rewrite fmap_length //.
+Qed.
+
+Theorem wp_UInt32Put stk E s (x: u32) vs :
+  {{{ is_slice s byteT vs ∗ ⌜length vs >= u32_bytes⌝ }}}
+    UInt32Put (slice_val s) #x @ stk; E
+  {{{ RET #(); is_slice s byteT (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
+Proof using Type.
+  iIntros (Φ) "[Hsl %] HΦ".
+  wp_lam.
+  wp_let.
+  wp_lam.
+  wp_pures.
+  iDestruct (is_slice_elim with "Hsl") as "[Hptr %]".
+  iDestruct (array_split 4 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
+  wp_apply (wp_EncodeUInt32 with "[$Henc]").
+  { iPureIntro.
+    rewrite take_length; lia. }
+  iIntros "Henc".
+  change (Z.to_nat 4) with 4%nat.
+  iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
+  iApply "HΦ".
+  iFrame.
+  rewrite app_length drop_length u32_le_bytes_length.
+  iPureIntro.
+  lia.
+Qed.
+
 Eval cbv [le_to_u32 map LittleEndian.combine length Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2]
   in (fun (v1 v2 v3 v4:u8) => le_to_u32 [v1;v2;v3;v4]).
 
@@ -260,7 +293,7 @@ Proof using Type.
   rewrite ?word.unsigned_of_Z.
 Admitted.
 
-Theorem wp_DecodeUInt32 (l: loc) (x: u32) vs s E :
+Theorem wp_DecodeUInt32 (l: loc) (x: u32) s E :
   {{{ ▷ l ↦∗[byteT] (b2val <$> u32_le x) }}}
     DecodeUInt32 #l @ s ; E
   {{{ RET #x; l ↦∗[byteT] (b2val <$> u32_le x) }}}.
@@ -343,6 +376,18 @@ Proof using Type.
   wp_call.
   wp_call.
   wp_apply (wp_DecodeUInt64 with "Ha").
+  iApply "HΦ".
+Qed.
+
+Theorem wp_UInt32Get' stk E s (x: u32) :
+  {{{ s.(Slice.ptr) ↦∗[byteT] u32_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 4⌝ }}}
+    UInt32Get (slice_val s) @ stk; E
+  {{{ RET #x; s.(Slice.ptr) ↦∗[byteT] u32_le_bytes x }}}.
+Proof using Type.
+  iIntros (Φ) "[Ha %] HΦ".
+  wp_call.
+  wp_call.
+  wp_apply (wp_DecodeUInt32 with "Ha").
   iApply "HΦ".
 Qed.
 
