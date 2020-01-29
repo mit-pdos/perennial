@@ -836,3 +836,23 @@ Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
 
 Tactic Notation "wp_alloc" ident(l) :=
   wp_alloc l as "?".
+
+Ltac iFramePtsTo_core t :=
+  match goal with
+  | [ |- envs_entails ?Δ ((?l +ₗ ?z) ↦∗[_] ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j ((l +ₗ ?z') ↦∗[_] ?v')] =>
+      unify v v';
+      replace z with z';
+      [ iExact j | t ]
+    end
+  | [ |- envs_entails ?Δ (?l ↦ ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j (l ↦ ?v')] =>
+      replace v with v';
+      [ iExact j | t ]
+    end
+  end.
+
+Tactic Notation "iFramePtsTo" := iFramePtsTo_core ltac:(idtac).
+Tactic Notation "iFramePtsTo" "by" tactic(t) := iFramePtsTo_core ltac:(by t).
