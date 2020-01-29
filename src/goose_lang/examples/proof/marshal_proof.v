@@ -660,4 +660,13 @@ Proof.
   rewrite -encode_length_ok.
   len.
 Qed.
+
+Theorem wp_Dec__GetInts stk E dec xs vs :
+  {{{ is_dec dec ((EncUInt64 <$> xs) ++ vs) }}}
+    Dec__GetInts (DecM.to_val dec) @ stk; E
+  {{{ s, RET slice_val s; is_dec dec vs ∗ is_slice s uint64T (u64val <$> xs) }}}.
+Proof.
+  rewrite /Dec__GetInts.
+Abort.
+
 End heap.

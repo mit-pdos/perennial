@@ -26,6 +26,94 @@ Implicit Types vs : list val.
 Implicit Types z : Z.
 Implicit Types off : nat.
 
+Lemma wp_store s E l v v' :
+  {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
+  {{{ RET LitV LitUnit; l ↦ Free v }}}.
+Proof using Type.
+  iIntros (Φ) "Hl HΦ". unfold Store.
+  wp_lam. wp_let. wp_bind (PrepareWrite _).
+  iApply (wp_prepare_write with "Hl").
+  iIntros "!> Hl".
+  wp_seq. by iApply (wp_finish_store with "Hl").
+Qed.
+
+Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
+  MaybeIntoLaterNEnvs 1 Δ Δ' →
+  envs_lookup i Δ' = Some (false, l ↦ Free v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v')) Δ' = Some Δ'' →
+  envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
+Proof using Type.
+  rewrite envs_entails_eq=> ????.
+  rewrite -wp_bind. eapply wand_apply; first by eapply wp_store.
+  rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
+  rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
+Qed.
+
+(* local version just for this file *)
+Tactic Notation "wp_store" :=
+  let solve_mapsto _ :=
+    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
+    iAssumptionCore || fail "wp_store: cannot find" l "↦ ?" in
+  wp_pures;
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ _ _ K))
+      |fail 1 "wp_store: cannot find 'Store' in" e];
+    [iSolveTC
+    |solve_mapsto ()
+    |pm_reflexivity
+    |first [wp_seq|wp_finish]]
+  | _ => fail "wp_store: not a 'wp'"
+  end.
+
+Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (max:u64) (l:loc) (body: val) :
+  (∀ (i:u64),
+      {{{ I i ∗ l ↦ Free #i ∗ ⌜int.val i <= int.val max⌝ }}}
+        body #() @ stk; E
+      {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦ Free #i }}}) -∗
+  {{{ I 0 ∗ l ↦ Free #0 }}}
+    (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
+       body) @ stk; E
+  {{{ RET #(); I max ∗ l ↦ Free #max }}}.
+Proof using Type.
+  iIntros "#Hbody".
+  iIntros (Φ) "!> (H0 & Hl) HΦ".
+  rewrite /For /Continue.
+  wp_lam.
+  wp_let.
+  wp_let.
+  wp_pure (Rec _ _ _).
+  match goal with
+  | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
+  end.
+  remember (U64 0) as x.
+  (* TODO: need to first reduce the rec to a value lambda *)
+  assert (0 <= int.val x <= int.val max) as Hbounds by (subst; word).
+  clear Heqx.
+  iDestruct "H0" as "HIx".
+  iLöb as "IH" forall (x Hbounds).
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_if_destruct.
+  - wp_apply ("Hbody" with "[$HIx $Hl]").
+    { iPureIntro; lia. }
+    iIntros "[HIx Hl]".
+    wp_pures.
+    wp_load.
+    wp_pures.
+    wp_apply (wp_store with "Hl"); iIntros "Hl".
+    wp_seq.
+    iApply ("IH" with "[] HIx Hl").
+    { iPureIntro; word. }
+    iFrame.
+  - assert (int.val x = int.val max) by word.
+    apply word.unsigned_inj in H; subst.
+    iApply ("HΦ" with "[$]").
+Qed.
+
 (* TODO: this should probably be a val, or it's going to cause problems... *)
 Definition AllocN_at (t:ty) (len:expr) (e:expr) := AllocN len e.
 
@@ -48,7 +136,7 @@ Qed.
 Theorem val_hasTy_flatten_length Γ v t :
   (Γ ⊢v v : t) ->
   length (flatten_struct v) = length (flatten_ty t).
-Proof.
+Proof using Type.
   induction 1; simpl; auto.
   - inversion H; subst; auto.
   - rewrite ?app_length.
@@ -66,7 +154,7 @@ Qed.
 
 Theorem struct_ptsto_pair_split l v1 t1 v2 t2 :
   l ↦[t1 * t2] (v1, v2) ⊣⊢ l ↦[t1] v1 ∗ (l +ₗ ty_size t1) ↦[t2] v2.
-Proof.
+Proof using Type.
   rewrite /struct_mapsto /= big_opL_app.
   rewrite /val_ty.
   iSplit.
@@ -89,7 +177,7 @@ Lemma wp_LoadAt stk E l t v :
   {{{ l ↦[t] v }}}
     load_ty t #l @ stk; E
   {{{ RET v; l ↦[t] v }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "Hl HΦ".
   iDestruct "Hl" as "[Hl %]".
   hnf in H.
@@ -151,48 +239,6 @@ Proof.
   iApply ("Hl2" with "[$]").
 Qed.
 
-Lemma wp_store s E l v v' :
-  {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
-  {{{ RET LitV LitUnit; l ↦ Free v }}}.
-Proof using Type.
-  iIntros (Φ) "Hl HΦ". unfold Store.
-  wp_lam. wp_let. wp_bind (PrepareWrite _).
-  iApply (wp_prepare_write with "Hl").
-  iIntros "!> Hl".
-  wp_seq. by iApply (wp_finish_store with "Hl").
-Qed.
-
-Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
-  MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ Free v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v')) Δ' = Some Δ'' →
-  envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ s; E {{ Φ }}) →
-  envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
-Proof using Type.
-  rewrite envs_entails_eq=> ????.
-  rewrite -wp_bind. eapply wand_apply; first by eapply wp_store.
-  rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
-  rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
-Qed.
-
-(* local version just for this file *)
-Tactic Notation "wp_store" :=
-  let solve_mapsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_store: cannot find" l "↦ ?" in
-  wp_pures;
-  lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ _ _ K))
-      |fail 1 "wp_store: cannot find 'Store' in" e];
-    [iSolveTC
-    |solve_mapsto ()
-    |pm_reflexivity
-    |first [wp_seq|wp_finish]]
-  | _ => fail "wp_store: not a 'wp'"
-  end.
-
 (* TODO: move this to common tactics *)
 Ltac invc H := inversion H; subst; clear H.
 
@@ -201,7 +247,7 @@ Lemma wp_StoreAt stk E l t v0 v :
   {{{ l ↦[t] v0 }}}
     store_ty t #l v @ stk; E
   {{{ RET #(); l ↦[t] v }}}.
-Proof.
+Proof using Type.
   intros Hty; hnf in Hty.
   iIntros (Φ) "[Hl %] HΦ".
   hnf in H.

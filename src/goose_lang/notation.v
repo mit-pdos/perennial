@@ -214,12 +214,13 @@ Notation "'for-range:' v < b := e" := (ForRange v%string b%E e%E)
 Definition Continue {ext:ext_op}: val := #true.
 Definition Break {ext:ext_op}: val := #false.
 
-Definition For {ext:ext_op} (cond:expr) (body:expr) (post:expr) : expr :=
-  (rec: "__loop" BAnon :=
-     if: cond
-     then let: "__continue" := body in
-          if: (Var "__continue")
-          then post;; (Var "__loop") #()
+Definition For {ext:ext_op}: val :=
+  λ: "cond" "body" "post",
+  (rec: "loop" <> :=
+     if: (Var "cond") #()
+     then let: "continue" := (Var "body") #() in
+          if: (Var "continue")
+          then (Var "post") #();; (Var "loop") #()
           else #()
      else #()) #().
 Notation "'for:' cond ; post := e" := (For cond%E e%E post%E)
