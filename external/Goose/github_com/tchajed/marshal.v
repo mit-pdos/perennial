@@ -33,7 +33,7 @@ Definition Enc__PutInt32: val :=
 
 Definition Enc__PutInts: val :=
   λ: "enc" "xs",
-    ForSlice uint64T "_" "x" "xs"
+    ForSlice uint64T <> "x" "xs"
       (Enc__PutInt "enc" "x").
 
 Definition Enc__Finish: val :=

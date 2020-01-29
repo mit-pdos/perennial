@@ -309,6 +309,62 @@ Proof.
   len.
 Qed.
 
+Definition u64val (x: u64): val := #x.
+
+Theorem length_encode_fmap_uniform (sz: nat) {A} (f: A -> encodable) l :
+  (forall x, encode1_length (f x) = sz) ->
+  length (encode (f <$> l)) = (sz * length l)%nat.
+Proof.
+  intros Hsz.
+  induction l; simpl.
+  - rewrite Nat.mul_0_r; auto.
+  - rewrite encode_cons; autorewrite with len.
+    rewrite Hsz.
+    rewrite /fmap in IHl.
+    lia.
+Qed.
+
+Lemma take_0 A (l: list A) : take 0%nat l = [].
+Proof.
+  reflexivity.
+Qed.
+
+Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) (xs: list u64) :
+  {{{ is_enc enc vs ∗ is_slice s uint64T (u64val <$> xs) ∗ ⌜encode_length vs + 8 * length xs <= 4096⌝ }}}
+    Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
+  {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) }}}.
+Proof.
+  iIntros (Φ) "(Henc&Hs&%) HΦ".
+  rewrite /Enc__PutInts /ForSlice.
+  wp_pures.
+  wp_apply (wp_forSlice (λ i, is_enc enc (vs ++ (EncUInt64 <$> take (int.nat i) xs)))%I
+              with "[] [Henc $Hs]").
+  - iIntros (i x) "!>".
+    clear Φ.
+    iIntros (Φ) "[Henc (%&%)] HΦ".
+    apply list_lookup_fmap_inv in H1; destruct H1 as [xi [-> ?]].
+    rewrite /u64val.
+    wp_apply (wp_Enc__PutInt with "[$Henc]").
+    { iPureIntro.
+      apply lookup_lt_Some in H1.
+      rewrite encode_length_ok encode_app_length -encode_length_ok.
+      rewrite (length_encode_fmap_uniform 8%nat); auto.
+      len.
+    }
+    iIntros "Henc"; iApply "HΦ".
+    replace (int.nat (word.add i 1)) with (1 + int.nat i)%nat by word.
+    erewrite take_S_r by eauto.
+    rewrite -app_assoc fmap_app.
+    iFrame.
+  - rewrite take_0 app_nil_r.
+    iFrame.
+  - iIntros "(Henc&Hs)"; iApply "HΦ".
+    iDestruct (is_slice_sz with "Hs") as %Hslen.
+    rewrite fmap_length in Hslen.
+    rewrite -> take_ge by lia.
+    iFrame.
+Qed.
+
 Theorem wp_Enc__PutInt32 stk E enc vs (x: u32) :
   {{{ is_enc enc vs ∗ ⌜encode_length vs + 4 <= 4096⌝ }}}
     Enc__PutInt32 (EncM.to_val enc) #x @ stk; E
