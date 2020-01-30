@@ -413,6 +413,14 @@ Definition MapSize: val :=
   λ: "m",
     MapLen "m".
 
+Definition IntWrapper: ty := uint64T.
+
+Definition MapWrapper: ty := mapT boolT.
+
+Definition MapTypeAliases: val :=
+  λ: "m1" "m2",
+    MapInsert "m1" #4 (MapGet "m2" #0).
+
 (* multiple.go *)
 
 Definition returnTwo: val :=

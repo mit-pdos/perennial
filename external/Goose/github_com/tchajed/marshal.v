@@ -36,6 +36,12 @@ Definition Enc__PutInts: val :=
     ForSlice uint64T <> "x" "xs"
       (Enc__PutInt "enc" "x").
 
+Definition Enc__PutBytes: val :=
+  λ: "enc" "b",
+    let: "off" := ![uint64T] (struct.get Enc.S "off" "enc") in
+    let: "n" := SliceCopy byteT (SliceSkip byteT (struct.get Enc.S "b" "enc") "off") "b" in
+    struct.get Enc.S "off" "enc" <-[refT uint64T] ![uint64T] (struct.get Enc.S "off" "enc") + "n".
+
 Definition Enc__Finish: val :=
   λ: "enc",
     struct.get Enc.S "b" "enc".
@@ -76,3 +82,10 @@ Definition Dec__GetInts: val :=
       "xs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "xs") (Dec__GetInt "dec");;
       Continue);;
     ![slice.T uint64T] "xs".
+
+Definition Dec__GetBytes: val :=
+  λ: "dec" "num",
+    let: "off" := ![uint64T] (struct.get Dec.S "off" "dec") in
+    let: "b" := SliceSubslice byteT (struct.get Dec.S "b" "dec") "off" ("off" + "num") in
+    struct.get Dec.S "off" "dec" <-[refT uint64T] ![uint64T] (struct.get Dec.S "off" "dec") + "num";;
+    "b".
