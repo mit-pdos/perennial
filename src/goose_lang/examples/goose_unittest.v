@@ -310,7 +310,7 @@ Definition standardForLoop: val :=
   λ: "s",
     let: "sumPtr" := ref (zero_val uint64T) in
     let: "i" := ref #0 in
-    (for: (#true); (Skip) :=
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "i" < slice.len "s"
       then
         let: "sum" := ![uint64T] "sumPtr" in
@@ -325,7 +325,7 @@ Definition standardForLoop: val :=
 Definition conditionalInLoop: val :=
   λ: <>,
     let: "i" := ref #0 in
-    (for: (#true); (Skip) :=
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "i" < #3
       then
         DoSomething (#(str"i is small"));;
@@ -340,7 +340,7 @@ Definition conditionalInLoop: val :=
 Definition ImplicitLoopContinue: val :=
   λ: <>,
     let: "i" := ref #0 in
-    (for: (#true); (Skip) :=
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "i" < #4
       then "i" <-[uint64T] #0
       else #());;
@@ -349,9 +349,9 @@ Definition ImplicitLoopContinue: val :=
 Definition nestedLoops: val :=
   λ: <>,
     let: "i" := ref #0 in
-    (for: (#true); (Skip) :=
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "j" := ref #0 in
-      (for: (#true); (Skip) :=
+      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         (if: #true
         then Break
         else
@@ -363,13 +363,20 @@ Definition nestedLoops: val :=
 Definition nestedGoStyleLoops: val :=
   λ: <>,
     let: "i" := ref #0 in
-    (for: (![uint64T] "i" < #10); ("i" <-[uint64T] ![uint64T] "i" + #1) :=
+    (for: (λ: <>, ![uint64T] "i" < #10); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       let: "j" := ref #0 in
-      (for: (![uint64T] "j" < ![uint64T] "i"); ("j" <-[uint64T] ![uint64T] "j" + #1) :=
+      (for: (λ: <>, ![uint64T] "j" < ![uint64T] "i"); (λ: <>, "j" <-[uint64T] ![uint64T] "j" + #1) := λ: <>,
         (if: #true
         then Break
         else Continue));;
       Continue).
+
+Definition sumSlice: val :=
+  λ: "xs",
+    let: "sum" := ref (zero_val uint64T) in
+    ForSlice uint64T <> "x" "xs"
+      ("sum" <-[uint64T] ![uint64T] "sum" + "x");;
+    ![uint64T] "sum".
 
 (* maps.go *)
 
@@ -537,7 +544,7 @@ Definition ReplicatedDiskWrite: val :=
 Definition ReplicatedDiskRecover: val :=
   λ: <>,
     let: "a" := ref #0 in
-    (for: (#true); (Skip) :=
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "a" > DiskSize
       then Break
       else
@@ -789,6 +796,15 @@ Definition testFunctionOrdering: val :=
                 then #false
                 else (struct.get Pair.S "x" "p" + struct.get Pair.S "x" "q" = #109)))))))).
 
+Definition testStandardForLoop: val :=
+  λ: <>,
+    let: "arr" := ref (NewSlice uint64T #4) in
+    SliceSet uint64T (![slice.T uint64T] "arr") #0 (SliceGet uint64T (![slice.T uint64T] "arr") #0 + #1);;
+    SliceSet uint64T (![slice.T uint64T] "arr") #1 (SliceGet uint64T (![slice.T uint64T] "arr") #1 + #3);;
+    SliceSet uint64T (![slice.T uint64T] "arr") #2 (SliceGet uint64T (![slice.T uint64T] "arr") #2 + #5);;
+    SliceSet uint64T (![slice.T uint64T] "arr") #3 (SliceGet uint64T (![slice.T uint64T] "arr") #3 + #7);;
+    (standardForLoop (![slice.T uint64T] "arr") = #16).
+
 (* slices.go *)
 
 Definition SliceAlias: ty := slice.T boolT.
@@ -856,12 +872,12 @@ Definition threadCode: val :=
 Definition loopSpawn: val :=
   λ: <>,
     let: "i" := ref #0 in
-    (for: (![uint64T] "i" < #10); ("i" <-[uint64T] ![uint64T] "i" + #1) :=
+    (for: (λ: <>, ![uint64T] "i" < #10); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       let: "i" := ![uint64T] "i" in
       Fork (threadCode "i");;
       Continue);;
     let: "dummy" := ref #true in
-    (for: (#true); (Skip) :=
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       "dummy" <-[boolT] ~ (![boolT] "dummy");;
       Continue).
 
