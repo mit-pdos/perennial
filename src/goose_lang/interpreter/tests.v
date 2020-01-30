@@ -71,10 +71,7 @@ Example tc5 := testShortcircuitAndFT #() ~~> #true.
 Example tc6 := testShortcircuitOrTF #() ~~> #true.
 Example tc7 := testShortcircuitOrFT #() ~~> #true.
 
-(* TODO: this fails.
-Compute (check_run (testStandardForLoop #())).
 Example tc8 := testStandardForLoop #() ~~> #true.
-*)
 
 
 (* Extraction testing:
