@@ -21,7 +21,7 @@ End Log.
 
 Definition Log__mkHdr: val :=
   λ: "log",
-    let: "enc" := marshal.NewEnc #() in
+    let: "enc" := marshal.NewEnc disk.BlockSize in
     Enc__PutInt "enc" (struct.get Log.S "sz" "log");;
     Enc__PutInt "enc" (struct.get Log.S "diskSz" "log");;
     Enc__Finish "enc".

@@ -208,22 +208,30 @@ Hint Rewrite encode_app_length : len.
 Hint Rewrite encode_singleton_length : len.
 Hint Rewrite <- encode1_length_ok : len.
 
+Definition EncSz (enc:EncM.t): u64 := enc.(EncM.s).(Slice.sz).
+
+Theorem EncSz_fold enc : enc.(EncM.s).(Slice.sz) = EncSz enc.
+Proof. reflexivity. Qed.
+
+Hint Rewrite EncSz_fold : len.
+
 Definition is_enc (enc: EncM.t) (vs: Rec): iProp Σ :=
-  ⌜int.val enc.(EncM.s).(Slice.sz) = 4096⌝ ∗
   let encoded := encode vs in
   let encoded_len := Z.of_nat (length encoded) in
   enc.(EncM.off) ↦ (Free #(U64 encoded_len)) ∗
   enc.(EncM.s).(Slice.ptr) ↦∗[byteT] fmap b2val encoded ∗
   ∃ (free: list u8),
     (enc.(EncM.s).(Slice.ptr) +ₗ encoded_len) ↦∗[byteT] fmap b2val free ∗
-    ⌜(length encoded + length free)%nat = Z.to_nat 4096⌝.
+    ⌜(length encoded + length free)%nat = int.nat (EncSz enc)⌝.
 
-Theorem wp_new_enc stk E :
+Theorem wp_new_enc stk E (sz: u64) :
+  (* TODO: make zero-sized allocation safe (returns null) *)
+  0 < int.val sz ->
   {{{ True }}}
-    NewEnc #() @ stk; E
-  {{{ enc, RET EncM.to_val enc; is_enc enc [] }}}.
+    NewEnc #sz @ stk; E
+  {{{ enc, RET EncM.to_val enc; is_enc enc [] ∗ ⌜EncSz enc = sz⌝ }}}.
 Proof.
-  iIntros (Φ) "_ HΦ".
+  iIntros (Hsz_nonzero Φ) "_ HΦ".
   rewrite /NewEnc.
   rewrite /struct.buildStruct /Enc.S /=.
   wp_call.
@@ -237,25 +245,25 @@ Proof.
   wp_steps.
   rewrite EncM.to_val_intro.
   iApply "HΦ".
-  rewrite /is_enc.
-  simpl.
-  iSplitR; [ word | ].
-  iFrame.
-  rewrite array_nil.
-  rewrite right_id left_id ?loc_add_0.
-  iSplitL "Hl"; auto.
-  iExists (replicate (int.nat 4096) (U8 0)).
-  rewrite fmap_replicate; iFrame.
-  len.
+  rewrite /is_enc /EncSz /=.
+  iSplitL.
+  { rewrite array_nil.
+    rewrite left_id right_id ?loc_add_0.
+    iFrame.
+    iExists (replicate (int.nat sz) (U8 0)).
+    rewrite fmap_replicate; iFrame.
+    len. }
+  iPureIntro.
+  apply word.unsigned_inj; lia.
 Qed.
 
 Theorem wp_Enc__PutInt stk E enc vs (x: u64) :
-  {{{ is_enc enc vs ∗ ⌜encode_length vs + 8 <= 4096⌝ }}}
+  {{{ is_enc enc vs ∗ ⌜encode_length vs + 8 <= int.val (EncSz enc)⌝ }}}
     Enc__PutInt (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt64 x]) }}}.
 Proof.
   iIntros (Φ) "(Henc&%) HΦ".
-  iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
+  iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   wp_call.
   rewrite /struct.getField /Enc.S /=.
@@ -264,7 +272,7 @@ Proof.
   wp_steps.
   wp_apply wp_SliceSkip'.
   { iPureIntro.
-    word. }
+    len. }
   wp_apply (wp_UInt64Put with "[Hfree]").
   { rewrite /is_slice /=.
     iSplitL; [ iSplitL | ].
@@ -281,12 +289,12 @@ Proof.
   iApply "HΦ".
   cbn [slice_skip Slice.ptr].
   rewrite /is_enc.
-  iSplitR; [ iPureIntro; auto | ].
   iSplitL "Hoff".
   {
     iFramePtsTo.
     repeat f_equal.
     apply word.unsigned_inj.
+    rewrite encode_length_ok in H.
     len.
   }
   iDestruct (array_app with "Ha") as "[Hx Hfree]".
@@ -330,7 +338,8 @@ Proof.
 Qed.
 
 Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) (xs: list u64) :
-  {{{ is_enc enc vs ∗ is_slice s uint64T (u64val <$> xs) ∗ ⌜encode_length vs + 8 * length xs <= 4096⌝ }}}
+  {{{ is_enc enc vs ∗ is_slice s uint64T (u64val <$> xs) ∗
+             ⌜encode_length vs + 8 * length xs <= int.val (EncSz enc)⌝ }}}
     Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
   {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) }}}.
 Proof.
@@ -366,12 +375,12 @@ Proof.
 Qed.
 
 Theorem wp_Enc__PutInt32 stk E enc vs (x: u32) :
-  {{{ is_enc enc vs ∗ ⌜encode_length vs + 4 <= 4096⌝ }}}
+  {{{ is_enc enc vs ∗ ⌜encode_length vs + 4 <= int.val (EncSz enc)⌝ }}}
     Enc__PutInt32 (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt32 x]) }}}.
 Proof.
   iIntros (Φ) "(Henc&%) HΦ".
-  iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
+  iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   wp_call.
   rewrite /struct.getField /Enc.S /=.
@@ -380,7 +389,7 @@ Proof.
   wp_steps.
   wp_apply wp_SliceSkip'.
   { iPureIntro.
-    word. }
+    len. }
   wp_apply (wp_UInt32Put with "[Hfree]").
   { rewrite /is_slice /=.
     iSplitL; [ iSplitL | ].
@@ -397,11 +406,11 @@ Proof.
   iApply "HΦ".
   cbn [slice_skip Slice.ptr].
   rewrite /is_enc.
-  iSplitR; [ iPureIntro; auto | ].
   iSplitL "Hoff".
   {
     iFramePtsTo.
     repeat f_equal.
+    rewrite encode_length_ok in H.
     apply word.unsigned_inj.
     len. }
   iDestruct (array_app with "Ha") as "[Hx Hfree]".
@@ -490,15 +499,13 @@ Theorem wp_Enc__Finish stk E enc vs :
   {{{ is_enc enc vs }}}
     Enc__Finish (EncM.to_val enc) @ stk; E
   {{{ s (extra: list u8), RET (slice_val s);
-      mapsto_block s.(Slice.ptr) 1 (list_to_block $ encode vs ++ extra) ∗
-      ⌜int.val s.(Slice.sz) = 4096⌝ ∗
-     ⌜(encode_length vs + length extra)%Z = 4096⌝
-  }}}.
+      is_slice s byteT (b2val <$> encode vs ++ extra) ∗
+      ⌜Slice.sz s = EncSz enc⌝ }}}.
 Proof.
   iIntros (Φ) "Henc HΦ".
   wp_call.
   wp_call.
-  iDestruct "Henc" as "(%&Hoff&Henc&Hfree)".
+  iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   iDestruct (array_app with "[$Henc Hfree]") as "Hblock".
   { rewrite Z.mul_1_l.
@@ -506,28 +513,33 @@ Proof.
   rewrite -fmap_app.
   iApply "HΦ".
   iSplit.
-  { iApply (array_to_block with "Hblock").
+  { iSplitL; iFrame.
     len. }
-  rewrite encode_length_ok.
-  len.
+  len; auto.
 Qed.
 
+Definition DecSz (dec: DecM.t): u64 := dec.(DecM.s).(Slice.sz).
+
+Theorem DecSz_fold dec : ltac:(let rhs := constr:(DecSz dec) in
+                               let lhs := (eval red in rhs) in
+                               exact (lhs = rhs)).
+Proof. reflexivity. Qed.
+
+Hint Rewrite DecSz_fold : len.
+
 Definition is_dec (dec: DecM.t) vs: iProp Σ :=
-  ⌜int.val dec.(DecM.s).(Slice.sz) = 4096⌝ ∗
   ∃ (off: u64) (extra: list u8), dec.(DecM.off) ↦ Free #off ∗
     let encoded := encode vs in
   (dec.(DecM.s).(Slice.ptr) +ₗ int.val off) ↦∗[byteT]
     (b2val <$> (encoded ++ extra)) ∗
-  ⌜(int.val off + length encoded + Z.of_nat (length extra))%Z = 4096⌝.
+  ⌜(int.val off + length encoded + Z.of_nat (length extra))%Z = int.val (DecSz dec)⌝.
 
 Theorem wp_NewDec stk E s vs (extra: list u8) :
-  {{{ is_slice s byteT (b2val <$> encode vs ++ extra) ∗ ⌜int.val s.(Slice.sz)= 4096⌝ }}}
+  {{{ is_slice s byteT (b2val <$> encode vs ++ extra) }}}
     NewDec (slice_val s) @ stk; E
-  {{{ dec, RET (DecM.to_val dec); is_dec dec vs }}}.
+  {{{ dec, RET (DecM.to_val dec); is_dec dec vs ∗ ⌜DecSz dec = s.(Slice.sz)⌝ }}}.
 Proof.
   iIntros (Φ) "(Hs&%) HΦ".
-  iDestruct "Hs" as "(Ha&%)".
-  autorewrite with len in H0.
   wp_call.
   wp_apply wp_alloc; [ | auto | iIntros (off) "Hoff" ].
   { repeat constructor. }
@@ -535,12 +547,13 @@ Proof.
   rewrite DecM.to_val_intro.
   iApply "HΦ".
   rewrite /is_dec /=.
-  iSplitR; eauto.
+  iSplitL; eauto.
   iExists _, _; iFrame.
   iDestruct "Hoff" as "[[Hoff _] _]"; rewrite loc_add_0.
   iFrame.
   rewrite loc_add_0; iFrame.
-  len.
+  rewrite /DecSz; simpl.
+  autorewrite with len in H; len.
 Qed.
 
 Theorem wp_Dec__GetInt stk E dec x vs :
@@ -549,7 +562,7 @@ Theorem wp_Dec__GetInt stk E dec x vs :
   {{{ RET #x; is_dec dec vs }}}.
 Proof.
   iIntros (Φ) "Hdec HΦ".
-  iDestruct "Hdec" as (Hdecsz off extra) "(Hoff&Hvs&%)".
+  iDestruct "Hdec" as (off extra) "(Hoff&Hvs&%)".
   rewrite fmap_app.
   iDestruct (array_app with "Hvs") as "[Hxvs Hextra]".
   len.
@@ -565,7 +578,7 @@ Proof.
   wp_call.
   wp_store.
   wp_call.
-  wp_apply wp_SliceSkip'; [ word | ].
+  wp_apply wp_SliceSkip'; [ now len | ].
   wp_apply (wp_UInt64Get' with "[Hx]").
   { iSplitL.
     - cbn [Slice.ptr slice_skip].
@@ -573,13 +586,12 @@ Proof.
       iFramePtsTo by word.
     - simpl.
       simpl in H.
-      word.
+      len.
   }
   iIntros "Hx".
   cbn [Slice.ptr slice_skip].
   iApply "HΦ".
   rewrite /is_dec.
-  iSplitR; eauto.
   iExists _, _; iFrame.
   rewrite !loc_add_assoc.
   iSplitL.
@@ -590,15 +602,17 @@ Proof.
       len.
       simpl.
       len.
+      rewrite -encode_length_ok /= encode_length_ok in H.
+      len.
     - rewrite loc_add_assoc.
       iFramePtsTo.
       len.
       simpl.
+      rewrite -encode_length_ok /= encode_length_ok in H.
       len.
   }
   cbn [concat fmap list_fmap] in H.
-  rewrite -encode_length_ok /= in H.
-  rewrite -encode_length_ok.
+  rewrite -encode_length_ok /= encode_length_ok in H.
   len.
 Qed.
 
@@ -608,7 +622,7 @@ Theorem wp_Dec__GetInt32 stk E dec (x: u32) vs :
   {{{ RET #x; is_dec dec vs }}}.
 Proof.
   iIntros (Φ) "Hdec HΦ".
-  iDestruct "Hdec" as (Hdecsz off extra) "(Hoff&Hvs&%)".
+  iDestruct "Hdec" as (off extra) "(Hoff&Hvs&%)".
   rewrite fmap_app.
   iDestruct (array_app with "Hvs") as "[Hxvs Hextra]".
   len.
@@ -624,7 +638,7 @@ Proof.
   wp_call.
   wp_store.
   wp_call.
-  wp_apply wp_SliceSkip'; [ word | ].
+  wp_apply wp_SliceSkip'; [ now len | ].
   wp_apply (wp_UInt32Get' with "[Hx]").
   { iSplitL.
     - cbn [Slice.ptr slice_skip].
@@ -632,13 +646,12 @@ Proof.
       iFramePtsTo by word.
     - simpl.
       simpl in H.
-      word.
+      len.
   }
   iIntros "Hx".
   cbn [Slice.ptr slice_skip].
   iApply "HΦ".
   rewrite /is_dec.
-  iSplitR; eauto.
   iExists _, _; iFrame.
   rewrite !loc_add_assoc.
   iSplitL.
@@ -648,16 +661,19 @@ Proof.
     - iFramePtsTo.
       len.
       simpl.
-      len.
+      rewrite -encode_length_ok /= encode_length_ok in H.
+      word.
     - rewrite loc_add_assoc.
       iFramePtsTo.
       len.
       simpl.
+      (* TODO: really have to get rid of this repeated pattern, it blocks the
+      really powerful lia automation *)
+      rewrite -encode_length_ok /= encode_length_ok in H.
       len.
   }
   cbn [concat fmap list_fmap] in H.
-  rewrite -encode_length_ok /= in H.
-  rewrite -encode_length_ok.
+  rewrite -encode_length_ok /= encode_length_ok in H.
   len.
 Qed.
 

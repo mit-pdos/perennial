@@ -200,6 +200,20 @@ Proof.
     by iApply array_to_block_array.
 Qed.
 
+Theorem slice_to_block s bs :
+  s.(Slice.sz) = 4096 ->
+  is_slice s byteT (b2val <$> bs) -∗
+  mapsto_block s.(Slice.ptr) 1 (list_to_block bs).
+Proof.
+  iIntros (Hsz) "Hs".
+  iDestruct "Hs" as "[Hl %]".
+  rewrite fmap_length in H.
+  iApply (array_to_block with "Hl").
+  assert (int.val (Slice.sz s) = 4096).
+  { rewrite Hsz. reflexivity. }
+  lia.
+Qed.
+
 Theorem wp_mkHdr stk E (sz disk_sz:u64) :
   {{{ True }}}
     Log__mkHdr (#sz, #disk_sz)%V @ stk; E
@@ -207,36 +221,39 @@ Theorem wp_mkHdr stk E (sz disk_sz:u64) :
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
-  wp_apply wp_new_enc; [ auto | ].
-  iIntros (enc) "Henc".
+  wp_apply wp_new_enc; [ | auto | ].
+  { change (int.val 4096) with 4096; lia. }
+  iIntros (enc) "[Henc %]".
   wp_steps.
   wp_call.
   wp_apply (wp_Enc__PutInt with "[$Henc]").
-  { simpl; len. }
+  { simpl; rewrite H; len. }
   iIntros "Henc".
   wp_steps.
   wp_call.
   wp_apply (wp_Enc__PutInt with "[$Henc]").
-  { simpl; len. }
+  { simpl; rewrite H; len. }
   iIntros "Henc".
   wp_steps.
   wp_apply (wp_Enc__Finish with "[$Henc]").
-  iIntros (s extra) "(Hb&%&%)".
+  iIntros (s extra) "(Hs&%)".
   cbn [app encode_length encode1_length] in H0 |- *.
   destruct s.
   replace sz0 with (U64 4096).
   { iApply "HΦ".
+    iDestruct (is_slice_sz with "Hs") as %Hsz.
+    autorewrite with len in Hsz.
+    rewrite -encode_length_ok /= in Hsz.
+    iDestruct (slice_to_block with "Hs") as "Hb"; [ done | ].
     iFrame.
     iPureIntro.
     rewrite /is_hdr_block.
     exists extra.
-    rewrite -> list_to_block_to_vals; auto.
-    len.
-    rewrite -encode_length_ok /=.
-    lia. }
+    rewrite -> list_to_block_to_vals; auto. }
   apply word.unsigned_inj.
-  simpl in H.
-  word.
+  simpl in H0; subst.
+  rewrite H.
+  reflexivity.
 Qed.
 
 Theorem wpc_write_hdr stk k E1 E2 (sz0 disk_sz0 sz disk_sz:u64) :
@@ -1079,8 +1096,7 @@ Proof.
   destruct H as (extra&Hb).
   rewrite Hb.
   wp_apply (wp_NewDec with "[$Hs]").
-  { word. }
-  iIntros (dec) "Hdec".
+  iIntros (dec) "[Hdec %]".
   wp_pures.
   wp_apply (wp_Dec__GetInt with "Hdec").
   iIntros "Hdec".

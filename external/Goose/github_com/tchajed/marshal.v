@@ -4,18 +4,18 @@ From Perennial.goose_lang Require Import prelude.
 (* disk FFI *)
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-(* Enc is a stateful encoder for a single disk block. *)
+(* Enc is a stateful encoder for a statically-allocated array. *)
 Module Enc.
   Definition S := struct.decl [
-    "b" :: disk.blockT;
+    "b" :: slice.T byteT;
     "off" :: refT uint64T
   ].
 End Enc.
 
 Definition NewEnc: val :=
-  λ: <>,
+  λ: "sz",
     struct.mk Enc.S [
-      "b" ::= NewSlice byteT disk.BlockSize;
+      "b" ::= NewSlice byteT "sz";
       "off" ::= ref (zero_val uint64T)
     ].
 
@@ -41,10 +41,10 @@ Definition Enc__Finish: val :=
     struct.get Enc.S "b" "enc".
 
 (* Dec is a stateful decoder that returns values encoded
-   sequentially in a single disk block. *)
+   sequentially in a single slice. *)
 Module Dec.
   Definition S := struct.decl [
-    "b" :: disk.blockT;
+    "b" :: slice.T byteT;
     "off" :: refT uint64T
   ].
 End Dec.
