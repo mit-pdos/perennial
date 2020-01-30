@@ -53,17 +53,26 @@ Section ghost_spec.
   Definition tpool_mapsto k (j: nat) (e: language.expr Λ) : iProp Σ :=
     own cfg_name $ tpool_mapsto_aux k j e.
 
-  (* ownership of this does not mean there aren't other threads not in (fst ρ) *)
-  (*
-  Definition source_cfg k (ρ: (list (language.expr Λ)) * language.state Λ) : iProp Σ :=
-    own cfg_name (◯ (tpool_to_res (fst ρ), Some (Excl (snd ρ)))).
-   *)
+  Definition tpool_auth_aux (k: nat) tp : genUR :=
+    discrete_fun_singleton k (Some (● (tpool_to_res tp, ε))).
 
-  Definition source_state_aux k (j: nat) (σ: language.state Λ) : genUR :=
+  Definition tpool_auth k tp : iProp Σ :=
+    own cfg_name $ tpool_auth_aux k tp.
+
+
+  (* k is the generation number (i.e. counts how many crashes occured before this execution *)
+  (* j is the step number with the generation *)
+  Definition source_state_aux (k: nat) (j: nat) (σ: language.state Λ) : genUR :=
     discrete_fun_singleton k (Some (◯ (∅ : tpoolUR, discrete_fun_singleton j (Some (Excl σ))))).
 
-  Definition source_state k (j: nat) (σ: language.state Λ) : iProp Σ :=
+  Definition source_state_auth_aux (k: nat) (j: nat) (σ: language.state Λ) : genUR :=
+    discrete_fun_singleton k (Some (● (∅ : tpoolUR, discrete_fun_singleton j (Some (Excl σ))))).
+
+  Definition source_state (k: nat) (j: nat) (σ: language.state Λ) : iProp Σ :=
     own cfg_name $ source_state_aux k j σ.
+
+  Definition source_state_auth (k: nat) (j: nat) (σ: language.state Λ) : iProp Σ :=
+    own cfg_name $ source_state_auth_aux k j σ.
 
   (*
   Definition source_pool_map (tp: gmap nat (language.expr Λ)) : iProp Σ :=
@@ -119,6 +128,23 @@ in between each generation I guess we also stipulate a proof of crash_step?
        ⌜ rtc erased_rstep ([r], σss[0][0]) (tp2', σs[-1][-1]) ⌝ ∗ own ?? (● (tpool_to_res tp2')))
 
 *)
+
+  (*
+  Definition generation_inv (k: nat) (r: expr Λ) (σ σ': state Λ) : iProp Σ :=
+    (∃ σs, [∗ list] i ↦ σi ∈ σs, source_state_auth k i σi) ∗
+    (∃ tp,  tpool_auth k tp ∗
+            (∀ σs, ([∗ list] i ↦ σi ∈ σs, source_state_auth k i σi) -∗
+                   ⌜ erased_steps_list ([r], σ) (tp, σ') σs ∧ safe ([r], σ) ⌝)).
+   *)
+
+  Definition source_state_list_auth (σss: list (cfg Λ * (list (state Λ)))) : iProp Σ :=
+    ([∗list] k ↦ genk ∈ σss,
+     let '((tp, _), σs) := genk in
+       tpool_auth k tp ∗ ([∗ list] i ↦ σi ∈ σs, source_state_auth k i σi))%I.
+
+  Definition source_inv (r: expr Λ) (σ0: state Λ) : iProp Σ :=
+    (∃ σss, source_state_list_auth σss) ∗
+    (∃ ρlatest, ∀ σss, source_state_list_auth σss -∗ ⌜ erased_rsteps_list r ([r], σ0) ρlatest ⌝).
 
   Definition source_ctx' ρ : iProp Σ :=
     inv sourceN (source_inv (fst ρ) (snd ρ)).

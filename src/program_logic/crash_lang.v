@@ -48,6 +48,16 @@ Section crash_language.
       ρ3.2 = σ →
       erased_steps_list ρ1 ρ3 (σs ++ [σ]).
 
+  Inductive erased_rsteps_list (r: expr Λ): cfg Λ → cfg Λ → list (cfg Λ * list (state Λ)) → Prop :=
+  | erslist_normal ρ1 ρ2 σs:
+      erased_steps_list ρ1 ρ2 σs →
+      erased_rsteps_list r ρ1 ρ2 [(ρ2, σs)]
+  | erslist_r ρ1 ρ2 ρ3 σss σcrash σs:
+      erased_rsteps_list r ρ1 ρ2 σss →
+      crash_prim_step CS (ρ2.2) σcrash →
+      erased_steps_list ([r], σcrash) ρ3 σs →
+      erased_rsteps_list r ρ1 ρ3 (σss ++ [(ρ3, σs)]).
+
   Lemma eslist_l ρ1 ρ2 ρ3 σs σ:
     erased_step ρ1 ρ2 →
     erased_steps_list ρ2 ρ3 σs →
