@@ -98,6 +98,25 @@ Definition stringWrapperToString: val :=
   λ: "s",
     "s".
 
+(* copy.go *)
+
+Definition testCopySimple: val :=
+  λ: <>,
+    let: "x" := NewSlice byteT #10 in
+    SliceSet byteT "x" #3 (#(U8 1));;
+    let: "y" := NewSlice byteT #10 in
+    SliceCopy byteT "y" "x";;
+    (SliceGet byteT "y" #3 = #(U8 1)).
+
+Definition testCopyDifferentLengths: val :=
+  λ: <>,
+    let: "x" := NewSlice byteT #15 in
+    SliceSet byteT "x" #3 (#(U8 1));;
+    SliceSet byteT "x" #12 (#(U8 2));;
+    let: "y" := NewSlice byteT #10 in
+    let: "n" := SliceCopy byteT "y" "x" in
+    ("n" = #10) && (SliceGet byteT "y" #3 = #(U8 1)).
+
 (* data_structures.go *)
 
 Definition atomicCreateStub: val :=

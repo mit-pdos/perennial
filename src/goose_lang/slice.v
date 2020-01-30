@@ -41,6 +41,8 @@ Section goose_lang.
   Context `{ffi_sem: ext_semantics}.
   Context {ext_ty:ext_types ext}.
 
+  Implicit Types (t:ty).
+
   Set Default Proof Using "ext ext_ty".
 
   Definition Var' s : @expr ext := Var s.
@@ -78,15 +80,12 @@ Proof.
   typecheck.
 Qed.
 
-Definition MemCpy: val :=
+(*
+Definition MemCpy t: val :=
   λ: "dst" "src" (annot "n" uint64T),
     for-range: "i" < "n" :=
-      ("dst" +ₗ "i") <- !("src" +ₗ "i").
-
-Theorem MemCpy_t t : ⊢ MemCpy : (arrayT t -> arrayT t -> uint64T -> unitT).
-Proof.
-  typecheck.
-Qed.
+      ("dst" +ₗ "i") <-[t] ![t]("src" +ₗ "i").
+*)
 
 (* explicitly recursive version of MemCpy *)
 Definition MemCpy_rec t: val :=
@@ -99,6 +98,14 @@ Definition MemCpy_rec t: val :=
 Theorem MemCpy_rec_t t : ⊢ MemCpy_rec t : (arrayT t -> arrayT t -> uint64T -> unitT).
 Proof.
 Admitted.
+
+Definition SliceCopy t : val :=
+  λ: "dst" "src",
+  let: "n" :=
+     (if: slice.len "dst" ≤ slice.len "src"
+     then slice.len "dst" else slice.len "src") in (* take the minimum *)
+  MemCpy_rec t (slice.ptr "dst") (slice.ptr "src");;
+  "n".
 
 (* this models &s[i] (which looks a little like a get but is very different) *)
 Definition SliceRef: val :=
@@ -210,7 +217,7 @@ Proof.
   typecheck.
 Qed.
 
-Hint Resolve zero_array_t MemCpy_t : types.
+Hint Resolve zero_array_t MemCpy_rec_t : types.
 
 (*
 Theorem ArrayCopy_t t Γ : Γ ⊢ ArrayCopy t : (uint64T -> arrayT t -> arrayT t).
