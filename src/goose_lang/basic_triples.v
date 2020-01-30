@@ -24,7 +24,33 @@ Implicit Types Δ : envs (uPredI (iResUR Σ)).
 Implicit Types v : val.
 Implicit Types vs : list val.
 Implicit Types z : Z.
+Implicit Types t : ty.
+Implicit Types stk : stuckness.
 Implicit Types off : nat.
+
+Lemma wp_ref_to stk E t v :
+  val_ty v t ->
+  {{{ True }}} ref_to t (Val v) @ stk; E {{{ l, RET LitV (LitLoc l); l ↦[t] v }}}.
+Proof using Type.
+  iIntros (Hty Φ) "_ HΦ".
+  wp_call.
+  iApply wp_alloc; eauto with lia.
+Qed.
+
+Lemma tac_wp_alloc Δ Δ' s E j K v t Φ :
+  val_ty v t ->
+  MaybeIntoLaterNEnvs 1 Δ Δ' →
+  (∀ l, ∃ Δ'',
+    envs_app false (Esnoc Enil j (l ↦[t] v)) Δ' = Some Δ'' ∧
+    envs_entails Δ'' (WP fill K (Val $ LitV l) @ s; E {{ Φ }})) →
+  envs_entails Δ (WP fill K (ref_to t (Val v)) @ s; E {{ Φ }}).
+Proof using Type.
+  rewrite envs_entails_eq=> Hty ? HΔ.
+  rewrite -wp_bind /ref_to. eapply wand_apply; first exact: wp_ref_to.
+  rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
+  destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
+  apply wand_intro_l. by rewrite right_id wand_elim_r.
+Qed.
 
 Lemma wp_store s E l v v' :
   {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
@@ -114,27 +140,8 @@ Proof using Type.
     iApply ("HΦ" with "[$]").
 Qed.
 
-(* TODO: this should probably be a val, or it's going to cause problems... *)
-Definition AllocN_at (t:ty) (len:expr) (e:expr) := AllocN len e.
-
-Lemma tac_wp_allocN Δ Δ' s E j K v t (n: u64) Φ :
-  (0 < int.val n)%Z →
-  MaybeIntoLaterNEnvs 1 Δ Δ' →
+Theorem val_ty_flatten_length v t :
   val_ty v t ->
-  (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (array l t (replicate (int.nat n) v))) Δ' = Some Δ'' ∧
-    envs_entails Δ'' (WP fill K (Val $ LitV $ LitLoc l) @ s; E {{ Φ }})) →
-  envs_entails Δ (WP fill K (AllocN_at t (Val $ LitV $ LitInt n) (Val v)) @ s; E {{ Φ }}).
-Proof using Type.
-  rewrite envs_entails_eq=> ? ? Hty HΔ.
-  rewrite -wp_bind. eapply wand_apply; first exact: wp_allocN.
-  rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
-  destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
-  apply wand_intro_l. by rewrite right_id wand_elim_r.
-Qed.
-
-Theorem val_hasTy_flatten_length Γ v t :
-  (Γ ⊢v v : t) ->
   length (flatten_struct v) = length (flatten_ty t).
 Proof using Type.
   induction 1; simpl; auto.
@@ -156,17 +163,16 @@ Theorem struct_ptsto_pair_split l v1 t1 v2 t2 :
   l ↦[t1 * t2] (v1, v2) ⊣⊢ l ↦[t1] v1 ∗ (l +ₗ ty_size t1) ↦[t2] v2.
 Proof using Type.
   rewrite /struct_mapsto /= big_opL_app.
-  rewrite /val_ty.
   iSplit.
   - iIntros "[[Hv1 Hv2] %]".
     inversion H; subst; clear H.
     iSplitL "Hv1"; iFrame; eauto.
     iSplitL; eauto.
-    erewrite val_hasTy_flatten_length by eauto.
+    erewrite val_ty_flatten_length by eauto.
     setoid_rewrite ty_size_offset.
     iFrame.
   - iIntros "[[Hv1 %] [Hv2 %]]".
-    erewrite val_hasTy_flatten_length by eauto.
+    erewrite val_ty_flatten_length by eauto.
     setoid_rewrite ty_size_offset.
     iFrame.
     iPureIntro.
@@ -185,7 +191,10 @@ Proof using Type.
   { iIntros "!> HPost".
     iApply "HΦ".
     iSplit; eauto. }
-  (iInduction H as [ | | | | | | ] "IH" forall (l Φ));
+  (* TODO: we have to rename this so it doesn't conflict with a name generated
+  by induction; seems like a bug *)
+  rename l into l'.
+  (iInduction H as [ | | | | | | | ] "IH" forall (l' Φ));
     simpl;
     rewrite ?loc_add_0 ?right_id;
     wp_pures.
@@ -199,15 +208,17 @@ Proof using Type.
     rewrite Z.mul_1_r.
     wp_bind (load_ty t2 _).
     iApply ("IH1" with "[Hv2]").
-    + erewrite val_hasTy_flatten_length; eauto.
+    + erewrite val_ty_flatten_length; eauto.
       setoid_rewrite ty_size_offset.
       iFrame.
     + iIntros "!> Hv2".
       wp_pures.
       iApply "HΦ"; iFrame.
-      erewrite val_hasTy_flatten_length by eauto.
+      erewrite val_ty_flatten_length by eauto.
       setoid_rewrite ty_size_offset.
       iFrame.
+  - wp_load.
+    iApply ("HΦ" with "[$]").
   - wp_load.
     iApply ("HΦ" with "[$]").
   - wp_load.
@@ -256,7 +267,8 @@ Proof using Type.
     iApply "HΦ".
     iSplit; eauto. }
   rename v into v'.
-  (iInduction H as [ | | | | | | ] "IH" forall (v' Hty l Φ));
+  rename l into l'.
+  (iInduction H as [ | | | | | | | ] "IH" forall (v' Hty l' Φ));
     simpl;
     rewrite ?loc_add_0 ?right_id;
     wp_pures;
@@ -267,7 +279,7 @@ Proof using Type.
       wp_store;
       iApply ("HΦ" with "[$]").
   - rewrite big_opL_app.
-    erewrite val_hasTy_flatten_length by eauto.
+    erewrite val_ty_flatten_length by eauto.
     setoid_rewrite ty_size_offset.
     invc Hty.
     { by invc H1. (* can't be a pair and a base literal *) }
@@ -284,9 +296,11 @@ Proof using Type.
     simpl.
     rewrite big_opL_app.
     iFrame.
-    erewrite val_hasTy_flatten_length by eauto.
+    erewrite val_ty_flatten_length by eauto.
     setoid_rewrite ty_size_offset.
     iFrame.
+  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
+      iApply ("HΦ" with "[$]").
   - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
       iApply ("HΦ" with "[$]").
   - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
@@ -410,7 +424,7 @@ Proof using Type.
   wp_lam; repeat wp_step.
   wp_apply (wp_allocN _ _ _ t); eauto.
   { hnf.
-    eapply zero_val_ty. }
+    eapply zero_val_ty'. }
   iIntros (l) "Hl".
   repeat wp_step.
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
@@ -750,10 +764,9 @@ Proof using Type.
   iDestruct "Hs" as "[Hptr %]".
   wp_bind (AllocN _ _).
   wp_lam; repeat wp_step.
-  iApply wp_allocN; auto.
+  wp_apply (wp_allocN _ _ _ t); auto.
   { word. }
-  { apply zero_val_ty. }
-  iIntros "!>".
+  { apply zero_val_ty'. }
   iIntros (l) "Halloc".
   repeat wp_step.
   wp_lam; repeat wp_step.
@@ -867,16 +880,10 @@ Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
         first
           [reshape_expr e ltac:(fun K e' => eapply (tac_wp_alloc _ _ _ _ Htmp K))
           |fail 1 "wp_alloc: cannot find 'Alloc' in" e];
-        [iSolveTC
+        [val_ty
+        |iSolveTC
         |finish ()]
-    in
-    let process_array _ :=
-        first
-          [reshape_expr e ltac:(fun K e' => eapply (tac_wp_allocN _ _ _ _ Htmp K))
-          |fail 1 "wp_alloc: cannot find 'Alloc' in" e];
-        [idtac|iSolveTC
-         |finish ()]
-    in (process_single ()) || (process_array ())
+    in process_single ()
   | _ => fail "wp_alloc: not a 'wp'"
   end.
 

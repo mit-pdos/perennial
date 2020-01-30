@@ -160,24 +160,6 @@ Implicit Types Δ : envs (uPredI (iResUR Σ)).
 Implicit Types v : val.
 Implicit Types z : Z.
 
-(** allocation with a type annotation *)
-Definition Alloc_at (t:ty) (e:expr) := Alloc e.
-
-Lemma tac_wp_alloc Δ Δ' s E j K v t Φ :
-  MaybeIntoLaterNEnvs 1 Δ Δ' →
-  val_ty v t ->
-  (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (l ↦[t] v)) Δ' = Some Δ'' ∧
-    envs_entails Δ'' (WP fill K (Val $ LitV l) @ s; E {{ Φ }})) →
-  envs_entails Δ (WP fill K (Alloc_at t (Val v)) @ s; E {{ Φ }}).
-Proof using Type.
-  rewrite envs_entails_eq=> ? Hty HΔ.
-  rewrite -wp_bind /Alloc_at. eapply wand_apply; first exact: wp_alloc.
-  rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
-  destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
-  apply wand_intro_l. by rewrite right_id wand_elim_r.
-Qed.
-
 Lemma tac_wp_load Δ Δ' s E i K l q v Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_lookup i Δ' = Some (false, l ↦{q} Free v)%I →

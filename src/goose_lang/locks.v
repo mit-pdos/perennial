@@ -35,6 +35,9 @@ Module lock.
   Definition is_cond N γ (c: loc) R: iProp Σ :=
     ∃ lk, c ↦ Free lk ∗ is_lock N γ lk R.
 
+  Import environments.
+  Import proofmode.
+
   Theorem wp_newCond N γ lk R :
     {{{ is_lock N γ lk R }}}
       newCond lk
@@ -43,7 +46,7 @@ Module lock.
     iIntros (Φ) "Hl HΦ".
     wp_call.
     iDestruct (is_lock_flat with "Hl") as %[l ->].
-    wp_apply wp_alloc_untyped; auto.
+    wp_apply wp_alloc_untyped; [ auto | auto | ].
     iIntros (c) "Hc".
     iApply "HΦ".
     iExists _; iFrame.

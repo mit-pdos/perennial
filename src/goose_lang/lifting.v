@@ -29,12 +29,45 @@ Section StructMapsto.
     induction t; simpl; lia.
   Qed.
 
-  Definition val_ty (v: val) (t:ty) := val_hasTy ∅ v t.
+  Inductive lit_ty : base_lit -> ty -> Prop :=
+  | int_ty x : lit_ty (LitInt x) uint64T
+  | int32_ty x : lit_ty (LitInt32 x) uint32T
+  | int8_ty x : lit_ty (LitByte x) byteT
+  | bool_ty x : lit_ty (LitBool x) boolT
+  | string_ty x : lit_ty (LitString x) stringT
+  | unit_ty : lit_ty LitUnit unitT
+  | loc_array_ty x t : lit_ty (LitLoc x) (arrayT t)
+  | loc_struct_ty x ts : lit_ty (LitLoc x) (structRefT ts)
+  .
+
+  (* approximate types for closed values *)
+  Inductive val_ty : val -> ty -> Prop :=
+  | base_ty l t : lit_ty l t -> val_ty (LitV l) t
+  | val_ty_pair v1 t1 v2 t2 : val_ty v1 t1 ->
+                              val_ty v2 t2 ->
+                              val_ty (PairV v1 v2) (prodT t1 t2)
+  | sum_ty_l v1 t1 t2 : val_ty v1 t1 ->
+                        val_ty (InjLV v1) (sumT t1 t2)
+  | sum_ty_r v2 t1 t2 : val_ty v2 t2 ->
+                        val_ty (InjRV v2) (sumT t1 t2)
+  | map_def_ty v t : val_ty v t ->
+                     val_ty (MapNilV v) (mapValT t)
+  | map_cons_ty k v mv' t : val_ty mv' (mapValT t) ->
+                            val_ty k uint64T ->
+                            val_ty v t ->
+                            val_ty (InjRV (k, v, mv')%V) (mapValT t)
+  | rec_ty f x e t1 t2 : val_ty (RecV f x e) (arrowT t1 t2)
+  | ext_def_ty x : val_ty (ExtV (val_ty_def x)) (extT x)
+  .
+
+  Theorem zero_val_ty' t : val_ty (zero_val t) t.
+  Proof.
+    induction t; simpl; eauto using val_ty, lit_ty.
+  Qed.
 
   Theorem val_ty_len {v t} : val_ty v t -> length (flatten_struct v) = Z.to_nat (ty_size t).
   Proof.
-    unfold val_ty; intros H.
-    induction H; simpl; rewrite -> ?app_length in *; auto.
+    induction 1; simpl; rewrite -> ?app_length in *; auto.
     - inversion H; subst; auto.
     - pose proof (ty_size_gt0 t1).
       pose proof (ty_size_gt0 t2).
@@ -57,6 +90,12 @@ Section StructMapsto.
   Qed.
 
 End StructMapsto.
+
+Ltac val_ty :=
+  lazymatch goal with
+  | |- val_ty _ _ => solve [ repeat constructor ]
+  | _ => fail "not a val_ty goal"
+  end.
 
 Notation "l ↦[ ty ]{ q } v" := (struct_mapsto l q ty v%V)
                                   (at level 20, q at level 50, ty at level 50,

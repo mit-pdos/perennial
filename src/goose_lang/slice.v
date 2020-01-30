@@ -48,6 +48,9 @@ Section goose_lang.
   Definition Var' s : @expr ext := Var s.
   Local Coercion Var' : string >-> expr.
 
+(** allocation with a type annotation *)
+Definition ref_to (t:ty): val := λ: "v", Alloc "v".
+
 Definition raw_slice (t: ty): val :=
   λ: "p" "sz", ("p", "sz").
 

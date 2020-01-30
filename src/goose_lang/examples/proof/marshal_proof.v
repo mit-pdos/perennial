@@ -726,7 +726,7 @@ Proof.
   iIntros (Φ) "(Hdec&%&%) HΦ".
   wp_pures.
   wp_apply wp_alloc; auto.
-  { apply zero_val_ty. }
+  { apply zero_val_ty'. }
   iIntros (l) "Hl".
   rewrite zero_slice_val.
   wp_pures.
