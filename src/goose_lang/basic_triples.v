@@ -414,17 +414,51 @@ Proof using Type.
   iApply "HΦ".
 Qed.
 
+Lemma replicate_0 A (x:A) : replicate 0 x = [].
+Proof. reflexivity. Qed.
+
+Theorem is_slice_zero t :
+  is_slice (Slice.mk null (U64 0)) t [].
+Proof.
+  rewrite /is_slice /=.
+  rewrite /array.
+  rewrite big_opL_nil.
+  rewrite left_id.
+  iPureIntro; auto.
+Qed.
+
+Theorem zero_slice_val t :
+  zero_val (slice.T t) = slice_val (Slice.mk null (U64 0)).
+Proof.
+  reflexivity.
+Qed.
+
+Lemma u64_val_ne (x1 x2:u64) :
+  #x1 ≠ #x2 -> int.val x1 ≠ int.val x2.
+Proof.
+  intros Hne.
+  intros Heq%word.unsigned_inj.
+  congruence.
+Qed.
+
 Lemma wp_new_slice s E t (sz: u64) :
-  {{{ ⌜ 0 < int.val sz ⌝ }}}
+  {{{ True }}}
     NewSlice t #sz @ s; E
   {{{ sl, RET slice_val sl; is_slice sl t (replicate (int.nat sz) (zero_val t)) }}}.
 Proof using Type.
-  iIntros (Φ) "% HΦ".
-  repeat wp_step.
-  wp_lam; repeat wp_step.
-  wp_apply (wp_allocN _ _ _ t); eauto.
-  { hnf.
-    eapply zero_val_ty'. }
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  wp_if_destruct.
+  - wp_pures.
+    rewrite slice_val_fold.
+    iApply "HΦ".
+    rewrite replicate_0.
+    iApply is_slice_zero.
+  - wp_apply (wp_allocN _ _ _ t); eauto.
+    { apply u64_val_ne in Heqb.
+      change (int.val 0) with 0 in Heqb.
+      word. }
+    { eapply zero_val_ty'. }
   iIntros (l) "Hl".
   repeat wp_step.
   rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice.
@@ -708,26 +742,14 @@ Proof using Type.
   (iLöb as "IH" forall (vs1 vs2 n dst src Hvs1 Hvs2) "Hdst Hsrc HΦ").
   wp_call.
   wp_if_destruct.
-  - apply bool_decide_eq_true in Heqb.
-    inversion Heqb; subst.
-    change (int.nat 0) with 0%nat.
+  - change (int.nat 0) with 0%nat.
     iEval (rewrite firstn_O array_nil) in "HΦ" .
     iApply "HΦ"; iFrame.
-  - apply bool_decide_eq_false in Heqb.
-    assert (n ≠ 0).
-    { congruence. }
-    destruct vs1.
-    { apply u64_nat_0 in Hvs1.
-      congruence. }
-    destruct vs2.
-    { assert (n = U64 0); subst; try congruence.
-      apply u64_nat_0.
-      simpl in *.
-      lia. }
-    simpl in Hvs1, Hvs2.
+  - apply u64_val_ne in Heqb.
+    change (int.val 0) with 0 in *.
+    destruct vs1, vs2; simpl in Hvs1, Hvs2; try word.
     iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
     iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
-    (* TODO: add support for typed load to wp_load *)
     wp_apply (wp_LoadAt with "Hsrc"); iIntros "Hsrc".
     wp_bind (store_ty _ _ _).
     iDestruct (struct_mapsto_ty with "Hsrc") as %Hv0ty.

@@ -221,8 +221,7 @@ Theorem wp_mkHdr stk E (sz disk_sz:u64) :
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
-  wp_apply wp_new_enc; [ | auto | ].
-  { change (int.val 4096) with 4096; lia. }
+  wp_apply wp_new_enc.
   iIntros (enc) "[Henc %]".
   wp_steps.
   wp_call.
@@ -268,7 +267,7 @@ Proof.
   wpc_bind (Log__mkHdr _).
   wpc_frame "Hhdr HΦ".
   { iIntros "(Hhdr&HΦ)"; crash_case; iFrame. }
-  wp_apply wp_mkHdr; [ auto | ].
+  wp_apply wp_mkHdr.
   iIntros (l b) "(Hb&%) (Hhdr&HΦ)".
   iDestruct "Hhdr" as (b0) "(Hd0&%)".
   wpc_apply (wpc_Write' with "[Hd0 Hb]").
@@ -299,7 +298,7 @@ Theorem wp_write_hdr stk E (sz0 disk_sz0 sz disk_sz:u64) :
 Proof.
   iIntros (Φ) "Hhdr HΦ".
   wp_call.
-  wp_apply wp_mkHdr; [ auto | ].
+  wp_apply wp_mkHdr.
   iIntros (l b) "(Hb&%)".
   iDestruct "Hhdr" as (b0) "(Hd0&%)".
   wp_apply (wp_Write with "[Hd0 Hb]").

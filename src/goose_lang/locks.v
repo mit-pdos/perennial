@@ -46,7 +46,7 @@ Module lock.
     iIntros (Φ) "Hl HΦ".
     wp_call.
     iDestruct (is_lock_flat with "Hl") as %[l ->].
-    wp_apply wp_alloc_untyped; [ auto | auto | ].
+    wp_apply wp_alloc_untyped; [ auto | ].
     iIntros (c) "Hc".
     iApply "HΦ".
     iExists _; iFrame.

@@ -65,8 +65,7 @@ Section proof.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /newlock /=.
     wp_lam. wp_apply wp_alloc. (* TODO: to restore wp_alloc tactic, need a
     type hint in the code *)
-    { repeat constructor. }
-    { auto. }
+    { val_ty. }
     iIntros (l) "Hl".
     iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
     iMod (inv_alloc N _ (lock_inv γ l R) with "[-HΦ]") as "#?".

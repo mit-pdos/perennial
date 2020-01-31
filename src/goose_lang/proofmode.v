@@ -41,6 +41,11 @@ Ltac wp_expr_simpl := wp_expr_eval simpl.
 Ltac wp_value_head :=
   eapply tac_wp_value.
 
+Ltac solve_bi_true :=
+  try lazymatch goal with
+      | |- envs_entails _ (bi_pure True) => done
+      end.
+
 Ltac wp_finish :=
   wp_expr_simpl;      (* simplify occurences of subst/fill *)
   try wp_value_head;  (* in case we have reached a value, get rid of the WP *)
@@ -96,6 +101,11 @@ Tactic Notation "wp_rec" :=
   wp_pure (App _ _);
   clear H.
 
+Theorem inv_litv {ext:ext_op} l1 l2 : LitV l1 = LitV l2 -> l1 = l2.
+Proof.
+  inversion 1; auto.
+Qed.
+
 Tactic Notation "wp_if" := wp_pure (If _ _ _).
 Tactic Notation "wp_if_true" := wp_pure (If (LitV (LitBool true)) _ _).
 Tactic Notation "wp_if_false" := wp_pure (If (LitV (LitBool false)) _ _).
@@ -110,6 +120,10 @@ Tactic Notation "wp_if_destruct" :=
            | [ H: (?x <? ?y)%Z = false |- _ ] => apply Z.ltb_ge in H
            | [ H: (?x <=? ?y)%Z = true |- _ ] => apply Z.leb_le in H
            | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
+           | [ H: bool_decide _ = true |- _ ] => apply bool_decide_eq_true_1 in H
+           | [ H: bool_decide _ = false |- _ ] => apply bool_decide_eq_false_1 in H
+           | [ H: LitV _ = LitV _ |- _ ] => apply inv_litv in H
+           | [ H: @eq base_lit _ _ |- _ ] => inversion H; subst; clear H
            end;
     [ wp_if_true | wp_if_false ]
   end.
@@ -242,7 +256,7 @@ Tactic Notation "wp_apply_core" open_constr(lem) tactic(tac) :=
     | _ => fail "wp_apply: not a 'wp'"
     end).
 Tactic Notation "wp_apply" open_constr(lem) :=
-  wp_apply_core lem (fun H => iApplyHyp H; try iNext; try wp_expr_simpl).
+  wp_apply_core lem (fun H => iApplyHyp H; try iNext; try wp_expr_simpl; solve_bi_true).
 (** Tactic tailored for atomic triples: the first, simple one just runs
 [iAuIntro] on the goal, as atomic triples always have an atomic update as their
 premise.  The second one additionaly does some framing: it gets rid of [Hs] from

@@ -61,8 +61,9 @@ Qed.
 
 Definition NewSlice (t: ty): val :=
   λ: "sz",
-  let: "p" := AllocN "sz" (zero_val t) in
-  ("p", "sz").
+  if: "sz" = #0 then (#null, #0)
+  else let: "p" := AllocN "sz" (zero_val t) in
+       ("p", "sz").
 
 Theorem NewSlice_t t : ⊢ NewSlice t : (uint64T -> slice.T t).
 Proof.

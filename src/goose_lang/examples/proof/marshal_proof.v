@@ -190,9 +190,17 @@ Proof.
     apply loc_add_ne in H2; auto; lia.
 Qed.
 
+Transparent slice.T.
+
+Theorem slice_val_ty s t : val_ty (slice_val s) (slice.T t).
+Proof.
+  val_ty.
+Qed.
+
+Opaque slice.T.
+
 Section heap.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Existing Instance diskG0.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
@@ -225,17 +233,15 @@ Definition is_enc (enc: EncM.t) (vs: Rec): iProp Σ :=
     ⌜(length encoded + length free)%nat = int.nat (EncSz enc)⌝.
 
 Theorem wp_new_enc stk E (sz: u64) :
-  (* TODO: make zero-sized allocation safe (returns null) *)
-  0 < int.val sz ->
   {{{ True }}}
     NewEnc #sz @ stk; E
   {{{ enc, RET EncM.to_val enc; is_enc enc [] ∗ ⌜EncSz enc = sz⌝ }}}.
-Proof.
-  iIntros (Hsz_nonzero Φ) "_ HΦ".
+Proof using Type.
+  iIntros (Φ) "_ HΦ".
   rewrite /NewEnc.
   rewrite /struct.buildStruct /Enc.S /=.
   wp_call.
-  wp_apply wp_new_slice; [ word | ].
+  wp_apply wp_new_slice.
   iIntros (sl) "[Ha %]".
   rewrite replicate_length in H.
   change (int.nat 4096) with (Z.to_nat 4096) in H.
@@ -254,14 +260,15 @@ Proof.
     rewrite fmap_replicate; iFrame.
     len. }
   iPureIntro.
-  apply word.unsigned_inj; lia.
+  apply word.unsigned_inj.
+  word.
 Qed.
 
 Theorem wp_Enc__PutInt stk E enc vs (x: u64) :
   {{{ is_enc enc vs ∗ ⌜encode_length vs + 8 <= int.val (EncSz enc)⌝ }}}
     Enc__PutInt (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt64 x]) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "(Henc&%) HΦ".
   iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
@@ -342,7 +349,7 @@ Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) (xs: list u64) :
              ⌜encode_length vs + 8 * length xs <= int.val (EncSz enc)⌝ }}}
     Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
   {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "(Henc&Hs&%) HΦ".
   rewrite /Enc__PutInts /ForSlice.
   wp_pures.
@@ -378,7 +385,7 @@ Theorem wp_Enc__PutInt32 stk E enc vs (x: u32) :
   {{{ is_enc enc vs ∗ ⌜encode_length vs + 4 <= int.val (EncSz enc)⌝ }}}
     Enc__PutInt32 (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt32 x]) }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "(Henc&%) HΦ".
   iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
@@ -501,7 +508,7 @@ Theorem wp_Enc__Finish stk E enc vs :
   {{{ s (extra: list u8), RET (slice_val s);
       is_slice s byteT (b2val <$> encode vs ++ extra) ∗
       ⌜Slice.sz s = EncSz enc⌝ }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "Henc HΦ".
   wp_call.
   wp_call.
@@ -538,11 +545,10 @@ Theorem wp_NewDec stk E s vs (extra: list u8) :
   {{{ is_slice s byteT (b2val <$> encode vs ++ extra) }}}
     NewDec (slice_val s) @ stk; E
   {{{ dec, RET (DecM.to_val dec); is_dec dec vs ∗ ⌜DecSz dec = s.(Slice.sz)⌝ }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "(Hs&%) HΦ".
   wp_call.
-  wp_apply wp_alloc; [ | auto | iIntros (off) "Hoff" ].
-  { repeat constructor. }
+  wp_apply wp_alloc; [ val_ty | iIntros (off) "Hoff" ].
   wp_pures.
   rewrite DecM.to_val_intro.
   iApply "HΦ".
@@ -560,7 +566,7 @@ Theorem wp_Dec__GetInt stk E dec x vs :
   {{{ is_dec dec (EncUInt64 x::vs) }}}
     Dec__GetInt (DecM.to_val dec) @ stk; E
   {{{ RET #x; is_dec dec vs }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "Hdec HΦ".
   iDestruct "Hdec" as (off extra) "(Hoff&Hvs&%)".
   rewrite fmap_app.
@@ -620,7 +626,7 @@ Theorem wp_Dec__GetInt32 stk E dec (x: u32) vs :
   {{{ is_dec dec (EncUInt32 x::vs) }}}
     Dec__GetInt32 (DecM.to_val dec) @ stk; E
   {{{ RET #x; is_dec dec vs }}}.
-Proof.
+Proof using Type.
   iIntros (Φ) "Hdec HΦ".
   iDestruct "Hdec" as (off extra) "(Hoff&Hvs&%)".
   rewrite fmap_app.
@@ -682,22 +688,6 @@ Opaque load_ty.
 Typeclasses Opaque store_ty.
 Opaque store_ty.
 
-Theorem is_slice_zero t :
-  is_slice (Slice.mk null (U64 0)) t [].
-Proof.
-  rewrite /is_slice /=.
-  rewrite /array.
-  rewrite big_opL_nil.
-  rewrite left_id.
-  iPureIntro; auto.
-Qed.
-
-Theorem zero_slice_val t :
-  zero_val (slice.T t) = slice_val (Slice.mk null (U64 0)).
-Proof.
-  reflexivity.
-Qed.
-
 Theorem u64_ptsto_untype l x :
   l ↦[uint64T] #x -∗ l ↦ Free #x.
 Proof.
@@ -706,24 +696,13 @@ Proof.
   iIntros "[$ _]".
 Qed.
 
-Transparent slice.T.
-
-Theorem slice_val_ty s t : val_ty (slice_val s) (slice.T t).
-Proof.
-  constructor.
-  - admit. (* need a new typing judgement *)
-  - repeat constructor.
-Admitted.
-
-Opaque slice.T.
-
 Theorem wp_Dec__GetInts stk E dec xs (n:u64) vs :
-  {{{ is_dec dec ((EncUInt64 <$> xs) ++ vs) ∗ ⌜int.val n = length xs⌝ ∗ ⌜0 < int.val n⌝}}}
+  {{{ is_dec dec ((EncUInt64 <$> xs) ++ vs) ∗ ⌜int.val n = length xs⌝}}}
     Dec__GetInts (DecM.to_val dec) #n @ stk; E
   {{{ s, RET slice_val s; is_dec dec vs ∗ is_slice s uint64T (u64val <$> xs) }}}.
-Proof.
+Proof using Type.
   rewrite /Dec__GetInts.
-  iIntros (Φ) "(Hdec&%&%) HΦ".
+  iIntros (Φ) "(Hdec&%) HΦ".
   wp_pures.
   wp_apply wp_alloc; auto.
   { apply zero_val_ty'. }
