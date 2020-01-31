@@ -599,9 +599,22 @@ Definition roundtripEncDec32: val :=
     Enc__UInt32 "e" "x";;
     Dec__UInt32 "d".
 
+Definition testEncDec32Simple: val :=
+  λ: <>,
+    let: "v0" := (roundtripEncDec32 (#(U32 0)) = #(U32 0)) in
+    let: "v1" := (roundtripEncDec32 (#(U32 1)) = #(U32 1)) in
+    let: "v2" := (roundtripEncDec32 (#(U32 1231234)) = #(U32 1231234)) in
+    "v0" && "v1" && "v2".
+
 Definition testEncDec32: val :=
-  λ: "x",
-    (roundtripEncDec32 "x" = "x").
+  λ: <>,
+    let: "v0" := (roundtripEncDec32 (#(U32 3434807466)) = #(U32 3434807466)) in
+    let: "v1" := (roundtripEncDec32 (#1 ≪ #20) = #1 ≪ #20) in
+    let: "v2" := (roundtripEncDec32 (#1 ≪ #18) = #1 ≪ #18) in
+    let: "v3" := (roundtripEncDec32 (#1 ≪ #10) = #1 ≪ #10) in
+    let: "v4" := (roundtripEncDec32 (#1 ≪ #0) = #1 ≪ #0) in
+    let: "v5" := (roundtripEncDec32 (#1 ≪ #32 - #1) = #1 ≪ #32 - #1) in
+    "v0" && "v1" && "v2" && "v3" && "v4" && "v5".
 
 Definition roundtripEncDec64: val :=
   λ: "x",
@@ -615,9 +628,24 @@ Definition roundtripEncDec64: val :=
     Enc__UInt64 "e" "x";;
     Dec__UInt64 "d".
 
+Definition testEncDec64Simple: val :=
+  λ: <>,
+    let: "v0" := (roundtripEncDec64 #0 = #0) in
+    let: "v1" := (roundtripEncDec64 #1 = #1) in
+    let: "v2" := (roundtripEncDec64 #1231234 = #1231234) in
+    "v0" && "v1" && "v2".
+
 Definition testEncDec64: val :=
-  λ: "x",
-    (roundtripEncDec64 "x" = "x").
+  λ: <>,
+    let: "v0" := (roundtripEncDec64 #62206846038638762 = #62206846038638762) in
+    let: "v1" := (roundtripEncDec64 (#1 ≪ #63) = #1 ≪ #63) in
+    let: "v2" := (roundtripEncDec64 (#1 ≪ #47) = #1 ≪ #47) in
+    let: "v3" := (roundtripEncDec64 (#1 ≪ #20) = #1 ≪ #20) in
+    let: "v4" := (roundtripEncDec64 (#1 ≪ #18) = #1 ≪ #18) in
+    let: "v5" := (roundtripEncDec64 (#1 ≪ #10) = #1 ≪ #10) in
+    let: "v6" := (roundtripEncDec64 (#1 ≪ #0) = #1 ≪ #0) in
+    let: "v7" := (roundtripEncDec64 (#1 ≪ #64 - #1) = #1 ≪ #64 - #1) in
+    "v0" && "v1" && "v2" && "v3" && "v4" && "v5" && "v6" && "v7".
 
 (* test that y defaults to 0 and subtraction always reverses addition *)
 Definition reverseAssignOps64: val :=
@@ -630,8 +658,19 @@ Definition reverseAssignOps64: val :=
     ![uint64T] "y".
 
 Definition testReverseAssignOps64: val :=
-  λ: "x",
-    (reverseAssignOps64 "x" = #0).
+  λ: <>,
+    let: "v0" := (roundtripEncDec64 #0 = #0) in
+    let: "v1" := (roundtripEncDec64 #1 = #1) in
+    let: "v2" := (roundtripEncDec64 #1231234 = #1231234) in
+    let: "v3" := (roundtripEncDec64 #62206846038638762 = #62206846038638762) in
+    let: "v4" := (roundtripEncDec64 (#1 ≪ #63) = #1 ≪ #63) in
+    let: "v5" := (roundtripEncDec64 (#1 ≪ #47) = #1 ≪ #47) in
+    let: "v6" := (roundtripEncDec64 (#1 ≪ #20) = #1 ≪ #20) in
+    let: "v7" := (roundtripEncDec64 (#1 ≪ #18) = #1 ≪ #18) in
+    let: "v8" := (roundtripEncDec64 (#1 ≪ #10) = #1 ≪ #10) in
+    let: "v9" := (roundtripEncDec64 (#1 ≪ #0) = #1 ≪ #0) in
+    let: "v10" := (roundtripEncDec64 (#1 ≪ #64 - #1) = #1 ≪ #64 - #1) in
+    "v0" && "v1" && "v2" && "v3" && "v4" && "v5" && "v6" && "v7" && "v8" && "v9" && "v10".
 
 Definition reverseAssignOps32: val :=
   λ: "x",
@@ -643,8 +682,17 @@ Definition reverseAssignOps32: val :=
     ![uint32T] "y".
 
 Definition testReverseAssignOps32: val :=
-  λ: "x",
-    (reverseAssignOps32 "x" = #(U32 0)).
+  λ: <>,
+    let: "v0" := (roundtripEncDec32 (#(U32 0)) = #(U32 0)) in
+    let: "v1" := (roundtripEncDec32 (#(U32 1)) = #(U32 1)) in
+    let: "v2" := (roundtripEncDec32 (#(U32 1231234)) = #(U32 1231234)) in
+    let: "v3" := (roundtripEncDec32 (#(U32 3434807466)) = #(U32 3434807466)) in
+    let: "v4" := (roundtripEncDec32 (#1 ≪ #20) = #1 ≪ #20) in
+    let: "v5" := (roundtripEncDec32 (#1 ≪ #18) = #1 ≪ #18) in
+    let: "v6" := (roundtripEncDec32 (#1 ≪ #10) = #1 ≪ #10) in
+    let: "v7" := (roundtripEncDec32 (#1 ≪ #0) = #1 ≪ #0) in
+    let: "v8" := (roundtripEncDec32 (#1 ≪ #32 - #1) = #1 ≪ #32 - #1) in
+    "v0" && "v1" && "v2" && "v3" && "v4" && "v5" && "v6" && "v7" && "v8".
 
 (* test shortcircuiting behaviors for logical operators *)
 Module BoolTest.
@@ -715,13 +763,26 @@ Definition testShortcircuitOrFT: val :=
     else #false).
 
 (* test integer overflow and underflow *)
-Definition testAdd64Equals: val :=
+Definition add64Equals: val :=
   λ: "x" "y" "z",
     ("x" + "y" = "z").
 
-Definition testMinus64Equals: val :=
+Definition testAdd64Equals: val :=
+  λ: <>,
+    let: "x" := add64Equals #2 #3 #5 in
+    let: "y" := add64Equals (#1 ≪ #64 - #1) #1 #0 in
+    "x" && "y".
+
+Definition minus64Equals: val :=
   λ: "x" "y" "z",
     ("x" - "y" = "z").
+
+Definition testMinus64Equals: val :=
+  λ: <>,
+    let: "x" := minus64Equals #2 #1 #1 in
+    let: "y" := minus64Equals (#1 ≪ #64 - #1) (#1 ≪ #63) (#1 ≪ #63 - #1) in
+    let: "z" := minus64Equals #2 #8 (#1 ≪ #64 - #6) in
+    "x" && "y" && "z".
 
 (* test side-effects on array writes from multiple accessors *)
 Module ArrayEditor.
@@ -831,6 +892,17 @@ Definition testStandardForLoop: val :=
     SliceSet uint64T (![slice.T uint64T] "arr") #2 (SliceGet uint64T (![slice.T uint64T] "arr") #2 + #5);;
     SliceSet uint64T (![slice.T uint64T] "arr") #3 (SliceGet uint64T (![slice.T uint64T] "arr") #3 + #7);;
     (standardForLoop (![slice.T uint64T] "arr") = #16).
+
+Definition testConditionalAssign: val :=
+  λ: <>,
+    (conditionalAssign #true = #2) && (conditionalAssign #false = #3).
+
+Definition testConversions: val :=
+  λ: <>,
+    let: "s" := #(str"four") in
+    let: "b" := stringToByteSlice "s" in
+    let: "x" := literalCast #() in
+    ("x" = slice.len "b") && (byteSliceToString "b" = "s").
 
 (* slices.go *)
 

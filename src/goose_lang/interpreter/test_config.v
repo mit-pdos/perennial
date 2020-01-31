@@ -8,6 +8,7 @@ From Perennial.goose_lang.ffi Require Import disk.
 
 Definition startstate : state := inhabitant.
 
+(* TODO: move/remove these definitions *)
 Definition testRec : expr :=
   (rec: BAnon BAnon :=
      #3 + #3).
@@ -31,6 +32,7 @@ Definition testMatch: val :=
   | InjR "x1" => #4 + (Var "x1")
   end.
 
+(* testing infrastructure *)
 Definition run (p: expr): Error val :=
   fst <$> runStateT (interpret 100 p) startstate.
 
@@ -63,16 +65,6 @@ Compute (check_run (ReassignVars #())).
 
 (* fails because #333 is a uint64 *)
 Fail Compute (check_run (EncDec32 #333)).
-Example tc1 := testEncDec64 #333 ~~> #true.
-Example tc2 := testEncDec32 #(U32 333) ~~> #true.
-Example tc3 := testReverseAssignOps64 #333 ~~> #true.
-Example tc4 := testShortcircuitAndTF #() ~~> #true.
-Example tc5 := testShortcircuitAndFT #() ~~> #true.
-Example tc6 := testShortcircuitOrTF #() ~~> #true.
-Example tc7 := testShortcircuitOrFT #() ~~> #true.
-
-Example tc8 := testStandardForLoop #() ~~> #true.
-
 
 (* Extraction testing:
 
