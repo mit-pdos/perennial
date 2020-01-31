@@ -1,12 +1,3 @@
-[submodule "vendor/tactical"]
-	path = vendor/tactical
-	url = https://github.com/tchajed/coq-tactical
-[submodule "vendor/array"]
-	path = vendor/array
-	url = https://github.com/tchajed/coq-array
-[submodule "vendor/classes"]
-	path = vendor/classes
-	url = https://github.com/tchajed/coq-classes
 [submodule "external/stdpp"]
 	path = external/stdpp
 	url = https://gitlab.mpi-sws.org/iris/stdpp.git
@@ -16,9 +7,6 @@
 [submodule "vendor/record-update"]
 	path = vendor/record-update
 	url = https://github.com/tchajed/coq-record-update.git
-[submodule "vendor/transitions"]
-	path = vendor/transitions
-	url = https://github.com/tchajed/coq-transitions.git
 [submodule "external/coqutil"]
 	path = external/coqutil
 	url = https://github.com/mit-plv/coqutil
