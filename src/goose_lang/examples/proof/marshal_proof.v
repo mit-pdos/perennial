@@ -58,25 +58,6 @@ Definition encode1 (e:encodable) : list u8 :=
 
 Definition encode (es:Rec): list u8 := concat (encode1 <$> es).
 
-Definition encode1_length (e:encodable): nat :=
-  match e with
-  | EncUInt64 _ => 8%nat
-  | EncUInt32 _ => 4%nat
-  | EncBytes bs => length bs
-  end.
-
-Theorem encode1_length_ok e :
-  encode1_length e = length $ encode1 e.
-Proof.
-  destruct e; auto.
-Qed.
-
-Fixpoint encode_length (es:Rec): nat :=
-  match es with
-  | [] => 0%nat
-  | e::es => (encode1_length e + encode_length es)%nat
-  end.
-
 Hint Rewrite app_length @drop_length @take_length @fmap_length
      @replicate_length u64_le_bytes_length : len.
 Hint Rewrite @vec_to_list_length : len.
@@ -88,14 +69,6 @@ Ltac word := try lazymatch goal with
                  end; Integers.word.
 
 Ltac len := autorewrite with len; try word.
-
-Theorem encode_length_ok es :
-  encode_length es = length $ encode es.
-Proof.
-  induction es; simpl; auto.
-  rewrite IHes encode1_length_ok /encode.
-  cbn [concat list_fmap fmap]; len.
-Qed.
 
 Lemma encode_app es1 es2 :
   encode (es1 ++ es2) = encode es1 ++ encode es2.
@@ -123,7 +96,11 @@ Proof.
 Qed.
 
 Lemma encode_singleton_length e :
-  length (encode [e]) = ltac:(let x := (eval hnf in (encode1_length e)) in exact x).
+  length (encode [e]) = match e with
+                        | EncUInt64 _ => 8%nat
+                        | EncUInt32 _ => 4%nat
+                        | EncBytes bs => length bs
+                        end.
 Proof.
   rewrite encode_singleton.
   destruct e; auto.
@@ -214,7 +191,6 @@ Notation length := strings.length.
 
 Hint Rewrite encode_app_length : len.
 Hint Rewrite encode_singleton_length : len.
-Hint Rewrite <- encode1_length_ok : len.
 
 Definition EncSz (enc:EncM.t): u64 := enc.(EncM.s).(Slice.sz).
 
@@ -265,7 +241,7 @@ Proof using Type.
 Qed.
 
 Theorem wp_Enc__PutInt stk E enc vs (x: u64) :
-  {{{ is_enc enc vs ∗ ⌜encode_length vs + 8 <= int.val (EncSz enc)⌝ }}}
+  {{{ is_enc enc vs ∗ ⌜length (encode vs) + 8 <= int.val (EncSz enc)⌝ }}}
     Enc__PutInt (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt64 x]) }}}.
 Proof using Type.
@@ -285,8 +261,7 @@ Proof using Type.
     iSplitL; [ iSplitL | ].
     - iFramePtsTo by word.
     - len.
-    - rewrite encode_length_ok in H.
-      len.
+    - len.
   }
   iIntros "(Ha&%)".
   wp_steps.
@@ -301,7 +276,6 @@ Proof using Type.
     iFramePtsTo.
     repeat f_equal.
     apply word.unsigned_inj.
-    rewrite encode_length_ok in H.
     len.
   }
   iDestruct (array_app with "Ha") as "[Hx Hfree]".
@@ -320,14 +294,13 @@ Proof using Type.
     len.
     simpl; len.
   }
-  rewrite encode_length_ok in H.
   len.
 Qed.
 
 Definition u64val (x: u64): val := #x.
 
 Theorem length_encode_fmap_uniform (sz: nat) {A} (f: A -> encodable) l :
-  (forall x, encode1_length (f x) = sz) ->
+  (forall x, length (encode1 (f x)) = sz) ->
   length (encode (f <$> l)) = (sz * length l)%nat.
 Proof.
   intros Hsz.
@@ -346,7 +319,7 @@ Qed.
 
 Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) (xs: list u64) :
   {{{ is_enc enc vs ∗ is_slice s uint64T (u64val <$> xs) ∗
-             ⌜encode_length vs + 8 * length xs <= int.val (EncSz enc)⌝ }}}
+             ⌜length (encode vs) + 8 * length xs <= int.val (EncSz enc)⌝ }}}
     Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
   {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) }}}.
 Proof using Type.
@@ -363,7 +336,7 @@ Proof using Type.
     wp_apply (wp_Enc__PutInt with "[$Henc]").
     { iPureIntro.
       apply lookup_lt_Some in H1.
-      rewrite encode_length_ok encode_app_length -encode_length_ok.
+      rewrite encode_app_length.
       rewrite (length_encode_fmap_uniform 8%nat); auto.
       len.
     }
@@ -382,7 +355,7 @@ Proof using Type.
 Qed.
 
 Theorem wp_Enc__PutInt32 stk E enc vs (x: u32) :
-  {{{ is_enc enc vs ∗ ⌜encode_length vs + 4 <= int.val (EncSz enc)⌝ }}}
+  {{{ is_enc enc vs ∗ ⌜length (encode vs) + 4 <= int.val (EncSz enc)⌝ }}}
     Enc__PutInt32 (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt32 x]) }}}.
 Proof using Type.
@@ -402,8 +375,7 @@ Proof using Type.
     iSplitL; [ iSplitL | ].
     - iFramePtsTo by word.
     - len.
-    - rewrite encode_length_ok in H.
-      len.
+    - len.
   }
   iIntros "(Ha&%)".
   wp_steps.
@@ -417,7 +389,6 @@ Proof using Type.
   {
     iFramePtsTo.
     repeat f_equal.
-    rewrite encode_length_ok in H.
     apply word.unsigned_inj.
     len. }
   iDestruct (array_app with "Ha") as "[Hx Hfree]".
@@ -437,7 +408,6 @@ Proof using Type.
     len.
     simpl; len.
   }
-  rewrite encode_length_ok in H.
   len.
 Qed.
 
@@ -607,18 +577,16 @@ Proof using Type.
     - iFramePtsTo.
       len.
       simpl.
-      len.
-      rewrite -encode_length_ok /= encode_length_ok in H.
+      simpl in H.
       len.
     - rewrite loc_add_assoc.
       iFramePtsTo.
       len.
-      simpl.
-      rewrite -encode_length_ok /= encode_length_ok in H.
+      simpl in H |- *.
       len.
   }
   cbn [concat fmap list_fmap] in H.
-  rewrite -encode_length_ok /= encode_length_ok in H.
+  rewrite encode_cons /= in H.
   len.
 Qed.
 
@@ -666,20 +634,16 @@ Proof using Type.
     iSplitR "Hextra".
     - iFramePtsTo.
       len.
-      simpl.
-      rewrite -encode_length_ok /= encode_length_ok in H.
+      simpl in H |- *.
       word.
     - rewrite loc_add_assoc.
       iFramePtsTo.
-      len.
       simpl.
-      (* TODO: really have to get rid of this repeated pattern, it blocks the
-      really powerful lia automation *)
-      rewrite -encode_length_ok /= encode_length_ok in H.
+      rewrite encode_cons /= in H.
       len.
   }
   cbn [concat fmap list_fmap] in H.
-  rewrite -encode_length_ok /= encode_length_ok in H.
+  rewrite encode_cons /= in H.
   len.
 Qed.
 

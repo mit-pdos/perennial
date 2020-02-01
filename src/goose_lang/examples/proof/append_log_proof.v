@@ -236,13 +236,12 @@ Proof.
   wp_steps.
   wp_apply (wp_Enc__Finish with "[$Henc]").
   iIntros (s extra) "(Hs&%)".
-  cbn [app encode_length encode1_length] in H0 |- *.
   destruct s.
   replace sz0 with (U64 4096).
   { iApply "HΦ".
     iDestruct (is_slice_sz with "Hs") as %Hsz.
     autorewrite with len in Hsz.
-    rewrite -encode_length_ok /= in Hsz.
+    rewrite /= in Hsz.
     iDestruct (slice_to_block with "Hs") as "Hb"; [ done | ].
     iFrame.
     iPureIntro.
