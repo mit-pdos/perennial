@@ -11,29 +11,28 @@ Fixpoint is_closed_expr (X : list string) (e : expr) : bool :=
   match e with
   | Val v => is_closed_val v
   | Var x => bool_decide (x ∈ X)
+  | Primitive0 _ => true
   | Rec f x e => is_closed_expr (f :b: x :b: X) e
   | UnOp _ e | Fst e | Snd e | InjL e | InjR e | Fork e | Load e
-  | ExternalOp _ e | DecodeInt e =>
+  | ExternalOp _ e | Primitive1 _ e =>
      is_closed_expr X e
-  | App e1 e2 | BinOp _ e1 e2 | Pair e1 e2 | AllocN e1 e2 | Store e1 e2
-  | MapGet e1 e2 | EncodeInt e1 e2 =>
+  | App e1 e2 | BinOp _ e1 e2 | Pair e1 e2 | AllocN e1 e2 | Primitive2 _ e1 e2 =>
      is_closed_expr X e1 && is_closed_expr X e2
-  | If e0 e1 e2 | Case e0 e1 e2 | CmpXchg e0 e1 e2 | Resolve e0 e1 e2 | MapInsert e0 e1 e2 =>
+  | If e0 e1 e2 | Case e0 e1 e2 | CmpXchg e0 e1 e2 | Resolve e0 e1 e2 =>
      is_closed_expr X e0 && is_closed_expr X e1 && is_closed_expr X e2
   | NewProph => true
   end
 with is_closed_val (v : val) : bool :=
   match v with
-  | LitV _ => true
+  | LitV _ | ExtV _ => true
   | RecV f x e => is_closed_expr (f :b: x :b: []) e
   | PairV v1 v2 => is_closed_val v1 && is_closed_val v2
   | InjLV v | InjRV v => is_closed_val v
-  | MapNilV v => is_closed_val v
-  | MapConsV _ v1 v2 => is_closed_val v1 && is_closed_val v2
   end.
 
 Lemma is_closed_weaken X Y e : is_closed_expr X e → X ⊆ Y → is_closed_expr Y e.
-Proof. revert X Y; induction e; naive_solver (eauto; set_solver). Qed.
+Proof. revert X Y; induction e; try naive_solver (eauto; set_solver).
+Qed.
 
 Lemma is_closed_weaken_nil X e : is_closed_expr [] e → is_closed_expr X e.
 Proof. intros. by apply is_closed_weaken with [], list_subseteq_nil. Qed.
