@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders strings gmap pretty.
 From iris.program_logic Require Export language ectx_language ectxi_language.
-From Perennial.Helpers Require Import Integers Transitions.
+From Perennial.Helpers Require Import Integers.
 From Perennial.goose_lang Require Export locations lang prelude.
 From Perennial.goose_lang Require Import interpret_types.
 From Perennial.goose_lang Require Import pretty_types.
@@ -172,7 +172,7 @@ Qed.
 
 (* Deals with monadic wrappers around head_trans. *)
 Ltac head_step :=
-  rewrite /= /head_step /=; repeat (monad_simpl; simpl).
+  rewrite /= /head_step /=; repeat (Transitions.monad_simpl; simpl).
 
 (* Suppose we want to show that [a -> b] in 1 step. Then, nsteps
 doesn't have a constructor for stepping just once. Instead we have to
@@ -373,11 +373,11 @@ Section interpreter.
   Qed.
 
   (* Interpreter *)
-  Fixpoint interpret (fuel: nat) (e: expr) : StateT state Error val :=
+  Fixpoint interpret (fuel: nat) (expr: expr) : StateT state Error val :=
     match fuel with
     | O => mfail "Fuel depleted"
     | S n =>
-      match e with
+      match expr with
       | Val v => mret v
       | Var y => mfail ("Unbound variable: " ++ y)
       | Rec f y e => mret (RecV f y e)
@@ -539,21 +539,16 @@ Section interpreter.
       | Primitive2 p e1 e2 =>
         match p in (prim_op args2) return StateT state Error val with
         | AllocNOp =>
-          lenv <- interpret n e1;
-            initv <- interpret n e2;
-            match lenv with
-            | LitV (LitInt lenz) => 
-              if (Z.leb (int.val lenz) 0) then
-                mfail ("AllocN called with invalid size " ++ (pretty lenz))
-              else
-                (* We must allocate a list of length lenz where every entry
-                   is initv. state_init_heap does most of the work. *)
-                s <- mget;
-                let l := find_alloc_location s (int.val lenz) in
-                _ <- mput (state_init_heap l (int.val lenz) initv s);
-                  mret (LitV (LitLoc l))
-            | _ => @mfail state _ ("AllocN called with with non-integer argument of type " ++ (pretty lenv))
-            end
+          s <- mget;
+            t <- mlift (Transitions.interpret nil (head_trans expr) s) "transition.interpret failed in AllocNOp";
+              match t with
+              (* hints, new state, (obs list, next expr, threads) *)
+              | (hints, s', (l, expr', ts)) =>
+                match ts with
+                | nil => _ <- mput s'; interpret n expr'
+                | _ => mfail "Spawned thread in transition.interpret in AllocNOp"
+                end
+              end
         | FinishStoreOp =>
           addrv <- interpret n e1;
             val <- interpret n e2;
@@ -897,20 +892,22 @@ Ltac runStateT_inv :=
     (* Primitive2 *)
     { dependent destruction op.
       { (* AllocN *)
-        run_next_interpret IHn.
-        run_next_interpret IHn.
         runStateT_inv.
+        pose proof (Transitions.relation.interpret_sound _ _ _ Heqo).
+        destruct e1 eqn:?; simpl in H; try by inversion H.
+        destruct v0 eqn:?; simpl in H; try by inversion H.
+        destruct l0 eqn:?; simpl in H; try by inversion H.
+        destruct e2 eqn:?; simpl in H; try by inversion H.
+        subst.
+        Transitions.monad_inv.
+        assert (runStateT (interpret n e) s = Works (val * state) (v, σ')).
+        { unfold runStateT; exact Heqe1. }
+        pose proof (IHn _ _ _ _ H0).
+        destruct H1 as (m & l' & e_to_v).
         do 2 eexists.
-        eapply nsteps_transitive;
-          [ctx_step (fill [(Primitive2LCtx AllocNOp e2)])|].
-        eapply nsteps_transitive;
-          [ctx_step (fill [(Primitive2RCtx AllocNOp #n0)])|].
-        single_step.
-        rewrite -> ifThenElse_if; [|(rewrite -> Z.leb_nle in Heqb0; lia)].
-        simpl; monad_simpl.
-        pose proof (find_alloc_location_fresh s0 ((int.val n0) * length (flatten_struct v2))) as loc_fresh.
-        eapply relation.bind_suchThat; [apply loc_fresh|].
-        monad_simpl.
+        eapply nsteps_transitive.
+        { single_step. exact H. }
+        exact e_to_v.
       }
 
       { (* FinishStore *)
@@ -940,9 +937,9 @@ Ltac runStateT_inv :=
         unfold bin_op_eval in Heqo0; simpl in Heqo0;
 
         destruct (decide (vals_compare_safe v0 v2)) eqn:vcs; inversion Heqo0;
-        monad_simpl;
+        Transitions.monad_simpl;
         case_bool_decide; try by inversion H0;
-        repeat (monad_simpl; simpl)
+        repeat (Transitions.monad_simpl; simpl)
         ).
     }
 
