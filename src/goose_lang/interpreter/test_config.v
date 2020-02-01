@@ -3,75 +3,54 @@ From Perennial.goose_lang.interpreter Require Import interpret_types.
 From Perennial.goose_lang.interpreter Require Import interpreter.
 From Perennial.goose_lang.interpreter Require Import disk_interpreter.
 
-From Perennial.goose_lang.examples Require Import goose_unittest.
 From Perennial.goose_lang.ffi Require Import disk.
 
 Definition startstate : state := inhabitant.
-
-(* TODO: move/remove these definitions *)
-Definition testRec : expr :=
-  (rec: BAnon BAnon :=
-     #3 + #3).
-
-Definition testLiteralCast: expr :=
-  λ: <>,
-     let: "x" := #2 in
-     (Var "x") + #2.
-
-Definition testIfStatement: expr :=
-  λ: <>,
-     let: "m" := #2 in
-     (if: (Var "m") > #3
-      then #3
-      else #1).
-
-Definition testMatch: val :=
-  λ: "x",
-  match: (Var "x") with
-    InjL "x1" => #3 + (Var "x1")
-  | InjR "x1" => #4 + (Var "x1")
-  end.
 
 (* testing infrastructure *)
 Definition run (p: expr): Error val :=
   fst <$> runStateT (interpret 100 p) startstate.
 
-Notation check_run p := (ltac:(let x := (eval vm_compute in (run p)) in
-                               lazymatch x with
-                               | Works _ ?v => exact v
-                               | Fail _ ?msg => fail "interpreter failed on" p msg
-                               end)) (only parsing).
-
-Compute check_run (AllocN #1 (zero_val uint32T)).
-Compute check_run (returnTwoWrapper #3).
-Compute check_run (testRec #0).
+Tactic Notation "check_run" constr(p) :=
+  let x := (eval vm_compute in (run p)) in
+  lazymatch x with
+  | Works _ ?v => exact v
+  | Fail _ ?msg => fail "interpreter failed on" p msg
+  end.
+Notation check_run p := (ltac:(check_run p)) (only parsing).
 
 Definition runs_to (p: expr) (v: val) :=
   run p = Works _ v.
-Notation "p ~~> v" := (eq_refl : runs_to p v) (at level 70).
+Notation "p ~~> v" := (runs_to p v) (at level 70).
+Ltac test :=
+  match goal with
+  | [ |- runs_to ?p _ ] =>
+    vm_compute;
+    lazymatch goal with
+    | |- Works _ ?v' = Works _ ?v =>
+      reflexivity || fail 0 p "⇝" v' "but expected" v
+    | |- Fail _ ?msg = _ =>
+      fail "interpreter failed on" p msg
+    | |- ?goal =>
+      fail "vm_compute got stuck" goal
+    end
+  end.
+Notation t := ltac:(test) (only parsing).
 
-Example run_testRec := testRec #0 ~~> #6.
+(* these notations make vm_compute'd values more readable *)
+Notation U64_val z := {| u64_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
+Notation U32_val z := {| u32_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
+Notation U8_val z := {| u8_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
 
-Compute (check_run (testIfStatement #())).
-Compute (check_run (testMatch (InjL #2))).
-Compute (check_run (testMatch (InjR #2))).
-Compute (check_run (testLiteralCast #())).
+Module Examples.
+  Coercion Var' := Var.
+  Definition computeSix : val :=
+    (rec: <> <> :=
+       #3 + #3).
+  Definition add2_u32 : val :=
+    (λ: "x", "x" + #(U32 2)).
 
-(* Functions from examples/goose_unittests *)
-Compute (check_run ConstWithArith).
-Compute (check_run (useMap #())).
-Compute (check_run (useSliceIndexing #())).
-Compute (check_run (ReassignVars #())).
-
-(* fails because #333 is a uint64 *)
-Fail Compute (check_run (EncDec32 #333)).
-
-(* Extraction testing:
-
-Require Coq.extraction.Extraction.
-Extraction Language Haskell.
-Extract Inductive bool => "GHC.Base.Bool" [ "GHC.Base.True" "GHC.Base.False" ].
-
-Extraction "tc1.hs" tc1.
-
-*)
+  Example run1 : computeSix #() ~~> #6 := t.
+  Fail Example run1 : computeSix #() ~~> #5 := t.
+  Fail Example run2 : add2_u32 #333 ~~> #(U32 335) := t.
+End Examples.
