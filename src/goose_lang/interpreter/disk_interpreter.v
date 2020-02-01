@@ -6,9 +6,8 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang.interpreter Require Import interpret_types.
 From Perennial.goose_lang.interpreter Require Import pretty_types.
 From Perennial.goose_lang.interpreter Require Import interpreter.
-From Perennial.goose_lang.examples Require Import goose_unittest.
 
-From Perennial.goose_lang.ffi Require Import disk.
+From Perennial.goose_lang.ffi Require Import disk disk_prelude.
 Require Import Program.
 
 Instance statet_disk_error_bind : MBind (StateT state Error) :=
