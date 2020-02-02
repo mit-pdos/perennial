@@ -136,8 +136,9 @@ Section disk.
       ret $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
       _ ← reads (λ σ, σ.(world) !! int.val a) ≫= unwrap;
-        (* TODO: this is executable, need to implement that *)
-      b ← suchThat (λ σ b, (forall (i:Z), 0 <= i -> i < 4096 ->
+        (* TODO: use Sydney's executable version from disk_interpreter.v as
+        the generator here *)
+      b ← suchThat (gen:=fun _ _ => None) (λ σ b, (forall (i:Z), 0 <= i -> i < 4096 ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
                 | _ => False
