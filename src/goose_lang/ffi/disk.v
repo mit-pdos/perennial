@@ -22,17 +22,15 @@ Proof.
   solve_countable DiskOp_rec 3%nat.
 Qed.
 
-Inductive Disk_val := .
+Inductive Disk_val := | DiskInterfaceVal.
 Instance eq_Disk_val : EqDecision Disk_val.
 Proof.
-  intros [].
+  solve_decision.
 Defined.
 
 Instance eq_Disk_fin : Countable Disk_val.
 Proof.
-  refine {| encode := fun (x: Disk_val) => match x with end;
-            decode := fun x => None; |}.
-  intros [].
+  solve_countable Disk_val_rec 1%nat.
 Qed.
 
 Definition disk_op : ext_op.
@@ -40,18 +38,26 @@ Proof.
   refine (mkExtOp DiskOp _ _ Disk_val _ _).
 Defined.
 
-Instance disk_val_ty: val_types :=
-  {| ext_tys := Empty_set; |}.
+Inductive Disk_ty := | DiskInterfaceTy.
 
-Definition disk_ty: ext_types disk_op :=
-  {| val_tys := disk_val_ty;
-     val_ty_def x := match x with end;
-     get_ext_tys (op: @external disk_op) :=
-       match op with
-    | ReadOp => (uint64T, arrayT byteT)
-    | WriteOp => (prodT uint64T (arrayT byteT), unitT)
-    | SizeOp => (unitT, uint64T)
-       end; |}.
+Instance disk_val_ty: val_types :=
+  {| ext_tys := Disk_ty; |}.
+
+Section disk.
+  Existing Instances disk_op disk_val_ty.
+  Definition disk_ty: ext_types disk_op :=
+    {| val_tys := disk_val_ty;
+       val_ty_def x := match x with
+                    | DiskInterfaceTy => DiskInterfaceVal
+                       end;
+       get_ext_tys (op: @external disk_op) :=
+         match op with
+      | ReadOp => (uint64T, arrayT byteT)
+      | WriteOp => (prodT uint64T (arrayT byteT), unitT)
+      | SizeOp => (unitT, uint64T)
+         end; |}.
+  Definition Disk: ty := extT DiskInterfaceTy.
+End disk.
 
 Definition block_bytes: nat := Z.to_nat 4096.
 Definition BlockSize {ext: ext_op}: val := #4096.
@@ -100,6 +106,9 @@ Section disk.
   Proof.
     typecheck.
   Qed.
+
+  Definition Barrier: val :=
+    λ: <>, #().
 
   Definition Size: val :=
     λ: <>,

@@ -4,12 +4,14 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 Module Bcache.
   Definition S := struct.decl [
+    "d" :: disk.Disk
   ].
 End Bcache.
 
 Definition MkBcache: val :=
-  λ: <>,
+  λ: "d",
     struct.new Bcache.S [
+      "d" ::= "d"
     ].
 
 Definition Bcache__Read: val :=
@@ -26,4 +28,4 @@ Definition Bcache__Size: val :=
 
 Definition Bcache__Barrier: val :=
   λ: "bc",
-    #().
+    disk.Barrier #().

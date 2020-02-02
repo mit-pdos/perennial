@@ -144,13 +144,13 @@ Proof.
 
   (* Only way to convert (Z.to_nat i) to a (fin 4096) is to have
   hypothesis that says exactly this. *)
-  assert ((Z.to_nat i < 4096)%nat) as fin_i by lia. 
+  assert ((Z.to_nat i < Z.to_nat 4096)%nat) as fin_i by lia.
   
   pose proof (commute_option_vec_ok _ _ _ H (fin_of_nat fin_i)) as cov_ok_v.
   pose proof (commute_option_vec_ok _ _ _ all_free (fin_of_nat fin_i)) as cov_ok_navs.
   pose proof (state_readn_vec_ok _ _ _ _ vec_at_l (fin_of_nat fin_i)) as srv_ok_l.
 
-  destruct (heap σ !! (l +ₗ fin_of_nat fin_i)) as [nav|] eqn:heap_at_fin_i; [|rewrite heap_at_fin_i in srv_ok_l; contradiction].
+  destruct (heap σ !! (l +ₗ fin_of_nat fin_i)) as [nav|] eqn:heap_at_fin_i; [| contradiction].
   assert ((l +ₗ i) = (l +ₗ fin_of_nat fin_i)).
   {
     unfold loc_add.
@@ -160,7 +160,6 @@ Proof.
     lia.
   }
   rewrite -> H2.
-  rewrite heap_at_fin_i in srv_ok_l.
   rewrite heap_at_fin_i.
   rewrite srv_ok_l.
   rewrite -> (vlookup_map free_val navs (fin_of_nat fin_i)) in cov_ok_navs.
