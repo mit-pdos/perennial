@@ -372,6 +372,7 @@ Section interpreter.
     eauto.
   Qed.
 
+  Check @mret.
   (* Interpreter *)
   Fixpoint interpret (fuel: nat) (expr: expr) : StateT state Error val :=
     match fuel with
@@ -537,34 +538,18 @@ Section interpreter.
         end
 
       | Primitive2 p e1 e2 =>
-        match p in (prim_op args2) return StateT state Error val with
-        | AllocNOp =>
+          v1 <- interpret n e1;
+          v2 <- interpret n e2;
           s <- mget;
-            t <- mlift (Transitions.interpret nil (head_trans expr) s) "transition.interpret failed in AllocNOp";
-              match t with
+          t <- mlift (Transitions.interpret [] (head_trans (Primitive2 p v1 v2)) s) "transition.interpret failed in Primitive2";
+              match t return StateT state Error val with
               (* hints, new state, (obs list, next expr, threads) *)
               | (hints, s', (l, expr', ts)) =>
-                match ts with
-                | nil => _ <- mput s'; interpret n expr'
-                | _ => mfail "Spawned thread in transition.interpret in AllocNOp"
+                match ts return StateT state Error val with
+                | [] => _ <- mput s'; interpret n expr'
+                | _ => @mfail _ val "Spawned thread in transition.interpret in Primitive2"
                 end
               end
-        | FinishStoreOp =>
-          addrv <- interpret n e1;
-            val <- interpret n e2;
-            match addrv with
-            | LitV (LitLoc l) => 
-              s <- mget;
-                nav <- mlift (s.(heap) !! l) ("Load failed at location " ++ (pretty l));
-                match nav with
-                | Writing => 
-                  _ <- mput (set heap <[l:=Free val]> s);
-                    mret (LitV LitUnit)
-                | _ => mfail ("FinishStoreOp attempted on non-Writing location " ++ (pretty l))
-                end
-            | _ => @mfail state _ ("Attempted Store with non-location argument of type " ++ (pretty addrv))
-            end
-        end
 
       | ExternalOp op e =>
         v <- interpret n e;
