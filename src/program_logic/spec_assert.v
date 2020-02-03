@@ -1,9 +1,9 @@
-From iris.algebra Require Import auth frac agree gmap list excl functions.
+From iris.algebra Require Import auth frac agree gmap list excl.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
-From Perennial.program_logic Require Export crash_lang.
+From Perennial.program_logic Require Export crash_lang gen_dir.
 
 (*
 
@@ -18,19 +18,19 @@ Section ghost.
 Context {Λ: language}.
 Context {CS : crash_semantics Λ}.
 
-Definition natmapUR (A: ucmraT) : ucmraT :=
-  discrete_funUR (fun (_: nat) => A).
-
-(** The CMRA for the specification. *)
-Definition tpoolUR : ucmraT := gmapUR nat (exclR (exprO Λ)).
-Definition stateUR := natmapUR (optionUR (exclR (stateO Λ))).
-Definition cfgUR := prodUR tpoolUR stateUR.
-
-Definition genUR := natmapUR (optionUR (authUR cfgUR)).
+(** The CMRA for the threadpool specification. *)
+Definition tpoolUR : ucmraT := gen_dirUR nat nat ((exprO Λ)).
 
 Class cfgPreG (Σ : gFunctors) :=
-  { cfg_preG_inG :> inG Σ genUR }.
-Class cfgG Σ := { cfg_inG :> inG Σ genUR; cfg_name : gname }.
+  { cfg_preG_inG :> gen_dirPreG nat nat (exprO Λ) Σ }.
+
+Print irisG.
+
+Class cfgG Σ := {
+  cfg_inG :> gen_dirG nat nat (exprO Λ) Σ;
+  cfg_state_interp : nat → nat → state Λ → iProp Σ;
+(*  cfg_gen_length_interp: list nat → iProp Σ; *)
+}.
 
 Fixpoint tpool_to_map_aux (tp: list (language.expr Λ)) (id: nat) : gmap nat (language.expr Λ) :=
   match tp with
@@ -39,7 +39,16 @@ Fixpoint tpool_to_map_aux (tp: list (language.expr Λ)) (id: nat) : gmap nat (la
   end.
 
 Definition tpool_to_map tp := tpool_to_map_aux tp O.
-Definition tpool_to_res tp := (Excl <$> (tpool_to_map tp) : tpoolUR).
+
+Fixpoint tpools_to_map_aux (tps: list (list (language.expr Λ))) (id: nat)
+  : gmap nat (gmap nat (language.expr Λ)) :=
+  match tps with
+  | [] => ∅
+  | tp :: tps => <[id := tpool_to_map tp]>(tpools_to_map_aux tps (S id))
+  end.
+
+Definition tpools_to_map tps := tpools_to_map_aux tps O.
+Definition tpools_to_res tps : tpoolUR := to_gen_dir (tpools_to_map tps).
 
 Definition sourceN_root := nroot .@ "source".
 Definition sourceN := nroot .@ "source".@ "base".
@@ -47,123 +56,36 @@ Definition sourceN := nroot .@ "source".@ "base".
 Section ghost_spec.
   Context `{cfgG Σ, invG Σ}.
 
-  Definition tpool_mapsto_aux (k: nat) (j: nat) (e: language.expr Λ) : genUR :=
-    discrete_fun_singleton k (Some (◯ ({[ j := Excl e]}, ε))).
-
-  Definition tpool_mapsto k (j: nat) (e: language.expr Λ) : iProp Σ :=
-    own cfg_name $ tpool_mapsto_aux k j e.
-
-  Definition tpool_auth_aux (k: nat) tp : genUR :=
-    discrete_fun_singleton k (Some (● (tpool_to_res tp, ε))).
-
-  Definition tpool_auth k tp : iProp Σ :=
-    own cfg_name $ tpool_auth_aux k tp.
-
-
-  (* k is the generation number (i.e. counts how many crashes occured before this execution *)
-  (* j is the step number with the generation *)
-  Definition source_state_aux (k: nat) (j: nat) (σ: language.state Λ) : genUR :=
-    discrete_fun_singleton k (Some (◯ (∅ : tpoolUR, discrete_fun_singleton j (Some (Excl σ))))).
-
-  Definition source_state_auth_aux (k: nat) (j: nat) (σ: language.state Λ) : genUR :=
-    discrete_fun_singleton k (Some (● (∅ : tpoolUR, discrete_fun_singleton j (Some (Excl σ))))).
-
-  Definition source_state (k: nat) (j: nat) (σ: language.state Λ) : iProp Σ :=
-    own cfg_name $ source_state_aux k j σ.
-
-  Definition source_state_auth (k: nat) (j: nat) (σ: language.state Λ) : iProp Σ :=
-    own cfg_name $ source_state_auth_aux k j σ.
-
-  (*
-  Definition source_pool_map (tp: gmap nat (language.expr Λ)) : iProp Σ :=
-    own cfg_name (◯ (Excl <$> tp : tpoolUR, ε)).
-   *)
-
   Definition safe (ρ: cfg Λ) :=
     ∀ t2 σ2 e2, rtc erased_step ρ (t2, σ2) → e2 ∈ t2 → not_stuck e2 σ2.
 
-  (*
-  Definition source_inv tp σ : iProp Σ :=
-    (∃ tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
-                   ⌜ rtc erased_step (tp, σ) (tp', σ')
-                     ∧ safe (tp, σ) ⌝)%I.
-   *)
+  Definition gen_states_interp (σss: list (list (state Λ))) : iProp Σ :=
+    ([∗list] k ↦ σs ∈ σss, ([∗ list] i ↦ σi ∈ σs, cfg_state_interp k i σi))%I.
 
-(* Brainstorming how to extend trace from before the crash if we have no dedicated recovery procedure
+  Definition gen_tpools_interp (ρs: list (cfg Λ)) : iProp Σ :=
+    gen_dir_ctx (tpools_to_map (map fst ρs)) ∗ ([∗ list] ρ ∈ ρs, ⌜ safe ρ ⌝)%I.
 
-Idea 1:
-------
-  ∀ tp1'' σ1'', ⌜ rtc erased_step (tp1', σ1') (tp1'', σ1'') ⌝ -∗
-              own cfg_name (● (tpool_to_res tp1'', Some (Excl σ1''))) -∗
-              ∃ σ2 tp2' σ2' , ⌜ crash_step σ1'' σ2  ∧
-              ⌜ rtc erased_step ([r], σ2) (tp2', σ2') ⌝ ∗ own cgg_name ...
-
-  seems not to work.
-
-Idea 2:
-----
-
-Need to have a map from (crash generation, step number within a generation) to source state at
-that time.  so we can argue that, say, heap location l contained value v at
-some given step when we did a read, even if the state at the start of this generation changes (because
-an extra operation is completed from previous generation)
-
-For thread pool, should not need to retroactively record the thread
-expression, only the latest within each crash generation.
-
-For a given generation, the invariant should say something like
-
-(∃ σs, [∗ i, σ ∈ σs] own ?? (● (i, Some (excl σ)))) ∗
-∃ tp2', (∀ σs, [∗ i, σ ∈ σs] own ?? (● (i, Some (excl σ))) -∗
-       ⌜ rtc erased_step ([r], σs[0]) (tp2', σs[-1]) ⌝ ∗ own ?? (● (tpool_to_res tp2')))
-
-Instead of (rtc erased_step), should define a version of erased step that takes a list of states
-and says there's a sequence of transitions going through each list in that trace.
-
-For multiple generations, we probably need a list of (lists of sigmas * tp2') and fold over the above.
-in between each generation I guess we also stipulate a proof of crash_step?
-
-(∃ σss, [∗ i1, i2, σ ∈ σs] own ?? (● (i1, i2, Some (excl σ)))) ∗
-∃ tp2', (∀ σs, [∗ i, σ ∈ σs] own ?? (● (i, Some (excl σ))) -∗
-       ⌜ rtc erased_rstep ([r], σss[0][0]) (tp2', σs[-1][-1]) ⌝ ∗ own ?? (● (tpool_to_res tp2')))
-
-*)
-
-  (*
-  Definition generation_inv (k: nat) (r: expr Λ) (σ σ': state Λ) : iProp Σ :=
-    (∃ σs, [∗ list] i ↦ σi ∈ σs, source_state_auth k i σi) ∗
-    (∃ tp,  tpool_auth k tp ∗
-            (∀ σs, ([∗ list] i ↦ σi ∈ σs, source_state_auth k i σi) -∗
-                   ⌜ erased_steps_list ([r], σ) (tp, σ') σs ∧ safe ([r], σ) ⌝)).
-   *)
-
-  Definition source_state_list_auth (σss: list (cfg Λ * (list (state Λ)))) : iProp Σ :=
-    ([∗list] k ↦ genk ∈ σss,
-     let '((tp, _), σs) := genk in
-       tpool_auth k tp ∗ ([∗ list] i ↦ σi ∈ σs, source_state_auth k i σi))%I.
+  Definition gen_interp ρss : iProp Σ :=
+    gen_states_interp (map snd ρss) ∗ gen_tpools_interp (map fst ρss).
 
   Definition source_inv (r: expr Λ) (σ0: state Λ) : iProp Σ :=
-    (∃ σss, source_state_list_auth σss) ∗
-    (∃ ρlatest, ∀ σss, source_state_list_auth σss -∗ ⌜ erased_rsteps_list r ([r], σ0) ρlatest ⌝).
+    (∃ ρss, gen_interp ρss) ∗
+    (∀ ρss, gen_interp ρss -∗ ∃ ρlatest, ⌜ erased_rsteps_list (CS := CS) r ([r], σ0) ρlatest ρss ⌝).
 
-  Definition source_ctx' ρ : iProp Σ :=
-    inv sourceN (source_inv (fst ρ) (snd ρ)).
+  Definition source_ctx' r σ0 : iProp Σ :=
+    inv sourceN (source_inv r σ0).
 
   Definition source_ctx : iProp Σ :=
-    (∃ ρ, source_ctx' ρ)%I.
+    (∃ r σ0, source_ctx' r σ0)%I.
 
-  Global Instance tpool_mapsto_timeless j e : Timeless (tpool_mapsto j e).
-  Proof. apply _. Qed.
-  Global Instance source_state_timeless σ : Timeless (source_state σ).
-  Proof. apply _. Qed.
-  Global Instance source_ctx'_persistent ρ : Persistent (source_ctx' ρ).
+  Global Instance source_ctx'_persistent r σ0 : Persistent (source_ctx' r σ0).
   Proof. apply _. Qed.
   Global Instance source_ctx_persistent : Persistent (source_ctx).
   Proof. apply _. Qed.
 
 End ghost_spec.
 
-Notation "j ⤇ e" := (tpool_mapsto j e) (at level 20) : bi_scope.
+Notation "j @ i ⤇ e" := (mapsto (hG := cfg_inG) i j 1 e) (at level 20) : bi_scope.
 
 Section ghost_step.
   Context `{invG Σ}.
@@ -200,6 +122,7 @@ Section ghost_step.
     rewrite /tpool_to_map. pose (tpool_to_map_lookup_aux_none tp 0 j) => //=.
   Qed.
 
+  (*
   Lemma tpool_to_res_lookup tp j e:
     tpool_to_res tp !! j = Some (Excl e) ↔ tp !! j = Some e.
   Proof.
@@ -308,10 +231,12 @@ Section ghost_step.
     * by (right; exists p).
     * by left.
   Qed.
+   *)
 
-  Lemma source_cfg_init `{cfgPreG Σ} tp σ :
+  (*
+  Lemma source_cfg_init `{cfgPreG Σ} r σ :
     safe (tp, σ) →
-    (|={⊤}=> ∃ _ : cfgG Σ, source_ctx' (tp, σ)
+    (|={⊤}=> ∃ _ : cfgG Σ, source_ctx' r σ ∗
                                        ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ)%I.
   Proof.
     intros Hno_err.
@@ -334,10 +259,12 @@ Section ghost_step.
     rewrite pair_split.
     iDestruct "Hfrag" as "($&$)".
   Qed.
+   *)
 
   Context `{cfgG Σ}.
   Context `{Inhabited (state Λ)}.
 
+  (*
   Lemma source_thread_update e' tp j e σ :
     j ⤇ e -∗ own cfg_name (● (tpool_to_res tp, Excl' σ))
       ==∗ j ⤇ e' ∗ own cfg_name (● (tpool_to_res (<[j := e']>tp), Excl' σ)).
@@ -423,15 +350,35 @@ Section ghost_step.
     apply auth_both_valid in Hval_state as ((_&Hstate)%prod_included&_).
     apply Excl_included in Hstate; setoid_subst; auto.
   Qed.
+   *)
 
-  Lemma ghost_step_lifting' E ρ j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
-    language.prim_step e1 σ1 κ e2 σ2 efs →
+  Lemma ghost_step_lifting' E j i K `{LanguageCtx Λ K} e1 σ2 e2 efs:
     nclose sourceN ⊆ E →
-    source_ctx' ρ ∗ j ⤇ K e1 ∗ source_state σ1
-      ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+    (∀ σss1 σs σss2,
+       ⌜ length σss1 = i ⌝ -∗
+       ▷ gen_states_interp (σss1 ++ [σs] ++ σss2) ={E ∖ ↑ sourceN}=∗
+       ∃ κ σs0 σ1, ⌜ σs = σs0 ++ [σ1] ∧
+                     language.prim_step e1 σ1 κ e2 σ2 efs ⌝ ∗
+                   ▷ gen_states_interp (σss1 ++ [σs ++ [σ2]] ++ σss2)) -∗
+    source_ctx -∗ j @ i ⤇ (K e1)
+      ={E}=∗ j @ i ⤇ K e2 ∗ ([∗ list] ef ∈ efs, ∃ j', j' @ i ⤇ ef).
   Proof.
-    iIntros (Hstep ?) "(#Hctx&Hj&Hstate)". rewrite /source_ctx/source_inv.
-    iInv "Hctx" as (tp' σ') ">[Hauth %]" "Hclose".
+    iIntros (?) "Hstep #Hctx Hj". rewrite /source_ctx/source_ctx'/source_inv.
+    iDestruct "Hctx" as (??) "Hctx".
+    iInv "Hctx" as "(H1&H2)".
+    iDestruct "H1" as (ρss) "(H1s&H1tp)".
+   
+    (* if we have j @ i points to fact, then ρss must contain at least i generations *)
+    assert (∃ ρss1 ρss2 ρs, ρss = ρss1 ++ [ρs] ++ ρss2 ∧ length ρss1 = i) as (ρss1&ρss2&ρs&->&Hlen).
+    { admit. }
+
+    destruct ρs as (ρ, σs).
+    iSpecialize ("Hstep" $! (map snd ρss1) (σs) (map snd ρss2)).
+    rewrite map_length.
+    rewrite ?map_app.
+    iMod ("Hstep" with "[//] [$]") as (κ σs0 σ1 (?&?)) "H".
+    subst.
+
 
     (* Reconcile view based on authoritative element *)
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
