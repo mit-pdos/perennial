@@ -184,7 +184,7 @@ Lemma wptp_recv_strong_normal_adequacy Φ Φinv Φr κs' s k Hi Hc t n ns r1 e1 
   wpr s k Hi Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   wptp s k t1 -∗ NC -∗ step_fupdN_fresh (3 * (S (S k))) ns Hi Hc t (λ Hi' Hc' t',
     ⌜ Hi' = Hi ∧ Hc' = Hc ∧ t' = t ⌝ ∗
-    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S n) |={⊤, ∅}=> ▷ ∃ e2 t2',
+    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S n) ∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
     state_interp σ2 κs' (length t2') ∗
@@ -204,8 +204,6 @@ Proof.
   rewrite perennial_invG.
   iSplitL ""; first by eauto.
   iApply (step_fupdN_innerN_wand with "H"); auto.
-  iIntros. iApply fupd_mask_weaken; first by set_solver+.
-  iNext. eauto.
 Qed.
 
 Lemma wptp_recv_strong_crash_adequacy Φ Φinv Φinv' Φr κs' s k Hi Hc t ns n r1 e1 t1 κs t2 σ1 σ2 :
@@ -214,7 +212,7 @@ Lemma wptp_recv_strong_crash_adequacy Φ Φinv Φinv' Φr κs' s k Hi Hc t ns n 
   wpr s k Hi Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   □ (∀ Hi' t', Φinv Hi' t' -∗ □ Φinv' Hi' t') -∗
   wptp s k t1 -∗ NC -∗ step_fupdN_fresh (3 * (S (S k))) ns Hi Hc t (λ Hi' Hc' t',
-    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S (S n)) |={⊤, ∅}=> ▷ ∃ e2 t2',
+    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S (S n)) ∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
     state_interp σ2 κs' (length t2') ∗
@@ -283,7 +281,7 @@ Lemma wptp_recv_strong_adequacy Φ Φinv Φinv' Φr κs' s k Hi Hc t ns n r1 e1 
   wpr s k Hi Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   □ (∀ Hi' t', Φinv Hi' t' -∗ □ Φinv' Hi' t') -∗
   wptp s k t1 -∗ NC -∗ step_fupdN_fresh (3 * (S (S k))) ns Hi Hc t (λ Hi' Hc' t',
-    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S (S n)) |={⊤, ∅}=> ▷ ∃ e2 t2',
+    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S (S n)) ∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
     state_interp σ2 κs' (length t2') ∗
@@ -299,7 +297,7 @@ Proof.
     iApply (step_fupdN_fresh_wand with "H").
     iIntros (???) "H".
     iApply (step_fupdN_innerN_wand with "H"); auto.
-    iIntros ">H !> !> ".
+    iIntros "H".
     iDestruct "H" as (????) "(H&?&?&?)". iExists _, _.
     repeat (iSplitL ""; try iFrame; eauto).
   - iIntros. iDestruct (wptp_recv_strong_normal_adequacy with "[$] [$] [$] [$]") as "H"; eauto.
@@ -307,7 +305,7 @@ Proof.
     iIntros (???) "H".
     iDestruct "H" as ((?&?&?)) "H". subst.
     iApply (step_fupdN_innerN_wand with "H"); auto.
-    iIntros ">H !> !> ".
+    iIntros "H".
     iDestruct "H" as (????) "(H&?&?)". iExists _, _.
     repeat (iSplitL ""; try iFrame; eauto).
 Qed.
@@ -315,7 +313,7 @@ Qed.
 End recovery_adequacy.
 
 Record recv_adequate {Λ CS} (s : stuckness) (e1 r1: expr Λ) (σ1 : state Λ)
-    (φ φr: val Λ → state Λ → Prop) := {
+    (φ φr: val Λ → state Λ → Prop) (φinv: state Λ → Prop)  := {
   recv_adequate_result_normal t2 σ2 v2 :
    erased_rsteps (CS := CS) r1 ([e1], σ1) (of_val v2 :: t2, σ2) Normal →
    φ v2 σ2;
@@ -325,25 +323,29 @@ Record recv_adequate {Λ CS} (s : stuckness) (e1 r1: expr Λ) (σ1 : state Λ)
   recv_adequate_not_stuck t2 σ2 e2 stat :
    s = NotStuck →
    erased_rsteps (CS := CS) r1 ([e1], σ1) (t2, σ2) stat →
-   e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2)
+   e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2);
+  recv_adequate_inv t2 σ2 stat :
+   erased_rsteps (CS := CS) r1 ([e1], σ1) (t2, σ2) stat →
+   φinv σ2
 }.
 
-Lemma recv_adequate_alt {Λ CS} s e1 r1 σ1 (φ φr : val Λ → state Λ → Prop) :
-  recv_adequate (CS := CS) s e1 r1 σ1 φ φr ↔ ∀ t2 σ2 stat,
+Lemma recv_adequate_alt {Λ CS} s e1 r1 σ1 (φ φr : val Λ → state Λ → Prop) φinv :
+  recv_adequate (CS := CS) s e1 r1 σ1 φ φr φinv ↔ ∀ t2 σ2 stat,
     erased_rsteps (CS := CS) r1 ([e1], σ1) (t2, σ2) stat →
       (∀ v2 t2', t2 = of_val v2 :: t2' →
                  match stat with
                    | Normal => φ v2 σ2
                    | Crashed => φr v2 σ2
                  end) ∧
-      (∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2)).
+      (∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2)) ∧
+      (φinv σ2).
 Proof.
   split.
   - intros [] ?? []; naive_solver.
   - constructor; naive_solver.
 Qed.
 
-Corollary wp_recv_adequacy Σ Λ CS (T: ofeT) `{!invPreG Σ} `{!crashPreG Σ} s k e r σ φ φr Φinv :
+Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofeT) `{!invPreG Σ} `{!crashPreG Σ} s k e r σ φ φr φinv Φinv :
   (∀ `{Hinv : !invG Σ} `{Hc: !crashG Σ} κs,
      (|={⊤}=> ∃ (t: pbundleG T Σ)
          (stateI : pbundleG T Σ→ state Λ → list (observation Λ) → iProp Σ)
@@ -354,8 +356,10 @@ Corollary wp_recv_adequacy Σ Λ CS (T: ofeT) `{!invPreG Σ} `{!crashPreG Σ} s 
                IrisG Λ Σ Hi (λ σ κs _, stateI t σ κs)
                     (fork_post t)) Hpf
                in
+       □ (∀ σ κ, stateI t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
+       □ (∀ Hi t, Φinv Hi t -∗ □ ∀ σ κ, stateI t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
        stateI t σ κs ∗ wpr s k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝))%I) →
-  recv_adequate (CS := CS) s e r σ (λ v _, φ v) (λ v _, φr v) .
+  recv_adequate (CS := CS) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
 Proof.
   intros Hwp.
   apply recv_adequate_alt.
@@ -363,21 +367,33 @@ Proof.
   destruct (nrsteps_snoc _ _ _ _ _ _ H) as (ns'&n'&->).
   eapply (step_fupdN_fresh_soundness _ (3 * (S (S k))) ns' n')=> Hinv Hc.
   iIntros "HNC".
-  iMod (Hwp Hinv Hc κs) as (t stateI Hfork_post Hpf) "(Hw&H)".
+  iMod (Hwp Hinv Hc κs) as (t stateI Hfork_post Hpf) "(#Hinv1&#Hinv2&Hw&H)".
   iModIntro. iExists _.
   iDestruct (wptp_recv_strong_adequacy
                (perennialG0 :=
           PerennialG _ _ T Σ
             (λ Hi t,
              IrisG Λ Σ Hi (λ σ κs _, stateI t σ κs)
-                  (Hfork_post t)) Hpf) _ _ (λ _ _, True%I) _ [] with "[Hw] [H] [] [] HNC") as "H"; eauto.
+                  (Hfork_post t)) Hpf) _ _ (λ _ t, (∀ σ κ, stateI t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝))%I
+               _ [] with "[Hw] [H] [] [] HNC") as "H"; eauto.
   { rewrite app_nil_r. eauto. }
   iApply (step_fupdN_fresh_wand with "H").
   iIntros (???) "H".
   iApply (step_fupdN_innerN_wand with "H"); auto.
-  iIntros ">H !> !> ".
-  iDestruct "H" as (v2 ???) "(_&Hv&Hnstuck)".
-  iSplitR ""; last done.
-  iIntros (v2' ? Heq). subst. inversion Heq; subst.
-  rewrite to_of_val. destruct stat; iDestruct "Hv" as %?; eauto; naive_solver.
+  iIntros "H".
+  iDestruct "H" as (v2 ???) "(Hw&Hv&Hnstuck)".
+  destruct stat.
+  - iDestruct "Hv" as "(Hv&#Hinv)".
+    iMod ("Hinv" with "[$]") as %?.
+    iIntros "!> !>".
+    iSplit; [| iSplit]; eauto.
+    iIntros (v2' ? Heq). subst. inversion Heq; subst.
+    rewrite to_of_val. naive_solver.
+  - iDestruct "Hv" as "(Heq1&Hv)".
+    iDestruct "Heq1" as %(?&?); subst.
+    iMod ("Hinv1" with "[$]") as %?.
+    iIntros "!> !>".
+    iSplit; [| iSplit]; eauto.
+    iIntros (v2' ? Heq). subst. inversion Heq; subst.
+    rewrite to_of_val. naive_solver.
 Qed.
