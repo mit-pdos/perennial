@@ -16,6 +16,9 @@ Section crash_language.
   | Crashed
   | Normal.
 
+  Global Instance status_inhabited: Inhabited status.
+  Proof. repeat econstructor. Qed.
+
   (* Execution with crashes and a fresh procedure to run. list nat argument counts
      steps in-between each crash. The mneominic is now that "r" stands for "resume" *)
   Inductive nrsteps (r: expr Λ) : list nat → cfg Λ → list (observation Λ) → cfg Λ → status → Prop :=
@@ -37,6 +40,61 @@ Section crash_language.
       crash_prim_step CS (ρ2.2) σ →
       erased_rsteps r ([r], σ) ρ3 s →
       erased_rsteps r ρ1 ρ3 Crashed.
+
+  Lemma erased_rsteps_r r ρ ρ' ρ'' σ s:
+    erased_rsteps r ρ ρ' s →
+    crash_prim_step CS (ρ'.2) σ →
+    rtc erased_step ([r], σ) ρ'' →
+    erased_rsteps r ρ ρ'' Crashed.
+  Proof.
+    intros Hsteps. revert σ ρ''.
+    induction Hsteps; intros.
+    - intros. econstructor; eauto.
+      econstructor; eauto.
+    - intros. econstructor; eauto.
+  Qed.
+
+  Lemma erased_rsteps_r_inv r ρ ρ'':
+    erased_rsteps r ρ ρ'' Crashed →
+    ∃ ρ' σ' s,
+      erased_rsteps r ρ ρ' s ∧
+      crash_prim_step CS (ρ'.2) σ' ∧
+      rtc erased_step ([r], σ') ρ''.
+  Proof.
+    intros Hsteps. remember Crashed as s eqn:Heq. revert Heq.
+    induction Hsteps.
+    { congruence. }
+    intros _. destruct s.
+    - edestruct IHHsteps as (?&?&?&?&?&?); auto.
+      do 3 eexists; split_and!; eauto.
+      * eapply erased_rsteps_crash; eauto.
+    - inversion Hsteps; subst.
+      do 3 eexists; split_and!; eauto.
+      * econstructor; eauto.
+  Qed.
+
+  Lemma erased_rsteps_r_rtc r ρ ρ' ρ'' s:
+    erased_rsteps r ρ ρ' s →
+    rtc erased_step ρ' ρ'' →
+    erased_rsteps r ρ ρ'' s.
+  Proof.
+    destruct s.
+    - intros (?&?&?&?&?&?)%erased_rsteps_r_inv.
+      intros. eapply erased_rsteps_r; eauto.
+      eapply rtc_transitive; eauto.
+    - inversion 1; subst; eauto.
+      intros. econstructor.
+      eapply rtc_transitive; eauto.
+  Qed.
+
+  Lemma erased_rsteps_r_1 r ρ ρ' ρ'' s:
+    erased_rsteps r ρ ρ' s →
+    erased_step ρ' ρ'' →
+    erased_rsteps r ρ ρ'' s.
+  Proof.
+    intros; eapply erased_rsteps_r_rtc; eauto.
+    eapply rtc_once; eauto.
+  Qed.
 
   Inductive erased_steps_list: cfg Λ → cfg Λ → list (state Λ) → Prop :=
   | eslist_refl ρ σ:

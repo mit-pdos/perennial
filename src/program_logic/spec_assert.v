@@ -3,6 +3,7 @@ From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
+From Perennial.program_logic Require Export crash_lang.
 
 (*
 
@@ -15,6 +16,7 @@ From iris.program_logic Require Import lifting.
 
 Section ghost.
 Context {Λ: language}.
+Context {CS: crash_semantics Λ}.
 
 (** The CMRA for the heap of the specification. *)
 Definition tpoolUR : ucmraT := gmapUR nat (exclR (exprO Λ)).
@@ -53,25 +55,31 @@ Section ghost_spec.
   Definition source_pool_map (tp: gmap nat (language.expr Λ)) : iProp Σ :=
     own cfg_name (◯ (Excl <$> tp : tpoolUR, ε)).
 
+  (*
   Definition safe (ρ: cfg Λ) :=
     ∀ t2 σ2 e2, rtc erased_step ρ (t2, σ2) → e2 ∈ t2 → not_stuck e2 σ2.
+   *)
 
-  Definition source_inv tp σ : iProp Σ :=
-    (∃ tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
-                   ⌜ rtc erased_step (tp, σ) (tp', σ')
-                     ∧ safe (tp, σ) ⌝)%I.
+  Definition crash_safe r (ρ: cfg Λ) :=
+    ∀ t2 σ2 e2 s, erased_rsteps (CS := CS) r ρ (t2, σ2) s →
+                  e2 ∈ t2 → not_stuck e2 σ2.
 
-  Definition source_ctx' ρ : iProp Σ :=
-    inv sourceN (source_inv (fst ρ) (snd ρ)).
+  Definition source_inv r tp σ : iProp Σ :=
+    (∃ s tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
+                   ⌜ erased_rsteps (CS := CS) r (tp, σ) (tp', σ') s
+                     ∧ crash_safe r (tp, σ) ⌝)%I.
+
+  Definition source_ctx' r ρ : iProp Σ :=
+    inv sourceN (source_inv r (fst ρ) (snd ρ)).
 
   Definition source_ctx : iProp Σ :=
-    (∃ ρ, source_ctx' ρ)%I.
+    (∃ r ρ, source_ctx' r ρ)%I.
 
   Global Instance tpool_mapsto_timeless j e : Timeless (tpool_mapsto j e).
   Proof. apply _. Qed.
   Global Instance source_state_timeless σ : Timeless (source_state σ).
   Proof. apply _. Qed.
-  Global Instance source_ctx'_persistent ρ : Persistent (source_ctx' ρ).
+  Global Instance source_ctx'_persistent r ρ : Persistent (source_ctx' r ρ).
   Proof. apply _. Qed.
   Global Instance source_ctx_persistent : Persistent (source_ctx).
   Proof. apply _. Qed.
@@ -224,9 +232,9 @@ Section ghost_step.
     * by left.
   Qed.
 
-  Lemma source_cfg_init `{cfgPreG Σ} tp σ :
-    safe (tp, σ) →
-    (|={⊤}=> ∃ _ : cfgG Σ, source_ctx' (tp, σ)
+  Lemma source_cfg_init `{cfgPreG Σ} r tp σ :
+    crash_safe r (tp, σ) →
+    (|={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp, σ)
                                        ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ)%I.
   Proof.
     intros Hno_err.
@@ -242,9 +250,9 @@ Section ghost_step.
     }
     set (IN := {| cfg_name := γ |}).
     iExists IN.
-    iMod (inv_alloc sourceN ⊤ (source_inv tp σ) with "[Hauth]").
-    { rewrite /source_inv. iNext. iExists tp, σ. iFrame "Hauth".
-      iPureIntro; split; eauto. econstructor. }
+    iMod (inv_alloc sourceN ⊤ (source_inv r tp σ) with "[Hauth]").
+    { rewrite /source_inv. iNext. iExists Normal,tp, σ. iFrame "Hauth".
+      iPureIntro; split; eauto. econstructor. econstructor. }
     iModIntro. iFrame.
     rewrite pair_split.
     iDestruct "Hfrag" as "($&$)".
@@ -339,14 +347,14 @@ Section ghost_step.
     apply Excl_included in Hstate; setoid_subst; auto.
   Qed.
 
-  Lemma ghost_step_lifting' E ρ j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
+  Lemma ghost_step_lifting' E r ρ j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
     language.prim_step e1 σ1 κ e2 σ2 efs →
     nclose sourceN ⊆ E →
-    source_ctx' ρ ∗ j ⤇ K e1 ∗ source_state σ1
+    source_ctx' r ρ ∗ j ⤇ K e1 ∗ source_state σ1
       ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
   Proof.
     iIntros (Hstep ?) "(#Hctx&Hj&Hstate)". rewrite /source_ctx/source_inv.
-    iInv "Hctx" as (tp' σ') ">[Hauth %]" "Hclose".
+    iInv "Hctx" as (s' tp' σ') ">[Hauth %]" "Hclose".
 
     (* Reconcile view based on authoritative element *)
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
@@ -360,9 +368,9 @@ Section ghost_step.
 
     (* Restore the invariant *)
     iMod ("Hclose" with "[Hauth]").
-    { iNext. iExists (<[j := K e2]>tp' ++ efs), σ2.
+    { iNext. iExists s', (<[j := K e2]>tp' ++ efs), σ2.
       iFrame. intuition. iPureIntro; split; auto.
-      eapply rtc_r; eauto.
+      eapply erased_rsteps_r_1; eauto.
       eapply fill_step in Hstep.
       econstructor. econstructor; eauto.
       - f_equal. symmetry. eapply take_drop_middle; eauto.
@@ -384,7 +392,7 @@ Section ghost_step.
       ={E}=∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
   Proof.
     iIntros (??) "Hj Hsrc ?".
-    iDestruct "Hsrc" as (?) "Hsrc".
+    iDestruct "Hsrc" as (??) "Hsrc".
     iApply ghost_step_lifting'; eauto. iFrame.
   Qed.
 
@@ -401,13 +409,13 @@ Section ghost_step.
     }
     clear Hstuck.
     rewrite /source_ctx/source_inv.
-    iDestruct "Hctx" as (ρ) "#Hctx".
-    iInv "Hctx" as (tp' σ') ">[Hauth Hpure]" "Hclose".
+    iDestruct "Hctx" as (? ρ) "#Hctx".
+    iInv "Hctx" as (? tp' σ') ">[Hauth Hpure]" "Hclose".
     iDestruct "Hpure" as %(Hstep&Hnoerr).
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
     iDestruct (source_state_reconcile with "Hstate Hauth") as %Heq_state.
     subst.
-    exfalso. rewrite /safe in Hnoerr.
+    exfalso. rewrite /crash_safe in Hnoerr.
     eapply not_not_stuck in Hstuck'.
     eapply Hstuck', Hnoerr; eauto.
     by eapply elem_of_list_lookup_2.
@@ -419,8 +427,8 @@ Section ghost_step.
     source_ctx ∗ j ⤇ K e1
       ={E}=∗ j ⤇ K e2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
   Proof.
-    iIntros (Hstep ?) "(#Hctx&Hj)". iDestruct "Hctx" as (?) "Hctx". rewrite /source_ctx/source_inv.
-    iInv "Hctx" as (tp' σ') ">[Hauth %]" "Hclose".
+    iIntros (Hstep ?) "(#Hctx&Hj)". iDestruct "Hctx" as (??) "Hctx". rewrite /source_ctx/source_inv.
+    iInv "Hctx" as (? tp' σ') ">[Hauth %]" "Hclose".
 
     (* Reconcile view based on authoritative element *)
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
@@ -432,9 +440,9 @@ Section ghost_step.
 
 
     iMod ("Hclose" with "[Hauth]").
-    { iNext. iExists (<[j := K e2]>tp' ++ efs), _.
+    { iNext. iExists _, (<[j := K e2]>tp' ++ efs), _.
       iFrame. intuition. iPureIntro; split; auto.
-      eapply rtc_r; eauto.
+      eapply erased_rsteps_r_1; eauto.
       edestruct Hstep as (?&Hstep').
       eapply fill_step in Hstep'.
       econstructor. econstructor; eauto.
@@ -505,3 +513,4 @@ End ghost_step.
 End ghost.
 
 Notation "j ⤇ e" := (tpool_mapsto j e) (at level 20) : bi_scope.
+
