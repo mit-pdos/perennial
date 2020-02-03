@@ -106,4 +106,15 @@ Proof.
   destruct m; simpl; auto.
 Qed.
 
+Definition wp_MapDelete stk E mref (m: gmap u64 val * val) mv k :
+  {{{ mref ↦ Free mv ∗ ⌜map_val mv = Some m⌝ }}}
+    MapDelete #mref #k @ stk; E
+  {{{ mv', RET #(); mref ↦ Free mv' ∗
+                    ⌜map_val mv' = Some (map_del m k)⌝ }}}.
+Proof.
+  iIntros (𝛷) "[Hmref %] H𝛷".
+Abort.
+
+(* TODO: specify MapIter *)
+
 End heap.

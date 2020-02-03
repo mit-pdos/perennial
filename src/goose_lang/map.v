@@ -54,6 +54,10 @@ Definition map_insert (m_def: gmap u64 val * val) (k: u64) (v: val) : gmap u64 v
   let (m, def) := m_def in
   (<[ k := v ]> m, def).
 
+Definition map_del (m_def: gmap u64 val * val) (k: u64) (v: val) : gmap u64 val * val :=
+  let (m, def) := m_def in
+  (delete k m, def).
+
 Definition MapGet: val :=
   λ: "mref" "k",
   (rec: "mapGet" "m" :=
