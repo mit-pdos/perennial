@@ -89,4 +89,21 @@ Proof.
         destruct m'; eauto.
 Qed.
 
+Definition wp_MapInsert stk E mref (m: gmap u64 val * val) mv k v' :
+  {{{ mref ↦ Free mv ∗ ⌜map_val mv = Some m⌝ }}}
+    MapInsert #mref #k v' @ stk; E
+  {{{ mv', RET #(); mref ↦ Free mv' ∗
+                    ⌜map_val mv' = Some (map_insert m k v')⌝ }}}.
+Proof.
+  iIntros (𝛷) "[Hmref %] H𝛷".
+  wp_call.
+  wp_load.
+  wp_store.
+  iApply ("H𝛷" with "[$Hmref]").
+  iPureIntro.
+  simpl.
+  rewrite H.
+  destruct m; simpl; auto.
+Qed.
+
 End heap.
