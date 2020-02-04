@@ -11,7 +11,7 @@ Class GenPred T Σ (pred: Σ -> T -> Prop) := genNext : Z -> forall (s:Σ), opti
 Arguments GenPred : clear implicits.
 Notation GenType T Σ := (GenPred T Σ (fun _ _ => True)).
 
-Instance fallback_genPred T Σ p : GenPred T Σ p | 99 := fun _ _ => None.
+Definition fallback_genPred T Σ p : GenPred T Σ p (* | 99 *) := fun _ _ => None.
 Instance bool_GenType Σ : GenType bool Σ := fun z _ => Some (exist _ (z mod 2 =? 0)%Z I).
 
 Section transition.
@@ -48,7 +48,7 @@ Section transition.
   Arguments any T {gen}.
 
   Definition undefined {T}: transition T :=
-    suchThat (fun _ _ => False).
+    suchThat (gen:=fun _ _ => None) (fun _ _ => False).
 
   Definition plus {T} (r1 r2: transition T): transition T :=
     bind (any bool) (fun b => if b then r1 else r2).

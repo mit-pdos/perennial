@@ -537,34 +537,22 @@ Section interpreter.
         end
 
       | Primitive2 p e1 e2 =>
-        match p in (prim_op args2) return StateT state Error val with
-        | AllocNOp =>
+          v1 <- interpret n e1;
+          v2 <- interpret n e2;
           s <- mget;
-            t <- mlift (Transitions.interpret nil (head_trans expr) s) "transition.interpret failed in AllocNOp";
-              match t with
+          t <- mlift (Transitions.interpret [] (head_trans (Primitive2 p (Val v1) (Val v2))) s) "transition.interpret failed in Primitive2";
+              match t return StateT state Error val with
               (* hints, new state, (obs list, next expr, threads) *)
               | (hints, s', (l, expr', ts)) =>
-                match ts with
-                | nil => _ <- mput s'; interpret n expr'
-                | _ => mfail "Spawned thread in transition.interpret in AllocNOp"
+                match expr' return StateT state Error val with
+                | Val v =>
+                  match ts with
+                    | [] => _ <- mput s'; mret v
+                    | _ => mfail "Thread spawned during Primitive2 op"
+                  end
+                | _ => mfail "Failed to interpret Primitive2 op to val"
                 end
               end
-        | FinishStoreOp =>
-          addrv <- interpret n e1;
-            val <- interpret n e2;
-            match addrv with
-            | LitV (LitLoc l) => 
-              s <- mget;
-                nav <- mlift (s.(heap) !! l) ("Load failed at location " ++ (pretty l));
-                match nav with
-                | Writing => 
-                  _ <- mput (set heap <[l:=Free val]> s);
-                    mret (LitV LitUnit)
-                | _ => mfail ("FinishStoreOp attempted on non-Writing location " ++ (pretty l))
-                end
-            | _ => @mfail state _ ("Attempted Store with non-location argument of type " ++ (pretty addrv))
-            end
-        end
 
       | ExternalOp op e =>
         v <- interpret n e;
@@ -890,37 +878,31 @@ Ltac runStateT_inv :=
     }
 
     (* Primitive2 *)
-    { dependent destruction op.
-      { (* AllocN *)
-        runStateT_inv.
-        pose proof (Transitions.relation.interpret_sound _ _ _ Heqo).
-        destruct e1 eqn:?; simpl in H; try by inversion H.
-        destruct v0 eqn:?; simpl in H; try by inversion H.
-        destruct l0 eqn:?; simpl in H; try by inversion H.
-        destruct e2 eqn:?; simpl in H; try by inversion H.
+    { do 2 run_next_interpret IHn.
+      runStateT_inv.
+      pose proof (Transitions.relation.interpret_sound _ _ _ Heqo).
+      dependent destruction op.
+      { runStateT_inv.
+        destruct v2 eqn:?; simpl in H; try by inversion H.
+        destruct l2 eqn:?; simpl in H; try by inversion H.
         subst.
         Transitions.monad_inv.
-        assert (runStateT (interpret n e) s = Works (val * state) (v, σ')).
-        { unfold runStateT; exact Heqe1. }
-        pose proof (IHn _ _ _ _ H0).
-        destruct H1 as (m & l' & e_to_v).
         do 2 eexists.
-        eapply nsteps_transitive.
-        { single_step. exact H. }
-        exact e_to_v.
-      }
-
-      { (* FinishStore *)
-        do 2 run_next_interpret IHn.
-        runStateT_inv.
-        do 2 eexists.
-        (* [FinishStore e1 e2] -> [FinishStore #l1 e2] *)
-        eapply nsteps_transitive;
-          [ctx_step (fill [(Primitive2LCtx FinishStoreOp e2)])|].
-        (* [FinishStore #l0 e2] -> [FinishStore #l1 v2] *)
-        eapply nsteps_transitive;
-          [ctx_step (fill [(Primitive2RCtx FinishStoreOp #l2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx AllocNOp e2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx AllocNOp #n0)])|].
         single_step.
+        exact H.
+      }
+      { runStateT_inv.
+        destruct v2 eqn:?; simpl in H; try by inversion H.
+        destruct l2 eqn:?; simpl in H; try by inversion H.
+        subst.
+        Transitions.monad_inv.
+        do 2 eexists.
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx FinishStoreOp e2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx FinishStoreOp #l4)])|].
+        single_step.
+        exact H.
       }
     }
 
