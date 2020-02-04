@@ -372,7 +372,6 @@ Section interpreter.
     eauto.
   Qed.
 
-  Check @mret.
   (* Interpreter *)
   Fixpoint interpret (fuel: nat) (expr: expr) : StateT state Error val :=
     match fuel with
@@ -541,13 +540,17 @@ Section interpreter.
           v1 <- interpret n e1;
           v2 <- interpret n e2;
           s <- mget;
-          t <- mlift (Transitions.interpret [] (head_trans (Primitive2 p v1 v2)) s) "transition.interpret failed in Primitive2";
+          t <- mlift (Transitions.interpret [] (head_trans (Primitive2 p (Val v1) (Val v2))) s) "transition.interpret failed in Primitive2";
               match t return StateT state Error val with
               (* hints, new state, (obs list, next expr, threads) *)
               | (hints, s', (l, expr', ts)) =>
-                match ts return StateT state Error val with
-                | [] => _ <- mput s'; interpret n expr'
-                | _ => @mfail _ val "Spawned thread in transition.interpret in Primitive2"
+                match expr' return StateT state Error val with
+                | Val v =>
+                  match ts with
+                    | [] => _ <- mput s'; mret v
+                    | _ => mfail "Thread spawned during Primitive2 op"
+                  end
+                | _ => mfail "Failed to interpret Primitive2 op to val"
                 end
               end
 
@@ -875,37 +878,31 @@ Ltac runStateT_inv :=
     }
 
     (* Primitive2 *)
-    { dependent destruction op.
-      { (* AllocN *)
-        runStateT_inv.
-        pose proof (Transitions.relation.interpret_sound _ _ _ Heqo).
-        destruct e1 eqn:?; simpl in H; try by inversion H.
-        destruct v0 eqn:?; simpl in H; try by inversion H.
-        destruct l0 eqn:?; simpl in H; try by inversion H.
-        destruct e2 eqn:?; simpl in H; try by inversion H.
+    { do 2 run_next_interpret IHn.
+      runStateT_inv.
+      pose proof (Transitions.relation.interpret_sound _ _ _ Heqo).
+      dependent destruction op.
+      { runStateT_inv.
+        destruct v2 eqn:?; simpl in H; try by inversion H.
+        destruct l2 eqn:?; simpl in H; try by inversion H.
         subst.
         Transitions.monad_inv.
-        assert (runStateT (interpret n e) s = Works (val * state) (v, σ')).
-        { unfold runStateT; exact Heqe1. }
-        pose proof (IHn _ _ _ _ H0).
-        destruct H1 as (m & l' & e_to_v).
         do 2 eexists.
-        eapply nsteps_transitive.
-        { single_step. exact H. }
-        exact e_to_v.
-      }
-
-      { (* FinishStore *)
-        do 2 run_next_interpret IHn.
-        runStateT_inv.
-        do 2 eexists.
-        (* [FinishStore e1 e2] -> [FinishStore #l1 e2] *)
-        eapply nsteps_transitive;
-          [ctx_step (fill [(Primitive2LCtx FinishStoreOp e2)])|].
-        (* [FinishStore #l0 e2] -> [FinishStore #l1 v2] *)
-        eapply nsteps_transitive;
-          [ctx_step (fill [(Primitive2RCtx FinishStoreOp #l2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx AllocNOp e2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx AllocNOp #n0)])|].
         single_step.
+        exact H.
+      }
+      { runStateT_inv.
+        destruct v2 eqn:?; simpl in H; try by inversion H.
+        destruct l2 eqn:?; simpl in H; try by inversion H.
+        subst.
+        Transitions.monad_inv.
+        do 2 eexists.
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx FinishStoreOp e2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx FinishStoreOp #l4)])|].
+        single_step.
+        exact H.
       }
     }
 
