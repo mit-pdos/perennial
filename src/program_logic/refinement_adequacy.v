@@ -15,7 +15,8 @@ Context {CS: crash_semantics Λ}.
 Context `{INH: Inhabited (state Λspec)}.
 
 Corollary wp_recv_refinement_adequacy Σ (T: ofeT) (cfgT : _ → @cfgG Λspec Σ)
-  `{!invPreG Σ} `{!crashPreG Σ} s k es e rs r σs σ φ φr Φinv P:
+  `{!invPreG Σ} `{!crashPreG Σ} s k es e rs r σs σ φ φr Φinv (R: state Λspec -> state Λ -> Prop)
+:
   (∀ `{Hinv : !invG Σ} `{Hc: !crashG Σ} κs,
      (|={⊤}=> ∃ (t: pbundleG T Σ)
          (stateI : pbundleG T Σ → state Λ → list (observation Λ) → iProp Σ)
@@ -28,7 +29,7 @@ Corollary wp_recv_refinement_adequacy Σ (T: ofeT) (cfgT : _ → @cfgG Λspec Σ
                in
         let Φinv' := λ (Hinv: invG Σ) t,
             (@source_ctx' Λspec CSspec Σ (cfgT t) Hinv rs ([es], σs) ∗
-            □ (∀ σ κ,  stateI t σ κ ={⊤ ∖ ↑ sourceN, ∅}=∗ ∃ σs, source_state σs ∗ ⌜ P σs σ ⌝))
+            □ (∀ σ κ,  stateI t σ κ ={⊤ ∖ ↑ sourceN, ∅}=∗ ∃ σs, source_state σs ∗ ⌜ R σs σ ⌝))
             in
        Φinv' _ _ ∗
        □ (∀ Hi t, Φinv Hi t -∗ Φinv' Hi t) ∗
@@ -36,14 +37,14 @@ Corollary wp_recv_refinement_adequacy Σ (T: ofeT) (cfgT : _ → @cfgG Λspec Σ
   ∀ t2 σ2 stat, erased_rsteps (CS := CS) r ([e], σ) (t2, σ2) stat →
   ∃ t2s σ2s stats,
   erased_rsteps (CS := CSspec) rs ([es], σs) (t2s, σ2s) stats ∧
-  P σ2s σ2.
+  R σ2s σ2.
 Proof.
   intros H t2 σ2 stat Hsteps.
   eapply recv_adequate_inv with
          (φinv := λ σ2,
                   ∃ t2s σ2s stats,
                     erased_rsteps (CS := CSspec) rs ([es], σs) (t2s, σ2s) stats ∧
-                    P σ2s σ2); eauto.
+                    R σ2s σ2); eauto.
   eapply wp_recv_adequacy_inv.
   { eassumption. }
   { eassumption. }
