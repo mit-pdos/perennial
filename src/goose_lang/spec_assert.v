@@ -23,8 +23,11 @@ Context {spec_ext: spec_ext_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
+
 Canonical Structure spec_lang : language :=
   @heap_lang (spec_ext_op_field) (spec_ffi_model_field) (spec_ext_semantics_field).
+Canonical Structure spec_crash_lang : crash_semantics spec_lang :=
+  @heap_crash_lang (spec_ext_op_field) (spec_ffi_model_field) (spec_ext_semantics_field).
 
 Existing Instance spec_ffi_interp_field.
 Existing Instance spec_ext_semantics_field.
@@ -55,7 +58,7 @@ Definition spec_stateN := nroot .@ "source".@  "state".
 
 (* TODO: these names are terrible *)
 Definition spec_ctx : iProp Σ :=
-  source_ctx ∗ inv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
+  source_ctx (CS := spec_crash_lang) ∗ inv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
 
 Global Instance spec_ctx_persistent : Persistent (spec_ctx).
 Proof. apply _. Qed.
@@ -125,6 +128,7 @@ Proof.
   rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
 Qed.
 
+(*
 Lemma ghost_allocN_seq j K E v (n: u64):
   (0 < int.val n)%Z →
   nclose sourceN_root ⊆ E →
@@ -156,6 +160,7 @@ Proof.
   iExists _; iFrame. iModIntro.
   by iApply heap_array_to_seq_mapsto.
 Qed.
+*)
 
 End go_ghost_step.
 
