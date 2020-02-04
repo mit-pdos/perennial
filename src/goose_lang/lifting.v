@@ -687,35 +687,6 @@ Proof using Type.
   eauto.
 Qed.
 
-Definition map_mapsto l q m_def :=
-  (∃ vs, l ↦{q} Free vs ∗ ⌜ map_val vs = Some m_def ⌝)%I.
-
-Lemma wp_map_get s E l q m_def k :
-  {{{ ▷ map_mapsto l q m_def }}} MapGet (Val $ LitV (LitLoc l)) (Val $ LitV $ LitInt k) @ s; E
-  {{{ r ok, RET PairV r (LitV $ LitBool ok); ⌜ map_get m_def k = (r, ok) ⌝ ∗ map_mapsto l q m_def }}}.
-Proof using Type.
-  iIntros (Φ) ">Hl HΦ".
-  iDestruct "Hl" as (vs) "(Hl&Hmap)".
-  iDestruct "Hmap" as %Hmap.
-Abort.
-
-Theorem map_cons_insert k v vs m_def :
-  map_val vs = Some m_def ->
-  map_val (MapConsV k v vs) = Some (map_insert m_def k v).
-Proof using Type.
-  destruct m_def; simpl.
-  by intros ->.
-Qed.
-
-Lemma wp_map_insert s E l m_def k v :
-  {{{ ▷ map_mapsto l 1 m_def }}} MapInsert (Val $ LitV (LitLoc l)) (Val $ LitV $ LitInt k) (Val v) @ s; E
-  {{{ RET LitV LitUnit; map_mapsto l 1 (map_insert m_def k v) }}}.
-Proof using Type.
-  iIntros (Φ) ">Hl HΦ".
-  iDestruct "Hl" as (vs) "(Hl&Hmap)".
-  iDestruct "Hmap" as %Hmap.
-Abort.
-
 Lemma wp_cmpxchg_fail s E l q v' v1 v2 :
   v' ≠ v1 → vals_compare_safe v' v1 →
   {{{ ▷ l ↦{q} Free v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E

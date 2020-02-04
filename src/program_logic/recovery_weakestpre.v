@@ -26,7 +26,7 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
   (WPC e @ s ; k; E ; ∅
      {{ Φ }}
      {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') κs n,
-        state_interp σ κs n ={∅}=∗  ▷ ∀ H1 H2, NC -∗ ∃ t, state_interp σ' κs 0 ∗ (Φinv H1 t ∧ wpr H1 H2 t E rec rec (λ v, Φr H1 t v) Φinv Φr) ∗ NC}})%I.
+        state_interp σ κs n ={∅}=∗  ▷ ∀ H1 H2, NC ={⊤}=∗ ∃ t, state_interp σ' κs 0 ∗ (Φinv H1 t ∧ wpr H1 H2 t E rec rec (λ v, Φr H1 t v) Φinv Φr) ∗ NC}})%I.
 
 Local Instance wpr_pre_contractive `{!perennialG Λ CS T Σ} s k: Contractive (wpr_pre s k).
 Proof.
@@ -71,8 +71,8 @@ Proof.
   iIntros "H".
   rewrite difference_diag_L.
   iModIntro. iIntros (?????) "Hinterp". iMod ("H" with "[//] Hinterp") as "H".
-  iModIntro. iNext. iIntros (Hi' Hc') "HNC". iDestruct ("H" $! Hi' Hc' with "[$]") as (?) "(?&H&HNC)".
-  iExists _. iFrame.
+  iModIntro. iNext. iIntros (Hi' Hc') "HNC". iMod ("H" $! Hi' Hc' with "[$]") as (?) "(?&H&HNC)".
+  iModIntro. iExists _. iFrame.
   iSplit.
   - iDestruct "H" as "(H&_)". iDestruct "HΦ" as "(_&HΦ&_)". by iApply "HΦ".
   - iDestruct "H" as "(_&H)".
@@ -89,7 +89,7 @@ Lemma idempotence_wpr s k E e rec Φx Φinv Φrx Φcx Hi Hc t:
   ((WPC e @ s ; k ; E ; ∅ {{ Φx t }} {{ Φcx t }}) -∗
    (□ ∀ (H: invG Σ) (Hc: crashG Σ) (t: pbundleG T Σ) σ σ' (HC: crash_prim_step CS σ σ') κs n,
         Φcx t -∗ state_interp σ κs n ={∅}=∗
-        ▷ ∀ H' (Hc': crashG Σ), NC -∗ ∃ t', state_interp σ' κs 0 ∗ (Φinv H' t' ∧ WPC rec @ s ; k; E ; ∅ {{ Φrx H' t' }} {{ Φcx t' }}) ∗ NC) -∗
+        ▷ ∀ H' (Hc': crashG Σ), NC ={⊤}=∗ ∃ t', state_interp σ' κs 0 ∗ (Φinv H' t' ∧ WPC rec @ s ; k; E ; ∅ {{ Φrx H' t' }} {{ Φcx t' }}) ∗ NC) -∗
     wpr s k Hi Hc t E e rec (Φx t) Φinv Φrx)%I.
 Proof.
   iLöb as "IH" forall (E e Hi Hc t Φx).
@@ -101,8 +101,8 @@ Proof.
   iModIntro.
   iIntros. iMod ("Hidemp" with "[ ] [$] [$]") as "H".
   { eauto. }
-  iModIntro. iNext. iIntros (Hi' Hc') "HNC". iDestruct ("H" $! Hi' Hc' with "[$]") as (t') "(?&Hc&HNC)".
-  iExists _. iFrame.
+  iModIntro. iNext. iIntros (Hi' Hc') "HNC". iMod ("H" $! Hi' Hc' with "[$]") as (t') "(?&Hc&HNC)".
+  iExists _. iFrame. iModIntro.
   iSplit.
   { iDestruct "Hc" as "($&_)". }
   iDestruct "Hc" as "(_&Hc)".
