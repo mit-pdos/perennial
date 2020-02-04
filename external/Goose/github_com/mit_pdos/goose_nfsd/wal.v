@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-From Goose Require github_com.mit_pdos.goose_nfsd.buf.
+From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.fake_bcache.bcache.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.tchajed.marshal.
@@ -19,7 +19,7 @@ From Goose Require github_com.tchajed.marshal.
     Blocks in the range [diskEnd, nextDiskEnd) are in the process of
     being logged.  Blocks in unstable are unstably committed (i.e.,
     written by NFS Write with the unstable flag and they can be lost
-    on crash). Later transactions may absorp them (e.g., a later NFS
+    on crash). Later transactions may absorb them (e.g., a later NFS
     write may update the same inode or indirect block).  The code
     implements a policy of postponing writing unstable blocks to disk
     as long as possible to maximize the chance of absorption (i.e.,
@@ -31,8 +31,10 @@ Definition HDRMETA : expr := #8.
 
 Definition HDRADDRS : expr := disk.BlockSize - HDRMETA `quot` #8.
 
+Definition LOGSZ : expr := HDRADDRS.
+
 (* 2 for log header *)
-Definition LOGSIZE : expr := HDRADDRS + #2.
+Definition LOGDISKBLOCKS : expr := HDRADDRS + #2.
 
 Definition LogPosition: ty := uint64T.
 
@@ -44,7 +46,7 @@ Definition LOGSTART : expr := #2.
 
 Module BlockData.
   Definition S := struct.decl [
-    "bn" :: buf.Bnum;
+    "bn" :: common.Bnum;
     "blk" :: disk.blockT
   ].
 End BlockData.
@@ -74,15 +76,11 @@ Module Walog.
   ].
 End Walog.
 
-Definition Walog__LogSz: val :=
-  λ: "l",
-    HDRADDRS.
-
 (* On-disk header in the first block of the log *)
 Module hdr.
   Definition S := struct.decl [
     "end" :: LogPosition;
-    "addrs" :: slice.T buf.Bnum
+    "addrs" :: slice.T common.Bnum
   ].
 End hdr.
 
@@ -148,6 +146,14 @@ Definition Walog__readHdr2: val :=
     let: "h" := decodeHdr2 "blk" in
     "h".
 
+Definition posToDiskAddr: val :=
+  λ: "pos",
+    LOGSTART + "pos" `rem` LOGSZ.
+
+Definition Walog__LogSz: val :=
+  λ: "l",
+    common.HDRADDRS.
+
 (* installer.go *)
 
 Definition Walog__cutMemLog: val :=
@@ -178,8 +184,14 @@ Definition Walog__installBlocks: val :=
       bcache.Bcache__Write (struct.loadF Walog.S "d" "l") "blkno" "blk";;
       Continue).
 
-(* Installer holds logLock
-   XXX absorp *)
+(* logInstall installs one on-disk transaction from the disk log to the data
+   region.
+
+   Returns the number of blocks written from memory and the old diskEnd
+   TODO(tchajed): why is this called installEnd?
+
+   Installer holds memLock
+   XXX absorb *)
 Definition Walog__logInstall: val :=
   λ: "l",
     let: "installEnd" := struct.loadF Walog.S "diskEnd" "l" in
@@ -227,55 +239,68 @@ Definition Walog__installer: val :=
 
 (* logger.go *)
 
+(* logBlocks writes bufs to the end of the circular log
+
+   Requires diskend to reflect the on-disk log, but otherwise operates without
+   holding any locks (with exclusive ownership of the on-disk log).
+
+   The caller is responsible for updating both the disk and memory copy of
+   diskEnd. *)
 Definition Walog__logBlocks: val :=
-  λ: "l" "memend" "memstart" "diskend" "bufs",
-    let: "pos" := ref "diskend" in
-    (for: (λ: <>, ![LogPosition] "pos" < "memend"); (λ: <>, "pos" <-[LogPosition] ![LogPosition] "pos" + #1) := λ: <>,
-      let: "buf" := SliceGet (struct.t BlockData.S) "bufs" (![LogPosition] "pos" - "diskend") in
+  λ: "l" "diskEnd" "bufs",
+    ForSlice (struct.t BlockData.S) "i" "buf" "bufs"
+      (let: "pos" := "diskEnd" + "i" in
       let: "blk" := struct.get BlockData.S "blk" "buf" in
       let: "blkno" := struct.get BlockData.S "bn" "buf" in
       util.DPrintf #5 (#(str"logBlocks: %d to log block %d
-      ")) "blkno" (![LogPosition] "pos");;
-      bcache.Bcache__Write (struct.loadF Walog.S "d" "l") (LOGSTART + ![LogPosition] "pos" `rem` Walog__LogSz "l") "blk";;
-      Continue).
+      ")) "blkno" "pos";;
+      bcache.Bcache__Write (struct.loadF Walog.S "d" "l") (posToDiskAddr "pos") "blk").
 
-(* Logger holds logLock *)
+(* logAppend appends to the log, if it can find transactions to append.
+
+   It grabs the new writes in memory and not on disk through l.
+   nextDiskEnd; if there are any such writes, it commits them atomically.
+
+   assumes caller holds memLock
+
+   Returns true if it made progress (for liveness, not important for
+   correctness). *)
 Definition Walog__logAppend: val :=
   λ: "l",
     Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: slice.len (struct.loadF Walog.S "memLog" "l") ≤ Walog__LogSz "l"
-      then Break
-      else lock.condWait (struct.loadF Walog.S "condInstall" "l"));;
+    (for: (λ: <>, slice.len (struct.loadF Walog.S "memLog" "l") > LOGSZ); (λ: <>, Skip) := λ: <>,
+      lock.condWait (struct.loadF Walog.S "condInstall" "l");;
       Continue);;
     let: "memstart" := struct.loadF Walog.S "memStart" "l" in
     let: "memlog" := struct.loadF Walog.S "memLog" "l" in
-    let: "memend" := struct.loadF Walog.S "nextDiskEnd" "l" in
-    let: "diskend" := struct.loadF Walog.S "diskEnd" "l" in
-    let: "newbufs" := SliceSubslice (struct.t BlockData.S) "memlog" ("diskend" - "memstart") ("memend" - "memstart") in
+    let: "newDiskEnd" := struct.loadF Walog.S "nextDiskEnd" "l" in
+    let: "diskEnd" := struct.loadF Walog.S "diskEnd" "l" in
+    let: "newbufs" := SliceSubslice (struct.t BlockData.S) "memlog" ("diskEnd" - "memstart") ("newDiskEnd" - "memstart") in
     (if: (slice.len "newbufs" = #0)
     then #false
     else
       lock.release (struct.loadF Walog.S "memLock" "l");;
-      Walog__logBlocks "l" "memend" "memstart" "diskend" "newbufs";;
-      let: "addrs" := NewSlice buf.Bnum (Walog__LogSz "l") in
-      let: "i" := ref #0 in
-      (for: (λ: <>, ![uint64T] "i" < "memend" - "memstart"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-        let: "pos" := "memstart" + ![uint64T] "i" in
-        SliceSet uint64T "addrs" ("pos" `rem` Walog__LogSz "l") (struct.get BlockData.S "bn" (SliceGet (struct.t BlockData.S) "memlog" (![uint64T] "i")));;
-        Continue);;
+      Walog__logBlocks "l" "diskEnd" "newbufs";;
+      let: "addrs" := NewSlice common.Bnum HDRADDRS in
+      ForSlice (struct.t BlockData.S) "i" "buf" (SliceTake "memlog" ("newDiskEnd" - "memstart"))
+        (let: "pos" := "memstart" + "i" in
+        SliceSet uint64T "addrs" ("pos" `rem` LOGSZ) (struct.get BlockData.S "bn" "buf"));;
       let: "newh" := struct.new hdr.S [
-        "end" ::= "memend";
+        "end" ::= "newDiskEnd";
         "addrs" ::= "addrs"
       ] in
       Walog__writeHdr "l" "newh";;
       bcache.Bcache__Barrier (struct.loadF Walog.S "d" "l");;
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
-      struct.storeF Walog.S "diskEnd" "l" "memend";;
+      struct.storeF Walog.S "diskEnd" "l" "newDiskEnd";;
       lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
       lock.condBroadcast (struct.loadF Walog.S "condInstall" "l");;
       #true).
 
+(* logger writes blocks from the in-memory log to the on-disk log
+
+   Operates by continuously polling for in-memory transactions, driven by
+   condLogger for scheduling *)
 Definition Walog__logger: val :=
   λ: "l",
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
@@ -295,13 +320,13 @@ Definition Walog__logger: val :=
 
 (* wal.go *)
 
-Definition Walog__Recover: val :=
+Definition Walog__recover: val :=
   λ: "l",
     let: "h" := Walog__readHdr "l" in
     let: "h2" := Walog__readHdr2 "l" in
     struct.storeF Walog.S "memStart" "l" (struct.loadF hdr2.S "start" "h2");;
     struct.storeF Walog.S "diskEnd" "l" (struct.loadF hdr.S "end" "h");;
-    util.DPrintf #1 (#(str"Recover %d %d
+    util.DPrintf #1 (#(str"recover %d %d
     ")) (struct.loadF Walog.S "memStart" "l") (struct.loadF Walog.S "diskEnd" "l");;
     let: "pos" := ref (struct.loadF hdr2.S "start" "h2") in
     (for: (λ: <>, ![LogPosition] "pos" < struct.loadF hdr.S "end" "h"); (λ: <>, "pos" <-[LogPosition] ![LogPosition] "pos" + #1) := λ: <>,
@@ -332,8 +357,8 @@ Definition MkLog: val :=
       "memLogMap" ::= NewMap LogPosition
     ] in
     util.DPrintf #1 (#(str"mkLog: size %d
-    ")) (Walog__LogSz "l");;
-    Walog__Recover "l";;
+    ")) LOGSZ;;
+    Walog__recover "l";;
     Fork (Walog__logger "l");;
     Fork (Walog__installer "l");;
     "l".
@@ -397,35 +422,47 @@ Definition Walog__Read: val :=
     else "blk" <-[slice.T byteT] bcache.Bcache__Read (struct.loadF Walog.S "d" "l") "blkno");;
     ![slice.T byteT] "blk".
 
-(* Append to in-memory log. Returns false, if bufs don't fit.
-   Otherwise, returns the txn for this append. *)
+(* Append to in-memory log.
+
+   On success returns the txn for this append.
+
+   On failure guaranteed to be idempotent (failure can occur either due to bufs
+   exceeding the size of the log or in principle due to overflowing 2^64 writes) *)
 Definition Walog__MemAppend: val :=
   λ: "l" "bufs",
-    (if: slice.len "bufs" > Walog__LogSz "l"
+    (if: slice.len "bufs" > LOGSZ
     then (#0, #false)
     else
       let: "txn" := ref #0 in
+      let: "ok" := ref #true in
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        (if: struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") - struct.loadF Walog.S "diskEnd" "l" + slice.len "bufs" > Walog__LogSz "l"
+        (if: util.SumOverflows (struct.loadF Walog.S "memStart" "l") (slice.len "bufs")
         then
-          util.DPrintf #5 (#(str"memAppend: log is full; try again"));;
-          struct.storeF Walog.S "nextDiskEnd" "l" (struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l"));;
-          lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
-          lock.condWait (struct.loadF Walog.S "condLogger" "l");;
-          Continue
+          "ok" <-[boolT] #false;;
+          Break
         else
-          "txn" <-[LogPosition] Walog__doMemAppend "l" "bufs";;
-          Break));;
+          (if: struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") - struct.loadF Walog.S "diskEnd" "l" + slice.len "bufs" > LOGSZ
+          then
+            util.DPrintf #5 (#(str"memAppend: log is full; try again"));;
+            struct.storeF Walog.S "nextDiskEnd" "l" (struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l"));;
+            lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
+            lock.condWait (struct.loadF Walog.S "condLogger" "l");;
+            Continue
+          else
+            "txn" <-[LogPosition] Walog__doMemAppend "l" "bufs";;
+            Break)));;
       lock.release (struct.loadF Walog.S "memLock" "l");;
-      (![LogPosition] "txn", #true)).
+      (![LogPosition] "txn", ![boolT] "ok")).
 
-(* Wait until logger has appended in-memory log up to txn to on-disk
-   log *)
-Definition Walog__LogAppendWait: val :=
+(* Flush flushes a transaction (and all preceding transactions)
+
+   The implementation waits until the logger has appended in-memory log up to
+   txn to on-disk log. *)
+Definition Walog__Flush: val :=
   λ: "l" "txn",
-    util.DPrintf #1 (#(str"LogAppendWait: commit till txn %d
+    util.DPrintf #1 (#(str"Flush: commit till txn %d
     ")) "txn";;
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
@@ -441,15 +478,6 @@ Definition Walog__LogAppendWait: val :=
       else lock.condWait (struct.loadF Walog.S "condLogger" "l"));;
       Continue);;
     lock.release (struct.loadF Walog.S "memLock" "l").
-
-(* Wait until last started transaction has been appended to log.  If
-   it is logged, then all preceeding transactions are also logged. *)
-Definition Walog__WaitFlushMemLog: val :=
-  λ: "l",
-    lock.acquire (struct.loadF Walog.S "memLock" "l");;
-    let: "n" := struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") in
-    lock.release (struct.loadF Walog.S "memLock" "l");;
-    Walog__LogAppendWait "l" "n".
 
 (* Shutdown logger and installer *)
 Definition Walog__Shutdown: val :=

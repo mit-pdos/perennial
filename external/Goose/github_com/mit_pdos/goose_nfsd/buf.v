@@ -2,47 +2,18 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+From Goose Require github_com.mit_pdos.goose_nfsd.addr.
+From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.fake_bcache.bcache.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.tchajed.marshal.
-
-(* addr.go *)
-
-Definition Bnum: ty := uint64T.
-
-Definition NULLBNUM : expr := #0.
-
-(* Address of disk object and its size *)
-Module Addr.
-  Definition S := struct.decl [
-    "Blkno" :: Bnum;
-    "Off" :: uint64T;
-    "Sz" :: uint64T
-  ].
-End Addr.
-
-Definition Addr__Flatid: val :=
-  λ: "a",
-    struct.loadF Addr.S "Blkno" "a" * disk.BlockSize * #8 + struct.loadF Addr.S "Off" "a".
-
-Definition Addr__Eq: val :=
-  λ: "a" "b",
-    (struct.loadF Addr.S "Blkno" "a" = struct.get Addr.S "Blkno" "b") && (struct.loadF Addr.S "Off" "a" = struct.get Addr.S "Off" "b") && (struct.loadF Addr.S "Sz" "a" = struct.get Addr.S "Sz" "b").
-
-Definition MkAddr: val :=
-  λ: "blkno" "off" "sz",
-    struct.mk Addr.S [
-      "Blkno" ::= "blkno";
-      "Off" ::= "off";
-      "Sz" ::= "sz"
-    ].
 
 (* buf.go *)
 
 (* A buf holds a disk object (inode, a bitmap bit, or disk block) *)
 Module Buf.
   Definition S := struct.decl [
-    "Addr" :: struct.t Addr.S;
+    "Addr" :: addr.Addr;
     "Blk" :: disk.blockT;
     "dirty" :: boolT
   ].
@@ -65,8 +36,8 @@ Definition MkBuf: val :=
 (* Load the bits of a disk block into a new buf, as specified by addr *)
 Definition MkBufLoad: val :=
   λ: "addr" "blk",
-    let: "bytefirst" := struct.get Addr.S "Off" "addr" `quot` #8 in
-    let: "bytelast" := struct.get Addr.S "Off" "addr" + struct.get Addr.S "Sz" "addr" - #1 `quot` #8 in
+    let: "bytefirst" := struct.get addr.Addr.S "Off" "addr" `quot` #8 in
+    let: "bytelast" := struct.get addr.Addr.S "Off" "addr" + struct.get addr.Addr.S "Sz" "addr" - #1 `quot` #8 in
     let: "data" := SliceSubslice byteT "blk" "bytefirst" ("bytelast" + #1) in
     let: "b" := struct.new Buf.S [
       "Addr" ::= "addr";
@@ -103,13 +74,13 @@ Definition installBytes: val :=
 (* Install the bits from buf into blk.  Two cases: a bit or an inode *)
 Definition Buf__Install: val :=
   λ: "buf" "blk",
-    util.DPrintf #20 (#(str"%v: install %v
-    ")) (struct.loadF Buf.S "Addr" "buf") "blk";;
-    (if: (struct.get Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = #1)
-    then installBit (struct.loadF Buf.S "Blk" "buf") "blk" (struct.get Addr.S "Off" (struct.loadF Buf.S "Addr" "buf"))
+    util.DPrintf #1 (#(str"%v: install
+    ")) (struct.loadF Buf.S "Addr" "buf");;
+    (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = #1)
+    then installBit (struct.loadF Buf.S "Blk" "buf") "blk" (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf"))
     else
-      (if: (struct.get Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") `rem` #8 = #0) && (struct.get Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") `rem` #8 = #0)
-      then installBytes (struct.loadF Buf.S "Blk" "buf") "blk" (struct.get Addr.S "Off" (struct.loadF Buf.S "Addr" "buf")) (struct.get Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf"))
+      (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") `rem` #8 = #0) && (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") `rem` #8 = #0)
+      then installBytes (struct.loadF Buf.S "Blk" "buf") "blk" (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf")) (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf"))
       else
         Panic ("Install unsupported
         ")));;
@@ -119,8 +90,8 @@ Definition Buf__Install: val :=
 (* Load the bits of a disk block into buf, as specified by addr *)
 Definition Buf__Load: val :=
   λ: "buf" "blk",
-    let: "bytefirst" := struct.get Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") `quot` #8 in
-    let: "bytelast" := struct.get Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") + struct.get Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") - #1 `quot` #8 in
+    let: "bytefirst" := struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") `quot` #8 in
+    let: "bytelast" := struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") + struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") - #1 `quot` #8 in
     struct.storeF Buf.S "Blk" "buf" (SliceSubslice byteT "blk" "bytefirst" ("bytelast" + #1)).
 
 Definition Buf__IsDirty: val :=
@@ -134,12 +105,12 @@ Definition Buf__SetDirty: val :=
 Definition Buf__WriteDirect: val :=
   λ: "buf" "d",
     Buf__SetDirty "buf";;
-    (if: (struct.get Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = disk.BlockSize)
-    then bcache.Bcache__Write "d" (struct.get Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) (struct.loadF Buf.S "Blk" "buf")
+    (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = disk.BlockSize)
+    then bcache.Bcache__Write "d" (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) (struct.loadF Buf.S "Blk" "buf")
     else
-      let: "blk" := bcache.Bcache__Read "d" (struct.get Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) in
+      let: "blk" := bcache.Bcache__Read "d" (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) in
       Buf__Install "buf" "blk";;
-      bcache.Bcache__Write "d" (struct.get Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) "blk").
+      bcache.Bcache__Write "d" (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) "blk").
 
 Definition Buf__BnumGet: val :=
   λ: "buf" "off",
@@ -170,15 +141,15 @@ Definition MkBufMap: val :=
 
 Definition BufMap__Insert: val :=
   λ: "bmap" "buf",
-    MapInsert (struct.loadF BufMap.S "addrs" "bmap") (Addr__Flatid (struct.loadF Buf.S "Addr" "buf")) "buf".
+    MapInsert (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid (struct.loadF Buf.S "Addr" "buf")) "buf".
 
 Definition BufMap__Lookup: val :=
   λ: "bmap" "addr",
-    MapGet (struct.loadF BufMap.S "addrs" "bmap") (Addr__Flatid "addr").
+    MapGet (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid "addr").
 
 Definition BufMap__Del: val :=
   λ: "bmap" "addr",
-    MapDelete (struct.loadF BufMap.S "addrs" "bmap") (Addr__Flatid "addr").
+    MapDelete (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid "addr").
 
 Definition BufMap__Ndirty: val :=
   λ: "bmap",
