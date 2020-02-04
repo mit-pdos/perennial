@@ -25,13 +25,13 @@ Fixpoint step_fupdN_fresh k (ns: list nat) Hi0 (Hc0: crashG Σ) t0
   | [] => P Hi0 Hc0 t0
   | (n :: ns) =>
     (|={⊤, ⊤}_k=>^(S (S n)) |={⊤, ∅}_k=> ▷
-     ∀ Hi' Hc', NC -∗ (∃ t' : pbundleG T Σ, step_fupdN_fresh k ns Hi' Hc' t' P))%I
+     ∀ Hi' Hc', NC ={⊤}=∗ (∃ t' : pbundleG T Σ, step_fupdN_fresh k ns Hi' Hc' t' P))%I
   end.
 
 Lemma step_fupdN_fresh_snoc k (ns: list nat) n Hi0 Hc0 t0 Q:
   step_fupdN_fresh k (ns ++ [n]) Hi0 Hc0 t0 Q ≡
   step_fupdN_fresh k (ns) Hi0 Hc0 t0
-    (λ Hi Hc' _, |={⊤, ⊤}_k=>^(S (S n)) |={⊤, ∅}_k=> ▷ ∀ Hi' Hc', NC -∗ ∃ t', Q Hi' Hc' t')%I.
+    (λ Hi Hc' _, |={⊤, ⊤}_k=>^(S (S n)) |={⊤, ∅}_k=> ▷ ∀ Hi' Hc', NC ={⊤}=∗ ∃ t', Q Hi' Hc' t')%I.
 Proof.
   apply (anti_symm (⊢)%I).
   - revert Hi0 Hc0 t0 Q.
@@ -42,7 +42,7 @@ Proof.
     iApply (step_fupdN_inner_wand' with "H"); auto.
     iIntros "H".
     iNext. iIntros (??) "HNC".
-    iDestruct ("H" $! _ _ with "[$]") as (?) "H".
+    iMod ("H" $! _ _ with "[$]") as (?) "H".
     iExists _. by iApply IHns.
   - revert Hi0 Hc0 t0 Q.
     induction ns => ???? //=.
@@ -56,7 +56,7 @@ Proof.
     iApply (step_fupdN_inner_wand' with "H"); auto.
     iIntros "H".
     iNext. iIntros (??) "HNC".
-    iDestruct ("H" $! _ _ with "[$]") as (?) "H".
+    iMod ("H" $! _ _ with "[$]") as (?) "H".
     iExists _. by iApply IHns.
 Qed.
 
@@ -112,7 +112,7 @@ Proof.
   - iIntros "H Hwand". rewrite /step_fupdN_fresh -/step_fupdN_fresh.
     iApply (step_fupdN_fresh_pattern_wand with "H [Hwand]").
     iIntros "H".
-    iIntros (Hi' Hc') "HNC". iSpecialize ("H" $! Hi' Hc' with "[$]"). iDestruct "H" as (?) "H".
+    iIntros (Hi' Hc') "HNC". iSpecialize ("H" $! Hi' Hc' with "[$]"). iMod "H" as (?) "H".
     iExists _. iApply (IHns with "H"). eauto.
 Qed.
 
@@ -152,7 +152,7 @@ Proof.
     iDestruct (step_fupdN_fresh_pattern_wand  _ _ _
                   (▷^(fresh_later_count k ns + _) P)
                  with "H [IH]") as "H".
-    { iIntros "H". iApply "IH". iIntros. iModIntro. by iApply "H". }
+    { iIntros "H". iApply "IH". iIntros. by iMod ("H" with "[$]"). }
     iDestruct (step_fupdN_fresh_pattern_plain' with "H") as "H".
     rewrite {1}uPred_fupd_eq {1}/uPred_fupd_def.
     iMod ("H" with "[$]") as "[Hw [HE >H]]".
@@ -255,11 +255,11 @@ Proof.
   iMod ("H" with "[//] Hσ") as "H". iModIntro. iNext.
   destruct s0.
   - iIntros (Hi' Hc') "HNC". iSpecialize ("H" $! Hi' Hc' with "[$]").
-    iDestruct "H" as (t') "(Hσ&Hr&HNC)".
+    iMod "H" as (t') "(Hσ&Hr&HNC)".
     iDestruct "Hr" as "(_&Hr)".
     iPoseProof (IH with "[Hσ] Hr [] [] HNC") as "H"; eauto.
   - iIntros (Hi' Hc') "HNC".
-    iDestruct ("H" $! Hi' Hc' with "[$]") as (t') "(Hσ&Hr&HNC)".
+    iMod ("H" $! Hi' Hc' with "[$]") as (t') "(Hσ&Hr&HNC)".
     iExists t'.
     iAssert (□Φinv' Hi' t')%I as "#Hinv'".
     { iDestruct "Hr" as "(Hr&_)".
@@ -268,6 +268,7 @@ Proof.
     iDestruct "Hr" as "(_&Hr)".
     iDestruct (wptp_recv_strong_normal_adequacy with "[Hσ] [Hr] [] HNC") as "H"; eauto.
     iApply (step_fupdN_fresh_wand with "H").
+    iModIntro.
     iIntros (???) "H".
     iDestruct "H" as ((?&?&?)) "H". subst.
     iClear "HC".
