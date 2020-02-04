@@ -5,13 +5,17 @@ From iris.program_logic Require Export weakestpre adequacy.
 From Perennial.goose_lang Require Import proofmode notation.
 Set Default Proof Using "Type".
 
-Class ffi_interp_adequacy `{!ffi_interp ffi} :=
+Class ffi_interp_adequacy `{!ffi_interp ffi} `{EXT: !ext_semantics ext ffi} :=
   { ffi_preG: gFunctors -> Type;
     ffiΣ: gFunctors;
     (* modeled after subG_gen_heapPreG and gen_heap_init *)
     subG_ffiPreG : forall Σ, subG ffiΣ Σ -> ffi_preG Σ;
     ffi_init : forall Σ, ffi_preG Σ -> forall (σ:ffi_state),
-(|==> ∃ (H0: ffiG Σ), ffi_ctx H0 σ)%I;
+          (|==> ∃ (H0: ffiG Σ), ffi_ctx H0 σ)%I;
+    ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
+    ffi_crash : forall Σ, ffi_preG Σ ->
+          (∀ (σ σ': ffi_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
+           ffi_ctx Hold σ ==∗ ∃ (Hnew: ffiG Σ), ffi_ctx Hnew σ' ∗ ffi_crash_rel Σ Hold σ Hnew σ')%I;
   }.
 
 (* this is the magic that lets subG_ffiPreG solve for an ffi_preG using only
@@ -29,9 +33,28 @@ Class heapPreG `{ext: ext_op} `{ffi_interp_adequacy} Σ := HeapPreG {
 
 Hint Resolve heap_preG_ffi : typeclass_instances.
 
+Ltac solve_inG_deep :=
+  intros;
+  (* XXX: had to add cases with more _'s compared to solve_inG to get this work *)
+   lazymatch goal with
+   | H:subG (?xΣ _ _ _ _ _ _) _ |- _ => try unfold xΣ in H
+   | H:subG (?xΣ _ _ _ _ _) _ |- _ => try unfold xΣ in H
+   | H:subG (?xΣ _ _ _ _) _ |- _ => try unfold xΣ in H
+   | H:subG (?xΣ _ _ _) _ |- _ => try unfold xΣ in H
+   | H:subG (?xΣ _ _) _ |- _ => try unfold xΣ in H
+   | H:subG (?xΣ _) _ |- _ => try unfold xΣ in H
+   | H:subG ?xΣ _ |- _ => try unfold xΣ in H
+   end; repeat match goal with
+               | H:subG (gFunctors.app _ _) _ |- _ => apply subG_inv in H; destruct H
+               end; repeat match goal with
+                           | H:subG _ _ |- _ => move : H; apply subG_inG in H || clear H
+                           end; intros; try done; split; assumption || by apply _.
+
 Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors := #[invΣ; gen_heapΣ loc (nonAtomic val); ffiΣ; proph_mapΣ proph_id (val * val); traceΣ].
-Instance subG_heapPreG `{ext: ext_op} `{ffi_interp_adequacy} {Σ} : subG heapΣ Σ → heapPreG Σ.
-Proof. solve_inG. Qed.
+Instance subG_heapPreG `{ext: ext_op} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} : subG heapΣ Σ → heapPreG Σ.
+Proof.
+  solve_inG_deep.
+Qed.
 
 Definition heap_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} s e σ φ :
   (∀ `{!heapG Σ}, trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗ WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
