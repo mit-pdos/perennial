@@ -25,8 +25,8 @@ Definition Min: val :=
 (* returns n+m>=2^64 (if it were computed at infinite precision) *)
 Definition SumOverflows: val :=
   λ: "n" "m",
-    "n" > #1 ≪ #64 - #1 - "m".
+    "n" + "m" < "n".
 
 Definition SumOverflows32: val :=
   λ: "n" "m",
-    "n" > #1 ≪ #32 - #1 - "m".
+    "n" + "m" < "n".

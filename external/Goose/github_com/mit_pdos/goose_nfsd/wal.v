@@ -158,37 +158,41 @@ Definition Walog__LogSz: val :=
 
 Definition Walog__cutMemLog: val :=
   λ: "l" "installEnd",
-    let: "i" := ref (struct.loadF Walog.S "memStart" "l") in
-    (for: (λ: <>, ![LogPosition] "i" < "installEnd"); (λ: <>, "i" <-[LogPosition] ![LogPosition] "i" + #1) := λ: <>,
-      let: "blkno" := struct.get BlockData.S "bn" (SliceGet (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") (![LogPosition] "i" - struct.loadF Walog.S "memStart" "l")) in
-      let: ("pos", "ok") := MapGet (struct.loadF Walog.S "memLogMap" "l") "blkno" in
-      (if: "ok" && ("pos" = ![LogPosition] "i")
+    ForSlice (struct.t BlockData.S) "i" "blk" (SliceTake (struct.loadF Walog.S "memLog" "l") ("installEnd" - struct.loadF Walog.S "memStart" "l"))
+      (let: "pos" := "installEnd" + "i" in
+      let: "blkno" := struct.get BlockData.S "bn" "blk" in
+      let: ("oldPos", "ok") := MapGet (struct.loadF Walog.S "memLogMap" "l") "blkno" in
+      (if: "ok" && ("oldPos" = "pos")
       then
         util.DPrintf #5 (#(str"memLogMap: del %d %d
-        ")) "blkno" "pos";;
+        ")) "blkno" "oldPos";;
         MapDelete (struct.loadF Walog.S "memLogMap" "l") "blkno"
-      else #());;
-      Continue);;
+      else #()));;
     struct.storeF Walog.S "memLog" "l" (SliceSkip (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") ("installEnd" - struct.loadF Walog.S "memStart" "l"));;
     struct.storeF Walog.S "memStart" "l" "installEnd".
 
+(* installBlocks installs the updates in bufs to the data region
+
+   Does not hold the memLock, but expects exclusive ownership of the data
+   region. *)
 Definition Walog__installBlocks: val :=
   λ: "l" "bufs",
-    let: "n" := slice.len "bufs" in
-    let: "i" := ref #0 in
-    (for: (λ: <>, ![uint64T] "i" < "n"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: "blkno" := struct.get BlockData.S "bn" (SliceGet (struct.t BlockData.S) "bufs" (![uint64T] "i")) in
-      let: "blk" := struct.get BlockData.S "blk" (SliceGet (struct.t BlockData.S) "bufs" (![uint64T] "i")) in
+    ForSlice (struct.t BlockData.S) "i" "buf" "bufs"
+      (let: "blkno" := struct.get BlockData.S "bn" "buf" in
+      let: "blk" := struct.get BlockData.S "blk" "buf" in
       util.DPrintf #5 (#(str"installBlocks: write log block %d to %d
-      ")) (![uint64T] "i") "blkno";;
-      bcache.Bcache__Write (struct.loadF Walog.S "d" "l") "blkno" "blk";;
-      Continue).
+      ")) "i" "blkno";;
+      bcache.Bcache__Write (struct.loadF Walog.S "d" "l") "blkno" "blk").
 
 (* logInstall installs one on-disk transaction from the disk log to the data
    region.
 
-   Returns the number of blocks written from memory and the old diskEnd
-   TODO(tchajed): why is this called installEnd?
+   Returns (blkCount, installEnd)
+
+   blkCount is the number of blocks installed (only used for liveness)
+
+   installEnd is the new last position installed to the data region (only used
+   for debugging)
 
    Installer holds memLock
    XXX absorb *)
@@ -363,38 +367,6 @@ Definition MkLog: val :=
     Fork (Walog__installer "l");;
     "l".
 
-(* Assumes caller holds memLock *)
-Definition Walog__memWrite: val :=
-  λ: "l" "bufs",
-    let: "s" := slice.len (struct.loadF Walog.S "memLog" "l") in
-    let: "i" := ref #0 in
-    ForSlice (struct.t BlockData.S) <> "buf" "bufs"
-      (let: "pos" := struct.loadF Walog.S "memStart" "l" + "s" + ![uint64T] "i" in
-      let: ("oldpos", "ok") := MapGet (struct.loadF Walog.S "memLogMap" "l") (struct.get BlockData.S "bn" "buf") in
-      (if: "ok" && "oldpos" ≥ struct.loadF Walog.S "nextDiskEnd" "l"
-      then
-        util.DPrintf #5 (#(str"memWrite: absorb %d pos %d old %d
-        ")) (struct.get BlockData.S "bn" "buf") "pos" "oldpos";;
-        SliceSet (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") ("oldpos" - struct.loadF Walog.S "memStart" "l") "buf"
-      else
-        (if: "ok"
-        then
-          util.DPrintf #5 (#(str"memLogMap: replace %d pos %d old %d
-          ")) (struct.get BlockData.S "bn" "buf") "pos" "oldpos"
-        else
-          util.DPrintf #5 (#(str"memLogMap: add %d pos %d
-          ")) (struct.get BlockData.S "bn" "buf") "pos");;
-        struct.storeF Walog.S "memLog" "l" (SliceAppend (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") "buf");;
-        MapInsert (struct.loadF Walog.S "memLogMap" "l") (struct.get BlockData.S "bn" "buf") "pos";;
-        "i" <-[uint64T] ![uint64T] "i" + #1)).
-
-(* Assumes caller holds memLock *)
-Definition Walog__doMemAppend: val :=
-  λ: "l" "bufs",
-    Walog__memWrite "l" "bufs";;
-    let: "txn" := struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") in
-    "txn".
-
 (* Read blkno from memLog, if present *)
 Definition Walog__readMemLog: val :=
   λ: "l" "blkno",
@@ -422,6 +394,44 @@ Definition Walog__Read: val :=
     else "blk" <-[slice.T byteT] bcache.Bcache__Read (struct.loadF Walog.S "d" "l") "blkno");;
     ![slice.T byteT] "blk".
 
+(* memWrite writes out bufs to the in-memory log
+
+   Absorbs writes in in-memory transactions (avoiding those that might be in
+   the process of being logged or installed).
+
+   Assumes caller holds memLock *)
+Definition Walog__memWrite: val :=
+  λ: "l" "bufs",
+    let: "pos" := ref (slice.len (struct.loadF Walog.S "memLog" "l")) in
+    ForSlice (struct.t BlockData.S) <> "buf" "bufs"
+      (let: ("oldpos", "ok") := MapGet (struct.loadF Walog.S "memLogMap" "l") (struct.get BlockData.S "bn" "buf") in
+      (if: "ok" && "oldpos" ≥ struct.loadF Walog.S "nextDiskEnd" "l"
+      then
+        util.DPrintf #5 (#(str"memWrite: absorb %d pos %d old %d
+        ")) (struct.get BlockData.S "bn" "buf") (![LogPosition] "pos") "oldpos";;
+        SliceSet (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") ("oldpos" - struct.loadF Walog.S "memStart" "l") "buf"
+      else
+        (if: "ok"
+        then
+          util.DPrintf #5 (#(str"memLogMap: replace %d pos %d old %d
+          ")) (struct.get BlockData.S "bn" "buf") (![LogPosition] "pos") "oldpos"
+        else
+          util.DPrintf #5 (#(str"memLogMap: add %d pos %d
+          ")) (struct.get BlockData.S "bn" "buf") (![LogPosition] "pos"));;
+        struct.storeF Walog.S "memLog" "l" (SliceAppend (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") "buf");;
+        MapInsert (struct.loadF Walog.S "memLogMap" "l") (struct.get BlockData.S "bn" "buf") (![LogPosition] "pos");;
+        "pos" <-[LogPosition] ![LogPosition] "pos" + #1)).
+
+(* Assumes caller holds memLock
+
+   Appends to the in-memory log and returns the new transaction's pos in the
+   log. *)
+Definition Walog__doMemAppend: val :=
+  λ: "l" "bufs",
+    Walog__memWrite "l" "bufs";;
+    let: "txn" := struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") in
+    "txn".
+
 (* Append to in-memory log.
 
    On success returns the txn for this append.
@@ -443,7 +453,9 @@ Definition Walog__MemAppend: val :=
           "ok" <-[boolT] #false;;
           Break
         else
-          (if: struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") - struct.loadF Walog.S "diskEnd" "l" + slice.len "bufs" > LOGSZ
+          let: "memEnd" := struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") in
+          let: "memSize" := "memEnd" - struct.loadF Walog.S "diskEnd" "l" in
+          (if: "memSize" + slice.len "bufs" > LOGSZ
           then
             util.DPrintf #5 (#(str"memAppend: log is full; try again"));;
             struct.storeF Walog.S "nextDiskEnd" "l" (struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l"));;

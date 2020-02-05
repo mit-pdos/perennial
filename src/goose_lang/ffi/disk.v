@@ -6,6 +6,7 @@ From iris.program_logic Require Import ectx_lifting.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing.
+From Perennial.algebra Require Import gen_heap.
 
 (* this is purely cosmetic but it makes printing line up with how the code is
 usually written *)
@@ -158,6 +159,9 @@ Section disk.
 
   Instance disk_interp: ffi_interp disk_model :=
     {| ffiG := diskG;
+       ffi_names := gen_heap_names;
+       ffi_update := fun _ hD names =>
+                       {| diskG_gen_heapG := gen_heapG_update (@diskG_gen_heapG _ hD) names |};
        ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap_ctx d; |}.
 
   Section proof.
