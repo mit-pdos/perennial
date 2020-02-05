@@ -104,8 +104,21 @@ Notation "l ↦[ ty ] v" := (struct_mapsto l 1 ty v%V)
                              (at level 20, ty at level 50,
                               format "l  ↦[ ty ]  v") : bi_scope.
 
+(* An FFI layer will use certain CMRAs for its primitive rules.
+   Besides needing to know that these CMRAs are included in Σ, there may
+   be some implicit ghost names that are used to identify instances
+   of these algebras. (For example, gen_heap has an implicit name used for
+   the ghost heap). These are bundled together in ffiG.
+
+   On a crash, a new "generation" might use fresh names for these instances.
+   Thus, an FFI needs to tell the framework how to unbundle ffiG and swap in a
+   new set of names.
+*)
+
 Class ffi_interp (ffi: ffi_model) :=
   { ffiG: gFunctors -> Set;
+    ffi_names : Set;
+    ffi_update : ∀ Σ, ffiG Σ → ffi_names → ffiG Σ;
     ffi_ctx: forall `{ffiG Σ}, ffi_state -> iProp Σ; }.
 
 Arguments ffi_ctx {ffi FfiInterp Σ} fG : rename.
