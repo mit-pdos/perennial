@@ -14,16 +14,21 @@ Notation GenType T Σ := (GenPred T Σ (fun _ _ => True)).
 Definition fallback_genPred T Σ p : GenPred T Σ p (* | 99 *) := fun _ _ => None.
 Instance bool_GenType Σ : GenType bool Σ := fun z _ => Some (exist _ (z mod 2 =? 0)%Z I).
 
+Class GenBool T Σ (b: Σ -> T -> bool) := genNextBool : Z -> forall (s:Σ), option {x:T | b s x = true}.
+Arguments GenBool : clear implicits.
+
 Section transition.
   Context {Σ:Type}.
 
   Inductive transition : Type -> Type :=
   | runF {T} (f: Σ -> Σ * T) : transition T
   | suchThat {T} (pred: Σ -> T -> Prop) {gen:GenPred T Σ pred} : transition T
+  | suchThatBool {T} (b: Σ -> T -> bool) {gen:GenBool T Σ b}: transition T
   | bind {T T'} (x: transition T') (rx: T' -> transition T) : transition T
   .
 
   Arguments suchThat {T} pred {gen}.
+  Arguments suchThatBool {T} b {gen}.
 
   Definition ret {T} (v:T): transition T :=
     runF (fun s => (s, v)).
@@ -114,12 +119,18 @@ Section transition.
                                 | Some (exist _ x _) => Some (hints', s, x)
                                 | None => None
                                 end
+    | suchThatBool b => let (hint, hints') := next_hint hints in
+                          fun s => match genNextBool hint s with
+                                | Some (exist _ x _) => Some (hints', s, x)
+                                | None => None
+                                end
     end.
 
 End transition.
 
 Arguments transition Σ T : clear implicits.
 Arguments suchThat {Σ T} pred {gen}.
+Arguments suchThatBool {Σ T} b {gen}.
 Arguments any {Σ} T {gen}.
 Arguments check {Σ} P {_}.
 Arguments when {Σ} P {_}.
@@ -140,6 +151,12 @@ Module relation.
       econstructor.
       destruct (f s); auto.
     Qed.
+
+    Inductive suchThatBool {T} (b: Σ -> T -> bool): t T :=
+    | suchThatBool_runs : forall s x,
+        b s x = true ->
+        suchThatBool b s s x
+    .
 
     Inductive suchThat {T} (pred: Σ -> T -> Prop): t T :=
     | suchThat_runs : forall s x,
@@ -189,6 +206,7 @@ Module relation.
       match tr with
       | Transitions.runF f => runF f
       | Transitions.suchThat pred => suchThat pred
+      | Transitions.suchThatBool b => suchThatBool b
       | Transitions.bind r rx => bind (denote r) (fun x => denote (rx x))
       end.
 
@@ -234,6 +252,11 @@ Module relation.
         destruct s0.
         inv H.
         eauto using suchThat_runs.
+      - destruct_with_eqn (next_hint hints).
+        destruct (genNextBool z s); [ | congruence ].
+        destruct s0.
+        inv H.
+        eauto using suchThatBool_runs.
       - destruct_with_eqn (interpret hints tr s); [ | congruence ].
         destruct p as [[hints'' s''] v'].
         eapply IHtr in Heqo.
