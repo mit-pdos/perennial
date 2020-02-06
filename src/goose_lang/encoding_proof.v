@@ -4,7 +4,8 @@ From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export
      lang notation array typing struct
      tactics lifting proofmode.
-From Perennial.goose_lang Require Import slice encoding basic_triples.
+From Perennial.goose_lang Require Import slice basic_triples.
+From Perennial.goose_lang Require Export encoding.
 
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
@@ -221,9 +222,6 @@ Proof using Type.
   iPureIntro.
   lia.
 Qed.
-
-Eval cbv [le_to_u32 map LittleEndian.combine length Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2]
-  in (fun (v1 v2 v3 v4:u8) => le_to_u32 [v1;v2;v3;v4]).
 
 Hint Rewrite word.unsigned_or_nowrap : word.
 Hint Rewrite word.unsigned_slu : word.

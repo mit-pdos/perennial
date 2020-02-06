@@ -1,11 +1,6 @@
-From iris.proofmode Require Import coq_tactics reduction.
 From Goose.github_com.tchajed Require Import marshal.
-From Perennial.goose_lang Require Import wpc_proofmode.
-From Perennial.goose_lang Require Import basic_triples encoding_proof.
-From Perennial.goose_lang Require Import slice encoding.
-From Perennial.goose_lang Require Import ffi.disk.
-From Perennial.goose_lang Require Import ffi.disk_prelude.
-Import uPred.
+From Perennial.goose_lang Require Import encoding_proof.
+From Perennial.program_proof Require Import proof_prelude.
 
 (* The specification for encoding is based on this encodable inductive, which
 represents a single encodable bundle.

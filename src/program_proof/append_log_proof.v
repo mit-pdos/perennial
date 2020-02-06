@@ -1,12 +1,7 @@
-From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.goose_lang.examples Require Import append_log.
-From Perennial.goose_lang Require Import wpc_proofmode.
-From Perennial.goose_lang Require Import basic_triples encoding_proof.
-From Perennial.goose_lang Require Import slice encoding.
-From Perennial.goose_lang Require Import ffi.disk.
-From Perennial.goose_lang Require Import ffi.disk_prelude.
-From Perennial.goose_lang.examples Require Import marshal_proof.
-Import uPred.
+From Perennial.goose_lang Require Import encoding_proof.
+From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import marshal_proof.
 
 (* TODO: use this throughout (including replacing slice_val) *)
 Class GoData T := to_val: forall {ext:ext_op}, T -> val.
