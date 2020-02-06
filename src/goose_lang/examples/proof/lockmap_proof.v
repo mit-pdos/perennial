@@ -33,10 +33,17 @@ Implicit Types stk : stuckness.
 
 Definition lockN : namespace := nroot .@ "lockShard".
 
+Definition is_lockShard_addr (addr : u64) (ptrVal : val) :=
+  ( ∃ (lockStatePtr : loc) owner held cond waiters,
+      ⌜ptrVal = #lockStatePtr⌝ ∗
+      lockStatePtr ↦[structTy lockState.S] (owner, #held, cond, waiters)
+  )%I.
+
 Definition is_lockShard_inner (mptr : loc) :=
   (∃ m mv def,
     mptr ↦ Free mv ∗
-    ⌜map_val mv = Some (m, def)⌝
+    ⌜map_val mv = Some (m, def)⌝ ∗
+    [∗ map] addr ↦ lockStatePtrVal ∈ m, is_lockShard_addr addr lockStatePtrVal
   )%I.
 
 Definition is_lockShard (ls : loc) :=
@@ -138,7 +145,7 @@ Proof.
 
   wp_load.
 
-  iDestruct "Hinner" as (m mv def) "[Hmptr %]".
+  iDestruct "Hinner" as (m mv def) "(Hmptr & % & Haddrs)".
   wp_apply (wp_MapGet with "[$Hmptr]"); auto.
   iIntros (v ok) "[% Hmptr]".
 
@@ -175,7 +182,7 @@ Proof.
 
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
-  iDestruct "Hinner" as (m mv def) "[Hmptr %]".
+  iDestruct "Hinner" as (m mv def) "(Hmptr & % & Haddrs)".
 
   wp_pures.
   replace (1 * int.val (1 + 0)) with (1) by len.
