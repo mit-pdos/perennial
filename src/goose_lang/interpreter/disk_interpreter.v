@@ -200,12 +200,12 @@ Instance pretty_disk_op : Pretty DiskOp :=
 (* Single-step interpreter for external disk operations. *)
 Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
   match (op, v) with
-  | (ReadOp, (LitV (LitInt a))) =>
+  | (ReadOp, (LitV (LitInt _))) =>
     σ <- mget;
-      b <- mlift (σ.(world) !! int.val a) ("Disk ReadOp failed: No block at address " ++ (pretty a));
-      let l := find_alloc_location σ 4096 in
-      _ <- mput (state_insert_list l (Block_to_vals b) σ);
-        mret (Val $ LitV (LitLoc l))
+      t <- mlift (Transitions.interpret [] (ext_step ReadOp v) σ) "Transitions.interpret failed in ReadOp";
+      match t with
+      | (hints, σ', v') => _ <- mput σ'; mret (Val v')
+      end
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
     σ <- mget;
       _ <- mlift (σ.(world) !! int.val a) ("Disk WriteOp failed: No block at write address " ++ (pretty a));
@@ -223,28 +223,42 @@ Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ 
     exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ').
 Proof.
   intros eop arg result σ σ' H.
-  destruct eop; inversion H.
+  destruct eop; [| inversion H | inversion H].
   { (* ReadOp *)
-    destruct arg; try by inversion H1.
-    destruct l; try by inversion H1.
-    simpl in H1.
-    destruct (world σ !! int.val n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1.
-    simpl in H1.
-    inversion H1.
+    unfold disk_interpret_step in H.
+    destruct arg; try by inversion H.
+    destruct l; try by inversion H.
+    assert (runStateT mget σ = Works _ (σ, σ)) by eauto.
+    rewrite (runStateT_Error_bind _ _ _ _ _ _ _ H0) in H.
+    destruct (Transitions.interpret [] (ext_step ReadOp #n) σ) eqn:interp_res; simpl in H; try by inversion H.
+    destruct p as ((l & s) & b).
+    simpl in H.
+    inversion H.
+    subst.
+    pose proof (Transitions.relation.interpret_sound _ _ _ interp_res) as interp_ok.
+    simpl in interp_ok.
+    monad_inv.
+    simpl in interp_ok.
     do 2 eexists.
     single_step.
-    rewrite disk_at_n.
-    simpl.
+    (* TODO: rewrite using ltac (or a lemma) to handle adding a function at the end of a known relation (does that exist?) *)
+    inversion interp_ok.
+    econstructor; [exact H1|].
     monad_simpl.
-    pose proof (find_alloc_location_fresh σ 4096) as fresh.
-    {
-      eapply relation.bind_suchThat.
-      {
-        simpl.
-        exact fresh.
-      }
-      monad_simpl.
-    }
+    subst.
+    inversion H2.
+    econstructor; [exact H3|].
+    monad_simpl.
+    inversion H4.
+    subst.
+    econstructor.
+    inversion H8. inversion H9.
+    subst.
+    simpl.
+    inversion H5.
+    rewrite H7.
+    inversion H11.
+    reflexivity.
   }
   { (* WriteOp *)
     destruct arg; try by inversion H1.
