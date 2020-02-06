@@ -26,28 +26,36 @@ Implicit Types stk : stuckness.
 
 Definition lockN : namespace := nroot .@ "lockShard".
 
+Notation "l ↦@ t v " := (mapsto (hG := t) l 1 v)
+  (at level 20, t at level 50, format "l  ↦@ t  v") : bi_scope.
+
 Definition is_lockShard_addr (addr : u64) (ptrVal : val) :=
   ( ∃ (lockStatePtr : loc) owner held cond waiters,
       ⌜ptrVal = #lockStatePtr⌝ ∗
       lockStatePtr ↦[structTy lockState.S] (owner, #held, cond, waiters)
   )%I.
 
-Definition is_lockShard_inner (mptr : loc) :=
-  (∃ m mv def,
+Definition is_lockShard_inner (mptr : loc) hm :=
+  (∃ m mv def lockedmap,
     mptr ↦ Free mv ∗
     ⌜map_val mv = Some (m, def)⌝ ∗
+    gen_heap_ctx (hG := hm) lockedmap ∗
+    (* connect lockedmap to m *)
     [∗ map] addr ↦ lockStatePtrVal ∈ m, is_lockShard_addr addr lockStatePtrVal
   )%I.
 
-Definition is_lockShard (ls : loc) :=
+Definition is_lockShard (ls : loc) (P : u64 -> iProp Σ) (covered : gset u64) hm :=
   (∃ l γl mptr,
-    is_lock lockN γl l (is_lockShard_inner mptr) ∗
+    is_lock lockN γl l (is_lockShard_inner mptr hm) ∗
     ls ↦[structTy lockShard.S] (l, #mptr))%I.
 
-Theorem wp_mkLockShard :
-  {{{ True }}}
+Definition locked (hm : gen_heapG loc (nonAtomic val) Σ) (addr : u64) : iProp Σ :=
+  ( True )%I.
+
+Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
+  {{{ [∗ set] a ∈ covered, P a }}}
     mkLockShard #()
-  {{{ ls, RET #ls; is_lockShard ls }}}.
+  {{{ ls hm, RET #ls; is_lockShard ls P covered hm }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   rewrite /mkLockShard.
@@ -79,10 +87,11 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wp_lockShard__acquire ls (addr : u64) (id : u64) :
-  {{{ is_lockShard ls }}}
+Theorem wp_lockShard__acquire ls (addr : u64) (id : u64) (P : u64 -> iProp Σ) covered hm :
+  {{{ is_lockShard ls P covered hm ∗
+      ⌜addr ∈ covered⌝ }}}
     lockShard__acquire #ls #addr #id
-  {{{ RET #(); is_lockShard ls }}}.
+  {{{ RET #(); is_lockShard ls P covered hm ∗ P addr ∗ locked hm addr }}}.
 Proof.
   iIntros (Φ) "Hls HΦ".
   iDestruct "Hls" as (l γl mptr) "(#Hlock&Hls)".
@@ -149,10 +158,10 @@ Proof.
 
 Abort.
 
-Theorem wp_lockShard__release ls (addr : u64) :
-  {{{ is_lockShard ls }}}
+Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered hm :
+  {{{ is_lockShard ls P covered hm ∗ P addr ∗ locked hm addr }}}
     lockShard__release #ls #addr
-  {{{ RET #(); is_lockShard ls }}}.
+  {{{ RET #(); is_lockShard ls P covered hm }}}.
 Proof.
   iIntros (Φ) "Hls HΦ".
   iDestruct "Hls" as (l γl mptr) "(Hlock&Hls)".
