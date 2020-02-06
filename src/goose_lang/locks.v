@@ -20,6 +20,15 @@ Module lock.
   Definition acquire := spin_lock.acquire.
   Definition release := spin_lock.release.
 
+  Theorem is_lock_ty N γ lk R :
+    is_lock N γ lk R -∗ ⌜val_ty lk lockRefT⌝.
+  Proof.
+    iIntros "Hlk".
+    iDestruct (is_lock_flat with "Hlk") as (l) "->".
+    iPureIntro.
+    val_ty.
+  Qed.
+
   (* a cond var (a Go *sync.Cond) is modeled as a pointer to the underlying
   lock *)
   Definition newCond: val := λ: "l", ref "l".

@@ -17,9 +17,9 @@ From Perennial.goose_lang Require Import
 From Perennial.goose_lang.examples Require Import
      goose_unittest append_log wal simpledb logging2 rfc1813.
 
-(* NFS spec 
+(* NFS spec *)
 From Perennial.goose_lang.examples.nfs_spec Require Import
-     NFS3API.*)
+     NFS3API.
 
 (* more goose output *)
 From Goose Require github_com.mit_pdos.goose_nfsd.wal.

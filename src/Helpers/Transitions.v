@@ -16,6 +16,8 @@ Instance bool_GenType Σ : GenType bool Σ := fun z _ => Some (exist _ (z mod 2 
 
 Class GenBool T Σ (b: Σ -> T -> bool) := genNextBool : Z -> forall (s:Σ), option {x:T | b s x = true}.
 Arguments GenBool : clear implicits.
+(* use as dummy generator, non-executable *)
+Definition fallback_genBool T Σ b : GenBool T Σ b (*| 99*) := fun _ _ => None. 
 
 Section transition.
   Context {Σ:Type}.
@@ -189,6 +191,14 @@ Module relation.
     Proof.
       intros.
       apply inv_runF in H; intuition subst.
+    Qed.
+
+    Theorem inv_suchThatBool {T} (b:Σ -> T -> bool) :
+      forall s1 s2 v', suchThatBool b s1 s2 v' ->
+                  s2 = s1 /\ b s1 v' = true.
+    Proof.
+      intros.
+      inversion H; subst; eauto.
     Qed.
 
     Theorem inv_suchThat {T} (pred:Σ -> T -> Prop) :
@@ -391,6 +401,17 @@ Module relation.
       eauto.
     Qed.
 
+    Theorem inv_bind_suchThatBool T1 T2 (b: Σ -> T1 -> bool) (r: T1 -> t T2) :
+      forall s1 s2 v,
+        bind (suchThatBool b) r s1 s2 v ->
+        exists x, b s1 x = true /\ r x s1 s2 v.
+    Proof.
+      intros.
+      inv H.
+      inv H0.
+      eauto.
+    Qed.
+
     Theorem bind_runF_runF T1 T2 (f: Σ -> Σ * T1) (rx: T1 -> Σ -> Σ * T2) :
       bind (runF f) (fun x => runF (rx x)) ≡
            runF (fun s => let '(s', x) := f s in
@@ -446,6 +467,10 @@ Ltac monad_inv :=
            inversion H; contradiction
          | [ H: relation.suchThat _ ?s1 ?s2 ?v |- _ ] =>
            apply relation.inv_suchThat in H; destruct H; subst
+         | [ H: relation.suchThatBool (fun _ _ => false) ?s1 ?s2 ?v |- _ ] =>
+           inversion H; contradiction
+         | [ H: relation.suchThatBool _ ?s1 ?s2 ?v |- _ ] =>
+           apply relation.inv_suchThatBool in H; destruct H; subst
          | [ H: relation.bind (relation.bind _ _) _ ?s1 ?s2 ?v |- _ ] =>
            apply relation.bind_bind in H
          | [ H: relation.bind (relation.suchThat ?pred) _ ?s1 ?s2 ?v |- _ ] =>
@@ -455,6 +480,15 @@ Ltac monad_inv :=
              let x := fresh x in
              let H' := fresh in
              apply relation.inv_bind_suchThat in H;
+             destruct H as [x [H' H]]
+           end
+         | [ H: relation.bind (relation.suchThatBool ?b) _ ?s1 ?s2 ?v |- _ ] =>
+           let b := (eval hnf in b) in
+           lazymatch b with
+           | fun _ x => _ =>
+             let x := fresh x in
+             let H' := fresh in
+             apply relation.inv_bind_suchThatBool in H;
              destruct H as [x [H' H]]
            end
          | [ H: ?mx = Some ?x, H': context[unwrap ?mx] |- _ ] =>

@@ -3,7 +3,7 @@ From coqutil Require Import Datatypes.HList.
 From coqutil.Z Require Import BitOps.
 From coqutil.Word Require Naive.
 From coqutil.Word Require Export Interface Properties.
-From coqutil.Word Require Import LittleEndian.
+From Perennial Require Import Helpers.LittleEndian.
 
 Open Scope Z_scope.
 
@@ -353,10 +353,6 @@ Proof.
   by rewrite word.of_Z_unsigned.
 Qed.
 (* end 32-bit code *)
-
-Eval cbv [u32_le map split tuple.to_list] in u32_le.
-Eval cbv [le_to_u32 map combine length tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2]
-  in (fun v1 v2 v3 v4 => le_to_u32 [v1;v2;v3;v4]).
 
 Lemma combine_unfold n b (t: HList.tuple byte n) :
   combine (S n) {| PrimitivePair.pair._1 := b; PrimitivePair.pair._2 := t |} =
