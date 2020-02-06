@@ -352,6 +352,7 @@ Section interpreter.
       | Primitive0 p =>
         match p in (prim_op args0) return StateT state Error val with
         | PanicOp s => mfail ("Interpret panic: " ++ s)
+        | ArbitraryIntOp => mret (LitV (LitInt (U64 1)))
         end
 
       | Primitive1 p e =>
@@ -718,7 +719,14 @@ Ltac runStateT_inv :=
       (* TODO: Remove dependent destruction using
        https://jamesrwilcox.com/dep-destruct.html technique *)
       dependent destruction op.
-      inversion H0.
+      - (* Panic *)
+        inversion H0.
+      - (* ArbitraryInt *)
+        runStateT_inv.
+        do 2 eexists.
+        single_step.
+        eapply Transitions.relation.bind_runs; [ | Transitions.monad_simpl ].
+        constructor; auto.
     }
 
     (* Primitive1 *)

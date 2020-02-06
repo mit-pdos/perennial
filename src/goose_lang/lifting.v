@@ -238,6 +238,7 @@ Local Hint Extern 1 (relation.bind _ _ _ _ _) => monad_simpl; simpl : core.
 Local Hint Extern 1 (relation.runF _ _ _ _) => monad_simpl; simpl : core.
 (* Local Hint Extern 0 (head_step (CmpXchg _ _ _) _ _ _ _ _) => eapply CmpXchgS : core. *)
 Local Hint Extern 0 (head_step (AllocN _ _) _ _ _ _ _) => apply alloc_fresh : core.
+Local Hint Extern 0 (head_step (ArbitraryInt) _ _ _ _ _) => apply arbitrary_int_step : core.
 Local Hint Extern 0 (head_step NewProph _ _ _ _ _) => apply new_proph_id_fresh : core.
 Local Hint Resolve to_of_val : core.
 
@@ -445,6 +446,17 @@ Lemma wp_panic s msg E Φ :
   ▷ False -∗ WP Panic msg @ s; E {{ Φ }}.
 Proof using Type.
   iIntros ">[] HΦ".
+Qed.
+
+Lemma wp_ArbitraryInt stk E :
+  {{{ True }}}
+    ArbitraryInt @ stk; E
+  {{{ (x:u64), RET #x; True }}}.
+Proof using Type.
+  iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
+  iIntros (σ1 κ κs n) "(Hσ&?&?&?&?) !>"; iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
+  iModIntro. by iApply "HΦ".
 Qed.
 
 Lemma wp_output s E tr lit :

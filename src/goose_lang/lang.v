@@ -113,6 +113,8 @@ Inductive arity : Set := args0 | args1 | args2.
 Inductive prim_op : arity -> Set :=
   (* a stuck expression, to represent undefined behavior *)
   | PanicOp (s: string) : prim_op args0
+  (* non-deterministically pick an integer *)
+  | ArbitraryIntOp : prim_op args0
   | AllocNOp : prim_op args2 (* array length (positive number), initial value *)
   | PrepareWriteOp : prim_op args1 (* loc *)
   | FinishStoreOp : prim_op args2 (* pointer, value *)
@@ -170,6 +172,7 @@ Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
 
 Notation Panic s := (Primitive0 (PanicOp s)).
+Notation ArbitraryInt := (Primitive0 ArbitraryIntOp).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
@@ -533,6 +536,7 @@ Proof.
   refine (inj_countable' (λ op, let 'a_prim_op op := op in
                                 match op with
                                 | PanicOp s => inl s
+                                | ArbitraryIntOp => inr 8
                                 | AllocNOp => inr 0
                                 | PrepareWriteOp => inr 1
                                 | FinishStoreOp => inr 2
@@ -552,6 +556,7 @@ Proof.
                                | inr 5 => a_prim_op _
                                | inr 6 => a_prim_op _
                                | inr 7 => a_prim_op _
+                               | inr 8 => a_prim_op _
                                | _ => a_prim_op (PanicOp "")
                                end) _); intros [_ []]; trivial.
 Qed.
@@ -1002,6 +1007,13 @@ Defined.
 Definition newProphId: transition state proph_id :=
   suchThat (fun σ p => p ∉ σ.(used_proph_id)).
 
+Instance gen_anyInt Σ: GenPred u64 Σ (fun _ _ => True).
+  refine (fun z _ => Some (U64 z ↾ _)); auto.
+Defined.
+
+Definition arbitraryInt: transition state u64 :=
+  suchThat (fun _ _ => True).
+
 Fixpoint head_trans (e: expr) :
  transition state (list observation * expr * list expr) :=
   match e with
@@ -1019,6 +1031,10 @@ Fixpoint head_trans (e: expr) :
   | Case (Val (InjLV v)) e1 e2 => ret_expr $ App e1 (Val v)
   | Case (Val (InjRV v)) e1 e2 => ret_expr $ App e2 (Val v)
   | Fork e => ret ([], Val $ LitV LitUnit, [e])
+  | ArbitraryInt =>
+    atomically
+      (x ← arbitraryInt;
+      ret $ LitV $ LitInt x)
   | AllocN (Val (LitV (LitInt n))) (Val v) =>
     atomically
       (check (0 < int.val n)%Z;;
@@ -1174,6 +1190,17 @@ Proof.
   monad_simpl.
 Qed.
 
+Lemma arbitrary_int_step σ :
+  head_step (ArbitraryInt) σ []
+            (Val $ LitV $ LitInt $ U64 0) σ [].
+Proof.
+  intros.
+  rewrite /head_step /=.
+  monad_simpl.
+  eapply relation.bind_runs; [ | monad_simpl ].
+  constructor; auto.
+Qed.
+
 Lemma new_proph_id_fresh σ :
   let p := fresh σ.(used_proph_id) in
   head_step NewProph σ [] (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ) [].
@@ -1271,6 +1298,7 @@ Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
 
 Notation Panic s := (Primitive0 (PanicOp s)).
+Notation ArbitraryInt := (Primitive0 ArbitraryIntOp).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
