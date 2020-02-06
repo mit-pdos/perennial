@@ -26,5 +26,5 @@ From Goose Require github_com.mit_pdos.goose_nfsd.wal.
 
 (* interpreter *)
 From Perennial.goose_lang.interpreter Require Import interpreter test_config.
-From Perennial.goose_lang.interpreter Require Import interpreter generated_tests.
+From Perennial.goose_lang.interpreter Require Import interpreter generated_test.
 From Perennial.goose_lang.interpreter Require Import disk_interpreter.
