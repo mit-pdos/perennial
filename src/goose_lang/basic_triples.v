@@ -94,6 +94,46 @@ Tactic Notation "wp_store" :=
   | _ => fail "wp_store: not a 'wp'"
   end.
 
+Theorem wp_forBreak (I X: iProp Σ) stk E (body: val) :
+  {{{ I }}}
+    body #() @ stk; E
+  {{{ r, RET #r; I ∗ ⌜r=true⌝ ∨ X ∗ ⌜r=false⌝ }}} -∗
+  {{{ I }}}
+    (for: (λ: <>, #true)%V ; (λ: <>, (λ: <>, #())%V #())%V :=
+       body) @ stk; E
+  {{{ RET #(); X }}}.
+Proof using Type.
+  iIntros "#Hbody".
+  iIntros (Φ) "!> I HΦ".
+  rewrite /For.
+  wp_lam.
+  wp_let.
+  wp_let.
+  wp_pure (Rec _ _ _).
+  match goal with
+  | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
+  end.
+  iLöb as "IH".
+  wp_pures.
+  iDestruct ("Hbody" with "I") as "Hbody1".
+  wp_bind (body _).
+  iApply "Hbody1".
+  iNext.
+  iIntros (r) "Hr".
+  iDestruct "Hr" as "[[I %] | [X %]]"; subst.
+  - iDestruct ("IH" with "I HΦ") as "IH1".
+    wp_let.
+    wp_if.
+    wp_lam.
+    wp_lam.
+    wp_pure (Rec _ _ _).
+    wp_lam.
+    iApply "IH1".
+  - wp_pures.
+    iApply "HΦ".
+    iApply "X".
+Qed.
+
 Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (max:u64) (l:loc) (body: val) :
   (∀ (i:u64),
       {{{ I i ∗ l ↦ Free #i ∗ ⌜int.val i < int.val max⌝ }}}
