@@ -1,12 +1,5 @@
-From iris.proofmode Require Import coq_tactics reduction.
+From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
-From Perennial.goose_lang Require Import wpc_proofmode.
-From Perennial.goose_lang Require Import basic_triples.
-From Perennial.goose_lang Require Import slice.
-From Perennial.goose_lang Require Import locks.
-From Perennial.goose_lang Require Import map_triples.
-From Perennial.goose_lang Require Import lib.spin_lock.
-Import uPred.
 
 Hint Rewrite app_length @drop_length @take_length @fmap_length
      @replicate_length : len.
