@@ -79,14 +79,74 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wp_lockShard__acquire stk E ls addr (id : u64) :
+Theorem wp_lockShard__acquire ls (addr : u64) (id : u64) :
   {{{ is_lockShard ls }}}
-    lockShard__acquire #ls #addr @ stk; E
+    lockShard__acquire #ls #addr #id
   {{{ RET #(); is_lockShard ls }}}.
 Proof.
   iIntros (Φ) "Hls HΦ".
-  iDestruct "Hls" as (l γl mptr) "(Hlock&Hls)".
+  iDestruct "Hls" as (l γl mptr) "(#Hlock&Hls)".
+
   wp_call.
+
+  (* What's the right way to deal with loadField? *)
+  Transparent loadField.
+  rewrite /struct.loadF /=.
+  iDestruct "Hls" as "[(Hl & Hm) %]".
+  iDestruct (lock.is_lock_ty with "Hlock") as "%".
+  inversion H0; subst.
+  inversion H; subst.
+  inversion H7; subst.
+  rewrite /=.
+  wp_steps.
+  iDestruct "Hl" as "[Hl _]".
+  iDestruct "Hm" as "[Hm _]".
+  wp_load.
+
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "[Hlocked Hinner]".
+
+  wp_pures.
+  wp_apply ((wp_forBreak
+      (is_lockShard_inner mptr ∗ locked γl ∗ (ls +ₗ 1%nat) ↦ Free #mptr)
+      (is_lockShard_inner mptr ∗ locked γl ∗ (ls +ₗ 1%nat) ↦ Free #mptr)
+    ) with "[] [$Hinner $Hlocked $Hm]").
+  2: {
+    iIntros "(Hinner & Hlocked & Hm)".
+    wp_pures.
+    wp_load.
+    wp_apply (release_spec with "[$Hlock $Hlocked $Hinner]").
+    iIntros.
+    iApply "HΦ".
+
+    iExists _, _, _.
+    iSplitL "Hlock"; [ iApply "Hlock" | ].
+    rewrite /struct_mapsto.
+    (* XXX *)
+    admit.
+  }
+
+  iIntros (Φloop) "!> (Hinner & Hlocked & Hm) HΦloop".
+  wp_pures.
+
+  (* XXX annoying that the proof has to keep specifying these
+    types, when the goose-generated .v file already has them! *)
+  wp_apply (wp_alloc _ _ (refT (structTy lockState.S))).
+  { val_ty. }
+  iIntros (state) "Hstate".
+  wp_pures.
+
+  wp_load.
+
+  iDestruct "Hinner" as (m mv def) "[Hmptr %]".
+  wp_apply (wp_MapGet with "[$Hmptr]"); auto.
+  iIntros (v ok) "[% Hmptr]".
+
+  wp_pures.
+  (* XXX annoying that i have to keep unfolding allocation
+    types even when i'm not allocating a struct.. *)
+  (* wp_store. *)
+
 Abort.
 
 Theorem wp_lockShard__release ls (addr : u64) :
