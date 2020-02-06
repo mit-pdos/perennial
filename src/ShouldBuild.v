@@ -10,7 +10,7 @@ From Perennial.goose_lang Require Import
      adequacy spec_assert lib.spin_lock refinement.
 From Perennial.goose_lang Require Import map_triples.
 From Perennial.program_proof Require Import
-     marshal_proof append_log_proof.
+     marshal_proof append_log_proof util_proof.
 From Perennial.goose_lang Require Import
      ffi.append_log_ffi.
 (* goose deep output *)
