@@ -112,6 +112,28 @@ Proof.
     eexists _, _, _, _; intuition eauto.
 Qed.
 
+Definition wp_NewMap stk E T :
+  {{{ True }}}
+    NewMap T @ stk; E
+  {{{ mref mv def, RET #mref;
+    mref ↦ Free mv ∗ ⌜map_val mv = Some (∅, def)⌝ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_apply (wp_alloc _ _ (mapValT T)).
+  {
+    (* This seems messy; is there a cleaner way? Why [zero_val_ty']? *)
+    econstructor. apply zero_val_ty'.
+  }
+  iIntros (mref) "Hm".
+  iApply "HΦ".
+
+  (* This seems messy.. *)
+  rewrite /struct_mapsto /= loc_add_0.
+  iDestruct "Hm" as "[[Hm _] %]".
+  iFrame.
+  auto.
+Qed.
+
 Definition wp_MapGet stk E mref (m: gmap u64 val * val) mv k :
   {{{ mref ↦ Free mv ∗ ⌜map_val mv = Some m⌝ }}}
     MapGet #mref #k @ stk; E
