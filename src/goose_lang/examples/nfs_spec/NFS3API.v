@@ -179,13 +179,9 @@ Record async `{Countable T} := { (* {T} {EqDec: DqDecision T} {H: Countable T} *
   latest : T;
   pending : list T;
 }.
-About async.
-About pending.
 
 Arguments async T {_ _}.
 Arguments Build_async {_ _ _}.
-About Build_async.
-About async.
 
 Definition possible `{Countable T} (ab : async T) :=
   latest ab :: pending ab.
@@ -427,7 +423,6 @@ Section SymbolicStep.
   Definition symBool := suchThatBool (fun (_: State) (_ : bool) => true).
   Definition symU32 := suchThatBool (fun (_: State) (_ : u32) => true).
   Definition symU64 := suchThatBool (fun (_: State) (_ : u64) => true).
-  Search u64_eq_dec.
   Definition fid_does_not_exist (s: State) (fid: fileid) : bool :=
     fold_left (fun acc x =>
                  match x with
@@ -1243,7 +1238,7 @@ Record Dynamics Op State :=
   }.
 
 Extraction Language OCaml.
-Recursive Extraction setattr_step getattr_step. (*getattr_step setattr_step commit_step.*)
+(* Recursive Extraction setattr_step getattr_step. *) (*getattr_step setattr_step commit_step.*)
 
 Definition nfs3op_to_transition {T} (op : Op T): transition State T :=
   match op with
