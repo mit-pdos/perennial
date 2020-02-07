@@ -24,6 +24,17 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types stk : stuckness.
 
+Lemma points_to_byte l (x: u8) :
+  l ↦[byteT] #x ⊣⊢ l ↦ Free #x.
+Proof.
+  rewrite /struct_mapsto /=.
+  rewrite loc_add_0 right_id.
+  iSplit.
+  - iDestruct 1 as "[$ _]".
+  - iDestruct 1 as "$".
+    auto.
+Qed.
+
 Lemma array_to_block_array l b :
   array l byteT (Block_to_vals b) ⊣⊢ mapsto_block l 1 b.
 Proof.
@@ -31,8 +42,14 @@ Proof.
   rewrite heap_array_to_list.
   rewrite big_sepL_fmap.
   setoid_rewrite Z.mul_1_l.
-  (* should be true, since everything in b is a byte *)
-Admitted.
+  apply big_opL_proper.
+  intros k y Heq.
+  rewrite /Block_to_vals in Heq.
+  rewrite list_lookup_fmap in Heq.
+  destruct (fmap_Some_1 _ _ _ Heq) as [x [Hx ->]].
+  rewrite /b2val.
+  rewrite points_to_byte //.
+Qed.
 
 Lemma slice_to_block_array s b :
   is_slice_small s byteT (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) 1 b.
