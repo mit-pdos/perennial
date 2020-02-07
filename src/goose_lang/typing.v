@@ -165,6 +165,8 @@ Section goose_lang.
       Γ ⊢ Rec f x e : arrowT t1 t2
   | panic_expr_hasTy msg t :
       Γ ⊢ Panic msg : t
+  | arbitrary_int_expr_hasTy :
+      Γ ⊢ ArbitraryInt : uint64T
   | fork_hasTy e t :
       Γ ⊢ e : t ->
       Γ ⊢ Fork e : unitT

@@ -198,7 +198,7 @@ Definition is_enc (enc: EncM.t) (vs: Rec): iProp Σ :=
   let encoded := encode vs in
   let encoded_len := Z.of_nat (length encoded) in
   enc.(EncM.off) ↦ (Free #(U64 encoded_len)) ∗
-  enc.(EncM.s).(Slice.ptr) ↦∗[byteT] fmap b2val encoded ∗
+  enc.(EncM.s).(Slice.ptr) ↦∗[byteT] (b2val <$> encoded) ∗
   ∃ (free: list u8),
     (enc.(EncM.s).(Slice.ptr) +ₗ encoded_len) ↦∗[byteT] fmap b2val free ∗
     ⌜(length encoded + length free)%nat = int.nat (EncSz enc)⌝.
@@ -213,11 +213,10 @@ Proof using Type.
   rewrite /struct.buildStruct /Enc.S /=.
   wp_call.
   wp_apply wp_new_slice.
-  iIntros (sl) "[Ha %]".
+  iIntros (sl) "Hs". iDestruct (is_slice_elim with "Hs") as "[Ha %]".
   rewrite replicate_length in H.
   change (int.nat 4096) with (Z.to_nat 4096) in H.
   wp_apply wp_alloc; auto.
-  { repeat econstructor. }
   iIntros (l) "(Hl&_)".
   wp_steps.
   rewrite EncM.to_val_intro.
@@ -252,7 +251,7 @@ Proof using Type.
   { iPureIntro.
     len. }
   wp_apply (wp_UInt64Put with "[Hfree]").
-  { rewrite /is_slice /=.
+  { rewrite /is_slice_small /=.
     iSplitL; [ iSplitL | ].
     - iFramePtsTo by word.
     - len.
@@ -313,7 +312,7 @@ Proof.
 Qed.
 
 Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) (xs: list u64) :
-  {{{ is_enc enc vs ∗ is_slice s uint64T (u64val <$> xs) ∗
+  {{{ is_enc enc vs ∗ is_slice_small s uint64T (u64val <$> xs) ∗
              ⌜length (encode vs) + 8 * length xs <= int.val (EncSz enc)⌝ }}}
     Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
   {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) }}}.
@@ -343,7 +342,7 @@ Proof using Type.
   - rewrite take_0 app_nil_r.
     iFrame.
   - iIntros "(Henc&Hs)"; iApply "HΦ".
-    iDestruct (is_slice_sz with "Hs") as %Hslen.
+    iDestruct (is_slice_small_sz with "Hs") as %Hslen.
     rewrite fmap_length in Hslen.
     rewrite -> take_ge by lia.
     iFrame.
@@ -366,7 +365,7 @@ Proof using Type.
   { iPureIntro.
     len. }
   wp_apply (wp_UInt32Put with "[Hfree]").
-  { rewrite /is_slice /=.
+  { rewrite /is_slice_small /=.
     iSplitL; [ iSplitL | ].
     - iFramePtsTo by word.
     - len.
@@ -471,7 +470,7 @@ Theorem wp_Enc__Finish stk E enc vs :
   {{{ is_enc enc vs }}}
     Enc__Finish (EncM.to_val enc) @ stk; E
   {{{ s (extra: list u8), RET (slice_val s);
-      is_slice s byteT (b2val <$> encode vs ++ extra) ∗
+      is_slice_small s byteT (b2val <$> encode vs ++ extra) ∗
       ⌜Slice.sz s = EncSz enc⌝ }}}.
 Proof using Type.
   iIntros (Φ) "Henc HΦ".
@@ -507,7 +506,7 @@ Definition is_dec (dec: DecM.t) vs: iProp Σ :=
   ⌜(int.val off + length encoded + Z.of_nat (length extra))%Z = int.val (DecSz dec)⌝.
 
 Theorem wp_NewDec stk E s vs (extra: list u8) :
-  {{{ is_slice s byteT (b2val <$> encode vs ++ extra) }}}
+  {{{ is_slice_small s byteT (b2val <$> encode vs ++ extra) }}}
     NewDec (slice_val s) @ stk; E
   {{{ dec, RET (DecM.to_val dec); is_dec dec vs ∗ ⌜DecSz dec = s.(Slice.sz)⌝ }}}.
 Proof using Type.
@@ -663,13 +662,11 @@ Proof using Type.
   rewrite /Dec__GetInts.
   iIntros (Φ) "(Hdec&%) HΦ".
   wp_pures.
-  wp_apply wp_alloc; auto.
-  { apply zero_val_ty'. }
+  wp_apply (wp_alloc _ _ (slice.T uint64T)); auto.
   iIntros (l) "Hl".
   rewrite zero_slice_val.
   wp_pures.
   wp_apply wp_alloc; auto.
-  { repeat constructor. }
   iIntros (l__i) "Hli".
   wp_let.
   wp_apply (wp_forUpto (λ x,
@@ -717,7 +714,7 @@ Proof using Type.
     iFrame.
     iDestruct (u64_ptsto_untype with "Hli") as "Hli".
     iFrame.
-    iExists (Slice.mk null (U64 0)); iFrame.
+    iExists (Slice.mk null (U64 0) (U64 0)); iFrame.
     rewrite take_0 fmap_nil.
     iApply is_slice_zero.
   - iIntros "[(Hdec&Hslice) Hli]".

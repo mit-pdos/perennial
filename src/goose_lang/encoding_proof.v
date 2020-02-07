@@ -166,16 +166,16 @@ Proof using Type.
 Admitted.
 
 Theorem wp_UInt64Put stk E s x vs :
-  {{{ is_slice s byteT vs ∗ ⌜length vs >= u64_bytes⌝ }}}
+  {{{ is_slice_small s byteT vs ∗ ⌜length vs >= u64_bytes⌝ }}}
     UInt64Put (slice_val s) #x @ stk; E
-  {{{ RET #(); is_slice s byteT (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
+  {{{ RET #(); is_slice_small s byteT (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
 Proof using Type.
   iIntros (Φ) "[Hsl %] HΦ".
   wp_lam.
   wp_let.
   wp_lam.
   wp_pures.
-  iDestruct (is_slice_elim with "Hsl") as "[Hptr %]".
+  iDestruct "Hsl" as "(Hptr&%)".
   iDestruct (array_split 8 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
   wp_apply (wp_EncodeUInt64 with "[$Henc]").
   { iPureIntro.
@@ -199,16 +199,16 @@ Proof using Type.
 Qed.
 
 Theorem wp_UInt32Put stk E s (x: u32) vs :
-  {{{ is_slice s byteT vs ∗ ⌜length vs >= u32_bytes⌝ }}}
+  {{{ is_slice_small s byteT vs ∗ ⌜length vs >= u32_bytes⌝ }}}
     UInt32Put (slice_val s) #x @ stk; E
-  {{{ RET #(); is_slice s byteT (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
+  {{{ RET #(); is_slice_small s byteT (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
 Proof using Type.
   iIntros (Φ) "[Hsl %] HΦ".
   wp_lam.
   wp_let.
   wp_lam.
   wp_pures.
-  iDestruct (is_slice_elim with "Hsl") as "[Hptr %]".
+  iDestruct "Hsl" as "(Hptr&%)".
   iDestruct (array_split 4 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
   wp_apply (wp_EncodeUInt32 with "[$Henc]").
   { iPureIntro.
@@ -339,18 +339,18 @@ Proof using Type.
 Admitted.
 
 Theorem wp_UInt64Get stk E s (x: u64) vs :
-  {{{ is_slice s byteT vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
+  {{{ is_slice_small s byteT vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
     UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; is_slice s byteT (u64_le_bytes x ++ drop 8 vs) }}}.
+  {{{ RET #x; is_slice_small s byteT (u64_le_bytes x ++ drop 8 vs) }}}.
 Proof using Type.
   iIntros (Φ) "[Hs %] HΦ".
   assert (vs = u64_le_bytes x ++ drop 8 vs).
   { rewrite -{1}(take_drop 8 vs).
     congruence. }
-  rewrite [vs in is_slice _ _ vs](H0).
+  rewrite [vs in is_slice_small _ _ vs](H0).
   wp_call.
   wp_apply wp_slice_ptr.
-  iDestruct "Hs" as "[Hptr %]".
+  iDestruct "Hs" as "(Hptr&%)".
   iDestruct (array_app with "Hptr") as "[Htake Hrest]"; try lia;
     rewrite u64_le_bytes_length.
   wp_apply (wp_DecodeUInt64 with "[$Htake]").
