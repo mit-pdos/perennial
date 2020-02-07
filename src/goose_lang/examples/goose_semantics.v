@@ -2,6 +2,63 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+(* comparisons.go *)
+
+Definition testCompareAll: val :=
+  λ: <>,
+    let: "ok" := ref #true in
+    let: "nok" := ref #false in
+    "ok" <-[boolT] ![boolT] "ok" && #1 < #2;;
+    "nok" <-[boolT] ![boolT] "ok" && #2 < #1;;
+    "ok" <-[boolT] ![boolT] "ok" && #1 ≤ #2;;
+    "ok" <-[boolT] ![boolT] "ok" && #2 ≤ #2;;
+    "nok" <-[boolT] ![boolT] "ok" && #2 ≤ #1;;
+    (if: ![boolT] "nok"
+    then #false
+    else ![boolT] "ok").
+
+Definition testCompareGT: val :=
+  λ: <>,
+    let: "x" := ref #4 in
+    let: "y" := ref #5 in
+    let: "ok" := ref #true in
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "y" > #4;;
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "y" > ![uint64T] "x";;
+    ![boolT] "ok".
+
+Definition testCompareGE: val :=
+  λ: <>,
+    let: "x" := ref #4 in
+    let: "y" := ref #5 in
+    let: "ok" := ref #true in
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "y" ≥ #4;;
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "y" ≥ #5;;
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "y" ≥ ![uint64T] "x";;
+    (if: ![uint64T] "y" > #5
+    then #false
+    else ![boolT] "ok").
+
+Definition testCompareLT: val :=
+  λ: <>,
+    let: "x" := ref #4 in
+    let: "y" := ref #5 in
+    let: "ok" := ref #true in
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "y" < #6;;
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "x" < ![uint64T] "y";;
+    ![boolT] "ok".
+
+Definition testCompareLE: val :=
+  λ: <>,
+    let: "x" := ref #4 in
+    let: "y" := ref #5 in
+    let: "ok" := ref #true in
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "y" ≤ #6;;
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "y" ≤ #5;;
+    "ok" <-[boolT] ![boolT] "ok" && ![uint64T] "x" ≤ ![uint64T] "y";;
+    (if: ![uint64T] "y" < #5
+    then #false
+    else ![boolT] "ok").
+
 (* conversions.go *)
 
 Definition literalCast: val :=

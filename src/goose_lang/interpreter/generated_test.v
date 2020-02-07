@@ -6,6 +6,11 @@ From Perennial.goose_lang.interpreter Require Import test_config.
 (* test functions *)
 From Perennial.goose_lang.examples Require Import goose_semantics.
 
+Example testCompareAll_ok : testCompareAll #() ~~> #true := t.
+Example testCompareGT_ok : testCompareGT #() ~~> #true := t.
+Example testCompareGE_ok : testCompareGE #() ~~> #true := t.
+Example testCompareLT_ok : testCompareLT #() ~~> #true := t.
+Example testCompareLE_ok : testCompareLE #() ~~> #true := t.
 Example testEncDec32Simple_ok : testEncDec32Simple #() ~~> #true := t.
 Fail Example testEncDec32_ok : testEncDec32 #() ~~> #true := t.
 Example testEncDec64Simple_ok : testEncDec64Simple #() ~~> #true := t.
@@ -13,8 +18,8 @@ Example testEncDec64_ok : testEncDec64 #() ~~> #true := t.
 Fail Example testFunctionOrdering_ok : testFunctionOrdering #() ~~> #true := t.
 Fail Example testCopySimple_ok : testCopySimple #() ~~> #true := t.
 Fail Example testCopyDifferentLengths_ok : testCopyDifferentLengths #() ~~> #true := t.
-(* TODO: This either takes ages or just doesn't terminate...
-Fail Example testConversions_ok : testConversions #() ~~> #true := t. *)
+(* TODO: This doesn't terminate...?
+Example testConversions_ok : testConversions #() ~~> #true := t. *)
 Example testShortcircuitAndTF_ok : testShortcircuitAndTF #() ~~> #true := t.
 Example testShortcircuitAndFT_ok : testShortcircuitAndFT #() ~~> #true := t.
 Example testShortcircuitOrTF_ok : testShortcircuitOrTF #() ~~> #true := t.

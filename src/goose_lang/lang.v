@@ -847,7 +847,7 @@ Definition bin_op_eval_word (op : bin_op) {width} {word: Interface.word width} (
 
 Definition bin_op_eval_compare (op : bin_op) {width} {word: Interface.word width} (n1 n2 : word) : option bool :=
   match op with
-  | LeOp => Some $ word.ltu n1 n2
+  | LeOp => Some $ (orb (word.ltu n1 n2) (word.eqb n1 n2))
   | LtOp => Some $ word.ltu n1 n2
   | EqOp => Some $ word.eqb n1 n2
   | _ => None

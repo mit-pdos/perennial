@@ -133,7 +133,7 @@ Proof.
 Qed.
 
 Definition SliceTake: val :=
-  λ: "s" "n", if: slice.len "s" ≤ "n"
+  λ: "s" "n", if: slice.len "s" < "n"
               then Panic "slice index out-of-bounds"
               else (slice.ptr "s", "n").
 
@@ -146,7 +146,7 @@ Definition SliceSubslice t: val :=
   λ: "s" "n1" "n2",
   if: "n2" < "n1"
   then Panic "slice indices out of order"
-  else if: slice.len "s" ≤ "n2" - "n1"
+  else if: slice.len "s" < "n2" - "n1"
        then Panic "slice index out-of-bounds"
        else (slice.ptr "s" +ₗ[t] "n1", "n2" - "n1").
 
