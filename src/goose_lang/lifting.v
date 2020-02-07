@@ -93,9 +93,13 @@ End StructMapsto.
 
 Ltac val_ty :=
   lazymatch goal with
+  | |- val_ty (zero_val _) _ => apply zero_val_ty'
+  | [ H: val_ty ?v ?t |- val_ty ?v ?t ] => exact H
   | |- val_ty _ _ => solve [ repeat constructor ]
   | _ => fail "not a val_ty goal"
   end.
+
+Hint Extern 2 (val_ty _ _) => val_ty : core.
 
 Notation "l ↦[ ty ]{ q } v" := (struct_mapsto l q ty v%V)
                                   (at level 20, q at level 50, ty at level 50,

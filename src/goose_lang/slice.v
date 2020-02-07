@@ -12,11 +12,12 @@ Open Scope heap_types.
 Module slice.
   Section types.
     Context `{ext_ty: ext_types}.
-    Definition S t := mkStruct ["p" :: refT t; "len" :: uint64T].
-    Definition T t : ty := arrayT t * uint64T.
+    Definition S t := mkStruct ["p" :: refT t; "len" :: uint64T; "cap" :: uint64T].
+    Definition T t : ty := (arrayT t * uint64T * uint64T)%ht.
 
-    Definition ptr: val := λ: "s", Fst (Var "s").
-    Definition len: val := λ: "s", Snd (Var "s").
+    Definition ptr: val := λ: "s", Fst (Fst (Var "s")).
+    Definition len: val := λ: "s", Snd (Fst (Var "s")).
+    Definition cap: val := λ: "s", Snd (Var "s").
 
     Theorem ptr_t t : ⊢ ptr : (T t -> arrayT t).
     Proof.
@@ -27,7 +28,7 @@ Module slice.
       typecheck.
     Qed.
 
-    Definition nil : val := (#null, #0).
+    Definition nil : val := (#null, #0, #0).
     Theorem nil_t t : ⊢ nil : T t.
     Proof.
       typecheck.
@@ -52,18 +53,27 @@ Section goose_lang.
 Definition ref_to (t:ty): val := λ: "v", Alloc "v".
 
 Definition raw_slice (t: ty): val :=
-  λ: "p" "sz", ("p", "sz").
+  λ: "p" "sz",
+  ("p", "sz", "sz").
 
 Theorem raw_slice_t t : ⊢ raw_slice t : (arrayT t -> uint64T -> slice.T t).
 Proof.
   typecheck.
 Qed.
 
+Definition make_cap: val :=
+  λ: "sz",
+  let: "extra" := ArbitraryInt in
+  (* check for overflow *)
+  if: "sz" + "extra" ≥ "sz"
+  then "sz" + "extra" else "sz".
+
 Definition NewSlice (t: ty): val :=
   λ: "sz",
-  if: "sz" = #0 then (#null, #0)
-  else let: "p" := AllocN "sz" (zero_val t) in
-       ("p", "sz").
+  if: "sz" = #0 then slice.nil
+  else let: "cap" := make_cap "sz" in
+       let: "p" := AllocN "cap" (zero_val t) in
+       (Var "p", Var "sz", Var "cap").
 
 Theorem NewSlice_t t : ⊢ NewSlice t : (uint64T -> slice.T t).
 Proof.
@@ -73,7 +83,7 @@ Qed.
 Definition SliceSingleton: val :=
   λ: "x",
   let: "p" := AllocN #1 "x" in
-  ("p", #1).
+  ("p", #1, #1).
 
 Theorem SliceSingleton_t t : ⊢ SliceSingleton : (t -> slice.T t).
 Proof.
@@ -125,7 +135,7 @@ Qed.
 (* TODO: it would be nice if we could panic in the model if this goes
 out-of-bounds, but it seems we need to unfold the definition to use it *)
 Definition SliceSkip t: val :=
-  λ: "s" "n", (slice.ptr "s" +ₗ[t] "n", slice.len "s" - "n").
+  λ: "s" "n", (slice.ptr "s" +ₗ[t] "n", slice.len "s" - "n", slice.cap "s" - "n").
 
 Theorem SliceSkip_t t : ⊢ SliceSkip t : (slice.T t -> uint64T -> slice.T t).
 Proof.
@@ -135,7 +145,9 @@ Qed.
 Definition SliceTake: val :=
   λ: "s" "n", if: slice.len "s" < "n"
               then Panic "slice index out-of-bounds"
-              else (slice.ptr "s", "n").
+              else
+                (* TODO: could this have extra capacity? *)
+                (slice.ptr "s", "n", "n").
 
 Theorem SliceTake_t t : ⊢ SliceTake : (slice.T t -> uint64T -> slice.T t).
 Proof.
@@ -148,7 +160,7 @@ Definition SliceSubslice t: val :=
   then Panic "slice indices out of order"
   else if: slice.len "s" < "n2" - "n1"
        then Panic "slice index out-of-bounds"
-       else (slice.ptr "s" +ₗ[t] "n1", "n2" - "n1").
+       else (slice.ptr "s" +ₗ[t] "n1", "n2" - "n1", "n2" - "n1").
 
 Theorem SliceSubslice_t t : ⊢ SliceSubslice t : (slice.T t -> uint64T -> uint64T -> slice.T t).
 Proof.
@@ -184,16 +196,25 @@ Qed.
 
 Definition SliceAppend t: val :=
   λ: "s1" "x",
-  let: "p" := AllocN (slice.len "s1" + #1) (zero_val t) in
-  MemCpy_rec t "p" (slice.ptr "s1") (slice.len "s1");;
-  store_ty t ("p" +ₗ[t] slice.len "s1") "x";;
-  (* TODO: unsound, need to de-allocate s1.p *)
-  ("p", slice.len "s1" + #1).
+  let: "sz" := slice.len "s1" + #1 in
+  if: slice.cap "s1" - slice.len "s1" ≥ #1 then
+    (* re-use existing capacity *)
+    let: "p" := slice.ptr "s1" in
+    store_ty t ("p" +ₗ[t] slice.len "s1") "x";;
+    ("p", "sz", slice.cap "s1")
+  else
+    (* non-deterministically grow and copy *)
+    let: "cap" := make_cap "sz" in
+    let: "p" := AllocN "cap" (zero_val t) in
+    MemCpy_rec t "p" (slice.ptr "s1") (slice.len "s1");;
+    store_ty t ("p" +ₗ[t] slice.len "s1") "x";;
+    ("p", "sz", "cap").
 
 Theorem SliceAppend_t t : ⊢ SliceAppend t : (slice.T t -> t -> slice.T t).
 Proof.
 Admitted.
 
+(* TODO: update to handle capacity correctly *)
 Definition SliceAppendSlice t: val :=
   λ: "s1" "s2",
   let: "new_sz" := slice.len "s1" + slice.len "s2" in
@@ -202,10 +223,6 @@ Definition SliceAppendSlice t: val :=
   MemCpy_rec t ("p" +ₗ slice.len "s2") (slice.ptr "s2") "new_sz";;
   (* TODO: unsound, need to de-allocate s1.p *)
   ("p", "new_sz").
-
-Theorem SliceAppendSlice_t t : ⊢ SliceAppendSlice t : (slice.T t -> slice.T t -> slice.T t).
-Proof.
-Admitted.
 
 Definition zero_array (t:ty): val :=
   λ: "sz", AllocN "sz" (zero_val t).
@@ -250,5 +267,5 @@ Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.
 
 Hint Resolve raw_slice_t NewSlice_t
      SliceTake_t SliceSkip_t SliceSubslice_t (* SliceGet_t SliceSet_t *)
-     SliceAppend_t SliceAppendSlice_t : types.
+     SliceAppend_t : types.
 Hint Resolve zero_array_t (* ArrayCopy_t *) : types.
