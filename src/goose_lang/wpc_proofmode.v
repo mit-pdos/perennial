@@ -157,11 +157,12 @@ Tactic Notation "wpc_if_destruct" :=
   | |- envs_entails _ (wpc _ _ _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _ _) =>
     destruct cond eqn:?;
              repeat match goal with
-                    | [ H: context[(word.ltu ?x ?y)] |- _ ] => rewrite (word.unsigned_ltu x y) in H
                     | [ H: (?x <? ?y)%Z = true |- _ ] => apply Z.ltb_lt in H
                     | [ H: (?x <? ?y)%Z = false |- _ ] => apply Z.ltb_ge in H
                     | [ H: (?x <=? ?y)%Z = true |- _ ] => apply Z.leb_le in H
                     | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
+                    | [ H: bool_decide _ = true |- _ ] => apply bool_decide_eq_true_1 in H
+                    | [ H: bool_decide _ = false |- _ ] => apply bool_decide_eq_false_1 in H
                     end
   end.
 
