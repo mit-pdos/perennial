@@ -115,7 +115,6 @@ Tactic Notation "wp_if_destruct" :=
   | |- envs_entails _ (wp _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _) =>
     destruct cond eqn:?;
     repeat match goal with
-           | [ H: context[(word.ltu ?x ?y)] |- _ ] => rewrite (word.unsigned_ltu x y) in H
            | [ H: (?x <? ?y)%Z = true |- _ ] => apply Z.ltb_lt in H
            | [ H: (?x <? ?y)%Z = false |- _ ] => apply Z.ltb_ge in H
            | [ H: (?x <=? ?y)%Z = true |- _ ] => apply Z.leb_le in H

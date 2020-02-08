@@ -19,12 +19,6 @@ Hint Resolve width64_ok width32_ok width8_ok : typeclass_instances.
 
 Opaque Naive.word.
 
-(* this instance is named u64 because we always refer to the type as u64.(rep),
-where the rep is implicitly inserted since it's a word >-> Sortclass
-coercion.
-
-(and the same for u32 and u8)
- *)
 
 Module u64_instance.
   Import Interface.word.

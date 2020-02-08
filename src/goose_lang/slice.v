@@ -65,7 +65,7 @@ Definition make_cap: val :=
   λ: "sz",
   let: "extra" := ArbitraryInt in
   (* check for overflow *)
-  if: "sz" + "extra" ≥ "sz"
+  if: "sz" + "extra" > "sz"
   then "sz" + "extra" else "sz".
 
 Definition NewSlice (t: ty): val :=
