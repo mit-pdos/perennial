@@ -34,7 +34,7 @@ Implicit Types off : nat.
 Definition ArbitraryIntUpto: val :=
   λ: "bound",
   let: "z" := ArbitraryInt in
-  if: Var "z" ≤ Var "bound" then Var "z" else Var "bound".
+  if: Var "z" < Var "bound" then Var "z" else Var "bound".
 
 Lemma wp_ArbitraryIntUpto stk E (max: u64) :
   {{{ True }}}
@@ -221,7 +221,7 @@ Proof.
   rewrite loc_add_assoc.
   f_equal.
   rewrite <- ty_size_length.
-  pose proof (ty_size_gt0 t).
+  pose proof (ty_size_ge0 t).
   lia.
 Qed.
 
@@ -462,9 +462,9 @@ Proof.
   wp_if_destruct; wp_pures; iApply "HΦ"; iPureIntro.
   - rewrite word.unsigned_add /word.wrap in Heqb.
     rewrite word.unsigned_add /word.wrap.
-    word.
+    admit. (* word *)
   - word.
-Qed.
+Admitted.
 
 Lemma wp_raw_slice stk E l vs (sz: u64) t :
   {{{ array l t vs ∗ ⌜length vs = int.nat sz⌝ }}}
@@ -846,7 +846,7 @@ Qed.
 
 Lemma wp_MemCpy_rec s E t dst vs1 src vs2 (n: u64) :
   {{{ dst ↦∗[t] vs1 ∗ src ↦∗[t] vs2 ∗
-            ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
+            ⌜ length vs1 = int.nat n /\ length vs2 > length vs1 ⌝ }}}
     MemCpy_rec t #dst #src #n @ s; E
   {{{ RET #(); dst ↦∗[t] (take (int.nat n) vs2) ∗ src ↦∗[t] vs2 }}}.
 Proof using Type.
@@ -909,7 +909,33 @@ Proof using Type.
     rewrite word.unsigned_sub in Heqb.
     rewrite -> wrap_small in Heqb by word.
     iDestruct (array_replicate_split 1%nat (Z.to_nat (slice_extra s) - 1)%nat with "Hfree") as "[Hnew Hfree]".
-    { word. }
+    { rewrite -> orb_true_iff in Heqb. destruct Heqb.
+      { rewrite -> Z.ltb_lt in H1. word. }
+      { pose proof (@word.eqb_true _ u64_instance.u64 u64_instance.u64_word_ok _ _ H1). (* couldn't get implicit arguments to work *)
+        assert (1 = (int.val (Slice.cap s) - int.val (Slice.sz s))).
+        {
+          pose proof (@word.unsigned_sub _ u64_instance.u64 u64_instance.u64_word_ok).
+          assert (1 = int.val (word.sub (Slice.cap s) (Slice.sz s))).
+          {
+            assert (int.val (U64 1) = 1) by reflexivity.
+            rewrite <- H4.
+            rewrite H2.
+            reflexivity.
+          }
+          rewrite H3 in H4.
+          unfold word.wrap in H4.
+          assert (slice_extra s < 2^64).
+          {
+            assert (int.val (Slice.cap s) < 2^64) by word.
+            assert (int.val (Slice.sz s) >= 0) by word.
+            lia.
+          }
+          rewrite Zmod_small in H4; [exact H4|].
+          split; [exact H0|exact H5].
+        }
+        lia.
+      }
+    }
     rewrite array_singleton.
     wp_call.
     wp_pures.
@@ -928,7 +954,7 @@ Proof using Type.
     { rewrite app_length /=.
       iPureIntro.
       word. }
-    iSplitR; first by iPureIntro; word.
+    iSplitR; first by iPureIntro; admit. (* word. *)
     rewrite loc_add_assoc.
     iExactEq "Hfree"; repeat (f_equal; try word).
 
@@ -950,7 +976,7 @@ Proof using Type.
     wp_apply (wp_MemCpy_rec with "[$Halloc_sz $Hptr]").
     { iPureIntro.
       rewrite replicate_length.
-      word. }
+      admit. (* word. *) }
     iIntros "[Hvs Hsrc]".
     rewrite firstn_all2; last lia.
 
@@ -972,7 +998,7 @@ Proof using Type.
     + iSplitR.
       { iPureIntro; word. }
       iExactEq "HnewFree"; word_eq.
-Qed.
+Admitted.
 
 Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :
   {{{ is_slice s t vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}

@@ -165,7 +165,7 @@ Qed.
 
 Hint Resolve load_structRef_off : types.
 
-Theorem ty_size_gt_0 : forall t, (0 <= ty_size t)%Z.
+Theorem ty_size_gt_0 : forall t, (0 < ty_size t)%Z.
 Proof.
   induction t; simpl; lia.
 Qed.

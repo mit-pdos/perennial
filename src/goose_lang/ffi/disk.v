@@ -376,7 +376,7 @@ lemmas. *)
   Proof. by rewrite /disk_array. Qed.
 
   Theorem disk_array_split l q z vs :
-    0 <= z <= Z.of_nat (length vs) ->
+    0 <= z < Z.of_nat (length vs) ->
     disk_array l q vs ⊣⊢
                disk_array l q (take (Z.to_nat z) vs) ∗
                disk_array (l + z) q (drop (Z.to_nat z) vs).

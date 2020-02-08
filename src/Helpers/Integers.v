@@ -458,11 +458,13 @@ Ltac word_cleanup :=
          | [ |- context[int.val ?x] ] =>
            lazymatch goal with
            | [ H': 0 <= int.val x < 2^64 |- _ ] => fail
+           | [ H': 0 <= int.val x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
          | [ H: context[int.val ?x] |- _ ] =>
            lazymatch goal with
            | [ H': 0 <= int.val x < 2^64 |- _ ] => fail
+           | [ H': 0 <= int.val x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
          end;
