@@ -15,7 +15,6 @@ Theorem wp_Min_l stk E (n m: u64) Φ :
 Proof.
   iIntros (Hlt) "HΦ".
   wp_call.
-  rewrite word.unsigned_ltu.
   wp_if_destruct.
   - iFrame.
   - assert (int.val n = int.val m) by word.
@@ -29,7 +28,6 @@ Theorem wp_Min_r stk E (n m: u64) Φ :
 Proof.
   iIntros (Hlt) "HΦ".
   wp_call.
-  rewrite word.unsigned_ltu.
   wp_if_destruct.
   - assert (int.val n = int.val m) by word.
     apply word.unsigned_inj in H; subst.
