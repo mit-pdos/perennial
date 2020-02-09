@@ -128,7 +128,9 @@ Notation "l ↦[ ty ] v" := (struct_mapsto l 1 ty v%V)
 Class ffi_interp (ffi: ffi_model) :=
   { ffiG: gFunctors -> Set;
     ffi_names : Set;
+    ffi_get_names : ∀ Σ, ffiG Σ → ffi_names;
     ffi_update : ∀ Σ, ffiG Σ → ffi_names → ffiG Σ;
+    ffi_get_update: ∀ Σ hF, ffi_update Σ hF (ffi_get_names _ hF) = hF;
     ffi_ctx: forall `{ffiG Σ}, ffi_state -> iProp Σ; }.
 
 Arguments ffi_ctx {ffi FfiInterp Σ} fG : rename.
@@ -229,6 +231,16 @@ Record heap_names := {
   heap_trace_names : tr_names;
 }.
 
+Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
+  {| heapG_invG := heapG_invG;
+     heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
+     heapG_gen_heapG := gen_heapG_update (heapG_gen_heapG) (heap_heap_names names);
+     heapG_proph_mapG :=
+       {| proph_map_inG := proph_map_inG;
+          proph_map_name := (heap_proph_name names) |};
+     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
+ |}.
+
 Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (names: heap_names) :=
   {| heapG_invG := Hinv;
      heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
@@ -238,6 +250,20 @@ Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (names: heap_names) :=
           proph_map_name := (heap_proph_name names) |};
      heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
  |}.
+
+Definition heap_get_names Σ (hG : heapG Σ) : heap_names :=
+  {| heap_heap_names := gen_heapG_get_names (heapG_gen_heapG);
+     heap_proph_name := proph_map_name (heapG_proph_mapG);
+     heap_ffi_names := ffi_get_names Σ (heapG_ffiG);
+     heap_trace_names := trace_tr_names;
+ |}.
+
+Lemma heap_get_update Σ hG :
+  heap_update_names Σ hG (heap_get_names _ hG) = hG.
+Proof.
+  rewrite /heap_update_names/heap_get_names/gen_heapG_update/gen_heapG_get_names ffi_get_update //=.
+  destruct hG as [?? [] [] []]; eauto.
+Qed.
 
 Global Instance heapG_irisG `{!heapG Σ} :
   irisG heap_lang Σ := {
