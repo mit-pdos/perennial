@@ -229,8 +229,8 @@ Record heap_names := {
   heap_trace_names : tr_names;
 }.
 
-Definition heap_update Σ (hG : heapG Σ) (names: heap_names) :=
-  {| heapG_invG := heapG_invG;
+Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (names: heap_names) :=
+  {| heapG_invG := Hinv;
      heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
      heapG_gen_heapG := gen_heapG_update (heapG_gen_heapG) (heap_heap_names names);
      heapG_proph_mapG :=
