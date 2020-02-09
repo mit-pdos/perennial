@@ -6,6 +6,7 @@ From iris.base_logic.lib Require Export proph_map.
 From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import ectx_lifting total_ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
+From Perennial.algebra Require Import gen_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import tactics notation map.
 From Perennial.goose_lang Require Import typing.
@@ -139,19 +140,25 @@ Section goose_lang.
 
 Definition traceO := leibnizO (list event).
 Definition OracleO := leibnizO (Oracle).
+
+Record tr_names := {
+  trace_name : gname;
+  oracle_name : gname;
+}.
+
 Class traceG (Σ: gFunctors) := {
   trace_inG :> inG Σ (authR (optionUR (exclR traceO)));
   oracle_inG :> inG Σ (authR (optionUR (exclR OracleO)));
-  trace_name : gname;
-  oracle_name : gname
+  trace_tr_names : tr_names;
 }.
-Arguments trace_name {_} _.
-Arguments oracle_name {_} _.
 
 Class trace_preG (Σ: gFunctors) := {
   trace_preG_inG :> inG Σ (authR (optionUR (exclR traceO)));
   oracle_preG_inG :> inG Σ (authR (optionUR (exclR OracleO)));
 }.
+
+Definition traceG_update (Σ: gFunctors) (hT: traceG Σ) (names: tr_names) :=
+  {| trace_inG := trace_inG; oracle_inG := oracle_inG; trace_tr_names := names |}.
 
 Definition traceΣ : gFunctors :=
   #[GFunctor (authR (optionUR (exclR traceO)));
@@ -161,13 +168,13 @@ Global Instance subG_crashG {Σ} : subG traceΣ Σ → trace_preG Σ.
 Proof using Type. solve_inG. Qed.
 
 Definition trace_auth `{hT: traceG Σ} (l: Trace) :=
-  own (trace_name hT) (● (Excl' (l: traceO))).
+  own (trace_name (trace_tr_names)) (● (Excl' (l: traceO))).
 Definition trace_frag `{hT: traceG Σ} (l: Trace) :=
-  own (trace_name hT) (◯ (Excl' (l: traceO))).
+  own (trace_name (trace_tr_names)) (◯ (Excl' (l: traceO))).
 Definition oracle_auth `{hT: traceG Σ} (o: Oracle) :=
-  own (oracle_name hT) (● (Excl' (o: OracleO))).
+  own (oracle_name (trace_tr_names)) (● (Excl' (o: OracleO))).
 Definition oracle_frag `{hT: traceG Σ} (o: Oracle) :=
-  own (oracle_name hT) (◯ (Excl' (o: OracleO))).
+  own (oracle_name (trace_tr_names)) (◯ (Excl' (o: OracleO))).
 
 Lemma trace_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
   (|==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o)%I.
@@ -176,7 +183,7 @@ Proof using Type.
   { apply auth_both_valid; split; eauto. econstructor. }
   iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
   { apply auth_both_valid; split; eauto. econstructor. }
-  iModIntro. iExists {| trace_name := γ; oracle_name := γ' |}. iFrame.
+  iModIntro. iExists {| trace_tr_names := {| trace_name := γ; oracle_name := γ' |} |}. iFrame.
 Qed.
 
 Lemma trace_update `{hT: traceG Σ} (l: Trace) (x: event):
@@ -211,9 +218,26 @@ Class heapG Σ := HeapG {
   heapG_ffiG : ffiG Σ;
   heapG_gen_heapG :> gen_heapG loc (nonAtomic val) Σ;
   heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
-  heapG_oracleG :> proph_mapG proph_id (val * val) Σ;
   heapG_traceG :> traceG Σ;
 }.
+
+(* The word 'heap' is really overloaded... *)
+Record heap_names := {
+  heap_heap_names : gen_heap_names;
+  heap_proph_name : gname;
+  heap_ffi_names : ffi_names;
+  heap_trace_names : tr_names;
+}.
+
+Definition heap_update Σ (hG : heapG Σ) (names: heap_names) :=
+  {| heapG_invG := heapG_invG;
+     heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
+     heapG_gen_heapG := gen_heapG_update (heapG_gen_heapG) (heap_heap_names names);
+     heapG_proph_mapG :=
+       {| proph_map_inG := proph_map_inG;
+          proph_map_name := (heap_proph_name names) |};
+     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
+ |}.
 
 Global Instance heapG_irisG `{!heapG Σ} :
   irisG heap_lang Σ := {

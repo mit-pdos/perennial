@@ -69,5 +69,5 @@ Proof.
   iModIntro. iExists
     (λ σ κs, (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx HffiG σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
     (λ _, True%I).
-  iFrame. by iApply (Hwp (HeapG _ _ HffiG _ _ _ HtraceG) with "[$] [$]").
+  iFrame. by iApply (Hwp (HeapG _ _ HffiG _ _ HtraceG) with "[$] [$]").
 Qed.
