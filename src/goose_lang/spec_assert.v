@@ -46,6 +46,7 @@ Class refinement_heapG Σ := refinement_HeapG {
    *)
 }.
 
+Section go_spec_definitions.
 Context {Σ: gFunctors}.
 Context {hR: refinement_heapG Σ}.
 Context `{invG Σ}.
@@ -163,5 +164,53 @@ Qed.
 *)
 
 End go_ghost_step.
-
+End go_spec_definitions.
 End go_refinement.
+
+Notation "l s↦{ q } v" := (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l q v%V)
+  (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
+Notation "l s↦ v" :=
+  (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l 1 v%V) (at level 20) : bi_scope.
+Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
+  (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
+Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
+
+Section resolution_test.
+Context {ext: ext_op}.
+Context {ffi: ffi_model}.
+Context {ffi_semantics: ext_semantics ext ffi}.
+Context `{!ffi_interp ffi}.
+Context {spec_ext: spec_ext_op}.
+Context {spec_ffi: spec_ffi_model}.
+Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
+Context `{!spec_ffi_interp spec_ffi}.
+Context {Σ: gFunctors}.
+Context {hG: heapG Σ}.
+Context {hR: refinement_heapG Σ}.
+Set Printing Implicit.
+
+Lemma test_resolution1 l v :
+  l ↦ Free v -∗ (mapsto (hG := heapG_gen_heapG) l 1 (Free v)).
+Proof using Type.
+  iIntros "H". eauto.
+Qed.
+
+Lemma test_resolution2 l v :
+  l s↦ Free v -∗ (mapsto (hG := refinement_gen_heapG) l 1 (Free v)).
+Proof using Type.
+  iIntros "H". eauto.
+Qed.
+
+Lemma test_resolution3 l v :
+  l ↦ Free v -∗ (mapsto l 1 (Free v)).
+Proof using Type.
+  iIntros "H". eauto.
+Qed.
+
+Lemma test_resolution4 l v :
+  l s↦ Free v -∗ (mapsto l 1 (Free v)).
+Proof using Type.
+  iIntros "H". eauto.
+Qed.
+
+End resolution_test.
