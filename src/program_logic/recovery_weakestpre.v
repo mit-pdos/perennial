@@ -8,7 +8,6 @@ Import uPred.
 
 Class pbundleG (T: ofeT) (Σ: gFunctors) := {
   pbundleT : T;
-  pbundleT_fixed : Set;
 }.
 
 Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofeT) (Σ : gFunctors) := PerennialG {

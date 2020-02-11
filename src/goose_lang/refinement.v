@@ -7,14 +7,14 @@ From Perennial.goose_lang Require Import tactics notation map lifting.
 
 Section go_refinement.
   (* Records defining spec language extensions *)
-  Context (spec_op: ext_op).
-  Context (spec_ffi: ffi_model).
-  Context (spec_semantics: ext_semantics spec_op spec_ffi).
+  Context {spec_op: ext_op}.
+  Context {spec_ffi: ffi_model}.
+  Context {spec_semantics: ext_semantics spec_op spec_ffi}.
 
   (* Records for the target language *)
-  Context (impl_op: ext_op).
-  Context (impl_ffi: ffi_model).
-  Context (impl_semantics: ext_semantics impl_op impl_ffi).
+  Context {impl_op: ext_op}.
+  Context {impl_ffi: ffi_model}.
+  Context {impl_semantics: ext_semantics impl_op impl_ffi}.
 
   Notation sexpr := (@expr spec_op).
   Notation sstate := (@state spec_op spec_ffi).
@@ -32,8 +32,8 @@ Section go_refinement.
     @heap_crash_lang (impl_op) (impl_ffi) (impl_semantics).
 
   Definition trace_refines (e r: iexpr) (σ: istate) (e' r': sexpr) (σ': sstate) :=
-    @never_stuck spec_lang spec_crash_lang e' r' σ' →
-    @never_stuck impl_lang impl_crash_lang e r σ ∧
+    @crash_safe spec_lang spec_crash_lang r' ([e'], σ') →
+    @crash_safe impl_lang impl_crash_lang r ([e], σ) ∧
     (∀ tr, trace_observable e r σ tr → ∃ tr', trace_observable e' r' σ' tr' ∧ trace_prefix tr tr').
 
 End go_refinement.

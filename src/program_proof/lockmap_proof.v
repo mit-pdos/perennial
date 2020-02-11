@@ -13,6 +13,11 @@ Ltac word := try lazymatch goal with
 
 Ltac len := autorewrite with len; try word.
 
+Locate "[∗".
+Search _ loc_add.
+Print big_sepM2.
+Print big_sepM2_aux.
+Print big_sepM2_def.
 
 Section heap.
 Context `{!heapG Σ} `{!lockG Σ}.

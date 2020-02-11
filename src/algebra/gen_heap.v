@@ -21,5 +21,9 @@ Section gen_heap_defs.
              (gen_heap_heap_name names)
              (gen_heap_meta_name names).
 
+  Definition gen_heapG_get_names {Σ} (hG: gen_heapG L V Σ) : gen_heap_names :=
+    {| gen_heap_heap_name := gen_heap_name hG;
+       gen_heap_meta_name := gen_meta_name hG |}.
+
 End gen_heap_defs.
 

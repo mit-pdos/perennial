@@ -157,12 +157,15 @@ Section disk.
     { ext_step := ext_step;
       ext_crash := eq; }.
 
-  Instance disk_interp: ffi_interp disk_model :=
+  Program Instance disk_interp: ffi_interp disk_model :=
     {| ffiG := diskG;
        ffi_names := gen_heap_names;
+       ffi_get_names := fun _ hD => gen_heapG_get_names (diskG_gen_heapG);
        ffi_update := fun _ hD names =>
                        {| diskG_gen_heapG := gen_heapG_update (@diskG_gen_heapG _ hD) names |};
+       ffi_get_update := fun _ _ => _;
        ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap_ctx d; |}.
+  Next Obligation. intros ? [[]] => //=. Qed.
 
   Section proof.
   Context `{!heapG Σ}.

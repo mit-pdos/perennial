@@ -24,7 +24,9 @@ typeclass resolution, which is the one thing solve_inG tries. *)
 Existing Class ffi_preG.
 Hint Resolve subG_ffiPreG : typeclass_instances.
 
-Class heapPreG `{ext: ext_op} `{ffi_interp_adequacy} Σ := HeapPreG {
+Class heapPreG `{ext: ext_op} `{EXT_SEM: !ext_semantics ext ffi}
+      `{INTERP: !ffi_interp ffi} {ADEQ: ffi_interp_adequacy} Σ
+  := HeapPreG {
   heap_preG_iris :> invPreG Σ;
   heap_preG_heap :> gen_heapPreG loc (nonAtomic val) Σ;
   heap_preG_proph :> proph_mapPreG proph_id (val * val) Σ;
@@ -69,5 +71,5 @@ Proof.
   iModIntro. iExists
     (λ σ κs, (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx HffiG σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
     (λ _, True%I).
-  iFrame. by iApply (Hwp (HeapG _ _ HffiG _ _ _ HtraceG) with "[$] [$]").
+  iFrame. by iApply (Hwp (HeapG _ _ HffiG _ _ HtraceG) with "[$] [$]").
 Qed.

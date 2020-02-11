@@ -128,9 +128,9 @@ Section crash_language.
     - intros. rewrite app_comm_cons. econstructor; eauto.
   Qed.
 
-  Definition never_stuck (e1 r1: expr Λ) (σ1: state Λ) :=
-    (∀ e2 σ2 t2 stat, erased_rsteps r1 ([e1], σ1) (t2, σ2) stat →
-      e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2)).
+  Definition crash_safe r (ρ: cfg Λ) :=
+    ∀ t2 σ2 e2 s, erased_rsteps r ρ (t2, σ2) s →
+                  e2 ∈ t2 → not_stuck e2 σ2.
 
   Lemma nrsteps_normal_empty_prefix r ns n ρ1 κ ρ2:
     nrsteps r (ns ++ [n]) ρ1 κ ρ2 Normal →

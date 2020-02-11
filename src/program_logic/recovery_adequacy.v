@@ -6,6 +6,8 @@ From Perennial.program_logic Require Export staged_invariant crash_lang recovery
 From Perennial.program_logic Require Import crash_adequacy.
 Import uPred.
 
+Set Default Proof Using "Type".
+
 Section recovery_adequacy.
 Context `{!perennialG Λ CS T Σ}.
 Implicit Types s : stuckness.
