@@ -390,6 +390,71 @@ Proof using Type.
   iApply "HΦ". iApply ("Hl2" with "Hl1").
 Qed.
 
+Fixpoint getValField_fs (fs:list (string*ty)) (f0:string) (v:val) : option (val*ty) :=
+  match fs with
+  | nil => None
+  | (f, t) :: nil => if String.eqb f f0 then Some (v, t) else None
+  | (f, t) :: fs =>  match v with
+                   | PairV v1 v2 =>
+                     if String.eqb f f0
+                     then Some (v1, t)
+                     else getValField_fs fs f0 v2
+                   | _ => None (* v is ill-typed *)
+                   end
+  end.
+
+Definition getValField (d:descriptor) (f:string) (v:val) : option (val*ty) :=
+  getValField_fs d.(fields) f v.
+
+Theorem getValField_wt d f v :
+  val_ty v (struct.t d) ->
+  forall z t, field_offset d.(fields) f = Some (z, t) ->
+         exists fv, getValField d f v = Some (fv, t) /\
+               val_ty fv t.
+Proof.
+  rewrite /getValField.
+  rewrite /struct.t.
+  rename f into f0.
+  destruct d as [fs].
+  destruct fs as [|(f&t) fs].
+  { cbn; intros; congruence. }
+  cbn [fields struct_ty_prod snd].
+  generalize dependent f.
+  generalize dependent t.
+  generalize dependent v.
+  induction fs.
+  - cbn; intros.
+    destruct (String.eqb_spec f f0); inversion H0; subst; clear H0.
+    eexists; eauto.
+  - intros v t f.
+    cbn [struct_ty_aux snd].
+Abort.
+
+Fixpoint setValField_fs (fs:list (string*ty)) (f0:string) (v:val) (fv':val) : option val :=
+  match fs with
+  | nil => None
+  | (f, t) :: nil => if String.eqb f f0 then Some fv' else None
+  | (f, t) :: fs =>  match v with
+                   | PairV v1 v2 =>
+                     if String.eqb f f0
+                     then Some (fv', v2)%V
+                     else (fun v2' => (v1, v2')%V) <$> setValField_fs fs f0 v2 fv'
+                   | _ => None (* v is ill-typed *)
+                   end
+  end.
+
+Definition setValField (d:descriptor) (f:string) (v:val) (fv':val) : option val :=
+  setValField_fs d.(fields) f v fv'.
+
+Theorem setValField_wt d f v fv' :
+  val_ty v (struct.t d) ->
+  forall z t, field_offset d.(fields) f = Some (z, t) ->
+         val_ty fv' t ->
+         exists v', setValField d f v fv' = Some v' /\
+               val_ty v' (struct.t d).
+Proof.
+Abort.
+
 (*
 Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :
   {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ vinsert off v vs }}}.
