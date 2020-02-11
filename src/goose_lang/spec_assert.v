@@ -192,7 +192,9 @@ Context {hG: heapG Σ}.
 Context {hR: refinement_heapG Σ}.
 
 Definition trace_inv : iProp Σ :=
-  (∃ tr trs or ors, trace_frag (hT := heapG_traceG) tr ∗
+  (∃ tr trs or ors, ⌜ tr = trs ⌝ ∗
+                    ⌜ or = ors ⌝ ∗
+                    trace_frag (hT := heapG_traceG) tr ∗
                     trace_frag (hT := refinement_traceG) trs ∗
                     oracle_frag (hT := heapG_traceG) or ∗
                     oracle_frag (hT := refinement_traceG) ors).

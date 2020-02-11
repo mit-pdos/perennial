@@ -61,8 +61,39 @@ Proof.
   { iNext. iExists _. iFrame. }
   rewrite /trace_ctx.
   iMod (inv_alloc (spec_traceN) _ trace_inv with "[-]") as "$".
-  { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame. }
+  { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
   done.
+Qed.
+
+Lemma trace_inv_open {hG: heapG Σ} {hrG: refinement_heapG Σ}  rs es σs σ:
+  spec_ctx' rs ([es], σs) -∗
+  trace_ctx -∗
+  trace_auth (trace σ) -∗
+  oracle_auth (oracle σ) -∗
+  |={⊤,∅}=> ⌜∃ (t2s : list expr) (σ2s : state) (stats : status),
+            erased_rsteps (CS := spec_crash_lang) rs ([es], σs) (t2s, σ2s) stats ∧ trace σ2s = trace σ⌝.
+Proof.
+  iIntros "Hspec Htrace Htrace_auth Horacle_auth".
+  rewrite /spec_ctx'.
+  iDestruct "Hspec" as "(Hsource&Hspec_state)".
+  iInv "Hsource" as "Hsource_open" "_".
+  iInv "Hspec_state" as "Hspec_state_open" "_".
+  iInv "Htrace" as ">Htrace_open" "_".
+  rewrite /source_inv.
+  iDestruct "Hsource_open" as (???) "(>Hsource_auth&>(%&%))".
+  iDestruct "Hspec_state_open" as (?) "(>Hsource_state&Hspec_interp)".
+  iDestruct "Hspec_interp" as "(?&?&>Hspec_trace_auth&>Hspec_oracle_auth)".
+  rewrite /trace_inv.
+  iDestruct "Htrace_open" as (???? ??) "(Htrace_frag&Hspec_trace_frag&Horacle_frag&Htspec_oracle_frag)".
+  iDestruct (source_state_reconcile with "[$] [$]") as %Heq0.
+  iDestruct (trace_agree with "Htrace_auth [$]") as %Heq1.
+  iDestruct (trace_agree with "Hspec_trace_auth [$]") as %Heq2.
+  iDestruct (oracle_agree with "Horacle_auth [$]") as %Heq3.
+  iDestruct (oracle_agree with "Hspec_oracle_auth [$]") as %Heq4.
+  iApply fupd_mask_weaken; first by set_solver+.
+  iExists _, _, _; iPureIntro; split.
+  { eauto. }
+  { subst. congruence. }
 Qed.
 
 Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr Φinv :
@@ -74,7 +105,7 @@ Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr 
         trace_ctx -∗
        □ (∀ Hi t, Φinv Hi t -∗
                        let _ := heap_update _ Hheap Hi (@pbundleT _ _ t) in
-                       ∃ Href', spec_ctx' (hR := Href') rs ([es], σs) ∗ trace_inv (hR := Href')) ∗
+                       ∃ Href', spec_ctx' (hR := Href') rs ([es], σs) ∗ trace_ctx (hR := Href')) ∗
         ((O ⤇ es) -∗ wpr NotStuck k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝))))%I) →
   trace_refines e r σ es rs σs.
 Proof.
@@ -115,10 +146,13 @@ Proof.
   rewrite /heapG_ffiG//= ffi_get_update. iFrame.
   iModIntro. iSplit.
   - iAlways. iIntros (??) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
-    (* Open source inv, spec inv, and trace inv *)
-    admit.
-  - iAlways. iIntros.
-    (* etc. same proof, should do once as an assert. *)
-Abort.
+    iApply (trace_inv_open with "[$] [$] [$] [$]").
+  - iAlways. iIntros (Hi' Hnames') "Hinv".
+    iClear "Hspec Htrace".
+    iDestruct ("H1" with "[$]") as (?) "(#Hspec_ctx&#Htrace_ctx)".
+    iClear "H1". iAlways.
+    iIntros (??) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
+    iApply (@trace_inv_open (heap_update Σ hG _ (@pbundleT _ _ Hnames')) with "[$] [$] [$] [$]").
+Qed.
 
 End refinement.
