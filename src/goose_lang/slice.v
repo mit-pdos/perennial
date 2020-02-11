@@ -69,7 +69,7 @@ Definition make_cap: val :=
   then "sz" + "extra" else "sz".
 
 Definition NewSlice (t: ty): val :=
-  λ: "sz",
+  rec: "NewSlice" "sz" :=
   if: "sz" = #0 then slice.nil
   else let: "cap" := make_cap "sz" in
        let: "p" := AllocN "cap" (zero_val t) in

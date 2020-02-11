@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 (* comparisons.go *)
 
 Definition testCompareAll: val :=
-  λ: <>,
+  rec: "testCompareAll" <> :=
     let: "ok" := ref #true in
     let: "nok" := ref #false in
     "ok" <-[boolT] ![boolT] "ok" && #1 < #2;;
@@ -113,7 +113,7 @@ Module Enc.
 End Enc.
 
 Definition Enc__consume: val :=
-  λ: "e" "n",
+  rec: "Enc.consume" "e" "n" :=
     let: "b" := SliceTake (struct.loadF Enc.S "p" "e") "n" in
     struct.storeF Enc.S "p" "e" (SliceSkip byteT (struct.loadF Enc.S "p" "e") "n");;
     "b".
@@ -143,7 +143,7 @@ Definition roundtripEncDec32: val :=
     UInt32Get (Dec__consume "d" #4).
 
 Definition roundtripEncDec64: val :=
-  λ: "x",
+  rec: "roundtripEncDec64" "x" :=
     let: "r" := NewSlice byteT #8 in
     let: "e" := struct.new Enc.S [
       "p" ::= "r"
@@ -175,7 +175,7 @@ Definition testEncDec32: val :=
     ![boolT] "ok".
 
 Definition testEncDec64Simple: val :=
-  λ: <>,
+  rec: "testEncDec64Simple" <> :=
     let: "ok" := ref #true in
     "ok" <-[boolT] ![boolT] "ok" && (roundtripEncDec64 #0 = #0);;
     "ok" <-[boolT] ![boolT] "ok" && (roundtripEncDec64 #1 = #1);;

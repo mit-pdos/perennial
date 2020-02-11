@@ -305,7 +305,7 @@ Section interpreter.
           v1 <- interpret n e1;
           match v1 with
           | RecV (BNamed fname) y ex =>
-            _ <- mupdate (fun bts => (fst bts, [fname] ++ (snd bts)));
+            _ <- mupdate (fun bts => (fst bts, fname :: snd bts));
             let e3 := subst' y v2 (subst' (BNamed fname) v1 ex) in
             interpret n e3
           | RecV f y ex =>

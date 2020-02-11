@@ -38,7 +38,7 @@ Ltac test :=
 Notation t := ltac:(test) (only parsing).
 
 Definition runWithTrace (e: expr) : Error (val * list string) :=
-  (fun p => (fst p, snd (snd p))) <$> runStateT (interpret 100 e) startstate.
+  (fun p => (fst p, reverse $ snd (snd p))) <$> runStateT (interpret 100 e) startstate.
 
 (* these notations make vm_compute'd values more readable *)
 Notation U64_val z := {| u64_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
