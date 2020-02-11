@@ -197,40 +197,49 @@ Instance pretty_disk_op : Pretty DiskOp :=
         | SizeOp => "SizeOp"
         end.
 
+(* Not imported from interpreter.v? *)
+Instance statet_error_bind : MBind (StateT btstate Error) :=
+  StateT_bind Error Error_fmap Error_join Error_bind.
+Instance statet_error_ret : MRet (StateT btstate Error) :=
+  StateT_ret Error Error_ret.
+
 (* Single-step interpreter for external disk operations. *)
-Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT state Error expr :=
+Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr :=
   match (op, v) with
   | (ReadOp, (LitV (LitInt _))) =>
-    σ <- mget;
+    bts <- mget;
+      let σ := fst bts in
       t <- mlift (Transitions.interpret [] (ext_step ReadOp v) σ) "Transitions.interpret failed in ReadOp";
       match t with
-      | (hints, σ', v') => _ <- mput σ'; mret (Val v')
+      | (hints, σ', v') => _ <- mput (σ', snd bts); mret (Val v')
       end
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
-    σ <- mget;
+    bts <- mget;
+      let σ := fst bts in
       _ <- mlift (σ.(world) !! int.val a) ("Disk WriteOp failed: No block at write address " ++ (pretty a));
       b <- mlift (read_block_from_heap σ l) ("Disk WriteOp failed: Read from heap failed at location " ++ (pretty l));
-      _ <- mput (set world <[ int.val a := b ]> σ);
+      _ <- mput ((set world <[ int.val a := b ]> σ), snd bts);
       mret (Val $ LitV (LitUnit))
   | (SizeOp, LitV LitUnit) =>
-    σ <- mget;
+    bts <- mget;
+    let σ := fst bts in
       mret (Val $ LitV $ LitInt (U64 (disk_size σ.(world))))
   | _ => mfail ("DiskOp failed: Invalid argument types for " ++ (pretty op))
   end.
 
-Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state),
-    (runStateT (disk_interpret_step eop arg) σ = Works _ (result, σ')) ->
+Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state) (ws ws': btval),
+    (runStateT (disk_interpret_step eop arg) (σ, ws) = Works _ (result, (σ', ws'))) ->
     exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ').
 Proof.
-  intros eop arg result σ σ' H.
+  intros eop arg result σ σ' ws ws' H.
   destruct eop; [| inversion H | inversion H].
   { (* ReadOp *)
     unfold disk_interpret_step in H.
     destruct arg; try by inversion H.
     destruct l; try by inversion H.
-    assert (runStateT mget σ = Works _ (σ, σ)) by eauto.
+    assert (runStateT mget (σ, ws) = Works _ ((σ, ws), (σ, ws))) by eauto.
     rewrite (runStateT_Error_bind _ _ _ _ _ _ _ H0) in H.
-    destruct (Transitions.interpret [] (ext_step ReadOp #n) σ) eqn:interp_res; simpl in H; try by inversion H.
+    destruct (Transitions.interpret [] (ext_step ReadOp #n) (σ, ws).1) eqn:interp_res; simpl in H; try by inversion H.
     destruct p as ((l & s) & b).
     simpl in H.
     inversion H.

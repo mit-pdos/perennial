@@ -28,6 +28,41 @@ Instance Error_join : MJoin Error :=
 Instance Error_bind : MBind Error :=
   (fun _ _ f a => mjoin (f <$> a)).
 
+Inductive WriterT w M (A: Type) : Type :=
+| makeWriterT (maws : M (prod A (list w))) (* TODO: gset instead of list? *)
+.
+
+Definition runWriterT {w M A} (wa : WriterT w M A) : M (prod A (list w)) :=
+  match wa with
+  | makeWriterT _ _ _ maws => maws
+  end.
+
+Definition WriterT_ret {w} M (mr : MRet M) : MRet (WriterT w M) :=
+  (fun _ v => makeWriterT _ _ _ (mret (v, nil))).
+
+Definition WriterT_fmap {w} M (mf : FMap M) : FMap (WriterT w M) :=
+  (fun A B f => (fun wa => match wa with
+                 | makeWriterT _ _ _ maws =>
+                   makeWriterT _ _ _ $ fmap (fun p => (f (fst p), snd p)) maws
+                 end)).
+
+Definition WriterT_join {w} M (mf : FMap M) (mj : MJoin M) : MJoin (WriterT w M) :=
+  (fun A wtwta => match wtwta with
+             | makeWriterT _ _ _ mwtaws =>
+               makeWriterT _ _ _ $
+                           mjoin ((fun (p : (WriterT w M A * list w)) =>
+                                     match p with
+                                       | (makeWriterT _ _ _ maws, ws) =>
+                                         (fun (q : (A * list w)) =>
+                                            (fst q, snd q ++ ws)) <$> maws
+                                     end) <$> mwtaws)
+               end).
+
+Definition WriterT_bind {w} M (mf: FMap M) (mj: MJoin M) (mb: MBind M) : MBind (WriterT w M) :=
+  (let sj := WriterT_join M mf mj in
+   let sf := WriterT_fmap M mf in
+  (fun _ _ f a => mjoin (f <$> a))).
+
 (* http://hackage.haskell.org/package/mtl-2.2.2/docs/Control-Monad-State-Lazy.html#t:StateT *)
 (* This is a state monad transformer, which takes a pre-existing monad
 M and produces a new monad StateT M. *)

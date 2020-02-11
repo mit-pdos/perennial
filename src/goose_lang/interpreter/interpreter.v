@@ -210,14 +210,17 @@ Section interpreter.
   Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
   Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
 
+  Definition btval := list string.
+  Definition btstate := prod state btval.
+
   (* The analog of ext_semantics for an interpretable external
      operation. An ext_op transition isn't strong enough to let us interpret
      ExternalOps, so we need an executable interpretation of them. *)
   Class ext_interpretable :=
     {
-      ext_interpret_step : external -> val -> StateT state Error expr;
-      ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ': state),
-          (runStateT (ext_interpret_step eop arg) σ = Works _ (result, σ')) ->
+      ext_interpret_step : external -> val -> StateT btstate Error expr;
+      ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ': state) (ws ws':btval),
+          (runStateT (ext_interpret_step eop arg) (σ,ws) = Works _ (result, (σ',ws'))) ->
           exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ');
     }.
 
@@ -225,9 +228,9 @@ Section interpreter.
 
   (* Necessary because mbind and mret implicitly need instances of
   MBind and MRet, respectively. *)
-  Instance statet_error_bind : MBind (StateT state Error) :=
+  Instance statet_error_bind : MBind (StateT btstate Error) :=
     StateT_bind Error Error_fmap Error_join Error_bind.
-  Instance statet_error_ret : MRet (StateT state Error) :=
+  Instance statet_error_ret : MRet (StateT btstate Error) :=
     StateT_ret Error Error_ret.
 
   Fixpoint print_val (v: val) : string :=
@@ -269,37 +272,59 @@ Section interpreter.
     | vcons h t => r <- h; s <- commute_option_vec _ t; mret (vcons r s)
     end.
 
+  Fixpoint print_btval (v: btval) : string :=
+    match v with
+    | nil => ""
+    | cons h nil => h
+    | cons h tl => h ++ ", " ++ (print_btval tl)
+    end.
+  Instance pretty_btval : Pretty btval := print_btval.
+
+  Definition mfail_bt (msg: string) : StateT btstate Error val :=
+    s <- mget;
+      mfail ("[" ++ (pretty (snd s)) ++ "]:
+ " ++ msg).
+
+  Definition mlift_bt {X} (ma: option X) (msg: string) : StateT btstate Error X :=
+    s <- mget;
+      mlift ma ("[" ++ (pretty (snd s)) ++ "]:
+ " ++ msg).
+  
   (* Interpreter *)
-  Fixpoint interpret (fuel: nat) (expr: expr) : StateT state Error val :=
+  Fixpoint interpret (fuel: nat) (expr: expr) : StateT btstate Error val :=
     match fuel with
-    | O => mfail "Fuel depleted"
+    | O => mfail_bt "Fuel depleted"
     | S n =>
       match expr with
       | Val v => mret v
-      | Var y => mfail ("Unbound variable: " ++ y)
+      | Var y => mfail_bt ("Unbound variable: " ++ y)
       | Rec f y e => mret (RecV f y e)
 
       | App e1 e2 => 
         v2 <- interpret n e2;
           v1 <- interpret n e1;
           match v1 with
+          | RecV (BNamed fname) y ex =>
+            _ <- mupdate (fun bts => (fst bts, [fname] ++ (snd bts)));
+            let e3 := subst' y v2 (subst' (BNamed fname) v1 ex) in
+            interpret n e3
           | RecV f y ex =>
             let e3 := subst' y v2 (subst' f v1 ex) in
             interpret n e3
-          | _ => mfail ("App applied to a non-function of type: " ++ (pretty v1))
+          | _ => mfail_bt ("App applied to a non-function of type: " ++ (pretty v1))
           end
             
       | UnOp op e =>
         v <- interpret n e;
-          (* mlift because un_op_eval returns an optional *)
-          mlift (un_op_eval op v)
+          (* mlift_bt because un_op_eval returns an optional *)
+          mlift_bt (un_op_eval op v)
                 ("UnOp eval on invalid type: " ++ (pretty op) ++ "(" ++ (pretty v) ++ ")")
                 
       | BinOp op e1 e2 =>
         v1 <- interpret n e1;
           v2 <- interpret n e2;
-          (* mlift because bin_op_eval returns an optional *)
-          mlift (bin_op_eval op v1 v2)
+          (* mlift_bt because bin_op_eval returns an optional *)
+          mlift_bt (bin_op_eval op v1 v2)
                 ("BinOp eval on invalid type: " ++ (pretty op) ++ "(" ++ (pretty v1) ++ ", " ++ (pretty v2) ++ ")")
                 
       | If e0 e1 e2 =>
@@ -307,7 +332,7 @@ Section interpreter.
           match c with
           | LitV (LitBool true) => interpret n e1
           | LitV (LitBool false) => interpret n e2
-          | _ => mfail ("If applied to non-Bool of type " ++ (pretty c))
+          | _ => mfail_bt ("If applied to non-Bool of type " ++ (pretty c))
           end
 
       | Pair e1 e2 =>
@@ -319,14 +344,14 @@ Section interpreter.
         v <- interpret n e;
           match v with
           | PairV v1 v2 => mret v1
-          | _ => mfail ("Fst applied to non-PairV of type " ++ (pretty v))
+          | _ => mfail_bt ("Fst applied to non-PairV of type " ++ (pretty v))
           end
 
       | Snd e =>
         v <- interpret n e;
           match v with
           | PairV v1 v2 => mret v2
-          | _ => mfail ("Snd applied to non-PairV of type:" ++ (pretty v))
+          | _ => mfail_bt ("Snd applied to non-PairV of type:" ++ (pretty v))
           end
             
       | InjL e =>
@@ -344,111 +369,117 @@ Section interpreter.
             interpret n (App e1 (Val v'))
           | InjRV v' =>
             interpret n (App e2 (Val v'))
-          | _ => mfail ("Tried to Case on a non-Inj term of type " ++ (pretty v))
+          | _ => mfail_bt ("Tried to Case on a non-Inj term of type " ++ (pretty v))
           end
 
-      | Fork e => mfail "Fork operation not supported"
+      | Fork e => mfail_bt "Fork operation not supported"
 
       | Primitive0 p =>
-        match p in (prim_op args0) return StateT state Error val with
-        | PanicOp s => mfail ("Interpret panic: " ++ s)
+        match p in (prim_op args0) return StateT btstate Error val with
+        | PanicOp s => mfail_bt ("Interpret panic: " ++ s)
         | ArbitraryIntOp => mret (LitV (LitInt (U64 1)))
         end
 
       | Primitive1 p e =>
-        match p in (prim_op args1) return StateT state Error val with
+        match p in (prim_op args1) return StateT btstate Error val with
         | PrepareWriteOp =>
           addrv <- interpret n e;
             match addrv with
             | LitV (LitLoc l) =>
-              s <- mget;
-                nav <- mlift (s.(heap) !! l) ("Load failed for location " ++ (pretty l));
+              sbt <- mget;
+                let s := fst sbt in
+                nav <- mlift_bt (s.(heap) !! l) ("Load failed for location " ++ (pretty l));
                 match nav with
-                | Reading v 0 => _ <- mupdate (set heap <[l:=Writing]>);
+                | Reading v 0 => _ <- mupdate (fun sbt => ((set heap <[l:=Writing]>) $ fst sbt, snd sbt));
                                   mret (LitV LitUnit)
-                | _ => mfail ("Race occurred during write at location " ++ (pretty l))
+                | _ => mfail_bt ("Race occurred during write at location " ++ (pretty l))
                 end
-            | _ => mfail ("Attempted Load with a non-location argument of type " ++ (pretty addrv))
+            | _ => mfail_bt ("Attempted Load with a non-location argument of type " ++ (pretty addrv))
             end
         | LoadOp =>
           addrv <- interpret n e;
             match addrv with
             | LitV (LitInt l) =>
-              mfail ("Attempted load at Int " ++ (pretty l) ++ " instead of a Loc")
+              mfail_bt ("Attempted load at Int " ++ (pretty l) ++ " instead of a Loc")
             | LitV (LitLoc l) =>
               (* Since Load of an address with nothing doesn't step,
                  we can lift from the option monad into the StateT option
-                 monad here (we mfail "NotImpl" if v is None). *)
-              s <- mget;
-                nav <- mlift (s.(heap) !! l) ("Load failed at location " ++ (pretty l));
+                 monad here (we mfail_bt "NotImpl" if v is None). *)
+              sbt <- mget;
+                let s := fst sbt in
+                nav <- mlift_bt (s.(heap) !! l) ("Load failed at location " ++ (pretty l));
                 match nav with
                 | Reading v 0 => mret v
-                | _ => mfail ("Race detected while reading at location " ++ (pretty l))
+                | _ => mfail_bt ("Race detected while reading at location " ++ (pretty l))
                 end
-            | _ => mfail ("Attempted Load with non-location argument of type " ++ (pretty addrv))
+            | _ => mfail_bt ("Attempted Load with non-location argument of type " ++ (pretty addrv))
             end
         | InputOp =>
           v <- interpret n e;
             match v with
             | LitV selv =>
-              σ <- mget;
+              sbt <- mget;
+                let σ := fst sbt in
                 let x := σ.(oracle) σ.(trace) selv in
-                _ <- mupdate (set trace (fun tr => [In_ev selv (LitInt x)] ++ tr));
+                _ <- mupdate (fun sbt => ((set trace (fun tr => [In_ev selv (LitInt x)] ++ tr)) $ fst sbt, snd sbt));
                   mret (LitV (LitInt x))
-            | _ => mfail ("Attempted InputOp with non-literal selector of type " ++ (pretty v))
+            | _ => mfail_bt ("Attempted InputOp with non-literal selector of type " ++ (pretty v))
             end
         | OutputOp =>
           v <- interpret n e;
             match v with
             | LitV v =>
-              _ <- mupdate (set trace (fun tr => [Out_ev v] ++ tr));
+              _ <- mupdate (fun sbt => ((set trace (fun tr => [Out_ev v] ++ tr)) $ fst sbt, snd sbt));
                 mret (LitV LitUnit)
-            | _ => mfail ("Attempted Output with non-literal value of type " ++ (pretty v))
+            | _ => mfail_bt ("Attempted Output with non-literal value of type " ++ (pretty v))
             end
         | StartReadOp =>
           addrv <- interpret n e;
             match addrv with
             | LitV (LitLoc l) =>
-              s <- mget;
-                nav <- mlift (s.(heap) !! l) ("StartReadOp failed at location " ++ (pretty l));
+              sbt <- mget;
+                let s := fst sbt in
+                nav <- mlift_bt (s.(heap) !! l) ("StartReadOp failed at location " ++ (pretty l));
                 match nav with
-                | Reading v n => _ <- mupdate (set heap <[l:=Reading v (S n)]>);
+                | Reading v n => _ <- mupdate (fun sbt => ((set heap <[l:=Reading v (S n)]>) $ fst sbt, snd sbt));
                                   mret v
-                | _ => mfail ("Race detected during StartReadOp at location " ++ (pretty l))
+                | _ => mfail_bt ("Race detected during StartReadOp at location " ++ (pretty l))
                 end
-            | _ => mfail ("StartReadOp called with non-location argument of type " ++ (pretty addrv))
+            | _ => mfail_bt ("StartReadOp called with non-location argument of type " ++ (pretty addrv))
             end
         | FinishReadOp =>
           addrv <- interpret n e;
             match addrv with
             | LitV (LitLoc l) =>
-              s <- mget;
-                nav <- mlift (s.(heap) !! l) ("FinishReadOp failed at location " ++ (pretty l));
+              sbt <- mget;
+                let s := fst sbt in
+                nav <- mlift_bt (s.(heap) !! l) ("FinishReadOp failed at location " ++ (pretty l));
                 match nav with
-                | Reading v (S n) => _ <- mupdate (set heap <[l:=Reading v n]>);
+                | Reading v (S n) => _ <- mupdate (fun sbt => ((set heap <[l:=Reading v n]>) $ fst sbt, snd sbt));
                                       mret (LitV LitUnit)
-                | Reading v 0 => mfail ("FinishReadOp attempted with no reads occurring at location " ++ (pretty l))
-                | _ => mfail ("Attempted FinishReadOp while writing at location " ++ (pretty l))
+                | Reading v 0 => mfail_bt ("FinishReadOp attempted with no reads occurring at location " ++ (pretty l))
+                | _ => mfail_bt ("Attempted FinishReadOp while writing at location " ++ (pretty l))
                 end
-            | _ => mfail ("Attempted FinishReadOp with non-location argument of type " ++ (pretty addrv))
+            | _ => mfail_bt ("Attempted FinishReadOp with non-location argument of type " ++ (pretty addrv))
             end
         end
 
       | Primitive2 p e1 e2 =>
           v1 <- interpret n e1;
           v2 <- interpret n e2;
-          s <- mget;
-          t <- mlift (Transitions.interpret [] (head_trans (Primitive2 p (Val v1) (Val v2))) s) "transition.interpret failed in Primitive2";
-              match t return StateT state Error val with
+          sbt <- mget;
+          let s := fst sbt in
+          t <- mlift_bt (Transitions.interpret [] (head_trans (Primitive2 p (Val v1) (Val v2))) s) "transition.interpret failed in Primitive2";
+              match t return StateT btstate Error val with
               (* hints, new state, (obs list, next expr, threads) *)
               | (hints, s', (l, expr', ts)) =>
-                match expr' return StateT state Error val with
+                match expr' return StateT btstate Error val with
                 | Val v =>
                   match ts with
-                    | [] => _ <- mput s'; mret v
-                    | _ => mfail "Thread spawned during Primitive2 op"
+                    | [] => _ <- mput (s', snd sbt); mret v
+                    | _ => mfail_bt "Thread spawned during Primitive2 op"
                   end
-                | _ => mfail "Failed to interpret Primitive2 op to val"
+                | _ => mfail_bt "Failed to interpret Primitive2 op to val"
                 end
               end
 
@@ -463,26 +494,27 @@ Section interpreter.
             v2 <- interpret n e2;
             match addrv with
             | LitV (LitLoc l) =>
-              s <- mget;
-                nav <- mlift (s.(heap) !! l) ("CmpXchg load failed at location " ++ (pretty l));
+              sbt <- mget;
+                let s := fst sbt in
+                nav <- mlift_bt (s.(heap) !! l) ("CmpXchg load failed at location " ++ (pretty l));
                 match nav with
                 | Reading vl 0 =>
-                  b <- mlift (bin_op_eval EqOp vl v1)
+                  b <- mlift_bt (bin_op_eval EqOp vl v1)
                     ("CmpXchg BinOp tried on invalid type: " ++ (pretty EqOp) ++ "(" ++ (pretty vl) ++ ", " ++ (pretty v1) ++ ")");
                   match b with
-                  | LitV (LitBool true) => _ <- mput (set heap <[l:=Free v2]> s);
+                  | LitV (LitBool true) => _ <- mput ((set heap <[l:=Free v2]> s), snd sbt);
                            mret (PairV vl #true)
                   | LitV (LitBool false) => mret (PairV vl #false)
-                  | _ => mfail ("Expected bool but CmpXchg EqOp returned type: " ++ (pretty b))
+                  | _ => mfail_bt ("Expected bool but CmpXchg EqOp returned type: " ++ (pretty b))
                   end
-                | _ => mfail ("Race detected while reading CmpXchg location " ++ (pretty l))
+                | _ => mfail_bt ("Race detected while reading CmpXchg location " ++ (pretty l))
                 end
-            | _ => mfail ("CmpXchg attempted with non-location argument of type " ++ (pretty addrv))
+            | _ => mfail_bt ("CmpXchg attempted with non-location argument of type " ++ (pretty addrv))
             end
 
       (* Won't interpret anything involving prophecy variables. *)
-      | NewProph => mfail "NotImpl: prophecy variable." (* ignore *)
-      | Resolve ex e1 e2 => mfail "NotImpl: resolve."   (* ignore *)
+      | NewProph => mfail_bt "NotImpl: prophecy variable." (* ignore *)
+      | Resolve ex e1 e2 => mfail_bt "NotImpl: resolve."   (* ignore *)
       end
     end.
 
@@ -492,7 +524,7 @@ Section interpreter.
   apply the inductive hypothesis from interpret_ok, passed in as IHn. *)
   Ltac run_next_interpret IHn :=
     match goal with
-    | [H : runStateT (mbind (fun x => @?F x) (interpret ?n ?e)) ?σ = _ |- _] =>
+    | [H : runStateT (mbind (fun x => @?F x) (interpret ?n ?e)) (?σ, ?ws) = _ |- _] =>
       let interp_e := fresh "interp_e" in
       let IHe := fresh "IHe" in
       let e_to_v := fresh "nsteps_interp" in
@@ -501,9 +533,10 @@ Section interpreter.
       let l := fresh "l" in
       let v := fresh "v" in
       let s := fresh "s" in
-      destruct (runStateT (interpret n e) σ) as [v0|] eqn:interp_e; [|runStateT_bind];
-      destruct v0 as (v & s);
-      pose (IHn e σ v s interp_e) as IHe;
+      let ws' := fresh "ws'" in
+      destruct (runStateT (interpret n e) (σ, ws)) as [v0|] eqn:interp_e; [|runStateT_bind];
+      destruct v0 as (v & (s & ws'));
+      pose (IHn e σ v s ws ws' interp_e) as IHe;
       destruct IHe as (m & l & e_to_v);
       runStateT_bind
     | _ => fail
@@ -569,14 +602,14 @@ Ltac runStateT_inv :=
   (* For any expression e that we can successfully interpret to a
   value v, there exists some number m of steps in the heap transition
   function that steps e to v. *)
-  Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state),
-      (((runStateT (interpret n e) σ) = Works _ (v, σ')) ->
+  Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state) (ws ws':btval),
+      (((runStateT (interpret n e) (σ, ws)) = Works _ (v, (σ', ws'))) ->
        exists m l, @language.nsteps heap_lang m ([e], σ) l ([Val v], σ')).
   Proof using Type.
     intros n. induction n.
     { by intros []. }
 
-    intros e σ v σ' interp. destruct e; simpl; inversion interp; simpl.
+    intros e σ v σ' ws ws' interp. destruct e; simpl; inversion interp; simpl.
     
     (* Val *)
     { eexists. eexists. apply language.nsteps_refl. }
@@ -592,14 +625,27 @@ Ltac runStateT_inv :=
       run_next_interpret IHn.
       run_next_interpret IHn.
       runStateT_inv.
-      pose proof (IHn _ _ _ _ H0) as IHapp.
-      destruct IHapp as (k & l' & app_to_v).
-      do 2 eexists.
-      (* [App e1 e2] -> [App e1 v1] *)
-      eapply nsteps_transitive; [ctx_step (fill [(AppRCtx e1)])|].
-      (* [App e1 v1] -> [App (rec f x := e) v1] *)
-      eapply nsteps_transitive; [ctx_step (fill [(AppLCtx v1)])|].
-      eapply nsteps_transitive; [single_step | exact app_to_v].
+      {
+        pose proof (IHn _ _ _ _ _ _ H0) as IHapp.
+        destruct IHapp as (k & l' & app_to_v).
+        do 2 eexists.
+        (* [App e1 e2] -> [App e1 v1] *)
+        eapply nsteps_transitive; [ctx_step (fill [(AppRCtx e1)])|].
+        (* [App e1 v1] -> [App (rec f x := e) v1] *)
+        eapply nsteps_transitive; [ctx_step (fill [(AppLCtx v1)])|].
+        eapply nsteps_transitive; [single_step | exact app_to_v].
+      }
+      { (* Named case, need to deal with modifying bt *)
+        assert (runStateT (interpret n (subst' x v1 (subst s1 (rec: s1 x := e) e))) (s0, s1 :: ws'1) = Works (val * btstate) (v, (σ', ws'))) as H0 by (unfold runStateT; exact Heqe0).
+        pose proof (IHn _ _ _ _ _ _ H0) as IHapp.
+        destruct IHapp as (k & l' & app_to_v).
+        do 2 eexists.
+        (* [App e1 e2] -> [App e1 v1] *)
+        eapply nsteps_transitive; [ctx_step (fill [(AppRCtx e1)])|].
+        (* [App e1 v1] -> [App (rec f x := e) v1] *)
+        eapply nsteps_transitive; [ctx_step (fill [(AppLCtx v1)])|].
+        eapply nsteps_transitive; [single_step | exact app_to_v].
+      }
     }
 
     (* UnOp *)
@@ -630,7 +676,7 @@ Ltac runStateT_inv :=
     { run_next_interpret IHn.
       runStateT_inv;
       ( (* v1 = true or false *)
-        pose (IHn _ _ _ _ H0) as IH';
+        pose proof (IHn _ _ _ _ _ _ H0) as IH';
         destruct IH' as (m' & l' & er_to_v);
         do 2 eexists;
         (* [If e1 e2 e3] -> [If #val e2 e3] *)
@@ -697,7 +743,7 @@ Ltac runStateT_inv :=
     { run_next_interpret IHn.
       runStateT_inv.
       { (* InjL *)
-        pose proof (IHn _ _ _ _ H0) as IHe2.
+        pose proof (IHn _ _ _ _ _ _ H0) as IHe2.
         destruct IHe2 as (m' & l' & e2_to_v).
         do 2 eexists.
         (* [Case e1 e2 e3] -> [Case (InjLV v0) e2 e3] *)
@@ -705,7 +751,7 @@ Ltac runStateT_inv :=
         eapply nsteps_transitive; [single_step | exact e2_to_v].
       }
       { (* InjR *)
-        pose proof (IHn _ _ _ _ H0) as IHe3.
+        pose proof (IHn _ _ _ _ _ _ H0) as IHe3.
         destruct IHe3 as (m' & l' & e3_to_v).
         do 2 eexists.
         (* [Case e1 e2 e3] -> [Case (InjRV v0) e2 e3] *)
@@ -832,12 +878,12 @@ Ltac runStateT_inv :=
 
     (* ExternalOp *)
     { run_next_interpret IHn.
-      destruct (runStateT (ext_interpret_step op v1) s) as [e_result|] eqn:ext_interp_v1; [|runStateT_bind].
-      destruct e_result as (e' & s').
-      pose proof (ext_interpret_ok _ _ _ _ _ ext_interp_v1) as ei_ok.
+      destruct (runStateT (ext_interpret_step op v1) (s, ws'0)) as [e_result|] eqn:ext_interp_v1; [|runStateT_bind].
+      destruct e_result as (e' & (s' & ws'1)).
+      pose proof (ext_interpret_ok _ _ _ _ _ _ _ ext_interp_v1) as ei_ok.
       destruct ei_ok as (m' & (l' & nstep_ext_interp)).
       runStateT_bind.
-      pose proof (IHn _ _ _ _ H0).
+      pose proof (IHn _ _ _ _ _ _ H0).
       destruct H as (m'' & (l'' & rest_nstep)).
       do 2 eexists.
       eapply nsteps_transitive; [ctx_step (fill ([ExternalOpCtx op]))|].
