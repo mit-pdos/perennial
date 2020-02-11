@@ -55,19 +55,10 @@ Section ghost_spec.
   Definition source_pool_map (tp: gmap nat (language.expr Λ)) : iProp Σ :=
     own cfg_name (◯ (Excl <$> tp : tpoolUR, ε)).
 
-  (*
-  Definition safe (ρ: cfg Λ) :=
-    ∀ t2 σ2 e2, rtc erased_step ρ (t2, σ2) → e2 ∈ t2 → not_stuck e2 σ2.
-   *)
-
-  Definition crash_safe r (ρ: cfg Λ) :=
-    ∀ t2 σ2 e2 s, erased_rsteps (CS := CS) r ρ (t2, σ2) s →
-                  e2 ∈ t2 → not_stuck e2 σ2.
-
   Definition source_inv r tp σ : iProp Σ :=
     (∃ s tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
                    ⌜ erased_rsteps (CS := CS) r (tp, σ) (tp', σ') s
-                     ∧ crash_safe r (tp, σ) ⌝)%I.
+                     ∧ crash_safe (CS := CS) r (tp, σ) ⌝)%I.
 
   Definition source_ctx' r ρ : iProp Σ :=
     inv sourceN (source_inv r (fst ρ) (snd ρ)).
@@ -233,7 +224,7 @@ Section ghost_step.
   Qed.
 
   Lemma source_cfg_init `{cfgPreG Σ} r tp σ :
-    crash_safe r (tp, σ) →
+    crash_safe (CS := CS) r (tp, σ) →
     (|={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp, σ)
                                        ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ)%I.
   Proof.

@@ -24,7 +24,9 @@ typeclass resolution, which is the one thing solve_inG tries. *)
 Existing Class ffi_preG.
 Hint Resolve subG_ffiPreG : typeclass_instances.
 
-Class heapPreG `{ext: ext_op} `{ffi_interp_adequacy} Σ := HeapPreG {
+Class heapPreG `{ext: ext_op} `{EXT_SEM: !ext_semantics ext ffi}
+      `{INTERP: !ffi_interp ffi} {ADEQ: ffi_interp_adequacy} Σ
+  := HeapPreG {
   heap_preG_iris :> invPreG Σ;
   heap_preG_heap :> gen_heapPreG loc (nonAtomic val) Σ;
   heap_preG_proph :> proph_mapPreG proph_id (val * val) Σ;

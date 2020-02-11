@@ -60,6 +60,8 @@ Definition spec_stateN := nroot .@ "source".@  "state".
 (* TODO: these names are terrible *)
 Definition spec_ctx : iProp Σ :=
   source_ctx (CS := spec_crash_lang) ∗ inv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
+Definition spec_ctx' r ρ : iProp Σ :=
+  source_ctx' (CS := spec_crash_lang) r ρ ∗ inv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
 
 Global Instance spec_ctx_persistent : Persistent (spec_ctx).
 Proof. apply _. Qed.
@@ -165,6 +167,7 @@ Qed.
 
 End go_ghost_step.
 End go_spec_definitions.
+
 End go_refinement.
 
 Notation "l s↦{ q } v" := (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l q v%V)
@@ -174,6 +177,32 @@ Notation "l s↦ v" :=
 Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
+
+Section trace_inv.
+Context {ext: ext_op}.
+Context {ffi: ffi_model}.
+Context {ffi_semantics: ext_semantics ext ffi}.
+Context `{!ffi_interp ffi}.
+Context {spec_ext: spec_ext_op}.
+Context {spec_ffi: spec_ffi_model}.
+Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
+Context `{!spec_ffi_interp spec_ffi}.
+Context {Σ: gFunctors}.
+Context {hG: heapG Σ}.
+Context {hR: refinement_heapG Σ}.
+
+Definition trace_inv : iProp Σ :=
+  (∃ tr trs or ors, trace_frag (hT := heapG_traceG) tr ∗
+                    trace_frag (hT := refinement_traceG) trs ∗
+                    oracle_frag (hT := heapG_traceG) or ∗
+                    oracle_frag (hT := refinement_traceG) ors).
+
+Definition spec_traceN := nroot .@ "source".@  "trace".
+
+Definition trace_ctx : iProp Σ :=
+  inv spec_traceN trace_inv.
+
+End trace_inv.
 
 Section resolution_test.
 Context {ext: ext_op}.
