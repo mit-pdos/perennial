@@ -131,9 +131,12 @@ Class ffi_interp (ffi: ffi_model) :=
     ffi_get_names : ∀ Σ, ffiG Σ → ffi_names;
     ffi_update : ∀ Σ, ffiG Σ → ffi_names → ffiG Σ;
     ffi_get_update: ∀ Σ hF, ffi_update Σ hF (ffi_get_names _ hF) = hF;
-    ffi_ctx: forall `{ffiG Σ}, ffi_state -> iProp Σ; }.
+    ffi_ctx: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
+    ffi_start: ∀ `{ffiG Σ}, ffi_state -> iProp Σ
+  }.
 
 Arguments ffi_ctx {ffi FfiInterp Σ} fG : rename.
+Arguments ffi_start {ffi FfiInterp Σ} fG : rename.
 
 Section goose_lang.
   Context `{ffi_semantics: ext_semantics}.

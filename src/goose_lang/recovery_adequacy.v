@@ -25,7 +25,7 @@ End wpr_definitions.
 Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} `{crashPreG Σ} s k e r σ φ φr φinv Φinv :
   (∀ `{Hheap : !heapG Σ} `{Hc: !crashG Σ} Hinv t,
      (|={⊤}=>
-       (trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
+       (ffi_start (heapG_ffiG) σ.(world) -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
        □ (∀ n σ κ, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
        □ (∀ Hi t, Φinv Hi t -∗
                        let _ := heap_update _ Hheap Hi (@pbundleT _ _ t) in
@@ -37,7 +37,7 @@ Proof.
   iIntros (???) "".
   iMod (gen_heap_init σ.(heap)) as (?) "Hh".
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
-  iMod (ffi_init _ _ σ.(world)) as (HffiG) "Hw".
+  iMod (ffi_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)".
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hG := (HeapG _ _ HffiG _ _ HtraceG)).
   set (hnames := heap_get_names _ (HeapG _ _ HffiG _ _ HtraceG)).
@@ -47,7 +47,7 @@ Proof.
                state_interp σ κs O)%I,
     (λ t _, True%I).
   iExists (λ _ _, eq_refl).
-  iMod (Hwp hG Hc Hinv {| pbundleT := hnames |} with "[$] [$]") as "(#H1&#H2&Hwp)".
+  iMod (Hwp hG Hc Hinv {| pbundleT := hnames |} with "[$] [$] [$]") as "(#H1&#H2&Hwp)".
   iModIntro.
   iSplitR.
   { iAlways. iIntros (??) "H". rewrite heap_get_update.

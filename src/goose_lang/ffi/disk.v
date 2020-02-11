@@ -164,7 +164,9 @@ Section disk.
        ffi_update := fun _ hD names =>
                        {| diskG_gen_heapG := gen_heapG_update (@diskG_gen_heapG _ hD) names |};
        ffi_get_update := fun _ _ => _;
-       ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap_ctx d; |}.
+       ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap_ctx d;
+       ffi_start := fun _ _ (d: @ffi_state disk_model) =>
+                      ([∗ map] l↦v ∈ d, (mapsto (L:=Z) (V:=Block) l 1 v))%I |}.
   Next Obligation. intros ? [[]] => //=. Qed.
 
   Section proof.

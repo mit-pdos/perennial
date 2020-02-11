@@ -11,7 +11,7 @@ Class ffi_interp_adequacy `{!ffi_interp ffi} `{EXT: !ext_semantics ext ffi} :=
     (* modeled after subG_gen_heapPreG and gen_heap_init *)
     subG_ffiPreG : forall Σ, subG ffiΣ Σ -> ffi_preG Σ;
     ffi_init : forall Σ, ffi_preG Σ -> forall (σ:ffi_state),
-          (|==> ∃ (H0: ffiG Σ), ffi_ctx H0 σ)%I;
+          (|==> ∃ (H0: ffiG Σ), ffi_ctx H0 σ ∗ ffi_start H0 σ)%I;
     ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
     ffi_crash : forall Σ, ffi_preG Σ ->
           (∀ (σ σ': ffi_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
@@ -60,16 +60,18 @@ Proof.
 Qed.
 
 Definition heap_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} s e σ φ :
-  (∀ `{!heapG Σ}, trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗ WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
+  (∀ `{!heapG Σ}, ffi_start (heapG_ffiG) σ.(world) -∗
+                  trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
+                  WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
   adequate s e σ (λ v _, φ v).
 Proof.
   intros Hwp; eapply (wp_adequacy _ _); iIntros (??) "".
   iMod (gen_heap_init σ.(heap)) as (?) "Hh".
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
-  iMod (ffi_init _ _ σ.(world)) as (HffiG) "Hw".
+  iMod (ffi_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)".
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&?&Hor&?)".
   iModIntro. iExists
     (λ σ κs, (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx HffiG σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
     (λ _, True%I).
-  iFrame. by iApply (Hwp (HeapG _ _ HffiG _ _ HtraceG) with "[$] [$]").
+  iFrame. by iApply (Hwp (HeapG _ _ HffiG _ _ HtraceG) with "[$] [$] [$]").
 Qed.

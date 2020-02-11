@@ -43,14 +43,15 @@ Lemma goose_spec_init {hG: heapG Σ} r tp σ tr or:
   σ.(trace) = tr →
   σ.(oracle) = or →
   crash_safe (CS := spec_crash_lang) r (tp, σ) →
-  (trace_frag tr -∗ oracle_frag or -∗
+  ( trace_frag tr -∗ oracle_frag or -∗
    |={⊤}=> ∃ _ : refinement_heapG Σ, spec_ctx' r (tp, σ) ∗ source_pool_map (tpool_to_map tp)
+                                               ∗ ffi_start (refinement_spec_ffiG) σ.(world)
                                                ∗ trace_ctx)%I.
 Proof.
   iIntros (?? Hsafe) "Htr Hor".
   iMod (source_cfg_init r tp σ) as (Hcfg) "(Hsource_ctx&Hpool&Hstate)"; first done.
   iMod (gen_heap_init σ.(heap)) as (Hrheap) "Hrh".
-  iMod (ffi_init _ (refinement_heap_preG_ffi) σ.(world)) as (HffiG) "Hrw".
+  iMod (ffi_init _ (refinement_heap_preG_ffi) σ.(world)) as (HffiG) "(Hrw&Hrs)".
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
   set (HrhG := (refinement_HeapG _ HffiG HtraceG Hcfg Hrheap)).
   iExists HrhG.
@@ -106,7 +107,7 @@ Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr 
        □ (∀ Hi t, Φinv Hi t -∗
                        let _ := heap_update _ Hheap Hi (@pbundleT _ _ t) in
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], σs) ∗ trace_ctx (hR := Href')) ∗
-        ((O ⤇ es) -∗ wpr NotStuck k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝))))%I) →
+        (ffi_start (heapG_ffiG) σ.(world) -∗ ffi_start (refinement_spec_ffiG) σs.(world) -∗ O ⤇ es -∗ wpr NotStuck k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝))))%I) →
   trace_refines e r σ es rs σs.
 Proof.
   intros ?? Hwp Hsafe.
@@ -129,7 +130,7 @@ Proof.
   iIntros (???) "".
   iMod (gen_heap_init σ.(heap)) as (?) "Hh".
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
-  iMod (ffi_init _ _ σ.(world)) as (HffiG) "Hw".
+  iMod (ffi_init _ _ σ.(world)) as (HffiG) "(Hw&Hs)".
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hG := (HeapG _ _ HffiG _ _ HtraceG)).
   set (hnames := heap_get_names _ (HeapG _ _ HffiG _ _ HtraceG)).
@@ -139,10 +140,10 @@ Proof.
                state_interp σ κs O)%I,
     (λ t _, True%I).
   iExists (λ _ _, eq_refl).
-  iMod (goose_spec_init with "[$] [$]") as (HrG) "(#Hspec&Hpool&#Htrace)"; try (by symmetry); eauto.
+  iMod (goose_spec_init with "[$] [$]") as (HrG) "(#Hspec&Hpool&Hrs&#Htrace)"; try (by symmetry); eauto.
   iMod (Hwp hG Hc HrG Hinv {| pbundleT := hnames |} with "[$] [$]") as "(#H1&Hwp)".
   iDestruct (source_pool_singleton with "Hpool") as "Hpool".
-  iSpecialize ("Hwp" with "[$]"). iFrame.
+  iSpecialize ("Hwp" with "[$] [$] [$]"). iFrame.
   rewrite /heapG_ffiG//= ffi_get_update. iFrame.
   iModIntro. iSplit.
   - iAlways. iIntros (??) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
