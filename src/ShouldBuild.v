@@ -7,7 +7,7 @@ From Perennial Require Import program_logic.crash_inv.
 From Perennial Require Import heap_lang.crash_lock.
 
 From Perennial.goose_lang Require Import
-     adequacy recovery_adequacy spec_assert lib.spin_lock refinement.
+     adequacy recovery_adequacy spec_assert lib.spin_lock refinement refinement_adequacy.
 From Perennial.goose_lang Require Import map_triples.
 From Perennial.program_proof Require Import
      marshal_proof append_log_proof util_proof.

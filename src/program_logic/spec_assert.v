@@ -252,6 +252,13 @@ Section ghost_step.
   Context `{cfgG Σ}.
   Context `{Inhabited (state Λ)}.
 
+  Lemma source_pool_singleton e:
+    source_pool_map (tpool_to_map [e]) -∗ 0 ⤇ e.
+  Proof.
+    rewrite /source_pool_map/tpool_to_map/tpool_to_map_aux/tpool_mapsto.
+    by rewrite fmap_insert fmap_empty insert_empty.
+  Qed.
+
   Lemma source_thread_update e' tp j e σ :
     j ⤇ e -∗ own cfg_name (● (tpool_to_res tp, Excl' σ))
       ==∗ j ⤇ e' ∗ own cfg_name (● (tpool_to_res (<[j := e']>tp), Excl' σ)).
