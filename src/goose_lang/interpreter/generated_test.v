@@ -6,6 +6,8 @@ From Perennial.goose_lang.interpreter Require Import test_config.
 (* test functions *)
 From Perennial.goose_lang.examples Require Import goose_semantics.
 
+Compute (runWithTrace (testFunctionOrdering #())).
+
 Example testCompareAll_ok : testCompareAll #() ~~> #true := t.
 Example testCompareGT_ok : testCompareGT #() ~~> #true := t.
 Example testCompareGE_ok : testCompareGE #() ~~> #true := t.
@@ -15,11 +17,12 @@ Example testEncDec32Simple_ok : testEncDec32Simple #() ~~> #true := t.
 Fail Example testEncDec32_ok : testEncDec32 #() ~~> #true := t.
 Example testEncDec64Simple_ok : testEncDec64Simple #() ~~> #true := t.
 Example testEncDec64_ok : testEncDec64 #() ~~> #true := t.
+Example testIterateMap_ok : testIterateMap #() ~~> #true := t.
+Example testMapSize_ok : testMapSize #() ~~> #true := t.
 Fail Example testFunctionOrdering_ok : testFunctionOrdering #() ~~> #true := t.
 Fail Example testCopySimple_ok : testCopySimple #() ~~> #true := t.
 Fail Example testCopyDifferentLengths_ok : testCopyDifferentLengths #() ~~> #true := t.
-(* TODO: This doesn't terminate...?
-Example testConversions_ok : testConversions #() ~~> #true := t. *)
+(* Example testConversions_ok : testConversions #() ~~> #true := t. *)
 Example testShortcircuitAndTF_ok : testShortcircuitAndTF #() ~~> #true := t.
 Example testShortcircuitAndFT_ok : testShortcircuitAndFT #() ~~> #true := t.
 Example testShortcircuitOrTF_ok : testShortcircuitOrTF #() ~~> #true := t.
@@ -29,4 +32,6 @@ Fail Example testReverseAssignOps32_ok : testReverseAssignOps32 #() ~~> #true :=
 Example testAdd64Equals_ok : testAdd64Equals #() ~~> #true := t.
 Example testSub64Equals_ok : testSub64Equals #() ~~> #true := t.
 Example testStandardForLoop_ok : testStandardForLoop #() ~~> #true := t.
+Fail Example testStringAppend_ok : testStringAppend #() ~~> #true := t.
+Fail Example testStringLength_ok : testStringLength #() ~~> #true := t.
 Example testOverwriteArray_ok : testOverwriteArray #() ~~> #true := t.

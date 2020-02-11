@@ -208,7 +208,7 @@ End Editor.
 (* advances the array editor, and returns the value it wrote, storing
    "next" in next_val *)
 Definition Editor__AdvanceReturn: val :=
-  λ: "e" "next",
+  rec: "Editor_AdvanceReturn" "e" "next" :=
     let: "tmp" := ref (struct.loadF Editor.S "next_val" "e") in
     SliceSet uint64T (struct.loadF Editor.S "s" "e") #0 (![uint64T] "tmp");;
     struct.storeF Editor.S "next_val" "e" "next";;
@@ -218,7 +218,7 @@ Definition Editor__AdvanceReturn: val :=
 (* we call this function with side-effectful function calls as arguments,
    its implementation is unimportant *)
 Definition addFour64: val :=
-  λ: "a" "b" "c" "d",
+  rec: "addFour64" "a" "b" "c" "d" :=
     "a" + "b" + "c" + "d".
 
 Module Pair.
@@ -230,7 +230,7 @@ End Pair.
 
 (* tests *)
 Definition testFunctionOrdering: val :=
-  λ: <>,
+  rec: "testFunctionOrdering" <>:=
     let: "arr" := ref (NewSlice uint64T #5) in
     let: "e1" := struct.mk Editor.S [
       "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
@@ -298,6 +298,44 @@ Definition testStandardForLoop: val :=
     SliceSet uint64T (![slice.T uint64T] "arr") #2 (SliceGet uint64T (![slice.T uint64T] "arr") #2 + #5);;
     SliceSet uint64T (![slice.T uint64T] "arr") #3 (SliceGet uint64T (![slice.T uint64T] "arr") #3 + #7);;
     (standardForLoop (![slice.T uint64T] "arr") = #16).
+
+(* maps.go *)
+
+Definition IterateMapKeys: val :=
+  λ: "m",
+    let: "sum" := ref (zero_val uint64T) in
+    MapIter "m" (λ: "k" <>,
+      "sum" <-[uint64T] ![uint64T] "sum" + "k");;
+    ![uint64T] "sum".
+
+Definition IterateMapValues: val :=
+  λ: "m",
+    let: "sum" := ref (zero_val uint64T) in
+    MapIter "m" (λ: <> "v",
+      "sum" <-[uint64T] ![uint64T] "sum" + "v");;
+    ![uint64T] "sum".
+
+Definition testIterateMap: val :=
+  λ: <>,
+    let: "ok" := ref #true in
+    let: "m" := NewMap uint64T in
+    MapInsert "m" #0 #1;;
+    MapInsert "m" #1 #2;;
+    MapInsert "m" #3 #4;;
+    "ok" <-[boolT] ![boolT] "ok" && (IterateMapKeys "m" = #4);;
+    "ok" <-[boolT] ![boolT] "ok" && (IterateMapValues "m" = #7);;
+    ![boolT] "ok".
+
+Definition testMapSize: val :=
+  λ: <>,
+    let: "ok" := ref #true in
+    let: "m" := NewMap uint64T in
+    "ok" <-[boolT] ![boolT] "ok" && (MapLen "m" = #0);;
+    MapInsert "m" #0 #1;;
+    MapInsert "m" #1 #2;;
+    MapInsert "m" #3 #4;;
+    "ok" <-[boolT] ![boolT] "ok" && (MapLen "m" = #3);;
+    ![boolT] "ok".
 
 (* operations.go *)
 
@@ -484,3 +522,30 @@ Definition testOverwriteArray: val :=
     (if: SliceGet uint64T (![slice.T uint64T] "arr") #0 + SliceGet uint64T (![slice.T uint64T] "arr") #1 + SliceGet uint64T (![slice.T uint64T] "arr") #2 + SliceGet uint64T (![slice.T uint64T] "arr") #3 ≥ #100
     then #false
     else (SliceGet uint64T (![slice.T uint64T] "arr") #3 = #4) && (SliceGet uint64T (![slice.T uint64T] "arr") #0 = #4)).
+
+(* strings.go *)
+
+Definition stringAppend: val :=
+  λ: "s" "x",
+    "s" + uint64_to_string "x".
+
+Definition stringLength: val :=
+  λ: "s",
+    strLen "s".
+
+Definition testStringAppend: val :=
+  λ: <>,
+    let: "ok" := ref #true in
+    let: "s" := ref #(str"123") in
+    let: "y" := ref (stringAppend (![stringT] "s") #45) in
+    ![boolT] "ok" && (![stringT] "y" = #(str"12345")).
+
+Definition testStringLength: val :=
+  λ: <>,
+    let: "ok" := ref #true in
+    let: "s" := ref #(str"") in
+    "ok" <-[boolT] ![boolT] "ok" && (strLen (![stringT] "s") = #0);;
+    "s" <-[stringT] stringAppend (![stringT] "s") #1;;
+    "ok" <-[boolT] ![boolT] "ok" && (strLen (![stringT] "s") = #1);;
+    "s" <-[stringT] stringAppend (![stringT] "s") #23;;
+    ![boolT] "ok" && (strLen (![stringT] "s") = #3).
