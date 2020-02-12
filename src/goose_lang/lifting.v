@@ -69,6 +69,7 @@ Section StructMapsto.
   Theorem zero_val_ty' t : val_ty (zero_val t) t.
   Proof.
     induction t; simpl; eauto using val_ty, lit_ty.
+    destruct t; eauto using val_ty, lit_ty.
   Qed.
 
   Theorem val_ty_len {v t} : val_ty v t -> length (flatten_struct v) = Z.to_nat (ty_size t).

@@ -5,13 +5,16 @@ Class val_types :=
 
 Section val_types.
   Context {val_tys: val_types}.
+  Inductive base_ty :=
+  | uint64BT
+  | uint32BT
+  | byteBT
+  | boolBT
+  | unitBT
+  | stringBT.
+
   Inductive ty :=
-  | uint64T
-  | uint32T
-  | byteT
-  | boolT
-  | unitT
-  | stringT
+  | baseT (t:base_ty)
   | prodT (t1 t2: ty)
   | sumT (t1 t2: ty)
   | arrowT (t1 t2: ty)
@@ -21,6 +24,12 @@ Section val_types.
   | mapValT (vt: ty) (* keys are always uint64, for now *)
   | extT (x: ext_tys)
   .
+  Definition uint64T := baseT uint64BT.
+  Definition uint32T := baseT uint32BT.
+  Definition byteT   := baseT byteBT.
+  Definition boolT   := baseT boolBT.
+  Definition unitT   := baseT unitBT.
+  Definition stringT := baseT stringBT.
   Definition u8T := byteT.
 
   (* for backwards compatibility; need a sound plan for dealing with recursive
@@ -63,28 +72,28 @@ Section goose_lang.
 
   Definition ShiftL (t:ty) (e1: expr) (e2: expr): expr :=
     match t with
-    | uint64T => to_u64 e1 ≪ to_u64 e2
-    | uint32T => to_u32 e1 ≪ to_u32 e2
-    | byteT => to_u8 e1 ≪ to_u8 e2
+    | baseT uint64BT => to_u64 e1 ≪ to_u64 e2
+    | baseT uint32BT => to_u32 e1 ≪ to_u32 e2
+    | baseT byteBT => to_u8 e1 ≪ to_u8 e2
     | _ => #()
     end.
 
   Definition ShiftR (t:ty) (e1: expr) (e2: expr): expr :=
     match t with
-    | uint64T => to_u64 e1 ≫ to_u64 e2
-    | uint32T => to_u32 e1 ≫ to_u32 e2
-    | byteT => to_u8 e1 ≫ to_u8 e2
+    | baseT uint64BT => to_u64 e1 ≫ to_u64 e2
+    | baseT uint32BT => to_u32 e1 ≫ to_u32 e2
+    | baseT byteBT => to_u8 e1 ≫ to_u8 e2
     | _ => #()
     end.
 
   Fixpoint zero_val (t:ty) : val :=
     match t with
-    | uint64T => #0
-    | uint32T => #(U32 0)
-    | byteT => #(U8 0)
-    | boolT => #false
-    | unitT => #()
-    | stringT => #(str"")
+    | baseT uint64BT => #0
+    | baseT uint32BT => #(U32 0)
+    | baseT byteBT => #(U8 0)
+    | baseT boolBT => #false
+    | baseT unitBT => #()
+    | baseT stringT => #(str"")
     | mapValT vt => MapNilV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
     | sumT t1 t2 => InjLV (zero_val t1)
@@ -98,7 +107,7 @@ Section goose_lang.
     match t with
     | prodT t1 t2 => ty_size t1 + ty_size t2
     | extT x => 1 (* all external values are base literals *)
-    | unitT => 1
+    | baseT unitT => 1
     | _ => 1
     end.
 
@@ -137,9 +146,9 @@ Section goose_lang.
 
   Definition is_intTy (t: ty) : bool :=
     match t with
-    | uint64T => true
-    | uint32T => true
-    | byteT => true
+    | baseT uint64BT => true
+    | baseT uint32BT => true
+    | baseT byteBT => true
     | _ => false
     end.
 
@@ -380,6 +389,7 @@ Section goose_lang.
   Proof.
     generalize dependent Γ.
     induction ty; simpl; eauto.
+    destruct t; eauto.
   Qed.
 
   Definition NewMap (t:ty) : expr := AllocMap (zero_val t).

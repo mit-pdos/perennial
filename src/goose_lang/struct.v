@@ -323,11 +323,6 @@ Theorem store_ty_val_t : forall Γ t,
 Proof using Type.
   induction t; simpl; intros; eauto.
   - typecheck.
-  - typecheck.
-  - typecheck.
-  - typecheck.
-  - typecheck.
-  - typecheck.
   - type_step.
     type_step.
     type_step.
@@ -349,6 +344,7 @@ Proof using Type.
   - typecheck.
   - typecheck.
   - typecheck.
+    Fail idtac.
 Admitted.
 
 Theorem store_ty_t Γ t :
