@@ -18,9 +18,9 @@ COQ_WARN_LIST := -notation-overridden\
 -funind-cannot-define-graph\
 -funind-cannot-build-inversion
 
+empty :=
 # A literal space.
-space :=
-space +=
+space := $(empty) $(empty)
 # A literal comma
 comma := ,
 
