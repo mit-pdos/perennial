@@ -111,7 +111,6 @@ Module lock.
     wp_call.
     wp_load.
     wp_apply (release_spec with "[$Hc $Hlocked $HR]").
-    iIntros "_".
     wp_pures.
     wp_load.
     wp_apply (acquire_spec with "[$Hc]").

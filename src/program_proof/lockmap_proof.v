@@ -74,6 +74,7 @@ Global Instance is_lockShard_ne ls gh c : ∀ n, Proper (Pointwise (dist n) ==> 
 Proof. apply _. Qed.
 *)
 
+Opaque zero_val.
 
 Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
   {{{ [∗ set] a ∈ covered, P a }}}
@@ -96,8 +97,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 
   wp_pures.
   iDestruct (lock.is_free_lock_ty with "Hfreelock") as "%".
-  wp_apply (wp_alloc _ _ (structTy lockShard.S)).
-  { repeat econstructor. }
+  wp_apply (wp_alloc _ _ (structTy lockShard.S)); first by eauto.
   iIntros (ls) "Hls".
 
   iMod (gen_heap_init (∅: gmap u64 bool)) as (hG) "Hheapctx".
@@ -172,20 +172,19 @@ Proof.
   auto.
 Qed.
 
+Ltac inv_ty :=
+  repeat match goal with
+         | [ H: val_ty _ _ |- _ ] => inversion H; subst; clear H
+         | [ H: lit_ty _ _ |- _ ] => inversion H; subst; clear H
+         end.
+
 Theorem wp_store_lockState_1 (lsp : loc) owner held cond waiters (v : bool) :
   {{{ lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}
     #(lsp +ₗ 1) <- #v
   {{{ RET #(); lsp ↦[struct.t lockState.S] (owner, #v, cond, waiters) }}}.
 Proof.
-  iIntros (Φ) "Hlsp HΦ".
-  iDestruct "Hlsp" as "[Hlsp %]".
-  inversion H; subst.
-  inversion H3; subst; clear H3.
-  inversion H4; subst; clear H4.
-  inversion H5; clear H5; subst.
-  inversion H7; clear H7; subst.
-  inversion H3; clear H3; subst.
-  inversion H8; clear H8; subst.
+  iIntros (Φ) "[Hlsp %] HΦ".
+  inv_ty.
   iDestruct "Hlsp" as "[[[[Howner _] [Hheld _]] [Hcond _]] [Hwaiters _]]".
   rewrite /=.
   wp_store.
@@ -196,7 +195,7 @@ Proof.
     iFrame.
   }
   iPureIntro.
-  repeat (eauto || econstructor).
+  val_ty.
 Qed.
 
 Theorem wp_load_lockState_2 (lsp : loc) owner held cond waiters :
@@ -206,17 +205,7 @@ Theorem wp_load_lockState_2 (lsp : loc) owner held cond waiters :
 Proof.
   iIntros (Φ) "Hlsp HΦ".
   iDestruct "Hlsp" as "[Hlsp %]".
-  inversion H; subst.
-  inversion H3; subst; clear H3.
-  inversion H4; subst; clear H4.
-  inversion H5; clear H5; subst.
-  inversion H7; clear H7; subst.
-  inversion H3; clear H3; subst.
-  inversion H8; clear H8; subst.
-  inversion H0; clear H0; subst.
-  inversion H1; clear H1; subst.
-  inversion H2; clear H2; subst.
-  inversion H3; clear H3; subst.
+  inv_ty.
   iDestruct "Hlsp" as "[[[[Howner _] [Hheld _]] [Hcond _]] [Hwaiters _]]".
   rewrite /=.
   wp_load.
@@ -233,17 +222,7 @@ Theorem wp_load_lockState_3 (lsp : loc) owner held cond waiters :
 Proof.
   iIntros (Φ) "Hlsp HΦ".
   iDestruct "Hlsp" as "[Hlsp %]".
-  inversion H; subst.
-  inversion H3; subst; clear H3.
-  inversion H4; subst; clear H4.
-  inversion H5; clear H5; subst.
-  inversion H7; clear H7; subst.
-  inversion H3; clear H3; subst.
-  inversion H8; clear H8; subst.
-  inversion H0; clear H0; subst.
-  inversion H1; clear H1; subst.
-  inversion H2; clear H2; subst.
-  inversion H3; clear H3; subst.
+  inv_ty.
   iDestruct "Hlsp" as "[[[[Howner _] [Hheld _]] [Hcond _]] [Hwaiters _]]".
   rewrite /=.
   wp_load.
@@ -270,18 +249,14 @@ Proof.
   rewrite /struct.loadF /=.
 
   wp_pures.
-  replace (1 * int.val 0) with (0) by len.
-  wp_bind (Load _).
-  iApply wp_load_lockShard_0; [done|].
-  iNext.
-  iIntros "_".
+  change (1 * int.val 0) with 0.
+  wp_apply wp_load_lockShard_0; [done|].
 
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
 
   wp_pures.
-  wp_bind (For _ _ _).
-  iApply (wp_forBreak
+  wp_apply (wp_forBreak
     (is_lockShard_inner mptr shardlock gh covered P)
     (is_lockShard_inner mptr shardlock gh covered P ∗ P addr ∗ locked gh addr)
     with "[] [$Hinner]").
@@ -290,21 +265,13 @@ Proof.
     iIntros (Φloop) "!> Hinner HΦloop".
     iDestruct "Hinner" as (m mv def gm) "(Hmptr & % & Hghctx & Haddrs & Hcovered)".
     wp_pures.
-
-    (* XXX annoying that the proof has to keep specifying these
-      types, when the goose-generated .v file already has them! *)
-    wp_apply (wp_alloc _ _ (refT (structTy lockState.S))).
-    { val_ty. }
+    wp_apply wp_alloc_zero.
     iIntros (state) "Hstate".
     wp_pures.
 
     replace (1 * int.val (1 + 0)) with (1) by len.
-    wp_bind (Load _).
-    iApply wp_load_lockShard_1; [done|].
-    iNext.
-    iIntros "_".
+    wp_apply wp_load_lockShard_1; [done|].
 
-    wp_bind (map.MapGet _ _).
     wp_apply (wp_MapGet with "[$Hmptr]"); auto.
     iIntros (v ok) "[% Hmptr]".
 
@@ -321,15 +288,11 @@ Proof.
   }
 
   {
-    iNext.
     iIntros "(Hinner & Hp & Haddrlocked)".
 
     wp_pures.
     replace (1 * int.val 0) with (0) by len.
-    wp_bind (Load _).
-    iApply wp_load_lockShard_0; [done|].
-    iNext.
-    iIntros "_".
+    wp_apply wp_load_lockShard_0; [done|].
 
     wp_apply (release_spec with "[Hlocked Hinner]").
     {
@@ -337,7 +300,6 @@ Proof.
       iFrame.
     }
 
-    iIntros "_".
     iApply "HΦ".
     iFrame.
   }
@@ -477,7 +439,6 @@ Proof.
       admit.
     }
 
-    iIntros "_".
     iApply "HΦ".
     auto.
   }
@@ -485,27 +446,19 @@ Proof.
   {
     wp_pures.
     replace (1 * int.val (1 + 0)) with (1) by len.
-    wp_bind (Load _).
-    iApply wp_load_lockShard_1; [done|].
-    iNext.
-    iIntros "_".
+    wp_apply wp_load_lockShard_1; [done|].
 
     wp_pures.
-    wp_bind (map.MapDelete _ _).
-    iApply (wp_MapDelete with "[Hmptr]").
+    wp_apply (wp_MapDelete with "[Hmptr]").
     {
       iFrame. done.
     }
-    iNext.
     iIntros (mv') "[Hmptr %]".
 
     wp_pures.
 
     replace (1 * int.val 0) with (0) by len.
-    wp_bind (Load _).
-    iApply wp_load_lockShard_0; [done|].
-    iNext.
-    iIntros "_".
+    wp_apply wp_load_lockShard_0; [done|].
 
     wp_apply (release_spec with "[Hlock Hlocked Hp Haddrlocked Hghctx Hcovered Hmptr Haddrs Hlockstateptr Hcond]").
     {
@@ -523,7 +476,6 @@ Proof.
       admit.
     }
 
-    iIntros "_".
     iApply "HΦ".
     auto.
   }

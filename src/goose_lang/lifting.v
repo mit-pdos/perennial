@@ -690,6 +690,16 @@ Proof using Type.
   iIntros "!>" (l) "/= (? & _)". rewrite Z.mul_0_r loc_add_0. iApply "HΦ"; iFrame.
 Qed.
 
+Definition zero_val_unfold :
+  forall t, zero_val t = ltac:(let x := eval red in (zero_val t) in
+                              exact x) := fun _ => eq_refl.
+
+Lemma wp_alloc_zero stk E t :
+  {{{ True }}} Alloc (zero_val t) @ stk; E {{{ l, RET LitV (LitLoc l); l ↦[t] (zero_val t) }}}.
+Proof using Type.
+  iIntros (Φ) "_ HΦ". iApply wp_alloc; eauto with lia.
+Qed.
+
 Lemma wp_alloc_untyped stk E v v0 :
   flatten_struct v = [v0] ->
   {{{ True }}} ref (Val v) @ stk; E
