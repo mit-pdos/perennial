@@ -20,6 +20,18 @@ Module lock.
   Definition acquire := spin_lock.acquire.
   Definition release := spin_lock.release.
 
+  Theorem new_free_lock stk E :
+    {{{ True }}}
+      new #() @ stk; E
+    {{{ l, RET #l; is_free_lock l }}}.
+  Proof.
+    iIntros (l) "_ HΦ".
+    wp_call.
+    wp_apply wp_alloc; [ eauto | ].
+    iIntros (l') "Hl".
+    iApply ("HΦ" with "[$]").
+  Qed.
+
   Theorem is_lock_ty N γ lk R :
     is_lock N γ lk R -∗ ⌜val_ty lk lockRefT⌝.
   Proof.
