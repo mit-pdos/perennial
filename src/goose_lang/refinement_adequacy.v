@@ -188,7 +188,7 @@ Definition wpc_obligation k E e es Φ Φc (hG: heapG Σ) (hC: crashG Σ) (hRG: r
      (O ⤇ es -∗ spec_ctx -∗ trace_ctx -∗ WPC e @ NotStuck; k; E; ∅ {{ Φ hG hC hRG }} {{ Φc hG hC hRG }})%I.
 
 Definition wpc_init k E e es Φ Φc initP : iProp Σ :=
-  (∀ {hG: heapG Σ} {hC: crashG Σ} {hRG: refinement_heapG Σ} σ σs,
+  (∀ (hG: heapG Σ) (hC: crashG Σ) (hRG: refinement_heapG Σ) σ σs,
       ⌜ initP σ σs ⌝ →
       ffi_start (heapG_ffiG) σ.(world) -∗
       ffi_start (refinement_spec_ffiG) σs.(world) -∗
@@ -199,7 +199,7 @@ Definition wpc_init k E e es Φ Φc initP : iProp Σ :=
    to be able to depend on what state the impl crashed to. If spec crah steps
    or impl crash steps are deterministic, there is probably a much simpler defn. *)
 Definition wpc_post_crash k E e es Φ Φc : iProp Σ :=
-  (∀ {hG: heapG Σ} {hC: crashG Σ} {hRG: refinement_heapG Σ},
+  (∀ (hG: heapG Σ) (hC: crashG Σ) (hRG: refinement_heapG Σ),
       Φc hG hC hRG ={∅}=∗
       ∀ (hG': heapG Σ) (hC': crashG Σ) σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) -∗
