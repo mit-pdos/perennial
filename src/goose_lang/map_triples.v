@@ -193,7 +193,10 @@ Definition wp_MapDelete stk E mref (m: gmap u64 val * val) mv k :
                     ⌜map_val mv' = Some (map_del m k)⌝ }}}.
 Proof.
   iIntros (𝛷) "[Hmref %] H𝛷".
-Abort.
+  wp_call.
+  wp_load.
+  wp_pure (Rec _ _ _).
+Admitted.
 
 (* TODO: specify MapIter *)
 

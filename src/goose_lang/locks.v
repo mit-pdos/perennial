@@ -32,6 +32,14 @@ Module lock.
     iApply ("HΦ" with "[$]").
   Qed.
 
+  Theorem is_free_lock_ty lk :
+    is_free_lock lk -∗ ⌜val_ty #lk lockRefT⌝.
+  Proof.
+    iIntros "Hlk".
+    iPureIntro.
+    val_ty.
+  Qed.
+
   Theorem is_lock_ty N γ lk R :
     is_lock N γ lk R -∗ ⌜val_ty lk lockRefT⌝.
   Proof.
