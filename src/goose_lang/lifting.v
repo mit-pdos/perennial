@@ -133,11 +133,13 @@ Class ffi_interp (ffi: ffi_model) :=
     ffi_update : ∀ Σ, ffiG Σ → ffi_names → ffiG Σ;
     ffi_get_update: ∀ Σ hF, ffi_update Σ hF (ffi_get_names _ hF) = hF;
     ffi_ctx: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
-    ffi_start: ∀ `{ffiG Σ}, ffi_state -> iProp Σ
+    ffi_start: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
+    ffi_restart: ∀ `{ffiG Σ}, ffi_state -> iProp Σ
   }.
 
 Arguments ffi_ctx {ffi FfiInterp Σ} fG : rename.
 Arguments ffi_start {ffi FfiInterp Σ} fG : rename.
+Arguments ffi_restart {ffi FfiInterp Σ} fG : rename.
 
 Section goose_lang.
   Context `{ffi_semantics: ext_semantics}.
@@ -226,6 +228,7 @@ Class heapG Σ := HeapG {
   heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
   heapG_traceG :> traceG Σ;
 }.
+
 
 (* The word 'heap' is really overloaded... *)
 Record heap_names := {
@@ -943,3 +946,5 @@ End goose_lang.
 
 Hint Extern 0 (AsRecV (RecV _ _ _) _ _ _) =>
   apply AsRecV_recv : typeclass_instances.
+
+Arguments heapG_ffiG {_ _ _ _ hG}: rename.

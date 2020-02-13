@@ -245,3 +245,5 @@ Proof using Type.
 Qed.
 
 End resolution_test.
+
+Arguments refinement_spec_ffiG {spec_ext spec_ffi spec_ffi_semantics spec_ffi_interp0 Σ hRG} : rename.

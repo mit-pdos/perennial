@@ -166,7 +166,8 @@ Section disk.
        ffi_get_update := fun _ _ => _;
        ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap_ctx d;
        ffi_start := fun _ _ (d: @ffi_state disk_model) =>
-                      ([∗ map] l↦v ∈ d, (mapsto (L:=Z) (V:=Block) l 1 v))%I |}.
+                      ([∗ map] l↦v ∈ d, (mapsto (L:=Z) (V:=Block) l 1 v))%I;
+       ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I |}.
   Next Obligation. intros ? [[]] => //=. Qed.
 
   Section proof.

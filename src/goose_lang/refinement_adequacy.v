@@ -37,7 +37,8 @@ Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
 
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field.
+Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field 
+         spec_ffi_interp_adequacy_field.
 
 Lemma goose_spec_init {hG: heapG Σ} r tp σ tr or:
   σ.(trace) = tr →
@@ -157,3 +158,58 @@ Proof.
 Qed.
 
 End refinement.
+
+Section refinement_wpc.
+Context {ext: ext_op}.
+Context {ffi: ffi_model}.
+Context {ffi_semantics: ext_semantics ext ffi}.
+Context `{interp: !ffi_interp ffi}.
+Context `{interp_adeq: !ffi_interp_adequacy}.
+
+Context {spec_ext: spec_ext_op}.
+Context {spec_ffi: spec_ffi_model}.
+Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
+Context `{spec_interp: @spec_ffi_interp spec_ffi}.
+Context `{spec_adeq: !spec_ffi_interp_adequacy}.
+
+Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
+Context `{Hcpre: @cfgPreG spec_lang Σ}.
+Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
+
+Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
+         spec_ffi_interp_adequacy_field.
+
+
+(* This is the core triple that must be proved. There are then two scenarios
+   where it has to be shown to hold: from an initial state, and from post-crash
+   (assuming Φc on the previous generation) *)
+
+Definition wpc_obligation k E e es Φ Φc (hG: heapG Σ) (hC: crashG Σ) (hRG: refinement_heapG Σ) : iProp Σ :=
+     (O ⤇ es -∗ spec_ctx -∗ trace_ctx -∗ WPC e @ NotStuck; k; E; ∅ {{ Φ hG hC hRG }} {{ Φc hG hC hRG }})%I.
+
+Definition wpc_init k E e es Φ Φc initP : iProp Σ :=
+  (∀ {hG: heapG Σ} {hC: crashG Σ} {hRG: refinement_heapG Σ} σ σs,
+      ⌜ initP σ σs ⌝ →
+      ffi_start (heapG_ffiG) σ.(world) -∗
+      ffi_start (refinement_spec_ffiG) σs.(world) -∗
+      wpc_obligation k E e es Φ Φc hG hC hRG)%I.
+
+(* XXX: ffi_restart seems unnecessary, given ffi_crash_rel *)
+(* This is very complicated to allow the choice of simulated spec crash step
+   to be able to depend on what state the impl crashed to. If spec crah steps
+   or impl crash steps are deterministic, there is probably a much simpler defn. *)
+Definition wpc_post_crash k E e es Φ Φc : iProp Σ :=
+  (∀ {hG: heapG Σ} {hC: crashG Σ} {hRG: refinement_heapG Σ},
+      Φc hG hC hRG ={∅}=∗
+      ∀ (hG': heapG Σ) (hC': crashG Σ) σs,
+      (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) -∗
+      ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
+      spec_assert.spec_interp σs -∗
+      ∃ σs' (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
+      ∀ (hRG': refinement_heapG Σ),
+      ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
+                      (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
+      ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
+      wpc_obligation k E e es Φ Φc hG' hC' hRG')%I.
+
+End refinement_wpc.
