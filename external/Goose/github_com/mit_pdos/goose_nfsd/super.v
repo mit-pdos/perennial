@@ -4,12 +4,11 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.fake_bcache.bcache.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 
 Module FsSuper.
   Definition S := struct.decl [
-    "Disk" :: struct.ptrT bcache.Bcache.S;
+    "Disk" :: disk.Disk;
     "Size" :: uint64T;
     "nLog" :: uint64T;
     "NBlockBitmap" :: uint64T;
@@ -38,9 +37,8 @@ Definition MkFsSuper: val :=
       util.DPrintf #0 (#(str"MkFsSuper: create mem disk
       "));;
       "d" <-[Disk] disk.NewMemDisk "sz");;
-    let: "bc" := bcache.MkBcache (![Disk] "d") in
     struct.new FsSuper.S [
-      "Disk" ::= "bc";
+      "Disk" ::= ![Disk] "d";
       "Size" ::= "sz";
       "nLog" ::= common.LOGSIZE;
       "NBlockBitmap" ::= "nblockbitmap";

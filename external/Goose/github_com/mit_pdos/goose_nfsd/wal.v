@@ -3,7 +3,6 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.fake_bcache.bcache.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.tchajed.marshal.
 
@@ -62,7 +61,7 @@ Definition MkBlockData: val :=
 Module Walog.
   Definition S := struct.decl [
     "memLock" :: lockRefT;
-    "d" :: struct.ptrT bcache.Bcache.S;
+    "d" :: disk.Disk;
     "condLogger" :: condvarRefT;
     "condInstall" :: condvarRefT;
     "memLog" :: slice.T (struct.t BlockData.S);
@@ -127,22 +126,22 @@ Definition encodeHdr2: val :=
 Definition Walog__writeHdr: val :=
   λ: "l" "h",
     let: "blk" := encodeHdr (struct.load hdr.S "h") in
-    bcache.Bcache__Write (struct.loadF Walog.S "d" "l") LOGHDR "blk".
+    disk.Write LOGHDR "blk".
 
 Definition Walog__readHdr: val :=
   λ: "l",
-    let: "blk" := bcache.Bcache__Read (struct.loadF Walog.S "d" "l") LOGHDR in
+    let: "blk" := disk.Read LOGHDR in
     let: "h" := decodeHdr "blk" in
     "h".
 
 Definition Walog__writeHdr2: val :=
   λ: "l" "h",
     let: "blk" := encodeHdr2 (struct.load hdr2.S "h") in
-    bcache.Bcache__Write (struct.loadF Walog.S "d" "l") LOGHDR2 "blk".
+    disk.Write LOGHDR2 "blk".
 
 Definition Walog__readHdr2: val :=
   λ: "l",
-    let: "blk" := bcache.Bcache__Read (struct.loadF Walog.S "d" "l") LOGHDR2 in
+    let: "blk" := disk.Read LOGHDR2 in
     let: "h" := decodeHdr2 "blk" in
     "h".
 
@@ -159,7 +158,7 @@ Definition Walog__LogSz: val :=
 Definition Walog__cutMemLog: val :=
   λ: "l" "installEnd",
     ForSlice (struct.t BlockData.S) "i" "blk" (SliceTake (struct.loadF Walog.S "memLog" "l") ("installEnd" - struct.loadF Walog.S "memStart" "l"))
-      (let: "pos" := "installEnd" + "i" in
+      (let: "pos" := struct.loadF Walog.S "memStart" "l" + "i" in
       let: "blkno" := struct.get BlockData.S "bn" "blk" in
       let: ("oldPos", "ok") := MapGet (struct.loadF Walog.S "memLogMap" "l") "blkno" in
       (if: "ok" && ("oldPos" = "pos")
@@ -175,14 +174,14 @@ Definition Walog__cutMemLog: val :=
 
    Does not hold the memLock, but expects exclusive ownership of the data
    region. *)
-Definition Walog__installBlocks: val :=
-  λ: "l" "bufs",
+Definition installBlocks: val :=
+  λ: "d" "bufs",
     ForSlice (struct.t BlockData.S) "i" "buf" "bufs"
       (let: "blkno" := struct.get BlockData.S "bn" "buf" in
       let: "blk" := struct.get BlockData.S "blk" "buf" in
       util.DPrintf #5 (#(str"installBlocks: write log block %d to %d
       ")) "i" "blkno";;
-      bcache.Bcache__Write (struct.loadF Walog.S "d" "l") "blkno" "blk").
+      disk.Write "blkno" "blk").
 
 (* logInstall installs one on-disk transaction from the disk log to the data
    region.
@@ -206,7 +205,7 @@ Definition Walog__logInstall: val :=
       lock.release (struct.loadF Walog.S "memLock" "l");;
       util.DPrintf #5 (#(str"logInstall up to %d
       ")) "installEnd";;
-      Walog__installBlocks "l" "bufs";;
+      installBlocks (struct.loadF Walog.S "d" "l") "bufs";;
       let: "h" := struct.new hdr2.S [
         "start" ::= "installEnd"
       ] in
@@ -250,20 +249,20 @@ Definition Walog__installer: val :=
 
    The caller is responsible for updating both the disk and memory copy of
    diskEnd. *)
-Definition Walog__logBlocks: val :=
-  λ: "l" "diskEnd" "bufs",
+Definition logBlocks: val :=
+  λ: "d" "diskEnd" "bufs",
     ForSlice (struct.t BlockData.S) "i" "buf" "bufs"
       (let: "pos" := "diskEnd" + "i" in
       let: "blk" := struct.get BlockData.S "blk" "buf" in
       let: "blkno" := struct.get BlockData.S "bn" "buf" in
       util.DPrintf #5 (#(str"logBlocks: %d to log block %d
       ")) "blkno" "pos";;
-      bcache.Bcache__Write (struct.loadF Walog.S "d" "l") (posToDiskAddr "pos") "blk").
+      disk.Write (posToDiskAddr "pos") "blk").
 
 (* logAppend appends to the log, if it can find transactions to append.
 
-   It grabs the new writes in memory and not on disk through l.
-   nextDiskEnd; if there are any such writes, it commits them atomically.
+   It grabs the new writes in memory and not on disk through l.nextDiskEnd; if
+   there are any such writes, it commits them atomically.
 
    assumes caller holds memLock
 
@@ -284,7 +283,7 @@ Definition Walog__logAppend: val :=
     then #false
     else
       lock.release (struct.loadF Walog.S "memLock" "l");;
-      Walog__logBlocks "l" "diskEnd" "newbufs";;
+      logBlocks (struct.loadF Walog.S "d" "l") "diskEnd" "newbufs";;
       let: "addrs" := NewSlice common.Bnum HDRADDRS in
       ForSlice (struct.t BlockData.S) "i" "buf" (SliceTake "memlog" ("newDiskEnd" - "memstart"))
         (let: "pos" := "memstart" + "i" in
@@ -294,7 +293,7 @@ Definition Walog__logAppend: val :=
         "addrs" ::= "addrs"
       ] in
       Walog__writeHdr "l" "newh";;
-      bcache.Bcache__Barrier (struct.loadF Walog.S "d" "l");;
+      disk.Barrier #();;
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
       struct.storeF Walog.S "diskEnd" "l" "newDiskEnd";;
       lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
@@ -337,13 +336,14 @@ Definition Walog__recover: val :=
       let: "addr" := SliceGet uint64T (struct.loadF hdr.S "addrs" "h") (![LogPosition] "pos" `rem` Walog__LogSz "l") in
       util.DPrintf #1 (#(str"recover block %d
       ")) "addr";;
-      let: "blk" := bcache.Bcache__Read (struct.loadF Walog.S "d" "l") (LOGSTART + ![LogPosition] "pos" `rem` Walog__LogSz "l") in
+      let: "blk" := disk.Read (LOGSTART + ![LogPosition] "pos" `rem` Walog__LogSz "l") in
       let: "b" := MkBlockData "addr" "blk" in
       struct.storeF Walog.S "memLog" "l" (SliceAppend (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") "b");;
+      MapInsert (struct.loadF Walog.S "memLogMap" "l") (struct.get BlockData.S "bn" "b") (![LogPosition] "pos");;
       Continue);;
     struct.storeF Walog.S "nextDiskEnd" "l" (struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l")).
 
-Definition MkLog: val :=
+Definition mkLog: val :=
   λ: "disk",
     let: "ml" := lock.new #() in
     let: "l" := struct.new Walog.S [
@@ -363,36 +363,18 @@ Definition MkLog: val :=
     util.DPrintf #1 (#(str"mkLog: size %d
     ")) LOGSZ;;
     Walog__recover "l";;
-    Fork (Walog__logger "l");;
-    Fork (Walog__installer "l");;
     "l".
 
-(* Read blkno from memLog, if present *)
-Definition Walog__readMemLog: val :=
-  λ: "l" "blkno",
-    let: "blk" := ref (zero_val (slice.T byteT)) in
-    lock.acquire (struct.loadF Walog.S "memLock" "l");;
-    let: ("pos", "ok") := MapGet (struct.loadF Walog.S "memLogMap" "l") "blkno" in
-    (if: "ok"
-    then
-      util.DPrintf #5 (#(str"read memLogMap: read %d pos %d
-      ")) "blkno" "pos";;
-      let: "buf" := SliceGet (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") ("pos" - struct.loadF Walog.S "memStart" "l") in
-      "blk" <-[slice.T byteT] NewSlice byteT disk.BlockSize;;
-      SliceCopy byteT (![slice.T byteT] "blk") (struct.get BlockData.S "blk" "buf");;
-      #()
-    else #());;
-    lock.release (struct.loadF Walog.S "memLock" "l");;
-    ![slice.T byteT] "blk".
+Definition Walog__startBackgroundThreads: val :=
+  λ: "l",
+    Fork (Walog__logger "l");;
+    Fork (Walog__installer "l").
 
-Definition Walog__Read: val :=
-  λ: "l" "blkno",
-    let: "blk" := ref (zero_val (slice.T byteT)) in
-    let: "blkMem" := Walog__readMemLog "l" "blkno" in
-    (if: "blkMem" ≠ slice.nil
-    then "blk" <-[slice.T byteT] "blkMem"
-    else "blk" <-[slice.T byteT] bcache.Bcache__Read (struct.loadF Walog.S "d" "l") "blkno");;
-    ![slice.T byteT] "blk".
+Definition MkLog: val :=
+  λ: "disk",
+    let: "l" := mkLog "disk" in
+    Walog__startBackgroundThreads "l";;
+    "l".
 
 (* memWrite writes out bufs to the in-memory log
 
@@ -402,7 +384,7 @@ Definition Walog__Read: val :=
    Assumes caller holds memLock *)
 Definition Walog__memWrite: val :=
   λ: "l" "bufs",
-    let: "pos" := ref (slice.len (struct.loadF Walog.S "memLog" "l")) in
+    let: "pos" := ref (struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l")) in
     ForSlice (struct.t BlockData.S) <> "buf" "bufs"
       (let: ("oldpos", "ok") := MapGet (struct.loadF Walog.S "memLogMap" "l") (struct.get BlockData.S "bn" "buf") in
       (if: "ok" && "oldpos" ≥ struct.loadF Walog.S "nextDiskEnd" "l"
@@ -422,15 +404,53 @@ Definition Walog__memWrite: val :=
         MapInsert (struct.loadF Walog.S "memLogMap" "l") (struct.get BlockData.S "bn" "buf") (![LogPosition] "pos");;
         "pos" <-[LogPosition] ![LogPosition] "pos" + #1)).
 
-(* Assumes caller holds memLock
-
-   Appends to the in-memory log and returns the new transaction's pos in the
-   log. *)
+(* Assumes caller holds memLock *)
 Definition Walog__doMemAppend: val :=
   λ: "l" "bufs",
     Walog__memWrite "l" "bufs";;
     let: "txn" := struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") in
     "txn".
+
+(* Read blkno from memLog, if present *)
+Definition Walog__readMemLog: val :=
+  λ: "l" "blkno",
+    let: "blk" := ref (zero_val (slice.T byteT)) in
+    lock.acquire (struct.loadF Walog.S "memLock" "l");;
+    let: ("pos", "ok") := MapGet (struct.loadF Walog.S "memLogMap" "l") "blkno" in
+    (if: "ok"
+    then
+      util.DPrintf #5 (#(str"read memLogMap: read %d pos %d
+      ")) "blkno" "pos";;
+      let: "buf" := SliceGet (struct.t BlockData.S) (struct.loadF Walog.S "memLog" "l") ("pos" - struct.loadF Walog.S "memStart" "l") in
+      "blk" <-[slice.T byteT] NewSlice byteT disk.BlockSize;;
+      SliceCopy byteT (![slice.T byteT] "blk") (struct.get BlockData.S "blk" "buf");;
+      #()
+    else #());;
+    lock.release (struct.loadF Walog.S "memLock" "l");;
+    ![slice.T byteT] "blk".
+
+(* Read from only the in-memory cached state (the unstable and logged parts of
+   the wal). *)
+Definition Walog__ReadMem: val :=
+  λ: "l" "blkno",
+    let: "blk" := Walog__readMemLog "l" "blkno" in
+    ("blk", "blk" ≠ slice.nil).
+
+(* Read from only the installed state (a subset of durable state). *)
+Definition Walog__ReadInstalled: val :=
+  λ: "l" "blkno",
+    disk.Read "blkno".
+
+(* Read reads from the latest memory state, but does so in a
+   difficult-to-linearize way (specifically, it is future-dependent when to
+   linearize between the l.memLog.Unlock() and the eventual disk read, due to
+   potential concurrent cache or disk writes). *)
+Definition Walog__Read: val :=
+  λ: "l" "blkno",
+    let: ("blk", "ok") := Walog__ReadMem "l" "blkno" in
+    (if: "ok"
+    then "blk"
+    else Walog__ReadInstalled "l" "blkno").
 
 (* Append to in-memory log.
 
@@ -480,7 +500,7 @@ Definition Walog__Flush: val :=
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
     (if: "txn" > struct.loadF Walog.S "nextDiskEnd" "l"
     then
-      struct.storeF Walog.S "nextDiskEnd" "l" "txn";;
+      struct.storeF Walog.S "nextDiskEnd" "l" (struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l"));;
       #()
     else #());;
     Skip;;
