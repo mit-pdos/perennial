@@ -17,8 +17,15 @@ Definition disk := gmap u64 Block.
 
 Module log_state.
   Record t :=
-    mk { txn_disk: gmap u64 disk; }.
-  Global Instance _eta: Settable _ := settable! mk <txn_disk>.
+    mk { (* tracks the disk corresponding to each LogPosition (the identifiers
+    handed out by MemAppend) *)
+        txn_disk: gmap u64 disk;
+        (* installed_to promises what will be read after a cache miss *)
+        installed_to: u64;
+        (* durable_to promises what will be on-disk after a crash *)
+        durable_to: u64;
+      }.
+  Global Instance _eta: Settable _ := settable! mk <txn_disk; installed_to; durable_to>.
 End log_state.
 
 Instance gen_gmap_entry {Σ K} `{Countable K} {V} (m: gmap K V) :
@@ -35,24 +42,50 @@ Qed.
 Existing Instance r_mbind.
 
 Definition log_crash: transition log_state.t unit :=
-  disks ← reads log_state.txn_disk;
-  kv ← suchThat (fun _ '(k, v) => disks !! k = Some v);
+  kv ← suchThat (gen:=fun _ _ => None) (fun s '(k, v) => s.(log_state.txn_disk) !! k = Some v ∧ int.val k >= int.val s.(log_state.durable_to));
   let '(pos, d) := kv in
-  modify (set log_state.txn_disk (λ _, {[ pos := d ]}));;
+  modify (set log_state.txn_disk (λ _, {[ pos := d ]}) ∘
+          set log_state.durable_to (λ _, pos));;
   ret tt.
-
-Instance Zgt_decide z1 z2 : Decision (z1 > z2).
-Proof.
-  hnf.
-  destruct (decide (z2 < z1)); [ left | right ]; abstract lia.
-Defined.
 
 Definition latest_disk (s:log_state.t): u64*disk :=
   map_fold
     (fun k d '(k', d') =>
-       if decide (int.val k > int.val k')
+       if decide (int.val k' < int.val k)
        then (k, d) else (k', d'))
     (U64 0, ∅) s.(log_state.txn_disk).
+
+Definition get_txn_disk (pos:u64) : transition log_state.t disk :=
+  reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap.
+
+Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
+  ok ← suchThat (fun _ (b:bool) => True);
+  if (ok:bool)
+  then d ← reads (snd ∘ latest_disk);
+       match d !! a with
+       | None => undefined
+       | Some b => ret (Some b)
+       end
+  else (* this is really non-deterministic; it would be simpler if upfront we
+          moved installed_to forward to a valid transaction and then made most
+          of the remaining decisions deterministically. *)
+    new_installed ← suchThat (gen:=fun _ _ => None)
+                  (fun s pos => int.val s.(log_state.installed_to) <=
+                             int.val pos <=
+                             int.val s.(log_state.durable_to));
+    modify (set log_state.installed_to (λ _, new_installed));;
+    install_d ← get_txn_disk new_installed;
+    suchThat (gen:=fun _ _ => None)
+             (fun s (_:unit) =>
+                forall pos d, int.val s.(log_state.installed_to) < int.val pos ->
+                         s.(log_state.txn_disk) !! pos = Some d ->
+                         d !! a = install_d !! a);;
+    ret None.
+
+Definition log_read_installed (a:u64): transition log_state.t Block :=
+  installed_to ← reads log_state.installed_to;
+  install_d ← get_txn_disk installed_to;
+  unwrap (install_d !! a).
 
 Definition log_read (a:u64): transition log_state.t Block :=
   d ← reads (snd ∘ latest_disk);
@@ -64,11 +97,14 @@ Definition log_read (a:u64): transition log_state.t Block :=
 Definition apply_upds (upds: list (u64*Block)) (d: disk): disk :=
   fold_right (fun '(a, b) => <[a := b]>) d upds.
 
-Definition log_mem_append (upds: list (u64*Block)): transition log_state.t unit :=
+Definition log_mem_append (upds: list (u64*Block)): transition log_state.t u64 :=
   txn_d ← reads latest_disk;
   let '(txn, d) := txn_d in
+  (* TODO: note that this promises an ordering over transaction IDs, but due
+  to absorption this might not be true. *)
   new_txn ← suchThat (gen:=fun _ _ => None) (fun _ new_txn => int.val new_txn > int.val txn);
-  modify (set log_state.txn_disk (<[new_txn:=apply_upds upds d]>)).
+  modify (set log_state.txn_disk (<[new_txn:=apply_upds upds d]>));;
+  ret new_txn.
 
 Definition remove_before (pos: u64) {V} (m: gmap u64 V) : gmap u64 V :=
   filter (fun '(x, _) => int.val x < int.val pos) m.
@@ -84,5 +120,85 @@ Existing Instance diskG0.
 Implicit Types (Φ : val → iProp Σ).
 Implicit Types (v:val) (z:Z).
 Implicit Types (stk:stuckness) (E:coPset).
+
+Context (N: namespace).
+Context (P: log_state.t -> iProp Σ).
+
+(* this will be the entire internal wal invariant - callers will not need to
+unfold it *)
+Definition is_wal (l: loc): iProp Σ := inv N (l ↦ Free #()).
+
+Definition blocks_to_gmap (bs:list Block): disk.
+  (* this is just annoying to write down *)
+Admitted.
+
+Theorem wp_new_wal bs :
+  {{{ P (log_state.mk {[U64 0 := blocks_to_gmap bs]} (U64 0) (U64 0)) ∗ 0 d↦∗ bs }}}
+    MkLog #()
+  {{{ l, RET #l; is_wal l }}}.
+Proof.
+Admitted.
+
+Definition update_val (up:u64*Slice.t): val :=
+  (#(fst up), slice_val (snd up))%V.
+
+Definition is_block (s:Slice.t) (b:Block) :=
+  is_slice_small s byteT (Block_to_vals b).
+
+Definition updates_slice (bk_s: Slice.t) (bs: list (u64*Block)): iProp Σ :=
+  ∃ bks, is_slice_small bk_s (struct.t BlockData.S) (update_val <$> bks) ∗
+   [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(a,b) := upd in
+                                     is_block (snd b_upd) b.
+
+Theorem wp_Walog__MemAppend (Q: u64 -> iProp Σ) l bufs bs :
+  {{{ is_wal l ∗
+       updates_slice bufs bs ∗
+       (∀ σ σ' pos,
+         ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ ∗
+          P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos)
+   }}}
+    Walog__MemAppend #l (slice_val bufs)
+  {{{ pos, RET #pos; Q pos }}}.
+Proof.
+Admitted.
+
+Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l a :
+  {{{ is_wal l ∗
+       (∀ σ σ' mb,
+         ⌜relation.denote (log_read_cache a) σ σ' mb⌝ ∗
+          P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q mb)
+   }}}
+    Walog__ReadMem #l #a
+  {{{ (ok:bool) bl, RET (#ok, slice_val bl); if ok
+                                             then ∃ b, is_block bl b ∗ Q (Some b)
+                                             else Q None}}}.
+Proof.
+Admitted.
+
+Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l a :
+  {{{ is_wal l ∗
+       (∀ σ σ' b,
+         ⌜relation.denote (log_read_installed a) σ σ' b⌝ ∗
+          P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q b)
+   }}}
+    Walog__ReadInstalled #l #a
+  {{{ (ok:bool) bl, RET (#ok, slice_val bl); ∃ b, is_block bl b ∗ Q b}}}.
+Proof.
+Admitted.
+
+Theorem wp_Walog__Flush (Q: iProp Σ) l pos :
+  {{{ is_wal l ∗
+       (∀ σ σ' b,
+           (* TODO: does this correctly account for undefined behavior? it seems
+           like it's wrong since this proof gets to assume false when there's
+           undefined behavior, whereas we'd somehow need the caller to establish
+           preconditions at all intermediate points *)
+         ⌜relation.denote (log_flush pos) σ σ' b⌝ ∗
+          P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
+   }}}
+    Walog__Flush #l #pos
+  {{{ RET #(); Q}}}.
+Proof.
+Admitted.
 
 End heap.
