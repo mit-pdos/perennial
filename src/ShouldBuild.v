@@ -22,7 +22,7 @@ From Perennial.goose_lang.examples.nfs_spec Require Import
      NFS3API.
 
 (* more goose output *)
-From Goose.github_com.mit_pdos Require goose_nfsd.wal.
+From Goose.github_com.mit_pdos Require goose_nfsd.lockmap.
 
 (* interpreter *)
 From Perennial.goose_lang.interpreter Require Import interpreter test_config.

@@ -46,9 +46,8 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrV
   )%I.
 
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
-  ( ∃ mv m def ghostMap,
-      mptr ↦ Free mv ∗
-      ⌜ map_val mv = Some (m, def) ⌝ ∗
+  ( ∃ m def ghostMap,
+      is_map mptr (m, def) ∗
       gen_heap_ctx (hG := ghostHeap) ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P ) ∗
@@ -81,7 +80,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   wp_call.
 
   wp_apply wp_NewMap.
-  iIntros (mref mv def) "[Hmap %]".
+  iIntros (mref) "Hmap".
   wp_pures.
 
   wp_bind (newlock _).
@@ -102,16 +101,13 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 
   iAssert (is_lockShard_inner mref shardlock hG covered P) with "[Hinit Hmap Hheapctx]" as "Hinner".
   {
-    iExists _, _, _, _.
+    iExists _, _, _.
     iFrame.
 
     iSplitR; eauto.
 
     rewrite dom_empty_L difference_empty_L.
     iFrame.
-
-    iApply big_sepM2_empty.
-    done.
   }
 
   iMod (alloc_lock with "Hfreelock Hinner") as (γ) "Hlock".
@@ -258,7 +254,7 @@ Proof.
 
   {
     iIntros (Φloop) "!> Hinner HΦloop".
-    iDestruct "Hinner" as (m mv def gm) "(Hmptr & % & Hghctx & Haddrs & Hcovered)".
+    iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
     wp_pures.
     wp_apply wp_alloc_zero.
     iIntros (state) "Hstate".
@@ -341,22 +337,13 @@ Proof.
 
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
-  iDestruct "Hinner" as (m mv def gm) "(Hmptr & % & Hghctx & Haddrs & Hcovered)".
+  iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
 
   wp_pures.
   replace (1 * int.val (1 + 0)) with (1) by len.
-  wp_bind (Load _).
-  iApply wp_load_lockShard_1; [done|].
-  iNext.
-  iIntros "_".
+  wp_apply wp_load_lockShard_1; [done|].
 
-  wp_bind (map.MapGet _ _).
-  iApply (wp_MapGet with "[Hmptr]").
-  {
-    iFrame.
-    auto.
-  }
-  iNext.
+  wp_apply (wp_MapGet with "Hmptr").
   iIntros (v ok) "[% Hmptr]".
 
   wp_pures.
@@ -370,24 +357,20 @@ Proof.
 
   iDestruct "Haddr" as (lockStatePtr owner cond waiters) "[-> (Hlockstateptr & Hcond & [% Hxx])]".
 
-  rewrite /map_get H1 /= in H0.
-  inversion H0; clear H0; subst.
+  rewrite /map_get H0 /= in H.
+  inversion H; clear H; subst.
 
   Transparent storeField.
   rewrite /struct.storeF /=.
 
   wp_pures.
   replace (1 * int.val (1 + 0)) with (1) by len.
-  wp_bind (Store _ _).
-  iApply (wp_store_lockState_1 with "Hlockstateptr").
-  iNext.
+  wp_apply (wp_store_lockState_1 with "Hlockstateptr").
   iIntros "Hlockstateptr".
 
   wp_pures.
   replace (1 * int.val (1 + (1 + (1 + 0)))) with (3) by len.
-  wp_bind (Load _).
-  iApply (wp_load_lockState_3 with "Hlockstateptr").
-  iNext.
+  wp_apply (wp_load_lockState_3 with "Hlockstateptr").
   iIntros (nwaiters) "[-> Hlockstateptr]".
 
   wp_pures.
@@ -396,13 +379,10 @@ Proof.
   {
     wp_pures.
     replace (1 * int.val (1 + (1 + 0))) with (2) by len.
-    wp_bind (Load _).
-    iApply (wp_load_lockState_2 with "Hlockstateptr").
-    iNext.
+    wp_apply (wp_load_lockState_2 with "Hlockstateptr").
     iIntros "Hlockstateptr".
 
-    wp_bind (lock.condSignal _).
-    iApply (lock.wp_condSignal with "[Hcond]").
+    wp_apply (lock.wp_condSignal with "[Hcond]").
     {
       iExists _.
       iDestruct "Hcond" as "[[Hcond _] %]".
@@ -412,7 +392,6 @@ Proof.
       iApply "Hlock".
     }
 
-    iNext.
     iIntros "Hcond".
     wp_pures.
 
@@ -427,9 +406,8 @@ Proof.
       iFrame.
       iSplitR.
       { iApply "Hlock". }
-      iExists m, _, _, gm.
+      iExists m, _, gm.
       iFrame.
-      iSplitR; eauto.
 
       admit.
     }
@@ -444,11 +422,8 @@ Proof.
     wp_apply wp_load_lockShard_1; [done|].
 
     wp_pures.
-    wp_apply (wp_MapDelete with "[Hmptr]").
-    {
-      iFrame. done.
-    }
-    iIntros (mv') "[Hmptr %]".
+    wp_apply (wp_MapDelete with "[$Hmptr]").
+    iIntros "Hmptr".
 
     wp_pures.
 
@@ -460,10 +435,8 @@ Proof.
       iFrame.
       iSplitR.
       { iApply "Hlock". }
-      iExists mv', _, _, (delete addr gm).
+      iExists _, _, (delete addr gm).
       iFrame.
-      iSplitR; eauto.
-
       (* don't have a lemma for gen_heap deletion.. *)
       iSplitL "Hghctx". { admit. }
 
