@@ -1,5 +1,5 @@
 From iris.proofmode Require Export coq_tactics reduction.
-From iris.algebra Require Export auth gmap frac agree.
+From iris.algebra Require Export auth gmap frac agree excl vector.
 From Perennial.goose_lang Require Export wpc_proofmode.
 From Perennial.goose_lang Require Export basic_triples.
 From Perennial.goose_lang Require Export map_triples.
