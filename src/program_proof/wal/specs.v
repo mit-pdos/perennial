@@ -76,10 +76,10 @@ Definition log_read (a:u64): transition log_state.t Block :=
   | Some b => ret b
   end.
 
-Definition apply_upds (upds: list (u64*Block)) (d: disk): disk :=
-  fold_right (fun '(a, b) => <[int.val a := b]>) d upds.
+Definition apply_upds (upds: list update.t) (d: disk): disk :=
+  fold_right (fun '(update.mk a b) => <[int.val a := b]>) d upds.
 
-Definition log_mem_append (upds: list (u64*Block)): transition log_state.t u64 :=
+Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   txn_d ← reads latest_disk;
   let '(txn, d) := txn_d in
   (* TODO: note that this promises an ordering over transaction IDs, but due
@@ -117,17 +117,6 @@ Theorem wp_new_wal bs :
   {{{ l, RET #l; is_wal l }}}.
 Proof.
 Admitted.
-
-Definition update_val (up:u64*Slice.t): val :=
-  (#(fst up), slice_val (snd up))%V.
-
-Definition is_block (s:Slice.t) (b:Block) :=
-  is_slice_small s byteT (Block_to_vals b).
-
-Definition updates_slice (bk_s: Slice.t) (bs: list (u64*Block)): iProp Σ :=
-  ∃ bks, is_slice_small bk_s (struct.t Update.S) (update_val <$> bks) ∗
-   [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(a,b) := upd in
-                                     is_block (snd b_upd) b.
 
 Theorem wp_Walog__MemAppend (Q: u64 -> iProp Σ) l bufs bs :
   {{{ is_wal l ∗

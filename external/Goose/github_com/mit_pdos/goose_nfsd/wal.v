@@ -94,6 +94,11 @@ Definition circular__hdr2: val :=
 
 Definition circular__appendFreeSpace: val :=
   λ: "c" "bufs",
+    (if: circular__SpaceRemaining "c" < slice.len "bufs"
+    then
+      Panic ("append would overflow circular log");;
+      #()
+    else #());;
     ForSlice (struct.t Update.S) "i" "buf" "bufs"
       (let: "pos" := struct.loadF circular.S "diskEnd" "c" + "i" in
       let: "blk" := struct.get Update.S "Block" "buf" in
@@ -453,7 +458,9 @@ Definition Walog__MemAppend: val :=
           "ok" <-[boolT] #false;;
           Break
         else
-          (if: (circular__SpaceRemaining (struct.loadF Walog.S "circ" "l") = #0)
+          let: "memEnd" := struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l") in
+          let: "memSize" := "memEnd" - struct.loadF circular.S "diskEnd" (struct.loadF Walog.S "circ" "l") in
+          (if: "memSize" + slice.len "bufs" > LOGSZ
           then
             util.DPrintf #5 (#(str"memAppend: log is full; try again"));;
             struct.storeF Walog.S "nextDiskEnd" "l" (struct.loadF Walog.S "memStart" "l" + slice.len (struct.loadF Walog.S "memLog" "l"));;
