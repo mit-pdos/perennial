@@ -6,9 +6,6 @@ Import uPred.
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
-Implicit Types P Q : iProp Σ.
-Implicit Types Φ : val → iProp Σ.
-Implicit Types Δ : envs (uPredI (iResUR Σ)).
 Implicit Types v : val.
 Implicit Types vs : list val.
 Implicit Types z : Z.

@@ -98,10 +98,7 @@ Definition log_flush (pos: u64): transition log_state.t unit :=
 
 Section heap.
 Context `{!heapG Σ}.
-Existing Instance diskG0.
-Implicit Types (Φ : val → iProp Σ).
 Implicit Types (v:val) (z:Z).
-Implicit Types (stk:stuckness) (E:coPset).
 
 Context (N: namespace).
 Context (P: log_state.t -> iProp Σ).

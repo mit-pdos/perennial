@@ -26,13 +26,8 @@ Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!gen_heapPreG u64 bool Σ}.
 
-Implicit Types P Q : iProp Σ.
-Implicit Types Φ : val → iProp Σ.
-Implicit Types Δ : envs (uPredI (iResUR Σ)).
-Implicit Types v : val.
-Implicit Types z : Z.
 Implicit Types s : Slice.t.
-Implicit Types stk : stuckness.
+Implicit Types (stk:stuckness) (E: coPset).
 
 Definition lockN : namespace := nroot .@ "lockShard".
 Definition lockshardN : namespace := nroot .@ "lockShardMem".

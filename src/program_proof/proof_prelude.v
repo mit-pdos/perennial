@@ -11,3 +11,6 @@ From Perennial.goose_lang Require Export lib.spin_lock.
 Export uPred.
 
 Global Set Default Proof Using "Type".
+Global Set Printing Projections.
+
+Existing Instance diskG0.
