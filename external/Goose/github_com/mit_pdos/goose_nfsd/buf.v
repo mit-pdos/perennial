@@ -12,7 +12,7 @@ From Goose Require github_com.tchajed.marshal.
 (* A buf holds a disk object (inode, a bitmap bit, or disk block) *)
 Module Buf.
   Definition S := struct.decl [
-    "Addr" :: addr.Addr;
+    "Addr" :: struct.t addr.Addr.S;
     "Blk" :: disk.blockT;
     "dirty" :: boolT
   ].
