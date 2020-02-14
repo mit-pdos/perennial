@@ -14,6 +14,11 @@ From Perennial.program_proof Require Import proof_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buf.
 
+Record addr := {
+  addrBlock : u64;
+  addrOff : u64;
+}.
+
 Definition inode_bytes := Z.to_nat 128.
 Definition inode_buf := vec u8 inode_bytes.
 Definition inode_to_vals {ext: ext_op} (i:inode_buf) : list val :=
@@ -29,6 +34,18 @@ Inductive updatable_buf (T : Type) :=
 Arguments Unstable {T}.
 Arguments Stable {T} v.
 
+Inductive txnObject :=
+| txnBit (b : bool)
+| txnInode (i : inode_buf)
+| txnBlock (b : Block)
+.
+
+Global Instance addr_eq_dec : EqDecision addr.
+Admitted.
+
+Global Instance addr_finite : Countable addr.
+Admitted.
+
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
@@ -41,6 +58,7 @@ Context `{!gen_heapPreG unit
            gmap u64 (gmap u64 (updatable_buf inode_buf)) *
            gmap u64 (gmap u64 (updatable_buf Block)))
          Σ}.
+Context `{!gen_heapPreG addr txnObject Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -250,5 +268,41 @@ Theorem wp_txn_CommitWait l gBits gInodes gBlocks bufs buflist :
       ( [∗ list] _ ↦ buf ∈ buflist, commit_post gBits gInodes gBlocks buf ) }}}.
 Proof.
 Admitted.
+
+Definition unify_heaps_inner
+    (gBits    : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
+    (gInodes  : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
+    (gBlocks  : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
+    (gUnified : gmap addr txnObject)
+    : iProp Σ :=
+  (
+    [∗ map] addr ↦ txnObj ∈ gUnified,
+      match txnObj with
+      | txnBit v =>
+        ∃ hG,
+          ⌜gBits !! addr.(addrBlock) = Some hG⌝ ∧
+          mapsto (hG := hG) addr.(addrOff) 1 (Stable v)
+      | txnInode v =>
+        ∃ hG,
+          ⌜gInodes !! addr.(addrBlock) = Some hG⌝ ∧
+          mapsto (hG := hG) addr.(addrOff) 1 (Stable v)
+      | txnBlock v =>
+        ∃ hG,
+          ⌜gBlocks !! addr.(addrBlock) = Some hG⌝ ∧
+          mapsto (hG := hG) addr.(addrOff) 1 (Stable v)
+      end
+  )%I.
+
+Definition unify_heaps
+    (gBits    : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
+    (gInodes  : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
+    (gBlocks  : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
+    (γUnified : gen_heapG addr txnObject Σ)
+    : iProp Σ :=
+  (
+    ∃ gUnified,
+      gen_heap_ctx (hG := γUnified) gUnified ∗
+      unify_heaps_inner gBits gInodes gBlocks gUnified
+  )%I.
 
 End heap.
