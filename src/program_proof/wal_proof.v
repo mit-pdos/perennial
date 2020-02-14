@@ -146,7 +146,7 @@ Definition is_block (s:Slice.t) (b:Block) :=
   is_slice_small s byteT (Block_to_vals b).
 
 Definition updates_slice (bk_s: Slice.t) (bs: list (u64*Block)): iProp Σ :=
-  ∃ bks, is_slice_small bk_s (struct.t BlockData.S) (update_val <$> bks) ∗
+  ∃ bks, is_slice_small bk_s (struct.t Update.S) (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(a,b) := upd in
                                      is_block (snd b_upd) b.
 
