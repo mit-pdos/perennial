@@ -23,7 +23,8 @@ Definition log_crash: transition log_state.t unit :=
   kv ← suchThat (gen:=fun _ _ => None) (fun s '(k, v) => s.(log_state.txn_disk) !! k = Some v ∧ int.val k >= int.val s.(log_state.durable_to));
   let '(pos, d) := kv in
   modify (set log_state.txn_disk (λ _, {[ pos := d ]}) ∘
-          set log_state.durable_to (λ _, pos));;
+          set log_state.durable_to (λ _, pos) ∘
+          set log_state.installed_to (λ _, pos));;
   ret tt.
 
 Definition latest_disk (s:log_state.t): u64*disk :=
@@ -82,19 +83,19 @@ Definition apply_upds (upds: list update.t) (d: disk): disk :=
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   txn_d ← reads latest_disk;
   let '(txn, d) := txn_d in
-  (* TODO: note that this promises an ordering over transaction IDs, but due
-  to absorption this might not be true. *)
-  new_txn ← suchThat (gen:=fun _ _ => None) (fun _ new_txn => int.val new_txn > int.val txn);
+  (* Note that if the new position can be an earlier txn if every update is
+  absorbed (as a special case, an empty list of updates is always fully
+  absorbed). In that case what was previously a possible crash point is now
+  gone. This is actually the case when it happens because that transaction was
+  in memory. *)
+  new_txn ← suchThat (gen:=fun _ _ => None) (fun _ new_txn => int.val new_txn >= int.val txn);
   modify (set log_state.txn_disk (<[new_txn:=apply_upds upds d]>));;
   ret new_txn.
 
-Definition remove_before (pos: u64) {V} (m: gmap u64 V) : gmap u64 V :=
-  filter (fun '(x, _) => int.val x < int.val pos) m.
-
 Definition log_flush (pos: u64): transition log_state.t unit :=
-  txns ← reads log_state.txn_disk;
-  _ ← unwrap (txns !! pos);
-  modify (set log_state.txn_disk (remove_before pos)).
+  (* flush should be undefined when the position is invalid *)
+  _ ← reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap;
+  modify (set log_state.durable_to (λ _, pos)).
 
 Section heap.
 Context `{!heapG Σ}.
@@ -161,8 +162,8 @@ Theorem wp_Walog__Flush (Q: iProp Σ) l pos :
            like it's wrong since this proof gets to assume false when there's
            undefined behavior, whereas we'd somehow need the caller to establish
            preconditions at all intermediate points *)
-         ⌜relation.denote (log_flush pos) σ σ' b⌝ ∗
-          P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
+         (⌜relation.denote (log_flush pos) σ σ' b⌝ ∗ P σ)
+         ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
    }}}
     Walog__Flush #l #pos
   {{{ RET #(); Q}}}.
