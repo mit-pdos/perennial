@@ -31,15 +31,17 @@ Section goose_lang.
   Proof.
     iIntros "Hl".
     iDestruct "Hl" as (q) "Hl".
-    iDestruct (fractional.fractional_half with "Hl") as "[Hl1 Hl2]".
+    iDestruct "Hl" as "[Hl1 Hl2]".
     iSplitL "Hl1"; iExists _; iFrame.
   Qed.
 
+  (* make it possible to iDestruct [l ↦ro v] into two copies of itself;
+     above we do something similar to actually prove ptsto_ro_dup.
+   *)
   Global Instance ptsto_ro_into_sep l v : IntoSep (l ↦ro v) (l ↦ro v) (l ↦ro v).
   Proof.
     hnf.
-    iIntros "Hl".
-    iApply (ptsto_ro_dup with "[$]").
+    apply ptsto_ro_dup.
   Qed.
 
   Theorem ptsto_ro_agree l v1 v2 :
