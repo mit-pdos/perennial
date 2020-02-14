@@ -392,13 +392,15 @@ Section goose_lang.
     destruct t; eauto.
   Qed.
 
-  Definition NewMap (t:ty) : expr := AllocMap (zero_val t).
+  Definition NewMap (t:ty) : expr := Alloc (zero_val (mapValT t)).
   Theorem NewMap_t t Γ : Γ ⊢ NewMap t : mapT t.
   Proof.
     unfold NewMap, mapT.
     eapply array_ref_hasTy.
-    repeat econstructor.
-    apply zero_val_ty.
+    econstructor.
+    - repeat econstructor.
+    - econstructor.
+      apply zero_val_ty.
   Qed.
 
   Lemma extend_context_add:

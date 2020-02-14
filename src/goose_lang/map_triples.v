@@ -116,11 +116,7 @@ Definition wp_NewMap stk E T :
     mref ↦ Free mv ∗ ⌜map_val mv = Some (∅, def)⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_apply (wp_alloc _ _ (mapValT T)).
-  {
-    (* This seems messy; is there a cleaner way? Why [zero_val_ty']? *)
-    econstructor. apply zero_val_ty'.
-  }
+  wp_apply wp_alloc_zero.
   iIntros (mref) "Hm".
   iApply "HΦ".
 
@@ -137,31 +133,31 @@ Definition wp_MapGet stk E mref (m: gmap u64 val * val) mv k :
   {{{ v ok, RET (v, #ok); ⌜map_get m k = (v, ok)⌝ ∗
                           mref ↦ Free mv }}}.
 Proof.
-  iIntros (𝛷) "[Hmref %] H𝛷".
+  iIntros (Φ) "[Hmref %] HΦ".
   wp_call.
   wp_load.
   wp_pure (_ _).
-  iAssert (∀ v ok, ⌜map_get m k = (v, ok)⌝ -∗ 𝛷 (v, #ok)%V)%I with "[Hmref H𝛷]" as "H𝛷".
+  iAssert (∀ v ok, ⌜map_get m k = (v, ok)⌝ -∗ Φ (v, #ok)%V)%I with "[Hmref HΦ]" as "HΦ".
   { iIntros (v ok) "%".
-    by iApply ("H𝛷" with "[$Hmref]"). }
+    by iApply ("HΦ" with "[$Hmref]"). }
   iLöb as "IH" forall (m mv H).
   wp_call.
   destruct (map_val_split _ _ H).
   - (* nil *)
     destruct e as [def ?]; intuition subst.
     wp_pures.
-    iApply "H𝛷".
+    iApply "HΦ".
     rewrite map_get_empty; auto.
   - destruct e as [k' [v [mv' [m' ?]]]]; intuition subst.
     wp_pures.
     wp_if_destruct.
     + wp_pures.
-      iApply "H𝛷".
+      iApply "HΦ".
       rewrite map_get_insert //.
     + iApply "IH".
       * eauto.
       * iIntros (v' ok) "%".
-        iApply "H𝛷".
+        iApply "HΦ".
         rewrite map_get_insert_ne //; try congruence.
         destruct m'; eauto.
 Qed.
@@ -172,11 +168,11 @@ Definition wp_MapInsert stk E mref (m: gmap u64 val * val) mv k v' :
   {{{ mv', RET #(); mref ↦ Free mv' ∗
                     ⌜map_val mv' = Some (map_insert m k v')⌝ }}}.
 Proof.
-  iIntros (𝛷) "[Hmref %] H𝛷".
+  iIntros (Φ) "[Hmref %] HΦ".
   wp_call.
   wp_load.
   wp_store.
-  iApply ("H𝛷" with "[$Hmref]").
+  iApply ("HΦ" with "[$Hmref]").
   iPureIntro.
   simpl.
   rewrite H.
@@ -189,7 +185,7 @@ Definition wp_MapDelete stk E mref (m: gmap u64 val * val) mv k :
   {{{ mv', RET #(); mref ↦ Free mv' ∗
                     ⌜map_val mv' = Some (map_del m k)⌝ }}}.
 Proof.
-  iIntros (𝛷) "[Hmref %] H𝛷".
+  iIntros (Φ) "[Hmref %] HΦ".
   wp_call.
   wp_load.
   wp_pure (Rec _ _ _).
