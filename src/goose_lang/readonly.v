@@ -11,6 +11,8 @@ Section goose_lang.
   Notation "l ↦ro v" := (ptsto_ro l v)
                           (at level 20, format "l  ↦ro  v") : bi_scope.
 
+  Global Instance ptsto_ro_timeless l v : Timeless (l ↦ro v) := _.
+
   Theorem ptsto_ro_from_q l q v :
     l ↦{q} Free v -∗ l ↦ro v.
   Proof.
@@ -31,6 +33,13 @@ Section goose_lang.
     iDestruct "Hl" as (q) "Hl".
     iDestruct (fractional.fractional_half with "Hl") as "[Hl1 Hl2]".
     iSplitL "Hl1"; iExists _; iFrame.
+  Qed.
+
+  Global Instance ptsto_ro_into_sep l v : IntoSep (l ↦ro v) (l ↦ro v) (l ↦ro v).
+  Proof.
+    hnf.
+    iIntros "Hl".
+    iApply (ptsto_ro_dup with "[$]").
   Qed.
 
   Theorem ptsto_ro_agree l v1 v2 :

@@ -69,8 +69,7 @@ Module lock.
     is_cond N γ c R -∗ is_cond N γ c R ∗ is_cond N γ c R.
   Proof.
     iIntros "Hc".
-    iDestruct "Hc" as (lk) "[Hc #Hl]".
-    iDestruct (ptsto_ro_dup with "Hc") as "[Hc1 Hc2]".
+    iDestruct "Hc" as (lk) "[[Hc1 Hc2] #Hl]".
     iSplitL "Hc1"; iExists lk; iFrame "#∗".
   Qed.
 
