@@ -7,6 +7,8 @@ From Perennial.goose_lang Require Export
 From Perennial.goose_lang Require Import slice basic_triples.
 From Perennial.goose_lang Require Export encoding.
 
+Set Default Proof Using "Type".
+
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
@@ -20,7 +22,7 @@ Implicit Types off : nat.
 
 Lemma word_sru_0 width (word: Interface.word width) (ok: word.ok word)
       (x: word) s : int.val s = 0 -> word.sru x s = x.
-Proof using Type.
+Proof.
   intros.
   apply word.unsigned_inj.
   rewrite word.unsigned_sru.
@@ -38,7 +40,7 @@ Theorem word_wrap_wrap `{word1: Interface.word width1} `{word2: Interface.word w
         {ok2: word.ok word2} z :
   width1 <= width2 ->
   word.wrap (word:=word1) (word.wrap (word:=word2) z) = word.wrap (word:=word1) z.
-Proof using Type.
+Proof.
   unfold word.wrap; intros.
   pose proof (@word.width_pos width1 _ _).
   pose proof (@word.width_pos width2 _ _).
@@ -56,7 +58,7 @@ Theorem word_wrap_wrap' `{word1: Interface.word width1} `{word2: Interface.word 
         {ok2: word.ok word2} z :
   width2 <= width1 ->
   word.wrap (word:=word1) (word.wrap (word:=word2) z) = word.wrap (word:=word2) z.
-Proof using Type.
+Proof.
   unfold word.wrap; intros.
   pose proof (@word.width_pos width1 _ _).
   pose proof (@word.width_pos width2 _ _).
@@ -91,7 +93,7 @@ Theorem u32_le_to_sru (x: u32) :
              (cons #(u8_from_u32 (word.sru x (U32 (2%nat * 8))))
                    (cons #(u8_from_u32 (word.sru x (U32 (3%nat * 8))))
                          nil))).
-Proof using Type.
+Proof.
   rewrite /b2val.
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite -word_byte_extract; last lia.
@@ -105,7 +107,7 @@ Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
   {{{ ▷ l ↦∗[byteT] vs ∗ ⌜ length vs = u32_bytes ⌝ }}}
     EncodeUInt32 #x #l @ s ; E
   {{{ RET #(); l ↦∗[byteT] (b2val <$> u32_le x) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "(>Hl & %) HΦ".
   unfold EncodeUInt32.
   repeat (destruct vs; simpl in H; [ congruence | ]).
@@ -154,7 +156,7 @@ Definition u64_le_bytes (x: u64) : list val :=
   b2val <$> u64_le x.
 
 Lemma u64_le_bytes_length x : length (u64_le_bytes x) = u64_bytes.
-Proof using Type.
+Proof.
   rewrite fmap_length //.
 Qed.
 
@@ -162,14 +164,14 @@ Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
   {{{ ▷ l ↦∗[byteT] vs ∗ ⌜ length vs = u64_bytes ⌝ }}}
     EncodeUInt64 #x #l @ stk ; E
   {{{ RET #(); l ↦∗[byteT] (b2val <$> u64_le x) }}}.
-Proof using Type.
+Proof.
 Admitted.
 
 Theorem wp_UInt64Put stk E s x vs :
   {{{ is_slice_small s byteT vs ∗ ⌜length vs >= u64_bytes⌝ }}}
     UInt64Put (slice_val s) #x @ stk; E
   {{{ RET #(); is_slice_small s byteT (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "[Hsl %] HΦ".
   wp_lam.
   wp_let.
@@ -194,7 +196,7 @@ Definition u32_le_bytes (x: u32) : list val :=
   b2val <$> u32_le x.
 
 Lemma u32_le_bytes_length x : length (u32_le_bytes x) = u32_bytes.
-Proof using Type.
+Proof.
   rewrite fmap_length //.
 Qed.
 
@@ -202,7 +204,7 @@ Theorem wp_UInt32Put stk E s (x: u32) vs :
   {{{ is_slice_small s byteT vs ∗ ⌜length vs >= u32_bytes⌝ }}}
     UInt32Put (slice_val s) #x @ stk; E
   {{{ RET #(); is_slice_small s byteT (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "[Hsl %] HΦ".
   wp_lam.
   wp_let.
@@ -229,7 +231,7 @@ Hint Rewrite word.unsigned_slu : word.
 Theorem val_u32 z :
   0 <= z < 2 ^ 32 ->
   int.val (U32 z) = z.
-Proof using Type.
+Proof.
   intros.
   unfold U32.
   rewrite word.unsigned_of_Z.
@@ -248,7 +250,7 @@ Ltac eval_u32 :=
 Theorem u8_to_from_u32 x :
   int.val (u8_to_u32 (u8_from_u32 x)) =
   int.val x `mod` 2 ^ 8.
-Proof using Type.
+Proof.
   unfold u8_to_u32, u8_from_u32, U8, U32.
   autorewrite with word.
   rewrite word.unsigned_of_Z.
@@ -258,7 +260,7 @@ Qed.
 
 Lemma val_u8_to_u32 x :
   int.val (u8_to_u32 x) = int.val x.
-Proof using Type.
+Proof.
   unfold u8_to_u32, U32.
   rewrite word.unsigned_of_Z.
   pose proof (word.unsigned_range x).
@@ -273,7 +275,7 @@ Theorem decode_encode x :
                  (word.or (u8_to_u32 (word.of_Z ((int.val x ≫ 8) ≫ 8)))
                     (word.slu (u8_to_u32 (word.of_Z (((int.val x ≫ 8) ≫ 8) ≫ 8))) (U32 8)))
                  (U32 8))) (U32 8)) = x.
-Proof using Type.
+Proof.
   apply word.unsigned_inj.
   pose proof (u32_le_to_word x).
   cbv [le_to_u32 u32_le map LittleEndian.combine LittleEndian.split length Datatypes.HList.tuple.to_list Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2] in H.
@@ -295,7 +297,7 @@ Theorem wp_DecodeUInt32 (l: loc) (x: u32) s E :
   {{{ ▷ l ↦∗[byteT] (b2val <$> u32_le x) }}}
     DecodeUInt32 #l @ s ; E
   {{{ RET #x; l ↦∗[byteT] (b2val <$> u32_le x) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) ">Hl HΦ".
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
@@ -318,7 +320,7 @@ Theorem wp_DecodeUInt64 (l: loc) (x: u64) s E :
   {{{ ▷ l ↦∗[byteT] (b2val <$> u64_le x) }}}
     DecodeUInt64 #l @ s ; E
   {{{ RET #x; l ↦∗[byteT] (b2val <$> u64_le x) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) ">Hl HΦ".
   cbv [u64_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
@@ -342,7 +344,7 @@ Theorem wp_UInt64Get stk E s (x: u64) vs :
   {{{ is_slice_small s byteT vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
     UInt64Get (slice_val s) @ stk; E
   {{{ RET #x; is_slice_small s byteT (u64_le_bytes x ++ drop 8 vs) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "[Hs %] HΦ".
   assert (vs = u64_le_bytes x ++ drop 8 vs).
   { rewrite -{1}(take_drop 8 vs).
@@ -369,7 +371,7 @@ Theorem wp_UInt64Get' stk E s (x: u64) :
   {{{ s.(Slice.ptr) ↦∗[byteT] u64_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 8⌝ }}}
     UInt64Get (slice_val s) @ stk; E
   {{{ RET #x; s.(Slice.ptr) ↦∗[byteT] u64_le_bytes x }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "[Ha %] HΦ".
   wp_call.
   wp_call.
@@ -381,7 +383,7 @@ Theorem wp_UInt32Get' stk E s (x: u32) :
   {{{ s.(Slice.ptr) ↦∗[byteT] u32_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 4⌝ }}}
     UInt32Get (slice_val s) @ stk; E
   {{{ RET #x; s.(Slice.ptr) ↦∗[byteT] u32_le_bytes x }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "[Ha %] HΦ".
   wp_call.
   wp_call.

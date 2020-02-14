@@ -173,7 +173,7 @@ Definition traceΣ : gFunctors :=
       GFunctor (authR (optionUR (exclR OracleO)))].
 
 Global Instance subG_crashG {Σ} : subG traceΣ Σ → trace_preG Σ.
-Proof using Type. solve_inG. Qed.
+Proof. solve_inG. Qed.
 
 Definition trace_auth `{hT: traceG Σ} (l: Trace) :=
   own (trace_name (trace_tr_names)) (● (Excl' (l: traceO))).
@@ -186,7 +186,7 @@ Definition oracle_frag `{hT: traceG Σ} (o: Oracle) :=
 
 Lemma trace_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
   (|==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o)%I.
-Proof using Type.
+Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
   { apply auth_both_valid; split; eauto. econstructor. }
   iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
@@ -196,7 +196,7 @@ Qed.
 
 Lemma trace_update `{hT: traceG Σ} (l: Trace) (x: event):
   trace_auth l -∗ trace_frag l ==∗ trace_auth (add_event x l) ∗ trace_frag (add_event x l).
-Proof using Type.
+Proof.
   iIntros "Hγ● Hγ◯".
   iMod (own_update_2 _ _ _ (● Excl' _ ⋅ ◯ Excl' _) with "Hγ● Hγ◯") as "[$$]".
   { by apply auth_update, option_local_update, exclusive_local_update. }
@@ -205,7 +205,7 @@ Qed.
 
 Lemma trace_agree `{hT: traceG Σ} (l l': list event):
   trace_auth l -∗ trace_frag l' -∗ ⌜ l = l' ⌝.
-Proof using Type.
+Proof.
   iIntros "Hγ1 Hγ2".
   iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
   iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
@@ -309,15 +309,15 @@ Local Hint Extern 0 (head_step NewProph _ _ _ _ _) => apply new_proph_id_fresh :
 Local Hint Resolve to_of_val : core.
 
 Global Instance into_val_val v : IntoVal (Val v) v.
-Proof using Type. done. Qed.
+Proof. done. Qed.
 Global Instance as_val_val v : AsVal (Val v).
-Proof using Type. by eexists. Qed.
+Proof. by eexists. Qed.
 
 Theorem heap_head_atomic e :
   (forall σ κ e' σ' efs,
       relation.denote (head_trans e) σ σ' (κ, e', efs) -> is_Some (to_val e')) ->
   head_atomic StronglyAtomic e.
-Proof using Type.
+Proof.
   intros Hdenote.
   hnf; intros * H%Hdenote.
   auto.
@@ -326,7 +326,7 @@ Qed.
 Theorem atomically_is_val Σ (tr: transition Σ val) σ σ' κ e' efs :
   relation.denote (atomically tr) σ σ' (κ, e', efs) ->
   is_Some (to_val e').
-Proof using Type.
+Proof.
   intros.
   inversion H; subst; clear H.
   inversion H1; subst; clear H1.
@@ -348,44 +348,44 @@ Local Ltac solve_atomic :=
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
 
 Global Instance alloc_atomic s v w : Atomic s (AllocN (Val v) (Val w)).
-Proof using Type.
+Proof.
   solve_atomic.
 Qed.
 
 (* PrepareWrite and Store are individually atomic, but the two need to be
 combined to actually write to the heap and that is not atomic. *)
 Global Instance prepare_write_atomic s v : Atomic s (PrepareWrite (Val v)).
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 Global Instance load_atomic s v : Atomic s (Load (Val v)).
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 Global Instance finish_store_atomic s v1 v2 : Atomic s (FinishStore (Val v1) (Val v2)).
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 Global Instance fork_atomic s e : Atomic s (Fork e).
-Proof using Type. solve_atomic.
+Proof. solve_atomic.
        simpl in H; monad_inv.
        eexists; eauto.
 Qed.
 Global Instance skip_atomic s  : Atomic s Skip.
-Proof using Type. solve_atomic.
+Proof. solve_atomic.
        simpl in H; monad_inv.
        eexists; eauto.
 Qed.
 Global Instance new_proph_atomic s : Atomic s NewProph.
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 Global Instance ext_atomic s op v : Atomic s (ExternalOp op (Val v)).
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 Global Instance input_atomic s v : Atomic s (Input (Val v)).
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 Global Instance output_atomic s v : Atomic s (Output (Val v)).
-Proof using Type. solve_atomic. Qed.
+Proof. solve_atomic. Qed.
 
 Global Instance proph_resolve_atomic s e v1 v2 :
   Atomic s e → Atomic s (Resolve e (Val v1) (Val v2)).
-Proof using Type.
+Proof.
   rename e into e1. intros H σ1 e2 κ σ2 efs [Ks e1' e2' Hfill -> step].
   simpl in *. induction Ks as [|K Ks _] using rev_ind; simpl in Hfill.
   - subst. rewrite /head_step /= in step.
@@ -412,7 +412,7 @@ Proof using Type.
 Qed.
 
 Global Instance resolve_proph_atomic s v1 v2 : Atomic s (ResolveProph (Val v1) (Val v2)).
-Proof using Type. by apply proph_resolve_atomic, skip_atomic. Qed.
+Proof. by apply proph_resolve_atomic, skip_atomic. Qed.
 
 Local Ltac solve_exec_safe := intros; subst; do 3 eexists; cbn; repeat (monad_simpl; simpl).
 Local Ltac solve_exec_puredet := rewrite /= /head_step /=; intros; repeat (monad_inv; simpl in * ); eauto.
@@ -443,34 +443,34 @@ Hint Extern 0 (AsRecV (RecV _ _ _) _ _ _) =>
 
 Global Instance pure_recc f x (erec : expr) :
   PureExec True 1 (Rec f x erec) (Val $ RecV f x erec).
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 Global Instance pure_pairc (v1 v2 : val) :
   PureExec True 1 (Pair (Val v1) (Val v2)) (Val $ PairV v1 v2).
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 Global Instance pure_injlc (v : val) :
   PureExec True 1 (InjL $ Val v) (Val $ InjLV v).
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 Global Instance pure_injrc (v : val) :
   PureExec True 1 (InjR $ Val v) (Val $ InjRV v).
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 
 Global Instance pure_beta f x (erec : expr) (v1 v2 : val) `{!AsRecV v1 f x erec} :
   PureExec True 1 (App (Val v1) (Val v2)) (subst' x v2 (subst' f v1 erec)).
-Proof using Type. unfold AsRecV in *. solve_pure_exec. Qed.
+Proof. unfold AsRecV in *. solve_pure_exec. Qed.
 
 Global Instance pure_unop op v v' :
   PureExec (un_op_eval op v = Some v') 1 (UnOp op (Val v)) (Val v').
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 
 Global Instance pure_binop op v1 v2 v' :
   PureExec (bin_op_eval op v1 v2 = Some v') 1 (BinOp op (Val v1) (Val v2)) (Val v') | 10.
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 (* Higher-priority instance for EqOp. *)
 Global Instance pure_eqop v1 v2 :
   PureExec (vals_compare_safe v1 v2) 1
     (BinOp EqOp (Val v1) (Val v2))
     (Val $ LitV $ LitBool $ bool_decide (v1 = v2)) | 1.
-Proof using Type.
+Proof.
   intros Hcompare.
   cut (bin_op_eval EqOp v1 v2 = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
   { intros. revert Hcompare. solve_pure_exec. }
@@ -478,26 +478,26 @@ Proof using Type.
 Qed.
 
 Global Instance pure_if_true e1 e2 : PureExec True 1 (If (Val $ LitV $ LitBool true) e1 e2) e1.
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 
 Global Instance pure_if_false e1 e2 : PureExec True 1 (If (Val $ LitV  $ LitBool false) e1 e2) e2.
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 
 Global Instance pure_fst v1 v2 :
   PureExec True 1 (Fst (Val $ PairV v1 v2)) (Val v1).
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 
 Global Instance pure_snd v1 v2 :
   PureExec True 1 (Snd (Val $ PairV v1 v2)) (Val v2).
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 
 Global Instance pure_case_inl v e1 e2 :
   PureExec True 1 (Case (Val $ InjLV v) e1 e2) (App e1 (Val v)).
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 
 Global Instance pure_case_inr v e1 e2 :
   PureExec True 1 (Case (Val $ InjRV v) e1 e2) (App e2 (Val v)).
-Proof using Type. solve_pure_exec. Qed.
+Proof. solve_pure_exec. Qed.
 
 Section lifting.
 Context `{!heapG Σ}.
@@ -510,7 +510,7 @@ Implicit Types l : loc.
 
 Lemma wp_panic s msg E Φ :
   ▷ False -∗ WP Panic msg @ s; E {{ Φ }}.
-Proof using Type.
+Proof.
   iIntros ">[] HΦ".
 Qed.
 
@@ -518,7 +518,7 @@ Lemma wp_ArbitraryInt stk E :
   {{{ True }}}
     ArbitraryInt @ stk; E
   {{{ (x:u64), RET #x; True }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "(Hσ&?&?&?&?) !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
@@ -529,7 +529,7 @@ Lemma wp_output s E tr lit :
   {{{ trace_frag tr }}}
      Output (LitV lit) @ s; E
   {{{ RET (LitV LitUnit); trace_frag (add_event (Out_ev lit) tr)}}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth&?) !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
@@ -542,7 +542,7 @@ Lemma wp_input s E tr sel Or :
   {{{ trace_frag tr ∗ oracle_frag Or }}}
      Input (LitV sel) @ s; E
   {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr)}}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth&Hor_auth) !>"; iSplit.
   { iPureIntro. unshelve (by eauto); apply (U64 0). }
@@ -556,7 +556,7 @@ Qed.
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ (LitV LitUnit) -∗ WP Fork e @ s; E {{ Φ }}.
-Proof using Type.
+Proof.
   iIntros "He HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "Hσ !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. by iFrame.
@@ -569,7 +569,7 @@ Lemma heap_array_to_seq_meta {V} l (vs: list V) (n : nat) :
   length vs = n →
   ([∗ map] l' ↦ _ ∈ heap_array l vs, meta_token l' ⊤) -∗
   [∗ list] i ∈ seq 0 n, meta_token (l +ₗ (i : nat)) ⊤.
-Proof using Type.
+Proof.
   iIntros (<-) "Hvs". iInduction vs as [|v vs] "IH" forall (l)=> //=.
   rewrite big_opM_union; last first.
   { apply map_disjoint_spec=> l' v1 v2 /lookup_singleton_Some [-> _].
@@ -610,7 +610,7 @@ Qed.
 Lemma heap_array_to_seq_mapsto l vs :
   ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free vs), l' ↦ vm) -∗
   [∗ list] j ↦ v ∈ vs, (l +ₗ j) ↦ Free v.
-Proof using Type.
+Proof.
   iIntros "Hvs". iInduction vs as [|vs] "IH" forall (l); simpl.
   { done. }
   rewrite big_opM_union; last first.
@@ -636,7 +636,7 @@ Abort.
 Lemma heap_array_replicate_to_nested_mapsto l vs (n : nat) :
   ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (concat_replicate n vs)), l' ↦ vm) -∗
   [∗ list] i ∈ seq 0 n, [∗ list] j ↦ v ∈ vs, (l +ₗ ((i : nat) * Z.of_nat (length vs)) +ₗ j)%nat ↦ Free v.
-Proof using Type.
+Proof.
   iIntros "Hmap".
   iDestruct (heap_array_to_seq_mapsto with "Hmap") as "Hvs".
   iInduction n as [|n] "IH" forall (l); simpl.
@@ -658,7 +658,7 @@ Lemma wp_allocN_seq s E t v (n: u64) :
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
                               ((l +ₗ[t] Z.of_nat i) ↦[t] v) }}}.
-Proof using Type.
+Proof.
   iIntros (Hn Hty Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
@@ -684,7 +684,7 @@ Qed.
 Lemma wp_alloc stk E ty v :
   val_ty v ty ->
   {{{ True }}} Alloc (Val v) @ stk; E {{{ l, RET LitV (LitLoc l); l ↦[ty] v }}}.
-Proof using Type.
+Proof.
   iIntros (Hty Φ) "_ HΦ". iApply wp_allocN_seq; eauto with lia.
   { constructor. }
   iIntros "!>" (l) "/= (? & _)". rewrite Z.mul_0_r loc_add_0. iApply "HΦ"; iFrame.
@@ -696,7 +696,7 @@ Definition zero_val_unfold :
 
 Lemma wp_alloc_zero stk E t :
   {{{ True }}} Alloc (zero_val t) @ stk; E {{{ l, RET LitV (LitLoc l); l ↦[t] (zero_val t) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "_ HΦ". iApply wp_alloc; eauto with lia.
 Qed.
 
@@ -704,7 +704,7 @@ Lemma wp_alloc_untyped stk E v v0 :
   flatten_struct v = [v0] ->
   {{{ True }}} ref (Val v) @ stk; E
   {{{ l, RET LitV (LitLoc l); l ↦ Free v0 }}}.
-Proof using Type.
+Proof.
   assert (0 < int.val (U64 1)) by (change (int.val 1) with 1; lia).
   iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
@@ -726,7 +726,7 @@ Qed.
 
 Lemma wp_load s E l q v :
   {{{ ▷ l ↦{q} Free v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; l ↦{q} Free v }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
@@ -736,7 +736,7 @@ Qed.
 Theorem is_Writing_Some A (mna: option (nonAtomic A)) :
   mna = Some Writing ->
   is_Writing mna.
-Proof using Type.
+Proof.
   rewrite /is_Writing; auto.
 Qed.
 
@@ -745,7 +745,7 @@ Hint Resolve is_Writing_Some.
 Lemma wp_prepare_write s E l v :
   {{{ ▷ l ↦ Free v }}} PrepareWrite (Val $ LitV (LitLoc l)) @ s; E
   {{{ RET LitV LitUnit; l ↦ Writing }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
@@ -757,7 +757,7 @@ Qed.
 Lemma wp_finish_store s E l v :
   {{{ ▷ l ↦ Writing }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
   {{{ RET LitV LitUnit; l ↦ Free v }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
@@ -773,7 +773,7 @@ Theorem gen_heap_valid_map (σ: gmap _ _) l q vs :
   gen_heap_ctx σ -∗
                ([∗ map] l↦v ∈ heap_array l vs, l ↦{q} v) -∗
                ⌜forall i, (i < (length vs))%nat -> is_Some (σ !! (l +ₗ i))⌝.
-Proof using Type.
+Proof.
   iIntros "Hctx Hmap".
   iIntros (i Hi).
   apply lookup_lt_is_Some_2 in Hi.
@@ -792,7 +792,7 @@ Lemma wp_cmpxchg_fail s E l q v' v1 v2 :
   v' ≠ v1 → vals_compare_safe v' v1 →
   {{{ ▷ l ↦{q} Free v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
   {{{ RET PairV v' (LitV $ LitBool false); l ↦{q} Free v' }}}.
-Proof using Type.
+Proof.
   iIntros (?? Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
   iSplit; first by eauto 8. iNext; iIntros (v2' σ2 efs Hstep); inv_head_step.
@@ -804,7 +804,7 @@ Lemma wp_cmpxchg_suc s E l v1 v2 v' :
   v' = v1 → vals_compare_safe v' v1 →
   {{{ ▷ l ↦ Free v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
   {{{ RET PairV v' (LitV $ LitBool true); l ↦ Free v2 }}}.
-Proof using Type.
+Proof.
   iIntros (?? Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
   iSplit; first by eauto 8. iNext; iIntros (v2' σ2 efs Hstep); inv_head_step.
@@ -817,7 +817,7 @@ Lemma wp_new_proph s E :
   {{{ True }}}
     NewProph @ s; E
   {{{ pvs p, RET (LitV (LitProphecy p)); proph p pvs }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs n) "(Hσ&HR&Hffi) !>". iSplit; first by eauto.
   iNext; iIntros (v2 σ2 efs Hstep). inv_head_step.
@@ -831,7 +831,7 @@ be able to make a head step for [Resolve e _ _] not to be (head) stuck. *)
 Lemma resolve_reducible e σ (p : proph_id) v :
   Atomic StronglyAtomic e → reducible e σ →
   reducible (Resolve e (Val (LitV (LitProphecy p))) (Val v)) σ.
-Proof using Type.
+Proof.
   intros A (κ & e' & σ' & efs & H).
   exists (κ ++ [(p, (default v (to_val e'), v))]), e', σ', efs.
   eapply Ectx_step with (K:=[]); try done.
@@ -850,7 +850,7 @@ Lemma step_resolve e vp vt σ1 κ e2 σ2 efs :
   Atomic StronglyAtomic e →
   prim_step (Resolve e (Val vp) (Val vt)) σ1 κ e2 σ2 efs →
   head_step (Resolve e (Val vp) (Val vt)) σ1 κ e2 σ2 efs.
-Proof using Type.
+Proof.
   intros A [Ks e1' e2' Hfill -> step]. simpl in *.
   induction Ks as [|K Ks _] using rev_ind.
   + simpl in *. subst.
@@ -883,7 +883,7 @@ Lemma wp_resolve s E e Φ (p : proph_id) v (pvs : list (val * val)) :
   proph p pvs -∗
   WP e @ s; E {{ r, ∀ pvs', ⌜pvs = (r, v)::pvs'⌝ -∗ proph p pvs' -∗ Φ r }} -∗
   WP Resolve e (Val $ LitV $ LitProphecy p) (Val v) @ s; E {{ Φ }}.
-Proof using Type.
+Proof.
   (* TODO we should try to use a generic lifting lemma (and avoid [wp_unfold])
      here, since this breaks the WP abstraction. *)
   iIntros (A He) "Hp WPe". rewrite !wp_unfold /wp_pre /= He. simpl in *.
@@ -920,7 +920,7 @@ Lemma wp_resolve_proph s E (p : proph_id) (pvs : list (val * val)) v :
   {{{ proph p pvs }}}
     ResolveProph (Val $ LitV $ LitProphecy p) (Val v) @ s; E
   {{{ pvs', RET (LitV LitUnit); ⌜pvs = (LitV LitUnit, v)::pvs'⌝ ∗ proph p pvs' }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "Hp HΦ". iApply (wp_resolve with "Hp"); first done.
   iApply wp_pure_step_later=> //=. iApply wp_value.
   iIntros "!>" (vs') "HEq Hp". iApply "HΦ". iFrame.
@@ -931,7 +931,7 @@ Lemma wp_resolve_cmpxchg_suc s E l (p : proph_id) (pvs : list (val * val)) v1 v2
   {{{ proph p pvs ∗ ▷ l ↦ Free v1 }}}
     Resolve (CmpXchg #l v1 v2) #p v @ s; E
   {{{ RET (v1, #true) ; ∃ pvs', ⌜pvs = ((v1, #true)%V, v)::pvs'⌝ ∗ proph p pvs' ∗ l ↦ Free v2 }}}.
-Proof using Type.
+Proof.
   iIntros (Hcmp Φ) "[Hp Hl] HΦ".
   iApply (wp_resolve with "Hp"); first done.
   assert (val_is_unboxed v1) as Hv1; first by destruct Hcmp.
@@ -944,7 +944,7 @@ Lemma wp_resolve_cmpxchg_fail s E l (p : proph_id) (pvs : list (val * val)) q v'
   {{{ proph p pvs ∗ ▷ l ↦{q} Free v' }}}
     Resolve (CmpXchg #l v1 v2) #p v @ s; E
   {{{ RET (v', #false) ; ∃ pvs', ⌜pvs = ((v', #false)%V, v)::pvs'⌝ ∗ proph p pvs' ∗ l ↦{q} Free v' }}}.
-Proof using Type.
+Proof.
   iIntros (NEq Hcmp Φ) "[Hp Hl] HΦ".
   iApply (wp_resolve with "Hp"); first done.
   iApply (wp_cmpxchg_fail with "Hl"); [done..|]. iIntros "!> Hl".
