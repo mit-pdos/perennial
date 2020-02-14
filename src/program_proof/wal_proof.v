@@ -13,7 +13,7 @@ Module update.
       b: Block; }.
 End update.
 
-Definition disk := gmap u64 Block.
+Definition disk := gmap Z Block.
 
 Module log_state.
   Record t :=
@@ -58,44 +58,48 @@ Definition latest_disk (s:log_state.t): u64*disk :=
 Definition get_txn_disk (pos:u64) : transition log_state.t disk :=
   reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap.
 
+Definition update_installed: transition log_state.t u64 :=
+  new_installed ← suchThat (gen:=fun _ _ => None)
+                (fun s pos => int.val s.(log_state.installed_to) <=
+                            int.val pos <=
+                            int.val s.(log_state.durable_to));
+  modify (set log_state.installed_to (λ _, new_installed));;
+  ret new_installed.
+
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
   ok ← suchThat (fun _ (b:bool) => True);
   if (ok:bool)
   then d ← reads (snd ∘ latest_disk);
-       match d !! a with
+       match d !! int.val a with
        | None => undefined
        | Some b => ret (Some b)
        end
   else (* this is really non-deterministic; it would be simpler if upfront we
           moved installed_to forward to a valid transaction and then made most
           of the remaining decisions deterministically. *)
-    new_installed ← suchThat (gen:=fun _ _ => None)
-                  (fun s pos => int.val s.(log_state.installed_to) <=
-                             int.val pos <=
-                             int.val s.(log_state.durable_to));
-    modify (set log_state.installed_to (λ _, new_installed));;
+    new_installed ← update_installed;
     install_d ← get_txn_disk new_installed;
     suchThat (gen:=fun _ _ => None)
              (fun s (_:unit) =>
                 forall pos d, int.val s.(log_state.installed_to) < int.val pos ->
                          s.(log_state.txn_disk) !! pos = Some d ->
-                         d !! a = install_d !! a);;
+                         d !! int.val a = install_d !! int.val a);;
     ret None.
 
 Definition log_read_installed (a:u64): transition log_state.t Block :=
-  installed_to ← reads log_state.installed_to;
+  installed_to ← update_installed;
   install_d ← get_txn_disk installed_to;
-  unwrap (install_d !! a).
+  unwrap (install_d !! int.val a).
 
 Definition log_read (a:u64): transition log_state.t Block :=
   d ← reads (snd ∘ latest_disk);
-  match d !! a with
+  match d !! int.val a with
   | None => undefined
   | Some b => ret b
   end.
 
 Definition apply_upds (upds: list (u64*Block)) (d: disk): disk :=
-  fold_right (fun '(a, b) => <[a := b]>) d upds.
+  fold_right (fun '(a, b) => <[int.val a := b]>) d upds.
 
 Definition log_mem_append (upds: list (u64*Block)): transition log_state.t u64 :=
   txn_d ← reads latest_disk;
