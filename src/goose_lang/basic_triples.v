@@ -543,35 +543,6 @@ Proof using Type.
   iPureIntro; auto.
 Qed.
 
-Ltac nat2Z_1 :=
-  match goal with
-  | _ => lia (* TODO: this only makes sense on Coq master where lia doesn't
-    need any of the help below *)
-  | |- @eq nat _ _ => apply Nat2Z.inj
-  | [ H: @eq nat _ _ |- _ ] => apply Nat2Z.inj_iff in H
-  | |- le _ _ => apply Nat2Z.inj_le
-  | [ |- context[Z.of_nat (Z.to_nat ?z)] ] =>
-    rewrite (Z2Nat.id z); [ | lia ]
-  | [ |- context[Z.to_nat (Z.of_nat ?n)] ] =>
-    rewrite (Nat2Z.id n)
-  | [ H: context[Z.of_nat (Z.to_nat ?z)] |- _ ] =>
-    rewrite (Z2Nat.id z) in H; [ | lia ]
-  | [ H: context[Z.to_nat (Z.of_nat ?n)] |- _ ] =>
-    rewrite (Nat2Z.id n) in H; [ | lia ]
-  | [ H: context[Z.of_nat (?n - ?m)%nat] |- _ ] =>
-    rewrite (Nat2Z.inj_sub n m) in H; [ | apply Nat2Z.inj_le; lia ]
-  | [ H: context[Z.of_nat (?n + ?m)%nat] |- _ ] =>
-    rewrite (Nat2Z.inj_add n m) in H; [ | apply Nat2Z.inj_le; lia ]
-  | [ H: context[Z.to_nat (?n - ?m)%Z] |- _ ] =>
-    rewrite (Nat2Z.inj_sub n m) in H; [ | apply Nat2Z.inj_le ]
-  | [ H: context[Z.to_nat (?n + ?m)%Z] |- _ ] =>
-    rewrite (Z2Nat.inj_add n m) in H; [ | lia | lia ]
-  | [ H: context[Z.to_nat (?n - ?m)%Z] |- _ ] =>
-    rewrite (Z2Nat.inj_sub n m) in H; [ | lia ]
-  end.
-
-Ltac nat2Z := repeat nat2Z_1.
-
 Lemma wp_slice_len stk E (s: Slice.t) (Φ: val -> iProp Σ) :
     Φ #(s.(Slice.sz)) -∗ WP slice.len (slice_val s) @ stk; E {{ v, Φ v }}.
 Proof using Type.
