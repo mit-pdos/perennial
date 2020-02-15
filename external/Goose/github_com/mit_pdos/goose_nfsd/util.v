@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 Definition Debug : expr := #0.
 
 Definition DPrintf: val :=
-  λ: "level" "format" "a",
+  rec: "DPrintf" "level" "format" "a" :=
     (if: "level" ≤ Debug
     then
       (* log.Printf(format, a...) *)
@@ -13,20 +13,20 @@ Definition DPrintf: val :=
     else #()).
 
 Definition RoundUp: val :=
-  λ: "n" "sz",
+  rec: "RoundUp" "n" "sz" :=
     "n" + "sz" - #1 `quot` "sz".
 
 Definition Min: val :=
-  λ: "n" "m",
+  rec: "Min" "n" "m" :=
     (if: "n" < "m"
     then "n"
     else "m").
 
 (* returns n+m>=2^64 (if it were computed at infinite precision) *)
 Definition SumOverflows: val :=
-  λ: "n" "m",
+  rec: "SumOverflows" "n" "m" :=
     "n" + "m" < "n".
 
 Definition SumOverflows32: val :=
-  λ: "n" "m",
+  rec: "SumOverflows32" "n" "m" :=
     "n" + "m" < "n".
