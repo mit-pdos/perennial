@@ -6,8 +6,6 @@ From Perennial.goose_lang.interpreter Require Import test_config.
 (* test functions *)
 From Perennial.goose_lang.examples Require Import goose_semantics.
 
-Compute (runWithTrace (testEncDec64Simple #())).
-
 Example testCompareAll_ok : testCompareAll #() ~~> #true := t.
 Example testCompareGT_ok : testCompareGT #() ~~> #true := t.
 Example testCompareGE_ok : testCompareGE #() ~~> #true := t.
@@ -22,7 +20,7 @@ Example testMapSize_ok : testMapSize #() ~~> #true := t.
 Fail Example testFunctionOrdering_ok : testFunctionOrdering #() ~~> #true := t.
 Fail Example testCopySimple_ok : testCopySimple #() ~~> #true := t.
 Fail Example testCopyDifferentLengths_ok : testCopyDifferentLengths #() ~~> #true := t.
-(* Example testConversions_ok : testConversions #() ~~> #true := t. *)
+Example testByteSliceToString_ok : testByteSliceToString #() ~~> #true := t.
 Example testShortcircuitAndTF_ok : testShortcircuitAndTF #() ~~> #true := t.
 Example testShortcircuitAndFT_ok : testShortcircuitAndFT #() ~~> #true := t.
 Example testShortcircuitOrTF_ok : testShortcircuitOrTF #() ~~> #true := t.

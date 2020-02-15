@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 (* comparisons.go *)
 
 Definition testCompareAll: val :=
-  rec: "testCompareAll" <> :=
+  λ: <>,
     let: "ok" := ref #true in
     let: "nok" := ref #false in
     "ok" <-[boolT] ![boolT] "ok" && #1 < #2;;
@@ -73,16 +73,16 @@ Definition stringToByteSlice: val :=
 
 Definition byteSliceToString: val :=
   λ: "p",
-    let: "s" := Data.bytesToString "p" in
-    "s".
+    Data.bytesToString "p".
 
 (* tests *)
-Definition testConversions: val :=
+Definition testByteSliceToString: val :=
   λ: <>,
-    let: "s" := #(str"four") in
-    let: "b" := stringToByteSlice "s" in
-    let: "x" := literalCast #() in
-    ("x" = slice.len "b") && (byteSliceToString "b" = "s").
+    let: "x" := NewSlice byteT #3 in
+    SliceSet byteT "x" #0 (#(U8 65));;
+    SliceSet byteT "x" #1 (#(U8 66));;
+    SliceSet byteT "x" #2 (#(U8 67));;
+    (byteSliceToString "x" = #(str"ABC")).
 
 (* copy.go *)
 
@@ -156,7 +156,7 @@ Definition roundtripEncDec64: val :=
 
 (* tests *)
 Definition testEncDec32Simple: val :=
-  λ: <>,
+  rec: "testEncDec32Simple" <> :=
     let: "ok" := ref #true in
     "ok" <-[boolT] ![boolT] "ok" && (roundtripEncDec32 (#(U32 0)) = #(U32 0));;
     "ok" <-[boolT] ![boolT] "ok" && (roundtripEncDec32 (#(U32 1)) = #(U32 1));;
@@ -230,7 +230,7 @@ End Pair.
 
 (* tests *)
 Definition testFunctionOrdering: val :=
-  rec: "testFunctionOrdering" <>:=
+  rec: "testFunctionOrdering" <> :=
     let: "arr" := ref (NewSlice uint64T #5) in
     let: "e1" := struct.mk Editor.S [
       "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
