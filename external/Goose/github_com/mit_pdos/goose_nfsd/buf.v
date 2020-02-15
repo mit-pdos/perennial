@@ -19,7 +19,7 @@ Module Buf.
 End Buf.
 
 Definition MkBuf: val :=
-  λ: "addr" "blk",
+  rec: "MkBuf" "addr" "blk" :=
     (if: slice.len "blk" > disk.BlockSize
     then
       Panic "mkbuf";;
@@ -34,7 +34,7 @@ Definition MkBuf: val :=
 
 (* Load the bits of a disk block into a new buf, as specified by addr *)
 Definition MkBufLoad: val :=
-  λ: "addr" "blk",
+  rec: "MkBufLoad" "addr" "blk" :=
     let: "bytefirst" := struct.get addr.Addr.S "Off" "addr" `quot` #8 in
     let: "bytelast" := struct.get addr.Addr.S "Off" "addr" + struct.get addr.Addr.S "Sz" "addr" - #1 `quot` #8 in
     let: "data" := SliceSubslice byteT "blk" "bytefirst" ("bytelast" + #1) in
@@ -47,7 +47,7 @@ Definition MkBufLoad: val :=
 
 (* Install 1 bit from src into dst, at offset bit. return new dst. *)
 Definition installOneBit: val :=
-  λ: "src" "dst" "bit",
+  rec: "installOneBit" "src" "dst" "bit" :=
     let: "new" := ref "dst" in
     (if: "src" && #(U8 1) ≪ "bit" ≠ "dst" && #(U8 1) ≪ "bit"
     then
@@ -60,19 +60,19 @@ Definition installOneBit: val :=
 
 (* Install bit from src to dst, at dstoff in destination. dstoff is in bits. *)
 Definition installBit: val :=
-  λ: "src" "dst" "dstoff",
+  rec: "installBit" "src" "dst" "dstoff" :=
     let: "dstbyte" := "dstoff" `quot` #8 in
     SliceSet byteT "dst" "dstbyte" (installOneBit (SliceGet byteT "src" #0) (SliceGet byteT "dst" "dstbyte") ("dstoff" `rem` #8)).
 
 (* Install bytes from src to dst. *)
 Definition installBytes: val :=
-  λ: "src" "dst" "dstoff" "nbit",
+  rec: "installBytes" "src" "dst" "dstoff" "nbit" :=
     let: "sz" := "nbit" `quot` #8 in
     SliceCopy byteT (SliceSkip byteT "dst" ("dstoff" `quot` #8)) (SliceTake "src" "sz").
 
 (* Install the bits from buf into blk.  Two cases: a bit or an inode *)
 Definition Buf__Install: val :=
-  λ: "buf" "blk",
+  rec: "Buf__Install" "buf" "blk" :=
     util.DPrintf #1 (#(str"%v: install
     ")) (struct.loadF Buf.S "Addr" "buf");;
     (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = #1)
@@ -88,21 +88,21 @@ Definition Buf__Install: val :=
 
 (* Load the bits of a disk block into buf, as specified by addr *)
 Definition Buf__Load: val :=
-  λ: "buf" "blk",
+  rec: "Buf__Load" "buf" "blk" :=
     let: "bytefirst" := struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") `quot` #8 in
     let: "bytelast" := struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") + struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") - #1 `quot` #8 in
     struct.storeF Buf.S "Blk" "buf" (SliceSubslice byteT "blk" "bytefirst" ("bytelast" + #1)).
 
 Definition Buf__IsDirty: val :=
-  λ: "buf",
+  rec: "Buf__IsDirty" "buf" :=
     struct.loadF Buf.S "dirty" "buf".
 
 Definition Buf__SetDirty: val :=
-  λ: "buf",
+  rec: "Buf__SetDirty" "buf" :=
     struct.storeF Buf.S "dirty" "buf" #true.
 
 Definition Buf__WriteDirect: val :=
-  λ: "buf" "d",
+  rec: "Buf__WriteDirect" "buf" "d" :=
     Buf__SetDirty "buf";;
     (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = disk.BlockSize)
     then disk.Write (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) (struct.loadF Buf.S "Blk" "buf")
@@ -112,12 +112,12 @@ Definition Buf__WriteDirect: val :=
       disk.Write (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) "blk").
 
 Definition Buf__BnumGet: val :=
-  λ: "buf" "off",
+  rec: "Buf__BnumGet" "buf" "off" :=
     let: "dec" := marshal.NewDec (SliceSubslice byteT (struct.loadF Buf.S "Blk" "buf") "off" ("off" + #8)) in
     marshal.Dec__GetInt "dec".
 
 Definition Buf__BnumPut: val :=
-  λ: "buf" "off" "v",
+  rec: "Buf__BnumPut" "buf" "off" "v" :=
     let: "enc" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "enc" "v";;
     SliceCopy byteT (SliceSubslice byteT (struct.loadF Buf.S "Blk" "buf") "off" ("off" + #8)) (marshal.Enc__Finish "enc");;
@@ -132,26 +132,26 @@ Module BufMap.
 End BufMap.
 
 Definition MkBufMap: val :=
-  λ: <>,
+  rec: "MkBufMap" <> :=
     let: "a" := struct.new BufMap.S [
       "addrs" ::= NewMap (struct.ptrT Buf.S)
     ] in
     "a".
 
 Definition BufMap__Insert: val :=
-  λ: "bmap" "buf",
+  rec: "BufMap__Insert" "bmap" "buf" :=
     MapInsert (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid (struct.loadF Buf.S "Addr" "buf")) "buf".
 
 Definition BufMap__Lookup: val :=
-  λ: "bmap" "addr",
+  rec: "BufMap__Lookup" "bmap" "addr" :=
     Fst (MapGet (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid "addr")).
 
 Definition BufMap__Del: val :=
-  λ: "bmap" "addr",
+  rec: "BufMap__Del" "bmap" "addr" :=
     MapDelete (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid "addr").
 
 Definition BufMap__Ndirty: val :=
-  λ: "bmap",
+  rec: "BufMap__Ndirty" "bmap" :=
     let: "n" := ref #0 in
     MapIter (struct.loadF BufMap.S "addrs" "bmap") (λ: <> "buf",
       (if: struct.loadF Buf.S "dirty" "buf"
@@ -160,7 +160,7 @@ Definition BufMap__Ndirty: val :=
     ![uint64T] "n".
 
 Definition BufMap__DirtyBufs: val :=
-  λ: "bmap",
+  rec: "BufMap__DirtyBufs" "bmap" :=
     let: "bufs" := ref (zero_val (slice.T (refT (struct.t Buf.S)))) in
     MapIter (struct.loadF BufMap.S "addrs" "bmap") (λ: <> "buf",
       (if: struct.loadF Buf.S "dirty" "buf"
