@@ -59,6 +59,22 @@ Section proof.
   Global Instance locked_timeless γ : Timeless (locked γ).
   Proof. apply _. Qed.
 
+  Definition is_free_lock (l: loc): iProp Σ := l ↦[boolT] #false.
+
+  Theorem alloc_lock l R : is_free_lock l -∗ R ={⊤}=∗ ∃ γ, is_lock γ #l R.
+  Proof.
+    iIntros "Hl HR".
+    iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
+    iMod (inv_alloc N _ (lock_inv γ l R) with "[Hl HR Hγ]") as "#?".
+    { iIntros "!>". iExists false. iFrame.
+      iDestruct "Hl" as "[[Hl _] %]".
+      rewrite loc_add_0.
+      by iFrame. }
+    iModIntro.
+    iExists γ, l.
+    iSplit; eauto.
+  Qed.
+
   Lemma newlock_spec (R : iProp Σ):
     {{{ R }}} newlock #() {{{ lk γ, RET lk; is_lock γ lk R }}}.
   Proof using ext_tys.
@@ -67,13 +83,9 @@ Section proof.
     type hint in the code *)
     { val_ty. }
     iIntros (l) "Hl".
-    iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
-    iMod (inv_alloc N _ (lock_inv γ l R) with "[-HΦ]") as "#?".
-    { iIntros "!>". iExists false. iFrame.
-      iDestruct "Hl" as "[[Hl _] %]".
-      rewrite loc_add_0.
-      by iFrame. }
-    iModIntro. iApply "HΦ". iExists l. iSplit; eauto.
+    iMod (alloc_lock with "Hl HR") as (γ) "Hlock".
+    iModIntro.
+    iApply "HΦ". iFrame.
   Qed.
 
   Lemma try_acquire_spec γ lk R :
@@ -81,8 +93,7 @@ Section proof.
     {{{ b, RET #b; if b is true then locked γ ∗ R else True }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
-    wp_rec.
-    wp_bind (CmpXchg _ _ _). iInv N as ([]) "[Hl HR]".
+    wp_rec. wp_bind (CmpXchg _ _ _). iInv N as ([]) "[Hl HR]".
     - wp_cmpxchg_fail. iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
       wp_pures. iApply ("HΦ" $! false). done.
     - wp_cmpxchg_suc. iDestruct "HR" as "[Hγ HR]".

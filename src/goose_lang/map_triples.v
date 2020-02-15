@@ -3,12 +3,11 @@ From Perennial.goose_lang Require Import basic_triples.
 From Perennial.goose_lang Require Import map.
 Import uPred.
 
+Set Default Proof Using "Type".
+
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
-Implicit Types P Q : iProp Σ.
-Implicit Types Φ : val → iProp Σ.
-Implicit Types Δ : envs (uPredI (iResUR Σ)).
 Implicit Types v : val.
 Implicit Types vs : list val.
 Implicit Types z : Z.
@@ -112,88 +111,93 @@ Proof.
     eexists _, _, _, _; intuition eauto.
 Qed.
 
-Definition wp_NewMap stk E T :
+Definition is_map (mref:loc) (m: gmap u64 val * val): iProp Σ :=
+  ∃ mv, ⌜map_val mv = Some m⌝ ∗ mref ↦ Free mv.
+
+Definition wp_NewMap stk E t :
   {{{ True }}}
-    NewMap T @ stk; E
-  {{{ mref mv def, RET #mref;
-    mref ↦ Free mv ∗ ⌜map_val mv = Some (∅, def)⌝ }}}.
+    NewMap t @ stk; E
+  {{{ mref, RET #mref;
+      is_map mref (∅, zero_val t) }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_apply (wp_alloc _ _ (mapValT T)).
-  {
-    (* This seems messy; is there a cleaner way? Why [zero_val_ty']? *)
-    econstructor. apply zero_val_ty'.
-  }
+  wp_apply wp_alloc_zero.
   iIntros (mref) "Hm".
   iApply "HΦ".
 
-  (* This seems messy.. *)
   rewrite /struct_mapsto /= loc_add_0.
   iDestruct "Hm" as "[[Hm _] %]".
-  iFrame.
-  auto.
+  iExists _; iSplitR; auto.
+  by rewrite /=.
 Qed.
 
-Definition wp_MapGet stk E mref (m: gmap u64 val * val) mv k :
-  {{{ mref ↦ Free mv ∗ ⌜map_val mv = Some m⌝ }}}
+Definition wp_MapGet stk E mref (m: gmap u64 val * val) k :
+  {{{ is_map mref m }}}
     MapGet #mref #k @ stk; E
   {{{ v ok, RET (v, #ok); ⌜map_get m k = (v, ok)⌝ ∗
-                          mref ↦ Free mv }}}.
+                          is_map mref m }}}.
 Proof.
-  iIntros (𝛷) "[Hmref %] H𝛷".
+  iIntros (Φ) "Hmref HΦ".
+  iDestruct "Hmref" as (mv H) "Hmref".
   wp_call.
   wp_load.
   wp_pure (_ _).
-  iAssert (∀ v ok, ⌜map_get m k = (v, ok)⌝ -∗ 𝛷 (v, #ok)%V)%I with "[Hmref H𝛷]" as "H𝛷".
+  iAssert (∀ v ok, ⌜map_get m k = (v, ok)⌝ -∗ Φ (v, #ok)%V)%I with "[Hmref HΦ]" as "HΦ".
   { iIntros (v ok) "%".
-    by iApply ("H𝛷" with "[$Hmref]"). }
+    iApply ("HΦ" with "[Hmref]").
+    iSplitR; auto.
+    iExists mv; by iFrame. }
   iLöb as "IH" forall (m mv H).
   wp_call.
   destruct (map_val_split _ _ H).
   - (* nil *)
     destruct e as [def ?]; intuition subst.
     wp_pures.
-    iApply "H𝛷".
+    iApply "HΦ".
     rewrite map_get_empty; auto.
   - destruct e as [k' [v [mv' [m' ?]]]]; intuition subst.
     wp_pures.
     wp_if_destruct.
     + wp_pures.
-      iApply "H𝛷".
+      iApply "HΦ".
       rewrite map_get_insert //.
     + iApply "IH".
       * eauto.
       * iIntros (v' ok) "%".
-        iApply "H𝛷".
+        iApply "HΦ".
         rewrite map_get_insert_ne //; try congruence.
         destruct m'; eauto.
 Qed.
 
-Definition wp_MapInsert stk E mref (m: gmap u64 val * val) mv k v' :
-  {{{ mref ↦ Free mv ∗ ⌜map_val mv = Some m⌝ }}}
+Definition wp_MapInsert stk E mref (m: gmap u64 val * val) k v' :
+  {{{ is_map mref m }}}
     MapInsert #mref #k v' @ stk; E
-  {{{ mv', RET #(); mref ↦ Free mv' ∗
-                    ⌜map_val mv' = Some (map_insert m k v')⌝ }}}.
+  {{{ RET #(); is_map mref (map_insert m k v') }}}.
 Proof.
-  iIntros (𝛷) "[Hmref %] H𝛷".
+  iIntros (Φ) "Hmref HΦ".
+  iDestruct "Hmref" as (mv ?) "Hmref".
   wp_call.
   wp_load.
   wp_store.
-  iApply ("H𝛷" with "[$Hmref]").
+  iApply ("HΦ" with "[Hmref]").
+  iExists _; iFrame.
   iPureIntro.
   simpl.
   rewrite H.
   destruct m; simpl; auto.
 Qed.
 
-Definition wp_MapDelete stk E mref (m: gmap u64 val * val) mv k :
-  {{{ mref ↦ Free mv ∗ ⌜map_val mv = Some m⌝ }}}
+Definition wp_MapDelete stk E mref (m: gmap u64 val * val) k :
+  {{{ is_map mref m }}}
     MapDelete #mref #k @ stk; E
-  {{{ mv', RET #(); mref ↦ Free mv' ∗
-                    ⌜map_val mv' = Some (map_del m k)⌝ }}}.
+  {{{ RET #(); is_map mref (map_del m k) }}}.
 Proof.
-  iIntros (𝛷) "[Hmref %] H𝛷".
-Abort.
+  iIntros (Φ) "Hmref HΦ".
+  iDestruct "Hmref" as (mv ?) "Hmref".
+  wp_call.
+  wp_load.
+  wp_pure (Rec _ _ _).
+Admitted.
 
 (* TODO: specify MapIter *)
 

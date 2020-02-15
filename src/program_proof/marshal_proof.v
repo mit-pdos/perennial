@@ -173,14 +173,9 @@ Opaque slice.T.
 
 Section heap.
 Context `{!heapG Σ}.
-Existing Instance diskG0.
-Implicit Types P Q : iProp Σ.
-Implicit Types Φ : val → iProp Σ.
-Implicit Types Δ : envs (uPredI (iResUR Σ)).
 Implicit Types v : val.
-Implicit Types z : Z.
 Implicit Types s : Slice.t.
-Implicit Types stk : stuckness.
+Implicit Types (stk:stuckness) (E: coPset).
 
 Notation length := strings.length.
 
@@ -207,7 +202,7 @@ Theorem wp_new_enc stk E (sz: u64) :
   {{{ True }}}
     NewEnc #sz @ stk; E
   {{{ enc, RET EncM.to_val enc; is_enc enc [] ∗ ⌜EncSz enc = sz⌝ }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "_ HΦ".
   rewrite /NewEnc.
   rewrite /struct.buildStruct /Enc.S /=.
@@ -238,7 +233,7 @@ Theorem wp_Enc__PutInt stk E enc vs (x: u64) :
   {{{ is_enc enc vs ∗ ⌜length (encode vs) + 8 <= int.val (EncSz enc)⌝ }}}
     Enc__PutInt (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt64 x]) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "(Henc&%) HΦ".
   iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
@@ -316,7 +311,7 @@ Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) (xs: list u64) :
              ⌜length (encode vs) + 8 * length xs <= int.val (EncSz enc)⌝ }}}
     Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
   {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "(Henc&Hs&%) HΦ".
   rewrite /Enc__PutInts /ForSlice.
   wp_pures.
@@ -352,7 +347,7 @@ Theorem wp_Enc__PutInt32 stk E enc vs (x: u32) :
   {{{ is_enc enc vs ∗ ⌜length (encode vs) + 4 <= int.val (EncSz enc)⌝ }}}
     Enc__PutInt32 (EncM.to_val enc) #x @ stk; E
   {{{ RET #(); is_enc enc (vs ++ [EncUInt32 x]) }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "(Henc&%) HΦ".
   iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
@@ -472,7 +467,7 @@ Theorem wp_Enc__Finish stk E enc vs :
   {{{ s (extra: list u8), RET (slice_val s);
       is_slice_small s byteT (b2val <$> encode vs ++ extra) ∗
       ⌜Slice.sz s = EncSz enc⌝ }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "Henc HΦ".
   wp_call.
   wp_call.
@@ -509,7 +504,7 @@ Theorem wp_NewDec stk E s vs (extra: list u8) :
   {{{ is_slice_small s byteT (b2val <$> encode vs ++ extra) }}}
     NewDec (slice_val s) @ stk; E
   {{{ dec, RET (DecM.to_val dec); is_dec dec vs ∗ ⌜DecSz dec = s.(Slice.sz)⌝ }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "(Hs&%) HΦ".
   wp_call.
   wp_apply wp_alloc; [ val_ty | iIntros (off) "Hoff" ].
@@ -530,7 +525,7 @@ Theorem wp_Dec__GetInt stk E dec x vs :
   {{{ is_dec dec (EncUInt64 x::vs) }}}
     Dec__GetInt (DecM.to_val dec) @ stk; E
   {{{ RET #x; is_dec dec vs }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "Hdec HΦ".
   iDestruct "Hdec" as (off extra) "(Hoff&Hvs&%)".
   rewrite fmap_app.
@@ -588,7 +583,7 @@ Theorem wp_Dec__GetInt32 stk E dec (x: u32) vs :
   {{{ is_dec dec (EncUInt32 x::vs) }}}
     Dec__GetInt32 (DecM.to_val dec) @ stk; E
   {{{ RET #x; is_dec dec vs }}}.
-Proof using Type.
+Proof.
   iIntros (Φ) "Hdec HΦ".
   iDestruct "Hdec" as (off extra) "(Hoff&Hvs&%)".
   rewrite fmap_app.
@@ -658,7 +653,7 @@ Theorem wp_Dec__GetInts stk E dec xs (n:u64) vs :
   {{{ is_dec dec ((EncUInt64 <$> xs) ++ vs) ∗ ⌜int.val n = length xs⌝}}}
     Dec__GetInts (DecM.to_val dec) #n @ stk; E
   {{{ s, RET slice_val s; is_dec dec vs ∗ is_slice s uint64T (u64val <$> xs) }}}.
-Proof using Type.
+Proof.
   rewrite /Dec__GetInts.
   iIntros (Φ) "(Hdec&%) HΦ".
   wp_pures.

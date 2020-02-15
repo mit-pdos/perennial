@@ -7,7 +7,7 @@ From Goose Require github_com.mit_pdos.goose_nfsd.common.
 (* Address of disk object and its size *)
 Module Addr.
   Definition S := struct.decl [
-    "Blkno" :: common.Bnum;
+    "Blkno" :: uint64T;
     "Off" :: uint64T;
     "Sz" :: uint64T
   ].

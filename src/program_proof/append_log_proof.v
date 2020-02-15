@@ -15,14 +15,10 @@ Instance slice_data: GoData Slice.t := λ {_} s, slice_val s.
 Section heap.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
-Existing Instance diskG0.
-Implicit Types P Q : iProp Σ.
-Implicit Types Φ : val → iProp Σ.
-Implicit Types Δ : envs (uPredI (iResUR Σ)).
 Implicit Types v : val.
 Implicit Types z : Z.
 Implicit Types s : Slice.t.
-Implicit Types stk : stuckness.
+Implicit Types (stk:stuckness) (E: coPset).
 
 Lemma points_to_byte l (x: u8) :
   l ↦[byteT] #x ⊣⊢ l ↦ Free #x.

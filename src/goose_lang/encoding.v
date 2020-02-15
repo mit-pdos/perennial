@@ -1,6 +1,8 @@
 From iris.proofmode Require Import tactics.
 From Perennial.goose_lang Require Import struct typing slice map.
 
+Set Default Proof Using "Type".
+
 Section goose_lang.
   Context `{ffi_sem: ext_semantics}.
   Context {ext_ty:ext_types ext}.
@@ -16,7 +18,7 @@ Section goose_lang.
     "p" +ₗ #3 <-[u8T] to_u8 ("n" ≫ #(U32 $ 3*8)).
 
   Theorem EncodeUInt32_t : (⊢ EncodeUInt32 : (uint32T -> arrayT byteT -> unitT))%T.
-  Proof using Type.
+  Proof.
     typecheck.
   Qed.
 
@@ -29,7 +31,7 @@ Section goose_lang.
     "v0" ∥ ("v1" ∥ ("v2" ∥ "v3" ≪ #(U32 8)) ≪ #(U32 8)) ≪ #(U32 8).
 
   Theorem DecodeUInt32_t : (⊢ DecodeUInt32 : (arrayT byteT -> uint32T))%T.
-  Proof using Type.
+  Proof.
     typecheck.
   Qed.
 
@@ -46,7 +48,7 @@ Section goose_lang.
   .
 
   Theorem EncodeUInt64_t : (⊢ EncodeUInt64 : (uint64T -> arrayT byteT -> unitT))%T.
-  Proof using Type.
+  Proof.
     typecheck.
   Qed.
 
@@ -64,7 +66,7 @@ Section goose_lang.
       ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8).
 
   Theorem DecodeUInt64_t : (⊢ DecodeUInt64 : (arrayT byteT -> uint64T))%T.
-  Proof using Type.
+  Proof.
     typecheck.
   Qed.
 
@@ -75,7 +77,7 @@ Section goose_lang.
     EncodeUInt64 "n" (slice.ptr "p").
 
   Theorem UInt64Put_t : ⊢ UInt64Put : (slice.T byteT -> uint64T -> unitT).
-  Proof using Type.
+  Proof.
     typecheck.
   Qed.
 
@@ -84,7 +86,7 @@ Section goose_lang.
     DecodeUInt64 (slice.ptr "p").
 
   Theorem UInt64Get_t : ⊢ UInt64Get : (slice.T byteT -> uint64T).
-  Proof using Type.
+  Proof.
     typecheck.
   Qed.
 
@@ -93,7 +95,7 @@ Section goose_lang.
     EncodeUInt32 "n" (slice.ptr "p").
 
   Theorem UInt32Put_t : ⊢ UInt32Put : (slice.T byteT -> uint32T -> unitT).
-  Proof using Type.
+  Proof.
     typecheck.
   Qed.
 
@@ -102,7 +104,7 @@ Section goose_lang.
     DecodeUInt32 (slice.ptr "p").
 
   Theorem UInt32Get_t : ⊢ UInt32Get : (slice.T byteT -> uint32T).
-  Proof using Type.
+  Proof.
     typecheck.
   Qed.
 

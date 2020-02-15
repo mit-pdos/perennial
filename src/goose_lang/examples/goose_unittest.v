@@ -2,6 +2,8 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+From Goose Require github_com.tchajed.marshal.
+
 (* comments.go *)
 
 (* This struct is very important.
@@ -18,6 +20,16 @@ End importantStruct.
 Definition doSubtleThings: val :=
   λ: <>,
     #().
+
+(* condvar.go *)
+
+Definition condvarWrapping: val :=
+  λ: <>,
+    let: "mu" := ref (zero_val lockRefT) in
+    "mu" <-[lockRefT] lock.new #();;
+    let: "cond1" := lock.newCond (![lockRefT] "mu") in
+    "mu" <-[lockRefT] lock.new #();;
+    lock.condWait "cond1".
 
 (* const.go *)
 
@@ -175,6 +187,19 @@ Definition getRandom: val :=
   λ: <>,
     let: "r" := Data.randomUint64 #() in
     "r".
+
+(* disk.go *)
+
+Module diskWrapper.
+  Definition S := struct.decl [
+    "d" :: disk.Disk
+  ].
+End diskWrapper.
+
+Definition diskArgument: val :=
+  λ: "d",
+    let: "b" := disk.Read #0 in
+    disk.Write #1 "b".
 
 (* empty_functions.go *)
 
@@ -417,7 +442,7 @@ Definition MapWrapper: ty := mapT boolT.
 
 Definition MapTypeAliases: val :=
   λ: "m1" "m2",
-    MapInsert "m1" #4 (MapGet "m2" #0).
+    MapInsert "m1" #4 (Fst (MapGet "m2" #0)).
 
 (* multiple.go *)
 
@@ -477,6 +502,19 @@ Definition AssignOps: val :=
     "x" <-[uint64T] ![uint64T] "x" - #3;;
     "x" <-[uint64T] ![uint64T] "x" + #1;;
     "x" <-[uint64T] ![uint64T] "x" - #1.
+
+(* package.go *)
+
+Module wrapExternalStruct.
+  Definition S := struct.decl [
+    "e" :: struct.t marshal.Enc.S;
+    "d" :: struct.t marshal.Dec.S
+  ].
+End wrapExternalStruct.
+
+Definition wrapExternalStruct__moveUint64: val :=
+  λ: "w",
+    marshal.Enc__PutInt (struct.get wrapExternalStruct.S "e" "w") (marshal.Dec__GetInt (struct.get wrapExternalStruct.S "d" "w")).
 
 (* panic.go *)
 
@@ -581,326 +619,6 @@ Definition ReplicatedDiskRecover: val :=
         else #());;
         "a" <-[uint64T] ![uint64T] "a" + #1;;
         Continue)).
-
-(* semantics.go *)
-
-(* test that encoding and decoding roundtrips *)
-Definition roundtripEncDec32: val :=
-  λ: "x",
-    let: "r" := NewSlice byteT #4 in
-    let: "e" := struct.new Enc.S [
-      "p" ::= "r"
-    ] in
-    let: "d" := struct.new Dec.S [
-      "p" ::= "r"
-    ] in
-    Enc__UInt32 "e" "x";;
-    Dec__UInt32 "d".
-
-Definition testEncDec32Simple: val :=
-  λ: <>,
-    let: "v0" := (roundtripEncDec32 (#(U32 0)) = #(U32 0)) in
-    let: "v1" := (roundtripEncDec32 (#(U32 1)) = #(U32 1)) in
-    let: "v2" := (roundtripEncDec32 (#(U32 1231234)) = #(U32 1231234)) in
-    "v0" && "v1" && "v2".
-
-Definition testEncDec32: val :=
-  λ: <>,
-    let: "v0" := (roundtripEncDec32 (#(U32 3434807466)) = #(U32 3434807466)) in
-    let: "v1" := (roundtripEncDec32 (#1 ≪ #20) = #1 ≪ #20) in
-    let: "v2" := (roundtripEncDec32 (#1 ≪ #18) = #1 ≪ #18) in
-    let: "v3" := (roundtripEncDec32 (#1 ≪ #10) = #1 ≪ #10) in
-    let: "v4" := (roundtripEncDec32 (#1 ≪ #0) = #1 ≪ #0) in
-    let: "v5" := (roundtripEncDec32 (#1 ≪ #32 - #1) = #1 ≪ #32 - #1) in
-    "v0" && "v1" && "v2" && "v3" && "v4" && "v5".
-
-Definition roundtripEncDec64: val :=
-  λ: "x",
-    let: "r" := NewSlice byteT #8 in
-    let: "e" := struct.new Enc.S [
-      "p" ::= "r"
-    ] in
-    let: "d" := struct.new Dec.S [
-      "p" ::= "r"
-    ] in
-    Enc__UInt64 "e" "x";;
-    Dec__UInt64 "d".
-
-Definition testEncDec64Simple: val :=
-  λ: <>,
-    let: "v0" := (roundtripEncDec64 #0 = #0) in
-    let: "v1" := (roundtripEncDec64 #1 = #1) in
-    let: "v2" := (roundtripEncDec64 #1231234 = #1231234) in
-    "v0" && "v1" && "v2".
-
-Definition testEncDec64: val :=
-  λ: <>,
-    let: "v0" := (roundtripEncDec64 #62206846038638762 = #62206846038638762) in
-    let: "v1" := (roundtripEncDec64 (#1 ≪ #63) = #1 ≪ #63) in
-    let: "v2" := (roundtripEncDec64 (#1 ≪ #47) = #1 ≪ #47) in
-    let: "v3" := (roundtripEncDec64 (#1 ≪ #20) = #1 ≪ #20) in
-    let: "v4" := (roundtripEncDec64 (#1 ≪ #18) = #1 ≪ #18) in
-    let: "v5" := (roundtripEncDec64 (#1 ≪ #10) = #1 ≪ #10) in
-    let: "v6" := (roundtripEncDec64 (#1 ≪ #0) = #1 ≪ #0) in
-    let: "v7" := (roundtripEncDec64 (#1 ≪ #64 - #1) = #1 ≪ #64 - #1) in
-    "v0" && "v1" && "v2" && "v3" && "v4" && "v5" && "v6" && "v7".
-
-(* test that y defaults to 0 and subtraction always reverses addition *)
-Definition reverseAssignOps64: val :=
-  λ: "x",
-    let: "y" := ref (zero_val uint64T) in
-    "y" <-[uint64T] ![uint64T] "y" + "x";;
-    "y" <-[uint64T] ![uint64T] "y" - "x";;
-    "y" <-[uint64T] ![uint64T] "y" + #1;;
-    "y" <-[uint64T] ![uint64T] "y" - #1;;
-    ![uint64T] "y".
-
-Definition testReverseAssignOps64: val :=
-  λ: <>,
-    let: "v0" := (roundtripEncDec64 #0 = #0) in
-    let: "v1" := (roundtripEncDec64 #1 = #1) in
-    let: "v2" := (roundtripEncDec64 #1231234 = #1231234) in
-    let: "v3" := (roundtripEncDec64 #62206846038638762 = #62206846038638762) in
-    let: "v4" := (roundtripEncDec64 (#1 ≪ #63) = #1 ≪ #63) in
-    let: "v5" := (roundtripEncDec64 (#1 ≪ #47) = #1 ≪ #47) in
-    let: "v6" := (roundtripEncDec64 (#1 ≪ #20) = #1 ≪ #20) in
-    let: "v7" := (roundtripEncDec64 (#1 ≪ #18) = #1 ≪ #18) in
-    let: "v8" := (roundtripEncDec64 (#1 ≪ #10) = #1 ≪ #10) in
-    let: "v9" := (roundtripEncDec64 (#1 ≪ #0) = #1 ≪ #0) in
-    let: "v10" := (roundtripEncDec64 (#1 ≪ #64 - #1) = #1 ≪ #64 - #1) in
-    "v0" && "v1" && "v2" && "v3" && "v4" && "v5" && "v6" && "v7" && "v8" && "v9" && "v10".
-
-Definition reverseAssignOps32: val :=
-  λ: "x",
-    let: "y" := ref (zero_val uint32T) in
-    "y" <-[uint32T] ![uint32T] "y" + "x";;
-    "y" <-[uint32T] ![uint32T] "y" - "x";;
-    "y" <-[uint32T] ![uint32T] "y" + #1;;
-    "y" <-[uint32T] ![uint32T] "y" - #1;;
-    ![uint32T] "y".
-
-Definition testReverseAssignOps32: val :=
-  λ: <>,
-    let: "v0" := (roundtripEncDec32 (#(U32 0)) = #(U32 0)) in
-    let: "v1" := (roundtripEncDec32 (#(U32 1)) = #(U32 1)) in
-    let: "v2" := (roundtripEncDec32 (#(U32 1231234)) = #(U32 1231234)) in
-    let: "v3" := (roundtripEncDec32 (#(U32 3434807466)) = #(U32 3434807466)) in
-    let: "v4" := (roundtripEncDec32 (#1 ≪ #20) = #1 ≪ #20) in
-    let: "v5" := (roundtripEncDec32 (#1 ≪ #18) = #1 ≪ #18) in
-    let: "v6" := (roundtripEncDec32 (#1 ≪ #10) = #1 ≪ #10) in
-    let: "v7" := (roundtripEncDec32 (#1 ≪ #0) = #1 ≪ #0) in
-    let: "v8" := (roundtripEncDec32 (#1 ≪ #32 - #1) = #1 ≪ #32 - #1) in
-    "v0" && "v1" && "v2" && "v3" && "v4" && "v5" && "v6" && "v7" && "v8".
-
-(* test shortcircuiting behaviors for logical operators *)
-Module BoolTest.
-  Definition S := struct.decl [
-    "t" :: boolT;
-    "f" :: boolT;
-    "tc" :: uint64T;
-    "fc" :: uint64T
-  ].
-End BoolTest.
-
-Definition CheckTrue: val :=
-  λ: "b",
-    struct.storeF BoolTest.S "tc" "b" (struct.loadF BoolTest.S "tc" "b" + #1);;
-    struct.loadF BoolTest.S "t" "b".
-
-Definition CheckFalse: val :=
-  λ: "b",
-    struct.storeF BoolTest.S "fc" "b" (struct.loadF BoolTest.S "fc" "b" + #1);;
-    struct.loadF BoolTest.S "f" "b".
-
-Definition testShortcircuitAndTF: val :=
-  λ: <>,
-    let: "b" := struct.new BoolTest.S [
-      "t" ::= #true;
-      "f" ::= #false;
-      "tc" ::= #0;
-      "fc" ::= #0
-    ] in
-    (if: CheckTrue "b" && CheckFalse "b"
-    then #false
-    else (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #1)).
-
-Definition testShortcircuitAndFT: val :=
-  λ: <>,
-    let: "b" := struct.new BoolTest.S [
-      "t" ::= #true;
-      "f" ::= #false;
-      "tc" ::= #0;
-      "fc" ::= #0
-    ] in
-    (if: CheckFalse "b" && CheckTrue "b"
-    then #false
-    else (struct.loadF BoolTest.S "tc" "b" = #0) && (struct.loadF BoolTest.S "fc" "b" = #1)).
-
-Definition testShortcircuitOrTF: val :=
-  λ: <>,
-    let: "b" := struct.new BoolTest.S [
-      "t" ::= #true;
-      "f" ::= #false;
-      "tc" ::= #0;
-      "fc" ::= #0
-    ] in
-    (if: CheckTrue "b" || CheckFalse "b"
-    then (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #0)
-    else #false).
-
-Definition testShortcircuitOrFT: val :=
-  λ: <>,
-    let: "b" := struct.new BoolTest.S [
-      "t" ::= #true;
-      "f" ::= #false;
-      "tc" ::= #0;
-      "fc" ::= #0
-    ] in
-    (if: CheckFalse "b" || CheckTrue "b"
-    then (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #1)
-    else #false).
-
-(* test integer overflow and underflow *)
-Definition add64Equals: val :=
-  λ: "x" "y" "z",
-    ("x" + "y" = "z").
-
-Definition testAdd64Equals: val :=
-  λ: <>,
-    let: "x" := add64Equals #2 #3 #5 in
-    let: "y" := add64Equals (#1 ≪ #64 - #1) #1 #0 in
-    "x" && "y".
-
-Definition minus64Equals: val :=
-  λ: "x" "y" "z",
-    ("x" - "y" = "z").
-
-Definition testMinus64Equals: val :=
-  λ: <>,
-    let: "x" := minus64Equals #2 #1 #1 in
-    let: "y" := minus64Equals (#1 ≪ #64 - #1) (#1 ≪ #63) (#1 ≪ #63 - #1) in
-    let: "z" := minus64Equals #2 #8 (#1 ≪ #64 - #6) in
-    "x" && "y" && "z".
-
-(* test side-effects on array writes from multiple accessors *)
-Module ArrayEditor.
-  Definition S := struct.decl [
-    "s" :: slice.T uint64T;
-    "next_val" :: uint64T
-  ].
-End ArrayEditor.
-
-Definition ArrayEditor__Advance: val :=
-  λ: "ae" "arr" "next",
-    SliceSet uint64T "arr" #0 (SliceGet uint64T "arr" #0 + #1);;
-    SliceSet uint64T (struct.loadF ArrayEditor.S "s" "ae") #0 (struct.loadF ArrayEditor.S "next_val" "ae");;
-    struct.storeF ArrayEditor.S "next_val" "ae" "next";;
-    struct.storeF ArrayEditor.S "s" "ae" (SliceSkip uint64T (struct.loadF ArrayEditor.S "s" "ae") #1).
-
-Definition testOverwriteArray: val :=
-  λ: <>,
-    let: "arr" := ref (NewSlice uint64T #4) in
-    let: "ae1" := struct.new ArrayEditor.S [
-      "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
-      "next_val" ::= #1
-    ] in
-    let: "ae2" := struct.new ArrayEditor.S [
-      "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #1;
-      "next_val" ::= #102
-    ] in
-    ArrayEditor__Advance "ae2" (![slice.T uint64T] "arr") #103;;
-    ArrayEditor__Advance "ae2" (![slice.T uint64T] "arr") #104;;
-    ArrayEditor__Advance "ae2" (![slice.T uint64T] "arr") #105;;
-    ArrayEditor__Advance "ae1" (![slice.T uint64T] "arr") #2;;
-    ArrayEditor__Advance "ae1" (![slice.T uint64T] "arr") #3;;
-    ArrayEditor__Advance "ae1" (![slice.T uint64T] "arr") #4;;
-    ArrayEditor__Advance "ae1" (![slice.T uint64T] "arr") #5;;
-    (if: SliceGet uint64T (![slice.T uint64T] "arr") #0 + SliceGet uint64T (![slice.T uint64T] "arr") #1 + SliceGet uint64T (![slice.T uint64T] "arr") #2 + SliceGet uint64T (![slice.T uint64T] "arr") #3 ≥ #100
-    then #false
-    else (SliceGet uint64T (![slice.T uint64T] "arr") #3 = #4) && (SliceGet uint64T (![slice.T uint64T] "arr") #0 = #4)).
-
-(* advances the array editor, and returns the value it wrote, storing "next" in next_val *)
-Definition ArrayEditor__AdvanceReturn: val :=
-  λ: "ae" "next",
-    let: "tmp" := ref (struct.loadF ArrayEditor.S "next_val" "ae") in
-    SliceSet uint64T (struct.loadF ArrayEditor.S "s" "ae") #0 (![uint64T] "tmp");;
-    struct.storeF ArrayEditor.S "next_val" "ae" "next";;
-    struct.storeF ArrayEditor.S "s" "ae" (SliceSkip uint64T (struct.loadF ArrayEditor.S "s" "ae") #1);;
-    ![uint64T] "tmp".
-
-(* we call this function with side-effectful function calls as arguments,
-   its implementation is unimportant *)
-Definition addFour64: val :=
-  λ: "a" "b" "c" "d",
-    "a" + "b" + "c" + "d".
-
-Module Pair.
-  Definition S := struct.decl [
-    "x" :: uint64T;
-    "y" :: uint64T
-  ].
-End Pair.
-
-Definition testFunctionOrdering: val :=
-  λ: <>,
-    let: "arr" := ref (NewSlice uint64T #5) in
-    let: "ae1" := struct.mk ArrayEditor.S [
-      "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
-      "next_val" ::= #1
-    ] in
-    let: "ae2" := struct.mk ArrayEditor.S [
-      "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
-      "next_val" ::= #101
-    ] in
-    (if: ArrayEditor__AdvanceReturn "ae1" #2 + ArrayEditor__AdvanceReturn "ae2" #102 ≠ #102
-    then #false
-    else
-      (if: SliceGet uint64T (![slice.T uint64T] "arr") #0 ≠ #101
-      then #false
-      else
-        (if: addFour64 (ArrayEditor__AdvanceReturn "ae1" #3) (ArrayEditor__AdvanceReturn "ae2" #103) (ArrayEditor__AdvanceReturn "ae2" #104) (ArrayEditor__AdvanceReturn "ae1" #4) ≠ #210
-        then #false
-        else
-          (if: SliceGet uint64T (![slice.T uint64T] "arr") #1 ≠ #102
-          then #false
-          else
-            (if: SliceGet uint64T (![slice.T uint64T] "arr") #2 ≠ #3
-            then #false
-            else
-              let: "p" := struct.mk Pair.S [
-                "x" ::= ArrayEditor__AdvanceReturn "ae1" #5;
-                "y" ::= ArrayEditor__AdvanceReturn "ae2" #105
-              ] in
-              (if: SliceGet uint64T (![slice.T uint64T] "arr") #3 ≠ #104
-              then #false
-              else
-                let: "q" := struct.mk Pair.S [
-                  "y" ::= ArrayEditor__AdvanceReturn "ae1" #6;
-                  "x" ::= ArrayEditor__AdvanceReturn "ae2" #106
-                ] in
-                (if: SliceGet uint64T (![slice.T uint64T] "arr") #4 ≠ #105
-                then #false
-                else (struct.get Pair.S "x" "p" + struct.get Pair.S "x" "q" = #109)))))))).
-
-Definition testStandardForLoop: val :=
-  λ: <>,
-    let: "arr" := ref (NewSlice uint64T #4) in
-    SliceSet uint64T (![slice.T uint64T] "arr") #0 (SliceGet uint64T (![slice.T uint64T] "arr") #0 + #1);;
-    SliceSet uint64T (![slice.T uint64T] "arr") #1 (SliceGet uint64T (![slice.T uint64T] "arr") #1 + #3);;
-    SliceSet uint64T (![slice.T uint64T] "arr") #2 (SliceGet uint64T (![slice.T uint64T] "arr") #2 + #5);;
-    SliceSet uint64T (![slice.T uint64T] "arr") #3 (SliceGet uint64T (![slice.T uint64T] "arr") #3 + #7);;
-    (standardForLoop (![slice.T uint64T] "arr") = #16).
-
-Definition testConditionalAssign: val :=
-  λ: <>,
-    (conditionalAssign #true = #2) && (conditionalAssign #false = #3).
-
-Definition testConversions: val :=
-  λ: <>,
-    let: "s" := #(str"four") in
-    let: "b" := stringToByteSlice "s" in
-    let: "x" := literalCast #() in
-    ("x" = slice.len "b") && (byteSliceToString "b" = "s").
 
 (* slices.go *)
 

@@ -4,7 +4,6 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.fake_bcache.bcache.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.tchajed.marshal.
 
@@ -13,7 +12,7 @@ From Goose Require github_com.tchajed.marshal.
 (* A buf holds a disk object (inode, a bitmap bit, or disk block) *)
 Module Buf.
   Definition S := struct.decl [
-    "Addr" :: addr.Addr;
+    "Addr" :: struct.t addr.Addr.S;
     "Blk" :: disk.blockT;
     "dirty" :: boolT
   ].
@@ -106,11 +105,11 @@ Definition Buf__WriteDirect: val :=
   λ: "buf" "d",
     Buf__SetDirty "buf";;
     (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = disk.BlockSize)
-    then bcache.Bcache__Write "d" (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) (struct.loadF Buf.S "Blk" "buf")
+    then disk.Write (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) (struct.loadF Buf.S "Blk" "buf")
     else
-      let: "blk" := bcache.Bcache__Read "d" (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) in
+      let: "blk" := disk.Read (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) in
       Buf__Install "buf" "blk";;
-      bcache.Bcache__Write "d" (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) "blk").
+      disk.Write (struct.get addr.Addr.S "Blkno" (struct.loadF Buf.S "Addr" "buf")) "blk").
 
 Definition Buf__BnumGet: val :=
   λ: "buf" "off",
@@ -145,7 +144,7 @@ Definition BufMap__Insert: val :=
 
 Definition BufMap__Lookup: val :=
   λ: "bmap" "addr",
-    MapGet (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid "addr").
+    Fst (MapGet (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid "addr")).
 
 Definition BufMap__Del: val :=
   λ: "bmap" "addr",

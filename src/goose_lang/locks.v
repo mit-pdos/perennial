@@ -2,6 +2,7 @@ From Perennial.goose_lang Require Import lang notation lib.spin_lock.
 From Perennial.goose_lang Require Import lifting.
 From iris.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import proofmode.
+From Perennial.goose_lang Require Import readonly.
 From Perennial.goose_lang Require Import typing.
 From Perennial.goose_lang Require Import basic_triples.
 Import uPred.
@@ -19,6 +20,26 @@ Module lock.
   Definition new := spin_lock.newlock.
   Definition acquire := spin_lock.acquire.
   Definition release := spin_lock.release.
+
+  Theorem new_free_lock stk E :
+    {{{ True }}}
+      new #() @ stk; E
+    {{{ l, RET #l; is_free_lock l }}}.
+  Proof.
+    iIntros (l) "_ HΦ".
+    wp_call.
+    wp_apply wp_alloc; [ eauto | ].
+    iIntros (l') "Hl".
+    iApply ("HΦ" with "[$]").
+  Qed.
+
+  Theorem is_free_lock_ty lk :
+    is_free_lock lk -∗ ⌜val_ty #lk lockRefT⌝.
+  Proof.
+    iIntros "Hlk".
+    iPureIntro.
+    val_ty.
+  Qed.
 
   Theorem is_lock_ty N γ lk R :
     is_lock N γ lk R -∗ ⌜val_ty lk lockRefT⌝.
@@ -42,10 +63,15 @@ Module lock.
                                       acquire !"l".
 
   Definition is_cond N γ (c: loc) R: iProp Σ :=
-    ∃ lk, c ↦ Free lk ∗ is_lock N γ lk R.
+    ∃ lk, c ↦ro lk ∗ is_lock N γ lk R.
 
-  Import environments.
-  Import proofmode.
+  Theorem is_cond_dup N γ c R :
+    is_cond N γ c R -∗ is_cond N γ c R ∗ is_cond N γ c R.
+  Proof.
+    iIntros "Hc".
+    iDestruct "Hc" as (lk) "[[Hc1 Hc2] #Hl]".
+    iSplitL "Hc1"; iExists lk; iFrame "#∗".
+  Qed.
 
   Theorem wp_newCond N γ lk R :
     {{{ is_lock N γ lk R }}}
@@ -57,6 +83,7 @@ Module lock.
     iDestruct (is_lock_flat with "Hl") as %[l ->].
     wp_apply wp_alloc_untyped; [ auto | ].
     iIntros (c) "Hc".
+    rewrite ptsto_ro_weaken.
     iApply "HΦ".
     iExists _; iFrame.
   Qed.
@@ -89,9 +116,9 @@ Module lock.
     iIntros (Φ) "(Hc&Hlocked&HR) HΦ".
     iDestruct "Hc" as (lk) "(Hcptr&#Hc)".
     wp_call.
+    iDestruct (ptsto_ro_load with "Hcptr") as (q) "Hcptr".
     wp_load.
     wp_apply (release_spec with "[$Hc $Hlocked $HR]").
-    iIntros "_".
     wp_pures.
     wp_load.
     wp_apply (acquire_spec with "[$Hc]").
@@ -99,6 +126,7 @@ Module lock.
     iApply "HΦ".
     iSplitR "Hlocked HR"; last by iFrame.
     iExists lk; iFrame "#∗".
+    iApply (ptsto_ro_from_q with "[$]").
   Qed.
 
   End goose_lang.

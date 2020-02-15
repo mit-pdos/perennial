@@ -4,10 +4,8 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import util.
 Section heap.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
-Existing Instance diskG0.
-Implicit Types (Φ : val → iProp Σ).
-Implicit Types (v:val) (z:Z).
-Implicit Types (stk:stuckness) (E:coPset).
+Implicit Types (v:val).
+Implicit Types (stk:stuckness) (E: coPset).
 
 Theorem wp_Min_l stk E (n m: u64) Φ :
   int.val n <= int.val m ->

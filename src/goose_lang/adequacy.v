@@ -16,7 +16,8 @@ Class ffi_interp_adequacy `{!ffi_interp ffi} `{EXT: !ext_semantics ext ffi} :=
     ffi_crash : forall Σ, ffi_preG Σ ->
           (∀ (σ σ': ffi_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
            ffi_ctx Hold σ ==∗ ∃ (new: ffi_names), ffi_ctx (ffi_update Σ Hold new) σ' ∗
-                                                  ffi_crash_rel Σ Hold σ (ffi_update Σ Hold new) σ')%I;
+                                                  ffi_crash_rel Σ Hold σ (ffi_update Σ Hold new) σ' ∗
+                                                  ffi_restart (ffi_update Σ Hold new) σ')%I;
   }.
 
 (* this is the magic that lets subG_ffiPreG solve for an ffi_preG using only

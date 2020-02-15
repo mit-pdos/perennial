@@ -44,6 +44,7 @@ Ltac wp_value_head :=
 Ltac solve_bi_true :=
   try lazymatch goal with
       | |- envs_entails _ (bi_pure True) => done
+      | |- envs_entails _ (bi_wand (bi_pure True) _)  => iIntros "_"
       end.
 
 Ltac wp_finish :=
