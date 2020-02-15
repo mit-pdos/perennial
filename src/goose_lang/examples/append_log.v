@@ -18,18 +18,18 @@ Module Log.
 End Log.
 
 Definition Log__mkHdr: val :=
-  λ: "log",
+  rec: "Log__mkHdr" "log" :=
     let: "enc" := marshal.NewEnc disk.BlockSize in
     marshal.Enc__PutInt "enc" (struct.get Log.S "sz" "log");;
     marshal.Enc__PutInt "enc" (struct.get Log.S "diskSz" "log");;
     marshal.Enc__Finish "enc".
 
 Definition Log__writeHdr: val :=
-  λ: "log",
+  rec: "Log__writeHdr" "log" :=
     disk.Write #0 (Log__mkHdr "log").
 
 Definition Init: val :=
-  λ: "diskSz",
+  rec: "Init" "diskSz" :=
     (if: "diskSz" < #1
     then
       (struct.mk Log.S [
@@ -45,7 +45,7 @@ Definition Init: val :=
       ("log", #true)).
 
 Definition Open: val :=
-  λ: <>,
+  rec: "Open" <> :=
     let: "hdr" := disk.Read #0 in
     let: "dec" := marshal.NewDec "hdr" in
     let: "sz" := marshal.Dec__GetInt "dec" in
@@ -56,19 +56,19 @@ Definition Open: val :=
     ].
 
 Definition Log__Get: val :=
-  λ: "log" "i",
+  rec: "Log__Get" "log" "i" :=
     let: "sz" := struct.get Log.S "sz" "log" in
     (if: "i" < "sz"
     then (disk.Read (#1 + "i"), #true)
     else (slice.nil, #false)).
 
 Definition writeAll: val :=
-  λ: "bks" "off",
+  rec: "writeAll" "bks" "off" :=
     ForSlice (slice.T byteT) "i" "bk" "bks"
       (disk.Write ("off" + "i") "bk").
 
 Definition Log__Append: val :=
-  λ: "log" "bks",
+  rec: "Log__Append" "log" "bks" :=
     let: "sz" := struct.loadF Log.S "sz" "log" in
     (if: slice.len "bks" ≥ struct.loadF Log.S "diskSz" "log" - #1 - "sz"
     then #false
@@ -83,7 +83,7 @@ Definition Log__Append: val :=
       #true).
 
 Definition Log__Reset: val :=
-  λ: "log",
+  rec: "Log__Reset" "log" :=
     let: "newLog" := struct.mk Log.S [
       "sz" ::= #0;
       "diskSz" ::= struct.loadF Log.S "diskSz" "log"
