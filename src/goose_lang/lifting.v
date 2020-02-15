@@ -281,6 +281,13 @@ Global Instance heapG_irisG `{!heapG Σ} :
   fork_post _ := True%I;
 }.
 
+Lemma heap_get_update' Σ hG :
+  heap_update Σ hG (iris_invG) (heap_get_names _ hG) = hG.
+Proof.
+  rewrite /heap_update/heap_get_names/gen_heapG_update/gen_heapG_get_names ffi_get_update //=.
+  destruct hG as [?? [] [] []]; eauto.
+Qed.
+
 (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
 [head_step]. The tactic will discharge head-reductions starting from values, and
 simplifies hypothesis related to conversions from and to values, and finite map

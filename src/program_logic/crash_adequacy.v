@@ -18,12 +18,12 @@ Implicit Types Φs : list (val Λ → iProp Σ).
 
 Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})%I.
 
-Lemma wpc_step s k e1 σ1 κ κs e2 σ2 efs m Φ Φc :
+Lemma wpc_step E s k e1 σ1 κ κs e2 σ2 efs m Φ Φc :
   prim_step e1 σ1 κ e2 σ2 efs →
-  state_interp σ1 (κ ++ κs) m -∗ WPC e1 @ s; k; ⊤; ∅ {{ Φ }} {{ Φc }} -∗ NC -∗
+  state_interp σ1 (κ ++ κs) m -∗ WPC e1 @ s; k; ⊤; E {{ Φ }} {{ Φc }} -∗ NC -∗
   |={⊤,⊤}_(3 * (S (S k)))=>
   state_interp σ2 κs (length efs + m) ∗
-  WPC e2 @ s; k; ⊤; ∅ {{ Φ }} {{ Φc }} ∗
+  WPC e2 @ s; k; ⊤; E {{ Φ }} {{ Φc }} ∗
   wptp s k efs ∗
   NC.
 Proof.
@@ -45,9 +45,9 @@ Qed.
 
 Lemma wptp_step s k e1 t1 t2 κ κs σ1 σ2 Φ Φc :
   step (e1 :: t1,σ1) κ (t2, σ2) →
-  state_interp σ1 (κ ++ κs) (length t1) -∗ WPC e1 @ s; k; ⊤; ∅ {{ Φ }} {{ Φc }}-∗ wptp s k t1 -∗ NC ==∗
+  state_interp σ1 (κ ++ κs) (length t1) -∗ WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }}-∗ wptp s k t1 -∗ NC ==∗
   ∃ e2 t2', ⌜t2 = e2 :: t2'⌝ ∗
-  |={⊤,⊤}_(3 * (S (S k)))=> state_interp σ2 κs (pred (length t2)) ∗ WPC e2 @ s; k; ⊤; ∅ {{ Φ }} {{ Φc}} ∗ wptp s k t2' ∗ NC.
+  |={⊤,⊤}_(3 * (S (S k)))=> state_interp σ2 κs (pred (length t2)) ∗ WPC e2 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc}} ∗ wptp s k t2' ∗ NC.
 Proof.
   iIntros (Hstep) "Hσ He Ht HNC".
   destruct Hstep as [e1' σ1' e2' σ2' efs [|? t1'] t2' ?? Hstep]; simplify_eq/=.
@@ -68,11 +68,11 @@ Qed.
 
 Lemma wptp_steps s k n e1 t1 κs κs' t2 σ1 σ2 Φ Φc :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
-  state_interp σ1 (κs ++ κs') (length t1) -∗ WPC e1 @ s; k; ⊤; ∅ {{ Φ }} {{ Φc }} -∗ wptp s k t1 -∗ NC -∗
+  state_interp σ1 (κs ++ κs') (length t1) -∗ WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗ wptp s k t1 -∗ NC -∗
   |={⊤,⊤}_(3 * (S (S k)))=>^n (∃ e2 t2',
     ⌜t2 = e2 :: t2'⌝ ∗
     state_interp σ2 κs' (pred (length t2)) ∗
-    WPC e2 @ s; k; ⊤; ∅ {{ Φ }} {{ Φc }} ∗ wptp s k t2' ∗
+    WPC e2 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} ∗ wptp s k t2' ∗
     NC).
 Proof.
   revert e1 t1 κs κs' t2 σ1 σ2; simpl.
@@ -86,9 +86,9 @@ Proof.
   by iApply (IH with "Hσ He Ht HNC").
 Qed.
 
-Lemma wpc_safe k κs m e σ Φ Φc :
+Lemma wpc_safe E k κs m e σ Φ Φc :
   state_interp σ κs m -∗
-  WPC e @ k {{ Φ }} {{ Φc }} -∗ NC ={⊤}=∗ ▷^(S (S k))
+  WPC e @ k ; ⊤ ; E {{ Φ }} {{ Φc }} -∗ NC ={⊤}=∗ ▷^(S (S k))
   ⌜is_Some (to_val e) ∨ reducible e σ⌝.
 Proof.
   rewrite wpc_unfold /wpc_pre. iIntros "Hσ (H&_) HNC".
@@ -106,7 +106,7 @@ Qed.
 Lemma wptp_strong_adequacy Φ Φc k κs' s n e1 t1 κs t2 σ1 σ2 :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗
-  WPC e1 @ s; k; ⊤; ∅ {{ Φ }} {{ Φc }} -∗
+  WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC -∗
   |={⊤,⊤}_(3 * (S (S k)))=>^(S n) (∃ e2 t2',
@@ -123,7 +123,7 @@ Proof.
   iDestruct 1 as (e2' t2' ?) "(Hσ & Hwp & Ht & HNC)"; simplify_eq/=.
   iMod (fupd_plain_keep_l ⊤
     (▷^(S (S k)) ⌜ ∀ e2, s = NotStuck → e2 ∈ (e2' :: t2') → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝)%I
-    (state_interp σ2 κs' (length t2') ∗ WPC e2' @ s; k; ⊤; ∅ {{ v, Φ v }} {{ Φc }} ∗ wptp s k t2' ∗ NC)%I
+    (state_interp σ2 κs' (length t2') ∗ WPC e2' @ s; k; ⊤; ⊤ {{ v, Φ v }} {{ Φc }} ∗ wptp s k t2' ∗ NC)%I
     with "[$Hσ $Hwp $Ht $HNC]") as "(Hsafe&Hσ&Hwp&Hvs&HNC)".
   { iIntros "(Hσ & Hwp & Ht & HNC)" (e' -> He').
     apply elem_of_cons in He' as [<-|(t1''&t2''&->)%elem_of_list_split].
@@ -147,7 +147,7 @@ Qed.
 Lemma wptp_strong_crash_adequacy Φ Φc κs' s k n e1 t1 κs t2 σ1 σ2 :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗
-  WPC e1 @ s; k; ⊤; ∅ {{ Φ }} {{ Φc }} -∗
+  WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC -∗ |={⊤,⊤}_(3 * S (S k))=>^(S n) |={⊤,⊤}_(S k)=> |={⊤, ∅}_(S k)=> (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
@@ -159,7 +159,7 @@ Proof.
   iDestruct 1 as (e2' t2' ?) "(Hσ & Hwp & Ht & HNC)"; simplify_eq/=.
   iMod (fupd_plain_keep_l ⊤
     (▷^(S (S k)) ⌜ ∀ e2, s = NotStuck → e2 ∈ (e2' :: t2') → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝)%I
-    (state_interp σ2 κs' (length t2') ∗ WPC e2' @ s; k; ⊤; ∅ {{ v, Φ v }} {{ Φc }} ∗ wptp s k t2' ∗ NC)%I
+    (state_interp σ2 κs' (length t2') ∗ WPC e2' @ s; k; ⊤; ⊤ {{ v, Φ v }} {{ Φc }} ∗ wptp s k t2' ∗ NC)%I
     with "[$Hσ $Hwp $Ht $HNC]") as "(Hsafe&Hσ&Hwp&Hvs&HNC)".
   { iIntros "(Hσ & Hwp & Ht & HNC)" (e' -> He').
     apply elem_of_cons in He' as [<-|(t1''&t2''&->)%elem_of_list_split].

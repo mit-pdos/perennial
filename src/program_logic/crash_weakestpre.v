@@ -832,6 +832,16 @@ Proof.
   - iIntros "?". iMod (fupd_intro_mask' _ ∅); first by set_solver+. by iApply HΦc.
 Qed.
 
+Lemma wpc_mono' s k E1 E2 e Φ Ψ Φc Ψc :
+  (∀ v, Φ v -∗ Ψ v) -∗ (Φc -∗ Ψc) -∗ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }} -∗
+  WPC e @ s; k; E1; E2 {{ Ψ }} {{ Ψc }}.
+Proof.
+  iIntros "H1 H2 H3"; iApply (wpc_strong_mono' with "H3"); auto.
+  iSplit.
+  - iIntros (v) "?". by iApply "H1".
+  - iIntros "?". iMod (fupd_intro_mask' _ ∅); first by set_solver+. by iApply "H2".
+Qed.
+
 Lemma wp_wpc_frame' s E1 E2 e Φ Φc Φc' k:
   Φc' ∗
   □ (Φc' -∗ Φc) ∗
