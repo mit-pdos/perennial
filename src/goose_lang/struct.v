@@ -26,6 +26,28 @@ Fixpoint getField_e (f0: string) (rev_fields: list (string*ty)) (se: expr): expr
 Definition getField (d:descriptor) f : val :=
   λ: "v", getField_e f (rev d.(fields)) (Var "v").
 
+Definition val_fst (p : val) : val :=
+  match p with
+  | PairV a b => a
+  | _ => #()
+  end.
+
+Definition val_snd (p : val) : val :=
+  match p with
+  | PairV a b => b
+  | _ => #()
+  end.
+
+Fixpoint extractField_helper (f0: string) (rev_fields: list (string*ty)) (v: val): val :=
+  match rev_fields with
+  | [] => #()
+  | [f] => if String.eqb (fst f) f0 then v else #()
+  | f::fs => if String.eqb (fst f) f0 then val_snd v else extractField_helper f0 fs (val_fst v)
+  end.
+
+Definition extractField (d:descriptor) f v : val :=
+  extractField_helper f (rev d.(fields)) v.
+
 Fixpoint assocl_lookup {A} (field_vals: list (string * A)) (f0: string) : option A :=
   match field_vals with
   | [] => None

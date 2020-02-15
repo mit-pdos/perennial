@@ -28,9 +28,9 @@ Definition locked (hm : gen_heapG u64 bool Σ) (addr : u64) : iProp Σ :=
   ( mapsto (hG := hm) addr 1 true )%I.
 
 Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrVal : val) (covered : gset u64) (P : u64 -> iProp Σ) :=
-  ( ∃ (lockStatePtr : loc) owner (cond : loc) waiters,
+  ( ∃ (lockStatePtr : loc) owner (cond : loc) (nwaiters : u64),
       ⌜ ptrVal = #lockStatePtr ⌝ ∗
-      lockStatePtr ↦[structTy lockState.S] (owner, #gheld, #cond, waiters) ∗
+      lockStatePtr ↦[structTy lockState.S] (owner, #gheld, #cond, #nwaiters) ∗
       cond ↦[lockRefT] #shardlock ∗
       ⌜ addr ∈ covered ⌝ ∗
       ( ⌜ gheld = true ⌝ ∨
@@ -195,46 +195,31 @@ Proof.
   val_ty.
 Qed.
 
-Theorem wp_load_lockState_cond (lsp : loc) owner held cond waiters :
-  {{{ lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}
-    struct.loadF lockState.S "cond" #lsp
-  {{{ RET cond; lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}.
+Theorem wp_load_lockState (lsp : loc) v fn :
+  {{{ lsp ↦[struct.t lockState.S] v }}}
+    struct.loadF lockState.S fn #lsp
+  {{{ RET extractField lockState.S fn v; lsp ↦[struct.t lockState.S] v }}}.
 Proof.
   Transparent loadField.
+  Opaque String.eqb.
 
-  iIntros (Φ) "Hlsp HΦ".
-  iDestruct "Hlsp" as "[Hlsp %]".
+  iIntros (Φ) "[Hlsp %] HΦ".
   inv_ty.
-  iDestruct "Hlsp" as "[[[[Howner _] [Hheld _]] [Hcond _]] [Hwaiters _]]".
-  rewrite /loadField /=.
-  wp_load.
-  iApply "HΦ".
-  iSplitL; eauto.
   rewrite /=.
-  iFrame.
+  repeat iDestruct "Hlsp" as "[? Hlsp]".
+  rewrite /struct.loadF /extractField /=.
 
-  Opaque loadField.
-Qed.
+  repeat match goal with
+  | |- context[(?a =? ?b)%string] => destruct (String.eqb_spec a b); try congruence
+  end.
 
-Theorem wp_load_lockState_waiters (lsp : loc) owner held cond waiters :
-  {{{ lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}
-    struct.loadF lockState.S "waiters" #lsp
-  {{{ (nwaiters : u64), RET #nwaiters; ⌜waiters = #nwaiters⌝ ∗ lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}.
-Proof.
-  Transparent loadField.
+  all: wp_pures.
+  all: try wp_load.
+  all: iApply "HΦ".
+  all: iSplitL; eauto.
+  all: rewrite /=; iFrame.
 
-  iIntros (Φ) "Hlsp HΦ".
-  iDestruct "Hlsp" as "[Hlsp %]".
-  inv_ty.
-  iDestruct "Hlsp" as "[[[[Howner _] [Hheld _]] [Hcond _]] [Hwaiters _]]".
-  rewrite /loadField /=.
-  wp_load.
-  iApply "HΦ".
-  iSplitR; eauto.
-  iSplitL; eauto.
-  rewrite /=.
-  iFrame.
-
+  Transparent String.eqb.
   Opaque loadField.
 Qed.
 
@@ -352,15 +337,15 @@ Proof.
   wp_apply (wp_store_lockState_1 with "Hlockstateptr").
   iIntros "Hlockstateptr".
 
-  wp_apply (wp_load_lockState_waiters with "Hlockstateptr").
-  iIntros (nwaiters) "[-> Hlockstateptr]".
+  wp_apply (wp_load_lockState with "Hlockstateptr").
+  iIntros "Hlockstateptr".
 
   wp_pures.
-  destruct (bool_decide (int.val 0 < int.val nwaiters)).
+  destruct (bool_decide (int.val 0 < int.val waiters)).
 
   {
     wp_pures.
-    wp_apply (wp_load_lockState_cond with "Hlockstateptr").
+    wp_apply (wp_load_lockState with "Hlockstateptr").
     iIntros "Hlockstateptr".
 
     wp_apply (lock.wp_condSignal with "[Hcond]").
