@@ -13,14 +13,6 @@ Ltac word := try lazymatch goal with
 
 Ltac len := autorewrite with len; try word.
 
-(*
-Locate "[∗".
-Search _ loc_add.
-Print big_sepM2.
-Print big_sepM2_aux.
-Print big_sepM2_def.
-*)
-
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
@@ -119,12 +111,17 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iFrame.
 Qed.
 
-Theorem wp_load_lockShard_0 (ls shardlock mptr : loc) :
+Theorem wp_load_lockShard_mu (ls shardlock mptr : loc) :
   {{{ inv lockshardN (ls ↦[struct.t lockShard.S] (#shardlock, #mptr)) }}}
-    Load #(ls +ₗ 0)
+    struct.loadF lockShard.S "mu" #ls
   {{{ RET #shardlock; True }}}.
 Proof.
+  Transparent loadField.
+
   iIntros (Φ) "#Hinv HΦ".
+  rewrite /loadField /=.
+  wp_pures.
+
   iInv lockshardN as "Hls".
   iDestruct "Hls" as "[([Hl _] & [Hm _]) Ht]".
   rewrite /=.
@@ -139,14 +136,21 @@ Proof.
   }
   iApply "HΦ".
   auto.
+
+  Opaque loadField.
 Qed.
 
-Theorem wp_load_lockShard_1 (ls shardlock mptr : loc) :
+Theorem wp_load_lockShard_state (ls shardlock mptr : loc) :
   {{{ inv lockshardN (ls ↦[struct.t lockShard.S] (#shardlock, #mptr)) }}}
-    Load #(ls +ₗ 1)
+    struct.loadF lockShard.S "state" #ls
   {{{ RET #mptr; True }}}.
 Proof.
+  Transparent loadField.
+
   iIntros (Φ) "#Hinv HΦ".
+  rewrite /loadField /=.
+  wp_pures.
+
   iInv lockshardN as "Hls".
   iDestruct "Hls" as "[([Hl _] & [Hm _]) Ht]".
   rewrite /=.
@@ -161,6 +165,8 @@ Proof.
   }
   iApply "HΦ".
   auto.
+
+  Opaque loadField.
 Qed.
 
 Ltac inv_ty :=
@@ -189,39 +195,47 @@ Proof.
   val_ty.
 Qed.
 
-Theorem wp_load_lockState_2 (lsp : loc) owner held cond waiters :
+Theorem wp_load_lockState_cond (lsp : loc) owner held cond waiters :
   {{{ lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}
-    Load #(lsp +ₗ 2)
+    struct.loadF lockState.S "cond" #lsp
   {{{ RET cond; lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}.
 Proof.
+  Transparent loadField.
+
   iIntros (Φ) "Hlsp HΦ".
   iDestruct "Hlsp" as "[Hlsp %]".
   inv_ty.
   iDestruct "Hlsp" as "[[[[Howner _] [Hheld _]] [Hcond _]] [Hwaiters _]]".
-  rewrite /=.
+  rewrite /loadField /=.
   wp_load.
   iApply "HΦ".
   iSplitL; eauto.
   rewrite /=.
   iFrame.
+
+  Opaque loadField.
 Qed.
 
-Theorem wp_load_lockState_3 (lsp : loc) owner held cond waiters :
+Theorem wp_load_lockState_waiters (lsp : loc) owner held cond waiters :
   {{{ lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}
-    Load #(lsp +ₗ 3)
+    struct.loadF lockState.S "waiters" #lsp
   {{{ (nwaiters : u64), RET #nwaiters; ⌜waiters = #nwaiters⌝ ∗ lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}.
 Proof.
+  Transparent loadField.
+
   iIntros (Φ) "Hlsp HΦ".
   iDestruct "Hlsp" as "[Hlsp %]".
   inv_ty.
   iDestruct "Hlsp" as "[[[[Howner _] [Hheld _]] [Hcond _]] [Hwaiters _]]".
-  rewrite /=.
+  rewrite /loadField /=.
   wp_load.
   iApply "HΦ".
   iSplitR; eauto.
   iSplitL; eauto.
   rewrite /=.
   iFrame.
+
+  Opaque loadField.
 Qed.
 
 Theorem wp_lockShard__acquire ls gh covered (addr : u64) (id : u64) (P : u64 -> iProp Σ) :
@@ -234,15 +248,7 @@ Proof.
   iDestruct "Hls" as (shardlock mptr γl) "(#Hls&#Hlock)".
 
   wp_call.
-
-  (* What's the right way to deal with loadField? *)
-  Transparent loadField.
-  rewrite /struct.loadF /=.
-
-  wp_pures.
-  change (1 * int.val 0) with 0.
-  wp_apply wp_load_lockShard_0; [done|].
-
+  wp_apply wp_load_lockShard_mu; [done|].
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
 
@@ -258,11 +264,7 @@ Proof.
     wp_pures.
     wp_apply wp_alloc_zero.
     iIntros (state) "Hstate".
-    wp_pures.
-
-    replace (1 * int.val (1 + 0)) with (1) by len.
-    wp_apply wp_load_lockShard_1; [done|].
-
+    wp_apply wp_load_lockShard_state; [done|].
     wp_apply (wp_MapGet with "[$Hmptr]"); auto.
     iIntros (v ok) "[% Hmptr]".
 
@@ -280,11 +282,7 @@ Proof.
 
   {
     iIntros "(Hinner & Hp & Haddrlocked)".
-
-    wp_pures.
-    replace (1 * int.val 0) with (0) by len.
-    wp_apply wp_load_lockShard_0; [done|].
-
+    wp_apply wp_load_lockShard_mu; [done|].
     wp_apply (release_spec with "[Hlocked Hinner]").
     {
       iSplitR. { iApply "Hlock". }
@@ -323,26 +321,12 @@ Proof.
   iIntros (Φ) "(Hls & Hp & Haddrlocked) HΦ".
   iDestruct "Hls" as (shardlock mptr γl) "(#Hls&#Hlock)".
   wp_call.
-
-  (* What's the right way to deal with loadField? *)
-  Transparent loadField.
-  rewrite /struct.loadF /=.
-
-  wp_pures.
-  replace (1 * int.val 0) with (0) by len.
-  wp_bind (Load _).
-  iApply wp_load_lockShard_0; [done|].
-  iNext.
-  iIntros "_".
-
+  wp_apply wp_load_lockShard_mu; [done|].
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
   iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
 
-  wp_pures.
-  replace (1 * int.val (1 + 0)) with (1) by len.
-  wp_apply wp_load_lockShard_1; [done|].
-
+  wp_apply wp_load_lockShard_state; [done|].
   wp_apply (wp_MapGet with "Hmptr").
   iIntros (v ok) "[% Hmptr]".
 
@@ -368,9 +352,7 @@ Proof.
   wp_apply (wp_store_lockState_1 with "Hlockstateptr").
   iIntros "Hlockstateptr".
 
-  wp_pures.
-  replace (1 * int.val (1 + (1 + (1 + 0)))) with (3) by len.
-  wp_apply (wp_load_lockState_3 with "Hlockstateptr").
+  wp_apply (wp_load_lockState_waiters with "Hlockstateptr").
   iIntros (nwaiters) "[-> Hlockstateptr]".
 
   wp_pures.
@@ -378,8 +360,7 @@ Proof.
 
   {
     wp_pures.
-    replace (1 * int.val (1 + (1 + 0))) with (2) by len.
-    wp_apply (wp_load_lockState_2 with "Hlockstateptr").
+    wp_apply (wp_load_lockState_cond with "Hlockstateptr").
     iIntros "Hlockstateptr".
 
     wp_apply (lock.wp_condSignal with "[Hcond]").
@@ -389,18 +370,13 @@ Proof.
       rewrite /=.
       rewrite loc_add_0.
       iFrame.
-      iApply "Hlock".
+      (* XXX what's this ptsto_ro thing? *)
+      (* iApply "Hlock". *)
+      admit.
     }
 
     iIntros "Hcond".
-    wp_pures.
-
-    replace (1 * int.val 0) with (0) by len.
-    wp_bind (Load _).
-    iApply wp_load_lockShard_0; [done|].
-    iNext.
-    iIntros "_".
-
+    wp_apply wp_load_lockShard_mu; [done|].
     wp_apply (release_spec with "[Hlock Hlocked Hp Haddrlocked Hghctx Hcovered Hmptr Haddrs Hlockstateptr Hcond]").
     {
       iFrame.
@@ -418,18 +394,11 @@ Proof.
 
   {
     wp_pures.
-    replace (1 * int.val (1 + 0)) with (1) by len.
-    wp_apply wp_load_lockShard_1; [done|].
-
-    wp_pures.
+    wp_apply wp_load_lockShard_state; [done|].
     wp_apply (wp_MapDelete with "[$Hmptr]").
     iIntros "Hmptr".
 
-    wp_pures.
-
-    replace (1 * int.val 0) with (0) by len.
-    wp_apply wp_load_lockShard_0; [done|].
-
+    wp_apply wp_load_lockShard_mu; [done|].
     wp_apply (release_spec with "[Hlock Hlocked Hp Haddrlocked Hghctx Hcovered Hmptr Haddrs Hlockstateptr Hcond]").
     {
       iFrame.
@@ -447,7 +416,6 @@ Proof.
     iApply "HΦ".
     auto.
   }
-
-Abort.
+Admitted.
 
 End heap.
