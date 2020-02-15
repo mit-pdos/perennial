@@ -5,6 +5,8 @@ From iris.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Export step_fupd_extra crash_token crash_lang crash_weakestpre.
 Import uPred.
 
+Set Default Proof Using "Type".
+
 Section crash_adequacy.
 Context `{!irisG Λ Σ, crashG Σ}.
 Implicit Types s : stuckness.

@@ -8,6 +8,7 @@ From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing.
 From Perennial.algebra Require Import gen_heap.
 
+Set Default Proof Using "Type".
 (* this is purely cosmetic but it makes printing line up with how the code is
 usually written *)
 Set Printing Projections.

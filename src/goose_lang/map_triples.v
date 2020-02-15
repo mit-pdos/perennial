@@ -3,6 +3,8 @@ From Perennial.goose_lang Require Import basic_triples.
 From Perennial.goose_lang Require Import map.
 Import uPred.
 
+Set Default Proof Using "Type".
+
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.

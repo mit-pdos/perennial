@@ -7,6 +7,8 @@ From Perennial.program_logic Require Import recovery_weakestpre recovery_adequac
 From Perennial.goose_lang Require Import typing adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert.
 
+Set Default Proof Using "Type".
+
 Class spec_ffi_interp_adequacy `{spec_ffi: @spec_ffi_interp ffi} `{EXT: !spec_ext_semantics ext ffi} :=
   { spec_ffi_interp_adequacy_field : @ffi_interp_adequacy _ (spec_ffi_interp_field)
                                                           (spec_ext_op_field)
@@ -48,7 +50,7 @@ Lemma goose_spec_init {hG: heapG Σ} r tp σ tr or:
    |={⊤}=> ∃ _ : refinement_heapG Σ, spec_ctx' r (tp, σ) ∗ source_pool_map (tpool_to_map tp)
                                                ∗ ffi_start (refinement_spec_ffiG) σ.(world)
                                                ∗ trace_ctx)%I.
-Proof.
+Proof using Hrpre Hcpre.
   iIntros (?? Hsafe) "Htr Hor".
   iMod (source_cfg_init r tp σ) as (Hcfg) "(Hsource_ctx&Hpool&Hstate)"; first done.
   iMod (gen_heap_init σ.(heap)) as (Hrheap) "Hrh".
@@ -110,7 +112,7 @@ Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr 
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], σs) ∗ trace_ctx (hR := Href')) ∗
         (ffi_start (heapG_ffiG) σ.(world) -∗ ffi_start (refinement_spec_ffiG) σs.(world) -∗ O ⤇ es -∗ wpr NotStuck k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝))))%I) →
   trace_refines e r σ es rs σs.
-Proof.
+Proof using Hrpre Hhpre Hcpre.
   intros ?? Hwp Hsafe.
   cut (recv_adequate (CS := heap_crash_lang) NotStuck e r σ (λ v _, φ v) (λ v _, φr v)
                      (λ σ2,

@@ -111,13 +111,12 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iFrame.
 Qed.
 
+Transparent loadField.
 Theorem wp_load_lockShard_mu (ls shardlock mptr : loc) :
   {{{ inv lockshardN (ls ↦[struct.t lockShard.S] (#shardlock, #mptr)) }}}
     struct.loadF lockShard.S "mu" #ls
   {{{ RET #shardlock; True }}}.
 Proof.
-  Transparent loadField.
-
   iIntros (Φ) "#Hinv HΦ".
   rewrite /loadField /=.
   wp_pures.
@@ -136,8 +135,6 @@ Proof.
   }
   iApply "HΦ".
   auto.
-
-  Opaque loadField.
 Qed.
 
 Theorem wp_load_lockShard_state (ls shardlock mptr : loc) :
@@ -145,8 +142,6 @@ Theorem wp_load_lockShard_state (ls shardlock mptr : loc) :
     struct.loadF lockShard.S "state" #ls
   {{{ RET #mptr; True }}}.
 Proof.
-  Transparent loadField.
-
   iIntros (Φ) "#Hinv HΦ".
   rewrite /loadField /=.
   wp_pures.
@@ -165,8 +160,6 @@ Proof.
   }
   iApply "HΦ".
   auto.
-
-  Opaque loadField.
 Qed.
 
 Ltac inv_ty :=
@@ -175,14 +168,14 @@ Ltac inv_ty :=
          | [ H: lit_ty _ _ |- _ ] => inversion H; subst; clear H
          end.
 
+Transparent storeField.
+Opaque String.eqb.
 Theorem wp_store_lockState (lsp : loc) fn v fv :
   val_ty fv (fieldType lockState.S fn) ->
   {{{ lsp ↦[struct.t lockState.S] v }}}
     struct.storeF lockState.S fn #lsp fv
   {{{ RET #(); lsp ↦[struct.t lockState.S] (updateField lockState.S fn fv v) }}}.
 Proof.
-  Transparent storeField.
-  Opaque String.eqb.
 
   iIntros (Hfvt Φ) "[Hlsp %] HΦ".
   generalize dependent Hfvt.
@@ -204,8 +197,6 @@ Proof.
   all: iSplitL; [| iPureIntro; val_ty ].
   all: rewrite /=; iFrame.
 
-  Transparent String.eqb.
-  Opaque storeField.
 Qed.
 
 Theorem wp_load_lockState (lsp : loc) v fn :
@@ -213,8 +204,6 @@ Theorem wp_load_lockState (lsp : loc) v fn :
     struct.loadF lockState.S fn #lsp
   {{{ RET extractField lockState.S fn v; lsp ↦[struct.t lockState.S] v }}}.
 Proof.
-  Transparent loadField.
-  Opaque String.eqb.
 
   iIntros (Φ) "[Hlsp %] HΦ".
   inv_ty.
@@ -232,9 +221,9 @@ Proof.
   all: iSplitL; eauto.
   all: rewrite /=; iFrame.
 
-  Transparent String.eqb.
-  Opaque loadField.
 Qed.
+Transparent String.eqb.
+Opaque loadField.
 
 Theorem wp_lockShard__acquire ls gh covered (addr : u64) (id : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockShard ls gh covered P ∗
