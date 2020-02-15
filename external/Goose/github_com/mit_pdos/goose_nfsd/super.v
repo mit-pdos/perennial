@@ -21,7 +21,7 @@ End FsSuper.
 Definition MkFsSuper: val :=
   λ: "sz" "name",
     let: "nblockbitmap" := "sz" `quot` common.NBITBLOCK + #1 in
-    let: "d" := ref (zero_val Disk) in
+    let: "d" := ref (zero_val disk.Disk) in
     (if: "name" ≠ slice.nil
     then
       util.DPrintf #0 (#(str"MkFsSuper: open file disk %s
@@ -32,13 +32,13 @@ Definition MkFsSuper: val :=
         Panic ("MkFsSuper: couldn't create disk image");;
         #()
       else #());;
-      "d" <-[Disk] "file"
+      "d" <-[disk.Disk] "file"
     else
       util.DPrintf #0 (#(str"MkFsSuper: create mem disk
       "));;
-      "d" <-[Disk] disk.NewMemDisk "sz");;
+      "d" <-[disk.Disk] disk.NewMemDisk "sz");;
     struct.new FsSuper.S [
-      "Disk" ::= ![Disk] "d";
+      "Disk" ::= ![disk.Disk] "d";
       "Size" ::= "sz";
       "nLog" ::= common.LOGSIZE;
       "NBlockBitmap" ::= "nblockbitmap";

@@ -12,7 +12,7 @@ Definition LogPosition: ty := uint64T.
 
 Module Update.
   Definition S := struct.decl [
-    "Addr" :: common.Bnum;
+    "Addr" :: uint64T;
     "Block" :: disk.blockT
   ].
 End Update.

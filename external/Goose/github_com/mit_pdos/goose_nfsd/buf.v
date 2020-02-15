@@ -144,7 +144,7 @@ Definition BufMap__Insert: val :=
 
 Definition BufMap__Lookup: val :=
   λ: "bmap" "addr",
-    MapGet (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid "addr").
+    Fst (MapGet (struct.loadF BufMap.S "addrs" "bmap") (addr.Addr__Flatid "addr")).
 
 Definition BufMap__Del: val :=
   λ: "bmap" "addr",
