@@ -30,6 +30,7 @@ Fail Example testReverseAssignOps32_ok : testReverseAssignOps32 #() ~~> #true :=
 Example testAdd64Equals_ok : testAdd64Equals #() ~~> #true := t.
 Example testSub64Equals_ok : testSub64Equals #() ~~> #true := t.
 Example testStandardForLoop_ok : testStandardForLoop #() ~~> #true := t.
+Example testForLoopWait_ok : testForLoopWait #() ~~> #true := t.
 Fail Example testStringAppend_ok : testStringAppend #() ~~> #true := t.
 Fail Example testStringLength_ok : testStringLength #() ~~> #true := t.
 Example testOverwriteArray_ok : testOverwriteArray #() ~~> #true := t.

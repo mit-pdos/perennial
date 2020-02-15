@@ -289,6 +289,24 @@ Definition standardForLoop: val :=
     let: "sum" := ![uint64T] "sumPtr" in
     "sum".
 
+(* based off diskAppendWait loop pattern in logging2 *)
+Module LoopStruct.
+  Definition S := struct.decl [
+    "loopNext" :: refT uint64T
+  ].
+End LoopStruct.
+
+Definition LoopStruct__forLoopWait: val :=
+  rec: "LoopStruct__forLoopWait" "ls" "i" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "nxt" := struct.get LoopStruct.S "loopNext" "ls" in
+      (if: "i" < ![uint64T] "nxt"
+      then Break
+      else
+        struct.get LoopStruct.S "loopNext" "ls" <-[refT uint64T] ![uint64T] (struct.get LoopStruct.S "loopNext" "ls") + #1;;
+        Continue)).
+
 (* tests *)
 Definition testStandardForLoop: val :=
   rec: "testStandardForLoop" <> :=
@@ -298,6 +316,14 @@ Definition testStandardForLoop: val :=
     SliceSet uint64T (![slice.T uint64T] "arr") #2 (SliceGet uint64T (![slice.T uint64T] "arr") #2 + #5);;
     SliceSet uint64T (![slice.T uint64T] "arr") #3 (SliceGet uint64T (![slice.T uint64T] "arr") #3 + #7);;
     (standardForLoop (![slice.T uint64T] "arr") = #16).
+
+Definition testForLoopWait: val :=
+  rec: "testForLoopWait" <> :=
+    let: "ls" := struct.mk LoopStruct.S [
+      "loopNext" ::= ref (zero_val uint64T)
+    ] in
+    LoopStruct__forLoopWait "ls" #3;;
+    (![uint64T] (struct.get LoopStruct.S "loopNext" "ls") = #4).
 
 (* maps.go *)
 
