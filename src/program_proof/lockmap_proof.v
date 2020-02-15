@@ -246,7 +246,7 @@ Proof.
   iDestruct "Hls" as (shardlock mptr γl) "(#Hls&#Hlock)".
 
   wp_call.
-  wp_apply wp_load_lockShard_mu; [done|].
+  wp_apply (wp_load_lockShard_mu with "Hls").
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
 
@@ -262,7 +262,7 @@ Proof.
     wp_pures.
     wp_apply wp_alloc_zero.
     iIntros (state) "Hstate".
-    wp_apply wp_load_lockShard_state; [done|].
+    wp_apply (wp_load_lockShard_state with "Hls").
     wp_apply (wp_MapGet with "[$Hmptr]"); auto.
     iIntros (v ok) "[% Hmptr]".
 
@@ -280,7 +280,7 @@ Proof.
 
   {
     iIntros "(Hinner & Hp & Haddrlocked)".
-    wp_apply wp_load_lockShard_mu; [done|].
+    wp_apply (wp_load_lockShard_mu with "Hls").
     wp_apply (release_spec with "[Hlocked Hinner]").
     {
       iSplitR. { iApply "Hlock". }
@@ -319,12 +319,12 @@ Proof.
   iIntros (Φ) "(Hls & Hp & Haddrlocked) HΦ".
   iDestruct "Hls" as (shardlock mptr γl) "(#Hls&#Hlock)".
   wp_call.
-  wp_apply wp_load_lockShard_mu; [done|].
+  wp_apply (wp_load_lockShard_mu with "Hls").
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
   iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
 
-  wp_apply wp_load_lockShard_state; [done|].
+  wp_apply (wp_load_lockShard_state with "Hls").
   wp_apply (wp_MapGet with "Hmptr").
   iIntros (v ok) "[% Hmptr]".
 
@@ -369,7 +369,7 @@ Proof.
     }
 
     iIntros "Hcond".
-    wp_apply wp_load_lockShard_mu; [done|].
+    wp_apply (wp_load_lockShard_mu with "Hls").
     wp_apply (release_spec with "[Hlock Hlocked Hp Haddrlocked Hghctx Hcovered Hmptr Haddrs Hlockstateptr Hcond]").
     {
       iFrame.
@@ -387,11 +387,11 @@ Proof.
 
   {
     wp_pures.
-    wp_apply wp_load_lockShard_state; [done|].
+    wp_apply (wp_load_lockShard_state with "Hls").
     wp_apply (wp_MapDelete with "[$Hmptr]").
     iIntros "Hmptr".
 
-    wp_apply wp_load_lockShard_mu; [done|].
+    wp_apply (wp_load_lockShard_mu with "Hls").
     wp_apply (release_spec with "[Hlock Hlocked Hp Haddrlocked Hghctx Hcovered Hmptr Haddrs Hlockstateptr Hcond]").
     {
       iFrame.
