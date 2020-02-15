@@ -6,6 +6,8 @@ From Perennial.goose_lang Require Export
 
 (* TODO: replace all of these stubs with real operations *)
 
+Open Scope heap_types.
+
 Definition uint64_to_string {ext: ext_op}: val := λ: <>, #().
 Definition strLen {ext: ext_op}: val := λ: "s", #0.
 
@@ -13,7 +15,17 @@ Module Data.
   Section goose_lang.
     Context `{ext_ty:ext_types}.
     Axiom stringToBytes: val.
-    Axiom bytesToString: val.
+
+    Definition Var' s : @expr ext := Var s.
+    Local Coercion Var' : string >-> expr.
+
+    Definition bytesToString : val :=
+      (rec: "bytesToString" "b" :=
+         if: (slice.len "b") = #0
+         then (Val #str "")
+         else (to_string !(slice.ptr ("b"))) +
+              ("bytesToString" ((slice.ptr "b" +ₗ #1, slice.len "b" - #1), slice.cap "b" - #1))).
+
     Axiom stringToBytes_t : ⊢ stringToBytes : (stringT -> slice.T byteT).
     Axiom bytesToString_t : ⊢ bytesToString : (slice.T byteT -> stringT).
     Definition randomUint64: val := λ: <>, #0.

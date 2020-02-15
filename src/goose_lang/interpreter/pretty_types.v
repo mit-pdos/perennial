@@ -39,6 +39,7 @@ Instance pretty_un_op : Pretty un_op :=
         | ToUInt64Op => "to_u64"
         | ToUInt32Op => "to_u32"
         | ToUInt8Op => "to_u8"
+        | ToStringOp => "to_string"
         end.
 
 Instance pretty_bin_op : Pretty bin_op :=

@@ -191,6 +191,10 @@ Section goose_lang.
       Γ ⊢ e1 : t ->
       is_intTy t = true ->
       Γ ⊢ UnOp ToUInt8Op e1 : byteT
+  | cast_string_op_hasTy e1 t :
+      Γ ⊢ e1 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp ToStringOp e1 : stringT
   | un_op_hasTy op e1 t1 t :
       un_op_ty op = Some (t1, t) ->
       Γ ⊢ e1 : t1 ->
@@ -528,6 +532,7 @@ Ltac _type_step :=
   | [ |- expr_hasTy _ (UnOp ToUInt64Op _) _ ] => eapply cast_u64_op_hasTy
   | [ |- expr_hasTy _ (UnOp ToUInt32Op _) _ ] => eapply cast_u32_op_hasTy
   | [ |- expr_hasTy _ (UnOp ToUInt8Op _) _ ] => eapply cast_u8_op_hasTy
+  | [ |- expr_hasTy _ (UnOp ToStringOp _) _ ] => eapply cast_string_op_hasTy
   | [ |- expr_hasTy _ (BinOp _ _ _) uint32T ] => eapply bin_op_32_hasTy; [ reflexivity | | ]
   | [ |- expr_hasTy _ (BinOp _ _ _) uint64T ] => eapply bin_op_64_hasTy; [ reflexivity | | ]
   | [ |- expr_hasTy _ (BinOp _ _ _) uint32T ] => eapply bin_op_32_hasTy; [ reflexivity | | ]

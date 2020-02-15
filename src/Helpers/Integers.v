@@ -218,6 +218,17 @@ Proof.
   reflexivity.
 Qed.
 
+Theorem u8_nat_through_Z (x:u8) : Z.to_nat (int.val x) = int.nat x.
+Proof.
+  reflexivity.
+Qed.
+
+(* should maybe convert this into an explicit match on ints at some point *)
+Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (int.nat x).
+
+(* conversion to string *)
+Definition u8_to_string (x:byte) : String.string := String.String (u8_to_ascii x) String.EmptyString.
+
 (* conversions up *)
 Definition u8_to_u32 (x:byte) : u32 := U32 (int.val x).
 Definition u8_to_u64 (x:byte) : u64 := U64 (int.val x).

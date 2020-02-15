@@ -99,7 +99,7 @@ Inductive base_lit : Type :=
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
   (* TODO: operation to take length of string *)
-  | NegOp | MinusUnOp | ToUInt64Op | ToUInt32Op | ToUInt8Op.
+  | NegOp | MinusUnOp | ToUInt64Op | ToUInt32Op | ToUInt8Op | ToStringOp.
 Inductive bin_op : Set :=
   | PlusOp | MinusOp | MultOp | QuotOp | RemOp (* Arithmetic *)
   | AndOp | OrOp | XorOp (* Bitwise *)
@@ -827,6 +827,7 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | ToUInt8Op, LitV (LitInt v) => Some $ LitV $ LitByte (u8_from_u64 v)
   | ToUInt8Op, LitV (LitInt32 v) => Some $ LitV $ LitByte (u8_from_u32 v)
   | ToUInt8Op, LitV (LitByte v) => Some $ LitV $ LitInt32 (u8_to_u32 v)
+  | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString (u8_to_string v)
   | _, _ => None
   end.
 
