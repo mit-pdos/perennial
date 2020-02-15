@@ -152,6 +152,12 @@ Section goose_lang.
     | _ => false
     end.
 
+  Definition is_byteTy (t: ty) : bool :=
+    match t with
+    | baseT byteBT => true
+    | _ => false
+    end.
+
   Fixpoint flatten_ty (t: ty) : list ty :=
     match t with
     | prodT t1 t2 => flatten_ty t1 ++ flatten_ty t2
@@ -193,7 +199,7 @@ Section goose_lang.
       Γ ⊢ UnOp ToUInt8Op e1 : byteT
   | cast_string_op_hasTy e1 t :
       Γ ⊢ e1 : t ->
-      is_intTy t = true ->
+      is_byteTy t = true ->
       Γ ⊢ UnOp ToStringOp e1 : stringT
   | un_op_hasTy op e1 t1 t :
       un_op_ty op = Some (t1, t) ->

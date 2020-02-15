@@ -70,7 +70,7 @@ Section translate.
       Γ ⊢ UnOp ToUInt8Op e1 -- UnOp ToUInt8Op e2 : byteT
   | cast_string_op_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
-      is_intTy t = true ->
+      is_byteTy t = true ->
       Γ ⊢ UnOp ToStringOp e1 -- UnOp ToStringOp e2 : stringT
   | un_op_transTy op e1 e2 t1 t :
       un_op_ty op = Some (t1, t) ->
