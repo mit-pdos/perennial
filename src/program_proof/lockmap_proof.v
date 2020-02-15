@@ -175,24 +175,37 @@ Ltac inv_ty :=
          | [ H: lit_ty _ _ |- _ ] => inversion H; subst; clear H
          end.
 
-Theorem wp_store_lockState_1 (lsp : loc) owner held cond waiters (v : bool) :
-  {{{ lsp ↦[struct.t lockState.S] (owner, held, cond, waiters) }}}
-    #(lsp +ₗ 1) <- #v
-  {{{ RET #(); lsp ↦[struct.t lockState.S] (owner, #v, cond, waiters) }}}.
+Theorem wp_store_lockState (lsp : loc) fn v fv :
+  val_ty fv (fieldType lockState.S fn) ->
+  {{{ lsp ↦[struct.t lockState.S] v }}}
+    struct.storeF lockState.S fn #lsp fv
+  {{{ RET #(); lsp ↦[struct.t lockState.S] (updateField lockState.S fn fv v) }}}.
 Proof.
-  iIntros (Φ) "[Hlsp %] HΦ".
+  Transparent storeField.
+  Opaque String.eqb.
+
+  iIntros (Hfvt Φ) "[Hlsp %] HΦ".
+  generalize dependent Hfvt.
   inv_ty.
-  iDestruct "Hlsp" as "[[[[Howner _] [Hheld _]] [Hcond _]] [Hwaiters _]]".
+  intro Hfvt.
   rewrite /=.
-  wp_store.
-  iApply "HΦ".
-  iSplitL.
-  {
-    rewrite /=.
-    iFrame.
-  }
-  iPureIntro.
-  val_ty.
+  repeat iDestruct "Hlsp" as "[? Hlsp]".
+  rewrite /struct.storeF /updateField /=.
+  rewrite /fieldType /= in Hfvt.
+
+  repeat match goal with
+  | |- context[(?a =? ?b)%string] => destruct (String.eqb_spec a b); try congruence
+  end.
+
+  all: inv_ty.
+  all: wp_pures.
+  all: try wp_store.
+  all: iApply "HΦ".
+  all: iSplitL; [| iPureIntro; val_ty ].
+  all: rewrite /=; iFrame.
+
+  Transparent String.eqb.
+  Opaque storeField.
 Qed.
 
 Theorem wp_load_lockState (lsp : loc) v fn :
@@ -329,12 +342,7 @@ Proof.
   rewrite /map_get H0 /= in H.
   inversion H; clear H; subst.
 
-  Transparent storeField.
-  rewrite /struct.storeF /=.
-
-  wp_pures.
-  replace (1 * int.val (1 + 0)) with (1) by len.
-  wp_apply (wp_store_lockState_1 with "Hlockstateptr").
+  wp_apply (wp_store_lockState with "Hlockstateptr"); [val_ty|].
   iIntros "Hlockstateptr".
 
   wp_apply (wp_load_lockState with "Hlockstateptr").

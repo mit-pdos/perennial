@@ -48,6 +48,18 @@ Fixpoint extractField_helper (f0: string) (rev_fields: list (string*ty)) (v: val
 Definition extractField (d:descriptor) f v : val :=
   extractField_helper f (rev d.(fields)) v.
 
+Fixpoint updateField_helper (rev_fields: list (string*ty)) (f0: string) (f0v: val) (oldv: val): val :=
+  match rev_fields with
+  | [] => #()
+  | [f] => if String.eqb (fst f) f0 then f0v else oldv
+  | f::fs =>
+    PairV (updateField_helper fs f0 f0v (val_fst oldv))
+          (if String.eqb (fst f) f0 then f0v else val_snd oldv)
+  end.
+
+Definition updateField (d:descriptor) f fv v : val :=
+  updateField_helper (rev d.(fields)) f fv v.
+
 Fixpoint assocl_lookup {A} (field_vals: list (string * A)) (f0: string) : option A :=
   match field_vals with
   | [] => None
@@ -125,6 +137,12 @@ Definition fieldPointer (d:descriptor) (f:string) (l:loc): loc :=
   match field_offset d.(fields) f with
   | Some (off, _) => l +ₗ off
   | None => null
+  end.
+
+Definition fieldType (d:descriptor) (f:string): ty :=
+  match field_offset d.(fields) f with
+  | Some (_, t) => t
+  | None => unitT
   end.
 
 (** structFieldRef gives a function that takes a location and constant pointer
