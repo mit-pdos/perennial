@@ -19,7 +19,7 @@ Module lockShard.
 End lockShard.
 
 Definition mkLockShard: val :=
-  λ: <>,
+  rec: "mkLockShard" <> :=
     let: "state" := NewMap (struct.ptrT lockState.S) in
     let: "mu" := lock.new #() in
     let: "a" := struct.new lockShard.S [
@@ -29,7 +29,7 @@ Definition mkLockShard: val :=
     "a".
 
 Definition lockShard__acquire: val :=
-  λ: "lmap" "addr" "id",
+  rec: "lockShard__acquire" "lmap" "addr" "id" :=
     lock.acquire (struct.loadF lockShard.S "mu" "lmap");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -62,7 +62,7 @@ Definition lockShard__acquire: val :=
     lock.release (struct.loadF lockShard.S "mu" "lmap").
 
 Definition lockShard__release: val :=
-  λ: "lmap" "addr",
+  rec: "lockShard__release" "lmap" "addr" :=
     lock.acquire (struct.loadF lockShard.S "mu" "lmap");;
     let: "state" := Fst (MapGet (struct.loadF lockShard.S "state" "lmap") "addr") in
     struct.storeF lockState.S "held" "state" #false;;
@@ -80,7 +80,7 @@ Module LockMap.
 End LockMap.
 
 Definition MkLockMap: val :=
-  λ: <>,
+  rec: "MkLockMap" <> :=
     let: "shards" := NewSlice (struct.ptrT lockShard.S) NSHARD in
     let: "i" := ref #0 in
     (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
@@ -92,11 +92,11 @@ Definition MkLockMap: val :=
     "a".
 
 Definition LockMap__Acquire: val :=
-  λ: "lmap" "flataddr" "id",
+  rec: "LockMap__Acquire" "lmap" "flataddr" "id" :=
     let: "shard" := SliceGet (refT (struct.t lockShard.S)) (struct.loadF LockMap.S "shards" "lmap") ("flataddr" `rem` NSHARD) in
     lockShard__acquire "shard" "flataddr" "id".
 
 Definition LockMap__Release: val :=
-  λ: "lmap" "flataddr" "id",
+  rec: "LockMap__Release" "lmap" "flataddr" "id" :=
     let: "shard" := SliceGet (refT (struct.t lockShard.S)) (struct.loadF LockMap.S "shards" "lmap") ("flataddr" `rem` NSHARD) in
     lockShard__release "shard" "flataddr".
