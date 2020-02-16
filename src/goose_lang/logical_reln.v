@@ -47,7 +47,7 @@ Record spec_valTy_model :=
 
 Definition has_semTy `{hG: !heapG Σ} {hRG: refinement_heapG Σ} {hC: crashG Σ}
            (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
-  (∀ (j: nat) (K: sexpr → sexpr) {CTX: LanguageCtx K},
+  (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
       j ⤇ K es -∗ WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN) {{ v, ∃ vs, j ⤇ K (of_val vs)
                                                                     ∗ vty hG hRG vs v }}
                                                       {{ True }})%I.
