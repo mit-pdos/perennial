@@ -323,6 +323,30 @@ Proof.
   iFrame.
 Qed.
 
+Lemma trace_equiv_preserve_crash σ σ' σs σs':
+  trace σs = trace σ →
+  crash_prim_step heap_crash_lang σ σ' →
+  crash_prim_step spec_crash_lang σs σs' →
+  trace σs' = trace σ'.
+Proof.
+  intros Heq1 Hcrash Hcrash_spec.
+  inversion Hcrash; subst.
+  inversion Hcrash_spec; subst.
+  rewrite //= /add_crash Heq1 //=.
+Qed.
+
+Lemma oracle_equiv_preserve_crash σ σ' σs σs':
+  oracle σs = oracle σ →
+  crash_prim_step heap_crash_lang σ σ' →
+  crash_prim_step spec_crash_lang σs σs' →
+  oracle σs' = oracle σ'.
+Proof.
+  intros Heq1 Hcrash Hcrash_spec.
+  inversion Hcrash; subst.
+  inversion Hcrash_spec; subst.
+  rewrite //= Heq1 //=.
+Qed.
+
 Theorem heap_wpc_refinement_adequacy `{crashPreG Σ} k es e
         σs σ Φ Φc initP:
   σ.(trace) = σs.(trace) →
@@ -331,7 +355,7 @@ Theorem heap_wpc_refinement_adequacy `{crashPreG Σ} k es e
   wpc_init k ⊤ e es Φ Φc initP →
   wpc_post_crash k ⊤ e es Φ Φc →
   trace_refines e e σ es es σs.
-Proof.
+Proof using Hrpre Hhpre Hcpre.
   intros Heq1 Heq2 Hinit Hwp_init Hwp_crash.
   eapply heap_recv_refinement_adequacy with
       (k0 := k)
@@ -388,11 +412,8 @@ Proof.
     iClear "Htrace_auth Horacle_auth Htrace_frag Horacle_frag".
     iMod (goose_spec_crash_init _ _ σs _ σs' σs_post_crash _ (trace σ_post_crash) (oracle σ_post_crash)
             with "[$] [$] Hspec_ffi") as (HrG) "(#Hspec&Hpool&Hcrash_rel&Hrs&#Htrace)"; eauto.
-    { (* need to show that if we have two states with equiv. traces, then do a crash on
-         both we still have equiv traces *)
-      admit. }
-    { (* similar as previous, but with oracle *)
-      admit. }
+    { eapply trace_equiv_preserve_crash; eauto. }
+    { eapply oracle_equiv_preserve_crash; eauto. }
     iExists ({| pbundleT := hnames |}).
     iModIntro.
     rewrite /state_interp//=.
@@ -419,6 +440,6 @@ Proof.
       rewrite /traceG_update//=.
       rewrite /gen_heap.gen_heapG_update//=.
       rewrite ?ffi_update_get //=.
-Admitted.
+Qed.
 
 End refinement_wpc.
