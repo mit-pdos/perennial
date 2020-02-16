@@ -131,6 +131,7 @@ Class ffi_interp (ffi: ffi_model) :=
     ffi_names : Set;
     ffi_get_names : ∀ Σ, ffiG Σ → ffi_names;
     ffi_update : ∀ Σ, ffiG Σ → ffi_names → ffiG Σ;
+    ffi_update_get: ∀ Σ hF names, ffi_get_names Σ (ffi_update _ hF names) = names;
     ffi_get_update: ∀ Σ hF, ffi_update Σ hF (ffi_get_names _ hF) = hF;
     ffi_update_update: ∀ Σ hF names1 names2, ffi_update Σ (ffi_update Σ hF names1) names2
                                      = ffi_update Σ hF names2;
@@ -170,6 +171,9 @@ Class trace_preG (Σ: gFunctors) := {
 Definition traceG_update (Σ: gFunctors) (hT: traceG Σ) (names: tr_names) :=
   {| trace_inG := trace_inG; oracle_inG := oracle_inG; trace_tr_names := names |}.
 
+Definition traceG_update_pre (Σ: gFunctors) (hT: trace_preG Σ) (names: tr_names) :=
+  {| trace_inG := trace_preG_inG; oracle_inG := oracle_preG_inG; trace_tr_names := names |}.
+
 Definition traceΣ : gFunctors :=
   #[GFunctor (authR (optionUR (exclR traceO)));
       GFunctor (authR (optionUR (exclR OracleO)))].
@@ -194,6 +198,28 @@ Proof.
   iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
   { apply auth_both_valid; split; eauto. econstructor. }
   iModIntro. iExists {| trace_tr_names := {| trace_name := γ; oracle_name := γ' |} |}. iFrame.
+Qed.
+
+Lemma trace_name_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
+  (|==> ∃ name : tr_names, let _ := traceG_update_pre _ _ name in
+                           trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o)%I.
+Proof.
+  iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
+  { apply auth_both_valid; split; eauto. econstructor. }
+  iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
+  { apply auth_both_valid; split; eauto. econstructor. }
+  iModIntro. iExists {| trace_name := γ; oracle_name := γ' |}. iFrame.
+Qed.
+
+Lemma trace_reinit `(hT: traceG Σ) (l: list event) (o: Oracle):
+  (|==> ∃ names : tr_names, let _ := traceG_update Σ hT names in
+     trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o)%I.
+Proof.
+  iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
+  { apply auth_both_valid; split; eauto. econstructor. }
+  iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
+  { apply auth_both_valid; split; eauto. econstructor. }
+  iModIntro. iExists {| trace_name := γ; oracle_name := γ' |}. iFrame.
 Qed.
 
 Lemma trace_update `{hT: traceG Σ} (l: Trace) (x: event):

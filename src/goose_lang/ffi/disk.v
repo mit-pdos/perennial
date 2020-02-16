@@ -169,6 +169,7 @@ Section disk.
        ffi_start := fun _ _ (d: @ffi_state disk_model) =>
                       ([∗ map] l↦v ∈ d, (mapsto (L:=Z) (V:=Block) l 1 v))%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I |}.
+  Next Obligation. intros ? [[]] [] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
 

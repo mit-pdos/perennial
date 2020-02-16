@@ -37,10 +37,10 @@ Proof.
   iIntros (???) "".
   iMod (gen_heap_init σ.(heap)) as (?) "Hh".
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
-  iMod (ffi_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)".
+  iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)".
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&Htrfrag&Hor&Hofrag)".
-  set (hG := (HeapG _ _ HffiG _ _ HtraceG)).
-  set (hnames := heap_get_names _ (HeapG _ _ HffiG _ _ HtraceG)).
+  set (hG := (HeapG _ _ (ffi_update_pre _ _ HffiG) _ _ HtraceG)).
+  set (hnames := heap_get_names _ hG).
   iExists ({| pbundleT := hnames |}).
   iExists
     (λ t σ κs, let _ := heap_update_names Σ hG (@pbundleT _ _ t) in
