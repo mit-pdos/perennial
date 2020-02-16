@@ -29,7 +29,7 @@ Corollary wp_recv_refinement_adequacy Σ (T: ofeT) (cfgT : _ → @cfgG Λspec Σ
                in
         let Φinv' := λ (Hinv: invG Σ) t,
             (@source_ctx' Λspec CSspec Σ (cfgT t) Hinv rs ([es], σs) ∗
-            □ (∀ σ κ,  stateI t σ κ ={⊤ ∖ ↑ sourceN, ∅}=∗ ∃ σs, source_state σs ∗ ⌜ R σs σ ⌝))
+            □ (∀ σ κ,  stateI t σ κ ={⊤ ∖ ↑ sN, ∅}=∗ ∃ σs, source_state σs ∗ ⌜ R σs σ ⌝))
             in
        Φinv' _ _ ∗
        □ (∀ Hi t, Φinv Hi t -∗ Φinv' Hi t) ∗
@@ -58,6 +58,8 @@ Proof.
     iInv "Hsource" as "H" "_".
     iDestruct "H" as (???) ">(Hauth&Hsteps)".
     iDestruct "Hsteps" as %(Hsteps_spec&Hsafe).
+    iMod (fupd_intro_mask' _ (⊤ ∖ ↑sN)).
+    { solve_ndisj. }
     iMod ("HP" with "[$]") as (σs') "(H&%)".
     iDestruct (source_state_reconcile with "[$] [$]") as %Heq.
     iModIntro. iExists _, _, _. iPureIntro. split; eauto. rewrite <-Heq. eauto.
@@ -70,6 +72,8 @@ Proof.
     iInv "Hsource" as "H" "_".
     iDestruct "H" as (???) ">(Hauth&Hsteps)".
     iDestruct "Hsteps" as %(Hsteps_spec&Hsafe).
+    iMod (fupd_intro_mask' _ (⊤ ∖ ↑sN)).
+    { solve_ndisj. }
     iMod ("HP" with "[$]") as (σs') "(H&%)".
     iDestruct (source_state_reconcile with "[$] [$]") as %Heq.
     iModIntro. iExists _, _, _. iPureIntro. split; eauto. rewrite <-Heq. eauto.

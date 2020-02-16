@@ -77,11 +77,11 @@ Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
 
 Section go_ghost_step.
 
-Lemma sourceN_sub_minus_state E:
-  nclose sourceN_root ⊆ E →
-  nclose sourceN ⊆ E ∖ ↑spec_stateN.
+Lemma sN_inv_sub_minus_state E:
+  nclose sN ⊆ E →
+  nclose sN_inv ⊆ E ∖ ↑spec_stateN.
 Proof.
-  rewrite /sourceN/sourceN_root/spec_stateN. intros Hsub.
+  rewrite /sN_inv/sN/spec_stateN. intros Hsub.
   assert (nclose (nroot.@"source".@"base") ##
                  ↑nroot.@"source".@"state").
   { solve_ndisj. }
@@ -90,10 +90,10 @@ Proof.
   set_solver.
 Qed.
 
-Hint Resolve sourceN_sub_minus_state.
+Hint Resolve sN_inv_sub_minus_state.
 
 Lemma ghost_load j K E l q v:
-  nclose sourceN_root ⊆ E →
+  nclose sN ⊆ E →
   spec_ctx -∗
   l s↦{q} Free v -∗
   j ⤇ fill K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
@@ -134,7 +134,7 @@ Qed.
 (*
 Lemma ghost_allocN_seq j K E v (n: u64):
   (0 < int.val n)%Z →
-  nclose sourceN_root ⊆ E →
+  nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ fill K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) ={E}=∗
   ∃ l, ([∗ list] i ∈ seq 0 (int.nat n),
@@ -199,7 +199,7 @@ Definition trace_inv : iProp Σ :=
                     oracle_frag (hT := heapG_traceG) or ∗
                     oracle_frag (hT := refinement_traceG) ors).
 
-Definition spec_traceN := nroot .@ "source".@  "trace".
+Definition spec_traceN := sN .@ "trace".
 
 Definition trace_ctx : iProp Σ :=
   inv spec_traceN trace_inv.

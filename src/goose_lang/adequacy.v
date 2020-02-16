@@ -14,8 +14,8 @@ Class ffi_interp_adequacy `{!ffi_interp ffi} `{EXT: !ext_semantics ext ffi} :=
           (|==> ∃ (H0: ffiG Σ), ffi_ctx H0 σ ∗ ffi_start H0 σ)%I;
     ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
     ffi_crash : forall Σ, ffi_preG Σ ->
-          (∀ (σ σ': ffi_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
-           ffi_ctx Hold σ ==∗ ∃ (new: ffi_names), ffi_ctx (ffi_update Σ Hold new) σ' ∗
+          ∀ (σ σ': ffi_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
+           (ffi_ctx Hold σ ==∗ ∃ (new: ffi_names), ffi_ctx (ffi_update Σ Hold new) σ' ∗
                                                   ffi_crash_rel Σ Hold σ (ffi_update Σ Hold new) σ' ∗
                                                   ffi_restart (ffi_update Σ Hold new) σ')%I;
   }.

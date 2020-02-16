@@ -132,6 +132,8 @@ Class ffi_interp (ffi: ffi_model) :=
     ffi_get_names : ∀ Σ, ffiG Σ → ffi_names;
     ffi_update : ∀ Σ, ffiG Σ → ffi_names → ffiG Σ;
     ffi_get_update: ∀ Σ hF, ffi_update Σ hF (ffi_get_names _ hF) = hF;
+    ffi_update_update: ∀ Σ hF names1 names2, ffi_update Σ (ffi_update Σ hF names1) names2
+                                     = ffi_update Σ hF names2;
     ffi_ctx: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
     ffi_start: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
     ffi_restart: ∀ `{ffiG Σ}, ffi_state -> iProp Σ
