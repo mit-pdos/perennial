@@ -4,7 +4,6 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.util.
 
 Module FsSuper.
   Definition S := struct.decl [
@@ -19,26 +18,11 @@ Module FsSuper.
 End FsSuper.
 
 Definition MkFsSuper: val :=
-  rec: "MkFsSuper" "sz" "name" :=
+  rec: "MkFsSuper" "d" :=
+    let: "sz" := disk.Size #() in
     let: "nblockbitmap" := "sz" `quot` common.NBITBLOCK + #1 in
-    let: "d" := ref (zero_val disk.Disk) in
-    (if: "name" ≠ slice.nil
-    then
-      util.DPrintf #1 (#(str"MkFsSuper: open file disk %s
-      ")) (![stringT] "name");;
-      let: ("file", "err") := disk.NewFileDisk (![stringT] "name") "sz" in
-      (if: "err" ≠ slice.nil
-      then
-        Panic ("MkFsSuper: couldn't create disk image");;
-        #()
-      else #());;
-      "d" <-[disk.Disk] "file"
-    else
-      util.DPrintf #1 (#(str"MkFsSuper: create mem disk
-      "));;
-      "d" <-[disk.Disk] disk.NewMemDisk "sz");;
     struct.new FsSuper.S [
-      "Disk" ::= ![disk.Disk] "d";
+      "Disk" ::= "d";
       "Size" ::= "sz";
       "nLog" ::= common.LOGSIZE;
       "NBlockBitmap" ::= "nblockbitmap";
