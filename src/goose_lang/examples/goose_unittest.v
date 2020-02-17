@@ -44,6 +44,14 @@ Definition ConstWithArith : expr := #4 + #3 * TypedInt.
 
 Definition TypedInt32 : expr := #(U32 3).
 
+Definition DivisionInConst : expr := (#4096 - #8) `quot` #8.
+
+(* 517 *)
+Definition ModInConst : expr := #513 + #12 `rem` #8.
+
+(* 5 *)
+Definition ModInConstParens : expr := (#513 + #12) `rem` #8.
+
 (* control_flow.go *)
 
 Definition conditionalReturn: val :=

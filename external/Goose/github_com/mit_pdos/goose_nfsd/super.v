@@ -27,7 +27,7 @@ Definition MkFsSuper: val :=
       "nLog" ::= common.LOGSIZE;
       "NBlockBitmap" ::= "nblockbitmap";
       "NInodeBitmap" ::= common.NINODEBITMAP;
-      "nInodeBlk" ::= common.NINODEBITMAP * common.NBITBLOCK * common.INODESZ `quot` disk.BlockSize;
+      "nInodeBlk" ::= (common.NINODEBITMAP * common.NBITBLOCK * common.INODESZ) `quot` disk.BlockSize;
       "Maxaddr" ::= "sz"
     ].
 

@@ -61,8 +61,8 @@ Definition recoverCircular: val :=
     let: "bufs" := ref (zero_val (slice.T (struct.t Update.S))) in
     let: "pos" := ref "start" in
     (for: (λ: <>, ![uint64T] "pos" < "end"); (λ: <>, "pos" <-[uint64T] ![uint64T] "pos" + #1) := λ: <>,
-      let: "addr" := SliceGet uint64T "addrs" (![uint64T] "pos" `rem` "LOGSZ") in
-      let: "b" := disk.Read ("LOGSTART" + ![uint64T] "pos" `rem` "LOGSZ") in
+      let: "addr" := SliceGet uint64T "addrs" ((![uint64T] "pos") `rem` "LOGSZ") in
+      let: "b" := disk.Read ("LOGSTART" + (![uint64T] "pos") `rem` "LOGSZ") in
       "bufs" <-[slice.T (struct.t Update.S)] SliceAppend (struct.t Update.S) (![slice.T (struct.t Update.S)] "bufs") (struct.mk Update.S [
         "Addr" ::= "addr";
         "Block" ::= "b"
@@ -145,7 +145,7 @@ Definition circular__Empty: val :=
 (* space for the end position *)
 Definition HDRMETA : expr := #8.
 
-Definition HDRADDRS : expr := disk.BlockSize - HDRMETA `quot` #8.
+Definition HDRADDRS : expr := (disk.BlockSize - HDRMETA) `quot` #8.
 
 Definition LOGSZ : expr := HDRADDRS.
 

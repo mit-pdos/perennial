@@ -35,8 +35,8 @@ Definition MkBuf: val :=
 (* Load the bits of a disk block into a new buf, as specified by addr *)
 Definition MkBufLoad: val :=
   rec: "MkBufLoad" "addr" "blk" :=
-    let: "bytefirst" := struct.get addr.Addr.S "Off" "addr" `quot` #8 in
-    let: "bytelast" := struct.get addr.Addr.S "Off" "addr" + struct.get addr.Addr.S "Sz" "addr" - #1 `quot` #8 in
+    let: "bytefirst" := (struct.get addr.Addr.S "Off" "addr") `quot` #8 in
+    let: "bytelast" := (struct.get addr.Addr.S "Off" "addr" + struct.get addr.Addr.S "Sz" "addr" - #1) `quot` #8 in
     let: "data" := SliceSubslice byteT "blk" "bytefirst" ("bytelast" + #1) in
     let: "b" := struct.new Buf.S [
       "Addr" ::= "addr";
@@ -78,7 +78,7 @@ Definition Buf__Install: val :=
     (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = #1)
     then installBit (struct.loadF Buf.S "Blk" "buf") "blk" (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf"))
     else
-      (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") `rem` #8 = #0) && (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") `rem` #8 = #0)
+      (if: ((struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf")) `rem` #8 = #0) && ((struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf")) `rem` #8 = #0)
       then installBytes (struct.loadF Buf.S "Blk" "buf") "blk" (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf")) (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf"))
       else
         Panic ("Install unsupported
@@ -89,8 +89,8 @@ Definition Buf__Install: val :=
 (* Load the bits of a disk block into buf, as specified by addr *)
 Definition Buf__Load: val :=
   rec: "Buf__Load" "buf" "blk" :=
-    let: "bytefirst" := struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") `quot` #8 in
-    let: "bytelast" := struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") + struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") - #1 `quot` #8 in
+    let: "bytefirst" := (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf")) `quot` #8 in
+    let: "bytelast" := (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") + struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") - #1) `quot` #8 in
     struct.storeF Buf.S "Blk" "buf" (SliceSubslice byteT "blk" "bytefirst" ("bytelast" + #1)).
 
 Definition Buf__IsDirty: val :=

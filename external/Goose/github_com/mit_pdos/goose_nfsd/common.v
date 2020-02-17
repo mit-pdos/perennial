@@ -14,7 +14,7 @@ Definition INODESZ : expr := #128.
 (* space for the end position *)
 Definition HDRMETA : expr := #8.
 
-Definition HDRADDRS : expr := disk.BlockSize - HDRMETA `quot` #8.
+Definition HDRADDRS : expr := (disk.BlockSize - HDRMETA) `quot` #8.
 
 (* 2 for log header *)
 Definition LOGSIZE : expr := HDRADDRS + #2.

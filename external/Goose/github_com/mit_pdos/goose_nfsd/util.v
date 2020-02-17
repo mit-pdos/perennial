@@ -14,7 +14,7 @@ Definition DPrintf: val :=
 
 Definition RoundUp: val :=
   rec: "RoundUp" "n" "sz" :=
-    "n" + "sz" - #1 `quot` "sz".
+    ("n" + "sz" - #1) `quot` "sz".
 
 Definition Min: val :=
   rec: "Min" "n" "m" :=
