@@ -104,13 +104,13 @@ Definition lockInv (l: loc) (σ: log_state.t): iProp Σ :=
       ⌜∃ memLog', memLog = diskLog ++ memLog'⌝ ∗
       ⌜int.val σ.(log_state.durable_to) <= int.val durable_to⌝ ∗
       ⌜int.val σ.(log_state.installed_to) <= int.val installed_to⌝ ∗
+      ⌜σ.(log_state.txn_disk) !! installed_to = Some installedDisk⌝ ∗
       ([∗ map] a↦b ∈ installedDisk, LogDiskBlocks d↦ b) ∗
       ⌜ forall pos1 pos2 (d1 d2: disk),
-          (* TODO: there are some more side conditions on pos (eg, they should
-             be in the range that the memLog covers) *)
           σ.(log_state.txn_disk) !! pos1 = Some d1 ->
           σ.(log_state.txn_disk) !! pos2 = Some d2 ->
           int.val pos1 <= int.val pos2 ->
+          int.val durable_to ≤ int.val pos2 ->
           d2 = apply_updates (take_updates pos1 pos2 memLog memStart) d1 ⌝
   ).
 
