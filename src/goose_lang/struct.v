@@ -1,5 +1,3 @@
-From Perennial.Helpers Require Import NEList.
-
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import typing.
