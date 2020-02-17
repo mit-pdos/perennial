@@ -16,6 +16,7 @@ Context {ffi: ffi_model}.
 Context {ffi_semantics: ext_semantics ext ffi}.
 Context `{interp: !ffi_interp ffi}.
 Context `{interp_adeq: !ffi_interp_adequacy}.
+Context (impl_ty: ext_types ext).
 
 Context {spec_ext: spec_ext_op}.
 Context {spec_ffi: spec_ffi_model}.
@@ -36,23 +37,24 @@ Notation iexpr := (@expr ext).
 Notation ival := (@val ext).
 Notation sty := (@ty (@val_tys _ spec_ty)).
 
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
-         spec_ffi_interp_adequacy_field.
+Context `{hG: !heapG Σ}.
+Context {hRG: refinement_heapG Σ}.
+Context {hC: crashG Σ}.
 
-Definition val_semTy := ∀ `(hG: !heapG Σ) (hRG: refinement_heapG Σ),
-  sval → ival → iProp Σ.
+Definition val_semTy := sval → ival → iProp Σ.
 
 Record spec_valTy_model :=
-  { spec_val_interp : @ext_tys (@val_tys _ spec_ty) → val_semTy }.
+  { spec_val_interp :> @ext_tys (@val_tys _ spec_ty) → val_semTy }.
 
-Definition has_semTy `{hG: !heapG Σ} {hRG: refinement_heapG Σ} {hC: crashG Σ}
-           (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
+Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) (* spec_ffi_interp_adequacy_field *).
+
+Definition has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
       j ⤇ K es -∗ WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN) {{ v, ∃ vs, j ⤇ K (of_val vs)
-                                                                    ∗ vty hG hRG vs v }}
+                                                                    ∗ vty vs v }}
                                                       {{ True }})%I.
 
-Definition base_ty_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} (t: base_ty) :=
+Definition base_ty_interp (t: base_ty) :=
   λ (v1: sval) (v2: ival),
   match t with
     | uint64BT => (∃ x, ⌜ v1 = LitV $ LitInt x ∧ v2 = LitV $ LitInt x ⌝ : iProp Σ)%I
@@ -63,25 +65,36 @@ Definition base_ty_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} (t: base_
     | stringBT => (∃ x, ⌜ v1 = LitV $ LitString x ∧ v2 = LitV $ LitString x ⌝ : iProp Σ)%I
   end.
 
-Fixpoint val_interp_aux `{hG: !heapG Σ} {hRG : refinement_heapG Σ}
-         (smodel: spec_valTy_model) (t: sty) (vs: sval) (v: ival) :=
+Fixpoint val_interp (smodel: spec_valTy_model) (t: sty) (vs: sval) (v: ival) :=
   match t with
   | baseT bt => base_ty_interp bt vs v
   | prodT t1 t2 => (∃ v1 v2 vs1 vs2, ⌜ v = (v1, v2)%V ∧
                                        vs = (vs1, vs2)%V⌝
-                   ∗ val_interp_aux smodel t1 vs1 v1
-                   ∗ val_interp_aux smodel t2 vs2 v2)%I
+                   ∗ val_interp smodel t1 vs1 v1
+                   ∗ val_interp smodel t2 vs2 v2)%I
   | sumT t1 t2 => ((∃ v' vs', ⌜ v = InjLV v' ∧
                                 vs = InjLV vs'⌝
-                              ∗ val_interp_aux smodel t1 vs' v')
+                              ∗ val_interp smodel t1 vs' v')
                      ∨
                    (∃ v' vs', ⌜ v = InjRV v' ∧
                                 vs = InjRV vs'⌝
-                              ∗ val_interp_aux smodel t2 vs' v'))%I
-  | _ => False%I
+                              ∗ val_interp smodel t2 vs' v'))%I
+  | arrayT t => ((∃ l ls (vvslist: list (sval * ival)),
+                     ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ⌝ ∗
+                     [∗ list] i↦vvs ∈ vvslist, (ls +ₗ i) s↦ (Free (fst vvs))
+                                               ∗ (l +ₗ i) ↦ (Free (snd vvs))
+                                               ∗ val_interp smodel t (fst vvs) (snd vvs))
+                 ∨ (⌜ vs = #null ∧ v = #null⌝))%I
+  | arrowT t1 t2 =>
+    (∃ f x e fs xs es,
+        ⌜ v = RecV f x e ∧
+          vs = RecV fs xs es ⌝
+        ∗ (∀ varg vsarg,
+              val_interp smodel t1 vsarg varg -∗
+              has_semTy (App vs vsarg) (App v varg) (val_interp smodel t2)))%I
+  | extT x => smodel x vs v
+  | mapValT vt => False%I
+  | structRefT ts => False%I
   end.
-
-Definition val_interp (smodel: spec_valTy_model) (t: sty) : val_semTy :=
-  λ `(hG: !heapG Σ) (hRG: refinement_heapG Σ), val_interp_aux smodel t%I.
 
 End reln.
