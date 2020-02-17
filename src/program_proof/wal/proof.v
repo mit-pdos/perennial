@@ -74,9 +74,16 @@ Proof.
   iApply "HΦ".
 Qed.
 
-Opaque u64_instance.u64.
+Definition apply_update (u: update.t) : disk → disk :=
+  <[int.val u.(update.addr) := u.(update.b)]>.
 
-Definition walN: namespace := nroot .@ "wal".
+Definition apply_updates (us: list update.t) (d:disk): disk :=
+  foldr apply_update d us.
+
+Definition take_updates (from to : u64) (log: list update.t) (logStart: u64) : list update.t :=
+  let start := (int.nat from - int.nat logStart)%nat in
+  let num := (int.nat to - int.nat from)%nat in
+  take num (drop start log).
 
 Definition lockInv (l: loc) (σ: log_state.t): iProp Σ :=
   (∃ memLog diskLog
@@ -97,8 +104,17 @@ Definition lockInv (l: loc) (σ: log_state.t): iProp Σ :=
       ⌜∃ memLog', memLog = diskLog ++ memLog'⌝ ∗
       ⌜int.val σ.(log_state.durable_to) <= int.val durable_to⌝ ∗
       ⌜int.val σ.(log_state.installed_to) <= int.val installed_to⌝ ∗
-      [∗ map] a↦b ∈ installedDisk, LogDiskBlocks d↦ b
+      ([∗ map] a↦b ∈ installedDisk, LogDiskBlocks d↦ b) ∗
+      ⌜ forall pos1 pos2 (d1 d2: disk),
+          (* TODO: there are some more side conditions on pos (eg, they should
+             be in the range that the memLog covers) *)
+          σ.(log_state.txn_disk) !! pos1 = Some d1 ->
+          σ.(log_state.txn_disk) !! pos2 = Some d2 ->
+          int.val pos1 <= int.val pos2 ->
+          d2 = apply_updates (take_updates pos1 pos2 memLog memStart) d1 ⌝
   ).
+
+Definition walN: namespace := nroot .@ "wal".
 
 Definition is_wal (l: loc) (σ: log_state.t): iProp Σ :=
   ∃ γ, is_lock walN γ #(l +ₗ 0) (lockInv l σ) ∗
