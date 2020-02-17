@@ -438,6 +438,19 @@ Definition testSub64Equals: val :=
     "ok" <-[boolT] ![boolT] "ok" && sub64Equals #2 #8 (#1 ≪ #64 - #6);;
     ![boolT] "ok".
 
+Definition testDivisionPrecedence: val :=
+  rec: "testDivisionPrecedence" <> :=
+    let: "blockSize" := #4096 in
+    let: "hdrmeta" := #8 in
+    let: "hdraddrs" := ("blockSize" - "hdrmeta") `quot` #8 in
+    ("hdraddrs" = #511).
+
+Definition testModPrecedence: val :=
+  rec: "testModPrecedence" <> :=
+    let: "x1" := #513 + #12 `rem` #8 in
+    let: "x2" := (#513 + #12) `rem` #8 in
+    ("x1" = #517) && ("x2" = #5).
+
 (* shortcircuiting.go *)
 
 (* helpers *)
