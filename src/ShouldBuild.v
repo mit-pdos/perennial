@@ -14,7 +14,7 @@ From Perennial.program_proof Require Import
      append_log_proof
      util_proof
      lockmap_proof
-     wal.specs wal.proof wal.circular_proof.
+     wal.specs wal.proof wal.circular_proof wal.heapspec.
 From Perennial.goose_lang Require Import
      ffi.append_log_ffi.
 (* goose deep output *)

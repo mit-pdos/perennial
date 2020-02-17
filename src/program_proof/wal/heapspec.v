@@ -217,6 +217,39 @@ Definition memappend_q γh (bs : list update.t) (pos : u64) : iProp Σ :=
   [∗ list] _ ↦ u ∈ bs,
     mapsto (hG := γh) u.(update.addr) 1 (Latest u.(update.b)).
 
+Theorem memappend_pre_nodup γh (bs : list update.t) :
+  memappend_pre γh bs -∗ ⌜NoDup (map update.addr bs)⌝.
+Proof.
+  iIntros "Hpre".
+  iInduction bs as [|] "Hi".
+  - simpl. iPureIntro. constructor.
+  - iDestruct "Hpre" as "[Ha Hpre]".
+    iDestruct "Ha" as (v0) "Ha".
+    iDestruct ("Hi" with "Hpre") as "%".
+    iAssert (⌜update.addr a ∉ map update.addr bs⌝)%I as "%".
+    {
+      iClear "Hi".
+      clear H.
+      iInduction bs as [|] "Hi".
+      + simpl. iPureIntro. apply not_elem_of_nil.
+      + iDestruct "Hpre" as "[Ha0 Hpre]".
+        iDestruct "Ha0" as (v1) "Ha0".
+        iDestruct ("Hi" with "Ha Hpre") as "%".
+        destruct (decide (a.(update.addr) = a0.(update.addr))).
+        {
+          rewrite e.
+          iDestruct (mapsto_valid_2 with "Ha Ha0") as %Hd.
+          exfalso. apply Hd. simpl. auto.
+        }
+        iPureIntro.
+        simpl.
+        apply not_elem_of_cons.
+        auto.
+    }
+    iPureIntro.
+    eapply NoDup_cons_2; eauto.
+Qed.
+
 Theorem wal_heap_memappend γh bs :
   memappend_pre γh bs -∗
   ( ∀ σ σ' pos,
@@ -227,6 +260,7 @@ Proof.
   iIntros "Hpre".
   iIntros (σ σ' pos) "% % Hinv".
   iDestruct "Hinv" as (gh) "[Hctx Hgh]".
+  iDestruct (memappend_pre_nodup with "Hpre") as %Hnodup.
   rewrite /memappend_pre.
 
   simpl in *; monad_inv.
@@ -270,7 +304,7 @@ Proof.
         rewrite Heqp in H3; simpl in H3.
         eapply a0.
         2: apply H2.
-        admit.
+        destruct a. lia.
 
       + rewrite lookup_insert_ne in H2; eauto.
   }
@@ -283,16 +317,29 @@ Proof.
     iDestruct (gen_heap_valid with "Hctx Ha") as "%".
 
     iMod (gen_heap_update _ _ _ (Latest b) with "Hctx Ha") as "[Hctx Ha]".
-    iDestruct ("Ibs" with "[] [] [] Hpre Hctx") as "Ibs2";
+    iDestruct ("Ibs" with "[] [] [] [] Hpre Hctx") as "Ibs2";
       iClear "Ibs".
 
-    4: {
+    5: {
       iDestruct (big_sepM_delete with "Hgh") as "[% Hgh]"; eauto.
       iDestruct (big_sepM_mono _ (wal_heap_inv_addr
         (set log_state.txn_disk (<[new_txn:=<[int.val addr:=b]> d]>) σ)) with "Hgh") as "Hgh".
       {
-        intros.
-        admit.
+        iIntros; iPureIntro.
+        destruct (decide (k = addr)); subst.
+        {
+          rewrite lookup_delete in H2. congruence.
+        }
+        rewrite /set /=.
+        destruct x.
+        {
+          rewrite <- a0; clear a0.
+          admit.
+        }
+        {
+          intros.
+          admit.
+        }
       }
 
       iDestruct ("Ibs2" with "[Hgh]") as "Ibs2".
@@ -310,11 +357,14 @@ Proof.
 
       iModIntro.
       iSplitL "Hinv".
-      - (* XXX *) admit.
+      - rewrite insert_insert.
+        rewrite /= in Hnodup.
+        admit.
       - rewrite /memappend_q /=.
         iFrame.
     }
 
+    { admit. }
     { admit. }
     { admit. }
     { admit. }
