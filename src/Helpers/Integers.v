@@ -451,6 +451,7 @@ Qed.
 
 Ltac word_cleanup :=
   rewrite ?word.unsigned_add, ?word.unsigned_sub,
+  ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
   ?unsigned_U64_0, ?unsigned_U32_0,
   ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
   repeat match goal with

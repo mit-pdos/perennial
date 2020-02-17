@@ -1,3 +1,5 @@
+From Perennial.Helpers Require Import NEList.
+
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import typing.
@@ -8,10 +10,11 @@ From Perennial.goose_lang Require Import typing.
 
 (* Check eq_refl : (#0, #1, #2)%E = ((#0, #1), #2)%E. *)
 
+Set Default Proof Using "Type".
+
 Section goose_lang.
   Context `{ffi_sem: ext_semantics}.
   Context {ext_ty: ext_types ext}.
-  Set Default Proof Using "ext ext_ty".
 
 Record descriptor :=
   mkStruct { fields: list (string*ty); }.
@@ -19,8 +22,8 @@ Record descriptor :=
 Fixpoint getField_e (f0: string) (rev_fields: list (string*ty)) (se: expr): expr :=
   match rev_fields with
   | [] => LitV LitUnit
-  | [f] => if String.eqb (fst f) f0 then se else #()
-  | f::fs => if String.eqb (fst f) f0 then Snd se else getField_e f0 fs (Fst se)
+  | [(f,_)] => if String.eqb f f0 then se else #()
+  | (f,_)::fs => if String.eqb f f0 then Snd se else getField_e f0 fs (Fst se)
   end.
 
 Definition getField (d:descriptor) f : val :=
