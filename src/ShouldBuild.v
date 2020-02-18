@@ -1,3 +1,4 @@
+From Perennial Require Import algebra.na_heap.
 From Perennial Require Import program_logic.crash_lang.
 From Perennial Require Import program_logic.crash_weakestpre.
 From Perennial Require Import program_logic.spec_assert.
