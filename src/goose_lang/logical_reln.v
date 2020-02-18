@@ -1,5 +1,5 @@
 From iris.proofmode Require Import tactics.
-From iris.algebra Require Import auth.
+From iris.algebra Require Import auth excl.
 From iris.base_logic.lib Require Import proph_map.
 From iris.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map.
@@ -65,6 +65,27 @@ Definition base_ty_interp (t: base_ty) :=
     | stringBT => (∃ x, ⌜ v1 = LitV $ LitString x ∧ v2 = LitV $ LitString x ⌝ : iProp Σ)%I
   end.
 
+Inductive loc_status :=
+| loc_free
+| loc_writing.
+Canonical Structure loc_statusO := leibnizO loc_status.
+
+Context `{!inG Σ (authR (optionUR (exclR loc_statusO)))}.
+
+(* XXX: This is almost certainly not sufficient if the FFI itself needs to do a non-atomic
+   read from a location ... *)
+Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
+  (∃ (stat: loc_status), own γ (● (Excl' stat)) ∗
+    match stat with
+    | loc_free => ∃ vs v, vTy vs v ∗ ls s↦ Free vs ∗ l ↦ Free v ∗ own γ (◯ Excl' stat)
+    | loc_writing => ls ↦ Writing ∗ l ↦ Writing
+   end)%I.
+
+Definition locN := nroot.@"loc".
+
+Definition is_loc γ ls l vTy :=
+  inv locN (loc_inv γ ls l vTy).
+
 Fixpoint val_interp (smodel: spec_valTy_model) (t: sty) (vs: sval) (v: ival) :=
   match t with
   | baseT bt => base_ty_interp bt vs v
@@ -79,17 +100,15 @@ Fixpoint val_interp (smodel: spec_valTy_model) (t: sty) (vs: sval) (v: ival) :=
                    (∃ v' vs', ⌜ v = InjRV v' ∧
                                 vs = InjRV vs'⌝
                               ∗ val_interp smodel t2 vs' v'))%I
-  | arrayT t => ((∃ l ls (vvslist: list (sval * ival)),
+  | arrayT t => ((∃ l ls (indices: list gname),
                      ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ⌝ ∗
-                     [∗ list] i↦vvs ∈ vvslist, (ls +ₗ i) s↦ (Free (fst vvs))
-                                               ∗ (l +ₗ i) ↦ (Free (snd vvs))
-                                               ∗ val_interp smodel t (fst vvs) (snd vvs))
+                     [∗ list] i↦γ ∈ indices, is_loc γ (ls +ₗ i) (l +ₗ i) (val_interp smodel t))
                  ∨ (⌜ vs = #null ∧ v = #null⌝))%I
   | arrowT t1 t2 =>
     (∃ f x e fs xs es,
         ⌜ v = RecV f x e ∧
           vs = RecV fs xs es ⌝
-        ∗ (∀ varg vsarg,
+        ∗ □ (∀ varg vsarg,
               val_interp smodel t1 vsarg varg -∗
               has_semTy (App vs vsarg) (App v varg) (val_interp smodel t2)))%I
   | extT x => smodel x vs v
