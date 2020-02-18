@@ -47,11 +47,11 @@ Definition lockShard__acquire: val :=
         MapInsert (struct.loadF lockShard.S "state" "lmap") "addr" (![refT (struct.t lockState.S)] "state"));;
       (if: ~ (struct.loadF lockState.S "held" (![refT (struct.t lockState.S)] "state"))
       then
-        struct.storeF lockState.S "held" "state" #true;;
-        struct.storeF lockState.S "owner" "state" "id";;
+        struct.storeF lockState.S "held" (![refT (struct.t lockState.S)] "state") #true;;
+        struct.storeF lockState.S "owner" (![refT (struct.t lockState.S)] "state") "id";;
         Break
       else
-        struct.storeF lockState.S "waiters" "state" (struct.loadF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") + #1);;
+        struct.storeF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") (struct.loadF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") + #1);;
         lock.condWait (struct.loadF lockState.S "cond" (![refT (struct.t lockState.S)] "state"));;
         let: ("state2", "ok2") := MapGet (struct.loadF lockShard.S "state" "lmap") "addr" in
         (if: "ok2"

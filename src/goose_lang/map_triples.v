@@ -102,6 +102,14 @@ Proof.
   destruct (m !! k); rewrite /=; congruence.
 Qed.
 
+Lemma map_get_false k v m def :
+  map_get (m, def) k = (v, false) ->
+  m !! k = None.
+Proof.
+  rewrite /map_get.
+  destruct (m !! k); rewrite /=; congruence.
+Qed.
+
 Lemma map_val_split mv m :
   map_val mv = Some m ->
   {∃ def, mv = MapNilV def ∧ m = (∅, def)} +
