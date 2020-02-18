@@ -262,11 +262,23 @@ Proof.
 
     wp_pures.
     wp_load.
-
-    (* XXX *)
-    admit.
-  }
-
+    wp_bind(If _ _ _).
+    rewrite /map_get /= in H0; simpl.
+    destruct (decide (v = slice.nil)); subst.
+    - rewrite /slice.nil slice_val_fold //.
+      wp_binop; simpl; eauto.
+      1: admit.
+      wp_if_destruct.
+      + admit.
+      + admit.
+    - destruct (decide (v ≠ slice.nil)); subst.
+      + wp_binop; simpl; eauto.
+        1:admit.
+        wp_if_destruct; eauto.
+        all: admit.
+      + admit.
+   }
+          
   {
     iIntros "(Hinner & Hp & Haddrlocked)".
     wp_apply (wp_load_lockShard_mu with "Hls").
@@ -279,8 +291,6 @@ Proof.
     iApply "HΦ".
     iFrame.
   }
-
-
 (*
 *)
 Abort.
