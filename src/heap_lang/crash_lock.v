@@ -37,6 +37,7 @@ Section proof.
         (γ1 γ2) "(#Hstaged_inv&Hstaged_val&Hpending)".
     { iFrame "HR". iAlways. iIntros. iSplitL; last done. by iApply "HRcrash". }
     iApply (wpc_ci_inv _ _ Ncrash ⊤); auto.
+    { set_solver. }
     iFrame. iFrame "Hstaged_inv".
     iApply wpc_bind.
     iApply wp_wpc_frame. iFrame.

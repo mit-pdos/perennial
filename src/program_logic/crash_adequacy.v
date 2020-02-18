@@ -130,7 +130,8 @@ Proof.
     - iMod (wpc_safe with "Hσ Hwp HNC") as "$"; auto.
     - iDestruct "Ht" as "(_ & He' & _)". by iMod (wpc_safe with "Hσ He' HNC"). }
   iApply step_fupd_fupd. iApply step_fupd_intro; first done.
-  iMod (fupd_intro_mask' _ ∅) as "Hclo". auto.
+  iMod (fupd_intro_mask' _ ∅) as "Hclo".
+  { set_solver. }
   do 5 (iModIntro). iMod "Hclo".
   iApply step_fupdN_inner_fupd.
   iApply (step_fupdN_inner_later); auto.
@@ -166,7 +167,8 @@ Proof.
     - iMod (wpc_safe with "Hσ Hwp HNC") as "$"; auto.
     - iDestruct "Ht" as "(_ & He' & _)". by iMod (wpc_safe with "Hσ He' HNC"). }
   iApply step_fupd_fupd. iApply step_fupd_intro; first done.
-  iMod (fupd_intro_mask' _ ∅) as "Hclo". auto.
+  iMod (fupd_intro_mask' _ ∅) as "Hclo".
+  { set_solver. }
   do 5 (iModIntro). iMod "Hclo".
   iApply step_fupdN_inner_fupd.
   iApply (step_fupdN_inner_later); auto.
