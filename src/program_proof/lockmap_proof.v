@@ -258,28 +258,35 @@ Proof.
     wp_pures.
     iDestruct "Hstate" as "[[Hstate _] _]". rewrite /=.
     rewrite loc_add_0.
-    wp_store.
 
-    wp_pures.
-    wp_load.
-    wp_bind(If _ _ _).
-    rewrite /map_get /= in H0; simpl.
-    destruct (decide (v = slice.nil)); subst.
-    - rewrite /slice.nil slice_val_fold //.
-      wp_binop; simpl; eauto.
-      1: admit.
-      wp_if_destruct.
-      + admit.
-      + admit.
-    - destruct (decide (v ≠ slice.nil)); subst.
-      + wp_binop; simpl; eauto.
-        1:admit.
-        wp_if_destruct; eauto.
-        all: admit.
-      + admit.
-   }
-          
-  {
+    destruct ok; wp_if.
+    - wp_pures.
+      wp_store.
+      wp_load.
+      admit.
+    - wp_pures.
+      wp_apply (wp_load_lockShard_mu with "Hls").
+      wp_apply lock.wp_newCond; [done|].
+      iIntros (c) "Hcond".
+      wp_apply (wp_alloc _ _ (struct.t lockState.S)); [val_ty|].
+      iIntros (lst) "Hlst".
+      wp_store.
+      wp_load.
+      wp_apply (wp_load_lockShard_state with "Hls").
+      wp_apply (wp_MapInsert with "[$Hmptr]").
+      iIntros "Hmptr".
+      wp_pures.
+      wp_load.
+      wp_apply (wp_load_lockState with "Hlst").
+      iIntros "Hlst".
+      rewrite /extractField /=. wp_pures.
+      wp_bind (struct.storeF _ _ _ _).
+      (* XXX interesting goose problem: it's missing an implicit dereference of state here,
+        and the store appears to be going to #state instead of #lst *)
+      admit.
+    }
+
+    {
     iIntros "(Hinner & Hp & Haddrlocked)".
     wp_apply (wp_load_lockShard_mu with "Hls").
     wp_apply (release_spec with "[Hlocked Hinner]").

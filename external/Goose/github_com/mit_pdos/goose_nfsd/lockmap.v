@@ -34,18 +34,17 @@ Definition lockShard__acquire: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "state" := ref (zero_val (refT (struct.t lockState.S))) in
-      "state" <-[refT (struct.t lockState.S)] Fst (MapGet (struct.loadF lockShard.S "state" "lmap") "addr");;
-      (if: (![refT (struct.t lockState.S)] "state" = slice.nil)
-      then
+      let: ("state1", "ok1") := MapGet (struct.loadF lockShard.S "state" "lmap") "addr" in
+      (if: "ok1"
+      then "state" <-[refT (struct.t lockState.S)] "state1"
+      else
         "state" <-[refT (struct.t lockState.S)] struct.new lockState.S [
           "owner" ::= "id";
           "held" ::= #false;
           "cond" ::= lock.newCond (struct.loadF lockShard.S "mu" "lmap");
           "waiters" ::= #0
         ];;
-        MapInsert (struct.loadF lockShard.S "state" "lmap") "addr" (![refT (struct.t lockState.S)] "state");;
-        #()
-      else #());;
+        MapInsert (struct.loadF lockShard.S "state" "lmap") "addr" (![refT (struct.t lockState.S)] "state"));;
       (if: ~ (struct.loadF lockState.S "held" (![refT (struct.t lockState.S)] "state"))
       then
         struct.storeF lockState.S "held" "state" #true;;
@@ -54,9 +53,9 @@ Definition lockShard__acquire: val :=
       else
         struct.storeF lockState.S "waiters" "state" (struct.loadF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") + #1);;
         lock.condWait (struct.loadF lockState.S "cond" (![refT (struct.t lockState.S)] "state"));;
-        "state" <-[refT (struct.t lockState.S)] Fst (MapGet (struct.loadF lockShard.S "state" "lmap") "addr");;
-        (if: ![refT (struct.t lockState.S)] "state" ≠ slice.nil
-        then struct.storeF lockState.S "waiters" "state" (struct.loadF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") - #1)
+        let: ("state2", "ok2") := MapGet (struct.loadF lockShard.S "state" "lmap") "addr" in
+        (if: "ok2"
+        then struct.storeF lockState.S "waiters" "state2" (struct.loadF lockState.S "waiters" "state2" - #1)
         else #()));;
       Continue);;
     lock.release (struct.loadF lockShard.S "mu" "lmap").
