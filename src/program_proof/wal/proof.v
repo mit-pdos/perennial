@@ -118,7 +118,7 @@ Definition walN: namespace := nroot .@ "wal".
 
 Definition is_wal (l: loc) (σ: log_state.t): iProp Σ :=
   ∃ γ, is_lock walN γ #(l +ₗ 0) (lockInv l σ) ∗
-       lock.is_cond walN γ (l +ₗ 4) (lockInv l σ) ∗
-       lock.is_cond walN γ (l +ₗ 5) (lockInv l σ).
+       lock.is_cond (l +ₗ 4) #(l +ₗ 0) ∗
+       lock.is_cond (l +ₗ 5) #(l +ₗ 0).
 
 End heap.

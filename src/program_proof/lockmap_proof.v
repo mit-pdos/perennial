@@ -31,10 +31,10 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrV
   ( ∃ (lockStatePtr : loc) owner (cond : loc) (nwaiters : u64),
       ⌜ ptrVal = #lockStatePtr ⌝ ∗
       lockStatePtr ↦[structTy lockState.S] (owner, #gheld, #cond, #nwaiters) ∗
-      cond ↦[lockRefT] #shardlock ∗
+      lock.is_cond cond #shardlock ∗
       ⌜ addr ∈ covered ⌝ ∗
       ( ⌜ gheld = true ⌝ ∨
-        ( ⌜ gheld = false ⌝ ∗ locked gh addr ∗ P addr ) )
+        ( ⌜ gheld = false ⌝ ∗ mapsto (hG := gh) addr 1 false ∗ P addr ) )
   )%I.
 
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
@@ -385,17 +385,9 @@ Proof.
     wp_apply (wp_load_lockState with "Hlockstateptr").
     iIntros "Hlockstateptr".
 
-    wp_apply (lock.wp_condSignal with "[Hcond]").
-    {
-      iExists _.
-      iDestruct "Hcond" as "[[Hcond _] %]".
-      rewrite /=.
-      rewrite loc_add_0.
-      iFrame.
-      (* XXX what's this ptsto_ro thing? *)
-      (* iApply "Hlock". *)
-      admit.
-    }
+    wp_apply (lock.wp_condSignal with "[$Hcond]").
+
+    iMod (gen_heap_update _ _ _ false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
 
     iIntros "Hcond".
     wp_apply (wp_load_lockShard_mu with "Hls").
@@ -404,10 +396,24 @@ Proof.
       iFrame.
       iSplitR.
       { iApply "Hlock". }
-      iExists m, _, gm.
+      iExists m, _, _.
       iFrame.
 
-      admit.
+      iDestruct (big_sepM2_insert_2 _ _ _ addr false #lockStatePtr
+        with "[Hlockstateptr Hp Hcond Haddrlocked] Haddrs") as "Haddrs".
+      {
+        rewrite /updateField /=.
+        iExists _, _, _, _.
+        iFrame.
+        iSplitR; auto.
+        iSplitR; auto.
+        iRight.
+        iFrame. done.
+      }
+
+      rewrite insert_delete.
+      rewrite insert_delete.
+      rewrite (insert_id m); eauto.
     }
 
     iApply "HΦ".
@@ -428,6 +434,7 @@ Proof.
       { iApply "Hlock". }
       iExists _, _, (delete addr gm).
       iFrame.
+
       (* don't have a lemma for gen_heap deletion.. *)
       iSplitL "Hghctx". { admit. }
 

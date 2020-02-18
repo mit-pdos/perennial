@@ -5,6 +5,7 @@ From Perennial.goose_lang Require Export basic_triples.
 From Perennial.goose_lang Require Export map_triples.
 From Perennial.goose_lang Require Export slice.
 From Perennial.goose_lang Require Export locks.
+From Perennial.goose_lang Require Export readonly.
 From Perennial.goose_lang Require Export ffi.disk.
 From Perennial.goose_lang Require Export ffi.disk_prelude.
 From Perennial.goose_lang Require Export lib.spin_lock.
