@@ -86,16 +86,16 @@ Definition testByteSliceToString: val :=
 
 (* copy.go *)
 
-Definition testCopySimple: val :=
-  rec: "testCopySimple" <> :=
+Definition failing_testCopySimple: val :=
+  rec: "failing_testCopySimple" <> :=
     let: "x" := NewSlice byteT #10 in
     SliceSet byteT "x" #3 (#(U8 1));;
     let: "y" := NewSlice byteT #10 in
     SliceCopy byteT "y" "x";;
     (SliceGet byteT "y" #3 = #(U8 1)).
 
-Definition testCopyDifferentLengths: val :=
-  rec: "testCopyDifferentLengths" <> :=
+Definition failing_testCopyDifferentLengths: val :=
+  rec: "failing_testCopyDifferentLengths" <> :=
     let: "x" := NewSlice byteT #15 in
     SliceSet byteT "x" #3 (#(U8 1));;
     SliceSet byteT "x" #12 (#(U8 2));;
@@ -163,8 +163,8 @@ Definition testEncDec32Simple: val :=
     "ok" <-[boolT] ![boolT] "ok" && (roundtripEncDec32 (#(U32 1231234)) = #(U32 1231234));;
     ![boolT] "ok".
 
-Definition testEncDec32: val :=
-  rec: "testEncDec32" <> :=
+Definition failing_testEncDec32: val :=
+  rec: "failing_testEncDec32" <> :=
     let: "ok" := ref #true in
     "ok" <-[boolT] ![boolT] "ok" && (roundtripEncDec32 (#(U32 3434807466)) = #(U32 3434807466));;
     "ok" <-[boolT] ![boolT] "ok" && (roundtripEncDec32 (#1 ≪ #20) = #1 ≪ #20);;
@@ -229,8 +229,8 @@ Module Pair.
 End Pair.
 
 (* tests *)
-Definition testFunctionOrdering: val :=
-  rec: "testFunctionOrdering" <> :=
+Definition failing_testFunctionOrdering: val :=
+  rec: "failing_testFunctionOrdering" <> :=
     let: "arr" := ref (NewSlice uint64T #5) in
     let: "e1" := struct.mk Editor.S [
       "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
@@ -409,8 +409,8 @@ Definition testReverseAssignOps64: val :=
     "ok" <-[boolT] ![boolT] "ok" && (reverseAssignOps64 (#1 ≪ #64 - #1) = #0);;
     ![boolT] "ok".
 
-Definition testReverseAssignOps32: val :=
-  rec: "testReverseAssignOps32" <> :=
+Definition failing_testReverseAssignOps32: val :=
+  rec: "failing_testReverseAssignOps32" <> :=
     let: "ok" := ref #true in
     "ok" <-[boolT] ![boolT] "ok" && (reverseAssignOps32 (#(U32 0)) = #(U32 0));;
     "ok" <-[boolT] ![boolT] "ok" && (reverseAssignOps32 (#(U32 1)) = #(U32 0));;
@@ -564,6 +564,7 @@ Definition testOverwriteArray: val :=
 
 (* strings.go *)
 
+(* helpers *)
 Definition stringAppend: val :=
   rec: "stringAppend" "s" "x" :=
     "s" + uint64_to_string "x".
@@ -572,15 +573,16 @@ Definition stringLength: val :=
   rec: "stringLength" "s" :=
     strLen "s".
 
-Definition testStringAppend: val :=
-  rec: "testStringAppend" <> :=
+(* tests *)
+Definition failing_testStringAppend: val :=
+  rec: "failing_testStringAppend" <> :=
     let: "ok" := ref #true in
     let: "s" := ref #(str"123") in
     let: "y" := ref (stringAppend (![stringT] "s") #45) in
     ![boolT] "ok" && (![stringT] "y" = #(str"12345")).
 
-Definition testStringLength: val :=
-  rec: "testStringLength" <> :=
+Definition failing_testStringLength: val :=
+  rec: "failing_testStringLength" <> :=
     let: "ok" := ref #true in
     let: "s" := ref #(str"") in
     "ok" <-[boolT] ![boolT] "ok" && (strLen (![stringT] "s") = #0);;
