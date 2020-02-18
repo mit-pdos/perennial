@@ -62,21 +62,21 @@ Module lock.
                                       into account *)
                                       acquire !"l".
 
-  Definition is_cond N γ (c: loc) R: iProp Σ :=
-    ∃ lk, c ↦ro lk ∗ is_lock N γ lk R.
+  Definition is_cond (c: loc) (lk : val) : iProp Σ :=
+    c ↦ro lk.
 
-  Theorem is_cond_dup N γ c R :
-    is_cond N γ c R -∗ is_cond N γ c R ∗ is_cond N γ c R.
+  Theorem is_cond_dup c lk :
+    is_cond c lk -∗ is_cond c lk ∗ is_cond c lk.
   Proof.
     iIntros "Hc".
-    iDestruct "Hc" as (lk) "[[Hc1 Hc2] #Hl]".
-    iSplitL "Hc1"; iExists lk; iFrame "#∗".
+    iDestruct "Hc" as "[Hc1 Hc2]".
+    iSplitL "Hc1"; iFrame "#∗".
   Qed.
 
   Theorem wp_newCond N γ lk R :
     {{{ is_lock N γ lk R }}}
       newCond lk
-    {{{ c, RET #c; is_cond N γ c R }}}.
+    {{{ c, RET #c; is_cond c lk }}}.
   Proof.
     iIntros (Φ) "Hl HΦ".
     wp_call.
@@ -85,47 +85,45 @@ Module lock.
     iIntros (c) "Hc".
     rewrite ptsto_ro_weaken.
     iApply "HΦ".
-    iExists _; iFrame.
+    iFrame.
   Qed.
 
-  Theorem wp_condSignal N γ c R :
-    {{{ is_cond N γ c R }}}
+  Theorem wp_condSignal c lk :
+    {{{ is_cond c lk }}}
       condSignal #c
-    {{{ RET #(); is_cond N γ c R }}}.
+    {{{ RET #(); is_cond c lk }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
     wp_call.
-    iApply ("HΦ" with "[$]").
+    iApply ("HΦ" with "[$Hc]").
   Qed.
 
-  Theorem wp_condBroadcast N γ c R :
-    {{{ is_cond N γ c R }}}
+  Theorem wp_condBroadcast c lk :
+    {{{ is_cond c lk }}}
       condBroadcast #c
-    {{{ RET #(); is_cond N γ c R }}}.
+    {{{ RET #(); is_cond c lk }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
     wp_call.
     iApply ("HΦ" with "[$]").
   Qed.
 
-  Theorem wp_condWait N γ c R :
-    {{{ is_cond N γ c R ∗ spin_lock.locked γ ∗ R }}}
+  Theorem wp_condWait N γ c lk R :
+    {{{ is_cond c lk ∗ is_lock N γ lk R ∗ spin_lock.locked γ ∗ R }}}
       condWait #c
-    {{{ RET #(); is_cond N γ c R ∗ spin_lock.locked γ ∗ R }}}.
+    {{{ RET #(); is_cond c lk ∗ spin_lock.locked γ ∗ R }}}.
   Proof.
-    iIntros (Φ) "(Hc&Hlocked&HR) HΦ".
-    iDestruct "Hc" as (lk) "(Hcptr&#Hc)".
+    iIntros (Φ) "(Hc&#Hlock&Hlocked&HR) HΦ".
     wp_call.
-    iDestruct (ptsto_ro_load with "Hcptr") as (q) "Hcptr".
+    iDestruct (ptsto_ro_load with "Hc") as (q) "Hc".
     wp_load.
-    wp_apply (release_spec with "[$Hc $Hlocked $HR]").
+    wp_apply (release_spec with "[$Hlock $Hlocked $HR]").
     wp_pures.
     wp_load.
-    wp_apply (acquire_spec with "[$Hc]").
+    wp_apply (acquire_spec with "[$Hlock]").
     iIntros "(Hlocked&HR)".
     iApply "HΦ".
     iSplitR "Hlocked HR"; last by iFrame.
-    iExists lk; iFrame "#∗".
     iApply (ptsto_ro_from_q with "[$]").
   Qed.
 

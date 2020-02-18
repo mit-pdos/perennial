@@ -1,3 +1,4 @@
+From Perennial Require Import algebra.na_heap.
 From Perennial Require Import program_logic.crash_lang.
 From Perennial Require Import program_logic.crash_weakestpre.
 From Perennial Require Import program_logic.spec_assert.
@@ -14,7 +15,7 @@ From Perennial.program_proof Require Import
      append_log_proof
      util_proof
      lockmap_proof
-     wal.specs wal.proof wal.circular_proof.
+     wal.specs wal.proof wal.circular_proof wal.heapspec.
 From Perennial.goose_lang Require Import
      ffi.append_log_ffi.
 (* goose deep output *)

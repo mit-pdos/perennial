@@ -94,6 +94,14 @@ Proof.
   rewrite lookup_insert_ne //.
 Qed.
 
+Lemma map_get_true k v m def :
+  map_get (m, def) k = (v, true) ->
+  m !! k = Some v.
+Proof.
+  rewrite /map_get.
+  destruct (m !! k); rewrite /=; congruence.
+Qed.
+
 Lemma map_val_split mv m :
   map_val mv = Some m ->
   {∃ def, mv = MapNilV def ∧ m = (∅, def)} +

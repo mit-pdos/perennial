@@ -24,6 +24,20 @@ Module log_state.
         durable_to: u64;
       }.
   Global Instance _eta: Settable _ := settable! mk <txn_disk; installed_to; durable_to>.
+
+  (* TODO: it would be awkward to express directly with dependent types but all
+     of the operations should preserve this well-formedness invariant.
+
+    Additionally, the state should grow monotonically: txn_disk should
+    accumulate new disks (possibly overwriting the latest disk due to complete
+    absorption) and installed_to and durable_to should increase.
+   *)
+  Definition wf (σ:t) :=
+    (exists install_d,
+      σ.(txn_disk) !! σ.(installed_to) = Some install_d) ∧
+    (exists durable_d,
+      σ.(txn_disk) !! σ.(durable_to) = Some durable_d) ∧
+    (int.val σ.(installed_to) ≤ int.val σ.(durable_to)).
 End log_state.
 
 Section heap.

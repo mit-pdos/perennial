@@ -34,6 +34,32 @@ Definition latest_disk (s:log_state.t): u64*disk :=
        then (k, d) else (k', d'))
     (U64 0, ∅) s.(log_state.txn_disk).
 
+Definition valid_log_state (s : log_state.t) :=
+  int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
+  ∃ d,
+    s.(log_state.txn_disk) !! s.(log_state.durable_to) = Some d.
+
+Lemma latest_disk_durable s : valid_log_state s ->
+  int.val s.(log_state.durable_to) ≤ int.val (fst (latest_disk s)).
+Proof.
+  destruct s.
+  rewrite /valid_log_state /latest_disk /=.
+  intros. destruct H.
+Admitted.
+
+Lemma latest_disk_pos s : valid_log_state s ->
+  s.(log_state.txn_disk) !! (fst (latest_disk s)) = Some (snd (latest_disk s)).
+Proof.
+  unfold latest_disk.
+  destruct s; simpl.
+Admitted.
+
+Lemma latest_disk_append s npos nd : valid_log_state s ->
+  int.val npos >= int.val (fst (latest_disk s)) ->
+  latest_disk (set log_state.txn_disk <[npos:=nd]> s) = (npos, nd).
+Proof.
+Admitted.
+
 Definition get_txn_disk (pos:u64) : transition log_state.t disk :=
   reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap.
 
@@ -60,7 +86,7 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
     install_d ← get_txn_disk new_installed;
     suchThat (gen:=fun _ _ => None)
              (fun s (_:unit) =>
-                forall pos d, int.val s.(log_state.installed_to) < int.val pos ->
+                forall pos d, int.val s.(log_state.installed_to) ≤ int.val pos ->
                          s.(log_state.txn_disk) !! pos = Some d ->
                          d !! int.val a = install_d !! int.val a);;
     ret None.
@@ -123,8 +149,9 @@ Theorem wp_Walog__MemAppend (Q: u64 -> iProp Σ) l bufs bs :
   {{{ is_wal l ∗
        updates_slice bufs bs ∗
        (∀ σ σ' pos,
-         ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ ∗
-          P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos)
+         ⌜valid_log_state σ⌝ -∗
+         ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
+         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos))
    }}}
     Walog__MemAppend #l (slice_val bufs)
   {{{ pos, RET #pos; Q pos }}}.
@@ -134,8 +161,9 @@ Admitted.
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l a :
   {{{ is_wal l ∗
        (∀ σ σ' mb,
-         ⌜relation.denote (log_read_cache a) σ σ' mb⌝ ∗
-          P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q mb)
+         ⌜valid_log_state σ⌝ -∗
+         ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
+         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q mb))
    }}}
     Walog__ReadMem #l #a
   {{{ (ok:bool) bl, RET (#ok, slice_val bl); if ok
@@ -147,8 +175,9 @@ Admitted.
 Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l a :
   {{{ is_wal l ∗
        (∀ σ σ' b,
-         ⌜relation.denote (log_read_installed a) σ σ' b⌝ ∗
-          P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q b)
+         ⌜valid_log_state σ⌝ -∗
+         ⌜relation.denote (log_read_installed a) σ σ' b⌝ -∗
+         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q b))
    }}}
     Walog__ReadInstalled #l #a
   {{{ (ok:bool) bl, RET (#ok, slice_val bl); ∃ b, is_block bl b ∗ Q b}}}.
@@ -158,12 +187,9 @@ Admitted.
 Theorem wp_Walog__Flush (Q: iProp Σ) l pos :
   {{{ is_wal l ∗
        (∀ σ σ' b,
-           (* TODO: does this correctly account for undefined behavior? it seems
-           like it's wrong since this proof gets to assume false when there's
-           undefined behavior, whereas we'd somehow need the caller to establish
-           preconditions at all intermediate points *)
-         (⌜relation.denote (log_flush pos) σ σ' b⌝ ∗ P σ)
-         ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
+         ⌜valid_log_state σ⌝ -∗
+         ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗
+         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
    }}}
     Walog__Flush #l #pos
   {{{ RET #(); Q}}}.

@@ -31,10 +31,10 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrV
   ( ∃ (lockStatePtr : loc) owner (cond : loc) (nwaiters : u64),
       ⌜ ptrVal = #lockStatePtr ⌝ ∗
       lockStatePtr ↦[structTy lockState.S] (owner, #gheld, #cond, #nwaiters) ∗
-      cond ↦[lockRefT] #shardlock ∗
+      lock.is_cond cond #shardlock ∗
       ⌜ addr ∈ covered ⌝ ∗
       ( ⌜ gheld = true ⌝ ∨
-        ( ⌜ gheld = false ⌝ ∗ locked gh addr ∗ P addr ) )
+        ( ⌜ gheld = false ⌝ ∗ mapsto (hG := gh) addr 1 false ∗ P addr ) )
   )%I.
 
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
@@ -225,6 +225,34 @@ Qed.
 Transparent String.eqb.
 Opaque loadField.
 
+Lemma big_sepM2_lookup_1_some
+    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
+    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
+    (i : K) (x1 : A)
+    (_ : forall x2 : B, Absorbing (Φ i x1 x2)) :
+  m1 !! i = Some x1 ->
+    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+        ⌜∃ x2, m2 !! i = Some x2⌝ )%I.
+Proof.
+  intros.
+  iIntros "H".
+  iDestruct (big_sepM2_lookup_1 with "H") as (x2) "[% _]"; eauto.
+Qed.
+
+Lemma big_sepM2_lookup_2_some
+    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
+    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
+    (i : K) (x2 : B)
+    (_ : forall x1 : A, Absorbing (Φ i x1 x2)) :
+  m2 !! i = Some x2 ->
+    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+        ⌜∃ x1, m1 !! i = Some x1⌝ )%I.
+Proof.
+  intros.
+  iIntros "H".
+  iDestruct (big_sepM2_lookup_2 with "H") as (x1) "[% _]"; eauto.
+Qed.
+
 Theorem wp_lockShard__acquire ls gh covered (addr : u64) (id : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockShard ls gh covered P ∗
       ⌜addr ∈ covered⌝ }}}
@@ -258,47 +286,59 @@ Proof.
     wp_pures.
     iDestruct "Hstate" as "[[Hstate _] _]". rewrite /=.
     rewrite loc_add_0.
-    wp_store.
 
-    wp_pures.
-    wp_load.
+    destruct ok; wp_if.
+    - wp_pures.
+      wp_store.
+      wp_load.
+      apply map_get_true in H0.
+      iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
+      iDestruct (big_sepM2_insert_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
+      iDestruct "Haddr" as (lockStatePtr owner cond nwaiters) "(% & HlockStatePtr & Hcond & % & Hwaiters)".
+      subst.
+      wp_apply (wp_load_lockState with "HlockStatePtr").
+      iIntros "HlockStatePtr".
+      rewrite /extractField /=.
+      destruct gheld; wp_pures.
+      + (* XXX store mis-translation *)
+        admit.
 
-    (* XXX *)
-    admit.
+      + (* XXX store mis-translation *)
+        admit.
+
+    - wp_pures.
+      wp_apply (wp_load_lockShard_mu with "Hls").
+      wp_apply lock.wp_newCond; [done|].
+      iIntros (c) "Hcond".
+      wp_apply (wp_alloc _ _ (struct.t lockState.S)); [val_ty|].
+      iIntros (lst) "Hlst".
+      wp_store.
+      wp_load.
+      wp_apply (wp_load_lockShard_state with "Hls").
+      wp_apply (wp_MapInsert with "[$Hmptr]").
+      iIntros "Hmptr".
+      wp_pures.
+      wp_load.
+      wp_apply (wp_load_lockState with "Hlst").
+      iIntros "Hlst".
+      rewrite /extractField /=. wp_pures.
+      wp_bind (struct.storeF _ _ _ _).
+      (* XXX interesting goose problem: it's missing an implicit dereference of state here,
+        and the store appears to be going to #state instead of #lst *)
+      admit.
   }
 
+  iIntros "(Hinner & Hp & Haddrlocked)".
+  wp_apply (wp_load_lockShard_mu with "Hls").
+  wp_apply (release_spec with "[Hlocked Hinner]").
   {
-    iIntros "(Hinner & Hp & Haddrlocked)".
-    wp_apply (wp_load_lockShard_mu with "Hls").
-    wp_apply (release_spec with "[Hlocked Hinner]").
-    {
-      iSplitR. { iApply "Hlock". }
-      iFrame.
-    }
-
-    iApply "HΦ".
+    iSplitR. { iApply "Hlock". }
     iFrame.
   }
 
-
-(*
-*)
-Abort.
-  
-
-Lemma big_sepM2_lookup_1_some 
-    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
-    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
-    (i : K) (x1 : A)
-    (_ : forall x2 : B, Absorbing (Φ i x1 x2)) :
-  m1 !! i = Some x1 ->
-    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
-        ⌜∃ x2, m2 !! i = Some x2⌝ )%I.
-Proof.
-  intros.
-  iIntros "H".
-  iDestruct (big_sepM2_lookup_1 with "H") as (x2) "[% _]"; eauto.
-Qed.
+  iApply "HΦ".
+  iFrame.
+Admitted.
 
 Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered gh :
   {{{ is_lockShard ls gh covered P ∗ P addr ∗ locked gh addr }}}
@@ -345,17 +385,9 @@ Proof.
     wp_apply (wp_load_lockState with "Hlockstateptr").
     iIntros "Hlockstateptr".
 
-    wp_apply (lock.wp_condSignal with "[Hcond]").
-    {
-      iExists _.
-      iDestruct "Hcond" as "[[Hcond _] %]".
-      rewrite /=.
-      rewrite loc_add_0.
-      iFrame.
-      (* XXX what's this ptsto_ro thing? *)
-      (* iApply "Hlock". *)
-      admit.
-    }
+    wp_apply (lock.wp_condSignal with "[$Hcond]").
+
+    iMod (gen_heap_update _ _ _ false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
 
     iIntros "Hcond".
     wp_apply (wp_load_lockShard_mu with "Hls").
@@ -364,10 +396,24 @@ Proof.
       iFrame.
       iSplitR.
       { iApply "Hlock". }
-      iExists m, _, gm.
+      iExists m, _, _.
       iFrame.
 
-      admit.
+      iDestruct (big_sepM2_insert_2 _ _ _ addr false #lockStatePtr
+        with "[Hlockstateptr Hp Hcond Haddrlocked] Haddrs") as "Haddrs".
+      {
+        rewrite /updateField /=.
+        iExists _, _, _, _.
+        iFrame.
+        iSplitR; auto.
+        iSplitR; auto.
+        iRight.
+        iFrame. done.
+      }
+
+      rewrite insert_delete.
+      rewrite insert_delete.
+      rewrite (insert_id m); eauto.
     }
 
     iApply "HΦ".
@@ -388,6 +434,7 @@ Proof.
       { iApply "Hlock". }
       iExists _, _, (delete addr gm).
       iFrame.
+
       (* don't have a lemma for gen_heap deletion.. *)
       iSplitL "Hghctx". { admit. }
 
