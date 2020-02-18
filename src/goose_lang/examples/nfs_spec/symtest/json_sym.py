@@ -1,3 +1,4 @@
+import pprint
 import json_eval
 import collections
 import z3
@@ -25,6 +26,7 @@ class SymbolicJSON(object):
   def z3_sort(self, typeexpr):
     ## Check for a base type before reduction, for types
     ## like gmap that we want to avoid unfolding in reduce.
+    ## for something like positive, this can cause infinite recursion
     base_lam = self.base_types.get(typeexpr['name'])
     if base_lam is not None:
       return base_lam(typeexpr['args'])
@@ -55,6 +57,7 @@ class SymbolicJSON(object):
         state, k = self.proc(args[0], state)
         state, m = self.proc(args[1], state)
         return state, m[k]
+
       elif f['id'] == 'map_insert':
         state, k = self.proc(args[0], state)
         state, v = self.proc(args[1], state)
@@ -64,6 +67,17 @@ class SymbolicJSON(object):
         vsome = constructor_by_name(rangesort, "Some")(v)
 
         return state, z3.Store(m, k, vsome)
+
+      elif f['id'] == 'reads':
+        return state, state
+
+      elif f['id'] == 'ret':
+        state, res = self.proc(args[0], state)
+        return state, res
+
+      elif f['name'] == 'modify':
+        _, newstate = self.proc(args[0], state)
+
       elif f['id'] == 'len_buf':
         state, buf = self.proc(args[0], state)
         return state, z3.Int2BV(z3.Length(buf), 64)
@@ -72,10 +86,10 @@ class SymbolicJSON(object):
         state, buf = self.proc(args[1], state)
         ## XXX should be of length newlen, not empty..
         return state, z3.Empty(buf.sort())
-      elif f['id'] == 'uint64_gt':
-        state, a0 = self.proc(args[0], state)
-        state, a1 = self.proc(args[1], state)
-        return state, z3.If(a0 > a1, self.bool_sort.constructor(0)(), self.bool_sort.constructor(1)())
+      #elif f['id'] == 'uint64_gt':
+       # state, a0 = self.proc(args[0], state)
+       # state, a1 = self.proc(args[1], state)
+       # return state, z3.If(a0 > a1, self.bool_sort.constructor(0)(), self.bool_sort.constructor(1)())
       elif f['id'] == 'eqDec_time':
         state, a0 = self.proc(args[0], state)
         state, a1 = self.proc(args[1], state)
@@ -122,6 +136,8 @@ class SymbolicJSON(object):
     procexpr = self.context.reduce(procexpr)
 
     while True:
+      print "-------------------- NEW PROC ----------------------"
+      pprint.pprint(procexpr)
       if type(procexpr) != dict:
         return state, procexpr
 
@@ -136,24 +152,38 @@ class SymbolicJSON(object):
       if procexpr['what'] == 'expr:constructor':
         mod, name = self.context.scope_name(procexpr['name'], procexpr['mod'])
         c = mod.get_constructor(name)
-        print name, c
-        # XXX todo
-        state, procexpr = self.proc_constructor_proc(procexpr, state)
-        continue
+        if procexpr['name'] == 'Bind':
+          p0 = procexpr['args'][0]
+          p1lam = procexpr['args'][1]
+          print "-------------------- BIND PROC ----------------------"
+          pprint.pprint(p0)
+          state0, res0 = self.proc(p0, state)
+          p1 = {
+            'what': 'expr:apply',
+            'args': [res0],
+            'func': p1lam,
+          }
+          state, procexpr = self.proc(p1, state0)
+          continue
+        else:
+          # XXX todo
+          state, procexpr = self.proc_constructor_other(procexpr, state)
+          continue
 
       # XXX todo axioms
       if procexpr['what'] == 'expr:special':
-        if procexpr['id'] == 'u64_zero':
-          procexpr = 0
-          continue
-        elif procexpr['id'] == 'u32_zero':
-          procexpr = 0
-          continue
-
+        if procexpr['id'] == 'symBool':
+          return state, z3.Const(anon(), self.bool_sort)
+        if callop['name'] == 'symU32':
+          return state, z3.Const(anon(), z3.BitVecSort(32))
+        if callop['name'] == 'symU64':
+          return state, z3.Const(anon(), z3.BitVecSort(64))
+        if callop['name'] == 'symAssert':
+          # XXX how to add a solver constraint?
+          return state, self.unit_tt
         else:
           raise Exception("unknown special", procexpr['id'])
 
-      print procexpr0
       raise Exception("proc() on unexpected thing", procexpr['what'])
 
   def proc_constructor_other(self, procexpr, state):
@@ -207,47 +237,6 @@ class SymbolicJSON(object):
 
     return state, sort.constructor(cid)(*cargs)
 '''
-
-  def proc_constructor_proc(self, procexpr, state):
-    if procexpr['name'] == 'Bind':
-      p0 = procexpr['args'][0]
-      p1lam = procexpr['args'][1]
-
-      state0, res0 = self.proc(p0, state)
-      p1 = {
-        'what': 'expr:apply',
-        'args': [res0],
-        'func': p1lam,
-      }
-      return self.proc(p1, state0)
-    elif procexpr['name'] == 'SuchThatBool':
-      procexpr['args']['']
-    #elif procexpr['name'] == 'Ret':
-      retval = self.context.reduce(procexpr['args'][0])
-      return state, retval
-    elif procexpr['name'] == 'RunF':
-      callop = self.context.reduce(procexpr['args'][0])
-      if callop['what'] != 'expr:constructor':
-        raise Exception("callop expected constructor, got", callop['what'])
-
-      if callop['name'] == 'Reads':
-        return state, state
-      elif callop['name'] == 'SymBool':
-        return state, z3.Const(anon(), self.bool_sort)
-      elif callop['name'] == 'SymU32':
-        return state, z3.Const(anon(), z3.BitVecSort(32))
-      elif callop['name'] == 'SymU64':
-        return state, z3.Const(anon(), z3.BitVecSort(64))
-      elif callop['name'] == 'Assert':
-        # XXX how to add a solver constraint?
-        return state, self.unit_tt
-      elif callop['name'] == 'Puts':
-        _, newstate = self.proc(callop['args'][0], state)
-        return newstate, self.unit_tt
-      else:
-        raise Exception("unexpected callop constructor", callop['name'])
-    else:
-      raise Exception("unexpected proc constructor", procexpr['name'])
 
 def constructor_idx_by_name(sort, cname):
   for i in range(0, sort.num_constructors()):

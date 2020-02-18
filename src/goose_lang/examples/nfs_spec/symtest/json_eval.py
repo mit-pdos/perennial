@@ -215,6 +215,11 @@ def rename_binders(expr, namemap):
         }
       elif pat['what'] == 'pat:wild':
         newpat = pat
+      elif pat['what'] == 'pat:rel':
+        argname = pat['name']
+        n = anon_binder(argname)
+        casenamemap[argname] = n
+        newpat = pat
       else:
         raise Exception('unhandled pat', pat['what'])
       newcase = {
@@ -225,14 +230,12 @@ def rename_binders(expr, namemap):
       newcases.append(newcase)
     return {
       'what': expr['what'],
-      #'type': expr['type'],
       'expr': rename_binders(expr['expr'], namemap),
       'cases': newcases,
     }
   elif expr['what'] == 'expr:constructor':
     return {
       'what': expr['what'],
-      #'type': expr['type'],
       'mod': expr['mod'],
       'name': expr['name'],
       'args': [rename_binders(a, namemap) for a in expr['args']],
