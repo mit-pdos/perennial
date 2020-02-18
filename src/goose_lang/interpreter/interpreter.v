@@ -409,7 +409,7 @@ Section interpreter.
                 let s := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("Load failed at location " ++ (pretty l));
                 match nav with
-                | Reading v 0 => mret v
+                | Reading v _ => mret v
                 | _ => mfail_bt ("Race detected while reading at location " ++ (pretty l))
                 end
             | _ => mfail_bt ("Attempted Load with non-location argument of type " ++ (pretty addrv))

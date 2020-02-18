@@ -1073,7 +1073,7 @@ Fixpoint head_trans (e: expr) :
      atomically
        (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
         match nav with
-        | Reading v 0 => ret v
+        | Reading v _ => ret v
         | _ => undefined
         end)
   | FinishStore (Val (LitV (LitLoc l))) (Val v) =>
