@@ -250,6 +250,22 @@ Proof.
     eapply NoDup_cons_2; eauto.
 Qed.
 
+Theorem apply_upds_insert addr b bs d :
+  addr ∉ map update.addr bs ->
+  <[int.val addr:=b]> (apply_upds bs d) =
+  apply_upds bs (<[int.val addr:=b]> d).
+Proof.
+  induction bs; eauto; simpl; intros.
+  destruct a.
+  apply not_elem_of_cons in H.
+  simpl in *.
+  intuition.
+  rewrite insert_commute.
+  { rewrite H; auto. }
+  apply u64_val_ne.
+  congruence.
+Qed.
+
 Theorem wal_heap_memappend γh bs :
   memappend_pre γh bs -∗
   ( ∀ σ σ' pos,
@@ -338,7 +354,23 @@ Proof.
         }
         {
           intros.
-          admit.
+          destruct (decide (new_txn = pos)); subst.
+          {
+            rewrite lookup_insert in H4.
+            inversion H4; clear H4; subst.
+            rewrite lookup_insert_ne.
+            2: apply u64_val_ne; congruence.
+            pose proof (latest_disk_pos _ a).
+            rewrite Heqp in H4; simpl in H4.
+            eapply a0; [|eauto].
+            pose proof (latest_disk_durable _ a).
+            rewrite Heqp in H5; simpl in H5.
+            unfold valid_log_state in a; intuition.
+            lia.
+          }
+          {
+            rewrite lookup_insert_ne in H4; eauto.
+          }
         }
       }
 
@@ -359,15 +391,23 @@ Proof.
       iSplitL "Hinv".
       - rewrite insert_insert.
         rewrite /= in Hnodup.
-        admit.
+        rewrite apply_upds_insert.
+        2: inversion Hnodup; eauto.
+        iApply "Hinv".
       - rewrite /memappend_q /=.
         iFrame.
     }
 
-    { admit. }
-    { admit. }
-    { admit. }
-    { admit. }
+    { inversion Hnodup; eauto. }
+    { rewrite /valid_log_state /set /=.
+      rewrite /valid_log_state in a.
+      iPureIntro; intuition.
+      destruct (decide (new_txn = σ.(log_state.durable_to))); subst.
+      + eexists. rewrite lookup_insert; eauto.
+      + destruct H2. eexists. rewrite lookup_insert_ne; eauto. 
+    }
+    { instantiate (1 := new_txn). admit. }
+    { iPureIntro; lia. }
 Admitted.
 
 End heap.
