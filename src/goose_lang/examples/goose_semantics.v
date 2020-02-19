@@ -325,6 +325,31 @@ Definition testForLoopWait: val :=
     LoopStruct__forLoopWait "ls" #3;;
     (![uint64T] (struct.get LoopStruct.S "loopNext" "ls") = #4).
 
+Definition testBreakFromLoopWithContinue: val :=
+  rec: "testBreakFromLoopWithContinue" <> :=
+    let: "i" := ref #0 in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: #true
+      then
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        Break
+      else Continue));;
+    (![uint64T] "i" = #1).
+
+Definition failing_testBreakFromLoopNoContinue: val :=
+  rec: "failing_testBreakFromLoopNoContinue" <> :=
+    let: "i" := ref #0 in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: #true
+      then
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        Break
+      else #());;
+      Continue);;
+    (![uint64T] "i" = #1).
+
 (* maps.go *)
 
 Definition IterateMapKeys: val :=
@@ -540,6 +565,27 @@ Definition ArrayEditor__Advance: val :=
     struct.storeF ArrayEditor.S "s" "ae" (SliceSkip uint64T (struct.loadF ArrayEditor.S "s" "ae") #1).
 
 (* tests *)
+Definition testSliceOps: val :=
+  rec: "testSliceOps" <> :=
+    let: "x" := NewSlice uint64T #10 in
+    SliceSet uint64T "x" #1 #5;;
+    SliceSet uint64T "x" #2 #10;;
+    SliceSet uint64T "x" #3 #15;;
+    SliceSet uint64T "x" #4 #20;;
+    let: "v1" := SliceGet uint64T "x" #2 in
+    let: "v2" := SliceSubslice uint64T "x" #2 #3 in
+    let: "v3" := SliceTake "x" #3 in
+    let: "v4" := SliceRef "x" #2 in
+    let: "ok" := ref #true in
+    "ok" <-[boolT] ![boolT] "ok" && ("v1" = #10);;
+    "ok" <-[boolT] ![boolT] "ok" && (SliceGet uint64T "v2" #0 = #10);;
+    "ok" <-[boolT] ![boolT] "ok" && (slice.len "v2" = #1);;
+    "ok" <-[boolT] ![boolT] "ok" && (SliceGet uint64T "v3" #1 = #5);;
+    "ok" <-[boolT] ![boolT] "ok" && (SliceGet uint64T "v3" #2 = #10);;
+    "ok" <-[boolT] ![boolT] "ok" && (slice.len "v3" = #3);;
+    "ok" <-[boolT] ![boolT] "ok" && (![uint64T] "v4" = #10);;
+    ![boolT] "ok".
+
 Definition testOverwriteArray: val :=
   rec: "testOverwriteArray" <> :=
     let: "arr" := ref (NewSlice uint64T #4) in
@@ -590,3 +636,98 @@ Definition failing_testStringLength: val :=
     "ok" <-[boolT] ![boolT] "ok" && (strLen (![stringT] "s") = #1);;
     "s" <-[stringT] stringAppend (![stringT] "s") #23;;
     ![boolT] "ok" && (strLen (![stringT] "s") = #3).
+
+(* structs.go *)
+
+(* helpers *)
+Module TwoInts.
+  Definition S := struct.decl [
+    "x" :: uint64T;
+    "y" :: uint64T
+  ].
+End TwoInts.
+
+Module S.
+  Definition S := struct.decl [
+    "a" :: uint64T;
+    "b" :: struct.t TwoInts.S;
+    "c" :: boolT
+  ].
+End S.
+
+Definition NewS: val :=
+  rec: "NewS" <> :=
+    struct.new S.S [
+      "a" ::= #2;
+      "b" ::= struct.mk TwoInts.S [
+        "x" ::= #1;
+        "y" ::= #2
+      ];
+      "c" ::= #true
+    ].
+
+Definition S__readA: val :=
+  rec: "S__readA" "s" :=
+    struct.loadF S.S "a" "s".
+
+Definition S__readB: val :=
+  rec: "S__readB" "s" :=
+    struct.loadF S.S "b" "s".
+
+Definition S__readBVal: val :=
+  rec: "S__readBVal" "s" :=
+    struct.get S.S "b" "s".
+
+Definition S__updateBValX: val :=
+  rec: "S__updateBValX" "s" "i" :=
+    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" "s") "i".
+
+Definition S__negateC: val :=
+  rec: "S__negateC" "s" :=
+    struct.storeF S.S "c" "s" (~ (struct.loadF S.S "c" "s")).
+
+(* tests *)
+Definition failing_testStructUpdates: val :=
+  rec: "failing_testStructUpdates" <> :=
+    let: "ok" := ref #true in
+    let: "ns" := ref (NewS #()) in
+    "ok" <-[boolT] ![boolT] "ok" && (S__readA (![refT (struct.t S.S)] "ns") = #2);;
+    let: "b1" := ref (S__readB (![refT (struct.t S.S)] "ns")) in
+    "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (![struct.t TwoInts.S] "b1") = #1);;
+    S__negateC (![refT (struct.t S.S)] "ns");;
+    "ok" <-[boolT] ![boolT] "ok" && (struct.loadF S.S "c" (![refT (struct.t S.S)] "ns") = #false);;
+    struct.storeF TwoInts.S "x" "b1" #3;;
+    let: "b2" := ref (S__readB (![refT (struct.t S.S)] "ns")) in
+    "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (![struct.t TwoInts.S] "b2") = #1);;
+    let: "b3" := ref (struct.fieldRef S.S "b" "ns") in
+    "ok" <-[boolT] ![boolT] "ok" && (struct.loadF TwoInts.S "x" (![refT (struct.t TwoInts.S)] "b3") = #1);;
+    S__updateBValX (![refT (struct.t S.S)] "ns") #4;;
+    "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (S__readBVal (![refT (struct.t S.S)] "ns")) = #4);;
+    ![boolT] "ok".
+
+Definition failing_testNestedStructUpdate: val :=
+  rec: "failing_testNestedStructUpdate" <> :=
+    let: "ns" := ref (NewS #()) in
+    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" "ns") #5;;
+    (struct.get TwoInts.S "x" (struct.loadF S.S "b" (![refT (struct.t S.S)] "ns")) = #5).
+
+Definition testStructConstructions: val :=
+  rec: "testStructConstructions" <> :=
+    let: "ok" := ref #true in
+    let: "p1" := ref (zero_val (refT (struct.t TwoInts.S))) in
+    let: "p2" := ref (zero_val (struct.t TwoInts.S)) in
+    let: "p3" := struct.mk TwoInts.S [
+      "y" ::= #0;
+      "x" ::= #0
+    ] in
+    let: "p4" := struct.mk TwoInts.S [
+      "x" ::= #0;
+      "y" ::= #0
+    ] in
+    "ok" <-[boolT] ![boolT] "ok" && (![refT (struct.t TwoInts.S)] "p1" = slice.nil);;
+    "p1" <-[refT (struct.t TwoInts.S)] struct.alloc TwoInts.S (zero_val (struct.t TwoInts.S));;
+    "ok" <-[boolT] ![boolT] "ok" && (![struct.t TwoInts.S] "p2" = "p3");;
+    "ok" <-[boolT] ![boolT] "ok" && ("p3" = "p4");;
+    "ok" <-[boolT] ![boolT] "ok" && ("p4" = struct.load TwoInts.S (![refT (struct.t TwoInts.S)] "p1"));;
+    "ok" <-[boolT] ![boolT] "ok" && "p4" ≠ ![refT (struct.t TwoInts.S)] "p1";;
+    ![boolT] "ok".
