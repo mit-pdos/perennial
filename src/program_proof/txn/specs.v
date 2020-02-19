@@ -2,7 +2,6 @@ From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
 (*
-  TODO: get txn to actually Goose
   TODO: allow representing multiple logical disks with Txn,
     one per logical disk from Wal.
   TODO: how to deal with crashes?  the 3 ghost maps exposed
@@ -11,8 +10,10 @@ Import RecordSetNotations.
 
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.Helpers Require Import GenHeap.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import buf.
+From Goose.github_com.mit_pdos.goose_nfsd Require Import buf txn.
+From Perennial.program_proof Require Import wal.specs wal.heapspec.
 
 Record addr := {
   addrBlock : u64;
@@ -49,7 +50,7 @@ Admitted.
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
-Context `{!gen_heapPreG u64 Block Σ}.
+Context `{!gen_heapPreG u64 heap_block Σ}.
 Context `{!gen_heapPreG u64 (updatable_buf Block) Σ}.
 Context `{!gen_heapPreG u64 (updatable_buf inode_buf) Σ}.
 Context `{!gen_heapPreG u64 (updatable_buf bool) Σ}.
@@ -65,6 +66,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Definition lockN : namespace := nroot .@ "txnlock".
 Definition invN : namespace := nroot .@ "txninv".
+Definition walN : namespace := nroot .@ "txnwal".
 
 Definition txn_inodes_in_block (b : Block) (gm : gmap u64 (updatable_buf inode_buf)) : iProp Σ :=
   (
@@ -100,7 +102,7 @@ Definition txn_blocks_in_block (b : Block) (gm : gmap u64 (updatable_buf Block))
       end
   )%I.
 
-Definition is_txn_always (walHeap : gen_heapG u64 Block Σ)
+Definition is_txn_always (walHeap : gen_heapG u64 heap_block Σ)
     (gBits   : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
     (gInodes : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
     (gBlocks : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
@@ -116,15 +118,15 @@ Definition is_txn_always (walHeap : gen_heapG u64 Block Σ)
       mapsto (hG := γMaps) tt (1/2) (mBits, mInodes, mBlocks) ∗
       ( [∗ map] blkno ↦ bitmap ∈ mBits,
           ∃ b,
-            mapsto (hG := walHeap) blkno 1 b ∗
+            mapsto (hG := walHeap) blkno 1 (Latest b) ∗
             txn_bits_in_block b bitmap ) ∗
       ( [∗ map] blkno ↦ inodemap ∈ mInodes,
           ∃ b,
-            mapsto (hG := walHeap) blkno 1 b ∗
+            mapsto (hG := walHeap) blkno 1 (Latest b) ∗
             txn_inodes_in_block b inodemap ) ∗
       ( [∗ map] blkno ↦ blockmap ∈ mBlocks,
           ∃ b,
-            mapsto (hG := walHeap) blkno 1 b ∗
+            mapsto (hG := walHeap) blkno 1 (Latest b) ∗
             txn_blocks_in_block b blockmap )
   )%I.
 
@@ -148,15 +150,45 @@ Definition is_txn (l : loc)
     (gBlocks : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
     : iProp Σ :=
   (
-    ∃ γMaps γLock (walHeap : gen_heapG u64 Block Σ),
-      (* Say something about the struct Txn stored at l,
-         get the [*wal.Walog] from l, and connect that
-         to wal_Heap. *)
+    ∃ γMaps γLock (walHeap : gen_heapG u64 heap_block Σ) (mu : loc) (walptr : loc),
+      l ↦ro #mu ∗
+      (l +ₗ 1) ↦ro #walptr ∗
+      is_wal walN (wal_heap_inv walHeap) walptr ∗
       inv invN (is_txn_always walHeap gBits gInodes gBlocks γMaps) ∗
       is_lock lockN γLock #l (is_txn_locked γMaps)
   )%I.
 
-Axiom txn_Load : val.
+Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
+    (hG : gen_heapG u64 (updatable_buf Block) Σ) v :
+  {{{ is_txn l gBits gInodes gBlocks ∗
+      ⌜gBlocks !! blk = Some hG⌝ ∗
+      mapsto (hG := hG) off 1 (Stable v)
+  }}}
+    Txn__Load #l (#blk, #off, #(block_bytes*8))%V
+  {{{ (buf : Slice.t) vals, RET (slice_val buf);
+      is_slice buf u8T vals ∗
+      ⌜vals = Block_to_vals v⌝ }}}.
+Proof.
+  iIntros (Φ) "(Htxn & % & Hstable) HΦ".
+  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(Hl & Hwalptr & Hwal & #Hinv & #Hlock)".
+
+  wp_call.
+  wp_call.
+
+  Transparent loadField.
+  rewrite /struct.loadF /=.
+  wp_pures.
+  replace (1 * int.val (1 + 0)) with (1) by word.
+  iDestruct (ptsto_ro_load with "Hwalptr") as (q) "Hwalptr".
+
+  wp_load.
+  wp_call.
+
+  wp_apply (wp_Walog__ReadMem with "[$Hwal]").
+  { admit. }
+
+  admit.
+Admitted.
 
 Theorem wp_txn_Load_bit l gBits gInodes gBlocks (blk off : u64)
     (hG : gen_heapG u64 (updatable_buf bool) Σ) v :
@@ -164,7 +196,7 @@ Theorem wp_txn_Load_bit l gBits gInodes gBlocks (blk off : u64)
       ⌜gBits !! blk = Some hG⌝ ∗
       mapsto (hG := hG) off 1 (Stable v)
   }}}
-    txn_Load #l (#blk, #off, #1)
+    Txn__Load #l (#blk, #off, #1)
   {{{ (buf : Slice.t) b, RET (slice_val buf);
       is_slice buf u8T [b] ∗
       ⌜b = #0 <-> v = false⌝
@@ -178,27 +210,12 @@ Theorem wp_txn_Load_inode l gBits gInodes gBlocks (blk off : u64)
       ⌜gInodes !! blk = Some hG⌝ ∗
       mapsto (hG := hG) off 1 (Stable v)
   }}}
-    txn_Load #l (#blk, #off, #(inode_bytes*8))
+    Txn__Load #l (#blk, #off, #(inode_bytes*8))
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
       is_slice buf u8T vals ∗
       ⌜vals = inode_to_vals v⌝ }}}.
 Proof.
 Admitted.
-
-Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
-    (hG : gen_heapG u64 (updatable_buf Block) Σ) v :
-  {{{ is_txn l gBits gInodes gBlocks ∗
-      ⌜gBlocks !! blk = Some hG⌝ ∗
-      mapsto (hG := hG) off 1 (Stable v)
-  }}}
-    txn_Load #l (#blk, #off, #(block_bytes*8))
-  {{{ (buf : Slice.t) vals, RET (slice_val buf);
-      is_slice buf u8T vals ∗
-      ⌜vals = Block_to_vals v⌝ }}}.
-Proof.
-Admitted.
-
-Axiom txn_CommitWait : val.
 
 Definition commit_pre
     (gBits   : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
@@ -262,7 +279,7 @@ Theorem wp_txn_CommitWait l gBits gInodes gBlocks bufs buflist :
       is_slice bufs (refT (struct.t buf.Buf.S)) buflist ∗
       ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
   }}}
-    txn_CommitWait #l (slice_val bufs)
+    Txn__CommitWait #l (slice_val bufs)
   {{{ RET #();
       is_slice bufs (refT (struct.t buf.Buf.S)) buflist ∗
       ( [∗ list] _ ↦ buf ∈ buflist, commit_post gBits gInodes gBlocks buf ) }}}.

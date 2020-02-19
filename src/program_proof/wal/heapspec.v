@@ -5,6 +5,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.specs.
+From Perennial.Helpers Require Import GenHeap.
 
 Inductive heap_block :=
 | Latest (b : Block)
