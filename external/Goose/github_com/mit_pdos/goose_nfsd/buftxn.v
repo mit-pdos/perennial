@@ -50,7 +50,7 @@ Definition BufTxn__OverWrite: val :=
         Panic "overwrite";;
         #()
       else #());;
-      struct.storeF buf.Buf.S "Blk" "b" "data");;
+      struct.storeF buf.Buf.S "Blk" (![refT (struct.t buf.Buf.S)] "b") "data");;
     buf.Buf__SetDirty (![refT (struct.t buf.Buf.S)] "b").
 
 Definition BufTxn__NDirty: val :=
