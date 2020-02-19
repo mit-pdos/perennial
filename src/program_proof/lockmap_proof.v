@@ -315,6 +315,10 @@ Proof.
     destruct ok; wp_if.
     - wp_pures.
       wp_store.
+
+      wp_apply wp_alloc_zero.
+      iIntros (acquired) "Hacquired".
+
       wp_load.
       apply map_get_true in H0.
       iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
@@ -371,6 +375,9 @@ Proof.
           wp_apply (wp_load_lockState with "HlockStatePtr"). iIntros "HlockStatePtr".
           wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|]. iIntros "HlockStatePtr".
 
+          iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
+          wp_load.
+
           wp_pures.
           iApply "HΦloop".
           iLeft. iFrame. iSplitL; try done.
@@ -378,7 +385,9 @@ Proof.
           iApply "Haddrs".
           iExists _, _, _, _. iFrame. done.
 
-        * wp_pures.
+        * iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
+          wp_load.
+          wp_pures.
           iApply "HΦloop".
           iLeft. iFrame. iSplitL; try done.
           iExists _, _, _. iFrame.
@@ -391,9 +400,13 @@ Proof.
         iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
         iMod (gen_heap_update _ _ _ true with "Hghctx Haddr") as "[Hghctx Haddr]".
 
+        iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
+        wp_store.
+        wp_load.
+
         wp_pures.
         iApply "HΦloop".
-        iLeft. iFrame. iSplitL; try done.
+        iRight. iFrame. iSplitL; try done.
         iExists _, _, _. iFrame.
 
         erewrite <- (insert_id m) at 1; eauto.
@@ -414,6 +427,10 @@ Proof.
       wp_apply (wp_load_lockShard_state with "Hls").
       wp_apply (wp_MapInsert with "[$Hmptr]").
       iIntros "Hmptr".
+
+      wp_apply wp_alloc_zero.
+      iIntros (acquired) "Hacquired".
+
       wp_pures.
       wp_load.
       wp_apply (wp_load_lockState with "Hlst").
@@ -429,11 +446,21 @@ Proof.
       apply map_get_false in H0.
       iDestruct (big_sepM2_lookup_2_none with "Haddrs") as %Hgaddr; eauto.
 
-      iMod (gen_heap_alloc _ addr true with "Hghctx") as "(Hghctx & Haddrlocked & Htoken)"; [auto|].
+      iMod (gen_heap_alloc _ addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].  
+
+      iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
+      wp_store.
+      wp_load.
 
       wp_pures.
       iApply "HΦloop".
-      iLeft. iFrame. iSplitL; try done.
+      iRight. iFrame. iSplitL; try done.
+
+      destruct (covered !! addr) eqn:Hcoveredaddr; try congruence.
+      iDestruct (big_sepM_delete with "Hcovered") as "[Hp Hcovered]"; eauto.
+      iSplitR "Hp".
+      2: { iApply "Hp"; done. }
+
       iExists _, _, _. iFrame.
 
       iSplitR "Hcovered".
@@ -443,15 +470,29 @@ Proof.
         iExists _, _, _, _.
         iFrame.
         iSplitL; try done.
-        iSplitL; try done.
+        iSplitL; [ iPureIntro; congruence | ].
         iLeft; done.
       }
 
-      iApply (big_sepM_mono with "Hcovered").
-      iIntros (x ? Hx) "H %".
-      destruct (decide (addr = x)); subst; eauto.
-      { iApply "H". eauto. }
-      { rewrite lookup_insert_ne in a; auto. iApply "H". done. }
+      replace (covered) with (<[addr := tt]> (delete addr covered)) at 3.
+      2: {
+        rewrite insert_delete.
+        rewrite insert_id; destruct u; eauto.
+      }
+
+      iApply (big_sepM_insert).
+      { rewrite lookup_delete; auto. }
+
+      iSplitR. { rewrite lookup_insert; iIntros (Hx). congruence. }
+
+      iApply big_sepM_mono; iFrame.
+      iIntros (x ? Hx) "H".
+      destruct (decide (addr = x)); subst.
+      { rewrite lookup_delete in Hx. congruence. }
+
+      iIntros "%".
+      rewrite lookup_insert_ne in a0; eauto.
+      iApply "H". done.
   }
 
   iIntros "(Hinner & Hlocked & Hp & Haddrlocked)".

@@ -45,11 +45,12 @@ Definition lockShard__acquire: val :=
           "waiters" ::= #0
         ];;
         MapInsert (struct.loadF lockShard.S "state" "lmap") "addr" (![refT (struct.t lockState.S)] "state"));;
+      let: "acquired" := ref (zero_val boolT) in
       (if: ~ (struct.loadF lockState.S "held" (![refT (struct.t lockState.S)] "state"))
       then
         struct.storeF lockState.S "held" (![refT (struct.t lockState.S)] "state") #true;;
         struct.storeF lockState.S "owner" (![refT (struct.t lockState.S)] "state") "id";;
-        Break
+        "acquired" <-[boolT] #true
       else
         struct.storeF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") (struct.loadF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") + #1);;
         lock.condWait (struct.loadF lockState.S "cond" (![refT (struct.t lockState.S)] "state"));;
@@ -57,7 +58,9 @@ Definition lockShard__acquire: val :=
         (if: "ok2"
         then struct.storeF lockState.S "waiters" "state2" (struct.loadF lockState.S "waiters" "state2" - #1)
         else #()));;
-      Continue);;
+      (if: ![boolT] "acquired"
+      then Break
+      else Continue));;
     lock.release (struct.loadF lockShard.S "mu" "lmap").
 
 Definition lockShard__release: val :=
