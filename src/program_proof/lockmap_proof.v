@@ -447,7 +447,13 @@ Proof.
         iLeft; done.
       }
 
-      admit.
+      {
+        iDestruct (big_sepS_subseteq P (covered ∖ dom (gset u64) m) (covered ∖ dom (gset u64) (<[addr:=#lst]> m))) as "Hsub".
+        1: (* need: Y ⊂ X => S\Y ⊂ S\X. *) admit.
+        iApply "Hsub"; eauto.
+      }
+
+      Print Coercion Paths class class.
   }
 
   iIntros "(Hinner & Hlocked & Hp & Haddrlocked)".
