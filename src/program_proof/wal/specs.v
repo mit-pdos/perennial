@@ -154,7 +154,7 @@ Theorem wp_Walog__MemAppend (Q: u64 -> iProp Σ) l bufs bs :
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos))
    }}}
     Walog__MemAppend #l (slice_val bufs)
-  {{{ pos, RET #pos; Q pos }}}.
+  {{{ pos, RET (#pos, #true); Q pos }}}.
 Proof.
 Admitted.
 
@@ -166,7 +166,7 @@ Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l a :
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q mb))
    }}}
     Walog__ReadMem #l #a
-  {{{ (ok:bool) bl, RET (#ok, slice_val bl); if ok
+  {{{ (ok:bool) bl, RET (slice_val bl, #ok); if ok
                                              then ∃ b, is_block bl b ∗ Q (Some b)
                                              else Q None}}}.
 Proof.
@@ -180,7 +180,7 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l a :
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q b))
    }}}
     Walog__ReadInstalled #l #a
-  {{{ (ok:bool) bl, RET (#ok, slice_val bl); ∃ b, is_block bl b ∗ Q b}}}.
+  {{{ (ok:bool) bl, RET (slice_val bl, #ok); ∃ b, is_block bl b ∗ Q b}}}.
 Proof.
 Admitted.
 
