@@ -250,6 +250,34 @@ Proof.
   iDestruct (big_sepM2_lookup_2 with "H") as (x1) "[% _]"; eauto.
 Qed.
 
+Lemma big_sepM2_lookup_1_none
+    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
+    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
+    (i : K)
+    (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
+  m1 !! i = None ->
+    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+        ⌜m2 !! i = None⌝ )%I.
+Proof.
+  case_eq (m2 !! i); auto.
+  iIntros (? ? ?) "H".
+  iDestruct (big_sepM2_lookup_2 with "H") as (x2) "[% _]"; eauto; congruence.
+Qed.
+
+Lemma big_sepM2_lookup_2_none
+    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
+    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
+    (i : K)
+    (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
+  m2 !! i = None ->
+    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+        ⌜m1 !! i = None⌝ )%I.
+Proof.
+  case_eq (m1 !! i); auto.
+  iIntros (? ? ?) "H".
+  iDestruct (big_sepM2_lookup_1 with "H") as (x1) "[% _]"; eauto; congruence.
+Qed.
+
 Theorem wp_lockShard__acquire ls gh covered (addr : u64) (id : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockShard ls gh covered P ∗
       ⌜addr ∈ covered⌝ }}}
@@ -399,10 +427,9 @@ Proof.
       wp_apply (wp_store_lockState with "Hlst"); [val_ty|]. iIntros "Hlst".
 
       apply map_get_false in H0.
-      iDestruct (big_sepM2_dom with "Haddrs") as %Hdom.
-      (* need [gm !! addr = None].. *)
+      iDestruct (big_sepM2_lookup_2_none with "Haddrs") as %Hgaddr; eauto.
 
-      iMod (gen_heap_alloc _ addr true with "Hghctx") as "(Hghctx & Haddrlocked & Htoken)"; [admit|].
+      iMod (gen_heap_alloc _ addr true with "Hghctx") as "(Hghctx & Haddrlocked & Htoken)"; [auto|].
 
       wp_pures.
       iApply "HΦloop".
@@ -411,7 +438,7 @@ Proof.
 
       iSplitR "Hcovered".
       {
-        iApply (big_sepM2_insert); [admit | auto | ].
+        iApply (big_sepM2_insert); [auto | auto | ].
         iFrame.
         iExists _, _, _, _.
         iFrame.
