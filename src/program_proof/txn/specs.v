@@ -170,7 +170,7 @@ Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
       ⌜vals = Block_to_vals v⌝ }}}.
 Proof.
   iIntros (Φ) "(Htxn & % & Hstable) HΦ".
-  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(Hl & Hwalptr & Hwal & #Hinv & #Hlock)".
+  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
 
   wp_call.
   wp_call.
@@ -184,10 +184,25 @@ Proof.
   wp_load.
   wp_call.
 
-  wp_apply (wp_Walog__ReadMem with "[$Hwal]").
-  { admit. }
+  wp_apply (wp_Walog__ReadMem with "[$Hwal Hstable]").
+  {
+    iApply (wal_heap_readmem with "[Hstable]").
+    admit.
+  }
 
-  admit.
+  iIntros (ok bl) "Hres".
+  destruct ok.
+  - iDestruct "Hres" as (b) "[Hisblock [Hblk ->]]".
+    wp_pures.
+    admit.
+
+  - wp_pures.
+    wp_apply (wp_Walog__ReadInstalled with "[$Hwal Hres]").
+    { iApply (wal_heap_readinstalled with "[$Hres]"). }
+    iIntros (ok bl0) "Hres".
+    iDestruct "Hres" as (b) "[Hisblock [Hblk ->]]".
+    wp_pures.
+    admit.
 Admitted.
 
 Theorem wp_txn_Load_bit l gBits gInodes gBlocks (blk off : u64)
