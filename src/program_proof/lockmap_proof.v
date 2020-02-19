@@ -1,4 +1,5 @@
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.Helpers Require Import GenHeap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
 
 Hint Rewrite app_length @drop_length @take_length @fmap_length
@@ -55,10 +56,6 @@ Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered 
 
 Global Instance is_lockShard_persistent ls gh (P : u64 -> iProp Σ) c : Persistent (is_lockShard ls gh c P).
 Proof. apply _. Qed.
-(*
-Global Instance is_lockShard_ne ls gh c : ∀ n, Proper (Pointwise (dist n) ==> dist n) (is_lockShard ls gh c).
-Proof. apply _. Qed.
-*)
 
 Opaque zero_val.
 
@@ -524,17 +521,16 @@ Proof.
     wp_apply (wp_MapDelete with "[$Hmptr]").
     iIntros "Hmptr".
 
+    iMod (gen_heap_delete with "[$Haddrlocked $Hghctx]") as "Hghctx".
+
     wp_apply (wp_load_lockShard_mu with "Hls").
-    wp_apply (release_spec with "[Hlock Hlocked Hp Haddrlocked Hghctx Hcovered Hmptr Haddrs Hlockstateptr Hcond]").
+    wp_apply (release_spec with "[Hlock Hlocked Hp Hghctx Hcovered Hmptr Haddrs Hlockstateptr Hcond]").
     {
       iFrame.
       iSplitR.
       { iApply "Hlock". }
       iExists _, _, (delete addr gm).
       iFrame.
-
-      (* don't have a lemma for gen_heap deletion.. *)
-      iSplitL "Hghctx". { admit. }
 
       rewrite dom_delete_L.
       admit.
