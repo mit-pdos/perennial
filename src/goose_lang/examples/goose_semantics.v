@@ -731,3 +731,23 @@ Definition testStructConstructions: val :=
     "ok" <-[boolT] ![boolT] "ok" && ("p4" = struct.load TwoInts.S (![refT (struct.t TwoInts.S)] "p1"));;
     "ok" <-[boolT] ![boolT] "ok" && "p4" ≠ ![refT (struct.t TwoInts.S)] "p1";;
     ![boolT] "ok".
+
+Module StructWrap.
+  Definition S := struct.decl [
+    "i" :: uint64T
+  ].
+End StructWrap.
+
+Definition testStoreInStructVar: val :=
+  rec: "testStoreInStructVar" <> :=
+    let: "p" := ref (struct.mk StructWrap.S [
+      "i" ::= #0
+    ]) in
+    struct.storeF StructWrap.S "i" "p" #5;;
+    #true.
+
+Definition testStoreInStructPointerVar: val :=
+  rec: "testStoreInStructPointerVar" <> :=
+    let: "p" := ref (struct.alloc StructWrap.S (zero_val (struct.t StructWrap.S))) in
+    struct.storeF StructWrap.S "i" "p" #5;;
+    #true.
