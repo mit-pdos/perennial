@@ -207,7 +207,7 @@ lemmas. *)
     intros.
     simpl.
     monad_simpl.
-    rewrite H; simpl.
+    simpl.
     monad_simpl.
     econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
     apply relation.bind_runF.
@@ -236,14 +236,14 @@ lemmas. *)
       eexists _, _, _, _; simpl.
       rewrite /head_step /=.
       monad_simpl.
-      rewrite H; simpl.
+      simpl.
       monad_simpl.
       econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
       monad_simpl. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
     monad_inv.
-    simpl in H0.
-    rewrite H /= in H0; monad_inv.
+    rewrite /= in H0.
+    monad_inv.
     iMod (gen_heap_alloc_gen _ (heap_array l (map Free $ Block_to_vals b)) with "Hσ")
       as "(Hσ & Hl & Hm)".
     { apply heap_array_map_disjoint.
@@ -338,12 +338,11 @@ lemmas. *)
     { iPureIntro.
       eexists _, _, _, _; cbn.
       repeat (monad_simpl; cbn).
-      rewrite H; cbn; monad_simpl.
       econstructor; eauto; [ | monad_simpl ].
       econstructor; eauto. }
     iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
     monad_inv.
-    rewrite H /= in H1; monad_inv.
+    rewrite /= in H1; monad_inv.
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
     assert (b = b1); [ | subst b1 ].
     { apply Block_to_vals_ext_eq; intros.
