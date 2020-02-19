@@ -28,27 +28,27 @@ Definition lockshardN : namespace := nroot .@ "lockShardMem".
 Definition locked (hm : gen_heapG u64 bool Σ) (addr : u64) : iProp Σ :=
   ( mapsto (hG := hm) addr 1 true )%I.
 
-Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrVal : val) (covered : gset u64) (P : u64 -> iProp Σ) :=
+Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrVal : val) (covered : gmap u64 unit) (P : u64 -> iProp Σ) :=
   ( ∃ (lockStatePtr : loc) owner (cond : loc) (nwaiters : u64),
       ⌜ ptrVal = #lockStatePtr ⌝ ∗
       lockStatePtr ↦[structTy lockState.S] (owner, #gheld, #cond, #nwaiters) ∗
       lock.is_cond cond #shardlock ∗
-      ⌜ addr ∈ covered ⌝ ∗
+      ⌜ covered !! addr ≠ None ⌝ ∗
       ( ⌜ gheld = true ⌝ ∨
         ( ⌜ gheld = false ⌝ ∗ mapsto (hG := gh) addr 1 false ∗ P addr ) )
   )%I.
 
-Definition is_lockShard_inner (mptr : loc) (shardlock : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
+Definition is_lockShard_inner (mptr : loc) (shardlock : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ m def ghostMap,
       is_map mptr (m, def) ∗
       gen_heap_ctx (hG := ghostHeap) ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P ) ∗
-      ( [∗ set] addr ∈ covered ∖ (dom _ m),
-          P addr )
+      ( [∗ map] addr ↦ _ ∈ covered,
+          ⌜m !! addr = None⌝ → P addr )
   )%I.
 
-Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) :=
+Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) :=
   ( ∃ (shardlock mptr : loc) γl,
       inv lockshardN (ls ↦[structTy lockShard.S] (#shardlock, #mptr)) ∗
       is_lock lockN γl #shardlock (is_lockShard_inner mptr shardlock ghostHeap covered P)
@@ -60,7 +60,7 @@ Proof. apply _. Qed.
 Opaque zero_val.
 
 Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
-  {{{ [∗ set] a ∈ covered, P a }}}
+  {{{ [∗ map] a ↦ _ ∈ covered, P a }}}
     mkLockShard #()
   {{{ ls gh, RET #ls; is_lockShard ls gh covered P }}}.
 Proof using gen_heapPreG0 heapG0 lockG0 Σ.
@@ -95,8 +95,8 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 
     iSplitR; eauto.
 
-    rewrite dom_empty_L difference_empty_L.
-    iFrame.
+    iApply big_sepM_mono; last iFrame.
+    iIntros; iFrame.
   }
 
   iMod (alloc_lock with "Hfreelock Hinner") as (γ) "Hlock".
@@ -280,7 +280,7 @@ Qed.
 
 Theorem wp_lockShard__acquire ls gh covered (addr : u64) (id : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockShard ls gh covered P ∗
-      ⌜addr ∈ covered⌝ }}}
+      ⌜covered !! addr ≠ None⌝ }}}
     lockShard__acquire #ls #addr #id
   {{{ RET #(); P addr ∗ locked gh addr }}}.
 Proof.
@@ -447,13 +447,11 @@ Proof.
         iLeft; done.
       }
 
-      {
-        iDestruct (big_sepS_subseteq P (covered ∖ dom (gset u64) m) (covered ∖ dom (gset u64) (<[addr:=#lst]> m))) as "Hsub".
-        1: (* need: Y ⊂ X => S\Y ⊂ S\X. *) admit.
-        iApply "Hsub"; eauto.
-      }
-
-      Print Coercion Paths class class.
+      iApply (big_sepM_mono with "Hcovered").
+      iIntros (x ? Hx) "H %".
+      destruct (decide (addr = x)); subst; eauto.
+      { iApply "H". eauto. }
+      { rewrite lookup_insert_ne in a; auto. iApply "H". done. }
   }
 
   iIntros "(Hinner & Hlocked & Hp & Haddrlocked)".
@@ -466,7 +464,7 @@ Proof.
 
   iApply "HΦ".
   iFrame.
-Admitted.
+Qed.
 
 Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered gh :
   {{{ is_lockShard ls gh covered P ∗ P addr ∗ locked gh addr }}}
@@ -565,13 +563,32 @@ Proof.
       iExists _, _, (delete addr gm).
       iFrame.
 
-      rewrite dom_delete_L.
-      admit.
+      destruct (covered !! addr) eqn:Hca; try congruence.
+      iDestruct (big_sepM_delete with "Hcovered") as "[Hcaddr Hcovered]"; eauto.
+      replace (covered) with (<[addr := tt]> (delete addr covered)) at 3.
+      2: {
+        rewrite insert_delete.
+        rewrite insert_id; destruct u; eauto.
+      }
+
+      iApply (big_sepM_insert).
+      { rewrite lookup_delete; auto. }
+
+      iSplitL "Hp". { iFrame. done. }
+
+      iApply big_sepM_mono; iFrame.
+      iIntros (x ? Hx) "H".
+      destruct (decide (addr = x)); subst.
+      { rewrite lookup_delete in Hx. congruence. }
+
+      iIntros "%".
+      rewrite lookup_delete_ne in a0; eauto.
+      iApply "H". done.
     }
 
     iApply "HΦ".
     auto.
   }
-Admitted.
+Qed.
 
 End heap.
