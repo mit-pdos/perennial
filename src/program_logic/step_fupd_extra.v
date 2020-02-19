@@ -202,7 +202,7 @@ Proof using HAff.
     iApply (fupd_plain_mask _ ∅).
     iMod "H".
     iDestruct (step_fupdN_wand _ _ _ _ (|={∅}=> P)%I with "H []") as "H".
-    { iIntros "H". iMod "H". iApply fupd_mask_weaken; eauto. set_solver. }
+    { iIntros "H". iMod "H". iApply fupd_mask_weaken; eauto. }
     rewrite -step_fupdN_S_fupd.
     iMod (step_fupdN_plain with "H") as "H".
     iModIntro. rewrite -!later_laterN !laterN_later.

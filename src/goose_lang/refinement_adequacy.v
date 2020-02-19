@@ -295,7 +295,6 @@ Lemma wpc_trace_inv_open k es σs e Hheap Hc Href Φ Φc:
 Proof.
   iIntros "Hspec Htrace H".
   iApply (@wpc_strong_mono with "H"); eauto.
-  { set_solver. }
   iSplit; first eauto.
   iIntros.
   replace (k-k)%nat with O by lia. rewrite //=.
