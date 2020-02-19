@@ -2,6 +2,9 @@ From Coq Require Import RelationClasses.
 From Coq Require Import Setoid.
 From Coq Require Import ZArith.
 
+(* make sure tactics use ssreflect rewrite *)
+From Coq Require Import ssreflect.
+
 From stdpp Require Import base.
 
 Set Implicit Arguments.
@@ -61,7 +64,10 @@ Section transition.
     bind (any bool) (fun b => if b then r1 else r2).
 
   Definition ifThenElse P `{!Decision P} {T} (tr1 tr2: transition T): transition T :=
-    if (decide P) then tr1 else tr2.
+    match decide P with
+    | left _ => tr1
+    | right _ => tr2
+    end.
 
   Arguments ifThenElse P {_} {T}.
 
@@ -281,8 +287,7 @@ Module relation.
       - firstorder.
       - intros r1 r2 r3.
         unfold requiv; intros Heq1 Heq2 **.
-        rewrite Heq1.
-        apply Heq2.
+        rewrite Heq1 //.
     Qed.
 
     Theorem bind_id {T1 T2} (f: T1 -> t T2) x :
