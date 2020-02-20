@@ -9,6 +9,7 @@ From Perennial.goose_lang Require Export readonly.
 From Perennial.goose_lang Require Export ffi.disk.
 From Perennial.goose_lang Require Export ffi.disk_prelude.
 From Perennial.goose_lang Require Export lib.spin_lock.
+From Perennial.Helpers Require Export BigOp.
 Export uPred.
 
 Global Set Default Proof Using "Type".
