@@ -6,124 +6,7 @@ From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.tchajed.marshal.
 
-(* 0circular.go *)
-
-Definition LogPosition: ty := uint64T.
-
-Module Update.
-  Definition S := struct.decl [
-    "Addr" :: uint64T;
-    "Block" :: disk.blockT
-  ].
-End Update.
-
-Definition MkBlockData: val :=
-  rec: "MkBlockData" "bn" "blk" :=
-    let: "b" := struct.mk Update.S [
-      "Addr" ::= "bn";
-      "Block" ::= "blk"
-    ] in
-    "b".
-
-Module circular.
-  Definition S := struct.decl [
-    "d" :: disk.Disk;
-    "diskStart" :: LogPosition;
-    "diskEnd" :: LogPosition;
-    "diskAddrs" :: slice.T uint64T
-  ].
-End circular.
-
-(* initCircular takes ownership of the circular log, which is the first
-   LOGDISKBLOCKS of the disk. *)
-Definition initCircular: val :=
-  rec: "initCircular" "d" :=
-    let: "b0" := NewSlice byteT disk.BlockSize in
-    disk.Write "LOGHDR" "b0";;
-    disk.Write "LOGHDR2" "b0";;
-    let: "addrs" := NewSlice uint64T "HDRADDRS" in
-    (struct.new circular.S [
-       "d" ::= "d";
-       "diskStart" ::= #0;
-       "diskEnd" ::= #0;
-       "diskAddrs" ::= "addrs"
-     ], slice.nil).
-
-Definition recoverCircular: val :=
-  rec: "recoverCircular" "d" :=
-    let: "hdr1" := disk.Read "LOGHDR" in
-    let: "dec1" := marshal.NewDec "hdr1" in
-    let: "end" := marshal.Dec__GetInt "dec1" in
-    let: "addrs" := marshal.Dec__GetInts "dec1" "HDRADDRS" in
-    let: "hdr2" := disk.Read "LOGHDR2" in
-    let: "dec2" := marshal.NewDec "hdr2" in
-    let: "start" := marshal.Dec__GetInt "dec2" in
-    let: "bufs" := ref (zero_val (slice.T (struct.t Update.S))) in
-    let: "pos" := ref "start" in
-    (for: (λ: <>, ![uint64T] "pos" < "end"); (λ: <>, "pos" <-[uint64T] ![uint64T] "pos" + #1) := λ: <>,
-      let: "addr" := SliceGet uint64T "addrs" ((![uint64T] "pos") `rem` "LOGSZ") in
-      let: "b" := disk.Read ("LOGSTART" + (![uint64T] "pos") `rem` "LOGSZ") in
-      "bufs" <-[slice.T (struct.t Update.S)] SliceAppend (struct.t Update.S) (![slice.T (struct.t Update.S)] "bufs") (struct.mk Update.S [
-        "Addr" ::= "addr";
-        "Block" ::= "b"
-      ]);;
-      Continue);;
-    (struct.new circular.S [
-       "d" ::= "d";
-       "diskStart" ::= "start";
-       "diskEnd" ::= "end";
-       "diskAddrs" ::= "addrs"
-     ], ![slice.T (struct.t Update.S)] "bufs").
-
-Definition circular__SpaceRemaining: val :=
-  rec: "circular__SpaceRemaining" "c" :=
-    "LOGSZ" - struct.loadF circular.S "diskEnd" "c" - struct.loadF circular.S "diskStart" "c".
-
-Definition circular__hdr1: val :=
-  rec: "circular__hdr1" "c" :=
-    let: "enc" := marshal.NewEnc disk.BlockSize in
-    marshal.Enc__PutInt "enc" (struct.loadF circular.S "diskEnd" "c");;
-    marshal.Enc__PutInts "enc" (struct.loadF circular.S "diskAddrs" "c");;
-    marshal.Enc__Finish "enc".
-
-Definition circular__hdr2: val :=
-  rec: "circular__hdr2" "c" :=
-    let: "enc" := marshal.NewEnc disk.BlockSize in
-    marshal.Enc__PutInt "enc" (struct.loadF circular.S "diskStart" "c");;
-    marshal.Enc__Finish "enc".
-
-Definition circular__appendFreeSpace: val :=
-  rec: "circular__appendFreeSpace" "c" "bufs" :=
-    (if: circular__SpaceRemaining "c" < slice.len "bufs"
-    then
-      Panic ("append would overflow circular log");;
-      #()
-    else #());;
-    ForSlice (struct.t Update.S) "i" "buf" "bufs"
-      (let: "pos" := struct.loadF circular.S "diskEnd" "c" + "i" in
-      let: "blk" := struct.get Update.S "Block" "buf" in
-      let: "blkno" := struct.get Update.S "Addr" "buf" in
-      util.DPrintf #5 (#(str"logBlocks: %d to log block %d
-      ")) "blkno" "pos";;
-      disk.Write ("LOGSTART" + "pos" `rem` "LOGSZ") "blk";;
-      SliceSet uint64T (struct.loadF circular.S "diskAddrs" "c") ("pos" `rem` "LOGSZ") "blkno");;
-    struct.storeF circular.S "diskEnd" "c" (struct.loadF circular.S "diskEnd" "c" + slice.len "bufs").
-
-Definition circular__Append: val :=
-  rec: "circular__Append" "c" "bufs" :=
-    circular__appendFreeSpace "c" "bufs";;
-    let: "b" := circular__hdr1 "c" in
-    disk.Write "LOGHDR" "b";;
-    disk.Barrier #().
-
-Definition circular__Empty: val :=
-  rec: "circular__Empty" "c" :=
-    struct.storeF circular.S "diskStart" "c" (struct.loadF circular.S "diskEnd" "c");;
-    let: "b" := circular__hdr2 "c" in
-    disk.Write "LOGHDR2" "b";;
-    disk.Barrier #().
-
-(* 0waldefs.go *)
+(* 00waldefs.go *)
 
 (*  wal implements write-ahead logging
 
@@ -178,6 +61,123 @@ End Walog.
 Definition Walog__LogSz: val :=
   rec: "Walog__LogSz" "l" :=
     common.HDRADDRS.
+
+(* 0circular.go *)
+
+Definition LogPosition: ty := uint64T.
+
+Module Update.
+  Definition S := struct.decl [
+    "Addr" :: uint64T;
+    "Block" :: disk.blockT
+  ].
+End Update.
+
+Definition MkBlockData: val :=
+  rec: "MkBlockData" "bn" "blk" :=
+    let: "b" := struct.mk Update.S [
+      "Addr" ::= "bn";
+      "Block" ::= "blk"
+    ] in
+    "b".
+
+Module circular.
+  Definition S := struct.decl [
+    "d" :: disk.Disk;
+    "diskStart" :: LogPosition;
+    "diskEnd" :: LogPosition;
+    "diskAddrs" :: slice.T uint64T
+  ].
+End circular.
+
+(* initCircular takes ownership of the circular log, which is the first
+   LOGDISKBLOCKS of the disk. *)
+Definition initCircular: val :=
+  rec: "initCircular" "d" :=
+    let: "b0" := NewSlice byteT disk.BlockSize in
+    disk.Write LOGHDR "b0";;
+    disk.Write LOGHDR2 "b0";;
+    let: "addrs" := NewSlice uint64T HDRADDRS in
+    (struct.new circular.S [
+       "d" ::= "d";
+       "diskStart" ::= #0;
+       "diskEnd" ::= #0;
+       "diskAddrs" ::= "addrs"
+     ], slice.nil).
+
+Definition recoverCircular: val :=
+  rec: "recoverCircular" "d" :=
+    let: "hdr1" := disk.Read LOGHDR in
+    let: "dec1" := marshal.NewDec "hdr1" in
+    let: "end" := marshal.Dec__GetInt "dec1" in
+    let: "addrs" := marshal.Dec__GetInts "dec1" HDRADDRS in
+    let: "hdr2" := disk.Read LOGHDR2 in
+    let: "dec2" := marshal.NewDec "hdr2" in
+    let: "start" := marshal.Dec__GetInt "dec2" in
+    let: "bufs" := ref (zero_val (slice.T (struct.t Update.S))) in
+    let: "pos" := ref "start" in
+    (for: (λ: <>, ![uint64T] "pos" < "end"); (λ: <>, "pos" <-[uint64T] ![uint64T] "pos" + #1) := λ: <>,
+      let: "addr" := SliceGet uint64T "addrs" ((![uint64T] "pos") `rem` LOGSZ) in
+      let: "b" := disk.Read (LOGSTART + (![uint64T] "pos") `rem` LOGSZ) in
+      "bufs" <-[slice.T (struct.t Update.S)] SliceAppend (struct.t Update.S) (![slice.T (struct.t Update.S)] "bufs") (struct.mk Update.S [
+        "Addr" ::= "addr";
+        "Block" ::= "b"
+      ]);;
+      Continue);;
+    (struct.new circular.S [
+       "d" ::= "d";
+       "diskStart" ::= "start";
+       "diskEnd" ::= "end";
+       "diskAddrs" ::= "addrs"
+     ], ![slice.T (struct.t Update.S)] "bufs").
+
+Definition circular__SpaceRemaining: val :=
+  rec: "circular__SpaceRemaining" "c" :=
+    LOGSZ - struct.loadF circular.S "diskEnd" "c" - struct.loadF circular.S "diskStart" "c".
+
+Definition circular__hdr1: val :=
+  rec: "circular__hdr1" "c" :=
+    let: "enc" := marshal.NewEnc disk.BlockSize in
+    marshal.Enc__PutInt "enc" (struct.loadF circular.S "diskEnd" "c");;
+    marshal.Enc__PutInts "enc" (struct.loadF circular.S "diskAddrs" "c");;
+    marshal.Enc__Finish "enc".
+
+Definition circular__hdr2: val :=
+  rec: "circular__hdr2" "c" :=
+    let: "enc" := marshal.NewEnc disk.BlockSize in
+    marshal.Enc__PutInt "enc" (struct.loadF circular.S "diskStart" "c");;
+    marshal.Enc__Finish "enc".
+
+Definition circular__appendFreeSpace: val :=
+  rec: "circular__appendFreeSpace" "c" "bufs" :=
+    (if: circular__SpaceRemaining "c" < slice.len "bufs"
+    then
+      Panic ("append would overflow circular log");;
+      #()
+    else #());;
+    ForSlice (struct.t Update.S) "i" "buf" "bufs"
+      (let: "pos" := struct.loadF circular.S "diskEnd" "c" + "i" in
+      let: "blk" := struct.get Update.S "Block" "buf" in
+      let: "blkno" := struct.get Update.S "Addr" "buf" in
+      util.DPrintf #5 (#(str"logBlocks: %d to log block %d
+      ")) "blkno" "pos";;
+      disk.Write (LOGSTART + "pos" `rem` LOGSZ) "blk";;
+      SliceSet uint64T (struct.loadF circular.S "diskAddrs" "c") ("pos" `rem` LOGSZ) "blkno");;
+    struct.storeF circular.S "diskEnd" "c" (struct.loadF circular.S "diskEnd" "c" + slice.len "bufs").
+
+Definition circular__Append: val :=
+  rec: "circular__Append" "c" "bufs" :=
+    circular__appendFreeSpace "c" "bufs";;
+    let: "b" := circular__hdr1 "c" in
+    disk.Write LOGHDR "b";;
+    disk.Barrier #().
+
+Definition circular__Empty: val :=
+  rec: "circular__Empty" "c" :=
+    struct.storeF circular.S "diskStart" "c" (struct.loadF circular.S "diskEnd" "c");;
+    let: "b" := circular__hdr2 "c" in
+    disk.Write LOGHDR2 "b";;
+    disk.Barrier #().
 
 (* installer.go *)
 
