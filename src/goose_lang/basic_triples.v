@@ -491,7 +491,7 @@ Definition struct_field_mapsto l q (d: descriptor) (f0: string) (fv:val): iProp 
   | Some (off, t) =>
     (* this struct is for the field type *)
     struct_mapsto (l +ₗ off) q t fv
-  | None => True
+  | None => ⌜fv = #()⌝
   end.
 
 Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
@@ -667,6 +667,19 @@ Notation "l ↦[ d :: f ] v" :=
     (at level 20, d at level 50, f at level 50,
     format "l  ↦[ d  ::  f ]  v").
 
+Theorem getField_f_none d f0 v :
+  field_offset d f0 = None ->
+  getField_f d f0 v = #().
+Proof.
+  revert v.
+  induction d as [|[f t] fs]; simpl; auto; intros.
+  destruct (f =? f0)%string.
+  - congruence.
+  - destruct_with_eqn (field_offset fs f0).
+    + destruct p; congruence.
+    + destruct v; auto.
+Qed.
+
 Theorem setField_f_none d f0 fv' v :
   field_offset d f0 = None ->
   setField_f d f0 fv' v = v.
@@ -694,6 +707,7 @@ Proof.
   - rewrite /struct_field_mapsto Hf.
     iIntros "Hl".
     iSplitR; auto.
+    { rewrite getField_f_none; auto. }
     iIntros (fv') "_".
     rewrite -> setField_f_none by auto; auto.
 Qed.
@@ -709,26 +723,8 @@ Proof.
     rewrite /struct_field_mapsto Hf.
     iFrame.
   - rewrite /struct_field_mapsto Hf.
-    iIntros "$Hl".
-    auto.
-Qed.
-
-Transparent loadField storeField.
-
-Theorem wp_loadField stk E l q d f fv :
-  is_Some (field_offset d f) ->
-  {{{ struct_field_mapsto l q d f fv }}}
-    struct.loadF d f #l @ stk; E
-  {{{ RET fv; struct_field_mapsto l q d f fv }}}.
-Proof.
-  intros [[off t] Hf].
-  rewrite /loadField Hf.
-  iIntros (Φ) "Hl HΦ".
-  wp_pures.
-  rewrite /struct_field_mapsto Hf.
-  rewrite Z.mul_1_r.
-  wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
-  iApply ("HΦ" with "[$]").
+    iIntros "Hl".
+    rewrite getField_f_none; auto.
 Qed.
 
 Theorem struct_field_mapsto_ty l q d z t f v :
@@ -742,20 +738,61 @@ Proof.
   auto.
 Qed.
 
-Theorem wp_storeField stk E l d f z t fv fv' :
-  field_offset d f = Some (z, t) ->
-  val_ty fv' t ->
+Theorem struct_field_mapsto_none l q d f v :
+  field_offset d f = None ->
+  struct_field_mapsto l q d f v -∗ ⌜v = #()⌝.
+Proof.
+  rewrite /struct_field_mapsto.
+  intros ->.
+  auto.
+Qed.
+
+Transparent loadField storeField.
+
+Theorem wp_loadField stk E l q d f fv :
+  {{{ struct_field_mapsto l q d f fv }}}
+    struct.loadF d f #l @ stk; E
+  {{{ RET fv; struct_field_mapsto l q d f fv }}}.
+Proof.
+  rewrite /loadField.
+  destruct (field_offset d f) as [[z t]|] eqn:Hf.
+  - iIntros (Φ) "Hl HΦ".
+    wp_pures.
+    rewrite /struct_field_mapsto Hf.
+    rewrite Z.mul_1_r.
+    wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+    iApply ("HΦ" with "[$]").
+  - iIntros (Φ) "Hl HΦ".
+    wp_pures.
+    iDestruct (struct_field_mapsto_none with "Hl") as %->; auto.
+    iApply ("HΦ" with "[$]").
+Qed.
+
+Definition field_ty d f: ty :=
+  match field_offset d f with
+  | Some (_, t) => t
+  | None => unitT
+  end.
+
+Theorem wp_storeField stk E l d f fv fv' :
+  val_ty fv' (field_ty d f) ->
   {{{ struct_field_mapsto l 1 d f fv }}}
     struct.storeF d f #l fv' @ stk; E
   {{{ RET #(); struct_field_mapsto l 1 d f fv' }}}.
 Proof.
-  intros Hf Hty.
-  rewrite /storeField Hf.
-  iIntros (Φ) "Hl HΦ".
-  wp_pures.
-  rewrite /struct_field_mapsto Hf.
-  rewrite Z.mul_1_r.
-  wp_apply (wp_StoreAt with "Hl"); auto.
+  rewrite /storeField /field_ty.
+  intros Hty.
+  destruct (field_offset d f) as [[z t]|] eqn:Hf.
+  - iIntros (Φ) "Hl HΦ".
+    wp_pures.
+    rewrite /struct_field_mapsto Hf.
+    rewrite Z.mul_1_r.
+    wp_apply (wp_StoreAt with "Hl"); auto.
+  - inv_ty Hty.
+    iIntros (Φ) "Hl HΦ".
+    wp_pures.
+    iDestruct (struct_field_mapsto_none with "Hl") as %->; auto.
+    iApply ("HΦ" with "[$]").
 Qed.
 
 Opaque loadField storeField.
