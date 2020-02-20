@@ -42,16 +42,19 @@ Definition readmem_q γh (a : u64) (b : Block) (res : option Block) : iProp Σ :
     end
   )%I.
 
-Theorem wal_heap_readmem γh a b :
-  mapsto (hG := γh) a 1 (Latest b) -∗
+Theorem wal_heap_readmem N2 γh a (Q : option Block -> iProp Σ) :
+  ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ b, mapsto (hG := γh) a 1 (Latest b) ∗
+        ( ∀ mb, readmem_q γh a b mb ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q mb ) ) -∗
   ( ∀ σ σ' mb,
       ⌜valid_log_state σ⌝ -∗
       ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
-      ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ (readmem_q γh a b mb) ) ).
+      ( (wal_heap_inv γh) σ ={⊤ ∖ ↑N}=∗ (wal_heap_inv γh) σ' ∗ Q mb ) ).
 Proof.
   iIntros "Ha".
   iIntros (σ σ' mb) "% % Hinv".
   iDestruct "Hinv" as (gh) "[Hctx Hgh]".
+
+  iMod "Ha" as (b) "[Ha Hfupd]".
   iDestruct (gen_heap_valid with "Hctx Ha") as "%".
   iDestruct (big_sepM_lookup with "Hgh") as "%"; eauto.
 
@@ -61,6 +64,10 @@ Proof.
     simpl in *; monad_inv.
     rewrite H0 in a1.
     simpl in *; monad_inv.
+
+    iDestruct ("Hfupd" $! (Some b) with "[Ha]") as "Hfupd".
+    { rewrite /readmem_q. iFrame. done. }
+    iMod "Hfupd".
 
     iModIntro.
     iSplitL "Hctx Hgh".
@@ -78,6 +85,10 @@ Proof.
     simpl in *; monad_inv.
 
     iMod (gen_heap_update _ _ _ (All b) with "Hctx Ha") as "[Hctx Ha]".
+
+    iDestruct ("Hfupd" $! None with "Ha") as "Hfupd".
+    iMod "Hfupd".
+
     iModIntro.
     iSplitL "Hctx Hgh".
     * iExists _; iFrame.

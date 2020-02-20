@@ -102,6 +102,24 @@ Definition txn_blocks_in_block (b : Block) (gm : gmap u64 (updatable_buf Block))
       end
   )%I.
 
+Global Instance txn_bits_in_block_timeless b gm : Timeless (txn_bits_in_block b gm).
+Proof.
+  apply big_sepM_timeless; intros.
+  destruct x; refine _.
+Qed.
+
+Global Instance txn_inodes_in_block_timeless b gm : Timeless (txn_inodes_in_block b gm).
+Proof.
+  apply big_sepM_timeless; intros.
+  destruct x; refine _.
+Qed.
+
+Global Instance txn_blocks_in_block_timeless b gm : Timeless (txn_blocks_in_block b gm).
+Proof.
+  apply big_sepM_timeless; intros.
+  destruct x; refine _.
+Qed.
+
 Definition is_txn_always (walHeap : gen_heapG u64 heap_block Σ)
     (gBits   : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
     (gInodes : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
@@ -181,39 +199,50 @@ Proof.
   replace (1 * int.val (1 + 0)) with (1) by word.
   iDestruct (ptsto_ro_load with "Hwalptr") as (q) "Hwalptr".
 
-  wp_bind (Load _).
-  iInv invN as "Hinv_inner".
-
   wp_load.
-
-  iDestruct "Hinv_inner" as (mBits mInodes mBlocks) "(Hctxbits & Hctxinodes & Hctxblocks & Hbigmap & Hbits & Hinodes & Hblocks)".
-
-  iDestruct (big_sepM2_lookup_2_some with "Hctxblocks") as %Hblk; eauto.
-  destruct Hblk.
-
-  iDestruct (big_sepM2_lookup_acc with "Hctxblocks") as "[Hctxblock Hctxblocks]"; eauto.
-  iDestruct (gen_heap_valid with "Hctxblock Hstable") as %Hblockoff.
-  iDestruct ("Hctxblocks" with "Hctxblock") as "Hctxblocks".
-
-(*
-  iDestruct (big_sepM_lookup_acc with "Hblocks") as "[Hblock Hblocks]"; eauto.
-  iDestruct "Hblock" as (blk_b) "[Hblk Hinblk]".
-*)
-
-  iModIntro.
-  iSplitL "Hctxbits Hctxinodes Hctxblocks Hbigmap Hbits Hinodes Hblocks".
-  { iModIntro. iExists _, _, _. iFrame. }
-
   wp_call.
 
   wp_apply (wp_Walog__ReadMem with "[$Hwal Hstable]").
   {
-    iApply (wal_heap_readmem with "[Hstable]").
-    admit.
+    iApply (wal_heap_readmem walN invN with "[Hstable]").
+
+    iInv invN as ">Hinv_inner" "Hinv_closer".
+    iDestruct "Hinv_inner" as (mBits mInodes mBlocks) "(Hctxbits & Hctxinodes & Hctxblocks & Hbigmap & Hbits & Hinodes & Hblocks)".
+
+    iDestruct (big_sepM2_lookup_2_some with "Hctxblocks") as %Hblk; eauto.
+    destruct Hblk.
+
+    iDestruct (big_sepM2_lookup_acc with "Hctxblocks") as "[Hctxblock Hctxblocks]"; eauto.
+    iDestruct (gen_heap_valid with "Hctxblock Hstable") as %Hblockoff.
+    iDestruct ("Hctxblocks" with "Hctxblock") as "Hctxblocks".
+
+    iDestruct (big_sepM_lookup_acc with "Hblocks") as "[Hblock Hblocks]"; eauto.
+    iDestruct "Hblock" as (blk_b) "[Hblk Hinblk]".
+
+    iExists _. iFrame.
+
+    iModIntro.
+    iIntros (mb) "Hrmq".
+
+    iDestruct ("Hinv_closer" with "[-]") as "Hinv_closer".
+    {
+      iModIntro.
+      iExists _, _, _.
+      iFrame.
+      iApply "Hblocks". iExists _. iFrame.
+      destruct mb; rewrite /=.
+      { iDestruct "Hrmq" as "[$ _]". }
+      admit.
+    }
+
+    iMod "Hinv_closer".
+    iModIntro.
+    done.
   }
 
   iIntros (ok bl) "Hres".
   destruct ok.
+(*
   - iDestruct "Hres" as (b) "[Hisblock [Hblk ->]]".
     wp_pures.
     admit.
@@ -225,6 +254,7 @@ Proof.
     iDestruct "Hres" as (b) "[Hisblock [Hblk ->]]".
     wp_pures.
     admit.
+*)
 Admitted.
 
 Theorem wp_txn_Load_bit l gBits gInodes gBlocks (blk off : u64)
