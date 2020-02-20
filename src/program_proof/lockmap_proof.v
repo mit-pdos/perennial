@@ -134,6 +134,14 @@ Proof.
   auto.
 Qed.
 
+Instance loadField_atomic d f z bt (l:loc) : field_offset d f = Some (z, baseT bt) -> Atomic s (struct.loadF d f #l).
+Proof.
+  rewrite /loadField.
+  intros s ->.
+  simpl.
+  destruct bt; simpl.
+Abort.
+
 Theorem wp_load_lockShard_state (ls shardlock mptr : loc) :
   {{{ inv lockshardN (ls ↦[struct.t lockShard.S] (#shardlock, (#mptr, #()))) }}}
     struct.loadF lockShard.S "state" #ls
@@ -145,9 +153,9 @@ Proof.
 
   iInv lockshardN as "Hls".
   iDestruct "Hls" as "[([Hl _] & [Hm _]) Ht]".
-  rewrite /=.
-  wp_load.
-  iModIntro.
+  rewrite Z.mul_1_r Z.add_0_r /=.
+  iDestruct "Hm" as "[Hm _]".
+  wp_apply (wp_load with "Hm"); iIntros "Hm".
   iSplitL "Hl Hm Ht".
   {
     iModIntro.
