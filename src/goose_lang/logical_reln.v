@@ -66,25 +66,23 @@ Definition base_ty_interp (t: base_ty) :=
   end.
 
 Inductive loc_status :=
-| loc_free
+| loc_readable
 | loc_writing.
 Canonical Structure loc_statusO := leibnizO loc_status.
 
 Context `{!inG Σ (authR (optionUR (exclR loc_statusO)))}.
 
-(* XXX: This is almost certainly not sufficient if the FFI itself needs to do a non-atomic
-   read from a location ... *)
-Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
-  (∃ (stat: loc_status), own γ (● (Excl' stat)) ∗
+Definition loc_inv (ls: loc) (l: loc) (vTy: val_semTy) :=
+  (∃ (stat: loc_status),
     match stat with
-    | loc_free => ∃ vs v, vTy vs v ∗ ls s↦ vs ∗ l ↦ v ∗ own γ (◯ Excl' stat)
-    | loc_writing => False%I (* XXX: fix, should rather be raw na_heap_mapsto_st *)
+    | loc_readable => ∃ q vs v, vTy vs v ∗ ls s↦{q} vs ∗ l ↦{q} v
+    | loc_writing => ∃ vs, na_heap_mapsto_st WSt ls 1 vs
    end)%I.
 
 Definition locN := nroot.@"loc".
 
-Definition is_loc γ ls l vTy :=
-  inv locN (loc_inv γ ls l vTy).
+Definition is_loc ls l vTy :=
+  inv locN (loc_inv ls l vTy).
 
 Fixpoint val_interp (smodel: spec_valTy_model) (t: sty) (vs: sval) (v: ival) :=
   match t with
@@ -100,9 +98,9 @@ Fixpoint val_interp (smodel: spec_valTy_model) (t: sty) (vs: sval) (v: ival) :=
                    (∃ v' vs', ⌜ v = InjRV v' ∧
                                 vs = InjRV vs'⌝
                               ∗ val_interp smodel t2 vs' v'))%I
-  | arrayT t => ((∃ l ls (indices: list gname),
+  | arrayT t => ((∃ l ls (indices: list unit),
                      ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ⌝ ∗
-                     [∗ list] i↦γ ∈ indices, is_loc γ (ls +ₗ i) (l +ₗ i) (val_interp smodel t))
+                     [∗ list] i↦_ ∈ indices, is_loc (ls +ₗ i) (l +ₗ i) (val_interp smodel t))
                  ∨ (⌜ vs = #null ∧ v = #null⌝))%I
   | arrowT t1 t2 =>
     (∃ f x e fs xs es,
