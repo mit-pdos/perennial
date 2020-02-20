@@ -592,14 +592,13 @@ Proof.
     reflexivity.
 Qed.
 
-Lemma struct_big_sep_to_big_fields l q d v :
-  NoDup d.*1 ->
+Lemma struct_big_sep_to_big_fields l q d {dwf: struct.wf d} v :
   struct_big_fields l q d v = struct_big_sep l q d v.
 Proof.
   intros.
   rewrite /struct_big_fields.
   change d with (nil ++ d) at 1.
-  rewrite -> struct_big_sep_to_big_fields_gen by auto.
+  rewrite -> struct_big_sep_to_big_fields_gen by apply descriptor_NoDup.
   simpl.
   rewrite loc_add_0 //.
 Qed.

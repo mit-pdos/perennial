@@ -11,13 +11,35 @@ From Perennial.goose_lang Require Import typing.
 Set Default Proof Using "Type".
 Set Implicit Arguments.
 
-Definition descriptor {ext} {ext_ty: ext_types ext} := list (string*ty).
-Definition mkStruct {ext} {ext_ty: ext_types ext} (fs: list (string*ty)): descriptor := fs.
+Section goose.
+  Context {ext} {ext_ty: ext_types ext}.
+  Definition descriptor := list (string*ty).
+  Definition mkStruct (fs: list (string*ty)): descriptor := fs.
+
+  Class descriptor_wf (d:descriptor) :=
+    { descriptor_NoDup: NoDup d.*1; }.
+
+  Definition option_descriptor_wf (d:descriptor) : option (descriptor_wf d).
+    destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
+    constructor; auto.
+  Defined.
+
+End goose.
+
+Local Ltac maybe_descriptor_wf d :=
+  let mpf := (eval hnf in (option_descriptor_wf d)) in
+  match mpf with
+  | Some ?pf => exact pf
+  | None => fail "descriptor is not well-formed"
+  end.
+
+Hint Extern 3 (descriptor_wf ?d) => maybe_descriptor_wf d : typeclass_instances.
 
 Module one.
   Section goose.
     Context {ext} {ext_ty: ext_types ext}.
     Definition S := mkStruct [("foo", uint64T)].
+    Global Instance wf : descriptor_wf S := _.
     Definition v1: val := (#3, #()).
   End goose.
 End one.
@@ -26,6 +48,7 @@ Module two.
   Section goose.
     Context {ext} {ext_ty: ext_types ext}.
     Definition S := mkStruct [("foo", uint64T); ("bar", boolT)].
+    Global Instance wf : descriptor_wf S := _.
     Definition v1: val := (#3, (#true, #())).
   End goose.
 End two.
@@ -35,6 +58,7 @@ Module three.
     Context {ext} {ext_ty: ext_types ext}.
     Local Notation "f :: t" := (@pair string ty f%string t%ht).
     Definition S := mkStruct ["foo" :: uint64T; "bar" :: boolT; "baz" :: refT uint64T].
+    Global Instance wf : descriptor_wf S := _.
     Definition v1: val := (#3, (#true, (#(LitLoc $ Build_loc 7), #()))).
   End goose.
 End three.
@@ -419,6 +443,7 @@ Declare Reduction buildStruct :=
 Module struct.
   Notation decl := mkStruct.
   Notation mk := buildStruct.
+  Notation wf := descriptor_wf.
   Notation new := allocStructLit.
   Notation alloc := allocStruct.
   Notation get := getField.
