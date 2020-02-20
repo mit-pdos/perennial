@@ -46,12 +46,12 @@ Example testAdd64Equals_ok : testAdd64Equals #() ~~> #true := t.
 Example testSub64Equals_ok : testSub64Equals #() ~~> #true := t.
 Example testDivisionPrecedence_ok : testDivisionPrecedence #() ~~> #true := t.
 Example testModPrecedence_ok : testModPrecedence #() ~~> #true := t.
-Fail Example testBitwiseOpsPrecedence_ok : failing_testBitwiseOpsPrecedence #() ~~> #true := t.
+Example testBitwiseOpsPrecedence_ok : testBitwiseOpsPrecedence #() ~~> #true := t.
 Example testArithmeticShifts_ok : testArithmeticShifts #() ~~> #true := t.
 
 (* structs.go *)
 Fail Example testStructUpdates_ok : failing_testStructUpdates #() ~~> #true := t.
-Fail Example testNestedStructUpdate_ok : failing_testNestedStructUpdate #() ~~> #true := t.
+Example testNestedStructUpdates_ok : testNestedStructUpdates #() ~~> #true := t.
 Example testStructConstructions_ok : testStructConstructions #() ~~> #true := t.
 Example testStoreInStructVar_ok : testStoreInStructVar #() ~~> #true := t.
 Example testStoreInStructPointerVar_ok : testStoreInStructPointerVar #() ~~> #true := t.

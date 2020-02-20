@@ -476,15 +476,15 @@ Definition testModPrecedence: val :=
     let: "x2" := (#513 + #12) `rem` #8 in
     ("x1" = #517) && ("x2" = #5).
 
-Definition failing_testBitwiseOpsPrecedence: val :=
-  rec: "failing_testBitwiseOpsPrecedence" <> :=
+Definition testBitwiseOpsPrecedence: val :=
+  rec: "testBitwiseOpsPrecedence" <> :=
     let: "ok" := ref #true in
-    "ok" <-[boolT] ![boolT] "ok" && (#222 || #327 = #479);;
-    "ok" <-[boolT] ![boolT] "ok" && (#468 && #1191 = #132);;
+    "ok" <-[boolT] ![boolT] "ok" && (#222 ∥ #327 = #479);;
+    "ok" <-[boolT] ![boolT] "ok" && ((#468 & #1191) = #132);;
     "ok" <-[boolT] ![boolT] "ok" && (#453 ^^ #761 = #828);;
-    "ok" <-[boolT] ![boolT] "ok" && (#453 ^^ #761 || #121 = #893);;
-    "ok" <-[boolT] ![boolT] "ok" && (#468 && #1191 || #333 = #461);;
-    "ok" <-[boolT] ![boolT] "ok" && #222 || #327 && #421 ≠ #389;;
+    "ok" <-[boolT] ![boolT] "ok" && (#453 ^^ #761 ∥ #121 = #893);;
+    "ok" <-[boolT] ![boolT] "ok" && ((#468 & #1191) ∥ #333 = #461);;
+    "ok" <-[boolT] ![boolT] "ok" && #222 ∥ (#327 & #421) ≠ #389;;
     ![boolT] "ok".
 
 Definition testArithmeticShifts: val :=
@@ -660,7 +660,6 @@ Definition failing_testStringLength: val :=
 
 (* structs.go *)
 
-(* helpers *)
 Module TwoInts.
   Definition S := struct.decl [
     "x" :: uint64T;
@@ -707,30 +706,43 @@ Definition S__negateC: val :=
   rec: "S__negateC" "s" :=
     struct.storeF S.S "c" "s" (~ (struct.loadF S.S "c" "s")).
 
-(* tests *)
 Definition failing_testStructUpdates: val :=
   rec: "failing_testStructUpdates" <> :=
     let: "ok" := ref #true in
-    let: "ns" := ref (NewS #()) in
-    "ok" <-[boolT] ![boolT] "ok" && (S__readA (![refT (struct.t S.S)] "ns") = #2);;
-    let: "b1" := ref (S__readB (![refT (struct.t S.S)] "ns")) in
+    let: "ns" := NewS #() in
+    "ok" <-[boolT] ![boolT] "ok" && (S__readA "ns" = #2);;
+    let: "b1" := ref (S__readB "ns") in
     "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (![struct.t TwoInts.S] "b1") = #1);;
-    S__negateC (![refT (struct.t S.S)] "ns");;
-    "ok" <-[boolT] ![boolT] "ok" && (struct.loadF S.S "c" (![refT (struct.t S.S)] "ns") = #false);;
+    S__negateC "ns";;
+    "ok" <-[boolT] ![boolT] "ok" && (struct.loadF S.S "c" "ns" = #false);;
     struct.storeF TwoInts.S "x" "b1" #3;;
-    let: "b2" := ref (S__readB (![refT (struct.t S.S)] "ns")) in
+    let: "b2" := ref (S__readB "ns") in
     "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (![struct.t TwoInts.S] "b2") = #1);;
     let: "b3" := ref (struct.fieldRef S.S "b" "ns") in
     "ok" <-[boolT] ![boolT] "ok" && (struct.loadF TwoInts.S "x" (![refT (struct.t TwoInts.S)] "b3") = #1);;
-    S__updateBValX (![refT (struct.t S.S)] "ns") #4;;
-    "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (S__readBVal (![refT (struct.t S.S)] "ns")) = #4);;
+    S__updateBValX "ns" #4;;
+    "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (S__readBVal "ns") = #4);;
     ![boolT] "ok".
 
-Definition failing_testNestedStructUpdate: val :=
-  rec: "failing_testNestedStructUpdate" <> :=
+Definition testNestedStructUpdates: val :=
+  rec: "testNestedStructUpdates" <> :=
+    let: "ok" := ref #true in
     let: "ns" := ref (NewS #()) in
-    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" "ns") #5;;
-    (struct.get TwoInts.S "x" (struct.loadF S.S "b" (![refT (struct.t S.S)] "ns")) = #5).
+    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns")) #5;;
+    "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (struct.loadF S.S "b" (![refT (struct.t S.S)] "ns")) = #5);;
+    "ns" <-[refT (struct.t S.S)] NewS #();;
+    let: "p" := ref (struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns")) in
+    struct.storeF TwoInts.S "x" (![refT (struct.t TwoInts.S)] "p") #5;;
+    "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (struct.loadF S.S "b" (![refT (struct.t S.S)] "ns")) = #5);;
+    "ns" <-[refT (struct.t S.S)] NewS #();;
+    "p" <-[refT (struct.t TwoInts.S)] struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns");;
+    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns")) #5;;
+    "ok" <-[boolT] ![boolT] "ok" && (struct.get TwoInts.S "x" (struct.load TwoInts.S (![refT (struct.t TwoInts.S)] "p")) = #5);;
+    "ns" <-[refT (struct.t S.S)] NewS #();;
+    "p" <-[refT (struct.t TwoInts.S)] struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns");;
+    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns")) #5;;
+    "ok" <-[boolT] ![boolT] "ok" && (struct.loadF TwoInts.S "x" (![refT (struct.t TwoInts.S)] "p") = #5);;
+    ![boolT] "ok".
 
 Definition testStructConstructions: val :=
   rec: "testStructConstructions" <> :=
@@ -765,10 +777,10 @@ Definition testStoreInStructVar: val :=
       "i" ::= #0
     ]) in
     struct.storeF StructWrap.S "i" "p" #5;;
-    #true.
+    (struct.get StructWrap.S "i" (![struct.t StructWrap.S] "p") = #5).
 
 Definition testStoreInStructPointerVar: val :=
   rec: "testStoreInStructPointerVar" <> :=
     let: "p" := ref (struct.alloc StructWrap.S (zero_val (struct.t StructWrap.S))) in
-    struct.storeF StructWrap.S "i" "p" #5;;
-    #true.
+    struct.storeF StructWrap.S "i" (![refT (struct.t StructWrap.S)] "p") #5;;
+    (struct.loadF StructWrap.S "i" (![refT (struct.t StructWrap.S)] "p") = #5).
