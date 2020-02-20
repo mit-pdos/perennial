@@ -105,15 +105,15 @@ Proof.
   lia.
 Qed.
 
-Lemma wp_LoadAt stk E l t v :
-  {{{ l ↦[t] v }}}
+Lemma wp_LoadAt stk E q l t v :
+  {{{ l ↦[t]{q} v }}}
     load_ty t #l @ stk; E
-  {{{ RET v; l ↦[t] v }}}.
+  {{{ RET v; l ↦[t]{q} v }}}.
 Proof.
   iIntros (Φ) "Hl HΦ".
   iDestruct "Hl" as "[Hl %]".
   hnf in H.
-  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
+  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
   { iIntros "!> HPost".
     iApply "HΦ".
     iSplit; eauto. }
@@ -603,7 +603,7 @@ Proof.
   rewrite loc_add_0 //.
 Qed.
 
-Theorem struct_mapsto_field_acc l q d f0 (off: Z) t0 v :
+Theorem struct_mapsto_field_offset_acc l q d f0 (off: Z) t0 v :
   field_offset d f0 = Some (off, t0) ->
   struct_mapsto l q (struct.t d) v -∗
   (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
@@ -644,19 +644,121 @@ Proof.
     destruct (f =? f0)%string; congruence.
 Qed.
 
-Theorem struct_mapsto_acc_read l q d f0 (off: Z) t0 v :
+Theorem struct_mapsto_acc_offset_read l q d f0 (off: Z) t0 v :
   field_offset d f0 = Some (off, t0) ->
   struct_mapsto l q (struct.t d) v -∗
   (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
    (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
 Proof.
   iIntros (Hf) "Hl".
-  iDestruct (struct_mapsto_field_acc with "Hl") as "[Hf Hupd]"; [ eauto | .. ].
+  iDestruct (struct_mapsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | .. ].
   iFrame.
   iIntros "Hf".
   iSpecialize ("Hupd" with "Hf").
   rewrite setField_getField_f_id //.
 Qed.
+
+Notation "l ↦[ d :: f ]{ q } v" :=
+  (struct_field_mapsto l q%Qp d f%string v%V)
+    (at level 20, q at level 50, d at level 50, f at level 50,
+    format "l  ↦[ d  ::  f ]{ q }  v").
+Notation "l ↦[ d :: f ] v" :=
+  (struct_field_mapsto l 1%Qp d f%string v%V)
+    (at level 20, d at level 50, f at level 50,
+    format "l  ↦[ d  ::  f ]  v").
+
+Theorem setField_f_none d f0 fv' v :
+  field_offset d f0 = None ->
+  setField_f d f0 fv' v = v.
+Proof.
+  revert v.
+  induction d as [|[f t] fs]; simpl; auto; intros.
+  destruct (f =? f0)%string.
+  - congruence.
+  - destruct_with_eqn (field_offset fs f0).
+    + destruct p; congruence.
+    + destruct v; auto.
+      rewrite IHfs //.
+Qed.
+
+Theorem struct_mapsto_field_acc l q d f0 v :
+  struct_mapsto l q (struct.t d) v -∗
+  (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
+   (∀ fv', struct_field_mapsto l q d f0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
+Proof.
+  destruct (field_offset d f0) as [[off t0]|] eqn:Hf.
+  - iIntros "Hl".
+    iDestruct (struct_mapsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | ].
+    rewrite /struct_field_mapsto Hf.
+    iFrame.
+  - rewrite /struct_field_mapsto Hf.
+    iIntros "Hl".
+    iSplitR; auto.
+    iIntros (fv') "_".
+    rewrite -> setField_f_none by auto; auto.
+Qed.
+
+Theorem struct_mapsto_acc_read l q d f0 v :
+  struct_mapsto l q (struct.t d) v -∗
+  (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
+   (struct_field_mapsto l q d f0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
+Proof.
+  destruct (field_offset d f0) as [[off t0]|] eqn:Hf.
+  - iIntros "Hl".
+    iDestruct (struct_mapsto_acc_offset_read with "Hl") as "[Hf Hupd]"; [ eauto | ].
+    rewrite /struct_field_mapsto Hf.
+    iFrame.
+  - rewrite /struct_field_mapsto Hf.
+    iIntros "$Hl".
+    auto.
+Qed.
+
+Transparent loadField storeField.
+
+Theorem wp_loadField stk E l q d f fv :
+  is_Some (field_offset d f) ->
+  {{{ struct_field_mapsto l q d f fv }}}
+    struct.loadF d f #l @ stk; E
+  {{{ RET fv; struct_field_mapsto l q d f fv }}}.
+Proof.
+  intros [[off t] Hf].
+  rewrite /loadField Hf.
+  iIntros (Φ) "Hl HΦ".
+  wp_pures.
+  rewrite /struct_field_mapsto Hf.
+  rewrite Z.mul_1_r.
+  wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+  iApply ("HΦ" with "[$]").
+Qed.
+
+Theorem struct_field_mapsto_ty l q d z t f v :
+  field_offset d f = Some (z, t) ->
+  struct_field_mapsto l q d f v -∗ ⌜val_ty v t⌝.
+Proof.
+  rewrite /struct_field_mapsto.
+  intros ->.
+  iIntros "Hl".
+  iDestruct (struct_mapsto_ty with "Hl") as %Hty.
+  auto.
+Qed.
+
+Theorem wp_storeField stk E l d f z t fv fv' :
+  field_offset d f = Some (z, t) ->
+  val_ty fv' t ->
+  {{{ struct_field_mapsto l 1 d f fv }}}
+    struct.storeF d f #l fv' @ stk; E
+  {{{ RET #(); struct_field_mapsto l 1 d f fv' }}}.
+Proof.
+  intros Hf Hty.
+  rewrite /storeField Hf.
+  iIntros (Φ) "Hl HΦ".
+  wp_pures.
+  rewrite /struct_field_mapsto Hf.
+  rewrite Z.mul_1_r.
+  wp_apply (wp_StoreAt with "Hl"); auto.
+Qed.
+
+Opaque loadField storeField.
 
 (*
 Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :

@@ -226,7 +226,7 @@ Definition structFieldRef' d f0: val :=
 
 Definition loadField (d:descriptor) (f:string) : val :=
   match field_offset d f with
-  | Some (off, t) => λ: "p", load_ty t (Var "p" +ₗ #off)
+  | Some (off, t) => λ: "p", load_ty t (BinOp (OffsetOp off) (Var "p") #1)
   | None => λ: <>, #()
   end.
 
