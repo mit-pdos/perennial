@@ -694,7 +694,7 @@ Proof.
       rewrite IHfs //.
 Qed.
 
-Theorem struct_mapsto_field_acc l q d f0 v :
+Theorem struct_mapsto_acc f0 l q d v :
   struct_mapsto l q (struct.t d) v -∗
   (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
    (∀ fv', struct_field_mapsto l q d f0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
@@ -712,7 +712,7 @@ Proof.
     rewrite -> setField_f_none by auto; auto.
 Qed.
 
-Theorem struct_mapsto_acc_read l q d f0 v :
+Theorem struct_mapsto_acc_read f0 l q d v :
   struct_mapsto l q (struct.t d) v -∗
   (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
    (struct_field_mapsto l q d f0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
@@ -796,6 +796,32 @@ Proof.
 Qed.
 
 Opaque loadField storeField.
+
+Theorem wp_loadField_struct stk E l q d f v :
+  {{{ struct_mapsto l q (struct.t d) v }}}
+    struct.loadF d f #l @ stk; E
+  {{{ RET (getField_f d f v); struct_mapsto l q (struct.t d) v }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ".
+  iDestruct (struct_mapsto_acc_read f with "Hs") as "[Hf Hupd]".
+  wp_apply (wp_loadField with "Hf"); iIntros "Hf".
+  iApply "HΦ".
+  iApply ("Hupd" with "[$]").
+Qed.
+
+Theorem wp_storeField_struct stk E l d f v fv' :
+  val_ty fv' (field_ty d f) ->
+  {{{ struct_mapsto l 1 (struct.t d) v }}}
+    struct.storeF d f #l fv' @ stk; E
+  {{{ RET #(); struct_mapsto l 1 (struct.t d) (setField_f d f fv' v) }}}.
+Proof.
+  iIntros (Hty Φ) "Hs HΦ".
+  iDestruct (struct_mapsto_acc f with "Hs") as "[Hf Hupd]".
+  wp_apply (wp_storeField with "Hf"); auto.
+  iIntros "Hf".
+  iApply "HΦ".
+  iApply ("Hupd" with "[$]").
+Qed.
 
 (*
 Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :

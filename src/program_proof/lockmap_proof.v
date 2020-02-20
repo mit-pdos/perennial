@@ -31,7 +31,7 @@ Definition locked (hm : gen_heapG u64 bool Σ) (addr : u64) : iProp Σ :=
 Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrVal : val) (covered : gmap u64 unit) (P : u64 -> iProp Σ) :=
   ( ∃ (lockStatePtr : loc) owner (cond : loc) (nwaiters : u64),
       ⌜ ptrVal = #lockStatePtr ⌝ ∗
-      lockStatePtr ↦[structTy lockState.S] (owner, #gheld, #cond, #nwaiters) ∗
+      lockStatePtr ↦[structTy lockState.S] (owner, (#gheld, (#cond, (#nwaiters, #())))) ∗
       lock.is_cond cond #shardlock ∗
       ⌜ covered !! addr ≠ None ⌝ ∗
       ( ⌜ gheld = true ⌝ ∨
@@ -110,7 +110,7 @@ Qed.
 
 Transparent loadField.
 Theorem wp_load_lockShard_mu (ls shardlock mptr : loc) :
-  {{{ inv lockshardN (ls ↦[struct.t lockShard.S] (#shardlock, #mptr)) }}}
+  {{{ inv lockshardN (ls ↦[struct.t lockShard.S] (#shardlock, (#mptr, #()))) }}}
     struct.loadF lockShard.S "mu" #ls
   {{{ RET #shardlock; True }}}.
 Proof.
@@ -128,7 +128,7 @@ Proof.
     iModIntro.
     iFrame.
     rewrite /=.
-    done.
+    iFrame.
   }
   iApply "HΦ".
   auto.
@@ -167,65 +167,27 @@ Proof.
   auto.
 Qed.
 
-Ltac inv_ty :=
-  repeat match goal with
-         | [ H: val_ty _ _ |- _ ] => inversion H; subst; clear H
-         | [ H: lit_ty _ _ |- _ ] => inversion H; subst; clear H
-         end.
-
 Transparent storeField.
 Opaque String.eqb.
 Theorem wp_store_lockState (lsp : loc) fn v fv :
-  val_ty fv (fieldType lockState.S fn) ->
+  val_ty fv (field_ty lockState.S fn) ->
   {{{ lsp ↦[struct.t lockState.S] v }}}
     struct.storeF lockState.S fn #lsp fv
-  {{{ RET #(); lsp ↦[struct.t lockState.S] (updateField lockState.S fn fv v) }}}.
+  {{{ RET #(); lsp ↦[struct.t lockState.S] (setField_f lockState.S fn fv v) }}}.
 Proof.
-
-  iIntros (Hfvt Φ) "[Hlsp %] HΦ".
-  generalize dependent Hfvt.
-  inv_ty.
-  intro Hfvt.
-  rewrite /=.
-  repeat iDestruct "Hlsp" as "[? Hlsp]".
-  rewrite /struct.storeF /updateField /=.
-  rewrite /fieldType /= in Hfvt.
-
-  repeat match goal with
-  | |- context[(?a =? ?b)%string] => destruct (String.eqb_spec a b); try congruence
-  end.
-
-  all: inv_ty.
-  all: wp_pures.
-  all: try wp_store.
-  all: iApply "HΦ".
-  all: iSplitL; [| iPureIntro; val_ty ].
-  all: rewrite /=; iFrame.
-
+  iIntros (Hfvt Φ) "Hl HΦ".
+  wp_apply (wp_storeField_struct with "Hl"); first by auto.
+  iFrame.
 Qed.
 
 Theorem wp_load_lockState (lsp : loc) v fn :
   {{{ lsp ↦[struct.t lockState.S] v }}}
     struct.loadF lockState.S fn #lsp
-  {{{ RET extractField lockState.S fn v; lsp ↦[struct.t lockState.S] v }}}.
+  {{{ RET getField_f lockState.S fn v; lsp ↦[struct.t lockState.S] v }}}.
 Proof.
-
-  iIntros (Φ) "[Hlsp %] HΦ".
-  inv_ty.
-  rewrite /=.
-  repeat iDestruct "Hlsp" as "[? Hlsp]".
-  rewrite /struct.loadF /extractField /=.
-
-  repeat match goal with
-  | |- context[(?a =? ?b)%string] => destruct (String.eqb_spec a b); try congruence
-  end.
-
-  all: wp_pures.
-  all: try wp_load.
-  all: iApply "HΦ".
-  all: iSplitL; eauto.
-  all: rewrite /=; iFrame.
-
+  iIntros (Φ) "Hl HΦ".
+  wp_apply (wp_loadField_struct with "Hl").
+  iFrame.
 Qed.
 Transparent String.eqb.
 Opaque loadField.
@@ -335,7 +297,7 @@ Proof.
       subst.
       wp_apply (wp_load_lockState with "HlockStatePtr").
       iIntros "HlockStatePtr".
-      rewrite /extractField /=.
+      rewrite /getField_f /=.
       destruct gheld; wp_pures.
       + wp_load.
         wp_apply (wp_load_lockState with "HlockStatePtr").
@@ -443,7 +405,7 @@ Proof.
       wp_load.
       wp_apply (wp_load_lockState with "Hlst").
       iIntros "Hlst".
-      rewrite /extractField /=. wp_pures.
+      rewrite /getField_f /=. wp_pures.
       wp_bind (struct.storeF _ _ _ _).
 
       wp_load.
@@ -577,7 +539,7 @@ Proof.
       iDestruct (big_sepM2_insert_2 _ _ _ addr false #lockStatePtr
         with "[Hlockstateptr Hp Hcond Haddrlocked] Haddrs") as "Haddrs".
       {
-        rewrite /updateField /=.
+        rewrite /setField_f /=.
         iExists _, _, _, _.
         iFrame.
         iSplitR; auto.

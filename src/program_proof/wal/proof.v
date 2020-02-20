@@ -7,49 +7,7 @@ Definition LogPositionT := wal.LogPosition.
 Definition LogPosition := u64.
 Definition LogDiskBlocks := 513.
 
-Class ToVal {ext:ext_op} {ext_ty: ext_types ext} T (t: @ty val_tys) :=
-  { to_val : T → val;
-    to_val_ty : forall x, val_ty (to_val x) t;
-  }.
-
 Transparent slice.T.
-
-Module WalogM.
-  Record t :=
-    mk { memLock: loc;
-         d: Disk_ty;
-         circ: loc;
-
-         (* these are condition variables and behave like indirect access to
-         memLock *)
-         condLogger: loc;
-         condInstall: loc;
-
-         memLog: Slice.t; (* size 2 *)
-         memStart: LogPosition;
-         nextDiskEnd: LogPosition;
-
-         (* these have no bearing on the abstraction relation *)
-         shutdown: bool;
-         nthread: u64;
-         condShut: loc;
-
-         memLogMap: loc;
-       }.
-
-  Instance t_val : ToVal t (struct.t Walog.S).
-  refine {| to_val x :=
-              (#x.(memLock), ExtV DiskInterfaceVal, #x.(circ),
-               #x.(condLogger), #x.(condInstall),
-               slice_val x.(memLog), #(LitInt x.(memStart)), #(LitInt x.(nextDiskEnd)),
-               #x.(shutdown), #x.(nthread), #x.(condShut),
-               #x.(memLogMap))%V |}.
-  intros []; simpl.
-  repeat constructor; simpl.
-  { rewrite /Disk.
-    exact (ext_def_ty DiskInterfaceTy). }
-  Defined.
-End WalogM.
 
 Section heap.
 Context `{!heapG Σ}.
