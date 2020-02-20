@@ -24,7 +24,7 @@ Section translate.
   Notation ival := (@val impl_op).
   Notation sty := (@ty (@val_tys _ spec_ty)).
 
-  Context (spec_val_trans : sval -> ival).
+  Context (spec_val_trans : @ext_val spec_op -> ival).
   Context (spec_op_trans : @external spec_op -> iexpr).
   (* XXX: need some assumptions that the previous two arguments make sense
      in particular, should be total in the sense that all well typed extension rules
@@ -76,21 +76,21 @@ Section translate.
       un_op_ty op = Some (t1, t) ->
       Γ ⊢ e1 -- e2 : t1 ->
       Γ ⊢ UnOp op e1 -- UnOp op e2 : t
-  | offset_op_transTy e1 e1' e2 e2' t :
+  | offset_op_transTy e1 e1' e2 e2' k t :
       Γ ⊢ e1 -- e1' : arrayT t ->
       Γ ⊢ e2 -- e2' : uint64T ->
-      Γ ⊢ BinOp OffsetOp e1 e2 -- BinOp OffsetOp e1' e2' : arrayT t
+      Γ ⊢ BinOp (OffsetOp k) e1 e2 -- BinOp (OffsetOp k) e1' e2' : arrayT t
   (* JDT: Worried about compilation of abstract types in structs. Might there be an issue
           with the way flattening is done, if, say, the implementation of an abstract type is
           as a struct? But perhaps not, as Tej pointed out abstract type has to be wrapped by a pointer
           to enforce abstraction anyway *)
   | struct_offset_op_transTy e1 e1' (v: Z) ts :
       Γ ⊢ e1 -- e1' : structRefT ts ->
-      Γ ⊢ BinOp OffsetOp e1 #v -- BinOp OffsetOp e1' #v : structRefT (skipn (Z.to_nat v) ts)
-  | struct_offset_op_collapse_transTy e1 e1' (v1 v2: Z) ts :
-      Γ ⊢ BinOp OffsetOp (BinOp OffsetOp e1 #v1) #v2 --
-          BinOp OffsetOp (BinOp OffsetOp e1' #v1) #v2 : structRefT ts ->
-      Γ ⊢ BinOp OffsetOp e1 #(v1 + v2) -- BinOp OffsetOp e1' #(v1 + v2): structRefT ts
+      Γ ⊢ BinOp (OffsetOp 1) e1 #v -- BinOp (OffsetOp 1) e1' #v : structRefT (skipn (Z.to_nat v) ts)
+  | struct_offset_op_collapse_transTy e1 e1' (v1 v2: Z) k ts :
+      Γ ⊢ BinOp (OffsetOp k) (BinOp (OffsetOp k) e1 #v1) #v2 --
+          BinOp (OffsetOp k) (BinOp (OffsetOp k) e1' #v1) #v2 : structRefT ts ->
+      Γ ⊢ BinOp (OffsetOp k) e1 #(v1 + v2) -- BinOp (OffsetOp k) e1' #(v1 + v2): structRefT ts
   | eq_op_transTy e1 e1' e2 e2' t :
       Γ ⊢ e1 -- e1' : t ->
       Γ ⊢ e2 -- e2' : t ->
@@ -219,7 +219,7 @@ Section translate.
       Γ ⊢v v : anyT
   *)
   | ext_def_transTy x:
-      Γ ⊢v val_ty_def x -- (spec_val_trans (val_ty_def x)) : extT x
+      Γ ⊢v (ExtV (val_ty_def x)) -- (spec_val_trans ((val_ty_def x))) : extT x
   where "Γ ⊢v v1 -- v2 : A" := (val_transTy Γ v1 v2 A).
 
 End translate.

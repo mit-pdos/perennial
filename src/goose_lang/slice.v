@@ -233,12 +233,14 @@ Definition ArrayCopy (t:ty): val :=
   MemCpy_rec t "p" "a" "sz";;
   "p".
 
+(*
 Theorem zero_array_t t Γ : Γ ⊢ zero_array t : (uint64T -> arrayT t).
 Proof.
   typecheck.
 Qed.
 
 Hint Resolve zero_array_t MemCpy_rec_t : types.
+*)
 
 (*
 Theorem ArrayCopy_t t Γ : Γ ⊢ ArrayCopy t : (uint64T -> arrayT t -> arrayT t).
@@ -268,4 +270,6 @@ Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.
 Hint Resolve raw_slice_t NewSlice_t
      SliceTake_t SliceSkip_t SliceSubslice_t (* SliceGet_t SliceSet_t *)
      SliceAppend_t : types.
+(*
 Hint Resolve zero_array_t (* ArrayCopy_t *) : types.
+*)

@@ -5,7 +5,7 @@ From iris.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert.
-From Perennial.goose_lang Require Import typing adequacy refinement.
+From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
 
 Set Default Proof Using "Type".
@@ -48,6 +48,7 @@ Class specTy_model :=
     sty_update_update : ∀ (Σ : gFunctors) (hF : styG Σ) (names1 names2 : sty_names),
                           sty_update Σ (sty_update Σ hF names1) names2 = sty_update Σ hF names2;
     sty_inv : ∀ {Σ} `{!heapG Σ} `{refinement_heapG} `{crashG Σ}, styG Σ → iProp Σ;
+    styN: coPset;
     sty_val_interp : ∀ {Σ} `{!heapG Σ} `{refinement_heapG Σ} `{crashG Σ} (hS: styG Σ),
                      @ext_tys (@val_tys _ spec_ty) → val_semTy }.
 
@@ -134,7 +135,72 @@ Fixpoint val_interp (t: sty) (vs: sval) (v: ival) :=
 
 End reln_defs.
 
+Class specTy_update `(hsT_model: !specTy_model) (spec_op_trans: @external (spec_ext_op_field) → iexpr) :=
+  { sty_preG : gFunctors → Type;
+    styΣ: gFunctors;
+    subG_styPreG : forall Σ, subG styΣ Σ -> sty_preG Σ;
+    sty_initP : sstate → istate → Prop;
+    sty_update_pre: ∀ Σ, sty_preG Σ -> sty_names -> styG Σ;
+    sty_update_pre_update: ∀ Σ (hPre: sty_preG Σ) names1 names2,
+        sty_update Σ (sty_update_pre _ hPre names1) names2 =
+        sty_update_pre _ hPre names2;
+    sty_update_pre_get: ∀ Σ (hPre: sty_preG Σ) names,
+        sty_get_names _ (sty_update_pre _ hPre names) = names;
+  }.
 
+Section reln_adeq.
+
+Context `{hsT_model: !specTy_model} (spec_op_trans: @external (spec_ext_op_field) → iexpr)
+        `{!ffi_interp_adequacy (FFI := spec_ffi_interp_field)
+                             (EXT := (spec_ffi_semantics_field spec_ffi_semantics))}.
+
+Context (upd: specTy_update hsT_model spec_op_trans).
+
+Definition sty_init_obligation (sty_initP: sstate → istate → Prop) :=
+      forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) `(hC: crashG Σ) (hPre: sty_preG Σ) σs σ
+      (HINIT: sty_initP σs σ),
+        (ffi_start (heapG_ffiG) σ.(world) -∗
+         ffi_start (refinement_spec_ffiG) σs.(world) -∗
+         |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_inv H0)%I.
+
+Definition sty_crash_obligation :=
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+      (sty_inv hS ={styN, ∅}=∗
+      ∀ (hC': crashG Σ) σs,
+      (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
+      ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
+      ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
+      ∃ (σs': sstate) (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
+      ffi_ctx (refinement_spec_ffiG) σs.(world) ∗
+      ∀ (hRG': refinement_heapG Σ),
+      ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
+                      (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
+      ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
+      |={styN}=> ∃ (new: sty_names), sty_inv (sty_update Σ hS new))%I.
+
+Definition sty_rules_obligation :=
+  ∀ op (es: sexpr) e t1 t2,
+    get_ext_tys op = (t1, t2) →
+    forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+    sty_inv hS -∗
+    has_semTy es e (val_interp (hS := hS) t1) -∗
+    has_semTy (ExternalOp op es) ((spec_op_trans) op e) (val_interp (hS := hS) t2).
+
+Definition sty_pers_obligation :=
+ forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ)
+        (τ: ext_tys) es e, Persistent (val_interp (hS := hS) (extT τ) es e).
+
+(* The classic 'fundamental theorem' of logical relations, in our setting: *)
+(* XXX: have to define closing substitutions and the value translation? *)
+Lemma sty_fundamental_lemma:
+  sty_pers_obligation →
+  sty_rules_obligation →
+  ∀ Γ es e τ Hval, expr_transTy _ _ _ Hval spec_op_trans Γ es e τ →
+  (forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+    sty_inv hS -∗ has_semTy es e (val_interp (hS := hS) τ)).
+Proof. Abort.
+
+(*
 Class specTy_model_adequacy `{!specTy_model} (spec_op_trans: @external (spec_ext_op_field) → iexpr)
       `{!ffi_interp_adequacy (FFI := spec_ffi_interp_field)
                              (EXT := (spec_ffi_semantics_field spec_ffi_semantics))} :=
@@ -148,7 +214,6 @@ Class specTy_model_adequacy `{!specTy_model} (spec_op_trans: @external (spec_ext
         sty_update_pre _ hPre names2;
     sty_update_pre_get: ∀ Σ (hPre: sty_preG Σ) names,
         sty_get_names _ (sty_update_pre _ hPre names) = names;
-    styN: coPset;
     sty_init :
       forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) `(hC: crashG Σ) (hPre: sty_preG Σ) σs σ
       (HINIT: sty_initP σs σ),
@@ -177,5 +242,8 @@ Class specTy_model_adequacy `{!specTy_model} (spec_op_trans: @external (spec_ext
         has_semTy es e (val_interp (hS := hS) t1) -∗
         has_semTy (ExternalOp op es) ((spec_op_trans) op e) (val_interp (hS := hS) t2)
 }.
+*)
+
+End reln_adeq.
 
 End reln.

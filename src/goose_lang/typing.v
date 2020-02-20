@@ -1,3 +1,4 @@
+From stdpp Require Import gmap.
 From Perennial.goose_lang Require Import lang notation map.
 
 Class val_types :=
@@ -39,20 +40,19 @@ Section val_types.
   Definition refT (t:ty) : ty := structRefT [t].
   Definition mapT (vt:ty) : ty := refT (mapValT vt).
 
-  Definition Ctx := string -> option ty.
-  Global Instance empty_ctx : Empty Ctx := fun _ => None.
+  Definition Ctx := gmap string ty.
+  (* Global Instance empty_ctx : Empty Ctx := (∅: gmap _ _). *)
   Global Instance ctx_insert : Insert binder ty Ctx.
   Proof using Type.
     hnf.
     exact (fun b t => match b with
-                   | BNamed x => fun Γ =>
-                                  fun x' => if String.eqb x x'
-                                         then Some t
-                                         else Γ x'
+                   | BNamed x => fun Γ => <[ x := t ]> Γ
                    | BAnon => fun Γ => Γ
                    end).
   Defined.
+  (*
   Global Instance ctx_lookup : Lookup string ty Ctx := fun x Γ => Γ x.
+   *)
 End val_types.
 
 Infix "*" := prodT : heap_type.
@@ -349,6 +349,9 @@ Section goose_lang.
   Proof.
     intros.
     repeat (econstructor; eauto).
+    - rewrite lookup_insert_ne //= lookup_insert //=.
+    - rewrite lookup_insert_ne //= lookup_insert //=.
+    - rewrite lookup_insert //=.
   Qed.
 
   Theorem store_val_hasTy Γ t :
@@ -356,6 +359,9 @@ Section goose_lang.
   Proof.
     intros.
     repeat (econstructor; eauto).
+    - rewrite lookup_insert_ne //= lookup_insert //=.
+    - rewrite lookup_insert_ne //= lookup_insert //=.
+    - rewrite lookup_insert //=.
   Qed.
 
   Theorem store_array_hasTy Γ l v t :
@@ -378,11 +384,14 @@ Section goose_lang.
     - econstructor; eauto.
       apply array_ref_hasTy.
       econstructor; eauto.
+     rewrite lookup_insert_ne //= lookup_insert //=.
     - econstructor; eauto.
       econstructor; eauto.
       + apply array_ref_hasTy.
         econstructor; eauto.
+        rewrite lookup_insert_ne //= lookup_insert //=.
       + econstructor; eauto.
+        rewrite lookup_insert //=.
   Qed.
 
   Hint Constructors base_lit_hasTy expr_hasTy val_hasTy base_lit_hasTy.
@@ -414,27 +423,31 @@ Section goose_lang.
   Qed.
 
   Lemma extend_context_add:
-    ∀ Γ Γ' : string → option ty,
-      (∀ (x : string) (t0 : ty), Γ x = Some t0 → Γ' x = Some t0)
+    ∀ Γ Γ' : Ctx,
+      (∀ (x : string) (t0 : ty), Γ !! x = Some t0 → Γ' !! x = Some t0)
       → ∀ (x : binder) (t: ty) (x0 : string) (t0 : ty),
-        (<[x:=t]> Γ) x0 = Some t0
-        → (<[x:=t]> Γ') x0 = Some t0.
+        (<[x:=t]> Γ) !! x0 = Some t0
+        → (<[x:=t]> Γ') !! x0 = Some t0.
   Proof.
     intros Γ Γ' Heq f t x t0 HΓ.
     unfold insert, ctx_insert in *.
     destruct f; eauto.
-    destruct (s =? x)%string; eauto.
+    destruct (s =? x)%string eqn:Heq_s.
+    - apply String.eqb_eq in Heq_s. subst.
+      move: HΓ. rewrite ?lookup_insert //=.
+    - apply String.eqb_neq in Heq_s.
+      move: HΓ. rewrite ?lookup_insert_ne //=; eauto.
   Qed.
 
   Hint Resolve extend_context_add.
 
   Theorem context_extension Γ (t: ty) e :
       Γ ⊢ e : t ->
-      forall Γ', (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
+      forall Γ', (forall x t0, Γ !! x = Some t0 -> Γ' !! x = Some t0) ->
       Γ' ⊢ e : t
     with val_context_extension Γ (t: ty) v :
         Γ ⊢v v : t ->
-        forall Γ', (forall x t0, Γ x = Some t0 -> Γ' x = Some t0) ->
+        forall Γ', (forall x t0, Γ !! x = Some t0 -> Γ' !! x = Some t0) ->
         Γ' ⊢v v : t.
   Proof.
     - inversion 1; subst; solve [ econstructor; eauto ].
@@ -574,6 +587,7 @@ Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +
 Notation "l +ₗ[ t ] z" := (l +ₗ ty_size t * z) : stdpp_scope .
 Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E) : expr_scope .
 
+(*
 Section goose_lang.
   Context `{ext_ty: ext_types}.
   Local Open Scope heap_types.
@@ -626,3 +640,5 @@ Section goose_lang.
   Qed.
 End goose_lang.
 End test.
+
+*)
