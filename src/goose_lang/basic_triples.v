@@ -313,8 +313,8 @@ Proof.
     constructor; auto.
 Qed.
 
-Theorem struct_mapsto_ty l v t :
-  l ↦[t] v -∗ ⌜val_ty v t⌝.
+Theorem struct_mapsto_ty q l v t :
+  l ↦[t]{q} v -∗ ⌜val_ty v t⌝.
 Proof.
   iIntros "[_ %] !%//".
 Qed.
@@ -602,6 +602,61 @@ Proof.
   rewrite -> struct_big_sep_to_big_fields_gen by auto.
   simpl.
   rewrite loc_add_0 //.
+Qed.
+
+Theorem struct_mapsto_field_acc l q d f0 (off: Z) t0 v :
+  field_offset d f0 = Some (off, t0) ->
+  struct_mapsto l q (struct.t d) v -∗
+  (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
+   (∀ fv', struct_mapsto (l +ₗ off) q t0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
+Proof.
+  revert l v off t0.
+  induction d as [|[f t] fs]; simpl; intros.
+  - congruence.
+  - iIntros "Hl".
+    iDestruct (struct_mapsto_ty with "Hl") as %Hty.
+    inv_ty Hty.
+    destruct (f =? f0)%string.
+    + invc H; simpl.
+      rewrite loc_add_0.
+      iDestruct (struct_ptsto_pair_split with "Hl") as "[Hv1 Hv2]".
+      iFrame.
+      iIntros (fv') "Hv1".
+      iDestruct (struct_ptsto_pair_split with "[$Hv1 $Hv2]") as "$".
+    + destruct_with_eqn (field_offset fs f0); try congruence.
+      destruct p as [off' t'].
+      invc H.
+      iDestruct (struct_ptsto_pair_split with "Hl") as "[Hv1 Hv2]".
+      erewrite IHfs by eauto.
+      rewrite loc_add_assoc.
+      iDestruct "Hv2" as "[Hf Hupd]".
+      iFrame "Hf".
+      iIntros (fv') "Hf".
+      iApply struct_ptsto_pair_split; iFrame.
+      iApply ("Hupd" with "[$]").
+Qed.
+
+Theorem setField_getField_f_id d f0 v :
+  setField_f d f0 (getField_f d f0 v) v = v.
+Proof.
+  revert v.
+  induction d as [|[f t] fs]; simpl; eauto.
+  - destruct v; auto.
+    destruct (f =? f0)%string; congruence.
+Qed.
+
+Theorem struct_mapsto_acc_read l q d f0 (off: Z) t0 v :
+  field_offset d f0 = Some (off, t0) ->
+  struct_mapsto l q (struct.t d) v -∗
+  (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
+   (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
+Proof.
+  iIntros (Hf) "Hl".
+  iDestruct (struct_mapsto_field_acc with "Hl") as "[Hf Hupd]"; [ eauto | .. ].
+  iFrame.
+  iIntros "Hf".
+  iSpecialize ("Hupd" with "Hf").
+  rewrite setField_getField_f_id //.
 Qed.
 
 (*
