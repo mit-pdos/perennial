@@ -42,10 +42,17 @@ Inductive txnObject :=
 .
 
 Global Instance addr_eq_dec : EqDecision addr.
-Admitted.
+Proof.
+  solve_decision.
+Defined.
 
 Global Instance addr_finite : Countable addr.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (fun a => (a.(addrBlock), a.(addrOff)))
+            (fun '(b, o) => Build_addr b o) _);
+    by intros [].
+Qed.
 
 Section heap.
 Context `{!heapG Σ}.
