@@ -6,7 +6,7 @@ From Perennial.algebra Require Import gen_heap.
 From Perennial.goose_lang Require Import proofmode notation.
 Set Default Proof Using "Type".
 
-Class ffi_interp_adequacy `{!ffi_interp ffi} `{EXT: !ext_semantics ext ffi} :=
+Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi} :=
   { ffi_preG: gFunctors -> Type;
     ffiΣ: gFunctors;
     (* modeled after subG_gen_heapPreG and gen_heap_init *)
