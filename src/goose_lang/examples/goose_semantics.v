@@ -476,6 +476,27 @@ Definition testModPrecedence: val :=
     let: "x2" := (#513 + #12) `rem` #8 in
     ("x1" = #517) && ("x2" = #5).
 
+Definition failing_testBitwiseOpsPrecedence: val :=
+  rec: "failing_testBitwiseOpsPrecedence" <> :=
+    let: "ok" := ref #true in
+    "ok" <-[boolT] ![boolT] "ok" && (#222 || #327 = #479);;
+    "ok" <-[boolT] ![boolT] "ok" && (#468 && #1191 = #132);;
+    "ok" <-[boolT] ![boolT] "ok" && (#453 ^^ #761 = #828);;
+    "ok" <-[boolT] ![boolT] "ok" && (#453 ^^ #761 || #121 = #893);;
+    "ok" <-[boolT] ![boolT] "ok" && (#468 && #1191 || #333 = #461);;
+    "ok" <-[boolT] ![boolT] "ok" && #222 || #327 && #421 ≠ #389;;
+    ![boolT] "ok".
+
+Definition testArithmeticShifts: val :=
+  rec: "testArithmeticShifts" <> :=
+    let: "ok" := ref #true in
+    "ok" <-[boolT] ![boolT] "ok" && (#672 ≪ #3 = #5376);;
+    "ok" <-[boolT] ![boolT] "ok" && (#672 ≪ #51 = #1513209474796486656);;
+    "ok" <-[boolT] ![boolT] "ok" && (#672 ≫ #4 = #42);;
+    "ok" <-[boolT] ![boolT] "ok" && (#672 ≫ #12 = #0);;
+    "ok" <-[boolT] ![boolT] "ok" && (#672 ≫ #4 ≪ #4 = #672);;
+    ![boolT] "ok".
+
 (* shortcircuiting.go *)
 
 (* helpers *)
