@@ -181,7 +181,29 @@ Proof.
   replace (1 * int.val (1 + 0)) with (1) by word.
   iDestruct (ptsto_ro_load with "Hwalptr") as (q) "Hwalptr".
 
+  wp_bind (Load _).
+  iInv invN as "Hinv_inner".
+
   wp_load.
+
+  iDestruct "Hinv_inner" as (mBits mInodes mBlocks) "(Hctxbits & Hctxinodes & Hctxblocks & Hbigmap & Hbits & Hinodes & Hblocks)".
+
+  iDestruct (big_sepM2_lookup_2_some with "Hctxblocks") as %Hblk; eauto.
+  destruct Hblk.
+
+  iDestruct (big_sepM2_lookup_acc with "Hctxblocks") as "[Hctxblock Hctxblocks]"; eauto.
+  iDestruct (gen_heap_valid with "Hctxblock Hstable") as %Hblockoff.
+  iDestruct ("Hctxblocks" with "Hctxblock") as "Hctxblocks".
+
+(*
+  iDestruct (big_sepM_lookup_acc with "Hblocks") as "[Hblock Hblocks]"; eauto.
+  iDestruct "Hblock" as (blk_b) "[Hblk Hinblk]".
+*)
+
+  iModIntro.
+  iSplitL "Hctxbits Hctxinodes Hctxblocks Hbigmap Hbits Hinodes Hblocks".
+  { iModIntro. iExists _, _, _. iFrame. }
+
   wp_call.
 
   wp_apply (wp_Walog__ReadMem with "[$Hwal Hstable]").
