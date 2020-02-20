@@ -52,6 +52,22 @@ Lemma latest_disk_pos s : valid_log_state s ->
 Proof.
   unfold latest_disk.
   destruct s; simpl.
+  intros.
+  assert (∃ d, txn_disk !! durable_to = Some d).
+  { destruct H; eauto. }
+  clear H.
+  revert H0.
+  match goal with
+  | |- context[map_fold ?f ?init ?m] =>
+    eapply (map_fold_ind (fun acc m => (∃ d, m !! durable_to = Some d) -> m !! acc.1 = Some acc.2) f)
+  end.
+  { intros [d Heq]; simpl.
+    rewrite lookup_empty in Heq; congruence. }
+  intros x d m [k' d']; simpl; intros.
+  destruct (decide (int.val k' < int.val x)); simpl.
+  - rewrite lookup_insert //.
+  - destruct (decide (x = k')) as [-> | ?].
+    + rewrite lookup_insert //.
 Admitted.
 
 Lemma latest_disk_append s npos nd : valid_log_state s ->
