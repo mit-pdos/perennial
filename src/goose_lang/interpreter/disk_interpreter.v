@@ -282,9 +282,6 @@ Proof.
     inversion H1.
     do 2 eexists.
     single_step.
-    rewrite disk_at_n.
-    simpl.
-    monad_simpl.
     pose proof (read_block_from_heap_ok _ _ _ block_at_l) as rbfsok.
     eapply relation.bind_suchThat; [exact rbfsok|].
     monad_simpl.
