@@ -107,7 +107,7 @@ Section goose_lang.
     match t with
     | prodT t1 t2 => ty_size t1 + ty_size t2
     | extT x => 1 (* all external values are base literals *)
-    | baseT unitT => 1
+    | baseT unitBT => 0
     | _ => 1
     end.
 
@@ -161,8 +161,25 @@ Section goose_lang.
   Fixpoint flatten_ty (t: ty) : list ty :=
     match t with
     | prodT t1 t2 => flatten_ty t1 ++ flatten_ty t2
+    | baseT unitBT => []
     | _ => [t]
     end.
+
+  Theorem ty_size_ge_0 : forall t, (0 <= ty_size t)%Z.
+  Proof.
+    induction t; simpl; try lia.
+    destruct t; lia.
+  Qed.
+
+  Theorem ty_size_length t : Z.to_nat (ty_size t) = length (flatten_ty t).
+  Proof.
+    induction t; simpl; auto.
+    - destruct t; simpl; auto.
+    - pose proof (ty_size_ge_0 t1).
+      pose proof (ty_size_ge_0 t2).
+      rewrite app_length; auto.
+      rewrite Z2Nat.inj_add; lia.
+  Qed.
 
   Inductive expr_hasTy (Γ: Ctx) : expr -> ty -> Prop :=
   | var_hasTy x t :

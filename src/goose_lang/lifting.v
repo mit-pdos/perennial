@@ -26,16 +26,6 @@ Section StructMapsto.
   Context {ext:ext_op}.
   Context {ext_ty:ext_types ext}.
 
-  Theorem ty_size_gt0 t : 0 < ty_size t.
-  Proof.
-    induction t; simpl; lia.
-  Qed.
-
-  Theorem ty_size_ge0 t : 0 <= ty_size t.
-  Proof.
-    induction t; simpl; lia.
-  Qed.
-
   Inductive lit_ty : base_lit -> ty -> Prop :=
   | int_ty x : lit_ty (LitInt x) uint64T
   | int32_ty x : lit_ty (LitInt32 x) uint32T
@@ -77,8 +67,8 @@ Section StructMapsto.
   Proof.
     induction 1; simpl; rewrite -> ?app_length in *; auto.
     - inversion H; subst; auto.
-    - pose proof (ty_size_ge0 t1).
-      pose proof (ty_size_ge0 t2).
+    - pose proof (ty_size_ge_0 t1).
+      pose proof (ty_size_ge_0 t2).
       lia.
   Qed.
 
@@ -720,7 +710,7 @@ Proof.
   setoid_rewrite Z.mul_comm at 1.
   setoid_rewrite Z2Nat.id.
   { by iFrame. }
-  apply ty_size_ge0.
+  apply ty_size_ge_0.
 Qed.
 
 Lemma wp_alloc stk E ty v :

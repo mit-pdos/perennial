@@ -135,7 +135,7 @@ Definition is_log' (sz disk_sz: u64) (vs:list Block): iProp Σ :=
 
 Definition is_log (v:val) (vs:list Block): iProp Σ :=
   ∃ (sz: u64) (disk_sz: u64),
-    ⌜v = (#sz, #disk_sz)%V⌝ ∗
+    ⌜v = (#sz, (#disk_sz, #()))%V⌝ ∗
    is_log' sz disk_sz vs.
 
 Open Scope Z.
@@ -222,7 +222,7 @@ Qed.
 
 Theorem wp_mkHdr stk E (sz disk_sz:u64) :
   {{{ True }}}
-    Log__mkHdr (#sz, #disk_sz)%V @ stk; E
+    Log__mkHdr (#sz, (#disk_sz, #()))%V @ stk; E
   {{{ l cap b, RET (slice_val (Slice.mk l 4096 cap)); mapsto_block l 1 b ∗ ⌜is_hdr_block sz disk_sz b⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -262,7 +262,7 @@ Qed.
 
 Theorem wpc_write_hdr stk k E1 E2 (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 }}}
-    Log__writeHdr (#sz, #disk_sz)%V @ stk; k; E1; E2
+    Log__writeHdr (#sz, (#disk_sz, #()))%V @ stk; k; E1; E2
   {{{ RET #(); is_hdr sz disk_sz }}}
   {{{ is_hdr sz0 disk_sz0 ∨ is_hdr sz disk_sz }}}.
 Proof.
@@ -298,7 +298,7 @@ Qed.
 
 Theorem wp_write_hdr stk E (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 }}}
-    Log__writeHdr (#sz, #disk_sz)%V @ stk; E
+    Log__writeHdr (#sz, (#disk_sz, #()))%V @ stk; E
   {{{ RET #(); is_hdr sz disk_sz }}}.
 Proof.
   iIntros (Φ) "Hhdr HΦ".
@@ -383,8 +383,8 @@ Qed.
 
 Lemma is_log_elim v bs :
   is_log v bs -∗ ∃ (sz disk_sz: u64),
-      ⌜v = (#sz, #disk_sz)%V⌝ ∗
-      is_log (#sz, #disk_sz) bs.
+      ⌜v = (#sz, (#disk_sz, #()))%V⌝ ∗
+      is_log (#sz, (#disk_sz, #())) bs.
 Proof.
   iIntros "Hlog".
   iDestruct "Hlog" as (sz disk_sz) "[-> Hlog']".
@@ -400,7 +400,7 @@ Proof.
 Qed.
 
 Theorem is_log_sz (sz disk_sz: u64) bs :
-  is_log (#sz, #disk_sz)%V bs -∗ ⌜length bs = int.nat sz⌝.
+  is_log (#sz, (#disk_sz, #()))%V bs -∗ ⌜length bs = int.nat sz⌝.
 Proof.
   iIntros "Hlog".
   iDestruct "Hlog" as (sz' disk_sz') "[% Hlog']".
@@ -411,10 +411,10 @@ Qed.
 
 Theorem is_log_read (i: u64) (sz disk_sz: u64) bs :
   int.val i < int.val sz ->
-  is_log (#sz, #disk_sz) bs -∗
+  is_log (#sz, (#disk_sz, #())) bs -∗
     ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗
          (1 + int.val i) d↦ b ∗
-         ((1 + int.val i) d↦ b -∗ is_log (#sz, #disk_sz) bs).
+         ((1 + int.val i) d↦ b -∗ is_log (#sz, (#disk_sz, #())) bs).
 Proof.
   iIntros (Hi) "Hlog".
   iDestruct "Hlog" as (sz' disk_sz') "[% Hlog]".
@@ -741,7 +741,7 @@ Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
 Transparent struct.loadField struct.storeStruct.
 
 Lemma is_log_intro sz disk_sz bs :
-  is_log' sz disk_sz bs -∗ is_log (#sz, #disk_sz)%V bs.
+  is_log' sz disk_sz bs -∗ is_log (#sz, (#disk_sz, #()))%V bs.
 Proof.
   iIntros "Hlog".
   iExists _, _; iFrame; eauto.
@@ -811,7 +811,7 @@ Lemma is_log_append (sz new_elems disk_sz: u64) bs0 bs free :
   (⌜int.val sz = Z.of_nat (length bs0)⌝ ∗
    ⌜int.val new_elems = Z.of_nat (length bs)⌝ ∗
    ⌜(1 + int.val sz + length bs + length free = int.val disk_sz)%Z⌝) -∗
-  is_log (#(LitInt $ word.add sz new_elems), #disk_sz)%V (bs0 ++ bs).
+  is_log (#(LitInt $ word.add sz new_elems), (#disk_sz, #()))%V (bs0 ++ bs).
 Proof.
   iIntros "Hhdr Hlog Hnew Hfree (%&%&%)".
   iExists _, _.
@@ -936,7 +936,7 @@ Proof.
         iSplit.
         { iIntros "Hhdr".
           iDestruct "Hhdr" as "[Hhdr | Hhdr]"; crash_case.
-          - iExists (#sz, #disk_sz)%V.
+          - iExists (#sz, (#disk_sz, #()))%V.
             iLeft.
             rewrite /is_log.
             iExists _, _; iSplitR; eauto.
@@ -957,6 +957,7 @@ Proof.
         wp_call.
         wp_store.
         wp_store.
+        wp_pures.
         iIntros "(Hhdr&Hlog&Hnew&Hfree&HΦ)".
         wpc_pures.
         { iExists _; iRight.
@@ -1045,6 +1046,7 @@ Proof.
       by iApply (is_log_reset with "Hhdr Hlog Hfree [%]"). }
     wp_store.
     wp_store.
+    wp_pures.
     iIntros "(Hhdr&Hlog&Hfree&HΦ)".
     iApply "HΦ".
     rewrite /ptsto_log.

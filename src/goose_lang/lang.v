@@ -185,6 +185,7 @@ Notation Output := (Primitive1 OutputOp).
 Fixpoint flatten_struct (v: val) : list val :=
   match v with
   | PairV v1 v2 => flatten_struct v1 ++ flatten_struct v2
+  | LitV LitUnit => []
   | _ => [v]
   end.
 

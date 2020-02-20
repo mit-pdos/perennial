@@ -64,6 +64,93 @@ Proof.
   iApply wp_alloc; eauto with lia.
 Qed.
 
+Theorem subst_load_ty' t v : forall e,
+  subst "l" v
+        ((fix load (t0 : ty) (l0 : expr) {struct t0} : expr :=
+            match t0 with
+            | baseT unitBT => Val #()
+            | (t1 * t2)%ht => (load t1 l0, load t2 (l0 +ₗ[t1] #1))%E
+            | _ => Load l0
+            end) t e) =
+  ((fix load (t0 : ty) (l0 : expr) {struct t0} : expr :=
+      match t0 with
+      | baseT unitBT => Val #()
+      | (t1 * t2)%ht => (load t1 l0, load t2 (l0 +ₗ[t1] #1))%E
+      | _ => Load l0
+      end) t (subst "l" v e)).
+Proof.
+  induction t; intros; simpl; auto.
+  - destruct t; simpl; auto.
+  - rewrite IHt1.
+    rewrite IHt2.
+    reflexivity.
+Qed.
+
+Theorem val_ty_flatten_length v t :
+  val_ty v t ->
+  length (flatten_struct v) = length (flatten_ty t).
+Proof.
+  induction 1; simpl; auto.
+  - inversion H; subst; auto.
+  - rewrite ?app_length.
+    lia.
+Qed.
+
+Theorem ty_size_offset t l j : l +ₗ (length (flatten_ty t) + j)%nat = l +ₗ ty_size t +ₗ j.
+Proof.
+  rewrite loc_add_assoc.
+  f_equal.
+  rewrite <- ty_size_length.
+  pose proof (ty_size_ge_0 t).
+  lia.
+Qed.
+
+Lemma wp_LoadAt stk E q l t v :
+  {{{ l ↦[t]{q} v }}}
+    load_ty t #l @ stk; E
+  {{{ RET v; l ↦[t]{q} v }}}.
+Proof.
+  iIntros (Φ) "Hl HΦ".
+  iDestruct "Hl" as "[Hl %]".
+  hnf in H.
+  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
+  { iIntros "!> HPost".
+    iApply "HΦ".
+    iSplit; eauto. }
+  (* TODO: we have to rename this so it doesn't conflict with a name generated
+  by induction; seems like a bug *)
+  rename l into l'.
+  (iInduction H as [ | | | | | | | ] "IH" forall (l' Φ));
+    simpl;
+    wp_pures;
+    rewrite ?loc_add_0 ?right_id.
+  - inversion H; subst; simpl;
+      rewrite ?loc_add_0 ?right_id;
+      try wp_apply (wp_load with "[$]"); auto.
+    wp_pures.
+    iApply ("HΦ" with "[//]").
+  - rewrite big_opL_app.
+    iDestruct "Hl" as "[Hv1 Hv2]".
+    wp_apply ("IH" with "Hv1"); iIntros "Hv1".
+    wp_apply ("IH1" with "[Hv2]"); [ | iIntros "Hv2" ].
+    { erewrite val_ty_flatten_length; eauto.
+      setoid_rewrite ty_size_offset.
+      rewrite Z.mul_1_r.
+      iFrame. }
+    wp_pures.
+    iApply "HΦ"; iFrame.
+    erewrite val_ty_flatten_length by eauto.
+    setoid_rewrite ty_size_offset.
+    rewrite Z.mul_1_r.
+    iFrame.
+  - wp_apply (wp_load with "[$]"); auto.
+  - wp_apply (wp_load with "[$]"); auto.
+  - wp_apply (wp_load with "[$]"); auto.
+  - wp_apply (wp_load with "[$]"); auto.
+  - wp_apply (wp_load with "[$]"); auto.
+  - wp_apply (wp_load with "[$]"); auto.
+Qed.
+
 Lemma tac_wp_alloc Δ Δ' s E j K v t Φ :
   val_ty v t ->
   MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -206,27 +293,8 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
-Theorem val_ty_flatten_length v t :
-  val_ty v t ->
-  length (flatten_struct v) = length (flatten_ty t).
-Proof.
-  induction 1; simpl; auto.
-  - inversion H; subst; auto.
-  - rewrite ?app_length.
-    lia.
-Qed.
-
-Theorem ty_size_offset t l j : l +ₗ (length (flatten_ty t) + j)%nat = l +ₗ ty_size t +ₗ j.
-Proof.
-  rewrite loc_add_assoc.
-  f_equal.
-  rewrite <- ty_size_length.
-  pose proof (ty_size_ge0 t).
-  lia.
-Qed.
-
-Theorem struct_ptsto_pair_split l v1 t1 v2 t2 :
-  l ↦[t1 * t2] (v1, v2) ⊣⊢ l ↦[t1] v1 ∗ (l +ₗ ty_size t1) ↦[t2] v2.
+Theorem struct_ptsto_pair_split q l v1 t1 v2 t2 :
+  l ↦[t1 * t2]{q} (v1, v2) ⊣⊢ l ↦[t1]{q} v1 ∗ (l +ₗ ty_size t1) ↦[t2]{q} v2.
 Proof.
   rewrite /struct_mapsto /= big_opL_app.
   iSplit.
@@ -245,60 +313,8 @@ Proof.
     constructor; auto.
 Qed.
 
-Lemma wp_LoadAt stk E l t v :
-  {{{ l ↦[t] v }}}
-    load_ty t #l @ stk; E
-  {{{ RET v; l ↦[t] v }}}.
-Proof.
-  iIntros (Φ) "Hl HΦ".
-  iDestruct "Hl" as "[Hl %]".
-  hnf in H.
-  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
-  { iIntros "!> HPost".
-    iApply "HΦ".
-    iSplit; eauto. }
-  (* TODO: we have to rename this so it doesn't conflict with a name generated
-  by induction; seems like a bug *)
-  rename l into l'.
-  (iInduction H as [ | | | | | | | ] "IH" forall (l' Φ));
-    simpl;
-    rewrite ?loc_add_0 ?right_id;
-    wp_pures.
-  - inversion H; subst; clear H; simpl; wp_load; iApply ("HΦ" with "[$]").
-  - rewrite big_opL_app.
-    iDestruct "Hl" as "[Hv1 Hv2]".
-    wp_bind (load_ty t1 _).
-    iApply ("IH" with "Hv1").
-    iIntros "!> Hv1".
-    wp_pures.
-    rewrite Z.mul_1_r.
-    wp_bind (load_ty t2 _).
-    iApply ("IH1" with "[Hv2]").
-    + erewrite val_ty_flatten_length; eauto.
-      setoid_rewrite ty_size_offset.
-      iFrame.
-    + iIntros "!> Hv2".
-      wp_pures.
-      iApply "HΦ"; iFrame.
-      erewrite val_ty_flatten_length by eauto.
-      setoid_rewrite ty_size_offset.
-      iFrame.
-  - wp_load.
-    iApply ("HΦ" with "[$]").
-  - wp_load.
-    iApply ("HΦ" with "[$]").
-  - wp_load.
-    iApply ("HΦ" with "[$]").
-  - wp_load.
-    iApply ("HΦ" with "[$]").
-  - wp_load.
-    iApply ("HΦ" with "[$]").
-  - wp_load.
-    iApply ("HΦ" with "[$]").
-Qed.
-
-Theorem struct_mapsto_ty l v t :
-  l ↦[t] v -∗ ⌜val_ty v t⌝.
+Theorem struct_mapsto_ty q l v t :
+  l ↦[t]{q} v -∗ ⌜val_ty v t⌝.
 Proof.
   iIntros "[_ %] !%//".
 Qed.
@@ -337,13 +353,16 @@ Proof.
   (iInduction H as [ | | | | | | | ] "IH" forall (v' Hty l' Φ));
     simpl;
     rewrite ?loc_add_0 ?right_id;
-    wp_pures;
-    try wp_store.
-  - invc H; invc Hty;
+    wp_pures.
+  - invc Hty; invc H;
+      try match goal with
+          | [ H: lit_ty _ _ |- _ ] => invc H
+          end;
       simpl;
       rewrite ?loc_add_0 ?right_id;
-      wp_store;
-      iApply ("HΦ" with "[$]").
+      try (wp_apply (wp_store with "[$]"); auto).
+    wp_pures.
+    iApply ("HΦ" with "[//]").
   - rewrite big_opL_app.
     erewrite val_ty_flatten_length by eauto.
     setoid_rewrite ty_size_offset.
@@ -351,13 +370,12 @@ Proof.
     { by invc H1. (* can't be a pair and a base literal *) }
     iDestruct "Hl" as "[Hv1 Hv2]".
     wp_pures.
-    wp_bind (store_ty t1 _ _).
-    iApply ("IH" with "[//] Hv1").
-    iIntros "!> Hv1".
+    wp_apply ("IH" with "[//] Hv1").
+    iIntros "Hv1".
     wp_pures.
     rewrite Z.mul_1_r.
-    iApply ("IH1" with "[//] Hv2").
-    iIntros "!> Hv2".
+    wp_apply ("IH1" with "[//] Hv2").
+    iIntros "Hv2".
     iApply "HΦ".
     simpl.
     rewrite big_opL_app.
@@ -365,18 +383,42 @@ Proof.
     erewrite val_ty_flatten_length by eauto.
     setoid_rewrite ty_size_offset.
     iFrame.
-  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
-      iApply ("HΦ" with "[$]").
-  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
-      iApply ("HΦ" with "[$]").
-  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
-      iApply ("HΦ" with "[$]").
-  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
-      iApply ("HΦ" with "[$]").
-  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
-      iApply ("HΦ" with "[$]").
-  - invc Hty; simpl; rewrite ?loc_add_0 ?right_id;
-      iApply ("HΦ" with "[$]").
+  - invc Hty;
+      try match goal with
+          | [ H: lit_ty _ _ |- _ ] => invc H
+          end;
+      rewrite /= ?loc_add_0 ?right_id;
+      wp_apply (wp_store with "[$]"); auto.
+  - invc Hty;
+      try match goal with
+          | [ H: lit_ty _ _ |- _ ] => invc H
+          end;
+      rewrite /= ?loc_add_0 ?right_id;
+      wp_apply (wp_store with "[$]"); auto.
+  - invc Hty;
+      try match goal with
+          | [ H: lit_ty _ _ |- _ ] => invc H
+          end;
+      rewrite /= ?loc_add_0 ?right_id;
+      wp_apply (wp_store with "[$]"); auto.
+  - invc Hty;
+      try match goal with
+          | [ H: lit_ty _ _ |- _ ] => invc H
+          end;
+      rewrite /= ?loc_add_0 ?right_id;
+      wp_apply (wp_store with "[$]"); auto.
+  - invc Hty;
+      try match goal with
+          | [ H: lit_ty _ _ |- _ ] => invc H
+          end;
+      rewrite /= ?loc_add_0 ?right_id;
+      wp_apply (wp_store with "[$]"); auto.
+  - invc Hty;
+      try match goal with
+          | [ H: lit_ty _ _ |- _ ] => invc H
+          end;
+      rewrite /= ?loc_add_0 ?right_id;
+      wp_apply (wp_store with "[$]"); auto.
 Qed.
 
 Lemma wp_store_offset s E l off vs t v :
@@ -390,70 +432,396 @@ Proof.
   iApply "HΦ". iApply ("Hl2" with "Hl1").
 Qed.
 
-Fixpoint getValField_fs (fs:list (string*ty)) (f0:string) (v:val) : option (val*ty) :=
-  match fs with
-  | nil => None
-  | (f, t) :: nil => if String.eqb f f0 then Some (v, t) else None
-  | (f, t) :: fs =>  match v with
-                   | PairV v1 v2 =>
-                     if String.eqb f f0
-                     then Some (v1, t)
-                     else getValField_fs fs f0 v2
-                   | _ => None (* v is ill-typed *)
-                   end
+Ltac inv_ty H :=
+  match type of H with
+  | val_ty _ _ =>
+    inversion H; subst; clear H;
+    try match goal with
+        | [ H: lit_ty _ _ |- _ ] =>
+          inversion H;
+          let n := numgoals in
+          guard n <= 1;
+          subst; clear H
+        end
   end.
 
-Definition getValField (d:descriptor) (f:string) (v:val) : option (val*ty) :=
-  getValField_fs d.(fields) f v.
-
-Theorem getValField_wt d f v :
+Theorem getField_f_wt d f0 v :
   val_ty v (struct.t d) ->
-  forall z t, field_offset d.(fields) f = Some (z, t) ->
-         exists fv, getValField d f v = Some (fv, t) /\
-               val_ty fv t.
+  forall z t, field_offset d f0 = Some (z, t) ->
+         val_ty (getField_f d f0 v) t.
 Proof.
-  rewrite /getValField.
-  rewrite /struct.t.
-  rename f into f0.
-  destruct d as [fs].
-  destruct fs as [|(f&t) fs].
-  { cbn; intros; congruence. }
-  cbn [fields struct_ty_prod snd].
-  generalize dependent f.
-  generalize dependent t.
-  generalize dependent v.
-  induction fs.
-  - cbn; intros.
-    destruct (String.eqb_spec f f0); inversion H0; subst; clear H0.
-    eexists; eauto.
-  - intros v t f.
-    cbn [struct_ty_aux snd].
-Abort.
+  revert v.
+  induction d as [|[f t] fs]; simpl; intros.
+  - congruence.
+  - destruct (f =? f0)%string.
+    + invc H0.
+      inv_ty H.
+      eauto.
+    + destruct_with_eqn (field_offset fs f0); try congruence.
+      destruct p as [off t'].
+      invc H0.
+      inv_ty H.
+      eauto.
+Qed.
 
-Fixpoint setValField_fs (fs:list (string*ty)) (f0:string) (v:val) (fv':val) : option val :=
-  match fs with
-  | nil => None
-  | (f, t) :: nil => if String.eqb f f0 then Some fv' else None
-  | (f, t) :: fs =>  match v with
-                   | PairV v1 v2 =>
-                     if String.eqb f f0
-                     then Some (fv', v2)%V
-                     else (fun v2' => (v1, v2')%V) <$> setValField_fs fs f0 v2 fv'
-                   | _ => None (* v is ill-typed *)
-                   end
-  end.
-
-Definition setValField (d:descriptor) (f:string) (v:val) (fv':val) : option val :=
-  setValField_fs d.(fields) f v fv'.
-
-Theorem setValField_wt d f v fv' :
+Theorem setField_f_wt d f0 v fv' :
   val_ty v (struct.t d) ->
-  forall z t, field_offset d.(fields) f = Some (z, t) ->
+  forall z t, field_offset d f0 = Some (z, t) ->
          val_ty fv' t ->
-         exists v', setValField d f v fv' = Some v' /\
-               val_ty v' (struct.t d).
+         val_ty (setField_f d f0 fv' v) (struct.t d).
 Proof.
-Abort.
+  revert v.
+  revert fv'.
+  induction d as [|[f t] fs]; simpl; intros.
+  - congruence.
+  - destruct (f =? f0)%string.
+    + invc H0.
+      inv_ty H.
+      eauto.
+      econstructor; eauto.
+    + destruct_with_eqn (field_offset fs f0); try congruence.
+      destruct p as [off t'].
+      invc H0.
+      inv_ty H.
+      econstructor; eauto.
+Qed.
+
+Definition struct_field_mapsto l q (d: descriptor) (f0: string) (fv:val): iProp Σ :=
+  match field_offset d f0 with
+  | Some (off, t) =>
+    (* this struct is for the field type *)
+    struct_mapsto (l +ₗ off) q t fv
+  | None => ⌜fv = #()⌝
+  end.
+
+Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
+  match d with
+  | [] => emp
+  | (f,t)::fs =>
+    match v with
+    | PairV v1 v2 => struct_mapsto l q t v1 ∗
+                    struct_big_sep (l +ₗ ty_size t) q fs v2
+    | _ => emp
+    end
+  end.
+
+Theorem struct_mapsto_to_big l q d v :
+  val_ty v (struct.t d) ->
+  struct_mapsto l q (struct.t d) v ⊣⊢ struct_big_sep l q d v.
+Proof.
+  intros Hty.
+  (iInduction (d) as [| [f t] fs] "IH" forall (l v Hty)); simpl.
+  - inv_ty Hty.
+    rewrite /struct_mapsto /flatten_struct /=.
+    rewrite left_id.
+    auto.
+  - inv_ty Hty.
+    rewrite struct_ptsto_pair_split.
+    iSplit; iIntros "[$ Hv2]".
+    + iApply ("IH" with "[//] Hv2").
+    + iApply ("IH" with "[//] Hv2").
+Qed.
+
+Fixpoint struct_big_fields_rec l q (d: descriptor) (fs:descriptor) (v:val): iProp Σ :=
+  match fs with
+  | [] => emp
+  | (f,t)::fs =>
+    match v with
+    | PairV v1 v2 => struct_field_mapsto l q d f v1 ∗
+                    struct_big_fields_rec l q d fs v2
+    | _ => emp
+    end
+  end.
+
+Definition struct_big_fields l q d v : iProp Σ := struct_big_fields_rec l q d d v.
+
+Theorem field_offset_prefix (fs1: descriptor) f t (fs: descriptor) :
+  f ∉ (fs1.*1) ->
+  field_offset (fs1 ++ [(f, t)] ++ fs) f =
+  Some (ty_size (struct.t fs1), t).
+Proof.
+  generalize dependent f.
+  induction fs1 as [|[f' t'] fs1]; simpl; intros.
+  - rewrite String.eqb_refl; auto.
+  - apply not_elem_of_cons in H; destruct H.
+    destruct (String.eqb_spec f' f); subst; try congruence.
+    rewrite IHfs1; eauto.
+Qed.
+
+Theorem NoDup_app_singleton A l (x:A) :
+  NoDup (l ++ [x]) ->
+  x ∉ l.
+Proof.
+  intros Hnodup%NoDup_app.
+  destruct Hnodup as (_&Hnotin&_).
+  intros ?%Hnotin.
+  apply H0.
+  constructor.
+Qed.
+
+Theorem ty_size_struct_app d1 d2 :
+  ty_size (struct.t (d1 ++ d2)) =
+  ty_size (struct.t d1) + ty_size (struct.t d2).
+Proof.
+  induction d1 as [|[f t] fs]; simpl; auto.
+  rewrite IHfs; lia.
+Qed.
+
+Lemma struct_big_sep_to_big_fields_gen l q fs1 fs v :
+  NoDup ((fs1 ++ fs).*1) ->
+  struct_big_fields_rec l q (fs1 ++ fs) fs v = struct_big_sep (l +ₗ ty_size (struct.t fs1)) q fs v.
+Proof.
+  revert fs1 v.
+  induction fs as [|[f t] fs]; simpl; auto; intros.
+  destruct v; auto.
+  change (fs1 ++ (f,t)::fs) with (fs1 ++ [(f,t)] ++ fs).
+  rewrite app_assoc in H |- *.
+  rewrite IHfs; eauto.
+  f_equal.
+  - rewrite /struct_field_mapsto.
+    rewrite -app_assoc.
+    erewrite field_offset_prefix; eauto.
+    rewrite ?fmap_app in H.
+    apply NoDup_app in H.
+    destruct H as [H _].
+    simpl in H.
+    apply NoDup_app_singleton in H; auto.
+  - rewrite ty_size_struct_app; simpl.
+    rewrite Z.add_0_r.
+    rewrite loc_add_assoc.
+    reflexivity.
+Qed.
+
+Lemma struct_big_sep_to_big_fields l q d {dwf: struct.wf d} v :
+  struct_big_fields l q d v = struct_big_sep l q d v.
+Proof.
+  intros.
+  rewrite /struct_big_fields.
+  change d with (nil ++ d) at 1.
+  rewrite -> struct_big_sep_to_big_fields_gen by apply descriptor_NoDup.
+  simpl.
+  rewrite loc_add_0 //.
+Qed.
+
+Theorem struct_mapsto_field_offset_acc l q d f0 (off: Z) t0 v :
+  field_offset d f0 = Some (off, t0) ->
+  struct_mapsto l q (struct.t d) v -∗
+  (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
+   (∀ fv', struct_mapsto (l +ₗ off) q t0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
+Proof.
+  revert l v off t0.
+  induction d as [|[f t] fs]; simpl; intros.
+  - congruence.
+  - iIntros "Hl".
+    iDestruct (struct_mapsto_ty with "Hl") as %Hty.
+    inv_ty Hty.
+    destruct (f =? f0)%string.
+    + invc H; simpl.
+      rewrite loc_add_0.
+      iDestruct (struct_ptsto_pair_split with "Hl") as "[Hv1 Hv2]".
+      iFrame.
+      iIntros (fv') "Hv1".
+      iDestruct (struct_ptsto_pair_split with "[$Hv1 $Hv2]") as "$".
+    + destruct_with_eqn (field_offset fs f0); try congruence.
+      destruct p as [off' t'].
+      invc H.
+      iDestruct (struct_ptsto_pair_split with "Hl") as "[Hv1 Hv2]".
+      erewrite IHfs by eauto.
+      rewrite loc_add_assoc.
+      iDestruct "Hv2" as "[Hf Hupd]".
+      iFrame "Hf".
+      iIntros (fv') "Hf".
+      iApply struct_ptsto_pair_split; iFrame.
+      iApply ("Hupd" with "[$]").
+Qed.
+
+Theorem setField_getField_f_id d f0 v :
+  setField_f d f0 (getField_f d f0 v) v = v.
+Proof.
+  revert v.
+  induction d as [|[f t] fs]; simpl; eauto.
+  - destruct v; auto.
+    destruct (f =? f0)%string; congruence.
+Qed.
+
+Theorem struct_mapsto_acc_offset_read l q d f0 (off: Z) t0 v :
+  field_offset d f0 = Some (off, t0) ->
+  struct_mapsto l q (struct.t d) v -∗
+  (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
+   (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
+Proof.
+  iIntros (Hf) "Hl".
+  iDestruct (struct_mapsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | .. ].
+  iFrame.
+  iIntros "Hf".
+  iSpecialize ("Hupd" with "Hf").
+  rewrite setField_getField_f_id //.
+Qed.
+
+Notation "l ↦[ d :: f ]{ q } v" :=
+  (struct_field_mapsto l q%Qp d f%string v%V)
+    (at level 20, q at level 50, d at level 50, f at level 50,
+    format "l  ↦[ d  ::  f ]{ q }  v").
+Notation "l ↦[ d :: f ] v" :=
+  (struct_field_mapsto l 1%Qp d f%string v%V)
+    (at level 20, d at level 50, f at level 50,
+    format "l  ↦[ d  ::  f ]  v").
+
+Theorem getField_f_none d f0 v :
+  field_offset d f0 = None ->
+  getField_f d f0 v = #().
+Proof.
+  revert v.
+  induction d as [|[f t] fs]; simpl; auto; intros.
+  destruct (f =? f0)%string.
+  - congruence.
+  - destruct_with_eqn (field_offset fs f0).
+    + destruct p; congruence.
+    + destruct v; auto.
+Qed.
+
+Theorem setField_f_none d f0 fv' v :
+  field_offset d f0 = None ->
+  setField_f d f0 fv' v = v.
+Proof.
+  revert v.
+  induction d as [|[f t] fs]; simpl; auto; intros.
+  destruct (f =? f0)%string.
+  - congruence.
+  - destruct_with_eqn (field_offset fs f0).
+    + destruct p; congruence.
+    + destruct v; auto.
+      rewrite IHfs //.
+Qed.
+
+Theorem struct_mapsto_acc f0 l q d v :
+  struct_mapsto l q (struct.t d) v -∗
+  (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
+   (∀ fv', struct_field_mapsto l q d f0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
+Proof.
+  destruct (field_offset d f0) as [[off t0]|] eqn:Hf.
+  - iIntros "Hl".
+    iDestruct (struct_mapsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | ].
+    rewrite /struct_field_mapsto Hf.
+    iFrame.
+  - rewrite /struct_field_mapsto Hf.
+    iIntros "Hl".
+    iSplitR; auto.
+    { rewrite getField_f_none; auto. }
+    iIntros (fv') "_".
+    rewrite -> setField_f_none by auto; auto.
+Qed.
+
+Theorem struct_mapsto_acc_read f0 l q d v :
+  struct_mapsto l q (struct.t d) v -∗
+  (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
+   (struct_field_mapsto l q d f0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
+Proof.
+  destruct (field_offset d f0) as [[off t0]|] eqn:Hf.
+  - iIntros "Hl".
+    iDestruct (struct_mapsto_acc_offset_read with "Hl") as "[Hf Hupd]"; [ eauto | ].
+    rewrite /struct_field_mapsto Hf.
+    iFrame.
+  - rewrite /struct_field_mapsto Hf.
+    iIntros "Hl".
+    rewrite getField_f_none; auto.
+Qed.
+
+Theorem struct_field_mapsto_ty l q d z t f v :
+  field_offset d f = Some (z, t) ->
+  struct_field_mapsto l q d f v -∗ ⌜val_ty v t⌝.
+Proof.
+  rewrite /struct_field_mapsto.
+  intros ->.
+  iIntros "Hl".
+  iDestruct (struct_mapsto_ty with "Hl") as %Hty.
+  auto.
+Qed.
+
+Theorem struct_field_mapsto_none l q d f v :
+  field_offset d f = None ->
+  struct_field_mapsto l q d f v -∗ ⌜v = #()⌝.
+Proof.
+  rewrite /struct_field_mapsto.
+  intros ->.
+  auto.
+Qed.
+
+Transparent loadField storeField.
+
+Theorem wp_loadField stk E l q d f fv :
+  {{{ struct_field_mapsto l q d f fv }}}
+    struct.loadF d f #l @ stk; E
+  {{{ RET fv; struct_field_mapsto l q d f fv }}}.
+Proof.
+  rewrite /loadField.
+  destruct (field_offset d f) as [[z t]|] eqn:Hf.
+  - iIntros (Φ) "Hl HΦ".
+    wp_pures.
+    rewrite /struct_field_mapsto Hf.
+    rewrite Z.mul_1_r.
+    wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+    iApply ("HΦ" with "[$]").
+  - iIntros (Φ) "Hl HΦ".
+    wp_pures.
+    iDestruct (struct_field_mapsto_none with "Hl") as %->; auto.
+    iApply ("HΦ" with "[$]").
+Qed.
+
+Definition field_ty d f: ty :=
+  match field_offset d f with
+  | Some (_, t) => t
+  | None => unitT
+  end.
+
+Theorem wp_storeField stk E l d f fv fv' :
+  val_ty fv' (field_ty d f) ->
+  {{{ struct_field_mapsto l 1 d f fv }}}
+    struct.storeF d f #l fv' @ stk; E
+  {{{ RET #(); struct_field_mapsto l 1 d f fv' }}}.
+Proof.
+  rewrite /storeField /field_ty.
+  intros Hty.
+  destruct (field_offset d f) as [[z t]|] eqn:Hf.
+  - iIntros (Φ) "Hl HΦ".
+    wp_pures.
+    rewrite /struct_field_mapsto Hf.
+    rewrite Z.mul_1_r.
+    wp_apply (wp_StoreAt with "Hl"); auto.
+  - inv_ty Hty.
+    iIntros (Φ) "Hl HΦ".
+    wp_pures.
+    iDestruct (struct_field_mapsto_none with "Hl") as %->; auto.
+    iApply ("HΦ" with "[$]").
+Qed.
+
+Opaque loadField storeField.
+
+Theorem wp_loadField_struct stk E l q d f v :
+  {{{ struct_mapsto l q (struct.t d) v }}}
+    struct.loadF d f #l @ stk; E
+  {{{ RET (getField_f d f v); struct_mapsto l q (struct.t d) v }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ".
+  iDestruct (struct_mapsto_acc_read f with "Hs") as "[Hf Hupd]".
+  wp_apply (wp_loadField with "Hf"); iIntros "Hf".
+  iApply "HΦ".
+  iApply ("Hupd" with "[$]").
+Qed.
+
+Theorem wp_storeField_struct stk E l d f v fv' :
+  val_ty fv' (field_ty d f) ->
+  {{{ struct_mapsto l 1 (struct.t d) v }}}
+    struct.storeF d f #l fv' @ stk; E
+  {{{ RET #(); struct_mapsto l 1 (struct.t d) (setField_f d f fv' v) }}}.
+Proof.
+  iIntros (Hty Φ) "Hs HΦ".
+  iDestruct (struct_mapsto_acc f with "Hs") as "[Hf Hupd]".
+  wp_apply (wp_storeField with "Hf"); auto.
+  iIntros "Hf".
+  iApply "HΦ".
+  iApply ("Hupd" with "[$]").
+Qed.
 
 (*
 Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :

@@ -42,10 +42,17 @@ Inductive txnObject :=
 .
 
 Global Instance addr_eq_dec : EqDecision addr.
-Admitted.
+Proof.
+  solve_decision.
+Defined.
 
 Global Instance addr_finite : Countable addr.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (fun a => (a.(addrBlock), a.(addrOff)))
+            (fun '(b, o) => Build_addr b o) _);
+    by intros [].
+Qed.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -182,7 +189,7 @@ Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
       ⌜gBlocks !! blk = Some hG⌝ ∗
       mapsto (hG := hG) off 1 (Stable v)
   }}}
-    Txn__Load #l (#blk, #off, #(block_bytes*8))%V
+    Txn__Load #l (#blk, (#off, (#(block_bytes*8), #())))%V
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
       is_slice buf u8T vals ∗
       ⌜vals = Block_to_vals v⌝ }}}.

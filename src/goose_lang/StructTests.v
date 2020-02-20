@@ -7,11 +7,7 @@ Module three.
   Section types.
     Context {ext:ext_op} {ext_ty: ext_types ext}.
     Definition S := struct.decl ["foo" :: uint64T; "bar" :: boolT; "baz" :: refT uint64T].
-    Definition T := struct.t S.
-    Definition foo := structF! S "foo".
-    Definition bar := structF! S "bar".
-    Definition baz := structF! S "baz".
-    Fail Definition quux := structF! S "quux".
+    Global Instance wf : struct.wf S := _.
   End types.
 End three.
 
@@ -26,37 +22,28 @@ Section goose_lang.
     | _ => fail "unexpected goal"
     end.
 
-  Theorem t_is : three.T = (uint64T * boolT * refT uint64T)%ht.
-  Proof.
-    reflexivity.
-  Qed.
+  Theorem t_is : struct.t three.S = (uint64T * (boolT * (refT uint64T * unitT)))%ht.
+  Proof. reflexivity. Qed.
 
-  Theorem foo_is : three.foo = (λ: "v", Fst (Fst (Var "v")))%V.
+  Theorem foo_is : getField three.S "foo" = (λ: "v", Fst $ Var "v")%V.
   Proof.
-    unfold three.foo.
+    unfold struct.get; simpl.
     goal_is_exactly_equal.
   Qed.
 
-  Theorem bar_is : three.bar = (λ: "v", Snd (Fst (Var "v")))%V.
+  Theorem bar_is : getField three.S "bar" = (λ: "v", Fst $ Snd $ Var "v")%V.
   Proof.
-    unfold three.bar.
+    unfold struct.get; simpl.
     goal_is_exactly_equal.
   Qed.
 
-  Theorem fieldOffset_is l : struct.fieldPointer three.S "bar" l = fieldPointer three.S "bar" l.
-  Proof.
-    goal_is_exactly_equal.
-  Qed.
-
-  Fail Example fieldOffset_check l : fieldOffset three.S "foobar" l = l.
-
-  Theorem foo_t : ⊢ three.foo : (three.T -> uint64T).
+  Theorem foo_t : ⊢ getField three.S "foo" : (struct.t three.S -> uint64T).
   Proof. typecheck. Qed.
 
-  Theorem bar_t : ⊢ three.bar : (three.T -> boolT).
+  Theorem bar_t : ⊢ getField three.S "bar" : (struct.t three.S -> boolT).
   Proof. typecheck. Qed.
 
-  Theorem baz_t : ⊢ three.baz : (three.T -> refT uint64T).
+  Theorem baz_t : ⊢ getField three.S "baz" : (struct.t three.S -> refT uint64T).
   Proof. typecheck. Qed.
 
 End goose_lang.
