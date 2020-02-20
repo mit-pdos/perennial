@@ -101,7 +101,7 @@ Section to_na_heap.
   Proof. by rewrite /to_na_heap fmap_delete. Qed.
 End to_na_heap.
 
-Lemma na_heap_init `{Countable L, !na_heapPreG L V Σ, LK} (tls: LK → lock_state) σ :
+Lemma na_heap_init `{Countable L, !na_heapPreG L V Σ} {LK} (tls: LK → lock_state) σ :
   (|==> ∃ _ : na_heapG L V Σ, na_heap_ctx tls σ)%I.
 Proof.
   iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
@@ -305,6 +305,36 @@ Section na_heap.
   Definition tls_write_unique (tls: LK → _) :=
     ∀ lk1 lk2, tls lk1 = WSt → tls lk2 = WSt → lk1 = lk2.
 
+  Lemma na_heap_write_prepare tls σ l v lkw :
+    tls lkw = WSt →
+    na_heap_ctx tls σ -∗ l ↦ v ==∗
+      ∃ lk1,
+      ⌜ σ !! l = Some (lk1, v) ∧ tls lk1 = RSt 0 ⌝ ∗
+      na_heap_ctx tls (<[l:=(lkw, v)]> σ) ∗
+      na_heap_mapsto_st WSt l 1%Qp v.
+  Proof.
+    iIntros (Hwrite) "Hσ Hmt".
+    rewrite na_heap_mapsto_eq.
+    iDestruct (na_heap_mapsto_lookup_1 with "Hσ Hmt") as %(lkr&?&Hread); eauto.
+    iMod (na_heap_write_vs with "Hσ [Hmt]") as "[Hσ Hmt]"; first done.
+    { by rewrite /na_heap_mapsto_def Hread. }
+    iModIntro. iExists lkr. iSplit; [done|]. iFrame. rewrite Hwrite //.
+  Qed.
+
+  Lemma na_heap_write_finish_vs tls l v v' lk' :
+    tls lk' = RSt 0 →
+    na_heap_mapsto_st WSt l 1%Qp v -∗
+    (∀ σ2, na_heap_ctx tls σ2 ==∗ ∃ lkw, ⌜σ2 !! l = Some (lkw, v) ∧ tls lkw = WSt⌝ ∗
+        na_heap_ctx tls (<[l:=(lk', v')]> σ2) ∗ l ↦ v').
+  Proof.
+    iIntros (Hread) "Hmt". iIntros (σ) "Hσ".
+    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %(lk2&n&Hσl&Hlk'); eauto.
+    iMod (na_heap_write_vs _ _ _ lk' with "Hσ [Hmt]") as "[Hσ Hmt]"; first done.
+    { by rewrite Hlk'. }
+    iExists lk2. iFrame. iModIntro; iSplit; [done|].
+    { by rewrite na_heap_mapsto_eq /na_heap_mapsto_def Hread. }
+  Qed.
+
   Lemma na_heap_write_na tls σ l v v' lkw :
     tls_write_unique tls →
     tls lkw = WSt →
@@ -316,18 +346,59 @@ Section na_heap.
         na_heap_ctx tls (<[l:=(lk1, v')]> σ2) ∗ l ↦ v'.
   Proof.
     iIntros (Huniq Hwrite) "Hσ Hmt".
-    rewrite na_heap_mapsto_eq.
-    iDestruct (na_heap_mapsto_lookup_1 with "Hσ Hmt") as %(lkr&?&Hread); eauto.
-    iMod (na_heap_write_vs with "Hσ [Hmt]") as "[Hσ Hmt]"; first done.
-    { by rewrite /na_heap_mapsto_def Hread. }
-    iModIntro. iExists lkr.  iSplit; [done|]. iFrame.
-    clear dependent σ. iIntros (σ2). iIntros "Hσ".
-    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %(lk'&n&Hσl&Hlk'); eauto.
-    rewrite Hwrite in Hlk'.
-    iMod (na_heap_write_vs _ _ _ lkr with "Hσ [Hmt]") as "[Hσ Hmt]"; first done.
-    { by rewrite /na_heap_mapsto_def Hwrite Hlk'. }
-    rewrite (Huniq _ _ Hwrite Hlk'). iFrame.
-    iModIntro; iSplit; [done|].
-    { by rewrite /na_heap_mapsto_def Hread. }
+    iMod (na_heap_write_prepare with "Hσ Hmt") as (lkr (?&Hread)) "[Hσ Hmt]"; eauto.
+    iPoseProof (na_heap_write_finish_vs with "Hmt") as "Hmt"; eauto.
+    iModIntro. iExists _. iFrame.
+    iSplit; [done|]. iIntros. iMod ("Hmt" with "[$]") as (? (->&?)) "[Hσ Hmt]". iFrame.
+    iPureIntro; repeat f_equal. eapply Huniq; eauto.
   Qed.
 End na_heap.
+
+Section na_heap_defs.
+  Context {L V : Type} `{Countable L}.
+
+  Record na_heap_names :=
+    {
+      na_heap_heap_name : gname;
+    }.
+
+  Definition na_heapG_update {Σ} (hG: na_heapG L V Σ) (names: na_heap_names) :=
+    Na_HeapG _ _ _ _ _
+             (@na_heap_inG _ _ _ _ _ hG)
+             (na_heap_heap_name names).
+
+  Definition na_heapG_update_pre {Σ} (hG: na_heapPreG L V Σ) (names: na_heap_names) :=
+    Na_HeapG _ _ _ _ _
+             (@na_heap_preG_inG _ _ _ _ _ hG)
+             (na_heap_heap_name names).
+
+  Definition na_heapG_get_names {Σ} (hG: na_heapG L V Σ) : na_heap_names :=
+    {| na_heap_heap_name := na_heap_name hG; |}.
+
+  Lemma na_heapG_get_update {Σ} (hG: na_heapG L V Σ) :
+    na_heapG_update hG (na_heapG_get_names hG) = hG.
+  Proof. destruct hG => //=. Qed.
+
+  Lemma na_heapG_update_pre_get {Σ} (hG: na_heapPreG L V Σ) names:
+    (na_heapG_get_names (na_heapG_update_pre hG names)) = names.
+  Proof. destruct hG, names => //=. Qed.
+
+  Lemma na_heap_name_init `{!na_heapPreG L V Σ} {LK} (tls: LK → _) σ :
+    (|==> ∃ names : na_heap_names, na_heap_ctx (hG := na_heapG_update_pre _ names) tls σ)%I.
+  Proof.
+    iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
+    { rewrite auth_auth_valid. exact: to_na_heap_valid. }
+    iModIntro. iExists {| na_heap_heap_name := γh |}.
+    iFrame "Hh".
+  Qed.
+
+  Lemma na_heap_reinit {Σ} (hG: na_heapG L V Σ) {LK} (tls: LK → _) σ :
+    (|==> ∃ names : na_heap_names, na_heap_ctx (hG := na_heapG_update hG names) tls σ)%I.
+  Proof.
+    iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
+    { rewrite auth_auth_valid. exact: to_na_heap_valid. }
+    iModIntro. iExists {| na_heap_heap_name := γh |}.
+    iFrame "Hh".
+  Qed.
+
+End na_heap_defs.

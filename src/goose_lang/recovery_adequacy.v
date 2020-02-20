@@ -14,6 +14,7 @@ Context {ext_tys: ext_types ext}.
 Context `{!ffi_interp ffi}.
 
 Canonical Structure heap_namesO := leibnizO heap_names.
+
 Global Instance heapG_perennialG `{!heapG Σ} : perennialG heap_lang heap_crash_lang heap_namesO Σ :=
 {
   perennial_irisG := λ Hinv hnames, @heapG_irisG _ _ _ _ _ (heap_update _ _ Hinv (@pbundleT _ _ hnames));
@@ -35,7 +36,7 @@ Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_ad
 Proof.
   intros Hwp. eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _).
   iIntros (???) "".
-  iMod (gen_heap_init σ.(heap)) as (?) "Hh".
+  iMod (na_heap_init tls σ.(heap)) as (?) "Hh".
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
   iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)".
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&Htrfrag&Hor&Hofrag)".

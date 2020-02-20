@@ -80,8 +80,8 @@ Proof.
 Qed.
 
 Lemma wp_store s E l v v' :
-  {{{ ▷ l ↦ Free v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
-  {{{ RET LitV LitUnit; l ↦ Free v }}}.
+  {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
+  {{{ RET LitV LitUnit; l ↦ v }}}.
 Proof.
   iIntros (Φ) "Hl HΦ". unfold Store.
   wp_lam. wp_let. wp_bind (PrepareWrite _).
@@ -92,8 +92,8 @@ Qed.
 
 Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ Free v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v')) Δ' = Some Δ'' →
+  envs_lookup i Δ' = Some (false, l ↦ v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ v')) Δ' = Some Δ'' →
   envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
 Proof.
@@ -163,13 +163,13 @@ Qed.
 
 Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (max:u64) (l:loc) (body: val) :
   (∀ (i:u64),
-      {{{ I i ∗ l ↦ Free #i ∗ ⌜int.val i < int.val max⌝ }}}
+      {{{ I i ∗ l ↦ #i ∗ ⌜int.val i < int.val max⌝ }}}
         body #() @ stk; E
-      {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦ Free #i }}}) -∗
-  {{{ I 0 ∗ l ↦ Free #0 }}}
+      {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦ #i }}}) -∗
+  {{{ I 0 ∗ l ↦ #0 }}}
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
        body) @ stk; E
-  {{{ RET #(); I max ∗ l ↦ Free #max }}}.
+  {{{ RET #(); I max ∗ l ↦ #max }}}.
 Proof.
   iIntros "#Hbody".
   iIntros (Φ) "!> (H0 & Hl) HΦ".
@@ -253,7 +253,7 @@ Proof.
   iIntros (Φ) "Hl HΦ".
   iDestruct "Hl" as "[Hl %]".
   hnf in H.
-  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ Free vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
+  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
   { iIntros "!> HPost".
     iApply "HΦ".
     iSplit; eauto. }
@@ -328,7 +328,7 @@ Proof.
   intros Hty; hnf in Hty.
   iIntros (Φ) "[Hl %] HΦ".
   hnf in H.
-  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ Free vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
+  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
   { iIntros "!> HPost".
     iApply "HΦ".
     iSplit; eauto. }

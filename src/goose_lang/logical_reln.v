@@ -77,8 +77,8 @@ Context `{!inG Σ (authR (optionUR (exclR loc_statusO)))}.
 Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
   (∃ (stat: loc_status), own γ (● (Excl' stat)) ∗
     match stat with
-    | loc_free => ∃ vs v, vTy vs v ∗ ls s↦ Free vs ∗ l ↦ Free v ∗ own γ (◯ Excl' stat)
-    | loc_writing => ls ↦ Writing ∗ l ↦ Writing
+    | loc_free => ∃ vs v, vTy vs v ∗ ls s↦ vs ∗ l ↦ v ∗ own γ (◯ Excl' stat)
+    | loc_writing => False%I (* XXX: fix, should rather be raw na_heap_mapsto_st *)
    end)%I.
 
 Definition locN := nroot.@"loc".

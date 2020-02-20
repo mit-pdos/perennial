@@ -39,7 +39,7 @@ Class refinement_heapG Σ := refinement_HeapG {
   refinement_spec_ffiG : ffiG Σ;
   refinement_traceG :> traceG Σ;
   refinement_cfgG :> @cfgG spec_lang Σ;
-  refinement_gen_heapG :> gen_heapG loc (nonAtomic (@val spec_ext_op_field)) Σ;
+  refinement_na_heapG :> na_heapG loc (@val spec_ext_op_field) Σ;
   (* TODO: do we need prophecies at the spec level? *)
   (*
   refinement_proph_mapG :> proph_mapG proph_id (val * val) Σ;
@@ -52,7 +52,7 @@ Context {hR: refinement_heapG Σ}.
 Context `{invG Σ}.
 
 Definition spec_interp σ : iProp Σ :=
-    (gen_heap_ctx σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world)
+    (na_heap_ctx tls σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world)
       ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I.
 
 Definition spec_stateN := nroot .@ "source".@  "state".
@@ -67,10 +67,10 @@ Global Instance spec_ctx_persistent : Persistent (spec_ctx).
 Proof. apply _. Qed.
 
 (** Override the notations so that scopes and coercions work out *)
-Notation "l s↦{ q } v" := (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l q v%V)
+Notation "l s↦{ q } v" := (na_heap_mapsto (L:=loc) (V:=val) (hG := refinement_na_heapG) l q v%V)
   (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l 1 v%V) (at level 20) : bi_scope.
+  (na_heap_mapsto (L:=loc) (V:=val) (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
 Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
@@ -95,14 +95,14 @@ Hint Resolve sN_inv_sub_minus_state.
 Lemma ghost_load j K E l q v:
   nclose sN ⊆ E →
   spec_ctx -∗
-  l s↦{q} Free v -∗
+  l s↦{q} v -∗
   j ⤇ fill K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
-  l s↦{q} Free v ∗ j ⤇ fill K v.
+  l s↦{q} v ∗ j ⤇ fill K v.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
-  iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
+  iDestruct (@na_heap_read with "Hσ Hl") as %([]&?&?&Hlock); try inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { eapply head_prim_step.
     rewrite /= /head_step /=.
@@ -114,7 +114,8 @@ Proof.
   iFrame. eauto.
 Qed.
 
-(* TODO: this is a copy and paste from lifting.v, because of type classes the form there is not matching *)
+(* TODO: this was a copy and paste from lifting.v, because of type classes the form there is not matching *)
+(*
 Lemma heap_array_to_seq_mapsto l v (n : nat) :
   ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (replicate n v)), l' ↦ vm) -∗
   [∗ list] i ∈ seq 0 n, (l +ₗ (i : nat)) ↦ Free v.
@@ -130,6 +131,7 @@ Proof.
   setoid_rewrite <-loc_add_assoc.
   rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
 Qed.
+*)
 
 (*
 Lemma ghost_allocN_seq j K E v (n: u64):
@@ -145,7 +147,7 @@ Proof.
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   set (l := fresh_locs (dom (gset loc) σ.(heap))).
-  iMod (gen_heap_alloc_gen
+  iMod (na_heap_alloc_gen
           _ (heap_array
                l (fmap Free (replicate (int.nat n) v))) with "Hσ")
     as "(Hσ & Hl & Hm)".
@@ -170,10 +172,10 @@ End go_spec_definitions.
 
 End go_refinement.
 
-Notation "l s↦{ q } v" := (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l q v%V)
+Notation "l s↦{ q } v" := (na_heap_mapsto (L:=loc) (V:=val) (hG := refinement_na_heapG) l q v%V)
   (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (mapsto (L:=loc) (V:=nonAtomic val) (hG := refinement_gen_heapG) l 1 v%V) (at level 20) : bi_scope.
+  (na_heap_mapsto (L:=loc) (V:=val) (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
 Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
@@ -221,25 +223,25 @@ Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
 
 Lemma test_resolution1 l v :
-  l ↦ Free v -∗ (mapsto (hG := heapG_gen_heapG) l 1 (Free v)).
+  l ↦ v -∗ (na_heap_mapsto (hG := heapG_na_heapG) l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution2 l v :
-  l s↦ Free v -∗ (mapsto (hG := refinement_gen_heapG) l 1 (Free v)).
+  l s↦ v -∗ (na_heap_mapsto (hG := refinement_na_heapG) l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution3 l v :
-  l ↦ Free v -∗ (mapsto l 1 (Free v)).
+  l ↦ v -∗ (na_heap_mapsto l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution4 l v :
-  l s↦ Free v -∗ (mapsto l 1 (Free v)).
+  l s↦ v -∗ (na_heap_mapsto l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.

@@ -2,6 +2,7 @@ From stdpp Require Import gmap.
 From stdpp Require Import vector fin_maps.
 From RecordUpdate Require Import RecordSet.
 From iris.proofmode Require Import tactics.
+From iris.base_logic Require Import gen_heap.
 From iris.program_logic Require Import ectx_lifting.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
@@ -83,7 +84,7 @@ Proof.
 Qed.
 
 Class diskG Σ :=
-  { diskG_gen_heapG :> gen_heapG Z Block Σ; }.
+  { diskG_gen_heapG :> gen_heap.gen_heapG Z Block Σ; }.
 
 Section disk.
   (* these are local instances on purpose, so that importing this files doesn't
@@ -142,7 +143,7 @@ Section disk.
         the generator here *)
       b ← suchThat (gen:=fun _ _ => None) (λ σ b, (forall (i:Z), 0 <= i -> i < 4096 ->
                 match σ.(heap) !! (l +ₗ i) with
-                | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
+                | Some (Reading _, v) => Block_to_vals b !! Z.to_nat i = Some v
                 | _ => False
                 end));
       modify (set world <[ int.val a := b ]>);;
@@ -165,9 +166,9 @@ Section disk.
        ffi_update := fun _ hD names =>
                        {| diskG_gen_heapG := gen_heapG_update (@diskG_gen_heapG _ hD) names |};
        ffi_get_update := fun _ _ => _;
-       ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap_ctx d;
+       ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap.gen_heap_ctx d;
        ffi_start := fun _ _ (d: @ffi_state disk_model) =>
-                      ([∗ map] l↦v ∈ d, (mapsto (L:=Z) (V:=Block) l 1 v))%I;
+                      ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l 1 v))%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I |}.
   Next Obligation. intros ? [[]] [] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
@@ -177,7 +178,7 @@ Section disk.
   Context `{!heapG Σ}.
   Instance diskG0 : diskG Σ := heapG_ffiG.
 
-  Notation "l d↦{ q } v" := (mapsto (L:=Z) (V:=Block) l q v%V)
+  Notation "l d↦{ q } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l q v%V)
                              (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
   Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
   Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
@@ -218,14 +219,13 @@ lemmas. *)
   Hint Extern 1 (head_step (ExternalOp _ _) _ _ _ _ _) => econstructor; simpl : core.
 
   Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
-    ([∗ map] l ↦ v ∈ heap_array l (fmap Free $ Block_to_vals b), l ↦{q} v)%I.
+    ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
 
   Lemma wp_ReadOp s E (a: u64) q b :
     {{{ ▷ int.val a d↦{q} b }}}
       ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
     {{{ l, RET LitV (LitLoc l); int.val a d↦{q} b ∗
-                                  mapsto_block l 1 b ∗
-                                  [∗ map] l ↦ _ ∈ heap_array l (fmap Free $ Block_to_vals b), meta_token l ⊤ }}}.
+                                  mapsto_block l 1 b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
@@ -244,11 +244,14 @@ lemmas. *)
     monad_inv.
     rewrite /= in H0.
     monad_inv.
-    iMod (gen_heap_alloc_gen _ (heap_array l (map Free $ Block_to_vals b)) with "Hσ")
-      as "(Hσ & Hl & Hm)".
-    { apply heap_array_map_disjoint.
+    iMod (na_heap.na_heap_alloc_gen tls _ (fmap Free $ heap_array _ (Block_to_vals b)) with "Hσ")
+      as "(Hσ & Hl)".
+    { rewrite heap_array_fmap. apply heap_array_map_disjoint.
       rewrite map_length length_Block_to_vals; eauto. }
+    { intros ??. rewrite lookup_fmap.
+      destruct (heap_array _ _ !! _); inversion 1; subst; eauto. }
     iModIntro; iSplit; first done.
+    rewrite big_sepM_fmap heap_array_fmap.
     iFrame "Hσ Hκs Hd Htr". iApply "HΦ".
     iFrame.
   Qed.
@@ -273,17 +276,15 @@ lemmas. *)
   Theorem mapsto_block_extract i l q b :
     (0 <= i)%Z ->
     (i < 4096)%Z ->
-    (mapsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} Free v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝)%I.
+    (mapsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝)%I.
   Proof.
     unfold mapsto_block; intros Hlow Hhi.
     iIntros "Hm".
     pose proof (block_byte_index b i ltac:(auto) ltac:(auto)) as Hi.
-    assert (heap_array l (fmap Free $ Block_to_vals b) !! (l +ₗ i) =
-            Some $ Free $ LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi) as Hha.
+    assert (heap_array l (Block_to_vals b) !! (l +ₗ i) =
+            Some $ LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi) as Hha.
     { apply heap_array_lookup.
-      eexists; intuition eauto.
-      rewrite list_lookup_fmap.
-      rewrite Hi; simpl; auto. }
+      eexists; intuition eauto. }
     iDestruct (big_sepM_lookup_acc _ _ _ _ Hha with "Hm") as "(Hmi&_)".
     iExists _.
     iFrame "Hmi".
@@ -291,19 +292,18 @@ lemmas. *)
   Qed.
 
   Theorem heap_valid_block l b q σ :
-    gen_heap_ctx σ -∗ mapsto_block l q b -∗
+    na_heap.na_heap_ctx tls σ -∗ mapsto_block l q b -∗
     ⌜ (forall (i:Z), (0 <= i)%Z -> (i < 4096)%Z ->
                 match σ !! (l +ₗ i) with
-             | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
+             | Some (Reading _, v) => Block_to_vals b !! Z.to_nat i = Some v
              | _ => False
                 end) ⌝.
   Proof.
     iIntros "Hσ Hm".
     iIntros (i Hbound1 Hbound2).
     iDestruct (mapsto_block_extract i with "Hm") as (v) "[Hi %]"; eauto.
-    iDestruct (@gen_heap_valid with "Hσ Hi") as %?.
-    iPureIntro.
-    rewrite H0; auto.
+    iDestruct (@na_heap.na_heap_read with "Hσ Hi") as %(lk&?&Hlookup&Hlock).
+    destruct lk; inversion Hlock; subst. rewrite Hlookup //.
   Qed.
 
   Theorem Block_to_vals_ext_eq b1 b2 :
@@ -349,8 +349,7 @@ lemmas. *)
       specialize (H0 i); specialize (H2 i); intuition.
       simpl in H4.
       destruct_with_eqn (σ1.(heap) !! (l +ₗ i)); try contradiction.
-      destruct n0; try contradiction.
-      congruence. }
+      destruct p as (n0&?); destruct n0; try contradiction; congruence. }
     iModIntro; iSplit; first done.
     iFrame.
     iApply ("Hϕ" with "[$]").

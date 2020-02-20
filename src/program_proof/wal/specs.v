@@ -132,7 +132,7 @@ Context (P: log_state.t -> iProp Σ).
 
 (* this will be the entire internal wal invariant - callers will not need to
 unfold it *)
-Definition is_wal (l: loc): iProp Σ := inv N (l ↦ Free #() ∗ ∃ σ, P σ).
+Definition is_wal (l: loc): iProp Σ := inv N (l ↦ #() ∗ ∃ σ, P σ).
 
 Definition blocks_to_gmap (bs:list Block): disk.
   (* this is just annoying to write down *)

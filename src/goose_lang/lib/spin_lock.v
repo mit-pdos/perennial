@@ -32,7 +32,7 @@ Section proof.
   Context `{!heapG Σ, !lockG Σ} (N : namespace).
 
   Definition lock_inv (γ : gname) (l : loc) (R : iProp Σ) : iProp Σ :=
-    (∃ b : bool, l ↦ Free #b ∗ if b then True else own γ (Excl ()) ∗ R)%I.
+    (∃ b : bool, l ↦ #b ∗ if b then True else own γ (Excl ()) ∗ R)%I.
 
   Definition is_lock (γ : gname) (lk : val) (R : iProp Σ) : iProp Σ :=
     (∃ l: loc, ⌜lk = #l⌝ ∧ inv N (lock_inv γ l R))%I.

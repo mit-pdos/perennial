@@ -17,7 +17,7 @@ Instance statet_disk_error_ret : MRet (StateT state Error) :=
 
 Definition free_val {A} (x: nonAtomic A) : option A :=
   match x with
-  | Reading y 0 => Some y
+  | (Reading 0, y) => Some y
   | _ => None
   end.
 
@@ -130,7 +130,7 @@ Lemma read_block_from_heap_ok (σ: state) (l: loc) (b: Block) :
   (read_block_from_heap σ l = Some b) ->
   (forall (i:Z), 0 <= i -> i < 4096 ->
             match σ.(heap) !! (l +ₗ i) with
-            | Some (Reading v _) => Block_to_vals b !! Z.to_nat i = Some v
+            | Some (Reading _, v) => Block_to_vals b !! Z.to_nat i = Some v
             | _ => False
             end).
 Proof.
@@ -164,7 +164,7 @@ Proof.
   rewrite srv_ok_l.
   rewrite -> (vlookup_map free_val navs (fin_of_nat fin_i)) in cov_ok_navs.
   unfold free_val in cov_ok_navs.
-  destruct (navs !!! fin_of_nat fin_i) as [|nav'] eqn:navs_at_fin_i; inversion cov_ok_navs.
+  destruct (navs !!! fin_of_nat fin_i) as ([|?], nav') eqn:navs_at_fin_i; inversion cov_ok_navs.
   destruct n eqn:n_is_free; inversion cov_ok_navs.
   clear cov_ok_navs navs_at_fin_i heap_at_fin_i H4 H5 H2 srv_ok_l nav'
         n n_is_free nav all_free H navs vec_at_l.

@@ -21,7 +21,7 @@ Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Lemma points_to_byte l (x: u8) :
-  l ↦[byteT] #x ⊣⊢ l ↦ Free #x.
+  l ↦[byteT] #x ⊣⊢ l ↦ #x.
 Proof.
   rewrite /struct_mapsto /=.
   rewrite loc_add_0 right_id.
@@ -36,13 +36,11 @@ Lemma array_to_block_array l b :
 Proof.
   rewrite /mapsto_block /array.
   rewrite heap_array_to_list.
-  rewrite big_sepL_fmap.
+  rewrite ?big_sepL_fmap.
   setoid_rewrite Z.mul_1_l.
   apply big_opL_proper.
   intros k y Heq.
   rewrite /Block_to_vals in Heq.
-  rewrite list_lookup_fmap in Heq.
-  destruct (fmap_Some_1 _ _ _ Heq) as [x [Hx ->]].
   rewrite /b2val.
   rewrite points_to_byte //.
 Qed.
@@ -112,7 +110,7 @@ Proof.
   iIntros (Φ) ">Hda HΦ".
   wp_call.
   wp_apply (wp_ReadOp with "Hda").
-  iIntros (l) "(Hda&Hl&_)".
+  iIntros (l) "(Hda&Hl)".
   iDestruct (block_array_to_slice _ _ 4096 with "Hl") as "Hs".
   wp_pures.
   wp_apply (wp_raw_slice with "Hs").
@@ -736,8 +734,8 @@ Qed.
 
 Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
   ∃ (sz: u64) (disk_sz: u64),
-    (l ↦ Free #sz ∗
-     (l +ₗ 1) ↦ Free #disk_sz) ∗
+    (l ↦ #sz ∗
+     (l +ₗ 1) ↦ #disk_sz) ∗
     is_log' sz disk_sz vs.
 
 Transparent struct.loadField struct.storeStruct.

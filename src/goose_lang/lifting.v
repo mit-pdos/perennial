@@ -1,22 +1,23 @@
 From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap excl.
-From iris.base_logic Require Export gen_heap.
 From iris.base_logic.lib Require Export proph_map.
 From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import ectx_lifting total_ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
-From Perennial.algebra Require Import gen_heap.
+From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import tactics notation map.
 From Perennial.goose_lang Require Import typing.
 Set Default Proof Using "Type".
 
+Notation nonAtomic T := (naMode * T)%type.
+
 (** Override the notations so that scopes and coercions work out *)
-Notation "l ↦{ q } v" := (mapsto (L:=loc) (V:=nonAtomic val) l q v%V)
+Notation "l ↦{ q } v" := (na_heap_mapsto (L:=loc) (V:=val) l q v%V)
   (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
 Notation "l ↦ v" :=
-  (mapsto (L:=loc) (V:=nonAtomic val) l 1 v%V) (at level 20) : bi_scope.
+  (na_heap_mapsto (L:=loc) (V:=val) l 1 v%V) (at level 20) : bi_scope.
 Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
@@ -34,7 +35,7 @@ Section StructMapsto.
   Proof.
     induction t; simpl; lia.
   Qed.
-  
+
   Inductive lit_ty : base_lit -> ty -> Prop :=
   | int_ty x : lit_ty (LitInt x) uint64T
   | int32_ty x : lit_ty (LitInt32 x) uint32T
@@ -81,14 +82,14 @@ Section StructMapsto.
       lia.
   Qed.
 
-  Context {Σ} {hG: gen_heapG loc (nonAtomic val) Σ}.
+  Context {Σ} {hG: na_heapG loc val Σ}.
 
   Definition struct_mapsto l q (t:ty) (v: val): iProp Σ :=
-    (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{q} Free vj) ∗ ⌜val_ty v t⌝)%I.
+    (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{q} vj) ∗ ⌜val_ty v t⌝)%I.
 
   Theorem struct_mapsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
-    struct_mapsto l q t v -∗ l ↦{q} Free v0.
+    struct_mapsto l q t v -∗ l ↦{q} v0.
   Proof.
     intros Hv.
     rewrite /struct_mapsto Hv /=.
@@ -118,7 +119,7 @@ Notation "l ↦[ ty ] v" := (struct_mapsto l 1 ty v%V)
 (* An FFI layer will use certain CMRAs for its primitive rules.
    Besides needing to know that these CMRAs are included in Σ, there may
    be some implicit ghost names that are used to identify instances
-   of these algebras. (For example, gen_heap has an implicit name used for
+   of these algebras. (For example, na_heap has an implicit name used for
    the ghost heap). These are bundled together in ffiG.
 
    On a crash, a new "generation" might use fresh names for these instances.
@@ -252,7 +253,7 @@ Qed.
 Class heapG Σ := HeapG {
   heapG_invG : invG Σ;
   heapG_ffiG : ffiG Σ;
-  heapG_gen_heapG :> gen_heapG loc (nonAtomic val) Σ;
+  heapG_na_heapG :> na_heapG loc val Σ;
   heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
   heapG_traceG :> traceG Σ;
 }.
@@ -260,7 +261,7 @@ Class heapG Σ := HeapG {
 
 (* The word 'heap' is really overloaded... *)
 Record heap_names := {
-  heap_heap_names : gen_heap_names;
+  heap_heap_names : na_heap_names;
   heap_proph_name : gname;
   heap_ffi_names : ffi_names;
   heap_trace_names : tr_names;
@@ -269,7 +270,7 @@ Record heap_names := {
 Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
   {| heapG_invG := heapG_invG;
      heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
-     heapG_gen_heapG := gen_heapG_update (heapG_gen_heapG) (heap_heap_names names);
+     heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
      heapG_proph_mapG :=
        {| proph_map_inG := proph_map_inG;
           proph_map_name := (heap_proph_name names) |};
@@ -279,7 +280,7 @@ Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
 Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (names: heap_names) :=
   {| heapG_invG := Hinv;
      heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
-     heapG_gen_heapG := gen_heapG_update (heapG_gen_heapG) (heap_heap_names names);
+     heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
      heapG_proph_mapG :=
        {| proph_map_inG := proph_map_inG;
           proph_map_name := (heap_proph_name names) |};
@@ -287,7 +288,7 @@ Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (names: heap_names) :=
  |}.
 
 Definition heap_get_names Σ (hG : heapG Σ) : heap_names :=
-  {| heap_heap_names := gen_heapG_get_names (heapG_gen_heapG);
+  {| heap_heap_names := na_heapG_get_names (heapG_na_heapG);
      heap_proph_name := proph_map_name (heapG_proph_mapG);
      heap_ffi_names := ffi_get_names Σ (heapG_ffiG);
      heap_trace_names := trace_tr_names;
@@ -296,15 +297,23 @@ Definition heap_get_names Σ (hG : heapG Σ) : heap_names :=
 Lemma heap_get_update Σ hG :
   heap_update_names Σ hG (heap_get_names _ hG) = hG.
 Proof.
-  rewrite /heap_update_names/heap_get_names/gen_heapG_update/gen_heapG_get_names ffi_get_update //=.
+  rewrite /heap_update_names/heap_get_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
   destruct hG as [?? [] [] []]; eauto.
 Qed.
 
-Global Instance heapG_irisG `{!heapG Σ} :
+Definition tls (na: naMode) : lock_state :=
+  match na with
+  | Writing => WSt
+  | Reading n => RSt n
+  end.
+
+Global Existing Instances heapG_na_heapG.
+
+Global Instance heapG_irisG `{!heapG Σ}:
   irisG heap_lang Σ := {
   iris_invG := heapG_invG;
   state_interp σ κs _ :=
-    (gen_heap_ctx σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
+    (na_heap_ctx tls σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
       ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
   fork_post _ := True%I;
 }.
@@ -312,7 +321,7 @@ Global Instance heapG_irisG `{!heapG Σ} :
 Lemma heap_get_update' Σ hG :
   heap_update Σ hG (iris_invG) (heap_get_names _ hG) = hG.
 Proof.
-  rewrite /heap_update/heap_get_names/gen_heapG_update/gen_heapG_get_names ffi_get_update //=.
+  rewrite /heap_update/heap_get_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
   destruct hG as [?? [] [] []]; eauto.
 Qed.
 
@@ -600,20 +609,12 @@ Qed.
 (** Heap *)
 (** The "proper" [allocN] are derived in [array]. *)
 
-Lemma heap_array_to_seq_meta {V} l (vs: list V) (n : nat) :
-  length vs = n →
-  ([∗ map] l' ↦ _ ∈ heap_array l vs, meta_token l' ⊤) -∗
-  [∗ list] i ∈ seq 0 n, meta_token (l +ₗ (i : nat)) ⊤.
+Theorem heap_array_fmap V1 V2 l (f: V1 → V2) (vs: list V1) :
+  fmap f (heap_array l vs) = heap_array l (fmap f vs).
 Proof.
-  iIntros (<-) "Hvs". iInduction vs as [|v vs] "IH" forall (l)=> //=.
-  rewrite big_opM_union; last first.
-  { apply map_disjoint_spec=> l' v1 v2 /lookup_singleton_Some [-> _].
-    intros (j&?&Hjl&_)%heap_array_lookup.
-    rewrite loc_add_assoc -{1}[l']loc_add_0 in Hjl. simplify_eq; lia. }
-  rewrite loc_add_0 -fmap_seq big_sepL_fmap.
-  setoid_rewrite Nat2Z.inj_succ. setoid_rewrite <-Z.add_1_l.
-  setoid_rewrite <-loc_add_assoc.
-  rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
+  revert l. induction vs; simpl; intros.
+  - rewrite fmap_empty //=.
+  - rewrite -insert_union_singleton_l fmap_insert insert_union_singleton_l IHvs //=.
 Qed.
 
 Theorem heap_array_app V l (vs1 vs2: list V) :
@@ -643,8 +644,8 @@ Proof.
 Qed.
 
 Lemma heap_array_to_seq_mapsto l vs :
-  ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free vs), l' ↦ vm) -∗
-  [∗ list] j ↦ v ∈ vs, (l +ₗ j) ↦ Free v.
+  ([∗ map] l' ↦ vm ∈ heap_array l vs, l' ↦ vm) -∗
+  [∗ list] j ↦ v ∈ vs, (l +ₗ j) ↦ v.
 Proof.
   iIntros "Hvs". iInduction vs as [|vs] "IH" forall (l); simpl.
   { done. }
@@ -669,8 +670,8 @@ Proof.
 Abort.
 
 Lemma heap_array_replicate_to_nested_mapsto l vs (n : nat) :
-  ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (concat_replicate n vs)), l' ↦ vm) -∗
-  [∗ list] i ∈ seq 0 n, [∗ list] j ↦ v ∈ vs, (l +ₗ ((i : nat) * Z.of_nat (length vs)) +ₗ j)%nat ↦ Free v.
+  ([∗ map] l' ↦ vm ∈ heap_array l (concat_replicate n vs), l' ↦ vm) -∗
+  [∗ list] i ∈ seq 0 n, [∗ list] j ↦ v ∈ vs, (l +ₗ ((i : nat) * Z.of_nat (length vs)) +ₗ j)%nat ↦ v.
 Proof.
   iIntros "Hmap".
   iDestruct (heap_array_to_seq_mapsto with "Hmap") as "Hvs".
@@ -697,15 +698,21 @@ Proof.
   iIntros (Hn Hty Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-  iMod (gen_heap_alloc_gen
-          _ (heap_array
-               l (fmap Free (concat_replicate (int.nat n) (flatten_struct v)))) with "Hσ")
-    as "(Hσ & Hl & Hm)".
-  { apply heap_array_map_disjoint.
+  iMod (na_heap_alloc_gen
+          _ _ (fmap Free (heap_array
+               l (concat_replicate (int.nat n) (flatten_struct v)))) with "Hσ")
+    as "(Hσ & Hl)".
+  { rewrite heap_array_fmap. apply heap_array_map_disjoint.
     rewrite map_length concat_replicate_length. auto with lia. }
+  { intros ??. rewrite lookup_fmap.
+    destruct (heap_array l _ !! _) => //=.
+    inversion 1; subst => //=; congruence. }
   iModIntro; iSplit; first done.
-  iFrame "Hσ Hκs". iApply "HΦ".
+  rewrite heap_array_fmap. iFrame.
+  iApply "HΦ".
   unfold struct_mapsto.
+  rewrite -heap_array_fmap.
+  rewrite big_sepM_fmap.
   iDestruct (heap_array_replicate_to_nested_mapsto with "Hl") as "Hl".
   rewrite (val_ty_len Hty).
   iApply (big_sepL_mono with "Hl").
@@ -738,74 +745,81 @@ Qed.
 Lemma wp_alloc_untyped stk E v v0 :
   flatten_struct v = [v0] ->
   {{{ True }}} ref (Val v) @ stk; E
-  {{{ l, RET LitV (LitLoc l); l ↦ Free v0 }}}.
+  {{{ l, RET LitV (LitLoc l); l ↦ v0 }}}.
 Proof.
   assert (0 < int.val (U64 1)) by (change (int.val 1) with 1; lia).
   iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-  iMod (gen_heap_alloc_gen
-          _ (heap_array
-               l [Free v0]) with "Hσ")
-    as "(Hσ & Hl & Hm)".
-  { apply heap_array_map_disjoint.
+  iMod (na_heap_alloc_gen
+          _ _ (fmap Free (heap_array
+               l [v0])) with "Hσ")
+    as "(Hσ & Hm)".
+  { rewrite heap_array_fmap. apply heap_array_map_disjoint.
     rewrite Z.mul_1_l Hn /= in H0.
     simpl; auto with lia. }
+  { intros ??. rewrite lookup_fmap.
+    destruct (heap_array l _ !! _) => //=.
+    inversion 1; subst => //=; congruence. }
   iModIntro; iSplit; first done.
   change (int.nat 1) with 1%nat; simpl.
   replace (flatten_struct v); simpl.
+  rewrite -heap_array_fmap.
   iFrame "Hσ Hκs". iApply "HΦ".
-  rewrite right_id.
-  rewrite big_sepM_singleton; iFrame.
+  rewrite right_id big_sepM_fmap big_sepM_singleton; iFrame.
 Qed.
 
 Lemma wp_load s E l q v :
-  {{{ ▷ l ↦{q} Free v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; l ↦{q} Free v }}}.
+  {{{ ▷ l ↦{q} v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; l ↦{q} v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
-  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (na_heap_read with "Hσ Hl") as %([|]&?&Heq&Hlock).
+  { simpl in Hlock. congruence. }
+  iSplit; first by eauto 8.
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
 Qed.
 
-Theorem is_Writing_Some A (mna: option (nonAtomic A)) :
-  mna = Some Writing ->
+Theorem is_Writing_Some A (mna: option (nonAtomic A)) a :
+  mna = Some (Writing, a) ->
   is_Writing mna.
 Proof.
-  rewrite /is_Writing; auto.
+  rewrite /is_Writing; eauto.
 Qed.
 
 Hint Resolve is_Writing_Some.
 
 Lemma wp_prepare_write s E l v :
-  {{{ ▷ l ↦ Free v }}} PrepareWrite (Val $ LitV (LitLoc l)) @ s; E
-  {{{ RET LitV LitUnit; l ↦ Writing }}}.
+  {{{ ▷ l ↦ v }}} PrepareWrite (Val $ LitV (LitLoc l)) @ s; E
+  {{{ RET LitV LitUnit; na_heap_mapsto_st WSt l 1 v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
+  iIntros (σ1 κ κs n) "[Hσ Hκs]".
+  iMod (na_heap_write_prepare _ _ _ _ Writing with "Hσ Hl") as (lk1 (Hlookup&Hlock)) "(?&?)"; first done.
+  destruct lk1; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
 
-Lemma wp_finish_store s E l v :
-  {{{ ▷ l ↦ Writing }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
-  {{{ RET LitV LitUnit; l ↦ Free v }}}.
+Lemma wp_finish_store s E l v v' :
+  {{{ ▷ na_heap_mapsto_st WSt l 1 v' }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
+  {{{ RET LitV LitUnit; l ↦ v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
+  iIntros (σ1 κ κs n) "[Hσ Hκs]".
+  iMod (na_heap_write_finish_vs _ _ _ _ (Reading 0) with "Hl Hσ") as (lkw (?&Hlock)) "(Hσ&Hl)"; first done.
+  destruct lkw; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
 
-Definition mapsto_vals (l: loc) (q: Qp) (vs: list (nonAtomic val)) :=
+Definition mapsto_vals (l: loc) (q: Qp) (vs: list val) :=
   ([∗ map] l ↦ nav ∈ heap_array l vs, l ↦{q} nav)%I.
 
-Theorem gen_heap_valid_map (σ: gmap _ _) l q vs :
-  gen_heap_ctx σ -∗
+Theorem na_heap_valid_map (σ: gmap _ _) l q vs :
+  na_heap_ctx tls σ -∗
                ([∗ map] l↦v ∈ heap_array l vs, l ↦{q} v) -∗
                ⌜forall i, (i < (length vs))%nat -> is_Some (σ !! (l +ₗ i))⌝.
 Proof.
@@ -819,17 +833,18 @@ Proof.
     rewrite Nat2Z.id; intuition eauto.
     lia. }
   iDestruct (big_sepM_lookup _ _ _ _ H0 with "Hmap") as "H".
-  iDestruct (gen_heap_valid with "Hctx H") as %?.
+  iDestruct (na_heap_read with "Hctx H") as %(?&?&?&?).
   eauto.
 Qed.
 
 Lemma wp_cmpxchg_fail s E l q v' v1 v2 :
   v' ≠ v1 → vals_compare_safe v' v1 →
-  {{{ ▷ l ↦{q} Free v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
-  {{{ RET PairV v' (LitV $ LitBool false); l ↦{q} Free v' }}}.
+  {{{ ▷ l ↦{q} v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
+  {{{ RET PairV v' (LitV $ LitBool false); l ↦{q} v' }}}.
 Proof.
   iIntros (?? Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
+  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@na_heap_read with "Hσ Hl") as %(lk&?&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
   iSplit; first by eauto 8. iNext; iIntros (v2' σ2 efs Hstep); inv_head_step.
   rewrite bool_decide_false //.
   iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
@@ -837,14 +852,17 @@ Qed.
 
 Lemma wp_cmpxchg_suc s E l v1 v2 v' :
   v' = v1 → vals_compare_safe v' v1 →
-  {{{ ▷ l ↦ Free v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
-  {{{ RET PairV v' (LitV $ LitBool true); l ↦ Free v2 }}}.
+  {{{ ▷ l ↦ v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
+  {{{ RET PairV v' (LitV $ LitBool true); l ↦ v2 }}}.
 Proof.
   iIntros (?? Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 κ κs n) "[Hσ Hκs] !>". iDestruct (@gen_heap_valid with "Hσ Hl") as %?.
+  iIntros (σ1 κ κs n) "[Hσ Hκs]".
+  iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (na_heap_write _ _ _ (Reading 0) with "Hσ Hl") as "(?&?)"; first done.
+  iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2' σ2 efs Hstep); inv_head_step.
   rewrite bool_decide_true //.
-  iMod (@gen_heap_update with "Hσ Hl") as "[$ Hl]".
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
 
@@ -963,9 +981,9 @@ Qed.
 
 Lemma wp_resolve_cmpxchg_suc s E l (p : proph_id) (pvs : list (val * val)) v1 v2 v :
   vals_compare_safe v1 v1 →
-  {{{ proph p pvs ∗ ▷ l ↦ Free v1 }}}
+  {{{ proph p pvs ∗ ▷ l ↦ v1 }}}
     Resolve (CmpXchg #l v1 v2) #p v @ s; E
-  {{{ RET (v1, #true) ; ∃ pvs', ⌜pvs = ((v1, #true)%V, v)::pvs'⌝ ∗ proph p pvs' ∗ l ↦ Free v2 }}}.
+  {{{ RET (v1, #true) ; ∃ pvs', ⌜pvs = ((v1, #true)%V, v)::pvs'⌝ ∗ proph p pvs' ∗ l ↦ v2 }}}.
 Proof.
   iIntros (Hcmp Φ) "[Hp Hl] HΦ".
   iApply (wp_resolve with "Hp"); first done.
@@ -976,9 +994,9 @@ Qed.
 
 Lemma wp_resolve_cmpxchg_fail s E l (p : proph_id) (pvs : list (val * val)) q v' v1 v2 v :
   v' ≠ v1 → vals_compare_safe v' v1 →
-  {{{ proph p pvs ∗ ▷ l ↦{q} Free v' }}}
+  {{{ proph p pvs ∗ ▷ l ↦{q} v' }}}
     Resolve (CmpXchg #l v1 v2) #p v @ s; E
-  {{{ RET (v', #false) ; ∃ pvs', ⌜pvs = ((v', #false)%V, v)::pvs'⌝ ∗ proph p pvs' ∗ l ↦{q} Free v' }}}.
+  {{{ RET (v', #false) ; ∃ pvs', ⌜pvs = ((v', #false)%V, v)::pvs'⌝ ∗ proph p pvs' ∗ l ↦{q} v' }}}.
 Proof.
   iIntros (NEq Hcmp Φ) "[Hp Hl] HΦ".
   iApply (wp_resolve with "Hp"); first done.

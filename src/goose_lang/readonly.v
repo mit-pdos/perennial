@@ -6,7 +6,7 @@ Section goose_lang.
   Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 
   Definition ptsto_ro (l: loc) (v: val): iProp Σ :=
-    ∃ q, l ↦{q} Free v.
+    ∃ q, l ↦{q} v.
 
   Notation "l ↦ro v" := (ptsto_ro l v)
                           (at level 20, format "l  ↦ro  v") : bi_scope.
@@ -14,14 +14,14 @@ Section goose_lang.
   Global Instance ptsto_ro_timeless l v : Timeless (l ↦ro v) := _.
 
   Theorem ptsto_ro_from_q l q v :
-    l ↦{q} Free v -∗ l ↦ro v.
+    l ↦{q} v -∗ l ↦ro v.
   Proof.
     iIntros "Hl".
     iExists q; iFrame.
   Qed.
 
   Theorem ptsto_ro_weaken l v :
-    l ↦ Free v -∗ l ↦ro v.
+    l ↦ v -∗ l ↦ro v.
   Proof.
     apply (ptsto_ro_from_q l 1 v).
   Qed.
@@ -50,14 +50,14 @@ Section goose_lang.
     iIntros "Hl1 Hl2".
     iDestruct "Hl1" as (q1) "Hl1".
     iDestruct "Hl2" as (q2) "Hl2".
-    iDestruct (mapsto_agree with "Hl1 Hl2") as %Heq.
+    iDestruct (@na_heap_mapsto_agree with "[$]") as %Heq.
     inversion Heq; auto.
   Qed.
 
   (* TODO: for now this exposes the implementation of ptsto_ro, but maybe this
   isn't necessary once we have a triple for loads *)
   Theorem ptsto_ro_load l v :
-    l ↦ro v -∗ ∃ q, l ↦{q} Free v.
+    l ↦ro v -∗ ∃ q, l ↦{q} v.
   Proof.
     iIntros "Hro".
     iDestruct "Hro" as (q) "Hl".

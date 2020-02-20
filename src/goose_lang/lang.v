@@ -190,11 +190,14 @@ Fixpoint flatten_struct (v: val) : list val :=
 
 Context {ffi : ffi_model}.
 
-Inductive nonAtomic T := Writing | Reading (v:T) (n:nat).
-Global Arguments Writing {T}.
-Global Arguments Reading {T}.
+Inductive naMode :=
+  | Writing
+  | Reading (n:nat).
+
+Notation nonAtomic T := (naMode * T)%type.
+
 (* TODO: Free should really be called something else - quiescent? just value?  *)
-Definition Free {T} (v:T): nonAtomic T := Reading v 0.
+Definition Free {T} (v:T): nonAtomic T := (Reading 0, v).
 
 Inductive event :=
   | In_ev (sel v:base_lit)
@@ -964,17 +967,21 @@ Definition is_Free {A} (mna: option (nonAtomic A)) := exists x, mna = Some (Free
 Global Instance is_Free_dec A (x: option (nonAtomic A)) : Decision (is_Free x).
 Proof.
   hnf; rewrite /is_Free /Free.
-  destruct x; [ | right; abstract (destruct 1; congruence) ].
-  destruct n; [ right; abstract (destruct 1; congruence) | ].
-  destruct (decide (n = 0)); [ subst; left; eauto | right; abstract (destruct 1; congruence) ].
+  destruct x as [na|]; [ | right; abstract (destruct 1; congruence) ].
+  destruct na as ([|[]]&?).
+  - right; abstract (destruct 1; congruence).
+  - left; eauto.
+  - right; abstract (destruct 1; congruence).
 Defined.
 
-Definition is_Writing {A} (mna: option (nonAtomic A)) := mna = Some Writing.
+Definition is_Writing {A} (mna: option (nonAtomic A)) := exists x, mna = Some (Writing, x).
 Global Instance is_Writing_dec A (x: option (nonAtomic A)) : Decision (is_Writing x).
 Proof.
   hnf; rewrite /is_Writing.
-  destruct x; [ | right; abstract (inversion 1) ].
-  destruct n; [ left; eauto | right; abstract (inversion 1) ].
+  destruct x as [na|]; [ | right; abstract (destruct 1; congruence) ].
+  destruct na as ([|]&?).
+  - left; eauto.
+  - right; abstract (destruct 1; congruence).
 Defined.
 
 Existing Instances r_mbind r_mret r_fmap.
@@ -1046,8 +1053,8 @@ Fixpoint head_trans (e: expr) :
     atomically
       (v ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
         match v with
-        | Reading _ 0 =>
-          modify (set heap <[l:=Writing]>);;
+        | (Reading 0, v) =>
+          modify (set heap <[l:=(Writing, v)]>);;
           ret $ LitV $ LitUnit
         | _ => undefined
         end)
@@ -1055,8 +1062,8 @@ Fixpoint head_trans (e: expr) :
      atomically
        (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
         match nav with
-        | Reading v n =>
-          modify (set heap <[l:=Reading v (S n)]>);;
+        | (Reading n, v) =>
+          modify (set heap <[l:=(Reading (S n), v)]>);;
           ret v
         | _ => undefined
         end)
@@ -1064,8 +1071,8 @@ Fixpoint head_trans (e: expr) :
      atomically
        (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
         match nav with
-        | Reading v (S n) =>
-          modify (set heap <[l:=Reading v n]>);;
+        | (Reading (S n), v) =>
+          modify (set heap <[l:=(Reading n, v)]>);;
                  ret $ LitV $ LitUnit
         | _ => undefined
         end)
@@ -1073,7 +1080,7 @@ Fixpoint head_trans (e: expr) :
      atomically
        (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
         match nav with
-        | Reading v _ => ret v
+        | (Reading _, v) => ret v
         | _ => undefined
         end)
   | FinishStore (Val (LitV (LitLoc l))) (Val v) =>
@@ -1096,10 +1103,10 @@ Fixpoint head_trans (e: expr) :
     atomically
       (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
       match nav with
-      | Reading vl 0 =>
+      | (Reading n, vl) =>
       (* Crucially, this compares the same way as [EqOp]! *)
         check (vals_compare_safe vl v1);;
-        when (vl = v1) (modify (set heap <[l:=Free v2]>));;
+        when (vl = v1) (check (n = 0);; modify (set heap <[l:=Free v2]>));;
         ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
       | _ => undefined
       end)
@@ -1308,3 +1315,4 @@ Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
+Notation nonAtomic T := (naMode * T)%type.

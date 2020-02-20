@@ -192,7 +192,7 @@ Hint Rewrite EncSz_fold : len.
 Definition is_enc (enc: EncM.t) (vs: Rec): iProp Σ :=
   let encoded := encode vs in
   let encoded_len := Z.of_nat (length encoded) in
-  enc.(EncM.off) ↦ (Free #(U64 encoded_len)) ∗
+  enc.(EncM.off) ↦ (#(U64 encoded_len)) ∗
   enc.(EncM.s).(Slice.ptr) ↦∗[byteT] (b2val <$> encoded) ∗
   ∃ (free: list u8),
     (enc.(EncM.s).(Slice.ptr) +ₗ encoded_len) ↦∗[byteT] fmap b2val free ∗
@@ -494,7 +494,7 @@ Proof. reflexivity. Qed.
 Hint Rewrite DecSz_fold : len.
 
 Definition is_dec (dec: DecM.t) vs: iProp Σ :=
-  ∃ (off: u64) (extra: list u8), dec.(DecM.off) ↦ Free #off ∗
+  ∃ (off: u64) (extra: list u8), dec.(DecM.off) ↦ #off ∗
     let encoded := encode vs in
   (dec.(DecM.s).(Slice.ptr) +ₗ int.val off) ↦∗[byteT]
     (b2val <$> (encoded ++ extra)) ∗
@@ -642,7 +642,7 @@ Typeclasses Opaque store_ty.
 Opaque store_ty.
 
 Theorem u64_ptsto_untype l x :
-  l ↦[uint64T] #x -∗ l ↦ Free #x.
+  l ↦[uint64T] #x -∗ l ↦ #x.
 Proof.
   rewrite /struct_mapsto /=.
   rewrite loc_add_0 right_id.

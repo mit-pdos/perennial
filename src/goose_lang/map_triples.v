@@ -128,7 +128,7 @@ Proof.
 Qed.
 
 Definition is_map (mref:loc) (m: gmap u64 val * val): iProp Σ :=
-  ∃ mv, ⌜map_val mv = Some m⌝ ∗ mref ↦ Free mv.
+  ∃ mv, ⌜map_val mv = Some m⌝ ∗ mref ↦ mv.
 
 Definition wp_NewMap stk E t :
   {{{ True }}}

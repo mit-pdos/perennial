@@ -176,7 +176,7 @@ Implicit Types z : Z.
 
 Lemma tac_wp_load Δ Δ' s E i K l q v Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦{q} Free v)%I →
+  envs_lookup i Δ' = Some (false, l ↦{q} v)%I →
   envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (Load (LitV l)) @ s; E {{ Φ }}).
 Proof using Type.
@@ -188,8 +188,8 @@ Qed.
 
 Lemma tac_wp_cmpxchg Δ Δ' Δ'' s E i K l v v1 v2 Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ Free v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v2)) Δ' = Some Δ'' →
+  envs_lookup i Δ' = Some (false, l ↦ v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ v2)) Δ' = Some Δ'' →
   vals_compare_safe v v1 →
   (v = v1 →
    envs_entails Δ'' (WP fill K (Val $ PairV v (LitV $ LitBool true)) @ s; E {{ Φ }})) →
@@ -211,7 +211,7 @@ Qed.
 
 Lemma tac_wp_cmpxchg_fail Δ Δ' s E i K l q v v1 v2 Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦{q} Free v)%I →
+  envs_lookup i Δ' = Some (false, l ↦{q} v)%I →
   v ≠ v1 → vals_compare_safe v v1 →
   envs_entails Δ' (WP fill K (Val $ PairV v (LitV $ LitBool false)) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E {{ Φ }}).
@@ -224,8 +224,8 @@ Qed.
 
 Lemma tac_wp_cmpxchg_suc Δ Δ' Δ'' s E i K l v v1 v2 Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ Free v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ Free v2)) Δ' = Some Δ'' →
+  envs_lookup i Δ' = Some (false, l ↦ v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦ v2)) Δ' = Some Δ'' →
   v = v1 → vals_compare_safe v v1 →
   envs_entails Δ'' (WP fill K (Val $ PairV v (LitV $ LitBool true)) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E {{ Φ }}).

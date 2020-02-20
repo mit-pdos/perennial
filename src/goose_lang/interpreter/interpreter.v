@@ -390,7 +390,7 @@ Section interpreter.
                 let s := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("Load failed for location " ++ (pretty l));
                 match nav with
-                | Reading v 0 => _ <- mupdate (fun sbt => ((set heap <[l:=Writing]>) $ fst sbt, snd sbt));
+                | (Reading 0, v) => _ <- mupdate (fun sbt => ((set heap <[l:=(Writing, v)]>) $ fst sbt, snd sbt));
                                   mret (LitV LitUnit)
                 | _ => mfail_bt ("Race occurred during write at location " ++ (pretty l))
                 end
@@ -409,7 +409,7 @@ Section interpreter.
                 let s := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("Load failed at location " ++ (pretty l));
                 match nav with
-                | Reading v _ => mret v
+                | (Reading _, v) => mret v
                 | _ => mfail_bt ("Race detected while reading at location " ++ (pretty l))
                 end
             | _ => mfail_bt ("Attempted Load with non-location argument of type " ++ (pretty addrv))
@@ -441,7 +441,7 @@ Section interpreter.
                 let s := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("StartReadOp failed at location " ++ (pretty l));
                 match nav with
-                | Reading v n => _ <- mupdate (fun sbt => ((set heap <[l:=Reading v (S n)]>) $ fst sbt, snd sbt));
+                | (Reading n, v) => _ <- mupdate (fun sbt => ((set heap <[l:=(Reading (S n), v)]>) $ fst sbt, snd sbt));
                                   mret v
                 | _ => mfail_bt ("Race detected during StartReadOp at location " ++ (pretty l))
                 end
@@ -455,9 +455,9 @@ Section interpreter.
                 let s := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("FinishReadOp failed at location " ++ (pretty l));
                 match nav with
-                | Reading v (S n) => _ <- mupdate (fun sbt => ((set heap <[l:=Reading v n]>) $ fst sbt, snd sbt));
+                | (Reading (S n), v) => _ <- mupdate (fun sbt => ((set heap <[l:=(Reading n, v)]>) $ fst sbt, snd sbt));
                                       mret (LitV LitUnit)
-                | Reading v 0 => mfail_bt ("FinishReadOp attempted with no reads occurring at location " ++ (pretty l))
+                | (Reading 0, v) => mfail_bt ("FinishReadOp attempted with no reads occurring at location " ++ (pretty l))
                 | _ => mfail_bt ("Attempted FinishReadOp while writing at location " ++ (pretty l))
                 end
             | _ => mfail_bt ("Attempted FinishReadOp with non-location argument of type " ++ (pretty addrv))
@@ -498,12 +498,16 @@ Section interpreter.
                 let s := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("CmpXchg load failed at location " ++ (pretty l));
                 match nav with
-                | Reading vl 0 =>
+                | (Reading n, vl) =>
                   b <- mlift_bt (bin_op_eval EqOp vl v1)
                     ("CmpXchg BinOp tried on invalid type: " ++ (pretty EqOp) ++ "(" ++ (pretty vl) ++ ", " ++ (pretty v1) ++ ")");
                   match b with
-                  | LitV (LitBool true) => _ <- mput ((set heap <[l:=Free v2]> s), snd sbt);
+                  | LitV (LitBool true) =>
+                    match n with
+                      | S _ => mfail_bt ("CmpXchg load failed at location " ++ (pretty l) ++ "because of a race with non-atomic read")
+                      | O => _ <- mput ((set heap <[l:=Free v2]> s), snd sbt);
                            mret (PairV vl #true)
+                    end
                   | LitV (LitBool false) => mret (PairV vl #false)
                   | _ => mfail_bt ("Expected bool but CmpXchg EqOp returned type: " ++ (pretty b))
                   end

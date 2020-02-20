@@ -16,7 +16,7 @@ Class spec_ffi_interp_adequacy `{spec_ffi: @spec_ffi_interp ffi} `{EXT: !spec_ex
                                                           (spec_ext_semantics_field) }.
 
 Class refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} Σ := HeapPreG {
-  refinement_heap_preG_heap :> gen_heapPreG loc (nonAtomic (@val spec_ext_op_field)) Σ;
+  refinement_heap_preG_heap :> na_heapPreG loc (@val spec_ext_op_field) Σ;
   refinement_heap_preG_ffi : @ffi_preG (@spec_ffi_model_field ffi)
                                        (@spec_ffi_interp_field _ spec_ffi)
                                        _ _ (spec_ffi_interp_adequacy_field) Σ;
@@ -55,7 +55,7 @@ Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 tp σ s tr or:
 Proof using Hrpre Hcpre.
   iIntros (?? Hsteps Hsafe) "Htr Hor".
   iMod (source_cfg_init1 r tp0 σ0 tp σ) as (Hcfg) "(Hsource_ctx&Hpool&Hstate)"; eauto.
-  iMod (gen_heap_init σ.(heap)) as (Hrheap) "Hrh".
+  iMod (na_heap_init tls σ.(heap)) as (Hrheap) "Hrh".
   iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world)) as (HffiG) "(Hrw&Hrs)".
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
   set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG) HtraceG Hcfg Hrheap)).
@@ -100,7 +100,7 @@ Proof using Hrpre Hcpre.
   iIntros (?? Hsteps Hsafe Hcrash) "Htr Hor Hffi".
   iMod (source_cfg_init1 r tp0 σ0 [r] σ_post_crash) as (Hcfg) "(Hsource_ctx&Hpool&Hstate)"; eauto.
   { eapply erased_rsteps_r; eauto. econstructor. }
-  iMod (gen_heap_init σ_post_crash.(heap)) as (Hrheap) "Hrh".
+  iMod (na_heap_init tls σ_post_crash.(heap)) as (Hrheap) "Hrh".
   iMod (ffi_crash _ σ.(world) σ_post_crash.(world) with "Hffi")
     as (ffi_names) "(Hrw&Hcrash_rel&Hrs)".
   { inversion Hcrash. subst. eauto. }
@@ -181,12 +181,12 @@ Proof using Hrpre Hhpre Hcpre.
   }
   eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ Φinv).
   iIntros (???) "".
-  iMod (gen_heap.gen_heap_name_init σ.(heap)) as (name_gen_heap) "Hh".
+  iMod (na_heap.na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
   iMod (proph_map.proph_map_name_init _ κs σ.(used_proph_id)) as (name_proph_map) "Hp".
   iMod (ffi_name_init _ _ σ.(world)) as (name_ffi) "(Hw&Hs)".
   iMod (trace_name_init (hT := heap_preG_trace) σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hnames :=
-         {| heap_heap_names := name_gen_heap;
+         {| heap_heap_names := name_na_heap;
             heap_proph_name := name_proph_map;
             heap_ffi_names := name_ffi;
             heap_trace_names := name_trace |}).
@@ -395,12 +395,12 @@ Proof using Hrpre Hhpre Hcpre.
     iDestruct (trace_agree with "Htrace_auth [$]") as %Heq1'.
     iDestruct (oracle_agree with "Horacle_auth [$]") as %Heq2'.
     iModIntro. iNext. iIntros.
-    iMod (gen_heap.gen_heap_reinit _ σ_post_crash.(heap)) as (name_gen_heap) "Hh".
+    iMod (na_heap.na_heap_reinit _ tls σ_post_crash.(heap)) as (name_na_heap) "Hh".
     iMod (proph_map.proph_map_reinit _ κs σ_post_crash.(used_proph_id)) as (name_proph_map) "Hp".
     iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old") as (ffi_names) "(Hw&Hcrel&Hc)".
     { inversion Hcrash; subst; eauto. }
     iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
-    set (hnames := {| heap_heap_names := name_gen_heap;
+    set (hnames := {| heap_heap_names := name_na_heap;
                       heap_proph_name := name_proph_map;
                       heap_ffi_names := ffi_names;
                       heap_trace_names := name_trace |}).
