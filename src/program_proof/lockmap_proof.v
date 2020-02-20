@@ -50,7 +50,7 @@ Definition is_lockShard_inner (mptr : loc) (shardlock : loc) (ghostHeap : gen_he
 
 Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) :=
   ( ∃ (shardlock mptr : loc) γl,
-      inv lockshardN (ls ↦[structTy lockShard.S] (#shardlock, #mptr)) ∗
+      inv lockshardN (ls ↦[structTy lockShard.S] (#shardlock, (#mptr, #()))) ∗
       is_lock lockN γl #shardlock (is_lockShard_inner mptr shardlock ghostHeap covered P)
   )%I.
 
@@ -100,7 +100,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   }
 
   iMod (alloc_lock with "Hfreelock Hinner") as (γ) "Hlock".
-  iMod (inv_alloc lockshardN _ (ls ↦[struct.t lockShard.S] (#shardlock, #mref)) with "Hls") as "Hls".
+  iMod (inv_alloc lockshardN _ (ls ↦[struct.t lockShard.S] (#shardlock, (#mref, #()))) with "Hls") as "Hls".
   iModIntro.
 
   iApply "HΦ".
@@ -135,7 +135,7 @@ Proof.
 Qed.
 
 Theorem wp_load_lockShard_state (ls shardlock mptr : loc) :
-  {{{ inv lockshardN (ls ↦[struct.t lockShard.S] (#shardlock, #mptr)) }}}
+  {{{ inv lockshardN (ls ↦[struct.t lockShard.S] (#shardlock, (#mptr, #()))) }}}
     struct.loadF lockShard.S "state" #ls
   {{{ RET #mptr; True }}}.
 Proof.

@@ -7,6 +7,7 @@ Module three.
   Section types.
     Context {ext:ext_op} {ext_ty: ext_types ext}.
     Definition S := struct.decl ["foo" :: uint64T; "bar" :: boolT; "baz" :: refT uint64T].
+    Global Instance wf : struct.wf S := _.
   End types.
 End three.
 

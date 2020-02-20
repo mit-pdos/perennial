@@ -105,9 +105,9 @@ Module EncM.
   Record t := mk { s: Slice.t;
                    off: loc; }.
   Definition to_val (x:t) : val :=
-    (slice_val x.(s), #x.(off))%V.
+    (slice_val x.(s), (#x.(off), #()))%V.
   Lemma to_val_intro s (off: loc) :
-    (slice_val s, #off)%V = to_val (mk s off).
+    (slice_val s, (#off, #()))%V = to_val (mk s off).
   Proof.
     reflexivity.
   Qed.
@@ -117,9 +117,9 @@ Module DecM.
   Record t := mk { s: Slice.t;
                    off: loc; }.
   Definition to_val (x:t) : val :=
-    (slice_val x.(s), #x.(off))%V.
+    (slice_val x.(s), (#x.(off), #()))%V.
   Lemma to_val_intro s (off: loc) :
-    (slice_val s, #off)%V = to_val (mk s off).
+    (slice_val s, (#off, #()))%V = to_val (mk s off).
   Proof.
     reflexivity.
   Qed.
@@ -644,9 +644,11 @@ Opaque store_ty.
 Theorem u64_ptsto_untype l x :
   l ↦[uint64T] #x -∗ l ↦ #x.
 Proof.
-  rewrite /struct_mapsto /=.
-  rewrite loc_add_0 right_id.
-  iIntros "[$ _]".
+  iIntros "[H %]".
+  inversion H; subst; clear H.
+  inversion H1; subst.
+  simpl.
+  rewrite loc_add_0 right_id //.
 Qed.
 
 Theorem wp_Dec__GetInts stk E dec xs (n:u64) vs :
