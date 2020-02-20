@@ -6,7 +6,7 @@ From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.tchajed.marshal.
 
-(* 00waldefs.go *)
+(* 00walconst.go *)
 
 (*  wal implements write-ahead logging
 
@@ -40,27 +40,6 @@ Definition LOGHDR : expr := #0.
 Definition LOGHDR2 : expr := #1.
 
 Definition LOGSTART : expr := #2.
-
-Module Walog.
-  Definition S := struct.decl [
-    "memLock" :: lockRefT;
-    "d" :: disk.Disk;
-    "circ" :: struct.ptrT circular.S;
-    "condLogger" :: condvarRefT;
-    "condInstall" :: condvarRefT;
-    "memLog" :: slice.T (struct.t Update.S);
-    "memStart" :: LogPosition;
-    "nextDiskEnd" :: LogPosition;
-    "shutdown" :: boolT;
-    "nthread" :: uint64T;
-    "condShut" :: condvarRefT;
-    "memLogMap" :: mapT LogPosition
-  ].
-End Walog.
-
-Definition Walog__LogSz: val :=
-  rec: "Walog__LogSz" "l" :=
-    common.HDRADDRS.
 
 (* 0circular.go *)
 
@@ -178,6 +157,46 @@ Definition circular__Empty: val :=
     let: "b" := circular__hdr2 "c" in
     disk.Write LOGHDR2 "b";;
     disk.Barrier #().
+
+(* 0waldefs.go *)
+
+(*  wal implements write-ahead logging
+
+    The layout of log:
+    [ installed writes | logged writes | in-memory/logged | unstable in-memory ]
+     ^                   ^               ^                  ^
+     0                   memStart        diskEnd            nextDiskEnd
+
+    Blocks in the range [diskEnd, nextDiskEnd) are in the process of
+    being logged.  Blocks in unstable are unstably committed (i.e.,
+    written by NFS Write with the unstable flag and they can be lost
+    on crash). Later transactions may absorb them (e.g., a later NFS
+    write may update the same inode or indirect block).  The code
+    implements a policy of postponing writing unstable blocks to disk
+    as long as possible to maximize the chance of absorption (i.e.,
+    commitWait or log is full).  It may better to start logging
+    earlier. *)
+
+Module Walog.
+  Definition S := struct.decl [
+    "memLock" :: lockRefT;
+    "d" :: disk.Disk;
+    "circ" :: struct.ptrT circular.S;
+    "condLogger" :: condvarRefT;
+    "condInstall" :: condvarRefT;
+    "memLog" :: slice.T (struct.t Update.S);
+    "memStart" :: LogPosition;
+    "nextDiskEnd" :: LogPosition;
+    "shutdown" :: boolT;
+    "nthread" :: uint64T;
+    "condShut" :: condvarRefT;
+    "memLogMap" :: mapT LogPosition
+  ].
+End Walog.
+
+Definition Walog__LogSz: val :=
+  rec: "Walog__LogSz" "l" :=
+    common.HDRADDRS.
 
 (* installer.go *)
 
