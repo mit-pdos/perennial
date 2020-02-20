@@ -293,8 +293,8 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
-Theorem struct_ptsto_pair_split l v1 t1 v2 t2 :
-  l ↦[t1 * t2] (v1, v2) ⊣⊢ l ↦[t1] v1 ∗ (l +ₗ ty_size t1) ↦[t2] v2.
+Theorem struct_ptsto_pair_split q l v1 t1 v2 t2 :
+  l ↦[t1 * t2]{q} (v1, v2) ⊣⊢ l ↦[t1]{q} v1 ∗ (l +ₗ ty_size t1) ↦[t2]{q} v2.
 Proof.
   rewrite /struct_mapsto /= big_opL_app.
   iSplit.
@@ -437,7 +437,11 @@ Ltac inv_ty H :=
   | val_ty _ _ =>
     inversion H; subst; clear H;
     try match goal with
-        | [ H: lit_ty _ _ |- _ ] => try solve [ inversion H ]
+        | [ H: lit_ty _ _ |- _ ] =>
+          inversion H;
+          let n := numgoals in
+          guard n <= 1;
+          subst; clear H
         end
   end.
 
@@ -480,6 +484,124 @@ Proof.
       invc H0.
       inv_ty H.
       econstructor; eauto.
+Qed.
+
+Definition struct_field_mapsto l q (d: descriptor) (f0: string) (fv:val): iProp Σ :=
+  match field_offset d f0 with
+  | Some (off, t) =>
+    (* this struct is for the field type *)
+    struct_mapsto (l +ₗ off) q t fv
+  | None => True
+  end.
+
+Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
+  match d with
+  | [] => emp
+  | (f,t)::fs =>
+    match v with
+    | PairV v1 v2 => struct_mapsto l q t v1 ∗
+                    struct_big_sep (l +ₗ ty_size t) q fs v2
+    | _ => emp
+    end
+  end.
+
+Theorem struct_mapsto_to_big l q d v :
+  val_ty v (struct.t d) ->
+  struct_mapsto l q (struct.t d) v ⊣⊢ struct_big_sep l q d v.
+Proof.
+  intros Hty.
+  (iInduction (d) as [| [f t] fs] "IH" forall (l v Hty)); simpl.
+  - inv_ty Hty.
+    rewrite /struct_mapsto /flatten_struct /=.
+    rewrite left_id.
+    auto.
+  - inv_ty Hty.
+    rewrite struct_ptsto_pair_split.
+    iSplit; iIntros "[$ Hv2]".
+    + iApply ("IH" with "[//] Hv2").
+    + iApply ("IH" with "[//] Hv2").
+Qed.
+
+Fixpoint struct_big_fields_rec l q (d: descriptor) (fs:descriptor) (v:val): iProp Σ :=
+  match fs with
+  | [] => emp
+  | (f,t)::fs =>
+    match v with
+    | PairV v1 v2 => struct_field_mapsto l q d f v1 ∗
+                    struct_big_fields_rec l q d fs v2
+    | _ => emp
+    end
+  end.
+
+Definition struct_big_fields l q d v : iProp Σ := struct_big_fields_rec l q d d v.
+
+Theorem field_offset_prefix (fs1: descriptor) f t (fs: descriptor) :
+  f ∉ (fs1.*1) ->
+  field_offset (fs1 ++ [(f, t)] ++ fs) f =
+  Some (ty_size (struct.t fs1), t).
+Proof.
+  generalize dependent f.
+  induction fs1 as [|[f' t'] fs1]; simpl; intros.
+  - rewrite String.eqb_refl; auto.
+  - apply not_elem_of_cons in H; destruct H.
+    destruct (String.eqb_spec f' f); subst; try congruence.
+    rewrite IHfs1; eauto.
+Qed.
+
+Theorem NoDup_app_singleton A l (x:A) :
+  NoDup (l ++ [x]) ->
+  x ∉ l.
+Proof.
+  intros Hnodup%NoDup_app.
+  destruct Hnodup as (_&Hnotin&_).
+  intros ?%Hnotin.
+  apply H0.
+  constructor.
+Qed.
+
+Theorem ty_size_struct_app d1 d2 :
+  ty_size (struct.t (d1 ++ d2)) =
+  ty_size (struct.t d1) + ty_size (struct.t d2).
+Proof.
+  induction d1 as [|[f t] fs]; simpl; auto.
+  rewrite IHfs; lia.
+Qed.
+
+Lemma struct_big_sep_to_big_fields_gen l q fs1 fs v :
+  NoDup ((fs1 ++ fs).*1) ->
+  struct_big_fields_rec l q (fs1 ++ fs) fs v = struct_big_sep (l +ₗ ty_size (struct.t fs1)) q fs v.
+Proof.
+  revert fs1 v.
+  induction fs as [|[f t] fs]; simpl; auto; intros.
+  destruct v; auto.
+  change (fs1 ++ (f,t)::fs) with (fs1 ++ [(f,t)] ++ fs).
+  rewrite app_assoc in H |- *.
+  rewrite IHfs; eauto.
+  f_equal.
+  - rewrite /struct_field_mapsto.
+    rewrite -app_assoc.
+    erewrite field_offset_prefix; eauto.
+    rewrite ?fmap_app in H.
+    apply NoDup_app in H.
+    destruct H as [H _].
+    simpl in H.
+    apply NoDup_app_singleton in H; auto.
+  - rewrite ty_size_struct_app; simpl.
+    rewrite Z.add_0_r.
+    rewrite loc_add_assoc.
+    reflexivity.
+Qed.
+
+Lemma struct_big_sep_to_big_fields l q d v :
+  NoDup d.*1 ->
+  struct_big_fields l q d v = struct_big_sep l q d v.
+Proof.
+  intros.
+  rewrite /struct_big_fields.
+  change d with (nil ++ d) at 1.
+  rewrite -> struct_big_sep_to_big_fields_gen by auto.
+  simpl.
+  rewrite loc_add_0 //.
 Qed.
 
 (*
