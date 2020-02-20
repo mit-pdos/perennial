@@ -138,7 +138,7 @@ Fixpoint structTy d : ty :=
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
-Definition load_ty t: val :=
+Definition load_ty' t: val :=
   λ: "l",
   (fix load t (l: expr): expr :=
      match t with
@@ -146,6 +146,13 @@ Definition load_ty t: val :=
      | baseT unitBT => #()
      | _ => !l
      end) t (Var "l").
+
+Fixpoint load_ty t: val :=
+  match t with
+  | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))
+  | baseT unitBT => λ: <>, #()
+  | _ => λ: "l", !(Var "l")
+  end.
 
 Definition loadStruct (d:descriptor) : val := load_ty (structTy d).
 
@@ -199,7 +206,16 @@ Definition loadField (d:descriptor) (f:string) : val :=
   | None => λ: <>, #()
   end.
 
-Definition store_ty t: val :=
+Fixpoint store_ty t: val :=
+  match t with
+  | prodT t1 t2 => λ: "p" "v",
+                  store_ty t1 (Var "p") (Fst (Var "v"));;
+                  store_ty t2 (Var "p" +ₗ[t1] #1) (Snd (Var "v"))
+  | baseT unitBT => λ: <> <>, #()
+  | _ => λ: "p" "v", Var "p" <- Var "v"
+  end.
+
+Definition store_ty' t: val :=
   λ: "p" "v",
   (fix store t (p: expr) (v: expr) :=
      match t with
@@ -258,8 +274,8 @@ Hint Resolve load_hasTy.
 
 Hint Rewrite @drop_app : ty.
 
-Theorem load_ty_val_t : forall Γ t,
-  Γ ⊢v load_ty t : (structRefT (flatten_ty t) -> t).
+Theorem load_ty'_val_t : forall Γ t,
+  Γ ⊢v load_ty' t : (structRefT (flatten_ty t) -> t).
 Proof using Type.
   intros.
   type_step.
@@ -276,18 +292,11 @@ Proof using Type.
     admit. (* TODO: need to fix typing rules to use scaled offset *)
 Admitted.
 
-Theorem load_ty_t : forall Γ t,
-  Γ ⊢ load_ty t : (structRefT (flatten_ty t) -> t).
+Theorem load_ty'_t : forall Γ t,
+  Γ ⊢ load_ty' t : (structRefT (flatten_ty t) -> t).
 Proof.
   constructor.
-  apply load_ty_val_t.
-Qed.
-
-Theorem loadStruct_t Γ d :
-  Γ ⊢v loadStruct d : (structRefTy d -> structTy d).
-Proof.
-  unfold loadStruct.
-  apply load_ty_val_t.
+  apply load_ty'_val_t.
 Qed.
 
 Theorem fieldOffset_t Γ fs f z t e :
@@ -315,6 +324,7 @@ Proof using Type.
       destruct fs; simpl in *; congruence.
 Qed.
 
+(*
 Theorem loadField_t : forall d f t z,
   field_offset d f = Some (z, t) ->
   forall Γ, (Γ ⊢v loadField d f : (structRefTy d -> t))%T.
@@ -323,10 +333,11 @@ Proof.
   intros.
   rewrite H; simpl.
   type_step.
-  econstructor; [ | apply load_ty_t ].
+  econstructor; [ | apply load_ty'_t ].
   eapply fieldOffset_t; eauto.
   typecheck.
 Qed.
+*)
 
 Theorem structFieldRef_t Γ d f t z :
   field_offset d f = Some (z, t) ->
@@ -435,4 +446,4 @@ Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scop
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)
 Global Opaque allocStruct structFieldRef loadStruct loadField storeStruct storeField.
-Hint Resolve structFieldRef_t loadStruct_t loadField_t storeStruct_t storeField_t : types.
+Hint Resolve structFieldRef_t storeStruct_t storeField_t : types.

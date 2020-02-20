@@ -30,10 +30,12 @@ Section goose_lang.
     let: "v3" := to_u32 ![u8T]("p" +ₗ #3) in
     "v0" ∥ ("v1" ∥ ("v2" ∥ "v3" ≪ #(U32 8)) ≪ #(U32 8)) ≪ #(U32 8).
 
+  (*
   Theorem DecodeUInt32_t : (⊢ DecodeUInt32 : (arrayT byteT -> uint32T))%T.
   Proof.
     typecheck.
   Qed.
+*)
 
   Definition EncodeUInt64: val :=
     λ: "n" "p",
@@ -65,12 +67,14 @@ Section goose_lang.
     "v0" ∥ ("v1" ∥ ("v2" ∥ ("v3" ∥ ("v4" ∥ ("v5" ∥ ("v6" ∥ "v7"
       ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8).
 
+  (*
   Theorem DecodeUInt64_t : (⊢ DecodeUInt64 : (arrayT byteT -> uint64T))%T.
   Proof.
     typecheck.
   Qed.
+*)
 
-  Hint Resolve EncodeUInt64_t EncodeUInt32_t DecodeUInt64_t DecodeUInt32_t : types.
+  Hint Resolve EncodeUInt64_t EncodeUInt32_t : types.
 
   Definition UInt64Put: val :=
     λ: "p" "n",
@@ -85,10 +89,12 @@ Section goose_lang.
     λ: "p",
     DecodeUInt64 (slice.ptr "p").
 
+  (*
   Theorem UInt64Get_t : ⊢ UInt64Get : (slice.T byteT -> uint64T).
   Proof.
     typecheck.
   Qed.
+*)
 
   Definition UInt32Put: val :=
     λ: "p" "n",
@@ -103,13 +109,15 @@ Section goose_lang.
     λ: "p",
     DecodeUInt32 (slice.ptr "p").
 
+  (*
   Theorem UInt32Get_t : ⊢ UInt32Get : (slice.T byteT -> uint32T).
   Proof.
     typecheck.
   Qed.
+*)
 
 End goose_lang.
 
 Hint Resolve
-     UInt64Put_t UInt64Get_t
-     UInt32Put_t UInt32Get_t : types.
+     UInt64Put_t
+     UInt32Put_t : types.
