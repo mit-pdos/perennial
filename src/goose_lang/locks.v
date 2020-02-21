@@ -1,10 +1,8 @@
-From Perennial.goose_lang Require Import lang notation lib.spin_lock.
-From Perennial.goose_lang Require Import lifting.
 From iris.program_logic Require Import weakestpre.
-From Perennial.goose_lang Require Import proofmode.
+
+From Perennial.goose_lang Require Import notation typing proofmode.
 From Perennial.goose_lang Require Import readonly.
-From Perennial.goose_lang Require Import typing.
-From Perennial.goose_lang Require Import basic_triples.
+From Perennial.goose_lang.lib Require Import typed_mem spin_lock.
 Import uPred.
 
 Definition lockRefT {ext} {ext_ty: ext_types ext} := refT boolT.
@@ -28,7 +26,7 @@ Module lock.
   Proof.
     iIntros (l) "_ HΦ".
     wp_call.
-    wp_apply wp_alloc; [ eauto | ].
+    wp_apply wp_alloc_untyped; [ eauto | ].
     iIntros (l') "Hl".
     iApply ("HΦ" with "[$]").
   Qed.

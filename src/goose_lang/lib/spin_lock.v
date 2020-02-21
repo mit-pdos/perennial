@@ -58,18 +58,14 @@ Section proof.
   Global Instance locked_timeless γ : Timeless (locked γ).
   Proof. apply _. Qed.
 
-  Definition is_free_lock (l: loc): iProp Σ := l ↦[boolT] #false.
+  Definition is_free_lock (l: loc): iProp Σ := l ↦ #false.
 
   Theorem alloc_lock l R : is_free_lock l -∗ R ={⊤}=∗ ∃ γ, is_lock γ #l R.
   Proof.
     iIntros "Hl HR".
     iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
     iMod (inv_alloc N _ (lock_inv γ l R) with "[Hl HR Hγ]") as "#?".
-    { iIntros "!>". iExists false. iFrame.
-      rewrite /is_free_lock /struct_mapsto /=.
-      iDestruct "Hl" as "[Hl _]".
-      rewrite loc_add_0 right_id //.
-    }
+    { iIntros "!>". iExists false. iFrame. }
     iModIntro.
     iExists γ, l.
     iSplit; eauto.
@@ -80,14 +76,14 @@ Section proof.
   Proof using ext_tys.
     iIntros (Φ) "_ HΦ".
     wp_call.
-    wp_apply (typed_mem.wp_AllocAt boolT); auto.
+    wp_apply wp_alloc_untyped; auto.
   Qed.
 
   Lemma newlock_spec (R : iProp Σ):
     {{{ R }}} newlock #() {{{ lk γ, RET lk; is_lock γ lk R }}}.
   Proof using ext_tys.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /newlock /=.
-    wp_lam. wp_apply (typed_mem.wp_AllocAt boolT); first by auto.
+    wp_lam. wp_apply wp_alloc_untyped; first by auto.
     iIntros (l) "Hl".
     iMod (alloc_lock with "Hl HR") as (γ) "Hlock".
     iModIntro.
