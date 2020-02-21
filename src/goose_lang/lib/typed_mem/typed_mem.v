@@ -81,7 +81,7 @@ Section goose_lang.
     intros Hty.
     rewrite (val_ty_len Hty).
     pose proof (ty_size_ge_0 t).
-    lia.
+    rewrite Z2Nat.id; auto.
   Qed.
 
   (* this is the core reasoning, not intended for external use *)
