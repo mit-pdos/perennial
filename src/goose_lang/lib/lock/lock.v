@@ -1,24 +1,22 @@
+From stdpp Require Import namespaces.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl.
+From iris.base_logic.lib Require Import invariants.
 From iris.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Export lang.
-From Perennial.goose_lang Require Import proofmode basic_triples notation.
-From Perennial.goose_lang.lib Require Import lock.
+
+From Perennial.goose_lang Require Export lang typing.
+From Perennial.goose_lang Require Import proofmode notation.
+From Perennial.goose_lang Require Import readonly.
+From Perennial.goose_lang.lib Require Import typed_mem.
+From Perennial.goose_lang.lib Require Export lock.impl.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-  Context `{ffi_sem: ext_semantics}.
-  Context `{!ffi_interp ffi}.
-  Context {ext_tys: ext_types ext}.
+Context `{ffi_sem: ext_semantics}.
+Context `{!ffi_interp ffi}.
+Context {ext_tys: ext_types ext}.
 
-  Definition Var' s : @expr ext := Var s.
-  Local Coercion Var' : string >-> expr.
-
-Definition newlock : val := λ: <>, ref #false.
-Definition try_acquire : val := λ: "l", CAS "l" #false #true.
-Definition acquire : val :=
-  rec: "acquire" "l" := if: try_acquire "l" then #() else "acquire" "l".
-Definition release : val := λ: "l", CmpXchg "l" #true #false;; #().
+Local Coercion Var' (s:string): expr := Var s.
 
 (** The CMRA we need. *)
 (* Not bundling heapG, as it may be shared with other users. *)
@@ -43,6 +41,15 @@ Section proof.
     iIntros "Hl"; iDestruct "Hl" as (l) "[-> _]"; eauto.
   Qed.
 
+  Theorem is_lock_ty γ lk R :
+    is_lock γ lk R -∗ ⌜val_ty lk lockRefT⌝.
+  Proof.
+    iIntros "Hlk".
+    iDestruct (is_lock_flat with "Hlk") as (l) "->".
+    iPureIntro.
+    val_ty.
+  Qed.
+
   Definition locked (γ : gname) : iProp Σ := own γ (Excl ()).
 
   Lemma locked_exclusive (γ : gname) : locked γ -∗ locked γ -∗ False.
@@ -59,29 +66,40 @@ Section proof.
   Global Instance locked_timeless γ : Timeless (locked γ).
   Proof. apply _. Qed.
 
-  Definition is_free_lock (l: loc): iProp Σ := l ↦[boolT] #false.
+  Definition is_free_lock (l: loc): iProp Σ := l ↦ #false.
+
+  Theorem is_free_lock_ty lk :
+    is_free_lock lk -∗ ⌜val_ty #lk lockRefT⌝.
+  Proof.
+    iIntros "Hlk".
+    iPureIntro.
+    val_ty.
+  Qed.
 
   Theorem alloc_lock l R : is_free_lock l -∗ R ={⊤}=∗ ∃ γ, is_lock γ #l R.
   Proof.
     iIntros "Hl HR".
     iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
     iMod (inv_alloc N _ (lock_inv γ l R) with "[Hl HR Hγ]") as "#?".
-    { iIntros "!>". iExists false. iFrame.
-      iDestruct "Hl" as "[[Hl _] %]".
-      rewrite loc_add_0.
-      by iFrame. }
+    { iIntros "!>". iExists false. iFrame. }
     iModIntro.
     iExists γ, l.
     iSplit; eauto.
   Qed.
 
-  Lemma newlock_spec (R : iProp Σ):
-    {{{ R }}} newlock #() {{{ lk γ, RET lk; is_lock γ lk R }}}.
+  Lemma wp_new_free_lock :
+    {{{ True }}} lock.new #() {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof using ext_tys.
-    iIntros (Φ) "HR HΦ". rewrite -wp_fupd /newlock /=.
-    wp_lam. wp_apply wp_alloc. (* TODO: to restore wp_alloc tactic, need a
-    type hint in the code *)
-    { val_ty. }
+    iIntros (Φ) "_ HΦ".
+    wp_call.
+    wp_apply wp_alloc_untyped; auto.
+  Qed.
+
+  Lemma newlock_spec (R : iProp Σ):
+    {{{ R }}} lock.new #() {{{ lk γ, RET lk; is_lock γ lk R }}}.
+  Proof using ext_tys.
+    iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
+    wp_lam. wp_apply wp_alloc_untyped; first by auto.
     iIntros (l) "Hl".
     iMod (alloc_lock with "Hl HR") as (γ) "Hlock".
     iModIntro.
@@ -89,7 +107,7 @@ Section proof.
   Qed.
 
   Lemma try_acquire_spec γ lk R :
-    {{{ is_lock γ lk R }}} try_acquire lk
+    {{{ is_lock γ lk R }}} lock.try_acquire lk
     {{{ b, RET #b; if b is true then locked γ ∗ R else True }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -102,7 +120,7 @@ Section proof.
   Qed.
 
   Lemma acquire_spec γ lk R :
-    {{{ is_lock γ lk R }}} acquire lk {{{ RET #(); locked γ ∗ R }}}.
+    {{{ is_lock γ lk R }}} lock.acquire lk {{{ RET #(); locked γ ∗ R }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_acquire_spec with "Hl"). iIntros ([]).
@@ -111,11 +129,11 @@ Section proof.
   Qed.
 
   Lemma release_spec γ lk R :
-    {{{ is_lock γ lk R ∗ locked γ ∗ R }}} release lk {{{ RET #(); True }}}.
+    {{{ is_lock γ lk R ∗ locked γ ∗ R }}} lock.release lk {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock & Hlocked & HR) HΦ".
     iDestruct "Hlock" as (l ->) "#Hinv".
-    rewrite /release /=. wp_lam.
+    rewrite /lock.release /=. wp_lam.
     wp_bind (CmpXchg _ _ _).
     iInv N as (b) "[Hl _]".
     destruct b.
@@ -128,11 +146,75 @@ Section proof.
       iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
       iNext. iExists false. by iFrame.
   Qed.
+
+  (** cond var proofs *)
+
+  Definition is_cond (c: loc) (lk : val) : iProp Σ :=
+    c ↦ro lk.
+
+  Theorem is_cond_dup c lk :
+    is_cond c lk -∗ is_cond c lk ∗ is_cond c lk.
+  Proof.
+    iIntros "Hc".
+    iDestruct "Hc" as "[Hc1 Hc2]".
+    iSplitL "Hc1"; iFrame "#∗".
+  Qed.
+
+  Theorem wp_newCond γ lk R :
+    {{{ is_lock γ lk R }}}
+      lock.newCond lk
+    {{{ c, RET #c; is_cond c lk }}}.
+  Proof.
+    iIntros (Φ) "Hl HΦ".
+    wp_call.
+    iDestruct (is_lock_flat with "Hl") as %[l ->].
+    wp_apply wp_alloc_untyped; [ auto | ].
+    iIntros (c) "Hc".
+    rewrite ptsto_ro_weaken.
+    iApply "HΦ".
+    iFrame.
+  Qed.
+
+  Theorem wp_condSignal c lk :
+    {{{ is_cond c lk }}}
+      lock.condSignal #c
+    {{{ RET #(); is_cond c lk }}}.
+  Proof.
+    iIntros (Φ) "Hc HΦ".
+    wp_call.
+    iApply ("HΦ" with "[$Hc]").
+  Qed.
+
+  Theorem wp_condBroadcast c lk :
+    {{{ is_cond c lk }}}
+      lock.condBroadcast #c
+    {{{ RET #(); is_cond c lk }}}.
+  Proof.
+    iIntros (Φ) "Hc HΦ".
+    wp_call.
+    iApply ("HΦ" with "[$]").
+  Qed.
+
+  Theorem wp_condWait γ c lk R :
+    {{{ is_cond c lk ∗ is_lock γ lk R ∗ locked γ ∗ R }}}
+      lock.condWait #c
+    {{{ RET #(); is_cond c lk ∗ locked γ ∗ R }}}.
+  Proof.
+    iIntros (Φ) "(Hc&#Hlock&Hlocked&HR) HΦ".
+    wp_call.
+    iDestruct (ptsto_ro_load with "Hc") as (q) "Hc".
+    wp_load.
+    wp_apply (release_spec with "[$Hlock $Hlocked $HR]").
+    wp_pures.
+    wp_load.
+    wp_apply (acquire_spec with "[$Hlock]").
+    iIntros "(Hlocked&HR)".
+    iApply "HΦ".
+    iSplitR "Hlocked HR"; last by iFrame.
+    iApply (ptsto_ro_from_q with "[$]").
+  Qed.
+
 End proof.
 End goose_lang.
 
-Typeclasses Opaque is_lock locked.
-
-Canonical Structure spin_lock `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {ext_tys:ext_types ext} `{!heapG Σ, !lockG Σ} : lock Σ :=
-  {| lock.locked_exclusive := locked_exclusive; lock.newlock_spec := newlock_spec;
-     lock.acquire_spec := acquire_spec; lock.release_spec := release_spec |}.
+Typeclasses Opaque is_lock is_cond locked.

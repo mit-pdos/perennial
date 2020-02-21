@@ -1,5 +1,6 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
+From iris.proofmode Require Export environments.
 From iris.program_logic Require Export weakestpre total_weakestpre.
 From iris.program_logic Require Import atomic.
 From Perennial.goose_lang Require Export tactics lifting.
@@ -10,7 +11,7 @@ Import uPred.
 Lemma tac_wp_expr_eval `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ e e' :
   (∀ (e'':=e'), e = e'') →
   envs_entails Δ (WP e' @ s; E {{ Φ }}) → envs_entails Δ (WP e @ s; E {{ Φ }}).
-Proof using Type. by intros ->. Qed.
+Proof. by intros ->. Qed.
 
 Tactic Notation "wp_expr_eval" tactic(t) :=
   iStartProof;
@@ -27,24 +28,36 @@ Lemma tac_wp_pure `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ �
   MaybeIntoLaterNEnvs n Δ Δ' →
   envs_entails Δ' (WP e2 @ s; E {{ Φ }}) →
   envs_entails Δ (WP e1 @ s; E {{ Φ }}).
-Proof using Type.
+Proof.
   rewrite envs_entails_eq=> ??? HΔ'. rewrite into_laterN_env_sound /=.
   rewrite HΔ' -lifting.wp_pure_step_later //.
 Qed.
 
 Lemma tac_wp_value `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ v :
   envs_entails Δ (Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).
-Proof using Type. rewrite envs_entails_eq=> ->. by apply wp_value. Qed.
+Proof. rewrite envs_entails_eq=> ->. by apply wp_value. Qed.
 
 Ltac wp_expr_simpl := wp_expr_eval simpl.
 
 Ltac wp_value_head :=
   eapply tac_wp_value.
 
+Lemma tac_wp_true_elim Σ Δ (P: iProp Σ) :
+  envs_entails Δ P ->
+  envs_entails Δ (bi_wand (bi_pure True) P).
+Proof. rewrite envs_entails_eq=> ->.
+  iIntros "H _".
+  iApply "H".
+Qed.
+
+Lemma tac_wp_true Σ (Δ: envs (iPropI Σ)) :
+  envs_entails Δ (bi_pure True).
+Proof. done. Qed.
+
 Ltac solve_bi_true :=
   try lazymatch goal with
-      | |- envs_entails _ (bi_pure True) => done
-      | |- envs_entails _ (bi_wand (bi_pure True) _)  => iIntros "_"
+      | |- envs_entails _ (bi_pure True) => apply tac_wp_true
+      | |- envs_entails _ (bi_wand (bi_pure True) _)  => apply tac_wp_true_elim
       end.
 
 Ltac wp_finish :=
@@ -98,7 +111,7 @@ can be used as an instance by the typeclass resolution system. We then perform
 the reduction, and finally we clear this new hypothesis. *)
 Tactic Notation "wp_rec" :=
   let H := fresh in
-  assert (H := AsRecV_recv);
+  pose proof AsRecV_recv as H;
   wp_pure (App _ _);
   clear H.
 
@@ -147,7 +160,7 @@ Lemma tac_wp_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} K Δ
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
   envs_entails Δ (WP e @ s; E {{ v, WP f (Val v) @ s; E {{ Φ }} }})%I →
   envs_entails Δ (WP fill K e @ s; E {{ Φ }}).
-Proof using Type. rewrite envs_entails_eq=> -> ->. by apply: wp_bind. Qed.
+Proof. rewrite envs_entails_eq=> -> ->. by apply: wp_bind. Qed.
 
 Ltac wp_bind_core K :=
   lazymatch eval hnf in K with
@@ -179,7 +192,7 @@ Lemma tac_wp_load Δ Δ' s E i K l q v Φ :
   envs_lookup i Δ' = Some (false, l ↦{q} v)%I →
   envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (Load (LitV l)) @ s; E {{ Φ }}).
-Proof using Type.
+Proof.
   rewrite envs_entails_eq=> ???.
   rewrite -wp_bind. eapply wand_apply; first exact: wp_load.
   rewrite into_laterN_env_sound -later_sep envs_lookup_split //; simpl.
@@ -196,7 +209,7 @@ Lemma tac_wp_cmpxchg Δ Δ' Δ'' s E i K l v v1 v2 Φ :
   (v ≠ v1 →
    envs_entails Δ' (WP fill K (Val $ PairV v (LitV $ LitBool false)) @ s; E {{ Φ }})) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) (Val v1) (Val v2)) @ s; E {{ Φ }}).
-Proof using Type.
+Proof.
   rewrite envs_entails_eq=> ???? Hsuc Hfail.
   destruct (decide (v = v1)) as [Heq|Hne].
   - rewrite -wp_bind. eapply wand_apply.
@@ -215,7 +228,7 @@ Lemma tac_wp_cmpxchg_fail Δ Δ' s E i K l q v v1 v2 Φ :
   v ≠ v1 → vals_compare_safe v v1 →
   envs_entails Δ' (WP fill K (Val $ PairV v (LitV $ LitBool false)) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E {{ Φ }}).
-Proof using Type.
+Proof.
   rewrite envs_entails_eq=> ?????.
   rewrite -wp_bind. eapply wand_apply; first exact: wp_cmpxchg_fail.
   rewrite into_laterN_env_sound -later_sep envs_lookup_split //; simpl.
@@ -229,7 +242,7 @@ Lemma tac_wp_cmpxchg_suc Δ Δ' Δ'' s E i K l v v1 v2 Φ :
   v = v1 → vals_compare_safe v v1 →
   envs_entails Δ'' (WP fill K (Val $ PairV v (LitV $ LitBool true)) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E {{ Φ }}).
-Proof using Type.
+Proof.
   rewrite envs_entails_eq=> ??????; subst.
   rewrite -wp_bind. eapply wand_apply.
   { eapply wp_cmpxchg_suc; eauto. }

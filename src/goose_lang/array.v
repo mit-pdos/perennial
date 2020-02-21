@@ -1,20 +1,21 @@
 From stdpp Require Import fin_maps.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import tactics coq_tactics.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lifting.
-From Perennial.goose_lang Require Import tactics notation typing.
+From Perennial.goose_lang Require Import proofmode tactics.
+From Perennial.goose_lang.lib Require Import typed_mem.typed_mem.
 Set Default Proof Using "Type".
 
 (** This file defines the [array] connective, a version of [mapsto] that works
 with lists of values. It also contains array versions of the basic heap
-operations of HeapLand. *)
+operations of GooseLang. *)
 
 Reserved Notation "l ↦∗[ t ] vs" (at level 20, format "l  ↦∗[ t ]  vs").
 
 Section goose_lang.
-  Context `{ffi_semantics: ext_semantics}.
-  Context {ext_tys:ext_types ext}.
-  Context `{!ffi_interp ffi}.
+Context `{ffi_semantics: ext_semantics}.
+Context {ext_tys:ext_types ext}.
+Context `{!ffi_interp ffi}.
 
 (* technically the definition of array doesn't depend on a state interp, only
 the ffiG type; fixing this would require unbundling ffi_interp *)
@@ -115,73 +116,67 @@ Proof.
   by iApply "IH".
 Qed.
 
-Lemma wp_allocN s E v t (n: u64) :
+Lemma wp_allocN t s E v (n: u64) :
   (0 < int.val n)%Z →
   val_ty v t ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); l ↦∗[t] replicate (int.nat n) v }}}.
 Proof.
-  iIntros (Hsz Hty Φ) "_ HΦ". iApply wp_allocN_seq; [done..|]. iNext.
+  iIntros (Hsz Hty Φ) "_ HΦ". wp_apply wp_allocN_seq; [done..|].
   iIntros (l) "Hlm". iApply "HΦ".
-  by iApply mapsto_seq_struct_array.
+  iApply mapsto_seq_struct_array.
+  iApply (big_sepL_mono with "Hlm").
+  iIntros (k y Heq) "Hvals".
+  erewrite (nat_scaled_offset_to_Z Hty).
+  iSplitL; auto.
 Qed.
 
-(** Access to array elements *)
-(* moved to basic_triples *)
-
-(*
-Lemma wp_cmpxchg_suc_offset s E l off vs v' v1 v2 :
-  vs !! off = Some v' →
-  v' = v1 →
-  vals_compare_safe v' v1 →
-  {{{ ▷ l ↦∗ vs }}}
-    CmpXchg #(l +ₗ off) v1 v2 @ s; E
-  {{{ RET (v', #true); l ↦∗ <[off:=v2]> vs }}}.
+Lemma wp_load_offset s E l off t vs v :
+  vs !! off = Some v →
+  {{{ l ↦∗[t] vs }}} load_ty t #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t] vs ∗ ⌜val_ty v t⌝ }}}.
 Proof.
-  iIntros (Hlookup ?? Φ) "Hl HΦ".
-  iDestruct (update_array l _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  iApply (wp_cmpxchg_suc with "Hl1"); [done..|].
-  iNext. iIntros "Hl1". iApply "HΦ". iApply "Hl2". iApply "Hl1".
+  iIntros (Hlookup Φ) "Hl HΦ".
+  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
+  iApply (wp_LoadAt with "Hl1"). iIntros "!> Hl1". iApply "HΦ".
+  iDestruct ("Hl2" $! v) as "Hl2". rewrite list_insert_id; last done.
+  iDestruct (struct_mapsto_ty with "Hl1") as %Hty.
+  iSplitL; eauto.
+  iApply ("Hl2" with "[$]").
 Qed.
 
-Lemma wp_cmpxchg_suc_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v1 v2 :
-  vs !!! off = v1 →
-  vals_compare_safe (vs !!! off) v1 →
-  {{{ ▷ l ↦∗ vs }}}
-    CmpXchg #(l +ₗ off) v1 v2 @ s; E
-  {{{ RET (vs !!! off, #true); l ↦∗ vinsert off v2 vs }}}.
+Lemma wp_store_offset s E l off vs t v :
+  is_Some (vs !! off) →
+  val_ty v t ->
+  {{{ ▷ l ↦∗[t] vs }}} store_ty t #(l +ₗ[t] off) v @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
 Proof.
-  intros. setoid_rewrite vec_to_list_insert. eapply wp_cmpxchg_suc_offset=> //.
-  by apply vlookup_lookup.
+  iIntros ([w Hlookup] Hty Φ) ">Hl HΦ".
+  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
+  iApply (wp_StoreAt _ _ _ _ _ _ Hty with "Hl1"). iIntros "!> Hl1".
+  iApply "HΦ". iApply ("Hl2" with "Hl1").
 Qed.
-
-Lemma wp_cmpxchg_fail_offset s E l off vs v0 v1 v2 :
-  vs !! off = Some v0 →
-  v0 ≠ v1 →
-  vals_compare_safe v0 v1 →
-  {{{ ▷ l ↦∗ vs }}}
-    CmpXchg #(l +ₗ off) v1 v2 @ s; E
-  {{{ RET (v0, #false); l ↦∗ vs }}}.
-Proof.
-  iIntros (Hlookup HNEq Hcmp Φ) ">Hl HΦ".
-  iDestruct (update_array l _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  iApply (wp_cmpxchg_fail with "Hl1"); first done.
-  { destruct Hcmp; by [ left | right ]. }
-  iIntros "!> Hl1". iApply "HΦ". iDestruct ("Hl2" $! v0) as "Hl2".
-  rewrite list_insert_id; last done. iApply "Hl2". iApply "Hl1".
-Qed.
-
-Lemma wp_cmpxchg_fail_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v1 v2 :
-  vs !!! off ≠ v1 →
-  vals_compare_safe (vs !!! off) v1 →
-  {{{ ▷ l ↦∗ vs }}}
-    CmpXchg #(l +ₗ off) v1 v2 @ s; E
-  {{{ RET (vs !!! off, #false); l ↦∗ vs }}}.
-Proof. intros. eapply wp_cmpxchg_fail_offset=> //. by apply vlookup_lookup. Qed.
-*)
 
 End lifting.
 End goose_lang.
 
 Notation "l  ↦∗[ t ]  vs" := (array l t vs) : bi_scope.
 Typeclasses Opaque array.
+
+Ltac iFramePtsTo_core t :=
+  match goal with
+  | [ |- envs_entails ?Δ ((?l +ₗ ?z) ↦∗[_] ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j ((l +ₗ ?z') ↦∗[_] ?v')] =>
+      unify v v';
+      replace z with z';
+      [ iExact j | t ]
+    end
+  | [ |- envs_entails ?Δ (?l ↦ ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j (l ↦ ?v')] =>
+      replace v with v';
+      [ iExact j | t ]
+    end
+  end.
+
+Tactic Notation "iFramePtsTo" := iFramePtsTo_core ltac:(idtac).
+Tactic Notation "iFramePtsTo" "by" tactic(t) := iFramePtsTo_core ltac:(by t).

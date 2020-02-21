@@ -1,5 +1,7 @@
-From Perennial.goose_lang Require Export
-     lang notation slice map struct typing encoding locks.
+From Perennial.goose_lang Require Export lang notation typing.
+From Perennial.goose_lang.lib Require Export
+     typed_mem.impl struct.impl loop.impl
+     encoding.impl map.impl slice.impl lock.impl.
 
 (* We provide stubs here for primitive operations to make the Goose unit tests
    compile. *)
@@ -7,6 +9,7 @@ From Perennial.goose_lang Require Export
 (* TODO: replace all of these stubs with real operations *)
 
 Open Scope heap_types.
+Open Scope struct_scope.
 
 Definition uint64_to_string {ext: ext_op}: val := λ: <>, #().
 Definition strLen {ext: ext_op}: val := λ: "s", #0.

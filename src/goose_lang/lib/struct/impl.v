@@ -1,7 +1,6 @@
-From stdpp Require Import gmap.
-From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import typing.
+From Perennial.goose_lang.lib Require Import typed_mem.impl.
 
 (** * Struct library
 
@@ -10,35 +9,31 @@ From Perennial.goose_lang Require Import typing.
 Set Default Proof Using "Type".
 Set Implicit Arguments.
 
-Section goose.
-  Context {ext} {ext_ty: ext_types ext}.
-  Definition descriptor := list (string*ty).
-  Definition mkStruct (fs: list (string*ty)): descriptor := fs.
+Section goose_lang.
+Context `{ffi_sem: ext_semantics}.
+Context {ext_ty: ext_types ext}.
 
-  Class descriptor_wf (d:descriptor) :=
-    { descriptor_NoDup: NoDup d.*1; }.
+Definition descriptor := list (string*ty).
+Definition mkStruct (fs: list (string*ty)): descriptor := fs.
 
-  Definition option_descriptor_wf (d:descriptor) : option (descriptor_wf d).
-    destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
-    constructor; auto.
-  Defined.
-End goose.
+Class descriptor_wf (d:descriptor) :=
+  { descriptor_NoDup: NoDup d.*1; }.
 
-Local Ltac maybe_descriptor_wf d :=
-  let mpf := (eval hnf in (option_descriptor_wf d)) in
-  match mpf with
-  | Some ?pf => exact pf
-  | None => fail "descriptor is not well-formed"
+Definition option_descriptor_wf (d:descriptor) : option (descriptor_wf d).
+  destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
+  constructor; auto.
+Defined.
+
+Definition proj_descriptor_wf (d:descriptor) :=
+  match option_descriptor_wf d as mwf return match mwf with
+                                             | Some _ => descriptor_wf d
+                                             | None => True
+                                             end  with
+  | Some pf => pf
+  | None => I
   end.
 
-Hint Extern 3 (descriptor_wf ?d) => maybe_descriptor_wf d : typeclass_instances.
-
-Section goose_lang.
-  Context `{ffi_sem: ext_semantics}.
-  Context {ext_ty: ext_types ext}.
-
 Implicit Types (d:descriptor).
-
 Infix "=?" := (String.eqb).
 
 Definition getField d (f0: string) : val :=
@@ -116,13 +111,6 @@ Fixpoint structTy d : ty :=
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
-Fixpoint load_ty t: val :=
-  match t with
-  | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))
-  | baseT unitBT => λ: <>, #()
-  | _ => λ: "l", !(Var "l")
-  end.
-
 Definition loadStruct (d:descriptor) : val := load_ty (structTy d).
 
 Fixpoint field_offset d f0 : option (Z * ty) :=
@@ -153,15 +141,6 @@ Definition loadField (d:descriptor) (f:string) : val :=
   match field_offset d f with
   | Some (off, t) => λ: "p", load_ty t (BinOp (OffsetOp off) (Var "p") #1)
   | None => λ: <>, #()
-  end.
-
-Fixpoint store_ty t: val :=
-  match t with
-  | prodT t1 t2 => λ: "p" "v",
-                  store_ty t1 (Var "p") (Fst (Var "v"));;
-                  store_ty t2 (Var "p" +ₗ[t1] #1) (Snd (Var "v"))
-  | baseT unitBT => λ: <> <>, #()
-  | _ => λ: "p" "v", Var "p" <- Var "v"
   end.
 
 Definition storeStruct (d: descriptor) : val := store_ty (structTy d).
@@ -267,7 +246,7 @@ Admitted.
 
 Hint Constructors expr_hasTy.
 
-Theorem store_struct_singleton Γ e v t :
+Theorem store_struct_singleton_ty Γ e v t :
   Γ ⊢ e : structRefT [t] ->
   Γ ⊢ v : t ->
   Γ ⊢ (e <- v) : unitT.
@@ -276,9 +255,9 @@ Proof.
   eapply store_hasTy; eauto.
 Qed.
 
-Hint Resolve store_struct_singleton.
-
 End goose_lang.
+
+Hint Extern 3 (descriptor_wf ?d) => exact (proj_descriptor_wf d) : typeclass_instances.
 
 Module struct.
   Notation decl := mkStruct.
@@ -298,16 +277,10 @@ Module struct.
   Notation storeF := storeField.
 End struct.
 
-Notation "![ t ] e" := (load_ty t e%E)
-                         (at level 9, right associativity, format "![ t ]  e") : expr_scope.
-Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E)
-                             (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
-
 Notation "f :: t" := (@pair string ty f%string t%ht) : struct_scope.
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
 Arguments mkStruct {ext ext_ty} _%struct_scope.
-Open Scope struct_scope.
 
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)

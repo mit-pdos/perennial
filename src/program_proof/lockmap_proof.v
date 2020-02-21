@@ -1,6 +1,7 @@
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.Helpers Require Import GenHeap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
+From Perennial.goose_lang.lib Require Import wp_store.
 
 Hint Rewrite app_length @drop_length @take_length @fmap_length
      @replicate_length : len.
@@ -72,15 +73,13 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iIntros (mref) "Hmap".
   wp_pures.
 
-  wp_bind (newlock _).
-  iApply lock.new_free_lock; auto.
+  wp_apply wp_new_free_lock; auto.
 
-  iNext.
   iIntros (shardlock) "Hfreelock".
 
   wp_pures.
-  iDestruct (lock.is_free_lock_ty with "Hfreelock") as "%".
-  wp_apply (wp_alloc _ _ (structTy lockShard.S)); first by eauto.
+  iDestruct (is_free_lock_ty with "Hfreelock") as "%".
+  wp_apply (typed_mem.wp_AllocAt (structTy lockShard.S)); first by eauto.
   iIntros (ls) "Hls".
 
   iMod (gen_heap_init (∅: gmap u64 bool)) as (hG) "Hheapctx".
@@ -208,15 +207,15 @@ Proof.
 
   wp_pures.
   wp_apply (wp_forBreak
-    (is_lockShard_inner mptr shardlock gh covered P ∗ spin_lock.locked γl)
-    (is_lockShard_inner mptr shardlock gh covered P ∗ spin_lock.locked γl ∗ P addr ∗ locked gh addr)
+    (is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl)
+    (is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl ∗ P addr ∗ locked gh addr)
     with "[] [$Hlocked $Hinner]").
 
   {
     iIntros (Φloop) "!> [Hinner Hlocked] HΦloop".
     iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
     wp_pures.
-    wp_apply wp_alloc_zero.
+    wp_apply wp_ref_of_zero.
     iIntros (state) "Hstate".
     wp_apply (wp_load_lockShard_state with "Hls").
     wp_apply (wp_MapGet with "[$Hmptr]"); auto.
@@ -228,9 +227,9 @@ Proof.
 
     destruct ok; wp_if.
     - wp_pures.
-      wp_store.
+      wp_apply (wp_store with "Hstate"); iIntros "Hstate".
 
-      wp_apply wp_alloc_zero.
+      wp_apply wp_ref_of_zero.
       iIntros (acquired) "Hacquired".
 
       wp_load.
@@ -315,6 +314,7 @@ Proof.
         iMod (gen_heap_update _ _ _ true with "Hghctx Haddr") as "[Hghctx Haddr]".
 
         iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
+        wp_pures.
         wp_store.
         wp_load.
 
@@ -334,7 +334,7 @@ Proof.
       wp_apply (wp_load_lockShard_mu with "Hls").
       wp_apply lock.wp_newCond; [done|].
       iIntros (c) "Hcond".
-      wp_apply (wp_alloc _ _ (struct.t lockState.S)); [val_ty|].
+      wp_apply (typed_mem.wp_AllocAt (struct.t lockState.S)); [val_ty|].
       iIntros (lst) "Hlst".
       wp_store.
       wp_load.
@@ -342,7 +342,7 @@ Proof.
       wp_apply (wp_MapInsert with "[$Hmptr]").
       iIntros "Hmptr".
 
-      wp_apply wp_alloc_zero.
+      wp_apply wp_ref_of_zero.
       iIntros (acquired) "Hacquired".
 
       wp_pures.

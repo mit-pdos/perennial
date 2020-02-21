@@ -1,0 +1,36 @@
+From Perennial.goose_lang Require Import lang notation.
+
+Section goose_lang.
+Context {ext: ext_op}.
+
+(* idiomatic wrappers for loop control flow *)
+Definition Continue: val := #true.
+Definition Break: val := #false.
+
+Definition For: val :=
+  λ: "cond" "body" "post",
+  (rec: "loop" <> :=
+     if: (Var "cond") #()
+     then let: "continue" := (Var "body") #() in
+          if: (Var "continue")
+          then (Var "post") #();; (Var "loop") #()
+          else #()
+     else #()) #().
+
+Definition Loop: val :=
+  λ: "body",
+  (rec: "loop" <> :=
+     let: "continue" := (Var "body") #() in
+     if: Var "continue"
+     then (Var "loop") #()
+     else #()) #().
+
+End goose_lang.
+
+Notation "'for:' cond ; post := e" := (For cond%E e%E post%E)
+  (at level 200, cond, post at level 1, e at level 200,
+   format "'[' 'for:'  cond  ;  post  :=  '/  ' e ']'") : expr_scope.
+
+Notation "'for:' := e" := (Loop (LamV BAnon e%E))
+  (at level 200, e at level 200,
+   format "'[' 'for:'  :=  '/  ' e ']'") : expr_scope.

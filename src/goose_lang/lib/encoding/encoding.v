@@ -4,8 +4,8 @@ From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export
      lang notation array typing struct
      tactics lifting proofmode.
-From Perennial.goose_lang Require Import slice basic_triples.
-From Perennial.goose_lang Require Export encoding.
+From Perennial.goose_lang Require Import slice.
+From Perennial.goose_lang.lib Require Export encoding.impl.
 
 Set Default Proof Using "Type".
 

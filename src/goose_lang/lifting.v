@@ -7,7 +7,7 @@ From iris.program_logic Require Import ectx_lifting total_ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
-From Perennial.goose_lang Require Import tactics notation map.
+From Perennial.goose_lang Require Import tactics notation.
 From Perennial.goose_lang Require Import typing.
 Set Default Proof Using "Type".
 
@@ -21,90 +21,6 @@ Notation "l ↦ v" :=
 Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
-
-Section StructMapsto.
-  Context {ext:ext_op}.
-  Context {ext_ty:ext_types ext}.
-
-  Inductive lit_ty : base_lit -> ty -> Prop :=
-  | int_ty x : lit_ty (LitInt x) uint64T
-  | int32_ty x : lit_ty (LitInt32 x) uint32T
-  | int8_ty x : lit_ty (LitByte x) byteT
-  | bool_ty x : lit_ty (LitBool x) boolT
-  | string_ty x : lit_ty (LitString x) stringT
-  | unit_ty : lit_ty LitUnit unitT
-  | loc_array_ty x t : lit_ty (LitLoc x) (arrayT t)
-  | loc_struct_ty x ts : lit_ty (LitLoc x) (structRefT ts)
-  .
-
-  (* approximate types for closed values *)
-  Inductive val_ty : val -> ty -> Prop :=
-  | base_ty l t : lit_ty l t -> val_ty (LitV l) t
-  | val_ty_pair v1 t1 v2 t2 : val_ty v1 t1 ->
-                              val_ty v2 t2 ->
-                              val_ty (PairV v1 v2) (prodT t1 t2)
-  | sum_ty_l v1 t1 t2 : val_ty v1 t1 ->
-                        val_ty (InjLV v1) (sumT t1 t2)
-  | sum_ty_r v2 t1 t2 : val_ty v2 t2 ->
-                        val_ty (InjRV v2) (sumT t1 t2)
-  | map_def_ty v t : val_ty v t ->
-                     val_ty (MapNilV v) (mapValT t)
-  | map_cons_ty k v mv' t : val_ty mv' (mapValT t) ->
-                            val_ty k uint64T ->
-                            val_ty v t ->
-                            val_ty (InjRV (k, v, mv')%V) (mapValT t)
-  | rec_ty f x e t1 t2 : val_ty (RecV f x e) (arrowT t1 t2)
-  | ext_def_ty x : val_ty (ExtV (val_ty_def x)) (extT x)
-  .
-
-  Theorem zero_val_ty' t : val_ty (zero_val t) t.
-  Proof.
-    induction t; simpl; eauto using val_ty, lit_ty.
-    destruct t; eauto using val_ty, lit_ty.
-  Qed.
-
-  Theorem val_ty_len {v t} : val_ty v t -> length (flatten_struct v) = Z.to_nat (ty_size t).
-  Proof.
-    induction 1; simpl; rewrite -> ?app_length in *; auto.
-    - inversion H; subst; auto.
-    - pose proof (ty_size_ge_0 t1).
-      pose proof (ty_size_ge_0 t2).
-      lia.
-  Qed.
-
-  Context {Σ} {hG: na_heapG loc val Σ}.
-
-  Definition struct_mapsto l q (t:ty) (v: val): iProp Σ :=
-    (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{q} vj) ∗ ⌜val_ty v t⌝)%I.
-
-  Theorem struct_mapsto_singleton l q t v v0 :
-    flatten_struct v = [v0] ->
-    struct_mapsto l q t v -∗ l ↦{q} v0.
-  Proof.
-    intros Hv.
-    rewrite /struct_mapsto Hv /=.
-    rewrite loc_add_0 right_id.
-    by iIntros "[$ _]".
-  Qed.
-
-End StructMapsto.
-
-Ltac val_ty :=
-  lazymatch goal with
-  | |- val_ty (zero_val _) _ => apply zero_val_ty'
-  | [ H: val_ty ?v ?t |- val_ty ?v ?t ] => exact H
-  | |- val_ty _ _ => solve [ repeat constructor ]
-  | _ => fail "not a val_ty goal"
-  end.
-
-Hint Extern 2 (val_ty _ _) => val_ty : core.
-
-Notation "l ↦[ ty ]{ q } v" := (struct_mapsto l q ty v%V)
-                                  (at level 20, q at level 50, ty at level 50,
-                                   format "l  ↦[ ty ]{ q }  v") : bi_scope.
-Notation "l ↦[ ty ] v" := (struct_mapsto l 1 ty v%V)
-                             (at level 20, ty at level 50,
-                              format "l  ↦[ ty ]  v") : bi_scope.
 
 (* An FFI layer will use certain CMRAs for its primitive rules.
    Besides needing to know that these CMRAs are included in Σ, there may
@@ -136,9 +52,9 @@ Arguments ffi_start {ffi FfiInterp Σ} fG : rename.
 Arguments ffi_restart {ffi FfiInterp Σ} fG : rename.
 
 Section goose_lang.
-  Context `{ffi_semantics: ext_semantics}.
-  Context {ext_tys: ext_types ext}.
-  Context `{!ffi_interp ffi}.
+Context `{ffi_semantics: ext_semantics}.
+Context {ext_tys: ext_types ext}.
+Context `{!ffi_interp ffi}.
 
 Definition traceO := leibnizO (list event).
 Definition OracleO := leibnizO (Oracle).
@@ -678,14 +594,16 @@ Proof.
     admit. (* need to move between seq 0 and seq 1 *)
 Admitted.
 
-Lemma wp_allocN_seq s E t v (n: u64) :
+Definition mapsto_vals l q vs : iProp Σ :=
+  ([∗ list] j↦vj ∈ vs, (l +ₗ j) ↦{q} vj)%I.
+
+Lemma wp_allocN_seq s E v (n: u64) :
   (0 < int.val n)%Z →
-  val_ty v t ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
-                              ((l +ₗ[t] Z.of_nat i) ↦[t] v) }}}.
+                              (mapsto_vals (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1 (flatten_struct v)) }}}.
 Proof.
-  iIntros (Hn Hty Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
+  iIntros (Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
   iMod (na_heap_alloc_gen
@@ -700,36 +618,14 @@ Proof.
   iModIntro; iSplit; first done.
   rewrite heap_array_fmap. iFrame.
   iApply "HΦ".
-  unfold struct_mapsto.
+  unfold mapsto_vals.
   rewrite -heap_array_fmap.
   rewrite big_sepM_fmap.
   iDestruct (heap_array_replicate_to_nested_mapsto with "Hl") as "Hl".
-  rewrite (val_ty_len Hty).
   iApply (big_sepL_mono with "Hl").
   iIntros (k0 j _) "H".
   setoid_rewrite Z.mul_comm at 1.
-  setoid_rewrite Z2Nat.id.
   { by iFrame. }
-  apply ty_size_ge_0.
-Qed.
-
-Lemma wp_alloc stk E ty v :
-  val_ty v ty ->
-  {{{ True }}} Alloc (Val v) @ stk; E {{{ l, RET LitV (LitLoc l); l ↦[ty] v }}}.
-Proof.
-  iIntros (Hty Φ) "_ HΦ". iApply wp_allocN_seq; eauto with lia.
-  { constructor. }
-  iIntros "!>" (l) "/= (? & _)". rewrite Z.mul_0_r loc_add_0. iApply "HΦ"; iFrame.
-Qed.
-
-Definition zero_val_unfold :
-  forall t, zero_val t = ltac:(let x := eval red in (zero_val t) in
-                              exact x) := fun _ => eq_refl.
-
-Lemma wp_alloc_zero stk E t :
-  {{{ True }}} Alloc (zero_val t) @ stk; E {{{ l, RET LitV (LitLoc l); l ↦[t] (zero_val t) }}}.
-Proof.
-  iIntros (Φ) "_ HΦ". iApply wp_alloc; eauto with lia.
 Qed.
 
 Lemma wp_alloc_untyped stk E v v0 :
@@ -753,9 +649,10 @@ Proof.
     inversion 1; subst => //=; congruence. }
   iModIntro; iSplit; first done.
   change (int.nat 1) with 1%nat; simpl.
-  replace (flatten_struct v); simpl.
+  iFrame "Hκs".
   rewrite -heap_array_fmap.
-  iFrame "Hσ Hκs". iApply "HΦ".
+  replace (flatten_struct v); simpl.
+  iFrame "Hσ". iApply "HΦ".
   rewrite right_id big_sepM_fmap big_sepM_singleton; iFrame.
 Qed.
 
@@ -805,13 +702,10 @@ Proof.
   iModIntro. iSplit=>//. iFrame. by iApply "HΦ".
 Qed.
 
-Definition mapsto_vals (l: loc) (q: Qp) (vs: list val) :=
-  ([∗ map] l ↦ nav ∈ heap_array l vs, l ↦{q} nav)%I.
-
-Theorem na_heap_valid_map (σ: gmap _ _) l q vs :
+Lemma na_heap_valid_map (σ: gmap _ _) l q vs :
   na_heap_ctx tls σ -∗
-               ([∗ map] l↦v ∈ heap_array l vs, l ↦{q} v) -∗
-               ⌜forall i, (i < (length vs))%nat -> is_Some (σ !! (l +ₗ i))⌝.
+              ([∗ map] l↦v ∈ heap_array l vs, l ↦{q} v) -∗
+              ⌜forall i, (i < (length vs))%nat -> is_Some (σ !! (l +ₗ i))⌝.
 Proof.
   iIntros "Hctx Hmap".
   iIntros (i Hi).
