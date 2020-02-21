@@ -1,6 +1,7 @@
 From Goose.github_com.tchajed Require Import marshal.
 From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.goose_lang.lib Require Import wp_store.
 
 (* The specification for encoding is based on this encodable inductive, which
 represents a single encodable bundle.
@@ -256,7 +257,7 @@ Proof.
   wp_steps.
   wp_load.
   wp_steps.
-  wp_apply (wp_store with "Hoff"); iIntros "Hoff".
+  wp_store.
   iApply "HΦ".
   cbn [slice_skip Slice.ptr].
   rewrite /is_enc.
@@ -370,7 +371,7 @@ Proof.
   wp_steps.
   wp_load.
   wp_steps.
-  wp_apply (wp_store with "Hoff"); iIntros "Hoff".
+  wp_store.
   iApply "HΦ".
   cbn [slice_skip Slice.ptr].
   rewrite /is_enc.
@@ -541,8 +542,7 @@ Proof.
   wp_load.
   wp_steps.
   wp_call.
-  wp_apply (wp_store with "Hoff"); iIntros "Hoff".
-  wp_pures.
+  wp_store.
   wp_call.
   wp_apply wp_SliceSkip'; [ now len | ].
   wp_apply (wp_UInt64Get' with "[Hx]").
@@ -600,8 +600,7 @@ Proof.
   wp_load.
   wp_steps.
   wp_call.
-  wp_apply (wp_store with "Hoff"); iIntros "Hoff".
-  wp_pures.
+  wp_store.
   wp_call.
   wp_apply wp_SliceSkip'; [ now len | ].
   wp_apply (wp_UInt32Get' with "[Hx]").

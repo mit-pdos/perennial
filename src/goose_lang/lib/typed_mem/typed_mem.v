@@ -133,7 +133,7 @@ Section goose_lang.
     wp_apply (wp_AllocAt t); auto.
   Qed.
 
-  Lemma wp_LoadAt stk E q l t v :
+  Theorem wp_LoadAt stk E q l t v :
     {{{ l ↦[t]{q} v }}}
       load_ty t #l @ stk; E
     {{{ RET v; l ↦[t]{q} v }}}.
@@ -179,7 +179,7 @@ Section goose_lang.
     - wp_apply (wp_load with "[$]"); auto.
   Qed.
 
-  Lemma wp_store stk E l v v' :
+  Theorem wp_store stk E l v v' :
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
     {{{ RET LitV LitUnit; l ↦ v }}}.
   Proof.
@@ -188,7 +188,7 @@ Section goose_lang.
     by wp_apply (wp_finish_store with "Hl").
   Qed.
 
-  Lemma wp_StoreAt stk E l t v0 v :
+  Theorem wp_StoreAt stk E l t v0 v :
     val_ty v t ->
     {{{ l ↦[t] v0 }}}
       store_ty t #l v @ stk; E

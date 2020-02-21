@@ -46,79 +46,7 @@ Proof.
     word.
 Qed.
 
-Lemma tac_wp_alloc Δ Δ' s E j K v t Φ :
-  val_ty v t ->
-  MaybeIntoLaterNEnvs 1 Δ Δ' →
-  (∀ l, ∃ Δ'',
-    envs_app false (Esnoc Enil j (l ↦[t] v)) Δ' = Some Δ'' ∧
-    envs_entails Δ'' (WP fill K (Val $ LitV l) @ s; E {{ Φ }})) →
-  envs_entails Δ (WP fill K (ref_to t (Val v)) @ s; E {{ Φ }}).
-Proof.
-  rewrite envs_entails_eq=> Hty ? HΔ.
-  rewrite -wp_bind /ref_to. eapply wand_apply; first exact: wp_ref_to.
-  rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
-  destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
-  apply wand_intro_l. by rewrite right_id wand_elim_r.
-Qed.
-
-Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
-  MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ v')) Δ' = Some Δ'' →
-  envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ s; E {{ Φ }}) →
-  envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
-Proof.
-  rewrite envs_entails_eq=> ????.
-  rewrite -wp_bind. eapply wand_apply; first by eapply wp_store.
-  rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
-  rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
-Qed.
-
-(* local version just for this file *)
-Tactic Notation "wp_store" :=
-  let solve_mapsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_store: cannot find" l "↦ ?" in
-  wp_pures;
-  lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ _ _ K))
-      |fail 1 "wp_store: cannot find 'Store' in" e];
-    [iSolveTC
-    |solve_mapsto ()
-    |pm_reflexivity
-    |first [wp_seq|wp_finish]]
-  | _ => fail "wp_store: not a 'wp'"
-  end.
-
-(*
-Lemma wp_store_offset_vec s E l sz (off : fin sz) (vs : vec val sz) v :
-  {{{ ▷ l ↦∗ vs }}} #(l +ₗ off) <- v @ s; E {{{ RET #(); l ↦∗ vinsert off v vs }}}.
-Proof.
-  setoid_rewrite vec_to_list_insert. apply wp_store_offset.
-  eexists. by apply vlookup_lookup.
-Qed.
-*)
-
 End heap.
-
-Tactic Notation "wp_store" :=
-  let solve_mapsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_store: cannot find" l "↦ ?" in
-  wp_pures;
-  lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ _ _ K))
-      |fail 1 "wp_store: cannot find 'Store' in" e];
-    [iSolveTC
-    |solve_mapsto ()
-    |pm_reflexivity
-    |first [wp_seq|wp_finish]]
-  | _ => fail "wp_store: not a 'wp'"
-  end.
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
   let Htmp := iFresh in

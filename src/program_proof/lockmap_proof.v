@@ -1,6 +1,7 @@
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.Helpers Require Import GenHeap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
+From Perennial.goose_lang.lib Require Import wp_store.
 
 Hint Rewrite app_length @drop_length @take_length @fmap_length
      @replicate_length : len.
@@ -228,7 +229,7 @@ Proof.
 
     destruct ok; wp_if.
     - wp_pures.
-      wp_store.
+      wp_apply (wp_store with "Hstate"); iIntros "Hstate".
 
       wp_apply wp_ref_of_zero.
       iIntros (acquired) "Hacquired".
@@ -315,6 +316,7 @@ Proof.
         iMod (gen_heap_update _ _ _ true with "Hghctx Haddr") as "[Hghctx Haddr]".
 
         iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
+        wp_pures.
         wp_store.
         wp_load.
 

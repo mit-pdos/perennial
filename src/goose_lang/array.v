@@ -131,9 +131,6 @@ Proof.
   iSplitL; auto.
 Qed.
 
-(** Access to array elements *)
-(* moved to basic_triples *)
-
 Lemma wp_load_offset s E l off t vs v :
   vs !! off = Some v →
   {{{ l ↦∗[t] vs }}} load_ty t #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t] vs ∗ ⌜val_ty v t⌝ }}}.
