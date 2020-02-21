@@ -1,5 +1,8 @@
-From Perennial.goose_lang Require Export
-     lang notation slice map struct typing encoding locks.
+From Perennial.goose_lang Require Export lang notation typing.
+From Perennial.goose_lang.lib Require Export
+     typed_mem.impl struct.impl loop.impl
+     encoding.impl map.impl slice.impl.
+From Perennial.goose_lang Require Export locks.
 
 (* We provide stubs here for primitive operations to make the Goose unit tests
    compile. *)

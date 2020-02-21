@@ -80,7 +80,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 
   wp_pures.
   iDestruct (lock.is_free_lock_ty with "Hfreelock") as "%".
-  wp_apply (wp_alloc _ _ (structTy lockShard.S)); first by eauto.
+  wp_apply (typed_mem.wp_AllocAt (structTy lockShard.S)); first by eauto.
   iIntros (ls) "Hls".
 
   iMod (gen_heap_init (∅: gmap u64 bool)) as (hG) "Hheapctx".
@@ -216,7 +216,7 @@ Proof.
     iIntros (Φloop) "!> [Hinner Hlocked] HΦloop".
     iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
     wp_pures.
-    wp_apply wp_alloc_zero.
+    wp_apply wp_ref_of_zero.
     iIntros (state) "Hstate".
     wp_apply (wp_load_lockShard_state with "Hls").
     wp_apply (wp_MapGet with "[$Hmptr]"); auto.
@@ -230,7 +230,7 @@ Proof.
     - wp_pures.
       wp_store.
 
-      wp_apply wp_alloc_zero.
+      wp_apply wp_ref_of_zero.
       iIntros (acquired) "Hacquired".
 
       wp_load.
@@ -334,7 +334,7 @@ Proof.
       wp_apply (wp_load_lockShard_mu with "Hls").
       wp_apply lock.wp_newCond; [done|].
       iIntros (c) "Hcond".
-      wp_apply (wp_alloc _ _ (struct.t lockState.S)); [val_ty|].
+      wp_apply (typed_mem.wp_AllocAt (struct.t lockState.S)); [val_ty|].
       iIntros (lst) "Hlst".
       wp_store.
       wp_load.
@@ -342,7 +342,7 @@ Proof.
       wp_apply (wp_MapInsert with "[$Hmptr]").
       iIntros "Hmptr".
 
-      wp_apply wp_alloc_zero.
+      wp_apply wp_ref_of_zero.
       iIntros (acquired) "Hacquired".
 
       wp_pures.

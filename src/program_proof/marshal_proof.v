@@ -205,21 +205,21 @@ Theorem wp_new_enc stk E (sz: u64) :
 Proof.
   iIntros (Φ) "_ HΦ".
   rewrite /NewEnc.
-  rewrite /struct.buildStruct /Enc.S /=.
+  rewrite /struct.mk /Enc.S /=.
   wp_call.
   wp_apply wp_new_slice.
   iIntros (sl) "Hs". iDestruct (is_slice_elim with "Hs") as "[Ha %]".
   rewrite replicate_length in H.
   change (int.nat 4096) with (Z.to_nat 4096) in H.
-  wp_apply wp_alloc; auto.
-  iIntros (l) "(Hl&_)".
+  wp_apply wp_alloc_untyped; auto.
+  iIntros (l) "Hl".
   wp_steps.
   rewrite EncM.to_val_intro.
   iApply "HΦ".
   rewrite /is_enc /EncSz /=.
   iSplitL.
   { rewrite array_nil.
-    rewrite left_id right_id ?loc_add_0.
+    rewrite left_id ?loc_add_0.
     iFrame.
     iExists (replicate (int.nat sz) (U8 0)).
     rewrite fmap_replicate; iFrame.
@@ -238,7 +238,7 @@ Proof.
   iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   wp_call.
-  rewrite /struct.getField /Enc.S /=.
+  rewrite /struct.get /Enc.S /=.
   wp_steps.
   wp_load.
   wp_steps.
@@ -256,7 +256,7 @@ Proof.
   wp_steps.
   wp_load.
   wp_steps.
-  wp_store.
+  wp_apply (wp_store with "Hoff"); iIntros "Hoff".
   iApply "HΦ".
   cbn [slice_skip Slice.ptr].
   rewrite /is_enc.
@@ -352,7 +352,7 @@ Proof.
   iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   wp_call.
-  rewrite /struct.getField /Enc.S /=.
+  rewrite /struct.get /Enc.S /=.
   wp_steps.
   wp_load.
   wp_steps.
@@ -370,7 +370,7 @@ Proof.
   wp_steps.
   wp_load.
   wp_steps.
-  wp_store.
+  wp_apply (wp_store with "Hoff"); iIntros "Hoff".
   iApply "HΦ".
   cbn [slice_skip Slice.ptr].
   rewrite /is_enc.
@@ -507,7 +507,7 @@ Theorem wp_NewDec stk E s vs (extra: list u8) :
 Proof.
   iIntros (Φ) "(Hs&%) HΦ".
   wp_call.
-  wp_apply wp_alloc; [ val_ty | iIntros (off) "Hoff" ].
+  wp_apply typed_mem.wp_AllocAt; [ val_ty | iIntros (off) "Hoff" ].
   wp_pures.
   rewrite DecM.to_val_intro.
   iApply "HΦ".
@@ -541,7 +541,8 @@ Proof.
   wp_load.
   wp_steps.
   wp_call.
-  wp_store.
+  wp_apply (wp_store with "Hoff"); iIntros "Hoff".
+  wp_pures.
   wp_call.
   wp_apply wp_SliceSkip'; [ now len | ].
   wp_apply (wp_UInt64Get' with "[Hx]").
@@ -599,7 +600,8 @@ Proof.
   wp_load.
   wp_steps.
   wp_call.
-  wp_store.
+  wp_apply (wp_store with "Hoff"); iIntros "Hoff".
+  wp_pures.
   wp_call.
   wp_apply wp_SliceSkip'; [ now len | ].
   wp_apply (wp_UInt32Get' with "[Hx]").
@@ -659,11 +661,11 @@ Proof.
   rewrite /Dec__GetInts.
   iIntros (Φ) "(Hdec&%) HΦ".
   wp_pures.
-  wp_apply (wp_alloc _ _ (slice.T uint64T)); auto.
+  wp_apply (typed_mem.wp_AllocAt (slice.T uint64T)); auto.
   iIntros (l) "Hl".
   rewrite zero_slice_val.
   wp_pures.
-  wp_apply wp_alloc; auto.
+  wp_apply typed_mem.wp_AllocAt; auto.
   iIntros (l__i) "Hli".
   wp_let.
   wp_apply (wp_forUpto (λ x,
