@@ -73,14 +73,12 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iIntros (mref) "Hmap".
   wp_pures.
 
-  wp_bind (newlock _).
-  iApply lock.new_free_lock; auto.
+  wp_apply wp_new_free_lock; auto.
 
-  iNext.
   iIntros (shardlock) "Hfreelock".
 
   wp_pures.
-  iDestruct (lock.is_free_lock_ty with "Hfreelock") as "%".
+  iDestruct (is_free_lock_ty with "Hfreelock") as "%".
   wp_apply (typed_mem.wp_AllocAt (structTy lockShard.S)); first by eauto.
   iIntros (ls) "Hls".
 
@@ -209,8 +207,8 @@ Proof.
 
   wp_pures.
   wp_apply (wp_forBreak
-    (is_lockShard_inner mptr shardlock gh covered P ∗ spin_lock.locked γl)
-    (is_lockShard_inner mptr shardlock gh covered P ∗ spin_lock.locked γl ∗ P addr ∗ locked gh addr)
+    (is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl)
+    (is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl ∗ P addr ∗ locked gh addr)
     with "[] [$Hlocked $Hinner]").
 
   {
