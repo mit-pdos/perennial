@@ -596,9 +596,3 @@ the first according to the GooseLang semantics. *)
 Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +ₗ[ t ]  z").
 Notation "l +ₗ[ t ] z" := (l +ₗ ty_size t * z) : stdpp_scope .
 Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E) : expr_scope .
-
-Section goose_lang.
-  Context `{ext_ty: ext_types}.
-  (** allocation with a type annotation *)
-  Definition ref_to (t:ty): val := λ: "v", Alloc (Var "v").
-End goose_lang.

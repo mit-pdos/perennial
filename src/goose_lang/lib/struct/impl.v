@@ -1,7 +1,6 @@
-From stdpp Require Import gmap.
-From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import typing.
+From Perennial.goose_lang.lib Require Import typed_mem.impl.
 
 (** * Struct library
 
@@ -10,15 +9,10 @@ From Perennial.goose_lang Require Import typing.
 Set Default Proof Using "Type".
 Set Implicit Arguments.
 
-Section goose.
-  Context {ext} {ext_ty: ext_types ext}.
-End goose.
-
 Section goose_lang.
 Context `{ffi_sem: ext_semantics}.
 Context {ext_ty: ext_types ext}.
 
-Implicit Types (d:descriptor).
 Definition descriptor := list (string*ty).
 Definition mkStruct (fs: list (string*ty)): descriptor := fs.
 
@@ -30,6 +24,16 @@ Definition option_descriptor_wf (d:descriptor) : option (descriptor_wf d).
   constructor; auto.
 Defined.
 
+Definition proj_descriptor_wf (d:descriptor) :=
+  match option_descriptor_wf d as mwf return match mwf with
+                                             | Some _ => descriptor_wf d
+                                             | None => True
+                                             end  with
+  | Some pf => pf
+  | None => I
+  end.
+
+Implicit Types (d:descriptor).
 Infix "=?" := (String.eqb).
 
 Definition getField d (f0: string) : val :=
@@ -253,14 +257,7 @@ Qed.
 
 End goose_lang.
 
-Local Ltac maybe_descriptor_wf d :=
-  let mpf := (eval hnf in (option_descriptor_wf d)) in
-  match mpf with
-  | Some ?pf => exact pf
-  | None => fail "descriptor is not well-formed"
-  end.
-
-Hint Extern 3 (descriptor_wf ?d) => maybe_descriptor_wf d : typeclass_instances.
+Hint Extern 3 (descriptor_wf ?d) => exact (proj_descriptor_wf d) : typeclass_instances.
 
 Module struct.
   Notation decl := mkStruct.

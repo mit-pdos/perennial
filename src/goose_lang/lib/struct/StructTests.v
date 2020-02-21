@@ -1,5 +1,5 @@
-From Perennial.goose_lang Require Import
-     lang notation struct typing.
+From Perennial.goose_lang Require Import notation typing.
+From Perennial.goose_lang.lib Require Import struct.impl.
 
 Open Scope heap_types.
 
