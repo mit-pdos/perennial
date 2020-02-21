@@ -1237,8 +1237,8 @@ Record Dynamics Op State :=
     finish_step: FinishSemantics State;
   }.
 
-Extraction Language OCaml.
-(* Recursive Extraction setattr_step getattr_step. *) (*getattr_step setattr_step commit_step.*)
+Extraction Language JSON.
+(*Recursive Extraction setattr_step getattr_step. getattr_step setattr_step commit_step.*)
 
 Definition nfs3op_to_transition {T} (op : Op T): transition State T :=
   match op with
