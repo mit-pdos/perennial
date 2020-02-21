@@ -94,7 +94,7 @@ End lazyFileBuf.
 (* readTableIndex parses a complete table on disk into a key->offset index *)
 Definition readTableIndex: val :=
   rec: "readTableIndex" "f" "index" :=
-    let: "buf" := ref (struct.mk lazyFileBuf.S [
+    let: "buf" := ref_to (struct.t lazyFileBuf.S) (struct.mk lazyFileBuf.S [
       "offset" ::= #0;
       "next" ::= slice.nil
     ]) in
@@ -360,7 +360,7 @@ Definition tablePutBuffer: val :=
    buffer b since those writes overwrite old ones *)
 Definition tablePutOldTable: val :=
   rec: "tablePutOldTable" "w" "t" "b" :=
-    let: "buf" := ref (struct.mk lazyFileBuf.S [
+    let: "buf" := ref_to (struct.t lazyFileBuf.S) (struct.mk lazyFileBuf.S [
       "offset" ::= #0;
       "next" ::= slice.nil
     ]) in
@@ -457,7 +457,7 @@ Definition deleteOtherFiles: val :=
   rec: "deleteOtherFiles" "tableName" :=
     let: "files" := FS.list #(str"db") in
     let: "nfiles" := slice.len "files" in
-    let: "i" := ref #0 in
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: (![uint64T] "i" = "nfiles")
       then Break
