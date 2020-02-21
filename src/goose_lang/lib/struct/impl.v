@@ -277,11 +277,6 @@ Module struct.
   Notation storeF := storeField.
 End struct.
 
-Notation "![ t ] e" := (load_ty t e%E)
-                         (at level 9, right associativity, format "![ t ]  e") : expr_scope.
-Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E)
-                             (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
-
 Notation "f :: t" := (@pair string ty f%string t%ht) : struct_scope.
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.

@@ -553,7 +553,7 @@ Hint Resolve store_val_hasTy store_array_val_hasTy : types.
 
 Hint Extern 1 (expr_hasTy _ _ _) => apply var_hasTy; reflexivity : types.
 
-Local Ltac simp := unfold For; rewrite ?insert_anon.
+Local Ltac simp := rewrite ?insert_anon.
 Ltac _type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]

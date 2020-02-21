@@ -99,3 +99,8 @@ Ltac val_ty :=
   end.
 
 Hint Extern 2 (val_ty _ _) => val_ty : core.
+
+Notation "![ t ] e" := (load_ty t e%E)
+                         (at level 9, right associativity, format "![ t ]  e") : expr_scope.
+Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E)
+                             (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
