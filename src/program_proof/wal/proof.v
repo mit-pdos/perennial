@@ -12,6 +12,7 @@ Transparent slice.T.
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
+Context `{!inG Σ (authR mnatUR)}.
 Implicit Types (Φ: val → iProp Σ).
 Implicit Types (v:val) (z:Z).
 
@@ -42,6 +43,36 @@ Definition take_updates (from to : u64) (log: list update.t) (logStart: u64) : l
   let start := (int.nat from - int.nat logStart)%nat in
   let num := (int.nat to - int.nat from)%nat in
   take num (drop start log).
+
+Definition is_wal_state (st: loc) (σ: log_state.t): iProp Σ :=
+  ∃ (memLog memStart diskEnd nextDiskEnd memLogMap: loc),
+    st ↦[structTy WalogState.S] (#memLog, #memStart, #diskEnd, #nextDiskEnd, #memLogMap)
+(*
+    let log_σ := circΣ.mk diskLog diskStart in
+    let durable_to := circΣ.diskEnd log_σ in
+    let installed_to := diskStart in *).
+
+Definition is_circular_appender(circ: loc): iProp Σ :=
+  ∃ (diskaddr:loc) s,
+    circ ↦[struct.t circularAppender.S] #diskaddr ∗
+    diskaddr ↦[slice.T uint64T] (slice_val s) ∗
+    (* relate s to the home address of blocks in log *)
+    (∃ γh γstart γend,
+      is_circ γh γstart γend).
+
+Definition walN: namespace := nroot .@ "wal".
+
+Definition is_wal (l: loc) (σ: log_state.t): iProp Σ :=
+  ∃ memLock d (circ st condL condI:loc),
+    (* ro ->? *)
+    l ↦[structTy Walog.S] (#memLock, #d, #circ, #st, #condL, #condI) ∗
+    is_circular_appender circ ∗
+    (∃ γ,
+        is_lock walN γ #memLock (is_wal_state st σ) ∗
+        lock.is_cond condL #memLock ∗
+        lock.is_cond condI #memLock).
+
+(* old lockInv, parts need to be incorporated above
 
 Definition lockInv (l: loc) (σ: log_state.t): iProp Σ :=
   (∃ memLog diskLog
@@ -78,5 +109,6 @@ Definition is_wal (l: loc) (σ: log_state.t): iProp Σ :=
   ∃ γ, is_lock walN γ #(l +ₗ 0) (lockInv l σ) ∗
        lock.is_cond (l +ₗ 4) #(l +ₗ 0) ∗
        lock.is_cond (l +ₗ 5) #(l +ₗ 0).
+ *)
 
 End heap.
