@@ -7,6 +7,7 @@ From Perennial.goose_lang Require Export
 (* TODO: replace all of these stubs with real operations *)
 
 Open Scope heap_types.
+Open Scope struct_scope.
 
 Definition uint64_to_string {ext: ext_op}: val := λ: <>, #().
 Definition strLen {ext: ext_op}: val := λ: "s", #0.

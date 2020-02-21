@@ -1,9 +1,14 @@
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Export typed_mem struct.impl.
 
+Close Scope struct_scope.
+
 Section goose_lang.
-Context {ext:ext_op}.
-Context {ext_ty:ext_types ext}.
+Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context {ext_ty: ext_types ext}.
+
+Implicit Types (t : ty).
+Implicit Types (stk : stuckness).
 
 (* TODO: move this to common tactics *)
 Ltac invc H := inversion H; subst; clear H.

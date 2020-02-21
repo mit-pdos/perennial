@@ -2,6 +2,7 @@ From Perennial.goose_lang Require Import notation typing.
 From Perennial.goose_lang.lib Require Import struct.impl.
 
 Open Scope heap_types.
+Open Scope struct_scope.
 
 Module three.
   Section types.
