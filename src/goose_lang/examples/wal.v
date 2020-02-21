@@ -129,7 +129,7 @@ Definition getLogEntry: val :=
 (* applyLog assumes we are running sequentially *)
 Definition applyLog: val :=
   rec: "applyLog" "length" :=
-    let: "i" := ref #0 in
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "i" < "length"
       then
