@@ -273,7 +273,7 @@ Proof.
     rewrite left_id.
     auto.
   - inv_ty Hty.
-    rewrite struct_ptsto_pair_split.
+    rewrite struct_mapsto_prod.
     iSplit; iIntros "[$ Hv2]".
     + iApply ("IH" with "[//] Hv2").
     + iApply ("IH" with "[//] Hv2").
@@ -375,20 +375,20 @@ Proof.
     destruct (f =? f0)%string.
     + invc H; simpl.
       rewrite loc_add_0.
-      iDestruct (struct_ptsto_pair_split with "Hl") as "[Hv1 Hv2]".
+      iDestruct (struct_mapsto_prod with "Hl") as "[Hv1 Hv2]".
       iFrame.
       iIntros (fv') "Hv1".
-      iDestruct (struct_ptsto_pair_split with "[$Hv1 $Hv2]") as "$".
+      iDestruct (struct_mapsto_prod with "[$Hv1 $Hv2]") as "$".
     + destruct_with_eqn (field_offset fs f0); try congruence.
       destruct p as [off' t'].
       invc H.
-      iDestruct (struct_ptsto_pair_split with "Hl") as "[Hv1 Hv2]".
+      iDestruct (struct_mapsto_prod with "Hl") as "[Hv1 Hv2]".
       erewrite IHfs by eauto.
       rewrite loc_add_assoc.
       iDestruct "Hv2" as "[Hf Hupd]".
       iFrame "Hf".
       iIntros (fv') "Hf".
-      iApply struct_ptsto_pair_split; iFrame.
+      iApply struct_mapsto_prod; iFrame.
       iApply ("Hupd" with "[$]").
 Qed.
 

@@ -53,7 +53,7 @@ Section goose_lang.
     iIntros "[_ %] !%//".
   Qed.
 
-  Theorem struct_ptsto_pair_split q l v1 t1 v2 t2 :
+  Theorem struct_mapsto_prod q l v1 t1 v2 t2 :
     l ↦[t1 * t2]{q} (v1, v2) ⊣⊢ l ↦[t1]{q} v1 ∗ (l +ₗ ty_size t1) ↦[t2]{q} v2.
   Proof.
     rewrite /struct_mapsto /= big_opL_app.
