@@ -64,93 +64,6 @@ Proof.
   iApply wp_alloc; eauto with lia.
 Qed.
 
-Theorem subst_load_ty' t v : forall e,
-  subst "l" v
-        ((fix load (t0 : ty) (l0 : expr) {struct t0} : expr :=
-            match t0 with
-            | baseT unitBT => Val #()
-            | (t1 * t2)%ht => (load t1 l0, load t2 (l0 +ₗ[t1] #1))%E
-            | _ => Load l0
-            end) t e) =
-  ((fix load (t0 : ty) (l0 : expr) {struct t0} : expr :=
-      match t0 with
-      | baseT unitBT => Val #()
-      | (t1 * t2)%ht => (load t1 l0, load t2 (l0 +ₗ[t1] #1))%E
-      | _ => Load l0
-      end) t (subst "l" v e)).
-Proof.
-  induction t; intros; simpl; auto.
-  - destruct t; simpl; auto.
-  - rewrite IHt1.
-    rewrite IHt2.
-    reflexivity.
-Qed.
-
-Theorem val_ty_flatten_length v t :
-  val_ty v t ->
-  length (flatten_struct v) = length (flatten_ty t).
-Proof.
-  induction 1; simpl; auto.
-  - inversion H; subst; auto.
-  - rewrite ?app_length.
-    lia.
-Qed.
-
-Theorem ty_size_offset t l j : l +ₗ (length (flatten_ty t) + j)%nat = l +ₗ ty_size t +ₗ j.
-Proof.
-  rewrite loc_add_assoc.
-  f_equal.
-  rewrite <- ty_size_length.
-  pose proof (ty_size_ge_0 t).
-  lia.
-Qed.
-
-Lemma wp_LoadAt stk E q l t v :
-  {{{ l ↦[t]{q} v }}}
-    load_ty t #l @ stk; E
-  {{{ RET v; l ↦[t]{q} v }}}.
-Proof.
-  iIntros (Φ) "Hl HΦ".
-  iDestruct "Hl" as "[Hl %]".
-  hnf in H.
-  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
-  { iIntros "!> HPost".
-    iApply "HΦ".
-    iSplit; eauto. }
-  (* TODO: we have to rename this so it doesn't conflict with a name generated
-  by induction; seems like a bug *)
-  rename l into l'.
-  (iInduction H as [ | | | | | | | ] "IH" forall (l' Φ));
-    simpl;
-    wp_pures;
-    rewrite ?loc_add_0 ?right_id.
-  - inversion H; subst; simpl;
-      rewrite ?loc_add_0 ?right_id;
-      try wp_apply (wp_load with "[$]"); auto.
-    wp_pures.
-    iApply ("HΦ" with "[//]").
-  - rewrite big_opL_app.
-    iDestruct "Hl" as "[Hv1 Hv2]".
-    wp_apply ("IH" with "Hv1"); iIntros "Hv1".
-    wp_apply ("IH1" with "[Hv2]"); [ | iIntros "Hv2" ].
-    { erewrite val_ty_flatten_length; eauto.
-      setoid_rewrite ty_size_offset.
-      rewrite Z.mul_1_r.
-      iFrame. }
-    wp_pures.
-    iApply "HΦ"; iFrame.
-    erewrite val_ty_flatten_length by eauto.
-    setoid_rewrite ty_size_offset.
-    rewrite Z.mul_1_r.
-    iFrame.
-  - wp_apply (wp_load with "[$]"); auto.
-  - wp_apply (wp_load with "[$]"); auto.
-  - wp_apply (wp_load with "[$]"); auto.
-  - wp_apply (wp_load with "[$]"); auto.
-  - wp_apply (wp_load with "[$]"); auto.
-  - wp_apply (wp_load with "[$]"); auto.
-Qed.
-
 Lemma tac_wp_alloc Δ Δ' s E j K v t Φ :
   val_ty v t ->
   MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -164,17 +77,6 @@ Proof.
   rewrite left_id into_laterN_env_sound; apply later_mono, forall_intro=> l.
   destruct (HΔ l) as (Δ''&?&HΔ'). rewrite envs_app_sound //; simpl.
   apply wand_intro_l. by rewrite right_id wand_elim_r.
-Qed.
-
-Lemma wp_store s E l v v' :
-  {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ s; E
-  {{{ RET LitV LitUnit; l ↦ v }}}.
-Proof.
-  iIntros (Φ) "Hl HΦ". unfold Store.
-  wp_lam. wp_let. wp_bind (PrepareWrite _).
-  iApply (wp_prepare_write with "Hl").
-  iIntros "!> Hl".
-  wp_seq. by iApply (wp_finish_store with "Hl").
 Qed.
 
 Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
@@ -334,92 +236,6 @@ Qed.
 
 (* TODO: move this to common tactics *)
 Ltac invc H := inversion H; subst; clear H.
-
-Lemma wp_StoreAt stk E l t v0 v :
-  val_ty v t ->
-  {{{ l ↦[t] v0 }}}
-    store_ty t #l v @ stk; E
-  {{{ RET #(); l ↦[t] v }}}.
-Proof.
-  intros Hty; hnf in Hty.
-  iIntros (Φ) "[Hl %] HΦ".
-  hnf in H.
-  iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
-  { iIntros "!> HPost".
-    iApply "HΦ".
-    iSplit; eauto. }
-  rename v into v'.
-  rename l into l'.
-  (iInduction H as [ | | | | | | | ] "IH" forall (v' Hty l' Φ));
-    simpl;
-    rewrite ?loc_add_0 ?right_id;
-    wp_pures.
-  - invc Hty; invc H;
-      try match goal with
-          | [ H: lit_ty _ _ |- _ ] => invc H
-          end;
-      simpl;
-      rewrite ?loc_add_0 ?right_id;
-      try (wp_apply (wp_store with "[$]"); auto).
-    wp_pures.
-    iApply ("HΦ" with "[//]").
-  - rewrite big_opL_app.
-    erewrite val_ty_flatten_length by eauto.
-    setoid_rewrite ty_size_offset.
-    invc Hty.
-    { by invc H1. (* can't be a pair and a base literal *) }
-    iDestruct "Hl" as "[Hv1 Hv2]".
-    wp_pures.
-    wp_apply ("IH" with "[//] Hv1").
-    iIntros "Hv1".
-    wp_pures.
-    rewrite Z.mul_1_r.
-    wp_apply ("IH1" with "[//] Hv2").
-    iIntros "Hv2".
-    iApply "HΦ".
-    simpl.
-    rewrite big_opL_app.
-    iFrame.
-    erewrite val_ty_flatten_length by eauto.
-    setoid_rewrite ty_size_offset.
-    iFrame.
-  - invc Hty;
-      try match goal with
-          | [ H: lit_ty _ _ |- _ ] => invc H
-          end;
-      rewrite /= ?loc_add_0 ?right_id;
-      wp_apply (wp_store with "[$]"); auto.
-  - invc Hty;
-      try match goal with
-          | [ H: lit_ty _ _ |- _ ] => invc H
-          end;
-      rewrite /= ?loc_add_0 ?right_id;
-      wp_apply (wp_store with "[$]"); auto.
-  - invc Hty;
-      try match goal with
-          | [ H: lit_ty _ _ |- _ ] => invc H
-          end;
-      rewrite /= ?loc_add_0 ?right_id;
-      wp_apply (wp_store with "[$]"); auto.
-  - invc Hty;
-      try match goal with
-          | [ H: lit_ty _ _ |- _ ] => invc H
-          end;
-      rewrite /= ?loc_add_0 ?right_id;
-      wp_apply (wp_store with "[$]"); auto.
-  - invc Hty;
-      try match goal with
-          | [ H: lit_ty _ _ |- _ ] => invc H
-          end;
-      rewrite /= ?loc_add_0 ?right_id;
-      wp_apply (wp_store with "[$]"); auto.
-  - invc Hty;
-      try match goal with
-          | [ H: lit_ty _ _ |- _ ] => invc H
-          end;
-      rewrite /= ?loc_add_0 ?right_id;
-      wp_apply (wp_store with "[$]"); auto.
-Qed.
 
 Lemma wp_store_offset s E l off vs t v :
   is_Some (vs !! off) →
@@ -1454,23 +1270,3 @@ Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
 
 Tactic Notation "wp_alloc" ident(l) :=
   wp_alloc l as "?".
-
-Ltac iFramePtsTo_core t :=
-  match goal with
-  | [ |- envs_entails ?Δ ((?l +ₗ ?z) ↦∗[_] ?v) ] =>
-    match Δ with
-    | context[Esnoc _ ?j ((l +ₗ ?z') ↦∗[_] ?v')] =>
-      unify v v';
-      replace z with z';
-      [ iExact j | t ]
-    end
-  | [ |- envs_entails ?Δ (?l ↦ ?v) ] =>
-    match Δ with
-    | context[Esnoc _ ?j (l ↦ ?v')] =>
-      replace v with v';
-      [ iExact j | t ]
-    end
-  end.
-
-Tactic Notation "iFramePtsTo" := iFramePtsTo_core ltac:(idtac).
-Tactic Notation "iFramePtsTo" "by" tactic(t) := iFramePtsTo_core ltac:(by t).

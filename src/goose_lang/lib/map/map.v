@@ -1,6 +1,6 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.goose_lang Require Import basic_triples.
-From Perennial.goose_lang Require Import map.
+From Perennial.goose_lang.lib.map Require Import impl.
 Import uPred.
 
 Set Default Proof Using "Type".

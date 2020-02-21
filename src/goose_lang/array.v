@@ -2,12 +2,13 @@ From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lifting.
-From Perennial.goose_lang Require Import tactics notation typing.
+From Perennial.goose_lang Require Import tactics.
+From Perennial.goose_lang.lib Require Import typed_mem.
 Set Default Proof Using "Type".
 
 (** This file defines the [array] connective, a version of [mapsto] that works
 with lists of values. It also contains array versions of the basic heap
-operations of HeapLand. *)
+operations of GooseLang. *)
 
 Reserved Notation "l ↦∗[ t ] vs" (at level 20, format "l  ↦∗[ t ]  vs").
 
@@ -185,3 +186,23 @@ End goose_lang.
 
 Notation "l  ↦∗[ t ]  vs" := (array l t vs) : bi_scope.
 Typeclasses Opaque array.
+
+Ltac iFramePtsTo_core t :=
+  match goal with
+  | [ |- envs_entails ?Δ ((?l +ₗ ?z) ↦∗[_] ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j ((l +ₗ ?z') ↦∗[_] ?v')] =>
+      unify v v';
+      replace z with z';
+      [ iExact j | t ]
+    end
+  | [ |- envs_entails ?Δ (?l ↦ ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j (l ↦ ?v')] =>
+      replace v with v';
+      [ iExact j | t ]
+    end
+  end.
+
+Tactic Notation "iFramePtsTo" := iFramePtsTo_core ltac:(idtac).
+Tactic Notation "iFramePtsTo" "by" tactic(t) := iFramePtsTo_core ltac:(by t).

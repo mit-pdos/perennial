@@ -12,32 +12,23 @@ Set Implicit Arguments.
 
 Section goose.
   Context {ext} {ext_ty: ext_types ext}.
-  Definition descriptor := list (string*ty).
-  Definition mkStruct (fs: list (string*ty)): descriptor := fs.
-
-  Class descriptor_wf (d:descriptor) :=
-    { descriptor_NoDup: NoDup d.*1; }.
-
-  Definition option_descriptor_wf (d:descriptor) : option (descriptor_wf d).
-    destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
-    constructor; auto.
-  Defined.
 End goose.
 
-Local Ltac maybe_descriptor_wf d :=
-  let mpf := (eval hnf in (option_descriptor_wf d)) in
-  match mpf with
-  | Some ?pf => exact pf
-  | None => fail "descriptor is not well-formed"
-  end.
-
-Hint Extern 3 (descriptor_wf ?d) => maybe_descriptor_wf d : typeclass_instances.
-
 Section goose_lang.
-  Context `{ffi_sem: ext_semantics}.
-  Context {ext_ty: ext_types ext}.
+Context `{ffi_sem: ext_semantics}.
+Context {ext_ty: ext_types ext}.
 
 Implicit Types (d:descriptor).
+Definition descriptor := list (string*ty).
+Definition mkStruct (fs: list (string*ty)): descriptor := fs.
+
+Class descriptor_wf (d:descriptor) :=
+  { descriptor_NoDup: NoDup d.*1; }.
+
+Definition option_descriptor_wf (d:descriptor) : option (descriptor_wf d).
+  destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
+  constructor; auto.
+Defined.
 
 Infix "=?" := (String.eqb).
 
@@ -116,13 +107,6 @@ Fixpoint structTy d : ty :=
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
-Fixpoint load_ty t: val :=
-  match t with
-  | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))
-  | baseT unitBT => λ: <>, #()
-  | _ => λ: "l", !(Var "l")
-  end.
-
 Definition loadStruct (d:descriptor) : val := load_ty (structTy d).
 
 Fixpoint field_offset d f0 : option (Z * ty) :=
@@ -153,15 +137,6 @@ Definition loadField (d:descriptor) (f:string) : val :=
   match field_offset d f with
   | Some (off, t) => λ: "p", load_ty t (BinOp (OffsetOp off) (Var "p") #1)
   | None => λ: <>, #()
-  end.
-
-Fixpoint store_ty t: val :=
-  match t with
-  | prodT t1 t2 => λ: "p" "v",
-                  store_ty t1 (Var "p") (Fst (Var "v"));;
-                  store_ty t2 (Var "p" +ₗ[t1] #1) (Snd (Var "v"))
-  | baseT unitBT => λ: <> <>, #()
-  | _ => λ: "p" "v", Var "p" <- Var "v"
   end.
 
 Definition storeStruct (d: descriptor) : val := store_ty (structTy d).
@@ -267,7 +242,7 @@ Admitted.
 
 Hint Constructors expr_hasTy.
 
-Theorem store_struct_singleton Γ e v t :
+Theorem store_struct_singleton_ty Γ e v t :
   Γ ⊢ e : structRefT [t] ->
   Γ ⊢ v : t ->
   Γ ⊢ (e <- v) : unitT.
@@ -276,9 +251,16 @@ Proof.
   eapply store_hasTy; eauto.
 Qed.
 
-Hint Resolve store_struct_singleton.
-
 End goose_lang.
+
+Local Ltac maybe_descriptor_wf d :=
+  let mpf := (eval hnf in (option_descriptor_wf d)) in
+  match mpf with
+  | Some ?pf => exact pf
+  | None => fail "descriptor is not well-formed"
+  end.
+
+Hint Extern 3 (descriptor_wf ?d) => maybe_descriptor_wf d : typeclass_instances.
 
 Module struct.
   Notation decl := mkStruct.

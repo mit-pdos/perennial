@@ -1,5 +1,8 @@
 From stdpp Require Import gmap.
-From Perennial.goose_lang Require Import lang notation map.
+From Perennial.goose_lang Require Import lang notation.
+From Perennial.goose_lang.lib Require Import map.impl.
+
+Set Default Proof Using "Type".
 
 Class val_types :=
   { ext_tys: Type; }.
@@ -41,9 +44,8 @@ Section val_types.
   Definition mapT (vt:ty) : ty := refT (mapValT vt).
 
   Definition Ctx := gmap string ty.
-  (* Global Instance empty_ctx : Empty Ctx := (∅: gmap _ _). *)
   Global Instance ctx_insert : Insert binder ty Ctx.
-  Proof using Type.
+  Proof.
     hnf.
     exact (fun b t => match b with
                    | BNamed x => fun Γ => <[ x := t ]> Γ
@@ -518,15 +520,7 @@ Section goose_lang.
     econstructor.
   Qed.
 
-  Inductive type_annot :=
-  | annot (e:string) (t:ty).
-
-  Definition annot_e a := let 'annot e _  := a in e.
-
 End goose_lang.
-
-Notation "v :: t" := (annot v t) (only printing) : expr_scope.
-Coercion annot_e : type_annot >-> string.
 
 Delimit Scope heap_types with T.
 Delimit Scope heap_type with ht.
@@ -578,7 +572,6 @@ Ltac _type_step :=
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ | solve [eauto with types] | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply bin_op_32_hasTy; [ reflexivity | solve [eauto with types] | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply bin_op_32_hasTy; [ reflexivity | | solve [eauto with types] ]
-  | [ |- expr_hasTy _ (Rec _ (annot_e (annot _ ?t)) _) (arrowT _ _) ] => eapply (rec_expr_hasTy_eq t)
   | [ |- expr_hasTy _ (Rec _ _ _) (arrowT _ _) ] => eapply rec_expr_hasTy_eq
   | [ |- expr_hasTy _ _ _ ] => econstructor
   | [ |- val_hasTy _ _ _ ] => econstructor
@@ -604,58 +597,8 @@ Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +
 Notation "l +ₗ[ t ] z" := (l +ₗ ty_size t * z) : stdpp_scope .
 Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E) : expr_scope .
 
-(*
 Section goose_lang.
   Context `{ext_ty: ext_types}.
-  Local Open Scope heap_types.
-  Theorem MapGet_t Γ vt : Γ ⊢ MapGet : (mapT vt -> uint64T -> vt * boolT).
-  Proof.
-    typecheck.
-  Qed.
-
-  Theorem MapInsert_t Γ vt : Γ ⊢v MapInsert : (mapT vt -> uint64T -> vt -> unitT).
-  Proof.
-    type_step.
-    type_step.
-    type_step.
-    eapply store_hasTy; typecheck.
-  Qed.
-
-  Theorem mapGetDef_t Γ vt : Γ ⊢ mapGetDef : (mapValT vt -> vt).
-  Proof.
-    typecheck.
-  Qed.
-
-  Hint Resolve mapGetDef_t : types.
-
-  Theorem MapClear_t Γ vt : Γ ⊢ MapClear : (mapT vt -> unitT).
-  Proof.
-    type_step.
-    type_step.
-    type_step.
-    { typecheck. }
-    type_step.
-    eapply store_hasTy; typecheck.
-  Qed.
-
-  Theorem MapIter_t vt Γ : Γ ⊢ MapIter : (mapT vt -> (uint64T -> vt -> unitT) -> unitT).
-  Proof.
-    typecheck.
-  Qed.
+  (** allocation with a type annotation *)
+  Definition ref_to (t:ty): val := λ: "v", Alloc (Var "v").
 End goose_lang.
-
-Opaque MapGet MapInsert MapClear MapIter.
-Hint Resolve MapGet_t MapInsert_t MapClear_t MapIter_t : types.
-
-Module test.
-Section goose_lang.
-  Context `{ext_ty: ext_types}.
-  Local Open Scope heap_types.
-  Theorem panic_test Γ : Γ ⊢ (Panic "";; #())%E : unitT.
-  Proof.
-    typecheck.
-  Qed.
-End goose_lang.
-End test.
-
-*)
