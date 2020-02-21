@@ -1,5 +1,5 @@
 From Perennial.goose_lang.examples Require Import append_log.
-From Perennial.goose_lang Require Import encoding_proof.
+From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import marshal_proof.
 
