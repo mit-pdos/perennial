@@ -1,5 +1,6 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
+From iris.proofmode Require Export environments.
 From iris.program_logic Require Export weakestpre total_weakestpre.
 From iris.program_logic Require Import atomic.
 From Perennial.goose_lang Require Export tactics lifting.

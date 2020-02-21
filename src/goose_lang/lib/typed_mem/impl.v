@@ -4,6 +4,25 @@ From Perennial.goose_lang.lib Require Import map.impl.
 Section goose_lang.
   Context {ext} {ext_ty: ext_types ext}.
 
+  Fixpoint load_ty t: val :=
+    match t with
+    | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))
+    | baseT unitBT => λ: <>, #()
+    | _ => λ: "l", !(Var "l")
+    end.
+
+  Fixpoint store_ty t: val :=
+    match t with
+    | prodT t1 t2 => λ: "p" "v",
+                    store_ty t1 (Var "p") (Fst (Var "v"));;
+                    store_ty t2 (Var "p" +ₗ[t1] #1) (Snd (Var "v"))
+    | baseT unitBT => λ: <> <>, #()
+    | _ => λ: "p" "v", Var "p" <- Var "v"
+    end.
+
+  (* approximate types for closed values, as obligatons for using load_ty and
+  store_ty *)
+
   Inductive lit_ty : base_lit -> ty -> Prop :=
   | int_ty x : lit_ty (LitInt x) uint64T
   | int32_ty x : lit_ty (LitInt32 x) uint32T
@@ -15,7 +34,6 @@ Section goose_lang.
   | loc_struct_ty x ts : lit_ty (LitLoc x) (structRefT ts)
   .
 
-  (* approximate types for closed values *)
   Inductive val_ty : val -> ty -> Prop :=
   | base_ty l t : lit_ty l t -> val_ty (LitV l) t
   | val_ty_pair v1 t1 v2 t2 : val_ty v1 t1 ->

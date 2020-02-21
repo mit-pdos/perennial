@@ -1,5 +1,5 @@
-From Perennial.goose_lang Require Import lifting proofmode.
-From Perennial.goose_lang.lib Require Import typed_mem.impl.
+From Perennial.goose_lang Require Import proofmode.
+From Perennial.goose_lang.lib Require Export typed_mem.impl.
 
 Set Default Proof Using "Type".
 
@@ -72,22 +72,6 @@ Section goose_lang.
       iPureIntro.
       constructor; auto.
   Qed.
-
-  Fixpoint load_ty t: val :=
-    match t with
-    | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))
-    | baseT unitBT => λ: <>, #()
-    | _ => λ: "l", !(Var "l")
-    end.
-
-  Fixpoint store_ty t: val :=
-    match t with
-    | prodT t1 t2 => λ: "p" "v",
-                    store_ty t1 (Var "p") (Fst (Var "v"));;
-                    store_ty t2 (Var "p" +ₗ[t1] #1) (Snd (Var "v"))
-    | baseT unitBT => λ: <> <>, #()
-    | _ => λ: "p" "v", Var "p" <- Var "v"
-    end.
 
   Lemma wp_LoadAt stk E q l t v :
     {{{ l ↦[t]{q} v }}}

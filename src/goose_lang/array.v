@@ -3,7 +3,7 @@ From iris.proofmode Require Import tactics coq_tactics.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lifting.
 From Perennial.goose_lang Require Import proofmode tactics.
-From Perennial.goose_lang.lib Require Import typed_mem.
+From Perennial.goose_lang.lib Require Import typed_mem.typed_mem.
 Set Default Proof Using "Type".
 
 (** This file defines the [array] connective, a version of [mapsto] that works
