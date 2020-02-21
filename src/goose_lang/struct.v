@@ -22,7 +22,6 @@ Section goose.
     destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
     constructor; auto.
   Defined.
-
 End goose.
 
 Local Ltac maybe_descriptor_wf d :=
@@ -33,34 +32,6 @@ Local Ltac maybe_descriptor_wf d :=
   end.
 
 Hint Extern 3 (descriptor_wf ?d) => maybe_descriptor_wf d : typeclass_instances.
-
-Module one.
-  Section goose.
-    Context {ext} {ext_ty: ext_types ext}.
-    Definition S := mkStruct [("foo", uint64T)].
-    Global Instance wf : descriptor_wf S := _.
-    Definition v1: val := (#3, #()).
-  End goose.
-End one.
-
-Module two.
-  Section goose.
-    Context {ext} {ext_ty: ext_types ext}.
-    Definition S := mkStruct [("foo", uint64T); ("bar", boolT)].
-    Global Instance wf : descriptor_wf S := _.
-    Definition v1: val := (#3, (#true, #())).
-  End goose.
-End two.
-
-Module three.
-  Section goose.
-    Context {ext} {ext_ty: ext_types ext}.
-    Local Notation "f :: t" := (@pair string ty f%string t%ht).
-    Definition S := mkStruct ["foo" :: uint64T; "bar" :: boolT; "baz" :: refT uint64T].
-    Global Instance wf : descriptor_wf S := _.
-    Definition v1: val := (#3, (#true, (#(LitLoc $ Build_loc 7), #()))).
-  End goose.
-End three.
 
 Section goose_lang.
   Context `{ffi_sem: ext_semantics}.
@@ -78,10 +49,6 @@ Definition getField d (f0: string) : val :=
      | (f,_)%core::fs => if f =? f0 then Fst e else go fs (Snd e)
      end) d (Var "v").
 
-Example getField1 : getField three.S "foo" = (λ: "v", Fst $ Var "v")%V := eq_refl.
-Example getField2 : getField three.S "baz" = (λ: "v", Fst $ Snd $ Snd $ Var "v")%V := eq_refl.
-Example getField3 : getField one.S "foo" = (λ: "v", Fst $ Var "v")%V := eq_refl.
-
 Fixpoint getField_f d f0: val -> val :=
   λ v, match d with
        | [] => #()
@@ -91,8 +58,6 @@ Fixpoint getField_f d f0: val -> val :=
          | _ => #()
          end
        end.
-
-Example getField_f1 : getField_f three.S "foo" three.v1 = #3 := eq_refl.
 
 Fixpoint setField_f d f0 fv: val -> val :=
   λ v, match d with
@@ -106,10 +71,6 @@ Fixpoint setField_f d f0 fv: val -> val :=
          | _ => v
          end
        end.
-
-Example setField_f1 : setField_f three.S "foo" #4 three.v1
-                      = (#4, (#true, (#{| loc_car := 7 |}, #())))%V
-  := eq_refl.
 
 Fixpoint assocl_lookup {A} (field_vals: list (string * A)) (f0: string) : option A :=
   match field_vals with
@@ -129,12 +90,6 @@ Fixpoint build_struct_val d (field_vals: list (string*expr)): option expr :=
            | None => None
            end
   end.
-
-(* Eval vm_compute in build_struct_val
-                   three.S
-                   [("foo", Val #3);
-                   ("baz", Val #{| loc_car := 7 |});
-                   ("bar", Val #true)]. *)
 
 Definition buildStruct d (fvs: list (string*expr)) : expr :=
   match build_struct_val d fvs with
@@ -161,15 +116,6 @@ Fixpoint structTy d : ty :=
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
-Definition load_ty' t: val :=
-  λ: "l",
-  (fix load t (l: expr): expr :=
-     match t with
-     | prodT t1 t2 => (load t1 l, load t2 (l +ₗ[t1] #1))
-     | baseT unitBT => #()
-     | _ => !l
-     end) t (Var "l").
-
 Fixpoint load_ty t: val :=
   match t with
   | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))
@@ -178,9 +124,6 @@ Fixpoint load_ty t: val :=
   end.
 
 Definition loadStruct (d:descriptor) : val := load_ty (structTy d).
-
-(* Eval cbv -[U64] in structTy three.S. *)
-(* Eval cbv -[U64 ty_size Z.mul] in loadStruct three.S. *)
 
 Fixpoint field_offset d f0 : option (Z * ty) :=
   match d with
@@ -191,14 +134,6 @@ Fixpoint field_offset d f0 : option (Z * ty) :=
                     | None => None
                     end
   end.
-
-(*
-Definition fieldPointer (d:descriptor) (f:string) (l:loc): loc :=
-  match field_offset d f with
-  | Some (off, _) => l +ₗ off
-  | None => null
-  end.
-*)
 
 Definition fieldType (d:descriptor) (f:string): ty :=
   match field_offset d f with
@@ -214,15 +149,6 @@ Definition structFieldRef d f0: val :=
   | None => λ: <>, #()
   end.
 
-Definition structFieldRef' d f0: val :=
-  λ: "p",
-  (fix go fs (p: expr): expr :=
-     match fs with
-     | [] => p
-     | (f,t)%core :: fs => if f =? f0 then p
-                    else go fs (p +ₗ[t] #1)
-     end) d (Var "p").
-
 Definition loadField (d:descriptor) (f:string) : val :=
   match field_offset d f with
   | Some (off, t) => λ: "p", load_ty t (BinOp (OffsetOp off) (Var "p") #1)
@@ -237,16 +163,6 @@ Fixpoint store_ty t: val :=
   | baseT unitBT => λ: <> <>, #()
   | _ => λ: "p" "v", Var "p" <- Var "v"
   end.
-
-Definition store_ty' t: val :=
-  λ: "p" "v",
-  (fix store t (p: expr) (v: expr) :=
-     match t with
-     | prodT t1 t2 => store t1 p (Fst v);;
-                     store t2 (p +ₗ[t1] #1) (Snd v)
-     | baseT unitBT => #()
-     | _ => p <- v
-     end) t (Var "p") (Var "v").
 
 Definition storeStruct (d: descriptor) : val := store_ty (structTy d).
 
@@ -296,20 +212,6 @@ Qed.
 Hint Resolve load_hasTy.
 
 Hint Rewrite @drop_app : ty.
-
-Theorem load_ty'_val_t : forall Γ t,
-  Γ ⊢v load_ty' t : (structRefT (flatten_ty t) -> t).
-Proof using Type.
-  intros.
-  type_step.
-Admitted.
-
-Theorem load_ty'_t : forall Γ t,
-  Γ ⊢ load_ty' t : (structRefT (flatten_ty t) -> t).
-Proof.
-  constructor.
-  apply load_ty'_val_t.
-Qed.
 
 Theorem fieldOffset_t Γ fs f z t e :
   field_offset fs f = Some (z, t) ->
@@ -376,74 +278,22 @@ Qed.
 
 Hint Resolve store_struct_singleton.
 
-(*
-Theorem store_ty_val_t : forall Γ t,
-  Γ ⊢v store_ty t : (structRefT (flatten_ty t) -> t -> unitT).
-Proof using Type.
-  (* TODO: copy the structure of load_ty *)
-Admitted.
-
-Theorem store_ty_t Γ t :
-  Γ ⊢ store_ty t : (structRefT (flatten_ty t) -> t -> unitT).
-Proof.
-  constructor.
-  apply store_ty_val_t.
-Qed.
-
-Theorem storeStruct_t : forall Γ d,
-  Γ ⊢v storeStruct d : (structRefTy d -> structTy d -> unitT).
-Proof.
-  unfold storeStruct; intros.
-  apply store_ty_val_t.
-Qed.
-
-Theorem storeField_t : forall Γ d f z t,
-  field_offset d f = Some (z, t) ->
-  Γ ⊢v storeField d f : (structRefTy d -> t -> unitT).
-Proof.
-  unfold storeField; intros.
-  rewrite H.
-  type_step.
-  type_step.
-  eapply app_hasTy; [ typecheck | ].
-  eapply app_hasTy.
-  { (* eapply fieldOffset_t; eauto. *) admit. }
-  apply store_ty_t; eauto.
-Admitted.
-*)
-
 End goose_lang.
-
-Declare Reduction getField := cbv [getField rev fst snd app String.eqb Ascii.eqb eqb].
-
-Ltac make_structF desc fname :=
-  let f := eval unfold desc in (getField desc fname) in
-  let f := eval getField in f in
-      lazymatch f with
-      | context[LitUnit] => fail "struct" desc "does not have field" fname
-      | _ => exact f
-      end.
-
-(* we don't use this, but just to document the relevant reduction *)
-Declare Reduction buildStruct :=
-  cbv [buildStruct
-       build_struct_val
-       rev app assocl_lookup
-       String.eqb Ascii.eqb eqb].
 
 Module struct.
   Notation decl := mkStruct.
-  Notation mk := buildStruct.
   Notation wf := descriptor_wf.
+
+  Notation t := structTy.
+  Notation ptrT := structRefTy.
+
+  Notation mk := buildStruct.
   Notation new := allocStructLit.
   Notation alloc := allocStruct.
   Notation get := getField.
   Notation fieldRef := structFieldRef.
-  (* TODO: load/loadF could probably use better names *)
   Notation load := loadStruct.
   Notation loadF := loadField.
-  Notation t := structTy.
-  Notation ptrT := structRefTy.
   Notation store := storeStruct.
   Notation storeF := storeField.
 End struct.
@@ -452,9 +302,6 @@ Notation "![ t ] e" := (load_ty t e%E)
                          (at level 9, right associativity, format "![ t ]  e") : expr_scope.
 Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E)
                              (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
-
-Notation "'structF!' desc fname" := (ltac:(make_structF desc fname))
-                                    (at level 0, desc, fname at next level, only parsing).
 
 Notation "f :: t" := (@pair string ty f%string t%ht) : struct_scope.
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
@@ -465,6 +312,3 @@ Open Scope struct_scope.
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)
 Global Opaque allocStruct structFieldRef loadStruct loadField storeStruct storeField.
-(*
-Hint Resolve structFieldRef_t loadStruct_t loadField_t storeStruct_t storeField_t : types.
-*)
