@@ -47,6 +47,44 @@ Proof.
     iApply "X".
 Qed.
 
+Theorem wp_forBreak' (I: bool -> iProp Σ) stk E (body: val) :
+  {{{ I true }}}
+    body #() @ stk; E
+  {{{ r, RET #r; I r }}} -∗
+  {{{ I true }}}
+    (for: (λ: <>, #true)%V ; (λ: <>, (λ: <>, #())%V #())%V :=
+       body) @ stk; E
+  {{{ RET #(); I false }}}.
+Proof.
+  iIntros "#Hbody".
+  iIntros (Φ) "!> I HΦ".
+  rewrite /For.
+  wp_lam.
+  wp_let.
+  wp_let.
+  wp_pure (Rec _ _ _).
+  match goal with
+  | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
+  end.
+  iLöb as "IH".
+  wp_pures.
+  iDestruct ("Hbody" with "I") as "Hbody1".
+  wp_apply "Hbody1".
+  iIntros (r) "Hr".
+  destruct r.
+  - iDestruct ("IH" with "Hr HΦ") as "IH1".
+    wp_let.
+    wp_if.
+    wp_lam.
+    wp_lam.
+    wp_pure (Rec _ _ _).
+    wp_lam.
+    iApply "IH1".
+  - wp_pures.
+    iApply "HΦ".
+    iApply "Hr".
+Qed.
+
 Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (max:u64) (l:loc) (body: val) :
   (∀ (i:u64),
       {{{ I i ∗ l ↦ #i ∗ ⌜int.val i < int.val max⌝ }}}
