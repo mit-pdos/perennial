@@ -2,6 +2,7 @@ From Perennial.goose_lang.examples Require Import append_log.
 From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import marshal_proof.
+From Perennial.goose_lang.lib Require Import wp_store.
 
 (* TODO: use this throughout (including replacing slice_val) *)
 Class GoData T := to_val: forall {ext:ext_op}, T -> val.
@@ -738,7 +739,7 @@ Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
      (l +ₗ 1) ↦ #disk_sz) ∗
     is_log' sz disk_sz vs.
 
-Transparent struct.loadField struct.storeStruct.
+Transparent struct.loadF struct.store.
 
 Lemma is_log_intro sz disk_sz bs :
   is_log' sz disk_sz bs -∗ is_log (#sz, (#disk_sz, #()))%V bs.
@@ -829,7 +830,7 @@ Proof.
   iIntros (Φ Φc) "[Hptsto_log Hbs] HΦ".
   iDestruct "Hptsto_log" as (sz disk_sz) "[(Hf0&Hf1) Hlog]".
   rewrite /Log__Append.
-  unfold struct.loadField; simpl.
+  unfold struct.loadF; simpl.
   wpc_pures.
   { iApply (is_log_crash_l with "Hlog"). }
   rewrite loc_add_0.
@@ -948,7 +949,7 @@ Proof.
         { iExists _; iRight.
           iApply (is_log_append with "[$] [$] [$] [$] [%]"); [len]. }
 
-        wpc_bind (struct.storeStruct _ _ _).
+        wpc_bind (struct.store _ _ _).
         wpc_frame "Hhdr Hlog Hnew Hfree HΦ".
         { iIntros "(Hhdr&Hlog&Hnew&Hfree&HΦ)".
           crash_case.
@@ -997,7 +998,7 @@ Proof.
   rewrite /Log__Reset.
   wpc_pures.
   { iApply (is_log_crash_l with "[$]"). }
-  wpc_bind (struct.loadField _ _ _).
+  wpc_bind (struct.loadF _ _ _).
   wpc_frame "Hlog HΦ".
   { iIntros "(Hlog&HΦ)".
     crash_case.
@@ -1029,7 +1030,7 @@ Proof.
       rewrite /is_log.
       iExists _, _; iSplitR; [ eauto | ].
       by iApply (is_log_reset with "Hhdr Hlog Hfree [%]"). }
-    rewrite /struct.storeStruct.
+    rewrite /struct.store.
     simpl.
     wpc_pures.
     { iExists _.
@@ -1054,13 +1055,13 @@ Proof.
     by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
 Qed.
 
-Transparent struct.loadStruct.
+Transparent struct.load.
 
 (* TODO: this should be proven generically on top of a shallow representation of
 the struct *)
 Theorem wp_loadLog stk E l vs :
   {{{ ptsto_log l vs }}}
-    struct.loadStruct Log.S #l @ stk; E
+    struct.load Log.S #l @ stk; E
   {{{ v, RET v; is_log v vs }}}.
 Proof.
   iIntros (Φ) "Hptsto_log HΦ".
