@@ -195,58 +195,8 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
-Theorem struct_ptsto_pair_split q l v1 t1 v2 t2 :
-  l ↦[t1 * t2]{q} (v1, v2) ⊣⊢ l ↦[t1]{q} v1 ∗ (l +ₗ ty_size t1) ↦[t2]{q} v2.
-Proof.
-  rewrite /struct_mapsto /= big_opL_app.
-  iSplit.
-  - iIntros "[[Hv1 Hv2] %]".
-    inversion H; subst; clear H.
-    iSplitL "Hv1"; iFrame; eauto.
-    iSplitL; eauto.
-    erewrite val_ty_flatten_length by eauto.
-    setoid_rewrite ty_size_offset.
-    iFrame.
-  - iIntros "[[Hv1 %] [Hv2 %]]".
-    erewrite val_ty_flatten_length by eauto.
-    setoid_rewrite ty_size_offset.
-    iFrame.
-    iPureIntro.
-    constructor; auto.
-Qed.
-
-Theorem struct_mapsto_ty q l v t :
-  l ↦[t]{q} v -∗ ⌜val_ty v t⌝.
-Proof.
-  iIntros "[_ %] !%//".
-Qed.
-
-Lemma wp_load_offset s E l off t vs v :
-  vs !! off = Some v →
-  {{{ l ↦∗[t] vs }}} load_ty t #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t] vs ∗ ⌜val_ty v t⌝ }}}.
-Proof.
-  iIntros (Hlookup Φ) "Hl HΦ".
-  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  iApply (wp_LoadAt with "Hl1"). iIntros "!> Hl1". iApply "HΦ".
-  iDestruct ("Hl2" $! v) as "Hl2". rewrite list_insert_id; last done.
-  iDestruct (struct_mapsto_ty with "Hl1") as %Hty.
-  iSplitL; eauto.
-  iApply ("Hl2" with "[$]").
-Qed.
-
 (* TODO: move this to common tactics *)
 Ltac invc H := inversion H; subst; clear H.
-
-Lemma wp_store_offset s E l off vs t v :
-  is_Some (vs !! off) →
-  val_ty v t ->
-  {{{ ▷ l ↦∗[t] vs }}} store_ty t #(l +ₗ[t] off) v @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
-Proof.
-  iIntros ([w Hlookup] Hty Φ) ">Hl HΦ".
-  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  iApply (wp_StoreAt _ _ _ _ _ _ Hty with "Hl1"). iIntros "!> Hl1".
-  iApply "HΦ". iApply ("Hl2" with "Hl1").
-Qed.
 
 Ltac inv_ty H :=
   match type of H with

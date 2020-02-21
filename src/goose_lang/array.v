@@ -145,6 +145,30 @@ Qed.
 (** Access to array elements *)
 (* moved to basic_triples *)
 
+Lemma wp_load_offset s E l off t vs v :
+  vs !! off = Some v →
+  {{{ l ↦∗[t] vs }}} load_ty t #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t] vs ∗ ⌜val_ty v t⌝ }}}.
+Proof.
+  iIntros (Hlookup Φ) "Hl HΦ".
+  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
+  iApply (wp_LoadAt with "Hl1"). iIntros "!> Hl1". iApply "HΦ".
+  iDestruct ("Hl2" $! v) as "Hl2". rewrite list_insert_id; last done.
+  iDestruct (struct_mapsto_ty with "Hl1") as %Hty.
+  iSplitL; eauto.
+  iApply ("Hl2" with "[$]").
+Qed.
+
+Lemma wp_store_offset s E l off vs t v :
+  is_Some (vs !! off) →
+  val_ty v t ->
+  {{{ ▷ l ↦∗[t] vs }}} store_ty t #(l +ₗ[t] off) v @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
+Proof.
+  iIntros ([w Hlookup] Hty Φ) ">Hl HΦ".
+  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
+  iApply (wp_StoreAt _ _ _ _ _ _ Hty with "Hl1"). iIntros "!> Hl1".
+  iApply "HΦ". iApply ("Hl2" with "Hl1").
+Qed.
+
 End lifting.
 End goose_lang.
 

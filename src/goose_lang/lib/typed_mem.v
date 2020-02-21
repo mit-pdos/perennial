@@ -106,6 +106,32 @@ Section goose_lang.
     by iIntros "[$ _]".
   Qed.
 
+  Theorem struct_mapsto_ty q l v t :
+    l ↦[t]{q} v -∗ ⌜val_ty v t⌝.
+  Proof.
+    iIntros "[_ %] !%//".
+  Qed.
+
+  Theorem struct_ptsto_pair_split q l v1 t1 v2 t2 :
+    l ↦[t1 * t2]{q} (v1, v2) ⊣⊢ l ↦[t1]{q} v1 ∗ (l +ₗ ty_size t1) ↦[t2]{q} v2.
+  Proof.
+    rewrite /struct_mapsto /= big_opL_app.
+    iSplit.
+    - iIntros "[[Hv1 Hv2] %]".
+      inversion H; subst; clear H.
+      iSplitL "Hv1"; iFrame; eauto.
+      iSplitL; eauto.
+      erewrite val_ty_flatten_length by eauto.
+      setoid_rewrite ty_size_offset.
+      iFrame.
+    - iIntros "[[Hv1 %] [Hv2 %]]".
+      erewrite val_ty_flatten_length by eauto.
+      setoid_rewrite ty_size_offset.
+      iFrame.
+      iPureIntro.
+      constructor; auto.
+  Qed.
+
   Fixpoint load_ty t: val :=
     match t with
     | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))
