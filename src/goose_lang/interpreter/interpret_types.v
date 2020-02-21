@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Import prelude.
+From Perennial.goose_lang Require Import lang notation.
 
 (* Interpreter Helper Stuff *)  
 Notation "x <- p1 ; p2" := (mbind (fun x => p2) p1) 

@@ -1,9 +1,8 @@
-From stdpp Require Export binders strings pretty.
-From iris.program_logic Require Export language ectx_language ectxi_language.
+From stdpp Require Import strings.
+From stdpp Require Export pretty.
+From iris.program_logic Require Import language ectx_language ectxi_language.
 From Perennial.Helpers Require Import Integers Transitions.
-From Perennial.goose_lang Require Export locations lang prelude.
-
-Require Import Program.
+From Perennial.goose_lang Require Import locations lang.
 
 Set Default Proof Using "Type".
 
@@ -16,8 +15,7 @@ Instance pretty_u32 : Pretty Integers.u32 :=
 Instance pretty_loc : Pretty loc :=
   fun x => pretty x.(loc_car).
 
-Definition single_quote: string := String (Ascii.ascii_of_N 34%N) EmptyString.
-Definition quoted (s:string) : string := (single_quote ++ s ++ single_quote)%string.
+Definition quoted (s:string) : string := ("""" ++ s ++ """")%string.
 
 Instance pretty_lit : Pretty base_lit :=
   fun x => match x with

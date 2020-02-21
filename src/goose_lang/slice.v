@@ -12,7 +12,7 @@ Open Scope heap_types.
 Module slice.
   Section types.
     Context `{ext_ty: ext_types}.
-    Definition S t := mkStruct ["p" :: refT t; "len" :: uint64T; "cap" :: uint64T].
+    Definition S t := struct.decl ["p" :: refT t; "len" :: uint64T; "cap" :: uint64T].
     Definition T t : ty := (arrayT t * uint64T * uint64T)%ht.
 
     Definition ptr: val := λ: "s", Fst (Fst (Var "s")).
@@ -94,14 +94,6 @@ Proof.
   typecheck.
 Qed.
 
-(*
-Definition MemCpy t: val :=
-  λ: "dst" "src" (annot "n" uint64T),
-    for-range: "i" < "n" :=
-      ("dst" +ₗ "i") <-[t] ![t]("src" +ₗ "i").
-*)
-
-(* explicitly recursive version of MemCpy *)
 Definition MemCpy_rec t: val :=
   rec: "memcpy" "dst" "src" "n" :=
     if: "n" = #0

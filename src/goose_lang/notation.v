@@ -212,17 +212,6 @@ Notation "'match:' e0 'with' 'SOME' x => e2 | 'NONE' => e1 'end'" :=
 Notation ResolveProph e1 e2 := (Resolve Skip e1 e2) (only parsing).
 Notation "'resolve_proph:' p 'to:' v" := (ResolveProph p v) (at level 100) : expr_scope.
 
-
-Definition ForRange {ext:ext_op} (v:string) (bound:expr) (body:expr) : expr :=
-  (rec: "__loop" v :=
-     if: Var v < bound
-     then body;;
-          (Var "__loop") (Var v + #1)
-     else #()) #0.
-Notation "'for-range:' v < b := e" := (ForRange v%string b%E e%E)
-  (at level 200, v at level 1, b at level 1, e at level 200,
-   format "'[' 'for-range:'  v  <  b  :=  '/  ' e ']'") : expr_scope.
-
 (* idiomatic wrappers for loop control flow *)
 Definition Continue {ext:ext_op}: val := #true.
 Definition Break {ext:ext_op}: val := #false.
@@ -240,12 +229,13 @@ Notation "'for:' cond ; post := e" := (For cond%E e%E post%E)
   (at level 200, cond, post at level 1, e at level 200,
    format "'[' 'for:'  cond  ;  post  :=  '/  ' e ']'") : expr_scope.
 
-Definition Loop {ext:ext_op} (body:expr) : expr :=
-  (rec: "__loop" BAnon :=
-     let: "__continue" := body in
-     if: (Var "__continue")
-     then (Var "__loop") #()
+Definition Loop {ext:ext_op} : val :=
+  λ: "body",
+  (rec: "loop" <> :=
+     let: "continue" := (Var "body") #() in
+     if: Var "continue"
+     then (Var "loop") #()
      else #()) #().
-Notation "'for:' := e" := (Loop e%E)
+Notation "'for:' := e" := (Loop (LamV BAnon e%E))
   (at level 200, e at level 200,
    format "'[' 'for:'  :=  '/  ' e ']'") : expr_scope.

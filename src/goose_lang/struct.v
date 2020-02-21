@@ -3,11 +3,9 @@ From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import typing.
 
-(** * Lightweight struct library
+(** * Struct library
 
     Access field offsets within pairs by name rather than using Fst and Snd. *)
-
-(* Check eq_refl : (#0, #1, #2)%E = ((#0, #1), #2)%E. *)
 
 Set Default Proof Using "Type".
 Set Implicit Arguments.
@@ -458,8 +456,11 @@ Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E)
 Notation "'structF!' desc fname" := (ltac:(make_structF desc fname))
                                     (at level 0, desc, fname at next level, only parsing).
 
-Notation "f :: t" := (@pair string ty f%string t%ht).
+Notation "f :: t" := (@pair string ty f%string t%ht) : struct_scope.
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
+Delimit Scope struct_scope with struct.
+Arguments mkStruct {ext ext_ty} _%struct_scope.
+Open Scope struct_scope.
 
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)
