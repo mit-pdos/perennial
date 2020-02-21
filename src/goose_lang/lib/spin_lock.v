@@ -1,18 +1,17 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl.
 From iris.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Export lang.
-From Perennial.goose_lang Require Import proofmode basic_triples notation.
-From Perennial.goose_lang.lib Require Import lock.
+From Perennial.goose_lang Require Export lang typing.
+From Perennial.goose_lang Require Import proofmode notation.
+From Perennial.goose_lang.lib Require Import typed_mem lock.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-  Context `{ffi_sem: ext_semantics}.
-  Context `{!ffi_interp ffi}.
-  Context {ext_tys: ext_types ext}.
+Context `{ffi_sem: ext_semantics}.
+Context `{!ffi_interp ffi}.
+Context {ext_tys: ext_types ext}.
 
-  Definition Var' s : @expr ext := Var s.
-  Local Coercion Var' : string >-> expr.
+Local Coercion Var' (s:string): expr := Var s.
 
 Definition newlock : val := λ: <>, ref #false.
 Definition try_acquire : val := λ: "l", CAS "l" #false #true.
@@ -67,21 +66,28 @@ Section proof.
     iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
     iMod (inv_alloc N _ (lock_inv γ l R) with "[Hl HR Hγ]") as "#?".
     { iIntros "!>". iExists false. iFrame.
-      iDestruct "Hl" as "[[Hl _] %]".
-      rewrite loc_add_0.
-      by iFrame. }
+      rewrite /is_free_lock /struct_mapsto /=.
+      iDestruct "Hl" as "[Hl _]".
+      rewrite loc_add_0 right_id //.
+    }
     iModIntro.
     iExists γ, l.
     iSplit; eauto.
+  Qed.
+
+  Lemma wp_new_free_lock :
+    {{{ True }}} newlock #() {{{ lk, RET #lk; is_free_lock lk }}}.
+  Proof using ext_tys.
+    iIntros (Φ) "_ HΦ".
+    wp_call.
+    wp_apply (typed_mem.wp_AllocAt boolT); auto.
   Qed.
 
   Lemma newlock_spec (R : iProp Σ):
     {{{ R }}} newlock #() {{{ lk γ, RET lk; is_lock γ lk R }}}.
   Proof using ext_tys.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /newlock /=.
-    wp_lam. wp_apply wp_alloc. (* TODO: to restore wp_alloc tactic, need a
-    type hint in the code *)
-    { val_ty. }
+    wp_lam. wp_apply (typed_mem.wp_AllocAt boolT); first by auto.
     iIntros (l) "Hl".
     iMod (alloc_lock with "Hl HR") as (γ) "Hlock".
     iModIntro.
