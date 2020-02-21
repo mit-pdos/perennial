@@ -116,18 +116,7 @@ Proof.
   by iApply "IH".
 Qed.
 
-Theorem nat_scaled_offset_to_Z {v t} {i: nat} :
-  val_ty v t ->
-  Z.of_nat (length (flatten_struct v)) * i =
-  ty_size t * Z.of_nat i.
-Proof.
-  intros Hty.
-  rewrite (val_ty_len Hty).
-  pose proof (ty_size_ge_0 t).
-  lia.
-Qed.
-
-Lemma wp_allocN s E v t (n: u64) :
+Lemma wp_allocN t s E v (n: u64) :
   (0 < int.val n)%Z →
   val_ty v t ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E

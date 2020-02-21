@@ -190,7 +190,7 @@ Proof.
   - wp_apply wp_make_cap.
     iIntros (cap Hcapge).
     wp_pures.
-    wp_apply (wp_allocN _ _ _ t); eauto.
+    wp_apply (wp_allocN t); eauto.
     { apply u64_val_ne in Heqb.
       change (int.val 0) with 0 in Heqb.
       word. }
@@ -213,7 +213,7 @@ Theorem wp_SliceSingleton Φ stk E t x :
 Proof.
   iIntros (Hty) "HΦ".
   wp_call.
-  wp_apply (wp_allocN _ _ _ t); eauto.
+  wp_apply (wp_allocN t); eauto.
   { word. }
   change (replicate (int.nat 1) x) with [x].
   iIntros (l) "Hl".
@@ -526,7 +526,7 @@ Proof.
     iIntros (cap Hcapgt).
     rewrite word.unsigned_add in Hcapgt.
     rewrite -> wrap_small in Hcapgt by word.
-    wp_apply (wp_allocN _ _ _ t); auto.
+    wp_apply (wp_allocN t); auto.
     { word. }
     iIntros (l) "Halloc".
     iDestruct (array_replicate_split (int.nat s.(Slice.sz) + 1) (int.nat cap - int.nat s.(Slice.sz) - 1) with "Halloc") as "[Halloc HnewFree]";

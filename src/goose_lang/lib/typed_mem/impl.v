@@ -4,6 +4,10 @@ From Perennial.goose_lang.lib Require Import map.impl.
 Section goose_lang.
   Context {ext} {ext_ty: ext_types ext}.
 
+  (** allocation with a type annotation *)
+  Definition ref_to (t:ty): val := λ: "v", ref (Var "v").
+  Definition ref_zero (t:ty): val := λ: <>, ref (zero_val t).
+
   Fixpoint load_ty t: val :=
     match t with
     | prodT t1 t2 => λ: "l", (load_ty t1 (Var "l"), load_ty t2 (Var "l" +ₗ[t1] #1))

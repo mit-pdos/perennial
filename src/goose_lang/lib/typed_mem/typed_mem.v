@@ -73,6 +73,66 @@ Section goose_lang.
       constructor; auto.
   Qed.
 
+  Theorem nat_scaled_offset_to_Z {v t} {i: nat} :
+    val_ty v t ->
+    Z.of_nat (length (flatten_struct v)) * i =
+    ty_size t * Z.of_nat i.
+  Proof.
+    intros Hty.
+    rewrite (val_ty_len Hty).
+    pose proof (ty_size_ge_0 t).
+    lia.
+  Qed.
+
+  (* this is the core reasoning, not intended for external use *)
+  Local Theorem wp_AllocAt t stk E v :
+    val_ty v t ->
+    {{{ True }}}
+      ref v @ stk; E
+    {{{ l, RET #l; l ↦[t] v }}}.
+  Proof.
+    iIntros (Hty Φ) "_ HΦ".
+    wp_apply wp_allocN_seq; first by word.
+    change (int.nat 1) with 1%nat; simpl.
+    iIntros (l) "[Hl _]".
+    iApply "HΦ".
+    rewrite /struct_mapsto.
+    iSplitL; auto.
+    rewrite Z.mul_0_r loc_add_0.
+    iFrame.
+  Qed.
+
+  Theorem wp_ref_to t stk E v :
+    val_ty v t ->
+    {{{ True }}}
+      ref_to t v @ stk; E
+    {{{ l, RET #l; l ↦[t] v }}}.
+  Proof.
+    iIntros (Hty Φ) "_ HΦ".
+    wp_call.
+    wp_apply (wp_AllocAt t); auto.
+  Qed.
+
+  (* TODO: this is only because Goose doesn't use ref_zero *)
+  Theorem wp_ref_of_zero stk E t :
+    {{{ True }}}
+      ref (zero_val t) @ stk; E
+    {{{ l, RET #l; l ↦[t] (zero_val t) }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ".
+    wp_apply (wp_AllocAt t); auto.
+  Qed.
+
+  Theorem wp_ref_zero stk E t :
+    {{{ True }}}
+      ref_zero t #() @ stk; E
+    {{{ l, RET #l; l ↦[t] (zero_val t) }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ".
+    wp_call.
+    wp_apply (wp_AllocAt t); auto.
+  Qed.
+
   Lemma wp_LoadAt stk E q l t v :
     {{{ l ↦[t]{q} v }}}
       load_ty t #l @ stk; E
