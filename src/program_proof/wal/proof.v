@@ -59,7 +59,7 @@ Definition is_circular_appender (circ: loc) γlog γstart γend: iProp Σ :=
   ∃ (diskaddr:loc) s addrList,
     circ ↦[struct.t circularAppender.S] #diskaddr ∗
     diskaddr ↦[slice.T uint64T] (slice_val s) ∗
-    is_slice s uint64T addrList ∗
+    is_slice s uint64T 1%Qp addrList ∗
     (∃ mh,
         gen_heap_ctx (hG := γlog) mh ∗
         (* relate addrList to the home address of blocks in log; how slice and map? *)
