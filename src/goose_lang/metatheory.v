@@ -244,10 +244,35 @@ Proof.
     + by rewrite /= delete_insert_delete delete_idemp.
     + by rewrite /= Hins // delete_insert_delete !Hdel delete_idemp.
 Qed.
+Lemma subst_map_insert' x v vs e:
+    subst_map (<[x:=v]> vs) e = subst_map vs (subst x v e).
+Proof.
+  revert vs. assert (∀ (y : binder) (vs : gmap _ val), y ≠ BNamed x →
+    binder_delete y (<[x:=v]> vs) = <[x:=v]> (binder_delete y vs)) as Hins.
+  { intros [|y] vs ?; rewrite /= ?delete_insert_ne //; congruence. }
+  induction e=> vs; simplify_map_eq; auto with f_equal.
+  - match goal with
+    | |- context [ <[?x:=_]> _ !! ?y ] =>
+       destruct (decide (x = y)); simplify_map_eq=> //
+    end.
+  - destruct (decide _) as [[??]|[<-%dec_stable|[<-%dec_stable ?]]%not_and_l_alt].
+    + rewrite !Hins // IHe //.
+    + by rewrite /= delete_insert_delete.
+    + by rewrite /= Hins // delete_insert_delete.
+Qed.
 Lemma subst_map_binder_insert b v vs e :
   subst_map (binder_insert b v vs) e =
   subst' b v (subst_map (binder_delete b vs) e).
 Proof. destruct b; rewrite ?subst_map_insert //. Qed.
+Lemma subst_map_binder_insert' b v vs e:
+  subst_map (binder_insert b v vs) e =
+  subst_map vs (subst' b v e).
+Proof. destruct b; rewrite ?subst_map_insert' //=. Qed.
+
+Lemma binder_delete_commute b1 b2 (vs: gmap string val):
+  binder_delete b1 (binder_delete b2 vs) =
+  binder_delete b2 (binder_delete b1 vs).
+Proof. destruct b1, b2; rewrite //= delete_commute //. Qed.
 
 (* subst_map on closed expressions *)
 Lemma subst_map_is_closed X e vs :

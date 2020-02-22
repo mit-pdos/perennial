@@ -190,6 +190,7 @@ Definition sty_rules_obligation :=
     get_ext_tys op = (t1, t2) →
     forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
     sty_inv hS -∗
+    spec_ctx -∗
     has_semTy es e (val_interp (hS := hS) t1) -∗
     has_semTy (ExternalOp op es) ((spec_op_trans) op e) (val_interp (hS := hS) t2).
 
@@ -197,11 +198,11 @@ Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
 Definition subst_ctx := gmap string subst_tuple.
 
-
 Definition ctx_has_semTy `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
-           (Γ: Ctx) es e τ :=
+           (Γ: Ctx) es e τ : iProp Σ :=
   ∀ Γsubst (HPROJ: subst_ty <$> Γsubst = Γ),
   sty_inv hS -∗
+  spec_ctx -∗
   ([∗ map] x ↦ t ∈ Γsubst, (val_interp (hS := hS) (subst_ty t) (subst_sval t) (subst_ival t))) -∗
   has_semTy (subst_map (subst_sval <$> Γsubst) es)
             (subst_map (subst_ival <$> Γsubst) e)
@@ -227,6 +228,31 @@ Qed.
 
 Existing Instance sty_inv_persistent.
 
+Lemma ctx_has_semTy_subst `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
+      e es t x v vs tx Γ:
+      ctx_has_semTy (hS := hS) (<[x:=tx]> Γ) es e t -∗
+      val_interp (hS := hS) tx vs v -∗
+      ctx_has_semTy (hS := hS) Γ (subst' x vs es) (subst' x v e) t.
+Proof.
+  rewrite /ctx_has_semTy.
+  iIntros "Hhasty Hval".
+  iIntros (Γsubst Hproj) "Hsty Hspec Hctx".
+  destruct x as [|x] => //=.
+  { iApply ("Hhasty" with "[] [$] [$]").
+    * rewrite insert_anon //=.
+    * eauto.
+  }
+  rewrite -?subst_map_insert'.
+  iSpecialize ("Hhasty" $! (<[x := {| subst_ty := tx; subst_sval := vs; subst_ival := v |}]> Γsubst)
+                 with "[] [$] [$] [Hctx Hval]").
+  { iPureIntro. rewrite -Hproj. apply: fmap_insert. }
+  { iPoseProof (big_sepM_insert_2 with "[Hval] [Hctx]") as "$".
+    * iFrame.
+    * eauto.
+  }
+  rewrite ?fmap_insert //=.
+Qed.
+
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
   ∀ Γ es e τ Hval, expr_transTy _ _ _ Hval spec_op_trans Γ es e τ →
@@ -234,7 +260,7 @@ Lemma sty_fundamental_lemma:
     ctx_has_semTy (hS := hS) Γ es e τ)%I.
 Proof.
   iIntros (Hrules ????? Htyping ??????).
-  induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hctx".
+  induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Hctx".
   (* Variables *)
   - subst.
     rewrite lookup_fmap in H.
@@ -247,14 +273,14 @@ Proof.
   (* Function app. *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
-    iPoseProof (IHHtyping1 with "[$] [$]") as "H"; eauto.
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) x2).
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppRCtx (subst_map _ f1)] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     wpc_bind (subst_map _ f2).
-    iPoseProof (IHHtyping2 with "[$] [$]") as "H"; eauto.
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$]") as "H"; eauto.
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppLCtx (vs2)] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
     iApply (wpc_mono' with "[Hv2] [] H"); last done.
@@ -262,6 +288,48 @@ Proof.
     simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
     iApply ("Hinterp" with "[$]").
     { iFrame. }
+  - (* XXX: something needs to be said about the val translation, but we
+       were debating dropping val typing for external layers? *)
+    admit.
+  (* Function abstraction *)
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)".
+      (* TODO: make spec_ctx auto frame source_ctx *)
+    }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. econstructor; eauto.
+      { simpl. econstructor; eauto. }
+      { econstructor; eauto. }
+    }
+    wpc_pures; eauto.
+    iExists _; iFrame.
+    iExists _, _, _, _, _, _; iSplit; first eauto.
+    iLöb as "IH".
+    iAlways. iIntros (v vs) "Hval".
+    clear j K Hctx.
+    iIntros (j K Hctx) "Hj".
+    wpc_pures; first auto.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)".
+      (* TODO: make spec_ctx auto frame source_ctx *)
+    }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. econstructor; eauto.
+    }
+    iPoseProof (ctx_has_semTy_subst with "[] []") as "H1".
+    { iApply IHHtyping. }
+    { simpl. iExists _, _, _, _, _, _. iFrame "IH"; eauto. }
+    iPoseProof (ctx_has_semTy_subst with "[] Hval") as "H2".
+    { iApply "H1". }
+    iSpecialize ("H2" with "[//] [$] [$] [$] [//] [Hj]").
+    { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
+      iEval (rewrite (binder_delete_commute f x)). iFrame. }
+    { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
+      iEval (rewrite {2}binder_delete_commute). iFrame. }
   -
 Abort.
 
