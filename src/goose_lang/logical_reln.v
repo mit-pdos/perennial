@@ -3,7 +3,7 @@ From iris.algebra Require Import auth excl.
 From iris.base_logic.lib Require Import proph_map.
 From iris.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map.
-From Perennial.goose_lang Require Import proofmode notation.
+From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert.
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
@@ -51,7 +51,13 @@ Class specTy_model :=
     sty_inv : ∀ {Σ} `{!heapG Σ} `{refinement_heapG} `{crashG Σ}, styG Σ → iProp Σ;
     styN: coPset;
     sty_val_interp : ∀ {Σ} `{!heapG Σ} `{refinement_heapG Σ} `{crashG Σ} (hS: styG Σ),
-                     @ext_tys (@val_tys _ spec_ty) → val_semTy }.
+                     @ext_tys (@val_tys _ spec_ty) → val_semTy;
+    sty_val_persistent:
+      forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ es e,
+        Persistent (sty_val_interp hS τ es e);
+    sty_inv_persistent:
+      forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+        Persistent (sty_inv hS) }.
 
 (*
 Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
@@ -187,14 +193,6 @@ Definition sty_rules_obligation :=
     has_semTy es e (val_interp (hS := hS) t1) -∗
     has_semTy (ExternalOp op es) ((spec_op_trans) op e) (val_interp (hS := hS) t2).
 
-Definition sty_pers_obligation1 :=
- forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ)
-        (τ: ext_tys) es e, Persistent (val_interp (hS := hS) (extT τ) es e).
-
-Definition sty_pers_obligation2 :=
- forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
-        Persistent (sty_inv hS).
-
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
 Definition subst_ctx := gmap string subst_tuple.
@@ -209,26 +207,61 @@ Definition ctx_has_semTy `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_h
             (subst_map (subst_ival <$> Γsubst) e)
             (val_interp (hS := hS) τ).
 
+Instance base_interp_pers Σ es e t:
+      Persistent (base_ty_interp (Σ := Σ) t es e).
+Proof. destruct t; apply _. Qed.
+
+Instance val_interp_pers `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t:
+      Persistent (val_interp (hS := hS) t es e).
+Proof.
+ revert es e. induction t => ?? //=; try apply _.
+ by apply sty_val_persistent.
+Qed.
+
+Instance sty_ctx_prop_pers `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
+      (Γsubst: gmap string subst_tuple) :
+      Persistent ([∗ map] t ∈ Γsubst, val_interp (hS := hS) (subst_ty t) (subst_sval t) (subst_ival t))%I.
+Proof.
+  apply big_sepM_persistent => ??. by apply val_interp_pers.
+Qed.
+
+Existing Instance sty_inv_persistent.
+
 Lemma sty_fundamental_lemma:
-  sty_pers_obligation1 →
-  sty_pers_obligation2 →
   sty_rules_obligation →
   ∀ Γ es e τ Hval, expr_transTy _ _ _ Hval spec_op_trans Γ es e τ →
   (forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
     ctx_has_semTy (hS := hS) Γ es e τ)%I.
 Proof.
-  rewrite /sty_pers_obligation1.
-  rewrite /sty_pers_obligation2.
-  iIntros (Hpers1 Hpers2 Hrules ????? Htyping ??????).
-  induction Htyping.
-  - iIntros (??) "#Hinv Hctx". subst.
+  iIntros (Hrules ????? Htyping ??????).
+  induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hctx".
+  (* Variables *)
+  - subst.
     rewrite lookup_fmap in H.
     apply fmap_Some_1 in H as (t'&?&?). subst.
     iDestruct (big_sepM_lookup with "Hctx") as "H"; first eauto.
     rewrite /= ?lookup_fmap H //=.
     iIntros (j K Hctx) "Hj". iApply wpc_value; iSplit.
-    * iModIntro. iExists _; iFrame.
+    * iModIntro. iExists _; iFrame "H"; iFrame.
     * iModIntro. iApply fupd_mask_weaken; first by set_solver+. eauto.
+  (* Function app. *)
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping1 with "[$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) x2).
+    iSpecialize ("H" $! j (λ x, K (subst_map _ f1 x)) with "[] Hj").
+    { admit. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    wpc_bind (subst_map _ f2).
+    iPoseProof (IHHtyping2 with "[$] [$]") as "H"; eauto.
+    iSpecialize ("H" $! j (λ x, K (x (of_val vs2))) with "[] Hj").
+    { admit. }
+    iApply (wpc_mono' with "[Hv2] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
+    iApply ("Hinterp" with "[$]").
+    { iFrame. }
   -
 Abort.
 
