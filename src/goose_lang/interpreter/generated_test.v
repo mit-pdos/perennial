@@ -17,8 +17,8 @@ Example testCompareLE_ok : testCompareLE #() ~~> #true := t.
 Example testByteSliceToString_ok : testByteSliceToString #() ~~> #true := t.
 
 (* copy.go *)
-Fail Example testCopySimple_ok : failing_testCopySimple #() ~~> #true := t.
-Fail Example testCopyDifferentLengths_ok : failing_testCopyDifferentLengths #() ~~> #true := t.
+Example testCopySimple_ok : testCopySimple #() ~~> #true := t.
+Example testCopyDifferentLengths_ok : testCopyDifferentLengths #() ~~> #true := t.
 
 (* encoding.go *)
 Example testEncDec32Simple_ok : testEncDec32Simple #() ~~> #true := t.
