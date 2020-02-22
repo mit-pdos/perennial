@@ -86,16 +86,16 @@ Definition testByteSliceToString: val :=
 
 (* copy.go *)
 
-Definition failing_testCopySimple: val :=
-  rec: "failing_testCopySimple" <> :=
+Definition testCopySimple: val :=
+  rec: "testCopySimple" <> :=
     let: "x" := NewSlice byteT #10 in
     SliceSet byteT "x" #3 (#(U8 1));;
     let: "y" := NewSlice byteT #10 in
     SliceCopy byteT "y" "x";;
     (SliceGet byteT "y" #3 = #(U8 1)).
 
-Definition failing_testCopyDifferentLengths: val :=
-  rec: "failing_testCopyDifferentLengths" <> :=
+Definition testCopyDifferentLengths: val :=
+  rec: "testCopyDifferentLengths" <> :=
     let: "x" := NewSlice byteT #15 in
     SliceSet byteT "x" #3 (#(U8 1));;
     SliceSet byteT "x" #12 (#(U8 2));;

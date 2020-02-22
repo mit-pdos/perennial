@@ -98,9 +98,9 @@ Admitted.
 Definition SliceCopy t : val :=
   λ: "dst" "src",
   let: "n" :=
-     (if: slice.len "dst" ≤ slice.len "src"
+     (if: slice.len "dst" < slice.len "src"
      then slice.len "dst" else slice.len "src") in (* take the minimum *)
-  MemCpy_rec t (slice.ptr "dst") (slice.ptr "src");;
+  MemCpy_rec t (slice.ptr "dst") (slice.ptr "src") "n";;
   "n".
 
 (* this models &s[i] (which looks a little like a get but is very different) *)
