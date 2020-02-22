@@ -11,6 +11,7 @@ with lists of values. It also contains array versions of the basic heap
 operations of GooseLang. *)
 
 Reserved Notation "l ↦∗[ t ] vs" (at level 20, format "l  ↦∗[ t ]  vs").
+Reserved Notation "l ↦∗[ t ]{ q } vs" (at level 20, format "l  ↦∗[ t ]{ q }  vs").
 
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.
@@ -19,9 +20,10 @@ Context `{!ffi_interp ffi}.
 
 (* technically the definition of array doesn't depend on a state interp, only
 the ffiG type; fixing this would require unbundling ffi_interp *)
-Definition array `{!heapG Σ} (l : loc) (t:ty) (vs : list val) : iProp Σ :=
-  ([∗ list] i ↦ v ∈ vs, (l +ₗ[t] i) ↦[t] v)%I.
-Notation "l ↦∗[ t ] vs" := (array l t vs) : bi_scope.
+Definition array `{!heapG Σ} (l : loc) (q:Qp) (t:ty) (vs : list val) : iProp Σ :=
+  ([∗ list] i ↦ v ∈ vs, (l +ₗ[t] i) ↦[t]{q} v)%I.
+Notation "l ↦∗[ t ]{ q } vs" := (array l q t vs) : bi_scope.
+Notation "l ↦∗[ t ] vs" := (array l 1%Qp t vs) : bi_scope.
 
 (** We have no [FromSep] or [IntoSep] instances to remain forwards compatible
 with a fractional array assertion, that will split the fraction, not the
@@ -29,25 +31,21 @@ list. *)
 
 Section lifting.
 Context `{!heapG Σ}.
-Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
-Implicit Types σ : state.
-Implicit Types v : val.
-Implicit Types t : ty.
-Implicit Types vs : list val.
-Implicit Types l : loc.
-Implicit Types sz off : nat.
+Implicit Types (v:val) (t:ty) (l:loc).
+Implicit Types (vs : list val).
+Implicit Types (sz off : nat).
 
-Global Instance array_timeless l t vs : Timeless (array l t vs) := _.
+Global Instance array_timeless l q t vs : Timeless (array l q t vs) := _.
 
-Lemma array_nil l t : l ↦∗[t] [] ⊣⊢ emp.
+Lemma array_nil l t q : l ↦∗[t]{q} [] ⊣⊢ emp.
 Proof. by rewrite /array. Qed.
 
-Lemma array_singleton l t v : l ↦∗[t] [v] ⊣⊢ l ↦[t] v.
+Lemma array_singleton l t q v : l ↦∗[t]{q} [v] ⊣⊢ l ↦[t]{q} v.
 Proof. by rewrite /array /= right_id Z.mul_0_r loc_add_0. Qed.
 
-Lemma array_app l t vs ws :
-  l ↦∗[t] (vs ++ ws) ⊣⊢ l ↦∗[t] vs ∗ (l +ₗ[t] length vs) ↦∗[t] ws.
+Lemma array_app l t q vs ws :
+  l ↦∗[t]{q} (vs ++ ws) ⊣⊢ l ↦∗[t]{q} vs ∗ (l +ₗ[t] length vs) ↦∗[t]{q} ws.
 Proof.
   rewrite /array big_sepL_app.
   setoid_rewrite Nat2Z.inj_add.
@@ -56,7 +54,7 @@ Proof.
   done.
 Qed.
 
-Lemma array_cons l v t vs : l ↦∗[t] (v :: vs) ⊣⊢ l ↦[t] v ∗ (l +ₗ ty_size t) ↦∗[t] vs.
+Lemma array_cons l v t q vs : l ↦∗[t]{q} (v :: vs) ⊣⊢ l ↦[t]{q} v ∗ (l +ₗ ty_size t) ↦∗[t]{q} vs.
 Proof.
   rewrite /array big_sepL_cons Z.mul_0_r loc_add_0.
   f_equiv.
@@ -65,12 +63,29 @@ Proof.
   by setoid_rewrite Hoff.
 Qed.
 
-Lemma update_array l vs off t v :
+Lemma array_split (i:Z) l t vs :
+  0 <= i ->
+  i <= Z.of_nat (length vs) ->
+  l ↦∗[t] vs ⊣⊢
+        l ↦∗[t] (take (Z.to_nat i) vs) ∗ (l +ₗ[t] i) ↦∗[t] (drop (Z.to_nat i) vs).
+Proof.
+  intros Hn Hlength.
+  rewrite <- (take_drop (Z.to_nat i) vs) at 1.
+  rewrite array_app.
+  rewrite take_length.
+  rewrite Nat.min_l; last lia.
+  rewrite Z2Nat.id; last lia.
+  auto.
+Qed.
+
+(* this lemma is just used to prove the update version (with q=1) and read
+version (with arbitrary q but no update) below *)
+Local Lemma update_array_gen {l vs off t q v} :
   vs !! off = Some v →
-  (l ↦∗[t] vs -∗ ((l +ₗ[t] off) ↦[t] v ∗ ∀ v', (l +ₗ[t] off) ↦[t] v' -∗ l ↦∗[t] <[off:=v']>vs))%I.
+  (l ↦∗[t]{q} vs -∗ ((l +ₗ[t] off) ↦[t]{q} v ∗ ∀ v', (l +ₗ[t] off) ↦[t]{q} v' -∗ l ↦∗[t]{q} <[off:=v']>vs))%I.
 Proof.
   iIntros (Hlookup) "Hl".
-  rewrite -[X in (l ↦∗[_] X)%I](take_drop_middle _ off v); last done.
+  rewrite -[X in (l ↦∗[_]{_} X)%I](take_drop_middle _ off v); last done.
   iDestruct (array_app with "Hl") as "[Hl1 Hl]".
   iDestruct (array_cons with "Hl") as "[Hl2 Hl3]".
   assert (off < length vs)%nat as H by (apply lookup_lt_is_Some; by eexists).
@@ -78,10 +93,28 @@ Proof.
   iIntros (w) "Hl2".
   clear Hlookup. assert (<[off:=w]> vs !! off = Some w) as Hlookup.
   { apply list_lookup_insert. lia. }
-  rewrite -[in (l ↦∗[_] <[off:=w]> vs)%I](take_drop_middle (<[off:=w]> vs) off w Hlookup).
+  rewrite -[in (l ↦∗[_]{_} <[off:=w]> vs)%I](take_drop_middle (<[off:=w]> vs) off w Hlookup).
   iApply array_app. rewrite take_insert; last by lia. iFrame.
   iApply array_cons. rewrite take_length min_l; last by lia. iFrame.
   rewrite drop_insert; last by lia. done.
+Qed.
+
+Lemma update_array {l vs off t v} :
+  vs !! off = Some v →
+  (l ↦∗[t] vs -∗ ((l +ₗ[t] off) ↦[t] v ∗ ∀ v', (l +ₗ[t] off) ↦[t] v' -∗ l ↦∗[t] <[off:=v']>vs))%I.
+Proof.
+  apply update_array_gen.
+Qed.
+
+Lemma array_elem_acc {l vs off t q v} :
+  vs !! off = Some v →
+  l ↦∗[t]{q} vs -∗ (l +ₗ[t] off) ↦[t]{q} v ∗ ((l +ₗ[t] off) ↦[t]{q} v -∗ l ↦∗[t]{q} vs).
+Proof.
+  iIntros (Hlookup) "Hl".
+  iDestruct (update_array_gen Hlookup with "Hl") as "[$ Hupd]".
+  iIntros "Hoff".
+  iSpecialize ("Hupd" with "Hoff").
+  rewrite list_insert_id //.
 Qed.
 
 (** Allocation *)
@@ -127,21 +160,20 @@ Proof.
   iApply mapsto_seq_struct_array.
   iApply (big_sepL_mono with "Hlm").
   iIntros (k y Heq) "Hvals".
-  erewrite (nat_scaled_offset_to_Z Hty).
+  rewrite (nat_scaled_offset_to_Z Hty).
   iSplitL; auto.
 Qed.
 
-Lemma wp_load_offset s E l off t vs v :
+Lemma wp_load_offset s E l q off t vs v :
   vs !! off = Some v →
-  {{{ l ↦∗[t] vs }}} load_ty t #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t] vs ∗ ⌜val_ty v t⌝ }}}.
+  {{{ l ↦∗[t]{q} vs }}} load_ty t #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t]{q} vs ∗ ⌜val_ty v t⌝ }}}.
 Proof.
   iIntros (Hlookup Φ) "Hl HΦ".
-  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
-  iApply (wp_LoadAt with "Hl1"). iIntros "!> Hl1". iApply "HΦ".
-  iDestruct ("Hl2" $! v) as "Hl2". rewrite list_insert_id; last done.
+  iDestruct (array_elem_acc (l:=l) Hlookup with "Hl") as "[Hl1 Hl2]".
   iDestruct (struct_mapsto_ty with "Hl1") as %Hty.
+  wp_apply (wp_LoadAt with "Hl1"); iIntros "Hl1". iApply "HΦ".
   iSplitL; eauto.
-  iApply ("Hl2" with "[$]").
+  iApply ("Hl2" with "Hl1").
 Qed.
 
 Lemma wp_store_offset s E l off vs t v :
@@ -150,7 +182,7 @@ Lemma wp_store_offset s E l off vs t v :
   {{{ ▷ l ↦∗[t] vs }}} store_ty t #(l +ₗ[t] off) v @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
 Proof.
   iIntros ([w Hlookup] Hty Φ) ">Hl HΦ".
-  iDestruct (update_array l _ _ _ _ Hlookup with "Hl") as "[Hl1 Hl2]".
+  iDestruct (update_array (l:=l) Hlookup with "Hl") as "[Hl1 Hl2]".
   iApply (wp_StoreAt _ _ _ _ _ _ Hty with "Hl1"). iIntros "!> Hl1".
   iApply "HΦ". iApply ("Hl2" with "Hl1").
 Qed.
@@ -158,7 +190,8 @@ Qed.
 End lifting.
 End goose_lang.
 
-Notation "l  ↦∗[ t ]  vs" := (array l t vs) : bi_scope.
+Notation "l ↦∗[ t ] vs" := (array l 1%Qp t vs) : bi_scope.
+Notation "l ↦∗[ t ]{ q } vs" := (array l q t vs) : bi_scope.
 Typeclasses Opaque array.
 
 Ltac iFramePtsTo_core t :=

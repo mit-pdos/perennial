@@ -86,7 +86,7 @@ Proof.
 Qed.
 
 Lemma wp_raw_slice stk E l vs (sz: u64) t :
-  {{{ array l t vs ∗ ⌜length vs = int.nat sz⌝ }}}
+  {{{ array l 1 t vs ∗ ⌜length vs = int.nat sz⌝ }}}
     raw_slice t #l #sz @ stk; E
   {{{ sl, RET slice_val sl; is_slice sl t vs }}}.
 Proof.
@@ -135,21 +135,6 @@ Proof.
   intros Hne.
   intros Heq%word.unsigned_inj.
   congruence.
-Qed.
-
-Lemma array_split (n:Z) l t vs :
-  0 <= n ->
-  Z.to_nat n <= length vs ->
-  array l t vs ⊣⊢
-        array l t (take (Z.to_nat n) vs) ∗ array (l +ₗ[t] n) t (drop (Z.to_nat n) vs).
-Proof.
-  intros Hn Hlength.
-  rewrite <- (take_drop (Z.to_nat n) vs) at 1.
-  rewrite array_app.
-  rewrite take_length.
-  rewrite Nat.min_l; last lia.
-  rewrite Z2Nat.id; last lia.
-  auto.
 Qed.
 
 Lemma array_replicate_split (n1 n2 n: nat) l t v :
@@ -328,15 +313,14 @@ Proof.
   rewrite /is_slice_small /=.
   iDestruct "Hsl" as "(Hsl&%)"; simpl.
   repeat wp_call.
-  iDestruct (update_array ptr _ _ _ _ H with "Hsl") as "[Hi Hsl']".
+  iDestruct (array_elem_acc H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
   word_cleanup.
   iDestruct (struct_mapsto_ty with "Hi") as %Hty.
   wp_apply (wp_LoadAt with "Hi"); iIntros "Hi".
-  iApply "HΦ".
-  iFrame.
-  { iDestruct ("Hsl'" with "Hi") as "Hsl".
-    erewrite list_insert_id by eauto; auto. }
+  iSpecialize ("Hsl'" with "Hi").
+  iApply "HΦ"; iFrame.
+  iPureIntro; auto.
 Qed.
 
 Lemma list_lookup_lt A (l: list A) (i: nat) :
@@ -507,7 +491,7 @@ Proof.
     wp_pures.
     wp_call.
     rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice /=.
-    iDestruct (array_app _ _ vs [x] with "[$Hptr Hnew]") as "Hptr".
+    iDestruct (array_app _ _ _ vs [x] with "[$Hptr Hnew]") as "Hptr".
     { rewrite array_singleton.
       iExactEq "Hnew"; f_equal.
       f_equal.
