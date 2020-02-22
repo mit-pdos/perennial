@@ -10,8 +10,12 @@ Set Default Proof Using "Type".
 with lists of values. It also contains array versions of the basic heap
 operations of GooseLang. *)
 
-Reserved Notation "l ↦∗[ t ] vs" (at level 20, format "l  ↦∗[ t ]  vs").
-Reserved Notation "l ↦∗[ t ]{ q } vs" (at level 20, format "l  ↦∗[ t ]{ q }  vs").
+Reserved Notation "l ↦∗[ t ] vs" (at level 20,
+                                  t at level 50,
+                                  format "l  ↦∗[ t ]  vs").
+Reserved Notation "l ↦∗[ t ]{ q } vs" (at level 20,
+                                       t at level 50, q at level 50,
+                                       format "l  ↦∗[ t ]{ q }  vs").
 
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.
@@ -76,6 +80,26 @@ Proof.
   rewrite Nat.min_l; last lia.
   rewrite Z2Nat.id; last lia.
   auto.
+Qed.
+
+Lemma array_split_nm (n m: nat) {l t q vs} :
+  (n + m)%nat = length vs ->
+  l ↦∗[t]{q} vs -∗
+    ∃ vs1 vs2, ⌜vs = vs1 ++ vs2 ∧ length vs1 = n ∧ length vs2 = m⌝ ∗
+               l ↦∗[t]{q} vs1 ∗ (l +ₗ[t] n) ↦∗[t]{q} vs2.
+Proof.
+  iIntros (Hlen) "Hl".
+  rewrite -(take_drop n vs).
+  iExists (take n vs), (drop n vs).
+  iSplitR.
+  { iPureIntro.
+    rewrite -> take_length_le by lia.
+    rewrite drop_length.
+    intuition lia.
+  }
+  rewrite array_app.
+  rewrite -> take_length_le by lia.
+  iFrame.
 Qed.
 
 (* this lemma is just used to prove the update version (with q=1) and read
@@ -190,8 +214,8 @@ Qed.
 End lifting.
 End goose_lang.
 
-Notation "l ↦∗[ t ] vs" := (array l 1%Qp t vs) : bi_scope.
 Notation "l ↦∗[ t ]{ q } vs" := (array l q t vs) : bi_scope.
+Notation "l ↦∗[ t ] vs" := (array l 1%Qp t vs) : bi_scope.
 Typeclasses Opaque array.
 
 Ltac iFramePtsTo_core t :=
