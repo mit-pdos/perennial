@@ -2,6 +2,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import wal.circular_proof.
+From Perennial.Helpers Require Import GenHeap.
 
 Definition LogPositionT := wal.LogPosition.
 Definition LogPosition := u64.
@@ -44,31 +45,32 @@ Definition take_updates (from to : u64) (log: list update.t) (logStart: u64) : l
   let num := (int.nat to - int.nat from)%nat in
   take num (drop start log).
 
-Definition is_wal_state (st: loc) (σ: log_state.t): iProp Σ :=
-  ∃ (memLog memStart diskEnd nextDiskEnd memLogMap: loc),
-    st ↦[structTy WalogState.S] (#memLog, #memStart, #diskEnd, #nextDiskEnd, #memLogMap)
-(*
-    let log_σ := circΣ.mk diskLog diskStart in
-    let durable_to := circΣ.diskEnd log_σ in
-    let installed_to := diskStart in *).
+Definition is_wal_state (st: loc) (σ: log_state.t) γstart γend: iProp Σ :=
+  ∃ (memLog diskEnd nextDiskEnd memLogMap: loc) (memStart diskEnd: u64),
+    st ↦[structTy WalogState.S] (#memLog, #memStart, #diskEnd, #nextDiskEnd, #memLogMap) ∗
+    own γstart (◯ ((int.nat memStart) : mnat)) ∗
+    own γend (◯ ((int.nat diskEnd) : mnat)).
 
-Definition is_circular_appender(circ: loc): iProp Σ :=
+Definition is_circular_appender (circ: loc) γstart γend: iProp Σ :=
   ∃ (diskaddr:loc) s,
     circ ↦[struct.t circularAppender.S] #diskaddr ∗
     diskaddr ↦[slice.T uint64T] (slice_val s) ∗
-    (* relate s to the home address of blocks in log *)
-    (∃ γh γstart γend,
-      is_circ γh γstart γend).
+    (∃ γh mh,
+        gen_heap_ctx (hG := γh) mh ∗
+        (* relate s to the home address of blocks in log; how to iterate through slice? *)
+        (* is_slice s u64 (map update.addr mh) ∗ *)
+        (* ⌜ mh !! (word.add σ.(circΣ.start) i) = Some(upd) ⌝ → upd.Addr = s * *)
+        is_circ γh γstart γend).
 
 Definition walN: namespace := nroot .@ "wal".
 
 Definition is_wal (l: loc) (σ: log_state.t): iProp Σ :=
-  ∃ memLock d (circ st condL condI:loc),
+  ∃ memLock d (circ st condL condI:loc) γstart γend,
     (* ro ->? *)
     l ↦[structTy Walog.S] (#memLock, #d, #circ, #st, #condL, #condI) ∗
-    is_circular_appender circ ∗
+    is_circular_appender circ γstart γend ∗
     (∃ γ,
-        is_lock walN γ #memLock (is_wal_state st σ) ∗
+        is_lock walN γ #memLock (is_wal_state st σ γstart γend) ∗
         lock.is_cond condL #memLock ∗
         lock.is_cond condI #memLock).
 

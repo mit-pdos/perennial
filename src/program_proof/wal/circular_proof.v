@@ -67,10 +67,12 @@ Definition circN : namespace := nroot .@ "circ".
 Definition is_circ (γh : gen_heapG u64 update.t Σ) (γstart γend : gname) : iProp Σ :=
   inv circN (circ_inner γh γstart γend).
 
+
 (*
 Definition is_circularAppender (l:loc) σ : iProp Σ :=
   circ_data σ ∗
-  ∃ (diskAddrs : Slice.t), l ↦[struct.t circular.S] diskAddrs ∗
+  ∃ (diskAddrs : Slice.t),
+  l ↦[struct.t circularAppender.S] diskAddrs ∗
   is_slice diskAddrs u64 (map update.addr σ.(circΣ.upds)).
 *)
 
