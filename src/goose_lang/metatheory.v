@@ -1,5 +1,6 @@
 From stdpp Require Import gmap.
 From Perennial.goose_lang Require Export lang.
+Require Import Program.
 
 (* This file contains some metatheory about the heap_lang language,
   which is not needed for verifying programs. *)
@@ -30,8 +31,39 @@ with is_closed_val (v : val) : bool :=
   | InjLV v | InjRV v => is_closed_val v
   end.
 
+
+Lemma is_closed_expr_prim1_iff X op e:
+  is_closed_expr X (Primitive1 op e) <-> is_closed_expr X e.
+Proof.
+  refine (match op as op' in prim_op arg
+                return forall pf : arg = args1 ,
+              eq_rect arg prim_op op' args1 pf = op ->
+              (is_closed_expr X (Primitive1 (eq_rect arg prim_op op' args1 pf) e) <-> is_closed_expr X e) with
+          | PanicOp _ => _
+          |  _ => _
+          end eq_refl eq_refl) => //=;
+    (intros pf; assert (pf = eq_refl) as ->; [ eapply Eqdep_dec.UIP_dec; decide equality |]; eauto).
+Qed.
+
+Lemma is_closed_expr_prim2_iff X op e1 e2:
+  is_closed_expr X (Primitive2 op e1 e2) <-> is_closed_expr X e1 && is_closed_expr X e2.
+Proof.
+  refine (match op as op' in prim_op arg
+                return forall pf : arg = args2 ,
+              eq_rect arg prim_op op' args2 pf = op ->
+              (is_closed_expr X (Primitive2 (eq_rect arg prim_op op' args2 pf) e1 e2) <->
+               is_closed_expr X e1 && is_closed_expr X e2) with
+          | PanicOp _ => _
+          |  _ => _
+          end eq_refl eq_refl) => //=;
+    (intros pf; assert (pf = eq_refl) as ->; [ eapply Eqdep_dec.UIP_dec; decide equality |]; eauto).
+Qed.
+
 Lemma is_closed_weaken X Y e : is_closed_expr X e → X ⊆ Y → is_closed_expr Y e.
 Proof. revert X Y; induction e; try naive_solver (eauto; set_solver).
+       - intros. move: H. rewrite ?is_closed_expr_prim1_iff; eauto.
+       - intros. move: H. rewrite ?is_closed_expr_prim2_iff; eauto.
+         naive_solver.
 Qed.
 
 Lemma is_closed_weaken_nil X e : is_closed_expr [] e → is_closed_expr X e.
@@ -41,7 +73,7 @@ Lemma is_closed_subst X e x v :
   is_closed_val v → is_closed_expr (x :: X) e → is_closed_expr X (subst x v e).
 Proof.
   intros Hv. revert X.
-  induction e=> X /= ?; destruct_and?; split_and?; simplify_option_eq;
+  induction e=> X /= ?; try (dependent destruction op); destruct_and?; split_and?; simplify_option_eq;
     try match goal with
     | H : ¬(_ ∧ _) |- _ => apply not_and_l in H as [?%dec_stable|?%dec_stable]
     end; eauto using is_closed_weaken with set_solver.
@@ -53,7 +85,7 @@ Proof. destruct x; eauto using is_closed_subst. Qed.
 (* Substitution *)
 Lemma subst_is_closed X e x es : is_closed_expr X e → x ∉ X → subst x es e = e.
 Proof.
-  revert X. induction e=> X /=; rewrite ?bool_decide_spec ?andb_True=> ??;
+  revert X. induction e=> X /=; try (dependent destruction op); rewrite ?bool_decide_spec ?andb_True=> ??;
     repeat case_decide; simplify_eq/=; f_equal; intuition eauto with set_solver.
 Qed.
 
@@ -93,45 +125,50 @@ Lemma  bin_op_eval_closed op v1 v2 v':
   is_closed_val v1 → is_closed_val v2 → bin_op_eval op v1 v2 = Some v' →
   is_closed_val v'.
 Proof.
-  rewrite /bin_op_eval /bin_op_eval_bool /bin_op_eval_int;
-    repeat case_match; by naive_solver.
+  rewrite /bin_op_eval /bin_op_eval_bool /bin_op_eval_word /bin_op_eval_string;
+    repeat case_match; try by naive_solver.
 Qed.
 
 Lemma heap_closed_alloc σ l n w :
   (0 < n)%Z →
   is_closed_val w →
-  map_Forall (λ _ v, is_closed_val v) (heap σ) →
+  map_Forall (λ _ v, is_closed_val (snd v)) (heap σ) →
   (∀ i : Z, (0 ≤ i)%Z → (i < n)%Z → heap σ !! (l +ₗ i) = None) →
-  map_Forall (λ _ v, is_closed_val v)
-             (heap_array l (replicate (Z.to_nat n) w) ∪ heap σ).
+  map_Forall (λ _ v, is_closed_val (snd v))
+             (heap_array l (replicate (Z.to_nat n) (Free w)) ∪ heap σ).
 Proof.
   intros Hn Hw Hσ Hl.
   eapply (map_Forall_ind
-            (λ k v, ((heap_array l (replicate (Z.to_nat n) w) ∪ heap σ)
+            (λ k v, ((heap_array l (fmap Free (replicate (Z.to_nat n) w)) ∪ heap σ)
                        !! k = Some v))).
   - apply map_Forall_empty.
   - intros m i x Hi Hix Hkwm Hm.
     apply map_Forall_insert_2; auto.
     apply lookup_union_Some in Hix; last first.
-    { eapply heap_array_map_disjoint;
+    { eapply heap_array_map_disjoint. rewrite fmap_replicate.
         rewrite replicate_length Z2Nat.id; auto with lia. }
-    destruct Hix as [(?&?&?&[-> Hlt%inj_lt]%lookup_replicate_1)%heap_array_lookup|
-                     [j Hj]%elem_of_map_to_list%elem_of_list_lookup_1].
-    + rewrite !Z2Nat.id in Hlt; eauto with lia.
+    destruct Hix as [Hlook|[j Hj]%elem_of_map_to_list%elem_of_list_lookup_1].
+    + eapply heap_array_lookup in Hlook as (?&?&?&Hlook).
+      rewrite list_lookup_fmap in Hlook.
+      eapply fmap_Some_1 in Hlook as (?&Hlook&Hf).
+      eapply lookup_replicate_1 in Hlook as [-> Hlt%inj_lt].
+      rewrite !Z2Nat.id in Hlt; subst; eauto with lia.
     + apply map_Forall_to_list in Hσ.
       by eapply Forall_lookup in Hσ; eauto; simpl in *.
   - apply map_Forall_to_list, Forall_forall.
-    intros [? ?]; apply elem_of_map_to_list.
+    intros [? ?] ?%elem_of_map_to_list.
+    by rewrite fmap_replicate.
 Qed.
 
 (* The stepping relation preserves closedness *)
+(*
 Lemma head_step_is_closed e1 σ1 obs e2 σ2 es :
   is_closed_expr [] e1 →
-  map_Forall (λ _ v, is_closed_val v) σ1.(heap) →
+  map_Forall (λ _ v, is_closed_val (snd v)) σ1.(heap) →
   head_step e1 σ1 obs e2 σ2 es →
 
   is_closed_expr [] e2 ∧ Forall (is_closed_expr []) es ∧
-  map_Forall (λ _ v, is_closed_val v) σ2.(heap).
+  map_Forall (λ _ v, is_closed_val (snd v)) σ2.(heap).
 Proof.
   intros Cl1 Clσ1 STEP.
   induction STEP; simpl in *; split_and!.
@@ -142,6 +179,7 @@ Proof.
   - by apply heap_closed_alloc.
   - case_match; try apply map_Forall_insert_2; by naive_solver.
 Qed.
+*)
 
 (* Parallel substitution with maps of values indexed by strings *)
 Definition binder_delete {A} (x : binder) (vs : gmap string A) : gmap string A :=
@@ -172,9 +210,10 @@ Fixpoint subst_map (vs : gmap string val) (e : expr) : expr :=
   | InjR e => InjR (subst_map vs e)
   | Case e0 e1 e2 => Case (subst_map vs e0) (subst_map vs e1) (subst_map vs e2)
   | Fork e => Fork (subst_map vs e)
-  | AllocN e1 e2 => AllocN (subst_map vs e1) (subst_map vs e2)
-  | Load e => Load (subst_map vs e)
-  | Store e1 e2 => Store (subst_map vs e1) (subst_map vs e2)
+  | Primitive0 op => Primitive0 op
+  | Primitive1 op e => Primitive1 op (subst_map vs e)
+  | Primitive2 op e1 e2 => Primitive2 op (subst_map vs e1) (subst_map vs e2)
+  | ExternalOp op e => ExternalOp op (subst_map vs e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst_map vs e0) (subst_map vs e1) (subst_map vs e2)
   | NewProph => NewProph
   | Resolve e0 e1 e2 => Resolve (subst_map vs e0) (subst_map vs e1) (subst_map vs e2)
@@ -221,7 +260,7 @@ Proof.
     x ∈ x2 :b: x1 :b: X →
     binder_delete x1 (binder_delete x2 vs) !! x = None).
   { intros x x1 x2 X vs ??. rewrite !lookup_binder_delete_None. set_solver. }
-  induction e=> X vs /= ? HX; repeat case_match; naive_solver eauto with f_equal.
+  induction e=> X vs /= ? HX; try (dependent destruction op); repeat case_match; naive_solver eauto with f_equal.
 Qed.
 
 Lemma subst_map_is_closed_nil e vs : is_closed_expr [] e → subst_map vs e = e.

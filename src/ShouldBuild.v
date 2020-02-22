@@ -4,6 +4,7 @@ default using make as well as in CI on Travis). *)
 From Perennial.goose_lang Require
      adequacy recovery_adequacy
      spec_assert
+     metatheory
      refinement refinement_adequacy
      logical_reln.
 From Perennial.program_proof Require

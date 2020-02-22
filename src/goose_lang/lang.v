@@ -945,6 +945,14 @@ Proof.
   move: Hj. rewrite Z2Nat.id // => ?. by rewrite Hdisj.
 Qed.
 
+Lemma heap_array_fmap V1 V2 l (f: V1 → V2) (vs: list V1) :
+  fmap f (heap_array l vs) = heap_array l (fmap f vs).
+Proof.
+  revert l. induction vs; simpl; intros.
+  - rewrite fmap_empty //=.
+  - rewrite -insert_union_singleton_l fmap_insert insert_union_singleton_l IHvs //=.
+Qed.
+
 Close Scope Z.
 
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)

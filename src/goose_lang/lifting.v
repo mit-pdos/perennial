@@ -515,14 +515,6 @@ Qed.
 (** Heap *)
 (** The "proper" [allocN] are derived in [array]. *)
 
-Theorem heap_array_fmap V1 V2 l (f: V1 → V2) (vs: list V1) :
-  fmap f (heap_array l vs) = heap_array l (fmap f vs).
-Proof.
-  revert l. induction vs; simpl; intros.
-  - rewrite fmap_empty //=.
-  - rewrite -insert_union_singleton_l fmap_insert insert_union_singleton_l IHvs //=.
-Qed.
-
 Theorem heap_array_app V l (vs1 vs2: list V) :
   heap_array l (vs1 ++ vs2) = heap_array l vs1 ∪ heap_array (l +ₗ (length vs1)) vs2.
 Proof.
