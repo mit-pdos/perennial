@@ -4,7 +4,7 @@ From iris.base_logic.lib Require Import proph_map.
 From iris.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
-From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert.
+From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert language_ctx.
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
 From Perennial.goose_lang Require Import metatheory.
@@ -249,14 +249,14 @@ Proof.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping1 with "[$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) x2).
-    iSpecialize ("H" $! j (λ x, K (subst_map _ f1 x)) with "[] Hj").
-    { admit. }
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppRCtx (subst_map _ f1)] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     wpc_bind (subst_map _ f2).
     iPoseProof (IHHtyping2 with "[$] [$]") as "H"; eauto.
-    iSpecialize ("H" $! j (λ x, K (x (of_val vs2))) with "[] Hj").
-    { admit. }
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppLCtx (vs2)] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
     iApply (wpc_mono' with "[Hv2] [] H"); last done.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
