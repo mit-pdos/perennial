@@ -45,7 +45,7 @@ Definition take_updates (from to : u64) (log: list update.t) (logStart: u64) : l
   let num := (int.nat to - int.nat from)%nat in
   take num (drop start log).
 
-Definition is_wal_state (st: loc) (σ: log_state.t) (γLog : gen_heapG u64 update.t Σ) γstart γend: iProp Σ :=
+Definition is_wal_state (st: loc) (σ: log_state.t) (γlog : gen_heapG u64 update.t Σ) γstart γend: iProp Σ :=
   ∃ (memLogPtr diskEnd nextDiskEnd memLogMapPtr: loc) (memStart diskEnd: u64) memLog memLogMap,
     st ↦[structTy WalogState.S] (#memLogPtr, #memStart, #diskEnd, #nextDiskEnd, #memLogMapPtr) ∗
     (∃ s, memLogPtr ↦[slice.T (struct.t Update.S)] (slice_val s) ∗
