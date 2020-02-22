@@ -7,6 +7,7 @@ From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert.
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
+From Perennial.goose_lang Require Import metatheory.
 
 Set Default Proof Using "Type".
 
@@ -186,19 +187,50 @@ Definition sty_rules_obligation :=
     has_semTy es e (val_interp (hS := hS) t1) -∗
     has_semTy (ExternalOp op es) ((spec_op_trans) op e) (val_interp (hS := hS) t2).
 
-Definition sty_pers_obligation :=
+Definition sty_pers_obligation1 :=
  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ)
         (τ: ext_tys) es e, Persistent (val_interp (hS := hS) (extT τ) es e).
 
-(* The classic 'fundamental theorem' of logical relations, in our setting: *)
-(* XXX: have to define closing substitutions and the value translation? *)
+Definition sty_pers_obligation2 :=
+ forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+        Persistent (sty_inv hS).
+
+Record subst_tuple :=
+  { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
+Definition subst_ctx := gmap string subst_tuple.
+
+
+Definition ctx_has_semTy `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
+           (Γ: Ctx) es e τ :=
+  ∀ Γsubst (HPROJ: subst_ty <$> Γsubst = Γ),
+  sty_inv hS -∗
+  ([∗ map] x ↦ t ∈ Γsubst, (val_interp (hS := hS) (subst_ty t) (subst_sval t) (subst_ival t))) -∗
+  has_semTy (subst_map (subst_sval <$> Γsubst) es)
+            (subst_map (subst_ival <$> Γsubst) e)
+            (val_interp (hS := hS) τ).
+
 Lemma sty_fundamental_lemma:
-  sty_pers_obligation →
+  sty_pers_obligation1 →
+  sty_pers_obligation2 →
   sty_rules_obligation →
   ∀ Γ es e τ Hval, expr_transTy _ _ _ Hval spec_op_trans Γ es e τ →
   (forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
-    sty_inv hS -∗ has_semTy es e (val_interp (hS := hS) τ)).
-Proof. Abort.
+    ctx_has_semTy (hS := hS) Γ es e τ)%I.
+Proof.
+  rewrite /sty_pers_obligation1.
+  rewrite /sty_pers_obligation2.
+  iIntros (Hpers1 Hpers2 Hrules ????? Htyping ??????).
+  induction Htyping.
+  - iIntros (??) "#Hinv Hctx". subst.
+    rewrite lookup_fmap in H.
+    apply fmap_Some_1 in H as (t'&?&?). subst.
+    iDestruct (big_sepM_lookup with "Hctx") as "H"; first eauto.
+    rewrite /= ?lookup_fmap H //=.
+    iIntros (j K Hctx) "Hj". iApply wpc_value; iSplit.
+    * iModIntro. iExists _; iFrame.
+    * iModIntro. iApply fupd_mask_weaken; first by set_solver+. eauto.
+  -
+Abort.
 
 (*
 Class specTy_model_adequacy `{!specTy_model} (spec_op_trans: @external (spec_ext_op_field) → iexpr)

@@ -265,4 +265,5 @@ Qed.
 
 Lemma subst_map_is_closed_nil e vs : is_closed_expr [] e → subst_map vs e = e.
 Proof. intros. apply subst_map_is_closed with []; set_solver. Qed.
+
 End goose_lang.
