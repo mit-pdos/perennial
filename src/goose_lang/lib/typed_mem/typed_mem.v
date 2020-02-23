@@ -1,3 +1,7 @@
+From iris.proofmode Require Import coq_tactics reduction.
+From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import environments.
+From iris.program_logic Require Import weakestpre total_weakestpre.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Export typed_mem.impl.
 
@@ -134,11 +138,11 @@ Section goose_lang.
   Qed.
 
   Theorem wp_LoadAt stk E q l t v :
-    {{{ l ↦[t]{q} v }}}
+    {{{ ▷ l ↦[t]{q} v }}}
       load_ty t #l @ stk; E
     {{{ RET v; l ↦[t]{q} v }}}.
   Proof.
-    iIntros (Φ) "Hl HΦ".
+    iIntros (Φ) ">Hl HΦ".
     iDestruct "Hl" as "[Hl %]".
     hnf in H.
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
@@ -179,6 +183,18 @@ Section goose_lang.
     - wp_apply (wp_load with "[$]"); auto.
   Qed.
 
+  Lemma tac_wp_load_ty Δ Δ' s E i K l q t v Φ :
+    MaybeIntoLaterNEnvs 1 Δ Δ' →
+    envs_lookup i Δ' = Some (false, struct_mapsto l q t v)%I →
+    envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
+    envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
+  Proof.
+    rewrite envs_entails_eq=> ???.
+    rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_LoadAt.
+    rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
+    by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
+  Qed.
+
   Theorem wp_store stk E l v v' :
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
     {{{ RET LitV LitUnit; l ↦ v }}}.
@@ -190,12 +206,12 @@ Section goose_lang.
 
   Theorem wp_StoreAt stk E l t v0 v :
     val_ty v t ->
-    {{{ l ↦[t] v0 }}}
+    {{{ ▷ l ↦[t] v0 }}}
       store_ty t #l v @ stk; E
     {{{ RET #(); l ↦[t] v }}}.
   Proof.
     intros Hty.
-    iIntros (Φ) "[Hl %] HΦ".
+    iIntros (Φ) ">[Hl %] HΦ".
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
       iApply "HΦ".
@@ -261,11 +277,60 @@ Section goose_lang.
         wp_apply (wp_store with "[$]"); auto.
   Qed.
 
+  Lemma tac_wp_store_ty Δ Δ' Δ'' stk E i K l t v v' Φ :
+    val_ty v' t ->
+    MaybeIntoLaterNEnvs 1 Δ Δ' →
+    envs_lookup i Δ' = Some (false, l ↦[t] v)%I →
+    envs_simple_replace i false (Esnoc Enil i (l ↦[t] v')) Δ' = Some Δ'' →
+    envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
+    envs_entails Δ (WP fill K (store_ty t (LitV l) (Val v')) @ stk; E {{ Φ }}).
+  Proof.
+    intros Hty.
+    rewrite envs_entails_eq=> ????.
+    rewrite -wp_bind. eapply bi.wand_apply; first by eapply wp_StoreAt.
+    rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
+    rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
+  Qed.
+
 End goose_lang.
 
-Notation "l ↦[ ty ]{ q } v" := (struct_mapsto l q ty v%V)
-                                 (at level 20, q at level 50, ty at level 50,
-                                  format "l  ↦[ ty ]{ q }  v") : bi_scope.
-Notation "l ↦[ ty ] v" := (struct_mapsto l 1 ty v%V)
-                            (at level 20, ty at level 50,
-                             format "l  ↦[ ty ]  v") : bi_scope.
+Notation "l ↦[ t ]{ q } v" := (struct_mapsto l q t v%V)
+                                 (at level 20, q at level 50, t at level 50,
+                                  format "l  ↦[ t ]{ q }  v") : bi_scope.
+Notation "l ↦[ t ] v" := (struct_mapsto l 1 t v%V)
+                            (at level 20, t at level 50,
+                             format "l  ↦[ t ]  v") : bi_scope.
+
+Tactic Notation "wp_load" :=
+  let solve_mapsto _ :=
+    let l := match goal with |- _ = Some (_, (?l ↦[_]{_} _)%I) => l end in
+    iAssumptionCore || fail "wp_load: cannot find" l "↦[t] ?" in
+  wp_pures;
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty _ _ _ _ _ K))
+      |fail 1 "wp_load: cannot find 'load_ty' in" e];
+    [iSolveTC
+    |solve_mapsto ()
+    |wp_finish]
+  | _ => fail "wp_load: not a 'wp'"
+  end.
+
+Tactic Notation "wp_store" :=
+  let solve_mapsto _ :=
+    let l := match goal with |- _ = Some (_, (?l ↦[_] _)%I) => l end in
+    iAssumptionCore || fail "wp_store: cannot find" l "↦[t] ?" in
+  wp_pures;
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store_ty _ _ _ _ _ _ K))
+      |fail 1 "wp_store: cannot find 'store_ty' in" e];
+    [val_ty
+    |iSolveTC
+    |solve_mapsto ()
+    |pm_reflexivity
+    |first [wp_seq|wp_finish]]
+  | _ => fail "wp_store: not a 'wp'"
+  end.

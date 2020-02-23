@@ -1,11 +1,11 @@
 From iris.proofmode Require Import tactics.
-From Perennial.goose_lang Require Import struct typing slice map.
+From Perennial.goose_lang Require Import lang notation typing.
+From Perennial.goose_lang.lib Require Import typed_mem.impl slice.impl map.impl.
 
 Set Default Proof Using "Type".
 
 Section goose_lang.
-  Context `{ffi_sem: ext_semantics}.
-  Context {ext_ty:ext_types ext}.
+  Context {ext} {ext_ty:ext_types ext}.
 
   Definition Var' s : @expr ext := Var s.
   Local Coercion Var' : string >-> expr.

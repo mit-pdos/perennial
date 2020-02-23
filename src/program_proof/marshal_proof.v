@@ -170,6 +170,8 @@ Proof.
   val_ty.
 Qed.
 
+Hint Immediate slice_val_ty : val_ty.
+
 Opaque slice.T.
 
 Section heap.
@@ -241,7 +243,7 @@ Proof.
   wp_call.
   rewrite /struct.get /Enc.S /=.
   wp_steps.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_apply wp_SliceSkip'.
   { iPureIntro.
@@ -255,7 +257,7 @@ Proof.
   }
   iIntros "(Ha&%)".
   wp_steps.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_store.
   iApply "HΦ".
@@ -355,7 +357,7 @@ Proof.
   wp_call.
   rewrite /struct.get /Enc.S /=.
   wp_steps.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_apply wp_SliceSkip'.
   { iPureIntro.
@@ -369,7 +371,7 @@ Proof.
   }
   iIntros "(Ha&%)".
   wp_steps.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_store.
   iApply "HΦ".
@@ -536,10 +538,10 @@ Proof.
   iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
   wp_call.
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_call.
   wp_store.
@@ -594,10 +596,10 @@ Proof.
   iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
   wp_call.
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_call.
   wp_store.
@@ -688,16 +690,14 @@ Proof.
       iFrame. }
     fold (@app encodable).
     iIntros "Hdec".
-    wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+    wp_load.
     iDestruct (is_slice_sz with "Hs") as %Hsz.
     autorewrite with len in Hsz.
     wp_apply (wp_SliceAppend with "[$Hs]").
     { iPureIntro; split; [ word | ].
       repeat constructor. }
     iIntros (s') "Hs".
-    wp_apply (wp_StoreAt with "Hl").
-    { apply slice_val_ty. }
-    iIntros "Hl".
+    wp_apply (wp_StoreAt with "Hl"); [ val_ty | iIntros "Hl" ].
     wp_pures.
     rewrite /Continue.
     iApply "HΦ".
@@ -718,7 +718,7 @@ Proof.
   - iIntros "[(Hdec&Hslice) Hli]".
     iDestruct "Hslice" as (s) "[Hl Hs]".
     wp_pures.
-    wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+    wp_load.
     iApply "HΦ".
     rewrite -> take_ge by word.
     rewrite -> drop_ge by word.

@@ -120,7 +120,7 @@ Proof.
   iInv lockshardN as "Hls".
   iDestruct "Hls" as "[([Hl _] & [Hm _]) Ht]".
   rewrite /=.
-  wp_load.
+  wp_untyped_load.
   iModIntro.
   iSplitL "Hl Hm Ht".
   {
@@ -150,7 +150,7 @@ Proof.
   rewrite /loadField /=.
   wp_pures.
 
-  iInv lockshardN as "Hls".
+  iInv lockshardN as ">Hls".
   iDestruct "Hls" as "[([Hl _] & [Hm _]) Ht]".
   rewrite Z.mul_1_r Z.add_0_r /=.
   iDestruct "Hm" as "[Hm _]".
@@ -232,7 +232,7 @@ Proof.
       wp_apply wp_ref_of_zero.
       iIntros (acquired) "Hacquired".
 
-      wp_load.
+      wp_untyped_load.
       apply map_get_true in H0.
       iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
       iDestruct (big_sepM2_insert_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
@@ -242,10 +242,10 @@ Proof.
       iIntros "HlockStatePtr".
       rewrite /getField_f /=.
       destruct gheld; wp_pures.
-      + wp_load.
+      + wp_untyped_load.
         wp_apply (wp_load_lockState with "HlockStatePtr").
         iIntros "HlockStatePtr".
-        wp_load.
+        wp_untyped_load.
         wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|].
         iIntros "HlockStatePtr".
         wp_pures.
@@ -256,7 +256,7 @@ Proof.
 
         iDestruct (lock.is_cond_dup with "Hcond") as "[Hcond1 Hcond2]".
 
-        wp_load.
+        wp_untyped_load.
         wp_apply (wp_load_lockState with "HlockStatePtr").
         iIntros "HlockStatePtr".
         wp_apply (lock.wp_condWait with "[$Hlock $Hcond1 $Hlocked Hmptr Hghctx Hcovered Haddrs Hcond2 HlockStatePtr]").
@@ -289,7 +289,7 @@ Proof.
           wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|]. iIntros "HlockStatePtr".
 
           iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-          wp_load.
+          wp_untyped_load.
 
           wp_pures.
           iApply "HΦloop".
@@ -299,15 +299,15 @@ Proof.
           iExists _, _, _, _. iFrame. done.
 
         * iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-          wp_load.
+          wp_untyped_load.
           wp_pures.
           iApply "HΦloop".
           iLeft. iFrame. iSplitL; try done.
           iExists _, _, _. iFrame.
 
-      + wp_load.
+      + wp_untyped_load.
         wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|]. iIntros "HlockStatePtr".
-        wp_load.
+        wp_untyped_load.
         wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|]. iIntros "HlockStatePtr".
 
         iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
@@ -316,7 +316,7 @@ Proof.
         iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
         wp_pures.
         wp_store.
-        wp_load.
+        wp_untyped_load.
 
         wp_pures.
         iApply "HΦloop".
@@ -337,7 +337,7 @@ Proof.
       wp_apply (typed_mem.wp_AllocAt (struct.t lockState.S)); [val_ty|].
       iIntros (lst) "Hlst".
       wp_store.
-      wp_load.
+      wp_untyped_load.
       wp_apply (wp_load_lockShard_state with "Hls").
       wp_apply (wp_MapInsert with "[$Hmptr]").
       iIntros "Hmptr".
@@ -346,15 +346,15 @@ Proof.
       iIntros (acquired) "Hacquired".
 
       wp_pures.
-      wp_load.
+      wp_untyped_load.
       wp_apply (wp_load_lockState with "Hlst").
       iIntros "Hlst".
       rewrite /getField_f /=. wp_pures.
       wp_bind (struct.storeF _ _ _ _).
 
-      wp_load.
+      wp_untyped_load.
       wp_apply (wp_store_lockState with "Hlst"); [val_ty|]. iIntros "Hlst".
-      wp_load.
+      wp_untyped_load.
       wp_apply (wp_store_lockState with "Hlst"); [val_ty|]. iIntros "Hlst".
 
       apply map_get_false in H0.
@@ -364,7 +364,7 @@ Proof.
 
       iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
       wp_store.
-      wp_load.
+      wp_untyped_load.
 
       wp_pures.
       iApply "HΦloop".

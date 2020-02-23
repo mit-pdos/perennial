@@ -281,7 +281,7 @@ Tactic Notation "awp_apply" open_constr(lem) :=
 Tactic Notation "awp_apply" open_constr(lem) "without" constr(Hs) :=
   wp_apply_core lem (fun H => iApply wp_frame_wand_l; iSplitL Hs; [iAccu|iApplyHyp H; last iAuIntro]).
 
-Tactic Notation "wp_load" :=
+Tactic Notation "wp_untyped_load" :=
   let solve_mapsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
     iAssumptionCore || fail "wp_load: cannot find" l "↦ ?" in

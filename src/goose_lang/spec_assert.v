@@ -6,7 +6,7 @@ From iris.program_logic Require Import lifting.
 From Perennial.Helpers Require Export Transitions.
 From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang Require Export lang.
-From Perennial.goose_lang Require Import tactics notation map lifting.
+From Perennial.goose_lang Require Import tactics notation lifting.
 
 (* Wrapper around ffi_models and so on to avoid clashes between the ffi for
    the spec and the concrete *)

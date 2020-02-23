@@ -203,10 +203,10 @@ Section proof.
     iIntros (Φ) "(Hc&#Hlock&Hlocked&HR) HΦ".
     wp_call.
     iDestruct (ptsto_ro_load with "Hc") as (q) "Hc".
-    wp_load.
+    wp_untyped_load.
     wp_apply (release_spec with "[$Hlock $Hlocked $HR]").
     wp_pures.
-    wp_load.
+    wp_untyped_load.
     wp_apply (acquire_spec with "[$Hlock]").
     iIntros "(Hlocked&HR)".
     iApply "HΦ".

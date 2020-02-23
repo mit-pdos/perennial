@@ -111,14 +111,14 @@ Proof.
   iDestruct "H0" as "HIx".
   iLöb as "IH" forall (x Hbounds).
   wp_pures.
-  wp_load.
+  wp_untyped_load.
   wp_pures.
   wp_if_destruct.
   - wp_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
     iIntros "[HIx Hl]".
     wp_pures.
-    wp_load.
+    wp_untyped_load.
     wp_pures.
     wp_apply (wp_store with "Hl"); iIntros "Hl".
     wp_seq.
@@ -158,17 +158,16 @@ Proof.
   iDestruct "H0" as "HIx".
   iLöb as "IH" forall (x Hbounds).
   wp_pures.
-  wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+  wp_load.
   wp_pures.
   wp_if_destruct.
   - wp_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
     iIntros "[HIx Hl]".
     wp_pures.
-    wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+    wp_load.
     wp_pures.
-    wp_apply (wp_StoreAt with "Hl"); [val_ty |]; iIntros "Hl".
-    wp_seq.
+    wp_store.
     iApply ("IH" with "[] HIx Hl").
     { iPureIntro; word. }
     iFrame.

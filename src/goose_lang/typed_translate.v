@@ -1,4 +1,5 @@
-From Perennial.goose_lang Require Import lang notation map typing.
+From Perennial.goose_lang Require Import lang notation typing.
+From Perennial.goose_lang.lib Require Import map.impl.
 
 
 (* Defines typed translation between two Goose lang extensions *)

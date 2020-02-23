@@ -92,11 +92,12 @@ End goose_lang.
 
 Ltac val_ty :=
   lazymatch goal with
-  | |- val_ty (zero_val _) _ => apply zero_val_ty'
   | [ H: val_ty ?v ?t |- val_ty ?v ?t ] => exact H
-  | |- val_ty _ _ => solve [ repeat constructor ]
+  | |- val_ty _ _ => first [ by auto 1 with val_ty nocore | solve [ repeat constructor ] ]
   | _ => fail "not a val_ty goal"
   end.
+
+Hint Immediate zero_val_ty' : val_ty.
 
 Hint Extern 2 (val_ty _ _) => val_ty : core.
 

@@ -159,7 +159,7 @@ Proof.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv H) "Hmref".
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_pure (_ _).
   iAssert (∀ v ok, ⌜map_get m k = (v, ok)⌝ -∗ Φ (v, #ok)%V)%I with "[Hmref HΦ]" as "HΦ".
   { iIntros (v ok) "%".
@@ -196,7 +196,7 @@ Proof.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv ?) "Hmref".
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_apply (wp_store with "Hmref"); iIntros "Hmref".
   iApply ("HΦ" with "[Hmref]").
   iExists _; iFrame.
@@ -214,7 +214,7 @@ Proof.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv ?) "Hmref".
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_pure (Rec _ _ _).
 Admitted.
 

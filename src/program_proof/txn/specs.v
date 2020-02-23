@@ -206,7 +206,7 @@ Proof.
   replace (1 * int.val (1 + 0)) with (1) by word.
   iDestruct (ptsto_ro_load with "Hwalptr") as (q) "Hwalptr".
 
-  wp_load.
+  wp_untyped_load.
   wp_call.
 
   wp_apply (wp_Walog__ReadMem with "[$Hwal Hstable]").

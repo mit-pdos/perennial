@@ -305,7 +305,7 @@ Proof.
   pose proof (word.unsigned_range i).
   word_cleanup.
   iDestruct (struct_mapsto_ty with "Hi") as %Hty.
-  wp_apply (wp_LoadAt with "Hi"); iIntros "Hi".
+  wp_load.
   iSpecialize ("Hsl'" with "Hi").
   iApply "HΦ"; iFrame.
   iPureIntro; auto.
@@ -425,7 +425,7 @@ Proof.
     destruct vs1, vs2; simpl in Hvs1, Hvs2; try word.
     iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
     iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
-    wp_apply (wp_LoadAt with "Hsrc"); iIntros "Hsrc".
+    wp_load.
     wp_bind (store_ty _ _ _).
     iDestruct (struct_mapsto_ty with "Hsrc") as %Hv0ty.
     wp_apply (wp_StoreAt with "Hdst"); [ done | iIntros "Hdst" ].
@@ -532,8 +532,8 @@ Proof.
 
     wp_pures.
     wp_call.
-    wp_apply (wp_StoreAt with "[Halloc1]"); [ auto | | iIntros "Hlast" ].
-    { iExactEq "Halloc1"; word_eq. }
+    wp_apply (wp_StoreAt with "[Halloc1]"); [ val_ty | | iIntros "Hlast" ].
+    { iModIntro. iExactEq "Halloc1"; word_eq. }
     wp_pures.
 
     rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice /is_slice_small /=.

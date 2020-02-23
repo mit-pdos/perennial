@@ -341,7 +341,7 @@ Proof.
     wp_pures.
     rewrite /struct_field_mapsto Hf.
     rewrite Z.mul_1_r.
-    wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+    wp_load.
     iApply ("HΦ" with "[$]").
   - iIntros (Φ) "Hl HΦ".
     wp_pures.
@@ -368,7 +368,8 @@ Proof.
     wp_pures.
     rewrite /struct_field_mapsto Hf.
     rewrite Z.mul_1_r.
-    wp_apply (wp_StoreAt with "Hl"); auto.
+    wp_store.
+    iApply ("HΦ" with "[$]").
   - inv_ty Hty.
     iIntros (Φ) "Hl HΦ".
     wp_pures.

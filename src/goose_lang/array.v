@@ -195,7 +195,8 @@ Proof.
   iIntros (Hlookup Φ) "Hl HΦ".
   iDestruct (array_elem_acc (l:=l) Hlookup with "Hl") as "[Hl1 Hl2]".
   iDestruct (struct_mapsto_ty with "Hl1") as %Hty.
-  wp_apply (wp_LoadAt with "Hl1"); iIntros "Hl1". iApply "HΦ".
+  wp_load.
+  iApply "HΦ".
   iSplitL; eauto.
   iApply ("Hl2" with "Hl1").
 Qed.
@@ -207,7 +208,7 @@ Lemma wp_store_offset s E l off vs t v :
 Proof.
   iIntros ([w Hlookup] Hty Φ) ">Hl HΦ".
   iDestruct (update_array (l:=l) Hlookup with "Hl") as "[Hl1 Hl2]".
-  iApply (wp_StoreAt _ _ _ _ _ _ Hty with "Hl1"). iIntros "!> Hl1".
+  wp_store.
   iApply "HΦ". iApply ("Hl2" with "Hl1").
 Qed.
 

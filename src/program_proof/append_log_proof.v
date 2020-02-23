@@ -838,7 +838,7 @@ Proof.
   wpc_bind (Load _).
   wpc_atomic.
   { iApply (is_log_crash_l with "Hlog"). }
-  wp_load.
+  wp_untyped_load.
   iSplit.
   { iModIntro; crash_case; iApply (is_log_crash_l with "Hlog"). }
   iModIntro.
@@ -848,7 +848,7 @@ Proof.
   wpc_bind (Load _).
   wpc_atomic.
   { iApply (is_log_crash_l with "Hlog"). }
-  wp_load.
+  wp_untyped_load.
   iSplit.
   { iModIntro; crash_case; iApply (is_log_crash_l with "Hlog"). }
   iModIntro.
@@ -924,7 +924,7 @@ Proof.
         wpc_atomic.
         { iApply is_log_crash_l.
           iApply (is_log_split with "[$] [$] Hnew Hfree [%]"); len. }
-        wp_load.
+        wp_untyped_load.
         iSplit; iModIntro; crash_case.
         { iApply is_log_crash_l.
           iApply (is_log_split with "[$] [$] Hnew Hfree [%]"); len. }
@@ -1004,7 +1004,7 @@ Proof.
     crash_case.
     iApply (is_log_crash_l with "[$]"). }
   wp_call.
-  wp_load.
+  wp_untyped_load.
   iIntros "(Hlog&HΦ)".
   wpc_pures.
   { iApply (is_log_crash_l with "[$]"). }
@@ -1067,8 +1067,8 @@ Proof.
   iIntros (Φ) "Hptsto_log HΦ".
   iDestruct "Hptsto_log" as (sz disk_sz) "[[Hf0 Hf1] Hlog]".
   wp_call.
-  wp_load.
-  wp_load.
+  wp_untyped_load.
+  wp_untyped_load.
   wp_steps.
   iApply "HΦ".
   iExists _, _; by iFrame.
