@@ -260,8 +260,8 @@ Definition wpc_init k E e es Φ Φc initP : iProp Σ :=
    to be able to depend on what state the impl crashed to. If spec crah steps
    or impl crash steps are deterministic, there is probably a much simpler defn. *)
 Definition wpc_post_crash k E e es Φ Φc : iProp Σ :=
-  (∀ (hG: heapG Σ) (hC: crashG Σ) (hRG: refinement_heapG Σ) (hG': heapG Σ),
-      Φc hG hC hRG ={⊤}=∗
+  (∀ (hG: heapG Σ) (hC: crashG Σ) (hRG: refinement_heapG Σ),
+      Φc hG hC hRG -∗ ▷ ∀ (hG': heapG Σ), |={⊤}=>
       ∀ (hC': crashG Σ) σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
@@ -269,7 +269,8 @@ Definition wpc_post_crash k E e es Φ Φc : iProp Σ :=
       ∃ σs' (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
       ffi_ctx (refinement_spec_ffiG) σs.(world) ∗
       ∀ (hRG': refinement_heapG Σ),
-      ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
+      ffi_crash_rel (ext := spec_ext_op_field) Σ
+                      (refinement_spec_ffiG (hRG := hRG)) σs.(world)
                       (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
       ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
       wpc_obligation k E e es Φ Φc hG' hC' hRG')%I.
@@ -394,7 +395,9 @@ Proof using Hrpre Hhpre Hcpre.
     iIntros "(_&_&Hffi_old&Htrace_auth&Horacle_auth)".
     iDestruct (trace_agree with "Htrace_auth [$]") as %Heq1'.
     iDestruct (oracle_agree with "Horacle_auth [$]") as %Heq2'.
-    iModIntro. iNext. iIntros.
+    iModIntro.
+    iPoseProof (@Hwp_crash $! _ _ _ with "HΦc") as "H".
+    iNext. iIntros.
     iMod (na_heap.na_heap_reinit _ tls σ_post_crash.(heap)) as (name_na_heap) "Hh".
     iMod (proph_map.proph_map_reinit _ κs σ_post_crash.(used_proph_id)) as (name_proph_map) "Hp".
     iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old") as (ffi_names) "(Hw&Hcrel&Hc)".
@@ -405,8 +408,7 @@ Proof using Hrpre Hhpre Hcpre.
                       heap_ffi_names := ffi_names;
                       heap_trace_names := name_trace |}).
     set (hG := (heap_update _ _ _ hnames)).
-    iPoseProof (@Hwp_crash $! _ _ _ hG with "HΦc") as "H".
-    iMod "H". iSpecialize ("H" with "[Hc Hcrel] [$]").
+    iMod ("H" $! hG) as "H". iSpecialize ("H" with "[Hc Hcrel] [$]").
     {  simpl. iExists _, _. rewrite ffi_update_update. iFrame. }
     iDestruct "H" as (σs_post_crash Hspec_crash) "(Hspec_ffi&Hwpc)".
     iClear "Htrace_auth Horacle_auth Htrace_frag Horacle_frag".

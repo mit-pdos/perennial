@@ -72,11 +72,11 @@ Context {hC: crashG Σ}.
 Context `{hS: @styG smodel Σ}.
 
 
-Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) (* spec_ffi_interp_adequacy_field *).
+Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
 Definition has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
-      j ⤇ K es -∗ WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN) {{ v, ∃ vs, j ⤇ K (of_val vs)
+      j ⤇ K es -∗ WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ v, ∃ vs, j ⤇ K (of_val vs)
                                                                     ∗ vty vs v }}
                                                       {{ True }})%I.
 
@@ -146,7 +146,7 @@ Class specTy_update `(hsT_model: !specTy_model) (spec_op_trans: @external (spec_
   { sty_preG : gFunctors → Type;
     styΣ: gFunctors;
     subG_styPreG : forall Σ, subG styΣ Σ -> sty_preG Σ;
-    sty_initP : sstate → istate → Prop;
+    sty_initP : istate → sstate → Prop;
     sty_update_pre: ∀ Σ, sty_preG Σ -> sty_names -> styG Σ;
     sty_update_pre_update: ∀ Σ (hPre: sty_preG Σ) names1 names2,
         sty_update Σ (sty_update_pre _ hPre names1) names2 =
@@ -157,22 +157,22 @@ Class specTy_update `(hsT_model: !specTy_model) (spec_op_trans: @external (spec_
 
 Section reln_adeq.
 
-Context `{hsT_model: !specTy_model} (spec_op_trans: @external (spec_ext_op_field) → ival)
-        `{!ffi_interp_adequacy (FFI := spec_ffi_interp_field)
-                             (EXT := (spec_ffi_semantics_field spec_ffi_semantics))}.
+Context `{hsT_model: !specTy_model} (spec_op_trans: @external (spec_ext_op_field) → ival).
+
+Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
 Context (upd: specTy_update hsT_model spec_op_trans).
 
-Definition sty_init_obligation (sty_initP: sstate → istate → Prop) :=
+Definition sty_init_obligation (sty_initP: istate → sstate → Prop) :=
       forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) `(hC: crashG Σ) (hPre: sty_preG Σ) σs σ
-      (HINIT: sty_initP σs σ),
+      (HINIT: sty_initP σ σs),
         (ffi_start (heapG_ffiG) σ.(world) -∗
          ffi_start (refinement_spec_ffiG) σs.(world) -∗
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_inv H0)%I.
 
 Definition sty_crash_obligation :=
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
-      (sty_inv hS ={styN, ∅}=∗
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+      (sty_inv hS ={styN, ∅}=∗ ▷ ∀ (hG': heapG Σ), |={⊤}=>
       ∀ (hC': crashG Σ) σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
@@ -203,6 +203,7 @@ Definition ctx_has_semTy `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_h
   ∀ Γsubst (HPROJ: subst_ty <$> Γsubst = Γ),
   sty_inv hS -∗
   spec_ctx -∗
+  trace_ctx -∗
   ([∗ map] x ↦ t ∈ Γsubst, (val_interp (hS := hS) (subst_ty t) (subst_sval t) (subst_ival t))) -∗
   has_semTy (subst_map (subst_sval <$> Γsubst) es)
             (subst_map (subst_ival <$> Γsubst) e)
@@ -236,15 +237,15 @@ Lemma ctx_has_semTy_subst `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_
 Proof.
   rewrite /ctx_has_semTy.
   iIntros "Hhasty Hval".
-  iIntros (Γsubst Hproj) "Hsty Hspec Hctx".
+  iIntros (Γsubst Hproj) "Hsty Hspec Htrace Hctx".
   destruct x as [|x] => //=.
-  { iApply ("Hhasty" with "[] [$] [$]").
+  { iApply ("Hhasty" with "[] [$] [$] [$]").
     * rewrite insert_anon //=.
     * eauto.
   }
   rewrite -?subst_map_insert'.
   iSpecialize ("Hhasty" $! (<[x := {| subst_ty := tx; subst_sval := vs; subst_ival := v |}]> Γsubst)
-                 with "[] [$] [$] [Hctx Hval]").
+                 with "[] [$] [$] [$] [Hctx Hval]").
   { iPureIntro. rewrite -Hproj. apply: fmap_insert. }
   { iPoseProof (big_sepM_insert_2 with "[Hval] [Hctx]") as "$".
     * iFrame.
@@ -260,7 +261,7 @@ Lemma sty_fundamental_lemma:
     ctx_has_semTy (hS := hS) Γ es e τ)%I.
 Proof.
   iIntros (Hrules ????? Htyping ??????).
-  induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Hctx".
+  induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx".
   (* Variables *)
   - subst.
     rewrite lookup_fmap in H.
@@ -273,14 +274,14 @@ Proof.
   (* Function app. *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
-    iPoseProof (IHHtyping1 with "[//] [$] [$] [$]") as "H"; eauto.
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) x2).
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppRCtx (subst_map _ f1)] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     wpc_bind (subst_map _ f2).
-    iPoseProof (IHHtyping2 with "[//] [$] [$] [$]") as "H"; eauto.
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppLCtx (vs2)] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
     iApply (wpc_mono' with "[Hv2] [] H"); last done.
@@ -325,7 +326,7 @@ Proof.
     { simpl. iExists _, _, _, _, _, _. iFrame "IH"; eauto. }
     iPoseProof (ctx_has_semTy_subst with "[] Hval") as "H2".
     { iApply "H1". }
-    iSpecialize ("H2" with "[//] [$] [$] [$] [//] [Hj]").
+    iSpecialize ("H2" with "[//] [$] [$] [$] [$] [//] [Hj]").
     { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
       iEval (rewrite (binder_delete_commute f x)). iFrame. }
     { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
@@ -363,7 +364,7 @@ Proof.
   - admit.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
-    iPoseProof (IHHtyping with "[//] [$] [$] [$]") as "H"; eauto.
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) _).
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [ExternalOpCtx _] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
@@ -373,6 +374,79 @@ Proof.
   - admit.
   - admit.
 Admitted.
+
+Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
+         spec_ffi_interp_adequacy_field.
+
+Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
+Context `{Hcpre: @cfgPreG spec_lang Σ}.
+Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
+Context `{Hcrashpre: crashPreG Σ}.
+
+Lemma sty_adequacy es σs e σ τ Hval initP:
+  sty_init_obligation initP →
+  sty_crash_obligation →
+  sty_rules_obligation →
+  expr_transTy _ _ _ Hval spec_op_trans ∅ es e τ →
+  σ.(trace) = σs.(trace) →
+  σ.(oracle) = σs.(oracle) →
+  initP σ σs →
+  trace_refines e e σ es es σs.
+Proof.
+  intros Hsty_init Hsty_crash Hsty_rules Htype Htrace Horacle Hinit.
+  eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Φ := λ _ _ _ _, True%I) (Φc := (λ hG hC hRG, ∃ hS,
+      ▷ ∀ (hG': heapG Σ), |={⊤}=>
+      ∀ (hC': crashG Σ) σs,
+      (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
+      ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
+      ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
+      ∃ (σs': sstate) (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
+      ffi_ctx (refinement_spec_ffiG) σs.(world) ∗
+      ∀ (hRG': refinement_heapG Σ),
+      ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
+                      (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
+      ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
+      |={styN}=> ∃ (new: sty_names), sty_inv (sty_update Σ hS new))%I)
+                                           (k := MAX) (initP := initP); eauto.
+  { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hC hRG σ σs Hinit) "Hffi Hffi_spec".
+    rewrite /sty_init_obligation in Hsty_init.
+    rewrite /wpc_obligation.
+    iIntros "Hj #Hspec #Htrace".
+    iApply fupd_wpc.
+    iPoseProof (Hsty_init with "[$] [$]") as "H"; first auto.
+    iApply (fupd_mask_mono styN); first by set_solver+.
+    iMod "H" as (names) "#Hinv".
+    iModIntro.
+    iPoseProof (sty_fundamental_lemma Hsty_rules ∅ _ _ _ _ Htype) as "H"; eauto.
+    iSpecialize ("H" $! ∅ with "[] [$] [$] [$] []").
+    { iPureIntro. apply: fmap_empty. }
+    { by rewrite big_sepM_empty. }
+    rewrite /has_semTy.
+    iSpecialize ("H" $! O id with "[] [Hj]").
+    { iPureIntro. apply _. }
+    { simpl. by rewrite fmap_empty subst_map_empty. }
+    rewrite fmap_empty subst_map_empty.
+    iApply (wpc_strong_mono with "[$]"); eauto.
+    { solve_ndisj. }
+    iSplit.
+    - eauto.
+    - iIntros.
+      simpl. replace (MAX - MAX)%nat with O by lia. simpl.
+      replace (⊤ ∖ ↑sN ∖ (⊤ ∖ ↑sN ∖ styN)) with (styN); last first.
+      { admit. (* need assumption about styN being disj from ↑sN *) }
+      rewrite /sty_crash_obligation in Hsty_crash.
+      iMod (Hsty_crash with "[$]") as "H".
+      iModIntro. iModIntro. iExists _. iFrame.
+  }
+  { clear dependent σ σs.
+    rewrite /wpc_post_crash.
+    iIntros (???) "H". iDestruct "H" as (?) "H". iNext.
+    iIntros (hG'). iMod ("H" $! hG') as "H". iModIntro.
+    iIntros. iSpecialize ("H" with "[$] [$]").
+    iDestruct "H" as (σs' Hcrash) "(Hctx&Hrest)".
+    iExists σs', Hcrash. iFrame. iIntros (hRG') "Hcrash_rel Hrestart".
+    iSpecialize ("Hrest" $! hRG' with "[$] [$]").
+Abort.
 
 (*
 Class specTy_model_adequacy `{!specTy_model} (spec_op_trans: @external (spec_ext_op_field) → iexpr)
