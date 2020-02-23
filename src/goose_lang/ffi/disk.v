@@ -91,6 +91,9 @@ Section disk.
   suddenly cause all FFI parameters to be inferred as the disk model *)
   Existing Instances disk_op disk_model disk_ty.
 
+  Definition Get: val :=
+    λ: <>, ExtV DiskInterfaceVal.
+
   Definition Read: val :=
     λ: "a",
     let: "p" := ExternalOp ReadOp (Var "a") in
