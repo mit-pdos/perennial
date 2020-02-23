@@ -142,7 +142,7 @@ Fixpoint val_interp (t: sty) (vs: sval) (v: ival) :=
 
 End reln_defs.
 
-Class specTy_update `(hsT_model: !specTy_model) (spec_op_trans: @external (spec_ext_op_field) → iexpr) :=
+Class specTy_update `(hsT_model: !specTy_model) (spec_op_trans: @external (spec_ext_op_field) → ival) :=
   { sty_preG : gFunctors → Type;
     styΣ: gFunctors;
     subG_styPreG : forall Σ, subG styΣ Σ -> sty_preG Σ;
@@ -157,7 +157,7 @@ Class specTy_update `(hsT_model: !specTy_model) (spec_op_trans: @external (spec_
 
 Section reln_adeq.
 
-Context `{hsT_model: !specTy_model} (spec_op_trans: @external (spec_ext_op_field) → iexpr)
+Context `{hsT_model: !specTy_model} (spec_op_trans: @external (spec_ext_op_field) → ival)
         `{!ffi_interp_adequacy (FFI := spec_ffi_interp_field)
                              (EXT := (spec_ffi_semantics_field spec_ffi_semantics))}.
 
@@ -186,13 +186,13 @@ Definition sty_crash_obligation :=
       |={styN}=> ∃ (new: sty_names), sty_inv (sty_update Σ hS new))%I.
 
 Definition sty_rules_obligation :=
-  ∀ op (es: sexpr) e t1 t2,
+  ∀ op (vs: sval) v t1 t2,
     get_ext_tys op = (t1, t2) →
     forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
     sty_inv hS -∗
     spec_ctx -∗
-    has_semTy es e (val_interp (hS := hS) t1) -∗
-    has_semTy (ExternalOp op es) ((spec_op_trans) op e) (val_interp (hS := hS) t2).
+    val_interp (hS := hS) t1 vs v -∗
+    has_semTy (ExternalOp op vs) ((spec_op_trans) op v) (val_interp (hS := hS) t2).
 
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
@@ -330,8 +330,49 @@ Proof.
       iEval (rewrite (binder_delete_commute f x)). iFrame. }
     { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
       iEval (rewrite {2}binder_delete_commute). iFrame. }
-  -
-Abort.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping with "[//] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) _).
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [ExternalOpCtx _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    iPoseProof (Hrules with "[$] [$] [$] [] Hj") as "H"; eauto.
+  - admit.
+  - admit.
+Admitted.
 
 (*
 Class specTy_model_adequacy `{!specTy_model} (spec_op_trans: @external (spec_ext_op_field) → iexpr)

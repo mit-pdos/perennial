@@ -26,7 +26,7 @@ Section translate.
   Notation sty := (@ty (@val_tys _ spec_ty)).
 
   Context (spec_val_trans : @ext_val spec_op -> ival).
-  Context (spec_op_trans : @external spec_op -> iexpr).
+  Context (spec_op_trans : @external spec_op -> ival).
   (* XXX: need some assumptions that the previous two arguments make sense
      in particular, should be total in the sense that all well typed extension rules
      should have a translation rule *)
