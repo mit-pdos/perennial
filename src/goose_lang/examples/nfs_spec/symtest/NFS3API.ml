@@ -1,9 +1,9 @@
-(* Warning: Extraction inside an opened module is experimental.In case of problem, close it first.
+Warning: Extraction inside an opened module is experimental.In case of problem, close it first.
 [extraction-inside-module,extraction]
 Warning: The following axioms must be realized in the extracted
 code: resize_buf writeverf eq_dec_fh buf fh len_buf EqDec_time createverf eq_dec_inode_state
       countable_inode_state countable_fh.
- [extraction-axiom-to-realize,extraction] *)
+ [extraction-axiom-to-realize,extraction]
 
 
 type __ = Obj.t
@@ -1542,12 +1542,14 @@ let inode_wcc i =
                 | _ -> u2 Z0); wcc_mtime = m.inode_meta_mtime; wcc_ctime = m.inode_meta_ctime }
 
 (** val result_bind :
-    (state, ('a1, 'a2) res) transition -> ('a2 -> (state, 'a3) transition) -> (state, 'a3) transition **)
+    (state, ('a1, 'a2) res) transition -> ('a2 -> (state, ('a1, 'a3) res) transition) -> (state,
+    ('a1, 'a3) res) transition **)
 
 let result_bind x fx =
-  Bind ((Obj.magic x), (fun r -> match Obj.magic r with
-                                 | OK (_, v) -> fx v
-                                 | Err (_, _) -> undefined))
+  Bind ((Obj.magic x), (fun r ->
+    match Obj.magic r with
+    | OK (_, v) -> fx v
+    | Err (a, e) -> ret (Err (a, e))))
 
 (** val symBool : (state, bool) transition **)
 
@@ -1627,7 +1629,7 @@ let inode_attrs i =
 (** val getattr_step : fh -> (state, (unit0, fattr) res) transition **)
 
 let getattr_step f =
-  result_bind (get_fh f None) (fun i -> Bind ((Obj.magic inode_attrs i), (fun attrs ->
+  result_bind (get_fh f Tt) (fun i -> Bind ((Obj.magic inode_attrs i), (fun attrs ->
     ret (OK (Tt, (Obj.magic attrs))))))
 
 (** val check_ctime_guard :
@@ -1813,3 +1815,5 @@ let setattr_step f a ctime_guard =
         let i1 = set_attr_nonlen i0 (Obj.magic t) a in
         Bind ((Obj.magic update_fh_sync f i1), (fun _ ->
         ret (OK ({ wcc_before = (Some wcc_before0); wcc_after = (Some (inode_wcc i1)) }, Tt)))))))))
+
+

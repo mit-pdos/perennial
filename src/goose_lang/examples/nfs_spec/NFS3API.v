@@ -409,12 +409,12 @@ Definition inode_finish (s : async inode_state) : async inode_state :=
 
 (** Step definitions for each RPC opcode *)
 Section SymbolicStep.
-  Definition result_bind {A T T'} x (fx: T -> transition State T')
-  : transition State T' :=
+  Definition result_bind {A T T'} x (fx: T -> transition State (res A T'))
+  : transition State (res A T') :=
     bind x (fun (r : res A T) =>
       match r with
       | OK a v => fx v
-      | Err _ _ => undefined
+      | Err a e => ret (Err a e) (*undefined*)
       end).
 
   Notation "x <~- p1 ; p2" := (result_bind p1 (fun x => p2))
@@ -504,7 +504,7 @@ Section SymbolicStep.
     ret res.
 
   Definition getattr_step (f : fh) : transition State (res unit fattr) :=
-    i <~- get_fh f (@None inode_state);
+    i <~- get_fh f ();
     attrs <- inode_attrs i;
     ret (OK tt attrs).
 
@@ -1238,7 +1238,7 @@ Record Dynamics Op State :=
   }.
 
 Extraction Language JSON.
-(*Recursive Extraction setattr_step getattr_step. getattr_step setattr_step commit_step.*)
+(*Recursive Extraction setattr_step getattr_step. (*getattr_step setattr_step commit_step.*)*)
 
 Definition nfs3op_to_transition {T} (op : Op T): transition State T :=
   match op with

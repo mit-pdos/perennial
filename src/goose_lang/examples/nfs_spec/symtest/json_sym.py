@@ -10,6 +10,7 @@ class SymbolicJSON(object):
         self.bool_sort = None
         self.sumbool_sort = None
         self.unit_tt = None
+        self.last_option_type = None
 
     def set_bool_type(self, t):
         self.bool_sort = self.z3_sort(t)
@@ -105,11 +106,12 @@ class SymbolicJSON(object):
         resstate = None
         resvalue = None
 
-        print "-------------------- CASE ----------------------"
-        pprint.pprint(expr['cases'])
-
         for case in expr['cases'][::-1]:
             pat = case['pat']
+
+            print "-------------------- CASE ----------------------"
+            pprint.pprint(expr['cases'])
+
             if pat['what'] == 'pat:constructor':
                 body = case['body']
                 cidx = constructor_idx_by_name(victim.sort(), pat['name'])
@@ -118,11 +120,22 @@ class SymbolicJSON(object):
                     if argname == '_': continue
                     val = victim.sort().accessor(cidx, idx)(victim)
                     body = json_eval.subst_what(body, 'expr:rel', argname, val)
+                print "Proc of ",
+                pprint.pprint(body)
                 patstate, patbody = self.proc(body, state)
                 if resstate is None:
+                    print "Resstate none"
                     resstate = patstate
                     resvalue = patbody
                 else:
+                    print "Case patbody, resvalue:"
+                    pprint.pprint(patbody)
+                    print(patbody.sort())
+                    pprint.pprint(resvalue)
+                    print(resvalue.sort())
+                    print(patstate.sort())
+                    print(resstate.sort())
+                    print(dir(resvalue.sort()))
                     resstate = z3.If(patCondition, patstate, resstate)
                     resvalue = z3.If(patCondition, patbody, resvalue)
             elif pat['what'] == 'pat:wild':
@@ -169,19 +182,20 @@ class SymbolicJSON(object):
                     state, procexpr = self.proc(p1, state0)
                     continue
                 else:
-                    # XXX todo
                     state, procexpr = self.proc_constructor_other(procexpr, state)
                     continue
 
-            # XXX todo axioms
+            # axioms
             if procexpr['what'] == 'expr:special':
                 if procexpr['id'] == 'symBool':
                     return state, z3.Const(anon(), self.bool_sort)
-                if callop['name'] == 'symU32':
+                if procexpr['id'] == 'symU32':
                     return state, z3.Const(anon(), z3.BitVecSort(32))
-                if callop['name'] == 'symU64':
+                if procexpr['id'] == 'symU64':
                     return state, z3.Const(anon(), z3.BitVecSort(64))
-                if callop['name'] == 'symAssert':
+                if procexpr['id'] == 'undefined':
+                    return state, z3.Const(anon(), z3.BitVecSort(64))
+                if procexpr['id'] == 'symAssert':
                     # XXX how to add a solver constraint?
                     return state, self.unit_tt
                 else:
@@ -212,20 +226,15 @@ class SymbolicJSON(object):
             return state, sort.constructor(cid)(*cargs)
 
         if procexpr['name'] == 'Err' or procexpr['name'] == 'OK':
-            if procexpr['name'] == 'Err':
-                arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args' : [
-                                    {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'wcc_data'},
-                                ]}
-                arg1 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'}
-            else:
-                arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args' : [
-                                    {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'},
-                                ]}
-                arg1 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'inode_state'}
+            arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'}
+            #arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args' : [
+                                #{'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'},
+                            #]}
+            arg1 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'inode_state'}
 
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'res',
                             'args' : [arg0, arg1]
-                    }
+                }
             sort = self.z3_sort(t)
             cid = constructor_idx_by_name(sort, procexpr['name'])
             cargs = []
@@ -235,18 +244,25 @@ class SymbolicJSON(object):
             print "CONSTRUCTOR: ",
             pprint.pprint(sort.constructor(cid))
             pprint.pprint(cargs)
+            print(cargs[0].sort())
+            print(cargs[1].sort())
+            print(sort)
+            print(dir(sort))
             return state, sort.constructor(cid)(*cargs)
 
         if procexpr['name'] == 'None':
             # pass in argument for type 'A' in res XXX hacky?
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args': [
-                {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'wcc_data'},
+                {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'},
             ]}
             sort = self.z3_sort(t)
             cid = constructor_idx_by_name(sort, 'None')
             cargs = []
 
             return state, sort.constructor(cid)(*cargs)
+
+        if procexpr['name'] == 'Tt':
+            return state, self.unit_tt
 
         else:
             print "UNKNOWN CONSTRUCTOR",
@@ -257,8 +273,6 @@ class SymbolicJSON(object):
             cargs = []
 
             return state, sort.constructor(cid)(*cargs)
-
-
 
 def constructor_idx_by_name(sort, cname):
     for i in range(0, sort.num_constructors()):

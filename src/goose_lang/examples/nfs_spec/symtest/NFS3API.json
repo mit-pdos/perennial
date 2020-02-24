@@ -22384,8 +22384,16 @@
                   "what": "type:glob", "name": "state", "args": [
                     
                   ]
-                }, {
-                  "what": "type:varidx", "name": 3
+                },
+                {
+                  "what": "type:glob", "name": "res",
+                  "args": [
+                    {
+                      "what": "type:varidx", "name": 1
+                    }, {
+                      "what": "type:varidx", "name": 3
+                    }
+                  ]
                 }
               ]
             }
@@ -22397,8 +22405,16 @@
                 "what": "type:glob", "name": "state", "args": [
                   
                 ]
-              }, {
-                "what": "type:varidx", "name": 3
+              },
+              {
+                "what": "type:glob", "name": "res",
+                "args": [
+                  {
+                    "what": "type:varidx", "name": 1
+                  }, {
+                    "what": "type:varidx", "name": 3
+                  }
+                ]
               }
             ]
           }
@@ -22449,10 +22465,25 @@
                     "what": "case",
                     "pat": {
                       "what": "pat:constructor", "name": "Err", "argnames": [
-                        "_", "_"
+                        "a", "e"
                       ]
-                    }, "body": {
-                      "what": "expr:global", "name": "undefined"
+                    },
+                    "body": {
+                      "what": "expr:apply", "func": {
+                        "what": "expr:global", "name": "ret"
+                      },
+                      "args": [
+                        {
+                          "what": "expr:constructor", "name": "Err",
+                          "args": [
+                            {
+                              "what": "expr:rel", "name": "a"
+                            }, {
+                              "what": "expr:rel", "name": "e"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   }
                 ]
@@ -23722,7 +23753,7 @@
                 {
                   "what": "expr:rel", "name": "f"
                 }, {
-                  "what": "expr:constructor", "name": "None", "args": [
+                  "what": "expr:constructor", "name": "Tt", "args": [
                     
                   ]
                 }
@@ -28668,6 +28699,5 @@
     }
   ]
 }
-
 
 
