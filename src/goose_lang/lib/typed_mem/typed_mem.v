@@ -57,6 +57,65 @@ Section goose_lang.
     iIntros "[_ %] !%//".
   Qed.
 
+  Theorem base_mapsto_untype {l bt q v} :
+    match bt with
+    | unitBT => false
+    | _ => true
+    end = true ->
+    l ↦[baseT bt]{q} v ⊣⊢ l ↦{q} v ∗ ⌜val_ty v (baseT bt)⌝.
+  Proof.
+    intros Hnotunit.
+    iSplit.
+    - iIntros "Hl".
+      iDestruct (struct_mapsto_ty with "Hl") as %Hty.
+      rewrite struct_mapsto_singleton; eauto.
+      inv_ty; simpl; auto.
+      congruence.
+    - iIntros "[Hl %]".
+      iSplitL; auto.
+      inv_ty; simpl; try rewrite loc_add_0 right_id; auto.
+  Qed.
+
+  Theorem base_load_ty {bt} :
+    match bt with
+    | unitBT => false
+    | _ => true
+    end = true ->
+    load_ty (baseT bt) = (λ: "l", !(Var "l"))%V.
+  Proof.
+    destruct bt; simpl; intros; auto.
+    congruence.
+  Qed.
+
+  Theorem wp_base_load stk E bt (l:loc) (Φ: val -> iProp Σ) :
+    match bt with
+    | unitBT => false
+    | _ => true
+    end = true ->
+    (∀ le, ⌜Atomic StronglyAtomic le⌝ -∗
+           (∀ q v,
+               {{{ l ↦[baseT bt]{q} v }}}
+                 le @ stk; E
+               {{{ RET v; l ↦[baseT bt]{q} v }}}) -∗
+           WP le @ stk; E {{ Φ }}) -∗
+    WP load_ty (baseT bt) #l @ stk; E {{ Φ }}.
+  Proof.
+    intros Hnotunit.
+    iIntros "Hle".
+    rewrite -> base_load_ty by auto.
+    wp_lam.
+    iApply "Hle".
+    { iPureIntro.
+      apply _. }
+    iIntros (q v Φ') "!> Hl HΦ'".
+    iDestruct (struct_mapsto_ty with "Hl") as %Hty.
+    iDestruct (base_mapsto_untype with "Hl") as "[Hl _]"; auto.
+    wp_apply (wp_load with "Hl").
+    iIntros "Hl".
+    iApply "HΦ'".
+    iApply (base_mapsto_untype with "[$Hl]"); eauto.
+  Qed.
+
   Theorem struct_mapsto_prod q l v1 t1 v2 t2 :
     l ↦[t1 * t2]{q} (v1, v2) ⊣⊢ l ↦[t1]{q} v1 ∗ (l +ₗ ty_size t1) ↦[t2]{q} v2.
   Proof.
