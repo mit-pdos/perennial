@@ -8,6 +8,27 @@ From Perennial.program_logic Require Export crash_weakestpre staged_invariant.
 Set Default Proof Using "Type".
 Import uPred.
 
+Lemma wpc_fork `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ, !crashG Σ} s k E1 E2 e Φ Φc :
+  ▷ WPC e @ s; k; ⊤; ∅ {{ _, True }} {{ True }} -∗ (▷ Φc ∧ ▷ Φ (LitV LitUnit)) -∗
+                      WPC Fork e @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "He HΦ". iApply wpc_lift_head_step; [done|].
+  iSplit; last first.
+  {  iDestruct "HΦ" as "(HΦc&_)". iModIntro. iNext.
+     iApply fupd_mask_weaken; first by set_solver+. iFrame. }
+  iIntros (σ1 κ κs n) "Hσ".
+  iMod (fupd_intro_mask' _ ∅) as "Hclose"; first by set_solver+.
+  iModIntro. iSplit.
+  { iPureIntro; econstructor; do 4 eexists; eauto. }
+  iNext; iIntros (v2 σ2 efs Hstep). rewrite /head_step /= in Hstep.
+  inversion Hstep as [??? Heq]. inversion Heq; subst.
+  iMod "Hclose". iFrame. iModIntro => //=. rewrite right_id.
+  iApply wpc_value; iSplit.
+  - by iDestruct "HΦ" as "(_&$)".
+  - iDestruct "HΦ" as "($&_)". iModIntro; iApply fupd_mask_weaken; eauto.
+    set_solver+.
+Qed.
+
 Lemma tac_wpc_expr_eval `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} Δ (s: stuckness) (k: nat) E1 E2 Φ (Φc: iProp Σ) e e' :
   (∀ (e'':=e'), e = e'') →

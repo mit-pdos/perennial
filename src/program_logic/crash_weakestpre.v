@@ -1007,3 +1007,49 @@ Section proofmode_classes.
   Qed.
   *)
 End proofmode_classes.
+
+From iris.program_logic Require Import ectx_language.
+
+Section wpc_ectx_lifting.
+Context {Λ : ectxLanguage} `{!irisG Λ Σ} `{crashG Σ} {Hinh : Inhabited (state Λ)}.
+Hint Resolve head_prim_reducible head_reducible_prim_step : core.
+Hint Resolve (reducible_not_val _ inhabitant) : core.
+Hint Resolve head_stuck_stuck : core.
+
+Lemma wpc_lift_head_step_fupd s k E E' Φ Φc e1 :
+  to_val e1 = None →
+  ((∀ σ1 κ κs n, state_interp σ1 (κ ++ κs) n ={E,∅}=∗
+    (⌜head_reducible e1 σ1⌝ ∗
+    ∀ e2 σ2 efs, ⌜head_step e1 σ1 κ e2 σ2 efs⌝ ={∅,∅,E}▷=∗
+      (state_interp σ2 κs (length efs + n) ∗
+       WPC e2 @ s; k; E; E' {{ Φ }} {{ Φc }} ∗
+       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})))
+  ∧ |={E}=> ▷ |={E', ∅}=> Φc)%I
+ ⊢ WPC e1 @ s; k; E; E' {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "H". iApply wpc_lift_step_fupd=>//. iSplit.
+  - iDestruct "H" as "(H&_)". iIntros (σ1 κ κs Qs) "Hσ".
+    iMod ("H" with "Hσ") as "[% H]"; iModIntro.
+    iSplit; first by destruct s; eauto. iIntros (e2 σ2 efs ?).
+    iApply "H"; eauto.
+  - iDestruct "H" as "(_&$)".
+Qed.
+
+Lemma wpc_lift_head_step s k E1 E2 Φ Φc e1 :
+  to_val e1 = None →
+  ((∀ σ1 κ κs n, state_interp σ1 (κ ++ κs) n ={E1,∅}=∗
+    ⌜head_reducible e1 σ1⌝ ∗
+    ▷ ∀ e2 σ2 efs, ⌜head_step e1 σ1 κ e2 σ2 efs⌝ ={∅,E1}=∗
+      state_interp σ2 κs (length efs + n) ∗
+      WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }} ∗
+      [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})
+  ∧ |={E1}=> ▷ |={E2, ∅}=> Φc)%I
+  ⊢ WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "H". iApply wpc_lift_head_step_fupd; [done|]. iSplit.
+  - iDestruct "H" as "(H&_)". iIntros (????) "?".
+    iMod ("H" with "[$]") as "[$ H]". iIntros "!>" (e2 σ2 efs ?) "!> !>". by iApply "H".
+  - iDestruct "H" as "(_&$)".
+Qed.
+
+End wpc_ectx_lifting.
