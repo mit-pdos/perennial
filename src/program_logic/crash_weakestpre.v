@@ -23,6 +23,8 @@ Definition wpc_pre `{!irisG Λ Σ} `{crashG Σ} (s : stuckness) (k: nat)
    end ∧
    (C -∗ |={E1,E1}_(S k)=> |={E2, ∅}=> |={∅, ∅}▷=>^(S k) |={∅, ∅}=> Φc))%I.
 
+Definition wpc_crash_modality  `{!irisG Λ Σ} `{crashG Σ} (k: nat) E1 E2 :=
+  λ P, (C -∗ |={E1,E1}_(S k)=> |={E2, ∅}=> |={∅, ∅}▷=>^(S k) |={∅, ∅}=> P)%I.
 
 Local Instance wpc_pre_contractive `{!irisG Λ Σ} `{crashG Σ} s k : Contractive (wpc_pre s k).
 Proof.
@@ -498,8 +500,8 @@ Qed.
    Atomic (stuckness_to_atomicity s) but it seems to require
    moving the ⌜ reducible e1 σ1 ⌝ in the definition of wpc_pre to be
    before the conjunction that occurs closest there. *)
-Lemma wpc_atomic s k E1 E2 e Φ Φc `{!Atomic StronglyAtomic e} :
-  (|={E2, ∅}=> Φc) ∧ WP e @ s; E1 {{ v, (|={E1}=> Φ v) ∧ |={E2, ∅}=> Φc }} ⊢
+Lemma wpc_atomic_crash_modality s k E1 E2 e Φ Φc `{!Atomic StronglyAtomic e} :
+  (wpc_crash_modality k E1 E2 Φc) ∧ WP e @ s; E1 {{ v, (|={E1}=> Φ v) ∧ wpc_crash_modality k E1 E2 Φc }} ⊢
   WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "H". rewrite !wpc_unfold !wp_unfold /wpc_pre /wp_pre.
@@ -507,11 +509,7 @@ Proof.
   { iSplit.
     - iDestruct "H" as "(_&H)". iIntros "HNC". iFrame.
       iMod (fupd_mask_mono with "H") as "($&_)"; first by set_solver+.
-    - iDestruct "H" as "(H&_)".
-      iIntros "HC". iApply step_fupdN_inner_later; auto. do 2 iNext.
-      iMod "H".
-      iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver+.
-      iModIntro. iApply step_fupdN_later; eauto.
+    - iDestruct "H" as "(H&_)"; eauto.
   }
   iSplit.
   {
@@ -536,22 +534,35 @@ Proof.
       ** iFrame "Hσ". iSplitL "H".
          { iSplit.
            * iIntros. iMod "H" as "(?&_)". iFrame.
-           * iIntros. iMod "H" as "(_&H)". iApply step_fupdN_inner_later; auto.
-             do 2 iNext.
-             iMod (fupd_intro_mask' _ ∅) as "Hclo'"; first by set_solver+.
-             iModIntro. iApply step_fupdN_later; eauto.
-             do 2 iNext. iMod "Hclo'". eauto.
+           * iIntros. iMod "H" as "(_&H)". iApply "H"; eauto. 
          }
          iFrame.
          iApply big_sepL_mono; last eauto. iIntros. by iApply wp_wpc.
       ** edestruct (atomic _ _ _ _ _ Hstep); congruence.
   }
-  iDestruct "H" as "(H&_)".
-  iIntros "HC".
-  iApply step_fupdN_inner_later; auto. do 2 iNext.
-  iMod "H".
-  iMod (fupd_intro_mask' _ ∅) as "Hclo'"; first by set_solver+.
-  iModIntro. iApply step_fupdN_later; auto.
+  iDestruct "H" as "(H&_)"; eauto.
+Qed.
+
+Lemma wpc_crash_elim s k E1 E2 e Φ Φc:
+  WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }} -∗ wpc_crash_modality k E1 E2 Φc.
+Proof. iIntros "H". rewrite !wpc_unfold /wpc_pre. iDestruct "H" as "(_&$)". Qed.
+
+Lemma fupd_mask_open_wpc_crash_modality k E1 E2 P:
+  (|={E2,∅}=> P) -∗ wpc_crash_modality k E1 E2 P.
+Proof.
+  iIntros "H HC". iApply step_fupdN_inner_later; auto. do 2 iNext.
+  iMod "H". iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver+.
+  iModIntro. iApply step_fupdN_later; eauto.
+Qed.
+
+Lemma wpc_atomic s k E1 E2 e Φ Φc `{!Atomic StronglyAtomic e} :
+  (|={E2, ∅}=> Φc) ∧ WP e @ s; E1 {{ v, (|={E1}=> Φ v) ∧ |={E2, ∅}=> Φc }} ⊢
+  WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "H". iApply (wpc_atomic_crash_modality); iApply (and_mono with "H").
+  { eapply fupd_mask_open_wpc_crash_modality. }
+  iApply wp_mono. iIntros (?).
+  iApply and_mono; eauto using fupd_mask_open_wpc_crash_modality.
 Qed.
 
 (* note that this also reverses the postcondition and crash condition, so we
@@ -577,15 +588,19 @@ Qed.
 
 (* written to match the premise of wpc_bind *)
 Lemma wpc_atomic_from_bind K `{!LanguageCtx K} s k E1 E2 e Φ Φc `{!Atomic StronglyAtomic e} :
-  Φc ∧ WP e @ s; E1 {{ v, (|={E1}=> WPC K (of_val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }}) }} ⊢
+  Φc ∧ WP e @ s; E1 {{ v, WPC K (of_val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }} }} ⊢
   WPC e @ s; k; E1 ; E2 {{ v, WPC K (of_val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }} }} {{ Φc }}.
 Proof.
   iIntros "Hwp".
-  iApply wpc_atomic_no_mask.
+  iApply wpc_atomic_crash_modality.
   iSplit.
-  - iDestruct "Hwp" as "[$ _]".
+  - iDestruct "Hwp" as "[H _]". iApply fupd_mask_open_wpc_crash_modality.
+    iApply fupd_mask_weaken; eauto; set_solver.
   - iDestruct "Hwp" as "[_ Hwp]".
-Admitted.
+    iApply (wp_mono with "Hwp").
+    iIntros (?) "H". iSplit; first done.
+    iApply wpc_crash_elim; eauto.
+Qed.
 
 Lemma wpc_bind K `{!LanguageCtx K} s k E1 E2 e Φ Φc :
   WPC e @ s; k; E1 ; E2 {{ v, WPC K (of_val v) @ s; k; E1; E2 {{ Φ }} {{ Φc }} }} {{ Φc }}
