@@ -47,7 +47,7 @@ def main():
 
     goose_dir = args.goose
     goose_nfsd_dir = args.nfsd
-    perennial_dir = os.path.dirname(os.path.realpath(__file__))
+    perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
