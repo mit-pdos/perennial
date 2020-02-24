@@ -3,6 +3,13 @@ From Perennial.goose_lang.lib Require Export typed_mem struct.impl.
 
 Close Scope struct_scope.
 
+Reserved Notation "l ↦[ d :: f ]{ q } v"
+    (at level 20, q at level 50, d at level 50, f at level 50,
+    format "l  ↦[ d  ::  f ]{ q }  v").
+Reserved Notation "l ↦[ d :: f ] v"
+    (at level 20, d at level 50, f at level 50,
+    format "l  ↦[ d  ::  f ]  v").
+
 Section goose_lang.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
@@ -240,13 +247,9 @@ Proof.
 Qed.
 
 Notation "l ↦[ d :: f ]{ q } v" :=
-  (struct_field_mapsto l q%Qp d f%string v%V)
-    (at level 20, q at level 50, d at level 50, f at level 50,
-    format "l  ↦[ d  ::  f ]{ q }  v").
+  (struct_field_mapsto l q d f%string v%V).
 Notation "l ↦[ d :: f ] v" :=
-  (struct_field_mapsto l 1%Qp d f%string v%V)
-    (at level 20, d at level 50, f at level 50,
-    format "l  ↦[ d  ::  f ]  v").
+  (struct_field_mapsto l 1 d f%string v%V).
 
 Theorem getField_f_none d f0 v :
   field_offset d f0 = None ->
@@ -407,3 +410,8 @@ Qed.
 
 
 End goose_lang.
+
+Notation "l ↦[ d :: f ]{ q } v" :=
+  (struct_field_mapsto l q d f%string v%V).
+Notation "l ↦[ d :: f ] v" :=
+  (struct_field_mapsto l 1 d f%string v%V).
