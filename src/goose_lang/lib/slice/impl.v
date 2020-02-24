@@ -88,7 +88,7 @@ Definition MemCpy_rec t: val :=
   rec: "memcpy" "dst" "src" "n" :=
     if: "n" = #0
     then #()
-    else store_ty t "dst" (load_ty t "src");;
+    else "dst" <-[t] (![t] "src");;
          "memcpy" ("dst" +ₗ[t] #1) ("src" +ₗ[t] #1) ("n" - #1).
 
 Theorem MemCpy_rec_t t : ⊢ MemCpy_rec t : (arrayT t -> arrayT t -> uint64T -> unitT).
@@ -162,7 +162,7 @@ Qed.
 
 Definition SliceSet t: val :=
   λ: "s" "i" "v",
-  store_ty t (slice.ptr "s" +ₗ[t] "i") "v".
+  (slice.ptr "s" +ₗ[t] "i") <-[t] "v".
 
 (*
 Theorem SliceSet_t t : ⊢ SliceSet t : (slice.T t -> uint64T -> t -> unitT).
@@ -182,14 +182,14 @@ Definition SliceAppend t: val :=
   if: slice.cap "s1" - slice.len "s1" ≥ #1 then
     (* re-use existing capacity *)
     let: "p" := slice.ptr "s1" in
-    store_ty t ("p" +ₗ[t] slice.len "s1") "x";;
+    ("p" +ₗ[t] slice.len "s1") <-[t] "x";;
     ("p", "sz", slice.cap "s1")
   else
     (* non-deterministically grow and copy *)
     let: "cap" := make_cap "sz" in
     let: "p" := AllocN "cap" (zero_val t) in
     MemCpy_rec t "p" (slice.ptr "s1") (slice.len "s1");;
-    store_ty t ("p" +ₗ[t] slice.len "s1") "x";;
+    ("p" +ₗ[t] slice.len "s1") <-[t] "x";;
     ("p", "sz", "cap").
 
 Theorem SliceAppend_t t : ⊢ SliceAppend t : (slice.T t -> t -> slice.T t).

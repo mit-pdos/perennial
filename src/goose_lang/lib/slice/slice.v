@@ -426,9 +426,9 @@ Proof.
     iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
     iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
     wp_load.
-    wp_bind (store_ty _ _ _).
+    wp_bind (store_ty _ _).
     iDestruct (struct_mapsto_ty with "Hsrc") as %Hv0ty.
-    wp_apply (wp_StoreAt with "Hdst"); [ done | iIntros "Hdst" ].
+    wp_store.
     wp_pures.
     rewrite Z.mul_1_r.
     wp_apply ("IH" $! vs1 vs2 with "[] [] [Hvs1] [Hvs2]");

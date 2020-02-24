@@ -266,7 +266,7 @@ Section goose_lang.
   Theorem wp_StoreAt stk E l t v0 v :
     val_ty v t ->
     {{{ ▷ l ↦[t] v0 }}}
-      store_ty t #l v @ stk; E
+      (#l <-[t] v)%V @ stk; E
     {{{ RET #(); l ↦[t] v }}}.
   Proof.
     intros Hty.
@@ -342,7 +342,7 @@ Section goose_lang.
     envs_lookup i Δ' = Some (false, l ↦[t] v)%I →
     envs_simple_replace i false (Esnoc Enil i (l ↦[t] v')) Δ' = Some Δ'' →
     envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
-    envs_entails Δ (WP fill K (store_ty t (LitV l) (Val v')) @ stk; E {{ Φ }}).
+    envs_entails Δ (WP fill K (store_ty t (PairV (LitV l) v')) @ stk; E {{ Φ }}).
   Proof.
     intros Hty.
     rewrite envs_entails_eq=> ????.

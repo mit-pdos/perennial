@@ -541,9 +541,9 @@ Proof.
   wp_untyped_load.
   wp_steps.
   wp_call.
+  wp_call.
   wp_untyped_load.
   wp_steps.
-  wp_call.
   wp_store.
   wp_call.
   wp_apply wp_SliceSkip'; [ now len | ].
@@ -599,9 +599,9 @@ Proof.
   wp_untyped_load.
   wp_steps.
   wp_call.
+  wp_call.
   wp_untyped_load.
   wp_steps.
-  wp_call.
   wp_store.
   wp_call.
   wp_apply wp_SliceSkip'; [ now len | ].

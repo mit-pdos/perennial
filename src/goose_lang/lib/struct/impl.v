@@ -143,11 +143,12 @@ Definition loadField (d:descriptor) (f:string) : val :=
   | None => λ: <>, #()
   end.
 
-Definition storeStruct (d: descriptor) : val := store_ty (structTy d).
+Definition storeStruct (d: descriptor) : val :=
+  λ: "p" "v", store_ty (structTy d) (Var "p", Var "v").
 
 Definition storeField d f : val :=
   match field_offset d f with
-  | Some (off, t) => λ: "p" "x", store_ty t (BinOp (OffsetOp off) (Var "p") #1) (Var "x")
+  | Some (off, t) => λ: "p" "x", (BinOp (OffsetOp off) (Var "p") #1) <-[t] (Var "x")
   | None => λ: <> <>, #()
   end.
 

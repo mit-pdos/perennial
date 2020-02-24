@@ -1,6 +1,11 @@
 From Perennial.goose_lang Require Export notation typing.
 From Perennial.goose_lang.lib Require Import map.impl.
 
+Reserved Notation "![ t ] e"
+         (at level 9, right associativity, format "![ t ]  e").
+Reserved Notation "e1 <-[ t ] e2"
+         (at level 80, format "e1  <-[ t ]  e2").
+
 Section goose_lang.
   Context {ext} {ext_ty: ext_types ext}.
 
@@ -17,9 +22,20 @@ Section goose_lang.
 
   Fixpoint store_ty t: val :=
     match t with
+    | prodT t1 t2 => λ: "pv",
+                    let: "p" := Fst (Var "pv") in
+                    let: "v" := Snd (Var "pv") in
+                    store_ty t1 (Var "p", Fst (Var "v"));;
+                    store_ty t2 (Var "p" +ₗ[t1] #1, Snd (Var "v"))
+    | baseT unitBT => λ: <>, #()
+    | _ => λ: "pv", Fst (Var "pv") <- Snd (Var "pv")
+    end.
+
+  Fixpoint store_ty' t: val :=
+    match t with
     | prodT t1 t2 => λ: "p" "v",
-                    store_ty t1 (Var "p") (Fst (Var "v"));;
-                    store_ty t2 (Var "p" +ₗ[t1] #1) (Snd (Var "v"))
+                    store_ty' t1 (Var "p") (Fst (Var "v"));;
+                    store_ty' t2 (Var "p" +ₗ[t1] #1) (Snd (Var "v"))
     | baseT unitBT => λ: <> <>, #()
     | _ => λ: "p" "v", Var "p" <- Var "v"
     end.
@@ -101,7 +117,13 @@ Hint Immediate zero_val_ty' : val_ty.
 
 Hint Extern 2 (val_ty _ _) => val_ty : core.
 
-Notation "![ t ] e" := (load_ty t e%E)
-                         (at level 9, right associativity, format "![ t ]  e") : expr_scope.
-Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E)
-                             (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
+Notation "![ t ] e" := (load_ty t e%E) : expr_scope.
+(* NOTE: in code we want to supply arbitrary expressions, so we have the usual
+   notation, but the specs should be in terms of value pairs, so we have a
+   similar notation in the value-scope (even though this is an expression and
+   not a value)
+
+   See the heap_lang documentation in Iris for par, which has a similar
+   trick. *)
+Notation "e1 <-[ t ] e2" := (store_ty t (Pair e1%E e2%E)) : expr_scope.
+Notation "v1 <-[ t ] v2" := (store_ty t (PairV v1%V v2%V)) : val_scope.

@@ -190,7 +190,7 @@ Qed.
 
 Lemma wp_load_offset s E l q off t vs v :
   vs !! off = Some v →
-  {{{ l ↦∗[t]{q} vs }}} load_ty t #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t]{q} vs ∗ ⌜val_ty v t⌝ }}}.
+  {{{ l ↦∗[t]{q} vs }}} ![t] #(l +ₗ[t] off) @ s; E {{{ RET v; l ↦∗[t]{q} vs ∗ ⌜val_ty v t⌝ }}}.
 Proof.
   iIntros (Hlookup Φ) "Hl HΦ".
   iDestruct (array_elem_acc (l:=l) Hlookup with "Hl") as "[Hl1 Hl2]".
@@ -204,7 +204,7 @@ Qed.
 Lemma wp_store_offset s E l off vs t v :
   is_Some (vs !! off) →
   val_ty v t ->
-  {{{ ▷ l ↦∗[t] vs }}} store_ty t #(l +ₗ[t] off) v @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
+  {{{ ▷ l ↦∗[t] vs }}} (#(l +ₗ[t] off) <-[t] v)%V @ s; E {{{ RET #(); l ↦∗[t] <[off:=v]> vs }}}.
 Proof.
   iIntros ([w Hlookup] Hty Φ) ">Hl HΦ".
   iDestruct (update_array (l:=l) Hlookup with "Hl") as "[Hl1 Hl2]".
