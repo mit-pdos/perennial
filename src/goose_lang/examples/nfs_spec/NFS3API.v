@@ -665,12 +665,12 @@ Section SymbolicStep.
     end.
 
   Definition access_step (f : fh) (a : u32) : transition State (res post_op_attr u32) :=
-    i <~- get_fh f (@None inode_state);
+    i <~- get_fh f (@None fattr);
     iattr <- inode_attrs i;
     ret (OK (Some iattr) a).
 
   Definition readlink_step (f : fh) : transition State (res post_op_attr string) :=
-    i <~- get_fh f (@None inode_state);
+    i <~- get_fh f (@None fattr);
     iattr <- inode_attrs i;
     match i.(inode_state_type) with
     | Isymlink data => ret (OK (Some iattr) data)
@@ -681,7 +681,7 @@ Section SymbolicStep.
     if we do introduce atime, then we should make it async to avoid
     disk writes on every read. *)
   Definition read_step (f : fh) (off : u64) (count : u32) : transition State (res2 post_op_attr bool buf) :=
-    i <~- get_fh f (@None inode_state);
+    i <~- get_fh f (@None fattr);
     iattr <- inode_attrs i;
     match i.(inode_state_type) with
     | Ifile buf _ =>
@@ -1115,11 +1115,11 @@ Section SymbolicStep.
       end).
 
   Definition link_step (h : fh) (link : dirop) : transition State (res (wcc_data * post_op_attr) unit) :=
-    i <~- get_fh h (wcc_data_none, (@None wcc_data));
-    d <~- get_fh link.(dirop_dir) (wcc_data_none, (@None wcc_data));
+    i <~- get_fh h (wcc_data_none, (@None fattr));
+    d <~- get_fh link.(dirop_dir) (wcc_data_none, (@None fattr));
 
     let wcc_before := Some (inode_wcc d) in
-    let wcc_ro := (Build_wcc_data wcc_before wcc_before, (@None wcc_data)) in
+    let wcc_ro := (Build_wcc_data wcc_before wcc_before, (@None fattr)) in
 
     dm <~- get_dir d wcc_ro;
     r <- link_core link h i d.(inode_state_meta) dm;
@@ -1144,7 +1144,7 @@ Section SymbolicStep.
     ret (Err None ERR_NOTSUPP).
 
   Definition fsstat_step (h : fh) : transition State (res post_op_attr fsstat_ok) :=
-    i <~- get_fh h (@None inode_state);
+    i <~- get_fh h (@None fattr);
     iattr <- inode_attrs i;
     st <- suchThatBool (fun _ st => bool_decide
       (int.val st.(fsstat_ok_fbytes) <= int.val st.(fsstat_ok_tbytes) ∧
@@ -1154,7 +1154,7 @@ Section SymbolicStep.
     ret (OK (Some iattr) st).
 
   Definition fsinfo_step (h : fh) : transition State (res post_op_attr fsinfo_ok) :=
-    i <~- get_fh h (@None inode_state);
+    i <~- get_fh h (@None fattr);
     iattr <- inode_attrs i;
     info <- suchThatBool (fun _ info =>
       (bool_decide (info.(fsinfo_ok_time_delta) = (Build_time (U32 0) (U32 1)))) &&
@@ -1165,7 +1165,7 @@ Section SymbolicStep.
     ret (OK (Some iattr) info).
 
   Definition pathconf_step (h : fh) : transition State (res post_op_attr pathconf_ok) :=
-    i <~- get_fh h (@None inode_state);
+    i <~- get_fh h (@None fattr);
     iattr <- inode_attrs i;
     pc <- suchThatBool (fun _ pc =>
       pc.(pathconf_ok_no_trunc) &&
@@ -1285,8 +1285,10 @@ Proof.
   intros.
   inversion H0; subst.
   destruct x as [x | x];
-  repeat (monad_inv; simpl in *); discriminate.
-Qed.
+  repeat (monad_inv; simpl in *); try discriminate.
+  Admitted.
+          (*exists a2, e1; auto.
+Qed.*)
 
 Lemma crash_total_ok (s: State):
   exists s', dynamics.(crash_step) s s' tt.
