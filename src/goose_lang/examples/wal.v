@@ -9,6 +9,7 @@ Definition logLength : expr := #1 + #2 * MaxTxnWrites.
 
 Module Log.
   Definition S := struct.decl [
+    "d" :: disk.Disk;
     "l" :: lockRefT;
     "cache" :: mapT disk.blockT;
     "length" :: refT uint64T
@@ -29,6 +30,7 @@ Definition blockToInt: val :=
 (* New initializes a fresh log *)
 Definition New: val :=
   rec: "New" <> :=
+    let: "d" := disk.Get #() in
     let: "diskSize" := disk.Size #() in
     (if: "diskSize" ≤ logLength
     then
@@ -42,6 +44,7 @@ Definition New: val :=
     "lengthPtr" <-[refT uint64T] #0;;
     let: "l" := lock.new #() in
     struct.mk Log.S [
+      "d" ::= "d";
       "cache" ::= "cache";
       "length" ::= "lengthPtr";
       "l" ::= "l"
@@ -119,7 +122,7 @@ Definition Log__Commit: val :=
     disk.Write #0 "header".
 
 Definition getLogEntry: val :=
-  rec: "getLogEntry" "logOffset" :=
+  rec: "getLogEntry" "d" "logOffset" :=
     let: "diskAddr" := #1 + #2 * "logOffset" in
     let: "aBlock" := disk.Read "diskAddr" in
     let: "a" := blockToInt "aBlock" in
@@ -128,19 +131,19 @@ Definition getLogEntry: val :=
 
 (* applyLog assumes we are running sequentially *)
 Definition applyLog: val :=
-  rec: "applyLog" "length" :=
-    let: "i" := ref #0 in
+  rec: "applyLog" "d" "length" :=
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "i" < "length"
       then
-        let: ("a", "v") := getLogEntry (![uint64T] "i") in
+        let: ("a", "v") := getLogEntry "d" (![uint64T] "i") in
         disk.Write (logLength + "a") "v";;
         "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue
       else Break)).
 
 Definition clearLog: val :=
-  rec: "clearLog" <> :=
+  rec: "clearLog" "d" :=
     let: "header" := intToBlock #0 in
     disk.Write #0 "header".
 
@@ -151,23 +154,25 @@ Definition Log__Apply: val :=
   rec: "Log__Apply" "l" :=
     Log__lock "l";;
     let: "length" := ![uint64T] (struct.get Log.S "length" "l") in
-    applyLog "length";;
-    clearLog #();;
+    applyLog (struct.get Log.S "d" "l") "length";;
+    clearLog (struct.get Log.S "d" "l");;
     struct.get Log.S "length" "l" <-[refT uint64T] #0;;
     Log__unlock "l".
 
 (* Open recovers the log following a crash or shutdown *)
 Definition Open: val :=
   rec: "Open" <> :=
+    let: "d" := disk.Get #() in
     let: "header" := disk.Read #0 in
     let: "length" := blockToInt "header" in
-    applyLog "length";;
-    clearLog #();;
+    applyLog "d" "length";;
+    clearLog "d";;
     let: "cache" := NewMap disk.blockT in
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <-[refT uint64T] #0;;
     let: "l" := lock.new #() in
     struct.mk Log.S [
+      "d" ::= "d";
       "cache" ::= "cache";
       "length" ::= "lengthPtr";
       "l" ::= "l"

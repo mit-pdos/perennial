@@ -1,6 +1,7 @@
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.Helpers Require Import GenHeap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
+From Perennial.goose_lang.lib Require Import wp_store.
 
 Hint Rewrite app_length @drop_length @take_length @fmap_length
      @replicate_length : len.
@@ -72,15 +73,13 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iIntros (mref) "Hmap".
   wp_pures.
 
-  wp_bind (newlock _).
-  iApply lock.new_free_lock; auto.
+  wp_apply wp_new_free_lock; auto.
 
-  iNext.
   iIntros (shardlock) "Hfreelock".
 
   wp_pures.
-  iDestruct (lock.is_free_lock_ty with "Hfreelock") as "%".
-  wp_apply (wp_alloc _ _ (structTy lockShard.S)); first by eauto.
+  iDestruct (is_free_lock_ty with "Hfreelock") as "%".
+  wp_apply (typed_mem.wp_AllocAt (structTy lockShard.S)); first by eauto.
   iIntros (ls) "Hls".
 
   iMod (gen_heap_init (∅: gmap u64 bool)) as (hG) "Hheapctx".
@@ -121,7 +120,7 @@ Proof.
   iInv lockshardN as "Hls".
   iDestruct "Hls" as "[([Hl _] & [Hm _]) Ht]".
   rewrite /=.
-  wp_load.
+  wp_untyped_load.
   iModIntro.
   iSplitL "Hl Hm Ht".
   {
@@ -151,7 +150,7 @@ Proof.
   rewrite /loadField /=.
   wp_pures.
 
-  iInv lockshardN as "Hls".
+  iInv lockshardN as ">Hls".
   iDestruct "Hls" as "[([Hl _] & [Hm _]) Ht]".
   rewrite Z.mul_1_r Z.add_0_r /=.
   iDestruct "Hm" as "[Hm _]".
@@ -208,15 +207,15 @@ Proof.
 
   wp_pures.
   wp_apply (wp_forBreak
-    (is_lockShard_inner mptr shardlock gh covered P ∗ spin_lock.locked γl)
-    (is_lockShard_inner mptr shardlock gh covered P ∗ spin_lock.locked γl ∗ P addr ∗ locked gh addr)
+    (is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl)
+    (is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl ∗ P addr ∗ locked gh addr)
     with "[] [$Hlocked $Hinner]").
 
   {
     iIntros (Φloop) "!> [Hinner Hlocked] HΦloop".
     iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
     wp_pures.
-    wp_apply wp_alloc_zero.
+    wp_apply wp_ref_of_zero.
     iIntros (state) "Hstate".
     wp_apply (wp_load_lockShard_state with "Hls").
     wp_apply (wp_MapGet with "[$Hmptr]"); auto.
@@ -228,12 +227,12 @@ Proof.
 
     destruct ok; wp_if.
     - wp_pures.
-      wp_store.
+      wp_apply (wp_store with "Hstate"); iIntros "Hstate".
 
-      wp_apply wp_alloc_zero.
+      wp_apply wp_ref_of_zero.
       iIntros (acquired) "Hacquired".
 
-      wp_load.
+      wp_untyped_load.
       apply map_get_true in H0.
       iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
       iDestruct (big_sepM2_insert_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
@@ -243,10 +242,10 @@ Proof.
       iIntros "HlockStatePtr".
       rewrite /getField_f /=.
       destruct gheld; wp_pures.
-      + wp_load.
+      + wp_untyped_load.
         wp_apply (wp_load_lockState with "HlockStatePtr").
         iIntros "HlockStatePtr".
-        wp_load.
+        wp_untyped_load.
         wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|].
         iIntros "HlockStatePtr".
         wp_pures.
@@ -257,7 +256,7 @@ Proof.
 
         iDestruct (lock.is_cond_dup with "Hcond") as "[Hcond1 Hcond2]".
 
-        wp_load.
+        wp_untyped_load.
         wp_apply (wp_load_lockState with "HlockStatePtr").
         iIntros "HlockStatePtr".
         wp_apply (lock.wp_condWait with "[$Hlock $Hcond1 $Hlocked Hmptr Hghctx Hcovered Haddrs Hcond2 HlockStatePtr]").
@@ -290,7 +289,7 @@ Proof.
           wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|]. iIntros "HlockStatePtr".
 
           iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-          wp_load.
+          wp_untyped_load.
 
           wp_pures.
           iApply "HΦloop".
@@ -300,23 +299,24 @@ Proof.
           iExists _, _, _, _. iFrame. done.
 
         * iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-          wp_load.
+          wp_untyped_load.
           wp_pures.
           iApply "HΦloop".
           iLeft. iFrame. iSplitL; try done.
           iExists _, _, _. iFrame.
 
-      + wp_load.
+      + wp_untyped_load.
         wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|]. iIntros "HlockStatePtr".
-        wp_load.
+        wp_untyped_load.
         wp_apply (wp_store_lockState with "HlockStatePtr"); [val_ty|]. iIntros "HlockStatePtr".
 
         iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
         iMod (gen_heap_update _ _ _ true with "Hghctx Haddr") as "[Hghctx Haddr]".
 
         iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
+        wp_pures.
         wp_store.
-        wp_load.
+        wp_untyped_load.
 
         wp_pures.
         iApply "HΦloop".
@@ -334,27 +334,27 @@ Proof.
       wp_apply (wp_load_lockShard_mu with "Hls").
       wp_apply lock.wp_newCond; [done|].
       iIntros (c) "Hcond".
-      wp_apply (wp_alloc _ _ (struct.t lockState.S)); [val_ty|].
+      wp_apply (typed_mem.wp_AllocAt (struct.t lockState.S)); [val_ty|].
       iIntros (lst) "Hlst".
       wp_store.
-      wp_load.
+      wp_untyped_load.
       wp_apply (wp_load_lockShard_state with "Hls").
       wp_apply (wp_MapInsert with "[$Hmptr]").
       iIntros "Hmptr".
 
-      wp_apply wp_alloc_zero.
+      wp_apply wp_ref_of_zero.
       iIntros (acquired) "Hacquired".
 
       wp_pures.
-      wp_load.
+      wp_untyped_load.
       wp_apply (wp_load_lockState with "Hlst").
       iIntros "Hlst".
       rewrite /getField_f /=. wp_pures.
       wp_bind (struct.storeF _ _ _ _).
 
-      wp_load.
+      wp_untyped_load.
       wp_apply (wp_store_lockState with "Hlst"); [val_ty|]. iIntros "Hlst".
-      wp_load.
+      wp_untyped_load.
       wp_apply (wp_store_lockState with "Hlst"); [val_ty|]. iIntros "Hlst".
 
       apply map_get_false in H0.
@@ -364,7 +364,7 @@ Proof.
 
       iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
       wp_store.
-      wp_load.
+      wp_untyped_load.
 
       wp_pures.
       iApply "HΦloop".

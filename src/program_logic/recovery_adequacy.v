@@ -19,7 +19,7 @@ Implicit Types Φc : invG Σ → pbundleG T Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})%I.
+Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤; ⊤ {{ fork_post }} {{ True }})%I.
 
 Fixpoint step_fupdN_fresh k (ns: list nat) Hi0 (Hc0: crashG Σ) t0
          (P: invG Σ → crashG Σ → pbundleG T Σ → iProp Σ) {struct ns} :=

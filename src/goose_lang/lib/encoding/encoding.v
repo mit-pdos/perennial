@@ -4,8 +4,8 @@ From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export
      lang notation array typing struct
      tactics lifting proofmode.
-From Perennial.goose_lang Require Import slice basic_triples.
-From Perennial.goose_lang Require Export encoding.
+From Perennial.goose_lang Require Import slice.
+From Perennial.goose_lang.lib Require Export encoding.impl.
 
 Set Default Proof Using "Type".
 
@@ -168,9 +168,9 @@ Proof.
 Admitted.
 
 Theorem wp_UInt64Put stk E s x vs :
-  {{{ is_slice_small s byteT vs ∗ ⌜length vs >= u64_bytes⌝ }}}
+  {{{ is_slice_small s byteT 1%Qp vs ∗ ⌜length vs >= u64_bytes⌝ }}}
     UInt64Put (slice_val s) #x @ stk; E
-  {{{ RET #(); is_slice_small s byteT (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
+  {{{ RET #(); is_slice_small s byteT 1%Qp (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
   wp_lam.
@@ -201,9 +201,9 @@ Proof.
 Qed.
 
 Theorem wp_UInt32Put stk E s (x: u32) vs :
-  {{{ is_slice_small s byteT vs ∗ ⌜length vs >= u32_bytes⌝ }}}
+  {{{ is_slice_small s byteT 1%Qp vs ∗ ⌜length vs >= u32_bytes⌝ }}}
     UInt32Put (slice_val s) #x @ stk; E
-  {{{ RET #(); is_slice_small s byteT (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
+  {{{ RET #(); is_slice_small s byteT 1%Qp (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
   wp_lam.
@@ -293,10 +293,10 @@ Proof.
   rewrite ?word.unsigned_of_Z.
 Admitted.
 
-Theorem wp_DecodeUInt32 (l: loc) (x: u32) s E :
-  {{{ ▷ l ↦∗[byteT] (b2val <$> u32_le x) }}}
+Theorem wp_DecodeUInt32 (l: loc) q (x: u32) s E :
+  {{{ ▷ l ↦∗[byteT]{q} (b2val <$> u32_le x) }}}
     DecodeUInt32 #l @ s ; E
-  {{{ RET #x; l ↦∗[byteT] (b2val <$> u32_le x) }}}.
+  {{{ RET #x; l ↦∗[byteT]{q} (b2val <$> u32_le x) }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
@@ -316,10 +316,10 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wp_DecodeUInt64 (l: loc) (x: u64) s E :
-  {{{ ▷ l ↦∗[byteT] (b2val <$> u64_le x) }}}
+Theorem wp_DecodeUInt64 (l: loc) q (x: u64) s E :
+  {{{ ▷ l ↦∗[byteT]{q} (b2val <$> u64_le x) }}}
     DecodeUInt64 #l @ s ; E
-  {{{ RET #x; l ↦∗[byteT] (b2val <$> u64_le x) }}}.
+  {{{ RET #x; l ↦∗[byteT]{q} (b2val <$> u64_le x) }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   cbv [u64_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
@@ -340,16 +340,16 @@ Proof.
   rewrite ?Z.mul_1_l.
 Admitted.
 
-Theorem wp_UInt64Get stk E s (x: u64) vs :
-  {{{ is_slice_small s byteT vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
+Theorem wp_UInt64Get stk E s q (x: u64) vs :
+  {{{ is_slice_small s byteT q vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
     UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; is_slice_small s byteT (u64_le_bytes x ++ drop 8 vs) }}}.
+  {{{ RET #x; is_slice_small s byteT q (u64_le_bytes x ++ drop 8 vs) }}}.
 Proof.
   iIntros (Φ) "[Hs %] HΦ".
   assert (vs = u64_le_bytes x ++ drop 8 vs).
   { rewrite -{1}(take_drop 8 vs).
     congruence. }
-  rewrite [vs in is_slice_small _ _ vs](H0).
+  rewrite [vs in is_slice_small _ _ _ vs](H0).
   wp_call.
   wp_apply wp_slice_ptr.
   iDestruct "Hs" as "(Hptr&%)".
@@ -367,10 +367,10 @@ Proof.
   lia.
 Qed.
 
-Theorem wp_UInt64Get' stk E s (x: u64) :
-  {{{ s.(Slice.ptr) ↦∗[byteT] u64_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 8⌝ }}}
+Theorem wp_UInt64Get' stk E s q (x: u64) :
+  {{{ s.(Slice.ptr) ↦∗[byteT]{q} u64_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 8⌝ }}}
     UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; s.(Slice.ptr) ↦∗[byteT] u64_le_bytes x }}}.
+  {{{ RET #x; s.(Slice.ptr) ↦∗[byteT]{q} u64_le_bytes x }}}.
 Proof.
   iIntros (Φ) "[Ha %] HΦ".
   wp_call.
@@ -379,10 +379,10 @@ Proof.
   iApply "HΦ".
 Qed.
 
-Theorem wp_UInt32Get' stk E s (x: u32) :
-  {{{ s.(Slice.ptr) ↦∗[byteT] u32_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 4⌝ }}}
+Theorem wp_UInt32Get' stk E s q (x: u32) :
+  {{{ s.(Slice.ptr) ↦∗[byteT]{q} u32_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 4⌝ }}}
     UInt32Get (slice_val s) @ stk; E
-  {{{ RET #x; s.(Slice.ptr) ↦∗[byteT] u32_le_bytes x }}}.
+  {{{ RET #x; s.(Slice.ptr) ↦∗[byteT]{q} u32_le_bytes x }}}.
 Proof.
   iIntros (Φ) "[Ha %] HΦ".
   wp_call.

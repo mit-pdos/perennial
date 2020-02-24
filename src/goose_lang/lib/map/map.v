@@ -1,6 +1,7 @@
 From iris.proofmode Require Import coq_tactics reduction.
-From Perennial.goose_lang Require Import basic_triples.
-From Perennial.goose_lang Require Import map.
+From Perennial.goose_lang Require Import notation proofmode.
+From Perennial.goose_lang.lib Require Import typed_mem.
+From Perennial.goose_lang.lib Require Export map.impl.
 Import uPred.
 
 Set Default Proof Using "Type".
@@ -130,6 +131,10 @@ Qed.
 Definition is_map (mref:loc) (m: gmap u64 val * val): iProp Σ :=
   ∃ mv, ⌜map_val mv = Some m⌝ ∗ mref ↦ mv.
 
+Theorem map_zero_val t :
+      flatten_struct (zero_val (mapValT t)) = [MapNilV (zero_val t)].
+Proof. reflexivity. Qed.
+
 Definition wp_NewMap stk E t :
   {{{ True }}}
     NewMap t @ stk; E
@@ -137,14 +142,12 @@ Definition wp_NewMap stk E t :
       is_map mref (∅, zero_val t) }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_apply wp_alloc_zero.
+  wp_apply wp_alloc_untyped.
+  { rewrite map_zero_val; auto. }
   iIntros (mref) "Hm".
   iApply "HΦ".
-
-  rewrite /struct_mapsto /= loc_add_0.
-  iDestruct "Hm" as "[[Hm _] %]".
   iExists _; iSplitR; auto.
-  by rewrite /=.
+  done.
 Qed.
 
 Definition wp_MapGet stk E mref (m: gmap u64 val * val) k :
@@ -156,7 +159,7 @@ Proof.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv H) "Hmref".
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_pure (_ _).
   iAssert (∀ v ok, ⌜map_get m k = (v, ok)⌝ -∗ Φ (v, #ok)%V)%I with "[Hmref HΦ]" as "HΦ".
   { iIntros (v ok) "%".
@@ -193,8 +196,8 @@ Proof.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv ?) "Hmref".
   wp_call.
-  wp_load.
-  wp_store.
+  wp_untyped_load.
+  wp_apply (wp_store with "Hmref"); iIntros "Hmref".
   iApply ("HΦ" with "[Hmref]").
   iExists _; iFrame.
   iPureIntro.
@@ -211,7 +214,7 @@ Proof.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv ?) "Hmref".
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_pure (Rec _ _ _).
 Admitted.
 

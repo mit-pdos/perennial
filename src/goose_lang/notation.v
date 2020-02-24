@@ -38,7 +38,7 @@ Notation LamV x e := (RecV BAnon x e) (only parsing).
 Notation LetCtx x e2 := (AppRCtx (LamV x e2)) (only parsing).
 Notation SeqCtx e2 := (LetCtx BAnon e2) (only parsing).
 Notation Match e0 x1 e1 x2 e2 := (Case e0 (Lam x1 e1) (Lam x2 e2)) (only parsing).
-Notation Alloc e := (AllocN (Val $ LitV $ LitInt (word.of_Z 1)) e) (only parsing).
+Notation Alloc e := (AllocN (Val $ LitV $ LitInt (U64 1)) e).
 (** Compare-and-set (CAS) returns just a boolean indicating success or failure. *)
 Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
 
@@ -211,31 +211,3 @@ Notation "'match:' e0 'with' 'SOME' x => e2 | 'NONE' => e1 'end'" :=
 
 Notation ResolveProph e1 e2 := (Resolve Skip e1 e2) (only parsing).
 Notation "'resolve_proph:' p 'to:' v" := (ResolveProph p v) (at level 100) : expr_scope.
-
-(* idiomatic wrappers for loop control flow *)
-Definition Continue {ext:ext_op}: val := #true.
-Definition Break {ext:ext_op}: val := #false.
-
-Definition For {ext:ext_op}: val :=
-  λ: "cond" "body" "post",
-  (rec: "loop" <> :=
-     if: (Var "cond") #()
-     then let: "continue" := (Var "body") #() in
-          if: (Var "continue")
-          then (Var "post") #();; (Var "loop") #()
-          else #()
-     else #()) #().
-Notation "'for:' cond ; post := e" := (For cond%E e%E post%E)
-  (at level 200, cond, post at level 1, e at level 200,
-   format "'[' 'for:'  cond  ;  post  :=  '/  ' e ']'") : expr_scope.
-
-Definition Loop {ext:ext_op} : val :=
-  λ: "body",
-  (rec: "loop" <> :=
-     let: "continue" := (Var "body") #() in
-     if: Var "continue"
-     then (Var "loop") #()
-     else #()) #().
-Notation "'for:' := e" := (Loop (LamV BAnon e%E))
-  (at level 200, e at level 200,
-   format "'[' 'for:'  :=  '/  ' e ']'") : expr_scope.

@@ -1,5 +1,8 @@
 From stdpp Require Import gmap.
-From Perennial.goose_lang Require Import lang notation map.
+From Perennial.goose_lang Require Import lang notation.
+From Perennial.goose_lang.lib Require Import map.impl.
+
+Set Default Proof Using "Type".
 
 Class val_types :=
   { ext_tys: Type; }.
@@ -41,9 +44,8 @@ Section val_types.
   Definition mapT (vt:ty) : ty := refT (mapValT vt).
 
   Definition Ctx := gmap string ty.
-  (* Global Instance empty_ctx : Empty Ctx := (∅: gmap _ _). *)
   Global Instance ctx_insert : Insert binder ty Ctx.
-  Proof using Type.
+  Proof.
     hnf.
     exact (fun b t => match b with
                    | BNamed x => fun Γ => <[ x := t ]> Γ
@@ -60,6 +62,7 @@ Infix "->" := arrowT : heap_type.
 
 Reserved Notation "Γ ⊢ e : A" (at level 74, e, A at next level).
 Reserved Notation "Γ '⊢v' v : A" (at level 74, v, A at next level).
+Reserved Notation "⊢ v : A" (at level 90, v at next level, A at next level).
 
 Class ext_types (ext:ext_op) :=
   { val_tys :> val_types;
@@ -518,15 +521,7 @@ Section goose_lang.
     econstructor.
   Qed.
 
-  Inductive type_annot :=
-  | annot (e:string) (t:ty).
-
-  Definition annot_e a := let 'annot e _  := a in e.
-
 End goose_lang.
-
-Notation "v :: t" := (annot v t) (only printing) : expr_scope.
-Coercion annot_e : type_annot >-> string.
 
 Delimit Scope heap_types with T.
 Delimit Scope heap_type with ht.
@@ -534,8 +529,8 @@ Bind Scope heap_type with ty.
 
 Notation "Γ ⊢ e : A" := (expr_hasTy Γ%ht e A%ht) : heap_types.
 Notation "Γ ⊢v v : A" := (val_hasTy Γ%ht v A%ht) : heap_types.
-Notation "⊢ v : A" := (base_lit_hasTy v%V A%ht) (at level 90, only printing) : heap_types.
-Notation "⊢ e : A" := (val_hasTy ∅ e%V A%ht) (at level 90, e at next level, A at next level) : heap_types.
+Notation "⊢ v : A" := (base_lit_hasTy v%V A%ht) (only printing) : heap_types.
+Notation "⊢ e : A" := (val_hasTy ∅ e%V A%ht) : heap_types.
 
 Theorem insert_anon `{ext_ty: ext_types} t : (<[BAnon := t]> : Ctx -> Ctx) = (fun Γ => Γ).
 Proof.
@@ -559,7 +554,7 @@ Hint Resolve store_val_hasTy store_array_val_hasTy : types.
 
 Hint Extern 1 (expr_hasTy _ _ _) => apply var_hasTy; reflexivity : types.
 
-Local Ltac simp := unfold For; rewrite ?insert_anon.
+Local Ltac simp := rewrite ?insert_anon.
 Ltac _type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]
@@ -578,7 +573,6 @@ Ltac _type_step :=
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply str_plus_hasTy; [ | solve [eauto with types] | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply bin_op_32_hasTy; [ reflexivity | solve [eauto with types] | ]
   | [ |- expr_hasTy _ (BinOp PlusOp _ _) _ ] => eapply bin_op_32_hasTy; [ reflexivity | | solve [eauto with types] ]
-  | [ |- expr_hasTy _ (Rec _ (annot_e (annot _ ?t)) _) (arrowT _ _) ] => eapply (rec_expr_hasTy_eq t)
   | [ |- expr_hasTy _ (Rec _ _ _) (arrowT _ _) ] => eapply rec_expr_hasTy_eq
   | [ |- expr_hasTy _ _ _ ] => econstructor
   | [ |- val_hasTy _ _ _ ] => econstructor
@@ -603,59 +597,3 @@ the first according to the GooseLang semantics. *)
 Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +ₗ[ t ]  z").
 Notation "l +ₗ[ t ] z" := (l +ₗ ty_size t * z) : stdpp_scope .
 Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E) : expr_scope .
-
-(*
-Section goose_lang.
-  Context `{ext_ty: ext_types}.
-  Local Open Scope heap_types.
-  Theorem MapGet_t Γ vt : Γ ⊢ MapGet : (mapT vt -> uint64T -> vt * boolT).
-  Proof.
-    typecheck.
-  Qed.
-
-  Theorem MapInsert_t Γ vt : Γ ⊢v MapInsert : (mapT vt -> uint64T -> vt -> unitT).
-  Proof.
-    type_step.
-    type_step.
-    type_step.
-    eapply store_hasTy; typecheck.
-  Qed.
-
-  Theorem mapGetDef_t Γ vt : Γ ⊢ mapGetDef : (mapValT vt -> vt).
-  Proof.
-    typecheck.
-  Qed.
-
-  Hint Resolve mapGetDef_t : types.
-
-  Theorem MapClear_t Γ vt : Γ ⊢ MapClear : (mapT vt -> unitT).
-  Proof.
-    type_step.
-    type_step.
-    type_step.
-    { typecheck. }
-    type_step.
-    eapply store_hasTy; typecheck.
-  Qed.
-
-  Theorem MapIter_t vt Γ : Γ ⊢ MapIter : (mapT vt -> (uint64T -> vt -> unitT) -> unitT).
-  Proof.
-    typecheck.
-  Qed.
-End goose_lang.
-
-Opaque MapGet MapInsert MapClear MapIter.
-Hint Resolve MapGet_t MapInsert_t MapClear_t MapIter_t : types.
-
-Module test.
-Section goose_lang.
-  Context `{ext_ty: ext_types}.
-  Local Open Scope heap_types.
-  Theorem panic_test Γ : Γ ⊢ (Panic "";; #())%E : unitT.
-  Proof.
-    typecheck.
-  Qed.
-End goose_lang.
-End test.
-
-*)

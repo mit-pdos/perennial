@@ -53,9 +53,9 @@ Definition circ_data (σ : circΣ.t) : iProp Σ :=
     [∗ list] i ↦ bupd ∈ σ.(circΣ.upds),
       ⌜lσ.(lowΣ.upds) !! Z.to_nat ((int.val σ.(circΣ.start) + i) `mod` LogSz)%Z = Some bupd⌝.
 
-Definition circ_inner (γh : gen_heapG u64 update.t Σ) (γstart γend : gname) : iProp Σ :=
+Definition circ_inner (γlog : gen_heapG u64 update.t Σ) (γstart γend : gname) : iProp Σ :=
   ∃ mh σ,
-    gen_heap_ctx (hG := γh) mh ∗
+    gen_heap_ctx (hG := γlog) mh ∗
     circ_data σ ∗
     own γstart (● (Z.to_nat (int.val σ.(circΣ.start)) : mnat)) ∗
     own γend (● (plus (Z.to_nat (int.val σ.(circΣ.start))) (length σ.(circΣ.upds)) : mnat)) ∗
@@ -64,13 +64,15 @@ Definition circ_inner (γh : gen_heapG u64 update.t Σ) (γstart γend : gname) 
 
 Definition circN : namespace := nroot .@ "circ".
 
-Definition is_circ (γh : gen_heapG u64 update.t Σ) (γstart γend : gname) : iProp Σ :=
-  inv circN (circ_inner γh γstart γend).
+Definition is_circ (γlog : gen_heapG u64 update.t Σ) (γstart γend : gname) : iProp Σ :=
+  inv circN (circ_inner γlog γstart γend).
+
 
 (*
 Definition is_circularAppender (l:loc) σ : iProp Σ :=
   circ_data σ ∗
-  ∃ (diskAddrs : Slice.t), l ↦[struct.t circular.S] diskAddrs ∗
+  ∃ (diskAddrs : Slice.t),
+  l ↦[struct.t circularAppender.S] diskAddrs ∗
   is_slice diskAddrs u64 (map update.addr σ.(circΣ.upds)).
 *)
 

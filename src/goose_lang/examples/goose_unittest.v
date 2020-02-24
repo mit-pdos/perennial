@@ -359,7 +359,7 @@ Definition DoSomething: val :=
 Definition standardForLoop: val :=
   rec: "standardForLoop" "s" :=
     let: "sumPtr" := ref (zero_val uint64T) in
-    let: "i" := ref #0 in
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "i" < slice.len "s"
       then
@@ -374,7 +374,7 @@ Definition standardForLoop: val :=
 
 Definition conditionalInLoop: val :=
   rec: "conditionalInLoop" <> :=
-    let: "i" := ref #0 in
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "i" < #3
       then
@@ -389,7 +389,7 @@ Definition conditionalInLoop: val :=
 
 Definition ImplicitLoopContinue: val :=
   rec: "ImplicitLoopContinue" <> :=
-    let: "i" := ref #0 in
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "i" < #4
       then "i" <-[uint64T] #0
@@ -398,9 +398,9 @@ Definition ImplicitLoopContinue: val :=
 
 Definition nestedLoops: val :=
   rec: "nestedLoops" <> :=
-    let: "i" := ref #0 in
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "j" := ref #0 in
+      let: "j" := ref_to uint64T #0 in
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         (if: #true
         then Break
@@ -412,9 +412,9 @@ Definition nestedLoops: val :=
 
 Definition nestedGoStyleLoops: val :=
   rec: "nestedGoStyleLoops" <> :=
-    let: "i" := ref #0 in
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < #10); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: "j" := ref #0 in
+      let: "j" := ref_to uint64T #0 in
       (for: (λ: <>, ![uint64T] "j" < ![uint64T] "i"); (λ: <>, "j" <-[uint64T] ![uint64T] "j" + #1) := λ: <>,
         (if: #true
         then Break
@@ -574,7 +574,7 @@ Definition ReassignVars: val :=
     let: "x" := ref (zero_val uint64T) in
     let: "y" := #0 in
     "x" <-[uint64T] #3;;
-    let: "z" := ref (struct.mk composite.S [
+    let: "z" := ref_to (struct.t composite.S) (struct.mk composite.S [
       "a" ::= ![uint64T] "x";
       "b" ::= "y"
     ]) in
@@ -644,7 +644,7 @@ Definition ReplicatedDiskWrite: val :=
 
 Definition ReplicatedDiskRecover: val :=
   rec: "ReplicatedDiskRecover" <> :=
-    let: "a" := ref #0 in
+    let: "a" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![uint64T] "a" > DiskSize
       then Break
@@ -724,12 +724,12 @@ Definition threadCode: val :=
 
 Definition loopSpawn: val :=
   rec: "loopSpawn" <> :=
-    let: "i" := ref #0 in
+    let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < #10); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       let: "i" := ![uint64T] "i" in
       Fork (threadCode "i");;
       Continue);;
-    let: "dummy" := ref #true in
+    let: "dummy" := ref_to boolT #true in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       "dummy" <-[boolT] ~ (![boolT] "dummy");;
       Continue).

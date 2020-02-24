@@ -1,18 +1,12 @@
-From Perennial.goose_lang Require Export lang notation.
-From Perennial.goose_lang Require Import struct typing.
+From Perennial.goose_lang.lib Require Import typed_mem.impl.
 
-(** * Slice library
-
-    Intended to model Go slices. We don't track slice capacity because our model
-    soundly approximates slices as never having extra capacity.
- *)
+(** * Slice library *)
 
 Open Scope heap_types.
 
 Module slice.
   Section types.
     Context `{ext_ty: ext_types}.
-    Definition S t := struct.decl ["p" :: refT t; "len" :: uint64T; "cap" :: uint64T].
     Definition T t : ty := (arrayT t * uint64T * uint64T)%ht.
 
     Definition ptr: val := λ: "s", Fst (Fst (Var "s")).
@@ -39,18 +33,14 @@ End slice.
 Hint Resolve slice.ptr_t slice.len_t slice.nil_t : types.
 
 Section goose_lang.
-  Context `{ffi_sem: ext_semantics}.
-  Context {ext_ty:ext_types ext}.
+Context `{ffi_sem: ext_semantics}.
+Context {ext_ty:ext_types ext}.
 
-  Implicit Types (t:ty).
+Implicit Types (t:ty).
 
-  Set Default Proof Using "ext ext_ty".
+Set Default Proof Using "ext ext_ty".
 
-  Definition Var' s : @expr ext := Var s.
-  Local Coercion Var' : string >-> expr.
-
-(** allocation with a type annotation *)
-Definition ref_to (t:ty): val := λ: "v", Alloc "v".
+Local Coercion Var' s: @expr ext := Var s.
 
 Definition raw_slice (t: ty): val :=
   λ: "p" "sz",
@@ -108,9 +98,9 @@ Admitted.
 Definition SliceCopy t : val :=
   λ: "dst" "src",
   let: "n" :=
-     (if: slice.len "dst" ≤ slice.len "src"
+     (if: slice.len "dst" < slice.len "src"
      then slice.len "dst" else slice.len "src") in (* take the minimum *)
-  MemCpy_rec t (slice.ptr "dst") (slice.ptr "src");;
+  MemCpy_rec t (slice.ptr "dst") (slice.ptr "src") "n";;
   "n".
 
 (* this models &s[i] (which looks a little like a get but is very different) *)
@@ -216,23 +206,11 @@ Definition SliceAppendSlice t: val :=
   (* TODO: unsound, need to de-allocate s1.p *)
   ("p", "new_sz").
 
-Definition zero_array (t:ty): val :=
-  λ: "sz", AllocN "sz" (zero_val t).
-
 Definition ArrayCopy (t:ty): val :=
   λ: "sz" "a",
-  let: "p" := zero_array t "sz" in
+  let: "p" := AllocN "sz" (zero_val t) in
   MemCpy_rec t "p" "a" "sz";;
   "p".
-
-(*
-Theorem zero_array_t t Γ : Γ ⊢ zero_array t : (uint64T -> arrayT t).
-Proof.
-  typecheck.
-Qed.
-
-Hint Resolve zero_array_t MemCpy_rec_t : types.
-*)
 
 (*
 Theorem ArrayCopy_t t Γ : Γ ⊢ ArrayCopy t : (uint64T -> arrayT t -> arrayT t).

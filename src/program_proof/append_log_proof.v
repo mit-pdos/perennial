@@ -1,7 +1,8 @@
 From Perennial.goose_lang.examples Require Import append_log.
-From Perennial.goose_lang Require Import encoding_proof.
+From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import marshal_proof.
+From Perennial.goose_lang.lib Require Import wp_store.
 
 (* TODO: use this throughout (including replacing slice_val) *)
 Class GoData T := to_val: forall {ext:ext_op}, T -> val.
@@ -20,8 +21,8 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Lemma points_to_byte l (x: u8) :
-  l ↦[byteT] #x ⊣⊢ l ↦ #x.
+Lemma points_to_byte l q (x: u8) :
+  l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
 Proof.
   rewrite /struct_mapsto /=.
   rewrite loc_add_0 right_id.
@@ -31,8 +32,8 @@ Proof.
     auto.
 Qed.
 
-Lemma array_to_block_array l b :
-  array l byteT (Block_to_vals b) ⊣⊢ mapsto_block l 1 b.
+Lemma array_to_block_array l q b :
+  array l q byteT (Block_to_vals b) ⊣⊢ mapsto_block l q b.
 Proof.
   rewrite /mapsto_block /array.
   rewrite heap_array_to_list.
@@ -45,15 +46,15 @@ Proof.
   rewrite points_to_byte //.
 Qed.
 
-Lemma slice_to_block_array s b :
-  is_slice_small s byteT (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) 1 b.
+Lemma slice_to_block_array s q b :
+  is_slice_small s byteT q (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) q b.
 Proof.
   iIntros "(Ha&_)".
   by iApply array_to_block_array.
 Qed.
 
-Lemma block_array_to_slice l b cap :
-  mapsto_block l 1 b -∗ is_slice_small (Slice.mk l 4096 cap) byteT (Block_to_vals b).
+Lemma block_array_to_slice l q b cap :
+  mapsto_block l q b -∗ is_slice_small (Slice.mk l 4096 cap) byteT q (Block_to_vals b).
 Proof.
   iIntros "Hm".
   iSplitL.
@@ -68,10 +69,10 @@ Notation length := strings.length.
 
 Transparent disk.Read disk.Write.
 
-Theorem wp_Write stk E (a: u64) s b :
-  {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice_small s byteT (Block_to_vals b) }}}
+Theorem wp_Write stk E (a: u64) s q b :
+  {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; E
-  {{{ RET #(); int.val a d↦ b ∗ is_slice_small s byteT (Block_to_vals b) }}}.
+  {{{ RET #(); int.val a d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) ">Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
@@ -90,10 +91,10 @@ Proof.
   by iApply array_to_block_array.
 Qed.
 
-Theorem wp_Write' stk E (z: Z) (a: u64) s b :
-  {{{ ⌜int.val a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ is_slice_small s byteT (Block_to_vals b) }}}
+Theorem wp_Write' stk E (z: Z) (a: u64) s q b :
+  {{{ ⌜int.val a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; E
-  {{{ RET #(); z d↦ b ∗ is_slice_small s byteT (Block_to_vals b) }}}.
+  {{{ RET #(); z d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) "[<- >Hpre] HΦ".
   iApply (wp_Write with "[$Hpre]").
@@ -105,13 +106,13 @@ Lemma wp_Read stk E (a: u64) q b :
     Read #a @ stk; E
   {{{ s, RET slice_val s;
       int.val a d↦{q} b ∗
-      is_slice s byteT (Block_to_vals b) }}}.
+      is_slice s byteT 1%Qp (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) ">Hda HΦ".
   wp_call.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
-  iDestruct (block_array_to_slice _ _ 4096 with "Hl") as "Hs".
+  iDestruct (block_array_to_slice _ _ _ 4096 with "Hl") as "Hs".
   wp_pures.
   wp_apply (wp_raw_slice with "Hs").
   iIntros (s) "Hs".
@@ -140,11 +141,11 @@ Definition is_log (v:val) (vs:list Block): iProp Σ :=
 
 Open Scope Z.
 
-Theorem wpc_Write stk k E1 E2 (a: u64) s b :
-  {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice_small s byteT (Block_to_vals b) }}}
+Theorem wpc_Write stk k E1 E2 (a: u64) s q b :
+  {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; k; E1; E2
-  {{{ RET #(); int.val a d↦ b ∗ is_slice_small s byteT (Block_to_vals b) }}}
-  {{{ ∃ b', int.val a d↦ b' ∗ is_slice_small s byteT (Block_to_vals b) }}}.
+  {{{ RET #(); int.val a d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}
+  {{{ ∃ b', int.val a d↦ b' ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ Φc) ">Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
@@ -175,11 +176,11 @@ Proof.
     by iApply array_to_block_array.
 Qed.
 
-Theorem wpc_Write' stk k E1 E2 (a: u64) s b0 b :
-  {{{ ▷ int.val a d↦ b0 ∗ is_slice_small s byteT (Block_to_vals b) }}}
+Theorem wpc_Write' stk k E1 E2 (a: u64) s q b0 b :
+  {{{ ▷ int.val a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; k; E1; E2
-  {{{ RET #(); int.val a d↦ b ∗ is_slice_small s byteT (Block_to_vals b) }}}
-  {{{ (int.val a d↦ b0 ∨ int.val a d↦ b) ∗ is_slice_small s byteT (Block_to_vals b) }}}.
+  {{{ RET #(); int.val a d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}
+  {{{ (int.val a d↦ b0 ∨ int.val a d↦ b) ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ Φc) "[>Hda Hs] HΦ".
   rewrite /Write /slice.ptr.
@@ -206,10 +207,10 @@ Proof.
     by iApply array_to_block_array.
 Qed.
 
-Theorem slice_to_block s bs :
+Theorem slice_to_block s q bs :
   s.(Slice.sz) = 4096 ->
-  is_slice_small s byteT (b2val <$> bs) -∗
-  mapsto_block s.(Slice.ptr) 1 (list_to_block bs).
+  is_slice_small s byteT q (b2val <$> bs) -∗
+  mapsto_block s.(Slice.ptr) q (list_to_block bs).
 Proof.
   iIntros (Hsz) "Hs".
   iDestruct "Hs" as "[Hl %]".
@@ -442,7 +443,7 @@ Theorem wp_Log__Get stk E v bs (i: u64) :
     Log__Get v #i @ stk; E
   {{{ s (ok: bool), RET (slice_val s, #ok);
       (if ok
-       then ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s byteT (Block_to_vals b)
+       then ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s byteT 1%Qp (Block_to_vals b)
        else ⌜bs !! int.nat i = None⌝) ∗
       is_log v bs }}}.
 Proof.
@@ -474,8 +475,8 @@ Proof.
 Qed.
 
 Definition blocks_slice (bk_s: Slice.t) (bks: list Slice.t) (bs: list Block): iProp Σ :=
-  is_slice_small bk_s (slice.T byteT) (fmap slice_val bks) ∗
-   [∗ list] _ ↦ b_s;b ∈ bks;bs , is_slice_small b_s byteT (Block_to_vals b).
+  is_slice_small bk_s (slice.T byteT) 1%Qp (fmap slice_val bks) ∗
+   [∗ list] _ ↦ b_s;b ∈ bks;bs , is_slice_small b_s byteT 1%Qp (Block_to_vals b).
 
 Lemma blocks_slice_length bk_s bks bs :
   blocks_slice bk_s bks bs -∗ ⌜length bks = length bs⌝.
@@ -547,10 +548,10 @@ Proof.
   { iDestruct "HΦ" as "[_ $]". }
 Qed.
 
-Lemma wpc_SliceGet stk k E1 E2 s t vs (i: u64) v0 :
-  {{{ is_slice_small s t vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+Lemma wpc_SliceGet stk k E1 E2 s t q vs (i: u64) v0 :
+  {{{ is_slice_small s t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
     SliceGet t (slice_val s) #i @ stk; k; E1; E2
-  {{{ RET v0; is_slice_small s t vs ∗ ⌜val_ty v0 t⌝ }}}
+  {{{ RET v0; is_slice_small s t q vs ∗ ⌜val_ty v0 t⌝ }}}
   {{{ True }}}.
 Proof.
   iIntros (Φ Φc) "[Hs %] HΦ".
@@ -569,7 +570,7 @@ Proof.
   (* TODO: is there a way to strip the later? *)
 Admitted.
 
-Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s t vs (body: val) :
+Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s t q vs (body: val) :
   (∀ (i: u64) (x: val),
       {{{ I i ∗ ⌜int.val i < int.val s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ ∗
@@ -578,9 +579,9 @@ Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s t vs (body: val) :
       {{{ RET #(); I (word.add i (U64 1)) }}}
       {{{ Φc' }}}) -∗
     □ (∀ x, I x -∗ Φc') -∗
-    {{{ I (U64 0) ∗ is_slice_small s t vs }}}
+    {{{ I (U64 0) ∗ is_slice_small s t q vs }}}
       forSlice t body (slice_val s) @ stk; k; E1; E2
-    {{{ RET #(); I s.(Slice.sz) ∗ is_slice_small s t vs }}}
+    {{{ RET #(); I s.(Slice.sz) ∗ is_slice_small s t q vs }}}
     {{{ Φc' }}}.
 Proof.
   iIntros "#Hind #HΦcI".
@@ -640,11 +641,11 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
-Theorem wpc_WriteArray stk k E1 E2 l bs (s: Slice.t) b (off: u64) :
-  {{{ l d↦∗ bs ∗ is_slice_small s byteT (Block_to_vals b) ∗ ⌜0 <= int.val off - l < Z.of_nat (length bs)⌝ }}}
+Theorem wpc_WriteArray stk k E1 E2 l bs q (s: Slice.t) b (off: u64) :
+  {{{ l d↦∗ bs ∗ is_slice_small s byteT q (Block_to_vals b) ∗ ⌜0 <= int.val off - l < Z.of_nat (length bs)⌝ }}}
     Write #off (slice_val s) @ stk; k; E1; E2
-  {{{ RET #(); l d↦∗ <[Z.to_nat (int.val off - l) := b]> bs ∗ is_slice_small s byteT (Block_to_vals b) }}}
-  {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ ∗ is_slice_small s byteT (Block_to_vals b) }}}.
+  {{{ RET #(); l d↦∗ <[Z.to_nat (int.val off - l) := b]> bs ∗ is_slice_small s byteT q (Block_to_vals b) }}}
+  {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ".
   destruct (list_lookup_lt _ bs (Z.to_nat (int.val off - l))) as [b0 Hlookup].
@@ -683,7 +684,7 @@ Proof.
   iDestruct "Hbs" as "[Hbk_s Hbks]".
 
   iApply (wpc_forSlice (fun i =>
-                         (([∗ list] b_s;b ∈ bks;bs, is_slice_small b_s byteT (Block_to_vals b)) ∗
+                         (([∗ list] b_s;b ∈ bks;bs, is_slice_small b_s byteT 1%Qp (Block_to_vals b)) ∗
                          int.val off d↦∗ (take (int.nat i) bs ++ drop (int.nat i) bs0))%I)
             with "[] [] [$Hbk_s $Hbks $Hd] [HΦ]"); last first.
   - iSplit.
@@ -738,7 +739,7 @@ Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
      (l +ₗ 1) ↦ #disk_sz) ∗
     is_log' sz disk_sz vs.
 
-Transparent struct.loadField struct.storeStruct.
+Transparent struct.loadF struct.store.
 
 Lemma is_log_intro sz disk_sz bs :
   is_log' sz disk_sz bs -∗ is_log (#sz, (#disk_sz, #()))%V bs.
@@ -829,7 +830,7 @@ Proof.
   iIntros (Φ Φc) "[Hptsto_log Hbs] HΦ".
   iDestruct "Hptsto_log" as (sz disk_sz) "[(Hf0&Hf1) Hlog]".
   rewrite /Log__Append.
-  unfold struct.loadField; simpl.
+  unfold struct.loadF; simpl.
   wpc_pures.
   { iApply (is_log_crash_l with "Hlog"). }
   rewrite loc_add_0.
@@ -837,7 +838,7 @@ Proof.
   wpc_bind (Load _).
   wpc_atomic.
   { iApply (is_log_crash_l with "Hlog"). }
-  wp_load.
+  wp_untyped_load.
   iSplit.
   { iModIntro; crash_case; iApply (is_log_crash_l with "Hlog"). }
   iModIntro.
@@ -847,7 +848,7 @@ Proof.
   wpc_bind (Load _).
   wpc_atomic.
   { iApply (is_log_crash_l with "Hlog"). }
-  wp_load.
+  wp_untyped_load.
   iSplit.
   { iModIntro; crash_case; iApply (is_log_crash_l with "Hlog"). }
   iModIntro.
@@ -923,7 +924,7 @@ Proof.
         wpc_atomic.
         { iApply is_log_crash_l.
           iApply (is_log_split with "[$] [$] Hnew Hfree [%]"); len. }
-        wp_load.
+        wp_untyped_load.
         iSplit; iModIntro; crash_case.
         { iApply is_log_crash_l.
           iApply (is_log_split with "[$] [$] Hnew Hfree [%]"); len. }
@@ -948,7 +949,7 @@ Proof.
         { iExists _; iRight.
           iApply (is_log_append with "[$] [$] [$] [$] [%]"); [len]. }
 
-        wpc_bind (struct.storeStruct _ _ _).
+        wpc_bind (struct.store _ _ _).
         wpc_frame "Hhdr Hlog Hnew Hfree HΦ".
         { iIntros "(Hhdr&Hlog&Hnew&Hfree&HΦ)".
           crash_case.
@@ -997,13 +998,13 @@ Proof.
   rewrite /Log__Reset.
   wpc_pures.
   { iApply (is_log_crash_l with "[$]"). }
-  wpc_bind (struct.loadField _ _ _).
+  wpc_bind (struct.loadF _ _ _).
   wpc_frame "Hlog HΦ".
   { iIntros "(Hlog&HΦ)".
     crash_case.
     iApply (is_log_crash_l with "[$]"). }
   wp_call.
-  wp_load.
+  wp_untyped_load.
   iIntros "(Hlog&HΦ)".
   wpc_pures.
   { iApply (is_log_crash_l with "[$]"). }
@@ -1029,7 +1030,7 @@ Proof.
       rewrite /is_log.
       iExists _, _; iSplitR; [ eauto | ].
       by iApply (is_log_reset with "Hhdr Hlog Hfree [%]"). }
-    rewrite /struct.storeStruct.
+    rewrite /struct.store.
     simpl.
     wpc_pures.
     { iExists _.
@@ -1054,20 +1055,20 @@ Proof.
     by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
 Qed.
 
-Transparent struct.loadStruct.
+Transparent struct.load.
 
 (* TODO: this should be proven generically on top of a shallow representation of
 the struct *)
 Theorem wp_loadLog stk E l vs :
   {{{ ptsto_log l vs }}}
-    struct.loadStruct Log.S #l @ stk; E
+    struct.load Log.S #l @ stk; E
   {{{ v, RET v; is_log v vs }}}.
 Proof.
   iIntros (Φ) "Hptsto_log HΦ".
   iDestruct "Hptsto_log" as (sz disk_sz) "[[Hf0 Hf1] Hlog]".
   wp_call.
-  wp_load.
-  wp_load.
+  wp_untyped_load.
+  wp_untyped_load.
   wp_steps.
   iApply "HΦ".
   iExists _, _; by iFrame.

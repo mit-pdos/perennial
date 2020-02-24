@@ -16,14 +16,14 @@ Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φs : list (val Λ → iProp Σ).
 
-Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})%I.
+Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤; ⊤ {{ fork_post }} {{ True }})%I.
 
-Lemma wpc_step E s k e1 σ1 κ κs e2 σ2 efs m Φ Φc :
+Lemma wpc_step s k e1 σ1 κ κs e2 σ2 efs m Φ Φc :
   prim_step e1 σ1 κ e2 σ2 efs →
-  state_interp σ1 (κ ++ κs) m -∗ WPC e1 @ s; k; ⊤; E {{ Φ }} {{ Φc }} -∗ NC -∗
+  state_interp σ1 (κ ++ κs) m -∗ WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗ NC -∗
   |={⊤,⊤}_(3 * (S (S k)))=>
   state_interp σ2 κs (length efs + m) ∗
-  WPC e2 @ s; k; ⊤; E {{ Φ }} {{ Φc }} ∗
+  WPC e2 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} ∗
   wptp s k efs ∗
   NC.
 Proof.

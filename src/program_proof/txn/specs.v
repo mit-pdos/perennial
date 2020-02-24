@@ -191,7 +191,7 @@ Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
   }}}
     Txn__Load #l (#blk, (#off, (#(block_bytes*8), #())))%V
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
-      is_slice buf u8T vals ∗
+      is_slice buf u8T 1%Qp vals ∗
       ⌜vals = Block_to_vals v⌝ }}}.
 Proof.
   iIntros (Φ) "(Htxn & % & Hstable) HΦ".
@@ -206,7 +206,7 @@ Proof.
   replace (1 * int.val (1 + 0)) with (1) by word.
   iDestruct (ptsto_ro_load with "Hwalptr") as (q) "Hwalptr".
 
-  wp_load.
+  wp_untyped_load.
   wp_call.
 
   wp_apply (wp_Walog__ReadMem with "[$Hwal Hstable]").
@@ -272,7 +272,7 @@ Theorem wp_txn_Load_bit l gBits gInodes gBlocks (blk off : u64)
   }}}
     Txn__Load #l (#blk, #off, #1)
   {{{ (buf : Slice.t) b, RET (slice_val buf);
-      is_slice buf u8T [b] ∗
+      is_slice buf u8T 1%Qp [b] ∗
       ⌜b = #0 <-> v = false⌝
   }}}.
 Proof.
@@ -286,7 +286,7 @@ Theorem wp_txn_Load_inode l gBits gInodes gBlocks (blk off : u64)
   }}}
     Txn__Load #l (#blk, #off, #(inode_bytes*8))
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
-      is_slice buf u8T vals ∗
+      is_slice buf u8T 1%Qp vals ∗
       ⌜vals = inode_to_vals v⌝ }}}.
 Proof.
 Admitted.
@@ -300,7 +300,7 @@ Definition commit_pre
     ∃ (bloc : loc) (blkno off sz : u64) data data_vals,
       ⌜b = #bloc⌝ ∗
       bloc ↦[struct.t buf.Buf.S] (#blkno, #off, #sz, slice_val data) ∗
-      is_slice data u8T data_vals ∗
+      is_slice data u8T 1%Qp data_vals ∗
       (
         ( ∃ (hG : gen_heapG u64 (updatable_buf bool) Σ) v,
           ⌜sz=1⌝ ∗
@@ -326,7 +326,7 @@ Definition commit_post
     ∃ (bloc : loc) (blkno off sz : u64) data data_vals,
       ⌜b = #bloc⌝ ∗
       bloc ↦[struct.t buf.Buf.S] (#blkno, #off, #sz, slice_val data) ∗
-      is_slice data u8T data_vals ∗
+      is_slice data u8T 1%Qp data_vals ∗
       (
         ( ∃ (hG : gen_heapG u64 (updatable_buf bool) Σ) v,
           ⌜sz=1⌝ ∗
@@ -348,14 +348,14 @@ Definition commit_post
       )
   )%I.
 
-Theorem wp_txn_CommitWait l gBits gInodes gBlocks bufs buflist :
+Theorem wp_txn_CommitWait l q gBits gInodes gBlocks bufs buflist :
   {{{ is_txn l gBits gInodes gBlocks ∗
-      is_slice bufs (refT (struct.t buf.Buf.S)) buflist ∗
+      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
   }}}
     Txn__CommitWait #l (slice_val bufs)
   {{{ RET #();
-      is_slice bufs (refT (struct.t buf.Buf.S)) buflist ∗
+      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ list] _ ↦ buf ∈ buflist, commit_post gBits gInodes gBlocks buf ) }}}.
 Proof.
 Admitted.

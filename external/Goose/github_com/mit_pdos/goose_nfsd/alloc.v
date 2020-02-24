@@ -46,9 +46,9 @@ Definition Alloc__allocBit: val :=
       let: "byte" := (![uint64T] "num") `quot` #8 in
       util.DPrintf #10 (#(str"allocBit: s %d num %d
       ")) "start" (![uint64T] "num");;
-      (if: (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" && #(U8 1) ≪ "bit" = #(U8 0))
+      (if: (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" & #(U8 1) ≪ "bit") = #(U8 0)
       then
-        SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" || #(U8 1) ≪ "bit");;
+        SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" ∥ #(U8 1) ≪ "bit");;
         Break
       else
         "num" <-[uint64T] Alloc__incNext "a";;
@@ -65,7 +65,7 @@ Definition Alloc__freeBit: val :=
     lock.acquire (struct.loadF Alloc.S "mu" "a");;
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
-    SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" && ~ (#(U8 1) ≪ "bit"));;
+    SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" & ~ (#(U8 1) ≪ "bit"));;
     lock.release (struct.loadF Alloc.S "mu" "a").
 
 Definition Alloc__AllocNum: val :=

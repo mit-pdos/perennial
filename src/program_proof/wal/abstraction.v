@@ -45,11 +45,12 @@ Context `{!heapG Σ}.
 Definition update_val (up:u64*Slice.t): val :=
   (#(fst up), slice_val (snd up))%V.
 
+(* TODO: this should probably also have a fraction *)
 Definition is_block (s:Slice.t) (b:Block) :=
-  is_slice_small s byteT (Block_to_vals b).
+  is_slice_small s byteT 1 (Block_to_vals b).
 
 Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
-  ∃ bks, is_slice_small bk_s (struct.t Update.S) (update_val <$> bks) ∗
+  ∃ bks, is_slice_small bk_s (struct.t Update.S) 1 (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
                                      is_block (snd b_upd) b.
 End heap.

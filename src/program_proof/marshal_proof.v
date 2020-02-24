@@ -1,6 +1,7 @@
 From Goose.github_com.tchajed Require Import marshal.
-From Perennial.goose_lang Require Import encoding_proof.
+From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.goose_lang.lib Require Import wp_store.
 
 (* The specification for encoding is based on this encodable inductive, which
 represents a single encodable bundle.
@@ -169,6 +170,8 @@ Proof.
   val_ty.
 Qed.
 
+Hint Immediate slice_val_ty : val_ty.
+
 Opaque slice.T.
 
 Section heap.
@@ -205,21 +208,21 @@ Theorem wp_new_enc stk E (sz: u64) :
 Proof.
   iIntros (Φ) "_ HΦ".
   rewrite /NewEnc.
-  rewrite /struct.buildStruct /Enc.S /=.
+  rewrite /struct.mk /Enc.S /=.
   wp_call.
   wp_apply wp_new_slice.
   iIntros (sl) "Hs". iDestruct (is_slice_elim with "Hs") as "[Ha %]".
   rewrite replicate_length in H.
   change (int.nat 4096) with (Z.to_nat 4096) in H.
-  wp_apply wp_alloc; auto.
-  iIntros (l) "(Hl&_)".
+  wp_apply wp_alloc_untyped; auto.
+  iIntros (l) "Hl".
   wp_steps.
   rewrite EncM.to_val_intro.
   iApply "HΦ".
   rewrite /is_enc /EncSz /=.
   iSplitL.
   { rewrite array_nil.
-    rewrite left_id right_id ?loc_add_0.
+    rewrite left_id ?loc_add_0.
     iFrame.
     iExists (replicate (int.nat sz) (U8 0)).
     rewrite fmap_replicate; iFrame.
@@ -238,9 +241,9 @@ Proof.
   iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   wp_call.
-  rewrite /struct.getField /Enc.S /=.
+  rewrite /struct.get /Enc.S /=.
   wp_steps.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_apply wp_SliceSkip'.
   { iPureIntro.
@@ -254,7 +257,7 @@ Proof.
   }
   iIntros "(Ha&%)".
   wp_steps.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_store.
   iApply "HΦ".
@@ -306,8 +309,8 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) (xs: list u64) :
-  {{{ is_enc enc vs ∗ is_slice_small s uint64T (u64val <$> xs) ∗
+Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) q (xs: list u64) :
+  {{{ is_enc enc vs ∗ is_slice_small s uint64T q (u64val <$> xs) ∗
              ⌜length (encode vs) + 8 * length xs <= int.val (EncSz enc)⌝ }}}
     Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
   {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) }}}.
@@ -352,9 +355,9 @@ Proof.
   iDestruct "Henc" as "(Hoff&Henc&Hfree)".
   iDestruct "Hfree" as (free) "(Hfree&%)".
   wp_call.
-  rewrite /struct.getField /Enc.S /=.
+  rewrite /struct.get /Enc.S /=.
   wp_steps.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_apply wp_SliceSkip'.
   { iPureIntro.
@@ -368,7 +371,7 @@ Proof.
   }
   iIntros "(Ha&%)".
   wp_steps.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_store.
   iApply "HΦ".
@@ -443,9 +446,9 @@ Proof.
   typeclasses eauto.
 Qed.
 
-Lemma array_to_block l (bs: list byte) :
+Lemma array_to_block l q (bs: list byte) :
   length bs = Z.to_nat 4096 ->
-  l ↦∗[byteT] (b2val <$> bs) -∗ mapsto_block l 1 (list_to_block bs).
+  l ↦∗[byteT]{q} (b2val <$> bs) -∗ mapsto_block l q (list_to_block bs).
 Proof.
   rewrite /array /mapsto_block /Block_to_vals /list_to_block.
   iIntros (H) "Hl".
@@ -465,7 +468,7 @@ Theorem wp_Enc__Finish stk E enc vs :
   {{{ is_enc enc vs }}}
     Enc__Finish (EncM.to_val enc) @ stk; E
   {{{ s (extra: list u8), RET (slice_val s);
-      is_slice_small s byteT (b2val <$> encode vs ++ extra) ∗
+      is_slice_small s byteT 1%Qp (b2val <$> encode vs ++ extra) ∗
       ⌜Slice.sz s = EncSz enc⌝ }}}.
 Proof.
   iIntros (Φ) "Henc HΦ".
@@ -501,13 +504,13 @@ Definition is_dec (dec: DecM.t) vs: iProp Σ :=
   ⌜(int.val off + length encoded + Z.of_nat (length extra))%Z = int.val (DecSz dec)⌝.
 
 Theorem wp_NewDec stk E s vs (extra: list u8) :
-  {{{ is_slice_small s byteT (b2val <$> encode vs ++ extra) }}}
+  {{{ is_slice_small s byteT 1%Qp (b2val <$> encode vs ++ extra) }}}
     NewDec (slice_val s) @ stk; E
   {{{ dec, RET (DecM.to_val dec); is_dec dec vs ∗ ⌜DecSz dec = s.(Slice.sz)⌝ }}}.
 Proof.
   iIntros (Φ) "(Hs&%) HΦ".
   wp_call.
-  wp_apply wp_alloc; [ val_ty | iIntros (off) "Hoff" ].
+  wp_apply typed_mem.wp_AllocAt; [ val_ty | iIntros (off) "Hoff" ].
   wp_pures.
   rewrite DecM.to_val_intro.
   iApply "HΦ".
@@ -535,16 +538,16 @@ Proof.
   iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
   wp_call.
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_call.
   wp_store.
   wp_call.
   wp_apply wp_SliceSkip'; [ now len | ].
-  wp_apply (wp_UInt64Get' with "[Hx]").
+  wp_apply (wp_UInt64Get' _ _ _ 1%Qp with "[Hx]").
   { iSplitL.
     - cbn [Slice.ptr slice_skip].
       rewrite Z.mul_1_l.
@@ -593,16 +596,16 @@ Proof.
   iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
   wp_call.
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_call.
-  wp_load.
+  wp_untyped_load.
   wp_steps.
   wp_call.
   wp_store.
   wp_call.
   wp_apply wp_SliceSkip'; [ now len | ].
-  wp_apply (wp_UInt32Get' with "[Hx]").
+  wp_apply (wp_UInt32Get' _ _ _ 1%Qp with "[Hx]").
   { iSplitL.
     - cbn [Slice.ptr slice_skip].
       rewrite Z.mul_1_l.
@@ -654,16 +657,16 @@ Qed.
 Theorem wp_Dec__GetInts stk E dec xs (n:u64) vs :
   {{{ is_dec dec ((EncUInt64 <$> xs) ++ vs) ∗ ⌜int.val n = length xs⌝}}}
     Dec__GetInts (DecM.to_val dec) #n @ stk; E
-  {{{ s, RET slice_val s; is_dec dec vs ∗ is_slice s uint64T (u64val <$> xs) }}}.
+  {{{ s, RET slice_val s; is_dec dec vs ∗ is_slice s uint64T 1%Qp (u64val <$> xs) }}}.
 Proof.
   rewrite /Dec__GetInts.
   iIntros (Φ) "(Hdec&%) HΦ".
   wp_pures.
-  wp_apply (wp_alloc _ _ (slice.T uint64T)); auto.
+  wp_apply (typed_mem.wp_AllocAt (slice.T uint64T)); auto.
   iIntros (l) "Hl".
   rewrite zero_slice_val.
   wp_pures.
-  wp_apply wp_alloc; auto.
+  wp_apply typed_mem.wp_AllocAt; auto.
   iIntros (l__i) "Hli".
   wp_let.
   wp_apply (wp_forUpto (λ x,
@@ -672,7 +675,7 @@ Proof.
                         let remaining_xs: list u64 := drop num xs in
                         is_dec dec ((EncUInt64 <$> remaining_xs) ++ vs) ∗
                                ∃ s, l ↦[slice.T uint64T] (slice_val s) ∗
-                                    is_slice s uint64T (u64val <$> done_xs))%I with "[] [Hdec Hl Hli]").
+                                    is_slice s uint64T 1%Qp (u64val <$> done_xs))%I with "[] [Hdec Hl Hli]").
   - iIntros (i) "!>".
     clear Φ.
     iIntros (Φ) "([Hdec Hpre] & Hli & %) HΦ".
@@ -687,16 +690,14 @@ Proof.
       iFrame. }
     fold (@app encodable).
     iIntros "Hdec".
-    wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+    wp_load.
     iDestruct (is_slice_sz with "Hs") as %Hsz.
     autorewrite with len in Hsz.
     wp_apply (wp_SliceAppend with "[$Hs]").
     { iPureIntro; split; [ word | ].
       repeat constructor. }
     iIntros (s') "Hs".
-    wp_apply (wp_StoreAt with "Hl").
-    { apply slice_val_ty. }
-    iIntros "Hl".
+    wp_apply (wp_StoreAt with "Hl"); [ val_ty | iIntros "Hl" ].
     wp_pures.
     rewrite /Continue.
     iApply "HΦ".
@@ -717,7 +718,7 @@ Proof.
   - iIntros "[(Hdec&Hslice) Hli]".
     iDestruct "Hslice" as (s) "[Hl Hs]".
     wp_pures.
-    wp_apply (wp_LoadAt with "Hl"); iIntros "Hl".
+    wp_load.
     iApply "HΦ".
     rewrite -> take_ge by word.
     rewrite -> drop_ge by word.

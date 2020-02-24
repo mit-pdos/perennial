@@ -67,6 +67,51 @@ Definition BlockSize {ext: ext_op}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
 
+(* TODO: delete this instance when
+https://gitlab.mpi-sws.org/iris/stdpp/merge_requests/114 is merged. *)
+
+Fixpoint list_to_option_vec {A} (l: list A) n : option (vec A n) :=
+  match l, n with
+  | nil, O => Some vnil
+  | cons _ _, O => None
+  | nil, S _ => None
+  | cons x xs, S n =>
+    match list_to_option_vec xs n with
+    | Some v => Some (vcons x v)
+    | None => None
+    end
+  end.
+
+Theorem list_to_option_vec_nil {A} :
+  list_to_option_vec (@nil A) 0 = Some vnil.
+Proof. reflexivity. Qed.
+
+Theorem list_to_option_vec_cons {A} (x:A) l n :
+  list_to_option_vec (x::l) (S n) =
+  match list_to_option_vec l n with
+  | Some v => Some (vcons x v)
+  | None => None
+  end.
+Proof. reflexivity. Qed.
+
+Theorem vec_to_list_to_option_vec_id {A n} (v: vec A n) :
+  list_to_option_vec (vec_to_list v) n = Some v.
+Proof.
+  induction v; simpl; auto.
+  by rewrite IHv.
+Qed.
+
+Global Instance vec_countable {A} `{Countable A} n :
+  Countable (vec A n).
+Proof.
+  refine (inj_countable (fun v => vec_to_list v)
+                        (fun l => list_to_option_vec l n)
+                        _).
+  intros v; by rewrite vec_to_list_to_option_vec_id.
+Qed.
+
+Global Instance Block_countable : Countable Block := _.
+
 Definition disk_state := gmap Z Block.
 
 Definition disk_model : ffi_model.
@@ -90,6 +135,9 @@ Section disk.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the disk model *)
   Existing Instances disk_op disk_model disk_ty.
+
+  Definition Get: val :=
+    λ: <>, ExtV DiskInterfaceVal.
 
   Definition Read: val :=
     λ: "a",
