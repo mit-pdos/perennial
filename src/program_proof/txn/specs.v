@@ -175,12 +175,12 @@ Definition is_txn (l : loc)
     (gBlocks : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
     : iProp Σ :=
   (
-    ∃ γMaps γLock (walHeap : gen_heapG u64 heap_block Σ) (mu : loc) (walptr : loc),
-      l ↦ro #mu ∗
-      (l +ₗ 1) ↦ro #walptr ∗
+    ∃ γMaps γLock (walHeap : gen_heapG u64 heap_block Σ) (mu : loc) (walptr : loc) q,
+      l ↦[Txn.S :: "mu"]{q} #mu ∗
+      l ↦[Txn.S :: "log"]{q} #walptr ∗
       is_wal walN (wal_heap_inv walHeap) walptr ∗
       inv invN (is_txn_always walHeap gBits gInodes gBlocks γMaps) ∗
-      is_lock lockN γLock #l (is_txn_locked γMaps)
+      is_lock lockN γLock #mu (is_txn_locked γMaps)
   )%I.
 
 Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
@@ -195,18 +195,12 @@ Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
       ⌜vals = Block_to_vals v⌝ }}}.
 Proof.
   iIntros (Φ) "(Htxn & % & Hstable) HΦ".
-  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
+  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr q) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
 
   wp_call.
   wp_call.
 
-  Transparent loadField.
-  rewrite /struct.loadF /=.
-  wp_pures.
-  replace (1 * int.val (1 + 0)) with (1) by word.
-  iDestruct (ptsto_ro_load with "Hwalptr") as (q) "Hwalptr".
-
-  wp_untyped_load.
+  wp_apply (wp_loadField with "Hwalptr"); iIntros "Hwalptr".
   wp_call.
 
   wp_apply (wp_Walog__ReadMem with "[$Hwal Hstable]").
