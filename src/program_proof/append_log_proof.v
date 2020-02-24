@@ -4,15 +4,6 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.goose_lang.lib Require Import wp_store.
 
-(* TODO: use this throughout (including replacing slice_val) *)
-Class GoData T := to_val: forall {ext:ext_op}, T -> val.
-Hint Mode GoData !.
-
-Instance u64_data: GoData u64 := λ {_} x, #x.
-Instance byte_data: GoData u8 := λ {_} x, #x.
-Instance bool_data: GoData bool := λ {_} x, #x.
-Instance slice_data: GoData Slice.t := λ {_} s, slice_val s.
-
 Section heap.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
@@ -21,7 +12,7 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Lemma points_to_byte l q (x: u8) :
+Lemma byte_ptsto_untype l q (x: u8) :
   l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
 Proof.
   rewrite /struct_mapsto /=.
@@ -43,13 +34,13 @@ Proof.
   intros k y Heq.
   rewrite /Block_to_vals in Heq.
   rewrite /b2val.
-  rewrite points_to_byte //.
+  rewrite byte_ptsto_untype //.
 Qed.
 
 Lemma slice_to_block_array s q b :
   is_slice_small s byteT q (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) q b.
 Proof.
-  iIntros "(Ha&_)".
+  iIntros "[Ha _]".
   by iApply array_to_block_array.
 Qed.
 
@@ -121,7 +112,7 @@ Proof.
 Qed.
 
 Definition is_hdr_block (sz disk_sz: u64) (b: Block) :=
-∃ extra, Block_to_vals b = b2val <$> encode [EncUInt64 sz; EncUInt64 disk_sz] ++ extra.
+  ∃ (extra: list u8), Block_to_vals b = b2val <$> encode [EncUInt64 sz; EncUInt64 disk_sz] ++ extra.
 
 Definition is_hdr (sz disk_sz: u64): iProp Σ :=
   ∃ b, 0 d↦ b ∗
