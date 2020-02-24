@@ -18,7 +18,7 @@ Definition wpc_pre `{!irisG Λ Σ} `{crashG Σ} (s : stuckness) (k: nat)
         ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,∅}_(S k)=> |={∅,∅,E1}▷=> |={E1, E1}_(S k)=>
           (state_interp σ2 κs (length efs + n) ∗
           wpc E1 E2 e2 Φ Φc ∗
-          ([∗ list] i ↦ ef ∈ efs, wpc ⊤ ∅ ef fork_post True) ∗
+          ([∗ list] i ↦ ef ∈ efs, wpc ⊤ E2 ef fork_post True) ∗
           NC))))
    end ∧
    (C -∗ |={E1,E1}_(S k)=> |={E2, ∅}=> |={∅, ∅}▷=>^(S k) |={∅, ∅}=> Φc))%I.
@@ -221,19 +221,11 @@ Proof.
     iIntros "!#" (? ef _) "H". by iApply "IH".
 Qed.
 
+(* Not true, even for k=0, without redefining Iris WP
+   because of the "NC/C" token *)
 Lemma wpc_wp s E1 E2 e Φ Φc k:
   WPC e @ s ; k; E1; E2 {{ Φ }} {{ Φc }} ⊢ NC -∗ WP e @ s ; E1 {{ Φ }}.
 Proof.
-  iIntros "H HNC". (iLöb as "IH" forall (E1 E2 e Φ)).
-  rewrite wp_unfold wpc_unfold /wp_pre /wpc_pre.
-  destruct (to_val e) as [v|]=>//.
-  - iDestruct "H" as "[H _]".
-    iDestruct ("H" with "HNC") as ">[$ _]".
-    auto.
-  - iIntros (σ κ κs n) "Hinterp".
-    iDestruct "H" as "[H _]".
-    iMod ("H" with "Hinterp [$]") as "H".
-    (* oops, H is under (S k) laters so probably isn't usable *)
 Abort.
 
 Lemma wpc_strong_mono s1 s2 k1 k2 E1 E2 E1' E2' e Φ Ψ Φc Ψc :
@@ -670,7 +662,7 @@ Lemma wpc_lift_step_fupd s k E E' Φ Φc e1 :
     ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ ={∅,∅,E}▷=∗
       (state_interp σ2 κs (length efs + n) ∗
        WPC e2 @ s; k; E; E' {{ Φ }} {{ Φc }} ∗
-       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})))
+       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; E' {{ fork_post }} {{ True }})))
   ∧ |={E}=> ▷ |={E', ∅}=> Φc)%I
  ⊢ WPC e1 @ s; k; E; E' {{ Φ }} {{ Φc }}.
 Proof.
@@ -701,7 +693,7 @@ Lemma wpc_lift_step s k E1 E2 Φ Φc e1 :
     ▷ ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ ={∅,E1}=∗
       state_interp σ2 κs (length efs + n) ∗
       WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }} ∗
-      [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})
+      [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; E2 {{ fork_post }} {{ True }})
   ∧ ▷ Φc
   ⊢ WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
@@ -1023,7 +1015,7 @@ Lemma wpc_lift_head_step_fupd s k E E' Φ Φc e1 :
     ∀ e2 σ2 efs, ⌜head_step e1 σ1 κ e2 σ2 efs⌝ ={∅,∅,E}▷=∗
       (state_interp σ2 κs (length efs + n) ∗
        WPC e2 @ s; k; E; E' {{ Φ }} {{ Φc }} ∗
-       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})))
+       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; E' {{ fork_post }} {{ True }})))
   ∧ |={E}=> ▷ |={E', ∅}=> Φc)%I
  ⊢ WPC e1 @ s; k; E; E' {{ Φ }} {{ Φc }}.
 Proof.
@@ -1042,7 +1034,7 @@ Lemma wpc_lift_head_step s k E1 E2 Φ Φc e1 :
     ▷ ∀ e2 σ2 efs, ⌜head_step e1 σ1 κ e2 σ2 efs⌝ ={∅,E1}=∗
       state_interp σ2 κs (length efs + n) ∗
       WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }} ∗
-      [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; ∅ {{ fork_post }} {{ True }})
+      [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; E2 {{ fork_post }} {{ True }})
   ∧ |={E1}=> ▷ |={E2, ∅}=> Φc)%I
   ⊢ WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.

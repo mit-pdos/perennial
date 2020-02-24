@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Lemma wpc_fork `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ, !crashG Σ} s k E1 E2 e Φ Φc :
-  ▷ WPC e @ s; k; ⊤; ∅ {{ _, True }} {{ True }} -∗ (▷ Φc ∧ ▷ Φ (LitV LitUnit)) -∗
+  ▷ WPC e @ s; k; ⊤; E2 {{ _, True }} {{ True }} -∗ (▷ Φc ∧ ▷ Φ (LitV LitUnit)) -∗
                       WPC Fork e @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "He HΦ". iApply wpc_lift_head_step; [done|].
