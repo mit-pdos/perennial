@@ -10,6 +10,22 @@ Reserved Notation "l ↦[ d :: f ] v"
     (at level 20, d at level 50, f at level 50,
     format "l  ↦[ d  ::  f ]  v").
 
+Lemma bient_pure_wlog (p: Prop) {Σ} (P Q: iProp Σ) :
+  (P -∗ ⌜p⌝) ->
+  (Q -∗ ⌜p⌝) ->
+  (p -> P ⊣⊢ Q) ->
+  (P ⊣⊢ Q).
+Proof.
+  intros HP HQ Heq.
+  iSplit.
+  - iIntros "HP".
+    iDestruct (HP with "HP") as %?.
+    iApply (Heq with "HP"); auto.
+  - iIntros "HQ".
+    iDestruct (HQ with "HQ") as %?.
+    iApply (Heq with "HQ"); auto.
+Qed.
+
 Section goose_lang.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
@@ -82,21 +98,38 @@ Definition struct_field_mapsto l q (d: descriptor) (f0: string) (fv:val): iProp 
   | None => ⌜fv = #()⌝
   end.
 
-Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
+Local Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
   match d with
-  | [] => emp
+  | [] => ⌜v = #()⌝
   | (f,t)::fs =>
     match v with
     | PairV v1 v2 => struct_mapsto l q t v1 ∗
                     struct_big_sep (l +ₗ ty_size t) q fs v2
-    | _ => emp
+    | _ => False
     end
   end.
 
-Theorem struct_mapsto_to_big l q d v :
-  val_ty v (struct.t d) ->
+Local Lemma struct_big_sep_ty l q d v :
+  struct_big_sep l q d v -∗ ⌜val_ty v (struct.t d)⌝.
+Proof.
+  revert v l.
+  induction d as [|[f t] fs]; simpl; intros.
+  - iIntros (->) "!%".
+    val_ty.
+  - destruct v; auto.
+    iIntros "[Hv1 Hv2]".
+    iDestruct (struct_mapsto_ty with "Hv1") as %Hv1ty.
+    iDestruct (IHfs with "Hv2") as %Hv2ty.
+    iPureIntro.
+    constructor; auto.
+Qed.
+
+Local Lemma struct_mapsto_to_big l q d v :
   struct_mapsto l q (struct.t d) v ⊣⊢ struct_big_sep l q d v.
 Proof.
+  apply (bient_pure_wlog (val_ty v (struct.t d))).
+  { apply struct_mapsto_ty. }
+  { apply struct_big_sep_ty. }
   intros Hty.
   (iInduction (d) as [| [f t] fs] "IH" forall (l v Hty)); simpl.
   - inv_ty Hty.
@@ -110,20 +143,22 @@ Proof.
     + iApply ("IH" with "[//] Hv2").
 Qed.
 
-Fixpoint struct_big_fields_rec l q (d: descriptor) (fs:descriptor) (v:val): iProp Σ :=
+Local Fixpoint struct_big_fields_rec l q (d: descriptor) (fs:descriptor) (v:val): iProp Σ :=
   match fs with
-  | [] => emp
+  | [] => ⌜v = #()⌝
   | (f,t)::fs =>
     match v with
     | PairV v1 v2 => struct_field_mapsto l q d f v1 ∗
                     struct_big_fields_rec l q d fs v2
-    | _ => emp
+    | _ => False
     end
   end.
 
-Definition struct_big_fields l q d v : iProp Σ := struct_big_fields_rec l q d d v.
+(** [struct_fields] is the desired function to describe a struct in terms of all
+of its field points-to facts. *)
+Definition struct_fields l q d v : iProp Σ := struct_big_fields_rec l q d d v.
 
-Theorem field_offset_prefix (fs1: descriptor) f t (fs: descriptor) :
+Lemma field_offset_prefix (fs1: descriptor) f t (fs: descriptor) :
   f ∉ (fs1.*1) ->
   field_offset (fs1 ++ [(f, t)] ++ fs) f =
   Some (ty_size (struct.t fs1), t).
@@ -136,7 +171,7 @@ Proof.
     rewrite IHfs1; eauto.
 Qed.
 
-Theorem NoDup_app_singleton A l (x:A) :
+Lemma NoDup_app_singleton A l (x:A) :
   NoDup (l ++ [x]) ->
   x ∉ l.
 Proof.
@@ -147,7 +182,7 @@ Proof.
   constructor.
 Qed.
 
-Theorem ty_size_struct_app d1 d2 :
+Lemma ty_size_struct_app d1 d2 :
   ty_size (struct.t (d1 ++ d2)) =
   ty_size (struct.t d1) + ty_size (struct.t d2).
 Proof.
@@ -155,7 +190,7 @@ Proof.
   rewrite IHfs; lia.
 Qed.
 
-Lemma struct_big_sep_to_big_fields_gen l q fs1 fs v :
+Local Lemma struct_big_sep_to_big_fields_gen l q fs1 fs v :
   NoDup ((fs1 ++ fs).*1) ->
   struct_big_fields_rec l q (fs1 ++ fs) fs v = struct_big_sep (l +ₗ ty_size (struct.t fs1)) q fs v.
 Proof.
@@ -180,18 +215,33 @@ Proof.
     reflexivity.
 Qed.
 
-Lemma struct_big_sep_to_big_fields l q d {dwf: struct.wf d} v :
-  struct_big_fields l q d v = struct_big_sep l q d v.
+Local Lemma struct_big_sep_to_fields l q d {dwf: struct.wf d} v :
+  struct_big_sep l q d v = struct_fields l q d v.
 Proof.
   intros.
-  rewrite /struct_big_fields.
-  change d with (nil ++ d) at 1.
+  rewrite /struct_fields.
+  change d with (nil ++ d) at 2.
   rewrite -> struct_big_sep_to_big_fields_gen by apply descriptor_NoDup.
   simpl.
   rewrite loc_add_0 //.
 Qed.
 
-Theorem struct_mapsto_field_offset_acc l q d f0 (off: Z) t0 v :
+Lemma struct_fields_ty l q d {dwf: struct.wf d} v :
+  struct_fields l q d v -∗ ⌜val_ty v (struct.t d)⌝.
+Proof.
+  rewrite -struct_big_sep_to_fields.
+  apply struct_big_sep_ty.
+Qed.
+
+(** This is the big splitting theorem, for converting from a monolithic struct
+points-to fact to the individual field pointers. *)
+Theorem struct_fields_split l q d {dwf: struct.wf d} v :
+  struct_mapsto l q (struct.t d) v ⊣⊢ struct_fields l q d v.
+Proof.
+  rewrite struct_mapsto_to_big struct_big_sep_to_fields //.
+Qed.
+
+Lemma struct_mapsto_field_offset_acc l q d f0 (off: Z) t0 v :
   field_offset d f0 = Some (off, t0) ->
   struct_mapsto l q (struct.t d) v -∗
   (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
@@ -232,7 +282,7 @@ Proof.
     destruct (f =? f0)%string; congruence.
 Qed.
 
-Theorem struct_mapsto_acc_offset_read l q d f0 (off: Z) t0 v :
+Lemma struct_mapsto_acc_offset_read l q d f0 (off: Z) t0 v :
   field_offset d f0 = Some (off, t0) ->
   struct_mapsto l q (struct.t d) v -∗
   (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
@@ -278,7 +328,7 @@ Proof.
       rewrite IHfs //.
 Qed.
 
-Theorem struct_mapsto_acc f0 l q d v :
+Lemma struct_mapsto_acc f0 l q d v :
   struct_mapsto l q (struct.t d) v -∗
   (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
    (∀ fv', struct_field_mapsto l q d f0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
@@ -296,7 +346,7 @@ Proof.
     rewrite -> setField_f_none by auto; auto.
 Qed.
 
-Theorem struct_mapsto_acc_read f0 l q d v :
+Lemma struct_mapsto_acc_read f0 l q d v :
   struct_mapsto l q (struct.t d) v -∗
   (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
    (struct_field_mapsto l q d f0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
