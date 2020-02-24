@@ -333,7 +333,23 @@ Proof.
     { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
       iEval (rewrite {2}binder_delete_commute). iFrame. }
   - admit.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)".
+    }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. econstructor; eauto.
+    }
+    iEval (simpl; rewrite right_id) in "Hchild".
+    iDestruct "Hchild" as (j') "Hj'".
+    iApply (wpc_fork with "[Hj']").
+    { iNext. iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
+      iSpecialize ("H" $! j' (λ x, x) with "[] [$]"); first by (iPureIntro; apply language_ctx_id).
+      iApply (wpc_mono with "H"); eauto.
+    }
+    iSplit; first eauto. iNext. iExists _; iFrame; eauto.
   - admit.
   - admit.
   - admit.
