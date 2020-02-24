@@ -1284,11 +1284,32 @@ Lemma getattr_always_err (s: State) (f: fh) a2 e2 s1 s2 ret1 ret2 :
 Proof.
   intros.
   inversion H0; subst.
-  destruct x as [x | x];
-  repeat (monad_inv; simpl in *); try discriminate.
-  Admitted.
-          (*exists a2, e1; auto.
-Qed.*)
+  destruct x as [x | x].
+  (* 2nd step returns OK, clearly wrong *)
+  - repeat (monad_inv; simpl in *). discriminate.
+  (* 2nd step returns ERR, remember resulting state for first step *)
+  - repeat (simpl in *; monad_inv).
+    inversion H3; subst.
+    destruct ((fhs s1) !! f) eqn:He.
+    * repeat (monad_inv; simpl in *). discriminate.
+    * inversion H; subst.
+              assert (s = s1).
+              {
+                assert (s2 = s).
+                {
+                  repeat (simpl in H1; monad_inv).
+                  destruct (fhs s !! f) eqn:Hes;
+                  repeat (simpl in H1; monad_inv); auto.
+                  destruct x1; repeat (simpl in H1; monad_inv); auto.
+                } subst.
+                destruct x0 as [x0 | x0]; repeat (simpl in *; monad_inv); auto.
+              }
+              subst.
+              destruct x0 as [x0 | x0]; repeat (simpl in *; monad_inv); rewrite He in *;
+              simpl in H1; monad_inv.
+              -- destruct x5; simpl in H1; monad_inv; discriminate.
+              -- destruct x2; eauto.
+Qed.
 
 Lemma crash_total_ok (s: State):
   exists s', dynamics.(crash_step) s s' tt.
