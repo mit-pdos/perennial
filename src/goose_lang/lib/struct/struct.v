@@ -1,3 +1,4 @@
+From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Export typed_mem struct.impl.
 
@@ -384,7 +385,7 @@ Qed.
 Transparent loadField storeField.
 
 Theorem wp_loadField stk E l q d f fv :
-  {{{ struct_field_mapsto l q d f fv }}}
+  {{{ ▷ struct_field_mapsto l q d f fv }}}
     struct.loadF d f #l @ stk; E
   {{{ RET fv; struct_field_mapsto l q d f fv }}}.
 Proof.
@@ -402,6 +403,18 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
+Lemma tac_wp_loadField Δ Δ' s E i K l q d f v Φ :
+  MaybeIntoLaterNEnvs 1 Δ Δ' →
+  envs_lookup i Δ' = Some (false, struct_field_mapsto l q d f v)%I →
+  envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP fill K (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_eq=> ???.
+  rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_loadField.
+  rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
+  by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
+Qed.
+
 Definition field_ty d f: ty :=
   match field_offset d f with
   | Some (_, t) => t
@@ -410,7 +423,7 @@ Definition field_ty d f: ty :=
 
 Theorem wp_storeField stk E l d f fv fv' :
   val_ty fv' (field_ty d f) ->
-  {{{ struct_field_mapsto l 1 d f fv }}}
+  {{{ ▷ struct_field_mapsto l 1 d f fv }}}
     struct.storeF d f #l fv' @ stk; E
   {{{ RET #(); struct_field_mapsto l 1 d f fv' }}}.
 Proof.
@@ -431,6 +444,21 @@ Proof.
 Qed.
 
 Opaque loadField storeField.
+
+Lemma tac_wp_storeField Δ Δ' Δ'' stk E i K l d f v v' Φ :
+  val_ty v' (field_ty d f) →
+  MaybeIntoLaterNEnvs 1 Δ Δ' →
+  envs_lookup i Δ' = Some (false, l ↦[d :: f] v)%I →
+  envs_simple_replace i false (Esnoc Enil i (l ↦[d :: f] v')) Δ' = Some Δ'' →
+  envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
+  envs_entails Δ (WP fill K (struct.storeF d f (LitV l) (Val v')) @ stk; E {{ Φ }}).
+Proof.
+  intros Hty.
+  rewrite envs_entails_eq=> ????.
+  rewrite -wp_bind. eapply bi.wand_apply; first by eapply wp_storeField.
+  rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
+  rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
+Qed.
 
 Theorem wp_loadField_struct stk E l q d f v :
   {{{ struct_mapsto l q (struct.t d) v }}}
@@ -465,3 +493,37 @@ Notation "l ↦[ d :: f ]{ q } v" :=
   (struct_field_mapsto l q d f%string v%V).
 Notation "l ↦[ d :: f ] v" :=
   (struct_field_mapsto l 1 d f%string v%V).
+
+Tactic Notation "wp_loadField" :=
+  let solve_mapsto _ :=
+    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
+    iAssumptionCore || fail "wp_load: cannot find" l "↦[d :: f] ?" in
+  wp_pures;
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_loadField _ _ _ _ _ K))
+      |fail 1 "wp_load: cannot find 'loadField' in" e];
+    [iSolveTC
+    |solve_mapsto ()
+    |wp_finish]
+  | _ => fail "wp_load: not a 'wp'"
+  end.
+
+Tactic Notation "wp_storeField" :=
+  let solve_mapsto _ :=
+    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
+    iAssumptionCore || fail "wp_storeField: cannot find" l "↦[d :: f] ?" in
+  wp_pures;
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_storeField _ _ _ _ _ _ K))
+      |fail 1 "wp_storeField: cannot find 'storeField' in" e];
+    [val_ty
+    |iSolveTC
+    |solve_mapsto ()
+    |pm_reflexivity
+    |first [wp_seq|wp_finish]]
+  | _ => fail "wp_storeField: not a 'wp'"
+  end.

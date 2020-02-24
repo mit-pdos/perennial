@@ -199,8 +199,7 @@ Proof.
 
   wp_call.
   wp_call.
-
-  wp_apply (wp_loadField with "Hwalptr"); iIntros "Hwalptr".
+  wp_loadField.
   wp_call.
 
   wp_apply (wp_Walog__ReadMem with "[$Hwal Hstable]").
