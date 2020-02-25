@@ -59,20 +59,27 @@ Definition Open: val :=
       "diskSz" ::= "diskSz"
     ].
 
-Definition Log__Get: val :=
-  rec: "Log__Get" "log" "i" :=
+Definition Log__get: val :=
+  rec: "Log__get" "log" "i" :=
     let: "sz" := struct.loadF Log.S "sz" "log" in
     (if: "i" < "sz"
     then (disk.Read (#1 + "i"), #true)
     else (slice.nil, #false)).
+
+Definition Log__Get: val :=
+  rec: "Log__Get" "log" "i" :=
+    lock.acquire (struct.loadF Log.S "m" "log");;
+    let: ("v", "b") := Log__get "log" "i" in
+    lock.release (struct.loadF Log.S "m" "log");;
+    ("v", "b").
 
 Definition writeAll: val :=
   rec: "writeAll" "bks" "off" :=
     ForSlice (slice.T byteT) "i" "bk" "bks"
       (disk.Write ("off" + "i") "bk").
 
-Definition Log__Append: val :=
-  rec: "Log__Append" "log" "bks" :=
+Definition Log__append: val :=
+  rec: "Log__append" "log" "bks" :=
     let: "sz" := struct.loadF Log.S "sz" "log" in
     (if: slice.len "bks" ≥ struct.loadF Log.S "diskSz" "log" - #1 - "sz"
     then #false
@@ -82,7 +89,21 @@ Definition Log__Append: val :=
       Log__writeHdr "log";;
       #true).
 
-Definition Log__Reset: val :=
-  rec: "Log__Reset" "log" :=
+Definition Log__Append: val :=
+  rec: "Log__Append" "log" "bks" :=
+    lock.acquire (struct.loadF Log.S "m" "log");;
+    let: "b" := Log__append "log" "bks" in
+    lock.release (struct.loadF Log.S "m" "log");;
+    "b".
+
+Definition Log__reset: val :=
+  rec: "Log__reset" "log" :=
     struct.storeF Log.S "sz" "log" #0;;
     Log__writeHdr "log".
+
+Definition Log__Reset: val :=
+  rec: "Log__Reset" "log" :=
+    lock.acquire (struct.loadF Log.S "m" "log");;
+    Log__writeHdr "log";;
+    Log__reset "log";;
+    lock.release (struct.loadF Log.S "m" "log").

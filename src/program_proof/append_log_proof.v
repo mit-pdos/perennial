@@ -250,9 +250,9 @@ Proof.
     word.
 Qed.
 
-Theorem wp_Log__Get stk E (lptr: loc) bs (i: u64) :
+Theorem wp_Log__get stk E (lptr: loc) bs (i: u64) :
   {{{ ptsto_log lptr bs ∗ ⌜int.val i < 2^64-1⌝ }}}
-    Log__Get #lptr #i @ stk; E
+    Log__get #lptr #i @ stk; E
   {{{ s (ok: bool), RET (slice_val s, #ok);
       (if ok
        then ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s byteT 1%Qp (Block_to_vals b)
@@ -613,16 +613,16 @@ Definition struct_ty_unfold d :
         exact (x = x')) := eq_refl.
 Opaque struct.t.
 
-Theorem wpc_Log__Append k stk E1 E2 l bs0 bk_s bks bs :
+Theorem wpc_Log__append k stk E1 E2 l bs0 bk_s bks bs :
   {{{ ptsto_log l bs0 ∗ blocks_slice bk_s bks bs }}}
-    Log__Append #l (slice_val bk_s) @ stk; k; E1; E2
+    Log__append #l (slice_val bk_s) @ stk; k; E1; E2
   {{{ (ok: bool), RET #ok; (ptsto_log l (if ok then bs0 ++ bs else bs0)) ∗
                           blocks_slice bk_s bks bs }}}
   {{{ crashed_log bs0 ∨ crashed_log (bs0 ++ bs) }}}.
 Proof.
   iIntros (Φ Φc) "[Hptsto_log Hbs] HΦ".
   iDestruct "Hptsto_log" as (sz disk_sz) "((Hsz&Hdisk_sz)&Hlog)".
-  rewrite /Log__Append.
+  rewrite /Log__append.
 
   wpc_pures.
   { iApply (is_log_crash_l with "Hlog"). }
@@ -758,15 +758,15 @@ Proof.
   len.
 Qed.
 
-Theorem wpc_Log__Reset stk k E1 E2 l bs :
+Theorem wpc_Log__reset stk k E1 E2 l bs :
   {{{ ptsto_log l bs }}}
-    Log__Reset #l @ stk; k; E1; E2
+    Log__reset #l @ stk; k; E1; E2
   {{{ RET #(); ptsto_log l [] }}}
   {{{ crashed_log bs ∨ crashed_log [] }}}.
 Proof.
   iIntros (Φ Φc) "Hlog HΦ".
   iDestruct "Hlog" as (sz disk_sz) "((Hsz&Hdisk_sz)&Hlog)".
-  rewrite /Log__Reset.
+  rewrite /Log__reset.
   wpc_pures.
   { iApply (is_log_crash_l with "[$]"). }
   wpc_bind (struct.storeF _ _ _ _).
