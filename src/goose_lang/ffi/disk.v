@@ -108,19 +108,23 @@ Section disk.
     let: "p" := ExternalOp ReadOp (Var "a") in
     raw_slice byteT (Var "p") #4096.
 
+  (*
   Theorem Read_t : ⊢ Read : (uint64T -> blockT).
   Proof.
     typecheck.
   Qed.
+  *)
 
   Definition Write: val :=
     λ: "a" "b",
     ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
 
+  (*
   Theorem Write_t : ⊢ Write : (uint64T -> slice.T byteT -> unitT).
   Proof.
     typecheck.
   Qed.
+  *)
 
   Definition Barrier: val :=
     λ: <>, #().
@@ -438,7 +442,6 @@ lemmas. *)
 End disk.
 
 Global Opaque Write Read Size.
-Hint Resolve Write_t Read_t Size_t : types.
 
 Notation "l d↦{ q } v" := (mapsto (L:=Z) (V:=Block) l q%Qp v%V)
                             (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.

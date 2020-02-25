@@ -185,6 +185,8 @@ Section goose_lang.
   Qed.
 
   Inductive expr_hasTy (Γ: Ctx) : expr -> ty -> Prop :=
+
+  (** structural rules *)
   | var_hasTy x t :
       Γ !! x = Some t ->
       Γ ⊢ Var x : t
@@ -198,13 +200,22 @@ Section goose_lang.
   | rec_expr_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e : t2 ->
       Γ ⊢ Rec f x e : arrowT t1 t2
+  | fork_hasTy e t :
+      Γ ⊢ e : t ->
+      Γ ⊢ Fork e : unitT
+
+  (** control flow *)
+  | if_hasTy cond e1 e2 t :
+      Γ ⊢ cond : boolT ->
+      Γ ⊢ e1 : t ->
+      Γ ⊢ e2 : t ->
+      Γ ⊢ If cond e1 e2 : t
+
+  (** primitives operations *)
   | panic_expr_hasTy msg t :
       Γ ⊢ Panic msg : t
   | arbitrary_int_expr_hasTy :
       Γ ⊢ ArbitraryInt : uint64T
-  | fork_hasTy e t :
-      Γ ⊢ e : t ->
-      Γ ⊢ Fork e : unitT
   | cast_u64_op_hasTy e1 t :
       Γ ⊢ e1 : t ->
       is_intTy t = true ->
@@ -225,16 +236,6 @@ Section goose_lang.
       un_op_ty op = Some (t1, t) ->
       Γ ⊢ e1 : t1 ->
       Γ ⊢ UnOp op e1 : t
-  | offset_op_hasTy e1 e2 k t :
-      Γ ⊢ e1 : arrayT t ->
-      Γ ⊢ e2 : uint64T ->
-      Γ ⊢ BinOp (OffsetOp k) e1 e2 : arrayT t
-  | struct_offset_op_hasTy e1 (v: Z) ts :
-      Γ ⊢ e1 : structRefT ts ->
-      Γ ⊢ BinOp (OffsetOp 1) e1 #v : structRefT (skipn (Z.to_nat v) ts)
-  | struct_offset_op_collapse_hasTy e1 (v1 v2: Z) k ts :
-      Γ ⊢ BinOp (OffsetOp k) (BinOp (OffsetOp k) e1 #v1) #v2 : structRefT ts ->
-      Γ ⊢ BinOp (OffsetOp k) e1 #(v1 + v2) : structRefT ts
   | eq_op_hasTy e1 e2 t :
       Γ ⊢ e1 : t ->
       Γ ⊢ e2 : t ->
@@ -253,6 +254,8 @@ Section goose_lang.
       Γ ⊢ e1 : stringT ->
       Γ ⊢ e2 : stringT ->
       Γ ⊢ BinOp PlusOp e1 e2 : stringT
+
+  (** data *)
  | pair_hasTy e1 e2 t1 t2 :
       Γ ⊢ e1 : t1 ->
       Γ ⊢ e2 : t2 ->
@@ -287,28 +290,34 @@ Section goose_lang.
       Γ ⊢ e1 : arrowT t1 t ->
       Γ ⊢ e2 : arrowT t2 t ->
       Γ ⊢ Case cond e1 e2 : t
-  | if_hasTy cond e1 e2 t :
-      Γ ⊢ cond : boolT ->
-      Γ ⊢ e1 : t ->
-      Γ ⊢ e2 : t ->
-      Γ ⊢ If cond e1 e2 : t
-  (* TODO: extend to handle structs *)
+
+  (** pointers *)
   | alloc_hasTy n v t :
       Γ ⊢ n : uint64T ->
       Γ ⊢ v : t ->
       Γ ⊢ AllocN n v : arrayT t
-  | load_hasTy l t :
-      Γ ⊢ l : refT t ->
+  | offset_op_hasTy e1 e2 t :
+      Γ ⊢ e1 : arrayT t ->
+      Γ ⊢ e2 : uint64T ->
+      Γ ⊢ BinOp (OffsetOp (ty_size t)) e1 e2 : arrayT t
+  | array_struct_hasTy e t :
+      Γ ⊢ e : arrayT t ->
+      Γ ⊢ e : structRefT (flatten_ty t)
+  | struct_offset_op_hasTy e1 (k: Z) ts :
+      Γ ⊢ e1 : structRefT ts ->
+      Γ ⊢ BinOp (OffsetOp k) e1 #1 : structRefT (drop (Z.to_nat k) ts)
+  | load_hasTy l t ts :
+      Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ Load l : t
-  | prepare_write_hasTy l t :
-      Γ ⊢ l : refT t ->
+  | prepare_write_hasTy l t ts :
+      Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ PrepareWrite l : unitT
-  | finish_store_hasTy l v t :
-      Γ ⊢ l : refT t ->
+  | finish_store_hasTy l v t ts :
+      Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ v : t ->
       Γ ⊢ FinishStore l v : unitT
-  | start_read_hasTy l t :
-      Γ ⊢ l : refT t ->
+  | start_read_hasTy l t ts :
+      Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ StartRead l : t
   | finish_read_hasTy l t :
       Γ ⊢ l : refT t ->
@@ -318,20 +327,19 @@ Section goose_lang.
       Γ ⊢ v1 : t ->
       Γ ⊢ v2 : t ->
       Γ ⊢ CmpXchg l v1 v2 : prodT t boolT
+
+  (** externals *)
   | external_hasTy op e t1 t2 :
       get_ext_tys op = (t1, t2) ->
       Γ ⊢ e : t1 ->
       Γ ⊢ ExternalOp op e : t2
-  | struct_weaken_hasTy e ts1 ts2 :
-      Γ ⊢ e : structRefT (ts1 ++ ts2) ->
-      Γ ⊢ e : structRefT ts1
-  | array_ref_hasTy e t :
-      Γ ⊢ e : arrayT t ->
-      Γ ⊢ e : refT t
+
   where "Γ ⊢ e : A" := (expr_hasTy Γ e A)
+
   with val_hasTy (Γ: Ctx) : val -> ty -> Prop :=
   | val_base_lit_hasTy v t :
-      base_lit_hasTy v t -> val_hasTy Γ (LitV v) t
+      base_lit_hasTy v t ->
+      Γ ⊢v (LitV v) : t
   | val_pair_hasTy v1 v2 t1 t2 :
       Γ ⊢v v1 : t1 ->
       Γ ⊢v v2 : t2 ->
@@ -353,75 +361,7 @@ Section goose_lang.
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
-  Theorem load_array_hasTy Γ l t :
-      Γ ⊢ l : arrayT t ->
-      Γ ⊢ Load l : t.
-  Proof.
-    intros.
-    apply load_hasTy.
-    apply array_ref_hasTy; auto.
-  Qed.
-
-  Theorem store_hasTy Γ l v t :
-    Γ ⊢ l : refT t ->
-    Γ ⊢ v : t ->
-    Γ ⊢ Store l v : unitT.
-  Proof.
-    intros.
-    repeat (econstructor; eauto).
-    - rewrite lookup_insert_ne //= lookup_insert //=.
-    - rewrite lookup_insert_ne //= lookup_insert //=.
-    - rewrite lookup_insert //=.
-  Qed.
-
-  Theorem store_val_hasTy Γ t :
-    Γ ⊢v Store : (arrowT (refT t) (arrowT t unitT)).
-  Proof.
-    intros.
-    repeat (econstructor; eauto).
-    - rewrite lookup_insert_ne //= lookup_insert //=.
-    - rewrite lookup_insert_ne //= lookup_insert //=.
-    - rewrite lookup_insert //=.
-  Qed.
-
-  Theorem store_array_hasTy Γ l v t :
-      Γ ⊢ l : arrayT t ->
-      Γ ⊢ v : t ->
-      Γ ⊢ Store l v : unitT.
-  Proof.
-    intros.
-    eapply store_hasTy; eauto.
-    apply array_ref_hasTy; eauto.
-  Qed.
-
-  Theorem store_array_val_hasTy Γ t :
-      Γ ⊢v Store : (arrowT (arrayT t) (arrowT t unitT)).
-  Proof.
-    intros.
-    econstructor; eauto.
-    econstructor; eauto.
-    econstructor; eauto.
-    - econstructor; eauto.
-      apply array_ref_hasTy.
-      econstructor; eauto.
-     rewrite lookup_insert_ne //= lookup_insert //=.
-    - econstructor; eauto.
-      econstructor; eauto.
-      + apply array_ref_hasTy.
-        econstructor; eauto.
-        rewrite lookup_insert_ne //= lookup_insert //=.
-      + econstructor; eauto.
-        rewrite lookup_insert //=.
-  Qed.
-
-  Hint Constructors base_lit_hasTy expr_hasTy val_hasTy base_lit_hasTy.
-
-  Theorem ref_hasTy Γ v t :
-    Γ ⊢ v : t ->
-    Γ ⊢ ref v : refT t.
-  Proof.
-    eauto.
-  Qed.
+  Hint Constructors expr_hasTy val_hasTy base_lit_hasTy : core.
 
   Theorem zero_val_ty ty Γ :
     Γ ⊢v zero_val ty : ty.
@@ -429,17 +369,6 @@ Section goose_lang.
     generalize dependent Γ.
     induction ty; simpl; eauto.
     destruct t; eauto.
-  Qed.
-
-  Definition NewMap (t:ty) : expr := Alloc (zero_val (mapValT t)).
-  Theorem NewMap_t t Γ : Γ ⊢ NewMap t : mapT t.
-  Proof.
-    unfold NewMap, mapT.
-    eapply array_ref_hasTy.
-    econstructor.
-    - repeat econstructor.
-    - econstructor.
-      apply zero_val_ty.
   Qed.
 
   Lemma extend_context_add:
@@ -500,14 +429,6 @@ Section goose_lang.
     intros; subst; eauto.
   Qed.
 
-  Theorem struct_offset_op_hasTy_eq Γ e1 (v: Z) ts ts' :
-      Γ ⊢ e1 : structRefT ts ->
-      ts' = skipn (Z.to_nat v) ts ->
-      Γ ⊢ BinOp (OffsetOp 1) e1 #v : structRefT ts'.
-  Proof.
-    intros; subst; eauto.
-  Qed.
-
   Theorem hasTy_ty_congruence v t1 t2 :
     ∅ ⊢v v : t1 ->
     t1 = t2 ->
@@ -519,6 +440,25 @@ Section goose_lang.
   Theorem Panic_unit_t Γ s : Γ ⊢ Panic s : unitT.
   Proof.
     econstructor.
+  Qed.
+
+  Theorem ref_hasTy t Γ ts e :
+    Γ ⊢ e : t ->
+    ts = flatten_ty t ->
+    Γ ⊢ ref e : structRefT ts.
+  Proof.
+    intros He ->.
+    eapply array_struct_hasTy.
+    eauto.
+  Qed.
+
+  Definition NewMap (t:ty) : expr := Alloc (zero_val (mapValT t)).
+  Theorem NewMap_t t Γ : Γ ⊢ NewMap t : mapT t.
+  Proof.
+    unfold NewMap, mapT.
+    eapply (ref_hasTy (mapValT t)); eauto.
+    constructor.
+    apply zero_val_ty.
   Qed.
 
 End goose_lang.
@@ -543,14 +483,12 @@ Hint Resolve hasTy_ty_congruence : types.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
 Hint Constructors base_lit_hasTy : types.
-Remove Hints array_ref_hasTy : types.
 (* note that this has to be after [Hint Constructors expr_hasTy] to get higher
 priority than Panic_hasTy *)
 Hint Resolve Panic_unit_t : types.
 Hint Resolve zero_val_ty : types.
 Hint Resolve var_hasTy : types.
-Hint Resolve ref_hasTy load_array_hasTy store_array_hasTy array_null_hasTy : types.
-Hint Resolve store_val_hasTy store_array_val_hasTy : types.
+Hint Resolve array_null_hasTy : types.
 
 Hint Extern 1 (expr_hasTy _ _ _) => apply var_hasTy; reflexivity : types.
 
@@ -559,9 +497,6 @@ Ltac _type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]
   | [ |- val_hasTy _ _ _ ] => solve [eauto with types]
-  | [ |- expr_hasTy _ (Store _ _) _ ] => eapply store_array_hasTy; [ solve [eauto with types] | ]
-  | [ |- expr_hasTy _ (Load _) _ ] => eapply load_array_hasTy; [ solve [eauto with types] ]
-  | [ |- expr_hasTy _ (ref _) _ ] => eapply ref_hasTy
   | [ |- expr_hasTy _ (UnOp ToUInt64Op _) _ ] => eapply cast_u64_op_hasTy
   | [ |- expr_hasTy _ (UnOp ToUInt32Op _) _ ] => eapply cast_u32_op_hasTy
   | [ |- expr_hasTy _ (UnOp ToUInt8Op _) _ ] => eapply cast_u8_op_hasTy

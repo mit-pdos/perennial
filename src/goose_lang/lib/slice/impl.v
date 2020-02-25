@@ -65,24 +65,10 @@ Definition NewSlice (t: ty): val :=
        let: "p" := AllocN "cap" (zero_val t) in
        (Var "p", Var "sz", Var "cap").
 
-Theorem NewSlice_t t : ⊢ NewSlice t : (uint64T -> slice.T t).
-Proof.
-  typecheck.
-Qed.
-
 Definition SliceSingleton: val :=
   λ: "x",
   let: "p" := AllocN #1 "x" in
   ("p", #1, #1).
-
-Theorem SliceSingleton_t t : ⊢ SliceSingleton : (t -> slice.T t).
-Proof.
-  type_step.
-  type_step.
-  { instantiate (1 := arrayT t).
-    typecheck. }
-  typecheck.
-Qed.
 
 Definition MemCpy_rec t: val :=
   rec: "memcpy" "dst" "src" "n" :=
@@ -90,10 +76,6 @@ Definition MemCpy_rec t: val :=
     then #()
     else "dst" <-[t] (![t] "src");;
          "memcpy" ("dst" +ₗ[t] #1) ("src" +ₗ[t] #1) ("n" - #1).
-
-Theorem MemCpy_rec_t t : ⊢ MemCpy_rec t : (arrayT t -> arrayT t -> uint64T -> unitT).
-Proof.
-Admitted.
 
 Definition SliceCopy t : val :=
   λ: "dst" "src",
@@ -109,20 +91,10 @@ Definition SliceRef: val :=
               then (slice.ptr "s" +ₗ "i")
               else Panic "slice index out-of-bounds".
 
-Theorem SliceRef_t t : ⊢ SliceRef : (slice.T t -> uint64T -> arrayT t).
-Proof.
-  typecheck.
-Qed.
-
 (* TODO: it would be nice if we could panic in the model if this goes
 out-of-bounds, but it seems we need to unfold the definition to use it *)
 Definition SliceSkip t: val :=
   λ: "s" "n", (slice.ptr "s" +ₗ[t] "n", slice.len "s" - "n", slice.cap "s" - "n").
-
-Theorem SliceSkip_t t : ⊢ SliceSkip t : (slice.T t -> uint64T -> slice.T t).
-Proof.
-  typecheck.
-Qed.
 
 Definition SliceTake: val :=
   λ: "s" "n", if: slice.len "s" < "n"
@@ -130,11 +102,6 @@ Definition SliceTake: val :=
               else
                 (* TODO: could this have extra capacity? *)
                 (slice.ptr "s", "n", "n").
-
-Theorem SliceTake_t t : ⊢ SliceTake : (slice.T t -> uint64T -> slice.T t).
-Proof.
-  typecheck.
-Qed.
 
 Definition SliceSubslice t: val :=
   λ: "s" "n1" "n2",
@@ -153,28 +120,9 @@ Definition SliceGet t: val :=
   λ: "s" "i",
   load_ty t (slice.ptr "s" +ₗ[t] "i").
 
-(*
-Theorem SliceGet_t t : ⊢ SliceGet t : (slice.T t -> uint64T -> t).
-Proof.
-  typecheck.
-Qed.
-*)
-
 Definition SliceSet t: val :=
   λ: "s" "i" "v",
   (slice.ptr "s" +ₗ[t] "i") <-[t] "v".
-
-(*
-Theorem SliceSet_t t : ⊢ SliceSet t : (slice.T t -> uint64T -> t -> unitT).
-Proof.
-  type_step.
-  type_step.
-  type_step.
-  eapply store_array_hasTy.
-  { typecheck. }
-  typecheck.
-Qed.
-*)
 
 Definition SliceAppend t: val :=
   λ: "s1" "x",
@@ -192,10 +140,6 @@ Definition SliceAppend t: val :=
     ("p" +ₗ[t] slice.len "s1") <-[t] "x";;
     ("p", "sz", "cap").
 
-Theorem SliceAppend_t t : ⊢ SliceAppend t : (slice.T t -> t -> slice.T t).
-Proof.
-Admitted.
-
 (* TODO: update to handle capacity correctly *)
 Definition SliceAppendSlice t: val :=
   λ: "s1" "s2",
@@ -211,13 +155,6 @@ Definition ArrayCopy (t:ty): val :=
   let: "p" := AllocN "sz" (zero_val t) in
   MemCpy_rec t "p" "a" "sz";;
   "p".
-
-(*
-Theorem ArrayCopy_t t Γ : Γ ⊢ ArrayCopy t : (uint64T -> arrayT t -> arrayT t).
-Proof.
-  typecheck.
-Qed.
-*)
 
 Definition forSlice t: val :=
   λ: "body" "s",
@@ -236,10 +173,3 @@ Definition ForSlice t (iv: binder) (xv: binder) (s: expr) (body: expr): expr :=
 End goose_lang.
 
 Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.
-
-Hint Resolve raw_slice_t NewSlice_t
-     SliceTake_t SliceSkip_t SliceSubslice_t (* SliceGet_t SliceSet_t *)
-     SliceAppend_t : types.
-(*
-Hint Resolve zero_array_t (* ArrayCopy_t *) : types.
-*)

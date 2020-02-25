@@ -6,8 +6,8 @@ Notation MapNilV def := (InjLV def).
 Notation AllocMap v := (Alloc (MapNilV v)) (only parsing).
 
 Section goose_lang.
-  Context {ext:ext_op}.
-  Local Coercion Var' (s:string) : expr := Var s.
+Context {ext:ext_op}.
+Local Coercion Var' (s:string) : expr := Var s.
 
 Definition MapGet: val :=
   λ: "mref" "k",

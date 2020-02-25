@@ -153,108 +153,13 @@ Definition storeField d f : val :=
   | None => λ: <> <>, #()
   end.
 
-Hint Resolve struct_offset_op_hasTy_eq : types.
-
 Local Open Scope heap_types.
 
 Theorem load_struct_ref_hasTy Γ l t ts :
   Γ ⊢ l : structRefT (t::ts) ->
   Γ ⊢ !l : t.
 Proof.
-  intros.
   apply load_hasTy.
-  eapply struct_weaken_hasTy; simpl; eauto.
-Qed.
-
-Theorem load_structRef_off : forall Γ e ts n t,
-  ts !! Z.to_nat n = Some t ->
-  (Γ ⊢ e : structRefT ts)%T ->
-  (Γ ⊢ ! (e +ₗ #n) : t)%T.
-Proof.
-  intros.
-  destruct (elem_of_list_split_length ts (Z.to_nat n) t)
-    as [l1 [l2 (?&?)]]; auto; subst.
-  eapply load_struct_ref_hasTy.
-  eapply struct_offset_op_hasTy_eq; eauto.
-  rewrite drop_app_alt; auto.
-Qed.
-
-Hint Resolve load_structRef_off : types.
-
-Hint Rewrite ty_size_length : ty.
-
-Theorem struct_offset_0_hasTy Γ ts e :
-  Γ ⊢ e : structRefT ts ->
-  Γ ⊢ (e +ₗ #0) : structRefT ts.
-Proof.
-  apply struct_offset_op_hasTy.
-Qed.
-
-Hint Resolve load_hasTy.
-
-Hint Rewrite @drop_app : ty.
-
-Theorem fieldOffset_t Γ fs f z t e :
-  field_offset fs f = Some (z, t) ->
-  Γ ⊢ e : structRefT (flatten_ty (structTy fs)) ->
-  Γ ⊢ (e +ₗ #z) : structRefT (flatten_ty t).
-Proof using Type.
-  revert e z t.
-  induction fs; simpl; intros.
-  - congruence.
-  - destruct a as [f' t']; simpl in H0.
-    destruct (f' =? f)%string.
-    + inversion H; subst; clear H.
-      apply struct_offset_0_hasTy.
-      eapply struct_weaken_hasTy; eauto.
-    + destruct_with_eqn (field_offset fs f); try congruence.
-      destruct p as [off t''].
-      inversion H; subst; clear H.
-
-      apply struct_offset_op_collapse_hasTy; auto.
-      eapply IHfs; eauto.
-
-      eapply struct_offset_op_hasTy_eq; eauto.
-      autorewrite with ty.
-      destruct fs; simpl in *; congruence.
-Qed.
-
-(*
-Theorem loadField_t : forall d f t z,
-  field_offset d f = Some (z, t) ->
-  forall Γ, (Γ ⊢v loadField d f : (structRefTy d -> t))%T.
-Proof.
-  unfold structRefTy, loadField; simpl.
-  intros.
-  rewrite H; simpl.
-  type_step.
-  econstructor; [ | apply load_ty'_t ].
-  eapply fieldOffset_t; eauto.
-  typecheck.
-  rewrite lookup_insert //=.
-Qed.
-*)
-
-Theorem structFieldRef_t Γ d f t z :
-  field_offset d f = Some (z, t) ->
-  Γ ⊢v structFieldRef d f : (structRefTy d -> structRefT (flatten_ty t)).
-Proof.
-  unfold structRefTy, structFieldRef.
-  intros.
-  rewrite H.
-  type_step.
-  admit. (* more scaled offset typing *)
-Admitted.
-
-Hint Constructors expr_hasTy.
-
-Theorem store_struct_singleton_ty Γ e v t :
-  Γ ⊢ e : structRefT [t] ->
-  Γ ⊢ v : t ->
-  Γ ⊢ (e <- v) : unitT.
-Proof.
-  intros.
-  eapply store_hasTy; eauto.
 Qed.
 
 End goose_lang.
