@@ -18,12 +18,12 @@ Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Lemma wpc_ci_inv s k N E1 e Φ Φc P γ γ' :
+Lemma wpc_ci_inv s k N E1 E2 e Φ Φc P γ γ' :
   ↑N ⊆ E1 →
   staged_inv N k (E1 ∖ ↑N) (E1 ∖ ↑N) γ γ' P ∗
   staged_pending γ' ∗
-  WPC e @ s; ((S k)); E1; ∅ {{ Φ }} {{ Φc }} ⊢
-  WPC e @ s; (2 * (S k)); E1; ∅ {{ Φ }} {{ Φc ∗ P }}.
+  WPC e @ s; ((S k)); E1; E2 {{ Φ }} {{ Φc }} ⊢
+  WPC e @ s; (2 * (S k)); E1; E2 {{ Φ }} {{ Φc ∗ P }}.
 Proof.
   iIntros (Hin) "(#Hinv&Hpending&H)".
   iApply (wpc_strong_crash_frame s s _ _ E1 _ _ with "H"); try auto.
@@ -33,14 +33,14 @@ Proof.
   iApply (staged_inv_weak_open); eauto.
 Qed.
 
-Lemma wpc_staged_invariant_aux s k E1 E1' e Φ Φc P Q N γ γ' :
+Lemma wpc_staged_invariant_aux s k E1 E1' E2 e Φ Φc P Q N γ γ' :
   E1 ⊆ E1' →
   ↑N ⊆ E1 →
   staged_inv N (2 * (S k)) (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   NC ∗
-  staged_value N γ (WPC e @ k; E1 ∖ ↑N;∅ {{ v, Q v ∗ □ (Q v -∗ P) ∗ (staged_value N γ (Q v) True -∗ Φ v ∧ Φc)}}{{Φc ∗ P}}) Φc
+  staged_value N γ (WPC e @ k; E1 ∖ ↑N; ∅ {{ v, Q v ∗ □ (Q v -∗ P) ∗ (staged_value N γ (Q v) True -∗ Φ v ∧ Φc)}}{{Φc ∗ P}}) Φc
   ⊢ |={E1,E1}_(S (2 * S (S k)))=>
-     WPC e @ s; 2 * S (S k); E1; ∅ {{ v, Φ v }} {{Φc}} ∗ NC.
+     WPC e @ s; 2 * S (S k); E1; E2 {{ v, Φ v }} {{Φc}} ∗ NC.
 Proof.
   iIntros (??) "(#Hsi&HNC&Hwp)".
   iLöb as "IH" forall (e).
@@ -199,7 +199,8 @@ Proof.
   iApply (big_sepL_mono with "Hefs").
   iIntros. iApply (wpc_strong_mono' with "[$]"); eauto.
   { lia. }
-  { iSplit; first auto. rewrite difference_diag_L; auto. }
+  { set_solver +. }
+  { iSplit; first auto. iIntros. iApply fupd_mask_weaken; eauto; set_solver. }
   - iIntros.
     iMod (staged_inv_open with "[$]") as "[(H&Hclo')|Hcrash]"; auto; last first.
     {
@@ -232,16 +233,17 @@ Proof.
       iIntros. iApply step_fupdN_inner_later; auto. iNext; eauto.
     }
     iApply step_fupdN_inner_later; auto.
+    { set_solver+. }
 Qed.
 
-Lemma wpc_staged_invariant s k E1 E1' e Φ Φc Q Qrest Qnew P N γ γ' :
+Lemma wpc_staged_invariant s k E1 E1' E2 e Φ Φc Q Qrest Qnew P N γ γ' :
   E1 ⊆ E1' →
   ↑N ⊆ E1 →
   to_val e = None →
   staged_inv N (2 * (S k)) (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   staged_value N γ Q Qrest ∗
   (Φc ∧ (▷ (Q) -∗ WPC e @ NotStuck; k; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
-  WPC e @ s; (2 * S (S k)); E1; ∅ {{ Φ }} {{ Φc }}.
+  WPC e @ s; (2 * S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (?? Hval) "(#Hinv&Hval&Hwp)".
   rewrite !wpc_unfold /wpc_pre.
@@ -251,6 +253,7 @@ Proof.
     iApply step_fupdN_inner_later; try reflexivity.
     repeat iNext.
     iApply step_fupdN_inner_later; try reflexivity.
+    { set_solver. }
     eauto.
   }
   rewrite Hval.
@@ -320,14 +323,15 @@ Proof.
   iModIntro. iModIntro. iNext. iMod "Hclo''" as "_".
   iModIntro.
   iPoseProof (wpc_staged_invariant_aux s k E1 E1'
-                _ Φ Φc P Qnew N γ with "[Hclo HNC]") as "H"; try assumption.
+                _ _ Φ Φc P Qnew N γ with "[Hclo HNC]") as "H"; try assumption.
   { iIntros. iFrame "Hinv". iFrame. }
   iApply (step_fupdN_inner_wand with "H"); auto.
   iIntros "(?&?)". iFrame.
   iApply (big_sepL_mono with "Hefs").
   iIntros. iApply (wpc_strong_mono' with "[$]"); eauto.
   - lia.
-  - iSplit; eauto. rewrite difference_diag_L; eauto.
+  - set_solver+.
+  - iSplit; first auto. iIntros. iApply fupd_mask_weaken; eauto; set_solver.
 Qed.
 
 

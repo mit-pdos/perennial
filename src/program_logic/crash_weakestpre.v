@@ -322,11 +322,11 @@ Proof.
   by iApply "Hweaken".
 Qed.
 
-Lemma wpc_strong_crash_frame s1 s2 k1 k2 E1 E2 e Φ Φc Ψc :
+Lemma wpc_strong_crash_frame s1 s2 k1 k2 E1 E2 E e Φ Φc Ψc :
   s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 →
-  WPC e @ s1; k1; E1 ; ∅ {{ Φ }} {{ Φc }} -∗
+  WPC e @ s1; k1; E1 ; E {{ Φ }} {{ Φc }} -∗
   (C -∗ |={E2, E2}_(k2 - k1)=> Ψc) -∗
-  WPC e @ s2; k2; E2 ; ∅ {{ Φ }} {{ Φc ∗ Ψc }}.
+  WPC e @ s2; k2; E2 ; E {{ Φ }} {{ Φc ∗ Ψc }}.
 Proof.
   iIntros (?? HE) "H HΦ".
   iLöb as "IH" forall (e E1 E2 HE Φ Φc Ψc).
@@ -377,7 +377,7 @@ Proof.
     iMod "H".
     iMod "Hclo".
     iApply (step_fupdN_inner_wand with "HΦ"); auto. iIntros "HΦ".
-    iApply (step_fupdN_inner_wand with "H"); eauto; try lia.
+    iApply (step_fupdN_inner_wand' with "H"); eauto; try lia.
     iIntros; by iFrame.
 Qed.
 
