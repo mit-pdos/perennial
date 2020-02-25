@@ -18,7 +18,8 @@ Example testByteSliceToString_ok : testByteSliceToString #() ~~> #true := t.
 
 (* copy.go *)
 Example testCopySimple_ok : testCopySimple #() ~~> #true := t.
-Example testCopyDifferentLengths_ok : testCopyDifferentLengths #() ~~> #true := t.
+Example testCopyShorterDst_ok : testCopyShorterDst #() ~~> #true := t.
+Example testCopyShorterSrc_ok : testCopyShorterSrc #() ~~> #true := t.
 
 (* encoding.go *)
 Example testEncDec32Simple_ok : testEncDec32Simple #() ~~> #true := t.
@@ -29,15 +30,24 @@ Example testEncDec64_ok : testEncDec64 #() ~~> #true := t.
 (* function_ordering.go *)
 Fail Example testFunctionOrdering_ok : failing_testFunctionOrdering #() ~~> #true := t.
 
+(* lock.go *)
+Example testsUseLocks_ok : testsUseLocks #() ~~> #true := t.
+
 (* loops.go *)
 Example testStandardForLoop_ok : testStandardForLoop #() ~~> #true := t.
 Example testForLoopWait_ok : testForLoopWait #() ~~> #true := t.
 Example testBreakFromLoopWithContinue_ok : testBreakFromLoopWithContinue #() ~~> #true := t.
 Fail Example testBreakFromLoopNoContinue_ok : failing_testBreakFromLoopNoContinue #() ~~> #true := t.
+Example testNestedLoops_ok : testNestedLoops #() ~~> #true := t.
+Example testNestedGoStyleLoops_ok : testNestedGoStyleLoops #() ~~> #true := t.
 
 (* maps.go *)
 Example testIterateMap_ok : testIterateMap #() ~~> #true := t.
 Example testMapSize_ok : testMapSize #() ~~> #true := t.
+
+(* nil.go *)
+Fail Example testCompareSliceToNil_ok : failing_testCompareSliceToNil #() ~~> #true := t.
+Example testComparePointerToNil_ok : testComparePointerToNil #() ~~> #true := t.
 
 (* operations.go *)
 Example testReverseAssignOps64_ok : testReverseAssignOps64 #() ~~> #true := t.
@@ -69,4 +79,7 @@ Example testNestedStructUpdates_ok : testNestedStructUpdates #() ~~> #true := t.
 Example testStructConstructions_ok : testStructConstructions #() ~~> #true := t.
 Example testStoreInStructVar_ok : testStoreInStructVar #() ~~> #true := t.
 Example testStoreInStructPointerVar_ok : testStoreInStructPointerVar #() ~~> #true := t.
+
+(* wal.go *)
+Example testWal_ok : testWal #() ~~> #true := t.
 

@@ -2,10 +2,23 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang.interpreter Require Import interpret_types.
 From Perennial.goose_lang.interpreter Require Import interpreter.
 From Perennial.goose_lang.interpreter Require Import disk_interpreter.
+From RecordUpdate Require Import RecordSet.
 
 From Perennial.goose_lang.ffi Require Import disk.
 
-Definition startstate : btstate := inhabitant.
+(* there is a right way to do this, and this is definitely not it *)
+Definition ffi_is_disk : ffi_state -> disk_state.
+Proof.
+  eauto.
+Defined.
+
+Definition ffi_is_disk' : disk_state -> ffi_state.
+Proof.
+  eauto.
+Defined.
+
+Definition startstate : btstate := let p := inhabitant in
+                                   (set world (fun d => ffi_is_disk' $ init_disk (ffi_is_disk d) 30) (fst p), snd p).
 
 (* testing infrastructure *)
 Definition run (p: expr): Error val :=

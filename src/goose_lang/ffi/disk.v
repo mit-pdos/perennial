@@ -77,6 +77,12 @@ Proof.
   refine (mkFfiModel disk_state _).
 Defined.
 
+Fixpoint init_disk (d: disk_state) (sz: nat) : disk_state :=
+  match sz with
+  | O => d
+  | S n => <[(Z.of_nat n) := (inhabitant: Block)]> (init_disk d n)
+  end.
+
 Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
   fmap b2val (vec_to_list bl).
 
