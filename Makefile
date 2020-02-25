@@ -42,6 +42,7 @@ default: src/ShouldBuild.vo test
 all: $(VFILES:.v=.vo)
 test: $(TEST_VO)
 vos: src/ShouldBuild.vos
+interpreter: src/goose_lang/interpreter/generated_test.vo
 
 _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 	@echo "-Q src $$(cat libname)" > $@

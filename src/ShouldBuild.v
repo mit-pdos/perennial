@@ -30,9 +30,9 @@ From Goose.github_com.mit_pdos Require
      goose_nfsd.buftxn.
 
 (* interpreter semantics tests *)
-From Perennial.goose_lang.interpreter Require
+(* From Perennial.goose_lang.interpreter Require
      generated_test
-     disk_interpreter.
+     disk_interpreter. *)
 
 (* NFS spec *)
 From Perennial.goose_lang.examples.nfs_spec Require
