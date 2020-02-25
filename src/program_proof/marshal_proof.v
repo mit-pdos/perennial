@@ -126,43 +126,6 @@ Module DecM.
   Qed.
 End DecM.
 
-Lemma loc_add_Sn l n :
-  l +ₗ S n = (l +ₗ 1) +ₗ n.
-Proof.
-  rewrite loc_add_assoc.
-  f_equal.
-  lia.
-Qed.
-
-Theorem heap_array_to_list {Σ} {A} l0 (vs: list A) (P: loc -> A -> iProp Σ) :
-  ([∗ map] l↦v ∈ heap_array l0 vs, P l v) ⊣⊢
-  ([∗ list] i↦v ∈ vs, P (l0 +ₗ i) v).
-Proof.
-  (iInduction (vs) as [| v vs] "IH" forall (l0)).
-  - simpl.
-    rewrite big_sepM_empty.
-    auto.
-  - simpl.
-    rewrite loc_add_0.
-    rewrite big_sepM_union.
-    { rewrite big_sepM_singleton.
-      setoid_rewrite loc_add_Sn.
-      iSpecialize ("IH" $! (l0 +ₗ 1)).
-      iSplit.
-      + iIntros "($&Hm)".
-        iApply ("IH" with "Hm").
-      + iIntros "($&Hl)".
-        iApply ("IH" with "Hl").
-    }
-    symmetry.
-    apply heap_array_map_disjoint; intros.
-    apply (not_elem_of_dom (D := gset loc)).
-    rewrite dom_singleton.
-    intros ?%elem_of_singleton.
-    rewrite loc_add_assoc in H2.
-    apply loc_add_ne in H2; auto; lia.
-Qed.
-
 Transparent slice.T.
 
 Theorem slice_val_ty s t : val_ty (slice_val s) (slice.T t).
@@ -401,59 +364,6 @@ Proof.
     simpl; len.
   }
   len.
-Qed.
-
-Definition list_to_block (l: list u8) : Block :=
-  match decide (length l = Z.to_nat 4096) with
-  | left H => eq_rect _ _ (list_to_vec l) _ H
-  | _ => inhabitant
-  end.
-
-Lemma vec_to_list_of_list_eq_rect A (l: list A) n (H: length l = n) :
-  vec_to_list (eq_rect _ _ (list_to_vec l) _ H) = l.
-Proof.
-  rewrite <- H; simpl.
-  rewrite vec_to_list_of_list.
-  auto.
-Qed.
-
-Definition list_to_block_to_vals l :
-  length l = Z.to_nat 4096 ->
-  Block_to_vals (list_to_block l) = b2val <$> l.
-Proof.
-  intros H.
-  rewrite /list_to_block /Block_to_vals.
-  rewrite decide_left.
-  f_equal.
-  rewrite vec_to_list_of_list_eq_rect; auto.
-Qed.
-
-Theorem big_sepL_impl A (f g: nat -> A -> iProp Σ) (l: list A) :
-  (forall i x, f i x -∗ g i x) ->
-  ([∗ list] i↦x ∈ l, f i x) -∗
-  ([∗ list] i↦x ∈ l, g i x).
-Proof.
-  intros Himpl.
-  apply big_opL_gen_proper; auto.
-  typeclasses eauto.
-Qed.
-
-Lemma array_to_block l q (bs: list byte) :
-  length bs = Z.to_nat 4096 ->
-  l ↦∗[byteT]{q} (b2val <$> bs) -∗ mapsto_block l q (list_to_block bs).
-Proof.
-  rewrite /array /mapsto_block /Block_to_vals /list_to_block.
-  iIntros (H) "Hl".
-  rewrite decide_left.
-  rewrite heap_array_to_list.
-  rewrite !big_sepL_fmap.
-  rewrite vec_to_list_of_list_eq_rect.
-  setoid_rewrite Z.mul_1_l.
-  iApply (big_sepL_impl with "Hl"); simpl.
-  iIntros (i x) "[Hl _]".
-  simpl.
-  rewrite loc_add_0 right_id /b2val.
-  iFrame.
 Qed.
 
 Theorem wp_Enc__Finish stk E enc vs :
