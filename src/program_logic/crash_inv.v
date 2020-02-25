@@ -6,6 +6,8 @@ From Perennial.program_logic Require Import staged_invariant crash_weakestpre.
 Set Default Proof Using "Type".
 Import uPred.
 
+Definition LV (n: nat) := 2 * (S (S n)).
+
 Section ci.
 Context `{!irisG Λ Σ}.
 Context `{!stagedG Σ}.
@@ -18,31 +20,34 @@ Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Lemma wpc_ci_inv s k N E1 E2 e Φ Φc P γ γ' :
+Lemma wpc_ci_inv' s k k' N E1 E2 e Φ Φc P γ γ' :
+  k' ≤ k →
   ↑N ⊆ E1 →
-  staged_inv N k (E1 ∖ ↑N) (E1 ∖ ↑N) γ γ' P ∗
+  staged_inv N (k') (E1 ∖ ↑N) (E1 ∖ ↑N) γ γ' P ∗
   staged_pending γ' ∗
   WPC e @ s; ((S k)); E1; E2 {{ Φ }} {{ Φc }} ⊢
   WPC e @ s; (2 * (S k)); E1; E2 {{ Φ }} {{ Φc ∗ P }}.
 Proof.
-  iIntros (Hin) "(#Hinv&Hpending&H)".
+  iIntros (Hle Hin) "(#Hinv&Hpending&H)".
   iApply (wpc_strong_crash_frame s s _ _ E1 _ _ with "H"); try auto.
   { lia. }
   iIntros "HΦc".
   replace (2 * S k - S k) with (S k) by lia.
+  iApply (step_fupdN_inner_wand _ E1 _ (S k') with "[HΦc Hpending]"); eauto; try lia.
   iApply (staged_inv_weak_open); eauto.
 Qed.
 
-Lemma wpc_staged_invariant_aux s k E1 E1' E2 e Φ Φc P Q N γ γ' :
+Lemma wpc_staged_invariant_aux' s k k' E1 E1' E2 e Φ Φc P Q N γ γ' :
   E1 ⊆ E1' →
   ↑N ⊆ E1 →
-  staged_inv N (2 * (S k)) (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
+  (2 * (S k)) ≤ k' →
+  staged_inv N k' (* (2 * (S k)) *) (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   NC ∗
   staged_value N γ (WPC e @ k; E1 ∖ ↑N; ∅ {{ v, Q v ∗ □ (Q v -∗ P) ∗ (staged_value N γ (Q v) True -∗ Φ v ∧ Φc)}}{{Φc ∗ P}}) Φc
   ⊢ |={E1,E1}_(S (2 * S (S k)))=>
      WPC e @ s; 2 * S (S k); E1; E2 {{ v, Φ v }} {{Φc}} ∗ NC.
 Proof.
-  iIntros (??) "(#Hsi&HNC&Hwp)".
+  iIntros (???) "(#Hsi&HNC&Hwp)".
   iLöb as "IH" forall (e).
   destruct (to_val e) as [v|] eqn:Hval.
   {
@@ -106,13 +111,14 @@ Proof.
   { iSplitL "H".
     -  iApply "H".
     - iAlways. iIntros "HC H".
-    replace (2 * (((S k)))) with (S k + S k) by lia.
-    rewrite Nat_iter_add.
     iPoseProof (wpc_crash with "H") as "H".
     iSpecialize ("H" with "[$]").
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hclo".
     { set_solver. }
     iMod "H". iModIntro.
+    iApply (step_fupdN_le (2 * S k)); eauto.
+    replace (2 * (((S k)))) with (S k + S k) by lia.
+    rewrite Nat_iter_add.
     iEval rewrite step_fupdN_S_fupd.
     iApply (step_fupdN_wand with "H").
     iIntros "HP".
@@ -173,13 +179,14 @@ Proof.
   { iSplitL "H". iApply "H".
     iAlways.
     iIntros "HC H".
-    replace (2 * (((S k)))) with (S k + S k) by lia.
-    rewrite Nat_iter_add.
     iPoseProof (wpc_crash with "H") as "H".
     iSpecialize ("H" with "[$]").
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hclo".
     { set_solver. }
     iMod "H". iModIntro.
+    iApply (step_fupdN_le (2 * S k)); eauto.
+    replace (2 * (((S k)))) with (S k + S k) by lia.
+    rewrite Nat_iter_add.
     iEval rewrite step_fupdN_S_fupd.
     iApply (step_fupdN_wand with "H").
     iIntros "HP".
@@ -236,16 +243,17 @@ Proof.
     { set_solver+. }
 Qed.
 
-Lemma wpc_staged_invariant s k E1 E1' E2 e Φ Φc Q Qrest Qnew P N γ γ' :
+Lemma wpc_staged_invariant' s k k' E1 E1' E2 e Φ Φc Q Qrest Qnew P N γ γ' :
   E1 ⊆ E1' →
   ↑N ⊆ E1 →
+  (2 * (S k)) ≤ k' →
   to_val e = None →
-  staged_inv N (2 * (S k)) (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
+  staged_inv N k' (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   staged_value N γ Q Qrest ∗
   (Φc ∧ (▷ (Q) -∗ WPC e @ NotStuck; k; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
   WPC e @ s; (2 * S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (?? Hval) "(#Hinv&Hval&Hwp)".
+  iIntros (??? Hval) "(#Hinv&Hval&Hwp)".
   rewrite !wpc_unfold /wpc_pre.
   iSplit; last first.
   {
@@ -303,12 +311,13 @@ Proof.
   { iSplitL "H".
     - iNext. iFrame.
     - iAlways. iIntros "HC H".
-    replace (2 * (((S k)))) with (S k + S k) by lia.
-    rewrite Nat_iter_add.
     iPoseProof (wpc_crash with "H") as "H".
     iSpecialize ("H" with "[$]").
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hclo".
     { set_solver. }
+    iApply (step_fupdN_le (2 * S k)); eauto.
+    replace (2 * (((S k)))) with (S k + S k) by lia.
+    rewrite Nat_iter_add.
     iMod "H". iModIntro.
     iEval rewrite step_fupdN_S_fupd.
     iApply (step_fupdN_wand with "H").
@@ -322,7 +331,7 @@ Proof.
   iMod (fupd_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
   iModIntro. iModIntro. iNext. iMod "Hclo''" as "_".
   iModIntro.
-  iPoseProof (wpc_staged_invariant_aux s k E1 E1'
+  iPoseProof (wpc_staged_invariant_aux' s k k' E1 E1'
                 _ _ Φ Φc P Qnew N γ with "[Hclo HNC]") as "H"; try assumption.
   { iIntros. iFrame "Hinv". iFrame. }
   iApply (step_fupdN_inner_wand with "H"); auto.
