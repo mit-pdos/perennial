@@ -28,6 +28,24 @@ Proof.
     iApply (Heq with "HQ"); auto.
 Qed.
 
+Theorem inv_readonly_acc {Σ} `{invG Σ}
+        (P: Qp -> iProp Σ)
+        `{fractional.Fractional _ P} {Htimeless: forall q, Timeless (P q)}
+        N E :
+  ↑N ⊆ E →
+  (inv N (∃ q, P q)
+   ={E}=∗
+   ∃ q, P q)%I.
+Proof.
+  iIntros (HN) "#Hinv".
+  iInv N as (q) ">H" "Hclose".
+  rewrite -(Qp_div_2 q).
+  iDestruct (H0 (q/2)%Qp (q/2)%Qp with "H") as "[H1 H2]".
+  iExists _; iFrame.
+  iApply "Hclose".
+  iExists _; iFrame.
+Qed.
+
 Section goose_lang.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
@@ -509,19 +527,6 @@ Proof.
   iApply ("Hupd" with "[$]").
 Qed.
 
-Theorem inv_struct_field_mapsto_split N l d f v E :
-  ↑N ⊆ E →
-  inv N (∃ q, struct_field_mapsto l q d f v)
-  ={E}=∗
-  ∃ q, struct_field_mapsto l q d f v.
-Proof.
-  iIntros (HN) "#Hinv".
-  iInv N as (q) ">[H1 H2]" "Hclose".
-  iExists _; iFrame.
-  iApply "Hclose".
-  iExists _; iFrame.
-Qed.
-
 Theorem wp_loadField_inv N l d f v stk E :
   ↑N ⊆ E →
   {{{ inv N (∃ q, l ↦[d :: f]{q} v) }}}
@@ -529,7 +534,7 @@ Theorem wp_loadField_inv N l d f v stk E :
   {{{ RET v; True }}}.
 Proof.
   iIntros (HN Φ) "#Hinv HΦ".
-  iMod (inv_struct_field_mapsto_split with "Hinv") as (q) "Hv"; auto.
+  iMod (inv_readonly_acc with "Hinv") as (q) "Hv"; auto.
   wp_apply (wp_loadField with "Hv"); iIntros "_".
   iApply "HΦ"; done.
 Qed.
