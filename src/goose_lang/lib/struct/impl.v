@@ -92,16 +92,6 @@ Definition buildStruct d (fvs: list (string*expr)) : expr :=
   | None => LitV LitUnit
   end.
 
-(* wraps AllocStruct for typechecking *)
-Definition allocStruct (d:descriptor) : val :=
-  λ: "v", Alloc (Var "v").
-
-Definition allocStructLit (d:descriptor) (fvs: list (string*expr)) : expr :=
-  match build_struct_val d fvs with
-  | Some v => Alloc v
-  | None => LitV LitUnit
-  end.
-
 Fixpoint structTy d : ty :=
   match d with
   | [] => unitT
@@ -110,6 +100,17 @@ Fixpoint structTy d : ty :=
 
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
+
+(* TODO: add type annotations to these and use them *)
+
+Definition allocStruct (d:descriptor) : val :=
+  λ: "v", Alloc (Var "v").
+
+Definition allocStructLit (d:descriptor) (fvs: list (string*expr)) : expr :=
+  match build_struct_val d fvs with
+  | Some v => Alloc v
+  | None => LitV LitUnit
+  end.
 
 Definition loadStruct (d:descriptor) : val := load_ty (structTy d).
 

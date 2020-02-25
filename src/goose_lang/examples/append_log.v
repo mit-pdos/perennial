@@ -20,8 +20,8 @@ End Log.
 Definition Log__mkHdr: val :=
   rec: "Log__mkHdr" "log" :=
     let: "enc" := marshal.NewEnc disk.BlockSize in
-    marshal.Enc__PutInt "enc" (struct.get Log.S "sz" "log");;
-    marshal.Enc__PutInt "enc" (struct.get Log.S "diskSz" "log");;
+    marshal.Enc__PutInt "enc" (struct.loadF Log.S "sz" "log");;
+    marshal.Enc__PutInt "enc" (struct.loadF Log.S "diskSz" "log");;
     marshal.Enc__Finish "enc".
 
 Definition Log__writeHdr: val :=
@@ -32,12 +32,12 @@ Definition Init: val :=
   rec: "Init" "diskSz" :=
     (if: "diskSz" < #1
     then
-      (struct.mk Log.S [
+      (struct.new Log.S [
          "sz" ::= #0;
          "diskSz" ::= #0
        ], #false)
     else
-      let: "log" := struct.mk Log.S [
+      let: "log" := struct.new Log.S [
         "sz" ::= #0;
         "diskSz" ::= "diskSz"
       ] in
@@ -50,14 +50,14 @@ Definition Open: val :=
     let: "dec" := marshal.NewDec "hdr" in
     let: "sz" := marshal.Dec__GetInt "dec" in
     let: "diskSz" := marshal.Dec__GetInt "dec" in
-    struct.mk Log.S [
+    struct.new Log.S [
       "sz" ::= "sz";
       "diskSz" ::= "diskSz"
     ].
 
 Definition Log__Get: val :=
   rec: "Log__Get" "log" "i" :=
-    let: "sz" := struct.get Log.S "sz" "log" in
+    let: "sz" := struct.loadF Log.S "sz" "log" in
     (if: "i" < "sz"
     then (disk.Read (#1 + "i"), #true)
     else (slice.nil, #false)).
@@ -74,19 +74,11 @@ Definition Log__Append: val :=
     then #false
     else
       writeAll "bks" (#1 + "sz");;
-      let: "newLog" := struct.mk Log.S [
-        "sz" ::= "sz" + slice.len "bks";
-        "diskSz" ::= struct.loadF Log.S "diskSz" "log"
-      ] in
-      Log__writeHdr "newLog";;
-      struct.store Log.S "log" "newLog";;
+      struct.storeF Log.S "sz" "log" (struct.loadF Log.S "sz" "log" + slice.len "bks");;
+      Log__writeHdr "log";;
       #true).
 
 Definition Log__Reset: val :=
   rec: "Log__Reset" "log" :=
-    let: "newLog" := struct.mk Log.S [
-      "sz" ::= #0;
-      "diskSz" ::= struct.loadF Log.S "diskSz" "log"
-    ] in
-    Log__writeHdr "newLog";;
-    struct.store Log.S "log" "newLog".
+    struct.storeF Log.S "sz" "log" #0;;
+    Log__writeHdr "log".
