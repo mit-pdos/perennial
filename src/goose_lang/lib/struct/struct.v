@@ -107,6 +107,20 @@ Proof.
   - refine _.
 Qed.
 
+Global Instance struct_field_mapsto_fractional l d f v : fractional.Fractional (λ q : Qp, struct_field_mapsto l q d f v).
+Proof.
+  rewrite /struct_field_mapsto.
+  destruct (field_offset d f).
+  - destruct p. refine _.
+  - refine _.
+Qed.
+
+Global Instance struct_field_mapsto_as_fractional l q d f v : fractional.AsFractional (struct_field_mapsto l q d f v) (λ q0 : Qp, struct_field_mapsto l q0 d f v) q.
+Proof.
+  refine (fractional.Build_AsFractional _ _ _ _ _ _).
+  reflexivity.
+Qed.
+
 Local Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
   match d with
   | [] => ⌜v = #()⌝
