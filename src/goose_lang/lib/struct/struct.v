@@ -1,4 +1,5 @@
 From iris.proofmode Require Import coq_tactics reduction.
+From iris.base_logic.lib Require Import invariants.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Export typed_mem struct.impl.
 
@@ -508,6 +509,30 @@ Proof.
   iApply ("Hupd" with "[$]").
 Qed.
 
+Theorem inv_struct_field_mapsto_split N l d f v E :
+  ↑N ⊆ E →
+  inv N (∃ q, struct_field_mapsto l q d f v)
+  ={E}=∗
+  ∃ q, struct_field_mapsto l q d f v.
+Proof.
+  iIntros (HN) "#Hinv".
+  iInv N as (q) ">[H1 H2]" "Hclose".
+  iExists _; iFrame.
+  iApply "Hclose".
+  iExists _; iFrame.
+Qed.
+
+Theorem wp_loadField_inv N l d f v stk E :
+  ↑N ⊆ E →
+  {{{ inv N (∃ q, l ↦[d :: f]{q} v) }}}
+    struct.loadF d f #l @ stk; E
+  {{{ RET v; True }}}.
+Proof.
+  iIntros (HN Φ) "#Hinv HΦ".
+  iMod (inv_struct_field_mapsto_split with "Hinv") as (q) "Hv"; auto.
+  wp_apply (wp_loadField with "Hv"); iIntros "_".
+  iApply "HΦ"; done.
+Qed.
 
 End goose_lang.
 
