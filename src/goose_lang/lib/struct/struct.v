@@ -99,6 +99,14 @@ Definition struct_field_mapsto l q (d: descriptor) (f0: string) (fv:val): iProp 
   | None => ⌜fv = #()⌝
   end.
 
+Global Instance struct_field_mapsto_timeless l d f q v : Timeless (struct_field_mapsto l q d f v).
+Proof.
+  rewrite /struct_field_mapsto.
+  destruct (field_offset d f).
+  - destruct p. refine _.
+  - refine _.
+Qed.
+
 Local Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
   match d with
   | [] => ⌜v = #()⌝
