@@ -171,18 +171,18 @@ Proof.
   eauto.
 Qed.
 
-Theorem log_struct_to_fields lptr (sz disk_sz: u64) :
-  lptr ↦[struct.t Log.S] (#sz, (#disk_sz, #())) -∗
+Theorem log_struct_to_fields lptr (ml: loc) (sz disk_sz: u64) :
+  lptr ↦[struct.t Log.S] (#ml, (#sz, (#disk_sz, #()))) -∗
   log_fields lptr sz disk_sz.
 Proof.
   iIntros "Hs".
-  iDestruct (struct_fields_split with "Hs") as "(Hsz&Hdisk_sz&_)".
+  iDestruct (struct_fields_split with "Hs") as "(_&Hsz&Hdisk_sz&_)".
   iFrame.
 Qed.
 
-Theorem wp_init stk E (sz: u64) vs :
+Theorem wp_init (sz: u64) vs :
   {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
-    Init #sz @ stk; E
+    Init #sz
   {{{ l (ok: bool), RET (#l, #ok); ⌜ok⌝ -∗ ptsto_log l [] }}}.
 Proof.
   iIntros (Φ) "[Hdisk %] HΦ".
@@ -190,13 +190,15 @@ Proof.
   wp_lam.
   wp_pures.
   wp_if_destruct; wp_pures.
-  - wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
+  - wp_apply wp_new_free_lock; iIntros (ml) "_".
+    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
     iApply "HΦ".
     iIntros ([]).
   - destruct vs.
     { simpl in *.
       word. }
+    wp_apply wp_new_free_lock; iIntros (ml) "_".
     wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
     iDestruct (log_struct_to_fields with "Hs") as "Hfields".
     wp_pures.
@@ -796,9 +798,9 @@ Proof.
     by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
 Qed.
 
-Theorem wp_Open stk E vs :
+Theorem wp_Open vs :
   {{{ crashed_log vs }}}
-    Open #() @ stk; E
+    Open #()
   {{{ lptr, RET #lptr; ptsto_log lptr vs }}}.
 Proof.
   iIntros (Φ) "Hlog HΦ".
@@ -826,6 +828,7 @@ Proof.
   wp_apply (wp_Dec__GetInt with "Hdec").
   iIntros "_".
   wp_steps.
+  wp_apply wp_new_free_lock; iIntros (ml) "_".
   wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
   iDestruct (log_struct_to_fields with "Hs") as "Hfields".
   iApply "HΦ".
