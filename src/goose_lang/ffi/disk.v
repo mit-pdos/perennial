@@ -110,6 +110,7 @@ Proof.
   intros v; by rewrite vec_to_list_to_option_vec_id.
 Qed.
 
+Global Instance Block0: Inhabited Block := _.
 Global Instance Block_countable : Countable Block := _.
 
 Definition disk_state := gmap Z Block.

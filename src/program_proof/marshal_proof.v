@@ -403,14 +403,6 @@ Proof.
   len.
 Qed.
 
-Instance word_inhabited width (word: Interface.word width) : Inhabited word.
-Proof.
-  constructor.
-  exact (word.of_Z 0).
-Qed.
-
-Instance Block0: Inhabited Block := _.
-
 Definition list_to_block (l: list u8) : Block :=
   match decide (length l = Z.to_nat 4096) with
   | left H => eq_rect _ _ (list_to_vec l) _ H

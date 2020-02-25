@@ -7,6 +7,12 @@ From Perennial Require Import Helpers.LittleEndian.
 
 Open Scope Z_scope.
 
+Instance word_inhabited width (word: Interface.word width) : Inhabited word.
+Proof.
+  constructor.
+  exact (word.of_Z 0).
+Qed.
+
 Record u64_rep := Word64 { u64_car : Naive.word64 }.
 Record u32_rep := Word32 { u32_car : Naive.word32 }.
 Record u8_rep := Word8 { u8_car : Naive.word8 }.
