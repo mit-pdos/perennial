@@ -8,17 +8,28 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
+Lemma byte_ptsto_untype l q (x: u8) :
+  l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
+Proof.
+  rewrite /struct_mapsto /=.
+  rewrite loc_add_0 right_id.
+  iSplit.
+  - iDestruct 1 as "[$ _]".
+  - iDestruct 1 as "$".
+    auto.
+Qed.
+
 Definition list_to_block (l: list u8) : Block :=
   match decide (length l = Z.to_nat 4096) with
   | left H => eq_rect _ _ (list_to_vec l) _ H
   | _ => inhabitant
   end.
 
-Lemma vec_to_list_of_list_eq_rect A (l: list A) n (H: length l = n) :
+Lemma vec_to_list_to_vec_eq_rect A (l: list A) n (H: length l = n) :
   vec_to_list (eq_rect _ _ (list_to_vec l) _ H) = l.
 Proof.
   rewrite <- H; simpl.
-  rewrite vec_to_list_of_list.
+  rewrite vec_to_list_to_vec.
   auto.
 Qed.
 
@@ -30,37 +41,23 @@ Proof.
   rewrite /list_to_block /Block_to_vals.
   rewrite decide_left.
   f_equal.
-  rewrite vec_to_list_of_list_eq_rect; auto.
+  rewrite vec_to_list_to_vec_eq_rect; auto.
 Qed.
 
 Lemma array_to_block l q (bs: list byte) :
   length bs = Z.to_nat 4096 ->
   l ↦∗[byteT]{q} (b2val <$> bs) -∗ mapsto_block l q (list_to_block bs).
 Proof.
-  rewrite /array /mapsto_block /Block_to_vals /list_to_block.
+  rewrite /array /mapsto_block.
   iIntros (H) "Hl".
-  rewrite decide_left.
+  rewrite -> list_to_block_to_vals by auto.
   rewrite heap_array_to_list.
   rewrite !big_sepL_fmap.
-  rewrite vec_to_list_of_list_eq_rect.
   setoid_rewrite Z.mul_1_l.
   iApply (big_sepL_impl with "Hl"); simpl.
   iModIntro.
-  iIntros (i x) "% [Hl _]".
-  simpl.
-  rewrite loc_add_0 right_id /b2val.
-  iFrame.
-Qed.
-
-Lemma byte_ptsto_untype l q (x: u8) :
-  l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
-Proof.
-  rewrite /struct_mapsto /=.
-  rewrite loc_add_0 right_id.
-  iSplit.
-  - iDestruct 1 as "[$ _]".
-  - iDestruct 1 as "$".
-    auto.
+  iIntros (i x) "% Hl".
+  iApply (byte_ptsto_untype with "Hl").
 Qed.
 
 Lemma array_to_block_array l q b :
