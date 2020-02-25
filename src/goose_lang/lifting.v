@@ -7,7 +7,7 @@ From iris.program_logic Require Import ectx_lifting total_ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
-From Perennial.goose_lang Require Import tactics notation.
+From Perennial.goose_lang Require Export tactics notation.
 From Perennial.goose_lang Require Import typing.
 Set Default Proof Using "Type".
 

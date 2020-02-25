@@ -1,10 +1,10 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
 From iris.proofmode Require Export environments.
-From iris.program_logic Require Export weakestpre total_weakestpre.
+From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import atomic.
-From Perennial.goose_lang Require Export tactics lifting.
-From Perennial.goose_lang Require Import notation typing.
+From Perennial.goose_lang Require Export lifting.
+From Perennial.goose_lang Require Export typing.
 Set Default Proof Using "Type".
 Import uPred.
 
