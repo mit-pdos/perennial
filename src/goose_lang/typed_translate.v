@@ -25,7 +25,6 @@ Section translate.
   Notation ival := (@val impl_op).
   Notation sty := (@ty (@val_tys _ spec_ty)).
 
-  Context (spec_val_trans : @ext_val spec_op -> ival).
   Context (spec_op_trans : @external spec_op -> ival).
   (* XXX: need some assumptions that the previous two arguments make sense
      in particular, should be total in the sense that all well typed extension rules
@@ -219,8 +218,6 @@ Section translate.
       Γ ⊢v v : t ->
       Γ ⊢v v : anyT
   *)
-  | ext_def_transTy x:
-      Γ ⊢v (ExtV (val_ty_def x)) -- (spec_val_trans ((val_ty_def x))) : extT x
   where "Γ ⊢v v1 -- v2 : A" := (val_transTy Γ v1 v2 A).
 
 End translate.

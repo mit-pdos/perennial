@@ -25,7 +25,7 @@ Fixpoint is_closed_expr (X : list string) (e : expr) : bool :=
   end
 with is_closed_val (v : val) : bool :=
   match v with
-  | LitV _ | ExtV _ => true
+  | LitV _  => true
   | RecV f x e => is_closed_expr (f :b: x :b: []) e
   | PairV v1 v2 => is_closed_val v1 && is_closed_val v2
   | InjLV v | InjRV v => is_closed_val v

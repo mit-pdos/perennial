@@ -70,16 +70,15 @@ Section goose_lang.
                             val_ty v t ->
                             val_ty (InjRV (k, v, mv')%V) (mapValT t)
   | rec_ty f x e t1 t2 : val_ty (RecV f x e) (arrowT t1 t2)
-  | ext_def_ty x : val_ty (ExtV (val_ty_def x)) (extT x)
   .
 
   Ltac invc H := inversion H; subst; clear H.
 
   (* Prove that this is a sensible definition *)
 
-  Theorem zero_val_ty' t : val_ty (zero_val t) t.
+  Theorem zero_val_ty' t : has_zero t -> val_ty (zero_val t) t.
   Proof.
-    induction t; simpl; eauto using val_ty, lit_ty.
+    induction t; simpl; intros; intuition eauto using val_ty, lit_ty.
     destruct t; eauto using val_ty, lit_ty.
   Qed.
 
@@ -109,11 +108,11 @@ End goose_lang.
 Ltac val_ty :=
   lazymatch goal with
   | [ H: val_ty ?v ?t |- val_ty ?v ?t ] => exact H
-  | |- val_ty _ _ => first [ by auto 1 with val_ty nocore | solve [ repeat constructor ] ]
+  | |- val_ty _ _ => first [ by auto with val_ty nocore | solve [ repeat constructor ] ]
   | _ => fail "not a val_ty goal"
   end.
 
-Hint Immediate zero_val_ty' : val_ty.
+Hint Resolve zero_val_ty' : val_ty.
 
 Hint Extern 2 (val_ty _ _) => val_ty : core.
 

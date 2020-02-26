@@ -139,7 +139,7 @@ Proof.
     iIntros (Φloop) "!> [Hinner Hlocked] HΦloop".
     iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
     wp_pures.
-    wp_apply wp_ref_of_zero.
+    wp_apply wp_ref_of_zero; first by auto.
     iIntros (state) "Hstate".
     wp_apply (wp_loadField_inv with "Hls_state"); auto.
     wp_apply (wp_MapGet with "[$Hmptr]"); auto.
@@ -153,7 +153,7 @@ Proof.
     - wp_pures.
       wp_apply (wp_store with "Hstate"); iIntros "Hstate".
 
-      wp_apply wp_ref_of_zero.
+      wp_apply wp_ref_of_zero; first by auto.
       iIntros (acquired) "Hacquired".
 
       wp_untyped_load.
@@ -260,7 +260,7 @@ Proof.
       wp_apply (wp_MapInsert with "[$Hmptr]").
       iIntros "Hmptr".
 
-      wp_apply wp_ref_of_zero.
+      wp_apply wp_ref_of_zero; first by auto.
       iIntros (acquired) "Hacquired".
 
       iDestruct (struct_fields_split with "Hlst") as "(?&?&?&?&_)".

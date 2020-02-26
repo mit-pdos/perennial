@@ -178,22 +178,24 @@ Section goose_lang.
 
   (* TODO: this is only because Goose doesn't use ref_zero *)
   Theorem wp_ref_of_zero stk E t :
+    has_zero t ->
     {{{ True }}}
       ref (zero_val t) @ stk; E
     {{{ l, RET #l; l ↦[t] (zero_val t) }}}.
   Proof.
-    iIntros (Φ) "_ HΦ".
-    wp_apply (wp_AllocAt t); auto.
+    iIntros (Hzero Φ) "_ HΦ".
+    wp_apply (wp_AllocAt t); eauto.
   Qed.
 
   Theorem wp_ref_zero stk E t :
+    has_zero t ->
     {{{ True }}}
       ref_zero t #() @ stk; E
     {{{ l, RET #l; l ↦[t] (zero_val t) }}}.
   Proof.
-    iIntros (Φ) "_ HΦ".
+    iIntros (Hzero Φ) "_ HΦ".
     wp_call.
-    wp_apply (wp_AllocAt t); auto.
+    wp_apply wp_ref_of_zero; eauto.
   Qed.
 
   Theorem wp_LoadAt stk E q l t v :
@@ -211,7 +213,7 @@ Section goose_lang.
     (* TODO: we have to rename this so it doesn't conflict with a name generated
   by induction; seems like a bug *)
     rename l into l'.
-    (iInduction H as [ | | | | | | | ] "IH" forall (l' Φ));
+    (iInduction H as [ | | | | | | ] "IH" forall (l' Φ));
       simpl;
       wp_pures;
       rewrite ?loc_add_0 ?right_id.
@@ -234,7 +236,6 @@ Section goose_lang.
       setoid_rewrite ty_size_offset.
       rewrite Z.mul_1_r.
       iFrame.
-    - wp_apply (wp_load with "[$]"); auto.
     - wp_apply (wp_load with "[$]"); auto.
     - wp_apply (wp_load with "[$]"); auto.
     - wp_apply (wp_load with "[$]"); auto.
@@ -277,7 +278,7 @@ Section goose_lang.
       iSplit; eauto. }
     rename v into v'.
     rename l into l'.
-    (iInduction H as [ | | | | | | | ] "IH" forall (v' Hty l' Φ));
+    (iInduction H as [ | | | | | | ] "IH" forall (v' Hty l' Φ));
       simpl;
       rewrite ?loc_add_0 ?right_id;
       wp_pures.
@@ -326,9 +327,6 @@ Section goose_lang.
         try match goal with
             | [ H: lit_ty _ _ |- _ ] => invc H
             end;
-        rewrite /= ?loc_add_0 ?right_id;
-        wp_apply (wp_store with "[$]"); auto.
-    - inv_ty;
         rewrite /= ?loc_add_0 ?right_id;
         wp_apply (wp_store with "[$]"); auto.
     - inv_ty;

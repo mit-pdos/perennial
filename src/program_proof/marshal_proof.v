@@ -174,6 +174,7 @@ Proof.
   rewrite /struct.mk /Enc.S /=.
   wp_call.
   wp_apply wp_new_slice.
+  { simpl; auto. }
   iIntros (sl) "Hs". iDestruct (is_slice_elim with "Hs") as "[Ha %]".
   rewrite replicate_length in H.
   change (int.nat 4096) with (Z.to_nat 4096) in H.
@@ -565,6 +566,8 @@ Proof.
   iIntros (Φ) "(Hdec&%) HΦ".
   wp_pures.
   wp_apply (typed_mem.wp_AllocAt (slice.T uint64T)); auto.
+  (* TODO: fix how this works so auto solves the goal  *)
+  { auto with val_ty. }
   iIntros (l) "Hl".
   rewrite zero_slice_val.
   wp_pures.
@@ -595,9 +598,8 @@ Proof.
     wp_load.
     iDestruct (is_slice_sz with "Hs") as %Hsz.
     autorewrite with len in Hsz.
-    wp_apply (wp_SliceAppend with "[$Hs]").
-    { iPureIntro; split; [ word | ].
-      repeat constructor. }
+    wp_apply (wp_SliceAppend with "[$Hs]"); first by auto.
+    { iPureIntro; split; [ word | auto ]. }
     iIntros (s') "Hs".
     wp_apply (wp_StoreAt with "Hl"); [ val_ty | iIntros "Hl" ].
     wp_pures.

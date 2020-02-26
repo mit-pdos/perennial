@@ -132,7 +132,7 @@ Definition is_map (mref:loc) (m: gmap u64 val * val): iProp Σ :=
   ∃ mv, ⌜map_val mv = Some m⌝ ∗ mref ↦ mv.
 
 Theorem map_zero_val t :
-      flatten_struct (zero_val (mapValT t)) = [MapNilV (zero_val t)].
+  flatten_struct (zero_val (mapValT t)) = [MapNilV (zero_val t)].
 Proof. reflexivity. Qed.
 
 Definition wp_NewMap stk E t :

@@ -257,10 +257,10 @@ Qed.
 
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
-  ∀ Γ es e τ Hval, expr_transTy _ _ _ Hval spec_op_trans Γ es e τ →
+  ∀ Γ es e τ Hval, expr_transTy _ _ _ Hval Γ es e τ →
   (forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
     ctx_has_semTy (hS := hS) Γ es e τ)%I.
-Proof.
+Proof using spec_op_trans.
   iIntros (Hrules ????? Htyping ??????).
   induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx".
   (* Variables *)
@@ -388,6 +388,7 @@ Proof.
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iPoseProof (Hrules with "[$] [$] [$] [] Hj") as "H"; eauto.
+    admit.
   - admit.
   - admit.
 Admitted.
@@ -417,7 +418,7 @@ Definition sty_crash_condition :=
       |={styN}=> ∃ (new: sty_names), sty_inv (sty_update Σ hS new))%I.
 
 Lemma sty_inv_to_wpc hG hC hRG hS Hval es e τ j:
-  expr_transTy _ _ _ Hval spec_op_trans ∅ es e τ →
+  expr_transTy _ _ _ Hval ∅ es e τ →
   sty_crash_obligation →
   sty_rules_obligation →
   spec_ctx -∗
@@ -456,7 +457,7 @@ Lemma sty_adequacy es σs e σ τ Hval initP:
   sty_init_obligation initP →
   sty_crash_obligation →
   sty_rules_obligation →
-  expr_transTy _ _ _ Hval spec_op_trans ∅ es e τ →
+  expr_transTy _ _ _ Hval ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →

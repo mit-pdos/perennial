@@ -167,11 +167,12 @@ Ltac word_eq :=
   repeat (f_equal; try word).
 
 Lemma wp_new_slice s E t (sz: u64) :
+  has_zero t ->
   {{{ True }}}
     NewSlice t #sz @ s; E
   {{{ sl, RET slice_val sl; is_slice sl t 1 (replicate (int.nat sz) (zero_val t)) }}}.
 Proof.
-  iIntros (Φ) "_ HΦ".
+  iIntros (Hzero Φ) "_ HΦ".
   wp_call.
   wp_if_destruct.
   - wp_pures.
@@ -467,11 +468,12 @@ Proof.
 Qed.
 
 Lemma wp_SliceAppend stk E s t vs x :
+  has_zero t ->
   {{{ is_slice s t 1 vs ∗ ⌜int.val s.(Slice.sz) + 1 < 2^64⌝ ∗ ⌜val_ty x t⌝ }}}
     SliceAppend t s x @ stk; E
   {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
 Proof.
-  iIntros (Φ) "(Hs&%) HΦ".
+  iIntros (Hzero Φ) "(Hs&%) HΦ".
   destruct H as [Hbound Hty].
   wp_lam; repeat wp_step.
   repeat wp_step.

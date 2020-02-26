@@ -73,23 +73,9 @@ Proof.
   solve_countable LogOp_rec 5%nat.
 Qed.
 
-Inductive Log_val := Log (vs:list disk.Block).
-Instance eq_Log_val : EqDecision Log_val.
-Proof.
-  solve_decision.
-Defined.
-
-Instance eq_Log_fin : Countable Log_val.
-Proof.
-  apply (inj_countable' (λ v, match v with
-                               | Log vs => vs
-                               end) Log);
-    by intros [].
-Qed.
-
 Definition log_op : ext_op.
 Proof.
-  refine (mkExtOp LogOp _ _ Log_val _ _).
+  refine (mkExtOp LogOp _ _).
 Defined.
 
 Inductive Log_ty := LogT.
@@ -101,9 +87,6 @@ Section log.
   Existing Instances log_op log_val_ty.
   Instance log_ty: ext_types log_op :=
     {| val_tys := log_val_ty;
-       val_ty_def t := match t with
-                       | LogT => Log []
-                       end;
        get_ext_tys (op: @external log_op) :=
          match op with
          | AppendOp => (extT LogT, sliceT_ blockT_ _)
@@ -149,10 +132,12 @@ Section log.
       ret $ #()
     | InitOp, LitV LitUnit =>
       initTo [];;
-      ret $ ExtV (Log [])
+      (* TODO: initialize log with a pointer to a unit *)
+      ret $ #()
     | OpenOp, LitV LitUnit =>
       s ← open;
-      ret $ ExtV (Log s)
+      (* TODO: initialize log with a pointer to a unit *)
+      ret $ #()
     | AppendOp, v =>
       (* FIXME: append should be non-atomic in the spec because it needs to read
          an input slice (and the slices the input points to). *)

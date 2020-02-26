@@ -40,7 +40,12 @@ Implicit Types (t:ty).
 
 Set Default Proof Using "ext ext_ty".
 
-Local Coercion Var' s: @expr ext := Var s.
+Local Coercion Var' s: expr := Var s.
+
+Theorem has_zero_slice_T t : has_zero (slice.T t).
+Proof.
+  auto.
+Qed.
 
 Definition raw_slice (t: ty): val :=
   λ: "p" "sz",
@@ -172,4 +177,5 @@ Definition ForSlice t (iv: binder) (xv: binder) (s: expr) (body: expr): expr :=
 
 End goose_lang.
 
+Hint Resolve has_zero_slice_T : core.
 Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.
