@@ -37,15 +37,16 @@ Definition MapInsert: val :=
 
 Definition MapDelete: val :=
   λ: "mref" "k",
-  (rec: "mapDel" "m" :=
-  match: "m" with
-    InjL "def" => InjL "def"
-  | InjR "kvm" =>
-    let: "kv" := Fst "kvm" in
-    let: "m2" := Snd "kvm" in
-    if: "k" = (Fst "kv") then ("mapDel" "m2")
-    else ("kv", "mapDel" "m2")
-  end) (!"mref").
+  "mref" <-
+    (rec: "mapDel" "m" :=
+    match: "m" with
+      InjL "def" => InjL "def"
+    | InjR "kvm" =>
+      let: "kv" := Fst "kvm" in
+      let: "m2" := Snd "kvm" in
+      if: "k" = (Fst "kv") then ("mapDel" "m2")
+      else ("kv", "mapDel" "m2")
+    end) (!"mref").
 
 Definition mapGetDef: val :=
   rec: "mapGetDef" "m" :=
