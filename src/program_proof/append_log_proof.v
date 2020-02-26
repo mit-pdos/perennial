@@ -1,5 +1,5 @@
 From Perennial.goose_lang.examples Require Import append_log.
-From Perennial.goose_lang.lib Require Import encoding.
+From Perennial.goose_lang.lib Require Import encoding crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import marshal_proof.
@@ -798,6 +798,49 @@ Proof.
     by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
 Qed.
 
+Context `{!lockG Σ, stagedG Σ}.
+Theorem wpc_Log__Reset N1 N2 k k' E1 E2 l lk :
+  (S k < k')%nat →
+  {{{ (∃ q, l ↦[Log.S :: "m"]{q} lk)
+      ∗ (∃ γ, is_crash_lock N1 N2 (LVL k') γ lk (∃ bs, ptsto_log l bs) (∃ bs, crashed_log bs)) }}}
+    Log__Reset #l @ NotStuck; (LVL (S (S k))); ⊤; E2
+  {{{ RET #() ; True }}}
+  {{{ True }}}.
+Proof.
+  rewrite /Log__Reset.
+  iIntros (? Φ Φc) "(Hm&His_lock) HΦ".
+  iDestruct "Hm" as (q) "Hm". iDestruct "His_lock" as (γ) "His_lock".
+  wpc_pures; auto.
+  wpc_bind (struct.loadF _ _ _).
+  wpc_frame "HΦ"; [ iIntros "(H&_)"; by iApply "H" | ].
+  wp_loadField.
+  iIntros "HΦ".
+  wpc_apply (crash_lock.acquire_spec with "[-]").
+  { admit. }
+  { eauto. }
+  { rewrite //=. }
+  iFrame "His_lock".
+  iSplit.
+  { iDestruct "HΦ" as "(H&_)"; by iApply "H". }
+  iIntros ">H". iDestruct "H" as (bs) "H".
+  wpc_pures.
+  { iSplitL "HΦ".
+    + iDestruct "HΦ" as "(H&_)". by iApply "H".
+    + admit.
+  }
+  wpc_apply (wpc_Log__reset with "[$] [-]").
+  iSplit.
+  { iIntros "H". iSplitL "HΦ"; first by (iDestruct "HΦ" as "(H&_)"; by iApply "H").
+    iDestruct "H" as "[H|H]"; iExists _; iFrame.
+  }
+  iNext. iIntros.
+  wpc_pures.
+  { iSplitL "HΦ"; first by (iDestruct "HΦ" as "(H&_)"; by iApply "H").
+    admit.
+  }
+Abort.
+
+
 Theorem wp_Open vs :
   {{{ crashed_log vs }}}
     Open #()
@@ -806,7 +849,8 @@ Proof.
   iIntros (Φ) "Hlog HΦ".
   iDestruct "Hlog" as (sz disk_sz) "[Hhdr Hlog_rest]".
   wp_call.
-  iDestruct "Hhdr" as (b) "[Hd0 %]".
+  iDestruct "Hhdr" as (b) "[Hd0 Hhdr]".
+  iDestruct "Hhdr" as %Hhdr.
   wp_apply (wp_Read with "[Hd0]").
   { change (int.val 0) with 0.
     iFrame. }
@@ -814,10 +858,10 @@ Proof.
   wp_steps.
   iDestruct (is_slice_sz with "Hs") as %Hsz.
   rewrite length_Block_to_vals in Hsz.
-  assert (int.val s.(Slice.sz) = 4096).
+  assert (int.val s.(Slice.sz) = 4096) as Hlen.
   { change block_bytes with 4096%nat in Hsz; lia. }
-  pose proof H.
-  destruct H as (extra&Hb).
+  pose proof Hhdr as Hhdr'.
+  destruct Hhdr' as (extra&Hb).
   rewrite Hb.
   wp_apply (wp_NewDec with "[Hs]").
   { iApply (is_slice_to_small with "[$]"). }

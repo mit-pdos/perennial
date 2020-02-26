@@ -3,7 +3,8 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl.
 From iris.base_logic.lib Require Import invariants.
 From iris.program_logic Require Export weakestpre.
-From Perennial.program_logic Require Import crash_weakestpre staged_invariant crash_inv.
+From Perennial.program_logic Require Import crash_weakestpre staged_invariant.
+From Perennial.program_logic Require Export crash_inv.
 
 From Perennial.goose_lang Require Export lang typing.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode notation.
