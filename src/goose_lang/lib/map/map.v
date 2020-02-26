@@ -206,6 +206,49 @@ Proof.
   destruct m; simpl; auto.
 Qed.
 
+Definition wp_MapDelete' stk E mv (m: gmap u64 val * val) k :
+  {{{ ⌜map_val mv = Some m⌝ }}}
+    MapDelete' mv #k @ stk; E
+  {{{ mv', RET mv'; ⌜map_val mv' = Some (map_del m k)⌝ }}}.
+Proof.
+  destruct m.
+  iIntros (Φ H) "HΦ".
+  rewrite /MapDelete'.
+  wp_lam. wp_let.
+  wp_pure (Rec _ _ _).
+  iLöb as "IH" forall (g v mv H Φ).
+  apply map_val_split in H; intuition; repeat match goal with
+    | H : ∃ _, _ |- _ => destruct H
+    end; intuition; try congruence; subst.
+  - wp_pures.
+    iApply "HΦ".
+    rewrite /=.
+    inversion H1; subst.
+    rewrite delete_empty. done.
+  - destruct x2.
+    wp_pures.
+    rewrite bool_decide_decide.
+    destruct (decide (#k = #x)); wp_if.
+    + inversion e; clear e; subst.
+      iApply "IH".
+      { eauto. }
+      iIntros (mv' Hmv').
+      iApply "HΦ"; iPureIntro.
+      rewrite Hmv' H2 /map_del /=.
+      rewrite delete_insert_delete.
+      auto.
+    + iSpecialize ("IH" $! _ _ _ H).
+      wp_bind (App _ _).
+      iApply "IH".
+      iIntros (mv' Hmv').
+      wp_pures.
+      iApply "HΦ"; iPureIntro.
+      rewrite H2.
+      rewrite /= Hmv' /map_del.
+      f_equal.
+      rewrite delete_insert_ne; congruence.
+Qed.
+
 Definition wp_MapDelete stk E mref (m: gmap u64 val * val) k :
   {{{ is_map mref m }}}
     MapDelete #mref #k @ stk; E
@@ -215,8 +258,12 @@ Proof.
   iDestruct "Hmref" as (mv ?) "Hmref".
   wp_call.
   wp_untyped_load.
-  wp_pure (Rec _ _ _).
-Admitted.
+  wp_apply wp_MapDelete'; eauto.
+  iIntros (mv' Hmv').
+  wp_apply (wp_store with "Hmref").
+  iIntros "Hmref".
+  iApply "HΦ". iExists _. iFrame. eauto.
+Qed.
 
 (* TODO: specify MapIter *)
 
