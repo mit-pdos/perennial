@@ -6,6 +6,7 @@ From Perennial.goose_lang Require
      spec_assert
      metatheory
      refinement refinement_adequacy
+     crash_lock
      logical_reln.
 From Perennial.program_proof Require
      marshal_proof
