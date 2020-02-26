@@ -104,6 +104,5 @@ Definition Log__reset: val :=
 Definition Log__Reset: val :=
   rec: "Log__Reset" "log" :=
     lock.acquire (struct.loadF Log.S "m" "log");;
-    Log__writeHdr "log";;
     Log__reset "log";;
     lock.release (struct.loadF Log.S "m" "log").
