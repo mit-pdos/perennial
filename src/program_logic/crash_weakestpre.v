@@ -418,6 +418,14 @@ Proof.
     set_solver.
 Qed.
 
+Lemma wpc_fupd_crash_shift' s k E1 E2 e Φ Φc :
+  WPC e @ s; k ; E1 ; E2 {{ Φ }} {{ |={∅}=> Φc }} ⊢ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "H".
+  iApply (wpc_strong_mono' s s k k E1 E1 _ with "H []"); auto.
+  - iSplit; auto. rewrite difference_diag_L //=. eauto.
+Qed.
+
 Lemma wpc_inv (N: namespace) s k E e Φ Φc :
   inv N Φc ∗ WPC e @ s ; k ; E; ∅ {{ Φ }} {{ True }} ⊢ WPC e @ s ; k ; E ; ↑N {{ Φ }} {{ ▷ Φc }}.
 Proof.

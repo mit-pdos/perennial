@@ -798,48 +798,6 @@ Proof.
     by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
 Qed.
 
-Context `{!lockG Σ, stagedG Σ}.
-Theorem wpc_Log__Reset N1 N2 k k' E1 E2 l lk :
-  (S k < k')%nat →
-  {{{ (∃ q, l ↦[Log.S :: "m"]{q} lk)
-      ∗ (∃ γ, is_crash_lock N1 N2 (LVL k') γ lk (∃ bs, ptsto_log l bs) (∃ bs, crashed_log bs)) }}}
-    Log__Reset #l @ NotStuck; (LVL (S (S k))); ⊤; E2
-  {{{ RET #() ; True }}}
-  {{{ True }}}.
-Proof.
-  rewrite /Log__Reset.
-  iIntros (? Φ Φc) "(Hm&His_lock) HΦ".
-  iDestruct "Hm" as (q) "Hm". iDestruct "His_lock" as (γ) "His_lock".
-  wpc_pures; auto.
-  wpc_bind (struct.loadF _ _ _).
-  wpc_frame "HΦ"; [ iIntros "(H&_)"; by iApply "H" | ].
-  wp_loadField.
-  iIntros "HΦ".
-  wpc_apply (crash_lock.acquire_spec with "[-]").
-  { admit. }
-  { eauto. }
-  { rewrite //=. }
-  iFrame "His_lock".
-  iSplit.
-  { iDestruct "HΦ" as "(H&_)"; by iApply "H". }
-  iIntros ">H". iDestruct "H" as (bs) "H".
-  wpc_pures.
-  { iSplitL "HΦ".
-    + iDestruct "HΦ" as "(H&_)". by iApply "H".
-    + admit.
-  }
-  wpc_apply (wpc_Log__reset with "[$] [-]").
-  iSplit.
-  { iIntros "H". iSplitL "HΦ"; first by (iDestruct "HΦ" as "(H&_)"; by iApply "H").
-    iDestruct "H" as "[H|H]"; iExists _; iFrame.
-  }
-  iNext. iIntros.
-  wpc_pures.
-  { iSplitL "HΦ"; first by (iDestruct "HΦ" as "(H&_)"; by iApply "H").
-    admit.
-  }
-Abort.
-
 
 Theorem wp_Open vs :
   {{{ crashed_log vs }}}
@@ -884,3 +842,113 @@ Proof.
 Qed.
 
 End heap.
+
+From Perennial.goose_lang.ffi Require Import append_log_ffi.
+
+Section hocap.
+Context `{!heapG Σ}.
+Context `{!crashG Σ}.
+Context `{!lockG Σ, stagedG Σ}.
+Implicit Types v : val.
+Implicit Types z : Z.
+Implicit Types s : Slice.t.
+Implicit Types (stk:stuckness) (E: coPset).
+
+Context (Nlog: namespace).
+Context (P: log_state -> iProp Σ).
+
+Definition N1 := Nlog.@"lock".
+Definition N2 := Nlog.@"crash".
+
+Definition is_log (k: nat) (l: loc) : iProp Σ :=
+  ∃ lk, inv Nlog (∃ q, l ↦[Log.S :: "m"]{q} lk) ∗
+  (∃ γ, is_crash_lock N1 N2 (LVL k) γ lk
+                                (∃ bs, ptsto_log l bs ∗ P (Opened bs l))
+                                (∃ bs, crashed_log bs ∗ P (Closed bs))).
+
+Instance is_log_persistent: Persistent (is_log k l).
+Proof. apply _. Qed.
+
+(* XXX: For these crash hocap specs, P (Closed bs) might be slightly
+   confusing...  It is not yet "crashed", merely halted? *)
+
+Theorem wpc_Log__Reset k k' E1 E2 l Q Qc:
+  (S k < k')%nat →
+  {{{ is_log k' l ∗
+     ((∀ bs, (P (Opened bs l) ={⊤ ∖↑ N2}=∗ P (Opened [] l) ∗ Q) ∧
+             (P (Opened bs l) ={∅}=∗ P (Closed bs) ∗ Qc) ∧
+             (P (Opened bs l) ={∅}=∗ P (Closed []) ∗ Qc)) ∧
+      Qc)
+  }}}
+    Log__Reset #l @ NotStuck; (LVL (S (S k))); ⊤; E2
+  {{{ RET #() ; Q }}}
+  {{{ Qc }}}.
+Proof.
+  iIntros (? Φ Φc) "(His_log&Hvs) HΦ".
+  iDestruct "His_log" as (?) "H".
+  iDestruct "H" as "(Hm&His_lock)".
+  iMod (inv_readonly_acc _ with "Hm") as (q) "Hm"; first by set_solver+.
+  iDestruct "His_lock" as (γ) "His_lock".
+  rewrite /Log__Reset.
+  wpc_pures; auto.
+  { iDestruct "Hvs" as "(_&$)". }
+  wpc_bind (struct.loadF _ _ _).
+  wpc_frame "HΦ Hvs".
+  { iIntros "((H&_)&(_&Hvs))". by iApply "H". }
+  wp_loadField.
+  iIntros "(HΦ&Hvs)".
+  wpc_apply (crash_lock.acquire_spec with "[-]").
+  { admit. }
+  { eauto. }
+  { rewrite //=. }
+  iFrame "His_lock".
+  iSplit.
+  { iDestruct "HΦ" as "(H&_)"; iDestruct "Hvs" as "(_&Hvs)"; by iApply "H". }
+  iIntros "H". iDestruct "H" as (bs) "(>H&HP)".
+  iApply wpc_fupd_crash_shift'.
+  wpc_pures.
+  { iDestruct "Hvs" as "(Hvs&_)". iDestruct ("Hvs" $! bs) as "(_&Hvs&_)".
+    iMod ("Hvs" with "[$]") as "(Hclo&HQc)".
+    iModIntro.
+    iSplitL "HΦ HQc".
+    + iDestruct "HΦ" as "(H&_)". by iApply "H".
+    + iExists bs. iFrame. admit.
+  }
+  wpc_apply (wpc_Log__reset with "[$] [-]").
+  iSplit.
+  { iIntros "H". iDestruct "Hvs" as "(Hvs&_)".
+    iDestruct "H" as "[H|H]".
+    * iDestruct ("Hvs" $! bs) as "(_&Hvs&_)".
+      iMod ("Hvs" with "[$]") as "(Hclo&HQc)".
+      iModIntro.
+      iSplitL "HΦ HQc".
+      ** iDestruct "HΦ" as "(H&_)". by iApply "H".
+      ** iExists bs. iFrame.
+    * iDestruct ("Hvs" $! bs) as "(_&_&Hvs)".
+      iMod ("Hvs" with "[$]") as "(Hclo&HQc)".
+      iModIntro.
+      iSplitL "HΦ HQc".
+      ** iDestruct "HΦ" as "(H&_)". by iApply "H".
+      ** iExists []. iFrame.
+  }
+  iNext. iIntros.
+  wpc_pures.
+  {
+    iDestruct "Hvs" as "(Hvs&_)".
+    iDestruct ("Hvs" $! bs) as "(_&_&Hvs)".
+      iMod ("Hvs" with "[$]") as "(Hclo&HQc)".
+      iModIntro.
+      iSplitL "HΦ HQc".
+      ** iDestruct "HΦ" as "(H&_)". by iApply "H".
+      ** iExists []. iFrame.
+         admit.
+  }
+  (* Linearization point *)
+  iDestruct "Hvs" as "(Hvs&_)".
+  iDestruct ("Hvs" $! bs) as "(Hvs&_)".
+  iMod ("Hvs" with "[$]") as "(HP&HQ)".
+  admit.
+Abort.
+
+
+End hocap.
