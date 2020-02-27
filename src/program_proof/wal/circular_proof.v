@@ -4,18 +4,13 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import marshal_proof.
+From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import GenHeap.
 
-Definition LogSz := 511.
+From Perennial.Helpers Require Import Transitions.
+Existing Instance r_mbind.
 
-Module lowΣ.
-  Record t :=
-    mk { upds: list update.t;
-         startpos: u64;
-         endpos: u64;
-       }.
-  Global Instance _eta: Settable _ := settable! mk <upds; startpos; endpos>.
-End lowΣ.
+Definition LogSz := 511.
 
 Module circΣ.
   Record t :=
@@ -29,101 +24,136 @@ Module circΣ.
     mk [] (diskEnd s).
 End circΣ.
 
+Definition circ_read : transition circΣ.t (list update.t * u64) :=
+  s ← reads (fun x => (circΣ.upds x, circΣ.start x));
+  ret s.
+
+Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
+  oldStart ← reads circΣ.start;
+  modify (set circΣ.upds (fun u => skipn (Z.to_nat (int.val newStart - int.val oldStart)%Z) u));;
+  modify (set circΣ.start (fun _ => newStart)).
+
+Definition circ_append (l : list update.t) : transition circΣ.t unit :=
+  modify (set circΣ.upds (fun u => u ++ l)).
+
 Section heap.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
-Context `{!inG Σ (authR mnatUR)}.
-Implicit Types (v:val).
-Implicit Types (stk:stuckness) (E:coPset).
 
-Definition low_data (σ : lowΣ.t) : iProp Σ :=
-  ⌜Z.of_nat (length σ.(lowΣ.upds)) = LogSz⌝ ∗
+Context (N: namespace).
+Context (P: circΣ.t -> iProp Σ).
+Context `{!forall σ, Timeless (P σ)}.
+
+Definition is_low_state (startpos endpos : u64) (updarray : list update.t) : iProp Σ :=
+  ⌜Z.of_nat (length updarray) = LogSz⌝ ∗
   ∃ hdr1 hdr2 (hdr2extra : list encodable),
     0 d↦ hdr1 ∗
     1 d↦ hdr2 ∗
-    ⌜Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 σ.(lowΣ.endpos)] ++ (map EncUInt64 (map update.addr (σ.(lowΣ.upds)))))⌝ ∗
-    ⌜Block_to_vals hdr2 = b2val <$> encode ([EncUInt64 σ.(lowΣ.startpos)] ++ hdr2extra)⌝ ∗
-    2 d↦∗ (update.b <$> σ.(lowΣ.upds)).
+    ⌜Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 endpos] ++ (map EncUInt64 (map update.addr updarray)))⌝ ∗
+    ⌜Block_to_vals hdr2 = b2val <$> encode ([EncUInt64 startpos] ++ hdr2extra)⌝ ∗
+    2 d↦∗ (update.b <$> updarray).
 
-Definition circ_data (σ : circΣ.t) : iProp Σ :=
-  ∃ lσ,
-    low_data lσ ∗
-    ⌜σ.(circΣ.start) = lσ.(lowΣ.startpos)⌝ ∗
-    ⌜lσ.(lowΣ.endpos) = word.add lσ.(lowΣ.startpos) (length σ.(circΣ.upds))⌝ ∗
+Definition is_circular_state (σ : circΣ.t) : iProp Σ :=
+  ∃ updarray,
+    is_low_state σ.(circΣ.start) (word.add σ.(circΣ.start) (length σ.(circΣ.upds))) updarray ∗
     [∗ list] i ↦ bupd ∈ σ.(circΣ.upds),
-      ⌜lσ.(lowΣ.upds) !! Z.to_nat ((int.val σ.(circΣ.start) + i) `mod` LogSz)%Z = Some bupd⌝.
+      ⌜updarray !! Z.to_nat ((int.val σ.(circΣ.start) + i) `mod` LogSz)%Z = Some bupd⌝.
 
-Definition circ_inner (γlog : gen_heapG u64 update.t Σ) (γstart γend : gname) : iProp Σ :=
-  ∃ mh σ,
-    gen_heap_ctx (hG := γlog) mh ∗
-    circ_data σ ∗
-    own γstart (● (Z.to_nat (int.val σ.(circΣ.start)) : mnat)) ∗
-    own γend (● (plus (Z.to_nat (int.val σ.(circΣ.start))) (length σ.(circΣ.upds)) : mnat)) ∗
-    ⌜ ∀ (i : nat),
-      mh !! (word.add σ.(circΣ.start) i) = σ.(circΣ.upds) !! i ⌝.
+Definition is_circular : iProp Σ :=
+  inv N (∃ σ, is_circular_state σ ∗ P σ).
 
-Definition circN : namespace := nroot .@ "circ".
-
-Definition is_circ (γlog : gen_heapG u64 update.t Σ) (γstart γend : gname) : iProp Σ :=
-  inv circN (circ_inner γlog γstart γend).
-
-
-(*
-Definition is_circularAppender (l:loc) σ : iProp Σ :=
-  circ_data σ ∗
-  ∃ (diskAddrs : Slice.t),
-  l ↦[struct.t circularAppender.S] diskAddrs ∗
-  is_slice diskAddrs u64 (map update.addr σ.(circΣ.upds)).
-*)
-
-(*
-Theorem new_circular bs :
-  0 d↦∗ bs ∗ ⌜length bs = Z.to_nat (2+LogSz)⌝ -∗ ∃ σ, circ_data σ.
+Theorem wp_circular__Advance (Q: iProp Σ) d (newStart : u64) :
+  {{{ is_circular ∗
+       (∀ σ σ' b,
+         ⌜relation.denote (circ_advance newStart) σ σ' b⌝ -∗
+         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
+  }}}
+    Advance #d #newStart
+  {{{ RET #(); Q }}}.
 Proof.
+  iIntros (Φ) "[#Hcirc Hfupd] HΦ".
+  wp_call.
+  wp_call.
+  wp_apply wp_new_enc.
+  iIntros (enc) "[Henc %]".
+  wp_apply (wp_Enc__PutInt with "[$Henc]").
+  { iPureIntro. rewrite /=. rewrite H0. word. }
+  iIntros "Henc".
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (s extra) "[Hslice %]".
+
+Transparent Write.
+  rewrite /Write /is_circular.
+  wp_apply wp_slice_ptr.
+  wp_pures.
+  wp_bind (ExternalOp _ _).
+  iInv N as ">Hcircopen".
+  iDestruct "Hcircopen" as (σ) "[Hcs HP]".
+  iDestruct "Hcs" as (updarray) "[Hlow Hupds]".
+  iDestruct "Hlow" as "[% Hlow]".
+  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra) "(Hd0 & Hd1 & % & % & Hd2)".
+
+  wp_apply (wp_WriteOp with "[Hd1 Hslice]").
+  { iNext. iExists _. iFrame.
+    iApply slice_to_block; last iFrame.
+    congruence. }
+
+  iIntros "[Hd1 Hslice]".
+
+  assert (∃ lz σ' r, Some (lz, σ', r) = interpret nil (circ_advance newStart) σ). { eauto. }
+  destruct H5. destruct H5. destruct H5.
+  rewrite /= in H5. inversion H5; clear H5.
+
+  iDestruct ("Hfupd" $! σ x0 tt with "[] HP") as "Hfupd".
+  { iPureIntro. subst. repeat econstructor. }
+  iMod "Hfupd" as "[HP HQ]".
+  iModIntro.
+
+  iSplitL "HP Hd0 Hd1 Hd2 Hupds".
+  { iNext.
+    iExists _. iFrame.
+    iExists _.
+    subst. destruct σ. rewrite /=.
+    iSplitL "Hd0 Hd1 Hd2".
+    { rewrite /is_low_state. iSplitR "Hd0 Hd1 Hd2".
+      2: { iExists _, _, _. iFrame.
+          (* one complication here is that the caller may have advanced the
+           * start pointer past the end pointer, so it would not be possible
+           * here to prove that the end pointer on-disk remains consistent
+           * with the invariant.  our plan is to introduce an error state
+           * into circΣ, which corresponds to any on-disk state, and all
+           * subsequent transitions from the error state remain an error.
+           * it would then be the caller's job to avoid transitions into
+           * the error state if they don't want it.
+           *)
+          admit. }
+      done.
+    }
+    admit.
+  }
+
+  wp_pures.
+  wp_call.
+  iApply "HΦ".
+  iFrame.
 Admitted.
 
-(* XXX recoverCircular actually returns two things *)
-Theorem wp_recoverCircular σ :
-  {{{ circ_data σ }}}
-    recoverCircular #()
-  {{{ l, RET #l; is_circular l σ }}}.
+Theorem wp_circular__Append (Q: iProp Σ) d (newEnd : u64) (bufs : Slice.t) (buflist : list val) (upds : list update.t) c :
+  {{{ is_circular ∗
+      is_slice_small bufs (struct.t Update.S) 1 buflist ∗
+      (* relate buflist to upds *)
+      (* require that [c] and [newEnd] correspond to reality..  newEnd should be σ.end+length(buflist).
+        this is probably best handled by passing the data behind [c] and passing [newEnd] into
+        the [circ_append] transition, and erroring out in that transition if these values don't match. *)
+       (∀ σ σ' b,
+         ⌜relation.denote (circ_append upds) σ σ' b⌝ -∗
+         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
+  }}}
+    circularAppender__Append #c #d #newEnd (slice_val bufs)
+  {{{ RET #(); Q }}}.
 Proof.
+  iIntros (Φ) "(#Hcirc & Hslice & Hfupd) HΦ".
+  wp_call.
+  wp_call.
 Admitted.
-
-Definition space_remaining σ: Z := LogSz - Z.of_nat (length σ.(upds)).
-
-Theorem wpc_circular__appendFreeSpace stk k E1 E2 l σ bufs σ' :
-  0 < space_remaining σ ->
-  {{{ is_circular l σ ∗ updates_slice bufs σ'.(upds) }}}
-    circular__appendFreeSpace #l (slice_val bufs)
-    @ stk; k; E1; E2
-                    (* TODO: need to break is_circular apart into the part
-                    consumed by the header and the free space; the free space
-                    gets modified here but not the in-memory state or existing
-                    updates *)
-  {{{ RET #(); is_circular l σ }}}
-  {{{ circ_data σ }}}.
-Proof.
-Admitted.
-
-Theorem wpc_circular__Append stk k E1 E2 l σ bufs upds' :
-  0 < space_remaining σ ->
-  {{{ is_circular l σ ∗ updates_slice bufs upds' }}}
-    circular__Append #l (slice_val bufs)
-    @ stk; k; E1; E2
-  {{{ RET #(); is_circular l (set circΣ.upds (.++ upds') σ) }}}
-  {{{ is_circular l σ ∨ is_circular l (set circΣ.upds (.++ upds') σ) }}}.
-Proof.
-Admitted.
-
-Theorem wpc_circular__Empty stk k E1 E2 l σ :
-  {{{ is_circular l σ }}}
-    circular__Empty #()
-    @ stk; k; E1; E2
-  {{{ RET #(); is_circular l (circΣ.empty σ) }}}
-  {{{ circ_data σ ∨ circ_data (circΣ.empty σ) }}}.
-Proof.
-Admitted.
-*)
 
 End heap.
