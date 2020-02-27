@@ -258,8 +258,8 @@ Lemma wpc_staged_invariant' s k k' k'' E1 E1' E2 e Φ Φc Q Qrest Qnew P N γ γ
   to_val e = None →
   staged_inv N k' (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   staged_value N γ Q Qrest ∗
-  (Φc ∧ (▷ (Q) -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
-  WPC e @ s; (2 * S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
+  (Φc ∧ (Q -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
+  WPC e @ s; (2 * (S (S (S k)))); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (????? Hval) "(#Hinv&Hval&Hwp)".
   rewrite !wpc_unfold /wpc_pre.
@@ -279,9 +279,13 @@ Proof.
   { iDestruct "Hfalse" as "(_&HC&_)".
     iDestruct (NC_C with "[$] [$]") as "[]".
   }
+  replace (S (2 * (S (S (S k))))) with (S (S (S (2 * (S (S k)))))); last first.
+  { lia. }
   iMod (fupd_intro_mask' _ ∅) as "Hclo'"; first set_solver+.
   iModIntro.
   iEval (rewrite Nat_iter_S). iModIntro. iNext.
+  iEval (rewrite Nat_iter_S). do 2 iModIntro. iNext.
+  iEval (rewrite Nat_iter_S). do 2 iModIntro. iNext.
   iDestruct ("Hwp" with "[$]") as "(Hwp&_)".
   iMod "Hclo'".
   iMod ("Hwp" with "[$] [$]") as "Hwp". iModIntro.
@@ -299,6 +303,10 @@ Proof.
   { destruct s; eauto. }
   iIntros.
   iMod ("H" with "[//]") as "H".
+  iEval rewrite Nat_iter_S.
+  iModIntro. iModIntro. iNext.
+  iEval rewrite Nat_iter_S.
+  iModIntro. iModIntro. iNext.
   iEval rewrite Nat_iter_S.
   iModIntro. iModIntro. iNext.
   rewrite Nat_iter_add.
@@ -346,7 +354,12 @@ Proof.
                 _ _ Φ Φc P Qnew N γ with "[Hclo HNC]") as "H"; try assumption.
   { iIntros. iFrame "Hinv". iFrame. }
   iApply (step_fupdN_inner_wand with "H"); auto.
-  iIntros "(?&?)". iFrame.
+  iIntros "(Hwp&?)". iFrame.
+  iSplitL "Hwp".
+  { iIntros. iApply (wpc_strong_mono' with "[$]"); eauto.
+    - lia.
+    - iSplit; first auto. iIntros. iApply fupd_mask_weaken; eauto; set_solver.
+  }
   iApply (big_sepL_mono with "Hefs").
   iIntros. iApply (wpc_strong_mono' with "[$]"); eauto.
   - lia.
@@ -355,7 +368,7 @@ Proof.
 Qed.
 
 
-Definition LVL (k: nat) : nat := 2 ^ (S (S k)).
+Definition LVL (k: nat) : nat := 2 ^ ((S (S k))).
 
 Lemma wpc_ci_inv'' s k k' N E1 E2 e Φ Φc P γ γ' :
   k' < k →
@@ -381,7 +394,7 @@ Lemma wpc_staged_invariant'' s k k' k'' E1 E1' E2 e Φ Φc Q Qrest Qnew P N γ �
   to_val e = None →
   staged_inv N k' (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   staged_value N γ Q Qrest ∗
-  (Φc ∧ (▷ (Q) -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
+  (Φc ∧ (Q -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
   WPC e @ s; (4 * k); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   rewrite /LVL. iIntros (??????) "(?&?&?)".
@@ -420,7 +433,7 @@ Lemma wpc_staged_invariant s k k' E1 E1' E2 e Φ Φc Q Qrest Qnew P N γ γ' :
   to_val e = None →
   staged_inv N (LVL k') (E1' ∖ ↑N) (E1' ∖ ↑N) γ γ' P ∗
   staged_value N γ Q Qrest ∗
-  (Φc ∧ (▷ (Q) -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
+  (Φc ∧ ((Q) -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   rewrite /LVL. iIntros (????) "(?&?&?)".

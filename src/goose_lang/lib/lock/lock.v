@@ -106,11 +106,12 @@ Section proof.
     iApply "HΦ". iFrame.
   Qed.
 
-  Lemma try_acquire_spec γ lk R :
-    {{{ is_lock γ lk R }}} lock.try_acquire lk
+  Lemma try_acquire_spec E γ lk R :
+    ↑N ⊆ E →
+    {{{ is_lock γ lk R }}} lock.try_acquire lk @ E
     {{{ b, RET #b; if b is true then locked γ ∗ R else True }}}.
   Proof.
-    iIntros (Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
+    iIntros (? Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
     wp_rec. wp_bind (CmpXchg _ _ _). iInv N as ([]) "[Hl HR]".
     - wp_cmpxchg_fail. iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
       wp_pures. iApply ("HΦ" $! false). done.
@@ -119,19 +120,25 @@ Section proof.
       rewrite /locked. wp_pures. by iApply ("HΦ" $! true with "[$Hγ $HR]").
   Qed.
 
-  Lemma acquire_spec γ lk R :
-    {{{ is_lock γ lk R }}} lock.acquire lk {{{ RET #(); locked γ ∗ R }}}.
+  Lemma acquire_spec' E γ lk R :
+    ↑N ⊆ E →
+    {{{ is_lock γ lk R }}} lock.acquire lk @ E {{{ RET #(); locked γ ∗ R }}}.
   Proof.
-    iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
-    wp_apply (try_acquire_spec with "Hl"). iIntros ([]).
+    iIntros (? Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
+    wp_apply (try_acquire_spec with "Hl"); auto. iIntros ([]).
     - iIntros "[Hlked HR]". wp_if. iApply "HΦ"; iFrame.
     - iIntros "_". wp_if. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
-  Lemma release_spec γ lk R :
-    {{{ is_lock γ lk R ∗ locked γ ∗ R }}} lock.release lk {{{ RET #(); True }}}.
+  Lemma acquire_spec γ lk R :
+    {{{ is_lock γ lk R }}} lock.acquire lk {{{ RET #(); locked γ ∗ R }}}.
+  Proof. eapply acquire_spec'; auto. Qed.
+
+  Lemma release_spec' E γ lk R :
+    ↑N ⊆ E →
+    {{{ is_lock γ lk R ∗ locked γ ∗ R }}} lock.release lk @ E {{{ RET #(); True }}}.
   Proof.
-    iIntros (Φ) "(Hlock & Hlocked & HR) HΦ".
+    iIntros (? Φ) "(Hlock & Hlocked & HR) HΦ".
     iDestruct "Hlock" as (l ->) "#Hinv".
     rewrite /lock.release /=. wp_lam.
     wp_bind (CmpXchg _ _ _).
@@ -146,6 +153,10 @@ Section proof.
       iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
       iNext. iExists false. by iFrame.
   Qed.
+
+  Lemma release_spec γ lk R :
+    {{{ is_lock γ lk R ∗ locked γ ∗ R }}} lock.release lk {{{ RET #(); True }}}.
+  Proof. eapply release_spec'; auto. Qed.
 
   (** cond var proofs *)
 
