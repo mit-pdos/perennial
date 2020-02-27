@@ -95,6 +95,35 @@ Qed.
 
 Transparent disk.Read disk.Write.
 
+Theorem wp_Write_fupd {stk E} E' (Q: iProp Σ) (a: u64) s q b :
+  {{{ ▷ is_slice_small s byteT q (Block_to_vals b) ∗
+        ∃ b0, (|={E,E'}=> int.val a d↦ b0 ∗ ▷ |={E',E}=> int.val a d↦ b -∗ Q) }}}
+    Write #a (slice_val s) @ stk; E
+  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
+Proof.
+  iIntros (Φ) "[Hs Hupd] HΦ".
+  wp_call.
+  wp_call.
+  iDestruct "Hupd" as (b0) "Hupd".
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iApply (wp_atomic _ E E').
+  iMod "Hupd".
+  iDestruct "Hupd" as "[Hda HQ]".
+  iModIntro.
+  wp_apply (wp_WriteOp with "[Hda Hs]").
+  { iIntros "!>".
+    iExists b0.
+    iFrame.
+    by iApply slice_to_block_array. }
+  iIntros "[Hda Hmapsto]".
+  iMod ("HQ" with "Hda") as "HQ".
+  iModIntro.
+  iApply "HΦ".
+  iFrame.
+  iSplitL; auto.
+  by iApply array_to_block_array.
+Qed.
+
 Theorem wp_Write stk E (a: u64) s q b :
   {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; E
@@ -102,19 +131,11 @@ Theorem wp_Write stk E (a: u64) s q b :
 Proof.
   iIntros (Φ) ">Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
-  wp_call.
-  wp_call.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  wp_apply (wp_WriteOp with "[Hda Hs]").
-  { iIntros "!>".
-    iExists b0.
-    iFrame.
-    by iApply slice_to_block_array. }
-  iIntros "[Hda Hmapsto]".
-  iApply "HΦ".
-  iFrame.
-  iSplitL; auto.
-  by iApply array_to_block_array.
+  wp_apply (wp_Write_fupd E (int.val a d↦ b) with "[Hda $Hs]").
+  { iExists b0; iFrame.
+    iIntros "!> !> !> $". }
+  iIntros "[Hs Hda]".
+  iApply ("HΦ" with "[$]").
 Qed.
 
 Theorem wp_Write' stk E (z: Z) (a: u64) s q b :
@@ -127,23 +148,40 @@ Proof.
   eauto.
 Qed.
 
-Lemma wp_Read stk E (a: u64) q b :
-  {{{ ▷ int.val a d↦{q} b }}}
+Lemma wp_Read_fupd {stk E} E' (Q: iProp Σ) (a: u64) q b :
+  {{{ |={E,E'}=> int.val a d↦{q} b ∗ ▷ |={E',E}=> int.val a d↦{q} b -∗ Q }}}
     Read #a @ stk; E
   {{{ s, RET slice_val s;
-      int.val a d↦{q} b ∗
-      is_slice s byteT 1%Qp (Block_to_vals b) }}}.
+      Q ∗ is_slice s byteT 1%Qp (Block_to_vals b) }}}.
 Proof.
-  iIntros (Φ) ">Hda HΦ".
+  iIntros (Φ) "Hupd HΦ".
   wp_call.
+  wp_bind (ExternalOp _ _).
+  iApply (wp_atomic _ E E').
+  iMod "Hupd" as "[Hda Hupd]"; iModIntro.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
+  iMod "Hupd" as "HQ"; iModIntro.
+  iSpecialize ("HQ" with "Hda").
   iDestruct (block_array_to_slice _ _ _ 4096 with "Hl") as "Hs".
   wp_pures.
   wp_apply (wp_raw_slice with "Hs").
   iIntros (s) "Hs".
   iApply "HΦ".
   iFrame.
+Qed.
+
+Lemma wp_Read {stk E} (a: u64) q b :
+  {{{ ▷ int.val a d↦{q} b }}}
+    Read #a @ stk; E
+  {{{ s, RET slice_val s;
+      int.val a d↦{q} b ∗ is_slice s byteT 1%Qp (Block_to_vals b) }}}.
+Proof.
+  iIntros (Φ) ">Hda HΦ".
+  wp_apply (wp_Read_fupd E (int.val a d↦{q} b) with "[$Hda]").
+  { iIntros "!> !> !> $". }
+  iIntros (s) "[Hda Hs]".
+  iApply ("HΦ" with "[$]").
 Qed.
 
 Lemma wpc_Read stk k E1 E2 (a: u64) q b :
