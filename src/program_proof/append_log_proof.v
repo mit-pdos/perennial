@@ -552,6 +552,9 @@ Qed.
 
 Definition crashed_log bs: iProp Σ :=
   ∃ sz disk_sz, is_log' sz disk_sz bs.
+Definition uninit_log: iProp Σ :=
+  ∃ vs, 0 d↦∗ vs.
+Definition unopened_log : iProp Σ := uninit_log ∨ (∃ bs, crashed_log bs).
 
 Lemma is_log_crash_l sz disk_sz bs (Q: iProp Σ) :
   is_log' sz disk_sz bs -∗ crashed_log bs ∨ Q.
@@ -864,12 +867,19 @@ Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Context (Nlog: namespace).
-Context (P: log_state -> iProp Σ).
 
+Context (P: log_state -> iProp Σ).
+Context (Pinit_token: iProp Σ).
+Context (Popen_token: iProp Σ).
 Context (POpenClose: ∀ l bs, P (Opened bs l) -∗ P (Closed bs)).
+Context (Pinit_non_open: ∀ l bs, P (Opened bs l) ∗ Pinit_token ={⊤}=∗ False).
+Context (Pinit_non_closed: ∀ bs, P (Closed bs) ∗ Pinit_token ={⊤}=∗ False).
+Context (Popen_non_uninit: P (UnInit) ∗ Popen_token ={⊤}=∗ False).
 
 Definition N1 := Nlog.@"lock".
 Definition N2 := Nlog.@"crash".
+Definition Npre := Nlog.@"pre".
+Definition Ntok := Nlog.@"tok".
 
 Definition is_log (k: nat) (l: loc) : iProp Σ :=
   ∃ lk, inv Nlog (∃ q, l ↦[Log.S :: "m"]{q} lk) ∗
@@ -966,6 +976,52 @@ Proof using POpenClose.
   iIntros "(HQ&HΦ)".
   by iApply "HΦ".
 Qed.
+
+Definition log_crash_inner :=
+  ((P UnInit ∗ uninit_log) ∨ (∃ bs, P (Closed bs) ∗ crashed_log bs))%I.
+
+Definition is_pre_log (k: nat) : iProp Σ :=
+  ∃ γ γ', staged_inv Npre (LVL k) (⊤ ∖ ↑Npre) (⊤ ∖ ↑Npre) γ γ' log_crash_inner ∗
+          inv Ntok (staged_value Npre γ (P UnInit ∗ uninit_log) True ∨ Pinit_token).
+
+Lemma alloc_pre_lock_uninit k k' E Φ Φc e:
+  (k' < k)%nat →
+  Φc ∗
+  P UnInit ∗
+  uninit_log ∗
+  (Φc -∗ is_pre_log k' -∗ WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Φc }}) -∗
+  WPC e @ (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ ((P UnInit ∗ uninit_log) ∨ (∃ bs, P (Closed bs) ∗ crashed_log bs))}}.
+Proof.
+  iIntros (?) "(HΦc&HP&Hlog&Hwp)".
+  iMod (staged_inv_alloc Npre (LVL k') ⊤ (⊤ ∖ ↑Npre) log_crash_inner (P UnInit ∗ uninit_log)
+                         True%I with "[HP Hlog]") as
+      (γ1 γ2) "(#Hstaged_inv&Hstaged_val&Hpending)".
+  { rewrite /log_crash_inner. iFrame. iAlways. iIntros.
+    iFrame. }
+  iApply (wpc_ci_inv _ k k' Npre ⊤ E with "[-]"); try assumption.
+  { set_solver +. }
+  iFrame. iFrame "Hstaged_inv".
+  iMod (inv_alloc Ntok _ (staged_value Npre γ1 (P UnInit ∗ uninit_log) True ∨ Pinit_token)%I
+          with "[Hstaged_val]").
+  { iFrame. }
+  iApply ("Hwp" with "[$]").
+  iExists _, _. iFrame "Hstaged_inv". iFrame.
+Qed.
+
+Theorem wpc_Open' vs k k' E2 Qc:
+  (S k < k')%nat →
+  {{{ is_pre_log k' ∗ ((∀ l, |={⊤}=> P (Opened vs l) ∗ Qc) ∧ Qc) ∗ Popen_token}}}
+    Open #() @ NotStuck; (S k); ⊤; E2
+  {{{ lptr, RET #lptr; is_log k' lptr }}}
+  {{{ Qc }}}.
+Proof using POpenClose.
+  iIntros (? Φ Φc) "(Hc&Hvs) HΦ".
+  iApply wpc_fupd.
+  rewrite /is_pre_log.
+  iDestruct "Hc" as (γ γ') "(#Hstaged&#Hinv)".
+  iApply fupd_wpc.
+  iInv "Hinv" as "H" "Hclo".
+Abort.
 
 (* XXX: but this seems too weak, because it doesn't say that by initializing, the
    caller no longer has to prove crashed_log *)
