@@ -61,6 +61,12 @@ Definition is_circular_state (σ : circΣ.t) : iProp Σ :=
 Definition is_circular : iProp Σ :=
   inv N (∃ σ, is_circular_state σ ∗ P σ).
 
+Definition is_circular_appender (circ: loc) addrList : iProp Σ :=
+  ∃ (diskaddr:loc) s,
+    circ ↦[circularAppender.S :: "diskAddrs"] #diskaddr ∗
+    diskaddr ↦[slice.T uint64T] (slice_val s) ∗
+    is_slice s uint64T 1%Qp addrList.
+
 Theorem wp_circular__Advance (Q: iProp Σ) d (newStart : u64) :
   {{{ is_circular ∗
        (∀ σ σ' b,
@@ -137,12 +143,13 @@ Transparent Write.
   iFrame.
 Admitted.
 
-Theorem wp_circular__Append (Q: iProp Σ) d (newEnd : u64) (bufs : Slice.t) (buflist : list val) (upds : list update.t) c :
+Theorem wp_circular__Append (Q: iProp Σ) d (newEnd : u64) (bufs : Slice.t) (buflist : list val) (upds : list update.t) c circAppenderList :
   {{{ is_circular ∗
       is_slice_small bufs (struct.t Update.S) 1 buflist ∗
+      is_circular_appender c circAppenderList ∗
       (* relate buflist to upds *)
       (* require that [c] and [newEnd] correspond to reality..  newEnd should be σ.end+length(buflist).
-        this is probably best handled by passing the data behind [c] and passing [newEnd] into
+        this is probably best handled by passing [circAppenderList] and [newEnd] into
         the [circ_append] transition, and erroring out in that transition if these values don't match. *)
        (∀ σ σ' b,
          ⌜relation.denote (circ_append upds) σ σ' b⌝ -∗

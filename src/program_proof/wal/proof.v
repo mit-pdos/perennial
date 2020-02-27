@@ -45,38 +45,35 @@ Definition take_updates (from to : u64) (log: list update.t) (logStart: u64) : l
   let num := (int.nat to - int.nat from)%nat in
   take num (drop start log).
 
-Definition is_wal_state (st: loc) (σ: log_state.t) (γlog : gen_heapG u64 update.t Σ) γstart γend: iProp Σ :=
-  ∃ (memLogPtr diskEnd nextDiskEnd memLogMapPtr: loc) (memStart diskEnd: u64) memLog memLogMap,
-    st ↦[structTy WalogState.S] (#memLogPtr, #memStart, #diskEnd, #nextDiskEnd, #memLogMapPtr) ∗
+Definition is_wal_state (st: loc) (Pwal : log_state.t → iProp Σ) (cσ : circΣ.t): iProp Σ :=
+  ∃ (σ: log_state.t)
+    (memLogPtr diskEnd nextDiskEnd memLogMapPtr: loc) (memStart diskEnd: u64) memLog memLogMap,
+    Pwal σ ∗
+    st ↦[WalogState.S :: "memLog"] #memLogPtr ∗
+    st ↦[WalogState.S :: "memStart"] #memStart ∗
+    st ↦[WalogState.S :: "diskEnd"] #diskEnd ∗
+    st ↦[WalogState.S :: "nextDiskEnd"] #nextDiskEnd ∗
+    st ↦[WalogState.S :: "memLogMap"] #memLogMapPtr ∗
     (∃ s, memLogPtr ↦[slice.T (struct.t Update.S)] (slice_val s) ∗
-    updates_slice s memLog) ∗
-    (* relate memLog to \gammaLog *)
+          updates_slice s memLog) ∗
     is_map memLogMapPtr memLogMap ∗
-    own γstart (◯ ((int.nat memStart) : mnat)) ∗
-    own γend (◯ ((int.nat diskEnd) : mnat)).
-
-Definition is_circular_appender (circ: loc) γlog γstart γend: iProp Σ :=
-  ∃ (diskaddr:loc) s addrList,
-    circ ↦[struct.t circularAppender.S] #diskaddr ∗
-    diskaddr ↦[slice.T uint64T] (slice_val s) ∗
-    is_slice s uint64T 1%Qp addrList ∗
-    (∃ mh,
-        gen_heap_ctx (hG := γlog) mh ∗
-        (* relate addrList to the home address of blocks in log; how slice and map? *)
-        (* ⌜ mh !! (word.add σ.(circΣ.start) i) = Some(upd) ⌝ → upd.Addr = addr * *)
-        is_circ γlog γstart γend).
+    (* relate memLog to wal state σ *)
+    (* relate memLogMap to wal state σ *)
+    (* connect σ to cσ *)
+    True.
 
 Definition walN: namespace := nroot .@ "wal".
 
-Definition is_wal (l: loc) (σ: log_state.t): iProp Σ :=
+(*
+Definition is_wal (l: loc) : iProp Σ :=
   ∃ memLock d (circ st condL condI:loc) γh γstart γend,
     (* ro ->? *)
     l ↦[structTy Walog.S] (#memLock, #d, #circ, #st, #condL, #condI) ∗
-    is_circular_appender circ γh γstart γend ∗
     (∃ γ,
         is_lock walN γ #memLock (is_wal_state st σ γh γstart γend) ∗
         lock.is_cond condL #memLock ∗
         lock.is_cond condI #memLock).
+*)
 
 (* old lockInv, parts need to be incorporated above
 
