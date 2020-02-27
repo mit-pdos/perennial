@@ -146,6 +146,32 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wpc_Read stk k E1 E2 (a: u64) q b :
+  {{{ ▷ int.val a d↦{q} b }}}
+    Read #a @ stk; k; E1; E2
+  {{{ s, RET slice_val s;
+      int.val a d↦{q} b ∗
+      is_slice s byteT 1%Qp (Block_to_vals b) }}}
+  {{{ int.val a d↦{q} b }}}.
+Proof.
+  iIntros (Φ Φc) ">Hda HΦ".
+  rewrite /Read.
+  wpc_pures; first done.
+  wpc_bind (ExternalOp _ _).
+  wpc_atomic; iFrame.
+  wp_apply (wp_ReadOp with "Hda").
+  iIntros (l) "(Hda&Hl)".
+  iDestruct (block_array_to_slice _ _ _ 4096 with "Hl") as "Hs".
+  iSplit; first (by iApply "HΦ").
+  iModIntro. wpc_pures; first done.
+  wpc_frame "Hda HΦ".
+  { iIntros "(?&H)". by iApply "H". }
+  wp_apply (wp_raw_slice with "Hs").
+  iIntros (s) "Hs".
+  iIntros "(?&HΦ)". iApply "HΦ".
+  iFrame.
+Qed.
+
 Theorem wpc_Write stk k E1 E2 (a: u64) s q b :
   {{{ ▷ ∃ b0, int.val a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; k; E1; E2

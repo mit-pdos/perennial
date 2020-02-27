@@ -798,49 +798,6 @@ Proof.
     by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
 Qed.
 
-
-Theorem wp_Open vs :
-  {{{ crashed_log vs }}}
-    Open #()
-  {{{ lptr, RET #lptr; ptsto_log lptr vs }}}.
-Proof.
-  iIntros (Φ) "Hlog HΦ".
-  iDestruct "Hlog" as (sz disk_sz) "[Hhdr Hlog_rest]".
-  wp_call.
-  iDestruct "Hhdr" as (b) "[Hd0 Hhdr]".
-  iDestruct "Hhdr" as %Hhdr.
-  wp_apply (wp_Read with "[Hd0]").
-  { change (int.val 0) with 0.
-    iFrame. }
-  iIntros (s) "[Hd0 Hs]".
-  wp_steps.
-  iDestruct (is_slice_sz with "Hs") as %Hsz.
-  rewrite length_Block_to_vals in Hsz.
-  assert (int.val s.(Slice.sz) = 4096) as Hlen.
-  { change block_bytes with 4096%nat in Hsz; lia. }
-  pose proof Hhdr as Hhdr'.
-  destruct Hhdr' as (extra&Hb).
-  rewrite Hb.
-  wp_apply (wp_NewDec with "[Hs]").
-  { iApply (is_slice_to_small with "[$]"). }
-  iIntros (dec) "[Hdec %]".
-  wp_pures.
-  wp_apply (wp_Dec__GetInt with "Hdec").
-  iIntros "Hdec".
-  wp_apply (wp_Dec__GetInt with "Hdec").
-  iIntros "_".
-  wp_steps.
-  wp_apply wp_new_free_lock; iIntros (ml) "_".
-  wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
-  iDestruct (log_struct_to_fields with "Hs") as "Hfields".
-  iApply "HΦ".
-  rewrite /ptsto_log.
-  iExists _, _; iFrame.
-  rewrite /is_hdr.
-  iExists _; iFrame.
-  eauto.
-Qed.
-
 End heap.
 
 From Perennial.goose_lang.ffi Require Import append_log_ffi.
@@ -856,6 +813,8 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Context (Nlog: namespace).
 Context (P: log_state -> iProp Σ).
+
+Context (POpenClose: ∀ l bs, P (Opened bs l) -∗ P (Closed bs)).
 
 Definition N1 := Nlog.@"lock".
 Definition N2 := Nlog.@"crash".
@@ -876,15 +835,13 @@ Theorem wpc_Log__Reset k k' E1 E2 l Q Qc:
   (S k < k')%nat →
   {{{ is_log k' l ∗
      ((∀ bs, (P (Opened bs l) ={⊤ ∖↑ N2}=∗ P (Opened [] l) ∗ Q) ∧
-             (P (Opened bs l) ={∅}=∗ P (Closed bs) ∗ Qc) ∧
-             (P (Opened bs l) ={∅}=∗ P (Closed []) ∗ Qc)) ∧
-      Qc) ∗
+             (P (Opened bs l) ={∅}=∗ P (Closed []) ∗ Qc)) ∧ Qc) ∗
      □ (Q -∗ Qc)
   }}}
     Log__Reset #l @ NotStuck; (LVL (S (S k))); ⊤; E2
   {{{ RET #() ; Q }}}
   {{{ Qc }}}.
-Proof.
+Proof using POpenClose.
   iIntros (? Φ Φc) "(His_log&Hvs&#HQ_to_Qc) HΦ".
   iDestruct "His_log" as (?) "H".
   iDestruct "H" as "(Hm&His_lock)".
@@ -919,15 +876,16 @@ Proof.
   iApply wpc_fupd.
   wpc_apply (wpc_Log__reset with "[$] [-]").
   iSplit.
-  { iIntros "H". iDestruct "Hvs" as "(Hvs&_)".
+  { iIntros "H". (* iDestruct "Hvs" as "(_&HQc)". *)
     iDestruct "H" as "[H|H]".
-    * iDestruct ("Hvs" $! bs) as "(_&Hvs&_)".
-      iMod ("Hvs" with "[$]") as "(Hclo&HQc)".
+    * iDestruct (POpenClose with "HP") as "HP".
+      iDestruct "Hvs" as "(_&Hvs)".
       iModIntro.
-      iSplitL "HΦ HQc".
+      iSplitL "HΦ Hvs".
       ** iDestruct "HΦ" as "(H&_)". by iApply "H".
       ** iExists bs. iFrame.
-    * iDestruct ("Hvs" $! bs) as "(_&_&Hvs)".
+    * iDestruct "Hvs" as "(Hvs&_)".
+      iDestruct ("Hvs" $! bs) as "(_&Hvs)".
       iMod ("Hvs" with "[$]") as "(Hclo&HQc)".
       iModIntro.
       iSplitL "HΦ HQc".
@@ -956,5 +914,55 @@ Proof.
   iIntros "(HQ&HΦ)".
   by iApply "HΦ".
 Qed.
+
+Theorem wpc_Open stk k E2 vs :
+  {{{ crashed_log vs }}}
+    Open #() @ NotStuck; k; ⊤; E2
+  {{{ lptr, RET #lptr; ptsto_log lptr vs }}}
+  {{{ crashed_log vs }}}.
+Proof.
+  iIntros (Φ Φc) "Hlog HΦ".
+  rewrite /Open.
+  wpc_pures; first done.
+  iDestruct "Hlog" as (sz disk_sz) "[Hhdr Hlog_rest]".
+  iDestruct "Hhdr" as (b) "[Hd0 Hhdr]".
+  wpc_apply (wpc_Read with "[Hd0]").
+  { iFrame. }
+  iSplit.
+  { iIntros. iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame. }
+  iNext.
+  iIntros (s) "[Hd0 Hs]".
+  iDestruct "Hhdr" as %Hhdr.
+  wpc_frame "Hd0 HΦ Hlog_rest".
+  { iIntros "(?&HΦ&?)". iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame; eauto. }
+  wp_steps.
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  rewrite length_Block_to_vals in Hsz.
+  assert (int.val s.(Slice.sz) = 4096) as Hlen.
+  { change block_bytes with 4096%nat in Hsz; lia. }
+  pose proof Hhdr as Hhdr'.
+  destruct Hhdr' as (extra&Hb).
+  rewrite Hb.
+  wp_apply (wp_NewDec with "[Hs]").
+  { iApply (is_slice_to_small with "[$]"). }
+  iIntros (dec) "[Hdec %]".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "_".
+  wp_steps.
+  wp_apply wp_new_free_lock; iIntros (ml) "_".
+  wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
+  iDestruct (log_struct_to_fields with "Hs") as "Hfields".
+  iIntros "(?&HΦ&?&?&?)".
+  iApply "HΦ".
+  rewrite /ptsto_log.
+  iExists _, _; iFrame.
+  rewrite /is_hdr.
+  iExists _; iFrame.
+  eauto.
+Qed.
+
 
 End hocap.
