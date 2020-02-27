@@ -65,6 +65,8 @@ Proof.
   lia.
 Qed.
 
+Hint Mode SemiSet ! ! - - - - : typeclass_instances.
+
 Theorem heap_array_to_list {Σ} {A} l0 (vs: list A) (P: loc -> A -> iProp Σ) :
   ([∗ map] l↦v ∈ heap_array l0 vs, P l v) ⊣⊢
   ([∗ list] i↦v ∈ vs, P (l0 +ₗ i) v).
