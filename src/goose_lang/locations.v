@@ -35,6 +35,9 @@ Proof. destruct l; rewrite /loc_add /=; f_equal; lia. Qed.
 Lemma loc_add_0 l : l +ₗ 0 = l.
 Proof. destruct l; rewrite /loc_add /=; f_equal; lia. Qed.
 
+Lemma loc_add_Sn l n : l +ₗ S n = (l +ₗ 1) +ₗ n.
+Proof. rewrite loc_add_assoc; f_equal; lia. Qed.
+
 Lemma loc_add_eq_inv l i : l +ₗ i = l -> i = 0.
 Proof. destruct l; rewrite /=; inversion 1; lia. Qed.
 

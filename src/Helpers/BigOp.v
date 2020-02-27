@@ -1,5 +1,7 @@
 From iris.algebra Require Import gmap.
-From Perennial.goose_lang Require Import proofmode.
+From iris.proofmode Require Import tactics.
+From iris.base_logic.lib Require Import iprop.
+From Perennial.goose_lang Require Import lang.
 
 Lemma big_sepM2_lookup_1_some
     (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
@@ -57,16 +59,6 @@ Proof.
   iDestruct (big_sepM2_lookup_1 with "H") as (x1) "[% _]"; eauto; congruence.
 Qed.
 
-Lemma loc_add_Sn l n :
-  l +ₗ S n = (l +ₗ 1) +ₗ n.
-Proof.
-  rewrite loc_add_assoc.
-  f_equal.
-  lia.
-Qed.
-
-Hint Mode SemiSet ! ! - - - - : typeclass_instances.
-
 Theorem heap_array_to_list {Σ} {A} l0 (vs: list A) (P: loc -> A -> iProp Σ) :
   ([∗ map] l↦v ∈ heap_array l0 vs, P l v) ⊣⊢
   ([∗ list] i↦v ∈ vs, P (l0 +ₗ i) v).
@@ -90,10 +82,8 @@ Proof.
     symmetry.
     apply heap_array_map_disjoint; intros.
     apply (not_elem_of_dom (D := gset loc)).
-    rewrite dom_singleton.
-    intros ?%elem_of_singleton.
-    rewrite loc_add_assoc in H2.
-    apply loc_add_ne in H2; auto; lia.
+    rewrite dom_singleton elem_of_singleton loc_add_assoc.
+    intros ?%loc_add_ne; auto; lia.
 Qed.
 
 Theorem big_sepL_impl {Σ} A (f g: nat -> A -> iProp Σ) (l: list A) :
