@@ -88,7 +88,7 @@ Proof.
   iIntros (s extra) "[Hslice %]".
   wp_apply (wp_Write_fupd _ Q with "[Hslice Hfupd]").
   { iSplitL "Hslice".
-    { iNext. rewrite -list_to_block_to_vals. { iFrame. }
+    { rewrite -list_to_block_to_vals. { iFrame. }
       admit.
     }
 
