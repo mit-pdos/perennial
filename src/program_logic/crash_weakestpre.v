@@ -320,32 +320,32 @@ Proof.
   - iIntros. rewrite difference_diag_L. by iFrame.
 Qed.
 
-Lemma wpc_later s k E1 E2 e Φ Φc :
+Lemma wpc_step_fupd s k E1 E2 e Φ Φc :
   to_val e = None →
-  ▷ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }} -∗
+  (|={E1,∅}▷=> WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}) -∗
   WPC e @ s; (S k); E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hval) "Hwp".
   iLöb as "IH" forall (k E1 E2 e Φ Φc Hval).
   rewrite ?wpc_unfold /wpc_pre.
   iSplit; last first.
-  { iIntros. iDestruct "Hwp" as "(_&Hwp)".
+  { iIntros.
     iEval (rewrite Nat_iter_S).
-    iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver+.
+    iMod "Hwp".
     iIntros "!> !> !>".
     iSpecialize ("Hwp" with "[$]").
-    iMod "Hclo".
+    iMod "Hwp".
     iApply (step_fupdN_inner_wand with "Hwp"); auto.
     iIntros "Hwp".
     iApply (step_fupdN_inner_wand' with "Hwp"); auto.
   }
   rewrite Hval. iIntros.
   iEval (rewrite Nat_iter_S).
-  iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver+.
+  iMod "Hwp".
   iIntros "!> !> !>".
+  iMod "Hwp".
   iDestruct "Hwp" as "(Hwp&_)".
   iSpecialize ("Hwp" with "[$] [$]").
-  iMod "Hclo".
   iApply (step_fupdN_inner_wand' with "Hwp"); auto.
   iIntros "($&Hwp)". iIntros.
   iSpecialize ("Hwp" with "[//]").
@@ -358,6 +358,17 @@ Proof.
   iSplitL "Hwp".
   - iApply (wpc_idx_mono with "Hwp"); eauto.
   - iApply (big_sepL_mono with "Hefs"). iIntros. iApply (wpc_idx_mono with "[$]"); eauto.
+Qed.
+
+Lemma wpc_later s k E1 E2 e Φ Φc :
+  to_val e = None →
+  ▷ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }} -∗
+  WPC e @ s; (S k); E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (Hval) "Hwp".
+  iApply wpc_step_fupd; first done.
+  iMod (fupd_intro_mask' _ ∅) as "H"; first by set_solver+.
+  iModIntro. iNext. iMod "H". eauto.
 Qed.
 
 Theorem wpc_crash_mono k stk E1 E2 e Φ Φc Φc' :
