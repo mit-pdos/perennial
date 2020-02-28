@@ -39,8 +39,12 @@ Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
   modify (fun σ => set upds (skipn (Z.to_nat (int.val newStart - int.val σ.(start))%Z)) σ);;
   modify (set start (fun _ => newStart)).
 
-Definition circ_append (l : list update.t) : transition circΣ.t unit :=
+Definition circ_append (l : list update.t) (newend : u64) (lowaddrs : list u64) : transition circΣ.t unit :=
+  assert (fun σ => ∀ (i : nat) u,
+            σ.(upds) !! i = Some u →
+            lowaddrs !! Z.to_nat ((int.val σ.(start) + i) `mod` LogSz)%Z = Some u.(update.addr));;
   modify (set circΣ.upds (fun u => u ++ l));;
+  assert (fun σ => int.val σ.(start) + length σ.(upds) = int.val newend);;
   assert (fun σ => length σ.(upds) <= LogSz).
 
 Section heap.
@@ -61,9 +65,9 @@ Definition is_low_state (startpos endpos : u64) (updarray : list update.t) : iPr
 
 Definition is_circular_state (σ : circΣ.t) : iProp Σ :=
   ∃ updarray,
-    is_low_state σ.(circΣ.start) (word.add σ.(circΣ.start) (length σ.(circΣ.upds))) updarray ∗
-    [∗ list] i ↦ bupd ∈ σ.(circΣ.upds),
-      ⌜updarray !! Z.to_nat ((int.val σ.(circΣ.start) + i) `mod` LogSz)%Z = Some bupd⌝.
+    is_low_state σ.(start) (word.add σ.(start) (length σ.(upds))) updarray ∗
+    [∗ list] i ↦ bupd ∈ σ.(upds),
+      ⌜updarray !! Z.to_nat ((int.val σ.(start) + i) `mod` LogSz)%Z = Some bupd⌝.
 
 Definition is_circular : iProp Σ :=
   inv N (∃ σ, is_circular_state σ ∗ P σ).
@@ -72,7 +76,7 @@ Definition is_circular_appender (circ: loc) addrList : iProp Σ :=
   ∃ (diskaddr:loc) s,
     circ ↦[circularAppender.S :: "diskAddrs"] #diskaddr ∗
     diskaddr ↦[slice.T uint64T] (slice_val s) ∗
-    is_slice s uint64T 1%Qp addrList.
+    is_slice s uint64T 1%Qp ((fun (x : u64) => #x) <$> addrList).
 
 Opaque encode.
 
@@ -161,16 +165,12 @@ Opaque encode.
   iFrame.
 Admitted.
 
-Theorem wp_circular__Append (Q: iProp Σ) d (newEnd : u64) (bufs : Slice.t) (buflist : list val) (upds : list update.t) c circAppenderList :
+Theorem wp_circular__Append (Q: iProp Σ) d (newEnd : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
   {{{ is_circular ∗
-      is_slice_small bufs (struct.t Update.S) 1 buflist ∗
+      updates_slice bufs upds ∗
       is_circular_appender c circAppenderList ∗
-      (* relate buflist to upds *)
-      (* require that [c] and [newEnd] correspond to reality..  newEnd should be σ.end+length(buflist).
-        this is probably best handled by passing [circAppenderList] and [newEnd] into
-        the [circ_append] transition, and erroring out in that transition if these values don't match. *)
        (∀ σ σ' b,
-         ⌜relation.denote (circ_append upds) σ σ' b⌝ -∗
+         ⌜relation.denote (circ_append upds newEnd circAppenderList) σ σ' b⌝ -∗
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
   }}}
     circularAppender__Append #c #d #newEnd (slice_val bufs)
