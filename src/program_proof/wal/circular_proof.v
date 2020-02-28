@@ -105,8 +105,7 @@ Opaque encode.
     rewrite fmap_length in Hslen.
 
     iSplitL "Hslice".
-    { iNext.
-      rewrite -list_to_block_to_vals; first iFrame.
+    { rewrite -list_to_block_to_vals; first iFrame.
       rewrite Hslen. rewrite H1. rewrite H0. word.
     }
 
