@@ -14,6 +14,8 @@ Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!inG Σ (authR mnatUR)}.
+Context `{!inG Σ (authR (optionUR (exclR (listO updateC))))}.
+
 Implicit Types (Φ: val → iProp Σ).
 Implicit Types (v:val) (z:Z).
 
@@ -45,10 +47,15 @@ Definition take_updates (from to : u64) (log: list update.t) (logStart: u64) : l
   let num := (int.nat to - int.nat from)%nat in
   take num (drop start log).
 
-Definition is_wal_state (st: loc) (Pwal : log_state.t → iProp Σ) (cσ : circΣ.t): iProp Σ :=
-  ∃ (σ: log_state.t)
-    (memLogPtr diskEnd nextDiskEnd memLogMapPtr: loc) (memStart diskEnd: u64) memLog memLogMap,
-    Pwal σ ∗
+Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 val) : gmap u64 val :=
+  match memLog with
+  | nil => m
+  | u :: memLog' =>
+    compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := #pos ]> m)
+  end.
+
+Definition is_wal_state (st: loc) (γmemstart γdiskend: gname) (γmemlog: gname) : iProp Σ :=
+  ∃ (memLogPtr diskEnd nextDiskEnd memLogMapPtr: loc) (memStart diskEnd: u64) (memLog : list update.t) (memLogMap : gmap u64 val * val),
     st ↦[WalogState.S :: "memLog"] #memLogPtr ∗
     st ↦[WalogState.S :: "memStart"] #memStart ∗
     st ↦[WalogState.S :: "diskEnd"] #diskEnd ∗
@@ -57,22 +64,45 @@ Definition is_wal_state (st: loc) (Pwal : log_state.t → iProp Σ) (cσ : circ�
     (∃ s, memLogPtr ↦[slice.T (struct.t Update.S)] (slice_val s) ∗
           updates_slice s memLog) ∗
     is_map memLogMapPtr memLogMap ∗
-    (* relate memLog to wal state σ *)
-    (* relate memLogMap to wal state σ *)
-    (* connect σ to cσ *)
-    True.
+    ⌜fst memLogMap = compute_memLogMap memLog memStart ∅⌝ ∗
+    own γmemstart (● (int.nat memStart : mnat)) ∗
+    own γdiskend (◯ (int.nat diskEnd : mnat)) ∗
+    own γmemlog (● (Excl' memLog))
+    .
 
 Definition walN: namespace := nroot .@ "wal".
 
+Definition is_wal_mem (l: loc) γlock γmemstart γdiskend γmemlog : iProp Σ :=
+  ∃ (memLock : loc) d (circ st : loc) (shutdown : bool) (nthread : u64) (condLogger condInstall condShut : loc),
+    inv walN (∃ q, l ↦[Walog.S :: "memLock"]{q} #memLock) ∗
+    inv walN (∃ q, l ↦[Walog.S :: "d"]{q} d) ∗
+    inv walN (∃ q, l ↦[Walog.S :: "circ"]{q} #circ) ∗
+    inv walN (∃ q, l ↦[Walog.S :: "st"]{q} #st) ∗
+    inv walN (∃ q, l ↦[Walog.S :: "condLogger"]{q} #condLogger) ∗
+    inv walN (∃ q, l ↦[Walog.S :: "condInstall"]{q} #condInstall) ∗
+    inv walN (∃ q, l ↦[Walog.S :: "condShut"]{q} #condShut) ∗
+    inv walN (∃ q, l ↦[Walog.S :: "shutdown"]{q} #shutdown) ∗
+    inv walN (∃ q, l ↦[Walog.S :: "nthread"]{q} #nthread) ∗
+    lock.is_cond condLogger #memLock ∗
+    lock.is_cond condInstall #memLock ∗
+    lock.is_cond condShut #memLock ∗
+    is_lock walN γlock #memLock (is_wal_state st γmemstart γdiskend γmemlog).
+
+Definition is_wal_circ γdiskstart γdisklog (σ : circΣ.t) : iProp Σ :=
+  own γdiskstart (● (int.nat σ.(circΣ.start) : mnat)) ∗
+  own γdisklog (● (Excl' σ.(circΣ.upds))).
+
 (*
-Definition is_wal (l: loc) : iProp Σ :=
-  ∃ memLock d (circ st condL condI:loc) γh γstart γend,
-    (* ro ->? *)
-    l ↦[structTy Walog.S] (#memLock, #d, #circ, #st, #condL, #condI) ∗
-    (∃ γ,
-        is_lock walN γ #memLock (is_wal_state st σ γh γstart γend) ∗
-        lock.is_cond condL #memLock ∗
-        lock.is_cond condI #memLock).
+Definition is_wal_inner (γmemstart γdiskstart γdiskend γdisklog γmemlog : gname) (Pwal : log_state.t -> iProp Σ) : iProp Σ :=
+  ∃ (σ: log_state.t) (memStart : nat),
+    Pwal σ ∗
+    own γmemstart (◯ (int.nat memStart : mnat)) ∗
+    own γdiskstart (◯ (int.nat memStart : mnat)) ∗
+    own γdiskend (● (int.nat memStart : mnat)) ∗
+    own γdisklog (● (int.nat memStart : mnat)) ∗
+    own γmemlog (● (int.nat memStart : mnat)) ∗
+
+    own γ
 *)
 
 (* old lockInv, parts need to be incorporated above
