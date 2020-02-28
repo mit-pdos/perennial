@@ -24,17 +24,24 @@ Module circΣ.
     mk [] (diskEnd s).
 End circΣ.
 
+Notation start := circΣ.start.
+Notation upds := circΣ.upds.
+
 Definition circ_read : transition circΣ.t (list update.t * u64) :=
-  s ← reads (fun x => (circΣ.upds x, circΣ.start x));
+  s ← reads (fun x => (upds x, start x));
   ret s.
 
+Definition assert `(P : T -> Prop) : transition T unit :=
+  @suchThat _ unit (fun σ _ => P σ) (fallback_genPred _).
+
 Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
-  oldStart ← reads circΣ.start;
-  modify (set circΣ.upds (fun u => skipn (Z.to_nat (int.val newStart - int.val oldStart)%Z) u));;
-  modify (set circΣ.start (fun _ => newStart)).
+  assert (fun σ => int.val σ.(start) <= int.val newStart <= int.val σ.(start) + length σ.(upds));;
+  modify (fun σ => set upds (skipn (Z.to_nat (int.val newStart - int.val σ.(start))%Z)) σ);;
+  modify (set start (fun _ => newStart)).
 
 Definition circ_append (l : list update.t) : transition circΣ.t unit :=
-  modify (set circΣ.upds (fun u => u ++ l)).
+  modify (set circΣ.upds (fun u => u ++ l));;
+  assert (fun σ => length σ.(upds) <= LogSz).
 
 Section heap.
 Context `{!heapG Σ}.
@@ -45,11 +52,11 @@ Context `{!forall σ, Timeless (P σ)}.
 
 Definition is_low_state (startpos endpos : u64) (updarray : list update.t) : iProp Σ :=
   ⌜Z.of_nat (length updarray) = LogSz⌝ ∗
-  ∃ hdr1 hdr2 (hdr2extra : list encodable),
+  ∃ hdr1 hdr2 hdr2extra,
     0 d↦ hdr1 ∗
     1 d↦ hdr2 ∗
     ⌜Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 endpos] ++ (map EncUInt64 (map update.addr updarray)))⌝ ∗
-    ⌜Block_to_vals hdr2 = b2val <$> encode ([EncUInt64 startpos] ++ hdr2extra)⌝ ∗
+    ⌜Block_to_vals hdr2 = b2val <$> encode [EncUInt64 startpos] ++ hdr2extra⌝ ∗
     2 d↦∗ (update.b <$> updarray).
 
 Definition is_circular_state (σ : circΣ.t) : iProp Σ :=
@@ -67,11 +74,13 @@ Definition is_circular_appender (circ: loc) addrList : iProp Σ :=
     diskaddr ↦[slice.T uint64T] (slice_val s) ∗
     is_slice s uint64T 1%Qp addrList.
 
+Opaque encode.
+
 Theorem wp_circular__Advance (Q: iProp Σ) d (newStart : u64) :
   {{{ is_circular ∗
-       (∀ σ σ' b,
-         ⌜relation.denote (circ_advance newStart) σ σ' b⌝ -∗
-         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
+    (∀ σ, P σ -∗
+      ( (∃ σ' b, ⌜relation.denote (circ_advance newStart) σ σ' b⌝) ∧
+        (∀ σ' b, ⌜relation.denote (circ_advance newStart) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)))
   }}}
     Advance #d #newStart
   {{{ RET #(); Q }}}.
@@ -82,14 +91,23 @@ Proof.
   wp_apply wp_new_enc.
   iIntros (enc) "[Henc %]".
   wp_apply (wp_Enc__PutInt with "[$Henc]").
-  { iPureIntro. rewrite /=. rewrite H0. word. }
+  {
+Transparent encode.
+    iPureIntro. rewrite /=. rewrite H0. word.
+Opaque encode.
+  }
   iIntros "Henc".
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s extra) "[Hslice %]".
   wp_apply (wp_Write_fupd _ Q with "[Hslice Hfupd]").
-  { iSplitL "Hslice".
-    { iNext. rewrite -list_to_block_to_vals. { iFrame. }
-      admit.
+  {
+    iDestruct (is_slice_small_sz with "Hslice") as %Hslen.
+    rewrite fmap_length in Hslen.
+
+    iSplitL "Hslice".
+    { iNext.
+      rewrite -list_to_block_to_vals; first iFrame.
+      rewrite Hslen. rewrite H1. rewrite H0. word.
     }
 
     iInv N as ">Hcircopen" "Hclose".
@@ -101,32 +119,37 @@ Proof.
     iModIntro.
     iIntros "Hd1".
 
-    assert (∃ lz σ' r, Some (lz, σ', r) = interpret nil (circ_advance newStart) σ). { eauto. }
-    destruct H5. destruct H5. destruct H5.
-    rewrite /= in H5. inversion H5; clear H5.
+    iDestruct ("Hfupd" with "HP") as "[Hex Hfupd]".
+    iDestruct "Hex" as (eσ' eb) "Hex".
+    iDestruct "Hex" as %Hex.
 
-    iDestruct ("Hfupd" $! σ x0 tt with "[] HP") as "Hfupd".
-    { iPureIntro. subst. repeat econstructor. }
+    iSpecialize ("Hfupd" $! eσ' eb).
+    simpl in Hex. monad_inv.
+
+    iDestruct ("Hfupd" with "[]") as "Hfupd".
+    { iPureIntro. repeat econstructor; lia. }
+
     iMod "Hfupd" as "[HP HQ]". iFrame.
-
     iApply "Hclose".
 
     iNext. iExists _. iFrame.
-    iExists _.
-    subst. destruct σ. rewrite /=.
+    iExists _. destruct σ. rewrite /=.
     iSplitL "Hd0 Hd1 Hd2".
     { rewrite /is_low_state. iSplitR "Hd0 Hd1 Hd2".
-      2: { iExists _, _, _. iFrame.
-          (* one complication here is that the caller may have advanced the
-           * start pointer past the end pointer, so it would not be possible
-           * here to prove that the end pointer on-disk remains consistent
-           * with the invariant.  our plan is to introduce an error state
-           * into circΣ, which corresponds to any on-disk state, and all
-           * subsequent transitions from the error state remain an error.
-           * it would then be the caller's job to avoid transitions into
-           * the error state if they don't want it.
-           *)
-          admit. }
+      2: {
+        iExists _, _, _. iFrame.
+        iPureIntro; intuition idtac; simpl in *.
+        {
+          rewrite H3.
+          f_equal. f_equal. f_equal. f_equal.
+          rewrite skipn_length.
+          admit.
+        }
+        {
+          rewrite -list_to_block_to_vals; eauto.
+          rewrite Hslen. rewrite H1. rewrite H0. word.
+        }
+      }
       done.
     }
     admit.
