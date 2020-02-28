@@ -8,6 +8,8 @@ Definition LogPositionT := wal.LogPosition.
 Definition LogPosition := u64.
 Definition LogDiskBlocks := 513.
 
+Canonical Structure u64C := leibnizO u64.
+
 Transparent slice.T.
 
 Section heap.
@@ -15,6 +17,7 @@ Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!inG Σ (authR mnatUR)}.
 Context `{!inG Σ (authR (optionUR (exclR (listO updateC))))}.
+Context `{!inG Σ (authR (optionUR (exclR u64C)))}.
 
 Implicit Types (Φ: val → iProp Σ).
 Implicit Types (v:val) (z:Z).
@@ -54,7 +57,7 @@ Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 va
     compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := #pos ]> m)
   end.
 
-Definition is_wal_state (st: loc) (γmemstart γdiskend: gname) (γmemlog: gname) : iProp Σ :=
+Definition is_wal_state (st: loc) (γmemstart γmdiskend: gname) (γmemlog: gname) : iProp Σ :=
   ∃ (memLogPtr diskEnd nextDiskEnd memLogMapPtr: loc) (memStart diskEnd: u64) (memLog : list update.t) (memLogMap : gmap u64 val * val),
     st ↦[WalogState.S :: "memLog"] #memLogPtr ∗
     st ↦[WalogState.S :: "memStart"] #memStart ∗
@@ -65,14 +68,14 @@ Definition is_wal_state (st: loc) (γmemstart γdiskend: gname) (γmemlog: gname
           updates_slice s memLog) ∗
     is_map memLogMapPtr memLogMap ∗
     ⌜fst memLogMap = compute_memLogMap memLog memStart ∅⌝ ∗
-    own γmemstart (● (int.nat memStart : mnat)) ∗
-    own γdiskend (◯ (int.nat diskEnd : mnat)) ∗
+    own γmemstart (● (Excl' memStart)) ∗
+    own γmdiskend (● (Excl' diskEnd)) ∗
     own γmemlog (● (Excl' memLog))
     .
 
 Definition walN: namespace := nroot .@ "wal".
 
-Definition is_wal_mem (l: loc) γlock γmemstart γdiskend γmemlog : iProp Σ :=
+Definition is_wal_mem (l: loc) γlock γmemstart γmdiskend γmemlog : iProp Σ :=
   ∃ (memLock : loc) d (circ st : loc) (shutdown : bool) (nthread : u64) (condLogger condInstall condShut : loc),
     inv walN (∃ q, l ↦[Walog.S :: "memLock"]{q} #memLock) ∗
     inv walN (∃ q, l ↦[Walog.S :: "d"]{q} d) ∗
@@ -86,24 +89,27 @@ Definition is_wal_mem (l: loc) γlock γmemstart γdiskend γmemlog : iProp Σ :
     lock.is_cond condLogger #memLock ∗
     lock.is_cond condInstall #memLock ∗
     lock.is_cond condShut #memLock ∗
-    is_lock walN γlock #memLock (is_wal_state st γmemstart γdiskend γmemlog).
+    is_lock walN γlock #memLock (is_wal_state st γmemstart γmdiskend γmemlog).
 
 Definition is_wal_circ γdiskstart γdisklog (σ : circΣ.t) : iProp Σ :=
-  own γdiskstart (● (int.nat σ.(circΣ.start) : mnat)) ∗
+  own γdiskstart (● (Excl' σ.(circΣ.start))) ∗
   own γdisklog (● (Excl' σ.(circΣ.upds))).
 
-(*
-Definition is_wal_inner (γmemstart γdiskstart γdiskend γdisklog γmemlog : gname) (Pwal : log_state.t -> iProp Σ) : iProp Σ :=
-  ∃ (σ: log_state.t) (memStart : nat),
+Definition is_wal_inner (γmemstart γdiskstart γmdiskend γdisklog γmemlog : gname) (Pwal : log_state.t -> iProp Σ) : iProp Σ :=
+  ∃ (σ: log_state.t) (memStart diskStart mDiskEnd : u64) (disklog memlog : list update.t),
     Pwal σ ∗
-    own γmemstart (◯ (int.nat memStart : mnat)) ∗
-    own γdiskstart (◯ (int.nat memStart : mnat)) ∗
-    own γdiskend (● (int.nat memStart : mnat)) ∗
-    own γdisklog (● (int.nat memStart : mnat)) ∗
-    own γmemlog (● (int.nat memStart : mnat)) ∗
-
-    own γ
+    own γmemstart (◯ (Excl' memStart)) ∗
+    own γdiskstart (◯ (Excl' diskStart)) ∗
+    own γmdiskend (◯ (Excl' mDiskEnd)) ∗
+    own γdisklog (◯ (Excl' disklog)) ∗
+    own γmemlog (◯ (Excl' memlog)) ∗
+(*
+    ⌜memStart <= diskStart⌝ ∗
+    ⌜mDiskEnd <= diskStart + length disklog⌝ ∗
+    ⌜diskStart:disklog ∈ memStart:memlog⌝
+    .. describe σ .. will own installed disk blocks
 *)
+    True.
 
 (* old lockInv, parts need to be incorporated above
 
