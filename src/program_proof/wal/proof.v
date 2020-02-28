@@ -22,6 +22,10 @@ Context `{!inG Σ (authR (optionUR (exclR u64C)))}.
 Implicit Types (Φ: val → iProp Σ).
 Implicit Types (v:val) (z:Z).
 
+Context (Pwal: log_state.t -> iProp Σ).
+Context (walN : namespace).
+Definition circN: namespace := walN .@ "circ".
+
 Theorem post_upto_intval Φ (x1 x2: u64) :
   int.val x1 = int.val x2 →
   Φ #x1 -∗ Φ #x2.
@@ -73,8 +77,6 @@ Definition is_wal_state (st: loc) (γmemstart γmdiskend: gname) (γmemlog: gnam
     own γmemlog (● (Excl' memLog))
     .
 
-Definition walN: namespace := nroot .@ "wal".
-
 Definition is_wal_mem (l: loc) γlock γmemstart γmdiskend γmemlog : iProp Σ :=
   ∃ (memLock : loc) d (circ st : loc) (shutdown : bool) (nthread : u64) (condLogger condInstall condShut : loc),
     inv walN (∃ q, l ↦[Walog.S :: "memLock"]{q} #memLock) ∗
@@ -118,7 +120,7 @@ Definition is_wal_sigma (σ: log_state.t) (memStart: u64) (memlog: list update.t
      *)
     True.
 
-Definition is_wal_inner (γmemstart γdiskstart γmdiskend γdisklog γmemlog : gname) (Pwal : log_state.t -> iProp Σ) : iProp Σ :=
+Definition is_wal_inner (γmemstart γdiskstart γmdiskend γdisklog γmemlog : gname) : iProp Σ :=
   ∃ (σ: log_state.t) (memStart diskStart mDiskEnd : u64) (disklog memlog : list update.t),
     Pwal σ ∗
     own γmemstart (◯ (Excl' memStart)) ∗
@@ -131,6 +133,12 @@ Definition is_wal_inner (γmemstart γdiskstart γmdiskend γdisklog γmemlog : 
     [∗ list] off ↦ u ∈ disklog,
       ⌜memlog !! Z.to_nat (int.val diskStart + off - int.val memStart) = Some u⌝ ∗
     is_wal_sigma σ memStart memlog (int.nat diskStart + length disklog).
+
+Definition is_wal (l : loc) γcirc : iProp Σ :=
+  ∃ γlock γmemstart γmdiskend γmemlog γdisklog γdiskstart,
+    is_wal_mem l γlock γmemstart γmdiskend γmemlog ∗
+    inv walN (is_wal_inner γmemstart γdiskstart γmdiskend γdisklog γmemlog) ∗
+    is_circular circN (is_wal_circ γdiskstart γdisklog) γcirc.
 
 (* old lockInv, parts need to be incorporated above
 
@@ -162,13 +170,6 @@ Definition lockInv (l: loc) (σ: log_state.t): iProp Σ :=
           int.val durable_to ≤ int.val pos2 ->
           d2 = apply_updates (take_updates pos1 pos2 memLog memStart) d1 ⌝
   ).
-
-Definition walN: namespace := nroot .@ "wal".
-
-Definition is_wal (l: loc) (σ: log_state.t): iProp Σ :=
-  ∃ γ, is_lock walN γ #(l +ₗ 0) (lockInv l σ) ∗
-       lock.is_cond (l +ₗ 4) #(l +ₗ 0) ∗
-       lock.is_cond (l +ₗ 5) #(l +ₗ 0).
  *)
 
 End heap.
