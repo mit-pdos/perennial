@@ -1,4 +1,4 @@
-From iris.algebra Require Export auth gmap frac agree excl vector.
+From iris.algebra Require Export auth gmap frac agree excl vector list.
 
 From Perennial.Helpers Require Export BigOp.
 

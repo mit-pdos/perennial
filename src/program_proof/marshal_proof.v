@@ -277,7 +277,8 @@ Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) q (xs: list u64) :
   {{{ is_enc enc vs ∗ is_slice_small s uint64T q (u64val <$> xs) ∗
              ⌜length (encode vs) + 8 * length xs <= int.val (EncSz enc)⌝ }}}
     Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
-  {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) }}}.
+  {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) ∗
+      is_slice_small s uint64T q (u64val <$> xs) }}}.
 Proof.
   iIntros (Φ) "(Henc&Hs&%) HΦ".
   rewrite /Enc__PutInts /ForSlice.
