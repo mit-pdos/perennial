@@ -103,9 +103,9 @@ Definition is_wal_inner (γmemstart γdiskstart γmdiskend γdisklog γmemlog : 
     own γmdiskend (◯ (Excl' mDiskEnd)) ∗
     own γdisklog (◯ (Excl' disklog)) ∗
     own γmemlog (◯ (Excl' memlog)) ∗
+    ⌜int.val memStart <= int.val diskStart⌝ ∗
+    ⌜int.val mDiskEnd <= (int.val diskStart + (length disklog))⌝.
 (*
-    ⌜memStart <= diskStart⌝ ∗
-    ⌜mDiskEnd <= diskStart + length disklog⌝ ∗
     ⌜diskStart:disklog ∈ memStart:memlog⌝
     .. describe σ .. will own installed disk blocks
 *)
