@@ -86,37 +86,32 @@ Proof.
   iIntros "Henc".
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s extra) "[Hslice %]".
+  wp_apply (wp_Write_fupd _ Q with "[Hslice Hfupd]").
+  { iSplitL "Hslice".
+    { iNext. rewrite -list_to_block_to_vals. { iFrame. }
+      admit.
+    }
 
-Transparent Write.
-  rewrite /Write /is_circular.
-  wp_apply wp_slice_ptr.
-  wp_pures.
-  wp_bind (ExternalOp _ _).
-  iInv N as ">Hcircopen".
-  iDestruct "Hcircopen" as (σ) "[Hcs HP]".
-  iDestruct "Hcs" as (updarray) "[Hlow Hupds]".
-  iDestruct "Hlow" as "[% Hlow]".
-  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra) "(Hd0 & Hd1 & % & % & Hd2)".
-
-  wp_apply (wp_WriteOp with "[Hd1 Hslice]").
-  { iNext. iExists _. iFrame.
-    iApply slice_to_block; last iFrame.
-    congruence. }
-
-  iIntros "[Hd1 Hslice]".
-
-  assert (∃ lz σ' r, Some (lz, σ', r) = interpret nil (circ_advance newStart) σ). { eauto. }
-  destruct H5. destruct H5. destruct H5.
-  rewrite /= in H5. inversion H5; clear H5.
-
-  iDestruct ("Hfupd" $! σ x0 tt with "[] HP") as "Hfupd".
-  { iPureIntro. subst. repeat econstructor. }
-  iMod "Hfupd" as "[HP HQ]".
-  iModIntro.
-
-  iSplitL "HP Hd0 Hd1 Hd2 Hupds".
-  { iNext.
+    iInv N as ">Hcircopen" "Hclose".
+    iDestruct "Hcircopen" as (σ) "[Hcs HP]".
+    iDestruct "Hcs" as (updarray) "[Hlow Hupds]".
+    iDestruct "Hlow" as "[% Hlow]".
+    iDestruct "Hlow" as (hdr1 hdr2 hdr2extra) "(Hd0 & Hd1 & % & % & Hd2)".
     iExists _. iFrame.
+    iModIntro.
+    iIntros "Hd1".
+
+    assert (∃ lz σ' r, Some (lz, σ', r) = interpret nil (circ_advance newStart) σ). { eauto. }
+    destruct H5. destruct H5. destruct H5.
+    rewrite /= in H5. inversion H5; clear H5.
+
+    iDestruct ("Hfupd" $! σ x0 tt with "[] HP") as "Hfupd".
+    { iPureIntro. subst. repeat econstructor. }
+    iMod "Hfupd" as "[HP HQ]". iFrame.
+
+    iApply "Hclose".
+
+    iNext. iExists _. iFrame.
     iExists _.
     subst. destruct σ. rewrite /=.
     iSplitL "Hd0 Hd1 Hd2".
@@ -137,6 +132,7 @@ Transparent Write.
     admit.
   }
 
+  iIntros "[Hslice HQ]".
   wp_pures.
   wp_call.
   iApply "HΦ".
