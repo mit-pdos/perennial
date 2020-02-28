@@ -95,6 +95,29 @@ Definition is_wal_circ γdiskstart γdisklog (σ : circΣ.t) : iProp Σ :=
   own γdiskstart (● (Excl' σ.(circΣ.start))) ∗
   own γdisklog (● (Excl' σ.(circΣ.upds))).
 
+Definition is_wal_sigma (σ: log_state.t) (memStart: u64) (memlog: list update.t) (diskend: nat) : iProp Σ :=
+  ∃ d,
+    ( [∗ map] a ↦ b ∈ d, a d↦ b ) ∗
+    ⌜int.nat σ.(log_state.durable_to) = diskend⌝ ∗
+
+    (* all disks agree on the addresses they cover *)
+    ( [∗ map] pos ↦ td ∈ σ.(log_state.txn_disk), ⌜∀ a, d !! a = None <-> td !! a = None⌝ ) ∗
+
+    (*
+     * complication: what to do when we are midway through installing some transactions?
+     * the current installed disk state isn't any specific transaction state..  we promise
+     * that the installed disk contents match some transaction between installed_to and
+     * durable_to..
+     *)
+    ( [∗ map] a ↦ b ∈ d,
+      ∃ pos td, ⌜σ.(log_state.txn_disk) !! pos = Some td⌝ ∗
+                ⌜td !! a = Some b⌝ ) ∗
+
+    (*
+     * connect [memlog] to σ.(log_state.txn_disk)
+     *)
+    True.
+
 Definition is_wal_inner (γmemstart γdiskstart γmdiskend γdisklog γmemlog : gname) (Pwal : log_state.t -> iProp Σ) : iProp Σ :=
   ∃ (σ: log_state.t) (memStart diskStart mDiskEnd : u64) (disklog memlog : list update.t),
     Pwal σ ∗
@@ -104,12 +127,10 @@ Definition is_wal_inner (γmemstart γdiskstart γmdiskend γdisklog γmemlog : 
     own γdisklog (◯ (Excl' disklog)) ∗
     own γmemlog (◯ (Excl' memlog)) ∗
     ⌜int.val memStart <= int.val diskStart⌝ ∗
-    ⌜int.val mDiskEnd <= (int.val diskStart + (length disklog))⌝.
-(*
-    ⌜diskStart:disklog ∈ memStart:memlog⌝
-    .. describe σ .. will own installed disk blocks
-*)
-    True.
+    ⌜int.val mDiskEnd <= (int.val diskStart + (length disklog))⌝ ∗
+    [∗ list] off ↦ u ∈ disklog,
+      ⌜memlog !! Z.to_nat (int.val diskStart + off - int.val memStart) = Some u⌝ ∗
+    is_wal_sigma σ memStart memlog (int.nat diskStart + length disklog).
 
 (* old lockInv, parts need to be incorporated above
 
