@@ -59,8 +59,10 @@ def main():
     )
 
     def compile_goose():
+        old_dir = os.getcwd()
         os.chdir(goose_dir)
         do_run(["go", "install", "./cmd/goose"])
+        os.chdir(old_dir)
 
     def run_goose(src_path, output, pkg=None):
         gopath = os.getenv("GOPATH", default=None)
