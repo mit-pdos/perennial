@@ -23,10 +23,10 @@ m = jc.get_module('Main')
 stateType = m.get_type("state")
 
 sym = json_sym.SymbolicJSON(jc)
-sym.register_base_type("Z", lambda args: z3.IntSort())
 sym.register_base_type("positive", lambda args: z3.IntSort())
 sym.register_base_type("string", lambda args: z3.StringSort())
-# u0 is a u64? and u1 is a u32...
+
+# XXX u0 is a u64? and u1 is a u32...
 sym.register_base_type("u0", lambda args: z3.BitVecSort(64))
 sym.register_base_type("u1", lambda args: z3.BitVecSort(32))
 sym.register_base_type("gmap", lambda args: z3.ArraySort(sym.z3_sort(args[0]),
@@ -46,8 +46,6 @@ sym.register_base_type("list", lambda args: z3.SeqSort(sym.z3_sort({
     'mod': m,
 })))
 sym.register_base_type("fh", lambda args: z3.StringSort())
-#sym.register_base_type("uint32", lambda args: z3.BitVecSort(32))
-#sym.register_base_type("uint64", lambda args: z3.BitVecSort(64))
 
 ### Fix later
 sym.register_base_type("fileid", lambda args: z3.BitVecSort(64))
@@ -74,7 +72,7 @@ m.redefine_term('map_insert', {
         'id': 'map_insert',
     },
 })
-for id in ('ret', 'reads', 'modify', 'symBool', 'symU32', 'symU64', 'symAssert', 'eq_dec_fh', 'len_buf', 'eqDec_time', 'eq_dec_inode_state', 'countable_inode_state', 'countable_fh', 'resize_buf',):
+for id in ('u3', 'ret', 'reads', 'modify', 'symBool', 'symU32', 'symU64', 'symAssert', 'eq_dec_fh', 'len_buf', 'eqDec_time', 'eq_dec_inode_state', 'countable_inode_state', 'countable_fh', 'resize_buf',):
     m.redefine_term(id, {
         'what': 'expr:special',
         'id': id,

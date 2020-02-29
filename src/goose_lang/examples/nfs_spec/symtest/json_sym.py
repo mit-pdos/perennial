@@ -25,6 +25,7 @@ class SymbolicJSON(object):
         self.base_types[name] = z3sort_lam
 
     def z3_sort(self, typeexpr):
+
         ## Check for a base type before reduction, for types
         ## like gmap that we want to avoid unfolding in reduce.
         ## for something like positive, this can cause infinite recursion
@@ -52,8 +53,16 @@ class SymbolicJSON(object):
 
     def proc_apply(self, expr, state):
         f = self.context.reduce(expr['func'])
+        print "Reduced application function",
+        pprint.pprint(f)
         args = expr['args']
         if f['what'] == 'expr:special':
+            # for converting Z to u32
+            if f['id'] == 'u3':
+                print "u3 proc, evalucating arg"
+                state, val = self.proc(args[0], state)
+                return state, z3.Const(anon(), val)
+
             if f['id'] == 'gmap_lookup':
                 state, k = self.proc(args[0], state)
                 state, m = self.proc(args[1], state)
@@ -76,21 +85,21 @@ class SymbolicJSON(object):
                 state, res = self.proc(args[0], state)
                 return state, res
 
-            elif f['name'] == 'modify':
-                _, newstate = self.proc(args[0], state)
-
             elif f['id'] == 'len_buf':
                 state, buf = self.proc(args[0], state)
                 return state, z3.Int2BV(z3.Length(buf), 64)
+
             elif f['id'] == 'resize_buf':
                 state, newlen = self.proc(args[0], state)
                 state, buf = self.proc(args[1], state)
                 ## XXX should be of length newlen, not empty..
                 return state, z3.Empty(buf.sort())
+
             #elif f['id'] == 'uint64_gt':
              # state, a0 = self.proc(args[0], state)
              # state, a1 = self.proc(args[1], state)
              # return state, z3.If(a0 > a1, self.bool_sort.constructor(0)(), self.bool_sort.constructor(1)())
+
             elif f['id'] == 'eqDec_time':
                 state, a0 = self.proc(args[0], state)
                 state, a1 = self.proc(args[1], state)
@@ -166,24 +175,8 @@ class SymbolicJSON(object):
                 continue
 
             if procexpr['what'] == 'expr:constructor':
-                mod, name = self.context.scope_name(procexpr['name'], procexpr['mod'])
-                c = mod.get_constructor(name)
-                if procexpr['name'] == 'Bind':
-                    p0 = procexpr['args'][0]
-                    p1lam = procexpr['args'][1]
-                    print "-------------------- BIND PROC ----------------------"
-                    pprint.pprint(p0)
-                    state0, res0 = self.proc(p0, state)
-                    p1 = {
-                        'what': 'expr:apply',
-                        'args': [res0],
-                        'func': p1lam,
-                    }
-                    state, procexpr = self.proc(p1, state0)
-                    continue
-                else:
-                    state, procexpr = self.proc_constructor_other(procexpr, state)
-                    continue
+                state, procexpr = self.proc_constructor(procexpr, state)
+                continue
 
             # axioms
             if procexpr['what'] == 'expr:special':
@@ -198,81 +191,67 @@ class SymbolicJSON(object):
                 if procexpr['id'] == 'symAssert':
                     # XXX how to add a solver constraint?
                     return state, self.unit_tt
+
                 else:
                     raise Exception("unknown special", procexpr['id'])
 
             raise Exception("proc() on unexpected thing", procexpr['what'])
 
-    def proc_constructor_other(self, procexpr, state):
-        if procexpr['name'] == 'list':
-            ## What a hack: lists are always of inode_state
-            inode_state_sort = self.z3_sort({
-                'what': 'type:glob',
-                'mod': procexpr['mod'],
-                'args': [],
-                'name': 'inode_state',
-            })
-            if procexpr['name'] == 'Nil':
-                return state, z3.Empty(z3.SeqSort(inode_state_sort))
+    def proc_constructor(self, procexpr, state):
+        if procexpr['name'] == 'Bind':
+            p0 = procexpr['args'][0]
+            p1lam = procexpr['args'][1]
+            print "-------------------- BIND PROC ----------------------"
+            pprint.pprint(p0)
+            state0, res0 = self.proc(p0, state)
+            p1 = {
+                'what': 'expr:apply',
+                'args': [res0],
+                'func': p1lam,
+            }
+            return self.proc(p1, state0)
 
+        if procexpr['name'] == 'Tt':
+            return state, self.unit_tt
+
+        t = {}
         if "ERR" in procexpr['name']:
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'err', 'args' : []}
-            sort = self.z3_sort(t)
-            cid = constructor_idx_by_name(sort, procexpr['name'])
-            cargs = []
-            for arg in procexpr['args']:
-                state, carg = self.proc(arg, state)
-                cargs.append(carg)
-            return state, sort.constructor(cid)(*cargs)
 
-        if procexpr['name'] == 'Err' or procexpr['name'] == 'OK':
+        elif procexpr['name'] == 'Err' or procexpr['name'] == 'OK':
             arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'}
-            #arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args' : [
-                                #{'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'},
-                            #]}
             arg1 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'inode_state'}
+            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'res', 'args' : [arg0, arg1]}
 
-            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'res',
-                            'args' : [arg0, arg1]
-                }
-            sort = self.z3_sort(t)
-            cid = constructor_idx_by_name(sort, procexpr['name'])
-            cargs = []
-            for arg in procexpr['args']:
-                state, carg = self.proc(arg, state)
-                cargs.append(carg)
-            print "CONSTRUCTOR: ",
-            pprint.pprint(sort.constructor(cid))
-            pprint.pprint(cargs)
-            print(cargs[0].sort())
-            print(cargs[1].sort())
-            print(sort)
-            print(dir(sort))
-            return state, sort.constructor(cid)(*cargs)
-
-        if procexpr['name'] == 'None':
+        elif procexpr['name'] == 'None':
             # pass in argument for type 'A' in res XXX hacky?
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args': [
                 {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'},
             ]}
-            sort = self.z3_sort(t)
-            cid = constructor_idx_by_name(sort, 'None')
-            cargs = []
 
-            return state, sort.constructor(cid)(*cargs)
+        elif "NF3" in procexpr['name']:
+            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'ftype', 'args': []}
 
-        if procexpr['name'] == 'Tt':
-            return state, self.unit_tt
+        elif "Build" in procexpr['name']:
+            typename = procexpr['name'][6:]
+            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': typename, 'args': []}
+
+        elif procexpr['name'] == 'Z0':
+            # XXX Z0 is automatically converted to a bitvecsort?
+            return state, z3.BitVecSort(32)
 
         else:
             print "UNKNOWN CONSTRUCTOR",
             pprint.pprint(procexpr)
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': procexpr['name'], 'args': []}
-            sort = self.z3_sort(t)
-            cid = constructor_idx_by_name(sort, 'None')
-            cargs = []
 
-            return state, sort.constructor(cid)(*cargs)
+        sort = self.z3_sort(t)
+        cid = constructor_idx_by_name(sort, procexpr['name'])
+        cargs = []
+        for arg in procexpr['args']:
+            state, carg = self.proc(arg, state)
+            cargs.append(carg)
+        return state, sort.constructor(cid)(*cargs)
 
 def constructor_idx_by_name(sort, cname):
     for i in range(0, sort.num_constructors()):
