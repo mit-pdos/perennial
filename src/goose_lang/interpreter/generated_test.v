@@ -79,6 +79,8 @@ Example testNestedStructUpdates_ok : testNestedStructUpdates #() ~~> #true := t.
 Example testStructConstructions_ok : testStructConstructions #() ~~> #true := t.
 Example testStoreInStructVar_ok : testStoreInStructVar #() ~~> #true := t.
 Example testStoreInStructPointerVar_ok : testStoreInStructPointerVar #() ~~> #true := t.
+Example testStoreComposite_ok : testStoreComposite #() ~~> #true := t.
+Example testStoreSlice_ok : testStoreSlice #() ~~> #true := t.
 
 (* wal.go *)
 Example testWal_ok : testWal #() ~~> #true := t.

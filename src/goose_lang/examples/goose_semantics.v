@@ -302,7 +302,7 @@ Definition standardForLoop: val :=
       then
         let: "sum" := ![uint64T] "sumPtr" in
         let: "x" := SliceGet uint64T "s" (![uint64T] "i") in
-        "sumPtr" <-[refT uint64T] "sum" + "x";;
+        "sumPtr" <-[uint64T] "sum" + "x";;
         "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue
       else Break));;
@@ -324,7 +324,7 @@ Definition LoopStruct__forLoopWait: val :=
       (if: "i" < ![uint64T] "nxt"
       then Break
       else
-        struct.get LoopStruct.S "loopNext" "ls" <-[refT uint64T] ![uint64T] (struct.get LoopStruct.S "loopNext" "ls") + #1;;
+        struct.get LoopStruct.S "loopNext" "ls" <-[uint64T] ![uint64T] (struct.get LoopStruct.S "loopNext" "ls") + #1;;
         Continue)).
 
 (* tests *)
@@ -850,6 +850,22 @@ Definition testStoreInStructPointerVar: val :=
     struct.storeF StructWrap.S "i" (![refT (struct.t StructWrap.S)] "p") #5;;
     (struct.loadF StructWrap.S "i" (![refT (struct.t StructWrap.S)] "p") = #5).
 
+Definition testStoreComposite: val :=
+  rec: "testStoreComposite" <> :=
+    let: "p" := struct.alloc TwoInts.S (zero_val (struct.t TwoInts.S)) in
+    struct.store TwoInts.S "p" (struct.mk TwoInts.S [
+      "x" ::= #3;
+      "y" ::= #4
+    ]);;
+    (struct.get TwoInts.S "y" (struct.load TwoInts.S "p") = #4).
+
+Definition testStoreSlice: val :=
+  rec: "testStoreSlice" <> :=
+    let: "p" := ref (zero_val (slice.T uint64T)) in
+    let: "s" := NewSlice uint64T #3 in
+    "p" <-[slice.T uint64T] "s";;
+    (slice.len (![slice.T uint64T] "p") = #3).
+
 (* wal.go *)
 
 (* 10 is completely arbitrary *)
@@ -891,7 +907,7 @@ Definition New: val :=
     let: "header" := intToBlock #0 in
     disk.Write #0 "header";;
     let: "lengthPtr" := ref (zero_val uint64T) in
-    "lengthPtr" <-[refT uint64T] #0;;
+    "lengthPtr" <-[uint64T] #0;;
     let: "l" := lock.new #() in
     struct.mk Log.S [
       "d" ::= "d";
@@ -959,7 +975,7 @@ Definition Log__Write: val :=
     disk.Write "nextAddr" "aBlock";;
     disk.Write ("nextAddr" + #1) "v";;
     MapInsert (struct.get Log.S "cache" "l") "a" "v";;
-    struct.get Log.S "length" "l" <-[refT uint64T] "length" + #1;;
+    struct.get Log.S "length" "l" <-[uint64T] "length" + #1;;
     Log__unlock "l".
 
 (* Commit the current transaction. *)
@@ -1006,7 +1022,7 @@ Definition Log__Apply: val :=
     let: "length" := ![uint64T] (struct.get Log.S "length" "l") in
     applyLog (struct.get Log.S "d" "l") "length";;
     clearLog (struct.get Log.S "d" "l");;
-    struct.get Log.S "length" "l" <-[refT uint64T] #0;;
+    struct.get Log.S "length" "l" <-[uint64T] #0;;
     Log__unlock "l".
 
 (* Open recovers the log following a crash or shutdown *)
@@ -1019,7 +1035,7 @@ Definition Open: val :=
     clearLog "d";;
     let: "cache" := NewMap disk.blockT in
     let: "lengthPtr" := ref (zero_val uint64T) in
-    "lengthPtr" <-[refT uint64T] #0;;
+    "lengthPtr" <-[uint64T] #0;;
     let: "l" := lock.new #() in
     struct.mk Log.S [
       "d" ::= "d";

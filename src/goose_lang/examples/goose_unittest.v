@@ -166,16 +166,16 @@ Definition useMap: val :=
 Definition usePtr: val :=
   rec: "usePtr" <> :=
     let: "p" := ref (zero_val uint64T) in
-    "p" <-[refT uint64T] #1;;
+    "p" <-[uint64T] #1;;
     let: "x" := ![uint64T] "p" in
-    "p" <-[refT uint64T] "x".
+    "p" <-[uint64T] "x".
 
 Definition iterMapKeysAndValues: val :=
   rec: "iterMapKeysAndValues" "m" :=
     let: "sumPtr" := ref (zero_val uint64T) in
     MapIter "m" (λ: "k" "v",
       let: "sum" := ![uint64T] "sumPtr" in
-      "sumPtr" <-[refT uint64T] "sum" + "k" + "v");;
+      "sumPtr" <-[uint64T] "sum" + "k" + "v");;
     let: "sum" := ![uint64T] "sumPtr" in
     "sum".
 
@@ -183,11 +183,11 @@ Definition iterMapKeys: val :=
   rec: "iterMapKeys" "m" :=
     let: "keysSlice" := NewSlice uint64T #0 in
     let: "keysRef" := ref (zero_val (slice.T uint64T)) in
-    "keysRef" <-[refT (slice.T uint64T)] "keysSlice";;
+    "keysRef" <-[slice.T uint64T] "keysSlice";;
     MapIter "m" (λ: "k" <>,
       let: "keys" := ![slice.T uint64T] "keysRef" in
       let: "newKeys" := SliceAppend uint64T "keys" "k" in
-      "keysRef" <-[refT (slice.T uint64T)] "newKeys");;
+      "keysRef" <-[slice.T uint64T] "newKeys");;
     let: "keys" := ![slice.T uint64T] "keysRef" in
     "keys".
 
@@ -365,7 +365,7 @@ Definition standardForLoop: val :=
       then
         let: "sum" := ![uint64T] "sumPtr" in
         let: "x" := SliceGet uint64T "s" (![uint64T] "i") in
-        "sumPtr" <-[refT uint64T] "sum" + "x";;
+        "sumPtr" <-[uint64T] "sum" + "x";;
         "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue
       else Break));;
@@ -446,7 +446,7 @@ Definition IterateMapKeys: val :=
   rec: "IterateMapKeys" "m" "sum" :=
     MapIter "m" (λ: "k" <>,
       let: "oldSum" := ![uint64T] "sum" in
-      "sum" <-[refT uint64T] "oldSum" + "k").
+      "sum" <-[uint64T] "oldSum" + "k").
 
 Definition MapSize: val :=
   rec: "MapSize" "m" :=
@@ -715,7 +715,7 @@ Definition simpleSpawn: val :=
           else #());;
           lock.release "l");;
     lock.acquire "l";;
-    "v" <-[refT uint64T] #1;;
+    "v" <-[uint64T] #1;;
     lock.release "l".
 
 Definition threadCode: val :=

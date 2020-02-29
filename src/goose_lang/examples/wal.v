@@ -41,7 +41,7 @@ Definition New: val :=
     let: "header" := intToBlock #0 in
     disk.Write #0 "header";;
     let: "lengthPtr" := ref (zero_val uint64T) in
-    "lengthPtr" <-[refT uint64T] #0;;
+    "lengthPtr" <-[uint64T] #0;;
     let: "l" := lock.new #() in
     struct.mk Log.S [
       "d" ::= "d";
@@ -109,7 +109,7 @@ Definition Log__Write: val :=
     disk.Write "nextAddr" "aBlock";;
     disk.Write ("nextAddr" + #1) "v";;
     MapInsert (struct.get Log.S "cache" "l") "a" "v";;
-    struct.get Log.S "length" "l" <-[refT uint64T] "length" + #1;;
+    struct.get Log.S "length" "l" <-[uint64T] "length" + #1;;
     Log__unlock "l".
 
 (* Commit the current transaction. *)
@@ -156,7 +156,7 @@ Definition Log__Apply: val :=
     let: "length" := ![uint64T] (struct.get Log.S "length" "l") in
     applyLog (struct.get Log.S "d" "l") "length";;
     clearLog (struct.get Log.S "d" "l");;
-    struct.get Log.S "length" "l" <-[refT uint64T] #0;;
+    struct.get Log.S "length" "l" <-[uint64T] #0;;
     Log__unlock "l".
 
 (* Open recovers the log following a crash or shutdown *)
@@ -169,7 +169,7 @@ Definition Open: val :=
     clearLog "d";;
     let: "cache" := NewMap disk.blockT in
     let: "lengthPtr" := ref (zero_val uint64T) in
-    "lengthPtr" <-[refT uint64T] #0;;
+    "lengthPtr" <-[uint64T] #0;;
     let: "l" := lock.new #() in
     struct.mk Log.S [
       "d" ::= "d";

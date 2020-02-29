@@ -181,13 +181,13 @@ Definition bufFlush: val :=
     then #()
     else
       FS.append (struct.get bufFile.S "file" "f") "buf";;
-      struct.get bufFile.S "buf" "f" <-[refT (slice.T byteT)] slice.nil).
+      struct.get bufFile.S "buf" "f" <-[slice.T byteT] slice.nil).
 
 Definition bufAppend: val :=
   rec: "bufAppend" "f" "p" :=
     let: "buf" := ![slice.T byteT] (struct.get bufFile.S "buf" "f") in
     let: "buf2" := SliceAppendSlice byteT "buf" "p" in
-    struct.get bufFile.S "buf" "f" <-[refT (slice.T byteT)] "buf2".
+    struct.get bufFile.S "buf" "f" <-[slice.T byteT] "buf2".
 
 Definition bufClose: val :=
   rec: "bufClose" "f" :=
@@ -220,7 +220,7 @@ Definition tableWriterAppend: val :=
   rec: "tableWriterAppend" "w" "p" :=
     bufAppend (struct.get tableWriter.S "file" "w") "p";;
     let: "off" := ![uint64T] (struct.get tableWriter.S "offset" "w") in
-    struct.get tableWriter.S "offset" "w" <-[refT uint64T] "off" + slice.len "p".
+    struct.get tableWriter.S "offset" "w" <-[uint64T] "off" + slice.len "p".
 
 Definition tableWriterClose: val :=
   rec: "tableWriterClose" "w" :=
@@ -272,7 +272,7 @@ Definition makeValueBuffer: val :=
   rec: "makeValueBuffer" <> :=
     let: "buf" := NewMap (slice.T byteT) in
     let: "bufPtr" := ref (zero_val (mapT (slice.T byteT))) in
-    "bufPtr" <-[refT (mapT (slice.T byteT))] "buf";;
+    "bufPtr" <-[mapT (slice.T byteT)] "buf";;
     "bufPtr".
 
 (* NewDb initializes a new database on top of an empty filesys. *)
@@ -283,7 +283,7 @@ Definition NewDb: val :=
     let: "bufferL" := lock.new #() in
     let: "tableName" := #(str"table.0") in
     let: "tableNameRef" := ref (zero_val stringT) in
-    "tableNameRef" <-[refT stringT] "tableName";;
+    "tableNameRef" <-[stringT] "tableName";;
     let: "table" := CreateTable "tableName" in
     let: "tableRef" := struct.alloc Table.S (zero_val (struct.t Table.S)) in
     struct.store Table.S "tableRef" "table";;
@@ -419,15 +419,15 @@ Definition Compact: val :=
     lock.acquire (struct.get Database.S "bufferL" "db");;
     let: "buf" := ![mapT (slice.T byteT)] (struct.get Database.S "wbuffer" "db") in
     let: "emptyWbuffer" := NewMap (slice.T byteT) in
-    struct.get Database.S "wbuffer" "db" <-[refT (mapT (slice.T byteT))] "emptyWbuffer";;
-    struct.get Database.S "rbuffer" "db" <-[refT (mapT (slice.T byteT))] "buf";;
+    struct.get Database.S "wbuffer" "db" <-[mapT (slice.T byteT)] "emptyWbuffer";;
+    struct.get Database.S "rbuffer" "db" <-[mapT (slice.T byteT)] "buf";;
     lock.release (struct.get Database.S "bufferL" "db");;
     lock.acquire (struct.get Database.S "tableL" "db");;
     let: "oldTableName" := ![stringT] (struct.get Database.S "tableName" "db") in
     let: ("oldTable", "t") := constructNewTable "db" "buf" in
     let: "newTable" := freshTable "oldTableName" in
     struct.store Table.S (struct.get Database.S "table" "db") "t";;
-    struct.get Database.S "tableName" "db" <-[refT stringT] "newTable";;
+    struct.get Database.S "tableName" "db" <-[stringT] "newTable";;
     let: "manifestData" := Data.stringToBytes "newTable" in
     FS.atomicCreate #(str"db") #(str"manifest") "manifestData";;
     CloseTable "oldTable";;
@@ -475,7 +475,7 @@ Definition Recover: val :=
     let: "tableRef" := struct.alloc Table.S (zero_val (struct.t Table.S)) in
     struct.store Table.S "tableRef" "table";;
     let: "tableNameRef" := ref (zero_val stringT) in
-    "tableNameRef" <-[refT stringT] "tableName";;
+    "tableNameRef" <-[stringT] "tableName";;
     deleteOtherFiles "tableName";;
     let: "wbuffer" := makeValueBuffer #() in
     let: "rbuffer" := makeValueBuffer #() in
