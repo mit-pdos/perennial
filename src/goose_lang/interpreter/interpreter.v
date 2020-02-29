@@ -240,7 +240,6 @@ Section interpreter.
     | PairV v1 v2 => "PairV(" +:+ print_val v1 +:+ ", " +:+ print_val v2 +:+ ")"
     | InjLV v => "InjL(" +:+ print_val v +:+ ")"
     | InjRV v => "InjR(" +:+ print_val v +:+ ")"
-    | ExtV x => "ExtV"
     end.
   Instance pretty_val : Pretty val := print_val.
 
