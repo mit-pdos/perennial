@@ -38,9 +38,9 @@ def main():
     )
     parser.add_argument(
         "--nfsd",
-        help="path to goose-nfsd repo",
-        required=True,
+        help="path to goose-nfsd repo (skip translation if not provided)",
         metavar="GOOSE_NFSD_PATH",
+        default=None,
     )
 
     args = parser.parse_args()
@@ -51,7 +51,7 @@ def main():
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if not os.path.isdir(goose_nfsd_dir):
+    if goose_nfsd_dir is not None and not os.path.isdir(goose_nfsd_dir):
         parser.error("goose-nfsd directory does not exist")
 
     do_run = lambda cmd_args: run_command(
@@ -99,30 +99,31 @@ def main():
             path.join(perennial_dir, "src/goose_lang/examples/", example + ".v"),
         )
 
-    nfsd_pkgs = [
-        "wal",
-        "buf",
-        "super",
-        "common",
-        "util",
-        "addr",
-        "txn",
-        "alloc",
-        "lockmap",
-    ]
-    for pkg in nfsd_pkgs:
-        if pkg == ".":
-            run_goose(
-                goose_nfsd_dir,
-                path.join(perennial_dir, "external/Goose"),
-                pkg="github.com/mit-pdos/goose-nfsd",
-            )
-        else:
-            run_goose(
-                path.join(goose_nfsd_dir, pkg),
-                path.join(perennial_dir, "external/Goose"),
-                pkg="github.com/mit-pdos/goose-nfsd/" + pkg,
-            )
+    if goose_nfsd_dir is not None:
+        nfsd_pkgs = [
+            "wal",
+            "buf",
+            "super",
+            "common",
+            "util",
+            "addr",
+            "txn",
+            "alloc",
+            "lockmap",
+        ]
+        for pkg in nfsd_pkgs:
+            if pkg == ".":
+                run_goose(
+                    goose_nfsd_dir,
+                    path.join(perennial_dir, "external/Goose"),
+                    pkg="github.com/mit-pdos/goose-nfsd",
+                )
+            else:
+                run_goose(
+                    path.join(goose_nfsd_dir, pkg),
+                    path.join(perennial_dir, "external/Goose"),
+                    pkg="github.com/mit-pdos/goose-nfsd/" + pkg,
+                )
 
 
 if __name__ == "__main__":
