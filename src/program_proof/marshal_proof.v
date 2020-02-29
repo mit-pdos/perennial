@@ -572,7 +572,7 @@ Proof.
   iIntros (l) "Hl".
   rewrite zero_slice_val.
   wp_pures.
-  wp_apply typed_mem.wp_AllocAt; auto.
+  wp_apply typed_mem.wp_ref_to; auto.
   iIntros (l__i) "Hli".
   wp_let.
   wp_apply (wp_forUpto (λ x,
