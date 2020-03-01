@@ -42,7 +42,8 @@ default: src/ShouldBuild.vo test
 all: $(VFILES:.v=.vo)
 test: $(TEST_VO)
 vos: src/ShouldBuild.vos
-interpreter: src/goose_lang/interpreter/generated_test.vo
+# skipping generated_test.vos for now because wal test is expensive
+interpreter: src/goose_lang/interpreter/interpreter.vos
 
 _CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
 	@echo "-Q src $$(cat libname)" > $@
@@ -98,7 +99,7 @@ skip-qed:
 unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
-ci: skip-qed src/ShouldBuild.vo src/goose_lang/interpreter/interpreter.vos $(TEST_VO)
+ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
 	$(Q)if [ ${TIMED} = "true" ]; then \
 		./etc/timing-report.py timing.sqlite3; \
 		fi
