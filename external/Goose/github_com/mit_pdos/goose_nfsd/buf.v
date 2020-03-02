@@ -48,12 +48,12 @@ Definition MkBufLoad: val :=
 (* Install 1 bit from src into dst, at offset bit. return new dst. *)
 Definition installOneBit: val :=
   rec: "installOneBit" "src" "dst" "bit" :=
-    let: "new" := ref_to byteT "dst" in
-    (if: ("src" & #(U8 1) ≪ "bit") ≠ ("dst" & #(U8 1) ≪ "bit")
+    let: "new" := ref "dst" in
+    (if: "src" && #(U8 1) ≪ "bit" ≠ "dst" && #(U8 1) ≪ "bit"
     then
-      (if: ("src" & #(U8 1) ≪ "bit") = #(U8 0)
-      then "new" <-[byteT] (![byteT] "new" & ~ (#(U8 1) ≪ "bit"))
-      else "new" <-[byteT] ![byteT] "new" ∥ #(U8 1) ≪ "bit");;
+      (if: ("src" && #(U8 1) ≪ "bit" = #(U8 0))
+      then "new" <-[byteT] ![byteT] "new" && ~ (#(U8 1) ≪ "bit")
+      else "new" <-[byteT] ![byteT] "new" || #(U8 1) ≪ "bit");;
       #()
     else #());;
     ![byteT] "new".
@@ -152,7 +152,7 @@ Definition BufMap__Del: val :=
 
 Definition BufMap__Ndirty: val :=
   rec: "BufMap__Ndirty" "bmap" :=
-    let: "n" := ref_to uint64T #0 in
+    let: "n" := ref #0 in
     MapIter (struct.loadF BufMap.S "addrs" "bmap") (λ: <> "buf",
       (if: struct.loadF Buf.S "dirty" "buf"
       then "n" <-[uint64T] ![uint64T] "n" + #1
