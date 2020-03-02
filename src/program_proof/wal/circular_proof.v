@@ -131,15 +131,9 @@ Proof.
   wp_call.
   wp_apply wp_new_enc.
   iIntros (enc) "[Henc %]".
-  wp_apply (wp_Enc__PutInt with "[$Henc]").
-  {
-Transparent encode.
-    iPureIntro. rewrite /=. rewrite H0. word.
-Opaque encode.
-  }
-  iIntros "Henc".
+  wp_apply (wp_Enc__PutInt with "Henc"); [ word | iIntros "Henc" ].
   wp_apply (wp_Enc__Finish with "Henc").
-  iIntros (s extra) "[Hslice %]".
+  iIntros (s) "[Hslice %]".
   wp_apply (wp_Write_fupd _ Q with "[Hslice Hfupd]").
   {
     iDestruct (is_slice_small_sz with "Hslice") as %Hslen.
@@ -147,7 +141,9 @@ Opaque encode.
 
     iSplitL "Hslice".
     { rewrite -list_to_block_to_vals; first iFrame.
-      rewrite Hslen. rewrite H1. rewrite H0. word.
+      rewrite Hslen. autorewrite with len in H1, Hslen.
+      rewrite H0 in H1.
+      word.
     }
 
     iInv N as ">Hcircopen" "Hclose".
@@ -179,16 +175,16 @@ Opaque encode.
     { rewrite /is_low_state. iSplitR "Hd0 Hd1 Hd2".
       2: {
         iExists _, _, _. iFrame.
-        iPureIntro; intuition idtac; simpl in *.
+        iPureIntro; destruct_and?; split_and?.
         {
+          simpl.
           rewrite H3.
-          f_equal. f_equal. f_equal. f_equal.
+          f_equal. f_equal.
           rewrite skipn_length.
           admit.
         }
         {
           rewrite -list_to_block_to_vals; eauto.
-          rewrite Hslen. rewrite H1. rewrite H0. word.
         }
       }
       done.
@@ -305,24 +301,16 @@ Proof.
 
   wp_apply wp_new_enc.
   iIntros (enc) "[Henc %]".
-  wp_apply (wp_Enc__PutInt with "[$Henc]").
-  {
-Transparent encode.
-    iPureIntro. rewrite /=. rewrite H0. word.
-Opaque encode.
-  }
-  iIntros "Henc".
+  wp_apply (wp_Enc__PutInt with "Henc"); [ word | iIntros "Henc" ].
   wp_loadField.
   wp_apply (wp_Enc__PutInts with "[$Henc $Hs]").
   {
-Transparent encode.
-    iPureIntro. rewrite /=. rewrite H0. admit.
-Opaque encode.
+    admit. (* need more information about number of updates *)
   }
   iIntros "[Henc Hs]".
 
   wp_apply (wp_Enc__Finish with "Henc").
-  iIntros (s extra) "[Hslice %]".
+  iIntros (s) "[Hslice %]".
 
   wp_apply (wp_Write_fupd _ Q with "[Hslice Hγ Hfupd]").
   {
@@ -331,7 +319,8 @@ Opaque encode.
 
     iSplitL "Hslice".
     { rewrite -list_to_block_to_vals; first iFrame.
-      rewrite Hslen. rewrite H1. rewrite H0. word.
+      rewrite Hslen. admit. (* TODO: avoid reasoning about size of slices, use
+      length of list if possible *)
     }
 
     iInv N as ">Hcircopen" "Hclose".

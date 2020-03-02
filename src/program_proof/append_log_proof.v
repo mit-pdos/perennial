@@ -53,33 +53,26 @@ Proof.
   iIntros (enc) "[Henc %]".
   wp_steps.
   wp_loadField.
-  wp_apply (wp_Enc__PutInt with "[$Henc]").
-  { simpl; rewrite H; len. }
-  iIntros "Henc".
+  wp_apply (wp_Enc__PutInt with "Henc"); [ word | iIntros "Henc" ].
   wp_steps.
   wp_loadField.
-  wp_apply (wp_Enc__PutInt with "[$Henc]").
-  { simpl; rewrite H; len. }
-  iIntros "Henc".
-  wp_steps.
+  wp_apply (wp_Enc__PutInt with "Henc"); [ word | iIntros "Henc" ].
   wp_apply (wp_Enc__Finish with "[$Henc]").
-  iIntros (s extra) "(Hs&%)".
+  iIntros (s) "(Hs&%)".
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  autorewrite with len in H0, Hsz.
   destruct s.
   replace sz0 with (U64 4096).
   { iApply "HΦ".
-    iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-    autorewrite with len in Hsz.
-    rewrite /= in Hsz.
     iDestruct (slice_to_block with "Hs") as "Hb"; [ done | ].
     iFrame.
     iPureIntro.
     rewrite /is_hdr_block.
-    exists extra.
-    rewrite -> list_to_block_to_vals; auto. }
+    eexists _.
+    rewrite list_to_block_to_vals; eauto. }
   apply word.unsigned_inj.
-  simpl in H0; subst.
-  rewrite H.
-  reflexivity.
+  simpl in Hsz.
+  word.
 Qed.
 
 Theorem wpc_write_hdr stk k E1 E2 lptr (sz0 disk_sz0 sz disk_sz:u64) :
