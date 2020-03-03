@@ -68,43 +68,94 @@ Definition circ_read : transition circΣ.t (list update.t * u64) :=
   ret s.
 
 Definition assert `(P : T -> Prop) : transition T unit :=
-  @suchThat _ unit (fun σ _ => P σ) (fallback_genPred _).
+  suchThat (gen:=fun _ _ => None) (fun σ _ => P σ).
 
 Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
   assert (fun σ => int.val σ.(start) <= int.val newStart <= int.val σ.(start) + length σ.(upds));;
-  modify (fun σ => set upds (skipn (Z.to_nat (int.val newStart - int.val σ.(start))%Z)) σ);;
+  modify (fun σ => set upds (drop (Z.to_nat (int.val newStart - int.val σ.(start))%Z)) σ);;
   modify (set start (fun _ => newStart)).
 
 Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t unit :=
-  assert (fun σ => int.val σ.(start) + length σ.(upds) = int.val endpos);;
+  assert (fun σ => circΣ.diskEnd σ = int.val endpos);;
   modify (set circΣ.upds (fun u => u ++ l));;
   assert (fun σ => length σ.(upds) <= LogSz).
 
-Canonical Structure updateC := leibnizO update.t.
+Canonical Structure updateO := leibnizO update.t.
+
+Section list.
+  Context (A:Type).
+  Notation list := (list A).
+  Implicit Types (l:list).
+
+  Definition Forall_idx (P: nat -> A -> Prop) (start:nat) (l: list): Prop :=
+    Forall2 P (seq start (length l)) l.
+
+  Lemma drop_seq n len m :
+    drop m (seq n len) = seq (n + m) (len - m).
+  Proof.
+    revert n m.
+    induction len; simpl; intros.
+    - rewrite drop_nil //.
+    - destruct m; simpl.
+      + replace (n + 0)%nat with n by lia; auto.
+      + rewrite IHlen.
+        f_equal; lia.
+  Qed.
+
+  Theorem Forall_idx_drop (P: nat -> A -> Prop) l (start n: nat) :
+    Forall_idx P start l ->
+    Forall_idx P (start + n) (drop n l).
+  Proof.
+    rewrite /Forall_idx.
+    intros.
+    rewrite drop_length -drop_seq.
+    apply Forall2_drop; auto.
+  Qed.
+
+  Theorem Forall_idx_impl (P1 P2: nat -> A -> Prop) l (start n: nat) :
+    Forall_idx P1 start l ->
+    (forall i x, l !! i = Some x ->
+            P1 (start + i)%nat x ->
+            P2 (start + i)%nat x) ->
+    Forall_idx P2 start l.
+  Proof.
+    rewrite /Forall_idx.
+    intros.
+    apply Forall2_same_length_lookup.
+    eapply Forall2_same_length_lookup in H.
+    intuition idtac.
+    pose proof (lookup_seq_inv _ _ _ _ H); intuition subst.
+    apply H0; eauto.
+  Qed.
+End list.
 
 Section heap.
 Context `{!heapG Σ}.
-Context `{!inG Σ (authR (optionUR (exclR (listO updateC))))}.
+Context `{!inG Σ (authR (optionUR (exclR (listO updateO))))}.
 
 Context (N: namespace).
 Context (P: circΣ.t -> iProp Σ).
-Context `{!forall σ, Timeless (P σ)}.
+Context {Ptimeless: forall σ, Timeless (P σ)}.
 
 Definition is_low_state (startpos endpos : u64) (updarray : list update.t) : iProp Σ :=
   ⌜Z.of_nat (length updarray) = LogSz⌝ ∗
   ∃ hdr1 hdr2 hdr2extra,
     0 d↦ hdr1 ∗
     1 d↦ hdr2 ∗
-    ⌜Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 endpos] ++ (map EncUInt64 (map update.addr updarray)))⌝ ∗
+    ⌜Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 endpos] ++ (map EncUInt64 (update.addr <$> updarray)))⌝ ∗
     ⌜Block_to_vals hdr2 = b2val <$> encode [EncUInt64 startpos] ++ hdr2extra⌝ ∗
     2 d↦∗ (update.b <$> updarray).
+
+Definition has_circ_updates (start: Z) (upds: list update.t) (updarray: list update.t) :=
+  forall i bupd, upds !! i = Some bupd ->
+            updarray !! (Z.to_nat $ (start + Z.of_nat i) `mod` LogSz) = Some bupd.
 
 Definition is_circular_state γ (σ : circΣ.t) : iProp Σ :=
   ∃ (updarray : list update.t),
     own γ (● (Excl' updarray)) ∗
     is_low_state σ.(start) (word.add σ.(start) (length σ.(upds))) updarray ∗
-    [∗ list] i ↦ bupd ∈ σ.(upds),
-      ⌜updarray !! Z.to_nat ((int.val σ.(start) + i) `mod` LogSz)%Z = Some bupd⌝.
+    ⌜int.val σ.(start) + length σ.(upds) < 2^64⌝ ∗
+    ⌜has_circ_updates (int.val σ.(start)) σ.(upds) updarray⌝.
 
 Definition is_circular γ : iProp Σ :=
   inv N (∃ σ, is_circular_state γ σ ∗ P σ).
@@ -113,7 +164,27 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
   ∃ s (updarray : list update.t),
     own γ (◯ (Excl' updarray)) ∗
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
-    is_slice_small s uint64T 1%Qp (u64val <$> (update.addr <$> updarray)).
+    is_slice_small s uint64T 1 (u64val <$> (update.addr <$> updarray)).
+
+Lemma has_circ_updates_advance:
+  ∀ (newStart : u64) (upds : list update.t) (start : u64) (updarray : list update.t),
+    has_circ_updates (int.val start) upds updarray
+    → int.val start ≤ int.val newStart ∧ int.val newStart ≤ int.val start + strings.length upds
+    → has_circ_updates (int.val newStart) (drop (Z.to_nat (int.val newStart - int.val start)) upds)
+                       updarray.
+Proof.
+  rewrite /has_circ_updates; intros.
+  rewrite lookup_drop in H1.
+  pose proof (lookup_lt_Some _ _ _ H1).
+  apply H in H1.
+  match goal with
+  | [ H: updarray !! ?i = Some _ |- updarray !! ?i' = Some _ ] =>
+    replace i' with i; [ exact H | ]
+  end.
+  f_equal.
+  f_equal.
+  lia.
+Qed.
 
 Opaque encode.
 
@@ -125,7 +196,7 @@ Theorem wp_circular__Advance (Q: iProp Σ) γ d (newStart : u64) :
   }}}
     Advance #d #newStart
   {{{ RET #(); Q }}}.
-Proof.
+Proof using Ptimeless.
   iIntros (Φ) "[#Hcirc Hfupd] HΦ".
   wp_call.
   wp_call.
@@ -141,14 +212,15 @@ Proof.
 
     iSplitL "Hslice".
     { rewrite -list_to_block_to_vals; first iFrame.
-      rewrite Hslen. autorewrite with len in H1, Hslen.
-      rewrite H0 in H1.
+      rewrite Hslen. autorewrite with len in H0, Hslen.
+      rewrite H in H0.
       word.
     }
 
     iInv N as ">Hcircopen" "Hclose".
     iDestruct "Hcircopen" as (σ) "[Hcs HP]".
     iDestruct "Hcs" as (updarray) "(Hγ & Hlow & Hupds)".
+    iDestruct "Hupds" as %(Hendpos&Hupds).
     iDestruct "Hlow" as "[% Hlow]".
     iDestruct "Hlow" as (hdr1 hdr2 hdr2extra) "(Hd0 & Hd1 & % & % & Hd2)".
     iExists _. iFrame.
@@ -158,38 +230,38 @@ Proof.
     iDestruct ("Hfupd" with "HP") as "[Hex Hfupd]".
     iDestruct "Hex" as (eσ' eb) "Hex".
     iDestruct "Hex" as %Hex.
-
     iSpecialize ("Hfupd" $! eσ' eb).
     simpl in Hex. monad_inv.
 
-    iDestruct ("Hfupd" with "[]") as "Hfupd".
+    iMod ("Hfupd" with "[]") as "[HP HQ]".
     { iPureIntro. repeat econstructor; lia. }
-
-    iMod "Hfupd" as "[HP HQ]". iFrame.
+    iFrame.
     iApply "Hclose".
 
     iNext. iExists _. iFrame.
-    iExists _. destruct σ. rewrite /=.
-    iSplitL "Hγ"; first iFrame.
+    iExists _.
+    iFrame "Hγ". destruct σ. rewrite /=.
     iSplitL "Hd0 Hd1 Hd2".
-    { rewrite /is_low_state. iSplitR "Hd0 Hd1 Hd2".
-      2: {
-        iExists _, _, _. iFrame.
-        iPureIntro; destruct_and?; split_and?.
-        {
-          simpl.
-          rewrite H3.
-          f_equal. f_equal.
-          rewrite skipn_length.
-          admit.
-        }
-        {
-          rewrite -list_to_block_to_vals; eauto.
-        }
+    { rewrite /is_low_state. iSplitR "Hd0 Hd1 Hd2"; first by done.
+      iExists _, _, _. iFrame.
+      iPureIntro; destruct_and?; split_and?.
+      {
+        simpl.
+        rewrite H2.
+        f_equal. f_equal.
+        rewrite drop_length.
+        simpl in *; f_equal.
+        f_equal.
+        apply word.unsigned_inj.
+        word.
       }
-      done.
+      rewrite -list_to_block_to_vals; eauto.
     }
-    admit.
+    iPureIntro.
+    simpl in *.
+    split.
+    { len. }
+    apply has_circ_updates_advance; auto.
   }
 
   iIntros "[Hslice HQ]".
@@ -197,7 +269,9 @@ Proof.
   wp_call.
   iApply "HΦ".
   iFrame.
-Admitted.
+  Grab Existential Variables.
+  all: auto.
+Qed.
 
 Fixpoint apply_updates (updarray : list update.t) (endpos : Z) (newupds : list update.t) : list update.t :=
   match newupds with
@@ -266,8 +340,8 @@ Proof.
   { word. }
   destruct (list_lookup_lt _ bks (int.nat i)).
   { word. }
-  rewrite list_lookup_fmap in H1.
-  rewrite H3 in H1. simpl in H1. inversion H1; clear H1; subst.
+  rewrite list_lookup_fmap in H0.
+  rewrite H2 /= in H0. inversion H1; clear H1; subst.
   destruct x1. destruct x0.
 
   iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hi Hbks]"; eauto.
