@@ -166,6 +166,30 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
     is_slice_small s uint64T 1 (u64val <$> (update.addr <$> updarray)).
 
+Lemma is_low_state_array_len startpos endpos updarray :
+  is_low_state startpos endpos updarray -∗ ⌜Z.of_nat (length updarray) = LogSz⌝.
+Proof.
+  iIntros "[% _]".
+  done.
+Qed.
+
+Theorem updarray_len γ updarray :
+  is_circular γ -∗ own γ (◯ (Excl' updarray)) ={⊤}=∗ ⌜Z.of_nat (length updarray) = LogSz⌝ ∗ own γ (◯ (Excl' updarray)).
+Proof using Ptimeless.
+  iIntros "#Hcirc Hown".
+  iInv "Hcirc" as ">Hcircular".
+  iDestruct "Hcircular" as (σ) "[Hcs HP]".
+  iDestruct "Hcs" as (updarray') "(Hγ & Hlow & Hupds)".
+  iDestruct (ghost_var_agree with "Hγ Hown") as %->.
+  iDestruct (is_low_state_array_len with "Hlow") as %Hlen.
+  iModIntro.
+  iSplitR "Hown".
+  { iNext; iExists σ; iFrame.
+    iExists updarray; iFrame. }
+  iFrame.
+  done.
+Qed.
+
 Lemma has_circ_updates_advance:
   ∀ (newStart : u64) (upds : list update.t) (start : u64) (updarray : list update.t),
     has_circ_updates (int.val start) upds updarray
@@ -280,6 +304,16 @@ Fixpoint apply_updates (updarray : list update.t) (endpos : Z) (newupds : list u
   | nil => updarray
   end.
 
+Lemma apply_updates_length updarray endpos upds :
+  length (apply_updates updarray endpos upds) = length updarray.
+Proof.
+  revert endpos updarray.
+  induction upds; simpl; intros; len.
+  rewrite IHupds //.
+Qed.
+
+Hint Rewrite apply_updates_length : len.
+
 Theorem wp_circularAppender__logBlocks γ c d (endpos : u64) (bufs : Slice.t) (updarray : list update.t) diskaddrslice (upds : list update.t) :
   {{{ is_circular γ ∗
       own γ (◯ (Excl' updarray)) ∗
@@ -326,9 +360,8 @@ Proof.
     iFrame.
     iSplitL "Hbks Hupdslice".
     { iExists _. iFrame. }
-    rewrite <- Hslen.
-    rewrite Hslen2.
-    rewrite firstn_all. done.
+    iPureIntro.
+    rewrite -> take_ge by lia; auto.
   }
 
   iIntros (i x Φloop) "!> (Hloop & % & %) HΦloop".
@@ -366,6 +399,7 @@ Proof.
   wp_call.
 
   iDestruct "Hca" as (addrslice updarray) "(Hγ & Haddrslice & Hs)".
+  iMod (updarray_len with "Hcirc Hγ") as (Hupdarray_len) "Hγ".
   wp_apply (wp_circularAppender__logBlocks with "[$Hcirc $Hslice $Hγ $Haddrslice $Hs]").
 
   iIntros (updarray') "(Hγ & Haddrslice & Hs & Hupdslice & ->)".
@@ -379,27 +413,33 @@ Proof.
   wp_loadField.
   wp_apply (wp_Enc__PutInts with "[$Henc $Hs]").
   {
-    admit. (* need more information about number of updates *)
+    len.
+    rewrite Hupdarray_len.
+    rewrite /LogSz.
+    word.
   }
   iIntros "[Henc Hs]".
 
-  wp_apply (wp_Enc__Finish with "Henc").
+  wp_apply (wp_Enc__Finish_complete with "Henc").
+  { len.
+    rewrite Hupdarray_len.
+    rewrite /LogSz.
+    word. }
   iIntros (s) "[Hslice %]".
 
   wp_apply (wp_Write_fupd _ Q with "[Hslice Hγ Hfupd]").
   {
     iDestruct (is_slice_small_sz with "Hslice") as %Hslen.
-    rewrite fmap_length in Hslen.
+    rewrite fmap_length in H0.
 
     iSplitL "Hslice".
     { rewrite -list_to_block_to_vals; first iFrame.
-      rewrite Hslen. admit. (* TODO: avoid reasoning about size of slices, use
-      length of list if possible *)
-    }
+      rewrite H0 H //. }
 
     iInv N as ">Hcircopen" "Hclose".
     iDestruct "Hcircopen" as (σ) "[Hcs HP]".
     iDestruct "Hcs" as (updarray0) "(Hγauth & Hlow & Hupds)".
+    iDestruct "Hupds" as %Hupds.
     iDestruct "Hlow" as "[% Hlow]".
     iDestruct "Hlow" as (hdr1 hdr2 hdr2extra) "(Hd0 & Hd1 & % & % & Hd2)".
     iExists _. iFrame.
@@ -428,18 +468,32 @@ Proof.
     { rewrite /is_low_state. iSplitR "Hd0 Hd1 Hd2".
       2: {
         iExists _, _, _. iFrame.
-        iPureIntro; intuition idtac; simpl in *.
+        len.
+        iPureIntro; (intuition idtac); simpl in *.
         {
-          admit.
+          rewrite list_to_block_to_vals.
+          { f_equal. f_equal. f_equal. f_equal.
+            rewrite /circΣ.diskEnd /= in H4.
+            autorewrite with len in *.
+            apply word.unsigned_inj.
+            word_cleanup.
+            admit.
+          }
+          autorewrite with len in H0, Hslen.
+          rewrite H in H0.
+          word.
         }
-        {
-          eauto.
-        }
+        rewrite H3; eauto.
       }
+      simpl in *.
+      autorewrite with len in *.
       done.
     }
-    iFrame.
-    admit.
+    iPureIntro.
+    (intuition idtac); len.
+    { admit. }
+    { simpl in *.
+      admit. (* update to has_circ_updates *) }
   }
 
   iIntros "[Hslice HQ]".
@@ -447,6 +501,7 @@ Proof.
   wp_call.
   iApply "HΦ".
   iFrame.
+  Fail idtac.
 Admitted.
 
 End heap.

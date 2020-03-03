@@ -415,13 +415,15 @@ Theorem wp_Enc__Finish_complete stk E enc vs free :
   {{{ is_enc enc vs free }}}
     Enc__Finish (EncM.to_val enc) @ stk; E
   {{{ s, RET (slice_val s);
-      is_slice_small s byteT 1 (b2val <$> encode vs)}}}.
+      let bs := b2val <$> encode vs in
+      is_slice_small s byteT 1 bs ∗
+      ⌜length bs = int.nat (EncSz enc)⌝ }}}.
 Proof.
   iIntros (Hfree Φ) "Henc HΦ".
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s) "(Hs&%)".
-  rewrite Hfree replicate_0 app_nil_r.
-  iApply ("HΦ" with "Hs").
+  rewrite Hfree replicate_0 app_nil_r in H |- *.
+  by iApply ("HΦ" with "[$Hs]").
 Qed.
 
 Definition DecSz (dec: DecM.t): u64 := dec.(DecM.s).(Slice.sz).
