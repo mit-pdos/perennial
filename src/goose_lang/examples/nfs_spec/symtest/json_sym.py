@@ -11,6 +11,7 @@ class SymbolicJSON(object):
         self.sumbool_sort = None
         self.unit_tt = None
         self.last_option_type = None
+        self.res_type = 'unit'
 
     def set_bool_type(self, t):
         self.bool_sort = self.z3_sort(t)
@@ -53,13 +54,10 @@ class SymbolicJSON(object):
 
     def proc_apply(self, expr, state):
         f = self.context.reduce(expr['func'])
-        print "Reduced application function",
-        pprint.pprint(f)
         args = expr['args']
         if f['what'] == 'expr:special':
             # for converting Z to u32
             if f['id'] == 'u3':
-                print "u3 proc, evalucating arg"
                 state, val = self.proc(args[0], state)
                 return state, z3.Const(anon(), val)
 
@@ -107,7 +105,6 @@ class SymbolicJSON(object):
             else:
                 raise Exception('unknown special function', f['id'])
         else:
-            print expr
             raise Exception('unknown apply on', f['what'])
 
     def proc_case(self, expr, state):
@@ -115,11 +112,13 @@ class SymbolicJSON(object):
         resstate = None
         resvalue = None
 
-        for case in expr['cases'][::-1]:
-            pat = case['pat']
+        # process wildcard case first
+        cases = expr['cases']
+        if cases[-1]['pat']['what'] == 'pat:wild':
+            cases.insert(0, cases.pop(-1))
 
-            print "-------------------- CASE ----------------------"
-            pprint.pprint(expr['cases'])
+        for case in cases:
+            pat = case['pat']
 
             if pat['what'] == 'pat:constructor':
                 body = case['body']
@@ -129,24 +128,15 @@ class SymbolicJSON(object):
                     if argname == '_': continue
                     val = victim.sort().accessor(cidx, idx)(victim)
                     body = json_eval.subst_what(body, 'expr:rel', argname, val)
-                print "Proc of ",
-                pprint.pprint(body)
                 patstate, patbody = self.proc(body, state)
                 if resstate is None:
-                    print "Resstate none"
                     resstate = patstate
                     resvalue = patbody
                 else:
-                    print "Case patbody, resvalue:"
-                    pprint.pprint(patbody)
-                    print(patbody.sort())
-                    pprint.pprint(resvalue)
-                    print(resvalue.sort())
-                    print(patstate.sort())
-                    print(resstate.sort())
-                    print(dir(resvalue.sort()))
+                    print "CASE PATBODY, RESVALUE: ", patbody.sort(), resvalue.sort()
                     resstate = z3.If(patCondition, patstate, resstate)
                     resvalue = z3.If(patCondition, patbody, resvalue)
+
             elif pat['what'] == 'pat:wild':
                 if resstate is not None:
                     raise Exception('wildcard not the last pattern')
@@ -161,8 +151,7 @@ class SymbolicJSON(object):
         procexpr = self.context.reduce(procexpr)
 
         while True:
-            print "-------------------- NEW PROC ----------------------"
-            pprint.pprint(procexpr)
+            #print "-------------------- NEW PROC ----------------------", procexpr
             if type(procexpr) != dict:
                 return state, procexpr
 
@@ -201,8 +190,7 @@ class SymbolicJSON(object):
         if procexpr['name'] == 'Bind':
             p0 = procexpr['args'][0]
             p1lam = procexpr['args'][1]
-            print "-------------------- BIND PROC ----------------------"
-            pprint.pprint(p0)
+            #print "-------------------- BIND PROC ----------------------", p0
             state0, res0 = self.proc(p0, state)
             p1 = {
                 'what': 'expr:apply',
@@ -219,38 +207,56 @@ class SymbolicJSON(object):
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'err', 'args' : []}
 
         elif procexpr['name'] == 'Err' or procexpr['name'] == 'OK':
-            arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'}
-            arg1 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'inode_state'}
+            cargs = []
+            for arg in procexpr['args']:
+                state, carg = self.proc(arg, state)
+                cargs.append(carg)
+
+            # can't just use 1st carg type here because could be err...
+            arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': str(cargs[0].sort())}
+            if procexpr['name'] == 'OK':
+                self.res_type = str(cargs[1].sort())
+            arg1 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.res_type}
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'res', 'args' : [arg0, arg1]}
+
+            sort = self.z3_sort(t)
+            print "result! ", sort, cargs[0].sort(), cargs[1].sort()
+            cid = constructor_idx_by_name(sort, procexpr['name'])
+            return state, sort.constructor(cid)(*cargs)
 
         elif procexpr['name'] == 'None':
             # pass in argument for type 'A' in res XXX hacky?
+            opt_type = self.res_type
+            if self.res_type == 'wcc_data':
+                opt_type = 'wcc_attr'
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args': [
-                {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'unit'},
+                {'what': 'type:glob', 'mod': procexpr['mod'], 'name': opt_type}
             ]}
 
         elif "NF3" in procexpr['name']:
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'ftype', 'args': []}
 
         elif "Build" in procexpr['name']:
-            typename = procexpr['name'][6:]
-            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': typename, 'args': []}
+            self.res_type = procexpr['name'][6:]
+            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.res_type , 'args': []}
 
         elif procexpr['name'] == 'Z0':
             # XXX Z0 is automatically converted to a bitvecsort?
             return state, z3.BitVecSort(32)
 
         else:
-            print "UNKNOWN CONSTRUCTOR",
-            pprint.pprint(procexpr)
+            raise Exception("UNKNOWN CONSTRUCTOR in proc")
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': procexpr['name'], 'args': []}
 
+        pprint.pprint(procexpr)
         sort = self.z3_sort(t)
         cid = constructor_idx_by_name(sort, procexpr['name'])
         cargs = []
         for arg in procexpr['args']:
             state, carg = self.proc(arg, state)
             cargs.append(carg)
+            print "CARG", carg.sort()
+        print sort.constructor(cid)
         return state, sort.constructor(cid)(*cargs)
 
 def constructor_idx_by_name(sort, cname):

@@ -126,8 +126,6 @@ s.add(res0.sort().recognizer(0)(res0))
 s.add(res1.sort().recognizer(1)(res1))
 assert(s.check() == z3.unsat)
 
-
-
 def lift_ftype(t):
     ftypeSort = sym.z3_sort(m.get_type("ftype"))
     if t == rfc1813.const.NF3REG:
@@ -171,7 +169,7 @@ def lift_fattr3(fattr3):
 s = z3.Solver()
 s.set(**{"solver.smtlib2_log": "filename.smt2"})
 
-trace = nfs_trace.call_reply_pairs("./nfs.pcap")
+'''trace = nfs_trace.call_reply_pairs("./nfs.pcap")
 for (proc, call, reply) in trace:
     if proc == 1: #getattr
         arg = z3.StringVal(call.object.data)
@@ -224,7 +222,7 @@ for (proc, call, reply) in trace:
     current_state = next_state
 
 print s.check()
-
+'''
 
 ## symbolic nfs server: ask for satisfying assignment for new RPC call
 current_state = z3.Const('s_init', stateSort)

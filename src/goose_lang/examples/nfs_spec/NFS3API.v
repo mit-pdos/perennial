@@ -414,7 +414,7 @@ Section SymbolicStep.
     bind x (fun (r : res A T) =>
       match r with
       | OK a v => fx v
-      | Err a e => ret (Err a e) (*undefined*)
+      | Err a e => ret (@Err A T' a e) (*undefined*)
       end).
 
   Notation "x <~- p1 ; p2" := (result_bind p1 (fun x => p2))
@@ -504,7 +504,7 @@ Section SymbolicStep.
     ret res.
 
   Definition getattr_step (f : fh) : transition State (res unit fattr) :=
-    i <~- get_fh f ();
+    i <~- get_fh f tt;
     attrs <- inode_attrs i;
     ret (OK tt attrs).
 
