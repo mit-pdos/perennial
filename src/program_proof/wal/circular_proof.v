@@ -76,6 +76,7 @@ Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
 
 Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t unit :=
   assert (fun σ => circΣ.diskEnd σ = int.val endpos);;
+  assert (fun σ => circΣ.diskEnd σ + length l < 2^64);;
   modify (set circΣ.upds (fun u => u ++ l));;
   assert (fun σ => length σ.(upds) <= LogSz).
 
@@ -561,7 +562,9 @@ Proof.
     }
     iPureIntro.
     (intuition idtac); len.
-    { admit. }
+    { simpl in *.
+      rewrite /circΣ.diskEnd /= in H4, H5.
+      lia. }
     { simpl in *.
       rewrite /circΣ.diskEnd /= in H4.
       apply has_circ_updates_append; eauto.
