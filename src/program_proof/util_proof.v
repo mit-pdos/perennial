@@ -33,9 +33,9 @@ Proof.
   - iFrame.
 Qed.
 
-Theorem wp_Dprintf stk E (level: u64) (msg arg: val) :
+Theorem wp_DPrintf stk E (level: u64) (msg arg: val) :
   {{{ True }}}
-    util.DPrintf #level msg arg
+    util.DPrintf #level msg arg @ stk; E
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "_ HΦ".

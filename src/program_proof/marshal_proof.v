@@ -125,17 +125,6 @@ Module DecM.
   Qed.
 End DecM.
 
-Transparent slice.T.
-
-Theorem slice_val_ty s t : val_ty (slice_val s) (slice.T t).
-Proof.
-  val_ty.
-Qed.
-
-Hint Immediate slice_val_ty : val_ty.
-
-Opaque slice.T.
-
 Section heap.
 Context `{!heapG Σ}.
 Implicit Types v : val.
@@ -396,7 +385,6 @@ Theorem wp_Enc__Finish stk E enc vs free :
 Proof.
   iIntros (Φ) "Henc HΦ".
   wp_call.
-  wp_call.
   iDestruct "Henc" as "(Hoff&Henc&Hfree&%)".
   iDestruct (array_app with "[$Henc Hfree]") as "Hblock".
   { iExactEq "Hfree".
@@ -474,11 +462,8 @@ Proof.
   rewrite encode_cons fmap_app.
   iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
   wp_call.
-  wp_call.
   wp_load.
   wp_steps.
-  wp_call.
-  wp_call.
   wp_load.
   wp_steps.
   wp_store.
@@ -532,11 +517,8 @@ Proof.
   rewrite encode_cons fmap_app.
   iDestruct (array_app with "Hxvs") as "[Hx Hvs]".
   wp_call.
-  wp_call.
   wp_load.
   wp_steps.
-  wp_call.
-  wp_call.
   wp_load.
   wp_steps.
   wp_store.

@@ -3,7 +3,7 @@ Import RecordSetNotations.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
-From Perennial.program_proof Require Import marshal_proof.
+From Perennial.program_proof Require Import marshal_proof util_proof.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import GenHeap.
 
@@ -314,6 +314,10 @@ Qed.
 
 Hint Rewrite apply_updates_length : len.
 
+Ltac invc H := inversion H; subst; clear H.
+
+Opaque struct.get.
+
 Theorem wp_circularAppender__logBlocks γ c d (endpos : u64) (bufs : Slice.t) (updarray : list update.t) diskaddrslice (upds : list update.t) :
   {{{ is_circular γ ∗
       own γ (◯ (Excl' updarray)) ∗
@@ -345,12 +349,12 @@ Proof.
       ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
                                          is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝) ∗
       ⌜updarray' = apply_updates updarray (int.val endpos) (firstn (int.nat i) upds)⌝)%I
-    with "[] [Hγ Hdiskaddrs Hslice Hupdslice Hbks]").
+    with "[] [Hγ Hdiskaddrs Hslice Hupdslice $Hbks]").
 
   2: {
     iFrame.
-    iExists _. iFrame. 
-    rewrite firstn_O /=. done.
+    iExists _. iFrame.
+    rewrite take_0 //.
   }
 
   2: {
@@ -380,8 +384,14 @@ Proof.
   iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hi Hbks]"; eauto.
   rewrite /=.
   iDestruct "Hi" as "[Hi ->]".
-
-  rewrite /update_val /=.
+  iSpecialize ("Hbks" with "[$Hi //]").
+  invc H0.
+  wp_apply wp_getField; auto.
+  wp_apply wp_getField; auto.
+  wp_pures.
+  wp_apply wp_DPrintf.
+  wp_pures.
+  change (word.divu (word.sub 4096 8) 8) with (U64 511).
 Admitted.
 
 Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :

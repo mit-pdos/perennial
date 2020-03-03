@@ -43,7 +43,13 @@ End log_state.
 Section heap.
 Context `{!heapG Σ}.
 Definition update_val (up:u64*Slice.t): val :=
-  (#(fst up), slice_val (snd up))%V.
+  (#(fst up), (slice_val (snd up), #()))%V.
+
+Theorem update_val_t u : val_ty (update_val u) (struct.t Update.S).
+Proof.
+  repeat constructor.
+  destruct u; rewrite /blockT; val_ty.
+Qed.
 
 (* TODO: this should probably also have a fraction *)
 Definition is_block (s:Slice.t) (b:Block) :=
@@ -55,3 +61,5 @@ Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
                                      is_block (snd b_upd) b ∗
                                      ⌜fst b_upd = a⌝.
 End heap.
+
+Hint Resolve update_val_t : val_ty.
