@@ -219,20 +219,26 @@ Notation "l ↦∗[ t ]{ q } vs" := (array l q t vs) : bi_scope.
 Notation "l ↦∗[ t ] vs" := (array l 1%Qp t vs) : bi_scope.
 Typeclasses Opaque array.
 
-Ltac iFramePtsTo_core t :=
+Ltac iFramePtsTo_core tac :=
   match goal with
   | [ |- envs_entails ?Δ ((?l +ₗ ?z) ↦∗[_] ?v) ] =>
     match Δ with
     | context[Esnoc _ ?j ((l +ₗ ?z') ↦∗[_] ?v')] =>
       unify v v';
       replace z with z';
-      [ iExact j | t ]
+      [ iExact j | tac ]
     end
   | [ |- envs_entails ?Δ (?l ↦ ?v) ] =>
     match Δ with
     | context[Esnoc _ ?j (l ↦ ?v')] =>
       replace v with v';
-      [ iExact j | t ]
+      [ iExact j | tac ]
+    end
+  | [ |- envs_entails ?Δ (?l ↦[?t]{?q} ?v) ] =>
+    match Δ with
+    | context[Esnoc _ ?j (l ↦[_]{q} ?v')] =>
+      replace v with v';
+      [ iExact j | tac ]
     end
   end.
 

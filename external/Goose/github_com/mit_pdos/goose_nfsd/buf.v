@@ -74,7 +74,7 @@ Definition installBytes: val :=
 Definition Buf__Install: val :=
   rec: "Buf__Install" "buf" "blk" :=
     util.DPrintf #1 (#(str"%v: install
-    ")) (struct.loadF Buf.S "Addr" "buf");;
+    ")) #();;
     (if: (struct.get addr.Addr.S "Sz" (struct.loadF Buf.S "Addr" "buf") = #1)
     then installBit (struct.loadF Buf.S "Blk" "buf") "blk" (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf"))
     else
@@ -84,7 +84,7 @@ Definition Buf__Install: val :=
         Panic ("Install unsupported
         ")));;
     util.DPrintf #20 (#(str"install -> %v
-    ")) "blk".
+    ")) #().
 
 (* Load the bits of a disk block into buf, as specified by addr *)
 Definition Buf__Load: val :=

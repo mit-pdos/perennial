@@ -446,4 +446,25 @@ Proof.
     apply Nat.pow_lt_mono_r_iff; eauto. lia. }
 Qed.
 
+Lemma wpc_later' s k E1 E2 e Φ Φc :
+  to_val e = None →
+  ▷ ▷ WPC e @ s; (LVL k); E1 ; E2 {{ Φ }} {{ Φc }} -∗
+  WPC e @ s; (LVL (S k)); E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "Hwp".
+  assert ((S (S (LVL k))) ≤ LVL (S k)).
+  { rewrite /LVL.
+    rewrite {1}(Nat.pow_succ_r' 2 (S (S k))).
+    replace (S (S (2 ^ (S (S k))))) with (2 + (2^(S (S k)))); last by lia.
+    replace (2 * (2 ^ (S (S k)))) with (2 ^ (S (S k)) + (2 ^ (S (S k)))) by lia.
+    apply plus_le_compat; auto.
+    { replace 2 with (2^1) at 1; last by auto.
+    apply Nat.pow_le_mono_r_iff; eauto. lia. }
+  }
+  iApply (wpc_idx_mono with "[Hwp]"); first by eassumption.
+  iApply (wpc_later with "[Hwp]"); eauto.
+  iNext.
+  iApply (wpc_later with "[Hwp]"); eauto.
+Qed.
+
 End ci.

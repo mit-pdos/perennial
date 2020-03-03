@@ -9,7 +9,9 @@ Section recoverable.
   Context {Σ:Type}.
   Inductive RecoverableState :=
     | UnInit
+    | Initing
     | Closed (s:Σ)
+    | Opening (s:Σ)
     | Opened (s:Σ) (l:loc)
   .
 

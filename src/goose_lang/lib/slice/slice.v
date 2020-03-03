@@ -21,6 +21,13 @@ Implicit Types (q:Qp).
 
 Coercion slice_val (s: Slice.t) : val := (#s.(Slice.ptr), #s.(Slice.sz), #s.(Slice.cap)).
 
+Transparent slice.T.
+Theorem slice_val_ty s t : val_ty (slice_val s) (slice.T t).
+Proof.
+  val_ty.
+Qed.
+Opaque slice.T.
+
 (* is_slice_small is a smaller footprint version if is_slice that imprecisely
 ignores the extra capacity; it allows for weaker preconditions for code which
 doesn't make use of capacity *)
@@ -72,6 +79,7 @@ Qed.
 
 Definition slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
   (#ptr, #sz, #cap)%V = slice_val (Slice.mk ptr sz cap) := eq_refl.
+
 
 (* TODO: order commands so primitives are opaque only after proofs *)
 Transparent raw_slice.
@@ -579,3 +587,5 @@ Proof.
 Qed.
 
 End goose_lang.
+
+Hint Resolve slice_val_ty : val_ty.

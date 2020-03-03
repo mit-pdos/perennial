@@ -423,6 +423,22 @@ Proof.
   auto.
 Qed.
 
+Theorem wp_getField stk E d f0 (v: val) :
+  val_ty v (struct.t d) ->
+  {{{ True }}}
+    getField d f0 v @ stk; E
+  {{{ RET (getField_f d f0 v); True }}}.
+Proof.
+  iIntros (Hty Φ) "_ HΦ".
+  iSpecialize ("HΦ" with "[//]").
+  iInduction d as [|[f t] fs] "IH" forall (v Hty); simpl.
+  - wp_call; auto.
+  - inv_ty Hty.
+    destruct (f =? f0)%string.
+    + wp_call; auto.
+    + wp_apply "IH"; auto.
+Qed.
+
 Transparent loadField storeField.
 
 Theorem wp_loadField stk E l q d f fv :

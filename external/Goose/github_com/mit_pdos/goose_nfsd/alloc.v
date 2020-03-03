@@ -45,7 +45,7 @@ Definition Alloc__allocBit: val :=
       let: "bit" := (![uint64T] "num") `rem` #8 in
       let: "byte" := (![uint64T] "num") `quot` #8 in
       util.DPrintf #10 (#(str"allocBit: s %d num %d
-      ")) "start" (![uint64T] "num");;
+      ")) #();;
       (if: (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" & #(U8 1) ≪ "bit") = #(U8 0)
       then
         SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" ∥ #(U8 1) ≪ "bit");;

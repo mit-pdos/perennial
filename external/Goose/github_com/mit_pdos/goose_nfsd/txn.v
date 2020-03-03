@@ -86,7 +86,7 @@ Definition Txn__doCommit: val :=
     lock.acquire (struct.loadF Txn.S "mu" "txn");;
     let: "blks" := Txn__installBufs "txn" "bufs" in
     util.DPrintf #3 (#(str"doCommit: %v bufs
-    ")) (slice.len "blks");;
+    ")) #();;
     let: ("n", "ok") := wal.Walog__MemAppend (struct.loadF Txn.S "log" "txn") "blks" in
     struct.storeF Txn.S "pos" "txn" "n";;
     lock.release (struct.loadF Txn.S "mu" "txn");;
@@ -102,7 +102,7 @@ Definition Txn__CommitWait: val :=
       (if: ~ "ok"
       then
         util.DPrintf #10 (#(str"memappend failed; log is too small
-        "));;
+        ")) #();;
         "commit" <-[boolT] #false
       else
         (if: "wait"
@@ -110,7 +110,7 @@ Definition Txn__CommitWait: val :=
         else #()))
     else
       util.DPrintf #5 (#(str"commit read-only trans
-      ")));;
+      ")) #());;
     ![boolT] "commit".
 
 (* NOTE: this is coarse-grained and unattached to the transaction ID *)

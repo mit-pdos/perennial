@@ -16,7 +16,7 @@ Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!inG Σ (authR mnatUR)}.
-Context `{!inG Σ (authR (optionUR (exclR (listO updateC))))}.
+Context `{!inG Σ (authR (optionUR (exclR (listO updateO))))}.
 Context `{!inG Σ (authR (optionUR (exclR u64C)))}.
 
 Implicit Types (Φ: val → iProp Σ).

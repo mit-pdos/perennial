@@ -56,6 +56,29 @@ Section proof.
     rewrite /is_crash_lock. iExists _, _. iFrame. iFrame "#".
   Qed.
 
+
+  Lemma alloc_crash_lock k k' E Φ Φc e lk (R Rcrash : iProp Σ):
+    (k' < k)%nat →
+    □ (R -∗ Rcrash) ∗
+    R ∗
+    Φc ∗
+    is_free_lock lk ∗
+    (∀ γ, Φc -∗ is_crash_lock (LVL k') γ #lk R Rcrash -∗
+          WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Φc }}) -∗
+    WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ Rcrash }}.
+  Proof using ext_tys.
+    iIntros (?) "(#HRcrash&HR&HΦc&Hfree&Hwp)".
+    iMod (staged_inv_alloc Ncrash (LVL k') ⊤ (⊤ ∖ ↑Ncrash) Rcrash R True%I with "[HR]") as
+        (γ1 γ2) "(#Hstaged_inv&Hstaged_val&Hpending)".
+    { iFrame "HR". iAlways. iIntros. iSplitL; last done. by iApply "HRcrash". }
+    iApply (wpc_ci_inv _ k k' Ncrash ⊤ E with "[-]"); try assumption.
+    { set_solver +. }
+    iFrame. iFrame "Hstaged_inv".
+    iMod (alloc_lock Nlock _ with "Hfree Hstaged_val") as (γ) "Hlk".
+    iApply ("Hwp" with "[$]").
+    rewrite /is_crash_lock. iExists _, _. iFrame. iFrame "#".
+  Qed.
+
   Lemma acquire_spec k E γ (R Rcrash : iProp Σ) lk:
     ↑Nlock ⊆ E →
     {{{ is_crash_lock k γ lk R Rcrash }}}

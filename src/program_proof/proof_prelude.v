@@ -14,3 +14,5 @@ Global Set Default Proof Using "Type".
 Global Set Printing Projections.
 
 Existing Instance diskG0.
+
+Notation length := List.length.

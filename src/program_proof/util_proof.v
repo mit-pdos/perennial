@@ -33,4 +33,15 @@ Proof.
   - iFrame.
 Qed.
 
+Theorem wp_DPrintf stk E (level: u64) (msg arg: val) :
+  {{{ True }}}
+    util.DPrintf #level msg arg @ stk; E
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iSpecialize ("HΦ" with "[//]").
+  wp_call.
+  wp_if_destruct; auto.
+Qed.
+
 End heap.

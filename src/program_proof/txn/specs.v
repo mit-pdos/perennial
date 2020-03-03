@@ -198,7 +198,6 @@ Proof.
   iDestruct "Htxn" as (γMaps γLock walHeap mu walptr q) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
 
   wp_call.
-  wp_call.
   wp_loadField.
   wp_call.
 

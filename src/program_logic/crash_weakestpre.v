@@ -309,6 +309,68 @@ Proof.
     iApply step_fupdN_inner_later; auto.
 Qed.
 
+Lemma wpc_idx_mono s k' k E1 E2 e Φ Φc :
+  k' ≤ k →
+  WPC e @ s; k'; E1 ; E2 {{ Φ }} {{ Φc }} -∗
+  WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "Hwp". iApply (wpc_strong_mono' with "Hwp"); eauto.
+  iSplit.
+  - iIntros. by iFrame.
+  - iIntros. rewrite difference_diag_L. by iFrame.
+Qed.
+
+Lemma wpc_step_fupd s k E1 E2 e Φ Φc :
+  to_val e = None →
+  (|={E1,∅}▷=> WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}) -∗
+  WPC e @ s; (S k); E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (Hval) "Hwp".
+  iLöb as "IH" forall (k E1 E2 e Φ Φc Hval).
+  rewrite ?wpc_unfold /wpc_pre.
+  iSplit; last first.
+  { iIntros.
+    iEval (rewrite Nat_iter_S).
+    iMod "Hwp".
+    iIntros "!> !> !>".
+    iSpecialize ("Hwp" with "[$]").
+    iMod "Hwp".
+    iApply (step_fupdN_inner_wand with "Hwp"); auto.
+    iIntros "Hwp".
+    iApply (step_fupdN_inner_wand' with "Hwp"); auto.
+  }
+  rewrite Hval. iIntros.
+  iEval (rewrite Nat_iter_S).
+  iMod "Hwp".
+  iIntros "!> !> !>".
+  iMod "Hwp".
+  iDestruct "Hwp" as "(Hwp&_)".
+  iSpecialize ("Hwp" with "[$] [$]").
+  iApply (step_fupdN_inner_wand' with "Hwp"); auto.
+  iIntros "($&Hwp)". iIntros.
+  iSpecialize ("Hwp" with "[//]").
+  iApply (step_fupdN_inner_wand' with "Hwp"); auto.
+  iIntros "Hwp".
+  iMod "Hwp". iModIntro. iModIntro.
+  iMod "Hwp". iModIntro.
+  iApply (step_fupdN_inner_wand' with "Hwp"); auto.
+  iIntros "($&Hwp&Hefs&$)".
+  iSplitL "Hwp".
+  - iApply (wpc_idx_mono with "Hwp"); eauto.
+  - iApply (big_sepL_mono with "Hefs"). iIntros. iApply (wpc_idx_mono with "[$]"); eauto.
+Qed.
+
+Lemma wpc_later s k E1 E2 e Φ Φc :
+  to_val e = None →
+  ▷ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }} -∗
+  WPC e @ s; (S k); E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (Hval) "Hwp".
+  iApply wpc_step_fupd; first done.
+  iMod (fupd_intro_mask' _ ∅) as "H"; first by set_solver+.
+  iModIntro. iNext. iMod "H". eauto.
+Qed.
+
 Theorem wpc_crash_mono k stk E1 E2 e Φ Φc Φc' :
   (Φc' -∗ Φc) -∗
   WPC e @ stk; k; E1; E2 {{ Φ }} {{ Φc' }} -∗

@@ -36,13 +36,13 @@ Definition proj_descriptor_wf (d:descriptor) :=
 Implicit Types (d:descriptor).
 Infix "=?" := (String.eqb).
 
-Definition getField d (f0: string) : val :=
-  λ: "v",
-  (fix go fs e : expr :=
-     match fs with
-     | [] => #()
-     | (f,_)%core::fs => if f =? f0 then Fst e else go fs (Snd e)
-     end) d (Var "v").
+Fixpoint getField d (f0: string) : val :=
+  match d with
+  | [] => λ: <>, #()
+  | (f,_)::fs => if f =? f0
+               then (λ: "v", Fst (Var "v"))%V
+               else (λ: "v", getField fs f0 (Snd (Var "v")))%V
+  end.
 
 Fixpoint getField_f d f0: val -> val :=
   λ v, match d with
