@@ -36,7 +36,7 @@ Definition MkTxn: val :=
 Definition Txn__GetTransId: val :=
   rec: "Txn__GetTransId" "txn" :=
     lock.acquire (struct.loadF Txn.S "mu" "txn");;
-    let: "id" := ref (struct.loadF Txn.S "nextId" "txn") in
+    let: "id" := ref_to uint64T (struct.loadF Txn.S "nextId" "txn") in
     (if: (![uint64T] "id" = #0)
     then
       struct.storeF Txn.S "nextId" "txn" (struct.loadF Txn.S "nextId" "txn" + #1);;
@@ -59,8 +59,8 @@ Definition Txn__Load: val :=
    apply to the same disk block. Assume caller holds commit lock. *)
 Definition Txn__installBufs: val :=
   rec: "Txn__installBufs" "txn" "bufs" :=
-    let: "blks" := ref (NewSlice (struct.t wal.Update.S) #0) in
-    let: "bufsByBlock" := ref (NewMap (slice.T (struct.ptrT buf.Buf.S))) in
+    let: "blks" := ref_to (slice.T (struct.t wal.Update.S)) (NewSlice (struct.t wal.Update.S) #0) in
+    let: "bufsByBlock" := ref_to (mapT (slice.T (refT (struct.t buf.Buf.S)))) (NewMap (slice.T (struct.ptrT buf.Buf.S))) in
     ForSlice (refT (struct.t buf.Buf.S)) <> "b" "bufs"
       (MapInsert (![mapT (slice.T (refT (struct.t buf.Buf.S)))] "bufsByBlock") (struct.get addr.Addr.S "Blkno" (struct.loadF buf.Buf.S "Addr" "b")) (SliceAppend (refT (struct.t buf.Buf.S)) (Fst (MapGet (![mapT (slice.T (refT (struct.t buf.Buf.S)))] "bufsByBlock") (struct.get addr.Addr.S "Blkno" (struct.loadF buf.Buf.S "Addr" "b")))) "b"));;
     MapIter (![mapT (slice.T (refT (struct.t buf.Buf.S)))] "bufsByBlock") (λ: "blkno" "bufs",
@@ -86,7 +86,7 @@ Definition Txn__doCommit: val :=
     lock.acquire (struct.loadF Txn.S "mu" "txn");;
     let: "blks" := Txn__installBufs "txn" "bufs" in
     util.DPrintf #3 (#(str"doCommit: %v bufs
-    ")) (slice.len "blks");;
+    ")) #();;
     let: ("n", "ok") := wal.Walog__MemAppend (struct.loadF Txn.S "log" "txn") "blks" in
     struct.storeF Txn.S "pos" "txn" "n";;
     lock.release (struct.loadF Txn.S "mu" "txn");;
@@ -95,14 +95,14 @@ Definition Txn__doCommit: val :=
 (* Commit dirty bufs of the transaction into the log, and perhaps wait. *)
 Definition Txn__CommitWait: val :=
   rec: "Txn__CommitWait" "txn" "bufs" "wait" "id" :=
-    let: "commit" := ref #true in
+    let: "commit" := ref_to boolT #true in
     (if: slice.len "bufs" > #0
     then
       let: ("n", "ok") := Txn__doCommit "txn" "bufs" in
       (if: ~ "ok"
       then
         util.DPrintf #10 (#(str"memappend failed; log is too small
-        "));;
+        ")) #();;
         "commit" <-[boolT] #false
       else
         (if: "wait"
@@ -110,7 +110,7 @@ Definition Txn__CommitWait: val :=
         else #()))
     else
       util.DPrintf #5 (#(str"commit read-only trans
-      ")));;
+      ")) #());;
     ![boolT] "commit".
 
 (* NOTE: this is coarse-grained and unattached to the transaction ID *)

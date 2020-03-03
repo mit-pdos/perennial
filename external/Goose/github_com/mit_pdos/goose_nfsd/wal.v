@@ -121,7 +121,7 @@ Definition circularAppender__logBlocks: val :=
       let: "blk" := struct.get Update.S "Block" "buf" in
       let: "blkno" := struct.get Update.S "Addr" "buf" in
       util.DPrintf #5 (#(str"logBlocks: %d to log block %d
-      ")) "blkno" "pos";;
+      ")) #();;
       disk.Write (LOGSTART + "pos" `rem` LOGSZ) "blk";;
       SliceSet uint64T (struct.loadF circularAppender.S "diskAddrs" "c") ("pos" `rem` LOGSZ) "blkno").
 
@@ -197,7 +197,7 @@ Definition WalogState__cutMemLog: val :=
       (if: "ok" && "oldPos" ≤ "pos"
       then
         util.DPrintf #5 (#(str"memLogMap: del %d %d
-        ")) "blkno" "oldPos";;
+        ")) #();;
         MapDelete (struct.loadF WalogState.S "memLogMap" "ls") "blkno"
       else #()));;
     struct.storeF WalogState.S "memLog" "ls" (SliceSkip (struct.t Update.S) (struct.loadF WalogState.S "memLog" "ls") ("installEnd" - struct.loadF WalogState.S "memStart" "ls"));;
@@ -213,7 +213,7 @@ Definition installBlocks: val :=
       (let: "blkno" := struct.get Update.S "Addr" "buf" in
       let: "blk" := struct.get Update.S "Block" "buf" in
       util.DPrintf #5 (#(str"installBlocks: write log block %d to %d
-      ")) "i" "blkno";;
+      ")) #();;
       disk.Write "blkno" "blk").
 
 (* logInstall installs one on-disk transaction from the disk log to the data
@@ -236,7 +236,7 @@ Definition Walog__logInstall: val :=
     else
       lock.release (struct.loadF Walog.S "memLock" "l");;
       util.DPrintf #5 (#(str"logInstall up to %d
-      ")) "installEnd";;
+      ")) #();;
       installBlocks (struct.loadF Walog.S "d" "l") "bufs";;
       Advance (struct.loadF Walog.S "d" "l") "installEnd";;
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
@@ -255,11 +255,11 @@ Definition Walog__installer: val :=
       (if: "blkcount" > #0
       then
         util.DPrintf #5 (#(str"Installed till txn %d
-        ")) "txn"
+        ")) #()
       else lock.condWait (struct.loadF Walog.S "condInstall" "l"));;
       Continue);;
     util.DPrintf #1 (#(str"installer: shutdown
-    "));;
+    ")) #();;
     struct.storeF Walog.S "nthread" "l" (struct.loadF Walog.S "nthread" "l" - #1);;
     lock.condSignal (struct.loadF Walog.S "condShut" "l");;
     lock.release (struct.loadF Walog.S "memLock" "l").
@@ -313,7 +313,7 @@ Definition Walog__logger: val :=
       else #());;
       Continue);;
     util.DPrintf #1 (#(str"logger: shutdown
-    "));;
+    ")) #();;
     struct.storeF Walog.S "nthread" "l" (struct.loadF Walog.S "nthread" "l" - #1);;
     lock.condSignal (struct.loadF Walog.S "condShut" "l");;
     lock.release (struct.loadF Walog.S "memLock" "l").
@@ -323,7 +323,7 @@ Definition Walog__logger: val :=
 Definition Walog__recover: val :=
   rec: "Walog__recover" "l" :=
     util.DPrintf #1 (#(str"recover %d %d
-    ")) (struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l")) (struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l"));;
+    ")) #();;
     ForSlice (struct.t Update.S) "i" "buf" (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l"))
       (MapInsert (struct.loadF WalogState.S "memLogMap" (struct.loadF Walog.S "st" "l")) (struct.get Update.S "Addr" "buf") (struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l") + "i")).
 
@@ -350,7 +350,7 @@ Definition mkLog: val :=
       "condShut" ::= lock.newCond "ml"
     ] in
     util.DPrintf #1 (#(str"mkLog: size %d
-    ")) LOGSZ;;
+    ")) #();;
     Walog__recover "l";;
     "l".
 
@@ -379,16 +379,16 @@ Definition WalogState__memWrite: val :=
       (if: "ok" && "oldpos" ≥ struct.loadF WalogState.S "nextDiskEnd" "st"
       then
         util.DPrintf #5 (#(str"memWrite: absorb %d pos %d old %d
-        ")) (struct.get Update.S "Addr" "buf") (![LogPosition] "pos") "oldpos";;
+        ")) #();;
         SliceSet (struct.t Update.S) (struct.loadF WalogState.S "memLog" "st") ("oldpos" - struct.loadF WalogState.S "memStart" "st") "buf"
       else
         (if: "ok"
         then
           util.DPrintf #5 (#(str"memLogMap: replace %d pos %d old %d
-          ")) (struct.get Update.S "Addr" "buf") (![LogPosition] "pos") "oldpos"
+          ")) #()
         else
           util.DPrintf #5 (#(str"memLogMap: add %d pos %d
-          ")) (struct.get Update.S "Addr" "buf") (![LogPosition] "pos"));;
+          ")) #());;
         struct.storeF WalogState.S "memLog" "st" (SliceAppend (struct.t Update.S) (struct.loadF WalogState.S "memLog" "st") "buf");;
         MapInsert (struct.loadF WalogState.S "memLogMap" "st") (struct.get Update.S "Addr" "buf") (![LogPosition] "pos");;
         "pos" <-[LogPosition] ![LogPosition] "pos" + #1)).
@@ -409,7 +409,7 @@ Definition Walog__readMemLog: val :=
     (if: "ok"
     then
       util.DPrintf #5 (#(str"read memLogMap: read %d pos %d
-      ")) "blkno" "pos";;
+      ")) #();;
       let: "buf" := SliceGet (struct.t Update.S) (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) ("pos" - struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l")) in
       "blk" <-[slice.T byteT] NewSlice byteT disk.BlockSize;;
       SliceCopy byteT (![slice.T byteT] "blk") (struct.get Update.S "Block" "buf");;
@@ -466,7 +466,7 @@ Definition Walog__MemAppend: val :=
           let: "memSize" := "memEnd" - struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
           (if: "memSize" + slice.len "bufs" > LOGSZ
           then
-            util.DPrintf #5 (#(str"memAppend: log is full; try again"));;
+            util.DPrintf #5 (#(str"memAppend: log is full; try again")) #();;
             struct.storeF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l") + slice.len (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")));;
             lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
             lock.condWait (struct.loadF Walog.S "condLogger" "l");;
@@ -484,7 +484,7 @@ Definition Walog__MemAppend: val :=
 Definition Walog__Flush: val :=
   rec: "Walog__Flush" "l" "txn" :=
     util.DPrintf #1 (#(str"Flush: commit till txn %d
-    ")) "txn";;
+    ")) #();;
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
     (if: "txn" > struct.loadF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l")
@@ -504,16 +504,16 @@ Definition Walog__Flush: val :=
 Definition Walog__Shutdown: val :=
   rec: "Walog__Shutdown" "l" :=
     util.DPrintf #1 (#(str"shutdown wal
-    "));;
+    ")) #();;
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
     struct.storeF Walog.S "shutdown" "l" #true;;
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
     lock.condBroadcast (struct.loadF Walog.S "condInstall" "l");;
     Skip;;
     (for: (λ: <>, struct.loadF Walog.S "nthread" "l" > #0); (λ: <>, Skip) := λ: <>,
-      util.DPrintf #1 (#(str"wait for logger/installer"));;
+      util.DPrintf #1 (#(str"wait for logger/installer")) #();;
       lock.condWait (struct.loadF Walog.S "condShut" "l");;
       Continue);;
     lock.release (struct.loadF Walog.S "memLock" "l");;
     util.DPrintf #1 (#(str"wal done
-    ")).
+    ")) #().
