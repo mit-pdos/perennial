@@ -10,7 +10,6 @@ From Perennial.Helpers Require Import GenHeap.
 From Perennial.Helpers Require Import Transitions.
 Existing Instance r_mbind.
 
-
 Section ghost_var_helpers.
 Context {A: ofeT} `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A}.
 Context {Σ} {Hin: inG Σ (authR (optionUR (exclR A)))}.
@@ -394,6 +393,67 @@ Proof.
   change (word.divu (word.sub 4096 8) 8) with (U64 511).
 Admitted.
 
+Theorem apply_updates_lookup_new updarray endpos newupds (i: nat) u :
+  forall (Hendpos_ge: 0 <= endpos)
+    (Hlen: length updarray = Z.to_nat LogSz)
+    (Hnewlen: length newupds <= LogSz)
+    (Hlookup: newupds !! i = Some u),
+    apply_updates updarray endpos newupds
+                  !! Z.to_nat ((endpos + Z.of_nat i) `mod` LogSz)
+    = Some u.
+Proof.
+  revert endpos i.
+  induction newupds; simpl; intros.
+  - rewrite lookup_nil in Hlookup; congruence.
+  - destruct (decide (i = O)); subst.
+    + inversion Hlookup; subst; clear Hlookup.
+      rewrite Z.add_0_r.
+      rewrite list_lookup_insert; auto.
+      rewrite /LogSz in Hlen |- *.
+      len.
+      pose proof (Z.mod_bound_pos endpos 511).
+      lia.
+    + rewrite list_lookup_insert_ne; auto.
+      { replace (endpos + i) with (endpos + 1 + Z.of_nat (i - 1)) by lia.
+        eapply IHnewupds; eauto; try lia.
+        replace i with (S (i - 1)%nat) in Hlookup by lia.
+        simpl in Hlookup; auto. }
+      apply lookup_lt_Some in Hlookup.
+      simpl in Hlookup.
+      assert (i < Z.to_nat LogSz)%nat.
+      { lia. }
+      intro.
+      pose proof (Z.mod_bound_pos endpos LogSz ltac:(lia) ltac:(lia)).
+      pose proof (Z.mod_bound_pos (endpos + i) LogSz ltac:(lia) ltac:(lia)).
+      apply Z2Nat.inj in H0; try lia.
+      assert (Z.of_nat i < LogSz) by lia.
+      (* endpos%511 = (endpos+i)%511 but i<511, contradiction *)
+Admitted.
+
+Lemma has_circ_updates_append:
+  ∀ (endpos : u64) (upds updarray upds0 : list update.t) (start : u64),
+    strings.length (upds0 ++ upds) ≤ LogSz
+    -> length updarray = Z.to_nat LogSz
+    -> int.val start + length upds0 = int.val endpos
+    → has_circ_updates (int.val start) upds0 (apply_updates updarray (int.val endpos) upds)
+    → has_circ_updates (int.val start) (upds0 ++ upds)
+                       (apply_updates updarray (int.val endpos) upds).
+Proof.
+  unfold has_circ_updates.
+  intros.
+  destruct (decide (i < length upds0)).
+  { apply H2.
+    rewrite -> lookup_app_l in H3 by lia.
+    auto.
+  }
+  rewrite -> lookup_app_r in H3 by lia.
+  replace (int.val endpos).
+  replace (int.val start + i) with
+      (int.val start + length upds0 + (Z.of_nat $ (i - length upds0)%nat)) by lia.
+  autorewrite with len in H.
+  eapply apply_updates_lookup_new; eauto; len.
+Qed.
+
 Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
   {{{ is_circular γ ∗
       updates_slice bufs upds ∗
@@ -503,7 +563,9 @@ Proof.
     (intuition idtac); len.
     { admit. }
     { simpl in *.
-      admit. (* update to has_circ_updates *) }
+      rewrite /circΣ.diskEnd /= in H4.
+      apply has_circ_updates_append; eauto.
+      autorewrite with len in *; len. }
   }
 
   iIntros "[Hslice HQ]".
