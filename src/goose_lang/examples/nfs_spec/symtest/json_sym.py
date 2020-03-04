@@ -58,8 +58,11 @@ class SymbolicJSON(object):
         args = expr['args']
         if f['what'] == 'expr:special':
             # for converting Z to u32
-            if f['id'] == 'u3':
-                state, val = self.proc(args[0], state)
+            if f['id'] == 'u3' or f['id'] == 'u2':
+                arg = args[0]
+                # be able to distinguish between Z->u32 and Z->u64
+                arg['name'] = f['id']
+                state, val = self.proc(arg, state)
                 return state, z3.Const(anon(), val)
 
             if f['id'] == 'gmap_lookup':
@@ -229,12 +232,12 @@ class SymbolicJSON(object):
             cid = constructor_idx_by_name(sort, procexpr['name'])
             return state, sort.constructor(cid)(*cargs)
 
-        elif procexpr['name'] == 'None':
+        elif procexpr['name'] == 'None' or procexpr['name'] == 'Some':
             # pass in argument for type 'A' in res XXX hacky?
             if self.opt_type == 'wcc_data':
-                opt_type = 'wcc_attr'
+                self.opt_type = 'wcc_attr'
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args': [
-                {'what': 'type:glob', 'mod': procexpr['mod'], 'name': opt_type}
+                {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.opt_type}
             ]}
 
         elif "NF3" in procexpr['name']:
@@ -244,13 +247,16 @@ class SymbolicJSON(object):
             self.opt_type = procexpr['name'][6:]
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.opt_type, 'args': []}
 
-        elif procexpr['name'] == 'Z0':
-            # XXX Z0 is automatically converted to a bitvecsort?
+        elif procexpr['name'] == 'u3':
             return state, z3.BitVecSort(32)
 
+        elif procexpr['name'] == 'u2':
+            return state, z3.BitVecSort(64)
+
+
         else:
-            raise Exception("UNKNOWN CONSTRUCTOR in proc")
             pprint.pprint(procexpr)
+            raise Exception("UNKNOWN CONSTRUCTOR in proc")
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': procexpr['name'], 'args': []}
 
         pprint.pprint(procexpr)
