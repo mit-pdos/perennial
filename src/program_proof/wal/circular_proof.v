@@ -381,10 +381,9 @@ Proof.
   rewrite H2 /= in H0. inversion H1; clear H1; subst.
   destruct x1. destruct x0.
 
-  iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hi Hbks]"; eauto.
+  iDestruct (big_sepL2_insert_acc with "Hbks") as "[Hi Hbks]"; eauto.
   rewrite /=.
   iDestruct "Hi" as "[Hi ->]".
-  iSpecialize ("Hbks" with "[$Hi //]").
   invc H0.
   wp_apply wp_getField; auto.
   wp_apply wp_getField; auto.
@@ -392,6 +391,11 @@ Proof.
   wp_apply wp_DPrintf.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 511).
+  (* TODO: need to use a HOCAP Write spec since the disk points-to is in an invariant *)
+  wp_apply wp_Write.
+  (* TODO: can't preserve invariant at this point - the disk has been updated
+  (which affects the updarray ghost variable) but not the in-memory diskAddrs
+  (which is also supposed to reflect updarray) *)
 Admitted.
 
 Theorem apply_updates_lookup_new updarray endpos newupds (i: nat) u :
@@ -544,7 +548,7 @@ Proof.
         {
           rewrite list_to_block_to_vals.
           { f_equal. f_equal. f_equal. f_equal.
-            rewrite /circΣ.diskEnd /= in H4.
+            rewrite /circΣ.diskEnd /= in H4, H5.
             autorewrite with len in *.
             apply word.unsigned_inj.
             word_cleanup.
