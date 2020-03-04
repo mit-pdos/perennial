@@ -56,6 +56,7 @@ class SymbolicJSON(object):
     def proc_apply(self, expr, state):
         f = self.context.reduce(expr['func'])
         args = expr['args']
+
         if f['what'] == 'expr:special':
             # for converting Z to u32
             if f['id'] == 'u3' or f['id'] == 'u2':
@@ -83,6 +84,11 @@ class SymbolicJSON(object):
             elif f['id'] == 'reads':
                 return state, state
 
+            elif f['id'] == 'modify':
+                pprint.pprint(args)
+                _, newstate = self.proc(args[0]['body'], state)
+                return newstate, self.unit_tt
+
             elif f['id'] == 'ret':
                 state, res = self.proc(args[0], state)
                 return state, res
@@ -97,15 +103,23 @@ class SymbolicJSON(object):
                 ## XXX should be of length newlen, not empty..
                 return state, z3.Empty(buf.sort())
 
-            #elif f['id'] == 'uint64_gt':
-             # state, a0 = self.proc(args[0], state)
-             # state, a1 = self.proc(args[1], state)
-             # return state, z3.If(a0 > a1, self.bool_sort.constructor(0)(), self.bool_sort.constructor(1)())
-
             elif f['id'] == 'eqDec_time':
                 state, a0 = self.proc(args[0], state)
                 state, a1 = self.proc(args[1], state)
                 return state, z3.If(a0 == a1, self.sumbool_sort.constructor(0)(), self.sumbool_sort.constructor(1)())
+
+            elif f['id'] == 'time_ge':
+                state, a0 = self.proc(args[0], state)
+                state, a1 = self.proc(args[1], state)
+                # constructor 0 is true, 1 is false
+                return state, z3.If(a0 >= a1, self.bool_sort.constructor(0)(), self.bool_sort.constructor(1)())
+
+            elif f['id'] == 'symAssert':
+                for arg in args:
+                    state, a = self.proc(arg, state)
+                # how to add a solver constraint for assert within the z3 expression?
+                return state, self.unit_tt
+
             else:
                 raise Exception('unknown special function', f['id'])
         else:
@@ -159,7 +173,8 @@ class SymbolicJSON(object):
         procexpr = self.context.reduce(procexpr)
 
         while True:
-            #print "-------------------- NEW PROC ----------------------", procexpr
+            print "-------------------- NEW PROC ----------------------"
+            pprint.pprint(procexpr)
             if type(procexpr) != dict:
                 return state, procexpr
 
@@ -185,9 +200,6 @@ class SymbolicJSON(object):
                     return state, z3.Const(anon(), z3.BitVecSort(64))
                 if procexpr['id'] == 'undefined':
                     return state, z3.Const(anon(), z3.BitVecSort(64))
-                if procexpr['id'] == 'symAssert':
-                    # XXX how to add a solver constraint?
-                    return state, self.unit_tt
 
                 else:
                     raise Exception("unknown special", procexpr['id'])
@@ -244,7 +256,7 @@ class SymbolicJSON(object):
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'ftype', 'args': []}
 
         elif "Build" in procexpr['name']:
-            self.opt_type = procexpr['name'][6:]
+            self.opt_type = procexpr['name'][6:].lower()
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.opt_type, 'args': []}
 
         elif procexpr['name'] == 'u3':
@@ -255,11 +267,9 @@ class SymbolicJSON(object):
 
 
         else:
-            pprint.pprint(procexpr)
             raise Exception("UNKNOWN CONSTRUCTOR in proc")
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': procexpr['name'], 'args': []}
 
-        pprint.pprint(procexpr)
         sort = self.z3_sort(t)
         cid = constructor_idx_by_name(sort, procexpr['name'])
         cargs = []

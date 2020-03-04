@@ -442,6 +442,7 @@ Section SymbolicStep.
   Definition call_reads {T : Type} (read_f : State -> T) :=
     s <- reads (fun s => s);
     ret (read_f s).
+
   Definition call_puts (put_f : State -> State) :=
     s <- reads (fun s => s);
     modify (fun _ => (put_f s)).

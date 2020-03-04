@@ -72,7 +72,7 @@ m.redefine_term('map_insert', {
         'id': 'map_insert',
     },
 })
-for id in ('u2', 'u3', 'ret', 'reads', 'modify', 'symBool', 'symU32', 'symU64', 'symAssert', 'eq_dec_fh', 'len_buf', 'eqDec_time', 'eq_dec_inode_state', 'countable_inode_state', 'countable_fh', 'resize_buf',):
+for id in ('u2', 'u3', 'ret', 'reads', 'modify', 'symBool', 'symU32', 'symU64', 'symAssert', 'eq_dec_fh', 'len_buf', 'eqDec_time', 'eq_dec_inode_state', 'countable_inode_state', 'countable_fh', 'resize_buf', 'time_ge'):
     m.redefine_term(id, {
         'what': 'expr:special',
         'id': id,
