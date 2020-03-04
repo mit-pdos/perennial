@@ -276,7 +276,6 @@ Proof using Ptimeless.
         rewrite drop_length.
         simpl in *; f_equal.
         f_equal.
-        apply word.unsigned_inj.
         word.
       }
       rewrite -list_to_block_to_vals; eauto.
@@ -548,7 +547,6 @@ Proof using Ptimeless.
           { f_equal. f_equal. f_equal. f_equal.
             rewrite /circΣ.diskEnd /= in H4, H5.
             autorewrite with len in *.
-            apply word.unsigned_inj.
             word.
           }
           autorewrite with len in H0, Hslen.

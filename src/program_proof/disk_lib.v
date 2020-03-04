@@ -233,7 +233,6 @@ Proof.
     + by iApply block_array_to_slice.
     + rewrite length_Block_to_vals in Hsz.
       change block_bytes with (Z.to_nat 4096) in Hsz.
-      apply word.unsigned_inj.
       word.
   - iApply "HΦ".
     iFrame.
@@ -264,7 +263,6 @@ Proof.
     + by iApply block_array_to_slice.
     + rewrite length_Block_to_vals in Hsz.
       change block_bytes with (Z.to_nat 4096) in Hsz.
-      apply word.unsigned_inj.
       word.
   - iApply "HΦ".
     iFrame.

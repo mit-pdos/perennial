@@ -391,9 +391,7 @@ Proof.
     assert (int.val (z + 1) = int.val z + 1).
     { rewrite word.unsigned_of_Z.
       rewrite wrap_small; try lia. }
-    replace (word.add z 1) with (U64 (z + 1)); last first.
-    { apply word.unsigned_inj.
-      word. }
+    replace (word.add z 1) with (U64 (z + 1)) by word.
     iSpecialize ("IH" $! (z+1) with "[] []").
     { iPureIntro; lia. }
     { iPureIntro; lia. }

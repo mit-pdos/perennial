@@ -70,7 +70,6 @@ Proof.
     rewrite /is_hdr_block.
     eexists _.
     rewrite list_to_block_to_vals; eauto. }
-  apply word.unsigned_inj.
   simpl in Hsz.
   word.
 Qed.
@@ -442,9 +441,7 @@ Proof.
           wpc_pures.
           { iApply ("HΦcI" with "[$]"). }
           assert (int.val (z + 1) = int.val z + 1) by word.
-          replace (word.add z 1) with (U64 (z + 1)); last first.
-          { apply word.unsigned_inj.
-            word. }
+          replace (word.add z 1) with (U64 (z + 1)) by word.
           iSpecialize ("IH" $! (z+1) with "[] []").
           { iPureIntro; word. }
           { iPureIntro; word. }

@@ -179,7 +179,6 @@ Proof.
     rewrite fmap_replicate; iFrame.
     len. }
   iPureIntro.
-  apply word.unsigned_inj.
   word.
 Qed.
 
@@ -226,7 +225,6 @@ Proof.
   {
     iFramePtsTo.
     repeat f_equal.
-    apply word.unsigned_inj.
     len.
   }
   iDestruct (array_app with "Ha") as "[Hx Hfree]".
@@ -349,7 +347,6 @@ Proof.
   {
     iFramePtsTo.
     repeat f_equal.
-    apply word.unsigned_inj.
     len. }
   iDestruct (array_app with "Ha") as "[Hx Hfree]".
   iDestruct (array_app with "[$Henc Hx]") as "Henc".
