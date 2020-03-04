@@ -12,6 +12,7 @@ class SymbolicJSON(object):
         self.unit_tt = None
         self.last_option_type = None
         self.res_type = 'unit'
+        self.opt_type = 'unit'
 
     def set_bool_type(self, t):
         self.bool_sort = self.z3_sort(t)
@@ -116,6 +117,8 @@ class SymbolicJSON(object):
         cases = expr['cases']
         if cases[-1]['pat']['what'] == 'pat:wild':
             cases.insert(0, cases.pop(-1))
+        print "CASES"
+        pprint.pprint(cases)
 
         for case in cases:
             pat = case['pat']
@@ -134,6 +137,8 @@ class SymbolicJSON(object):
                     resvalue = patbody
                 else:
                     print "CASE PATBODY, RESVALUE: ", patbody.sort(), resvalue.sort()
+                    pprint.pprint(patbody)
+                    pprint.pprint(resvalue)
                     resstate = z3.If(patCondition, patstate, resstate)
                     resvalue = z3.If(patCondition, patbody, resvalue)
 
@@ -226,8 +231,7 @@ class SymbolicJSON(object):
 
         elif procexpr['name'] == 'None':
             # pass in argument for type 'A' in res XXX hacky?
-            opt_type = self.res_type
-            if self.res_type == 'wcc_data':
+            if self.opt_type == 'wcc_data':
                 opt_type = 'wcc_attr'
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'option', 'args': [
                 {'what': 'type:glob', 'mod': procexpr['mod'], 'name': opt_type}
@@ -237,8 +241,8 @@ class SymbolicJSON(object):
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'ftype', 'args': []}
 
         elif "Build" in procexpr['name']:
-            self.res_type = procexpr['name'][6:]
-            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.res_type , 'args': []}
+            self.opt_type = procexpr['name'][6:]
+            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.opt_type, 'args': []}
 
         elif procexpr['name'] == 'Z0':
             # XXX Z0 is automatically converted to a bitvecsort?
@@ -246,6 +250,7 @@ class SymbolicJSON(object):
 
         else:
             raise Exception("UNKNOWN CONSTRUCTOR in proc")
+            pprint.pprint(procexpr)
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': procexpr['name'], 'args': []}
 
         pprint.pprint(procexpr)
