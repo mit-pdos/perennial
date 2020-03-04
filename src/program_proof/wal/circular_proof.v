@@ -276,7 +276,6 @@ Proof using Ptimeless.
         rewrite drop_length.
         simpl in *; f_equal.
         f_equal.
-        apply word.unsigned_inj.
         word.
       }
       rewrite -list_to_block_to_vals; eauto.
@@ -381,10 +380,9 @@ Proof.
   rewrite H2 /= in H0. inversion H1; clear H1; subst.
   destruct x1. destruct x0.
 
-  iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hi Hbks]"; eauto.
+  iDestruct (big_sepL2_insert_acc with "Hbks") as "[Hi Hbks]"; eauto.
   rewrite /=.
   iDestruct "Hi" as "[Hi ->]".
-  iSpecialize ("Hbks" with "[$Hi //]").
   invc H0.
   wp_apply wp_getField; auto.
   wp_apply wp_getField; auto.
@@ -392,6 +390,8 @@ Proof.
   wp_apply wp_DPrintf.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 511).
+  (* TODO: need to use a HOCAP Write spec since the disk points-to is in an invariant *)
+  wp_apply wp_Write_fupd.
 Admitted.
 
 Theorem apply_updates_lookup_new updarray endpos newupds (i: nat) u :
@@ -465,7 +465,7 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (
   }}}
     circularAppender__Append #c #d #endpos (slice_val bufs)
   {{{ RET #(); Q }}}.
-Proof.
+Proof using Ptimeless.
   iIntros (Φ) "(#Hcirc & Hslice & Hca & Hfupd) HΦ".
   wp_call.
 
@@ -477,6 +477,7 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   wp_call.
+  iDestruct (updates_slice_len with "Hupdslice") as %Hbufslen.
 
   wp_apply wp_new_enc.
   iIntros (enc) "[Henc %]".
@@ -544,11 +545,9 @@ Proof.
         {
           rewrite list_to_block_to_vals.
           { f_equal. f_equal. f_equal. f_equal.
-            rewrite /circΣ.diskEnd /= in H4.
+            rewrite /circΣ.diskEnd /= in H4, H5.
             autorewrite with len in *.
-            apply word.unsigned_inj.
-            word_cleanup.
-            admit.
+            word.
           }
           autorewrite with len in H0, Hslen.
           rewrite H in H0.
@@ -576,7 +575,8 @@ Proof.
   wp_call.
   iApply "HΦ".
   iFrame.
-  Fail idtac.
-Admitted.
+  Grab Existential Variables.
+  all: auto.
+Qed.
 
 End heap.

@@ -456,6 +456,11 @@ Proof.
 Qed.
 
 Ltac word_cleanup :=
+  try match goal with
+      | |- @eq u64 _ _ => apply word.unsigned_inj
+      | |- @eq u32 _ _ => apply word.unsigned_inj
+      | |- @eq u8 _ _ => apply word.unsigned_inj
+      end;
   rewrite ?word.unsigned_add, ?word.unsigned_sub,
   ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
   ?unsigned_U64_0, ?unsigned_U32_0,

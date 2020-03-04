@@ -25,9 +25,6 @@ Definition apply_upds (upds: list update.t) (d: disk): disk :=
 Definition get_updates (s:log_state.t): list update.t :=
   s.(log_state.updates).
 
-Definition get_durable (s:log_state.t): u64 :=
-  s.(log_state.durable_to).
-
 Definition latest_disk (s:log_state.t): disk :=
   (apply_upds s.(log_state.updates) s.(log_state.disk)).
 
@@ -36,6 +33,12 @@ Definition disk_at_pos (pos: u64) (s:log_state.t): disk :=
 
 Definition installed_disk (s:log_state.t): disk :=
   disk_at_pos s.(log_state.installed_to) s.
+
+Definition logged_upds (s:log_state.t): list update.t :=
+  firstn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
+
+Definition inmem_upds (s:log_state.t): list update.t :=
+  skipn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
 
 (* XXX something about uniqueness of addr in upds beyond durable *)
 Definition valid_log_state (s : log_state.t) :=
@@ -91,10 +94,10 @@ Fixpoint interpret upds m: gmap u64 Block :=
 (* XXX fit in log *)
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   update_durable;;
-  old ← reads get_updates;
-  durable ← reads get_durable;
-  let logged := firstn (Z.to_nat (int.val durable)) upds in
-  let inmem := skipn (Z.to_nat (int.val durable)) upds in
+  logged ← reads logged_upds;
+  inmem  ← reads inmem_upds;
+  (* new are the updates after absorbing of inmem in upds; that is,
+  replacing upds in inmem with upds if to the same address.  *)
   new ← suchThat (gen:=fun _ _ => None)
                  (fun s new => interpret new ∅ = interpret (inmem++upds) ∅);
   modify (set log_state.updates (λ _, logged++new));;

@@ -13,8 +13,9 @@ From Perennial.program_proof Require
      append_log_proof
      util_proof
      lockmap_proof
-     wal.specs wal.proof wal.circular_proof wal.heapspec
-     txn.specs.
+     (* temporarily disabled while wal abstraction is in flux *)
+     (* wal.specs wal.proof wal.heapspec txn.specs *)
+     wal.circular_proof.
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
 
