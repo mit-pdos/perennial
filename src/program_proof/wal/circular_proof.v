@@ -392,10 +392,7 @@ Proof.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 511).
   (* TODO: need to use a HOCAP Write spec since the disk points-to is in an invariant *)
-  wp_apply wp_Write.
-  (* TODO: can't preserve invariant at this point - the disk has been updated
-  (which affects the updarray ghost variable) but not the in-memory diskAddrs
-  (which is also supposed to reflect updarray) *)
+  wp_apply wp_Write_fupd.
 Admitted.
 
 Theorem apply_updates_lookup_new updarray endpos newupds (i: nat) u :
@@ -469,7 +466,7 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (
   }}}
     circularAppender__Append #c #d #endpos (slice_val bufs)
   {{{ RET #(); Q }}}.
-Proof.
+Proof using Ptimeless.
   iIntros (Φ) "(#Hcirc & Hslice & Hca & Hfupd) HΦ".
   wp_call.
 
@@ -481,6 +478,7 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   wp_call.
+  iDestruct (updates_slice_len with "Hupdslice") as %Hbufslen.
 
   wp_apply wp_new_enc.
   iIntros (enc) "[Henc %]".
@@ -551,8 +549,7 @@ Proof.
             rewrite /circΣ.diskEnd /= in H4, H5.
             autorewrite with len in *.
             apply word.unsigned_inj.
-            word_cleanup.
-            admit.
+            word.
           }
           autorewrite with len in H0, Hslen.
           rewrite H in H0.
@@ -580,7 +577,8 @@ Proof.
   wp_call.
   iApply "HΦ".
   iFrame.
-  Fail idtac.
-Admitted.
+  Grab Existential Variables.
+  all: auto.
+Qed.
 
 End heap.
