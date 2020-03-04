@@ -62,11 +62,20 @@ class SymbolicJSON(object):
             if f['id'] == 'u3' or f['id'] == 'u2':
                 arg = args[0]
                 # be able to distinguish between Z->u32 and Z->u64
-                arg['name'] = f['id']
+                if f['id'] == 'u3':
+                    arg['name'] = 'u32'
+                else:
+                    arg['name'] = 'u64'
                 state, val = self.proc(arg, state)
                 return state, z3.Const(anon(), val)
 
-            if f['id'] == 'gmap_lookup':
+            elif f['id'] == 'gtb':
+                arg0 = args[0]['cases'][0]['body']['args'][0]
+                nstate, arg1 = self.proc(args[1]['cases'][0]['body']['args'][0], state)
+                print arg0, arg1
+                return nstate, z3.If(arg0 > arg1, self.bool_sort.constructor(0)(), self.bool_sort.constructor(1)())
+
+            elif f['id'] == 'gmap_lookup':
                 state, k = self.proc(args[0], state)
                 state, m = self.proc(args[1], state)
                 return state, m[k]
@@ -115,10 +124,8 @@ class SymbolicJSON(object):
                 return state, z3.If(a0 >= a1, self.bool_sort.constructor(0)(), self.bool_sort.constructor(1)())
 
             elif f['id'] == 'symAssert':
-                for arg in args:
-                    state, a = self.proc(arg, state)
-                # how to add a solver constraint for assert within the z3 expression?
-                return state, self.unit_tt
+                state, a = self.proc(args[0], state)
+                return state, z3.And(a == self.bool_sort.constructor(0)())
 
             else:
                 raise Exception('unknown special function', f['id'])
@@ -198,6 +205,10 @@ class SymbolicJSON(object):
                     return state, z3.Const(anon(), z3.BitVecSort(32))
                 if procexpr['id'] == 'symU64':
                     return state, z3.Const(anon(), z3.BitVecSort(64))
+                if procexpr['id'] == 'u64':
+                    return state, z3.Const(anon(), z3.BitVecSort(64))
+                if procexpr['id'] == 'u32':
+                    return state, z3.Const(anon(), z3.BitVecSort(32))
                 if procexpr['id'] == 'undefined':
                     return state, z3.Const(anon(), z3.BitVecSort(64))
 
@@ -259,12 +270,11 @@ class SymbolicJSON(object):
             self.opt_type = procexpr['name'][6:].lower()
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.opt_type, 'args': []}
 
-        elif procexpr['name'] == 'u3':
+        elif procexpr['name'] == 'u32':
             return state, z3.BitVecSort(32)
 
-        elif procexpr['name'] == 'u2':
+        elif procexpr['name'] == 'u64':
             return state, z3.BitVecSort(64)
-
 
         else:
             raise Exception("UNKNOWN CONSTRUCTOR in proc")
