@@ -539,6 +539,22 @@ Proof.
   apply of_to_val in He as <-. by iMod (wpc_value_inv' with "[$] [$]") as "($&$)".
 Qed.
 
+Lemma wpc_C s k E1 E2 e Φ Φc :
+ C ∗ Φc ⊢ WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "(HC&HΦc)".
+  rewrite wpc_unfold /wpc_pre.
+  iSplit.
+  - destruct (to_val e).
+    * iIntros "HNC". iDestruct (NC_C with "[$] [$]") as "[]".
+    * iIntros (????) "_ HNC". iDestruct (NC_C with "[$] [$]") as "[]".
+  - iIntros.
+    iApply step_fupdN_inner_later; eauto.
+    iNext; iNext.
+    iApply step_fupdN_inner_later; eauto.
+    set_solver.
+Qed.
+
 Lemma fupd_wpc s k E1 E2 e Φ Φc:
   (|={E1}=> WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}) ⊢ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
