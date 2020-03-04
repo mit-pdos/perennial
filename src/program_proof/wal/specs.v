@@ -19,65 +19,37 @@ Qed.
 
 Existing Instance r_mbind.
 
+Definition apply_upds (upds: list update.t) (d: disk): disk :=
+  fold_right (fun '(update.mk a b) => <[int.val a := b]>) d upds.
+
+Definition get_updates (s:log_state.t): list update.t :=
+  s.(log_state.updates).
+
+Definition get_durable (s:log_state.t): u64 :=
+  s.(log_state.durable_to).
+
+Definition latest_disk (s:log_state.t): disk :=
+  (apply_upds s.(log_state.updates) s.(log_state.disk)).
+
+Definition disk_at_pos (pos: u64) (s:log_state.t): disk :=
+  apply_upds (firstn (Z.to_nat (int.val pos)) s.(log_state.updates)) s.(log_state.disk).
+
+Definition installed_disk (s:log_state.t): disk :=
+  disk_at_pos s.(log_state.installed_to) s.
+
+(* XXX something about uniqueness of addr in upds beyond durable *)
+Definition valid_log_state (s : log_state.t) :=
+  int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
+  int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to).
+
 Definition log_crash: transition log_state.t unit :=
-  kv ← suchThat (gen:=fun _ _ => None) (fun s '(k, v) => s.(log_state.txn_disk) !! k = Some v ∧ int.val k >= int.val s.(log_state.durable_to));
-  let '(pos, d) := kv in
-  modify (set log_state.txn_disk (λ _, {[ pos := d ]}) ∘
+  kv ← suchThat (gen:=fun _ _ => None) (fun s '(pos, d, upds) => s.(log_state.disk) = d ∧ int.val pos >= int.val s.(log_state.durable_to) ∧ upds = firstn (Z.to_nat (int.val pos)) s.(log_state.updates));
+  let '(pos, d, upds) := kv in
+  modify (set log_state.disk (λ _, d ) ∘
+          set log_state.updates (λ _, upds) ∘
           set log_state.durable_to (λ _, pos) ∘
           set log_state.installed_to (λ _, pos));;
   ret tt.
-
-Definition latest_disk (s:log_state.t): u64*disk :=
-  map_fold
-    (fun k d '(k', d') =>
-       if decide (int.val k' < int.val k)
-       then (k, d) else (k', d'))
-    (U64 0, ∅) s.(log_state.txn_disk).
-
-Definition valid_log_state (s : log_state.t) :=
-  int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
-  ∃ d,
-    s.(log_state.txn_disk) !! s.(log_state.durable_to) = Some d.
-
-Lemma latest_disk_durable s : valid_log_state s ->
-  int.val s.(log_state.durable_to) ≤ int.val (fst (latest_disk s)).
-Proof.
-  destruct s.
-  rewrite /valid_log_state /latest_disk /=.
-  intros. destruct H.
-Admitted.
-
-Lemma latest_disk_pos s : valid_log_state s ->
-  s.(log_state.txn_disk) !! (fst (latest_disk s)) = Some (snd (latest_disk s)).
-Proof.
-  unfold latest_disk.
-  destruct s; simpl.
-  intros.
-  assert (∃ d, txn_disk !! durable_to = Some d).
-  { destruct H; eauto. }
-  clear H.
-  revert H0.
-  match goal with
-  | |- context[map_fold ?f ?init ?m] =>
-    eapply (map_fold_ind (fun acc m => (∃ d, m !! durable_to = Some d) -> m !! acc.1 = Some acc.2) f)
-  end.
-  { intros [d Heq]; simpl.
-    rewrite lookup_empty in Heq; congruence. }
-  intros x d m [k' d']; simpl; intros.
-  destruct (decide (int.val k' < int.val x)); simpl.
-  - rewrite lookup_insert //.
-  - destruct (decide (x = k')) as [-> | ?].
-    + rewrite lookup_insert //.
-Admitted.
-
-Lemma latest_disk_append s npos nd : valid_log_state s ->
-  int.val npos >= int.val (fst (latest_disk s)) ->
-  latest_disk (set log_state.txn_disk <[npos:=nd]> s) = (npos, nd).
-Proof.
-Admitted.
-
-Definition get_txn_disk (pos:u64) : transition log_state.t disk :=
-  reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap.
 
 Definition update_installed: transition log_state.t u64 :=
   new_installed ← suchThat (gen:=fun _ _ => None)
@@ -87,56 +59,49 @@ Definition update_installed: transition log_state.t u64 :=
   modify (set log_state.installed_to (λ _, new_installed));;
   ret new_installed.
 
+Definition update_durable: transition log_state.t u64 :=
+  new_durable ← suchThat (gen:=fun _ _ => None)
+                (fun s pos => int.val s.(log_state.durable_to) <=
+                            int.val pos <=
+                            (length s.(log_state.updates)));
+  modify (set log_state.durable_to (λ _, new_durable));;
+  ret new_durable.
+
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
-  ok ← suchThat (fun _ (b:bool) => True);
-  if (ok:bool)
-  then d ← reads (snd ∘ latest_disk);
-       match d !! int.val a with
-       | None => undefined
-       | Some b => ret (Some b)
-       end
-  else (* this is really non-deterministic; it would be simpler if upfront we
-          moved installed_to forward to a valid transaction and then made most
-          of the remaining decisions deterministically. *)
-    new_installed ← update_installed;
-    install_d ← get_txn_disk new_installed;
-    suchThat (gen:=fun _ _ => None)
-             (fun s (_:unit) =>
-                forall pos d, int.val s.(log_state.installed_to) ≤ int.val pos ->
-                         s.(log_state.txn_disk) !! pos = Some d ->
-                         d !! int.val a = install_d !! int.val a);;
-    ret None.
-
-Definition log_read_installed (a:u64): transition log_state.t Block :=
-  installed_to ← update_installed;
-  install_d ← get_txn_disk installed_to;
-  unwrap (install_d !! int.val a).
-
-Definition log_read (a:u64): transition log_state.t Block :=
-  d ← reads (snd ∘ latest_disk);
+  update_installed;;
+  update_durable;;
+  d ← reads latest_disk;
   match d !! int.val a with
   | None => undefined
-  | Some b => ret b
+  | Some b => ret (Some b)
   end.
 
-Definition apply_upds (upds: list update.t) (d: disk): disk :=
-  fold_right (fun '(update.mk a b) => <[int.val a := b]>) d upds.
+Definition log_read_installed (a:u64): transition log_state.t Block :=
+  update_installed;;
+  update_durable;;
+  d ← reads installed_disk;
+  unwrap (d !! int.val a).
 
+Fixpoint interpret upds m: gmap u64 Block :=
+  match upds with
+  | [] => m
+  | upd :: upd0 => interpret upd0 (<[update.addr upd := update.b upd]> m)
+  end.                   
+
+(* XXX fit in log *)
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
-  txn_d ← reads latest_disk;
-  let '(txn, d) := txn_d in
-  (* Note that if the new position can be an earlier txn if every update is
-  absorbed (as a special case, an empty list of updates is always fully
-  absorbed). In that case what was previously a possible crash point is now
-  gone. This is actually the case when it happens because that transaction was
-  in memory. *)
-  new_txn ← suchThat (gen:=fun _ _ => None) (fun _ new_txn => int.val new_txn >= int.val txn);
-  modify (set log_state.txn_disk (<[new_txn:=apply_upds upds d]>));;
-  ret new_txn.
+  update_durable;;
+  old ← reads get_updates;
+  durable ← reads get_durable;
+  let logged := firstn (Z.to_nat (int.val durable)) upds in
+  let inmem := skipn (Z.to_nat (int.val durable)) upds in
+  new ← suchThat (gen:=fun _ _ => None)
+                 (fun s new => interpret new ∅ = interpret (inmem++upds) ∅);
+  modify (set log_state.updates (λ _, logged++new));;
+  ret (U64 (length (logged++new))).
 
 Definition log_flush (pos: u64): transition log_state.t unit :=
   (* flush should be undefined when the position is invalid *)
-  _ ← reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap;
   modify (set log_state.durable_to (λ _, pos)).
 
 Section heap.
@@ -213,3 +178,83 @@ Proof.
 Admitted.
 
 End heap.
+
+
+(*
+Lemma latest_disk_durable s : valid_log_state s ->
+  int.val s.(log_state.durable_to) ≤ int.val (fst (latest_disk s)).
+Proof.
+  destruct s.
+  rewrite /valid_log_state /latest_disk /=.
+  intros. destruct H.
+Admitted.
+
+Lemma latest_disk_pos s : valid_log_state s ->
+  s.(log_state.txn_disk) !! (fst (latest_disk s)) = Some (snd (latest_disk s)).
+Proof.
+  unfold latest_disk.
+  destruct s; simpl.
+  intros.
+  assert (∃ d, txn_disk !! durable_to = Some d).
+  { destruct H; eauto. }
+  clear H.
+  revert H0.
+  match goal with
+  | |- context[map_fold ?f ?init ?m] =>
+    eapply (map_fold_ind (fun acc m => (∃ d, m !! durable_to = Some d) -> m !! acc.1 = Some acc.2) f)
+  end.
+  { intros [d Heq]; simpl.
+    rewrite lookup_empty in Heq; congruence. }
+  intros x d m [k' d']; simpl; intros.
+  destruct (decide (int.val k' < int.val x)); simpl.
+  - rewrite lookup_insert //.
+  - destruct (decide (x = k')) as [-> | ?].
+    + rewrite lookup_insert //.
+Admitted.
+
+Lemma latest_disk_append s npos nd : valid_log_state s ->
+  int.val npos >= int.val (fst (latest_disk s)) ->
+  latest_disk (set log_state.txn_disk <[npos:=nd]> s) = (npos, nd).
+Proof.
+Admitted.
+
+Definition get_txn_disk (pos:u64) : transition log_state.t disk :=
+  reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap.
+ *)
+
+(*
+Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
+  ok ← suchThat (fun _ (b:bool) => True);
+  if (ok:bool)
+  then d ← reads (snd ∘ latest_disk);
+       match d !! int.val a with
+       | None => undefined
+       | Some b => ret (Some b)
+       end
+  else (* this is really non-deterministic; it would be simpler if upfront we
+          moved installed_to forward to a valid transaction and then made most
+          of the remaining decisions deterministically. *)
+    new_installed ← update_installed;
+    install_d ← get_txn_disk new_installed;
+    suchThat (gen:=fun _ _ => None)
+             (fun s (_:unit) =>
+                forall pos d, int.val s.(log_state.installed_to) ≤ int.val pos ->
+                         s.(log_state.txn_disk) !! pos = Some d ->
+                         d !! int.val a = install_d !! int.val a);;
+    ret None.
+*)
+
+(*
+Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
+  txn_d ← reads latest_disk;
+  let '(txn, d) := txn_d in
+  (* Note that if the new position can be an earlier txn if every update is
+  absorbed (as a special case, an empty list of updates is always fully
+  absorbed). In that case what was previously a possible crash point is now
+  gone. This is actually the case when it happens because that transaction was
+  in memory. *)
+  new_txn ← suchThat (gen:=fun _ _ => None) (fun _ new_txn => int.val new_txn >= int.val txn);
+  modify (set log_state.txn_disk (<[new_txn:=apply_upds upds d]>));;
+  ret new_txn.
+*)          
+

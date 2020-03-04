@@ -9,35 +9,25 @@ Module update.
   Record t :=
     mk { addr: u64;
          b: Block; }.
+  Global Instance _eta: Settable _ := settable! mk <addr; b>.
 End update.
 
 Definition disk := gmap Z Block.
 
 Module log_state.
   Record t :=
-    mk { (* tracks the disk corresponding to each LogPosition (the identifiers
-    handed out by MemAppend) *)
-        txn_disk: gmap u64 disk;
+    mk {
+        disk: disk;
+        updates: list update.t;
         (* installed_to promises what will be read after a cache miss *)
         installed_to: u64;
         (* durable_to promises what will be on-disk after a crash *)
         durable_to: u64;
       }.
-  Global Instance _eta: Settable _ := settable! mk <txn_disk; installed_to; durable_to>.
+  Global Instance _eta: Settable _ := settable! mk <disk; updates; installed_to; durable_to>.
 
-  (* TODO: it would be awkward to express directly with dependent types but all
-     of the operations should preserve this well-formedness invariant.
-
-    Additionally, the state should grow monotonically: txn_disk should
-    accumulate new disks (possibly overwriting the latest disk due to complete
-    absorption) and installed_to and durable_to should increase.
-   *)
-  Definition wf (σ:t) :=
-    (exists install_d,
-      σ.(txn_disk) !! σ.(installed_to) = Some install_d) ∧
-    (exists durable_d,
-      σ.(txn_disk) !! σ.(durable_to) = Some durable_d) ∧
-    (int.val σ.(installed_to) ≤ int.val σ.(durable_to)).
+  Definition last_pos (s: t): u64 := (length s.(updates)).
+  
 End log_state.
 
 Section heap.
