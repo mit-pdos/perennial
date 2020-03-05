@@ -3,7 +3,6 @@ From iris.proofmode Require Import base tactics classes.
 From iris.program_logic Require Import weakestpre.
 Unset Implicit Arguments.
 
-(* TODO: move *)
 Section ghost_var_helpers.
 Context {A: ofeT} `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A}.
 Context {Σ} {Hin: inG Σ (authR (optionUR (exclR A)))}.

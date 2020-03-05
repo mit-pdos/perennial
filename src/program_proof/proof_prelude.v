@@ -2,6 +2,7 @@ From iris.algebra Require Export auth gmap frac agree excl vector list.
 
 From Perennial.Helpers Require Export BigOp.
 
+From Perennial.program_logic Require Export ghost_var.
 From Perennial.goose_lang Require Export proofmode wpc_proofmode array.
 From Perennial.goose_lang Require Export readonly.
 From Perennial.goose_lang.lib Require Export slice map struct loop lock.

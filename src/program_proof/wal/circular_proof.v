@@ -10,41 +10,6 @@ From Perennial.Helpers Require Import GenHeap.
 From Perennial.Helpers Require Import Transitions.
 Existing Instance r_mbind.
 
-Section ghost_var_helpers.
-Context {A: ofeT} `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A}.
-Context {Σ} {Hin: inG Σ (authR (optionUR (exclR A)))}.
-
-Lemma ghost_var_alloc (a: A) :
-  (|==> ∃ γ, own γ (● (Excl' a)) ∗ own γ (◯ (Excl' a)))%I.
-Proof using H0.
-  iMod (own_alloc (● (Excl' a) ⋅ ◯ (Excl' a))) as (γ) "[H1 H2]".
-  { apply auth_both_valid; split; eauto. econstructor. }
-  iModIntro. iExists γ. iFrame.
-Qed.
-
-Lemma ghost_var_agree γ (a1 a2: A) :
-  own γ (● (Excl' a1)) -∗ own γ (◯ (Excl' a2)) -∗ ⌜ a1 = a2 ⌝.
-Proof using H H0.
-  iIntros "Hγ1 Hγ2".
-  iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
-  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
-  done.
-Qed.
-
-Lemma ghost_var_update γ (a1' a1 a2 : A) :
-  own γ (● (Excl' a1)) -∗ own γ (◯ (Excl' a2)) ==∗
-    own γ (● (Excl' a1')) ∗ own γ (◯ (Excl' a1')).
-Proof.
-  iIntros "Hγ● Hγ◯".
-  iMod (own_update_2 _ _ _ (● Excl' a1' ⋅ ◯ Excl' a1') with "Hγ● Hγ◯") as "[$$]".
-  { by apply auth_update, option_local_update, exclusive_local_update. }
-  done.
-Qed.
-
-End ghost_var_helpers.
-
-
-
 Definition LogSz := 511.
 
 Module circΣ.
@@ -82,52 +47,6 @@ Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t 
 
 Canonical Structure updateO := leibnizO update.t.
 
-Section list.
-  Context (A:Type).
-  Notation list := (list A).
-  Implicit Types (l:list).
-
-  Definition Forall_idx (P: nat -> A -> Prop) (start:nat) (l: list): Prop :=
-    Forall2 P (seq start (length l)) l.
-
-  Lemma drop_seq n len m :
-    drop m (seq n len) = seq (n + m) (len - m).
-  Proof.
-    revert n m.
-    induction len; simpl; intros.
-    - rewrite drop_nil //.
-    - destruct m; simpl.
-      + replace (n + 0)%nat with n by lia; auto.
-      + rewrite IHlen.
-        f_equal; lia.
-  Qed.
-
-  Theorem Forall_idx_drop (P: nat -> A -> Prop) l (start n: nat) :
-    Forall_idx P start l ->
-    Forall_idx P (start + n) (drop n l).
-  Proof.
-    rewrite /Forall_idx.
-    intros.
-    rewrite drop_length -drop_seq.
-    apply Forall2_drop; auto.
-  Qed.
-
-  Theorem Forall_idx_impl (P1 P2: nat -> A -> Prop) l (start n: nat) :
-    Forall_idx P1 start l ->
-    (forall i x, l !! i = Some x ->
-            P1 (start + i)%nat x ->
-            P2 (start + i)%nat x) ->
-    Forall_idx P2 start l.
-  Proof.
-    rewrite /Forall_idx.
-    intros.
-    apply Forall2_same_length_lookup.
-    eapply Forall2_same_length_lookup in H.
-    intuition idtac.
-    pose proof (lookup_seq_inv _ _ _ _ H); intuition subst.
-    apply H0; eauto.
-  Qed.
-End list.
 
 Section heap.
 Context `{!heapG Σ}.
