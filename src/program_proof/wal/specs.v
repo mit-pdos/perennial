@@ -40,7 +40,6 @@ Definition logged_upds (s:log_state.t): list update.t :=
 Definition inmem_upds (s:log_state.t): list update.t :=
   skipn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
 
-(* XXX something about uniqueness of addr in upds beyond durable *)
 Definition valid_log_state (s : log_state.t) :=
   int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
   int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to).
@@ -85,10 +84,10 @@ Definition log_read_installed (a:u64): transition log_state.t Block :=
   d ← reads installed_disk;
   unwrap (d !! int.val a).
 
-Fixpoint interpret upds m: gmap u64 Block :=
+Fixpoint absorb_map upds m: gmap u64 Block :=
   match upds with
   | [] => m
-  | upd :: upd0 => interpret upd0 (<[update.addr upd := update.b upd]> m)
+  | upd :: upd0 => absorb_map upd0 (<[update.addr upd := update.b upd]> m)
   end.                   
 
 (* XXX fit in log *)
@@ -99,7 +98,7 @@ Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   (* new are the updates after absorbing of inmem in upds; that is,
   replacing upds in inmem with upds if to the same address.  *)
   new ← suchThat (gen:=fun _ _ => None)
-                 (fun s new => interpret new ∅ = interpret (inmem++upds) ∅);
+                 (fun s new => absorb_map new ∅ = absorb_map (inmem++upds) ∅);
   modify (set log_state.updates (λ _, logged++new));;
   ret (U64 (length (logged++new))).
 
@@ -107,6 +106,7 @@ Definition log_flush (pos: u64): transition log_state.t unit :=
   (* flush should be undefined when the position is invalid *)
   modify (set log_state.durable_to (λ _, pos)).
 
+(*
 Section heap.
 Context `{!heapG Σ}.
 Implicit Types (v:val) (z:Z).
@@ -181,7 +181,7 @@ Proof.
 Admitted.
 
 End heap.
-
+*)
 
 (*
 Lemma latest_disk_durable s : valid_log_state s ->

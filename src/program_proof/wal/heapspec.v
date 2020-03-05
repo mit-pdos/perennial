@@ -20,12 +20,42 @@ Context (N: namespace).
 
 Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iProp Σ :=
   ⌜ match b with
-    | Latest b => snd (latest_disk ls) !! (int.val a) = Some b
-    | All b => ∀ pos d,
+    | Latest b => (latest_disk ls) !! (int.val a) = Some b
+    | All b => ∀ pos,
         int.val ls.(log_state.installed_to) <= int.val pos ->
-        ls.(log_state.txn_disk) !! pos = Some d ->
-        d !! (int.val a) = Some b
+        (disk_at_pos pos ls) !! (int.val a) = Some b
     end ⌝.
+
+Lemma wal_heap_inv_addr_extend (gh : gmap u64 heap_block) (σ : log_state.t) pos pos0 :
+  forall a b,
+  (int.val σ.(log_state.installed_to) ≤ int.val pos
+   ∧ int.val pos ≤ int.val σ.(log_state.durable_to)) -> 
+  (int.val σ.(log_state.durable_to) ≤ int.val pos0
+   ∧ int.val pos0 ≤ length σ.(log_state.updates)) ->
+  (gh !! a = Some (Latest b)) ->
+  (latest_disk σ !! int.val a = Some b) ->
+  ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
+   [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
+     (set log_state.installed_to (λ _ : u64, pos)
+     (set log_state.durable_to (λ _ : u64, pos0) σ)) a1 b0.
+Proof.
+  iIntros (a b) "% % % % Hmap".
+  destruct σ; simpl in *.
+  rewrite /set /=.
+  iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
+                                  log_state.disk := disk;
+                                  log_state.updates := updates;
+                                  log_state.installed_to := pos;
+                                  log_state.durable_to := pos0 |}) with "Hmap") as "Hmap".
+  {
+    rewrite /wal_heap_inv_addr.
+    iIntros; iPureIntro.
+    destruct x; auto.
+    admit.
+  }
+  iDestruct (big_sepM_insert_acc with "Hmap") as "[_ Hmap]"; eauto.
+  - admit.
+Admitted.
 
 Definition wal_heap_inv (γh : gen_heapG u64 heap_block Σ) (ls : log_state.t) : iProp Σ :=
   (
@@ -59,83 +89,20 @@ Proof.
   iDestruct (big_sepM_lookup with "Hgh") as "%"; eauto.
 
   simpl in *; monad_inv.
-  destruct b0.
-  - simpl in *; monad_inv.
-    simpl in *; monad_inv.
-    rewrite H0 in a1.
-    simpl in *; monad_inv.
+  simpl in *; monad_inv.
+  rewrite H0 in a1.
+  simpl in *; monad_inv.
 
-    iDestruct ("Hfupd" $! (Some b) with "[Ha]") as "Hfupd".
-    { rewrite /readmem_q. iFrame. done. }
-    iMod "Hfupd".
+  iDestruct ("Hfupd" $! (Some b) with "[Ha]") as "Hfupd".
+  { rewrite /readmem_q. iFrame. done. }
+  iMod "Hfupd".
 
-    iModIntro.
-    iSplitL "Hctx Hgh".
-    + iExists _; iFrame.
-    + iFrame; done.
-
-  - simpl in *; monad_inv.
-    simpl in *; monad_inv.
-
-    match goal with
-    | H : context[unwrap ?x] |- _ => destruct x eqn:?
-    end.
-    2: simpl in *; monad_inv; done.
-
-    simpl in *; monad_inv.
-
-    iMod (gen_heap_update _ _ _ (All b) with "Hctx Ha") as "[Hctx Ha]".
-
-    iDestruct ("Hfupd" $! None with "Ha") as "Hfupd".
-    iMod "Hfupd".
-
-    iModIntro.
-    iSplitL "Hctx Hgh".
-    * iExists _; iFrame.
-      destruct σ; simpl in *.
-      rewrite /set /=.
-
-      iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
-                                   log_state.txn_disk := txn_disk;
-                                   log_state.installed_to := pos;
-                                   log_state.durable_to := durable_to |}) with "Hgh") as "Hgh".
-      {
-        rewrite /wal_heap_inv_addr.
-        iIntros; iPureIntro.
-
-        destruct x0; auto.
-        simpl in *.
-        intros.
-        eapply a1; [| eauto ].
-        lia.
-      }
-
-      iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
-      iDestruct ("Hgh" $! (All b) with "[]") as "Hx".
-      2: iFrame.
-
-      iPureIntro; intros.
-      simpl in *.
-
-      pose proof (latest_disk_pos {|
-        log_state.txn_disk := txn_disk;
-        log_state.installed_to := installed_to;
-        log_state.durable_to := durable_to |} a0).
-      simpl in *.
-
-      rewrite <- H0; clear H0.
-
-      rewrite (H3 _ _ _ H6).
-      2: {
-        pose proof (latest_disk_durable _ a0); simpl in *.
-        lia.
-      }
-
-      eapply H3.
-      2: eauto.
-      lia.
-
-    * iFrame.
+  iModIntro.
+  iSplitL "Hctx Hgh".
+  + iExists _.
+    iSplitL "Hctx"; iFrame.
+    iDestruct (wal_heap_inv_addr_extend gh σ pos pos0 with "Hgh") as "Ha"; eauto.
+  + iFrame; done.
 Qed.
 
 Definition readinstalled_q γh (a : u64) (b : Block) (res : Block) : iProp Σ :=
