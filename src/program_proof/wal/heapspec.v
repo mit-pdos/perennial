@@ -26,36 +26,61 @@ Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iPr
         (disk_at_pos pos ls) !! (int.val a) = Some b
     end ⌝.
 
-Lemma wal_heap_inv_addr_extend (gh : gmap u64 heap_block) (σ : log_state.t) pos pos0 :
+Lemma wal_update_durable (gh : gmap u64 heap_block) (σ : log_state.t) pos :
   forall a b,
-  (int.val σ.(log_state.installed_to) ≤ int.val pos
-   ∧ int.val pos ≤ int.val σ.(log_state.durable_to)) -> 
-  (int.val σ.(log_state.durable_to) ≤ int.val pos0
-   ∧ int.val pos0 ≤ length σ.(log_state.updates)) ->
+  (int.val σ.(log_state.durable_to) ≤ int.val pos
+   ∧ int.val pos ≤ length σ.(log_state.updates)) ->
   (gh !! a = Some (Latest b)) ->
   (latest_disk σ !! int.val a = Some b) ->
   ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
    [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
-     (set log_state.installed_to (λ _ : u64, pos)
-     (set log_state.durable_to (λ _ : u64, pos0) σ)) a1 b0.
+     (set log_state.durable_to (λ _ : u64, pos) σ) a1 b0.
 Proof.
-  iIntros (a b) "% % % % Hmap".
+  iIntros (a b) "% % % Hmap".
   destruct σ; simpl in *.
   rewrite /set /=.
   iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
                                   log_state.disk := disk;
                                   log_state.updates := updates;
+                                  log_state.installed_to := installed_to;
+                                  log_state.durable_to := pos |}) with "Hmap") as "Hmap".
+  2: iFrame.
+  rewrite /wal_heap_inv_addr.
+  iIntros; iPureIntro.
+  destruct x; auto.
+Qed.
+
+Lemma wal_update_installed (gh : gmap u64 heap_block) (σ : log_state.t) pos :
+  forall a b,
+  (int.val σ.(log_state.installed_to) ≤ int.val pos
+   ∧ int.val pos ≤ int.val σ.(log_state.durable_to)) ->
+  (gh !! a = Some (Latest b)) ->
+  (latest_disk σ !! int.val a = Some b) ->
+  ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
+   [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
+     (set log_state.installed_to (λ _ : u64, pos) σ) a1 b0.
+Proof.
+  iIntros (a b) "% % % Hmap".
+  destruct σ eqn:sigma; simpl in *.
+  rewrite /set /=.
+  iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
+                                  log_state.disk := disk;
+                                  log_state.updates := updates;
                                   log_state.installed_to := pos;
-                                  log_state.durable_to := pos0 |}) with "Hmap") as "Hmap".
-  {
-    rewrite /wal_heap_inv_addr.
-    iIntros; iPureIntro.
-    destruct x; auto.
-    admit.
-  }
-  iDestruct (big_sepM_insert_acc with "Hmap") as "[_ Hmap]"; eauto.
-  - admit.
-Admitted.
+                                  log_state.durable_to := durable_to |})
+               with "Hmap") as "Hmap".
+  2: iFrame.
+  rewrite /wal_heap_inv_addr.
+  iIntros; iPureIntro.
+  destruct x; eauto.
+  simpl in *.
+  intros.
+  specialize (a0 pos0).
+  assert (int.val installed_to <= int.val pos0).
+  - destruct H; lia.
+  - specialize (a0 H4).
+    eauto.
+Qed.
 
 Definition wal_heap_inv (γh : gen_heapG u64 heap_block Σ) (ls : log_state.t) : iProp Σ :=
   (
@@ -101,8 +126,11 @@ Proof.
   iSplitL "Hctx Hgh".
   + iExists _.
     iSplitL "Hctx"; iFrame.
-    iDestruct (wal_heap_inv_addr_extend gh σ pos pos0 with "Hgh") as "Ha"; eauto.
-  + iFrame; done.
+    iDestruct (wal_update_durable gh σ pos0 with "Hgh") as "Ha"; eauto.
+    iDestruct (wal_update_installed gh (set log_state.installed_to (λ _ : u64, pos0) σ) pos with "Ha") as "Ha"; eauto.
+    simpl in *.
+    lia.
+  + iFrame.
 Qed.
 
 Definition readinstalled_q γh (a : u64) (b : Block) (res : Block) : iProp Σ :=
