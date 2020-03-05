@@ -45,6 +45,24 @@ Proof.
   iDestruct 1 as "[$ _]".
 Qed.
 
+Lemma is_slice_small_acc s t q vs :
+  is_slice s t q vs -∗ is_slice_small s t q vs ∗ (∀ vs', is_slice_small s t q vs' -∗ is_slice s t q vs').
+Proof.
+  iDestruct 1 as "[$ Hextra]".
+  iDestruct "Hextra" as (extra Hlen) "Hextra".
+  iIntros (vs') "Hs".
+  iFrame "Hs".
+  iExists _; by iFrame.
+Qed.
+
+Lemma is_slice_small_read s t q vs :
+  is_slice s t q vs -∗ is_slice_small s t q vs ∗ (is_slice_small s t q vs -∗ is_slice s t q vs).
+Proof.
+  iIntros "Hs".
+  iDestruct (is_slice_small_acc with "Hs") as "[$ Hupd]".
+  iApply ("Hupd" $! vs).
+Qed.
+
 Lemma is_slice_of_small s t q vs :
   s.(Slice.sz) = s.(Slice.cap) ->
   is_slice_small s t q vs -∗ is_slice s t q vs.
@@ -562,26 +580,38 @@ Proof.
 Qed.
 
 Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :
-  {{{ is_slice s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
+  {{{ is_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
     SliceSet t s #i x @ stk; E
-  {{{ RET #(); is_slice s t 1 (<[int.nat i:=x]> vs) }}}.
+  {{{ RET #(); is_slice_small s t 1 (<[int.nat i:=x]> vs) }}}.
 Proof.
   iIntros (Φ) "[Hs %] HΦ".
   destruct H as [Hlookup Hty].
   destruct s as [ptr sz].
   wp_call.
   wp_call.
-  iDestruct "Hs" as "((Hptr&%) & Hfree)".
+  iDestruct "Hs" as "(Hptr&%)".
   simpl in H |- *.
   replace (int.val i) with (Z.of_nat (int.nat i)) by word.
   wp_apply (wp_store_offset with "Hptr"); [ | done | iIntros "Hptr" ]; auto.
   iApply "HΦ".
-  rewrite /is_slice /=.
-  iFrame.
   iSplitL.
   { iExactEq "Hptr"; word_eq. }
   iPureIntro.
   rewrite insert_length; auto.
+Qed.
+
+(* using full ownership of the slice *)
+Lemma wp_SliceSet_full stk E s t vs (i: u64) (x: val) :
+  {{{ is_slice s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
+    SliceSet t s #i x @ stk; E
+  {{{ RET #(); is_slice s t 1 (<[int.nat i:=x]> vs) }}}.
+Proof.
+  iIntros (Φ) "[Hs %] HΦ".
+  iDestruct (is_slice_small_acc with "Hs") as "[Hs Hs_upd]".
+  wp_apply (wp_SliceSet with "[$Hs //]").
+  iIntros "Hs".
+  iApply "HΦ".
+  iApply ("Hs_upd" with "[$]").
 Qed.
 
 End goose_lang.

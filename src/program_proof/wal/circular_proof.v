@@ -236,17 +236,25 @@ Ltac invc H := inversion H; subst; clear H.
 
 Opaque struct.get.
 
+Theorem apply_updates_lookup_old updarray endpos newupds i :
+  (* TODO: figure out the precondition *)
+  apply_updates updarray endpos newupds !! i = updarray !! i.
+Proof.
+  revert endpos.
+  induction newupds; simpl; intros; auto.
+Abort.
+
 Theorem wp_circularAppender__logBlocks γ c d (endpos : u64) (bufs : Slice.t) (updarray : list update.t) diskaddrslice (upds : list update.t) :
   {{{ is_circular γ ∗
       own γ (◯ (Excl' updarray)) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      is_slice_small diskaddrslice uint64T 1%Qp (u64val <$> (update.addr <$> updarray)) ∗
+      is_slice_small diskaddrslice uint64T 1 (u64val <$> (update.addr <$> updarray)) ∗
       updates_slice bufs upds }}}
     circularAppender__logBlocks #c #d #endpos (slice_val bufs)
   {{{ updarray', RET #();
       own γ (◯ (Excl' updarray')) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      is_slice_small diskaddrslice uint64T 1%Qp (u64val <$> (update.addr <$> updarray')) ∗
+      is_slice_small diskaddrslice uint64T 1 (u64val <$> (update.addr <$> updarray')) ∗
       updates_slice bufs upds ∗
       ⌜updarray' = apply_updates updarray (int.val endpos) upds⌝
   }}}.
@@ -263,7 +271,7 @@ Proof.
     ∃ updarray',
       own γ (◯ Excl' updarray') ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      is_slice_small diskaddrslice uint64T 1%Qp (u64val <$> (update.addr <$> updarray')) ∗
+      is_slice_small diskaddrslice uint64T 1 (u64val <$> (update.addr <$> updarray')) ∗
       ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
                                          is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝) ∗
       ⌜updarray' = apply_updates updarray (int.val endpos) (firstn (int.nat i) upds)⌝)%I
@@ -309,8 +317,64 @@ Proof.
   wp_apply wp_DPrintf.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 511).
-  (* TODO: need to use a HOCAP Write spec since the disk points-to is in an invariant *)
-  wp_apply wp_Write_fupd.
+  let updarray' := constr:(apply_updates updarray (int.val endpos) (take (S (int.nat i)) upds)) in
+  wp_apply (wp_Write_fupd (⊤ ∖ ↑N) (own γ (◯ Excl' updarray')) with "[$Hi Hγ]").
+  {
+    iInv "Hcirc" as ">Hcircopen" "Hclose".
+    iDestruct "Hcircopen" as (σ) "[Hcs HP]".
+    iDestruct "Hcs" as (updarray0) "(Hγauth & Hlow & Hupds)".
+    iDestruct "Hupds" as %Hupds.
+    iDestruct "Hlow" as "[% Hlow]".
+    iDestruct "Hlow" as (hdr1 hdr2 hdr2extra) "(Hd0 & Hd1 & % & % & Hd2)".
+    iDestruct (ghost_var_agree with "Hγauth Hγ") as %->.
+    autorewrite with len in *.
+    (* TODO: need a precondition constraining length upds *)
+    assert (int.val i < 511) by admit.
+    iDestruct (update_disk_array _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]".
+    { unfold LogSz.
+      apply Z_mod_pos; word. }
+    { instantiate (1 := b).
+      admit. }
+    word_cleanup.
+    assert (2 + (int.val endpos + int.val i) `mod` LogSz =
+            word.wrap (word:=u64_instance.u64) (2 + int.val (word.add endpos i) `mod` 511)) by admit.
+    rewrite -H11.
+    iModIntro.
+    iExists b.
+    iFrame "Hdi".
+    iIntros "Hdi".
+    iSpecialize ("Hd2" with "Hdi").
+    iMod (ghost_var_update γ (apply_updates updarray (int.val endpos)
+                           (take (S (int.nat i)) upds)) with "Hγauth Hγ") as "[Hγauth Hγ]".
+    iFrame.
+    iApply "Hclose".
+    iNext.
+    iExists _; iFrame.
+    iExists _; iFrame.
+    iSplitL; auto.
+    { iSplitR; first by len.
+      iExists _, _, _; iFrame.
+      iSplitR; [ | iSplitR ].
+      - admit. (* oops, not true; need to update only the blocks and not the
+        addresses, or hdr1 will be out-of-sync *)
+      - iPureIntro.
+        eauto.
+      - iExactEq "Hd2".
+        f_equal.
+        admit.
+    }
+    iPureIntro.
+    split; try word.
+    admit.
+  }
+  iIntros "[Hs Hγ]".
+  wp_loadField.
+  wp_apply (wp_SliceSet with "[$Hslice]").
+  { iPureIntro.
+    split; [ | val_ty ].
+    admit.
+  }
+  iIntros "Hslice".
 Admitted.
 
 Theorem apply_updates_lookup_new updarray endpos newupds (i: nat) u :
