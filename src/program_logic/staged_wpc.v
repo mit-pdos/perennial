@@ -368,8 +368,6 @@ Proof.
 Qed.
 
 
-Definition LVL (k: nat) : nat := 2 ^ ((S (S k))).
-
 Lemma wpc_staged_inv_init'' s k k' N E1 E2 e Φ Φc P γ γ' :
   k' < k →
   1 < k →
@@ -397,7 +395,7 @@ Lemma wpc_staged_inv_open'' s k k' k'' E1 E1' E2 e Φ Φc Q Qrest Qnew P N γ γ
   (Φc ∧ (Q -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_value N γ (Qnew v) True -∗  (Φ v ∧ Φc))}} {{ Φc ∗ P }})) ⊢
   WPC e @ s; (4 * k); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  rewrite /LVL. iIntros (??????) "(?&?&?)".
+  iIntros (??????) "(?&?&?)".
   destruct k as [|k]; first by lia.
   destruct k as [|k]; first by lia.
   replace (4 * (S (S k))) with (2 * (S (S (S (S (2 * k)))))) by lia.
@@ -409,6 +407,8 @@ Proof.
   { lia. }
   { eauto. }
 Qed.
+
+Definition LVL (k: nat) : nat := 2 ^ ((S (S k))).
 
 Lemma wpc_staged_inv_init s k k' N E1 E2 e Φ Φc P γ γ' :
   k' < k →
@@ -446,16 +446,22 @@ Proof.
     apply Nat.pow_lt_mono_r_iff; eauto. lia. }
 Qed.
 
-Lemma SS_LVL k:
-  S (S (LVL k)) ≤ LVL (S k).
+Lemma SSS_LVL k:
+  (S (S (S (LVL k)))) ≤ LVL (S k).
 Proof.
   rewrite /LVL.
   rewrite {1}(Nat.pow_succ_r' 2 (S (S k))).
-  replace (S (S (2 ^ (S (S k))))) with (2 + (2^(S (S k)))); last by lia.
+  replace (S (S (S (2 ^ (S (S k)))))) with (3 + (2^(S (S k)))); last by lia.
   replace (2 * (2 ^ (S (S k)))) with (2 ^ (S (S k)) + (2 ^ (S (S k)))) by lia.
   apply plus_le_compat; auto.
-  { replace 2 with (2^1) at 1; last by auto.
+  { transitivity 4; first lia. replace 4 with (2^2) at 1; last by auto.
   apply Nat.pow_le_mono_r_iff; eauto. lia. }
+Qed.
+
+Lemma SS_LVL k:
+  S (S (LVL k)) ≤ LVL (S k).
+Proof.
+  etransitivity; last eapply SSS_LVL; eauto.
 Qed.
 
 Lemma wpc_later' s k E1 E2 e Φ Φc :
@@ -482,6 +488,18 @@ Proof.
   clear Hlvl.
   iApply (wpc_idx_mono with "[Hwp]"); first by eassumption.
   iApply (wpc_step_fupd with "[Hwp]"); eauto.
+Qed.
+
+Lemma wpc_step_fupdN_inner3 s k E1 E2 e Φ Φc :
+  to_val e = None →
+  (|={E1,E1}_3=> WPC e @ s; (LVL k); E1 ; E2 {{ Φ }} {{ Φc }}) -∗
+  WPC e @ s; (LVL (S k)); E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "Hwp".
+  specialize (SSS_LVL k) => Hlvl.
+  iApply (wpc_idx_mono with "[Hwp]"); first by eassumption.
+  replace (S (S (S (LVL k)))) with (3 + LVL k) by lia.
+  iApply (wpc_step_fupdN_inner with "[Hwp]"); eauto.
 Qed.
 
 End staged_inv_wpc.

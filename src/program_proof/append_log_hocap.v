@@ -23,7 +23,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 Context (Nlog: namespace).
 
 Context (P: log_state -> iProp Σ).
-Context (PHasOpened: iProp Σ).
+Context (PStartedOpening: iProp Σ).
 (*
 Context (Pinit_token: iProp Σ).
 Context (Popen_token: iProp Σ).
@@ -52,7 +52,7 @@ Definition log_crash_cond : iProp Σ :=
   ∃ (s: log_state), log_state_to_crash s ∗ P s.
 
 Definition log_inv_inner k γ1 : iProp Σ :=
-             (crash_inv_full N2 k ⊤ γ1 (log_crash_cond) (log_crash_cond) ∨ PHasOpened)%I.
+             (crash_inv_full N2 k ⊤ γ1 (log_crash_cond) (log_crash_cond) ∨ PStartedOpening)%I.
 
 Definition log_inv k :=
   (∃ γ1, inv N (log_inv_inner (LVL k) γ1))%I.
@@ -185,86 +185,86 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-(*
-Definition is_pre_log (k: nat) : iProp Σ :=
-  ∃ γ γ', staged_inv Npre (LVL k) (⊤ ∖ ↑Npre) (⊤ ∖ ↑Npre) γ γ' log_crash_inner ∗
-          inv Ntok (staged_value Npre γ (P UnInit ∗ uninit_log) True).
-
-Lemma alloc_pre_lock_uninit k k' E Φ Φc e:
-  (k' < k)%nat →
-  Φc ∗
-  P UnInit ∗
-  uninit_log ∗
-  (Φc -∗ is_pre_log k' -∗ WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Φc }}) -∗
-  WPC e @ (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ ((P UnInit ∗ uninit_log) ∨ (∃ bs, P (Closed bs) ∗ crashed_log bs))}}.
+Lemma ptsto_log_crashed lptr vs:
+  ptsto_log lptr vs -∗ crashed_log vs.
 Proof.
-  iIntros (?) "(HΦc&HP&Hlog&Hwp)".
-  iMod (staged_inv_alloc Npre (LVL k') ⊤ (⊤ ∖ ↑Npre) log_crash_inner (P UnInit ∗ uninit_log)
-                         True%I with "[HP Hlog]") as
-      (γ1 γ2) "(#Hstaged_inv&Hstaged_val&Hpending)".
-  { rewrite /log_crash_inner. iFrame. iAlways. iIntros.
-    iFrame. }
-  iApply (wpc_ci_inv _ k k' Npre ⊤ E with "[-]"); try assumption.
-  { set_solver +. }
-  iFrame. iFrame "Hstaged_inv".
-  iMod (inv_alloc Ntok _ (staged_value Npre γ1 (P UnInit ∗ uninit_log) True)%I
-          with "[Hstaged_val]").
-  { iFrame. }
-  iApply ("Hwp" with "[$]").
-  iExists _, _. iFrame "Hstaged_inv". iFrame.
+  rewrite /ptsto_log. iIntros "H". iDestruct "H" as (??) "(?&His_log')".
+  rewrite /crashed_log. iExists _, _. iFrame.
 Qed.
-*)
 
-(*
 Theorem wpc_Open' k k' E2 Qc:
   (S k < k')%nat →
-  {{{ log_inv k' ∗ ((∀ (s: log_state), ⌜ s ≠ UnInit ⌝ -∗ P s ={⊤}=∗ False) ∧ (PHasOpened ={⊤ ∖ ↑N}=∗ False) ∧
-                     (P UnInit ={⊤ ∖ ↑N2}=∗ P Initing ∗ (∀ vs l, P Initing ={⊤ ∖ ↑N2}=∗ P (Opened l vs)))) }}}
-    Open #() @ NotStuck; LVL (S (S k)); ⊤; E2
+  {{{ log_inv k' ∗ ((∀ (s: log_state), ⌜ ∀ vs, s ≠ Closed vs ⌝ -∗ P s ={⊤ ∖ ↑N ∖ ↑N2}=∗ False) ∧
+                     (PStartedOpening ={⊤ ∖ ↑N}=∗ False) ∧
+                     (∀ vs, P (Closed vs) ={⊤ ∖ ↑N ∖ ↑N2}=∗
+                      P (Opening vs) ∗ (Qc ∧ ∀ l, P (Opening vs) ={⊤ ∖ ↑N2}=∗ P (Opened vs l)) ∗ PStartedOpening)) }}}
+    Open #() @ NotStuck; LVL (S (S (S k))); ⊤; E2
   {{{ lptr, RET #lptr; is_log k' lptr }}}
   {{{ Qc }}}.
 Proof.
   iIntros (? Φ Φc) "(#Hlog_inv&Hvs) HΦ".
   iApply wpc_fupd.
   rewrite /log_inv.
-  iDestruct "Hlog_inv" as (γ1 γ2) "(#Hc_inv&#Hinv)".
-  iApply wpc_step_fupd'; first done.
+  iDestruct "Hlog_inv" as (γ) "#Hinv".
+  iApply wpc_step_fupdN_inner3; first done.
   iInv "Hinv" as "Hinner" "Hclo".
   iMod (fupd_intro_mask' _ ∅) as "Hclo'"; first by set_solver+.
-  iModIntro. iNext.
-  iMod "Hclo'" as "_".
+  do 2 iModIntro. iNext. iMod "Hclo'" as "_".
   rewrite /log_inv_inner.
   iDestruct "Hinner" as "[Hval|Hfalse]"; last first.
   {
     iDestruct "Hvs" as "(_&(Hbad&_))".
     by iMod ("Hbad" with "[$]").
   }
-  iMod (staged_inv_open with "[Hval]") as "Hclo'"; [ | | iFrame "Hc_inv"; iFrame | ].
+  iApply (crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
   { solve_ndisj. }
-  { eauto. }
-  iDestruct "Hclo'" as "[?|?]"; last first.
-  {
-    iMod
-  (* XXX need more laters here... *)
+  iIntros "[(Hlog_crash_cond&Hclose)|Hc]".
+  - iDestruct "Hlog_crash_cond" as (s) "(Hlog_state&HP)". rewrite /log_crash_cond.
+    (* We must be in Closed state, otherwise we can prove false. *)
+    destruct s;
+    try (iDestruct "Hvs" as "(Hvs&_)"; iMod ("Hvs" with "[] HP"); try eauto; done).
+    (* Viewshift to the "Opening" state, which will let us take out the crash_inv_full from inv *)
+    iDestruct "Hvs" as "(_&_&Hvs)". iMod ("Hvs" with "HP") as "(HP&Hvs&Hopening)".
+    iMod ("Hclose" $! (log_state_to_crash (Opening s) ∗ P (Opening s))%I with "[HP Hlog_state]") as "Hfull".
+    { iSplitL "HP Hlog_state".
+      - iNext. iFrame.
+      - iAlways. iIntros. iExists _; eauto. }
+    iMod ("Hclo" with "[Hopening]").
+    { iNext. eauto. }
+    (* XXX: make it so you can iModIntro |={E,E}_k=> *)
+    iApply step_fupdN_inner_later; auto.
+    iApply (wpc_crash_inv_open_modify (λ v,
+                                       match v with
+                                       | LitV (LitLoc l) => (∃ bs, ptsto_log l bs ∗ P (Opened bs l))
+                                       | _ => False
+                                       end)%I with "Hfull"); try auto.
+    iSplit.
+    { iApply "HΦ". iDestruct "Hvs" as "($&_)". }
+    iIntros "(Hlog&HP)".
+    iApply wpc_fupd.
+    wpc_apply (wpc_Open with "[$] [-]").
+    iSplit.
+    * iIntros. iSplitL "Hvs HΦ".
+      ** iApply "HΦ". iDestruct "Hvs" as "($&_)".
+      ** iExists (Opening s). iFrame.
+    * iNext. iIntros (lptr) "(Hlog&Hlock)".
+      iDestruct "Hlock" as (ml) "(Hpts&Hlock)".
+      iDestruct "Hvs" as "(_&Hvs)".
+      iMod ("Hvs" $! lptr with "HP") as "HP".
+      iSplitL "HP Hlog".
+      { iExists _. iFrame. eauto. }
+      iModIntro.
+      iSplitR; first eauto.
+      { iAlways. iIntros "H". iDestruct "H" as (bs) "(?&?)". iExists _. iFrame.
+        simpl. by iApply ptsto_log_crashed. }
+      iIntros "Hfull". iSplit.
+      ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
+         { iNext; iExists _; iFrame. }
+         iMod (alloc_crash_lock' with "Hlock Hfull") as (?) "Hcrash_lock".
+         iModIntro. iApply "HΦ". iExists _. iFrame. rewrite /log_inv. iSplitL "".
+         { iExists _. rewrite /log_inv_inner. eauto. }
+         iExists _.
 Abort.
 
-(* XXX: but this seems too weak, because it doesn't say that by initializing, the
-   caller no longer has to prove crashed_log *)
-Theorem wpc_Open' vs k k' E2 Qc:
-  (S k < k')%nat →
-  {{{ crashed_log vs ∗ ((∀ l, |={⊤}=> P (Opened vs l) ∗ Qc) ∧ Qc)}}}
-    Open #() @ NotStuck; k; ⊤; E2
-  {{{ lptr, RET #lptr; is_log k' lptr }}}
-  {{{ crashed_log vs ∗ Qc }}}.
-Proof.
-  iIntros (? Φ Φc) "(Hc&Hvs) HΦ".
-  iApply wpc_fupd.
-  wpc_apply (wpc_Open with "Hc").
-  iSplit.
-  { iIntros. iApply "HΦ". iFrame. iDestruct ("Hvs") as "(_&$)". }
-  iNext. iIntros (?) "(Hlog&Hm)".
-  iDestruct "Hm" as (?) "(Hm&Hlock)".
-Abort.
-*)
 
 End hocap.

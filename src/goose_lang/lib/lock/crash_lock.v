@@ -57,6 +57,16 @@ Section proof.
 *)
 
 
+  Lemma alloc_crash_lock' k E γ lk (R Rcrash : iProp Σ):
+    is_free_lock lk -∗
+    crash_inv_full Ncrash k ⊤ γ R Rcrash
+    ={E}=∗ ∃ γ, is_crash_lock k γ #lk R Rcrash.
+  Proof using ext_tys.
+    iIntros "Hfree Hfull".
+    iMod (alloc_lock Nlock _ with "Hfree Hfull") as (γ') "Hlk".
+    iModIntro. iExists _. rewrite /is_crash_lock. iExists _. iFrame.
+  Qed.
+
   Lemma alloc_crash_lock k k' E Φ Φc e lk (R Rcrash : iProp Σ):
     (k' < k)%nat →
     □ (R -∗ Rcrash) ∗
@@ -74,9 +84,8 @@ Section proof.
     iApply (wpc_crash_inv_init _ k k' Ncrash ⊤ E with "[-]"); try assumption.
     { set_solver +. }
     iFrame.
-    iMod (alloc_lock Nlock _ with "Hfree Hfull") as (γ) "Hlk".
-    iApply ("Hwp" with "[$]").
-    rewrite /is_crash_lock. iExists _. iFrame.
+    iMod (alloc_crash_lock' with "Hfree Hfull") as (?) "Hlk".
+    iApply ("Hwp" with "[$]"). by iFrame.
   Qed.
 
   Lemma acquire_spec k E γ (R Rcrash : iProp Σ) lk:

@@ -800,9 +800,9 @@ Proof.
     by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
 Qed.
 
-Theorem wpc_Open k E2 vs :
+Theorem wpc_Open k E1 E2 vs :
   {{{ crashed_log vs }}}
-    Open #() @ NotStuck; k; ⊤; E2
+    Open #() @ NotStuck; k; E1; E2
   {{{ lptr, RET #lptr; ptsto_log lptr vs ∗ ∃ (ml: loc), lptr ↦[Log.S :: "m"] #ml ∗ is_free_lock ml }}}
   {{{ crashed_log vs }}}.
 Proof.

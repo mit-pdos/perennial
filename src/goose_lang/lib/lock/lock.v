@@ -76,7 +76,7 @@ Section proof.
     val_ty.
   Qed.
 
-  Theorem alloc_lock l R : is_free_lock l -∗ R ={⊤}=∗ ∃ γ, is_lock γ #l R.
+  Theorem alloc_lock E l R : is_free_lock l -∗ R ={E}=∗ ∃ γ, is_lock γ #l R.
   Proof.
     iIntros "Hl HR".
     iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
@@ -87,16 +87,16 @@ Section proof.
     iSplit; eauto.
   Qed.
 
-  Lemma wp_new_free_lock :
-    {{{ True }}} lock.new #() {{{ lk, RET #lk; is_free_lock lk }}}.
+  Lemma wp_new_free_lock E:
+    {{{ True }}} lock.new #() @ E {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof using ext_tys.
     iIntros (Φ) "_ HΦ".
     wp_call.
     wp_apply wp_alloc_untyped; auto.
   Qed.
 
-  Lemma newlock_spec (R : iProp Σ):
-    {{{ R }}} lock.new #() {{{ lk γ, RET lk; is_lock γ lk R }}}.
+  Lemma newlock_spec E (R : iProp Σ):
+    {{{ R }}} lock.new #() @ E {{{ lk γ, RET lk; is_lock γ lk R }}}.
   Proof using ext_tys.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
     wp_lam. wp_apply wp_alloc_untyped; first by auto.
