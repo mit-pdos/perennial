@@ -124,7 +124,7 @@ Qed.
 Lemma crash_inv_open N k' k E E' E1 γ P Q R:
   ↑N ⊆ E →
   crash_inv_full N k' E1 γ Q P -∗
-  ((Q ∗ (▷ Q ={E∖↑N,E}=∗ crash_inv_full N k' E1 γ Q P)) ∨ (C ∗ |={E∖↑N, E}=> emp)
+  ((Q ∗ (▷ Q ={E∖↑N,E}=∗ crash_inv_full N k' E1 γ Q P)) ∨ (C ∗ |={E∖↑N, E}=> crash_inv_full N k' E1 γ Q P)
    -∗ |={E ∖ ↑N, E'}_k=> R) -∗
   (|={E,E'}_(S (S k))=> R).
 Proof.
@@ -138,18 +138,18 @@ Proof.
   rewrite Nat_iter_S.
   iModIntro. iNext. iMod "Hclo" as "_".
   iApply ("Hwp" with "[HQ]").
-  iDestruct "HQ" as "[(HQ&Hclo)|(?&HC&?)]".
+  iDestruct "HQ" as "[(HQ&Hclo)|(?&HC&Hclo)]".
   - iLeft. iFrame. iIntros "HQ". iMod ("Hclo" $! Q True%I with "[HQ]") as "H".
     { iFrame. iAlways. iIntros. iApply step_fupdN_inner_later; auto. iNext.
       iDestruct ("Hwand" with "[$]") as "$". }
     iModIntro. iExists _, _. iFrame "H Hinv Hwand".
-  - iRight. iFrame.
+  - iRight. iFrame. iMod "Hclo". iModIntro. iExists _, _. iFrame "Hclo Hwand Hinv".
 Qed.
 
 Lemma crash_inv_open_modify N k' k E E' E1 γ P Q R:
   ↑N ⊆ E →
   crash_inv_full N k' E1 γ Q P -∗
-  ((Q ∗ (∀ Q', ▷ Q' ∗ □ (Q' -∗ P) ={E∖↑N,E}=∗ crash_inv_full N k' E1 γ Q' P)) ∨ (C ∗ |={E∖↑N, E}=> emp)
+  ((Q ∗ (∀ Q', ▷ Q' ∗ □ (Q' -∗ P) ={E∖↑N,E}=∗ crash_inv_full N k' E1 γ Q' P)) ∨ (C ∗ |={E∖↑N, E}=> crash_inv_full N k' E1 γ Q P)
    -∗ |={E ∖ ↑N, E'}_k=> R) -∗
   (|={E,E'}_(S (S k))=> R).
 Proof.
@@ -163,12 +163,12 @@ Proof.
   rewrite Nat_iter_S.
   iModIntro. iNext. iMod "Hclo" as "_".
   iApply ("Hwp" with "[HQ]").
-  iDestruct "HQ" as "[(HQ&Hclo)|(?&HC&?)]".
+  iDestruct "HQ" as "[(HQ&Hclo)|(?&HC&Hclo)]".
   - iLeft. iFrame. iIntros (Q') "(HQ'&#Hwand')". iMod ("Hclo" $! Q' True%I with "[HQ']") as "H".
     { iFrame. iAlways. iIntros. iApply step_fupdN_inner_later; auto. iNext.
       iDestruct ("Hwand'" with "[$]") as "$". }
     iModIntro. iExists _, _. iFrame "H Hinv Hwand'".
-  - iRight. iFrame.
+  - iRight. iFrame. iMod "Hclo". iModIntro. iExists _, _. iFrame "Hclo Hwand Hinv".
 Qed.
 
 End ci.

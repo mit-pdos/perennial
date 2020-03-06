@@ -112,12 +112,12 @@ Lemma staged_inv_open E N k E1 E2 γ γ' P Q Qr:
   staged_inv N k E1 E2 γ γ' P ∗
   staged_value N γ Q Qr ={E,E∖↑N}=∗
   (▷ ▷ Q ∗ (∀ Q' Qr', ▷ Q' ∗ □ (C -∗ Q' -∗ |={E1, E2}_k=> P ∗ Qr') ={E∖↑N,E}=∗ staged_value N γ Q' Qr')) ∨
-  (▷ ▷ Qr ∗ C ∗ |={E∖↑N, E}=> emp).
+  (▷ ▷ Qr ∗ C ∗ |={E∖↑N, E}=> staged_value N γ Q True).
 Proof.
   iIntros (??) "(#Hinv&Hval)".
   iDestruct "Hval" as (γprop γprop') "(Hγ&#Hsaved&#Hsaved')".
   iInv N as (γprop_alt γprop'_alt Qsaved Qrsaved) "H" "Hclose".
-  iDestruct "H" as "(>Hγ'&#Hsaved_alt&#Hsaved'_alt&HQ0&Hcase)".
+  iDestruct "H" as "(>Hγ'&#Hsaved_alt&#Hsaved'_alt&#HQ0&Hcase)".
   iDestruct (own_valid_2 with "Hγ' Hγ") as "#H".
   iDestruct "H" as %[Heq%Excl_included%leibniz_equiv _]%auth_both_valid.
   inversion Heq; subst.
@@ -146,15 +146,15 @@ Proof.
       iDestruct (saved_prop_agree with "Hsaved' Hsaved'_alt") as "Hequiv".
       iNext. by iRewrite "Hequiv".
     - iFrame "HC".
-      iMod (saved_prop_alloc P) as (γprop_new) "#Hsaved_new".
       iMod (saved_prop_alloc True) as (γprop'_new) "#Hsaved'_new".
-      iMod (own_update_2 _ _ _ (● Excl' (γprop_new, γprop'_new) ⋅
-                                ◯ Excl' (γprop_new, γprop'_new)) with "Hγ' Hγ") as "[Hγ' Hγ]".
+      iMod (own_update_2 _ _ _ (● Excl' (γprop_alt, γprop'_new) ⋅
+                                ◯ Excl' (γprop_alt, γprop'_new)) with "Hγ' Hγ") as "[Hγ' Hγ]".
       { by apply auth_update, option_local_update, exclusive_local_update. }
       iMod ("Hclose" with "[Hγ']").
-      * iNext. iExists γprop_new, γprop'_new, _, _. iFrame "#". iFrame.
-        iAlways. iIntros. iApply step_fupdN_inner_later; auto; iNext; by iFrame.
-      * eauto.
+      * iNext. iExists γprop_alt, γprop'_new, _, _. iFrame "#". iFrame.
+        iAlways. iIntros. iSpecialize ("HQ0" with "[$] [$]").
+        iApply (step_fupdN_inner_wand' with "HQ0"); auto. iIntros "($&?)".
+      * iModIntro. iExists _, _. iFrame. iFrame. eauto.
   }
 Qed.
 

@@ -11,6 +11,7 @@ From Perennial.goose_lang Require
 From Perennial.program_proof Require
      marshal_proof
      append_log_proof
+     append_log_hocap
      util_proof
      lockmap_proof
      (* temporarily disabled while wal abstraction is in flux *)

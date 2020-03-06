@@ -91,7 +91,7 @@ Definition is_log (k: nat) (l: loc) : iProp Σ :=
   inv Nlog (∃ q, l ↦[Log.S :: "m"]{q} lk) ∗
   (∃ γlk, is_crash_lock N1 N2 (LVL k) γlk lk
                                 (∃ bs, ptsto_log l bs ∗ P (Opened bs l))
-                                (∃ bs, crashed_log bs ∗ (P (Opened bs l) ∨ P (Closed bs)))).
+                                log_crash_cond).
 
 Instance is_log_persistent: Persistent (is_log k l).
 Proof. apply _. Qed.
@@ -153,14 +153,14 @@ Proof.
       iModIntro.
       iSplitL "HΦ Hvs".
       ** iDestruct "HΦ" as "(H&_)". by iApply "H".
-      ** iExists bs. iFrame.
+      ** iExists _. do 2 iFrame.
     * iDestruct "Hvs" as "(Hvs&_)".
       iDestruct ("Hvs" $! bs) as "(_&Hvs)".
       iMod ("Hvs" with "[$]") as "(Hclo&HQc)".
       iModIntro.
       iSplitL "HΦ HQc".
       ** iDestruct "HΦ" as "(H&_)". by iApply "H".
-      ** iExists []. iFrame.
+      ** iExists _. do 2 iFrame.
   }
   iNext. iIntros "Hpts".
   (* Linearization point *)
@@ -192,12 +192,12 @@ Proof.
   rewrite /crashed_log. iExists _, _. iFrame.
 Qed.
 
-Theorem wpc_Open' k k' E2 Qc:
+Theorem wpc_Open k k' E2 Qc:
   (S k < k')%nat →
   {{{ log_inv k' ∗ ((∀ (s: log_state), ⌜ ∀ vs, s ≠ Closed vs ⌝ -∗ P s ={⊤ ∖ ↑N ∖ ↑N2}=∗ False) ∧
                      (PStartedOpening ={⊤ ∖ ↑N}=∗ False) ∧
                      (∀ vs, P (Closed vs) ={⊤ ∖ ↑N ∖ ↑N2}=∗
-                      P (Opening vs) ∗ (Qc ∧ ∀ l, P (Opening vs) ={⊤ ∖ ↑N2}=∗ P (Opened vs l)) ∗ PStartedOpening)) }}}
+                      P (Opening vs) ∗ (Qc ∧ ∀ l, P (Opening vs) ={⊤ ∖ ↑N2}=∗ Qc ∗ P (Opened vs l)) ∗ PStartedOpening) ∧ Qc) }}}
     Open #() @ NotStuck; LVL (S (S (S k))); ⊤; E2
   {{{ lptr, RET #lptr; is_log k' lptr }}}
   {{{ Qc }}}.
@@ -218,7 +218,7 @@ Proof.
   }
   iApply (crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
   { solve_ndisj. }
-  iIntros "[(Hlog_crash_cond&Hclose)|Hc]".
+  iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
   - iDestruct "Hlog_crash_cond" as (s) "(Hlog_state&HP)". rewrite /log_crash_cond.
     (* We must be in Closed state, otherwise we can prove false. *)
     destruct s;
@@ -250,7 +250,7 @@ Proof.
     * iNext. iIntros (lptr) "(Hlog&Hlock)".
       iDestruct "Hlock" as (ml) "(Hpts&Hlock)".
       iDestruct "Hvs" as "(_&Hvs)".
-      iMod ("Hvs" $! lptr with "HP") as "HP".
+      iMod ("Hvs" $! lptr with "HP") as "(HQc&HP)".
       iSplitL "HP Hlog".
       { iExists _. iFrame. eauto. }
       iModIntro.
@@ -263,8 +263,13 @@ Proof.
          iMod (alloc_crash_lock' with "Hlock Hfull") as (?) "Hcrash_lock".
          iModIntro. iApply "HΦ". iExists _. iFrame. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
-         iExists _.
-Abort.
-
+         iExists _. iFrame.
+      ** by iApply "HΦ".
+  - iMod "Hclose". iMod ("Hclo" with "[Hclose]"); first eauto.
+    iApply step_fupdN_inner_later; auto.
+    iApply wpc_C. iFrame.
+    iDestruct "Hvs" as "(_&_&_&?)".
+    by iApply "HΦ".
+Qed.
 
 End hocap.
