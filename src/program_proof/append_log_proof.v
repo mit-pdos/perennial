@@ -181,48 +181,6 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wp_init (sz: u64) vs :
-  {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
-    Init #sz
-  {{{ l (ok: bool), RET (#l, #ok); ⌜ok⌝ -∗ ptsto_log l [] }}}.
-Proof.
-  iIntros (Φ) "[Hdisk %] HΦ".
-  rewrite /Init.
-  wp_lam.
-  wp_pures.
-  wp_if_destruct; wp_pures.
-  - wp_apply wp_new_free_lock; iIntros (ml) "_".
-    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
-    wp_pures.
-    iApply "HΦ".
-    iIntros ([]).
-  - destruct vs.
-    { simpl in *.
-      word. }
-    wp_apply wp_new_free_lock; iIntros (ml) "_".
-    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
-    iDestruct (log_struct_to_fields with "Hs") as "Hfields".
-    wp_pures.
-    iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
-    iDestruct (block_to_is_hdr with "Hd0") as (sz0 disk_sz0) "Hhdr".
-    wp_apply (wp_write_hdr with "[$Hhdr $Hfields]").
-    iIntros "[Hhdr Hfields]".
-    wp_steps.
-    iApply "HΦ".
-    iIntros "_".
-    rewrite /ptsto_log /is_log'.
-    change (0 + 1) with 1.
-    simpl.
-    iExists _, _; iFrame.
-    rewrite disk_array_emp.
-    iSplitR; first by auto.
-    iSplitR; first by auto.
-    iExists vs; iFrame.
-    iPureIntro.
-    simpl in H.
-    lia.
-Qed.
-
 Theorem is_log'_sz sz disk_sz bs :
   is_log' sz disk_sz bs -∗ ⌜length bs = int.nat sz⌝.
 Proof.
@@ -607,6 +565,68 @@ Proof.
   iFrame.
   iPureIntro; word.
 Qed.
+
+Theorem wpc_init (sz: u64) k E1 E2 vs :
+  {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
+    Init #sz @ NotStuck; k; E1; E2
+  {{{ l (ok: bool), RET (#l, #ok);  if ok then ptsto_log l [] else 0 d↦∗ vs }}}
+  {{{ 0 d↦∗ vs ∨ (∃ b b' vs', ⌜ vs = b :: vs' ⌝ ∗ 0 d↦∗ (b' :: vs') ) }}}.
+Proof.
+  iIntros (Φ Φc) "[Hdisk %] HΦ".
+  rewrite /Init.
+  wpc_pures; first by eauto.
+  wpc_if_destruct; wpc_pures; try by eauto.
+  - wpc_frame "Hdisk HΦ".
+    { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
+    wp_apply wp_new_free_lock; iIntros (ml) "_".
+    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
+    wp_pures.
+    iIntros "(Hdisk&HΦ)".
+    by iApply "HΦ".
+  - destruct vs.
+    { simpl in *.
+      word. }
+    wpc_bind (Alloc _).
+    wpc_frame "Hdisk HΦ".
+    { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
+    wp_apply wp_new_free_lock; iIntros (ml) "_".
+    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
+    iDestruct (log_struct_to_fields with "Hs") as "Hfields".
+    wp_pures.
+    iIntros "(Hdisk&HΦ)".
+    wpc_pures; first by eauto.
+    iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
+    iDestruct (block_to_is_hdr with "Hd0") as (sz0 disk_sz0) "Hhdr".
+    wpc_apply (wpc_write_hdr with "[$Hhdr $Hfields]").
+    iSplit.
+    { iIntros "Hcase". iApply "HΦ".
+      iRight.
+      iDestruct "Hcase" as "[H|H]".
+      - rewrite /is_hdr. iDestruct "H" as (?) "(?&?)".
+        iExists _, _, _. iSplitR; first done. iApply disk_array_cons. by iFrame.
+      - rewrite /is_hdr. iDestruct "H" as (?) "(?&?)".
+        iExists _, _, _. iSplitR; first done. iApply disk_array_cons. by iFrame.
+    }
+    iNext. iIntros "(Hhdr&Hlog)".
+    wpc_pures.
+    { iRight.
+      rewrite /is_hdr. iDestruct "Hhdr" as (?) "(?&?)".
+      iExists _, _, _. iSplitR; first done. iApply disk_array_cons. by iFrame.
+    }
+    iApply "HΦ". rewrite /ptsto_log.
+    rewrite /ptsto_log /is_log'.
+    change (0 + 1) with 1.
+    simpl.
+    iExists _, _; iFrame.
+    rewrite disk_array_emp.
+    iSplitR; first by auto.
+    iSplitR; first by auto.
+    iExists vs; iFrame.
+    iPureIntro.
+    simpl in H.
+    lia.
+Qed.
+
 
 Transparent struct.store.
 Definition struct_ty_unfold d :
