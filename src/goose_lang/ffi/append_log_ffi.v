@@ -172,3 +172,69 @@ Section log.
     {| ext_step := log_step;
        ext_crash := fun s s' => relation.denote close s s' tt; |}.
 End log.
+
+From iris.algebra Require Import auth agree excl csum.
+From Perennial.program_logic Require Import ghost_var.
+Definition openR := csumR (fracR) (agreeR (leibnizO loc)).
+Definition Log_Closed q : openR := Cinl (q).
+Definition Log_Opened (l: loc) : openR := Cinr (to_agree l).
+
+Class logG Σ :=
+  { logG_open_inG :> inG Σ openR;
+    logG_open_name : gname;
+    logG_state_inG:> inG Σ (authR (optionUR (exclR (leibnizO (list disk.Block)))));
+    logG_state_name: gname;
+  }.
+
+Record log_names :=
+  { log_names_open: gname;
+    log_names_state: gname; }.
+
+Definition log_get_names {Σ} (lG: logG Σ) :=
+  {| log_names_open := logG_open_name; log_names_state := logG_state_name |}.
+
+Definition log_update {Σ} (lG: logG Σ) (names: log_names) :=
+  {| logG_open_inG := logG_open_inG;
+     logG_open_name := (log_names_open names);
+     logG_state_inG := logG_state_inG;
+     logG_state_name := (log_names_state names);
+  |}.
+
+Definition log_open {Σ} {lG :logG Σ} (l: loc) :=
+  own (logG_open_name) (Log_Opened l).
+Definition log_closed {Σ} {lG :logG Σ} (q: Qp) :=
+  own (logG_open_name) (Log_Closed q).
+
+Definition log_auth {Σ} {lG :logG Σ} (vs: list (disk.Block)) :=
+  own (logG_state_name) (● Excl' (vs: leibnizO (list disk.Block))).
+Definition log_frag {Σ} {lG :logG Σ} (vs: list (disk.Block)) :=
+  own (logG_state_name) (◯ Excl' (vs: leibnizO (list disk.Block))).
+
+Section log_interp.
+  Existing Instances log_op log_model log_val_ty.
+
+  Definition log_ctx {Σ} {lG: logG Σ} (lg: @ffi_state log_model) : iProp Σ :=
+    match lg with
+    | Opened s l => log_open l ∗ log_auth s
+    | Closed s => log_closed (1/2) ∗ log_auth s
+    | UnInit => log_closed (1/2) ∗ log_auth []
+    | _ => False%I
+    end.
+
+  Definition log_start {Σ} {lG: logG Σ} (lg: @ffi_state log_model) : iProp Σ :=
+    match lg with
+    | Opened s l => log_open l ∗ log_frag s
+    | Closed s => log_closed (1/2) ∗ log_frag s
+    | UnInit => log_closed (1/2) ∗ log_frag []
+    | _ => False%I
+    end.
+
+  Definition log_restart {Σ} (lG: logG Σ) (lg: @ffi_state log_model) :=
+    match lg with
+    | Opened s l => log_open l
+    | Closed s => log_closed (1/2)
+    | UnInit => log_closed (1/2)
+    | _ => False%I
+    end.
+
+End log_interp.
