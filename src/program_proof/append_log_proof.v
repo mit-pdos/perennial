@@ -507,9 +507,9 @@ Qed.
 
 Definition crashed_log bs: iProp Σ :=
   ∃ sz disk_sz, is_log' sz disk_sz bs.
-Definition uninit_log: iProp Σ :=
-  ∃ vs, 0 d↦∗ vs.
-Definition unopened_log : iProp Σ := uninit_log ∨ (∃ bs, crashed_log bs).
+Definition uninit_log sz: iProp Σ :=
+  ∃ vs, 0 d↦∗ vs ∗ ⌜ length vs = sz ⌝.
+Definition unopened_log sz : iProp Σ := uninit_log sz ∨ (∃ bs, crashed_log bs).
 
 Lemma is_log_crash_l sz disk_sz bs (Q: iProp Σ) :
   is_log' sz disk_sz bs -∗ crashed_log bs ∨ Q.
@@ -569,7 +569,9 @@ Qed.
 Theorem wpc_init (sz: u64) k E1 E2 vs :
   {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
     Init #sz @ NotStuck; k; E1; E2
-  {{{ l (ok: bool), RET (#l, #ok);  if ok then ptsto_log l [] else 0 d↦∗ vs }}}
+  {{{ l (ok: bool), RET (#l, #ok); ⌜ int.nat sz > 0 → ok = true ⌝ ∗
+      if ok then ptsto_log l [] ∗ ∃ (ml: loc), l ↦[Log.S :: "m"] #ml ∗ is_free_lock ml
+      else 0 d↦∗ vs }}}
   {{{ 0 d↦∗ vs ∨ (∃ b b' vs', ⌜ vs = b :: vs' ⌝ ∗ 0 d↦∗ (b' :: vs') ) }}}.
 Proof.
   iIntros (Φ Φc) "[Hdisk %] HΦ".
@@ -582,16 +584,16 @@ Proof.
     wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
     iIntros "(Hdisk&HΦ)".
-    by iApply "HΦ".
+    iApply "HΦ". iFrame. iPureIntro. word.
   - destruct vs.
     { simpl in *.
       word. }
     wpc_bind (Alloc _).
     wpc_frame "Hdisk HΦ".
     { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
-    wp_apply wp_new_free_lock; iIntros (ml) "_".
+    wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
     wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
-    iDestruct (log_struct_to_fields with "Hs") as "Hfields".
+    iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
     wp_pures.
     iIntros "(Hdisk&HΦ)".
     wpc_pures; first by eauto.
@@ -617,6 +619,10 @@ Proof.
     rewrite /ptsto_log /is_log'.
     change (0 + 1) with 1.
     simpl.
+    iSplitL "".
+    { eauto. }
+    iSplitR "Hm Hlock"; last first.
+    { iExists _. iFrame. }
     iExists _, _; iFrame.
     rewrite disk_array_emp.
     iSplitR; first by auto.
