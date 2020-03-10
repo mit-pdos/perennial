@@ -760,7 +760,7 @@ Proof.
     iApply (step_fupdN_wand with "H"). iIntros "H".
     iMod "H". iModIntro. iDestruct "H" as "[% H]".
     iSplit.
-    { destruct s; eauto using reducible_fill. }
+    { destruct s; eauto using reducible_fill_inv. }
     iIntros (e2 σ2 efs Hstep).
     iMod ("H" $! (K e2) σ2 efs with "[]") as "H"; [by eauto using fill_step|].
     iModIntro. iApply (step_fupdN_wand with "H"). iIntros "H".
