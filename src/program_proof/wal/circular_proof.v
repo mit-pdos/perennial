@@ -215,6 +215,37 @@ Proof using Ptimeless.
   all: auto.
 Qed.
 
+Fixpoint apply_update_blocks (updarray : list update.t) (endpos : Z) (newupds : list update.t) : list update.t :=
+  match newupds with
+  | u :: newupds' =>
+    alter (fun '(update.mk addr b) => update.mk addr u.(update.b)) (Z.to_nat (endpos `mod` LogSz)) (apply_update_blocks updarray (endpos+1) newupds')
+  | nil => updarray
+  end.
+
+Hint Rewrite @alter_length : len.
+
+Lemma apply_update_blocks_length updarray endpos upds :
+  length (apply_update_blocks updarray endpos upds) = length updarray.
+Proof.
+  revert endpos updarray.
+  induction upds; simpl; intros; len.
+  rewrite IHupds //.
+Qed.
+
+Hint Rewrite apply_update_blocks_length : len.
+
+Theorem update_blocks_addrs updarray endpos newupds :
+  update.addr <$> apply_update_blocks updarray endpos newupds = update.addr <$> updarray.
+Proof.
+  revert endpos.
+  induction newupds; simpl; intros; auto.
+  - erewrite (list_alter_fmap _ _ id); eauto.
+    { rewrite IHnewupds.
+      rewrite list_alter_id; auto. }
+    apply Forall_forall; intros.
+    destruct x; simpl; auto.
+Qed.
+
 Fixpoint apply_updates (updarray : list update.t) (endpos : Z) (newupds : list update.t) : list update.t :=
   match newupds with
   | u :: newupds' =>
@@ -232,17 +263,112 @@ Qed.
 
 Hint Rewrite apply_updates_length : len.
 
-Ltac invc H := inversion H; subst; clear H.
-
-Opaque struct.get.
-
-Theorem apply_updates_lookup_old updarray endpos newupds i :
-  (* TODO: figure out the precondition *)
-  apply_updates updarray endpos newupds !! i = updarray !! i.
+Lemma mod_add_modulus a k :
+  k ≠ 0 ->
+  a `mod` k = (a + k) `mod` k.
 Proof.
-  revert endpos.
+  intros.
+  rewrite -> Z.add_mod by auto.
+  rewrite -> Z.mod_same by auto.
+  rewrite Z.add_0_r.
+  rewrite -> Z.mod_mod by auto.
+  auto.
+Qed.
+
+Lemma mod_sub_modulus a k :
+  k ≠ 0 ->
+  a `mod` k = (a - k) `mod` k.
+Proof.
+  intros.
+  rewrite -> Zminus_mod by auto.
+  rewrite -> Z.mod_same by auto.
+  rewrite Z.sub_0_r.
+  rewrite -> Z.mod_mod by auto.
+  auto.
+Qed.
+
+Theorem mod_neq_lt a b k :
+  0 < k ->
+  0 <= a < b ->
+  b - a < k ->
+  a `mod` k ≠ b `mod` k.
+Proof.
+  intros.
+  assert (k ≠ 0) by lia.
+  replace b with (a + (b - a)) by lia.
+  assert (0 < b - a) by lia.
+  generalize dependent (b - a); intros d **.
+  intros ?.
+  assert ((a + d) `mod` k - a `mod` k = 0) by lia.
+  assert (((a + d) `mod` k - a `mod` k) `mod` k = 0).
+  { rewrite H5.
+    rewrite Z.mod_0_l; lia. }
+  rewrite -Zminus_mod in H6.
+  replace (a + d - a) with d in H6 by lia.
+  rewrite -> Z.mod_small in H6 by lia.
+  lia.
+Qed.
+
+Theorem mod_neq_gt a b k :
+  0 < k ->
+  0 <= a < b ->
+  b - a < k ->
+  b `mod` k ≠ a `mod` k.
+Proof.
+  intros ** Heq%eq_sym%mod_neq_lt; lia.
+Qed.
+
+Theorem Zto_nat_neq_inj z1 z2 :
+  0 <= z1 ->
+  0 <= z2 ->
+  z1 ≠ z2 ->
+  Z.to_nat z1 ≠ Z.to_nat z2.
+Proof.
+  lia.
+Qed.
+
+Theorem LogSz_gt_0 : 0 < LogSz.
+Proof. reflexivity. Qed.
+
+Hint Resolve Z_mod_pos LogSz_gt_0 : core.
+
+Theorem apply_updates_lookup_old (start: Z) updarray endpos newupds (i: Z) :
+  0 <= i ->
+  0 <= start + i < endpos ->
+  endpos + length newupds - start < LogSz ->
+  apply_updates updarray endpos newupds !! Z.to_nat ((start + i) `mod` LogSz) =
+  updarray !! Z.to_nat ((start + i) `mod` LogSz).
+Proof.
+  revert endpos start i.
   induction newupds; simpl; intros; auto.
+  rewrite list_lookup_insert_ne.
+  { erewrite IHnewupds; eauto; try lia. }
+  apply Zto_nat_neq_inj; eauto.
+  apply mod_neq_gt; eauto; try lia.
+Qed.
+
+Lemma has_circ_updates_log_one:
+  ∀ (endpos : u64) (updarray newupds : list update.t) (i: u64) upd,
+    newupds !! int.nat i = Some upd
+    → ∀ σ : circΣ.t,
+      has_circ_updates (int.val (start σ)) (circΣ.upds σ)
+                       (apply_update_blocks updarray (int.val endpos) (take (int.nat i) newupds))
+      → has_circ_updates (int.val (start σ)) (circΣ.upds σ)
+                         (apply_update_blocks updarray (int.val endpos) (take (S (int.nat i)) newupds)).
+Proof.
+  intros.
+  assert (0 <= int.val (start σ)) by word.
+  generalize dependent (int.val (start σ)); intros start.
+  generalize dependent (circΣ.upds σ); intros upds.
+  assert (0 <= int.val endpos) by word.
+  generalize dependent (int.val endpos); clear endpos; intros endpos.
+  intros **.
+  clear σ.
+  erewrite take_S_r; eauto.
 Abort.
+
+Ltac invc H := inversion H; subst; clear H.
+Opaque struct.get.
 
 Theorem wp_circularAppender__logBlocks γ c d (endpos : u64) (bufs : Slice.t) (updarray : list update.t) diskaddrslice (upds : list update.t) :
   {{{ is_circular γ ∗
@@ -256,7 +382,7 @@ Theorem wp_circularAppender__logBlocks γ c d (endpos : u64) (bufs : Slice.t) (u
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 (u64val <$> (update.addr <$> updarray')) ∗
       updates_slice bufs upds ∗
-      ⌜updarray' = apply_updates updarray (int.val endpos) upds⌝
+      ⌜updarray' = apply_update_blocks updarray (int.val endpos) upds⌝
   }}}.
 Proof.
   iIntros (Φ) "(#Hcirc & Hγ & Hdiskaddrs & Hslice & Hupdslice) HΦ".
@@ -274,7 +400,7 @@ Proof.
       is_slice_small diskaddrslice uint64T 1 (u64val <$> (update.addr <$> updarray')) ∗
       ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
                                          is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝) ∗
-      ⌜updarray' = apply_updates updarray (int.val endpos) (firstn (int.nat i) upds)⌝)%I
+      ⌜updarray' = apply_update_blocks updarray (int.val endpos) (take (int.nat i) upds)⌝)%I
     with "[] [Hγ Hdiskaddrs Hslice Hupdslice $Hbks]").
 
   2: {
@@ -317,7 +443,7 @@ Proof.
   wp_apply wp_DPrintf.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 511).
-  let updarray' := constr:(apply_updates updarray (int.val endpos) (take (S (int.nat i)) upds)) in
+  let updarray' := constr:(apply_update_blocks updarray (int.val endpos) (take (S (int.nat i)) upds)) in
   wp_apply (wp_Write_fupd (⊤ ∖ ↑N) (own γ (◯ Excl' updarray')) with "[$Hi Hγ]").
   {
     iInv "Hcirc" as ">Hcircopen" "Hclose".
@@ -344,7 +470,7 @@ Proof.
     iFrame "Hdi".
     iIntros "Hdi".
     iSpecialize ("Hd2" with "Hdi").
-    iMod (ghost_var_update γ (apply_updates updarray (int.val endpos)
+    iMod (ghost_var_update γ (apply_update_blocks updarray (int.val endpos)
                            (take (S (int.nat i)) upds)) with "Hγauth Hγ") as "[Hγauth Hγ]".
     iFrame.
     iApply "Hclose".
@@ -355,8 +481,8 @@ Proof.
     { iSplitR; first by len.
       iExists _, _, _; iFrame.
       iSplitR; [ | iSplitR ].
-      - admit. (* oops, not true; need to update only the blocks and not the
-        addresses, or hdr1 will be out-of-sync *)
+      - rewrite ?update_blocks_addrs in H1 |- *.
+        auto.
       - iPureIntro.
         eauto.
       - iExactEq "Hd2".
@@ -364,7 +490,8 @@ Proof.
         admit.
     }
     iPureIntro.
-    split; try word.
+
+
     admit.
   }
   iIntros "[Hs Hγ]".
@@ -502,6 +629,9 @@ Proof using Ptimeless.
     iIntros "Hd0".
 
     iDestruct (ghost_var_agree with "Hγauth Hγ") as %->.
+    (* TODO: make this work *)
+    (* iMod (ghost_var_update γ (apply_updates updarray (int.val endpos) upds)
+            with "Hγauth Hγ") as "[Hγauth Hγ]". *)
 
     iDestruct ("Hfupd" with "HP") as "[Hex Hfupd]".
     iDestruct "Hex" as (eσ' eb) "Hex".
@@ -549,8 +679,10 @@ Proof using Ptimeless.
       lia. }
     { simpl in *.
       rewrite /circΣ.diskEnd /= in H4.
-      apply has_circ_updates_append; eauto.
-      autorewrite with len in *; len. }
+      (* TODO: this will only work after the above ghost_var_update *)
+      (* apply has_circ_updates_append; eauto.
+      autorewrite with len in *; len. *)
+      admit. }
   }
 
   iIntros "[Hslice HQ]".
@@ -560,6 +692,6 @@ Proof using Ptimeless.
   iFrame.
   Grab Existential Variables.
   all: auto.
-Qed.
+Admitted.
 
 End heap.
