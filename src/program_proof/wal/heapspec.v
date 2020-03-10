@@ -191,10 +191,19 @@ Proof.
     2: iFrame.
 
     iPureIntro; intros.
-    
-    pose proof (latest_disk_durable _ a0); simpl in *.
-    lia.
-
+    unfold installed_disk, latest_disk in *.
+    simpl in *.
+    specialize (H0 (length updates)).
+    destruct H0; eauto.
+    + destruct H1. destruct H2. lia.
+  - iSplitL; iFrame.
+    iPureIntro.
+    unfold installed_disk in *; simpl in *.
+    specialize (H0 pos).
+    assert (int.val σ.(log_state.installed_to) ≤ int.val pos).
+    + destruct H1; auto.
+    + specialize (H0 H3). rewrite Heqo in H0.
+      inversion H0; auto.
 Qed.
 
 Definition memappend_pre γh (bs : list update.t) : iProp Σ :=
