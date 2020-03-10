@@ -1123,7 +1123,8 @@ From iris.program_logic Require Import ectx_language.
 Section wpc_ectx_lifting.
 Context {Λ : ectxLanguage} `{!irisG Λ Σ} `{crashG Σ} {Hinh : Inhabited (state Λ)}.
 Hint Resolve head_prim_reducible head_reducible_prim_step : core.
-Hint Resolve (reducible_not_val _ inhabitant) : core.
+Local Definition reducible_not_val_inhabitant_state e := reducible_not_val e inhabitant.
+Hint Resolve reducible_not_val_inhabitant_state : core.
 Hint Resolve head_stuck_stuck : core.
 
 Lemma wpc_lift_head_step_fupd s k E E' Φ Φc e1 :
