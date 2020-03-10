@@ -12,6 +12,7 @@ From Perennial.program_proof Require
      marshal_proof
      append_log_proof
      append_log_hocap
+     append_log_refinement
      util_proof
      lockmap_proof
      (* temporarily disabled while wal abstraction is in flux *)

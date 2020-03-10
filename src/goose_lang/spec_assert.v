@@ -4,7 +4,7 @@ From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
 From Perennial.Helpers Require Export Transitions.
-From Perennial.program_logic Require Import spec_assert.
+From Perennial.program_logic Require Export spec_assert.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import tactics notation lifting.
 

@@ -149,7 +149,7 @@ Section log.
     | InitOp, LitV LitUnit =>
       logPtr ← allocIdent;
       initTo [] logPtr;;
-      ret $ LitV $ LitLoc logPtr
+      ret $ PairV (LitV $ LitLoc logPtr) (LitV $ LitBool true)
     | OpenOp, LitV LitUnit =>
       logPtr ← allocIdent;
       s ← open logPtr;
@@ -236,5 +236,20 @@ Section log_interp.
     | UnInit => log_closed (1/2)
     | _ => False%I
     end.
+
+
+  Program Instance log_interp : ffi_interp log_model :=
+    {| ffiG := logG;
+       ffi_names := log_names;
+       ffi_get_names := @log_get_names;
+       ffi_update := @log_update;
+       ffi_get_update := _;
+       ffi_ctx := @log_ctx;
+       ffi_start := @log_start;
+       ffi_restart := @log_restart;
+    |}.
+  Next Obligation. intros ? [[]] [] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
 
 End log_interp.
