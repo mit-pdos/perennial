@@ -262,7 +262,7 @@ lemmas. *)
 
   Definition bindex_of_Z (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) : fin block_bytes.
     cut (Z.to_nat i < 4096)%nat.
-    { apply fin_of_nat. }
+    { apply nat_to_fin. }
     change 4096%nat with (Z.to_nat 4096%Z).
     abstract (apply Z2Nat.inj_lt; auto; vm_compute; inversion 1).
   Defined.

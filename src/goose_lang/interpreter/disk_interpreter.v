@@ -146,15 +146,15 @@ Proof.
   hypothesis that says exactly this. *)
   assert ((Z.to_nat i < Z.to_nat 4096)%nat) as fin_i by lia.
   
-  pose proof (commute_option_vec_ok _ _ _ H (fin_of_nat fin_i)) as cov_ok_v.
-  pose proof (commute_option_vec_ok _ _ _ all_free (fin_of_nat fin_i)) as cov_ok_navs.
-  pose proof (state_readn_vec_ok _ _ _ _ vec_at_l (fin_of_nat fin_i)) as srv_ok_l.
+  pose proof (commute_option_vec_ok _ _ _ H (nat_to_fin fin_i)) as cov_ok_v.
+  pose proof (commute_option_vec_ok _ _ _ all_free (nat_to_fin fin_i)) as cov_ok_navs.
+  pose proof (state_readn_vec_ok _ _ _ _ vec_at_l (nat_to_fin fin_i)) as srv_ok_l.
 
-  destruct (heap σ !! (l +ₗ fin_of_nat fin_i)) as [nav|] eqn:heap_at_fin_i; [| contradiction].
-  assert ((l +ₗ i) = (l +ₗ fin_of_nat fin_i)).
+  destruct (heap σ !! (l +ₗ nat_to_fin fin_i)) as [nav|] eqn:heap_at_fin_i; [| contradiction].
+  assert ((l +ₗ i) = (l +ₗ nat_to_fin fin_i)).
   {
     unfold loc_add.
-    replace (loc_car l + (fin_of_nat fin_i)) with (loc_car l + i); [reflexivity|].
+    replace (loc_car l + (nat_to_fin fin_i)) with (loc_car l + i); [reflexivity|].
     pose proof (fin_to_of_nat _ _ fin_i).
     rewrite H2.
     lia.
@@ -162,15 +162,15 @@ Proof.
   rewrite -> H2.
   rewrite heap_at_fin_i.
   rewrite srv_ok_l.
-  rewrite -> (vlookup_map free_val navs (fin_of_nat fin_i)) in cov_ok_navs.
+  rewrite -> (vlookup_map free_val navs (nat_to_fin fin_i)) in cov_ok_navs.
   unfold free_val in cov_ok_navs.
-  destruct (navs !!! fin_of_nat fin_i) as ([|?], nav') eqn:navs_at_fin_i; inversion cov_ok_navs.
+  destruct (navs !!! nat_to_fin fin_i) as ([|?], nav') eqn:navs_at_fin_i; inversion cov_ok_navs.
   destruct n eqn:n_is_free; inversion cov_ok_navs.
   clear cov_ok_navs navs_at_fin_i heap_at_fin_i H4 H5 H2 srv_ok_l nav'
         n n_is_free nav all_free H navs vec_at_l.
   unfold block_bytes in cov_ok_v. (* block_bytes doesn't show, but is here and needs to be unfolded *)
-  rewrite -> (vlookup_map byte_val v (fin_of_nat fin_i)) in cov_ok_v.
-  destruct (v !!! fin_of_nat fin_i) eqn:v_at_fin_i; try by inversion cov_ok_v.
+  rewrite -> (vlookup_map byte_val v (nat_to_fin fin_i)) in cov_ok_v.
+  destruct (v !!! nat_to_fin fin_i) eqn:v_at_fin_i; try by inversion cov_ok_v.
   unfold Block_to_vals.
   pose proof (list_lookup_fmap b2val b (Z.to_nat i)) as llf.
   rewrite llf.
