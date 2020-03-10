@@ -505,7 +505,7 @@ Proof.
       updarray *)
       (* rewrite apply_update_blocks_lookup_old; eauto; try len. *)
       admit. }
-    word_cleanup.
+    word_cleanup; unfold LogSz; try word.
     assert (2 + (int.val endpos + int.val i) `mod` LogSz =
             word.wrap (word:=u64_instance.u64) (2 + int.val (word.add endpos i) `mod` 511)) by admit.
     rewrite -H11.
