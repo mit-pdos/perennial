@@ -27,16 +27,16 @@ Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iPr
     end ⌝.
 
 Lemma wal_update_durable (gh : gmap u64 heap_block) (σ : log_state.t) pos :
-  forall a b,
+  forall a b hb,
   (int.val σ.(log_state.durable_to) ≤ int.val pos
-   ∧ int.val pos ≤ length σ.(log_state.updates)) ->
-  (gh !! a = Some (Latest b)) ->
+   ∧ int.val pos ≤ int.val (length σ.(log_state.updates))) ->
+  (gh !! a = Some hb) ->
   (latest_disk σ !! int.val a = Some b) ->
   ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
    [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
      (set log_state.durable_to (λ _ : u64, pos) σ) a1 b0.
 Proof.
-  iIntros (a b) "% % % Hmap".
+  iIntros (a b hb) "% % % Hmap".
   destruct σ; simpl in *.
   rewrite /set /=.
   iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
@@ -51,16 +51,16 @@ Proof.
 Qed.
 
 Lemma wal_update_installed (gh : gmap u64 heap_block) (σ : log_state.t) pos :
-  forall a b,
+  forall a b hb,
   (int.val σ.(log_state.installed_to) ≤ int.val pos
    ∧ int.val pos ≤ int.val σ.(log_state.durable_to)) ->
-  (gh !! a = Some (Latest b)) ->
+  (gh !! a = Some hb) ->
   (latest_disk σ !! int.val a = Some b) ->
   ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
    [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
      (set log_state.installed_to (λ _ : u64, pos) σ) a1 b0.
 Proof.
-  iIntros (a b) "% % % Hmap".
+  iIntros (a b hb) "% % % Hmap".
   destruct σ eqn:sigma; simpl in *.
   rewrite /set /=.
   iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
@@ -153,14 +153,7 @@ Proof.
   iDestruct (gen_heap_valid with "Hctx Ha") as "%".
   iDestruct (big_sepM_lookup with "Hgh") as "%"; eauto.
 
-  destruct σ.
   simpl in *; monad_inv.
-  simpl in *; monad_inv.
-
-  match goal with
-  | H : context[unwrap ?x] |- _ => destruct x eqn:?
-  end.
-  2: simpl in *; monad_inv; done.
   simpl in *; monad_inv.
 
   match goal with
@@ -171,23 +164,26 @@ Proof.
 
   iMod (gen_heap_update _ _ _ (Latest b) with "Hctx Ha") as "[Hctx Ha]".
   iModIntro.
+  
   iSplitL "Hctx Hgh".
   - iExists _; iFrame.
     rewrite /set /=.
+    destruct σ eqn:sigma.
+    simpl in *.
 
     iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
-                                 log_state.txn_disk := txn_disk;
+                                 log_state.disk := disk;
+                                 log_state.updates := updates;
                                  log_state.installed_to := pos;
-                                 log_state.durable_to := durable_to |}) with "Hgh") as "Hgh".
+                                 log_state.durable_to := pos0 |}) with "Hgh") as "Hgh".
     {
       rewrite /wal_heap_inv_addr.
       iIntros; iPureIntro.
-
       destruct x; auto.
-      simpl in *.
-      intros.
-      eapply a1; [| eauto ].
-      lia.
+      intros; simpl in *.
+      specialize (a1 pos1).
+      apply a1.
+      destruct H1. lia.
     }
 
     iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
@@ -195,22 +191,10 @@ Proof.
     2: iFrame.
 
     iPureIntro; intros.
-
-    pose proof (latest_disk_pos {|
-      log_state.txn_disk := txn_disk;
-      log_state.installed_to := installed_to;
-      log_state.durable_to := durable_to |} a0).
-    simpl in *.
-
-    eapply H0.
-    2: eapply H2.
-
+    
     pose proof (latest_disk_durable _ a0); simpl in *.
     lia.
-  - iSplitL; iFrame.
-    erewrite H0 in Heqo0; eauto.
-    2: lia.
-    inversion Heqo0; done.
+
 Qed.
 
 Definition memappend_pre γh (bs : list update.t) : iProp Σ :=

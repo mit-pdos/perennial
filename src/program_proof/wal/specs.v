@@ -25,11 +25,11 @@ Definition apply_upds (upds: list update.t) (d: disk): disk :=
 Definition get_updates (s:log_state.t): list update.t :=
   s.(log_state.updates).
 
-Definition latest_disk (s:log_state.t): disk :=
-  (apply_upds s.(log_state.updates) s.(log_state.disk)).
-
 Definition disk_at_pos (pos: u64) (s:log_state.t): disk :=
   apply_upds (firstn (Z.to_nat (int.val pos)) s.(log_state.updates)) s.(log_state.disk).
+
+Definition latest_disk (s:log_state.t): disk :=
+  disk_at_pos (length s.(log_state.updates)) s.
 
 Definition installed_disk (s:log_state.t): disk :=
   disk_at_pos s.(log_state.installed_to) s.
@@ -43,6 +43,13 @@ Definition inmem_upds (s:log_state.t): list update.t :=
 Definition valid_log_state (s : log_state.t) :=
   int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
   int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to).
+
+Lemma latest_disk_at_pos: forall σ,
+    latest_disk σ = disk_at_pos (length σ.(log_state.updates)) σ.
+Proof.
+  intros.
+  unfold latest_disk; eauto.
+Qed.
 
 Definition log_crash: transition log_state.t unit :=
   kv ← suchThat (gen:=fun _ _ => None) (fun s '(pos, d, upds) => s.(log_state.disk) = d ∧ int.val pos >= int.val s.(log_state.durable_to) ∧ upds = firstn (Z.to_nat (int.val pos)) s.(log_state.updates));
@@ -64,8 +71,8 @@ Definition update_installed: transition log_state.t u64 :=
 Definition update_durable: transition log_state.t u64 :=
   new_durable ← suchThat (gen:=fun _ _ => None)
                 (fun s pos => int.val s.(log_state.durable_to) <=
-                            int.val pos <=
-                            (length s.(log_state.updates)));
+                            int.val pos <= 
+                            int.val (length s.(log_state.updates)));
   modify (set log_state.durable_to (λ _, new_durable));;
   ret new_durable.
 
