@@ -36,10 +36,10 @@ Definition Nlog := nroot.@"log".
 
 Definition P (γ: gname) (s: log_state) :=
   match s with
-  | UnInit => log_closed (1/2) ∗ log_frag []
-  | Initing  => log_closed (1/2) ∗ log_frag []
-  | Closed vs => log_closed (1/2) ∗ log_frag vs
-  | Opening vs => log_closed (1/2) ∗ log_frag vs
+  | UnInit => log_uninit_frag ∗ log_frag []
+  | Initing  => log_uninit_frag ∗ log_frag []
+  | Closed vs => log_closed_frag ∗ log_frag vs
+  | Opening vs => log_closed_frag ∗ log_frag vs
   | Opened vs l => log_open l ∗ log_frag vs
   end%I.
 
@@ -65,19 +65,22 @@ Definition is_log γ : nat → loc → iProp Σ :=
 
 Theorem wpc_Init j γ K k k' E2:
   (S k < k')%nat →
-  {{{ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) InitOp #()) }}}
+  {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) InitOp #()) }}}
     Init #SIZE @ NotStuck; LVL (S (S (S k))); ⊤; E2
   {{{ l, RET (#l, #true);  is_log γ k' l ∗ j ⤇ K (of_val (#l, #true) : sexpr)}}}
   {{{ True }}}.
 Proof.
-  iIntros (? Φ Φc) "(#Hinv&Hj) HΦ".
+  iIntros (? Φ Φc) "(#Hspec&#Hinv&Hj) HΦ".
   wpc_apply (wpc_Init _ _ _ _ _ _ _ _ _ _ _ _ (True%I) (λ l, j ⤇ K (of_val (#l, #true)))%I
                with "[Hj]"); try iFrame "Hinv"; eauto.
   iSplit; [| iSplit].
-  - iIntros (s Hneq). destruct s; try auto.
-    * simpl.
-      (* XXX: should not be s ≠ Init, but s = Open or s = Closed → False *)
-      (* XXX: need to distinguish between log_closed and log_uninit *)
+  - iIntros (vs); simpl P.
+    iIntros "(Hclosed&Hlist)".
+    iDestruct "Hspec" as "(#Hspec&#Hstate)".
+    iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+    iDestruct "Hinterp" as "(?&>Hffi&?&?)".
+    rewrite /spec_interp.
+
 Abort.
 
 End refinement.
