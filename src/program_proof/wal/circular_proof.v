@@ -335,7 +335,7 @@ Hint Resolve Z_mod_pos LogSz_gt_0 : core.
 Theorem apply_updates_lookup_old (start: Z) updarray endpos newupds (i: Z) :
   0 <= i ->
   0 <= start + i < endpos ->
-  endpos + length newupds - start < LogSz ->
+  endpos + length newupds - start <= LogSz ->
   apply_updates updarray endpos newupds !! Z.to_nat ((start + i) `mod` LogSz) =
   updarray !! Z.to_nat ((start + i) `mod` LogSz).
 Proof.
@@ -347,14 +347,44 @@ Proof.
   apply mod_neq_gt; eauto; try lia.
 Qed.
 
+Theorem apply_update_blocks_lookup_old (start: Z) updarray endpos newupds (i: Z) :
+  0 <= i ->
+  0 <= start + i < endpos ->
+  endpos + length newupds - start <= LogSz ->
+  apply_update_blocks updarray endpos newupds !! Z.to_nat ((start + i) `mod` LogSz) =
+  updarray !! Z.to_nat ((start + i) `mod` LogSz).
+Proof.
+  revert endpos start i.
+  induction newupds; simpl; intros; auto.
+  rewrite list_lookup_alter_ne.
+  { erewrite IHnewupds; eauto; try lia. }
+  apply Zto_nat_neq_inj; eauto.
+  apply mod_neq_gt; eauto; try lia.
+Qed.
+
+Lemma apply_update_blocks_app1 updarray endpos newupds u:
+  apply_update_blocks updarray endpos (newupds ++ [u]) =
+  apply_update_blocks (alter (fun '(update.mk addr b) => update.mk addr u.(update.b)) (Z.to_nat ((endpos + length newupds) `mod` LogSz)) updarray) endpos newupds.
+Proof.
+  revert updarray endpos.
+  induction newupds; simpl; intros.
+  { rewrite Z.add_0_r //. }
+  rewrite IHnewupds.
+  repeat (f_equal; try lia).
+Qed.
+
 Lemma has_circ_updates_log_one:
   ∀ (endpos : u64) (updarray newupds : list update.t) (i: u64) upd,
-    newupds !! int.nat i = Some upd
-    → ∀ σ : circΣ.t,
+    newupds !! int.nat i = Some upd ->
+    ∀ σ : circΣ.t,
+      int.val (start σ) <= int.val endpos ->
+      int.val endpos = int.val (start σ) + length (circΣ.upds σ) ->
+      (* why is this < and not ≤? *)
+      int.val endpos + Z.of_nat (length newupds) - int.val (start σ) < LogSz ->
       has_circ_updates (int.val (start σ)) (circΣ.upds σ)
-                       (apply_update_blocks updarray (int.val endpos) (take (int.nat i) newupds))
-      → has_circ_updates (int.val (start σ)) (circΣ.upds σ)
-                         (apply_update_blocks updarray (int.val endpos) (take (S (int.nat i)) newupds)).
+                       (apply_update_blocks updarray (int.val endpos) (take (int.nat i) newupds)) ->
+      has_circ_updates (int.val (start σ)) (circΣ.upds σ)
+                       (apply_update_blocks updarray (int.val endpos) (take (S (int.nat i)) newupds)).
 Proof.
   intros.
   assert (0 <= int.val (start σ)) by word.
@@ -365,7 +395,16 @@ Proof.
   intros **.
   clear σ.
   erewrite take_S_r; eauto.
-Abort.
+  rewrite apply_update_blocks_app1.
+  unfold has_circ_updates; intros.
+  pose proof (lookup_lt_Some _ _ _ H6).
+  apply H4 in H6.
+  rewrite apply_update_blocks_lookup_old; len; try lia.
+  rewrite apply_update_blocks_lookup_old in H6; len; try lia.
+  rewrite list_lookup_alter_ne; auto.
+  apply Zto_nat_neq_inj; eauto.
+  apply mod_neq_gt; eauto; try lia.
+Qed.
 
 Ltac invc H := inversion H; subst; clear H.
 Opaque struct.get.
@@ -442,7 +481,7 @@ Proof.
   wp_pures.
   wp_apply wp_DPrintf.
   wp_pures.
-  change (word.divu (word.sub 4096 8) 8) with (U64 511).
+  change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
   let updarray' := constr:(apply_update_blocks updarray (int.val endpos) (take (S (int.nat i)) upds)) in
   wp_apply (wp_Write_fupd (⊤ ∖ ↑N) (own γ (◯ Excl' updarray')) with "[$Hi Hγ]").
   {
@@ -455,13 +494,18 @@ Proof.
     iDestruct (ghost_var_agree with "Hγauth Hγ") as %->.
     autorewrite with len in *.
     (* TODO: need a precondition constraining length upds *)
-    assert (int.val i < 511) by admit.
+    assert (int.val i < LogSz) by admit.
     iDestruct (update_disk_array _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]".
     { unfold LogSz.
       apply Z_mod_pos; word. }
     { instantiate (1 := b).
+      pose proof (lookup_lt_Some _ _ _ H4).
+      rewrite list_lookup_fmap.
+      (* TODO: this is just wrong, the block won't come from upds but from
+      updarray *)
+      (* rewrite apply_update_blocks_lookup_old; eauto; try len. *)
       admit. }
-    word_cleanup.
+    word_cleanup; unfold LogSz; try word.
     assert (2 + (int.val endpos + int.val i) `mod` LogSz =
             word.wrap (word:=u64_instance.u64) (2 + int.val (word.add endpos i) `mod` 511)) by admit.
     rewrite -H11.
