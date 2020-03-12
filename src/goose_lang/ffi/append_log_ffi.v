@@ -332,6 +332,8 @@ Instance logG0 : logG Σ := refinement_spec_ffiG.
           inversion H; subst; clear H
         | H : ext_step _ _ _ _ _ |- _ =>
           inversion H; subst; clear H
+        | [ H1: context[ match world ?σ with | _ => _ end ], Heq: world ?σ = _ |- _ ] =>
+          rewrite Heq in H1
         end.
 
 Lemma log_closed_init_false vs E j K {HCTX: LanguageCtx K}:
@@ -350,10 +352,49 @@ Proof.
   { rewrite /stuck; split; first done.
     apply prim_head_irreducible; last first.
     { apply ExternalOp_sub_redexes; eauto. }
-    intros ?????. inv_head_step; simpl in H2; repeat monad_inv.
-    simpl in H2. rewrite Heq in H2. monad_inv.
+    intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
   }
   { solve_ndisj. }
+Qed.
+
+Lemma log_double_init_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) ={E}=∗
+  False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iEval (simpl) in "Hffi".
+  destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
+  - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+    { apply head_prim_step. simpl. econstructor.
+      * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+        ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+        ** simpl. rewrite Heq. repeat econstructor.
+      * repeat econstructor.
+    }
+    { solve_ndisj. }
+    iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
+    { split; first done.
+      apply prim_head_irreducible; last by (apply ExternalOp_sub_redexes; eauto).
+      intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
+    }
+    { solve_ndisj. }
+  - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
+    { split; first done.
+      apply prim_head_irreducible; last by (apply ExternalOp_sub_redexes; eauto).
+      intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
+    }
+    { solve_ndisj. }
+  - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
+    { split; first done.
+      apply prim_head_irreducible; last by (apply ExternalOp_sub_redexes; eauto).
+      intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
+    }
+    { solve_ndisj. }
 Qed.
 
 End spec.

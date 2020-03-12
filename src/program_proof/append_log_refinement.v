@@ -73,7 +73,11 @@ Proof.
     iIntros "(Hclosed&Hlist)".
     iMod (log_closed_init_false with "[$] [$] [$] Hj") as %[].
     { solve_ndisj. }
-  -
+  - iIntros "[Hiniting|[Hopening|Hopened]]".
+    * iDestruct "Hiniting" as (j' K' Hctx') "(Hj'&_)".
+      iMod (log_double_init_false with "[$] [$] [$]") as %[].
+      { solve_ndisj. }
+    *
 Abort.
 
 End refinement.
