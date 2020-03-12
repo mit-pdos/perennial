@@ -226,6 +226,19 @@ Module relation.
       | Transitions.bind r rx => bind (denote r) (fun x => denote (rx x))
       end.
 
+    Theorem inv_undefined {T} s1 s2 (x: T):
+      denote undefined s1 s2 x -> False.
+    Proof. by inversion 1. Qed.
+
+    Theorem inv_bind_undefined T (r: unit -> t T) :
+      forall s1 s2 v,
+        bind (denote undefined) r s1 s2 v ->
+        False.
+    Proof.
+      inversion 1; subst.
+      eapply inv_undefined; eauto.
+    Qed.
+
     Theorem suchThat_gen_run {T} (pred: Σ -> T -> Prop) {gen: GenPred T Σ pred} (hint:Z) :
       forall s v H,
       gen hint s = Some (exist _ v H) ->
@@ -464,6 +477,10 @@ Ltac monad_inv :=
   repeat match goal with
          | [ H: (_, _) = (_, _) |- _ ] =>
            inversion H; subst; clear H
+         | [ H: relation.denote undefined ?s1 ?s2 ?v |- _ ] =>
+           apply relation.inv_undefined in H; exfalso; apply H
+         | [ H: relation.bind (relation.denote undefined) _ ?s1 ?s2 ?v |- _ ] =>
+           apply relation.inv_bind_undefined in H; exfalso; apply H
          | [ H: relation.bind (relation.runF _) _ ?s1 ?s2 ?v |- _ ] =>
            apply relation.inv_bind_runF in H
          | [ H: relation.runF _ ?s1 ?s2 ?v |- _ ] =>

@@ -7,19 +7,14 @@ From Perennial.goose_lang.ffi Require Import append_log_ffi.
 From Perennial.goose_lang Require Import logical_reln spec_assert.
 From Perennial.program_logic Require Import ghost_var.
 
-Instance log_spec_ext : spec_ext_op := {| spec_ext_op_field := log_op |}.
-Instance log_ffi_model : spec_ffi_model := {| spec_ffi_model_field := log_model |}.
-Instance log_ext_semantics : spec_ext_semantics (log_spec_ext) (log_ffi_model) :=
-  {| spec_ext_semantics_field := log_semantics |}.
-Instance log_ffi_interp : spec_ffi_interp log_ffi_model :=
-  {| spec_ffi_interp_field := log_interp |}.
+Existing Instances log_spec_ext log_ffi_model log_ext_semantics log_ffi_interp.
 
 Section refinement.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
 Context `{!refinement_heapG Σ}.
 Context `{!lockG Σ, stagedG Σ}.
-Context `{!logG Σ}.
+Existing Instance logG0.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
 Context `{Hin_nat_ctx: inG Σ (authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →
                                                                        spec_lang.(language.expr)))))))}.
@@ -63,7 +58,7 @@ Definition log_inv γ : nat → iProp Σ :=
 Definition is_log γ : nat → loc → iProp Σ :=
   is_log Nlog (P γ) (POpened) (PStartedOpening γ) (PStartedIniting γ) SIZE.
 
-Theorem wpc_Init j γ K k k' E2:
+Theorem wpc_Init j γ K `{LanguageCtx _ K} k k' E2:
   (S k < k')%nat →
   {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) InitOp #()) }}}
     Init #SIZE @ NotStuck; LVL (S (S (S k))); ⊤; E2
@@ -76,11 +71,9 @@ Proof.
   iSplit; [| iSplit].
   - iIntros (vs); simpl P.
     iIntros "(Hclosed&Hlist)".
-    iDestruct "Hspec" as "(#Hspec&#Hstate)".
-    iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
-    iDestruct "Hinterp" as "(?&>Hffi&?&?)".
-    rewrite /spec_interp.
-
+    iMod (log_closed_init_false with "[$] [$] [$] Hj") as %[].
+    { solve_ndisj. }
+  -
 Abort.
 
 End refinement.

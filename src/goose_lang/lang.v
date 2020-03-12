@@ -1297,6 +1297,34 @@ Definition trace_observable e r σ tr :=
 Definition trace_prefix (tr: Trace) (tr': Trace) : Prop :=
   prefix tr tr'.
 
+Lemma ExternalOp_fill_inv K o e1 e2:
+  ExternalOp o e1 = fill K e2 →
+  (ExternalOp o e1 = e2 ∨ ∃ K1 K2, K = K1 ++ K2 ∧ e1 = fill K1 e2).
+Proof.
+  revert o e1 e2.
+  induction K => o e1 e2.
+  - eauto.
+  - intros [Heq|Happ]%IHK.
+    * destruct a; simpl in Heq; try congruence.
+      inversion Heq; subst. right.
+      exists [], (ExternalOpCtx op :: K) => //=.
+    * destruct Happ as (K1&K2&->&Heq).
+      right. exists (a :: K1), K2; eauto.
+Qed.
+
+Lemma ExternalOp_fill_item_inv Ki o e1 e2:
+  ExternalOp o e1 = fill_item Ki e2 →
+  e1 = e2.
+Proof. destruct Ki => //=; congruence. Qed.
+
+Lemma ExternalOp_sub_redexes o e:
+  is_Some (to_val e) →
+  sub_redexes_are_values (ExternalOp o e).
+Proof.
+  intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+  apply ExternalOp_fill_item_inv in Heq; subst; auto.
+Qed.
+
 End goose_lang.
 
 Bind Scope expr_scope with expr.

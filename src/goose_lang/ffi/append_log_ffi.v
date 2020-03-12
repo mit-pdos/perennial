@@ -349,16 +349,11 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
   { rewrite /stuck; split; first done.
     apply prim_head_irreducible; last first.
-    { admit. (* need lemma *) }
-    intros ?????. inv_head_step.
-    simpl. repeat monad_inv.
-    inversion H2. subst.
-    monad_simpl. repeat monad_inv.
-    simpl in *.
-    monad_simpl. rewrite Heq in H3. repeat monad_inv. inversion H3; eauto.
-    (* XXX: monad_inv should elim undefined *)
+    { apply ExternalOp_sub_redexes; eauto. }
+    intros ?????. inv_head_step; simpl in H2; repeat monad_inv.
+    simpl in H2. rewrite Heq in H2. monad_inv.
   }
   { solve_ndisj. }
-Abort.
+Qed.
 
 End spec.
