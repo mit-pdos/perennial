@@ -29,24 +29,31 @@ Notation sval := (@val (@spec_ext_op_field log_spec_ext)).
 
 Definition Nlog := nroot.@"log".
 
+Definition thread_tok_frag γ j K :=
+  own γ (◯ Excl' ((j, K) : leibnizO (nat * (sexpr → sexpr)))).
+Definition thread_tok_auth γ j K :=
+  own γ (● Excl' ((j, K) : leibnizO (nat * (sexpr → sexpr)))).
+Definition thread_tok_full γ j K :=
+ (thread_tok_auth γ j K ∗ thread_tok_frag γ j K)%I.
+
 Definition P (γ: gname) (s: log_state) :=
   match s with
-  | UnInit => log_uninit_frag ∗ log_frag []
+  | UnInit => log_uninit_frag ∗ log_frag [] ∗ thread_tok_full γ 0 id
   | Initing  => log_uninit_frag ∗ log_frag []
-  | Closed vs => log_closed_frag ∗ log_frag vs
+  | Closed vs => log_closed_frag ∗ log_frag vs ∗ thread_tok_full γ 0 id
   | Opening vs => log_closed_frag ∗ log_frag vs
-  | Opened vs l => log_open l ∗ log_frag vs
+  | Opened vs l => (∃ l', log_open l' ∗ log_frag vs)
   end%I.
 
 Definition POpened := (∃ l, log_open l)%I.
 Definition PStartedOpening γ :=
   (∃ j (K: spec_lang.(language.expr) → spec_lang.(language.expr)) (Hctx: LanguageCtx K),
       j ⤇ K (ExternalOp (ext := spec_ext_op_field) OpenOp #())
-      ∗ own γ (● Excl' ((j, K) : leibnizO (nat * (sexpr → sexpr)))))%I.
+      ∗ thread_tok_auth γ j K)%I.
 Definition PStartedIniting γ :=
   (∃ j (K: spec_lang.(language.expr) → spec_lang.(language.expr)) (Hctx: LanguageCtx K),
       j ⤇ K (ExternalOp (ext := spec_ext_op_field) InitOp #())
-      ∗ own γ (● Excl' ((j, K) : leibnizO (nat * (sexpr → sexpr)))))%I.
+      ∗ thread_tok_auth γ j K)%I.
 
 Lemma PStartedOpening_Timeless γ : Timeless (PStartedOpening γ).
 Proof. apply _. Qed.
@@ -62,15 +69,17 @@ Theorem wpc_Init j γ K `{LanguageCtx _ K} k k' E2:
   (S k < k')%nat →
   {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) InitOp #()) }}}
     Init #SIZE @ NotStuck; LVL (S (S (S k))); ⊤; E2
-  {{{ l, RET (#l, #true);  is_log γ k' l ∗ j ⤇ K (of_val (#l, #true) : sexpr)}}}
+  {{{ l, RET (#l, #true);  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val (#l', #true) : sexpr))}}}
   {{{ True }}}.
-Proof.
+Proof using SIZE_nonzero SIZE_bounds.
   iIntros (? Φ Φc) "(#Hspec&#Hinv&Hj) HΦ".
-  wpc_apply (wpc_Init _ _ _ _ _ _ _ _ _ _ _ _ (True%I) (λ l, j ⤇ K (of_val (#l, #true)))%I
+  unshelve
+  wpc_apply (wpc_Init _ _ _ _ _ _ _ _ _ _ _ _ (True%I) (λ l, (∃ (l': loc), j ⤇ K (of_val (#l', #true))))%I
                with "[Hj]"); try iFrame "Hinv"; eauto.
+  { apply _. }
   iSplit; [| iSplit].
   - iIntros (vs); simpl P.
-    iIntros "(Hclosed&Hlist)".
+    iIntros "(Hclosed&Hlist&Htok)".
     iMod (log_closed_init_false with "[$] [$] [$] Hj") as %[].
     { solve_ndisj. }
   - iIntros "[Hiniting|[Hopening|Hopened]]".
@@ -84,8 +93,22 @@ Proof.
       iMod (log_opened_init_false with "[$] [$] [$]") as %[].
       { solve_ndisj. }
   - iSplit; last done. simpl.
-    iIntros "(Huninit_frag&Hvals_frag)".
-    rewrite /PStartedIniting.
-Abort.
+    iIntros "(Huninit_frag&Hvals_frag&(Hthread_auth&Hthread_frag))".
+    iMod (ghost_var_update _ ((j, K) : leibnizO (nat * (sexpr → sexpr))) with "[$] [$]")
+         as "(Hthread_auth&Hthread_frag)".
+    iModIntro.
+    iSplitL "Hthread_auth Hj".
+    { unshelve (iExists _, _, _; iFrame); eauto. }
+    iFrame. iSplit; first done.
+    iIntros (l) "(Huninit&Hvals) Hthread".
+    iDestruct "Hthread" as (j' K' ?) "(Hj&Hthread_auth)".
+    rewrite /thread_tok_auth.
+    unify_ghost.
+    iMod (ghost_step_log_init with "[$] [$] [$] [$]") as (l') "(Hj&#Hopen&Hvals)".
+    { solve_ndisj. }
+    iModIntro. iSplitR "Hvals".
+    * iExists _. iFrame.
+    * iFrame. iSplitL ""; iExists _; iFrame "Hopen".
+Qed.
 
 End refinement.

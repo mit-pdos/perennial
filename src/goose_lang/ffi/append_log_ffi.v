@@ -176,7 +176,7 @@ End log.
 From iris.algebra Require Import auth agree excl csum.
 From Perennial.program_logic Require Import ghost_var.
 Inductive log_unopen_status := UnInit' | Closed'.
-Definition openR := csumR (authR (optionUR (exclR (leibnizO log_unopen_status)))) (agreeR (leibnizO loc)).
+Definition openR := csumR (prodR fracR (agreeR (leibnizO log_unopen_status))) (agreeR (leibnizO loc)).
 Definition Log_Opened (l: loc) : openR := Cinr (to_agree l).
 
 Class logG Σ :=
@@ -203,13 +203,13 @@ Definition log_update {Σ} (lG: logG Σ) (names: log_names) :=
 Definition log_open {Σ} {lG :logG Σ} (l: loc) :=
   own (logG_open_name) (Log_Opened l).
 Definition log_closed_frag {Σ} {lG :logG Σ} :=
-  own (logG_open_name) (Cinl (◯ Excl' (Closed' : leibnizO log_unopen_status))).
+  own (logG_open_name) (Cinl ((1/2)%Qp, to_agree (Closed' : leibnizO log_unopen_status))).
 Definition log_closed_auth {Σ} {lG :logG Σ} :=
-  own (logG_open_name) (Cinl (● Excl' (Closed' : leibnizO log_unopen_status))).
+  own (logG_open_name) (Cinl ((1/2)%Qp, to_agree (Closed' : leibnizO log_unopen_status))).
 Definition log_uninit_frag {Σ} {lG :logG Σ} :=
-  own (logG_open_name) (Cinl (◯ Excl' (UnInit' : leibnizO log_unopen_status))).
+  own (logG_open_name) (Cinl ((1/2)%Qp, to_agree (UnInit' : leibnizO log_unopen_status))).
 Definition log_uninit_auth {Σ} {lG :logG Σ} :=
-  own (logG_open_name) (Cinl (● Excl' (UnInit' : leibnizO log_unopen_status))).
+  own (logG_open_name) (Cinl ((1/2)%Qp, to_agree (UnInit' : leibnizO log_unopen_status))).
 
 Definition log_auth {Σ} {lG :logG Σ} (vs: list (disk.Block)) :=
   own (logG_state_name) (● Excl' (vs: leibnizO (list disk.Block))).
@@ -272,14 +272,18 @@ Section log_lemmas.
   Global Instance log_restart_Timeless lg: Timeless (log_restart _ lg).
   Proof. destruct lg; apply _. Qed.
 
+  Global Instance log_open_Persistent (l: loc) : Persistent (log_open l).
+  Proof. rewrite /log_open/Log_Opened. apply own_core_persistent. rewrite /CoreId//=. Qed.
+
   Lemma log_ctx_unify_closed lg vs:
     log_closed_frag -∗ log_frag vs -∗ log_ctx lg -∗ ⌜ lg = Closed vs ⌝.
   Proof.
     destruct lg; try eauto; iIntros "Hclosed_frag Hstate_frag Hctx".
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (own_valid_2 with "Huninit_auth Hclosed_frag") as %Hval.
-      rewrite -Cinl_op in Hval.
-      apply auth_both_valid in Hval as [Heq%Excl_included _]; congruence.
+      rewrite -Cinl_op -pair_op in Hval.
+      inversion Hval as [? Heq%agree_op_inv'].
+      inversion Heq.
     - iDestruct "Hctx" as "(Hclosed_auth&Hstate_auth)".
       rewrite /log_frag/log_auth. by unify_ghost.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
@@ -293,8 +297,8 @@ Section log_lemmas.
     destruct lg; try eauto; iIntros "Huninit_frag Hctx".
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (own_valid_2 with "Huninit_auth Huninit_frag") as %Hval.
-      rewrite -Cinl_op in Hval.
-      apply auth_both_valid in Hval as [Heq%Excl_included _]; congruence.
+      inversion Hval as [? Heq%agree_op_inv'].
+      inversion Heq.
     - iDestruct "Hctx" as "(Hauth&Hstate_auth)".
       iDestruct (own_valid_2 with "Hauth Huninit_frag") as %Hval.
       inversion Hval.
@@ -318,6 +322,20 @@ Section log_lemmas.
       iPureIntro; eexists. inversion Heq. by subst.
   Qed.
 
+  Lemma log_uninit_token_open (l: loc):
+    log_uninit_auth -∗ log_uninit_frag ==∗ log_open l.
+  Proof.
+    iIntros "Hua Huf".
+    iCombine "Hua Huf" as "Huninit".
+    rewrite -Cinl_op.
+    iMod (own_update _ _ (Log_Opened l) with "Huninit") as "$"; last done.
+    { apply: cmra_update_exclusive.
+      { apply Cinl_exclusive. rewrite -pair_op frac_op' Qp_half_half.
+        simpl. apply pair_exclusive_l. apply _.
+      }
+      { econstructor. }
+    }
+  Qed.
 End log_lemmas.
 
 From Perennial.program_proof Require Import proof_prelude.
@@ -462,6 +480,39 @@ Proof.
   - iMod (ghost_step_init_stuck with "Hj [$] [$]") as "[]".
     { solve_ndisj. }
     { congruence. }
+Qed.
+
+Lemma ghost_step_log_init E j K {HCTX: LanguageCtx K}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  log_uninit_frag -∗
+  log_frag [] -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #())
+  ={E}=∗
+  ∃ (l: loc), j ⤇ K (#l, #true)%V ∗ log_open l ∗ log_frag [].
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hvals Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (log_ctx_unify_uninit with "[$] [$]") as %Heq.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { apply head_prim_step. simpl. econstructor.
+    * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+      ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+      ** simpl. rewrite Heq. repeat econstructor.
+    * repeat econstructor.
+  }
+  { solve_ndisj. }
+  simpl. rewrite Heq.
+  iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
+  iMod (log_uninit_token_open ((fresh_locs (dom _ σ.(heap)))) with "[$] [$]") as "#Hopen".
+  iMod (na_heap_alloc _ σ.(heap) _ (#()) (Reading O) with "Hσ") as "(Hσ&?)".
+  { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
+  { auto. }
+  rewrite loc_add_0.
+  iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
+  { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
+  iModIntro. iExists _. iFrame "Hopen". iFrame.
 Qed.
 
 End spec.
