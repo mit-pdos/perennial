@@ -329,8 +329,12 @@ Qed.
 
 Theorem LogSz_gt_0 : 0 < LogSz.
 Proof. reflexivity. Qed.
+Hint Resolve LogSz_gt_0 : core.
 
-Hint Resolve Z_mod_pos LogSz_gt_0 : core.
+Theorem mod_LogSz_pos z : 0 <= z `mod` LogSz.
+Proof. apply Z_mod_pos, LogSz_gt_0. Qed.
+
+Hint Resolve mod_LogSz_pos : core.
 
 Theorem apply_updates_lookup_old (start: Z) updarray endpos newupds (i: Z) :
   0 <= i ->
@@ -360,6 +364,50 @@ Proof.
   { erewrite IHnewupds; eauto; try lia. }
   apply Zto_nat_neq_inj; eauto.
   apply mod_neq_gt; eauto; try lia.
+Qed.
+
+Theorem apply_update_blocks_lookup_new updarray endpos newupds (i: Z) :
+  0 <= endpos ->
+  0 <= i < length newupds ->
+  length newupds <= length updarray ->
+  Z.of_nat (length updarray) = LogSz ->
+  update.b <$> apply_update_blocks updarray endpos newupds !! Z.to_nat ((endpos + i) `mod` LogSz) =
+  update.b <$> newupds !! Z.to_nat i.
+Proof.
+  revert endpos i.
+  induction newupds; simpl; intros; auto.
+  { lia. }
+  destruct (decide (i = 0)); subst.
+  - rewrite Z.add_0_r.
+    rewrite list_lookup_alter.
+    simpl.
+    destruct (list_lookup_lt _ (apply_update_blocks updarray (endpos + 1) newupds) (Z.to_nat (endpos `mod` LogSz))) as [[a0 b0] Hu].
+    { len.
+      pose proof (Z.mod_bound_pos endpos LogSz).
+      word. }
+    rewrite Hu //=.
+  - replace (endpos + i) with (endpos + 1 + (i-1)) by lia.
+    rewrite list_lookup_alter_ne.
+    { rewrite IHnewupds; try lia.
+      replace (Z.to_nat i) with (S (Z.to_nat (i - 1))) by lia.
+      rewrite -?list_lookup_fmap //. }
+    apply Zto_nat_neq_inj; auto; try lia.
+    apply mod_neq_lt; lia.
+Qed.
+
+Theorem apply_update_blocks_lookup_past_end updarray endpos newupds (i: Z) :
+  0 <= endpos ->
+  length newupds <= i < LogSz ->
+  apply_update_blocks updarray endpos newupds !! Z.to_nat ((endpos + i) `mod` LogSz) =
+  updarray !! Z.to_nat ((endpos + i) `mod` LogSz).
+Proof.
+  revert endpos i.
+  induction newupds; simpl; intros; auto.
+  replace (endpos + i) with (endpos + 1 + (i-1)) by lia.
+  rewrite list_lookup_alter_ne.
+  { rewrite IHnewupds; auto; lia. }
+  apply Zto_nat_neq_inj; auto; try lia.
+  apply mod_neq_lt; auto; lia.
 Qed.
 
 Lemma apply_update_blocks_app1 updarray endpos newupds u:
@@ -404,6 +452,57 @@ Proof.
   rewrite list_lookup_alter_ne; auto.
   apply Zto_nat_neq_inj; eauto.
   apply mod_neq_gt; eauto; try lia.
+Qed.
+
+Lemma apply_update_blocks_insert:
+  ∀ (endpos : Z) (updarray upds : list update.t) (i : Z) (b : Block),
+    0 <= endpos ->
+    0 <= i <= length upds ->
+    i < LogSz ->
+    update.b <$>
+             apply_update_blocks
+             (alter (λ '{| update.addr := addr |}, {| update.addr := addr; update.b := b |})
+                    (Z.to_nat ((endpos + length (take (Z.to_nat i) upds)) `mod` LogSz)) updarray)
+             (endpos) (take (Z.to_nat i) upds) =
+    <[Z.to_nat ((endpos + i) `mod` LogSz):=b]>
+    (update.b <$> apply_update_blocks updarray endpos (take (Z.to_nat i) upds)).
+Proof.
+  intros.
+  remember (take (Z.to_nat i) upds) as newupds.
+  assert (Z.of_nat (length newupds) = i) by (subst; len).
+  destruct H0 as [H0 _].
+  clear Heqnewupds.
+  clear upds.
+
+  generalize dependent i.
+  generalize dependent endpos.
+  induction newupds as [|u newupds]; simpl; intros.
+  - assert (i = 0) by word; subst.
+    rewrite Z.add_0_r.
+    rewrite (list_alter_fmap _ _ (λ _, b)); eauto.
+    { rewrite list_insert_alter //. }
+    apply Forall_forall; intros.
+    destruct x; auto.
+  - rewrite (list_alter_fmap _ _ (λ _, u.(update.b))); eauto.
+    2: {
+      apply Forall_forall; intros.
+      destruct x; auto.
+    }
+    replace (endpos + S (length newupds)) with
+        (endpos + 1 + length newupds) by lia.
+    replace (endpos + i) with (endpos + 1 + (length newupds)) by lia.
+    rewrite (IHnewupds (endpos + 1) _ (i - 1)); try lia.
+    replace (endpos + 1 + (i - 1)) with (endpos + i) by lia.
+    replace (endpos + 1 + length newupds) with (endpos + i) by lia.
+    rewrite (list_alter_fmap _ _ (λ _, u.(update.b))); eauto.
+    2: {
+      apply Forall_forall; intros.
+      destruct x; auto.
+    }
+    rewrite -?list_insert_alter.
+    rewrite list_insert_commute; eauto.
+    apply Zto_nat_neq_inj; auto.
+    apply mod_neq_lt; eauto; try lia.
 Qed.
 
 Ltac invc H := inversion H; subst; clear H.
@@ -495,22 +594,22 @@ Proof.
     autorewrite with len in *.
     (* TODO: need a precondition constraining length upds *)
     assert (int.val i < LogSz) by admit.
+    pose proof (lookup_lt_Some _ _ _ H4).
+    destruct (list_lookup_lt _ updarray (Z.to_nat ((int.val endpos + int.val i) `mod` LogSz))) as [u Hupdarray_i].
+    { pose proof (Z.mod_bound_pos (int.val endpos + int.val i) LogSz); word. }
     iDestruct (update_disk_array _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]".
-    { unfold LogSz.
-      apply Z_mod_pos; word. }
-    { instantiate (1 := b).
-      pose proof (lookup_lt_Some _ _ _ H4).
-      rewrite list_lookup_fmap.
-      (* TODO: this is just wrong, the block won't come from upds but from
-      updarray *)
-      (* rewrite apply_update_blocks_lookup_old; eauto; try len. *)
-      admit. }
-    word_cleanup; unfold LogSz; try word.
+    { auto. }
+
+    { rewrite list_lookup_fmap.
+      rewrite -> apply_update_blocks_lookup_past_end; try len.
+      eapply fmap_Some_2; eauto. }
+
+    word_cleanup; try (unfold LogSz; word).
     assert (2 + (int.val endpos + int.val i) `mod` LogSz =
-            word.wrap (word:=u64_instance.u64) (2 + int.val (word.add endpos i) `mod` 511)) by admit.
-    rewrite -H11.
+            word.wrap (word:=u64_instance.u64) (2 + int.val (word.add endpos i) `mod` LogSz)) as Hiaddr by admit.
+    rewrite -Hiaddr.
     iModIntro.
-    iExists b.
+    iExists u.(update.b).
     iFrame "Hdi".
     iIntros "Hdi".
     iSpecialize ("Hd2" with "Hdi").
@@ -531,11 +630,18 @@ Proof.
         eauto.
       - iExactEq "Hd2".
         f_equal.
-        admit.
+        erewrite take_S_r; eauto.
+        rewrite apply_update_blocks_app1.
+        simpl.
+        rewrite apply_update_blocks_insert; try word.
+        auto.
     }
     iPureIntro.
-
-
+    split; try word.
+    destruct Hupds.
+    (* TODO: oops, this works poorly (none of these bounds are in the
+    invariant) *)
+    (* eapply has_circ_updates_log_one; eauto; try word. *)
     admit.
   }
   iIntros "[Hs Hγ]".
@@ -543,9 +649,16 @@ Proof.
   wp_apply (wp_SliceSet with "[$Hslice]").
   { iPureIntro.
     split; [ | val_ty ].
-    admit.
+    change (word.divu (word.sub 4096 8) 8) with (U64 511).
+    word_cleanup.
+    apply lookup_lt_is_Some_2; len.
+    pose proof (Z.mod_bound_pos (int.val (word.add endpos i)) 511).
+    replace (length updarray) with 511%nat by admit.
+    lia.
   }
   iIntros "Hslice".
+  iApply "HΦloop".
+  iExists _; iFrame.
 Admitted.
 
 Theorem apply_updates_lookup_new updarray endpos newupds (i: nat) u :
