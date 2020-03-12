@@ -1325,6 +1325,15 @@ Proof.
   apply ExternalOp_fill_item_inv in Heq; subst; auto.
 Qed.
 
+Lemma stuck_ExternalOp σ o e:
+  is_Some (to_val e) →
+  head_irreducible (ExternalOp o e) σ →
+  stuck (ExternalOp o e) σ.
+Proof.
+  intros Hval Hirred. split; first done.
+  apply prim_head_irreducible; auto. apply ExternalOp_sub_redexes; eauto.
+Qed.
+
 End goose_lang.
 
 Bind Scope expr_scope with expr.

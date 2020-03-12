@@ -75,9 +75,17 @@ Proof.
     { solve_ndisj. }
   - iIntros "[Hiniting|[Hopening|Hopened]]".
     * iDestruct "Hiniting" as (j' K' Hctx') "(Hj'&_)".
-      iMod (log_double_init_false with "[$] [$] [$]") as %[].
+      iMod (log_init_init_false with "[$] [$] [$]") as %[].
       { solve_ndisj. }
-    *
+    * iDestruct "Hopening" as (j' K' Hctx') "(Hj'&_)".
+      iMod (log_init_open_false with "[$] [$] [$]") as %[].
+      { solve_ndisj. }
+    * iDestruct "Hopened" as (l) "Hopen".
+      iMod (log_opened_init_false with "[$] [$] [$]") as %[].
+      { solve_ndisj. }
+  - iSplit; last done. simpl.
+    iIntros "(Huninit_frag&Hvals_frag)".
+    rewrite /PStartedIniting.
 Abort.
 
 End refinement.

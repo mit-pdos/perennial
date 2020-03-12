@@ -299,6 +299,25 @@ Section log_lemmas.
       iDestruct (own_valid_2 with "Hauth Huninit_frag") as %Hval.
       inversion Hval.
   Qed.
+
+  Lemma log_ctx_unify_opened l lg:
+    log_open l -∗ log_ctx lg -∗ ⌜ ∃ vs, lg = Opened vs l ⌝.
+  Proof.
+    destruct lg as [| | |  | vs l']; try eauto; iIntros "Hopen Hctx".
+    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+      inversion Hval.
+    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+      inversion Hval.
+    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+      rewrite /Log_Opened -Cinr_op in Hval.
+      assert (l' ≡ l) as Heq.
+      { eapply agree_op_inv'. eauto. }
+      iPureIntro; eexists. inversion Heq. by subst.
+  Qed.
+
 End log_lemmas.
 
 From Perennial.program_proof Require Import proof_prelude.
@@ -336,6 +355,25 @@ Instance logG0 : logG Σ := refinement_spec_ffiG.
           rewrite Heq in H1
         end.
 
+Lemma ghost_step_init_stuck E j K {HCTX: LanguageCtx K} σ:
+  nclose sN_inv ⊆ E →
+  (σ.(@world _ log_ffi_model.(@spec_ffi_model_field)) ≠ UnInit) →
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗
+  source_ctx (CS := spec_crash_lang) -∗
+  source_state σ -∗
+  |={E}=> False.
+Proof.
+  iIntros (??) "Hj Hctx H".
+  iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
+  { eapply stuck_ExternalOp; first (by eauto).
+    intros ?????.
+    repeat (inv_head_step; simpl in *; repeat monad_inv).
+    destruct (σ.(world)); try congruence;
+    repeat (inv_head_step; simpl in *; repeat monad_inv).
+  }
+  { solve_ndisj. }
+Qed.
+
 Lemma log_closed_init_false vs E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
@@ -348,16 +386,29 @@ Proof.
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (log_ctx_unify_closed with "[$] [$] [$]") as %Heq; subst.
-  iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
-  { rewrite /stuck; split; first done.
-    apply prim_head_irreducible; last first.
-    { apply ExternalOp_sub_redexes; eauto. }
-    intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
-  }
+  iMod (ghost_step_init_stuck with "[$] [$] [$]") as "[]".
   { solve_ndisj. }
+  { congruence. }
 Qed.
 
-Lemma log_double_init_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
+Lemma log_opened_init_false l E j K {HCTX: LanguageCtx K}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  log_open l -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) ={E}=∗
+  False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  simpl.
+  iDestruct (log_ctx_unify_opened with "[$] [$]") as %Heq; subst.
+  iMod (ghost_step_init_stuck with "[$] [$] [$]") as "[]".
+  { solve_ndisj. }
+  { destruct Heq as (?&Heq). by rewrite Heq. }
+Qed.
+
+Lemma log_init_init_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗
@@ -377,24 +428,40 @@ Proof.
       * repeat econstructor.
     }
     { solve_ndisj. }
-    iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
-    { split; first done.
-      apply prim_head_irreducible; last by (apply ExternalOp_sub_redexes; eauto).
-      intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
-    }
+    iMod (ghost_step_init_stuck with "Hj' [$] [$]") as "[]".
     { solve_ndisj. }
+    { simpl. congruence. }
+  - iMod (ghost_step_init_stuck with "Hj' [$] [$]") as "[]".
+    { solve_ndisj. }
+    { congruence. }
+  - iMod (ghost_step_init_stuck with "Hj' [$] [$]") as "[]".
+    { solve_ndisj. }
+    { congruence. }
+Qed.
+
+Lemma log_init_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) ={E}=∗
+  False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iEval (simpl) in "Hffi".
+  destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
-    { split; first done.
-      apply prim_head_irreducible; last by (apply ExternalOp_sub_redexes; eauto).
+    { eapply stuck_ExternalOp; first (by eauto).
       intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
     }
     { solve_ndisj. }
-  - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
-    { split; first done.
-      apply prim_head_irreducible; last by (apply ExternalOp_sub_redexes; eauto).
-      intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
-    }
+  - iMod (ghost_step_init_stuck with "Hj [$] [$]") as "[]".
     { solve_ndisj. }
+    { congruence. }
+  - iMod (ghost_step_init_stuck with "Hj [$] [$]") as "[]".
+    { solve_ndisj. }
+    { congruence. }
 Qed.
 
 End spec.
