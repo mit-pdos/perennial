@@ -77,17 +77,21 @@ Definition update_durable: transition log_state.t u64 :=
   ret new_durable.
 
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
-  update_installed;;
-  update_durable;;
-  d ← reads latest_disk;
-  match d !! int.val a with
-  | None => undefined
-  | Some b => ret (Some b)
-  end.
+  ok ← suchThat (fun _ (b:bool) => True);
+  if (ok:bool)
+  then d ← reads latest_disk;
+       match d !! int.val a with
+       | None => undefined
+       | Some b => ret (Some b)
+       end
+  else (* this is really non-deterministic; it would be simpler if upfront we
+          moved installed_to forward to a valid transaction and then made most
+          of the remaining decisions deterministically. *)
+    update_installed;;
+    ret None.
 
 Definition log_read_installed (a:u64): transition log_state.t Block :=
-  update_installed;;
-  update_durable;;
+  update_installed;;   (* XXX unnecessary? *)
   d ← reads installed_disk;
   unwrap (d !! int.val a).
 
@@ -99,7 +103,6 @@ Fixpoint absorb_map upds m: gmap u64 Block :=
 
 (* XXX fit in log *)
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
-  update_durable;;
   logged ← reads logged_upds;
   inmem  ← reads inmem_upds;
   (* new are the updates after absorbing of inmem in upds; that is,
