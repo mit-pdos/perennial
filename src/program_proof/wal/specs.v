@@ -40,6 +40,8 @@ Definition logged_upds (s:log_state.t): list update.t :=
 Definition inmem_upds (s:log_state.t): list update.t :=
   skipn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
 
+(* XXX Add: set of transaction positions to state, so that installed is a pos in that set *)
+(* XXX all addresses are in bound (in domain of disk) *)
 Definition valid_log_state (s : log_state.t) :=
   int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
   int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to).
@@ -51,6 +53,7 @@ Proof.
   unfold latest_disk; eauto.
 Qed.
 
+(* XXX crash in a pos that corresponds to a transaction *)
 Definition log_crash: transition log_state.t unit :=
   kv ← suchThat (gen:=fun _ _ => None) (fun s '(pos, d, upds) => s.(log_state.disk) = d ∧ int.val pos >= int.val s.(log_state.durable_to) ∧ upds = firstn (Z.to_nat (int.val pos)) s.(log_state.updates));
   let '(pos, d, upds) := kv in
@@ -60,6 +63,7 @@ Definition log_crash: transition log_state.t unit :=
           set log_state.installed_to (λ _, pos));;
   ret tt.
 
+(* XXX pos must be a transaction boundary *)
 Definition update_installed: transition log_state.t u64 :=
   new_installed ← suchThat (gen:=fun _ _ => None)
                 (fun s pos => int.val s.(log_state.installed_to) <=
@@ -68,6 +72,7 @@ Definition update_installed: transition log_state.t u64 :=
   modify (set log_state.installed_to (λ _, new_installed));;
   ret new_installed.
 
+(* XXX pos must be a transaction boundary *)
 Definition update_durable: transition log_state.t u64 :=
   new_durable ← suchThat (gen:=fun _ _ => None)
                 (fun s pos => int.val s.(log_state.durable_to) <=
@@ -91,7 +96,7 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
     ret None.
 
 Definition log_read_installed (a:u64): transition log_state.t Block :=
-  update_installed;;   (* XXX unnecessary? *)
+  update_installed;;
   d ← reads installed_disk;
   unwrap (d !! int.val a).
 
@@ -101,7 +106,7 @@ Fixpoint absorb_map upds m: gmap u64 Block :=
   | upd :: upd0 => absorb_map upd0 (<[update.addr upd := update.b upd]> m)
   end.                   
 
-(* XXX fit in log *)
+(* XXX  upds fit in log *)
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   logged ← reads logged_upds;
   inmem  ← reads inmem_upds;
@@ -112,8 +117,8 @@ Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   modify (set log_state.updates (λ _, logged++new));;
   ret (U64 (length (logged++new))).
 
+(* XXX flush should be undefined when the position is invalid *)
 Definition log_flush (pos: u64): transition log_state.t unit :=
-  (* flush should be undefined when the position is invalid *)
   modify (set log_state.durable_to (λ _, pos)).
 
 (*
