@@ -55,7 +55,10 @@ Qed.
 
 (* XXX crash in a pos that corresponds to a transaction *)
 Definition log_crash: transition log_state.t unit :=
-  kv ← suchThat (gen:=fun _ _ => None) (fun s '(pos, d, upds) => s.(log_state.disk) = d ∧ int.val pos >= int.val s.(log_state.durable_to) ∧ upds = firstn (Z.to_nat (int.val pos)) s.(log_state.updates));
+  kv ← suchThat (gen:=fun _ _ => None)
+     (fun s '(pos, d, upds) => s.(log_state.disk) = d ∧
+                            int.val pos >= int.val s.(log_state.durable_to) ∧
+                            upds = firstn (Z.to_nat (int.val pos)) s.(log_state.updates));
   let '(pos, d, upds) := kv in
   modify (set log_state.disk (λ _, d ) ∘
           set log_state.updates (λ _, upds) ∘

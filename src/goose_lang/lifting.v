@@ -526,7 +526,7 @@ Proof.
     replace (1 + strings.length vs1) with (Z.of_nat (S (strings.length vs1))) by lia.
     (* true, but only due to disjointness *)
     admit.
-Admitted.
+Abort.
 
 Theorem concat_replicate_S A n (vs: list A) :
   concat_replicate (S n) vs = vs ++ concat_replicate n vs.
