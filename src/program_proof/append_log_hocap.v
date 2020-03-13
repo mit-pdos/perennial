@@ -130,19 +130,18 @@ Proof. apply _. Qed.
    confusing...  It is not yet "crashed", merely halted? *)
 
 Theorem wpc_Log__Reset k k' E2 l Q Qc:
-  ↑N ⊆ E2 →
-  (S k < k')%nat →
+  (S (S k) < k')%nat →
+  (Q -∗ Qc) →
   {{{ is_log k' l ∗
-     ((∀ bs, (P (Opened bs l) ={⊤ ∖↑ N2}=∗ P (Opened [] l) ∗ Q) ∧
-             (P (Opened bs l) ={∅}=∗ P (Closed []) ∗ Qc)) ∧ Qc) ∗
-     □ (Q -∗ Qc)
+     ((∀ bs, P (Opened bs l) ={⊤ ∖↑ N2}=∗ P (Opened [] l) ∗ Q) ∧
+             Qc)
   }}}
-    Log__Reset #l @ NotStuck; (LVL (S (S k))); ⊤; E2
+    Log__Reset #l @ NotStuck; (LVL (S (S (S k)))); ⊤; E2
   {{{ RET #() ; Q }}}
   {{{ Qc }}}.
 Proof.
   clear PStartedOpening_Timeless PStartedIniting_Timeless SIZE_nonzero.
-  iIntros (?? Φ Φc) "(His_log&Hvs&#HQ_to_Qc) HΦ".
+  iIntros (? Hwand Φ Φc) "(His_log&Hvs) HΦ".
   iDestruct "His_log" as (?) "H".
   iDestruct "H" as "(#Hlog_inv&Hm&His_lock)".
   iMod (inv_readonly_acc _ with "Hm") as (q) "Hm"; first by set_solver+.
@@ -175,7 +174,7 @@ Proof.
 
   iIntros "H". iDestruct "H" as (bs) "(Hpts&HP)".
   iApply wpc_fupd.
-  iApply wpc_fupd_crash_shift'.
+  iApply wpc_fupd_crash_shift_empty'.
   wpc_apply (wpc_Log__reset with "[$] [-]").
   iSplit.
   { iIntros "H".
@@ -186,28 +185,27 @@ Proof.
       ** iDestruct "HΦ" as "(H&_)". by iApply "H".
       ** iExists _. do 2 iFrame.
     * iDestruct "Hvs" as "(Hvs&_)".
-      iDestruct ("Hvs" $! bs) as "(_&Hvs)".
+      iDestruct ("Hvs" $! bs) as "Hvs".
       iMod ("Hvs" with "[$]") as "(Hclo&HQc)".
       iModIntro.
       iSplitL "HΦ HQc".
-      ** iDestruct "HΦ" as "(H&_)". by iApply "H".
+      ** iDestruct "HΦ" as "(H&_)". iApply "H". by iApply Hwand.
       ** iExists _. do 2 iFrame.
   }
   iNext. iIntros "Hpts".
   (* Linearization point *)
   iDestruct "Hvs" as "(Hvs&_)".
-  iDestruct ("Hvs" $! bs) as "(Hvs&_)".
   iMod ("Hvs" with "[$]") as "(HP&HQ)".
   iSplitR "Hpts HP"; last first.
   { iExists _; iFrame. eauto. }
   iModIntro. iIntros.
   iSplit; last first.
-  { iApply "HΦ"; by iApply "HQ_to_Qc". }
+  { iApply "HΦ"; by iApply Hwand. }
   wpc_pures.
-  { by iApply "HQ_to_Qc". }
+  { by iApply Hwand. }
 
   wpc_frame "HQ HΦ".
-  { iIntros "(?&H)"; iApply "H". by iApply "HQ_to_Qc". }
+  { iIntros "(?&H)"; iApply "H". by iApply Hwand. }
 
   wp_bind (struct.loadF _ _ _).
   wp_loadField.

@@ -408,7 +408,7 @@ Proof.
   { eauto. }
 Qed.
 
-Definition LVL (k: nat) : nat := 2 ^ ((S (S k))).
+Definition LVL (k: nat) : nat := 3 ^ ((S (S k))).
 
 Lemma wpc_staged_inv_init s k k' N E1 E2 e Φ Φc P γ γ' :
   k' < k →
@@ -419,10 +419,12 @@ Lemma wpc_staged_inv_init s k k' N E1 E2 e Φ Φc P γ γ' :
   WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ Φc ∗ P }}.
 Proof.
   rewrite /LVL. iIntros (??) "(?&?&?)".
-  replace (2 ^ (S (S (S k)))) with (2 * (2 ^ ((S (S k))))) by auto.
+  replace (3 ^ (S (S (S k)))) with (3 * (3 ^ ((S (S k))))) by auto.
+  iApply (wpc_idx_mono _ (2 * 3 ^ (S (S k)))).
+  {  lia. }
   iApply wpc_staged_inv_init''; last first. iFrame; auto.
   - eauto.
-  - replace 1 with (2^0) by auto. apply Nat.pow_lt_mono_r_iff; eauto. lia.
+  - replace 1 with (3^0) by auto. apply Nat.pow_lt_mono_r_iff; eauto. lia.
   - apply Nat.pow_lt_mono_r_iff; eauto. lia.
 Qed.
 
@@ -437,12 +439,14 @@ Lemma wpc_staged_inv_open s k k' E1 E1' E2 e Φ Φc Q Qrest Qnew P N γ γ' :
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   rewrite /LVL. iIntros (????) "(?&?&?)".
-  assert (Hpow: 2 ^ (S (S (S (S k)))) =  4 * 2 ^ (S (S k))).
+  assert (Hpow: 3 ^ (S (S (S (S k)))) =  9 * 3 ^ (S (S k))).
   { rewrite //=. lia. }
   rewrite Hpow.
+  iApply (wpc_idx_mono _ (4 * 3 ^ (S (S k)))).
+  { lia. }
   iApply (wpc_staged_inv_open'' with "[$]"); eauto.
-  { rewrite -Hpow. apply Nat.pow_le_mono_r_iff; eauto. lia. }
-  { replace 2 with (2^1) at 1; last by auto.
+  { transitivity (9 * 3 ^ (S (S k))); first by lia. rewrite -Hpow. apply Nat.pow_le_mono_r_iff; eauto. lia. }
+  { transitivity 3; first lia. replace 3 with (3^1) at 1; last by auto.
     apply Nat.pow_lt_mono_r_iff; eauto. lia. }
 Qed.
 
@@ -450,12 +454,13 @@ Lemma SSS_LVL k:
   (S (S (S (LVL k)))) ≤ LVL (S k).
 Proof.
   rewrite /LVL.
-  rewrite {1}(Nat.pow_succ_r' 2 (S (S k))).
-  replace (S (S (S (2 ^ (S (S k)))))) with (3 + (2^(S (S k)))); last by lia.
-  replace (2 * (2 ^ (S (S k)))) with (2 ^ (S (S k)) + (2 ^ (S (S k)))) by lia.
+  rewrite {1}(Nat.pow_succ_r' 3 (S (S k))).
+  replace (S (S (S (3 ^ (S (S k)))))) with (3 + (3^(S (S k)))); last by lia.
+  replace (2 * (3 ^ (S (S k)))) with (3 ^ (S (S k)) + (3 ^ (S (S k)))) by lia.
   apply plus_le_compat; auto.
-  { transitivity 4; first lia. replace 4 with (2^2) at 1; last by auto.
+  { transitivity 9; first lia. replace 9 with (3^2) at 1; last by auto.
   apply Nat.pow_le_mono_r_iff; eauto. lia. }
+  lia.
 Qed.
 
 Lemma SS_LVL k:
@@ -500,6 +505,19 @@ Proof.
   iApply (wpc_idx_mono with "[Hwp]"); first by eassumption.
   replace (S (S (S (LVL k)))) with (3 + LVL k) by lia.
   iApply (wpc_step_fupdN_inner with "[Hwp]"); eauto.
+Qed.
+
+Lemma wpc_fupd_crash_shift_empty' s k E1 e Φ Φc :
+  WPC e @ s; (LVL k) ; E1 ; ∅ {{ Φ }} {{ |={E1}=> Φc }} ⊢ WPC e @ s; LVL (S k); E1 ; ∅ {{ Φ }} {{ Φc }}.
+Proof.
+  iApply wpc_fupd_crash_shift_empty.
+  rewrite /LVL.
+  cut (2 * 3 ^ (S (S k)) + 1 ≤ 3 ^ (S (S (S k)))); first lia.
+  assert (Hpow: 3 ^ ((S (S (S k)))) =  3 * 3 ^ (S (S k))).
+  { rewrite //=. }
+  rewrite Hpow.
+  cut (1 ≤ 3 ^ (S (S k))); first lia.
+  replace 1 with (3^0) by auto. apply Nat.pow_le_mono_r_iff; eauto. lia.
 Qed.
 
 End staged_inv_wpc.

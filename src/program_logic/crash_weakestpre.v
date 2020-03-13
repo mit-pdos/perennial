@@ -230,6 +230,70 @@ Lemma wpc_wp s E1 E2 e Φ Φc k:
 Proof.
 Abort.
 
+Lemma wpc_strong_mono_empty_crash s1 s2 k1 k2 E1 E2 E2' e Φ Ψ Φc Ψc :
+  (S k1) ≤ (k2 - k1) →
+  s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 →
+  WPC e @ s1; k1; E1 ; ∅ {{ Φ }} {{ Φc }} -∗
+  (∀ v, Φ v ={E2}=∗ Ψ v) ∧ (Φc -∗ |={E2}=> |={E2', ∅}_(k2 - k1)=> Ψc) -∗
+  WPC e @ s2; k2; E2 ; E2' {{ Ψ }} {{ Ψc }}.
+Proof.
+  iIntros (Hle ?? HE) "H HΦ".
+  iLöb as "IH" forall (e E1 E2 E2' HE Φ Ψ Φc Ψc).
+  rewrite !wpc_unfold /wpc_pre.
+  iSplit.
+  - destruct (to_val e) as [v|] eqn:?.
+    {
+      iDestruct "HΦ" as "(HΦ&_)". iDestruct "H" as "(H&_)".
+      iMod (fupd_intro_mask' _ E1) as "Hclo"; first by auto.
+      iIntros.
+      iMod ("H" with "[$]") as "(?&?)". iMod "Hclo" as "_".
+      iMod ("HΦ" with "[$]"). iFrame. eauto.
+    }
+    iIntros (σ1 κ κs n) "Hσ HNC".
+    iMod (fupd_intro_mask' E2 E1) as "Hclo"; first done.
+    iDestruct "H" as "(H&_)".
+    iMod ("H" with "[$] [$]") as "H".
+    iModIntro.
+    iApply (step_fupdN_le (S k1)); eauto.
+    { lia. }
+    iApply (step_fupdN_wand with "H"). iIntros "H".
+    iDestruct "H" as "H". iMod "H" as "(%&H)".
+    iModIntro.
+    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 efs Hstep).
+    iMod ("H" with "[//]") as "H".
+    iApply (step_fupdN_le (S k1)); eauto.
+    { lia. }
+    iApply (step_fupdN_wand with "H"). iModIntro. iIntros "H".
+    iIntros "!>".
+    iMod "H". iMod "H". iIntros "!>". iNext. iMod "H". iMod "Hclo" as "_". iModIntro.
+    iApply (step_fupdN_le (S k1)); eauto.
+    { lia. }
+    iApply (step_fupdN_inner_wand with "H"); auto.
+    iIntros "(Hσ & H & Hefs & HNC)". iFrame.
+    iSplitR "Hefs".
+    ** iApply ("IH" with "[] H [HΦ]"); auto.
+    ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
+       iIntros "H". eauto. iApply ("IH" with "[] H"); auto.
+       { iSplit; first auto. iIntros.
+         iApply step_fupdN_inner_later; auto; try set_solver+.
+       }
+  - iDestruct "H" as "(_&H)". iIntros "HC".
+    iSpecialize ("H" with "[$]").
+    assert (S k2 = S k1 + (k2 - k1)) as Hplus by lia.
+    rewrite {1}Hplus.
+    iApply step_fupdN_inner_plus.
+    iApply (step_fupdN_inner_wand with "H"); auto.
+    iIntros "H".
+    iApply step_fupdN_inner_fupd.
+    iApply (step_fupdN_inner_wand with "H"); auto.
+    { set_solver+. }
+    iIntros "H".
+    iDestruct "HΦ" as "(_&HΦ)".
+    iMod ("HΦ" with "[$]") as "HΦ".
+    iModIntro.
+    iApply (step_fupdN_inner_wand with "HΦ"); eauto. lia.
+Qed.
+
 Lemma wpc_strong_mono s1 s2 k1 k2 E1 E2 E1' E2' e Φ Ψ Φc Ψc :
   s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 → E1' ⊆ E2' →
   WPC e @ s1; k1; E1 ; E1' {{ Φ }} {{ Φc }} -∗
@@ -292,6 +356,21 @@ Proof.
     iEval (rewrite -step_fupdN_inner_fupd).
     iMod ("HΦ" with "[$]") as "HΦ".
     iApply (step_fupdN_wand with "HΦ"). iModIntro; eauto.
+Qed.
+
+Lemma wpc_strong_mono_empty_crash' s1 s2 k1 k2 E1 E2 E2' e Φ Ψ Φc Ψc :
+  s1 ⊑ s2 → S k1 ≤ k2 - k1 → E1 ⊆ E2 →
+  WPC e @ s1; k1; E1 ; ∅ {{ Φ }} {{ Φc }} -∗
+  (∀ v, Φ v ={E2}=∗ Ψ v) ∧ (Φc ={E2}=∗ |={E2', ∅}=> Ψc) -∗
+  WPC e @ s2; k2; E2 ; E2' {{ Ψ }} {{ Ψc }}.
+Proof.
+  iIntros (???) "? H".
+  iApply (wpc_strong_mono_empty_crash with "[$] [-]"); auto; try lia.
+  iSplit.
+  - iDestruct "H" as "(H&_)". eauto.
+  - iIntros. iDestruct "H" as "(_&H)".
+    iMod ("H" with "[$]") as "H". iModIntro. iMod "H".
+    iApply step_fupdN_inner_later; auto.
 Qed.
 
 Lemma wpc_strong_mono' s1 s2 k1 k2 E1 E2 E1' E2' e Φ Ψ Φc Ψc :
@@ -503,6 +582,16 @@ Proof.
   iIntros "H".
   iApply (wpc_strong_mono' s s k k E1 E1 _ with "H []"); auto.
   - iSplit; auto. rewrite difference_diag_L //=. eauto.
+Qed.
+
+Lemma wpc_fupd_crash_shift_empty s k1 k2 E1 e Φ Φc :
+  S k1 ≤ k2 - k1 →
+  WPC e @ s; k1 ; E1 ; ∅ {{ Φ }} {{ |={E1}=> Φc }} ⊢ WPC e @ s; k2; E1 ; ∅ {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "H".
+  iApply (wpc_strong_mono_empty_crash' s s k1 k2 E1 E1 _ with "H []"); auto.
+  iSplit; auto. iIntros "H".
+  iMod "H". eauto.
 Qed.
 
 Lemma wpc_inv (N: namespace) s k E e Φ Φc :

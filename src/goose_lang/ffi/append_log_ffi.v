@@ -141,7 +141,7 @@ Section log.
       l ← allocateN 4096;
       modify (state_insert_list l (disk.Block_to_vals b));;
       ret $ #(LitLoc l)
-    | ResetOp, PairV (LitV (LitLoc logPtr)) (LitV LitUnit) =>
+    | ResetOp, LitV (LitLoc logPtr) =>
       openΣ ≫= λ '(_, logPtr_),
       check (logPtr = logPtr_);;
       modifyΣ (fun _ => []);;
@@ -322,6 +322,26 @@ Section log_lemmas.
       iPureIntro; eexists. inversion Heq. by subst.
   Qed.
 
+  Lemma log_ctx_unify_opened' l lg vs:
+    log_open l -∗ log_frag vs -∗ log_ctx lg -∗ ⌜ lg = Opened vs l ⌝.
+  Proof.
+    destruct lg as [| | |  | vs' l']; try eauto; iIntros "Hopen Hstate Hctx".
+    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+      inversion Hval.
+    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+      inversion Hval.
+    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+      rewrite /Log_Opened -Cinr_op in Hval.
+      assert (l' ≡ l) as Heq.
+      { eapply agree_op_inv'. eauto. }
+      rewrite /log_frag/log_auth. unify_ghost.
+      iDestruct (own_valid_2 with "Hstate_auth Hstate") as %Hval'.
+      inversion Heq; subst. eauto.
+  Qed.
+
   Lemma log_uninit_token_open (l: loc):
     log_uninit_auth -∗ log_uninit_frag ==∗ log_open l.
   Proof.
@@ -351,6 +371,11 @@ Section log_lemmas.
       { econstructor. }
     }
   Qed.
+
+  Lemma log_state_update vsnew vs1 vs2:
+    log_auth vs1 -∗ log_frag vs2 ==∗ log_auth vsnew ∗ log_frag vsnew.
+  Proof. apply ghost_var_update. Qed.
+
 End log_lemmas.
 
 From Perennial.program_proof Require Import proof_prelude.
@@ -646,6 +671,31 @@ Proof.
   iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
   { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
   iModIntro. iExists _. iFrame "Hopen". iFrame.
+Qed.
+
+Lemma ghost_step_log_reset E j K {HCTX: LanguageCtx K} l vs:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  log_open l -∗
+  log_frag vs -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) ResetOp #l)
+  ={E}=∗
+  j ⤇ K #()%V ∗log_frag [].
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) #Hopen Hvals Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (log_ctx_unify_opened with "[$] [$]") as %Heq.
+  destruct Heq as (vs'&Heq).
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { apply head_prim_step. repeat (eauto || monad_simpl || rewrite Heq || econstructor). }
+  { solve_ndisj. }
+  simpl. rewrite Heq.
+  iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
+  iMod (log_state_update [] with "[$] [$]") as "(Hvals_auth&?)".
+  iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
+  { iNext. iExists _. iFrame "H". iFrame. iFrame "Hopen". }
+  iModIntro. iFrame.
 Qed.
 
 End spec.

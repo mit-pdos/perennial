@@ -69,12 +69,13 @@ Theorem wpc_Init j γ K `{LanguageCtx _ K} k k' E2:
   (S k < k')%nat →
   {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) InitOp #()) }}}
     Init #SIZE @ NotStuck; LVL (S (S (S k))); ⊤; E2
-  {{{ l, RET (#l, #true);  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val (#l', #true) : sexpr))}}}
+  {{{ l, RET (#l, #true);  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val (#l', #true) : sexpr) ∗ log_open l')}}}
   {{{ True }}}.
 Proof using SIZE_nonzero SIZE_bounds.
   iIntros (? Φ Φc) "(#Hspec&#Hinv&Hj) HΦ".
   unshelve
-  wpc_apply (wpc_Init _ _ _ _ _ _ _ _ _ _ _ _ (True%I) (λ l, (∃ (l': loc), j ⤇ K (of_val (#l', #true))))%I
+    wpc_apply (wpc_Init _ _ _ _ _ _ _ _ _ _ _ _ (True%I)
+                        (λ l, (∃ (l': loc), j ⤇ K (of_val (#l', #true)) ∗ log_open l'))%I
                with "[Hj]"); try iFrame "Hinv"; eauto.
   { apply _. }
   iSplit; [| iSplit].
@@ -107,7 +108,7 @@ Proof using SIZE_nonzero SIZE_bounds.
     iMod (ghost_step_log_init with "[$] [$] [$] [$]") as (l') "(Hj&#Hopen&Hvals)".
     { solve_ndisj. }
     iModIntro. iSplitR "Hvals".
-    * iExists _. iFrame.
+    * iExists _. iFrame. iFrame "Hopen".
     * iFrame. iSplitL ""; iExists _; iFrame "Hopen".
 Qed.
 
@@ -115,12 +116,12 @@ Theorem wpc_Open j γ K `{LanguageCtx _ K} k k' E2:
   (S k < k')%nat →
   {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) OpenOp #()) }}}
     Open #() @ NotStuck; LVL (S (S (S k))); ⊤; E2
-  {{{ l, RET #l;  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val #l': sexpr))}}}
+  {{{ l, RET #l;  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val #l': sexpr) ∗ log_open l')}}}
   {{{ True }}}.
 Proof using SIZE_bounds.
   iIntros (? Φ Φc) "(#Hspec&#Hinv&Hj) HΦ".
   unshelve
-  wpc_apply (wpc_Open _ _ _ _ _ _ _ _ _ _ (True%I) (λ l, (∃ (l': loc), j ⤇ K (of_val #l')))%I
+  wpc_apply (wpc_Open _ _ _ _ _ _ _ _ _ _ (True%I) (λ l, (∃ (l': loc), j ⤇ K (of_val #l') ∗ log_open l'))%I
                with "[Hj]"); try iFrame "Hinv"; eauto.
   { apply _. }
   iSplit; [| iSplit].
@@ -152,8 +153,29 @@ Proof using SIZE_bounds.
     iMod (ghost_step_log_open with "[$] [$] [$] [$]") as (l') "(Hj&#Hopen&Hvals)".
     { solve_ndisj. }
     iModIntro. iSplitR "Hvals".
-    * iExists _. iFrame.
+    * iExists _. iFrame. iFrame "Hopen".
     * iFrame. iSplitL ""; iExists _; iFrame "Hopen".
 Qed.
+
+Theorem wpc_Log__Reset j γ K `{LanguageCtx _ K} k k' E2 (l l': loc):
+  (S (S k) < k')%nat →
+  {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) (ResetOp) #l') ∗
+               is_log γ k' l ∗ log_open l'
+  }}}
+    Log__Reset #l @ NotStuck; (LVL (S (S (S k)))); ⊤; E2
+  {{{ RET #(); j ⤇ K (of_val #(): sexpr)}}}
+  {{{ True }}}.
+Proof using SIZE_bounds.
+  iIntros (? Φ Φc) "(#Hspec&#Hinv&Hj&His_log&#Hopen) HΦ".
+  wpc_apply (wpc_Log__Reset _ _ _ _ _ _ _ _ _ _ (j ⤇ K (of_val #()))%I True%I
+               with "[Hj His_log Hopen]"); try iFrame "His_log"; eauto.
+  iSplit; last done.
+  iIntros (bs).
+  iIntros "Hopened". iDestruct "Hopened" as (?) "(_&Hfrag)".
+  iMod (ghost_step_log_reset with "[$] [$] [$] [$]") as "(Hj&Hvals)".
+  { solve_ndisj. }
+  iModIntro. iFrame. iExists _. eauto.
+Qed.
+
 
 End refinement.
