@@ -227,7 +227,7 @@ Theorem wpc_Open k k' E2 Qc Q:
   (S k < k')%nat →
   (∀ l, Q l -∗ Qc) →
   {{{ log_inv k'
-      ∗ ((∀ (s: log_state), ⌜ ∀ vs, s ≠ Closed vs ⌝ -∗ P s ={⊤ ∖ ↑N ∖ ↑N2}=∗ False)
+      ∗ ((P (UnInit) ={⊤ ∖ ↑N ∖ ↑N2}=∗ False)
         ∧ (PStartedIniting ∨ PStartedOpening ∨ POpened ={⊤ ∖ ↑N}=∗ False)
         ∧ (∀ vs, P (Closed vs) ={⊤ ∖ ↑N ∖ ↑N2}=∗
                  PStartedOpening ∗ P (Opening vs)
@@ -258,7 +258,7 @@ Proof using PStartedOpening_Timeless.
     { solve_ndisj. }
     iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
     - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
-      iDestruct "Hvs" as "(Hvs&_)"; iMod ("Hvs" with "[] HP"); try eauto; done.
+      iDestruct "Hvs" as "(Hvs&_)"; iMod ("Hvs" with "HP"); try eauto; done.
     - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
       { iNext. iExists _. iFrame. }
       iApply step_fupdN_inner_later; auto.

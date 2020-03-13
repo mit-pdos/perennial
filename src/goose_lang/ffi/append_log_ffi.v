@@ -336,6 +336,21 @@ Section log_lemmas.
       { econstructor. }
     }
   Qed.
+
+  Lemma log_closed_token_open (l: loc):
+    log_closed_auth -∗ log_closed_frag ==∗ log_open l.
+  Proof.
+    iIntros "Hua Huf".
+    iCombine "Hua Huf" as "Huninit".
+    rewrite -Cinl_op.
+    iMod (own_update _ _ (Log_Opened l) with "Huninit") as "$"; last done.
+    { apply: cmra_update_exclusive.
+      { apply Cinl_exclusive. rewrite -pair_op frac_op' Qp_half_half.
+        simpl. apply pair_exclusive_l. apply _.
+      }
+      { econstructor. }
+    }
+  Qed.
 End log_lemmas.
 
 From Perennial.program_proof Require Import proof_prelude.
@@ -388,6 +403,26 @@ Proof.
     repeat (inv_head_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
     repeat (inv_head_step; simpl in *; repeat monad_inv).
+  }
+  { solve_ndisj. }
+Qed.
+
+Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
+  nclose sN_inv ⊆ E →
+  (∀ vs, σ.(@world _ log_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗
+  source_ctx (CS := spec_crash_lang) -∗
+  source_state σ -∗
+  |={E}=> False.
+Proof.
+  iIntros (??) "Hj Hctx H".
+  iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
+  { eapply stuck_ExternalOp; first (by eauto).
+    intros ?????.
+    repeat (inv_head_step; simpl in *; repeat monad_inv).
+    destruct (σ.(world)); try congruence;
+    repeat (inv_head_step; simpl in *; repeat monad_inv); eauto.
+    eapply H1; eauto.
   }
   { solve_ndisj. }
 Qed.
@@ -506,6 +541,104 @@ Proof.
   simpl. rewrite Heq.
   iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
   iMod (log_uninit_token_open ((fresh_locs (dom _ σ.(heap)))) with "[$] [$]") as "#Hopen".
+  iMod (na_heap_alloc _ σ.(heap) _ (#()) (Reading O) with "Hσ") as "(Hσ&?)".
+  { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
+  { auto. }
+  rewrite loc_add_0.
+  iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
+  { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
+  iModIntro. iExists _. iFrame "Hopen". iFrame.
+Qed.
+
+Lemma log_uninit_open_false vs E j K {HCTX: LanguageCtx K}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  log_uninit_frag -∗
+  log_frag vs -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) ={E}=∗
+  False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hentries Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (log_ctx_unify_uninit with "[$] [$]") as %Heq; subst.
+  iMod (ghost_step_open_stuck with "[$] [$] [$]") as "[]".
+  { solve_ndisj. }
+  { congruence. }
+Qed.
+
+Lemma log_opened_open_false l E j K {HCTX: LanguageCtx K}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  log_open l -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) ={E}=∗
+  False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  simpl.
+  iDestruct (log_ctx_unify_opened with "[$] [$]") as %Heq; subst.
+  iMod (ghost_step_open_stuck with "[$] [$] [$]") as "[]".
+  { solve_ndisj. }
+  { destruct Heq as (?&Heq). by rewrite Heq. }
+Qed.
+
+Lemma log_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) ={E}=∗
+  False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iEval (simpl) in "Hffi".
+  destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
+  - iMod (ghost_step_open_stuck with "Hj' [$] [$]") as "[]".
+    { solve_ndisj. }
+    { congruence. }
+  - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+    { apply head_prim_step. simpl. econstructor.
+      * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+        ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+        ** simpl. rewrite Heq. repeat econstructor.
+      * repeat econstructor.
+    }
+    { solve_ndisj. }
+    iMod (ghost_step_open_stuck with "Hj' [$] [$]") as "[]".
+    { solve_ndisj. }
+    { simpl. congruence. }
+  - iMod (ghost_step_open_stuck with "Hj' [$] [$]") as "[]".
+    { solve_ndisj. }
+    { congruence. }
+Qed.
+
+Lemma ghost_step_log_open E j K {HCTX: LanguageCtx K} vs:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  log_closed_frag -∗
+  log_frag vs -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #())
+  ={E}=∗
+  ∃ (l: loc), j ⤇ K #l%V ∗ log_open l ∗ log_frag vs.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hvals Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (log_ctx_unify_closed with "[$] [$] [$]") as %Heq.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { apply head_prim_step. simpl. econstructor.
+    * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+      ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+      ** simpl. rewrite Heq. repeat econstructor.
+    * repeat econstructor.
+  }
+  { solve_ndisj. }
+  simpl. rewrite Heq.
+  iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
+  iMod (log_closed_token_open ((fresh_locs (dom _ σ.(heap)))) with "[$] [$]") as "#Hopen".
   iMod (na_heap_alloc _ σ.(heap) _ (#()) (Reading O) with "Hσ") as "(Hσ&?)".
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { auto. }

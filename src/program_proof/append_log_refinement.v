@@ -111,4 +111,49 @@ Proof using SIZE_nonzero SIZE_bounds.
     * iFrame. iSplitL ""; iExists _; iFrame "Hopen".
 Qed.
 
+Theorem wpc_Open j γ K `{LanguageCtx _ K} k k' E2:
+  (S k < k')%nat →
+  {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) OpenOp #()) }}}
+    Open #() @ NotStuck; LVL (S (S (S k))); ⊤; E2
+  {{{ l, RET #l;  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val #l': sexpr))}}}
+  {{{ True }}}.
+Proof using SIZE_bounds.
+  iIntros (? Φ Φc) "(#Hspec&#Hinv&Hj) HΦ".
+  unshelve
+  wpc_apply (wpc_Open _ _ _ _ _ _ _ _ _ _ (True%I) (λ l, (∃ (l': loc), j ⤇ K (of_val #l')))%I
+               with "[Hj]"); try iFrame "Hinv"; eauto.
+  { apply _. }
+  iSplit; [| iSplit].
+  - iIntros "(Huninit&Hlist&Htok)".
+    iMod (log_uninit_open_false with "[$] [$] [$] Hj") as %[].
+    { solve_ndisj. }
+  - iIntros "[Hiniting|[Hopening|Hopened]]".
+    * iDestruct "Hiniting" as (j' K' Hctx') "(Hj'&_)".
+      iMod (log_init_open_false with "[$] [$] [$]") as %[].
+      { solve_ndisj. }
+    * iDestruct "Hopening" as (j' K' Hctx') "(Hj'&_)".
+      iMod (log_open_open_false with "[$] [$] [$]") as %[].
+      { solve_ndisj. }
+    * iDestruct "Hopened" as (l) "Hopen".
+      iMod (log_opened_open_false with "[$] [$] [$]") as %[].
+      { solve_ndisj. }
+  - iSplit; last done. simpl.
+    iIntros (vs) "(Hclosed_frag&Hvals_frag&(Hthread_auth&Hthread_frag))".
+    iMod (ghost_var_update _ ((j, K) : leibnizO (nat * (sexpr → sexpr))) with "[$] [$]")
+         as "(Hthread_auth&Hthread_frag)".
+    iModIntro.
+    iSplitL "Hthread_auth Hj".
+    { unshelve (iExists _, _, _; iFrame); eauto. }
+    iFrame. iSplit; first done.
+    iIntros (l) "(Huninit&Hvals) Hthread".
+    iDestruct "Hthread" as (j' K' ?) "(Hj&Hthread_auth)".
+    rewrite /thread_tok_auth.
+    unify_ghost.
+    iMod (ghost_step_log_open with "[$] [$] [$] [$]") as (l') "(Hj&#Hopen&Hvals)".
+    { solve_ndisj. }
+    iModIntro. iSplitR "Hvals".
+    * iExists _. iFrame.
+    * iFrame. iSplitL ""; iExists _; iFrame "Hopen".
+Qed.
+
 End refinement.
