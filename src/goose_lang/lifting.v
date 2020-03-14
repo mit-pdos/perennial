@@ -562,7 +562,9 @@ Definition big_opL_add_spec (M: ofeT) (o: M -> M -> M) {mon:monoid.Monoid o} f s
   big_opL o (fun i x => f (i + k)%nat x) (seq (start + off) n) ≡
   big_opL o (fun i x => f i (x + off)%nat) (seq (start + k)%nat n).
 
+(*
 Eval compute in (fun M o {mon:monoid.Monoid o} f off => big_opL_add_spec M o f 2%nat off 4%nat).
+*)
 
 Theorem big_opL_add (M: ofeT) (o: M -> M -> M) {mon:monoid.Monoid o} f start off k n :
   Proper (equiv ==> equiv ==> equiv) o ->
