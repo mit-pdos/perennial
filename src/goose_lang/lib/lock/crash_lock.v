@@ -23,11 +23,11 @@ Section proof.
   Context `{!heapG Σ, !lockG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
 
   Definition is_crash_lock k (γlk: gname) (lk: val) (R Rcrash: iProp Σ) : iProp Σ :=
-    is_lock Nlock γlk lk (crash_inv_full Ncrash k ⊤ R Rcrash).
+    is_lock Nlock γlk lk (crash_inv_full Ncrash k R Rcrash).
 
   Definition crash_locked k Γ lk R Rcrash : iProp Σ :=
-    (crash_inv_full Ncrash k ⊤ R Rcrash ∗
-           is_lock Nlock Γ lk (crash_inv_full Ncrash k ⊤ R Rcrash) ∗
+    (crash_inv_full Ncrash k R Rcrash ∗
+           is_lock Nlock Γ lk (crash_inv_full Ncrash k R Rcrash) ∗
            locked Γ)%I.
 
   (*
@@ -59,7 +59,7 @@ Section proof.
 
   Lemma alloc_crash_lock' k E lk (R Rcrash : iProp Σ):
     is_free_lock lk -∗
-    crash_inv_full Ncrash k ⊤ R Rcrash
+    crash_inv_full Ncrash k R Rcrash
     ={E}=∗ ∃ γ, is_crash_lock k γ #lk R Rcrash.
   Proof using ext_tys.
     iIntros "Hfree Hfull".
@@ -78,11 +78,10 @@ Section proof.
     WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ Rcrash }}.
   Proof using ext_tys.
     iIntros (?) "(#HRcrash&HR&HΦc&Hfree&Hwp)".
-    iMod (crash_inv_alloc Ncrash (LVL k') ⊤ ⊤ Rcrash R with "[HR]") as
+    iMod (crash_inv_alloc Ncrash (LVL k') ⊤ Rcrash R with "[HR]") as
         "(Hfull&Hpending)".
     { iFrame "HR". iAlways. by iApply "HRcrash". }
-    iApply (wpc_crash_inv_init _ k k' Ncrash ⊤ E with "[-]"); try assumption.
-    { set_solver +. }
+    iApply (wpc_crash_inv_init _ k k' Ncrash E with "[-]"); try assumption.
     iFrame.
     iMod (alloc_crash_lock' with "Hfree Hfull") as (?) "Hlk".
     iApply ("Hwp" with "[$]"). by iFrame.

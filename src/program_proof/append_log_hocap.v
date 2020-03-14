@@ -61,9 +61,9 @@ Definition log_crash_cond : iProp Σ :=
 
 Definition log_state_to_inv (s: log_state) k γ2 :=
   match s with
-  | UnInit => crash_inv_full N2 k ⊤ (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | UnInit => crash_inv_full N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
   | Initing => PStartedIniting
-  | Closed vs => crash_inv_full N2 k ⊤ (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | Closed vs => crash_inv_full N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
   | Opening vs => PStartedOpening
   | Opened vs l => POpened
   end%I.
@@ -82,15 +82,14 @@ Lemma append_log_crash_inv_obligation e (Φ: val → iProp Σ) Φc E k k':
 Proof.
   iIntros (?) "Hinit Hwp".
   iDestruct "Hinit" as "[(HP&Hinit)|Hinit]".
-  - iMod (crash_inv_alloc N2 (LVL k') ⊤ ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[HP Hinit]") as
+  - iMod (crash_inv_alloc N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[HP Hinit]") as
       "(Hfull&Hpending)".
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
       iSplitL "HP Hinit".
       { iNext. iFrame => //=. }
       iAlways. iIntros "H". iExists _; eauto.
     }
-    iApply (wpc_crash_inv_init _ k k' N2 ⊤ E with "[-]"); try assumption.
-    { set_solver +. }
+    iApply (wpc_crash_inv_init _ k k' N2 E with "[-]"); try assumption.
     iFrame.
     iMod (ghost_var_alloc (UnInit : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
@@ -98,15 +97,14 @@ Proof.
     iApply ("Hwp" with "[]").
     { iExists _. eauto. }
   - iDestruct "Hinit" as (vs) "(HP&Hinit)".
-    iMod (crash_inv_alloc N2 (LVL k') ⊤ ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[HP Hinit]") as
+    iMod (crash_inv_alloc N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[HP Hinit]") as
       "(Hfull&Hpending)".
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
       iSplitL "HP Hinit".
       { iNext. iFrame => //=. }
       iAlways. iIntros "H". iExists _; eauto.
     }
-    iApply (wpc_crash_inv_init _ k k' N2 ⊤ E with "[-]"); try assumption.
-    { set_solver +. }
+    iApply (wpc_crash_inv_init _ k k' N2 E with "[-]"); try assumption.
     iFrame.
     iMod (ghost_var_alloc (Closed vs : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
