@@ -23,12 +23,12 @@ Section proof.
   Context `{!heapG Σ, !lockG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
 
   Definition is_crash_lock k (γlk: gname) (lk: val) (R Rcrash: iProp Σ) : iProp Σ :=
-    (∃ γ1, is_lock Nlock γlk lk (crash_inv_full Ncrash k ⊤ γ1 R Rcrash)).
+    is_lock Nlock γlk lk (crash_inv_full Ncrash k ⊤ R Rcrash).
 
   Definition crash_locked k Γ lk R Rcrash : iProp Σ :=
-    (crash_inv_full Ncrash k ⊤ Γ.1 R Rcrash ∗
-           is_lock Nlock Γ.2 lk (crash_inv_full Ncrash k ⊤ Γ.1 R Rcrash) ∗
-           locked Γ.2)%I.
+    (crash_inv_full Ncrash k ⊤ R Rcrash ∗
+           is_lock Nlock Γ lk (crash_inv_full Ncrash k ⊤ R Rcrash) ∗
+           locked Γ)%I.
 
   (*
   Lemma newlock_spec K `{!LanguageCtx K} k k' E Φ Φc (R Rcrash : iProp Σ):
@@ -57,14 +57,14 @@ Section proof.
 *)
 
 
-  Lemma alloc_crash_lock' k E γ lk (R Rcrash : iProp Σ):
+  Lemma alloc_crash_lock' k E lk (R Rcrash : iProp Σ):
     is_free_lock lk -∗
-    crash_inv_full Ncrash k ⊤ γ R Rcrash
+    crash_inv_full Ncrash k ⊤ R Rcrash
     ={E}=∗ ∃ γ, is_crash_lock k γ #lk R Rcrash.
   Proof using ext_tys.
     iIntros "Hfree Hfull".
     iMod (alloc_lock Nlock _ with "Hfree Hfull") as (γ') "Hlk".
-    iModIntro. iExists _. rewrite /is_crash_lock. iExists _. iFrame.
+    iModIntro. iExists _. rewrite /is_crash_lock. eauto.
   Qed.
 
   Lemma alloc_crash_lock k k' E Φ Φc e lk (R Rcrash : iProp Σ):
@@ -79,7 +79,7 @@ Section proof.
   Proof using ext_tys.
     iIntros (?) "(#HRcrash&HR&HΦc&Hfree&Hwp)".
     iMod (crash_inv_alloc Ncrash (LVL k') ⊤ ⊤ Rcrash R with "[HR]") as
-        (γ1) "(Hfull&Hpending)".
+        "(Hfull&Hpending)".
     { iFrame "HR". iAlways. by iApply "HRcrash". }
     iApply (wpc_crash_inv_init _ k k' Ncrash ⊤ E with "[-]"); try assumption.
     { set_solver +. }
@@ -96,9 +96,9 @@ Section proof.
   Proof.
     iIntros (? Φ) "Hcrash HΦ".
     rewrite /is_crash_lock.
-    iDestruct "Hcrash" as (?) "#His_lock".
+    iDestruct "Hcrash" as "#His_lock".
     wp_apply (acquire_spec' with "His_lock"); auto.
-    iIntros "(?&?)". iApply "HΦ". iExists (_, _). iFrame.
+    iIntros "(?&?)". iApply "HΦ". iExists _. iFrame.
     iFrame "His_lock".
   Qed.
 

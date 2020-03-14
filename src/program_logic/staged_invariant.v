@@ -186,4 +186,46 @@ Proof.
   iModIntro. eauto.
 Qed.
 
+(*
+Definition staged_inv_full N k E1 E2 Q Qr P :=
+  (∃ γ γ', staged_inv N k E1 E2 γ γ' P ∗ staged_value N γ Q Qr)%I.
+
+Lemma staged_inv_full_open E N k E1 E2 P Q Qr:
+  ↑N ⊆ E →
+  E2 ⊆ E1 →
+  staged_inv_full N k E1 E2 Q Qr P ={E,E∖↑N}=∗
+  (▷ ▷ Q ∗ (∀ Q' Qr', ▷ Q' ∗ □ (C -∗ Q' -∗ |={E1, E2}_k=> P ∗ Qr')
+                      ={E∖↑N,E}=∗ staged_inv_full N k E1 E2 Q' Qr' P)) ∨
+  (▷ ▷ Qr ∗ C ∗ |={E∖↑N, E}=> staged_inv_full N k E1 E2 Q True P).
+Proof.
+  iIntros (??) "H". iDestruct "H" as (γ γ') "(#Hinv&Hval)".
+  iMod (staged_inv_open with "[$]") as "[H1|H2]"; auto; iModIntro; [iLeft | iRight].
+  - iDestruct "H1" as "($&H1)". iIntros.
+    iMod ("H1" with "[$]") as "H2". iModIntro. iExists _, _. iFrame; eauto.
+  - iDestruct "H2" as "($&$&H)".
+    iMod ("H") as "Hval". iExists _, _. iModIntro; eauto.
+Qed.
+
+Definition sem_staged_inv N k E1 E2 Q Qr P :=
+  (∀ E, ⌜ ↑N ⊆ E ⌝ → ⌜ E2 ⊆ E1 ⌝ ={E,E∖↑N}=∗
+  (▷ ▷ Q ∗ (∀ Q' Qr', ▷ Q' ∗ □ (C -∗ Q' -∗ |={E1, E2}_k=> P ∗ Qr')
+                      ={E∖↑N,E}=∗ staged_inv_full N k E1 E2 Q' Qr' P)) ∨
+  (▷ ▷ Qr ∗ C ∗ |={E∖↑N, E}=> staged_inv_full N k E1 E2 Q True P))%I.
+
+Lemma staged_inv_combine N (N1_ext N2_ext: namespace) k E Q Q' Qr Qr' P P':
+  sem_staged_inv (N.@N1_ext) k (E ∖ ↑ N.@N1_ext) (E ∖ ↑ N.@N1_ext) Q Qr P -∗
+  sem_staged_inv (N.@N2_ext) k (E ∖ ↑ N.@N2_ext) (E ∖ ↑ N.@N2_ext) Q' Qr' P' -∗
+  sem_staged_inv N k (E ∖ ↑N) (E ∖ ↑N) (Q ∗ Q') (Qr ∗ Qr') (P ∗ P').
+Proof.
+  iIntros "H1 H2".
+  iIntros (E' Hin Hsub).
+  rewrite /sem_staged_inv.
+  unshelve (iSpecialize ("H1" $! E' _ _)).
+  { solve_ndisj. }
+  { solve_ndisj. }
+  iMod "H1".
+  iInv "H1".
+Abort
+*)
+
 End inv.

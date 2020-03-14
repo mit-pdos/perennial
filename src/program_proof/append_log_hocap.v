@@ -59,20 +59,20 @@ Definition log_crash_cond' s : iProp Σ :=
 Definition log_crash_cond : iProp Σ :=
   ∃ (s: log_state), log_state_to_crash s ∗ P s.
 
-Definition log_state_to_inv (s: log_state) k γ1 γ2 :=
+Definition log_state_to_inv (s: log_state) k γ2 :=
   match s with
-  | UnInit => crash_inv_full N2 k ⊤ γ1 (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | UnInit => crash_inv_full N2 k ⊤ (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
   | Initing => PStartedIniting
-  | Closed vs => crash_inv_full N2 k ⊤ γ1 (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | Closed vs => crash_inv_full N2 k ⊤ (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
   | Opening vs => PStartedOpening
   | Opened vs l => POpened
   end%I.
 
-Definition log_inv_inner k γ1 γ2 : iProp Σ :=
-  (∃ s, log_state_to_inv s k γ1 γ2 ∗ own γ2 (● (Excl' s)))%I.
+Definition log_inv_inner k γ2 : iProp Σ :=
+  (∃ s, log_state_to_inv s k γ2 ∗ own γ2 (● (Excl' s)))%I.
 
 Definition log_inv k :=
-  (∃ γ1 γ2, inv N (log_inv_inner (LVL k) γ1 γ2))%I.
+  (∃ γ2, inv N (log_inv_inner (LVL k) γ2))%I.
 
 Lemma append_log_crash_inv_obligation e (Φ: val → iProp Σ) Φc E k k':
   (k' < k)%nat →
@@ -83,7 +83,7 @@ Proof.
   iIntros (?) "Hinit Hwp".
   iDestruct "Hinit" as "[(HP&Hinit)|Hinit]".
   - iMod (crash_inv_alloc N2 (LVL k') ⊤ ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[HP Hinit]") as
-      (γ1) "(Hfull&Hpending)".
+      "(Hfull&Hpending)".
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
       iSplitL "HP Hinit".
       { iNext. iFrame => //=. }
@@ -93,13 +93,13 @@ Proof.
     { set_solver +. }
     iFrame.
     iMod (ghost_var_alloc (UnInit : log_stateO)) as (γ2) "(Hauth&Hfrag)".
-    iMod (inv_alloc N _ (log_inv_inner _ γ1 γ2) with "[Hfull Hauth Hfrag]") as "#?".
+    iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
     { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. }
     iApply ("Hwp" with "[]").
     { iExists _. eauto. }
   - iDestruct "Hinit" as (vs) "(HP&Hinit)".
     iMod (crash_inv_alloc N2 (LVL k') ⊤ ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[HP Hinit]") as
-      (γ1) "(Hfull&Hpending)".
+      "(Hfull&Hpending)".
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
       iSplitL "HP Hinit".
       { iNext. iFrame => //=. }
@@ -109,7 +109,7 @@ Proof.
     { set_solver +. }
     iFrame.
     iMod (ghost_var_alloc (Closed vs : log_stateO)) as (γ2) "(Hauth&Hfrag)".
-    iMod (inv_alloc N _ (log_inv_inner _ γ1 γ2) with "[Hfull Hauth Hfrag]") as "#?".
+    iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
     { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. }
     iApply ("Hwp" with "[]").
     { iExists _. eauto. }
@@ -239,7 +239,7 @@ Proof using PStartedOpening_Timeless.
   iIntros (? Hwand Φ Φc) "(#Hlog_inv&Hvs) HΦ".
   iApply wpc_fupd.
   rewrite /log_inv.
-  iDestruct "Hlog_inv" as (γ1 γ2) "#Hinv".
+  iDestruct "Hlog_inv" as (γ2) "#Hinv".
   iApply wpc_step_fupdN_inner3; first done.
   iInv "Hinv" as "Hinner" "Hclo".
   iMod (fupd_intro_mask' _ ∅) as "Hclo'"; first by set_solver+.
@@ -345,7 +345,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
   iIntros (Hsize ? Hwand Φ Φc) "(#Hlog_inv&Hvs) HΦ".
   iApply wpc_fupd.
   rewrite /log_inv.
-  iDestruct "Hlog_inv" as (γ1 γ2) "#Hinv".
+  iDestruct "Hlog_inv" as (γ2) "#Hinv".
   iApply wpc_step_fupdN_inner3; first done.
   iInv "Hinv" as "Hinner" "Hclo".
   iMod (fupd_intro_mask' _ ∅) as "Hclo'"; first by set_solver+.
