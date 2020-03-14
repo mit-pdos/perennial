@@ -507,6 +507,20 @@ Proof.
   iApply (wpc_step_fupdN_inner with "[Hwp]"); eauto.
 Qed.
 
+Lemma wpc_step_fupdN_inner3_NC s k E1 E2 e Φ Φc :
+  to_val e = None →
+  Φc ∧ (NC -∗ |={E1,E1}_3=> NC ∗ WPC e @ s; (LVL k); E1 ; E2 {{ Φ }} {{ Φc }}) -∗
+  WPC e @ s; (LVL (S k)); E1 ; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "Hwp".
+  specialize (SSS_LVL k) => Hlvl.
+  iApply (wpc_idx_mono with "[Hwp]"); first by eassumption.
+  replace (S (S (S (LVL k)))) with (3 + LVL k) by lia.
+  iApply (wpc_step_fupdN_inner_NC with "[Hwp]"); eauto.
+  iApply (and_mono with "Hwp"); auto.
+  iIntros. by iApply intro_wpc_crash_modality.
+Qed.
+
 Lemma wpc_fupd_crash_shift_empty' s k E1 e Φ Φc :
   WPC e @ s; (LVL k) ; E1 ; ∅ {{ Φ }} {{ |={E1}=> Φc }} ⊢ WPC e @ s; LVL (S k); E1 ; ∅ {{ Φ }} {{ Φc }}.
 Proof.

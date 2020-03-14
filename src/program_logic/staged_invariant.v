@@ -158,6 +158,19 @@ Proof.
   }
 Qed.
 
+Lemma staged_inv_NC_open E N k E1 E2 γ γ' P Q Qr:
+  ↑N ⊆ E →
+  E2 ⊆ E1 →
+  NC ∗
+  staged_inv N k E1 E2 γ γ' P ∗
+  staged_value N γ Q Qr ={E,E∖↑N}=∗
+  (▷ ▷ Q ∗ (∀ Q' Qr', ▷ Q' ∗ □ (C -∗ Q' -∗ |={E1, E2}_k=> P ∗ Qr') ={E∖↑N,E}=∗ staged_value N γ Q' Qr')).
+Proof.
+  iIntros (??) "(HNC&Hinv&Hval)".
+  iMod (staged_inv_open with "[$]") as "[H|(_&HC&_)]"; auto.
+  iDestruct (NC_C with "[$] [$]") as %[].
+Qed.
+
 Lemma staged_inv_weak_open E N k E1 γ γ' P:
   ↑N ⊆ E →
   E1 ⊆ E ∖ ↑N →
