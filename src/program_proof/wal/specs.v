@@ -40,11 +40,12 @@ Definition logged_upds (s:log_state.t): list update.t :=
 Definition inmem_upds (s:log_state.t): list update.t :=
   skipn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
 
-(* XXX Add: set of transaction positions to state, so that installed is a pos in that set *)
-(* XXX all addresses are in bound (in domain of disk) *)
+(* XXX all addresses are in updates are in domain of disk *)
 Definition valid_log_state (s : log_state.t) :=
   int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
-  int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to).
+  int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to) ∧
+  s.(log_state.trans) !! s.(log_state.durable_to) = Some (true) ∧
+  s.(log_state.trans) !! s.(log_state.installed_to) = Some (true).
 
 Lemma latest_disk_at_pos: forall σ,
     latest_disk σ = disk_at_pos (length σ.(log_state.updates)) σ.
@@ -53,10 +54,10 @@ Proof.
   unfold latest_disk; eauto.
 Qed.
 
-(* XXX crash in a pos that corresponds to a transaction *)
 Definition log_crash: transition log_state.t unit :=
   kv ← suchThat (gen:=fun _ _ => None)
      (fun s '(pos, d, upds) => s.(log_state.disk) = d ∧
+                            s.(log_state.trans) !! pos = Some (true) ∧
                             int.val pos >= int.val s.(log_state.durable_to) ∧
                             upds = firstn (Z.to_nat (int.val pos)) s.(log_state.updates));
   let '(pos, d, upds) := kv in
@@ -66,21 +67,21 @@ Definition log_crash: transition log_state.t unit :=
           set log_state.installed_to (λ _, pos));;
   ret tt.
 
-(* XXX pos must be a transaction boundary *)
 Definition update_installed: transition log_state.t u64 :=
   new_installed ← suchThat (gen:=fun _ _ => None)
-                (fun s pos => int.val s.(log_state.installed_to) <=
+                (fun s pos => s.(log_state.trans) !! pos = Some (true) ∧
+                            int.val s.(log_state.installed_to) <=
                             int.val pos <=
                             int.val s.(log_state.durable_to));
   modify (set log_state.installed_to (λ _, new_installed));;
   ret new_installed.
 
-(* XXX pos must be a transaction boundary *)
 Definition update_durable: transition log_state.t u64 :=
   new_durable ← suchThat (gen:=fun _ _ => None)
-                (fun s pos => int.val s.(log_state.durable_to) <=
-                            int.val pos <= 
-                            int.val (length s.(log_state.updates)));
+              (fun s pos =>  s.(log_state.trans) !! pos = Some (true) ∧
+                          int.val s.(log_state.durable_to) <=
+                          int.val pos <= 
+                          int.val (length s.(log_state.updates)));
   modify (set log_state.durable_to (λ _, new_durable));;
   ret new_durable.
 
@@ -113,16 +114,20 @@ Fixpoint absorb_map upds m: gmap u64 Block :=
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   logged ← reads logged_upds;
   inmem  ← reads inmem_upds;
+  updates ← reads get_updates;
   (* new are the updates after absorbing of inmem in upds; that is,
   replacing upds in inmem with upds if to the same address.  *)
   new ← suchThat (gen:=fun _ _ => None)
                  (fun s new => absorb_map new ∅ = absorb_map (inmem++upds) ∅);
   modify (set log_state.updates (λ _, logged++new));;
+  modify (set log_state.trans <[ U64 (length updates) := true]>);;
   ret (U64 (length (logged++new))).
 
-(* XXX flush should be undefined when the position is invalid *)
 Definition log_flush (pos: u64): transition log_state.t unit :=
-  modify (set log_state.durable_to (λ _, pos)).
+  p  ← suchThat (gen:=fun _ _ => None)
+     (fun s (p:u64) => s.(log_state.trans) !! pos = Some (true) ∧
+                    p = pos);
+  modify (set log_state.durable_to (λ _, p)).
 
 (*
 Section heap.
@@ -243,39 +248,4 @@ Definition get_txn_disk (pos:u64) : transition log_state.t disk :=
   reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap.
  *)
 
-(*
-Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
-  ok ← suchThat (fun _ (b:bool) => True);
-  if (ok:bool)
-  then d ← reads (snd ∘ latest_disk);
-       match d !! int.val a with
-       | None => undefined
-       | Some b => ret (Some b)
-       end
-  else (* this is really non-deterministic; it would be simpler if upfront we
-          moved installed_to forward to a valid transaction and then made most
-          of the remaining decisions deterministically. *)
-    new_installed ← update_installed;
-    install_d ← get_txn_disk new_installed;
-    suchThat (gen:=fun _ _ => None)
-             (fun s (_:unit) =>
-                forall pos d, int.val s.(log_state.installed_to) ≤ int.val pos ->
-                         s.(log_state.txn_disk) !! pos = Some d ->
-                         d !! int.val a = install_d !! int.val a);;
-    ret None.
-*)
-
-(*
-Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
-  txn_d ← reads latest_disk;
-  let '(txn, d) := txn_d in
-  (* Note that if the new position can be an earlier txn if every update is
-  absorbed (as a special case, an empty list of updates is always fully
-  absorbed). In that case what was previously a possible crash point is now
-  gone. This is actually the case when it happens because that transaction was
-  in memory. *)
-  new_txn ← suchThat (gen:=fun _ _ => None) (fun _ new_txn => int.val new_txn >= int.val txn);
-  modify (set log_state.txn_disk (<[new_txn:=apply_upds upds d]>));;
-  ret new_txn.
-*)          
 

@@ -19,12 +19,14 @@ Module log_state.
     mk {
         disk: disk;
         updates: list update.t;
+        (* positions that are a transaction boundary *)
+        trans: gmap u64 bool;
         (* installed_to promises what will be read after a cache miss *)
         installed_to: u64;
         (* durable_to promises what will be on-disk after a crash *)
         durable_to: u64;
       }.
-  Global Instance _eta: Settable _ := settable! mk <disk; updates; installed_to; durable_to>.
+  Global Instance _eta: Settable _ := settable! mk <disk; updates; trans; installed_to; durable_to>.
 
   Definition last_pos (s: t): u64 := (length s.(updates)).
   
