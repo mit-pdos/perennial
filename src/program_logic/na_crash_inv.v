@@ -19,21 +19,21 @@ Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Definition crash_inv N k P :=
+Definition na_crash_inv N k P :=
   (∃ γ γ', staged_inv N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) γ γ' P)%I.
 
-Definition crash_inv_full N k Q P :=
+Definition na_crash_inv_full N k Q P :=
   (∃ γ γ' Qr, staged_inv N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) γ γ' P ∗ staged_value N γ Q Qr ∗ □ (Q -∗ P))%I.
 
-Definition crash_inv_pending N k P :=
+Definition na_crash_inv_pending N k P :=
   (∃ γ γ', staged_inv N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) γ γ' P ∗ staged_pending γ')%I.
 
-Global Instance crash_inv_pers N k P : Persistent (crash_inv N k P).
+Global Instance na_crash_inv_pers N k P : Persistent (na_crash_inv N k P).
 Proof. apply _. Qed.
 
-Lemma crash_inv_alloc N k E P Q:
+Lemma na_crash_inv_alloc N k E P Q:
   ▷ Q ∗ □ (Q -∗ P) ={E}=∗
-  crash_inv_full N k Q P ∗ crash_inv_pending N k P.
+  na_crash_inv_full N k Q P ∗ na_crash_inv_pending N k P.
 Proof.
   iIntros "HQP".
   iDestruct "HQP" as "(HQ&#HQP)".
@@ -45,25 +45,25 @@ Proof.
   - iExists γ, _. iFrame. iFrame "Hinv".
 Qed.
 
-Lemma crash_inv_full_impl N k Q P:
-  crash_inv_full N k Q P -∗ □ (Q -∗ P).
+Lemma na_crash_inv_full_impl N k Q P:
+  na_crash_inv_full N k Q P -∗ □ (Q -∗ P).
 Proof. iIntros "H". iDestruct "H" as (???) "(?&?&$)"; eauto. Qed.
 
-Lemma crash_inv_full_weaken N k Q P:
-  crash_inv_full N k Q P -∗ crash_inv N k P.
+Lemma na_crash_inv_full_weaken N k Q P:
+  na_crash_inv_full N k Q P -∗ na_crash_inv N k P.
 Proof. iIntros "H". iDestruct "H" as (???) "(?&?)"; eauto. iExists _, _. iFrame. Qed.
 
-Lemma crash_inv_pending_weaken N k P:
-  crash_inv_pending N k P -∗ crash_inv N k P.
+Lemma na_crash_inv_pending_weaken N k P:
+  na_crash_inv_pending N k P -∗ na_crash_inv N k P.
 Proof. iIntros "H". iDestruct "H" as (??) "(?&?)"; eauto. iExists _, _. iFrame. Qed.
 
-Lemma wpc_crash_inv_open s k k' E1 E2 e Φ Φc Q P N:
+Lemma wpc_na_crash_inv_open s k k' E1 E2 e Φ Φc Q P N:
   ↑N ⊆ E1 →
   S k < k' →
   to_val e = None →
-  crash_inv_full N (LVL k') Q P -∗
+  na_crash_inv_full N (LVL k') Q P -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, Q ∗ (crash_inv_full N (LVL k') Q P -∗ (Φ v ∧ Φc))}}
+                    {{λ v, Q ∗ (na_crash_inv_full N (LVL k') Q P -∗ (Φ v ∧ Φc))}}
                     {{ Φc ∗ P }})) -∗
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
@@ -84,13 +84,13 @@ Proof.
   - iIntros. rewrite difference_diag_L. iModIntro; eauto.
 Qed.
 
-Lemma wpc_crash_inv_open_modify Qnew s k k' E1 E2 e Φ Φc Q P N :
+Lemma wpc_na_crash_inv_open_modify Qnew s k k' E1 E2 e Φ Φc Q P N :
   ↑N ⊆ E1 →
   S k < k' →
   to_val e = None →
-  crash_inv_full N (LVL k') Q P -∗
+  na_crash_inv_full N (LVL k') Q P -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, Qnew v ∗ □ (Qnew v -∗ P)  ∗ (crash_inv_full N (LVL k') (Qnew v) P -∗ (Φ v ∧ Φc))}}
+                    {{λ v, Qnew v ∗ □ (Qnew v -∗ P)  ∗ (na_crash_inv_full N (LVL k') (Qnew v) P -∗ (Φ v ∧ Φc))}}
                     {{ Φc ∗ P }})) -∗
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
@@ -110,9 +110,9 @@ Proof.
   - iIntros. rewrite difference_diag_L. iModIntro; eauto.
 Qed.
 
-Lemma wpc_crash_inv_init s k k' N E2 e Φ Φc P :
+Lemma wpc_na_crash_inv_init s k k' N E2 e Φ Φc P :
   k' < k →
-  crash_inv_pending N (LVL k') P ∗
+  na_crash_inv_pending N (LVL k') P ∗
   WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ Φc }} ⊢
   WPC e @ s; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc ∗ P }}.
 Proof.
@@ -121,10 +121,10 @@ Proof.
   iApply wpc_staged_inv_init; last (by iFrame); eauto.
 Qed.
 
-Lemma crash_inv_open_modify N k' k E E' P Q R:
+Lemma na_crash_inv_open_modify N k' k E E' P Q R:
   ↑N ⊆ E →
-  crash_inv_full N k' Q P -∗
-  ((Q ∗ (∀ Q', ▷ Q' ∗ □ (Q' -∗ P) ={E∖↑N,E}=∗ crash_inv_full N k' Q' P)) ∨ (C ∗ |={E∖↑N, E}=> crash_inv_full N k' Q P)
+  na_crash_inv_full N k' Q P -∗
+  ((Q ∗ (∀ Q', ▷ Q' ∗ □ (Q' -∗ P) ={E∖↑N,E}=∗ na_crash_inv_full N k' Q' P)) ∨ (C ∗ |={E∖↑N, E}=> na_crash_inv_full N k' Q P)
    -∗ |={E ∖ ↑N, E'}_k=> R) -∗
   (|={E,E'}_(S (S k))=> R).
 Proof.
@@ -146,15 +146,15 @@ Proof.
   - iRight. iFrame. iMod "Hclo". iModIntro. iExists _, _, _. iFrame "Hclo Hwand Hinv".
 Qed.
 
-Lemma crash_inv_open N k' k E E' P Q R:
+Lemma na_crash_inv_open N k' k E E' P Q R:
   ↑N ⊆ E →
-  crash_inv_full N k' Q P -∗
-  ((Q ∗ (▷ Q ={E∖↑N,E}=∗ crash_inv_full N k' Q P)) ∨ (C ∗ |={E∖↑N, E}=> crash_inv_full N k' Q P)
+  na_crash_inv_full N k' Q P -∗
+  ((Q ∗ (▷ Q ={E∖↑N,E}=∗ na_crash_inv_full N k' Q P)) ∨ (C ∗ |={E∖↑N, E}=> na_crash_inv_full N k' Q P)
    -∗ |={E ∖ ↑N, E'}_k=> R) -∗
   (|={E,E'}_(S (S k))=> R).
 Proof.
-  iIntros (?) "H1 H2". iDestruct (crash_inv_full_impl with "[$]") as "#HQP".
-  iApply (crash_inv_open_modify with "[$]"); first done.
+  iIntros (?) "H1 H2". iDestruct (na_crash_inv_full_impl with "[$]") as "#HQP".
+  iApply (na_crash_inv_open_modify with "[$]"); first done.
   iIntros "Hwand". iApply ("H2" with "[Hwand]").
   iDestruct "Hwand" as "[H1|H2]".
    - iLeft. iDestruct "H1" as "($&H)". iIntros "HQ". by iMod ("H" $! Q with "[$]").

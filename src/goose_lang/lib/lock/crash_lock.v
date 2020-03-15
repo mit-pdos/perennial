@@ -4,7 +4,7 @@ From iris.algebra Require Import excl.
 From iris.base_logic.lib Require Import invariants.
 From iris.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import crash_weakestpre staged_invariant.
-From Perennial.program_logic Require Export crash_inv.
+From Perennial.program_logic Require Export na_crash_inv.
 
 From Perennial.goose_lang Require Export lang typing.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode notation.
@@ -23,11 +23,11 @@ Section proof.
   Context `{!heapG Σ, !lockG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
 
   Definition is_crash_lock k (γlk: gname) (lk: val) (R Rcrash: iProp Σ) : iProp Σ :=
-    is_lock Nlock γlk lk (crash_inv_full Ncrash k R Rcrash).
+    is_lock Nlock γlk lk (na_crash_inv_full Ncrash k R Rcrash).
 
   Definition crash_locked k Γ lk R Rcrash : iProp Σ :=
-    (crash_inv_full Ncrash k R Rcrash ∗
-           is_lock Nlock Γ lk (crash_inv_full Ncrash k R Rcrash) ∗
+    (na_crash_inv_full Ncrash k R Rcrash ∗
+           is_lock Nlock Γ lk (na_crash_inv_full Ncrash k R Rcrash) ∗
            locked Γ)%I.
 
   (*
@@ -41,7 +41,7 @@ Section proof.
     WPC K (lock.new #()) @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ Rcrash }}.
   Proof using ext_tys.
     iIntros (?) "(#HRcrash&HR&HΦc&Hwp)".
-    iMod (crash_inv_alloc Ncrash (LVL k') ⊤ ⊤ Rcrash R with "[HR]") as
+    iMod (na_crash_inv_alloc Ncrash (LVL k') ⊤ ⊤ Rcrash R with "[HR]") as
         (γ1) "(Hfull&Hpending)".
     { iFrame "HR". iAlways. by iApply "HRcrash". }
     iApply (wpc_ci_inv _ k k' Ncrash ⊤ E with "[-]"); try assumption.
@@ -59,7 +59,7 @@ Section proof.
 
   Lemma alloc_crash_lock' k E lk (R Rcrash : iProp Σ):
     is_free_lock lk -∗
-    crash_inv_full Ncrash k R Rcrash
+    na_crash_inv_full Ncrash k R Rcrash
     ={E}=∗ ∃ γ, is_crash_lock k γ #lk R Rcrash.
   Proof using ext_tys.
     iIntros "Hfree Hfull".
@@ -78,10 +78,10 @@ Section proof.
     WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ Rcrash }}.
   Proof using ext_tys.
     iIntros (?) "(#HRcrash&HR&HΦc&Hfree&Hwp)".
-    iMod (crash_inv_alloc Ncrash (LVL k') ⊤ Rcrash R with "[HR]") as
+    iMod (na_crash_inv_alloc Ncrash (LVL k') ⊤ Rcrash R with "[HR]") as
         "(Hfull&Hpending)".
     { iFrame "HR". iAlways. by iApply "HRcrash". }
-    iApply (wpc_crash_inv_init _ k k' Ncrash E with "[-]"); try assumption.
+    iApply (wpc_na_crash_inv_init _ k k' Ncrash E with "[-]"); try assumption.
     iFrame.
     iMod (alloc_crash_lock' with "Hfree Hfull") as (?) "Hlk".
     iApply ("Hwp" with "[$]"). by iFrame.
@@ -112,7 +112,7 @@ Section proof.
   Proof.
     iIntros (??) "Hcrash_locked H".
     iDestruct "Hcrash_locked" as "(Hfull&#His_lock&Hlocked)".
-    iApply (wpc_crash_inv_open with "[$] [H Hlocked]"); try iFrame; auto.
+    iApply (wpc_na_crash_inv_open with "[$] [H Hlocked]"); try iFrame; auto.
     iSplit.
     - iDestruct "H" as "($&_)".
     - iIntros "HR". iDestruct "H" as "(_&H)".

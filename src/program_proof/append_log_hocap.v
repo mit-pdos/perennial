@@ -61,9 +61,9 @@ Definition log_crash_cond : iProp Σ :=
 
 Definition log_state_to_inv (s: log_state) k γ2 :=
   match s with
-  | UnInit => crash_inv_full N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | UnInit => na_crash_inv_full N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
   | Initing => PStartedIniting
-  | Closed vs => crash_inv_full N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | Closed vs => na_crash_inv_full N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
   | Opening vs => PStartedOpening
   | Opened vs l => POpened
   end%I.
@@ -74,7 +74,7 @@ Definition log_inv_inner k γ2 : iProp Σ :=
 Definition log_inv k :=
   (∃ γ2, inv N (log_inv_inner (LVL k) γ2))%I.
 
-Lemma append_log_crash_inv_obligation e (Φ: val → iProp Σ) Φc E k k':
+Lemma append_log_na_crash_inv_obligation e (Φ: val → iProp Σ) Φc E k k':
   (k' < k)%nat →
   log_init -∗
   (log_inv k' -∗ (WPC e @ NotStuck; LVL k; ⊤; E {{ Φ }} {{ Φc }})) -∗
@@ -82,14 +82,14 @@ Lemma append_log_crash_inv_obligation e (Φ: val → iProp Σ) Φc E k k':
 Proof.
   iIntros (?) "Hinit Hwp".
   iDestruct "Hinit" as "[(HP&Hinit)|Hinit]".
-  - iMod (crash_inv_alloc N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[HP Hinit]") as
+  - iMod (na_crash_inv_alloc N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[HP Hinit]") as
       "(Hfull&Hpending)".
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
       iSplitL "HP Hinit".
       { iNext. iFrame => //=. }
       iAlways. iIntros "H". iExists _; eauto.
     }
-    iApply (wpc_crash_inv_init _ k k' N2 E with "[-]"); try assumption.
+    iApply (wpc_na_crash_inv_init _ k k' N2 E with "[-]"); try assumption.
     iFrame.
     iMod (ghost_var_alloc (UnInit : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
@@ -97,14 +97,14 @@ Proof.
     iApply ("Hwp" with "[]").
     { iExists _. eauto. }
   - iDestruct "Hinit" as (vs) "(HP&Hinit)".
-    iMod (crash_inv_alloc N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[HP Hinit]") as
+    iMod (na_crash_inv_alloc N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[HP Hinit]") as
       "(Hfull&Hpending)".
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
       iSplitL "HP Hinit".
       { iNext. iFrame => //=. }
       iAlways. iIntros "H". iExists _; eauto.
     }
-    iApply (wpc_crash_inv_init _ k k' N2 E with "[-]"); try assumption.
+    iApply (wpc_na_crash_inv_init _ k k' N2 E with "[-]"); try assumption.
     iFrame.
     iMod (ghost_var_alloc (Closed vs : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
@@ -250,7 +250,7 @@ Proof using PStartedOpening_Timeless.
          eauto; done).
   (* UnInit case *)
   { iDestruct "Hstate_to_inv" as "(Hval&Hfrag_state)".
-    iApply (crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
+    iApply (na_crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
     { solve_ndisj. }
     iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
     - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
@@ -263,11 +263,11 @@ Proof using PStartedOpening_Timeless.
       by iApply "HΦ".
   }
   iDestruct "Hstate_to_inv" as "(Hval&Hfrag_state)".
-  iApply (crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
+  iApply (na_crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
   { solve_ndisj. }
   iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
   - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
-    (* Viewshift to the "Opening" state, which will let us take out the crash_inv_full from inv *)
+    (* Viewshift to the "Opening" state, which will let us take out the na_crash_inv_full from inv *)
     iDestruct "Hvs" as "(_&_&Hvs)". iMod ("Hvs" with "HP") as "(Hopening&HP&Hvs)".
     iMod ("Hclose" $! (log_state_to_crash (Opening s) ∗ P (Opening s))%I with "[HP Hlog_state]") as "Hfull".
     { iSplitL "HP Hlog_state".
@@ -278,7 +278,7 @@ Proof using PStartedOpening_Timeless.
     { iNext. iExists _; iFrame; eauto. }
     (* XXX: make it so you can iModIntro |={E,E}_k=> *)
     iApply step_fupdN_inner_later; auto.
-    iApply (wpc_crash_inv_open_modify (λ v,
+    iApply (wpc_na_crash_inv_open_modify (λ v,
                                        match v with
                                        | LitV (LitLoc l) => (∃ bs, ptsto_log l bs ∗ P (Opened bs l))
                                        | _ => False
@@ -356,7 +356,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
          eauto; done).
   2:{
     iDestruct "Hstate_to_inv" as "(Hval&Hfrag_state)".
-    iApply (crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
+    iApply (na_crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
     { solve_ndisj. }
     iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
     - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
@@ -369,11 +369,11 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
       by iApply "HΦ".
   }
   iDestruct "Hstate_to_inv" as "(Hval&Hfrag_state)".
-  iApply (crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
+  iApply (na_crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
   { solve_ndisj. }
   iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
   - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
-    (* Viewshift to the "Initing" state, which will let us take out the crash_inv_full from inv *)
+    (* Viewshift to the "Initing" state, which will let us take out the na_crash_inv_full from inv *)
     iDestruct "Hvs" as "(_&_&Hvs)". iMod ("Hvs" with "HP") as "(Hopening&HP&Hvs)".
     iMod ("Hclose" $! (log_state_to_crash (Initing) ∗ P (Initing))%I with "[HP Hlog_state]") as "Hfull".
     { iSplitL "HP Hlog_state".
@@ -384,7 +384,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
     { iNext. iExists _; iFrame; eauto. }
     (* XXX: make it so you can iModIntro |={E,E}_k=> *)
     iApply step_fupdN_inner_later; auto.
-    iApply (wpc_crash_inv_open_modify (λ v,
+    iApply (wpc_na_crash_inv_open_modify (λ v,
                                        match v with
                                        | PairV (LitV (LitLoc l))
                                                (LitV (LitBool true))
