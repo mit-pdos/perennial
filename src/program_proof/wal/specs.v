@@ -4,7 +4,7 @@ Import RecordSetNotations.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import Transitions.
-From Perennial.program_proof Require Import proof_prelude wal.abstraction.
+From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.circular_proof.
 
 Instance gen_gmap_entry {Σ K} `{Countable K} {V} (m: gmap K V) :
   GenPred (K*V) Σ (fun _ '(k, v) => m !! k = Some v).
@@ -34,18 +34,30 @@ Definition latest_disk (s:log_state.t): disk :=
 Definition installed_disk (s:log_state.t): disk :=
   disk_at_pos s.(log_state.installed_to) s.
 
-Definition logged_upds (s:log_state.t): list update.t :=
+(* updates that have been logged or installed *)
+Definition stable_upds (s:log_state.t): list update.t :=
   firstn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
 
+(* updates in the on-disk log *)
+Definition logged_upds (s:log_state.t): list update.t :=
+  skipn (Z.to_nat (int.val s.(log_state.installed_to))) (stable_upds s).
+
+(* update in the in-memory log *)
 Definition inmem_upds (s:log_state.t): list update.t :=
   skipn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
 
-(* XXX all addresses are in updates are in domain of disk *)
+Definition valid_addrs (updates: list update.t) (d: disk) :=
+  forall i u, updates !! i = Some u -> ∃ (b: Block), d !! (int.val u.(update.addr)) = Some b.
+
+Definition is_trans (trans: gmap u64 bool) pos :=
+  trans !! pos = Some(true).
+
 Definition valid_log_state (s : log_state.t) :=
+  valid_addrs s.(log_state.updates) s.(log_state.disk) ∧
+  is_trans s.(log_state.trans) s.(log_state.durable_to) ∧
+  is_trans s.(log_state.trans) s.(log_state.installed_to) ∧
   int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
-  int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to) ∧
-  s.(log_state.trans) !! s.(log_state.durable_to) = Some (true) ∧
-  s.(log_state.trans) !! s.(log_state.installed_to) = Some (true).
+  int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to).
 
 Lemma latest_disk_at_pos: forall σ,
     latest_disk σ = disk_at_pos (length σ.(log_state.updates)) σ.
@@ -110,18 +122,19 @@ Fixpoint absorb_map upds m: gmap u64 Block :=
   | upd :: upd0 => absorb_map upd0 (<[update.addr upd := update.b upd]> m)
   end.                   
 
-(* XXX  upds fit in log *)
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   logged ← reads logged_upds;
+  assert (fun σ => length (logged ++ upds) <= circular_proof.LogSz);;
   inmem  ← reads inmem_upds;
+  stable ← reads stable_upds;
   updates ← reads get_updates;
   (* new are the updates after absorbing of inmem in upds; that is,
   replacing upds in inmem with upds if to the same address.  *)
   new ← suchThat (gen:=fun _ _ => None)
                  (fun s new => absorb_map new ∅ = absorb_map (inmem++upds) ∅);
-  modify (set log_state.updates (λ _, logged++new));;
+  modify (set log_state.updates (λ _, stable++new));;
   modify (set log_state.trans <[ U64 (length updates) := true]>);;
-  ret (U64 (length (logged++new))).
+  ret (U64 (length (stable++new))).
 
 Definition log_flush (pos: u64): transition log_state.t unit :=
   p  ← suchThat (gen:=fun _ _ => None)
