@@ -85,6 +85,13 @@ Proof.
     iIntros "(?&$)". by iApply "HPQ".
 Qed.
 
+Lemma pending_alloc:
+  (|==> ∃ γ, staged_pending γ)%I.
+Proof.
+  iApply (own_alloc (Cinl (Excl ()))).
+  { econstructor. }
+Qed.
+
 Lemma staged_inv_alloc N k E E' P Q Qr:
   ▷ Q ∗ □ (C -∗ Q -∗ P ∗ Qr) ={E}=∗
   ∃ γ γ', staged_inv N k E' E' γ γ' P ∗ staged_value N γ Q Qr ∗ staged_pending γ'.
@@ -93,8 +100,7 @@ Proof.
   iMod (saved_prop_alloc Qr) as (γprop') "#Hsaved'".
   iMod (own_alloc (● (Excl' (γprop, γprop')) ⋅ ◯ (Excl' (γprop, γprop')))) as (γ) "[H1 H2]".
   { apply auth_both_valid_2; [econstructor | reflexivity]. }
-  iMod (own_alloc (Cinl (Excl ()))) as (γ') "H".
-  { econstructor. }
+  iMod (pending_alloc) as (γ') "H".
   iIntros "(HQ&#HQP)".
   iMod (inv_alloc N E _ with "[HQ H1]") as "HI"; last first.
   { iModIntro. iExists γ, γ'. iFrame "H". iSplitL "HI".
