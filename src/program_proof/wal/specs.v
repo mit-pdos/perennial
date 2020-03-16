@@ -157,10 +157,8 @@ Definition blocks_to_gmap (bs:list Block): disk.
   (* this is just annoying to write down *)
 Admitted.
 
-Definition empty_gmap: gmap u64 bool :=  ∅.
-
 Theorem wp_new_wal bs :
-  {{{ P (log_state.mk {[U64 0 := blocks_to_gmap bs]} ([]) (∅) (U64 0) (U64 0)) ∗ 0 d↦∗ bs }}}
+  {{{ P (log_state.mk (blocks_to_gmap bs) ([]) (∅) (U64 0) (U64 0)) ∗ 0 d↦∗ bs }}}
     MkLog #()
   {{{ l, RET #l; is_wal l }}}.
 Proof.
