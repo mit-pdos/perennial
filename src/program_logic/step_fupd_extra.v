@@ -65,8 +65,8 @@ Qed.
 Lemma step_fupdN_inner_plain `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
       (k: nat) (P: PROP) :
   Plain P →
-  ((|={⊤, ∅}=> |={∅, ∅}▷=>^k |={∅, ∅}=> P) -∗
-  |={⊤}=> ▷^(S k) P)%I.
+  ⊢ (|={⊤, ∅}=> |={∅, ∅}▷=>^k |={∅, ∅}=> P) -∗
+  |={⊤}=> ▷^(S k) P.
 Proof.
   iIntros (HPlain).
   iInduction k as [| k] "IH" forall (P HPlain).
@@ -171,7 +171,7 @@ Qed.
 
 Lemma step_fupdN_inner_plus E1 E2 k1 k2 (P: PROP):
   (|={E1,∅}=> |={∅,∅}▷=>^k1 |={∅, E1}=> |={E1,∅}=> |={∅,∅}▷=>^k2 |={∅,E2}=> P)
-  ⊢ (|={E1,∅}=> |={∅,∅}▷=>^(k1 + k2) |={∅,E2}=> P)%I.
+  ⊢ |={E1,∅}=> |={∅,∅}▷=>^(k1 + k2) |={∅,E2}=> P.
 Proof using HAff.
   rewrite Nat_iter_add.
   iIntros "H". iMod "H". iModIntro.
@@ -192,8 +192,8 @@ Qed.
 Lemma step_fupdN_inner_plain' `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
       (k: nat) (P: PROP) :
   Plain P →
-  ((|={⊤, ⊤}_k=> P) -∗
-  |={⊤}=> ▷^(S k) P)%I.
+  ⊢ (|={⊤, ⊤}_k=> P) -∗
+  |={⊤}=> ▷^(S k) P.
 Proof using HAff.
   iIntros (HPlain).
   iInduction k as [| k] "IH" forall (P HPlain).
@@ -212,8 +212,8 @@ Qed.
 Lemma step_fupdN_innerN_plain `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
       (k n: nat) (P: PROP) :
   Plain P →
-  ((|={⊤, ⊤}_k=>^n P) -∗
-  |={⊤}=> ▷^(n * (S k)) P)%I.
+  ⊢ (|={⊤, ⊤}_k=>^n P) -∗
+  |={⊤}=> ▷^(n * (S k)) P.
 Proof using HAff.
   iIntros (HPlain).
   iInduction n as [| n] "IH" forall (P HPlain).

@@ -48,10 +48,10 @@ Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 tp σ s tr or:
   σ.(oracle) = or →
   erased_rsteps (CS := spec_crash_lang) r (tp0, σ0) (tp, σ) s →
   crash_safe (CS := spec_crash_lang) r (tp0, σ0) →
-  ( trace_frag tr -∗ oracle_frag or -∗
+  ⊢ trace_frag tr -∗ oracle_frag or -∗
    |={⊤}=> ∃ _ : refinement_heapG Σ, spec_ctx' r (tp0, σ0) ∗ source_pool_map (tpool_to_map tp)
                                                ∗ ffi_start (refinement_spec_ffiG) σ.(world)
-                                               ∗ trace_ctx)%I.
+                                               ∗ trace_ctx.
 Proof using Hrpre Hcpre.
   iIntros (?? Hsteps Hsafe) "Htr Hor".
   iMod (source_cfg_init1 r tp0 σ0 tp σ) as (Hcfg) "(Hsource_ctx&Hpool&Hstate)"; eauto.
@@ -75,10 +75,10 @@ Lemma goose_spec_init2 {hG: heapG Σ} r tp σ tr or:
   σ.(trace) = tr →
   σ.(oracle) = or →
   crash_safe (CS := spec_crash_lang) r (tp, σ) →
-  ( trace_frag tr -∗ oracle_frag or -∗
+  ⊢ trace_frag tr -∗ oracle_frag or -∗
    |={⊤}=> ∃ _ : refinement_heapG Σ, spec_ctx' r (tp, σ) ∗ source_pool_map (tpool_to_map tp)
                                                ∗ ffi_start (refinement_spec_ffiG) σ.(world)
-                                               ∗ trace_ctx)%I.
+                                               ∗ trace_ctx.
 Proof using Hrpre Hcpre.
   intros; eapply goose_spec_init1; eauto.
   { do 2 econstructor. }
@@ -90,12 +90,12 @@ Lemma goose_spec_crash_init {hG: heapG Σ} {hRG: refinement_heapG Σ} r tp0 σ0 
   erased_rsteps (CS := spec_crash_lang) r (tp0, σ0) (tp, σ) s →
   crash_safe (CS := spec_crash_lang) r (tp0, σ0) →
   crash_prim_step spec_crash_lang σ σ_post_crash →
-  ( trace_frag tr -∗ oracle_frag or -∗ ffi_ctx refinement_spec_ffiG (world σ) -∗
+  ⊢ trace_frag tr -∗ oracle_frag or -∗ ffi_ctx refinement_spec_ffiG (world σ) -∗
    |={⊤}=> ∃ hRG' : refinement_heapG Σ, spec_ctx' r (tp0, σ0) ∗ source_pool_map (tpool_to_map [r])
              ∗ ffi_crash_rel Σ (@refinement_spec_ffiG _ _ _ _ _ hRG) (world σ)
                                (refinement_spec_ffiG) (world σ_post_crash)
              ∗ ffi_restart (refinement_spec_ffiG) (world σ_post_crash)
-             ∗ trace_ctx)%I.
+             ∗ trace_ctx.
 Proof using Hrpre Hcpre.
   iIntros (?? Hsteps Hsafe Hcrash) "Htr Hor Hffi".
   iMod (source_cfg_init1 r tp0 σ0 [r] σ_post_crash) as (Hcfg) "(Hsource_ctx&Hpool&Hstate)"; eauto.
@@ -154,13 +154,13 @@ Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr 
   σ.(oracle) = σs.(oracle) →
   (∀ `{Hheap : !heapG Σ} `{Hc: !crashG Σ} {Href: refinement_heapG Σ}
      (HPF: ∃ Hi' Ht', Hheap = heap_update_pre _ _ Hi' (@pbundleT _ Σ Ht')),
-     (|={⊤}=>
+     ⊢ |={⊤}=>
        (spec_ctx' rs ([es], σs) -∗
         trace_ctx -∗
        □ (∀ Hi t, Φinv Hi t -∗
                        let _ := heap_update _ Hheap Hi (@pbundleT _ _ t) in
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], σs) ∗ trace_ctx (hR := Href')) ∗
-        (ffi_start (heapG_ffiG) σ.(world) -∗ ffi_start (refinement_spec_ffiG) σs.(world) -∗ O ⤇ es -∗ wpr NotStuck k _ Hc {| pbundleT := heap_get_names _ Hheap |}  ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝))))%I) →
+        (ffi_start (heapG_ffiG) σ.(world) -∗ ffi_start (refinement_spec_ffiG) σs.(world) -∗ O ⤇ es -∗ wpr NotStuck k _ Hc {| pbundleT := heap_get_names _ Hheap |}  ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝)))) →
   trace_refines e r σ es rs σs.
 Proof using Hrpre Hhpre Hcpre.
   intros ?? Hwp Hsafe.
@@ -353,8 +353,8 @@ Theorem heap_wpc_refinement_adequacy `{crashPreG Σ} k es e
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →
-  wpc_init k ⊤ e es Φ Φc initP →
-  wpc_post_crash k ⊤ e es Φ Φc →
+  (⊢ wpc_init k ⊤ e es Φ Φc initP) →
+  (⊢ wpc_post_crash k ⊤ e es Φ Φc) →
   trace_refines e e σ es es σs.
 Proof using Hrpre Hhpre Hcpre.
   intros Heq1 Heq2 Hinit Hwp_init Hwp_crash.

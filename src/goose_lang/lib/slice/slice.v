@@ -148,7 +148,7 @@ Proof.
 Qed.
 
 Theorem is_slice_zero t q :
-  is_slice (Slice.mk null (U64 0) (U64 0)) t q [].
+  ⊢ is_slice (Slice.mk null (U64 0) (U64 0)) t q [].
 Proof.
   iApply is_slice_of_small; first by auto.
   rewrite /is_slice_small /=.

@@ -8,7 +8,7 @@ Context {A: ofeT} `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A}.
 Context {Σ} {Hin: inG Σ (authR (optionUR (exclR A)))}.
 
 Lemma ghost_var_alloc (a: A) :
-  (|==> ∃ γ, own γ (● (Excl' a)) ∗ own γ (◯ (Excl' a)))%I.
+  ⊢ |==> ∃ γ, own γ (● (Excl' a)) ∗ own γ (◯ (Excl' a)).
 Proof.
   iMod (own_alloc (● (Excl' a) ⋅ ◯ (Excl' a))) as (γ) "[H1 H2]".
   { apply auth_both_valid; split; eauto. econstructor. }

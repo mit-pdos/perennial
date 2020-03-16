@@ -98,7 +98,7 @@ Definition oracle_frag `{hT: traceG Σ} (o: Oracle) :=
   own (oracle_name (trace_tr_names)) (◯ (Excl' (o: OracleO))).
 
 Lemma trace_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
-  (|==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o)%I.
+  ⊢ |==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o .
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
   { apply auth_both_valid; split; eauto. econstructor. }
@@ -108,8 +108,8 @@ Proof.
 Qed.
 
 Lemma trace_name_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
-  (|==> ∃ name : tr_names, let _ := traceG_update_pre _ _ name in
-                           trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o)%I.
+  ⊢ |==> ∃ name : tr_names, let _ := traceG_update_pre _ _ name in
+                           trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o.
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
   { apply auth_both_valid; split; eauto. econstructor. }
@@ -119,8 +119,8 @@ Proof.
 Qed.
 
 Lemma trace_reinit `(hT: traceG Σ) (l: list event) (o: Oracle):
-  (|==> ∃ names : tr_names, let _ := traceG_update Σ hT names in
-     trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o)%I.
+  ⊢ |==> ∃ names : tr_names, let _ := traceG_update Σ hT names in
+     trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o.
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
   { apply auth_both_valid; split; eauto. econstructor. }

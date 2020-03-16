@@ -9,8 +9,8 @@ Lemma big_sepM2_lookup_1_some
     (i : K) (x1 : A)
     (_ : forall x2 : B, Absorbing (Φ i x1 x2)) :
   m1 !! i = Some x1 ->
-    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
-        ⌜∃ x2, m2 !! i = Some x2⌝ )%I.
+    ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+        ⌜∃ x2, m2 !! i = Some x2⌝.
 Proof.
   intros.
   iIntros "H".
@@ -23,8 +23,8 @@ Lemma big_sepM2_lookup_2_some
     (i : K) (x2 : B)
     (_ : forall x1 : A, Absorbing (Φ i x1 x2)) :
   m2 !! i = Some x2 ->
-    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
-        ⌜∃ x1, m1 !! i = Some x1⌝ )%I.
+    ⊢ ([∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2) -∗
+        ⌜∃ x1, m1 !! i = Some x1⌝.
 Proof.
   intros.
   iIntros "H".
@@ -37,8 +37,8 @@ Lemma big_sepM2_lookup_1_none
     (i : K)
     (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
   m1 !! i = None ->
-    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
-        ⌜m2 !! i = None⌝ )%I.
+    ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+        ⌜m2 !! i = None⌝.
 Proof.
   case_eq (m2 !! i); auto.
   iIntros (? ? ?) "H".
@@ -51,8 +51,8 @@ Lemma big_sepM2_lookup_2_none
     (i : K)
     (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
   m2 !! i = None ->
-    ( ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
-        ⌜m1 !! i = None⌝ )%I.
+    ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+        ⌜m1 !! i = None⌝.
 Proof.
   case_eq (m1 !! i); auto.
   iIntros (? ? ?) "H".

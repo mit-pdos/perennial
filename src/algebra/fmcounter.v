@@ -89,7 +89,7 @@ Proof.
 Qed.
 
 Lemma fmcounter_sep γ q1 q2 n:
-  (fmcounter γ (q1 + q2) n ∗-∗ fmcounter γ q1 n ∗ fmcounter γ q2 n)%I.
+  fmcounter γ (q1 + q2) n ⊣⊢ fmcounter γ q1 n ∗ fmcounter γ q2 n.
 Proof.
   iSplit.
   - iIntros "(Hm1&Hm2)". iFrame.

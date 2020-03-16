@@ -102,7 +102,7 @@ Section to_na_heap.
 End to_na_heap.
 
 Lemma na_heap_init `{Countable L, !na_heapPreG L V Σ} {LK} (tls: LK → lock_state) σ :
-  (|==> ∃ _ : na_heapG L V Σ, na_heap_ctx tls σ)%I.
+  ⊢ |==> ∃ _ : na_heapG L V Σ, na_heap_ctx tls σ.
 Proof.
   iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
   { rewrite auth_auth_valid. exact: to_na_heap_valid. }
@@ -384,7 +384,7 @@ Section na_heap_defs.
   Proof. destruct hG, names => //=. Qed.
 
   Lemma na_heap_name_init `{!na_heapPreG L V Σ} {LK} (tls: LK → _) σ :
-    (|==> ∃ names : na_heap_names, na_heap_ctx (hG := na_heapG_update_pre _ names) tls σ)%I.
+    ⊢ |==> ∃ names : na_heap_names, na_heap_ctx (hG := na_heapG_update_pre _ names) tls σ.
   Proof.
     iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
     { rewrite auth_auth_valid. exact: to_na_heap_valid. }
@@ -393,7 +393,7 @@ Section na_heap_defs.
   Qed.
 
   Lemma na_heap_reinit {Σ} (hG: na_heapG L V Σ) {LK} (tls: LK → _) σ :
-    (|==> ∃ names : na_heap_names, na_heap_ctx (hG := na_heapG_update hG names) tls σ)%I.
+    ⊢ |==> ∃ names : na_heap_names, na_heap_ctx (hG := na_heapG_update hG names) tls σ.
   Proof.
     iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
     { rewrite auth_auth_valid. exact: to_na_heap_valid. }

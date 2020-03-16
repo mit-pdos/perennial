@@ -25,13 +25,13 @@ End wpr_definitions.
 
 Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} `{crashPreG Σ} s k e r σ φ φr φinv Φinv :
   (∀ `{Hheap : !heapG Σ} `{Hc: !crashG Σ} Hinv t,
-     (|={⊤}=>
+     ⊢ |={⊤}=>
        (ffi_start (heapG_ffiG) σ.(world) -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
        □ (∀ n σ κ, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
        □ (∀ Hi t, Φinv Hi t -∗
                        let _ := heap_update _ Hheap Hi (@pbundleT _ _ t) in
                        □ ∀ σ κ n, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
-        wpr s k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝)))%I) →
+        wpr s k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝))) →
   recv_adequate (CS := heap_crash_lang) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
 Proof.
   intros Hwp. eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _).

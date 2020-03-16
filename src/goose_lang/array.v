@@ -106,7 +106,7 @@ Qed.
 version (with arbitrary q but no update) below *)
 Local Lemma update_array_gen {l vs off t q v} :
   vs !! off = Some v →
-  (l ↦∗[t]{q} vs -∗ ((l +ₗ[t] off) ↦[t]{q} v ∗ ∀ v', (l +ₗ[t] off) ↦[t]{q} v' -∗ l ↦∗[t]{q} <[off:=v']>vs))%I.
+  ⊢ l ↦∗[t]{q} vs -∗ ((l +ₗ[t] off) ↦[t]{q} v ∗ ∀ v', (l +ₗ[t] off) ↦[t]{q} v' -∗ l ↦∗[t]{q} <[off:=v']>vs).
 Proof.
   iIntros (Hlookup) "Hl".
   rewrite -[X in (l ↦∗[_]{_} X)%I](take_drop_middle _ off v); last done.
@@ -125,7 +125,7 @@ Qed.
 
 Lemma update_array {l vs off t v} :
   vs !! off = Some v →
-  (l ↦∗[t] vs -∗ ((l +ₗ[t] off) ↦[t] v ∗ ∀ v', (l +ₗ[t] off) ↦[t] v' -∗ l ↦∗[t] <[off:=v']>vs))%I.
+  ⊢ l ↦∗[t] vs -∗ ((l +ₗ[t] off) ↦[t] v ∗ ∀ v', (l +ₗ[t] off) ↦[t] v' -∗ l ↦∗[t] <[off:=v']>vs).
 Proof.
   apply update_array_gen.
 Qed.

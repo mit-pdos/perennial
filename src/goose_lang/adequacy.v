@@ -18,13 +18,13 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi}
     ffi_update_pre_get: ∀ Σ (hPre: ffi_preG Σ) names,
         ffi_get_names _ (ffi_update_pre _ hPre names) = names;
     ffi_name_init : forall Σ (hPre: ffi_preG Σ) (σ:ffi_state),
-          (|==> ∃ (names: ffi_names), let H0 := ffi_update_pre _ hPre names in ffi_ctx H0 σ ∗ ffi_start H0 σ)%I;
+          ⊢ |==> ∃ (names: ffi_names), let H0 := ffi_update_pre _ hPre names in ffi_ctx H0 σ ∗ ffi_start H0 σ;
     ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
     ffi_crash : forall Σ,
           ∀ (σ σ': ffi_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
-           (ffi_ctx Hold σ ==∗ ∃ (new: ffi_names), ffi_ctx (ffi_update Σ Hold new) σ' ∗
+           ⊢ ffi_ctx Hold σ ==∗ ∃ (new: ffi_names), ffi_ctx (ffi_update Σ Hold new) σ' ∗
                                                   ffi_crash_rel Σ Hold σ (ffi_update Σ Hold new) σ' ∗
-                                                  ffi_restart (ffi_update Σ Hold new) σ')%I;
+                                                  ffi_restart (ffi_update Σ Hold new) σ';
   }.
 
 (* this is the magic that lets subG_ffiPreG solve for an ffi_preG using only

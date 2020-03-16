@@ -86,7 +86,7 @@ Proof.
 Qed.
 
 Lemma pending_alloc:
-  (|==> ∃ γ, staged_pending γ)%I.
+  ⊢ |==> ∃ γ, staged_pending γ.
 Proof.
   iApply (own_alloc (Cinl (Excl ()))).
   { econstructor. }

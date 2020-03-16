@@ -62,7 +62,6 @@ Infix "->" := arrowT : heap_type.
 
 Reserved Notation "Γ ⊢ e : A" (at level 74, e, A at next level).
 Reserved Notation "Γ '⊢v' v : A" (at level 74, v, A at next level).
-Reserved Notation "⊢ v : A" (at level 90, v at next level, A at next level).
 
 Class ext_types (ext:ext_op) :=
   { val_tys :> val_types;
@@ -480,8 +479,6 @@ Bind Scope heap_type with ty.
 
 Notation "Γ ⊢ e : A" := (expr_hasTy Γ%ht e A%ht) : heap_types.
 Notation "Γ ⊢v v : A" := (val_hasTy Γ%ht v A%ht) : heap_types.
-Notation "⊢ v : A" := (base_lit_hasTy v%V A%ht) (only printing) : heap_types.
-Notation "⊢ e : A" := (val_hasTy ∅ e%V A%ht) : heap_types.
 
 Theorem insert_anon `{ext_ty: ext_types} t : (<[BAnon := t]> : Ctx -> Ctx) = (fun Γ => Γ).
 Proof.

@@ -169,13 +169,13 @@ Context (upd: specTy_update hsT_model spec_op_trans).
 Definition sty_init_obligation (sty_initP: istate → sstate → Prop) :=
       forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) `(hC: crashG Σ) (hPre: sty_preG Σ) σs σ
       (HINIT: sty_initP σ σs),
-        (ffi_start (heapG_ffiG) σ.(world) -∗
+        ⊢ ffi_start (heapG_ffiG) σ.(world) -∗
          ffi_start (refinement_spec_ffiG) σs.(world) -∗
-         |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0)%I.
+         |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
 
 Definition sty_crash_obligation :=
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
-      (sty_inv hS -∗ sty_crash_cond hS ={styN, ∅}=∗ ▷ ∀ (hG': heapG Σ), |={⊤}=>
+      ⊢ sty_inv hS -∗ sty_crash_cond hS ={styN, ∅}=∗ ▷ ∀ (hG': heapG Σ), |={⊤}=>
       ∀ (hC': crashG Σ) σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
@@ -186,7 +186,7 @@ Definition sty_crash_obligation :=
       ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
                       (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
       ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
-      |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new))%I.
+      |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new).
 
 Definition sty_rules_obligation :=
   ∀ op (vs: sval) v t1 t2,
@@ -200,11 +200,11 @@ Definition sty_rules_obligation :=
 Definition sty_crash_inv_obligation :=
   (forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
      e (Φ: ival → iProp Σ),
-    (sty_init hS -∗
+    ⊢ sty_init hS -∗
     spec_ctx -∗
     (sty_inv hS -∗ (WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ True%I }})) -∗
     sty_inv hS ∗
-    WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ sty_crash_cond hS }}))%I.
+    WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ sty_crash_cond hS }}).
 
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
@@ -269,8 +269,8 @@ Qed.
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
   ∀ Γ es e τ Hval, expr_transTy _ _ _ Hval Γ es e τ →
-  (forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
-    ctx_has_semTy (hS := hS) Γ es e τ)%I.
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+    ⊢ ctx_has_semTy (hS := hS) Γ es e τ.
 Proof using spec_op_trans.
   iIntros (Hrules ????? Htyping ??????).
   induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx".

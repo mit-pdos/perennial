@@ -121,7 +121,7 @@ Section disk.
     λ: <>,
        ExternalOp SizeOp #().
 
-  Theorem Size_t : ⊢ Size : (unitT -> uint64T).
+  Theorem Size_t : ∅ ⊢ Size : (unitT -> uint64T).
   Proof.
     typecheck.
   Qed.
@@ -280,7 +280,7 @@ lemmas. *)
   Theorem mapsto_block_extract i l q b :
     (0 <= i)%Z ->
     (i < 4096)%Z ->
-    (mapsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝)%I.
+    ⊢ mapsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝.
   Proof.
     unfold mapsto_block; intros Hlow Hhi.
     iIntros "Hm".

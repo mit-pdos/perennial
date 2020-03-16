@@ -87,11 +87,11 @@ Qed.
    where the crash condition implies the precondition for a crash wp for rec *)
 Lemma idempotence_wpr s k E1 E2 e rec Φx Φinv Φrx Φcx Hi Hc t:
   E2 ⊆ E1 →
-  ((WPC e @ s ; k ; E1 ; E2 {{ Φx t }} {{ Φcx t }}) -∗
+  ⊢ WPC e @ s ; k ; E1 ; E2 {{ Φx t }} {{ Φcx t }} -∗
    (□ ∀ (H: invG Σ) (Hc: crashG Σ) (t: pbundleG T Σ) σ σ' (HC: crash_prim_step CS σ σ') κs n,
         Φcx t -∗ state_interp σ κs n ={∅}=∗
         ▷ ∀ H' (Hc': crashG Σ), NC ={⊤}=∗ ∃ t', state_interp σ' κs 0 ∗ (Φinv H' t' ∧ WPC rec @ s ; k; E1 ; E2 {{ Φrx H' t' }} {{ Φcx t' }}) ∗ NC) -∗
-    wpr s k Hi Hc t E1 e rec (Φx t) Φinv Φrx)%I.
+    wpr s k Hi Hc t E1 e rec (Φx t) Φinv Φrx.
 Proof.
   iLöb as "IH" forall (E1 E2 e Hi Hc t Φx).
   iIntros (?) "He #Hidemp".

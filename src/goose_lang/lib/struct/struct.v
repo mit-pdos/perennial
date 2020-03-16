@@ -33,9 +33,7 @@ Theorem inv_readonly_acc {Σ} `{invG Σ}
         `{fractional.Fractional _ P} {Htimeless: forall q, Timeless (P q)}
         N E :
   ↑N ⊆ E →
-  (inv N (∃ q, P q)
-   ={E}=∗
-   ∃ q, P q)%I.
+  ⊢ inv N (∃ q, P q) ={E}=∗ ∃ q, P q.
 Proof.
   iIntros (HN) "#Hinv".
   iInv N as (q) ">H" "Hclose".

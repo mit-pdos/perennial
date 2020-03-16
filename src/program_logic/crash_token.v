@@ -25,7 +25,7 @@ Definition C_def `{crashG Σ} := own crash_name C_tok.
 Definition C_aux `{crashG Σ} : seal C_def. by eexists. Qed.
 Definition C `{crashG Σ} := C_aux.(unseal).
 
-Lemma NC_alloc `{!crashPreG Σ} : (|==> ∃ _ : crashG Σ, NC)%I.
+Lemma NC_alloc `{!crashPreG Σ} : ⊢ |==> ∃ _ : crashG Σ, NC.
 Proof.
   iIntros.
   iMod (own_alloc (Cinl (Excl ()))) as (γ) "H".

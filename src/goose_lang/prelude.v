@@ -29,10 +29,10 @@ Module Data.
          else (to_string !(slice.ptr ("b"))) +
               ("bytesToString" ((slice.ptr "b" +ₗ #1, slice.len "b" - #1), slice.cap "b" - #1))).
 
-    Axiom stringToBytes_t : ⊢ stringToBytes : (stringT -> slice.T byteT).
-    Axiom bytesToString_t : ⊢ bytesToString : (slice.T byteT -> stringT).
+    Axiom stringToBytes_t : ∅ ⊢ stringToBytes : (stringT -> slice.T byteT).
+    Axiom bytesToString_t : ∅ ⊢ bytesToString : (slice.T byteT -> stringT).
     Definition randomUint64: val := λ: <>, #0.
-    Theorem randomUint64_t: ⊢ randomUint64 : (unitT -> uint64T).
+    Theorem randomUint64_t: ∅ ⊢ randomUint64 : (unitT -> uint64T).
     Proof.
       typecheck.
     Qed.

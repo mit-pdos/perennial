@@ -58,7 +58,7 @@ Section to_gen_heap.
 End to_gen_heap.
 
 Lemma gen_heap_init `{Countable L, !gen_heapPreG L V Σ} σ :
-  (|==> ∃ _ : gen_heapG L V Σ, gen_heap_ctx σ)%I.
+  ⊢ |==> ∃ _ : gen_heapG L V Σ, gen_heap_ctx σ.
 Proof.
   iMod (own_alloc (● to_gen_heap σ)) as (γh) "Hh".
   { rewrite auth_auth_valid. exact: to_gen_heap_valid. }

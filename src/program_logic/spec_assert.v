@@ -226,8 +226,8 @@ Section ghost_step.
   Lemma source_cfg_init1 `{cfgPreG Σ} r tp0 σ0 tp σ s:
     erased_rsteps (CS := CS) r (tp0, σ0) (tp, σ) s →
     crash_safe (CS := CS) r (tp0, σ0) →
-    (|={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp0, σ0)
-                                       ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ)%I.
+    ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp0, σ0)
+                                       ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ.
   Proof.
     intros Herased Hno_err.
     iMod (own_alloc (● (tpool_to_res tp, Some (Excl σ))
@@ -252,8 +252,8 @@ Section ghost_step.
 
   Lemma source_cfg_init2 `{cfgPreG Σ} r tp σ :
     crash_safe (CS := CS) r (tp, σ) →
-    (|={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp, σ)
-                                       ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ)%I.
+    ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp, σ)
+                                       ∗ source_pool_map (tpool_to_map tp) ∗ source_state σ.
   Proof.
     intros Hno_err.
     iApply source_cfg_init1; eauto.

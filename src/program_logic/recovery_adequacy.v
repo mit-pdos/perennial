@@ -350,7 +350,7 @@ Qed.
 
 Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofeT) `{!invPreG Σ} `{!crashPreG Σ} s k e r σ φ φr φinv Φinv :
   (∀ `{Hinv : !invG Σ} `{Hc: !crashG Σ} κs,
-     (|={⊤}=> ∃ (t: pbundleG T Σ)
+     ⊢ |={⊤}=> ∃ (t: pbundleG T Σ)
          (stateI : pbundleG T Σ→ state Λ → list (observation Λ) → iProp Σ)
          (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf,
         let _ : perennialG Λ CS _ Σ :=
@@ -361,7 +361,7 @@ Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofeT) `{!invPreG Σ} `{!crashPreG Σ
                in
        □ (∀ σ κ, stateI t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
        □ (∀ Hi t, Φinv Hi t -∗ □ ∀ σ κ, stateI t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
-       stateI t σ κs ∗ wpr s k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝))%I) →
+       stateI t σ κs ∗ wpr s k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝)) →
   recv_adequate (CS := CS) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
 Proof.
   intros Hwp.

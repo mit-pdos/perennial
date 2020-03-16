@@ -43,7 +43,7 @@ Section gen_heap_defs.
   Proof. destruct hG, names => //=. Qed.
 
   Lemma gen_heap_name_init `{!gen_heapPreG L V Σ} σ :
-    (|==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update_pre _ names) σ)%I.
+    ⊢ |==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update_pre _ names) σ.
   Proof.
     iMod (own_alloc (● to_gen_heap σ)) as (γh) "Hh".
     { rewrite auth_auth_valid. exact: to_gen_heap_valid. }
@@ -54,7 +54,7 @@ Section gen_heap_defs.
   Qed.
 
   Lemma gen_heap_reinit {Σ} (hG: gen_heapG L V Σ) σ :
-    (|==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update hG names) σ)%I.
+    ⊢ |==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update hG names) σ.
   Proof.
     iMod (own_alloc (● to_gen_heap σ)) as (γh) "Hh".
     { rewrite auth_auth_valid. exact: to_gen_heap_valid. }
