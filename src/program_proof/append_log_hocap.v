@@ -61,9 +61,11 @@ Definition log_crash_cond : iProp Σ :=
 
 Definition log_state_to_inv (s: log_state) k γ2 :=
   match s with
-  | UnInit => na_crash_inv_full N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | UnInit => ∃ Γ bset, na_crash_bundle Γ N2 k (log_crash_cond' s) bset ∗
+                        na_crash_val Γ (log_crash_cond) bset ∗ own γ2 (◯ (Excl' s))
   | Initing => PStartedIniting
-  | Closed vs => na_crash_inv_full N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | Closed vs => ∃ Γ bset, na_crash_bundle Γ N2 k (log_crash_cond' s) bset ∗
+                        na_crash_val Γ (log_crash_cond) bset ∗ own γ2 (◯ (Excl' s))
   | Opening vs => PStartedOpening
   | Opened vs l => POpened
   end%I.
@@ -81,34 +83,35 @@ Lemma append_log_na_crash_inv_obligation e (Φ: val → iProp Σ) Φc E k k':
   WPC e @ NotStuck; (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ log_crash_cond }}%I.
 Proof.
   iIntros (?) "Hinit Hwp".
+  iMod (na_crash_inv_init N2 (LVL k') ⊤) as (Γ) "#Hinv".
   iDestruct "Hinit" as "[(HP&Hinit)|Hinit]".
-  - iMod (na_crash_inv_alloc N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[HP Hinit]") as
-      "(Hfull&Hpending)".
+  - iMod (na_crash_inv_alloc Γ N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[$] [HP Hinit] []") as
+     (bset) "(Hfull&#Hval&Hpending)".
+    { set_solver +. }
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
-      iSplitL "HP Hinit".
-      { iNext. iFrame => //=. }
-      iAlways. iIntros "H". iExists _; eauto.
-    }
-    iApply (wpc_na_crash_inv_init _ k k' N2 E with "[-]"); try assumption.
+      iFrame "HP".
+      iNext. iFrame => //=. }
+    { iAlways. iIntros "H". iExists _. iFrame. }
+    iApply (wpc_na_crash_inv_init _ _ k k' N2 E with "[-]"); try assumption.
     iFrame.
     iMod (ghost_var_alloc (UnInit : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
-    { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. }
+    { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. iExists _, _. iFrame "#". iFrame. }
     iApply ("Hwp" with "[]").
     { iExists _. eauto. }
   - iDestruct "Hinit" as (vs) "(HP&Hinit)".
-    iMod (na_crash_inv_alloc N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[HP Hinit]") as
-      "(Hfull&Hpending)".
+    iMod (na_crash_inv_alloc Γ N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[$] [HP Hinit] []") as
+     (bset) "(Hfull&#Hval&Hpending)".
+    { set_solver+. }
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
-      iSplitL "HP Hinit".
-      { iNext. iFrame => //=. }
-      iAlways. iIntros "H". iExists _; eauto.
-    }
-    iApply (wpc_na_crash_inv_init _ k k' N2 E with "[-]"); try assumption.
+      iFrame "HP".
+      iNext. iFrame => //=. }
+    { iAlways. iIntros "H". iExists _. iFrame. }
+    iApply (wpc_na_crash_inv_init _ _ k k' N2 E with "[-]"); try assumption.
     iFrame.
     iMod (ghost_var_alloc (Closed vs : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
-    { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. }
+    { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. iExists _, _. iFrame "#". eauto. }
     iApply ("Hwp" with "[]").
     { iExists _. eauto. }
 Qed.
@@ -249,21 +252,21 @@ Proof using PStartedOpening_Timeless.
          iMod ("Hbad" with "[Hstate_to_inv]") as %[];
          eauto; done).
   (* UnInit case *)
-  { iDestruct "Hstate_to_inv" as "(Hval&Hfrag_state)".
-    iApply (na_crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
+  { iDestruct "Hstate_to_inv" as (??) "(Hbundle&#Hval&Hfrag_state)".
+    iApply (na_crash_inv_open_modify _ _ _ O (⊤ ∖ ↑N) ⊤ with "Hbundle Hval").
     { solve_ndisj. }
     iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
     - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
       iDestruct "Hvs" as "(Hvs&_)"; iMod ("Hvs" with "HP"); try eauto; done.
     - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
-      { iNext. iExists _. iFrame. }
+      { iNext. iExists _. iFrame. iExists _, _.  iFrame. eauto. }
       iApply step_fupdN_inner_later; auto.
       iApply wpc_C. iFrame.
       iDestruct "Hvs" as "(_&_&_&?)".
       by iApply "HΦ".
   }
-  iDestruct "Hstate_to_inv" as "(Hval&Hfrag_state)".
-  iApply (na_crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
+  iDestruct "Hstate_to_inv" as (??) "(Hbundle&#Hval&Hfrag_state)".
+  iApply (na_crash_inv_open_modify _ _ _ O (⊤ ∖ ↑N) ⊤ with "Hbundle Hval").
   { solve_ndisj. }
   iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
   - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
@@ -278,7 +281,7 @@ Proof using PStartedOpening_Timeless.
     { iNext. iExists _; iFrame; eauto. }
     (* XXX: make it so you can iModIntro |={E,E}_k=> *)
     iApply step_fupdN_inner_later; auto.
-    iApply (wpc_na_crash_inv_open_modify (λ v,
+    iApply (wpc_na_crash_inv_open_modify _ (λ v,
                                        match v with
                                        | LitV (LitLoc l) => (∃ bs, ptsto_log l bs ∗ P (Opened bs l))
                                        | _ => False
@@ -311,13 +314,14 @@ Proof using PStartedOpening_Timeless.
       iIntros "Hfull". iSplit.
       ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
          { iNext; iExists _; iFrame. }
-         iMod (alloc_crash_lock' with "Hlock Hfull") as (?) "Hcrash_lock".
+         iMod (alloc_crash_lock' with "[] Hlock Hfull Hval") as (?) "Hcrash_lock".
+         { iAlways. iDestruct 1 as (?) "(?&?)". iExists _. iFrame. by iApply ptsto_log_crashed. }
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
          iFrame. iExists _. iFrame.
       ** iApply "HΦ". by iApply Hwand.
   - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
-    { iNext. iExists _. iFrame. }
+    { iNext. iExists _. iFrame. iExists _, _. iFrame. eauto. }
     iApply step_fupdN_inner_later; auto.
     iApply wpc_C. iFrame.
     iDestruct "Hvs" as "(_&_&_&?)".
@@ -355,21 +359,21 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
          iMod ("Hbad" with "[Hstate_to_inv]") as %[];
          eauto; done).
   2:{
-    iDestruct "Hstate_to_inv" as "(Hval&Hfrag_state)".
-    iApply (na_crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
+    iDestruct "Hstate_to_inv" as (??) "(Hbundle&#Hval&Hfrag_state)".
+    iApply (na_crash_inv_open_modify _ _ _ O (⊤ ∖ ↑N) ⊤ with "Hbundle Hval").
     { solve_ndisj. }
     iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
     - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
       iDestruct "Hvs" as "(Hvs&_)"; iMod ("Hvs" with "HP"); try eauto; done.
     - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
-      { iNext. iExists _. iFrame. }
+      { iNext. iExists _. iFrame. iExists _, _.  iFrame. eauto. }
       iApply step_fupdN_inner_later; auto.
       iApply wpc_C. iFrame.
       iDestruct "Hvs" as "(_&_&_&?)".
       by iApply "HΦ".
   }
-  iDestruct "Hstate_to_inv" as "(Hval&Hfrag_state)".
-  iApply (na_crash_inv_open_modify _ _ O (⊤ ∖ ↑N) ⊤ with "Hval").
+  iDestruct "Hstate_to_inv" as (??) "(Hbundle&#Hval&Hfrag_state)".
+  iApply (na_crash_inv_open_modify _ _ _ O (⊤ ∖ ↑N) ⊤ with "Hbundle Hval").
   { solve_ndisj. }
   iIntros "[(Hlog_crash_cond&Hclose)|(Hc&Hclose)]".
   - iDestruct "Hlog_crash_cond" as "(Hlog_state&HP)".
@@ -384,7 +388,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
     { iNext. iExists _; iFrame; eauto. }
     (* XXX: make it so you can iModIntro |={E,E}_k=> *)
     iApply step_fupdN_inner_later; auto.
-    iApply (wpc_na_crash_inv_open_modify (λ v,
+    iApply (wpc_na_crash_inv_open_modify _ (λ v,
                                        match v with
                                        | PairV (LitV (LitLoc l))
                                                (LitV (LitBool true))
@@ -429,13 +433,14 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
       iIntros "Hfull". iSplit.
       ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
          { iNext; iExists _; iFrame. }
-         iMod (alloc_crash_lock' with "Hlock Hfull") as (?) "Hcrash_lock".
+         iMod (alloc_crash_lock' with "[] Hlock Hfull Hval") as (?) "Hcrash_lock".
+         { iAlways. iDestruct 1 as (?) "(?&?)". iExists _. iFrame. by iApply ptsto_log_crashed. }
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
          iFrame. iExists _. iFrame.
       ** iApply "HΦ". by iApply Hwand.
   - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
-    { iNext. iExists _. iFrame. }
+    { iNext. iExists _. iFrame. iExists _, _. iFrame. eauto. }
     iApply step_fupdN_inner_later; auto.
     iApply wpc_C. iFrame.
     iDestruct "Hvs" as "(_&_&_&?)".

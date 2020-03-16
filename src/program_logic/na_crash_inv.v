@@ -19,85 +19,83 @@ Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Definition na_crash_inv N k P :=
-  (∃ γ γ', staged_inv N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) γ γ' P)%I.
+Definition na_crash_inv_def Γ N k :=
+  (staged_inv Γ N k (⊤ ∖ ↑N) (⊤ ∖ ↑N))%I.
+Definition na_crash_inv_aux : seal (@na_crash_inv_def). by eexists. Qed.
+Definition na_crash_inv := (na_crash_inv_aux).(unseal).
+Definition na_crash_inv_eq := (na_crash_inv_aux).(seal_eq).
 
-Definition na_crash_inv_full N k Q P :=
-  (∃ γ γ' Qr, staged_inv N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) γ γ' P ∗ staged_value N γ Q Qr ∗ □ (Q -∗ P))%I.
+Definition na_crash_bundle_def Γ N k Q bset :=
+  (∃ Qr, staged_inv Γ N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) ∗ staged_bundle Γ Q Qr false bset)%I.
+Definition na_crash_bundle_aux : seal (@na_crash_bundle_def). by eexists. Qed.
+Definition na_crash_bundle := (na_crash_bundle_aux).(unseal).
+Definition na_crash_bundle_eq := (na_crash_bundle_aux).(seal_eq).
 
-Definition na_crash_inv_pending N k P :=
-  (∃ γ γ', staged_inv N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) γ γ' P ∗ staged_pending γ')%I.
+Definition na_crash_val_def Γ P bset :=
+  (staged_crash Γ P bset)%I.
+Definition na_crash_val_aux : seal (@na_crash_val_def). by eexists. Qed.
+Definition na_crash_val := (na_crash_val_aux).(unseal).
+Definition na_crash_val_eq := (na_crash_val_aux).(seal_eq).
 
-Global Instance na_crash_inv_pers N k P : Persistent (na_crash_inv N k P).
-Proof. apply _. Qed.
+Definition na_crash_pending_def Γ N k P :=
+  (∃ i, staged_inv Γ N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) ∗ staged_crash_pending Γ P i)%I.
+Definition na_crash_pending_aux : seal (@na_crash_pending_def). by eexists. Qed.
+Definition na_crash_pending := (na_crash_pending_aux).(unseal).
+Definition na_crash_pending_eq := (na_crash_pending_aux).(seal_eq).
 
-Lemma na_crash_inv_alloc N k E P Q:
-  ▷ Q ∗ □ (Q -∗ P) ={E}=∗
-  na_crash_inv_full N k Q P ∗ na_crash_inv_pending N k P.
+Ltac crash_unseal :=
+  rewrite /na_crash_inv/na_crash_val/na_crash_pending/na_crash_bundle;
+  rewrite ?na_crash_inv_eq ?na_crash_val_eq ?na_crash_pending_eq ?na_crash_bundle_eq;
+  rewrite /na_crash_inv_def/na_crash_val_def/na_crash_pending_def/na_crash_bundle_def.
+
+Global Instance na_crash_inv_pers Γ N k : Persistent (na_crash_inv Γ N k).
+Proof. crash_unseal. apply _. Qed.
+
+Global Instance na_crash_val_pers Γ P bset : Persistent (na_crash_val Γ P bset).
+Proof. crash_unseal. apply _. Qed.
+
+
+Lemma na_crash_inv_init N k E:
+  ⊢ |={E}=> ∃ Γ, na_crash_inv Γ N k.
+Proof. crash_unseal. iMod (staged_inv_init) as (Γ) "H". iExists Γ. iFrame "H". eauto. Qed.
+
+Lemma na_crash_inv_alloc Γ N k E P Q:
+  ↑N ⊆ E →
+  na_crash_inv Γ N k -∗
+  ▷ Q -∗ □ (Q -∗ P) ={E}=∗
+  ∃ i, na_crash_bundle Γ N k Q {[i]} ∗ na_crash_val Γ P {[i]} ∗ na_crash_pending Γ N k P.
 Proof.
-  iIntros "HQP".
-  iDestruct "HQP" as "(HQ&#HQP)".
-  iMod (staged_inv_alloc N k E (⊤ ∖ ↑N) P Q True%I with "[HQ]") as (γ γ') "(#Hinv&Hval&Hpend)".
-  { iFrame. iAlways. iIntros. iDestruct ("HQP" with "[$]") as "$". }
-  iModIntro.
-  iSplitL "Hval".
-  - iExists γ, γ', _. iFrame. iFrame "Hinv". iAlways; eauto.
-  - iExists γ, _. iFrame. iFrame "Hinv".
+  crash_unseal.
+  iIntros (?) "#Hinv HQ #HQP".
+  iMod (staged_inv_alloc Γ N k E (⊤ ∖ ↑N) P Q True%I with "[HQ]") as (i') "(Hbundle&#Hval&Hpend)".
+  { auto. }
+  { iFrame "#". iFrame. iAlways; iIntros; eauto. rewrite right_id. iApply "HQP"; eauto. }
+  iModIntro. iExists i'. iFrame "#".
+  iSplitL "Hbundle".
+  - iExists _. iFrame.
+  - iExists _. eauto.
 Qed.
 
-Lemma na_crash_inv_full_impl N k Q P:
-  na_crash_inv_full N k Q P -∗ □ (Q -∗ P).
-Proof. iIntros "H". iDestruct "H" as (???) "(?&?&$)"; eauto. Qed.
+Lemma na_crash_inv_pending_weaken Γ N k P:
+  na_crash_pending Γ N k P -∗ na_crash_inv Γ N k.
+Proof. crash_unseal. iIntros "H". iDestruct "H" as (?) "(?&?)"; eauto. Qed.
 
-Lemma na_crash_inv_full_weaken N k Q P:
-  na_crash_inv_full N k Q P -∗ na_crash_inv N k P.
-Proof. iIntros "H". iDestruct "H" as (???) "(?&?)"; eauto. iExists _, _. iFrame. Qed.
-
-Lemma na_crash_inv_pending_weaken N k P:
-  na_crash_inv_pending N k P -∗ na_crash_inv N k P.
-Proof. iIntros "H". iDestruct "H" as (??) "(?&?)"; eauto. iExists _, _. iFrame. Qed.
-
-Lemma wpc_na_crash_inv_open s k k' E1 E2 e Φ Φc Q P N:
+Lemma wpc_na_crash_inv_open_modify Γ Qnew s k k' E1 E2 e Φ Φc Q P bset N :
   ↑N ⊆ E1 →
   S k < k' →
   to_val e = None →
-  na_crash_inv_full N (LVL k') Q P -∗
+  na_crash_bundle Γ N (LVL k') Q bset -∗
+  na_crash_val Γ P bset -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, Q ∗ (na_crash_inv_full N (LVL k') Q P -∗ (Φ v ∧ Φc))}}
+                    {{λ v, Qnew v ∗ □ (Qnew v -∗ P)  ∗ (na_crash_bundle Γ N (LVL k') (Qnew v) bset -∗ (Φ v ∧ Φc))}}
                     {{ Φc ∗ P }})) -∗
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (???) "Hfull Hwp".
-  iDestruct "Hfull" as (???) "(#Hinv&Hval&#Hwand)".
-  iApply (wpc_staged_inv_open _ _ _ _ _ _ _ _ _ _ _ (λ _, Q)); eauto.
-  iFrame "Hinv". iFrame.
-  iSplit.
-  { iDestruct "Hwp" as "($&_)". }
-  iDestruct "Hwp" as "(_&Hwp)".
-  iIntros "HQ". iSpecialize ("Hwp" with "HQ").
-  iApply (wpc_strong_mono' with "Hwp"); eauto.
-  iSplit.
-  - iIntros (?) "(HQ&HQrest)".
-    iModIntro. iFrame "HQ".
-    iFrame "Hwand". iIntros.
-    iApply "HQrest". iExists _, _, _. iFrame. iFrame "Hinv". iFrame "Hwand".
-  - iIntros. rewrite difference_diag_L. iModIntro; eauto.
-Qed.
-
-Lemma wpc_na_crash_inv_open_modify Qnew s k k' E1 E2 e Φ Φc Q P N :
-  ↑N ⊆ E1 →
-  S k < k' →
-  to_val e = None →
-  na_crash_inv_full N (LVL k') Q P -∗
-  (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, Qnew v ∗ □ (Qnew v -∗ P)  ∗ (na_crash_inv_full N (LVL k') (Qnew v) P -∗ (Φ v ∧ Φc))}}
-                    {{ Φc ∗ P }})) -∗
-  WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
-Proof.
-  iIntros (???) "Hfull Hwp".
-  iDestruct "Hfull" as (???) "(#Hinv&Hval&#Hwand)".
-  iApply (wpc_staged_inv_open _ _ _ _ _ _ _ _ _ _ _ Qnew); eauto.
-  iFrame "Hinv". iFrame.
+  crash_unseal.
+  iIntros (???) "Hbundle Hval Hwp".
+  iDestruct "Hbundle" as (?) "(#Hinv&Hbundle)".
+  iApply (wpc_staged_inv_open _ _ _ _ _ _ _ _ _ _ _ _ Qnew); eauto.
+  iFrame "Hinv". iFrame "Hval". iFrame "Hbundle".
   iSplit.
   { iDestruct "Hwp" as "($&_)". }
   iDestruct "Hwp" as "(_&Hwp)".
@@ -106,57 +104,75 @@ Proof.
   iSplit.
   - iIntros (?) "(HQ&#Hwand'&HQrest)".
     iModIntro. iFrame "HQ Hwand'". iIntros "Hval".
-    iApply "HQrest". iExists _, _, _. iFrame. iFrame "Hinv". iFrame "Hwand'".
+    iApply "HQrest". iFrame. iFrame "Hinv". iExists _. iFrame.
   - iIntros. rewrite difference_diag_L. iModIntro; eauto.
 Qed.
 
-Lemma wpc_na_crash_inv_init s k k' N E2 e Φ Φc P :
+Lemma wpc_na_crash_inv_open Γ s k k' E1 E2 e Φ Φc Q P bset N:
+  ↑N ⊆ E1 →
+  S k < k' →
+  to_val e = None →
+  na_crash_bundle Γ N (LVL k') Q bset -∗
+  na_crash_val Γ P bset -∗
+  (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
+                    {{λ v, Q ∗ □ (Q -∗ P) ∗ (na_crash_bundle Γ N (LVL k') Q bset -∗ (Φ v ∧ Φc))}}
+                    {{ Φc ∗ P }})) -∗
+  WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (???) "H1 H2 Hwp". iApply (wpc_na_crash_inv_open_modify with "[$] [$]"); auto.
+Qed.
+
+Lemma wpc_na_crash_inv_init Γ s k k' N E2 e Φ Φc P :
   k' < k →
-  na_crash_inv_pending N (LVL k') P ∗
+  na_crash_pending Γ N (LVL k') P ∗
   WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ Φc }} ⊢
   WPC e @ s; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc ∗ P }}.
 Proof.
+  crash_unseal.
   iIntros (?) "(H&?)".
-  iDestruct "H" as (??) "(?&?)".
+  iDestruct "H" as (?) "(?&?)".
   iApply wpc_staged_inv_init; last (by iFrame); eauto.
 Qed.
 
-Lemma na_crash_inv_open_modify N k' k E E' P Q R:
+Lemma na_crash_inv_open_modify Γ N k' k E E' P Q R bset:
   ↑N ⊆ E →
-  na_crash_inv_full N k' Q P -∗
-  ((Q ∗ (∀ Q', ▷ Q' ∗ □ (Q' -∗ P) ={E∖↑N,E}=∗ na_crash_inv_full N k' Q' P)) ∨ (C ∗ |={E∖↑N, E}=> na_crash_inv_full N k' Q P)
+  na_crash_bundle Γ N k' Q bset -∗
+  na_crash_val Γ P bset -∗
+  ((Q ∗ (∀ Q', ▷ Q' ∗ □ (Q' -∗ P) ={E∖↑N,E}=∗ na_crash_bundle Γ N k' Q' bset)) ∨ (C ∗ |={E∖↑N, E}=> na_crash_bundle Γ N k' Q bset)
    -∗ |={E ∖ ↑N, E'}_k=> R) -∗
   (|={E,E'}_(S (S k))=> R).
 Proof.
-  iIntros (?) "H Hwp".
-  iDestruct "H" as (???) "(#Hinv&H&#Hwand)".
-  iMod (staged_inv_open with "[H]") as "HQ"; try iFrame "H Hinv"; eauto.
+  crash_unseal.
+  iIntros (?) "Hbundle Hwp".
+  iDestruct "Hbundle" as (?) "(#Hinv&Hbundle)".
+  iMod (staged_inv_open with "[$]") as "HQ"; auto.
   iMod (fupd_intro_mask' _ ∅) as "Hclo"; first set_solver.
+  iIntros "H".
   iModIntro.
   rewrite Nat_iter_S.
   iModIntro. iNext. iModIntro.
   rewrite Nat_iter_S.
   iModIntro. iNext. iMod "Hclo" as "_".
-  iApply ("Hwp" with "[HQ]").
+  iApply ("H" with "[HQ]").
   iDestruct "HQ" as "[(HQ&Hclo)|(?&HC&Hclo)]".
-  - iLeft. iFrame. iIntros (Q') "(HQ'&#Hwand')". iMod ("Hclo" $! Q' True%I with "[HQ']") as "H".
-    { iFrame. iAlways. iIntros. iApply step_fupdN_inner_later; auto. iNext.
-      iDestruct ("Hwand'" with "[$]") as "$". }
-    iModIntro. iExists _, _, _. iFrame "H Hinv Hwand'".
-  - iRight. iFrame. iMod "Hclo". iModIntro. iExists _, _, _. iFrame "Hclo Hwand Hinv".
+  - iLeft. iFrame. iIntros (Q') "(HQ'&#Hwand')". iMod ("Hclo" $! Q' True%I false with "[HQ']") as "H".
+    { iFrame. iAlways. iIntros. rewrite right_id. by iApply "Hwand'". }
+    iModIntro. iExists _. iFrame "H Hinv Hwand'".
+  - iRight. iFrame. iMod "Hclo". iModIntro. iExists _. iFrame. iFrame "#".
 Qed.
 
-Lemma na_crash_inv_open N k' k E E' P Q R:
+Lemma na_crash_inv_open Γ N k' k E E' P Q R bset:
   ↑N ⊆ E →
-  na_crash_inv_full N k' Q P -∗
-  ((Q ∗ (▷ Q ={E∖↑N,E}=∗ na_crash_inv_full N k' Q P)) ∨ (C ∗ |={E∖↑N, E}=> na_crash_inv_full N k' Q P)
+  na_crash_bundle Γ N k' Q bset -∗
+  na_crash_val Γ P bset -∗
+  ((Q ∗ (▷ Q ∗ □ (Q -∗ P) ={E∖↑N,E}=∗ na_crash_bundle Γ N k' Q bset)) ∨ (C ∗ |={E∖↑N, E}=> na_crash_bundle Γ N k' Q bset)
    -∗ |={E ∖ ↑N, E'}_k=> R) -∗
   (|={E,E'}_(S (S k))=> R).
 Proof.
-  iIntros (?) "H1 H2". iDestruct (na_crash_inv_full_impl with "[$]") as "#HQP".
-  iApply (na_crash_inv_open_modify with "[$]"); first done.
-  iIntros "Hwand". iApply ("H2" with "[Hwand]").
-  iDestruct "Hwand" as "[H1|H2]".
+  iIntros (?) "H1 H2 H3".
+  iApply (na_crash_inv_open_modify with "[$] [$]"); auto.
+  iIntros "H". iApply ("H3" with "[H]").
+  iDestruct "H" as "[H1|H2]".
    - iLeft. iDestruct "H1" as "($&H)". iIntros "HQ". by iMod ("H" $! Q with "[$]").
    - iRight. iFrame.
 Qed.

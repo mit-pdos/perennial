@@ -3,6 +3,7 @@ From iris.base_logic Require Export invariants.
 Set Default Proof Using "Type".
 Import uPred.
 
+
 Notation "|={ E1 , E2 }_ k => P" :=
     (|={E1, ∅}=> |={∅, ∅}▷=>^k |={∅, E2}=> P)%I
       (at level 99, E1, E2 at level 50, k at level 9, P at level 200,
@@ -18,6 +19,13 @@ Notation "|={ E1 , E2 }_ k =>^ n P" :=
 Section step_fupdN.
 
 Context {PROP: sbi} {H: BiFUpd PROP} {HAff: BiAffine PROP}.
+Implicit Types P Q: PROP.
+
+Lemma step_fupd_sep E P Q : (|={E}▷=> P) ∗ (|={E}▷=> Q) -∗ |={E}▷=> P ∗ Q.
+Proof using HAff.
+  iIntros "(>H1&>H2)".
+  iModIntro. iNext. iMod "H1". iMod "H2". by iFrame.
+Qed.
 
 Lemma step_fupdN_le {E1 E2 : coPset} (n1 n2 : nat) (P: PROP):
   E2 ⊆ E1 →
@@ -39,19 +47,26 @@ Proof using HAff.
     iModIntro. iModIntro. iMod "Hclo". iModIntro. by iApply "IH".
 Qed.
 
-Lemma step_fupdN_inner_later E1 E2 k (P: PROP):
-  E2 ⊆ E1 →
-  ▷^k P -∗ |={E1,∅}=> |={∅,∅}▷=>^k |={∅,E2}=> P.
+Lemma step_fupdN_inner_later' E1 E2 k (P: PROP):
+  (▷^k |={E1, E2}=> P)%I -∗ |={E1,∅}=> |={∅,∅}▷=>^k |={∅,E2}=> P.
 Proof using HAff.
-  iIntros (Hle).
   iInduction k as [| k] "IH".
   - rewrite //=. iIntros "HP".
-    iMod (fupd_intro_mask' _ E2) as "H"; eauto.
+    iMod "HP".
     iApply fupd_intro_mask; eauto; first set_solver.
   - iIntros. iMod (fupd_intro_mask' _ ∅) as "Hclo".
     { set_solver. }
     rewrite Nat_iter_S.
     iModIntro. iModIntro. iNext. iMod "Hclo". by iApply "IH".
+Qed.
+
+Lemma step_fupdN_inner_later E1 E2 k (P: PROP):
+  E2 ⊆ E1 →
+  ▷^k P -∗ |={E1,∅}=> |={∅,∅}▷=>^k |={∅,E2}=> P.
+Proof using HAff.
+  iIntros (Hle) "H".
+  iApply step_fupdN_inner_later'.
+  iNext. iMod (fupd_intro_mask' _ E2) as "?"; eauto.
 Qed.
 
 Lemma step_fupdN_inner_fupd E1 E2 k (P: PROP):

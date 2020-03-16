@@ -23,12 +23,14 @@ Section proof.
   Context `{!heapG Σ, !lockG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
 
   Definition is_crash_lock k (γlk: gname) (lk: val) (R Rcrash: iProp Σ) : iProp Σ :=
-    is_lock Nlock γlk lk (na_crash_inv_full Ncrash k R Rcrash).
+    ∃ Γ bset, is_lock Nlock γlk lk (na_crash_bundle Γ Ncrash k R bset) ∗
+              na_crash_val Γ Rcrash bset ∗ □ (R -∗ Rcrash).
 
-  Definition crash_locked k Γ lk R Rcrash : iProp Σ :=
-    (na_crash_inv_full Ncrash k R Rcrash ∗
-           is_lock Nlock Γ lk (na_crash_inv_full Ncrash k R Rcrash) ∗
-           locked Γ)%I.
+  Definition crash_locked k γlk lk R Rcrash : iProp Σ :=
+    (∃ Γ bset, na_crash_bundle Γ Ncrash k R bset ∗
+           is_lock Nlock γlk lk (na_crash_bundle Γ Ncrash k R bset) ∗
+           na_crash_val Γ Rcrash bset ∗ □ (R -∗ Rcrash) ∗
+           locked γlk)%I.
 
   (*
   Lemma newlock_spec K `{!LanguageCtx K} k k' E Φ Φc (R Rcrash : iProp Σ):
@@ -57,14 +59,16 @@ Section proof.
 *)
 
 
-  Lemma alloc_crash_lock' k E lk (R Rcrash : iProp Σ):
+  Lemma alloc_crash_lock' Γ k E lk (R Rcrash : iProp Σ) bset:
+    □ (R -∗ Rcrash) -∗
     is_free_lock lk -∗
-    na_crash_inv_full Ncrash k R Rcrash
+    na_crash_bundle Γ Ncrash k R bset -∗
+    na_crash_val Γ Rcrash bset
     ={E}=∗ ∃ γ, is_crash_lock k γ #lk R Rcrash.
   Proof using ext_tys.
-    iIntros "Hfree Hfull".
+    iIntros "Hwand Hfree Hfull Hval".
     iMod (alloc_lock Nlock _ with "Hfree Hfull") as (γ') "Hlk".
-    iModIntro. iExists _. rewrite /is_crash_lock. eauto.
+    iModIntro. iExists _, _, _. rewrite /is_crash_lock. eauto.
   Qed.
 
   Lemma alloc_crash_lock k k' E Φ Φc e lk (R Rcrash : iProp Σ):
@@ -78,12 +82,14 @@ Section proof.
     WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ Rcrash }}.
   Proof using ext_tys.
     iIntros (?) "(#HRcrash&HR&HΦc&Hfree&Hwp)".
-    iMod (na_crash_inv_alloc Ncrash (LVL k') ⊤ Rcrash R with "[HR]") as
-        "(Hfull&Hpending)".
-    { iFrame "HR". iAlways. by iApply "HRcrash". }
-    iApply (wpc_na_crash_inv_init _ k k' Ncrash E with "[-]"); try assumption.
+    iMod (na_crash_inv_init Ncrash (LVL k') ⊤) as (Γ) "Hinv".
+    iMod (na_crash_inv_alloc Γ Ncrash (LVL k') ⊤ Rcrash R with "Hinv [HR] HRcrash") as
+        (bset) "(Hfull&Hval&Hpending)".
+    { set_solver. }
+    { iFrame "HR". }
+    iApply (wpc_na_crash_inv_init _ _ k k' Ncrash E with "[-]"); try assumption.
     iFrame.
-    iMod (alloc_crash_lock' with "Hfree Hfull") as (?) "Hlk".
+    iMod (alloc_crash_lock' with "HRcrash Hfree Hfull Hval") as (?) "Hlk".
     iApply ("Hwp" with "[$]"). by iFrame.
   Qed.
 
@@ -91,14 +97,13 @@ Section proof.
     ↑Nlock ⊆ E →
     {{{ is_crash_lock k γ lk R Rcrash }}}
     lock.acquire lk @ E
-    {{{ RET #(); ∃ Γ, crash_locked k Γ lk R Rcrash }}}.
+    {{{ RET #(); ∃ γlk, crash_locked k γlk lk R Rcrash }}}.
   Proof.
     iIntros (? Φ) "Hcrash HΦ".
     rewrite /is_crash_lock.
-    iDestruct "Hcrash" as "#His_lock".
+    iDestruct "Hcrash" as (??) "(#His_lock&#Hval&#HRcrash)".
     wp_apply (acquire_spec' with "His_lock"); auto.
-    iIntros "(?&?)". iApply "HΦ". iExists _. iFrame.
-    iFrame "His_lock".
+    iIntros "(?&?)". iApply "HΦ". iExists _, _, _. iFrame. iFrame "#".
   Qed.
 
   Lemma use_crash_locked E k k' Γ e lk R Rcrash Φ Φc:
@@ -111,16 +116,16 @@ Section proof.
     WPC e @  (LVL (S (S k))); ⊤; E {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (??) "Hcrash_locked H".
-    iDestruct "Hcrash_locked" as "(Hfull&#His_lock&Hlocked)".
-    iApply (wpc_na_crash_inv_open with "[$] [H Hlocked]"); try iFrame; auto.
+    iDestruct "Hcrash_locked" as (??) "(Hfull&#His_lock&#Hval&#HRcrash&Hlocked)".
+    iApply (wpc_na_crash_inv_open with "[$] [$] [H Hlocked]"); try iFrame; auto.
     iSplit.
     - iDestruct "H" as "($&_)".
     - iIntros "HR". iDestruct "H" as "(_&H)".
       iSpecialize ("H" with "[$]").
       iApply (wpc_strong_mono with "H"); eauto.
       iSplit.
-      * iIntros (?) "(Hclose&?)". iModIntro. iFrame.
-        iIntros. iApply "Hclose". iFrame; eauto.
+      * iIntros (?) "(Hclose&?)". iModIntro. iFrame. iFrame "#".
+        iIntros. iApply "Hclose". iExists _, _. iFrame; eauto.
       * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
   Qed.
 
@@ -131,7 +136,7 @@ Section proof.
     {{{ RET #(); True }}}.
   Proof.
     iIntros (? Φ) "Hcrash_locked HΦ".
-    iDestruct "Hcrash_locked" as "(Hfull&#His_lock&Hlocked)".
+    iDestruct "Hcrash_locked" as (??) "(Hfull&#His_lock&#?&#?&Hlocked)".
     wp_apply (release_spec' with "[His_lock Hlocked Hfull]"); swap 1 2.
     { iFrame "His_lock". iFrame. }
     { auto. }

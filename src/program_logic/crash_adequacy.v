@@ -4,6 +4,7 @@ From iris.base_logic.lib Require Import wsat.
 From iris.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Export step_fupd_extra crash_token crash_lang crash_weakestpre.
 Import uPred.
+Import language.
 
 Set Default Proof Using "Type".
 
