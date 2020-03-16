@@ -69,7 +69,7 @@ Qed.
 Definition log_crash: transition log_state.t unit :=
   kv ← suchThat (gen:=fun _ _ => None)
      (fun s '(pos, d, upds) => s.(log_state.disk) = d ∧
-                            s.(log_state.trans) !! pos = Some (true) ∧
+                            is_trans s.(log_state.trans) pos ∧
                             int.val pos >= int.val s.(log_state.durable_to) ∧
                             upds = firstn (Z.to_nat (int.val pos)) s.(log_state.updates));
   let '(pos, d, upds) := kv in
@@ -81,7 +81,7 @@ Definition log_crash: transition log_state.t unit :=
 
 Definition update_installed: transition log_state.t u64 :=
   new_installed ← suchThat (gen:=fun _ _ => None)
-                (fun s pos => s.(log_state.trans) !! pos = Some (true) ∧
+                (fun s pos => is_trans s.(log_state.trans) pos ∧
                             int.val s.(log_state.installed_to) <=
                             int.val pos <=
                             int.val s.(log_state.durable_to));
@@ -90,7 +90,7 @@ Definition update_installed: transition log_state.t u64 :=
 
 Definition update_durable: transition log_state.t u64 :=
   new_durable ← suchThat (gen:=fun _ _ => None)
-              (fun s pos =>  s.(log_state.trans) !! pos = Some (true) ∧
+              (fun s pos =>  is_trans s.(log_state.trans) pos ∧
                           int.val s.(log_state.durable_to) <=
                           int.val pos <= 
                           int.val (length s.(log_state.updates)));
@@ -138,8 +138,7 @@ Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
 
 Definition log_flush (pos: u64): transition log_state.t unit :=
   p  ← suchThat (gen:=fun _ _ => None)
-     (fun s (p:u64) => s.(log_state.trans) !! pos = Some (true) ∧
-                    p = pos);
+     (fun s (p:u64) => is_trans  s.(log_state.trans) pos ∧ p = pos);
   modify (set log_state.durable_to (λ _, p)).
 
 Section heap.
