@@ -142,7 +142,6 @@ Definition log_flush (pos: u64): transition log_state.t unit :=
                     p = pos);
   modify (set log_state.durable_to (λ _, p)).
 
-(*
 Section heap.
 Context `{!heapG Σ}.
 Implicit Types (v:val) (z:Z).
@@ -158,8 +157,10 @@ Definition blocks_to_gmap (bs:list Block): disk.
   (* this is just annoying to write down *)
 Admitted.
 
+Definition empty_gmap: gmap u64 bool :=  ∅.
+
 Theorem wp_new_wal bs :
-  {{{ P (log_state.mk {[U64 0 := blocks_to_gmap bs]} (U64 0) (U64 0)) ∗ 0 d↦∗ bs }}}
+  {{{ P (log_state.mk {[U64 0 := blocks_to_gmap bs]} ([]) (∅) (U64 0) (U64 0)) ∗ 0 d↦∗ bs }}}
     MkLog #()
   {{{ l, RET #l; is_wal l }}}.
 Proof.
@@ -217,48 +218,6 @@ Proof.
 Admitted.
 
 End heap.
-*)
 
-(*
-Lemma latest_disk_durable s : valid_log_state s ->
-  int.val s.(log_state.durable_to) ≤ int.val (fst (latest_disk s)).
-Proof.
-  destruct s.
-  rewrite /valid_log_state /latest_disk /=.
-  intros. destruct H.
-Admitted.
-
-Lemma latest_disk_pos s : valid_log_state s ->
-  s.(log_state.txn_disk) !! (fst (latest_disk s)) = Some (snd (latest_disk s)).
-Proof.
-  unfold latest_disk.
-  destruct s; simpl.
-  intros.
-  assert (∃ d, txn_disk !! durable_to = Some d).
-  { destruct H; eauto. }
-  clear H.
-  revert H0.
-  match goal with
-  | |- context[map_fold ?f ?init ?m] =>
-    eapply (map_fold_ind (fun acc m => (∃ d, m !! durable_to = Some d) -> m !! acc.1 = Some acc.2) f)
-  end.
-  { intros [d Heq]; simpl.
-    rewrite lookup_empty in Heq; congruence. }
-  intros x d m [k' d']; simpl; intros.
-  destruct (decide (int.val k' < int.val x)); simpl.
-  - rewrite lookup_insert //.
-  - destruct (decide (x = k')) as [-> | ?].
-    + rewrite lookup_insert //.
-Admitted.
-
-Lemma latest_disk_append s npos nd : valid_log_state s ->
-  int.val npos >= int.val (fst (latest_disk s)) ->
-  latest_disk (set log_state.txn_disk <[npos:=nd]> s) = (npos, nd).
-Proof.
-Admitted.
-
-Definition get_txn_disk (pos:u64) : transition log_state.t disk :=
-  reads ((.!! pos) ∘ log_state.txn_disk) ≫= unwrap.
- *)
 
 
