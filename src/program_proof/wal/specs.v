@@ -67,7 +67,7 @@ Proof.
 Qed.
 
 Lemma valid_installed: forall s,
-    valig_log_state s ->
+    valid_log_state s ->
     int.val s.(log_state.installed_to) ≤ int.val (length s.(log_state.updates)).
 Proof.
 Admitted.
