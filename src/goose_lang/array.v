@@ -148,7 +148,7 @@ Lemma mapsto_seq_array l v t n :
 Proof.
   rewrite /array. iInduction n as [|n'] "IH" forall (l); simpl.
   { done. }
-  iIntros "[$ Hl]". rewrite -fmap_seq big_sepL_fmap.
+  iIntros "[$ Hl]". rewrite -fmap_S_seq big_sepL_fmap.
   setoid_rewrite Nat2Z.inj_succ. setoid_rewrite <-Z.add_1_l.
   setoid_rewrite Z.mul_add_distr_l.
   setoid_rewrite Z.mul_1_r.
@@ -167,7 +167,7 @@ Proof.
   rewrite /array. iInduction n as [|n'] "IH" forall (l); simpl.
   { done. }
   rewrite Z.mul_0_r loc_add_0.
-  iIntros "[$ Hl]". rewrite -fmap_seq big_sepL_fmap.
+  iIntros "[$ Hl]". rewrite -fmap_S_seq big_sepL_fmap.
   setoid_rewrite Zmul_S_r.
   setoid_rewrite <-loc_add_assoc.
   by iApply "IH".

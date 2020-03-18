@@ -155,7 +155,7 @@ Proof.
   {
     unfold loc_add.
     replace (loc_car l + (nat_to_fin fin_i)) with (loc_car l + i); [reflexivity|].
-    pose proof (fin_to_of_nat _ _ fin_i).
+    pose proof (fin_to_nat_to_fin _ _ fin_i).
     rewrite H2.
     lia.
   }
