@@ -180,6 +180,29 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
+Lemma wp_Barrier stk E  :
+  {{{ True }}}
+    Barrier #() @ stk; E
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  iApply ("HΦ" with "[//]").
+Qed.
+
+Lemma wpc_Barrier stk k E1 E2 :
+  {{{ True }}}
+    Barrier #() @ stk; k; E1; E2
+  {{{ RET #(); True }}}
+  {{{ True }}}.
+Proof.
+  iIntros (Φ Φc) "_ HΦ".
+  rewrite /Barrier.
+  wpc_pures; auto.
+  iRight in "HΦ".
+  iApply ("HΦ" with "[//]").
+Qed.
+
 Lemma wpc_Read stk k E1 E2 (a: u64) q b :
   {{{ int.val a d↦{q} b }}}
     Read #a @ stk; k; E1; E2
