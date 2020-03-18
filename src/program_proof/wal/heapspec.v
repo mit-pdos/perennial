@@ -8,7 +8,7 @@ From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.sp
 From Perennial.Helpers Require Import GenHeap.
 
 Inductive heap_block :=
-| Latest (b : Block)
+| Last (b : Block)
 | All (b : Block)
 .
 
@@ -20,7 +20,7 @@ Context (N: namespace).
 
 Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iProp Σ :=
   ⌜ match b with
-    | Latest b => (latest_disk ls) !! (int.val a) = Some b
+    | Last b => (last_disk ls) !! (int.val a) = Some b
     | All b => ∀ pos,
         int.val ls.(log_state.installed_to) <= int.val pos ->
         (disk_at_pos pos ls) !! (int.val a) = Some b
@@ -31,7 +31,7 @@ Lemma wal_update_durable (gh : gmap u64 heap_block) (σ : log_state.t) pos :
   (int.val σ.(log_state.durable_to) ≤ int.val pos
    ∧ int.val pos ≤ int.val (length σ.(log_state.updates))) ->
   (gh !! a = Some hb) ->
-  (latest_disk σ !! int.val a = Some b) ->
+  (last_disk σ !! int.val a = Some b) ->
   ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
    [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
      (set log_state.durable_to (λ _ : u64, pos) σ) a1 b0.
@@ -55,7 +55,7 @@ Lemma wal_update_installed (gh : gmap u64 heap_block) (σ : log_state.t) pos :
   (int.val σ.(log_state.installed_to) ≤ int.val pos
    ∧ int.val pos ≤ int.val σ.(log_state.durable_to)) ->
   (gh !! a = Some hb) ->
-  (latest_disk σ !! int.val a = Some b) ->
+  (last_disk σ !! int.val a = Some b) ->
   ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
    [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
      (set log_state.installed_to (λ _ : u64, pos) σ) a1 b0.
@@ -93,12 +93,12 @@ Definition readmem_q γh (a : u64) (b : Block) (res : option Block) : iProp Σ :
   (
     match res with
     | None => mapsto (hG := γh) a 1 (All b)
-    | Some resb => mapsto (hG := γh) a 1 (Latest b) ∗ ⌜resb = b⌝
+    | Some resb => mapsto (hG := γh) a 1 (Last b) ∗ ⌜resb = b⌝
     end
   )%I.
 
 Theorem wal_heap_readmem N2 γh a (Q : option Block -> iProp Σ) :
-  ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ b, mapsto (hG := γh) a 1 (Latest b) ∗
+  ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ b, mapsto (hG := γh) a 1 (Last b) ∗
         ( ∀ mb, readmem_q γh a b mb ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q mb ) ) -∗
   ( ∀ σ σ' mb,
       ⌜valid_log_state σ⌝ -∗
@@ -155,8 +155,7 @@ Proof.
          rewrite /wal_heap_inv_addr /=.
          iPureIntro; intros.
          apply H3; eauto.
-         simpl in *.
-         admit.
+         apply only_on_disk_eq; eauto.
       }
       rewrite /wal_heap_inv.
       iExists _; iFrame.
@@ -164,7 +163,7 @@ Qed.
 
 Definition readinstalled_q γh (a : u64) (b : Block) (res : Block) : iProp Σ :=
   (
-    mapsto (hG := γh) a 1 (Latest b) ∗
+    mapsto (hG := γh) a 1 (Last b) ∗
     ⌜res = b⌝
   )%I.
 
@@ -191,60 +190,52 @@ Proof.
   2: simpl in *; monad_inv; done.
   simpl in *; monad_inv.
 
-  iMod (gen_heap_update _ _ _ (Latest b) with "Hctx Ha") as "[Hctx Ha]".
+  iMod (gen_heap_update _ _ _ (Last b) with "Hctx Ha") as "[Hctx Ha]".
   iModIntro.
   
   iSplitL "Hctx Hgh".
   - iExists _; iFrame.
-    rewrite /set /=.
-    destruct σ eqn:sigma.
-    simpl in *.
 
-    iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
-                                 log_state.disk := disk;
-                                 log_state.updates := updates;
-                                 log_state.installed_to := pos;
-                                 log_state.durable_to := pos0 |}) with "Hgh") as "Hgh".
+    iDestruct (wal_update_installed gh (set log_state.installed_to (λ _ : u64, pos) σ) pos with "Hgh") as "Hgh"; eauto.
     {
-      rewrite /wal_heap_inv_addr.
-      iIntros; iPureIntro.
-      destruct x; auto.
-      intros; simpl in *.
-      specialize (a1 pos1).
-      apply a1.
-      destruct H1. lia.
+      rewrite /set /=.
+      destruct H1, H2.
+      lia.
     }
-
+    {
+      pose proof (valid_installed σ).
+      destruct σ eqn:sigma.
+      specialize (H0 (length updates)); auto.
+    }
     iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
-    iDestruct ("Hgh" $! (Latest b) with "[]") as "Hx".
+    iDestruct ("Hgh" $! (Last b) with "[]") as "Hx".
     2: iFrame.
-
     iPureIntro; intros.
-    unfold installed_disk, latest_disk in *.
-    simpl in *.
+    pose proof (valid_installed σ).
+    destruct σ eqn:sigma.
     specialize (H0 (length updates)).
-    destruct H0; eauto.
-    + destruct H1. destruct H2. lia.
+    apply H0; simpl in *; auto.
   - iSplitL; iFrame.
     iPureIntro.
     unfold installed_disk in *; simpl in *.
     specialize (H0 pos).
+    rewrite Heqo in H0.
     assert (int.val σ.(log_state.installed_to) ≤ int.val pos).
-    + destruct H1; auto.
-    + specialize (H0 H3). rewrite Heqo in H0.
-      inversion H0; auto.
+    + intuition H1.
+    + specialize (H0 H2).
+      inversion H0; eauto.
 Qed.
 
 Definition memappend_pre γh (bs : list update.t) : iProp Σ :=
   (
     [∗ list] _ ↦ u ∈ bs,
       ∃ v0,
-        mapsto (hG := γh) u.(update.addr) 1 (Latest v0)
+        mapsto (hG := γh) u.(update.addr) 1 (Last v0)
   )%I.
 
 Definition memappend_q γh (bs : list update.t) (pos : u64) : iProp Σ :=
   [∗ list] _ ↦ u ∈ bs,
-    mapsto (hG := γh) u.(update.addr) 1 (Latest u.(update.b)).
+    mapsto (hG := γh) u.(update.addr) 1 (Last u.(update.b)).
 
 Theorem memappend_pre_nodup γh (bs : list update.t) :
   memappend_pre γh bs -∗ ⌜NoDup (map update.addr bs)⌝.
@@ -336,7 +327,7 @@ Proof.
     iDestruct "Ha" as (v0) "Ha".
     iDestruct (gen_heap_valid with "Hctx Ha") as "%".
 
-    iMod (gen_heap_update _ _ _ (Latest b) with "Hctx Ha") as "[Hctx Ha]".
+    iMod (gen_heap_update _ _ _ (Last b) with "Hctx Ha") as "[Hctx Ha]".
     iDestruct ("Ibs" with "[] [] [] Hpre Hctx") as "Ibs2";
     iClear "Ibs".
     
@@ -348,7 +339,7 @@ Proof.
     iIntros; iPureIntro.
 
     destruct x; simpl in *.
-    - rewrite latest_disk_append; auto.
+    - rewrite last_disk_append; auto.
       {
         rewrite Heqp in a0. simpl in *. auto.
       }
@@ -359,8 +350,8 @@ Proof.
     - intros.
       destruct (decide (new_txn = pos)); subst.
       + rewrite lookup_insert in H2. inversion H2; clear H2; subst.
-        pose proof (latest_disk_pos _ a).
-        pose proof (latest_disk_durable _ a).
+        pose proof (last_disk_pos _ a).
+        pose proof (last_disk_durable _ a).
         rewrite Heqp in H2; simpl in H2.
         rewrite Heqp in H3; simpl in H3.
         eapply a0.
@@ -377,7 +368,7 @@ Proof.
     iDestruct "Ha" as (v0) "Ha".
     iDestruct (gen_heap_valid with "Hctx Ha") as "%".
 
-    iMod (gen_heap_update _ _ _ (Latest b) with "Hctx Ha") as "[Hctx Ha]".
+    iMod (gen_heap_update _ _ _ (Last b) with "Hctx Ha") as "[Hctx Ha]".
     iDestruct ("Ibs" with "[] [] [] [] Hpre Hctx") as "Ibs2";
       iClear "Ibs".
 
@@ -405,10 +396,10 @@ Proof.
             inversion H4; clear H4; subst.
             rewrite lookup_insert_ne.
             2: apply u64_val_ne; congruence.
-            pose proof (latest_disk_pos _ a).
+            pose proof (last_disk_pos _ a).
             rewrite Heqp in H4; simpl in H4.
             eapply a0; [|eauto].
-            pose proof (latest_disk_durable _ a).
+            pose proof (last_disk_durable _ a).
             rewrite Heqp in H5; simpl in H5.
             unfold valid_log_state in a; intuition.
             lia.

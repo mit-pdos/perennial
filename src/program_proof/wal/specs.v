@@ -28,7 +28,7 @@ Definition get_updates (s:log_state.t): list update.t :=
 Definition disk_at_pos (pos: u64) (s:log_state.t): disk :=
   apply_upds (firstn (Z.to_nat (int.val pos)) s.(log_state.updates)) s.(log_state.disk).
 
-Definition latest_disk (s:log_state.t): disk :=
+Definition last_disk (s:log_state.t): disk :=
   disk_at_pos (length s.(log_state.updates)) s.
 
 Definition installed_disk (s:log_state.t): disk :=
@@ -59,12 +59,18 @@ Definition valid_log_state (s : log_state.t) :=
   int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
   int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to).
 
-Lemma latest_disk_at_pos: forall σ,
-    latest_disk σ = disk_at_pos (length σ.(log_state.updates)) σ.
+Lemma last_disk_at_pos: forall σ,
+    last_disk σ = disk_at_pos (length σ.(log_state.updates)) σ.
 Proof.
   intros.
-  unfold latest_disk; eauto.
+  unfold last_disk; eauto.
 Qed.
+
+Lemma valid_installed: forall s,
+    valig_log_state s ->
+    int.val s.(log_state.installed_to) ≤ int.val (length s.(log_state.updates)).
+Proof.
+Admitted.
 
 Definition log_crash: transition log_state.t unit :=
   kv ← suchThat (gen:=fun _ _ => None)
@@ -97,10 +103,43 @@ Definition update_durable: transition log_state.t u64 :=
   modify (set log_state.durable_to (λ _, new_durable));;
   ret new_durable.
 
+(* XXX is_trans pos? *)
+Definition only_on_disk s (a: u64) :=
+  forall pos b,
+    int.val s.(log_state.installed_to) ≤ int.val pos ->
+    (installed_disk s) !! (int.val a) = Some b ->
+    (disk_at_pos pos s) !! (int.val a) = Some b.
+
+Lemma only_on_disk_eq:
+  forall s (a:u64) (b: Block),
+    only_on_disk s a ->
+    (last_disk s) !! (int.val a) = Some b ->
+    (installed_disk s) !! (int.val a) = Some b.
+Proof.
+Admitted.
+
+Lemma only_on_disk_last:
+  forall s (a:u64) (b: Block),
+    valid_log_state s ->
+    only_on_disk s a ->
+    (installed_disk s) !! (int.val a) = Some b ->
+    (last_disk s) !! (int.val a) = Some b.
+Proof.
+  intros.
+  unfold only_on_disk in *.
+  destruct s eqn:sigma.
+  specialize (H0 (length updates)).
+  apply H0; simpl in *; eauto.
+  unfold valid_log_state in *.
+  intuition; simpl in *.
+  unfold log_state.last_pos in H6; simpl in *.
+  lia.
+Qed.
+
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
   ok ← suchThat (fun _ (b:bool) => True);
   if (ok:bool)
-  then d ← reads latest_disk;
+  then d ← reads last_disk;
        match d !! int.val a with
        | None => undefined
        | Some b => ret (Some b)
@@ -110,12 +149,7 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
           of the remaining decisions deterministically. *)
     update_installed;;
     suchThat (gen:=fun _ _ => None)
-             (fun s (_:unit) =>
-                forall pos b,  (* XXX is_trans pos? *)
-                  int.val s.(log_state.installed_to) ≤ int.val pos ->
-                  disk_at_pos (int.val s.(log_state.installed_to))
-                               s !! (int.val a) = Some b ->
-                  (disk_at_pos pos s) !! (int.val a) = Some b);;
+             (fun s (_:unit) => only_on_disk s a);;
     ret None.
 
 Definition log_read_installed (a:u64): transition log_state.t Block :=
