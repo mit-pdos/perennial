@@ -114,23 +114,52 @@ Proof.
   iDestruct (big_sepM_lookup with "Hgh") as "%"; eauto.
 
   simpl in *; monad_inv.
-  simpl in *; monad_inv.
-  rewrite H0 in a1.
-  simpl in *; monad_inv.
+  destruct b0.
+  - simpl in *; monad_inv.
+    simpl in *; monad_inv.
 
-  iDestruct ("Hfupd" $! (Some b) with "[Ha]") as "Hfupd".
-  { rewrite /readmem_q. iFrame. done. }
-  iMod "Hfupd".
+    rewrite H0 in a1.
+    simpl in *; monad_inv.
 
-  iModIntro.
-  iSplitL "Hctx Hgh".
-  + iExists _.
-    iSplitL "Hctx"; iFrame.
-    iDestruct (wal_update_durable gh σ pos0 with "Hgh") as "Ha"; eauto.
-    iDestruct (wal_update_installed gh (set log_state.installed_to (λ _ : u64, pos0) σ) pos with "Ha") as "Ha"; eauto.
-    simpl in *.
-    lia.
-  + iFrame.
+    iDestruct ("Hfupd" $! (Some b) with "[Ha]") as "Hfupd".
+    { rewrite /readmem_q. iFrame. done. }
+    iMod "Hfupd".
+
+    iModIntro.
+    iSplitL "Hctx Hgh".
+    + iExists _; iFrame.
+    + iFrame.
+      
+  - simpl in *; monad_inv.
+    
+    iMod (gen_heap_update _ _ _ (All b) with "Hctx Ha") as "[Hctx Ha]".
+    iDestruct ("Hfupd" $! None with "[Ha]") as "Hfupd".
+    {
+      rewrite /readmem_q.
+      iFrame. 
+    }
+    iMod "Hfupd".
+    iModIntro.
+    iSplitL "Hctx Hgh".
+    2: iFrame.
+
+    iDestruct (wal_update_installed gh (set log_state.installed_to (λ _ : u64, pos) σ) pos with "Hgh") as "Hgh"; eauto.
+    + rewrite /set /=.
+      destruct H2, H4.
+      lia.
+    + iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
+      iDestruct ("Hgh" $! (All b) with "[]") as "Hx".
+      {
+         rewrite /set /=.
+         rewrite /wal_heap_inv.
+         rewrite /wal_heap_inv_addr /=.
+         iPureIntro; intros.
+         apply H3; eauto.
+         simpl in *.
+         admit.
+      }
+      rewrite /wal_heap_inv.
+      iExists _; iFrame.
 Qed.
 
 Definition readinstalled_q γh (a : u64) (b : Block) (res : Block) : iProp Σ :=
@@ -281,10 +310,9 @@ Proof.
 
   simpl in *; monad_inv.
   simpl in *; monad_inv.
-  destruct (latest_disk σ) eqn:?.
-  simpl in *; monad_inv.
+  simpl in *; monad_inv. clear H0.
 
-  iInduction (bs) as [|b] "Ibs" forall (σ gh d u a Heqp H).
+  iInduction (bs) as [|b] "Ibs" forall (σ gh a H).
   {
     simpl.
 
@@ -294,9 +322,26 @@ Proof.
     iExists _; iFrame.
     rewrite /set.
     iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
-                     log_state.txn_disk := <[new_txn:=d]> σ.(log_state.txn_disk);
+                     log_state.disk := σ.(log_state.disk);
+                     log_state.updates := σ.(log_state.updates);
                      log_state.installed_to := σ.(log_state.installed_to);
                      log_state.durable_to := σ.(log_state.durable_to) |}) with "Hgh") as "Hgh".
+    2: admit.
+    admit.
+  }
+  {
+    destruct b.
+    rewrite /=.
+    iDestruct "Hpre" as "[Ha Hpre]".
+    iDestruct "Ha" as (v0) "Ha".
+    iDestruct (gen_heap_valid with "Hctx Ha") as "%".
+
+    iMod (gen_heap_update _ _ _ (Latest b) with "Hctx Ha") as "[Hctx Ha]".
+    iDestruct ("Ibs" with "[] [] [] Hpre Hctx") as "Ibs2";
+    iClear "Ibs".
+    
+  
+      
     2: iFrame.
 
     rewrite /wal_heap_inv_addr.

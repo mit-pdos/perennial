@@ -109,6 +109,13 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
           moved installed_to forward to a valid transaction and then made most
           of the remaining decisions deterministically. *)
     update_installed;;
+    suchThat (gen:=fun _ _ => None)
+             (fun s (_:unit) =>
+                forall pos b,  (* XXX is_trans pos? *)
+                  int.val s.(log_state.installed_to) ≤ int.val pos ->
+                  disk_at_pos (int.val s.(log_state.installed_to))
+                               s !! (int.val a) = Some b ->
+                  (disk_at_pos pos s) !! (int.val a) = Some b);;
     ret None.
 
 Definition log_read_installed (a:u64): transition log_state.t Block :=
