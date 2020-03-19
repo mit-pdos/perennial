@@ -20,19 +20,39 @@ Qed.
 Existing Instance r_mbind.
 
 Definition apply_upds (upds: list update.t) (d: disk): disk :=
-  fold_right (fun '(update.mk a b) => <[int.val a := b]>) d upds.
+  fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
 
 Definition get_updates (s:log_state.t): list update.t :=
   s.(log_state.updates).
 
-Definition disk_at_pos (pos: u64) (s:log_state.t): disk :=
-  apply_upds (firstn (Z.to_nat (int.val pos)) s.(log_state.updates)) s.(log_state.disk).
+Definition disk_at_pos (pos: nat) (s:log_state.t): disk :=
+  apply_upds (firstn pos s.(log_state.updates)) s.(log_state.disk).
+
+Definition updates_since (pos: u64) (a: u64) (s : log_state.t) : list Block :=
+  map update.b
+  (filter (fun u => u.(update.addr) = a) (skipn (int.nat pos) s.(log_state.updates))).
+
+Fixpoint latest_update (base: Block) (upds: list Block) : Block :=
+  match upds with
+  | u :: upds' =>
+    latest_update u upds'
+  | nil => base
+  end.
+
+Definition is_last_pos (m : gmap u64 Block) (pos : u64) : Prop :=
+  ∀ (pos' : u64) b,
+    m !! pos' = Some b -> word.ltu pos' pos ∨ pos' = pos.
+
+Definition is_last_block (m : gmap u64 Block) (b : Block) : Prop :=
+  ∃ pos,
+    is_last_pos m pos ∧
+    m !! pos = Some b.
 
 Definition last_disk (s:log_state.t): disk :=
   disk_at_pos (length s.(log_state.updates)) s.
 
 Definition installed_disk (s:log_state.t): disk :=
-  disk_at_pos s.(log_state.installed_to) s.
+  disk_at_pos (int.nat s.(log_state.installed_to)) s.
 
 (* updates that have been logged or installed *)
 Definition stable_upds (s:log_state.t): list update.t :=
@@ -72,6 +92,17 @@ Lemma valid_installed: forall s,
 Proof.
 Admitted.
 
+Theorem valid_log_state_advance_installed_to σ pos :
+  valid_log_state σ ->
+  is_trans σ.(log_state.trans) pos ->
+  int.val pos ≤ int.val σ.(log_state.durable_to) ->
+  valid_log_state (set log_state.installed_to (λ _ : u64, pos) σ).
+Proof.
+  destruct σ.
+  unfold valid_log_state; simpl.
+  intuition.
+Qed.
+
 Definition log_crash: transition log_state.t unit :=
   kv ← suchThat (gen:=fun _ _ => None)
      (fun s '(pos, d, upds) => s.(log_state.disk) = d ∧
@@ -103,20 +134,30 @@ Definition update_durable: transition log_state.t u64 :=
   modify (set log_state.durable_to (λ _, new_durable));;
   ret new_durable.
 
+(*
 (* XXX is_trans pos? *)
 Definition only_on_disk s (a: u64) :=
-  forall pos b,
-    int.val s.(log_state.installed_to) ≤ int.val pos ->
-    (installed_disk s) !! (int.val a) = Some b ->
-    (disk_at_pos pos s) !! (int.val a) = Some b.
+  forall pos,
+    int.val s.(log_state.installed_to) ≤ pos ->
+    (disk_at_pos (Z.to_nat pos) s) !! (int.val a) = (installed_disk s) !! (int.val a).
+*)
 
+(*
 Lemma only_on_disk_eq:
   forall s (a:u64) (b: Block),
+    valid_log_state s ->
     only_on_disk s a ->
     (last_disk s) !! (int.val a) = Some b ->
     (installed_disk s) !! (int.val a) = Some b.
 Proof.
-Admitted.
+  unfold only_on_disk.
+  unfold last_disk, installed_disk.
+  intros.
+  specialize (H0 (length s.(log_state.updates))).
+  rewrite <- H0; auto.
+  apply valid_installed.
+  auto.
+Qed.
 
 Lemma only_on_disk_last:
   forall s (a:u64) (b: Block),
@@ -129,12 +170,111 @@ Proof.
   unfold only_on_disk in *.
   destruct s eqn:sigma.
   specialize (H0 (length updates)).
-  apply H0; simpl in *; eauto.
+  rewrite H0; simpl in *; eauto.
   unfold valid_log_state in *.
   intuition; simpl in *.
   unfold log_state.last_pos in H6; simpl in *.
   lia.
 Qed.
+*)
+
+Theorem apply_upds_cons disk u ul :
+  apply_upds (u :: ul) disk =
+  apply_upds ul (apply_upds [u] disk).
+Proof.
+  reflexivity.
+Qed.
+
+Theorem apply_upds_app : forall u1 u2 disk,
+  apply_upds (u1 ++ u2) disk =
+  apply_upds u2 (apply_upds u1 disk).
+Proof.
+  induction u1.
+  - reflexivity.
+  - simpl app.
+    intros.
+    rewrite apply_upds_cons.
+    rewrite IHu1.
+    reflexivity.
+Qed.
+
+Theorem updates_since_to_last_disk σ a (pos : u64) installed :
+  disk_at_pos (int.nat pos) σ !! int.val a = Some installed ->
+  int.val pos ≤ int.val σ.(log_state.installed_to) ->
+  last_disk σ !! int.val a = Some (latest_update installed (updates_since pos a σ)).
+Proof.
+  destruct σ.
+  unfold last_disk, updates_since, disk_at_pos.
+  simpl.
+  intros.
+  rewrite firstn_all.
+  rewrite <- (firstn_skipn (int.nat pos)) at 1.
+  rewrite apply_upds_app.
+  generalize dependent H.
+  generalize (apply_upds (take (int.nat pos) updates) disk).
+  intros.
+  generalize (drop (int.nat pos) updates).
+  intros.
+  generalize dependent d.
+  generalize dependent installed.
+  induction l; simpl; intros.
+  - auto.
+  - destruct a0.
+    rewrite filter_cons; simpl.
+    destruct (decide (addr = a)); subst.
+    + simpl.
+      erewrite <- IHl.
+      { reflexivity. }
+      rewrite lookup_insert. auto.
+    + erewrite <- IHl.
+      { reflexivity. }
+      rewrite lookup_insert_ne; auto.
+      intro Hx. apply n. word.
+Qed.
+
+Theorem disk_at_pos_installed_to σ pos0 pos :
+  disk_at_pos pos0 (@set _ _  log_state.installed_to
+      (fun (_ : forall _ : u64, u64) (x2 : log_state.t) => x2) (λ _ : u64, pos) σ) =
+  disk_at_pos pos0 σ.
+Proof.
+  reflexivity.
+Qed.
+
+Theorem last_disk_installed_to σ pos :
+  last_disk (@set _ _  log_state.installed_to
+      (fun (_ : forall _ : u64, u64) (x2 : log_state.t) => x2) (λ _ : u64, pos) σ) =
+  last_disk σ.
+Proof.
+  reflexivity.
+Qed.
+
+Definition no_updates_since σ a (pos : u64) :=
+  ∀ (pos' : u64) u,
+    int.val pos < int.val pos' ->
+    σ.(log_state.updates) !! int.nat pos' = Some u ->
+    u.(update.addr) ≠ a.
+
+Theorem no_updates_since_nil σ a (pos : u64) :
+  no_updates_since σ a pos ->
+  updates_since pos a σ = nil.
+Proof.
+  unfold no_updates_since, updates_since.
+  intros.
+Admitted.
+
+Theorem no_updates_since_last_disk σ a (pos : u64) :
+  no_updates_since σ a pos ->
+  disk_at_pos (int.nat pos) σ !! int.val a = last_disk σ !! int.val a.
+Proof.
+Admitted.
+
+Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
+  int.val pos ≤ int.val diskpos ->
+  disk_at_pos (int.nat pos) σ !! int.val a = Some installedb ->
+  disk_at_pos (int.nat diskpos) σ !! int.val a = Some b ->
+  b ∈ installedb :: updates_since pos a σ.
+Proof.
+Admitted.
 
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
   ok ← suchThat (fun _ (b:bool) => True);
@@ -149,7 +289,8 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
           of the remaining decisions deterministically. *)
     update_installed;;
     suchThat (gen:=fun _ _ => None)
-             (fun s (_:unit) => only_on_disk s a);;
+             (fun s (_:unit) =>
+                no_updates_since s a s.(log_state.installed_to));;
     ret None.
 
 Definition log_read_installed (a:u64): transition log_state.t Block :=
