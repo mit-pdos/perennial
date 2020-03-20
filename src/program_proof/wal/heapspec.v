@@ -266,56 +266,13 @@ Fixpoint memappend_gh (gh : gmap u64 heap_block) bs olds :=
   | _, _ => gh
   end.
 
-(*
-Theorem memappend_pre_nodup γh (bs : list update.t) olds :
-  memappend_pre γh bs olds -∗ ⌜NoDup (map update.addr bs)⌝.
+Theorem memappend_pre_in_gh γh (gh : gmap u64 heap_block) bs olds :
+  gen_heap_ctx gh -∗
+  memappend_pre γh bs olds -∗
+  ⌜ ∀ u, u ∈ bs →
+      ∃ b, gh !! u.(update.addr) = Some b ⌝.
 Proof.
-  iIntros "Hpre".
-  iInduction bs as [|] "Hi".
-  - simpl. iPureIntro. constructor.
-  - iDestruct "Hpre" as "[Ha Hpre]".
-    iDestruct "Ha" as (v0) "Ha".
-    iDestruct ("Hi" with "Hpre") as "%".
-    iAssert (⌜update.addr a ∉ map update.addr bs⌝)%I as "%".
-    {
-      iClear "Hi".
-      clear H.
-      iInduction bs as [|] "Hi".
-      + simpl. iPureIntro. apply not_elem_of_nil.
-      + iDestruct "Hpre" as "[Ha0 Hpre]".
-        iDestruct "Ha0" as (v1) "Ha0".
-        iDestruct ("Hi" with "Ha Hpre") as "%".
-        destruct (decide (a.(update.addr) = a0.(update.addr))).
-        {
-          rewrite e.
-          iDestruct (mapsto_valid_2 with "Ha Ha0") as %Hd.
-          exfalso. apply Hd. simpl. auto.
-        }
-        iPureIntro.
-        simpl.
-        apply not_elem_of_cons.
-        auto.
-    }
-    iPureIntro.
-    eapply NoDup_cons_2; eauto.
-Qed.
-
-Theorem apply_upds_insert addr b bs d :
-  addr ∉ map update.addr bs ->
-  <[int.val addr:=b]> (apply_upds bs d) =
-  apply_upds bs (<[int.val addr:=b]> d).
-Proof.
-  induction bs; eauto; simpl; intros.
-  destruct a.
-  apply not_elem_of_cons in H.
-  simpl in *.
-  intuition.
-  rewrite insert_commute.
-  { rewrite H; auto. }
-  apply u64_val_ne.
-  congruence.
-Qed.
-*)
+Admitted.
 
 Lemma wal_heap_memappend_pre_to_q gh γh bs olds newpos :
   ( gen_heap_ctx gh ∗
@@ -349,6 +306,75 @@ Proof.
   iFrame.
 Qed.
 
+Theorem memappend_pre_nodup γh (bs : list update.t) olds :
+  memappend_pre γh bs olds -∗ ⌜NoDup (map update.addr bs)⌝.
+Proof.
+  iIntros "Hpre".
+  iInduction bs as [|] "Hi" forall (olds).
+  - simpl. iPureIntro. constructor.
+  - iDestruct (big_sepL2_length with "Hpre") as %Hlen.
+    destruct olds; simpl in *; try congruence.
+    iDestruct "Hpre" as "[Ha Hpre]".
+    iDestruct ("Hi" with "Hpre") as "%".
+
+    iAssert (⌜update.addr a ∉ map update.addr bs⌝)%I as "%".
+    {
+      iClear "Hi".
+      clear H Hlen.
+      iInduction bs as [|] "Hi" forall (olds).
+      + simpl. iPureIntro. apply not_elem_of_nil.
+      + iDestruct (big_sepL2_length with "Hpre") as %Hlen.
+        destruct olds; simpl in *; try congruence.
+        iDestruct "Hpre" as "[Ha0 Hpre]".
+        iDestruct ("Hi" with "Ha Hpre") as "%".
+        destruct (decide (a.(update.addr) = a0.(update.addr))).
+        {
+          rewrite e.
+          iDestruct (mapsto_valid_2 with "Ha Ha0") as %Hd.
+          exfalso. apply Hd. simpl. auto.
+        }
+        iPureIntro.
+        simpl.
+        apply not_elem_of_cons.
+        auto.
+    }
+    iPureIntro.
+    eapply NoDup_cons_2; eauto.
+Qed.
+
+(*
+Theorem apply_upds_insert addr b bs d :
+  addr ∉ map update.addr bs ->
+  <[int.val addr:=b]> (apply_upds bs d) =
+  apply_upds bs (<[int.val addr:=b]> d).
+Proof.
+  induction bs; eauto; simpl; intros.
+  destruct a.
+  apply not_elem_of_cons in H.
+  simpl in *.
+  intuition.
+  rewrite insert_commute.
+  { rewrite H; auto. }
+  apply u64_val_ne.
+  congruence.
+Qed.
+*)
+
+
+Theorem memappend_gh_not_in_bs gh bs olds k :
+  k ∉ map update.addr bs ->
+  memappend_gh gh bs olds !! k = gh !! k.
+Proof.
+Admitted.
+
+Theorem elem_of_map {A B} (k: B) (f: A -> B) (l : list A) :
+  k ∈ map f l ->
+  ∃ x,
+    x ∈ l ∧
+    k = f x.
+Proof.
+Admitted.
+
 Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
   ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ olds, memappend_pre γh bs olds ∗
         ( ∀ pos, memappend_q γh bs olds pos ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q pos ) ) -∗
@@ -359,16 +385,16 @@ Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
 Proof.
   iIntros "Hpre".
   iIntros (σ σ' pos) "% % Hinv".
-  iDestruct "Hinv" as (gh) "[Hctx #Hgh]".
-(*
-  iDestruct (memappend_pre_nodup with "Hpre") as %Hnodup.
-  rewrite /memappend_pre.
-*)
+  iDestruct "Hinv" as (gh) "[Hctx Hgh]".
 
   simpl in *; monad_inv.
   simpl in *.
 
   iMod "Hpre" as (olds) "[Hpre Hfupd]".
+  iDestruct (memappend_pre_nodup with "Hpre") as %Hnodup.
+  iDestruct (big_sepL2_length with "Hpre") as %Hlen.
+  iDestruct (memappend_pre_in_gh with "Hctx Hpre") as %Hbs_in_gh.
+
   iMod (wal_heap_memappend_pre_to_q with "[$Hctx $Hpre]") as "[Hctx Hq]".
   iSpecialize ("Hfupd" $! (length (stable_upds σ ++ new))).
   iDestruct ("Hfupd" with "Hq") as "Hfupd".
@@ -377,150 +403,63 @@ Proof.
   iFrame.
 
   iExists _. iFrame.
+  intuition.
 
-(*
+  iDestruct (big_sepM_forall with "Hgh") as %Hgh.
+  iApply big_sepM_forall.
 
-  iInduction (bs) as [|b] "Ibs" forall (σ gh a H H0).
-  {
-    iModIntro.
-    iSplitL "Hctx Hgh". 2: iApply "Hpre".
+  iIntros (k b Hkb).
+  destruct b.
+  iPureIntro.
+  clear Q.
+  simpl.
+  specialize (Hgh k).
 
-    iExists _; iFrame.
-    rewrite /set.
-    iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
-                     log_state.disk := σ.(log_state.disk);
-                     log_state.updates := σ.(log_state.updates);
-                     log_state.installed_to := σ.(log_state.installed_to);
-                     log_state.durable_to := σ.(log_state.durable_to) |}) with "Hgh") as "Hgh".
-    2: admit.
-    admit.
-  }
-  {
-    destruct b.
-    rewrite /=.
-    iDestruct "Hpre" as "[Ha Hpre]".
-    iDestruct "Ha" as (v0) "Ha".
-    iDestruct (gen_heap_valid with "Hctx Ha") as "%".
+  destruct (decide (k ∈ map update.addr bs)).
+  - apply elem_of_map in e as ex.
+    destruct ex. intuition. subst.
+    specialize (Hbs_in_gh _ H3). destruct Hbs_in_gh. destruct x1.
+    specialize (Hgh _ H0). simpl in *.
+    destruct Hgh as [pos Hgh].
+    exists pos.
+    intuition.
 
-    iMod (gen_heap_update _ _ _ (Last b) with "Hctx Ha") as "[Hctx Ha]".
-    iDestruct ("Ibs" with "[] [] [] Hpre Hctx") as "Ibs2";
-    iClear "Ibs".
-    
-  
-      
-    2: iFrame.
-
-    rewrite /wal_heap_inv_addr.
-    iIntros; iPureIntro.
-
-    destruct x; simpl in *.
-    - rewrite last_disk_append; auto.
-      {
-        rewrite Heqp in a0. simpl in *. auto.
-      }
-      {
-        rewrite Heqp. simpl. lia.
-      }
-
-    - intros.
-      destruct (decide (new_txn = pos)); subst.
-      + rewrite lookup_insert in H2. inversion H2; clear H2; subst.
-        pose proof (last_disk_pos _ a).
-        pose proof (last_disk_durable _ a).
-        rewrite Heqp in H2; simpl in H2.
-        rewrite Heqp in H3; simpl in H3.
-        eapply a0.
-        2: apply H2.
-        destruct a. lia.
-
-      + rewrite lookup_insert_ne in H2; eauto.
-  }
-
-  {
-    destruct b.
-    rewrite /=.
-    iDestruct "Hpre" as "[Ha Hpre]".
-    iDestruct "Ha" as (v0) "Ha".
-    iDestruct (gen_heap_valid with "Hctx Ha") as "%".
-
-    iMod (gen_heap_update _ _ _ (Last b) with "Hctx Ha") as "[Hctx Ha]".
-    iDestruct ("Ibs" with "[] [] [] [] Hpre Hctx") as "Ibs2";
-      iClear "Ibs".
-
-    5: {
-      iDestruct (big_sepM_delete with "Hgh") as "[% Hgh]"; eauto.
-      iDestruct (big_sepM_mono _ (wal_heap_inv_addr
-        (set log_state.txn_disk (<[new_txn:=<[int.val addr:=b]> d]>) σ)) with "Hgh") as "Hgh".
-      {
-        iIntros; iPureIntro.
-        destruct (decide (k = addr)); subst.
-        {
-          rewrite lookup_delete in H2. congruence.
-        }
-        rewrite /set /=.
-        destruct x.
-        {
-          rewrite <- a0; clear a0.
-          admit.
-        }
-        {
-          intros.
-          destruct (decide (new_txn = pos)); subst.
-          {
-            rewrite lookup_insert in H4.
-            inversion H4; clear H4; subst.
-            rewrite lookup_insert_ne.
-            2: apply u64_val_ne; congruence.
-            pose proof (last_disk_pos _ a).
-            rewrite Heqp in H4; simpl in H4.
-            eapply a0; [|eauto].
-            pose proof (last_disk_durable _ a).
-            rewrite Heqp in H5; simpl in H5.
-            unfold valid_log_state in a; intuition.
-            lia.
-          }
-          {
-            rewrite lookup_insert_ne in H4; eauto.
-          }
-        }
-      }
-
-      iDestruct ("Ibs2" with "[Hgh]") as "Ibs2".
-      {
-        rewrite <- insert_delete.
-        iApply big_sepM_insert.
-        { apply lookup_delete. }
-        iFrame.
-        iPureIntro.
-        admit.
-      }
-
-      iMod ("Ibs2") as "[Hinv Hq]".
-      rewrite /set /=.
-
-      iModIntro.
-      iSplitL "Hinv".
-      - rewrite insert_insert.
-        rewrite /= in Hnodup.
-        rewrite apply_upds_insert.
-        2: inversion Hnodup; eauto.
-        iApply "Hinv".
-      - rewrite /memappend_q /=.
-        iFrame.
+    {
+      admit. (* H6, and need to know that installed_block=installed_block0
+        through olds *)
     }
 
-    { inversion Hnodup; eauto. }
-    { rewrite /valid_log_state /set /=.
-      rewrite /valid_log_state in a.
-      iPureIntro; intuition.
-      destruct (decide (new_txn = σ.(log_state.durable_to))); subst.
-      + eexists. rewrite lookup_insert; eauto.
-      + destruct H2. eexists. rewrite lookup_insert_ne; eauto. 
+    {
+      (* need to know that blocks_since_install = blocks_since_install0 ++ [x0.(update.b)] *)
+      admit.
     }
-    { instantiate (1 := new_txn). admit. }
-    { iPureIntro; lia. }
-*)
 
+    {
+      admit.
+    }
+
+  - rewrite memappend_gh_not_in_bs in Hkb; eauto.
+    specialize (Hgh _ Hkb).
+    simpl in *.
+
+    destruct Hgh as [pos Hgh].
+    exists pos.
+    intuition.
+
+    {
+      admit. (* H4 *)
+    }
+
+    {
+      etransitivity.
+      2: eassumption.
+      admit.
+    }
+
+    {
+      rewrite H6.
+      (* use H1 at address k *)
+    }
 Admitted.
 
 End heap.
