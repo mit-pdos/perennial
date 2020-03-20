@@ -25,11 +25,14 @@ Module log_state.
         installed_to: u64;
         (* durable_to promises what will be on-disk after a crash *)
         durable_to: u64;
+        (* next_durable_to determines which in-memory updates are
+         * subject to absorption. *)
+        next_durable_to: u64;
       }.
-  Global Instance _eta: Settable _ := settable! mk <disk; updates; trans; installed_to; durable_to>.
+  Global Instance _eta: Settable _ := settable! mk <disk; updates; trans; installed_to; durable_to; next_durable_to>.
 
   Definition last_pos (s: t): u64 := (length s.(updates)).
-  
+
 End log_state.
 
 Section heap.

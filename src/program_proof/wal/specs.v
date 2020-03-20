@@ -54,30 +54,31 @@ Definition last_disk (s:log_state.t): disk :=
 Definition installed_disk (s:log_state.t): disk :=
   disk_at_pos (int.nat s.(log_state.installed_to)) s.
 
-(* updates that have been logged or installed *)
+(* updates that have been logged or installed or in the process of being logged *)
 Definition stable_upds (s:log_state.t): list update.t :=
-  firstn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
+  firstn (Z.to_nat (int.val s.(log_state.next_durable_to))) s.(log_state.updates).
 
 (* updates in the on-disk log *)
 Definition logged_upds (s:log_state.t): list update.t :=
   skipn (Z.to_nat (int.val s.(log_state.installed_to))) (stable_upds s).
 
-(* update in the in-memory log *)
-Definition inmem_upds (s:log_state.t): list update.t :=
-  skipn (Z.to_nat (int.val s.(log_state.durable_to))) s.(log_state.updates).
+(* update in the in-memory log that can be absorbed *)
+Definition unstable_upds (s:log_state.t): list update.t :=
+  skipn (Z.to_nat (int.val s.(log_state.next_durable_to))) s.(log_state.updates).
 
 Definition valid_addrs (updates: list update.t) (d: disk) :=
   forall i u, updates !! i = Some u -> ∃ (b: Block), d !! (int.val u.(update.addr)) = Some b.
 
 Definition is_trans (trans: gmap u64 bool) pos :=
-  trans !! pos = Some(true).
+  trans !! pos = Some true.
 
 Definition valid_log_state (s : log_state.t) :=
   valid_addrs s.(log_state.updates) s.(log_state.disk) ∧
   is_trans s.(log_state.trans) s.(log_state.durable_to) ∧
   is_trans s.(log_state.trans) s.(log_state.installed_to) ∧
   int.val s.(log_state.installed_to) ≤ int.val s.(log_state.durable_to) ∧
-  int.val (log_state.last_pos s) >= int.val s.(log_state.durable_to).
+  int.val s.(log_state.durable_to) ≤ int.val s.(log_state.next_durable_to) ∧
+  int.val (log_state.last_pos s) >= int.val s.(log_state.next_durable_to).
 
 Lemma last_disk_at_pos: forall σ,
     last_disk σ = disk_at_pos (length σ.(log_state.updates)) σ.
@@ -125,12 +126,12 @@ Definition update_installed: transition log_state.t u64 :=
   modify (set log_state.installed_to (λ _, new_installed));;
   ret new_installed.
 
+Definition update_next_durable: transition log_state.t unit :=
+  p ← reads log_state.updates;
+  modify (set log_state.next_durable_to (λ _, length p)).
+
 Definition update_durable: transition log_state.t u64 :=
-  new_durable ← suchThat (gen:=fun _ _ => None)
-              (fun s pos =>  is_trans s.(log_state.trans) pos ∧
-                          int.val s.(log_state.durable_to) <=
-                          int.val pos <= 
-                          int.val (length s.(log_state.updates)));
+  new_durable ← reads log_state.next_durable_to;
   modify (set log_state.durable_to (λ _, new_durable));;
   ret new_durable.
 
@@ -293,6 +294,14 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
                 no_updates_since s a s.(log_state.installed_to));;
     ret None.
 
+(* XXX
+  where should we intersperse calls to [update_next_durable] and
+  [update_durable]?  this matters because [update_next_durable] cannot
+  be deferred: it grabs the current set of updates.  in contrast,
+  [update_durable] and [update_installed] are ``cumulative'', in the
+  sense that they can choose any intermediate durable or installed point.
+*)
+
 Definition log_read_installed (a:u64): transition log_state.t Block :=
   update_installed;;
   d ← reads installed_disk;
@@ -302,26 +311,38 @@ Fixpoint absorb_map upds m: gmap u64 Block :=
   match upds with
   | [] => m
   | upd :: upd0 => absorb_map upd0 (<[update.addr upd := update.b upd]> m)
-  end.                   
+  end.
 
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   logged ← reads logged_upds;
   assert (fun σ => length (logged ++ upds) <= circular_proof.LogSz);;
-  inmem  ← reads inmem_upds;
+  unstable ← reads unstable_upds;
   stable ← reads stable_upds;
   updates ← reads get_updates;
   (* new are the updates after absorbing of inmem in upds; that is,
   replacing upds in inmem with upds if to the same address.  *)
   new ← suchThat (gen:=fun _ _ => None)
-                 (fun s new => absorb_map new ∅ = absorb_map (inmem++upds) ∅);
+                 (fun s new =>
+                  absorb_map new ∅ = absorb_map (unstable++upds) ∅ ∧
+                  new ⊆ unstable++upds);
   modify (set log_state.updates (λ _, stable++new));;
-  modify (set log_state.trans <[ U64 (length updates) := true]>);;
+  modify (set log_state.trans <[ U64 (length (stable++new)) := true]>);;
   ret (U64 (length (stable++new))).
 
-Definition log_flush (pos: u64): transition log_state.t unit :=
-  p  ← suchThat (gen:=fun _ _ => None)
-     (fun s (p:u64) => is_trans  s.(log_state.trans) pos ∧ p = pos);
-  modify (set log_state.durable_to (λ _, p)).
+(*
+  log_flush needs to be non-atomic: the first part should
+  update_next_durable, and the next part is as below.
+  we're hoping the HOCAP style allows us to specify these
+  two transitions in wp_log_flush.
+*)
+Definition log_flush (pos : u64) : transition log_state.t unit :=
+  already ← suchThat (gen:=fun _ _ => None)
+                     (fun σ (b:bool) => int.val pos ≤ int.val σ.(log_state.durable_to));
+  if (already:bool) then
+    ret tt
+  else
+    update_durable;;
+    ret tt.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -339,7 +360,7 @@ Definition blocks_to_gmap (bs:list Block): disk.
 Admitted.
 
 Theorem wp_new_wal bs :
-  {{{ P (log_state.mk (blocks_to_gmap bs) ([]) (∅) (U64 0) (U64 0)) ∗ 0 d↦∗ bs }}}
+  {{{ P (log_state.mk (blocks_to_gmap bs) ([]) (∅) (U64 0) (U64 0) (U64 0)) ∗ 0 d↦∗ bs }}}
     MkLog #()
   {{{ l, RET #l; is_wal l }}}.
 Proof.
