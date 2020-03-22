@@ -277,6 +277,12 @@ Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
 Proof.
 Admitted.
 
+Theorem latest_update_take_some installed bs pos v :
+  (installed :: bs) !! pos = Some v ->
+  latest_update installed (take pos bs) = v.
+Proof.
+Admitted.
+
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
   ok ← suchThat (fun _ (b:bool) => True);
   if (ok:bool)

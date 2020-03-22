@@ -29,11 +29,10 @@ Definition inode_bits : u64 := inode_bytes*8.
 Definition block_bits : u64 := block_bytes*8.
 
 Inductive updatable_buf (T : Type) :=
-| Latest : forall (v : T), updatable_buf T
-| NotModifiedSinceInstall : forall (v : T), updatable_buf T.
+| UB : forall (v : T) (modifiedSinceInstallG : gname), updatable_buf T
+.
 
-Arguments Latest {T} v.
-Arguments NotModifiedSinceInstall {T} v.
+Arguments UB {T} v modifiedSinceInstallG.
 
 Inductive txnObject :=
 | txnBit (b : bool)
@@ -67,6 +66,7 @@ Context `{!gen_heapPreG unit
            gmap u64 (gmap u64 (updatable_buf Block)))
          Σ}.
 Context `{!gen_heapPreG addr txnObject Σ}.
+Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -89,24 +89,31 @@ Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 e
   - exact None.
 Defined.
 
+Definition mapsto_txn {T} hG (off : u64) (v : T) : iProp Σ :=
+  ∃ γm,
+    mapsto (hG := hG) off 1 (UB v γm) ∗
+    own γm (◯ (Excl' true)).
+
 Definition txn_inodes_in_block (installed : Block) (bs : list Block) (gm : gmap u64 (updatable_buf inode_buf)) : iProp Σ :=
   (
     [∗ map] off ↦ maybe_inode ∈ gm,
-      ⌜ match maybe_inode with
-        | Latest v =>
-          extract_nth (latest_update installed bs) inode_bytes (int.nat off) = Some v
-        | NotModifiedSinceInstall v =>
-          ∀ prefix,
-            extract_nth (latest_update installed (take prefix bs)) inode_bytes (int.nat off) = Some v
-        end ⌝
+      match maybe_inode with
+      | UB v γm =>
+        ⌜ extract_nth (latest_update installed bs) inode_bytes (int.nat off) = Some v ⌝ ∗
+        ∃ (modifiedSinceInstall : bool),
+          own γm (● (Excl' modifiedSinceInstall)) ∗
+          if modifiedSinceInstall then emp
+          else
+            ⌜ ∀ prefix,
+              extract_nth (latest_update installed (take prefix bs)) inode_bytes (int.nat off) = Some v ⌝
+      end
   )%I.
 
 Definition txn_bits_in_block (installed : Block) (bs : list Block) (gm : gmap u64 (updatable_buf bool)) : iProp Σ :=
   (
     [∗ map] off ↦ maybe_bit ∈ gm,
       match maybe_bit with
-      | Latest v => True
-      | NotModifiedSinceInstall v =>
+      | UB v γm =>
         (* extract bit off from block; it must be equal to v *)
         True
       end
@@ -115,14 +122,16 @@ Definition txn_bits_in_block (installed : Block) (bs : list Block) (gm : gmap u6
 Definition txn_blocks_in_block (installed : Block) (bs : list Block) (gm : gmap u64 (updatable_buf Block)) : iProp Σ :=
   (
     [∗ map] off ↦ maybe_block ∈ gm,
-      ⌜ off = (0 : u64) ⌝ ∗
-      ⌜ match maybe_block with
-        | Latest v =>
-          latest_update installed bs = v
-        | NotModifiedSinceInstall v =>
-          ∀ prefix,
-            latest_update installed (take prefix bs) = v
-      end ⌝
+      match maybe_block with
+      | UB v γm =>
+        ⌜ latest_update installed bs = v ⌝ ∗
+        ∃ (modifiedSinceInstall : bool),
+          own γm (● (Excl' modifiedSinceInstall)) ∗
+          if modifiedSinceInstall then emp
+          else
+            ⌜ ∀ prefix,
+              latest_update installed (take prefix bs) = v ⌝
+      end
   )%I.
 
 Global Instance txn_bits_in_block_timeless installed bs gm : Timeless (txn_bits_in_block installed bs gm).
@@ -134,12 +143,18 @@ Qed.
 Global Instance txn_inodes_in_block_timeless installed bs gm : Timeless (txn_inodes_in_block installed bs gm).
 Proof.
   apply big_sepM_timeless; intros.
+  destruct x.
+  apply sep_timeless; refine _.
+  apply exist_timeless.
   destruct x; refine _.
 Qed.
 
 Global Instance txn_blocks_in_block_timeless installed bs gm : Timeless (txn_blocks_in_block installed bs gm).
 Proof.
   apply big_sepM_timeless; intros.
+  destruct x; refine _.
+  apply sep_timeless; refine _.
+  apply exist_timeless.
   destruct x; refine _.
 Qed.
 
@@ -166,7 +181,8 @@ Definition is_txn_always (walHeap : gen_heapG u64 heap_block Σ)
             mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
             txn_inodes_in_block installed bs inodemap ) ∗
       ( [∗ map] blkno ↦ blockmap ∈ mBlocks,
-          ∃ installed bs,
+          ∃ installed bs theBlock,
+            ⌜ blockmap = {[ (0 : u64) := theBlock ]} ⌝ ∗
             mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
             txn_blocks_in_block installed bs blockmap )
   )%I.
@@ -197,28 +213,31 @@ Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
     (hG : gen_heapG u64 (updatable_buf Block) Σ) v :
   {{{ is_txn l gBits gInodes gBlocks ∗
       ⌜gBlocks !! blk = Some hG⌝ ∗
-      mapsto (hG := hG) off 1 (Latest v)
+      mapsto_txn hG off v
   }}}
     Txn__Load #l (#blk, (#off, (#(block_bytes*8), #())))%V
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
       is_slice buf u8T 1%Qp vals ∗
       ⌜vals = Block_to_vals v⌝ ∗
-      mapsto (hG := hG) off 1 (Latest v)
+      mapsto_txn hG off v
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & % & Hstable) HΦ".
   iDestruct "Htxn" as (γMaps γLock walHeap mu walptr q) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
+  iDestruct "Hstable" as (γm) "[Hstable Hmod]".
 
   wp_call.
   wp_loadField.
   wp_call.
 
-  wp_apply (wp_Walog__ReadMem _ _ (λ mb, match mb with
-    | Some b => mapsto (hG := hG) off 1 (Latest v) ∗ ⌜ b = v ⌝
-    | None => mapsto (hG := hG) off 1 (NotModifiedSinceInstall v)
-    end ∗ ⌜ off = 0 ⌝)%I with "[$Hwal Hstable]").
+  wp_apply (wp_Walog__ReadMem _ _ (λ mb,
+    mapsto off 1 (UB v γm) ∗
+    match mb with
+    | Some b => own γm (◯ Excl' true) ∗ ⌜ b = v ⌝
+    | None => own γm (◯ Excl' false)
+    end ∗ ⌜ off = 0 ⌝)%I with "[$Hwal Hstable Hmod]").
   {
-    iApply (wal_heap_readmem walN invN with "[Hstable]").
+    iApply (wal_heap_readmem walN invN with "[Hstable Hmod]").
 
     iInv invN as ">Hinv_inner" "Hinv_closer".
     iDestruct "Hinv_inner" as (mBits mInodes mBlocks) "(Hctxbits & Hctxinodes & Hctxblocks & Hbigmap & Hbits & Hinodes & Hblocks)".
@@ -231,7 +250,7 @@ Proof.
     iDestruct ("Hctxblocks" with "Hctxblock") as "Hctxblocks".
 
     iDestruct (big_sepM_lookup_acc with "Hblocks") as "[Hblock Hblocks]"; eauto.
-    iDestruct "Hblock" as (blk_installed blk_bs) "[Hblk Hinblk]".
+    iDestruct "Hblock" as (blk_installed blk_bs theBlock) "(% & Hblk & Hinblk)".
 
     iExists _, _. iFrame.
 
@@ -241,70 +260,152 @@ Proof.
 
     {
       iDestruct "Hrmq" as "[Hrmq %]".
-      iDestruct (big_sepM_lookup with "Hinblk") as %Hinblk; eauto.
-      iDestruct ("Hinv_closer" with "[-Hstable]") as "Hinv_closer".
+
+      iDestruct (big_sepM_lookup_acc with "Hinblk") as "[Hinblk Hinblkother]"; eauto.
+      iDestruct "Hinblk" as "(% & Hinblk)".
+      iDestruct ("Hinblkother" with "[Hinblk]") as "Hinblk".
+      { iFrame. done. }
+
+      iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
       {
         iModIntro.
         iExists _, _, _.
         iFrame.
         iApply "Hblocks".
         iExists _, _. iFrame.
+        eauto.
       }
 
       iMod "Hinv_closer".
       iModIntro.
       intuition; subst.
       iFrame.
+      apply lookup_singleton_Some in Hblockoff; intuition subst.
       done.
     }
 
     {
-      admit.
+      subst x.
+      rewrite /txn_blocks_in_block.
+      rewrite big_sepM_singleton.
+      apply lookup_singleton_Some in Hblockoff; intuition subst.
+      iDestruct "Hinblk" as "[<- Hinblk]".
+      iDestruct "Hinblk" as (modSince) "[Hγm Hinblk]".
+      iDestruct (ghost_var_agree with "Hγm Hmod") as %->.
+      iMod (ghost_var_update _ false with "Hγm Hmod") as "[Hγm Hmod]".
+
+      iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
+      {
+        iModIntro.
+        iExists _, _, _.
+        iFrame.
+        iApply "Hblocks".
+        iExists _, _, _.
+        iSplitR; [ done | ].
+        iFrame.
+        iApply big_sepM_singleton.
+        iSplitR; [ done | ].
+        iExists _. iFrame. iPureIntro.
+        intros.
+        rewrite take_nil. auto.
+      }
+
+      iMod "Hinv_closer".
+      iModIntro.
+      iFrame. done.
     }
   }
 
   iIntros (ok bl) "Hres".
   destruct ok.
   {
-    iDestruct ("Hres") as (b) "(Hisblock & (Hlatest & ->) & ->)".
+    iDestruct ("Hres") as (b) "(Hisblock & Hlatest & (Hown & ->) & ->)".
     wp_pures.
+    (* XXX slice reasoning for MkBufLoad *)
     admit.
   }
 
   {
-    iDestruct ("Hres") as "(Hnotmod & ->)".
+    iDestruct ("Hres") as "(Hlatest & Hown & ->)".
     wp_pures.
 
-    wp_apply (wp_Walog__ReadInstalled _ _ (λ b, ⌜ b = v ⌝)%I with "[$Hwal Hnotmod]").
+    wp_apply (wp_Walog__ReadInstalled _ _ (λ b, ⌜ b = v ⌝ ∗ mapsto (hG := hG) 0 1 (UB v γm) ∗ own γm (◯ (Excl' true)))%I with "[$Hwal Hlatest Hown]").
     {
-(*
-      iApply (wal_heap_readinstalled with "[$Hres]"). }
-      iIntros (ok bl0) "Hres".
-      iDestruct "Hres" as (b) "[Hisblock [Hblk ->]]".
-      wp_pures.
-      admit.
-*)
+      iApply (wal_heap_readinstalled walN invN with "[Hlatest Hown]").
 
-      admit.
+      iInv invN as ">Hinv_inner" "Hinv_closer".
+      iDestruct "Hinv_inner" as (mBits mInodes mBlocks) "(Hctxbits & Hctxinodes & Hctxblocks & Hbigmap & Hbits & Hinodes & Hblocks)".
+
+      iDestruct (big_sepM2_lookup_2_some with "Hctxblocks") as %Hblk; eauto.
+      destruct Hblk.
+
+      iDestruct (big_sepM2_lookup_acc with "Hctxblocks") as "[Hctxblock Hctxblocks]"; eauto.
+      iDestruct (gen_heap_valid with "Hctxblock Hlatest") as %Hblockoff.
+      iDestruct ("Hctxblocks" with "Hctxblock") as "Hctxblocks".
+
+      iDestruct (big_sepM_lookup_acc with "Hblocks") as "[Hblock Hblocks]"; eauto.
+      iDestruct "Hblock" as (blk_installed blk_bs theBlock) "(% & Hblk & Hinblk)".
+
+      iExists _, _. iFrame "Hblk".
+
+      iModIntro.
+      iIntros (b) "Hriq".
+      iDestruct "Hriq" as "[Hriq %]".
+
+      subst x.
+      rewrite /txn_blocks_in_block.
+      rewrite big_sepM_singleton.
+      apply lookup_singleton_Some in Hblockoff; intuition subst.
+      iDestruct "Hinblk" as "[<- Hinblk]".
+      iDestruct "Hinblk" as (modSince) "[Hγm Hinblk]".
+      iDestruct (ghost_var_agree with "Hγm Hown") as %->.
+      iMod (ghost_var_update _ true with "Hγm Hown") as "[Hγm Hown]".
+      iDestruct "Hinblk" as %Hinblk.
+      iFrame.
+
+      iDestruct ("Hinv_closer" with "[-]") as "Hinv_closer".
+      {
+        iModIntro.
+        iExists _, _, _.
+        iFrame.
+        iApply "Hblocks".
+        iExists _, _, _.
+        iSplitR; [ done | ].
+        iFrame.
+        iApply big_sepM_singleton.
+        iSplitR; [ done | ].
+        iExists _. iFrame.
+      }
+
+      iMod "Hinv_closer".
+      iModIntro.
+      iPureIntro.
+
+      apply elem_of_list_lookup_1 in H2.
+      destruct H2 as [prefix H2].
+      specialize (Hinblk prefix).
+      rewrite <- Hinblk; clear Hinblk.
+      erewrite latest_update_take_some; eauto.
     }
 
     iIntros (bslice) "Hres".
-    iDestruct "Hres" as (b) "(Hres & ->)".
+    iDestruct "Hres" as (b) "(Hres & -> & Hlatest & Hmod)".
     wp_pures.
+    (* more MkBufLoad *)
     admit.
-  }
 Admitted.
 
 Theorem wp_txn_Load_bit l gBits gInodes gBlocks (blk off : u64)
     (hG : gen_heapG u64 (updatable_buf bool) Σ) v :
   {{{ is_txn l gBits gInodes gBlocks ∗
       ⌜gBits !! blk = Some hG⌝ ∗
-      mapsto (hG := hG) off 1 (Latest v)
+      mapsto_txn hG off v
   }}}
     Txn__Load #l (#blk, #off, #1)
   {{{ (buf : Slice.t) b, RET (slice_val buf);
       is_slice buf u8T 1%Qp [b] ∗
-      ⌜b = #0 <-> v = false⌝
+      ⌜b = #0 <-> v = false⌝ ∗
+      mapsto_txn hG off v
   }}}.
 Proof.
 Admitted.
@@ -313,15 +414,18 @@ Theorem wp_txn_Load_inode l gBits gInodes gBlocks (blk off : u64)
     (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v :
   {{{ is_txn l gBits gInodes gBlocks ∗
       ⌜gInodes !! blk = Some hG⌝ ∗
-      mapsto (hG := hG) off 1 (Latest v)
+      mapsto_txn hG off v
   }}}
     Txn__Load #l (#blk, #off, #(inode_bytes*8))
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
       is_slice buf u8T 1%Qp vals ∗
-      ⌜vals = inode_to_vals v⌝ }}}.
+      ⌜vals = inode_to_vals v⌝ ∗
+      mapsto_txn hG off v
+  }}}.
 Proof.
 Admitted.
 
+(*
 Definition commit_pre
     (gBits   : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
     (gInodes : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
@@ -426,5 +530,6 @@ Definition unify_heaps
       gen_heap_ctx (hG := γUnified) gUnified ∗
       unify_heaps_inner gBits gInodes gBlocks gUnified
   )%I.
+*)
 
 End heap.
