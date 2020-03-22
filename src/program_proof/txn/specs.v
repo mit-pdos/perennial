@@ -29,11 +29,11 @@ Definition inode_bits : u64 := inode_bytes*8.
 Definition block_bits : u64 := block_bytes*8.
 
 Inductive updatable_buf (T : Type) :=
-| Stable : forall (v : T), updatable_buf T
-| Unstable.
+| Latest : forall (v : T), updatable_buf T
+| NotModifiedSinceInstall : forall (v : T), updatable_buf T.
 
-Arguments Unstable {T}.
-Arguments Stable {T} v.
+Arguments Latest {T} v.
+Arguments NotModifiedSinceInstall {T} v.
 
 Inductive txnObject :=
 | txnBit (b : bool)
@@ -75,53 +75,69 @@ Definition lockN : namespace := nroot .@ "txnlock".
 Definition invN : namespace := nroot .@ "txninv".
 Definition walN : namespace := nroot .@ "txnwal".
 
-Definition txn_inodes_in_block (b : Block) (gm : gmap u64 (updatable_buf inode_buf)) : iProp Σ :=
+Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 elemsize).
+  destruct (decide ((S n) * elemsize <= block_bytes)).
+  - refine (Some _).
+
+    assert (elemsize ≤ block_bytes - n * elemsize)%nat by abstract lia.
+    refine (Vector.take _ H _).
+
+    unfold Block in b.
+    assert (block_bytes = n * elemsize + (block_bytes - n * elemsize))%nat by abstract lia.
+    rewrite H0 in b.
+    refine (snd (Vector.splitat _ b)).
+  - exact None.
+Defined.
+
+Definition txn_inodes_in_block (installed : Block) (bs : list Block) (gm : gmap u64 (updatable_buf inode_buf)) : iProp Σ :=
   (
     [∗ map] off ↦ maybe_inode ∈ gm,
-      match maybe_inode with
-      | Unstable => True
-      | Stable v =>
-        (* extract bytes off*inode_size..(off+1)*inode_size from b;
-            they must be equal to v *)
-        True
-      end
+      ⌜ match maybe_inode with
+        | Latest v =>
+          extract_nth (latest_update installed bs) inode_bytes (int.nat off) = Some v
+        | NotModifiedSinceInstall v =>
+          ∀ prefix,
+            extract_nth (latest_update installed (take prefix bs)) inode_bytes (int.nat off) = Some v
+        end ⌝
   )%I.
 
-Definition txn_bits_in_block (b : Block) (gm : gmap u64 (updatable_buf bool)) : iProp Σ :=
+Definition txn_bits_in_block (installed : Block) (bs : list Block) (gm : gmap u64 (updatable_buf bool)) : iProp Σ :=
   (
     [∗ map] off ↦ maybe_bit ∈ gm,
       match maybe_bit with
-      | Unstable => True
-      | Stable v =>
+      | Latest v => True
+      | NotModifiedSinceInstall v =>
         (* extract bit off from block; it must be equal to v *)
         True
       end
   )%I.
 
-Definition txn_blocks_in_block (b : Block) (gm : gmap u64 (updatable_buf Block)) : iProp Σ :=
+Definition txn_blocks_in_block (installed : Block) (bs : list Block) (gm : gmap u64 (updatable_buf Block)) : iProp Σ :=
   (
     [∗ map] off ↦ maybe_block ∈ gm,
-      match maybe_block with
-      | Unstable => True
-      | Stable v =>
-        ⌜ off = (0 : u64) ⌝ ∗
-        ⌜ v = b ⌝
-      end
+      ⌜ off = (0 : u64) ⌝ ∗
+      ⌜ match maybe_block with
+        | Latest v =>
+          latest_update installed bs = v
+        | NotModifiedSinceInstall v =>
+          ∀ prefix,
+            latest_update installed (take prefix bs) = v
+      end ⌝
   )%I.
 
-Global Instance txn_bits_in_block_timeless b gm : Timeless (txn_bits_in_block b gm).
+Global Instance txn_bits_in_block_timeless installed bs gm : Timeless (txn_bits_in_block installed bs gm).
 Proof.
   apply big_sepM_timeless; intros.
   destruct x; refine _.
 Qed.
 
-Global Instance txn_inodes_in_block_timeless b gm : Timeless (txn_inodes_in_block b gm).
+Global Instance txn_inodes_in_block_timeless installed bs gm : Timeless (txn_inodes_in_block installed bs gm).
 Proof.
   apply big_sepM_timeless; intros.
   destruct x; refine _.
 Qed.
 
-Global Instance txn_blocks_in_block_timeless b gm : Timeless (txn_blocks_in_block b gm).
+Global Instance txn_blocks_in_block_timeless installed bs gm : Timeless (txn_blocks_in_block installed bs gm).
 Proof.
   apply big_sepM_timeless; intros.
   destruct x; refine _.
@@ -142,17 +158,17 @@ Definition is_txn_always (walHeap : gen_heapG u64 heap_block Σ)
       ( [∗ map] blkno ↦ gm;gh ∈ mBlocks;gBlocks, gen_heap_ctx (hG := gh) gm ) ∗
       mapsto (hG := γMaps) tt (1/2) (mBits, mInodes, mBlocks) ∗
       ( [∗ map] blkno ↦ bitmap ∈ mBits,
-          ∃ b,
-            mapsto (hG := walHeap) blkno 1 (Latest b) ∗
-            txn_bits_in_block b bitmap ) ∗
+          ∃ installed bs,
+            mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
+            txn_bits_in_block installed bs bitmap ) ∗
       ( [∗ map] blkno ↦ inodemap ∈ mInodes,
-          ∃ b,
-            mapsto (hG := walHeap) blkno 1 (Latest b) ∗
-            txn_inodes_in_block b inodemap ) ∗
+          ∃ installed bs,
+            mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
+            txn_inodes_in_block installed bs inodemap ) ∗
       ( [∗ map] blkno ↦ blockmap ∈ mBlocks,
-          ∃ b,
-            mapsto (hG := walHeap) blkno 1 (Latest b) ∗
-            txn_blocks_in_block b blockmap )
+          ∃ installed bs,
+            mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
+            txn_blocks_in_block installed bs blockmap )
   )%I.
 
 Definition is_txn_locked γMaps : iProp Σ :=
@@ -160,13 +176,7 @@ Definition is_txn_locked γMaps : iProp Σ :=
     ∃ (mBits : gmap u64 (gmap u64 (updatable_buf bool)))
       (mInodes : gmap u64 (gmap u64 (updatable_buf inode_buf)))
       (mBlocks : gmap u64 (gmap u64 (updatable_buf Block))),
-      mapsto (hG := γMaps) tt (1/2) (mBits, mInodes, mBlocks) ∗
-      ( [∗ map] blkno ↦ bitmap ∈ mBits,
-          [∗ map] off ↦ ub_bit ∈ bitmap, ⌜ub_bit ≠ Unstable⌝ ) ∗
-      ( [∗ map] blkno ↦ inodemap ∈ mBits,
-          [∗ map] off ↦ ub_inode ∈ inodemap, ⌜ub_inode ≠ Unstable⌝ ) ∗
-      ( [∗ map] blkno ↦ blockmap ∈ mBits,
-          [∗ map] off ↦ ub_block ∈ blockmap, ⌜ub_block ≠ Unstable⌝ )
+      mapsto (hG := γMaps) tt (1/2) (mBits, mInodes, mBlocks)
   )%I.
 
 Definition is_txn (l : loc)
@@ -187,12 +197,14 @@ Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
     (hG : gen_heapG u64 (updatable_buf Block) Σ) v :
   {{{ is_txn l gBits gInodes gBlocks ∗
       ⌜gBlocks !! blk = Some hG⌝ ∗
-      mapsto (hG := hG) off 1 (Stable v)
+      mapsto (hG := hG) off 1 (Latest v)
   }}}
     Txn__Load #l (#blk, (#off, (#(block_bytes*8), #())))%V
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
       is_slice buf u8T 1%Qp vals ∗
-      ⌜vals = Block_to_vals v⌝ }}}.
+      ⌜vals = Block_to_vals v⌝ ∗
+      mapsto (hG := hG) off 1 (Latest v)
+  }}}.
 Proof.
   iIntros (Φ) "(Htxn & % & Hstable) HΦ".
   iDestruct "Htxn" as (γMaps γLock walHeap mu walptr q) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
@@ -201,7 +213,10 @@ Proof.
   wp_loadField.
   wp_call.
 
-  wp_apply (wp_Walog__ReadMem with "[$Hwal Hstable]").
+  wp_apply (wp_Walog__ReadMem _ _ (λ mb, match mb with
+    | Some b => mapsto (hG := hG) off 1 (Latest v) ∗ ⌜ b = v ⌝
+    | None => mapsto (hG := hG) off 1 (NotModifiedSinceInstall v)
+    end ∗ ⌜ off = 0 ⌝)%I with "[$Hwal Hstable]").
   {
     iApply (wal_heap_readmem walN invN with "[Hstable]").
 
@@ -216,51 +231,75 @@ Proof.
     iDestruct ("Hctxblocks" with "Hctxblock") as "Hctxblocks".
 
     iDestruct (big_sepM_lookup_acc with "Hblocks") as "[Hblock Hblocks]"; eauto.
-    iDestruct "Hblock" as (blk_b) "[Hblk Hinblk]".
+    iDestruct "Hblock" as (blk_installed blk_bs) "[Hblk Hinblk]".
 
-    iExists _. iFrame.
+    iExists _, _. iFrame.
 
     iModIntro.
     iIntros (mb) "Hrmq".
+    destruct mb; rewrite /=.
 
-    iDestruct ("Hinv_closer" with "[-]") as "Hinv_closer".
     {
+      iDestruct "Hrmq" as "[Hrmq %]".
+      iDestruct (big_sepM_lookup with "Hinblk") as %Hinblk; eauto.
+      iDestruct ("Hinv_closer" with "[-Hstable]") as "Hinv_closer".
+      {
+        iModIntro.
+        iExists _, _, _.
+        iFrame.
+        iApply "Hblocks".
+        iExists _, _. iFrame.
+      }
+
+      iMod "Hinv_closer".
       iModIntro.
-      iExists _, _, _.
+      intuition; subst.
       iFrame.
-      iApply "Hblocks". iExists _. iFrame.
-      destruct mb; rewrite /=.
-      { iDestruct "Hrmq" as "[$ _]". }
-      admit.
+      done.
     }
 
-    iMod "Hinv_closer".
-    iModIntro.
-    done.
+    {
+      admit.
+    }
   }
 
   iIntros (ok bl) "Hres".
   destruct ok.
-(*
-  - iDestruct "Hres" as (b) "[Hisblock [Hblk ->]]".
+  {
+    iDestruct ("Hres") as (b) "(Hisblock & (Hlatest & ->) & ->)".
     wp_pures.
     admit.
+  }
 
-  - wp_pures.
-    wp_apply (wp_Walog__ReadInstalled with "[$Hwal Hres]").
-    { iApply (wal_heap_readinstalled with "[$Hres]"). }
-    iIntros (ok bl0) "Hres".
-    iDestruct "Hres" as (b) "[Hisblock [Hblk ->]]".
+  {
+    iDestruct ("Hres") as "(Hnotmod & ->)".
+    wp_pures.
+
+    wp_apply (wp_Walog__ReadInstalled _ _ (λ b, ⌜ b = v ⌝)%I with "[$Hwal Hnotmod]").
+    {
+(*
+      iApply (wal_heap_readinstalled with "[$Hres]"). }
+      iIntros (ok bl0) "Hres".
+      iDestruct "Hres" as (b) "[Hisblock [Hblk ->]]".
+      wp_pures.
+      admit.
+*)
+
+      admit.
+    }
+
+    iIntros (bslice) "Hres".
+    iDestruct "Hres" as (b) "(Hres & ->)".
     wp_pures.
     admit.
-*)
+  }
 Admitted.
 
 Theorem wp_txn_Load_bit l gBits gInodes gBlocks (blk off : u64)
     (hG : gen_heapG u64 (updatable_buf bool) Σ) v :
   {{{ is_txn l gBits gInodes gBlocks ∗
       ⌜gBits !! blk = Some hG⌝ ∗
-      mapsto (hG := hG) off 1 (Stable v)
+      mapsto (hG := hG) off 1 (Latest v)
   }}}
     Txn__Load #l (#blk, #off, #1)
   {{{ (buf : Slice.t) b, RET (slice_val buf);
@@ -274,7 +313,7 @@ Theorem wp_txn_Load_inode l gBits gInodes gBlocks (blk off : u64)
     (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v :
   {{{ is_txn l gBits gInodes gBlocks ∗
       ⌜gInodes !! blk = Some hG⌝ ∗
-      mapsto (hG := hG) off 1 (Stable v)
+      mapsto (hG := hG) off 1 (Latest v)
   }}}
     Txn__Load #l (#blk, #off, #(inode_bytes*8))
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
@@ -297,15 +336,15 @@ Definition commit_pre
         ( ∃ (hG : gen_heapG u64 (updatable_buf bool) Σ) v,
           ⌜sz=1⌝ ∗
           ⌜gBits !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Stable v) ) ∨
+          mapsto (hG := hG) off 1 (Latest v) ) ∨
         ( ∃ (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v,
           ⌜sz=inode_bits⌝ ∗
           ⌜gInodes !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Stable v) ) ∨
+          mapsto (hG := hG) off 1 (Latest v) ) ∨
         ( ∃ (hG : gen_heapG u64 (updatable_buf Block) Σ) v,
           ⌜sz=block_bits⌝ ∗
           ⌜gBlocks !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Stable v) )
+          mapsto (hG := hG) off 1 (Latest v) )
       )
   )%I.
 
@@ -323,19 +362,19 @@ Definition commit_post
         ( ∃ (hG : gen_heapG u64 (updatable_buf bool) Σ) v,
           ⌜sz=1⌝ ∗
           ⌜gBits !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Stable v) ∗
+          mapsto (hG := hG) off 1 (Latest v) ∗
           ⌜ v = false ∧ data_vals = (#0 :: nil) ∨
             v = true ∧ ∃ x, data_vals = [x] ∧ x ≠ #0 ⌝
           ) ∨
         ( ∃ (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v,
           ⌜sz=inode_bits⌝ ∗
           ⌜gInodes !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Stable v) ∗
+          mapsto (hG := hG) off 1 (Latest v) ∗
           ⌜ inode_to_vals v = data_vals ⌝ ) ∨
         ( ∃ (hG : gen_heapG u64 (updatable_buf Block) Σ) v,
           ⌜sz=block_bits⌝ ∗
           ⌜gBlocks !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Stable v) ∗
+          mapsto (hG := hG) off 1 (Latest v) ∗
           ⌜ Block_to_vals v = data_vals ⌝ )
       )
   )%I.
@@ -364,15 +403,15 @@ Definition unify_heaps_inner
       | txnBit v =>
         ∃ hG,
           ⌜gBits !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto (hG := hG) addr.(addrOff) 1 (Stable v)
+          mapsto (hG := hG) addr.(addrOff) 1 (Latest v)
       | txnInode v =>
         ∃ hG,
           ⌜gInodes !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto (hG := hG) addr.(addrOff) 1 (Stable v)
+          mapsto (hG := hG) addr.(addrOff) 1 (Latest v)
       | txnBlock v =>
         ∃ hG,
           ⌜gBlocks !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto (hG := hG) addr.(addrOff) 1 (Stable v)
+          mapsto (hG := hG) addr.(addrOff) 1 (Latest v)
       end
   )%I.
 

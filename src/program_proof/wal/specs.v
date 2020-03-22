@@ -401,7 +401,7 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l a :
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q b))
    }}}
     Walog__ReadInstalled #l #a
-  {{{ (ok:bool) bl, RET (slice_val bl, #ok); ∃ b, is_block bl b ∗ Q b}}}.
+  {{{ bl, RET slice_val bl; ∃ b, is_block bl b ∗ Q b}}}.
 Proof.
 Admitted.
 
