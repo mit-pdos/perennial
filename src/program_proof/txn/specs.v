@@ -425,7 +425,6 @@ Theorem wp_txn_Load_inode l gBits gInodes gBlocks (blk off : u64)
 Proof.
 Admitted.
 
-(*
 Definition commit_pre
     (gBits   : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
     (gInodes : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
@@ -440,15 +439,15 @@ Definition commit_pre
         ( ∃ (hG : gen_heapG u64 (updatable_buf bool) Σ) v,
           ⌜sz=1⌝ ∗
           ⌜gBits !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Latest v) ) ∨
+          mapsto_txn hG off v ) ∨
         ( ∃ (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v,
           ⌜sz=inode_bits⌝ ∗
           ⌜gInodes !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Latest v) ) ∨
+          mapsto_txn hG off v ) ∨
         ( ∃ (hG : gen_heapG u64 (updatable_buf Block) Σ) v,
           ⌜sz=block_bits⌝ ∗
           ⌜gBlocks !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Latest v) )
+          mapsto_txn hG off v )
       )
   )%I.
 
@@ -466,33 +465,100 @@ Definition commit_post
         ( ∃ (hG : gen_heapG u64 (updatable_buf bool) Σ) v,
           ⌜sz=1⌝ ∗
           ⌜gBits !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Latest v) ∗
+          mapsto_txn hG off v ∗
           ⌜ v = false ∧ data_vals = (#0 :: nil) ∨
             v = true ∧ ∃ x, data_vals = [x] ∧ x ≠ #0 ⌝
           ) ∨
         ( ∃ (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v,
           ⌜sz=inode_bits⌝ ∗
           ⌜gInodes !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Latest v) ∗
+          mapsto_txn hG off v ∗
           ⌜ inode_to_vals v = data_vals ⌝ ) ∨
         ( ∃ (hG : gen_heapG u64 (updatable_buf Block) Σ) v,
           ⌜sz=block_bits⌝ ∗
           ⌜gBlocks !! blkno = Some hG⌝ ∗
-          mapsto (hG := hG) off 1 (Latest v) ∗
+          mapsto_txn hG off v ∗
           ⌜ Block_to_vals v = data_vals ⌝ )
       )
   )%I.
 
-Theorem wp_txn_CommitWait l q gBits gInodes gBlocks bufs buflist :
+Theorem wp_txn__doCommit l q gBits gInodes gBlocks bufs buflist :
   {{{ is_txn l gBits gInodes gBlocks ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
   }}}
-    Txn__CommitWait #l (slice_val bufs)
-  {{{ RET #();
+    Txn__doCommit #l (slice_val bufs)
+  {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ list] _ ↦ buf ∈ buflist, commit_post gBits gInodes gBlocks buf ) }}}.
 Proof.
+  iIntros (Φ) "(Htxn & Hbufs & Hbufpre) HΦ".
+  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr tq) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
+
+  wp_call.
+  wp_loadField.
+  wp_apply acquire_spec; eauto.
+  iIntros "[Hlocked Htxnlocked]".
+
+  wp_pures.
+Admitted.
+
+Theorem wp_txn_CommitWait l q gBits gInodes gBlocks bufs buflist (wait : bool) (id : u64) :
+  {{{ is_txn l gBits gInodes gBlocks ∗
+      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
+      ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
+  }}}
+    Txn__CommitWait #l (slice_val bufs) #wait #id
+  {{{ (ok : bool), RET #ok;
+      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
+      ( [∗ list] _ ↦ buf ∈ buflist, commit_post gBits gInodes gBlocks buf ) }}}.
+Proof.
+  iIntros (Φ) "(Htxn & Hbufs & Hbufpre) HΦ".
+
+  wp_call.
+  wp_apply wp_ref_to; [val_ty|].
+  iIntros (commit) "Hcommit".
+  wp_pures.
+  wp_apply wp_slice_len.
+  wp_pures.
+  rewrite bool_decide_decide.
+  destruct (decide (int.val 0 < int.val bufs.(Slice.sz))).
+  - wp_pures.
+    wp_apply (wp_txn__doCommit with "[$Htxn $Hbufs $Hbufpre]").
+    iIntros (commitpos ok) "[Hq Hbufpost]".
+
+    wp_pures.
+    destruct ok.
+    + wp_pures.
+      destruct wait.
+      * wp_pures.
+        admit.
+      * wp_pures.
+        iDestruct (struct_mapsto_singleton with "Hcommit") as "Hcommit"; eauto.
+        wp_apply (wp_load with "Hcommit"); iIntros "Hcommit".
+        iApply "HΦ".
+        iFrame.
+
+    + wp_pures.
+      wp_apply util_proof.wp_DPrintf.
+      wp_pures.
+      iDestruct (struct_mapsto_singleton with "Hcommit") as "Hcommit"; eauto.
+      wp_apply (wp_store with "Hcommit"); iIntros "Hcommit".
+      wp_pures.
+      wp_apply (wp_load with "Hcommit"); iIntros "Hcommit".
+      iApply "HΦ".
+      iFrame.
+
+  - wp_pures.
+    wp_apply util_proof.wp_DPrintf.
+    wp_pures.
+    iDestruct (struct_mapsto_singleton with "Hcommit") as "Hcommit"; eauto.
+    wp_apply (wp_load with "Hcommit"); iIntros "Hcommit".
+    iApply "HΦ".
+    iFrame.
+
+    (* Slice.sz is 0, so buflist must be nil *)
+    admit.
 Admitted.
 
 Definition unify_heaps_inner
@@ -507,15 +573,15 @@ Definition unify_heaps_inner
       | txnBit v =>
         ∃ hG,
           ⌜gBits !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto (hG := hG) addr.(addrOff) 1 (Latest v)
+          mapsto_txn hG addr.(addrOff) v
       | txnInode v =>
         ∃ hG,
           ⌜gInodes !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto (hG := hG) addr.(addrOff) 1 (Latest v)
+          mapsto_txn hG addr.(addrOff) v
       | txnBlock v =>
         ∃ hG,
           ⌜gBlocks !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto (hG := hG) addr.(addrOff) 1 (Latest v)
+          mapsto_txn hG addr.(addrOff) v
       end
   )%I.
 
@@ -530,6 +596,5 @@ Definition unify_heaps
       gen_heap_ctx (hG := γUnified) gUnified ∗
       unify_heaps_inner gBits gInodes gBlocks gUnified
   )%I.
-*)
 
 End heap.
