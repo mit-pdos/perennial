@@ -3,8 +3,6 @@
 /doc
 *.lia.cache
 *.nia.cache
-/*/.stack-work
-*.cabal
 
 # emacs
 *.aux
@@ -25,7 +23,7 @@
 .coqdeps.d
 _CoqProject
 
-/timing*.sqlite3
+/.timing.sqlite3
 
 # Python
 __pycache__

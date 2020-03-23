@@ -32,7 +32,7 @@ COQ_ARGS :=
 
 TIMED:=true
 ifeq ($(TIMED), true)
-TIMING_ARGS := --timing-db timing.sqlite3
+TIMING_ARGS := --timing-db .timing.sqlite3
 else
 TIMING_ARGS := --no-timing
 endif
@@ -111,7 +111,7 @@ clean: clean-src
 	$(Q)rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.vos) $(ALL_VFILES:.v=.vok) $(ALL_VFILES:.v=.glob)
 	$(Q)find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
 	$(Q)find . $(SRC_DIRS) -name ".lia.cache" -exec rm {} \;
-	$(Q)rm -f timing.sqlite3
+	$(Q)rm -f .timing.sqlite3
 	rm -f _CoqProject .coqdeps.d
 
 .PHONY: default test clean clean-src

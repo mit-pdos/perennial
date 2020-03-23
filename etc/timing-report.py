@@ -41,7 +41,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--max", type=int, default=10, help="number of slowest files and proofs to show"
     )
-    parser.add_argument("db", help="sqlite database of timing info")
+    parser.add_argument("--db",
+            help="sqlite database of timing info",
+            default=".timing.sqlite3")
 
     args = parser.parse_args()
 
