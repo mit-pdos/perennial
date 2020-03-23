@@ -89,6 +89,24 @@ Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 e
   - exact None.
 Defined.
 
+Fixpoint split_block (elemsize : nat) (nelem : nat) (b : vec u8 (nelem * elemsize)) : list (vec u8 elemsize).
+  destruct nelem.
+  - exact nil.
+  - simpl in b.
+    refine (cons _ _).
+    + exact (fst (Vector.splitat _ b)).
+    + refine (split_block elemsize nelem _).
+      exact (snd (Vector.splitat _ b)).
+Defined.
+
+Definition block_to_inodes (b : Block) : list inode_buf.
+  refine (split_block inode_bytes _ _).
+  unfold Block in b.
+  assert (block_bytes = (block_bytes / inode_bytes) * inode_bytes)%nat.
+  { unfold block_bytes. unfold inode_bytes. vm_compute. reflexivity. }
+  rewrite H in b. exact b.
+Defined.
+
 Definition mapsto_txn {T} hG (off : u64) (v : T) : iProp Σ :=
   ∃ γm,
     mapsto (hG := hG) off 1 (UB v γm) ∗
