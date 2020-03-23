@@ -101,7 +101,7 @@ unskip-qed:
 
 ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
 	$(Q)if [ ${TIMED} = "true" ]; then \
-		./etc/timing-report.py timing.sqlite3; \
+		./etc/timing-report.py; \
 		fi
 
 clean-src:
