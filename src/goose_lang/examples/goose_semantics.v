@@ -361,7 +361,7 @@ Definition failing_testBreakFromLoopNoContinue: val :=
   rec: "failing_testBreakFromLoopNoContinue" <> :=
     let: "i" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, ![uint64T] "i" < #20); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ![uint64T] "i" < #3); (λ: <>, Skip) := λ: <>,
       (if: #true
       then
         "i" <-[uint64T] ![uint64T] "i" + #1;;

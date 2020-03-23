@@ -22,7 +22,7 @@ Definition startstate : btstate := let p := inhabitant in
 
 (* testing infrastructure *)
 Definition run (p: expr): Error val :=
-  fst <$> runStateT (interpret 100 p) startstate.
+  fst <$> runStateT (interpret 1000 p) startstate.
 
 Tactic Notation "check_run" constr(p) :=
   let x := (eval vm_compute in (run p)) in
