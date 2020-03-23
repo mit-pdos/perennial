@@ -482,6 +482,37 @@ Definition commit_post
       )
   )%I.
 
+Theorem wp_txn__installBufs l q gBits gInodes gBlocks bufs buflist :
+  {{{ is_txn l gBits gInodes gBlocks ∗
+      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
+      ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
+  }}}
+    Txn__installBufs #l (slice_val bufs)
+  {{{ (blks : Slice.t), RET (slice_val blks);
+      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
+      ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
+  }}}.
+Proof.
+  iIntros (Φ) "(Htxn & Hbufs & Hbufpre) HΦ".
+
+  wp_call.
+  wp_apply wp_new_slice. { rewrite /=. intuition. apply has_zero_slice_T. }
+  iIntros (blks) "Hblks".
+
+  wp_apply wp_ref_to; [val_ty|].
+  iIntros (blks_l) "Hblks_l".
+
+  wp_pures.
+  wp_apply wp_NewMap.
+  iIntros (bufsByBlock) "HbufsByBlock".
+
+  wp_apply wp_ref_to; [val_ty|].
+  iIntros (bufsByBlock_l) "HbufsByBlock_l".
+
+  wp_pures.
+  wp_apply wp_forSlice.
+Admitted.
+
 Theorem wp_txn__doCommit l q gBits gInodes gBlocks bufs buflist :
   {{{ is_txn l gBits gInodes gBlocks ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -501,6 +532,8 @@ Proof.
   iIntros "[Hlocked Htxnlocked]".
 
   wp_pures.
+  
+
 Admitted.
 
 Theorem wp_txn_CommitWait l q gBits gInodes gBlocks bufs buflist (wait : bool) (id : u64) :
