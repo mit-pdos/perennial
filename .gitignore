@@ -29,3 +29,5 @@ _CoqProject
 
 # Python
 __pycache__
+.mypy_cache
+*.pyc
