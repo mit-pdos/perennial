@@ -48,13 +48,13 @@ Class specTy_model :=
     sty_get_update : ∀ (Σ : gFunctors) (hF : styG Σ), sty_update Σ hF (sty_get_names Σ hF) = hF;
     sty_update_update : ∀ (Σ : gFunctors) (hF : styG Σ) (names1 names2 : sty_names),
                           sty_update Σ (sty_update Σ hF names1) names2 = sty_update Σ hF names2;
-    sty_inv : ∀ {Σ} `{!heapG Σ} `{refinement_heapG} `{crashG Σ}, styG Σ → iProp Σ;
-    sty_init : ∀ {Σ} `{!heapG Σ} `{refinement_heapG} `{crashG Σ}, styG Σ → iProp Σ;
-    sty_crash_cond : ∀ {Σ} `{!heapG Σ} `{refinement_heapG} `{crashG Σ}, styG Σ → iProp Σ;
+    sty_inv : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ} `{crashG Σ}, styG Σ → iProp Σ;
+    sty_init : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ} `{crashG Σ}, styG Σ → iProp Σ;
+    sty_crash_cond : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ} `{crashG Σ}, styG Σ → iProp Σ;
     styN: coPset;
     styN_disjoint : ↑ sN ## styN;
-    sty_val_interp : ∀ {Σ} `{!heapG Σ} `{refinement_heapG Σ} `{crashG Σ} (hS: styG Σ),
-                     @ext_tys (@val_tys _ spec_ty) → val_semTy;
+    sty_val_interp : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ} `{crashG Σ} (hS: styG Σ),
+                     @ext_tys (@val_tys (@spec_ext_op_field spec_ext) spec_ty) → val_semTy;
     sty_val_persistent:
       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ es e,
         Persistent (sty_val_interp hS τ es e);

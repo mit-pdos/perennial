@@ -179,3 +179,57 @@ Qed.
 
 
 End refinement.
+
+Section refinement.
+Context (SIZE: nat).
+Context (SIZE_nonzero: 0 < SIZE).
+Context (SIZE_bounds: int.nat SIZE = SIZE).
+Class appendG (Σ: gFunctors) :=
+  { append_lockG :> lockG Σ;
+    append_stagedG :> stagedG Σ;
+    append_stateG :> inG Σ (authR (optionUR (exclR log_stateO)));
+    append_nat_ctx :> inG Σ (authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →
+                                                                       spec_lang.(language.expr)))))))
+  }.
+
+Definition append_names := unit.
+Definition append_get_names (Σ: gFunctors) (hG: appendG Σ) := tt.
+Definition append_update (Σ: gFunctors) (hG: appendG Σ) (n: append_names) := hG.
+
+Definition KMAX : nat := 100.
+Existing Instance logG0.
+
+Definition append_inv {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ} :=
+  (∃ γ, log_inv SIZE γ 100%nat)%I.
+Definition append_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
+  : iProp Σ := (∃ γ, log_init (P γ) SIZE).
+Definition append_crash_cond {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
+  : iProp Σ := (∃ γ, log_crash_cond (P γ) SIZE).
+Definition appendN : coPset := (∅ : coPset).
+Set Printing Implicit.
+Definition append_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
+           (ty: @ext_tys (@val_tys _ log_ty)) : val_semTy :=
+  λ vspec vimpl, (∃ (lspec: loc) (limpl: loc) γ,
+            ⌜ vspec = #lspec ∧ vimpl = #limpl ⌝ ∗ is_log SIZE γ KMAX limpl ∗ log_open lspec)%I.
+
+Instance appendTy_model : specTy_model log_ty.
+Proof using SIZE.
+ refine
+  {| styG := appendG;
+     sty_names := append_names;
+     sty_get_names := append_get_names;
+     sty_update := append_update;
+     sty_inv := @append_inv;
+     sty_init := @append_init;
+     sty_crash_cond := @append_crash_cond;
+     styN := appendN;
+     sty_val_interp := @append_val_interp |}.
+ - intros ? [] [] => //=.
+ - intros ? [] => //=.
+ - intros ?? [] [] => //=.
+ - rewrite /sN/appendN. apply disjoint_empty_r.
+Defined.
+(* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
+  perhaps specTy_model should be split into two typeclasses? *)
+
+End refinement.

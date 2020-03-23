@@ -100,7 +100,7 @@ Section log.
          | AppendOp => (extT LogT, sliceT_ blockT_ _)
          | GetOp => (prodT (extT LogT) uint64T, prodT (blockT_ _) boolT)
          | ResetOp => (extT LogT, unitT)
-         | InitOp => (uint64T, extT LogT)
+         | InitOp => (unitT, extT LogT)
          | OpenOp => (unitT, extT LogT)
          end; |}.
 
@@ -387,6 +387,7 @@ Instance log_ext_semantics : spec_ext_semantics (log_spec_ext) (log_ffi_model) :
   {| spec_ext_semantics_field := log_semantics |}.
 Instance log_ffi_interp : spec_ffi_interp log_ffi_model :=
   {| spec_ffi_interp_field := log_interp |}.
+Instance log_spec_ty : ext_types (spec_ext_op_field) := log_ty.
 
 Context `{invG Σ}.
 Context `{!refinement_heapG Σ}.
