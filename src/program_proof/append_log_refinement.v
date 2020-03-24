@@ -7,7 +7,7 @@ From Perennial.goose_lang.ffi Require Import append_log_ffi.
 From Perennial.goose_lang Require Import logical_reln spec_assert.
 From Perennial.program_logic Require Import ghost_var.
 
-Existing Instances log_spec_ext log_ffi_model log_ext_semantics log_ffi_interp.
+Existing Instances log_spec_ext log_spec_ffi_model log_spec_ext_semantics log_spec_ffi_interp log_spec_interp_adequacy.
 
 Section refinement.
 Context `{!heapG Σ}.
@@ -254,8 +254,8 @@ Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 
 Notation append_nat_K :=
-(leibnizO (nat * ((@spec_lang log_spec_ext log_ffi_model log_ext_semantics).(language.expr)
-                           → (@spec_lang log_spec_ext log_ffi_model log_ext_semantics).(language.expr)))).
+(leibnizO (nat * ((@spec_lang log_spec_ext log_spec_ffi_model log_spec_ext_semantics).(language.expr)
+                           → (@spec_lang log_spec_ext log_spec_ffi_model log_spec_ext_semantics).(language.expr)))).
 
 Lemma append_init_obligation1: sty_init_obligation1 _ appendTy_update_model append_initP.
 Proof.
@@ -274,9 +274,95 @@ Proof.
   - rewrite replicate_length //=.
 Qed.
 
-(*
 Lemma append_crash_obligation:
-  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ _ _ appendTy_model. _ (upd := appendTy_update_model).
-*)
+  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ _ _ appendTy_model.
+Proof.
+  rewrite /sty_crash_obligation//=.
+  iIntros (? hG hC hRG hAppend) "Hinv Hcrash_cond".
+  iMod (ghost_var_alloc ((O, id) : append_nat_K)) as (γtok) "Hown".
+  iDestruct "Hinv" as (γ1) "#Hlog_inv".
+  rewrite /append_crash_cond.
+  iDestruct "Hcrash_cond" as (γ2 ls) "(Hstate_to_crash&HP)".
+  rewrite/ log_state_to_crash.
+  iModIntro. iNext. iIntros (hG').
+  iModIntro. iIntros (hC' σs Hrel).
+  destruct Hrel as (?&?&_&Heq&_).
+  iIntros "Hctx".
+  rewrite /append_init/log_init.
+  destruct (σs.(world)) eqn:Hworld_case; try iDestruct "Hctx" as %[].
+  - iAssert (⌜ ls = UnInit ⌝ ∗ log_ctx UnInit ∗ log_frag [])%I with "[HP Hctx]" as (Heqls) "(Hctx&Hfrag)".
+    { admit. }
+    iExists _. unshelve (iExists _).
+    { econstructor.
+      { symmetry; eauto. }
+      repeat econstructor.
+    }
+    iFrame. iIntros (hRG' (Heq1&Heq2)) "Hrestart".
+    iModIntro.
+    iExists tt, γtok. iLeft.
+    rewrite /logG0//=/log_frag//=. rewrite Heq2. rewrite Heq1.
+    iFrame. subst.
+    rewrite /append_log_proof.uninit_log.
+    rewrite /disk_array. rewrite /diskG0.
+    rewrite Heq.
+    iFrame.
+  - rewrite /P/log_ctx.
+    iAssert (⌜ ls = Closed s ∨ ls = Opening s  ⌝ ∗ log_ctx (Closed s) ∗ log_frag s)%I with "[HP Hctx]" as (Heqls) "(Hctx&Hfrag)".
+    { admit. }
+    iExists _. unshelve (iExists _).
+    { econstructor.
+      { symmetry; eauto. }
+      simpl.
+      repeat econstructor.
+    }
+    iFrame. iIntros (hRG' (Heq1&Heq2)) "Hrestart".
+    iModIntro.
+    iExists tt, γtok. iRight.
+    rewrite /logG0//=/log_frag//=. rewrite Heq2. rewrite Heq1.
+    iFrame. subst.
+    rewrite /append_log_proof.uninit_log.
+    rewrite /disk_array. rewrite /diskG0.
+    destruct Heqls as [-> | ->];
+      iExists _; iFrame;
+      iFrame; subst;
+      (* XXX: need a typeclass? or lemma? to say that these kinds of
+         disk assertions are "stable" when we go from hG to hG' because
+         disk ffi generation number doesn't change *)
+      rewrite /append_log_proof.uninit_log;
+      rewrite /append_log_proof.crashed_log;
+      rewrite /append_log_proof.is_log';
+      rewrite /append_log_proof.is_hdr;
+      rewrite /disk_array; rewrite /diskG0;
+      rewrite Heq;
+      iFrame.
+  - rewrite /P/log_ctx.
+    iAssert (⌜ ls = Opened s l  ⌝ ∗ log_ctx (Opened s l) ∗ log_frag s)%I with "[HP Hctx]" as (Heqls) "(Hctx&Hfrag)".
+    { admit. }
+    iExists _. unshelve (iExists _).
+    { econstructor.
+      { symmetry; eauto. }
+      simpl.
+      repeat econstructor.
+    }
+    iFrame. iIntros (hRG' (Heq1&Heq2)) "Hrestart".
+    iModIntro.
+    iExists tt, γtok. iRight.
+    rewrite /logG0//=/log_frag//=. rewrite Heq2. rewrite Heq1.
+    iFrame. subst.
+    rewrite /append_log_proof.uninit_log.
+    rewrite /disk_array. rewrite /diskG0.
+      iExists _; iFrame;
+      iFrame; subst;
+      (* XXX: need a typeclass? or lemma? to say that these kinds of
+         disk assertions are "stable" when we go from hG to hG' because
+         disk ffi generation number doesn't change *)
+      rewrite /append_log_proof.uninit_log;
+      rewrite /append_log_proof.crashed_log;
+      rewrite /append_log_proof.is_log';
+      rewrite /append_log_proof.is_hdr;
+      rewrite /disk_array; rewrite /diskG0;
+      rewrite Heq;
+      iFrame.
+Admitted.
 
 End refinement.

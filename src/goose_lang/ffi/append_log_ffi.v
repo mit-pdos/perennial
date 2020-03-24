@@ -47,7 +47,7 @@ Section recoverable.
 
   Definition close : transition (RecoverableState) unit :=
     bind (reads id) (fun s => match s with
-                           | Opened s _ => modify (fun _ => Closed s)
+                           | Opened s _ | Closed s => modify (fun _ => Closed s)
                            | UnInit => modify (fun _ => UnInit)
                            | _ => undefined
                            end).
@@ -406,7 +406,8 @@ Program Instance log_interp_adequacy:
      subG_ffiPreG := subG_logG;
      ffi_initP := λ σ, σ = UnInit;
      ffi_update_pre := @log_update_pre;
-     ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ log_names_state (log_get_names hF1) =
+     ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @logG_state_inG _ hF1 = @logG_state_inG _ hF2 ∧
+                                           log_names_state (log_get_names hF1) =
                                            log_names_state (log_get_names hF2) ⌝%I;
   |}.
 Next Obligation. rewrite //=. Qed.
@@ -446,18 +447,31 @@ Next Obligation.
     iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
     rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+  - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
+    inversion H2. subst. inversion H4. subst.
+    (* XXX: monad_inv should handle *)
+    iMod (own_alloc (Cinl (1%Qp, to_agree Closed') : openR)) as (γ1) "H".
+    { repeat econstructor => //=. }
+    iExists {| log_names_open := γ1; log_names_state := log_names_state (log_get_names _) |}.
+    iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
+    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
 Qed.
 
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.goose_lang Require Import refinement_adequacy.
 Section spec.
 
 Instance log_spec_ext : spec_ext_op := {| spec_ext_op_field := log_op |}.
-Instance log_ffi_model : spec_ffi_model := {| spec_ffi_model_field := log_model |}.
-Instance log_ext_semantics : spec_ext_semantics (log_spec_ext) (log_ffi_model) :=
+Instance log_spec_ffi_model : spec_ffi_model := {| spec_ffi_model_field := log_model |}.
+Instance log_spec_ext_semantics : spec_ext_semantics (log_spec_ext) (log_spec_ffi_model) :=
   {| spec_ext_semantics_field := log_semantics |}.
-Instance log_ffi_interp : spec_ffi_interp log_ffi_model :=
+Instance log_spec_ffi_interp : spec_ffi_interp log_spec_ffi_model :=
   {| spec_ffi_interp_field := log_interp |}.
 Instance log_spec_ty : ext_types (spec_ext_op_field) := log_ty.
+Instance log_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := log_spec_ffi_interp) :=
+  {| spec_ffi_interp_adequacy_field := log_interp_adequacy |}.
 
 Context `{invG Σ}.
 Context `{!refinement_heapG Σ}.
@@ -486,7 +500,7 @@ Instance logG0 : logG Σ := refinement_spec_ffiG.
 
 Lemma ghost_step_init_stuck E j K {HCTX: LanguageCtx K} σ:
   nclose sN_inv ⊆ E →
-  (σ.(@world _ log_ffi_model.(@spec_ffi_model_field)) ≠ UnInit) →
+  (σ.(@world _ log_spec_ffi_model.(@spec_ffi_model_field)) ≠ UnInit) →
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ -∗
@@ -505,7 +519,7 @@ Qed.
 
 Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
   nclose sN_inv ⊆ E →
-  (∀ vs, σ.(@world _ log_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
+  (∀ vs, σ.(@world _ log_spec_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ -∗
