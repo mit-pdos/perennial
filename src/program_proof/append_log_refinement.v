@@ -206,7 +206,6 @@ Definition append_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} 
 Definition append_crash_cond {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
   : iProp Σ := (∃ γ, log_crash_cond (P γ) SIZE).
 Definition appendN : coPset := (∅ : coPset).
-Set Printing Implicit.
 Definition append_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
            (ty: @ext_tys (@val_tys _ log_ty)) : val_semTy :=
   λ vspec vimpl, (∃ (lspec: loc) (limpl: loc) γ,
@@ -231,5 +230,48 @@ Proof using SIZE.
 Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
   perhaps specTy_model should be split into two typeclasses? *)
+
+Existing Instances subG_stagedΣ subG_lockΣ.
+
+Definition appendΣ := #[lockΣ; stagedΣ;
+                          GFunctor (authR (optionUR (exclR log_stateO)));
+                          GFunctor ((authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →
+                                                                       spec_lang.(language.expr))))))))].
+
+Instance subG_appendPreG: ∀ Σ, subG appendΣ Σ → appendG Σ.
+Proof. solve_inG. Qed.
+Definition append_initP (σimpl: @state disk_op disk_model) (σspec : @state log_op log_model) : Prop :=
+  (σimpl.(world) = init_disk ∅ SIZE) ∧
+  (σspec.(world) = UnInit).
+Definition append_update_pre (Σ: gFunctors) (hG: appendG Σ) (n: append_names) : appendG Σ := hG.
+
+Program Instance appendTy_update_model : specTy_update _ appendTy_model :=
+  {| sty_preG := appendG;
+            styΣ := appendΣ;
+            subG_styPreG := subG_appendPreG;
+            sty_update_pre := @append_update_pre |}.
+Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
+
+Notation append_nat_K :=
+(leibnizO (nat * ((@spec_lang log_spec_ext log_ffi_model log_ext_semantics).(language.expr)
+                           → (@spec_lang log_spec_ext log_ffi_model log_ext_semantics).(language.expr)))).
+
+Lemma append_init_obligation: sty_init_obligation _ appendTy_update_model append_initP.
+Proof.
+  rewrite /sty_init_obligation//=.
+  iIntros (? hG hRG hC hAppend σs σi Hinit) "Hdisk".
+  rewrite /log_start /append_init/log_init.
+  inversion Hinit as [Heqi Heqs]. rewrite Heqs Heqi.
+  iIntros "(Huninit_frag&Hlog_frag)". rewrite /P//=.
+  rewrite /thread_tok_full.
+  iMod (ghost_var_alloc ((O, id) : append_nat_K)) as (γ) "Hown".
+  iModIntro. iExists tt, γ. iLeft. iFrame.
+  rewrite /append_log_proof.uninit_log.
+  iExists _.
+  iSplitL "Hdisk".
+  - by iApply disk_array_init_disk.
+  - rewrite replicate_length //=.
+Qed.
 
 End refinement.

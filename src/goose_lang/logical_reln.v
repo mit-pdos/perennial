@@ -145,11 +145,10 @@ Fixpoint val_interp (t: sty) (vs: sval) (v: ival) :=
 
 End reln_defs.
 
-Class specTy_update `(hsT_model: !specTy_model) (spec_op_trans: @external (spec_ext_op_field) → ival) :=
+Class specTy_update `(hsT_model: !specTy_model) :=
   { sty_preG : gFunctors → Type;
     styΣ: gFunctors;
     subG_styPreG : forall Σ, subG styΣ Σ -> sty_preG Σ;
-    sty_initP : istate → sstate → Prop;
     sty_update_pre: ∀ Σ, sty_preG Σ -> sty_names -> styG Σ;
     sty_update_pre_update: ∀ Σ (hPre: sty_preG Σ) names1 names2,
         sty_update Σ (sty_update_pre _ hPre names1) names2 =
@@ -164,7 +163,7 @@ Context `{hsT_model: !specTy_model} (spec_op_trans: @external (spec_ext_op_field
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
-Context (upd: specTy_update hsT_model spec_op_trans).
+Context (upd: specTy_update hsT_model).
 
 Definition sty_init_obligation (sty_initP: istate → sstate → Prop) :=
       forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) `(hC: crashG Σ) (hPre: sty_preG Σ) σs σ

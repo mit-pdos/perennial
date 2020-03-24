@@ -16,6 +16,14 @@ Class stagedG (Σ : gFunctors) : Set := WsatG {
   staging_bunches_inG :> partition_preG nat nat Σ
 }.
 
+Definition stagedΣ : gFunctors :=
+  #[savedPropΣ; gen_heapΣ nat (); partitionΣ nat nat;
+      GFunctor (authR (optionUR (exclR (prodO (boolO) (prodO gnameO gnameO)))));
+      GFunctor (csumR (exclR unitO) (agreeR unitO))].
+
+Instance subG_stagedΣ {Σ} : subG stagedΣ Σ → stagedG Σ.
+Proof. solve_inG. Qed.
+
 Definition staged_pending `{stagedG Σ} (γ: gname) : iProp Σ :=
   own γ (Cinl (Excl ())).
 Definition staged_done `{stagedG Σ} (γ: gname) : iProp Σ :=

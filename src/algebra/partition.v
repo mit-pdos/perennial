@@ -16,6 +16,13 @@ Class partition_preG (L V: Type) Σ `{Countable L, Infinite L, Countable V, Infi
 }.
 
 
+Definition partitionΣ (L V: Type) `{Countable L, Infinite L, Countable V, Infinite V} : gFunctors :=
+    #[gen_heapΣ L (gset V)].
+
+Instance subG_partitionG L V {Σ} `{Countable L, Infinite L, Countable V, Infinite V}:
+  subG (partitionΣ L V) Σ → partition_preG L V Σ.
+Proof. solve_inG. Qed.
+
 Local Notation "l ↦{ q } v" := (mapsto l q v)
   (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
 Local Notation "l ↦ v" := (mapsto l 1 v) (at level 20) : bi_scope.

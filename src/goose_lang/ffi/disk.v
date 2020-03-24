@@ -425,6 +425,28 @@ lemmas. *)
     rewrite Z2Nat.id; auto. iFrame.
   Qed.
 
+  Lemma init_disk_sz_lookup_ge sz z:
+    Z.of_nat sz <= z →
+    (init_disk ∅ sz : gmap Z Block) !! z = None.
+  Proof.
+    induction sz => Hle.
+    - apply lookup_empty.
+    - rewrite lookup_insert_ne; first apply IHsz; lia.
+  Qed.
+
+  Lemma disk_array_init_disk sz:
+    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{1} b) -∗ disk_array 0 1 (replicate sz (inhabitant : Block)).
+  Proof.
+    induction sz; rewrite /init_disk-/init_disk/disk_array.
+    - rewrite big_sepM_empty big_sepL_nil //=.
+    - rewrite replicate_S_end.
+      rewrite big_sepL_app.
+      rewrite replicate_length big_sepL_cons big_sepL_nil.
+      rewrite big_sepM_insert.
+      * rewrite comm. apply bi.sep_mono; auto. by rewrite ?right_id Z.add_0_l.
+      * by apply init_disk_sz_lookup_ge.
+  Qed.
+
   End proof.
 
 End disk.
