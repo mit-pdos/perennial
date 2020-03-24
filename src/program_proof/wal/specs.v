@@ -91,8 +91,13 @@ Lemma valid_installed: forall s,
     valid_log_state s ->
     int.val s.(log_state.installed_to) ≤ int.val (length s.(log_state.updates)).
 Proof.
-Admitted.
-
+  intros.
+  unfold valid_log_state in H.
+  intuition.
+  unfold log_state.last_pos in H5.
+  lia.
+Qed.
+  
 Theorem valid_log_state_advance_installed_to σ pos :
   valid_log_state σ ->
   is_trans σ.(log_state.trans) pos ->
@@ -135,50 +140,6 @@ Definition update_durable: transition log_state.t u64 :=
   modify (set log_state.durable_to (λ _, new_durable));;
   ret new_durable.
 
-(*
-(* XXX is_trans pos? *)
-Definition only_on_disk s (a: u64) :=
-  forall pos,
-    int.val s.(log_state.installed_to) ≤ pos ->
-    (disk_at_pos (Z.to_nat pos) s) !! (int.val a) = (installed_disk s) !! (int.val a).
-*)
-
-(*
-Lemma only_on_disk_eq:
-  forall s (a:u64) (b: Block),
-    valid_log_state s ->
-    only_on_disk s a ->
-    (last_disk s) !! (int.val a) = Some b ->
-    (installed_disk s) !! (int.val a) = Some b.
-Proof.
-  unfold only_on_disk.
-  unfold last_disk, installed_disk.
-  intros.
-  specialize (H0 (length s.(log_state.updates))).
-  rewrite <- H0; auto.
-  apply valid_installed.
-  auto.
-Qed.
-
-Lemma only_on_disk_last:
-  forall s (a:u64) (b: Block),
-    valid_log_state s ->
-    only_on_disk s a ->
-    (installed_disk s) !! (int.val a) = Some b ->
-    (last_disk s) !! (int.val a) = Some b.
-Proof.
-  intros.
-  unfold only_on_disk in *.
-  destruct s eqn:sigma.
-  specialize (H0 (length updates)).
-  rewrite H0; simpl in *; eauto.
-  unfold valid_log_state in *.
-  intuition; simpl in *.
-  unfold log_state.last_pos in H6; simpl in *.
-  lia.
-Qed.
-*)
-
 Theorem apply_upds_cons disk u ul :
   apply_upds (u :: ul) disk =
   apply_upds ul (apply_upds [u] disk).
@@ -198,6 +159,86 @@ Proof.
     rewrite IHu1.
     reflexivity.
 Qed.
+
+Theorem apply_update_ne:
+  forall u1 u2 d,
+  u1.(update.addr) ≠ u2.(update.addr) ->
+  apply_upds [u1] (apply_upds [u2] d) = apply_upds [u2] (apply_upds [u1] d).
+Proof.
+  intros.
+  destruct u1, u2.
+  simpl in *.
+  rewrite insert_commute; eauto.
+  intro Hx. apply H. word.
+Qed.
+
+Theorem apply_update_eq:
+  forall u1 u2 d,
+  u1.(update.addr) = u2.(update.addr) ->
+  apply_upds [u1] (apply_upds [u2] d) = apply_upds [u1] d.
+Proof.
+  intros.
+  destruct u1, u2.
+  simpl in *.
+  subst.
+  rewrite insert_insert.
+  reflexivity.
+Qed.
+
+Theorem apply_upds_update_ne a:
+  forall l d u,
+    u.(update.addr) ≠ a ->
+    apply_upds l (apply_upds [u] d) !! int.val a = apply_upds l d !! int.val a.
+Proof.
+  intros.
+  generalize dependent d.
+  induction l.
+  - intros. destruct u; simpl in *.
+    rewrite lookup_insert_ne; auto.
+    intro Hx. apply H. word.
+  - intros.
+    rewrite apply_upds_cons.
+    destruct (decide (a0.(update.addr) = u.(update.addr))); subst; eauto.
+    + rewrite apply_update_eq.
+      (* XXX instead of rewrite apply_upds_cons at <n>. *)
+      ++ assert (apply_upds (a0 :: l) d = apply_upds l (apply_upds [a0] d)).
+         +++ rewrite apply_upds_cons.
+             reflexivity.
+         +++ rewrite H0.
+             reflexivity.
+      ++ apply e.
+    + rewrite apply_update_ne.
+      ++ specialize (IHl (apply_upds [a0] d)).
+         assert (apply_upds (a0 :: l) d = apply_upds l (apply_upds [a0] d)).
+         +++ rewrite apply_upds_cons.
+             reflexivity.
+         +++ rewrite H0.
+             apply IHl.
+      ++ apply n.
+Qed.
+
+(*
+Theorem disk_at_pos_S: forall pos σ a u,
+    σ.(log_state.updates) !! (int.nat pos) = Some u ->
+    u.(update.addr) ≠ a ->
+    disk_at_pos (int.nat pos) σ !! int.val a =
+    disk_at_pos (S (int.nat pos)) σ !! int.val a.
+Proof.
+  intros.
+  unfold disk_at_pos.
+  erewrite take_S_r; eauto.
+  rewrite apply_upds_app.
+  destruct (decide (u.(update.addr) = a)); subst.
+  + congruence.
+  + unfold apply_upds at 1.
+    simpl.
+    destruct u; subst.
+    rewrite lookup_insert_ne; eauto.
+    simpl in H0.
+    clear n H.
+    intro Hx. apply H0. word.
+Qed.
+*)
 
 Theorem updates_since_to_last_disk σ a (pos : u64) installed :
   disk_at_pos (int.nat pos) σ !! int.val a = Some installed ->
@@ -255,18 +296,41 @@ Definition no_updates_since σ a (pos : u64) :=
     σ.(log_state.updates) !! int.nat pos' = Some u ->
     u.(update.addr) ≠ a.
 
+Theorem no_updates_since_disks_eq pos σ a :
+  no_updates_since σ a pos ->
+  (forall (pos' : u64),
+      int.val pos' >= int.val pos ->
+      int.val pos' <= length(σ.(log_state.updates)) ->
+      disk_at_pos (int.nat pos) σ !! int.val a = disk_at_pos (int.nat pos') σ !! int.val a).
+Proof.
+  unfold disk_at_pos, no_updates_since in *.
+  generalize σ.(log_state.updates).
+  generalize σ.(log_state.disk).
+  induction l.
+  + admit.
+  + intros.
+    
+Admitted.
+
 Theorem no_updates_since_nil σ a (pos : u64) :
   no_updates_since σ a pos ->
   updates_since pos a σ = nil.
 Proof.
   unfold no_updates_since, updates_since.
-  intros.
+  induction  σ.(log_state.updates).
+  + rewrite drop_nil.
+    rewrite filter_nil.
+    simpl; eauto.
+  + intros.
 Admitted.
 
 Theorem no_updates_since_last_disk σ a (pos : u64) :
   no_updates_since σ a pos ->
   disk_at_pos (int.nat pos) σ !! int.val a = last_disk σ !! int.val a.
 Proof.
+  intros.
+  unfold no_updates_since, last_disk in *.
+  specialize (H (length σ.(log_state.updates))).
 Admitted.
 
 Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
