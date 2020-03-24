@@ -231,7 +231,7 @@ Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
   perhaps specTy_model should be split into two typeclasses? *)
 
-Existing Instances subG_stagedΣ subG_lockΣ.
+Existing Instances subG_stagedG subG_lockΣ.
 
 Definition appendΣ := #[lockΣ; stagedΣ;
                           GFunctor (authR (optionUR (exclR log_stateO)));
@@ -257,9 +257,9 @@ Notation append_nat_K :=
 (leibnizO (nat * ((@spec_lang log_spec_ext log_ffi_model log_ext_semantics).(language.expr)
                            → (@spec_lang log_spec_ext log_ffi_model log_ext_semantics).(language.expr)))).
 
-Lemma append_init_obligation: sty_init_obligation _ appendTy_update_model append_initP.
+Lemma append_init_obligation1: sty_init_obligation1 _ appendTy_update_model append_initP.
 Proof.
-  rewrite /sty_init_obligation//=.
+  rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hC hAppend σs σi Hinit) "Hdisk".
   rewrite /log_start /append_init/log_init.
   inversion Hinit as [Heqi Heqs]. rewrite Heqs Heqi.
@@ -273,5 +273,10 @@ Proof.
   - by iApply disk_array_init_disk.
   - rewrite replicate_length //=.
 Qed.
+
+(*
+Lemma append_crash_obligation:
+  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ _ _ appendTy_model. _ (upd := appendTy_update_model).
+*)
 
 End refinement.

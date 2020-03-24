@@ -44,6 +44,7 @@ Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_fie
          spec_ffi_interp_adequacy_field.
 
 Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 tp σ s tr or:
+  ffi_initP σ.(world) →
   σ.(trace) = tr →
   σ.(oracle) = or →
   erased_rsteps (CS := spec_crash_lang) r (tp0, σ0) (tp, σ) s →
@@ -53,10 +54,10 @@ Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 tp σ s tr or:
                                                ∗ ffi_start (refinement_spec_ffiG) σ.(world)
                                                ∗ trace_ctx.
 Proof using Hrpre Hcpre.
-  iIntros (?? Hsteps Hsafe) "Htr Hor".
+  iIntros (??? Hsteps Hsafe) "Htr Hor".
   iMod (source_cfg_init1 r tp0 σ0 tp σ) as (Hcfg) "(Hsource_ctx&Hpool&Hstate)"; eauto.
   iMod (na_heap_init tls σ.(heap)) as (Hrheap) "Hrh".
-  iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world)) as (HffiG) "(Hrw&Hrs)".
+  iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world)) as (HffiG) "(Hrw&Hrs)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
   set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG) HtraceG Hcfg Hrheap)).
   iExists HrhG.
@@ -72,6 +73,7 @@ Proof using Hrpre Hcpre.
 Qed.
 
 Lemma goose_spec_init2 {hG: heapG Σ} r tp σ tr or:
+  ffi_initP σ.(world) →
   σ.(trace) = tr →
   σ.(oracle) = or →
   crash_safe (CS := spec_crash_lang) r (tp, σ) →
@@ -150,6 +152,8 @@ Proof.
 Qed.
 
 Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr Φinv :
+  ffi_initP σ.(world) →
+  ffi_initP σs.(world) →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   (∀ `{Hheap : !heapG Σ} `{Hc: !crashG Σ} {Href: refinement_heapG Σ}
@@ -163,7 +167,7 @@ Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr 
         (ffi_start (heapG_ffiG) σ.(world) -∗ ffi_start (refinement_spec_ffiG) σs.(world) -∗ O ⤇ es -∗ wpr NotStuck k _ Hc {| pbundleT := heap_get_names _ Hheap |}  ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝)))) →
   trace_refines e r σ es rs σs.
 Proof using Hrpre Hhpre Hcpre.
-  intros ?? Hwp Hsafe.
+  intros ???? Hwp Hsafe.
   cut (recv_adequate (CS := heap_crash_lang) NotStuck e r σ (λ v _, φ v) (λ v _, φr v)
                      (λ σ2,
                       ∃ t2s σ2s stats,
@@ -183,7 +187,7 @@ Proof using Hrpre Hhpre Hcpre.
   iIntros (???) "".
   iMod (na_heap.na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
   iMod (proph_map.proph_map_name_init _ κs σ.(used_proph_id)) as (name_proph_map) "Hp".
-  iMod (ffi_name_init _ _ σ.(world)) as (name_ffi) "(Hw&Hs)".
+  iMod (ffi_name_init _ _ σ.(world)) as (name_ffi) "(Hw&Hs)"; first auto.
   iMod (trace_name_init (hT := heap_preG_trace) σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hnames :=
          {| heap_heap_names := name_na_heap;
@@ -348,16 +352,22 @@ Proof.
   rewrite //= Heq1 //=.
 Qed.
 
+Definition initP_wf initP :=
+  ∀ (σ: @state ext ffi) (σs: @state (@spec_ext_op_field spec_ext) (@spec_ffi_model_field spec_ffi)),
+    initP σ σs → ffi_initP σ.(world) ∧ ffi_initP σs.(world).
+
 Theorem heap_wpc_refinement_adequacy `{crashPreG Σ} k es e
         σs σ Φ Φc initP:
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →
+  initP_wf initP →
   (⊢ wpc_init k ⊤ e es Φ Φc initP) →
   (⊢ wpc_post_crash k ⊤ e es Φ Φc) →
   trace_refines e e σ es es σs.
 Proof using Hrpre Hhpre Hcpre.
-  intros Heq1 Heq2 Hinit Hwp_init Hwp_crash.
+  Set Printing Implicit.
+  intros Heq1 Heq2 Hinit Hinit_wf Hwp_init Hwp_crash.
   eapply heap_recv_refinement_adequacy with
       (k0 := k)
       (φ := λ _, True) (φr := λ _, True)
@@ -366,6 +376,8 @@ Proof using Hrpre Hhpre Hcpre.
                          let H := heap_update Σ Hheap Hi pbundleT in
                          ∃ Href' : refinement_heapG Σ, spec_ctx' es ([es], σs)
                                                                  ∗ trace_ctx)%I); eauto.
+  { eapply Hinit_wf; eauto. }
+  { eapply Hinit_wf; eauto. }
   iIntros (Hheap Hc Href Hpf).
   iModIntro. iIntros "#Hspec #Htrace".
   iSplit.

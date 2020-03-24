@@ -48,6 +48,7 @@ Section recoverable.
   Definition close : transition (RecoverableState) unit :=
     bind (reads id) (fun s => match s with
                            | Opened s _ => modify (fun _ => Closed s)
+                           | UnInit => modify (fun _ => UnInit)
                            | _ => undefined
                            end).
 
@@ -186,6 +187,17 @@ Class logG Σ :=
     logG_state_name: gname;
   }.
 
+Class log_preG Σ :=
+  { logG_preG_open_inG :> inG Σ openR;
+    logG_preG_state_inG:> inG Σ (authR (optionUR (exclR (leibnizO (list disk.Block)))));
+  }.
+
+Definition logΣ : gFunctors :=
+  #[GFunctor openR; GFunctor (authR (optionUR (exclR (leibnizO (list disk.Block)))))].
+
+Instance subG_logG Σ: subG logΣ Σ → log_preG Σ.
+Proof. solve_inG. Qed.
+
 Record log_names :=
   { log_names_open: gname;
     log_names_state: gname; }.
@@ -197,6 +209,13 @@ Definition log_update {Σ} (lG: logG Σ) (names: log_names) :=
   {| logG_open_inG := logG_open_inG;
      logG_open_name := (log_names_open names);
      logG_state_inG := logG_state_inG;
+     logG_state_name := (log_names_state names);
+  |}.
+
+Definition log_update_pre {Σ} (lG: log_preG Σ) (names: log_names) :=
+  {| logG_open_inG := logG_preG_open_inG;
+     logG_open_name := (log_names_open names);
+     logG_state_inG := logG_preG_state_inG;
      logG_state_name := (log_names_state names);
   |}.
 
@@ -377,6 +396,57 @@ Section log_lemmas.
   Proof. apply ghost_var_update. Qed.
 
 End log_lemmas.
+
+From Perennial.goose_lang Require Import adequacy.
+
+Program Instance log_interp_adequacy:
+  @ffi_interp_adequacy log_model log_interp log_op log_semantics :=
+  {| ffi_preG := log_preG;
+     ffiΣ := logΣ;
+     subG_ffiPreG := subG_logG;
+     ffi_initP := λ σ, σ = UnInit;
+     ffi_update_pre := @log_update_pre;
+     ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ log_names_state (log_get_names hF1) =
+                                           log_names_state (log_get_names hF2) ⌝%I;
+  |}.
+Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
+Next Obligation.
+  rewrite //=.
+  iIntros (Σ hPre σ ->). simpl.
+  rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
+  iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
+  { repeat econstructor => //=. }
+  iMod (ghost_var_alloc ([]: leibnizO (list disk.Block))) as (γ2) "(H2a&H2b)".
+  iExists {| log_names_open := γ1; log_names_state := γ2 |}.
+  iFrame. iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+Qed.
+Next Obligation.
+  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  inversion Hcrash; subst.
+  monad_inv. inversion H. subst. inversion H1. subst.
+  destruct x; monad_inv.
+  - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
+    inversion H2. subst. inversion H4. subst.
+    (* XXX: monad_inv should handle *)
+    iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
+    { repeat econstructor => //=. }
+    iExists {| log_names_open := γ1; log_names_state := log_names_state (log_get_names _) |}.
+    iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
+    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+  - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
+    inversion H2. subst. inversion H4. subst.
+    (* XXX: monad_inv should handle *)
+    iMod (own_alloc (Cinl (1%Qp, to_agree Closed') : openR)) as (γ1) "H".
+    { repeat econstructor => //=. }
+    iExists {| log_names_open := γ1; log_names_state := log_names_state (log_get_names _) |}.
+    iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
+    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+Qed.
 
 From Perennial.program_proof Require Import proof_prelude.
 Section spec.

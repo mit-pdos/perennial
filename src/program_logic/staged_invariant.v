@@ -21,7 +21,7 @@ Definition stagedΣ : gFunctors :=
       GFunctor (authR (optionUR (exclR (prodO (boolO) (prodO gnameO gnameO)))));
       GFunctor (csumR (exclR unitO) (agreeR unitO))].
 
-Instance subG_stagedΣ {Σ} : subG stagedΣ Σ → stagedG Σ.
+Instance subG_stagedG {Σ} : subG stagedΣ Σ → stagedG Σ.
 Proof. solve_inG. Qed.
 
 Definition staged_pending `{stagedG Σ} (γ: gname) : iProp Σ :=

@@ -11,13 +11,14 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi}
     ffiΣ: gFunctors;
     (* modeled after subG_gen_heapPreG and gen_heap_init *)
     subG_ffiPreG : forall Σ, subG ffiΣ Σ -> ffi_preG Σ;
+    ffi_initP: ffi_state → Prop;
     ffi_update_pre: ∀ Σ, ffi_preG Σ -> ffi_names -> ffiG Σ;
     ffi_update_pre_update: ∀ Σ (hPre: ffi_preG Σ) names1 names2,
         ffi_update Σ (ffi_update_pre _ hPre names1) names2 =
         ffi_update_pre _ hPre names2;
     ffi_update_pre_get: ∀ Σ (hPre: ffi_preG Σ) names,
         ffi_get_names _ (ffi_update_pre _ hPre names) = names;
-    ffi_name_init : forall Σ (hPre: ffi_preG Σ) (σ:ffi_state),
+    ffi_name_init : forall Σ (hPre: ffi_preG Σ) (σ:ffi_state), ffi_initP σ →
           ⊢ |==> ∃ (names: ffi_names), let H0 := ffi_update_pre _ hPre names in ffi_ctx H0 σ ∗ ffi_start H0 σ;
     ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
     ffi_crash : forall Σ,
@@ -90,7 +91,7 @@ Proof.
   solve_inG_deep.
 Qed.
 
-Definition heap_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} s e σ φ :
+Definition heap_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} s e σ φ (HINIT: ffi_initP σ.(world)) :
   (∀ `{!heapG Σ}, ffi_start (heapG_ffiG) σ.(world) -∗
                   trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
                   WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
@@ -99,7 +100,7 @@ Proof.
   intros Hwp; eapply (wp_adequacy _ _); iIntros (??) "".
   unshelve (iMod (na_heap_init (LK := naMode) tls σ.(heap)) as (?) "Hh").
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
-  iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)".
+  iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&?&Hor&?)".
   iModIntro. iExists
     (λ σ κs, (na_heap_ctx tls σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx (ffi_update_pre _ _ HffiG) σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),

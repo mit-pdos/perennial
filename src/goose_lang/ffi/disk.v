@@ -81,6 +81,19 @@ Qed.
 Class diskG Σ :=
   { diskG_gen_heapG :> gen_heap.gen_heapG Z Block Σ; }.
 
+
+Class disk_preG Σ :=
+  { disk_preG_gen_heapG :> gen_heap.gen_heapPreG Z Block Σ; }.
+
+Definition diskΣ : gFunctors :=
+  #[gen_heapΣ Z Block].
+
+Instance subG_diskG Σ : subG diskΣ Σ → disk_preG Σ.
+Proof. solve_inG. Qed.
+
+Definition disk_update_pre {Σ} (dG: disk_preG Σ) (n: gen_heap_names) :=
+  {| diskG_gen_heapG := gen_heapG_update_pre (@disk_preG_gen_heapG _ dG) n |}.
+
 Section disk.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the disk model *)
@@ -459,3 +472,29 @@ Notation "l d↦ v" := (mapsto (L:=Z) (V:=Block) l 1%Qp v%V)
                        (at level 20, format "l  d↦  v") : bi_scope.
 Notation "l d↦∗ vs" := (disk_array l 1%Qp vs%V)
                        (at level 20, format "l  d↦∗  vs") : bi_scope.
+
+From Perennial.goose_lang Require Import adequacy.
+
+Program Instance disk_interp_adequacy:
+  @ffi_interp_adequacy disk_model disk_interp disk_op disk_semantics :=
+  {| ffi_preG := disk_preG;
+     ffiΣ := diskΣ;
+     subG_ffiPreG := subG_diskG;
+     ffi_initP := λ _, True;
+     ffi_update_pre := @disk_update_pre;
+     ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
+  |}.
+Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
+Next Obligation.
+  rewrite //=.
+  iIntros (Σ hPre σ ?). iMod (gen_heap_name_strong_init σ) as (names) "(Hctx&Hpts)".
+  iExists names. by iFrame.
+Qed.
+Next Obligation.
+  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  iExists (ffi_get_names _ Hold) => //=.
+  inversion Hcrash; subst.
+  iFrame. iPureIntro; split_and!; auto.
+  destruct Hold as [[]] => //=.
+Qed.

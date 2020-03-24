@@ -165,12 +165,15 @@ Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_fie
 
 Context (upd: specTy_update hsT_model).
 
-Definition sty_init_obligation (sty_initP: istate → sstate → Prop) :=
+Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
       forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) `(hC: crashG Σ) (hPre: sty_preG Σ) σs σ
       (HINIT: sty_initP σ σs),
         ⊢ ffi_start (heapG_ffiG) σ.(world) -∗
          ffi_start (refinement_spec_ffiG) σs.(world) -∗
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
+
+Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=
+  ∀ σ σs, sty_initP σ σs → ffi_initP σ.(world) ∧ ffi_initP σs.(world).
 
 Definition sty_crash_obligation :=
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
@@ -477,7 +480,8 @@ Proof.
 Qed.
 
 Lemma sty_adequacy es σs e σ τ Hval initP:
-  sty_init_obligation initP →
+  sty_init_obligation1 initP →
+  sty_init_obligation2 initP →
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation →
@@ -487,16 +491,16 @@ Lemma sty_adequacy es σs e σ τ Hval initP:
   initP σ σs →
   trace_refines e e σ es es σs.
 Proof using Σ Hstypre Hrpre Hhpre Hcrashpre Hcpre.
-  intros Hsty_init Hsty_crash_inv Hsty_crash Hsty_rules Htype Htrace Horacle Hinit.
+  intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Htype Htrace Horacle Hinit.
   eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext)
            (Φ := λ _ _ _ _, True%I) (Φc := sty_derived_crash_condition)
            (k := MAX) (initP := initP); eauto.
   { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hC hRG σ σs Hinit) "Hffi Hffi_spec".
-    rewrite /sty_init_obligation in Hsty_init.
+    rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
     iIntros "Hj #Hspec #Htrace".
     iApply fupd_wpc.
-    iPoseProof (Hsty_init _ _ _ _ Hstypre with "[$] [$]") as "H"; first auto.
+    iPoseProof (Hsty_init1 _ _ _ _ Hstypre with "[$] [$]") as "H"; first auto.
     iApply (fupd_mask_mono styN); first by set_solver+.
     iMod "H" as (names) "Hinit".
     iModIntro.
@@ -520,49 +524,6 @@ Proof using Σ Hstypre Hrpre Hhpre Hcrashpre Hcpre.
   }
 Qed.
 
-(*
-Class specTy_model_adequacy `{!specTy_model} (spec_op_trans: @external (spec_ext_op_field) → iexpr)
-      `{!ffi_interp_adequacy (FFI := spec_ffi_interp_field)
-                             (EXT := (spec_ffi_semantics_field spec_ffi_semantics))} :=
-  { sty_preG : gFunctors → Type;
-    styΣ: gFunctors;
-    subG_styPreG : forall Σ, subG styΣ Σ -> sty_preG Σ;
-    sty_initP : sstate → istate → Prop;
-    sty_update_pre: ∀ Σ, sty_preG Σ -> sty_names -> styG Σ;
-    sty_update_pre_update: ∀ Σ (hPre: sty_preG Σ) names1 names2,
-        sty_update Σ (sty_update_pre _ hPre names1) names2 =
-        sty_update_pre _ hPre names2;
-    sty_update_pre_get: ∀ Σ (hPre: sty_preG Σ) names,
-        sty_get_names _ (sty_update_pre _ hPre names) = names;
-    sty_init :
-      forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) `(hC: crashG Σ) (hPre: sty_preG Σ) σs σ
-      (HINIT: sty_initP σs σ),
-        (ffi_start (heapG_ffiG) σ.(world) -∗
-         ffi_start (refinement_spec_ffiG) σs.(world) -∗
-         |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_inv H0)%I;
-    sty_crash :
-       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
-           (sty_inv hS ={styN, ∅}=∗
-           ∀ (hC': crashG Σ) σs,
-           (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
-           ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
-           ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
-           ∃ (σs': sstate) (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
-           ffi_ctx (refinement_spec_ffiG) σs.(world) ∗
-           ∀ (hRG': refinement_heapG Σ),
-           ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
-                           (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
-           ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
-           |={styN}=> ∃ (new: sty_names), sty_inv (sty_update Σ hS new))%I;
-    sty_rules_sound :
-      ∀ op (es: sexpr) e t1 t2,
-        get_ext_tys op = (t1, t2) →
-        forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
-        sty_inv hS -∗
-        has_semTy es e (val_interp (hS := hS) t1) -∗
-        has_semTy (ExternalOp op es) ((spec_op_trans) op e) (val_interp (hS := hS) t2)
-}.
-*)
 
 End reln_adeq.
 

@@ -23,7 +23,7 @@ Global Instance heapG_perennialG `{!heapG Σ} : perennialG heap_lang heap_crash_
 
 End wpr_definitions.
 
-Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} `{crashPreG Σ} s k e r σ φ φr φinv Φinv :
+Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} `{crashPreG Σ} s k e r σ φ φr φinv Φinv (HINIT: ffi_initP σ.(world)) :
   (∀ `{Hheap : !heapG Σ} `{Hc: !crashG Σ} Hinv t,
      ⊢ |={⊤}=>
        (ffi_start (heapG_ffiG) σ.(world) -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
@@ -38,7 +38,7 @@ Proof.
   iIntros (???) "".
   iMod (na_heap_init tls σ.(heap)) as (?) "Hh".
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
-  iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)".
+  iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hG := (HeapG _ _ (ffi_update_pre _ _ HffiG) _ _ HtraceG)).
   set (hnames := heap_get_names _ hG).
