@@ -581,18 +581,18 @@ Proof.
   - wpc_frame "Hdisk HΦ".
     { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
     wp_apply wp_new_free_lock; iIntros (ml) "_".
-    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
+    wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
     iIntros "(Hdisk&HΦ)".
     iApply "HΦ". iFrame. iPureIntro. word.
   - destruct vs.
     { simpl in *.
       word. }
-    wpc_bind (Alloc _).
+    wpc_bind (struct.alloc _ _).
     wpc_frame "Hdisk HΦ".
     { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
     wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
-    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
+    wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
     wp_pures.
     iIntros "(Hdisk&HΦ)".
@@ -864,7 +864,7 @@ Proof.
   iIntros "_".
   wp_steps.
   wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
-  wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
+  wp_apply wp_allocStruct; [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
   iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
   iIntros "(?&HΦ&?&?&?)".
   iApply "HΦ".

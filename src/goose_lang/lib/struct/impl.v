@@ -101,14 +101,12 @@ Fixpoint structTy d : ty :=
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
-(* TODO: add type annotations to these and use them *)
-
 Definition allocStruct (d:descriptor) : val :=
-  λ: "v", Alloc (Var "v").
+  λ: "v", ref_to (structTy d) (Var "v").
 
 Definition allocStructLit (d:descriptor) (fvs: list (string*expr)) : expr :=
   match build_struct_val d fvs with
-  | Some v => Alloc v
+  | Some v => allocStruct d v
   | None => LitV LitUnit
   end.
 

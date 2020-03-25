@@ -51,6 +51,21 @@ Context {ext_ty: ext_types ext}.
 Implicit Types (t : ty).
 Implicit Types (stk : stuckness).
 
+Transparent struct.alloc.
+
+Theorem wp_allocStruct d stk E v :
+  val_ty v (struct.t d) ->
+  {{{ True }}}
+    struct.alloc d v @ stk; E
+  {{{ l, RET #l; l ↦[struct.t d] v }}}.
+Proof.
+  iIntros (Hty Φ) "_ HΦ".
+  wp_call.
+  wp_apply wp_ref_to; auto.
+Qed.
+
+Opaque struct.alloc.
+
 (* TODO: move this to common tactics *)
 Ltac invc H := inversion H; subst; clear H.
 
