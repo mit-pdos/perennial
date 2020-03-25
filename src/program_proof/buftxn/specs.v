@@ -3,7 +3,7 @@ Import RecordSetNotations.
 
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.Helpers Require Import GenHeap.
+From Perennial.Helpers Require Import GenHeap Liftable.
 From Perennial.goose_lang.lib Require Import struct.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
@@ -87,7 +87,7 @@ Proof.
   wp_loadField.
 Admitted.
 
-Theorem BufTxn_lift buftx γt γUnified a v :
+Theorem BufTxn_lift_one buftx γt γUnified a v :
   (
     is_buftxn buftx γt γUnified ∗
     mapsto (hG := γUnified) a 1 v
@@ -119,6 +119,64 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Theorem BufTxn_lift buftx γt γUnified (m : gmap addr txnObject) :
+  (
+    is_buftxn buftx γt γUnified ∗
+    [∗ map] a ↦ v ∈ m, mapsto (hG := γUnified) a 1 v
+  )
+    ==∗
+  (
+    is_buftxn buftx γt γUnified ∗
+    [∗ map] a ↦ v ∈ m, mapsto (hG := γt) a 1 v
+  ).
+Proof.
+  iIntros "[Htxn Ha]".
+  iDestruct "Htxn" as (l mT bufmap txid gBits gInodes gBlocks) "(Hl & Hbufmap & Htxid & Htxn & Hunify & Hγtctx & Hm)".
+
+  iDestruct (big_sepM_disjoint_pred with "Hm Ha") as %Hd.
+  {
+    unfold Conflicting; intros.
+    iIntros "Hm1 Hm2".
+    iDestruct "Hm1" as (?) "Hm1".
+    iDestruct (mapsto_disjoint with "Hm1 Hm2") as %Hd.
+    done.
+  }
+
+  iMod (gen_heap_alloc_gen with "Hγtctx") as "[Hγtctx Haa]"; eauto.
+  iModIntro.
+  iSplitR "Haa"; last iFrame.
+
+  iExists _, _, _, _, _, _, _.
+  iFrame.
+  iApply (big_sepM_union); eauto.
+  iFrame.
+  iApply big_sepM_mono; last iFrame.
+  iIntros (???) "H".
+  iExists _.
+  iFrame.
+Qed.
+
+Theorem BufTxn_lift_pred `{!Liftable P} buftx γt γUnified :
+  (
+    is_buftxn buftx γt γUnified ∗
+    P γUnified
+  )
+    ==∗
+  (
+    is_buftxn buftx γt γUnified ∗
+    P γt
+  ).
+Proof.
+  iIntros "(Htxn & Hp)".
+  unfold Liftable in Liftable0.
+  iDestruct (Liftable0 with "Hp") as (m) "[Hm Hp]".
+  iMod (BufTxn_lift with "[$Htxn $Hm]") as "[Htxn Hm]".
+  iFrame.
+  iApply "Hp".
+  iFrame.
+  done.
+Qed.
+
 Theorem wp_BufTxn__CommitWait buftx γt γUnified mods :
   {{{
     is_buftxn buftx γt γUnified ∗
@@ -138,5 +196,26 @@ Proof.
   wp_loadField.
   wp_loadField.
 Admitted.
+
+Theorem wp_BufTxn__CommitWait_pred `{!Liftable P} buftx γt γUnified :
+  {{{
+    is_buftxn buftx γt γUnified ∗
+    P γt
+  }}}
+    BufTxn__CommitWait #buftx #true
+  {{{
+    RET #();
+    P γUnified
+  }}}.
+Proof.
+  iIntros (Φ) "(Htxn & Hp) HΦ".
+  unfold Liftable in Liftable0.
+  iDestruct (Liftable0 with "Hp") as (m) "[Hm Hp]".
+  wp_apply (wp_BufTxn__CommitWait with "[$Htxn $Hm]").
+  iIntros "Hm".
+  iApply "HΦ".
+  iApply "Hp".
+  iFrame.
+Qed.
 
 End heap.
