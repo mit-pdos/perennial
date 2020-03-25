@@ -643,9 +643,9 @@ Definition unify_heaps
     (γUnified : gen_heapG addr txnObject Σ)
     : iProp Σ :=
   (
-    ∃ gUnified,
+    inv invN (∃ gUnified,
       gen_heap_ctx (hG := γUnified) gUnified ∗
-      unify_heaps_inner gBits gInodes gBlocks gUnified
+      unify_heaps_inner gBits gInodes gBlocks gUnified)
   )%I.
 
 End heap.
