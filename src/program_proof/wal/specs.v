@@ -313,6 +313,14 @@ Proof.
     
 Admitted.
 
+Lemma map_eq_cons {A B} (f:A -> B) : forall (l: list A) (l': list B) b,
+    map f l = b :: l' -> exists a tl, l = a :: tl /\ b = f a /\ l' = map f tl.
+Proof.
+  intros l l' b Heq.
+  destruct l; inversion_clear Heq.
+  exists a, l; repeat split.
+Qed.
+
 Theorem no_updates_since_nil σ a (pos : u64) :
   valid_log_state σ ->
   no_updates_since σ a pos ->
