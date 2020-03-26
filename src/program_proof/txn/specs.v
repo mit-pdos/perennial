@@ -12,8 +12,8 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.Helpers Require Import GenHeap.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import buf txn.
-From Perennial.program_proof Require Import wal.specs wal.heapspec.
+From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
+From Perennial.program_proof Require Import wal.specs wal.heapspec addr.specs buf.specs.
 
 Record addr := {
   addrBlock : u64;

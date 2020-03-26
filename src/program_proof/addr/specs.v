@@ -54,24 +54,16 @@ Section flatid2addr.
       valid_addr a ->
       am !! a = Some v <-> fm !! (addr2flat a) = Some v.
 
-  Theorem flatid_addr_lookup_u64 fm am a v :
+  Theorem flatid_addr_lookup fm am a :
     flatid_addr_map fm am ->
     valid_addr a ->
-    fm !! (addr2flat a) = Some v ->
-    am !! a = Some v.
+    fm !! (addr2flat a) = am !! a.
   Proof.
     unfold flatid_addr_map; intros.
-    apply H; eauto.
-  Qed.
-
-  Theorem flatid_addr_lookup_addr fm am a v :
-    flatid_addr_map fm am ->
-    valid_addr a ->
-    am !! a = Some v ->
-    fm !! (addr2flat a) = Some v.
-  Proof.
-    unfold flatid_addr_map; intros.
-    apply H; eauto.
+    destruct (am !! a) eqn:Heq.
+    - apply H; eauto.
+    - destruct (fm !! addr2flat a) eqn:Heq2; eauto.
+      apply H in Heq2; eauto. congruence.
   Qed.
 
   Theorem flatid_addr_insert fm am a v :

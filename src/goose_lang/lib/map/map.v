@@ -105,10 +105,12 @@ Qed.
 
 Lemma map_get_false k v m def :
   map_get (m, def) k = (v, false) ->
-  m !! k = None.
+  m !! k = None ∧ v = def.
 Proof.
   rewrite /map_get.
-  destruct (m !! k); rewrite /=; congruence.
+  destruct (m !! k); rewrite /=.
+  - congruence.
+  - intuition congruence.
 Qed.
 
 Lemma map_val_split mv m :

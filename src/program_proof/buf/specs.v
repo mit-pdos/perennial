@@ -53,9 +53,9 @@ Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
     end.
 
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
-  ∃ (mptr : loc) (m : gmap u64 val) (am : gmap addr val) def,
+  ∃ (mptr : loc) (m : gmap u64 val) (am : gmap addr val),
     bufmap ↦[BufMap.S :: "addrs"] #mptr ∗
-    is_map mptr (m, def) ∗
+    is_map mptr (m, #null) ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
       ∃ (bufloc : loc),
@@ -85,7 +85,7 @@ Opaque zero_val. (* XXX can we avoid this? *)
 
   wp_pures.
   iApply "HΦ".
-  iExists _, _, _, _.
+  iExists _, _, _.
 
   iFrame.
   iSplitR; first (iPureIntro; apply flatid_addr_empty).
@@ -105,7 +105,7 @@ Theorem wp_BufMap__Insert l m bl a b :
   }}}.
 Proof.
   iIntros (Φ) "[Hbufmap Hbuf] HΦ".
-  iDestruct "Hbufmap" as (mptr mm am def) "(Hmptr & Hmap & % & Ham)".
+  iDestruct "Hbufmap" as (mptr mm am) "(Hmptr & Hmap & % & Ham)".
   iDestruct "Hbuf" as (bufdata bufsz) "(Hbuf.addr & Hbuf.sz & Hbuf.data & Hbuf.dirty & % & Hdata)".
 
   wp_call.
@@ -114,7 +114,7 @@ Proof.
   wp_loadField.
   wp_apply (wp_MapInsert with "Hmap"); iIntros "Hmap".
   iApply "HΦ".
-  iExists _, _, _, _. iFrame.
+  iExists _, _, _. iFrame.
   iSplitR.
   { iPureIntro. apply flatid_addr_insert; eauto. }
 
@@ -134,5 +134,108 @@ Proof.
     iSplitR; eauto.
     iExists _, _. iFrame. done.
 Qed.
+
+Theorem wp_BufMap__Del l m a :
+  {{{
+    is_bufmap l m ∗
+    ⌜ valid_addr a ⌝
+  }}}
+    BufMap__Del #l (addr2val a)
+  {{{
+    RET #();
+    is_bufmap l (delete a m)
+  }}}.
+Proof.
+  iIntros (Φ) "[Hbufmap %] HΦ".
+  iDestruct "Hbufmap" as (mptr mm am) "(Hmptr & Hmap & % & Ham)".
+
+  wp_call.
+  wp_apply wp_Addr__Flatid; eauto. iIntros (?) "->".
+  wp_loadField.
+  wp_apply (wp_MapDelete with "Hmap"); iIntros "Hmap".
+  iApply "HΦ".
+  iExists _, _, _. iFrame.
+  iSplitR.
+  { iPureIntro. apply flatid_addr_delete; eauto. }
+
+  (* Two cases: either we are deleting an existing addr or noop *)
+  destruct (am !! a) eqn:Heq.
+  - iDestruct (big_sepM2_lookup_1_some with "Ham") as (v2) "%"; eauto.
+    iDestruct (big_sepM2_delete with "Ham") as "[Hcur Hacc]"; eauto.
+
+  - iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
+    rewrite delete_notin; eauto.
+    rewrite delete_notin; eauto.
+Qed.
+
+Theorem wp_BufMap__Lookup l m a :
+  {{{
+    is_bufmap l m ∗
+    ⌜ valid_addr a ⌝
+  }}}
+    BufMap__Lookup #l (addr2val a)
+  {{{
+    (bptr : loc), RET #bptr;
+    match m !! a with
+    | None =>
+      ⌜ bptr = null ⌝ ∗ is_bufmap l m
+    | Some b =>
+      is_buf bptr a b ∗
+      (∀ b', is_buf bptr a b' -∗ is_bufmap l (<[a := b']> m))
+    end
+  }}}.
+Proof.
+  iIntros (Φ) "[Hbufmap %] HΦ".
+  iDestruct "Hbufmap" as (mptr mm am) "(Hmptr & Hmap & % & Ham)".
+
+  wp_call.
+  wp_apply wp_Addr__Flatid; eauto. iIntros (?) "->".
+  wp_loadField.
+  wp_apply (wp_MapGet with "Hmap"). iIntros (v ok) "[% Hmap]".
+  wp_pures.
+
+  destruct ok.
+  - apply map_get_true in H1.
+    erewrite flatid_addr_lookup in H1; eauto.
+    iDestruct (big_sepM2_lookup_1_some with "Ham") as (vv) "%"; eauto.
+    iDestruct (big_sepM2_insert_acc with "Ham") as "[Hbuf Ham]"; eauto.
+    iDestruct "Hbuf" as (bufloc) "[-> Hbuf]".
+    rewrite H2.
+    iApply "HΦ".
+    iFrame.
+
+    iIntros (b') "Hbuf".
+    iExists _, _, _.
+    iFrame.
+    iSplitR; first eauto.
+    replace (am) with (<[a:=#bufloc]> am) at 1 by ( apply insert_id; eauto ).
+    iApply "Ham".
+    iExists _. iFrame. done.
+
+  - apply map_get_false in H1; intuition subst.
+    erewrite flatid_addr_lookup in H2; eauto.
+    iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
+    rewrite H1.
+    iApply "HΦ".
+    iSplitR; first done.
+    iExists _, _, _. iFrame. done.
+Qed.
+
+Theorem wp_BufMap__DirtyBufs l m :
+  {{{
+    is_bufmap l m
+  }}}
+    BufMap__DirtyBufs #l
+  {{{
+    (s : Slice.t) bufptrlist dirtylist, RET (slice_val s);
+    is_slice s (refT (struct.t Buf.S)) 1%Qp bufptrlist ∗
+    ⌜ dirtylist ≡ₚ filter (λ x, (snd x).(bufDirty) = true) (map_to_list m) ⌝ ∗
+    [∗ list] _ ↦ bufptrval; addrbuf ∈ bufptrlist; dirtylist,
+      ∃ (bufptr : loc),
+        ⌜ bufptrval = #bufptr ⌝ ∗
+        is_buf bufptr (fst addrbuf) (snd addrbuf)
+  }}}.
+Proof.
+Admitted.
 
 End heap.

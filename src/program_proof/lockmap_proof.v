@@ -275,7 +275,7 @@ Proof.
       wp_storeField.
 
       apply map_get_false in H0.
-      iDestruct (big_sepM2_lookup_2_none with "Haddrs") as %Hgaddr; eauto.
+      iDestruct (big_sepM2_lookup_2_none with "Haddrs") as %Hgaddr; intuition eauto.
 
       iMod (gen_heap_alloc _ addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].  
 
