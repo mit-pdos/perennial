@@ -71,6 +71,7 @@ Theorem wp_BufTxn__ReadBuf__Block buftx γt γUnified a aa v :
     ⌜ getField_f Addr.S "Off" a = #aa.(addrOff) ⌝ ∗
     mapsto (hG := γt) aa 1 (txnBlock v)
   }}}
+    (* TODO: add size to this spec *)
     BufTxn__ReadBuf #buftx a
   {{{
     (buf : Slice.t), RET (slice_val buf);
@@ -82,7 +83,6 @@ Proof.
   iIntros (Φ) "(Htxn & % & % & % & Ha) HΦ".
   iDestruct "Htxn" as (l mT bufmap txid gBits gInodes gBlocks) "(Hl & Hbufmap & Htxid & Htxn & Hunify & Hγtctx & Hm)".
   wp_call.
-  wp_loadField.
 Admitted.
 
 Theorem wp_BufTxn__OverWrite__Block buftx γt γUnified a aa v0 v (buf : Slice.t) :
@@ -94,6 +94,7 @@ Theorem wp_BufTxn__OverWrite__Block buftx γt γUnified a aa v0 v (buf : Slice.t
     mapsto (hG := γt) aa 1 (txnBlock v0) ∗
     is_slice buf u8T 1%Qp (Block_to_vals v)
   }}}
+    (* TODO: add size to this spec *)
     BufTxn__OverWrite #buftx a (slice_val buf)
   {{{
     RET #();
@@ -104,7 +105,6 @@ Proof.
   iIntros (Φ) "(Htxn & % & % & % & Ha & Hbuf) HΦ".
   iDestruct "Htxn" as (l mT bufmap txid gBits gInodes gBlocks) "(Hl & Hbufmap & Htxid & Htxn & Hunify & Hγtctx & Hm)".
   wp_call.
-  wp_loadField.
 Admitted.
 
 Theorem BufTxn_lift_one buftx γt γUnified a v :
