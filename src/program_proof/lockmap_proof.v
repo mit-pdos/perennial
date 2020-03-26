@@ -83,7 +83,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 
   wp_pures.
   iDestruct (is_free_lock_ty with "Hfreelock") as "%".
-  wp_apply (typed_mem.wp_AllocAt (structTy lockShard.S)); first by eauto.
+  wp_apply wp_allocStruct; first by eauto.
   iIntros (ls) "Hls".
 
   iMod (gen_heap_init (∅: gmap u64 bool)) as (hG) "Hheapctx".
@@ -252,7 +252,7 @@ Proof.
       wp_apply (wp_loadField_inv with "Hls_mu"); auto.
       wp_apply lock.wp_newCond; [done|].
       iIntros (c) "Hcond".
-      wp_apply (typed_mem.wp_AllocAt (struct.t lockState.S)); [val_ty|].
+      wp_apply (wp_allocStruct); first by val_ty.
       iIntros (lst) "Hlst".
       wp_store.
       wp_untyped_load.

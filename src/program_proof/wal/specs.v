@@ -73,6 +73,7 @@ Definition is_trans (trans: gmap u64 bool) pos :=
   trans !! pos = Some true.
 
 Definition valid_log_state (s : log_state.t) :=
+  Z.of_nat (length s.(log_state.updates)) < 2^64 ∧
   valid_addrs s.(log_state.updates) s.(log_state.disk) ∧
   is_trans s.(log_state.trans) s.(log_state.durable_to) ∧
   is_trans s.(log_state.trans) s.(log_state.installed_to) ∧
@@ -94,7 +95,7 @@ Proof.
   intros.
   unfold valid_log_state in H.
   intuition.
-  unfold log_state.last_pos in H5.
+  unfold log_state.last_pos in H6.
   lia.
 Qed.
   
@@ -292,7 +293,7 @@ Qed.
 
 Definition no_updates_since σ a (pos : u64) :=
   ∀ (pos' : u64) u,
-    int.val pos < int.val pos' ->
+    int.val pos <= int.val pos' ->
     σ.(log_state.updates) !! int.nat pos' = Some u ->
     u.(update.addr) ≠ a.
 
@@ -312,17 +313,80 @@ Proof.
     
 Admitted.
 
+Lemma map_eq_cons {A B} (f:A -> B) : forall (l: list A) (l': list B) b,
+    map f l = b :: l' -> exists a tl, l = a :: tl /\ b = f a /\ l' = map f tl.
+Proof.
+  intros l l' b Heq.
+  destruct l; inversion_clear Heq.
+  exists a, l; repeat split.
+Qed.
+
 Theorem no_updates_since_nil σ a (pos : u64) :
+  valid_log_state σ ->
   no_updates_since σ a pos ->
   updates_since pos a σ = nil.
 Proof.
-  unfold no_updates_since, updates_since.
-  induction  σ.(log_state.updates).
-  + rewrite drop_nil.
-    rewrite filter_nil.
-    simpl; eauto.
-  + intros.
-Admitted.
+  unfold no_updates_since, updates_since, valid_log_state.
+  generalize σ.(log_state.updates). intro l.
+  intros. intuition.
+  clear H H2 H3 H4 H5 H7. clear σ.
+
+  destruct (decide (int.nat pos < length l)).
+  2: {
+    rewrite skipn_all2; try lia.
+    reflexivity.
+  }
+
+  replace l with (take (int.nat pos) l ++ drop (int.nat pos) l) in H0, H1.
+  2: apply firstn_skipn.
+
+  generalize dependent (drop (int.nat pos) l); intros.
+  rewrite app_length in H1.
+
+  destruct (map update.b (filter (λ u : update.t, u.(update.addr) = a) l1)) eqn:Heq; eauto.
+  exfalso.
+
+  apply map_eq_cons in Heq.
+  destruct Heq. destruct H.
+  intuition.
+
+  assert (∃ (i : nat), l1 !! i = Some x ∧ x.(update.addr) = a ∧ i < length l1).
+  {
+    clear H0 H1.
+    induction l1.
+    - inversion H2.
+    - rewrite filter_cons in H2.
+      destruct (decide (a0.(update.addr) = a)).
+      + exists 0%nat. simpl. inversion H2; clear H2; subst.
+        intuition. lia.
+      + specialize (IHl1 H2).
+        destruct IHl1.
+        exists (S x1). simpl. intuition. lia.
+  }
+
+  rewrite firstn_length_le in H1; try lia.
+
+  destruct H3. intuition.
+  specialize (H0 (int.nat pos + x1) x).
+  apply H0; eauto.
+
+  {
+    word.
+  }
+
+  {
+    rewrite lookup_app_r.
+    {
+      rewrite firstn_length_le; try lia.
+      rewrite <- H5.
+      f_equal.
+      word.
+    }
+
+    rewrite firstn_length_le; try lia.
+    word.
+  }
+Qed.
 
 Theorem no_updates_since_last_disk σ a (pos : u64) :
   no_updates_since σ a pos ->
@@ -488,6 +552,3 @@ Proof.
 Admitted.
 
 End heap.
-
-
-

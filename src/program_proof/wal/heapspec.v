@@ -173,8 +173,10 @@ Proof.
         }
         {
           rewrite no_updates_since_nil; auto.
+          apply valid_log_state_advance_installed_to; auto.
         }
         rewrite (no_updates_since_nil _ _ pos); auto.
+        apply valid_log_state_advance_installed_to; auto.
       }
       rewrite /wal_heap_inv.
       iExists _; iFrame.

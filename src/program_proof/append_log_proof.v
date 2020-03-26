@@ -199,7 +199,7 @@ Proof.
   - iExists b.
     iSplitR; eauto.
     iDestruct "Hlog" as "(Hhdr & Hlog & % & free)".
-    iDestruct (update_disk_array 1 bs (int.val i) with "Hlog") as "(Hdi&Hupd)"; eauto.
+    iDestruct (disk_array_acc 1 bs (int.val i) with "Hlog") as "(Hdi&Hupd)"; eauto.
     { word. }
     iFrame.
     iIntros "Hdi"; iDestruct ("Hupd" with "Hdi") as "Hlog".
@@ -422,7 +422,7 @@ Proof.
   iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ".
   destruct (list_lookup_lt _ bs (Z.to_nat (int.val off - l))) as [b0 Hlookup].
   { word. }
-  iDestruct (update_disk_array _ _ (int.val off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
+  iDestruct (disk_array_acc _ _ (int.val off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
   replace (l + (int.val off - l)) with (int.val off) by lia.
   iApply (wpc_Write with "[Hoff Hs] [Hda_rest HΦ]").
   - iExists _; iFrame.
@@ -581,18 +581,18 @@ Proof.
   - wpc_frame "Hdisk HΦ".
     { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
     wp_apply wp_new_free_lock; iIntros (ml) "_".
-    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
+    wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
     iIntros "(Hdisk&HΦ)".
     iApply "HΦ". iFrame. iPureIntro. word.
   - destruct vs.
     { simpl in *.
       word. }
-    wpc_bind (Alloc _).
+    wpc_bind (struct.alloc _ _).
     wpc_frame "Hdisk HΦ".
     { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
     wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
-    wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ val_ty | iIntros (lptr) "Hs" ].
+    wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
     wp_pures.
     iIntros "(Hdisk&HΦ)".
@@ -864,7 +864,7 @@ Proof.
   iIntros "_".
   wp_steps.
   wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
-  wp_apply (typed_mem.wp_AllocAt (struct.t Log.S)); [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
+  wp_apply wp_allocStruct; [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
   iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
   iIntros "(?&HΦ&?&?&?)".
   iApply "HΦ".

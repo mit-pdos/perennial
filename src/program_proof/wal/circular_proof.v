@@ -597,7 +597,7 @@ Proof.
     pose proof (lookup_lt_Some _ _ _ H4).
     destruct (list_lookup_lt _ updarray (Z.to_nat ((int.val endpos + int.val i) `mod` LogSz))) as [u Hupdarray_i].
     { pose proof (Z.mod_bound_pos (int.val endpos + int.val i) LogSz); word. }
-    iDestruct (update_disk_array _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]".
+    iDestruct (disk_array_acc _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]".
     { auto. }
 
     { rewrite list_lookup_fmap.

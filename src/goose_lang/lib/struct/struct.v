@@ -51,6 +51,21 @@ Context {ext_ty: ext_types ext}.
 Implicit Types (t : ty).
 Implicit Types (stk : stuckness).
 
+Transparent struct.alloc.
+
+Theorem wp_allocStruct d stk E v :
+  val_ty v (struct.t d) ->
+  {{{ True }}}
+    struct.alloc d v @ stk; E
+  {{{ l, RET #l; l ↦[struct.t d] v }}}.
+Proof.
+  iIntros (Hty Φ) "_ HΦ".
+  wp_call.
+  wp_apply wp_ref_to; auto.
+Qed.
+
+Opaque struct.alloc.
+
 (* TODO: move this to common tactics *)
 Ltac invc H := inversion H; subst; clear H.
 
@@ -366,6 +381,42 @@ Proof.
     + destruct p; congruence.
     + destruct v; auto.
       rewrite IHfs //.
+Qed.
+
+Lemma struct_mapsto_q l q t v :
+  struct_mapsto l q t v ⊣⊢
+  struct_mapsto l (q/2) t v ∗
+  struct_mapsto l (q/2) t v.
+Proof.
+  rewrite /struct_mapsto.
+  generalize (flatten_struct v); intro fl.
+  iSplit.
+  - iIntros "[Hl #Hty]". iFrame "Hty".
+    iInduction fl as [|f] "IH" forall (l); simpl; first done.
+    iDestruct "Hl" as "[[Hl00 Hl01] Hl]".
+    iFrame.
+    setoid_rewrite loc_add_Sn.
+    iDestruct ("IH" with "Hl") as "[Hl0 Hl1]". iFrame.
+  - iIntros "[[Hl0 #Hty] [Hl1 _]]". iFrame "Hty".
+    iInduction fl as [|f] "IH" forall (l); simpl; first done.
+    iDestruct "Hl0" as "[Hl0 Hl0']".
+    iDestruct "Hl1" as "[Hl1 Hl1']".
+    iSplitL "Hl0 Hl1".
+    { iSplitL "Hl0"; iFrame. }
+    setoid_rewrite loc_add_Sn.
+    iApply ("IH" with "Hl0' Hl1'").
+Qed.
+
+Lemma struct_field_mapsto_q l q d f v :
+  struct_field_mapsto l q d f v ⊣⊢
+  struct_field_mapsto l (q/2) d f v ∗
+  struct_field_mapsto l (q/2) d f v.
+Proof.
+  rewrite /struct_field_mapsto.
+  destruct (field_offset d f).
+  - destruct p.
+    rewrite struct_mapsto_q. done.
+  - iSplit; iIntros; iPureIntro; intuition.
 Qed.
 
 Lemma struct_mapsto_acc f0 l q d v :
