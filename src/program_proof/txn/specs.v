@@ -229,6 +229,20 @@ Definition is_txn (l : loc)
       is_lock lockN γLock #mu (is_txn_locked l γMaps)
   )%I.
 
+Theorem is_txn_dup l gBits gInodes gBlocks :
+  is_txn l gBits gInodes gBlocks -∗
+  is_txn l gBits gInodes gBlocks ∗
+  is_txn l gBits gInodes gBlocks.
+Proof.
+  iIntros "Htxn".
+  iDestruct "Htxn" as (????? q) "(Hmu & Hlog & #Hwal & #Hinv & #Hlock)".
+  iDestruct (struct_field_mapsto_q with "Hmu") as "[Hmu0 Hmu1]".
+  iDestruct (struct_field_mapsto_q with "Hlog") as "[Hlog0 Hlog1]".
+  iSplitL "Hmu0 Hlog0".
+  - iExists _, _, _, _, _, _. iFrame "Hmu0 Hlog0 Hwal Hinv Hlock".
+  - iExists _, _, _, _, _, _. iFrame "Hmu1 Hlog1 Hwal Hinv Hlock".
+Qed.
+
 Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
     (hG : gen_heapG u64 (updatable_buf Block) Σ) v :
   {{{ is_txn l gBits gInodes gBlocks ∗
