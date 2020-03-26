@@ -35,7 +35,7 @@ Record buf := {
 Definition get_bit (b0 : u8) (off : u64) : bool.
 Admitted.
 
-Definition is_bufObject (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
+Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
   ∃ (data : Slice.t) (sz : u64),
     bufptr ↦[Buf.S :: "Addr"] (addr2val a) ∗
     bufptr ↦[Buf.S :: "Sz"] #sz ∗
@@ -60,7 +60,7 @@ Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
       ∃ (bufloc : loc),
         ⌜ bufptr = #bufloc ⌝ ∗
-        is_bufObject bufloc a buf.
+        is_buf bufloc a buf.
 
 Theorem wp_MkBufMap :
   {{{
@@ -91,6 +91,48 @@ Opaque zero_val. (* XXX can we avoid this? *)
   iSplitR; first (iPureIntro; apply flatid_addr_empty).
   iApply big_sepM2_empty.
   done.
+Qed.
+
+Theorem wp_BufMap__Insert l m bl a b :
+  {{{
+    is_bufmap l m ∗
+    is_buf bl a b
+  }}}
+    BufMap__Insert #l #bl
+  {{{
+    RET #();
+    is_bufmap l (<[a := b]> m)
+  }}}.
+Proof.
+  iIntros (Φ) "[Hbufmap Hbuf] HΦ".
+  iDestruct "Hbufmap" as (mptr mm am def) "(Hmptr & Hmap & % & Ham)".
+  iDestruct "Hbuf" as (bufdata bufsz) "(Hbuf.addr & Hbuf.sz & Hbuf.data & Hbuf.dirty & % & Hdata)".
+
+  wp_call.
+  wp_loadField.
+  wp_apply wp_Addr__Flatid; eauto. iIntros (?) "->".
+  wp_loadField.
+  wp_apply (wp_MapInsert with "Hmap"); iIntros "Hmap".
+  iApply "HΦ".
+  iExists _, _, _, _. iFrame.
+  iSplitR.
+  { iPureIntro. apply flatid_addr_insert; eauto. }
+
+  (* Two cases: either we are inserting a new addr or overwriting *)
+  destruct (am !! a) eqn:Heq.
+  - iDestruct (big_sepM2_lookup_1_some with "Ham") as (v2) "%"; eauto.
+    iDestruct (big_sepM2_insert_acc with "Ham") as "[Hcur Hacc]"; eauto.
+    iApply "Hacc".
+    iExists _.
+    iSplitR; eauto.
+    iExists _, _. iFrame. done.
+
+  - iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
+    iApply big_sepM2_insert; eauto.
+    iFrame "Ham".
+    iExists _.
+    iSplitR; eauto.
+    iExists _, _. iFrame. done.
 Qed.
 
 End heap.

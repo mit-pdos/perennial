@@ -98,4 +98,21 @@ Section flatid2addr.
 
 End flatid2addr.
 
+Theorem wp_Addr__Flatid a :
+  {{{
+    ⌜ valid_addr a ⌝
+  }}}
+    Addr__Flatid (addr2val a)
+  {{{
+    v, RET #v; ⌜ v = addr2flat a ⌝
+  }}}.
+Proof.
+  iIntros (Φ) "% HΦ".
+  wp_call.
+  iApply "HΦ".
+  iPureIntro.
+
+  rewrite /addr2flat.
+Admitted.
+
 End heap.
