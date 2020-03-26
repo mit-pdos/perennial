@@ -278,7 +278,8 @@ Qed.
 
 Lemma append_crash_inv_obligation:
   @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ (LVL (LVL_INIT)) (LVL (LVL_OPS)) appendTy_model.
-Proof using SIZE SIZE_bounds.
+Proof using SIZE.
+  clear SIZE_bounds.
   rewrite /sty_crash_inv_obligation//=.
   iIntros (? hG hC hRG hAppend e Φ) "Hinit Hspec Hwand".
   rewrite /append_inv/append_init/log_inv.
@@ -298,7 +299,8 @@ Qed.
 
 Lemma append_crash_obligation:
   @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ _ _ appendTy_model.
-Proof.
+Proof using SIZE.
+  clear SIZE_bounds.
   rewrite /sty_crash_obligation//=.
   iIntros (? hG hC hRG hAppend) "Hinv Hcrash_cond".
   iMod (ghost_var_alloc ((O, id) : append_nat_K)) as (γtok) "Hown".
