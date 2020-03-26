@@ -27,30 +27,30 @@ Definition Begin: val :=
     "trans".
 
 Definition BufTxn__ReadBuf: val :=
-  rec: "BufTxn__ReadBuf" "buftxn" "addr" :=
+  rec: "BufTxn__ReadBuf" "buftxn" "addr" "sz" :=
     let: "b" := buf.BufMap__Lookup (struct.loadF BufTxn.S "bufs" "buftxn") "addr" in
     (if: ("b" = slice.nil)
     then
-      let: "buf" := txn.Txn__Load (struct.loadF BufTxn.S "txn" "buftxn") "addr" in
+      let: "buf" := txn.Txn__Load (struct.loadF BufTxn.S "txn" "buftxn") "addr" "sz" in
       buf.BufMap__Insert (struct.loadF BufTxn.S "bufs" "buftxn") "buf";;
       buf.BufMap__Lookup (struct.loadF BufTxn.S "bufs" "buftxn") "addr"
     else "b").
 
 (* Caller overwrites addr without reading it *)
 Definition BufTxn__OverWrite: val :=
-  rec: "BufTxn__OverWrite" "buftxn" "addr" "data" :=
+  rec: "BufTxn__OverWrite" "buftxn" "addr" "sz" "data" :=
     let: "b" := ref_to (refT (struct.t buf.Buf.S)) (buf.BufMap__Lookup (struct.loadF BufTxn.S "bufs" "buftxn") "addr") in
     (if: (![refT (struct.t buf.Buf.S)] "b" = slice.nil)
     then
-      "b" <-[refT (struct.t buf.Buf.S)] buf.MkBuf "addr" "data";;
+      "b" <-[refT (struct.t buf.Buf.S)] buf.MkBuf "addr" "sz" "data";;
       buf.BufMap__Insert (struct.loadF BufTxn.S "bufs" "buftxn") (![refT (struct.t buf.Buf.S)] "b")
     else
-      (if: slice.len "data" * #8 ≠ struct.get addr.Addr.S "Sz" (struct.loadF buf.Buf.S "Addr" (![refT (struct.t buf.Buf.S)] "b"))
+      (if: "sz" ≠ struct.loadF buf.Buf.S "Sz" (![refT (struct.t buf.Buf.S)] "b")
       then
         Panic "overwrite";;
         #()
       else #());;
-      struct.storeF buf.Buf.S "Blk" (![refT (struct.t buf.Buf.S)] "b") "data");;
+      struct.storeF buf.Buf.S "Data" (![refT (struct.t buf.Buf.S)] "b") "data");;
     buf.Buf__SetDirty (![refT (struct.t buf.Buf.S)] "b").
 
 Definition BufTxn__NDirty: val :=

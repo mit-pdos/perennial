@@ -249,7 +249,7 @@ Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
       ⌜gBlocks !! blk = Some hG⌝ ∗
       mapsto_txn hG off v
   }}}
-    Txn__Load #l (#blk, (#off, (#(block_bytes*8), #())))%V
+    Txn__Load #l (#blk, (#off, #()))%V #(block_bytes*8)%V
   {{{ (buf : Slice.t) vals, RET (slice_val buf);
       is_slice buf u8T 1%Qp vals ∗
       ⌜vals = Block_to_vals v⌝ ∗
