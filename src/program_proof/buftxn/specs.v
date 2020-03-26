@@ -13,6 +13,7 @@ Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
+Context `{!gen_heapPreG addr txnObject Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -39,13 +40,14 @@ Theorem wp_buftxn_Begin l gBits gInodes gBlocks γUnified :
   {{{ (buftx : loc) γt, RET #buftx;
       is_buftxn buftx γt γUnified
   }}}.
-Proof.
+Proof using gen_heapPreG0.
   iIntros (Φ) "(Htxn & Hunified) HΦ".
 
   wp_call.
   wp_apply (wp_MkBufMap with "[$]").
   iIntros (bufmap) "Hbufmap".
-  wp_apply (wp_Txn__GetTransId with "Htxn").
+  iDestruct (is_txn_dup with "Htxn") as "[Htxn Htxn0]".
+  wp_apply (wp_Txn__GetTransId with "Htxn0").
   iIntros (tid) "Htid".
   wp_apply wp_allocStruct; eauto.
   iIntros (buftx) "Hbuftx".
@@ -56,8 +58,10 @@ Proof.
   iApply "HΦ".
   iExists _, _, _, _, _, _, _.
   iFrame.
-  iSplitL; last (iApply big_sepM_empty; done).
-Admitted.
+  iApply big_sepM_empty; done.
+
+  Unshelve. eauto. (* XXX why? *)
+Qed.
 
 Theorem wp_BufTxn__ReadBuf__Block buftx γt γUnified a aa v :
   {{{
