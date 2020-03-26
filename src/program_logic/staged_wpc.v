@@ -462,6 +462,13 @@ Proof.
     apply Nat.pow_lt_mono_r_iff; eauto. lia. }
 Qed.
 
+Lemma LVL_le k k':
+  k ≤ k' →
+  LVL k ≤ LVL k'.
+Proof.
+  rewrite /LVL => ?. apply Nat.pow_le_mono_r_iff; auto. lia.
+Qed.
+
 Lemma SSS_LVL k:
   (S (S (S (LVL k)))) ≤ LVL (S k).
 Proof.

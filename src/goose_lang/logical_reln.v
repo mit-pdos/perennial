@@ -26,7 +26,8 @@ Context `{spec_interp: @spec_ffi_interp spec_ffi}.
 Context `{spec_adeq: !spec_ffi_interp_adequacy}.
 Context (spec_ty: ext_types (@spec_ext_op_field spec_ext)).
 
-Context {MAX: nat}.
+Context {LVL_INIT: nat}.
+Context {LVL_OPS: nat}.
 
 Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
 Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
@@ -79,7 +80,7 @@ Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semanti
 
 Definition has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
-      j ⤇ K es -∗ WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ v, ∃ vs, j ⤇ K (of_val vs)
+      j ⤇ K es -∗ WPC e @ NotStuck; LVL_OPS; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ v, ∃ vs, j ⤇ K (of_val vs)
                                                                     ∗ vty vs v }}
                                                       {{ True }})%I.
 
@@ -204,9 +205,9 @@ Definition sty_crash_inv_obligation :=
      e (Φ: ival → iProp Σ),
     ⊢ sty_init hS -∗
     spec_ctx -∗
-    (sty_inv hS -∗ (WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ True%I }})) -∗
-    sty_inv hS ∗
-    WPC e @ NotStuck; MAX; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ sty_crash_cond hS }}).
+    (sty_inv hS -∗ (WPC e @ NotStuck; LVL_OPS; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ True%I }})) -∗
+    |={⊤}=> sty_inv hS ∗
+    WPC e @ NotStuck; LVL_INIT; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ sty_crash_cond hS }}).
 
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
@@ -439,11 +440,11 @@ Lemma sty_inv_to_wpc hG hC hRG hS Hval es e τ j:
   trace_ctx -∗
   sty_init hS -∗
   j ⤇ es -∗
-  WPC e @ MAX; ⊤;⊤ ∖ ↑sN {{ _, True }}{{sty_derived_crash_condition hG hC hRG}}.
+  WPC e @ LVL_INIT; ⊤;⊤ ∖ ↑sN {{ _, True }}{{sty_derived_crash_condition hG hC hRG}}.
 Proof.
   iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules) "#Hspec #Htrace Hinit Hj".
     rewrite /sty_crash_obligation in Hsty_crash.
-  iAssert (sty_inv hS ∗ WPC e @ MAX; ⊤;⊤ ∖ ↑sN ∖ styN {{ _, True }}{{sty_crash_cond hS}})%I with "[-]" as "(#Hinv&H)".
+  iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ LVL_INIT; ⊤;⊤ ∖ ↑sN ∖ styN {{ _, True }}{{sty_crash_cond hS}})%I with "[-]" as ">(#Hinv&H)".
   {
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iApply (Hsty_crash_inv with "[$] [$] [Hj]").
@@ -461,7 +462,7 @@ Proof.
       iSplit.
       - eauto.
       - eauto. rewrite difference_diag_L.
-        simpl. replace (MAX - MAX)%nat with O by lia. eauto.
+        simpl. replace (LVL_OPS - LVL_OPS)%nat with O by lia. eauto.
     }
   }
   iApply (wpc_strong_mono with "[$]"); eauto.
@@ -469,7 +470,7 @@ Proof.
   iSplit.
   - eauto.
   - iIntros.
-    simpl. replace (MAX - MAX)%nat with O by lia. simpl.
+    simpl. replace (LVL_INIT - LVL_INIT)%nat with O by lia. simpl.
     replace (⊤ ∖ ↑sN ∖ (⊤ ∖ ↑sN ∖ styN)) with (styN); last first.
     {
       rewrite difference_difference_remainder_L; auto.
@@ -494,7 +495,7 @@ Proof using Σ Hstypre Hrpre Hhpre Hcrashpre Hcpre.
   intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Htype Htrace Horacle Hinit.
   eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext)
            (Φ := λ _ _ _ _, True%I) (Φc := sty_derived_crash_condition)
-           (k := MAX) (initP := initP); eauto.
+           (k := LVL_INIT) (initP := initP); eauto.
   { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hC hRG σ σs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
