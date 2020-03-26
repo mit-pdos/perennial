@@ -2,7 +2,6 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-From Goose Require ..os.
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
@@ -28,14 +27,7 @@ Module KVPair.
 End KVPair.
 
 Definition MkKVS: val :=
-  rec: "MkKVS" <> :=
-    os.Remove DISKNAME;;
-    let: ("d", "err") := disk.NewFileDisk DISKNAME DISKSZ in
-    (if: "err" ≠ slice.nil
-    then
-      Panic "oops";;
-      #()
-    else #());;
+  rec: "MkKVS" "d" :=
     let: "fsSuper" := super.MkFsSuper "d" in
     let: "kvs" := struct.new KVS.S [
       "super" ::= "fsSuper";
@@ -65,8 +57,4 @@ Definition KVS__Get: val :=
 
 Definition KVS__Delete: val :=
   rec: "KVS__Delete" "kvs" :=
-    txn.Txn__Shutdown (struct.loadF KVS.S "txn" "kvs");;
-    let: "err" := os.Remove DISKNAME in
-    (if: "err" ≠ slice.nil
-    then Panic "oops"
-    else #()).
+    txn.Txn__Shutdown (struct.loadF KVS.S "txn" "kvs").
