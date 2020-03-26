@@ -7,7 +7,7 @@ From Perennial.Helpers Require Import GenHeap Liftable.
 From Perennial.goose_lang.lib Require Import struct.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
-From Perennial.program_proof Require Import txn.specs.
+From Perennial.program_proof Require Import txn.specs buf.specs.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -41,6 +41,22 @@ Theorem wp_buftxn_Begin l gBits gInodes gBlocks γUnified :
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hunified) HΦ".
+
+  wp_call.
+  wp_apply (wp_MkBufMap with "[$]").
+  iIntros (bufmap) "Hbufmap".
+  wp_apply (wp_Txn__GetTransId with "Htxn").
+  iIntros (tid) "Htid".
+  wp_apply wp_allocStruct; eauto.
+  iIntros (buftx) "Hbuftx".
+  iDestruct (struct_fields_split with "Hbuftx") as "(Hbuftx.txn & Hbuftx.bufs & Hbuftx.id & %)".
+  wp_apply util_proof.wp_DPrintf.
+  iMod (gen_heap_init ∅) as (γt) "Htxctx".
+  wp_pures.
+  iApply "HΦ".
+  iExists _, _, _, _, _, _, _.
+  iFrame.
+  iSplitL; last (iApply big_sepM_empty; done).
 Admitted.
 
 Theorem wp_BufTxn__ReadBuf__Block buftx γt γUnified a aa v :

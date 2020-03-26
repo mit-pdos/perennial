@@ -205,12 +205,14 @@ Definition is_txn_always (walHeap : gen_heapG u64 heap_block Σ)
             txn_blocks_in_block installed bs blockmap )
   )%I.
 
-Definition is_txn_locked γMaps : iProp Σ :=
+Definition is_txn_locked l γMaps : iProp Σ :=
   (
     ∃ (mBits : gmap u64 (gmap u64 (updatable_buf bool)))
       (mInodes : gmap u64 (gmap u64 (updatable_buf inode_buf)))
-      (mBlocks : gmap u64 (gmap u64 (updatable_buf Block))),
-      mapsto (hG := γMaps) tt (1/2) (mBits, mInodes, mBlocks)
+      (mBlocks : gmap u64 (gmap u64 (updatable_buf Block)))
+      (nextId : u64),
+      mapsto (hG := γMaps) tt (1/2) (mBits, mInodes, mBlocks) ∗
+      l ↦[Txn.S :: "nextId"] #nextId
   )%I.
 
 Definition is_txn (l : loc)
@@ -224,7 +226,7 @@ Definition is_txn (l : loc)
       l ↦[Txn.S :: "log"]{q} #walptr ∗
       is_wal walN (wal_heap_inv walHeap) walptr ∗
       inv invN (is_txn_always walHeap gBits gInodes gBlocks γMaps) ∗
-      is_lock lockN γLock #mu (is_txn_locked γMaps)
+      is_lock lockN γLock #mu (is_txn_locked l γMaps)
   )%I.
 
 Theorem wp_txn_Load_block l gBits gInodes gBlocks (blk off : u64)
@@ -611,6 +613,49 @@ Proof.
     (* Slice.sz is 0, so buflist must be nil *)
     admit.
 Admitted.
+
+Theorem wp_Txn__GetTransId l gBits gInodes gBlocks :
+  {{{ is_txn l gBits gInodes gBlocks }}}
+    txn.Txn__GetTransId #l
+  {{{ (i : u64), RET #i; emp }}}.
+Proof.
+  iIntros (Φ) "Htxn HΦ".
+  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr tq) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
+  wp_call.
+  wp_loadField.
+  wp_apply acquire_spec; eauto.
+  iIntros "[Hlocked Htxnlocked]".
+  iDestruct "Htxnlocked" as (??? nextId) "[Htxnheap Hnextid]".
+  wp_loadField.
+  wp_apply wp_ref_to; eauto.
+  iIntros (id) "Hid".
+  wp_pures.
+  iDestruct (struct_mapsto_singleton with "Hid") as "Hid"; eauto.
+  wp_apply (wp_load with "Hid"); iIntros "Hid".
+  wp_pures.
+  destruct (bool_decide (#nextId = #0)); wp_pures.
+  - wp_loadField.
+    wp_storeField.
+    wp_apply (wp_store with "Hid"); iIntros "Hid".
+    wp_loadField.
+    wp_storeField.
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlock $Hlocked Htxnheap Hnextid]").
+    {
+      iExists _, _, _, _. iFrame.
+    }
+    wp_apply (wp_load with "Hid"); iIntros "Hid".
+    iApply "HΦ". done.
+  - wp_loadField.
+    wp_storeField.
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlock $Hlocked Htxnheap Hnextid]").
+    {
+      iExists _, _, _, _. iFrame.
+    }
+    wp_apply (wp_load with "Hid"); iIntros "Hid".
+    iApply "HΦ". done.
+Qed.
 
 Definition unify_heaps_inner
     (gBits    : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
