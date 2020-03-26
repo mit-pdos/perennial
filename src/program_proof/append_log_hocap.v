@@ -76,44 +76,55 @@ Definition log_inv_inner k γ2 : iProp Σ :=
 Definition log_inv k :=
   (∃ γ2, inv N (log_inv_inner (LVL k) γ2))%I.
 
-Lemma append_log_na_crash_inv_obligation e (Φ: val → iProp Σ) Φc E k k':
-  (k' < k)%nat →
+Lemma append_log_na_crash_inv_obligation e (Φ: val → iProp Σ) Φc E kinit kinv kpost:
+  (kinv < kinit - 1)%nat →
+  (kpost < kinit)%nat →
   log_init -∗
-  (log_inv k' -∗ (WPC e @ NotStuck; LVL k; ⊤; E {{ Φ }} {{ Φc }})) -∗
-  WPC e @ NotStuck; (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ log_crash_cond }}%I.
+  (log_inv kinv -∗ (WPC e @ NotStuck; LVL kpost; ⊤; E {{ Φ }} {{ Φc }})) -∗
+  |={⊤}=> log_inv kinv ∗ WPC e @ NotStuck; (LVL kinit); ⊤; E {{ Φ }} {{ Φc ∗ log_crash_cond }}%I.
 Proof.
-  iIntros (?) "Hinit Hwp".
-  iMod (na_crash_inv_init N2 (LVL k') ⊤) as (Γ) "#Hinv".
+  iIntros (??) "Hinit Hwp".
+  iMod (na_crash_inv_init N2 (LVL kinv) ⊤) as (Γ) "#Hinv".
   iDestruct "Hinit" as "[(HP&Hinit)|Hinit]".
-  - iMod (na_crash_inv_alloc Γ N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[$] [HP Hinit] []") as
+  - iMod (na_crash_inv_alloc Γ N2 (LVL kinv) ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[$] [HP Hinit] []") as
      (bset) "(Hfull&#Hval&Hpending)".
     { set_solver +. }
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
       iFrame "HP".
       iNext. iFrame => //=. }
     { iAlways. iIntros "H". iExists _. iFrame. }
-    iApply (wpc_na_crash_inv_init _ _ k k' N2 E with "[-]"); try assumption.
-    iFrame.
     iMod (ghost_var_alloc (UnInit : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
     { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. iExists _, _. iFrame "#". iFrame. }
-    iApply ("Hwp" with "[]").
-    { iExists _. eauto. }
+    iPoseProof (wpc_na_crash_inv_init _ _ (kinit - 1) kinv N2 E with "[-]") as "Hwp"; try assumption.
+    { iFrame.
+      iSpecialize ("Hwp" with "[]").
+      { iExists _. eauto. }
+      iApply (wpc_idx_mono with "Hwp"); auto.
+      apply LVL_le; lia.
+    }
+    replace (S (kinit - 1)) with kinit by lia.
+    iFrame. iExists _. eauto.
   - iDestruct "Hinit" as (vs) "(HP&Hinit)".
-    iMod (na_crash_inv_alloc Γ N2 (LVL k') ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[$] [HP Hinit] []") as
+    iMod (na_crash_inv_alloc Γ N2 (LVL kinv) ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[$] [HP Hinit] []") as
      (bset) "(Hfull&#Hval&Hpending)".
     { set_solver+. }
     { rewrite /log_init/log_crash_cond/log_crash_cond'.
       iFrame "HP".
       iNext. iFrame => //=. }
     { iAlways. iIntros "H". iExists _. iFrame. }
-    iApply (wpc_na_crash_inv_init _ _ k k' N2 E with "[-]"); try assumption.
-    iFrame.
     iMod (ghost_var_alloc (Closed vs : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
-    { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. iExists _, _. iFrame "#". eauto. }
-    iApply ("Hwp" with "[]").
-    { iExists _. eauto. }
+    { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. iExists _, _. iFrame "#". iFrame. }
+    iPoseProof (wpc_na_crash_inv_init _ _ (kinit - 1) kinv N2 E with "[-]") as "Hwp"; try assumption.
+    { iFrame.
+      iSpecialize ("Hwp" with "[]").
+      { iExists _. eauto. }
+      iApply (wpc_idx_mono with "Hwp"); auto.
+      apply LVL_le; lia.
+    }
+    replace (S (kinit - 1)) with kinit by lia.
+    iFrame. iExists _. eauto.
 Qed.
 
 Definition is_log (k: nat) (l: loc) : iProp Σ :=

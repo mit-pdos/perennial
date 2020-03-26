@@ -14,11 +14,7 @@ End Addr.
 
 Definition Addr__Flatid: val :=
   rec: "Addr__Flatid" "a" :=
-    struct.loadF Addr.S "Blkno" "a" * disk.BlockSize * #8 + struct.loadF Addr.S "Off" "a".
-
-Definition Addr__Eq: val :=
-  rec: "Addr__Eq" "a" "b" :=
-    (struct.loadF Addr.S "Blkno" "a" = struct.get Addr.S "Blkno" "b") && (struct.loadF Addr.S "Off" "a" = struct.get Addr.S "Off" "b").
+    struct.get Addr.S "Blkno" "a" * disk.BlockSize * #8 + struct.get Addr.S "Off" "a".
 
 Definition MkAddr: val :=
   rec: "MkAddr" "blkno" "off" :=

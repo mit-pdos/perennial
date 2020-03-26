@@ -196,11 +196,13 @@ Definition append_names := unit.
 Definition append_get_names (Σ: gFunctors) (hG: appendG Σ) := tt.
 Definition append_update (Σ: gFunctors) (hG: appendG Σ) (n: append_names) := hG.
 
-Definition KMAX : nat := 100.
+Definition LVL_INIT : nat := 100.
+Definition LVL_INV : nat := 75.
+Definition LVL_OPS : nat := 50.
 Existing Instance logG0.
 
 Definition append_inv {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ} :=
-  (∃ γ, log_inv SIZE γ 100%nat)%I.
+  (∃ γ, log_inv SIZE γ LVL_INV%nat)%I.
 Definition append_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
   : iProp Σ := (∃ γ, log_init (P γ) SIZE).
 Definition append_crash_cond {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
@@ -209,7 +211,7 @@ Definition appendN : coPset := (∅ : coPset).
 Definition append_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
            (ty: @ext_tys (@val_tys _ log_ty)) : val_semTy :=
   λ vspec vimpl, (∃ (lspec: loc) (limpl: loc) γ,
-            ⌜ vspec = #lspec ∧ vimpl = #limpl ⌝ ∗ is_log SIZE γ KMAX limpl ∗ log_open lspec)%I.
+            ⌜ vspec = #lspec ∧ vimpl = #limpl ⌝ ∗ is_log SIZE γ LVL_INV limpl ∗ log_open lspec)%I.
 
 Instance appendTy_model : specTy_model log_ty.
 Proof using SIZE.
@@ -272,6 +274,26 @@ Proof.
   iSplitL "Hdisk".
   - by iApply disk_array_init_disk.
   - rewrite replicate_length //=.
+Qed.
+
+Lemma append_crash_inv_obligation:
+  @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ (LVL (LVL_INIT)) (LVL (LVL_OPS)) appendTy_model.
+Proof.
+  rewrite /sty_crash_inv_obligation//=.
+  iIntros (? hG hC hRG hAppend e Φ) "Hinit Hspec Hwand".
+  rewrite /append_inv/append_init/log_inv.
+  iDestruct ("Hinit") as (γ) "Hinit".
+  rewrite /append_crash_cond.
+  iPoseProof (append_log_na_crash_inv_obligation Nlog _ POpened (PStartedOpening _)
+                                                 _ _ _ _ _ _ LVL_INIT
+                                                 LVL_INV LVL_OPS with "Hinit [Hwand]") as ">(Hinv&Hwp)".
+  { rewrite /LVL_INIT/LVL_INV. lia. }
+  { rewrite /LVL_INIT/LVL_OPS. lia. }
+  { iIntros "Hinv". iApply "Hwand". iExists _. eauto. }
+  iModIntro. iSplitL "Hinv".
+  { iExists _. iApply "Hinv". }
+  iApply (wpc_mono with "Hwp"); eauto.
+  iIntros "(_&H)". iExists _. iFrame.
 Qed.
 
 Lemma append_crash_obligation:
