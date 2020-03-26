@@ -34,7 +34,8 @@ From Goose.github_com.mit_pdos Require
      goose_nfsd.buf
      goose_nfsd.txn
      goose_nfsd.alloc
-     goose_nfsd.buftxn.
+     goose_nfsd.buftxn
+     goose_nfsd.kvs.
 
 (* interpreter semantics tests *)
 From Perennial.goose_lang.interpreter Require interpreter disk_interpreter.
