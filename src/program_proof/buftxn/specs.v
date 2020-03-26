@@ -60,7 +60,7 @@ Proof using gen_heapPreG0.
   iFrame.
   iApply big_sepM_empty; done.
 
-  Unshelve. eauto. (* XXX why? *)
+  Unshelve. all: eauto. (* XXX why? *)
 Qed.
 
 Theorem wp_BufTxn__ReadBuf__Block buftx γt γUnified a aa v :
