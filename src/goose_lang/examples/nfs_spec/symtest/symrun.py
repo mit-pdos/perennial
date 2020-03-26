@@ -11,7 +11,7 @@ import rfc1813
 
 # z3.set_param("smt.string_solver", "z3str3")
 
-with open('NFS3API.json') as f:
+with open('NFS3API_2.json') as f:
     code = f.read()
     j = json.loads(code)
 
@@ -72,7 +72,8 @@ m.redefine_term('map_insert', {
         'id': 'map_insert',
     },
 })
-for id in ('gtb', 'u2', 'u3', 'ret', 'reads', 'modify', 'symBool', 'symU32', 'symU64', 'symAssert', 'eq_dec_fh', 'len_buf', 'eqDec_time', 'eq_dec_inode_state', 'countable_inode_state', 'countable_fh', 'resize_buf', 'time_ge'):
+#for id in ('gtb', 'u2', 'u3', 'ret', 'reads', 'modify', 'symBool', 'symU32', 'symU64', 'symAssert', 'eq_dec_fh', 'len_buf', 'eqDec_time', 'eq_dec_inode_state', 'countable_inode_state', 'countable_fh', 'resize_buf', 'time_ge'):
+for id in ('u2', 'u3', 'ret', 'reads', 'modify', 'symBool', 'symU32', 'symU64', 'symAssert', 'eq_dec_fh', 'len_buf', 'eqDec_time', 'eq_dec_inode_state', 'countable_inode_state', 'countable_fh', 'time_ge'):
     m.redefine_term(id, {
         'what': 'expr:special',
         'id': id,
@@ -113,18 +114,18 @@ current_state = z3.Const('s_init', stateSort)
 
 ## Invariant: GETATTR cannot return both ERR_STALE and OK in the same state
 fh = z3.String("getattr_fh")
-getattr_step, _ = m.get_term("getattr_step")
-step = jc.reduce({
-    'what': 'expr:apply',
-    'args': [fh],
-    'func': getattr_step,
-})
-_, res0 = sym.proc(step, current_state)
-_, res1 = sym.proc(step, current_state)
-s = z3.Solver()
-s.add(res0.sort().recognizer(0)(res0))
-s.add(res1.sort().recognizer(1)(res1))
-assert(s.check() == z3.unsat)
+#getattr_step, _ = m.get_term("getattr_step")
+#step = jc.reduce({
+#    'what': 'expr:apply',
+#    'args': [fh],
+#    'func': getattr_step,
+#})
+#_, res0 = sym.proc(step, current_state)
+#_, res1 = sym.proc(step, current_state)
+#s = z3.Solver()
+#s.add(res0.sort().recognizer(0)(res0))
+#s.add(res1.sort().recognizer(1)(res1))
+#assert(s.check() == z3.unsat)
 
 def lift_ftype(t):
     ftypeSort = sym.z3_sort(m.get_type("ftype"))

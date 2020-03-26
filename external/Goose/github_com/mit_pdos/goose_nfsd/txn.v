@@ -49,9 +49,9 @@ Definition Txn__GetTransId: val :=
 
 (* Read a disk object into buf *)
 Definition Txn__Load: val :=
-  rec: "Txn__Load" "txn" "addr" :=
+  rec: "Txn__Load" "txn" "addr" "sz" :=
     let: "blk" := wal.Walog__Read (struct.loadF Txn.S "log" "txn") (struct.get addr.Addr.S "Blkno" "addr") in
-    let: "b" := buf.MkBufLoad "addr" "blk" in
+    let: "b" := buf.MkBufLoad "addr" "sz" "blk" in
     "b".
 
 (* Installs the txn's bufs into their blocks and returns the blocks.
@@ -66,8 +66,8 @@ Definition Txn__installBufs: val :=
     MapIter (![mapT (slice.T (refT (struct.t buf.Buf.S)))] "bufsByBlock") (λ: "blkno" "bufs",
       let: "blk" := ref (zero_val (slice.T byteT)) in
       ForSlice (refT (struct.t buf.Buf.S)) <> "b" "bufs"
-        (if: super.FsSuper__DiskBlockSize (struct.loadF Txn.S "fs" "txn") (struct.loadF buf.Buf.S "Addr" "b")
-        then "blk" <-[slice.T byteT] struct.loadF buf.Buf.S "Blk" "b"
+        (if: (struct.loadF buf.Buf.S "Sz" "b" = common.NBITBLOCK)
+        then "blk" <-[slice.T byteT] struct.loadF buf.Buf.S "Data" "b"
         else
           (if: (![slice.T byteT] "blk" = slice.nil)
           then

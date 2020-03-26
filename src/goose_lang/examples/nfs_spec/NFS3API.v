@@ -638,7 +638,7 @@ Section SymbolicStep.
     let wcc_before := inode_wcc i in
     _ <~- check_ctime_guard i ctime_guard (Build_wcc_data (Some wcc_before) (Some wcc_before));
     t <- get_time;
-    i <~- truncate i t a.(sattr_size) (Build_wcc_data (Some wcc_before) (Some wcc_before));
+    (*i <~- truncate i t a.(sattr_size) (Build_wcc_data (Some wcc_before) (Some wcc_before));*)
     let i := set_attr_nonlen i t a in
     _ <- update_fh_sync f i;
     ret (OK (Build_wcc_data (Some wcc_before) (Some (inode_wcc i))) tt).

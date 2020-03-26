@@ -13,6 +13,7 @@ class SymbolicJSON(object):
         self.last_option_type = None
         self.res_type = 'unit'
         self.opt_type = 'unit'
+        self.depth = 0
 
     def set_bool_type(self, t):
         self.bool_sort = self.z3_sort(t)
@@ -72,7 +73,6 @@ class SymbolicJSON(object):
             elif f['id'] == 'gtb':
                 arg0 = args[0]['cases'][0]['body']['args'][0]
                 nstate, arg1 = self.proc(args[1]['cases'][0]['body']['args'][0], state)
-                print arg0, arg1
                 return nstate, z3.If(arg0 > arg1, self.bool_sort.constructor(0)(), self.bool_sort.constructor(1)())
 
             elif f['id'] == 'gmap_lookup':
@@ -94,7 +94,6 @@ class SymbolicJSON(object):
                 return state, state
 
             elif f['id'] == 'modify':
-                pprint.pprint(args)
                 _, newstate = self.proc(args[0]['body'], state)
                 return newstate, self.unit_tt
 
@@ -133,6 +132,9 @@ class SymbolicJSON(object):
             raise Exception('unknown apply on', f['what'])
 
     def proc_case(self, expr, state):
+        self.depth+=1
+        print "CASES depth", self.depth
+        pprint.pprint(expr, width=100, depth=1000)
         state, victim = self.proc(expr['expr'], state)
         resstate = None
         resvalue = None
@@ -141,8 +143,6 @@ class SymbolicJSON(object):
         cases = expr['cases']
         if cases[-1]['pat']['what'] == 'pat:wild':
             cases.insert(0, cases.pop(-1))
-        print "CASES"
-        pprint.pprint(cases)
 
         for case in cases:
             pat = case['pat']
@@ -157,12 +157,14 @@ class SymbolicJSON(object):
                     body = json_eval.subst_what(body, 'expr:rel', argname, val)
                 patstate, patbody = self.proc(body, state)
                 if resstate is None:
+                    print "SETTING RESVALUE TO ", patbody.sort()
                     resstate = patstate
                     resvalue = patbody
                 else:
-                    print "CASE PATBODY, RESVALUE: ", patbody.sort(), resvalue.sort()
-                    pprint.pprint(patbody)
-                    pprint.pprint(resvalue)
+                    print "CASE PATBODY, RESVALUE, depth ", self.depth, patbody.sort(), resvalue.sort()
+                    pprint.pprint(body, width=100, depth=5000)
+                    pprint.pprint(patbody, width=100, depth=5000)
+                    pprint.pprint(resvalue, width=100, depth=5000)
                     resstate = z3.If(patCondition, patstate, resstate)
                     resvalue = z3.If(patCondition, patbody, resvalue)
 
@@ -170,9 +172,12 @@ class SymbolicJSON(object):
                 if resstate is not None:
                     raise Exception('wildcard not the last pattern')
                 resstate, resvalue = self.proc(case['body'], state)
+                print "CASE WILDCARD, RESVALUE: ", resvalue.sort()
+                pprint.pprint(resvalue)
             else:
                 raise Exception('unknown pattern type', pat['what'])
 
+        self.depth-=1
         return resstate, resvalue
 
     def proc(self, procexpr, state):
@@ -181,7 +186,7 @@ class SymbolicJSON(object):
 
         while True:
             print "-------------------- NEW PROC ----------------------"
-            pprint.pprint(procexpr)
+            pprint.pprint(procexpr, width=100, depth=None)
             if type(procexpr) != dict:
                 return state, procexpr
 
@@ -247,11 +252,12 @@ class SymbolicJSON(object):
             arg0 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': str(cargs[0].sort())}
             if procexpr['name'] == 'OK':
                 self.res_type = str(cargs[1].sort())
+                print "Setting res type to ", self.res_type
             arg1 = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': self.res_type}
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'res', 'args' : [arg0, arg1]}
 
             sort = self.z3_sort(t)
-            print "result! ", sort, cargs[0].sort(), cargs[1].sort()
+            print "result! ", procexpr['name'], sort, cargs[0].sort(), cargs[1].sort(), self.res_type
             cid = constructor_idx_by_name(sort, procexpr['name'])
             return state, sort.constructor(cid)(*cargs)
 
@@ -276,6 +282,24 @@ class SymbolicJSON(object):
         elif procexpr['name'] == 'u64':
             return state, z3.BitVecSort(64)
 
+        elif procexpr['name'] == 'Left':
+            return state, self.sumbool_sort.constructor(0)()
+
+        elif procexpr['name'] == 'Right':
+            return state, self.sumbool_sort.constructor(1)()
+
+        elif procexpr['name'] == 'True':
+            return state, self.bool_sort.constructor(0)()
+
+        elif procexpr['name'] == 'False':
+            return state, self.bool_sort.constructor(1)()
+
+        elif procexpr['name'] == 'Ifile':
+            t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': 'inode_type_state', 'args': []}
+
+        elif procexpr['name'] == 'Zpos':
+            return state, z3.BitVecSort(64)
+
         else:
             raise Exception("UNKNOWN CONSTRUCTOR in proc")
             t = {'what': 'type:glob', 'mod': procexpr['mod'], 'name': procexpr['name'], 'args': []}
@@ -286,8 +310,7 @@ class SymbolicJSON(object):
         for arg in procexpr['args']:
             state, carg = self.proc(arg, state)
             cargs.append(carg)
-            print "CARG", carg.sort()
-        print sort.constructor(cid)
+        print sort.constructor(cid), cargs
         return state, sort.constructor(cid)(*cargs)
 
 def constructor_idx_by_name(sort, cname):

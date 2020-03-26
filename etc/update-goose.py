@@ -112,6 +112,7 @@ def main():
             "txn",
             "alloc",
             "lockmap",
+            "kvs",
         ]
         for pkg in nfsd_pkgs:
             if pkg == ".":

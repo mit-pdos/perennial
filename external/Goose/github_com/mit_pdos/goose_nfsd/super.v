@@ -53,7 +53,7 @@ Definition FsSuper__DataStart: val :=
 
 Definition FsSuper__Block2addr: val :=
   rec: "FsSuper__Block2addr" "fs" "blkno" :=
-    addr.MkAddr "blkno" #0 common.NBITBLOCK.
+    addr.MkAddr "blkno" #0.
 
 Definition FsSuper__NInode: val :=
   rec: "FsSuper__NInode" "fs" :=
@@ -61,8 +61,4 @@ Definition FsSuper__NInode: val :=
 
 Definition FsSuper__Inum2Addr: val :=
   rec: "FsSuper__Inum2Addr" "fs" "inum" :=
-    addr.MkAddr (FsSuper__InodeStart "fs" + "inum" `quot` common.INODEBLK) ("inum" `rem` common.INODEBLK * common.INODESZ * #8) (common.INODESZ * #8).
-
-Definition FsSuper__DiskBlockSize: val :=
-  rec: "FsSuper__DiskBlockSize" "fs" "addr" :=
-    (struct.get addr.Addr.S "Sz" "addr" = common.NBITBLOCK).
+    addr.MkAddr (FsSuper__InodeStart "fs" + "inum" `quot` common.INODEBLK) ("inum" `rem` common.INODEBLK * common.INODESZ * #8).
