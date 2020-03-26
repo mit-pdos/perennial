@@ -135,4 +135,37 @@ Proof.
     iExists _, _. iFrame. done.
 Qed.
 
+Theorem wp_BufMap__Del l m a :
+  {{{
+    is_bufmap l m ∗
+    ⌜ valid_addr a ⌝
+  }}}
+    BufMap__Del #l (addr2val a)
+  {{{
+    RET #();
+    is_bufmap l (delete a m)
+  }}}.
+Proof.
+  iIntros (Φ) "[Hbufmap %] HΦ".
+  iDestruct "Hbufmap" as (mptr mm am def) "(Hmptr & Hmap & % & Ham)".
+
+  wp_call.
+  wp_apply wp_Addr__Flatid; eauto. iIntros (?) "->".
+  wp_loadField.
+  wp_apply (wp_MapDelete with "Hmap"); iIntros "Hmap".
+  iApply "HΦ".
+  iExists _, _, _, _. iFrame.
+  iSplitR.
+  { iPureIntro. apply flatid_addr_delete; eauto. }
+
+  (* Two cases: either we are deleting an existing addr or noop *)
+  destruct (am !! a) eqn:Heq.
+  - iDestruct (big_sepM2_lookup_1_some with "Ham") as (v2) "%"; eauto.
+    iDestruct (big_sepM2_delete with "Ham") as "[Hcur Hacc]"; eauto.
+
+  - iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
+    rewrite delete_notin; eauto.
+    rewrite delete_notin; eauto.
+Qed.
+
 End heap.
