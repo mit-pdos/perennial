@@ -414,7 +414,7 @@ lemmas. *)
     auto.
   Qed.
 
-  Lemma update_disk_array (l: Z) bs (z: Z) b q :
+  Lemma disk_array_acc (l: Z) bs (z: Z) b q :
     0 <= z ->
     bs !! Z.to_nat z = Some b →
     disk_array l q bs -∗ ((l + z) d↦{q} b ∗

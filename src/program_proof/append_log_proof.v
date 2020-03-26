@@ -199,7 +199,7 @@ Proof.
   - iExists b.
     iSplitR; eauto.
     iDestruct "Hlog" as "(Hhdr & Hlog & % & free)".
-    iDestruct (update_disk_array 1 bs (int.val i) with "Hlog") as "(Hdi&Hupd)"; eauto.
+    iDestruct (disk_array_acc 1 bs (int.val i) with "Hlog") as "(Hdi&Hupd)"; eauto.
     { word. }
     iFrame.
     iIntros "Hdi"; iDestruct ("Hupd" with "Hdi") as "Hlog".
@@ -422,7 +422,7 @@ Proof.
   iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ".
   destruct (list_lookup_lt _ bs (Z.to_nat (int.val off - l))) as [b0 Hlookup].
   { word. }
-  iDestruct (update_disk_array _ _ (int.val off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
+  iDestruct (disk_array_acc _ _ (int.val off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
   replace (l + (int.val off - l)) with (int.val off) by lia.
   iApply (wpc_Write with "[Hoff Hs] [Hda_rest HΦ]").
   - iExists _; iFrame.
