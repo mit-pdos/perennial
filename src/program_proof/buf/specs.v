@@ -21,14 +21,33 @@ Definition inode_buf := vec u8 inode_bytes.
 Definition inode_to_vals {ext: ext_op} (i:inode_buf) : list val :=
   fmap b2val (vec_to_list i).
 
-Inductive bufDataT :=
-| bufBit (b : bool)
-| bufInode (i : inode_buf)
-| bufBlock (b : Block)
+Inductive bufDataKind :=
+| KindBit
+| KindInode
+| KindBlock
 .
 
+Global Instance bufDataKind_eq_dec : EqDecision bufDataKind.
+Proof.
+  solve_decision.
+Defined.
+
+Inductive bufDataT : forall {K : bufDataKind}, Type :=
+| bufBit (b : bool) : @bufDataT KindBit
+| bufInode (i : inode_buf) : @bufDataT KindInode
+| bufBlock (b : Block) : @bufDataT KindBlock
+.
+
+Definition bufSz K : nat :=
+  match K with
+  | KindBit => 1
+  | KindInode => inode_bytes*8
+  | KindBlock => block_bytes*8
+  end.
+
 Record buf := {
-  bufData : bufDataT;
+  bufKind : bufDataKind;
+  bufData : @bufDataT bufKind;
   bufDirty : bool;
 }.
 
@@ -237,5 +256,27 @@ Theorem wp_BufMap__DirtyBufs l m :
   }}}.
 Proof.
 Admitted.
+
+Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 elemsize).
+  destruct (decide ((S n) * elemsize <= block_bytes)).
+  - refine (Some _).
+
+    assert (elemsize ≤ block_bytes - n * elemsize)%nat by abstract lia.
+    refine (Vector.take _ H _).
+
+    unfold Block in b.
+    assert (block_bytes = n * elemsize + (block_bytes - n * elemsize))%nat by abstract lia.
+    rewrite H0 in b.
+    refine (snd (Vector.splitat _ b)).
+  - exact None.
+Defined.
+
+Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : @bufDataT K) : Prop :=
+  match d with
+  | bufBlock d => off = 0 ∧ b = d
+  | bufInode i => extract_nth b inode_bytes (int.nat off) = Some i
+  | bufBit d => ∃ (b0 : u8), extract_nth b 1 ((int.nat off)/8) = Some (Vector.of_list [b0]) ∧
+      get_bit b0 (word.modu off 8) = d
+  end.
 
 End heap.
