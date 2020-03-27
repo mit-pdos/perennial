@@ -56,10 +56,10 @@ Admitted.
 
 Definition is_buf_data {K} (s : Slice.t) (d : @bufDataT K) (a : addr) : iProp Σ :=
   match d with
-  | bufBit b => ∃ (b0 : u8), is_slice s u8T 1%Qp (#b0 :: nil) ∗
+  | bufBit b => ∃ (b0 : u8), is_slice_small s u8T 1%Qp (#b0 :: nil) ∗
     ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
-  | bufInode i => is_slice s u8T 1%Qp (inode_to_vals i)
-  | bufBlock b => is_slice s u8T 1%Qp (Block_to_vals b)
+  | bufInode i => is_slice_small s u8T 1%Qp (inode_to_vals i)
+  | bufBlock b => is_slice_small s u8T 1%Qp (Block_to_vals b)
   end.
 
 Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
@@ -309,7 +309,7 @@ Qed.
 
 Theorem wp_MkBufLoad K a blk s (bufdata : @bufDataT K) :
   {{{
-    is_slice s u8T 1%Qp (Block_to_vals blk) ∗
+    is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
     ⌜ valid_addr a ⌝
   }}}
@@ -321,7 +321,7 @@ Theorem wp_MkBufLoad K a blk s (bufdata : @bufDataT K) :
 Proof.
   iIntros (Φ) "(Hs & % & %) HΦ".
   wp_call.
-  iDestruct (is_slice_sz with "Hs") as "%".
+  iDestruct (is_slice_small_sz with "Hs") as "%".
 
   wp_apply wp_SliceSubslice.
   { rewrite /valid_addr in H0.

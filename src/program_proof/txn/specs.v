@@ -39,9 +39,11 @@ Definition lockN : namespace := nroot .@ "txnlock".
 Definition invN : namespace := nroot .@ "txninv".
 Definition walN : namespace := nroot .@ "txnwal".
 
-Definition mapsto_txn {T} hG (off : u64) (v : T) : iProp Σ :=
-  ∃ γm,
-    mapsto (hG := hG) off 1 (UB v γm) ∗
+Definition mapsto_txn {K} (gData : gmap u64 (sigT (fun K => gen_heapG u64 (updatable_buf (@bufDataT K)) Σ))) (a : addr) (v : @bufDataT K) : iProp Σ :=
+  ∃ hG γm,
+    ⌜ valid_addr a ⌝ ∗
+    ⌜ gData !! a.(addrBlock) = Some (existT K hG) ⌝ ∗
+    mapsto (hG := hG) a.(addrOff) 1 (UB v γm) ∗
     own γm (◯ (Excl' true)).
 
 Definition txn_bufDataT_in_block {K} (installed : Block) (bs : list Block)
@@ -164,23 +166,21 @@ Proof.
   rewrite <- Eqdep.Eq_rect_eq.eq_rect_eq. iFrame.
 Qed.
 
-Theorem wp_txn_Load K l gData a
-    (hG : gen_heapG u64 (updatable_buf (@bufDataT K)) Σ) v :
+Theorem wp_txn_Load K l gData a v :
   {{{ is_txn l gData ∗
-      ⌜gData !! a.(addrBlock) = Some (existT K hG)⌝ ∗
-      mapsto_txn hG a.(addrOff) v
+      mapsto_txn gData a v
   }}}
     Txn__Load #l (addr2val a) #(bufSz K)
   {{{ (bufptr : loc) b, RET #bufptr;
       is_buf bufptr a b ∗
       ⌜ b.(bufDirty) = false ⌝ ∗
       ⌜ existT b.(bufKind) b.(bufData) = existT K v ⌝ ∗
-      mapsto_txn hG a.(addrOff) v
+      mapsto_txn gData a v
   }}}.
 Proof.
-  iIntros (Φ) "(Htxn & % & Hstable) HΦ".
+  iIntros (Φ) "(Htxn & Hstable) HΦ".
   iDestruct "Htxn" as (γMaps γLock walHeap mu walptr q) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
-  iDestruct "Hstable" as (γm) "[Hstable Hmod]".
+  iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".
 
   wp_call.
   wp_loadField.
@@ -243,7 +243,7 @@ Proof.
     }
 
     {
-      iDestruct (big_sepM_lookup_acc with "Hinblk") as "[Hinblk Hinblkother]"; eauto.
+      iDestruct (big_sepM_delete with "Hinblk") as "[Hinblk Hinblkother]"; eauto.
       rewrite /=.
       iDestruct "Hinblk" as "[% Hinblk]".
       iDestruct "Hinblk" as (modSince) "[Hγm Hinblk]".
@@ -258,132 +258,140 @@ Proof.
         iApply "Hdata".
         iExists _, _.
         iFrame.
-        iApply big_sepM_mono.
+        iDestruct (big_sepM_mono with "Hinblkother") as "Hinblkother".
         2: {
-          iApply "Hinblkother". iSplitR; first done.
+          replace (projT2 x) with (<[a.(addrOff) := UB v γm]> (delete a.(addrOff) (projT2 x))) at 2.
+          2: {
+            rewrite insert_delete.
+            rewrite insert_id; eauto.
+          }
+          iApply big_sepM_insert; first apply lookup_delete.
+          iFrame.
+          iSplitR.
+          { simpl. done. }
           iExists _; iFrame.
-(*
-        iSplitR; [ done | ].
-        iExists _. iFrame. iPureIntro.
+          iPureIntro; intros.
+          rewrite take_nil /=. eauto.
+        }
+
         intros.
-        rewrite take_nil. auto.
+        iIntros "H". destruct x0. rewrite /=.
+        iDestruct "H" as "[% H]".
+        iDestruct "H" as (modSince) "[H Hif]".
+        iSplitR; eauto.
+        iExists _. iFrame.
+        destruct modSince; iFrame.
+        iDestruct "Hif" as %Hif.
+        iPureIntro. intros. rewrite take_nil. eauto.
       }
 
       iMod "Hinv_closer".
       iModIntro.
-      iFrame. done.
+      iFrame.
     }
   }
 
   iIntros (ok bl) "Hres".
   destruct ok.
   {
-    iDestruct ("Hres") as (b) "(Hisblock & Hlatest & (Hown & ->) & ->)".
+    (* Case 1: hit in the cache *)
+
+    iDestruct ("Hres") as (b) "(Hisblock & Hlatest & Hown & %)".
     wp_pures.
-    (* XXX slice reasoning for MkBufLoad *)
-    admit.
+    rewrite /abstraction.is_block.
+    wp_apply (wp_MkBufLoad with "[$Hisblock]").
+    { done. }
+    iIntros (bufptr) "Hbuf".
+    wp_pures.
+    iApply "HΦ". iFrame.
+    rewrite /=.
+    iSplitR; first done.
+    iSplitR; first done.
+    iExists _, _. iFrame. done.
   }
 
+  (* Case 2: missed in cache *)
+  iDestruct ("Hres") as "(Hlatest & Hown)".
+  wp_pures.
+
+  wp_apply (wp_Walog__ReadInstalled _ _
+    (λ b, ⌜ is_bufData_at_off b a.(addrOff) v ⌝ ∗
+      mapsto (hG := hG) a.(addrOff) 1 (UB v γm) ∗
+      own γm (◯ (Excl' true)))%I
+    with "[$Hwal Hlatest Hown]").
   {
-    iDestruct ("Hres") as "(Hlatest & Hown & ->)".
-    wp_pures.
+    iApply (wal_heap_readinstalled walN invN with "[Hlatest Hown]").
 
-    wp_apply (wp_Walog__ReadInstalled _ _ (λ b, ⌜ b = v ⌝ ∗ mapsto (hG := hG) 0 1 (UB v γm) ∗ own γm (◯ (Excl' true)))%I with "[$Hwal Hlatest Hown]").
+    iInv invN as ">Hinv_inner" "Hinv_closer".
+    iDestruct "Hinv_inner" as (mData) "(Hctxdata & Hbigmap & Hdata)".
+
+    iDestruct (big_sepM2_lookup_2_some with "Hctxdata") as %Hblk; eauto.
+    destruct Hblk.
+
+    iDestruct (big_sepM2_lookup_acc with "Hctxdata") as "[Hctxblock Hctxdata]"; eauto.
+    iDestruct (gmDataP_eq with "Hctxblock") as "%".
+    simpl in *; subst.
+    iDestruct (gmDataP_ctx with "Hctxblock") as "Hctxblock".
+    iDestruct (gen_heap_valid with "Hctxblock Hlatest") as %Hblockoff.
+    iDestruct ("Hctxdata" with "[Hctxblock]") as "Hctxdata".
+    { iApply gmDataP_ctx'. iFrame. }
+
+    iDestruct (big_sepM_lookup_acc with "Hdata") as "[Hblock Hdata]"; eauto.
+    iDestruct "Hblock" as (blk_installed blk_bs) "(Hblk & Hinblk)".
+
+    iExists _, _. iFrame "Hblk".
+
+    iModIntro.
+    iIntros (b) "Hriq".
+    iDestruct "Hriq" as "[Hriq %]".
+
+    iDestruct (big_sepM_lookup_acc with "Hinblk") as "[Hinblk Hinblkother]"; eauto.
+    rewrite /=.
+    iDestruct "Hinblk" as "[% Hinblk]".
+    iDestruct "Hinblk" as (modSince) "[Hγm Hinblk]".
+    iDestruct (ghost_var_agree with "Hγm Hown") as %->.
+    iMod (ghost_var_update _ true with "Hγm Hown") as "[Hγm Hown]".
+    iDestruct "Hinblk" as %Hinblk.
+    iFrame.
+
+    iDestruct ("Hinv_closer" with "[-]") as "Hinv_closer".
     {
-      iApply (wal_heap_readinstalled walN invN with "[Hlatest Hown]").
-
-      iInv invN as ">Hinv_inner" "Hinv_closer".
-      iDestruct "Hinv_inner" as (mBits mInodes mBlocks) "(Hctxbits & Hctxinodes & Hctxblocks & Hbigmap & Hbits & Hinodes & Hblocks)".
-
-      iDestruct (big_sepM2_lookup_2_some with "Hctxblocks") as %Hblk; eauto.
-      destruct Hblk.
-
-      iDestruct (big_sepM2_lookup_acc with "Hctxblocks") as "[Hctxblock Hctxblocks]"; eauto.
-      iDestruct (gen_heap_valid with "Hctxblock Hlatest") as %Hblockoff.
-      iDestruct ("Hctxblocks" with "Hctxblock") as "Hctxblocks".
-
-      iDestruct (big_sepM_lookup_acc with "Hblocks") as "[Hblock Hblocks]"; eauto.
-      iDestruct "Hblock" as (blk_installed blk_bs theBlock) "(% & Hblk & Hinblk)".
-
-      iExists _, _. iFrame "Hblk".
-
       iModIntro.
-      iIntros (b) "Hriq".
-      iDestruct "Hriq" as "[Hriq %]".
-
-      subst x.
-      rewrite /txn_blocks_in_block.
-      rewrite big_sepM_singleton.
-      apply lookup_singleton_Some in Hblockoff; intuition subst.
-      iDestruct "Hinblk" as "[<- Hinblk]".
-      iDestruct "Hinblk" as (modSince) "[Hγm Hinblk]".
-      iDestruct (ghost_var_agree with "Hγm Hown") as %->.
-      iMod (ghost_var_update _ true with "Hγm Hown") as "[Hγm Hown]".
-      iDestruct "Hinblk" as %Hinblk.
+      iExists _.
       iFrame.
-
-      iDestruct ("Hinv_closer" with "[-]") as "Hinv_closer".
-      {
-        iModIntro.
-        iExists _, _, _.
-        iFrame.
-        iApply "Hblocks".
-        iExists _, _, _.
-        iSplitR; [ done | ].
-        iFrame.
-        iApply big_sepM_singleton.
-        iSplitR; [ done | ].
-        iExists _. iFrame.
-      }
-
-      iMod "Hinv_closer".
-      iModIntro.
-      iPureIntro.
-
-      apply elem_of_list_lookup_1 in H2.
-      destruct H2 as [prefix H2].
-      specialize (Hinblk prefix).
-      rewrite <- Hinblk; clear Hinblk.
-      erewrite latest_update_take_some; eauto.
+      iApply "Hdata".
+      iExists _, _. iFrame.
+      iApply "Hinblkother".
+      iSplitR; first done.
+      iExists _; iFrame.
     }
 
-    iIntros (bslice) "Hres".
-    iDestruct "Hres" as (b) "(Hres & -> & Hlatest & Hmod)".
-    wp_pures.
-    (* more MkBufLoad *)
-    admit.
-Admitted.
+    iMod "Hinv_closer".
+    iModIntro.
+    iPureIntro.
 
-Theorem wp_txn_Load_bit l gBits gInodes gBlocks (blk off : u64)
-    (hG : gen_heapG u64 (updatable_buf bool) Σ) v :
-  {{{ is_txn l gBits gInodes gBlocks ∗
-      ⌜gBits !! blk = Some hG⌝ ∗
-      mapsto_txn hG off v
-  }}}
-    Txn__Load #l (#blk, #off, #1)
-  {{{ (buf : Slice.t) b, RET (slice_val buf);
-      is_slice buf u8T 1%Qp [b] ∗
-      ⌜b = #0 <-> v = false⌝ ∗
-      mapsto_txn hG off v
-  }}}.
-Proof.
-Admitted.
+    apply elem_of_list_lookup_1 in H2.
+    destruct H2 as [prefix H2].
+    specialize (Hinblk prefix).
+    erewrite latest_update_take_some in Hinblk; eauto.
+  }
 
-Theorem wp_txn_Load_inode l gBits gInodes gBlocks (blk off : u64)
-    (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v :
-  {{{ is_txn l gBits gInodes gBlocks ∗
-      ⌜gInodes !! blk = Some hG⌝ ∗
-      mapsto_txn hG off v
-  }}}
-    Txn__Load #l (#blk, #off, #(inode_bytes*8))
-  {{{ (buf : Slice.t) vals, RET (slice_val buf);
-      is_slice buf u8T 1%Qp vals ∗
-      ⌜vals = inode_to_vals v⌝ ∗
-      mapsto_txn hG off v
-  }}}.
-Proof.
-Admitted.
+  iIntros (bslice) "Hres".
+  iDestruct "Hres" as (b) "(Hb & % & Hlatest & Hmod)".
+  wp_pures.
+  rewrite /abstraction.is_block.
+  wp_apply (wp_MkBufLoad with "[$Hb]").
+  { done. }
+  iIntros (bufptr) "Hbuf".
+  wp_pures.
+  iApply "HΦ".
+  iFrame. rewrite /=.
+  iSplitR; first done.
+  iSplitR; first done.
+  iExists _, _. iFrame. done.
+Qed.
 
+(*
 Definition commit_pre
     (gBits   : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
     (gInodes : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
@@ -632,6 +640,5 @@ Definition unify_heaps
       unify_heaps_inner gBits gInodes gBlocks gUnified)
   )%I.
 *)
-Admitted.
 
 End heap.
