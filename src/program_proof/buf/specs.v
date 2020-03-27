@@ -54,6 +54,14 @@ Record buf := {
 Definition get_bit (b0 : u8) (off : u64) : bool.
 Admitted.
 
+Definition is_buf_data {K} (s : Slice.t) (d : @bufDataT K) (a : addr) : iProp Σ :=
+  match d with
+  | bufBit b => ∃ (b0 : u8), is_slice s u8T 1%Qp (#b0 :: nil) ∗
+    ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
+  | bufInode i => is_slice s u8T 1%Qp (inode_to_vals i)
+  | bufBlock b => is_slice s u8T 1%Qp (Block_to_vals b)
+  end.
+
 Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
   ∃ (data : Slice.t) (sz : u64),
     bufptr ↦[Buf.S :: "Addr"] (addr2val a) ∗
@@ -61,15 +69,8 @@ Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
     bufptr ↦[Buf.S :: "Data"] (slice_val data) ∗
     bufptr ↦[Buf.S :: "dirty"] #o.(bufDirty) ∗
     ⌜ valid_addr a ⌝ ∗
-    match o.(bufData) with
-    | bufBit b => ∃ (b0 : u8), is_slice data u8T 1%Qp (#b0 :: nil) ∗
-      ⌜ get_bit b0 (word.modu a.(addrOff) 8) ⌝ ∗
-      ⌜ sz = 1 ⌝
-    | bufInode i => is_slice data u8T 1%Qp (inode_to_vals i) ∗
-      ⌜ sz = (inode_bytes * 8)%nat ⌝
-    | bufBlock b => is_slice data u8T 1%Qp (Block_to_vals b) ∗
-      ⌜ sz = (block_bytes * 8)%nat ⌝
-    end.
+    ⌜ sz = bufSz o.(bufKind) ⌝ ∗
+    is_buf_data data o.(bufData) a.
 
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 val) (am : gmap addr val),
@@ -278,5 +279,81 @@ Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : @bufDataT K) : Pro
   | bufBit d => ∃ (b0 : u8), extract_nth b 1 ((int.nat off)/8) = Some (Vector.of_list [b0]) ∧
       get_bit b0 (word.modu off 8) = d
   end.
+
+Theorem wp_MkBuf K a data (bufdata : @bufDataT K) :
+  {{{
+    is_buf_data data bufdata a ∗
+    ⌜ valid_addr a ⌝
+  }}}
+    MkBuf (addr2val a) #(bufSz K) (slice_val data)
+  {{{
+    (bufptr : loc), RET #bufptr;
+    is_buf bufptr a (Build_buf _ bufdata false)
+  }}}.
+Proof.
+  iIntros (Φ) "[Hbufdata %] HΦ".
+  wp_call.
+  wp_apply wp_allocStruct.
+  { econstructor; eauto.
+    econstructor; eauto.
+    econstructor; eauto.
+  }
+
+  iIntros (b) "Hb".
+  wp_pures.
+  iApply "HΦ".
+  iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
+  iExists _, _.
+  iFrame. done.
+Qed.
+
+Theorem wp_MkBufLoad K a blk s (bufdata : @bufDataT K) :
+  {{{
+    is_slice s u8T 1%Qp (Block_to_vals blk) ∗
+    ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
+    ⌜ valid_addr a ⌝
+  }}}
+    MkBufLoad (addr2val a) #(bufSz K) (slice_val s)
+  {{{
+    (bufptr : loc), RET #bufptr;
+    is_buf bufptr a (Build_buf _ bufdata false)
+  }}}.
+Proof.
+  iIntros (Φ) "(Hs & % & %) HΦ".
+  wp_call.
+  iDestruct (is_slice_sz with "Hs") as "%".
+
+  wp_apply wp_SliceSubslice.
+  { rewrite /valid_addr in H0.
+    iPureIntro; intuition.
+    { admit. }
+    { admit. }
+  }
+
+  wp_pures.
+  wp_apply wp_allocStruct.
+  { econstructor; eauto.
+    econstructor; eauto.
+    econstructor; eauto.
+  }
+
+  iIntros (b) "Hb".
+  wp_pures.
+  iApply "HΦ".
+  iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
+  iExists _, _.
+  iFrame.
+  iSplitR; first done.
+  iSplitR; first done.
+  destruct bufdata; cbn; cbn in H.
+  - destruct H; intuition.
+    iExists _.
+    iSplitL; last eauto.
+    admit.
+  - admit.
+  - intuition subst.
+    rewrite H3.
+    admit.
+Admitted.
 
 End heap.

@@ -136,6 +136,34 @@ Proof.
   - iExists _, _, _, _, _, _. iFrame "Hmu1 Hlog1 Hwal Hinv Hlock".
 Qed.
 
+Lemma gmDataP_eq gm gh :
+  gmDataP gm gh -∗ ⌜ projT1 gm = projT1 gh ⌝.
+Proof.
+  iIntros "H".
+  rewrite /gmDataP.
+  destruct (decide (projT1 gm = projT1 gh)); eauto.
+Qed.
+
+Lemma gmDataP_ctx gm (gh : gen_heapG u64 (updatable_buf (@bufDataT (projT1 gm))) Σ) :
+  gmDataP gm (existT (projT1 gm) gh) -∗
+  gen_heap_ctx (hG := gh) (projT2 gm).
+Proof.
+  iIntros "H".
+  rewrite /gmDataP /=.
+  destruct (decide (projT1 gm = projT1 gm)); eauto.
+  rewrite <- Eqdep.Eq_rect_eq.eq_rect_eq. iFrame.
+Qed.
+
+Lemma gmDataP_ctx' gm (gh : gen_heapG u64 (updatable_buf (@bufDataT (projT1 gm))) Σ) :
+  gen_heap_ctx (hG := gh) (projT2 gm) -∗
+  gmDataP gm (existT (projT1 gm) gh).
+Proof.
+  iIntros "H".
+  rewrite /gmDataP /=.
+  destruct (decide (projT1 gm = projT1 gm)); eauto.
+  rewrite <- Eqdep.Eq_rect_eq.eq_rect_eq. iFrame.
+Qed.
+
 Theorem wp_txn_Load K l gData a
     (hG : gen_heapG u64 (updatable_buf (@bufDataT K)) Σ) v :
   {{{ is_txn l gData ∗
@@ -175,13 +203,15 @@ Proof.
     destruct Hblk.
 
     iDestruct (big_sepM2_lookup_acc with "Hctxdata") as "[Hctxdatablk Hctxdata]"; eauto.
-    (* XXX replace K with [projT1 x] *)
-(*
+    iDestruct (gmDataP_eq with "Hctxdatablk") as "%".
+    simpl in *; subst.
+    iDestruct (gmDataP_ctx with "Hctxdatablk") as "Hctxdatablk".
     iDestruct (gen_heap_valid with "Hctxdatablk Hstable") as %Hblockoff.
-    iDestruct ("Hctxblocks" with "Hctxblock") as "Hctxblocks".
+    iDestruct ("Hctxdata" with "[Hctxdatablk]") as "Hctxdata".
+    { iApply gmDataP_ctx'. iFrame. }
 
-    iDestruct (big_sepM_lookup_acc with "Hblocks") as "[Hblock Hblocks]"; eauto.
-    iDestruct "Hblock" as (blk_installed blk_bs theBlock) "(% & Hblk & Hinblk)".
+    iDestruct (big_sepM_lookup_acc with "Hdata") as "[Hdatablk Hdata]"; eauto.
+    iDestruct "Hdatablk" as (blk_installed blk_bs) "(Hblk & Hinblk)".
 
     iExists _, _. iFrame.
 
@@ -200,27 +230,22 @@ Proof.
       iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
       {
         iModIntro.
-        iExists _, _, _.
+        iExists _.
         iFrame.
-        iApply "Hblocks".
+        iApply "Hdata".
         iExists _, _. iFrame.
-        eauto.
       }
 
       iMod "Hinv_closer".
       iModIntro.
       intuition; subst.
-      iFrame.
-      apply lookup_singleton_Some in Hblockoff; intuition subst.
-      done.
+      iFrame. done.
     }
 
     {
-      subst x.
-      rewrite /txn_blocks_in_block.
-      rewrite big_sepM_singleton.
-      apply lookup_singleton_Some in Hblockoff; intuition subst.
-      iDestruct "Hinblk" as "[<- Hinblk]".
+      iDestruct (big_sepM_lookup_acc with "Hinblk") as "[Hinblk Hinblkother]"; eauto.
+      rewrite /=.
+      iDestruct "Hinblk" as "[% Hinblk]".
       iDestruct "Hinblk" as (modSince) "[Hγm Hinblk]".
       iDestruct (ghost_var_agree with "Hγm Hmod") as %->.
       iMod (ghost_var_update _ false with "Hγm Hmod") as "[Hγm Hmod]".
@@ -228,13 +253,16 @@ Proof.
       iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
       {
         iModIntro.
-        iExists _, _, _.
+        iExists _.
         iFrame.
-        iApply "Hblocks".
-        iExists _, _, _.
-        iSplitR; [ done | ].
+        iApply "Hdata".
+        iExists _, _.
         iFrame.
-        iApply big_sepM_singleton.
+        iApply big_sepM_mono.
+        2: {
+          iApply "Hinblkother". iSplitR; first done.
+          iExists _; iFrame.
+(*
         iSplitR; [ done | ].
         iExists _. iFrame. iPureIntro.
         intros.
