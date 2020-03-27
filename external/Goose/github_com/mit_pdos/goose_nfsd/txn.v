@@ -116,7 +116,10 @@ Definition Txn__CommitWait: val :=
 (* NOTE: this is coarse-grained and unattached to the transaction ID *)
 Definition Txn__Flush: val :=
   rec: "Txn__Flush" "txn" :=
-    wal.Walog__Flush (struct.loadF Txn.S "log" "txn") (struct.loadF Txn.S "pos" "txn");;
+    lock.acquire (struct.loadF Txn.S "mu" "txn");;
+    let: "pos" := struct.loadF Txn.S "pos" "txn" in
+    lock.release (struct.loadF Txn.S "mu" "txn");;
+    wal.Walog__Flush (struct.loadF Txn.S "log" "txn") "pos";;
     #true.
 
 Definition Txn__LogSz: val :=

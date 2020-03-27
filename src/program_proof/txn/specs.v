@@ -107,10 +107,11 @@ Qed.
 Definition is_txn_locked l γMaps : iProp Σ :=
   (
     ∃ (mData : gmap u64 (sigT (fun K => gmap u64 (updatable_buf (@bufDataT K)))))
-      (nextId : u64),
+      (nextId : u64) (pos : u64),
       mapsto (hG := γMaps) tt (1/2) mData ∗
-      l ↦[Txn.S :: "nextId"] #nextId
-  )%I.
+      l ↦[Txn.S :: "nextId"] #nextId ∗
+      l ↦[Txn.S :: "pos"] #pos
+ )%I.
 
 Definition is_txn (l : loc)
     (gData   : gmap u64 (sigT (fun K => gen_heapG u64 (updatable_buf (@bufDataT K)) Σ)))
@@ -391,76 +392,48 @@ Proof.
   iExists _, _. iFrame. done.
 Qed.
 
-(*
-Definition commit_pre
-    (gBits   : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
-    (gInodes : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
-    (gBlocks : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
-    (b : val) : iProp Σ :=
-  (
-    ∃ (bloc : loc) (blkno off sz : u64) data data_vals,
-      ⌜b = #bloc⌝ ∗
-      bloc ↦[struct.t buf.Buf.S] (#blkno, #off, #sz, slice_val data) ∗
-      is_slice data u8T 1%Qp data_vals ∗
-      (
-        ( ∃ (hG : gen_heapG u64 (updatable_buf bool) Σ) v,
-          ⌜sz=1⌝ ∗
-          ⌜gBits !! blkno = Some hG⌝ ∗
-          mapsto_txn hG off v ) ∨
-        ( ∃ (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v,
-          ⌜sz=inode_bits⌝ ∗
-          ⌜gInodes !! blkno = Some hG⌝ ∗
-          mapsto_txn hG off v ) ∨
-        ( ∃ (hG : gen_heapG u64 (updatable_buf Block) Σ) v,
-          ⌜sz=block_bits⌝ ∗
-          ⌜gBlocks !! blkno = Some hG⌝ ∗
-          mapsto_txn hG off v )
-      )
-  )%I.
-
-Definition commit_post
-    (gBits   : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
-    (gInodes : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
-    (gBlocks : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
-    (b : val) : iProp Σ :=
-  (
-    ∃ (bloc : loc) (blkno off sz : u64) data data_vals,
-      ⌜b = #bloc⌝ ∗
-      bloc ↦[struct.t buf.Buf.S] (#blkno, #off, #sz, slice_val data) ∗
-      is_slice data u8T 1%Qp data_vals ∗
-      (
-        ( ∃ (hG : gen_heapG u64 (updatable_buf bool) Σ) v,
-          ⌜sz=1⌝ ∗
-          ⌜gBits !! blkno = Some hG⌝ ∗
-          mapsto_txn hG off v ∗
-          ⌜ v = false ∧ data_vals = (#0 :: nil) ∨
-            v = true ∧ ∃ x, data_vals = [x] ∧ x ≠ #0 ⌝
-          ) ∨
-        ( ∃ (hG : gen_heapG u64 (updatable_buf inode_buf) Σ) v,
-          ⌜sz=inode_bits⌝ ∗
-          ⌜gInodes !! blkno = Some hG⌝ ∗
-          mapsto_txn hG off v ∗
-          ⌜ inode_to_vals v = data_vals ⌝ ) ∨
-        ( ∃ (hG : gen_heapG u64 (updatable_buf Block) Σ) v,
-          ⌜sz=block_bits⌝ ∗
-          ⌜gBlocks !! blkno = Some hG⌝ ∗
-          mapsto_txn hG off v ∗
-          ⌜ Block_to_vals v = data_vals ⌝ )
-      )
-  )%I.
-
-Theorem wp_txn__installBufs l q gBits gInodes gBlocks bufs buflist :
-  {{{ is_txn l gBits gInodes gBlocks ∗
+Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap : gmap addr buf) :
+  {{{ is_txn l gData ∗
+      inv invN (is_txn_always walHeap gData γMaps) ∗
+      mapsto (hG := γMaps) tt (1/2) mData ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
+      [∗ list] _ ↦ bufptrval ∈ buflist,
+        ∃ (bufptr : loc) a buf v0,
+          ⌜ bufptrval = #bufptr ⌝ ∗
+          is_buf bufptr a buf ∗
+          @mapsto_txn buf.(bufKind) gData a v0 ∗
+          ⌜ bufamap !! a = Some buf ⌝
   }}}
     Txn__installBufs #l (slice_val bufs)
-  {{{ (blks : Slice.t), RET (slice_val blks);
+  {{{ (blks : Slice.t) updlist, RET (slice_val blks);
+      mapsto (hG := γMaps) tt (1/2) mData ∗
+      abstraction.updates_slice blks updlist ∗
+      ( [∗ list] _ ↦ walUpd ∈ updlist,
+        let blknum := walUpd.(abstraction.update.addr) in
+        let walBlock := walUpd.(abstraction.update.b) in
+        ∃ K gDataGH,
+          ⌜ gData !! blknum = Some (existT K gDataGH) ⌝ ∗
+          ∀ diskInstalled diskBs,
+            mapsto (hG := walHeap) blknum 1 (HB diskInstalled diskBs) -∗
+            let diskLatest := latest_update diskInstalled diskBs in
+            ∀ off,
+              ⌜ match bufamap !! (Build_addr blknum off) with
+                | None => ∀ (bufData : @bufDataT K),
+                  is_bufData_at_off diskLatest off bufData ->
+                  is_bufData_at_off walBlock off bufData
+                | Some buf =>
+                  is_bufData_at_off walBlock off buf.(bufData)
+                end ⌝
+      ) ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
+      [∗ list] _ ↦ bufptrval ∈ buflist,
+        ∃ (bufptr : loc) a buf v0,
+          ⌜ bufptrval = #bufptr ⌝ ∗
+          is_buf bufptr a buf ∗
+          @mapsto_txn buf.(bufKind) gData a v0
   }}}.
 Proof.
-  iIntros (Φ) "(Htxn & Hbufs & Hbufpre) HΦ".
+  iIntros (Φ) "(Htxn & #Hinv & Hmdata & Hbufs & Hbufpre) HΦ".
 
   wp_call.
   wp_apply wp_new_slice. { rewrite /=. intuition. apply has_zero_slice_T. }
@@ -480,17 +453,27 @@ Proof.
   wp_apply wp_forSlice.
 Admitted.
 
-Theorem wp_txn__doCommit l q gBits gInodes gBlocks bufs buflist :
-  {{{ is_txn l gBits gInodes gBlocks ∗
+Theorem wp_txn__doCommit l q gData bufs buflist :
+  {{{ is_txn l gData ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
+      [∗ list] _ ↦ bufptrval ∈ buflist,
+        ∃ (bufptr : loc) a buf v0,
+          ⌜ bufptrval = #bufptr ⌝ ∗
+          is_buf bufptr a buf ∗
+          @mapsto_txn buf.(bufKind) gData a v0
   }}}
     Txn__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      ( [∗ list] _ ↦ buf ∈ buflist, commit_post gBits gInodes gBlocks buf ) }}}.
+      [∗ list] _ ↦ bufptrval ∈ buflist,
+        ∃ (bufptr : loc) a buf,
+          ⌜ bufptrval = #bufptr ⌝ ∗
+          is_buf bufptr a buf ∗
+          mapsto_txn gData a buf.(bufData)
+  }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hbufs & Hbufpre) HΦ".
+  iDestruct (is_txn_dup with "Htxn") as "[Htxn0 Htxn]".
   iDestruct "Htxn" as (γMaps γLock walHeap mu walptr tq) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
 
   wp_call.
@@ -499,19 +482,48 @@ Proof.
   iIntros "[Hlocked Htxnlocked]".
 
   wp_pures.
-  
+  iDestruct "Htxnlocked" as (mData nextId pos) "(Hmdata & Hnextid & Hpos)".
+  wp_apply (wp_txn__installBufs with "[$Htxn0 $Hinv $Hmdata $Hbufs Hbufpre]").
+  { admit. }
 
+  iIntros (blks blklist) "(Hmdata & Hblks & Hpost & Hbufs & Hbufpre)".
+  wp_pures.
+  wp_apply util_proof.wp_DPrintf.
+  wp_loadField.
+  wp_apply (wp_Walog__MemAppend with "[$Hwal $Hblks Hpost]").
+  { iApply wal_heap_memappend.
+    admit. }
+
+  iIntros (npos) "Hnpos".
+  wp_pures.
+  wp_storeField.
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlock $Hlocked Hnextid Hmdata Hpos]").
+  { iExists _, _, _. iFrame. }
+
+  wp_pures.
+  iApply "HΦ".
+  iFrame.
 Admitted.
 
-Theorem wp_txn_CommitWait l q gBits gInodes gBlocks bufs buflist (wait : bool) (id : u64) :
-  {{{ is_txn l gBits gInodes gBlocks ∗
+Theorem wp_txn_CommitWait l q gData bufs buflist (wait : bool) (id : u64) :
+  {{{ is_txn l gData ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      ( [∗ list] _ ↦ buf ∈ buflist, commit_pre gBits gInodes gBlocks buf )
+      [∗ list] _ ↦ bufptrval ∈ buflist,
+        ∃ (bufptr : loc) a buf v0,
+          ⌜ bufptrval = #bufptr ⌝ ∗
+          is_buf bufptr a buf ∗
+          @mapsto_txn buf.(bufKind) gData a v0
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait #id
   {{{ (ok : bool), RET #ok;
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      ( [∗ list] _ ↦ buf ∈ buflist, commit_post gBits gInodes gBlocks buf ) }}}.
+      [∗ list] _ ↦ bufptrval ∈ buflist,
+        ∃ (bufptr : loc) a buf,
+          ⌜ bufptrval = #bufptr ⌝ ∗
+          is_buf bufptr a buf ∗
+          mapsto_txn gData a buf.(bufData)
+  }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hbufs & Hbufpre) HΦ".
 
@@ -561,8 +573,8 @@ Proof.
     admit.
 Admitted.
 
-Theorem wp_Txn__GetTransId l gBits gInodes gBlocks :
-  {{{ is_txn l gBits gInodes gBlocks }}}
+Theorem wp_Txn__GetTransId l gData :
+  {{{ is_txn l gData }}}
     txn.Txn__GetTransId #l
   {{{ (i : u64), RET #i; emp }}}.
 Proof.
@@ -572,7 +584,7 @@ Proof.
   wp_loadField.
   wp_apply acquire_spec; eauto.
   iIntros "[Hlocked Htxnlocked]".
-  iDestruct "Htxnlocked" as (??? nextId) "[Htxnheap Hnextid]".
+  iDestruct "Htxnlocked" as (? nextId pos) "(Htxnheap & Hnextid & Hpos)".
   wp_loadField.
   wp_apply wp_ref_to; eauto.
   iIntros (id) "Hid".
@@ -587,58 +599,21 @@ Proof.
     wp_loadField.
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[$Hlock $Hlocked Htxnheap Hnextid]").
+    wp_apply (release_spec with "[$Hlock $Hlocked Htxnheap Hnextid Hpos]").
     {
-      iExists _, _, _, _. iFrame.
+      iExists _, _, _. iFrame.
     }
     wp_apply (wp_load with "Hid"); iIntros "Hid".
     iApply "HΦ". done.
   - wp_loadField.
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[$Hlock $Hlocked Htxnheap Hnextid]").
+    wp_apply (release_spec with "[$Hlock $Hlocked Htxnheap Hnextid Hpos]").
     {
-      iExists _, _, _, _. iFrame.
+      iExists _, _, _. iFrame.
     }
     wp_apply (wp_load with "Hid"); iIntros "Hid".
     iApply "HΦ". done.
 Qed.
-
-Definition unify_heaps_inner
-    (gBits    : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
-    (gInodes  : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
-    (gBlocks  : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
-    (gUnified : gmap addr txnObject)
-    : iProp Σ :=
-  (
-    [∗ map] addr ↦ txnObj ∈ gUnified,
-      match txnObj with
-      | txnBit v =>
-        ∃ hG,
-          ⌜gBits !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto_txn hG addr.(addrOff) v
-      | txnInode v =>
-        ∃ hG,
-          ⌜gInodes !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto_txn hG addr.(addrOff) v
-      | txnBlock v =>
-        ∃ hG,
-          ⌜gBlocks !! addr.(addrBlock) = Some hG⌝ ∧
-          mapsto_txn hG addr.(addrOff) v
-      end
-  )%I.
-
-Definition unify_heaps
-    (gBits    : gmap u64 (gen_heapG u64 (updatable_buf bool) Σ))
-    (gInodes  : gmap u64 (gen_heapG u64 (updatable_buf inode_buf) Σ))
-    (gBlocks  : gmap u64 (gen_heapG u64 (updatable_buf Block) Σ))
-    (γUnified : gen_heapG addr txnObject Σ)
-    : iProp Σ :=
-  (
-    inv invN (∃ gUnified,
-      gen_heap_ctx (hG := γUnified) gUnified ∗
-      unify_heaps_inner gBits gInodes gBlocks gUnified)
-  )%I.
-*)
 
 End heap.
