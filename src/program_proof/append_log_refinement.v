@@ -157,9 +157,9 @@ Proof using SIZE_bounds.
     * iFrame. iSplitL ""; iExists _; iFrame "Hopen".
 Qed.
 
-Theorem wpc_Log__Reset j γ K `{LanguageCtx _ K} k k' E2 (l l': loc):
+Theorem wpc_Log__Reset j γ γ0 K `{LanguageCtx _ K} k k' E2 (l l': loc):
   (S (S k) < k')%nat →
-  {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) (ResetOp) #l') ∗
+  {{{ spec_ctx ∗ log_inv γ0 k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) (ResetOp) #l') ∗
                is_log γ k' l ∗ log_open l'
   }}}
     Log__Reset #l @ NotStuck; (LVL (S (S (S k)))); ⊤; E2
@@ -276,6 +276,73 @@ Proof.
   - rewrite replicate_length //=.
 Qed.
 
+Lemma append_init_obligation2: sty_init_obligation2 append_initP.
+Proof. intros ?? (?&?). rewrite //=. Qed.
+
+Definition append_op_trans (op: log_spec_ext.(@spec_ext_op_field).(@external)) : @val disk_op :=
+  match op with
+  | AppendOp => Log__Append
+  | GetOp => Log__Get
+  | ResetOp => Log__Reset
+  | InitOp => (λ:<>, Init #SIZE)%V
+  | OpenOp => Open
+  end.
+
+Lemma append_rules_obligation:
+  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ (LVL (LVL_OPS)) appendTy_model append_op_trans.
+Proof.
+  intros op vs v t1 t2 Htype.
+  destruct op.
+  - inversion Htype; subst. admit.
+  - inversion Htype; subst. admit.
+  - inversion Htype; subst.
+    iIntros (?????) "#Hinv #Hspec #Hval".
+    iIntros (j K Hctx).
+    rewrite //=.
+    iIntros "Hj".
+    rewrite /append_val_interp. iDestruct "Hval" as (lspec limpl γ Heq) "(His_log&Hlog_open)".
+    destruct Heq as (->&->). iDestruct "Hinv" as (?) "Hinv".
+    wpc_apply (@wpc_Log__Reset with "[$] []").
+    { eauto. }
+    { rewrite /LVL_INV. lia. }
+    iSplit; first done. iNext. iIntros. iExists _. eauto.
+  - inversion Htype; subst.
+    iIntros (?????) "#Hinv #Hspec #Hval".
+    iIntros (j K Hctx).
+    rewrite //=.
+    iIntros "Hj".
+    rewrite /append_val_interp.
+    iDestruct "Hval" as %[-> ->]. iDestruct "Hinv" as (?) "Hinv".
+    wpc_pures; first done.
+    wpc_apply (@wpc_Init with "[$] []").
+    { eauto. }
+    { eauto. }
+    { rewrite /LVL_INV. lia. }
+    iSplit; first done. iNext. iIntros (?) "(#His_log&Hj)".
+    iDestruct "Hj" as (?) "(Hj&Hopen)".
+    iExists _. iFrame.
+    iExists _, _, _, _. iSplit.
+    { iPureIntro; split; eauto. }
+    iSplitR ""; eauto.
+    iExists _, _, _. eauto.
+  - inversion Htype; subst.
+    iIntros (?????) "#Hinv #Hspec #Hval".
+    iIntros (j K Hctx).
+    rewrite //=.
+    iIntros "Hj".
+    rewrite /append_val_interp.
+    iDestruct "Hval" as %[-> ->]. iDestruct "Hinv" as (?) "Hinv".
+    wpc_apply (@wpc_Open with "[$] []").
+    { eauto. }
+    { rewrite /LVL_INV. lia. }
+    iSplit; first done. iNext. iIntros (?) "(#His_log&Hj)".
+    iDestruct "Hj" as (?) "(Hj&Hopen)".
+    iExists _. iFrame.
+    iExists _, _, _. iSplit.
+    { iPureIntro; split; eauto. }
+    iFrame. iFrame "#".
+Admitted.
+
 Lemma append_crash_inv_obligation:
   @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ (LVL (LVL_INIT)) (LVL (LVL_OPS)) appendTy_model.
 Proof using SIZE.
@@ -388,5 +455,29 @@ Proof using SIZE.
       rewrite Heq;
       iFrame.
 Admitted.
+
+Existing Instances log_semantics.
+Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
+(* XXX: might need to change typed_translate / refinement to use the spec_ wrappers around type classes *)
+
+Lemma append_refinement (es: @expr log_op) σs e σ (τ: @ty log_ty.(@val_tys log_op)) Hval:
+  typed_translate.expr_transTy _ _ _ Hval ∅ es e τ →
+  σ.(trace) = σs.(trace) →
+  σ.(oracle) = σs.(oracle) →
+  append_initP σ σs →
+  refinement.trace_refines e e σ es es σs.
+Proof.
+  intros. intros ?.
+  unshelve (
+  efeed pose proof sty_adequacy; eauto using append_init_obligation1, append_init_obligation2,
+                                 append_crash_inv_obligation, append_crash_obligation,
+                                 append_rules_obligation).
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Abort.
 
 End refinement.

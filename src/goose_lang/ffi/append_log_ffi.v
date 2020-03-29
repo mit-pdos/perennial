@@ -101,7 +101,7 @@ Section log.
          | AppendOp => (extT LogT, sliceT_ blockT_ _)
          | GetOp => (prodT (extT LogT) uint64T, prodT (blockT_ _) boolT)
          | ResetOp => (extT LogT, unitT)
-         | InitOp => (unitT, extT LogT)
+         | InitOp => (unitT, prodT (extT LogT) boolT)
          | OpenOp => (unitT, extT LogT)
          end; |}.
 
