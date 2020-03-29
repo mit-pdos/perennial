@@ -410,6 +410,8 @@ Admitted.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
          spec_ffi_interp_adequacy_field.
 
+Section pre_assumptions.
+
 Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
@@ -479,6 +481,10 @@ Proof.
     iMod (Hsty_crash with "[$] [$]").
     iModIntro. iModIntro. iExists _. iFrame.
 Qed.
+End pre_assumptions.
+
+Existing Instances subG_cfgG subG_refinement_heapPreG subG_crashG.
+Definition logical_relnΣ := #[styΣ; heapΣ; @cfgΣ spec_lang; refinement_heapΣ; crashΣ].
 
 Lemma sty_adequacy es σs e σ τ Hval initP:
   sty_init_obligation1 initP →
@@ -491,17 +497,21 @@ Lemma sty_adequacy es σs e σ τ Hval initP:
   σ.(oracle) = σs.(oracle) →
   initP σ σs →
   trace_refines e e σ es es σs.
-Proof using Σ Hstypre Hrpre Hhpre Hcrashpre Hcpre.
+Proof.
   intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Htype Htrace Horacle Hinit.
-  eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext)
+  eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
            (Φ := λ _ _ _ _, True%I) (Φc := sty_derived_crash_condition)
            (k := LVL_INIT) (initP := initP); eauto.
+  { apply _. }
+  { apply _. }
+  { apply _. }
+  { apply _. }
   { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hC hRG σ σs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
     iIntros "Hj #Hspec #Htrace".
     iApply fupd_wpc.
-    iPoseProof (Hsty_init1 _ _ _ _ Hstypre with "[$] [$]") as "H"; first auto.
+    iPoseProof (Hsty_init1 _ _ _ _  with "[$] [$]") as "H"; first auto.
     iApply (fupd_mask_mono styN); first by set_solver+.
     iMod "H" as (names) "Hinit".
     iModIntro.
@@ -521,8 +531,10 @@ Proof using Σ Hstypre Hrpre Hhpre Hcrashpre Hcpre.
     iApply (fupd_mask_mono styN); first by set_solver+.
     iMod "Hrest" as (names) "Hinv".
     iModIntro.
-    iApply (sty_inv_to_wpc _ _ _ (sty_update Σ hS' names) with "[$] [$] [$]"); eauto.
+    iApply (sty_inv_to_wpc _ _ _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$]"); eauto.
   }
+  Grab Existential Variables.
+  apply subG_styPreG, _.
 Qed.
 
 

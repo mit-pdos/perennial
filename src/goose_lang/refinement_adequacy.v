@@ -23,6 +23,12 @@ Class refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi sp
   refinement_heap_preG_trace :> trace_preG Σ;
 }.
 
+Existing Instances spec_ext_op_field spec_ext_semantics_field spec_ffi_model_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
+Definition refinement_heapΣ `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ].
+Instance subG_refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} {Σ} :
+  subG refinement_heapΣ Σ → refinement_heapPreG Σ.
+Proof. solve_inG_deep. Qed.
+
 Section refinement.
 Context {ext: ext_op}.
 Context {ffi: ffi_model}.

@@ -294,20 +294,69 @@ Section log_lemmas.
   Global Instance log_open_Persistent (l: loc) : Persistent (log_open l).
   Proof. rewrite /log_open/Log_Opened. apply own_core_persistent. rewrite /CoreId//=. Qed.
 
+  Lemma log_closed_auth_uninit_frag:
+    log_closed_auth -∗ log_uninit_frag -∗ False.
+  Proof.
+    iIntros "Hauth Huninit_frag".
+    iDestruct (own_valid_2 with "Hauth Huninit_frag") as %Hval.
+    inversion Hval as [? Heq%agree_op_inv'].
+    inversion Heq.
+  Qed.
+
+  Lemma log_uninit_auth_closed_frag:
+    log_uninit_auth -∗ log_closed_frag -∗ False.
+  Proof.
+    iIntros "Hauth Huninit_frag".
+    iDestruct (own_valid_2 with "Hauth Huninit_frag") as %Hval.
+    inversion Hval as [? Heq%agree_op_inv'].
+    inversion Heq.
+  Qed.
+
+  Lemma log_uninit_auth_opened l:
+    log_uninit_auth -∗ log_open l -∗ False.
+  Proof.
+    iIntros "Huninit_auth Hopen".
+    iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+    inversion Hval.
+  Qed.
+
+  Lemma log_closed_auth_opened l:
+    log_closed_auth -∗ log_open l -∗ False.
+  Proof.
+    iIntros "Huninit_auth Hopen".
+    iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+    inversion Hval.
+  Qed.
+
   Lemma log_ctx_unify_closed lg vs:
     log_closed_frag -∗ log_frag vs -∗ log_ctx lg -∗ ⌜ lg = Closed vs ⌝.
   Proof.
     destruct lg; try eauto; iIntros "Hclosed_frag Hstate_frag Hctx".
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
-      iDestruct (own_valid_2 with "Huninit_auth Hclosed_frag") as %Hval.
-      rewrite -Cinl_op -pair_op in Hval.
-      inversion Hval as [? Heq%agree_op_inv'].
-      inversion Heq.
+      iDestruct (log_closed_auth_uninit_frag with "[$] [$]") as %[].
     - iDestruct "Hctx" as "(Hclosed_auth&Hstate_auth)".
       rewrite /log_frag/log_auth. by unify_ghost.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (own_valid_2 with "Huninit_auth Hclosed_frag") as %Hval.
       inversion Hval.
+  Qed.
+
+  Lemma log_auth_frag_unif vs vs':
+    log_auth vs -∗ log_frag vs' -∗ ⌜ vs = vs' ⌝.
+  Proof.
+    rewrite /log_auth/log_frag. iIntros "H1 H2". by unify_ghost.
+  Qed.
+
+  Lemma log_open_unif l l':
+    log_open l -∗ log_open l' -∗ ⌜ l = l' ⌝.
+  Proof.
+    rewrite /log_auth/log_frag.
+    iIntros "H1 H2".
+    iDestruct (own_valid_2 with "H1 H2") as %Hval.
+    rewrite /Log_Opened -Cinr_op in Hval.
+    assert (l ≡ l') as Heq.
+    { eapply agree_op_inv'. eauto. }
+    inversion Heq. by subst.
   Qed.
 
   Lemma log_ctx_unify_uninit lg:
@@ -334,11 +383,8 @@ Section log_lemmas.
       iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
       inversion Hval.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
-      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
-      rewrite /Log_Opened -Cinr_op in Hval.
-      assert (l' ≡ l) as Heq.
-      { eapply agree_op_inv'. eauto. }
-      iPureIntro; eexists. inversion Heq. by subst.
+      iDestruct (log_open_unif with "[$] [$]") as %Heq.
+      subst. iPureIntro; eexists. eauto.
   Qed.
 
   Lemma log_ctx_unify_opened' l lg vs:
@@ -352,13 +398,9 @@ Section log_lemmas.
       iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
       inversion Hval.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
-      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
-      rewrite /Log_Opened -Cinr_op in Hval.
-      assert (l' ≡ l) as Heq.
-      { eapply agree_op_inv'. eauto. }
-      rewrite /log_frag/log_auth. unify_ghost.
-      iDestruct (own_valid_2 with "Hstate_auth Hstate") as %Hval'.
-      inversion Heq; subst. eauto.
+      iDestruct (log_open_unif with "[$] [$]") as %Heq.
+      iDestruct (log_auth_frag_unif with "[$] [$]") as %Heq'.
+      subst. eauto.
   Qed.
 
   Lemma log_uninit_token_open (l: loc):

@@ -381,8 +381,17 @@ Proof using SIZE.
   iIntros "Hctx".
   rewrite /append_init/log_init.
   destruct (σs.(world)) eqn:Hworld_case; try iDestruct "Hctx" as %[].
-  - iAssert (⌜ ls = UnInit ⌝ ∗ log_ctx UnInit ∗ log_frag [])%I with "[HP Hctx]" as (Heqls) "(Hctx&Hfrag)".
-    { admit. }
+  - iAssert (⌜ ls = UnInit ∨ ls = Initing ⌝ ∗ log_ctx UnInit ∗ log_frag [])%I with "[HP Hctx]" as (Heqls) "(Hctx&Hfrag)".
+    {
+      rewrite /log_ctx/P.
+      iDestruct "Hctx" as "(?&?)".
+      destruct ls; try (iDestruct "HP" as "(?&?&?)" || iDestruct "HP" as "(?&?)");
+        try (iFrame; eauto; done).
+      - iDestruct (log_uninit_auth_closed_frag with "[$] [$]") as %[].
+      - iDestruct (log_uninit_auth_closed_frag with "[$] [$]") as %[].
+      - iDestruct "HP" as (?) "(HP&?)".
+        iDestruct (log_uninit_auth_opened with "[$] [$]") as %[].
+    }
     iExists _. unshelve (iExists _).
     { econstructor.
       { symmetry; eauto. }
@@ -396,10 +405,22 @@ Proof using SIZE.
     rewrite /append_log_proof.uninit_log.
     rewrite /disk_array. rewrite /diskG0.
     rewrite Heq.
-    iFrame.
+    destruct Heqls as [-> | ->]; iFrame.
   - rewrite /P/log_ctx.
-    iAssert (⌜ ls = Closed s ∨ ls = Opening s  ⌝ ∗ log_ctx (Closed s) ∗ log_frag s)%I with "[HP Hctx]" as (Heqls) "(Hctx&Hfrag)".
-    { admit. }
+    iAssert (⌜ ls = Closed s ∨ ls = Opening s  ⌝ ∗
+             log_ctx (Closed s) ∗ log_frag s)%I with "[HP Hctx]" as (Heqls) "(Hctx&Hfrag)".
+    {
+      rewrite /log_ctx/P.
+      iDestruct "Hctx" as "(?&?)".
+      destruct ls; try (iDestruct "HP" as "(?&?&?)" || iDestruct "HP" as "(?&?)");
+        try (iFrame; eauto; done).
+      - iDestruct (log_closed_auth_uninit_frag with "[$] [$]") as %[].
+      - iDestruct (log_closed_auth_uninit_frag with "[$] [$]") as %[].
+      - iDestruct (log_auth_frag_unif with "[$] [$]") as %->. iFrame. eauto.
+      - iDestruct (log_auth_frag_unif with "[$] [$]") as %->. iFrame. eauto.
+      - iDestruct "HP" as (?) "(HP&?)".
+        iDestruct (log_closed_auth_opened with "[$] [$]") as %[].
+    }
     iExists _. unshelve (iExists _).
     { econstructor.
       { symmetry; eauto. }
@@ -427,8 +448,21 @@ Proof using SIZE.
       rewrite Heq;
       iFrame.
   - rewrite /P/log_ctx.
-    iAssert (⌜ ls = Opened s l  ⌝ ∗ log_ctx (Opened s l) ∗ log_frag s)%I with "[HP Hctx]" as (Heqls) "(Hctx&Hfrag)".
-    { admit. }
+    iAssert (∃ l0, ⌜ ls = Opened s l0  ⌝ ∗ log_ctx (Opened s l) ∗ log_frag s)%I with "[HP Hctx]" as (? Heqls) "(Hctx&Hfrag)".
+    {
+      rewrite /log_ctx/P.
+      iDestruct "Hctx" as "(?&?)".
+      destruct ls; try (iDestruct "HP" as "(?&?&?)" || iDestruct "HP" as "(?&?)");
+        try (iFrame; eauto; done).
+      - iDestruct (log_uninit_auth_opened with "[$] [$]") as %[].
+      - iDestruct (log_uninit_auth_opened with "[$] [$]") as %[].
+      - iDestruct (log_closed_auth_opened with "[$] [$]") as %[].
+      - iDestruct (log_closed_auth_opened with "[$] [$]") as %[].
+      - iDestruct "HP" as (?) "(HP&?)".
+        iDestruct (log_auth_frag_unif with "[$] [$]") as %->.
+        iDestruct (log_open_unif with "[$] [$]") as %->. iFrame.
+        iExists _. iFrame; eauto.
+    }
     iExists _. unshelve (iExists _).
     { econstructor.
       { symmetry; eauto. }
@@ -454,7 +488,7 @@ Proof using SIZE.
       rewrite /disk_array; rewrite /diskG0;
       rewrite Heq;
       iFrame.
-Admitted.
+Qed.
 
 Existing Instances log_semantics.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
@@ -468,16 +502,9 @@ Lemma append_refinement (es: @expr log_op) σs e σ (τ: @ty log_ty.(@val_tys lo
   refinement.trace_refines e e σ es es σs.
 Proof.
   intros. intros ?.
-  unshelve (
   efeed pose proof sty_adequacy; eauto using append_init_obligation1, append_init_obligation2,
                                  append_crash_inv_obligation, append_crash_obligation,
-                                 append_rules_obligation).
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-Abort.
+                                 append_rules_obligation.
+Qed.
 
 End refinement.

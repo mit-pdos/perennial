@@ -23,9 +23,16 @@ Definition tpoolUR : ucmraT := gmapUR nat (exclR (exprO Λ)).
 Definition stateUR := optionUR (exclR (stateO Λ)).
 Definition cfgUR := prodUR tpoolUR stateUR.
 
+
 Class cfgPreG (Σ : gFunctors) :=
   { cfg_preG_inG :> inG Σ (authR cfgUR) }.
 Class cfgG Σ := { cfg_inG :> inG Σ (authR cfgUR); cfg_name : gname }.
+
+Definition cfgΣ : gFunctors :=
+  #[GFunctor (authR cfgUR)].
+
+Instance subG_cfgG {Σ} : subG cfgΣ Σ → cfgPreG Σ.
+Proof. solve_inG. Qed.
 
 Fixpoint tpool_to_map_aux (tp: list (language.expr Λ)) (id: nat) : gmap nat (language.expr Λ) :=
   match tp with
