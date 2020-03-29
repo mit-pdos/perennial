@@ -124,6 +124,12 @@ Definition big_sepML {Σ V LV} `{!EqDecision K} `{!Countable K}
     ⌜ l ≡ₚ map snd (map_to_list lm) ⌝ ∗
     [∗ map] k ↦ v;lvm ∈ m;lm, P k v lvm.
 
+Notation "'[∗' 'maplist]' k ↦ x ; v ∈ m ; l , P" :=
+  (big_sepML (λ k x v, P) m l)
+  (at level 200, m, l at level 10, k, x, v at level 1, right associativity,
+   format "[∗  maplist]  k ↦ x ; v  ∈  m ; l ,  P")
+  : bi_scope.
+
 Global Instance big_sepML_proper {Σ V LV} `{!EqDecision K} `{!Countable K} :
   Proper (pointwise_relation _ (pointwise_relation _ (pointwise_relation _ (⊢)))
      ==> (=) ==> (Permutation) ==> (⊢))
