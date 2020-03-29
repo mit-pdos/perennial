@@ -397,12 +397,11 @@ Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap
       inv invN (is_txn_always walHeap gData γMaps) ∗
       mapsto (hG := γMaps) tt (1/2) mData ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      [∗ list] _ ↦ bufptrval ∈ buflist,
-        ∃ (bufptr : loc) a buf v0,
+      [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
+        ∃ (bufptr : loc) v0,
           ⌜ bufptrval = #bufptr ⌝ ∗
           is_buf bufptr a buf ∗
-          @mapsto_txn buf.(bufKind) gData a v0 ∗
-          ⌜ bufamap !! a = Some buf ⌝
+          @mapsto_txn buf.(bufKind) gData a v0
   }}}
     Txn__installBufs #l (slice_val bufs)
   {{{ (blks : Slice.t) updlist, RET (slice_val blks);
@@ -435,8 +434,9 @@ Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap
 Proof.
   iIntros (Φ) "(Htxn & #Hinv & Hmdata & Hbufs & Hbufpre) HΦ".
 
+Opaque struct.t.
   wp_call.
-  wp_apply wp_new_slice. { rewrite /=. intuition. apply has_zero_slice_T. }
+  wp_apply wp_new_slice. { repeat econstructor. }
   iIntros (blks) "Hblks".
 
   wp_apply wp_ref_to; [val_ty|].
@@ -450,7 +450,12 @@ Proof.
   iIntros (bufsByBlock_l) "HbufsByBlock_l".
 
   wp_pures.
-  wp_apply wp_forSlice.
+  wp_apply (wp_forSlice with "[] [Hbufs]").
+  2: {
+    iDestruct (is_slice_to_small with "Hbufs") as "Hbufs".
+    iFrame.
+    admit.
+  }
 Admitted.
 
 Theorem wp_txn__doCommit l q gData bufs buflist :
