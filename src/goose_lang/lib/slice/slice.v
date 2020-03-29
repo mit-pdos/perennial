@@ -421,6 +421,63 @@ Proof.
     rewrite word.of_Z_unsigned; auto.
 Qed.
 
+Theorem wp_forSliceEach (I: iProp Σ) (P Q: val -> iProp Σ) stk E s t q vs (body: val) :
+  (∀ (i: u64) (x: val),
+      {{{ I ∗ P x }}}
+        body #i x @ stk; E
+      {{{ RET #(); I ∗ Q x }}}) -∗
+    {{{ is_slice_small s t q vs ∗ I ∗ [∗ list] x ∈ vs, P x }}}
+      forSlice t body (slice_val s) @ stk; E
+    {{{ RET #(); is_slice_small s t q vs ∗ I ∗ [∗ list] x ∈ vs, Q x }}}.
+Proof.
+  iIntros "#Hind".
+  iIntros (Φ) "!> [Hs [Hi Hp]] HΦ".
+  iDestruct (is_slice_small_sz with "Hs") as %Hlen.
+  wp_apply (wp_forSlice
+    (λ i, ([∗ list] x ∈ firstn (int.nat i) vs, Q x) ∗
+          ([∗ list] x ∈ skipn (int.nat i) vs, P x) ∗
+          I)%I with "[] [$Hs Hi Hp]").
+  {
+    iIntros (i x).
+    iModIntro.
+    iIntros (Φ0) "[(Hq & Hp & Hi) [% %]] HΦ0".
+    apply take_drop_middle in H0.
+    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+    assert (strings.length (take (int.nat i) vs) = int.nat i) as Hivs.
+    { rewrite firstn_length_le; eauto. lia. }
+    replace (drop (int.nat i) vs) with (x :: drop (S (int.nat i)) vs).
+    2: {
+      rewrite <- H0 at 2.
+      rewrite drop_app_alt; eauto.
+    }
+    iDestruct "Hp" as "[Hpx Hp]".
+    iApply ("Hind" with "[$Hi $Hpx]").
+    iModIntro.
+    iIntros "[Hi Hqx]".
+    iApply "HΦ0".
+    replace (take (S (int.nat i)) vs) with ((take (int.nat i) vs) ++ [x]).
+    2: {
+      rewrite <- H0 at 2.
+      rewrite firstn_app Hivs.
+      rewrite (firstn_all2 (take _ _)); last lia.
+      f_equal.
+      replace (S (int.nat i) - int.nat i)%nat with 1%nat by lia.
+      rewrite /= firstn_O.
+      reflexivity.
+    }
+    rewrite big_sepL_app /=.
+    iFrame.
+  }
+  {
+    repeat replace (int.nat 0) with 0%nat by reflexivity.
+    rewrite drop_0 /=.
+    iFrame.
+  }
+  rewrite -Hlen skipn_all firstn_all /=.
+  iIntros "[(Hq & _ & Hi) Hs]".
+  iApply "HΦ"; iFrame.
+Qed.
+
 Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = U64 0.
 Proof.
   intros.
