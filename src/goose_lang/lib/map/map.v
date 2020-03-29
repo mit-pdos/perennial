@@ -267,6 +267,20 @@ Proof.
   iApply "HΦ". iExists _. iFrame. eauto.
 Qed.
 
-(* TODO: specify MapIter *)
+Definition wp_MapIter stk E mref (m: gmap u64 val * val) (I: iProp Σ) (P Q: u64 -> val -> iProp Σ) (body: val):
+  (∀ (k: u64) (v: val),
+      {{{ I ∗ P k v }}}
+        body #k v @ stk; E
+      {{{ RET #(); I ∗ Q k v }}}) -∗
+  {{{ is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ fst m, P k v }}}
+    MapIter #mref body @ stk; E
+  {{{ RET #(); is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ fst m, Q k v }}}.
+Proof.
+  iIntros "#Hind".
+  iIntros (Φ) "!> [Hm [Hi Hp]] HΦ".
+  iDestruct "Hm" as (mv) "[% Hm]".
+  wp_call.
+  (* XXX this seems to require extending na_heap with non-atomic reads... *)
+Admitted.
 
 End heap.
