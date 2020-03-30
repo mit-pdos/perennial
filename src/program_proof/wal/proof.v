@@ -2,7 +2,6 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import wal.circular_proof.
-From Perennial.Helpers Require Import GenHeap.
 
 Definition LogPositionT := wal.LogPosition.
 Definition LogPosition := u64.

@@ -1,6 +1,8 @@
 From iris.algebra Require Export auth gmap frac agree excl vector list.
 
-From Perennial.Helpers Require Export BigOp.
+From Perennial.algebra Require Export big_op.
+
+From Perennial.Helpers Require Export BigOp Transitions.
 
 From Perennial.program_logic Require Export ghost_var.
 From Perennial.goose_lang Require Export proofmode wpc_proofmode array.

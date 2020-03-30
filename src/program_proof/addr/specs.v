@@ -1,11 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.Helpers Require Import GenHeap.
-From Perennial.goose_lang.lib Require Import struct.
-
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr.
 
 Section heap.

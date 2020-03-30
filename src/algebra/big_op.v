@@ -91,6 +91,92 @@ Section map.
   Lemma big_sepM_insert_delete Φ m i x :
     ([∗ map] k↦y ∈ <[i:=x]> m, Φ k y) ⊣⊢ Φ i x ∗ [∗ map] k↦y ∈ delete i m, Φ k y.
   Proof. rewrite -insert_delete big_sepM_insert ?lookup_delete //. Qed.
-
 End map.
+
+Section map2.
+  Context `{Countable K} {A B : Type}.
+  Implicit Types Φ Ψ : K → A → B → PROP.
+
+  Lemma big_sepM2_lookup_1_some
+      Φ (m1 : gmap K A) (m2 : gmap K B) (i : K) (x1 : A)
+      (_ : forall x2 : B, Absorbing (Φ i x1 x2)) :
+    m1 !! i = Some x1 ->
+      ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+          ⌜∃ x2, m2 !! i = Some x2⌝.
+  Proof.
+    intros.
+    iIntros "H".
+    iDestruct (big_sepM2_lookup_1 with "H") as (x2) "[% _]"; eauto.
+  Qed.
+
+  Lemma big_sepM2_lookup_2_some
+      Φ (m1 : gmap K A) (m2 : gmap K B) (i : K) (x2 : B)
+      (_ : forall x1 : A, Absorbing (Φ i x1 x2)) :
+    m2 !! i = Some x2 ->
+      ⊢ ([∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2) -∗
+          ⌜∃ x1, m1 !! i = Some x1⌝.
+  Proof.
+    intros.
+    iIntros "H".
+    iDestruct (big_sepM2_lookup_2 with "H") as (x1) "[% _]"; eauto.
+  Qed.
+
+  Lemma big_sepM2_lookup_1_none
+      Φ (m1 : gmap K A) (m2 : gmap K B) (i : K)
+      (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
+    m1 !! i = None ->
+      ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+          ⌜m2 !! i = None⌝.
+  Proof.
+    case_eq (m2 !! i); auto.
+    iIntros (? ? ?) "H".
+    iDestruct (big_sepM2_lookup_2 with "H") as (x2) "[% _]"; eauto; congruence.
+  Qed.
+
+  Lemma big_sepM2_lookup_2_none
+      Φ (m1 : gmap K A) (m2 : gmap K B) (i : K)
+      (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
+    m2 !! i = None ->
+      ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+          ⌜m1 !! i = None⌝.
+  Proof.
+    case_eq (m1 !! i); auto.
+    iIntros (? ? ?) "H".
+    iDestruct (big_sepM2_lookup_1 with "H") as (x1) "[% _]"; eauto; congruence.
+  Qed.
+End map2.
+
+Theorem big_sepL_impl A (f g: nat -> A -> PROP) (l: list A) :
+  (forall i x, f i x -∗ g i x) ->
+  ([∗ list] i↦x ∈ l, f i x) -∗
+  ([∗ list] i↦x ∈ l, g i x).
+Proof.
+  intros Himpl.
+  apply big_opL_gen_proper; auto.
+  typeclasses eauto.
+Qed.
+
+Definition Conflicting {L V} (P0 P1 : L -> V -> PROP) :=
+  ∀ a0 v0 a1 v1,
+    P0 a0 v0 -∗ P1 a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.
+
+Lemma big_sepM_disjoint_pred {L V} `{!EqDecision L} `{!Countable L} (P0 P1 : L -> V -> PROP)
+  `{!∀ l v, Absorbing (P0 l v)}
+  `{!∀ l v, Absorbing (P1 l v)}
+  (m0 m1 : gmap L V) :
+  Conflicting P0 P1 ->
+  ( ( [∗ map] a↦v ∈ m0, P0 a v ) -∗
+    ( [∗ map] a↦v ∈ m1, P1 a v ) -∗
+    ⌜ m0 ##ₘ m1 ⌝ ).
+Proof.
+  iIntros (Hc) "H0 H1".
+  iIntros (i).
+  unfold option_relation.
+  destruct (m0 !! i) eqn:He; destruct (m1 !! i) eqn:H1; try solve [ iPureIntro; auto ].
+  iDestruct (big_sepM_lookup with "H0") as "H0"; eauto.
+  iDestruct (big_sepM_lookup with "H1") as "H1"; eauto.
+  iDestruct (Hc with "H0 H1") as %Hcc.
+  congruence.
+Qed.
+
 End bi_big_op.

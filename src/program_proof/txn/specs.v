@@ -1,16 +1,9 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-(*
-  TODO: allow representing multiple logical disks with Txn,
-    one per logical disk from Wal.
-  TODO: how to deal with crashes?  the 3 ghost maps exposed
-    by Txn must remain latest, so what represents the old state?
-*)
-
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.Helpers Require Import GenHeap.
+From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Perennial.program_proof Require Import wal.specs wal.heapspec addr.specs buf.specs.
@@ -450,7 +443,7 @@ Opaque struct.t.
   iIntros (bufsByBlock_l) "HbufsByBlock_l".
 
   wp_pures.
-  wp_apply (wp_forSlice with "[] [Hbufs]").
+  wp_apply (wp_forSliceEach with "[] [Hbufs]").
   2: {
     iDestruct (is_slice_to_small with "Hbufs") as "Hbufs".
     iFrame.

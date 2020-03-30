@@ -5,7 +5,6 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import marshal_proof util_proof.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.Helpers Require Import GenHeap.
 
 From Perennial.Helpers Require Import Transitions.
 Existing Instance r_mbind.

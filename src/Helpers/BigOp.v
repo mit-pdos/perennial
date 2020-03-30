@@ -1,63 +1,8 @@
 From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
 From iris.base_logic.lib Require Import iprop.
+From Perennial.algebra Require Import big_op.
 From Perennial.goose_lang Require Import lang.
-
-Lemma big_sepM2_lookup_1_some
-    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
-    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
-    (i : K) (x1 : A)
-    (_ : forall x2 : B, Absorbing (Φ i x1 x2)) :
-  m1 !! i = Some x1 ->
-    ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
-        ⌜∃ x2, m2 !! i = Some x2⌝.
-Proof.
-  intros.
-  iIntros "H".
-  iDestruct (big_sepM2_lookup_1 with "H") as (x2) "[% _]"; eauto.
-Qed.
-
-Lemma big_sepM2_lookup_2_some
-    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
-    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
-    (i : K) (x2 : B)
-    (_ : forall x1 : A, Absorbing (Φ i x1 x2)) :
-  m2 !! i = Some x2 ->
-    ⊢ ([∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2) -∗
-        ⌜∃ x1, m1 !! i = Some x1⌝.
-Proof.
-  intros.
-  iIntros "H".
-  iDestruct (big_sepM2_lookup_2 with "H") as (x1) "[% _]"; eauto.
-Qed.
-
-Lemma big_sepM2_lookup_1_none
-    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
-    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
-    (i : K)
-    (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
-  m1 !! i = None ->
-    ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
-        ⌜m2 !! i = None⌝.
-Proof.
-  case_eq (m2 !! i); auto.
-  iIntros (? ? ?) "H".
-  iDestruct (big_sepM2_lookup_2 with "H") as (x2) "[% _]"; eauto; congruence.
-Qed.
-
-Lemma big_sepM2_lookup_2_none
-    (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K)
-    (A B : Type) (Φ : K → A → B → PROP) (m1 : gmap K A) (m2 : gmap K B)
-    (i : K)
-    (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
-  m2 !! i = None ->
-    ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
-        ⌜m1 !! i = None⌝.
-Proof.
-  case_eq (m1 !! i); auto.
-  iIntros (? ? ?) "H".
-  iDestruct (big_sepM2_lookup_1 with "H") as (x1) "[% _]"; eauto; congruence.
-Qed.
 
 Theorem heap_array_to_list {Σ} {A} l0 (vs: list A) (P: loc -> A -> iProp Σ) :
   ([∗ map] l↦v ∈ heap_array l0 vs, P l v) ⊣⊢
@@ -84,36 +29,6 @@ Proof.
     apply (not_elem_of_dom (D := gset loc)).
     rewrite dom_singleton elem_of_singleton loc_add_assoc.
     intros ?%loc_add_ne; auto; lia.
-Qed.
-
-Theorem big_sepL_impl {Σ} A (f g: nat -> A -> iProp Σ) (l: list A) :
-  (forall i x, f i x -∗ g i x) ->
-  ([∗ list] i↦x ∈ l, f i x) -∗
-  ([∗ list] i↦x ∈ l, g i x).
-Proof.
-  intros Himpl.
-  apply big_opL_gen_proper; auto.
-  typeclasses eauto.
-Qed.
-
-Definition Conflicting {Σ L V} (P0 P1 : L -> V -> iProp Σ) :=
-  ∀ a0 v0 a1 v1,
-    P0 a0 v0 -∗ P1 a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.
-
-Lemma big_sepM_disjoint_pred {Σ L V} {_ : EqDecision L} {_ : Countable L} (m0 m1 : gmap L V) (P0 P1 : L -> V -> iProp Σ) :
-  Conflicting P0 P1 ->
-  ( ( [∗ map] a↦v ∈ m0, P0 a v ) -∗
-    ( [∗ map] a↦v ∈ m1, P1 a v ) -∗
-    ⌜ m0 ##ₘ m1 ⌝ ).
-Proof.
-  iIntros (Hc) "H0 H1".
-  iIntros (i).
-  unfold option_relation.
-  destruct (m0 !! i) eqn:H0; destruct (m1 !! i) eqn:H1; try solve [ iPureIntro; auto ].
-  iDestruct (big_sepM_lookup with "H0") as "H0"; eauto.
-  iDestruct (big_sepM_lookup with "H1") as "H1"; eauto.
-  iDestruct (Hc with "H0 H1") as %Hcc.
-  congruence.
 Qed.
 
 
