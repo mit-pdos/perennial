@@ -494,8 +494,8 @@ Existing Instances log_semantics.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 (* XXX: might need to change typed_translate / refinement to use the spec_ wrappers around type classes *)
 
-Lemma append_refinement (es: @expr log_op) σs e σ (τ: @ty log_ty.(@val_tys log_op)) Hval:
-  typed_translate.expr_transTy _ _ _ Hval ∅ es e τ →
+Lemma append_refinement (es: @expr log_op) σs e σ (τ: @ty log_ty.(@val_tys log_op)):
+  typed_translate.expr_transTy _ _ _ append_op_trans ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   append_initP σ σs →

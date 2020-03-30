@@ -271,11 +271,11 @@ Qed.
 
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
-  ∀ Γ es e τ Hval, expr_transTy _ _ _ Hval Γ es e τ →
+  ∀ Γ es e τ, expr_transTy _ _ _ spec_op_trans Γ es e τ →
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
     ⊢ ctx_has_semTy (hS := hS) Γ es e τ.
 Proof using spec_op_trans.
-  iIntros (Hrules ????? Htyping ??????).
+  iIntros (Hrules ???? Htyping ??????).
   induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx".
   (* Variables *)
   - subst.
@@ -346,7 +346,7 @@ Proof using spec_op_trans.
       iEval (rewrite (binder_delete_commute f x)). iFrame. }
     { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
       iEval (rewrite {2}binder_delete_commute). iFrame. }
-  - admit.
+  (* Fork *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
@@ -393,6 +393,7 @@ Proof using spec_op_trans.
   - admit.
   - admit.
   - admit.
+  - admit.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
@@ -402,9 +403,6 @@ Proof using spec_op_trans.
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iPoseProof (Hrules with "[$] [$] [$] [] Hj") as "H"; eauto.
-    admit.
-  - admit.
-  - admit.
 Admitted.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
@@ -433,8 +431,8 @@ Definition sty_derived_crash_condition :=
       ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new))%I.
 
-Lemma sty_inv_to_wpc hG hC hRG hS Hval es e τ j:
-  expr_transTy _ _ _ Hval ∅ es e τ →
+Lemma sty_inv_to_wpc hG hC hRG hS es e τ j:
+  expr_transTy _ _ _ spec_op_trans ∅ es e τ →
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation →
@@ -451,7 +449,7 @@ Proof.
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iApply (Hsty_crash_inv with "[$] [$] [Hj]").
     { iIntros "#Hinv'".
-      iPoseProof (sty_fundamental_lemma Hsty_rules ∅ _ _ _ _ Htype) as "H"; eauto.
+      iPoseProof (sty_fundamental_lemma Hsty_rules ∅ _ _ _ Htype) as "H"; eauto.
       iSpecialize ("H" $! ∅ with "[] [$] [$] [$] []").
       { iPureIntro. apply: fmap_empty. }
       { by rewrite big_sepM_empty. }
@@ -486,13 +484,13 @@ End pre_assumptions.
 Existing Instances subG_cfgG subG_refinement_heapPreG subG_crashG.
 Definition logical_relnΣ := #[styΣ; heapΣ; @cfgΣ spec_lang; refinement_heapΣ; crashΣ].
 
-Lemma sty_adequacy es σs e σ τ Hval initP:
+Lemma sty_adequacy es σs e σ τ initP:
   sty_init_obligation1 initP →
   sty_init_obligation2 initP →
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation →
-  expr_transTy _ _ _ Hval ∅ es e τ →
+  expr_transTy _ _ _ spec_op_trans ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →

@@ -51,11 +51,22 @@ Section translate.
   | rec_expr_transTy f x e e' t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e -- e' : t2 ->
       Γ ⊢ Rec f x e -- Rec f x e' : arrowT t1 t2
-  | panic_expr_transTy msg t :
-      Γ ⊢ Panic msg -- Panic msg : t
   | fork_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       Γ ⊢ Fork e1 -- Fork e2 : unitT
+
+  (** control flow *)
+  | if_transTy cond cond' e1 e1' e2 e2' t :
+      Γ ⊢ cond -- cond' : boolT ->
+      Γ ⊢ e1 -- e1' : t ->
+      Γ ⊢ e2 -- e2' : t ->
+      Γ ⊢ If cond e1 e2 -- If cond' e1' e2' : t
+
+  (** primitives operations *)
+  | panic_expr_transTy msg t :
+      Γ ⊢ Panic msg -- Panic msg : t
+  | arbitrary_int_expr_transTy :
+      Γ ⊢ ArbitraryInt -- ArbitraryInt : uint64T
   | cast_u64_op_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       is_intTy t = true ->
@@ -76,21 +87,6 @@ Section translate.
       un_op_ty op = Some (t1, t) ->
       Γ ⊢ e1 -- e2 : t1 ->
       Γ ⊢ UnOp op e1 -- UnOp op e2 : t
-  | offset_op_transTy e1 e1' e2 e2' k t :
-      Γ ⊢ e1 -- e1' : arrayT t ->
-      Γ ⊢ e2 -- e2' : uint64T ->
-      Γ ⊢ BinOp (OffsetOp k) e1 e2 -- BinOp (OffsetOp k) e1' e2' : arrayT t
-  (* JDT: Worried about compilation of abstract types in structs. Might there be an issue
-          with the way flattening is done, if, say, the implementation of an abstract type is
-          as a struct? But perhaps not, as Tej pointed out abstract type has to be wrapped by a pointer
-          to enforce abstraction anyway *)
-  | struct_offset_op_transTy e1 e1' (v: Z) ts :
-      Γ ⊢ e1 -- e1' : structRefT ts ->
-      Γ ⊢ BinOp (OffsetOp 1) e1 #v -- BinOp (OffsetOp 1) e1' #v : structRefT (skipn (Z.to_nat v) ts)
-  | struct_offset_op_collapse_transTy e1 e1' (v1 v2: Z) k ts :
-      Γ ⊢ BinOp (OffsetOp k) (BinOp (OffsetOp k) e1 #v1) #v2 --
-          BinOp (OffsetOp k) (BinOp (OffsetOp k) e1' #v1) #v2 : structRefT ts ->
-      Γ ⊢ BinOp (OffsetOp k) e1 #(v1 + v2) -- BinOp (OffsetOp k) e1' #(v1 + v2): structRefT ts
   | eq_op_transTy e1 e1' e2 e2' t :
       Γ ⊢ e1 -- e1' : t ->
       Γ ⊢ e2 -- e2' : t ->
@@ -109,6 +105,8 @@ Section translate.
       Γ ⊢ e1 -- e1' : stringT ->
       Γ ⊢ e2 -- e2' : stringT ->
       Γ ⊢ BinOp PlusOp e1 e2 -- BinOp PlusOp e1' e2' : stringT
+
+  (** data *)
   | pair_transTy e1 e1' e2 e2' t1 t2 :
       Γ ⊢ e1 -- e1' : t1 ->
       Γ ⊢ e2 -- e2' : t2 ->
@@ -143,35 +141,41 @@ Section translate.
       Γ ⊢ e1 -- e1' : arrowT t1 t ->
       Γ ⊢ e2 -- e2' : arrowT t2 t ->
       Γ ⊢ Case cond e1 e2 -- Case cond' e1' e2' : t
-  | if_transTy cond cond' e1 e1' e2 e2' t :
-      Γ ⊢ cond -- cond' : boolT ->
-      Γ ⊢ e1 -- e1' : t ->
-      Γ ⊢ e2 -- e2' : t ->
-      Γ ⊢ If cond e1 e2 -- If cond' e1' e2' : t
+
+  (** pointers *)
   | alloc_transTy n n' v v' t :
       Γ ⊢ n -- n' : uint64T ->
       Γ ⊢ v -- v' : t ->
       Γ ⊢ AllocN n v -- AllocN n' v': arrayT t
-  | load_transTy l l' t :
-      Γ ⊢ l -- l' : refT t ->
+  (* This rule means we require all external types to have the same size at the
+     spec level as in their implementation.  *)
+  | offset_op_transTy e1 e1' e2 e2' t :
+      Γ ⊢ e1 -- e1' : arrayT t ->
+      Γ ⊢ e2 -- e2' : uint64T ->
+      Γ ⊢ BinOp (OffsetOp (ty_size t)) e1 e2 -- BinOp (OffsetOp (ty_size t)) e1' e2' : arrayT t
+  | struct_offset_op_transTy e1 e1' (k: Z) ts :
+      Γ ⊢ e1 -- e1' : structRefT ts ->
+      Γ ⊢ BinOp (OffsetOp k) e1 #1 -- BinOp (OffsetOp k) e1' #1 : structRefT (drop (Z.to_nat k) ts)
+  | load_transTy l l' t ts :
+      Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ Load l -- Load l' : t
   (* XXX: need to fix this and next four to be for compound
      use of prepare followed by finish *)
-  | prepare_write_transTy l l' t :
-      Γ ⊢ l -- l' : refT t ->
+  | prepare_write_transTy l l' t ts:
+      Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ PrepareWrite l -- PrepareWrite l' : unitT
-  | finish_store_transTy l l' v v' t :
-      Γ ⊢ l -- l' : refT t ->
+  | finish_store_transTy l l' v v' t ts :
+      Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ v -- v' : t ->
       Γ ⊢ FinishStore l v -- FinishStore l' v' : unitT
-  | start_read_transTy l l' t :
-      Γ ⊢ l -- l' : refT t ->
+  | start_read_transTy l l' t ts :
+      Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ StartRead l -- StartRead l' : t
-  | finish_read_transTy l l' t :
-      Γ ⊢ l -- l' : refT t ->
+  | finish_read_transTy l l' t ts :
+      Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ FinishRead l -- FinishRead l' : unitT
-  | cmpxchg_transTy l l' v1 v1' v2 v2' t :
-      Γ ⊢ l -- l' : refT t ->
+  | cmpxchg_transTy l l' v1 v1' v2 v2' t ts :
+      Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ v1 -- v1' : t ->
       Γ ⊢ v2 -- v2' : t ->
       Γ ⊢ CmpXchg l v1 v2 -- CmpXchg l' v1' v2' : prodT t boolT
@@ -179,23 +183,13 @@ Section translate.
       get_ext_tys op = (t1, t2) ->
       Γ ⊢ e -- e' : t1 ->
       Γ ⊢ ExternalOp op e -- (spec_op_trans op) e' : t2
-  (* Is this sound given the rules about flattening? *)
-  | struct_weaken_transTy e e' ts1 ts2 :
-      Γ ⊢ e -- e' : structRefT (ts1 ++ ts2) ->
-      Γ ⊢ e -- e' : structRefT ts1
-  | array_ref_transTy e e' t :
-      Γ ⊢ e -- e' : arrayT t ->
-      Γ ⊢ e -- e' : refT t
-  (* XXX: remove this from the unary rules *)
-  (*
-  | e_any_transTy e t :
-      Γ ⊢ e : t ->
-      Γ ⊢ e : anyT
-                     *)
+
   where "Γ ⊢ e1 -- e2 : A" := (expr_transTy Γ e1 e2 A)
+
   with val_transTy (Γ: SCtx) : sval -> ival -> sty -> Prop :=
-  | val_base_lit_translateTy v t :
-      base_lit_hasTy v t -> val_transTy Γ (LitV v) (LitV v) t
+  | val_base_lit_transTy v t :
+      base_lit_hasTy v t ->
+      Γ ⊢v (LitV v) -- (LitV v) : t
   | val_pair_transTy v1 v1' v2 v2' t1 t2 :
       Γ ⊢v v1 -- v1' : t1 ->
       Γ ⊢v v2 -- v2' : t2 ->
@@ -212,12 +206,6 @@ Section translate.
   | mapNilV_transTy v v' t :
       Γ ⊢v v -- v' : t ->
       Γ ⊢v MapNilV v  -- MapNilV v': mapValT t
-  (* Remove from unary rules *)
-  (*
-  | val_any_transTy v v't :
-      Γ ⊢v v : t ->
-      Γ ⊢v v : anyT
-  *)
   where "Γ ⊢v v1 -- v2 : A" := (val_transTy Γ v1 v2 A).
 
 End translate.

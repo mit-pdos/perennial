@@ -329,11 +329,11 @@ Section goose_lang.
   | start_read_hasTy l t ts :
       Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ StartRead l : t
-  | finish_read_hasTy l t :
-      Γ ⊢ l : refT t ->
+  | finish_read_hasTy l t ts :
+      Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ FinishRead l : unitT
-  | cmpxchg_hasTy l v1 v2 t :
-      Γ ⊢ l : refT t ->
+  | cmpxchg_hasTy l v1 v2 t ts :
+      Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ v1 : t ->
       Γ ⊢ v2 : t ->
       Γ ⊢ CmpXchg l v1 v2 : prodT t boolT
