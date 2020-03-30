@@ -264,7 +264,6 @@ Theorem wp_circularAppender__logBlocks γ c d
   Z.of_nat (length upds) < LogSz ->
   length addrs = Z.to_nat LogSz ->
   {{{ is_circular γ ∗
-      own γ.(addrs_name) (◯ Excl' addrs) ∗
       own γ.(blocks_name) (◯ Excl' blocks) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs) ∗
@@ -272,14 +271,13 @@ Theorem wp_circularAppender__logBlocks γ c d
     circularAppender__logBlocks #c #d #endpos (slice_val bufs)
   {{{ blocks', RET #();
       let addrs' := update_addrs addrs (int.val endpos) upds in
-      own γ.(addrs_name) (◯ Excl' addrs') ∗
       own γ.(blocks_name) (◯ Excl' blocks') ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
       updates_slice bufs upds
   }}}.
 Proof.
-  iIntros (Hendpos_overflow Hfits_log Haddrs_len Φ) "(#Hcirc & Hγaddrs & Hγblocks & Hdiskaddrs & Hslice & Hupdslice) HΦ".
+  iIntros (Hendpos_overflow Hfits_log Haddrs_len Φ) "(#Hcirc & Hγblocks & Hdiskaddrs & Hslice & Hupdslice) HΦ".
   wp_lam. wp_let. wp_let. wp_let.
   iDestruct "Hupdslice" as (bks) "[Hupdslice Hbks]".
 
@@ -289,14 +287,13 @@ Proof.
 
   wp_apply (wp_forSlice (fun i =>
     ∃ (addrs': list u64) (blocks': list Block),
-      own γ.(addrs_name) (◯ Excl' addrs') ∗
       own γ.(blocks_name) (◯ Excl' blocks') ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
       ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
                                          is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝) ∗
       ⌜addrs' = update_addrs addrs (int.val endpos) (take (int.nat i) upds)⌝)%I
-    with "[] [Hγaddrs Hγblocks Hdiskaddrs Hslice Hupdslice $Hbks]").
+    with "[] [Hγblocks Hdiskaddrs Hslice Hupdslice $Hbks]").
 
   2: {
     iFrame.
@@ -306,7 +303,7 @@ Proof.
 
   2: {
     iIntros "[HI Hs]".
-    iDestruct "HI" as (addrs' blocks') "(?&? & Haddrs&Hblocks&Hupds&->)".
+    iDestruct "HI" as (addrs' blocks') "(?&? & Hblocks&Hupds&->)".
     iApply "HΦ"; iFrame.
     rewrite -> take_ge by lia.
     iFrame.
@@ -315,7 +312,7 @@ Proof.
   }
 
   iIntros (i bk Φₗ) "!> [HI [% %]] HΦ".
-  iDestruct "HI" as (addrs' blocks') "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs&Hbks&->)".
+  iDestruct "HI" as (addrs' blocks') "(Hγblocks&HdiskAddrs&Haddrs&Hbks&->)".
   rewrite list_lookup_fmap in H0.
   apply fmap_Some in H0.
   destruct H0 as [[addr bk_s] [Hbkseq ->]].
@@ -328,7 +325,8 @@ Proof.
   wp_apply wp_DPrintf.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-  wp_apply (wp_Write_fupd with "[$Hi Hγaddrs Hγblocks]").
+  let blocks'' := constr:(<[Z.to_nat ((int.val endpos + int.val i) `mod` LogSz):=b_i]> blocks') in
+  wp_apply (wp_Write_fupd (⊤ ∖ ↑N) (own γ.(blocks_name) (◯ Excl' blocks'')) with "[$Hi Hγblocks]").
   { word_cleanup.
     2: unfold LogSz; auto.
     rewrite wrap_small_log_addr.
@@ -353,9 +351,11 @@ Proof.
             γ.(addrs_name)
                 (update_addrs addrs (int.val endpos)
                               (take (S (int.nat i)) upds)) with "Haddrs_auth Hγaddrs") as "[Haddrs_auth Hγaddrs]". *)
+    iDestruct (ghost_var_agree γ.(blocks_name) with "Hblocks_auth Hγblocks") as %->.
     iMod (ghost_var_update γ.(blocks_name)
-                               (<[Z.to_nat ((int.val endpos + int.val i) `mod` LogSz):=b_i]> blocks'') with "Hblocks_auth Hγblocks") as "[Hblocks_auth Hγblocks]".
-    iApply ("Hclose" with "[-Hγaddrs Hγblocks]").
+                               (<[Z.to_nat ((int.val endpos + int.val i) `mod` LogSz):=b_i]> blocks')
+            with "Hblocks_auth Hγblocks") as "[Hblocks_auth Hγblocks]".
+    iMod ("Hclose" with "[-Hγblocks]").
     { iModIntro.
       iExists _; iFrame "HP".
       iSplitR; first by auto.
@@ -369,8 +369,29 @@ Proof.
       iExists hdr1, hdr2, hdr2extra.
       by iFrame.
     }
+    by iFrame.
   }
-Abort.
+  iIntros "[Hs Hγblocks]".
+  wp_loadField.
+  wp_apply (wp_SliceSet with "[$Haddrs]").
+  { iPureIntro.
+    split; auto.
+    rewrite list_lookup_fmap.
+    apply fmap_is_Some.
+    change (word.divu (word.sub 4096 8) 8) with (U64 511).
+    word_cleanup.
+    apply lookup_lt_is_Some_2; len.
+    admit. }
+  iIntros "Haddrs".
+  iApply "HΦ".
+  change (word.divu (word.sub 4096 8) 8) with (U64 511).
+  word_cleanup.
+  iExists (update_addrs addrs (int.val endpos) (take (Z.to_nat $ int.val i + 1) upds)), _; iFrame.
+  iSplitL "Haddrs".
+  { admit. (* equal *) }
+  iSplitL; auto.
+  admit. (* need to re-fold updates_slice? *)
+Admitted.
 
 Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
   {{{ is_circular γ ∗
@@ -384,6 +405,9 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (
   {{{ RET #(); Q }}}.
 Proof using Ptimeless.
   iIntros (Φ) "(#Hcirc & Hslice & Hca & Hfupd) HΦ".
+  wp_call.
+  iDestruct "Hca" as (bk_s addrs blocks) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
+  wp_apply (wp_circularAppender__logBlocks with "[Hγblocks HdiskAddrs Haddrs $Hslice]").
 Admitted.
 
 Theorem wp_recoverCircular (Q: iProp Σ) d σ γ :
