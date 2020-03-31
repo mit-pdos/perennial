@@ -218,29 +218,6 @@ Proof.
       ++ apply n.
 Qed.
 
-(*
-Theorem disk_at_pos_S: forall pos σ a u,
-    σ.(log_state.updates) !! (int.nat pos) = Some u ->
-    u.(update.addr) ≠ a ->
-    disk_at_pos (int.nat pos) σ !! int.val a =
-    disk_at_pos (S (int.nat pos)) σ !! int.val a.
-Proof.
-  intros.
-  unfold disk_at_pos.
-  erewrite take_S_r; eauto.
-  rewrite apply_upds_app.
-  destruct (decide (u.(update.addr) = a)); subst.
-  + congruence.
-  + unfold apply_upds at 1.
-    simpl.
-    destruct u; subst.
-    rewrite lookup_insert_ne; eauto.
-    simpl in H0.
-    clear n H.
-    intro Hx. apply H0. word.
-Qed.
-*)
-
 Theorem updates_since_to_last_disk σ a (pos : u64) installed :
   disk_at_pos (int.nat pos) σ !! int.val a = Some installed ->
   int.val pos ≤ int.val σ.(log_state.installed_to) ->
@@ -296,22 +273,6 @@ Definition no_updates_since σ a (pos : u64) :=
     int.val pos <= int.val pos' ->
     σ.(log_state.updates) !! int.nat pos' = Some u ->
     u.(update.addr) ≠ a.
-
-Theorem no_updates_since_disks_eq pos σ a :
-  no_updates_since σ a pos ->
-  (forall (pos' : u64),
-      int.val pos' >= int.val pos ->
-      int.val pos' <= length(σ.(log_state.updates)) ->
-      disk_at_pos (int.nat pos) σ !! int.val a = disk_at_pos (int.nat pos') σ !! int.val a).
-Proof.
-  unfold disk_at_pos, no_updates_since in *.
-  generalize σ.(log_state.updates).
-  generalize σ.(log_state.disk).
-  induction l.
-  + admit.
-  + intros.
-    
-Admitted.
 
 Lemma map_eq_cons {A B} (f:A -> B) : forall (l: list A) (l': list B) b,
     map f l = b :: l' -> exists a tl, l = a :: tl /\ b = f a /\ l' = map f tl.
@@ -388,14 +349,102 @@ Proof.
   }
 Qed.
 
+Theorem apply_upds_nil:
+  forall l d,
+    apply_upds [] (apply_upds l d) = apply_upds l d.
+Proof.
+  intros.
+  unfold apply_upds at 1.
+  simpl; eauto.
+Qed.
+
+Theorem apply_no_updates_since (pos: u64) a:
+  forall d l,
+  length l < 2 ^ 64 ->
+  (∀ u (pos': u64),
+         int.val pos ≤ int.val pos' ->
+         l !! int.nat pos' = Some u → u.(update.addr) ≠ a) ->
+  d !! int.val a = apply_upds (drop (int.nat pos) l) d !! int.val a.
+Proof.
+  intros.
+  replace l with (take (int.nat pos) l ++ drop (int.nat pos) l) in H, H0.
+  2: apply firstn_skipn.
+  assert (forall x, x ∈ (drop (int.nat pos) l) -> x.(update.addr) ≠ a).
+  {
+    intros.
+    specialize (H0 x).
+    apply elem_of_list_lookup_1 in H1.
+    destruct H1.
+    specialize (H0 (int.nat pos+x0)).
+    apply H0.
+    {
+      admit.
+    }
+    rewrite firstn_skipn.
+    admit.
+  }
+  generalize dependent (drop (int.nat pos) l).
+  intro.
+  - induction l0.
+    + intros.
+      simpl; eauto.
+    + intros.
+      rewrite apply_upds_cons.
+      rewrite apply_upds_update_ne.
+      2: {
+        apply H1.
+        apply elem_of_list_here.
+      }
+      apply IHl0.
+      -- admit.
+      -- intros. 
+         specialize (H0 u (int.nat pos + 1)).
+         apply H0.
+         1: admit.
+         admit.
+      -- admit.
+Admitted.
+
 Theorem no_updates_since_last_disk σ a (pos : u64) :
+  valid_log_state σ ->
   no_updates_since σ a pos ->
   disk_at_pos (int.nat pos) σ !! int.val a = last_disk σ !! int.val a.
 Proof.
-  intros.
-  unfold no_updates_since, last_disk in *.
-  specialize (H (length σ.(log_state.updates))).
-Admitted.
+  unfold last_disk, no_updates_since, valid_log_state, last_disk, disk_at_pos.
+  generalize (σ.(log_state.updates)).
+  generalize (σ.(log_state.disk)).
+  intros. intuition.
+  clear H H2 H3 H4 H5 H7.
+  destruct (decide (int.nat pos < length l)).
+  2: {
+    rewrite take_ge; last lia.
+    rewrite firstn_all.
+    reflexivity.
+  }
+  replace l with (take (int.nat pos) l ++ drop (int.nat pos) l) at 3.
+  2 : {
+    rewrite firstn_skipn; eauto.
+  }
+  rewrite firstn_app.
+  assert (length (take (int.nat pos) l) = int.nat pos).
+  {
+    rewrite firstn_length_le; eauto.
+    lia.
+  }
+  rewrite H.
+  rewrite apply_upds_app.
+  rewrite firstn_firstn.
+  assert((length l `min` int.nat pos)%nat = int.nat pos) by lia.
+  rewrite H2.
+  assert (take (length l - int.nat pos) (drop (int.nat pos) l) = drop (int.nat pos) l).
+  {
+    rewrite take_ge; eauto.
+    rewrite skipn_length; lia.
+  }
+  rewrite H3.
+  remember ((apply_upds (take (int.nat pos) l) d)).
+  erewrite apply_no_updates_since; eauto.
+Qed.
 
 Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
   int.val pos ≤ int.val diskpos ->

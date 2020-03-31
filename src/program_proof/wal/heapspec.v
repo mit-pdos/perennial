@@ -170,6 +170,7 @@ Proof.
         {
           rewrite <- updates_since_to_last_disk; eauto.
           rewrite no_updates_since_last_disk; auto.
+          apply valid_log_state_advance_installed_to; eauto.
         }
         {
           rewrite no_updates_since_nil; auto.
