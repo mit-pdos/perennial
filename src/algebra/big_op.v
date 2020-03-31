@@ -10,6 +10,18 @@ Local Existing Instances monoid_ne monoid_assoc monoid_comm
 From iris.bi Require Import derived_laws_sbi plainly big_op.
 Import interface.bi derived_laws_bi.bi derived_laws_sbi.bi.
 
+Lemma elem_of_map_list {A B} (l : list A) (f : A -> B) a :
+  a ∈ map f l ->
+  ∃ b, b ∈ l ∧ f b = a.
+Proof.
+  induction l; simpl; intros.
+  - inversion H.
+  - inversion H; subst; intuition.
+    + exists a0; intuition. apply elem_of_list_here.
+    + destruct H0 as [b H0].
+      exists b. intuition.
+      apply elem_of_list_further; eauto.
+Qed.
 
 (* TODO: upstream this *)
 Section big_op.
@@ -146,6 +158,100 @@ Section map2.
   Qed.
 End map2.
 
+Section maplist.
+  Context `{Countable K} {V LV : Type}.
+  Implicit Types Φ : K → V → LV → PROP.
+  Implicit Types m : gmap K V.
+  Implicit Types l : list LV.
+
+  Definition big_sepML Φ m l : PROP :=
+    (∃ lm,
+      ⌜ l ≡ₚ map snd (map_to_list lm) ⌝ ∗
+      [∗ map] k ↦ v;lvm ∈ m;lm, Φ k v lvm)%I.
+
+  Global Instance big_sepML_proper :
+    Proper (pointwise_relation _ (pointwise_relation _ (pointwise_relation _ (⊢)))
+       ==> (=) ==> (Permutation) ==> (⊢))
+           (big_sepML).
+  Proof.
+    intros P0 P1 HP.
+    intros m0 m Hm; subst.
+    intros l0 l1 Hl.
+    iIntros "Hml".
+    iDestruct "Hml" as (lm) "[Hlm Hml]".
+    rewrite Hl.
+    iExists lm; iFrame.
+    iSplitR; first done.
+    iApply big_sepM2_mono; iFrame.
+    iIntros (k v lv ? ?) "H".
+    iApply HP; iFrame.
+  Qed.
+
+  Theorem big_sepML_insert Φ m l k v lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    m !! k = None ->
+    Φ k v lv ∗ big_sepML Φ m l -∗
+    big_sepML Φ (<[k := v]> m) (lv :: l).
+  Proof.
+    iIntros "% [Hp Hml]".
+    iDestruct "Hml" as (lm) "[% Hml]".
+    iDestruct (big_sepM2_lookup_1_none with "Hml") as %Hlmnone; eauto.
+    iExists (<[k := lv]> lm).
+    iSplitR.
+    - iPureIntro.
+      rewrite map_to_list_insert; eauto.
+      rewrite /=.
+      rewrite H2.
+      reflexivity.
+    - iApply big_sepM2_insert; eauto.
+      iFrame.
+  Qed.
+
+  Theorem big_sepML_insert_app Φ m l k v lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    m !! k = None ->
+    Φ k v lv ∗ big_sepML Φ m l -∗
+    big_sepML Φ (<[k := v]> m) (l ++ [lv]).
+  Proof.
+    iIntros "% [Hp Hml]".
+    rewrite -Permutation_cons_append.
+    iApply big_sepML_insert; eauto; iFrame.
+  Qed.
+
+  Theorem big_sepML_delete Φ m l lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    big_sepML Φ m (lv :: l) -∗
+    ∃ k v,
+      ⌜ m !! k = Some v ⌝ ∗
+      Φ k v lv ∗
+      big_sepML Φ (delete k m) l.
+  Proof.
+    iIntros "Hml".
+    iDestruct "Hml" as (lm) "[% Hml]".
+    assert (lv ∈ lv :: l) by apply elem_of_list_here.
+    setoid_rewrite H1 in H2.
+    apply elem_of_map_list in H2. destruct H2 as [[k lv0] H2].
+    simpl in H2; intuition subst.
+    apply elem_of_map_to_list in H3.
+    iDestruct (big_sepM2_lookup_2_some with "Hml") as %[v Hmk]; eauto.
+    iExists _, _.
+    iSplitR; eauto.
+    iDestruct (big_sepM2_delete with "Hml") as "[Hp Hml]"; eauto.
+    iFrame.
+    iExists _.
+    iSplitR; last iFrame.
+    iPureIntro.
+    replace lm with (<[k := lv]> (delete k lm)) in H1.
+    2: {
+      rewrite insert_delete.
+      rewrite insert_id; eauto.
+    }
+    setoid_rewrite map_to_list_insert in H1.
+    2: apply lookup_delete.
+    simpl in H1.
+    apply Permutation.Permutation_cons_inv in H1.
+    done.
+  Qed.
+
+End maplist.
+
 Theorem big_sepL_impl A (f g: nat -> A -> PROP) (l: list A) :
   (forall i x, f i x -∗ g i x) ->
   ([∗ list] i↦x ∈ l, f i x) -∗
@@ -180,3 +286,9 @@ Proof.
 Qed.
 
 End bi_big_op.
+
+Notation "'[∗' 'maplist]' k ↦ x ; v ∈ m ; l , P" :=
+  (big_sepML (λ k x v, P) m l)
+  (at level 200, m, l at level 10, k, x, v at level 1, right associativity,
+   format "[∗  maplist]  k ↦ x ; v  ∈  m ; l ,  P")
+  : bi_scope.
