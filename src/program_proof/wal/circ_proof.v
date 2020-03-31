@@ -4,7 +4,8 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import marshal_proof util_proof.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.Helpers Require Import GenHeap.
+
+From Perennial.algebra Require Import deletable_heap.
 
 From Perennial.Helpers Require Import Transitions.
 Existing Instance r_mbind.
@@ -54,6 +55,7 @@ Section heap.
 Context `{!heapG Σ}.
 Context `{!inG Σ (authR (optionUR (exclR (listO u64O))))}.
 Context `{!inG Σ (authR (optionUR (exclR (listO blockO))))}.
+Context `{!inG Σ fmcounterUR}.
 
 Context (N: namespace).
 Context (P: circΣ.t -> iProp Σ).
@@ -113,10 +115,44 @@ Definition is_circular γ : iProp Σ :=
 
 Definition is_circular_appender γ (circ: loc) : iProp Σ :=
   ∃ s (addrs : list u64) (blocks: list Block),
+    ⌜circ_low_wf addrs blocks⌝ ∗
     own γ.(addrs_name) (◯ (Excl' addrs)) ∗
     own γ.(blocks_name) (◯ (Excl' blocks)) ∗
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
     is_slice_small s uint64T 1 (u64val <$> addrs).
+
+Theorem is_circular_inner_wf γ addrs blocks :
+  own γ.(addrs_name) (◯ Excl' addrs) ∗
+  own γ.(blocks_name) (◯ Excl' blocks) -∗
+  ▷ (∃ σ, is_circular_state γ σ ∗ P σ) -∗
+  ▷ ⌜circ_low_wf addrs blocks⌝.
+Proof.
+  iIntros "[Hγaddrs Hγblocks] Hinv".
+  iNext.
+  iDestruct "Hinv" as (σ) "[[_ His_circ] _]".
+  iDestruct "His_circ" as (addrs' blocks') "(_&Hown&_)".
+  iDestruct "Hown" as "(%&Haddrs&Hblocks)".
+  iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
+  iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
+  auto.
+Qed.
+
+(* hmm, this doesn't seem doable... *)
+Theorem is_circular_appender_wf γ addrs blocks :
+  is_circular γ -∗
+  own γ.(addrs_name) (◯ Excl' addrs) ∗
+  own γ.(blocks_name) (◯ Excl' blocks) -∗
+  |={⊤}=> ▷ ⌜circ_low_wf addrs blocks⌝.
+Proof.
+  iIntros "#Hcirc [Hγaddrs Hγblocks]".
+  iInv "Hcirc" as "Hinv".
+  iModIntro.
+  iDestruct (is_circular_inner_wf with "[$Hγaddrs $Hγblocks] Hinv") as "Hwf".
+  iSplitR.
+  - admit.
+  - iModIntro.
+    iFrame.
+Abort.
 
 Theorem wp_hdr2 (newStart: u64) :
   {{{ True }}}
@@ -139,6 +175,39 @@ Proof.
   rewrite H in H0.
   autorewrite with len in *.
   replace (int.nat 4096) with (Z.to_nat 4096) in H0.
+  rewrite -list_to_block_to_vals; len.
+  iFrame.
+  iExists _; iPureIntro.
+  rewrite list_to_block_to_vals; len.
+  eauto.
+Qed.
+
+Theorem wp_hdr1 (circ: loc) (newStart: u64) s addrs :
+  length addrs = Z.to_nat LogSz ->
+  {{{ circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
+       is_slice_small s uint64T 1 (u64val <$> addrs) }}}
+    circularAppender__hdr1 #circ #newStart
+  {{{ s b, RET slice_val s; is_block s b ∗
+                            ∃ extra,
+                              ⌜Block_to_vals b = b2val <$> encode [EncUInt64 newStart] ++ extra⌝ }}}.
+Proof.
+  iIntros (Haddrlen Φ) "[HdiskAddrs Hs] HΦ".
+  wp_call.
+  wp_apply wp_new_enc.
+  iIntros (enc) "[Henc %]".
+  wp_pures.
+  wp_apply (wp_Enc__PutInt with "Henc"); first by word.
+  iIntros "Henc".
+  wp_loadField.
+  wp_apply (wp_Enc__PutInts with "[$Henc $Hs]"); first by word.
+  iIntros "[Henc Hs]".
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (s') "[Hs' %]".
+  iApply "HΦ".
+  iFrame.
+  rewrite H in H0.
+  autorewrite with len in *.
+  change (int.nat 4096) with (Z.to_nat 4096) in H0.
   rewrite -list_to_block_to_vals; len.
   iFrame.
   iExists _; iPureIntro.
@@ -394,6 +463,16 @@ Proof.
   admit. (* need to re-fold updates_slice? *)
 Admitted.
 
+Theorem update_addrs_length addrs start upds :
+  length (update_addrs addrs start upds) = length addrs.
+Proof.
+  revert addrs start.
+  induction upds; simpl; intros; auto.
+  rewrite IHupds; len.
+Qed.
+
+Hint Rewrite update_addrs_length : len.
+
 Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
   {{{ is_circular γ ∗
       updates_slice bufs upds ∗
@@ -407,8 +486,18 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (
 Proof using Ptimeless.
   iIntros (Φ) "(#Hcirc & Hslice & Hca & Hfupd) HΦ".
   wp_call.
-  iDestruct "Hca" as (bk_s addrs blocks) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
-  wp_apply (wp_circularAppender__logBlocks with "[Hγblocks HdiskAddrs Haddrs $Hslice]").
+  iDestruct "Hca" as (bk_s addrs blocks Hlow_wf) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
+  destruct Hlow_wf as [Hlen1 Hlen2].
+  wp_apply (wp_circularAppender__logBlocks with "[$Hcirc $Hγblocks $HdiskAddrs $Haddrs $Hslice]"); try lia.
+  { admit. }
+  { admit. }
+  iIntros (blocks') "(Hγblocks&HdiskAddrs&Hs&Hupds)".
+  wp_pures.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_apply (wp_hdr1 with "[$HdiskAddrs $Hs]"); first by len.
+  iIntros (s' b) "[Hb %]".
+  wp_pures.
 Admitted.
 
 Theorem wp_recoverCircular (Q: iProp Σ) d σ γ :
