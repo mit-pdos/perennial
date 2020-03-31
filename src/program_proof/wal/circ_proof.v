@@ -11,6 +11,8 @@ Existing Instance r_mbind.
 
 Definition LogSz := 511.
 
+Hint Unfold LogSz : word.
+
 Module circΣ.
   Record t :=
     mk { upds: list update.t;
@@ -328,7 +330,6 @@ Proof.
   let blocks'' := constr:(<[Z.to_nat ((int.val endpos + int.val i) `mod` LogSz):=b_i]> blocks') in
   wp_apply (wp_Write_fupd (⊤ ∖ ↑N) (own γ.(blocks_name) (◯ Excl' blocks'')) with "[$Hi Hγblocks]").
   { word_cleanup.
-    2: unfold LogSz; auto.
     rewrite wrap_small_log_addr.
     word_cleanup.
 

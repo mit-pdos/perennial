@@ -455,16 +455,22 @@ Proof.
   reflexivity.
 Qed.
 
+Create HintDb word.
+
 Ltac word_cleanup :=
+  autounfold with word in *;
   try match goal with
       | |- @eq u64 _ _ => apply word.unsigned_inj
       | |- @eq u32 _ _ => apply word.unsigned_inj
       | |- @eq u8 _ _ => apply word.unsigned_inj
       end;
+  (* can't replace this with [autorewrite], probably because typeclass inference
+  isn't the same *)
   rewrite ?word.unsigned_add, ?word.unsigned_sub,
   ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
   ?unsigned_U64_0, ?unsigned_U32_0,
   ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
+  try autorewrite with word;
   repeat match goal with
          | [ H: context[word.unsigned (U64 (Zpos ?x))] |- _ ] => change (int.val (Zpos x)) with (Zpos x) in *
          | [ |- context[word.unsigned (U64 (Zpos ?x))] ] => change (int.val (Zpos x)) with (Zpos x)
