@@ -1317,6 +1317,11 @@ Lemma ExternalOp_fill_item_inv Ki o e1 e2:
   e1 = e2.
 Proof. destruct Ki => //=; congruence. Qed.
 
+Lemma Panic_fill_item_inv Ki msg e:
+  Primitive0 (PanicOp msg) = fill_item Ki e →
+  False.
+Proof. destruct Ki => //=. Qed.
+
 Lemma ExternalOp_sub_redexes o e:
   is_Some (to_val e) →
   sub_redexes_are_values (ExternalOp o e).
@@ -1332,6 +1337,16 @@ Lemma stuck_ExternalOp σ o e:
 Proof.
   intros Hval Hirred. split; first done.
   apply prim_head_irreducible; auto. apply ExternalOp_sub_redexes; eauto.
+Qed.
+
+Lemma stuck_Panic σ msg:
+  stuck (Primitive0 (PanicOp msg)) σ.
+Proof.
+  split; first done.
+  apply prim_head_irreducible; auto.
+  * inversion 1; eauto.
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    apply Panic_fill_item_inv in Heq; subst; auto; by exfalso.
 Qed.
 
 End goose_lang.

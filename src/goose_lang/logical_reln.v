@@ -374,8 +374,40 @@ Proof using spec_op_trans.
       iApply (wpc_mono with "H"); eauto.
     }
     iSplit; first eauto. iNext. iExists _; iFrame; eauto.
-  - admit.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) cond').
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [IfCtx _ _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+
+    iIntros (vcond) "H". iDestruct "H" as (vscond) "(Hj&Hvcond)".
+    (* split on the value of the bool *)
+    iDestruct "Hvcond" as %(b&->&->).
+    destruct b.
+    * wpc_pures; first done. simpl.
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step. econstructor; eauto.
+      }
+      iApply (IHHtyping2 with "[//] [$] [$] [$] [$]"). eauto.
+    * wpc_pures; first done. simpl.
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step. econstructor; eauto.
+      }
+      iApply (IHHtyping3 with "[//] [$] [$] [$] [$]"). eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iMod (ghost_step_stuck_det with "Hj []") as %[]; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros; eapply stuck_Panic. }
   - admit.
   - admit.
   - admit.
@@ -413,6 +445,7 @@ Proof using spec_op_trans.
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iPoseProof (Hrules with "[$] [$] [$] [] Hj") as "H"; eauto.
+  (* Values *)
   - admit.
   - admit.
   - admit.

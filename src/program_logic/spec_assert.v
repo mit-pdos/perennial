@@ -437,6 +437,30 @@ Section ghost_step.
     by eapply elem_of_list_lookup_2.
   Qed.
 
+  Lemma ghost_step_stuck_det E j K `{LanguageCtx Λ K} e:
+    (∀ σ, stuck e σ) →
+    nclose sN_inv ⊆ E →
+    j ⤇ K e -∗ source_ctx ={E}=∗ False.
+  Proof.
+    iIntros (Hstuck ?) "Hj Hctx".
+    assert (∀ σ, stuck (K e) σ) as Hstuck'.
+    { intros σ. edestruct Hstuck as (?&?). split.
+      - apply fill_not_val; auto.
+      - apply irreducible_fill; eauto.
+    }
+    clear Hstuck.
+    rewrite /source_ctx/source_inv.
+    iDestruct "Hctx" as (? ρ) "#Hctx".
+    iInv "Hctx" as (? tp' σ') ">[Hauth Hpure]" "Hclose".
+    iDestruct "Hpure" as %(Hstep&Hnoerr).
+    iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
+    subst.
+    exfalso. rewrite /crash_safe in Hnoerr.
+    eapply not_not_stuck in Hstuck'.
+    eapply Hstuck', Hnoerr; eauto.
+    by eapply elem_of_list_lookup_2.
+  Qed.
+
   Lemma ghost_step_lifting_puredet E j K `{LanguageCtx Λ K} e1 e2 efs:
     (∀ σ1, ∃ κ, language.prim_step e1 σ1 κ e2 σ1 efs) →
     nclose sN_inv ⊆ E →
