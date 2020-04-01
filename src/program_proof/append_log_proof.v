@@ -294,7 +294,7 @@ Proof.
   len.
   rewrite Nat.min_l; last lia.
   replace (i - i)%nat with 0%nat by lia.
-  rewrite drop_insert; last lia.
+  rewrite drop_insert_gt; last lia.
   replace (i + 1)%nat with (S i) at 1 by lia.
   erewrite take_S_r; eauto.
   rewrite insert_0_drop; last len.
@@ -500,7 +500,7 @@ Proof.
         word_cleanup.
         replace (int.val off + int.val i - int.val off) with (int.val i) by lia.
         erewrite list_copy_new; eauto.
-        rewrite drop_insert; last lia.
+        rewrite drop_insert_gt; last lia.
         rewrite Z2Nat.inj_add; [ | word | word ].
         iApply "HΦ'"; iFrame.
 Qed.

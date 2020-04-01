@@ -393,7 +393,7 @@ Section ghost_step.
       - f_equal. rewrite app_comm_cons assoc; f_equal.
         erewrite <-take_drop_middle at 1; f_equal.
         { apply take_insert; reflexivity. }
-        { f_equal. apply drop_insert; lia. }
+        { f_equal. apply drop_insert_gt; lia. }
         rewrite list_lookup_insert //=.
         apply lookup_lt_is_Some_1; eauto.
       }
@@ -466,7 +466,7 @@ Section ghost_step.
       - f_equal. rewrite app_comm_cons assoc; f_equal.
         erewrite <-take_drop_middle at 1; f_equal.
         { apply take_insert; reflexivity. }
-        { f_equal. apply drop_insert; lia. }
+        { f_equal. apply drop_insert_gt; lia. }
         rewrite list_lookup_insert //=.
         apply lookup_lt_is_Some_1; eauto.
       }

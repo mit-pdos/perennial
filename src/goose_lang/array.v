@@ -120,7 +120,7 @@ Proof.
   rewrite -[in (l ↦∗[_]{_} <[off:=w]> vs)%I](take_drop_middle (<[off:=w]> vs) off w Hlookup).
   iApply array_app. rewrite take_insert; last by lia. iFrame.
   iApply array_cons. rewrite take_length min_l; last by lia. iFrame.
-  rewrite drop_insert; last by lia. done.
+  rewrite drop_insert_gt; last by lia. done.
 Qed.
 
 Lemma update_array {l vs off t v} :
