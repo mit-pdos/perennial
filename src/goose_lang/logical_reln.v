@@ -269,18 +269,31 @@ Proof.
   rewrite ?fmap_insert //=.
 Qed.
 
+Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
+    val_typing_ind := Induction for val_transTy Sort Prop.
+
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
   ∀ Γ es e τ, expr_transTy _ _ _ spec_op_trans Γ es e τ →
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
     ⊢ ctx_has_semTy (hS := hS) Γ es e τ.
 Proof using spec_op_trans.
-  iIntros (Hrules ???? Htyping ??????).
-  induction Htyping; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx".
+  iIntros (Hrules ???? Htyping).
+  induction Htyping using @expr_typing_ind with
+      (spec_op_trans := spec_op_trans)
+      (P := (λ Γ es e τ
+             (HTYPE: expr_transTy _ _ _ spec_op_trans Γ es e τ),
+             forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+               ⊢ ctx_has_semTy (hS := hS) Γ es e τ))
+      (P0 := (λ Γ vs v τ
+             (HTYPE: val_transTy _ _ _ spec_op_trans Γ vs v τ),
+             forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+               ⊢ ctx_has_semTy (hS := hS) Γ vs v τ));
+    intros ??????; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx".
   (* Variables *)
   - subst.
-    rewrite lookup_fmap in H.
-    apply fmap_Some_1 in H as (t'&?&?). subst.
+    rewrite lookup_fmap in e.
+    apply fmap_Some_1 in e as (t'&?&?). subst.
     iDestruct (big_sepM_lookup with "Hctx") as "H"; first eauto.
     rewrite /= ?lookup_fmap H //=.
     iIntros (j K Hctx) "Hj". iApply wpc_value; iSplit.
@@ -304,10 +317,7 @@ Proof using spec_op_trans.
     simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
     iApply ("Hinterp" with "[$]").
     { iFrame. }
-  - (* XXX: something needs to be said about the val translation, but we
-       were debating dropping val typing for external layers? *)
-    admit.
-  (* Function abstraction *)
+  - iApply (IHHtyping with "[//] [$] [$] [$] [$]").
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
@@ -403,6 +413,12 @@ Proof using spec_op_trans.
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iPoseProof (Hrules with "[$] [$] [$] [] Hj") as "H"; eauto.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
 Admitted.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
