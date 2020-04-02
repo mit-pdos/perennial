@@ -591,7 +591,8 @@ Proof.
                         let remaining_xs: list u64 := drop num xs in
                         is_dec dec ((EncUInt64 <$> remaining_xs) ++ vs) ∗
                                ∃ s, l ↦[slice.T uint64T] (slice_val s) ∗
-                                    is_slice s uint64T 1%Qp (u64val <$> done_xs))%I with "[] [Hdec Hl Hli]").
+                                    is_slice s uint64T 1%Qp (u64val <$> done_xs))%I _ _ 0 with "[] [Hdec Hl Hli]").
+  - word.
   - iIntros (i) "!>".
     clear Φ.
     iIntros (Φ) "([Hdec Hpre] & Hli & %) HΦ".

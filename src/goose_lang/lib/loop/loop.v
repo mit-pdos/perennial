@@ -85,17 +85,18 @@ Proof.
     iApply "Hr".
 Qed.
 
-Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (max:u64) (l:loc) (body: val) :
+Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (start max:u64) (l:loc) (body: val) :
+  int.val start <= int.val max ->
   (∀ (i:u64),
       {{{ I i ∗ l ↦ #i ∗ ⌜int.val i < int.val max⌝ }}}
         body #() @ stk; E
       {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦ #i }}}) -∗
-  {{{ I 0 ∗ l ↦ #0 }}}
+  {{{ I start ∗ l ↦ #start }}}
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
        body) @ stk; E
   {{{ RET #(); I max ∗ l ↦ #max }}}.
 Proof.
-  iIntros "#Hbody".
+  iIntros (Hstart_max) "#Hbody".
   iIntros (Φ) "!> (H0 & Hl) HΦ".
   rewrite /For /Continue.
   wp_lam.
@@ -105,9 +106,9 @@ Proof.
   match goal with
   | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
   end.
-  remember (U64 0) as x.
-  assert (0 <= int.val x <= int.val max) as Hbounds by (subst; word).
-  clear Heqx.
+  remember start as x.
+  assert (int.val start <= int.val x <= int.val max) as Hbounds by (subst; word).
+  clear Heqx Hstart_max.
   iDestruct "H0" as "HIx".
   iLöb as "IH" forall (x Hbounds).
   wp_pures.
@@ -132,17 +133,18 @@ Qed.
 
 Local Opaque load_ty store_ty.
 
-Theorem wp_forUpto' (I: u64 -> iProp Σ) stk E (max:u64) (l:loc) (body: val) :
+Theorem wp_forUpto' (I: u64 -> iProp Σ) stk E (start max:u64) (l:loc) (body: val) :
+  int.val start <= int.val max ->
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.val i < int.val max⌝ }}}
         body #() @ stk; E
       {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦[uint64T] #i }}}) -∗
-  {{{ I 0 ∗ l ↦[uint64T] #0 }}}
+  {{{ I start ∗ l ↦[uint64T] #start }}}
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
        body) @ stk; E
   {{{ RET #(); I max ∗ l ↦[uint64T] #max }}}.
 Proof.
-  iIntros "#Hbody".
+  iIntros (Hstart_max) "#Hbody".
   iIntros (Φ) "!> (H0 & Hl) HΦ".
   rewrite /For /Continue.
   wp_lam.
@@ -152,9 +154,9 @@ Proof.
   match goal with
   | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
   end.
-  remember (U64 0) as x.
-  assert (0 <= int.val x <= int.val max) as Hbounds by (subst; word).
-  clear Heqx.
+  remember start as x.
+  assert (int.val start <= int.val x <= int.val max) as Hbounds by (subst; word).
+  clear Heqx Hstart_max.
   iDestruct "H0" as "HIx".
   iLöb as "IH" forall (x Hbounds).
   wp_pures.
