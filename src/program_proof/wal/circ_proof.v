@@ -335,13 +335,60 @@ Proof.
   word.
 Qed.
 
+Lemma mod_add_modulus a k :
+  k ≠ 0 ->
+  a `mod` k = (a + k) `mod` k.
+Proof.
+  intros.
+  rewrite -> Z.add_mod by auto.
+  rewrite -> Z.mod_same by auto.
+  rewrite Z.add_0_r.
+  rewrite -> Z.mod_mod by auto.
+  auto.
+Qed.
+
+Lemma mod_sub_modulus a k :
+  k ≠ 0 ->
+  a `mod` k = (a - k) `mod` k.
+Proof.
+  intros.
+  rewrite -> Zminus_mod by auto.
+  rewrite -> Z.mod_same by auto.
+  rewrite Z.sub_0_r.
+  rewrite -> Z.mod_mod by auto.
+  auto.
+Qed.
+
+Theorem mod_neq_lt a b k :
+  0 < k ->
+  0 <= a < b ->
+  b - a < k ->
+  a `mod` k ≠ b `mod` k.
+Proof.
+  intros.
+  assert (k ≠ 0) by lia.
+  replace b with (a + (b - a)) by lia.
+  assert (0 < b - a) by lia.
+  generalize dependent (b - a); intros d **.
+  intros ?.
+  assert ((a + d) `mod` k - a `mod` k = 0) by lia.
+  assert (((a + d) `mod` k - a `mod` k) `mod` k = 0).
+  { rewrite H5.
+    rewrite Z.mod_0_l; lia. }
+  rewrite -Zminus_mod in H6.
+  replace (a + d - a) with d in H6 by lia.
+  rewrite -> Z.mod_small in H6 by lia.
+  lia.
+Qed.
+
 Theorem mod_neq_gt a b k :
   0 < k ->
   0 <= a < b ->
   b - a < k ->
   b `mod` k ≠ a `mod` k.
 Proof.
-Admitted.
+  intros ** Heq%eq_sym%mod_neq_lt; lia.
+Qed.
 
 Theorem Zto_nat_neq_inj z1 z2 :
   0 <= z1 ->
@@ -357,18 +404,20 @@ Lemma has_circ_updates_blocks σ addrs blocks (i : u64) bi :
   has_circ_updates σ addrs blocks ->
   has_circ_updates σ addrs (<[Z.to_nat ((circΣ.diskEnd σ + int.val i) `mod` LogSz) := bi]> blocks).
 Proof.
-  rewrite /has_circ_updates; intros.
-  assert (0 ≤ i0 < length (upds σ)) by admit.
+  rewrite /has_circ_updates; intros Hbound Hhas_upds i0 u **.
+  assert (0 ≤ i0 < length (upds σ)).
+  { apply lookup_lt_Some in H.
+    word. }
   intuition.
-  { apply H0; eauto. }
+  { apply Hhas_upds; eauto. }
   rewrite list_lookup_insert_ne.
-  { apply H0; eauto. }
+  { apply Hhas_upds; eauto. }
   rewrite /circΣ.diskEnd.
-  apply Zto_nat_neq_inj; try word.
-  { admit. }
-  { admit. }
-  apply mod_neq_gt; try word.
-Admitted.
+  apply Zto_nat_neq_inj; match goal with
+                        | |- context[?x `mod` ?m] => pose proof (Z.mod_bound_pos x m)
+                         end; try word.
+  apply mod_neq_gt; word.
+Qed.
 
 Lemma circ_low_wf_blocks addrs blocks (i : nat) bi :
   circ_low_wf addrs blocks ->
