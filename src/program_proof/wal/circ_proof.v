@@ -364,7 +364,7 @@ Proof.
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
       ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
                                          is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝) ∗
-      ⌜addrs' = update_addrs addrs (int.val endpos) (take (int.nat i) upds)⌝)
+      ⌜addrs' = update_addrs addrs (int.val endpos) (take (int.nat i) upds)⌝)%I
     with "[] [Hγblocks Hdiskaddrs Hslice Hupdslice $Hbks]").
 
   2: {
