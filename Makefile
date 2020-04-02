@@ -85,6 +85,7 @@ endif
 .PHONY: skip-qed unskip-qed ci
 
 SLOW_QED_FILES := src/program_logic/crash_weakestpre.v\
+	src/program_logic/staged_invariant.v\
 	src/program_logic/crash_adequacy.v\
 	src/program_logic/recovery_adequacy.v\
 	src/program_logic/crash_inv.v\
