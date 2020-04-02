@@ -446,13 +446,66 @@ Proof.
   erewrite apply_no_updates_since; eauto.
 Qed.
 
+Theorem apply_upds_until_pos d (pos: u64):
+  forall l a b,
+    apply_upds (take (int.nat pos) l) d !! int.val a = Some b ->
+    (exists u, drop (int.nat pos) l !! 0%nat = Some u /\ u.(update.addr) = a /\ u.(update.b) = b).
+Proof.
+Admitted.
+  
+Theorem drop_lookup_gt (A: Type) (pos: u64):
+  forall (l: list A) (pos' : u64) e,
+      int.val pos < int.val pos' ->
+      (drop (int.nat pos') l) !! 0%nat = Some e ->
+      e ∈ (drop (int.nat pos) l).
+Proof.
+Admitted.
+                                                          
+
 Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
   int.val pos ≤ int.val diskpos ->
   disk_at_pos (int.nat pos) σ !! int.val a = Some installedb ->
   disk_at_pos (int.nat diskpos) σ !! int.val a = Some b ->
   b ∈ installedb :: updates_since pos a σ.
 Proof.
+  unfold updates_since, disk_at_pos in *.
+  generalize (σ.(log_state.updates)).
+  generalize (σ.(log_state.disk)).
+  intros.
+    
+  destruct (decide (pos = diskpos)).
+  {
+    rewrite <- e in *.
+    rewrite H0 in H1.
+    inversion H1.
+    apply elem_of_list_here.
+  }
+  apply apply_upds_until_pos in H0.
+  destruct H0.
+  apply apply_upds_until_pos in H1.
+  destruct H1.
+  intuition.
+
+  assert (x0 ∈ (drop (int.nat pos) l)).
+  {
+    eapply drop_lookup_gt; eauto.
+    admit.
+  }
+  apply elem_of_list_In in H4.
+  rewrite elem_of_list_In.
+  assert (In b (map update.b (filter (λ u : update.t, u.(update.addr) = a) (drop (int.nat pos) l)))).
+  {
+    rewrite in_map_iff.
+    exists x0; eauto.
+    split; eauto.
+    rewrite <- elem_of_list_In.
+    rewrite elem_of_list_filter.
+    split; eauto.
+    rewrite elem_of_list_In; eauto.
+  }
+  apply in_cons; eauto.
 Admitted.
+
 
 Theorem latest_update_take_some installed bs pos v :
   (installed :: bs) !! pos = Some v ->
