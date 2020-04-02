@@ -537,7 +537,7 @@ Proof.
       is_slice_small diskaddrslice uint64T 1 (u64val <$> (update.addr <$> updarray')) ∗
       ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
                                          is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝) ∗
-      ⌜updarray' = apply_update_blocks updarray (int.val endpos) (take (int.nat i) upds)⌝)%I
+      ⌜updarray' = apply_update_blocks updarray (int.val endpos) (take (int.nat i) upds)⌝)
     with "[] [Hγ Hdiskaddrs Hslice Hupdslice $Hbks]").
 
   2: {

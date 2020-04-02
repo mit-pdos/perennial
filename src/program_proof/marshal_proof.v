@@ -283,7 +283,7 @@ Proof.
   wp_pures.
   wp_apply (wp_forSlice (λ i, is_enc enc
                                      (vs ++ (EncUInt64 <$> take (int.nat i) xs))
-                                     (free - (8*int.val i)))%I
+                                     (free - (8*int.val i)))
               with "[] [Henc $Hs]").
   - iIntros (i x) "!>".
     clear Φ.
