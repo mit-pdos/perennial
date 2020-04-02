@@ -18,7 +18,6 @@ From Perennial.program_proof Require
      (* temporarily disabled while wal abstraction is in flux *)
      (* wal.proof *)
      wal.specs
-     wal.circular_proof
      wal.circ_proof (* started over on circular_proof *)
      txn.specs.
 From Perennial.goose_lang Require

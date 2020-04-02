@@ -4,7 +4,7 @@ Import RecordSetNotations.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import Transitions.
-From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.circular_proof.
+From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.circ_proof.
 
 Instance gen_gmap_entry {Σ K} `{Countable K} {V} (m: gmap K V) :
   GenPred (K*V) Σ (fun _ '(k, v) => m !! k = Some v).
@@ -498,7 +498,7 @@ Fixpoint absorb_map upds m: gmap u64 Block :=
 
 Definition log_mem_append (upds: list update.t): transition log_state.t u64 :=
   logged ← reads logged_upds;
-  assert (fun σ => length (logged ++ upds) <= circular_proof.LogSz);;
+  assert (fun σ => length (logged ++ upds) <= circ_proof.LogSz);;
   unstable ← reads unstable_upds;
   stable ← reads stable_upds;
   updates ← reads get_updates;
