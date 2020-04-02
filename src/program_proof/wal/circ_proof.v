@@ -188,8 +188,7 @@ Theorem wp_hdr1 (circ: loc) (newStart: u64) s addrs :
        is_slice_small s uint64T 1 (u64val <$> addrs) }}}
     circularAppender__hdr1 #circ #newStart
   {{{ s b, RET slice_val s; is_block s b ∗
-                            ∃ extra,
-                              ⌜Block_to_vals b = b2val <$> encode [EncUInt64 newStart] ++ extra⌝ }}}.
+                                     ⌜Block_to_vals b = b2val <$> encode ([EncUInt64 newStart] ++ (EncUInt64 <$> addrs))⌝ }}}.
 Proof.
   iIntros (Haddrlen Φ) "[HdiskAddrs Hs] HΦ".
   wp_call.
@@ -210,9 +209,11 @@ Proof.
   change (int.nat 4096) with (Z.to_nat 4096) in H0.
   rewrite -list_to_block_to_vals; len.
   iFrame.
-  iExists _; iPureIntro.
+  iPureIntro.
   rewrite list_to_block_to_vals; len.
-  eauto.
+  replace (Z.to_nat (int.val 4096 - 8 - 8 * length addrs)) with 0%nat by word.
+  rewrite replicate_0.
+  rewrite -app_assoc app_nil_r //.
 Qed.
 
 Lemma circ_wf_advance:
@@ -486,18 +487,68 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (
 Proof using Ptimeless.
   iIntros (Φ) "(#Hcirc & Hslice & Hca & Hfupd) HΦ".
   wp_call.
-  iDestruct "Hca" as (bk_s addrs blocks Hlow_wf) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
+  iDestruct "Hca" as (bk_s addrs blocks' Hlow_wf) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
   destruct Hlow_wf as [Hlen1 Hlen2].
   wp_apply (wp_circularAppender__logBlocks with "[$Hcirc $Hγblocks $HdiskAddrs $Haddrs $Hslice]"); try lia.
   { admit. }
   { admit. }
-  iIntros (blocks') "(Hγblocks&HdiskAddrs&Hs&Hupds)".
+  iIntros (blocks) "(Hγblocks&HdiskAddrs&Hs&Hupds)".
   wp_pures.
   wp_apply wp_slice_len.
   wp_pures.
   wp_apply (wp_hdr1 with "[$HdiskAddrs $Hs]"); first by len.
   iIntros (s' b) "[Hb %]".
   wp_pures.
+
+  wp_apply (wp_Write_fupd _ Q with "[Hb Hγblocks Hγaddrs Hfupd]").
+  {
+    iDestruct (is_slice_small_sz with "Hb") as %Hslen.
+    rewrite fmap_length in Hslen.
+
+    iFrame "Hb".
+
+    iInv N as ">Hcircopen" "Hclose".
+    iDestruct "Hcircopen" as (σ) "[[% Hcs] HP]".
+    iDestruct "Hcs" as (addrs0 blocks0 Hupds) "[Hown Hlow]".
+    iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
+    iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
+    iExists _. iFrame.
+    iModIntro.
+    iIntros "Hd0".
+
+    iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
+    iMod (ghost_var_update γ.(addrs_name) addrs with "Haddrs Hγaddrs") as "[Haddrs Hγaddrs]".
+
+    iDestruct ("Hfupd" with "HP") as "[Hex Hfupd]".
+    iDestruct "Hex" as (eσ' eb) "Hex".
+    iDestruct "Hex" as %Hex.
+
+    iSpecialize ("Hfupd" $! eσ' eb).
+    simpl in Hex. monad_inv.
+
+    iDestruct ("Hfupd" with "[]") as "Hfupd".
+    { iPureIntro. repeat econstructor; lia. }
+
+    iMod "Hfupd" as "[HP HQ]". iFrame.
+    iApply "Hclose".
+
+    iNext. iExists _. iFrame.
+    destruct σ. rewrite /=.
+    iSplitR.
+    { iPureIntro.
+      admit. (* circ_wf preserved *) }
+    iExists _, _; iFrame "Haddrs Hblocks".
+    iSplitR.
+    { iPureIntro.
+      admit. (* has_circ_updates preserved *) }
+    iSplitR.
+    { iPureIntro.
+      admit. (* circ_low_wf preserved *) }
+    admit. (* re-prove is_low_state *)
+  }
+  iIntros "[_ HQ]".
+  wp_apply wp_Barrier.
+  iApply ("HΦ" with "HQ").
 Admitted.
 
 Theorem wp_recoverCircular (Q: iProp Σ) d σ γ :
