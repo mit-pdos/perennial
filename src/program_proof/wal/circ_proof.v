@@ -806,6 +806,58 @@ Theorem wp_recoverCircular (Q: iProp Σ) d σ γ :
       ⌜σ.(circΣ.upds) = upds⌝
   }}}.
 Proof.
-Abort.
+  iIntros (Φ) "Hcs HΦ".
+
+Opaque struct.t.
+  wp_call.
+
+  iDestruct "Hcs" as (addrs0 blocks0 Hupds) "(% & Hown & Hlow)".
+  iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
+  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
+  wp_apply (wp_Read with "[Hd0]").
+  { iFrame. }
+  iIntros (s0) "[Hd0 Hs0]".
+  wp_pures.
+  wp_apply (wp_NewDec _ _ _ _ nil with "[Hs0]").
+  { iApply is_slice_to_small.
+    rewrite Hhdr1. rewrite app_nil_r. iFrame. }
+  iIntros (dec0) "[Hdec0 %]".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec0"); iIntros "Hdec0".
+  wp_pures.
+  wp_apply (wp_Dec__GetInts _ _ _ _ _ nil with "[Hdec0]").
+  { rewrite app_nil_r. iFrame.
+    change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
+    unfold circ_low_wf in Hlow_wf; intuition.
+  }
+  iIntros (addrs) "[Hdec0 Hdiskaddrs]".
+  wp_pures.
+
+  wp_apply (wp_Read with "[Hd1]").
+  { iFrame. }
+  iIntros (s1) "[Hd1 Hs1]".
+  wp_pures.
+  wp_apply (wp_NewDec with "[Hs1]").
+  { iApply is_slice_to_small.
+    rewrite Hhdr2. iFrame. }
+  iIntros (dec1) "[Hdec1 %]".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec1"); iIntros "Hdec1".
+  wp_pures.
+
+  wp_apply wp_ref_of_zero; eauto.
+  iIntros (bufsloc) "Hbufsloc".
+  wp_pures.
+
+  wp_apply wp_ref_to; eauto.
+  iIntros (pos) "Hpos".
+
+  wp_pures.
+  wp_apply (wp_forUpto (fun i =>
+    ∃ bufSlice,
+      bufsloc ↦[slice.T (struct.t Update.S)] (slice_val bufSlice) ∗
+      updates_slice bufSlice (take (int.nat i) σ.(upds))
+    )%I with "[] [Hbufsloc Hpos]").
+Admitted.
 
 End heap.
