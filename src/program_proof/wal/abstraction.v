@@ -51,7 +51,7 @@ Definition is_block (s:Slice.t) (b:Block) :=
   is_slice_small s byteT 1 (Block_to_vals b).
 
 Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
-  ∃ bks, is_slice_small bk_s (struct.t Update.S) 1 (update_val <$> bks) ∗
+  ∃ bks, is_slice bk_s (struct.t Update.S) 1 (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
                                      is_block (snd b_upd) b ∗
                                      ⌜fst b_upd = a⌝.
@@ -61,7 +61,7 @@ Lemma updates_slice_len bk_s bs :
 Proof.
   iIntros "Hupds".
   iDestruct "Hupds" as (bks) "[Hbs Hbks]".
-  iDestruct (is_slice_small_sz with "Hbs") as %Hbs_sz.
+  iDestruct (is_slice_sz with "Hbs") as %Hbs_sz.
   iDestruct (big_sepL2_length with "Hbks") as %Hbks_len.
   rewrite fmap_length in Hbs_sz.
   iPureIntro.
