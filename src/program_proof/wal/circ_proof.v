@@ -312,17 +312,17 @@ Proof using Ptimeless.
   iApply ("HΦ" with "HQ").
 Qed.
 
-Fixpoint update_addrs (addrs: list u64) (start: Z) (upds: list update.t): list u64 :=
+Fixpoint update_list_circ {A B} (f: B -> A) (xs: list A) (start: Z) (upds: list B): list A :=
   match upds with
- | nil => addrs
- | u::upds => update_addrs (<[Z.to_nat (start `mod` LogSz) := u.(update.addr) ]> addrs) (start + 1) upds
+ | nil => xs
+ | u::upds => update_list_circ f (<[Z.to_nat (start `mod` LogSz) := f u]> xs) (start + 1) upds
   end.
 
-Fixpoint update_blocks (blocks: list Block) (start: Z) (upds: list update.t): list Block :=
-  match upds with
- | nil => blocks
- | u::upds => update_blocks (<[Z.to_nat (start `mod` LogSz) := u.(update.b) ]> blocks) (start + 1) upds
-  end.
+Definition update_addrs (addrs: list u64) : Z -> list update.t -> list u64 :=
+  update_list_circ (update.addr) addrs.
+
+Definition update_blocks (blocks: list Block) : Z -> list update.t -> list Block :=
+  update_list_circ (update.b) blocks.
 
 Ltac mod_bound :=
   (* TODO: repeat *)
@@ -432,21 +432,21 @@ Proof.
   rewrite /circ_low_wf; len.
 Qed.
 
-Theorem update_addrs_length addrs start upds :
-  length (update_addrs addrs start upds) = length addrs.
+Theorem update_list_circ_length {A B} (f: A -> B) xs start upds :
+  length (update_list_circ f xs start upds) = length xs.
 Proof.
-  revert addrs start.
+  revert xs start.
   induction upds; simpl; intros; auto.
   rewrite IHupds; len.
 Qed.
 
+Theorem update_addrs_length addrs start upds :
+  length (update_addrs addrs start upds) = length addrs.
+Proof. apply update_list_circ_length. Qed.
+
 Theorem update_blocks_length blocks start upds :
   length (update_blocks blocks start upds) = length blocks.
-Proof.
-  revert blocks start.
-  induction upds; simpl; intros; auto.
-  rewrite IHupds; len.
-Qed.
+Proof. apply update_list_circ_length. Qed.
 
 Hint Rewrite update_addrs_length : len.
 Hint Rewrite update_blocks_length : len.
@@ -456,6 +456,7 @@ Lemma update_blocks_S :
   update_blocks blocks endpos (upds ++ [ {| update.addr := addr_i; update.b := b_i |} ]) =
   <[Z.to_nat ((endpos + length upds) `mod` 511) := b_i]> (update_blocks blocks endpos upds).
 Proof.
+  rewrite /update_blocks.
   induction upds; simpl; intros.
   - f_equal. f_equal. f_equal. lia.
   - rewrite IHupds. f_equal. f_equal. f_equal. lia.
@@ -480,6 +481,7 @@ Lemma update_addrs_S :
   update_addrs addrs endpos (upds ++ [ {| update.addr := addr_i; update.b := b_i |} ]) =
   <[Z.to_nat ((endpos + length upds) `mod` 511) := addr_i]> (update_addrs addrs endpos upds).
 Proof.
+  rewrite /update_addrs.
   induction upds; simpl; intros.
   - f_equal. f_equal. f_equal. lia.
   - rewrite IHupds. f_equal. f_equal. f_equal. lia.
@@ -686,9 +688,49 @@ Proof.
   rewrite /circ_wf /circΣ.diskEnd /=; len.
 Qed.
 
+Theorem lookup_update_circ_old {A B} (f: A -> B) xs (endpos: Z) upds i :
+  0 <= i < endpos ->
+  endpos - i + length upds <= LogSz ->
+  update_list_circ f xs endpos upds
+  !! Z.to_nat (i `mod` LogSz) =
+  xs !! Z.to_nat (i `mod` LogSz).
+Proof.
+  revert xs endpos i.
+  induction upds; simpl; intros; auto.
+  rewrite -> IHupds by word.
+  rewrite list_lookup_insert_ne; auto.
+  apply Zto_nat_neq_inj; try (mod_bound; word).
+  apply mod_neq_gt; try word.
+Qed.
+
+Theorem lookup_update_circ_new {A B} (f: A -> B) xs (endpos: Z) upds i :
+  0 <= endpos ->
+  length upds <= LogSz ->
+  endpos <= i < endpos + length upds ->
+  length xs = Z.to_nat LogSz ->
+  update_list_circ f xs endpos upds
+  !! Z.to_nat (i `mod` LogSz) =
+  f <$> upds !! Z.to_nat (i - endpos).
+Proof.
+  revert xs endpos i.
+  induction upds; simpl; intros; auto.
+  { lia. }
+  destruct (decide (i = endpos)); subst.
+  - rewrite lookup_update_circ_old; try lia.
+    rewrite -> list_lookup_insert by (mod_bound; lia).
+    replace (Z.to_nat (endpos - endpos)) with 0%nat by lia.
+    auto.
+  - rewrite -> IHupds by len.
+    f_equal.
+    replace (Z.to_nat $ i - endpos) with
+        (S $ Z.to_nat $ i - (endpos + 1)) by lia.
+    reflexivity.
+Qed.
+
 Lemma has_circ_updates_app upds0 start addrs blocks (endpos : u64) upds :
   int.val endpos = circΣ.diskEnd {| circΣ.upds := upds0; circΣ.start := start |} ->
   length (upds0 ++ upds) ≤ LogSz ->
+  circ_low_wf addrs (update_blocks blocks (int.val endpos) upds) ->
   has_circ_updates
     {| circΣ.upds := upds0; circΣ.start := start |} addrs
     (update_blocks blocks (int.val endpos) upds) ->
@@ -698,16 +740,24 @@ Lemma has_circ_updates_app upds0 start addrs blocks (endpos : u64) upds :
     (update_blocks blocks (int.val endpos) upds).
 Proof.
   rewrite /has_circ_updates /=.
+  intros Hendpos Hupdlen [Hbound1 Hbound2] Hupds.
+  rewrite /circΣ.diskEnd /= in Hendpos.
+  autorewrite with len in Hbound2, Hupdlen.
   intros.
   destruct (decide (i < length upds0)).
-  - rewrite -> lookup_app_l in H2 by lia.
-    apply H1 in H2; intuition.
-    rewrite <- H3.
-    admit.
-  - clear H1.
-    rewrite -> lookup_app_r in H2 by lia.
-    admit.
-Admitted.
+  - rewrite -> lookup_app_l in H by lia.
+    apply Hupds in H; intuition.
+    rewrite /update_addrs.
+    rewrite -> lookup_update_circ_old by word; auto.
+  - rewrite -> lookup_app_r in H by lia.
+    pose proof (lookup_lt_Some _ _ _ H).
+    rewrite /update_addrs /update_blocks.
+    rewrite -> lookup_update_circ_new by word.
+    rewrite -> ?lookup_update_circ_new by word.
+    replace (Z.to_nat (int.val start + i - int.val endpos)) with
+        (i - length upds0)%nat by word.
+    rewrite H; intuition eauto.
+Qed.
 
 Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
   {{{ is_circular γ ∗
