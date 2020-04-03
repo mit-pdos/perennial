@@ -299,11 +299,7 @@ Theorem wp_MkBuf K a data (bufdata : @bufDataT K) :
 Proof.
   iIntros (Φ) "[Hbufdata %] HΦ".
   wp_call.
-  wp_apply wp_allocStruct.
-  { econstructor; eauto.
-    econstructor; eauto.
-    econstructor; eauto.
-  }
+  wp_apply wp_allocStruct; first by auto.
 
   iIntros (b) "Hb".
   wp_pures.
@@ -340,11 +336,7 @@ Proof.
   }
 
   wp_pures.
-  wp_apply wp_allocStruct.
-  { econstructor; eauto.
-    econstructor; eauto.
-    econstructor; eauto.
-  }
+  wp_apply wp_allocStruct; first by auto.
 
   iIntros (b) "Hb".
   wp_pures.

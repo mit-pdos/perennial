@@ -115,7 +115,6 @@ Proof.
     + invc H0.
       inv_ty H.
       eauto.
-      econstructor; eauto.
     + destruct_with_eqn (field_offset fs f0); try congruence.
       destruct p as [off t'].
       invc H0.
