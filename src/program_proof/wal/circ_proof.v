@@ -53,6 +53,8 @@ Canonical Structure u64O := leibnizO u64.
 
 Section heap.
 Context `{!heapG Σ}.
+Context `{!crashG Σ}.
+
 Context `{!inG Σ (authR (optionUR (exclR (listO u64O))))}.
 Context `{!inG Σ (authR (optionUR (exclR (listO blockO))))}.
 Context `{!inG Σ fmcounterUR}.
@@ -1090,6 +1092,39 @@ Proof.
     }
     iPureIntro; intuition eauto.
     admit.
+Admitted.
+
+Theorem wpc_recoverCircular stk k E1 E2 (Q: iProp Σ) d σ γ :
+  {{{ is_circular_state γ σ }}}
+    recoverCircular #d @ stk; k; E1; E2
+  {{{ γ' (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),
+      RET (#c, #diskStart, #diskEnd, slice_val bufSlice);
+      updates_slice bufSlice upds ∗
+      is_circular_state γ' σ ∗
+      is_circular_appender γ' c ∗
+      ⌜σ.(circΣ.start) = diskStart⌝ ∗
+      ⌜σ.(circΣ.upds) = upds⌝
+  }}}
+  {{{ is_circular_state γ σ }}}.
+Proof.
+  iIntros (Φ Φc) "Hcs HΦ".
+
+  Opaque struct.t.
+  rewrite /recoverCircular.
+  wpc_pures; first iFrame.
+
+  iDestruct "Hcs" as (Hwf addrs0 blocks0 Hupds) "(Hown & Hlow)".
+  iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
+  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
+
+  wpc_apply (wpc_Read with "[Hd0]"); first iFrame.
+  iSplit.
+  (* XXX why do we still need to re-prove the invariant with WPC? *)
+  { iDestruct "HΦ" as "[HΦc _]". iIntros "Hd0". iApply "HΦc".
+    iSplitR; eauto.
+    iExists _, _. iSplitR; eauto.
+    iFrame. iSplitR; eauto.
+    iExists _, _, _. iFrame. eauto. }
 Admitted.
 
 End heap.
