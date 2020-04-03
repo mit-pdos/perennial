@@ -5,7 +5,6 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.super.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 
 Definition DISKSZ : expr := #10 * #1000.
@@ -14,7 +13,6 @@ Definition DISKNAME : expr := #(str"goose_kvs.img").
 
 Module KVS.
   Definition S := struct.decl [
-    "super" :: struct.ptrT super.FsSuper.S;
     "txn" :: struct.ptrT txn.Txn.S
   ].
 End KVS.
@@ -27,11 +25,9 @@ Module KVPair.
 End KVPair.
 
 Definition MkKVS: val :=
-  rec: "MkKVS" "d" :=
-    let: "fsSuper" := super.MkFsSuper "d" in
+  rec: "MkKVS" "txn" :=
     let: "kvs" := struct.new KVS.S [
-      "super" ::= "fsSuper";
-      "txn" ::= txn.MkTxn "fsSuper"
+      "txn" ::= "txn"
     ] in
     "kvs".
 

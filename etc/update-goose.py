@@ -103,16 +103,17 @@ def main():
 
     if goose_nfsd_dir is not None:
         nfsd_pkgs = [
-            "wal",
-            "buf",
-            "super",
-            "common",
-            "util",
             "addr",
-            "txn",
             "alloc",
-            "lockmap",
+            "buf",
+            "buftxn",
+            "common",
             "kvs",
+            "lockmap",
+            "super",
+            "txn",
+            "util",
+            "wal",
         ]
         for pkg in nfsd_pkgs:
             if pkg == ".":
