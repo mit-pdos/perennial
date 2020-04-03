@@ -986,15 +986,34 @@ Definition atomically {state} (tr: transition state val): transition state (list
   (λ v, ([], Val v, [])) <$> tr.
 
 Definition isFreshTo (bound:Z) (σ: state) (l: loc) :=
-  (forall i, 0 <= i -> i < bound -> σ.(heap) !! (l +ₗ i) = None)%Z.
+  (forall i, 0 <= i -> i < bound -> l +ₗ i ≠ null ∧ σ.(heap) !! (l +ₗ i) = None)%Z.
 
-Global Instance alloc_gen bound : GenPred loc state (isFreshTo bound).
+Theorem isFreshTo_not_null (bound: Z) σ l :
+  0 < Z.to_nat bound ->
+  isFreshTo bound σ l -> l ≠ null.
 Proof.
-  refine (fun _ σ => Some (exist _ (fresh_locs (dom (gset loc) σ.(heap))) _)).
-  hnf; intros.
-  apply (not_elem_of_dom (D := gset loc)).
-    by apply fresh_locs_fresh.
+  intros Hbound **.
+  rewrite -(loc_add_0 l).
+  apply H; lia.
+Qed.
+
+Theorem fresh_locs_isFreshTo bound σ :
+  isFreshTo bound σ (fresh_locs (dom (gset loc) σ.(heap))).
+Proof.
+  split.
+  - apply fresh_locs_non_null; auto.
+  - apply (not_elem_of_dom (D := gset loc)).
+      by apply fresh_locs_fresh.
+Qed.
+
+Definition gen_isFreshTo bound σ : {l: loc | isFreshTo bound σ l}.
+Proof.
+  refine (exist _ (fresh_locs (dom (gset loc) σ.(heap))) _).
+  by apply fresh_locs_isFreshTo.
 Defined.
+
+Global Instance alloc_gen bound : GenPred loc state (isFreshTo bound) :=
+  fun _ σ => Some (gen_isFreshTo bound σ).
 
 Definition allocateN (bound:Z): transition state loc :=
   suchThat (isFreshTo bound).
@@ -1183,9 +1202,7 @@ Proof.
   monad_simpl.
   eapply relation.bind_runs with σ l.
   { econstructor.
-    hnf; intros.
-    apply (not_elem_of_dom (D := gset loc)).
-      by apply fresh_locs_fresh.
+    apply fresh_locs_isFreshTo.
   }
   monad_simpl.
 Qed.

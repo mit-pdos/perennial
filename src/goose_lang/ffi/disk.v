@@ -235,6 +235,22 @@ lemmas. *)
   Hint Resolve read_fresh : core.
   Hint Extern 1 (head_step (ExternalOp _ _) _ _ _ _ _) => econstructor; simpl : core.
 
+  Lemma alloc_block_loc_not_null:
+    ∀ (b: Block) σ1 l,
+      isFreshTo 4096 σ1 l
+      → ∀ l0 (x : val),
+        heap_array l (Block_to_vals b) !! l0 = Some x
+        → l0 ≠ null.
+  Proof.
+    intros v σ1 l H l0 x Heq.
+    apply heap_array_lookup in Heq.
+    destruct Heq as [l' (?&->&Heq)].
+    apply H; eauto.
+    apply lookup_lt_Some in Heq.
+    rewrite length_Block_to_vals /block_bytes in Heq.
+    lia.
+  Qed.
+
   Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
     ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
 
@@ -264,13 +280,19 @@ lemmas. *)
     iMod (na_heap.na_heap_alloc_gen tls _ (fmap Free $ heap_array _ (Block_to_vals b)) with "Hσ")
       as "(Hσ & Hl)".
     { rewrite heap_array_fmap. apply heap_array_map_disjoint.
-      rewrite map_length length_Block_to_vals; eauto. }
+      rewrite map_length length_Block_to_vals; eauto.
+      apply H1. }
     { intros ??. rewrite lookup_fmap.
       destruct (heap_array _ _ !! _); inversion 1; subst; eauto. }
     iModIntro; iSplit; first done.
     rewrite big_sepM_fmap heap_array_fmap.
     iFrame "Hσ Hκs Hd Htr". iApply "HΦ".
     iFrame.
+    { iApply (big_sepM_mono with "Hl").
+      iIntros (l0 x Heq) "Hli".
+      iApply (na_mapsto_to_heap with "Hli").
+      eauto using alloc_block_loc_not_null.
+    }
   Qed.
 
   Definition bindex_of_Z (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) : fin block_bytes.
@@ -319,6 +341,7 @@ lemmas. *)
     iIntros "Hσ Hm".
     iIntros (i Hbound1 Hbound2).
     iDestruct (mapsto_block_extract i with "Hm") as (v) "[Hi %]"; eauto.
+    iDestruct (heap_mapsto_na_acc with "Hi") as "[Hi Hi_rest]".
     iDestruct (@na_heap.na_heap_read with "Hσ Hi") as %(lk&?&Hlookup&Hlock).
     destruct lk; inversion Hlock; subst. rewrite Hlookup //.
   Qed.
