@@ -558,8 +558,22 @@ Theorem wp_Walog__MemAppend (Q: u64 -> iProp Σ) l bufs bs :
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos))
    }}}
     Walog__MemAppend #l (slice_val bufs)
-  {{{ pos, RET (#pos, #true); Q pos }}}.
+  {{{ pos (ok : bool), RET (#pos, #ok); if ok then Q pos else emp }}}.
 Proof.
+  iIntros (Φ) "(Hwal & Hupds & Hfupd) HΦ".
+  wp_call.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_if_destruct.
+  { wp_pures. iApply "HΦ". done. }
+
+  wp_apply wp_ref_to; first val_ty.
+  iIntros (txnloc) "Htxnloc".
+
+  wp_apply wp_ref_to; first val_ty.
+  iIntros (okloc) "Hokloc".
+
+  (* XXX need a real is_wal *)
 Admitted.
 
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l a :
@@ -574,6 +588,14 @@ Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l a :
                                              then ∃ b, is_block bl b ∗ Q (Some b)
                                              else Q None}}}.
 Proof.
+  iIntros (Φ) "[Hwal Hfupd] HΦ".
+  wp_call.
+  wp_call.
+
+  wp_apply wp_ref_of_zero; eauto.
+  iIntros (blkloc) "Hblkloc".
+
+  (* XXX need a real is_wal *)
 Admitted.
 
 Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l a :
@@ -586,6 +608,10 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l a :
     Walog__ReadInstalled #l #a
   {{{ bl, RET slice_val bl; ∃ b, is_block bl b ∗ Q b}}}.
 Proof.
+  iIntros (Φ) "[Hwal Hfupd] HΦ".
+  wp_call.
+
+  (* XXX is this a valid block? *)
 Admitted.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l pos :
@@ -598,6 +624,12 @@ Theorem wp_Walog__Flush (Q: iProp Σ) l pos :
     Walog__Flush #l #pos
   {{{ RET #(); Q}}}.
 Proof.
+  iIntros (Φ) "[Hwal Hfupd] HΦ".
+  wp_call.
+
+  wp_apply util_proof.wp_DPrintf.
+
+  (* XXX need a real is_wal *)
 Admitted.
 
 End heap.
