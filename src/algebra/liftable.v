@@ -1,7 +1,7 @@
 From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
 From iris.base_logic.lib Require Import iprop.
-From Perennial.algebra Require Import big_op deletable_heap.
+From Perennial.algebra Require Import big_op.
 
 Section liftable.
 
@@ -11,44 +11,23 @@ Section liftable.
   Context `{!EqDecision L}.
   Context `{!Countable L}.
 
-  Lemma mapsto_disjoint h (a0 a1 : L) (v0 v1 : V) :
-    mapsto (Σ := Σ) (hG := h) a0 1 v0 -∗
-    mapsto (Σ := Σ) (hG := h) a1 1 v1 -∗
-    ⌜ a0 ≠ a1 ⌝.
-  Proof.
-    iIntros "Ha0 Ha1".
-    destruct (decide (a0 = a1)); auto; subst.
-    iDestruct (mapsto_valid_2 with "Ha0 Ha1") as %Ha.
-    exfalso.
-    apply Ha; simpl.
-    auto.
-  Qed.
-
-  Lemma big_sepM_disjoint h (m0 m1 : gmap L V) :
-    ( [∗ map] a↦v ∈ m0, mapsto (Σ := Σ) (hG := h) a 1 v ) -∗
-    ( [∗ map] a↦v ∈ m1, mapsto (Σ := Σ) (hG := h) a 1 v ) -∗
-    ⌜ m0 ##ₘ m1 ⌝.
-  Proof.
-    apply big_sepM_disjoint_pred; try typeclasses eauto.
-    unfold Conflicting; intros.
-    iIntros "H0 H1".
-    iDestruct (mapsto_disjoint with "H0 H1") as %Hc.
-    iPureIntro; auto.
-  Qed.
-
-  Class Liftable (P : @gen_heapG L V Σ _ _ -> iProp Σ) := liftable :
-    ∀ h1, P h1 -∗
-      ∃ (m : gmap L V), ([∗ map] a ↦ v ∈ m, mapsto (Σ := Σ) (hG := h1) a 1 v) ∗
-           ∀ h2, ([∗ map] a ↦ v ∈ m, mapsto (Σ := Σ) (hG := h2) a 1 v) -∗ P h2.
+  Class Liftable (P : (L -> V -> iProp Σ) -> iProp Σ) := liftable :
+    ∀ mapsto1,
+      (∀ l v, Absorbing (mapsto1 l v)) ->
+      Conflicting mapsto1 ->
+      P mapsto1 -∗
+      ∃ (m : gmap L V),
+        ([∗ map] a ↦ v ∈ m, mapsto1 a v) ∗
+           ∀ mapsto2, ([∗ map] a ↦ v ∈ m, mapsto2 a v) -∗ P mapsto2.
 
   Global Instance star_liftable `{Liftable P} `{Liftable Q} : Liftable (fun h => P h ∗ Q h)%I.
   Proof.
     unfold Liftable in *.
-    iIntros (?) "[Hp Hq]".
-    iDestruct (H with "Hp") as (mp) "[Hpm Hpi]".
-    iDestruct (H0 with "Hq") as (mq) "[Hqm Hqi]".
+    iIntros (???) "[Hp Hq]".
+    iDestruct (H with "Hp") as (mp) "[Hpm Hpi]"; eauto.
+    iDestruct (H0 with "Hq") as (mq) "[Hqm Hqi]"; eauto.
     iExists (mp ∪ mq).
-    iDestruct (big_sepM_disjoint with "[$Hpm] [$Hqm]") as %?.
+    iDestruct (big_sepM_disjoint_pred with "[$Hpm] [$Hqm]") as %?; eauto.
     iDestruct (big_sepM_union with "[$Hpm $Hqm]") as "Hm"; eauto.
     iFrame.
     iIntros (h2) "Hm".
@@ -57,12 +36,14 @@ Section liftable.
     iDestruct ("Hpi" with "Hpm") as "Hp".
     iDestruct ("Hqi" with "Hqm") as "Hq".
     iFrame.
+  Unshelve.
+    all: eauto.
   Qed.
 
   Global Instance pure_liftable P : Liftable (fun h => ⌜ P ⌝)%I.
   Proof.
     unfold Liftable in *.
-    iIntros (?) "%".
+    iIntros (???) "%".
     iExists ∅.
     rewrite big_sepM_empty.
     iSplit; try done.
@@ -75,9 +56,9 @@ Section liftable.
     Liftable (fun h => ∃ (x : T), P x h)%I.
   Proof.
     unfold Liftable in *.
-    iIntros (H h) "H".
+    iIntros (H h ??) "H".
     iDestruct "H" as (x) "H".
-    iDestruct (H with "H") as (m) "(Hm & Hx)".
+    iDestruct (H with "H") as (m) "(Hm & Hx)"; eauto.
     iExists _. iFrame.
     iIntros (h2) "Hm".
     iDestruct ("Hx" with "Hm") as "Hp".
@@ -90,7 +71,7 @@ Section liftable.
   Proof.
     intros.
     unfold Liftable.
-    iIntros (?) "Hm".
+    iIntros (???) "Hm".
     iInduction m as [|i x m] "IH" using map_ind.
     - iExists ∅.
       repeat rewrite big_sepM_empty.
@@ -102,10 +83,10 @@ Section liftable.
       iDestruct ("IH" with "Hm") as (m0) "[Hm0 Hr0]".
       specialize (H0 i x).
       unfold Liftable in H0.
-      iPoseProof H0 as "Hlift".
+      iPoseProof H0 as "Hlift"; eauto.
       iDestruct ("Hlift" with "Hx") as (m1) "[Hm1 Hr1]".
       iExists (m0 ∪ m1).
-      iDestruct (big_sepM_disjoint with "[$Hm0] [$Hm1]") as %?.
+      iDestruct (big_sepM_disjoint_pred with "[$Hm0] [$Hm1]") as %?; eauto.
       rewrite big_sepM_union; auto. iFrame.
       iIntros (h2) "Hh2".
       rewrite big_sepM_union; auto.
@@ -114,13 +95,15 @@ Section liftable.
       iDestruct ("Hr1" with "Hm1") as "Hr1".
       rewrite big_sepM_insert; auto.
       iFrame.
+  Unshelve.
+    all: eauto.
   Qed.
 
-  Global Instance mapsto_liftable :
-    Liftable (fun h => mapsto (hG := h) a 1 v)%I.
+  Global Instance conflicting_liftable :
+    Liftable (fun mapsto => mapsto a v)%I.
   Proof.
     intros; unfold Liftable.
-    iIntros (h1) "Ha".
+    iIntros (mapsto1 ??) "Ha".
     iExists (<[a:=v]> ∅).
     rewrite big_sepM_insert; try apply lookup_empty.
     iFrame.
@@ -136,7 +119,7 @@ Section liftable.
   Global Instance emp_liftable : Liftable (fun h => emp)%I.
   Proof.
     intros; unfold Liftable.
-    iIntros (h1) "H".
+    iIntros (mapsto1 ??) "H".
     iExists ∅.
     rewrite big_sepM_empty; iFrame.
     iIntros (h2) "Hm".
@@ -152,9 +135,9 @@ Section liftable.
     induction l; intros.
     - apply emp_liftable.
     - unfold Liftable in *.
-      iIntros (h1) "[Ha Hl]".
-      iDestruct (H with "Ha") as (ma0) "[Ha Hm0]".
-      iDestruct (IHl with "[Hl]") as (ml) "[Hl Hml]".
+      iIntros (mapsto1 ??) "[Ha Hl]".
+      iDestruct (H with "Ha") as (ma0) "[Ha Hm0]"; eauto.
+      iDestruct (IHl with "[Hl]") as (ml) "[Hl Hml]"; eauto.
       {
         iApply big_sepL_mono; iFrame.
         iIntros (? ? ?) "H".
@@ -163,7 +146,7 @@ Section liftable.
       }
 
       iExists (ma0 ∪ ml).
-      iDestruct (big_sepM_disjoint with "[$Ha] [$Hl]") as %?.
+      iDestruct (big_sepM_disjoint_pred with "[$Ha] [$Hl]") as %?; eauto.
       rewrite big_sepM_union; auto; iFrame.
       iIntros (h2) "Hh2".
       rewrite big_sepM_union; auto.
@@ -176,6 +159,8 @@ Section liftable.
       iIntros (? ? ?) "H".
       replace (off + S a0)%nat with (S off + a0)%nat by lia.
       iFrame.
+  Unshelve.
+    all: eauto.
   Qed.
 
   Global Instance list_liftable `(l : list V) P :

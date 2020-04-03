@@ -262,26 +262,26 @@ Proof.
   typeclasses eauto.
 Qed.
 
-Definition Conflicting {L V} (P0 P1 : L -> V -> PROP) :=
+Definition Conflicting {L V} (P : L -> V -> PROP) :=
   ∀ a0 v0 a1 v1,
-    P0 a0 v0 -∗ P1 a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.
+    P a0 v0 -∗ P a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.
 
-Lemma big_sepM_disjoint_pred {L V} `{!EqDecision L} `{!Countable L} (P0 P1 : L -> V -> PROP)
-  `{!∀ l v, Absorbing (P0 l v)}
-  `{!∀ l v, Absorbing (P1 l v)}
+Lemma big_sepM_disjoint_pred {L V} {P : L -> V -> PROP} `{!EqDecision L} `{!Countable L}
+  `{!∀ l v, Absorbing (P l v)}
+  `{!∀ l v, Absorbing (P l v)}
+  `(Conflicting P)
   (m0 m1 : gmap L V) :
-  Conflicting P0 P1 ->
-  ( ( [∗ map] a↦v ∈ m0, P0 a v ) -∗
-    ( [∗ map] a↦v ∈ m1, P1 a v ) -∗
+  ( ( [∗ map] a↦v ∈ m0, P a v ) -∗
+    ( [∗ map] a↦v ∈ m1, P a v ) -∗
     ⌜ m0 ##ₘ m1 ⌝ ).
 Proof.
-  iIntros (Hc) "H0 H1".
+  iIntros "H0 H1".
   iIntros (i).
   unfold option_relation.
   destruct (m0 !! i) eqn:He; destruct (m1 !! i) eqn:H1; try solve [ iPureIntro; auto ].
   iDestruct (big_sepM_lookup with "H0") as "H0"; eauto.
   iDestruct (big_sepM_lookup with "H1") as "H1"; eauto.
-  iDestruct (Hc with "H0 H1") as %Hcc.
+  iDestruct (Conflicting0 with "H0 H1") as %Hcc.
   congruence.
 Qed.
 

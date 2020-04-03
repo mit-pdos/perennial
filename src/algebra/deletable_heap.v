@@ -190,4 +190,17 @@ Section gen_heap.
     iModIntro. rewrite to_gen_heap_delete //.
   Qed.
 
+  Lemma mapsto_disjoint (a0 a1 : L) (v0 v1 : V) :
+    a0 ↦ v0 -∗
+    a1 ↦ v1 -∗
+    ⌜ a0 ≠ a1 ⌝.
+  Proof.
+    iIntros "Ha0 Ha1".
+    destruct (decide (a0 = a1)); auto; subst.
+    iDestruct (mapsto_valid_2 with "Ha0 Ha1") as %Ha.
+    exfalso.
+    apply Ha; simpl.
+    auto.
+  Qed.
+
 End gen_heap.
