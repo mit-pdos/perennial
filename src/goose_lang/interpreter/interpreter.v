@@ -498,7 +498,10 @@ Section interpreter.
                 nav <- mlift_bt (s.(heap) !! l) ("CmpXchg load failed at location " ++ (pretty l));
                 match nav with
                 | (Reading n, vl) =>
-                  b <- mlift_bt (bin_op_eval EqOp vl v1)
+                  b <- mlift_bt (if decide (vals_compare_safe vl v1) then
+                                  Some $ LitV $ LitBool $ bool_decide (vl = v1)
+                                else
+                                  None)
                     ("CmpXchg BinOp tried on invalid type: " ++ (pretty EqOp) ++ "(" ++ (pretty vl) ++ ", " ++ (pretty v1) ++ ")");
                   match b with
                   | LitV (LitBool true) =>
@@ -870,7 +873,6 @@ Ltac runStateT_inv :=
         eapply nsteps_transitive; [ctx_step (fill ([CmpXchgMCtx #l3 e3]))|];
         eapply nsteps_transitive; [ctx_step (fill ([CmpXchgRCtx #l3 v2]))|];
         single_step;
-        unfold bin_op_eval in Heqo0; simpl in Heqo0;
 
         destruct (decide (vals_compare_safe v0 v2)) eqn:vcs; inversion Heqo0;
         Transitions.monad_simpl;

@@ -5,7 +5,7 @@ Record loc := { loc_car : Z }.
 Definition null := {| loc_car := 0 |}.
 
 Instance loc_eq_decision : EqDecision loc.
-Proof. solve_decision. Qed.
+Proof. solve_decision. Defined.
 
 Instance loc_inhabited : Inhabited loc := populate {|loc_car := 0 |}.
 

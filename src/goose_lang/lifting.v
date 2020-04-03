@@ -417,14 +417,14 @@ Global Instance pure_binop op v1 v2 v' :
 Proof. solve_pure_exec. Qed.
 (* Higher-priority instance for EqOp. *)
 Global Instance pure_eqop v1 v2 :
-  PureExec (vals_compare_safe v1 v2) 1
+  PureExec True 1
     (BinOp EqOp (Val v1) (Val v2))
     (Val $ LitV $ LitBool $ bool_decide (v1 = v2)) | 1.
 Proof.
   intros Hcompare.
   cut (bin_op_eval EqOp v1 v2 = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
   { intros. revert Hcompare. solve_pure_exec. }
-  rewrite /bin_op_eval /= decide_True //.
+  rewrite /bin_op_eval /= //.
 Qed.
 
 Global Instance pure_if_true e1 e2 : PureExec True 1 (If (Val $ LitV $ LitBool true) e1 e2) e1.

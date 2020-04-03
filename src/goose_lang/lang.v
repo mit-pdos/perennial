@@ -866,11 +866,7 @@ Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :
 
 Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
   if decide (op = EqOp) then
-    (* Crucially, this compares the same way as [CmpXchg]! *)
-    if decide (vals_compare_safe v1 v2) then
-      Some $ LitV $ LitBool $ bool_decide (v1 = v2)
-    else
-      None
+    Some $ LitV $ LitBool $ bool_decide (v1 = v2)
   else
     match v1, v2 with
     | LitV (LitInt n1), LitV (LitInt n2) =>
@@ -1101,7 +1097,6 @@ Fixpoint head_trans (e: expr) :
       (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
       match nav with
       | (Reading n, vl) =>
-      (* Crucially, this compares the same way as [EqOp]! *)
         check (vals_compare_safe vl v1);;
         when (vl = v1) (check (n = 0);; modify (set heap <[l:=Free v2]>));;
         ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
