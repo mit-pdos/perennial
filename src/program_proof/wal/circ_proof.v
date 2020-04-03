@@ -988,6 +988,7 @@ Proof.
   - iIntros (i Φₗ) "!> (HI&Hpos&%) HΦ".
     iDestruct "HI" as "(Hbufs&Hdiskaddrs&Hd2)".
     iDestruct "Hbufs" as (bufSlice) "[Hbufsloc Hupds]".
+    iDestruct (updates_slice_len with "Hupds") as %Hupdslen.
     wp_pures.
     wp_apply (wp_load with "[Hpos]"); [ | iIntros "Hpos" ].
     { iDestruct "Hpos" as "[[Hpos _] %]".
@@ -1028,7 +1029,8 @@ Proof.
     rewrite list_insert_id; eauto.
 
     wp_apply (wp_SliceAppend_update with "[$Hupds Hb_s]").
-    { admit. }
+    { autorewrite with len in Hupdslen.
+      word. }
     { iApply is_slice_to_small. iFrame. }
     iIntros (bufSlice') "Hupds'".
     wp_store.
@@ -1060,8 +1062,9 @@ Proof.
 
   - iIntros "[(HI & Hdiskaddrs & Hd2) Hpos]".
     iDestruct "HI" as (bufSlice) "[Hbufsloc Hupds]".
-    wp_apply wp_allocStruct.
-    { admit. }
+    Transparent struct.t.
+    wp_apply wp_allocStruct; first by eauto.
+    Opaque struct.t.
     iIntros (ca) "Hca".
     wp_load.
 
@@ -1088,10 +1091,13 @@ Proof.
       iDestruct (struct_fields_split with "Hca") as "[Hca _]".
       iFrame.
       iSplitR; eauto.
+      (* TODO: need new ghost variables *)
       admit.
     }
     iPureIntro; intuition eauto.
-    admit.
+    rewrite take_ge; auto.
+    rewrite /circΣ.diskEnd /=.
+    destruct Hwf; word.
 Admitted.
 
 Theorem wpc_recoverCircular stk k E1 E2 (Q: iProp Σ) d σ γ :
