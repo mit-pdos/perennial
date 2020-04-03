@@ -1058,7 +1058,10 @@ Proof.
     iExists nil; simpl.
     iSplitL.
     { iApply is_slice_zero. }
-    admit.
+    replace (int.nat (start σ) - int.nat (start σ))%nat with 0%nat by lia.
+    rewrite take_0.
+    rewrite big_sepL2_nil.
+    auto.
 
   - iIntros "[(HI & Hdiskaddrs & Hd2) Hpos]".
     iDestruct "HI" as (bufSlice) "[Hbufsloc Hupds]".
@@ -1068,17 +1071,18 @@ Proof.
     iIntros (ca) "Hca".
     wp_load.
 
-    (* XXX allocate a new γ' since we need to recover
-      the ◯ that was lost in the pre-crash is_circular_appender *)
+    iMod (ghost_var_alloc (addrs0 : listO u64O)) as (addrs_name') "[Haddrs' Hγaddrs]".
+    iMod (ghost_var_alloc (blocks0 : listO blockO)) as (blocks_name') "[Hblocks' Hγblocks]".
+    set (γ' := {| addrs_name := addrs_name'; blocks_name := blocks_name' |}).
 
     wp_pures.
-    iApply "HΦ".
+    iApply ("HΦ" $! γ').
     iFrame.
-    iSplitR "Hca Hdiskaddrs".
+    iSplitR "Hca Hdiskaddrs Hγaddrs Hγblocks".
     { iSplitR; eauto.
       iExists _, _.
       iSplitR; eauto.
-      iSplitL "Haddrs Hblocks".
+      iSplitL "Haddrs' Hblocks'".
       { iSplitR; eauto.
         iFrame. }
       iExists _, _, _.
@@ -1089,11 +1093,7 @@ Proof.
     {
       iExists _, _, _.
       iDestruct (struct_fields_split with "Hca") as "[Hca _]".
-      iFrame.
-      iSplitR; eauto.
-      (* TODO: need new ghost variables *)
-      admit.
-    }
+      by iFrame. }
     iPureIntro; intuition eauto.
     rewrite take_ge; auto.
     rewrite /circΣ.diskEnd /=.
