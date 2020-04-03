@@ -492,7 +492,7 @@ Proof.
   { iApply wal_heap_memappend.
     admit. }
 
-  iIntros (npos) "Hnpos".
+  iIntros (npos ok) "Hnpos".
   wp_pures.
   wp_storeField.
   wp_loadField.
@@ -501,7 +501,7 @@ Proof.
 
   wp_pures.
   iApply "HΦ".
-  iFrame.
+  iFrame "Hbufs".
 Admitted.
 
 Theorem wp_txn_CommitWait l q gData bufs buflist (wait : bool) (id : u64) :
