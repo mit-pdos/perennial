@@ -19,7 +19,8 @@ From Perennial.program_proof Require
      (* wal.proof *)
      wal.specs
      wal.circ_proof (* started over on circular_proof *)
-     txn.specs.
+     txn.specs
+     buftxn.specs.
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
 

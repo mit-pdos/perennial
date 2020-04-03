@@ -67,6 +67,7 @@ Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
     bufptr ↦[Buf.S :: "dirty"] #o.(bufDirty) ∗
     ⌜ valid_addr a ⌝ ∗
     ⌜ sz = bufSz o.(bufKind) ⌝ ∗
+    ⌜ #bufptr ≠ #null ⌝ ∗
     is_buf_data data o.(bufData) a.
 
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
@@ -78,6 +79,14 @@ Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
       ∃ (bufloc : loc),
         ⌜ bufptr = #bufloc ⌝ ∗
         is_buf bufloc a buf.
+
+Theorem is_buf_not_null bufptr a o :
+  is_buf bufptr a o -∗ ⌜ #bufptr ≠ #null ⌝.
+Proof.
+  iIntros "Hbuf".
+  iDestruct "Hbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & % & % & Hbufdata)".
+  eauto.
+Qed.
 
 Theorem wp_MkBufMap :
   {{{
@@ -301,8 +310,11 @@ Proof.
   iApply "HΦ".
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
   iExists _, _.
-  iFrame. done.
-Qed.
+  iFrame.
+  iSplitL; try done.
+  iSplitL; try done.
+  admit.
+Admitted.
 
 Theorem wp_MkBufLoad K a blk s (bufdata : @bufDataT K) :
   {{{
@@ -344,6 +356,8 @@ Proof.
   iSplitR; first done.
   destruct bufdata; cbn; cbn in H.
   - destruct H; intuition.
+    iSplitR.
+    { admit. }
     iExists _.
     iSplitL; last eauto.
     admit.
