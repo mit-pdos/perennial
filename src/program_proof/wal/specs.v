@@ -186,7 +186,7 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem apply_upds_update_ne a:
+Theorem lookup_apply_update_ne a:
   forall l d u,
     u.(update.addr) ≠ a ->
     apply_upds l (apply_upds [u] d) !! int.val a = apply_upds l d !! int.val a.
@@ -390,7 +390,7 @@ Proof.
       simpl; eauto.
     + intros.
       rewrite apply_upds_cons.
-      rewrite apply_upds_update_ne.
+      rewrite lookup_apply_update_ne.
       2: {
         apply H1.
         apply elem_of_list_here.
@@ -446,21 +446,84 @@ Proof.
   erewrite apply_no_updates_since; eauto.
 Qed.
 
-Theorem apply_upds_until_pos d (pos: u64):
+Theorem lookup_apply_upds_cons_ne:
+  forall l d (a: u64) u b,
+    u.(update.addr) ≠ a ->
+    apply_upds l (apply_upds [u] d) !! int.val a = Some b ->
+    apply_upds l d !! int.val a = Some b \/ (d !! int.val a = Some b).
+Proof.
+  intros.
+  generalize dependent d.
+  induction l.
+  - intros.
+    destruct u.
+    rewrite lookup_insert_ne in H0; eauto.
+    simpl in *.
+    admit.
+  - intros.
+    rewrite apply_upds_cons in H0.
+    rewrite apply_upds_cons.
+    destruct (decide (a0.(update.addr) = u.(update.addr))).
+    1: rewrite apply_update_eq in H0; eauto.
+    rewrite apply_update_ne in H0; eauto.
+    specialize (IHl (apply_upds [a0] d) H0).
+    intuition.
+    
+Admitted.
+
+Theorem lookup_apply_upds d (pos: u64):
   forall l a b,
+    apply_upds l d !! int.val a = Some b ->
+    d !! int.val a = Some b \/
+    (exists (i:nat) u,
+        l !! i = Some u /\ u.(update.addr) = a /\ u.(update.b) = b /\
+        (forall (j:nat) u1,  j > i -> l !! j = Some u1 -> u1.(update.addr) ≠ a)).
+Proof.
+  intros.
+  induction l.
+  - simpl in *.
+    left; auto.
+  - rewrite apply_upds_cons in H.
+    destruct (decide (a0.(update.addr) = a)).
+    {
+      admit.
+    }
+    
+    apply lookup_apply_upds_cons_ne in H; eauto.
+    intuition.
+    destruct H1 as [i [u H1]].
+    intuition.
+    right.
+    exists (S i), u.
+Admitted.
+
+Theorem apply_upds_since_pos_new d (pos: u64) (pos': u64):
+  forall l a b b1,
+    int.val pos <= int.val pos' ->
     apply_upds (take (int.nat pos) l) d !! int.val a = Some b ->
-    (exists u, drop (int.nat pos) l !! 0%nat = Some u /\ u.(update.addr) = a /\ u.(update.b) = b).
+    apply_upds (take (int.nat pos') l) d !! int.val a = Some b1 ->
+    b ≠ b1 ->
+    (exists i u, drop (int.nat pos) l !! i%nat = Some u
+              /\ u.(update.addr) = a /\ u.(update.b) = b1).
 Proof.
+  intros.
+  replace (take (int.nat pos') l) with (take (int.nat pos) l ++ drop (int.nat pos) (take (int.nat pos') l)) in H1.
+  2: {
+    rewrite skipn_firstn_comm.
+    rewrite take_take_drop.
+    assert (int.nat pos + (int.nat pos' - int.nat pos) = int.nat pos').
+    + word.
+    + admit.
+  }
+  rewrite apply_upds_app in H1.
+  apply lookup_apply_upds in H1 as H1'; eauto.
+  intuition.
+  1: destruct (decide (b = b1)); congruence. 
+  destruct H3 as [i [u H3]].
+  exists i, u.
+  intuition.
+  (* plausible based on H4 and H7 *)
 Admitted.
-  
-Theorem drop_lookup_gt (A: Type) (pos: u64):
-  forall (l: list A) (pos' : u64) e,
-      int.val pos < int.val pos' ->
-      (drop (int.nat pos') l) !! 0%nat = Some e ->
-      e ∈ (drop (int.nat pos) l).
-Proof.
-Admitted.
-                                                          
 
 Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
   int.val pos ≤ int.val diskpos ->
@@ -472,26 +535,14 @@ Proof.
   generalize (σ.(log_state.updates)).
   generalize (σ.(log_state.disk)).
   intros.
-    
-  destruct (decide (pos = diskpos)).
+  destruct (decide (b = installedb)).
   {
-    rewrite <- e in *.
-    rewrite H0 in H1.
-    inversion H1.
+    subst.
     apply elem_of_list_here.
   }
-  apply apply_upds_until_pos in H0.
-  destruct H0.
-  apply apply_upds_until_pos in H1.
-  destruct H1.
-  intuition.
-
-  assert (x0 ∈ (drop (int.nat pos) l)).
-  {
-    eapply drop_lookup_gt; eauto.
-    admit.
-  }
-  apply elem_of_list_In in H4.
+  eapply apply_upds_since_pos_new with (pos := pos) (pos' := diskpos) in H0; eauto.
+  destruct H0. destruct H0. intuition.
+  apply elem_of_list_lookup_2 in H2.
   rewrite elem_of_list_In.
   assert (In b (map update.b (filter (λ u : update.t, u.(update.addr) = a) (drop (int.nat pos) l)))).
   {
@@ -501,16 +552,16 @@ Proof.
     rewrite <- elem_of_list_In.
     rewrite elem_of_list_filter.
     split; eauto.
-    rewrite elem_of_list_In; eauto.
   }
   apply in_cons; eauto.
-Admitted.
+Qed.
 
 
 Theorem latest_update_take_some installed bs pos v :
   (installed :: bs) !! pos = Some v ->
   latest_update installed (take pos bs) = v.
 Proof.
+  intros.
 Admitted.
 
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
