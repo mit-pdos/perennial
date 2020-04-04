@@ -591,10 +591,18 @@ Proof.
     iDestruct (struct_mapsto_singleton with "Hcommit") as "Hcommit"; eauto.
     wp_apply (wp_load with "Hcommit"); iIntros "Hcommit".
     iApply "HΦ".
+
+    iDestruct (is_slice_sz with "Hbufs") as %Hbuflistlen.
     iFrame.
 
-    (* Slice.sz is 0, so buflist must be nil *)
-    admit.
+    destruct buflist.
+    { simpl; eauto. }
+
+    exfalso.
+    simpl in Hbuflistlen.
+    revert Hbuflistlen.
+    revert n.
+    word.
 Admitted.
 
 Theorem wp_Txn__GetTransId l gData :
