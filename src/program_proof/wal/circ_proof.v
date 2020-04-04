@@ -915,7 +915,54 @@ Proof.
   rewrite fmap_app. auto.
 Qed.
 
-Theorem wp_recoverCircular (Q: iProp Σ) d σ γ :
+Theorem wp_decodeHdr1 stk E s (hdr1: Block) (endpos: u64) (addrs: list u64) :
+  Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 endpos] ++ (map EncUInt64 addrs)) ->
+  length addrs = Z.to_nat LogSz ->
+  {{{ is_slice s byteT 1 (Block_to_vals hdr1) }}}
+    decodeHdr1 (slice_val s) @ stk; E
+  {{{ (a_s:Slice.t), RET (#endpos, slice_val a_s);
+      is_slice a_s uint64T 1 (u64val <$> addrs) }}}.
+Proof.
+  iIntros (Hhdr1 Haddrlen Φ) "Hb HΦ".
+  wp_call.
+
+  wp_apply (wp_NewDec _ _ _ _ nil with "[Hb]").
+  { iApply is_slice_to_small.
+    rewrite Hhdr1. rewrite app_nil_r. iFrame. }
+  iIntros (dec0) "[Hdec0 %]".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec0"); iIntros "Hdec0".
+  wp_pures.
+  wp_apply (wp_Dec__GetInts _ _ _ _ _ nil with "[Hdec0]").
+  { rewrite app_nil_r. iFrame.
+    change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
+    iPureIntro; word. }
+  iIntros (a_s) "[_ Hdiskaddrs]".
+  wp_pures.
+  iApply ("HΦ" with "[$]").
+Qed.
+
+Theorem wp_decodeHdr2 stk E s (hdr2: Block) hdr2extra (startpos: u64) :
+  Block_to_vals hdr2 = b2val <$> encode [EncUInt64 startpos] ++ hdr2extra ->
+  {{{ is_slice s byteT 1 (Block_to_vals hdr2) }}}
+    decodeHdr2 (slice_val s) @ stk; E
+  {{{ RET #startpos; True }}}.
+Proof.
+  iIntros (Hhdr2 Φ) "Hb HΦ".
+
+  wp_call.
+  wp_apply (wp_NewDec with "[Hb]").
+  { iApply is_slice_to_small.
+    rewrite Hhdr2. iFrame. }
+  iIntros (dec1) "[Hdec1 %]".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec1").
+  iIntros "_".
+  wp_pures.
+  iApply ("HΦ" with "[$]").
+Qed.
+
+Theorem wp_recoverCircular d σ γ :
   {{{ is_circular_state γ σ }}}
     recoverCircular #d
   {{{ γ' (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),
@@ -935,36 +982,13 @@ Proof.
   iDestruct "Hcs" as (Hwf addrs0 blocks0 Hupds) "(Hown & Hlow)".
   iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
   iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
-  wp_apply (wp_Read with "[Hd0]").
-  { iFrame. }
+  wp_apply (wp_Read with "[Hd0]"); first by iFrame.
   iIntros (s0) "[Hd0 Hs0]".
-  wp_pures.
-  wp_apply (wp_NewDec _ _ _ _ nil with "[Hs0]").
-  { iApply is_slice_to_small.
-    rewrite Hhdr1. rewrite app_nil_r. iFrame. }
-  iIntros (dec0) "[Hdec0 %]".
-  wp_pures.
-  wp_apply (wp_Dec__GetInt with "Hdec0"); iIntros "Hdec0".
-  wp_pures.
-  wp_apply (wp_Dec__GetInts _ _ _ _ _ nil with "[Hdec0]").
-  { rewrite app_nil_r. iFrame.
-    change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-    unfold circ_low_wf in Hlow_wf; intuition.
-  }
-  iIntros (addrs) "[Hdec0 Hdiskaddrs]".
-  wp_pures.
-
-  wp_apply (wp_Read with "[Hd1]").
-  { iFrame. }
+  wp_apply (wp_Read with "[Hd1]"); first by iFrame.
   iIntros (s1) "[Hd1 Hs1]".
-  wp_pures.
-  wp_apply (wp_NewDec with "[Hs1]").
-  { iApply is_slice_to_small.
-    rewrite Hhdr2. iFrame. }
-  iIntros (dec1) "[Hdec1 %]".
-  wp_pures.
-  wp_apply (wp_Dec__GetInt with "Hdec1"); iIntros "Hdec1".
-  wp_pures.
+  wp_apply (wp_decodeHdr1 with "Hs0"); [ eauto | word | ].
+  iIntros (addrs) "Hdiskaddrs".
+  wp_apply (wp_decodeHdr2 with "Hs1"); [ eauto | ].
 
   wp_apply wp_ref_of_zero; eauto.
   iIntros (bufsloc) "Hbufsloc".
@@ -1045,10 +1069,10 @@ Proof.
       f_equal.
       destruct Hwf.
       destruct Hlow_wf.
-      rewrite /circΣ.diskEnd in H1.
+      rewrite /circΣ.diskEnd in H.
       word_cleanup.
       autorewrite with len in Hupdslen.
-      revert H1; word_cleanup; intros.
+      revert H; word_cleanup; intros.
       assert (int.nat i - int.nat σ.(start) < length σ.(upds))%nat as Hinbounds by word.
       apply list_lookup_lt in Hinbounds.
       destruct Hinbounds as [[a' b'] Hieq].
@@ -1114,7 +1138,7 @@ Proof.
     destruct Hwf; word.
 Qed.
 
-Theorem wpc_recoverCircular stk k E1 E2 (Q: iProp Σ) d σ γ :
+Theorem wpc_recoverCircular stk k E1 E2 d σ γ :
   {{{ is_circular_state γ σ }}}
     recoverCircular #d @ stk; k; E1; E2
   {{{ γ' (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),

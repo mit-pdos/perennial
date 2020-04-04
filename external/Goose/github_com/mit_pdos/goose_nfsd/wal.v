@@ -78,15 +78,27 @@ Definition initCircular: val :=
       "diskAddrs" ::= "addrs"
     ].
 
-Definition recoverCircular: val :=
-  rec: "recoverCircular" "d" :=
-    let: "hdr1" := disk.Read LOGHDR in
+(* decodeHdr1 decodes (end, start) from hdr1 *)
+Definition decodeHdr1: val :=
+  rec: "decodeHdr1" "hdr1" :=
     let: "dec1" := marshal.NewDec "hdr1" in
     let: "end" := marshal.Dec__GetInt "dec1" in
     let: "addrs" := marshal.Dec__GetInts "dec1" HDRADDRS in
-    let: "hdr2" := disk.Read LOGHDR2 in
+    ("end", "addrs").
+
+(* decodeHdr2 reads start from hdr2 *)
+Definition decodeHdr2: val :=
+  rec: "decodeHdr2" "hdr2" :=
     let: "dec2" := marshal.NewDec "hdr2" in
     let: "start" := marshal.Dec__GetInt "dec2" in
+    "start".
+
+Definition recoverCircular: val :=
+  rec: "recoverCircular" "d" :=
+    let: "hdr1" := disk.Read LOGHDR in
+    let: "hdr2" := disk.Read LOGHDR2 in
+    let: ("end", "addrs") := decodeHdr1 "hdr1" in
+    let: "start" := decodeHdr2 "hdr2" in
     let: "bufs" := ref (zero_val (slice.T (struct.t Update.S))) in
     let: "pos" := ref_to uint64T "start" in
     (for: (λ: <>, ![uint64T] "pos" < "end"); (λ: <>, "pos" <-[uint64T] ![uint64T] "pos" + #1) := λ: <>,
