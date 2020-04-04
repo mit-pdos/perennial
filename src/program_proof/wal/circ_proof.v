@@ -156,6 +156,8 @@ Proof.
     iFrame.
 Abort.
 
+Local Opaque load_ty store_ty.
+
 Theorem wp_hdr2 (newStart: u64) :
   {{{ True }}}
     hdr2 #newStart
@@ -1015,11 +1017,7 @@ Proof.
     iDestruct "Hbufs" as (bufSlice) "[Hbufsloc Hupds]".
     iDestruct (updates_slice_len with "Hupds") as %Hupdslen.
     wp_pures.
-    wp_apply (wp_load with "[Hpos]"); [ | iIntros "Hpos" ].
-    { iDestruct "Hpos" as "[[Hpos _] %]".
-      simpl.
-      rewrite loc_add_0.
-      iFrame. }
+    wp_load.
     wp_pures.
     change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
     destruct (list_lookup_lt _ addrs0 (Z.to_nat $ int.val i `mod` LogSz)) as [a Halookup].
@@ -1032,7 +1030,7 @@ Proof.
       rewrite Halookup.
       eauto. }
     iIntros "[Hdiskaddrs _]".
-    wp_apply (wp_load with "Hpos"); iIntros "Hpos".
+    wp_load.
     wp_pures.
     change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
     destruct (list_lookup_lt _ blocks0 (Z.to_nat $ int.val i `mod` LogSz)) as [b Hblookup].
@@ -1062,31 +1060,27 @@ Proof.
 
     iApply "HΦ".
     iFrame.
-    iSplitR "Hpos".
-    { iSplit; first by word.
-      iExists _. iFrame.
-      iExactEq "Hupds'".
-      f_equal.
-      destruct Hwf.
-      destruct Hlow_wf.
-      rewrite /circΣ.diskEnd in H.
-      word_cleanup.
-      autorewrite with len in Hupdslen.
-      revert H; word_cleanup; intros.
-      assert (int.nat i - int.nat σ.(start) < length σ.(upds))%nat as Hinbounds by word.
-      apply list_lookup_lt in Hinbounds.
-      destruct Hinbounds as [[a' b'] Hieq].
-      pose proof (Hupds _ _ Hieq) as Haddr_block_eq. rewrite /LogSz /= in Haddr_block_eq.
-      replace (int.val (start σ) + Z.of_nat (int.nat i - int.nat (start σ)))
-              with (int.val i) in Haddr_block_eq by word.
-      destruct Haddr_block_eq.
-      replace (Z.to_nat (int.val i + 1) - int.nat (start σ))%nat with (S (int.nat i - int.nat (start σ))) by word.
-      erewrite take_S_r; eauto.
-      rewrite Hieq.
-      congruence. }
-
-    iSplitL; auto.
-    { iSplitL. { rewrite loc_add_0. iFrame. } done. }
+    iSplit; first by word.
+    iExists _. iFrame.
+    iExactEq "Hupds'".
+    f_equal.
+    destruct Hwf.
+    destruct Hlow_wf.
+    rewrite /circΣ.diskEnd in H.
+    word_cleanup.
+    autorewrite with len in Hupdslen.
+    revert H; word_cleanup; intros.
+    assert (int.nat i - int.nat σ.(start) < length σ.(upds))%nat as Hinbounds by word.
+    apply list_lookup_lt in Hinbounds.
+    destruct Hinbounds as [[a' b'] Hieq].
+    pose proof (Hupds _ _ Hieq) as Haddr_block_eq. rewrite /LogSz /= in Haddr_block_eq.
+    replace (int.val (start σ) + Z.of_nat (int.nat i - int.nat (start σ)))
+      with (int.val i) in Haddr_block_eq by word.
+    destruct Haddr_block_eq.
+    replace (Z.to_nat (int.val i + 1) - int.nat (start σ))%nat with (S (int.nat i - int.nat (start σ))) by word.
+    erewrite take_S_r; eauto.
+    rewrite Hieq.
+    congruence.
 
   - iDestruct (is_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".
     iFrame.
