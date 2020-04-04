@@ -558,16 +558,6 @@ Qed.
 Opaque load_ty.
 Opaque store_ty.
 
-Theorem u64_ptsto_untype l x :
-  l ↦[uint64T] #x -∗ l ↦ #x.
-Proof.
-  iIntros "[H %]".
-  inversion H; subst; clear H.
-  inversion H1; subst.
-  simpl.
-  rewrite loc_add_0 right_id //.
-Qed.
-
 Theorem wp_Dec__GetInts stk E dec xs (n:u64) vs :
   {{{ is_dec dec ((EncUInt64 <$> xs) ++ vs) ∗ ⌜int.val n = length xs⌝}}}
     Dec__GetInts (DecM.to_val dec) #n @ stk; E
@@ -576,9 +566,9 @@ Proof.
   rewrite /Dec__GetInts.
   iIntros (Φ) "(Hdec&%) HΦ".
   wp_pures.
+  Transparent slice.T.
   wp_apply (typed_mem.wp_AllocAt (slice.T uint64T)); auto.
-  (* TODO: fix how this works so auto solves the goal  *)
-  { auto with val_ty. }
+  Opaque slice.T.
   iIntros (l) "Hl".
   rewrite zero_slice_val.
   wp_pures.
@@ -625,8 +615,6 @@ Proof.
     rewrite fmap_app; simpl.
     iFrame.
   - rewrite drop_0.
-    iFrame.
-    iDestruct (u64_ptsto_untype with "Hli") as "Hli".
     iFrame.
     iExists (Slice.mk null (U64 0) (U64 0)); iFrame.
     rewrite take_0 fmap_nil.

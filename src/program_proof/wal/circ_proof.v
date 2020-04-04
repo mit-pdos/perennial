@@ -998,7 +998,7 @@ Proof.
   iIntros (pos) "Hpos".
 
   wp_pures.
-  wp_apply (wp_forUpto' (fun i =>
+  wp_apply (wp_forUpto (fun i =>
     ⌜int.val σ.(start) <= int.val i⌝ ∗
     (∃ bufSlice,
       bufsloc ↦[slice.T (struct.t Update.S)] (slice_val bufSlice) ∗
