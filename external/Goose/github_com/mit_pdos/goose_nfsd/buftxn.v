@@ -29,7 +29,7 @@ Definition Begin: val :=
 Definition BufTxn__ReadBuf: val :=
   rec: "BufTxn__ReadBuf" "buftxn" "addr" "sz" :=
     let: "b" := buf.BufMap__Lookup (struct.loadF BufTxn.S "bufs" "buftxn") "addr" in
-    (if: ("b" = slice.nil)
+    (if: ("b" = #null)
     then
       let: "buf" := txn.Txn__Load (struct.loadF BufTxn.S "txn" "buftxn") "addr" "sz" in
       buf.BufMap__Insert (struct.loadF BufTxn.S "bufs" "buftxn") "buf";;
@@ -40,7 +40,7 @@ Definition BufTxn__ReadBuf: val :=
 Definition BufTxn__OverWrite: val :=
   rec: "BufTxn__OverWrite" "buftxn" "addr" "sz" "data" :=
     let: "b" := ref_to (refT (struct.t buf.Buf.S)) (buf.BufMap__Lookup (struct.loadF BufTxn.S "bufs" "buftxn") "addr") in
-    (if: (![refT (struct.t buf.Buf.S)] "b" = slice.nil)
+    (if: (![refT (struct.t buf.Buf.S)] "b" = #null)
     then
       "b" <-[refT (struct.t buf.Buf.S)] buf.MkBuf "addr" "sz" "data";;
       buf.Buf__SetDirty (![refT (struct.t buf.Buf.S)] "b");;

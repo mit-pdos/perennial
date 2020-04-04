@@ -495,7 +495,7 @@ Definition CompareSliceToNil: val :=
 Definition ComparePointerToNil: val :=
   rec: "ComparePointerToNil" <> :=
     let: "s" := ref (zero_val uint64T) in
-    "s" ≠ slice.nil.
+    "s" ≠ #null.
 
 (* operators.go *)
 

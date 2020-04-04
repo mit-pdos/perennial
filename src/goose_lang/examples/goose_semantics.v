@@ -451,7 +451,12 @@ Definition failing_testCompareSliceToNil: val :=
 Definition testComparePointerToNil: val :=
   rec: "testComparePointerToNil" <> :=
     let: "s" := ref (zero_val uint64T) in
-    "s" ≠ slice.nil.
+    "s" ≠ #null.
+
+Definition testCompareNilToNil: val :=
+  rec: "testCompareNilToNil" <> :=
+    let: "s" := ref (zero_val (refT uint64T)) in
+    (![refT uint64T] "s" = #null).
 
 (* operations.go *)
 
@@ -822,7 +827,7 @@ Definition testStructConstructions: val :=
       "x" ::= #0;
       "y" ::= #0
     ] in
-    "ok" <-[boolT] ![boolT] "ok" && (![refT (struct.t TwoInts.S)] "p1" = slice.nil);;
+    "ok" <-[boolT] ![boolT] "ok" && (![refT (struct.t TwoInts.S)] "p1" = #null);;
     "p1" <-[refT (struct.t TwoInts.S)] struct.alloc TwoInts.S (zero_val (struct.t TwoInts.S));;
     "ok" <-[boolT] ![boolT] "ok" && (![struct.t TwoInts.S] "p2" = "p3");;
     "ok" <-[boolT] ![boolT] "ok" && ("p3" = "p4");;
@@ -1044,9 +1049,9 @@ Definition Open: val :=
       "l" ::= "l"
     ].
 
-(* test *)
-Definition testWal: val :=
-  rec: "testWal" <> :=
+(* disabled since performance is quite poor *)
+Definition disabled_testWal: val :=
+  rec: "disabled_testWal" <> :=
     let: "ok" := ref_to boolT #true in
     let: "lg" := New #() in
     (if: Log__BeginTxn "lg"
