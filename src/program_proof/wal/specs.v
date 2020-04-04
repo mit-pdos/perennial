@@ -419,7 +419,6 @@ Proof.
            rewrite take_length.
            admit. (* XXX *)
          }
-         Search lookup cons.
          rewrite lookup_cons_ne_0.
          {
            admit. (* XXX *)
@@ -532,7 +531,6 @@ Proof.
     specialize (H4 (Init.Nat.pred j) u1).
     eapply H4; eauto.
     1: lia.
-    Search cons lookup.
     rewrite lookup_cons_ne_0 in H5; eauto.
     destruct (decide (j = 0%nat)); eauto.
     exfalso; lia.    
