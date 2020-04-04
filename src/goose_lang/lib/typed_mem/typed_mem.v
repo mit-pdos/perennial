@@ -260,8 +260,8 @@ Section goose_lang.
     {{{ RET LitV LitUnit; l ↦ v }}}.
   Proof.
     iIntros (Φ) "Hl HΦ". rewrite /Store.
-    wp_apply (wp_prepare_write with "Hl"); iIntros "Hl".
-    by wp_apply (wp_finish_store with "Hl").
+    wp_apply (wp_prepare_write with "Hl"); iIntros "[Hl Hl']".
+    by wp_apply (wp_finish_store with "[$Hl $Hl']").
   Qed.
 
   Theorem wp_StoreAt stk E l t v0 v :

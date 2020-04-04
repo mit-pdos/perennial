@@ -223,7 +223,7 @@ Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
 
 Lemma test_resolution1 l v :
-  l ↦ v -∗ (na_heap_mapsto (hG := heapG_na_heapG) l 1 (v)).
+  l ↦ v -∗ (heap_mapsto (hG := heapG_na_heapG) l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
@@ -235,7 +235,7 @@ Proof using Type.
 Qed.
 
 Lemma test_resolution3 l v :
-  l ↦ v -∗ (na_heap_mapsto l 1 (v)).
+  l ↦ v -∗ (heap_mapsto l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.

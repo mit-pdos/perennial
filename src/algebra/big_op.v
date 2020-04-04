@@ -262,17 +262,17 @@ Proof.
   typeclasses eauto.
 Qed.
 
-Definition Conflicting {L V} (P : L -> V -> PROP) :=
+Definition Conflicting {L V} (P0 P1 : L -> V -> PROP) :=
   ∀ a0 v0 a1 v1,
-    P a0 v0 -∗ P a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.
+    P0 a0 v0 -∗ P1 a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.
 
-Lemma big_sepM_disjoint_pred {L V} {P : L -> V -> PROP} `{!EqDecision L} `{!Countable L}
-  `{!∀ l v, Absorbing (P l v)}
-  `{!∀ l v, Absorbing (P l v)}
-  `(Conflicting P)
+Lemma big_sepM_disjoint_pred {L V} {P0 P1 : L -> V -> PROP} `{!EqDecision L} `{!Countable L}
+  `{!∀ l v, Absorbing (P0 l v)}
+  `{!∀ l v, Absorbing (P1 l v)}
+  `(Conflicting P0 P1)
   (m0 m1 : gmap L V) :
-  ( ( [∗ map] a↦v ∈ m0, P a v ) -∗
-    ( [∗ map] a↦v ∈ m1, P a v ) -∗
+  ( ( [∗ map] a↦v ∈ m0, P0 a v ) -∗
+    ( [∗ map] a↦v ∈ m1, P1 a v ) -∗
     ⌜ m0 ##ₘ m1 ⌝ ).
 Proof.
   iIntros "H0 H1".

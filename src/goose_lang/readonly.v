@@ -50,7 +50,7 @@ Section goose_lang.
     iIntros "Hl1 Hl2".
     iDestruct "Hl1" as (q1) "Hl1".
     iDestruct "Hl2" as (q2) "Hl2".
-    iDestruct (@na_heap_mapsto_agree with "[$]") as %Heq.
+    iDestruct (@heap_mapsto_agree with "[$]") as %Heq.
     inversion Heq; auto.
   Qed.
 

@@ -39,6 +39,32 @@ Definition mapsto_txn {K} (gData : gmap u64 (sigT (fun K => gen_heapG u64 (updat
     mapsto (hG := hG) a.(addrOff) 1 (UB v γm) ∗
     own γm (◯ (Excl' true)).
 
+Theorem mapsto_txn_2 {K} gData a v0 v1 :
+  @mapsto_txn K gData a v0 -∗
+  @mapsto_txn K gData a v1 -∗
+  False.
+Proof.
+  rewrite /mapsto_txn.
+  iIntros "H0 H1".
+  iDestruct "H0" as (g0 m0) "(% & % & H0m & H0own)".
+  iDestruct "H1" as (g1 m1) "(% & % & H1m & H1own)".
+  rewrite H0 in H2; inversion H2.
+  apply eq_sigT_eq_dep in H4.
+  apply Eqdep_dec.eq_dep_eq_dec in H4; subst.
+  2: apply bufDataKind_eq_dec.
+  iDestruct (mapsto_valid_2 with "H0m H1m") as %x.
+  exfalso; eauto.
+Qed.
+
+Theorem mapsto_txn_valid {K} gData a v :
+  @mapsto_txn K gData a v -∗
+  ⌜ valid_addr a ⌝.
+Proof.
+  rewrite /mapsto_txn.
+  iIntros "H".
+  iDestruct "H" as (h g) "[% _]"; done.
+Qed.
+
 Definition txn_bufDataT_in_block {K} (installed : Block) (bs : list Block)
                                  (gm : gmap u64 (updatable_buf (@bufDataT K))) : iProp Σ :=
   (

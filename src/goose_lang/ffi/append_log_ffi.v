@@ -627,10 +627,11 @@ Proof.
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
     { apply head_prim_step. simpl. econstructor.
-      * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
-        ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
-        ** simpl. rewrite Heq. repeat econstructor.
-      * repeat econstructor.
+    * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+      ** apply fresh_locs_non_null; lia.
+      ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+      ** simpl. rewrite Heq. repeat econstructor.
+    * repeat econstructor.
     }
     { solve_ndisj. }
     iMod (ghost_step_init_stuck with "Hj' [$] [$]") as "[]".
@@ -685,6 +686,7 @@ Proof.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step. simpl. econstructor.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+      ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
       ** simpl. rewrite Heq. repeat econstructor.
     * repeat econstructor.
@@ -754,6 +756,7 @@ Proof.
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
     { apply head_prim_step. simpl. econstructor.
       * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+        ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
         ** simpl. rewrite Heq. repeat econstructor.
       * repeat econstructor.
@@ -783,6 +786,7 @@ Proof.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step. simpl. econstructor.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+      ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
       ** simpl. rewrite Heq. repeat econstructor.
     * repeat econstructor.
