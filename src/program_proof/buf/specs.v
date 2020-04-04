@@ -262,6 +262,15 @@ Theorem wp_BufMap__DirtyBufs l m :
         is_buf bufptr (fst addrbuf) (snd addrbuf)
   }}}.
 Proof using.
+Opaque struct.t.
+  iIntros (Φ) "Hisbufmap HΦ".
+  iDestruct "Hisbufmap" as (addrs bm am) "(Haddrs & Hismap & % & Hmap)".
+  wp_call.
+  wp_apply wp_ref_of_zero; eauto.
+  iIntros (bufs) "Hbufs".
+  wp_loadField.
+  wp_apply wp_MapIter.
+Transparent struct.t.
 Admitted.
 
 Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 elemsize).
@@ -305,12 +314,18 @@ Proof using.
   wp_pures.
   iApply "HΦ".
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
+
+  iDestruct (heap_mapsto_non_null with "[Hb.a]") as %Hnotnull.
+  { iDestruct "Hb.a" as "[[[Hb _] _] _]".
+    repeat rewrite loc_add_0. iFrame. }
+
   iExists _, _.
   iFrame.
   iSplitL; try done.
   iSplitL; try done.
-  admit.
-Admitted.
+
+  iPureIntro. congruence.
+Qed.
 
 Theorem wp_MkBufLoad K a blk s (bufdata : @bufDataT K) :
   {{{
@@ -342,6 +357,11 @@ Proof using.
   wp_pures.
   iApply "HΦ".
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
+
+  iDestruct (heap_mapsto_non_null with "[Hb.a]") as %Hnotnull.
+  { iDestruct "Hb.a" as "[[[Hb _] _] _]".
+    repeat rewrite loc_add_0. iFrame. }
+
   iExists _, _.
   iFrame.
   iSplitR; first done.
@@ -349,12 +369,16 @@ Proof using.
   destruct bufdata; cbn; cbn in H.
   - destruct H; intuition.
     iSplitR.
-    { admit. }
+    { iPureIntro. congruence. }
     iExists _.
     iSplitL; last eauto.
     admit.
-  - admit.
+  - iSplitR.
+    { iPureIntro. congruence. }
+    admit.
   - intuition subst.
+    iSplitR.
+    { iPureIntro. congruence. }
     rewrite H3.
     admit.
 Admitted.

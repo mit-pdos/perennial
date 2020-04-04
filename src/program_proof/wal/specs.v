@@ -378,10 +378,13 @@ Proof.
     specialize (H0 (int.nat pos+x0)).
     apply H0.
     {
-      admit.
+      rewrite lookup_drop in H1; auto.
+      admit. (* XXX *)
+      
     }
     rewrite firstn_skipn.
-    admit.
+    rewrite lookup_drop in H1.
+    admit. (* XXX word/nat *)
   }
   generalize dependent (drop (int.nat pos) l).
   intro.
@@ -396,13 +399,36 @@ Proof.
         apply elem_of_list_here.
       }
       apply IHl0.
-      -- admit.
+      -- rewrite app_length in H.
+         rewrite app_length.
+         rewrite cons_length in H.
+         lia.
       -- intros. 
-         specialize (H0 u (int.nat pos + 1)).
-         apply H0.
-         1: admit.
-         admit.
-      -- admit.
+         specialize (H0 u (int.nat pos' + 1)).
+         apply H0; auto.
+         {
+           admit. (* word *)
+         }
+         rewrite lookup_app_r in H3.
+         2: {
+           rewrite take_length.
+           admit. (* XXX *)
+         }
+         rewrite lookup_app_r.
+         2: {
+           rewrite take_length.
+           admit. (* XXX *)
+         }
+         Search lookup cons.
+         rewrite lookup_cons_ne_0.
+         {
+           admit. (* XXX *)
+         }
+         word_cleanup.
+         admit. (* XXX *)
+      -- intros.
+         specialize (H1 x).
+         apply elem_of_list_further with (y := a0) in H2; auto.
 Admitted.
 
 Theorem no_updates_since_last_disk σ a (pos : u64) :
@@ -459,7 +485,7 @@ Proof.
     destruct u.
     rewrite lookup_insert_ne in H0; eauto.
     simpl in *.
-    admit.
+    admit. (* XXX *)
   - intros.
     rewrite apply_upds_cons in H0.
     rewrite apply_upds_cons.
@@ -468,7 +494,11 @@ Proof.
     rewrite apply_update_ne in H0; eauto.
     specialize (IHl (apply_upds [a0] d) H0).
     intuition.
-    
+    destruct (decide (a0.(update.addr) = a)).
+    {
+      rewrite lookup_apply_update_ne in H0; eauto.
+    }
+    rewrite lookup_apply_update_ne in H0; eauto.
 Admitted.
 
 Theorem lookup_apply_upds d (pos: u64):
@@ -488,18 +518,30 @@ Proof.
     {
       admit.
     }
-    
     apply lookup_apply_upds_cons_ne in H; eauto.
     intuition.
     destruct H1 as [i [u H1]].
     intuition.
     right.
     exists (S i), u.
+    split.
+    1: rewrite lookup_cons_ne_0; eauto.
+    split; eauto.
+    split; eauto.
+    intros.
+    specialize (H4 (Init.Nat.pred j) u1).
+    eapply H4; eauto.
+    1: lia.
+    Search cons lookup.
+    rewrite lookup_cons_ne_0 in H5; eauto.
+    destruct (decide (j = 0%nat)); eauto.
+    exfalso; lia.    
 Admitted.
 
 Theorem apply_upds_since_pos_new d (pos: u64) (pos': u64):
   forall l a b b1,
     int.val pos <= int.val pos' ->
+    int.val pos' <= length l ->
     apply_upds (take (int.nat pos) l) d !! int.val a = Some b ->
     apply_upds (take (int.nat pos') l) d !! int.val a = Some b1 ->
     b ≠ b1 ->
@@ -507,26 +549,32 @@ Theorem apply_upds_since_pos_new d (pos: u64) (pos': u64):
               /\ u.(update.addr) = a /\ u.(update.b) = b1).
 Proof.
   intros.
-  replace (take (int.nat pos') l) with (take (int.nat pos) l ++ drop (int.nat pos) (take (int.nat pos') l)) in H1.
+  replace (take (int.nat pos') l) with (take (int.nat pos) l ++ drop (int.nat pos) (take (int.nat pos') l)) in H2.
   2: {
     rewrite skipn_firstn_comm.
     rewrite take_take_drop.
     assert (int.nat pos + (int.nat pos' - int.nat pos) = int.nat pos').
     + word.
-    + admit.
+    + admit. (* XXX *)
   }
-  rewrite apply_upds_app in H1.
-  apply lookup_apply_upds in H1 as H1'; eauto.
+  rewrite apply_upds_app in H2.
+  apply lookup_apply_upds in H2 as H2'; eauto.
   intuition.
   1: destruct (decide (b = b1)); congruence. 
-  destruct H3 as [i [u H3]].
+  destruct H4 as [i [u H4]].
   exists i, u.
   intuition.
-  (* plausible based on H4 and H7 *)
+  rewrite lookup_drop.
+  rewrite lookup_drop in H5.
+  apply lookup_lt_Some in H5 as H5'.
+  rewrite -> firstn_length in H5'.
+  rewrite lookup_take in H5; auto.
+  (* Min.min_l H0 *)
 Admitted.
 
 Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
   int.val pos ≤ int.val diskpos ->
+  int.val diskpos <= length (σ.(log_state.updates)) ->
   disk_at_pos (int.nat pos) σ !! int.val a = Some installedb ->
   disk_at_pos (int.nat diskpos) σ !! int.val a = Some b ->
   b ∈ installedb :: updates_since pos a σ.
@@ -542,7 +590,7 @@ Proof.
   }
   eapply apply_upds_since_pos_new with (pos := pos) (pos' := diskpos) in H0; eauto.
   destruct H0. destruct H0. intuition.
-  apply elem_of_list_lookup_2 in H2.
+  apply elem_of_list_lookup_2 in H3.
   rewrite elem_of_list_In.
   assert (In b (map update.b (filter (λ u : update.t, u.(update.addr) = a) (drop (int.nat pos) l)))).
   {
