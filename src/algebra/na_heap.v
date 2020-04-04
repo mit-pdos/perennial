@@ -187,7 +187,7 @@ Section na_heap.
   Proof.
     iIntros "H● H◯".
     iDestruct (own_valid_2 with "H● H◯") as %[Hl?]%auth_both_valid.
-    iPureIntro. move: Hl=> /singleton_included [[[q' ls'] dv]].
+    iPureIntro. move: Hl=> /singleton_included_l [[[q' ls'] dv]].
     rewrite /to_na_heap lookup_fmap fmap_Some_equiv.
     move=> [[[ls'' v'] [?[[/=??]->]]]]; simplify_eq.
     move=> /Some_pair_included_total_2
@@ -206,7 +206,7 @@ Section na_heap.
   Proof.
     iIntros "H● H◯".
     iDestruct (own_valid_2 with "H● H◯") as %[Hl?]%auth_both_valid.
-    iPureIntro. move: Hl=> /singleton_included [[[q' ls'] dv]].
+    iPureIntro. move: Hl=> /singleton_included_l [[[q' ls'] dv]].
     rewrite /to_na_heap lookup_fmap fmap_Some_equiv.
     move=> [[[ls'' v'] [?[[/=??]->]]] Hincl]; simplify_eq.
     apply (Some_included_exclusive _ _) in Hincl as [? Hval]; last by destruct (tls ls'') eqn:Hls''.

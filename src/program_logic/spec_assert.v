@@ -195,7 +195,7 @@ Section ghost_step.
   Lemma tpool_singleton_included1 tp j e :
     {[j := Excl e]} ≼ tpool_to_res tp → tpool_to_res tp !! j = Some (Excl e).
   Proof.
-    intros (x&Hlookup&Hexcl)%singleton_included.
+    intros (x&Hlookup&Hexcl)%singleton_included_l.
     destruct (tpool_to_res_lookup_excl tp j x) as (e'&Heq); setoid_subst; eauto.
     apply Excl_included in Hexcl; setoid_subst; auto.
   Qed.
