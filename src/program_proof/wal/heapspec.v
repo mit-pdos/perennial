@@ -221,10 +221,10 @@ Proof.
     assert (b ∈ installed :: updates_since x a σ).
     {
       eapply updates_since_apply_upds.
-      2: eauto.
-      2: eauto.
-      simpl.
-      lia.
+      3: eauto.
+      3: eauto.
+      1: simpl; lia.
+      simpl. admit.
     }
 
     inversion H6.
@@ -252,7 +252,7 @@ Proof.
   }
 
   iExists _. iFrame.
-Qed.
+Admitted.
 
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
   [∗ list] _ ↦ u; old ∈ bs; olds,
