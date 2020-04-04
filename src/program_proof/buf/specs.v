@@ -376,4 +376,43 @@ Proof using.
   iExists _, _. iFrame. done.
 Qed.
 
+Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : @bufDataT k') :
+  {{{
+    is_buf bufptr a b ∗
+    is_buf_data vslice v' a ∗
+    ⌜ k' = b.(bufKind) ⌝
+  }}}
+    struct.storeF buf.Buf.S "Data" #bufptr (slice_val vslice)
+  {{{
+    RET #();
+    is_buf bufptr a (Build_buf k' v' b.(bufDirty))
+  }}}.
+Proof using.
+  iIntros (Φ) "(Hisbuf & Hisbufdata & %) HΦ".
+  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  wp_apply (wp_storeField with "Hdata"); eauto.
+  { eapply slice_val_ty. } (* XXX why does [val_ty] fail? *)
+  iIntros "Hdata".
+  iApply "HΦ".
+  iExists _, _. iFrame. subst. done.
+Qed.
+
+Theorem wp_Buf__SetDirty bufptr a b :
+  {{{
+    is_buf bufptr a b
+  }}}
+    Buf__SetDirty #bufptr
+  {{{
+    RET #();
+    is_buf bufptr a (Build_buf b.(bufKind) b.(bufData) true)
+  }}}.
+Proof.
+  iIntros (Φ) "Hisbuf HΦ".
+  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  wp_call.
+  wp_storeField.
+  iApply "HΦ".
+  iExists _, _. iFrame. done.
+Qed.
+
 End heap.

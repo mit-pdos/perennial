@@ -43,6 +43,7 @@ Definition BufTxn__OverWrite: val :=
     (if: (![refT (struct.t buf.Buf.S)] "b" = #null)
     then
       "b" <-[refT (struct.t buf.Buf.S)] buf.MkBuf "addr" "sz" "data";;
+      buf.Buf__SetDirty (![refT (struct.t buf.Buf.S)] "b");;
       buf.BufMap__Insert (struct.loadF BufTxn.S "bufs" "buftxn") (![refT (struct.t buf.Buf.S)] "b")
     else
       (if: "sz" ≠ struct.loadF buf.Buf.S "Sz" (![refT (struct.t buf.Buf.S)] "b")
@@ -50,8 +51,8 @@ Definition BufTxn__OverWrite: val :=
         Panic "overwrite";;
         #()
       else #());;
-      struct.storeF buf.Buf.S "Data" (![refT (struct.t buf.Buf.S)] "b") "data");;
-    buf.Buf__SetDirty (![refT (struct.t buf.Buf.S)] "b").
+      struct.storeF buf.Buf.S "Data" (![refT (struct.t buf.Buf.S)] "b") "data";;
+      buf.Buf__SetDirty (![refT (struct.t buf.Buf.S)] "b")).
 
 Definition BufTxn__NDirty: val :=
   rec: "BufTxn__NDirty" "buftxn" :=
