@@ -63,7 +63,8 @@ class TimingDb:
 
     def add_file(self, fname, time):
         self.conn.execute(
-            """INSERT OR REPLACE INTO file_timings VALUES (?,?)""", (fname, time)
+            """INSERT OR REPLACE INTO file_timings VALUES (?,?)""",
+            (fname, time),
         )
 
     def close(self):
@@ -103,7 +104,11 @@ class Classify:
         m = cls.TIME_RE.match(s)
         if m is None:
             return None
-        return (int(m.group("start")), int(m.group("end")), float(m.group("time")))
+        return (
+            int(m.group("start")),
+            int(m.group("end")),
+            float(m.group("time")),
+        )
 
 
 class CoqcFilter:

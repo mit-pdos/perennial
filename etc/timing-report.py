@@ -22,7 +22,9 @@ def read_db(fname):
     qed_sum = qed_df.groupby("fname").sum()
     raw_file_df = pd.DataFrame(file_timings, columns=["fname", "time"])
     file_df = raw_file_df.join(qed_sum, rsuffix="_qed", on="fname")
-    file_df.rename(mapper={"time_qed": "qed_time"}, axis="columns", inplace=True)
+    file_df.rename(
+        mapper={"time_qed": "qed_time"}, axis="columns", inplace=True
+    )
     file_df.fillna(value={"qed_time": 0.0}, inplace=True)
     return qed_df, file_df
 
@@ -39,10 +41,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--max-files", type=int, default=10, help="number of slow files to show",
+        "--max-files",
+        type=int,
+        default=10,
+        help="number of slow files to show",
     )
     parser.add_argument(
-        "--max-qeds", type=int, default=0, help="number of slow QED proofs to show",
+        "--max-qeds",
+        type=int,
+        default=0,
+        help="number of slow QED proofs to show",
     )
     parser.add_argument(
         "--db", help="sqlite database of timing info", default=".timing.sqlite3"
@@ -62,18 +70,24 @@ if __name__ == "__main__":
     print(
         "{:12s} {:>6.1f}".format(
             "  Iris",
-            filter_df(file_df, col="fname", pat="^external/iris-coq")["time"].sum(),
+            filter_df(file_df, col="fname", pat="^external/iris-coq")[
+                "time"
+            ].sum(),
         )
     )
     print(
         "{:12s} {:>6.1f}".format(
             "  stdpp",
-            filter_df(file_df, col="fname", pat="^external/stdpp")["time"].sum(),
+            filter_df(file_df, col="fname", pat="^external/stdpp")[
+                "time"
+            ].sum(),
         )
     )
     qed_s = file_df["qed_time"].sum()
     print(
-        "{:12s} {:>6.1f} ({:0.0f}%)".format("Qed total", qed_s, qed_s / total_s * 100)
+        "{:12s} {:>6.1f} ({:0.0f}%)".format(
+            "Qed total", qed_s, qed_s / total_s * 100
+        )
     )
 
     if args.max_files > 0 or args.max_qeds > 0:
