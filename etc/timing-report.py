@@ -39,11 +39,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--max", type=int, default=10, help="number of slowest files and proofs to show"
+        "--max-files", type=int, default=10, help="number of slow files to show",
     )
-    parser.add_argument("--db",
-            help="sqlite database of timing info",
-            default=".timing.sqlite3")
+    parser.add_argument(
+        "--max-qeds", type=int, default=0, help="number of slow QED proofs to show",
+    )
+    parser.add_argument(
+        "--db", help="sqlite database of timing info", default=".timing.sqlite3"
+    )
 
     args = parser.parse_args()
 
@@ -54,27 +57,31 @@ if __name__ == "__main__":
     pd.set_option("display.max_rows", 100)
     pd.set_option("display.max_columns", 10)
     pd.set_option("display.width", 300)
-    print("{:12s} {:>6.1f}".format("total", file_df["time"].sum()))
+    total_s = file_df["time"].sum()
+    print("{:12s} {:>6.1f}".format("total", total_s))
     print(
         "{:12s} {:>6.1f}".format(
-            " Iris",
+            "  Iris",
             filter_df(file_df, col="fname", pat="^external/iris-coq")["time"].sum(),
         )
     )
     print(
         "{:12s} {:>6.1f}".format(
-            " stdpp",
+            "  stdpp",
             filter_df(file_df, col="fname", pat="^external/stdpp")["time"].sum(),
         )
     )
-    print("{:12s} {:>6.1f}".format("Qed total", file_df["qed_time"].sum()))
+    qed_s = file_df["qed_time"].sum()
+    print(
+        "{:12s} {:>6.1f} ({:0.0f}%)".format("Qed total", qed_s, qed_s / total_s * 100)
+    )
 
-    if args.max > 0:
+    if args.max_files > 0 or args.max_qeds > 0:
         print()
         print("slow files:")
-        print(file_df.nlargest(args.max, "time"))
+        print(file_df.nlargest(args.max_files, "time").to_string(index=False))
 
-        if len(qed_df) > 0:
+        if args.max_qeds > 0 and len(qed_df) > 0:
             print()
             print("slow QEDs:")
-            print(qed_df.nlargest(args.max, "time"))
+            print(qed_df.nlargest(args.max_qeds, "time").to_string(index=False))
