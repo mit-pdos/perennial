@@ -84,7 +84,7 @@ Section to_gen_dir.
     {[l1 := {[ l2 := (q, to_agree v)]} ]} ≼ to_gen_dir σ →
     ∃ σd, σ !! l1 = Some σd ∧ σd !! l2 = Some v.
   Proof.
-    rewrite singleton_included=> -[[q' av] []].
+    rewrite singleton_included_l=> -[[q' av] []].
     rewrite /to_gen_dir lookup_fmap fmap_Some_equiv => -[σd [Hl ->]].
     move=>/Some_included_total. eauto using gen_heap_singleton_included.
   Qed.
@@ -104,7 +104,7 @@ Section to_gen_dir.
 End to_gen_dir.
 
 Lemma gen_dir_init `{gen_dirPreG L1 L2 V Σ} σ :
-  (|==> ∃ _ : gen_dirG L1 L2 V Σ, gen_dir_ctx σ)%I.
+  ⊢ |==> ∃ _ : gen_dirG L1 L2 V Σ, gen_dir_ctx σ.
 Proof.
   iMod (own_alloc (● to_gen_dir σ)) as (γ) "Hh".
   { rewrite auth_auth_valid. exact: to_gen_dir_valid. }
@@ -112,9 +112,9 @@ Proof.
 Qed.
 
 Lemma gen_dir_strong_init `{gen_dirPreG L1 L2 V Σ} σ :
-  (|==> ∃ (H0 : gen_dirG L1 L2 V Σ)
+  ⊢ |==> ∃ (H0 : gen_dirG L1 L2 V Σ)
           (Hpf: @gen_dir_inG _ _ _ _ _ _ _ _ H0  = gen_dir_preG_inG), gen_dir_ctx σ ∗
-    own (gen_dir_name H0) (◯ (to_gen_dir σ)))%I.
+    own (gen_dir_name H0) (◯ (to_gen_dir σ)).
 Proof.
   iMod (own_alloc (● to_gen_dir σ ⋅ ◯ to_gen_dir σ)) as (γ) "(?&?)".
   { apply auth_both_valid; split; auto. exact: to_gen_dir_valid. }

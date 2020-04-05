@@ -43,7 +43,8 @@ Section list.
     apply Forall2_same_length_lookup.
     eapply Forall2_same_length_lookup in H.
     intuition idtac.
-    pose proof (lookup_seq_inv _ _ _ _ H); intuition subst.
+    pose proof H as Hlookup.
+    apply lookup_seq in Hlookup; intuition subst.
     apply H0; eauto.
   Qed.
 End list.
