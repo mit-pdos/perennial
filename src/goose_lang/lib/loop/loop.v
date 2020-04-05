@@ -133,6 +133,9 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
+Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
+iExists _; iFrame; iPureIntro; word : core.
+
 Theorem wpc_forUpto (I: u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
   int.val start <= int.val max ->
   (∀ (i:u64),
@@ -149,10 +152,7 @@ Proof.
   iIntros (Hstart_max) "#Hbody".
   iIntros (Φ Φc) "!> (H0 & Hl) HΦ".
   rewrite /For /Continue.
-  wpc_rec Hcrash.
-  { crash_case.
-    iExists _; iFrame.
-    iPureIntro; word. }
+  wpc_rec Hcrash; first by crash_case; auto.
   wpc_let Hcrash.
   wpc_let Hcrash.
   wpc_pure (Rec _ _ _) Hcrash.
@@ -165,62 +165,43 @@ Proof.
   iDestruct "H0" as "HIx".
   clear Hcrash.
   iLöb as "IH" forall (x Hbounds).
-  wpc_pures.
-  { iExists _; iFrame.
-    iPureIntro; word. }
+  wpc_pures; first by auto.
   wpc_bind (load_ty _ _).
   wpc_frame "HIx HΦ".
   { iIntros "(HIx&HΦ)".
-    crash_case.
-    iExists _; iFrame.
-    iPureIntro; word. }
+    crash_case; auto. }
   wp_load.
   iIntros "(HIx&HΦ)".
-  wpc_pures.
-  { iExists _; iFrame.
-    iPureIntro; word. }
-  wpc_if_destruct.
-  - wpc_pures.
-    { iExists _; iFrame.
-      iPureIntro; word. }
-    wpc_apply ("Hbody" with "[$HIx $Hl]").
+  wpc_pures; first by auto.
+  wpc_if_destruct; wpc_pures; auto.
+  - wpc_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
     iSplit.
-    { iIntros "[IH1 | IH2]"; crash_case.
-      - iExists _; iFrame; iPureIntro; word.
-      - iExists _; iFrame; iPureIntro; word. }
+    { iIntros "[IH1 | IH2]"; crash_case; auto. }
     iIntros "!> [HIx Hl]".
-    wpc_pures.
-    { iExists _; iFrame.
-      iPureIntro; word. }
+    wpc_pures; first by auto.
     wpc_bind (store_ty _ _).
     wpc_frame "HIx HΦ".
     { iIntros "(HIx&HΦ)".
-      crash_case.
-      iExists _; iFrame.
-      iPureIntro; word. }
+      crash_case; auto. }
     wp_load.
     wp_store.
     iIntros "(HIx&HΦ)".
     wpc_pure _ Hcrash.
-    { crash_case.
-      iExists _; iFrame.
-      iPureIntro; word. }
+    { crash_case; auto. }
     wpc_pure _ Hcrash.
     iApply ("IH" with "[] HIx Hl").
     { iPureIntro; word. }
     iSplit.
     + iIntros "HIx".
       iDestruct "HIx" as (x') "[HI %]".
-      crash_case.
+      crash_case; auto.
       iExists _; iFrame.
       iPureIntro; revert H; word.
     + iRight in "HΦ".
       iFrame.
   - assert (int.val x = int.val max) by word.
     apply word.unsigned_inj in H; subst.
-    wpc_pures.
-    { iExists _; iFrame; iPureIntro; word. }
     iApply ("HΦ" with "[$]").
 Qed.
 
