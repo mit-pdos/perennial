@@ -570,26 +570,23 @@ Proof.
       * wp_pures.
         admit.
       * wp_pures.
-        iDestruct (struct_mapsto_singleton with "Hcommit") as "Hcommit"; eauto.
-        wp_apply (wp_load with "Hcommit"); iIntros "Hcommit".
+        wp_load.
         iApply "HΦ".
         iFrame.
 
     + wp_pures.
       wp_apply util_proof.wp_DPrintf.
       wp_pures.
-      iDestruct (struct_mapsto_singleton with "Hcommit") as "Hcommit"; eauto.
-      wp_apply (wp_store with "Hcommit"); iIntros "Hcommit".
+      wp_store.
       wp_pures.
-      wp_apply (wp_load with "Hcommit"); iIntros "Hcommit".
+      wp_load.
       iApply "HΦ".
       iFrame.
 
   - wp_pures.
     wp_apply util_proof.wp_DPrintf.
     wp_pures.
-    iDestruct (struct_mapsto_singleton with "Hcommit") as "Hcommit"; eauto.
-    wp_apply (wp_load with "Hcommit"); iIntros "Hcommit".
+    wp_load.
     iApply "HΦ".
 
     iDestruct (is_slice_sz with "Hbufs") as %Hbuflistlen.
@@ -621,13 +618,12 @@ Proof.
   wp_apply wp_ref_to; eauto.
   iIntros (id) "Hid".
   wp_pures.
-  iDestruct (struct_mapsto_singleton with "Hid") as "Hid"; eauto.
-  wp_apply (wp_load with "Hid"); iIntros "Hid".
+  wp_load.
   wp_pures.
   destruct (bool_decide (#nextId = #0)); wp_pures.
   - wp_loadField.
     wp_storeField.
-    wp_apply (wp_store with "Hid"); iIntros "Hid".
+    wp_store.
     wp_loadField.
     wp_storeField.
     wp_loadField.
@@ -635,7 +631,7 @@ Proof.
     {
       iExists _, _, _. iFrame.
     }
-    wp_apply (wp_load with "Hid"); iIntros "Hid".
+    wp_load.
     iApply "HΦ". done.
   - wp_loadField.
     wp_storeField.
@@ -644,7 +640,7 @@ Proof.
     {
       iExists _, _, _. iFrame.
     }
-    wp_apply (wp_load with "Hid"); iIntros "Hid".
+    wp_load.
     iApply "HΦ". done.
 Qed.
 

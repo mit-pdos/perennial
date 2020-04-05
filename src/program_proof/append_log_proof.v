@@ -12,7 +12,8 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Local Opaque struct_mapsto load_ty store_ty.
+(* TODO: is this still needed? *)
+Local Opaque struct_mapsto.
 
 Notation length := strings.length.
 

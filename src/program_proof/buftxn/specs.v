@@ -310,15 +310,13 @@ Opaque struct.t.
   destruct (gBufmap !! a) eqn:Hbufmap_a.
   - iDestruct "Hbufmapptr" as "[Hisbuf Hisbufmap]".
     iDestruct (is_buf_not_null with "Hisbuf") as "%".
-    wp_apply (wp_load with "[Hb]").
-    { iDestruct "Hb" as "[[Hb _] %]". rewrite loc_add_0. iFrame. }
-    iIntros "Hb".
+    wp_load.
     wp_pures.
     destruct (bool_decide (#bufptr = #null)) eqn:Hbooldec.
     { apply bool_decide_eq_true_1 in Hbooldec; congruence. }
     wp_pures.
     replace (bufSz (projT1 v)) with (bufSz (projT1 v0)) by congruence.
-    wp_apply (wp_load with "Hb"); iIntros "Hb".
+    wp_load.
     wp_apply (wp_buf_loadField_sz with "Hisbuf"); iIntros "Hisbuf".
     iDestruct (big_sepM_lookup with "Hbufmapt") as %HmT_a; eauto.
     rewrite HmT_a2 in HmT_a; inversion HmT_a; subst.
@@ -327,14 +325,14 @@ Opaque struct.t.
     destruct (bool_decide (#(bufSz b0.(bufKind)) = #(bufSz b0.(bufKind)))) eqn:He.
     2: { apply bool_decide_eq_false_1 in He; congruence. }
     wp_pures.
-    wp_apply (wp_load with "Hb"); iIntros "Hb".
+    wp_load.
     wp_apply (wp_buf_storeField_data with "[$Hisbuf $Hvslice]"); eauto.
     iIntros "Hisbuf".
 
     iMod (gen_heap_update with "Hγtctx Ha") as "[Hγtctx Ha]".
 
     wp_pures.
-    wp_apply (wp_load with "Hb"); iIntros "Hb".
+    wp_load.
     wp_apply (wp_Buf__SetDirty with "Hisbuf"); iIntros "Hisbuf".
     iApply "HΦ".
     iFrame.
@@ -381,18 +379,16 @@ Opaque struct.t.
     destruct (gBufmap !! k); eauto.
 
   - iDestruct "Hbufmapptr" as "[-> Hisbufmap]".
-    wp_apply (wp_load with "[Hb]").
-    { iDestruct "Hb" as "[[Hb _] %]". rewrite loc_add_0. iFrame. }
-    iIntros "Hb".
+    wp_load.
     wp_pures.
     wp_apply (wp_MkBuf with "[$Hvslice]"); eauto.
     iIntros (bufptr) "Hisbuf".
     wp_pures.
-    wp_apply (wp_store with "Hb"); iIntros "Hb".
+    wp_store.
     wp_pures.
-    wp_apply (wp_load with "Hb"); iIntros "Hb".
+    wp_load.
     wp_apply (wp_Buf__SetDirty with "Hisbuf"); iIntros "Hisbuf".
-    wp_apply (wp_load with "Hb"); iIntros "Hb".
+    wp_load.
     wp_loadField.
 
     iMod (gen_heap_update with "Hγtctx Ha") as "[Hγtctx Ha]".

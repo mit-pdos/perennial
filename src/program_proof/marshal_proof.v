@@ -143,8 +143,6 @@ Proof. reflexivity. Qed.
 
 Hint Rewrite EncSz_fold : len.
 
-Local Opaque load_ty store_ty.
-
 Definition is_enc (enc: EncM.t) (vs: Rec) (free:Z): iProp Σ :=
   let encoded := encode vs in
   let encoded_len := Z.of_nat (length encoded) in

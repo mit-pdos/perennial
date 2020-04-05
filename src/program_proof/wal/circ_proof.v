@@ -156,8 +156,6 @@ Proof.
     iFrame.
 Abort.
 
-Local Opaque load_ty store_ty.
-
 Theorem wp_hdr2 (newStart: u64) :
   {{{ True }}}
     hdr2 #newStart
