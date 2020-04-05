@@ -37,13 +37,12 @@ Definition assert `(P : T -> Prop) : transition T unit :=
   suchThat (gen:=fun _ _ => None) (fun σ _ => P σ).
 
 Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
-  assert (fun σ => int.val σ.(start) <= int.val newStart <= int.val σ.(start) + length σ.(upds));;
+  assert (fun σ => int.val σ.(start) <= int.val newStart <= circΣ.diskEnd σ);;
   modify (fun σ => set upds (drop (Z.to_nat (int.val newStart - int.val σ.(start))%Z)) σ);;
   modify (set start (fun _ => newStart)).
 
 Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t unit :=
   assert (fun σ => circΣ.diskEnd σ = int.val endpos);;
-  assert (fun σ => circΣ.diskEnd σ + length l < 2^64);;
   modify (set circΣ.upds (fun u => u ++ l));;
   assert (fun σ => length σ.(upds) <= LogSz).
 
@@ -57,7 +56,6 @@ Context `{!crashG Σ}.
 
 Context `{!inG Σ (authR (optionUR (exclR (listO u64O))))}.
 Context `{!inG Σ (authR (optionUR (exclR (listO blockO))))}.
-Context `{!inG Σ fmcounterUR}.
 
 Context (N: namespace).
 Context (P: circΣ.t -> iProp Σ).
@@ -237,7 +235,7 @@ Qed.
 
 Lemma diskEnd_advance_unchanged:
   ∀ (newStart : u64) (σ : circΣ.t),
-    int.val (start σ) <= int.val newStart <= int.val (start σ) + length (upds σ) ->
+    int.val (start σ) <= int.val newStart <= circΣ.diskEnd σ ->
     circΣ.diskEnd
         (set start (λ _ : u64, newStart)
              (set upds (drop (Z.to_nat (int.val newStart - int.val (start σ)))) σ))
@@ -513,6 +511,7 @@ Theorem wp_circularAppender__logBlocks γ c d
         (endpos : u64) (bufs : Slice.t)
         (addrs : list u64) (blocks : list Block) diskaddrslice (upds : list update.t) Q :
   length addrs = Z.to_nat LogSz ->
+  int.val endpos + Z.of_nat (length upds) < 2^64 ->
   {{{ is_circular γ ∗
       own γ.(blocks_name) (◯ Excl' blocks) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
@@ -535,7 +534,7 @@ Theorem wp_circularAppender__logBlocks γ c d
         (∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
   }}}.
 Proof using Ptimeless.
-  iIntros ( (* Hendpos_overflow Hfits_log *) Haddrs_len Φ) "(#Hcirc & Hγblocks & Hdiskaddrs & Hslice & Hupdslice & Hhasspace) HΦ".
+  iIntros (Haddrs_len Hendpos_overflow Φ) "(#Hcirc & Hγblocks & Hdiskaddrs & Hslice & Hupdslice & Hhasspace) HΦ".
   wp_lam. wp_let. wp_let. wp_let.
   iDestruct (updates_slice_len with "Hupdslice") as %Hupdlen.
   iDestruct "Hupdslice" as (bks) "[Hupdslice Hbks]".
@@ -789,6 +788,7 @@ Proof.
 Qed.
 
 Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
+  int.val endpos + Z.of_nat (length upds) < 2^64 ->
   {{{ is_circular γ ∗
       updates_slice bufs upds ∗
       is_circular_appender γ c ∗
@@ -801,7 +801,7 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (
       updates_slice bufs upds ∗
       is_circular_appender γ c }}}.
 Proof using Ptimeless.
-  iIntros (Φ) "(#Hcirc & Hslice & Hca & Hfupd) HΦ".
+  iIntros (Hendpos_overflow Φ) "(#Hcirc & Hslice & Hca & Hfupd) HΦ".
   wp_call.
   iDestruct "Hca" as (bk_s addrs blocks' Hlow_wf) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
 
@@ -857,13 +857,14 @@ Proof using Ptimeless.
     destruct σ. rewrite /=.
     iSplitR.
     { iPureIntro.
-      simpl in H4. rewrite /set /=.
+      simpl in H3. rewrite /set /=.
       apply circ_wf_app; eauto.
+      word.
     }
     iExists _, _; iFrame "Haddrs Hblocks".
     iSplitR.
     { iPureIntro.
-      simpl in H4. rewrite /set /=.
+      simpl in H3. rewrite /set /=.
       apply has_circ_updates_app; eauto.
     }
     iSplitR; first by eauto.
@@ -871,8 +872,8 @@ Proof using Ptimeless.
     iPureIntro; intuition.
     { rewrite H. f_equal. f_equal. f_equal.
       f_equal. f_equal. rewrite /circΣ.diskEnd.
-      rewrite /set /= in H4 |- *.
-      autorewrite with len in H4 |- *.
+      rewrite /set /= in H3 |- *.
+      autorewrite with len in H3 |- *.
       destruct H0 as (?&?&?).
       unfold circΣ.diskEnd in *.
       cbn [circ_proof.start circ_proof.upds] in *.
