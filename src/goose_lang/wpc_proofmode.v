@@ -154,6 +154,9 @@ Proof.
   iApply (HΦc with "[$]").
 Qed.
 
+Tactic Notation "wpc_rec" simple_intropattern(H) := wpc_pure (App (RecV _ _ _) _) H.
+Tactic Notation "wpc_let" simple_intropattern(H) := wpc_pure (Rec BAnon (BNamed _) _) H; wpc_rec H.
+
 Ltac wpc_bind_core K :=
   lazymatch eval hnf in K with
   | [] => idtac

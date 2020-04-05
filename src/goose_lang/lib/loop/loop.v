@@ -1,10 +1,11 @@
-From Perennial.goose_lang Require Import notation proofmode typing.
+From Perennial.goose_lang Require Import notation typing.
+From Perennial.goose_lang Require Import proofmode wpc_proofmode.
 From Perennial.goose_lang.lib Require Export typed_mem loop.impl.
 
 Set Default Proof Using "Type".
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} `{!crashG Σ}.
 Context {ext_ty: ext_types ext}.
 
 Theorem wp_forBreak (I X: iProp Σ) stk E (body: val) :
@@ -131,4 +132,96 @@ Proof.
     apply word.unsigned_inj in H; subst.
     iApply ("HΦ" with "[$]").
 Qed.
+
+Theorem wpc_forUpto (I: u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
+  int.val start <= int.val max ->
+  (∀ (i:u64),
+      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.val i < int.val max⌝ }}}
+        body #() @ stk; k; E1; E2
+      {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦[uint64T] #i }}}
+      {{{ I i ∨ I (word.add i (U64 1)) }}}) -∗
+  {{{ I start ∗ l ↦[uint64T] #start }}}
+    (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
+       body) @ stk; k; E1; E2
+  {{{ RET #(); I max ∗ l ↦[uint64T] #max }}}
+  {{{ ∃ (i:u64), I i ∗ ⌜int.val start <= int.val i <= int.val max⌝ }}}.
+Proof.
+  iIntros (Hstart_max) "#Hbody".
+  iIntros (Φ Φc) "!> (H0 & Hl) HΦ".
+  rewrite /For /Continue.
+  wpc_rec Hcrash.
+  { crash_case.
+    iExists _; iFrame.
+    iPureIntro; word. }
+  wpc_let Hcrash.
+  wpc_let Hcrash.
+  wpc_pure (Rec _ _ _) Hcrash.
+  match goal with
+  | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
+  end.
+  remember start as x.
+  assert (int.val start <= int.val x <= int.val max) as Hbounds by (subst; word).
+  clear Heqx Hstart_max.
+  iDestruct "H0" as "HIx".
+  clear Hcrash.
+  iLöb as "IH" forall (x Hbounds).
+  wpc_pures.
+  { iExists _; iFrame.
+    iPureIntro; word. }
+  wpc_bind (load_ty _ _).
+  wpc_frame "HIx HΦ".
+  { iIntros "(HIx&HΦ)".
+    crash_case.
+    iExists _; iFrame.
+    iPureIntro; word. }
+  wp_load.
+  iIntros "(HIx&HΦ)".
+  wpc_pures.
+  { iExists _; iFrame.
+    iPureIntro; word. }
+  wpc_if_destruct.
+  - wpc_pures.
+    { iExists _; iFrame.
+      iPureIntro; word. }
+    wpc_apply ("Hbody" with "[$HIx $Hl]").
+    { iPureIntro; lia. }
+    iSplit.
+    { iIntros "[IH1 | IH2]"; crash_case.
+      - iExists _; iFrame; iPureIntro; word.
+      - iExists _; iFrame; iPureIntro; word. }
+    iIntros "!> [HIx Hl]".
+    wpc_pures.
+    { iExists _; iFrame.
+      iPureIntro; word. }
+    wpc_bind (store_ty _ _).
+    wpc_frame "HIx HΦ".
+    { iIntros "(HIx&HΦ)".
+      crash_case.
+      iExists _; iFrame.
+      iPureIntro; word. }
+    wp_load.
+    wp_store.
+    iIntros "(HIx&HΦ)".
+    wpc_pure _ Hcrash.
+    { crash_case.
+      iExists _; iFrame.
+      iPureIntro; word. }
+    wpc_pure _ Hcrash.
+    iApply ("IH" with "[] HIx Hl").
+    { iPureIntro; word. }
+    iSplit.
+    + iIntros "HIx".
+      iDestruct "HIx" as (x') "[HI %]".
+      crash_case.
+      iExists _; iFrame.
+      iPureIntro; revert H; word.
+    + iRight in "HΦ".
+      iFrame.
+  - assert (int.val x = int.val max) by word.
+    apply word.unsigned_inj in H; subst.
+    wpc_pures.
+    { iExists _; iFrame; iPureIntro; word. }
+    iApply ("HΦ" with "[$]").
+Qed.
+
 End goose_lang.
