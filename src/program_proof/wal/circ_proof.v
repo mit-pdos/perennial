@@ -1113,6 +1113,8 @@ Theorem wp_recoverCircular d σ γ :
       updates_slice bufSlice upds ∗
       is_circular_state γ' σ ∗
       is_circular_appender γ' c ∗
+      start_is γ' (1/2) diskStart ∗
+      diskEnd_is γ' (1/2) (int.val diskStart + length upds) ∗
       ⌜σ.(circΣ.start) = diskStart⌝ ∗
       ⌜σ.(circΣ.upds) = upds⌝
   }}}.
@@ -1257,15 +1259,14 @@ Proof.
     wp_pures.
     iApply ("HΦ" $! γ').
     iFrame "Hupds".
-    iSplitR "Hca Hdiskaddrs Hγaddrs Hγblocks".
-    { iSplitR; eauto.
-      iSplitL "Hstart1 HdiskEnd2".
-      { rewrite /circ_positions.
-        iFrame.
-        iPureIntro.
+    iFrame "Hstart1 HdiskEnd1".
+    iSplitR "Hca Hdiskaddrs Hγaddrs Hγblocks Hstart2 HdiskEnd2".
+    { iSplit; first by eauto.
+      iSplit.
+      { iPureIntro.
         destruct Hwf; word. }
       iExists _, _.
-      iSplitR; eauto.
+      iSplit; first by eauto.
       iSplitL "Haddrs' Hblocks'".
       { iFrame "Haddrs' Hblocks'".
         iPureIntro; eauto. }
@@ -1273,14 +1274,20 @@ Proof.
       iFrame.
       iPureIntro; eauto.
     }
-    iSplitL.
+    iSplitR "Hstart2 HdiskEnd2".
     {
       iExists _, _, _.
       iDestruct (struct_fields_split with "Hca") as "[Hca _]".
       by iFrame. }
+    iFrame.
+    iSplitL.
+    { iSplit.
+      { destruct Hwf; len. }
+      iExactEq "HdiskEnd2".
+      f_equal.
+      destruct Hwf; len. }
     iPureIntro; intuition eauto.
     rewrite take_ge; auto.
-    rewrite /circΣ.diskEnd /=.
     destruct Hwf; word.
 Qed.
 
@@ -1292,6 +1299,8 @@ Theorem wpc_recoverCircular stk k E1 E2 d σ γ :
       updates_slice bufSlice upds ∗
       is_circular_state γ' σ ∗
       is_circular_appender γ' c ∗
+      start_is γ' (1/2) diskStart ∗
+      diskEnd_is γ' (1/2) (int.val diskStart + length upds) ∗
       ⌜σ.(circΣ.start) = diskStart⌝ ∗
       ⌜σ.(circΣ.upds) = upds⌝
   }}}
