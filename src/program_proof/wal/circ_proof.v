@@ -1,12 +1,13 @@
+From iris.bi.lib Require Import fractional.
+From Perennial.algebra Require Import deletable_heap.
+From Perennial.algebra Require Import fmcounter.
+
 From RecordUpdate Require Import RecordSet.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import marshal_proof util_proof.
 From Perennial.program_proof Require Import disk_lib.
-
-From Perennial.algebra Require Import deletable_heap.
-From Perennial.algebra Require Import fmcounter.
 
 From Perennial.Helpers Require Import Transitions.
 Existing Instance r_mbind.
@@ -42,9 +43,7 @@ Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
   modify (set start (fun _ => newStart)).
 
 Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t unit :=
-  assert (fun σ => circΣ.diskEnd σ = int.val endpos);;
-  modify (set circΣ.upds (fun u => u ++ l));;
-  assert (fun σ => length σ.(upds) <= LogSz).
+  modify (set circΣ.upds (fun u => u ++ l)).
 
 Canonical Structure updateO := leibnizO update.t.
 Canonical Structure blockO := leibnizO Block.
@@ -134,10 +133,39 @@ Proof.
   word.
 Qed.
 
+Theorem start_at_least_to_le γ σ startpos :
+  circ_positions γ σ -∗
+  start_at_least γ startpos -∗
+  ⌜int.val startpos <= int.val (start σ)⌝.
+Proof.
+  iIntros "[Hstart1 _] Hstart2".
+  rewrite /start_is.
+  iDestruct (fmcounter_agree_2 with "Hstart1 Hstart2") as %Heq.
+  iPureIntro.
+  word.
+Qed.
+
+Instance diskEnd_fractional γ endpos : Fractional (λ q, diskEnd_is γ q endpos).
+Proof.
+  intros p q.
+  iSplit.
+  - iIntros "[% Hend]".
+    iDestruct "Hend" as "[Hend1 Hend2]".
+    iFrame.
+    iPureIntro; auto.
+  - iIntros "[[% Hend1] [% Hend2]]".
+    iCombine "Hend1 Hend2" as "$".
+    iPureIntro; auto.
+Qed.
+
+Instance diskEnd_as_fractional γ q endpos :
+  AsFractional (diskEnd_is γ q endpos) (λ q, diskEnd_is γ q endpos) q.
+Proof. split; first by done. apply _. Qed.
+
 Theorem diskEnd_is_to_eq γ σ q endpos :
   circ_positions γ σ -∗
   diskEnd_is γ q endpos -∗
-  ⌜circΣ.diskEnd σ = int.val endpos⌝.
+  ⌜circΣ.diskEnd σ = endpos⌝.
 Proof.
   iIntros "[_ Hend1] Hend2".
   iDestruct "Hend1" as "[_ Hend1]".
@@ -601,33 +629,31 @@ Proof.
 Qed.
 
 Theorem wp_circularAppender__logBlocks γ c d
-        (endpos : u64) (bufs : Slice.t)
-        (addrs : list u64) (blocks : list Block) diskaddrslice (upds : list update.t) Q :
+        (startpos_lb endpos : u64) (bufs : Slice.t)
+        (addrs : list u64) (blocks : list Block) diskaddrslice (upds : list update.t) :
   length addrs = Z.to_nat LogSz ->
   int.val endpos + Z.of_nat (length upds) < 2^64 ->
+  (int.val endpos - int.val startpos_lb) + length upds ≤ LogSz ->
   {{{ is_circular γ ∗
       own γ.(blocks_name) (◯ Excl' blocks) ∗
+      start_at_least γ startpos_lb ∗
+      diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs) ∗
-      updates_slice bufs upds ∗
-      (∀ σ, P σ -∗
-        (∃ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝) ∧
-        (∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
+      updates_slice bufs upds
   }}}
     circularAppender__logBlocks #c #d #endpos (slice_val bufs)
   {{{ RET #();
       let addrs' := update_addrs addrs (int.val endpos) upds in
       let blocks' := update_blocks blocks (int.val endpos) upds in
       own γ.(blocks_name) (◯ Excl' blocks') ∗
+      diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
-      updates_slice bufs upds ∗
-      (∀ σ, P σ -∗
-        (∃ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝) ∧
-        (∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
+      updates_slice bufs upds
   }}}.
 Proof using Ptimeless.
-  iIntros (Haddrs_len Hendpos_overflow Φ) "(#Hcirc & Hγblocks & Hdiskaddrs & Hslice & Hupdslice & Hhasspace) HΦ".
+  iIntros (Haddrs_len Hendpos_overflow Hhasspace Φ) "(#Hcirc & Hγblocks & #Hstart & Hend & Hdiskaddrs & Hslice & Hupdslice) HΦ".
   wp_lam. wp_let. wp_let. wp_let.
   iDestruct (updates_slice_len with "Hupdslice") as %Hupdlen.
   iDestruct "Hupdslice" as (bks) "[Hupdslice Hbks]".
@@ -644,17 +670,15 @@ Proof using Ptimeless.
     own γ.(blocks_name) (◯ Excl' blocks') ∗
     c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
     is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
+    diskEnd_is γ (1/2) (int.val endpos) ∗
     ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
-                                       is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝) ∗
-    (∀ σ, P σ -∗
-      (∃ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝) ∧
-      (∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
+                                       is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝)
     )%I (* XXX why is %I needed? *)
-    with "[] [$Hγblocks $Hdiskaddrs $Hslice $Hupdslice $Hhasspace $Hbks]").
+    with "[] [$Hγblocks $Hdiskaddrs $Hslice $Hupdslice $Hend $Hbks]").
 
   2: {
-    iIntros "[HI Hupdslice]".
-    iDestruct "HI" as "(?&? & Hblocks&Hupds&Hhasspace)".
+    iIntros "(HI&Hupdslice)".
+    iDestruct "HI" as "(?&? & Hblocks&Hend&Hupds)".
     iApply "HΦ"; iFrame.
     rewrite -> take_ge by lia.
     iFrame.
@@ -664,7 +688,7 @@ Proof using Ptimeless.
   }
 
   iIntros (i bk Φₗ) "!> [HI [% %]] HΦ".
-  iDestruct "HI" as "(Hγblocks&HdiskAddrs&Haddrs&Hbks&Hhasspace)".
+  iDestruct "HI" as "(Hγblocks&HdiskAddrs&Haddrs&Hend&Hbks)".
   rewrite list_lookup_fmap in H0.
   apply fmap_Some in H0.
   destruct H0 as [[addr bk_s] [Hbkseq ->]].
@@ -680,12 +704,8 @@ Proof using Ptimeless.
   let blocks'' := constr:(<[Z.to_nat ((int.val endpos + int.val i) `mod` LogSz):=b_i]> (update_blocks blocks (int.val endpos) (take (int.nat i) upds))) in
   wp_apply (wp_Write_fupd (⊤ ∖ ↑N)
     (own γ.(blocks_name) (◯ Excl' blocks'') ∗
-     ⌜ int.val endpos + Z.of_nat (length upds) < 2^64 ⌝ ∗
-     (∀ σ, P σ -∗
-       (∃ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝) ∧
-       (∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
-    )
-    with "[$Hi Hγblocks Hhasspace]").
+     diskEnd_is γ (1/2) (int.val endpos))
+    with "[$Hi Hγblocks Hend]").
   { word_cleanup.
     rewrite wrap_small_log_addr.
     word_cleanup.
@@ -697,24 +717,18 @@ Proof using Ptimeless.
     iDestruct "Hσ" as (addrs' blocks'' Hhas_upds) "(Hown&Hlow)".
     iDestruct (circ_state_wf with "Hown") as %Hlowwf.
     iDestruct (circ_state_wf with "Hown") as %[Hlen1 Hlen2].
+    iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
+    iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
     iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0&Hd1&Hd2)".
     pose proof (Z.mod_bound_pos (int.val endpos + int.val i) LogSz); intuition (try word).
     destruct (list_lookup_lt _ blocks'' (Z.to_nat $ (int.val endpos + int.val i) `mod` LogSz)) as [b ?]; first by word.
     iDestruct (disk_array_acc _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]"; eauto.
     { word. }
     iExists b.
+    assert (length (circ_proof.upds σ ++ upds) ≤ LogSz ∧
+    int.val endpos = circΣ.diskEnd σ ∧
+    int.val endpos + Z.of_nat (length upds) < 2^64) by len.
 
-    destruct (decide (length (circ_proof.upds σ ++ upds) ≤ LogSz ∧
-                      int.val endpos = circΣ.diskEnd σ ∧
-                      int.val endpos + Z.of_nat (length upds) < 2^64)).
-    2: {
-      iDestruct ("Hhasspace" with "HP") as "[Hhasspace _]".
-      iDestruct "Hhasspace" as (σ' b0) "%".
-      monad_inv.
-      simpl in *. word.
-    }
-
-    word_cleanup.
     iFrame.
     iIntros "Hdi".
     iSpecialize ("Hd2" with "Hdi").
@@ -746,7 +760,7 @@ Proof using Ptimeless.
     }
     iPureIntro. word.
   }
-  iIntros "(Hs & Hγblocks & % & Hhasspace)".
+  iIntros "(Hs & Hγblocks & Hhasspace)".
   wp_loadField.
   wp_apply (wp_SliceSet with "[$Haddrs]").
   { iPureIntro.
@@ -871,7 +885,6 @@ Qed.
 
 Hint Resolve circ_low_wf_log_blocks.
 
-
 Lemma circ_low_wf_update_addrs
       (endpos : u64) (upds : list update.t) (addrs : list u64)
       (blocks' : list Block) :
@@ -882,26 +895,63 @@ Proof.
   rewrite /circ_low_wf; len.
 Qed.
 
-Theorem wp_circular__Append (Q: iProp Σ) γ d (endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
+Lemma diskEnd_is_agree γ q1 q2 endpos1 endpos2 :
+  diskEnd_is γ q1 endpos1 -∗
+  diskEnd_is γ q2 endpos2 -∗
+  ⌜endpos1 = endpos2⌝.
+Proof.
+  iIntros "[% Hend1] [% Hend2]".
+  iDestruct (fmcounter_agree_1 with "Hend1 Hend2") as %Heq.
+  iPureIntro.
+  word.
+Qed.
+
+Lemma circ_positions_append upds γ σ (startpos endpos: u64) :
   int.val endpos + Z.of_nat (length upds) < 2^64 ->
+  (int.val endpos - int.val startpos) + length upds ≤ LogSz ->
+  circ_positions γ σ -∗
+  start_at_least γ startpos -∗
+  diskEnd_is γ (1/2) (int.val endpos) -∗
+  |==> circ_positions γ (set circ_proof.upds (λ u : list update.t, u ++ upds) σ) ∗
+       diskEnd_is γ (1/2) (int.val endpos + length upds).
+Proof.
+  iIntros (Hendpos_overflow Hhasspace) "[$ Hend1] #Hstart Hend2".
+  rewrite /circΣ.diskEnd /=; autorewrite with len.
+  iDestruct (diskEnd_is_agree with "Hend1 Hend2") as %Heq; rewrite Heq.
+  iCombine "Hend1 Hend2" as "Hend".
+  iDestruct "Hend" as "[% Hend]".
+  iMod (fmcounter_update _ with "Hend") as "[[Hend1 $] _]"; first by len.
+  iModIntro.
+  iSplit; first by word.
+  iSplit; first by word.
+  iExactEq "Hend1".
+  f_equal; word.
+Qed.
+
+Theorem wp_circular__Append (Q: iProp Σ) γ d (startpos endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
+  int.val endpos + Z.of_nat (length upds) < 2^64 ->
+  (int.val endpos - int.val startpos) + length upds ≤ LogSz ->
   {{{ is_circular γ ∗
       updates_slice bufs upds ∗
+      diskEnd_is γ (1/2) (int.val endpos) ∗
+      start_at_least γ startpos ∗
       is_circular_appender γ c ∗
       (∀ σ, P σ -∗
-        ( (∃ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝) ∧
-          (∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)))
+          ∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
   }}}
     circularAppender__Append #c #d #endpos (slice_val bufs)
   {{{ RET #(); Q ∗
       updates_slice bufs upds ∗
-      is_circular_appender γ c }}}.
+      is_circular_appender γ c ∗
+      diskEnd_is γ (1/2) (int.val endpos + length upds)
+  }}}.
 Proof using Ptimeless.
-  iIntros (Hendpos_overflow Φ) "(#Hcirc & Hslice & Hca & Hfupd) HΦ".
+  iIntros (Hendpos_overflow Hhasspace Φ) "(#Hcirc & Hslice & Hend & #Hstart & Hca & Hfupd) HΦ".
   wp_call.
   iDestruct "Hca" as (bk_s addrs blocks' Hlow_wf) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
 
-  wp_apply (wp_circularAppender__logBlocks with "[$Hcirc $Hγblocks $HdiskAddrs $Haddrs $Hslice $Hfupd]"); try word.
-  iIntros "(Hγblocks&HdiskAddrs&Hs&Hupds&Hfupd)".
+  wp_apply (wp_circularAppender__logBlocks with "[$Hcirc $Hγblocks $HdiskAddrs $Hstart $Hend $Haddrs $Hslice]"); try word.
+  iIntros "(Hγblocks&Hend&HdiskAddrs&Hs&Hupds)".
   iDestruct (updates_slice_len with "Hupds") as %Hbufsz.
   wp_pures.
   wp_apply wp_slice_len.
@@ -913,9 +963,10 @@ Proof using Ptimeless.
   wp_apply (wp_Write_fupd _
     (
       Q ∗
+      diskEnd_is γ (1/2) (int.val endpos + length upds) ∗
       own γ.(blocks_name) (◯ Excl' (update_blocks blocks' (int.val endpos) upds)) ∗
       own γ.(addrs_name) (◯ Excl' (update_addrs addrs (int.val endpos) upds))
-    ) with "[Hb Hγblocks Hγaddrs Hfupd]").
+    ) with "[Hb Hγblocks Hγaddrs Hend Hfupd]").
   {
     iDestruct (is_slice_small_sz with "Hb") as %Hslen.
     rewrite fmap_length in Hslen.
@@ -925,6 +976,8 @@ Proof using Ptimeless.
     iInv N as ">Hcircopen" "Hclose".
     iDestruct "Hcircopen" as (σ) "[[% Hcs] HP]".
     iDestruct "Hcs" as "[Hpos Hcs]".
+    iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
+    iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
     iDestruct "Hcs" as (addrs0 blocks0 Hupds) "[Hown Hlow]".
     iDestruct "Hown" as (Hlow_wf') "[Haddrs Hblocks]".
     iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
@@ -935,58 +988,49 @@ Proof using Ptimeless.
     iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
     iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
     iMod (ghost_var_update γ.(addrs_name) (update_addrs addrs (int.val endpos) upds) with "Haddrs Hγaddrs") as "[Haddrs Hγaddrs]".
+    iMod (circ_positions_append upds with "[$] Hstart [$]") as "[Hpos Hend]"; [ done | done | ].
+    iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd'.
+    iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb'.
 
-    iDestruct ("Hfupd" with "HP") as "[Hex Hfupd]".
-    iDestruct "Hex" as (eσ' eb) "Hex".
-    iDestruct "Hex" as %Hex.
-
-    iSpecialize ("Hfupd" $! eσ' eb).
-    simpl in Hex. monad_inv.
-
-    iDestruct ("Hfupd" with "[]") as "Hfupd".
-    { iPureIntro. repeat econstructor; lia. }
-
-    iMod "Hfupd" as "[HP HQ]". iFrame.
+    iMod ("Hfupd" with "HP []") as "[HP $]".
+    { iPureIntro.
+      simpl; monad_simpl. }
+    iFrame.
     iApply "Hclose".
 
     iNext. iExists _. iFrame.
     destruct σ. rewrite /=.
     iSplitR.
     { iPureIntro.
-      simpl in H3. rewrite /set /=.
-      apply circ_wf_app; eauto.
-      word.
+      rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
+      autorewrite with len in HdiskEnd'.
+      apply circ_wf_app; auto; len.
     }
-    iSplitL "Hpos".
-    { admit. (* TODO: update position ghost variables properly *) }
     iExists _, _; iFrame "Haddrs Hblocks".
     iSplitR.
     { iPureIntro.
-      simpl in H3. rewrite /set /=.
-      apply has_circ_updates_app; eauto.
+      rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
+      autorewrite with len in HdiskEnd'.
+      apply has_circ_updates_app; auto; len.
     }
     iSplitR; first by eauto.
     iExists _, _, _. iFrame.
     iPureIntro; intuition.
     { rewrite H. f_equal. f_equal. f_equal.
-      f_equal. f_equal. rewrite /circΣ.diskEnd.
-      rewrite /set /= in H3 |- *.
-      autorewrite with len in H3 |- *.
+      f_equal. f_equal.
+      rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
+      autorewrite with len in HdiskEnd'.
       destruct H0 as (?&?&?).
-      unfold circΣ.diskEnd in *.
       cbn [circ_proof.start circ_proof.upds] in *.
-      word. }
+      len. }
     rewrite Hhdr2. eauto.
   }
-  iIntros "[Hb_s (HQ & Ho1 & Ho2)]".
+  iIntros "[Hb_s (HQ & Hend & Ho1 & Ho2)]".
   wp_apply wp_Barrier.
-  iApply ("HΦ" with "[$HQ Ho1 Ho2 HdiskAddrs Hs $Hupds]").
+  iApply ("HΦ" with "[$HQ $Hend Ho1 Ho2 HdiskAddrs Hs $Hupds]").
   iExists _, _, _. iFrame.
   eauto using circ_low_wf_update_addrs.
-
-  Unshelve.
-  all: eauto. (* TODO: why? *)
-Admitted.
+Qed.
 
 Theorem wp_SliceAppend_update stk E bufSlice (a:u64) (b_s: Slice.t) (b: Block) upds :
   int.val bufSlice.(Slice.sz) + 1 < 2^64 ->
