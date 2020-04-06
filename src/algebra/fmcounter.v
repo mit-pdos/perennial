@@ -1,5 +1,6 @@
 From iris.algebra Require Import auth.
 From iris.proofmode Require Import base tactics classes.
+From iris.bi.lib Require Import fractional.
 From iris.program_logic Require Import weakestpre.
 Set Default Proof Using "Type".
 
@@ -104,7 +105,46 @@ Proof.
   { apply auth_frac_update_core_id; eauto. apply _. }
 Qed.
 
+Lemma fmcounter_get_lb γ q n:
+  fmcounter γ q n ==∗ fmcounter γ q n ∗ fmcounter_lb γ n.
+Proof.
+  iIntros "Hm".
+  iMod (own_update _ _ ((●{q} n) ⋅ ◯ n) with "Hm") as "(?&$)"; last done.
+  { apply auth_frac_update_core_id; eauto. apply _. }
+Qed.
+
+Lemma fmcounter_update n' γ n:
+  n <= n' ->
+  fmcounter γ 1 n ==∗ fmcounter γ 1 n' ∗ fmcounter_lb γ n'.
+Proof.
+  iIntros (Hlt) "Hm".
+  iMod (own_update with "Hm") as "($&?)"; last done.
+  apply auth_update_alloc, mnat_local_update; auto.
+Qed.
+
+Lemma fmcounter_alloc n :
+  ⊢ |==> ∃ γ, fmcounter γ 1 n.
+Proof.
+  iStartProof.
+  iMod (own_alloc (●{1} n)) as (γ) "H".
+  { apply auth_auth_valid.
+    cbv; auto. (* TODO: better way to prove an mnat is valid? *) }
+  iModIntro.
+  iExists _; iFrame.
+Qed.
+
 Global Instance fmcounter_lb_pers γ n: Persistent (fmcounter_lb γ n).
+Proof. apply _. Qed.
+
+Global Instance fmcounter_fractional γ n: Fractional (λ q, fmcounter γ q n).
+Proof. intros p q. apply fmcounter_sep. Qed.
+
+Global Instance fmcounter_as_fractional γ q n :
+  AsFractional (fmcounter γ q n) (λ q, fmcounter γ q n) q.
+Proof. split; first by done. apply _. Qed.
+
+Global Instance fmcounter_into_sep γ n :
+  IntoSep (fmcounter γ 1 n) (fmcounter γ (1/2) n) (fmcounter γ (1/2) n).
 Proof. apply _. Qed.
 
 End fmc_props.
