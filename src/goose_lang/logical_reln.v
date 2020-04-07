@@ -447,10 +447,100 @@ Proof using spec_op_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wpc_pures; eauto.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map _ e2).
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [UnOpCtx _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    iAssert (∃ (vres: u32), ⌜ un_op_eval ToUInt32Op v1 = Some #vres ∧
+                            un_op_eval ToUInt32Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
+    {
+      destruct t; try inversion e;
+      destruct t; try congruence;
+      rewrite /val_interp//=;
+      iDestruct "Hv1" as (?) "(%&%)"; subst;
+      iPureIntro; eexists; eauto.
+    }
+    destruct Hres as (x&Heq1&Heq2).
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step. repeat econstructor; eauto.
+        rewrite Heq2; eauto. econstructor; eauto.
+      }
+      wpc_pures; eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map _ e2).
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [UnOpCtx _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    iAssert (∃ (vres: u8), ⌜ un_op_eval ToUInt8Op v1 = Some #vres ∧
+                            un_op_eval ToUInt8Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
+    {
+      destruct t; try inversion e;
+      destruct t; try congruence;
+      rewrite /val_interp//=;
+      iDestruct "Hv1" as (?) "(%&%)"; subst;
+      iPureIntro; eexists; eauto.
+    }
+    destruct Hres as (x&Heq1&Heq2).
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step. repeat econstructor; eauto.
+        rewrite Heq2; eauto. econstructor; eauto.
+      }
+      wpc_pures; eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map _ e2).
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [UnOpCtx _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    iAssert (∃ (vres: string), ⌜ un_op_eval ToStringOp v1 = Some #(LitString vres) ∧
+                            un_op_eval ToStringOp vs1 = Some #(LitString vres) ⌝)%I with "[Hv1]" as %Hres.
+    {
+      destruct t; try inversion e;
+      destruct t; try congruence;
+      rewrite /val_interp//=;
+      iDestruct "Hv1" as (?) "(%&%)"; subst;
+      iPureIntro; eexists; eauto.
+    }
+    destruct Hres as (x&Heq1&Heq2).
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step. repeat econstructor; eauto.
+        rewrite Heq2; eauto. econstructor; eauto.
+      }
+      wpc_pures; eauto.
+  - destruct op; try inversion e; subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map _ e2).
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [UnOpCtx _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    iDestruct "Hv1" as (?) "(%&%)"; subst.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. repeat econstructor; eauto.
+    }
+    wpc_pures; eauto.
   - admit.
   - admit.
   - admit.

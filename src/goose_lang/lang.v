@@ -818,7 +818,7 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | ToUInt32Op, LitV (LitByte v) => Some $ LitV $ LitInt32 (u8_to_u32 v)
   | ToUInt8Op, LitV (LitInt v) => Some $ LitV $ LitByte (u8_from_u64 v)
   | ToUInt8Op, LitV (LitInt32 v) => Some $ LitV $ LitByte (u8_from_u32 v)
-  | ToUInt8Op, LitV (LitByte v) => Some $ LitV $ LitInt32 (u8_to_u32 v)
+  | ToUInt8Op, LitV (LitByte v) => Some $ LitV $ LitByte v
   | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString (u8_to_string v)
   | _, _ => None
   end.
