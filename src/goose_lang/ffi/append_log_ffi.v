@@ -122,7 +122,9 @@ Section log.
   Fixpoint tmapM {Σ A B} (f: A -> transition Σ B) (l: list A) : transition Σ (list B) :=
     match l with
     | [] => ret []
-    | x::xs => f x;; tmapM f xs
+    | x::xs => b ← f x;
+             bs ← tmapM f xs;
+             ret (b :: bs)
     end.
 
   (* TODO: implement *)
