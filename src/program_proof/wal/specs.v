@@ -500,22 +500,211 @@ Proof.
     rewrite lookup_apply_update_ne in H0; eauto.
 Admitted.
 
+Theorem apply_upds_lookup_eq d (a: u64) b:
+  forall a0,
+    a0.(update.addr) = a ->
+    apply_upds [a0] d !! int.val a = Some b ->
+    a0.(update.b) = b.
+Proof.
+  intros.
+  unfold apply_upds in H.
+  destruct a0; simpl in *.
+  subst.
+  rewrite lookup_insert in H0.
+  inversion H0; auto.
+Qed.
+
+Definition no_updates (l: list update.t) a : Prop :=
+  forall u, u ∈ l -> u.(update.addr) ≠ a.
+
+Definition exist_last_update (l: list update.t) a b : Prop :=
+  exists (i:nat) u,
+    l !! i = Some u /\ u.(update.addr) = a /\ u.(update.b) = b /\
+    (forall (j:nat) u1,  j > i -> l !! j = Some u1 -> u1.(update.addr) ≠ a).
+
+Theorem no_updates_cons (l: list update.t) a:
+  forall u, no_updates (u::l) a -> no_updates l a.
+Proof.
+  intros.
+  unfold no_updates in *.
+  intros.
+  specialize (H u0).
+  apply H.
+  rewrite elem_of_cons.
+  right; auto.
+Qed.
+
+Theorem no_updates_cons_ne (l: list update.t) a:
+  forall u,
+    u.(update.addr) ≠ a ->
+    no_updates l a ->
+    no_updates (u :: l) a.
+Proof.
+  intros.
+  unfold no_updates in *.
+  intros.
+  apply elem_of_cons in H1.
+  intuition; subst; auto.
+  specialize (H0 u0 H3); auto.
+Qed.
+
+Theorem exist_last_update_cons (l: list update.t) (a:u64) b:
+  forall a0,
+    exist_last_update l a b -> exist_last_update (a0 :: l) a b.
+Proof.
+  intros.
+  unfold exist_last_update in *.
+  destruct H as [i [u H]].
+  intuition.
+  exists (S i), u.
+  repeat split; auto.
+  intros.
+  specialize (H3 (pred j) u1).
+  apply H3; eauto.
+  1: lia.
+  rewrite <- lookup_cons_ne_0 with (x := a0); eauto.
+  lia.
+Qed.
+
+Theorem exist_last_update_cons_no_updates (l: list update.t) (a:u64) b:
+  forall u,
+    u.(update.addr) = a /\ u.(update.b) = b ->
+    no_updates l u.(update.addr) ->
+    exist_last_update (u :: l) a b.
+Proof.
+  intros.
+  unfold exist_last_update.
+  intuition.
+  exists 0%nat, u.
+  repeat split; auto.
+  intros.
+  unfold no_updates in H0.
+  specialize (H0 u1).
+  subst.
+  exfalso.
+  rewrite lookup_cons_ne_0 in H3; try lia.
+  apply elem_of_list_lookup_2 in H3.
+  destruct H0; auto.
+Qed.
+
+Theorem apply_upds_no_updates l (a: u64):
+   forall d u,
+    u.(update.addr) = a ->
+    no_updates l a ->
+    apply_upds l (apply_upds [u] d) !! int.val a = apply_upds [u] d !! int.val a.
+Proof.
+  intros.
+  generalize dependent d.
+  induction l.
+  - intros.
+    destruct u.
+    simpl in *; subst.
+    intuition; auto.
+  - intros.
+    rewrite apply_upds_cons.
+    destruct (decide (a0.(update.addr) = u.(update.addr))); subst.
+    {
+      exfalso.
+      unfold no_updates in H0.
+      specialize (H0 a0).
+      destruct H0.
+      1: apply elem_of_list_here; auto.
+      auto.
+    }
+    apply no_updates_cons in H0 as H0'.
+    rewrite apply_update_ne; auto.
+    specialize (IHl H0' (apply_upds [a0] d)).
+    rewrite IHl.
+    assert (apply_upds [u] (apply_upds [a0] d) !! int.val u.(update.addr) =
+            apply_upds [u] d !! int.val u.(update.addr)).
+    1: apply lookup_apply_update_ne; auto.
+    auto.
+Qed.
+
+Theorem lookup_apply_upds_cons_eq l (a: u64) b:
+  forall u d,
+    u.(update.addr) = a ->
+    apply_upds l (apply_upds [u] d) !! int.val a = Some b ->
+    no_updates l a \/ exist_last_update l a b.
+Proof.
+  induction l.
+  - intros.
+    destruct u.
+    simpl in *; subst.
+    left; auto.
+    unfold no_updates.
+    intros.
+    exfalso.
+    apply elem_of_nil in H; auto.
+  - intros.
+    rewrite apply_upds_cons in H0.
+    destruct (decide (a0.(update.addr) = u.(update.addr))).
+    + subst.
+      rewrite apply_update_eq  in H0; auto.
+      specialize (IHl a0 d e H0).
+      destruct (decide (a0.(update.b) = u.(update.b))).
+      {
+        intuition.
+        ++ right.
+           rewrite <- e in H.
+           eapply exist_last_update_cons_no_updates; auto.
+           split; auto.
+           rewrite apply_upds_no_updates in H0; auto.
+           1: apply apply_upds_lookup_eq in H0; auto.
+           rewrite e in H; auto.
+        ++ right.
+           apply exist_last_update_cons with (a0 := a0) in H; auto.
+      }
+      {
+        intuition.
+        ++ rewrite apply_upds_no_updates in H0; auto.
+           apply apply_upds_lookup_eq in H0; auto.
+           right.
+           eapply exist_last_update_cons_no_updates; auto.
+           rewrite <- e in H; auto.
+        ++ apply exist_last_update_cons with (a0 := a0) in H.
+           right; auto.
+      }
+    + subst.
+      rewrite apply_update_ne in H0; auto.
+      assert (u.(update.addr) = u.(update.addr)).
+      1: reflexivity.
+      specialize (IHl u (apply_upds [a0] d)  H H0).
+      intuition.
+      {
+        left.
+        apply no_updates_cons_ne with (u := a0) in H1; auto.
+      }
+      {
+        apply exist_last_update_cons with (a0 := a0) in H1.
+        right; auto.
+      }
+Qed.
+
 Theorem lookup_apply_upds d (pos: u64):
   forall l a b,
     apply_upds l d !! int.val a = Some b ->
-    d !! int.val a = Some b \/
-    (exists (i:nat) u,
-        l !! i = Some u /\ u.(update.addr) = a /\ u.(update.b) = b /\
-        (forall (j:nat) u1,  j > i -> l !! j = Some u1 -> u1.(update.addr) ≠ a)).
+    d !! int.val a = Some b \/ exist_last_update l a b.
 Proof.
   intros.
   induction l.
   - simpl in *.
     left; auto.
-  - rewrite apply_upds_cons in H.
+  - intros.
+    rewrite apply_upds_cons in H.
     destruct (decide (a0.(update.addr) = a)).
     {
-      admit.
+      apply lookup_apply_upds_cons_eq in H as H'1; auto.
+      intuition.
+      {
+        right.
+        apply exist_last_update_cons_no_updates; auto.
+        + rewrite apply_upds_no_updates in H; auto.
+          apply apply_upds_lookup_eq in H; auto.
+        + subst; auto.
+      }
+      right.
+      apply exist_last_update_cons; auto.
     }
     apply lookup_apply_upds_cons_ne in H; eauto.
     intuition.
@@ -529,12 +718,16 @@ Proof.
     split; eauto.
     intros.
     specialize (H4 (Init.Nat.pred j) u1).
-    eapply H4; eauto.
+    assert (u1.(update.addr) = a → False).
+    1: eapply H4; eauto.
     1: lia.
-    rewrite lookup_cons_ne_0 in H5; eauto.
-    destruct (decide (j = 0%nat)); eauto.
-    exfalso; lia.    
-Admitted.
+    {
+      rewrite lookup_cons_ne_0 in H5; eauto.
+      destruct (decide (j = 0%nat)); eauto.
+      exfalso; lia.
+    }
+    congruence.
+Qed.
 
 Theorem apply_upds_since_pos_new d (pos: u64) (pos': u64):
   forall l a b b1,
