@@ -808,51 +808,50 @@ Proof.
 Qed.
 
 Theorem latest_update_take_some bs v:
-  forall installed (pos: u64) ,
-    (installed :: bs) !! (int.nat pos) = Some v ->
-    latest_update installed (take (int.nat pos) bs) = v.
+  forall installed (pos: nat),
+    (installed :: bs) !! pos = Some v ->
+    latest_update installed (take pos bs) = v.
 Proof.
   induction bs.
   - intros.
     rewrite firstn_nil.
     simpl.
-    assert(int.nat pos = 0%nat).
+    assert(pos = 0%nat).
     {
       apply lookup_lt_Some in H.
-      simpl in *. lia.
+      simpl in *.
+      word.
     }
     rewrite H0 in H.
     simpl in *.
     inversion H; auto.
   - intros.
-    destruct (decide (int.nat pos = 0%nat)).
+    destruct (decide (pos = 0%nat)).
     + rewrite e in H; simpl in *.
       inversion H; auto.
       rewrite e; simpl; auto.
     +
-      assert (exists (pos':u64), (int.nat pos) = (S (int.nat pos'))).
+      assert (exists (pos':nat), pos = S pos').
       {
-        admit. (* XXX pos - 1 *)
+        exists (pred pos). lia.
       }
       destruct H0 as [pos' H0].
       rewrite H0.
       rewrite firstn_cons.
-      assert (Init.Nat.pred (int.nat pos) = (int.nat pos')).
-      1: lia.
-      destruct (decide ((take (int.nat pos') bs) = [])).
+      destruct (decide ((take pos' bs) = [])).
       ++ simpl.
          specialize (IHbs a pos').
          apply IHbs.
          rewrite lookup_cons_ne_0 in H; auto.
-         rewrite H1 in H; auto.
+         rewrite H0 in H; simpl in *; auto.
       ++ rewrite last_update_cons; auto.
          {
            specialize (IHbs a pos').
            apply IHbs.
            rewrite lookup_cons_ne_0 in H; auto.
-           rewrite H1 in H; auto.
+           rewrite H0 in H; simpl in *; auto.
          }
-Admitted.
+Qed.
 
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
   ok ← suchThat (fun _ (b:bool) => True);
