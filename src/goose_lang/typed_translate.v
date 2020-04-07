@@ -90,6 +90,7 @@ Section translate.
   | eq_op_transTy e1 e1' e2 e2' t :
       Γ ⊢ e1 -- e1' : t ->
       Γ ⊢ e2 -- e2' : t ->
+      is_comparableTy t = true ->
       Γ ⊢ BinOp EqOp e1 e2 -- BinOp EqOp e1' e2' : boolT
   | bin_op_64_transTy op e1 e1' e2 e2' t1 t2 t :
       bin_op_ty op uint64T = Some (t1, t2, t) ->

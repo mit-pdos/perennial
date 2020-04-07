@@ -100,8 +100,6 @@ Inductive loc_status :=
 | loc_writing.
 Canonical Structure loc_statusO := leibnizO loc_status.
 
-Context `{!inG Σ (authR (optionUR (exclR loc_statusO)))}.
-
 Definition loc_inv (ls: loc) (l: loc) (vTy: val_semTy) :=
   (∃ (stat: loc_status),
     match stat with
@@ -268,6 +266,42 @@ Proof.
   }
   rewrite ?fmap_insert //=.
 Qed.
+
+(* XXX: need to have some ghost resource that enforces that
+   the pairing between locs at spec and impl level that's done for arrayT
+   and structRefT is one to one, to ensure that pointer equality tests at
+   spec/impl level behave correctly *)
+Lemma comparableTy_val_eq t vs1 v1 vs2 v2:
+  is_comparableTy t = true →
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+  val_interp (hS := hS) t vs1 v1 -∗
+  val_interp (hS := hS) t vs2 v2 -∗
+  ⌜ v1 = v2 ↔ vs1 = vs2 ⌝.
+Proof.
+  revert vs1 v1 vs2 v2.
+  induction t => vs1 v1 vs2 v2; try (inversion 1; fail).
+  - intros. destruct t; iPureIntro; naive_solver.
+  - intros (?&?)%andb_prop.
+    intros.
+    iDestruct 1 as (?? ?? (->&->)) "(H1&H2)".
+    iDestruct 1 as (?? ?? (->&->)) "(H1'&H2')".
+    rewrite -/val_interp.
+    iPoseProof (IHt1 with "H1 H1'") as "%"; eauto.
+    iPoseProof (IHt2 with "H2 H2'") as "%"; eauto.
+    iPureIntro. naive_solver.
+  - intros.
+    iDestruct 1 as "[H1|Hnull1]";
+    iDestruct 1 as "[H2|Hnull2]";
+    rewrite -/val_interp.
+    * iDestruct "H1" as (??? (?&?)) "H1".
+      iDestruct "H2" as (??? (?&?)) "H2".
+      subst.
+      admit.
+    * admit.
+    * admit.
+    * admit.
+  - admit.
+Admitted.
 
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
     val_typing_ind := Induction for val_transTy Sort Prop.
@@ -541,7 +575,32 @@ Proof using spec_op_trans.
       apply head_prim_step. repeat econstructor; eauto.
     }
     wpc_pures; eauto.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [BinOpLCtx EqOp _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply: ectx_lang_ctx; eauto. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    wpc_bind (subst_map _ e2').
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [BinOpRCtx EqOp (vs1)] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. repeat econstructor; eauto.
+    }
+
+    wpc_pures; auto.
+    iExists _. iFrame. iExists (bool_decide (vs1 = vs2)); eauto.
+    iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
+    iPureIntro. split; first auto. do 2 f_equal.
+    by apply bool_decide_iff.
   - admit.
   - admit.
   - admit.

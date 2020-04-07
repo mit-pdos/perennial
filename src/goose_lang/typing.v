@@ -171,6 +171,16 @@ Section goose_lang.
     | _ => false
     end.
 
+  Fixpoint is_comparableTy (t: ty) : bool :=
+    match t with
+    | baseT _ => true
+    | prodT t1 t2 => is_comparableTy t1 && is_comparableTy t2
+    | arrayT _ => true
+    | structRefT _ => true
+    (* Arguably we could allow equality testing on sums, etc. *)
+    | _ => false
+    end.
+
   Fixpoint flatten_ty (t: ty) : list ty :=
     match t with
     | prodT t1 t2 => flatten_ty t1 ++ flatten_ty t2
@@ -249,6 +259,7 @@ Section goose_lang.
   | eq_op_hasTy e1 e2 t :
       Γ ⊢ e1 : t ->
       Γ ⊢ e2 : t ->
+      is_comparableTy t = true ->
       Γ ⊢ BinOp EqOp e1 e2 : boolT
   | bin_op_64_hasTy op e1 e2 t1 t2 t :
       bin_op_ty op uint64T = Some (t1, t2, t) ->
