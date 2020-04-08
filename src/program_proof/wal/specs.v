@@ -369,6 +369,7 @@ Proof.
   intros.
   replace l with (take (int.nat pos) l ++ drop (int.nat pos) l) in H, H0.
   2: apply firstn_skipn.
+  autorewrite with len in H.
   assert (forall x, x ∈ (drop (int.nat pos) l) -> x.(update.addr) ≠ a).
   {
     intros.
@@ -379,12 +380,19 @@ Proof.
     apply H0.
     {
       rewrite lookup_drop in H1; auto.
-      admit. (* XXX *)
-      
+      apply lookup_lt_Some in H1.
+      word.
     }
     rewrite firstn_skipn.
     rewrite lookup_drop in H1.
-    admit. (* XXX word/nat *)
+    replace (l !! int.nat (int.val pos + x0)) with (l !! (int.nat pos + x0)%nat); auto.
+    apply lookup_lt_Some in H1.
+    f_equal.
+    word.
+  }
+  assert ((length (drop (int.nat pos) l)) = (length l - int.nat pos)%nat).
+  {
+    autorewrite with len; auto.
   }
   generalize dependent (drop (int.nat pos) l).
   intro.
@@ -399,35 +407,49 @@ Proof.
         apply elem_of_list_here.
       }
       apply IHl0.
-      -- rewrite app_length in H.
-         rewrite app_length.
-         rewrite cons_length in H.
-         lia.
       -- intros. 
          specialize (H0 u ((int.nat pos') + 1)).
          apply H0; auto.
          {
-           admit. (* word *)
+           simpl in *.
+           pose proof (lookup_lt_Some _ _ _ H4).
+           autorewrite with len in H5.
+           word.
          }
-         rewrite lookup_app_r in H3.
+         rewrite lookup_app_r in H4.
          2: {
            rewrite take_length.
-           admit. (* XXX *)
+           word.
          }
          rewrite lookup_app_r.
          2: {
            rewrite take_length.
-           admit. (* XXX *)
+           simpl in *.
+           pose proof (lookup_lt_Some _ _ _ H4).
+           autorewrite with len in H5.
+           word.
          }
          rewrite lookup_cons_ne_0.
          {
-           admit. (* XXX *)
+           autorewrite with len in H4 |- *.
+           simpl in H2.
+           pose proof (lookup_lt_Some _ _ _ H4).
+           match goal with
+           | |- l0 !! ?i = _ =>
+               match type of H4 with
+               | l0 !! ?i' = _ => replace i with i' by word
+               end
+           end.
+           congruence.
          }
-         word_cleanup.
-         admit. (* XXX *)
+         autorewrite with len in H4 |- *.
+         simpl in H2.
+         pose proof (lookup_lt_Some _ _ _ H4).
+         word.
       -- intros.
          specialize (H1 x).
-         apply elem_of_list_further with (y := a0) in H2; auto.
+         apply elem_of_list_further with (y := a0) in H3; auto.
+      -- admit.
 Admitted.
 
 Theorem no_updates_since_last_disk σ a (pos : u64) :
@@ -747,7 +769,8 @@ Proof.
     rewrite take_take_drop.
     assert (int.nat pos + (int.nat pos' - int.nat pos) = int.nat pos').
     + word.
-    + admit. (* XXX *)
+    + f_equal.
+      word.
   }
   rewrite apply_upds_app in H2.
   apply lookup_apply_upds in H2 as H2'; eauto.
@@ -761,8 +784,8 @@ Proof.
   apply lookup_lt_Some in H5 as H5'.
   rewrite -> firstn_length in H5'.
   rewrite lookup_take in H5; auto.
-  (* Min.min_l H0 *)
-Admitted.
+  word.
+Qed.
 
 Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
   int.val pos ≤ int.val diskpos ->
