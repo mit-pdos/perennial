@@ -358,6 +358,35 @@ Proof.
   simpl; eauto.
 Qed.
 
+Definition no_updates_in_tail l (pos: u64) a : Prop :=
+  forall u', u' ∈ drop (int.nat pos) l → u'.(update.addr) ≠ a.
+  
+Theorem no_updates_since_in_tail l (pos: u64) a:
+  length l < 2 ^ 64 ->
+  (∀ u (pos' : u64),
+    int.val pos ≤ int.val pos' ->
+    l !! int.nat pos' = Some u →
+    u.(update.addr) ≠ a) ->
+  no_updates_in_tail l pos a.
+Proof.
+  intros.
+  unfold no_updates_in_tail.
+  intros.
+  apply elem_of_list_lookup_1 in H1.
+  destruct H1.
+  rewrite lookup_drop in H1; auto.
+  specialize (H0 u' ((int.val pos) + x)).
+  apply H0.
+  {
+    apply lookup_lt_Some in H1.
+    word.
+  }
+  replace (l !! int.nat (int.val pos + x)) with (l !! (int.nat pos + x)%nat); auto.
+  apply lookup_lt_Some in H1.
+  f_equal.
+  word.
+Qed.
+                                                           
 Theorem apply_no_updates_since (pos: u64) a:
   forall d l,
   length l < 2 ^ 64 ->
@@ -367,90 +396,23 @@ Theorem apply_no_updates_since (pos: u64) a:
   d !! int.val a = apply_upds (drop (int.nat pos) l) d !! int.val a.
 Proof.
   intros.
-  replace l with (take (int.nat pos) l ++ drop (int.nat pos) l) in H, H0.
-  2: apply firstn_skipn.
-  autorewrite with len in H.
-  assert (forall x, x ∈ (drop (int.nat pos) l) -> x.(update.addr) ≠ a).
-  {
-    intros.
-    specialize (H0 x).
-    apply elem_of_list_lookup_1 in H1.
-    destruct H1.
-    specialize (H0 ((int.val pos) +x0)).
-    apply H0.
+  apply no_updates_since_in_tail in H0 as Hno; auto.
+  clear H0.
+  unfold no_updates_in_tail in Hno.
+  induction (drop (int.nat pos) l).
+  + simpl in *; auto.
+  + rewrite apply_upds_cons.
+    rewrite lookup_apply_update_ne; auto.
     {
-      rewrite lookup_drop in H1; auto.
-      apply lookup_lt_Some in H1.
-      word.
+      apply IHl0; auto.
+      intros.
+      eapply elem_of_list_further with (y:=a0) in H0.
+      specialize (Hno u' H0); auto.
     }
-    rewrite firstn_skipn.
-    rewrite lookup_drop in H1.
-    replace (l !! int.nat (int.val pos + x0)) with (l !! (int.nat pos + x0)%nat); auto.
-    apply lookup_lt_Some in H1.
-    f_equal.
-    word.
-  }
-  assert ((length (drop (int.nat pos) l)) = (length l - int.nat pos)%nat).
-  {
-    autorewrite with len; auto.
-  }
-  generalize dependent (drop (int.nat pos) l).
-  intro.
-  - induction l0.
-    + intros.
-      simpl; eauto.
-    + intros.
-      rewrite apply_upds_cons.
-      rewrite lookup_apply_update_ne.
-      2: {
-        apply H1.
-        apply elem_of_list_here.
-      }
-      apply IHl0.
-      -- intros. 
-         specialize (H0 u ((int.nat pos') + 1)).
-         apply H0; auto.
-         {
-           simpl in *.
-           pose proof (lookup_lt_Some _ _ _ H4).
-           autorewrite with len in H5.
-           word.
-         }
-         rewrite lookup_app_r in H4.
-         2: {
-           rewrite take_length.
-           word.
-         }
-         rewrite lookup_app_r.
-         2: {
-           rewrite take_length.
-           simpl in *.
-           pose proof (lookup_lt_Some _ _ _ H4).
-           autorewrite with len in H5.
-           word.
-         }
-         rewrite lookup_cons_ne_0.
-         {
-           autorewrite with len in H4 |- *.
-           simpl in H2.
-           pose proof (lookup_lt_Some _ _ _ H4).
-           match goal with
-           | |- l0 !! ?i = _ =>
-               match type of H4 with
-               | l0 !! ?i' = _ => replace i with i' by word
-               end
-           end.
-           congruence.
-         }
-         autorewrite with len in H4 |- *.
-         simpl in H2.
-         pose proof (lookup_lt_Some _ _ _ H4).
-         word.
-      -- intros.
-         specialize (H1 x).
-         apply elem_of_list_further with (y := a0) in H3; auto.
-      -- admit.
-Admitted.
+    specialize (Hno a0).
+    apply Hno.
+    apply elem_of_list_here.
+Qed.
 
 Theorem no_updates_since_last_disk σ a (pos : u64) :
   valid_log_state σ ->
