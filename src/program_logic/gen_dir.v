@@ -137,7 +137,7 @@ Section gen_dir.
   Global Instance mapsto_fractional d f v : Fractional (λ q, d/f ↦{q} v)%I.
   Proof.
     intros p q. by rewrite mapsto_eq /mapsto_def -own_op -auth_frag_op
-      op_singleton op_singleton -pair_op agree_idemp.
+      singleton_op singleton_op -pair_op agree_idemp.
   Qed.
   Global Instance mapsto_as_fractional d f q v :
     AsFractional (d / f ↦{q} v) (λ q, d / f ↦{q} v)%I q.
@@ -148,7 +148,7 @@ Section gen_dir.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_frag_proj_valid /=. rewrite ?op_singleton ?singleton_valid -pair_op.
+    f_equiv=> /auth_frag_proj_valid /=. rewrite ?singleton_op ?singleton_valid -pair_op.
     by intros [_ ?%agree_op_invL'].
   Qed.
 

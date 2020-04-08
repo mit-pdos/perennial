@@ -127,7 +127,7 @@ Section na_heap.
   Global Instance na_heap_mapsto_fractional l v: Fractional (λ q, l ↦{q} v)%I.
   Proof.
     intros p q.
-    by rewrite na_heap_mapsto_eq -own_op -auth_frag_op op_singleton -pair_op agree_idemp.
+    by rewrite na_heap_mapsto_eq -own_op -auth_frag_op singleton_op -pair_op agree_idemp.
   Qed.
   Global Instance na_heap_mapsto_as_fractional l q v:
     AsFractional (l ↦{q} v) (λ q, l ↦{q} v)%I q.
@@ -137,7 +137,7 @@ Section na_heap.
   Proof.
     rewrite na_heap_mapsto_eq -own_op -auth_frag_op own_valid discrete_valid.
     eapply pure_elim; [done|]=> /auth_frag_valid /=.
-    rewrite op_singleton -pair_op singleton_valid=> -[? /agree_op_invL'->]; eauto.
+    rewrite singleton_op -pair_op singleton_valid=> -[? /agree_op_invL'->]; eauto.
   Qed.
 
   Lemma na_heap_alloc tls σ l v lk :
