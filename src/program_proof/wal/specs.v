@@ -375,7 +375,7 @@ Proof.
     specialize (H0 x).
     apply elem_of_list_lookup_1 in H1.
     destruct H1.
-    specialize (H0 (int.nat pos+x0)).
+    specialize (H0 ((int.val pos) +x0)).
     apply H0.
     {
       rewrite lookup_drop in H1; auto.
@@ -404,7 +404,7 @@ Proof.
          rewrite cons_length in H.
          lia.
       -- intros. 
-         specialize (H0 u (int.nat pos' + 1)).
+         specialize (H0 u ((int.nat pos') + 1)).
          apply H0; auto.
          {
            admit. (* word *)
@@ -484,7 +484,8 @@ Proof.
     destruct u.
     rewrite lookup_insert_ne in H0; eauto.
     simpl in *.
-    admit. (* XXX *)
+    intro Hx.
+    apply H. word.  
   - intros.
     rewrite apply_upds_cons in H0.
     rewrite apply_upds_cons.
@@ -498,7 +499,7 @@ Proof.
       rewrite lookup_apply_update_ne in H0; eauto.
     }
     rewrite lookup_apply_update_ne in H0; eauto.
-Admitted.
+Qed.
 
 Theorem apply_upds_lookup_eq d (a: u64) b:
   forall a0,
