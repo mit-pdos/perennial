@@ -200,22 +200,10 @@ Proof.
   - intros.
     rewrite apply_upds_cons.
     destruct (decide (a0.(update.addr) = u.(update.addr))); subst; eauto.
-    + rewrite apply_update_eq.
-      (* XXX instead of rewrite apply_upds_cons at <n>. *)
-      ++ assert (apply_upds (a0 :: l) d = apply_upds l (apply_upds [a0] d)).
-         +++ rewrite apply_upds_cons.
-             reflexivity.
-         +++ rewrite H0.
-             reflexivity.
-      ++ apply e.
-    + rewrite apply_update_ne.
-      ++ specialize (IHl (apply_upds [a0] d)).
-         assert (apply_upds (a0 :: l) d = apply_upds l (apply_upds [a0] d)).
-         +++ rewrite apply_upds_cons.
-             reflexivity.
-         +++ rewrite H0.
-             apply IHl.
-      ++ apply n.
+    + rewrite apply_update_eq //.
+    + rewrite apply_update_ne //.
+      rewrite IHl.
+      rewrite [apply_upds (a0::l) _]apply_upds_cons //.
 Qed.
 
 Theorem updates_since_to_last_disk σ a (pos : u64) installed :
