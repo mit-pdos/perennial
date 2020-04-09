@@ -442,6 +442,16 @@ Lemma updates_since_trans σ pos a f :
     updates_since pos a (set log_state.trans f σ).
 Admitted.
 
+Lemma updates_since_updates σ pos a new bs :
+  new ⊆ unstable_upds σ ++ bs ->
+  updates_since pos a
+    (set log_state.updates
+     (λ _ : list update.t, stable_upds σ ++ new) σ) ⊆
+  updates_since pos a σ ++ updates_for_addr a bs.
+Proof.
+  intros.
+Admitted.
+
 Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
   ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ olds, memappend_pre γh bs olds ∗
         ( ∀ pos, memappend_q γh bs olds pos ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q pos ) ) -∗
@@ -505,7 +515,13 @@ Proof.
 
     {
       rewrite -updates_since_trans.
-      admit.
+      etransitivity; first by apply updates_since_updates.
+      assert (updates_for_addr x0.(update.addr) bs = [x0.(update.b)]) as Hbs.
+      {
+        admit.
+      }
+      rewrite Hbs.
+      set_solver.
     }
 
     {
@@ -530,7 +546,14 @@ Proof.
       etransitivity.
       2: eassumption.
       rewrite -updates_since_trans.
-      admit.
+
+      etransitivity; first by apply updates_since_updates.
+      assert (updates_for_addr k bs = nil) as Hbs.
+      {
+        admit.
+      }
+      rewrite Hbs.
+      set_solver.
     }
 
     {

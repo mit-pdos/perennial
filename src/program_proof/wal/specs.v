@@ -28,9 +28,12 @@ Definition get_updates (s:log_state.t): list update.t :=
 Definition disk_at_pos (pos: nat) (s:log_state.t): disk :=
   apply_upds (firstn pos s.(log_state.updates)) s.(log_state.disk).
 
-Definition updates_since (pos: u64) (a: u64) (s : log_state.t) : list Block :=
+Definition updates_for_addr (a: u64) (l : list update.t) : list Block :=
   map update.b
-  (filter (fun u => u.(update.addr) = a) (skipn (int.nat pos) s.(log_state.updates))).
+  (filter (fun u => u.(update.addr) = a) l).
+
+Definition updates_since (pos: u64) (a: u64) (s : log_state.t) : list Block :=
+  updates_for_addr a (skipn (int.nat pos) s.(log_state.updates)).
 
 Fixpoint latest_update (base: Block) (upds: list Block) : Block :=
   match upds with
@@ -227,7 +230,7 @@ Proof.
   generalize dependent installed.
   induction l; simpl; intros.
   - auto.
-  - destruct a0.
+  - destruct a0. unfold updates_for_addr.
     rewrite filter_cons; simpl.
     destruct (decide (addr = a)); subst.
     + simpl.
