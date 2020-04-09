@@ -4,7 +4,9 @@ Import RecordSetNotations.
 
 From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buf.
+From Perennial.program_proof Require Import util_proof.
 From Perennial.program_proof.addr Require Import specs.
+From Perennial.program_proof.wal Require Import abstraction.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -501,6 +503,67 @@ Proof using.
     rewrite firstn_all2.
     2: { rewrite length_Block_to_vals /block_bytes. word. }
     rewrite skipn_O //.
+Admitted.
+
+Theorem wp_Buf__Install bufptr a b blk_s blk :
+  {{{
+    is_buf bufptr a b ∗
+    is_block blk_s blk
+  }}}
+    Buf__Install #bufptr (slice_val blk_s)
+  {{{
+    (blk': Block), RET #();
+    is_buf bufptr a b ∗
+    is_block blk_s blk' ∗
+    ⌜ ∀ off (d0 : @bufDataT b.(bufKind)),
+      is_bufData_at_off blk off d0 ->
+      if decide (off = a.(addrOff))
+      then is_bufData_at_off blk' off b.(bufData)
+      else is_bufData_at_off blk' off d0 ⌝
+  }}}.
+Proof.
+  iIntros (Φ) "[Hisbuf Hblk] HΦ".
+  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  wp_call.
+  wp_apply util_proof.wp_DPrintf.
+  wp_loadField.
+
+  destruct b; simpl in *.
+  destruct bufData0.
+  - wp_pures.
+    wp_loadField.
+    wp_loadField.
+    wp_call.
+
+    wp_apply (wp_SliceGet with "[$Hblk]").
+    { admit. }
+    iIntros "[Hblk %]".
+
+    iDestruct "Hisdata" as (x) "[Hisdata <-]".
+    wp_apply (wp_SliceGet with "[$Hisdata]"); first done.
+    iIntros "[Hisdata %]".
+
+    wp_call.
+    admit.
+
+  - wp_pures.
+    wp_loadField.
+    wp_pures.
+    wp_loadField.
+    wp_pures.
+
+    (* XXX how do we know the addr offset is properly aligned
+      for KindInode? *)
+    admit.
+
+  - wp_pures.
+    wp_loadField.
+    wp_loadField.
+    wp_pures.
+
+    (* XXX how do we know the addr offset is byte-aligned for
+      KindBlock? *)
+    admit.
 Admitted.
 
 Theorem wp_buf_loadField_sz bufptr a b :
