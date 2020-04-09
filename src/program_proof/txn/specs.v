@@ -6,7 +6,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
-From Perennial.program_proof Require Import wal.specs wal.heapspec addr.specs buf.specs.
+From Perennial.program_proof Require Import wal.specs wal.heapspec addr.specs buf.defs buf.specs.
 
 Inductive updatable_buf (T : Type) :=
 | UB : forall (v : T) (modifiedSinceInstallG : gname), updatable_buf T
@@ -34,7 +34,7 @@ Definition walN : namespace := nroot .@ "txnwal".
 
 Definition mapsto_txn {K} (gData : gmap u64 (sigT (fun K => gen_heapG u64 (updatable_buf (@bufDataT K)) Σ))) (a : addr) (v : @bufDataT K) : iProp Σ :=
   ∃ hG γm,
-    ⌜ valid_addr a ⌝ ∗
+    ⌜ valid_addr a ∧ valid_off K a.(addrOff) ⌝ ∗
     ⌜ gData !! a.(addrBlock) = Some (existT K hG) ⌝ ∗
     mapsto (hG := hG) a.(addrOff) 1 (UB v γm) ∗
     own γm (◯ (Excl' true)).
@@ -62,7 +62,16 @@ Theorem mapsto_txn_valid {K} gData a v :
 Proof.
   rewrite /mapsto_txn.
   iIntros "H".
-  iDestruct "H" as (h g) "[% _]"; done.
+  iDestruct "H" as (h g) "[% _]"; intuition; done.
+Qed.
+
+Theorem mapsto_txn_valid_off {K} gData a v :
+  @mapsto_txn K gData a v -∗
+  ⌜ valid_off K a.(addrOff) ⌝.
+Proof.
+  rewrite /mapsto_txn.
+  iIntros "H".
+  iDestruct "H" as (h g) "[% _]"; intuition; done.
 Qed.
 
 Definition txn_bufDataT_in_block {K} (installed : Block) (bs : list Block)
@@ -320,7 +329,7 @@ Proof.
     wp_pures.
     rewrite /abstraction.is_block.
     wp_apply (wp_MkBufLoad with "[$Hisblock]").
-    { done. }
+    { intuition. }
     iIntros (bufptr) "Hbuf".
     wp_pures.
     iApply "HΦ". iFrame.
@@ -401,7 +410,7 @@ Proof.
   wp_pures.
   rewrite /abstraction.is_block.
   wp_apply (wp_MkBufLoad with "[$Hb]").
-  { done. }
+  { intuition. }
   iIntros (bufptr) "Hbuf".
   wp_pures.
   iApply "HΦ".
