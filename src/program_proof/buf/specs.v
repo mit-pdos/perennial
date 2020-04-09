@@ -329,6 +329,15 @@ Proof using.
   iPureIntro. congruence.
 Qed.
 
+Lemma extract_nth_skipn_firstn blk sz off e:
+  extract_nth blk sz off = Some e ->
+  b2val <$> vec_to_list e =
+    skipn (Z.to_nat (off `div` 8))
+          (firstn (Z.to_nat ((off + (sz*8-1)) `div` 8 + 1))
+                  (Block_to_vals blk)).
+Proof.
+Admitted.
+
 Theorem wp_MkBufLoad K a blk s (bufdata : @bufDataT K) :
   {{{
     is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
@@ -375,10 +384,63 @@ Proof using.
     { iPureIntro. congruence. }
     iExists _.
     iSplitL; last eauto.
-    admit.
+    iExactEq "Hs"; f_equal.
+
+    unfold valid_addr in *.
+    unfold addr2flat_z in *.
+    unfold block_bytes in *.
+    intuition idtac.
+    word_cleanup.
+    rewrite word.unsigned_sub.
+    rewrite word.unsigned_add.
+    word_cleanup.
+    replace (int.val a.(addrOff) + Z.of_nat 1 - 1) with (int.val a.(addrOff)) by lia.
+    rewrite wrap_small.
+    2: {
+      split.
+      - assert (0 ≤ int.val a.(addrOff) `div` 8); try lia.
+        apply Z_div_pos; lia.
+      - assert (int.val a.(addrOff) `div` 8 ≤ int.val a.(addrOff)); try lia.
+        apply Zdiv_le_upper_bound; lia.
+    }
+
+    eapply extract_nth_skipn_firstn in H3.
+    rewrite /b2val /= in H3.
+    rewrite H3.
+    f_equal.
+    { admit. }
+    f_equal.
+    { admit. }
+
   - iSplitR.
     { iPureIntro. congruence. }
-    admit.
+    iExactEq "Hs"; f_equal.
+
+    unfold valid_addr in *.
+    unfold addr2flat_z in *.
+    unfold inode_bytes, block_bytes in *.
+    intuition idtac.
+    word_cleanup.
+    rewrite word.unsigned_sub.
+    rewrite word.unsigned_add.
+    word_cleanup.
+    replace (int.val a.(addrOff) + Z.of_nat (Z.to_nat 128 * 8) - 1) with (int.val a.(addrOff) + (128*8-1)) by lia.
+    rewrite wrap_small.
+    2: {
+      split.
+      - assert (0 ≤ (int.val a.(addrOff) + (128*8-1)) `div` 8); try lia.
+        apply Z_div_pos; lia.
+      - assert ((int.val a.(addrOff) + (128*8-1)) `div` 8 ≤ int.val a.(addrOff) + (128*8-1)); try lia.
+        apply Zdiv_le_upper_bound; lia.
+    }
+
+    eapply extract_nth_skipn_firstn in H.
+    rewrite /inode_to_vals H.
+    f_equal.
+    { word. }
+    f_equal.
+    { word. }
+
   - intuition subst.
     iSplitR.
     { iPureIntro. congruence. }
