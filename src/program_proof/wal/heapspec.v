@@ -428,7 +428,9 @@ Qed.
 Lemma disk_at_pos_trans σ pos f :
   disk_at_pos pos σ =
     disk_at_pos pos (set log_state.trans f σ).
-Admitted.
+Proof.
+  destruct σ; rewrite /disk_at_pos /= //.
+Qed.
 
 Lemma disk_at_pos_append σ (pos : u64) new :
   int.val pos ≤ int.val σ.(log_state.installed_to) ->
@@ -440,7 +442,9 @@ Admitted.
 Lemma updates_since_trans σ pos a f :
   updates_since pos a σ =
     updates_since pos a (set log_state.trans f σ).
-Admitted.
+Proof.
+  destruct σ; rewrite /updates_since /= //.
+Qed.
 
 Lemma updates_since_updates σ pos a new bs :
   new ⊆ unstable_upds σ ++ bs ->
@@ -452,6 +456,66 @@ Proof.
   intros.
 Admitted.
 
+Lemma latest_update_app : ∀ l b0 b,
+  latest_update b0 (l ++ [b]) = b.
+Proof.
+  induction l; simpl; eauto.
+Qed.
+
+Lemma latest_update_last_eq i l0 l1 :
+  last l0 = last l1 ->
+  latest_update i l0 = latest_update i l1.
+Proof.
+Admitted.
+
+Theorem updates_since_absorb σ pos a bs new :
+  absorb_map new ∅ = absorb_map (unstable_upds σ ++ bs) ∅ ->
+  last (updates_since pos a (set log_state.updates
+                             (λ _ : list update.t, stable_upds σ ++ new) σ)) =
+  last (updates_since pos a σ ++ updates_for_addr a bs).
+Proof.
+Admitted.
+
+Lemma updates_for_addr_notin : ∀ bs a,
+  a ∉ map update.addr bs ->
+  updates_for_addr a bs = nil.
+Proof.
+  induction bs; intros; eauto.
+  rewrite map_cons in H.
+  apply not_elem_of_cons in H; destruct H.
+  erewrite <- IHbs; eauto.
+  destruct a; rewrite /updates_for_addr filter_cons /=; simpl in *.
+  destruct (decide (addr = a0)); congruence.
+Qed.
+
+Theorem updates_for_addr_in : ∀ bs u i,
+  bs !! i = Some u ->
+  NoDup (map update.addr bs) ->
+  updates_for_addr u.(update.addr) bs = [u.(update.b)].
+Proof.
+  induction bs; intros.
+  { rewrite lookup_nil in H; congruence. }
+  destruct i; simpl in *.
+  { inversion H; clear H; subst.
+    rewrite /updates_for_addr filter_cons /=.
+    destruct (decide (u.(update.addr) = u.(update.addr))); try congruence.
+    rewrite /=.
+    inversion H0.
+    apply updates_for_addr_notin in H2.
+    rewrite /updates_for_addr in H2.
+    rewrite H2; eauto.
+  }
+  inversion H0; subst.
+  erewrite <- IHbs; eauto.
+  rewrite /updates_for_addr filter_cons /=.
+  destruct (decide (a.(update.addr) = u.(update.addr))); eauto.
+  exfalso.
+  apply H3. rewrite e.
+  eapply elem_of_list_lookup.
+  eexists.
+  admit.
+Admitted.
+
 Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
   ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ olds, memappend_pre γh bs olds ∗
         ( ∀ pos, memappend_q γh bs olds pos ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q pos ) ) -∗
@@ -459,7 +523,7 @@ Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
       ⌜valid_log_state σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
       ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q pos ) ).
-Proof.
+Proof using gen_heapPreG0.
   iIntros "Hpre".
   iIntros (σ σ' pos) "% % Hinv".
   iDestruct "Hinv" as (gh) "[Hctx Hgh]".
@@ -516,17 +580,19 @@ Proof.
     {
       rewrite -updates_since_trans.
       etransitivity; first by apply updates_since_updates.
-      assert (updates_for_addr x0.(update.addr) bs = [x0.(update.b)]) as Hbs.
-      {
-        admit.
-      }
-      rewrite Hbs.
+      erewrite updates_for_addr_in; eauto.
       set_solver.
     }
 
     {
       rewrite -updates_since_trans.
-      admit.
+      rewrite latest_update_app.
+      erewrite latest_update_last_eq.
+      2: {
+        eapply updates_since_absorb; eauto.
+      }
+      erewrite updates_for_addr_in; eauto.
+      rewrite latest_update_app; eauto.
     }
 
   - rewrite memappend_gh_not_in_bs in Hkb; eauto.
@@ -548,20 +614,19 @@ Proof.
       rewrite -updates_since_trans.
 
       etransitivity; first by apply updates_since_updates.
-      assert (updates_for_addr k bs = nil) as Hbs.
-      {
-        admit.
-      }
-      rewrite Hbs.
+      erewrite updates_for_addr_notin; eauto.
       set_solver.
     }
 
     {
       rewrite H6.
       rewrite -updates_since_trans.
-      (* use H1 at address k *)
-      admit.
+      etransitivity.
+      2: erewrite latest_update_last_eq; first reflexivity.
+      2: apply updates_since_absorb; eauto.
+      rewrite updates_for_addr_notin; eauto.
+      rewrite app_nil_r; eauto.
     }
-Admitted.
+Qed.
 
 End heap.
