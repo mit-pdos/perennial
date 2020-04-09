@@ -604,11 +604,28 @@ Theorem wp_BufTxn__CommitWait buftx γt γUnified mods :
   }}}
     BufTxn__CommitWait #buftx #true
   {{{
-    RET #();
+    (ok : bool), RET #ok;
     [∗ map] a ↦ v ∈ mods, mapsto_txn γUnified a (projT2 v)
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hmods) HΦ".
+  iDestruct "Htxn" as (l mT bufmap gBufmap txid)
+    "(Hl & Hbufmap & Htxid & Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".
+
+  wp_call.
+  wp_apply util_proof.wp_DPrintf.
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_BufMap__DirtyBufs with "Hisbufmap").
+  iIntros (dirtyslice bufptrlist dirtylist) "(Hdirtyslice & % & Hdirtylist)".
+  wp_loadField.
+  wp_apply (wp_txn_CommitWait with "[$Htxn $Hdirtyslice Hdirtylist Hbufmapt Hm]").
+  {
+    admit.
+  }
+  iIntros (ok) "[Hdirtyslice Hbufptrlist]".
+  wp_pures.
+  iApply "HΦ".
 Admitted.
 
 Theorem wp_BufTxn__CommitWait_pred `{!Liftable P} buftx γt γUnified :
