@@ -255,7 +255,7 @@ Proof.
   }
 
   iExists _. iFrame.
-Admitted.
+Qed.
 
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
   [∗ list] _ ↦ u; old ∈ bs; olds,
