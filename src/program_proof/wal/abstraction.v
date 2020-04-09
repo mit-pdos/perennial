@@ -35,6 +35,9 @@ Module log_state.
 
 End log_state.
 
+
+
+
 Section heap.
 Context `{!heapG Σ}.
 Definition update_val (up:u64*Slice.t): val :=

@@ -75,6 +75,23 @@ Definition valid_addrs (updates: list update.t) (d: disk) :=
 Definition is_trans (trans: gmap u64 bool) pos :=
   trans !! pos = Some true.
 
+Definition no_updates_since σ a (pos : u64) :=
+  ∀ (pos' : u64) u,
+    int.val pos <= int.val pos' ->
+    σ.(log_state.updates) !! int.nat pos' = Some u ->
+    u.(update.addr) ≠ a.
+
+Definition no_updates_in_tail l (pos: u64) a : Prop :=
+  forall u', u' ∈ drop (int.nat pos) l → u'.(update.addr) ≠ a.
+
+Definition no_updates (l: list update.t) a : Prop :=
+  forall u, u ∈ l -> u.(update.addr) ≠ a.
+
+Definition exist_last_update (l: list update.t) a b : Prop :=
+  exists (i:nat) u,
+    l !! i = Some u /\ u.(update.addr) = a /\ u.(update.b) = b /\
+    (forall (j:nat) u1,  j > i -> l !! j = Some u1 -> u1.(update.addr) ≠ a).
+  
 Definition valid_log_state (s : log_state.t) :=
   Z.of_nat (length s.(log_state.updates)) < 2^64 ∧
   valid_addrs s.(log_state.updates) s.(log_state.disk) ∧
@@ -259,12 +276,6 @@ Proof.
   reflexivity.
 Qed.
 
-Definition no_updates_since σ a (pos : u64) :=
-  ∀ (pos' : u64) u,
-    int.val pos <= int.val pos' ->
-    σ.(log_state.updates) !! int.nat pos' = Some u ->
-    u.(update.addr) ≠ a.
-
 Lemma fmap_eq_cons {A B} (f:A -> B) : forall (l: list A) (l': list B) b,
     fmap f l = b :: l' -> exists a tl, l = a :: tl /\ b = f a /\ l' = fmap f tl.
 Proof.
@@ -349,9 +360,6 @@ Proof.
   simpl; eauto.
 Qed.
 
-Definition no_updates_in_tail l (pos: u64) a : Prop :=
-  forall u', u' ∈ drop (int.nat pos) l → u'.(update.addr) ≠ a.
-  
 Theorem no_updates_since_in_tail l (pos: u64) a:
   length l < 2 ^ 64 ->
   (∀ u (pos' : u64),
@@ -490,13 +498,6 @@ Proof.
   inversion H0; auto.
 Qed.
 
-Definition no_updates (l: list update.t) a : Prop :=
-  forall u, u ∈ l -> u.(update.addr) ≠ a.
-
-Definition exist_last_update (l: list update.t) a b : Prop :=
-  exists (i:nat) u,
-    l !! i = Some u /\ u.(update.addr) = a /\ u.(update.b) = b /\
-    (forall (j:nat) u1,  j > i -> l !! j = Some u1 -> u1.(update.addr) ≠ a).
 
 Theorem no_updates_cons (l: list update.t) a:
   forall u, no_updates (u::l) a -> no_updates l a.
