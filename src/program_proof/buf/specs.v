@@ -265,6 +265,12 @@ Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 e
   refine (vtake' _ _ _ b); abstract lia.
 Defined.
 
+Lemma roundup_8 n sz :
+  n `mod` 8 = 0 ->
+  (n + (sz*8-1)) `div` 8 + 1 = n.
+Proof.
+Admitted.
+
 Lemma extract_nth_skipn_firstn blk sz off e:
   extract_nth blk sz off = Some e ->
   b2val <$> vec_to_list e =
