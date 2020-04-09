@@ -158,6 +158,74 @@ Section map2.
   Qed.
 End map2.
 
+Section list2.
+  Context {A B : Type}.
+  Implicit Types Φ Ψ : nat → A → B → PROP.
+
+  Lemma big_sepL2_lookup_1_some
+      Φ (l1 : list A) (l2 : list B) (i : nat) (x1 : A) :
+    l1 !! i = Some x1 ->
+      ⊢ ( [∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2 ) -∗
+          ⌜∃ x2, l2 !! i = Some x2⌝.
+  Proof.
+    intros.
+    iIntros "H".
+    apply lookup_lt_Some in H as Hlen.
+    iDestruct (big_sepL2_length with "H") as %Hslen.
+    rewrite Hslen in Hlen.
+    apply lookup_lt_is_Some_2 in Hlen.
+    destruct Hlen.
+    eauto.
+  Qed.
+
+  Lemma big_sepL2_lookup_2_some
+      Φ (l1 : list A) (l2 : list B) (i : nat) (x2 : B) :
+    l2 !! i = Some x2 ->
+      ⊢ ( [∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2 ) -∗
+          ⌜∃ x1, l1 !! i = Some x1⌝.
+  Proof.
+    intros.
+    iIntros "H".
+    apply lookup_lt_Some in H as Hlen.
+    iDestruct (big_sepL2_length with "H") as %Hslen.
+    rewrite -Hslen in Hlen.
+    apply lookup_lt_is_Some_2 in Hlen.
+    destruct Hlen.
+    eauto.
+  Qed.
+
+  Lemma big_sepL2_lookup_1_none
+      Φ (l1 : list A) (l2 : list B) (i : nat) :
+    l1 !! i = None ->
+      ⊢ ( [∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2 ) -∗
+          ⌜l2 !! i = None⌝.
+  Proof.
+    intros.
+    iIntros "H".
+    apply lookup_ge_None in H as Hlen.
+    iDestruct (big_sepL2_length with "H") as %Hslen.
+    rewrite Hslen in Hlen.
+    apply lookup_ge_None in Hlen.
+    eauto.
+  Qed.
+
+  Lemma big_sepL2_lookup_2_none
+      Φ (l1 : list A) (l2 : list B) (i : nat) :
+    l2 !! i = None ->
+      ⊢ ( [∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2 ) -∗
+          ⌜l1 !! i = None⌝.
+  Proof.
+    intros.
+    iIntros "H".
+    apply lookup_ge_None in H as Hlen.
+    iDestruct (big_sepL2_length with "H") as %Hslen.
+    rewrite -Hslen in Hlen.
+    apply lookup_ge_None in Hlen.
+    eauto.
+  Qed.
+
+End list2.
+
 Section maplist.
   Context `{Countable K} {V LV : Type}.
   Implicit Types Φ : K → V → LV → PROP.
