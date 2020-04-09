@@ -418,10 +418,32 @@ Proof.
 Qed.
 
 Lemma disk_at_pos_append σ (pos : u64) new :
+  valid_log_state σ ->
   int.val pos ≤ int.val σ.(log_state.installed_to) ->
   disk_at_pos (int.nat pos) σ =
     disk_at_pos (int.nat pos) (set log_state.updates
-      (λ _ : list update.t, stable_upds σ ++ new) σ).
+                                 (λ _ : list update.t, stable_upds σ ++ new) σ).
+Proof.
+  intros.
+  rewrite /set //.
+  rewrite /stable_upds //.
+  destruct σ.
+  rewrite /disk_at_pos //.
+  unfold valid_log_state in H.
+  simpl in *.
+  intuition.
+  unfold log_state.last_pos in H7.
+  simpl in *.
+  rewrite take_app_le /=.
+  {
+    rewrite firstn_firstn //.
+    assert ((Init.Nat.min (Z.to_nat (word.unsigned pos))
+             (Z.to_nat (word.unsigned next_durable_to))) = (int.nat pos)) by lia.
+    rewrite H6; auto.
+  }
+  rewrite firstn_length_le.
+  1: word.
+  assert ((int.val next_durable_to) ≤ int.val (length updates)) by lia.
 Admitted.
 
 Lemma updates_since_trans σ pos a f :
