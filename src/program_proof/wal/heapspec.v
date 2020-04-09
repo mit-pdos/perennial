@@ -332,7 +332,7 @@ Proof.
     iDestruct "Hpre" as "[Ha Hpre]".
     iDestruct ("Hi" with "Hpre") as "%".
 
-    iAssert (⌜update.addr a ∉ map update.addr bs⌝)%I as "%".
+    iAssert (⌜update.addr a ∉ fmap update.addr bs⌝)%I as "%".
     {
       iClear "Hi".
       clear H Hlen.
@@ -359,7 +359,7 @@ Qed.
 
 (*
 Theorem apply_upds_insert addr b bs d :
-  addr ∉ map update.addr bs ->
+  addr ∉ fmap update.addr bs ->
   <[int.val addr:=b]> (apply_upds bs d) =
   apply_upds bs (<[int.val addr:=b]> d).
 Proof.
@@ -377,13 +377,13 @@ Qed.
 
 
 Theorem memappend_gh_not_in_bs gh bs olds k :
-  k ∉ map update.addr bs ->
+  k ∉ fmap update.addr bs ->
   memappend_gh gh bs olds !! k = gh !! k.
 Proof.
 Admitted.
 
 Theorem elem_of_map {A B} (k: B) (f: A -> B) (l : list A) :
-  k ∈ map f l ->
+  k ∈ fmap f l ->
   ∃ x,
     x ∈ l ∧
     k = f x.
@@ -477,11 +477,11 @@ Proof.
 Admitted.
 
 Lemma updates_for_addr_notin : ∀ bs a,
-  a ∉ map update.addr bs ->
+  a ∉ fmap update.addr bs ->
   updates_for_addr a bs = nil.
 Proof.
   induction bs; intros; eauto.
-  rewrite map_cons in H.
+  rewrite fmap_cons in H.
   apply not_elem_of_cons in H; destruct H.
   erewrite <- IHbs; eauto.
   destruct a; rewrite /updates_for_addr filter_cons /=; simpl in *.
@@ -490,7 +490,7 @@ Qed.
 
 Theorem updates_for_addr_in : ∀ bs u i,
   bs !! i = Some u ->
-  NoDup (map update.addr bs) ->
+  NoDup (fmap update.addr bs) ->
   updates_for_addr u.(update.addr) bs = [u.(update.b)].
 Proof.
   induction bs; intros.
@@ -499,10 +499,10 @@ Proof.
   { inversion H; clear H; subst.
     rewrite /updates_for_addr filter_cons /=.
     destruct (decide (u.(update.addr) = u.(update.addr))); try congruence.
-    rewrite /=.
     inversion H0.
     apply updates_for_addr_notin in H2.
     rewrite /updates_for_addr in H2.
+    rewrite fmap_cons.
     rewrite H2; eauto.
   }
   inversion H0; subst.
@@ -513,8 +513,9 @@ Proof.
   apply H3. rewrite e.
   eapply elem_of_list_lookup.
   eexists.
-  admit.
-Admitted.
+  rewrite list_lookup_fmap.
+  erewrite H; eauto.
+Qed.
 
 Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
   ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ olds, memappend_pre γh bs olds ∗
@@ -556,7 +557,7 @@ Proof using gen_heapPreG0.
   simpl.
   specialize (Hgh k).
 
-  destruct (decide (k ∈ map update.addr bs)).
+  destruct (decide (k ∈ fmap update.addr bs)).
   - apply elem_of_map in e as ex.
     destruct ex. intuition. subst.
     apply elem_of_list_lookup in H3; destruct H3.

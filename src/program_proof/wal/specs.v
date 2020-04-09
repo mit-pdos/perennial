@@ -29,7 +29,7 @@ Definition disk_at_pos (pos: nat) (s:log_state.t): disk :=
   apply_upds (firstn pos s.(log_state.updates)) s.(log_state.disk).
 
 Definition updates_for_addr (a: u64) (l : list update.t) : list Block :=
-  map update.b
+  fmap update.b
   (filter (fun u => u.(update.addr) = a) l).
 
 Definition updates_since (pos: u64) (a: u64) (s : log_state.t) : list Block :=
@@ -265,8 +265,8 @@ Definition no_updates_since σ a (pos : u64) :=
     σ.(log_state.updates) !! int.nat pos' = Some u ->
     u.(update.addr) ≠ a.
 
-Lemma map_eq_cons {A B} (f:A -> B) : forall (l: list A) (l': list B) b,
-    map f l = b :: l' -> exists a tl, l = a :: tl /\ b = f a /\ l' = map f tl.
+Lemma fmap_eq_cons {A B} (f:A -> B) : forall (l: list A) (l': list B) b,
+    fmap f l = b :: l' -> exists a tl, l = a :: tl /\ b = f a /\ l' = fmap f tl.
 Proof.
   intros l l' b Heq.
   destruct l; inversion_clear Heq.
@@ -298,7 +298,7 @@ Proof.
   destruct (map update.b (filter (λ u : update.t, u.(update.addr) = a) l1)) eqn:Heq; eauto.
   exfalso.
 
-  apply map_eq_cons in Heq.
+  apply fmap_eq_cons in Heq.
   destruct Heq. destruct H.
   intuition.
 
