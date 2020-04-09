@@ -278,6 +278,21 @@ Theorem memappend_pre_in_gh γh (gh : gmap u64 heap_block) bs olds :
   ⌜ ∀ u, u ∈ bs →
       ∃ b, gh !! u.(update.addr) = Some b ⌝.
 Proof.
+  iIntros "Hctx Hmem % %".
+  rewrite / memappend_pre //.
+  rewrite / gen_heap_ctx.
+  apply elem_of_list_lookup in a0.
+  destruct a0 as [i a0].
+  apply lookup_lt_Some in a0 as Hlen.
+  iDestruct (big_sepL2_length with "Hmem") as %Hslen2.
+  rewrite Hslen2 in Hlen.
+  destruct (list_lookup_Z_lt olds (int.val i)) as [Holds Hb].
+  {
+    admit.
+  }
+  destruct Holds.
+  iDestruct (big_sepL2_lookup_acc _ _ _ i a (b, l) with "Hmem") as "Hx"; auto.
+  1: admit.
 Admitted.
 
 Lemma wal_heap_memappend_pre_to_q gh γh bs olds newpos :
