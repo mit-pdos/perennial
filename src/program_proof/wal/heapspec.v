@@ -505,7 +505,7 @@ Proof.
     destruct (decide (l = [])).
     + subst. simpl; auto.
     + rewrite last_cons; auto.
-      rewrite last_update_cons in H0; auto.
+      rewrite lastest_update_cons in H0; auto.
       specialize (IHl n b a).
       apply IHl; auto.
 Qed.
@@ -525,7 +525,7 @@ Proof.
       destruct IHl.
       simpl in *.
       exists x; auto.
-    + rewrite last_update_cons; auto.
+    + rewrite lastest_update_cons; auto.
 Qed.  
 
 Lemma latest_update_last_eq i l0 l1 :

@@ -772,7 +772,7 @@ Proof.
   apply in_cons; eauto.
 Qed.
 
-Theorem last_update_cons installed a:
+Theorem lastest_update_cons installed a:
   forall bs,
     bs ≠ [] ->
     latest_update installed (a :: bs) = latest_update a bs.
@@ -821,7 +821,7 @@ Proof.
          apply IHbs.
          rewrite lookup_cons_ne_0 in H; auto.
          rewrite H0 in H; simpl in *; auto.
-      ++ rewrite last_update_cons; auto.
+      ++ rewrite lastest_update_cons; auto.
          {
            specialize (IHbs a pos').
            apply IHbs.
