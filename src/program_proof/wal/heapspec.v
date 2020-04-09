@@ -375,23 +375,8 @@ Proof.
 Qed.
 *)
 
-
-Theorem memappend_gh_not_in_bs gh bs olds k :
-  k ∉ fmap update.addr bs ->
-  memappend_gh gh bs olds !! k = gh !! k.
-Proof.
-Admitted.
-
-Theorem elem_of_map {A B} (k: B) (f: A -> B) (l : list A) :
-  k ∈ fmap f l ->
-  ∃ x,
-    x ∈ l ∧
-    k = f x.
-Proof.
-Admitted.
-
-Lemma memappend_gh_lookup : ∀ bs olds gh a,
-  a ∉ (map update.addr bs) ->
+Lemma memappend_gh_not_in_bs : ∀ bs olds gh a,
+  a ∉ fmap update.addr bs ->
   memappend_gh gh bs olds !! a = gh !! a.
 Proof.
   induction bs; simpl; intros; eauto.
@@ -415,7 +400,7 @@ Proof.
   { simpl. intros.
     inversion H; clear H; subst.
     inversion H0; clear H0; subst.
-    rewrite memappend_gh_lookup.
+    rewrite memappend_gh_not_in_bs.
     { rewrite lookup_insert; eauto. }
     inversion H1; eauto.
   }
@@ -558,9 +543,9 @@ Proof using gen_heapPreG0.
   specialize (Hgh k).
 
   destruct (decide (k ∈ fmap update.addr bs)).
-  - apply elem_of_map in e as ex.
+  - eapply elem_of_list_fmap in e as ex.
     destruct ex. intuition. subst.
-    apply elem_of_list_lookup in H3; destruct H3.
+    apply elem_of_list_lookup in H4; destruct H4.
     edestruct Hbs_in_gh; eauto; intuition.
     specialize (Hgh _ H5). simpl in *.
     destruct Hgh as [pos Hgh].
