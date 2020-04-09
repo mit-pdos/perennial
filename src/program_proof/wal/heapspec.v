@@ -275,25 +275,19 @@ Fixpoint memappend_gh (gh : gmap u64 heap_block) bs olds :=
 Theorem memappend_pre_in_gh γh (gh : gmap u64 heap_block) bs olds :
   gen_heap_ctx gh -∗
   memappend_pre γh bs olds -∗
-  ⌜ ∀ u, u ∈ bs →
-      ∃ b, gh !! u.(update.addr) = Some b ⌝.
+  ⌜ ∀ u i,
+      bs !! i = Some u ->
+      ∃ old, olds !! i = Some old ∧
+             gh !! u.(update.addr) = Some (HB (fst old) (snd old)) ⌝.
 Proof.
-  iIntros "Hctx Hmem % %".
-  rewrite / memappend_pre //.
-  rewrite / gen_heap_ctx.
-  apply elem_of_list_lookup in a0.
-  destruct a0 as [i a0].
-  apply lookup_lt_Some in a0 as Hlen.
-  iDestruct (big_sepL2_length with "Hmem") as %Hslen2.
-  rewrite Hslen2 in Hlen.
-  destruct (list_lookup_Z_lt olds (int.val i)) as [Holds Hb].
-  {
-    admit.
-  }
-  destruct Holds.
-  iDestruct (big_sepL2_lookup_acc _ _ _ i a (b, l) with "Hmem") as "Hx"; auto.
-  1: admit.
-Admitted.
+  iIntros "Hctx Hmem % % %".
+  rewrite /memappend_pre //.
+  iDestruct (big_sepL2_lookup_1_some with "Hmem") as %Hv; eauto.
+  destruct Hv.
+  iDestruct (big_sepL2_lookup_acc with "Hmem") as "[Hx Hmem]"; eauto.
+  iDestruct (gen_heap_valid with "Hctx Hx") as %Hv.
+  eauto.
+Qed.
 
 Lemma wal_heap_memappend_pre_to_q gh γh bs olds newpos :
   ( gen_heap_ctx gh ∗
@@ -396,6 +390,58 @@ Theorem elem_of_map {A B} (k: B) (f: A -> B) (l : list A) :
 Proof.
 Admitted.
 
+Lemma memappend_gh_lookup : ∀ bs olds gh a,
+  a ∉ (map update.addr bs) ->
+  memappend_gh gh bs olds !! a = gh !! a.
+Proof.
+  induction bs; simpl; intros; eauto.
+  destruct olds; eauto.
+  apply not_elem_of_cons in H; intuition idtac.
+  rewrite IHbs; eauto.
+  rewrite lookup_insert_ne; eauto.
+Qed.
+
+Lemma memappend_gh_olds : ∀ bs olds gh i u old,
+  bs !! i = Some u ->
+  olds !! i = Some old ->
+  NoDup (map update.addr bs) ->
+  memappend_gh gh bs olds !! u.(update.addr) = Some (HB (fst old) (snd old ++ [u.(update.b)])).
+Proof.
+  induction bs; intros.
+  { rewrite lookup_nil in H. congruence. }
+  destruct olds.
+  { rewrite lookup_nil in H0. congruence. }
+  destruct i.
+  { simpl. intros.
+    inversion H; clear H; subst.
+    inversion H0; clear H0; subst.
+    rewrite memappend_gh_lookup.
+    { rewrite lookup_insert; eauto. }
+    inversion H1; eauto.
+  }
+
+  simpl in *. intros.
+  inversion H1.
+  erewrite IHbs; eauto.
+Qed.
+
+Lemma disk_at_pos_trans σ pos f :
+  disk_at_pos pos σ =
+    disk_at_pos pos (set log_state.trans f σ).
+Admitted.
+
+Lemma disk_at_pos_append σ (pos : u64) new :
+  int.val pos ≤ int.val σ.(log_state.installed_to) ->
+  disk_at_pos (int.nat pos) σ =
+    disk_at_pos (int.nat pos) (set log_state.updates
+      (λ _ : list update.t, stable_upds σ ++ new) σ).
+Admitted.
+
+Lemma updates_since_trans σ pos a f :
+  updates_since pos a σ =
+    updates_since pos a (set log_state.trans f σ).
+Admitted.
+
 Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
   ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ olds, memappend_pre γh bs olds ∗
         ( ∀ pos, memappend_q γh bs olds pos ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q pos ) ) -∗
@@ -439,23 +485,31 @@ Proof.
   destruct (decide (k ∈ map update.addr bs)).
   - apply elem_of_map in e as ex.
     destruct ex. intuition. subst.
-    specialize (Hbs_in_gh _ H3). destruct Hbs_in_gh. destruct x1.
-    specialize (Hgh _ H0). simpl in *.
+    apply elem_of_list_lookup in H3; destruct H3.
+    edestruct Hbs_in_gh; eauto; intuition.
+    specialize (Hgh _ H5). simpl in *.
     destruct Hgh as [pos Hgh].
     exists pos.
+
+    pose proof Hkb as Hkb'.
+    erewrite memappend_gh_olds in Hkb'; eauto.
+    inversion Hkb'; clear Hkb'; subst.
+    destruct x2; simpl in *.
+
     intuition.
 
     {
-      admit. (* H6, and need to know that installed_block=installed_block0
-        through olds *)
+      rewrite -disk_at_pos_trans.
+      rewrite -disk_at_pos_append; eauto.
     }
 
     {
-      (* need to know that blocks_since_install = blocks_since_install0 ++ [x0.(update.b)] *)
+      rewrite -updates_since_trans.
       admit.
     }
 
     {
+      rewrite -updates_since_trans.
       admit.
     }
 
@@ -468,17 +522,20 @@ Proof.
     intuition.
 
     {
-      admit. (* H4 *)
+      rewrite -disk_at_pos_trans.
+      rewrite -disk_at_pos_append; eauto.
     }
 
     {
       etransitivity.
       2: eassumption.
+      rewrite -updates_since_trans.
       admit.
     }
 
     {
       rewrite H6.
+      rewrite -updates_since_trans.
       (* use H1 at address k *)
       admit.
     }
