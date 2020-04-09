@@ -345,13 +345,14 @@ Proof using.
   wp_call.
   iDestruct (is_slice_small_sz with "Hs") as "%".
 
-  wp_apply wp_SliceSubslice.
+  wp_apply (wp_SliceSubslice_small with "[$Hs]").
   { rewrite /valid_addr in H0.
     iPureIntro; intuition.
     { admit. }
     { admit. }
   }
 
+  iIntros (s') "Hs".
   wp_pures.
   wp_apply wp_allocStruct; first by auto.
 
@@ -382,7 +383,18 @@ Proof using.
     iSplitR.
     { iPureIntro. congruence. }
     rewrite H3.
-    admit.
+    rewrite /block_bytes.
+    destruct s; cbn in *.
+    rewrite length_Block_to_vals in H1.
+    iExactEq "Hs".
+    replace (word.divu 0 8) with (U64 0) by reflexivity.
+    replace (word.add 0 (Z.to_nat 4096 * 8)%nat) with (U64 (4096 * 8)) by reflexivity.
+    replace (word.sub (4096 * 8) 1) with (U64 32767) by reflexivity.
+    replace (word.divu 32767 8) with (U64 4095) by reflexivity.
+    replace (word.add 4095 1) with (U64 4096) by reflexivity.
+    rewrite firstn_all2.
+    2: { rewrite length_Block_to_vals /block_bytes. word. }
+    rewrite skipn_O //.
 Admitted.
 
 Theorem wp_buf_loadField_sz bufptr a b :

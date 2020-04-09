@@ -300,7 +300,7 @@ Qed.
 
 Lemma wp_SliceSubslice Φ stk E s t (n1 n2: u64):
   ⌜int.val n1 ≤ int.val n2 ∧ int.val n2 ≤ int.val s.(Slice.sz)⌝ -∗
-  Φ (slice_val (Slice.mk (s.(Slice.ptr) +ₗ[t] int.val n1) (word.sub n2 n1) (word.sub n2 n1))) -∗
+  ▷ Φ (slice_val (Slice.mk (s.(Slice.ptr) +ₗ[t] int.val n1) (word.sub n2 n1) (word.sub n2 n1))) -∗
   WP (SliceSubslice t (slice_val s) #n1 #n2) @ stk; E {{ Φ }}.
 Proof.
   iIntros "% HΦ".
@@ -315,6 +315,84 @@ Proof.
       word.
     + wp_call.
       iApply "HΦ".
+Qed.
+
+Lemma is_slice_small_skipn s t q vs n:
+  ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
+  is_slice_small s t q vs -∗
+  is_slice_small (Slice.mk (s.(Slice.ptr) +ₗ[t] int.val n)
+                           (word.sub s.(Slice.sz) n)
+                           (word.sub s.(Slice.sz) n)) t q (skipn (int.nat n) vs).
+Proof.
+  iIntros "% [Hs %]".
+  iSplitL; simpl.
+  2: {
+    iPureIntro.
+    rewrite skipn_length.
+    word.
+  }
+
+  replace vs with (firstn (int.nat n) vs ++ skipn (int.nat n) vs) at 1 by apply firstn_skipn.
+
+  rewrite array_app.
+  iDestruct "Hs" as "[Hs0 Hs1]".
+  rewrite -> firstn_length_le by lia.
+  replace (Z.of_nat (int.nat n)) with (int.val n) by word.
+  iFrame.
+Qed.
+
+Lemma is_slice_small_firstn s t q vs n:
+  ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
+  is_slice_small s t q vs -∗
+  is_slice_small (Slice.mk s.(Slice.ptr) n n) t q (firstn (int.nat n) vs).
+Proof.
+  iIntros "% [Hs %]".
+  iSplitL; simpl.
+  2: {
+    iPureIntro.
+    rewrite firstn_length.
+    word.
+  }
+
+  replace vs with (firstn (int.nat n) vs ++ skipn (int.nat n) vs) at 1 by apply firstn_skipn.
+
+  rewrite array_app.
+  iDestruct "Hs" as "[Hs0 Hs1]".
+  iFrame.
+Qed.
+
+Lemma is_slice_small_subslice s t q vs n1 n2:
+  ⌜int.val n1 ≤ int.val n2 ∧ int.val n2 ≤ int.val s.(Slice.sz)⌝ -∗
+  is_slice_small s t q vs -∗
+  is_slice_small (Slice.mk (s.(Slice.ptr) +ₗ[t] int.val n1)
+                           (word.sub n2 n1) (word.sub n2 n1)) t q
+                 (skipn (int.nat n1) (firstn (int.nat n2) vs)).
+Proof.
+  iIntros "% Hs".
+  iDestruct (is_slice_small_firstn _ _ _ _ n2 with "[] Hs") as "Hs".
+  { iPureIntro; lia. }
+  iDestruct (is_slice_small_skipn _ _ _ _ n1 with "[] Hs") as "Hs".
+  { iPureIntro; simpl; lia. }
+  iFrame.
+Qed.
+
+Lemma wp_SliceSubslice_small stk E s t (n1 n2: u64) q vs:
+  {{{
+    is_slice_small s t q vs ∗
+    ⌜int.val n1 ≤ int.val n2 ∧ int.val n2 ≤ int.val s.(Slice.sz)⌝
+  }}}
+    SliceSubslice t (slice_val s) #n1 #n2 @ stk; E
+  {{{
+    (s': Slice.t), RET (slice_val s');
+    is_slice_small s' t q (skipn (int.nat n1) (firstn (int.nat n2) vs))
+  }}}.
+Proof.
+  iIntros (Φ) "[Hs %] HΦ".
+  iApply wp_SliceSubslice; first done.
+  iApply "HΦ".
+  iModIntro.
+  iApply is_slice_small_subslice; first done.
+  iFrame.
 Qed.
 
 Lemma wp_SliceGet stk E sl t q vs (i: u64) v0 :
