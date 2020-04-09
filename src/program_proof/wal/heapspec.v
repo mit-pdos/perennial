@@ -469,11 +469,101 @@ Proof.
   induction l; simpl; eauto.
 Qed.
 
+
+Lemma last_cons A (l : list A):
+  l ≠ [] -> forall a, last (a::l) = last l.
+Proof.
+  intros.
+  induction l.
+  - congruence.
+  - destruct (decide (l = [])).
+    + subst; auto.
+    + simpl.
+      f_equal.
+Qed.
+
+Lemma last_Some A (l : list A):
+  l ≠ [] -> exists e, last l = Some e.
+Proof.
+  induction l.
+  - intros. congruence.
+  - intros.
+    destruct (decide (l = [])).
+    + subst; simpl.
+      exists a; auto.
+    + rewrite last_cons; auto.
+Qed.
+
+Lemma latest_update_last l:
+  l ≠ [] ->
+  forall b i, latest_update i l = b -> last l = Some b.
+Proof.
+  induction l.
+  - intros.
+    congruence.
+  - intros.
+    destruct (decide (l = [])).
+    + subst. simpl; auto.
+    + rewrite last_cons; auto.
+      rewrite last_update_cons in H0; auto.
+      specialize (IHl n b a).
+      apply IHl; auto.
+Qed.
+
+Lemma latest_update_some l i:
+  exists b, latest_update i l = b.
+Proof.
+  generalize dependent i.
+  induction l.
+  - intros.
+    exists i.
+    simpl; auto.
+  - intros.
+    destruct (decide (l = [])).
+    + subst.
+      specialize (IHl a).
+      destruct IHl.
+      simpl in *.
+      exists x; auto.
+    + rewrite last_update_cons; auto.
+Qed.  
+
 Lemma latest_update_last_eq i l0 l1 :
   last l0 = last l1 ->
   latest_update i l0 = latest_update i l1.
 Proof.
-Admitted.
+  intros.
+  destruct (decide (l0 = [])); auto.
+  {
+    destruct (decide (l1 = [])); auto.
+    1: subst; simpl in *; auto.
+    subst; simpl in *.
+    apply last_Some in n.
+    destruct n.
+    rewrite H0 in H.
+    congruence.
+  }
+  destruct (decide (l1 = [])); auto.
+  {
+    subst; simpl in *; auto.
+    apply last_Some in n.
+    destruct n.
+    rewrite H0 in H.
+    congruence.
+  }
+  assert (exists b, latest_update i l0 = b).
+  1: apply latest_update_some.
+  assert (exists b, latest_update i l1 = b).
+  1: apply latest_update_some.
+  destruct H0.
+  destruct H1.
+  apply latest_update_last in H0 as H0'; auto.
+  apply latest_update_last in H1 as H1'; auto.
+  subst.
+  rewrite H0' in H.
+  rewrite H1' in H.
+  inversion H; auto.
+Qed.
 
 Theorem updates_since_absorb σ pos a bs new :
   absorb_map new ∅ = absorb_map (unstable_upds σ ++ bs) ∅ ->
