@@ -6,7 +6,7 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
-From Perennial.program_proof Require Import txn.specs buf.specs addr.specs.
+From Perennial.program_proof Require Import txn.specs buf.defs buf.specs addr.specs.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -31,7 +31,7 @@ Definition is_buftxn (buftx : loc)
       ( [∗ map] a ↦ b ∈ gBufmap,
         ⌜ mT !! a = Some (existT _ (bufData b)) ⌝ ) ∗
       ( [∗ map] a ↦ v ∈ mT,
-        ⌜ valid_addr a ⌝ ) ∗
+        ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ⌝ ) ∗
       ( [∗ map] a ↦ v ∈ mT,
         let dirty := match gBufmap !! a with
                      | None => false
@@ -100,7 +100,7 @@ Proof using gen_heapPreG0.
   iDestruct (big_sepM_lookup with "Hvalid") as "%"; eauto.
   wp_call.
   wp_loadField.
-  wp_apply (wp_BufMap__Lookup with "[$Hisbufmap]"); eauto.
+  wp_apply (wp_BufMap__Lookup with "[$Hisbufmap]"); first intuition.
   iIntros (bufptr) "Hbufptr".
   wp_pures.
   destruct (gBufmap !! a) eqn:Hbufmap_a.
@@ -133,7 +133,7 @@ Proof using gen_heapPreG0.
         iIntros (k x).
         destruct (decide (a = k)).
         { subst. repeat rewrite lookup_insert.
-          iPureIntro; intros. inversion H0; subst; clear H0.
+          iPureIntro; intros. inversion H; subst; clear H.
           simpl; eauto. }
         { repeat rewrite -> lookup_insert_ne by eauto.
           eauto. }
@@ -170,7 +170,7 @@ Proof using gen_heapPreG0.
         iIntros (k x).
         destruct (decide (a = k)).
         { subst. repeat rewrite lookup_insert.
-          iPureIntro; intros. inversion H0; subst; clear H0.
+          iPureIntro; intros. inversion H; subst; clear H.
           simpl; eauto. }
         { repeat rewrite -> lookup_insert_ne by eauto.
           eauto. }
@@ -197,7 +197,7 @@ Proof using gen_heapPreG0.
     iIntros "Hbufptr".
 
     wp_loadField.
-    wp_apply (wp_BufMap__Lookup with "[$Hbufptr]"); eauto.
+    wp_apply (wp_BufMap__Lookup with "[$Hbufptr]"); intuition.
     iIntros (bufptr2) "Hbufptr2".
 
     rewrite lookup_insert.
@@ -300,7 +300,7 @@ Opaque struct.t.
   iDestruct (big_sepM_lookup with "Hvalid") as "%"; eauto.
 
   wp_loadField.
-  wp_apply (wp_BufMap__Lookup with "[$Hisbufmap]"); eauto.
+  wp_apply (wp_BufMap__Lookup with "[$Hisbufmap]"); intuition.
   iIntros (bufptr) "Hbufmapptr".
 
   wp_apply wp_ref_to; first by eauto.
@@ -352,7 +352,7 @@ Opaque struct.t.
       iApply (big_sepM_mono with "Hbufmapt").
       iIntros (k x0) "% %". iPureIntro.
       destruct (decide (a = k)).
-      { subst. rewrite lookup_delete in H2. congruence. }
+      { subst. rewrite lookup_delete in H3. congruence. }
       repeat rewrite -> lookup_insert_ne by eauto.
       eauto.
     }
@@ -360,7 +360,8 @@ Opaque struct.t.
     iSplitL "Hvalid".
     {
       iDestruct (big_sepM_insert_acc with "Hvalid") as "[Ha Hvalid]"; eauto.
-      iApply "Hvalid"; eauto.
+      iApply "Hvalid".
+      rewrite H. done.
     }
 
     iDestruct (big_sepM_delete with "Hm") as "[Hma Hm]"; eauto.
@@ -381,7 +382,8 @@ Opaque struct.t.
   - iDestruct "Hbufmapptr" as "[-> Hisbufmap]".
     wp_load.
     wp_pures.
-    wp_apply (wp_MkBuf with "[$Hvslice]"); eauto.
+    wp_apply (wp_MkBuf with "[$Hvslice]").
+    { rewrite H. intuition. }
     iIntros (bufptr) "Hisbuf".
     wp_pures.
     wp_store.
@@ -418,7 +420,8 @@ Opaque struct.t.
     iSplitL "Hvalid".
     {
       iDestruct (big_sepM_insert_acc with "Hvalid") as "[Ha Hvalid]"; eauto.
-      iApply "Hvalid"; eauto.
+      iApply "Hvalid".
+      rewrite H. done.
     }
 
     iDestruct (big_sepM_delete with "Hm") as "[Hma Hm]"; eauto.
@@ -483,6 +486,7 @@ Proof.
   }
 
   iDestruct (mapsto_txn_valid with "Ha") as %Havalid.
+  iDestruct (mapsto_txn_valid_off with "Ha") as %Havalidoff.
 
   iMod ((gen_heap_alloc _ _ v) with "Hγtctx") as "[Hγtctx Haa]"; eauto.
   iModIntro.
@@ -544,9 +548,11 @@ Proof.
   iExists _, _, _, _, _.
   iFrame.
 
-  iDestruct (big_sepM_mono _ (fun a v => mapsto_txn γUnified a (projT2 v) ∗ ⌜ valid_addr a ⌝)%I with "Ha") as "Ha".
+  iDestruct (big_sepM_mono _ (fun a v => mapsto_txn γUnified a (projT2 v) ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ⌝)%I with "Ha") as "Ha".
   { iIntros (???) "H".
-    iDestruct (mapsto_txn_valid with "H") as %Hv; iFrame; done. }
+    iDestruct (mapsto_txn_valid with "H") as %Hv.
+    iDestruct (mapsto_txn_valid_off with "H") as %Hvo.
+    iFrame; done. }
   iDestruct (big_sepM_sep with "Ha") as "[Ha Havalid]".
 
   iSplitL "Hbufmapt".
