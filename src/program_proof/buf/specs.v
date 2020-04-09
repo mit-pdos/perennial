@@ -48,8 +48,10 @@ Record buf := {
   bufDirty : bool;
 }.
 
-Definition get_bit (b0 : u8) (off : u64) : bool.
-Admitted.
+Definition get_bit (b0 : u8) (off : u64) : bool :=
+  if decide (U8 1 = word.and (word.sru b0 (u8_from_u64 off)) (U8 1))
+  then true
+  else false.
 
 Definition is_buf_data {K} (s : Slice.t) (d : @bufDataT K) (a : addr) : iProp Σ :=
   match d with
