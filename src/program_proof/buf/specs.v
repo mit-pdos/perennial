@@ -275,19 +275,72 @@ Opaque struct.t.
 Transparent struct.t.
 Admitted.
 
-Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 elemsize).
-  destruct (decide ((S n) * elemsize <= block_bytes)).
-  - refine (Some _).
-
-    assert (elemsize ≤ block_bytes - n * elemsize)%nat by abstract lia.
-    refine (Vector.take _ H _).
-
-    unfold Block in b.
-    assert (block_bytes = n * elemsize + (block_bytes - n * elemsize))%nat by abstract lia.
-    rewrite H0 in b.
-    refine (snd (Vector.splitat _ b)).
-  - exact None.
+Definition vtake' {A} (i n : nat) (H : (i ≤ n)%nat) (v : vec A n) : vec A i.
+  destruct (decide (i = n)%nat); subst.
+  - exact v.
+  - assert (i < n)%nat as Hf by abstract lia.
+    replace i with (fin_to_nat (nat_to_fin Hf)) by abstract rewrite fin_to_nat_to_fin //.
+    refine (vtake _ v).
 Defined.
+
+Definition vdrop' {A} (i n : nat) (H : (i < n)%nat) (v : vec A n) : vec A (n-i).
+  replace i with (fin_to_nat (nat_to_fin H)) by abstract rewrite fin_to_nat_to_fin //.
+  refine (vdrop _ v).
+Defined.
+
+Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 elemsize).
+  destruct (decide (elemsize = 0)%nat); first exact None.
+  destruct (decide ((S n) * elemsize <= block_bytes)); last exact None.
+  refine (Some _).
+
+  replace elemsize with ((S n * elemsize) - n * elemsize)%nat by abstract lia.
+  refine (vdrop' _ _ _ _); first abstract lia.
+  refine (vtake' _ _ _ b); abstract lia.
+Defined.
+
+Lemma extract_nth_skipn_firstn blk sz off e:
+  extract_nth blk sz off = Some e ->
+  b2val <$> vec_to_list e =
+    skipn (Z.to_nat (off `div` 8))
+          (firstn (Z.to_nat ((off + (sz*8-1)) `div` 8 + 1))
+                  (Block_to_vals blk)).
+Proof.
+  pose proof (length_Block_to_vals blk) as H; revert H.
+  rewrite /extract_nth /Block_to_vals fmap_length; intros.
+  rewrite -fmap_take -fmap_drop. f_equal.
+
+  destruct (decide (sz = 0)%nat); try congruence.
+  destruct (decide (Z.of_nat (S off) * Z.of_nat sz ≤ Z.of_nat block_bytes)); try congruence.
+  inversion H0; clear H0; subst.
+
+  rewrite /vtake' /vdrop'.
+  destruct (decide ((sz + off * sz)%nat = block_bytes)).
+  - assert (((Z.to_nat ((Z.of_nat off + (Z.of_nat sz * 8 - 1)) `div` 8 + 1)) = block_bytes))%nat as Hf.
+    { admit. }
+    rewrite -> firstn_all2 by lia.
+
+    assert ((Z.to_nat (Z.of_nat off `div` 8)) < block_bytes)%nat as Hf2.
+    { admit. }
+    replace (Z.to_nat (Z.of_nat off `div` 8)) with (fin_to_nat (nat_to_fin Hf2)).
+    2: { rewrite fin_to_nat_to_fin; auto. }
+    rewrite -vec_to_list_drop.
+
+    admit.
+
+  - assert (((Z.to_nat ((Z.of_nat off + (Z.of_nat sz * 8 - 1)) `div` 8 + 1)) < block_bytes))%nat as Hf.
+    { admit. }
+    replace (Z.to_nat ((Z.of_nat off + (Z.of_nat sz * 8 - 1)) `div` 8 + 1)) with (fin_to_nat (nat_to_fin Hf)).
+    2: { rewrite fin_to_nat_to_fin; auto. }
+    rewrite -vec_to_list_take.
+
+    assert ((Z.to_nat (Z.of_nat off `div` 8)) < (@fin_to_nat block_bytes (nat_to_fin Hf)))%nat as Hf2.
+    { rewrite fin_to_nat_to_fin. admit. }
+    replace (Z.to_nat (Z.of_nat off `div` 8)) with (fin_to_nat (nat_to_fin Hf2)).
+    2: { rewrite fin_to_nat_to_fin; auto. }
+    rewrite -vec_to_list_drop.
+
+    admit.
+Admitted.
 
 Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : @bufDataT K) : Prop :=
   match d with
@@ -328,15 +381,6 @@ Proof using.
 
   iPureIntro. congruence.
 Qed.
-
-Lemma extract_nth_skipn_firstn blk sz off e:
-  extract_nth blk sz off = Some e ->
-  b2val <$> vec_to_list e =
-    skipn (Z.to_nat (off `div` 8))
-          (firstn (Z.to_nat ((off + (sz*8-1)) `div` 8 + 1))
-                  (Block_to_vals blk)).
-Proof.
-Admitted.
 
 Theorem wp_MkBufLoad K a blk s (bufdata : @bufDataT K) :
   {{{
