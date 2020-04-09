@@ -635,7 +635,7 @@ Theorem wp_BufTxn__CommitWait_pred `{!Liftable P} buftx γt γUnified :
   }}}
     BufTxn__CommitWait #buftx #true
   {{{
-    RET #();
+    (ok: bool), RET #ok;
     P (fun a v => mapsto_txn γUnified a (projT2 v))
   }}}.
 Proof.
@@ -646,7 +646,7 @@ Proof.
     destruct (decide (a0 = a1)); subst; eauto.
     iDestruct (mapsto_valid_2 with "Ha0 Ha1") as %Hf; eauto. }
   wp_apply (wp_BufTxn__CommitWait with "[$Htxn $Hm]").
-  iIntros "Hm".
+  iIntros (ok) "Hm".
   iApply "HΦ".
   iApply "Hp".
   iFrame.
