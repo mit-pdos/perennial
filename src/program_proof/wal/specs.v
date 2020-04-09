@@ -705,7 +705,7 @@ Qed.
 Theorem apply_upds_since_pos_new d (pos: u64) (pos': u64):
   forall l a b b1,
     int.val pos <= int.val pos' ->
-    int.val pos' <= length l ->
+    int.val pos' <= int.val (length l) ->
     apply_upds (take (int.nat pos) l) d !! int.val a = Some b ->
     apply_upds (take (int.nat pos') l) d !! int.val a = Some b1 ->
     b ≠ b1 ->
@@ -739,7 +739,7 @@ Qed.
 
 Theorem updates_since_apply_upds σ a (pos diskpos : u64) installedb b :
   int.val pos ≤ int.val diskpos ->
-  int.val diskpos <= length (σ.(log_state.updates)) ->
+  int.val diskpos <= int.val (length (σ.(log_state.updates))) ->
   disk_at_pos (int.nat pos) σ !! int.val a = Some installedb ->
   disk_at_pos (int.nat diskpos) σ !! int.val a = Some b ->
   b ∈ installedb :: updates_since pos a σ.

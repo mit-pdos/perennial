@@ -223,8 +223,11 @@ Proof.
       eapply updates_since_apply_upds.
       3: eauto.
       3: eauto.
-      1: simpl; lia.
-      simpl. admit.
+      all: simpl; try lia.
+      unfold valid_log_state in a0.
+      intuition.
+      unfold log_state.last_pos in H14.
+      lia.
     }
 
     inversion H6.
