@@ -147,7 +147,7 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
         ( ( memStart_txn_id ≤ txn_id ∧ absorptionBoundaries !! txn_id = Some tt ) ∨
           txn_id = length s.(log_state.txns) ) ->
         apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
-        apply_upds (txn_upds (subslice txn_id memStart_txn_id s.(log_state.txns))) ∅ ⌝.
+        apply_upds (txn_upds (subslice memStart_txn_id txn_id s.(log_state.txns))) ∅ ⌝.
 
 Definition is_wal (l : loc) γlock γinstalled γinstaller_blocks γabsorptionBoundaries : iProp Σ :=
   ∃ γcs γcirc ,
