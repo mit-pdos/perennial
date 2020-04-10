@@ -1,4 +1,5 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Perennial.algebra Require Import fmcounter.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import wal.circ_proof.
@@ -8,15 +9,22 @@ Definition LogPosition := u64.
 Definition LogDiskBlocks := 513.
 
 Canonical Structure u64C := leibnizO u64.
+Canonical Structure circΣC := leibnizO circΣ.t.
 
 Transparent slice.T.
 
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
+Context `{!fmcounterG Σ}.
 Context `{!inG Σ (authR mnatUR)}.
 Context `{!inG Σ (authR (optionUR (exclR (listO updateO))))}.
 Context `{!inG Σ (authR (optionUR (exclR u64C)))}.
+Context `{!inG Σ (authR (optionUR (exclR natO)))}.
+Context `{!inG Σ (authR (optionUR (exclR circΣC)))}.
+Context `{!inG Σ (authR (optionUR (exclR (listO u64O))))}.
+Context `{!inG Σ (authR (optionUR (exclR (listO blockO))))}.
+Context `{!inG Σ fmcounterUR}.
 
 Implicit Types (Φ: val → iProp Σ).
 Implicit Types (v:val) (z:Z).
@@ -25,34 +33,6 @@ Context (Pwal: log_state.t -> iProp Σ).
 Context (walN : namespace).
 Definition circN: namespace := walN .@ "circ".
 
-Theorem post_upto_intval Φ (x1 x2: u64) :
-  int.val x1 = int.val x2 →
-  Φ #x1 -∗ Φ #x2.
-Proof.
-  iIntros (Heq%word.unsigned_inj) "HΦ".
-  subst; auto.
-Qed.
-
-Theorem LogDiskBlocks_ok Φ :
-  Φ #LogDiskBlocks -∗ WP LOGDISKBLOCKS {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  rewrite /LOGDISKBLOCKS /HDRADDRS.
-  wp_pures.
-  iApply "HΦ".
-Qed.
-
-Definition apply_update (u: update.t) : disk → disk :=
-  <[int.val u.(update.addr) := u.(update.b)]>.
-
-Definition apply_updates (us: list update.t) (d:disk): disk :=
-  foldr apply_update d us.
-
-Definition take_updates (from to : u64) (log: list update.t) (logStart: u64) : list update.t :=
-  let start := (int.nat from - int.nat logStart)%nat in
-  let num := (int.nat to - int.nat from)%nat in
-  take num (drop start log).
-
 Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 val) : gmap u64 val :=
   match memLog with
   | nil => m
@@ -60,80 +40,130 @@ Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 va
     compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := #pos ]> m)
   end.
 
-Definition is_wal_state (st: loc) (γmemstart γmdiskend: gname) (γmemlog: gname) : iProp Σ :=
-  ∃ (memLogPtr diskEnd nextDiskEnd memLogMapPtr: loc) (memStart diskEnd: u64) (memLog : list update.t) (memLogMap : gmap u64 val * val),
-    st ↦[WalogState.S :: "memLog"] #memLogPtr ∗
+Definition is_wal_state (st: loc) γcirc (γmemstart γmemlog: gname): iProp Σ :=
+  ∃ (memLogSlice : Slice.t)
+    (memLogMapPtr : loc)
+    (memStart diskEnd nextDiskEnd : u64)
+    (memLog : list update.t)
+    (memLogMap : gmap u64 val),
+    st ↦[WalogState.S :: "memLog"] (slice_val memLogSlice) ∗
     st ↦[WalogState.S :: "memStart"] #memStart ∗
     st ↦[WalogState.S :: "diskEnd"] #diskEnd ∗
     st ↦[WalogState.S :: "nextDiskEnd"] #nextDiskEnd ∗
     st ↦[WalogState.S :: "memLogMap"] #memLogMapPtr ∗
-    (∃ s, memLogPtr ↦[slice.T (struct.t Update.S)] (slice_val s) ∗
-          updates_slice s memLog) ∗
-    is_map memLogMapPtr memLogMap ∗
-    ⌜fst memLogMap = compute_memLogMap memLog memStart ∅⌝ ∗
+    (updates_slice memLogSlice memLog) ∗
+    is_map memLogMapPtr (compute_memLogMap memLog memStart ∅, #0) ∗
+    diskEnd_at_least γcirc (int.val diskEnd) ∗
+    start_at_least γcirc memStart ∗
     own γmemstart (● (Excl' memStart)) ∗
-    own γmdiskend (● (Excl' diskEnd)) ∗
     own γmemlog (● (Excl' memLog))
     .
 
-Definition is_wal_mem (l: loc) γlock γmemstart γmdiskend γmemlog : iProp Σ :=
-  ∃ (memLock : loc) d (circ st : loc) (shutdown : bool) (nthread : u64) (condLogger condInstall condShut : loc),
-    inv walN (∃ q, l ↦[Walog.S :: "memLock"]{q} #memLock) ∗
-    inv walN (∃ q, l ↦[Walog.S :: "d"]{q} d) ∗
-    inv walN (∃ q, l ↦[Walog.S :: "circ"]{q} #circ) ∗
-    inv walN (∃ q, l ↦[Walog.S :: "st"]{q} #st) ∗
-    inv walN (∃ q, l ↦[Walog.S :: "condLogger"]{q} #condLogger) ∗
-    inv walN (∃ q, l ↦[Walog.S :: "condInstall"]{q} #condInstall) ∗
-    inv walN (∃ q, l ↦[Walog.S :: "condShut"]{q} #condShut) ∗
-    inv walN (∃ q, l ↦[Walog.S :: "shutdown"]{q} #shutdown) ∗
-    inv walN (∃ q, l ↦[Walog.S :: "nthread"]{q} #nthread) ∗
+Definition is_wal_mem (l: loc) γlock γcirc γmemstart γmemlog : iProp Σ :=
+  ∃ q (memLock : loc) (d : val) (circ st : loc)
+      (shutdown : bool) (nthread : u64)
+      (condLogger condInstall condShut : loc),
+    l ↦[Walog.S :: "memLock"]{q} #memLock ∗
+    l ↦[Walog.S :: "d"]{q} d ∗
+    l ↦[Walog.S :: "circ"]{q} #circ ∗
+    l ↦[Walog.S :: "st"]{q} #st ∗
+    l ↦[Walog.S :: "condLogger"]{q} #condLogger ∗
+    l ↦[Walog.S :: "condInstall"]{q} #condInstall ∗
+    l ↦[Walog.S :: "condShut"]{q} #condShut ∗
+    l ↦[Walog.S :: "shutdown"]{q} #shutdown ∗
+    l ↦[Walog.S :: "nthread"]{q} #nthread ∗
     lock.is_cond condLogger #memLock ∗
     lock.is_cond condInstall #memLock ∗
     lock.is_cond condShut #memLock ∗
-    is_lock walN γlock #memLock (is_wal_state st γmemstart γmdiskend γmemlog).
+    is_lock walN γlock #memLock (is_wal_state st γcirc γmemstart γmemlog).
 
-Definition is_wal_circ γdiskstart γdisklog (σ : circΣ.t) : iProp Σ :=
-  own γdiskstart (● (Excl' σ.(circΣ.start))) ∗
-  own γdisklog (● (Excl' σ.(circΣ.upds))).
+Definition circular_pred (γcs : gname) (cs : circΣ.t) : iProp Σ :=
+  own γcs (● (Excl' cs)).
 
-Definition is_wal_sigma (σ: log_state.t) (memStart: u64) (memlog: list update.t) (diskend: nat) : iProp Σ :=
-  ∃ d,
-    ( [∗ map] a ↦ b ∈ d, a d↦ b ) ∗
-    ⌜int.nat σ.(log_state.durable_to) = diskend⌝ ∗
+Definition circ_matches_memlog (memStart : u64) (memLog : list update.t)
+                               (circStart : u64) (circLog : list update.t) :=
+  ∀ (off : nat) u,
+    circLog !! off = Some u ->
+    memLog !! (off + int.nat circStart - int.nat memStart)%nat = Some u.
 
-    (* all disks agree on the addresses they cover *)
-    ( [∗ map] pos ↦ td ∈ σ.(log_state.txn_disk), ⌜∀ a, d !! a = None <-> td !! a = None⌝ ) ∗
-
-    (*
-     * complication: what to do when we are midway through installing some transactions?
-     * the current installed disk state isn't any specific transaction state..  we promise
-     * that the installed disk contents match some transaction between installed_to and
-     * durable_to..
-     *)
-    ( [∗ map] a ↦ b ∈ d,
-      ∃ pos td, ⌜σ.(log_state.txn_disk) !! pos = Some td⌝ ∗
-                ⌜td !! a = Some b⌝ ) ∗
-
-    (*
-     * connect [memlog] to σ.(log_state.txn_disk)
-     *)
-    True.
-
-Definition is_wal_inner (γmemstart γdiskstart γmdiskend γdisklog γmemlog : gname) : iProp Σ :=
-  ∃ (σ: log_state.t) (memStart diskStart mDiskEnd : u64) (disklog memlog : list update.t),
-    Pwal σ ∗
+Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
+                        (γlock γinstalled : gname) : iProp Σ :=
+  ∃ cs (s : log_state.t) γmemstart γmemlog (memStart : u64)
+       (memLog : list update.t) (fully_installed : disk),
+    own γcs (◯ (Excl' cs)) ∗
+    Pwal s ∗
+    is_wal_mem l γlock γcirc γmemstart γmemlog ∗
     own γmemstart (◯ (Excl' memStart)) ∗
-    own γdiskstart (◯ (Excl' diskStart)) ∗
+    own γmemlog (◯ (Excl' memLog)) ∗
+    ⌜ circ_matches_memlog memStart memLog cs.(circΣ.start) cs.(circΣ.upds) ⌝ ∗
+    ( [∗ map] a ↦ v ∈ fully_installed, (LogSz + 2 + a) d↦ v ) ∗
+    ( ∃ (installed_txn_id : nat),
+      own γinstalled (◯ (Excl' installed_txn_id)) ∗
+      ⌜ is_Some (s.(log_state.txns) !! installed_txn_id) ∧
+        s.(log_state.installed_to) ≤ installed_txn_id ∧
+        let installed_disk := disk_at_txn_id installed_txn_id s in
+        ∀ (a : u64) (b : Block),
+          updates_since installed_txn_id a s = nil ->
+          installed_disk !! int.val a = Some b ->
+          fully_installed !! int.val a = Some b ⌝ ) ∗
+    
+
+(*
+ * complication: what to do when we are midway through installing some transactions?
+ * the current installed disk state isn't any specific transaction state..  we promise
+ * that the installed disk contents match some transaction between installed_to and
+ * durable_to..
+ *)
+
+
+(*
+        d: disk;
+        txns: list (u64 * list update.t);
+        (* installed_lb promises what will be read after a cache miss *)
+        installed_to: nat;
+        (* durable_lb promises what will be on-disk after a crash *)
+        durable_to: nat;
+*)
+
+
+
+Definition is_wal (l : loc) γlock γinstalled : iProp Σ :=
+  ∃ γcs γcirc,
+    inv walN (is_wal_inner l γcs γcirc γlock γinstalled) ∗
+    is_circular circN (circular_pred γcs) γcirc.
+
+
+
+
+
+
+
+ mDiskEnd : u64)
+    (memLog : list update.t),
+    own γmemstart (◯ (Excl' memStart)) ∗
     own γmdiskend (◯ (Excl' mDiskEnd)) ∗
-    own γdisklog (◯ (Excl' disklog)) ∗
-    own γmemlog (◯ (Excl' memlog)) ∗
+    own γmemlog (◯ (Excl' memLog)) ∗
     ⌜int.val memStart <= int.val diskStart⌝ ∗
     ⌜int.val mDiskEnd <= (int.val diskStart + (length disklog))⌝ ∗
     [∗ list] off ↦ u ∈ disklog,
       ⌜memlog !! Z.to_nat (int.val diskStart + off - int.val memStart) = Some u⌝ ∗
     is_wal_sigma σ memStart memlog (int.nat diskStart + length disklog).
 
-Definition is_wal (l : loc) γcirc : iProp Σ :=
+
+Definition circular_pred (γmemstart γmdiskend γmemlog : gname)
+                         (cs : circΣ.t) : iProp Σ :=
+  ∃ (memStart mDiskEnd : u64)
+    (memLog : list update.t),
+    own γmemstart (◯ (Excl' memStart)) ∗
+    own γmdiskend (◯ (Excl' mDiskEnd)) ∗
+    own γmemlog (◯ (Excl' memLog)) ∗
+    ⌜int.val memStart <= int.val diskStart⌝ ∗
+    ⌜int.val mDiskEnd <= (int.val diskStart + (length disklog))⌝ ∗
+    [∗ list] off ↦ u ∈ disklog,
+      ⌜memlog !! Z.to_nat (int.val diskStart + off - int.val memStart) = Some u⌝ ∗
+    is_wal_sigma σ memStart memlog (int.nat diskStart + length disklog).
+
+Definition is_wal (l : loc) γcirc γinstalled : iProp Σ :=
   ∃ γlock γmemstart γmdiskend γmemlog γdisklog γdiskstart,
     is_wal_mem l γlock γmemstart γmdiskend γmemlog ∗
     inv walN (is_wal_inner γmemstart γdiskstart γmdiskend γdisklog γmemlog) ∗

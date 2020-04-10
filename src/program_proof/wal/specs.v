@@ -19,6 +19,7 @@ Qed.
 
 Existing Instance r_mbind.
 
+(*
 Definition apply_upds (upds: list update.t) (d: disk): disk :=
   fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
 
@@ -898,12 +899,57 @@ Definition log_flush (pos : u64) : transition log_state.t unit :=
     update_durable;;
     ret tt.
 
+*)
+
 Section heap.
 Context `{!heapG Σ}.
 Implicit Types (v:val) (z:Z).
 
 Context (N: namespace).
 Context (P: log_state.t -> iProp Σ).
+
+Definition is_wal_locked (l : loc) : iProp Σ :=
+  ∃ memLog memLogSlice memStart diskEnd nextDiskEnd memLogMap (memLogMapV : loc),
+    l ↦[WalogState.S :: "memLog"] (slice_val memLogSlice) ∗
+    l ↦[WalogState.S :: "memStart"] #memStart ∗
+    l ↦[WalogState.S :: "diskEnd"] #diskEnd ∗
+    l ↦[WalogState.S :: "nextDiskEnd"] #nextDiskEnd ∗
+    l ↦[WalogState.S :: "memLogMap"] #memLogMapV ∗
+
+    updates_Slice memLogSlice memLog.
+
+    is_map mptr (m, #null) ∗
+
+    bufptr ↦[Buf.S :: "Addr"] (addr2val a) ∗
+
+
+type WalogState struct {
+        memLog      []Update // in-memory log starting with memStart
+        memStart    LogPosition
+        diskEnd     LogPosition
+        nextDiskEnd LogPosition
+
+        // For speeding up reads:
+        memLogMap map[common.Bnum]LogPosition
+}
+
+type Walog struct {
+        memLock *sync.Mutex
+        d       disk.Disk
+        circ    *circularAppender
+        st      *WalogState
+
+        condLogger  *sync.Cond
+        condInstall *sync.Cond
+
+        // For shutdown:
+        shutdown bool
+        nthread  uint64
+        condShut *sync.Cond
+}
+
+
+
 
 (* this will be the entire internal wal invariant - callers will not need to
 unfold it *)
