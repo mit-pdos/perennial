@@ -44,7 +44,7 @@ Fixpoint latest_update (base: Block) (upds: list Block) : Block :=
 
 Definition is_last_pos (m : gmap u64 Block) (pos : u64) : Prop :=
   ∀ (pos' : u64) b,
-    m !! pos' = Some b -> word.ltu pos' pos ∨ pos' = pos.
+    m !! pos' = Some b -> int.val pos' <= int.val pos.
 
 Definition is_last_block (m : gmap u64 Block) (b : Block) : Prop :=
   ∃ pos,
