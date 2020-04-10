@@ -13,23 +13,23 @@ Existing Instance r_mbind.
 Definition update_durable: transition log_state.t nat :=
   new_durable ← suchThat (gen:=fun _ _ => None)
               (fun s new_durable =>
-                 (s.(log_state.durable_to) ≤ new_durable ≤ length s.(log_state.txns))%nat);
-  modify (set log_state.durable_to (λ _, new_durable));;
+                 (s.(log_state.durable_lb) ≤ new_durable ≤ length s.(log_state.txns))%nat);
+  modify (set log_state.durable_lb (λ _, new_durable));;
   ret new_durable.
 
 Definition update_installed: transition log_state.t nat :=
   new_installed ← suchThat (gen:=fun _ _ => None)
               (fun s new_installed =>
-                 (s.(log_state.installed_to) ≤ new_installed ≤ s.(log_state.durable_to))%nat);
-  modify (set log_state.installed_to (λ _, new_installed));;
+                 (s.(log_state.installed_lb) ≤ new_installed ≤ s.(log_state.durable_lb))%nat);
+  modify (set log_state.installed_lb (λ _, new_installed));;
   ret new_installed.
 
 Definition log_crash : transition log_state.t unit :=
   crash_txn ← suchThat (gen:=fun _ _ => None)
             (fun s (crash_txn: nat) =>
-               s.(log_state.durable_to) <= crash_txn);
+               s.(log_state.durable_lb) <= crash_txn);
   modify (set log_state.txns (fun txns => take crash_txn txns));;
-  modify (set log_state.durable_to (fun _ => crash_txn));;
+  modify (set log_state.durable_lb (fun _ => crash_txn));;
   ret tt.
 
 Definition suchThatMax {Σ} (pred: Σ -> nat -> Prop) : transition Σ nat :=
@@ -43,8 +43,8 @@ Definition log_flush (pos:u64) : transition log_state.t unit :=
   txn_id ← getTxnId pos;
   new_durable ← suchThat (gen:=fun _ _ => None)
               (fun s (new_durable: nat) =>
-                 (Nat.max s.(log_state.durable_to) txn_id ≤ new_durable ≤ length s.(log_state.txns))%nat);
-  modify (set log_state.durable_to (λ _, (new_durable)));;
+                 (Nat.max s.(log_state.durable_lb) txn_id ≤ new_durable ≤ length s.(log_state.txns))%nat);
+  modify (set log_state.durable_lb (λ _, (new_durable)));;
   ret tt.
 
 Definition allocPos : transition log_state.t u64 :=
@@ -99,11 +99,11 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
     update_installed;;
     suchThat (gen:=fun _ _ => None)
              (fun s (_:unit) =>
-                no_updates_since s a s.(log_state.installed_to));;
+                no_updates_since s a s.(log_state.installed_lb));;
     ret None.
 
 Definition installed_disk (s:log_state.t): disk :=
-  disk_at_txn_id s.(log_state.installed_to) s.
+  disk_at_txn_id s.(log_state.installed_lb) s.
 
 Definition log_read_installed (a:u64): transition log_state.t Block :=
   update_durable;;

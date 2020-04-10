@@ -124,7 +124,7 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
       own γinstalled (◯ (Excl' installed_txn_id)) ∗
       start_is γcirc (1/4) diskStart ∗
       ⌜ is_txn s installed_txn_id diskStart ∧
-        s.(log_state.installed_to) ≤ installed_txn_id ∧
+        s.(log_state.installed_lb) ≤ installed_txn_id ∧
         let installed_disk := disk_at_txn_id installed_txn_id s in
         ∀ (a : u64) (b : Block),
           installed_disk !! int.val a = Some b ->
@@ -147,7 +147,8 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
         ( ( memStart_txn_id ≤ txn_id ∧ absorptionBoundaries !! txn_id = Some tt ) ∨
           txn_id = length s.(log_state.txns) ) ->
         apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
-        apply_upds (txn_upds (subslice memStart_txn_id txn_id s.(log_state.txns))) ∅ ⌝.
+        (* need +1 since txn_id should be included in subslice *)
+        apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) s.(log_state.txns))) ∅ ⌝.
 
 Definition is_wal (l : loc) γlock γinstalled γinstaller_blocks γabsorptionBoundaries : iProp Σ :=
   ∃ γcs γcirc ,

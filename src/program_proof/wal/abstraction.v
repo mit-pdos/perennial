@@ -23,11 +23,11 @@ Module log_state.
         d: disk;
         txns: list (u64 * list update.t);
         (* installed_lb promises what will be read after a cache miss *)
-        installed_to: nat;
+        installed_lb: nat;
         (* durable_lb promises what will be on-disk after a crash *)
-        durable_to: nat;
+        durable_lb: nat;
       }.
-  Global Instance _eta: Settable _ := settable! mk <d; txns; installed_to; durable_to>.
+  Global Instance _eta: Settable _ := settable! mk <d; txns; installed_lb; durable_lb>.
 
   Definition updates σ : list update.t := txn_upds σ.(txns).
 
@@ -47,7 +47,7 @@ Definition valid_log_state (s : log_state.t) :=
       (* can get the same handle for two transactions due to absorption or
         empty transactions *)
       int.val pos1 ≤ int.val pos2) ∧
-  s.(log_state.installed_to) ≤ s.(log_state.durable_to) ≤ length s.(log_state.txns).
+  s.(log_state.installed_lb) ≤ s.(log_state.durable_lb) ≤ length s.(log_state.txns).
 
 
 Section heap.
