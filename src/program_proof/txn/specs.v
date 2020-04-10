@@ -420,16 +420,19 @@ Proof.
   iExists _, _. iFrame. done.
 Qed.
 
+Definition is_txn_buf  bufptrval (a : addr) (buf : buf) gData : iProp Σ :=
+  ∃ (bufptr : loc) v0,
+    ⌜ bufptrval = #bufptr ⌝ ∗
+    is_buf bufptr a buf ∗
+    @mapsto_txn buf.(bufKind) gData a v0.
+
 Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap : gmap addr buf) :
   {{{ is_txn l gData ∗
       inv invN (is_txn_always walHeap gData γMaps) ∗
       mapsto (hG := γMaps) tt (1/2) mData ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
-        ∃ (bufptr : loc) v0,
-          ⌜ bufptrval = #bufptr ⌝ ∗
-          is_buf bufptr a buf ∗
-          @mapsto_txn buf.(bufKind) gData a v0
+        is_txn_buf bufptrval a buf gData
   }}}
     Txn__installBufs #l (slice_val bufs)
   {{{ (blks : Slice.t) updlist, RET (slice_val blks);
@@ -454,12 +457,10 @@ Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap
       ) ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ list] _ ↦ bufptrval ∈ buflist,
-        ∃ (bufptr : loc) a buf v0,
-          ⌜ bufptrval = #bufptr ⌝ ∗
-          is_buf bufptr a buf ∗
-          @mapsto_txn buf.(bufKind) gData a v0
+      ∃ a buf, is_txn_buf bufptrval a buf gData
   }}}.
 Proof.
+
   iIntros (Φ) "(Htxn & #Hinv & Hmdata & Hbufs & Hbufpre) HΦ".
 
 Opaque struct.t.
@@ -490,10 +491,8 @@ Theorem wp_txn__doCommit l q gData bufs buflist :
   {{{ is_txn l gData ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ list] _ ↦ bufptrval ∈ buflist,
-        ∃ (bufptr : loc) a buf v0,
-          ⌜ bufptrval = #bufptr ⌝ ∗
-          is_buf bufptr a buf ∗
-          @mapsto_txn buf.(bufKind) gData a v0
+        ∃ a buf,
+          is_txn_buf bufptrval a buf gData
   }}}
     Txn__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
@@ -543,10 +542,8 @@ Theorem wp_txn_CommitWait l q gData bufs buflist (wait : bool) (id : u64) :
   {{{ is_txn l gData ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ list] _ ↦ bufptrval ∈ buflist,
-        ∃ (bufptr : loc) a buf v0,
-          ⌜ bufptrval = #bufptr ⌝ ∗
-          is_buf bufptr a buf ∗
-          @mapsto_txn buf.(bufKind) gData a v0
+        ∃ a buf,
+          is_txn_buf bufptrval a buf gData
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait #id
   {{{ (ok : bool), RET #ok;
