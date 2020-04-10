@@ -4,6 +4,7 @@ From Perennial.algebra Require Import deletable_heap.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import wal.circ_proof.
+From Perennial.program_proof Require Import wal.specs.
 
 Definition LogPositionT := wal.LogPosition.
 Definition LogPosition := u64.
@@ -25,6 +26,7 @@ Context `{!inG Σ (authR (optionUR (exclR natO)))}.
 Context `{!inG Σ (authR (optionUR (exclR circΣC)))}.
 Context `{!inG Σ (authR (optionUR (exclR (listO u64O))))}.
 Context `{!inG Σ (authR (optionUR (exclR (listO blockO))))}.
+Context `{!inG Σ (authR (optionUR (exclR (gmapO Z blockO))))}.
 Context `{!inG Σ fmcounterUR}.
 
 Implicit Types (Φ: val → iProp Σ).
@@ -90,10 +92,10 @@ Definition circ_matches_memlog (memStart : u64) (memLog : list update.t)
 
 Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
                         (γlock γinstalled γinstaller_blocks : gname)
-                        (γpossibleCrashes : _) : iProp Σ :=
-  ∃ cs (s : log_state.t) γmemstart γmemlog (memStart : u64)
+                        (γabsorptionBoundaries: gen_heapG nat unit Σ) : iProp Σ :=
+  ∃ (cs: circΣ.t) (s : log_state.t) (γmemstart γmemlog: gname) (memStart : u64)
        (memLog : list update.t) (fully_installed being_installed : disk)
-       (absorptionBoundaries : gmap nat unit) γnextDiskEnd,
+       (absorptionBoundaries : gmap nat unit) (γnextDiskEnd: gname),
     own γcs (◯ (Excl' cs)) ∗
     Pwal s ∗
     is_wal_mem l γlock γcirc γmemstart γmemlog γnextDiskEnd ∗
@@ -114,7 +116,7 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
           ( updates_since installed_txn_id a s = nil ∧
             fully_installed !! int.val a = Some b ) ∨
           ∃ b0, being_installed !! int.val a = Some b0 ⌝ ) ∗
-    gen_heap_ctx (hG := γpossibleCrashes) absorptionBoundaries ∗
+    gen_heap_ctx (hG:=γabsorptionBoundaries) absorptionBoundaries ∗
     ( ∃ (nextDiskEnd_txn_id : nat) (nextDiskEnd : u64),
       own γnextDiskEnd (◯ (Excl' nextDiskEnd)) ∗
       ⌜ absorptionBoundaries !! nextDiskEnd_txn_id = Some tt ⌝ ∗
@@ -132,47 +134,9 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
         apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
         apply_upds (txn_upds (drop memStart_txn_id (take txn_id s.(log_state.txns)))) ∅ ⌝.
 
-Definition is_wal (l : loc) γlock γinstalled : iProp Σ :=
-  ∃ γcs γcirc,
-    inv walN (is_wal_inner l γcs γcirc γlock γinstalled) ∗
+Definition is_wal (l : loc) γlock γinstalled γinstaller_blocks γabsorptionBoundaries : iProp Σ :=
+  ∃ γcs γcirc ,
+    inv walN (is_wal_inner l γcs γcirc γlock γinstalled γinstaller_blocks γabsorptionBoundaries) ∗
     is_circular circN (circular_pred γcs) γcirc.
-
-
-
-
-
-
-
-(* old lockInv, parts need to be incorporated above
-
-Definition lockInv (l: loc) (σ: log_state.t): iProp Σ :=
-  (∃ memLog diskLog
-     (memStart: u64) (diskStart: u64) (nextDiskEnd: u64)
-     memLogCache
-     (installedDisk: disk),
-      let log_σ := circΣ.mk diskLog diskStart in
-      (* these are the real positions; the abstract state lags them *)
-      let durable_to := circΣ.diskEnd log_σ in
-      let installed_to := diskStart in
-      (* (is_circularAppender (l +ₗ 2) log_σ) ∗ *)
-      (∃ s, (l +ₗ 5) ↦[slice.T (struct.t Update.S)] (slice_val s) ∗
-      updates_slice s memLog) ∗
-      (l +ₗ 7) ↦[uint64T] #memStart ∗
-      (l +ₗ 8) ↦[uint64T] #nextDiskEnd ∗
-      is_map (l +ₗ 12) memLogCache ∗
-      ⌜int.val memStart ≤ int.val diskStart⌝ ∗
-      ⌜∃ memLog', memLog = diskLog ++ memLog'⌝ ∗
-      ⌜int.val σ.(log_state.durable_to) <= int.val durable_to⌝ ∗
-      ⌜int.val σ.(log_state.installed_to) <= int.val installed_to⌝ ∗
-      ⌜σ.(log_state.txn_disk) !! installed_to = Some installedDisk⌝ ∗
-      ([∗ map] a↦b ∈ installedDisk, LogDiskBlocks d↦ b) ∗
-      ⌜ forall pos1 pos2 (d1 d2: disk),
-          σ.(log_state.txn_disk) !! pos1 = Some d1 ->
-          σ.(log_state.txn_disk) !! pos2 = Some d2 ->
-          int.val pos1 <= int.val pos2 ->
-          int.val durable_to ≤ int.val pos2 ->
-          d2 = apply_updates (take_updates pos1 pos2 memLog memStart) d1 ⌝
-  ).
- *)
 
 End heap.

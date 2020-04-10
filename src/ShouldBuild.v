@@ -15,12 +15,11 @@ From Perennial.program_proof Require
      append_log_refinement
      util_proof
      lockmap_proof
-     (* temporarily disabled while wal abstraction is in flux *)
-     (* wal.proof *)
+     wal.proof
      wal.specs
-     wal.circ_proof (* started over on circular_proof *)
-     txn.specs
-     buftxn.specs.
+     wal.circ_proof
+     (* txn.specs
+     buftxn.specs *).
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
 
