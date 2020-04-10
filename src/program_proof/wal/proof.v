@@ -90,6 +90,21 @@ Definition circ_matches_memlog (memStart : u64) (memLog : list update.t)
     circLog !! off = Some u ->
     memLog !! (off + int.nat circStart - int.nat memStart)%nat = Some u.
 
+Definition is_txn (s: log_state.t) (txn_id: nat) (pos: u64): Prop :=
+  fst <$> s.(log_state.txns) !! txn_id = Some pos.
+
+(** subslice takes elements with indices [n, m) in list [l] *)
+Definition subslice {A} (n m: nat) (l: list A): list A :=
+  drop n (take m l).
+
+Theorem subslice_length {A} n m (l: list A) :
+  (m <= length l)%nat ->
+  length (subslice n m l) = (m - n)%nat.
+Proof.
+  rewrite /subslice; intros; autorewrite with len.
+  lia.
+Qed.
+
 Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
                         (γlock γinstalled γinstaller_blocks : gname)
                         (γabsorptionBoundaries: gen_heapG nat unit Σ) : iProp Σ :=
@@ -108,7 +123,7 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
     ( ∃ (installed_txn_id : nat) (diskStart : u64),
       own γinstalled (◯ (Excl' installed_txn_id)) ∗
       start_is γcirc (1/4) diskStart ∗
-      ⌜ fst <$> s.(log_state.txns) !! installed_txn_id = Some diskStart ∧
+      ⌜ is_txn s installed_txn_id diskStart ∧
         s.(log_state.installed_to) ≤ installed_txn_id ∧
         let installed_disk := disk_at_txn_id installed_txn_id s in
         ∀ (a : u64) (b : Block),
@@ -120,19 +135,19 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
     ( ∃ (nextDiskEnd_txn_id : nat) (nextDiskEnd : u64),
       own γnextDiskEnd (◯ (Excl' nextDiskEnd)) ∗
       ⌜ absorptionBoundaries !! nextDiskEnd_txn_id = Some tt ⌝ ∗
-      ⌜ fst <$> s.(log_state.txns) !! nextDiskEnd_txn_id = Some nextDiskEnd ⌝ ) ∗
+      ⌜ is_txn s nextDiskEnd_txn_id nextDiskEnd ⌝ ) ∗
     ( ∃ (diskEnd_txn_id : nat) (diskEnd : u64),
       diskEnd_is γcirc (1/4) (int.val diskEnd) ∗
       ⌜ absorptionBoundaries !! diskEnd_txn_id = Some tt ⌝ ∗
-      ⌜ fst <$> s.(log_state.txns) !! diskEnd_txn_id = Some diskEnd ⌝ ) ∗
+      ⌜ is_txn s diskEnd_txn_id diskEnd ⌝ ) ∗
     ⌜ ∃ (memStart_txn_id : nat),
-      fst <$> s.(log_state.txns) !! memStart_txn_id = Some memStart ∧
+      is_txn s memStart_txn_id memStart ∧
       ∀ (txn_id : nat) (pos : u64),
-        fst <$> s.(log_state.txns) !! txn_id = Some pos ->
+        is_txn s txn_id pos ->
         ( ( memStart_txn_id ≤ txn_id ∧ absorptionBoundaries !! txn_id = Some tt ) ∨
           txn_id = length s.(log_state.txns) ) ->
         apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
-        apply_upds (txn_upds (drop memStart_txn_id (take txn_id s.(log_state.txns)))) ∅ ⌝.
+        apply_upds (txn_upds (subslice txn_id memStart_txn_id s.(log_state.txns))) ∅ ⌝.
 
 Definition is_wal (l : loc) γlock γinstalled γinstaller_blocks γabsorptionBoundaries : iProp Σ :=
   ∃ γcs γcirc ,
