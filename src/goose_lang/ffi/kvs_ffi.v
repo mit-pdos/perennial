@@ -3,6 +3,8 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
+From iris.base_logic Require Import gen_heap.
+From Perennial.algebra Require Import gen_heap.
 
 (* TODO: move this out, it's completely general *)
 (* Generalize life cycle of object state *)
@@ -67,7 +69,8 @@ Definition blockT_: ty_ := sliceT_ (λ val_ty, byteT).
 Inductive KvsOp :=
   | MakeOp
   | GetOp
-  | MultiPutOp
+  | MultiPutMarkOp
+  | MultiPutCommitOp
 .
 
 Instance eq_KvsOp : EqDecision KvsOp.
@@ -91,17 +94,15 @@ Instance kvs_val_ty: val_types :=
   {| ext_tys := Kvs_ty; |}.
 
 Section kvs.
-  Print structRefT.
-  Definition KvsSize := 10000. (*TODO *)
-  (* Function that inits gmap with all 0s for ^ blocks *)
-  (*Fixpoint kvs_init_helper (blk : nat) map :=
-    match blk with
-    | N.0 => (set map <[(Z.of_N blk) := disk.Block0]>)
-    | S n => kvs_init_helper n (set map <[(Z.of_N blk) := disk.Block0]>)
-                            end.*)
-  Definition kvs_init : gmap u64 disk.Block.
-    (*in kvs_init_helper KvsSize (GMap u64 disk.Block).*)
-  Admitted.
+  Definition kvs_sz : nat := 10000. (*TODO *)
+  Definition kvs_state_typ := gmap u64 disk.Block.
+  Fixpoint init_kvs (kvs: kvs_state_typ) (sz: nat) : kvs_state_typ :=
+  match sz with
+  | O => kvs
+  | S n => <[(U64 (Z.of_nat n)) := (inhabitant disk.Block0)]> (init_kvs kvs n)
+  end.
+  Definition kvs_init_s : gmap u64 disk.Block := init_kvs ∅ kvs_sz.
+
   Definition KVPairT : ty := structRefT [uint64T; prodT (arrayT (uint64T)) uint64T].
   Existing Instances kvs_op kvs_val_ty.
   Instance kvs_ty: ext_types kvs_op :=
@@ -113,7 +114,8 @@ Section kvs.
            (* kvs type should be opaque, but kvpair should be known by client *)
          | MakeOp => (unitT, extT KvsT)
          | GetOp => (prodT (extT KvsT) uint64T, KVPairT)
-         | MultiPutOp => (prodT (extT KvsT) (prodT (arrayT KVPairT) uint64T), boolT)
+         | MultiPutMarkOp => (prodT (extT KvsT) (prodT (arrayT KVPairT) uint64T), unitT)
+         | MultiPutCommitOp => (prodT (extT KvsT) (prodT (arrayT KVPairT) uint64T), boolT)
          end; |}.
 
   Definition kvs_state := RecoverableState (gmap u64 disk.Block).
@@ -122,15 +124,22 @@ Section kvs.
 
   Existing Instances r_mbind r_fmap.
 
-  Definition read_slice (t:ty) (v:val): transition state (list val) :=
+  Definition mark_slice (t:ty) (v:val): transition state () :=
     match v with
     | PairV (#(LitLoc l)) (PairV #(LitInt sz) #(LitInt cap)) =>
       (* TODO: implement , mark as being read *)
+      ret ()
+    | _ => undefined
+    end.
+
+  Definition read_slice (t:ty) (v:val): transition state (list val) :=
+    match v with
+    | PairV (#(LitLoc l)) (PairV #(LitInt sz) #(LitInt cap)) =>
+      (* TODO: implement , return contents *)
       ret []
     | _ => undefined
     end.
 
-  Print PairV.
   Definition read_kvpair_key (t:ty) (v:val): transition state u64:=
     match v with
     | PairV #(LitInt key) #(LitLoc _) => ret key
@@ -172,7 +181,7 @@ Section kvs.
     match op, v with
     | MakeOp, LitV LitUnit =>
       kvsPtr ← allocIdent;
-      initTo (kvs_init) kvsPtr;;
+      initTo (kvs_init_s) kvsPtr;;
              ret $ (LitV $ LitLoc kvsPtr)
     | GetOp, PairV (LitV (LitLoc kvsPtr)) (LitV (LitInt key)) =>
       openΣ ≫= λ '(kvs, kvsPtr_), (*kvs is the state *)
@@ -181,7 +190,8 @@ Section kvs.
       l ← allocateN 4096;
       modify (state_insert_list l (disk.Block_to_vals b));;
              ret $ #(LitLoc l)
-    | MultiPutOp, PairV (LitV (LitLoc kvsPtr)) v =>
+    | MultiPutMarkOp, PairV (LitV (LitLoc kvsPtr)) v => mark_slice KVPairT v;; ret $ #()
+    | MultiPutCommitOp, PairV (LitV (LitLoc kvsPtr)) v =>
       (*convert goose representations of kvpair to coq pair of key and value, *)
       (*given list of updates, inserts into gmap *)
       (*to define spec effect of operation*)
@@ -197,7 +207,7 @@ Section kvs.
       block_vals ← tmapM (read_slice (@slice.T _ kvs_ty byteT)) block_dataslices;
       new_blocks ← tmapM (unwrap ∘ to_block) block_vals;
       modifyΣ (λ s, update_keys s block_keys new_blocks);;
-      ret $ #()
+      ret $ #true (*TODO can this return false if commit_wait fails? *)
     | _, _ => undefined
     end.
 
@@ -206,7 +216,6 @@ Section kvs.
        ext_crash := fun s s' => relation.denote close s s' tt; |}. (* everything is durable *)
 End kvs.
 
-(*
 From iris.algebra Require Import auth agree excl csum.
 From Perennial.program_logic Require Import ghost_var.
 Inductive kvs_unopen_status := UnInit' | Closed'.
@@ -221,19 +230,19 @@ Class kvsG Σ :=
   { kvsG_open_inG :> inG Σ openR; (* inG --> which resources are available in type class *)
     (* implicitly insert names for elements, used to tag which generation *)
     kvsG_open_name : gname;
-    (* (2) exlusive/etc. algebra for list of disk blocks --> allows for ownership of entire log *)
-    kvsG_state_inG:> inG Σ (authR (optionUR (exclR (leibnizO (list disk.Block)))));
-    kvsG_state_name: gname;
+    (* (2) exlusive/etc. algebra for disk blocks --> allows for ownership of blocks *)
+    kvsG_state_inG:> gen_heap.gen_heapG u64 disk.Block Σ;
+    kvsG_state_name: gen_heap_names;
   }.
 
 (* without names: e.g. disk names stay same, memory ones are forgotten *)
 Class kvs_preG Σ :=
   { kvsG_preG_open_inG :> inG Σ openR;
-    kvsG_preG_state_inG:> inG Σ (authR (optionUR (exclR (leibnizO (list disk.Block)))));
+    kvsG_preG_state_inG:> gen_heap.gen_heapPreG u64 disk.Block Σ;
   }.
 
 Definition kvsΣ : gFunctors :=
-  #[GFunctor openR; GFunctor (authR (optionUR (exclR (leibnizO (list disk.Block)))))].
+  #[GFunctor openR; gen_heapΣ u64 disk.Block].
 
 Instance subG_kvsG Σ: subG kvsΣ Σ → kvs_preG Σ.
 Proof. solve_inG. Qed.
@@ -241,10 +250,10 @@ Proof. solve_inG. Qed.
 (* Helpers to manipulate names *)
 Record kvs_names :=
   { kvs_names_open: gname;
-    kvs_names_state: gname; }.
+    kvs_names_state: gen_heap_names; }.
 
 Definition kvs_get_names {Σ} (lG: kvsG Σ) :=
-  {| kvs_names_open := kvsG_open_name; kvs_names_state := kvsG_state_name |}.
+  {| kvs_names_open := kvsG_open_name; kvs_names_state := kvsG_state_name|}.
 
 Definition kvs_update {Σ} (lG: kvsG Σ) (names: kvs_names) :=
   {| kvsG_open_inG := kvsG_open_inG;
@@ -253,58 +262,58 @@ Definition kvs_update {Σ} (lG: kvsG Σ) (names: kvs_names) :=
      kvsG_state_name := (kvs_names_state names);
   |}.
 
-Definition kvs_update_pre {Σ} (lG: kvs_preG Σ) (names: kvs_names) :=
+Definition kvs_update_pre {Σ} (kvsG: kvs_preG Σ) (names: kvs_names) :=
   {| kvsG_open_inG := kvsG_preG_open_inG;
      kvsG_open_name := (kvs_names_open names);
-     kvsG_state_inG := kvsG_preG_state_inG;
+     kvsG_state_inG := gen_heapG_update_pre (@kvsG_preG_state_inG _ kvsG) (names.(kvs_names_state));
      kvsG_state_name := (kvs_names_state names);
   |}.
 
 (* assert have resource that tell us that kvs is opened at l, persistent + duplicable *)
-Definition kvs_open {Σ} {lG :kvsG Σ} (l: loc) :=
+Definition kvs_open {Σ} {kvsG :kvsG Σ} (l: loc) :=
   own (kvsG_open_name) (Kvs_Opened l).
-Definition kvs_closed_frag {Σ} {lG :kvsG Σ} :=
+Definition kvs_closed_frag {Σ} {kvsG :kvsG Σ} :=
   own (kvsG_open_name) (Cinl ((1/2)%Qp, to_agree (Closed' : leibnizO kvs_unopen_status))).
-Definition kvs_closed_auth {Σ} {lG :kvsG Σ} :=
+Definition kvs_closed_auth {Σ} {kvsG :kvsG Σ} :=
   own (kvsG_open_name) (Cinl ((1/2)%Qp, to_agree (Closed' : leibnizO kvs_unopen_status))).
-Definition kvs_uninit_frag {Σ} {lG :kvsG Σ} :=
+Definition kvs_uninit_frag {Σ} {ksG :kvsG Σ} :=
   own (kvsG_open_name) (Cinl ((1/2)%Qp, to_agree (UnInit' : leibnizO kvs_unopen_status))).
-Definition kvs_uninit_auth {Σ} {lG :kvsG Σ} :=
+Definition kvs_uninit_auth {Σ} {kvsG :kvsG Σ} :=
   own (kvsG_open_name) (Cinl ((1/2)%Qp, to_agree (UnInit' : leibnizO kvs_unopen_status))).
 
 (* what blocks are in the log *)
 (* kvs: more fine-grained lock? or lock entire map? (more/less useful for clients?) *)
 (* precondition in spec --> assert have points-to facts (no state RA), gen_heap *)
-Definition kvs_auth {Σ} {lG :kvsG Σ} (vs: list (disk.Block)) :=
+(*Definition kvs_auth {Σ} {lG :kvsG Σ} (vs: list (disk.Block)) :=
   own (kvsG_state_name) (● Excl' (vs: leibnizO (list disk.Block))).
 Definition kvs_frag {Σ} {lG :kvsG Σ} (vs: list (disk.Block)) :=
-  own (kvsG_state_name) (◯ Excl' (vs: leibnizO (list disk.Block))).
+  own (kvsG_state_name) (◯ Excl' (vs: leibnizO (list disk.Block))).*)
 
 Section kvs_interp.
   Existing Instances kvs_op kvs_model kvs_val_ty.
 
   (* ctx assertions map physical state to which resource assertions should be true, *)
   (* stores auth copy of fact*)
-  Definition kvs_ctx {Σ} {lG: kvsG Σ} (lg: @ffi_state kvs_model) : iProp Σ :=
-    match lg with
-    | Opened s l => kvs_open l (*∗ kvs_auth s*)
-    | Closed s => kvs_closed_auth (*∗ kvs_auth s*)
-    | UnInit => kvs_uninit_auth (*∗ kvs_auth []*)
+  Definition kvs_ctx {Σ} {kvsG: kvsG Σ} (kvs: @ffi_state kvs_model) : iProp Σ :=
+    match kvs with
+    | Opened s l => kvs_open l ∗ gen_heap.gen_heap_ctx s (*XXX?*)
+    | Closed s => kvs_closed_auth ∗ gen_heap.gen_heap_ctx s
+    | UnInit => kvs_uninit_auth (*∗  gen_heap.gen_heap_ctx kvs XXX? *)
     | _ => False%I
     end.
-(* When first start program, what initial resources assertions do you get
-  Definition kvs_start {Σ} {lG: kvsG Σ} (lg: @ffi_state kv
-s_model) : iProp Σ :=
-    match lg with
-    | Opened s l => kvs_open l ∗ kvs_frag s
-    | Closed s => kvs_closed_frag ∗ kvs_frag s
-    | UnInit => kvs_uninit_frag ∗ kvs_frag []
+
+  (* When first start program, what initial resources assertions do you get *)
+  Definition kvs_start {Σ} {kvsG: kvsG Σ} (kvs: @ffi_state kvs_model) : iProp Σ :=
+    match kvs with
+    | Opened s l => kvs_open l ∗ ([∗ map] l↦v ∈ s , (gen_heap.mapsto (L:=u64) (V:=disk.Block) l 1 v))%I (* what does [* map mean?]*)
+    | Closed s => kvs_closed_frag ∗ ([∗ map] l↦v ∈ s , (gen_heap.mapsto (L:=u64) (V:=disk.Block) l 1 v))%I
+    | UnInit => kvs_uninit_frag (*∗ kvs_frag [] XXX*)
     | _ => False%I
     end.
- *)
-(* get access to whether open/closed status
-  Definition kvs_restart {Σ} (lG: kvsG Σ) (lg: @ffi_state log_model) :=
-    match lg with
+
+(* get access to whether open/closed status *)
+  Definition kvs_restart {Σ} (kvsG: kvsG Σ) (kvs: @ffi_state kvs_model) :=
+    match kvs with
     | Opened s l => kvs_open l
     | Closed s => kvs_closed_frag
     | UnInit => kvs_uninit_frag
@@ -324,9 +333,9 @@ s_model) : iProp Σ :=
   Next Obligation. intros ? [[]] [] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
- *)
 End kvs_interp.
 
+(*
 Section kvs_lemmas.
   Context `{lG: kvsG Σ}.
 
@@ -875,5 +884,4 @@ Proof.
   iModIntro. iFrame.
 Qed.
 End
-
 *)
