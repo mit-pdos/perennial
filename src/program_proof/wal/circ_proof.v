@@ -12,8 +12,6 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import Transitions.
 Existing Instance r_mbind.
 
-Definition LogSz := 511.
-
 Hint Unfold LogSz : word.
 
 Module circΣ.

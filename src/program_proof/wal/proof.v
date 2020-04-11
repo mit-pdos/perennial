@@ -119,8 +119,8 @@ Definition is_installed (s: log_state.t) (γcirc : circ_names)
         (* note that this should be redundant with some well-formedness
            predicate, but leaving it here redundantly is still probably a good
            idea *)
-        ⌜2 + LogSz < int.val a⌝ ) ∗
-    ( [∗ map] a ↦ v ∈ being_installed, a d↦ v ∗ ⌜2 + LogSz < int.val a⌝ ) ∗
+        ⌜2 + LogSz <= int.val a⌝ ) ∗
+    ( [∗ map] a ↦ v ∈ being_installed, a d↦ v ∗ ⌜2 + LogSz <= int.val a⌝ ) ∗
     ( ∃ (installed_txn_id : nat) (diskStart : u64),
       own γinstalled (◯ (Excl' installed_txn_id)) ∗
       start_is γcirc (1/4) diskStart ∗

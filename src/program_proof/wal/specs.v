@@ -138,7 +138,7 @@ Theorem wp_Walog__MemAppend (Q: u64 -> iProp Σ) l bufs bs :
   {{{ is_wal l ∗
        updates_slice bufs bs ∗
        (∀ σ σ' pos,
-         ⌜valid_log_state σ⌝ -∗
+         ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos))
    }}}
@@ -164,7 +164,7 @@ Admitted.
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l a :
   {{{ is_wal l ∗
        (∀ σ σ' mb,
-         ⌜valid_log_state σ⌝ -∗
+         ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q mb))
    }}}
@@ -186,7 +186,7 @@ Admitted.
 Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l a :
   {{{ is_wal l ∗
        (∀ σ σ' b,
-         ⌜valid_log_state σ⌝ -∗
+         ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_read_installed a) σ σ' b⌝ -∗
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q b))
    }}}
@@ -202,7 +202,7 @@ Admitted.
 Theorem wp_Walog__Flush (Q: iProp Σ) l pos :
   {{{ is_wal l ∗
        (∀ σ σ' b,
-         ⌜valid_log_state σ⌝ -∗
+         ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
    }}}

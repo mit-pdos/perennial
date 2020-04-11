@@ -12,6 +12,8 @@ Module update.
   Global Instance _eta: Settable _ := settable! mk <addr; b>.
 End update.
 
+Definition LogSz: Z := 511.
+
 Definition disk := gmap Z Block.
 
 Definition txn_upds (txns: list (u64 * list update.t)) : list update.t :=
@@ -33,12 +35,13 @@ Module log_state.
 
 End log_state.
 
-Definition valid_addrs (updates: list update.t) (d: disk) :=
+Definition addrs_wf (updates: list update.t) (d: disk) :=
   forall i u, updates !! i = Some u ->
-         ∃ (b: Block), d !! (int.val u.(update.addr)) = Some b.
+              2 + LogSz ≤ int.val u.(update.addr) ∧
+              ∃ (b: Block), d !! (int.val u.(update.addr)) = Some b.
 
-Definition valid_log_state (s : log_state.t) :=
-  valid_addrs (log_state.updates s) s.(log_state.d) ∧
+Definition wal_wf (s : log_state.t) :=
+  addrs_wf (log_state.updates s) s.(log_state.d) ∧
   (* monotonicity of txnids  *)
   (forall (pos1 pos2: u64) (txn_id1 txn_id2: nat),
       txn_id1 < txn_id2 ->

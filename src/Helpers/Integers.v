@@ -458,7 +458,7 @@ Qed.
 Create HintDb word.
 
 Ltac word_cleanup :=
-  autounfold with word in *;
+  repeat autounfold with word in *;
   try match goal with
       | |- @eq u64 _ _ => apply word.unsigned_inj
       | |- @eq u32 _ _ => apply word.unsigned_inj
