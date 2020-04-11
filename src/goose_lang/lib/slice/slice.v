@@ -521,8 +521,8 @@ Proof.
     iIntros (Φ0) "[(Hq & Hp & Hi) [% %]] HΦ0".
     apply take_drop_middle in H0.
     replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
-    assert (strings.length (take (int.nat i) vs) = int.nat i) as Hivs.
-    { rewrite firstn_length_le; eauto. lia. }
+    assert (length (take (int.nat i) vs) = int.nat i) as Hivs.
+    { rewrite take_length. lia. }
     replace (drop (int.nat i) vs) with (x :: drop (S (int.nat i)) vs).
     2: {
       rewrite <- H0 at 2.

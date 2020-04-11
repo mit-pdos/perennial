@@ -131,8 +131,6 @@ Implicit Types v : val.
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Notation length := strings.length.
-
 Hint Rewrite encode_app_length : len.
 Hint Rewrite encode_singleton_length : len.
 

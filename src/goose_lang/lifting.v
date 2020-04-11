@@ -585,7 +585,7 @@ Proof.
   - rewrite left_id loc_add_0 //.
   - rewrite IHvs1.
     rewrite loc_add_assoc.
-    replace (1 + strings.length vs1) with (Z.of_nat (S (strings.length vs1))) by lia.
+    replace (1 + length vs1) with (Z.of_nat (S (length vs1))) by lia.
     (* true, but only due to disjointness *)
     admit.
 Abort.
@@ -677,7 +677,7 @@ Qed.
 
 Lemma alloc_list_loc_not_null:
   ∀ v (n : u64) σ1 l,
-    isFreshTo (int.val n * strings.length (flatten_struct v)) σ1 l
+    isFreshTo (int.val n * length (flatten_struct v)) σ1 l
     → ∀ l0 (x : val),
       heap_array l (concat_replicate (int.nat n) (flatten_struct v)) !! l0 = Some x
       → l0 ≠ null.
@@ -693,7 +693,7 @@ Qed.
 
 Lemma allocN_loc_not_null:
   ∀ v (n : u64) σ1 l,
-    isFreshTo (int.val n * strings.length (flatten_struct v)) σ1 l
+    isFreshTo (int.val n * length (flatten_struct v)) σ1 l
     → ∀ l0 (x : val),
       heap_array l (concat_replicate (int.nat n) (flatten_struct v)) !! l0 = Some x
       → l0 ≠ null.

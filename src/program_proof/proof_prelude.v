@@ -18,6 +18,4 @@ Global Set Printing Projections.
 
 Existing Instance diskG0.
 
-Notation length := List.length.
-
 Global Opaque load_ty store_ty.

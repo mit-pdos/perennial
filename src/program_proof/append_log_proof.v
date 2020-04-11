@@ -15,8 +15,6 @@ Implicit Types (stk:stuckness) (E: coPset).
 (* TODO: is this still needed? *)
 Local Opaque struct_mapsto.
 
-Notation length := strings.length.
-
 Definition is_hdr_block (sz disk_sz: u64) (b: Block) :=
   ∃ (extra: list u8), Block_to_vals b = b2val <$> encode [EncUInt64 sz; EncUInt64 disk_sz] ++ extra.
 
