@@ -737,7 +737,9 @@ Proof.
   rewrite -heap_array_fmap.
   rewrite big_sepM_fmap /=.
   iDestruct (heap_array_replicate_to_nested_mapsto with "[Hl]") as "Hl".
-  { iApply (big_sepM_mono with "Hl").
+  {
+    iDestruct "Hl" as "(Hl&Hlm)".
+    iApply (big_sepM_mono with "Hl").
     iIntros (l0 x Heq) "Hli".
     iApply (na_mapsto_to_heap with "Hli").
     eauto using allocN_loc_not_null.
@@ -760,7 +762,7 @@ Proof.
   iMod (na_heap_alloc_gen
           _ _ (fmap Free (heap_array
                l [v0])) with "Hσ")
-    as "(Hσ & Hm)".
+    as "(Hσ & Hm & Hmeta)".
   { rewrite heap_array_fmap. apply heap_array_map_disjoint.
     rewrite Z.mul_1_l Hn /= in H0.
     simpl; intros.

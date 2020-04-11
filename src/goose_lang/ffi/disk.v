@@ -294,7 +294,7 @@ lemmas. *)
     rewrite /= in H0.
     monad_inv.
     iMod (na_heap.na_heap_alloc_gen tls _ (fmap Free $ heap_array _ (Block_to_vals b)) with "Hσ")
-      as "(Hσ & Hl)".
+      as "(Hσ & Hl & Hlm)".
     { rewrite heap_array_fmap. apply heap_array_map_disjoint.
       rewrite map_length length_Block_to_vals; eauto.
       apply H1. }
