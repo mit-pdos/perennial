@@ -158,7 +158,7 @@ Class specTy_update `(hsT_model: !specTy_model) :=
 
 Section reln_adeq.
 
-Context `{hsT_model: !specTy_model} (spec_op_trans: @external (spec_ext_op_field) → ival).
+Context `{hsT_model: !specTy_model} (spec_trans: sval → ival → Prop).
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
@@ -190,13 +190,14 @@ Definition sty_crash_obligation :=
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new).
 
 Definition sty_rules_obligation :=
-  ∀ op (vs: sval) v t1 t2,
-    get_ext_tys op = (t1, t2) →
+  ∀ (es: sval) (vs: sval) e v t1 t2,
+    get_ext_tys es (t1, t2) →
+    spec_trans es e →
     forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
     sty_inv hS -∗
     spec_ctx -∗
     val_interp (hS := hS) t1 vs v -∗
-    has_semTy (ExternalOp op vs) ((spec_op_trans) op v) (val_interp (hS := hS) t2).
+    has_semTy (es vs) (e v) (val_interp (hS := hS) t2).
 
 Definition sty_crash_inv_obligation :=
   (forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
@@ -308,19 +309,19 @@ Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
 
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
-  ∀ Γ es e τ, expr_transTy _ _ _ spec_op_trans Γ es e τ →
+  ∀ Γ es e τ, expr_transTy _ _ _ spec_trans Γ es e τ →
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
     ⊢ ctx_has_semTy (hS := hS) Γ es e τ.
-Proof using spec_op_trans.
+Proof using spec_trans.
   iIntros (Hrules ???? Htyping).
   induction Htyping using @expr_typing_ind with
-      (spec_op_trans := spec_op_trans)
+      (spec_trans := spec_trans)
       (P := (λ Γ es e τ
-             (HTYPE: expr_transTy _ _ _ spec_op_trans Γ es e τ),
+             (HTYPE: expr_transTy _ _ _ spec_trans Γ es e τ),
              forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
                ⊢ ctx_has_semTy (hS := hS) Γ es e τ))
       (P0 := (λ Γ vs v τ
-             (HTYPE: val_transTy _ _ _ spec_op_trans Γ vs v τ),
+             (HTYPE: val_transTy _ _ _ spec_trans Γ vs v τ),
              forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
                ⊢ ctx_has_semTy (hS := hS) Γ vs v τ));
     intros ??????; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx".
@@ -626,7 +627,7 @@ Proof using spec_op_trans.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) _).
-    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [ExternalOpCtx _] x)) with "[] Hj").
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppRCtx _] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
@@ -667,7 +668,7 @@ Definition sty_derived_crash_condition :=
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new))%I.
 
 Lemma sty_inv_to_wpc hG hC hRG hS es e τ j:
-  expr_transTy _ _ _ spec_op_trans ∅ es e τ →
+  expr_transTy _ _ _ spec_trans ∅ es e τ →
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation →
@@ -725,7 +726,7 @@ Lemma sty_adequacy es σs e σ τ initP:
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation →
-  expr_transTy _ _ _ spec_op_trans ∅ es e τ →
+  expr_transTy _ _ _ spec_trans ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →

@@ -288,20 +288,31 @@ Definition append_op_trans (op: log_spec_ext.(@spec_ext_op_field).(@external)) :
   | OpenOp => Open
   end.
 
+Inductive append_trans : @val log_op -> @val disk_op -> Prop :=
+| AppendTrans (x: string) op:
+    append_trans (λ: x, ExternalOp op (Var x)) (append_op_trans op).
+
+
 Lemma append_rules_obligation:
-  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ (LVL (LVL_OPS)) appendTy_model append_op_trans.
+  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ (LVL (LVL_OPS)) appendTy_model append_trans.
 Proof.
-  intros op vs v t1 t2 Htype.
-  destruct op.
-  - inversion Htype; subst. admit.
-  - inversion Htype; subst. admit.
-  - inversion Htype; subst.
-    iIntros (?????) "#Hinv #Hspec #Hval".
+  intros vs0 vs v0 v0' t1 t2 Htype0 Htrans.
+  inversion Htype0 as [op Heq Htype]; subst.
+  destruct op; inversion Htype; inversion Htrans; subst.
+  - admit.
+  - admit.
+  - iIntros (?????) "#Hinv #Hspec #Hval".
     iIntros (j K Hctx).
     rewrite //=.
     iIntros "Hj".
     rewrite /append_val_interp. iDestruct "Hval" as (lspec limpl γ Heq) "(His_log&Hlog_open)".
     destruct Heq as (->&->). iDestruct "Hinv" as (?) "Hinv".
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)".
+    }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. econstructor; eauto. }
     wpc_apply (@wpc_Log__Reset with "[$] []").
     { eauto. }
     { rewrite /LVL_INV. lia. }
@@ -314,6 +325,12 @@ Proof.
     rewrite /append_val_interp.
     iDestruct "Hval" as %[-> ->]. iDestruct "Hinv" as (?) "Hinv".
     wpc_pures; first done.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)".
+    }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. econstructor; eauto. }
     wpc_apply (@wpc_Init with "[$] []").
     { eauto. }
     { eauto. }
@@ -332,6 +349,12 @@ Proof.
     iIntros "Hj".
     rewrite /append_val_interp.
     iDestruct "Hval" as %[-> ->]. iDestruct "Hinv" as (?) "Hinv".
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)".
+    }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. econstructor; eauto. }
     wpc_apply (@wpc_Open with "[$] []").
     { eauto. }
     { rewrite /LVL_INV. lia. }
@@ -495,7 +518,7 @@ Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_fie
 (* XXX: might need to change typed_translate / refinement to use the spec_ wrappers around type classes *)
 
 Lemma append_refinement (es: @expr log_op) σs e σ (τ: @ty log_ty.(@val_tys log_op)):
-  typed_translate.expr_transTy _ _ _ append_op_trans ∅ es e τ →
+  typed_translate.expr_transTy _ _ _ append_trans ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   append_initP σ σs →

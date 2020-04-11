@@ -94,16 +94,21 @@ Instance log_val_ty: val_types :=
 
 Section log.
   Existing Instances log_op log_val_ty.
+
+  Inductive log_ext_tys : @val log_op -> (ty * ty) -> Prop :=
+  | LogOpType op :
+      log_ext_tys (λ: "v", ExternalOp op (Var "v"))%V
+                  (match op with
+                   | AppendOp => (extT LogT, sliceT_ blockT_ _)
+                   | GetOp => (prodT (extT LogT) uint64T, prodT (blockT_ _) boolT)
+                   | ResetOp => (extT LogT, unitT)
+                   | InitOp => (unitT, prodT (extT LogT) boolT)
+                   | OpenOp => (unitT, extT LogT)
+                   end).
+
   Instance log_ty: ext_types log_op :=
     {| val_tys := log_val_ty;
-       get_ext_tys (op: @external log_op) :=
-         match op with
-         | AppendOp => (extT LogT, sliceT_ blockT_ _)
-         | GetOp => (prodT (extT LogT) uint64T, prodT (blockT_ _) boolT)
-         | ResetOp => (extT LogT, unitT)
-         | InitOp => (unitT, prodT (extT LogT) boolT)
-         | OpenOp => (unitT, extT LogT)
-         end; |}.
+       get_ext_tys := log_ext_tys |}.
 
   Definition log_state := RecoverableState (list disk.Block).
 

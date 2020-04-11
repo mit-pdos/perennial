@@ -65,7 +65,7 @@ Reserved Notation "Γ '⊢v' v : A" (at level 74, v, A at next level).
 
 Class ext_types (ext:ext_op) :=
   { val_tys :> val_types;
-    get_ext_tys: external -> ty * ty; (* the argument type and return type *)
+    get_ext_tys: val -> ty * ty -> Prop; (* the argument type and return type *)
   }.
 
 Section goose_lang.
@@ -350,10 +350,10 @@ Section goose_lang.
       Γ ⊢ CmpXchg l v1 v2 : prodT t boolT
 
   (** externals *)
-  | external_hasTy op e t1 t2 :
-      get_ext_tys op = (t1, t2) ->
-      Γ ⊢ e : t1 ->
-      Γ ⊢ ExternalOp op e : t2
+  | external_hasTy e earg t1 t2 :
+      get_ext_tys e (t1, t2) ->
+      Γ ⊢ earg : t1 ->
+      Γ ⊢ e earg : t2
 
   where "Γ ⊢ e : A" := (expr_hasTy Γ e A)
 

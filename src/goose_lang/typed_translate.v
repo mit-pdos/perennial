@@ -25,10 +25,10 @@ Section translate.
   Notation ival := (@val impl_op).
   Notation sty := (@ty (@val_tys _ spec_ty)).
 
-  Context (spec_op_trans : @external spec_op -> ival).
-  (* XXX: need some assumptions that the previous two arguments make sense
-     in particular, should be total in the sense that all well typed extension rules
-     should have a translation rule *)
+  (* The translation is not necessarily assumed to be a function, so in principle
+     there could be many translations of a particular piece of code. In reality,
+     you would want to prove that all well-typed programs have a valid translation *)
+  Context (spec_trans : sval -> ival -> Prop).
 
   Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
@@ -180,10 +180,11 @@ Section translate.
       Γ ⊢ v1 -- v1' : t ->
       Γ ⊢ v2 -- v2' : t ->
       Γ ⊢ CmpXchg l v1 v2 -- CmpXchg l' v1' v2' : prodT t boolT
-  | external_transTy op e e' t1 t2 :
-      get_ext_tys op = (t1, t2) ->
-      Γ ⊢ e -- e' : t1 ->
-      Γ ⊢ ExternalOp op e -- (spec_op_trans op) e' : t2
+  | external_transTy (v: sval) v' (earg: sexpr) earg' t1 t2 :
+      get_ext_tys v (t1, t2) ->
+      spec_trans v v' ->
+      Γ ⊢ earg -- earg' : t1 ->
+      Γ ⊢ v earg -- v' earg' : t2
 
   where "Γ ⊢ e1 -- e2 : A" := (expr_transTy Γ e1 e2 A)
 

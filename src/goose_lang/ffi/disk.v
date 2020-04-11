@@ -37,14 +37,19 @@ Instance disk_val_ty: val_types :=
 
 Section disk.
   Existing Instances disk_op disk_val_ty.
+
+  Inductive disk_ext_tys : @val disk_op -> (ty * ty) -> Prop :=
+  | DiskOpType op :
+      disk_ext_tys (λ: "v", ExternalOp op (Var "v"))%V
+                   (match op with
+                   | ReadOp => (uint64T, arrayT byteT)
+                   | WriteOp => (prodT uint64T (arrayT byteT), unitT)
+                   | SizeOp => (unitT, uint64T)
+                   end).
+
   Definition disk_ty: ext_types disk_op :=
     {| val_tys := disk_val_ty;
-       get_ext_tys (op: @external disk_op) :=
-         match op with
-      | ReadOp => (uint64T, arrayT byteT)
-      | WriteOp => (prodT uint64T (arrayT byteT), unitT)
-      | SizeOp => (unitT, uint64T)
-         end; |}.
+       get_ext_tys := disk_ext_tys |}.
   Definition Disk: ty := extT DiskInterfaceTy.
 End disk.
 
@@ -131,13 +136,24 @@ Section disk.
     λ: <>, #().
 
   Definition Size: val :=
-    λ: <>,
-       ExternalOp SizeOp #().
+    λ: "v",
+       ExternalOp SizeOp (Var "v").
 
+  Theorem Size_t : ∅ ⊢ Size #() : uint64T.
+  Proof.
+    rewrite /Size.
+     eapply external_hasTy; eauto.
+    - eapply (DiskOpType (SizeOp)).
+    - typecheck.
+  Qed.
+
+  (*
   Theorem Size_t : ∅ ⊢ Size : (unitT -> uint64T).
   Proof.
     typecheck.
+    econstructor.
   Qed.
+   *)
 
   Existing Instances r_mbind r_fmap.
 
