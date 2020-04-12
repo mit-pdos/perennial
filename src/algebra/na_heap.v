@@ -480,12 +480,18 @@ Section na_heap_defs.
     }.
 
   Definition na_heapG_update {Σ} (hG: na_heapG L V Σ) (names: na_heap_names) :=
-    Na_HeapG _ _ _ _ _ _ _ _
+    Na_HeapG _ _ _ _ _
+             (@na_heap_inG _ _ _ _ _ hG)
+             (@na_meta_inG _ _ _ _ _ hG)
+             (@na_meta_data_inG _ _ _ _ _ hG)
              (na_heap_heap_name names)
              (na_heap_meta_name names).
 
   Definition na_heapG_update_pre {Σ} (hG: na_heapPreG L V Σ) (names: na_heap_names) :=
-    Na_HeapG _ _ _ _ _ _ _ _
+    Na_HeapG _ _ _ _ _
+             (@na_heap_preG_inG _ _ _ _ _ hG)
+             (@na_meta_preG_inG _ _ _ _ _ hG)
+             (@na_meta_data_preG_inG _ _ _ _ _ hG)
              (na_heap_heap_name names)
              (na_heap_meta_name names).
 
