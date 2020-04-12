@@ -109,8 +109,38 @@ Definition loc_inv (ls: loc) (l: loc) (vTy: val_semTy) :=
 
 Definition locN := nroot.@"loc".
 
+Definition rlN := nroot.@"reln".@"eq".
+
+Definition loc_paired ls l :=
+  (meta (hG := refinement_na_heapG) ls rlN l ∗
+   meta (hG := heapG_na_heapG) l rlN ls)%I.
+
+Lemma loc_paired_eq_iff ls l ls' l':
+  loc_paired ls l -∗
+  loc_paired ls' l' -∗
+  ⌜ l = l' ↔ ls = ls' ⌝.
+Proof.
+  iIntros "(#Hmls&#Hml) (#Hmls'&#Hml')".
+  destruct (decide (ls = ls')).
+  { subst. iDestruct (meta_agree with "Hmls Hmls'") as %Heq.
+    eauto. }
+  destruct (decide (l = l')).
+  { subst. iDestruct (meta_agree with "Hml Hml'") as %Heq.
+    eauto. }
+  eauto.
+Qed.
+
 Definition is_loc ls l vTy :=
-  inv locN (loc_inv ls l vTy).
+  (inv locN (loc_inv ls l vTy) ∗ loc_paired ls l)%I.
+
+Lemma is_loc_eq_iff ls l ls' l' vTy vTy':
+  is_loc ls l vTy -∗
+  is_loc ls' l' vTy' -∗
+  ⌜ l = l' ↔ ls = ls' ⌝.
+Proof.
+  iIntros "(?&H1) (?&H2)".
+  iApply (loc_paired_eq_iff with "H1 H2").
+Qed.
 
 Fixpoint val_interp (t: sty) (vs: sval) (v: ival) :=
   match t with
@@ -127,7 +157,8 @@ Fixpoint val_interp (t: sty) (vs: sval) (v: ival) :=
                                 vs = InjRV vs'⌝
                               ∗ val_interp t2 vs' v'))%I
   | arrayT t => ((∃ l ls (indices: list unit),
-                     ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ⌝ ∗
+                     ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ∧ ls ≠ null ∧ l ≠ null ⌝ ∗
+                     ⌜ indices ≠ [] ⌝ ∗
                      [∗ list] i↦_ ∈ indices, is_loc (ls +ₗ i) (l +ₗ i) (val_interp t))
                  ∨ (⌜ vs = #null ∧ v = #null⌝))%I
   | arrowT t1 t2 =>
@@ -268,10 +299,6 @@ Proof.
   rewrite ?fmap_insert //=.
 Qed.
 
-(* XXX: need to have some ghost resource that enforces that
-   the pairing between locs at spec and impl level that's done for arrayT
-   and structRefT is one to one, to ensure that pointer equality tests at
-   spec/impl level behave correctly *)
 Lemma comparableTy_val_eq t vs1 v1 vs2 v2:
   is_comparableTy t = true →
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
@@ -279,6 +306,7 @@ Lemma comparableTy_val_eq t vs1 v1 vs2 v2:
   val_interp (hS := hS) t vs2 v2 -∗
   ⌜ v1 = v2 ↔ vs1 = vs2 ⌝.
 Proof.
+  clear spec_trans.
   revert vs1 v1 vs2 v2.
   induction t => vs1 v1 vs2 v2; try (inversion 1; fail).
   - intros. destruct t; iPureIntro; naive_solver.
@@ -294,15 +322,28 @@ Proof.
     iDestruct 1 as "[H1|Hnull1]";
     iDestruct 1 as "[H2|Hnull2]";
     rewrite -/val_interp.
-    * iDestruct "H1" as (??? (?&?)) "H1".
-      iDestruct "H2" as (??? (?&?)) "H2".
+    * iDestruct "H1" as (?? ls1 (?&?&?&?) Hnonempty1) "H1".
+      iDestruct "H2" as (?? ls2 (?&?&?&?) Hnonempty2) "H2".
       subst.
-      admit.
-    * admit.
-    * admit.
-    * admit.
-  - admit.
-Admitted.
+      destruct ls1 as [|[] ls1']; first by congruence.
+      destruct ls2 as [|[] ls2']; first by congruence.
+      rewrite ?big_sepL_cons.
+      iDestruct "H1" as "(H1&_)".
+      iDestruct "H2" as "(H2&_)".
+      subst. rewrite ?loc_add_0. iDestruct (is_loc_eq_iff with "H1 H2") as %Heq.
+      iPureIntro. split; inversion 1; subst; do 2 f_equal; eapply Heq; eauto.
+    * iDestruct "Hnull2" as %(Hnull2s&Hnull2). subst.
+      iDestruct "H1" as (??? (?&?&?&?)) "H".
+      iPureIntro. split; inversion 1; subst; do 2 f_equal; try congruence.
+    * iDestruct "Hnull1" as %(Hnull1s&Hnull1). subst.
+      iDestruct "H2" as (??? (?&?&?&?)) "H".
+      iPureIntro. split; inversion 1; subst; do 2 f_equal; try congruence.
+    * iDestruct "Hnull1" as %(Hnull1s&Hnull1). subst.
+      iDestruct "Hnull2" as %(Hnull2s&Hnull2). subst. auto.
+  - iIntros. auto.
+    (* XXX this case is not really done, in the sense that structRefT interp is currently False,
+       so the case becomes trivial. *)
+Qed.
 
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
     val_typing_ind := Induction for val_transTy Sort Prop.
