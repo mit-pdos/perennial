@@ -261,7 +261,7 @@ Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Blo
   [∗ list] _ ↦ u; old ∈ bs; olds,
     mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old)).
 
-Definition memappend_q γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
+Definition memappend_q γh (bs : list update.t) (olds : list (Block * list Block)) (pos : u64): iProp Σ :=
   [∗ list] _ ↦ u; old ∈ bs; olds,
     mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old ++ [u.(update.b)])).
 
@@ -289,12 +289,12 @@ Proof.
   eauto.
 Qed.
 
-Lemma wal_heap_memappend_pre_to_q gh γh bs olds :
+Lemma wal_heap_memappend_pre_to_q gh γh bs olds newpos :
   ( gen_heap_ctx gh ∗
     memappend_pre γh bs olds )
   ==∗
   ( gen_heap_ctx (memappend_gh gh bs olds) ∗
-    memappend_q γh bs olds ).
+    memappend_q γh bs olds newpos ).
 Proof.
   iIntros "(Hctx & Hpre)".
   iDestruct (big_sepL2_length with "Hpre") as %Hlen.
@@ -616,7 +616,7 @@ Qed.
 
 Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
   ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ olds, memappend_pre γh bs olds ∗
-        ( ∀ pos, memappend_q γh bs olds ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q pos ) ) -∗
+        ( ∀ pos, memappend_q γh bs olds pos ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q pos ) ) -∗
   ( ∀ σ σ' pos,
       ⌜valid_log_state σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
