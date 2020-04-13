@@ -67,7 +67,8 @@ Definition sliceT_ (t: ty_) : ty_ := λ val_ty, prodT (arrayT (t _)) uint64T.
 Definition blockT_: ty_ := sliceT_ (λ val_ty, byteT).
 
 Inductive KvsOp :=
-  | MakeOp
+  | OpenOp (* both open and init map to the same function (makeKVS) *)
+  | InitOp
   | GetOp
   | MultiPutMarkOp
   | MultiPutCommitOp
@@ -94,7 +95,15 @@ Instance kvs_val_ty: val_types :=
   {| ext_tys := Kvs_ty; |}.
 
 Section kvs.
-  Definition kvs_sz : nat := 10000. (*TODO *)
+  Parameter kvs_sz : nat.
+
+  Fixpoint init_keys (keys: list u64) (sz: nat) : list u64 :=
+  match sz with
+  | O => keys
+  | S n => init_keys ((U64 (Z.of_nat n)) :: keys) n
+  end.
+  Definition kvs_keys_all : list u64 := init_keys [] kvs_sz.
+
   Definition kvs_state_typ := gmap u64 disk.Block.
   Fixpoint init_kvs (kvs: kvs_state_typ) (sz: nat) : kvs_state_typ :=
   match sz with
@@ -105,18 +114,24 @@ Section kvs.
 
   Definition KVPairT : ty := structRefT [uint64T; prodT (arrayT (uint64T)) uint64T].
   Existing Instances kvs_op kvs_val_ty.
-  Instance kvs_ty: ext_types kvs_op :=
-    {| val_tys := kvs_val_ty;
-       get_ext_tys (op: @external kvs_op) :=
-         match op with
+
+  Inductive kvs_ext_tys : @val kvs_op -> (ty * ty) -> Prop :=
+  | KvsOpType op :
+      kvs_ext_tys (λ: "v", ExternalOp op (Var "v"))%V
+       (match op with
          (* pair where first comp is type of inputs, sec is type of outputs *)
            (* have make take no arguments, initialize super + txn -- assume specs? *)
            (* kvs type should be opaque, but kvpair should be known by client *)
-         | MakeOp => (unitT, extT KvsT)
+         | OpenOp => (unitT, extT KvsT)
+         | InitOp => (unitT, extT KvsT)
          | GetOp => (prodT (extT KvsT) uint64T, KVPairT)
          | MultiPutMarkOp => (prodT (extT KvsT) (prodT (arrayT KVPairT) uint64T), unitT)
          | MultiPutCommitOp => (prodT (extT KvsT) (prodT (arrayT KVPairT) uint64T), boolT)
-         end; |}.
+         end).
+
+  Instance kvs_ty: ext_types kvs_op :=
+    {| val_tys := kvs_val_ty;
+       get_ext_tys := kvs_ext_tys |}.
 
   Definition kvs_state := RecoverableState (gmap u64 disk.Block).
 
@@ -179,10 +194,14 @@ Section kvs.
 
   Definition kvs_step (op:KvsOp) (v:val) : transition state val :=
     match op, v with
-    | MakeOp, LitV LitUnit =>
+    | InitOp, LitV LitUnit =>
       kvsPtr ← allocIdent;
       initTo (kvs_init_s) kvsPtr;;
-             ret $ (LitV $ LitLoc kvsPtr)
+      ret $ (LitV $ LitLoc kvsPtr)
+    | OpenOp, LitV LitUnit =>
+      logPtr ← allocIdent;
+      s ← open logPtr;
+      ret $ LitV $ LitLoc logPtr
     | GetOp, PairV (LitV (LitLoc kvsPtr)) (LitV (LitInt key)) =>
       openΣ ≫= λ '(kvs, kvsPtr_), (*kvs is the state *)
       check (kvsPtr = kvsPtr_);;
@@ -223,22 +242,22 @@ Inductive kvs_unopen_status := UnInit' | Closed'.
 (* resource alg: append log has two: *)
 (* (1) tracks status of append log (open/closed) --> anything with recoverable state*)
 Definition openR := csumR (prodR fracR (agreeR (leibnizO kvs_unopen_status))) (agreeR (leibnizO loc)).
+
 Definition Kvs_Opened (l: loc) : openR := Cinr (to_agree l).
 
-(* Type class defn, define which algebras are availabe *)
+(* Type class defn, define which algebras are available *)
 Class kvsG Σ :=
   { kvsG_open_inG :> inG Σ openR; (* inG --> which resources are available in type class *)
     (* implicitly insert names for elements, used to tag which generation *)
     kvsG_open_name : gname;
     (* (2) exlusive/etc. algebra for disk blocks --> allows for ownership of blocks *)
-    kvsG_state_inG:> gen_heap.gen_heapG u64 disk.Block Σ;
-    kvsG_state_name: gen_heap_names;
+    kvsG_state_inG :> gen_heap.gen_heapG u64 disk.Block Σ;
   }.
 
 (* without names: e.g. disk names stay same, memory ones are forgotten *)
 Class kvs_preG Σ :=
   { kvsG_preG_open_inG :> inG Σ openR;
-    kvsG_preG_state_inG:> gen_heap.gen_heapPreG u64 disk.Block Σ;
+    kvsG_preG_state_inG :> gen_heap.gen_heapPreG u64 disk.Block Σ;
   }.
 
 Definition kvsΣ : gFunctors :=
@@ -252,21 +271,19 @@ Record kvs_names :=
   { kvs_names_open: gname;
     kvs_names_state: gen_heap_names; }.
 
-Definition kvs_get_names {Σ} (lG: kvsG Σ) :=
-  {| kvs_names_open := kvsG_open_name; kvs_names_state := kvsG_state_name|}.
+Definition kvs_get_names {Σ} (kvs: kvsG Σ) :=
+  {| kvs_names_open := kvsG_open_name; kvs_names_state := gen_heapG_get_names kvsG_state_inG|}.
 
-Definition kvs_update {Σ} (lG: kvsG Σ) (names: kvs_names) :=
+Definition kvs_update {Σ} (kvs: kvsG Σ) (names: kvs_names) :=
   {| kvsG_open_inG := kvsG_open_inG;
      kvsG_open_name := (kvs_names_open names);
-     kvsG_state_inG := kvsG_state_inG;
-     kvsG_state_name := (kvs_names_state names);
+     kvsG_state_inG := gen_heapG_update kvsG_state_inG names.(kvs_names_state);
   |}.
 
 Definition kvs_update_pre {Σ} (kvsG: kvs_preG Σ) (names: kvs_names) :=
   {| kvsG_open_inG := kvsG_preG_open_inG;
      kvsG_open_name := (kvs_names_open names);
-     kvsG_state_inG := gen_heapG_update_pre (@kvsG_preG_state_inG _ kvsG) (names.(kvs_names_state));
-     kvsG_state_name := (kvs_names_state names);
+     kvsG_state_inG := gen_heapG_update_pre kvsG_preG_state_inG names.(kvs_names_state);
   |}.
 
 (* assert have resource that tell us that kvs is opened at l, persistent + duplicable *)
@@ -281,13 +298,12 @@ Definition kvs_uninit_frag {Σ} {ksG :kvsG Σ} :=
 Definition kvs_uninit_auth {Σ} {kvsG :kvsG Σ} :=
   own (kvsG_open_name) (Cinl ((1/2)%Qp, to_agree (UnInit' : leibnizO kvs_unopen_status))).
 
-(* what blocks are in the log *)
+(* what blocks are in the kvs *)
 (* kvs: more fine-grained lock? or lock entire map? (more/less useful for clients?) *)
 (* precondition in spec --> assert have points-to facts (no state RA), gen_heap *)
-(*Definition kvs_auth {Σ} {lG :kvsG Σ} (vs: list (disk.Block)) :=
-  own (kvsG_state_name) (● Excl' (vs: leibnizO (list disk.Block))).
-Definition kvs_frag {Σ} {lG :kvsG Σ} (vs: list (disk.Block)) :=
-  own (kvsG_state_name) (◯ Excl' (vs: leibnizO (list disk.Block))).*)
+Definition kvs_auth {Σ} {kvs :kvsG Σ} (s: gmap u64 disk.Block) := gen_heap.gen_heap_ctx s.
+Definition kvs_frag {Σ} {kvsG :kvsG Σ} (k : u64) (v : disk.Block) : iProp Σ :=
+   (gen_heap.mapsto (L:=u64) (V:=disk.Block) k 1 v)%I.
 
 Section kvs_interp.
   Existing Instances kvs_op kvs_model kvs_val_ty.
@@ -296,18 +312,18 @@ Section kvs_interp.
   (* stores auth copy of fact*)
   Definition kvs_ctx {Σ} {kvsG: kvsG Σ} (kvs: @ffi_state kvs_model) : iProp Σ :=
     match kvs with
-    | Opened s l => kvs_open l ∗ gen_heap.gen_heap_ctx s (*XXX?*)
-    | Closed s => kvs_closed_auth ∗ gen_heap.gen_heap_ctx s
-    | UnInit => kvs_uninit_auth (*∗  gen_heap.gen_heap_ctx kvs XXX? *)
+    | Opened s l => kvs_open l ∗ kvs_auth s
+    | Closed s => kvs_closed_auth ∗ kvs_auth s
+    | UnInit => kvs_uninit_auth ∗ kvs_auth (∅ : gmap u64 disk.Block) (*  XXXX kvs_init_s *)
     | _ => False%I
     end.
 
   (* When first start program, what initial resources assertions do you get *)
   Definition kvs_start {Σ} {kvsG: kvsG Σ} (kvs: @ffi_state kvs_model) : iProp Σ :=
     match kvs with
-    | Opened s l => kvs_open l ∗ ([∗ map] l↦v ∈ s , (gen_heap.mapsto (L:=u64) (V:=disk.Block) l 1 v))%I (* what does [* map mean?]*)
-    | Closed s => kvs_closed_frag ∗ ([∗ map] l↦v ∈ s , (gen_heap.mapsto (L:=u64) (V:=disk.Block) l 1 v))%I
-    | UnInit => kvs_uninit_frag (*∗ kvs_frag [] XXX*)
+    | Opened s l => kvs_open l ∗ ([∗ list] k ∈ kvs_keys_all, (∃ v, kvs_frag k v)%I)
+    | Closed s => kvs_closed_frag ∗ ([∗ list] k ∈ kvs_keys_all, (∃ v, kvs_frag k v)%I)
+    | UnInit => kvs_uninit_frag
     | _ => False%I
     end.
 
@@ -330,23 +346,52 @@ Section kvs_interp.
        ffi_start := @kvs_start;
        ffi_restart := @kvs_restart;
     |}.
-  Next Obligation. intros ? [[]] [] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
+  Next Obligation.
+    intros.
+    destruct hF.
+    destruct names.
+    unfold kvs_update. simpl.
+    destruct kvsG_state_inG0; simpl. unfold kvs_get_names; simpl.
+    unfold gen_heapG_get_names; simpl.
+    destruct kvs_names_state0; simpl; auto.
+    Qed.
+  Next Obligation. intros ? [[]] => //=.
+                   unfold kvs_update; simpl.
+                   destruct kvsG_state_inG0; simpl.
+                   unfold kvs_get_names; simpl.
+                   unfold gen_heapG_get_names; simpl.
+                   auto.
+  Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
 End kvs_interp.
 
-(*
+Section misc_lemmas.
+  Context `{kvsG_ctx: inG Σ openR}.
+
+  Theorem openR_frac_split γ (q1 q2 : Qp) x :
+    own γ (Cinl ((q1 + q2)%Qp, x) : openR) ⊣⊢ own γ (Cinl (q1, x)) ∗ own γ (Cinl (q2, x)).
+  Proof.
+    rewrite -own_op.
+    f_equiv.
+    apply Cinl_equiv.
+    apply pair_proper; simpl.
+    - rewrite frac_op' //.
+    - rewrite agree_idemp //.
+  Qed.
+End misc_lemmas.
+
 Section kvs_lemmas.
-  Context `{lG: kvsG Σ}.
+  Context `{kvsG_ctx: kvsG Σ}.
 
-  Global Instance kvs_ctx_Timeless lg: Timeless (kvs_ctx lg).
-  Proof. destruct lg; apply _. Qed.
 
-  Global Instance kvs_start_Timeless lg: Timeless (kvs_start lg).
-  Proof. destruct lg; apply _. Qed.
+  Global Instance kvs_ctx_Timeless kvs: Timeless (kvs_ctx kvs).
+  Proof. destruct kvs; apply _. Qed.
 
-  Global Instance kvs_restart_Timeless lg: Timeless (kvs_restart _ lg).
-  Proof. destruct lg; apply _. Qed.
+  Global Instance kvs_start_Timeless kvs: Timeless (kvs_start kvs).
+  Proof. destruct kvs; apply _. Qed.
+
+  Global Instance kvs_restart_Timeless kvs: Timeless (kvs_restart _ kvs).
+  Proof. destruct kvs; apply _. Qed.
 
   Global Instance kvs_open_Persistent (l: loc) : Persistent (kvs_open l).
   Proof. rewrite /kvs_open/Kvs_Opened. apply own_core_persistent. rewrite /CoreId//=. Qed.
@@ -385,23 +430,44 @@ Section kvs_lemmas.
     inversion Hval.
   Qed.
 
-  Lemma kvs_ctx_unify_closed lg vs:
-    kvs_closed_frag -∗ kvs_frag vs -∗ log_ctx lg -∗ ⌜ lg = Closed vs ⌝.
+  (* know that we're closed + know value at a particular key *)
+  Notation "l k↦ v" := (gen_heap.mapsto (L:=u64) (V:=disk.Block) l 1 v%V)
+                              (at level 20, format "l  k↦ v") : bi_scope.
+  Notation "l k↦{ q } v" := (gen_heap.mapsto (L:=u64) (V:=disk.Block) l q v%V)
+                              (at level 20, q at level 50, format "l  k↦{ q }  v") : bi_scope.
+  Lemma kvs_ctx_unify_closed kvs (key: u64) (val: disk.Block):
+    kvs_closed_frag -∗ key k↦ val -∗ kvs_ctx kvs -∗ ∃ s, ⌜s !! key = Some val ∧ kvs = Closed s ⌝.
   Proof.
-    destruct lg; try eauto; iIntros "Hclosed_frag Hstate_frag Hctx".
+    destruct kvs; try eauto; iIntros "Hclosed_frag Hstate_frag Hctx".
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (kvs_closed_auth_uninit_frag with "[$] [$]") as %[].
-    - iDestruct "Hctx" as "(Hclosed_auth&Hstate_auth)".
-      rewrite /kvs_frag/kvs_auth. by unify_ghost.
-    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
-      iDestruct (own_valid_2 with "Huninit_auth Hclosed_frag") as %Hval.
-      inversion Hval.
+    - iExists s.
+      iDestruct "Hctx" as "(Hclosed_auth&Hstate_auth)".
+      iPoseProof (gen_heap_valid with "Hstate_auth Hstate_frag") as "H".
+      iSplit; auto.
+      - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+        iDestruct (own_valid_2 with "Huninit_auth Hclosed_frag") as %Hval.
+        inversion Hval.
   Qed.
 
-  Lemma kvs_auth_frag_unif vs vs':
-    kvs_auth vs -∗ kvs_frag vs' -∗ ⌜ vs = vs' ⌝.
+  Lemma kvs_ctx_unify_closed' kvs:
+    kvs_closed_frag -∗ kvs_ctx kvs -∗ ⌜∃ s, kvs = Closed s ⌝.
   Proof.
-    rewrite /kvs_auth/kvs_frag. iIntros "H1 H2". by unify_ghost.
+    destruct kvs; try eauto; iIntros "Hclosed_frag Hctx".
+    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+      iDestruct (kvs_closed_auth_uninit_frag with "[$] [$]") as %[].
+    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+        iDestruct (own_valid_2 with "Huninit_auth Hclosed_frag") as %Hval.
+        inversion Hval.
+  Qed.
+
+  Lemma kvs_auth_frag_unif (s : gmap u64 disk.Block) (k: u64) (v: disk.Block):
+    kvs_auth s -∗ k k↦ v -∗ ∃ s', ⌜s' !! k = Some v ∧ s = s'⌝.
+  Proof.
+    rewrite /kvs_auth/kvs_frag. iIntros "H1 H2".
+    iExists s.
+    iPoseProof (gen_heap_valid with "H1 H2") as "H".
+    iSplit; auto.
   Qed.
 
   Lemma kvs_open_unif l l':
@@ -416,10 +482,10 @@ Section kvs_lemmas.
     inversion Heq. by subst.
   Qed.
 
-  Lemma kvs_ctx_unify_uninit lg:
-    kvs_uninit_frag -∗ kvs_ctx lg -∗ ⌜ lg = UnInit ⌝.
+  Lemma kvs_ctx_unify_uninit kvs:
+    kvs_uninit_frag -∗ kvs_ctx kvs -∗ ⌜ kvs = UnInit ⌝.
   Proof.
-    destruct lg; try eauto; iIntros "Huninit_frag Hctx".
+    destruct kvs; try eauto; iIntros "Huninit_frag Hctx".
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (own_valid_2 with "Huninit_auth Huninit_frag") as %Hval.
       inversion Hval as [? Heq%agree_op_inv'].
@@ -429,10 +495,10 @@ Section kvs_lemmas.
       inversion Hval.
   Qed.
 
-  Lemma kvs_ctx_unify_opened l lg:
-    kvs_open l -∗ kvs_ctx lg -∗ ⌜ ∃ vs, lg = Opened vs l ⌝.
+  Lemma kvs_ctx_unify_opened l kvs:
+    kvs_open l -∗ kvs_ctx kvs -∗ ⌜ ∃ vs, kvs = Opened vs l ⌝.
   Proof.
-    destruct lg as [| | |  | vs l']; try eauto; iIntros "Hopen Hctx".
+      destruct kvs as [| | | | vs' l']; try eauto; iIntros "Hopen Hctx".
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
       inversion Hval.
@@ -441,27 +507,11 @@ Section kvs_lemmas.
       inversion Hval.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (kvs_open_unif with "[$] [$]") as %Heq.
-      subst. iPureIntro; eexists. eauto.
-  Qed.
-
-  Lemma kvs_ctx_unify_opened' l lg vs:
-    kvs_open l -∗ kvs_frag vs -∗ log_ctx lg -∗ ⌜ lg = Opened vs l ⌝.
-  Proof.
-    destruct lg as [| | |  | vs' l']; try eauto; iIntros "Hopen Hstate Hctx".
-    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
-      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
-      inversion Hval.
-    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
-      iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
-      inversion Hval.
-    - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
-      iDestruct (kvs_open_unif with "[$] [$]") as %Heq.
-      iDestruct (kvs_auth_frag_unif with "[$] [$]") as %Heq'.
       subst. eauto.
   Qed.
 
   Lemma kvs_uninit_token_open (l: loc):
-    kvs_uninit_auth -∗ kvs_uninit_frag ==∗ log_open l.
+    kvs_uninit_auth -∗ kvs_uninit_frag ==∗ kvs_open l.
   Proof.
     iIntros "Hua Huf".
     iCombine "Hua Huf" as "Huninit".
@@ -476,11 +526,12 @@ Section kvs_lemmas.
   Qed.
 
   Lemma kvs_closed_token_open (l: loc):
-    kvs_closed_auth -∗ kvs_closed_frag ==∗ log_open l.
+    kvs_closed_auth -∗ kvs_closed_frag ==∗ kvs_open l.
   Proof.
     iIntros "Hua Huf".
     iCombine "Hua Huf" as "Huninit".
     rewrite -Cinl_op.
+    (*Print cmra_update. can transform facts to another fact that is compatible w/others' facts*)
     iMod (own_update _ _ (Kvs_Opened l) with "Huninit") as "$"; last done.
     { apply: cmra_update_exclusive.
       { apply Cinl_exclusive. rewrite -pair_op frac_op' Qp_half_half.
@@ -490,18 +541,21 @@ Section kvs_lemmas.
     }
   Qed.
 
-  Lemma kvs_state_update vsnew vs1 vs2:
-    kvs_auth vs1 -∗ kvs_frag vs2 ==∗ log_auth vsnew ∗ log_frag vsnew.
-  Proof. apply ghost_var_update. Qed.
+  (* insert updated keyval *)
+  Lemma kvs_state_update s k v1 v2:
+    kvs_auth s -∗ k k↦v1 ==∗ kvs_auth (<[k := v2]>s)∗ k k↦ v2.
+  Proof.
+    unfold kvs_auth. apply gen_heap_update.
+  Qed.
 
 (* Not related to physical state yet, just updates to ghost vars*)
 End kvs_lemmas.
 
 From Perennial.goose_lang Require Import adequacy.
 
-(* when crashes, ffi_crash_rel: hF[] = instance of type class logG *)
+(* when crashes, ffi_crash_rel: hF[] = instance of type class kvsG *)
 (* Program Instance --> define instance of type class, don't need to fill in all fields (craete goal, obligation) *)Program Instance kvs_interp_adequacy:
-  @ffi_interp_adequacy kvs_model kvs_interp log_op log_semantics :=
+  @ffi_interp_adequacy kvs_model kvs_interp kvs_op kvs_semantics :=
   {| ffi_preG := kvs_preG;
      ffiΣ := kvsΣ;
      subG_ffiPreG := subG_kvsG;
@@ -512,18 +566,35 @@ From Perennial.goose_lang Require Import adequacy.
                                            kvs_names_state (kvs_get_names hF2) ⌝%I;
   |}.
 Next Obligation. rewrite //=. Qed.
-Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation.
-  rewrite //=.
-  iIntros (Σ hPre σ ->). simpl.
-  rewrite /kvs_uninit_auth/kvs_uninit_frag/log_frag/log_auth.
-  iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
-  { repeat econstructor => //=. }
-  iMod (ghost_var_alloc ([]: leibnizO (list disk.Block))) as (γ2) "(H2a&H2b)".
-  iExists {| kvs_names_open := γ1; kvs_names_state := γ2 |}.
-  iFrame. iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+  intros.
+  unfold ffi_get_names; simpl.
+  unfold kvs_get_names; unfold kvs_update_pre.
+  unfold gen_heapG_get_names; simpl.
+  destruct names; simpl.
+  destruct kvs_names_state0; simpl; auto.
 Qed.
 Next Obligation.
+  (*if in uninit state, can initialize algebra and give ffi start, show that ffi start can be created*)
+  (* first part: status *)
+  rewrite //=.
+  iIntros (Σ hPre σ ->). simpl.
+  rewrite /kvs_uninit_auth/kvs_uninit_frag/kvs_frag/kvs_auth.
+  iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
+  { repeat econstructor => //=. }
+  iMod (gen_heap_name_strong_init ∅) as (names) "(Hctx&Hpts)".
+  iFrame. iModIntro.
+  iExists {| kvs_names_open := γ1; kvs_names_state := names |}.
+  iPoseProof (openR_frac_split γ1 (1/2) (1/2) (to_agree UnInit')) as "HOpen".
+  iEval (rewrite -Qp_half_half) in "H".
+  iEval (rewrite -frac_op') in "H".
+  iDestruct "HOpen" as "[H1 H2]".
+  iDestruct ("H1" with "H") as "[H1' H2']".
+  iSplitR "H1'"; auto.
+  iSplitL "H2'"; auto.
+Qed.
+
+Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_update plugs in new names *)
   iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
   inversion Hcrash; subst.
   monad_inv. inversion H. subst. inversion H1. subst.
@@ -532,31 +603,46 @@ Next Obligation.
     inversion H2. subst. inversion H4. subst.
     (* XXX: monad_inv should handle *)
     iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
+    (*γ1 is new name, plug into new config name *)
     { repeat econstructor => //=. }
-    iExists {| kvs_names_open := γ1; kvs_names_state := log_names_state (log_get_names _) |}.
+    iExists {| kvs_names_open := γ1; kvs_names_state := kvs_names_state (kvs_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/kvs_restart//=.
     iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
-    rewrite /kvs_uninit_auth/kvs_uninit_frag/log_frag/log_auth.
+    * destruct kvsG_state_inG; simpl.
+      unfold gen_heapG_update; simpl.
+      unfold gen_heapG_get_names; simpl.
+      auto.
+    * rewrite /kvs_uninit_auth/kvs_uninit_frag/kvs_frag/kvs_auth.
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
     inversion H2. subst. inversion H4. subst.
     (* XXX: monad_inv should handle *)
     iMod (own_alloc (Cinl (1%Qp, to_agree Closed') : openR)) as (γ1) "H".
     { repeat econstructor => //=. }
-    iExists {| kvs_names_open := γ1; kvs_names_state := log_names_state (log_get_names _) |}.
+    iExists {| kvs_names_open := γ1; kvs_names_state := kvs_names_state (kvs_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/kvs_restart//=.
     iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
-    rewrite /kvs_uninit_auth/kvs_uninit_frag/log_frag/log_auth.
+   * destruct kvsG_state_inG; simpl.
+      unfold gen_heapG_update; simpl.
+      unfold gen_heapG_get_names; simpl.
+      auto.
+  *
+    rewrite /kvs_uninit_auth/kvs_uninit_frag/kvs_frag/kvs_auth.
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
     inversion H2. subst. inversion H4. subst.
     (* XXX: monad_inv should handle *)
     iMod (own_alloc (Cinl (1%Qp, to_agree Closed') : openR)) as (γ1) "H".
     { repeat econstructor => //=. }
-    iExists {| kvs_names_open := γ1; kvs_names_state := log_names_state (log_get_names _) |}.
+    iExists {| kvs_names_open := γ1; kvs_names_state := kvs_names_state (kvs_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/kvs_restart//=.
     iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
-    rewrite /kvs_uninit_auth/kvs_uninit_frag/log_frag/log_auth.
+   * destruct kvsG_state_inG; simpl.
+      unfold gen_heapG_update; simpl.
+      unfold gen_heapG_get_names; simpl.
+      auto.
+   *
+    rewrite /kvs_uninit_auth/kvs_uninit_frag/kvs_frag/kvs_auth.
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
 Qed.
 
@@ -566,7 +652,7 @@ Section spec.
 
 Instance kvs_spec_ext : spec_ext_op := {| spec_ext_op_field := kvs_op |}.
 Instance kvs_spec_ffi_model : spec_ffi_model := {| spec_ffi_model_field := kvs_model |}.
-Instance kvs_spec_ext_semantics : spec_ext_semantics (kvs_spec_ext) (log_spec_ffi_model) :=
+Instance kvs_spec_ext_semantics : spec_ext_semantics (kvs_spec_ext) (kvs_spec_ffi_model) :=
   {| spec_ext_semantics_field := kvs_semantics |}.
 Instance kvs_spec_ffi_interp : spec_ffi_interp kvs_spec_ffi_model :=
   {| spec_ffi_interp_field := kvs_interp |}.
@@ -638,21 +724,20 @@ Proof.
   { solve_ndisj. }
 Qed.
 
-Lemma kvs_closed_init_false vs E j K {HCTX: LanguageCtx K}:
+Lemma kvs_closed_init_false E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_closed_frag -∗
-  kvs_frag vs -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) ={E}=∗
   False.
 Proof.
-  iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hentries Hj".
+  iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
-  iDestruct (kvs_ctx_unify_closed with "[$] [$] [$]") as %Heq; subst.
+  iDestruct (kvs_ctx_unify_closed' with "[$] [$]") as %Heq; subst.
   iMod (ghost_step_init_stuck with "[$] [$] [$]") as "[]".
   { solve_ndisj. }
-  { congruence. }
+  destruct Heq; subst; auto. congruence.
 Qed.
 
 Lemma kvs_opened_init_false l E j K {HCTX: LanguageCtx K}:
@@ -665,7 +750,6 @@ Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
-  simpl.
   iDestruct (kvs_ctx_unify_opened with "[$] [$]") as %Heq; subst.
   iMod (ghost_step_init_stuck with "[$] [$] [$]") as "[]".
   { solve_ndisj. }
@@ -684,11 +768,12 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iEval (simpl) in "Hffi".
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
-  - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)". (* step one thread *)
     { apply head_prim_step. simpl. econstructor.
       * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+        ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
-        ** simpl. rewrite Heq. repeat econstructor.
+        ** simpl. rewrite Heq. repeat econstructor. 
       * repeat econstructor.
     }
     { solve_ndisj. }
@@ -732,18 +817,18 @@ Lemma ghost_step_kvs_init E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_uninit_frag -∗
-  kvs_frag [] -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #())
   ={E}=∗
-  ∃ (l: loc), j ⤇ K (#l, #true)%V ∗ kvs_open l ∗ kvs_frag [].
+  ∃ (l: loc), j ⤇ K (#l)%V ∗ kvs_open l.
 Proof.
-  iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hvals Hj".
+  iIntros (?) "(#Hctx&#Hstate) Hvals Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_uninit with "[$] [$]") as %Heq.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step. simpl. econstructor.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+      ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
       ** simpl. rewrite Heq. repeat econstructor.
     * repeat econstructor.
@@ -751,25 +836,29 @@ Proof.
   { solve_ndisj. }
   simpl. rewrite Heq.
   iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
-  iMod (kvs_uninit_token_open ((fresh_locs (dom _ σ.(heap)))) with "[$] [$]") as "#Hopen".
+  iMod (kvs_uninit_token_open ((fresh_locs (dom (gset loc) σ.(heap)))) with "[$] [$]") as "#Hopen".
   iMod (na_heap_alloc _ σ.(heap) _ (#()) (Reading O) with "Hσ") as "(Hσ&?)".
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { auto. }
   rewrite loc_add_0.
-  iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
-  { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
-  iModIntro. iExists _. iFrame "Hopen". iFrame.
+  iMod (gen_heap_alloc_gen ∅ kvs_init_s with "Hvals_auth") as "Hgh".
+  { apply map_disjoint_empty_r. }
+  { iMod ("Hclo" with "[Hσ H Hrest Hgh]") as "_".
+    - iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen".
+      iDestruct "Hgh" as "[Hgh Hmap]". simpl in *.
+      rewrite right_id; auto.
+    - iModIntro. iExists _. iFrame "Hopen". iFrame.
+  }
 Qed.
 
-Lemma kvs_uninit_open_false vs E j K {HCTX: LanguageCtx K}:
+Lemma kvs_uninit_open_false E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_uninit_frag -∗
-  kvs_frag vs -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) ={E}=∗
   False.
 Proof.
-  iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hentries Hj".
+  iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_uninit with "[$] [$]") as %Heq; subst.
@@ -813,6 +902,7 @@ Proof.
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
     { apply head_prim_step. simpl. econstructor.
       * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+        ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
         ** simpl. rewrite Heq. repeat econstructor.
       * repeat econstructor.
@@ -826,22 +916,23 @@ Proof.
     { congruence. }
 Qed.
 
-Lemma ghost_step_kvs_open E j K {HCTX: LanguageCtx K} vs:
+Lemma ghost_step_kvs_open E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_closed_frag -∗
-  kvs_frag vs -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #())
   ={E}=∗
-  ∃ (l: loc), j ⤇ K #l%V ∗ kvs_open l ∗ kvs_frag vs.
+  ∃ (l: loc), j ⤇ K #l%V ∗ kvs_open l.
 Proof.
-  iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hvals Hj".
+  iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
-  iDestruct (kvs_ctx_unify_closed with "[$] [$] [$]") as %Heq.
+  iDestruct (kvs_ctx_unify_closed' with "[$] [$]") as %Heq.
+  destruct Heq as [s Heq].
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step. simpl. econstructor.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+      ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
       ** simpl. rewrite Heq. repeat econstructor.
     * repeat econstructor.
@@ -859,16 +950,16 @@ Proof.
   iModIntro. iExists _. iFrame "Hopen". iFrame.
 Qed.
 
-Lemma ghost_step_kvs_reset E j K {HCTX: LanguageCtx K} l vs:
+(* XXX TODO how to return block?
+Lemma ghost_step_kvs_get E j K {HCTX: LanguageCtx K} l k v :
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_open l -∗
-  kvs_frag vs -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) ResetOp #l)
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) GetOp #l #(LitInt k))
   ={E}=∗
-  j ⤇ K #()%V ∗kvs_frag [].
+  j ⤇ K #(LitLoc l)%V ∗ l ↦ v ∗ kvs_frag k v.
 Proof.
-  iIntros (?) "(#Hctx&#Hstate) #Hopen Hvals Hj".
+  iIntros (?) "(#Hctx&#Hstate) #Hopen Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_opened with "[$] [$]") as %Heq.
@@ -882,6 +973,6 @@ Proof.
   iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
   { iNext. iExists _. iFrame "H". iFrame. iFrame "Hopen". }
   iModIntro. iFrame.
-Qed.
-End
-*)
+Qed.*)
+
+End spec.
