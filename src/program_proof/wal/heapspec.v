@@ -17,15 +17,16 @@ Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
 Context (N: namespace).
 
+Definition disk_at_pos (pos: nat) (s:log_state.t): disk :=
+  apply_upds (take pos (txn_upds s.(log_state.txns))) s.(log_state.d).
+
 Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iProp Σ :=
   ⌜ match b with
     | HB installed_block blocks_since_install =>
-      ∃ (pos : u64),
-        int.val pos ≤ int.val ls.(log_state.installed_to) ∧
-        disk_at_pos (int.nat pos) ls !! int.val a = Some installed_block ∧
-        updates_since pos a ls ⊆ blocks_since_install ∧
-        latest_update installed_block blocks_since_install =
-          latest_update installed_block (updates_since pos a ls)
+      ∃ (pos : nat),
+        pos ≤ ls.(log_state.installed_lb) ∧
+        disk_at_pos pos ls !! int.val a = Some installed_block ∧
+        updates_since pos a ls = blocks_since_install
     end ⌝.
 
 Lemma wal_update_durable (gh : gmap u64 heap_block) (σ : log_state.t) pos :
