@@ -156,6 +156,103 @@ Section map2.
     iIntros (? ? ?) "H".
     iDestruct (big_sepM2_lookup_1 with "H") as (x1) "[% _]"; eauto; congruence.
   Qed.
+
+  Lemma big_sepM2_sepM_1
+      Φ (m1 : gmap K A) (m2 : gmap K B)
+      (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
+    ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+      ( [∗ map] k↦y1 ∈ m1, ∃ y2, ⌜ m2 !! k = Some y2 ⌝ ∗ Φ k y1 y2 ).
+  Proof.
+    iIntros "H".
+    rewrite <- (list_to_map_to_list m1).
+    pose proof (NoDup_fst_map_to_list m1); revert H1.
+    generalize (map_to_list m1); intros l H1.
+    iInduction l as [|] "Hi" forall (m2).
+    - iDestruct (big_sepM2_empty_r with "H") as %->.
+      simpl.
+      iDestruct (big_sepM2_empty with "H") as "H".
+      iApply big_sepM_empty; iFrame.
+    - simpl.
+      iDestruct (big_sepM2_lookup_1_some with "H") as %H2.
+      { apply lookup_insert. }
+      destruct H2.
+      rewrite <- insert_delete at 1.
+      replace m2 with (<[a.1 := x]> m2).
+      2: {
+        rewrite insert_id //.
+      }
+      iDestruct (big_sepM2_insert_delete with "H") as "[Ha H]".
+      inversion H1; clear H1; subst.
+      iApply big_sepM_insert.
+      { apply not_elem_of_list_to_map_1; eauto. }
+      iSplitL "Ha".
+      { iExists _. iFrame. rewrite insert_id; done. }
+      rewrite delete_idemp.
+      iSpecialize ("Hi" $! H6).
+      rewrite delete_notin.
+      2: { apply not_elem_of_list_to_map_1; eauto. }
+      iDestruct ("Hi" with "H") as "H".
+      iApply (big_sepM_mono with "H").
+      iIntros (k x0 Hk) "H".
+      iDestruct "H" as (y2) "[% H]".
+      iExists _; iFrame.
+      iPureIntro.
+      assert (a.1 ≠ k).
+      { intro He; subst.
+        rewrite lookup_delete in H1; congruence. }
+      rewrite -> lookup_insert_ne by eauto.
+      rewrite -> lookup_delete_ne in H1 by eauto.
+      eauto.
+  Qed.
+
+  Lemma big_sepM2_sepM_2
+      Φ (m1 : gmap K A) (m2 : gmap K B)
+      (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
+    ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
+      ( [∗ map] k↦y2 ∈ m2, ∃ y1, ⌜ m1 !! k = Some y1 ⌝ ∗ Φ k y1 y2 ).
+  Proof.
+    iIntros "H".
+    rewrite <- (list_to_map_to_list m2).
+    pose proof (NoDup_fst_map_to_list m2); revert H1.
+    generalize (map_to_list m2); intros l H1.
+    iInduction l as [|] "Hi" forall (m1).
+    - iDestruct (big_sepM2_empty_l with "H") as %->.
+      simpl.
+      iDestruct (big_sepM2_empty with "H") as "H".
+      iApply big_sepM_empty; iFrame.
+    - simpl.
+      iDestruct (big_sepM2_lookup_2_some with "H") as %H2.
+      { apply lookup_insert. }
+      destruct H2.
+      rewrite <- insert_delete at 1.
+      replace m1 with (<[a.1 := x]> m1).
+      2: {
+        rewrite insert_id //.
+      }
+      iDestruct (big_sepM2_insert_delete with "H") as "[Ha H]".
+      inversion H1; clear H1; subst.
+      iApply big_sepM_insert.
+      { apply not_elem_of_list_to_map_1; eauto. }
+      iSplitL "Ha".
+      { iExists _. iFrame. rewrite insert_id; done. }
+      rewrite delete_idemp.
+      iSpecialize ("Hi" $! H6).
+      rewrite (delete_notin (list_to_map l)).
+      2: { apply not_elem_of_list_to_map_1; eauto. }
+      iDestruct ("Hi" with "H") as "H".
+      iApply (big_sepM_mono with "H").
+      iIntros (k x0 Hk) "H".
+      iDestruct "H" as (y1) "[% H]".
+      iExists _; iFrame.
+      iPureIntro.
+      assert (a.1 ≠ k).
+      { intro He; subst.
+        rewrite lookup_delete in H1; congruence. }
+      rewrite -> lookup_insert_ne by eauto.
+      rewrite -> lookup_delete_ne in H1 by eauto.
+      eauto.
+  Qed.
+
 End map2.
 
 Section list2.
