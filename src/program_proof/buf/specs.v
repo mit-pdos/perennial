@@ -35,15 +35,18 @@ Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
     ⌜ #bufptr ≠ #null ⌝ ∗
     is_buf_data data o.(bufData) a.
 
+Definition is_bufptr (bufptrval : val) (a : addr) (o : buf) : iProp Σ :=
+  ∃ (bufloc : loc),
+    ⌜ bufptrval = #bufloc ⌝ ∗
+    is_buf bufloc a o.
+
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 val) (am : gmap addr val),
     bufmap ↦[BufMap.S :: "addrs"] #mptr ∗
     is_map mptr (m, #null) ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
-      ∃ (bufloc : loc),
-        ⌜ bufptr = #bufloc ⌝ ∗
-        is_buf bufloc a buf.
+      is_bufptr bufptr a buf.
 
 Theorem is_buf_not_null bufptr a o :
   is_buf bufptr a o -∗ ⌜ #bufptr ≠ #null ⌝.
@@ -51,6 +54,61 @@ Proof.
   iIntros "Hbuf".
   iDestruct "Hbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & % & % & Hbufdata)".
   eauto.
+Qed.
+
+Theorem wp_buf_loadField_sz bufptr a b :
+  {{{
+    is_buf bufptr a b
+  }}}
+    struct.loadF buf.Buf.S "Sz" #bufptr
+  {{{
+    RET #(bufSz b.(bufKind));
+    is_buf bufptr a b
+  }}}.
+Proof using.
+  iIntros (Φ) "Hisbuf HΦ".
+  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  wp_loadField.
+  iApply "HΦ".
+  iExists _, _. iFrame. done.
+Qed.
+
+Theorem wp_buf_loadField_dirty bufptr a b :
+  {{{
+    is_buf bufptr a b
+  }}}
+    struct.loadF buf.Buf.S "dirty" #bufptr
+  {{{
+    RET #(b.(bufDirty));
+    is_buf bufptr a b
+  }}}.
+Proof using.
+  iIntros (Φ) "Hisbuf HΦ".
+  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  wp_loadField.
+  iApply "HΦ".
+  iExists _, _. iFrame. done.
+Qed.
+
+Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : @bufDataT k') :
+  {{{
+    is_buf bufptr a b ∗
+    is_buf_data vslice v' a ∗
+    ⌜ k' = b.(bufKind) ⌝
+  }}}
+    struct.storeF buf.Buf.S "Data" #bufptr (slice_val vslice)
+  {{{
+    RET #();
+    is_buf bufptr a (Build_buf k' v' b.(bufDirty))
+  }}}.
+Proof using.
+  iIntros (Φ) "(Hisbuf & Hisbufdata & %) HΦ".
+  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  wp_apply (wp_storeField with "Hdata"); eauto.
+  { eapply slice_val_ty. } (* XXX why does [val_ty] fail? *)
+  iIntros "Hdata".
+  iApply "HΦ".
+  iExists _, _. iFrame. subst. done.
 Qed.
 
 Theorem wp_MkBufMap :
@@ -238,7 +296,25 @@ Opaque struct.t.
   wp_apply wp_ref_of_zero; eauto.
   iIntros (bufs) "Hbufs".
   wp_loadField.
-  wp_apply wp_MapIter.
+  iDestruct (big_sepM2_sepM_1 with "Hmap") as "Hmap".
+  iDestruct (big_sepM_flatid_addr_map_1 with "Hmap") as "Hmap"; eauto.
+  wp_apply (wp_MapIter with "Hismap [$] Hmap").
+  {
+    iIntros (k v Φi).
+    iModIntro.
+    iIntros "[Hi Hp] HΦ".
+    iDestruct "Hp" as (a) "[-> Hp]".
+    iDestruct "Hp" as (b) "[% Hp]".
+    iDestruct "Hp" as (bl) "[-> Hp]".
+    wp_pures.
+    wp_apply (wp_buf_loadField_dirty with "Hp"); iIntros "Hp".
+    admit.
+  }
+
+  iIntros "(Hmap & Hi & Hq)".
+  wp_pures.
+  wp_load.
+  admit.
 Transparent struct.t.
 Admitted.
 
@@ -570,44 +646,6 @@ Proof.
     (* XXX stack overflow........ *)
     admit.
 Admitted.
-
-Theorem wp_buf_loadField_sz bufptr a b :
-  {{{
-    is_buf bufptr a b
-  }}}
-    struct.loadF buf.Buf.S "Sz" #bufptr
-  {{{
-    RET #(bufSz b.(bufKind));
-    is_buf bufptr a b
-  }}}.
-Proof using.
-  iIntros (Φ) "Hisbuf HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
-  wp_loadField.
-  iApply "HΦ".
-  iExists _, _. iFrame. done.
-Qed.
-
-Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : @bufDataT k') :
-  {{{
-    is_buf bufptr a b ∗
-    is_buf_data vslice v' a ∗
-    ⌜ k' = b.(bufKind) ⌝
-  }}}
-    struct.storeF buf.Buf.S "Data" #bufptr (slice_val vslice)
-  {{{
-    RET #();
-    is_buf bufptr a (Build_buf k' v' b.(bufDirty))
-  }}}.
-Proof using.
-  iIntros (Φ) "(Hisbuf & Hisbufdata & %) HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
-  wp_apply (wp_storeField with "Hdata"); eauto.
-  { eapply slice_val_ty. } (* XXX why does [val_ty] fail? *)
-  iIntros "Hdata".
-  iApply "HΦ".
-  iExists _, _. iFrame. subst. done.
-Qed.
 
 Theorem wp_Buf__SetDirty bufptr a b :
   {{{
