@@ -2,7 +2,7 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth excl.
 From iris.base_logic.lib Require Import proph_map.
 From iris.program_logic Require Export weakestpre adequacy.
-From Perennial.algebra Require Import proph_map.
+From Perennial.algebra Require Import proph_map frac_count.
 From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert language_ctx.
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
@@ -100,12 +100,14 @@ Inductive loc_status :=
 | loc_writing.
 Canonical Structure loc_statusO := leibnizO loc_status.
 
-Definition loc_inv (ls: loc) (l: loc) (vTy: val_semTy) :=
-  (∃ (stat: loc_status),
-    match stat with
-    | loc_readable => ∃ q vs v, vTy vs v ∗ ls s↦{q} vs ∗ l ↦{q} v
-    | loc_writing => ∃ vs, na_heap_mapsto_st WSt ls 1 vs
-   end)%I.
+Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
+   (∃ vs v, (fc_auth γ None ∗ ls s↦ vs ∗ l ↦ v ∗ vTy vs v) ∨
+            (∃ q q' (HPLUS: (q + q' = 1)%Qp) (n: positive),
+                fc_auth γ (Some (q, n)) ∗
+                na_heap_mapsto_st (RSt (Pos.to_nat n)) ls q vs ∗
+                l ↦{q} v ∗ vTy vs v) ∗
+            (fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗
+             na_heap_mapsto_st WSt ls (1/2)%Qp vs))%I.
 
 Definition locN := nroot.@"loc".
 
@@ -131,7 +133,7 @@ Proof.
 Qed.
 
 Definition is_loc ls l vTy :=
-  (inv locN (loc_inv ls l vTy) ∗ loc_paired ls l)%I.
+  ((∃ γ, inv locN (loc_inv γ ls l vTy)) ∗ loc_paired ls l)%I.
 
 Lemma is_loc_eq_iff ls l ls' l' vTy vTy':
   is_loc ls l vTy -∗
@@ -643,6 +645,11 @@ Proof using spec_trans.
     iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
     iPureIntro. split; first auto. do 2 f_equal.
     by apply bool_decide_iff.
+  (* bin op *)
+  - admit.
+  - admit.
+  - admit.
+  (* data *)
   - admit.
   - admit.
   - admit.
@@ -652,16 +659,22 @@ Proof using spec_trans.
   - admit.
   - admit.
   - admit.
+  (* pointers *)
   - admit.
   - admit.
   - admit.
   - admit.
   - admit.
   - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) l').
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [Primitive1Ctx _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    admit.
   - admit.
   - admit.
   - subst.

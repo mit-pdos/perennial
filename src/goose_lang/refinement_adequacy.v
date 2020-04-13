@@ -21,10 +21,11 @@ Class refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi sp
                                        (@spec_ffi_interp_field _ spec_ffi)
                                        _ _ (spec_ffi_interp_adequacy_field) Σ;
   refinement_heap_preG_trace :> trace_preG Σ;
+  refinement_heap_preG_frac :> frac_countG Σ;
 }.
 
 Existing Instances spec_ext_op_field spec_ext_semantics_field spec_ffi_model_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
-Definition refinement_heapΣ `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ].
+Definition refinement_heapΣ `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ; frac_countΣ].
 Instance subG_refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} {Σ} :
   subG refinement_heapΣ Σ → refinement_heapPreG Σ.
 Proof. solve_inG_deep. Qed.
@@ -65,7 +66,7 @@ Proof using Hrpre Hcpre.
   iMod (na_heap_init tls σ.(heap)) as (Hrheap) "Hrh".
   iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world)) as (HffiG) "(Hrw&Hrs)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
-  set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG) HtraceG Hcfg Hrheap)).
+  set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG) HtraceG Hcfg Hrheap) _).
   iExists HrhG.
   rewrite /spec_ctx'. iFrame.
   iMod (inv_alloc (spec_stateN) _
@@ -113,7 +114,7 @@ Proof using Hrpre Hcpre.
     as (ffi_names) "(Hrw&Hcrash_rel&Hrs)".
   { inversion Hcrash. subst. eauto. }
   iMod (trace_init σ_post_crash.(trace) σ_post_crash.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
-  set (HrhG := (refinement_HeapG _ (ffi_update Σ (refinement_spec_ffiG) ffi_names) HtraceG Hcfg Hrheap)).
+  set (HrhG := (refinement_HeapG _ (ffi_update Σ (refinement_spec_ffiG) ffi_names) HtraceG Hcfg Hrheap) _).
   iExists HrhG.
   rewrite /spec_ctx'. iFrame.
   iMod (inv_alloc (spec_stateN) _

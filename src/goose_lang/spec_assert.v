@@ -3,6 +3,7 @@ From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
+From Perennial.algebra Require Export frac_count.
 From Perennial.Helpers Require Export Transitions.
 From Perennial.program_logic Require Export spec_assert.
 From Perennial.goose_lang Require Export lang.
@@ -40,6 +41,7 @@ Class refinement_heapG Σ := refinement_HeapG {
   refinement_traceG :> traceG Σ;
   refinement_cfgG :> @cfgG spec_lang Σ;
   refinement_na_heapG :> na_heapG loc (@val spec_ext_op_field) Σ;
+  refinement_frac_countG :> frac_countG Σ;
   (* TODO: do we need prophecies at the spec level? *)
   (*
   refinement_proph_mapG :> proph_mapG proph_id (val * val) Σ;
