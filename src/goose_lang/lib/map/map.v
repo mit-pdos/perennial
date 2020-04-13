@@ -116,7 +116,7 @@ Qed.
 Lemma map_val_split mv m :
   map_val mv = Some m ->
   {∃ def, mv = MapNilV def ∧ m = (∅, def)} +
-  {∃ k v mv' m', mv = MapConsV k v mv' ∧ map_val mv' = Some m' ∧ m = (<[k:=v]> (fst m'), snd m') ∧ fst m' !! k = None}.
+  {∃ k v mv' m', mv = MapConsV k v mv' ∧ map_val mv' = Some m' ∧ m = (<[k:=v]> (fst m'), snd m')}.
 Proof.
   intros H.
   destruct mv; inversion H; subst; [ left | right ].
