@@ -12,30 +12,45 @@ Module update.
   Global Instance _eta: Settable _ := settable! mk <addr; b>.
 End update.
 
+Definition LogSz: Z := 511.
+
 Definition disk := gmap Z Block.
+
+Definition txn_upds (txns: list (u64 * list update.t)) : list update.t :=
+  concat (snd <$> txns).
 
 Module log_state.
   Record t :=
     mk {
-        disk: disk;
-        updates: list update.t;
-        (* positions that are a transaction boundary *)
-        trans: gmap u64 bool;
-        (* installed_to promises what will be read after a cache miss *)
-        installed_to: u64;
-        (* durable_to promises what will be on-disk after a crash *)
-        durable_to: u64;
-        (* next_durable_to determines which in-memory updates are
-         * subject to absorption. *)
-        next_durable_to: u64;
+        d: disk;
+        txns: list (u64 * list update.t);
+        (* installed_lb promises what will be read after a cache miss *)
+        installed_lb: nat;
+        (* durable_lb promises what will be on-disk after a crash *)
+        durable_lb: nat;
       }.
-  Global Instance _eta: Settable _ := settable! mk <disk; updates; trans; installed_to; durable_to; next_durable_to>.
+  Global Instance _eta: Settable _ := settable! mk <d; txns; installed_lb; durable_lb>.
 
-  Definition last_pos (s: t): u64 := (length s.(updates)).
+  Definition updates σ : list update.t := txn_upds σ.(txns).
 
 End log_state.
 
+Definition addrs_wf (updates: list update.t) (d: disk) :=
+  forall i u, updates !! i = Some u ->
+              2 + LogSz ≤ int.val u.(update.addr) ∧
+              ∃ (b: Block), d !! (int.val u.(update.addr)) = Some b.
 
+Definition wal_wf (s : log_state.t) :=
+  addrs_wf (log_state.updates s) s.(log_state.d) ∧
+  (* monotonicity of txnids  *)
+  (forall (pos1 pos2: u64) (txn_id1 txn_id2: nat),
+      txn_id1 < txn_id2 ->
+      fst <$> s.(log_state.txns) !! txn_id1 = Some pos1 ->
+      fst <$> s.(log_state.txns) !! txn_id2 = Some pos2 ->
+      (* can get the same handle for two transactions due to absorption or
+        empty transactions *)
+      int.val pos1 ≤ int.val pos2) ∧
+  s.(log_state.installed_lb) ≤ s.(log_state.durable_lb) ≤ length s.(log_state.txns).
 
 
 Section heap.

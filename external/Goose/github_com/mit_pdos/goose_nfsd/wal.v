@@ -201,19 +201,19 @@ Definition Walog__LogSz: val :=
 (* installer.go *)
 
 Definition WalogState__cutMemLog: val :=
-  rec: "WalogState__cutMemLog" "ls" "installEnd" :=
-    ForSlice (struct.t Update.S) "i" "blk" (SliceTake (struct.loadF WalogState.S "memLog" "ls") ("installEnd" - struct.loadF WalogState.S "memStart" "ls"))
-      (let: "pos" := struct.loadF WalogState.S "memStart" "ls" + "i" in
+  rec: "WalogState__cutMemLog" "st" "installEnd" :=
+    ForSlice (struct.t Update.S) "i" "blk" (SliceTake (struct.loadF WalogState.S "memLog" "st") ("installEnd" - struct.loadF WalogState.S "memStart" "st"))
+      (let: "pos" := struct.loadF WalogState.S "memStart" "st" + "i" in
       let: "blkno" := struct.get Update.S "Addr" "blk" in
-      let: ("oldPos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" "ls") "blkno" in
+      let: ("oldPos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" "st") "blkno" in
       (if: "ok" && "oldPos" ≤ "pos"
       then
         util.DPrintf #5 (#(str"memLogMap: del %d %d
         ")) #();;
-        MapDelete (struct.loadF WalogState.S "memLogMap" "ls") "blkno"
+        MapDelete (struct.loadF WalogState.S "memLogMap" "st") "blkno"
       else #()));;
-    struct.storeF WalogState.S "memLog" "ls" (SliceSkip (struct.t Update.S) (struct.loadF WalogState.S "memLog" "ls") ("installEnd" - struct.loadF WalogState.S "memStart" "ls"));;
-    struct.storeF WalogState.S "memStart" "ls" "installEnd".
+    struct.storeF WalogState.S "memLog" "st" (SliceSkip (struct.t Update.S) (struct.loadF WalogState.S "memLog" "st") ("installEnd" - struct.loadF WalogState.S "memStart" "st"));;
+    struct.storeF WalogState.S "memStart" "st" "installEnd".
 
 (* installBlocks installs the updates in bufs to the data region
 
@@ -508,8 +508,9 @@ Definition Walog__Flush: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: "txn" ≤ struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l")
       then Break
-      else lock.condWait (struct.loadF Walog.S "condLogger" "l"));;
-      Continue);;
+      else
+        lock.condWait (struct.loadF Walog.S "condLogger" "l");;
+        Continue));;
     lock.release (struct.loadF Walog.S "memLock" "l").
 
 (* Shutdown logger and installer *)
