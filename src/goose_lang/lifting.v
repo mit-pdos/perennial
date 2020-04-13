@@ -835,6 +835,42 @@ Proof.
   iApply ("Hl_rest" with "Hl").
 Qed.
 
+Lemma wp_start_read s E l q v :
+  {{{ ▷ l ↦{q} v }}} StartRead (Val $ LitV (LitLoc l)) @ s; E
+  {{{ RET v; na_heap_mapsto_st (RSt 1) l q v ∗ (∀ v', na_heap_mapsto l q v' -∗ l ↦{q} v') }}}.
+Proof.
+  iIntros (Φ) ">Hl HΦ".
+  iApply wp_lift_atomic_head_step_no_fork; auto.
+  iIntros (σ1 κ κs n) "[Hσ Hκs]".
+  iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iMod (na_heap_read_prepare _ (fun m => match m with | Reading n => Reading (S n) | _ => m end) with "Hσ Hl") as (lk1 n1 (Hlookup&Hlock)) "[Hσ Hl]".
+  1: {
+    intros lk lkn Hlk. destruct lk; inversion Hlk; subst.
+    rewrite /= //.
+  }
+  destruct lk1; inversion Hlock; subst. iModIntro.
+  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iModIntro. iSplit=>//. iFrame. iApply "HΦ"; by iFrame.
+Qed.
+
+Lemma wp_finish_read s E l q v :
+  {{{ ▷ na_heap_mapsto_st (RSt 1) l q v ∗ (∀ v', na_heap_mapsto l q v' -∗ l ↦{q} v') }}}
+    FinishRead (Val $ LitV (LitLoc l)) @ s; E
+  {{{ RET #(); l ↦{q} v }}}.
+Proof.
+  iIntros (Φ) "[>Hl Hl_rest] HΦ".
+  iApply wp_lift_atomic_head_step_no_fork; auto.
+  iIntros (σ1 κ κs n) "[Hσ Hκs]".
+  iMod (na_heap_read_finish_vs _ (fun m => match m with | Reading (S n) => Reading n | _ => m end) with "Hl Hσ") as (lk1 n1 (Hlookup&Hlock)) "[Hσ Hl]".
+  1: {
+    intros lk lkn Hlk. destruct lk; inversion Hlk; subst.
+    rewrite /= //.
+  }
+  destruct lk1; inversion Hlock; subst. iModIntro.
+  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iModIntro. iSplit=>//. iFrame. iApply "HΦ". iApply "Hl_rest". iApply "Hl".
+Qed.
+
 Lemma na_heap_valid_map (σ: gmap _ _) l q vs :
   na_heap_ctx tls σ -∗
               ([∗ map] l↦v ∈ heap_array l vs, l ↦{q} v) -∗

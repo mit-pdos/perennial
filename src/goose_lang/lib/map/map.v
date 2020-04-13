@@ -116,7 +116,7 @@ Qed.
 Lemma map_val_split mv m :
   map_val mv = Some m ->
   {∃ def, mv = MapNilV def ∧ m = (∅, def)} +
-  {∃ k v mv' m', mv = MapConsV k v mv' ∧ map_val mv' = Some m' ∧ m = (<[k:=v]> (fst m'), snd m')}.
+  {∃ k v mv' m', mv = MapConsV k v mv' ∧ map_val mv' = Some m' ∧ m = (<[k:=v]> (fst m'), snd m') ∧ fst m' !! k = None}.
 Proof.
   intros H.
   destruct mv; inversion H; subst; [ left | right ].
@@ -280,7 +280,49 @@ Proof.
   iIntros (Φ) "!> [Hm [Hi Hp]] HΦ".
   iDestruct "Hm" as (mv) "[% Hm]".
   wp_call.
-  (* XXX this seems to require extending na_heap with non-atomic reads... *)
+  wp_apply (wp_start_read with "Hm").
+  iIntros "[Hm0 Hm1]".
+  wp_let.
+  destruct m; simpl in *.
+  wp_pure (Rec _ _ _).
+  match goal with
+  | |- context[RecV (BNamed "mapIter") _ ?body] => set (loop:=body)
+  end.
+  apply map_val_split in H as HI.
+  revert HI.
+  generalize mv at 1 2 4; intro mvI.
+  generalize g at 1 2 3 5; intro gI.
+  intro HI.
+  iLöb as "IH" forall (mvI gI HI).
+  wp_pures.
+  destruct HI as [[d HI]|[k [v0 [mv' [m' HI]]]]]; subst.
+  - intuition subst.
+    inversion H1; clear H1; subst.
+    wp_pures.
+    wp_apply (wp_finish_read with "[$Hm0 $Hm1]").
+    iIntros "Hm".
+    iApply "HΦ"; iFrame.
+    iSplitR "Hp"; iFrame.
+    + iExists _. iFrame. done.
+    + iApply big_sepM_empty. done.
+  - intuition subst.
+    inversion H3; clear H3; subst.
+    wp_pures.
+    iDestruct (big_sepM_insert with "Hp") as "[Hpk Hp]".
+    { admit. }
+    wp_apply ("Hind" with "[$Hi $Hpk]").
+    iIntros "[Hi Hq]".
+    wp_pure (Rec _ _ _).
+    wp_lam.
+    iSpecialize ("IH" $! mv' _ _ with "Hi Hp [HΦ Hq] Hm0 Hm1").
+    { iIntros "(Hmref & Hi & Hqs)".
+      iApply "HΦ"; iFrame.
+      iApply big_sepM_insert; last iFrame.
+      admit.
+    }
+    iApply "IH".
+Unshelve.
+  apply map_val_split in H2; destruct m'; eauto.
 Admitted.
 
 End heap.
