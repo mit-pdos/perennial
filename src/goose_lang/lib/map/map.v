@@ -267,17 +267,18 @@ Proof.
   iApply "HΦ". iExists _. iFrame. eauto.
 Qed.
 
-Definition wp_MapIter stk E mref (m: gmap u64 val * val) (I: iProp Σ) (P Q: u64 -> val -> iProp Σ) (body: val):
+Definition wp_MapIter stk E mref (m: gmap u64 val * val) (I: iProp Σ) (P Q: u64 -> val -> iProp Σ) (body: val) Φ:
+  is_map mref m -∗
+  I -∗
+  ([∗ map] k ↦ v ∈ fst m, P k v) -∗
   (∀ (k: u64) (v: val),
       {{{ I ∗ P k v }}}
         body #k v @ stk; E
       {{{ RET #(); I ∗ Q k v }}}) -∗
-  {{{ is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ fst m, P k v }}}
-    MapIter #mref body @ stk; E
-  {{{ RET #(); is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ fst m, Q k v }}}.
+  ((is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ fst m, Q k v) -∗ Φ #()) -∗
+  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof.
-  iIntros "#Hind".
-  iIntros (Φ) "!> [Hm [Hi Hp]] HΦ".
+  iIntros "Hm Hi Hp #Hind HΦ".
   iDestruct "Hm" as (mv) "[% Hm]".
   wp_call.
   wp_apply (wp_start_read with "Hm").
@@ -315,7 +316,7 @@ Proof.
     wp_lam.
     wp_apply (wp_MapDelete'); eauto.
     iIntros (mv'') "%".
-    iSpecialize ("IH" $! mv'' _ _ with "Hi Hp [HΦ Hq] Hm0 Hm1").
+    iSpecialize ("IH" $! mv'' _ _ with "Hi Hp [Hq HΦ] Hm0 Hm1").
     { iIntros "(Hmref & Hi & Hqs)".
       iApply "HΦ"; iFrame.
       iApply big_sepM_insert_delete; iFrame.
