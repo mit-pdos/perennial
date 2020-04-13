@@ -40,7 +40,7 @@ Class refinement_heapG Σ := refinement_HeapG {
   refinement_spec_ffiG : ffiG Σ;
   refinement_traceG :> traceG Σ;
   refinement_cfgG :> @cfgG spec_lang Σ;
-  refinement_na_heapG :> na_heapG loc (@val spec_ext_op_field) Σ;
+  refinement_na_heapG :> na_heapG loc Z (@val spec_ext_op_field) Σ;
   refinement_frac_countG :> frac_countG Σ;
   (* TODO: do we need prophecies at the spec level? *)
   (*

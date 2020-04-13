@@ -64,11 +64,8 @@ Proof.
       simpl.
       assert (l +ₗ 0%nat = l) as plus_zero.
       {
-        unfold loc_add.
-        rewrite Zplus_0_r.
-        destruct l.
-        simpl.
-        reflexivity.
+        replace (Z.of_nat 0%nat) with 0%Z by auto.
+        apply loc_add_0.
       }
       rewrite plus_zero heap_at_l; by exact H1.
     }
@@ -76,11 +73,9 @@ Proof.
       intros.
       assert (l +ₗ FS i = (l +ₗ 1) +ₗ i) as l_plus_one.
       {
-        unfold loc_add.
-        destruct l.
         simpl.
-        replace (loc_car + S i) with (loc_car + 1 + i); [reflexivity|].
-        lia.
+        replace (Z.of_nat (S i)) with (1 + i) by lia.
+        rewrite loc_add_assoc //=.
       }
       rewrite l_plus_one.
       pose proof (IHn σ (l +ₗ 1) vtl srv_ind i).
@@ -153,8 +148,7 @@ Proof.
   destruct (heap σ !! (l +ₗ nat_to_fin fin_i)) as [nav|] eqn:heap_at_fin_i; [| contradiction].
   assert ((l +ₗ i) = (l +ₗ nat_to_fin fin_i)).
   {
-    unfold loc_add.
-    replace (loc_car l + (nat_to_fin fin_i)) with (loc_car l + i); [reflexivity|].
+    replace (Z.of_nat (nat_to_fin fin_i)) with i; auto.
     pose proof (fin_to_nat_to_fin _ _ fin_i).
     rewrite H2.
     lia.

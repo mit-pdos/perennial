@@ -772,6 +772,7 @@ Proof.
       * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
         ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+        ** econstructor.
         ** simpl. rewrite Heq. repeat econstructor. 
       * repeat econstructor.
     }
@@ -829,6 +830,7 @@ Proof.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+      ** econstructor.
       ** simpl. rewrite Heq. repeat econstructor.
     * repeat econstructor.
   }
@@ -836,10 +838,11 @@ Proof.
   simpl. rewrite Heq.
   iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
   iMod (kvs_uninit_token_open ((fresh_locs (dom (gset loc) σ.(heap)))) with "[$] [$]") as "#Hopen".
-  iMod (na_heap_alloc _ σ.(heap) _ (#()) (Reading O) with "Hσ") as "(Hσ&?)".
+  iMod (na_heap_alloc _ σ.(heap) (fresh_locs (dom _ σ.(heap))) (#()) (Reading O) with "Hσ") as "(Hσ&?)".
+  { rewrite //=. }
+  { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { auto. }
-  rewrite loc_add_0.
   iMod (gen_heap_alloc_gen ∅ kvs_init_s with "Hvals_auth") as "Hgh".
   { apply map_disjoint_empty_r. }
   { iMod ("Hclo" with "[Hσ H Hrest Hgh]") as "_".
@@ -903,6 +906,7 @@ Proof.
       * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
         ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+        ** econstructor.
         ** simpl. rewrite Heq. repeat econstructor.
       * repeat econstructor.
     }
@@ -933,6 +937,7 @@ Proof.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+      ** econstructor.
       ** simpl. rewrite Heq. repeat econstructor.
     * repeat econstructor.
   }
@@ -940,10 +945,11 @@ Proof.
   simpl. rewrite Heq.
   iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
   iMod (kvs_closed_token_open ((fresh_locs (dom _ σ.(heap)))) with "[$] [$]") as "#Hopen".
-  iMod (na_heap_alloc _ σ.(heap) _ (#()) (Reading O) with "Hσ") as "(Hσ&?)".
+  iMod (na_heap_alloc _ σ.(heap) (fresh_locs (dom _ σ.(heap))) (#()) (Reading O) with "Hσ") as "(Hσ&?)".
+  { rewrite //=. }
+  { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { auto. }
-  rewrite loc_add_0.
   iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
   { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
   iModIntro. iExists _. iFrame "Hopen". iFrame.

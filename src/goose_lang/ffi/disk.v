@@ -252,7 +252,7 @@ lemmas. *)
 
   Lemma alloc_block_loc_not_null:
     ∀ (b: Block) σ1 l,
-      isFreshTo 4096 σ1 l
+      isFresh σ1 l
       → ∀ l0 (x : val),
         heap_array l (Block_to_vals b) !! l0 = Some x
         → l0 ≠ null.
@@ -261,9 +261,6 @@ lemmas. *)
     apply heap_array_lookup in Heq.
     destruct Heq as [l' (?&->&Heq)].
     apply H; eauto.
-    apply lookup_lt_Some in Heq.
-    rewrite length_Block_to_vals /block_bytes in Heq.
-    lia.
   Qed.
 
   Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
@@ -292,21 +289,25 @@ lemmas. *)
     monad_inv.
     rewrite /= in H0.
     monad_inv.
-    iMod (na_heap.na_heap_alloc_gen tls _ (fmap Free $ heap_array _ (Block_to_vals b)) with "Hσ")
-      as "(Hσ & Hl & Hlm)".
-    { rewrite heap_array_fmap. apply heap_array_map_disjoint.
-      rewrite map_length length_Block_to_vals; eauto.
-      apply H1. }
-    { intros ??. rewrite lookup_fmap.
-      destruct (heap_array _ _ !! _); inversion 1; subst; eauto. }
+    iMod (na_heap_alloc_list tls _ l (Block_to_vals b) (Reading O) with "Hσ")
+      as "(Hσ & Hblock & Hl)".
+    { rewrite length_Block_to_vals. rewrite /block_bytes. lia. }
+    { destruct H1 as (?&?); eauto. }
+    { destruct H1 as (H'&?); eauto. eapply H'. }
+    { destruct H1 as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
+        by rewrite (loc_add_0) in Hfresh.
+    }
+    { eauto. }
     iModIntro; iSplit; first done.
-    rewrite big_sepM_fmap heap_array_fmap.
-    iFrame "Hσ Hκs Hd Htr". iApply "HΦ".
     iFrame.
-    { iApply (big_sepM_mono with "Hl").
-      iIntros (l0 x Heq) "Hli".
+    iApply "HΦ".
+    iFrame.
+    { rewrite /mapsto_block.
+      iApply seq_mapsto_to_heap_array.
+      iApply (big_sepL_mono with "Hl").
+      iIntros (k x Heq) "(Hli&Hmt)".
       iApply (na_mapsto_to_heap with "Hli").
-      eauto using alloc_block_loc_not_null.
+      destruct H1 as (H'&?). eapply H'.
     }
   Qed.
 

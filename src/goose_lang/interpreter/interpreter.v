@@ -552,11 +552,11 @@ Section interpreter.
   [e ~~> v] and a goal like [ctx_expr e ~~> ctx_expr v]. Uses nsteps_ctx
   lemma to dispatch the goal. *)
   Ltac ctx_step ctx_expr :=
-    match goal with
-    | [ nsteps_interp : nsteps _ ([?e], ?s) _ (_, _) |- _ ] =>
+    repeat match goal with
+    | [ nsteps_interp : language.nsteps _ ([?e], ?s) _ (_, _) |- _ ] =>
       let r := eval simpl in (ctx_expr e) in
           match goal with
-          | [ |- nsteps _ ([r], s) _ _ ] =>
+          | [ |- language.nsteps _ ([r], s) _ _ ] =>
             let H := fresh "nsteps_interp_ctx" in
             pose proof (@nsteps_ctx _ ctx_expr _ _ _ _ _ _ _ nsteps_interp) as H;
             simpl in H;

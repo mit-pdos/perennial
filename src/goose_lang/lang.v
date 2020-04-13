@@ -888,55 +888,6 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | _, _ => None
     end.
 
-Fixpoint heap_array {V} (l : loc) (vs : list V) : gmap loc V :=
-  match vs with
-  | [] => ∅
-  | v :: vs' => {[l := v]} ∪ heap_array (l +ₗ 1) vs'
-  end.
-
-Lemma heap_array_singleton V l (v:V) : heap_array l [v] = {[l := v]}.
-Proof. by rewrite /heap_array right_id. Qed.
-
-Open Scope Z.
-
-Lemma heap_array_lookup V l (vs: list V) w k :
-  heap_array l vs !! k = Some w ↔
-  ∃ j, 0 ≤ j ∧ k = l +ₗ j ∧ vs !! (Z.to_nat j) = Some w.
-Proof.
-  revert k l; induction vs as [|v' vs IH]=> l' l /=.
-  { rewrite lookup_empty. naive_solver lia. }
-  rewrite -insert_union_singleton_l lookup_insert_Some IH. split.
-  - intros [[-> ->] | (Hl & j & ? & -> & ?)].
-    { exists 0. rewrite loc_add_0. naive_solver lia. }
-    exists (1 + j). rewrite loc_add_assoc !Z.add_1_l Z2Nat.inj_succ; auto with lia.
-  - intros (j & ? & -> & Hil). destruct (decide (j = 0)); simplify_eq/=.
-    { rewrite loc_add_0; eauto. }
-    right. split.
-    { rewrite -{1}(loc_add_0 l). intros ?%(inj _); lia. }
-    assert (Z.to_nat j = S (Z.to_nat (j - 1))) as Hj.
-    { rewrite -Z2Nat.inj_succ; last lia. f_equal; lia. }
-    rewrite Hj /= in Hil.
-    exists (j - 1). rewrite loc_add_assoc Z.add_sub_assoc Z.add_simpl_l.
-    auto with lia.
-Qed.
-
-Lemma heap_array_map_disjoint {V} (h : gmap loc V) (l : loc) (vs : list V) :
-  (∀ i, (0 ≤ i) → (i < length vs) → h !! (l +ₗ i) = None) →
-  (heap_array l vs) ##ₘ h.
-Proof.
-  intros Hdisj. apply map_disjoint_spec=> l' v1 v2.
-  intros (j&?&->&Hj%lookup_lt_Some%inj_lt)%heap_array_lookup.
-  move: Hj. rewrite Z2Nat.id // => ?. by rewrite Hdisj.
-Qed.
-
-Lemma heap_array_fmap V1 V2 l (f: V1 → V2) (vs: list V1) :
-  fmap f (heap_array l vs) = heap_array l (fmap f vs).
-Proof.
-  revert l. induction vs; simpl; intros.
-  - rewrite fmap_empty //=.
-  - rewrite -insert_union_singleton_l fmap_insert insert_union_singleton_l IHvs //=.
-Qed.
-
 Close Scope Z.
 
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)
@@ -985,38 +936,40 @@ Definition ret_expr {state} (e:expr): transition state (list observation * expr 
 Definition atomically {state} (tr: transition state val): transition state (list observation * expr * list expr) :=
   (λ v, ([], Val v, [])) <$> tr.
 
-Definition isFreshTo (bound:Z) (σ: state) (l: loc) :=
-  (forall i, 0 <= i -> i < bound -> l +ₗ i ≠ null ∧ σ.(heap) !! (l +ₗ i) = None)%Z.
+Definition isFresh (σ: state) (l: loc) :=
+  (forall i, l +ₗ i ≠ null ∧ σ.(heap) !! (l +ₗ i) = None)%Z ∧
+  (addr_offset l = 0).
 
-Theorem isFreshTo_not_null (bound: Z) σ l :
-  0 < Z.to_nat bound ->
-  isFreshTo bound σ l -> l ≠ null.
+Theorem isFresh_not_null σ l :
+  isFresh σ l -> l ≠ null.
 Proof.
   intros Hbound **.
   rewrite -(loc_add_0 l).
-  apply H; lia.
+  eapply Hbound.
 Qed.
 
-Theorem fresh_locs_isFreshTo bound σ :
-  isFreshTo bound σ (fresh_locs (dom (gset loc) σ.(heap))).
+Theorem fresh_locs_isFresh σ :
+  isFresh σ (fresh_locs (dom (gset loc) σ.(heap))).
 Proof.
   split.
-  - apply fresh_locs_non_null; auto.
-  - apply (not_elem_of_dom (D := gset loc)).
-      by apply fresh_locs_fresh.
+  - split.
+    * apply fresh_locs_non_null; auto.
+    * apply (not_elem_of_dom (D := gset loc)).
+        by apply fresh_locs_fresh.
+  - auto.
 Qed.
 
-Definition gen_isFreshTo bound σ : {l: loc | isFreshTo bound σ l}.
+Definition gen_isFresh σ : {l: loc | isFresh σ l}.
 Proof.
   refine (exist _ (fresh_locs (dom (gset loc) σ.(heap))) _).
-  by apply fresh_locs_isFreshTo.
+  by apply fresh_locs_isFresh.
 Defined.
 
-Global Instance alloc_gen bound : GenPred loc state (isFreshTo bound) :=
-  fun _ σ => Some (gen_isFreshTo bound σ).
+Global Instance alloc_gen : GenPred loc state (isFresh) :=
+  fun _ σ => Some (gen_isFresh σ).
 
 Definition allocateN (bound:Z): transition state loc :=
-  suchThat (isFreshTo bound).
+  suchThat (isFresh).
 
 Global Instance newProphId_gen: GenPred proph_id state (fun σ p => p ∉ σ.(used_proph_id)).
 Proof.
@@ -1202,7 +1155,7 @@ Proof.
   monad_simpl.
   eapply relation.bind_runs with σ l.
   { econstructor.
-    apply fresh_locs_isFreshTo.
+    apply fresh_locs_isFresh.
   }
   monad_simpl.
 Qed.

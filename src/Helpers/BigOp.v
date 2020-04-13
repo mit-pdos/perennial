@@ -27,6 +27,6 @@ Proof.
     symmetry.
     apply heap_array_map_disjoint; intros.
     apply (not_elem_of_dom (D := gset loc)).
-    rewrite dom_singleton elem_of_singleton loc_add_assoc.
+    rewrite dom_singleton elem_of_singleton addr_plus_plus.
     intros ?%loc_add_ne; auto; lia.
 Qed.

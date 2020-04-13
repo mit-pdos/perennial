@@ -37,7 +37,7 @@ Class heapPreG `{ext: ext_op} `{EXT_SEM: !ext_semantics ext ffi}
       `{INTERP: !ffi_interp ffi} {ADEQ: ffi_interp_adequacy} Σ
   := HeapPreG {
   heap_preG_iris :> invPreG Σ;
-  heap_preG_heap :> na_heapPreG loc val Σ;
+  heap_preG_heap :> na_heapPreG loc Z val Σ;
   heap_preG_proph :> proph_mapPreG proph_id (val * val) Σ;
   heap_preG_ffi : ffi_preG Σ;
   heap_preG_trace :> trace_preG Σ;
@@ -85,7 +85,7 @@ Ltac solve_inG_deep :=
                            | H:subG _ _ |- _ => move : H; apply subG_inG in H || clear H
                            end; intros; try done; split; assumption || by apply _.
 
-Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ].
+Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors := #[invΣ; na_heapΣ loc Z val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ].
 Instance subG_heapPreG `{ext: ext_op} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} : subG heapΣ Σ → heapPreG Σ.
 Proof.
   solve_inG_deep.

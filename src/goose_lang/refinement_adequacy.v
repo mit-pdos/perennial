@@ -16,7 +16,7 @@ Class spec_ffi_interp_adequacy `{spec_ffi: @spec_ffi_interp ffi} `{EXT: !spec_ex
                                                           (spec_ext_semantics_field) }.
 
 Class refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} Σ := HeapPreG {
-  refinement_heap_preG_heap :> na_heapPreG loc (@val spec_ext_op_field) Σ;
+  refinement_heap_preG_heap :> na_heapPreG loc Z (@val spec_ext_op_field) Σ;
   refinement_heap_preG_ffi : @ffi_preG (@spec_ffi_model_field ffi)
                                        (@spec_ffi_interp_field _ spec_ffi)
                                        _ _ (spec_ffi_interp_adequacy_field) Σ;
@@ -25,7 +25,7 @@ Class refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi sp
 }.
 
 Existing Instances spec_ext_op_field spec_ext_semantics_field spec_ffi_model_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
-Definition refinement_heapΣ `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ; frac_countΣ].
+Definition refinement_heapΣ `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[invΣ; na_heapΣ loc Z val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ; frac_countΣ].
 Instance subG_refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} {Σ} :
   subG refinement_heapΣ Σ → refinement_heapPreG Σ.
 Proof. solve_inG_deep. Qed.
