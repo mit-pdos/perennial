@@ -21,7 +21,8 @@ From Perennial.program_proof Require
      txn.specs
      buftxn.specs.
 From Perennial.goose_lang Require
-     ffi.append_log_ffi.
+     ffi.append_log_ffi
+     ffi.kvs_ffi.
 
 (* goose output *)
 From Perennial.goose_lang.examples Require
