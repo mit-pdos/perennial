@@ -21,16 +21,6 @@ Definition MapGet: val :=
        else "mapGet" "m2"
      end) (!"mref").
 
-Definition MapLen: val :=
-  λ: "mref",
-  (rec: "mapLen" "m" :=
-     match: "m" with
-       InjL <> => #0
-     | InjR "kvm" =>
-       let: "m2" := Snd "kvm" in
-       #1 + "mapLen" "m2"
-     end) (!"mref").
-
 Definition MapInsert: val :=
   λ: "mref" "k" "v",
   "mref" <- InjR ("k", "v", !"mref").
@@ -50,6 +40,17 @@ Definition MapDelete': val :=
 Definition MapDelete: val :=
   λ: "mref" "k",
   "mref" <- MapDelete' (!"mref") "k".
+
+Definition MapLen: val :=
+  λ: "mref",
+  (rec: "mapLen" "m" :=
+     match: "m" with
+       InjL <> => #0
+     | InjR "kvm" =>
+       let: "kv" := Fst "kvm" in
+       let: "m2" := Snd "kvm" in
+       #1 + "mapLen" (MapDelete' "m2" "Fst kv")
+     end) (!"mref").
 
 Definition mapGetDef: val :=
   rec: "mapGetDef" "m" :=
@@ -76,7 +77,7 @@ Definition MapIter: val :=
        let: "v" := Snd (Fst "kvm") in
        let: "m_rest" := Snd "kvm" in
        "body" "k" "v";;
-       "mapIter" "m_rest"
+       "mapIter" (MapDelete' "m_rest" "k")
      end) "mv";;
   FinishRead "mref".
 

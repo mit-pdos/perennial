@@ -308,21 +308,21 @@ Proof.
   - intuition subst.
     inversion H3; clear H3; subst.
     wp_pures.
-    iDestruct (big_sepM_insert with "Hp") as "[Hpk Hp]".
-    { admit. }
+    iDestruct (big_sepM_insert_delete with "Hp") as "[Hpk Hp]".
     wp_apply ("Hind" with "[$Hi $Hpk]").
     iIntros "[Hi Hq]".
     wp_pure (Rec _ _ _).
     wp_lam.
-    iSpecialize ("IH" $! mv' _ _ with "Hi Hp [HΦ Hq] Hm0 Hm1").
+    wp_apply (wp_MapDelete'); eauto.
+    iIntros (mv'') "%".
+    iSpecialize ("IH" $! mv'' _ _ with "Hi Hp [HΦ Hq] Hm0 Hm1").
     { iIntros "(Hmref & Hi & Hqs)".
       iApply "HΦ"; iFrame.
-      iApply big_sepM_insert; last iFrame.
-      admit.
+      iApply big_sepM_insert_delete; iFrame.
     }
     iApply "IH".
 Unshelve.
-  apply map_val_split in H2; destruct m'; eauto.
-Admitted.
+  apply map_val_split in a; destruct m'; intuition idtac.
+Qed.
 
 End heap.
