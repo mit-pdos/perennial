@@ -44,7 +44,7 @@ Definition wal_wf (s : log_state.t) :=
   addrs_wf (log_state.updates s) s.(log_state.d) ∧
   (* monotonicity of txnids  *)
   (forall (pos1 pos2: u64) (txn_id1 txn_id2: nat),
-      txn_id1 < txn_id2 ->
+      (txn_id1 < txn_id2)%nat ->
       fst <$> s.(log_state.txns) !! txn_id1 = Some pos1 ->
       fst <$> s.(log_state.txns) !! txn_id2 = Some pos2 ->
       (* can get the same handle for two transactions due to absorption or

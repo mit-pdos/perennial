@@ -114,6 +114,8 @@ Definition is_installed (s: log_state.t) (γcirc : circ_names)
            (γinstalled γinstaller_blocks: gname) : iProp Σ :=
   ∃ (fully_installed being_installed: disk),
     own γinstaller_blocks (◯ (Excl' being_installed)) ∗
+    (* TODO: split into a read portion for definitely installed things and
+    an installer-owned portion while it's installing a transaction *)
     ( [∗ map] a ↦ v ∈ fully_installed,
       a d↦ v ∗
         (* note that this should be redundant with some well-formedness
