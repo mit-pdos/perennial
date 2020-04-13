@@ -49,7 +49,7 @@ Definition MapLen: val :=
      | InjR "kvm" =>
        let: "kv" := Fst "kvm" in
        let: "m2" := Snd "kvm" in
-       #1 + "mapLen" (MapDelete' "m2" "Fst kv")
+       #1 + "mapLen" (MapDelete' "m2" (Fst "kv"))
      end) (!"mref").
 
 Definition mapGetDef: val :=
