@@ -24,7 +24,12 @@ vos: src/ShouldBuild.vos
 interpreter: src/goose_lang/interpreter/interpreter.vos
 
 _CoqProject: _CoqProject.in
-	cat $< > $@
+	@cat $< > $@
+	@if coqc --version | grep -q -F 'version 8.11' ; then \
+		echo "-Q external/string-ident-v8.11/theories iris_string_ident"; \
+		else \
+		echo "-Q external/string-ident/theories iris_string_ident"; \
+		fi >> $@
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
