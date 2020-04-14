@@ -175,10 +175,6 @@ Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l a :
 Proof.
   iIntros (Φ) "[Hwal Hfupd] HΦ".
   wp_call.
-  wp_call.
-
-  wp_apply wp_ref_of_zero; eauto.
-  iIntros (blkloc) "Hblkloc".
 
   (* XXX need a real is_wal *)
 Admitted.
