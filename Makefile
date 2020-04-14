@@ -5,6 +5,7 @@ TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
 VFILES := $(filter-out $(TEST_VFILES),$(PROJ_VFILES))
 TEST_VO := $(TEST_VFILES:.v=.vo)
+QUICK_CHECK_FILES := $(shell find 'src/program_proof/wal' 'src/program_proof/txn' -name "*.v")
 
 COQ_ARGS :=
 
@@ -20,6 +21,7 @@ default: src/ShouldBuild.vo test
 all: $(VFILES:.v=.vo)
 test: $(TEST_VO)
 vos: src/ShouldBuild.vos
+vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
 
 _CoqProject: _CoqProject.in
