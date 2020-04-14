@@ -1112,6 +1112,107 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
+Definition block0: Block :=
+  list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
+
+Lemma replicate_zero_to_block0 :
+  replicate (int.nat 4096) (zero_val byteT) =
+  Block_to_vals block0.
+Proof.
+  change (zero_val byteT) with #(U8 0).
+  change (int.nat 4096) with (Z.to_nat 4096).
+  rewrite /Block_to_vals /block0.
+  reflexivity.
+Qed.
+
+Theorem circ_low_wf_empty logblocks :
+  length logblocks = Z.to_nat LogSz ->
+  circ_low_wf (replicate (Z.to_nat LogSz) (U64 0)) logblocks.
+Proof.
+  intros.
+  split; auto.
+  word.
+Qed.
+
+Theorem wp_initCircular d logblocks :
+  {{{ 0 d↦∗ logblocks ∗ ⌜length logblocks = Z.to_nat (2 + LogSz)⌝ }}}
+    initCircular #d
+  {{{ γ σ (c:loc), RET #c;
+      ⌜σ = circΣ.mk [] (U64 0)⌝ ∗
+      ⌜circ_wf σ⌝ ∗
+      is_circular_state γ σ ∗
+      is_circular_appender γ c ∗
+      start_is γ (1/2) (U64 0) ∗
+      diskEnd_is γ (1/2) 0
+  }}}.
+Proof.
+  iIntros (Φ) "[Hd %Hbkslen] HΦ".
+  destruct logblocks; first by (simpl in Hbkslen; word).
+  destruct logblocks; first by (simpl in Hbkslen; word).
+  iDestruct (disk_array_cons with "Hd") as "[Hd0 Hd]".
+  iDestruct (disk_array_cons with "Hd") as "[Hd1 Hd2]".
+  change (0 + 1) with 1.
+  change (1 + 1) with 2.
+  iMod (ghost_var_alloc ((replicate (Z.to_nat LogSz) (U64 0)) : listO u64O)) as (addrs_name') "[Haddrs' Hγaddrs]".
+  iMod (ghost_var_alloc (logblocks : listO blockO)) as (blocks_name') "[Hblocks' Hγblocks]".
+  iMod (fmcounter_alloc 0%nat) as (start_name') "[Hstart1 Hstart2]".
+  iMod (fmcounter_alloc 0%nat) as (diskEnd_name') "[HdiskEnd1 HdiskEnd2]".
+  wp_call.
+  wp_apply wp_new_slice; first by auto.
+  iIntros (zero_s) "Hzero".
+  iDestruct (is_slice_to_small with "Hzero") as "Hzero".
+  wp_pures.
+  rewrite replicate_zero_to_block0.
+  wp_apply (wp_Write with "[Hd0 $Hzero]").
+  { iExists _; iFrame. }
+  iIntros "[Hd0 Hzero]".
+  wp_apply (wp_Write with "[Hd1 $Hzero]").
+  { iExists _; iFrame. }
+  iIntros "[Hd1 Hzero]".
+  wp_apply wp_new_slice; first by auto.
+  change (int.nat (word.divu (word.sub 4096 8) 8)) with (Z.to_nat LogSz).
+  iIntros (upd_s) "Hupd".
+  wp_apply wp_allocStruct; first by auto.
+  iIntros (l) "Hs".
+  iApply ("HΦ" $! {| addrs_name := addrs_name';
+                     blocks_name := blocks_name';
+                     start_name := start_name';
+                     diskEnd_name := diskEnd_name'; |}).
+  iSplit; first by eauto.
+  iSplit; first by eauto.
+  iSplitL "Hstart1 HdiskEnd1 Haddrs' Hblocks' Hd0 Hd1 Hd2".
+  { iFrame "Hstart1 HdiskEnd1".
+    iSplit; first by eauto.
+    iSplit; first by eauto.
+    iExists _, _; iFrame "Haddrs' Hblocks'".
+    iSplit; auto.
+    iSplit.
+    { iPureIntro.
+      simpl in Hbkslen.
+      apply circ_low_wf_empty; word. }
+    change (int.val 0) with 0.
+    change (int.val 1) with 1.
+    iExists block0, block0, _.
+    iFrame.
+    iPureIntro.
+    { split.
+      - reflexivity.
+      - reflexivity. }
+    }
+  iFrame "Hstart2 HdiskEnd2".
+  iSplit; auto.
+  iExists _, _, _; iFrame "Hγaddrs Hγblocks".
+  iSplit.
+  { iPureIntro.
+    simpl in Hbkslen.
+    apply circ_low_wf_empty; word. }
+  iDestruct (struct_fields_split with "Hs") as "($&_)".
+  iDestruct (is_slice_to_small with "Hupd") as "Hupd".
+  change (zero_val uint64T) with (u64val (U64 0)).
+  rewrite -fmap_replicate.
+  iFrame "Hupd".
+Qed.
+
 Theorem wp_recoverCircular d σ γ :
   {{{ is_circular_state γ σ }}}
     recoverCircular #d
