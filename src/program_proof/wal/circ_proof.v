@@ -469,30 +469,6 @@ Proof.
   mod_bound; word.
 Qed.
 
-Lemma mod_add_modulus a k :
-  k ≠ 0 ->
-  a `mod` k = (a + k) `mod` k.
-Proof.
-  intros.
-  rewrite -> Z.add_mod by auto.
-  rewrite -> Z.mod_same by auto.
-  rewrite Z.add_0_r.
-  rewrite -> Z.mod_mod by auto.
-  auto.
-Qed.
-
-Lemma mod_sub_modulus a k :
-  k ≠ 0 ->
-  a `mod` k = (a - k) `mod` k.
-Proof.
-  intros.
-  rewrite -> Zminus_mod by auto.
-  rewrite -> Z.mod_same by auto.
-  rewrite Z.sub_0_r.
-  rewrite -> Z.mod_mod by auto.
-  auto.
-Qed.
-
 Theorem mod_neq_lt a b k :
   0 < k ->
   0 <= a < b ->
