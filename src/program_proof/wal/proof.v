@@ -105,6 +105,24 @@ Proof.
   lia.
 Qed.
 
+(* TODO: how will installer have enough information to know what's being
+installed? how will ReadInstalled be able to prove something is in
+fully_installed (which is currently implicitly the complement of
+being_installed)? *)
+Definition is_being_installed γinstaller_blocks (being_installed: disk): iProp Σ :=
+    (own γinstaller_blocks (◯ (Excl' being_installed)) ∗
+    ( [∗ map] a ↦ v ∈ being_installed, a d↦ v ∗ ⌜2 + LogSz <= int.val a⌝ ))%I.
+
+Definition is_installer_disks (s: log_state.t)
+           (installed_txn_id: nat) (fully_installed being_installed: disk) :=
+  s.(log_state.installed_lb) ≤ installed_txn_id ∧
+  let installed_disk := disk_at_txn_id installed_txn_id s in
+  ∀ (a : u64) (b : Block),
+    installed_disk !! int.val a = Some b ->
+    ( updates_since installed_txn_id a s = nil ∧
+      fully_installed !! int.val a = Some b ) ∨
+    ∃ b0, being_installed !! int.val a = Some b0.
+
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. The things in this invariant are
@@ -113,27 +131,47 @@ transfer plan between the invariant and its local state. *)
 Definition is_installed (s: log_state.t) (γcirc : circ_names)
            (γinstalled γinstaller_blocks: gname) : iProp Σ :=
   ∃ (fully_installed being_installed: disk),
-    own γinstaller_blocks (◯ (Excl' being_installed)) ∗
-    (* TODO: split into a read portion for definitely installed things and
-    an installer-owned portion while it's installing a transaction *)
     ( [∗ map] a ↦ v ∈ fully_installed,
-      a d↦ v ∗
-        (* note that this should be redundant with some well-formedness
-           predicate, but leaving it here redundantly is still probably a good
-           idea *)
-        ⌜2 + LogSz <= int.val a⌝ ) ∗
-    ( [∗ map] a ↦ v ∈ being_installed, a d↦ v ∗ ⌜2 + LogSz <= int.val a⌝ ) ∗
+      a d↦ v ∗ ⌜2 + LogSz <= int.val a⌝ ) ∗
+    is_being_installed γinstaller_blocks being_installed ∗
     ( ∃ (installed_txn_id : nat) (diskStart : u64),
       own γinstalled (◯ (Excl' installed_txn_id)) ∗
       start_is γcirc (1/4) diskStart ∗
-      ⌜ is_txn s installed_txn_id diskStart ∧
-        s.(log_state.installed_lb) ≤ installed_txn_id ∧
-        let installed_disk := disk_at_txn_id installed_txn_id s in
-        ∀ (a : u64) (b : Block),
-          installed_disk !! int.val a = Some b ->
-          ( updates_since installed_txn_id a s = nil ∧
-            fully_installed !! int.val a = Some b ) ∨
-          ∃ b0, being_installed !! int.val a = Some b0 ⌝ ).
+      ⌜is_txn s installed_txn_id diskStart⌝ ∗
+      ⌜is_installer_disks s installed_txn_id fully_installed being_installed⌝ ).
+
+Definition is_memlog (s: log_state.t)
+           (memStart_txn_id: nat) memLog
+           (absorptionBoundaries: gmap nat unit) (memStart: u64) :=
+      (* the high-level structure here is to relate each transaction "governed" by the memLog to the
+      "cumulative updates" through that transaction. *)
+      ∀ (txn_id : nat) (pos : u64),
+        is_txn s txn_id pos ->
+        (* the "governed" part - both transactions in absorptionBoundaries
+        that have gone through the nextDiskEnd -> logger flow ... *)
+        ( ( memStart_txn_id ≤ txn_id ∧ absorptionBoundaries !! txn_id = Some tt ) ∨
+          (* ...as well as the current transaction, including all the
+          potentially absorbed transactions that won't be logged *)
+          txn_id = length s.(log_state.txns) ) ->
+        (* the "cumulative updates" part - we can't talk about update lists here
+        because the abstract state has all the updates that have gone through
+        the system while the implementation maintains post-absorption
+        transactions. Instead we state that the updates when coalesced in order
+        are the same using [apply_upds] on an empty disk, which automatically
+        captures that the latest update to each address should match, including
+        the absence of any updates. The result is that the cached read from the
+        memLog is a correct way to read from the abstract list of updates
+        through txn.
+
+        We don't just say [apply_upds memLog ∅ = apply_upds (skip memStart
+        s.txns)]. This would only cover reads from the current in-memory state.
+        We also say that earlier transactions are correct, since if we crash
+        memLog will get trimmed to just the updates through diskEnd. (TODO(tej):
+        could we just say this about the current state and diskEnd? or do we
+        need the intermediate transactions to be inductive?) *)
+        apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
+        (* need +1 since txn_id should be included in subslice *)
+        apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) s.(log_state.txns))) ∅.
 
 Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
                         (γlock γinstalled γinstaller_blocks : gname)
@@ -172,37 +210,9 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
     established transactions in absorptionBoundaries, and finally contains a
     tail of transactions that are subject to absorption and not owned by the
     logger. *)
-    ⌜ ∃ (memStart_txn_id : nat),
-      is_txn s memStart_txn_id memStart ∧
-      (* the high-level structure here is to relate each transaction "governed" by the memLog to the
-      "cumulative updates" through that transaction. *)
-      ∀ (txn_id : nat) (pos : u64),
-        is_txn s txn_id pos ->
-        (* the "governed" part - both transactions in absorptionBoundaries
-        that have gone through the nextDiskEnd -> logger flow ... *)
-        ( ( memStart_txn_id ≤ txn_id ∧ absorptionBoundaries !! txn_id = Some tt ) ∨
-          (* ...as well as the current transaction, including all the
-          potentially absorbed transactions that won't be logged *)
-          txn_id = length s.(log_state.txns) ) ->
-        (* the "cumulative updates" part - we can't talk about update lists here
-        because the abstract state has all the updates that have gone through
-        the system while the implementation maintains post-absorption
-        transactions. Instead we state that the updates when coalesced in order
-        are the same using [apply_upds] on an empty disk, which automatically
-        captures that the latest update to each address should match, including
-        the absence of any updates. The result is that the cached read from the
-        memLog is a correct way to read from the abstract list of updates
-        through txn.
-
-        We don't just say [apply_upds memLog ∅ = apply_upds (skip memStart
-        s.txns)]. This would only cover reads from the current in-memory state.
-        We also say that earlier transactions are correct, since if we crash
-        memLog will get trimmed to just the updates through diskEnd. (TODO(tej):
-        could we just say this about the current state and diskEnd? or do we
-        need the intermediate transactions to be inductive?) *)
-        apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
-        (* need +1 since txn_id should be included in subslice *)
-        apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) s.(log_state.txns))) ∅ ⌝.
+    ∃ (memStart_txn_id : nat),
+      ⌜is_txn s memStart_txn_id memStart⌝ ∗
+      ⌜is_memlog s memStart_txn_id memLog absorptionBoundaries memStart⌝.
 
 Definition is_wal (l : loc) γlock γinstalled γinstaller_blocks γabsorptionBoundaries : iProp Σ :=
   ∃ γcs γcirc ,
