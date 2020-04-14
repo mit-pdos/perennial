@@ -10,3 +10,6 @@
 [submodule "external/coqutil"]
 	path = external/coqutil
 	url = https://github.com/mit-plv/coqutil
+[submodule "external/string-ident"]
+	path = external/string-ident
+	url = https://gitlab.mpi-sws.org/iris/string-ident.git
