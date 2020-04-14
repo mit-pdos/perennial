@@ -4,12 +4,12 @@
 [submodule "external/iris-coq"]
 	path = external/iris-coq
 	url = https://gitlab.mpi-sws.org/FP/iris-coq.git
-[submodule "vendor/record-update"]
-	path = vendor/record-update
-	url = https://github.com/tchajed/coq-record-update.git
 [submodule "external/coqutil"]
 	path = external/coqutil
 	url = https://github.com/mit-plv/coqutil
 [submodule "external/string-ident"]
 	path = external/string-ident
 	url = https://gitlab.mpi-sws.org/iris/string-ident.git
+[submodule "external/record-update"]
+	path = external/record-update
+	url = https://github.com/tchajed/coq-record-update

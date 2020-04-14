@@ -1,5 +1,0 @@
--Q external/iris-coq/theories iris
--Q external/string-ident/theories iris_string_ident
--Q external/stdpp/theories stdpp
--Q external/coqutil/src/coqutil coqutil
--Q external/Goose Goose

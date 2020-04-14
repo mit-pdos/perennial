@@ -1,33 +1,11 @@
 Q:=@
-SRC_DIRS := 'src' $(shell test -d 'vendor' && echo 'vendor') $(shell test -d 'external' && echo 'external')
+SRC_DIRS := 'src' 'external'
 ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
 VFILES := $(filter-out $(TEST_VFILES),$(PROJ_VFILES))
 TEST_VO := $(TEST_VFILES:.v=.vo)
 
-COQ_WARN_LIST := -notation-overridden\
--redundant-canonical-projection\
--several-object-files\
--implicit-core-hint-db\
--undeclared-scope\
--solve_obligation_error\
--auto-template\
--ambiguous-paths\
--convert_concl_no_check\
--funind-cannot-define-graph\
--funind-cannot-build-inversion
-
-empty :=
-# A literal space.
-space := $(empty) $(empty)
-# A literal comma
-comma := ,
-
-# Joins elements of a list with a comma
-join-with-comma = $(subst $(space),$(comma),$(strip $1))
-
-COQ_WARN_ARG := $(call join-with-comma,$(COQ_WARN_LIST))
 COQ_ARGS :=
 
 TIMED:=true
@@ -45,20 +23,8 @@ vos: src/ShouldBuild.vos
 # skipping generated_test.vos for now because wal test is expensive
 interpreter: src/goose_lang/interpreter/interpreter.vos
 
-_CoqProject: _CoqExt libname $(wildcard vendor/*) $(wildcard external/*)
-	@echo "-Q src $$(cat libname)" > $@
-	@echo "-arg -w -arg ${COQ_WARN_ARG}" >> $@
-	@cat _CoqExt >> $@
-	$(Q)for libdir in $(wildcard vendor/*); do \
-	libname=$$(cat $$libdir/libname); \
-	if [ $$? -ne 0 ]; then \
-	  echo "Do you need to run git submodule update --init --recursive?" 1>&2; \
-		exit 1; \
-	fi; \
-	echo "-Q $$libdir/src $$(cat $$libdir/libname)" >> $@; \
-	done
-	@echo "_CoqProject:"
-	@cat $@
+_CoqProject: _CoqProject.in
+	cat $< > $@
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
