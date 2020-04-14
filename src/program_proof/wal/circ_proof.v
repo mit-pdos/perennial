@@ -381,8 +381,8 @@ Theorem wp_circular__Advance (Q: iProp Σ) γ d (start0: u64) (newStart : u64) (
       start_is γ (1/2) start0 ∗
       diskEnd_at_least γ diskEnd_lb ∗
       ⌜int.val start0 ≤ int.val newStart ≤ diskEnd_lb⌝ ∗
-    (∀ σ, P σ -∗
-      (∀ σ' b, ⌜relation.denote (circ_advance newStart) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
+    (∀ σ, ⌜circ_wf σ⌝ ∗ P σ -∗
+      (∀ σ' b, ⌜relation.denote (circ_advance newStart) σ σ' b⌝ ∗ ⌜circ_wf σ'⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
   }}}
     Advance #d #newStart
   {{{ RET #(); Q ∗ start_is γ (1/2) newStart }}}.
@@ -404,10 +404,13 @@ Proof using Ptimeless.
     iDestruct (circ_state_wf with "Hown") as %Hlow_wf.
     iDestruct (circ_state_wf with "Hown") as %(Hlen1&Hlen2).
     iDestruct "Hlow" as (hdr1 hdr2_0 hdr2extra Hhdr1 Hhdr2) "(Hhdr1&Hhdr2&Hblocks)".
-    iDestruct ("Hfupd" with "HP") as "Hfupd".
+    iDestruct ("Hfupd" with "[$HP]") as "Hfupd"; first by eauto.
     iMod ("Hfupd" with "[]") as "[HP' HQ]".
     { iPureIntro.
-      simpl; monad_simpl. }
+      split.
+      - simpl; monad_simpl.
+      - eapply circ_wf_advance; eauto.
+        word. }
     simpl.
     iMod (circ_positions_advance newStart with "[$Hpos Hstart]") as "(Hpos&Hstart&Hstart_lb)"; auto.
     { word. }
@@ -934,8 +937,8 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (startpos endpos : u64) (bufs : S
       diskEnd_is γ (1/2) (int.val endpos) ∗
       start_at_least γ startpos ∗
       is_circular_appender γ c ∗
-      (∀ σ, P σ -∗
-          ∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
+      (∀ σ, ⌜circ_wf σ⌝ ∗ P σ -∗
+          ∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ∗ ⌜circ_wf σ'⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
   }}}
     circularAppender__Append #c #d #endpos (slice_val bufs)
   {{{ RET #(); Q ∗
@@ -990,9 +993,15 @@ Proof using Ptimeless.
     iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd'.
     iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb'.
 
-    iMod ("Hfupd" with "HP []") as "[HP $]".
+    iMod ("Hfupd" with "[$HP //] []") as "[HP $]".
     { iPureIntro.
-      simpl; monad_simpl. }
+      split.
+      - simpl; monad_simpl.
+      - destruct σ. rewrite /=.
+        rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
+        autorewrite with len in HdiskEnd'.
+        apply circ_wf_app; auto; len.
+    }
     iFrame.
     iApply "Hclose".
 
