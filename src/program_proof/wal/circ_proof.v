@@ -1146,7 +1146,8 @@ Theorem wp_initCircular d logblocks :
       diskEnd_is γ (1/2) 0
   }}}.
 Proof.
-  iIntros (Φ) "[Hd %Hbkslen] HΦ".
+  iIntros (Φ) "[Hd %] HΦ".
+  rename H into Hbkslen.
   destruct logblocks; first by (simpl in Hbkslen; word).
   destruct logblocks; first by (simpl in Hbkslen; word).
   iDestruct (disk_array_cons with "Hd") as "[Hd0 Hd]".
