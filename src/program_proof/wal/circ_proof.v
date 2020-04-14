@@ -218,7 +218,7 @@ Proof.
   iDestruct "Hinv" as (σ) "[[_ His_circ] _]".
   iDestruct "His_circ" as "(_&His_circ)".
   iDestruct "His_circ" as (addrs' blocks') "(_&Hown&_)".
-  iDestruct "Hown" as "(%&Haddrs&Hblocks)".
+  iDestruct "Hown" as "(%Hlow_wf&Haddrs&Hblocks)".
   iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
   iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
   auto.
@@ -251,17 +251,17 @@ Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
   wp_apply wp_new_enc.
-  iIntros (enc) "[Henc %]".
+  iIntros (enc) "[Henc %Hencsz]".
   wp_pures.
   wp_apply (wp_Enc__PutInt with "Henc"); first by word.
   iIntros "Henc".
   wp_apply (wp_Enc__Finish with "Henc").
-  iIntros (s) "[Hs %]".
+  iIntros (s) "[Hs %Henclen]".
   iApply "HΦ".
   iFrame.
-  rewrite H in H0.
+  rewrite Hencsz in Henclen.
   autorewrite with len in *.
-  replace (int.nat 4096) with (Z.to_nat 4096) in H0.
+  replace (int.nat 4096) with (Z.to_nat 4096) in Henclen.
   rewrite -list_to_block_to_vals; len.
   iFrame.
   iExists _; iPureIntro.
