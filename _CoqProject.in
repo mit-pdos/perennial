@@ -1,6 +1,6 @@
 -Q src Perennial
 -arg -w -arg -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template,-ambiguous-paths,-convert_concl_no_check,-funind-cannot-define-graph,-funind-cannot-build-inversion
--Q external/iris-coq/theories iris
+-Q external/iris/theories iris
 -Q external/stdpp/theories stdpp
 -Q external/coqutil/src/coqutil coqutil
 -Q external/Goose Goose

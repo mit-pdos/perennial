@@ -70,7 +70,7 @@ if __name__ == "__main__":
     print(
         "{:12s} {:>6.1f}".format(
             "  Iris",
-            filter_df(file_df, col="fname", pat="^external/iris-coq")[
+            filter_df(file_df, col="fname", pat="^external/iris")[
                 "time"
             ].sum(),
         )

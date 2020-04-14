@@ -1,9 +1,6 @@
 [submodule "external/stdpp"]
 	path = external/stdpp
 	url = https://gitlab.mpi-sws.org/iris/stdpp.git
-[submodule "external/iris-coq"]
-	path = external/iris-coq
-	url = https://gitlab.mpi-sws.org/FP/iris-coq.git
 [submodule "external/coqutil"]
 	path = external/coqutil
 	url = https://github.com/mit-plv/coqutil
@@ -17,3 +14,6 @@
 	path = external/string-ident-v8.11
 	url = https://gitlab.mpi-sws.org/iris/string-ident.git
 	branch = v8.11
+[submodule "external/iris"]
+	path = external/iris
+	url = https://gitlab.mpi-sws.org/iris/iris.git
