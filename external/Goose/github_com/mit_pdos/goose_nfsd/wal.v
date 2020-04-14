@@ -412,30 +412,33 @@ Definition WalogState__doMemAppend: val :=
     let: "txn" := struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st") in
     "txn".
 
-(* Read blkno from memLog, if present *)
-Definition Walog__readMemLog: val :=
-  rec: "Walog__readMemLog" "l" "blkno" :=
-    let: "blk" := ref (zero_val (slice.T byteT)) in
-    lock.acquire (struct.loadF Walog.S "memLock" "l");;
+Definition copyUpdateBlock: val :=
+  rec: "copyUpdateBlock" "u" :=
+    let: "blk" := NewSlice byteT disk.BlockSize in
+    SliceCopy byteT "blk" (struct.get Update.S "Block" "u");;
+    "blk".
+
+(* readMem implements ReadMem, assuming memLock is held *)
+Definition Walog__readMem: val :=
+  rec: "Walog__readMem" "l" "blkno" :=
     let: ("pos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" (struct.loadF Walog.S "st" "l")) "blkno" in
     (if: "ok"
     then
       util.DPrintf #5 (#(str"read memLogMap: read %d pos %d
       ")) #();;
-      let: "buf" := SliceGet (struct.t Update.S) (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) ("pos" - struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l")) in
-      "blk" <-[slice.T byteT] NewSlice byteT disk.BlockSize;;
-      SliceCopy byteT (![slice.T byteT] "blk") (struct.get Update.S "Block" "buf");;
-      #()
-    else #());;
-    lock.release (struct.loadF Walog.S "memLock" "l");;
-    ![slice.T byteT] "blk".
+      let: "u" := SliceGet (struct.t Update.S) (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) ("pos" - struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l")) in
+      let: "blk" := copyUpdateBlock "u" in
+      ("blk", #true)
+    else (slice.nil, #false)).
 
 (* Read from only the in-memory cached state (the unstable and logged parts of
    the wal). *)
 Definition Walog__ReadMem: val :=
   rec: "Walog__ReadMem" "l" "blkno" :=
-    let: "blk" := Walog__readMemLog "l" "blkno" in
-    ("blk", "blk" ≠ slice.nil).
+    lock.acquire (struct.loadF Walog.S "memLock" "l");;
+    let: ("blk", "ok") := Walog__readMem "l" "blkno" in
+    lock.release (struct.loadF Walog.S "memLock" "l");;
+    ("blk", "ok").
 
 (* Read from only the installed state (a subset of durable state). *)
 Definition Walog__ReadInstalled: val :=
