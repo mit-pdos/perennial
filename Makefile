@@ -20,8 +20,7 @@ default: src/ShouldBuild.vo test
 all: $(VFILES:.v=.vo)
 test: $(TEST_VO)
 vos: src/ShouldBuild.vos
-# skipping generated_test.vos for now because wal test is expensive
-interpreter: src/goose_lang/interpreter/interpreter.vos
+interpreter: src/goose_lang/interpreter/generated_test.vos
 
 _CoqProject: _CoqProject.in
 	@cat $< > $@
@@ -35,7 +34,7 @@ _CoqProject: _CoqProject.in
 	@echo "COQDEP $@"
 	$(Q)coqdep -vos -f _CoqProject $(ALL_VFILES) > $@
 
-CLEAN_GOALS := clean clean-ext clean-all
+CLEAN_GOALS := clean
 
 ifeq ($(filter $(MAKECMDGOALS),$(CLEAN_GOALS)),)
 -include .coqdeps.d
@@ -76,9 +75,7 @@ ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
 		./etc/timing-report.py; \
 		fi
 
-clean-src:
-
-clean: clean-src
+clean:
 	@echo "CLEAN vo glob aux"
 	$(Q)rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.vos) $(ALL_VFILES:.v=.vok) $(ALL_VFILES:.v=.glob)
 	$(Q)find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
@@ -86,5 +83,5 @@ clean: clean-src
 	$(Q)rm -f .timing.sqlite3
 	rm -f _CoqProject .coqdeps.d
 
-.PHONY: default test clean clean-src
+.PHONY: default test
 .DELETE_ON_ERROR:
