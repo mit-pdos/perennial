@@ -17,6 +17,8 @@ Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
 Context (N: namespace).
 
+(* Invariant and definitions *)
+
 Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iProp Σ :=
   ⌜ match b with
     | HB installed_block blocks_since_install =>
@@ -25,6 +27,153 @@ Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iPr
         disk_at_txn_id txn_id ls !! int.val a = Some installed_block ∧
         updates_since txn_id a ls = blocks_since_install
     end ⌝.
+
+Definition wal_heap_inv (γh : gen_heapG u64 heap_block Σ) (ls : log_state.t) : iProp Σ :=
+   ∃ (gh : gmap u64 heap_block),
+      gen_heap_ctx (hG := γh) gh ∗
+                   [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b.
+
+
+(* Helper lemmas *)
+
+
+Theorem apply_upds_cons disk u ul :
+  apply_upds (u :: ul) disk =
+  apply_upds ul (apply_upds [u] disk).
+Proof.
+  reflexivity.
+Qed.
+
+Theorem apply_upds_app : forall u1 u2 disk,
+  apply_upds (u1 ++ u2) disk =
+  apply_upds u2 (apply_upds u1 disk).
+Proof.
+  induction u1.
+  - reflexivity.
+  - simpl app.
+    intros.
+    rewrite apply_upds_cons.
+    rewrite IHu1.
+    reflexivity.
+Qed.
+
+Theorem txn_upds_cons txn txnl:
+  txn_upds (txn :: txnl) =
+  txn_upds [txn] ++ txn_upds txnl.
+Proof.
+  unfold txn_upds.
+  rewrite <- concat_app.
+  rewrite <- fmap_app.
+  f_equal.
+Qed.
+
+Theorem take_drop_txns:
+  forall (txn_id: nat) txns,
+    txn_id <= length txns ->
+    txn_upds txns = txn_upds (take txn_id txns) ++ txn_upds (drop txn_id txns).
+Proof.
+  induction txn_id.
+  - intros.
+    unfold txn_upds; simpl.
+    rewrite skipn_O; auto.
+  - intros. destruct txns.
+    + unfold txn_upds; simpl; auto.
+    + rewrite txn_upds_cons.
+      rewrite firstn_cons.
+      rewrite skipn_cons.
+      replace (txn_upds (p :: take txn_id txns)) with (txn_upds [p] ++ txn_upds (take txn_id txns)).
+      2: rewrite <- txn_upds_cons; auto.
+      rewrite <- app_assoc.
+      f_equal.
+      rewrite <- IHtxn_id; auto.
+      rewrite cons_length in H.
+      lia.
+Qed.
+
+Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
+  wal_wf σ ->
+  disk_at_txn_id txn_id σ !! int.val a = Some installed ->
+  (txn_id ≤ σ.(log_state.installed_lb))%nat ->
+  last_disk σ !! int.val a = Some (latest_update installed (updates_since txn_id a σ)).
+Proof.
+  destruct σ.
+  unfold last_disk, updates_since, disk_at_txn_id.
+  simpl.
+  intros.
+  rewrite firstn_all.
+  rewrite (take_drop_txns txn_id txns).
+  2: {
+    unfold wal_wf in H; intuition; simpl in *.
+    lia.
+  }
+  rewrite apply_upds_app.
+  generalize dependent H0.
+  generalize (apply_upds (txn_upds (take txn_id txns)) d).
+  intros.
+  generalize (txn_upds (drop txn_id txns)).
+  intros.
+  generalize dependent d0.
+  generalize dependent installed.
+  induction l; simpl; intros.
+  - auto.
+  - destruct a0. unfold updates_for_addr.
+    rewrite filter_cons; simpl.
+    destruct (decide (addr = a)); subst.
+    + simpl.
+      erewrite <- IHl.
+      { reflexivity. }
+      rewrite lookup_insert. auto.
+    + erewrite <- IHl.
+      { reflexivity. }
+      rewrite lookup_insert_ne; auto.
+      intro Hx. apply n. word.
+Qed.
+
+Theorem no_updates_since_last_disk σ a (txn_id : nat) :
+  wal_wf σ ->
+  no_updates_since σ a txn_id ->
+  disk_at_txn_id txn_id σ !! int.val a = last_disk σ !! int.val a.
+Proof.
+Admitted.
+
+Theorem no_updates_since_nil σ a (txn_id : nat) :
+  wal_wf σ ->
+  no_updates_since σ a txn_id ->
+  updates_since txn_id a σ = nil.
+Proof.
+Admitted.
+
+Theorem wal_wf_advance_installed_to σ txn_id :
+  wal_wf σ ->
+  (* is_trans σ.(log_state.trans) pos -> *)
+  (txn_id ≤ σ.(log_state.durable_lb))%nat ->
+  wal_wf (set log_state.installed_lb (λ _ : nat, txn_id) σ).
+Proof.
+  destruct σ.
+  unfold wal_wf; simpl.
+  intuition.
+  lia.
+Qed.
+
+(* TODO: rename pos to txn_id *)
+Theorem updates_since_apply_upds σ a (pos diskpos : nat) installedb b :
+  (pos ≤ diskpos)%nat ->
+  (diskpos <= length (log_state.txns σ))%nat ->
+  disk_at_txn_id pos σ !! int.val a = Some installedb ->
+  disk_at_txn_id diskpos σ !! int.val a = Some b ->
+  b ∈ installedb :: updates_since pos a σ.
+Proof.
+Admitted.
+
+Theorem disk_at_txn_id_installed_to σ pos0 pos :
+  disk_at_txn_id pos0 (@set _ _  log_state.installed_lb
+      (fun _ (x2 : log_state.t) => x2) (λ _ : nat, pos) σ) =
+  disk_at_txn_id pos0 σ.
+Proof.
+  destruct σ; auto.
+Qed.
+
+(* Specs *)
 
 Lemma wal_update_durable (gh : gmap u64 heap_block) (σ : log_state.t) new_durable :
   forall a b hb,
@@ -78,61 +227,6 @@ Proof.
   lia.
 Qed.
 
-Definition wal_heap_inv (γh : gen_heapG u64 heap_block Σ) (ls : log_state.t) : iProp Σ :=
-   ∃ (gh : gmap u64 heap_block),
-      gen_heap_ctx (hG := γh) gh ∗
-      [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b.
-
-Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
-  disk_at_txn_id txn_id σ !! int.val a = Some installed ->
-  (txn_id ≤ σ.(log_state.installed_lb))%nat ->
-  last_disk σ !! int.val a = Some (latest_update installed (updates_since txn_id a σ)).
-Proof.
-Admitted.
-
-Theorem no_updates_since_last_disk σ a (txn_id : nat) :
-  wal_wf σ ->
-  no_updates_since σ a txn_id ->
-  disk_at_txn_id txn_id σ !! int.val a = last_disk σ !! int.val a.
-Proof.
-Admitted.
-
-Theorem no_updates_since_nil σ a (txn_id : nat) :
-  wal_wf σ ->
-  no_updates_since σ a txn_id ->
-  updates_since txn_id a σ = nil.
-Proof.
-Admitted.
-
-Theorem wal_wf_advance_installed_to σ txn_id :
-  wal_wf σ ->
-  (* is_trans σ.(log_state.trans) pos -> *)
-  (txn_id ≤ σ.(log_state.durable_lb))%nat ->
-  wal_wf (set log_state.installed_lb (λ _ : nat, txn_id) σ).
-Proof.
-  destruct σ.
-  unfold wal_wf; simpl.
-  intuition.
-  lia.
-Qed.
-
-(* TODO: rename pos to txn_id *)
-Theorem updates_since_apply_upds σ a (pos diskpos : nat) installedb b :
-  (pos ≤ diskpos)%nat ->
-  (diskpos <= length (log_state.txns σ))%nat ->
-  disk_at_txn_id pos σ !! int.val a = Some installedb ->
-  disk_at_txn_id diskpos σ !! int.val a = Some b ->
-  b ∈ installedb :: updates_since pos a σ.
-Proof.
-Admitted.
-
-Theorem disk_at_txn_id_installed_to σ pos0 pos :
-  disk_at_txn_id pos0 (@set _ _  log_state.installed_lb
-      (fun _ (x2 : log_state.t) => x2) (λ _ : nat, pos) σ) =
-  disk_at_txn_id pos0 σ.
-Proof.
-  destruct σ; auto.
-Qed.
 
 Definition readmem_q γh (a : u64) (installed : Block) (bs : list Block) (res : option Block) : iProp Σ :=
   (
@@ -289,8 +383,8 @@ Proof.
     admit.
   }
   {
-    apply updates_since_to_last_disk.
-    { rewrite disk_at_txn_id_installed_to; eauto. }
+    apply updates_since_to_last_disk; eauto.
+    (* { rewrite disk_at_txn_id_installed_to; eauto. } *)
     rewrite /set. lia.
   }
 
