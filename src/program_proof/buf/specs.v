@@ -281,7 +281,7 @@ Theorem wp_BufMap__DirtyBufs l m :
     BufMap__DirtyBufs #l
   {{{
     (s : Slice.t) bufptrlist dirtylist, RET (slice_val s);
-    is_slice s (refT (struct.t Buf.S)) 1%Qp bufptrlist ∗
+    is_slice s (refT (struct.t Buf.S)) 1 bufptrlist ∗
     ⌜ dirtylist ≡ₚ filter (λ x, (snd x).(bufDirty) = true) (map_to_list m) ⌝ ∗
     [∗ list] _ ↦ bufptrval; addrbuf ∈ bufptrlist; dirtylist,
       ∃ (bufptr : loc),
@@ -298,7 +298,18 @@ Opaque struct.t.
   wp_loadField.
   iDestruct (big_sepM2_sepM_1 with "Hmap") as "Hmap".
   iDestruct (big_sepM_flatid_addr_map_1 with "Hmap") as "Hmap"; eauto.
-  wp_apply (wp_MapIter with "Hismap [$] Hmap").
+  wp_apply (wp_MapIter _ _ _ _
+    (∃ s bufptrlist,
+      bufs ↦[slice.T (refT (struct.t Buf.S))] (slice_val s) ∗
+      is_slice s (refT (struct.t Buf.S)) 1 bufptrlist
+      (* XXX *))
+    with "Hismap [Hbufs] Hmap").
+  {
+    iExists _, nil.
+    iSplitL.
+    2: { iApply is_slice_zero. }
+    iFrame.
+  }
   {
     iIntros (k v Φi).
     iModIntro.
@@ -306,14 +317,33 @@ Opaque struct.t.
     iDestruct "Hp" as (a) "[-> Hp]".
     iDestruct "Hp" as (b) "[% Hp]".
     iDestruct "Hp" as (bl) "[-> Hp]".
+    iDestruct "Hi" as (s bufptrlist) "[Hbufs Hbufptrlist]".
     wp_pures.
     wp_apply (wp_buf_loadField_dirty with "Hp"); iIntros "Hp".
-    admit.
+    wp_if_destruct.
+    { wp_load.
+      wp_apply (wp_SliceAppend with "[$Hbufptrlist]"); first eauto.
+      { iSplitL; eauto. admit. }
+      iIntros (s') "Hbufptrlist".
+      wp_store.
+      iApply "HΦ".
+      iSplitL "Hbufs Hbufptrlist".
+      { iExists _, _. iFrame. }
+      admit.
+    }
+    { iApply "HΦ".
+      iSplitL "Hbufs Hbufptrlist".
+      { iExists _, _. iFrame. }
+      admit.
+    }
   }
 
   iIntros "(Hmap & Hi & Hq)".
+  iDestruct "Hi" as (s bufptrlist) "[Hbufs Hbufptrlist]".
   wp_pures.
   wp_load.
+  iApply "HΦ".
+  iFrame.
   admit.
 Transparent struct.t.
 Admitted.
