@@ -9,48 +9,57 @@ From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.ci
 Implicit Types (txn_id:nat) (pos: u64).
 
 Existing Instance r_mbind.
+Existing Instance fallback_genPred.
 
 Definition update_durable: transition log_state.t nat :=
-  new_durable ← suchThat (gen:=fun _ _ => None)
-              (fun s new_durable =>
-                 (s.(log_state.durable_lb) ≤ new_durable ≤ length s.(log_state.txns))%nat);
-  modify (set log_state.durable_lb (λ _, new_durable));;
-  ret new_durable.
+  new_durable ← suchThat
+              (λ s new_durable,
+               (s.(log_state.durable_lb) ≤
+                new_durable ≤
+                length s.(log_state.txns))%nat);
+modify (set log_state.durable_lb (λ _, new_durable));;
+ret new_durable.
 
 Definition update_installed: transition log_state.t nat :=
-  new_installed ← suchThat (gen:=fun _ _ => None)
-              (fun s new_installed =>
-                 (s.(log_state.installed_lb) ≤ new_installed ≤ s.(log_state.durable_lb))%nat);
+  new_installed ← suchThat
+              (λ s new_installed,
+                 (s.(log_state.installed_lb) ≤
+                  new_installed ≤
+                  s.(log_state.durable_lb))%nat);
   modify (set log_state.installed_lb (λ _, new_installed));;
   ret new_installed.
 
 Definition log_crash : transition log_state.t unit :=
-  crash_txn ← suchThat (gen:=fun _ _ => None)
-            (fun s (crash_txn: nat) =>
-               s.(log_state.durable_lb) <= crash_txn);
+  crash_txn ← suchThat
+            (λ s (crash_txn: nat),
+               s.(log_state.durable_lb) ≤ crash_txn);
   modify (set log_state.txns (fun txns => take crash_txn txns));;
   modify (set log_state.durable_lb (fun _ => crash_txn));;
   ret tt.
 
 Definition suchThatMax {Σ} (pred: Σ -> nat -> Prop) : transition Σ nat :=
-  (* TODO: implement *)
-  undefined.
+  suchThat (λ s x, pred s x ∧ ∀ y, pred s y -> y ≤ x).
+
+Definition is_txn (s: log_state.t) (txn_id: nat) (pos: u64): Prop :=
+  fst <$> s.(log_state.txns) !! txn_id = Some pos.
 
 Definition getTxnId (pos: u64) : transition log_state.t nat :=
-  suchThatMax (fun s (txn_id: nat) => fst <$> s.(log_state.txns) !! txn_id = Some pos).
+  suchThatMax (fun s (txn_id: nat) => is_txn s txn_id pos).
 
 Definition log_flush (pos:u64) : transition log_state.t unit :=
   txn_id ← getTxnId pos;
-  new_durable ← suchThat (gen:=fun _ _ => None)
-              (fun s (new_durable: nat) =>
+  new_durable ← suchThat
+              (λ s (new_durable: nat),
                  (Nat.max s.(log_state.durable_lb) txn_id ≤ new_durable ≤ length s.(log_state.txns))%nat);
   modify (set log_state.durable_lb (λ _, (new_durable)));;
   ret tt.
 
 Definition allocPos : transition log_state.t u64 :=
-  (* TODO: get the highest pos used *)
-  highest ← ret (U64 0);
-  suchThat (gen:=fun _ _ => None) (fun _ (pos': u64) => int.val pos' >= int.val highest).
+  suchThat (λ s (pos': u64),
+            (∃ txn_id', is_txn s txn_id' pos') ∧
+            (∀ (pos: u64) txn_id,
+                is_txn s txn_id pos ->
+                int.val pos' >= int.val pos)).
 
 Definition log_mem_append (txn: list update.t): transition log_state.t u64 :=
   pos ← allocPos;
@@ -64,8 +73,7 @@ Definition disk_at_txn_id (txn_id: nat) (s:log_state.t): disk :=
   apply_upds (txn_upds $ take txn_id (log_state.txns s)) s.(log_state.d).
 
 Definition updates_for_addr (a: u64) (l : list update.t) : list Block :=
-  fmap update.b
-  (filter (fun u => u.(update.addr) = a) l).
+  update.b <$> filter (λ u, u.(update.addr) = a) l.
 
 Definition updates_since (txn_id: nat) (a: u64) (s : log_state.t) : list Block :=
   updates_for_addr a (txn_upds $ drop txn_id (log_state.txns s)).
@@ -81,11 +89,11 @@ Definition last_disk (s:log_state.t): disk :=
   disk_at_txn_id (length (log_state.txns s)) s.
 
 Definition no_updates_since σ a txn_id :=
-  Forall (fun u => u.(update.addr) ≠ a)
+  Forall (λ u, u.(update.addr) ≠ a)
          (txn_upds $ drop txn_id (log_state.txns σ)).
 
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
-  ok ← suchThat (fun _ (b:bool) => True);
+  ok ← any bool;
   if (ok:bool)
   then d ← reads last_disk;
        match d !! int.val a with
@@ -97,8 +105,7 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
     use [log_read_installed] and together get the current value at [a] *)
     update_durable;;
     update_installed;;
-    suchThat (gen:=fun _ _ => None)
-             (fun s (_:unit) =>
+    suchThat (fun s (_:unit) =>
                 no_updates_since s a s.(log_state.installed_lb));;
     ret None.
 

@@ -288,7 +288,7 @@ Proof.
   intuition.
 
   simpl in *; monad_inv.
-  destruct b.
+  destruct x0.
   - simpl in *; monad_inv.
     simpl in *; monad_inv.
 
