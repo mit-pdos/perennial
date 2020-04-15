@@ -36,6 +36,20 @@ Context (Pwal: log_state.t -> iProp Σ).
 Context (walN : namespace).
 Definition circN: namespace := walN .@ "circ".
 
+Record wal_names :=
+  { circ_name: circ_names;
+    memStart_name : gname;
+    memLog_name : gname;
+    nextDiskEnd_name : gname;
+    lock_name : gname;
+    cs_name : gname;
+    installer_blocks_name : gname;
+    installed_name : gname;
+    absorptionBoundaries_name : gen_heapG nat unit Σ;
+  }.
+
+Implicit Types (γ: wal_names).
+
 Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 val) : gmap u64 val :=
   match memLog with
   | nil => m
@@ -43,7 +57,7 @@ Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 va
     compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := #pos ]> m)
   end.
 
-Definition is_wal_state (st: loc) γcirc (γmemstart γmemlog γnextDiskEnd: gname): iProp Σ :=
+Definition is_wal_state (st: loc) γ : iProp Σ :=
   ∃ (memLogSlice : Slice.t)
     (memLogMapPtr : loc)
     (memStart diskEnd nextDiskEnd : u64)
@@ -56,14 +70,14 @@ Definition is_wal_state (st: loc) γcirc (γmemstart γmemlog γnextDiskEnd: gna
     st ↦[WalogState.S :: "memLogMap"] #memLogMapPtr ∗
     (updates_slice memLogSlice memLog) ∗
     is_map memLogMapPtr (compute_memLogMap memLog memStart ∅, #0) ∗
-    diskEnd_at_least γcirc (int.val diskEnd) ∗
-    start_at_least γcirc memStart ∗
-    own γmemstart (● (Excl' memStart)) ∗
-    own γmemlog (● (Excl' memLog)) ∗
-    own γnextDiskEnd (● (Excl' nextDiskEnd))
+    diskEnd_at_least γ.(circ_name) (int.val diskEnd) ∗
+    start_at_least γ.(circ_name) memStart ∗
+    own γ.(memStart_name) (● (Excl' memStart)) ∗
+    own γ.(memLog_name) (● (Excl' memLog)) ∗
+    own γ.(nextDiskEnd_name) (● (Excl' nextDiskEnd))
     .
 
-Definition is_wal_mem (l: loc) γlock γcirc γmemstart γmemlog γnextDiskEnd : iProp Σ :=
+Definition is_wal_mem (l: loc) γ : iProp Σ :=
   ∃ q (memLock : loc) (d : val) (circ st : loc)
       (shutdown : bool) (nthread : u64)
       (condLogger condInstall condShut : loc),
@@ -79,19 +93,16 @@ Definition is_wal_mem (l: loc) γlock γcirc γmemstart γmemlog γnextDiskEnd :
     lock.is_cond condLogger #memLock ∗
     lock.is_cond condInstall #memLock ∗
     lock.is_cond condShut #memLock ∗
-    is_lock walN γlock #memLock (is_wal_state st γcirc γmemstart γmemlog γnextDiskEnd).
+    is_lock walN γ.(lock_name) #memLock (is_wal_state st γ).
 
-Definition circular_pred (γcs : gname) (cs : circΣ.t) : iProp Σ :=
-  own γcs (● (Excl' cs)).
+Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
+  own γ.(cs_name) (● (Excl' cs)).
 
 Definition circ_matches_memlog (memStart : u64) (memLog : list update.t)
                                (circStart : u64) (circLog : list update.t) :=
   ∀ (off : nat) u,
     circLog !! off = Some u ->
     memLog !! (off + int.nat circStart - int.nat memStart)%nat = Some u.
-
-Definition is_txn (s: log_state.t) (txn_id: nat) (pos: u64): Prop :=
-  fst <$> s.(log_state.txns) !! txn_id = Some pos.
 
 (** subslice takes elements with indices [n, m) in list [l] *)
 Definition subslice {A} (n m: nat) (l: list A): list A :=
@@ -109,12 +120,12 @@ Qed.
 installed? how will ReadInstalled be able to prove something is in
 fully_installed (which is currently implicitly the complement of
 being_installed)? *)
-Definition is_being_installed γinstaller_blocks (being_installed: disk): iProp Σ :=
-    (own γinstaller_blocks (◯ (Excl' being_installed)) ∗
+Definition is_being_installed γ (being_installed: disk): iProp Σ :=
+    (own γ.(installer_blocks_name) (◯ (Excl' being_installed)) ∗
     ( [∗ map] a ↦ v ∈ being_installed, a d↦ v ∗ ⌜2 + LogSz <= int.val a⌝ ))%I.
 
 Definition is_installer_disks (s: log_state.t)
-           (installed_txn_id: nat) (fully_installed being_installed: disk) :=
+           (installed_txn_id: nat) (fully_installed being_installed: disk): Prop :=
   s.(log_state.installed_lb) ≤ installed_txn_id ∧
   let installed_disk := disk_at_txn_id installed_txn_id s in
   ∀ (a : u64) (b : Block),
@@ -128,21 +139,20 @@ region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. The things in this invariant are
 generally maintained by the installer thread, which will need some ownership
 transfer plan between the invariant and its local state. *)
-Definition is_installed (s: log_state.t) (γcirc : circ_names)
-           (γinstalled γinstaller_blocks: gname) : iProp Σ :=
+Definition is_installed (s: log_state.t) γ : iProp Σ :=
   ∃ (fully_installed being_installed: disk),
     ( [∗ map] a ↦ v ∈ fully_installed,
       a d↦ v ∗ ⌜2 + LogSz <= int.val a⌝ ) ∗
-    is_being_installed γinstaller_blocks being_installed ∗
+    is_being_installed γ being_installed ∗
     ( ∃ (installed_txn_id : nat) (diskStart : u64),
-      own γinstalled (◯ (Excl' installed_txn_id)) ∗
-      start_is γcirc (1/4) diskStart ∗
+      own γ.(installed_name) (◯ (Excl' installed_txn_id)) ∗
+      start_is γ.(circ_name) (1/4) diskStart ∗
       ⌜is_txn s installed_txn_id diskStart⌝ ∗
       ⌜is_installer_disks s installed_txn_id fully_installed being_installed⌝ ).
 
 Definition is_memlog (s: log_state.t)
            (memStart_txn_id: nat) memLog
-           (absorptionBoundaries: gmap nat unit) (memStart: u64) :=
+           (absorptionBoundaries: gmap nat unit) (memStart: u64): Prop :=
       (* the high-level structure here is to relate each transaction "governed" by the memLog to the
       "cumulative updates" through that transaction. *)
       ∀ (txn_id : nat) (pos : u64),
@@ -173,20 +183,18 @@ Definition is_memlog (s: log_state.t)
         (* need +1 since txn_id should be included in subslice *)
         apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) s.(log_state.txns))) ∅.
 
-Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
-                        (γlock γinstalled γinstaller_blocks : gname)
-                        (γabsorptionBoundaries: gen_heapG nat unit Σ) : iProp Σ :=
+Definition is_wal_inner (l : loc) γ : iProp Σ :=
   ∃ (cs: circΣ.t) (s : log_state.t) (γmemstart γmemlog: gname) (memStart : u64)
        (memLog : list update.t)
        (absorptionBoundaries : gmap nat unit) (γnextDiskEnd: gname),
-    own γcs (◯ (Excl' cs)) ∗
+    own γ.(cs_name) (◯ (Excl' cs)) ∗
     Pwal s ∗
-    is_wal_mem l γlock γcirc γmemstart γmemlog γnextDiskEnd ∗
+    is_wal_mem l γ ∗
     own γmemstart (◯ (Excl' memStart)) ∗
     own γmemlog (◯ (Excl' memLog)) ∗
     ⌜ circ_matches_memlog memStart memLog cs.(circΣ.start) cs.(circΣ.upds) ⌝ ∗
-    is_installed s γcirc γinstalled γinstaller_blocks ∗
-    gen_heap_ctx (hG:=γabsorptionBoundaries) absorptionBoundaries ∗
+    is_installed s γ ∗
+    gen_heap_ctx (hG:=γ.(absorptionBoundaries_name)) absorptionBoundaries ∗
     (* a group-commit transaction is logged by setting nextDiskEnd to its pos -
        these conditions ensure that it is recorded as an absorption boundary,
        since at this point it becomes a plausible crash point *)
@@ -196,7 +204,7 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
       ⌜ is_txn s nextDiskEnd_txn_id nextDiskEnd ⌝ ) ∗
     (* next, transactions are actually logged to the circ buffer *)
     ( ∃ (diskEnd_txn_id : nat) (diskEnd : u64),
-      diskEnd_is γcirc (1/4) (int.val diskEnd) ∗
+      diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd) ∗
       ⌜ absorptionBoundaries !! diskEnd_txn_id = Some tt ⌝ ∗
       ⌜ is_txn s diskEnd_txn_id diskEnd ⌝ ∗
       (* TODO(tej): does this make sense? it's the only constraint on
@@ -214,9 +222,8 @@ Definition is_wal_inner (l : loc) (γcs : gname) (γcirc : circ_names)
       ⌜is_txn s memStart_txn_id memStart⌝ ∗
       ⌜is_memlog s memStart_txn_id memLog absorptionBoundaries memStart⌝.
 
-Definition is_wal (l : loc) γlock γinstalled γinstaller_blocks γabsorptionBoundaries : iProp Σ :=
-  ∃ γcs γcirc ,
-    inv walN (is_wal_inner l γcs γcirc γlock γinstalled γinstaller_blocks γabsorptionBoundaries) ∗
-    is_circular circN (circular_pred γcs) γcirc.
+Definition is_wal (l : loc) : iProp Σ :=
+  ∃ γ, inv walN (is_wal_inner l γ) ∗
+    is_circular circN (circular_pred γ) γ.(circ_name).
 
 End heap.
