@@ -129,6 +129,14 @@ Proof.
       intro Hx. apply n. word.
 Qed.
 
+Theorem last_disk_installed_lb σ pos :
+  last_disk (@set _ _  log_state.installed_lb
+      (fun (_ : forall _ : nat, nat) (x2 : log_state.t) => x2) (λ _ : nat, pos) σ) =
+  last_disk σ.
+Proof.
+  reflexivity.
+Qed.
+
 Theorem no_updates_since_last_disk σ a (txn_id : nat) :
   wal_wf σ ->
   no_updates_since σ a txn_id ->
@@ -171,6 +179,28 @@ Theorem disk_at_txn_id_installed_to σ pos0 pos :
   disk_at_txn_id pos0 σ.
 Proof.
   destruct σ; auto.
+Qed.
+
+Theorem wal_wf_advance_durable_lb σ (pos:nat) :
+  wal_wf σ ->
+ (σ.(log_state.durable_lb) ≤ pos ≤ length σ.(log_state.txns))%nat ->
+  wal_wf (set log_state.durable_lb (λ _ : nat, pos) σ).
+Proof.
+  destruct σ.
+  unfold wal_wf; simpl.
+  intuition.
+  1: lia.
+  lia.
+Qed.
+
+Theorem wal_wf_advance_installed_lb σ (pos:nat) :
+  wal_wf σ ->
+  pos ≤ σ.(log_state.durable_lb) ->
+  wal_wf (set log_state.installed_lb (λ _ : nat, pos) σ).
+Proof.
+  destruct σ.
+  unfold wal_wf; simpl.
+  intuition.
 Qed.
 
 (* Specs *)
@@ -226,7 +256,6 @@ Proof.
   intuition.
   lia.
 Qed.
-
 
 Definition readmem_q γh (a : u64) (installed : Block) (bs : list Block) (res : option Block) : iProp Σ :=
   (
@@ -289,35 +318,56 @@ Proof.
     iSplitL "Hctx Hgh".
     2: iFrame.
 
-    iDestruct (wal_update_installed gh _ new_installed with "Hgh") as "Hgh"; eauto; try lia.
+    rewrite /set /=.
+    rewrite /set /= in H5.
+    rewrite /set /= in H6.
+    unfold wal_wf in a0.
+
+    iDestruct (wal_update_durable gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_durable with "Hgh") as "Hgh"; eauto.
     + rewrite /set /=.
-      intuition idtac.
-      simpl in *.
+      intuition.
       admit.
-    + apply updates_since_to_last_disk; eauto; try lia.
-    + iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
-      iDestruct ("Hgh" $! (HB (latest_update installed (updates_since x a σ)) nil) with "[]") as "Hx".
-      {
-        rewrite /set /=.
-        rewrite /wal_heap_inv.
-        rewrite /wal_heap_inv_addr /=.
-        iPureIntro; intros.
-        simpl in H5.
-        exists new_installed. intuition try lia.
-        {
-          rewrite <- updates_since_to_last_disk; eauto; try lia.
-          rewrite no_updates_since_last_disk; auto.
-          apply wal_wf_advance_installed_to; eauto; try lia.
-          admit.
-        }
-        {
-          rewrite no_updates_since_nil; auto.
-          apply wal_wf_advance_installed_to; auto; try lia.
-          admit.
-        }
-      }
-      rewrite /wal_heap_inv.
-      iExists _; iFrame.
+    + rewrite last_disk_installed_lb; auto.
+      apply updates_since_to_last_disk; eauto.
+      lia.
+    + iDestruct (wal_update_installed gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_installed with "Hgh") as "Hgh"; eauto.
+      -- rewrite last_disk_installed_lb; auto.
+         apply updates_since_to_last_disk; eauto.
+         1: admit.
+         subst; simpl in *.
+         lia.
+      -- iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
+         iDestruct ("Hgh" $! (HB (latest_update installed (updates_since x a σ)) nil) with "[]") as "Hx".
+          {
+            rewrite /set /=.
+            rewrite /wal_heap_inv.
+            rewrite /wal_heap_inv_addr /=.
+            iPureIntro; intros.
+            simpl in H5.
+            exists new_installed. intuition try lia.
+            {
+              rewrite -updates_since_to_last_disk; eauto.
+              1: rewrite no_updates_since_last_disk; auto.
+              {
+                edestruct wal_wf_advance_durable_lb with (σ := σ) (pos := new_durable); auto.
+                1: admit.
+                admit.
+                (* apply wal_wf_advance_installed_lb with (σ := (set log_state.durable_lb (λ _ : nat, new_durable) σ)); eauto.  *)
+              }
+              1: admit.
+              lia.
+            }
+            {
+              rewrite no_updates_since_nil; auto.
+              (* apply wal_wf_advance_installed_lb; auto. *)
+              admit.
+            }
+          }
+          rewrite (no_updates_since_nil _ _ x); auto.
+          2: admit.
+          (* apply wal_wf_advance_installed_lb; auto. *)
+          rewrite /wal_heap_inv.
+          iExists _; iFrame.
 Admitted.
 
 Definition readinstalled_q γh (a : u64) (installed : Block) (bs : list Block) (res : Block) : iProp Σ :=
