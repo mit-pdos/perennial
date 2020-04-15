@@ -409,23 +409,22 @@ Proof.
   iMod "Hfupd".
   iModIntro.
   iFrame.
+  destruct H0.
+  intuition.
 
-  destruct H0. intuition.
-  iDestruct (wal_update_installed gh (set log_state.installed_lb (λ _, new_installed) σ) new_installed with "Hgh") as "Hgh".
-  2: eauto.
-  {
-    rewrite /set.
-    intuition.
-    admit.
-  }
-  {
+  iDestruct (wal_update_durable gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_durable with "Hgh") as "Hgh"; eauto.
+  - rewrite last_disk_installed_lb; auto.
     apply updates_since_to_last_disk; eauto.
-    (* { rewrite disk_at_txn_id_installed_to; eauto. } *)
-    rewrite /set. lia.
-  }
-
-  iExists _. iFrame.
-Admitted.
+    lia.
+  - iDestruct (wal_update_installed gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_installed with "Hgh") as "Hgh"; eauto.
+    + rewrite last_disk_installed_lb; auto.
+       apply updates_since_to_last_disk; eauto.
+       1: apply wal_wf_advance_durable_lb; auto.
+       subst; simpl in *.
+       lia.
+    + rewrite /wal_heap_inv.
+      iExists _. iFrame.
+Qed.
 
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
   [∗ list] _ ↦ u; old ∈ bs; olds,
