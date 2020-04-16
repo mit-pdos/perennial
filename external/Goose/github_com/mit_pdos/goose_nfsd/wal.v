@@ -458,10 +458,9 @@ Definition Walog__Read: val :=
 
 (* Append to in-memory log.
 
-   On success returns the txn for this append.
+   On success returns the pos for this append.
 
-   On failure guaranteed to be idempotent (failure can occur either due to bufs
-   exceeding the size of the log or in principle due to overflowing 2^64 writes) *)
+   On failure guaranteed to be idempotent (failure can only occur in principle, due overflowing 2^64 writes) *)
 Definition Walog__MemAppend: val :=
   rec: "Walog__MemAppend" "l" "bufs" :=
     (if: slice.len "bufs" > LOGSZ
@@ -492,28 +491,25 @@ Definition Walog__MemAppend: val :=
       lock.release (struct.loadF Walog.S "memLock" "l");;
       (![LogPosition] "txn", ![boolT] "ok")).
 
-(* Flush flushes a transaction (and all preceding transactions)
+(* Flush flushes a transaction pos (and all preceding transactions)
 
    The implementation waits until the logger has appended in-memory log up to
    txn to on-disk log. *)
 Definition Walog__Flush: val :=
-  rec: "Walog__Flush" "l" "txn" :=
+  rec: "Walog__Flush" "l" "pos" :=
     util.DPrintf #1 (#(str"Flush: commit till txn %d
     ")) #();;
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
-    (if: "txn" > struct.loadF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l")
+    (if: "pos" > struct.loadF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l")
     then
       struct.storeF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l") + slice.len (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")));;
       #()
     else #());;
     Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: "txn" ≤ struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l")
-      then Break
-      else
-        lock.condWait (struct.loadF Walog.S "condLogger" "l");;
-        Continue));;
+    (for: (λ: <>, ~ ("pos" ≤ struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l"))); (λ: <>, Skip) := λ: <>,
+      lock.condWait (struct.loadF Walog.S "condLogger" "l");;
+      Continue);;
     lock.release (struct.loadF Walog.S "memLock" "l").
 
 (* Shutdown logger and installer *)
