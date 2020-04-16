@@ -43,8 +43,8 @@ Record wal_names :=
     nextDiskEnd_name : gname;
     lock_name : gname;
     cs_name : gname;
-    installer_blocks_name : gname;
     installed_name : gname;
+    installed_data_name : gname;
     absorptionBoundaries_name : gen_heapG nat unit Σ;
   }.
 
@@ -116,39 +116,32 @@ Proof.
   lia.
 Qed.
 
-(* TODO: how will installer have enough information to know what's being
-installed? how will ReadInstalled be able to prove something is in
-fully_installed (which is currently implicitly the complement of
-being_installed)? *)
-Definition is_being_installed γ (being_installed: disk): iProp Σ :=
-    (own γ.(installer_blocks_name) (◯ (Excl' being_installed)) ∗
-    ( [∗ map] a ↦ v ∈ being_installed, a d↦ v ∗ ⌜2 + LogSz <= int.val a⌝ ))%I.
+(* TODO: make this spatial - change absorptionBoundaries to include the
+txn_id, make this mapsto γ.(absorptionBoundaries_name) txn_id pos *)
+Definition txn_pos s txn_id pos: iProp Σ :=
+  ⌜is_txn s txn_id pos⌝.
 
-Definition is_installer_disks (s: log_state.t)
-           (installed_txn_id: nat) (fully_installed being_installed: disk): Prop :=
-  s.(log_state.installed_lb) ≤ installed_txn_id ∧
-  let installed_disk := disk_at_txn_id installed_txn_id s in
-  ∀ (a : u64) (b : Block),
-    installed_disk !! int.val a = Some b ->
-    ( updates_since installed_txn_id a s = nil ∧
-      fully_installed !! int.val a = Some b ) ∨
-    ∃ b0, being_installed !! int.val a = Some b0.
+Definition is_boundary γ txn_id : iProp Σ :=
+  mapsto (hG:=γ.(absorptionBoundaries_name)) txn_id 1 ().
 
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
-the updates through some installed transaction. The things in this invariant are
-generally maintained by the installer thread, which will need some ownership
-transfer plan between the invariant and its local state. *)
+the updates through some installed transaction. *)
 Definition is_installed (s: log_state.t) γ : iProp Σ :=
-  ∃ (fully_installed being_installed: disk),
-    ( [∗ map] a ↦ v ∈ fully_installed,
-      a d↦ v ∗ ⌜2 + LogSz <= int.val a⌝ ) ∗
-    is_being_installed γ being_installed ∗
-    ( ∃ (installed_txn_id : nat) (diskStart : u64),
-      own γ.(installed_name) (◯ (Excl' installed_txn_id)) ∗
-      start_is γ.(circ_name) (1/4) diskStart ∗
-      ⌜is_txn s installed_txn_id diskStart⌝ ∗
-      ⌜is_installer_disks s installed_txn_id fully_installed being_installed⌝ ).
+  ∃ installed_txn_id diskStart,
+    own γ.(installed_name) (◯ Excl' installed_txn_id) ∗
+    start_is γ.(circ_name) (1/4) diskStart ∗
+    txn_pos s installed_txn_id diskStart ∗
+    ([∗ map] a ↦ _ ∈ s.(log_state.d),
+     ∃ (b: Block),
+       (* every disk block has at least through installed_txn_id (most have
+        exactly, but some blocks may be in the process of being installed) *)
+       (* TODO: need to let installer keep track of exactly which blocks are
+       at a new txn_id, so that it can update installed_txn_id *)
+       ⌜∃ txn_id', (installed_txn_id ≤ txn_id')%nat ∧
+                   let txns := take txn_id' s.(log_state.txns) in
+                   apply_upds (txn_upds txns) s.(log_state.d) !! a = Some b⌝ ∗
+       a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝).
 
 Definition is_memlog (s: log_state.t)
            (memStart_txn_id: nat) memLog
@@ -201,12 +194,12 @@ Definition is_wal_inner (l : loc) γ : iProp Σ :=
     ( ∃ (nextDiskEnd_txn_id : nat) (nextDiskEnd : u64),
       own γnextDiskEnd (◯ (Excl' nextDiskEnd)) ∗
       ⌜ absorptionBoundaries !! nextDiskEnd_txn_id = Some tt ⌝ ∗
-      ⌜ is_txn s nextDiskEnd_txn_id nextDiskEnd ⌝ ) ∗
+      txn_pos s nextDiskEnd_txn_id nextDiskEnd ) ∗
     (* next, transactions are actually logged to the circ buffer *)
     ( ∃ (diskEnd_txn_id : nat) (diskEnd : u64),
       diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd) ∗
       ⌜ absorptionBoundaries !! diskEnd_txn_id = Some tt ⌝ ∗
-      ⌜ is_txn s diskEnd_txn_id diskEnd ⌝ ∗
+      txn_pos s diskEnd_txn_id diskEnd ∗
       (* TODO(tej): does this make sense? it's the only constraint on
          durable_lb *)
       ⌜ s.(log_state.durable_lb) ≤ diskEnd_txn_id ⌝ ) ∗
@@ -219,7 +212,7 @@ Definition is_wal_inner (l : loc) γ : iProp Σ :=
     tail of transactions that are subject to absorption and not owned by the
     logger. *)
     ∃ (memStart_txn_id : nat),
-      ⌜is_txn s memStart_txn_id memStart⌝ ∗
+      txn_pos s memStart_txn_id memStart ∗
       ⌜is_memlog s memStart_txn_id memLog absorptionBoundaries memStart⌝.
 
 Definition is_wal (l : loc) : iProp Σ :=
