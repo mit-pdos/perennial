@@ -78,22 +78,47 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
     .
 
 Definition is_wal_mem (l: loc) γ : iProp Σ :=
-  ∃ q (memLock : loc) (d : val) (circ st : loc)
+  ∃ (memLock : loc) (d : val) (circ st : loc)
       (shutdown : bool) (nthread : u64)
       (condLogger condInstall condShut : loc),
-    l ↦[Walog.S :: "memLock"]{q} #memLock ∗
-    l ↦[Walog.S :: "d"]{q} d ∗
-    l ↦[Walog.S :: "circ"]{q} #circ ∗
-    l ↦[Walog.S :: "st"]{q} #st ∗
-    l ↦[Walog.S :: "condLogger"]{q} #condLogger ∗
-    l ↦[Walog.S :: "condInstall"]{q} #condInstall ∗
-    l ↦[Walog.S :: "condShut"]{q} #condShut ∗
-    l ↦[Walog.S :: "shutdown"]{q} #shutdown ∗
-    l ↦[Walog.S :: "nthread"]{q} #nthread ∗
+    (∃ q, (l ↦[Walog.S :: "memLock"]{q} #memLock ∗
+           l ↦[Walog.S :: "d"]{q} d ∗
+           l ↦[Walog.S :: "circ"]{q} #circ ∗
+           l ↦[Walog.S :: "st"]{q} #st ∗
+           l ↦[Walog.S :: "condLogger"]{q} #condLogger ∗
+           l ↦[Walog.S :: "condInstall"]{q} #condInstall ∗
+           l ↦[Walog.S :: "condShut"]{q} #condShut ∗
+           l ↦[Walog.S :: "shutdown"]{q} #shutdown ∗
+           l ↦[Walog.S :: "nthread"]{q} #nthread)) ∗
     lock.is_cond condLogger #memLock ∗
     lock.is_cond condInstall #memLock ∗
     lock.is_cond condShut #memLock ∗
     is_lock walN γ.(lock_name) #memLock (wal_linv st γ).
+
+Typeclasses Opaque struct_field_mapsto.
+
+Theorem is_wal_mem_dup l γ :
+    is_wal_mem l γ -∗ is_wal_mem l γ ∗ is_wal_mem l γ.
+Proof.
+  iIntros "Hinv".
+  iDestruct "Hinv" as
+      (memLock d circ st
+         shutdown nthread condLogger condInstall condShut)
+        "(Hfields&HcondLogger&HcondInstall&HcondShut&#His_lock)".
+  iDestruct "Hfields" as (q) "([Hf1 ?] & [Hf2 ?] & [Hf3 ?] & [Hf4 ?] & [Hf5 ?] & [Hf6 ?] & [Hf7 ?] & [Hf8 ?] & [Hf9 ?])".
+  iDestruct (is_cond_dup with "HcondLogger") as "[Hcond1 ?]".
+  iDestruct (is_cond_dup with "HcondInstall") as "[Hcond2 ?]".
+  iDestruct (is_cond_dup with "HcondShut") as "[Hcond3 ?]".
+  iSplitL "Hf1 Hf2 Hf3 Hf4 Hf5 Hf6 Hf7 Hf8 Hf9 Hcond1 Hcond2 Hcond3".
+  { iExists memLock, d, circ, st, shutdown, nthread.
+    iExists condLogger, condInstall, condShut.
+    iFrame "∗ His_lock".
+    iExists (q/2)%Qp; iFrame. }
+  { iExists memLock, d, circ, st, shutdown, nthread.
+    iExists condLogger, condInstall, condShut.
+    iFrame "∗ His_lock".
+    iExists (q/2)%Qp; iFrame. }
+Qed.
 
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   own γ.(cs_name) (● (Excl' cs)).
