@@ -3,8 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
-From iris.base_logic Require Import gen_heap.
-From Perennial.algebra Require Import gen_heap.
+From Perennial.algebra Require Import gen_heap_names.
 
 (* TODO: move this out, it's completely general *)
 (* Generalize life cycle of object state *)

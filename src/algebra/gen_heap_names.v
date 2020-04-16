@@ -2,9 +2,13 @@ From stdpp Require Import gmap.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap.
-From iris.base_logic.lib Require Import gen_heap.
+From iris.base_logic.lib Require Export gen_heap.
 Set Default Proof Using "Type".
 Import uPred.
+
+(** Adds support to iris.base_logic.lib.gen_heap for extracting and changing the
+names of ghost variables, to use as part of a crash "generation" and support
+updating the generation of a heap. *)
 
 Section gen_heap_defs.
   Context {L V : Type} `{Countable L}.
@@ -99,4 +103,3 @@ Section gen_heap_defs.
   Qed.
 
 End gen_heap_defs.
-

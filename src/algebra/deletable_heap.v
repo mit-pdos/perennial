@@ -1,7 +1,9 @@
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap frac agree.
-From iris.base_logic.lib Require Import own gen_heap.
+From iris.base_logic.lib Require Import own.
+From iris.base_logic.lib Require gen_heap.
+
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -10,17 +12,17 @@ Import uPred.
 
 (** The CMRA we need. *)
 Class gen_heapG (L V : Type) (Σ : gFunctors) `{Countable L} := GenHeapG {
-  gen_heap_inG :> inG Σ (authR (gen_heapUR L V));
+  gen_heap_inG :> inG Σ (authR (gen_heap.gen_heapUR L V));
   gen_heap_name : gname
 }.
 Arguments gen_heap_name {_ _ _ _ _} _ : assert.
 
 Class gen_heapPreG (L V : Type) (Σ : gFunctors) `{Countable L} := {
-  gen_heap_preG_inG :> inG Σ (authR (gen_heapUR L V))
+  gen_heap_preG_inG :> inG Σ (authR (gen_heap.gen_heapUR L V))
 }.
 
 Definition gen_heapΣ (L V : Type) `{Countable L} : gFunctors := #[
-  GFunctor (authR (gen_heapUR L V))
+  GFunctor (authR (gen_heap.gen_heapUR L V))
 ].
 
 Instance xsubG_gen_heapPreG {Σ L V} `{Countable L} :
@@ -31,7 +33,7 @@ Section definitions.
   Context `{Countable L, hG : !gen_heapG L V Σ}.
 
   Definition gen_heap_ctx (σ : gmap L V) : iProp Σ := (
-    own (gen_heap_name hG) (● (to_gen_heap σ)))%I.
+    own (gen_heap_name hG) (● (gen_heap.to_gen_heap σ)))%I.
 
   Definition mapsto_def (l : L) (q : Qp) (v: V) : iProp Σ :=
     own (gen_heap_name hG) (◯ {[ l := (q, to_agree (v : leibnizO V)) ]}).
@@ -53,15 +55,15 @@ Section to_gen_heap.
   Implicit Types σ : gmap L V.
 
   Lemma to_gen_heap_delete l σ :
-    to_gen_heap (delete l σ) = delete l (to_gen_heap σ).
-  Proof. by rewrite /to_gen_heap fmap_delete. Qed.
+    gen_heap.to_gen_heap (delete l σ) = delete l (gen_heap.to_gen_heap σ).
+  Proof. by rewrite /gen_heap.to_gen_heap fmap_delete. Qed.
 End to_gen_heap.
 
 Lemma gen_heap_init `{Countable L, !gen_heapPreG L V Σ} σ :
   ⊢ |==> ∃ _ : gen_heapG L V Σ, gen_heap_ctx σ.
 Proof.
-  iMod (own_alloc (● to_gen_heap σ)) as (γh) "Hh".
-  { rewrite auth_auth_valid. exact: to_gen_heap_valid. }
+  iMod (own_alloc (● gen_heap.to_gen_heap σ)) as (γh) "Hh".
+  { rewrite auth_auth_valid. exact: gen_heap.to_gen_heap_valid. }
   iModIntro. iExists (GenHeapG L V Σ _ _ _ γh). done.
 Qed.
 
@@ -70,7 +72,7 @@ Section gen_heap.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : V → iProp Σ.
   Implicit Types σ : gmap L V.
-  Implicit Types h g : gen_heapUR L V.
+  Implicit Types h g : gen_heap.gen_heapUR L V.
   Implicit Types l : L.
   Implicit Types v : V.
 
@@ -133,9 +135,9 @@ Section gen_heap.
     iMod (own_update with "Hσ") as "[Hσ Hl]".
     { eapply auth_update_alloc,
         (alloc_singleton_local_update _ _ (1%Qp, to_agree (v:leibnizO _)))=> //.
-      by apply lookup_to_gen_heap_None. }
+      by apply gen_heap.lookup_to_gen_heap_None. }
     iModIntro. iFrame "Hl".
-    rewrite to_gen_heap_insert //.
+    rewrite gen_heap.to_gen_heap_insert //.
   Qed.
 
   Lemma gen_heap_alloc_gen σ σ' :
@@ -157,7 +159,7 @@ Section gen_heap.
     iIntros "Hσ Hl".
     rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_heap_singleton_included _]%auth_both_valid; auto.
+      as %[Hl%gen_heap.gen_heap_singleton_included _]%auth_both_valid; auto.
   Qed.
 
   Lemma gen_heap_update σ l v1 v2 :
@@ -165,12 +167,12 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_heap_singleton_included _]%auth_both_valid.
+      as %[Hl%gen_heap.gen_heap_singleton_included _]%auth_both_valid.
     iMod (own_update_2 with "Hσ Hl") as "[Hσ Hl]".
     { eapply auth_update, singleton_local_update,
         (exclusive_local_update _ (1%Qp, to_agree (v2:leibnizO _)))=> //.
-      by rewrite /to_gen_heap lookup_fmap Hl. }
-    iModIntro. iFrame "Hl". rewrite to_gen_heap_insert //.
+      by rewrite /gen_heap.to_gen_heap lookup_fmap Hl. }
+    iModIntro. iFrame "Hl". rewrite gen_heap.to_gen_heap_insert //.
   Qed.
 
   Lemma gen_heap_delete σ l v :

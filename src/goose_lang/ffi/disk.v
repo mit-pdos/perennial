@@ -1,13 +1,12 @@
 From stdpp Require Import gmap.
 From stdpp Require Import vector fin_maps.
 From RecordUpdate Require Import RecordSet.
+From Perennial.algebra Require Import gen_heap_names.
 From iris.proofmode Require Import tactics.
-From iris.base_logic Require Import gen_heap.
 From iris.program_logic Require Import ectx_lifting.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing.
-From Perennial.algebra Require Import gen_heap.
 
 Set Default Proof Using "Type".
 (* this is purely cosmetic but it makes printing line up with how the code is

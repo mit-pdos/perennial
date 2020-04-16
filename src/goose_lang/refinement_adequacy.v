@@ -459,7 +459,7 @@ Proof using Hrpre Hhpre Hcpre.
       rewrite /hG//=.
       rewrite /heap_update/heap_get_names//= ffi_update_update.
       rewrite /traceG_update//=.
-      rewrite /gen_heap.gen_heapG_update//=.
+      rewrite /gen_heap_names.gen_heapG_update//=.
       rewrite ?ffi_update_get //=.
 Qed.
 

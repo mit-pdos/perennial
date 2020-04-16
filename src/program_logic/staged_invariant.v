@@ -4,7 +4,7 @@ From stdpp Require Export namespaces.
 From iris.base_logic.lib Require Import wsat invariants saved_prop gen_heap.
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Export step_fupd_extra crash_token ghost_var.
-From Perennial.algebra Require Import partition gen_heap big_op.
+From Perennial.algebra Require Import partition gen_heap_names big_op.
 Set Default Proof Using "Type".
 Import uPred.
 
