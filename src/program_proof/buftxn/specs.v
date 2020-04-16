@@ -12,7 +12,8 @@ Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
-Context `{!gen_heapPreG addr (sigT (fun K => @bufDataT K)) Σ}.
+Context `{heapPreG_bufs: !gen_heapPreG addr (sigT (fun K => @bufDataT K)) Σ}.
+Context `{heapPreG_hb: !gen_heapPreG u64 heapspec.heap_block Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -51,7 +52,7 @@ Theorem wp_buftxn_Begin l γUnified :
   {{{ (buftx : loc) γt, RET #buftx;
       is_buftxn buftx γt γUnified
   }}}.
-Proof using gen_heapPreG0.
+Proof using heapPreG_bufs.
   iIntros (Φ) "Htxn HΦ".
 
   wp_call.
@@ -64,7 +65,7 @@ Proof using gen_heapPreG0.
   iIntros (buftx) "Hbuftx".
   iDestruct (struct_fields_split with "Hbuftx") as "(Hbuftx.txn & Hbuftx.bufs & Hbuftx.id & %)".
   wp_apply util_proof.wp_DPrintf.
-  iMod (gen_heap_init ∅) as (γt) "Htxctx".
+  iMod (gen_heap_init (gen_heapPreG0:=heapPreG_bufs) ∅) as (γt) "Htxctx".
   wp_pures.
   iApply "HΦ".
   iExists _, _, _, _, _.
@@ -72,8 +73,8 @@ Proof using gen_heapPreG0.
   rewrite big_sepM_empty. iFrame.
   iSplit. { iApply big_sepM_empty. done. }
   iApply big_sepM_empty. done.
-  Grab Existential Variables.
-  all: eauto.
+
+  Grab Existential Variables. all: eauto. (* XXX, bug in Coq v8.11*)
 Qed.
 
 Theorem wp_BufTxn__ReadBuf buftx γt γUnified a sz v :
@@ -92,7 +93,7 @@ Theorem wp_BufTxn__ReadBuf buftx γt γUnified a sz v :
       ( mapsto (hG := γt) a 1 (existT _ v') ∗
         is_buftxn buftx γt γUnified ) )
   }}}.
-Proof.
+Proof using heapPreG_bufs heapPreG_hb.
   iIntros (Φ) "(Htxn & Ha & ->) HΦ".
   iDestruct "Htxn" as (l mT bufmap gBufmap txid)
     "(Hl & Hbufmap & Htxid & Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".
@@ -274,8 +275,9 @@ Proof.
         simpl. eauto. }
       rewrite -> lookup_insert_ne by eauto.
       destruct (gBufmap !! k); eauto.
-  (* XXX why? *)
-Admitted.
+      Grab Existential Variables.
+      all: eauto.
+Qed.
 
 Theorem wp_BufTxn__OverWrite buftx γt γUnified a v0 v (sz : u64) (vslice : Slice.t) :
   {{{
