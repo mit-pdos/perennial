@@ -12,14 +12,14 @@ Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
-Context `{heapPreG_bufs: !gen_heapPreG addr (sigT (fun K => @bufDataT K)) Σ}.
+Context `{heapPreG_bufs: !gen_heapPreG addr (sigT (fun K => bufDataT K)) Σ}.
 Context `{heapPreG_hb: !gen_heapPreG u64 heapspec.heap_block Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Definition is_buftxn (buftx : loc)
-                     (γT : gen_heapG addr (sigT (fun K => @bufDataT K)) Σ)
+                     (γT : gen_heapG addr (sigT (fun K => bufDataT K)) Σ)
                      γUnified : iProp Σ :=
   (
     ∃ (l : loc) mT (bufmap : loc) (gBufmap : gmap addr buf) (txid : u64),
@@ -39,7 +39,7 @@ Definition is_buftxn (buftx : loc)
                      | Some buf => bufDirty buf
                      end in
         if dirty then
-          ∃ (v0 : @bufDataT (projT1 v)),
+          ∃ (v0 : bufDataT (projT1 v)),
             mapsto_txn γUnified a v0
         else
           mapsto_txn γUnified a (projT2 v) )
@@ -463,22 +463,10 @@ Proof.
     destruct (gBufmap !! a); rewrite /=.
     { destruct b.(bufDirty).
       { iDestruct "Ha2" as (v0) "Ha2".
-        (*
-        iDestruct (mapsto_txn_2 with "Ha Ha2") as %Hfalse.
-        exfalso; eauto.
-        *)
-        admit. }
-      { (*
-        iDestruct (mapsto_txn_2 with "Ha Ha2") as %Hfalse.
-        exfalso; eauto.
-        *)
-        admit. }
+        iDestruct (mapsto_txn_2 with "Ha Ha2") as %[]. }
+      { iDestruct (mapsto_txn_2 with "Ha Ha2") as %[]. }
     }
-    { (*
-      iDestruct (mapsto_txn_2 with "Ha Ha2") as %Hfalse.
-      exfalso; eauto.
-      *)
-      admit. }
+    { iDestruct (mapsto_txn_2 with "Ha Ha2") as %[]. }
   }
 
   iAssert (⌜ gBufmap !! a = None ⌝)%I as %Hgnone.
@@ -511,7 +499,7 @@ Proof.
   iApply (big_sepM_insert); eauto.
   iFrame.
   rewrite Hgnone. iFrame.
-Admitted.
+Qed.
 
 Theorem BufTxn_lift buftx γt γUnified (m : gmap addr (sigT _)) :
   (
@@ -532,16 +520,14 @@ Proof.
   {
     unfold Conflicting; intros.
     iIntros "Hm1 Hm2".
-    destruct (gBufmap !! a0).
+    destruct (decide (a0 = a1)); eauto; subst.
+    destruct (gBufmap !! a1).
     { destruct (b.(bufDirty)).
       { iDestruct "Hm1" as (?) "Hm1".
-        iDestruct (mapsto_txn_2 with "[$Hm1] [Hm2]") as %Hd; eauto.
-        admit. }
-      { iDestruct (mapsto_txn_2 with "[$Hm1] [Hm2]") as %Hd; eauto.
-        admit. }
+        iDestruct (mapsto_txn_2 with "Hm1 Hm2") as %[]. }
+      { iDestruct (mapsto_txn_2 with "Hm1 Hm2") as %[]. }
     }
-    { iDestruct (mapsto_txn_2 with "[$Hm1] [Hm2]") as %Hd; eauto.
-      admit. }
+    { iDestruct (mapsto_txn_2 with "Hm1 Hm2") as %[]. }
   }
 
   iMod (gen_heap_alloc_gen with "Hγtctx") as "[Hγtctx Haa]"; eauto.
@@ -591,14 +577,12 @@ Proof.
   iDestruct (Liftable0 with "Hp") as (m) "[Hm Hp]".
   { iIntros (a0 v0 a1 v1) "Ha0 Ha1".
     destruct (decide (a0 = a1)); subst; eauto.
-    iDestruct (mapsto_txn_2 with "Ha0 [Ha1]") as %Hf; eauto.
-    admit. }
+    iDestruct (mapsto_txn_2 with "Ha0 Ha1") as %[]. }
   iMod (BufTxn_lift with "[$Htxn $Hm]") as "[Htxn Hm]".
   iFrame.
   iApply "Hp".
-  iFrame.
-  done.
-Admitted.
+  by iFrame.
+Qed.
 
 Theorem wp_BufTxn__CommitWait buftx γt γUnified mods :
   {{{

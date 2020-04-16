@@ -16,7 +16,7 @@ Context `{!lockG Σ}.
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Definition is_buf_data {K} (s : Slice.t) (d : @bufDataT K) (a : addr) : iProp Σ :=
+Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ :=
   match d with
   | bufBit b => ∃ (b0 : u8), is_slice_small s u8T 1%Qp (#b0 :: nil) ∗
     ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
@@ -90,7 +90,7 @@ Proof using.
   iExists _, _. iFrame. done.
 Qed.
 
-Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : @bufDataT k') :
+Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k') :
   {{{
     is_buf bufptr a b ∗
     is_buf_data vslice v' a ∗
@@ -421,7 +421,7 @@ Proof.
     admit.
 Admitted.
 
-Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : @bufDataT K) : Prop :=
+Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop :=
   valid_off K off ∧
   match d with
   | bufBlock d => b = d
@@ -430,7 +430,7 @@ Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : @bufDataT K) : Pro
       get_bit b0 (word.modu off 8) = d
   end.
 
-Theorem wp_MkBuf K a data (bufdata : @bufDataT K) :
+Theorem wp_MkBuf K a data (bufdata : bufDataT K) :
   {{{
     is_buf_data data bufdata a ∗
     ⌜ valid_addr a ∧ valid_off K a.(addrOff) ⌝
@@ -462,7 +462,7 @@ Proof using.
   iPureIntro. congruence.
 Qed.
 
-Theorem wp_MkBufLoad K a blk s (bufdata : @bufDataT K) :
+Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) :
   {{{
     is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
@@ -607,7 +607,7 @@ Theorem wp_Buf__Install bufptr a b blk_s blk :
     (blk': Block), RET #();
     is_buf bufptr a b ∗
     is_block blk_s blk' ∗
-    ⌜ ∀ off (d0 : @bufDataT b.(bufKind)),
+    ⌜ ∀ off (d0 : bufDataT b.(bufKind)),
       is_bufData_at_off blk off d0 ->
       if decide (off = a.(addrOff))
       then is_bufData_at_off blk' off b.(bufData)

@@ -21,11 +21,13 @@ Proof.
   solve_decision.
 Defined.
 
-Inductive bufDataT : forall {K : bufDataKind}, Type :=
-| bufBit (b : bool) : @bufDataT KindBit
-| bufInode (i : inode_buf) : @bufDataT KindInode
-| bufBlock (b : Block) : @bufDataT KindBlock
+Inductive bufDataT : bufDataKind -> Type :=
+| bufBit (b : bool) : bufDataT KindBit
+| bufInode (i : inode_buf) : bufDataT KindInode
+| bufBlock (b : Block) : bufDataT KindBlock
 .
+
+Arguments bufDataT K.
 
 Definition bufSz K : nat :=
   match K with
@@ -36,7 +38,7 @@ Definition bufSz K : nat :=
 
 Record buf := {
   bufKind : bufDataKind;
-  bufData : @bufDataT bufKind;
+  bufData : bufDataT bufKind;
   bufDirty : bool;
 }.
 
