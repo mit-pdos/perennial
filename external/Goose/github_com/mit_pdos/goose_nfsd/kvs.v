@@ -7,14 +7,12 @@ From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.super.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
-From Goose Require github_com.mit_pdos.goose_nfsd.util.
-
-Definition DISKSZ : expr := #10 * #1000.
 
 Definition DISKNAME : expr := #(str"goose_kvs.img").
 
 Module KVS.
   Definition S := struct.decl [
+    "sz" :: uint64T;
     "txn" :: struct.ptrT txn.Txn.S
   ].
 End KVS.
@@ -27,12 +25,11 @@ Module KVPair.
 End KVPair.
 
 Definition MkKVS: val :=
-  rec: "MkKVS" "d" :=
+  rec: "MkKVS" "d" "sz" :=
     let: "super" := super.MkFsSuper "d" in
-    util.DPrintf #1 (#(str"Super: sz %d %v
-    ")) #();;
     let: "txn" := txn.MkTxn "super" in
     let: "kvs" := struct.new KVS.S [
+      "sz" ::= "sz";
       "txn" ::= "txn"
     ] in
     "kvs".
