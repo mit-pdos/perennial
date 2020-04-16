@@ -72,6 +72,8 @@ Proof using gen_heapPreG0.
   rewrite big_sepM_empty. iFrame.
   iSplit. { iApply big_sepM_empty. done. }
   iApply big_sepM_empty. done.
+  Grab Existential Variables.
+  all: eauto.
 Qed.
 
 Theorem wp_BufTxn__ReadBuf buftx γt γUnified a sz v :
