@@ -245,6 +245,23 @@ Theorem apply_upds_txn_upds_app l0 l1 d:
 Proof.
 Admitted.
 
+Theorem txn_upds_drop_lookup (l: list (u64 * list update.t)):
+  forall (txn_id i: nat),
+    (txn_upds (drop txn_id l)) !! i = (txn_upds l) !! (txn_id + i)%nat.
+Proof.
+Admitted.
+
+
+Theorem txn_upds_firstn_length (l: list (u64 * list update.t)):
+  forall txn_id, 
+    length (txn_upds (take txn_id l)) =  (txn_id `min` length l)%nat.
+Admitted.                 
+
+Theorem txn_upds_lookup_take (l: list (u64 * list update.t)):
+  forall (i n: nat),
+    i < n -> txn_upds (take n l) !! i = (txn_upds l) !! i.
+Admitted.
+
 Theorem apply_update_ne:
   forall u1 u2 d,
   u1.(update.addr) ≠ u2.(update.addr) ->
@@ -595,24 +612,6 @@ Proof.
     congruence.
 Qed.
 
-
-Theorem txn_upds_drop_lookup (l: list (u64 * list update.t)):
-  forall (txn_id i: nat),
-    (txn_upds (drop txn_id l)) !! i = (txn_upds l) !! (txn_id + i)%nat.
-Proof.
-Admitted.
-
-
-Theorem txn_upds_firstn_length (l: list (u64 * list update.t)):
-  forall txn_id, 
-    length (txn_upds (take txn_id l)) =  (txn_id `min` length l)%nat.
-Admitted.                 
-
-Theorem txn_upds_lookup_take (l: list (u64 * list update.t)):
-  forall (i n: nat),
-    i < n -> txn_upds (take n l) !! i = (txn_upds l) !! i.
-Admitted.
-
 Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
   forall l a b b1,
     txn_id <= txn_id' ->
@@ -716,6 +715,10 @@ Lemma updates_since_updates σ pos (a:u64) (new: list (u64 * list update.t)) bs 
   updates_since pos a σ ++ updates_for_addr a bs.
 Proof.
   intros.
+  destruct σ.
+  rewrite /set //.
+  rewrite /updates_since //.
+  simpl.
 Admitted.
 
 Lemma disk_at_txn_id_append σ (txn_id : nat) pos new :
@@ -727,7 +730,13 @@ Lemma disk_at_txn_id_append σ (txn_id : nat) pos new :
 Proof.
   intros.
   rewrite /set //.
-Admitted.
+  destruct σ.
+  rewrite /disk_at_txn_id //.
+  unfold wal_wf in H.
+  simpl in *.
+  intuition.
+  rewrite take_app_le /=; auto.
+Qed.
 
 Lemma updates_for_addr_notin : ∀ bs a,
   a ∉ fmap update.addr bs ->
