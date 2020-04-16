@@ -206,7 +206,7 @@ Theorem wp_txn_Load K l gData a v :
       ⌜ existT b.(bufKind) b.(bufData) = existT K v ⌝ ∗
       mapsto_txn gData a v
   }}}.
-Proof.
+Proof  using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
   iIntros (Φ) "(Htxn & Hstable) HΦ".
   iDestruct "Htxn" as (γMaps γLock walHeap mu walptr q) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
   iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".

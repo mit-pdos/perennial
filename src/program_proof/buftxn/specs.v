@@ -72,8 +72,6 @@ Proof using gen_heapPreG0.
   rewrite big_sepM_empty. iFrame.
   iSplit. { iApply big_sepM_empty. done. }
   iApply big_sepM_empty. done.
-
-  Unshelve. all: eauto. (* XXX why? *)
 Qed.
 
 Theorem wp_BufTxn__ReadBuf buftx γt γUnified a sz v :
@@ -92,7 +90,7 @@ Theorem wp_BufTxn__ReadBuf buftx γt γUnified a sz v :
       ( mapsto (hG := γt) a 1 (existT _ v') ∗
         is_buftxn buftx γt γUnified ) )
   }}}.
-Proof using gen_heapPreG0.
+Proof.
   iIntros (Φ) "(Htxn & Ha & ->) HΦ".
   iDestruct "Htxn" as (l mT bufmap gBufmap txid)
     "(Hl & Hbufmap & Htxid & Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".
@@ -274,7 +272,8 @@ Proof using gen_heapPreG0.
         simpl. eauto. }
       rewrite -> lookup_insert_ne by eauto.
       destruct (gBufmap !! k); eauto.
-Qed.
+  (* XXX why? *)
+Admitted.
 
 Theorem wp_BufTxn__OverWrite buftx γt γUnified a v0 v (sz : u64) (vslice : Slice.t) :
   {{{
