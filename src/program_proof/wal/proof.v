@@ -32,7 +32,7 @@ Context `{!inG Σ fmcounterUR}.
 Implicit Types (Φ: val → iProp Σ).
 Implicit Types (v:val) (z:Z).
 
-Context (Pwal: log_state.t -> iProp Σ).
+Context (P: log_state.t -> iProp Σ).
 Context (walN : namespace).
 Definition circN: namespace := walN .@ "circ".
 
@@ -176,12 +176,11 @@ Definition is_memlog (s: log_state.t)
         (* need +1 since txn_id should be included in subslice *)
         apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) s.(log_state.txns))) ∅.
 
-Definition is_wal_inner (l : loc) γ : iProp Σ :=
-  ∃ (cs: circΣ.t) (s : log_state.t) (γmemstart γmemlog: gname) (memStart : u64)
+Definition is_wal_inner (l : loc) γ s : iProp Σ :=
+  ∃ (cs: circΣ.t) (γmemstart γmemlog: gname) (memStart : u64)
        (memLog : list update.t)
        (absorptionBoundaries : gmap nat unit) (γnextDiskEnd: gname),
     own γ.(cs_name) (◯ (Excl' cs)) ∗
-    Pwal s ∗
     is_wal_mem l γ ∗
     own γmemstart (◯ (Excl' memStart)) ∗
     own γmemlog (◯ (Excl' memLog)) ∗
@@ -216,7 +215,7 @@ Definition is_wal_inner (l : loc) γ : iProp Σ :=
       ⌜is_memlog s memStart_txn_id memLog absorptionBoundaries memStart⌝.
 
 Definition is_wal (l : loc) : iProp Σ :=
-  ∃ γ, inv walN (is_wal_inner l γ) ∗
+  ∃ γ, inv walN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
     is_circular circN (circular_pred γ) γ.(circ_name).
 
 End heap.
