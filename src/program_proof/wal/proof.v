@@ -57,12 +57,12 @@ Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 va
     compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := #pos ]> m)
   end.
 
-Definition is_wal_state (st: loc) γ : iProp Σ :=
+(** the lock invariant protecting the WalogState, corresponding to l.memLock *)
+Definition wal_linv (st: loc) γ : iProp Σ :=
   ∃ (memLogSlice : Slice.t)
     (memLogMapPtr : loc)
     (memStart diskEnd nextDiskEnd : u64)
-    (memLog : list update.t)
-    (memLogMap : gmap u64 val),
+    (memLog : list update.t),
     st ↦[WalogState.S :: "memLog"] (slice_val memLogSlice) ∗
     st ↦[WalogState.S :: "memStart"] #memStart ∗
     st ↦[WalogState.S :: "diskEnd"] #diskEnd ∗
@@ -93,7 +93,7 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
     lock.is_cond condLogger #memLock ∗
     lock.is_cond condInstall #memLock ∗
     lock.is_cond condShut #memLock ∗
-    is_lock walN γ.(lock_name) #memLock (is_wal_state st γ).
+    is_lock walN γ.(lock_name) #memLock (wal_linv st γ).
 
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   own γ.(cs_name) (● (Excl' cs)).
@@ -177,13 +177,13 @@ Definition is_memlog (s: log_state.t)
         apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) s.(log_state.txns))) ∅.
 
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
-  ∃ (cs: circΣ.t) (γmemstart γmemlog: gname) (memStart : u64)
+  ∃ (cs: circΣ.t) (memStart : u64)
        (memLog : list update.t)
        (absorptionBoundaries : gmap nat unit) (γnextDiskEnd: gname),
-    own γ.(cs_name) (◯ (Excl' cs)) ∗
     is_wal_mem l γ ∗
-    own γmemstart (◯ (Excl' memStart)) ∗
-    own γmemlog (◯ (Excl' memLog)) ∗
+    own γ.(cs_name) (◯ (Excl' cs)) ∗
+    own γ.(memStart_name) (◯ (Excl' memStart)) ∗
+    own γ.(memLog_name) (◯ (Excl' memLog)) ∗
     ⌜ circ_matches_memlog memStart memLog cs.(circΣ.start) cs.(circΣ.upds) ⌝ ∗
     is_installed s γ ∗
     gen_heap_ctx (hG:=γ.(absorptionBoundaries_name)) absorptionBoundaries ∗
