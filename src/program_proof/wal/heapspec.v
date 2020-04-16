@@ -33,9 +33,66 @@ Definition wal_heap_inv (γh : gen_heapG u64 heap_block Σ) (ls : log_state.t) :
       gen_heap_ctx (hG := γh) gh ∗
                    [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b.
 
-
 (* Helper lemmas *)
 
+
+Theorem latest_update_cons installed a:
+  forall bs,
+    bs ≠ [] ->
+    latest_update installed (a :: bs) = latest_update a bs.
+Proof.
+  intros.
+  unfold latest_update at 1.
+  simpl.
+  fold latest_update.
+  f_equal.
+Qed.
+
+Theorem latest_update_take_some bs v:
+  forall installed (pos: nat),
+    (installed :: bs) !! pos = Some v ->
+    latest_update installed (take pos bs) = v.
+Proof.
+  induction bs.
+  - intros.
+    rewrite firstn_nil.
+    simpl.
+    assert(pos = 0%nat).
+    {
+      apply lookup_lt_Some in H.
+      simpl in *.
+      word.
+    }
+    rewrite H0 in H.
+    simpl in *.
+    inversion H; auto.
+  - intros.
+    destruct (decide (pos = 0%nat)).
+    + rewrite e in H; simpl in *.
+      inversion H; auto.
+      rewrite e; simpl; auto.
+    +
+      assert (exists (pos':nat), pos = S pos').
+      {
+        exists (pred pos). lia.
+      }
+      destruct H0 as [pos' H0].
+      rewrite H0.
+      rewrite firstn_cons.
+      destruct (decide ((take pos' bs) = [])).
+      ++ simpl.
+         specialize (IHbs a pos').
+         apply IHbs.
+         rewrite lookup_cons_ne_0 in H; auto.
+         rewrite H0 in H; simpl in *; auto.
+      ++ rewrite latest_update_cons; auto.
+         {
+           specialize (IHbs a pos').
+           apply IHbs.
+           rewrite lookup_cons_ne_0 in H; auto.
+           rewrite H0 in H; simpl in *; auto.
+         }
+Qed.
 
 Theorem apply_upds_cons disk u ul :
   apply_upds (u :: ul) disk =
@@ -201,6 +258,67 @@ Proof.
   destruct σ.
   unfold wal_wf; simpl.
   intuition.
+Qed.
+
+Lemma updates_since_updates σ pos (a:u64) (new: list (u64 * list update.t)) bs :
+  updates_since pos a
+    (set log_state.txns
+     (λ _ : list (u64 * list update.t), σ.(log_state.txns) ++ new) σ) =
+  updates_since pos a σ ++ updates_for_addr a bs.
+Proof.
+  intros.
+Admitted.
+
+Lemma disk_at_txn_id_append σ (txn_id : nat) pos new :
+  wal_wf σ ->
+  (txn_id ≤ length σ.(log_state.txns))%nat ->
+  disk_at_txn_id txn_id σ =
+    disk_at_txn_id txn_id (set log_state.txns
+                                 (λ upds, upds ++ [(pos,new)]) σ).
+Proof.
+  intros.
+  rewrite /set //.
+Admitted.
+
+Lemma updates_for_addr_notin : ∀ bs a,
+  a ∉ fmap update.addr bs ->
+  updates_for_addr a bs = nil.
+Proof.
+  induction bs; intros; eauto.
+  rewrite fmap_cons in H.
+  apply not_elem_of_cons in H; destruct H.
+  erewrite <- IHbs; eauto.
+  destruct a; rewrite /updates_for_addr filter_cons /=; simpl in *.
+  destruct (decide (addr = a0)); congruence.
+Qed.
+
+Theorem updates_for_addr_in : ∀ bs u i,
+  bs !! i = Some u ->
+  NoDup (fmap update.addr bs) ->
+  updates_for_addr u.(update.addr) bs = [u.(update.b)].
+Proof.
+  induction bs; intros.
+  { rewrite lookup_nil in H; congruence. }
+  destruct i; simpl in *.
+  { inversion H; clear H; subst.
+    rewrite /updates_for_addr filter_cons /=.
+    destruct (decide (u.(update.addr) = u.(update.addr))); try congruence.
+    inversion H0.
+    apply updates_for_addr_notin in H2.
+    rewrite /updates_for_addr in H2.
+    rewrite fmap_cons.
+    rewrite H2; eauto.
+  }
+  inversion H0; subst.
+  erewrite <- IHbs; eauto.
+  rewrite /updates_for_addr filter_cons /=.
+  destruct (decide (a.(update.addr) = u.(update.addr))); eauto.
+  exfalso.
+  apply H3. rewrite e.
+  eapply elem_of_list_lookup.
+  eexists.
+  rewrite list_lookup_fmap.
+  erewrite H; eauto.
 Qed.
 
 (* Specs *)
@@ -430,7 +548,9 @@ Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Blo
   [∗ list] _ ↦ u; old ∈ bs; olds,
     mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old)).
 
-Definition memappend_q γh (bs : list update.t) (olds : list (Block * list Block)) (pos : u64): iProp Σ :=
+(* TODO: must promise something about txn_id/pos *)
+Definition memappend_q γh (bs : list update.t) (olds : list (Block * list Block)) (pos: u64): iProp Σ :=
+(*  (∃ pos, is_txn txn_id pos) *)
   [∗ list] _ ↦ u; old ∈ bs; olds,
     mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old ++ [u.(update.b)])).
 
@@ -458,12 +578,12 @@ Proof.
   eauto.
 Qed.
 
-Lemma wal_heap_memappend_pre_to_q gh γh bs olds newpos :
+Lemma wal_heap_memappend_pre_to_q gh γh bs olds new_txn_id :
   ( gen_heap_ctx gh ∗
     memappend_pre γh bs olds )
   ==∗
   ( gen_heap_ctx (memappend_gh gh bs olds) ∗
-    memappend_q γh bs olds newpos ).
+    memappend_q γh bs olds new_txn_id ).
 Proof.
   iIntros "(Hctx & Hpre)".
   iDestruct (big_sepL2_length with "Hpre") as %Hlen.
@@ -526,24 +646,6 @@ Proof.
     eapply NoDup_cons_2; eauto.
 Qed.
 
-(*
-Theorem apply_upds_insert addr b bs d :
-  addr ∉ fmap update.addr bs ->
-  <[int.val addr:=b]> (apply_upds bs d) =
-  apply_upds bs (<[int.val addr:=b]> d).
-Proof.
-  induction bs; eauto; simpl; intros.
-  destruct a.
-  apply not_elem_of_cons in H.
-  simpl in *.
-  intuition.
-  rewrite insert_commute.
-  { rewrite H; auto. }
-  apply u64_val_ne.
-  congruence.
-Qed.
-*)
-
 Lemma memappend_gh_not_in_bs : ∀ bs olds gh a,
   a ∉ fmap update.addr bs ->
   memappend_gh gh bs olds !! a = gh !! a.
@@ -579,214 +681,14 @@ Proof.
   erewrite IHbs; eauto.
 Qed.
 
-Lemma disk_at_txn_id_append σ (txn_id : nat) pos new :
-  wal_wf σ ->
-  (txn_id ≤ length σ.(log_state.txns))%nat ->
-  disk_at_txn_id txn_id σ =
-    disk_at_txn_id txn_id (set log_state.txns
-                                 (λ upds, upds ++ [(pos,new)]) σ).
-Proof.
-  intros.
-  rewrite /set //.
-Admitted.
-
-Lemma latest_update_app : ∀ l b0 b,
-  latest_update b0 (l ++ [b]) = b.
-Proof.
-  induction l; simpl; eauto.
-Qed.
-
-
-Lemma last_cons A (l : list A):
-  l ≠ [] -> forall a, last (a::l) = last l.
-Proof.
-  intros.
-  induction l.
-  - congruence.
-  - destruct (decide (l = [])).
-    + subst; auto.
-    + simpl.
-      f_equal.
-Qed.
-
-Lemma last_Some A (l : list A):
-  l ≠ [] -> exists e, last l = Some e.
-Proof.
-  induction l.
-  - intros. congruence.
-  - intros.
-    destruct (decide (l = [])).
-    + subst; simpl.
-      exists a; auto.
-    + rewrite last_cons; auto.
-Qed.
-
-Theorem lastest_update_cons installed a:
-  forall bs,
-    latest_update installed (a :: bs) = latest_update a bs.
-Proof.
-  reflexivity.
-Qed.
-
-Lemma latest_update_last l:
-  l ≠ [] ->
-  forall b i, latest_update i l = b -> last l = Some b.
-Proof.
-  induction l.
-  - intros.
-    congruence.
-  - intros.
-    destruct (decide (l = [])).
-    + subst. simpl; auto.
-    + rewrite last_cons; auto.
-      rewrite lastest_update_cons in H0; auto.
-      specialize (IHl n b a).
-      apply IHl; auto.
-Qed.
-
-Lemma latest_update_some l i:
-  exists b, latest_update i l = b.
-Proof.
-  generalize dependent i.
-  induction l.
-  - intros.
-    exists i.
-    simpl; auto.
-  - intros.
-    rewrite lastest_update_cons //.
-Qed.
-
-Lemma latest_update_last_eq i l0 l1 :
-  last l0 = last l1 ->
-  latest_update i l0 = latest_update i l1.
-Proof.
-  intros.
-  destruct (decide (l0 = [])); auto.
-  {
-    destruct (decide (l1 = [])); auto.
-    1: subst; simpl in *; auto.
-    subst; simpl in *.
-    apply last_Some in n.
-    destruct n.
-    rewrite H0 in H.
-    congruence.
-  }
-  destruct (decide (l1 = [])); auto.
-  {
-    subst; simpl in *; auto.
-    apply last_Some in n.
-    destruct n.
-    rewrite H0 in H.
-    congruence.
-  }
-  assert (exists b, latest_update i l0 = b).
-  1: apply latest_update_some.
-  assert (exists b, latest_update i l1 = b).
-  1: apply latest_update_some.
-  destruct H0.
-  destruct H1.
-  apply latest_update_last in H0 as H0'; auto.
-  apply latest_update_last in H1 as H1'; auto.
-  subst.
-  rewrite H0' in H.
-  rewrite H1' in H.
-  inversion H; auto.
-Qed.
-
-Lemma updates_for_addr_notin : ∀ bs a,
-  a ∉ fmap update.addr bs ->
-  updates_for_addr a bs = nil.
-Proof.
-  induction bs; intros; eauto.
-  rewrite fmap_cons in H.
-  apply not_elem_of_cons in H; destruct H.
-  erewrite <- IHbs; eauto.
-  destruct a; rewrite /updates_for_addr filter_cons /=; simpl in *.
-  destruct (decide (addr = a0)); congruence.
-Qed.
-
-Theorem updates_for_addr_in : ∀ bs u i,
-  bs !! i = Some u ->
-  NoDup (fmap update.addr bs) ->
-  updates_for_addr u.(update.addr) bs = [u.(update.b)].
-Proof.
-  induction bs; intros.
-  { rewrite lookup_nil in H; congruence. }
-  destruct i; simpl in *.
-  { inversion H; clear H; subst.
-    rewrite /updates_for_addr filter_cons /=.
-    destruct (decide (u.(update.addr) = u.(update.addr))); try congruence.
-    inversion H0.
-    apply updates_for_addr_notin in H2.
-    rewrite /updates_for_addr in H2.
-    rewrite fmap_cons.
-    rewrite H2; eauto.
-  }
-  inversion H0; subst.
-  erewrite <- IHbs; eauto.
-  rewrite /updates_for_addr filter_cons /=.
-  destruct (decide (a.(update.addr) = u.(update.addr))); eauto.
-  exfalso.
-  apply H3. rewrite e.
-  eapply elem_of_list_lookup.
-  eexists.
-  rewrite list_lookup_fmap.
-  erewrite H; eauto.
-Qed.
-
-Theorem latest_update_take_some bs v:
-  forall installed (pos: nat),
-    (installed :: bs) !! pos = Some v ->
-    latest_update installed (take pos bs) = v.
-Proof.
-  induction bs.
-  - intros.
-    rewrite firstn_nil.
-    simpl.
-    assert(pos = 0%nat).
-    {
-      apply lookup_lt_Some in H.
-      simpl in *.
-      word.
-    }
-    rewrite H0 in H.
-    simpl in *.
-    inversion H; auto.
-  - intros.
-    destruct (decide (pos = 0%nat)).
-    + rewrite e in H; simpl in *.
-      inversion H; auto.
-      rewrite e; simpl; auto.
-    +
-      assert (exists (pos':nat), pos = S pos').
-      {
-        exists (pred pos). lia.
-      }
-      destruct H0 as [pos' H0].
-      rewrite H0.
-      rewrite firstn_cons.
-      destruct (decide ((take pos' bs) = [])).
-      ++ simpl.
-         specialize (IHbs a pos').
-         apply IHbs.
-         rewrite lookup_cons_ne_0 in H; auto.
-         rewrite H0 in H; simpl in *; auto.
-      ++ rewrite lastest_update_cons; auto.
-         {
-           specialize (IHbs a pos').
-           apply IHbs.
-           rewrite lookup_cons_ne_0 in H; auto.
-           rewrite H0 in H; simpl in *; auto.
-         }
-Qed.
 
 Theorem wal_heap_memappend N2 γh bs (Q : u64 -> iProp Σ) :
   ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=> ∃ olds, memappend_pre γh bs olds ∗
-        ( ∀ pos, memappend_q γh bs olds pos ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q pos ) ) -∗
-  ( ∀ σ σ' pos,
+        ( ∀ txn_id, memappend_q γh bs olds txn_id ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q txn_id ) ) -∗
+  ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
-      ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
-      ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q pos ) ).
+      ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
+      ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
 Proof using gen_heapPreG0.
   iIntros "Hpre".
   iIntros (σ σ' pos) "% % Hinv".
@@ -796,18 +698,23 @@ Proof using gen_heapPreG0.
   simpl in *.
 
   iMod "Hpre" as (olds) "[Hpre Hfupd]".
+
+  destruct H.
+  destruct H as [txn_id Htxn].
+
   iDestruct (memappend_pre_nodup with "Hpre") as %Hnodup.
+  
   iDestruct (big_sepL2_length with "Hpre") as %Hlen.
   iDestruct (memappend_pre_in_gh with "Hctx Hpre") as %Hbs_in_gh.
 
   iMod (wal_heap_memappend_pre_to_q with "[$Hctx $Hpre]") as "[Hctx Hq]".
-  (*
-  iSpecialize ("Hfupd" $! (length (stable_upds σ ++ new))).
+  
+  iSpecialize ("Hfupd" $! (pos')).
   iDestruct ("Hfupd" with "Hq") as "Hfupd".
   iMod "Hfupd".
   iModIntro.
   iFrame.
-
+  
   iExists _. iFrame.
   intuition.
 
@@ -817,47 +724,35 @@ Proof using gen_heapPreG0.
   iIntros (k b Hkb).
   destruct b.
   iPureIntro.
-  clear Q.
   simpl.
   specialize (Hgh k).
+  
 
   destruct (decide (k ∈ fmap update.addr bs)).
   - eapply elem_of_list_fmap in e as ex.
     destruct ex. intuition. subst.
-    apply elem_of_list_lookup in H4; destruct H4.
+    apply elem_of_list_lookup in H2; destruct H2.
     edestruct Hbs_in_gh; eauto; intuition.
-    specialize (Hgh _ H5). simpl in *.
+    specialize (Hgh _ H3). simpl in *.
     destruct Hgh as [pos Hgh].
     exists pos.
 
     pose proof Hkb as Hkb'.
     erewrite memappend_gh_olds in Hkb'; eauto.
     inversion Hkb'; clear Hkb'; subst.
-    destruct x2; simpl in *.
-
     intuition.
 
     {
-      rewrite -disk_at_txn_id_trans.
       rewrite -disk_at_txn_id_append; eauto.
+      unfold wal_wf in a; intuition.
+      lia.
     }
 
     {
-      rewrite -updates_since_trans.
-      etransitivity; first by apply updates_since_updates.
+      rewrite /set /=.
+      etransitivity; first apply updates_since_updates.
       erewrite updates_for_addr_in; eauto.
-      set_solver.
-    }
-
-    {
-      rewrite -updates_since_trans.
-      rewrite latest_update_app.
-      erewrite latest_update_last_eq.
-      2: {
-        eapply updates_since_absorb; eauto.
-      }
-      erewrite updates_for_addr_in; eauto.
-      rewrite latest_update_app; eauto.
+      f_equal; auto.
     }
 
   - rewrite memappend_gh_not_in_bs in Hkb; eauto.
@@ -869,31 +764,19 @@ Proof using gen_heapPreG0.
     intuition.
 
     {
-      rewrite -disk_at_txn_id_trans.
       rewrite -disk_at_txn_id_append; eauto.
+      unfold wal_wf in a; intuition.
+      lia.
     }
 
     {
       etransitivity.
       2: eassumption.
-      rewrite -updates_since_trans.
 
       etransitivity; first by apply updates_since_updates.
       erewrite updates_for_addr_notin; eauto.
-      set_solver.
-    }
-
-    {
-      rewrite H6.
-      rewrite -updates_since_trans.
-      etransitivity.
-      2: erewrite latest_update_last_eq; first reflexivity.
-      2: apply updates_since_absorb; eauto.
-      rewrite updates_for_addr_notin; eauto.
-      rewrite app_nil_r; eauto.
+      rewrite app_nil_r; auto.
     }
 Qed.
-*)
-Admitted.
 
 End heap.
