@@ -35,6 +35,25 @@ Definition wal_heap_inv (γh : gen_heapG u64 heap_block Σ) (ls : log_state.t) :
 
 (* Helper lemmas *)
 
+Theorem apply_upds_cons disk u ul :
+  apply_upds (u :: ul) disk =
+  apply_upds ul (apply_upds [u] disk).
+Proof.
+  reflexivity.
+Qed.
+
+Theorem apply_upds_app : forall u1 u2 disk,
+  apply_upds (u1 ++ u2) disk =
+  apply_upds u2 (apply_upds u1 disk).
+Proof.
+  induction u1.
+  - reflexivity.
+  - simpl app.
+    intros.
+    rewrite apply_upds_cons.
+    rewrite IHu1.
+    reflexivity.
+Qed.
 
 Theorem latest_update_cons installed a:
   forall bs,
@@ -92,26 +111,6 @@ Proof.
            rewrite lookup_cons_ne_0 in H; auto.
            rewrite H0 in H; simpl in *; auto.
          }
-Qed.
-
-Theorem apply_upds_cons disk u ul :
-  apply_upds (u :: ul) disk =
-  apply_upds ul (apply_upds [u] disk).
-Proof.
-  reflexivity.
-Qed.
-
-Theorem apply_upds_app : forall u1 u2 disk,
-  apply_upds (u1 ++ u2) disk =
-  apply_upds u2 (apply_upds u1 disk).
-Proof.
-  induction u1.
-  - reflexivity.
-  - simpl app.
-    intros.
-    rewrite apply_upds_cons.
-    rewrite IHu1.
-    reflexivity.
 Qed.
 
 Theorem txn_upds_cons txn txnl:
@@ -194,31 +193,147 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem no_updates_since_last_disk σ a (txn_id : nat) :
-  wal_wf σ ->
-  no_updates_since σ a txn_id ->
-  disk_at_txn_id txn_id σ !! int.val a = last_disk σ !! int.val a.
+Theorem apply_upds_txn_upds_app l0 l1 d:
+  apply_upds (txn_upds (l0 ++ l1)) d = apply_upds (txn_upds l1) (apply_upds (txn_upds l0) d).
 Proof.
 Admitted.
+
+Theorem apply_update_ne:
+  forall u1 u2 d,
+  u1.(update.addr) ≠ u2.(update.addr) ->
+  apply_upds [u1] (apply_upds [u2] d) = apply_upds [u2] (apply_upds [u1] d).
+Proof.
+  intros.
+  destruct u1, u2.
+  simpl in *.
+  rewrite insert_commute; eauto.
+  intro Hx. apply H. word.
+Qed.
+
+Theorem apply_update_eq:
+  forall u1 u2 d,
+  u1.(update.addr) = u2.(update.addr) ->
+  apply_upds [u1] (apply_upds [u2] d) = apply_upds [u1] d.
+Proof.
+  intros.
+  destruct u1, u2.
+  simpl in *.
+  subst.
+  rewrite insert_insert.
+  reflexivity.
+Qed.
+
+Theorem lookup_apply_update_ne a:
+  forall l d u,
+    u.(update.addr) ≠ a ->
+    apply_upds l (apply_upds [u] d) !! int.val a = apply_upds l d !! int.val a.
+Proof.
+  intros.
+  generalize dependent d.
+  induction l.
+  - intros. destruct u; simpl in *.
+    rewrite lookup_insert_ne; auto.
+    intro Hx. apply H. word.
+  - intros.
+    rewrite apply_upds_cons.
+    destruct (decide (a0.(update.addr) = u.(update.addr))); subst; eauto.
+    + rewrite apply_update_eq //.
+    + rewrite apply_update_ne //.
+      rewrite IHl.
+      rewrite [apply_upds (a0::l) _]apply_upds_cons //.
+Qed.
+
 
 Theorem no_updates_since_nil σ a (txn_id : nat) :
   wal_wf σ ->
   no_updates_since σ a txn_id ->
   updates_since txn_id a σ = nil.
 Proof.
-Admitted.
-
-Theorem wal_wf_advance_installed_to σ txn_id :
-  wal_wf σ ->
-  (* is_trans σ.(log_state.trans) pos -> *)
-  (txn_id ≤ σ.(log_state.durable_lb))%nat ->
-  wal_wf (set log_state.installed_lb (λ _ : nat, txn_id) σ).
-Proof.
-  destruct σ.
-  unfold wal_wf; simpl.
-  intuition.
-  lia.
+  unfold no_updates_since, updates_since.
+  generalize σ.(log_state.txns).
+  intro l.
+  generalize (txn_upds (drop txn_id l)).
+  intros. intuition.
+  unfold updates_for_addr.
+  induction l0.
+  - simpl; auto.
+  - rewrite filter_cons.
+    pose proof H0 as H0'.
+    rewrite -> Forall_forall in H0'.
+    specialize (H0' a0).
+    destruct (decide ((a0.(update.addr) = a))).
+    + exfalso.
+      apply H0'; auto.
+      apply elem_of_list_here.
+    + apply IHl0; auto.
+      apply Forall_inv_tail in H0; auto.
 Qed.
+
+Theorem apply_no_updates_since_lookup txn_id a:
+  forall d l,
+  Forall (λ u : update.t, u.(update.addr) = a → False) (txn_upds (drop txn_id l)) ->
+  d !! int.val a = apply_upds (txn_upds (drop txn_id l)) d !! int.val a.
+Proof.
+  intros.
+  induction (txn_upds (drop txn_id l)).
+  + simpl in *; auto.
+  + rewrite apply_upds_cons.
+    rewrite lookup_apply_update_ne; auto.
+    {
+      apply IHl0; auto.
+      apply Forall_inv_tail in H; auto.
+    }
+    rewrite -> Forall_forall in H.
+    specialize (H a0).
+    assert (a0.(update.addr) = a -> False).
+    {
+      intros.
+      apply H; auto.
+      apply elem_of_list_here.
+    }
+    congruence.
+Qed.
+
+Theorem no_updates_since_last_disk σ a (txn_id : nat) :
+  wal_wf σ ->
+  no_updates_since σ a txn_id ->
+  disk_at_txn_id txn_id σ !! int.val a = last_disk σ !! int.val a.
+Proof.
+  unfold last_disk, no_updates_since, wal_wf, last_disk, disk_at_txn_id.
+  generalize (σ.(log_state.txns)).
+  generalize (σ.(log_state.d)).
+  intros. intuition.
+  clear H.
+  destruct (decide (txn_id < length l)).
+  2: {
+    rewrite take_ge; last lia.
+    rewrite firstn_all.
+    reflexivity.
+  }
+  replace l with (take txn_id l ++ drop txn_id l) at 3.
+  2 : {
+    rewrite firstn_skipn; eauto.
+  }
+  rewrite firstn_app.
+  assert (length (take txn_id l) = txn_id).
+  {
+    rewrite firstn_length_le; eauto.
+    lia.
+  }
+  rewrite H; subst.
+  rewrite firstn_firstn.
+  assert( (Init.Nat.min (Datatypes.length l) txn_id) = txn_id) by lia.
+  rewrite H3.
+  assert (take (length l - txn_id) (drop txn_id l) = drop txn_id l).
+  {
+    rewrite take_ge; eauto.
+    rewrite skipn_length; lia.
+  }
+  rewrite H5.
+  rewrite apply_upds_txn_upds_app.
+  erewrite apply_no_updates_since_lookup; eauto.
+Qed.
+
 
 (* TODO: rename pos to txn_id *)
 Theorem updates_since_apply_upds σ a (pos diskpos : nat) installedb b :
@@ -749,7 +864,6 @@ Proof using gen_heapPreG0.
     }
 
     {
-      rewrite /set /=.
       etransitivity; first apply updates_since_updates.
       erewrite updates_for_addr_in; eauto.
       f_equal; auto.
@@ -770,10 +884,8 @@ Proof using gen_heapPreG0.
     }
 
     {
-      etransitivity.
-      2: eassumption.
-
-      etransitivity; first by apply updates_since_updates.
+      rewrite -H3.
+      etransitivity; first apply updates_since_updates.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
     }
