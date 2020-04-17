@@ -678,8 +678,11 @@ Proof.
   unfold wal_wf; simpl.
   intuition.
 Qed.
+  
 
-Lemma updates_since_updates σ txn_id (a:u64) pos' bs :
+Lemma updates_since_updates σ (txn_id:nat) (a:u64) pos' bs :
+  wal_wf σ ->
+  txn_id ≤ σ.(log_state.installed_lb) ->
   updates_since txn_id a
     (set log_state.txns
      (λ _ : list (u64 * list update.t), σ.(log_state.txns) ++ [(pos',bs)]) σ) =
@@ -690,7 +693,12 @@ Proof.
   rewrite /set //.
   rewrite /updates_since //.
   simpl.
-
+  rewrite drop_app_le.
+  2: {
+    unfold wal_wf in H.
+    intuition; simpl in *.
+    lia.
+  }
 Admitted.
 
 Lemma disk_at_txn_id_append σ (txn_id : nat) pos new :
@@ -1156,7 +1164,6 @@ Proof using gen_heapPreG0.
   iPureIntro.
   simpl.
   specialize (Hgh k).
-  
 
   destruct (decide (k ∈ fmap update.addr bs)).
   - eapply elem_of_list_fmap in e as ex.
@@ -1164,8 +1171,8 @@ Proof using gen_heapPreG0.
     apply elem_of_list_lookup in H2; destruct H2.
     edestruct Hbs_in_gh; eauto; intuition.
     specialize (Hgh _ H3). simpl in *.
-    destruct Hgh as [pos Hgh].
-    exists pos.
+    destruct Hgh as [txn_id' Hgh].
+    exists txn_id'.
 
     pose proof Hkb as Hkb'.
     erewrite memappend_gh_olds in Hkb'; eauto.
@@ -1179,7 +1186,7 @@ Proof using gen_heapPreG0.
     }
 
     {
-      etransitivity; first apply updates_since_updates.
+      etransitivity; first apply updates_since_updates; auto.
       erewrite updates_for_addr_in; eauto.
       f_equal; auto.
     }
@@ -1200,7 +1207,7 @@ Proof using gen_heapPreG0.
 
     {
       rewrite -H3.
-      etransitivity; first apply updates_since_updates.
+      etransitivity; first apply updates_since_updates; auto.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
     }
