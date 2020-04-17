@@ -207,15 +207,13 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
     is_slice_small s uint64T 1 (u64val <$> addrs).
 
-Theorem is_circular_inner_wf γ addrs blocks :
+Theorem is_circular_inner_wf γ addrs blocks σ :
   own γ.(addrs_name) (◯ Excl' addrs) ∗
   own γ.(blocks_name) (◯ Excl' blocks) -∗
-  ▷ (∃ σ, is_circular_state γ σ ∗ P σ) -∗
-  ▷ ⌜circ_low_wf addrs blocks⌝.
+  is_circular_state γ σ -∗
+  ⌜circ_low_wf addrs blocks⌝.
 Proof.
-  iIntros "[Hγaddrs Hγblocks] Hinv".
-  iNext.
-  iDestruct "Hinv" as (σ) "[[_ His_circ] _]".
+  iIntros "[Hγaddrs Hγblocks] [_ His_circ]".
   iDestruct "His_circ" as "(_&His_circ)".
   iDestruct "His_circ" as (addrs' blocks') "(_&Hown&_)".
   iDestruct "Hown" as "(%Hlow_wf&Haddrs&Hblocks)".
@@ -224,22 +222,20 @@ Proof.
   auto.
 Qed.
 
-(* hmm, this doesn't seem doable... *)
 Theorem is_circular_appender_wf γ addrs blocks :
   is_circular γ -∗
   own γ.(addrs_name) (◯ Excl' addrs) ∗
   own γ.(blocks_name) (◯ Excl' blocks) -∗
-  |={⊤}=> ▷ ⌜circ_low_wf addrs blocks⌝.
+  |={⊤}=> ⌜circ_low_wf addrs blocks⌝.
 Proof.
   iIntros "#Hcirc [Hγaddrs Hγblocks]".
-  iInv "Hcirc" as "Hinv".
-  iModIntro.
-  iDestruct (is_circular_inner_wf with "[$Hγaddrs $Hγblocks] Hinv") as "Hwf".
-  iSplitR.
-  - admit.
-  - iModIntro.
-    iFrame.
-Abort.
+  iMod (inv_dup_acc ⌜circ_low_wf addrs blocks⌝ with "Hcirc [Hγaddrs Hγblocks]") as ">%Hwf"; auto.
+  iIntros "Hinv".
+  iDestruct "Hinv" as (σ) "[Hstate HP]".
+  iDestruct (is_circular_inner_wf with "[$Hγaddrs $Hγblocks] Hstate") as %Hwf.
+  iSplitL; auto.
+  iExists _; iFrame.
+Qed.
 
 Theorem wp_hdr2 (newStart: u64) :
   {{{ True }}}
