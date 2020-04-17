@@ -36,10 +36,8 @@ Definition wal_heap_inv (γh : gen_heapG u64 heap_block Σ) (ls : log_state.t) :
 Definition no_updates (l: list update.t) a : Prop :=
   forall u, u ∈ l -> u.(update.addr) ≠ a.
 
-Definition exist_last_update (l: list update.t) a b : Prop :=
-  exists (i:nat) u,
-    l !! i = Some u /\ u.(update.addr) = a /\ u.(update.b) = b /\
-    (forall (j:nat) u1,  j > i -> l !! j = Some u1 -> u1.(update.addr) ≠ a).
+Definition is_update (l: list update.t) a b : Prop :=
+  ∃ u, u ∈ l /\ u.(update.addr) = a /\ u.(update.b) = b.
 
 (* Helper lemmas *)
 
@@ -61,6 +59,28 @@ Proof.
     rewrite apply_upds_cons.
     rewrite IHu1.
     reflexivity.
+Qed.
+
+Theorem is_update_cons_eq: forall l a0,
+  is_update (a0 :: l) a0.(update.addr) a0.(update.b).
+Proof.
+  intros.
+  rewrite /is_update.
+  exists a0.
+  split; try auto.
+  apply elem_of_list_here.
+Qed.
+
+Theorem is_update_cons (l: list update.t) a b:
+  forall a0, is_update l a b -> is_update (a0 :: l) a b.
+Proof.
+  intros.
+  unfold is_update in *.
+  destruct H as [u [l1 H]].
+  intuition.
+  exists u.
+  split; auto.
+  apply elem_of_list_further; auto.
 Qed.
 
 Theorem latest_update_cons installed a:
@@ -119,45 +139,6 @@ Proof.
            rewrite lookup_cons_ne_0 in H; auto.
            rewrite H0 in H; simpl in *; auto.
          }
-Qed.
-
-Theorem exist_last_update_cons (l: list update.t) (a:u64) b:
-  forall a0,
-    exist_last_update l a b -> exist_last_update (a0 :: l) a b.
-Proof.
-  intros.
-  unfold exist_last_update in *.
-  destruct H as [i [u H]].
-  intuition.
-  exists (S i), u.
-  repeat split; auto.
-  intros.
-  specialize (H3 (pred j) u1).
-  apply H3; eauto.
-  1: lia.
-  rewrite <- lookup_cons_ne_0 with (x := a0); eauto.
-  lia.
-Qed.
-
-Theorem exist_last_update_cons_no_updates (l: list update.t) (a:u64) b:
-  forall u,
-    u.(update.addr) = a /\ u.(update.b) = b ->
-    no_updates l u.(update.addr) ->
-    exist_last_update (u :: l) a b.
-Proof.
-  intros.
-  unfold exist_last_update.
-  intuition.
-  exists 0%nat, u.
-  repeat split; auto.
-  intros.
-  unfold no_updates in H0.
-  specialize (H0 u1).
-  subst.
-  exfalso.
-  rewrite lookup_cons_ne_0 in H3; try lia.
-  apply elem_of_list_lookup_2 in H3.
-  destruct H0; auto.
 Qed.
 
 Theorem txn_upds_cons txn txnl:
@@ -243,25 +224,13 @@ Qed.
 Theorem apply_upds_txn_upds_app l0 l1 d:
   apply_upds (txn_upds (l0 ++ l1)) d = apply_upds (txn_upds l1) (apply_upds (txn_upds l0) d).
 Proof.
-Admitted.
-
-Theorem txn_upds_drop_lookup (l: list (u64 * list update.t)):
-  forall (txn_id i: nat),
-    (txn_upds (drop txn_id l)) !! i = (txn_upds l) !! (txn_id + i)%nat.
-Proof.
-Admitted.
-
-
-Theorem txn_upds_firstn_length (l: list (u64 * list update.t)):
-  forall txn_id, 
-    length (txn_upds (take txn_id l)) =  (txn_id `min` length l)%nat.
-Admitted.                 
-
-Theorem txn_upds_lookup_take (l: list (u64 * list update.t)):
-  forall (i n: nat),
-    i < n -> txn_upds (take n l) !! i = (txn_upds l) !! i.
-Admitted.
-
+  intros.
+  unfold txn_upds.
+  rewrite fmap_app.
+  rewrite concat_app.
+  rewrite apply_upds_app; auto.
+Qed.
+  
 Theorem apply_update_ne:
   forall u1 u2 d,
   u1.(update.addr) ≠ u2.(update.addr) ->
@@ -306,7 +275,6 @@ Proof.
       rewrite IHl.
       rewrite [apply_upds (a0::l) _]apply_upds_cons //.
 Qed.
-
 
 Theorem no_updates_cons (l: list update.t) a:
   forall u, no_updates (u::l) a -> no_updates l a.
@@ -424,7 +392,6 @@ Proof.
   erewrite apply_no_updates_since_lookup; eauto.
 Qed.
 
-
 Theorem lookup_apply_upds_cons_ne:
   forall l d (a: u64) u b,
     u.(update.addr) ≠ a ->
@@ -503,12 +470,11 @@ Proof.
     auto.
 Qed.
 
-
 Theorem lookup_apply_upds_cons_eq l (a: u64) b:
-  forall u d,
+  forall d u,
     u.(update.addr) = a ->
     apply_upds l (apply_upds [u] d) !! int.val a = Some b ->
-    no_updates l a \/ exist_last_update l a b.
+    no_updates l a \/ is_update l a b.
 Proof.
   induction l.
   - intros.
@@ -524,93 +490,102 @@ Proof.
     destruct (decide (a0.(update.addr) = u.(update.addr))).
     + subst.
       rewrite apply_update_eq  in H0; auto.
-      specialize (IHl a0 d e H0).
+      specialize (IHl d a0 e H0).
       destruct (decide (a0.(update.b) = u.(update.b))).
       {
         intuition.
         ++ right.
-           rewrite <- e in H.
-           eapply exist_last_update_cons_no_updates; auto.
-           split; auto.
+           rewrite <- e.
            rewrite apply_upds_no_updates in H0; auto.
-           1: apply apply_upds_lookup_eq in H0; auto.
-           rewrite e in H; auto.
+           apply apply_upds_lookup_eq in H0; auto.
+           rewrite <- H0.
+           apply is_update_cons_eq.
         ++ right.
-           apply exist_last_update_cons with (a0 := a0) in H; auto.
+           apply is_update_cons with (a0:=a0) in H; auto.
       }
       {
         intuition.
         ++ rewrite apply_upds_no_updates in H0; auto.
            apply apply_upds_lookup_eq in H0; auto.
            right.
-           eapply exist_last_update_cons_no_updates; auto.
-           rewrite <- e in H; auto.
-        ++ apply exist_last_update_cons with (a0 := a0) in H.
-           right; auto.
+           rewrite <- H0.
+           rewrite <- e.
+           apply is_update_cons_eq.
+        ++ right.
+           eapply is_update_cons with (a0 := a0) in H; auto.
       }
     + subst.
       rewrite apply_update_ne in H0; auto.
       assert (u.(update.addr) = u.(update.addr)).
       1: reflexivity.
-      specialize (IHl u (apply_upds [a0] d)  H H0).
+      specialize (IHl (apply_upds [a0] d) u H).
       intuition.
-      {
-        left.
-        apply no_updates_cons_ne with (u := a0) in H1; auto.
-      }
-      {
-        apply exist_last_update_cons with (a0 := a0) in H1.
-        right; auto.
-      }
+      ++ left.
+         apply no_updates_cons_ne with (u := a0) in H2; auto.
+      ++ right.
+         apply is_update_cons with (a0:=a0) in H2; auto.
 Qed.
 
 Theorem lookup_apply_upds d:
   forall l a b,
     apply_upds l d !! int.val a = Some b ->
-    d !! int.val a = Some b \/ exist_last_update l a b.
+    d !! int.val a = Some b \/ is_update l a b.
 Proof.
   intros.
   induction l.
   - simpl in *.
     left; auto.
-  - intros.
-    rewrite apply_upds_cons in H.
+  - rewrite apply_upds_cons in H.
     destruct (decide (a0.(update.addr) = a)).
     {
       apply lookup_apply_upds_cons_eq in H as H'1; auto.
       intuition.
       {
         right.
-        apply exist_last_update_cons_no_updates; auto.
-        + rewrite apply_upds_no_updates in H; auto.
-          apply apply_upds_lookup_eq in H; auto.
-        + subst; auto.
+        rewrite apply_upds_no_updates in H; auto.
+        apply apply_upds_lookup_eq in H; auto.
+        subst. apply is_update_cons_eq; auto.
       }
       right.
-      apply exist_last_update_cons; auto.
+      apply is_update_cons; auto.
     }
     apply lookup_apply_upds_cons_ne in H; eauto.
     intuition.
-    destruct H1 as [i [u H1]].
-    intuition.
     right.
-    exists (S i), u.
-    split.
-    1: rewrite lookup_cons_ne_0; eauto.
-    split; eauto.
-    split; eauto.
-    intros.
-    specialize (H4 (Init.Nat.pred j) u1).
-    assert (u1.(update.addr) = a → False).
-    1: eapply H4; eauto.
-    1: lia.
-    {
-      rewrite lookup_cons_ne_0 in H5; eauto.
-      destruct (decide (j = 0%nat)); eauto.
-      exfalso; lia.
-    }
-    congruence.
-Qed.
+    apply is_update_cons; auto.
+Qed.  
+
+Theorem txn_ups_take_elem_of u l:
+  forall (txn_id txn_id': nat),
+    txn_id <= txn_id' ->
+    txn_id' <= length l + txn_id ->
+    u ∈ txn_upds (take (txn_id' - txn_id) l) ->
+    u ∈ txn_upds l.
+Proof.
+  intros.
+  rewrite -> elem_of_list_In in H1.
+  unfold txn_upds in *.
+  apply in_concat in H1.
+  destruct H1 as [l0 H1].
+  intuition.
+  rewrite -> elem_of_list_In.
+  apply in_concat.
+  exists l0.
+  split; auto.
+  rewrite <- elem_of_list_In in H2.
+  rewrite <- elem_of_list_In.
+  eapply elem_of_fmap_1 in H2.
+  destruct H2.
+  intuition.
+  eapply elem_of_list_fmap_1_alt; eauto.
+  apply elem_of_list_lookup_1 in H4.
+  destruct H4 as [i H4].
+  apply lookup_lt_Some in H4 as Hlen.
+  rewrite -> firstn_length_le in Hlen by lia.
+  rewrite -> lookup_take in H4 by lia.
+  apply elem_of_list_lookup_2 in H4; auto.
+  (* existential variables? *)
+Admitted.
 
 Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
   forall l a b b1,
@@ -619,8 +594,8 @@ Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
     apply_upds (txn_upds (take txn_id l)) d !! int.val a = Some b ->
     apply_upds (txn_upds (take txn_id' l)) d !! int.val a = Some b1 ->
     b ≠ b1 ->
-    (exists i u, (txn_upds (drop (txn_id) l)) !! i = Some u
-              /\ u.(update.addr) = a /\ u.(update.b) = b1).
+    (exists u, u ∈ (txn_upds (drop (txn_id) l)) 
+          /\ u.(update.addr) = a /\ u.(update.b) = b1).
 Proof using N gen_heapPreG0 heapG0 Σ.
   intros.
   replace (take txn_id' l) with (take txn_id l ++ drop txn_id (take txn_id' l)) in H2.
@@ -634,15 +609,12 @@ Proof using N gen_heapPreG0 heapG0 Σ.
   apply lookup_apply_upds in H2 as H2'; eauto.
   intuition.
   1: destruct (decide (b = b1)); congruence. 
-  destruct H4 as [i [u H4]].
-  exists i, u.
+  destruct H4 as [u H4].
+  exists u.
   intuition.
-
-  rewrite txn_upds_drop_lookup.
-  rewrite txn_upds_drop_lookup in H5.
-  apply lookup_lt_Some in H5 as H5'.
-  rewrite -> txn_upds_firstn_length in H5'.
-  rewrite txn_upds_lookup_take in H5; auto.
+  rewrite skipn_firstn_comm in H5.
+  apply txn_ups_take_elem_of in H5; auto.
+  rewrite skipn_length.
   lia.
 Qed.
 
@@ -664,17 +636,16 @@ Proof  using N gen_heapPreG0 heapG0 Σ.
   }
   eapply apply_upds_since_txn_id_new with (txn_id := txn_id) (txn_id' := txn_id') in H0; eauto.
   destruct H0. destruct H0. intuition.
-  apply elem_of_list_lookup_2 in H3.
-  rewrite elem_of_list_In.
   assert (In b (map update.b (filter (λ u : update.t, u.(update.addr) = a) (txn_upds (drop txn_id l))))).
   {
     rewrite in_map_iff.
-    exists x0; eauto.
+    exists x; eauto.
     split; eauto.
     rewrite <- elem_of_list_In.
     rewrite elem_of_list_filter.
     split; eauto.
   }
+  rewrite elem_of_list_In.
   apply in_cons; eauto.
 Qed.
 
