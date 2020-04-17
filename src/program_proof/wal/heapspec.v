@@ -3,7 +3,7 @@ Import RecordSetNotations.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
-From Perennial.Helpers Require Import Transitions.
+From Perennial.Helpers Require Import Transitions List.
 From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.specs.
 From Perennial.algebra Require Import deletable_heap.
 
@@ -184,15 +184,14 @@ Proof.
       lia.
 Qed.
 
-
 Theorem updates_for_addr_app a l1 l2:
   updates_for_addr a (l1 ++ l2) = updates_for_addr a l1 ++ updates_for_addr a l2.
 Proof.
   unfold updates_for_addr.
   rewrite <- fmap_app.
   f_equal.
-  (* where is filter_app for props? *)
-Admitted.
+  rewrite list_filter_app //.
+Qed.
   
 Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
   wal_wf σ ->

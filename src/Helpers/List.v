@@ -21,6 +21,17 @@ Section list.
         f_equal; lia.
   Qed.
 
+  (* TODO: upstream to stdpp *)
+  Theorem list_filter_app (P: A -> Prop) {H: forall x, Decision (P x)} (l1 l2: list) :
+    filter P (l1 ++ l2) = filter P l1 ++ filter P l2.
+  Proof.
+    revert l2.
+    induction l1; simpl; auto; intros.
+    rewrite ?filter_cons.
+    destruct (decide (P a)); auto.
+    rewrite IHl1 //.
+  Qed.
+
   Theorem Forall_idx_drop (P: nat -> A -> Prop) l (start n: nat) :
     Forall_idx P start l ->
     Forall_idx P (start + n) (drop n l).
