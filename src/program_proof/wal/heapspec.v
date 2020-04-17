@@ -151,6 +151,16 @@ Proof.
   f_equal.
 Qed.
 
+Theorem txn_upds_app txn1 txn2:
+  txn_upds (txn1 ++ txn2) =
+  txn_upds txn1 ++ txn_upds txn2.
+Proof.
+  unfold txn_upds.
+  rewrite <- concat_app.
+  rewrite <- fmap_app.
+  f_equal.
+Qed.
+
 Theorem take_drop_txns:
   forall (txn_id: nat) txns,
     txn_id <= length txns ->
@@ -174,6 +184,16 @@ Proof.
       lia.
 Qed.
 
+
+Theorem updates_for_addr_app a l1 l2:
+  updates_for_addr a (l1 ++ l2) = updates_for_addr a l1 ++ updates_for_addr a l2.
+Proof.
+  unfold updates_for_addr.
+  rewrite <- fmap_app.
+  f_equal.
+  (* where is filter_app for props? *)
+Admitted.
+  
 Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
   wal_wf σ ->
   disk_at_txn_id txn_id σ !! int.val a = Some installed ->
@@ -699,7 +719,12 @@ Proof.
     intuition; simpl in *.
     lia.
   }
-Admitted.
+  rewrite txn_upds_app.
+  rewrite updates_for_addr_app.
+  f_equal.
+  unfold txn_upds; simpl.
+  rewrite app_nil_r; auto.
+Qed.
 
 Lemma disk_at_txn_id_append σ (txn_id : nat) pos new :
   wal_wf σ ->
