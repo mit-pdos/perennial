@@ -15,6 +15,7 @@ From Perennial.program_proof Require Import marshal_proof.
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
+Context `{!crashG Σ}.
 Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
 Context `{!gen_heapPreG u64 disk.Block Σ}.
 Context `{!gen_heapG u64 disk.Block Σ}.
