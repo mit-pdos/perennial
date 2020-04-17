@@ -190,7 +190,7 @@ Proof.
   unfold updates_for_addr.
   rewrite <- fmap_app.
   f_equal.
-  rewrite list_filter_app //.
+  rewrite filter_app //.
 Qed.
   
 Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
