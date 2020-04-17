@@ -176,7 +176,9 @@ Module WalogState.
     "memStart" :: LogPosition;
     "diskEnd" :: LogPosition;
     "nextDiskEnd" :: LogPosition;
-    "memLogMap" :: mapT LogPosition
+    "memLogMap" :: mapT LogPosition;
+    "shutdown" :: boolT;
+    "nthread" :: uint64T
   ].
 End WalogState.
 
@@ -188,8 +190,6 @@ Module Walog.
     "st" :: struct.ptrT WalogState.S;
     "condLogger" :: condvarRefT;
     "condInstall" :: condvarRefT;
-    "shutdown" :: boolT;
-    "nthread" :: uint64T;
     "condShut" :: condvarRefT
   ].
 End Walog.
@@ -260,9 +260,9 @@ Definition Walog__logInstall: val :=
 Definition Walog__installer: val :=
   rec: "Walog__installer" "l" :=
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
-    struct.storeF Walog.S "nthread" "l" (struct.loadF Walog.S "nthread" "l" + #1);;
+    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") + #1);;
     Skip;;
-    (for: (λ: <>, ~ (struct.loadF Walog.S "shutdown" "l")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ~ (struct.loadF WalogState.S "shutdown" (struct.loadF Walog.S "st" "l"))); (λ: <>, Skip) := λ: <>,
       let: ("blkcount", "txn") := Walog__logInstall "l" in
       (if: "blkcount" > #0
       then
@@ -272,7 +272,7 @@ Definition Walog__installer: val :=
       Continue);;
     util.DPrintf #1 (#(str"installer: shutdown
     ")) #();;
-    struct.storeF Walog.S "nthread" "l" (struct.loadF Walog.S "nthread" "l" - #1);;
+    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") - #1);;
     lock.condSignal (struct.loadF Walog.S "condShut" "l");;
     lock.release (struct.loadF Walog.S "memLock" "l").
 
@@ -316,9 +316,9 @@ Definition Walog__logAppend: val :=
 Definition Walog__logger: val :=
   rec: "Walog__logger" "l" :=
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
-    struct.storeF Walog.S "nthread" "l" (struct.loadF Walog.S "nthread" "l" + #1);;
+    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") + #1);;
     Skip;;
-    (for: (λ: <>, ~ (struct.loadF Walog.S "shutdown" "l")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ~ (struct.loadF WalogState.S "shutdown" (struct.loadF Walog.S "st" "l"))); (λ: <>, Skip) := λ: <>,
       let: "progress" := Walog__logAppend "l" in
       (if: ~ "progress"
       then lock.condWait (struct.loadF Walog.S "condLogger" "l")
@@ -326,7 +326,7 @@ Definition Walog__logger: val :=
       Continue);;
     util.DPrintf #1 (#(str"logger: shutdown
     ")) #();;
-    struct.storeF Walog.S "nthread" "l" (struct.loadF Walog.S "nthread" "l" - #1);;
+    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") - #1);;
     lock.condSignal (struct.loadF Walog.S "condShut" "l");;
     lock.release (struct.loadF Walog.S "memLock" "l").
 
@@ -348,7 +348,9 @@ Definition mkLog: val :=
       "memStart" ::= "start";
       "diskEnd" ::= "end";
       "nextDiskEnd" ::= "end";
-      "memLogMap" ::= NewMap LogPosition
+      "memLogMap" ::= NewMap LogPosition;
+      "shutdown" ::= #false;
+      "nthread" ::= #0
     ] in
     let: "l" := struct.new Walog.S [
       "d" ::= "disk";
@@ -357,8 +359,6 @@ Definition mkLog: val :=
       "st" ::= "st";
       "condLogger" ::= lock.newCond "ml";
       "condInstall" ::= lock.newCond "ml";
-      "shutdown" ::= #false;
-      "nthread" ::= #0;
       "condShut" ::= lock.newCond "ml"
     ] in
     util.DPrintf #1 (#(str"mkLog: size %d
@@ -518,11 +518,11 @@ Definition Walog__Shutdown: val :=
     util.DPrintf #1 (#(str"shutdown wal
     ")) #();;
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
-    struct.storeF Walog.S "shutdown" "l" #true;;
+    struct.storeF WalogState.S "shutdown" (struct.loadF Walog.S "st" "l") #true;;
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
     lock.condBroadcast (struct.loadF Walog.S "condInstall" "l");;
     Skip;;
-    (for: (λ: <>, struct.loadF Walog.S "nthread" "l" > #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") > #0); (λ: <>, Skip) := λ: <>,
       util.DPrintf #1 (#(str"wait for logger/installer")) #();;
       lock.condWait (struct.loadF Walog.S "condShut" "l");;
       Continue);;
