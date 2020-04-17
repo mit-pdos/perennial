@@ -21,6 +21,7 @@ Section list.
         f_equal; lia.
   Qed.
 
+
   Theorem Forall_idx_drop (P: nat -> A -> Prop) l (start n: nat) :
     Forall_idx P start l ->
     Forall_idx P (start + n) (drop n l).
@@ -46,5 +47,26 @@ Section list.
     pose proof H as Hlookup.
     apply lookup_seq in Hlookup; intuition subst.
     apply H0; eauto.
+  Qed.
+End list.
+
+(* section for more specific list lemmas that aren't for arbitrary [list A] *)
+Section list.
+  (* for compatibility with Coq v8.11, which doesn't have this lemma *)
+  Lemma in_concat {A} : forall (l: list (list A)) y,
+    In y (concat l) <-> exists x, In x l /\ In y x.
+  Proof.
+    induction l; simpl; split; intros.
+    contradiction.
+    destruct H as (x,(H,_)); contradiction.
+    destruct (in_app_or _ _ _ H).
+    exists a; auto.
+    destruct (IHl y) as (H1,_); destruct (H1 H0) as (x,(H2,H3)).
+    exists x; auto.
+    apply in_or_app.
+    destruct H as (x,(H0,H1)); destruct H0.
+    subst; auto.
+    right; destruct (IHl y) as (_,H2); apply H2.
+    exists x; auto.
   Qed.
 End list.
