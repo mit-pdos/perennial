@@ -679,17 +679,18 @@ Proof.
   intuition.
 Qed.
 
-Lemma updates_since_updates σ pos (a:u64) (new: list (u64 * list update.t)) bs :
-  updates_since pos a
+Lemma updates_since_updates σ txn_id (a:u64) pos' bs :
+  updates_since txn_id a
     (set log_state.txns
-     (λ _ : list (u64 * list update.t), σ.(log_state.txns) ++ new) σ) =
-  updates_since pos a σ ++ updates_for_addr a bs.
+     (λ _ : list (u64 * list update.t), σ.(log_state.txns) ++ [(pos',bs)]) σ) =
+  updates_since txn_id a σ ++ updates_for_addr a bs.
 Proof.
   intros.
   destruct σ.
   rewrite /set //.
   rewrite /updates_since //.
   simpl.
+
 Admitted.
 
 Lemma disk_at_txn_id_append σ (txn_id : nat) pos new :
