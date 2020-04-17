@@ -1,7 +1,8 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.base_logic.lib Require Import invariants.
 From Perennial.goose_lang Require Import proofmode.
-From Perennial.goose_lang.lib Require Export typed_mem struct.impl.
+From Perennial.goose_lang.lib Require Export
+     typed_mem persistent_readonly struct.impl.
 
 Close Scope struct_scope.
 
@@ -148,8 +149,7 @@ Qed.
 
 Global Instance struct_field_mapsto_as_fractional l q d f v : fractional.AsFractional (struct_field_mapsto l q d f v) (λ q0 : Qp, struct_field_mapsto l q0 d f v) q.
 Proof.
-  refine (fractional.Build_AsFractional _ _ _ _ _ _).
-  reflexivity.
+  split; [ done | apply _ ].
 Qed.
 
 Local Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
@@ -406,6 +406,13 @@ Proof.
     iApply ("IH" with "Hl0' Hl1'").
 Qed.
 
+Global Instance struct_mapsto_as_mapsto d l v :
+  AsMapsTo (struct_mapsto l 1 d v)
+           (fun l q v => struct_mapsto l q d v) l v.
+Proof.
+  split; [ done | apply _ | apply _ ].
+Qed.
+
 Lemma struct_field_mapsto_q l q d f v :
   struct_field_mapsto l q d f v ⊣⊢
   struct_field_mapsto l (q/2) d f v ∗
@@ -416,6 +423,13 @@ Proof.
   - destruct p.
     rewrite struct_mapsto_q. done.
   - iSplit; iIntros; iPureIntro; intuition.
+Qed.
+
+Global Instance struct_field_mapsto_as_mapsto d f l v :
+  AsMapsTo (struct_field_mapsto l 1 d f v)
+           (fun l q v => struct_field_mapsto l q d f v) l v.
+Proof.
+  split; [ done | apply _ | apply _ ].
 Qed.
 
 Lemma struct_mapsto_acc f0 l q d v :
@@ -520,6 +534,43 @@ Proof.
   by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
 Qed.
 
+Theorem wp_load_ro l t v :
+  {{{ readonly (struct_mapsto l 1%Qp t v) }}}
+    load_ty t #l
+  {{{ RET v; True }}}.
+Proof.
+  iIntros (Φ) "#Hro HΦ".
+  iMod (readonly_load with "Hro") as (q) "Hl"; first by set_solver.
+  wp_apply (wp_LoadAt with "Hl"); iIntros "_".
+  iApply ("HΦ" with "[//]").
+Qed.
+
+Theorem wp_loadField_ro stk l d f fv :
+  {{{ readonly (struct_field_mapsto l 1%Qp d f fv) }}}
+    struct.loadF d f #l @ stk; ⊤
+  {{{ RET fv; True }}}.
+Proof.
+  iIntros (Φ) "#Hro HΦ".
+  iMod (readonly_load with "Hro") as (q) "Hl"; first by set_solver.
+  wp_apply (wp_loadField with "Hl"); iIntros "_".
+  iApply ("HΦ" with "[//]").
+Qed.
+
+Lemma tac_wp_loadField_ro Δ s i K l d f v Φ :
+  envs_lookup i Δ = Some (true, readonly (struct_field_mapsto l 1%Qp d f v))%I →
+  envs_entails Δ (WP fill K (Val v) @ s; ⊤ {{ Φ }}) →
+  envs_entails Δ (WP fill K (struct.loadF d f (LitV l)) @ s; ⊤ {{ Φ }}).
+Proof.
+  rewrite envs_entails_eq=> ? HΦ.
+  rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_loadField_ro.
+  rewrite envs_lookup_split //; simpl.
+  iIntros "[#Hro Henvs]".
+  iSplitR; auto.
+  iIntros "!> _".
+  iApply HΦ.
+  iApply ("Henvs" with "Hro").
+Qed.
+
 Definition field_ty d f: ty :=
   match field_offset d f with
   | Some (_, t) => t
@@ -613,17 +664,23 @@ Notation "l ↦[ d :: f ] v" :=
 Tactic Notation "wp_loadField" :=
   let solve_mapsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_load: cannot find" l "↦[d :: f] ?" in
+    iAssumptionCore || fail 1 "wp_load: cannot find" l "↦[d :: f] ?" in
   wp_pures;
-  lazymatch goal with
+  match goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    first
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_loadField_ro _ _ _ K))
+      |fail 1 "wp_load: cannot find 'loadField' in" e];
+    [iAssumptionCore
+    |wp_finish]
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_loadField _ _ _ _ _ K))
-      |fail 1 "wp_load: cannot find 'loadField' in" e];
+      |fail 2 "wp_load: cannot find 'loadField' in" e];
     [iSolveTC
     |solve_mapsto ()
     |wp_finish]
-  | _ => fail "wp_load: not a 'wp'"
+  | _ => fail 1 "wp_load: not a 'wp'"
   end.
 
 Tactic Notation "wp_storeField" :=
