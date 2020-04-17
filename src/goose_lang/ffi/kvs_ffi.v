@@ -123,7 +123,7 @@ Section kvs.
            (* kvs type should be opaque, but kvpair should be known by client *)
          | OpenOp => (unitT, extT KvsT)
          | InitOp => (unitT, extT KvsT)
-         | GetOp => (prodT (extT KvsT) uint64T, KVPairT)
+         | GetOp => (prodT (extT KvsT) uint64T, prodT (KVPairT) boolT)
          | MultiPutMarkOp => (prodT (extT KvsT) (prodT (arrayT KVPairT) uint64T), unitT)
          | MultiPutCommitOp => (prodT (extT KvsT) (prodT (arrayT KVPairT) uint64T), boolT)
          end).
@@ -207,7 +207,7 @@ Section kvs.
       b ← unwrap (kvs !! key);
       l ← allocateN 4096;
       modify (state_insert_list l (disk.Block_to_vals b));;
-             ret $ #(LitLoc l)
+             ret $ (PairV #(LitLoc l) #true) (*This could return false?*)
     | MultiPutMarkOp, PairV (LitV (LitLoc kvsPtr)) v => mark_slice KVPairT v;; ret $ #()
     | MultiPutCommitOp, PairV (LitV (LitLoc kvsPtr)) v =>
       (*convert goose representations of kvpair to coq pair of key and value, *)
