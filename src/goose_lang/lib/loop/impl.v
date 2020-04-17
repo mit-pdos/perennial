@@ -10,11 +10,12 @@ Definition Break: val := #false.
 Definition For: val :=
   λ: "cond" "body" "post",
   (rec: "loop" <> :=
-     if: (Var "cond") #()
-     then let: "continue" := (Var "body") #() in
-          if: (Var "continue")
-          then (Var "post") #();; (Var "loop") #()
-          else #()
+     let: "continue" :=
+        (if: (Var "cond") #()
+         then (Var "body") #()
+         else #false) in
+     if: (Var "continue")
+     then (Var "post") #();; (Var "loop") #()
      else #()) #().
 
 Definition Loop: val :=

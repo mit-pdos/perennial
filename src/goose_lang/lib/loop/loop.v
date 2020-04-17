@@ -8,12 +8,12 @@ Section goose_lang.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} `{!crashG Σ}.
 Context {ext_ty: ext_types ext}.
 
-Theorem wp_forBreak (I: bool -> iProp Σ) stk E (body: val) :
+Theorem wp_forBreak_cond (I: bool -> iProp Σ) stk E (cond body: val) :
   {{{ I true }}}
-    body #() @ stk; E
+    if: cond #() then body #() else #false @ stk; E
   {{{ r, RET #r; I r }}} -∗
   {{{ I true }}}
-    (for: (λ: <>, #true)%V ; (λ: <>, (λ: <>, #())%V #())%V :=
+    (for: cond; (λ: <>, (λ: <>, #())%V #())%V :=
        body) @ stk; E
   {{{ RET #(); I false }}}.
 Proof.
@@ -44,6 +44,24 @@ Proof.
   - wp_pures.
     iApply "HΦ".
     iApply "Hr".
+Qed.
+
+Theorem wp_forBreak (I: bool -> iProp Σ) stk E (body: val) :
+  {{{ I true }}}
+    body #() @ stk; E
+  {{{ r, RET #r; I r }}} -∗
+  {{{ I true }}}
+    (for: (λ: <>, #true)%V ; (λ: <>, (λ: <>, #())%V #())%V :=
+       body) @ stk; E
+  {{{ RET #(); I false }}}.
+Proof.
+  iIntros "#Hbody".
+  iIntros (Φ) "!> I HΦ".
+  wp_apply (wp_forBreak_cond I with "[] I HΦ").
+  iIntros "!>" (Φ') "I HΦ".
+  wp_pures.
+  wp_apply ("Hbody" with "[$]").
+  iFrame.
 Qed.
 
 Local Opaque load_ty store_ty.
@@ -77,6 +95,7 @@ Proof.
   wp_pures.
   wp_load.
   wp_pures.
+  wp_bind (If _ _ _).
   wp_if_destruct.
   - wp_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
@@ -88,7 +107,8 @@ Proof.
     iApply ("IH" with "[] HIx Hl").
     { iPureIntro; word. }
     iFrame.
-  - assert (int.val x = int.val max) by word.
+  - wp_pures.
+    assert (int.val x = int.val max) by word.
     apply word.unsigned_inj in H; subst.
     iApply ("HΦ" with "[$]").
 Qed.
@@ -133,6 +153,7 @@ Proof.
   wp_load.
   iIntros "(HIx&HΦ)".
   wpc_pures; first by auto.
+  wpc_bind (If _ _ _).
   wpc_if_destruct; wpc_pures; auto.
   - wpc_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
