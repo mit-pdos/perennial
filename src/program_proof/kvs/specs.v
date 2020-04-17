@@ -32,33 +32,41 @@ match sz with
 | S n => init_keys ((U64 (Z.of_nat n)) :: keys) n
 end.
 
-Definition is_kvs (kvsl: loc) (s :gmap u64 disk.Block) : iProp Σ :=
-  ( ∃ (l : loc) (sz: nat) (keys: list u64) γ,
+Fixpoint init_kvs (kvs: gmap u64 Block) (sz: nat) : gmap u64 Block :=
+match sz with
+| O => kvs
+| S n => <[(U64 (Z.of_nat n)) := (inhabitant Block0)]> (init_kvs kvs n)
+end.
+Definition kvs_init_s sz : gmap u64 Block := init_kvs ∅ sz.
+
+Definition is_kvs (kvsl: loc) (s :gmap u64 Block) (sz : nat): iProp Σ :=
+  ( ∃ (l : loc) (keys: list u64) γ,
       kvsl↦[KVS.S :: "txn"] #l ∗
       kvsl ↦[KVS.S :: "sz"] #(U64 (Z.of_nat sz)) ∗
       is_txn l γ ∗
       ⌜keys = init_keys [] sz⌝ ∗
-      [∗ list] k ∈ keys, (∃ v : disk.Block, ⌜s !! k = Some v⌝ ∗ k k↦ v))%I.
+      [∗ list] k ∈ keys, (∃ v : Block, ⌜s !! k = Some v⌝ ∗ k k↦ v))%I.
 
-Definition is_kvpair (l: loc) : iProp Σ :=
-  (∃ (key : u64) (val: Slice.t),
-      l↦[KVS.S :: "Key"] #key ∗
-      l ↦[KVS.S :: "Val"] (slice_val val))%I.
+Definition is_block (s:Slice.t) (b:Block) :=
+  is_slice_small s byteT 1 (Block_to_vals b).
 
-(*Theorem wpc_MkKVS (d: disk.Disk) (sz: u64)
-    MkKVS #d #sz @ NotStuck; k; E1; E2
-  {{{ l (ok: bool), RET (#l, #ok); ⌜ int.nat sz > 0 → ok = true ⌝ ∗
-      if ok then ptsto_log l [] ∗ ∃ (ml: loc), l ↦[Log.S :: "m"] #ml ∗ is_free_lock ml
-      else 0 d↦∗ vs }}}
-  {{{ 0 d↦∗ vs ∨ (∃ b b' vs', ⌜ vs = b :: vs' ⌝ ∗ 0 d↦∗ (b' :: vs') ) }}}.
+Definition is_kvpair (l: loc) (key : u64) (b: Block) : iProp Σ :=
+      ∃ bs, (l↦[KVPair.S :: "Key"] #key ∗
+      l ↦[KVPair.S :: "Val"] (slice_val bs) ∗
+      is_block bs b)%I.
+
+Theorem wpc_MkKVS d (sz: nat) k E1 E2:
+  {{{ True }}}
+    MkKVS #d #(U64(Z.of_nat sz)) @ NotStuck; k; E1; E2
+  {{{ kvsl, RET #kvsl; is_kvs kvsl (kvs_init_s sz) sz}}}
+  {{{ True }}}.
 Proof.
-Qed.*)
+Admitted.
 
-(*Do I need stuck / E? What are those for?*)
-Theorem wpc_KVS__Get kvsl s key stk E:
-  {{{ is_kvs kvsl s }}}
-    KVS__Get #kvsl key @ stk; E
-  {{{ (pairl: loc), RET #pairl; (is_kvs kvsl s ∗ is_kvpair pairl)}}}.
+Theorem wpc_KVS__Get kvsl s sz key v stk E:
+  {{{ is_kvs kvsl s sz ∗ ⌜s !! key = Some v⌝ }}}
+    KVS__Get #kvsl #key @ stk; E (* Crashes don't matter to state here *)
+  {{{ (pairl: loc), RET #pairl; (is_kvs kvsl s sz ∗ is_kvpair pairl key v)}}}.
 Proof.
 Admitted.
 

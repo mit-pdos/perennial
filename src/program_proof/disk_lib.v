@@ -19,6 +19,10 @@ Proof.
     auto.
 Qed.
 
+(* TODO: this should probably also have a fraction *)
+Definition is_block (s:Slice.t) (b:Block) :=
+  is_slice_small s byteT 1 (Block_to_vals b).
+
 Definition list_to_block (l: list u8) : Block :=
   match decide (length l = Z.to_nat 4096) with
   | left H => eq_rect _ _ (list_to_vec l) _ H

@@ -64,10 +64,6 @@ Proof.
   destruct u; rewrite /blockT; val_ty.
 Qed.
 
-(* TODO: this should probably also have a fraction *)
-Definition is_block (s:Slice.t) (b:Block) :=
-  is_slice_small s byteT 1 (Block_to_vals b).
-
 Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
   ∃ bks, is_slice bk_s (struct.t Update.S) 1 (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
