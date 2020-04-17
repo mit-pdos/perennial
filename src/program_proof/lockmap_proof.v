@@ -133,12 +133,11 @@ Proof.
 
   wp_pures.
   wp_apply (wp_forBreak
-    (is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl)
-    (is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl ∗ P addr ∗ locked gh addr)
+    (fun b => is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl ∗ if b then emp else P addr ∗ locked gh addr)%I
     with "[] [$Hlocked $Hinner]").
 
   {
-    iIntros (Φloop) "!> [Hinner Hlocked] HΦloop".
+    iIntros (Φloop) "!> (Hinner&Hlocked&_) HΦloop".
     iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
     wp_pures.
     wp_apply wp_ref_of_zero; first by auto.
@@ -213,7 +212,7 @@ Proof.
 
           wp_pures.
           iApply "HΦloop".
-          iLeft. iFrame. iSplitL; try done.
+          iFrame.
           iExists _, _, _. iFrame.
           iApply "Haddrs".
           iExists _, _, _, _. iFrame. done.
@@ -222,7 +221,7 @@ Proof.
           wp_untyped_load.
           wp_pures.
           iApply "HΦloop".
-          iLeft. iFrame. iSplitL; try done.
+          iFrame.
           iExists _, _, _. iFrame.
 
       + wp_untyped_load.
@@ -240,7 +239,7 @@ Proof.
 
         wp_pures.
         iApply "HΦloop".
-        iRight. iFrame. iSplitL; try done.
+        iFrame.
         iExists _, _, _. iFrame.
 
         erewrite <- (insert_id m) at 1; eauto.
@@ -287,7 +286,7 @@ Proof.
 
       wp_pures.
       iApply "HΦloop".
-      iRight. iFrame. iSplitL; try done.
+      iFrame.
 
       destruct (covered !! addr) eqn:Hcoveredaddr; try congruence.
       iDestruct (big_sepM_delete with "Hcovered") as "[Hp Hcovered]"; eauto.
