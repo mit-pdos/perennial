@@ -3,7 +3,7 @@ Import RecordSetNotations.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import proof_prelude disk_lib.
 
 Module update.
   Record t :=

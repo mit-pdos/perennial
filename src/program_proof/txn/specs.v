@@ -6,7 +6,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
-From Perennial.program_proof Require Import wal.specs wal.heapspec addr.specs buf.defs buf.specs.
+From Perennial.program_proof Require Import wal.specs wal.heapspec addr.specs buf.defs buf.specs disk_lib.
 
 Inductive updatable_buf (T : Type) :=
 | UB : forall (v : T) (modifiedSinceInstallG : gname), updatable_buf T
@@ -328,7 +328,7 @@ Proof  using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
 
     iDestruct ("Hres") as (b) "(Hisblock & Hlatest & Hown & %)".
     wp_pures.
-    rewrite /abstraction.is_block.
+    rewrite /is_block.
     wp_apply (wp_MkBufLoad with "[$Hisblock]").
     { intuition. }
     iIntros (bufptr) "Hbuf".
@@ -409,7 +409,7 @@ Proof  using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
   iIntros (bslice) "Hres".
   iDestruct "Hres" as (b) "(Hb & % & Hlatest & Hmod)".
   wp_pures.
-  rewrite /abstraction.is_block.
+  rewrite /is_block.
   wp_apply (wp_MkBufLoad with "[$Hb]").
   { intuition. }
   iIntros (bufptr) "Hbuf".
