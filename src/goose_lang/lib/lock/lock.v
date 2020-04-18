@@ -6,7 +6,7 @@ From iris.program_logic Require Export weakestpre.
 
 From Perennial.goose_lang Require Export lang typing.
 From Perennial.goose_lang Require Import proofmode notation.
-From Perennial.goose_lang Require Import readonly.
+From Perennial.goose_lang Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Import typed_mem.
 From Perennial.goose_lang.lib Require Export lock.impl.
 Set Default Proof Using "Type".
@@ -161,59 +161,58 @@ Section proof.
   (** cond var proofs *)
 
   Definition is_cond (c: loc) (lk : val) : iProp Σ :=
-    c ↦ro lk.
+    readonly (c ↦ lk).
 
-  Theorem is_cond_dup c lk :
-    is_cond c lk -∗ is_cond c lk ∗ is_cond c lk.
-  Proof.
-    iIntros "Hc".
-    iDestruct "Hc" as "[Hc1 Hc2]".
-    iSplitL "Hc1"; iFrame "#∗".
-  Qed.
+  Global Instance is_cond_persistent c lk :
+    Persistent (is_cond c lk) := _.
 
   Theorem wp_newCond γ lk R :
     {{{ is_lock γ lk R }}}
       lock.newCond lk
-    {{{ c, RET #c; is_cond c lk }}}.
+    {{{ (c: loc), RET #c; is_cond c lk }}}.
   Proof.
+    rewrite /is_cond.
     iIntros (Φ) "Hl HΦ".
     wp_call.
     iDestruct (is_lock_flat with "Hl") as %[l ->].
     wp_apply wp_alloc_untyped; [ auto | ].
     iIntros (c) "Hc".
-    rewrite ptsto_ro_weaken.
-    iApply "HΦ".
-    iFrame.
+    (* FIXME: need a let binding in the implementation to do an iMod after the
+    Alloc (so the goal needs to still be a WP) *)
+    iMod (readonly_alloc_1 with "Hc") as "Hcond".
+    wp_pures.
+    by iApply "HΦ".
   Qed.
 
   Theorem wp_condSignal c lk :
     {{{ is_cond c lk }}}
       lock.condSignal #c
-    {{{ RET #(); is_cond c lk }}}.
+    {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
     wp_call.
-    iApply ("HΦ" with "[$Hc]").
+    iApply ("HΦ" with "[//]").
   Qed.
 
   Theorem wp_condBroadcast c lk :
     {{{ is_cond c lk }}}
       lock.condBroadcast #c
-    {{{ RET #(); is_cond c lk }}}.
+    {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
     wp_call.
-    iApply ("HΦ" with "[$]").
+    iApply ("HΦ" with "[//]").
   Qed.
 
   Theorem wp_condWait γ c lk R :
     {{{ is_cond c lk ∗ is_lock γ lk R ∗ locked γ ∗ R }}}
       lock.condWait #c
-    {{{ RET #(); is_cond c lk ∗ locked γ ∗ R }}}.
+    {{{ RET #(); locked γ ∗ R }}}.
   Proof.
-    iIntros (Φ) "(Hc&#Hlock&Hlocked&HR) HΦ".
+    iIntros (Φ) "(#Hcond&#Hlock&Hlocked&HR) HΦ".
     wp_call.
-    iDestruct (ptsto_ro_load with "Hc") as (q) "Hc".
+    rewrite /is_cond.
+    iMod (readonly_load with "Hcond") as (q) "Hc"; first by set_solver.
     wp_untyped_load.
     wp_apply (release_spec with "[$Hlock $Hlocked $HR]").
     wp_pures.
@@ -221,8 +220,7 @@ Section proof.
     wp_apply (acquire_spec with "[$Hlock]").
     iIntros "(Hlocked&HR)".
     iApply "HΦ".
-    iSplitR "Hlocked HR"; last by iFrame.
-    iApply (ptsto_ro_from_q with "[$]").
+    iFrame.
   Qed.
 
 End proof.

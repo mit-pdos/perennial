@@ -8,7 +8,6 @@ From Perennial.program_logic Require Export na_crash_inv.
 
 From Perennial.goose_lang Require Export lang typing.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode notation.
-From Perennial.goose_lang Require Import readonly.
 From Perennial.goose_lang.lib Require Import typed_mem.
 From Perennial.goose_lang.lib Require Import lock.
 

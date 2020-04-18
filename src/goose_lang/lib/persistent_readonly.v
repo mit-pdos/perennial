@@ -63,7 +63,15 @@ Section goose_lang.
     auto.
   Qed.
 
+  Global Instance heap_mapsto_AsMapsTo l v :
+    AsMapsTo (l ↦ v) (λ l q v, heap_mapsto l q v) l v.
+  Proof.
+    split; [done|apply _|apply _].
+  Qed.
+
 End goose_lang.
+
+Hint Mode AsMapsTo - - + - - - : typeclass_instances.
 
 Typeclasses Opaque readonly.
 Opaque readonly.
