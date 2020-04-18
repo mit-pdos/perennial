@@ -1,4 +1,5 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From RecordUpdate Require Import RecordSet.
 From Perennial.algebra Require Import fmcounter.
 From Perennial.algebra Require Import deletable_heap.
 From Perennial.program_proof Require Import proof_prelude.
@@ -57,70 +58,77 @@ Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 va
     compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := #pos ]> m)
   end.
 
+(** low-level, unimportant state *)
+Record lowState :=
+  { memLogSlice: Slice.t;
+    memLogMapPtr: loc;
+    shutdown: bool;
+    nthread: u64;
+  }.
+
+Instance lowState_eta: Settable _ :=
+  settable! Build_lowState <memLogSlice; memLogMapPtr; shutdown; nthread>.
+
+Record locked_state :=
+  { memStart: u64;
+    diskEnd: u64;
+    nextDiskEnd: u64;
+    memLog: list update.t; }.
+
+Instance locked_state_eta: Settable _ :=
+  settable! Build_locked_state <memStart; diskEnd; nextDiskEnd; memLog>.
+
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
-  ∃ (memLogSlice : Slice.t)
-    (* TODO: group these into a Record *)
-    (memLogMapPtr : loc)
-    (memStart diskEnd nextDiskEnd : u64)
-    (shutdown:bool) (nthread: u64)
-    (memLog : list update.t),
-    (st ↦[WalogState.S :: "memLog"] (slice_val memLogSlice) ∗
-     st ↦[WalogState.S :: "memStart"] #memStart ∗
-     st ↦[WalogState.S :: "diskEnd"] #diskEnd ∗
-     st ↦[WalogState.S :: "nextDiskEnd"] #nextDiskEnd ∗
-     st ↦[WalogState.S :: "memLogMap"] #memLogMapPtr ∗
-     st ↦[WalogState.S :: "shutdown"] #shutdown ∗
-     st ↦[WalogState.S :: "nthread"] #nthread) ∗
-    (updates_slice memLogSlice memLog) ∗
-    is_map memLogMapPtr (compute_memLogMap memLog memStart ∅, #0) ∗
-    diskEnd_at_least γ.(circ_name) (int.val diskEnd) ∗
-    start_at_least γ.(circ_name) memStart ∗
-    own γ.(memStart_name) (● (Excl' memStart)) ∗
-    own γ.(memLog_name) (● (Excl' memLog)) ∗
-    own γ.(nextDiskEnd_name) (● (Excl' nextDiskEnd))
+  ∃ σₗ σ,
+    (st ↦[WalogState.S :: "memLog"] (slice_val σₗ.(memLogSlice)) ∗
+     st ↦[WalogState.S :: "memStart"] #σ.(memStart) ∗
+     st ↦[WalogState.S :: "diskEnd"] #σ.(diskEnd) ∗
+     st ↦[WalogState.S :: "nextDiskEnd"] #σ.(nextDiskEnd) ∗
+     st ↦[WalogState.S :: "memLogMap"] #σₗ.(memLogMapPtr) ∗
+     st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
+     st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
+    (updates_slice σₗ.(memLogSlice) σ.(memLog)) ∗
+    is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅, #0) ∗
+    diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
+    start_at_least γ.(circ_name) σ.(memStart) ∗
+    own γ.(memStart_name) (● (Excl' σ.(memStart))) ∗
+    own γ.(nextDiskEnd_name) (● (Excl' σ.(nextDiskEnd)))
+    (* TODO: inline absorptionBoundaries, memLog invariant *)
     .
 
+(** The implementation state contained in the *Walog struct, which is all
+read-only. *)
+Record wal_state :=
+  { memLock: loc;
+    wal_d: val;
+    circ: loc;
+    wal_st: loc;
+    condLogger: loc;
+    condInstall: loc;
+    condShut: loc;
+  }.
+
+Instance wal_state_eta : Settable _ :=
+  settable! Build_wal_state <memLock; wal_d; circ; wal_st; condLogger; condInstall; condShut>.
+
 Definition is_wal_mem (l: loc) γ : iProp Σ :=
-  (* TODO: group these into a record *)
-  ∃ (memLock : loc) (d : val) (circ st : loc)
-      (condLogger condInstall condShut : loc),
-    (∃ q,  l ↦[Walog.S :: "memLock"]{q} #memLock ∗
-           l ↦[Walog.S :: "d"]{q} d ∗
-           l ↦[Walog.S :: "circ"]{q} #circ ∗
-           l ↦[Walog.S :: "st"]{q} #st ∗
-           l ↦[Walog.S :: "condLogger"]{q} #condLogger ∗
-           l ↦[Walog.S :: "condInstall"]{q} #condInstall ∗
-           l ↦[Walog.S :: "condShut"]{q} #condShut) ∗
-    lock.is_cond condLogger #memLock ∗
-    lock.is_cond condInstall #memLock ∗
-    lock.is_cond condShut #memLock ∗
-    is_lock walN γ.(lock_name) #memLock (wal_linv st γ).
+  ∃ σₛ,
+    (readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
+     readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
+     readonly (l ↦[Walog.S :: "circ"] #σₛ.(circ)) ∗
+     readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+     readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
+     readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+     readonly (l ↦[Walog.S :: "condShut"] #σₛ.(condShut))) ∗
+    lock.is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
+    lock.is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
+    lock.is_cond σₛ.(condShut) #σₛ.(memLock) ∗
+    is_lock walN γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ).
+
+Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
 
 Typeclasses Opaque struct_field_mapsto.
-
-Theorem is_wal_mem_dup l γ :
-    is_wal_mem l γ -∗ is_wal_mem l γ ∗ is_wal_mem l γ.
-Proof.
-  iIntros "Hinv".
-  iDestruct "Hinv" as
-      (memLock d circ st
-         condLogger condInstall condShut)
-        "(Hfields&HcondLogger&HcondInstall&HcondShut&#His_lock)".
-  iDestruct "Hfields" as (q) "([Hf1 ?] & [Hf2 ?] & [Hf3 ?] & [Hf4 ?] & [Hf5 ?] & [Hf6 ?] & [Hf7 ?])".
-  iDestruct (is_cond_dup with "HcondLogger") as "[Hcond1 ?]".
-  iDestruct (is_cond_dup with "HcondInstall") as "[Hcond2 ?]".
-  iDestruct (is_cond_dup with "HcondShut") as "[Hcond3 ?]".
-  iSplitL "Hf1 Hf2 Hf3 Hf4 Hf5 Hf6 Hf7 Hcond1 Hcond2 Hcond3".
-  { iExists memLock, d, circ, st.
-    iExists condLogger, condInstall, condShut.
-    iFrame "∗ His_lock".
-    iExists (q/2)%Qp; iFrame. }
-  { iExists memLock, d, circ, st.
-    iExists condLogger, condInstall, condShut.
-    iFrame "∗ His_lock".
-    iExists (q/2)%Qp; iFrame. }
-Qed.
 
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   own γ.(cs_name) (● (Excl' cs)).
@@ -245,12 +253,6 @@ Definition is_wal (l : loc) γ : iProp Σ :=
   inv walN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
   is_circular circN (circular_pred γ) γ.(circ_name).
 
-Instance is_cond_timeless (c l: loc) : Timeless (is_cond c #l).
-Proof.
-  rewrite /is_cond.
-  refine _.
-Qed.
-
 Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
 Proof.
   iIntros "#Hwal".
@@ -258,11 +260,10 @@ Proof.
   iApply (inv_dup_acc with "Hinv"); first by set_solver.
   iIntros "HinvI".
   iDestruct "HinvI" as (σ) "[HinvI HP]".
-  iDestruct "HinvI" as (cs memStart memLog absorptionBoundaries) "(Hmem&Hrest)".
-  iDestruct (is_wal_mem_dup with "Hmem") as "[Hmem1 Hmem2]".
-  iSplitR "Hmem2"; last by auto.
+  iDestruct "HinvI" as (cs memStart memLog absorptionBoundaries) "(#Hmem&Hrest)".
+  iSplitL; last by auto.
   iExists _; iFrame.
-  iExists _, _, _, _; iFrame.
+  iExists _, _, _, _; iFrame "∗ Hmem".
 Qed.
 
 Theorem wal_linv_shutdown st γ :
@@ -275,21 +276,20 @@ Theorem wal_linv_shutdown st γ :
           wal_linv st γ).
 Proof.
   iIntros "Hlkinv".
-  iDestruct "Hlkinv" as (memLogSlice memLogMapPtr memStart diskEnd nextDiskEnd shutdown nthread memLog) "[Hfields Hrest]".
+  iDestruct "Hlkinv" as (σₗ σ) "[Hfields Hrest]".
   iDestruct "Hfields" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
-  iExists shutdown, nthread.
+  iExists _, _.
   iFrame.
   iIntros (shutdown' nthread') "Hshutdown Hnthread".
-  iExists memLogSlice, memLogMapPtr, memStart, diskEnd, nextDiskEnd.
-  iExists _, _, memLog.
+  iExists (set shutdown (λ _, shutdown') (set nthread (λ _, nthread') σₗ)), σ; simpl.
   iFrame.
 Qed.
 
-Theorem wp_Walog__logAppend l γ q (st: loc) (memLock: loc) (condLogger condInstall: loc) :
-  {{{ l ↦[Walog.S :: "memLock"]{q} #memLock ∗
-      l ↦[Walog.S :: "condLogger"]{q} #condLogger ∗
-      l ↦[Walog.S :: "condInstall"]{q} #condInstall ∗
-      l ↦[Walog.S :: "st"]{q} #st ∗
+Theorem wp_Walog__logAppend l γ (st: loc) (memLock: loc) (condLogger condInstall: loc) :
+  {{{ readonly (l ↦[Walog.S :: "memLock"] #memLock) ∗
+      readonly (l ↦[Walog.S :: "condLogger"] #condLogger) ∗
+      readonly (l ↦[Walog.S :: "condInstall"] #condInstall) ∗
+      readonly (l ↦[Walog.S :: "st"] #st) ∗
       is_cond condLogger #memLock ∗
       is_cond condInstall #memLock ∗
       wal_linv st γ ∗
@@ -298,32 +298,23 @@ Theorem wp_Walog__logAppend l γ q (st: loc) (memLock: loc) (condLogger condInst
   }}}
     Walog__logAppend #l
   {{{ (progress:bool), RET #progress;
-      l ↦[Walog.S :: "memLock"]{q} #memLock ∗
-      l ↦[Walog.S :: "condLogger"]{q} #condLogger ∗
-      l ↦[Walog.S :: "condInstall"]{q} #condInstall ∗
-      l ↦[Walog.S :: "st"]{q} #st ∗
-      is_cond condLogger #memLock ∗
-      is_cond condInstall #memLock ∗
       wal_linv st γ ∗
       locked γ.(lock_name)
   }}}.
 Proof.
-  iIntros (Φ) "(HmemLock& HcondLogger& HcondInstall&
-              Hf& His_cond1& His_cond2& Hlkinv& Hlocked& #His_lock) HΦ".
+  iIntros (Φ) "(#HmemLock& #HcondLogger& #HcondInstall&
+              #Hf& #His_cond1& #His_cond2& Hlkinv& Hlocked& #His_lock) HΦ".
   wp_call.
   wp_bind (For _ _ _).
   (* TODO: need inner part of wal_linv with fixed memLog, so we can say after
   this wait loop [length memLog ≤ Z.of_nat LogSz] *)
   wp_apply (wp_forBreak_cond
-              (λ b, l ↦[Walog.S :: "st"]{q} #st ∗
-                    l ↦[Walog.S :: "condInstall"]{q} #condInstall ∗
-                    is_cond condInstall #memLock ∗
-                    locked γ.(lock_name) ∗
-                      wal_linv st γ)%I
-              with "[] [$Hf $HcondInstall $His_cond2 $Hlkinv $Hlocked]").
-  { iIntros "!>" (Φ') "(Hf&Hf2&His_cond2&Hlocked&Hlkinv) HΦ".
+              (λ b, locked γ.(lock_name) ∗
+                    wal_linv st γ)%I
+              with "[] [$Hlkinv $Hlocked]").
+  { iIntros "!>" (Φ') "(Hlocked&Hlkinv) HΦ".
     wp_loadField.
-    iDestruct "Hlkinv" as (memLogSlice memLogMapPtr memStart diskEnd nextDiskEnd shutdown nthread memLog) "[Hfields Hrest]".
+    iDestruct "Hlkinv" as (σₗ σ) "[Hfields Hrest]".
     iDestruct "Hfields" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
     wp_loadField.
     wp_apply wp_slice_len; wp_pures.
@@ -331,13 +322,14 @@ Proof.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[$His_cond2 $Hlocked $His_lock HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread Hrest]").
-      { iExists _, _, _, _, _, _, _, _; iFrame. }
-      iIntros "(His_cond&Hlocked&Hlkinv)".
+      { iExists _, _; iFrame. }
+      iIntros "(Hlocked&Hlkinv)".
       wp_pures.
       iApply ("HΦ" with "[$]").
     - iApply "HΦ"; iFrame.
-      iExists _, _, _, _, _, _, _, _; iFrame.
+      iExists _, _; iFrame.
   }
+  iIntros "(Hlocked&Hlkinv)".
 Admitted.
 
 Ltac shutdown_fields :=
@@ -356,11 +348,10 @@ Theorem wp_Walog__logger l γ :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "#Hwal HΦ".
-  iMod (is_wal_read_mem with "Hwal") as "Hmem".
+  iMod (is_wal_read_mem with "Hwal") as "#Hmem".
   wp_call.
-  iDestruct "Hmem" as (memLock d circ st condLogger condInstall condShut) "Hmem".
-  iDestruct "Hmem" as "(Hfields&HcondLogger&HcondInstall&HcondShut&#Hlk)".
-  iDestruct "Hfields" as (q) "(Hf1&Hf2&Hf3&Hf4&Hf5&Hf6&Hf7)".
+  iDestruct "Hmem" as (σₛ) "(Hfields&HcondLogger&HcondInstall&HcondShut&#Hlk)".
+  iDestruct "Hfields" as "(Hf1&Hf2&Hf3&Hf4&Hf5&Hf6&Hf7)".
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "(Hlk_held&Hlkinv)".
@@ -369,10 +360,9 @@ Proof.
   shutdown_fields.
   wp_pures.
   wp_bind (For _ _ _).
-  wp_apply (wp_forBreak_cond (fun b => wal_linv st γ ∗
-                                       l ↦[Walog.S :: "st"]{q} #st)%I
-              with "[] [Hlkinv Hf4]").
-  { iIntros "!>" (Φ') "[Hlkinv Hf4] HΦ".
+  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ)%I
+              with "[] [$Hlkinv]").
+  { iIntros "!>" (Φ') "Hlkinv HΦ".
     shutdown_fields.
     wp_pures.
     wp_if_destruct.
@@ -382,16 +372,14 @@ Proof.
       admit.
     - iApply "HΦ". iFrame.
   }
-  { iFrame. }
-  iIntros "(Hlkinv&Hf4)".
+  iIntros "Hlkinv".
   wp_apply util_proof.wp_DPrintf.
   shutdown_fields.
   wp_loadField.
   wp_apply (wp_condSignal with "HcondShut").
-  iIntros "His_cond".
   wp_loadField.
   wp_apply (release_spec with "[$Hlk $Hlk_held $Hlkinv]").
-  iApply ("HΦ" with "[$]").
+  iApply ("HΦ" with "[//]").
 Abort.
 
 End heap.
