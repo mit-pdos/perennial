@@ -285,32 +285,33 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wp_Walog__logAppend l γ (st: loc) (memLock: loc) (condLogger condInstall: loc) :
-  {{{ readonly (l ↦[Walog.S :: "memLock"] #memLock) ∗
-      readonly (l ↦[Walog.S :: "condLogger"] #condLogger) ∗
-      readonly (l ↦[Walog.S :: "condInstall"] #condInstall) ∗
-      readonly (l ↦[Walog.S :: "st"] #st) ∗
-      is_cond condLogger #memLock ∗
-      is_cond condInstall #memLock ∗
-      wal_linv st γ ∗
+
+Theorem wp_Walog__logAppend l γ σₛ :
+  {{{ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
+      readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
+      readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+      is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
+      is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
+      readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      wal_linv σₛ.(wal_st) γ ∗
       locked γ.(lock_name) ∗
-      is_lock walN γ.(lock_name) #memLock (wal_linv st γ)
+      is_lock walN γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
   }}}
     Walog__logAppend #l
   {{{ (progress:bool), RET #progress;
-      wal_linv st γ ∗
+      wal_linv σₛ.(wal_st) γ ∗
       locked γ.(lock_name)
   }}}.
 Proof.
-  iIntros (Φ) "(#HmemLock& #HcondLogger& #HcondInstall&
-              #Hf& #His_cond1& #His_cond2& Hlkinv& Hlocked& #His_lock) HΦ".
+  iIntros (Φ) "(#HmemLock& #HcondLogger& #HcondInstall &
+              #His_cond1 & #His_cond2 & #Hf & Hlkinv& Hlocked& #His_lock) HΦ".
   wp_call.
   wp_bind (For _ _ _).
   (* TODO: need inner part of wal_linv with fixed memLog, so we can say after
   this wait loop [length memLog ≤ Z.of_nat LogSz] *)
   wp_apply (wp_forBreak_cond
               (λ b, locked γ.(lock_name) ∗
-                    wal_linv st γ)%I
+                    wal_linv σₛ.(wal_st) γ)%I
               with "[] [$Hlkinv $Hlocked]").
   { iIntros "!>" (Φ') "(Hlocked&Hlkinv) HΦ".
     wp_loadField.
@@ -360,19 +361,27 @@ Proof.
   shutdown_fields.
   wp_pures.
   wp_bind (For _ _ _).
-  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ)%I
-              with "[] [$Hlkinv]").
-  { iIntros "!>" (Φ') "Hlkinv HΦ".
+  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name))%I
+              with "[] [$Hlkinv $Hlk_held]").
+  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held) HΦ".
     shutdown_fields.
     wp_pures.
     wp_if_destruct.
     - wp_pures.
-      (* XXX: can't apply wp_Walog__logAppend, need a bunch more stuff in the
-      loop invariant *)
-      admit.
-    - iApply "HΦ". iFrame.
+      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held]").
+      { iFrame "#". }
+      iIntros (progress) "(Hlkinv&Hlk_held)".
+      wp_pures.
+      destruct (negb progress); [ wp_if_true | wp_if_false ]; wp_pures.
+      + wp_loadField.
+        wp_apply (wp_condWait with "[$HcondLogger $Hlk $Hlkinv $Hlk_held]").
+        iIntros "(Hlk_held&Hlkinv)".
+        wp_pures.
+        iApply ("HΦ" with "[$]").
+      + iApply ("HΦ" with "[$]").
+    - iApply ("HΦ" with "[$]").
   }
-  iIntros "Hlkinv".
+  iIntros "(Hlkinv&Hlk_held)".
   wp_apply util_proof.wp_DPrintf.
   shutdown_fields.
   wp_loadField.
@@ -380,6 +389,6 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[$Hlk $Hlk_held $Hlkinv]").
   iApply ("HΦ" with "[//]").
-Abort.
+Qed.
 
 End heap.
