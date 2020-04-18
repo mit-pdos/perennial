@@ -51,7 +51,7 @@ Section LittleEndian.
       { eapply Properties.word.unsigned_inj.
         rewrite word.unsigned_of_Z, <-Properties.word.wrap_unsigned; cbv [word.wrap].
         Z.bitblast; cbn; subst.
-        rewrite (Z.testbit_neg_r _ (i-8)) by bomega.
+        rewrite (Z.testbit_neg_r _ (i-8)) by blia.
         Z.bitblast_core. }
       { rewrite <-IHn.
         rewrite combine_split.
