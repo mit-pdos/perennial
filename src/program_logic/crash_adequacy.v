@@ -64,7 +64,7 @@ Proof.
     iMod "H" as "(Hσ & He2 & Hefs & HNC)". iIntros "!>".
     iFrame "He". rewrite !app_length /= !app_length.
     replace (length t1' + S (length t2' + length efs))
-      with (length efs + (length t1' + S (length t2'))) by omega. iFrame.
+      with (length efs + (length t1' + S (length t2'))) by lia. iFrame.
 Qed.
 
 Lemma wptp_steps s k n e1 t1 κs κs' t2 σ1 σ2 Φ Φc :
