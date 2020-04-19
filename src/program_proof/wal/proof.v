@@ -46,7 +46,7 @@ Record wal_names :=
     cs_name : gname;
     installed_name : gname;
     installed_data_name : gname;
-    absorptionBoundaries_name : gen_heapG nat unit Σ;
+    absorptionBoundaries_name : gen_heapG nat u64 Σ;
   }.
 
 Implicit Types (γ: wal_names).
@@ -151,13 +151,11 @@ Proof.
   lia.
 Qed.
 
-(* TODO: make this spatial - change absorptionBoundaries to include the
-txn_id, make this mapsto γ.(absorptionBoundaries_name) txn_id pos *)
 Definition txn_pos s txn_id pos: iProp Σ :=
   ⌜is_txn s txn_id pos⌝.
 
-Definition is_boundary γ txn_id : iProp Σ :=
-  mapsto (hG:=γ.(absorptionBoundaries_name)) txn_id 1 ().
+Definition group_txn γ txn_id (pos: u64) : iProp Σ :=
+  ∃ q, mapsto (hG:=γ.(absorptionBoundaries_name)) txn_id q pos.
 
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
@@ -166,7 +164,7 @@ Definition is_installed (s: log_state.t) γ : iProp Σ :=
   ∃ installed_txn_id diskStart,
     own γ.(installed_name) (◯ Excl' installed_txn_id) ∗
     start_is γ.(circ_name) (1/4) diskStart ∗
-    txn_pos s installed_txn_id diskStart ∗
+    group_txn γ installed_txn_id diskStart ∗
     ([∗ map] a ↦ _ ∈ s.(log_state.d),
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
@@ -178,19 +176,25 @@ Definition is_installed (s: log_state.t) γ : iProp Σ :=
                    apply_upds (txn_upds txns) s.(log_state.d) !! a = Some b⌝ ∗
        a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝).
 
-Definition is_memlog (s: log_state.t)
-           (memStart_txn_id: nat) memLog
-           (absorptionBoundaries: gmap nat unit) (memStart: u64): Prop :=
-      (* the high-level structure here is to relate each transaction "governed" by the memLog to the
+(** the simple role of the memLog is to contain all the transactions in the
+abstract state starting at the memStart_txn_id *)
+Definition is_mem_memlog γ memLog txns memStart_txn_id : Prop :=
+  apply_upds memLog ∅ =
+  apply_upds (txn_upds $ drop memStart_txn_id txns) ∅.
+
+(** the more complicated role of memLog is to correctly store committed
+transactions if we roll it back to a [group_txn] boundary, which is what happens
+on crash where [memLog] is restored from the circ log *)
+Definition is_crash_memlog γ
+           (memStart_txn_id: nat) memLog txns (memStart: u64): iProp Σ :=
+      (* the high-level structure here is to relate each group-committed transaction to the
       "cumulative updates" through that transaction. *)
       ∀ (txn_id : nat) (pos : u64),
-        is_txn s txn_id pos ->
-        (* the "governed" part - both transactions in absorptionBoundaries
-        that have gone through the nextDiskEnd -> logger flow ... *)
-        ( ( memStart_txn_id ≤ txn_id ∧ absorptionBoundaries !! txn_id = Some tt ) ∨
-          (* ...as well as the current transaction, including all the
-          potentially absorbed transactions that won't be logged *)
-          txn_id = length s.(log_state.txns) ) ->
+        ⌜memStart_txn_id ≤ txn_id⌝ -∗
+        (* note that we'll only read from this for the durable txn, but we need
+        to track it from the moment a group txn is allocated (when nextDiskEnd
+        is set) *)
+        group_txn γ txn_id pos -∗
         (* the "cumulative updates" part - we can't talk about update lists here
         because the abstract state has all the updates that have gone through
         the system while the implementation maintains post-absorption
@@ -199,23 +203,15 @@ Definition is_memlog (s: log_state.t)
         captures that the latest update to each address should match, including
         the absence of any updates. The result is that the cached read from the
         memLog is a correct way to read from the abstract list of updates
-        through txn.
-
-        We don't just say [apply_upds memLog ∅ = apply_upds (skip memStart
-        s.txns)]. This would only cover reads from the current in-memory state.
-        We also say that earlier transactions are correct, since if we crash
-        memLog will get trimmed to just the updates through diskEnd. (TODO(tej):
-        could we just say this about the current state and diskEnd? or do we
-        need the intermediate transactions to be inductive?) *)
-        apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
-        (* need +1 since txn_id should be included in subslice *)
-        apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) s.(log_state.txns))) ∅.
+        through txn. *)
+        ⌜apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
+        apply_upds (txn_upds $ subslice memStart_txn_id (txn_id+1) txns) ∅⌝.
 
 (** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
   ∃ (cs: circΣ.t) (memStart : u64)
        (memLog : list update.t)
-       (absorptionBoundaries : gmap nat unit),
+       (absorptionBoundaries : gmap nat u64),
     is_wal_mem l γ ∗
     own γ.(cs_name) (◯ (Excl' cs)) ∗
     own γ.(memStart_name) (◯ (Excl' memStart)) ∗
@@ -228,12 +224,11 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
        since at this point it becomes a plausible crash point *)
     ( ∃ (nextDiskEnd_txn_id : nat) (nextDiskEnd : u64),
       own γ.(nextDiskEnd_name) (◯ (Excl' nextDiskEnd)) ∗
-      ⌜ absorptionBoundaries !! nextDiskEnd_txn_id = Some tt ⌝ ∗
-      txn_pos s nextDiskEnd_txn_id nextDiskEnd ) ∗
+      group_txn γ nextDiskEnd_txn_id nextDiskEnd ) ∗
     (* next, transactions are actually logged to the circ buffer *)
     ( ∃ (diskEnd_txn_id : nat) (diskEnd : u64),
       diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd) ∗
-      ⌜ absorptionBoundaries !! diskEnd_txn_id = Some tt ⌝ ∗
+      group_txn γ diskEnd_txn_id diskEnd ∗
       txn_pos s diskEnd_txn_id diskEnd ∗
       (* TODO(tej): does this make sense? it's the only constraint on
          durable_lb *)
@@ -247,8 +242,8 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     tail of transactions that are subject to absorption and not owned by the
     logger. *)
     ∃ (memStart_txn_id : nat),
-      txn_pos s memStart_txn_id memStart ∗
-      ⌜is_memlog s memStart_txn_id memLog absorptionBoundaries memStart⌝.
+      group_txn γ memStart_txn_id memStart ∗
+      is_crash_memlog γ memStart_txn_id memLog s.(log_state.txns) memStart.
 
 Definition is_wal (l : loc) γ : iProp Σ :=
   inv walN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
