@@ -207,16 +207,23 @@ Definition is_crash_memlog γ
         ⌜apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
         apply_upds (txn_upds $ subslice memStart_txn_id (txn_id+1) txns) ∅⌝.
 
+(** an invariant governing the data logged for crash recovery of (a prefix of)
+memLog. *)
+Definition log_inv γ txns : iProp Σ :=
+  ∃ (memStart: u64) (memLog: list update.t) cs,
+    own γ.(memStart_name) (◯ (Excl' memStart)) ∗
+    own γ.(cs_name) (◯ (Excl' cs)) ∗
+    ⌜circ_matches_memlog memStart memLog cs ⌝ ∗
+    ∃ (memStart_txn_id : nat),
+      group_txn γ memStart_txn_id memStart ∗
+      is_crash_memlog γ memStart_txn_id memLog txns memStart.
+
 (** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
-  ∃ (cs: circΣ.t) (memStart : u64)
-       (memLog : list update.t)
-       (absorptionBoundaries : gmap nat u64),
+  ∃ (memStart : u64) (memLog : list update.t)
+    (absorptionBoundaries : gmap nat u64),
     is_wal_mem l γ ∗
-    own γ.(cs_name) (◯ (Excl' cs)) ∗
-    own γ.(memStart_name) (◯ (Excl' memStart)) ∗
-    own γ.(memLog_name) (◯ (Excl' memLog)) ∗
-    ⌜ circ_matches_memlog memStart memLog cs ⌝ ∗
+    log_inv γ s.(log_state.txns) ∗
     is_installed s γ ∗
     gen_heap_ctx (hG:=γ.(absorptionBoundaries_name)) absorptionBoundaries ∗
     (* a group-commit transaction is logged by setting nextDiskEnd to its pos -
@@ -243,7 +250,7 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     logger. *)
     ∃ (memStart_txn_id : nat),
       group_txn γ memStart_txn_id memStart ∗
-      is_crash_memlog γ memStart_txn_id memLog s.(log_state.txns) memStart.
+      ⌜is_mem_memlog γ memLog s.(log_state.txns) memStart_txn_id⌝.
 
 Definition is_wal (l : loc) γ : iProp Σ :=
   inv walN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
@@ -256,10 +263,10 @@ Proof.
   iApply (inv_dup_acc with "Hinv"); first by set_solver.
   iIntros "HinvI".
   iDestruct "HinvI" as (σ) "[HinvI HP]".
-  iDestruct "HinvI" as (cs memStart memLog absorptionBoundaries) "(#Hmem&Hrest)".
+  iDestruct "HinvI" as (memStart memLog absorptionBoundaries) "(#Hmem&Hrest)".
   iSplitL; last by auto.
   iExists _; iFrame.
-  iExists _, _, _, _; iFrame "∗ Hmem".
+  iExists _, _, _; iFrame "∗ Hmem".
 Qed.
 
 Theorem wal_linv_shutdown st γ :
