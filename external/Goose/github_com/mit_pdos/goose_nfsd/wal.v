@@ -412,6 +412,16 @@ Definition WalogState__doMemAppend: val :=
     let: "txn" := struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st") in
     "txn".
 
+(* Grab all of the current transactions and record them for the next group commit (when the logger gets around to it).
+
+   This is a separate function purely for verification purposes; the code isn't complicated but we have to manipulate
+   some ghost state and justify this value of nextDiskEnd.
+
+   Assumes caller holds memLock. *)
+Definition WalogState__endGroupTxn: val :=
+  rec: "WalogState__endGroupTxn" "st" :=
+    struct.storeF WalogState.S "nextDiskEnd" "st" (struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st")).
+
 Definition copyUpdateBlock: val :=
   rec: "copyUpdateBlock" "u" :=
     let: "blk" := NewSlice byteT disk.BlockSize in
@@ -419,14 +429,14 @@ Definition copyUpdateBlock: val :=
     "blk".
 
 (* readMem implements ReadMem, assuming memLock is held *)
-Definition Walog__readMem: val :=
-  rec: "Walog__readMem" "l" "blkno" :=
-    let: ("pos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" (struct.loadF Walog.S "st" "l")) "blkno" in
+Definition WalogState__readMem: val :=
+  rec: "WalogState__readMem" "st" "blkno" :=
+    let: ("pos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" "st") "blkno" in
     (if: "ok"
     then
       util.DPrintf #5 (#(str"read memLogMap: read %d pos %d
       ")) #();;
-      let: "u" := SliceGet (struct.t Update.S) (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) ("pos" - struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l")) in
+      let: "u" := SliceGet (struct.t Update.S) (struct.loadF WalogState.S "memLog" "st") ("pos" - struct.loadF WalogState.S "memStart" "st") in
       let: "blk" := copyUpdateBlock "u" in
       ("blk", #true)
     else (slice.nil, #false)).
@@ -436,7 +446,7 @@ Definition Walog__readMem: val :=
 Definition Walog__ReadMem: val :=
   rec: "Walog__ReadMem" "l" "blkno" :=
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
-    let: ("blk", "ok") := Walog__readMem "l" "blkno" in
+    let: ("blk", "ok") := WalogState__readMem (struct.loadF Walog.S "st" "l") "blkno" in
     lock.release (struct.loadF Walog.S "memLock" "l");;
     ("blk", "ok").
 
@@ -481,7 +491,7 @@ Definition Walog__MemAppend: val :=
           (if: "memSize" + slice.len "bufs" > LOGSZ
           then
             util.DPrintf #5 (#(str"memAppend: log is full; try again")) #();;
-            struct.storeF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l") + slice.len (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")));;
+            WalogState__endGroupTxn (struct.loadF Walog.S "st" "l");;
             lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
             lock.condWait (struct.loadF Walog.S "condLogger" "l");;
             Continue
@@ -503,7 +513,7 @@ Definition Walog__Flush: val :=
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
     (if: "pos" > struct.loadF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l")
     then
-      struct.storeF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l") + slice.len (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")));;
+      WalogState__endGroupTxn (struct.loadF Walog.S "st" "l");;
       #()
     else #());;
     Skip;;
