@@ -340,11 +340,33 @@ Ltac shutdown_fields :=
   let shutdown := fresh "shutdown" in
   let nthread := fresh "nthread" in
   iDestruct (wal_linv_shutdown with "Hlkinv") as (shutdown nthread) "[[? ?] Hlkinv]";
-  (repeat wp_loadField);
-  (repeat wp_storeField);
+  repeat wp_loadField;
+  repeat wp_storeField;
   iSpecialize ("Hlkinv" with "[$] [$]");
   try (clear shutdown);
   try (clear nthread).
+
+Lemma wp_inc_nthread l (st: loc) γ :
+  {{{ readonly (l ↦[Walog.S :: "st"] #st) ∗ wal_linv st γ }}}
+    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" #l)
+    (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" #l) + #1)
+    {{{ RET #(); wal_linv st γ }}}.
+Proof.
+  iIntros (Φ) "[#Hst Hlkinv] HΦ".
+  shutdown_fields.
+  iApply ("HΦ" with "[$]").
+Qed.
+
+Lemma wp_dec_nthread l (st: loc) γ :
+  {{{ readonly (l ↦[Walog.S :: "st"] #st) ∗ wal_linv st γ }}}
+    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" #l)
+    (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" #l) - #1)
+    {{{ RET #(); wal_linv st γ }}}.
+Proof.
+  iIntros (Φ) "[#Hst Hlkinv] HΦ".
+  shutdown_fields.
+  iApply ("HΦ" with "[$]").
+Qed.
 
 Theorem wp_Walog__logger l γ :
   {{{ is_wal l γ }}}
@@ -360,8 +382,8 @@ Proof.
   wp_apply (acquire_spec with "[$]").
   iIntros "(Hlk_held&Hlkinv)".
   wp_pures.
-  wp_bind (struct.storeF _ _ _ _).
-  shutdown_fields.
+
+  wp_apply (wp_inc_nthread with "[$Hf4 $Hlkinv]"); iIntros "Hlkinv".
   wp_pures.
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name))%I
@@ -386,7 +408,7 @@ Proof.
   }
   iIntros "(Hlkinv&Hlk_held)".
   wp_apply util_proof.wp_DPrintf.
-  shutdown_fields.
+  wp_apply (wp_dec_nthread with "[$Hf4 $Hlkinv]"); iIntros "Hlkinv".
   wp_loadField.
   wp_apply (wp_condSignal with "HcondShut").
   wp_loadField.
