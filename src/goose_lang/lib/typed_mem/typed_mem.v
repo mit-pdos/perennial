@@ -32,8 +32,11 @@ Section goose_lang.
     lia.
   Qed.
 
-  Definition struct_mapsto l q (t:ty) (v: val): iProp Σ :=
+  Definition struct_mapsto_def l q (t:ty) (v: val): iProp Σ :=
     (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{q} vj) ∗ ⌜val_ty v t⌝)%I.
+  Definition struct_mapsto_aux : seal (@struct_mapsto_def). Proof. by eexists. Qed.
+  Definition struct_mapsto := struct_mapsto_aux.(unseal).
+  Definition struct_mapsto_eq : @struct_mapsto = @struct_mapsto_def := struct_mapsto_aux.(seal_eq).
 
   Notation "l ↦[ t ]{ q } v" := (struct_mapsto l q t v%V)
                                    (at level 20, q at level 50, t at level 50,
@@ -42,12 +45,21 @@ Section goose_lang.
                               (at level 20, t at level 50,
                                format "l  ↦[ t ]  v") : bi_scope.
 
+  Ltac unseal := rewrite ?struct_mapsto_eq /struct_mapsto_def.
+
+  Global Instance struct_mapsto_timeless l t q v: Timeless (l ↦[t]{q} v).
+  Proof. unseal. apply _. Qed.
+
+  Global Instance struct_mapsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{q} v)%I.
+  Proof. unseal. apply _. Qed.
+
   Theorem struct_mapsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
     l ↦[t]{q} v -∗ l ↦{q} v0.
   Proof.
     intros Hv.
-    rewrite /struct_mapsto Hv /=.
+    unseal.
+    rewrite Hv /=.
     rewrite loc_add_0 right_id.
     by iIntros "[$ _]".
   Qed.
@@ -55,7 +67,7 @@ Section goose_lang.
   Theorem struct_mapsto_ty q l v t :
     l ↦[t]{q} v -∗ ⌜val_ty v t⌝.
   Proof.
-    iIntros "[_ %] !%//".
+    unseal. iIntros "[_ %] !%//".
   Qed.
 
   Theorem base_mapsto_untype {l bt q v} :
@@ -73,6 +85,7 @@ Section goose_lang.
       inv_ty; simpl; auto.
       congruence.
     - iIntros "[Hl %]".
+      unseal.
       iSplitL; auto.
       inv_ty; simpl; try rewrite loc_add_0 right_id; auto.
   Qed.
@@ -120,6 +133,7 @@ Section goose_lang.
   Theorem struct_mapsto_prod q l v1 t1 v2 t2 :
     l ↦[t1 * t2]{q} (v1, v2) ⊣⊢ l ↦[t1]{q} v1 ∗ (l +ₗ ty_size t1) ↦[t2]{q} v2.
   Proof.
+    unseal.
     rewrite /struct_mapsto /= big_opL_app.
     iSplit.
     - iIntros "[[Hv1 Hv2] %]".
@@ -160,7 +174,7 @@ Section goose_lang.
     change (int.nat 1) with 1%nat; simpl.
     iIntros (l) "[Hl _]".
     iApply "HΦ".
-    rewrite /struct_mapsto.
+    unseal.
     iSplitL; auto.
     rewrite Z.mul_0_r loc_add_0.
     iFrame.
@@ -205,6 +219,7 @@ Section goose_lang.
     {{{ RET v; l ↦[t]{q} v }}}.
   Proof.
     iIntros (Φ) ">Hl HΦ".
+    unseal.
     iDestruct "Hl" as "[Hl %]".
     hnf in H.
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
@@ -272,6 +287,7 @@ Section goose_lang.
     {{{ RET #(); l ↦[t] v }}}.
   Proof.
     intros Hty.
+    unseal.
     iIntros (Φ) ">[Hl %] HΦ".
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".

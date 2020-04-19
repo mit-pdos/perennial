@@ -187,7 +187,7 @@ Proof.
   intros Hty.
   (iInduction (d) as [| [f t] fs] "IH" forall (l v Hty)); simpl.
   - inv_ty Hty.
-    rewrite /struct_mapsto /flatten_struct /=.
+    rewrite struct_mapsto_eq /struct_mapsto_def /flatten_struct /=.
     rewrite left_id.
     auto.
   - inv_ty Hty.
@@ -387,23 +387,7 @@ Lemma struct_mapsto_q l q t v :
   struct_mapsto l (q/2) t v ∗
   struct_mapsto l (q/2) t v.
 Proof.
-  rewrite /struct_mapsto.
-  generalize (flatten_struct v); intro fl.
-  iSplit.
-  - iIntros "[Hl #Hty]". iFrame "Hty".
-    iInduction fl as [|f] "IH" forall (l); simpl; first done.
-    iDestruct "Hl" as "[[Hl00 Hl01] Hl]".
-    iFrame.
-    setoid_rewrite loc_add_Sn.
-    iDestruct ("IH" with "Hl") as "[Hl0 Hl1]". iFrame.
-  - iIntros "[[Hl0 #Hty] [Hl1 _]]". iFrame "Hty".
-    iInduction fl as [|f] "IH" forall (l); simpl; first done.
-    iDestruct "Hl0" as "[Hl0 Hl0']".
-    iDestruct "Hl1" as "[Hl1 Hl1']".
-    iSplitL "Hl0 Hl1".
-    { iSplitL "Hl0"; iFrame. }
-    setoid_rewrite loc_add_Sn.
-    iApply ("IH" with "Hl0' Hl1'").
+  rewrite -typed_mem.struct_mapsto_fractional Qp_div_2. auto.
 Qed.
 
 Global Instance struct_mapsto_as_mapsto d l v :

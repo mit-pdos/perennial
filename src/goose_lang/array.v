@@ -185,6 +185,7 @@ Proof.
   iApply (big_sepL_mono with "Hlm").
   iIntros (k y Heq) "Hvals".
   rewrite (nat_scaled_offset_to_Z Hty).
+  rewrite struct_mapsto_eq /struct_mapsto_def.
   iSplitL; auto.
 Qed.
 

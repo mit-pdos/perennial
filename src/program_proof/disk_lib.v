@@ -11,7 +11,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 Lemma byte_ptsto_untype l q (x: u8) :
   l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
 Proof.
-  rewrite /struct_mapsto /=.
+  rewrite struct_mapsto_eq /struct_mapsto_def /=.
   rewrite loc_add_0 right_id.
   iSplit.
   - iDestruct 1 as "[$ _]".

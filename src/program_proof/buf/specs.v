@@ -430,6 +430,17 @@ Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop
       get_bit b0 (word.modu off 8) = d
   end.
 
+Lemma buf_mapsto_non_null b a:
+  b ↦[Buf.S :: "Addr"] addr2val a -∗ ⌜ b ≠ null ⌝.
+Proof.
+  iIntros "Hb.a".
+  iDestruct (heap_mapsto_non_null with "[Hb.a]") as %Hnotnull.
+  { rewrite /struct_field_mapsto//= struct_mapsto_eq /struct_mapsto_def.
+    iDestruct "Hb.a" as "[[[Hb _] _] _]".
+    repeat rewrite loc_add_0. iFrame. }
+  eauto.
+Qed.
+
 Theorem wp_MkBuf K a data (bufdata : bufDataT K) :
   {{{
     is_buf_data data bufdata a ∗
@@ -450,9 +461,7 @@ Proof using.
   iApply "HΦ".
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
 
-  iDestruct (heap_mapsto_non_null with "[Hb.a]") as %Hnotnull.
-  { iDestruct "Hb.a" as "[[[Hb _] _] _]".
-    repeat rewrite loc_add_0. iFrame. }
+  iDestruct (buf_mapsto_non_null with "[$]") as %Hnotnull.
 
   iExists _, _.
   iFrame.
@@ -495,9 +504,7 @@ Proof using.
   iApply "HΦ".
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
 
-  iDestruct (heap_mapsto_non_null with "[Hb.a]") as %Hnotnull.
-  { iDestruct "Hb.a" as "[[[Hb _] _] _]".
-    repeat rewrite loc_add_0. iFrame. }
+  iDestruct (buf_mapsto_non_null with "[$]") as %Hnotnull.
 
   iExists _, _.
   iFrame.
