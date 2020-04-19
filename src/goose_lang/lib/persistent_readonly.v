@@ -74,7 +74,7 @@ Proof.
   split; [done|apply _|apply _].
 Qed.
 
-Instance mapsto_AsMapsTo `{ffi_sem: ext_semantics} `(hG: gen_heapG loc val Σ) l v :
+Instance mapsto_AsMapsTo `{ffi_sem: ext_semantics} `(hG: gen_heapG L V Σ) l v :
   AsMapsTo (mapsto (hG:=hG) l 1 v) (λ l q v, mapsto (hG:=hG) l q v) l v.
 Proof.
   split; [done|apply _|apply _].

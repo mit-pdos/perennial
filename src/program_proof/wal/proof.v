@@ -155,7 +155,7 @@ Definition txn_pos s txn_id pos: iProp Σ :=
   ⌜is_txn s txn_id pos⌝.
 
 Definition group_txn γ txn_id (pos: u64) : iProp Σ :=
-  ∃ q, mapsto (hG:=γ.(absorptionBoundaries_name)) txn_id q pos.
+  readonly (mapsto (hG:=γ.(absorptionBoundaries_name)) txn_id 1%Qp pos).
 
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
