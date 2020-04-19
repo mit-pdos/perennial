@@ -28,6 +28,8 @@ Context `{!inG Σ (authR (optionUR (exclR circΣC)))}.
 Context `{!inG Σ (authR (optionUR (exclR (listO u64O))))}.
 Context `{!inG Σ (authR (optionUR (exclR (listO blockO))))}.
 Context `{!inG Σ (authR (optionUR (exclR (gmapO Z blockO))))}.
+Context `{!inG Σ (authR (optionUR (exclR (listO (prodO u64C (listO updateO))))))}.
+Context `{!inG Σ (authR (optionUR (exclR (prodO u64O natO))))}.
 Context `{!inG Σ fmcounterUR}.
 
 Implicit Types (Φ: val → iProp Σ).
@@ -41,12 +43,10 @@ Record wal_names :=
   { circ_name: circ_names;
     memStart_name : gname;
     memLog_name : gname;
-    nextDiskEnd_name : gname;
     lock_name : gname;
     cs_name : gname;
-    installed_name : gname;
-    installed_data_name : gname;
     groupTxns_name : gen_heapG nat u64 Σ;
+    txns_name : gname;
   }.
 
 Implicit Types (γ: wal_names).
@@ -78,6 +78,26 @@ Record locked_state :=
 Instance locked_state_eta: Settable _ :=
   settable! Build_locked_state <memStart; diskEnd; nextDiskEnd; memLog>.
 
+Definition group_txn γ txn_id (pos: u64) : iProp Σ :=
+  readonly (mapsto (hG:=γ.(groupTxns_name)) txn_id 1%Qp pos).
+
+(** the simple role of the memLog is to contain all the transactions in the
+abstract state starting at the memStart_txn_id *)
+Definition is_mem_memLog γ memLog txns memStart_txn_id : Prop :=
+  apply_upds memLog ∅ =
+  apply_upds (txn_upds (drop memStart_txn_id txns)) ∅.
+
+Definition memLog_linv γ memStart (memLog: list update.t) : iProp Σ :=
+  (∃ (memStart_txn_id: nat) (txns: list (u64 * list update.t)),
+      own γ.(memStart_name) (● Excl' (memStart, memStart_txn_id)) ∗
+      own γ.(memLog_name) (● Excl' memLog) ∗
+      own γ.(txns_name) (● Excl' txns) ∗
+      group_txn γ memStart_txn_id memStart ∗
+      (* Here we establish what the memLog contains, which is necessary for reads
+      to work (they read through memLogMap, but the lock invariant establishes
+      that this matches memLog). *)
+      ⌜is_mem_memLog γ memLog txns memStart_txn_id⌝).
+
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
   ∃ σₗ σ,
@@ -92,9 +112,12 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
     is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅, #0) ∗
     diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
     start_at_least γ.(circ_name) σ.(memStart) ∗
-    own γ.(memStart_name) (● (Excl' σ.(memStart))) ∗
-    own γ.(nextDiskEnd_name) (● (Excl' σ.(nextDiskEnd)))
-    (* TODO: inline groupTxns, memLog invariant *)
+    memLog_linv γ σ.(memStart) σ.(memLog) ∗
+    (* a group-commit transaction is logged by setting nextDiskEnd to its pos -
+       these conditions ensure that it is recorded as an absorption boundary,
+       since at this point it becomes a plausible crash point *)
+    ( ∃ (nextDiskEnd_txn_id : nat),
+      group_txn γ nextDiskEnd_txn_id σ.(nextDiskEnd) )
     .
 
 (** The implementation state contained in the *Walog struct, which is all
@@ -112,6 +135,8 @@ Record wal_state :=
 Instance wal_state_eta : Settable _ :=
   settable! Build_wal_state <memLock; wal_d; circ; wal_st; condLogger; condInstall; condShut>.
 
+(* I guess this needs no arguments because the in-memory state doesn't
+    correspond directly to any part of the abstract state *)
 Definition is_wal_mem (l: loc) γ : iProp Σ :=
   ∃ σₛ,
     (readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
@@ -151,20 +176,14 @@ Proof.
   lia.
 Qed.
 
-Definition txn_pos s txn_id pos: iProp Σ :=
-  ⌜is_txn s txn_id pos⌝.
-
-Definition group_txn γ txn_id (pos: u64) : iProp Σ :=
-  readonly (mapsto (hG:=γ.(groupTxns_name)) txn_id 1%Qp pos).
-
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
-Definition is_installed (s: log_state.t) γ : iProp Σ :=
+Definition is_installed γ (s: log_state.t) : iProp Σ :=
   ∃ installed_txn_id diskStart,
-    own γ.(installed_name) (◯ Excl' installed_txn_id) ∗
     start_is γ.(circ_name) (1/4) diskStart ∗
     group_txn γ installed_txn_id diskStart ∗
+    ⌜(s.(log_state.installed_lb) ≤ installed_txn_id)%nat⌝ ∗
     ([∗ map] a ↦ _ ∈ s.(log_state.d),
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
@@ -176,15 +195,14 @@ Definition is_installed (s: log_state.t) γ : iProp Σ :=
                    apply_upds (txn_upds txns) s.(log_state.d) !! a = Some b⌝ ∗
        a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝).
 
-(** the simple role of the memLog is to contain all the transactions in the
-abstract state starting at the memStart_txn_id *)
-Definition is_mem_memlog γ memLog txns memStart_txn_id : Prop :=
-  apply_upds memLog ∅ =
-  apply_upds (txn_upds (drop memStart_txn_id txns)) ∅.
-
 (** the more complicated role of memLog is to correctly store committed
 transactions if we roll it back to a [group_txn] boundary, which is what happens
 on crash where [memLog] is restored from the circ log *)
+(* This is complicated a bit by the fact that the memLog can contain elements
+   before diskStart (before the installer has a chance to trim them), contains
+   all the logged updates, contains grouped transactions in groupTxns, and
+   finally contains a tail of transactions that are subject to absorption and
+   not owned by the logger. *)
 Definition is_crash_memlog γ
            (memStart_txn_id: nat) memLog txns (memStart: u64): iProp Σ :=
       (* the high-level structure here is to relate each group-committed transaction to the
@@ -209,48 +227,38 @@ Definition is_crash_memlog γ
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
-Definition log_inv γ txns : iProp Σ :=
-  ∃ (memStart: u64) (memLog: list update.t) cs,
-    own γ.(memStart_name) (◯ (Excl' memStart)) ∗
+Definition log_inv γ txns diskEnd_txn_id : iProp Σ :=
+  ∃ (memStart: u64) (memStart_txn_id: nat) (memLog: list update.t) cs,
+    own γ.(memStart_name) (◯ (Excl' (memStart, memStart_txn_id))) ∗
+    own γ.(memLog_name) (◯ Excl' memLog) ∗
     own γ.(cs_name) (◯ (Excl' cs)) ∗
-    ⌜circ_matches_memlog memStart memLog cs ⌝ ∗
-    ∃ (memStart_txn_id : nat),
-      group_txn γ memStart_txn_id memStart ∗
-      is_crash_memlog γ memStart_txn_id memLog txns memStart.
+    ⌜circ_matches_memlog memStart memLog cs⌝ ∗
+    is_crash_memlog γ memStart_txn_id memLog txns memStart ∗
+    (* this sub-part establishes that diskEnd_txn_id is the durable point *)
+    (∃ (diskEnd: u64),
+        group_txn γ diskEnd_txn_id diskEnd ∗
+        diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
+
+Definition is_groupTxns γ s: iProp Σ :=
+  ∃ (groupTxns: gmap nat u64),
+    gen_heap_ctx (hG:=γ.(groupTxns_name)) groupTxns ∗
+    ⌜∀ txn_id pos, groupTxns !! txn_id = Some pos ->
+                   is_txn s txn_id pos⌝.
+
+Definition is_durable γ s: iProp Σ :=
+  (∃ diskEnd_txn_id,
+    log_inv γ s.(log_state.txns) diskEnd_txn_id ∗
+    (* TODO(tej): does this make sense? it's the only constraint on
+        durable_lb *)
+    ⌜s.(log_state.durable_lb) ≤ diskEnd_txn_id ⌝ ).
 
 (** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
-  ∃ (memStart : u64) (memLog : list update.t)
-    (groupTxns : gmap nat u64),
     is_wal_mem l γ ∗
-    log_inv γ s.(log_state.txns) ∗
-    is_installed s γ ∗
-    gen_heap_ctx (hG:=γ.(groupTxns_name)) groupTxns ∗
-    (* a group-commit transaction is logged by setting nextDiskEnd to its pos -
-       these conditions ensure that it is recorded as an absorption boundary,
-       since at this point it becomes a plausible crash point *)
-    ( ∃ (nextDiskEnd_txn_id : nat) (nextDiskEnd : u64),
-      own γ.(nextDiskEnd_name) (◯ (Excl' nextDiskEnd)) ∗
-      group_txn γ nextDiskEnd_txn_id nextDiskEnd ) ∗
-    (* next, transactions are actually logged to the circ buffer *)
-    ( ∃ (diskEnd_txn_id : nat) (diskEnd : u64),
-      diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd) ∗
-      group_txn γ diskEnd_txn_id diskEnd ∗
-      txn_pos s diskEnd_txn_id diskEnd ∗
-      (* TODO(tej): does this make sense? it's the only constraint on
-         durable_lb *)
-      ⌜ s.(log_state.durable_lb) ≤ diskEnd_txn_id ⌝ ) ∗
-    (* Here we establish what the memLog contains, which is necessary for reads
-    to work (they read through memLogMap, but the lock invariant establishes
-    that this matches memLog). This is complicated a bit by the fact that the
-    memLog can contain elements before diskStart (before the installer has a
-    chance to trim them), contains all the logged updates, contains
-    grouped transactions in groupTxns, and finally contains a
-    tail of transactions that are subject to absorption and not owned by the
-    logger. *)
-    ∃ (memStart_txn_id : nat),
-      group_txn γ memStart_txn_id memStart ∗
-      ⌜is_mem_memlog γ memLog s.(log_state.txns) memStart_txn_id⌝.
+    own γ.(txns_name) (◯ Excl' s.(log_state.txns)) ∗
+    is_durable γ s ∗
+    is_installed γ s ∗
+    is_groupTxns γ s.
 
 Definition is_wal (l : loc) γ : iProp Σ :=
   inv walN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
@@ -263,10 +271,10 @@ Proof.
   iApply (inv_dup_acc with "Hinv"); first by set_solver.
   iIntros "HinvI".
   iDestruct "HinvI" as (σ) "[HinvI HP]".
-  iDestruct "HinvI" as (memStart memLog groupTxns) "(#Hmem&Hrest)".
+  iDestruct "HinvI" as "(#Hmem&Hrest)".
   iSplitL; last by auto.
   iExists _; iFrame.
-  iExists _, _, _; iFrame "∗ Hmem".
+  iFrame "∗ Hmem".
 Qed.
 
 Theorem wal_linv_shutdown st γ :
