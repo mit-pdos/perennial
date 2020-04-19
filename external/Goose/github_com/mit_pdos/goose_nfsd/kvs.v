@@ -48,11 +48,11 @@ Definition KVS__Get: val :=
     let: "btxn" := buftxn.Begin (struct.loadF KVS.S "txn" "kvs") in
     let: "akey" := addr.MkAddr ("key" + common.LOGSIZE) #0 in
     let: "data" := struct.loadF buf.Buf.S "Data" (buftxn.BufTxn__ReadBuf "btxn" "akey" common.NBITBLOCK) in
-    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
-    (struct.new KVPair.S [
-       "Key" ::= "key";
-       "Val" ::= "data"
-     ], "ok").
+    buftxn.BufTxn__CommitWait "btxn" #true;;
+    struct.new KVPair.S [
+      "Key" ::= "key";
+      "Val" ::= "data"
+    ].
 
 Definition KVS__Delete: val :=
   rec: "KVS__Delete" "kvs" :=
