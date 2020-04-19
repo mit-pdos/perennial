@@ -4,21 +4,22 @@ Set Default Proof Using "Type".
 
 (* This class encodes how to represent an address into a combination of
    a "block id" and an integer offset into that block *)
-Class BlockAddr L1 L2 `{Countable L1, Countable L2} : Type :=
+Local Notation L2 := Z.
+Class BlockAddr L1 `{Countable L1} : Type :=
   { addr_decode : L1 → (L2 * Z);
     addr_encode : (L2 * Z) → L1;
     addr_decode_encode : ∀ x, addr_decode (addr_encode x) = x;
     addr_encode_decode : ∀ x, addr_encode (addr_decode x) = x }.
 
 Section block_addr_defs.
-  Context `{BlockAddr L1 L2}.
+  Context `{BlockAddr L1}.
   Local Open Scope Z.
 
   Definition addr_id (x: L1) : L2 := fst (addr_decode x).
   Definition addr_offset (x: L1) : Z := snd (addr_decode x).
 
-  Definition addr_base (x: L1) := addr_encode (addr_id x, 0%Z).
-  Definition addr_plus_off (x: L1) (z: Z) :=
+  Definition addr_base (x: L1) : L1 := addr_encode (addr_id x, 0%Z).
+  Definition addr_plus_off (x: L1) (z: Z) : L1 :=
     addr_encode (addr_id x, (addr_offset x + z)%Z).
 
   Lemma addr_encode_decode' (x: L1) :
@@ -68,7 +69,7 @@ Section block_addr_defs.
     - rewrite !addr_offset_of_plus //=. lia.
   Qed.
 
-  Instance addr_encode_inj : Inj eq eq (addr_encode).
+  Instance addr_encode_inj : Inj (@eq _) (@eq L1) (addr_encode).
   Proof.
     rewrite /Inj => x y Heq. apply (f_equal addr_decode) in Heq.
     by rewrite ?addr_decode_encode in Heq.

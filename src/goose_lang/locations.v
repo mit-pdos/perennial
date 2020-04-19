@@ -24,7 +24,7 @@ Program Instance loc_infinite : Infinite loc :=
   inj_infinite (λ p, {| loc_car := p; loc_off := 0 |}) (λ l, Some (loc_car l)) _.
 Next Obligation. done. Qed.
 
-Program Global Instance locs_BlockAddr: BlockAddr loc Z :=
+Program Instance locs_BlockAddr: BlockAddr loc :=
   {| addr_decode := λ l, (loc_car l, loc_off l);
      addr_encode := λ l, {| loc_car := fst l; loc_off := snd l |} |}.
 Next Obligation. intros (?&?) => //=. Qed.

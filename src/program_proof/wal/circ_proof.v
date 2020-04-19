@@ -811,8 +811,8 @@ Proof.
     auto.
   - rewrite -> IHupds by len.
     f_equal.
-    replace (Z.to_nat $ i - endpos) with
-        (S $ Z.to_nat $ i - (endpos + 1)) by lia.
+    replace ((Z.to_nat) $ (i - endpos)) with
+        (S $ (Z.to_nat) $ (i - (endpos + 1))) by lia.
     reflexivity.
 Qed.
 
@@ -1244,7 +1244,7 @@ Proof.
     wp_load.
     wp_pures.
     change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-    destruct (list_lookup_lt _ addrs0 (Z.to_nat $ int.val i `mod` LogSz)) as [a Halookup].
+    destruct (list_lookup_lt _ addrs0 (Z.to_nat $ (int.val i `mod` LogSz))) as [a Halookup].
     { destruct Hlow_wf.
       mod_bound; word. }
     wp_apply (wp_SliceGet with "[$Hdiskaddrs]"); eauto.
@@ -1257,7 +1257,7 @@ Proof.
     wp_load.
     wp_pures.
     change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-    destruct (list_lookup_lt _ blocks0 (Z.to_nat $ int.val i `mod` LogSz)) as [b Hblookup].
+    destruct (list_lookup_lt _ blocks0 (Z.to_nat (int.val i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
       mod_bound; word. }
     iDestruct (disk_array_acc _ blocks0 (int.val i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.

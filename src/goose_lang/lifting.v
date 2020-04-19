@@ -16,7 +16,7 @@ Notation nonAtomic T := (naMode * T)%type.
 
 Section definitions.
   Context `{ext:ext_op}.
-  Context `{hG: na_heapG loc Z val Σ}.
+  Context `{hG: na_heapG loc val Σ}.
   Definition heap_mapsto_def l q v : iProp Σ :=
     ⌜l ≠ null⌝ ∗ na_heap_mapsto (L:=loc) (V:=val) l q v.
   Definition heap_mapsto_aux : seal (@heap_mapsto_def). by eexists. Qed.
@@ -221,7 +221,7 @@ Qed.
 Class heapG Σ := HeapG {
   heapG_invG : invG Σ;
   heapG_ffiG : ffiG Σ;
-  heapG_na_heapG :> na_heapG loc Z val Σ;
+  heapG_na_heapG :> na_heapG loc val Σ;
   heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
   heapG_traceG :> traceG Σ;
 }.
@@ -714,7 +714,7 @@ Definition mapsto_vals_toks l q vs : iProp Σ :=
   ([∗ list] j↦vj ∈ vs, (l +ₗ j) ↦{q} vj ∗ meta_token (l +ₗ j) ⊤)%I.
 
 Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
-  0 < length (flatten_struct v) →
+  (0 < length (flatten_struct v))%nat →
   (0 < int.val n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); na_block_size l (int.nat n * length (flatten_struct v))%nat ∗
@@ -730,7 +730,8 @@ Proof.
                            (concat_replicate (int.nat n) (flatten_struct v))
                            (Reading O) with "Hσ")
     as "(Hσ & Hblock & Hl)".
-  { rewrite concat_replicate_length. lia. }
+  { rewrite concat_replicate_length. cut (0 < int.nat n)%nat; first by lia.
+    eauto with *. }
   { destruct H as (?&?); eauto. }
   { destruct H as (H'&?); eauto. eapply H'. }
   { destruct H as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).

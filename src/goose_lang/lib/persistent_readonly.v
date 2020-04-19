@@ -67,7 +67,7 @@ Section goose_lang.
 
 End goose_lang.
 
-Instance heap_mapsto_AsMapsTo `{ext: !ext_op} `{!na_heapG loc Z val Σ}
+Instance heap_mapsto_AsMapsTo `{ext: !ext_op} `{!na_heapG loc val Σ}
          (l: loc) (v: val) :
   AsMapsTo (l ↦ v) (λ l q v, l ↦{q} v)%I l v.
 Proof.

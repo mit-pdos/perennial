@@ -180,7 +180,7 @@ Definition is_installed (s: log_state.t) γ : iProp Σ :=
 abstract state starting at the memStart_txn_id *)
 Definition is_mem_memlog γ memLog txns memStart_txn_id : Prop :=
   apply_upds memLog ∅ =
-  apply_upds (txn_upds $ drop memStart_txn_id txns) ∅.
+  apply_upds (txn_upds (drop memStart_txn_id txns)) ∅.
 
 (** the more complicated role of memLog is to correctly store committed
 transactions if we roll it back to a [group_txn] boundary, which is what happens
@@ -205,7 +205,7 @@ Definition is_crash_memlog γ
         memLog is a correct way to read from the abstract list of updates
         through txn. *)
         ⌜apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
-        apply_upds (txn_upds $ subslice memStart_txn_id (txn_id+1) txns) ∅⌝.
+        apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) txns)) ∅⌝.
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
@@ -322,7 +322,7 @@ Proof.
     iDestruct "Hfields" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
     wp_loadField.
     wp_apply wp_slice_len; wp_pures.
-    change (int.val $ word.divu (word.sub 4096 8) 8) with LogSz.
+    change (int.val (word.divu (word.sub 4096 8) 8)) with LogSz.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[$His_cond2 $Hlocked $His_lock HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread Hrest]").

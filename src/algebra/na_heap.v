@@ -24,9 +24,9 @@ Definition na_heapUR (L V: Type) `{Countable L} : ucmraT :=
 Definition na_sizeUR (L: Type) `{Countable L} : ucmraT :=
   gmapUR L (agreeR (leibnizO Z)).
 
-Class na_heapG (L L' V: Type) Σ `{BlockAddr L L'} := Na_HeapG {
+Class na_heapG (L V: Type) Σ `{BlockAddr L} := Na_HeapG {
   na_heap_inG :> inG Σ (authR (na_heapUR L V));
-  na_size_inG :> inG Σ (authR (na_sizeUR L'));
+  na_size_inG :> inG Σ (authR (na_sizeUR Z));
   na_meta_inG :> inG Σ (authR (gen_heap.gen_metaUR L));
   na_meta_data_inG :> inG Σ (namespace_mapR (agreeR positiveO));
   na_heap_name : gname;
@@ -34,20 +34,20 @@ Class na_heapG (L L' V: Type) Σ `{BlockAddr L L'} := Na_HeapG {
   na_meta_name : gname
 }.
 
-Arguments na_heap_name {_ _ _ _ _ _ _ _ _} _ : assert.
-Arguments na_size_name {_ _ _ _ _ _ _ _ _} _ : assert.
-Arguments na_meta_name {_ _ _ _ _ _ _ _ _} _ : assert.
+Arguments na_heap_name {_ _ _ _ _ _} _ : assert.
+Arguments na_size_name {_ _ _ _ _ _} _ : assert.
+Arguments na_meta_name {_ _ _ _ _ _} _ : assert.
 
-Class na_heapPreG (L L' V : Type) (Σ : gFunctors) `{BlockAddr L L'} := {
+Class na_heapPreG (L V : Type) (Σ : gFunctors) `{BlockAddr L} := {
   na_heap_preG_inG :> inG Σ (authR (na_heapUR L V));
-  na_size_preG_inG :> inG Σ (authR (na_sizeUR L'));
+  na_size_preG_inG :> inG Σ (authR (na_sizeUR Z));
   na_meta_preG_inG :> inG Σ (authR (gen_heap.gen_metaUR L));
   na_meta_data_preG_inG :> inG Σ (namespace_mapR (agreeR positiveO));
 }.
 
-Definition na_heapΣ (L L' V : Type) `{BlockAddr L L'} : gFunctors := #[
+Definition na_heapΣ (L V : Type) `{BlockAddr L} : gFunctors := #[
   GFunctor (authR (na_heapUR L V));
-  GFunctor (authR (na_sizeUR L'));
+  GFunctor (authR (na_sizeUR Z));
   GFunctor (authR (gen_heap.gen_metaUR L));
   GFunctor (namespace_mapR (agreeR positiveO))
 ].
@@ -72,8 +72,8 @@ Ltac solve_inG_deep :=
                            | H:subG _ _ |- _ =>apply subG_inG in H || clear H
                            end; intros; try done; split; assumption || by apply _.
 
-Instance subG_na_heapPreG {Σ L L' V} `{BlockAddr L L'} :
-  subG (na_heapΣ L L' V) Σ → na_heapPreG L L' V Σ.
+Instance subG_na_heapPreG {Σ L V} `{BlockAddr L} :
+  subG (na_heapΣ L V) Σ → na_heapPreG L V Σ.
 Proof. solve_inG_deep. Qed.
 
 Inductive lock_state :=
@@ -91,7 +91,7 @@ Definition to_na_size {L} `{Countable L} :
   gmap L Z → na_sizeUR L := fmap (λ v, to_agree v).
 
 Section definitions.
-  Context `{BlockAddr L L', hG : !na_heapG L L' V Σ}.
+  Context `{BlockAddr L, hG : !na_heapG L V Σ}.
   Context `{LK} (tls: LK → lock_state).
 
   Definition na_heap_mapsto_st (st : lock_state)
@@ -126,19 +126,11 @@ Section definitions.
   Definition meta {A dA cA} := meta_aux.(unseal) A dA cA.
   Definition meta_eq : @meta = @meta_def := meta_aux.(seal_eq).
 
-  (* This would say all blocks have to be sized. In practice, the refinement
-     proof only requires that if we say a block has a particular size, then that
-     bound must hold, but other blocks could be arbitrary *)
-  (*
-  Definition block_sizes_wf (σ: gmap L (LK * V)) (sz: gmap L' Z) : Prop :=
-    (∀ l, l ∈ dom (gset L) σ → ∃ z, sz !! addr_id l = Some z ∧ (addr_offset l ≤ z))%Z.
-   *)
-
-  Definition block_sizes_wf (σ: gmap L (LK * V)) (sz: gmap L' Z) : Prop :=
+  Definition block_sizes_wf (σ: gmap L (LK * V)) (sz: gmap Z Z) : Prop :=
     (∀ l z, l ∈ dom (gset L) σ → sz !! addr_id l = Some z → (0 ≤ addr_offset l ≤ z)%Z) ∧
-    (∀ l, l ∈ dom (gset L') sz → addr_encode (l, 0)%Z ∈ dom (gset L) σ).
+    (∀ l, l ∈ dom (gset Z) sz → addr_encode (l, 0)%Z ∈ dom (gset L) σ).
 
-  Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ m (sz: gmap L' Z),
+  Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ m (sz: gmap Z Z),
     ⌜ dom _ m ⊆ dom (gset L) σ ⌝ ∧
      own (na_heap_name hG) (● to_na_heap tls σ) ∗
      own (na_meta_name hG) (● (gen_heap.to_gen_meta m)) ∗
@@ -197,8 +189,8 @@ Section to_na_size.
 
 End to_na_size.
 
-Lemma na_heap_init `{BlockAddr L L', !na_heapPreG L L' V Σ} {LK} (tls: LK → lock_state) σ :
-  ⊢ |==> ∃ _ : na_heapG L L' V Σ, na_heap_ctx tls σ.
+Lemma na_heap_init `{BlockAddr L, !na_heapPreG L V Σ} {LK} (tls: LK → lock_state) σ :
+  ⊢ |==> ∃ _ : na_heapG L V Σ, na_heap_ctx tls σ.
 Proof.
   iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
   { rewrite auth_auth_valid. exact: to_na_heap_valid. }
@@ -206,7 +198,7 @@ Proof.
   { rewrite auth_auth_valid. exact: to_na_size_valid. }
   iMod (own_alloc (● gen_heap.to_gen_meta ∅)) as (γm) "Hm".
   { rewrite auth_auth_valid. exact: gen_heap.to_gen_meta_valid. }
-  iModIntro. iExists (Na_HeapG L L' V Σ _ _ _ _ _ _ _ _ _ γh γs γm).
+  iModIntro. iExists (Na_HeapG L V Σ _ _ _ _ _ _ _ γh γs γm).
   iExists ∅, ∅; simpl. iFrame "Hh Hm". rewrite dom_empty_L. iFrame.
   iPureIntro; split.
   - set_solver.
@@ -214,12 +206,12 @@ Proof.
 Qed.
 
 Section na_heap.
-  Context {L L' V} {LK: Type} `{BlockAddr L L', hG: !na_heapG L L' V Σ}.
+  Context {L V} {LK: Type} `{BlockAddr L, hG: !na_heapG L V Σ}.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : V → iProp Σ.
   Implicit Types σ : gmap L (LK * V).
   Implicit Types m : gmap L gname.
-  Implicit Types sz : gmap L' Z.
+  Implicit Types sz : gmap Z Z.
   Implicit Types h g : na_heapUR L V.
   Implicit Types l : L.
   Implicit Types v : V.
@@ -331,7 +323,7 @@ Section na_heap.
     assert (sz !! addr_id l = None).
     {
       destruct (sz !! addr_id l) as [?|] eqn:Heq; last done.
-      exfalso. apply not_elem_of_dom in Hσbase. apply Hσbase.
+      exfalso. apply (not_elem_of_dom (D := gset L)) in Hσbase. apply Hσbase.
       eapply Hwf2. apply elem_of_dom. eauto.
     }
     (*
@@ -381,7 +373,7 @@ Section na_heap.
     assert (sz !! addr_id l = None).
     {
       destruct (sz !! addr_id l) as [?|] eqn:Heq; last done.
-      exfalso. apply not_elem_of_dom in Hσl. apply Hσl.
+      exfalso. apply (not_elem_of_dom (D := gset L)) in Hσl. apply Hσl.
       rewrite -(addr_encode_decode' l) Hoff.
       eapply Hwf2. apply elem_of_dom. eauto.
     }
@@ -803,7 +795,7 @@ Section na_heap.
 End na_heap.
 
 Section na_heap_defs.
-  Context {L1 L2 V : Type} `{BlockAddr L1 L2}.
+  Context {L1 V : Type} `{BlockAddr L1}.
 
   Record na_heap_names :=
     {
@@ -812,40 +804,40 @@ Section na_heap_defs.
       na_heap_meta_name : gname;
     }.
 
-  Definition na_heapG_update {Σ} (hG: na_heapG L1 L2 V Σ) (names: na_heap_names) :=
-    Na_HeapG _ _ _ _ _ _ _ _ _
-             (@na_heap_inG _ _ _ _ _ _ _ _ _ hG)
-             (@na_size_inG _ _ _ _ _ _ _ _ _ hG)
-             (@na_meta_inG _ _ _ _ _ _ _ _ _ hG)
-             (@na_meta_data_inG _ _ _ _ _ _ _ _ _ hG)
+  Definition na_heapG_update {Σ} (hG: na_heapG L1 V Σ) (names: na_heap_names) :=
+    Na_HeapG _ _ _ _ _ _
+             (@na_heap_inG _ _ _ _ _ _ hG)
+             (@na_size_inG _ _ _ _ _ _ hG)
+             (@na_meta_inG _ _ _ _ _ _ hG)
+             (@na_meta_data_inG _ _ _ _ _ _ hG)
              (na_heap_heap_name names)
              (na_heap_size_name names)
              (na_heap_meta_name names).
 
-  Definition na_heapG_update_pre {Σ} (hG: na_heapPreG L1 L2 V Σ) (names: na_heap_names) :=
-    Na_HeapG _ _ _ _ _ _ _ _ _
-             (@na_heap_preG_inG _ _ _ _ _ _ _ _ _ hG)
-             (@na_size_preG_inG _ _ _ _ _ _ _ _ _ hG)
-             (@na_meta_preG_inG _ _ _ _ _ _ _ _ _ hG)
-             (@na_meta_data_preG_inG _ _ _ _ _ _ _ _ _ hG)
+  Definition na_heapG_update_pre {Σ} (hG: na_heapPreG L1 V Σ) (names: na_heap_names) :=
+    Na_HeapG _ _ _ _ _ _
+             (@na_heap_preG_inG _ _ _ _ _ _ hG)
+             (@na_size_preG_inG _ _ _ _ _ _ hG)
+             (@na_meta_preG_inG _ _ _ _ _ _ hG)
+             (@na_meta_data_preG_inG _ _ _ _ _ _ hG)
              (na_heap_heap_name names)
              (na_heap_size_name names)
              (na_heap_meta_name names).
 
-  Definition na_heapG_get_names {Σ} (hG: na_heapG L1 L2 V Σ) : na_heap_names :=
+  Definition na_heapG_get_names {Σ} (hG: na_heapG L1 V Σ) : na_heap_names :=
     {| na_heap_heap_name := na_heap_name hG;
        na_heap_size_name := na_size_name hG;
        na_heap_meta_name := na_meta_name hG |}.
 
-  Lemma na_heapG_get_update {Σ} (hG: na_heapG L1 L2 V Σ) :
+  Lemma na_heapG_get_update {Σ} (hG: na_heapG L1 V Σ) :
     na_heapG_update hG (na_heapG_get_names hG) = hG.
   Proof. destruct hG => //=. Qed.
 
-  Lemma na_heapG_update_pre_get {Σ} (hG: na_heapPreG L1 L2 V Σ) names:
+  Lemma na_heapG_update_pre_get {Σ} (hG: na_heapPreG L1 V Σ) names:
     (na_heapG_get_names (na_heapG_update_pre hG names)) = names.
   Proof. destruct hG, names => //=. Qed.
 
-  Lemma na_heap_name_init `{!na_heapPreG L1 L2 V Σ} {LK} (tls: LK → _) σ :
+  Lemma na_heap_name_init `{!na_heapPreG L1 V Σ} {LK} (tls: LK → _) σ :
     ⊢ |==> ∃ names : na_heap_names, na_heap_ctx (hG := na_heapG_update_pre _ names) tls σ.
   Proof.
     iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
@@ -861,7 +853,7 @@ Section na_heap_defs.
     - rewrite /block_sizes_wf. set_solver.
   Qed.
 
-  Lemma na_heap_reinit {Σ} (hG: na_heapG L1 L2 V Σ) {LK} (tls: LK → _) σ :
+  Lemma na_heap_reinit {Σ} (hG: na_heapG L1 V Σ) {LK} (tls: LK → _) σ :
     ⊢ |==> ∃ names : na_heap_names, na_heap_ctx (hG := na_heapG_update hG names) tls σ.
   Proof.
     iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".

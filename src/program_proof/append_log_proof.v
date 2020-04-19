@@ -134,10 +134,10 @@ Qed.
 Lemma block_to_is_hdr_block b :
   ∃ sz disk_sz, is_hdr_block sz disk_sz b.
 Proof.
-  exists (le_to_u64 (take 8 $ vec_to_list b)).
-  exists (le_to_u64 (take 8 $ drop 8 $ vec_to_list b)).
+  exists (le_to_u64 (take 8 $ (vector.vec_to_list b))).
+  exists (le_to_u64 (take 8 $ (list.drop 8) $ (vector.vec_to_list b))).
   rewrite /is_hdr_block /Block_to_vals.
-  exists (drop 16 $ vec_to_list b).
+  exists (drop 16 $ (vector.vec_to_list b)).
   f_equal.
   rewrite !encode_cons app_nil_r.
   cbn [encode encode1].

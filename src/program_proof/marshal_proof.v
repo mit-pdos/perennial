@@ -268,10 +268,10 @@ Proof.
 Qed.
 
 Theorem wp_Enc__PutInts stk E enc vs (s:Slice.t) q (xs: list u64) free :
-  8 * (Z.of_nat $ length xs) <= free ->
+  8 * (Z.of_nat $ (List.length xs)) <= free ->
   {{{ is_enc enc vs free ∗ is_slice_small s uint64T q (u64val <$> xs) }}}
     Enc__PutInts (EncM.to_val enc) (slice_val s) @ stk; E
-  {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) (free - 8 * (Z.of_nat $ length xs)) ∗
+  {{{ RET #(); is_enc enc (vs ++ (EncUInt64 <$> xs)) (free - 8 * (Z.of_nat $ (List.length xs))) ∗
       is_slice_small s uint64T q (u64val <$> xs) }}}.
 Proof.
   iIntros (Hfree Φ) "(Henc&Hs) HΦ".
