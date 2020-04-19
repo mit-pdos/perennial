@@ -134,10 +134,10 @@ Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   own γ.(cs_name) (● (Excl' cs)).
 
 Definition circ_matches_memlog (memStart : u64) (memLog : list update.t)
-                               (circStart : u64) (circLog : list update.t) :=
+                               (cs: circΣ.t) :=
   ∀ (off : nat) u,
-    circLog !! off = Some u ->
-    memLog !! (off + int.nat circStart - int.nat memStart)%nat = Some u.
+    cs.(circΣ.upds) !! off = Some u ->
+    memLog !! (off + int.nat cs.(circΣ.start) - int.nat memStart)%nat = Some u.
 
 (** subslice takes elements with indices [n, m) in list [l] *)
 Definition subslice {A} (n m: nat) (l: list A): list A :=
@@ -211,6 +211,7 @@ Definition is_memlog (s: log_state.t)
         (* need +1 since txn_id should be included in subslice *)
         apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) s.(log_state.txns))) ∅.
 
+(** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
   ∃ (cs: circΣ.t) (memStart : u64)
        (memLog : list update.t)
@@ -219,7 +220,7 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     own γ.(cs_name) (◯ (Excl' cs)) ∗
     own γ.(memStart_name) (◯ (Excl' memStart)) ∗
     own γ.(memLog_name) (◯ (Excl' memLog)) ∗
-    ⌜ circ_matches_memlog memStart memLog cs.(circΣ.start) cs.(circΣ.upds) ⌝ ∗
+    ⌜ circ_matches_memlog memStart memLog cs ⌝ ∗
     is_installed s γ ∗
     gen_heap_ctx (hG:=γ.(absorptionBoundaries_name)) absorptionBoundaries ∗
     (* a group-commit transaction is logged by setting nextDiskEnd to its pos -
