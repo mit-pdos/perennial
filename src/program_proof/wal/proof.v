@@ -46,7 +46,7 @@ Record wal_names :=
     cs_name : gname;
     installed_name : gname;
     installed_data_name : gname;
-    absorptionBoundaries_name : gen_heapG nat u64 Σ;
+    groupTxns_name : gen_heapG nat u64 Σ;
   }.
 
 Implicit Types (γ: wal_names).
@@ -94,7 +94,7 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
     start_at_least γ.(circ_name) σ.(memStart) ∗
     own γ.(memStart_name) (● (Excl' σ.(memStart))) ∗
     own γ.(nextDiskEnd_name) (● (Excl' σ.(nextDiskEnd)))
-    (* TODO: inline absorptionBoundaries, memLog invariant *)
+    (* TODO: inline groupTxns, memLog invariant *)
     .
 
 (** The implementation state contained in the *Walog struct, which is all
@@ -155,7 +155,7 @@ Definition txn_pos s txn_id pos: iProp Σ :=
   ⌜is_txn s txn_id pos⌝.
 
 Definition group_txn γ txn_id (pos: u64) : iProp Σ :=
-  readonly (mapsto (hG:=γ.(absorptionBoundaries_name)) txn_id 1%Qp pos).
+  readonly (mapsto (hG:=γ.(groupTxns_name)) txn_id 1%Qp pos).
 
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
@@ -221,11 +221,11 @@ Definition log_inv γ txns : iProp Σ :=
 (** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
   ∃ (memStart : u64) (memLog : list update.t)
-    (absorptionBoundaries : gmap nat u64),
+    (groupTxns : gmap nat u64),
     is_wal_mem l γ ∗
     log_inv γ s.(log_state.txns) ∗
     is_installed s γ ∗
-    gen_heap_ctx (hG:=γ.(absorptionBoundaries_name)) absorptionBoundaries ∗
+    gen_heap_ctx (hG:=γ.(groupTxns_name)) groupTxns ∗
     (* a group-commit transaction is logged by setting nextDiskEnd to its pos -
        these conditions ensure that it is recorded as an absorption boundary,
        since at this point it becomes a plausible crash point *)
@@ -245,7 +245,7 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     that this matches memLog). This is complicated a bit by the fact that the
     memLog can contain elements before diskStart (before the installer has a
     chance to trim them), contains all the logged updates, contains
-    established transactions in absorptionBoundaries, and finally contains a
+    grouped transactions in groupTxns, and finally contains a
     tail of transactions that are subject to absorption and not owned by the
     logger. *)
     ∃ (memStart_txn_id : nat),
@@ -263,7 +263,7 @@ Proof.
   iApply (inv_dup_acc with "Hinv"); first by set_solver.
   iIntros "HinvI".
   iDestruct "HinvI" as (σ) "[HinvI HP]".
-  iDestruct "HinvI" as (memStart memLog absorptionBoundaries) "(#Hmem&Hrest)".
+  iDestruct "HinvI" as (memStart memLog groupTxns) "(#Hmem&Hrest)".
   iSplitL; last by auto.
   iExists _; iFrame.
   iExists _, _, _; iFrame "∗ Hmem".
