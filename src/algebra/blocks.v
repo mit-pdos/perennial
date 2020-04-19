@@ -1,14 +1,6 @@
 From stdpp Require Export namespaces.
-From Coq Require Import Min.
-From stdpp Require Import coPset.
-From iris.algebra Require Import big_op gmap frac agree namespace_map.
-From iris.algebra Require Import csum excl auth cmra_big_op.
-From iris.bi Require Import fractional.
-From iris.base_logic Require Export lib.own.
-From iris.base_logic Require gen_heap.
 From iris.proofmode Require Export tactics.
 Set Default Proof Using "Type".
-Import uPred.
 
 (* This class encodes how to represent an address into a combination of
    a "block id" and an integer offset into that block *)
