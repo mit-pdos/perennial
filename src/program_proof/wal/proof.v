@@ -53,11 +53,11 @@ Record wal_names :=
 
 Implicit Types (γ: wal_names).
 
-Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 val) : gmap u64 val :=
+Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 u64) : gmap u64 u64 :=
   match memLog with
   | nil => m
   | u :: memLog' =>
-    compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := #pos ]> m)
+    compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := pos ]> m)
   end.
 
 (** low-level, unimportant state *)
@@ -100,6 +100,9 @@ Definition memLog_linv γ memStart (memLog: list update.t) : iProp Σ :=
       that this matches memLog). *)
       ⌜is_mem_memLog γ memLog txns memStart_txn_id⌝).
 
+(* TODO: de-duplicate this with the one in marshal_proof.v *)
+Definition u64val (x: u64): val := #x.
+
 Definition wal_linv_fields st σ: iProp Σ :=
   (∃ σₗ,
       (st ↦[WalogState.S :: "memLog"] (slice_val σₗ.(memLogSlice)) ∗
@@ -109,7 +112,7 @@ Definition wal_linv_fields st σ: iProp Σ :=
        st ↦[WalogState.S :: "memLogMap"] #σₗ.(memLogMapPtr) ∗
        st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
        st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
-  is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅, #0) ∗
+  is_map σₗ.(memLogMapPtr) (u64val <$> compute_memLogMap σ.(memLog) σ.(memStart) ∅, u64val (U64 0)) ∗
   updates_slice σₗ.(memLogSlice) σ.(memLog))%I.
 
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
@@ -372,6 +375,69 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
+(* TODO: move to map/map.v *)
+Lemma map_get_fmap {V} {m:gmap u64 V} {def: V} {to_val: V -> val} {a v ok} :
+  map_get (to_val <$> m, to_val def) a = (v, ok) ->
+  exists x, v = to_val x.
+Proof.
+  rewrite /map_get.
+  inversion_clear 1; subst.
+  destruct ((to_val <$> m) !! a) eqn:Hlookup; eauto.
+  rewrite lookup_fmap in Hlookup.
+  apply fmap_Some in Hlookup as [x [Hlookup ->]]; eauto.
+Qed.
+
+Opaque struct.t.
+
+Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
+  {{{ updates_slice bk_s bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
+    SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
+  {{{ uv, RET (update_val uv);
+      ⌜uv.1 = u.(update.addr)⌝ ∗
+      is_block uv.2 u.(update.b) ∗
+      (is_block uv.2 u.(update.b) -∗ updates_slice bk_s bs)
+  }}}.
+Proof.
+  iIntros (Φ) "[Hupds %Hlookup] HΦ".
+  iDestruct "Hupds" as (bks) "[Hbk_s Hbks]".
+  iDestruct (big_sepL2_lookup_2_some _ _ _ _ _ Hlookup with "Hbks")
+    as %[b_upd Hlookup_bs].
+  iDestruct (is_slice_small_acc with "Hbk_s") as "[Hbk_s Hbk_s_rest]".
+  wp_apply (wp_SliceGet with "[$Hbk_s]").
+  { iPureIntro.
+    rewrite list_lookup_fmap.
+    rewrite Hlookup_bs //. }
+  iIntros "[Hbk_s _]".
+  iDestruct ("Hbk_s_rest" with "Hbk_s") as "Hbk_s".
+  iApply "HΦ".
+  iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hbi Hbks]"; eauto.
+  destruct u as [a b]; simpl.
+  iDestruct "Hbi" as "[Hbi <-]".
+  iSplit; first by auto.
+  iFrame.
+  iIntros "Hbi".
+  iSpecialize ("Hbks" with "[$Hbi //]").
+  rewrite /updates_slice.
+  iExists _; iFrame.
+Qed.
+
+Lemma memLogMap_ok_memLog_lookup memStart memLog a i :
+  int.val memStart + Z.of_nat (length memLog) < 2^64 ->
+  map_get (u64val <$> compute_memLogMap memLog memStart ∅, u64val 0) a
+  = (u64val i, true) ->
+  ∃ b, memLog !! int.nat (word.sub i memStart) = Some (update.mk a b)
+  (* also, i is the highest index such that this is true *).
+Proof.
+  intros Hbound Hlookup.
+  apply map_get_true in Hlookup.
+  rewrite lookup_fmap in Hlookup.
+  apply fmap_Some in Hlookup as [i' [Hlookup Heq]].
+  inversion Heq; subst.
+  assert (int.val memStart ≤ int.val i') by admit. (* from how memLogMap is computed and lack of overflow *)
+  replace (int.nat (word.sub i' memStart)) with (int.nat i' - int.nat memStart)%nat by word.
+  (* this is hard, induction is hard with this left fold *)
+Admitted.
+
 Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
   {{{ wal_linv_fields st σ ∗
       memLog_linv γ σ.(memStart) σ.(memLog) }}}
@@ -389,14 +455,28 @@ Proof.
   wp_call.
   wp_loadField.
   wp_apply (wp_MapGet with "His_memLogMap").
-  iIntros (i ok) "(%Hmapget&His_memLogMap)".
+  iIntros (v ok) "(%Hmapget&His_memLogMap)".
+  destruct (map_get_fmap Hmapget) as [i ->].
   wp_pures.
   wp_if_destruct.
   - wp_apply util_proof.wp_DPrintf.
-    wp_loadField.
+    wp_loadField. wp_loadField.
+    apply memLogMap_ok_memLog_lookup in Hmapget as [b HmemLog_lookup];
+      last by admit. (* TODO: in-bounds proof *)
+    wp_apply (wp_SliceGet_updates with "[$His_memLog]"); eauto.
+    simpl.
+    iIntros ([a' u_s]) "(<-&Hb&His_memLog)".
+    wp_apply (wp_copyUpdateBlock with "Hb").
+    iIntros (s') "[Hb Hb_new]".
+    iSpecialize ("His_memLog" with "Hb").
     wp_pures.
-    (* XXX: need better typing of memLogMap *)
-Abort.
+    iApply "HΦ".
+    iFrame.
+    simpl in HmemLog_lookup |- *.
+    (* TODO: this comes from HmemLog_lookup plus that a' is maximal (the
+    apply_upds formulation is actually a good way to phrase it, especially since
+    [apply_upds] and [compute_memLogMap] are similar fold_left's) *)
+Admitted.
 
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
   {{{ is_wal l γ ∗
