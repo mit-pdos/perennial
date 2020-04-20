@@ -245,6 +245,11 @@ Section na_heap.
   Global Instance meta_persistent `{Countable A} l N (x : A) : Persistent (meta l N x).
   Proof. rewrite meta_eq /meta_def. apply _. Qed.
 
+  Global Instance na_block_size_timeless l z : Timeless (na_block_size l z).
+  Proof. rewrite na_block_size_eq /na_block_size_def. apply _. Qed.
+  Global Instance na_block_size_persistent l z : Persistent (na_block_size l z).
+  Proof. rewrite na_block_size_eq /na_block_size_def. apply _. Qed.
+
   Lemma meta_token_union_1 l E1 E2 :
     E1 ## E2 → meta_token l (E1 ∪ E2) -∗ meta_token l E1 ∗ meta_token l E2.
   Proof.

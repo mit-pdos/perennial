@@ -158,10 +158,14 @@ Fixpoint val_interp (t: sty) (vs: sval) (v: ival) :=
                    (∃ v' vs', ⌜ v = InjRV v' ∧
                                 vs = InjRV vs'⌝
                               ∗ val_interp t2 vs' v'))%I
-  | arrayT t => ((∃ l ls (indices: list unit),
-                     ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ∧ ls ≠ null ∧ l ≠ null ⌝ ∗
-                     ⌜ indices ≠ [] ⌝ ∗
-                     [∗ list] i↦_ ∈ indices, is_loc (ls +ₗ i) (l +ₗ i) (val_interp t))
+  | arrayT t => ((∃ l ls (n: nat) (Hnz: (0 < n)%nat),
+                     ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ∧ ls ≠ null ∧ l ≠ null ∧
+                       addr_offset l = addr_offset ls⌝ ∗
+                     (na_block_size (hG := refinement_na_heapG) ls (n * length (flatten_ty t))) ∗
+                     (na_block_size (hG := heapG_na_heapG) l (n * length (flatten_ty t))) ∗
+                     (* XXX: next line not quite right, need to do the struct flattening, but
+                        need to convince Coq those are all at smaller types so that recursion is wf *)
+                     [∗ list] i ∈ seq 0 n, is_loc (ls +ₗ Z.of_nat i) (l +ₗ i) (val_interp t))
                  ∨ (⌜ vs = #null ∧ v = #null⌝))%I
   | arrowT t1 t2 =>
     (∃ f x e fs xs es,
@@ -324,21 +328,20 @@ Proof.
     iDestruct 1 as "[H1|Hnull1]";
     iDestruct 1 as "[H2|Hnull2]";
     rewrite -/val_interp.
-    * iDestruct "H1" as (?? ls1 (?&?&?&?) Hnonempty1) "H1".
-      iDestruct "H2" as (?? ls2 (?&?&?&?) Hnonempty2) "H2".
+    * iDestruct "H1" as (?? n1 ? (?&?&?&?)) "(Hsz1&Hsz1'&H1)".
+      iDestruct "H2" as (?? n2 ? (?&?&?&?)) "(Hsz2&Hsz2'&H2)".
       subst.
-      destruct ls1 as [|[] ls1']; first by congruence.
-      destruct ls2 as [|[] ls2']; first by congruence.
+      destruct n1; destruct n2; try lia; [].
       rewrite ?big_sepL_cons.
       iDestruct "H1" as "(H1&_)".
       iDestruct "H2" as "(H2&_)".
       subst. rewrite ?loc_add_0. iDestruct (is_loc_eq_iff with "H1 H2") as %Heq.
       iPureIntro. split; inversion 1; subst; do 2 f_equal; eapply Heq; eauto.
     * iDestruct "Hnull2" as %(Hnull2s&Hnull2). subst.
-      iDestruct "H1" as (??? (?&?&?&?)) "H".
+      iDestruct "H1" as (???? (?&?&?&?&?)) "H".
       iPureIntro. split; inversion 1; subst; do 2 f_equal; try congruence.
     * iDestruct "Hnull1" as %(Hnull1s&Hnull1). subst.
-      iDestruct "H2" as (??? (?&?&?&?)) "H".
+      iDestruct "H2" as (???? (?&?&?&?&?)) "H".
       iPureIntro. split; inversion 1; subst; do 2 f_equal; try congruence.
     * iDestruct "Hnull1" as %(Hnull1s&Hnull1). subst.
       iDestruct "Hnull2" as %(Hnull2s&Hnull2). subst. auto.
