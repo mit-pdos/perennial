@@ -55,6 +55,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--db", help="sqlite database of timing info", default=".timing.sqlite3"
     )
+    parser.add_argument("--filter", help="filter file names", default=None)
 
     args = parser.parse_args()
 
@@ -70,9 +71,7 @@ if __name__ == "__main__":
     print(
         "{:12s} {:>6.1f}".format(
             "  Iris",
-            filter_df(file_df, col="fname", pat="^external/iris")[
-                "time"
-            ].sum(),
+            filter_df(file_df, col="fname", pat="^external/iris")["time"].sum(),
         )
     )
     print(
@@ -93,9 +92,13 @@ if __name__ == "__main__":
     if args.max_files > 0 or args.max_qeds > 0:
         print()
         print("slow files:")
+        if args.filter is not None:
+            file_df = filter_df(file_df, col="fname", pat=args.filter)
         print(file_df.nlargest(args.max_files, "time").to_string(index=False))
 
         if args.max_qeds > 0 and len(qed_df) > 0:
             print()
             print("slow QEDs:")
+            if args.filter is not None:
+                qed_df = filter_df(qed_df, col="fname", pat=args.filter)
             print(qed_df.nlargest(args.max_qeds, "time").to_string(index=False))
