@@ -273,18 +273,32 @@ Definition log_inv γ txns diskEnd_txn_id : iProp Σ :=
         group_txn γ diskEnd_txn_id diskEnd ∗
         diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
 
-Definition is_groupTxns γ s: iProp Σ :=
-  ∃ (groupTxns: gmap nat u64),
-    gen_heap_ctx (hG:=γ.(groupTxns_name)) groupTxns ∗
-    ⌜∀ txn_id pos, groupTxns !! txn_id = Some pos ->
-                   is_txn s txn_id pos⌝.
-
 Definition is_durable γ s: iProp Σ :=
   (∃ diskEnd_txn_id,
     log_inv γ s.(log_state.txns) diskEnd_txn_id ∗
     (* TODO(tej): does this make sense? it's the only constraint on
         durable_lb *)
     ⌜s.(log_state.durable_lb) ≤ diskEnd_txn_id ⌝ ).
+
+Definition is_groupTxns γ s: iProp Σ :=
+  ∃ (groupTxns: gmap nat u64),
+    gen_heap_ctx (hG:=γ.(groupTxns_name)) groupTxns ∗
+    ⌜∀ txn_id pos, groupTxns !! txn_id = Some pos ->
+                   is_txn s txn_id pos⌝.
+
+Theorem group_txn_valid γ s txn_id pos :
+  is_groupTxns γ s -∗
+  group_txn γ txn_id pos -∗
+  |={⊤}=> ⌜is_txn s txn_id pos⌝.
+Proof.
+  rewrite /is_groupTxns /group_txn.
+  iIntros "Hgroup Htxn".
+  iDestruct "Hgroup" as (groupTxns) "[Hctx %HgroupTxns]".
+  iMod (readonly_load with "Htxn") as (q) "Htxn_id"; first by set_solver.
+  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
+  iIntros "!> !%".
+  eauto.
+Qed.
 
 (** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
