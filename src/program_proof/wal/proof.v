@@ -100,18 +100,22 @@ Definition memLog_linv γ memStart (memLog: list update.t) : iProp Σ :=
       that this matches memLog). *)
       ⌜is_mem_memLog γ memLog txns memStart_txn_id⌝).
 
+Definition wal_linv_fields st σ: iProp Σ :=
+  (∃ σₗ,
+      (st ↦[WalogState.S :: "memLog"] (slice_val σₗ.(memLogSlice)) ∗
+       st ↦[WalogState.S :: "memStart"] #σ.(memStart) ∗
+       st ↦[WalogState.S :: "diskEnd"] #σ.(diskEnd) ∗
+       st ↦[WalogState.S :: "nextDiskEnd"] #σ.(nextDiskEnd) ∗
+       st ↦[WalogState.S :: "memLogMap"] #σₗ.(memLogMapPtr) ∗
+       st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
+       st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
+  is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅, #0) ∗
+  updates_slice σₗ.(memLogSlice) σ.(memLog))%I.
+
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
-  ∃ σₗ σ,
-    (st ↦[WalogState.S :: "memLog"] (slice_val σₗ.(memLogSlice)) ∗
-     st ↦[WalogState.S :: "memStart"] #σ.(memStart) ∗
-     st ↦[WalogState.S :: "diskEnd"] #σ.(diskEnd) ∗
-     st ↦[WalogState.S :: "nextDiskEnd"] #σ.(nextDiskEnd) ∗
-     st ↦[WalogState.S :: "memLogMap"] #σₗ.(memLogMapPtr) ∗
-     st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
-     st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
-    (updates_slice σₗ.(memLogSlice) σ.(memLog)) ∗
-    is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅, #0) ∗
+  ∃ σ,
+    wal_linv_fields st σ ∗
     diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
     start_at_least γ.(circ_name) σ.(memStart) ∗
     memLog_linv γ σ.(memStart) σ.(memLog) ∗
@@ -335,12 +339,14 @@ Theorem wal_linv_shutdown st γ :
           wal_linv st γ).
 Proof.
   iIntros "Hlkinv".
-  iDestruct "Hlkinv" as (σₗ σ) "[Hfields Hrest]".
-  iDestruct "Hfields" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
+  iDestruct "Hlkinv" as (σ) "[Hfields Hrest]".
+  iDestruct "Hfields" as (σₗ) "(Hfield_ptsto&His_memLogMap&His_memLog)".
+  iDestruct "Hfield_ptsto" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
   iExists _, _.
   iFrame.
   iIntros (shutdown' nthread') "Hshutdown Hnthread".
-  iExists (set shutdown (λ _, shutdown') (set nthread (λ _, nthread') σₗ)), σ; simpl.
+  iExists σ; iFrame "Hrest".
+  iExists (set shutdown (λ _, shutdown') (set nthread (λ _, nthread') σₗ)); simpl.
   iFrame.
 Qed.
 
@@ -365,6 +371,54 @@ Proof.
   wp_pures.
   iApply ("HΦ" with "[$]").
 Qed.
+
+Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
+  {{{ wal_linv_fields st σ ∗
+      memLog_linv γ σ.(memStart) σ.(memLog) }}}
+    WalogState__readMem #st #a
+  {{{ b_s b (ok:bool), RET (slice_val b_s, #ok);
+      if ok then is_block b_s b ∗
+                 ⌜apply_upds σ.(memLog) ∅ !! int.val a = Some b⌝ ∗
+                 memLog_linv γ σ.(memStart) σ.(memLog)
+      else True
+  }}}.
+Proof.
+  iIntros (Φ) "(Hfields&HmemLog_inv) HΦ".
+  iDestruct "Hfields" as (σₗ) "(Hfield_ptsto&His_memLogMap&His_memLog)".
+  iDestruct "Hfield_ptsto" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
+  wp_call.
+  wp_loadField.
+  wp_apply (wp_MapGet with "His_memLogMap").
+  iIntros (i ok) "(%Hmapget&His_memLogMap)".
+  wp_pures.
+  wp_if_destruct.
+  - wp_apply util_proof.wp_DPrintf.
+    wp_loadField.
+    wp_pures.
+    (* XXX: need better typing of memLogMap *)
+Abort.
+
+Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
+  {{{ is_wal l γ ∗
+       (∀ σ σ' mb,
+         ⌜wal_wf σ⌝ -∗
+         ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
+         (P σ ={⊤ ∖ ↑walN}=∗ P σ' ∗ Q mb))
+   }}}
+    Walog__ReadMem #l #a
+  {{{ (ok:bool) bl, RET (slice_val bl, #ok); if ok
+                                             then ∃ b, is_block bl b ∗ Q (Some b)
+                                             else Q None}}}.
+Proof.
+  iIntros (Φ) "[#Hwal Hfupd] HΦ".
+  iMod (is_wal_read_mem with "Hwal") as "#Hmem".
+  wp_call.
+  iDestruct "Hmem" as (σₛ) "(Hfields&HcondLogger&HcondInstall&HcondShut&#Hlk)".
+  iDestruct "Hfields" as "(Hf1&Hf2&Hf3&Hf4&Hf5&Hf6&Hf7)".
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlk"). iIntros "(Hlocked&Hlkinv)".
+  wp_loadField.
+Abort.
 
 Theorem wp_Walog__logAppend l γ σₛ :
   {{{ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
@@ -395,20 +449,21 @@ Proof.
               with "[] [$Hlkinv $Hlocked]").
   { iIntros "!>" (Φ') "(Hlocked&Hlkinv) HΦ".
     wp_loadField.
-    iDestruct "Hlkinv" as (σₗ σ) "[Hfields Hrest]".
-    iDestruct "Hfields" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
+    iDestruct "Hlkinv" as (σ) "[Hfields Hrest]".
+    iDestruct "Hfields" as (σₗ) "(Hfield_ptsto&His_memLogMap&His_memLog)".
+    iDestruct "Hfield_ptsto" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
     wp_loadField.
     wp_apply wp_slice_len; wp_pures.
     change (int.val (word.divu (word.sub 4096 8) 8)) with LogSz.
     wp_if_destruct.
     - wp_loadField.
-      wp_apply (wp_condWait with "[$His_cond2 $Hlocked $His_lock HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread Hrest]").
-      { iExists _, _; iFrame. }
+      wp_apply (wp_condWait with "[$His_cond2 $Hlocked $His_lock His_memLog His_memLogMap HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread Hrest]").
+      { iExists _; iFrame. iExists _; iFrame. }
       iIntros "(Hlocked&Hlkinv)".
       wp_pures.
       iApply ("HΦ" with "[$]").
     - iApply "HΦ"; iFrame.
-      iExists _, _; iFrame.
+      iExists _; iFrame. iExists _; iFrame.
   }
   iIntros "(Hlocked&Hlkinv)".
 Admitted.
