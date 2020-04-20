@@ -979,12 +979,7 @@ Proof  using N gen_heapPreG0 heapG0 Σ.
       all: simpl; try lia.
     }
 
-    inversion H6.
-    { econstructor. }
-    { econstructor.
-      epose proof elem_of_subseteq. edestruct H11.
-      apply H13 in H10; eauto.
-    }
+    inversion H6; eauto.
   }
   iMod "Hfupd".
   iModIntro.
