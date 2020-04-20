@@ -348,6 +348,13 @@ Section goose_lang.
       Γ ⊢ v1 : t ->
       Γ ⊢ v2 : t ->
       Γ ⊢ CmpXchg l v1 v2 : prodT t boolT
+  (** I/O *)
+  | input_hasTy sel :
+      Γ ⊢ sel : uint64T ->
+      Γ ⊢ Input sel : uint64T
+  | output_hasTy v :
+      Γ ⊢ v : uint64T ->
+      Γ ⊢ Output v : unitT
 
   (** externals *)
   | external_hasTy e earg t1 t2 :

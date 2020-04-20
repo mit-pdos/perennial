@@ -416,7 +416,7 @@ Section interpreter.
         | InputOp =>
           v <- interpret n e;
             match v with
-            | LitV selv =>
+            | LitV (LitInt selv) =>
               sbt <- mget;
                 let σ := fst sbt in
                 let x := σ.(oracle) σ.(trace) selv in

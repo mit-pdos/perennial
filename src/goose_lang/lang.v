@@ -212,7 +212,7 @@ Definition add_crash (ts: Trace) : Trace :=
   | _ => add_event Crash_ev ts
   end.
 
-Definition Oracle := Trace -> forall (sel:base_lit), u64.
+Definition Oracle := Trace -> forall (sel:u64), u64.
 
 Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0).
 
@@ -1055,10 +1055,10 @@ Fixpoint head_trans (e: expr) :
        modify (set heap <[l:=Free v]>);;
        ret $ LitV $ LitUnit)
   | ExternalOp op (Val v) => atomically $ ext_step op v
-  | Input (Val (LitV selv)) =>
+  | Input (Val (LitV (LitInt selv))) =>
     atomically
       (x ← reads (λ σ, σ.(oracle) σ.(trace) selv);
-      modify (set trace (add_event (In_ev selv (LitInt x))));;
+      modify (set trace (add_event (In_ev (LitInt selv) (LitInt x))));;
       ret $ LitV $ LitInt $ x)
   | Output (Val (LitV v)) =>
     atomically

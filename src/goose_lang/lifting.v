@@ -550,9 +550,9 @@ Proof.
   iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
 Qed.
 
-Lemma wp_input s E tr sel Or :
+Lemma wp_input s E tr (sel: u64) Or :
   {{{ trace_frag tr ∗ oracle_frag Or }}}
-     Input (LitV sel) @ s; E
+     Input (LitV (LitInt sel)) @ s; E
   {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr)}}}.
 Proof.
   iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_head_step; [done|].

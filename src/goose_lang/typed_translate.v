@@ -180,6 +180,16 @@ Section translate.
       Γ ⊢ v1 -- v1' : t ->
       Γ ⊢ v2 -- v2' : t ->
       Γ ⊢ CmpXchg l v1 v2 -- CmpXchg l' v1' v2' : prodT t boolT
+
+  (** I/O *)
+  | input_hasTy sel sel' :
+      Γ ⊢ sel -- sel' : uint64T ->
+      Γ ⊢ Input sel -- sel' : uint64T
+  | output_hasTy v v' :
+      Γ ⊢ v -- v' : uint64T ->
+      Γ ⊢ Output v -- Output v' : unitT
+
+
   | external_transTy (v: sval) v' (earg: sexpr) earg' t1 t2 :
       get_ext_tys v (t1, t2) ->
       spec_trans v v' ->
