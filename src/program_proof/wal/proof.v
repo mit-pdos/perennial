@@ -11,27 +11,24 @@ From Perennial.program_proof Require Import wal.specs.
 Definition LogPositionT := wal.LogPosition.
 Definition LogPosition := u64.
 Definition LogDiskBlocks := 513.
+Hint Unfold LogDiskBlocks.
 
-Canonical Structure u64C := leibnizO u64.
-Canonical Structure circΣC := leibnizO circΣ.t.
+Canonical Structure circO := leibnizO circΣ.t.
 
 Transparent slice.T.
+
+Class walG Σ :=
+  { wal_circ         :> circG Σ;
+    wal_circ_state   :> inG Σ (ghostR $ circO);
+    wal_txn_id       :> inG Σ (ghostR $ prodO u64O natO);
+    wal_list_update  :> inG Σ (ghostR $ listO updateO);
+    wal_txns         :> inG Σ (ghostR $ listO $ prodO u64O (listO updateO));
+  }.
 
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
-Context `{!fmcounterG Σ}.
-Context `{!inG Σ (authR mnatUR)}.
-Context `{!inG Σ (authR (optionUR (exclR (listO updateO))))}.
-Context `{!inG Σ (authR (optionUR (exclR u64C)))}.
-Context `{!inG Σ (authR (optionUR (exclR natO)))}.
-Context `{!inG Σ (authR (optionUR (exclR circΣC)))}.
-Context `{!inG Σ (authR (optionUR (exclR (listO u64O))))}.
-Context `{!inG Σ (authR (optionUR (exclR (listO blockO))))}.
-Context `{!inG Σ (authR (optionUR (exclR (gmapO Z blockO))))}.
-Context `{!inG Σ (authR (optionUR (exclR (listO (prodO u64C (listO updateO))))))}.
-Context `{!inG Σ (authR (optionUR (exclR (prodO u64O natO))))}.
-Context `{!inG Σ fmcounterUR}.
+Context `{!walG Σ}.
 
 Implicit Types (Φ: val → iProp Σ).
 Implicit Types (v:val) (z:Z).

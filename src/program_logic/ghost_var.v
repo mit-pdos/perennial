@@ -3,9 +3,11 @@ From iris.proofmode Require Import base tactics classes.
 From iris.program_logic Require Import weakestpre.
 Unset Implicit Arguments.
 
+Definition ghostR (A: ofeT) := (authR (optionUR (exclR A))).
+
 Section ghost_var_helpers.
 Context {A: ofeT} `{@LeibnizEquiv _ A.(ofe_equiv)} `{OfeDiscrete A}.
-Context {Σ} {Hin: inG Σ (authR (optionUR (exclR A)))}.
+Context {Σ} {Hin: inG Σ (ghostR A)}.
 
 Lemma ghost_var_alloc (a: A) :
   ⊢ |==> ∃ γ, own γ (● (Excl' a)) ∗ own γ (◯ (Excl' a)).

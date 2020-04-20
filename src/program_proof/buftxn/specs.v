@@ -8,12 +8,17 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
 From Perennial.program_proof Require Import txn.specs buf.defs buf.specs addr.specs.
 
+Class buftxnG Σ :=
+  { buftxn_bool  :> inG Σ (ghostR $ boolO);
+    buftxn_bufs  :> gen_heapPreG addr (sigT (fun K => bufDataT K)) Σ;
+    (* XXX: never used? *)
+    buftxn_hb    :> gen_heapPreG u64 heapspec.heap_block Σ;
+  }.
+
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
-Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
-Context `{heapPreG_bufs: !gen_heapPreG addr (sigT (fun K => bufDataT K)) Σ}.
-Context `{heapPreG_hb: !gen_heapPreG u64 heapspec.heap_block Σ}.
+Context `{!buftxnG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -52,7 +57,7 @@ Theorem wp_buftxn_Begin l γUnified :
   {{{ (buftx : loc) γt, RET #buftx;
       is_buftxn buftx γt γUnified
   }}}.
-Proof using heapPreG_bufs.
+Proof.
   iIntros (Φ) "Htxn HΦ".
 
   wp_call.
@@ -65,7 +70,7 @@ Proof using heapPreG_bufs.
   iIntros (buftx) "Hbuftx".
   iDestruct (struct_fields_split with "Hbuftx") as "(Hbuftx.txn & Hbuftx.bufs & Hbuftx.id & %)".
   wp_apply util_proof.wp_DPrintf.
-  iMod (gen_heap_init (gen_heapPreG0:=heapPreG_bufs) ∅) as (γt) "Htxctx".
+  iMod (gen_heap_init (gen_heapPreG0:=buftxn_bufs) ∅) as (γt) "Htxctx".
   wp_pures.
   iApply "HΦ".
   iExists _, _, _, _, _.
@@ -93,7 +98,7 @@ Theorem wp_BufTxn__ReadBuf buftx γt γUnified a sz v :
       ( mapsto (hG := γt) a 1 (existT _ v') ∗
         is_buftxn buftx γt γUnified ) )
   }}}.
-Proof using heapPreG_bufs heapPreG_hb.
+Proof.
   iIntros (Φ) "(Htxn & Ha & ->) HΦ".
   iDestruct "Htxn" as (l mT bufmap gBufmap txid)
     "(Hl & Hbufmap & Htxid & Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".

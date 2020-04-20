@@ -12,8 +12,6 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import Transitions.
 Existing Instance r_mbind.
 
-Hint Unfold LogSz : word.
-
 Module circΣ.
   Record t :=
     mk { upds: list update.t;
@@ -22,8 +20,6 @@ Module circΣ.
   Global Instance _eta: Settable _ := settable! mk <upds; start>.
   Definition diskEnd (s:t): Z :=
     int.val s.(start) + Z.of_nat (length s.(upds)).
-  Definition empty (s:t): t :=
-    mk [] (diskEnd s).
 End circΣ.
 
 Notation start := circΣ.start.
@@ -33,9 +29,6 @@ Definition circ_read : transition circΣ.t (list update.t * u64) :=
   s ← reads (fun x => (upds x, start x));
   ret s.
 
-Definition assert `(P : T -> Prop) : transition T unit :=
-  suchThat (gen:=fun _ _ => None) (fun σ _ => P σ).
-
 Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
   modify (fun σ => set upds (drop (Z.to_nat (int.val newStart - int.val σ.(start))%Z)) σ);;
   modify (set start (fun _ => newStart)).
@@ -43,18 +36,16 @@ Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
 Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t unit :=
   modify (set circΣ.upds (fun u => u ++ l)).
 
-Canonical Structure updateO := leibnizO update.t.
-Canonical Structure blockO := leibnizO Block.
-Canonical Structure u64O := leibnizO u64.
+Class circG Σ :=
+  { circ_list_u64 :> inG Σ (ghostR (listO u64O));
+    circ_list_block :> inG Σ (ghostR (listO blockO));
+    circ_fmcounter :> fmcounterG Σ;
+  }.
 
 Section heap.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
-Context `{!fmcounterG Σ}.
-
-Context `{!inG Σ (authR (optionUR (exclR (listO u64O))))}.
-Context `{!inG Σ (authR (optionUR (exclR (listO blockO))))}.
-Context `{!inG Σ fmcounterUR}.
+Context `{!circG Σ}.
 
 Context (N: namespace).
 Context (P: circΣ.t -> iProp Σ).
