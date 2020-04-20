@@ -2,6 +2,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From RecordUpdate Require Import RecordSet.
 From Perennial.algebra Require Import fmcounter.
 From Perennial.algebra Require Import deletable_heap.
+From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.abstraction.
 From Perennial.program_proof Require Import wal.circ_proof.
@@ -296,6 +297,27 @@ Proof.
   iFrame.
 Qed.
 
+Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) b :
+  {{{ is_block (snd u) b }}}
+    copyUpdateBlock (update_val u) @ stk; E
+  {{{ (s':Slice.t), RET (slice_val s'); is_block (snd u) b ∗ is_block s' b }}}.
+Proof.
+  iIntros (Φ) "Hb HΦ".
+  destruct u as [a s]; simpl.
+  wp_call.
+  wp_apply wp_new_slice; first by auto.
+  iIntros (s') "Hs'".
+  iDestruct (is_slice_to_small with "Hs'") as "Hs'".
+  wp_pures.
+  wp_apply (wp_SliceCopy_full with "[$Hb $Hs']").
+  { iPureIntro.
+    autorewrite with len.
+    rewrite length_Block_to_vals.
+    reflexivity. }
+  iIntros "(Hs&Hs')".
+  wp_pures.
+  iApply ("HΦ" with "[$]").
+Qed.
 
 Theorem wp_Walog__logAppend l γ σₛ :
   {{{ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗

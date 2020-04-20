@@ -607,6 +607,38 @@ Proof.
       auto.
 Qed.
 
+Lemma wp_SliceCopy_full stk E sl t q vs dst vs' :
+  {{{ is_slice_small sl t q vs ∗ is_slice_small dst t 1 vs' ∗ ⌜length vs = length vs'⌝ }}}
+    SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
+  {{{ RET #(U64 (length vs)); is_slice_small sl t q vs ∗ is_slice_small dst t 1 vs }}}.
+Proof.
+  iIntros (Φ) "(Hsrc&Hdst&%) HΦ".
+  wp_call.
+  iDestruct "Hsrc" as "[Hsrc %]".
+  iDestruct "Hdst" as "[Hdst %]".
+  assert (sl.(Slice.sz) = dst.(Slice.sz)) by word.
+  wp_apply wp_slice_len.
+  wp_apply wp_slice_len.
+  wp_bind (If _ _ _).
+  wp_pures.
+  wp_if_destruct; first by word.
+  wp_apply wp_slice_len.
+  wp_pures.
+  rewrite /slice.ptr; wp_pures.
+  wp_apply (wp_MemCpy_rec with "[$Hsrc $Hdst]").
+  { iPureIntro.
+    word. }
+  iIntros "(Hdst & Hsrc)".
+  wp_pures.
+  replace (Slice.sz sl) with (U64 (length vs)) by word.
+  iApply "HΦ".
+  rewrite -> take_ge by word.
+  iFrame.
+  iPureIntro; word.
+Qed.
+
+Global Opaque SliceCopy.
+
 Transparent SliceAppend.
 
 Lemma replicate_singleton {A} (x:A) :
