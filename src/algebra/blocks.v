@@ -97,6 +97,28 @@ Section block_addr_defs.
   Lemma addr_plus_ne l i : (0 < i)%Z -> addr_plus_off l i <> l.
   Proof. intros ? Heq%addr_plus_eq_inv; lia. Qed.
 
+  Lemma addr_base_eq_addr_id ls ls':
+    addr_base ls = addr_base ls' ↔ addr_id ls = addr_id ls'.
+  Proof.
+    rewrite /addr_base/addr_id. split.
+    - intros Heq%(inj addr_encode). inversion Heq; subst; eauto.
+    - intros -> => //=.
+  Qed.
+
+  Lemma addr_base_and_offset_eq_iff ls l ls' l':
+    addr_offset l = addr_offset ls →
+    addr_offset l' = addr_offset ls' →
+    (addr_base l = addr_base l' ↔ addr_base ls = addr_base ls') →
+    (l = l' ↔ ls = ls').
+  Proof.
+    intros Hoff1 Hoff2 Hbase.
+    split; inversion 1; subst; apply addr_component_eq; eauto.
+    - rewrite -addr_base_eq_addr_id -Hbase //=.
+    - congruence.
+    - rewrite -addr_base_eq_addr_id Hbase //=.
+    - congruence.
+  Qed.
+
   Fixpoint heap_array {V} (l : L1) (vs : list V) : gmap L1 V :=
     match vs with
     | [] => ∅

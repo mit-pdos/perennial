@@ -145,6 +145,7 @@ Section translate.
 
   (** pointers *)
   | alloc_transTy n n' v v' t :
+      flatten_ty t ≠ [] →
       Γ ⊢ n -- n' : uint64T ->
       Γ ⊢ v -- v' : t ->
       Γ ⊢ AllocN n v -- AllocN n' v': arrayT t

@@ -144,6 +144,14 @@ Proof.
   iApply (loc_paired_eq_iff with "H1 H2").
 Qed.
 
+Lemma litv_loc_eq_iff (ls l ls' l': loc):
+  (l = l' ↔ ls = ls') →
+  ((#l : ival) = #l' ↔ (#ls: sval) = #ls').
+Proof.
+  intros Heq.
+  split; inversion 1; subst; do 2 f_equal; eapply Heq; auto.
+Qed.
+
 Definition prodT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
   λ vs v, (∃ v1 v2 vs1 vs2, ⌜ v = (v1, v2)%V ∧ vs = (vs1, vs2)%V⌝
                    ∗ val_interp t1 vs1 v1
@@ -159,7 +167,7 @@ Definition sumT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
                               ∗ val_interp t2 vs' v'))%I.
 
 Definition arrayT_interp (t: sty) (val_list_interp: sty → list (sval → ival → iProp Σ)) : sval → ival → iProp Σ :=
-  λ vs v, ((∃ l ls (n: nat) (Hnz: (0 < n)%nat),
+  λ vs v, ((∃ l ls (n: nat) (Hnz: (0 < n)%nat) (Hnonempty: flatten_ty t ≠ []),
                      ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ∧ ls ≠ null ∧ l ≠ null ∧
                        addr_offset l = addr_offset ls⌝ ∗
                      (na_block_size (hG := refinement_na_heapG) ls (n * length (flatten_ty t))) ∗
@@ -203,6 +211,18 @@ Fixpoint val_interp (t: sty) {struct t} :=
     | mapValT vt => [λ _ _, False%I]
     | structRefT ts => [λ _ _, False%I]
     end.
+
+Lemma flatten_val_interp_flatten_ty t:
+  flatten_val_interp t = map val_interp (flatten_ty t).
+Proof.
+  induction t => //=.
+  - destruct t; eauto.
+  - rewrite map_app IHt1 IHt2 //.
+Qed.
+
+Lemma val_interp_array_unfold t:
+  val_interp (arrayT t) = arrayT_interp t (λ t, map val_interp (flatten_ty t)).
+Proof. rewrite //= /arrayT_interp flatten_val_interp_flatten_ty //=. Qed.
 
 End reln_defs.
 
@@ -349,27 +369,28 @@ Proof.
     iPoseProof (IHt1 with "H1 H1'") as "%"; eauto.
     iPoseProof (IHt2 with "H2 H2'") as "%"; eauto.
     iPureIntro. naive_solver.
-  - intros.
+  - intros. rewrite val_interp_array_unfold.
     iDestruct 1 as "[H1|Hnull1]";
-    iDestruct 1 as "[H2|Hnull2]";
-    rewrite -/val_interp.
-    * iDestruct "H1" as (?? n1 ? (?&?&?&?)) "(Hsz1&Hsz1'&H1)".
-      iDestruct "H2" as (?? n2 ? (?&?&?&?)) "(Hsz2&Hsz2'&H2)".
+    iDestruct 1 as "[H2|Hnull2]".
+    * iDestruct "H1" as (?? n1 ?? (?&?&?&?&Hoffset1)) "(Hsz1&Hsz1'&H1)".
+      iDestruct "H2" as (?? n2 ?? (?&?&?&?&Hoffset2)) "(Hsz2&Hsz2'&H2)".
       subst.
       destruct n1; destruct n2; try lia; [].
       rewrite ?big_sepL_cons.
       iDestruct "H1" as "(H1&_)".
       iDestruct "H2" as "(H2&_)".
+      destruct (flatten_ty t); first by congruence.
+      rewrite ?big_sepL_cons.
+      iDestruct "H1" as "(H1&_)".
+      iDestruct "H2" as "(H2&_)".
       subst. rewrite ?loc_add_0.
-Admitted.
-(*
-iDestruct (is_loc_eq_iff with "H1 H2") as %Heq.
-      iPureIntro. split; inversion 1; subst; do 2 f_equal; eapply Heq; eauto.
+      iDestruct (is_loc_eq_iff with "H1 H2") as %Heq_base.
+      iPureIntro. apply litv_loc_eq_iff, addr_base_and_offset_eq_iff; eauto.
     * iDestruct "Hnull2" as %(Hnull2s&Hnull2). subst.
-      iDestruct "H1" as (???? (?&?&?&?&?)) "H".
+      iDestruct "H1" as (????? (?&?&?&?&?)) "H".
       iPureIntro. split; inversion 1; subst; do 2 f_equal; try congruence.
     * iDestruct "Hnull1" as %(Hnull1s&Hnull1). subst.
-      iDestruct "H2" as (???? (?&?&?&?&?)) "H".
+      iDestruct "H2" as (????? (?&?&?&?&?)) "H".
       iPureIntro. split; inversion 1; subst; do 2 f_equal; try congruence.
     * iDestruct "Hnull1" as %(Hnull1s&Hnull1). subst.
       iDestruct "Hnull2" as %(Hnull2s&Hnull2). subst. auto.
@@ -377,7 +398,6 @@ iDestruct (is_loc_eq_iff with "H1 H2") as %Heq.
     (* XXX this case is not really done, in the sense that structRefT interp is currently False,
        so the case becomes trivial. *)
 Qed.
-*)
 
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
     val_typing_ind := Induction for val_transTy Sort Prop.
