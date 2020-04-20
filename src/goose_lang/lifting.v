@@ -730,8 +730,7 @@ Proof.
                            (concat_replicate (int.nat n) (flatten_struct v))
                            (Reading O) with "Hσ")
     as "(Hσ & Hblock & Hl)".
-  { rewrite concat_replicate_length. cut (0 < int.nat n)%nat; first by lia.
-    eauto with *. }
+  { rewrite concat_replicate_length. lia. }
   { destruct H as (?&?); eauto. }
   { destruct H as (H'&?); eauto. eapply H'. }
   { destruct H as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
