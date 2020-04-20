@@ -23,6 +23,8 @@ Class walG Σ :=
     wal_txn_id       :> inG Σ (ghostR $ prodO u64O natO);
     wal_list_update  :> inG Σ (ghostR $ listO updateO);
     wal_txns         :> inG Σ (ghostR $ listO $ prodO u64O (listO updateO));
+    wal_nat          :> inG Σ (ghostR $ natO);
+    wal_addr_set     :> inG Σ (ghostR $ gmapO ZO unitO);
   }.
 
 Section heap.
@@ -45,6 +47,8 @@ Record wal_names :=
     cs_name : gname;
     groupTxns_name : gen_heapG nat u64 Σ;
     txns_name : gname;
+    new_installed_name : gname;
+    being_installed_name : gname;
   }.
 
 Implicit Types (γ: wal_names).
@@ -178,20 +182,52 @@ Qed.
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
 Definition is_installed γ (s: log_state.t) : iProp Σ :=
-  ∃ installed_txn_id diskStart,
+  ∃ (installed_txn_id: nat) (new_installed_txn_id: nat) (being_installed: gmap Z unit) diskStart,
     start_is γ.(circ_name) (1/4) diskStart ∗
     group_txn γ installed_txn_id diskStart ∗
-    ⌜(s.(log_state.installed_lb) ≤ installed_txn_id)%nat⌝ ∗
+    (* TODO: the other half of these are owned by the installer, giving it full
+     knowledge of in-progress installations and exclusive update rights; need to
+     write down what it maintains as part of its loop invariant *)
+    (own γ.(new_installed_name) (● Excl' new_installed_txn_id) ∗
+     own γ.(being_installed_name) (● Excl' being_installed)) ∗
+    ⌜(s.(log_state.installed_lb) ≤ installed_txn_id ≤ new_installed_txn_id)%nat⌝ ∗
     ([∗ map] a ↦ _ ∈ s.(log_state.d),
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
         exactly, but some blocks may be in the process of being installed) *)
-       (* TODO: need to let installer keep track of exactly which blocks are
-       at a new txn_id, so that it can update installed_txn_id *)
-       ⌜∃ txn_id', (installed_txn_id ≤ txn_id')%nat ∧
-                   let txns := take txn_id' s.(log_state.txns) in
-                   apply_upds (txn_upds txns) s.(log_state.d) !! a = Some b⌝ ∗
+       ⌜let txn_id' := (if being_installed !! a
+                        then new_installed_txn_id
+                        else installed_txn_id) in
+        let txns := take txn_id' s.(log_state.txns) in
+        apply_upds (txn_upds txns) s.(log_state.d) !! a = Some b⌝ ∗
        a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝).
+
+(* weakening of [is_installed] for the sake of reading *)
+Definition is_installed_read γ (s: log_state.t): iProp Σ :=
+  ([∗ map] a ↦ _ ∈ s.(log_state.d),
+    ∃ (b: Block),
+      ⌜∃ txn_id', (s.(log_state.installed_lb) ≤ txn_id')%nat ∧
+      let txns := take txn_id' s.(log_state.txns) in
+      apply_upds (txn_upds txns) s.(log_state.d) !! a = Some b⌝ ∗
+      a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝)%I.
+
+Theorem is_installed_weaken_read γ s :
+  is_installed γ s -∗ is_installed_read γ s.
+Proof.
+  rewrite /is_installed /is_installed_read.
+  iIntros "I".
+  iDestruct "I" as (installed_txn_id new_installed_txn_id being_installed diskStart)
+                     "(_&_&_&%&Hd)".
+  iApply (big_sepM_mono with "Hd").
+  iIntros (a b0 Hlookup) "HI".
+  iDestruct "HI" as (b') "(%&Hb&%)".
+  iExists b'; iFrame.
+  iPureIntro.
+  split; auto.
+  destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_txn_id ].
+  - split; auto; lia.
+  - split; auto; lia.
+Qed.
 
 (** the more complicated role of memLog is to correctly store committed
 transactions if we roll it back to a [group_txn] boundary, which is what happens
