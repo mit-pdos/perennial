@@ -144,40 +144,65 @@ Proof.
   iApply (loc_paired_eq_iff with "H1 H2").
 Qed.
 
-Fixpoint val_interp (t: sty) (vs: sval) (v: ival) :=
-  match t with
-  | baseT bt => base_ty_interp bt vs v
-  | prodT t1 t2 => (∃ v1 v2 vs1 vs2, ⌜ v = (v1, v2)%V ∧
-                                       vs = (vs1, vs2)%V⌝
+Definition prodT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
+  λ vs v, (∃ v1 v2 vs1 vs2, ⌜ v = (v1, v2)%V ∧ vs = (vs1, vs2)%V⌝
                    ∗ val_interp t1 vs1 v1
-                   ∗ val_interp t2 vs2 v2)%I
-  | sumT t1 t2 => ((∃ v' vs', ⌜ v = InjLV v' ∧
+                   ∗ val_interp t2 vs2 v2)%I.
+
+Definition sumT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
+  λ vs v, ((∃ v' vs', ⌜ v = InjLV v' ∧
                                 vs = InjLV vs'⌝
                               ∗ val_interp t1 vs' v')
                      ∨
                    (∃ v' vs', ⌜ v = InjRV v' ∧
                                 vs = InjRV vs'⌝
-                              ∗ val_interp t2 vs' v'))%I
-  | arrayT t => ((∃ l ls (n: nat) (Hnz: (0 < n)%nat),
+                              ∗ val_interp t2 vs' v'))%I.
+
+Definition arrayT_interp (t: sty) (val_list_interp: sty → list (sval → ival → iProp Σ)) : sval → ival → iProp Σ :=
+  λ vs v, ((∃ l ls (n: nat) (Hnz: (0 < n)%nat),
                      ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ∧ ls ≠ null ∧ l ≠ null ∧
                        addr_offset l = addr_offset ls⌝ ∗
                      (na_block_size (hG := refinement_na_heapG) ls (n * length (flatten_ty t))) ∗
                      (na_block_size (hG := heapG_na_heapG) l (n * length (flatten_ty t))) ∗
-                     (* XXX: next line not quite right, need to do the struct flattening, but
-                        need to convince Coq those are all at smaller types so that recursion is wf *)
-                     [∗ list] i ∈ seq 0 n, is_loc (ls +ₗ Z.of_nat i) (l +ₗ i) (val_interp t))
-                 ∨ (⌜ vs = #null ∧ v = #null⌝))%I
-  | arrowT t1 t2 =>
+                     [∗ list] i ∈ seq 0 n,
+                     [∗ list] j↦vty ∈ (val_list_interp t),
+                         is_loc (addr_base ls +ₗ (length (flatten_ty t) * Z.of_nat i) +ₗ j)
+                                (addr_base l +ₗ (length (flatten_ty t) * Z.of_nat i) +ₗ j)
+                                vty)
+                 ∨ (⌜ vs = #null ∧ v = #null⌝))%I.
+
+Definition arrowT_interp (t1 t2: sty) (val_interp: sty → sval → ival → iProp Σ) : sval → ival → iProp Σ :=
+  λ vs v,
     (∃ f x e fs xs es,
         ⌜ v = RecV f x e ∧
           vs = RecV fs xs es ⌝
         ∗ □ (∀ varg vsarg,
               val_interp t1 vsarg varg -∗
-              has_semTy (App vs vsarg) (App v varg) (val_interp t2)))%I
-  | extT x => sty_val_interp hS x vs v
-  | mapValT vt => False%I
-  | structRefT ts => False%I
-  end.
+              has_semTy (App vs vsarg) (App v varg) (val_interp t2)))%I.
+
+Fixpoint val_interp (t: sty) {struct t} :=
+  match t with
+  | baseT bt => base_ty_interp bt
+  | prodT t1 t2 => prodT_interp t1 t2 val_interp
+  | sumT t1 t2 => sumT_interp t1 t2 val_interp
+  | arrayT t => arrayT_interp t flatten_val_interp
+  | arrowT t1 t2 => arrowT_interp t1 t2 val_interp
+  | extT x => sty_val_interp hS x
+  | mapValT vt => λ _ _, False%I
+  | structRefT ts => λ _ _, False%I
+  end with
+ flatten_val_interp (t: sty) {struct t} : list (sval → ival → iProp Σ) :=
+    match t with
+    | prodT t1 t2 => flatten_val_interp t1 ++ flatten_val_interp t2
+    | baseT unitBT => []
+    | baseT ty => [base_ty_interp ty]
+    | sumT t1 t2 => [sumT_interp t1 t2 val_interp]
+    | arrayT t => [arrayT_interp t flatten_val_interp]
+    | arrowT t1 t2 => [arrowT_interp t1 t2 val_interp]
+    | extT x => [sty_val_interp hS x]
+    | mapValT vt => [λ _ _, False%I]
+    | structRefT ts => [λ _ _, False%I]
+    end.
 
 End reln_defs.
 
@@ -335,7 +360,10 @@ Proof.
       rewrite ?big_sepL_cons.
       iDestruct "H1" as "(H1&_)".
       iDestruct "H2" as "(H2&_)".
-      subst. rewrite ?loc_add_0. iDestruct (is_loc_eq_iff with "H1 H2") as %Heq.
+      subst. rewrite ?loc_add_0.
+Admitted.
+(*
+iDestruct (is_loc_eq_iff with "H1 H2") as %Heq.
       iPureIntro. split; inversion 1; subst; do 2 f_equal; eapply Heq; eauto.
     * iDestruct "Hnull2" as %(Hnull2s&Hnull2). subst.
       iDestruct "H1" as (???? (?&?&?&?&?)) "H".
@@ -349,6 +377,7 @@ Proof.
     (* XXX this case is not really done, in the sense that structRefT interp is currently False,
        so the case becomes trivial. *)
 Qed.
+*)
 
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
     val_typing_ind := Induction for val_transTy Sort Prop.
@@ -528,6 +557,7 @@ Proof using spec_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wpc_pures; eauto.
+      iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e2).
@@ -554,6 +584,7 @@ Proof using spec_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wpc_pures; eauto.
+      iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e2).
@@ -580,6 +611,7 @@ Proof using spec_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wpc_pures; eauto.
+      iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e2).
@@ -606,6 +638,7 @@ Proof using spec_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wpc_pures; eauto.
+      iExists _. iFrame. eauto.
   - destruct op; try inversion e; subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e2).
@@ -622,6 +655,7 @@ Proof using spec_trans.
       apply head_prim_step. repeat econstructor; eauto.
     }
     wpc_pures; eauto.
+    iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.
@@ -663,7 +697,26 @@ Proof using spec_trans.
   - admit.
   - admit.
   (* pointers *)
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) n').
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [Primitive2LCtx _ _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
+
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) v').
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [Primitive2RCtx _ _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    iApply wp_wpc.
+    iApply wp_fupd.
+    iDestruct "Hv1" as (nint) "(->&->)".
+    iApply wp_allocN_seq_sized_meta;
+    admit.
   - admit.
   - admit.
   - admit.
