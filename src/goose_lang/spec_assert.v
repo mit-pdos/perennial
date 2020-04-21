@@ -69,10 +69,10 @@ Global Instance spec_ctx_persistent : Persistent (spec_ctx).
 Proof. apply _. Qed.
 
 (** Override the notations so that scopes and coercions work out *)
-Notation "l s↦{ q } v" := (na_heap_mapsto (L:=loc) (V:=val) (hG := refinement_na_heapG) l q v%V)
+Notation "l s↦{ q } v" := (heap_mapsto (hG := refinement_na_heapG) l q v%V)
   (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (na_heap_mapsto (L:=loc) (V:=val) (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
+  (heap_mapsto (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
 Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
@@ -94,14 +94,15 @@ Qed.
 
 Hint Resolve sN_inv_sub_minus_state.
 
-Lemma ghost_load j K E l q v:
+Lemma ghost_load j K `{LanguageCtx _ K} E l q v:
   nclose sN ⊆ E →
   spec_ctx -∗
   l s↦{q} v -∗
-  j ⤇ fill K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
-  l s↦{q} v ∗ j ⤇ fill K v.
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
+  l s↦{q} v ∗ j ⤇ K v.
 Proof.
-  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
+  iIntros (?) "(#Hctx&#Hstate) Hl0 Hj".
+  iDestruct (heap_mapsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   iDestruct (@na_heap_read with "Hσ Hl") as %([]&?&?&Hlock); try inversion Hlock; subst.
@@ -114,60 +115,72 @@ Proof.
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _. iFrame. }
   iFrame. eauto.
+  iModIntro. iApply "Hclo_l". eauto.
 Qed.
 
-(* TODO: this was a copy and paste from lifting.v, because of type classes the form there is not matching *)
-(*
-Lemma heap_array_to_seq_mapsto l v (n : nat) :
-  ([∗ map] l' ↦ vm ∈ heap_array l (fmap Free (replicate n v)), l' ↦ vm) -∗
-  [∗ list] i ∈ seq 0 n, (l +ₗ (i : nat)) ↦ Free v.
-Proof.
-  iIntros "Hvs". iInduction n as [|n] "IH" forall (l); simpl.
-  { done. }
-  rewrite big_opM_union; last first.
-  { apply map_disjoint_spec=> l' v1 v2 /lookup_singleton_Some [-> _].
-    intros (j&?&Hjl&_)%heap_array_lookup.
-    rewrite loc_add_assoc -{1}[l']loc_add_0 in Hjl. simplify_eq; lia. }
-  rewrite loc_add_0 -fmap_S_seq big_sepL_fmap.
-  setoid_rewrite Nat2Z.inj_succ. setoid_rewrite <-Z.add_1_l.
-  setoid_rewrite <-loc_add_assoc.
-  rewrite big_opM_singleton; iDestruct "Hvs" as "[$ Hvs]". by iApply "IH".
-Qed.
-*)
+Definition spec_mapsto_vals_toks l q vs : iProp Σ :=
+  ([∗ list] j↦vj ∈ vs, (l +ₗ j) s↦{q} vj ∗ meta_token (hG := refinement_na_heapG) (l +ₗ j) ⊤)%I.
 
-(*
-Lemma ghost_allocN_seq j K E v (n: u64):
+Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
+  (0 < length (flatten_struct v))%nat →
   (0 < int.val n)%Z →
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ fill K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) ={E}=∗
-  ∃ l, ([∗ list] i ∈ seq 0 (int.nat n),
-       (l +ₗ (i : nat)) s↦ Free v)
-       ∗ j ⤇ fill K (#l).
+  j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) ={E}=∗
+  ∃ l : loc, j ⤇ K (#l) ∗
+             na_block_size (hG := refinement_na_heapG) l (int.nat n * length (flatten_struct v))%nat ∗
+             [∗ list] i ∈ seq 0 (int.nat n),
+             (spec_mapsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
+                               (flatten_struct v)).
 Proof.
-  iIntros (??) "(#Hctx&#Hstate) Hj".
+  iIntros (Hlen Hn Φ) "(#Hctx&Hstate) Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
-  set (l := fresh_locs (dom (gset loc) σ.(heap))).
-  iMod (na_heap_alloc_gen
-          _ (heap_array
-               l (fmap Free (replicate (int.nat n) v))) with "Hσ")
-    as "(Hσ & Hl & Hm)".
-  { apply heap_array_map_disjoint.
-    rewrite map_length replicate_length u64_Z_through_nat; auto with lia.
-    intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
-    rewrite /= /head_step /=; monad_simpl.
-    econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
-    monad_simpl. }
+  { apply head_prim_step. simpl.
+    econstructor; last (repeat econstructor).
+    econstructor. { monad_simpl. }
+    eexists _ (fresh_locs (dom (gset loc) _.(heap))); repeat econstructor.
+      ** apply fresh_locs_non_null; lia.
+      ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
+  }
+  { solve_ndisj. }
+  set (l := fresh_locs (dom (gset loc) (heap _))).
+  assert (isFresh σ l) as Hfresh.
+  { apply fresh_locs_isFresh. }
+  iMod (na_heap_alloc_list tls (heap _) l
+                           (concat_replicate (int.nat n) (flatten_struct v))
+                           (Reading O) with "Hσ")
+    as "(Hσ & Hblock & Hl)".
+  { rewrite concat_replicate_length. cut (0 < int.nat n)%nat; first by lia.
+    eauto with *. }
+  { destruct Hfresh as (?&?). rewrite //=. }
+  { destruct Hfresh as (H'&?); eauto. eapply H'. }
+  { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
+    by rewrite (loc_add_0) in Hfresh.
+  }
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _. iFrame "H". iFrame. }
-  iExists _; iFrame. iModIntro.
-  by iApply heap_array_to_seq_mapsto.
+  iModIntro.
+  iExists _. iFrame.
+  unfold mapsto_vals.
+  rewrite concat_replicate_length. iFrame.
+  iDestruct (heap_seq_replicate_to_nested_mapsto l (flatten_struct v) (int.nat n)
+                                                 (λ l v, l s↦ v ∗ meta_token l ⊤)%I
+               with "[Hl]") as "Hl".
+  {
+    iApply (big_sepL_mono with "Hl").
+    iIntros (l0 x Heq) "(Hli&$)".
+    iApply (na_mapsto_to_heap with "Hli").
+    destruct Hfresh as (H'&?). eapply H'.
+  }
+  iApply (big_sepL_mono with "Hl").
+  iIntros (k0 ? _) "H".
+  setoid_rewrite Z.mul_comm at 1.
+  setoid_rewrite Z.mul_comm at 2.
+  rewrite /spec_mapsto_vals_toks. eauto.
 Qed.
-*)
 
 End go_ghost_step.
 End go_spec_definitions.

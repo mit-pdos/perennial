@@ -735,7 +735,28 @@ Proof using spec_trans.
     iApply wp_wpc.
     iApply wp_fupd.
     iDestruct "Hv1" as (nint) "(->&->)".
-    iApply wp_allocN_seq_sized_meta;
+    destruct (decide (0 < int.val nint)) as [Hnonneg|]; last first.
+    { (* this is UB *) admit. }
+    iApply wp_allocN_seq_sized_meta.
+    { admit. }
+    { auto. }
+    { auto. }
+    iNext. iIntros (l) "(Hsize&Hpts)".
+    iMod (ghost_allocN_seq_sized_meta with "[] Hj") as (ls) "(Hj&Hssize&Hspts)".
+    { admit. }
+    { eassumption. }
+    { solve_ndisj. }
+    { iApply "Hspec". }
+    iExists _. iFrame "Hj".
+    rewrite val_interp_array_unfold /arrayT_interp.
+    iLeft. iExists l, ls, (int.nat nint), _, _.
+    assert (length (flatten_struct v2) = length (flatten_ty t)) as ->.
+    { admit. }
+    assert (length (flatten_struct vs2) = length (flatten_ty t)) as ->.
+    { admit. }
+    iFrame. replace ((int.nat nint * length (flatten_ty t)))%Z with
+                   (Z.of_nat (int.nat nint * length (flatten_ty t)))%nat by lia.
+    iFrame.
     admit.
   - admit.
   - admit.
