@@ -746,6 +746,18 @@ Proof.
       iExactEq "HnewFree"; word_eq.
 Qed.
 
+Lemma wp_SliceAppend_to_zero stk E t x :
+  val_ty x t ->
+  has_zero t ->
+  {{{ True }}}
+    SliceAppend t (zero_val (slice.T t)) x @ stk; E
+  {{{ s', RET slice_val s'; is_slice s' t 1 ([x]) }}}.
+Proof.
+  iIntros (Hty Hzero Φ) "_ HΦ".
+  iDestruct (is_slice_zero t 1) as "Hs".
+  wp_apply (wp_SliceAppend with "[$Hs]"); auto.
+Qed.
+
 Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :
   {{{ is_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
     SliceSet t s #i x @ stk; E
