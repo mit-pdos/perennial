@@ -757,16 +757,8 @@ Proof.
   iIntros "(Hlkinv&Hlocked&#HdiskEnd_lb)".
   iDestruct "Hwal" as "[Hwal _]".
 
-  iInv "Hwal" as "Hinv" "Hclose".
   wp_pures.
   wp_loadField.
-  wp_call.
-  iDestruct "Hinv" as (σ) "(Hinner&HP)".
-  iDestruct "Hinner" as "(%Hwf&Hmem&Howntxns&Hdurable&Hinstalled&Htxns)".
-  iDestruct "Hdurable" as (diskEnd_txn_id Hdurable_bound) "Hloginv".
-  iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
-                           "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
-  iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
 
   (* TODO: this is where we simulate *)
   (* FIXME: we need to know pos is a valid log position for a transaction for UB
@@ -774,7 +766,6 @@ Proof.
   little like group_txn) that we take in the precondition. Then we know it gets
   flushed because every valid transaction at the time of locking gets
   flushed. *)
-  wp_loadField.
   wp_apply (release_spec with "[$Hlk $Hlocked $Hlkinv]").
 Abort.
 
