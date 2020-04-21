@@ -389,6 +389,7 @@ Qed.
 
 Opaque struct.t.
 
+(* TODO: move out of here to some general wal library *)
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
   {{{ updates_slice bk_s bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
     SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
@@ -478,6 +479,12 @@ Proof.
     [apply_upds] and [compute_memLogMap] are similar fold_left's) *)
 Admitted.
 
+Ltac destruct_is_wal :=
+  iMod (is_wal_read_mem with "Hwal") as "#Hmem";
+  wp_call;
+  iDestruct "Hmem" as (σₛ) "(Hfields&HcondLogger&HcondInstall&HcondShut&#Hlk)";
+  iDestruct "Hfields" as "(Hf1&Hf2&Hf3&Hf4&Hf5&Hf6&Hf7)".
+
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
   {{{ is_wal l γ ∗
        (∀ σ σ' mb,
@@ -491,13 +498,98 @@ Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
                                              else Q None}}}.
 Proof.
   iIntros (Φ) "[#Hwal Hfupd] HΦ".
-  iMod (is_wal_read_mem with "Hwal") as "#Hmem".
-  wp_call.
-  iDestruct "Hmem" as (σₛ) "(Hfields&HcondLogger&HcondInstall&HcondShut&#Hlk)".
-  iDestruct "Hfields" as "(Hf1&Hf2&Hf3&Hf4&Hf5&Hf6&Hf7)".
+  destruct_is_wal.
   wp_loadField.
   wp_apply (acquire_spec with "Hlk"). iIntros "(Hlocked&Hlkinv)".
   wp_loadField.
+Abort.
+
+Theorem wal_linv_load_nextDiskEnd st γ :
+  wal_linv st γ -∗
+    ∃ (x:u64),
+      st ↦[WalogState.S :: "nextDiskEnd"]{1/2} #x ∗
+         (st ↦[WalogState.S :: "nextDiskEnd"]{1/2} #x -∗ wal_linv st γ).
+Proof.
+  iIntros "Hlkinv".
+  iDestruct "Hlkinv" as (σ) "(Hfields&Hrest)".
+  iDestruct "Hfields" as (σₗ) "(Hfield_ptsto&His_memLogMap&His_memLog)".
+  iDestruct "Hfield_ptsto" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
+  iDestruct "HnextDiskEnd" as "[HnextDiskEnd1 HnextDiskEnd2]".
+  iExists _; iFrame.
+  iIntros "HnextDiskEnd2".
+  iCombine "HnextDiskEnd1 HnextDiskEnd2" as "HnextDiskEnd".
+  iExists _; iFrame.
+  iExists _; iFrame.
+Qed.
+
+Theorem wp_endGroupTxn st γ :
+  {{{ wal_linv st γ }}}
+    WalogState__endGroupTxn #st
+  {{{ RET #(); wal_linv st γ }}}.
+Proof.
+  iIntros (Φ) "Hlkinv HΦ".
+  iDestruct "Hlkinv" as (σ) "(Hfields&Hrest)".
+  iDestruct "Hfields" as (σₗ) "(Hfield_ptsto&His_memLogMap&His_memLog)".
+  iDestruct "Hfield_ptsto" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
+  rewrite -wp_fupd.
+  wp_call.
+  wp_loadField. wp_loadField. wp_apply wp_slice_len. wp_storeField.
+  iApply "HΦ".
+  iDestruct (updates_slice_len with "His_memLog") as %HmemLog_len.
+  iExists (set nextDiskEnd (λ _, word.add σ.(memStart) σₗ.(memLogSlice).(Slice.sz)) σ).
+  simpl.
+  iSplitL "HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread His_memLogMap His_memLog".
+  { iModIntro.
+    iExists σₗ; simpl.
+    iFrame. }
+  iDestruct "Hrest" as "($&$&$&HnextDiskEnd)".
+  (* TODO: definitely not enough, need the wal invariant to allocate a new group_txn *)
+Admitted.
+
+Theorem wp_Walog__Flush (Q: iProp Σ) l γ pos :
+  {{{ is_wal l γ ∗
+       (∀ σ σ' b,
+         ⌜wal_wf σ⌝ -∗
+         ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗
+         (P σ ={⊤ ∖ ↑walN}=∗ P σ' ∗ Q))
+   }}}
+    Walog__Flush #l #pos
+  {{{ RET #(); Q}}}.
+Proof.
+  iIntros (Φ) "[Hwal Hfupd] HΦ".
+  destruct_is_wal.
+
+  wp_apply util_proof.wp_DPrintf.
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlk"). iIntros "(Hlocked&Hlkinv)".
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "HcondLogger").
+  wp_loadField.
+  iDestruct (wal_linv_load_nextDiskEnd with "Hlkinv")
+    as (nextDiskEnd) "[HnextDiskEnd Hlkinv]".
+  wp_loadField.
+  iSpecialize ("Hlkinv" with "HnextDiskEnd").
+  wp_pures.
+  wp_bind (If _ _ _); wp_if_destruct.
+  { admit. }
+  wp_pures.
+  wp_bind (For _ _ _).
+  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ)
+           with "[] [$Hlkinv]").
+  { iIntros "!>" (Φ') "Hlkinv HΦ".
+    (* TODO: need a way to extract diskEnd and a ghost variable to keep track of
+    the fact that it is above a bound after this loop *)
+    admit.
+  }
+  iIntros "Hlkinv".
+  (* TODO: this is where we simulate *)
+  (* FIXME: we need to know pos is a valid log position for a transaction for UB
+  avoidance, probably best done with a persistent token about a position (a
+  little like group_txn) that we take in the precondition. Then we know it gets
+  flushed because every valid transaction at the time of locking gets
+  flushed. *)
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlk $Hlocked $Hlkinv]").
 Abort.
 
 Theorem wp_Walog__logAppend l γ σₛ :
