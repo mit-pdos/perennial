@@ -21,12 +21,19 @@ Section goose_lang.
 
   Let N := nroot .@ "readonly".
 
-  Definition readonly P `{H: AsMapsTo P Φ l v}: iProp Σ :=
+  Definition readonly_def P `{H: AsMapsTo P Φ l v}: iProp Σ :=
     inv N (∃ q, Φ l q v).
+  Definition readonly_aux : seal (@readonly_def). Proof. by eexists. Qed.
+  Definition readonly := readonly_aux.(unseal).
+  Definition readonly_eq : @readonly = @readonly_def := readonly_aux.(seal_eq).
+  Arguments readonly P {Φ}%function_scope {l v H}.
+
+  Ltac unseal := rewrite readonly_eq /readonly_def.
 
   Theorem readonly_alloc P `{H: AsMapsTo P Φ l v} q E :
     Φ l q v ={E}=∗ readonly P.
   Proof.
+    unseal.
     iIntros "HP".
     iMod (inv_alloc with "[HP]") as "$"; auto.
   Qed.
@@ -39,7 +46,8 @@ Section goose_lang.
     iApply (readonly_alloc with "HP").
   Qed.
 
-  Global Instance readonly_persistent P `{H: AsMapsTo P Φ l v} : Persistent (readonly P) := _.
+  Global Instance readonly_persistent P `{H: AsMapsTo P Φ l v} : Persistent (readonly P).
+  Proof. unseal; apply _. Qed.
 
   Instance as_mapsto_AsFractional P `{H: AsMapsTo P Φ l v} :
     AsFractional (Φ l q v) (λ q, Φ l q v) q.
@@ -53,7 +61,7 @@ Section goose_lang.
     readonly P ={E}=∗ ∃ q, Φ l q v.
   Proof.
     iIntros (Hsub) "Hro".
-    rewrite /readonly.
+    unseal.
     assert (Timeless (∃ q, Φ l q v)).
     { apply _. }
     iMod (inv_dup_acc (∃ q, Φ l q v) with "Hro []") as ">H"; first by auto.
@@ -81,6 +89,4 @@ Proof.
 Qed.
 
 Hint Mode AsMapsTo - - - + - - - : typeclass_instances.
-
-Typeclasses Opaque readonly.
-Opaque readonly.
+Arguments readonly {Σ invG0} {L V}%type_scope _%bi_scope {Φ}%function_scope {l v H}.
