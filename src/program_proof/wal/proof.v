@@ -572,6 +572,7 @@ Proof.
   lia.
 Qed.
 
+(* just an example, to work out the Flush proof without all the complications *)
 Theorem wp_updateDurable (Q: iProp Σ) l γ :
   {{{ is_wal l γ ∗
        (∀ σ σ' b,
@@ -592,9 +593,7 @@ Proof.
   iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
                            "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
   iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
-  iMod (group_txn_valid with "Htxns HdiskEnd_txn") as "(%HdiskEnd_txn_valid&Htxns)".
-  { unfold N.
-    admit. (* namespace stuff *) }
+  iMod (group_txn_valid with "Htxns HdiskEnd_txn") as "(%HdiskEnd_txn_valid&Htxns)"; first by solve_ndisj.
   apply is_txn_bound in HdiskEnd_txn_valid.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
           with "[% //] [%] [$HP]") as "[HP HQ]".
@@ -617,7 +616,22 @@ Proof.
     iSplit; first by (iPureIntro; lia).
     iExists _, _, _, _; iFrame.
     iSplit; auto.
-Admitted.
+Qed.
+
+(* TODO: move this out to some core control flow library *)
+(** A proof principle for if e { do_stuff(); } where do_stuff() is optional and
+does something irrelevant to the proof using resources R. Allows to re-use the
+proof for both branches, carrying on with resources R. *)
+Theorem wp_If_optional stk E (R: iProp Σ) (b: bool) e :
+  (∀ (Φ': val -> iProp Σ), R -∗ ▷ (R -∗ Φ' #()) -∗ WP e @ stk; E {{ Φ' }}) -∗
+  ∀ Φ, R -∗ ▷ (R -∗ Φ #()) -∗ WP If #b e #() @ stk; E {{ Φ }}.
+Proof.
+  iIntros "Hwp" (Φ) "HR HΦ".
+  wp_if_destruct.
+  - wp_apply ("Hwp" with "[$HR]").
+    iFrame.
+  - iApply ("HΦ" with "HR").
+Qed.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ pos :
   {{{ is_wal l γ ∗
@@ -643,8 +657,16 @@ Proof.
   wp_loadField.
   iSpecialize ("Hlkinv" with "HnextDiskEnd").
   wp_pures.
-  wp_bind (If _ _ _); wp_if_destruct.
-  { admit. }
+  wp_apply (wp_If_optional with "[] [Hlkinv Hlocked]"); [ | iAccu | ].
+  {
+    iIntros (Φ') "(Hlkinv&Hlocked) HΦ".
+    wp_loadField.
+    wp_apply (wp_endGroupTxn with "[$Hlkinv]").
+    iIntros "Hlkinv".
+    wp_pures.
+    iApply ("HΦ" with "[$]").
+  }
+  iIntros "(Hlkinv&Hlocked)".
   wp_pures.
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ)
