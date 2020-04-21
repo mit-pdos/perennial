@@ -11,14 +11,13 @@ Implicit Types (txn_id:nat) (pos: u64).
 Existing Instance r_mbind.
 Existing Instance fallback_genPred.
 
-Definition update_durable: transition log_state.t nat :=
+Definition update_durable: transition log_state.t unit :=
   new_durable ← suchThat
               (λ s new_durable,
                (s.(log_state.durable_lb) ≤
                 new_durable ≤
                 length s.(log_state.txns))%nat);
-modify (set log_state.durable_lb (λ _, new_durable));;
-ret new_durable.
+  modify (set log_state.durable_lb (λ _, new_durable)).
 
 Definition update_installed: transition log_state.t nat :=
   new_installed ← suchThat
@@ -40,11 +39,11 @@ Definition log_crash : transition log_state.t unit :=
 Definition suchThatMax {Σ} (pred: Σ -> nat -> Prop) : transition Σ nat :=
   suchThat (λ s x, pred s x ∧ ∀ y, pred s y -> y ≤ x).
 
-Definition is_txn (s: log_state.t) (txn_id: nat) (pos: u64): Prop :=
-  fst <$> s.(log_state.txns) !! txn_id = Some pos.
+Definition is_txn (txns: list (u64 * list update.t)) (txn_id: nat) (pos: u64): Prop :=
+  fst <$> txns !! txn_id = Some pos.
 
 Definition getTxnId (pos: u64) : transition log_state.t nat :=
-  suchThatMax (fun s (txn_id: nat) => is_txn s txn_id pos).
+  suchThatMax (fun s (txn_id: nat) => is_txn s.(log_state.txns) txn_id pos).
 
 Definition log_flush (pos:u64) : transition log_state.t unit :=
   txn_id ← getTxnId pos;
@@ -56,9 +55,9 @@ Definition log_flush (pos:u64) : transition log_state.t unit :=
 
 Definition allocPos : transition log_state.t u64 :=
   suchThat (λ s (pos': u64),
-            (∃ txn_id', is_txn s txn_id' pos') ∧
+            (∃ txn_id', is_txn s.(log_state.txns) txn_id' pos') ∧
             (∀ (pos: u64) txn_id,
-                is_txn s txn_id pos ->
+                is_txn s.(log_state.txns) txn_id pos ->
                 int.val pos' >= int.val pos)).
 
 Definition log_mem_append (txn: list update.t): transition log_state.t u64 :=

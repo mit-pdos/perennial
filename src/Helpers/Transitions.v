@@ -261,6 +261,11 @@ Module relation.
     Instance requiv {T}: Equiv (t T) :=
       fun r1 r2 => forall s1 s2 v, r1 s1 s2 v <-> r2 s1 s2 v.
 
+    Definition wf_preserved {T} (tr: transition Σ T) (wf: Σ -> Prop) :=
+      forall s1 s2 x,
+        wf s1 -> denote tr s1 s2 x ->
+        wf s2.
+
     Ltac inv H :=
       lazymatch type of H with
       | ret _ _ _ _ => apply inv_ret in H; destruct H; subst

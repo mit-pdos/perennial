@@ -1,6 +1,8 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From RecordUpdate Require Import RecordSet.
-From Perennial.algebra Require Import fmcounter.
+
+From Perennial.Helpers Require Import Transitions.
+
 From Perennial.algebra Require Import deletable_heap.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
@@ -37,7 +39,8 @@ Implicit Types (v:val) (z:Z).
 
 Context (P: log_state.t -> iProp Σ).
 Context (walN : namespace).
-Definition circN: namespace := walN .@ "circ".
+Let N := nroot .@ "wal" .@ walN.
+Definition circN: namespace := N .@ "circ".
 
 Record wal_names :=
   { circ_name: circ_names;
@@ -52,6 +55,8 @@ Record wal_names :=
   }.
 
 Implicit Types (γ: wal_names).
+Implicit Types (s: log_state.t) (memLog: list update.t) (txns: list (u64 * list update.t)).
+Implicit Types (pos: u64) (txn_id: nat).
 
 Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 u64) : gmap u64 u64 :=
   match memLog with
@@ -158,7 +163,7 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
     lock.is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
     lock.is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
     lock.is_cond σₛ.(condShut) #σₛ.(memLock) ∗
-    is_lock walN γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ).
+    is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ).
 
 Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
 
@@ -188,7 +193,7 @@ Qed.
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
-Definition is_installed γ (s: log_state.t) : iProp Σ :=
+Definition is_installed γ d txns installed_lb : iProp Σ :=
   ∃ (installed_txn_id: nat) (new_installed_txn_id: nat) (being_installed: gmap Z unit) diskStart,
     start_is γ.(circ_name) (1/4) diskStart ∗
     group_txn γ installed_txn_id diskStart ∗
@@ -197,29 +202,29 @@ Definition is_installed γ (s: log_state.t) : iProp Σ :=
      write down what it maintains as part of its loop invariant *)
     (own γ.(new_installed_name) (● Excl' new_installed_txn_id) ∗
      own γ.(being_installed_name) (● Excl' being_installed)) ∗
-    ⌜(s.(log_state.installed_lb) ≤ installed_txn_id ≤ new_installed_txn_id)%nat⌝ ∗
-    ([∗ map] a ↦ _ ∈ s.(log_state.d),
+    ⌜(installed_lb ≤ installed_txn_id ≤ new_installed_txn_id)%nat⌝ ∗
+    ([∗ map] a ↦ _ ∈ d,
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
         exactly, but some blocks may be in the process of being installed) *)
        ⌜let txn_id' := (if being_installed !! a
                         then new_installed_txn_id
                         else installed_txn_id) in
-        let txns := take txn_id' s.(log_state.txns) in
-        apply_upds (txn_upds txns) s.(log_state.d) !! a = Some b⌝ ∗
+        let txns := take txn_id' txns in
+        apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
        a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝).
 
 (* weakening of [is_installed] for the sake of reading *)
-Definition is_installed_read γ (s: log_state.t): iProp Σ :=
-  ([∗ map] a ↦ _ ∈ s.(log_state.d),
+Definition is_installed_read γ d txns installed_lb : iProp Σ :=
+  ([∗ map] a ↦ _ ∈ d,
     ∃ (b: Block),
-      ⌜∃ txn_id', (s.(log_state.installed_lb) ≤ txn_id')%nat ∧
-      let txns := take txn_id' s.(log_state.txns) in
-      apply_upds (txn_upds txns) s.(log_state.d) !! a = Some b⌝ ∗
+      ⌜∃ txn_id', (installed_lb ≤ txn_id')%nat ∧
+      let txns := take txn_id' txns in
+      apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
       a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝)%I.
 
-Theorem is_installed_weaken_read γ s :
-  is_installed γ s -∗ is_installed_read γ s.
+Theorem is_installed_weaken_read γ d txns installed_lb :
+  is_installed γ d txns installed_lb -∗ is_installed_read γ d txns installed_lb.
 Proof.
   rewrite /is_installed /is_installed_read.
   iIntros "I".
@@ -269,7 +274,7 @@ Definition is_crash_memlog γ
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
 Definition log_inv γ txns diskEnd_txn_id : iProp Σ :=
-  ∃ (memStart: u64) (memStart_txn_id: nat) (memLog: list update.t) cs,
+  ∃ (memStart: u64) (memStart_txn_id: nat) (memLog: list update.t) (cs: circΣ.t),
     own γ.(memStart_name) (◯ (Excl' (memStart, memStart_txn_id))) ∗
     own γ.(memLog_name) (◯ Excl' memLog) ∗
     own γ.(cs_name) (◯ (Excl' cs)) ∗
@@ -280,43 +285,45 @@ Definition log_inv γ txns diskEnd_txn_id : iProp Σ :=
         group_txn γ diskEnd_txn_id diskEnd ∗
         diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
 
-Definition is_durable γ s: iProp Σ :=
-  (∃ diskEnd_txn_id,
-    log_inv γ s.(log_state.txns) diskEnd_txn_id ∗
+Definition is_durable γ txns durable_lb : iProp Σ :=
+  (∃ (diskEnd_txn_id: nat),
     (* TODO(tej): does this make sense? it's the only constraint on
         durable_lb *)
-    ⌜s.(log_state.durable_lb) ≤ diskEnd_txn_id ⌝ ).
+      ⌜(durable_lb ≤ diskEnd_txn_id)%nat ⌝ ∗
+       log_inv γ txns diskEnd_txn_id).
 
-Definition is_groupTxns γ s: iProp Σ :=
+Definition is_groupTxns γ txns : iProp Σ :=
   ∃ (groupTxns: gmap nat u64),
     gen_heap_ctx (hG:=γ.(groupTxns_name)) groupTxns ∗
     ⌜∀ txn_id pos, groupTxns !! txn_id = Some pos ->
-                   is_txn s txn_id pos⌝.
+                   is_txn txns txn_id pos⌝.
 
-Theorem group_txn_valid γ s txn_id pos :
-  is_groupTxns γ s -∗
+Theorem group_txn_valid γ txns E txn_id pos :
+  ↑nroot.@"readonly" ⊆ E ->
+  is_groupTxns γ txns -∗
   group_txn γ txn_id pos -∗
-  |={⊤}=> ⌜is_txn s txn_id pos⌝.
+  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ is_groupTxns γ txns.
 Proof.
   rewrite /is_groupTxns /group_txn.
-  iIntros "Hgroup Htxn".
+  iIntros (Hsub) "Hgroup Htxn".
   iDestruct "Hgroup" as (groupTxns) "[Hctx %HgroupTxns]".
   iMod (readonly_load with "Htxn") as (q) "Htxn_id"; first by set_solver.
   iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
-  iIntros "!> !%".
-  eauto.
+  iIntros "!>".
+  iSplit; eauto.
 Qed.
 
 (** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
+    ⌜wal_wf s⌝ ∗
     is_wal_mem l γ ∗
     own γ.(txns_name) (◯ Excl' s.(log_state.txns)) ∗
-    is_durable γ s ∗
-    is_installed γ s ∗
-    is_groupTxns γ s.
+    is_durable γ s.(log_state.txns) s.(log_state.durable_lb) ∗
+    is_installed γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) ∗
+    is_groupTxns γ s.(log_state.txns).
 
 Definition is_wal (l : loc) γ : iProp Σ :=
-  inv walN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
+  inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
   is_circular circN (circular_pred γ) γ.(circ_name).
 
 Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
@@ -326,10 +333,10 @@ Proof.
   iApply (inv_dup_acc with "Hinv"); first by set_solver.
   iIntros "HinvI".
   iDestruct "HinvI" as (σ) "[HinvI HP]".
-  iDestruct "HinvI" as "(#Hmem&Hrest)".
+  iDestruct "HinvI" as "(%Hwf&#Hmem&Hrest)".
   iSplitL; last by auto.
   iExists _; iFrame.
-  iFrame "∗ Hmem".
+  by iFrame "∗ Hmem".
 Qed.
 
 Theorem wal_linv_shutdown st γ :
@@ -490,7 +497,7 @@ Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
        (∀ σ σ' mb,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
-         (P σ ={⊤ ∖ ↑walN}=∗ P σ' ∗ Q mb))
+         (P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb))
    }}}
     Walog__ReadMem #l #a
   {{{ (ok:bool) bl, RET (slice_val bl, #ok); if ok
@@ -546,17 +553,83 @@ Proof.
   (* TODO: definitely not enough, need the wal invariant to allocate a new group_txn *)
 Admitted.
 
+Theorem is_txn_bound txns diskEnd_txn_id diskEnd :
+  is_txn txns diskEnd_txn_id diskEnd ->
+  (diskEnd_txn_id ≤ length txns)%nat.
+Proof.
+  rewrite /is_txn -list_lookup_fmap.
+  intros H%lookup_lt_Some.
+  autorewrite with len in H; lia.
+Qed.
+
+Theorem wal_wf_update_durable :
+  relation.wf_preserved (update_durable) wal_wf.
+Proof.
+  intros s1 s2 [] Hwf ?; simpl in *; monad_inv.
+  destruct Hwf as (Hwf1&Hwf2&Hwf3).
+  destruct s1; split; unfold log_state.updates in *; simpl in *; eauto.
+  split; eauto.
+  lia.
+Qed.
+
+Theorem wp_updateDurable (Q: iProp Σ) l γ :
+  {{{ is_wal l γ ∗
+       (∀ σ σ' b,
+         ⌜wal_wf σ⌝ -∗
+         ⌜relation.denote (update_durable) σ σ' b⌝ -∗
+         (P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q))
+   }}}
+    Skip
+  {{{ RET #(); Q}}}.
+Proof.
+  iIntros (Φ) "[#Hwal Hfupd] HΦ".
+  iDestruct "Hwal" as "[Hwal Hcirc]".
+  iInv "Hwal" as "Hinv".
+  wp_call.
+  iDestruct "Hinv" as (σ) "(Hinner&HP)".
+  iDestruct "Hinner" as "(%Hwf&Hmem&Howntxns&Hdurable&Hinstalled&Htxns)".
+  iDestruct "Hdurable" as (diskEnd_txn_id Hdurable_bound) "Hloginv".
+  iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
+                           "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
+  iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
+  iMod (group_txn_valid with "Htxns HdiskEnd_txn") as "(%HdiskEnd_txn_valid&Htxns)".
+  { unfold N.
+    admit. (* namespace stuff *) }
+  apply is_txn_bound in HdiskEnd_txn_valid.
+  iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
+          with "[% //] [%] [$HP]") as "[HP HQ]".
+  { simpl.
+    econstructor; monad_simpl.
+    econstructor; monad_simpl; lia. }
+  iSpecialize ("HΦ" with "HQ").
+  iFrame "HΦ".
+  iIntros "!> !>".
+  iExists _; iFrame "HP".
+  iSplit.
+  - iPureIntro.
+    eapply wal_wf_update_durable; eauto.
+    { simpl; monad_simpl.
+      econstructor; monad_simpl.
+      econstructor; monad_simpl; lia. }
+  - simpl.
+    iFrame.
+    iExists diskEnd_txn_id.
+    iSplit; first by (iPureIntro; lia).
+    iExists _, _, _, _; iFrame.
+    iSplit; auto.
+Admitted.
+
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ pos :
   {{{ is_wal l γ ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗
-         (P σ ={⊤ ∖ ↑walN}=∗ P σ' ∗ Q))
+         (P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q))
    }}}
     Walog__Flush #l #pos
   {{{ RET #(); Q}}}.
 Proof.
-  iIntros (Φ) "[Hwal Hfupd] HΦ".
+  iIntros (Φ) "[#Hwal Hfupd] HΦ".
   destruct_is_wal.
 
   wp_apply util_proof.wp_DPrintf.
@@ -601,7 +674,7 @@ Theorem wp_Walog__logAppend l γ σₛ :
       readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       wal_linv σₛ.(wal_st) γ ∗
       locked γ.(lock_name) ∗
-      is_lock walN γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
+      is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
   }}}
     Walog__logAppend #l
   {{{ (progress:bool), RET #progress;
