@@ -109,7 +109,7 @@ Section goose_lang.
     | baseT _ => True
     | mapValT t => has_zero t
     | prodT t1 t2 => has_zero t1 ∧ has_zero t2
-    | sumT t1 t2 => has_zero t1 ∧ has_zero t2
+    | sumT t1 t2 => has_zero t1
     | arrowT _ t2 => has_zero t2
     | arrayT _ => True
     | structRefT _ => True
