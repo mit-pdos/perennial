@@ -85,6 +85,10 @@ Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ kvsl, RET #kvsl; ptsto_kvs kvsl (kvs_init_s sz) sz}}}
   {{{ True }}}.
 Proof.
+  iIntros (ϕ ϕc) "_ Hϕ".
+  rewrite /MkKVS.
+  wpc_pures; eauto.
+  wpc_bind (super.MkFsSuper _).
 Admitted.
 
 Theorem wpc_KVS__Get kvsl s sz key v stk E:
@@ -94,6 +98,11 @@ Theorem wpc_KVS__Get kvsl s sz key v stk E:
      ptsto_kvs kvsl s sz ∗ ptsto_kvpair pairl (kvpair.mk key v)
   }}}.
 Proof.
+  iIntros (ϕ) "[Hkvs Hs] Hϕ".
+  rewrite /KVS__Get.
+  wp_pures; eauto.
+  wp_bind (buftxn.Begin _).
+
 Admitted.
 
 Theorem wpc_KVS__MultiPut kvsl s sz kvp_ls_before kvp_slice kvp_ls stk k E1 E2:
