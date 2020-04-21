@@ -633,6 +633,59 @@ Proof.
   - iApply ("HΦ" with "HR").
 Qed.
 
+Theorem simulate_flush l γ Q pos txn_id :
+  is_wal l γ -∗
+  diskEnd_at_least γ.(circ_name) (int.val pos) -∗
+  (* TODO: the actual fact we want is not just for grouped txns but any valid
+  one; furthermore, there's a complication that we really need the highest
+  transaction id for this position since we'll only flush that *)
+  group_txn γ txn_id pos -∗
+  (∀ (σ σ' : log_state.t) (b : ()),
+      ⌜wal_wf σ⌝
+        -∗ ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
+  |={⊤}=> ▷ Q.
+Proof.
+  iIntros "#Hwal #Hlb #Hpos_txn Hfupd".
+  iDestruct "Hwal" as "[Hwal _]".
+  iInv "Hwal" as "Hinv" "Hclose".
+  iAssert (∃ σ, is_wal_inner l γ σ ∗ P σ)%I with "[Hinv]" as "Hinv".
+  { admit. }
+  iDestruct "Hinv" as (σ) "[Hinner HP]".
+  iDestruct "Hinner" as "(%Hwf&Hmem&Howntxns&Hdurable&Hinstalled&Htxns)".
+  iDestruct "Hdurable" as (diskEnd_txn_id Hdurable_bound) "Hloginv".
+  iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
+                           "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
+  iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
+  iMod (group_txn_valid with "Htxns Hpos_txn") as (His_txn) "Htxns"; first by solve_ndisj.
+  iMod (group_txn_valid with "Htxns HdiskEnd_txn") as (HdiskEnd_is_txn) "Htxns"; first by solve_ndisj.
+  pose proof (is_txn_bound _ _ _ His_txn).
+  pose proof (is_txn_bound _ _ _ HdiskEnd_is_txn).
+  iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, Nat.max σ.(log_state.durable_lb) txn_id) σ) with "[% //] [%] HP") as "[HP HQ]".
+  { simpl; monad_simpl.
+    repeat (econstructor; monad_simpl; eauto).
+    { admit. }
+    lia.
+  }
+  iFrame.
+  iApply "Hclose".
+  iNext.
+  iExists _; iFrame "HP".
+  iSplit; auto.
+  { iPureIntro.
+    eapply wal_wf_update_durable; eauto.
+    simpl; monad_simpl.
+    repeat (econstructor; monad_simpl; eauto); lia.
+  }
+  simpl.
+  iFrame.
+  iExists diskEnd_txn_id; iFrame.
+  iSplit.
+  { iPureIntro.
+    admit. }
+  iExists _, _, _, _; iFrame.
+  iSplit; auto.
+Admitted.
+
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ pos :
   {{{ is_wal l γ ∗
        (∀ σ σ' b,
@@ -676,8 +729,6 @@ Proof.
                if b then ⊤ else diskEnd_at_least γ.(circ_name) (int.val pos))%I
            with "[] [$Hlkinv $Hlocked]").
   { iIntros "!>" (Φ') "(Hlkinv&Hlocked&_) HΦ".
-    (* TODO: need a way to extract diskEnd and a ghost variable to keep track of
-    the fact that it is above a bound after this loop *)
     wp_loadField.
     iDestruct "Hlkinv" as (σ) "[Hfields Hrest]".
     iDestruct "Hfields" as (σₗ) "(Hfield_ptsto&His_memLogMap&His_memLog)".
@@ -704,6 +755,19 @@ Proof.
   }
 
   iIntros "(Hlkinv&Hlocked&#HdiskEnd_lb)".
+  iDestruct "Hwal" as "[Hwal _]".
+
+  iInv "Hwal" as "Hinv" "Hclose".
+  wp_pures.
+  wp_loadField.
+  wp_call.
+  iDestruct "Hinv" as (σ) "(Hinner&HP)".
+  iDestruct "Hinner" as "(%Hwf&Hmem&Howntxns&Hdurable&Hinstalled&Htxns)".
+  iDestruct "Hdurable" as (diskEnd_txn_id Hdurable_bound) "Hloginv".
+  iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
+                           "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
+  iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
+
   (* TODO: this is where we simulate *)
   (* FIXME: we need to know pos is a valid log position for a transaction for UB
   avoidance, probably best done with a persistent token about a position (a
