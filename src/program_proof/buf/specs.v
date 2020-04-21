@@ -435,7 +435,7 @@ Lemma buf_mapsto_non_null b a:
 Proof.
   iIntros "Hb.a".
   iDestruct (heap_mapsto_non_null with "[Hb.a]") as %Hnotnull.
-  { rewrite /struct_field_mapsto//= struct_mapsto_eq /struct_mapsto_def.
+  { rewrite struct_field_mapsto_eq /struct_field_mapsto_def //= struct_mapsto_eq /struct_mapsto_def.
     iDestruct "Hb.a" as "[[[Hb _] _] _]".
     repeat rewrite loc_add_0. iFrame. }
   eauto.

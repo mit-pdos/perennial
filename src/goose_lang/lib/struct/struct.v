@@ -123,7 +123,7 @@ Proof.
       econstructor; eauto.
 Qed.
 
-Definition struct_field_mapsto l q (d: descriptor) (f0: string) (fv:val): iProp Σ :=
+Definition struct_field_mapsto_def l q (d: descriptor) (f0: string) (fv:val): iProp Σ :=
   match field_offset d f0 with
   | Some (off, t) =>
     (* this struct is for the field type *)
@@ -131,9 +131,16 @@ Definition struct_field_mapsto l q (d: descriptor) (f0: string) (fv:val): iProp 
   | None => ⌜fv = #()⌝
   end.
 
+Definition struct_field_mapsto_aux : seal (@struct_field_mapsto_def). Proof. by eexists. Qed.
+Definition struct_field_mapsto := struct_field_mapsto_aux.(unseal).
+Definition struct_field_mapsto_eq : @struct_field_mapsto = @struct_field_mapsto_def := struct_field_mapsto_aux.(seal_eq).
+
+Ltac unseal :=
+  rewrite struct_field_mapsto_eq /struct_field_mapsto_def.
+
 Global Instance struct_field_mapsto_timeless l d f q v : Timeless (struct_field_mapsto l q d f v).
 Proof.
-  rewrite /struct_field_mapsto.
+  unseal.
   destruct (field_offset d f).
   - destruct p. refine _.
   - refine _.
@@ -141,7 +148,7 @@ Qed.
 
 Global Instance struct_field_mapsto_fractional l d f v : fractional.Fractional (λ q : Qp, struct_field_mapsto l q d f v).
 Proof.
-  rewrite /struct_field_mapsto.
+  unseal.
   destruct (field_offset d f).
   - destruct p. refine _.
   - refine _.
@@ -255,7 +262,7 @@ Proof.
   rewrite app_assoc in H |- *.
   rewrite IHfs; eauto.
   f_equal.
-  - rewrite /struct_field_mapsto.
+  - unseal.
     rewrite -app_assoc.
     erewrite field_offset_prefix; eauto.
     rewrite ?fmap_app in H.
@@ -402,7 +409,7 @@ Lemma struct_field_mapsto_q l q d f v :
   struct_field_mapsto l (q/2) d f v ∗
   struct_field_mapsto l (q/2) d f v.
 Proof.
-  rewrite /struct_field_mapsto.
+  unseal.
   destruct (field_offset d f).
   - destruct p.
     rewrite struct_mapsto_q. done.
@@ -424,9 +431,9 @@ Proof.
   destruct (field_offset d f0) as [[off t0]|] eqn:Hf.
   - iIntros "Hl".
     iDestruct (struct_mapsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | ].
-    rewrite /struct_field_mapsto Hf.
+    unseal; rewrite Hf.
     iFrame.
-  - rewrite /struct_field_mapsto Hf.
+  - unseal; rewrite Hf.
     iIntros "Hl".
     iSplitR; auto.
     { rewrite getField_f_none; auto. }
@@ -442,9 +449,9 @@ Proof.
   destruct (field_offset d f0) as [[off t0]|] eqn:Hf.
   - iIntros "Hl".
     iDestruct (struct_mapsto_acc_offset_read with "Hl") as "[Hf Hupd]"; [ eauto | ].
-    rewrite /struct_field_mapsto Hf.
+    unseal; rewrite Hf.
     iFrame.
-  - rewrite /struct_field_mapsto Hf.
+  - unseal; rewrite Hf.
     iIntros "Hl".
     rewrite getField_f_none; auto.
 Qed.
@@ -453,7 +460,7 @@ Theorem struct_field_mapsto_ty l q d z t f v :
   field_offset d f = Some (z, t) ->
   struct_field_mapsto l q d f v -∗ ⌜val_ty v t⌝.
 Proof.
-  rewrite /struct_field_mapsto.
+  unseal.
   intros ->.
   iIntros "Hl".
   iDestruct (struct_mapsto_ty with "Hl") as %Hty.
@@ -464,7 +471,7 @@ Theorem struct_field_mapsto_none l q d f v :
   field_offset d f = None ->
   struct_field_mapsto l q d f v -∗ ⌜v = #()⌝.
 Proof.
-  rewrite /struct_field_mapsto.
+  unseal.
   intros ->.
   auto.
 Qed.
@@ -496,7 +503,7 @@ Proof.
   destruct (field_offset d f) as [[z t]|] eqn:Hf.
   - iIntros (Φ) "Hl HΦ".
     wp_pures.
-    rewrite /struct_field_mapsto Hf.
+    unseal; rewrite Hf.
     rewrite Z.mul_1_r.
     wp_load.
     iApply ("HΦ" with "[$]").
@@ -572,7 +579,7 @@ Proof.
   destruct (field_offset d f) as [[z t]|] eqn:Hf.
   - iIntros (Φ) "Hl HΦ".
     wp_pures.
-    rewrite /struct_field_mapsto Hf.
+    unseal; rewrite Hf.
     rewrite Z.mul_1_r.
     wp_store.
     iApply ("HΦ" with "[$]").
