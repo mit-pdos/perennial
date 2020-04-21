@@ -165,6 +165,17 @@ Proof.
   word.
 Qed.
 
+Theorem diskEnd_at_least_mono (γ: circ_names) (lb1 lb2: Z) :
+  lb1 ≤ lb2 ->
+  diskEnd_at_least γ lb2 -∗
+  diskEnd_at_least γ lb1.
+Proof.
+  rewrite /diskEnd_at_least.
+  iIntros (Hle) "Hlb".
+  iApply (fmcounter_lb_mono with "Hlb").
+  word.
+Qed.
+
 Theorem diskEnd_at_least_to_le γ σ endpos_lb :
   circ_positions γ σ -∗
   diskEnd_at_least γ endpos_lb -∗

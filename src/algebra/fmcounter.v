@@ -89,6 +89,15 @@ Proof.
   by apply auth_both_frac_valid in Hval as (?&Hle%mnat_included&?).
 Qed.
 
+Lemma fmcounter_lb_mono γ n1 n2:
+  n1 ≤ n2 ->
+  fmcounter_lb γ n2 -∗ fmcounter_lb γ n1.
+Proof.
+  iIntros (Hle) "Hlb".
+  rewrite /fmcounter_lb.
+  iApply (own_mono with "Hlb").
+Admitted.
+
 Lemma fmcounter_sep γ q1 q2 n:
   fmcounter γ (q1 + q2) n ⊣⊢ fmcounter γ q1 n ∗ fmcounter γ q2 n.
 Proof.

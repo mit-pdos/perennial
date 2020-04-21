@@ -657,6 +657,7 @@ Proof.
   wp_loadField.
   iSpecialize ("Hlkinv" with "HnextDiskEnd").
   wp_pures.
+
   wp_apply (wp_If_optional with "[] [Hlkinv Hlocked]"); [ | iAccu | ].
   {
     iIntros (Φ') "(Hlkinv&Hlocked) HΦ".
@@ -668,15 +669,41 @@ Proof.
   }
   iIntros "(Hlkinv&Hlocked)".
   wp_pures.
+
   wp_bind (For _ _ _).
-  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ)
-           with "[] [$Hlkinv]").
-  { iIntros "!>" (Φ') "Hlkinv HΦ".
+  wp_apply (wp_forBreak_cond (λ b,
+               wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗
+               if b then ⊤ else diskEnd_at_least γ.(circ_name) (int.val pos))%I
+           with "[] [$Hlkinv $Hlocked]").
+  { iIntros "!>" (Φ') "(Hlkinv&Hlocked&_) HΦ".
     (* TODO: need a way to extract diskEnd and a ghost variable to keep track of
     the fact that it is above a bound after this loop *)
-    admit.
+    wp_loadField.
+    iDestruct "Hlkinv" as (σ) "[Hfields Hrest]".
+    iDestruct "Hfields" as (σₗ) "(Hfield_ptsto&His_memLogMap&His_memLog)".
+    iDestruct "Hfield_ptsto" as "(HmemLog&HmemStart&HdiskEnd&HnextDiskEnd&HmemLogMap&Hshutdown&Hnthread)".
+    wp_loadField.
+    wp_pures.
+    wp_if_destruct.
+    - wp_loadField.
+      wp_apply (wp_condWait with "[-HΦ $HcondLogger $Hlk $Hlocked]").
+      { iExists _; iFrame.
+        iExists _; iFrame. }
+      iIntros "(Hlocked&Hlockin)".
+      wp_pures.
+      iApply "HΦ"; iFrame.
+    - iApply "HΦ".
+      iFrame "Hlocked".
+      apply negb_false_iff in Heqb.
+      apply bool_decide_eq_true in Heqb.
+      iDestruct "Hrest" as "(#HdiskEnd_at_least&Hrest)".
+      iSplitL.
+      { iExists _; iFrame "HdiskEnd_at_least ∗".
+        iExists _; iFrame. }
+      iApply (diskEnd_at_least_mono with "HdiskEnd_at_least"); auto.
   }
-  iIntros "Hlkinv".
+
+  iIntros "(Hlkinv&Hlocked&#HdiskEnd_lb)".
   (* TODO: this is where we simulate *)
   (* FIXME: we need to know pos is a valid log position for a transaction for UB
   avoidance, probably best done with a persistent token about a position (a
