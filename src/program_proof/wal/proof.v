@@ -686,8 +686,9 @@ Proof.
   iSplit; auto.
 Admitted.
 
-Theorem wp_Walog__Flush (Q: iProp Σ) l γ pos :
+Theorem wp_Walog__Flush (Q: iProp Σ) l γ txn_id pos :
   {{{ is_wal l γ ∗
+      group_txn γ txn_id pos ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗
@@ -696,7 +697,7 @@ Theorem wp_Walog__Flush (Q: iProp Σ) l γ pos :
     Walog__Flush #l #pos
   {{{ RET #(); Q}}}.
 Proof.
-  iIntros (Φ) "[#Hwal Hfupd] HΦ".
+  iIntros (Φ) "(#Hwal & #Hpos_txn & Hfupd) HΦ".
   destruct_is_wal.
 
   wp_apply util_proof.wp_DPrintf.
@@ -755,10 +756,10 @@ Proof.
   }
 
   iIntros "(Hlkinv&Hlocked&#HdiskEnd_lb)".
-  iDestruct "Hwal" as "[Hwal _]".
-
   wp_pures.
   wp_loadField.
+
+  iMod (simulate_flush with "Hwal HdiskEnd_lb Hpos_txn Hfupd") as "HQ".
 
   (* TODO: this is where we simulate *)
   (* FIXME: we need to know pos is a valid log position for a transaction for UB
@@ -767,7 +768,8 @@ Proof.
   flushed because every valid transaction at the time of locking gets
   flushed. *)
   wp_apply (release_spec with "[$Hlk $Hlocked $Hlkinv]").
-Abort.
+  iApply ("HΦ" with "HQ").
+Qed.
 
 Theorem wp_Walog__logAppend l γ σₛ :
   {{{ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
