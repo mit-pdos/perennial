@@ -200,6 +200,11 @@ Definition Walog__LogSz: val :=
 
 (* installer.go *)
 
+(* cutMemLog deletes from the memLog through installEnd, after these blocks have
+   been installed. This transitions from a state where the on-disk install point
+   is already at installEnd, but memStart < installEnd.
+
+   Assumes caller holds memLock *)
 Definition WalogState__cutMemLog: val :=
   rec: "WalogState__cutMemLog" "st" "installEnd" :=
     ForSlice (struct.t Update.S) "i" "blk" (SliceTake (struct.loadF WalogState.S "memLog" "st") ("installEnd" - struct.loadF WalogState.S "memStart" "st"))

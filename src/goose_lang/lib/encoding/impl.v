@@ -23,7 +23,7 @@ Section goose_lang.
     let: "v1" := to_u32 ![u8T]("p" +ₗ #1) in
     let: "v2" := to_u32 ![u8T]("p" +ₗ #2) in
     let: "v3" := to_u32 ![u8T]("p" +ₗ #3) in
-    "v0" ∥ ("v1" ∥ ("v2" ∥ "v3" ≪ #(U32 8)) ≪ #(U32 8)) ≪ #(U32 8).
+    "v0" `or` ("v1" `or` ("v2" `or` "v3" ≪ #(U32 8)) ≪ #(U32 8)) ≪ #(U32 8).
 
   Definition EncodeUInt64: val :=
     λ: "n" "p",
@@ -47,7 +47,7 @@ Section goose_lang.
     let: "v5" := to_u64 ![u8T]("p" +ₗ #5) in
     let: "v6" := to_u64 ![u8T]("p" +ₗ #6) in
     let: "v7" := to_u64 ![u8T]("p" +ₗ #7) in
-    "v0" ∥ ("v1" ∥ ("v2" ∥ ("v3" ∥ ("v4" ∥ ("v5" ∥ ("v6" ∥ "v7"
+    "v0" `or` ("v1" `or` ("v2" `or` ("v3" `or` ("v4" `or` ("v5" `or` ("v6" `or` "v7"
       ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8).
 
   Definition UInt64Put: val :=

@@ -47,11 +47,11 @@ Definition MkBufLoad: val :=
 Definition installOneBit: val :=
   rec: "installOneBit" "src" "dst" "bit" :=
     let: "new" := ref_to byteT "dst" in
-    (if: ("src" & #(U8 1) ≪ "bit") ≠ ("dst" & #(U8 1) ≪ "bit")
+    (if: ("src" `and` #(U8 1) ≪ "bit") ≠ ("dst" `and` #(U8 1) ≪ "bit")
     then
-      (if: ("src" & #(U8 1) ≪ "bit") = #(U8 0)
-      then "new" <-[byteT] (![byteT] "new" & ~ (#(U8 1) ≪ "bit"))
-      else "new" <-[byteT] ![byteT] "new" ∥ #(U8 1) ≪ "bit");;
+      (if: ("src" `and` #(U8 1) ≪ "bit") = #(U8 0)
+      then "new" <-[byteT] (![byteT] "new" `and` ~ (#(U8 1) ≪ "bit"))
+      else "new" <-[byteT] ![byteT] "new" `or` #(U8 1) ≪ "bit");;
       #()
     else #());;
     ![byteT] "new".
