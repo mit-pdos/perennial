@@ -384,6 +384,8 @@ Proof. solve_atomic.
        simpl in H; monad_inv.
        eexists; eauto.
 Qed.
+Global Instance linearize_atomic s : Atomic s Linearize.
+Proof. rewrite /Linearize. apply _. Qed.
 Global Instance new_proph_atomic s : Atomic s NewProph.
 Proof. solve_atomic. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
@@ -425,6 +427,7 @@ Qed.
 
 Global Instance resolve_proph_atomic s v1 v2 : Atomic s (ResolveProph (Val v1) (Val v2)).
 Proof. by apply proph_resolve_atomic, skip_atomic. Qed.
+
 
 Local Ltac solve_exec_safe := intros; subst; do 3 eexists; cbn; repeat (monad_simpl; simpl).
 Local Ltac solve_exec_puredet := rewrite /= /head_step /=; intros; repeat (monad_inv; simpl in * ); eauto.

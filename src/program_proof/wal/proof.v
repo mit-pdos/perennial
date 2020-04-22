@@ -646,7 +646,7 @@ Proof.
 Abort.
 
 Theorem simulate_flush l γ Q σ pos txn_id :
-  ▷ (is_wal_inner l γ σ ∗ P σ) -∗
+  (is_wal_inner l γ σ ∗ P σ) -∗
   diskEnd_at_least γ.(circ_name) (int.val pos) -∗
   (* TODO: the actual fact we want is not just for grouped txns but any valid
   one; furthermore, there's a complication that we really need the highest
@@ -655,11 +655,9 @@ Theorem simulate_flush l γ Q σ pos txn_id :
   (∀ (σ σ' : log_state.t) (b : ()),
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
-  |={⊤ ∖ ↑N}=> ▷ ((∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗ Q).
+  |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗ Q.
 Proof.
   iIntros "Hinv #Hlb #Hpos_txn Hfupd".
-  iAssert (is_wal_inner l γ σ ∗ P σ)%I with "[Hinv]" as "Hinv";
-    first by admit. (* FIXME: figure out laters *)
   iDestruct "Hinv" as "[Hinner HP]".
   iDestruct "Hinner" as "(%Hwf&Hmem&Howntxns&Hdurable&Hinstalled&Htxns)".
   iDestruct "Hdurable" as (diskEnd_txn_id Hdurable_bound) "Hloginv".
@@ -678,7 +676,6 @@ Proof.
   }
   iFrame "HQ".
   iModIntro.
-  iNext.
   iExists _; iFrame "HP".
   iSplit; auto.
   { iPureIntro.
@@ -694,6 +691,7 @@ Proof.
     admit. }
   iExists _, _, _, _; iFrame.
   iSplit; auto.
+  Fail idtac.
 Admitted.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ txn_id pos :
@@ -771,15 +769,15 @@ Proof.
   }
 
   iIntros "(Hlkinv&Hlocked&#HdiskEnd_lb)".
-  wp_pures. (* Skip seems not necessary/helpful *)
+  wp_seq.
+  wp_bind Skip.
   iDestruct "Hwal" as "[Hwal _]".
-  iApply fupd_wp.
   iInv "Hwal" as "Hinv".
+  wp_call.
   iDestruct "Hinv" as (σ) "[Hinner HP]".
   iMod (simulate_flush with "[$Hinner $HP] HdiskEnd_lb Hpos_txn Hfupd") as "[Hinv HQ]".
   iModIntro.
   iFrame "Hinv".
-  iModIntro.
 
   wp_loadField.
   wp_apply (release_spec with "[$Hlk $Hlocked $Hlkinv]").
