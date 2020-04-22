@@ -53,12 +53,6 @@ Definition encode1 (e:encodable) : list u8 :=
 
 Definition encode (es:Rec): list u8 := concat (encode1 <$> es).
 
-Hint Rewrite app_length @drop_length @take_length @fmap_length
-     @replicate_length u64_le_bytes_length u32_le_bytes_length : len.
-Hint Rewrite @vec_to_list_length : len.
-Hint Rewrite @insert_length : len.
-Hint Rewrite u64_le_length : len.
-
 Ltac word := try lazymatch goal with
                  | |- envs_entails _ _ => iPureIntro
                  end; Integers.word.

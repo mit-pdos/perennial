@@ -2,12 +2,12 @@ From iris.algebra Require Export auth gmap frac agree excl vector list.
 
 From Perennial.algebra Require Export big_op.
 
-From Perennial.Helpers Require Export BigOp Transitions iris.
+From Perennial.Helpers Require Export ListLen BigOp Transitions iris.
 
 From Perennial.program_logic Require Export ghost_var.
 From Perennial.goose_lang Require Export proofmode wpc_proofmode array.
 From Perennial.goose_lang Require Export readonly.
-From Perennial.goose_lang.lib Require Export slice map struct loop lock.
+From Perennial.goose_lang.lib Require Export slice map struct loop lock control.
 From Perennial.goose_lang Require Export ffi.disk.
 From Perennial.goose_lang Require Export ffi.disk_prelude.
 

@@ -1,3 +1,5 @@
+From Perennial.Helpers Require Import ListLen.
+
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
 From iris.program_logic Require Export weakestpre.
@@ -392,3 +394,6 @@ Proof.
 Qed.
 
 End heap.
+
+Hint Rewrite @u64_le_bytes_length : len.
+Hint Rewrite @u32_le_bytes_length : len.

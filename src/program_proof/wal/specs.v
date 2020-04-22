@@ -4,7 +4,9 @@ Import RecordSetNotations.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import Transitions.
-From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.circ_proof disk_lib.
+From Perennial.program_proof Require util_proof.
+From Perennial.program_proof Require Import proof_prelude disk_lib.
+From Perennial.program_proof Require Import wal.lib.
 
 Implicit Types (txn_id:nat) (pos: u64).
 

@@ -6,7 +6,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
-From Perennial.program_proof Require Import wal.specs wal.heapspec addr.specs buf.defs buf.specs disk_lib.
+From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.specs buf.defs buf.specs disk_lib.
 
 Inductive updatable_buf (T : Type) :=
 | UB : forall (v : T) (modifiedSinceInstallG : gname), updatable_buf T
@@ -466,10 +466,10 @@ Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap
     Txn__installBufs #l (slice_val bufs)
   {{{ (blks : Slice.t) updlist, RET (slice_val blks);
       mapsto (hG := γMaps) tt (1/2) mData ∗
-      abstraction.updates_slice blks updlist ∗
+      updates_slice blks updlist ∗
       ( [∗ list] _ ↦ walUpd ∈ updlist,
-        let blknum := walUpd.(abstraction.update.addr) in
-        let walBlock := walUpd.(abstraction.update.b) in
+        let blknum := walUpd.(update.addr) in
+        let walBlock := walUpd.(update.b) in
         ∃ K gDataGH,
           ⌜ gData !! blknum = Some (existT K gDataGH) ⌝ ∗
           ∀ diskInstalled diskBs,

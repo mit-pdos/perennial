@@ -5,12 +5,6 @@ From Perennial.goose_lang.lib Require Import wp_store.
 
 Local Transparent load_ty store_ty.
 
-Hint Rewrite app_length @drop_length @take_length @fmap_length
-     @replicate_length : len.
-Hint Rewrite @vec_to_list_length : len.
-Hint Rewrite @insert_length : len.
-Hint Rewrite u64_le_length : len.
-
 Ltac word := try lazymatch goal with
                  | |- envs_entails _ _ => iPureIntro
                  end; Integers.word.

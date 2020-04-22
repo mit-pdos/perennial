@@ -6,7 +6,7 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.algebra Require Import deletable_heap.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_proof Require Import wal.abstraction.
+From Perennial.program_proof Require Import wal.lib.
 From Perennial.program_proof Require Import wal.circ_proof.
 From Perennial.program_proof Require Import wal.specs.
 
@@ -360,28 +360,6 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) b :
-  {{{ is_block (snd u) b }}}
-    copyUpdateBlock (update_val u) @ stk; E
-  {{{ (s':Slice.t), RET (slice_val s'); is_block (snd u) b ∗ is_block s' b }}}.
-Proof.
-  iIntros (Φ) "Hb HΦ".
-  destruct u as [a s]; simpl.
-  wp_call.
-  wp_apply wp_new_slice; first by auto.
-  iIntros (s') "Hs'".
-  iDestruct (is_slice_to_small with "Hs'") as "Hs'".
-  wp_pures.
-  wp_apply (wp_SliceCopy_full with "[$Hb $Hs']").
-  { iPureIntro.
-    autorewrite with len.
-    rewrite length_Block_to_vals.
-    reflexivity. }
-  iIntros "(Hs&Hs')".
-  wp_pures.
-  iApply ("HΦ" with "[$]").
-Qed.
-
 (* TODO: move to map/map.v *)
 Lemma map_get_fmap {V} {m:gmap u64 V} {def: V} {to_val: V -> val} {a v ok} :
   map_get (to_val <$> m, to_val def) a = (v, ok) ->
@@ -392,41 +370,6 @@ Proof.
   destruct ((to_val <$> m) !! a) eqn:Hlookup; eauto.
   rewrite lookup_fmap in Hlookup.
   apply fmap_Some in Hlookup as [x [Hlookup ->]]; eauto.
-Qed.
-
-Opaque struct.t.
-
-(* TODO: move out of here to some general wal library *)
-Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
-  {{{ updates_slice bk_s bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
-    SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
-  {{{ uv, RET (update_val uv);
-      ⌜uv.1 = u.(update.addr)⌝ ∗
-      is_block uv.2 u.(update.b) ∗
-      (is_block uv.2 u.(update.b) -∗ updates_slice bk_s bs)
-  }}}.
-Proof.
-  iIntros (Φ) "[Hupds %Hlookup] HΦ".
-  iDestruct "Hupds" as (bks) "[Hbk_s Hbks]".
-  iDestruct (big_sepL2_lookup_2_some _ _ _ _ _ Hlookup with "Hbks")
-    as %[b_upd Hlookup_bs].
-  iDestruct (is_slice_small_acc with "Hbk_s") as "[Hbk_s Hbk_s_rest]".
-  wp_apply (wp_SliceGet with "[$Hbk_s]").
-  { iPureIntro.
-    rewrite list_lookup_fmap.
-    rewrite Hlookup_bs //. }
-  iIntros "[Hbk_s _]".
-  iDestruct ("Hbk_s_rest" with "Hbk_s") as "Hbk_s".
-  iApply "HΦ".
-  iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hbi Hbks]"; eauto.
-  destruct u as [a b]; simpl.
-  iDestruct "Hbi" as "[Hbi <-]".
-  iSplit; first by auto.
-  iFrame.
-  iIntros "Hbi".
-  iSpecialize ("Hbks" with "[$Hbi //]").
-  rewrite /updates_slice.
-  iExists _; iFrame.
 Qed.
 
 Lemma memLogMap_ok_memLog_lookup memStart memLog a i :
@@ -445,6 +388,8 @@ Proof.
   replace (int.nat (word.sub i' memStart)) with (int.nat i' - int.nat memStart)%nat by word.
   (* this is hard, induction is hard with this left fold *)
 Admitted.
+
+Opaque struct.t.
 
 Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
   {{{ wal_linv_fields st σ ∗
@@ -616,21 +561,6 @@ Proof.
     iSplit; first by (iPureIntro; lia).
     iExists _, _, _, _; iFrame.
     iSplit; auto.
-Qed.
-
-(* TODO: move this out to some core control flow library *)
-(** A proof principle for if e { do_stuff(); } where do_stuff() is optional and
-does something irrelevant to the proof using resources R. Allows to re-use the
-proof for both branches, carrying on with resources R. *)
-Theorem wp_If_optional stk E (R: iProp Σ) (b: bool) e :
-  (∀ (Φ': val -> iProp Σ), R -∗ ▷ (R -∗ Φ' #()) -∗ WP e @ stk; E {{ Φ' }}) -∗
-  ∀ Φ, R -∗ ▷ (R -∗ Φ #()) -∗ WP If #b e #() @ stk; E {{ Φ }}.
-Proof.
-  iIntros "Hwp" (Φ) "HR HΦ".
-  wp_if_destruct.
-  - wp_apply ("Hwp" with "[$HR]").
-    iFrame.
-  - iApply ("HΦ" with "HR").
 Qed.
 
 Fixpoint find_highest_index poss pos: option nat :=
