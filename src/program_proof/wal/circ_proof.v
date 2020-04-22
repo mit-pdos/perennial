@@ -18,6 +18,7 @@ Module circΣ.
          start: u64;
        }.
   Global Instance _eta: Settable _ := settable! mk <upds; start>.
+  Global Instance _witness: Inhabited t := populate (mk inhabitant inhabitant).
   Definition diskEnd (s:t): Z :=
     int.val s.(start) + Z.of_nat (length s.(upds)).
 End circΣ.

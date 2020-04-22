@@ -36,9 +36,9 @@ Module log_state.
         durable_lb: nat;
       }.
   Global Instance _eta: Settable _ := settable! mk <d; txns; installed_lb; durable_lb>.
+  Global Instance _witness: Inhabited t := populate (mk inhabitant inhabitant inhabitant inhabitant).
 
   Definition updates σ : list update.t := txn_upds σ.(txns).
-
 End log_state.
 
 Definition addrs_wf (updates: list update.t) (d: disk) :=
