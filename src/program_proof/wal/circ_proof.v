@@ -882,6 +882,17 @@ Proof.
   word.
 Qed.
 
+Lemma diskEnd_is_agree_2 γ q endpos lb :
+  diskEnd_is γ q endpos -∗
+  diskEnd_at_least γ lb -∗
+  ⌜lb ≤ endpos ⌝.
+Proof.
+  iIntros "[% Hend] Hlb".
+  iDestruct (fmcounter_agree_2 with "Hend Hlb") as %Hlb.
+  iPureIntro.
+  word.
+Qed.
+
 Lemma circ_positions_append upds γ σ (startpos endpos: u64) :
   int.val endpos + Z.of_nat (length upds) < 2^64 ->
   (int.val endpos - int.val startpos) + length upds ≤ LogSz ->

@@ -42,8 +42,13 @@ Definition suchThatMax {Σ} (pred: Σ -> nat -> Prop) : transition Σ nat :=
 Definition is_txn (txns: list (u64 * list update.t)) (txn_id: nat) (pos: u64): Prop :=
   fst <$> txns !! txn_id = Some pos.
 
+Definition is_highest_txn txns txn_id pos :=
+  is_txn txns txn_id pos ∧
+  forall txn_id', is_txn txns txn_id' pos ->
+                  txn_id' <= txn_id.
+
 Definition getTxnId (pos: u64) : transition log_state.t nat :=
-  suchThatMax (fun s (txn_id: nat) => is_txn s.(log_state.txns) txn_id pos).
+  suchThat (fun s (txn_id: nat) => is_highest_txn s.(log_state.txns) txn_id pos).
 
 Definition log_flush (pos:u64) : transition log_state.t unit :=
   txn_id ← getTxnId pos;
