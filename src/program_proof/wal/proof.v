@@ -789,6 +789,17 @@ Proof.
       lia.
 Qed.
 
+Lemma wal_wf_txns_mono_highest' {σ txn_id1 pos1 txn_id2 pos2} :
+  wal_wf σ ->
+  is_highest_txn σ.(log_state.txns) txn_id1 pos1 ->
+  is_highest_txn σ.(log_state.txns) txn_id2 pos2 ->
+  int.val pos1 ≤ int.val pos2 ->
+  (txn_id1 ≤ txn_id2)%nat.
+Proof.
+  intros Hwf [Htxn1 _] Htxn2 Hle.
+  eapply wal_wf_txns_mono_highest; eauto.
+Qed.
+
 Theorem simulate_flush l γ Q σ pos txn_id :
   (is_wal_inner l γ σ ∗ P σ) -∗
   diskEnd_at_least γ.(circ_name) (int.val pos) -∗
