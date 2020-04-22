@@ -567,6 +567,16 @@ Definition testArithmeticShifts: val :=
     "ok" <-[boolT] ![boolT] "ok" && (#672 ≫ #4 ≪ #4 = #672);;
     ![boolT] "ok".
 
+(* prims.go *)
+
+Definition testLinearize: val :=
+  rec: "testLinearize" <> :=
+    let: "m" := lock.new #() in
+    lock.acquire "m";;
+    Linearize;;
+    lock.release "m";;
+    #true.
+
 (* shortcircuiting.go *)
 
 (* helpers *)

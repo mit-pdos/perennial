@@ -45,7 +45,7 @@ Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
 (* Skip should be atomic, we sometimes open invariants around
    it. Hence, we need to explicitly use LamV instead of e.g., Seq. *)
 Notation Skip := (App (Val $ LamV BAnon (Val $ LitV LitUnit)) (Val $ LitV LitUnit)).
-
+Definition Linearize {ext:ext_op}: expr := Skip.
 
 (* No scope for the values, does not conflict and scope is often not inferred
 properly. *)

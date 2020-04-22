@@ -60,6 +60,9 @@ Example testModPrecedence_ok : testModPrecedence #() ~~> #true := t.
 Example testBitwiseOpsPrecedence_ok : testBitwiseOpsPrecedence #() ~~> #true := t.
 Example testArithmeticShifts_ok : testArithmeticShifts #() ~~> #true := t.
 
+(* prims.go *)
+Example testLinearize_ok : testLinearize #() ~~> #true := t.
+
 (* shortcircuiting.go *)
 Example testShortcircuitAndTF_ok : testShortcircuitAndTF #() ~~> #true := t.
 Example testShortcircuitAndFT_ok : testShortcircuitAndFT #() ~~> #true := t.

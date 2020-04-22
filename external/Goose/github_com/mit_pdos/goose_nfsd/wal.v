@@ -525,6 +525,7 @@ Definition Walog__Flush: val :=
     (for: (λ: <>, ~ ("pos" ≤ struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l"))); (λ: <>, Skip) := λ: <>,
       lock.condWait (struct.loadF Walog.S "condLogger" "l");;
       Continue);;
+    Linearize;;
     lock.release (struct.loadF Walog.S "memLock" "l").
 
 (* Shutdown logger and installer *)
