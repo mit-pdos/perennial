@@ -633,8 +633,20 @@ Proof.
   - iApply ("HΦ" with "HR").
 Qed.
 
-Theorem simulate_flush l γ Q pos txn_id :
-  is_wal l γ -∗
+Theorem is_txn_round_up txns txn_id pos :
+  is_txn txns txn_id pos ->
+  ∃ txn_id', is_txn txns txn_id' pos ∧
+             (∀ txn_id'', is_txn txns txn_id'' pos ->
+                          txn_id'' <= txn_id').
+Proof.
+  rewrite /is_txn.
+  setoid_rewrite <- list_lookup_fmap.
+  generalize dependent txns.*1; intros poss.
+  induction poss.
+Abort.
+
+Theorem simulate_flush l γ Q σ pos txn_id :
+  ▷ (is_wal_inner l γ σ ∗ P σ) -∗
   diskEnd_at_least γ.(circ_name) (int.val pos) -∗
   (* TODO: the actual fact we want is not just for grouped txns but any valid
   one; furthermore, there's a complication that we really need the highest
@@ -643,14 +655,12 @@ Theorem simulate_flush l γ Q pos txn_id :
   (∀ (σ σ' : log_state.t) (b : ()),
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
-  |={⊤}=> ▷ Q.
+  |={⊤ ∖ ↑N}=> ▷ ((∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗ Q).
 Proof.
-  iIntros "#Hwal #Hlb #Hpos_txn Hfupd".
-  iDestruct "Hwal" as "[Hwal _]".
-  iInv "Hwal" as "Hinv" "Hclose".
-  iAssert (∃ σ, is_wal_inner l γ σ ∗ P σ)%I with "[Hinv]" as "Hinv".
-  { admit. }
-  iDestruct "Hinv" as (σ) "[Hinner HP]".
+  iIntros "Hinv #Hlb #Hpos_txn Hfupd".
+  iAssert (is_wal_inner l γ σ ∗ P σ)%I with "[Hinv]" as "Hinv";
+    first by admit. (* FIXME: figure out laters *)
+  iDestruct "Hinv" as "[Hinner HP]".
   iDestruct "Hinner" as "(%Hwf&Hmem&Howntxns&Hdurable&Hinstalled&Htxns)".
   iDestruct "Hdurable" as (diskEnd_txn_id Hdurable_bound) "Hloginv".
   iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
@@ -666,8 +676,8 @@ Proof.
     { admit. }
     lia.
   }
-  iFrame.
-  iApply "Hclose".
+  iFrame "HQ".
+  iModIntro.
   iNext.
   iExists _; iFrame "HP".
   iSplit; auto.
@@ -688,6 +698,11 @@ Admitted.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ txn_id pos :
   {{{ is_wal l γ ∗
+      (* FIXME: we need to know pos is a valid log position for a transaction
+      for UB avoidance, probably best done with a persistent token about a
+      position (a little like group_txn) that we take in the precondition. Then
+      we know it gets flushed because every valid transaction at the time of
+      locking gets flushed. *)
       group_txn γ txn_id pos ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
@@ -756,17 +771,17 @@ Proof.
   }
 
   iIntros "(Hlkinv&Hlocked&#HdiskEnd_lb)".
-  wp_pures.
+  wp_pures. (* Skip seems not necessary/helpful *)
+  iDestruct "Hwal" as "[Hwal _]".
+  iApply fupd_wp.
+  iInv "Hwal" as "Hinv".
+  iDestruct "Hinv" as (σ) "[Hinner HP]".
+  iMod (simulate_flush with "[$Hinner $HP] HdiskEnd_lb Hpos_txn Hfupd") as "[Hinv HQ]".
+  iModIntro.
+  iFrame "Hinv".
+  iModIntro.
+
   wp_loadField.
-
-  iMod (simulate_flush with "Hwal HdiskEnd_lb Hpos_txn Hfupd") as "HQ".
-
-  (* TODO: this is where we simulate *)
-  (* FIXME: we need to know pos is a valid log position for a transaction for UB
-  avoidance, probably best done with a persistent token about a position (a
-  little like group_txn) that we take in the precondition. Then we know it gets
-  flushed because every valid transaction at the time of locking gets
-  flushed. *)
   wp_apply (release_spec with "[$Hlk $Hlocked $Hlkinv]").
   iApply ("HΦ" with "HQ").
 Qed.
