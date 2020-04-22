@@ -429,7 +429,7 @@ Definition is_txn_buf  bufptrval (a : addr) (buf : buf) gData : iProp Σ :=
 
 Definition bufsby_slice_wf blkno bbblist val gData bufamap: iProp Σ :=
   ∃ s,
-    ⌜val = slice_val s⌝ ∗ is_slice s (slice.T (refT (struct.t buf.Buf.S))) 1 bbblist ∗
+    ⌜val = slice_val s⌝ ∗ is_slice s (refT (struct.t buf.Buf.S)) 1 bbblist ∗
     [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; bbblist,
   is_txn_buf bufptrval a buf gData ∗ ⌜a.(addrBlock) = blkno⌝.
 
@@ -527,13 +527,25 @@ Opaque struct.t.
     wp_pures.
     destruct ok.
     + apply map_get_true in Hmapget.
-      admit. (* lookup in "hmap" *)
-
+      iDestruct (big_sepM_lookup_acc with "Hbbb") as "(Hmi&_)"; eauto.
+      iDestruct "Hmi" as (Hbbblist) "(Hbbb_slice&_)".
+      iDestruct "Hbbb_slice" as (s') "( -> &(Hslice&Hmaplist))".
+      wp_apply (wp_SliceAppend with "[Hslice]"); eauto.
+      1: {
+        iFrame.
+        admit.  (* XXX Need to track that val_ty #bufptr (refT (struct.t buf.Buf.S)) *)
+      }
+      iIntros (s0') "Hs0'".
+      wp_loadField.
+      wp_pures.
+      wp_load.
+      wp_apply (wp_MapInsert with "Hismap").
+      iIntros "Hx".
+      iApply "HΦ'".
+      admit.
     + apply map_get_false in Hmapget; intuition; subst.
       rewrite -> zero_slice_val.
-      wp_apply (wp_SliceAppend_to_zero).
-      1: admit.
-      1: admit.
+      wp_apply (wp_SliceAppend_to_zero); eauto.
       iIntros (s) "Hslice".
       wp_loadField.
       wp_pures.
