@@ -64,7 +64,9 @@ SLOW_QED_FILES := src/program_logic/crash_weakestpre.v\
 	src/goose_lang/interpreter/interpreter.v\
 	src/goose_lang/interpreter/disk_interpreter.v\
 	src/program_proof/append_log_proof.v\
-	src/program_proof/lockmap_proof.v
+	src/program_proof/lockmap_proof.v\
+	src/program_proof/wal/circ_proof.v\
+	src/program_proof/wal/proof.v
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
