@@ -24,6 +24,7 @@ Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!crashG Σ}.
 Context `{!buftxnG Σ}.
+Context `{!gen_heapPreG u64 disk.Block Σ}.
 Context `{!gen_heapG u64 disk.Block Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
@@ -59,6 +60,10 @@ Definition kvpairs_slice (val_s: Slice.t) (pairs: list kvpair.t): iProp Σ :=
 Definition kvpairs_match (s: gmap u64 Block) (pairs: list kvpair.t): iProp Σ :=
   [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in (⌜(s !! a = Some b)⌝)%I.
 
+Definition valid_key (key: u64) :=
+  ∃ knat, key = U64(Z.of_nat knat) ∧
+          specs.valid_addr (specs.Build_addr (knat + abstraction.LogSz + 2) 0).
+
 Definition is_kvs' (s: gmap u64 Block) (sz : nat) :=
   (∃ keys,
     ⌜keys = init_keys [] sz⌝ ∗
@@ -91,18 +96,50 @@ Proof.
   wpc_bind (super.MkFsSuper _).
 Admitted.
 
-Theorem wpc_KVS__Get kvsl s sz key v stk E:
-  {{{ ptsto_kvs kvsl s sz ∗ ⌜s !! key = Some v⌝ }}}
-    KVS__Get #kvsl #key @ stk; E (* Crashes don't matter to state here *)
+Theorem wpc_KVS__Get kvsl s sz key v:
+  {{{ ptsto_kvs kvsl s sz ∗ ⌜s !! key = Some v⌝ ∗ ⌜valid_key key⌝ }}}
+    KVS__Get #kvsl #key (* Crashes don't matter to state here *)
   {{{(pairl: loc), RET #pairl;
      ptsto_kvs kvsl s sz ∗ ptsto_kvpair pairl (kvpair.mk key v)
   }}}.
 Proof.
-  iIntros (ϕ) "[Hkvs Hs] Hϕ".
-  rewrite /KVS__Get.
-  wp_pures; eauto.
+  iIntros (ϕ) "[Hkvs [%Hs %Hkey]] Hϕ".
+  iDestruct "Hkvs" as (l txn) "[Htxnl [Hsz [Htxn Hkvs]]]".
+  wp_call.
+  wp_loadField.
   wp_bind (buftxn.Begin _).
+  wp_apply (wp_buftxn_Begin l txn _ with "[Htxn]"); auto.
+  iIntros (buftx γt) "Hbtxn".
+  unfold is_buftxn.
+  iDestruct "Hbtxn" as (l0 mT bufmap gBufmap txid) "[Htxnl0 [Hbml [Htxidl [Htxn [Hbm [Hgh [HmT [Hvalid Hmapsto]]]]]]]]".
+  wp_let.
+  wp_pures.
+  wp_call.
+  wp_call.
+  wp_bind (buf.BufMap__Lookup _ _).
+  wp_loadField.
+  wp_apply (specs.wp_BufMap__Lookup _ gBufmap
+                                  (specs.Build_addr
+                                    (u64_instance.u64.(@word.add 64) key
+                                    (u64_instance.u64.(@word.add 64)
+                                    (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2))
+                                    0) with "[Hbm]"); auto.
+  - iSplitL "Hbm"; auto.
+    iPureIntro.
+    destruct Hkey as [knat [Hknat Hkey]].
+    rewrite Hknat.
+    unfold abstraction.LogSz in *. simpl in *.
+    admit.
+    (*apply Hkey.
+    Print specs.valid_addr.
+    simpl. split; simpl; try word; auto.*)
+  - iIntros (bptr).
 
+  specs.wp_BufMap__Lookup.
+  wp_loadField.
+  Searchabout "Begin".
+  wp_pures; eauto.
+  iPoseProof (wp_buftxn_Begin _ _ _ with "Htxn") as "WP_buftxn_Begin".
 Admitted.
 
 Theorem wpc_KVS__MultiPut kvsl s sz kvp_ls_before kvp_slice kvp_ls stk k E1 E2:
