@@ -499,6 +499,17 @@ Proof.
     rewrite word.of_Z_unsigned; auto.
 Qed.
 
+Theorem wp_forSlicePrefix (P: list val -> list val -> iProp Σ) stk E s t q vs (body: val) :
+  (∀ (i: u64) (x: val) (vs: list val) (vs': list val),
+      {{{ P vs (x :: vs') }}}
+        body #i x @ stk; E
+      {{{ RET #(); P (vs ++ [x]) vs' }}}) -∗
+    {{{ is_slice_small s t q vs ∗ P nil vs }}}
+      forSlice t body (slice_val s) @ stk; E
+    {{{ RET #(); is_slice_small s t q vs ∗ P vs nil }}}.
+Proof.
+Admitted.
+
 Theorem wp_forSliceEach (I: iProp Σ) (P Q: val -> iProp Σ) stk E s t q vs (body: val) :
   (∀ (i: u64) (x: val),
       {{{ I ∗ P x }}}

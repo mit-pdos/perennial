@@ -73,27 +73,27 @@ Proof.
   - intuition congruence.
 Qed.
 
-Definition is_map (mref:loc) (m: Map.t V) :=
+Definition is_tmap (mref:loc) (m: Map.t V) :=
   map.is_map mref (Map.untype m).
 
-Theorem is_map_untype mref m : is_map mref m -∗ map.is_map mref (Map.untype m).
+Theorem is_map_untype mref m : is_tmap mref m -∗ map.is_map mref (Map.untype m).
 Proof.
   auto.
 Qed.
 
-Theorem is_map_retype mref m : map.is_map mref (to_val <$> m, to_val IntoVal_def) -∗ is_map mref m.
+Theorem is_map_retype mref m : map.is_map mref (to_val <$> m, to_val IntoVal_def) -∗ is_tmap mref m.
 Proof.
   auto.
 Qed.
 
 Ltac untype :=
-  rewrite /is_map /Map.untype.
+  rewrite /is_tmap /Map.untype.
 
 Theorem wp_NewMap stk E :
   {{{ True }}}
     NewMap t @ stk; E
   {{{ mref, RET #mref;
-      is_map mref ∅ }}}.
+      is_tmap mref ∅ }}}.
 Proof using IntoValForType0.
   iIntros (Φ) "_ HΦ".
   wp_apply map.wp_NewMap.
@@ -123,11 +123,11 @@ Proof.
 Qed.
 
 Theorem wp_MapGet stk E mref m k :
-  {{{ is_map mref m }}}
+  {{{ is_tmap mref m }}}
     MapGet #mref #k @ stk; E
   {{{ v ok, RET (to_val v, #ok);
       ⌜map_get m k = (v, ok)⌝ ∗
-      is_map mref m }}}.
+      is_tmap mref m }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
@@ -150,9 +150,9 @@ Qed.
 
 Theorem wp_MapInsert stk E mref m k v' vv :
   vv = to_val v' ->
-  {{{ is_map mref m }}}
+  {{{ is_tmap mref m }}}
     MapInsert #mref #k vv @ stk; E
-  {{{ RET #(); is_map mref (map_insert m k v') }}}.
+  {{{ RET #(); is_tmap mref (map_insert m k v') }}}.
 Proof.
   intros ->.
   iIntros (Φ) "Hm HΦ".

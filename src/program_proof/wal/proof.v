@@ -118,7 +118,7 @@ Definition wal_linv_fields st σ: iProp Σ :=
        st ↦[WalogState.S :: "memLogMap"] #σₗ.(memLogMapPtr) ∗
        st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
        st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
-  is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅) ∗
+  is_tmap σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅) ∗
   updates_slice σₗ.(memLogSlice) σ.(memLog))%I.
 
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)

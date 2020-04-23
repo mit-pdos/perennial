@@ -352,6 +352,16 @@ Section maplist.
     iApply HP; iFrame.
   Qed.
 
+  Theorem big_sepML_empty Φ `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    ⊢ big_sepML Φ ∅ nil.
+  Proof.
+    iIntros.
+    rewrite /big_sepML.
+    iExists ∅.
+    iSplit; eauto.
+    iApply big_sepM2_empty. done.
+  Qed.
+
   Theorem big_sepML_insert Φ m l k v lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
     m !! k = None ->
     Φ k v lv ∗ big_sepML Φ m l -∗
