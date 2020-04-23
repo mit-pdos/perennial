@@ -326,4 +326,16 @@ Unshelve.
   apply map_val_split in a; destruct m'; intuition idtac.
 Qed.
 
+Theorem wp_MapIter_2 stk E mref (m: gmap u64 val * val) (I: gmap u64 val -> gmap u64 val -> iProp Σ) (body: val) Φ:
+  is_map mref m -∗
+  I (fst m) ∅ -∗
+  (∀ (k: u64) (v: val) (mtodo mdone : gmap u64 val),
+      {{{ I mtodo mdone ∗ ⌜mtodo !! k = Some v⌝ }}}
+        body #k v @ stk; E
+      {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
+  ((is_map mref m ∗ I ∅ (fst m)) -∗ Φ #()) -∗
+  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+Proof.
+Admitted.
+
 End heap.

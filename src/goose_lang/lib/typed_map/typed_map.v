@@ -190,6 +190,53 @@ Proof.
   iApply (is_map_retype with "Hm").
 Qed.
 
+Theorem wp_MapIter stk E mref m (I: iProp Σ) (P Q: u64 -> V -> iProp Σ) (body: val) Φ:
+  is_map mref m -∗
+  I -∗
+  ([∗ map] k ↦ v ∈ m, P k v) -∗
+  (∀ (k: u64) (v: V),
+      {{{ I ∗ P k v }}}
+        body #k (to_val v) @ stk; E
+      {{{ RET #(); I ∗ Q k v }}}) -∗
+  ((is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ m, Q k v) -∗ Φ #()) -∗
+  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+Proof.
+  iIntros "Hm HI HP #Hbody HΦ".
+  iDestruct (is_map_untype with "Hm") as "Hm".
+  wp_apply (map.wp_MapIter _ _ _ _ _
+    (λ k vv, ∃ v, ⌜vv = to_val v⌝ ∗ P k v)%I
+    (λ k vv, ∃ v, ⌜vv = to_val v⌝ ∗ Q k v)%I with "Hm HI [HP] [Hbody]").
+  { rewrite /Map.untype /=.
+    iApply big_sepM_fmap.
+    iApply (big_sepM_mono with "HP").
+    iIntros.
+    iExists _; iFrame; done. }
+  { iIntros.
+    iIntros (Φbody).
+    iModIntro.
+    iIntros "[HI HP] HΦ".
+    iDestruct "HP" as (v0) "[-> HP]".
+    wp_apply ("Hbody" with "[$HI $HP]").
+    iIntros "[HI HQ]".
+    iApply "HΦ"; iFrame.
+    iExists _; iFrame; done. }
+  iIntros "(Hm & HI & HQ)".
+  iApply "HΦ". iFrame.
+  rewrite /Map.untype /=.
+Admitted.
+
+Theorem wp_MapIter_2 stk E mref m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (body: val) Φ:
+  is_map mref m -∗
+  I m ∅ -∗
+  (∀ (k: u64) (v: V) (mtodo mdone : gmap u64 V),
+      {{{ I mtodo mdone ∗ ⌜mtodo !! k = Some v⌝ }}}
+        body #k (to_val v) @ stk; E
+      {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
+  ((is_map mref m ∗ I ∅ m) -∗ Φ #()) -∗
+  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+Proof.
+Admitted.
+
 End heap.
 
 Arguments wp_NewMap {_ _ _ _ _ _ _} V {_} {t}.

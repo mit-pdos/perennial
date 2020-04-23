@@ -436,6 +436,7 @@ Definition bufsByBlock_wf bufsByBlock_l (bufsByBlock:loc) gData (buflists: list 
       is_map bufsByBlock bbbmap ∗
       [∗ maplist] blkno↦s; bbblist ∈ bbbmap; buflists,
         is_slice s (refT (struct.t buf.Buf.S)) 1 bbblist ∗
+        ⌜ length bbblist > 0 ⌝ ∗
         [∗ list] bufptrval ∈ bbblist,
           ∃ a buf,
             is_txn_buf bufptrval a buf gData ∗
@@ -446,6 +447,25 @@ Definition bufsByBlock_buflist bufsByBlock_l (bufsByBlock:loc) gData buflist: iP
     bufsByBlock_wf bufsByBlock_l bufsByBlock gData buflists ∗
     ⌜ concat buflists ≡ₚ buflist ⌝.
 
+Definition updBlockOK walUpd
+  (gData : gmap u64 {K : bufDataKind & gen_heapG u64 (updatable_buf (bufDataT K)) Σ})
+  (walHeap : gen_heapG u64 heap_block Σ) (bufamap : gmap addr buf) : iProp Σ :=
+  let blknum := walUpd.(update.addr) in
+  let walBlock := walUpd.(update.b) in
+  ∃ K gDataGH,
+    ⌜ gData !! blknum = Some (existT K gDataGH) ⌝ ∗
+    ∀ diskInstalled diskBs,
+      mapsto (hG := walHeap) blknum 1 (HB diskInstalled diskBs) -∗
+      let diskLatest := latest_update diskInstalled diskBs in
+      ∀ off,
+        ⌜ match bufamap !! (Build_addr blknum off) with
+          | None => ∀ (bufData : @bufDataT K),
+            is_bufData_at_off diskLatest off bufData ->
+            is_bufData_at_off walBlock off bufData
+          | Some buf =>
+            is_bufData_at_off walBlock off buf.(bufData)
+          end ⌝.
+
 Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap : gmap addr buf) :
   {{{ is_txn l gData ∗
       inv invN (is_txn_always walHeap gData γMaps) ∗
@@ -455,29 +475,13 @@ Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap
         is_txn_buf bufptrval a buf gData
   }}}
     Txn__installBufs #l (slice_val bufs)
-  {{{ (blks : Slice.t) updlist, RET (slice_val blks);
+  {{{ (blks : Slice.t) updlist (updmap : gmap u64 unit), RET (slice_val blks);
       mapsto (hG := γMaps) tt (1/2) mData ∗
       updates_slice blks updlist ∗
-      ( [∗ list] _ ↦ walUpd ∈ updlist,
-        let blknum := walUpd.(update.addr) in
-        let walBlock := walUpd.(update.b) in
-        ∃ K gDataGH,
-          ⌜ gData !! blknum = Some (existT K gDataGH) ⌝ ∗
-          ∀ diskInstalled diskBs,
-            mapsto (hG := walHeap) blknum 1 (HB diskInstalled diskBs) -∗
-            let diskLatest := latest_update diskInstalled diskBs in
-            ∀ off,
-              ⌜ match bufamap !! (Build_addr blknum off) with
-                | None => ∀ (bufData : @bufDataT K),
-                  is_bufData_at_off diskLatest off bufData ->
-                  is_bufData_at_off walBlock off bufData
-                | Some buf =>
-                  is_bufData_at_off walBlock off buf.(bufData)
-                end ⌝
-      ) ∗
-      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      [∗ list] _ ↦ bufptrval ∈ buflist,
-      ∃ a buf, is_txn_buf bufptrval a buf gData
+      ⌜ ∀ a, is_Some (bufamap !! a) -> is_Some (updmap !! a.(addrBlock)) ⌝ ∗
+      [∗ maplist] blkno ↦ _; walUpd ∈ updmap; updlist,
+        ⌜ walUpd.(update.addr) = blkno ⌝ ∗
+        updBlockOK walUpd gData walHeap bufamap
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & #Hinv & Hmdata & Hbufs & Hbufpre) HΦ".
@@ -537,7 +541,7 @@ Opaque struct.t.
     destruct ok.
     + apply map_get_true in Hmapget.
       iDestruct (big_sepML_lookup_m_acc with "Hbuflists") as (i' lv') "(%Hb2 & Hb3 & Hbuflists)"; first eauto.
-      iDestruct "Hb3" as "[Hslice Hb3]".
+      iDestruct "Hb3" as "(Hslice & % & Hb3)".
       wp_apply (wp_SliceAppend with "[$Hslice]"); eauto.
       { iPureIntro. intuition idtac.
         { admit. }
@@ -556,7 +560,9 @@ Opaque struct.t.
       iSplitL.
       { rewrite /bufsByBlock_wf.
         iFrame. iExists _. iFrame.
-        iApply "Hbuflists". iFrame. simpl.
+        iApply "Hbuflists". iFrame.
+        rewrite app_length /=.
+        iSplitR; first by iPureIntro; lia.
         iSplitL; last done.
         iExists _, _. iSplitL.
         { iExists _, _. iFrame. done. }
@@ -583,6 +589,7 @@ Opaque struct.t.
         iFrame. iExists _. iFrame.
         iApply big_sepML_insert_app; first done.
         iFrame. simpl.
+        iSplitR; first by iPureIntro; lia.
         iSplitL; last done.
         iExists _, _. iSplitL.
         { iExists _, _. iFrame. done. }
@@ -593,10 +600,74 @@ Opaque struct.t.
 
   iIntros "[Hbufs HP]".
   iDestruct "HP" as "(_ & _ & HP)".
+  iDestruct "HP" as (buflists) "[[HbufsByBlock_l HP] %Hbuflists]".
+  iDestruct "HP" as (bbbmap) "[Hbbbmap HP]".
 
-  (* too weak HQ? bufsByBlock_buflist seems what we want *)
+  wp_load.
+  wp_apply (wp_MapIter_2 _ _ _ _
+    (λ mtodo mdone,
+      ∃ (blks : Slice.t) updlist buflists_todo,
+        blks_l ↦[slice.T (struct.t wal.Update.S)] (slice_val blks) ∗
+        updates_slice blks updlist ∗
+        ( [∗ maplist] blkno ↦ _; walUpd ∈ mdone; updlist,
+            ⌜ walUpd.(update.addr) = blkno ⌝ ∗
+            updBlockOK walUpd gData walHeap bufamap ) ∗
+        ( [∗ maplist] blkno ↦ s; bbblist ∈ mtodo; buflists_todo,
+            is_slice s (refT (struct.t buf.Buf.S)) 1 bbblist ∗
+            ⌜ length bbblist > 0 ⌝ ∗
+            [∗ list] bufptrval ∈ bbblist,
+              ∃ a buf,
+                is_txn_buf bufptrval a buf gData ∗
+                ⌜ a.(addrBlock) = blkno ⌝ )
+    )%I with "Hbbbmap [Hblks_l Hblks HP]").
+  {
+    iExists _, _, _.
+    iFrame.
+    iSplitL; last iApply big_sepML_empty.
+    iExists nil; iFrame.
+    done.
+  }
+  {
+    iIntros (k v mtodo mdone).
+    iIntros (Φ') "!> [HI %] HΦ'".
+    iDestruct "HI" as (blks0 updlist buflists_todo) "(Hblks_l & Hblks & Hdone & Htodo)".
+    wp_pures.
+
+    wp_apply wp_ref_of_zero; first by eauto.
+    iIntros (blk) "Hblk".
+    wp_pures.
+
+    iDestruct (big_sepML_lookup_m_acc with "Htodo") as (i lv) "(% & (Hvslice & %Hvlen & Hvlist) & Htodo)"; first by eauto.
+    iDestruct (is_slice_to_small with "Hvslice") as "Hvslice".
+    wp_apply (wp_forSlicePrefix
+      (λ done todo,
+        ∃ blk_slice bufamap_todo bufamap_done,
+          blk ↦[slice.T byteT] (slice_val blk_slice) ∗
+          ⌜ length done = 0%nat -> blk_slice = Slice.nil ⌝ ∗
+          ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap_todo; todo,
+              is_txn_buf bufptrval a buf gData ∗ ⌜a.(addrBlock) = k⌝ ) ∗
+          ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap_done; done,
+              is_txn_buf bufptrval a buf gData ∗ ⌜a.(addrBlock) = k⌝ ) ∗
+          ( ⌜ length done > 0 ⌝ -∗
+            ∃ blk_b,
+              is_block blk_slice blk_b ∗
+              updBlockOK (update.mk k blk_b) gData walHeap bufamap_done )
+      )%I with "[] [$Hvslice Hblk Hvlist]").
+    2: {
+      rewrite zero_slice_val.
+      iExists _, _, _. iFrame.
+      admit.
+    }
+    {
+      admit.
+    }
+
+    admit.
+  }
+
+  iIntros "[Hbbbmap HI]".
+  admit.
 Admitted.
-
 
 Theorem wp_txn__doCommit l q gData bufs buflist :
   {{{ is_txn l gData ∗
