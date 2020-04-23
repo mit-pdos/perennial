@@ -10,7 +10,7 @@ From Perennial.program_proof Require Import txn.specs buf.defs buf.specs addr.sp
 
 Class buftxnG Σ :=
   { buftxn_bool  :> inG Σ (ghostR $ boolO);
-    buftxn_bufs  :> gen_heapPreG addr (sigT (fun K => bufDataT K)) Σ;
+    buftxn_bufs  :> gen_heapPreG addr {K & bufDataT K} Σ;
     (* XXX: never used? *)
     buftxn_hb    :> gen_heapPreG u64 heapspec.heap_block Σ;
   }.
@@ -24,7 +24,7 @@ Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Definition is_buftxn (buftx : loc)
-                     (γT : gen_heapG addr (sigT (fun K => bufDataT K)) Σ)
+                     (γT : gen_heapG addr {K & bufDataT K} Σ)
                      γUnified : iProp Σ :=
   (
     ∃ (l : loc) mT (bufmap : loc) (gBufmap : gmap addr buf) (txid : u64),
@@ -506,7 +506,7 @@ Proof.
   rewrite Hgnone. iFrame.
 Qed.
 
-Theorem BufTxn_lift buftx γt γUnified (m : gmap addr (sigT _)) :
+Theorem BufTxn_lift buftx γt γUnified (m : gmap addr {K & _}) :
   (
     is_buftxn buftx γt γUnified ∗
     [∗ map] a ↦ v ∈ m, mapsto_txn γUnified a (projT2 v)
