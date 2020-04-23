@@ -44,16 +44,17 @@ Definition suchThatMax {Σ} (pred: Σ -> nat -> Prop) : transition Σ nat :=
 Definition is_txn (txns: list (u64 * list update.t)) (txn_id: nat) (pos: u64): Prop :=
   fst <$> txns !! txn_id = Some pos.
 
-Definition is_highest_txn txns txn_id pos :=
-  is_txn txns txn_id pos ∧
-  forall txn_id', is_txn txns txn_id' pos ->
-                  txn_id' <= txn_id.
+Theorem is_txn_bound txns txn_id pos :
+  is_txn txns txn_id pos ->
+  (txn_id ≤ length txns)%nat.
+Proof.
+  rewrite /is_txn -list_lookup_fmap.
+  intros H%lookup_lt_Some.
+  autorewrite with len in H; lia.
+Qed.
 
-Definition getTxnId (pos: u64) : transition log_state.t nat :=
-  suchThat (fun s (txn_id: nat) => is_highest_txn s.(log_state.txns) txn_id pos).
-
-Definition log_flush (pos:u64) : transition log_state.t unit :=
-  txn_id ← getTxnId pos;
+Definition log_flush (pos:u64) (txn_id: nat) : transition log_state.t unit :=
+  assert (λ s, is_txn s.(log_state.txns) txn_id pos);;
   new_durable ← suchThat
               (λ s (new_durable: nat),
                  (Nat.max s.(log_state.durable_lb) txn_id ≤ new_durable ≤ length s.(log_state.txns))%nat);
@@ -212,11 +213,11 @@ Proof.
   (* XXX is this a valid block? *)
 Admitted.
 
-Theorem wp_Walog__Flush (Q: iProp Σ) l pos :
+Theorem wp_Walog__Flush (Q: iProp Σ) l pos txn_id :
   {{{ is_wal l ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
-         ⌜relation.denote (log_flush pos) σ σ' b⌝ -∗
+         ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
    }}}
     Walog__Flush #l #pos
