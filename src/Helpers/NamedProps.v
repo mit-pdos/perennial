@@ -23,11 +23,12 @@ Section named.
     auto.
   Qed.
 
-  Global Instance frame_named : Frame p P (named name P) emp.
+  Global Instance frame_named_from_frame name p P Q R (H:Frame p P Q R) : Frame p P (named name Q) R.
   Proof.
     rewrite named_eq /named_def.
     apply _.
   Qed.
+
 End named.
 
 Ltac to_pm_ident H :=
@@ -95,6 +96,8 @@ Ltac iNamed H :=
 Ltac prove_named :=
   repeat rewrite -to_named.
 
+Notation "name ∷ P" := (named name P) (at level 79).
+
 (* TODO: maybe we should move tests out *)
 Module tests.
   Section tests.
@@ -148,11 +151,18 @@ Module tests.
       iPureIntro; exact Hfoo.
     Qed.
 
-    Example test_prove_named P Q :
+    Example test_frame_named P Q :
       ⊢ P -∗ Q -∗ named "HP" P ∗ named "HQ" Q.
     Proof.
       iIntros "HP HQ".
       iFrame "HQ HP".
+    Qed.
+
+    Example test_frame_named_sep P Q :
+      ⊢ P -∗ Q -∗ named "HPQ" (P ∗ Q).
+    Proof.
+      iIntros "HP HQ".
+      iFrame.
     Qed.
 
     Example test_remove_named_in_goal P Q :

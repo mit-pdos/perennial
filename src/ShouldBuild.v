@@ -28,9 +28,6 @@ From Perennial.goose_lang Require
 From Perennial.goose_lang.examples Require
      goose_unittest append_log wal simpledb logging2 rfc1813.
 
-(* work-in-progress named destruct *)
-From Perennial.Helpers Require NamedProps.
-
 (* goose-nfsd *)
 From Goose.github_com.mit_pdos Require
      goose_nfsd.lockmap
