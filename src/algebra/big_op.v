@@ -425,6 +425,26 @@ Section maplist.
     done.
   Qed.
 
+  Theorem big_sepML_lookup_l_acc Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    l !! i = Some lv ->
+    big_sepML Φ m l -∗
+    ∃ k v, ⌜ m !! k = Some v ⌝ ∗ Φ k v lv ∗
+    ∀ v' lv',
+      Φ k v' lv' -∗
+      big_sepML Φ (<[k := v']> m) (<[i := lv']> l).
+  Proof.
+  Admitted.
+
+  Theorem big_sepML_lookup_m_acc Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    m !! k = Some v ->
+    big_sepML Φ m l -∗
+    ∃ i lv, ⌜ l !! i = Some lv ⌝ ∗ Φ k v lv ∗
+    ∀ v' lv',
+      Φ k v' lv' -∗
+      big_sepML Φ (<[k := v']> m) (<[i := lv']> l).
+  Proof.
+  Admitted.
+
 End maplist.
 
 Theorem big_sepL_impl A (f g: nat -> A -> PROP) (l: list A) :
