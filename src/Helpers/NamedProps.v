@@ -23,6 +23,12 @@ Section named.
     auto.
   Qed.
 
+  Global Instance frame_named : Frame p P (named name P) emp.
+  Proof.
+    rewrite named_eq /named_def.
+    apply _.
+  Qed.
+
   Lemma tac_named_and_destruct Δ i p j1 j2 (P P1 P2 Q: PROP) :
     envs_lookup i Δ = Some (p, P) →
     (if p
@@ -166,9 +172,8 @@ Module tests.
       ⊢ P -∗ Q -∗ named "HP" P ∗ named "HQ" Q.
     Proof.
       iIntros "HP HQ".
-      (* TODO: can this work with an appropriate framing instance? *)
-      Fail iFrame "HP".
-    Abort.
+      iFrame "HQ HP".
+    Qed.
 
     Example test_remove_named_in_goal P Q :
       ⊢ P -∗ Q -∗ named "HP" P ∗ named "HQ" Q.
