@@ -137,7 +137,7 @@ Theorem map_zero_val t :
   flatten_struct (zero_val (mapValT t)) = [MapNilV (zero_val t)].
 Proof. reflexivity. Qed.
 
-Definition wp_NewMap stk E t :
+Theorem wp_NewMap stk E t :
   {{{ True }}}
     NewMap t @ stk; E
   {{{ mref, RET #mref;
@@ -152,7 +152,7 @@ Proof.
   done.
 Qed.
 
-Definition wp_MapGet stk E mref (m: gmap u64 val * val) k :
+Theorem wp_MapGet stk E mref (m: gmap u64 val * val) k :
   {{{ is_map mref m }}}
     MapGet #mref #k @ stk; E
   {{{ v ok, RET (v, #ok); ⌜map_get m k = (v, ok)⌝ ∗
@@ -190,7 +190,7 @@ Proof.
         destruct m'; eauto.
 Qed.
 
-Definition wp_MapInsert stk E mref (m: gmap u64 val * val) k v' :
+Theorem wp_MapInsert stk E mref (m: gmap u64 val * val) k v' :
   {{{ is_map mref m }}}
     MapInsert #mref #k v' @ stk; E
   {{{ RET #(); is_map mref (map_insert m k v') }}}.
@@ -208,7 +208,7 @@ Proof.
   destruct m; simpl; auto.
 Qed.
 
-Definition wp_MapDelete' stk E mv (m: gmap u64 val * val) k :
+Theorem wp_MapDelete' stk E mv (m: gmap u64 val * val) k :
   {{{ ⌜map_val mv = Some m⌝ }}}
     MapDelete' mv #k @ stk; E
   {{{ mv', RET mv'; ⌜map_val mv' = Some (map_del m k)⌝ }}}.
@@ -251,7 +251,7 @@ Proof.
       rewrite delete_insert_ne; congruence.
 Qed.
 
-Definition wp_MapDelete stk E mref (m: gmap u64 val * val) k :
+Theorem wp_MapDelete stk E mref (m: gmap u64 val * val) k :
   {{{ is_map mref m }}}
     MapDelete #mref #k @ stk; E
   {{{ RET #(); is_map mref (map_del m k) }}}.
@@ -267,7 +267,7 @@ Proof.
   iApply "HΦ". iExists _. iFrame. eauto.
 Qed.
 
-Definition wp_MapIter stk E mref (m: gmap u64 val * val) (I: iProp Σ) (P Q: u64 -> val -> iProp Σ) (body: val) Φ:
+Theorem wp_MapIter stk E mref (m: gmap u64 val * val) (I: iProp Σ) (P Q: u64 -> val -> iProp Σ) (body: val) Φ:
   is_map mref m -∗
   I -∗
   ([∗ map] k ↦ v ∈ fst m, P k v) -∗

@@ -4,8 +4,9 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import Transitions.
 
 From Perennial.algebra Require Import deletable_heap.
-From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_lib.
+From Perennial.goose_lang.lib Require Import typed_map.typed_map.
 From Perennial.program_proof Require Import wal.lib.
 From Perennial.program_proof Require Import wal.circ_proof.
 From Perennial.program_proof Require Import wal.specs.
@@ -117,7 +118,7 @@ Definition wal_linv_fields st σ: iProp Σ :=
        st ↦[WalogState.S :: "memLogMap"] #σₗ.(memLogMapPtr) ∗
        st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
        st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
-  is_map σₗ.(memLogMapPtr) (u64val <$> compute_memLogMap σ.(memLog) σ.(memStart) ∅, u64val (U64 0)) ∗
+  is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅) ∗
   updates_slice σₗ.(memLogSlice) σ.(memLog))%I.
 
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
@@ -360,32 +361,17 @@ Proof.
   iFrame.
 Qed.
 
-(* TODO: move to map/map.v *)
-Lemma map_get_fmap {V} {m:gmap u64 V} {def: V} {to_val: V -> val} {a v ok} :
-  map_get (to_val <$> m, to_val def) a = (v, ok) ->
-  exists x, v = to_val x.
-Proof.
-  rewrite /map_get.
-  inversion_clear 1; subst.
-  destruct ((to_val <$> m) !! a) eqn:Hlookup; eauto.
-  rewrite lookup_fmap in Hlookup.
-  apply fmap_Some in Hlookup as [x [Hlookup ->]]; eauto.
-Qed.
-
 Lemma memLogMap_ok_memLog_lookup memStart memLog a i :
   int.val memStart + Z.of_nat (length memLog) < 2^64 ->
-  map_get (u64val <$> compute_memLogMap memLog memStart ∅, u64val 0) a
-  = (u64val i, true) ->
+  map_get (compute_memLogMap memLog memStart ∅) a
+  = (i, true) ->
   ∃ b, memLog !! int.nat (word.sub i memStart) = Some (update.mk a b)
   (* also, i is the highest index such that this is true *).
 Proof.
   intros Hbound Hlookup.
   apply map_get_true in Hlookup.
-  rewrite lookup_fmap in Hlookup.
-  apply fmap_Some in Hlookup as [i' [Hlookup Heq]].
-  inversion Heq; subst.
-  assert (int.val memStart ≤ int.val i') by admit. (* from how memLogMap is computed and lack of overflow *)
-  replace (int.nat (word.sub i' memStart)) with (int.nat i' - int.nat memStart)%nat by word.
+  assert (int.val memStart ≤ int.val i) by admit. (* from how memLogMap is computed and lack of overflow *)
+  replace (int.nat (word.sub i memStart)) with (int.nat i - int.nat memStart)%nat by word.
   (* this is hard, induction is hard with this left fold *)
 Admitted.
 
@@ -408,8 +394,7 @@ Proof.
   wp_call.
   wp_loadField.
   wp_apply (wp_MapGet with "His_memLogMap").
-  iIntros (v ok) "(%Hmapget&His_memLogMap)".
-  destruct (map_get_fmap Hmapget) as [i ->].
+  iIntros (i ok) "(%Hmapget&His_memLogMap)".
   wp_pures.
   wp_if_destruct.
   - wp_apply util_proof.wp_DPrintf.
