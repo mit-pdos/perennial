@@ -6,6 +6,7 @@ notifications:
   email:
     - tchajed@mit.edu
     - joseph.tassarotti@bc.edu
+    - nickolai@csail.mit.edu
 
 branches:
   only:
