@@ -66,27 +66,27 @@ Proof.
   - intuition congruence.
 Qed.
 
-Definition is_tmap (mref:loc) (m: Map.t V) :=
+Definition is_map (mref:loc) (m: Map.t V) :=
   map.is_map mref (Map.untype m).
 
-Theorem is_map_untype mref m : is_tmap mref m -∗ map.is_map mref (Map.untype m).
+Theorem is_map_untype mref m : is_map mref m -∗ map.is_map mref (Map.untype m).
 Proof.
   auto.
 Qed.
 
-Theorem is_map_retype mref m : map.is_map mref (to_val <$> m, to_val IntoVal_def) -∗ is_tmap mref m.
+Theorem is_map_retype mref m : map.is_map mref (to_val <$> m, to_val IntoVal_def) -∗ is_map mref m.
 Proof.
   auto.
 Qed.
 
 Ltac untype :=
-  rewrite /is_tmap /Map.untype.
+  rewrite /is_map /Map.untype.
 
 Theorem wp_NewMap stk E :
   {{{ True }}}
     ref (zero_val (mapValT t)) @ stk; E
   {{{ mref, RET #mref;
-      is_tmap mref ∅ }}}.
+      is_map mref ∅ }}}.
 Proof using IntoValForType0.
   iIntros (Φ) "_ HΦ".
   wp_apply map.wp_NewMap.
@@ -116,11 +116,11 @@ Proof.
 Qed.
 
 Theorem wp_MapGet stk E mref m k :
-  {{{ is_tmap mref m }}}
+  {{{ is_map mref m }}}
     MapGet #mref #k @ stk; E
   {{{ v ok, RET (to_val v, #ok);
       ⌜map_get m k = (v, ok)⌝ ∗
-      is_tmap mref m }}}.
+      is_map mref m }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
@@ -152,9 +152,9 @@ Qed.
 
 Theorem wp_MapInsert stk E mref m k v' vv :
   vv = to_val v' ->
-  {{{ is_tmap mref m }}}
+  {{{ is_map mref m }}}
     MapInsert #mref #k vv @ stk; E
-  {{{ RET #(); is_tmap mref (map_insert m k v') }}}.
+  {{{ RET #(); is_map mref (map_insert m k v') }}}.
 Proof.
   intros ->.
   iIntros (Φ) "Hm HΦ".
@@ -167,9 +167,9 @@ Proof.
 Qed.
 
 Theorem wp_MapInsert_to_val stk E mref m k v' :
-  {{{ is_tmap mref m }}}
+  {{{ is_map mref m }}}
     MapInsert #mref #k (to_val v') @ stk; E
-  {{{ RET #(); is_tmap mref (map_insert m k v') }}}.
+  {{{ RET #(); is_map mref (map_insert m k v') }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iApply (wp_MapInsert with "Hm"); first reflexivity.
@@ -177,9 +177,9 @@ Proof.
 Qed.
 
 Theorem wp_MapDelete stk E mref m k :
-  {{{ is_tmap mref m }}}
+  {{{ is_map mref m }}}
     MapDelete #mref #k @ stk; E
-  {{{ RET #(); is_tmap mref (map_del m k) }}}.
+  {{{ RET #(); is_map mref (map_del m k) }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".

@@ -38,7 +38,7 @@ Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 loc) (am : gmap addr loc),
     bufmap ↦[BufMap.S :: "addrs"] #mptr ∗
-    is_tmap mptr m ∗
+    is_map mptr m ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
       is_buf bufptr a buf.

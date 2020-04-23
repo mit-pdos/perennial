@@ -42,7 +42,7 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
            (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (m: Map.t loc) ghostMap,
-      is_tmap mptr m ∗
+      is_map mptr m ∗
       gen_heap_ctx (hG := ghostHeap) ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P ) ∗

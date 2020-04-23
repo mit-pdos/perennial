@@ -7,7 +7,8 @@ From Perennial.Helpers Require Export ListLen BigOp Transitions iris.
 From Perennial.program_logic Require Export ghost_var.
 From Perennial.goose_lang Require Export proofmode wpc_proofmode array.
 From Perennial.goose_lang Require Export readonly.
-From Perennial.goose_lang.lib Require Export slice map struct loop lock control.
+From Perennial.goose_lang.lib Require Export slice struct loop lock control.
+From Perennial.goose_lang.lib Require Export typed_map.typed_map.
 From Perennial.goose_lang Require Export ffi.disk.
 From Perennial.goose_lang Require Export ffi.disk_prelude.
 
