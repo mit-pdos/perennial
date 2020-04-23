@@ -38,21 +38,31 @@ Definition KVS__MultiPut: val :=
   rec: "KVS__MultiPut" "kvs" "pairs" :=
     let: "btxn" := buftxn.Begin (struct.loadF KVS.S "txn" "kvs") in
     ForSlice (struct.t KVPair.S) <> "p" "pairs"
-      (let: "akey" := addr.MkAddr (struct.get KVPair.S "Key" "p" + common.LOGSIZE) #0 in
-      buftxn.BufTxn__OverWrite "btxn" "akey" common.NBITBLOCK (struct.get KVPair.S "Val" "p"));;
+      (if: (struct.get KVPair.S "Key" "p" ≥ struct.loadF KVS.S "sz" "kvs") || (struct.get KVPair.S "Key" "p" < common.LOGSIZE)
+      then
+        Panic "oops";;
+        #()
+      else #());;
+      let: "akey" := addr.MkAddr (struct.get KVPair.S "Key" "p") #0 in
+      buftxn.BufTxn__OverWrite "btxn" "akey" common.NBITBLOCK (struct.get KVPair.S "Val" "p");;
     let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
     "ok".
 
 Definition KVS__Get: val :=
   rec: "KVS__Get" "kvs" "key" :=
+    (if: ("key" > struct.loadF KVS.S "sz" "kvs") || ("key" < common.LOGSIZE)
+    then
+      Panic "oops";;
+      #()
+    else #());;
     let: "btxn" := buftxn.Begin (struct.loadF KVS.S "txn" "kvs") in
-    let: "akey" := addr.MkAddr ("key" + common.LOGSIZE) #0 in
+    let: "akey" := addr.MkAddr "key" #0 in
     let: "data" := struct.loadF buf.Buf.S "Data" (buftxn.BufTxn__ReadBuf "btxn" "akey" common.NBITBLOCK) in
-    buftxn.BufTxn__CommitWait "btxn" #true;;
-    struct.new KVPair.S [
-      "Key" ::= "key";
-      "Val" ::= "data"
-    ].
+    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
+    (struct.new KVPair.S [
+       "Key" ::= "key";
+       "Val" ::= "data"
+     ], "ok").
 
 Definition KVS__Delete: val :=
   rec: "KVS__Delete" "kvs" :=

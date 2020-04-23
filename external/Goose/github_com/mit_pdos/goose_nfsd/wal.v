@@ -211,7 +211,7 @@ Definition WalogState__cutMemLog: val :=
       (let: "pos" := struct.loadF WalogState.S "memStart" "st" + "i" in
       let: "blkno" := struct.get Update.S "Addr" "blk" in
       let: ("oldPos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" "st") "blkno" in
-      (if: "ok" && "oldPos" ≤ "pos"
+      (if: "ok" && ("oldPos" ≤ "pos")
       then
         util.DPrintf #5 (#(str"memLogMap: del %d %d
         ")) #();;
@@ -393,7 +393,7 @@ Definition WalogState__memWrite: val :=
     let: "pos" := ref_to LogPosition (struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st")) in
     ForSlice (struct.t Update.S) <> "buf" "bufs"
       (let: ("oldpos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" "st") (struct.get Update.S "Addr" "buf") in
-      (if: "ok" && "oldpos" ≥ struct.loadF WalogState.S "nextDiskEnd" "st"
+      (if: "ok" && ("oldpos" ≥ struct.loadF WalogState.S "nextDiskEnd" "st")
       then
         util.DPrintf #5 (#(str"memWrite: absorb %d pos %d old %d
         ")) #();;
