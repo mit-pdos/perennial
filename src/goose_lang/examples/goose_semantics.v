@@ -567,6 +567,40 @@ Definition testArithmeticShifts: val :=
     "ok" <-[boolT] ![boolT] "ok" && (#672 ≫ #4 ≪ #4 = #672);;
     ![boolT] "ok".
 
+(* precedence.go *)
+
+Definition failing_testOrCompareSimple: val :=
+  rec: "failing_testOrCompareSimple" <> :=
+    (if: #3 > #4 || #4 > #3
+    then #true
+    else #false).
+
+Definition failing_testOrCompare: val :=
+  rec: "failing_testOrCompare" <> :=
+    let: "ok" := ref_to boolT #true in
+    (if: ~ (#3 > #4 || #4 > #3)
+    then
+      "ok" <-[boolT] #false;;
+      #()
+    else #());;
+    (if: #3 > #4 || #2 > #3
+    then "ok" <-[boolT] #false
+    else #());;
+    ![boolT] "ok".
+
+Definition failing_testAndCompare: val :=
+  rec: "failing_testAndCompare" <> :=
+    let: "ok" := ref_to boolT #true in
+    (if: #3 > #4 && #4 > #3
+    then
+      "ok" <-[boolT] #false;;
+      #()
+    else #());;
+    (if: #4 > #3 || #3 > #2
+    then #()
+    else "ok" <-[boolT] #false);;
+    ![boolT] "ok".
+
 (* prims.go *)
 
 Definition testLinearize: val :=
