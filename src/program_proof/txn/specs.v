@@ -7,6 +7,7 @@ From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.specs buf.defs buf.specs disk_lib.
+From Perennial.goose_lang.lib Require Import typed_map.typed_map.
 
 Inductive updatable_buf (T : Type) :=
 | UB : forall (v : T) (modifiedSinceInstallG : gname), updatable_buf T
@@ -416,29 +417,21 @@ Proof  using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
   iExists _, _. iFrame. done.
 Qed.
 
-Definition is_txn_buf  bufptrval (a : addr) (buf : buf) gData : iProp Σ :=
-  ∃ (bufptr : loc) v0,
-    ⌜ bufptrval = #bufptr ⌝ ∗
+Definition is_txn_buf  (bufptrVal:val) (a : addr) (buf : buf) gData : iProp Σ :=
+  ∃ (bufptr: loc) v0,
+    ⌜bufptrVal = #bufptr⌝ ∗
     is_buf bufptr a buf ∗
     @mapsto_txn buf.(bufKind) gData a v0.
 
-(* XXX move somewhere general *)
-Global Instance into_val_slice : IntoVal Slice.t.
-Proof.
-  constructor.
-  - intro s. refine (slice_val s).
-  - refine {| Slice.ptr := null; Slice.sz := 0; Slice.cap := 0 |}.
-Defined.
-
 Definition bufsByBlock_wf bufsByBlock_l (bufsByBlock:loc) gData (buflists: list (list val)): iProp Σ :=
   ( bufsByBlock_l ↦[mapT (slice.T (refT (struct.t buf.Buf.S)))] #bufsByBlock ∗
-    ∃ bbbmap,
+    ∃ (bbbmap: Map.t Slice.t),
       is_map bufsByBlock bbbmap ∗
       [∗ maplist] blkno↦s; bbblist ∈ bbbmap; buflists,
         is_slice s (refT (struct.t buf.Buf.S)) 1 bbblist ∗
-        [∗ list] bufptrval ∈ bbblist,
+        [∗ list] bufptr ∈ bbblist,
           ∃ a buf,
-            is_txn_buf bufptrval a buf gData ∗
+            is_txn_buf bufptr a buf gData ∗
             ⌜a.(addrBlock) = blkno⌝ )%I.
 
 Definition bufsByBlock_buflist bufsByBlock_l (bufsByBlock:loc) gData buflist: iProp Σ :=
@@ -565,7 +558,6 @@ Opaque struct.t.
       admit.
 
     + apply map_get_false in Hmapget; intuition; subst.
-      rewrite /IntoVal_def /into_val_slice.
       wp_apply (wp_SliceAppend_to_zero); eauto.
       iIntros (s) "Hslice".
       wp_apply (wp_buf_loadField_addr with "Hisbuf"); iIntros "Hisbuf".
