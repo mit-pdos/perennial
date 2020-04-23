@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics environments reduction.
+From iris.proofmode Require Import tactics environments.
 From iris.base_logic.lib Require Import iprop.
 
 From iris_string_ident Require ltac2_string_ident.
@@ -28,28 +28,16 @@ Section named.
     rewrite named_eq /named_def.
     apply _.
   Qed.
-
-  Lemma tac_named_and_destruct Δ i p j1 j2 (P P1 P2 Q: PROP) :
-    envs_lookup i Δ = Some (p, P) →
-    (if p
-     then IntoAnd true P (named j1 P1) P2
-     else IntoSep P (named j1 P1) P2) →
-    match envs_simple_replace i p (Esnoc (Esnoc Enil (INamed j1) P1) j2 P2) Δ with
-    | None => False
-    | Some Δ' => envs_entails Δ' Q
-    end →
-    envs_entails Δ Q.
-  Proof.
-    rewrite named_eq /named_def.
-    eapply coq_tactics.tac_and_destruct; eauto.
-  Qed.
 End named.
 
+Ltac to_pm_ident H :=
+  lazymatch type of H with
+  | string => constr:(INamed H)
+  | ident => constr:(H)
+  end.
+
 Ltac name_hyp H :=
-  let i := lazymatch type of H with
-           | string => constr:(INamed H)
-           | ident => constr:(H)
-           end in
+  let i := to_pm_ident H in
   lazymatch goal with
   | |- context[Esnoc _ i (named ?name ?P)] =>
     iDestruct (from_named with i) as name
@@ -64,28 +52,6 @@ Ltac name_named :=
            iDestruct (from_named with i) as name
          end.
 
-Local Tactic Notation "iNamedDestruct_one" constr(H) "as" constr(H2) :=
-  eapply tac_named_and_destruct with H _ _ H2 _ _ _; (* (i:=H) (j2:=H2) *)
-  [pm_reflexivity ||
-                  let H := pretty_ident H in
-                  fail "iNamedDestruct:" H "not found"
-  |pm_reduce; iSolveTC ||
-                        let P :=
-                            lazymatch goal with
-                            | |- IntoSep ?P _ _ => P
-                            | |- IntoAnd _ ?P _ _ => P
-                            end in
-                        fail "iAndDestruct: cannot destruct" P
-  |pm_reduce].
-
-(* this works and is probably faster but it doesn't treat the names as patterns
-but just names *)
-Ltac iNamedDestruct' H :=
-  let Htmp := iFresh in
-  iNamedDestruct_one "H" as Htmp;
-  repeat (iNamedDestruct_one Htmp as Htmp);
-  name_hyp Htmp.
-
 (* this is a super-simple but maybe non-performant implementation *)
 Ltac iNamedDestruct H :=
   let rec go H :=
@@ -96,8 +62,27 @@ Ltac iNamedDestruct H :=
                                    [[intro_patterns.IIdent Htmp1;
                                      intro_patterns.IIdent Htmp2]]) in
               iDestruct H as pat;
-              name_hyp Htmp1; go Htmp2 ]
+              name_hyp Htmp1; go Htmp2
+            | idtac ]
   in go H.
+
+Ltac iDeexHyp H :=
+  let i := to_pm_ident H in
+  let rec go _ := match goal with
+                  | |- context[Esnoc _ i (bi_exist (fun x => _))] =>
+                    iDestructHyp i as (x) H
+                  end in
+  go tt; repeat go tt.
+
+Ltac iDeex :=
+  repeat match goal with
+         | |- context[Esnoc _ ?i (bi_exist (fun x => _))] =>
+           iDestructHyp i as (x) i
+         end.
+
+Ltac iNamed H :=
+  try iDeexHyp H;
+  iNamedDestruct H.
 
 Ltac prove_named :=
   repeat rewrite -to_named.
@@ -142,19 +127,6 @@ Module tests.
       iFrame.
     Qed.
 
-    Example test_destruct_named_iNamedDestruct' P Q :
-      ⊢ named "H1" P ∗
-        named "H2" Q ∗
-        named "H3" P ∗
-        named "H4" Q
-        -∗
-        P ∗ Q ∗ P ∗ Q.
-    Proof.
-      iIntros "H".
-      iNamedDestruct' "H".
-      iFrame.
-    Qed.
-
     Example test_destruct_pat (foo: Prop) P Q :
       ⊢ named "[%Hfoo HP]" (⌜foo⌝ ∗ P) ∗
         named "HQ" Q ∗
@@ -181,6 +153,35 @@ Module tests.
       iIntros "HP HQ".
       prove_named.
       iFrame.
+    Qed.
+
+    Example test_exist_destruct (P: nat -> iProp Σ) Q :
+      ⊢ (∃ x, named "HP" (P x) ∗ named "HQ" Q) -∗ (∃ x, P x) ∗ Q.
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      iSplitL "HP"; [ iExists x | ]; iFrame.
+    Qed.
+
+    Example test_exist_destruct_no_naming (P: nat -> iProp Σ) Q :
+      ⊢ (∃ x, P x) -∗ (∃ x, P x).
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      iExists x; iFrame "H".
+    Qed.
+
+    Example test_iNamed_destruct_pat (foo: Prop) P Q :
+      ⊢ named "[%Hfoo HP]" (⌜foo⌝ ∗ P) ∗
+        named "HQ" Q ∗
+        named "HP2" P
+        -∗
+        ⌜foo⌝ ∗ P ∗ Q ∗ P.
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      iFrame "HP HQ HP2".
+      iPureIntro; exact Hfoo.
     Qed.
 
   End tests.
