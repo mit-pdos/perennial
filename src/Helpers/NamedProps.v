@@ -190,6 +190,14 @@ Module tests.
       iExists x; iFrame "H".
     Qed.
 
+    Example test_multiple_exist_destruct (P: nat -> iProp Σ) Q :
+      ⊢ (∃ x y z, P (x + y + z)) -∗ (∃ x, P x).
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      iExists (x+y+z); iFrame "H".
+    Qed.
+
     Example test_iNamed_destruct_pat (foo: Prop) P Q :
       ⊢ named "[%Hfoo HP]" (⌜foo⌝ ∗ P) ∗
         named "HQ" Q ∗
