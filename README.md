@@ -12,10 +12,9 @@ of programs written in (a subset of) Go.
 
 ## Compiling
 
-We develop Perennial using Coq master and maintain compatibility with Coq 8.11.
+We develop Perennial using Coq master and maintain compatibility with Coq 8.11.1.
 
-This project uses git submodules to include several dependencies. You can either
-use `git clone --recurse-submodules` or (after cloning) `git submodule update --init --recursive` to set that up.
+This project uses git submodules to include several dependencies. You should run `git submodule update --init --recursive` to set that up.
 
 We compile with [coqc.py](etc/coqc.py), a Python wrapper around `coqc` to get
 timing information; due to limitations in the Makefile, this wrapper is required
@@ -24,6 +23,27 @@ need Python3 and the `argparse` library (`pip3 install argparse`) to run the
 wrapper.
 
 To compile just run `make` with Coq on your `$PATH`.
+
+## Compilation times
+
+Perennial takes about 30-40 CPU minutes to compile. Compiling in parallel with `make -j2` (or a higher number, depending on how many cores you have) is significantly faster, and can cut the time down to 10-15 minutes.
+
+Incremental builds are better, after Iris and some core libraries are compiled.
+
+When you make a change to a dependency, you can keep working without fully
+compiling the dependency by compiling `vos` interface files, which skips proofs.
+The simplest way to do this is just to run `make vos`, but it's fastest to pass
+a specific target, like `make src/program_proof/wal/proof.required_vos`, which
+only builds the vos dependencies to work on the `wal/proof.v` file.
+
+If you're working on Goose and only need to re-check the Goose output, you can run `make interpreter` to run the interpreter's semantics tests, or directly compile just the Goose output files.
+
+Coq also has a feature called `vok` files, where `coqc` compiles a `vos` file
+without requiring its dependencies to be built. The process does not produce a
+self-contained `vo` file, but emits an empty `vok` file to record that checking
+is complete. This allows checking individual files completely and in parallel.
+Using `vos` and `vok` files can significantly speed up the edit-compile-debug
+cycle. Note that technically `vok` checking isn't the same as regular compilation - it doesn't check universe constraints in the same way.
 
 ## Source organization
 
