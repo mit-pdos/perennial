@@ -433,18 +433,27 @@ Definition bufsby_slice_wf blkno bbblist val gData bufamap: iProp Σ :=
     [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; bbblist,
   is_txn_buf bufptrval a buf gData ∗ ⌜a.(addrBlock) = blkno⌝.
 
-Definition bufsByBlock_wf bufsByBlock_l (bufsByBlock:loc) gData bufamap buflist: iProp Σ :=
-  ∃ bbbmap buflist',
-    bufsByBlock_l ↦[mapT (slice.T (refT (struct.t buf.Buf.S)))] #bufsByBlock ∗
-    is_map bufsByBlock (bbbmap, zero_val (slice.T (struct.ptrT buf.Buf.S))) ∗
-    ([∗ map] blkno ↦ val ∈ bbbmap,
-     ∃ bbblist,
-       bufsby_slice_wf blkno bbblist val gData bufamap ∗ ⌜ bbblist ∈ buflist' ⌝)
-    ∗ ⌜ concat buflist' ≡ₚ buflist ⌝.
+Definition bufsByBlock_wf bufsByBlock_l (bufsByBlock:loc) gData bufamap bbbmap (buflists: list (list val)): iProp Σ :=
+  bufsByBlock_l ↦[mapT (slice.T (refT (struct.t buf.Buf.S)))] #bufsByBlock ∗
+  is_map bufsByBlock (bbbmap, zero_val (slice.T (struct.ptrT buf.Buf.S))) ∗
+  ([∗ map] blkno ↦ val ∈ bbbmap,
+   ∃ bbblist, (bufsby_slice_wf blkno bbblist val gData bufamap ∗
+              ⌜ bbblist ∈ buflists ⌝))%I.
 
+Definition bufsByBlock_buflist bufsByBlock_l (bufsByBlock:loc) gData bufamap buflist: iProp Σ :=
+  ∃ bbbmap buflists,
+    bufsByBlock_wf bufsByBlock_l (bufsByBlock:loc) gData bufamap bbbmap buflists
+    ∗ ⌜ concat buflists ≡ₚ buflist ⌝.
+
+Definition bufsByBlock_in bufsByBlock_l (bufsByBlock:loc) gData bufamap buf: iProp Σ :=
+  ∃ bbbmap buflists,
+    bufsByBlock_wf bufsByBlock_l (bufsByBlock:loc) gData bufamap bbbmap buflists
+    ∗ ⌜ buf ∈ concat buflists ⌝.
+    
 (* XXX pass in (take i buflist) and filter bufamp? *)
-Definition loop_inv bufsByBlock_l (bufsByBlock:loc) gData bufamap buflist: iProp Σ :=
-  bufsByBlock_wf bufsByBlock_l bufsByBlock gData bufamap buflist.
+Definition loop_inv bufsByBlock_l (bufsByBlock:loc) gData bufamap: iProp Σ :=
+  ∃ bbbmap buflists,
+    bufsByBlock_wf bufsByBlock_l bufsByBlock gData bufamap bbbmap buflists.
   
 Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap : gmap addr buf) :
   {{{ is_txn l gData ∗
@@ -501,9 +510,9 @@ Opaque struct.t.
   wp_pures.
 
   wp_apply (wp_forSliceEach
-      (loop_inv bufsByBlock_l bufsByBlock gData bufamap buflist)  (* XXX buflist *)
+      (loop_inv bufsByBlock_l bufsByBlock gData bufamap)  (* XXX buflist *)
       (fun b => ∃ (a: addr) buf, is_txn_buf b a buf gData)%I  (* XXX P *)
-      (fun b => True)%I  (* XXX Q *)
+      (fun b => bufsByBlock_in bufsByBlock_l bufsByBlock gData bufamap b)%I  (* XXX Q *)
       with "[] [HbufsByBlock_l HbufsByBlock Hbufs]").
   2: {
     iDestruct (is_slice_to_small with "Hbufs") as "Hbufs".
@@ -513,7 +522,7 @@ Opaque struct.t.
   {
     iIntros (i b).
     iIntros (Φ') "!> [Hloop HP] HΦ'".
-    iDestruct "Hloop" as (bbbmap buflist') "(HbufsByBlock&Hismap&Hbbb&Hbuflist)".
+    iDestruct "Hloop" as (bbbmap buflists) "(HbufsByBlock&Hismap&Hbbb)".
     wp_lam.
     wp_pures.
     iDestruct "HP" as (a buf) "Htxnbuf".
@@ -528,8 +537,8 @@ Opaque struct.t.
     destruct ok.
     + apply map_get_true in Hmapget.
       iDestruct (big_sepM_lookup_acc with "Hbbb") as "(Hmi&_)"; eauto.
-      iDestruct "Hmi" as (Hbbblist) "(Hbbb_slice&_)".
-      iDestruct "Hbbb_slice" as (s') "( -> &(Hslice&Hmaplist))".
+      iDestruct "Hmi" as (Hbbblist) "(Hbbb_slice&%Hbuflists)".
+      iDestruct "Hbbb_slice" as (s')  "( -> &(Hslice&Hmaplist))".
       wp_apply (wp_SliceAppend with "[Hslice]"); eauto.
       1: {
         iFrame.
@@ -553,6 +562,10 @@ Opaque struct.t.
       wp_apply (wp_MapInsert with "Hismap").
       iIntros "Hx".
       iApply "HΦ'".
+      admit.
+  }
+  iIntros "[Hbufs (Hloop&HQ)]".
+  (* too weak HQ? bufsByBlock_buflist seems what we want *)
 Admitted.
 
 
