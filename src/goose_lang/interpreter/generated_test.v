@@ -61,9 +61,9 @@ Example testBitwiseOpsPrecedence_ok : testBitwiseOpsPrecedence #() ~~> #true := 
 Example testArithmeticShifts_ok : testArithmeticShifts #() ~~> #true := t.
 
 (* precedence.go *)
-Fail Example testOrCompareSimple_ok : failing_testOrCompareSimple #() ~~> #true := t.
-Fail Example testOrCompare_ok : failing_testOrCompare #() ~~> #true := t.
-Fail Example testAndCompare_ok : failing_testAndCompare #() ~~> #true := t.
+Example testOrCompareSimple_ok : testOrCompareSimple #() ~~> #true := t.
+Example testOrCompare_ok : testOrCompare #() ~~> #true := t.
+Example testAndCompare_ok : testAndCompare #() ~~> #true := t.
 
 (* prims.go *)
 Example testLinearize_ok : testLinearize #() ~~> #true := t.

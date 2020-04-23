@@ -501,7 +501,7 @@ Definition ComparePointerToNil: val :=
 
 Definition LogicalOperators: val :=
   rec: "LogicalOperators" "b1" "b2" :=
-    "b1" && "b2" || "b1" && ~ #false.
+    ("b1" && ("b2" || "b1")) && (~ #false).
 
 Definition LogicalAndEqualityOperators: val :=
   rec: "LogicalAndEqualityOperators" "b1" "x" :=
