@@ -166,6 +166,16 @@ Proof.
   iApply (is_map_retype with "Hm").
 Qed.
 
+Theorem wp_MapInsert_to_val stk E mref m k v' :
+  {{{ is_tmap mref m }}}
+    MapInsert #mref #k (to_val v') @ stk; E
+  {{{ RET #(); is_tmap mref (map_insert m k v') }}}.
+Proof.
+  iIntros (Φ) "Hm HΦ".
+  iApply (wp_MapInsert with "Hm"); first reflexivity.
+  iFrame.
+Qed.
+
 Theorem wp_MapDelete stk E mref m k :
   {{{ is_tmap mref m }}}
     MapDelete #mref #k @ stk; E

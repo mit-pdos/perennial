@@ -35,18 +35,13 @@ Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
     ⌜ #bufptr ≠ #null ⌝ ∗
     is_buf_data data o.(bufData) a.
 
-Definition is_bufptr (bufptrval : val) (a : addr) (o : buf) : iProp Σ :=
-  ∃ (bufloc : loc),
-    ⌜ bufptrval = #bufloc ⌝ ∗
-    is_buf bufloc a o.
-
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
-  ∃ (mptr : loc) (m : gmap u64 val) (am : gmap addr val),
+  ∃ (mptr : loc) (m : gmap u64 loc) (am : gmap addr loc),
     bufmap ↦[BufMap.S :: "addrs"] #mptr ∗
-    is_map mptr (m, #null) ∗
+    is_tmap mptr m ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
-      is_bufptr bufptr a buf.
+      is_buf bufptr a buf.
 
 Theorem is_buf_not_null bufptr a o :
   is_buf bufptr a o -∗ ⌜ #bufptr ≠ #null ⌝.
@@ -63,6 +58,23 @@ Theorem wp_buf_loadField_sz bufptr a b :
     struct.loadF buf.Buf.S "Sz" #bufptr
   {{{
     RET #(bufSz b.(bufKind));
+    is_buf bufptr a b
+  }}}.
+Proof using.
+  iIntros (Φ) "Hisbuf HΦ".
+  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  wp_loadField.
+  iApply "HΦ".
+  iExists _, _. iFrame. done.
+Qed.
+
+Theorem wp_buf_loadField_addr bufptr a b :
+  {{{
+    is_buf bufptr a b
+  }}}
+    struct.loadF buf.Buf.S "Addr" #bufptr
+  {{{
+    RET (addr2val a);
     is_buf bufptr a b
   }}}.
 Proof using.
@@ -161,7 +173,7 @@ Proof using.
   wp_loadField.
   wp_apply wp_Addr__Flatid; intuition eauto. iIntros (?) "->".
   wp_loadField.
-  wp_apply (wp_MapInsert with "Hmap"); iIntros "Hmap".
+  wp_apply (wp_MapInsert_to_val with "Hmap"); iIntros "Hmap".
   iApply "HΦ".
   iExists _, _, _. iFrame.
   iSplitR.
@@ -172,8 +184,6 @@ Proof using.
   - iDestruct (big_sepM2_lookup_1_some with "Ham") as (v2) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Ham") as "[Hcur Hacc]"; eauto.
     iApply "Hacc".
-    iExists _.
-    iSplitR; eauto.
     iExists _, _. iFrame.
     iDestruct "Hdata" as "(% & % & Hdata)". iFrame.
     done.
@@ -181,8 +191,6 @@ Proof using.
   - iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
     iApply big_sepM2_insert; eauto.
     iFrame "Ham".
-    iExists _.
-    iSplitR; eauto.
     iExists _, _. iFrame.
     iDestruct "Hdata" as "(% & % & Hdata)". iFrame.
     done.
@@ -252,7 +260,6 @@ Proof using.
     erewrite flatid_addr_lookup in H1; eauto.
     iDestruct (big_sepM2_lookup_1_some with "Ham") as (vv) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Ham") as "[Hbuf Ham]"; eauto.
-    iDestruct "Hbuf" as (bufloc) "[-> Hbuf]".
     rewrite H2.
     iApply "HΦ".
     iFrame.
@@ -261,9 +268,8 @@ Proof using.
     iExists _, _, _.
     iFrame.
     iSplitR; first eauto.
-    replace (am) with (<[a:=#bufloc]> am) at 1 by ( apply insert_id; eauto ).
-    iApply "Ham".
-    iExists _. iFrame. done.
+    replace (am) with (<[a:=v]> am) at 1 by ( apply insert_id; eauto ).
+    iApply "Ham". iFrame.
 
   - apply map_get_false in H1; intuition subst.
     erewrite flatid_addr_lookup in H2; eauto.
@@ -298,6 +304,8 @@ Opaque struct.t.
   wp_loadField.
   iDestruct (big_sepM2_sepM_1 with "Hmap") as "Hmap".
   iDestruct (big_sepM_flatid_addr_map_1 with "Hmap") as "Hmap"; eauto.
+
+(*
   wp_apply (wp_MapIter _ _ _ _
     (∃ s bufptrlist,
       bufs ↦[slice.T (refT (struct.t Buf.S))] (slice_val s) ∗
@@ -345,6 +353,7 @@ Opaque struct.t.
   iApply "HΦ".
   iFrame.
   admit.
+*)
 Transparent struct.t.
 Admitted.
 
