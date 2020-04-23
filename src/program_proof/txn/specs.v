@@ -146,9 +146,9 @@ Definition is_txn (l : loc)
     (gData   : gmap u64 (sigT (fun K => gen_heapG u64 (updatable_buf (@bufDataT K)) Σ)))
     : iProp Σ :=
   (
-    ∃ γMaps γLock (walHeap : gen_heapG u64 heap_block Σ) (mu : loc) (walptr : loc) q,
-      l ↦[Txn.S :: "mu"]{q} #mu ∗
-      l ↦[Txn.S :: "log"]{q} #walptr ∗
+    ∃ γMaps γLock (walHeap : gen_heapG u64 heap_block Σ) (mu : loc) (walptr : loc),
+      readonly (l ↦[Txn.S :: "mu"] #mu) ∗
+      readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_wal walN (wal_heap_inv walHeap) walptr ∗
       inv invN (is_txn_always walHeap gData γMaps) ∗
       is_lock lockN γLock #mu (is_txn_locked l γMaps)
@@ -159,13 +159,8 @@ Theorem is_txn_dup l gData :
   is_txn l gData ∗
   is_txn l gData.
 Proof.
-  iIntros "Htxn".
-  iDestruct "Htxn" as (????? q) "(Hmu & Hlog & #Hwal & #Hinv & #Hlock)".
-  iDestruct (struct_field_mapsto_q with "Hmu") as "[Hmu0 Hmu1]".
-  iDestruct (struct_field_mapsto_q with "Hlog") as "[Hlog0 Hlog1]".
-  iSplitL "Hmu0 Hlog0".
-  - iExists _, _, _, _, _, _. iFrame "Hmu0 Hlog0 Hwal Hinv Hlock".
-  - iExists _, _, _, _, _, _. iFrame "Hmu1 Hlog1 Hwal Hinv Hlock".
+  iIntros "#Htxn".
+  iSplit; iFrame "#".
 Qed.
 
 Lemma gmDataP_eq gm gh :
@@ -209,7 +204,7 @@ Theorem wp_txn_Load K l gData a v :
   }}}.
 Proof  using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
   iIntros (Φ) "(Htxn & Hstable) HΦ".
-  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr q) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
+  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
   iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".
 
   wp_call.
@@ -588,7 +583,7 @@ Theorem wp_txn__doCommit l q gData bufs buflist :
 Proof.
   iIntros (Φ) "(Htxn & Hbufs & Hbufpre) HΦ".
   iDestruct (is_txn_dup with "Htxn") as "[Htxn0 Htxn]".
-  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr tq) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
+  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
 
   wp_call.
   wp_loadField.
@@ -696,7 +691,7 @@ Theorem wp_Txn__GetTransId l gData :
   {{{ (i : u64), RET #i; emp }}}.
 Proof.
   iIntros (Φ) "Htxn HΦ".
-  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr tq) "(Hl & Hwalptr & #Hwal & #Hinv & #Hlock)".
+  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
   wp_call.
   wp_loadField.
   wp_apply acquire_spec; eauto.
