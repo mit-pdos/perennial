@@ -2,6 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import deletable_heap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
 From Perennial.goose_lang.lib Require Import wp_store.
+From Perennial.goose_lang.lib Require Import typed_map.typed_map.
 
 Local Transparent load_ty store_ty.
 
@@ -25,9 +26,9 @@ Definition lockshardN : namespace := nroot .@ "lockShardMem".
 Definition locked (hm : gen_heapG u64 bool Σ) (addr : u64) : iProp Σ :=
   ( mapsto (hG := hm) addr 1 true )%I.
 
-Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrVal : val) (covered : gmap u64 unit) (P : u64 -> iProp Σ) :=
-  ( ∃ (lockStatePtr : loc) owner (cond : loc) (nwaiters : u64),
-      ⌜ ptrVal = #lockStatePtr ⌝ ∗
+Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
+           (lockStatePtr : loc) (covered : gmap u64 unit) (P : u64 -> iProp Σ) :=
+  ( ∃ owner (cond : loc) (nwaiters : u64),
       lockStatePtr ↦[lockState.S :: "owner"] owner ∗
       lockStatePtr ↦[lockState.S :: "held"] #gheld ∗
       lockStatePtr ↦[lockState.S :: "cond"] #cond ∗
@@ -38,9 +39,10 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool) (ptrV
         ( ⌜ gheld = false ⌝ ∗ mapsto (hG := gh) addr 1 false ∗ P addr ) )
   )%I.
 
-Definition is_lockShard_inner (mptr : loc) (shardlock : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) : iProp Σ :=
-  ( ∃ m def ghostMap,
-      is_map mptr (m, def) ∗
+Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
+           (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) : iProp Σ :=
+  ( ∃ (m: Map.t loc) ghostMap,
+      is_tmap mptr m ∗
       gen_heap_ctx (hG := ghostHeap) ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P ) ∗
@@ -67,9 +69,9 @@ Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
 Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iIntros (Φ) "Hinit HΦ".
   rewrite /mkLockShard.
-  wp_call.
+  wp_pures.
 
-  wp_apply wp_NewMap.
+  wp_apply (wp_NewMap loc).
   iIntros (mref) "Hmap".
   wp_pures.
 
@@ -89,7 +91,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 
   iAssert (is_lockShard_inner mref shardlock hG covered P) with "[Hinit Hmap Hheapctx]" as "Hinner".
   {
-    iExists _, _, _.
+    iExists _, _.
     iFrame.
 
     iSplitR; eauto.
@@ -130,13 +132,13 @@ Proof.
 
   {
     iIntros (Φloop) "!> (Hinner&Hlocked&_) HΦloop".
-    iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
+    iDestruct "Hinner" as (m gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
     wp_pures.
     wp_apply wp_ref_of_zero; first by auto.
     iIntros (state) "Hstate".
     wp_loadField.
     wp_apply (wp_MapGet with "[$Hmptr]"); auto.
-    iIntros (v ok) "[% Hmptr]".
+    iIntros (lockStatePtr ok) "[% Hmptr]".
 
     wp_pures.
     iEval (rewrite struct_mapsto_eq) in "Hstate".
@@ -154,8 +156,7 @@ Proof.
       apply map_get_true in H0.
       iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
       iDestruct (big_sepM2_insert_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
-      iDestruct "Haddr" as (lockStatePtr owner cond nwaiters) "(% & ? & ? & ? & ? & #Hcond & % & Hwaiters)".
-      subst.
+      iDestruct "Haddr" as (owner cond nwaiters) "(? & ? & ? & ? & #Hcond & % & Hwaiters)".
       wp_loadField.
       destruct gheld; wp_pures.
       + wp_untyped_load.
@@ -164,7 +165,7 @@ Proof.
         wp_storeField.
         wp_pures.
 
-        iSpecialize ("Haddrs" $! true #lockStatePtr).
+        iSpecialize ("Haddrs" $! true lockStatePtr).
         rewrite insert_id; eauto.
         rewrite insert_id; eauto.
 
@@ -173,12 +174,10 @@ Proof.
         wp_apply (lock.wp_condWait with "[-HΦloop Hstate Hacquired]").
         {
           iFrame "Hlock Hcond Hlocked".
-          iExists _, _, _.
+          iExists _, _.
           iFrame.
           iApply "Haddrs".
-          (* XXX: This used to be iExists _, _, _, _. But after the switch to block allocation,
-             the iFrame that follows would hang forever. *)
-          iExists lockStatePtr, _, _, _.
+          iExists _, _, _.
           iFrame "∗ Hcond".
           done.
         }
@@ -186,17 +185,16 @@ Proof.
         iIntros "(Hlocked & Hinner)".
         wp_loadField.
 
-        iDestruct "Hinner" as (m2 def2 gm2) "(Hmptr & Hghctx & Haddrs & Hcovered)".
-        wp_apply (wp_MapGet with "[$Hmptr]"). iIntros (v ok) "[% Hmptr]".
+        iDestruct "Hinner" as (m2 gm2) "(Hmptr & Hghctx & Haddrs & Hcovered)".
+        wp_apply (wp_MapGet with "[$Hmptr]"). iIntros (lockStatePtr2 ok) "[% Hmptr]".
         destruct ok.
         * wp_pures.
 
-          apply map_get_true in H2.
+          apply map_get_true in H3.
           iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
           iDestruct (big_sepM2_lookup_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
-          iDestruct "Haddr" as (lockStatePtr2 owner2 cond2 nwaiters2) "(% & ? & ? & ? & ? & Hcond2 & % & Hwaiters2)".
+          iDestruct "Haddr" as (owner2 cond2 nwaiters2) "(? & ? & ? & ? & Hcond2 & % & Hwaiters2)".
 
-          subst.
           wp_loadField.
           wp_storeField.
 
@@ -207,9 +205,9 @@ Proof.
           wp_pures.
           iApply "HΦloop".
           iFrame.
-          iExists _, _, _. iFrame.
+          iExists _, _. iFrame.
           iApply "Haddrs".
-          iExists lockStatePtr2, _, _, _. iFrame. done.
+          iExists _, _, _. iFrame. done.
 
         * iEval (rewrite struct_mapsto_eq) in "Hacquired".
           iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
@@ -217,7 +215,7 @@ Proof.
           wp_pures.
           iApply "HΦloop".
           iFrame.
-          iExists _, _, _. iFrame.
+          iExists _, _. iFrame.
 
       + wp_untyped_load.
         wp_storeField.
@@ -236,13 +234,12 @@ Proof.
         wp_pures.
         iApply "HΦloop".
         iFrame.
-        iExists _, _, _. iFrame.
+        iExists _, _. iFrame.
 
         erewrite <- (insert_id m) at 1; eauto.
         iApply "Haddrs".
-        iExists lockStatePtr, _, _, _. iFrame "∗ Hcond".
-        iSplitL; try done.
-        iSplitL; try done.
+        iExists _, _, _. iFrame "∗ Hcond".
+        iSplit; try done.
         iLeft; done.
 
     - wp_pures.
@@ -254,7 +251,7 @@ Proof.
       wp_store.
       wp_untyped_load.
       wp_loadField.
-      wp_apply (wp_MapInsert with "[$Hmptr]").
+      wp_apply (wp_MapInsert with "[$Hmptr]"); first by reflexivity.
       iIntros "Hmptr".
 
       wp_apply wp_ref_of_zero; first by auto.
@@ -290,16 +287,15 @@ Proof.
       iSplitR "Hp".
       2: { iApply "Hp"; done. }
 
-      iExists _, _, _. iFrame.
+      iExists _, _. iFrame.
 
       iSplitR "Hcovered".
       {
         iApply (big_sepM2_insert); [auto | auto | ].
         iFrame.
-        iExists lst, _, _, _.
+        iExists  _, _, _.
         iFrame "∗ Hcond".
         iFrame.
-        iSplitL; try done.
         iSplitL; [ iPureIntro; congruence | ].
         iLeft; done.
       }
@@ -348,11 +344,11 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
-  iDestruct "Hinner" as (m def gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
+  iDestruct "Hinner" as (m gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
 
   wp_loadField.
   wp_apply (wp_MapGet with "Hmptr").
-  iIntros (v ok) "[% Hmptr]".
+  iIntros (lockStatePtr ok) "[% Hmptr]".
 
   wp_pures.
 
@@ -363,7 +359,7 @@ Proof.
 
   iDestruct (big_sepM2_delete with "Haddrs") as "[Haddr Haddrs]"; eauto.
 
-  iDestruct "Haddr" as (lockStatePtr owner cond waiters) "[-> (? & ? & ? & ? & #Hcond & [% Hxx])]".
+  iDestruct "Haddr" as (owner cond waiters) "(? & ? & ? & ? & #Hcond & [% Hxx])".
 
   rewrite /map_get H0 /= in H.
   inversion H; clear H; subst.
@@ -385,16 +381,15 @@ Proof.
     wp_apply (release_spec with "[-HΦ]").
     {
       iFrame "Hlock Hlocked".
-      iExists m, _, _.
+      iExists _, _.
       iFrame.
 
-      iDestruct (big_sepM2_insert_2 _ _ _ addr false #lockStatePtr
+      iDestruct (big_sepM2_insert_2 _ _ _ addr false lockStatePtr
         with "[-Haddrs] Haddrs") as "Haddrs".
       {
         rewrite /setField_f /=.
-        iExists lockStatePtr, _, _, _.
+        iExists _, _, _.
         iFrame "∗ Hcond".
-        iSplitR; auto.
         iSplitR; auto.
         iRight.
         iFrame. done.
@@ -421,7 +416,7 @@ Proof.
     wp_apply (release_spec with "[-HΦ]").
     {
       iFrame "∗ Hlock".
-      iExists _, _, (delete addr gm).
+      iExists _, (delete addr gm).
       iFrame.
 
       destruct (covered !! addr) eqn:Hca; try congruence.

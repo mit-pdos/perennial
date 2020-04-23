@@ -8,6 +8,7 @@ Module Slice.
          sz: u64;
          cap: u64; }.
   Notation extra s := (int.val (cap s) - int.val (sz s)).
+  Definition nil := mk null (U64 0) (U64 0).
 End Slice.
 Notation slice_extra s := (Slice.extra s).
 
@@ -148,7 +149,7 @@ Proof.
 Qed.
 
 Theorem is_slice_zero t q :
-  ⊢ is_slice (Slice.mk null (U64 0) (U64 0)) t q [].
+  ⊢ is_slice Slice.nil t q [].
 Proof.
   iApply is_slice_of_small; first by auto.
   rewrite /is_slice_small /=.
@@ -157,7 +158,7 @@ Proof.
 Qed.
 
 Theorem zero_slice_val t :
-  zero_val (slice.T t) = slice_val (Slice.mk null (U64 0) (U64 0)).
+  zero_val (slice.T t) = slice_val Slice.nil.
 Proof.
   reflexivity.
 Qed.
