@@ -68,9 +68,17 @@ Ltac iNamedDestruct H :=
 
 Ltac iDeexHyp H :=
   let i := to_pm_ident H in
-  let rec go _ := match goal with
+  let rec go _ := lazymatch goal with
+                  (* check this separately because red on bi_exist produces an unseal *)
                   | |- context[Esnoc _ i (bi_exist (fun x => _))] =>
                     iDestructHyp i as (x) H
+                  | |- context[Esnoc _ i ?P] =>
+                    let P := (eval red in P) in
+                    lazymatch P with
+                    | bi_exist (fun x => _) =>
+                      iDestructHyp i as (x) H
+                    | _ => fail "iDeexHyp:" H "is not an ∃"
+                    end
                   end in
   go tt; repeat go tt.
 
@@ -157,6 +165,17 @@ Module tests.
 
     Example test_exist_destruct (P: nat -> iProp Σ) Q :
       ⊢ (∃ x, named "HP" (P x) ∗ named "HQ" Q) -∗ (∃ x, P x) ∗ Q.
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      iSplitL "HP"; [ iExists x | ]; iFrame.
+    Qed.
+
+    Definition rep_invariant (P: nat -> iProp Σ) Q : iProp Σ :=
+      (∃ x, named "HP" (P x) ∗ named "HQ" Q).
+
+    Example test_exist_destruct_under_definition (P: nat -> iProp Σ) Q :
+      ⊢ rep_invariant P Q -∗ (∃ x, P x) ∗ Q.
     Proof.
       iIntros "H".
       iNamed "H".
