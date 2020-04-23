@@ -21,9 +21,9 @@ Context `{!lockG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
 Context `{!{K & gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ}}.
 Context `{!gen_heapPreG unit
-           (gmap u64 (sigT (fun K => gmap u64 (updatable_buf (@bufDataT K)))))
+           (gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))})
          Σ}.
-Context `{!gen_heapPreG addr (sigT (fun K => @bufDataT K)) Σ}.
+Context `{!gen_heapPreG addr {K & @bufDataT K} Σ}.
 Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
 
 Implicit Types s : Slice.t.
@@ -116,7 +116,7 @@ Definition is_txn_always
     γMaps
     : iProp Σ :=
   (
-    ∃ (mData : gmap u64 (sigT (fun K => gmap u64 (updatable_buf (@bufDataT K))))),
+    ∃ (mData : gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))}),
       ( [∗ map] _ ↦ gm;gh ∈ mData;gData, gmDataP gm gh ) ∗
       mapsto (hG := γMaps) tt (1/2) (mData) ∗
       ( [∗ map] blkno ↦ datamap ∈ mData,
