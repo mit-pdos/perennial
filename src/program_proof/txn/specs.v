@@ -19,7 +19,7 @@ Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
-Context `{!sigT (fun K => gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ)}.
+Context `{!{K & gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ}}.
 Context `{!gen_heapPreG unit
            (gmap u64 (sigT (fun K => gmap u64 (updatable_buf (@bufDataT K)))))
          Σ}.
@@ -33,7 +33,7 @@ Definition lockN : namespace := nroot .@ "txnlock".
 Definition invN : namespace := nroot .@ "txninv".
 Definition walN : namespace := nroot .@ "txnwal".
 
-Definition mapsto_txn {K} (gData : gmap u64 (sigT (fun K => gen_heapG u64 (updatable_buf (@bufDataT K)) Σ))) (a : addr) (v : @bufDataT K) : iProp Σ :=
+Definition mapsto_txn {K} (gData : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})  (a : addr) (v : @bufDataT K) : iProp Σ :=
   ∃ hG γm,
     ⌜ valid_addr a ∧ valid_off K a.(addrOff) ⌝ ∗
     ⌜ gData !! a.(addrBlock) = Some (existT K hG) ⌝ ∗
@@ -49,10 +49,10 @@ Proof.
   iIntros "H0 H1".
   iDestruct "H0" as (g0 m0) "(% & % & H0m & H0own)".
   iDestruct "H1" as (g1 m1) "(% & % & H1m & H1own)".
-  rewrite H0 in H2; inversion H2.
+  rewrite H1 in H3; inversion H3.
   subst.
-  apply eq_sigT_eq_dep in H5.
-  apply Eqdep_dec.eq_dep_eq_dec in H5; subst.
+  apply eq_sigT_eq_dep in H6.
+  apply Eqdep_dec.eq_dep_eq_dec in H6; subst.
   2: apply bufDataKind_eq_dec.
   iDestruct (mapsto_valid_2 with "H0m H1m") as %x.
   exfalso; eauto.
@@ -101,8 +101,9 @@ Proof.
   destruct x; refine _.
 Qed.
 
-Definition gmDataP (gm : sigT (fun K => gmap u64 (updatable_buf (@bufDataT K))))
-                   (gh : sigT (fun K => gen_heapG u64 (updatable_buf (@bufDataT K)) Σ)) : iProp Σ.
+  
+Definition gmDataP (gm : {K & gmap u64 (updatable_buf (@bufDataT K))})
+                   (gh : {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ}) : iProp Σ.
   refine (if decide (projT1 gm = projT1 gh) then _ else False)%I.
   refine (gen_heap_ctx (hG := projT2 gh) _)%I.
   rewrite <- e.
@@ -111,7 +112,7 @@ Defined.
 
 Definition is_txn_always
     (walHeap : gen_heapG u64 heap_block Σ)
-    (gData   : gmap u64 (sigT (fun K => gen_heapG u64 (updatable_buf (@bufDataT K)) Σ)))
+    (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
     γMaps
     : iProp Σ :=
   (
@@ -136,7 +137,7 @@ Qed.
 
 Definition is_txn_locked l γMaps : iProp Σ :=
   (
-    ∃ (mData : gmap u64 (sigT (fun K => gmap u64 (updatable_buf (@bufDataT K)))))
+    ∃ (mData : gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))})
       (nextId : u64) (pos : u64),
       mapsto (hG := γMaps) tt (1/2) mData ∗
       l ↦[Txn.S :: "nextId"] #nextId ∗
@@ -144,7 +145,7 @@ Definition is_txn_locked l γMaps : iProp Σ :=
  )%I.
 
 Definition is_txn (l : loc)
-    (gData   : gmap u64 (sigT (fun K => gen_heapG u64 (updatable_buf (@bufDataT K)) Σ)))
+    (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
     : iProp Σ :=
   (
     ∃ γMaps γLock (walHeap : gen_heapG u64 heap_block Σ) (mu : loc) (walptr : loc),
@@ -396,8 +397,8 @@ Proof  using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
     iModIntro.
     iPureIntro.
 
-    apply elem_of_list_lookup_1 in H2.
-    destruct H2 as [prefix H2].
+    apply elem_of_list_lookup_1 in H3.
+    destruct H3 as [prefix H3].
     specialize (Hinblk prefix).
     erewrite latest_update_take_some in Hinblk; eauto.
   }
