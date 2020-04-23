@@ -60,8 +60,14 @@ Section transition.
   Definition undefined {T}: transition T :=
     suchThat (gen:=fun _ _ => None) (fun _ _ => False).
 
+  (* transitions still form a Kleene algebra *)
   Definition plus {T} (r1 r2: transition T): transition T :=
     bind (any bool) (fun b => if b then r1 else r2).
+
+  (* assert produces undefined behavior if [pred] does not hold of the state *)
+  (* like check, but over state instead of for a proposition *)
+  Definition assert (pred: Σ -> Prop): transition unit :=
+    suchThat (gen:=fun _ _ => None) (fun s _ => pred s).
 
   Definition ifThenElse P `{!Decision P} {T} (tr1 tr2: transition T): transition T :=
     match decide P with
