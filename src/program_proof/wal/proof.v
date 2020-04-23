@@ -106,9 +106,6 @@ Definition memLog_linv γ memStart (memLog: list update.t) : iProp Σ :=
       that this matches memLog). *)
       ⌜is_mem_memLog γ memLog txns memStart_txn_id⌝).
 
-(* TODO: de-duplicate this with the one in marshal_proof.v *)
-Definition u64val (x: u64): val := #x.
-
 Definition wal_linv_fields st σ: iProp Σ :=
   (∃ σₗ,
       (st ↦[WalogState.S :: "memLog"] (slice_val σₗ.(memLogSlice)) ∗
