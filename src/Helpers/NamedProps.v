@@ -1,4 +1,5 @@
-From iris.proofmode Require Import tactics environments.
+From iris.proofmode Require Import tactics environments intro_patterns.
+From iris.proofmode Require ltac_tactics.
 From iris.base_logic.lib Require Import iprop.
 
 From iris_string_ident Require ltac2_string_ident.
@@ -25,11 +26,33 @@ Ltac to_pm_ident H :=
   | ident => constr:(H)
   end.
 
+Ltac string_to_ident s :=
+  let ident_fun := constr:(ltac:(ltac_tactics.string_to_ident_hook s)) in
+  lazymatch ident_fun with
+  | λ (x:_), _ => x
+  end.
+
 Ltac iNameHyp H :=
   let i := to_pm_ident H in
   lazymatch goal with
   | |- context[Esnoc _ i (named ?name ?P)] =>
-    iDestruct (from_named with i) as name
+    let Htmp := iFresh in
+    iRename i into Htmp;
+    let pat := intro_pat.parse_one name in
+    lazymatch pat with
+    | IPure (IGallinaNamed ?name) =>
+      let id := string_to_ident name in
+      let id := fresh id in
+      iPure Htmp as id
+    | _ => iDestruct (from_named with Htmp) as pat
+    end;
+    (* TODO: we do this renaming so we can clear the original hypothesis, but
+    this only happens when it isn't consumed (when P is persistent); ideally we
+    would do this whole manipulation with something lower-level that always
+    replaced the hypothesis, but also supported an intro pattern for the result.
+    Otherwise this may have significant performance cost with large
+    environments. *)
+    try iClear Htmp
   | |- context[Esnoc _ i _] =>
     fail "iNameHyp: hypothesis" H "is not a named"
   | _ => fail 1 "iNameHyp: hypothesis" H "not found"
@@ -47,9 +70,7 @@ Ltac iNamedDestruct H :=
       first [iNameHyp H
             | let Htmp1 := iFresh in
               let Htmp2 := iFresh in
-              let pat := constr:(intro_patterns.IList
-                                   [[intro_patterns.IIdent Htmp1;
-                                     intro_patterns.IIdent Htmp2]]) in
+              let pat := constr:(IList [[IIdent Htmp1; IIdent Htmp2]]) in
               iDestruct H as pat;
               iNameHyp Htmp1; go Htmp2
             | idtac ]
@@ -117,6 +138,18 @@ Module tests.
       iNameHyp "H₁".
       iNameHyp "H₂".
       iSplitL "H1"; [ iExact "H1" | iExact "H2" ].
+    Qed.
+
+    Example test_pure_pattern_freshen φ φ' P :
+      named "%H" ⌜φ⌝ -∗
+      named "%H" ⌜φ'⌝ -∗
+      P -∗
+      ⌜φ ∧ φ'⌝ ∗ P.
+    Proof.
+      iIntros "H1 H2 $".
+      iNameHyp "H1".
+      iNameHyp "H2".
+      iPureIntro; exact (conj H H0).
     Qed.
 
     Example test_destruct_named P Q :
