@@ -37,4 +37,15 @@ Proof.
     wp_apply ("IH" with "[$]").
 Qed.
 
+Theorem wp_Assert stk E (cond: bool) :
+  cond = true ->
+  {{{ True }}}
+    Assert #cond @ stk; E
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (-> Φ) "_ HΦ".
+  wp_call.
+  iApply ("HΦ" with "[//]").
+Qed.
+
 End goose_lang.
