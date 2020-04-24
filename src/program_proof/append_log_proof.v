@@ -247,6 +247,21 @@ Proof.
     iExists _, _; iFrame.
 Qed.
 
+(* TODO: prove this based on [wp_Log__get] *)
+Theorem wpc_Log__get stk k E1 E2 (lptr: loc) bs (i: u64) :
+  {{{ ptsto_log lptr bs ∗ ⌜int.val i < 2^64-1⌝ }}}
+    Log__get #lptr #i @ stk; k; E1; E2
+  {{{ s (ok: bool), RET (slice_val s, #ok);
+      (if ok
+       then ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗ is_slice s byteT 1%Qp (Block_to_vals b)
+       else ⌜bs !! int.nat i = None⌝) ∗
+      ptsto_log lptr bs }}}
+  {{{ ptsto_log lptr bs }}}.
+Proof.
+  iIntros (Φ Φc) "[Hlog %] HΦ".
+  iDestruct "Hlog" as (sz disk_sz) "[[Hsz Hdisk_sz] Hlog]".
+Abort.
+
 Definition blocks_slice (bk_s: Slice.t) (bks: list Slice.t) (bs: list Block): iProp Σ :=
   is_slice_small bk_s (slice.T byteT) 1%Qp (fmap slice_val bks) ∗
    [∗ list] _ ↦ b_s;b ∈ bks;bs , is_slice_small b_s byteT 1%Qp (Block_to_vals b).
