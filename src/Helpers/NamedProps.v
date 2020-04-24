@@ -29,6 +29,12 @@ Section named.
     apply _.
   Qed.
 
+  Global Instance named_pure name P φ : IntoPure P φ → IntoPure (named name P) φ.
+  Proof.
+    rewrite named_eq /named_def.
+    auto.
+  Qed.
+
 End named.
 
 Ltac to_pm_ident H :=
@@ -219,6 +225,13 @@ Module tests.
       iNamed "H".
       iFrame "HP HQ HP2".
       iPureIntro; exact Hfoo.
+    Qed.
+
+    Example test_named_pure (P : Prop) (Q : iProp Σ) :
+      named "N" ⌜P⌝ ∗ Q -∗ Q.
+    Proof.
+      iIntros "[%HP HQ]".
+      iFrame.
     Qed.
 
   End tests.
