@@ -29,7 +29,13 @@ Section named.
     apply _.
   Qed.
 
-  Global Instance named_pure name P φ : IntoPure P φ → IntoPure (named name P) φ.
+  Global Instance named_into_pure name P φ : IntoPure P φ → IntoPure (named name P) φ.
+  Proof.
+    rewrite named_eq /named_def.
+    auto.
+  Qed.
+
+  Global Instance named_from_pure name a P φ : FromPure a P φ → FromPure a (named name P) φ.
   Proof.
     rewrite named_eq /named_def.
     auto.
@@ -227,11 +233,21 @@ Module tests.
       iPureIntro; exact Hfoo.
     Qed.
 
-    Example test_named_pure (P : Prop) (Q : iProp Σ) :
+    Example test_named_into_pure (P : Prop) (Q : iProp Σ) :
       named "N" ⌜P⌝ ∗ Q -∗ Q.
     Proof.
       iIntros "[%HP HQ]".
       iFrame.
+    Qed.
+
+    Example test_named_from_pure (P : Prop) (Q : iProp Σ) :
+      P ->
+      Q -∗ Q ∗ named "N" ⌜P⌝.
+    Proof.
+      iIntros (HP) "HQ".
+      iFrame.
+      iPureIntro.
+      done.
     Qed.
 
   End tests.
