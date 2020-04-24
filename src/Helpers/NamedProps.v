@@ -41,6 +41,12 @@ Section named.
     auto.
   Qed.
 
+  Global Instance named_persistent name P : Persistent P → Persistent (named name P).
+  Proof.
+    rewrite named_eq /named_def.
+    auto.
+  Qed.
+
 End named.
 
 Ltac to_pm_ident H :=
