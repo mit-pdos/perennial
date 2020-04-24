@@ -120,7 +120,7 @@ Ltac iNamed H :=
 Ltac prove_named :=
   repeat rewrite -to_named.
 
-Notation "name ∷ P" := (named name P) (at level 79).
+Notation "name ∷ P" := (named name P%I) (at level 79).
 
 (* TODO: maybe we should move tests out *)
 Module tests.
