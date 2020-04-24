@@ -576,7 +576,7 @@ Opaque struct.t.
           iSplitR "Hbbbmap".
           2: {
             iApply (big_sepML_mono with "Hbbbmap").
-            iPureIntro. clear.
+            iPureIntro.
             iIntros (k v lv) "Hold".
             iNamed "Hold".
             iExists _. iFrame.
@@ -616,7 +616,7 @@ Opaque struct.t.
           iSplitR "Hbbbmap".
           2: {
             iApply (big_sepML_mono with "Hbbbmap").
-            iPureIntro. clear.
+            iPureIntro.
             iIntros (k v lv) "Hold".
             iNamed "Hold".
             iExists _. iFrame.
