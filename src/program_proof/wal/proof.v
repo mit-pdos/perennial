@@ -100,7 +100,7 @@ Definition memLog_linv γ memStart (memLog: list update.t) : iProp Σ :=
       "HownmemStart" ∷ own γ.(memStart_name) (● Excl' (memStart, memStart_txn_id)) ∗
       "HownmemLog" ∷ own γ.(memLog_name) (● Excl' memLog) ∗
       "Howntxns" ∷ own γ.(txns_name) (● Excl' txns) ∗
-      "Htxns" ∷ group_txn γ memStart_txn_id memStart ∗
+      "HmemStart_txn" ∷ group_txn γ memStart_txn_id memStart ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
@@ -291,11 +291,134 @@ Definition is_durable γ txns durable_lb : iProp Σ :=
       ⌜(durable_lb ≤ diskEnd_txn_id)%nat ⌝ ∗
        log_inv γ txns diskEnd_txn_id).
 
+Definition list_to_imap {A} (l: list A) : gmap nat A :=
+  list_to_map (imap (λ i x, (i, x)) l).
+
+Theorem imap_NoDup {A B} (f: nat → A → B) (l: list A) :
+  (∀ i1 x1 i2 x2,
+      i1 ≠ i2 →
+      l !! i1 = Some x1 →
+      l !! i2 = Some x2 →
+      f i1 x1 ≠ f i2 x2) →
+  NoDup (imap f l).
+Proof.
+  revert f.
+  induction l as [|x l]; simpl; intros f Hfneq.
+  - constructor.
+  - constructor.
+    + intros Helem%elem_of_lookup_imap_1.
+      destruct Helem as (i'&x'&[Heq Hlookup]).
+      apply Hfneq in Heq; eauto.
+    + apply IHl; intros.
+      eapply Hfneq; eauto.
+Qed.
+
+Theorem lookup_list_to_imap_Some {A} l (i: nat) (x: A) :
+  l !! i = Some x <-> list_to_imap l !! i = Some x.
+Proof.
+  rewrite /list_to_imap.
+  revert i.
+  induction l; simpl; intros.
+  - auto.
+  - destruct i; simpl.
+    + rewrite lookup_insert //.
+    + rewrite -> lookup_insert_ne by lia.
+      rewrite IHl.
+      split.
+      * intros Helem%elem_of_list_to_map_2%elem_of_lookup_imap_1.
+        destruct Helem as (i'&x'&[Heq Hlookup]).
+        inversion Heq; subst; clear Heq.
+        apply elem_of_list_to_map_1.
+        { rewrite fmap_imap.
+          simpl.
+          apply imap_NoDup; intros; simpl.
+          auto. }
+        change (S i', x') with (((λ (i : nat) (x : A), (i, x)) ∘ S) i' x').
+        eapply elem_of_lookup_imap_2; eauto.
+      * intros Helem%elem_of_list_to_map_2%elem_of_lookup_imap_1.
+        destruct Helem as (i'&x'&[Heq Hlookup]).
+        inversion Heq; subst; clear Heq.
+        apply elem_of_list_to_map_1.
+        { rewrite fmap_imap.
+          simpl.
+          apply imap_NoDup; intros; simpl.
+          auto. }
+        eapply elem_of_lookup_imap_2; eauto.
+Qed.
+
+Theorem lookup_list_to_imap {A} (l: list A) (i: nat) :
+  list_to_imap l !! i = l !! i.
+Proof.
+  destruct (l !! i) eqn:Hl.
+  - apply lookup_list_to_imap_Some in Hl; auto.
+  - destruct (list_to_imap l !! i) eqn:Himapl; auto.
+    apply lookup_list_to_imap_Some in Himapl; congruence.
+Qed.
+
+Definition txns_pos_map (txns: list (u64 * list update.t)) : gmap nat u64 :=
+  list_to_imap txns.*1.
+
+Theorem txns_pos_is_txn txns (txn_id: nat) (pos: u64) :
+  is_txn txns txn_id pos <-> txns_pos_map txns !! txn_id = Some pos.
+Proof.
+  rewrite /is_txn /txns_pos_map.
+  rewrite -list_lookup_fmap.
+  rewrite lookup_list_to_imap //.
+Qed.
+
 Definition is_groupTxns γ txns : iProp Σ :=
-  ∃ (groupTxns: gmap nat u64),
-    gen_heap_ctx (hG:=γ.(groupTxns_name)) groupTxns ∗
-    ⌜∀ txn_id pos, groupTxns !! txn_id = Some pos ->
-                   is_txn txns txn_id pos⌝.
+    gen_heap_ctx (hG:=γ.(groupTxns_name)) (txns_pos_map txns) ∗
+    ([∗ map] txn_id↦pos ∈ (txns_pos_map txns),
+     group_txn γ txn_id pos).
+
+Theorem list_to_imap_app1 {A} (l: list A) (y: A) :
+  list_to_imap (l ++ [y]) = <[length l := y]> (list_to_imap l).
+Proof.
+  apply map_eq_iff; intros.
+  rewrite lookup_list_to_imap.
+  destruct (decide (i < length l)%nat);
+    [ | destruct (decide (i = length l)); subst ].
+  - rewrite -> lookup_app_l by lia.
+    rewrite -> lookup_insert_ne by lia.
+    rewrite lookup_list_to_imap //.
+  - rewrite -> lookup_app_r by lia.
+    replace (length l - length l)%nat with 0%nat by lia.
+    rewrite /= lookup_insert //.
+  - rewrite -> lookup_insert_ne by lia.
+    rewrite lookup_list_to_imap.
+    rewrite -> lookup_app_r by lia.
+    replace (i - length l)%nat with (S (i - length l - 1))%nat by lia; simpl.
+    rewrite lookup_nil.
+    rewrite -> lookup_ge_None_2 by lia.
+    auto.
+Qed.
+
+Theorem alloc_group_txn γ txns E pos upds :
+  is_groupTxns γ txns ={E}=∗
+  is_groupTxns γ (txns ++ [(pos, upds)]).
+Proof.
+  iIntros "[Hctx Htxns]".
+  rewrite /is_groupTxns /txns_pos_map.
+  rewrite fmap_app /=.
+  rewrite list_to_imap_app1.
+  assert (list_to_imap txns.*1 !! length txns.*1 = None) as Hempty.
+  { rewrite lookup_list_to_imap.
+    apply lookup_ge_None_2; lia. }
+  iMod (gen_heap_alloc _ (length txns.*1) pos with "Hctx") as "[$ Hmapsto]"; first by auto.
+  rewrite -> big_sepM_insert by auto.
+  iFrame.
+  iMod (readonly_alloc_1 with "Hmapsto") as "Hgroup_txn".
+  by iFrame.
+Qed.
+
+Theorem is_groupTxns_complete γ txns txn_id pos :
+  is_txn txns txn_id pos ->
+  is_groupTxns γ txns -∗ group_txn γ txn_id pos.
+Proof.
+  rewrite txns_pos_is_txn; intros Hlookup.
+  iIntros "[Hctx #Htxns]".
+  iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htxns") as "[$ _]".
+Qed.
 
 Theorem group_txn_valid γ txns E txn_id pos :
   ↑nroot.@"readonly" ⊆ E ->
@@ -305,9 +428,10 @@ Theorem group_txn_valid γ txns E txn_id pos :
 Proof.
   rewrite /is_groupTxns /group_txn.
   iIntros (Hsub) "Hgroup Htxn".
-  iDestruct "Hgroup" as (groupTxns) "[Hctx %HgroupTxns]".
+  iDestruct "Hgroup" as "[Hctx Hgroup_txns]".
   iMod (readonly_load with "Htxn") as (q) "Htxn_id"; first by set_solver.
   iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
+  apply txns_pos_is_txn in Hlookup.
   iIntros "!>".
   iSplit; eauto.
 Qed.
