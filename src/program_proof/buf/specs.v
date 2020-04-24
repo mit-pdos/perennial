@@ -102,6 +102,28 @@ Proof using.
   iExists _, _. iFrame. done.
 Qed.
 
+Theorem wp_buf_loadField_data bufptr a b :
+  {{{
+    is_buf bufptr a b
+  }}}
+    struct.loadF buf.Buf.S "Data" #bufptr
+  {{{
+    (vslice : Slice.t), RET (slice_val vslice);
+    is_buf_data vslice b.(bufData) a ∗
+    (∀ (v' : bufDataT b.(bufKind)),
+      is_buf_data vslice v' a -∗
+      is_buf bufptr a (Build_buf b.(bufKind) v' b.(bufDirty)))
+  }}}.
+Proof using.
+  iIntros (Φ) "Hisbuf HΦ".
+  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  wp_loadField.
+  iApply "HΦ".
+  iFrame.
+  iIntros (v') "Hisdata".
+  iExists _, _. iFrame. done.
+Qed.
+
 Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k') :
   {{{
     is_buf bufptr a b ∗

@@ -446,6 +446,15 @@ Section maplist.
   Proof.
   Admitted.
 
+  Theorem big_sepML_lookup_l_app_acc Φ m lv l0 l1 `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    big_sepML Φ m (l0 ++ lv :: l1) -∗
+    ∃ k v, ⌜ m !! k = Some v ⌝ ∗ Φ k v lv ∗
+    ∀ v' lv',
+      Φ k v' lv' -∗
+      big_sepML Φ (<[k := v']> m) (l0 ++ lv' :: l1).
+  Proof.
+  Admitted.
+
   Theorem big_sepML_lookup_m_acc Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
     m !! k = Some v ->
     big_sepML Φ m l -∗
@@ -484,6 +493,30 @@ Section maplist.
     iIntros (Hm) "Hml".
     iDestruct (big_sepML_lookup_m_acc with "Hml") as (i lv) "[% Hml]"; eauto.
   Qed.
+
+  Theorem big_sepML_empty_m Φ m `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    big_sepML Φ m [] -∗
+    ⌜ m = ∅ ⌝.
+  Proof.
+  Admitted.
+
+  Theorem big_sepML_empty_l Φ l `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    big_sepML Φ ∅ l -∗
+    ⌜ l = [] ⌝.
+  Proof.
+  Admitted.
+
+  Theorem big_sepML_fmap_m Φ m l f `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    big_sepML Φ (f <$> m) l -∗
+    big_sepML (λ k v lv, Φ k (f v) lv) m l.
+  Proof.
+  Admitted.
+
+  Theorem big_sepML_fmap_m' Φ m l f `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    big_sepML (λ k v lv, Φ k (f v) lv) m l -∗
+    big_sepML Φ (f <$> m) l.
+  Proof.
+  Admitted.
 
 End maplist.
 
