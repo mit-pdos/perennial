@@ -8,6 +8,7 @@ From Perennial.algebra Require Import deletable_heap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.specs buf.defs buf.specs disk_lib.
 From Perennial.goose_lang.lib Require Import typed_map.typed_map.
+From Perennial.Helpers Require Import NamedProps.
 
 Inductive updatable_buf (T : Type) :=
 | UB : forall (v : T) (modifiedSinceInstallG : gname), updatable_buf T
@@ -101,7 +102,6 @@ Proof.
   destruct x; refine _.
 Qed.
 
-  
 Definition gmDataP (gm : {K & gmap u64 (updatable_buf (@bufDataT K))})
                    (gh : {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ}) : iProp Σ.
   refine (if decide (projT1 gm = projT1 gh) then _ else False)%I.
@@ -424,23 +424,20 @@ Definition is_txn_buf  (bufptrVal:val) (a : addr) (buf : buf) gData : iProp Σ :
     is_buf bufptr a buf ∗
     @mapsto_txn buf.(bufKind) gData a v0.
 
-Definition bufsByBlock_wf bufsByBlock_l (bufsByBlock:loc) gData (buflists: list (list val)) bufamap : iProp Σ :=
-  ( bufsByBlock_l ↦[mapT (slice.T (refT (struct.t buf.Buf.S)))] #bufsByBlock ∗
-    ∃ (bbbmap: Map.t Slice.t),
-      is_map bufsByBlock bbbmap ∗
-      [∗ maplist] blkno↦s; bbblist ∈ bbbmap; buflists,
-        is_slice s (refT (struct.t buf.Buf.S)) 1 bbblist ∗
-        ⌜ length bbblist > 0 ⌝ ∗
-        ∃ bufamap0 ,
-        ⌜ bufamap0 ⊆ bufamap ⌝ ∗
-        [∗ maplist] a ↦ buf; bufptr ∈ bufamap0; bbblist,
-          is_txn_buf bufptr a buf gData ∗
-          ⌜a.(addrBlock) = blkno⌝ )%I.
-
-Definition bufsByBlock_buflist bufsByBlock_l (bufsByBlock:loc) gData bufamap buflist: iProp Σ :=
-  ∃ buflists,
-    bufsByBlock_wf bufsByBlock_l bufsByBlock gData buflists bufamap ∗
-    ⌜ concat buflists ≡ₚ buflist ⌝.
+Definition bufsByBlock_buflist bufsByBlock_l (bufsByBlock:loc)
+                               gData (bufamap : gmap addr buf) (buflist: list val) : iProp Σ :=
+  ( ∃ (bbbmap: Map.t Slice.t) buflists,
+    "HbufsByBlock_l" ∷ bufsByBlock_l ↦[mapT (slice.T (refT (struct.t buf.Buf.S)))] #bufsByBlock ∗
+    "HbufsByBlock" ∷ is_map bufsByBlock bbbmap ∗
+    "%Hbuflist_perm" ∷ ⌜ concat buflists ≡ₚ buflist ⌝ ∗
+    "Hbbbmap" ∷ [∗ maplist] blkno↦s; bbblist ∈ bbbmap; buflists,
+      ∃ bufamap0,
+      "Hbbblist_s" ∷ is_slice s (refT (struct.t buf.Buf.S)) 1 bbblist ∗
+      "%Hbbblist_notempty" ∷ ⌜ length bbblist > 0 ⌝ ∗
+      "%Hbufamap_subset" ∷ ⌜ dom (gset addr) bufamap0 ⊆ dom (gset addr) bufamap ⌝ ∗
+      "Hbbblist" ∷ [∗ maplist] a ↦ buf; bufptr ∈ bufamap0; bbblist,
+        "Histxn" ∷ is_txn_buf bufptr a buf gData ∗
+        "%HaddrBlock" ∷ ⌜a.(addrBlock) = blkno⌝ ).
 
 Definition updBlockOK walUpd
   (gData : gmap u64 {K : bufDataKind & gen_heapG u64 (updatable_buf (bufDataT K)) Σ})
@@ -501,115 +498,150 @@ Opaque struct.t.
   iDestruct (is_slice_to_small with "Hbufs") as "Hbufs".
   wp_apply (wp_forSlicePrefix
       (fun done todo =>
-        ⌜ done ++ todo = buflist ⌝ ∗
         ∃ bufamap_todo bufamap_done,
-        ( [∗ maplist] a↦buf;bufptrval ∈ bufamap_todo;todo, is_txn_buf bufptrval a buf gData ) ∗
-        bufsByBlock_buflist bufsByBlock_l bufsByBlock gData bufamap_done done ∗
-        ⌜ bufamap_todo ## bufamap_done ⌝)%I
+        "<-" ∷ ⌜ done ++ todo = buflist ⌝ ∗
+        "Hbufamap_todo" ∷ ( [∗ maplist] a↦buf;bufptrval ∈ bufamap_todo;todo, is_txn_buf bufptrval a buf gData ) ∗
+        "Hbufamap_done" ∷ bufsByBlock_buflist bufsByBlock_l bufsByBlock gData bufamap_done done ∗
+        "%Htodo_done_disjoint" ∷ ⌜ dom (gset addr) bufamap_todo ## dom (gset addr) bufamap_done ⌝)%I
       with "[] [$Hbufs Hbufpre HbufsByBlock_l HbufsByBlock]").
   2: {
-    iSplitR; try done.
     iExists _, ∅.
-    iSplitL "Hbufpre".
-    { iFrame. }
+    iSplitR; try done.
+    iSplitL "Hbufpre"; first by iFrame.
     iSplitL.
     {
-      iExists nil; rewrite /=; iSplitL; last done.
-      iSplitL "HbufsByBlock_l"; first iFrame.
-      iExists ∅.
+      iExists ∅, nil. rewrite /=.
+      iFrame.
       iSplitL "HbufsByBlock".
       { iApply is_map_retype. rewrite /=.
         iExactEq "HbufsByBlock". f_equal. f_equal.
         rewrite fmap_empty; done. }
+      iSplitR; first by done.
       iApply big_sepML_empty.
     }
     iPureIntro.
-    admit.
+    rewrite dom_empty.
+    apply disjoint_empty_r.
   }
 
-(*
   {
     iIntros (i b done todo).
-    iIntros (Φ') "!> (<- & Hbufpre & HP) HΦ'".
-    iDestruct "HP" as (buflists) "[HP %]".
-    iDestruct "HP" as "[HbufsByBlock_l HP]".
-    iDestruct "HP" as (bbbmap) "[Hbbbmap Hbuflists]".
-    iDestruct "Hbufpre" as (bufamap') "Hbufpre".
-    iDestruct (big_sepML_delete with "Hbufpre") as (a bb) "(%Hb & Htxnbuf & Hbufpre)".
+    iIntros (Φ') "!> HP HΦ'".
+    iNamed "HP".
+    iNamed "Hbufamap_done".
+    iDestruct (big_sepML_delete_cons with "Hbufamap_todo") as (a bb) "(%Hb & Htxnbuf & Hbufamap_todo)".
     iDestruct "Htxnbuf" as (bufptr v0) "(-> &Hisbuf&Hmapto)".
-    wp_apply (wp_buf_loadField_addr with "Hisbuf").
-    iIntros "Hisbuf".
+    wp_apply (wp_buf_loadField_addr with "Hisbuf"). iIntros "Hisbuf".
     wp_load.
-    wp_apply (wp_MapGet with "Hbbbmap").
-    iIntros (v1 ok) "[%Hmapget Hbbbmap]".
+    wp_apply (wp_MapGet with "HbufsByBlock").
+    iIntros (v1 ok) "[%Hmapget HbufsByBlock]".
     wp_pures.
+
+    assert (a ∉ dom (gset addr) bufamap_done) as Ha_not_done.
+    {
+      rewrite -> elem_of_disjoint in Htodo_done_disjoint.
+      intro Hx.
+      eapply Htodo_done_disjoint; eauto.
+      eapply elem_of_dom_2; eauto.
+    }
+
     destruct ok.
     + apply map_get_true in Hmapget.
-      iDestruct (big_sepML_lookup_m_acc with "Hbuflists") as (i' lv') "(%Hb2 & Hb3 & Hbuflists)"; first eauto.
-      iDestruct "Hb3" as "(Hslice & % & Hb3)".
-      wp_apply (wp_SliceAppend with "[$Hslice]"); eauto.
+      iDestruct (big_sepML_delete_m with "Hbbbmap") as (i' lv') "(%Hb2 & Hb3 & Hbbbmap)"; first eauto.
+      iNamed "Hb3".
+      wp_apply (wp_SliceAppend with "[$Hbbblist_s]"); eauto.
       { iPureIntro. intuition idtac.
         { admit. }
         { val_ty. } }
       iIntros (s0') "Hslice".
       wp_apply (wp_buf_loadField_addr with "Hisbuf"); iIntros "Hisbuf".
       wp_load.
-      wp_apply (wp_MapInsert_to_val with "Hbbbmap").
-      iIntros "Hbbbmap".
+      wp_apply (wp_MapInsert_to_val with "HbufsByBlock"). iIntros "HbufsByBlock".
       iApply "HΦ'".
+      iExists (delete a bufamap_todo), (<[a := bb]> bufamap_done).
       iSplitR.
       { rewrite -app_assoc //. }
-      iSplitL "Hbufpre".
-      { iExists _. iFrame. }
-      iExists _.
+      iSplitL "Hbufamap_todo".
+      { iFrame. }
       iSplitL.
-      { rewrite /bufsByBlock_wf.
-        iFrame. iExists _. iFrame.
-        iApply "Hbuflists". iFrame.
-        rewrite app_length.
-        iSplitR; first by iPureIntro; lia.
-        iDestruct "Hb3" as (bufamap0) "Hb3".
-        iExists _.
-        iApply big_sepML_insert_app; last iFrame.
-        iSplitL; last done.
-        iExists _, _. iSplitL.
-        { iExists _, _. iFrame. done. }
-        done.
+      { iExists _, _.
+        iFrame.
+        iSplitR.
+        2: {
+          rewrite /map_insert.
+          replace (<[a.(addrBlock):=s0']> bbbmap) with (<[a.(addrBlock):=s0']> (delete a.(addrBlock) bbbmap)).
+          2: { rewrite insert_delete; auto. }
+          iApply big_sepML_insert_app.
+          { rewrite lookup_delete; eauto. }
+          iSplitR "Hbbbmap".
+          2: {
+            iApply (big_sepML_mono with "Hbbbmap").
+            iPureIntro. clear.
+            iIntros (k v lv) "Hold".
+            iNamed "Hold".
+            iExists _. iFrame.
+            iPureIntro. set_solver.
+          }
+          iExists (<[a := bb]> bufamap0). iFrame.
+          rewrite app_length.
+          iSplitR; first by iPureIntro; lia.
+          iSplitR; first by iPureIntro; set_solver.
+          iApply big_sepML_insert_app; last iFrame.
+          { apply not_elem_of_dom. set_solver. }
+          iSplitL; last by done.
+          iExists _, _. iFrame. done.
+        }
+        admit.
       }
-      admit.
+      iPureIntro.
+      set_solver.
 
     + apply map_get_false in Hmapget; intuition; subst.
       wp_apply (wp_SliceAppend_to_zero); eauto.
       iIntros (s) "Hslice".
       wp_apply (wp_buf_loadField_addr with "Hisbuf"); iIntros "Hisbuf".
       wp_load.
-      wp_apply (wp_MapInsert_to_val with "Hbbbmap"); iIntros "Hbbbmap".
+      wp_apply (wp_MapInsert_to_val with "HbufsByBlock"); iIntros "HbufsByBlock".
       iApply "HΦ'".
-
+      iExists (delete a bufamap_todo), (<[a := bb]> bufamap_done).
       iSplitR.
       { rewrite -app_assoc //. }
-      iSplitL "Hbufpre".
-      { iExists _. iFrame. }
-      iExists _.
+      iSplitL "Hbufamap_todo"; first by iFrame.
       iSplitL.
-      { rewrite /bufsByBlock_wf.
-        iFrame. iExists _. iFrame.
-        iApply big_sepML_insert_app; first done.
-        iFrame. simpl.
-        iSplitR; first by iPureIntro; lia.
-        iSplitL; last done.
-        iExists _, _. iSplitL.
-        { iExists _, _. iFrame. done. }
-        done.
+      { iExists _, _.
+        iFrame.
+        iSplitR.
+        2: {
+          iApply big_sepML_insert_app; first done.
+          iSplitR "Hbbbmap".
+          2: {
+            iApply (big_sepML_mono with "Hbbbmap").
+            iPureIntro. clear.
+            iIntros (k v lv) "Hold".
+            iNamed "Hold".
+            iExists _. iFrame.
+            iPureIntro. set_solver.
+          }
+          iExists (<[a := bb]> ∅); iFrame.
+          iSplitR; first by simpl; iPureIntro; lia.
+          iSplitR.
+          2: {
+            iApply big_sepML_insert. { apply lookup_empty. }
+            iSplitL; last by iApply big_sepML_empty.
+            iSplitL; last by done.
+            iExists _, _; iFrame. done.
+          }
+          iPureIntro. set_solver.
+        }
+        rewrite concat_app Hbuflist_perm /= //.
       }
-      rewrite concat_app H /= //.
+      iPureIntro. set_solver.
   }
 
   iIntros "[Hbufs HP]".
-  iDestruct "HP" as "(_ & _ & HP)".
-  iDestruct "HP" as (buflists) "[[HbufsByBlock_l HP] %Hbuflists]".
-  iDestruct "HP" as (bbbmap) "[Hbbbmap HP]".
+  iNamed "HP".
 
+(*
   wp_load.
   wp_apply (wp_MapIter_2 _ _ _ _
     (λ mtodo mdone,

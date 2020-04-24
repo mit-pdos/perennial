@@ -325,7 +325,7 @@ End list2.
 
 Section maplist.
   Context `{Countable K} {V LV : Type}.
-  Implicit Types Φ : K → V → LV → PROP.
+  Implicit Types Φ Ψ : K → V → LV → PROP.
   Implicit Types m : gmap K V.
   Implicit Types l : list LV.
 
@@ -391,7 +391,7 @@ Section maplist.
     iApply big_sepML_insert; eauto; iFrame.
   Qed.
 
-  Theorem big_sepML_delete Φ m l lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_delete_cons Φ m l lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
     big_sepML Φ m (lv :: l) -∗
     ∃ k v,
       ⌜ m !! k = Some v ⌝ ∗
@@ -425,6 +425,17 @@ Section maplist.
     done.
   Qed.
 
+  Theorem big_sepML_delete_m Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    m !! k = Some v ->
+    big_sepML Φ m l -∗
+    ∃ i lv,
+      ⌜ l !! i = Some lv ⌝ ∗
+      Φ k v lv ∗
+      big_sepML Φ (delete k m) (delete i l).
+  Proof.
+    iIntros (Hm) "Hml".
+  Admitted.
+
   Theorem big_sepML_lookup_l_acc Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
     l !! i = Some lv ->
     big_sepML Φ m l -∗
@@ -444,6 +455,35 @@ Section maplist.
       big_sepML Φ (<[k := v']> m) (<[i := lv']> l).
   Proof.
   Admitted.
+
+  Theorem big_sepML_mono Φ Ψ m l `{!∀ k v lv, Absorbing (Φ k v lv)} `{!∀ k v lv, Absorbing (Ψ k v lv)} :
+    big_sepML Φ m l -∗
+    ⌜ ∀ k v lv, Φ k v lv -∗ Ψ k v lv ⌝ -∗
+    big_sepML Ψ m l.
+  Proof.
+    rewrite /big_sepML; iIntros "Hml %".
+    iDestruct "Hml" as (lm) "[% Hml]".
+    iExists lm; iSplitR; first by eauto.
+    iApply big_sepM2_mono; eauto.
+  Qed.
+
+  Theorem big_sepML_lookup_l_Some Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    l !! i = Some lv ->
+    big_sepML Φ m l -∗
+    ⌜ ∃ k v, m !! k = Some v ⌝.
+  Proof.
+    iIntros (Hl) "Hml".
+    iDestruct (big_sepML_lookup_l_acc with "Hml") as (k v) "[% Hml]"; eauto.
+  Qed.
+
+  Theorem big_sepML_lookup_m_Some Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    m !! k = Some v ->
+    big_sepML Φ m l -∗
+    ⌜ ∃ i lv, l !! i = Some lv ⌝.
+  Proof.
+    iIntros (Hm) "Hml".
+    iDestruct (big_sepML_lookup_m_acc with "Hml") as (i lv) "[% Hml]"; eauto.
+  Qed.
 
 End maplist.
 
@@ -487,3 +527,5 @@ Notation "'[∗' 'maplist]' k ↦ x ; v ∈ m ; l , P" :=
   (at level 200, m, l at level 10, k, x, v at level 1, right associativity,
    format "[∗  maplist]  k ↦ x ; v  ∈  m ; l ,  P")
   : bi_scope.
+
+Opaque big_sepML.
