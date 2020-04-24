@@ -612,8 +612,8 @@ Opaque struct.t.
           { iPureIntro.
             eapply insert_mono. eauto. }
           iApply big_sepML_insert_app; last iFrame.
-          { apply not_elem_of_dom.
-            eapply subseteq_dom in Hbufamap_subset. set_solver. }
+          { apply (not_elem_of_dom (D:=gset addr)).
+            eapply (subseteq_dom (D:=gset addr)) in Hbufamap_subset. set_solver. }
           iSplitL; last by done.
           iExists _. iFrame. done.
         }
@@ -651,7 +651,7 @@ Opaque struct.t.
             iPureIntro. intuition eauto.
             etransitivity; eauto.
             eapply insert_subseteq.
-            eapply not_elem_of_dom; eauto.
+            eapply (not_elem_of_dom (D:=gset addr)); eauto.
           }
           iExists (<[a := bb]> ∅); iFrame.
           iSplitR; first by simpl; iPureIntro; lia.
