@@ -25,17 +25,17 @@ Ltac to_pm_ident H :=
   | ident => constr:(H)
   end.
 
-Ltac name_hyp H :=
+Ltac iNameHyp H :=
   let i := to_pm_ident H in
   lazymatch goal with
   | |- context[Esnoc _ i (named ?name ?P)] =>
     iDestruct (from_named with i) as name
   | |- context[Esnoc _ i _] =>
-    fail "name_hyp: hypothesis" H "is not a named"
-  | _ => fail "name_hyp: hypothesis" H "not found"
+    fail "iNameHyp: hypothesis" H "is not a named"
+  | _ => fail 1 "iNameHyp: hypothesis" H "not found"
   end.
 
-Ltac name_named :=
+Ltac named :=
   repeat match goal with
          | |- context[Esnoc _ ?i (named ?name ?P)] =>
            iDestruct (from_named with i) as name
@@ -44,28 +44,32 @@ Ltac name_named :=
 (* this is a super-simple but maybe non-performant implementation *)
 Ltac iNamedDestruct H :=
   let rec go H :=
-      first [name_hyp H
+      first [iNameHyp H
             | let Htmp1 := iFresh in
               let Htmp2 := iFresh in
               let pat := constr:(intro_patterns.IList
                                    [[intro_patterns.IIdent Htmp1;
                                      intro_patterns.IIdent Htmp2]]) in
               iDestruct H as pat;
-              name_hyp Htmp1; go Htmp2
+              iNameHyp Htmp1; go Htmp2
             | idtac ]
   in go H.
+
+Local Ltac iDeex_go i x H :=
+  let x' := fresh x in
+  iDestructHyp i as (x') H.
 
 Ltac iDeexHyp H :=
   let i := to_pm_ident H in
   let rec go _ := lazymatch goal with
                   (* check this separately because red on bi_exist produces an unseal *)
                   | |- context[Esnoc _ i (bi_exist (fun x => _))] =>
-                    iDestructHyp i as (x) H
+                    first [ iDeex_go i x H | fail "iDeexHyp: could not deex" H ]
                   | |- context[Esnoc _ i ?P] =>
                     let P := (eval red in P) in
                     lazymatch P with
                     | bi_exist (fun x => _) =>
-                      iDestructHyp i as (x) H
+                      first [ iDeex_go i x H | fail "iDeexHyp: could not deex" H ]
                     | _ => fail "iDeexHyp:" H "is not an ∃"
                     end
                   end in
@@ -74,7 +78,7 @@ Ltac iDeexHyp H :=
 Ltac iDeex :=
   repeat match goal with
          | |- context[Esnoc _ ?i (bi_exist (fun x => _))] =>
-           iDestructHyp i as (x) i
+           iDeex_go
          end.
 
 Ltac iNamed H :=
@@ -91,6 +95,8 @@ Module tests.
   Section tests.
     Context {Σ:gFunctors}.
     Implicit Types (P Q R : iProp Σ).
+    Implicit Types (Ψ: nat -> iProp Σ).
+    Implicit Types (φ: Prop).
 
     Example test_name_named_1 P Q :
       ⊢ named "H1" P -∗
@@ -98,7 +104,7 @@ Module tests.
         P ∗ Q.
     Proof.
       iIntros "? ?".
-      name_named.
+      named.
       iSplitL "H1"; [ iExact "H1" | iExact "H2" ].
     Qed.
 
@@ -108,8 +114,8 @@ Module tests.
         P ∗ Q%I.
     Proof.
       iIntros "H₁ H₂".
-      name_hyp "H₁".
-      name_hyp "H₂".
+      iNameHyp "H₁".
+      iNameHyp "H₂".
       iSplitL "H1"; [ iExact "H1" | iExact "H2" ].
     Qed.
 
@@ -161,16 +167,16 @@ Module tests.
       iFrame.
     Qed.
 
-    Example test_exist_destruct (P: nat -> iProp Σ) Q :
-      ⊢ (∃ x, named "HP" (P x) ∗ named "HQ" Q) -∗ (∃ x, P x) ∗ Q.
+    Example test_exist_destruct Ψ Q :
+      ⊢ (∃ x, named "HP" (Ψ x) ∗ named "HQ" Q) -∗ (∃ x, Ψ x) ∗ Q.
     Proof.
       iIntros "H".
       iNamed "H".
       iSplitL "HP"; [ iExists x | ]; iFrame.
     Qed.
 
-    Definition rep_invariant (P: nat -> iProp Σ) Q : iProp Σ :=
-      (∃ x, named "HP" (P x) ∗ named "HQ" Q).
+    Definition rep_invariant Ψ Q : iProp Σ :=
+      (∃ x, named "HP" (Ψ x) ∗ named "HQ" Q).
 
     Example test_exist_destruct_under_definition (P: nat -> iProp Σ) Q :
       ⊢ rep_invariant P Q -∗ (∃ x, P x) ∗ Q.
@@ -180,28 +186,28 @@ Module tests.
       iSplitL "HP"; [ iExists x | ]; iFrame.
     Qed.
 
-    Example test_exist_destruct_no_naming (P: nat -> iProp Σ) Q :
-      ⊢ (∃ x, P x) -∗ (∃ x, P x).
+    Example test_exist_destruct_no_naming Ψ Q :
+      ⊢ (∃ x, Ψ x) -∗ (∃ x, Ψ x).
     Proof.
       iIntros "H".
       iNamed "H".
       iExists x; iFrame "H".
     Qed.
 
-    Example test_multiple_exist_destruct (P: nat -> iProp Σ) Q :
-      ⊢ (∃ x y z, P (x + y + z)) -∗ (∃ x, P x).
+    Example test_multiple_exist_destruct Ψ Q :
+      ⊢ (∃ x y z, Ψ (x + y + z)) -∗ (∃ x, Ψ x).
     Proof.
       iIntros "H".
       iNamed "H".
       iExists (x+y+z); iFrame "H".
     Qed.
 
-    Example test_iNamed_destruct_pat (foo: Prop) P Q :
-      ⊢ named "[%Hfoo HP]" (⌜foo⌝ ∗ P) ∗
+    Example test_iNamed_destruct_pat (φ: Prop) P Q :
+      ⊢ named "[%Hfoo HP]" (⌜φ⌝ ∗ P) ∗
         named "HQ" Q ∗
         named "HP2" P
         -∗
-        ⌜foo⌝ ∗ P ∗ Q ∗ P.
+        ⌜φ⌝ ∗ P ∗ Q ∗ P.
     Proof.
       iIntros "H".
       iNamed "H".
@@ -209,21 +215,39 @@ Module tests.
       iPureIntro; exact Hfoo.
     Qed.
 
-    Example test_named_into_pure (P : Prop) (Q : iProp Σ) :
-      named "N" ⌜P⌝ ∗ Q -∗ Q.
+    Example test_named_into_pure φ Q :
+      named "N" ⌜φ⌝ ∗ Q -∗ Q.
     Proof.
       iIntros "[%HP HQ]".
       iFrame.
     Qed.
 
-    Example test_named_from_pure (P : Prop) (Q : iProp Σ) :
-      P ->
-      Q -∗ Q ∗ named "N" ⌜P⌝.
+    Example test_named_from_pure φ Q :
+      φ ->
+      Q -∗ Q ∗ named "N" ⌜φ⌝.
     Proof.
       iIntros (HP) "HQ".
       iFrame.
       iPureIntro.
       done.
+    Qed.
+
+    Example test_named_not_found P :
+      named "HP" P -∗ P.
+    Proof.
+      iIntros "HP".
+      Fail iNamed "foo". (* hypothesis "foo" not found *)
+      iNamed "HP".
+      iExact "HP".
+    Qed.
+
+    Example test_exists_freshen x Ψ :
+      named "HP" (Ψ x) -∗ named "HP2" (∃ x, Ψ x) -∗
+      named "HP" (∃ x, Ψ x).
+    Proof.
+      iIntros "? ?"; named.
+      iDeexHyp "HP2".
+      iExists x0; iFrame.
     Qed.
 
   End tests.
