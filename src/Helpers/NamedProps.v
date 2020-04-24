@@ -6,47 +6,17 @@ From iris_string_ident Require ltac2_string_ident.
 Section named.
   Context {PROP:bi}.
 
-  Definition named_def (name: string) (P: PROP): PROP := P.
-  Definition named_aux : seal (@named_def). by eexists. Qed.
-  Definition named := (@named_aux).(unseal).
-  Definition named_eq : @named = @named_def := (@named_aux).(seal_eq).
+  Definition named (name: string) (P: PROP): PROP := P.
 
   Theorem to_named name P : P -∗ named name P.
   Proof.
-    rewrite named_eq /named_def.
     auto.
   Qed.
 
   Theorem from_named name P : named name P -∗ P.
   Proof.
-    rewrite named_eq /named_def.
     auto.
   Qed.
-
-  Global Instance frame_named_from_frame name p P Q R (H:Frame p P Q R) : Frame p P (named name Q) R.
-  Proof.
-    rewrite named_eq /named_def.
-    apply _.
-  Qed.
-
-  Global Instance named_into_pure name P φ : IntoPure P φ → IntoPure (named name P) φ.
-  Proof.
-    rewrite named_eq /named_def.
-    auto.
-  Qed.
-
-  Global Instance named_from_pure name a P φ : FromPure a P φ → FromPure a (named name P) φ.
-  Proof.
-    rewrite named_eq /named_def.
-    auto.
-  Qed.
-
-  Global Instance named_persistent name P : Persistent P → Persistent (named name P).
-  Proof.
-    rewrite named_eq /named_def.
-    auto.
-  Qed.
-
 End named.
 
 Ltac to_pm_ident H :=
