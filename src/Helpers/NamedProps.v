@@ -4,20 +4,31 @@ From iris.base_logic.lib Require Import iprop.
 
 From iris_string_ident Require ltac2_string_ident.
 
+(* NamedProps implements [named name P], which is equivalent to P but knows to
+   name itself [name] when iIntro'd. The syntax looks like [name ∷ P], in
+   analogy to in Gallina where you might write [forall (Hfoo: 3 < 4), ...] for a
+   hypothesis that would be introduced as `Hfoo` using automatic names.
+
+  To use this library, write your definitions with [name ∷ P] for each conjunct.
+  Then, use [iNamed "H"] to destruct an invariant "H" into its conjuncts, using
+  their specified names. [iNamed] also introduces existentials with the names
+  for the Coq binders.
+
+  The names in a [named] are not actually names but full-blown Iris intro
+  patterns. This means you can write [#H] to automatically introduce to the
+  persistent context, [%H] to name a pure fact (using string_to_ident), or even
+  something crazy like ["[<- H]"] to destruct the hypothesis and rewrite by the
+  first conjunct. *)
+
 Section named.
   Context {PROP:bi}.
 
   Definition named (name: string) (P: PROP): PROP := P.
 
   Theorem to_named name P : P -∗ named name P.
-  Proof.
-    auto.
-  Qed.
-
+  Proof. auto. Qed.
   Theorem from_named name P : named name P -∗ P.
-  Proof.
-    auto.
-  Qed.
+  Proof. auto. Qed.
 End named.
 
 Ltac to_pm_ident H :=
@@ -109,7 +120,7 @@ Ltac iNamed H :=
 Ltac prove_named :=
   repeat rewrite -to_named.
 
-Notation "name ∷ P" := (named name P) (at level 79).
+Notation "name ∷ P" := (named name P%I) (at level 79).
 
 (* TODO: maybe we should move tests out *)
 Module tests.
