@@ -1,6 +1,7 @@
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang Require Import lang.
+From Perennial.goose_lang.lib Require Import control.impl.
 
 Set Default Proof Using "Type".
 
@@ -19,6 +20,21 @@ Proof.
   - wp_apply ("Hwp" with "[$HR]").
     iFrame.
   - iApply ("HΦ" with "HR").
+Qed.
+
+Theorem wp_Assume stk E (cond: bool) :
+  {{{ True }}}
+    Assume #cond @ stk; E
+  {{{ RET #(); ⌜cond = true⌝ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  wp_if_destruct.
+  - iApply ("HΦ" with "[//]").
+  - wp_pures.
+    iLöb as "IH".
+    wp_pures.
+    wp_apply ("IH" with "[$]").
 Qed.
 
 End goose_lang.
