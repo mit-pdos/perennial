@@ -70,3 +70,21 @@ Section list.
     exists x; auto.
   Qed.
 End list.
+
+Global Instance concat_permutation_proper T :
+  Proper (Permutation ==> Permutation) (@concat T).
+Proof.
+  intros a b H.
+  induction H; eauto.
+  - simpl. rewrite IHPermutation. eauto.
+  - simpl. apply Permutation_app_swap_app.
+  - etransitivity; eauto.
+Qed.
+
+Global Instance concat_permutation_proper_forall T :
+  Proper (Forall2 Permutation ==> Permutation) (@concat T).
+Proof.
+  intros a b H.
+  induction H; eauto.
+  simpl. rewrite H. rewrite IHForall2. eauto.
+Qed.

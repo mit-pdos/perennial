@@ -541,7 +541,7 @@ Opaque struct.t.
     rewrite dom_empty.
     split.
     1: apply disjoint_empty_r.
-    admit.
+    rewrite right_id_L; eauto.
   }
 
   {
@@ -617,7 +617,14 @@ Opaque struct.t.
           iSplitL; last by done.
           iExists _. iFrame. done.
         }
-        admit.
+
+        iPureIntro.
+        rewrite concat_app -Hbuflist_perm /=.
+        apply delete_Permutation in Hb2.
+        rewrite -> Hb2 at 2. simpl.
+        rewrite app_nil_r. rewrite app_assoc.
+        eapply Permutation_app_tail.
+        eapply Permutation_app_comm.
       }
       iPureIntro.
       split.
