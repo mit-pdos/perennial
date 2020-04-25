@@ -29,7 +29,12 @@ Section instances.
        IntoVal_def := null;
     |}.
 
-  Global Instance loc_IntoVal_ref t : IntoValForType loc_IntoVal (struct.ptrT t).
+  Global Instance loc_IntoVal_struct_ptr t : IntoValForType loc_IntoVal (struct.ptrT t).
+  Proof.
+    constructor; auto.
+  Qed.
+
+  Global Instance loc_IntoVal_ref t : IntoValForType loc_IntoVal (refT t).
   Proof.
     constructor; auto.
   Qed.
