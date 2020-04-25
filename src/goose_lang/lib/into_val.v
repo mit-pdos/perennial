@@ -8,6 +8,7 @@ Class IntoVal {ext: ext_op} V :=
 
 Class IntoValForType {ext V} (H: @IntoVal ext V) {ext_ty: ext_types ext} (t:ty) :=
     { def_is_zero: to_val IntoVal_def = zero_val t;
+      to_val_has_zero: has_zero t;
       (* TODO: this isn't necessary, but it seems reasonable *)
       to_val_ty: forall v, val_ty (to_val v) t; }.
 
