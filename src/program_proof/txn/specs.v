@@ -824,7 +824,7 @@ Opaque struct.t.
     iSplitR.
     { iPureIntro. set_solver. }
     iApply big_sepML_insert_app.
-    { admit. }
+    { eapply not_elem_of_dom. eapply elem_of_dom_2 in H0. set_solver. }
     iFrame "Hmdone".
     iSplitR; first by done.
     iFrame.
@@ -840,8 +840,7 @@ Opaque struct.t.
   iApply ("HΦ" $! _ _ ((λ x, tt) <$> bbbmap)). iFrame.
   iSplitR.
   2: {
-    replace (∅ ∪ bufamap_done) with (bufamap_done).
-    2: { admit. }
+    replace (∅ ∪ bufamap_done) with (bufamap_done) by ( rewrite left_id_L; eauto ).
     admit.
   }
 
