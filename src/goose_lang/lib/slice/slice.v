@@ -1,3 +1,4 @@
+From RecordUpdate Require Import RecordSet.
 From Perennial.goose_lang Require Import proofmode array.
 From Perennial.goose_lang.lib Require Export typed_mem slice.impl.
 Set Default Proof Using "Type".
@@ -7,10 +8,12 @@ Module Slice.
     mk { ptr: loc;
          sz: u64;
          cap: u64; }.
+  Global Instance _eta: Settable _ := settable! mk <ptr; sz; cap>.
+  Global Instance _witness: Inhabited _ := populate (mk inhabitant inhabitant inhabitant).
   Notation extra s := (int.val (cap s) - int.val (sz s)).
   Definition nil := mk null (U64 0) (U64 0).
 End Slice.
-Notation slice_extra s := (Slice.extra s).
+Local Notation slice_extra s := (Slice.extra s).
 
 Section goose_lang.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
