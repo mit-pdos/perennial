@@ -1,7 +1,7 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.Helpers Require Import Transitions NamedProps.
+From Perennial.Helpers Require Import Transitions NamedProps Map.
 
 From Perennial.algebra Require Import deletable_heap.
 From Perennial.program_proof Require Import proof_prelude.
@@ -290,70 +290,6 @@ Definition is_durable γ txns durable_lb : iProp Σ :=
       ⌜(durable_lb ≤ diskEnd_txn_id)%nat ⌝ ∗
        log_inv γ txns diskEnd_txn_id).
 
-Definition list_to_imap {A} (l: list A) : gmap nat A :=
-  list_to_map (imap (λ i x, (i, x)) l).
-
-Theorem imap_NoDup {A B} (f: nat → A → B) (l: list A) :
-  (∀ i1 x1 i2 x2,
-      i1 ≠ i2 →
-      l !! i1 = Some x1 →
-      l !! i2 = Some x2 →
-      f i1 x1 ≠ f i2 x2) →
-  NoDup (imap f l).
-Proof.
-  revert f.
-  induction l as [|x l]; simpl; intros f Hfneq.
-  - constructor.
-  - constructor.
-    + intros Helem%elem_of_lookup_imap_1.
-      destruct Helem as (i'&x'&[Heq Hlookup]).
-      apply Hfneq in Heq; eauto.
-    + apply IHl; intros.
-      eapply Hfneq; eauto.
-Qed.
-
-Theorem lookup_list_to_imap_Some {A} l (i: nat) (x: A) :
-  l !! i = Some x <-> list_to_imap l !! i = Some x.
-Proof.
-  rewrite /list_to_imap.
-  revert i.
-  induction l; simpl; intros.
-  - auto.
-  - destruct i; simpl.
-    + rewrite lookup_insert //.
-    + rewrite -> lookup_insert_ne by lia.
-      rewrite IHl.
-      split.
-      * intros Helem%elem_of_list_to_map_2%elem_of_lookup_imap_1.
-        destruct Helem as (i'&x'&[Heq Hlookup]).
-        inversion Heq; subst; clear Heq.
-        apply elem_of_list_to_map_1.
-        { rewrite fmap_imap.
-          simpl.
-          apply imap_NoDup; intros; simpl.
-          auto. }
-        change (S i', x') with (((λ (i : nat) (x : A), (i, x)) ∘ S) i' x').
-        eapply elem_of_lookup_imap_2; eauto.
-      * intros Helem%elem_of_list_to_map_2%elem_of_lookup_imap_1.
-        destruct Helem as (i'&x'&[Heq Hlookup]).
-        inversion Heq; subst; clear Heq.
-        apply elem_of_list_to_map_1.
-        { rewrite fmap_imap.
-          simpl.
-          apply imap_NoDup; intros; simpl.
-          auto. }
-        eapply elem_of_lookup_imap_2; eauto.
-Qed.
-
-Theorem lookup_list_to_imap {A} (l: list A) (i: nat) :
-  list_to_imap l !! i = l !! i.
-Proof.
-  destruct (l !! i) eqn:Hl.
-  - apply lookup_list_to_imap_Some in Hl; auto.
-  - destruct (list_to_imap l !! i) eqn:Himapl; auto.
-    apply lookup_list_to_imap_Some in Himapl; congruence.
-Qed.
-
 Definition txns_pos_map (txns: list (u64 * list update.t)) : gmap nat u64 :=
   list_to_imap txns.*1.
 
@@ -369,28 +305,6 @@ Definition is_groupTxns γ txns : iProp Σ :=
     gen_heap_ctx (hG:=γ.(groupTxns_name)) (txns_pos_map txns) ∗
     ([∗ map] txn_id↦pos ∈ (txns_pos_map txns),
      group_txn γ txn_id pos).
-
-Theorem list_to_imap_app1 {A} (l: list A) (y: A) :
-  list_to_imap (l ++ [y]) = <[length l := y]> (list_to_imap l).
-Proof.
-  apply map_eq_iff; intros.
-  rewrite lookup_list_to_imap.
-  destruct (decide (i < length l)%nat);
-    [ | destruct (decide (i = length l)); subst ].
-  - rewrite -> lookup_app_l by lia.
-    rewrite -> lookup_insert_ne by lia.
-    rewrite lookup_list_to_imap //.
-  - rewrite -> lookup_app_r by lia.
-    replace (length l - length l)%nat with 0%nat by lia.
-    rewrite /= lookup_insert //.
-  - rewrite -> lookup_insert_ne by lia.
-    rewrite lookup_list_to_imap.
-    rewrite -> lookup_app_r by lia.
-    replace (i - length l)%nat with (S (i - length l - 1))%nat by lia; simpl.
-    rewrite lookup_nil.
-    rewrite -> lookup_ge_None_2 by lia.
-    auto.
-Qed.
 
 Theorem alloc_group_txn γ txns E pos upds :
   is_groupTxns γ txns ={E}=∗
