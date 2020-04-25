@@ -85,6 +85,10 @@ Record locked_state :=
 Instance locked_state_eta: Settable _ :=
   settable! Build_locked_state <memStart; diskEnd; nextDiskEnd; memLog>.
 
+(** TODO: rename.
+
+ [group_txn] no longer has anything to do with grouping, it's just a persistent
+fact about a valid (transaction, pos) pair. *)
 Definition group_txn γ txn_id (pos: u64) : iProp Σ :=
   readonly (mapsto (hG:=γ.(groupTxns_name)) txn_id 1%Qp pos).
 
@@ -600,9 +604,6 @@ Qed.
 Theorem simulate_flush l γ Q σ pos txn_id :
   (is_wal_inner l γ σ ∗ P σ) -∗
   diskEnd_at_least γ.(circ_name) (int.val pos) -∗
-  (* TODO: the actual fact we want is not just for grouped txns but any valid
-  one; furthermore, there's a complication that we really need the highest
-  transaction id for this position since we'll only flush that *)
   group_txn γ txn_id pos -∗
   (∀ (σ σ' : log_state.t) (b : ()),
       ⌜wal_wf σ⌝
@@ -647,12 +648,7 @@ Proof.
     iExists _, _, _, _; iFrame.
     iSplit; auto.
     iExists _; iFrame.
-    admit. (* this isn't doable - it's not an invariant that diskEnd_txn_id is a
-    group_txn for diskEnd, since the caller can force flushing up to a non-group
-    txn. I don't think it's important that it be a group txn; in fact, I'm not
-    convinced we care what the "group txns" are (as currently defined, historic
-    values of nextDiskEnd), only that we crash to diskEnd, which is always a
-    transaction boundary because nextDiskEnd is also a transaction boundary. *)
+    destruct (Nat.max_spec diskEnd_txn_id txn_id) as [[? ->] | [? ->]]; auto.
   - (* TODO: add support for this to word (at least as a goal, if not forward
     reasoning) *)
     assert (int.val pos ≠ int.val diskEnd).
@@ -666,16 +662,12 @@ Proof.
       lia. }
     iExists _, _, _, _; iFrame.
     iSplit; auto.
-  Fail idtac.
-Admitted.
+    Grab Existential Variables.
+    all: constructor.
+Qed.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ txn_id pos :
   {{{ is_wal l γ ∗
-      (* FIXME: we need to know pos is a valid log position for a transaction
-      for UB avoidance, probably best done with a persistent token about a
-      position (a little like group_txn) that we take in the precondition. Then
-      we know it gets flushed because every valid transaction at the time of
-      locking gets flushed. *)
       group_txn γ txn_id pos ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
