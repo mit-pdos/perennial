@@ -11,15 +11,11 @@ From Perennial.goose_lang Require
 From Perennial.goose_lang.lib Require
      typed_slice.typed_slice.
 From Perennial.program_proof Require
-     marshal_proof
      append_log_proof
-     append_log_hocap
      append_log_refinement
-     util_proof
      lockmap_proof
      wal.proof
      wal.specs
-     wal.circ_proof
      txn.specs
      buftxn.specs.
 From Perennial.goose_lang Require
@@ -28,7 +24,7 @@ From Perennial.goose_lang Require
 
 (* goose output *)
 From Perennial.goose_lang.examples Require
-     goose_unittest append_log wal simpledb logging2 rfc1813.
+     goose_unittest simpledb logging2 rfc1813.
 
 (* goose-nfsd *)
 From Goose.github_com.mit_pdos Require
@@ -40,8 +36,10 @@ From Goose.github_com.mit_pdos Require
      goose_nfsd.kvs.
 
 (* interpreter semantics tests *)
-From Perennial.goose_lang.interpreter Require interpreter disk_interpreter.
-From Perennial.goose_lang.interpreter Require generated_test.
+From Perennial.goose_lang.interpreter Require
+     interpreter
+     disk_interpreter
+     generated_test.
 
 (* NFS spec *)
 From Perennial.goose_lang.examples.nfs_spec Require
