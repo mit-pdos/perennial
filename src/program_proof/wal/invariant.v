@@ -32,8 +32,9 @@ Context `{!walG Σ}.
 Implicit Types (v:val) (z:Z).
 
 Context (P: log_state.t -> iProp Σ).
-Let N := nroot .@ "wal".
-Definition circN: namespace := N .@ "circ".
+Definition walN := nroot .@ "wal".
+Let N := walN.
+Let circN := walN .@ "circ".
 
 Record wal_names :=
   { circ_name: circ_names;
@@ -394,4 +395,42 @@ Proof.
   iFrame.
 Qed.
 
+Theorem wal_linv_load_nextDiskEnd st γ :
+  wal_linv st γ -∗
+    ∃ (x:u64),
+      st ↦[WalogState.S :: "nextDiskEnd"]{1/2} #x ∗
+         (st ↦[WalogState.S :: "nextDiskEnd"]{1/2} #x -∗ wal_linv st γ).
+Proof.
+  iIntros "Hlkinv".
+  iNamed "Hlkinv".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+  iDestruct "HnextDiskEnd" as "[HnextDiskEnd1 HnextDiskEnd2]".
+  iExists _; iFrame "HnextDiskEnd2".
+  iIntros "HnextDiskEnd2".
+  iCombine "HnextDiskEnd1 HnextDiskEnd2" as "HnextDiskEnd".
+  iExists _; iFrame "# ∗".
+  iExists _; iFrame.
+Qed.
+
+Lemma wal_wf_txns_mono_pos {σ txn_id1 pos1 txn_id2 pos2} :
+  wal_wf σ ->
+  is_txn σ.(log_state.txns) txn_id1 pos1 ->
+  is_txn σ.(log_state.txns) txn_id2 pos2 ->
+  int.val pos1 < int.val pos2 ->
+  (txn_id1 ≤ txn_id2)%nat.
+Proof.
+  destruct 1 as (_&Hmono&_).
+  rewrite /is_txn; intros.
+  destruct (decide (txn_id1 ≤ txn_id2)%nat); first by auto.
+  assert (txn_id2 < txn_id1)%nat as Hord by lia.
+  eapply Hmono in Hord; eauto.
+  word. (* contradiction from [pos1 = pos2] *)
+Qed.
+
 End goose_lang.
+
+Ltac destruct_is_wal :=
+  iMod (is_wal_read_mem with "Hwal") as "#Hmem";
+  wp_call;
+  iNamed "Hmem"; iNamed "Hstfields".
