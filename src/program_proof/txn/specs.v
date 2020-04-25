@@ -7,7 +7,6 @@ From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.specs buf.defs buf.specs disk_lib.
-From Perennial.goose_lang.lib Require Import typed_map.typed_map.
 From Perennial.Helpers Require Import NamedProps Map.
 
 Inductive updatable_buf (T : Type) :=
