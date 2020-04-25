@@ -611,8 +611,9 @@ Proof.
   wp_apply (wp_BufMap__DirtyBufs with "Hisbufmap").
   iIntros (dirtyslice bufptrlist dirtylist) "(Hdirtyslice & % & Hdirtylist)".
   wp_loadField.
-  wp_apply (wp_txn_CommitWait with "[$Htxn $Hdirtyslice Hdirtylist Hbufmapt Hm]").
+  wp_apply (wp_txn_CommitWait with "[$Htxn Hdirtyslice Hdirtylist Hbufmapt Hm]").
   {
+    (* TODO: dirtyslice is an untyped is_slice due to buf/specs.v *)
     admit.
   }
   iIntros (ok) "[Hdirtyslice Hbufptrlist]".
