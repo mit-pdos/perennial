@@ -71,6 +71,15 @@ Section list.
   Qed.
 End list.
 
+(* copied from Coq 8.12+alpha for 8.11 compatibility *)
+Lemma Permutation_app_swap_app {A} : forall (l1 l2 l3: list A),
+  Permutation (l1 ++ l2 ++ l3) (l2 ++ l1 ++ l3).
+Proof.
+  intros.
+  rewrite -> 2 app_assoc.
+  apply Permutation_app_tail, Permutation_app_comm.
+Qed.
+
 Global Instance concat_permutation_proper T :
   Proper (Permutation ==> Permutation) (@concat T).
 Proof.
