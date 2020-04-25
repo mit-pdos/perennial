@@ -105,6 +105,44 @@ Section map.
   Proof. rewrite -insert_delete big_sepM_insert ?lookup_delete //. Qed.
 End map.
 
+Section list.
+
+  Lemma big_sepL_mono_with_inv' {A} P Φ Ψ (m: list A) n :
+    (∀ k x, m !! k = Some x → P ∗ Φ (k + n) x ⊢ P ∗ Ψ (k + n) x) →
+    P ∗ ([∗ list] k ↦ x ∈ m, Φ (k + n) x) ⊢ P ∗ [∗ list] k ↦ x ∈ m, Ψ (k + n) x.
+  Proof.
+    revert n.
+    induction m as [|a m] => n Hwand //=.
+    - iIntros "(HP&HΦ&Hl)".
+      iDestruct (Hwand 0 a with "[HP HΦ]") as "(HP&HΨ)"; eauto.
+      { rewrite Nat.add_0_l. iFrame. }
+      rewrite ?Nat.add_0_l.
+      iFrame "HΨ".
+      setoid_rewrite <-Nat.add_succ_r.
+      iApply (IHm with "[$ ]"); eauto.
+      intros; eauto.
+      specialize (Hwand (S k)).
+      rewrite Nat.add_succ_r -Nat.add_succ_l. iApply Hwand; eauto.
+  Qed.
+
+  Lemma big_sepL_mono_with_inv {A} P Φ Ψ (m: list A) :
+    (∀ k x, m !! k = Some x → P ∗ Φ k x ⊢ P ∗ Ψ k x) →
+    P -∗ ([∗ list] k ↦ x ∈ m, Φ k x) -∗ P ∗ [∗ list] k ↦ x ∈ m, Ψ k x.
+  Proof.
+    iIntros (?) "HP H".
+    iPoseProof (big_sepL_mono_with_inv' P Φ Ψ _ O with "[HP H]") as "H";
+    setoid_rewrite Nat.add_0_r; eauto; iFrame.
+  Qed.
+
+  Lemma big_sepL_mono_with_pers {A} (P: PROP) `{!BiAffine PROP} `{Persistent PROP P} Φ Ψ (m: list A) :
+    (∀ k x, m !! k = Some x → P -∗ Φ k x -∗ Ψ k x) →
+    P -∗ ([∗ list] k ↦ x ∈ m, Φ k x) -∗ [∗ list] k ↦ x ∈ m, Ψ k x.
+  Proof.
+    iIntros (Himpl) "#HP H". iDestruct (big_sepL_mono_with_inv with "HP H") as "(_&$)"; eauto.
+    iIntros (???) "(#HP&Φ)". iFrame "HP". by iApply Himpl.
+  Qed.
+End list.
+
 Section map2.
   Context `{Countable K} {A B : Type}.
   Implicit Types Φ Ψ : K → A → B → PROP.
@@ -258,6 +296,46 @@ End map2.
 Section list2.
   Context {A B : Type}.
   Implicit Types Φ Ψ : nat → A → B → PROP.
+
+  Lemma big_sepL_merge_big_sepL2_aux (P: nat → A → PROP) (Q: nat → B → PROP) (l1: list A) (l2: list B) off:
+    length l1 = length l2 →
+    ([∗ list] k↦y1 ∈ l1, P (k + off) y1) -∗
+    ([∗ list] k↦y2 ∈ l2, Q (k + off) y2) -∗
+    ([∗ list] k↦y1;y2 ∈ l1;l2, P (k + off) y1 ∗ Q (k + off) y2).
+  Proof.
+    revert l2 off. induction l1; intros [|] off => /= Hlen; try congruence; eauto.
+    iIntros "(HP&Hl1) (HQ&Hl2)".
+    iFrame. setoid_rewrite <-Nat.add_succ_r.
+    iApply (IHl1 with "[$] [$]"); eauto.
+  Qed.
+
+  (** XXX: shocked that this is not upstream? *)
+  Lemma big_sepL_merge_big_sepL2 (P: nat → A → PROP) (Q: nat → B → PROP) (l1: list A) (l2: list B):
+    length l1 = length l2 →
+    ([∗ list] k↦y1 ∈ l1, P k y1) -∗
+    ([∗ list] k↦y2 ∈ l2, Q k y2) -∗
+    ([∗ list] k↦y1;y2 ∈ l1;l2, P k y1 ∗ Q k y2).
+  Proof.
+    intros. specialize (big_sepL_merge_big_sepL2_aux P Q l1 l2 O).
+    setoid_rewrite Nat.add_0_r; eauto.
+  Qed.
+
+  Lemma big_sepL2_mono_with_pers (P: PROP) `{!BiAffine PROP} `{Persistent PROP P} (Φ Ψ: nat → A → B → PROP) l1 l2:
+    (∀ k x y, l1 !! k = Some x → l2 !! k = Some y → P -∗ Φ k x y -∗ Ψ k x y) →
+    P -∗ ([∗ list] k ↦ x;y ∈ l1;l2, Φ k x y) -∗ [∗ list] k ↦ x;y ∈ l1;l2, Ψ k x y.
+  Proof.
+    iIntros (Himpl) "HP".
+    rewrite ?big_sepL2_alt.
+    iIntros "(%&Hwand)". iSplit; first auto.
+    iApply (big_sepL_mono_with_pers P (λ k ab, Φ k (fst ab) (snd ab))
+                                      (λ k ab, Ψ k (fst ab) (snd ab)) with "HP Hwand").
+    { intros k x Hlookup. eapply Himpl; eauto.
+      - rewrite -(fst_zip l1 l2); last lia.
+        rewrite list_lookup_fmap Hlookup //=.
+      - rewrite -(snd_zip l1 l2); last lia.
+        rewrite list_lookup_fmap Hlookup //=.
+    }
+  Qed.
 
   Lemma big_sepL2_lookup_1_some
       Φ (l1 : list A) (l2 : list B) (i : nat) (x1 : A) :

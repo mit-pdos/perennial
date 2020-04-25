@@ -27,6 +27,13 @@ Section frac_count.
   Definition fc_tok γ q :=
     own γ (◯ Some (q, xH)).
 
+  Lemma fc_auth_init :
+    ⊢ |==> ∃ γ, fc_auth γ None.
+  Proof.
+    iApply own_alloc.
+    { apply auth_auth_valid. constructor. }
+  Qed.
+
   Lemma fc_auth_first_tok γ :
     fc_auth γ None ==∗
     fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗ fc_tok γ (1/2)%Qp.

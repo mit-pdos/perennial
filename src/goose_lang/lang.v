@@ -948,6 +948,12 @@ Proof.
   eapply Hbound.
 Qed.
 
+Theorem isFresh_offset0 σ l :
+  isFresh σ l -> addr_offset l = 0.
+Proof.
+  intros Hbound. destruct Hbound as (?&?); eauto.
+Qed.
+
 Theorem fresh_locs_isFresh σ :
   isFresh σ (fresh_locs (dom (gset loc) σ.(heap))).
 Proof.

@@ -2,7 +2,7 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth excl.
 From iris.base_logic.lib Require Import proph_map.
 From iris.program_logic Require Export weakestpre adequacy.
-From Perennial.algebra Require Import proph_map frac_count.
+From Perennial.algebra Require Import proph_map frac_count big_op.
 From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert language_ctx.
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
@@ -432,6 +432,37 @@ Qed.
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
     val_typing_ind := Induction for val_transTy Sort Prop.
 
+Lemma loc_paired_init l ls:
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ),
+  meta_token l ⊤ -∗
+  meta_token (hG := refinement_na_heapG) ls ⊤ ==∗
+  loc_paired ls l.
+Proof.
+  intros. iIntros "Htok1 Htok2".
+  iMod (meta_set ⊤ l ls rlN with "[$]").
+  { solve_ndisj. }
+  iMod (meta_set (hG := refinement_na_heapG) ⊤ ls l rlN with "[$]").
+  { solve_ndisj. }
+  by iFrame.
+Qed.
+
+Lemma is_loc_init l ls v vs:
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) P,
+  l ↦ v -∗
+  meta_token l ⊤ -∗
+  ls s↦ vs -∗
+  meta_token (hG := refinement_na_heapG) ls ⊤ -∗
+  P vs v -∗
+  |={⊤}=> is_loc ls l P.
+Proof.
+  intros. iIntros "Hl Hltok Hls Hlstok HP".
+  iMod (fc_auth_init) as (γ) "Hfc".
+  iMod (loc_paired_init with "[$] [$]") as "$".
+  iExists γ.
+  iMod (inv_alloc locN ⊤ (loc_inv γ ls l P) with "[-]") as "$"; last done.
+  { iNext. iExists _, _. iLeft. iFrame. }
+Qed.
+
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
   ∀ Γ es e τ, expr_transTy _ _ _ spec_trans Γ es e τ →
@@ -772,8 +803,8 @@ Proof using spec_trans.
     { rewrite -Hsize. destruct (flatten_ty t) as [|]; try congruence; simpl; try lia. }
     { auto. }
     { auto. }
-    iNext. iIntros (l) "(Hsize&Hpts)".
-    iMod (ghost_allocN_seq_sized_meta with "[] Hj") as (ls) "(Hj&Hssize&Hspts)".
+    iNext. iIntros (l) "(%&Hsize&Hpts)".
+    iMod (ghost_allocN_seq_sized_meta with "[] Hj") as (ls) "(Hj&%&Hssize&Hspts)".
     { rewrite -Hspecsize. destruct (flatten_ty t) as [|]; try congruence; simpl; try lia. }
     { eassumption. }
     { solve_ndisj. }
@@ -786,8 +817,19 @@ Proof using spec_trans.
                    (Z.of_nat (int.nat nint * length (flatten_ty t)))%nat by lia.
     iFrame.
     iSplitL "".
-    { iPureIntro. split_and!; eauto; admit. }
-    admit.
+    { iPureIntro. split_and!; eauto; naive_solver congruence. }
+
+    rewrite (addr_offset_0_is_base l); last naive_solver.
+    rewrite (addr_offset_0_is_base ls); last naive_solver.
+    iCombine "Hpts Hspts" as "Hpts".
+    rewrite -big_sepL_sep.
+    iDestruct "Hv2" as "#Hv".
+    iApply big_sepL_fupd.
+    iApply (big_sepL_mono_with_pers with "Hv Hpts").
+    { iIntros (k x Hlookup) "Hval (Hmtoks&Hsmtoks)".
+      iDestruct (big_sepL_merge_big_sepL2 with "Hmtoks Hsmtoks") as "Hmtoks"; first lia.
+      admit.
+    }
   - admit.
   - admit.
   - admit.

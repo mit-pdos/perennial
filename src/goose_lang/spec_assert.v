@@ -128,6 +128,7 @@ Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
   spec_ctx -∗
   j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) ={E}=∗
   ∃ l : loc, j ⤇ K (#l) ∗
+             ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
              na_block_size (hG := refinement_na_heapG) l (int.nat n * length (flatten_struct v))%nat ∗
              [∗ list] i ∈ seq 0 (int.nat n),
              (spec_mapsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
@@ -175,6 +176,8 @@ Proof.
     iApply (na_mapsto_to_heap with "Hli").
     destruct Hfresh as (H'&?). eapply H'.
   }
+  iSplitL "".
+  { iPureIntro; split; eauto using isFresh_not_null, isFresh_offset0. }
   iApply (big_sepL_mono with "Hl").
   iIntros (k0 ? _) "H".
   setoid_rewrite Z.mul_comm at 1.

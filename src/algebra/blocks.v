@@ -119,6 +119,13 @@ Section block_addr_defs.
     - congruence.
   Qed.
 
+  Lemma addr_offset_0_is_base l:
+    addr_offset l = 0 →
+    addr_base l = l.
+  Proof.
+    rewrite /addr_base => <-. apply addr_encode_decode'.
+  Qed.
+
   Fixpoint heap_array {V} (l : L1) (vs : list V) : gmap L1 V :=
     match vs with
     | [] => ∅

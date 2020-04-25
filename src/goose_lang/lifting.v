@@ -720,7 +720,8 @@ Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
   (0 < length (flatten_struct v))%nat →
   (0 < int.val n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); na_block_size l (int.nat n * length (flatten_struct v))%nat ∗
+  {{{ l, RET LitV (LitLoc l); ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
+                              na_block_size l (int.nat n * length (flatten_struct v))%nat ∗
                               [∗ list] i ∈ seq 0 (int.nat n),
                               (mapsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
                                                 (flatten_struct v))
@@ -755,6 +756,8 @@ Proof.
     iApply (na_mapsto_to_heap with "Hli").
     destruct H as (H'&?). eapply H'.
   }
+  iSplitL "".
+  { iPureIntro; split; eauto using isFresh_not_null, isFresh_offset0. }
   iApply (big_sepL_mono with "Hl").
   iIntros (k0 j _) "H".
   setoid_rewrite Z.mul_comm at 1.
@@ -794,7 +797,7 @@ Proof.
     iSplitL ""; eauto.
   - iApply wp_allocN_seq_sized_meta; auto.
     { lia. }
-    iNext. iIntros (?) "(_&H)". iApply "HΦ".
+    iNext. iIntros (?) "(_&_&H)". iApply "HΦ".
     iApply (big_sepL_mono with "H"); intros. rewrite /mapsto_vals_toks/mapsto_vals.
     iApply (big_sepL_mono); intros. iIntros "(?&?)". rewrite -Hlen. iFrame.
 Qed.
