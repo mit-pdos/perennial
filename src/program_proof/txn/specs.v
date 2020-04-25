@@ -820,7 +820,7 @@ Opaque struct.t.
     iSplitR.
     { iPureIntro. set_solver. }
     iApply big_sepML_insert_app.
-    { eapply not_elem_of_dom. eapply elem_of_dom_2 in H0. set_solver. }
+    { eapply (not_elem_of_dom (D:=gset u64)). eapply (elem_of_dom_2 (D:=gset u64)) in H0. set_solver. }
     iFrame "Hmdone".
     iSplitR; first by done.
     iFrame.
