@@ -229,6 +229,7 @@ Proof using SIZE.
  - intros ? [] => //=.
  - intros ?? [] [] => //=.
  - rewrite /sN/appendN. apply disjoint_empty_r.
+ - abstract (intros; iIntros "H"; iDestruct "H" as (??? (->&->)) "H" => //=).
 Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
   perhaps specTy_model should be split into two typeclasses? *)

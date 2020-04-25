@@ -59,6 +59,11 @@ Class specTy_model :=
     sty_val_persistent:
       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ es e,
         Persistent (sty_val_interp hS τ es e);
+    sty_val_size:
+      forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ vs v,
+        sty_val_interp hS τ vs v -∗
+        ⌜ length (flatten_struct vs) = 1%nat ∧
+          length (flatten_struct v) = 1%nat ⌝;
     sty_inv_persistent:
       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
         Persistent (sty_inv hS) }.
@@ -399,6 +404,31 @@ Proof.
        so the case becomes trivial. *)
 Qed.
 
+Lemma length_flatten_well_typed vs v t:
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+  val_interp (hS := hS) t vs v -∗
+  ⌜ length (flatten_ty t) = length (flatten_struct vs) ∧
+    length (flatten_ty t) = length (flatten_struct v) ⌝.
+Proof.
+  iIntros (Σ hG hC hRG hG' HS) "Hval".
+  iInduction t as [] "IH" forall (vs v).
+  - destruct t; iDestruct "Hval" as %Hval;
+    repeat destruct Hval as (?&Hval); subst; eauto.
+  - iDestruct "Hval" as (???? (?&?)) "(H1&H2)". subst.
+    rewrite /= ?app_length.
+    iDestruct ("IH" with "[$]") as %[Heq1 Heq2].
+    iDestruct ("IH1" with "[$]") as %[Heq1' Heq2'].
+    subst. iPureIntro. lia.
+  - iDestruct "Hval" as "[Hval|Hval]"; iDestruct "Hval" as (?? (?&?)) "Hval";
+      subst; eauto.
+  - iDestruct "Hval" as (?????? (?&?)) "H1". subst; eauto.
+  - iDestruct "Hval" as "[Hval|(%&%)]"; last by (subst; eauto).
+    iDestruct "Hval" as (????? (?&?&?&?)) "H1". subst; eauto.
+  - iDestruct "Hval" as %[].
+  - iDestruct "Hval" as %[].
+  - rewrite /val_interp/=. iDestruct (sty_val_size with "Hval") as "(%&%)"; eauto.
+Qed.
+
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
     val_typing_ind := Induction for val_transTy Sort Prop.
 
@@ -737,26 +767,26 @@ Proof using spec_trans.
     iDestruct "Hv1" as (nint) "(->&->)".
     destruct (decide (0 < int.val nint)) as [Hnonneg|]; last first.
     { (* this is UB *) admit. }
+    iDestruct (length_flatten_well_typed with "Hv2") as %(Hspecsize&Hsize).
     iApply wp_allocN_seq_sized_meta.
-    { admit. }
+    { rewrite -Hsize. destruct (flatten_ty t) as [|]; try congruence; simpl; try lia. }
     { auto. }
     { auto. }
     iNext. iIntros (l) "(Hsize&Hpts)".
     iMod (ghost_allocN_seq_sized_meta with "[] Hj") as (ls) "(Hj&Hssize&Hspts)".
-    { admit. }
+    { rewrite -Hspecsize. destruct (flatten_ty t) as [|]; try congruence; simpl; try lia. }
     { eassumption. }
     { solve_ndisj. }
     { iApply "Hspec". }
     iExists _. iFrame "Hj".
     rewrite val_interp_array_unfold /arrayT_interp.
     iLeft. iExists l, ls, (int.nat nint), _, _.
-    assert (length (flatten_struct v2) = length (flatten_ty t)) as ->.
-    { admit. }
-    assert (length (flatten_struct vs2) = length (flatten_ty t)) as ->.
-    { admit. }
+    rewrite -Hsize -Hspecsize.
     iFrame. replace ((int.nat nint * length (flatten_ty t)))%Z with
                    (Z.of_nat (int.nat nint * length (flatten_ty t)))%nat by lia.
     iFrame.
+    iSplitL "".
+    { iPureIntro. split_and!; eauto; admit. }
     admit.
   - admit.
   - admit.
