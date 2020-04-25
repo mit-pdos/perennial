@@ -8,7 +8,7 @@ From Perennial.algebra Require Import deletable_heap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.specs buf.defs buf.specs disk_lib.
 From Perennial.goose_lang.lib Require Import typed_map.typed_map.
-From Perennial.Helpers Require Import NamedProps.
+From Perennial.Helpers Require Import NamedProps Map.
 
 Inductive updatable_buf (T : Type) :=
 | UB : forall (v : T) (modifiedSinceInstallG : gname), updatable_buf T
@@ -629,7 +629,7 @@ Opaque struct.t.
       iPureIntro.
       split.
       1: set_solver.
-      admit.
+      rewrite delete_insert_union; eauto.
 
     + apply map_get_false in Hmapget; intuition; subst.
       wp_apply (wp_SliceAppend_to_zero); eauto.
@@ -675,7 +675,7 @@ Opaque struct.t.
         }
         rewrite concat_app Hbuflist_perm /= //.
       }
-      iPureIntro. split. 1: set_solver. admit.
+      iPureIntro. split. 1: set_solver. rewrite delete_insert_union; eauto.
   }
 
   iIntros "[Hbufs HP]".
