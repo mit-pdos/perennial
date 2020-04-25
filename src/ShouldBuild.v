@@ -8,8 +8,6 @@ From Perennial.goose_lang Require
      refinement refinement_adequacy
      crash_lock
      logical_reln.
-From Perennial.goose_lang.lib Require
-     typed_slice.typed_slice.
 From Perennial.program_proof Require
      append_log_proof
      append_log_refinement
