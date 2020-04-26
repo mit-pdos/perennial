@@ -408,17 +408,18 @@ Proof.
     destruct (decide (0 ≤ idx  ∧ idx < n)%Z) as [(Hr1&Hr2)|Hout]; last first.
     { iRight. iPureIntro. rewrite Heq1.
       assert (idx < 0 ∨ n <= idx) as [?|?] by lia.
-      - left. lia.
+      - left.
+        apply Z.mul_neg_pos; lia.
       - right.
-        apply Z.mul_le_mono_nonneg_r; eauto; lia.
+        apply Z.mul_le_mono_nonneg_r; lia.
     }
     iLeft.
     iDestruct (big_sepL_elem_of _ (seq 0 n) (Z.to_nat idx) with "H1") as "H".
     { apply elem_of_list_In, in_seq. lia. }
     assert (addr_base ls +ₗ length (flatten_ty t) * Z.to_nat idx = ls) as ->.
-    { symmetry. rewrite (addr_plus_off_decode ls); f_equal. lia. }
+    { symmetry. rewrite (addr_plus_off_decode ls); f_equal; word. }
     assert (addr_base l +ₗ length (flatten_ty t) * Z.to_nat idx = l) as ->.
-    { symmetry. rewrite (addr_plus_off_decode l); f_equal. lia. }
+    { symmetry. rewrite (addr_plus_off_decode l); f_equal; word. }
     eauto.
   - iRight. eauto.
 Qed.
