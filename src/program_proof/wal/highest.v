@@ -1,6 +1,7 @@
 From stdpp Require Import list.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.wal Require Import specs.
+From Perennial.program_proof.wal Require Import abstraction.
 
 (*! Reasoning about is_highest_txn. *)
 (* This file has reasoning about [is_highest_txn txns txn_id pos], a version of
@@ -38,7 +39,7 @@ Fixpoint find_highest_index' poss pos: option nat :=
   | pos'::poss =>
     let idx := (λ i, (1 + i)) <$> find_highest_index' poss pos in
     match idx with
-    | Some _ => idx
+    | Some i => Some i
     | None => if (decide (pos = pos')) then Some 0 else None
     end
   end.
@@ -190,67 +191,28 @@ Fixpoint pos_indices (poss: list u64) (i: nat): gmap u64 nat :=
   match poss with
   | [] => ∅
   | pos::poss =>
-    let m := pos_indices poss (S i) in
-    match m !! pos with
-    | Some _ => m
-    | None => <[pos := i]> m
-    end
+    partial_alter (λ mi, match mi with
+                         | Some i => Some i
+                         | None => Some i
+                         end) pos (pos_indices poss (S i))
   end.
-
-Theorem option_Some_eq {A} (x1 x2: A) :
-  Some x1 = Some x2 <-> x1 = x2.
-Proof.
-  split; congruence.
-Qed.
-
-Theorem find_highest_index_none_pos_indices poss pos i0 :
-  find_highest_index poss pos = None <->
-  pos_indices poss i0 !! pos = None.
-Proof.
-  revert i0 pos.
-  induction poss; simpl; intros i0 pos.
-  - rewrite lookup_empty //.
-  - destruct (decide (pos = a)); subst.
-    { destruct (find_highest_index poss a);
-        (split; [ congruence | ]).
-      - destruct_with_eqn (pos_indices poss (S i0) !! a); try congruence.
-        rewrite lookup_insert //.
-      - destruct_with_eqn (pos_indices poss (S i0) !! a); try congruence.
-        rewrite lookup_insert //.
-    }
-    rewrite fmap_None.
-    rewrite (IHposs (S i0)).
-    { split; intros H.
-      - destruct_with_eqn (pos_indices poss (S i0) !! a); try congruence.
-        rewrite -> lookup_insert_ne by auto; auto.
-      - destruct_with_eqn (pos_indices poss (S i0) !! a); try congruence.
-        rewrite -> lookup_insert_ne in H by auto; auto.
-    }
-Qed.
 
 Lemma pos_indices_fmap_highest (poss: list u64) (i0: nat) :
   forall pos,
     (λ i, i0 + i) <$> find_highest_index poss pos =
     pos_indices poss i0 !! pos.
 Proof.
-  setoid_rewrite find_highest_index'_ok.
   revert i0.
-  induction poss; simpl; intros i0 pos.
+  induction poss; intros i0 pos.
   - rewrite lookup_empty; split; congruence.
-  - setoid_rewrite <- IHposs.
+  - simpl.
     destruct (decide (pos = a)); subst.
-    + destruct (find_highest_index' poss a) eqn:Hidx; simpl.
-      * rewrite -IHposs Hidx /=; auto.
-      * rewrite lookup_insert; auto.
-    + destruct (find_highest_index' poss pos) eqn:Hidx; simpl.
-      * destruct (find_highest_index' poss a) eqn:Hidx'; simpl.
-        { rewrite -IHposs Hidx /=; auto. }
-        rewrite -> lookup_insert_ne by auto.
-        rewrite -IHposs Hidx /=; auto.
-      * destruct (find_highest_index' poss a) eqn:Hidx'; simpl.
-        { rewrite -IHposs Hidx /=; auto. }
-        rewrite -> lookup_insert_ne by auto.
-        rewrite -IHposs Hidx /=; auto.
+    + rewrite lookup_partial_alter.
+      rewrite -IHposs.
+      destruct (find_highest_index poss a); simpl; auto.
+    + rewrite -> lookup_partial_alter_ne by auto.
+      rewrite -IHposs.
+      destruct (find_highest_index poss pos); simpl; auto.
 Qed.
 
 Theorem pos_indices_lookup (poss: list u64) :
@@ -261,3 +223,6 @@ Proof.
   rewrite -pos_indices_fmap_highest.
   destruct (find_highest_index poss pos); auto.
 Qed.
+
+Definition compute_memLogMap (memLog: list update.t) (memStart: u64): gmap u64 u64 :=
+  (λ (n:nat), U64 (Z.of_nat n)) <$> pos_indices (update.addr <$> memLog) (int.nat memStart).
