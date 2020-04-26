@@ -59,11 +59,17 @@ Class specTy_model :=
     sty_val_persistent:
       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ es e,
         Persistent (sty_val_interp hS τ es e);
+    sty_val_flatten:
+      forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ vs v,
+        sty_val_interp hS τ vs v -∗
+        ⌜ flatten_struct vs = [vs] ∧ flatten_struct v = [v] ⌝;
+    (*
     sty_val_size:
       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ vs v,
         sty_val_interp hS τ vs v -∗
         ⌜ length (flatten_struct vs) = 1%nat ∧
           length (flatten_struct v) = 1%nat ⌝;
+    *)
     sty_inv_persistent:
       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
         Persistent (sty_inv hS) }.
@@ -357,7 +363,7 @@ Qed.
 
 Lemma comparableTy_val_eq t vs1 v1 vs2 v2:
   is_comparableTy t = true →
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) t vs1 v1 -∗
   val_interp (hS := hS) t vs2 v2 -∗
   ⌜ v1 = v2 ↔ vs1 = vs2 ⌝.
@@ -404,6 +410,13 @@ Proof.
        so the case becomes trivial. *)
 Qed.
 
+Lemma sty_val_size:
+      forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ vs v,
+        sty_val_interp hS τ vs v -∗
+        ⌜ length (flatten_struct vs) = 1%nat ∧
+          length (flatten_struct v) = 1%nat ⌝.
+Proof. iIntros. by iDestruct (sty_val_flatten with "[$]") as %[-> ->]. Qed.
+
 Lemma length_flatten_well_typed vs v t:
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) t vs v -∗
@@ -427,6 +440,69 @@ Proof.
   - iDestruct "Hval" as %[].
   - iDestruct "Hval" as %[].
   - rewrite /val_interp/=. iDestruct (sty_val_size with "Hval") as "(%&%)"; eauto.
+Qed.
+
+
+Lemma flatten_well_typed vs v t i vsi vi ti:
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+    flatten_ty t !! i = Some ti →
+    flatten_struct vs !! i = Some vsi →
+    flatten_struct v !! i = Some vi →
+    val_interp (hS := hS) t vs v -∗
+    val_interp (hS := hS) ti vsi vi.
+Proof.
+  iIntros (Σ hG hC hRG HS Hlookup1 Hlookup2 Hlookup3) "Hval".
+  iInduction t as [] "IH" forall (vs v i Hlookup1 Hlookup2 Hlookup3).
+  - simpl in *.
+    destruct t; destruct i; simpl in *; inversion Hlookup1; subst; eauto;
+    iDestruct "Hval" as %Hval; repeat destruct Hval as (?&Hval); subst; eauto;
+    simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+  - iDestruct "Hval" as (???? (?&?)) "(H1&H2)". subst.
+    simpl in Hlookup1, Hlookup2, Hlookup3.
+    iDestruct (length_flatten_well_typed with "H1") as %[Hlen1 Hlens1].
+    iDestruct (length_flatten_well_typed with "H2") as %[Hlen2 Hlens2].
+    apply lookup_app_Some in Hlookup1 as [Hleft|Hright].
+    { specialize (lookup_lt_Some _ _ _ Hleft) => Hlen.
+      rewrite lookup_app_l in Hlookup2; last by lia.
+      rewrite lookup_app_l in Hlookup3; last by lia.
+      iApply "IH"; eauto.
+    }
+    { destruct Hright as (?&Hright).
+      specialize (lookup_lt_Some _ _ _ Hright) => Hlen.
+      rewrite lookup_app_r in Hlookup2; last by lia.
+      rewrite lookup_app_r in Hlookup3; last by lia.
+      iApply "IH1"; eauto.
+      { rewrite Hlen1; eauto. }
+      { rewrite Hlens1; eauto. }
+    }
+  - iDestruct "Hval" as "[Hval|Hval]"; iDestruct "Hval" as (?? (?&?)) "Hval";
+      subst; eauto.
+    { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+      simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+      iLeft. iExists _, _. iSplitL ""; first done. eauto. }
+    { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+      simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+      iRight. iExists _, _. iSplitL ""; first done. eauto. }
+  - iDestruct "Hval" as (?????? (->&->)) "H". subst.
+    { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+      simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+      iExists _,_,_,_,_,_. iFrame. eauto. }
+  - iDestruct "Hval" as "[Hval|(%&%)]".
+    { iDestruct "Hval" as (????? (?&?&?&?)) "H1". subst; eauto.
+      simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+      simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+      iLeft. unshelve (iExists _, _, _, _, _; iSplitL ""; first done; eauto); eauto. }
+    { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+      simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+      iRight. eauto. }
+  - iDestruct "Hval" as %[].
+  - iDestruct "Hval" as %[].
+  - rewrite /val_interp/=. iDestruct (sty_val_flatten with "Hval") as %[Heq1 Heq2].
+    { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+      rewrite Heq1 in Hlookup2.
+      rewrite Heq2 in Hlookup3.
+      simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+    }
 Qed.
 
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with

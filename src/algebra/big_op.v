@@ -320,6 +320,48 @@ Section list2.
     setoid_rewrite Nat.add_0_r; eauto.
   Qed.
 
+  Lemma big_sepL2_elim_big_sepL_aux `{!BiAffine PROP} {C} (P: nat → C → PROP) Φ (l1: list A) (l2: list B) (l: list C) n:
+    length l = length l1 →
+    □ (∀ k x y z, ⌜ l1 !! k = Some x ⌝ -∗
+                  ⌜ l2 !! k = Some y ⌝ -∗
+                  ⌜ l !! k = Some z ⌝ -∗ Φ (k + n) x y -∗ P (k + n) z) -∗
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ (k + n) y1 y2) -∗
+    ([∗ list] k↦z ∈ l, P (k + n) z).
+  Proof.
+    intros Hlen1.  rewrite big_sepL2_alt.
+    iIntros "#Halways (H&Hzip)". iDestruct "H" as %Hlen2.
+    iInduction l as [|c l] "IH" forall (l1 l2 Hlen1 Hlen2 n);
+    rewrite //=; destruct l1; destruct l2; simpl in Hlen1, Hlen2; try congruence; eauto.
+
+    simpl. iDestruct "Hzip" as "(H&Hrest)".
+    iDestruct ("Halways" $! 0 with "[] [] [] [H]") as "HP".
+    { iPureIntro. simpl; eauto. }
+    { iPureIntro. simpl; eauto. }
+    { iPureIntro. simpl; eauto. }
+    { rewrite Nat.add_0_l. iFrame. }
+    rewrite Nat.add_0_l. iFrame.
+    setoid_rewrite <-Nat.add_succ_r.
+    unshelve (iSpecialize ("IH" $! l1 l2 _ _ (S n))); eauto.
+    iApply "IH"; eauto.
+    iAlways. iIntros (???? ???) "HΦ".
+    setoid_rewrite Nat.add_succ_r.
+    setoid_rewrite <-Nat.add_succ_l.
+    iApply ("Halways" with "[] [] [] [$]"); eauto.
+  Qed.
+
+  Lemma big_sepL2_elim_big_sepL `{!BiAffine PROP} {C} (P: nat → C → PROP) Φ (l1: list A) (l2: list B) (l: list C):
+    length l = length l1 →
+    □ (∀ k x y z, ⌜ l1 !! k = Some x ⌝ -∗
+                  ⌜ l2 !! k = Some y ⌝ -∗
+                  ⌜ l !! k = Some z ⌝ -∗ Φ k x y -∗ P k z) -∗
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) -∗
+    ([∗ list] k↦z ∈ l, P k z).
+  Proof.
+    iIntros (?) "H1 H2". iPoseProof (big_sepL2_elim_big_sepL_aux P Φ l1 l2 l O) as "H"; auto.
+    setoid_rewrite Nat.add_0_r; eauto.
+    iApply ("H" with "H1 H2"); eauto.
+  Qed.
+
   Lemma big_sepL2_mono_with_pers (P: PROP) `{!BiAffine PROP} `{Persistent PROP P} (Φ Ψ: nat → A → B → PROP) l1 l2:
     (∀ k x y, l1 !! k = Some x → l2 !! k = Some y → P -∗ Φ k x y -∗ Ψ k x y) →
     P -∗ ([∗ list] k ↦ x;y ∈ l1;l2, Φ k x y) -∗ [∗ list] k ↦ x;y ∈ l1;l2, Ψ k x y.
