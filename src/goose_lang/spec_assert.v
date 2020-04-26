@@ -190,10 +190,10 @@ End go_spec_definitions.
 
 End go_refinement.
 
-Notation "l s↦{ q } v" := (na_heap_mapsto (L:=loc) (V:=val) (hG := refinement_na_heapG) l q v%V)
+Notation "l s↦{ q } v" := (heap_mapsto (hG := refinement_na_heapG) l q v%V)
   (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (na_heap_mapsto (L:=loc) (V:=val) (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
+  (heap_mapsto (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
 Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
@@ -247,7 +247,7 @@ Proof using Type.
 Qed.
 
 Lemma test_resolution2 l v :
-  l s↦ v -∗ (na_heap_mapsto (hG := refinement_na_heapG) l 1 (v)).
+  l s↦ v -∗ (heap_mapsto (hG := refinement_na_heapG) l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
@@ -259,7 +259,7 @@ Proof using Type.
 Qed.
 
 Lemma test_resolution4 l v :
-  l s↦ v -∗ (na_heap_mapsto l 1 (v)).
+  l s↦ v -∗ (heap_mapsto l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
