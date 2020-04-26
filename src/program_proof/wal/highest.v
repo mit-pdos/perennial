@@ -197,10 +197,10 @@ Fixpoint pos_indices (poss: list u64) (i: nat): gmap u64 nat :=
                          end) pos (pos_indices poss (S i))
   end.
 
-Lemma pos_indices_fmap_highest (poss: list u64) (i0: nat) :
+Lemma pos_indices_lookup (poss: list u64) (i0: nat) :
   forall pos,
-    (λ i, i0 + i) <$> find_highest_index poss pos =
-    pos_indices poss i0 !! pos.
+    pos_indices poss i0 !! pos =
+    (λ i, i0 + i) <$> find_highest_index poss pos.
 Proof.
   revert i0.
   induction poss; intros i0 pos.
@@ -208,21 +208,22 @@ Proof.
   - simpl.
     destruct (decide (pos = a)); subst.
     + rewrite lookup_partial_alter.
-      rewrite -IHposs.
+      rewrite IHposs.
       destruct (find_highest_index poss a); simpl; auto.
     + rewrite -> lookup_partial_alter_ne by auto.
-      rewrite -IHposs.
+      rewrite IHposs.
       destruct (find_highest_index poss pos); simpl; auto.
 Qed.
 
-Theorem pos_indices_lookup (poss: list u64) :
+Theorem pos_indices_0_lookup (poss: list u64) :
   forall pos,
     pos_indices poss 0 !! pos = find_highest_index poss pos.
 Proof.
   intros.
-  rewrite -pos_indices_fmap_highest.
+  rewrite pos_indices_lookup.
   destruct (find_highest_index poss pos); auto.
 Qed.
 
 Definition compute_memLogMap (memLog: list update.t) (memStart: u64): gmap u64 u64 :=
-  (λ (n:nat), U64 (Z.of_nat n)) <$> pos_indices (update.addr <$> memLog) (int.nat memStart).
+  (λ (n:nat), U64 (Z.of_nat n)) <$>
+    pos_indices (update.addr <$> memLog) (int.nat memStart).
