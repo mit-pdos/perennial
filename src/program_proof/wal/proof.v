@@ -4,3 +4,5 @@ From Perennial.program_proof.wal Require
      flush_proof
      logger_proof
      read_proof.
+
+From Perennial.program_proof.wal Require highest.
