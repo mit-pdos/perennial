@@ -14,80 +14,88 @@ From Perennial.program_proof Require Import marshal_proof.
 
 Module kvpair.
   Record t :=
-    mk { key: u64;
-         val: Block; }.
+    mk { key: specs.addr;
+         val: defs.bufDataT defs.KindBlock
+       }.
   Global Instance _eta: Settable _ := settable! mk <key; val>.
 End kvpair.
 
+Class kvsG Σ :=
+  {
+    kvs_bufs_pre :> gen_heapPreG specs.addr (defs.bufDataT defs.KindBlock) Σ;
+    kvs_bufs :> gen_heapG specs.addr (defs.bufDataT defs.KindBlock) Σ;
+  }.
+
 Section heap.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!crashG Σ}.
+Context `{!lockG Σ}.
 Context `{!buftxnG Σ}.
-Context `{!gen_heapPreG u64 disk.Block Σ}.
-Context `{!gen_heapG u64 disk.Block Σ}.
+Context `{!kvsG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Notation "l k↦ v" := (mapsto (L:=u64) (V:=disk.Block) l 1 v%V)
-                            (at level 20, format "l  k↦ v") : bi_scope.
-Notation "l k↦{ q } v" := (mapsto (L:=u64) (V:=disk.Block) l q v%V)
-                            (at level 20, q at level 50, format "l  k↦{ q }  v") : bi_scope.
+Notation "l k↦ v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock) l 1 v%V)
+                            (at level 20, format "l k↦ v") : bi_scope.
+Notation "l k↦{ q } v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock) l q v%V)
+                            (at level 20, q at level 50, format "l k↦{ q }  v") : bi_scope.
 
-Fixpoint init_keys (keys: list u64) (sz: nat) : list u64 :=
+Fixpoint init_keys (keys: list specs.addr) (sz: nat) : list specs.addr :=
 match sz with
 | O => keys
-| S n => init_keys ((U64 (Z.of_nat n)) :: keys) n
+| S n => init_keys ((specs.Build_addr n 0) :: keys) n
 end.
 
-Fixpoint init_kvs (kvs: gmap u64 Block) (sz: nat) : gmap u64 Block :=
-match sz with
-| O => kvs
-| S n => <[(U64 (Z.of_nat n)) := (inhabitant Block0)]> (init_kvs kvs n)
-end.
-Definition kvs_init_s sz : gmap u64 Block := init_kvs ∅ sz.
+Definition key2val (key: specs.addr) : val :=
+  #key.(specs.addrBlock).
 
 (*XXXway to generalize from wal/abstractions.v?*)
-Definition kvpair_val (pair : u64*Slice.t): val :=
-  (#(fst pair), (slice_val (snd pair), #()))%V.
+Definition kvpair_val (pair : specs.addr*Slice.t): val :=
+  ((key2val (fst pair)), (slice_val (snd pair), #()))%V.
 
 (* Links a list of kvpairs to a slice *)
-Definition kvpairs_slice (val_s: Slice.t) (pairs: list kvpair.t): iProp Σ :=
-  ∃ bks, is_slice val_s (struct.t KVPair.S) 1 (kvpair_val <$> bks) ∗
-   [∗ list] _ ↦ b_kvp;kvp ∈ bks;pairs, let '(kvpair.mk a b) := kvp in
-                                     is_block (snd b_kvp) b ∗
-                                              ⌜fst b_kvp = a⌝.
+Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ :=
+  ∃ slice_kvps, is_slice slice_val (struct.t KVPair.S) 1 (kvpair_val <$> slice_kvps)
+                         ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
+  let '(kvpair.mk key buf) := ls_kvp in ∃ blk,
+      ⌜specs.is_bufData_at_off blk 0 buf⌝
+      ∗ is_block (snd slice_kvp) blk
+      ∗ ⌜fst slice_kvp = key⌝.
 
-Definition kvpairs_match (s: gmap u64 Block) (pairs: list kvpair.t): iProp Σ :=
-  [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in (⌜(s !! a = Some b)⌝)%I.
+Definition kvpairs_match (pairs: list kvpair.t): iProp Σ :=
+  [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in (a k↦ b)%I.
 
-Definition valid_key (key: u64) :=
-  ∃ knat, key = U64(Z.of_nat knat) ∧
-          specs.valid_addr (specs.Build_addr (knat + abstraction.LogSz + 2) 0).
+Definition LogSz := 513.
 
-Definition is_kvs' (s: gmap u64 Block) (sz : nat) :=
+Definition valid_key (key: specs.addr) (sz: nat):=
+  specs.valid_addr key ∧
+  int.val key.(specs.addrBlock) >= int.val LogSz ∧
+  int.val key.(specs.addrBlock) < int.val sz.
+
+Definition is_kvs' (sz : nat) :=
   (∃ keys,
-    ⌜keys = init_keys [] sz⌝ ∗
-    [∗ list] k ∈ keys, (∃ v : Block, ⌜s !! k = Some v⌝ ∗ k k↦ v))%I.
+      ⌜keys = init_keys [] sz⌝
+      ∗ [∗ list] k ∈ keys, (∃ v, k k↦ v)
+  )%I.
 
-Definition ptsto_kvs (kvsl: loc) (s : gmap u64 Block) (sz : nat): iProp Σ :=
+Definition ptsto_kvs (kvsl: loc) (sz : nat): iProp Σ :=
   ( ∃ (l : loc) γ,
       kvsl↦[KVS.S :: "txn"] #l ∗
       kvsl ↦[KVS.S :: "sz"] #(U64 (Z.of_nat sz)) ∗
       is_txn l γ ∗
-      is_kvs' s sz)%I.
+      is_kvs' sz)%I.
 
-Definition crashed_kvs s sz kvp_ls : iProp Σ :=
-  is_kvs' s sz ∗ kvpairs_match s kvp_ls.
+Definition crashed_kvs sz kvp_ls : iProp Σ :=
+  is_kvs' sz ∗ kvpairs_match kvp_ls.
 
 Definition ptsto_kvpair (l: loc) (pair: kvpair.t) : iProp Σ :=
-      ∃ bs, (l↦[KVPair.S :: "Key"] #pair.(kvpair.key) ∗
-      l ↦[KVPair.S :: "Val"] (slice_val bs) ∗
-      is_block bs pair.(kvpair.val))%I.
+      ∃ bs blk, (l↦[KVPair.S :: "Key"] (key2val(pair.(kvpair.key))) ∗
+                  l ↦[KVPair.S :: "Val"] (slice_val bs) ∗ is_block bs blk
+                  ∗ ⌜specs.is_bufData_at_off blk 0 pair.(kvpair.val)⌝)%I.
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
     MkKVS #d #(U64(Z.of_nat sz)) @ NotStuck; k; E1; E2
-  {{{ kvsl, RET #kvsl; ptsto_kvs kvsl (kvs_init_s sz) sz}}}
+  {{{ kvsl, RET #kvsl; ptsto_kvs kvsl sz}}}
   {{{ True }}}.
 Proof.
   iIntros (ϕ ϕc) "_ Hϕ".
@@ -96,34 +104,46 @@ Proof.
   wpc_bind (super.MkFsSuper _).
 Admitted.
 
-Theorem wpc_KVS__Get kvsl s sz key v:
-  {{{ ptsto_kvs kvsl s sz ∗ ⌜s !! key = Some v⌝ ∗ ⌜valid_key key⌝ }}}
-    KVS__Get #kvsl #key (* Crashes don't matter to state here *)
+Theorem wpc_KVS__Get kvsl sz key v:
+  {{{
+       ptsto_kvs kvsl sz
+       ∗ ⌜valid_key key sz⌝
+  }}}
+    KVS__Get #kvsl (key2val(key))
   {{{(pairl: loc), RET #pairl;
-     ptsto_kvs kvsl s sz ∗ ptsto_kvpair pairl (kvpair.mk key v)
+     ptsto_kvs kvsl sz ∗ ptsto_kvpair pairl (kvpair.mk key v)
   }}}.
 Proof.
-  iIntros (ϕ) "[Hkvs [%Hs %Hkey]] Hϕ".
+  iIntros (ϕ) "[Hkvs %Hkey] Hϕ".
   iDestruct "Hkvs" as (l txn) "[Htxnl [Hsz [Htxn Hkvs]]]".
+  destruct Hkey as [Hkaddr [Hklgsz Hsz]].
   wp_call.
   wp_loadField.
-  wp_bind (buftxn.Begin _).
-  wp_apply (wp_buftxn_Begin l txn _ with "[Htxn]"); auto.
-  iIntros (buftx γt) "Hbtxn".
-  unfold is_buftxn.
-  iDestruct "Hbtxn" as (l0 mT bufmap gBufmap txid) "[Htxnl0 [Hbml [Htxidl [Htxn [Hbm [Hgh [HmT [Hvalid Hmapsto]]]]]]]]".
-  wp_let.
   wp_pures.
-  wp_call.
-  wp_call.
-  wp_bind (buf.BufMap__Lookup _ _).
-  wp_loadField.
-  wp_apply (specs.wp_BufMap__Lookup _ gBufmap
-                                  (specs.Build_addr
-                                    (u64_instance.u64.(@word.add 64) key
-                                    (u64_instance.u64.(@word.add 64)
-                                    (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2))
-                                    0) with "[Hbm]"); auto.
+  unfold specs.valid_addr in *; unfold specs.addr2flat_z in *.
+  remember(bool_decide (int.val sz < int.val key.(specs.addrBlock))) as Hszcomp.
+  destruct Hszcomp; wp_pures.
+  - wp_apply wp_panic.
+    destruct (decide_rel Z.lt (int.val sz) (int.val key.(specs.addrBlock))); try discriminate. omega.
+  - change (u64_instance.u64.(@word.add 64) (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2)
+      with (U64 LogSz).
+    remember(bool_decide (int.val _ < int.val LogSz)) as Hlgszcomp.
+    destruct Hlgszcomp; wp_pures.
+    * wp_apply wp_panic.
+      destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. omega.
+    * wp_loadField.
+      wp_apply (wp_buftxn_Begin l txn _ with "[Htxn]"); auto.
+      iIntros (buftx γt) "Hbtxn".
+      (*iDestruct "Hbtxn" as (l0 mT bufmap gBufmap txid) "[Htxnl0 [Hbml [Htxidl [Htxn [Hbm [Hgh [HmT [Hvalid Hmapsto]]]]]]]]".*)
+      wp_let.
+      wp_call.
+      change (u64_instance.u64.(@word.mul 64) 4096 8) with (U64 32768).
+      change (key2val key, (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
+      wp_apply (wp_BufTxn__ReadBuf buftx γt txn (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn Hkvs]").
+      -- unfold is_kvs'. iSplitL "Hbtxn"; auto.
+      unfold specs.valid_addr in *.
+
+                  
   - iSplitL "Hbm"; auto.
     iPureIntro.
     destruct Hkey as [knat [Hknat Hkey]].
@@ -134,7 +154,8 @@ Proof.
     Print specs.valid_addr.
     simpl. split; simpl; try word; auto.*)
   - iIntros (bptr).
-
+    iDestruct "Hmapsto" as "[Hmaps0 Hmaps]".
+    iApply "Hmapsto".
   specs.wp_BufMap__Lookup.
   wp_loadField.
   Searchabout "Begin".
