@@ -131,7 +131,7 @@ Proof.
   wp_loadField.
   iNamed "Hlkinv".
   wp_apply (wp_WalogState__readMem with "[$Hfields $HmemLog_linv]").
-  iIntros (b_s ok) "(Hb&?&?)"; named.
+  iIntros (b_s ok) "(Hb&?&?)"; iNamed.
   (* really meant to do wp_pure until wp_bind Skip succeeds *)
   do 8 wp_pure _; wp_bind Skip.
   iDestruct "Hwal" as "[Hwal Hcirc]".
@@ -140,7 +140,7 @@ Proof.
   destruct ok.
   - iDestruct "Hb" as (b) "[Hb %HmemLog_lookup]".
     iMod (simulate_read_cache_hit HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
-      as "([Hinner HP]&?&?)"; named.
+      as "([Hinner HP]&?&?)"; iNamed.
     iModIntro.
     iSplitL "Hinner HP".
     { iNext.
@@ -153,7 +153,7 @@ Proof.
     iExists _; iFrame.
   - iDestruct "Hb" as "[-> %HmemLog_lookup]".
     iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
-      as "(Hinv&?&?)"; named.
+      as "(Hinv&?&?)"; iNamed.
     iModIntro.
     iFrame "Hinv".
     wp_loadField.

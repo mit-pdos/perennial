@@ -69,10 +69,10 @@ Ltac iNameHyp H :=
   | _ => fail 1 "iNameHyp: hypothesis" H "not found"
   end.
 
-Ltac named :=
+Tactic Notation "iNamed" :=
   repeat match goal with
          | |- context[Esnoc _ ?i (named ?name ?P)] =>
-           iDestruct (from_named with i) as name
+           iNameHyp i
          end.
 
 (* this is a super-simple but maybe non-performant implementation *)
@@ -113,7 +113,7 @@ Ltac iDeex :=
            iDeex_go
          end.
 
-Ltac iNamed H :=
+Tactic Notation "iNamed" constr(H) :=
   try iDeexHyp H;
   iNamedDestruct H.
 
@@ -136,7 +136,7 @@ Module tests.
         P ∗ Q.
     Proof.
       iIntros "? ?".
-      named.
+      iNamed.
       iSplitL "H1"; [ iExact "H1" | iExact "H2" ].
     Qed.
 
@@ -289,7 +289,7 @@ Module tests.
       named "HP" (Ψ x) -∗ named "HP2" (∃ x, Ψ x) -∗
       named "HP" (∃ x, Ψ x).
     Proof.
-      iIntros "? ?"; named.
+      iIntros "? ?"; iNamed.
       iDeexHyp "HP2".
       iExists x0; iFrame.
     Qed.
