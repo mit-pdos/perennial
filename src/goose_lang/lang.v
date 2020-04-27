@@ -940,6 +940,22 @@ Definition isFresh (σ: state) (l: loc) :=
   (forall i, l +ₗ i ≠ null ∧ σ.(heap) !! (l +ₗ i) = None)%Z ∧
   (addr_offset l = 0).
 
+Lemma addr_base_non_null_offset l:
+  l ≠ null → (addr_offset l = 0)%Z →
+  addr_base l ≠ null.
+Proof.
+  intros Hneq Heq Heq'. rewrite /addr_base -Heq addr_encode_decode' in Heq'.
+  congruence.
+Qed.
+
+Lemma plus_off_preserves_non_null l:
+  addr_base l ≠ null →
+  ∀ z, l ≠ addr_plus_off null z.
+Proof.
+  intros Hneq z Heq. apply (f_equal addr_base) in Heq.
+  rewrite addr_base_of_plus /null //= in Heq.
+Qed.
+
 Theorem isFresh_not_null σ l :
   isFresh σ l -> l ≠ null.
 Proof.
