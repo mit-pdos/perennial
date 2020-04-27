@@ -39,7 +39,7 @@ Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
   {{{ b_s (ok:bool), RET (slice_val b_s, #ok);
       (if ok then ∃ b, is_block b_s b ∗
                        ⌜apply_upds σ.(memLog) ∅ !! int.val a = Some b⌝
-      else ⌜b_s = Slice.nil⌝) ∗
+      else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog) ∅ !! int.val a = None⌝) ∗
       "Hfields" ∷ wal_linv_fields st σ ∗
       "HmemLog_linv" ∷ memLog_linv γ σ.(memStart) σ.(memLog)
   }}}.
@@ -66,13 +66,27 @@ Proof.
     wp_pures.
     iApply "HΦ".
     iFrame.
-    simpl in HmemLog_lookup |- *.
+    iSplitL "Hb_new".
+    + iExists _; iFrame.
+      iPureIntro.
+      simpl in HmemLog_lookup |- *.
     (* TODO: this comes from HmemLog_lookup plus that a' is maximal (the
     apply_upds formulation is actually a good way to phrase it, especially since
     [apply_upds] and [compute_memLogMap] are similar fold_left's) *)
+      admit.
+    + iExists _; iFrame.
+  - wp_pures.
+    iApply ("HΦ" $! Slice.nil false).
+    iFrame.
+    iSplit; [ | by iExists _; iFrame ].
+    iPureIntro.
+    split; auto.
+    (* TODO: need a theorem about missing in compute_memLogMap (should follow
+    from a general equality about lookups) *)
+    admit.
 Admitted.
 
-Theorem simulate_read_mem {l γ Q σ memStart memLog b a} :
+Theorem simulate_read_cache_hit {l γ Q σ memStart memLog b a} :
   apply_upds memLog ∅ !! int.val a = Some b ->
   (is_wal_inner l γ σ ∗ P σ) -∗
   memLog_linv γ memStart memLog -∗
@@ -81,6 +95,19 @@ Theorem simulate_read_mem {l γ Q σ memStart memLog b a} :
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ ∗ P σ) ∗
               "HQ" ∷ Q (Some b) ∗
+              "HmemLog_linv" ∷ memLog_linv γ memStart memLog.
+Proof.
+Admitted.
+
+Theorem simulate_read_cache_miss {l γ Q σ memStart memLog a} :
+  apply_upds memLog ∅ !! int.val a = None ->
+  (is_wal_inner l γ σ ∗ P σ) -∗
+  memLog_linv γ memStart memLog -∗
+  (∀ (σ σ' : log_state.t) mb,
+      ⌜wal_wf σ⌝
+        -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
+  |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗
+              "HQ" ∷ Q None ∗
               "HmemLog_linv" ∷ memLog_linv γ memStart memLog.
 Proof.
 Admitted.
@@ -112,7 +139,7 @@ Proof.
   wp_pures.
   destruct ok.
   - iDestruct "Hb" as (b) "[Hb %HmemLog_lookup]".
-    iMod (simulate_read_mem HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
+    iMod (simulate_read_cache_hit HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
       as "([Hinner HP]&?&?)"; named.
     iModIntro.
     iSplitL "Hinner HP".
@@ -124,7 +151,17 @@ Proof.
     wp_pures.
     iApply "HΦ".
     iExists _; iFrame.
-  - (* TODO: need a different simulation theorem (a much simpler one) *)
-Abort.
+  - iDestruct "Hb" as "[-> %HmemLog_lookup]".
+    iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
+      as "(Hinv&?&?)"; named.
+    iModIntro.
+    iFrame "Hinv".
+    wp_loadField.
+    wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields HnextDiskEnd_txn]").
+    { iExists _; iFrame "HdiskEnd_at_least Hstart_at_least ∗". }
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+Qed.
 
 End goose_lang.
