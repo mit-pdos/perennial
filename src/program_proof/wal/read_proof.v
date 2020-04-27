@@ -36,11 +36,12 @@ Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
   {{{ wal_linv_fields st σ ∗
       memLog_linv γ σ.(memStart) σ.(memLog) }}}
     WalogState__readMem #st #a
-  {{{ b_s b (ok:bool), RET (slice_val b_s, #ok);
-      if ok then is_block b_s b ∗
-                 ⌜apply_upds σ.(memLog) ∅ !! int.val a = Some b⌝ ∗
-                 memLog_linv γ σ.(memStart) σ.(memLog)
-      else True
+  {{{ b_s (ok:bool), RET (slice_val b_s, #ok);
+      (if ok then ∃ b, is_block b_s b ∗
+                       ⌜apply_upds σ.(memLog) ∅ !! int.val a = Some b⌝
+      else ⌜b_s = Slice.nil⌝) ∗
+      "Hfields" ∷ wal_linv_fields st σ ∗
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memStart) σ.(memLog)
   }}}.
 Proof.
   iIntros (Φ) "(Hfields&HmemLog_inv) HΦ".
@@ -71,12 +72,25 @@ Proof.
     [apply_upds] and [compute_memLogMap] are similar fold_left's) *)
 Admitted.
 
+Theorem simulate_read_mem {l γ Q σ memStart memLog b a} :
+  apply_upds memLog ∅ !! int.val a = Some b ->
+  (is_wal_inner l γ σ ∗ P σ) -∗
+  memLog_linv γ memStart memLog -∗
+  (∀ (σ σ' : log_state.t) mb,
+      ⌜wal_wf σ⌝
+        -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
+  |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ ∗ P σ) ∗
+              "HQ" ∷ Q (Some b) ∗
+              "HmemLog_linv" ∷ memLog_linv γ memStart memLog.
+Proof.
+Admitted.
+
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
   {{{ is_wal P l γ ∗
-       (∀ σ σ' mb,
-         ⌜wal_wf σ⌝ -∗
-         ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
-         (P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb))
+       (∀ σₛ σₛ' mb,
+         ⌜wal_wf σₛ⌝ -∗
+         ⌜relation.denote (log_read_cache a) σₛ σₛ' mb⌝ -∗
+         (P σₛ ={⊤ ∖ ↑N}=∗ P σₛ' ∗ Q mb))
    }}}
     Walog__ReadMem #l #a
   {{{ (ok:bool) bl, RET (slice_val bl, #ok); if ok
@@ -88,6 +102,29 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "lk"). iIntros "(Hlocked&Hlkinv)".
   wp_loadField.
+  iNamed "Hlkinv".
+  wp_apply (wp_WalogState__readMem with "[$Hfields $HmemLog_linv]").
+  iIntros (b_s ok) "(Hb&?&?)"; named.
+  (* really meant to do wp_pure until wp_bind Skip succeeds *)
+  do 8 wp_pure _; wp_bind Skip.
+  iDestruct "Hwal" as "[Hwal Hcirc]".
+  iInv "Hwal" as (σs) "[Hinner HP]".
+  wp_pures.
+  destruct ok.
+  - iDestruct "Hb" as (b) "[Hb %HmemLog_lookup]".
+    iMod (simulate_read_mem HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
+      as "([Hinner HP]&?&?)"; named.
+    iModIntro.
+    iSplitL "Hinner HP".
+    { iNext.
+      iExists _; iFrame. }
+    wp_loadField.
+    wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields HnextDiskEnd_txn]").
+    { iExists _; iFrame "HdiskEnd_at_least Hstart_at_least ∗". }
+    wp_pures.
+    iApply "HΦ".
+    iExists _; iFrame.
+  - (* TODO: need a different simulation theorem (a much simpler one) *)
 Abort.
 
 End goose_lang.

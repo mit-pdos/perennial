@@ -452,6 +452,7 @@ Definition Walog__ReadMem: val :=
   rec: "Walog__ReadMem" "l" "blkno" :=
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
     let: ("blk", "ok") := WalogState__readMem (struct.loadF Walog.S "st" "l") "blkno" in
+    Linearize;;
     lock.release (struct.loadF Walog.S "memLock" "l");;
     ("blk", "ok").
 
@@ -475,7 +476,8 @@ Definition Walog__Read: val :=
 
    On success returns the pos for this append.
 
-   On failure guaranteed to be idempotent (failure can only occur in principle, due overflowing 2^64 writes) *)
+   On failure guaranteed to be idempotent (failure can only occur in principle,
+   due overflowing 2^64 writes) *)
 Definition Walog__MemAppend: val :=
   rec: "Walog__MemAppend" "l" "bufs" :=
     (if: slice.len "bufs" > LOGSZ
