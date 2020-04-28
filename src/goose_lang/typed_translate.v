@@ -155,7 +155,11 @@ Section translate.
       Γ ⊢ e1 -- e1' : arrayT t ->
       Γ ⊢ e2 -- e2' : uint64T ->
       Γ ⊢ BinOp (OffsetOp (ty_size t)) e1 e2 -- BinOp (OffsetOp (ty_size t)) e1' e2' : arrayT t
+  | array_struct_transTy e e' t :
+      Γ ⊢ e -- e' : arrayT t ->
+      Γ ⊢ e -- e' : structRefT (flatten_ty t)
   | struct_offset_op_transTy e1 e1' (k: Z) ts :
+      Z.to_nat k < length ts →
       Γ ⊢ e1 -- e1' : structRefT ts ->
       Γ ⊢ BinOp (OffsetOp k) e1 #1 -- BinOp (OffsetOp k) e1' #1 : structRefT (drop (Z.to_nat k) ts)
   | load_transTy l l' t ts :

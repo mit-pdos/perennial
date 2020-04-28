@@ -143,8 +143,33 @@ Proof.
   eauto.
 Qed.
 
+Lemma loc_paired_base_eq_iff ls l ls' l':
+  addr_offset l = addr_offset ls →
+  addr_offset l' = addr_offset ls' →
+  loc_paired (addr_base ls) (addr_base l) -∗
+  loc_paired (addr_base ls') (addr_base l') -∗
+  ⌜ l = l' ↔ ls = ls' ⌝.
+Proof.
+  iIntros (??) "(#Hmls&#Hml) (#Hmls'&#Hml')".
+  destruct (decide (ls = ls')).
+  { subst. iDestruct (meta_agree with "Hmls Hmls'") as %Heq.
+    iPureIntro.
+    apply addr_base_and_offset_eq_iff; eauto; split; eauto.
+  }
+  destruct (decide (l = l')).
+  { subst. iDestruct (meta_agree with "Hml Hml'") as %Heq.
+    iPureIntro.
+    apply addr_base_and_offset_eq_iff; eauto; split; eauto.
+  }
+  eauto.
+Qed.
+
 Definition is_loc ls l vTy :=
   ((∃ γ, inv locN (loc_inv γ ls l vTy)) ∗ loc_paired ls l)%I.
+
+Lemma is_loc_loc_paired ls l vTy:
+  is_loc ls l vTy -∗ loc_paired ls l.
+Proof. iIntros "(?&$)". Qed.
 
 Lemma is_loc_eq_iff ls l ls' l' vTy vTy':
   is_loc ls l vTy -∗
@@ -178,9 +203,10 @@ Definition sumT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
                               ∗ val_interp t2 vs' v'))%I.
 
 Definition arrayT_interp (t: sty) (val_list_interp: sty → list (sval → ival → iProp Σ)) : sval → ival → iProp Σ :=
-  λ vs v, ((∃ l ls (n: nat) (Hnz: (0 < n)%nat) (Hnonempty: flatten_ty t ≠ []),
+  λ vs v, ((∃ l ls (n: nat) (idx: Z) (Hnz: (0 < n)%nat) (Hnonempty: flatten_ty t ≠ []),
                      ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ∧ addr_base ls ≠ null ∧ addr_base l ≠ null ∧
-                       addr_offset l = addr_offset ls⌝ ∗
+                     addr_offset l = (idx * length (flatten_ty t))%Z ∧
+                     addr_offset ls = (idx * length (flatten_ty t))%Z ⌝ ∗
                      (na_block_size (hG := refinement_na_heapG) (addr_base ls) (n * length (flatten_ty t))) ∗
                      (na_block_size (hG := heapG_na_heapG) (addr_base l) (n * length (flatten_ty t))) ∗
                      [∗ list] i ∈ seq 0 n,
@@ -188,6 +214,20 @@ Definition arrayT_interp (t: sty) (val_list_interp: sty → list (sval → ival 
                          is_loc (addr_base ls +ₗ (length (flatten_ty t) * Z.of_nat i) +ₗ j)
                                 (addr_base l +ₗ (length (flatten_ty t) * Z.of_nat i) +ₗ j)
                                 vty)
+                 ∨ (∃ off, ⌜ vs = #(null +ₗ off) ∧ v = #(null +ₗ off) ⌝))%I.
+
+Definition structRefT_interp (ts: list (sval → ival → iProp Σ)) (* (val_list_interp: sty → list (sval → ival → iProp Σ) *) :
+  sval → ival → iProp Σ :=
+  λ vs v, ((∃ l ls (n: nat) (Hnz: (0 < n)%nat) (Hnonempty: ts ≠ []),
+                     ⌜ vs = LitV $ LitLoc ls ∧ v = LitV $ LitLoc l ∧ addr_base ls ≠ null ∧ addr_base l ≠ null ∧
+                       addr_offset l = addr_offset ls⌝ ∗
+                       loc_paired (addr_base ls) (addr_base l) ∗
+                     (na_block_size (hG := refinement_na_heapG) (addr_base ls) n) ∗
+                     (na_block_size (hG := heapG_na_heapG) (addr_base l) n) ∗
+                     (([∗ list] j↦vty ∈ (ts),
+                       is_loc (ls +ₗ j) (l +ₗ j) vty)
+                       ∨
+                      ⌜addr_offset l < 0 ∨ n ≤ addr_offset l⌝))
                  ∨ (∃ off, ⌜ vs = #(null +ₗ off) ∧ v = #(null +ₗ off) ⌝))%I.
 
 Definition arrowT_interp (t1 t2: sty) (val_interp: sty → sval → ival → iProp Σ) : sval → ival → iProp Σ :=
@@ -208,7 +248,7 @@ Fixpoint val_interp (t: sty) {struct t} :=
   | arrowT t1 t2 => arrowT_interp t1 t2 val_interp
   | extT x => sty_val_interp hS x
   | mapValT vt => λ _ _, False%I
-  | structRefT ts => λ _ _, False%I
+  | structRefT ts => structRefT_interp (map val_interp ts)
   end with
  flatten_val_interp (t: sty) {struct t} : list (sval → ival → iProp Σ) :=
     match t with
@@ -220,7 +260,7 @@ Fixpoint val_interp (t: sty) {struct t} :=
     | arrowT t1 t2 => [arrowT_interp t1 t2 val_interp]
     | extT x => [sty_val_interp hS x]
     | mapValT vt => [λ _ _, False%I]
-    | structRefT ts => [λ _ _, False%I]
+    | structRefT ts => [structRefT_interp (map val_interp ts)]
     end.
 
 Lemma flatten_val_interp_flatten_ty t:
@@ -336,6 +376,53 @@ Qed.
 
 Existing Instances sty_inv_persistent.
 
+Lemma arrayT_structRefT_promote vs v t:
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+    val_interp (hS := hS) (arrayT t) vs v -∗
+    val_interp (hS := hS) (structRefT (flatten_ty t)) vs v.
+Proof.
+  intros. iIntros "Hv".
+  intros. rewrite val_interp_array_unfold.
+  iDestruct "Hv" as "[Hv|Hnull]".
+  - iDestruct "Hv" as (l ls n idx H0lt Hnonempty (->&->&?&?&Heq1&Heq2)) "(Hsz1&Hsz1'&H1)".
+    iAssert (loc_paired (addr_base ls) (addr_base l)) with "[H1]" as "#Hpaired".
+    {
+      destruct n; try lia; [].
+      rewrite ?big_sepL_cons.
+      iDestruct "H1" as "(H&_)".
+      destruct (flatten_ty t); first by congruence.
+      rewrite ?big_sepL_cons.
+      iDestruct "H" as "(H&_)".
+      iApply is_loc_loc_paired; eauto.
+    }
+    iLeft.
+    assert (0 < length (flatten_ty t))%nat.
+    { destruct (flatten_ty t); simpl in *; try congruence. lia. }
+    unshelve (iExists l, ls, (n * length (flatten_ty t))%nat, _, _).
+    { lia. }
+    { destruct (flatten_ty t); simpl in *; try congruence. }
+    iSplitL "".
+    { iPureIntro; split_and!; eauto. lia. }
+    rewrite Nat2Z.inj_mul. iFrame.
+    iFrame "Hpaired".
+    destruct (decide (0 ≤ idx  ∧ idx < n)%Z) as [(Hr1&Hr2)|Hout]; last first.
+    { iRight. iPureIntro. rewrite Heq1.
+      assert (idx < 0 ∨ n <= idx) as [?|?] by lia.
+      - left. lia.
+      - right.
+        apply Z.mul_le_mono_nonneg_r; eauto; lia.
+    }
+    iLeft.
+    iDestruct (big_sepL_elem_of _ (seq 0 n) (Z.to_nat idx) with "H1") as "H".
+    { apply elem_of_list_In, in_seq. lia. }
+    assert (addr_base ls +ₗ length (flatten_ty t) * Z.to_nat idx = ls) as ->.
+    { symmetry. rewrite (addr_plus_off_decode ls); f_equal. lia. }
+    assert (addr_base l +ₗ length (flatten_ty t) * Z.to_nat idx = l) as ->.
+    { symmetry. rewrite (addr_plus_off_decode l); f_equal. lia. }
+    eauto.
+  - iRight. eauto.
+Qed.
+
 Lemma ctx_has_semTy_subst `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
       e es t x v vs tx Γ:
       ctx_has_semTy (hS := hS) (<[x:=tx]> Γ) es e t -∗
@@ -361,6 +448,40 @@ Proof.
   rewrite ?fmap_insert //=.
 Qed.
 
+Lemma structRefT_comparableTy_val_eq ts vs1 v1 vs2 v2:
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+  val_interp (hS := hS) (structRefT ts) vs1 v1 -∗
+  val_interp (hS := hS) (structRefT ts) vs2 v2 -∗
+  ⌜ v1 = v2 ↔ vs1 = vs2 ⌝.
+Proof.
+  intros.
+  iDestruct 1 as "[H1|Hnull1]";
+  iDestruct 1 as "[H2|Hnull2]".
+  * iDestruct "H1" as (?? n1 ?? (?&?&?&?&Hoffset1)) "(Hpaired1&_)".
+    iDestruct "H2" as (?? n2 ?? (?&?&?&?&Hoffset2)) "(Hpaired2&_)".
+    subst.
+    iDestruct (loc_paired_base_eq_iff with "Hpaired1 Hpaired2") as %Heq; eauto.
+    iPureIntro. apply litv_loc_eq_iff. eauto.
+  * iDestruct "Hnull2" as %(?&(Hnull2s&Hnull2)). subst.
+    iDestruct "H1" as (????? (?&?&?&?&?)) "H".
+    iPureIntro.
+    split; subst; inversion 1; exfalso; (eapply plus_off_preserves_non_null; [| eassumption]; eauto).
+  * iDestruct "Hnull1" as %(?&(Hnull1s&Hnull1)). subst.
+    iDestruct "H2" as (????? (?&?&Hnnull1&Hnnull2&?)) "H".
+    iPureIntro.
+    split; subst; intros Hnulleq; symmetry in Hnulleq; inversion Hnulleq; subst; symmetry.
+    ** exfalso. rewrite addr_base_of_plus //= in Hnnull2.
+    ** exfalso. rewrite addr_base_of_plus //= in Hnnull1.
+  * iDestruct "Hnull1" as %(?&(Hnull1s&Hnull1)). subst.
+    iDestruct "Hnull2" as %(?&(Hnull2s&Hnull2)). subst. iPureIntro. split; intros; eauto.
+    ** (* this is kind of round about since inversion is behaving oddly on the null offset hypothesis *)
+      f_equal. cut (∀ (l l': loc), #l = #l' → LitLoc l = LitLoc l'); eauto.
+       inversion 1; eauto.
+    ** (* this is kind of round about since inversion is behaving oddly on the null offset hypothesis *)
+      f_equal. cut (∀ (l l': loc), (#l = (#l': @val (@spec_ext_op_field spec_ext))) →
+                                     LitLoc l = LitLoc l'); eauto. inversion 1; eauto.
+Qed.
+
 Lemma comparableTy_val_eq t vs1 v1 vs2 v2:
   is_comparableTy t = true →
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
@@ -380,44 +501,12 @@ Proof.
     iPoseProof (IHt1 with "H1 H1'") as "%"; eauto.
     iPoseProof (IHt2 with "H2 H2'") as "%"; eauto.
     iPureIntro. naive_solver.
-  - intros. rewrite val_interp_array_unfold.
-    iDestruct 1 as "[H1|Hnull1]";
-    iDestruct 1 as "[H2|Hnull2]".
-    * iDestruct "H1" as (?? n1 ?? (?&?&?&?&Hoffset1)) "(Hsz1&Hsz1'&H1)".
-      iDestruct "H2" as (?? n2 ?? (?&?&?&?&Hoffset2)) "(Hsz2&Hsz2'&H2)".
-      subst.
-      destruct n1; destruct n2; try lia; [].
-      rewrite ?big_sepL_cons.
-      iDestruct "H1" as "(H1&_)".
-      iDestruct "H2" as "(H2&_)".
-      destruct (flatten_ty t); first by congruence.
-      rewrite ?big_sepL_cons.
-      iDestruct "H1" as "(H1&_)".
-      iDestruct "H2" as "(H2&_)".
-      subst. rewrite ?loc_add_0.
-      iDestruct (is_loc_eq_iff with "H1 H2") as %Heq_base.
-      iPureIntro. apply litv_loc_eq_iff, addr_base_and_offset_eq_iff; eauto.
-    * iDestruct "Hnull2" as %(?&(Hnull2s&Hnull2)). subst.
-      iDestruct "H1" as (????? (?&?&?&?&?)) "H".
-      iPureIntro.
-      split; subst; inversion 1; exfalso; (eapply plus_off_preserves_non_null; [| eassumption]; eauto).
-    * iDestruct "Hnull1" as %(?&(Hnull1s&Hnull1)). subst.
-      iDestruct "H2" as (????? (?&?&Hnnull1&Hnnull2&?)) "H".
-      iPureIntro.
-      split; subst; intros Hnulleq; symmetry in Hnulleq; inversion Hnulleq; subst; symmetry.
-      ** exfalso. rewrite addr_base_of_plus //= in Hnnull2.
-      ** exfalso. rewrite addr_base_of_plus //= in Hnnull1.
-    * iDestruct "Hnull1" as %(?&(Hnull1s&Hnull1)). subst.
-      iDestruct "Hnull2" as %(?&(Hnull2s&Hnull2)). subst. iPureIntro. split; intros; eauto.
-      ** (* this is kind of round about since inversion is behaving oddly on the null offset hypothesis *)
-        f_equal. cut (∀ (l l': loc), #l = #l' → LitLoc l = LitLoc l'); eauto.
-         inversion 1; eauto.
-      ** (* this is kind of round about since inversion is behaving oddly on the null offset hypothesis *)
-        f_equal. cut (∀ (l l': loc), (#l = (#l': @val (@spec_ext_op_field spec_ext))) →
-                                     LitLoc l = LitLoc l'); eauto. inversion 1; eauto.
-  - iIntros. auto.
-    (* XXX this case is not really done, in the sense that structRefT interp is currently False,
-       so the case becomes trivial. *)
+  - intros.
+    iIntros "H1 H2".
+    iDestruct (arrayT_structRefT_promote with "H1") as "H1".
+    iDestruct (arrayT_structRefT_promote with "H2") as "H2".
+    iApply (structRefT_comparableTy_val_eq with "H1 H2").
+  - intros. apply structRefT_comparableTy_val_eq.
 Qed.
 
 Lemma sty_val_size:
@@ -447,8 +536,10 @@ Proof.
   - iDestruct "Hval" as (?????? (?&?)) "H1". subst; eauto.
   - iDestruct "Hval" as "[Hval|Hnull]"; last first.
     { iDestruct "Hnull" as (?) "(%&%)"; subst. eauto. }
+    iDestruct "Hval" as (?????? (?&?&?&?)) "H1". subst; eauto.
+  - iDestruct "Hval" as "[Hval|Hnull]"; last first.
+    { iDestruct "Hnull" as (?) "(%&%)"; subst. eauto. }
     iDestruct "Hval" as (????? (?&?&?&?)) "H1". subst; eauto.
-  - iDestruct "Hval" as %[].
   - iDestruct "Hval" as %[].
   - rewrite /val_interp/=. iDestruct (sty_val_size with "Hval") as "(%&%)"; eauto.
 Qed.
@@ -499,6 +590,15 @@ Proof.
       simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
       iExists _,_,_,_,_,_. iFrame. eauto. }
   - iDestruct "Hval" as "[Hval|Hnull]".
+    { iDestruct "Hval" as (?????? (?&?&?&?)) "H1". subst; eauto.
+      simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+      simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+      iLeft. unshelve (iExists _, _, _, _, _, _; iSplitL ""; first done; eauto); eauto. }
+    { iDestruct "Hnull" as (?) "(%&%)"; subst.
+      simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+      simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
+      iRight. eauto. }
+  - iDestruct "Hval" as "[Hval|Hnull]".
     { iDestruct "Hval" as (????? (?&?&?&?)) "H1". subst; eauto.
       simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
       simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
@@ -507,7 +607,6 @@ Proof.
       simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
       simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
       iRight. eauto. }
-  - iDestruct "Hval" as %[].
   - iDestruct "Hval" as %[].
   - rewrite /val_interp/=. iDestruct (sty_val_flatten with "Hval") as %[Heq1 Heq2].
     { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
@@ -899,7 +998,7 @@ Proof using spec_trans.
     { iApply "Hspec". }
     iExists _. iFrame "Hj".
     rewrite val_interp_array_unfold /arrayT_interp.
-    iLeft. unshelve (iExists l, ls, (int.nat nint), _, _); eauto.
+    iLeft. unshelve (iExists l, ls, (int.nat nint), 0, _, _); eauto.
     { lia. }
     rewrite -Hsize -Hspecsize.
     iFrame. replace ((int.nat nint * length (flatten_ty t)))%Z with
@@ -910,6 +1009,7 @@ Proof using spec_trans.
       * apply addr_base_non_null_offset; eauto; naive_solver.
       * apply addr_base_non_null_offset; eauto; naive_solver.
       * naive_solver congruence.
+      * lia.
     }
     rewrite (addr_offset_0_is_base l); last naive_solver.
     rewrite (addr_offset_0_is_base ls); last naive_solver.
@@ -962,8 +1062,8 @@ Proof using spec_trans.
       iModIntro. iExists _. iFrame. iRight.
       iExists _. rewrite /loc_add. rewrite addr_plus_plus. eauto.
     }
-    iDestruct "Hv1" as (l ls n Hgtzero Hnonempty Hpeq) "(Hblock1&Hblock2&Hlist)".
-    destruct Hpeq as (->&->&?&?&?).
+    iDestruct "Hv1" as (l ls n idx Hgtzero Hnonempty Hpeq) "(Hblock1&Hblock2&Hlist)".
+    destruct Hpeq as (->&->&?&?&Hoff&Hoffs).
     wp_pures.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
@@ -974,11 +1074,34 @@ Proof using spec_trans.
     iModIntro.
     iExists _. iFrame. iLeft.
     unshelve (iExists (addr_plus_off l (ty_size t * int.val off)),
-                                      (addr_plus_off ls (ty_size t * int.val off)), _, _, _; iFrame); eauto.
+                                      (addr_plus_off ls (ty_size t * int.val off)), _, (idx + int.val off), _, _; iFrame); eauto.
     rewrite ?addr_base_of_plus ?addr_offset_of_plus. iPureIntro; split_and!; eauto.
-    subst. lia.
+    * rewrite Hoff. rewrite -ty_size_length.
+      specialize (ty_size_ge_0 t). intros.
+      rewrite Z2Nat.id //=. lia.
+    * rewrite Hoffs. rewrite -ty_size_length.
+      specialize (ty_size_ge_0 t). intros.
+      rewrite Z2Nat.id //=. lia.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j K with "[] Hj"); first auto.
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
+    iExists _. iFrame "Hj". iApply arrayT_structRefT_promote. eauto.
   - admit.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) l').
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [Primitive1Ctx _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
+
+    iApply wp_wpc.
+    iApply wp_fupd.
+    admit.
   - admit.
   - admit.
   - subst.

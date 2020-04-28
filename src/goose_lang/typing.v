@@ -325,6 +325,7 @@ Section goose_lang.
       Γ ⊢ e : arrayT t ->
       Γ ⊢ e : structRefT (flatten_ty t)
   | struct_offset_op_hasTy e1 (k: Z) ts :
+      Z.to_nat k < length ts →
       Γ ⊢ e1 : structRefT ts ->
       Γ ⊢ BinOp (OffsetOp k) e1 #1 : structRefT (drop (Z.to_nat k) ts)
   | load_hasTy l t ts :
