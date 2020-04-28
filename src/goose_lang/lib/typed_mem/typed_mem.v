@@ -70,6 +70,45 @@ Section goose_lang.
     unseal. iIntros "[_ %] !%//".
   Qed.
 
+  Local Lemma struct_mapsto_agree_flatten l t q1 v1 q2 v2 :
+    length (flatten_struct v1) = length (flatten_struct v2) ->
+    l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
+    ⌜flatten_struct v1 = flatten_struct v2⌝.
+  Proof.
+    unseal.
+    iIntros (Hlen) "[Hl1 _] [Hl2 _]".
+    generalize dependent (flatten_struct v1); intros l1.
+    generalize dependent (flatten_struct v2); intros l2.
+    clear.
+    iIntros (Hlen).
+    (iInduction l1 as [|v1 l1] "IH" forall (l l2 Hlen)).
+    { simpl in Hlen.
+      destruct l2; simpl in Hlen; try congruence.
+      auto. }
+    destruct l2; simpl in Hlen; try congruence.
+    simpl.
+    iDestruct "Hl1" as "[Hx1 Hl1]".
+    iDestruct "Hl2" as "[Hx2 Hl2]".
+    iDestruct (heap_mapsto_agree with "[$Hx1 $Hx2]") as "->".
+    setoid_rewrite loc_add_Sn.
+    iDestruct ("IH" $! (l +ₗ 1) l2 with "[] Hl1 Hl2") as %->; auto.
+  Qed.
+
+  Theorem struct_mapsto_agree l t q1 v1 q2 v2 :
+    l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
+    ⌜v1 = v2⌝.
+  Proof.
+    iIntros "Hl1 Hl2".
+    iDestruct (struct_mapsto_ty with "Hl1") as %Hty1.
+    iDestruct (struct_mapsto_ty with "Hl2") as %Hty2.
+    pose proof (val_ty_len Hty1).
+    pose proof (val_ty_len Hty2).
+    iDestruct (struct_mapsto_agree_flatten with "Hl1 Hl2") as %Heq.
+    { congruence. }
+    iPureIntro.
+    eapply flatten_struct_inj; eauto.
+  Qed.
+
   Theorem base_mapsto_untype {l bt q v} :
     match bt with
     | unitBT => false

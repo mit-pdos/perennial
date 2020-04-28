@@ -103,6 +103,41 @@ Section goose_lang.
       lia.
   Qed.
 
+  Ltac inv_lit_ty :=
+    try match goal with
+        | [ H: lit_ty _ _ |- _ ] => solve [ inversion H ]
+        end.
+
+  Theorem flatten_struct_inj v1 v2 t :
+    val_ty v1 t ->
+    val_ty v2 t ->
+    flatten_struct v1 = flatten_struct v2 ->
+    v1 = v2.
+  Proof.
+    intros H.
+    revert v2.
+    induction H; simpl; intros.
+    - inversion H0; subst; simpl in H1;
+        try solve [ inversion H ];
+        try (destruct l, l0; inversion H1; subst);
+        auto.
+    - invc H1; simpl in *; inv_lit_ty.
+      pose proof (val_ty_len H6).
+      pose proof (val_ty_len H).
+      unshelve epose proof (app_inj_1 _ _ _ _ _ H2); first by congruence.
+      intuition eauto.
+      eapply IHval_ty1 in H5; eauto; subst.
+      eapply IHval_ty2 in H8; eauto; subst.
+      congruence.
+    - invc H0; simpl in *; inv_lit_ty; try congruence.
+    - invc H0; simpl in *; inv_lit_ty; try congruence.
+    - invc H0; simpl in *; inv_lit_ty; try congruence.
+    - invc H0; simpl in *; inv_lit_ty; try congruence.
+      invc H4.
+      invc H2; simpl in *; inv_lit_ty; try congruence.
+    - invc H; simpl in *; inv_lit_ty; try congruence.
+  Qed.
+
 End goose_lang.
 
 Ltac val_ty :=
