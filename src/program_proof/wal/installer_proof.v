@@ -11,9 +11,9 @@ Section simulation.
   generic theorems about simulation, like the one below *)
   Definition simulation_fupd {T} (tr: transition state T) (Q: T -> iProp Σ): iProp Σ :=
     (∀ σ σ' r,
-        ⌜wf σ⌝ -∗
+         ⌜wf σ⌝ -∗
          ⌜relation.denote tr σ σ' r⌝ -∗
-         (P σ ={E}=∗ P σ' ∗ ⌜wf σ'⌝ ∗ Q r)).
+        (P σ ={E}=∗ P σ' ∗ ⌜wf σ'⌝ ∗ Q r)).
 
   Theorem simulation_bind_fupd {A B}
           (tr1: transition state A)
@@ -135,5 +135,58 @@ Proof.
   iExists _; iFrame.
   iDestruct (is_slice_to_small with "Hs") as "$".
 Qed.
+
+Definition cutMemLog (installEnd: u64) (σ: locked_state) : locked_state :=
+  set memStart (λ _, installEnd)
+      (set memLog (drop (int.nat installEnd-int.nat σ.(memStart))%nat) σ).
+
+Theorem wp_WalogState__cutMemLog γ (st: loc) σ (installEnd: u64) :
+  {{{ wal_linv_fields st σ ∗
+      memLog_linv γ σ.(memStart) σ.(memLog)}}}
+    WalogState__cutMemLog #st #installEnd
+  {{{ σ', RET #();
+      ⌜σ' = cutMemLog installEnd σ⌝ ∗
+      wal_linv_fields st σ' ∗
+      memLog_linv γ σ'.(memStart) σ'.(memLog)
+  }}}.
+Proof.
+Admitted.
+
+Fixpoint list_to_gmap_set {A} `{!EqDecision A} `{!Countable A} (l: list A): gmap A unit :=
+  match l with
+  | [] => ∅
+  | x::l => <[x := tt]> (list_to_gmap_set l)
+  end.
+
+Theorem list_to_gmap_set_lookup {A} `{!EqDecision A} `{!Countable A} (l: list A) (x: A) :
+  In x l <-> list_to_gmap_set l !! x = Some tt.
+Proof.
+  induction l; simpl.
+  - rewrite lookup_empty; split; [ intros [] | congruence ].
+  - destruct (decide (a = x)); subst.
+    + rewrite lookup_insert.
+      split; intuition idtac.
+    + rewrite -> lookup_insert_ne by auto.
+      split; intuition idtac.
+Qed.
+
+Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)
+        (installed_txn_id new_installed_txn_id: nat) :
+  {{{ updates_slice bufs_s bufs ∗
+      (* these aren't enough assumptions - we need bufs to actually match the
+      new transactions being installed (which will come from snapshotting the
+      memLog invariant) *)
+      own γ.(being_installed_name) (◯ Excl' (∅: gmap Z unit)) ∗
+      own γ.(new_installed_name) (◯ Excl' installed_txn_id)
+   }}}
+    installBlocks #d (slice_val bufs_s)
+  {{{ RET #(); updates_slice bufs_s bufs ∗
+      (* probably not enough in the postcondition, but it can only be ghost
+      variables so maybe this is it *)
+      own γ.(being_installed_name) (◯ Excl' (list_to_gmap_set ((λ u, int.val (update.addr u)) <$> bufs))) ∗
+      own γ.(new_installed_name) (◯ Excl' installed_txn_id)
+  }}}.
+Proof.
+Admitted.
 
 End goose_lang.
