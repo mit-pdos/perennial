@@ -616,9 +616,10 @@ Proof.
     (* TODO: dirtyslice is an untyped is_slice due to buf/specs.v *)
     admit.
   }
-  iIntros (ok) "[Hdirtyslice Hbufptrlist]".
+  iIntros (ok) "Hunifiedtxns".
   wp_pures.
   iApply "HΦ".
+  (* TODO: should postcondition use ok? *)
 Admitted.
 
 Theorem wp_BufTxn__CommitWait_pred `{!Liftable P} buftx γt γUnified :
