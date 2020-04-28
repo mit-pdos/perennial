@@ -20,24 +20,13 @@ Module kvpair.
   Global Instance _eta: Settable _ := settable! mk <key; val>.
 End kvpair.
 
-Class kvsG Σ :=
-  {
-    kvs_bufs_pre :> gen_heapPreG specs.addr (defs.bufDataT defs.KindBlock) Σ;
-    kvs_bufs :> gen_heapG specs.addr (defs.bufDataT defs.KindBlock) Σ;
-  }.
-
 Section heap.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
 Context `{!lockG Σ}.
 Context `{!buftxnG Σ}.
-Context `{!kvsG Σ}.
+Context `{!gen_heapG specs.addr (defs.bufDataT defs.KindBlock) Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
-
-(*Notation "l k↦ v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock) l 1 v%V)
-                            (at level 20, format "l k↦ v") : bi_scope.
-Notation "l k↦{ q } v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock) l q v%V)
-                            (at level 20, q at level 50, format "l k↦{ q }  v") : bi_scope.*)
 
 Definition LogSz := 513.
 Fixpoint init_keys_helper (keys: list specs.addr) (sz: nat) : list specs.addr :=
@@ -74,28 +63,29 @@ Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ
       ∗ is_block (snd slice_kvp) blk
       ∗ ⌜fst slice_kvp = key⌝.
 
-Definition kvpairs_match (pairs: list kvpair.t): iProp Σ :=
+Definition kvpairs_match (pairs: list kvpair.t) : iProp Σ :=
   [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in (mapsto a 1 b)%I.
 
-Definition ptsto_kvs (kvsl: loc) (sz : nat): iProp Σ :=
-  ( ∃ (l : loc) γ,
+Definition ptsto_kvs (kvsl: loc) (sz : nat) γUnified : iProp Σ :=
+  ( ∃ (l : loc),
       kvsl↦[KVS.S :: "txn"] #l ∗
       kvsl ↦[KVS.S :: "sz"] #(U64 (Z.of_nat sz)) ∗
-      is_txn l γ ∗
-      [∗ list] k ∈ valid_keys sz, (∃ v, mapsto k 1 v))%I.
+      is_txn l γUnified ∗
+      [∗ list] k ∈ valid_keys sz, (∃ v: defs.bufDataT defs.KindBlock, mapsto k 1 v))%I.
 
-Definition crashed_kvs kvp_ls sz: iProp Σ :=
-  ([∗ list] k ∈ valid_keys sz, (∃ v, mapsto k 1 v))%I ∗ kvpairs_match kvp_ls.
+Definition crashed_kvs kvp_ls sz : iProp Σ :=
+  ([∗ list] k ∈ valid_keys sz, (∃ v: defs.bufDataT defs.KindBlock, mapsto k 1 v))%I ∗ kvpairs_match kvp_ls.
 
 Definition ptsto_kvpair (l: loc) (pair: kvpair.t) : iProp Σ :=
       ∃ bs blk, (l↦[KVPair.S :: "Key"] (key2val(pair.(kvpair.key))) ∗
-                  l ↦[KVPair.S :: "Val"] (slice_val bs) ∗ is_block bs blk
+                  l ↦[KVPair.S :: "Val"] (slice_val bs) ∗ is_block bs
+ blk
                   ∗ ⌜specs.is_bufData_at_off blk 0 pair.(kvpair.val)⌝)%I.
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
     MkKVS #d #(U64(Z.of_nat sz)) @ NotStuck; k; E1; E2
-  {{{ kvsl, RET #kvsl; ptsto_kvs kvsl sz}}}
+  {{{ kvsl γUnified, RET #kvsl; ptsto_kvs kvsl sz γUnified}}}
   {{{ True }}}.
 Proof.
   iIntros (ϕ ϕc) "_ Hϕ".
@@ -104,18 +94,18 @@ Proof.
   wpc_bind (super.MkFsSuper _).
 Admitted.
 
-Theorem wpc_KVS__Get kvsl sz key v:
+Theorem wpc_KVS__Get kvsl sz key v γUnified:
   {{{
-       ptsto_kvs kvsl sz
+       ptsto_kvs kvsl sz γUnified
        ∗ ⌜valid_key key sz⌝
   }}}
     KVS__Get #kvsl (key2val(key))
   {{{(pairl: loc), RET #pairl;
-     ptsto_kvs kvsl sz ∗ ptsto_kvpair pairl (kvpair.mk key v)
+     ptsto_kvs kvsl sz γUnified ∗ ptsto_kvpair pairl (kvpair.mk key v)
   }}}.
 Proof.
   iIntros (ϕ) "[Hkvs %Hkey] Hϕ".
-  iDestruct "Hkvs" as (l txn) "[Htxnl [Hsz [Htxn Hkvs]]]".
+  iDestruct "Hkvs" as (l) "[Htxnl [Hsz [Htxn Hkvs]]]".
   pose Hkey as Hkey'.
   destruct Hkey' as [Hkaddr [Hklgsz Hsz]].
   wp_call.
@@ -133,26 +123,29 @@ Proof.
     * wp_apply wp_panic.
       destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. omega.
     * wp_loadField.
+      Check wp_buftxn_Begin.
       wp_apply (wp_buftxn_Begin l txn _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".
-      (*iDestruct "Hbtxn" as (l0 mT bufmap gBufmap txid) "[Htxnl0 [Hbml [Htxidl [Htxn [Hbm [Hgh [HmT [Hvalid Hmapsto]]]]]]]]".*)
       wp_let.
       wp_call.
       change (u64_instance.u64.(@word.mul 64) 4096 8) with (U64 32768).
       change (key2val key, (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
 
-      wp_apply (wp_BufTxn__ReadBuf buftx γt txn (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn Hkvs]").
+      Check wp_BufTxn__ReadBuf.
+      wp_apply (wp_BufTxn__ReadBuf buftx γt (gen_heapG (specs.addr) (defs.txn (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn Hkvs]").
+      (*iDestruct "Hbtxn" as (l0 mT bufmap gBufmap txid) "[Htxnl0 [Hbml [Htxidl [Htxn [Hbm [Hgh [HmT [Hvalid Hmapsto]]]]]]]]".*)
       -- iSplitL "Hbtxn"; auto.
          pose Hkey as Hkey'.
          apply (valid_key_in_valid_keys key sz) in Hkey'.
          iPoseProof (big_sepL_elem_of (λ k, (∃ v0, mapsto k 1 v0))%I (valid_keys sz) key Hkey' with "[Hkvs]") as "HkeyMt"; auto.
          {
-           Check big_sepL_mono.
-           Set Printing Implicit.
            iApply (big_sepL_mono with "Hkvs").
            iIntros (k y HkeysLkup) "HkeyMt".
            iDestruct "HkeyMt" as (v0) "HkeyMt".
-           iExists v0.
+           unfold mapsto_txn.
+           Set Printing Implicit.
+           iExists (existT _ v0).
+           auto.
          - iSplitL "HkeyMt"; eauto.
          {
            rewrite <- (valid_key_eq_addr _ _ Hkey).
