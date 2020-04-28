@@ -25,34 +25,31 @@ Context `{!heapG Σ}.
 Context `{!crashG Σ}.
 Context `{!lockG Σ}.
 Context `{!buftxnG Σ}.
-Context `{!gen_heapG specs.addr (defs.bufDataT defs.KindBlock) Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Definition LogSz := 513.
-Fixpoint init_keys_helper (keys: list specs.addr) (sz: nat) : list specs.addr :=
+SearchAbout (defs.bufDataT).
+Fixpoint init_kvs_helper (kvs: gmap specs.addr {K & defs.bufDataT K}) (sz: nat) :=
 match sz with
-| O => keys
-| S n => init_keys_helper ((specs.Build_addr n 0) :: keys) n
+| O => kvs
+| S n => <[(specs.Build_addr n 0) := existT defs.KindBlock (defs.bufBlock (inhabitant disk.Block0))]> (init_kvs_helper kvs n)
 end.
+Definition kvs_init sz : gmap specs.addr {K & defs.bufDataT K} := init_kvs_helper ∅ sz.
 
-Definition valid_keys sz := init_keys_helper [] sz.
 Definition valid_key (key: specs.addr) (sz: nat):=
-  specs.valid_addr key ∧
+  specs.valid_addr key  ∧
   int.val key.(specs.addrBlock) >= int.val LogSz ∧
   int.val key.(specs.addrBlock) < int.val sz.
 
-Lemma valid_key_in_valid_keys key sz : valid_key key sz -> key ∈ (valid_keys sz).
+Lemma valid_key_in_valid_keys key sz : valid_key key sz -> ∃ b, (kvs_init sz) !! key = Some b.
 Admitted.
 
-Lemma valid_key_eq_addr key sz : valid_key key sz -> key = specs.Build_addr key.(specs.addrBlock) 0.
-Admitted.
-
-Definition key2val (key: specs.addr) : val :=
-  #key.(specs.addrBlock).
+Definition key_to_addr key : specs.addr :=
+  specs.Build_addr key 0.
 
 (*XXXway to generalize from wal/abstractions.v?*)
 Definition kvpair_val (pair : specs.addr*Slice.t): val :=
-  ((key2val (fst pair)), (slice_val (snd pair), #()))%V.
+  (#(fst pair).(specs.addrBlock), (slice_val (snd pair), #()))%V.
 
 (* Links a list of kvpairs to a slice *)
 Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ :=
@@ -63,21 +60,23 @@ Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ
       ∗ is_block (snd slice_kvp) blk
       ∗ ⌜fst slice_kvp = key⌝.
 
-Definition kvpairs_match (pairs: list kvpair.t) : iProp Σ :=
-  [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in (mapsto a 1 b)%I.
+Definition kvpairs_match (pairs: list kvpair.t) γDisk : iProp Σ :=
+  [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in
+                        (mapsto_txn γDisk a b)%I.
 
-Definition ptsto_kvs (kvsl: loc) (sz : nat) γUnified : iProp Σ :=
+Definition ptsto_kvs (kvsl: loc) (sz : nat) γDisk : iProp Σ :=
   ( ∃ (l : loc),
       kvsl↦[KVS.S :: "txn"] #l ∗
       kvsl ↦[KVS.S :: "sz"] #(U64 (Z.of_nat sz)) ∗
-      is_txn l γUnified ∗
-      [∗ list] k ∈ valid_keys sz, (∃ v: defs.bufDataT defs.KindBlock, mapsto k 1 v))%I.
+      is_txn l γDisk ∗
+      [∗ map] k↦b ∈ kvs_init sz, mapsto_txn γDisk k (projT2 b))%I.
 
-Definition crashed_kvs kvp_ls sz : iProp Σ :=
-  ([∗ list] k ∈ valid_keys sz, (∃ v: defs.bufDataT defs.KindBlock, mapsto k 1 v))%I ∗ kvpairs_match kvp_ls.
+Definition crashed_kvs kvp_ls sz γDisk : iProp Σ :=
+      ([∗ map] k↦b ∈ kvs_init sz, mapsto_txn γDisk k (projT2 b))%I
+              ∗ kvpairs_match kvp_ls γDisk.
 
 Definition ptsto_kvpair (l: loc) (pair: kvpair.t) : iProp Σ :=
-      ∃ bs blk, (l↦[KVPair.S :: "Key"] (key2val(pair.(kvpair.key))) ∗
+      ∃ bs blk, (l↦[KVPair.S :: "Key"] #(pair.(kvpair.key).(specs.addrBlock)) ∗
                   l ↦[KVPair.S :: "Val"] (slice_val bs) ∗ is_block bs
  blk
                   ∗ ⌜specs.is_bufData_at_off blk 0 pair.(kvpair.val)⌝)%I.
@@ -85,7 +84,7 @@ Definition ptsto_kvpair (l: loc) (pair: kvpair.t) : iProp Σ :=
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
     MkKVS #d #(U64(Z.of_nat sz)) @ NotStuck; k; E1; E2
-  {{{ kvsl γUnified, RET #kvsl; ptsto_kvs kvsl sz γUnified}}}
+  {{{ kvsl γDisk, RET #kvsl; ptsto_kvs kvsl sz γDisk}}}
   {{{ True }}}.
 Proof.
   iIntros (ϕ ϕc) "_ Hϕ".
@@ -94,14 +93,14 @@ Proof.
   wpc_bind (super.MkFsSuper _).
 Admitted.
 
-Theorem wpc_KVS__Get kvsl sz key v γUnified:
+Theorem wpc_KVS__Get kvsl sz key v γDisk:
   {{{
-       ptsto_kvs kvsl sz γUnified
+       ptsto_kvs kvsl sz γDisk
        ∗ ⌜valid_key key sz⌝
   }}}
-    KVS__Get #kvsl (key2val(key))
+    KVS__Get #kvsl #((key.(specs.addrBlock)))
   {{{(pairl: loc), RET #pairl;
-     ptsto_kvs kvsl sz γUnified ∗ ptsto_kvpair pairl (kvpair.mk key v)
+     ptsto_kvs kvsl sz γDisk ∗ ptsto_kvpair pairl (kvpair.mk key v)
   }}}.
 Proof.
   iIntros (ϕ) "[Hkvs %Hkey] Hϕ".
@@ -111,11 +110,10 @@ Proof.
   wp_call.
   wp_loadField.
   wp_pures.
-  unfold specs.valid_addr in *; unfold specs.addr2flat_z in *.
-  remember(bool_decide (int.val sz < int.val key.(specs.addrBlock))) as Hszcomp.
+  remember(bool_decide (int.val sz < int.val _)) as Hszcomp.
   destruct Hszcomp; wp_pures.
   - wp_apply wp_panic.
-    destruct (decide_rel Z.lt (int.val sz) (int.val key.(specs.addrBlock))); try discriminate. omega.
+    destruct (decide_rel Z.lt (int.val sz) _); try discriminate. omega.
   - change (u64_instance.u64.(@word.add 64) (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2)
       with (U64 LogSz).
     remember(bool_decide (int.val _ < int.val LogSz)) as Hlgszcomp.
@@ -124,15 +122,16 @@ Proof.
       destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. omega.
     * wp_loadField.
       Check wp_buftxn_Begin.
-      wp_apply (wp_buftxn_Begin l txn _ with "[Htxn]"); auto.
+      wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".
       wp_let.
       wp_call.
       change (u64_instance.u64.(@word.mul 64) 4096 8) with (U64 32768).
-      change (key2val key, (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
+      change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
 
+      iMod (BufTxn_lift buftx γt γDisk (kvs_init sz) with "[Hbtxn] [Hkvs]") as "[H1 H2]".
       Check wp_BufTxn__ReadBuf.
-      wp_apply (wp_BufTxn__ReadBuf buftx γt (gen_heapG (specs.addr) (defs.txn (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn Hkvs]").
+      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn Hkvs]").
       (*iDestruct "Hbtxn" as (l0 mT bufmap gBufmap txid) "[Htxnl0 [Hbml [Htxidl [Htxn [Hbm [Hgh [HmT [Hvalid Hmapsto]]]]]]]]".*)
       -- iSplitL "Hbtxn"; auto.
          pose Hkey as Hkey'.
@@ -142,9 +141,8 @@ Proof.
            iApply (big_sepL_mono with "Hkvs").
            iIntros (k y HkeysLkup) "HkeyMt".
            iDestruct "HkeyMt" as (v0) "HkeyMt".
-           unfold mapsto_txn.
-           Set Printing Implicit.
            iExists (existT _ v0).
+           Search
            auto.
          - iSplitL "HkeyMt"; eauto.
          {
