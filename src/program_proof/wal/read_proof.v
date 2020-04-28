@@ -37,7 +37,7 @@ Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
       memLog_linv γ σ.(memStart) σ.(memLog) }}}
     WalogState__readMem #st #a
   {{{ b_s (ok:bool), RET (slice_val b_s, #ok);
-      (if ok then ∃ b, is_block b_s b ∗
+      (if ok then ∃ b, is_block b_s 1 b ∗
                        ⌜apply_upds σ.(memLog) ∅ !! int.val a = Some b⌝
       else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog) ∅ !! int.val a = None⌝) ∗
       "Hfields" ∷ wal_linv_fields st σ ∗
@@ -121,7 +121,7 @@ Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
    }}}
     Walog__ReadMem #l #a
   {{{ (ok:bool) bl, RET (slice_val bl, #ok); if ok
-                                             then ∃ b, is_block bl b ∗ Q (Some b)
+                                             then ∃ b, is_block bl 1 b ∗ Q (Some b)
                                              else Q None}}}.
 Proof.
   iIntros (Φ) "[#Hwal Hfupd] HΦ".

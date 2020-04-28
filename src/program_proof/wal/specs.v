@@ -188,7 +188,7 @@ Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l a :
    }}}
     Walog__ReadMem #l #a
   {{{ (ok:bool) bl, RET (slice_val bl, #ok); if ok
-                                             then ∃ b, is_block bl b ∗ Q (Some b)
+                                             then ∃ b, is_block bl 1 b ∗ Q (Some b)
                                              else Q None}}}.
 Proof.
   iIntros (Φ) "[Hwal Hfupd] HΦ".
@@ -205,7 +205,7 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l a :
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q b))
    }}}
     Walog__ReadInstalled #l #a
-  {{{ bl, RET slice_val bl; ∃ b, is_block bl b ∗ Q b}}}.
+  {{{ bl, RET slice_val bl; ∃ b, is_block bl 1 b ∗ Q b}}}.
 Proof.
   iIntros (Φ) "[Hwal Hfupd] HΦ".
   wp_call.

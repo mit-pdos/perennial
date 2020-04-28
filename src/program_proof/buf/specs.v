@@ -638,13 +638,13 @@ Admitted.
 Theorem wp_Buf__Install bufptr a b blk_s blk :
   {{{
     is_buf bufptr a b ∗
-    is_block blk_s blk
+    is_block blk_s 1 blk
   }}}
     Buf__Install #bufptr (slice_val blk_s)
   {{{
     (blk': Block), RET #();
     is_buf bufptr a b ∗
-    is_block blk_s blk' ∗
+    is_block blk_s 1 blk' ∗
     ⌜ ∀ off (d0 : bufDataT b.(bufKind)),
       is_bufData_at_off blk off d0 ->
       if decide (off = a.(addrOff))

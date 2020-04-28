@@ -243,7 +243,7 @@ Qed.
 Theorem wp_hdr2 (newStart: u64) :
   {{{ True }}}
     hdr2 #newStart
-  {{{ s b, RET slice_val s; is_block s b ∗
+  {{{ s b, RET slice_val s; is_block s 1 b ∗
                             ∃ extra,
                               ⌜Block_to_vals b = b2val <$> encode [EncUInt64 newStart] ++ extra⌝ }}}.
 Proof.
@@ -276,7 +276,7 @@ Theorem wp_hdr1 (circ: loc) (newStart: u64) s addrs :
   {{{ b_s b, RET slice_val b_s;
       circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
       is_slice_small s uint64T 1 (u64val <$> addrs) ∗
-      is_block b_s b ∗
+      is_block b_s 1 b ∗
       ⌜Block_to_vals b = b2val <$> encode ([EncUInt64 newStart] ++ (EncUInt64 <$> addrs))⌝ }}}.
 Proof.
   iIntros (Haddrlen Φ) "[HdiskAddrs Hs] HΦ".
@@ -649,7 +649,7 @@ Proof.
     is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
     diskEnd_is γ (1/2) (int.val endpos) ∗
     ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
-                                       is_block b_upd.2 b ∗ ⌜b_upd.1 = a⌝)
+                                       is_block b_upd.2 1 b ∗ ⌜b_upd.1 = a⌝)
     )%I (* XXX why is %I needed? *)
     with "[] [$Hγblocks $Hdiskaddrs $Hslice $Hupdslice $Hend $Hbks]").
 
@@ -1022,32 +1022,6 @@ Proof.
   eauto using circ_low_wf_update_addrs.
 Qed.
 
-Theorem wp_SliceAppend_update stk E bufSlice (a:u64) (b_s: Slice.t) (b: Block) upds :
-  int.val bufSlice.(Slice.sz) + 1 < 2^64 ->
-  {{{ updates_slice bufSlice upds ∗
-      is_block b_s b }}}
-    SliceAppend (struct.t Update.S) (slice_val bufSlice) (#a, (slice_val b_s, #()))%V @ stk; E
-  {{{ (bufSlice': Slice.t), RET (slice_val bufSlice');
-      updates_slice bufSlice' (upds ++ [update.mk a b]) }}}.
-Proof.
-  iIntros (Hsz Φ) "[Hupds Hb] HΦ".
-  iDestruct "Hupds" as (bk_s) "[Hupds_s Hblocks]".
-  (* TODO: replace opacity with a proper sealing plan *)
-  Transparent slice.T.
-  wp_apply (wp_SliceAppend with "[Hupds_s]"); eauto.
-  Opaque slice.T.
-  iIntros (s') "Hs'".
-  iApply "HΦ".
-  iExists _; iFrame.
-  iSplitL "Hs'".
-  2: {
-    iApply (big_sepL2_app _ _ [(a, b_s)] with "Hblocks").
-    simpl. iFrame. done.
-  }
-  iExactEq "Hs'"; f_equal.
-  rewrite fmap_app. auto.
-Qed.
-
 Theorem wp_decodeHdr1 stk E s (hdr1: Block) (endpos: u64) (addrs: list u64) :
   Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 endpos] ++ (map EncUInt64 addrs)) ->
   length addrs = Z.to_nat LogSz ->
@@ -1287,9 +1261,7 @@ Proof.
       mod_bound; word. }
     rewrite list_insert_id; eauto.
 
-    wp_apply (wp_SliceAppend_update with "[$Hupds Hb_s]").
-    { autorewrite with len in Hupdslen.
-      word. }
+    wp_apply (wp_SliceAppend_updates (uv:=(a, b_s)) with "[$Hupds Hb_s]"); first by len.
     { iApply is_slice_to_small. iFrame. }
     iIntros (bufSlice') "Hupds'".
     wp_store.
@@ -1315,7 +1287,7 @@ Proof.
     destruct Haddr_block_eq.
     replace (Z.to_nat (int.val i + 1) - int.nat (start σ))%nat with (S (int.nat i - int.nat (start σ))) by word.
     erewrite take_S_r; eauto.
-    rewrite Hieq.
+    rewrite Hieq /=.
     congruence.
 
   - iDestruct (is_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".

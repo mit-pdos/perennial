@@ -17,13 +17,13 @@ Qed.
 Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
   ∃ bks, is_slice bk_s (struct.t Update.S) 1 (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
-                                     is_block (snd b_upd) b ∗
+                                     is_block (snd b_upd) 1 b ∗
                                      ⌜fst b_upd = a⌝.
 
 Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp Σ :=
   ∃ bks, is_slice_small bk_s (struct.t Update.S) q (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
-                                     is_block (snd b_upd) b ∗
+                                     is_block (snd b_upd) q b ∗
                                      ⌜fst b_upd = a⌝.
 
 Theorem updates_slice_frag_acc bk_s bs :
@@ -85,8 +85,8 @@ Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
     SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
   {{{ uv, RET (update_val uv);
       ⌜uv.1 = u.(update.addr)⌝ ∗
-      is_block uv.2 u.(update.b) ∗
-      (is_block uv.2 u.(update.b) -∗ updates_slice bk_s bs)
+      is_block uv.2 1 u.(update.b) ∗
+      (is_block uv.2 1 u.(update.b) -∗ updates_slice bk_s bs)
   }}}.
 Proof.
   iIntros (Φ) "[Hupds %Hlookup] HΦ".
@@ -129,9 +129,9 @@ Opaque slice.T.
 
 Hint Resolve val_ty_update : val_ty.
 
-Theorem wp_SliceAppend_updates stk E bk_s bs (uv: u64 * Slice.t) b :
+Theorem wp_SliceAppend_updates {stk E bk_s bs} {uv: u64 * Slice.t} {b} :
   length bs + 1 < 2^64 ->
-  {{{ updates_slice bk_s bs ∗ is_block uv.2 b }}}
+  {{{ updates_slice bk_s bs ∗ is_block uv.2 1 b }}}
     SliceAppend (struct.t Update.S) (slice_val bk_s) (update_val uv) @ stk; E
   {{{ bk_s', RET slice_val bk_s';
       updates_slice bk_s' (bs ++ [update.mk uv.1 b])
@@ -148,14 +148,16 @@ Proof.
   change ([update_val uv]) with (update_val <$> [uv]).
   rewrite -fmap_app.
   rewrite /updates_slice.
-  iExists (bks ++ [uv]); iFrame.
+  iExists (bks ++ [uv]).
+  iFrame "Hs".
+  iApply (big_sepL2_app with "Hupds").
   simpl. auto.
 Qed.
 
-Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) b :
-  {{{ is_block (snd u) b }}}
+Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) q b :
+  {{{ is_block (snd u) q b }}}
     copyUpdateBlock (update_val u) @ stk; E
-  {{{ (s':Slice.t), RET (slice_val s'); is_block (snd u) b ∗ is_block s' b }}}.
+  {{{ (s':Slice.t), RET (slice_val s'); is_block (snd u) q b ∗ is_block s' 1 b }}}.
 Proof.
   iIntros (Φ) "Hb HΦ".
   destruct u as [a s]; simpl.

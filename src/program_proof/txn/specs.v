@@ -745,7 +745,7 @@ Opaque struct.t.
               is_txn_buf_blkno bufptrval a buf k ) ∗
           "Hblk_not_nil" ∷ ( ⌜ length done > 0 ⌝ -∗
             ∃ blk_b,
-              "His_block" ∷ is_block blk_slice blk_b ∗
+              "His_block" ∷ is_block blk_slice 1 blk_b ∗
               "Hblk_ok" ∷ updBlockOK (update.mk k blk_b) gData walHeap bufamap_done ) ∗
           "Hbufamap_done_mapsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done,
               ∃ data : bufDataT buf.(bufKind), mapsto_txn gData a data )

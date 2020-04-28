@@ -20,8 +20,8 @@ Proof.
 Qed.
 
 (* TODO: this should probably also have a fraction *)
-Definition is_block (s:Slice.t) (b:Block) :=
-  is_slice_small s byteT 1 (Block_to_vals b).
+Definition is_block (s:Slice.t) (q: Qp) (b:Block) :=
+  is_slice_small s byteT q (Block_to_vals b).
 
 Definition is_block_full (s:Slice.t) (b:Block) :=
   is_slice s byteT 1 (Block_to_vals b).
