@@ -102,6 +102,13 @@ Proof.
   iFrame.
 Qed.
 
+Global Instance array_fractional l q t vs :
+  fractional.AsFractional (array l q t vs) (λ q, array l q t vs) q.
+Proof.
+  constructor; auto.
+  apply _.
+Qed.
+
 (* this lemma is just used to prove the update version (with q=1) and read
 version (with arbitrary q but no update) below *)
 Local Lemma update_array_gen {l vs off t q v} :

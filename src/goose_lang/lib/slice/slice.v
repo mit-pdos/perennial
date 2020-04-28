@@ -1,5 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 From Perennial.goose_lang Require Import proofmode array.
+From Perennial.goose_lang.lib Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Export typed_mem slice.impl.
 Set Default Proof Using "Type".
 
@@ -32,7 +33,7 @@ Proof.
 Qed.
 Opaque slice.T.
 
-(* is_slice_small is a smaller footprint version if is_slice that imprecisely
+(* is_slice_small is a smaller footprint version of is_slice that imprecisely
 ignores the extra capacity; it allows for weaker preconditions for code which
 doesn't make use of capacity *)
 Definition is_slice_small (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
@@ -97,6 +98,14 @@ Proof.
   rewrite /is_slice.
   iIntros "[Hs _]".
   by iFrame.
+Qed.
+
+Global Instance is_slice_small_as_mapsto s t vs :
+  AsMapsTo (is_slice_small s t 1 vs) (λ s q vs, is_slice_small s t q vs) s vs.
+Proof.
+  constructor; auto; intros; apply _.
+  Grab Existential Variables.
+  exact 1%Qp.
 Qed.
 
 Definition slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
