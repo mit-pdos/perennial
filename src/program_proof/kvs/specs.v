@@ -34,10 +34,10 @@ Context `{!buftxnG Σ}.
 Context `{!kvsG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Notation "l k↦ v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock) l 1 v%V)
+(*Notation "l k↦ v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock) l 1 v%V)
                             (at level 20, format "l k↦ v") : bi_scope.
 Notation "l k↦{ q } v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock) l q v%V)
-                            (at level 20, q at level 50, format "l k↦{ q }  v") : bi_scope.
+                            (at level 20, q at level 50, format "l k↦{ q }  v") : bi_scope.*)
 
 Definition LogSz := 513.
 Fixpoint init_keys_helper (keys: list specs.addr) (sz: nat) : list specs.addr :=
@@ -75,17 +75,17 @@ Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ
       ∗ ⌜fst slice_kvp = key⌝.
 
 Definition kvpairs_match (pairs: list kvpair.t): iProp Σ :=
-  [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in (a k↦ b)%I.
+  [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in (mapsto a 1 b)%I.
 
 Definition ptsto_kvs (kvsl: loc) (sz : nat): iProp Σ :=
   ( ∃ (l : loc) γ,
       kvsl↦[KVS.S :: "txn"] #l ∗
       kvsl ↦[KVS.S :: "sz"] #(U64 (Z.of_nat sz)) ∗
       is_txn l γ ∗
-      [∗ list] k ∈ valid_keys sz, (∃ v, k k↦ v))%I.
+      [∗ list] k ∈ valid_keys sz, (∃ v, mapsto k 1 v))%I.
 
 Definition crashed_kvs kvp_ls sz: iProp Σ :=
-  ([∗ list] k ∈ valid_keys sz, (∃ v, k k↦ v))%I ∗ kvpairs_match kvp_ls.
+  ([∗ list] k ∈ valid_keys sz, (∃ v, mapsto k 1 v))%I ∗ kvpairs_match kvp_ls.
 
 Definition ptsto_kvpair (l: loc) (pair: kvpair.t) : iProp Σ :=
       ∃ bs blk, (l↦[KVPair.S :: "Key"] (key2val(pair.(kvpair.key))) ∗
@@ -145,9 +145,16 @@ Proof.
       -- iSplitL "Hbtxn"; auto.
          pose Hkey as Hkey'.
          apply (valid_key_in_valid_keys key sz) in Hkey'.
-         iPoseProof (big_sepL_elem_of (λ k, (∃ v0, k k↦{1} v0))%I (valid_keys sz) key Hkey' with "[Hkvs]") as "HkeyMt"; auto.
-         iSplitL "HkeyMt"; eauto.
-         { iDestruct "HkeyMt" as (v0) "HkeyMt". eauto.
+         iPoseProof (big_sepL_elem_of (λ k, (∃ v0, mapsto k 1 v0))%I (valid_keys sz) key Hkey' with "[Hkvs]") as "HkeyMt"; auto.
+         {
+           Check big_sepL_mono.
+           Set Printing Implicit.
+           iApply (big_sepL_mono with "Hkvs").
+           iIntros (k y HkeysLkup) "HkeyMt".
+           iDestruct "HkeyMt" as (v0) "HkeyMt".
+           iExists v0.
+         - iSplitL "HkeyMt"; eauto.
+         {
            rewrite <- (valid_key_eq_addr _ _ Hkey).
            iApply "HkeyMt".
 
