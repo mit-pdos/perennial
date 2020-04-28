@@ -104,7 +104,7 @@ Transparent disk.Read disk.Write.
 
 Theorem wp_Write_fupd {stk E} E' (Q: iProp Σ) (a: u64) s q b :
   {{{ is_slice_small s byteT q (Block_to_vals b) ∗
-      (|={E,E'}=> ∃ b0, int.val a d↦ b0 ∗ (int.val a d↦ b ={E',E}=∗ Q)) }}}
+      (|={E,E'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E',E}=∗ Q)) }}}
     Write #a (slice_val s) @ stk; E
   {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
 Proof.
@@ -137,7 +137,7 @@ Proof.
   iDestruct "Hpre" as (b0) "[Hda Hs]".
   wp_apply (wp_Write_fupd E (int.val a d↦ b) with "[Hda $Hs]").
   { iExists b0; iFrame.
-    iIntros "!> $". done. }
+    iIntros "!> !> $". done. }
   iIntros "[Hs Hda]".
   iApply ("HΦ" with "[$]").
 Qed.

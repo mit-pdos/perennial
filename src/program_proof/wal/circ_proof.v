@@ -51,7 +51,6 @@ Context `{!circG Σ}.
 
 Context (N: namespace).
 Context (P: circΣ.t -> iProp Σ).
-Context {Ptimeless: forall σ, Timeless (P σ)}.
 
 Record circ_names :=
   { addrs_name: gname;
@@ -386,7 +385,7 @@ Theorem wp_circular__Advance (Q: iProp Σ) γ d (start0: u64) (newStart : u64) (
   }}}
     Advance #d #newStart
   {{{ RET #(); Q ∗ start_is γ (1/2) newStart }}}.
-Proof using Ptimeless.
+Proof.
   iIntros (Φ) "(#Hcirc&Hstart&#Hend&%&Hfupd) HΦ".
   rename H into Hpre.
   wp_call.
@@ -395,8 +394,8 @@ Proof using Ptimeless.
   wp_apply (wp_Write_fupd (⊤ ∖ ↑N) (Q ∗ start_is γ (1/2) newStart) with "[$Hb Hfupd Hstart]").
 
   { rewrite /is_circular.
-    iInv "Hcirc" as ">Hcirc_inv" "Hclose".
-    iDestruct "Hcirc_inv" as (σ) "[Hcirc_state HP]".
+    iInv "Hcirc" as "Hcirc_inv" "Hclose".
+    iDestruct "Hcirc_inv" as (σ) "[>Hcirc_state HP]".
     iDestruct "Hcirc_state" as (Hwf) "(Hpos&Hcirc_state)".
     iDestruct "Hcirc_state" as (addrs blocks Hupds) "(Hown&Hlow)".
     iDestruct (start_is_to_eq with "[$] [$]") as %<-.
@@ -404,6 +403,8 @@ Proof using Ptimeless.
     iDestruct (circ_state_wf with "Hown") as %Hlow_wf.
     iDestruct (circ_state_wf with "Hown") as %(Hlen1&Hlen2).
     iDestruct "Hlow" as (hdr1 hdr2_0 hdr2extra Hhdr1 Hhdr2) "(Hhdr1&Hhdr2&Hblocks)".
+    iExists hdr2_0; iFrame "Hhdr2".
+    iIntros "!> !> Hhdr2".
     iDestruct ("Hfupd" with "[$HP]") as "Hfupd"; first by eauto.
     iMod ("Hfupd" with "[]") as "[HP' HQ]".
     { iPureIntro.
@@ -414,8 +415,6 @@ Proof using Ptimeless.
     simpl.
     iMod (circ_positions_advance newStart with "[$Hpos Hstart]") as "(Hpos&Hstart&Hstart_lb)"; auto.
     { word. }
-    iExists hdr2_0.
-    iFrame "Hhdr2". iIntros "!> Hhdr2".
     iMod ("Hclose" with "[-HQ Hstart Hstart_lb]").
     { iNext.
       iExists _; iFrame.
@@ -514,6 +513,7 @@ Lemma has_circ_updates_blocks σ addrs blocks (i : u64) bi :
   has_circ_updates σ addrs blocks ->
   has_circ_updates σ addrs (<[Z.to_nat ((circΣ.diskEnd σ + int.val i) `mod` LogSz) := bi]> blocks).
 Proof.
+  clear.
   rewrite /has_circ_updates; intros Hbound Hhas_upds i0 u **.
   assert (0 ≤ i0 < length (upds σ)).
   { apply lookup_lt_Some in H.
@@ -629,7 +629,7 @@ Theorem wp_circularAppender__logBlocks γ c d
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
       updates_slice bufs upds
   }}}.
-Proof using Ptimeless.
+Proof.
   iIntros (Haddrs_len Hendpos_overflow Hhasspace Φ) "(#Hcirc & Hγblocks & #Hstart & Hend & Hdiskaddrs & Hslice & Hupdslice) HΦ".
   wp_lam. wp_let. wp_let. wp_let.
   iDestruct (updates_slice_len with "Hupdslice") as %Hupdlen.
@@ -687,9 +687,8 @@ Proof using Ptimeless.
     rewrite wrap_small_log_addr.
     word_cleanup.
 
-    iInv "Hcirc" as ">HcircI" "Hclose".
-    iModIntro.
-    iDestruct "HcircI" as (σ) "[Hσ HP]".
+    iInv "Hcirc" as "HcircI" "Hclose".
+    iDestruct "HcircI" as (σ) "[>Hσ HP]".
     iDestruct "Hσ" as (Hwf) "[Hpos Hσ]".
     iDestruct "Hσ" as (addrs' blocks'' Hhas_upds) "(Hown&Hlow)".
     iDestruct (circ_state_wf with "Hown") as %Hlowwf.
@@ -706,14 +705,14 @@ Proof using Ptimeless.
     int.val endpos = circΣ.diskEnd σ ∧
     int.val endpos + Z.of_nat (length upds) < 2^64) by len.
 
-    iFrame.
-    iIntros "Hdi".
+    iFrame "Hdi".
+    iIntros "!> !> Hdi".
     iSpecialize ("Hd2" with "Hdi").
     iDestruct "Hown" as (_) "[Haddrs_auth Hblocks_auth]".
     iDestruct (ghost_var_agree γ.(blocks_name) with "Hblocks_auth Hγblocks") as %->.
     iMod (ghost_var_update γ.(blocks_name) _
             with "Hblocks_auth Hγblocks") as "[Hblocks_auth Hγblocks]".
-    iFrame "Hγblocks".
+    iFrame "Hγblocks Hend".
     iMod ("Hclose" with "[-]").
     { iModIntro.
       iExists _; iFrame "HP".
@@ -933,7 +932,7 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (startpos endpos : u64) (bufs : S
       is_circular_appender γ c ∗
       diskEnd_is γ (1/2) (int.val endpos + length upds)
   }}}.
-Proof using Ptimeless.
+Proof.
   iIntros (Hendpos_overflow Hhasspace Φ) "(#Hcirc & Hslice & Hend & #Hstart & Hca & Hfupd) HΦ".
   wp_call.
   iDestruct "Hca" as (bk_s addrs blocks' Hlow_wf) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
@@ -961,8 +960,8 @@ Proof using Ptimeless.
 
     iFrame "Hb".
 
-    iInv N as ">Hcircopen" "Hclose".
-    iDestruct "Hcircopen" as (σ) "[[% Hcs] HP]".
+    iInv N as "Hcircopen" "Hclose".
+    iDestruct "Hcircopen" as (σ) "[>[%Hwf Hcs] HP]".
     iDestruct "Hcs" as "[Hpos Hcs]".
     iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
     iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
@@ -970,8 +969,7 @@ Proof using Ptimeless.
     iDestruct "Hown" as (Hlow_wf') "[Haddrs Hblocks]".
     iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
     iExists _. iFrame "Hd0".
-    iModIntro.
-    iIntros "Hd0".
+    iIntros "!> !> Hd0".
 
     iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
     iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
@@ -991,7 +989,6 @@ Proof using Ptimeless.
     }
     iFrame.
     iApply "Hclose".
-
     iNext. iExists _. iFrame.
     destruct σ. rewrite /=.
     iSplitR.
@@ -1014,7 +1011,6 @@ Proof using Ptimeless.
       f_equal. f_equal.
       rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
       autorewrite with len in HdiskEnd'.
-      destruct H0 as (?&?&?).
       cbn [circ_proof.start circ_proof.upds] in *.
       len. }
     rewrite Hhdr2. eauto.
@@ -1214,6 +1210,7 @@ Theorem wp_recoverCircular d σ γ :
       ⌜σ.(circΣ.upds) = upds⌝
   }}}.
 Proof.
+  clear P.
   iIntros (Φ) "Hcs HΦ".
 
   Opaque struct.t.
@@ -1401,6 +1398,7 @@ Theorem wpc_recoverCircular stk k E1 E2 d σ γ :
   }}}
   {{{ is_circular_state γ σ }}}.
 Proof.
+  clear P.
   iIntros (Φ Φc) "Hcs HΦ".
 
   Opaque struct.t.
