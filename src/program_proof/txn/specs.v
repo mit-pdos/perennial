@@ -117,12 +117,12 @@ Definition is_txn_always
     : iProp Σ :=
   (
     ∃ (mData : gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))}),
-      ( [∗ map] _ ↦ gm;gh ∈ mData;gData, gmDataP gm gh ) ∗
-      mapsto (hG := γMaps) tt (1/2) (mData) ∗
-      ( [∗ map] blkno ↦ datamap ∈ mData,
+      "Hgmdata" ∷ ( [∗ map] _ ↦ gm;gh ∈ mData;gData, gmDataP gm gh ) ∗
+      "Hmdata_a" ∷ mapsto (hG := γMaps) tt (1/2) (mData) ∗
+      "Hmdata_m" ∷ ( [∗ map] blkno ↦ datamap ∈ mData,
           ∃ installed bs,
-            mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
-            txn_bufDataT_in_block installed bs (projT2 datamap) )
+            "Hmdata_hb" ∷ mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
+            "Hmdata_in_block" ∷ txn_bufDataT_in_block installed bs (projT2 datamap) )
   )%I.
 
 Global Instance is_txn_always_timeless walHeap gData γMaps :
@@ -484,7 +484,8 @@ Theorem wp_txn__installBufs l q gData mData walHeap γMaps bufs buflist (bufamap
   {{{ (blks : Slice.t) updlist (updmap : gmap u64 unit), RET (slice_val blks);
       mapsto (hG := γMaps) tt (1/2) mData ∗
       updates_slice blks updlist ∗
-      ⌜ ∀ a, is_Some (bufamap !! a) -> is_Some (updmap !! a.(addrBlock)) ⌝ ∗
+      ⌜ ∀ blkno, (∃ off, is_Some (bufamap !! (Build_addr blkno off))) <->
+                 is_Some (updmap !! blkno) ⌝ ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
         ∃ data, @mapsto_txn buf.(bufKind) gData a data ) ∗
       [∗ maplist] blkno ↦ _; walUpd ∈ updmap; updlist,
@@ -903,9 +904,106 @@ Proof.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
 
-  wp_apply (wp_Walog__MemAppend with "[$Hiswal $Hblks Hupdmap]").
+  wp_apply (wp_Walog__MemAppend _ _
+    (λ npos, emp)%I
+    with "[$Hiswal $Hblks Hupdmap Hmapstos]").
   { iApply wal_heap_memappend.
-    admit. }
+    iInv invN as ">Hinner" "Hinner_close".
+    iModIntro.
+    iNamed "Hinner".
+    rewrite /memappend_pre.
+
+    iDestruct (big_sepM_mono _
+      (λ a buf,
+        ( ∃ data : bufDataT buf.(bufKind), mapsto_txn gData a data ) ∗
+        ⌜ ∃ γ, gData !! a.(addrBlock) = Some (existT buf.(bufKind) γ) ⌝
+      )%I with "Hmapstos") as "Hmapstos".
+    {
+      iIntros (k x Hkx) "H".
+      iDestruct "H" as (data h γ) "(% & % & H0 & H1)".
+      iSplitL.
+      { iExists _, _, _. iFrame. done. }
+      iExists _. done.
+    }
+    iDestruct (big_sepM_sep with "Hmapstos") as "[Hmapstos #Hbufamap_gdata]".
+
+    iDestruct (big_sepM2_mono _ (λ k gm gh, gmDataP gm gh ∗ emp)%I with "Hgmdata") as "Hgmdata".
+    { iIntros; iFrame. }
+    iDestruct (big_sepM2_sep with "Hgmdata") as "[Hgmdata #Hmdata_gmdata]".
+
+    iDestruct (big_sepML_sepL with "Hupdmap") as "[#Hupdmap0 Hupdmap1]".
+    iDestruct (big_sepML_map_val_exists with "Hupdmap0 []") as (mx) "Hx".
+    {
+      iIntros (k v lv Hkv Hp).
+      specialize (Hcomplete k).
+      destruct Hcomplete as [Hcomplete1 Hcomplete2].
+      edestruct Hcomplete2 as [off Hoff]; eauto.
+      destruct Hoff.
+
+      iDestruct (big_sepM_lookup with "Hbufamap_gdata") as "%Hgdata"; eauto.
+      destruct Hgdata. simpl in *.
+
+      iDestruct (big_sepM2_lookup_2_some with "Hmdata_gmdata") as (mv) "%Hmdata"; eauto.
+
+      iExists mv.
+      iPureIntro.
+      apply Hmdata.
+    }
+
+    iAssert (⌜ ∀ k v, mx !! k = Some v -> mData0 !! k = Some v ⌝)%I as "%Hsubset".
+    { iIntros (k v Hkv).
+      iDestruct (big_sepML_lookup_m_acc with "Hx") as (i lv) "(% & Hx2 & _)"; eauto.
+      iDestruct "Hx2" as (_) "(Hx2 & _)". done.
+    }
+
+    rewrite <- (map_difference_union mx mData0) at 3.
+    2: { apply map_subseteq_spec. eauto. }
+
+    iDestruct (big_sepM_union with "Hmdata_m") as "[Hmx Hmdata_m]".
+    { apply map_disjoint_difference_r. apply map_subseteq_spec; eauto. }
+
+    iDestruct (big_sepML_sepM with "[$Hx $Hmx]") as "Hx_mx".
+    iDestruct (big_sepML_mono _
+      (λ k (v : {K : bufDataKind & gmap u64 (updatable_buf (bufDataT K))}) lv,
+        (∃ (installed_bs : Block * list Block),
+          ( ( ⌜mData0 !! k = Some v⌝ ∗
+              ⌜lv.(update.addr) = k⌝ ∗
+              txn_bufDataT_in_block (fst installed_bs) (snd installed_bs) (projT2 v)) ) ∗
+            mapsto lv.(update.addr) 1 (HB (fst installed_bs) (snd installed_bs)) )
+      )%I with "Hx_mx []") as "Hx_mx".
+    {
+      iIntros (k v lv). iPureIntro.
+      iIntros "[H0 H1]".
+      iDestruct "H0" as (_) "[H00 <-]".
+      iDestruct "H1" as (installed bs) "[H10 H11]".
+      iExists (installed, bs). iFrame. done. }
+
+    iDestruct (big_sepML_exists with "Hx_mx") as (updlist_olds) "[-> Hx_mx]".
+    iExists (snd <$> updlist_olds).
+
+    iDestruct (big_sepML_sepL with "Hx_mx") as "[Hx_mx Hupdlist_olds]".
+
+    iSplitL "Hupdlist_olds".
+    {
+      iApply big_sepL2_alt.
+      iSplitR.
+      { repeat rewrite fmap_length. eauto. }
+      rewrite zip_fst_snd. iFrame.
+    }
+
+    iIntros (txn_id) "Hq".
+    rewrite /memappend_q.
+    rewrite big_sepL2_alt.
+    iDestruct "Hq" as "[_ Hq]".
+    rewrite zip_fst_snd.
+
+    (* XXX gen_heap_update for every item in bufamap *)
+
+    iApply "Hinner_close".
+    iNext.
+    iExists _.
+    admit.
+  }
 
   iIntros (npos ok) "Hnpos".
   wp_pures.

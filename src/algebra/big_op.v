@@ -626,19 +626,66 @@ Section maplist.
   Proof.
   Admitted.
 
-  Theorem big_sepML_fmap_m Φ m l f `{!∀ k v lv, Absorbing (Φ k v lv)} :
-    big_sepML Φ (f <$> m) l -∗
-    big_sepML (λ k v lv, Φ k (f v) lv) m l.
+  Theorem big_sepML_sep Φ Ψ m l :
+    big_sepML (λ k v lv, Φ k v lv ∗ Ψ k v lv) m l -∗
+    big_sepML Φ m l ∗ big_sepML Ψ m l.
   Proof.
+    rewrite /big_sepML.
   Admitted.
 
-  Theorem big_sepML_fmap_m' Φ m l f `{!∀ k v lv, Absorbing (Φ k v lv)} :
-    big_sepML (λ k v lv, Φ k (f v) lv) m l -∗
-    big_sepML Φ (f <$> m) l.
+  Theorem big_sepML_sepM Φ (P : K -> V -> PROP) m l :
+    big_sepML (λ k v lv, Φ k v lv ∗ P k v) m l ⊣⊢
+    big_sepML Φ m l ∗ big_opM _ P m.
   Proof.
+    rewrite /big_sepML; iSplit.
   Admitted.
+
+  Theorem big_sepML_sepL Φ (P : LV -> PROP) m l :
+    big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l ⊣⊢
+    big_sepML Φ m l ∗ big_opL _ (λ i, P) l.
+  Proof.
+    rewrite /big_sepML; iSplit.
+  Admitted.
+
+  Global Instance big_sepML_persistent `(!∀ k v lv, Persistent (Φ k v lv)) :
+    Persistent (big_sepML Φ m l).
+  Proof.
+    typeclasses eauto.
+  Qed.
 
 End maplist.
+
+Section maplist2.
+  Context `{Countable K} {V W LV : Type}.
+  Implicit Types Φ : K → V → LV → PROP.
+  Implicit Types v : V.
+  Implicit Types w : W.
+  Implicit Types mv : gmap K V.
+  Implicit Types mw : gmap K W.
+  Implicit Types l : list LV.
+
+  Theorem big_sepML_map_val_exists Φ mv l (R : K -> V -> W -> Prop)
+      `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    big_sepML Φ mv l -∗
+    ( ∀ k v lv,
+      ⌜ mv !! k = Some v ⌝ -∗
+      Φ k v lv -∗
+      ⌜ ∃ w, R k v w ⌝ ) -∗
+    ∃ mw,
+      big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v lv) mw l.
+  Proof.
+  Admitted.
+
+  Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l :
+    big_sepML (λ k v lv, ∃ w, Φw k v lv w) m l -∗
+    ∃ lw,
+      ⌜ l = fst <$> lw ⌝ ∗
+      big_sepML (λ k v lv, Φw k v (fst lv) (snd lv)) m lw.
+  Proof.
+    rewrite /big_sepML.
+  Admitted.
+
+End maplist2.
 
 Theorem big_sepL_impl A (f g: nat -> A -> PROP) (l: list A) :
   (forall i x, f i x -∗ g i x) ->
