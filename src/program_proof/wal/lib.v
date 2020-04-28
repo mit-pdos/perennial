@@ -20,12 +20,34 @@ Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
                                      is_block (snd b_upd) b ∗
                                      ⌜fst b_upd = a⌝.
 
-Lemma updates_slice_len bk_s bs :
-  updates_slice bk_s bs -∗ ⌜int.val bk_s.(Slice.sz) = length bs⌝.
+Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp Σ :=
+  ∃ bks, is_slice_small bk_s (struct.t Update.S) q (update_val <$> bks) ∗
+   [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
+                                     is_block (snd b_upd) b ∗
+                                     ⌜fst b_upd = a⌝.
+
+Theorem updates_slice_frag_acc bk_s bs :
+  updates_slice bk_s bs -∗
+  updates_slice_frag bk_s 1 bs ∗
+   (updates_slice_frag bk_s 1 bs -∗ updates_slice bk_s bs).
+Proof.
+  iIntros "Hupds".
+  iDestruct "Hupds" as (bks) "[Hbks Hupds]".
+  iDestruct (is_slice_small_acc with "Hbks") as "[Hbks_small Hbks]".
+  iSplitR "Hbks".
+  - iExists _; iFrame.
+  - iIntros "Hupds".
+    iDestruct "Hupds" as (bks') "[Hs Hupds]".
+    iSpecialize ("Hbks" with "Hs").
+    iExists _; iFrame.
+Qed.
+
+Lemma updates_slice_frag_len bk_s q bs :
+  updates_slice_frag bk_s q bs -∗ ⌜int.val bk_s.(Slice.sz) = length bs⌝.
 Proof.
   iIntros "Hupds".
   iDestruct "Hupds" as (bks) "[Hbs Hbks]".
-  iDestruct (is_slice_sz with "Hbs") as %Hbs_sz.
+  iDestruct (is_slice_small_sz with "Hbs") as %Hbs_sz.
   iDestruct (big_sepL2_length with "Hbks") as %Hbks_len.
   rewrite fmap_length in Hbs_sz.
   iPureIntro.
@@ -33,6 +55,15 @@ Proof.
   rewrite Hbs_sz.
   destruct bk_s; simpl.
   word.
+Qed.
+
+Lemma updates_slice_len bk_s bs :
+  updates_slice bk_s bs -∗ ⌜int.val bk_s.(Slice.sz) = length bs⌝.
+Proof.
+  iIntros "Hupds".
+  iDestruct (updates_slice_frag_acc with "Hupds") as "[Hupds _]".
+  iDestruct (updates_slice_frag_len with "Hupds") as %Hlen.
+  auto.
 Qed.
 
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
@@ -65,6 +96,46 @@ Proof.
   iSpecialize ("Hbks" with "[$Hbi //]").
   rewrite /updates_slice.
   iExists _; iFrame.
+Qed.
+
+Lemma has_zero_update : has_zero (struct.t Update.S).
+Proof.
+  repeat constructor.
+Qed.
+
+Hint Resolve has_zero_update.
+
+Transparent slice.T.
+Theorem val_ty_update uv :
+  val_ty (update_val uv) (struct.t Update.S).
+Proof.
+  val_ty.
+Qed.
+Opaque slice.T.
+
+Hint Resolve val_ty_update : val_ty.
+
+Theorem wp_SliceAppend_updates stk E bk_s bs (uv: u64 * Slice.t) b :
+  length bs + 1 < 2^64 ->
+  {{{ updates_slice bk_s bs ∗ is_block uv.2 b }}}
+    SliceAppend (struct.t Update.S) (slice_val bk_s) (update_val uv) @ stk; E
+  {{{ bk_s', RET slice_val bk_s';
+      updates_slice bk_s' (bs ++ [update.mk uv.1 b])
+  }}}.
+Proof.
+  iIntros (Hlen_overflow Φ) "[Hupds Hub] HΦ".
+  iDestruct (updates_slice_len with "Hupds") as %Hlen.
+  iDestruct "Hupds" as (bks) "[Hbks Hupds]".
+  wp_apply (wp_SliceAppend with "[$Hbks]"); auto.
+  { iPureIntro.
+    split; auto. word. }
+  iIntros (s') "Hs".
+  iApply "HΦ".
+  change ([update_val uv]) with (update_val <$> [uv]).
+  rewrite -fmap_app.
+  rewrite /updates_slice.
+  iExists (bks ++ [uv]); iFrame.
+  simpl. auto.
 Qed.
 
 Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) b :
