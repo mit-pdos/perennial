@@ -113,10 +113,11 @@ Canonical Structure loc_statusO := leibnizO loc_status.
 
 Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
    (∃ vs v, (fc_auth γ None ∗ ls s↦ vs ∗ l ↦ v ∗ vTy vs v) ∨
-            (∃ q q' (HPLUS: (q + q' = 1)%Qp) (n: positive),
+            (∃ q q' (n: positive), ⌜ (q + q' = 1)%Qp ⌝ ∗
                 fc_auth γ (Some (q, n)) ∗
                 na_heap_mapsto_st (RSt (Pos.to_nat n)) ls q vs ∗
-                l ↦{q} v ∗ vTy vs v) ∗
+                l ↦{q} v ∗ vTy vs v)
+            ∨
             (fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗
              na_heap_mapsto_st WSt ls (1/2)%Qp vs))%I.
 
@@ -274,6 +275,10 @@ Qed.
 Lemma val_interp_array_unfold t:
   val_interp (arrayT t) = arrayT_interp t (λ t, map val_interp (flatten_ty t)).
 Proof. rewrite //= /arrayT_interp flatten_val_interp_flatten_ty //=. Qed.
+
+Lemma val_interp_struct_unfold ts:
+  val_interp (structRefT ts) = structRefT_interp (map val_interp ts).
+Proof. rewrite //= flatten_val_interp_flatten_ty //=. Qed.
 
 End reln_defs.
 
@@ -1102,6 +1107,43 @@ Proof using spec_trans.
 
     iApply wp_wpc.
     iApply wp_fupd.
+
+    rewrite val_interp_struct_unfold.
+    iDestruct "Hv1" as "[Hv|Hnull]".
+    * iDestruct "Hv" as (lv lvs n H0lt Hnonemtpy (->&->&?&?&?)) "(Hpaired&Hblock1&Hblocked2&Hloc)".
+      iDestruct "Hloc" as "[Hinbound|Hoob]".
+      {
+        iDestruct "Hinbound" as "(H&_)".
+        rewrite /is_loc. iDestruct "H" as "(Hlocinv&Hpaired')".
+        iDestruct "Hlocinv" as (γ) "Hlocinv".
+        iInv "Hlocinv" as "Hlocinv_body" "Hclo".
+        rewrite /loc_inv. iDestruct "Hlocinv_body" as (??) "H".
+        iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
+        {
+          iDestruct "H0readers" as "(>?&>Hspts&>Hpts&Hval)".
+          rewrite ?loc_add_0.
+          wp_step.
+          iApply (wp_load with "[$]"). iIntros "!> Hpts".
+          admit.
+        }
+        {
+          iDestruct "Hreaders" as (q q' n') "(>%&>?&>Hspts&>Hpts&Hval)".
+          rewrite ?loc_add_0.
+          wp_step.
+          iApply (wp_load with "[$]"). iIntros "!> Hpts".
+          admit.
+        }
+        {
+          (* UB, load while there's a write going on, which we can tell from
+           na_heap_mapsto_st WSt lvs (1 / 2)  *)
+          admit.
+        }
+      }
+      {
+        (* UB because #lv offset is is negative / greater than block size *)
+        admit.
+      }
+    * (* UB because base is a null pointer *)
     admit.
   - admit.
   - admit.
