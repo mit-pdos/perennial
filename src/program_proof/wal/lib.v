@@ -68,6 +68,45 @@ Qed.
 
 Existing Instance is_slice_small_Fractional.
 
+Theorem is_blocks_AsFractional bks q v :
+  fractional.AsFractional
+    ([∗ list] b_upd;upd ∈ bks;v, let
+                                     '{| update.addr := a; update.b := b |} := upd in
+                                   (is_block b_upd.2 q b ∗ ⌜b_upd.1 = a⌝))%I
+    (λ q, [∗ list] b_upd;upd ∈ bks;v, let
+                                     '{| update.addr := a; update.b := b |} := upd in
+                                   (is_block b_upd.2 q b ∗ ⌜b_upd.1 = a⌝))%I
+    q.
+Proof.
+  constructor; auto.
+  intros q1 q2.
+  rewrite -big_sepL2_sep.
+  iSplit.
+  - iIntros "Hupds".
+    iApply (big_sepL2_mono with "Hupds").
+    iIntros (k [a s] [a' b] Hlookup1 Hlookup2) "Hupd"; simpl.
+    iDestruct "Hupd" as "[Hb ->]".
+    iDestruct (fractional.fractional_split_1 with "Hb") as "[Hb1 Hb2]".
+    iSplitL "Hb1"; iFrame; auto.
+  - iIntros "Hupds".
+    iApply (big_sepL2_mono with "Hupds").
+    iIntros (k [a s] [a' b] Hlookup1 Hlookup2) "Hupd"; simpl.
+    iDestruct "Hupd" as "[[Hb1 ->] [Hb2 _]]".
+    iSplit; auto.
+    iApply (fractional.fractional_split_2 with "Hb1").
+    iFrame.
+Qed.
+
+Instance update_val_inj : Inj eq eq update_val.
+Proof.
+  intros u1 u2.
+  rewrite /update_val.
+  destruct u1, u2; simpl.
+  destruct t, t0; simpl in *; subst.
+  inversion 1; subst.
+  congruence.
+Qed.
+
 Global Instance updates_slice_frag_AsMapsTo bk_s bs :
   AsMapsTo (updates_slice_frag bk_s 1 bs) (λ bk_s q bs, updates_slice_frag bk_s q bs) bk_s bs.
 Proof.
@@ -77,7 +116,26 @@ Proof.
     + iIntros "Hupds".
       iDestruct "Hupds" as (bks) "[Hupds Hbs]".
       iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
-      (* oops, need is_block to also get split *)
+      iDestruct (fractional.fractional_split_1 with "Hbs") as "[Hbs1 Hbs2]".
+      { apply is_blocks_AsFractional. }
+      { apply is_blocks_AsFractional. }
+      { apply is_blocks_AsFractional. }
+      iSplitL "Hupds1 Hbs1".
+      * iExists _; iFrame.
+      * iExists _; iFrame.
+    + iIntros "[Hupds1 Hupds2]".
+      iDestruct "Hupds1" as (bks) "[Hbs1 Hupds1]".
+      iDestruct "Hupds2" as (bks') "[Hbs2 Hupds2]".
+      iDestruct (is_slice_small_agree with "Hbs1 Hbs2") as %Heq.
+      apply (fmap_inj update_val) in Heq; auto using update_val_inj; subst.
+      iDestruct (fractional.fractional_split_2 with "Hbs1 Hbs2") as "Hbs".
+      { apply _. }
+      iDestruct (fractional.fractional_split_2 _ _ _ _ q1 q2 with "Hupds1 Hupds2") as "Hupds".
+      { apply is_blocks_AsFractional. }
+      { apply is_blocks_AsFractional. }
+      { apply is_blocks_AsFractional. }
+      iExists _; iFrame.
+  - admit. (* XXX: Timeless instance *)
 Abort.
 
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
