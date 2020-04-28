@@ -66,6 +66,20 @@ Proof.
   auto.
 Qed.
 
+Existing Instance is_slice_small_Fractional.
+
+Global Instance updates_slice_frag_AsMapsTo bk_s bs :
+  AsMapsTo (updates_slice_frag bk_s 1 bs) (λ bk_s q bs, updates_slice_frag bk_s q bs) bk_s bs.
+Proof.
+  constructor; auto; intros.
+  - intros q1 q2.
+    iSplit.
+    + iIntros "Hupds".
+      iDestruct "Hupds" as (bks) "[Hupds Hbs]".
+      iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
+      (* oops, need is_block to also get split *)
+Abort.
+
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
   {{{ updates_slice bk_s bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
     SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
