@@ -94,18 +94,17 @@ Qed.
 
 Hint Resolve sN_inv_sub_minus_state.
 
-Lemma ghost_load j K `{LanguageCtx _ K} E l q v:
+Lemma ghost_load_rd j K `{LanguageCtx _ K} E n l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
-  l s↦{q} v -∗
+  na_heap_mapsto_st (RSt n) l q v -∗
   j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
-  l s↦{q} v ∗ j ⤇ K v.
+  na_heap_mapsto_st (RSt n) l q v ∗ j ⤇ K v.
 Proof.
-  iIntros (?) "(#Hctx&#Hstate) Hl0 Hj".
-  iDestruct (heap_mapsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
+  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
-  iDestruct (@na_heap_read with "Hσ Hl") as %([]&?&?&Hlock); try inversion Hlock; subst.
+  iDestruct (@na_heap_read' with "Hσ Hl") as %([]&?&?&Hlock); try inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { eapply head_prim_step.
     rewrite /= /head_step /=.
@@ -115,7 +114,20 @@ Proof.
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _. iFrame. }
   iFrame. eauto.
-  iModIntro. iApply "Hclo_l". eauto.
+Qed.
+
+Lemma ghost_load j K `{LanguageCtx _ K} E l q v:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  l s↦{q} v -∗
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
+  l s↦{q} v ∗ j ⤇ K v.
+Proof.
+  iIntros (?) "Hspec Hl0 Hj".
+  iDestruct (heap_mapsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
+  rewrite na_heap_mapsto_eq.
+  iMod (ghost_load_rd with "Hspec [$] [$]") as "(?&$)"; eauto.
+  iModIntro. iApply "Hclo_l". iFrame.
 Qed.
 
 Definition spec_mapsto_vals_toks l q vs : iProp Σ :=

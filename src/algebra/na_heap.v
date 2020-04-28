@@ -628,24 +628,31 @@ Section na_heap.
     apply nat_local_update; lia.
   Qed.
 
-  Lemma na_heap_read tls σ l q v :
-    na_heap_ctx tls σ -∗ l ↦{q} v -∗ ∃ lk n, ⌜σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
+  Lemma na_heap_read' tls σ n l q v :
+    na_heap_ctx tls σ -∗
+    na_heap_mapsto_st (RSt n) l q v -∗
+    ∃ lk n, ⌜σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
   Proof.
     iIntros "Hσ". iIntros "Hmt".
-    rewrite na_heap_mapsto_eq.
     iDestruct "Hσ" as (m sz Hσm) "[Hσ ?]".
-    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[n Hσl]; eauto.
+    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[n' [Hσl ?]]; eauto.
+  Qed.
+
+  Lemma na_heap_read tls σ l q v :
+    na_heap_ctx tls σ -∗ l ↦{q} v -∗ ∃ lk n, ⌜σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
+  Proof. rewrite na_heap_mapsto_eq. iApply na_heap_read'. Qed.
+
+  Lemma na_heap_read_1' tls σ n l v :
+    na_heap_ctx tls σ -∗ na_heap_mapsto_st (RSt n) l 1 v -∗ ⌜∃ lk, σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
+  Proof.
+    iIntros "Hσ Hmt".
+    iDestruct "Hσ" as (m sz Hσm) "[Hσ ?]".
+    iDestruct (na_heap_mapsto_lookup_1 with "Hσ Hmt") as %[n' Hσl]; eauto.
   Qed.
 
   Lemma na_heap_read_1 tls σ l v :
     na_heap_ctx tls σ -∗ l ↦ v -∗ ⌜∃ lk, σ !! l = Some (lk, v) ∧ tls lk = RSt O⌝.
-  Proof.
-    iIntros "Hσ Hmt".
-    rewrite na_heap_mapsto_eq.
-    iDestruct "Hσ" as (m sz Hσm) "[Hσ ?]".
-    iDestruct (na_heap_mapsto_lookup_1 with "Hσ Hmt") as %[n Hσl]; eauto.
-  Qed.
-
+  Proof. rewrite na_heap_mapsto_eq. iApply na_heap_read_1'. Qed.
 
   (* States whether the rl function has the effect of updating a lk
      to a lk with an additional reader *)

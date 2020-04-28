@@ -1120,18 +1120,26 @@ Proof using spec_trans.
         rewrite /loc_inv. iDestruct "Hlocinv_body" as (??) "H".
         iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
         {
-          iDestruct "H0readers" as "(>?&>Hspts&>Hpts&Hval)".
+          iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
           rewrite ?loc_add_0.
           wp_step.
           iApply (wp_load with "[$]"). iIntros "!> Hpts".
-          admit.
+          iMod (ghost_load with "[$] Hspts Hj") as "(Hspts&Hj)".
+          { solve_ndisj. }
+          iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
+          { iNext. iExists _, _. iLeft. iFrame. iFrame "Hval". }
+          iIntros "!> !>". iExists _. iFrame. iFrame "Hval".
         }
         {
-          iDestruct "Hreaders" as (q q' n') "(>%&>?&>Hspts&>Hpts&Hval)".
+          iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&>Hpts&#Hval)".
           rewrite ?loc_add_0.
           wp_step.
           iApply (wp_load with "[$]"). iIntros "!> Hpts".
-          admit.
+          iMod (ghost_load_rd with "[$] Hspts Hj") as "(Hspts&Hj)".
+          { solve_ndisj. }
+          iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
+          { iNext. iExists _, _. iRight. iLeft. iExists _, _, _. iFrame. iFrame "Hval". eauto. }
+          iIntros "!> !>". iExists _. iFrame. iFrame "Hval".
         }
         {
           (* UB, load while there's a write going on, which we can tell from
