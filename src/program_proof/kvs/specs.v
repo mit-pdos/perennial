@@ -39,11 +39,24 @@ Notation "l k↦ v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock)
 Notation "l k↦{ q } v" := (mapsto (L:=specs.addr) (V:=defs.bufDataT defs.KindBlock) l q v%V)
                             (at level 20, q at level 50, format "l k↦{ q }  v") : bi_scope.
 
-Fixpoint init_keys (keys: list specs.addr) (sz: nat) : list specs.addr :=
+Definition LogSz := 513.
+Fixpoint init_keys_helper (keys: list specs.addr) (sz: nat) : list specs.addr :=
 match sz with
 | O => keys
-| S n => init_keys ((specs.Build_addr n 0) :: keys) n
+| S n => init_keys_helper ((specs.Build_addr n 0) :: keys) n
 end.
+
+Definition valid_keys sz := init_keys_helper [] sz.
+Definition valid_key (key: specs.addr) (sz: nat):=
+  specs.valid_addr key ∧
+  int.val key.(specs.addrBlock) >= int.val LogSz ∧
+  int.val key.(specs.addrBlock) < int.val sz.
+
+Lemma valid_key_in_valid_keys key sz : valid_key key sz -> key ∈ (valid_keys sz).
+Admitted.
+
+Lemma valid_key_eq_addr key sz : valid_key key sz -> key = specs.Build_addr key.(specs.addrBlock) 0.
+Admitted.
 
 Definition key2val (key: specs.addr) : val :=
   #key.(specs.addrBlock).
@@ -64,28 +77,15 @@ Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ
 Definition kvpairs_match (pairs: list kvpair.t): iProp Σ :=
   [∗ list] kvp ∈ pairs, let '(kvpair.mk a b) := kvp in (a k↦ b)%I.
 
-Definition LogSz := 513.
-
-Definition valid_key (key: specs.addr) (sz: nat):=
-  specs.valid_addr key ∧
-  int.val key.(specs.addrBlock) >= int.val LogSz ∧
-  int.val key.(specs.addrBlock) < int.val sz.
-
-Definition is_kvs' (sz : nat) :=
-  (∃ keys,
-      ⌜keys = init_keys [] sz⌝
-      ∗ [∗ list] k ∈ keys, (∃ v, k k↦ v)
-  )%I.
-
 Definition ptsto_kvs (kvsl: loc) (sz : nat): iProp Σ :=
   ( ∃ (l : loc) γ,
       kvsl↦[KVS.S :: "txn"] #l ∗
       kvsl ↦[KVS.S :: "sz"] #(U64 (Z.of_nat sz)) ∗
       is_txn l γ ∗
-      is_kvs' sz)%I.
+      [∗ list] k ∈ valid_keys sz, (∃ v, k k↦ v))%I.
 
-Definition crashed_kvs sz kvp_ls : iProp Σ :=
-  is_kvs' sz ∗ kvpairs_match kvp_ls.
+Definition crashed_kvs kvp_ls sz: iProp Σ :=
+  ([∗ list] k ∈ valid_keys sz, (∃ v, k k↦ v))%I ∗ kvpairs_match kvp_ls.
 
 Definition ptsto_kvpair (l: loc) (pair: kvpair.t) : iProp Σ :=
       ∃ bs blk, (l↦[KVPair.S :: "Key"] (key2val(pair.(kvpair.key))) ∗
@@ -116,7 +116,8 @@ Theorem wpc_KVS__Get kvsl sz key v:
 Proof.
   iIntros (ϕ) "[Hkvs %Hkey] Hϕ".
   iDestruct "Hkvs" as (l txn) "[Htxnl [Hsz [Htxn Hkvs]]]".
-  destruct Hkey as [Hkaddr [Hklgsz Hsz]].
+  pose Hkey as Hkey'.
+  destruct Hkey' as [Hkaddr [Hklgsz Hsz]].
   wp_call.
   wp_loadField.
   wp_pures.
@@ -139,11 +140,17 @@ Proof.
       wp_call.
       change (u64_instance.u64.(@word.mul 64) 4096 8) with (U64 32768).
       change (key2val key, (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
-      wp_apply (wp_BufTxn__ReadBuf buftx γt txn (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn Hkvs]").
-      -- unfold is_kvs'. iSplitL "Hbtxn"; auto.
-      unfold specs.valid_addr in *.
 
-                  
+      wp_apply (wp_BufTxn__ReadBuf buftx γt txn (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn Hkvs]").
+      -- iSplitL "Hbtxn"; auto.
+         pose Hkey as Hkey'.
+         apply (valid_key_in_valid_keys key sz) in Hkey'.
+         iPoseProof (big_sepL_elem_of (λ k, (∃ v0, k k↦{1} v0))%I (valid_keys sz) key Hkey' with "[Hkvs]") as "HkeyMt"; auto.
+         iSplitL "HkeyMt"; eauto.
+         { iDestruct "HkeyMt" as (v0) "HkeyMt". eauto.
+           rewrite <- (valid_key_eq_addr _ _ Hkey).
+           iApply "HkeyMt".
+
   - iSplitL "Hbm"; auto.
     iPureIntro.
     destruct Hkey as [knat [Hknat Hkey]].
