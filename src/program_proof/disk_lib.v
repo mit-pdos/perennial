@@ -23,6 +23,9 @@ Qed.
 Definition is_block (s:Slice.t) (b:Block) :=
   is_slice_small s byteT 1 (Block_to_vals b).
 
+Definition is_block_full (s:Slice.t) (b:Block) :=
+  is_slice s byteT 1 (Block_to_vals b).
+
 Definition list_to_block (l: list u8) : Block :=
   match decide (length l = Z.to_nat 4096) with
   | left H => eq_rect _ _ (list_to_vec l) _ H
@@ -149,17 +152,17 @@ Proof.
   eauto.
 Qed.
 
-Lemma wp_Read_fupd {stk E} E' (Q: iProp Σ) (a: u64) q b :
-  {{{ |={E,E'}=> int.val a d↦{q} b ∗ (int.val a d↦{q} b -∗ |={E',E}=> Q) }}}
+Lemma wp_Read_fupd {stk E} E' (Q: Block -> iProp Σ) (a: u64) q :
+  {{{ |={E,E'}=> ∃ b, int.val a d↦{q} b ∗ ▷ (int.val a d↦{q} b -∗ |={E',E}=> Q b) }}}
     Read #a @ stk; E
-  {{{ s, RET slice_val s;
-      Q ∗ is_slice s byteT 1%Qp (Block_to_vals b) }}}.
+  {{{ s b, RET slice_val s;
+      Q b ∗ is_block_full s b }}}.
 Proof.
   iIntros (Φ) "Hupd HΦ".
   wp_call.
   wp_bind (ExternalOp _ _).
   iApply (wp_atomic _ E E').
-  iMod "Hupd" as "[Hda Hupd]"; iModIntro.
+  iMod "Hupd" as (b) "[Hda Hupd]"; iModIntro.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
   iMod ("Hupd" with "Hda") as "HQ"; iModIntro.
@@ -167,20 +170,23 @@ Proof.
   wp_pures.
   wp_apply (wp_raw_slice with "Hs").
   iIntros (s) "Hs".
-  iApply "HΦ".
-  iFrame.
+  iApply "HΦ"; iFrame.
 Qed.
 
 Lemma wp_Read {stk E} (a: u64) q b :
   {{{ int.val a d↦{q} b }}}
     Read #a @ stk; E
   {{{ s, RET slice_val s;
-      int.val a d↦{q} b ∗ is_slice s byteT 1%Qp (Block_to_vals b) }}}.
+      int.val a d↦{q} b ∗ is_block_full s b }}}.
 Proof.
   iIntros (Φ) "Hda HΦ".
-  wp_apply (wp_Read_fupd E (int.val a d↦{q} b) with "[$Hda]").
-  { iIntros "!> $". done. }
-  iIntros (s) "[Hda Hs]".
+  wp_apply (wp_Read_fupd E (fun b' => ⌜b' = b⌝ ∗ int.val a d↦{q} b')%I with "[Hda]").
+  { iModIntro.
+    iExists b; iFrame.
+    iNext.
+    iIntros "$ //".
+  }
+  iIntros (s b') "[[-> Hda] Hs]".
   iApply ("HΦ" with "[$]").
 Qed.
 

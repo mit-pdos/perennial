@@ -192,15 +192,15 @@ region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
 Definition is_installed γ d txns installed_lb : iProp Σ :=
   ∃ (installed_txn_id: nat) (new_installed_txn_id: nat) (being_installed: gmap Z unit) diskStart,
-    start_is γ.(circ_name) (1/4) diskStart ∗
-    group_txn γ installed_txn_id diskStart ∗
+    "Hstart_is" ∷ start_is γ.(circ_name) (1/4) diskStart ∗
+    "#Hstart_txn" ∷ group_txn γ installed_txn_id diskStart ∗
     (* TODO: the other half of these are owned by the installer, giving it full
      knowledge of in-progress installations and exclusive update rights; need to
      write down what it maintains as part of its loop invariant *)
-    (own γ.(new_installed_name) (● Excl' new_installed_txn_id) ∗
+    "Howninstalled" ∷ (own γ.(new_installed_name) (● Excl' new_installed_txn_id) ∗
      own γ.(being_installed_name) (● Excl' being_installed)) ∗
-    ⌜(installed_lb ≤ installed_txn_id ≤ new_installed_txn_id)%nat⌝ ∗
-    ([∗ map] a ↦ _ ∈ d,
+    "%Hinstalled_bounds" ∷ ⌜(installed_lb ≤ installed_txn_id ≤ new_installed_txn_id)%nat⌝ ∗
+    "Hdata" ∷ ([∗ map] a ↦ _ ∈ d,
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
         exactly, but some blocks may be in the process of being installed) *)
@@ -209,7 +209,7 @@ Definition is_installed γ d txns installed_lb : iProp Σ :=
                         else installed_txn_id) in
         let txns := take txn_id' txns in
         apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
-       a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝).
+       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝).
 
 (* weakening of [is_installed] for the sake of reading *)
 Definition is_installed_read γ d txns installed_lb : iProp Σ :=
@@ -218,24 +218,46 @@ Definition is_installed_read γ d txns installed_lb : iProp Σ :=
       ⌜∃ txn_id', (installed_lb ≤ txn_id')%nat ∧
       let txns := take txn_id' txns in
       apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
-      a d↦ b ∗ ⌜2 + LogSz ≤ int.val a⌝)%I.
+      a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
+
+Global Instance is_installed_read_Timeless {γ d txns installed_lb} :
+  Timeless (is_installed_read γ d txns installed_lb).
+Proof.
+  apply _.
+Qed.
 
 Theorem is_installed_weaken_read γ d txns installed_lb :
-  is_installed γ d txns installed_lb -∗ is_installed_read γ d txns installed_lb.
+  is_installed γ d txns installed_lb -∗
+  is_installed_read γ d txns installed_lb ∗ (is_installed_read γ d txns installed_lb -∗
+                                            is_installed γ d txns installed_lb).
 Proof.
   rewrite /is_installed /is_installed_read.
   iIntros "I".
   iNamed "I".
-  iDestruct "I" as "(_&_&_&%&Hd)".
-  iApply (big_sepM_mono with "Hd").
-  iIntros (a b0 Hlookup) "HI".
-  iDestruct "HI" as (b') "(%&Hb&%)".
-  iExists b'; iFrame.
-  iPureIntro.
-  split; auto.
-  destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_txn_id ].
-  - split; auto; lia.
-  - split; auto; lia.
+  iSplitL "Hdata".
+  { iApply (big_sepM_mono with "Hdata").
+    iIntros (a b0 Hlookup) "HI".
+    iDestruct "HI" as (b') "(%&Hb&%)".
+    iExists b'; iFrame.
+    iPureIntro.
+    split; auto.
+    destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_txn_id ].
+    - split; auto; lia.
+    - split; auto; lia. }
+  iIntros "Hmap".
+  admit.
+Admitted.
+
+Theorem is_installed_to_read γ d txns installed_lb E :
+  ▷ is_installed γ d txns installed_lb -∗
+    (|={E}=> is_installed_read γ d txns installed_lb) ∗
+    ▷ (is_installed_read γ d txns installed_lb -∗
+       is_installed γ d txns installed_lb).
+Proof.
+  iIntros "Hfull".
+  iDestruct (is_installed_weaken_read with "Hfull") as "[Hread $]".
+  iDestruct "Hread" as ">$".
+  auto.
 Qed.
 
 (** the more complicated role of memLog is to correctly store committed

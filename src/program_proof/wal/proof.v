@@ -3,6 +3,7 @@ need to compose some things together *)
 From Perennial.program_proof.wal Require
      flush_proof
      logger_proof
-     read_proof.
+     read_proof
+     installer_proof.
 
 From Perennial.program_proof.wal Require highest.
