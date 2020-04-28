@@ -126,6 +126,9 @@ Proof.
   iDestruct (array_agree with "Hs1 Hs2") as %->; auto.
 Qed.
 
+Global Instance is_slice_small_timeless s t q vs :
+  Timeless (is_slice_small s t q vs) := _.
+
 Definition slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
   (#ptr, #sz, #cap)%V = slice_val (Slice.mk ptr sz cap) := eq_refl.
 

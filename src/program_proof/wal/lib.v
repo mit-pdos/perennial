@@ -22,9 +22,9 @@ Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
 
 Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp Σ :=
   ∃ bks, is_slice_small bk_s (struct.t Update.S) q (update_val <$> bks) ∗
-   [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
-                                     is_block (snd b_upd) q b ∗
-                                     ⌜fst b_upd = a⌝.
+   [∗ list] _ ↦ b_upd;upd ∈ bks;bs,
+       is_block (snd b_upd) q upd.(update.b) ∗
+       ⌜fst b_upd = upd.(update.addr)⌝.
 
 Theorem updates_slice_frag_acc bk_s bs :
   updates_slice bk_s bs -∗
@@ -36,10 +36,14 @@ Proof.
   iDestruct (is_slice_small_acc with "Hbks") as "[Hbks_small Hbks]".
   iSplitR "Hbks".
   - iExists _; iFrame.
+    iApply (big_sepL2_mono with "Hupds").
+    intros ? ? [a b]; auto.
   - iIntros "Hupds".
     iDestruct "Hupds" as (bks') "[Hs Hupds]".
     iSpecialize ("Hbks" with "Hs").
     iExists _; iFrame.
+    iApply (big_sepL2_mono with "Hupds").
+    intros ? ? [a b]; auto.
 Qed.
 
 Lemma updates_slice_frag_len bk_s q bs :
@@ -68,33 +72,29 @@ Qed.
 
 Existing Instance is_slice_small_Fractional.
 
-Theorem is_blocks_AsFractional bks q v :
+Global Instance fractional_big_sepL2:
+  ∀ (PROP : bi) (A B : Type) (l1 : list A) (l2: list B) (Ψ : nat → A → B -> Qp → PROP),
+    (∀ (k : nat) (x : A) (y:B), fractional.Fractional (Ψ k x y))
+    → fractional.Fractional (λ q : Qp, ([∗ list] k↦x;y ∈ l1; l2, Ψ k x y q)%I).
+Proof.
+  intros.
+  intros q1 q2.
+  rewrite -big_sepL2_sep.
+  setoid_rewrite H.
+  auto.
+Qed.
+
+Instance is_blocks_AsFractional bks q v :
   fractional.AsFractional
-    ([∗ list] b_upd;upd ∈ bks;v, let
-                                     '{| update.addr := a; update.b := b |} := upd in
-                                   (is_block b_upd.2 q b ∗ ⌜b_upd.1 = a⌝))%I
-    (λ q, [∗ list] b_upd;upd ∈ bks;v, let
-                                     '{| update.addr := a; update.b := b |} := upd in
-                                   (is_block b_upd.2 q b ∗ ⌜b_upd.1 = a⌝))%I
+    ([∗ list] b_upd;upd ∈ bks;v,
+                                (is_block b_upd.2 q upd.(update.b) ∗ ⌜b_upd.1 = upd.(update.addr)⌝))%I
+    (λ q, [∗ list] b_upd;upd ∈ bks;v, (is_block b_upd.2 q upd.(update.b) ∗ ⌜b_upd.1 = upd.(update.addr)⌝))%I
     q.
 Proof.
   constructor; auto.
-  intros q1 q2.
-  rewrite -big_sepL2_sep.
-  iSplit.
-  - iIntros "Hupds".
-    iApply (big_sepL2_mono with "Hupds").
-    iIntros (k [a s] [a' b] Hlookup1 Hlookup2) "Hupd"; simpl.
-    iDestruct "Hupd" as "[Hb ->]".
-    iDestruct (fractional.fractional_split_1 with "Hb") as "[Hb1 Hb2]".
-    iSplitL "Hb1"; iFrame; auto.
-  - iIntros "Hupds".
-    iApply (big_sepL2_mono with "Hupds").
-    iIntros (k [a s] [a' b] Hlookup1 Hlookup2) "Hupd"; simpl.
-    iDestruct "Hupd" as "[[Hb1 ->] [Hb2 _]]".
-    iSplit; auto.
-    iApply (fractional.fractional_split_2 with "Hb1").
-    iFrame.
+  apply _.
+  Grab Existential Variables.
+  exact 1%Qp.
 Qed.
 
 Instance update_val_inj : Inj eq eq update_val.
@@ -117,9 +117,6 @@ Proof.
       iDestruct "Hupds" as (bks) "[Hupds Hbs]".
       iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
       iDestruct (fractional.fractional_split_1 with "Hbs") as "[Hbs1 Hbs2]".
-      { apply is_blocks_AsFractional. }
-      { apply is_blocks_AsFractional. }
-      { apply is_blocks_AsFractional. }
       iSplitL "Hupds1 Hbs1".
       * iExists _; iFrame.
       * iExists _; iFrame.
@@ -131,12 +128,10 @@ Proof.
       iDestruct (fractional.fractional_split_2 with "Hbs1 Hbs2") as "Hbs".
       { apply _. }
       iDestruct (fractional.fractional_split_2 _ _ _ _ q1 q2 with "Hupds1 Hupds2") as "Hupds".
-      { apply is_blocks_AsFractional. }
-      { apply is_blocks_AsFractional. }
-      { apply is_blocks_AsFractional. }
+      { apply _. }
       iExists _; iFrame.
-  - admit. (* XXX: Timeless instance *)
-Abort.
+  - apply _.
+Qed.
 
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
   {{{ updates_slice bk_s bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}

@@ -172,7 +172,7 @@ Qed.
 
 Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)
         (installed_txn_id new_installed_txn_id: nat) :
-  {{{ updates_slice bufs_s bufs ∗
+  {{{ readonly (updates_slice_frag bufs_s 1 bufs) ∗
       (* these aren't enough assumptions - we need bufs to actually match the
       new transactions being installed (which will come from snapshotting the
       memLog invariant) *)
