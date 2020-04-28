@@ -116,6 +116,16 @@ Proof.
   exact 1%Qp.
 Qed.
 
+Theorem is_slice_small_agree s t q1 q2 vs1 vs2 :
+  is_slice_small s t q1 vs1 -∗
+  is_slice_small s t q2 vs2 -∗
+  ⌜vs1 = vs2⌝.
+Proof.
+  iIntros "[Hs1 %] [Hs2 %]".
+  assert (length vs1 = length vs2) by congruence.
+  iDestruct (array_agree with "Hs1 Hs2") as %->; auto.
+Qed.
+
 Definition slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
   (#ptr, #sz, #cap)%V = slice_val (Slice.mk ptr sz cap) := eq_refl.
 

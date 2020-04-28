@@ -109,6 +109,36 @@ Proof.
   apply _.
 Qed.
 
+Theorem loc_add_stride_Sn l t n :
+  l +ₗ[t] S n = (l +ₗ ty_size t) +ₗ[t] n.
+Proof.
+  replace (Z.mul (ty_size t) (S n)) with (ty_size t + Z.mul (ty_size t) n).
+  { rewrite loc_add_assoc //. }
+  replace (Z.of_nat (S n)) with (1 + Z.of_nat n) by lia.
+  rewrite Z.mul_add_distr_l.
+  f_equal.
+  rewrite Z.mul_1_r //.
+Qed.
+
+Lemma array_agree l t q1 q2 vs1 vs2 :
+  length vs1 = length vs2 ->
+  array l q1 t vs1 -∗ array l q2 t vs2 -∗
+  ⌜vs1 = vs2⌝.
+Proof.
+  rewrite /array; iIntros (Hlen) "Ha1 Ha2".
+  (iInduction vs1 as [|v1 vs1] "IH" forall (l vs2 Hlen)).
+  { simpl in Hlen.
+    destruct vs2; simpl in Hlen; try congruence.
+    auto. }
+  destruct vs2; simpl in Hlen; first by congruence.
+  simpl.
+  iDestruct "Ha1" as "[Hx1 Ha1]".
+  iDestruct "Ha2" as "[Hx2 Ha2]".
+  iDestruct (struct_mapsto_agree with "Hx1 Hx2") as "->".
+  setoid_rewrite loc_add_stride_Sn.
+  iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
+Qed.
+
 (* this lemma is just used to prove the update version (with q=1) and read
 version (with arbitrary q but no update) below *)
 Local Lemma update_array_gen {l vs off t q v} :
