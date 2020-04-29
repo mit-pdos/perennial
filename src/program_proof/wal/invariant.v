@@ -87,7 +87,7 @@ Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
 Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
   ∃ upds, txn_val γ txn_id (pos, upds).
 
-Instance txn_pos_persistent γ txn_id pos :
+Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
 
 (** the simple role of the memLog is to contain all the transactions in the
@@ -462,6 +462,48 @@ Proof.
   assert (txn_id2 < txn_id1)%nat as Hord by lia.
   eapply Hmono in Hord; eauto.
   word. (* contradiction from [pos1 = pos2] *)
+Qed.
+
+Ltac shutdown_fields :=
+  let shutdown := fresh "shutdown" in
+  let nthread := fresh "nthread" in
+  iDestruct (wal_linv_shutdown with "Hlkinv") as (shutdown nthread) "[[? ?] Hlkinv]";
+  repeat wp_loadField;
+  repeat wp_storeField;
+  iSpecialize ("Hlkinv" with "[$] [$]");
+  try (clear shutdown);
+  try (clear nthread).
+
+Lemma wp_inc_nthread l (st: loc) γ :
+  {{{ readonly (l ↦[Walog.S :: "st"] #st) ∗ wal_linv st γ }}}
+    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" #l)
+    (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" #l) + #1)
+  {{{ RET #(); wal_linv st γ }}}.
+Proof.
+  iIntros (Φ) "[#Hst Hlkinv] HΦ".
+  shutdown_fields.
+  iApply ("HΦ" with "[$]").
+Qed.
+
+Lemma wp_dec_nthread l (st: loc) γ :
+  {{{ readonly (l ↦[Walog.S :: "st"] #st) ∗ wal_linv st γ }}}
+    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" #l)
+    (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" #l) - #1)
+  {{{ RET #(); wal_linv st γ }}}.
+Proof.
+  iIntros (Φ) "[#Hst Hlkinv] HΦ".
+  shutdown_fields.
+  iApply ("HΦ" with "[$]").
+Qed.
+
+Lemma wp_load_shutdown l (st: loc) γ :
+  {{{ readonly (l ↦[Walog.S :: "st"] #st) ∗ wal_linv st γ  }}}
+    struct.loadF WalogState.S "shutdown" (struct.loadF Walog.S "st" #l)
+  {{{ (b:bool), RET #b; wal_linv st γ }}}.
+Proof.
+  iIntros (Φ) "[#Hst Hlkinv] HΦ".
+  shutdown_fields.
+  iApply ("HΦ" with "[$]").
 Qed.
 
 End goose_lang.

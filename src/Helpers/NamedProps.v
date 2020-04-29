@@ -71,6 +71,11 @@ Tactic Notation "iNamed" :=
   repeat match goal with
          | |- context[Esnoc _ ?i (named ?name ?P)] =>
            iNameHyp i
+         (* TODO: debug this for destructing anonymous composites *)
+         (* | |- context[Esnoc _ ?i ?P] =>
+           lazymatch P with
+           | context[named _ _] => progress iNamed i
+           end *)
          end.
 
 (* this is a super-simple but maybe non-performant implementation *)
@@ -111,9 +116,11 @@ Ltac iDeex :=
            iDeex_go
          end.
 
-Tactic Notation "iNamed" constr(H) :=
+Local Ltac iNamed_go H :=
   try iDeexHyp H;
   iNamedDestruct H.
+
+Tactic Notation "iNamed" constr(H) := iNamed_go H.
 
 Ltac prove_named :=
   repeat rewrite -to_named.

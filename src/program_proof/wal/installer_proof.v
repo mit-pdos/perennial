@@ -189,4 +189,81 @@ Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)
 Proof.
 Admitted.
 
+Theorem wp_Walog__logInstall γ l σₛ :
+  {{{ "#st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
+      "#memLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
+      "#condInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+      "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
+      "His_locked" ∷ locked γ.(lock_name) ∗
+      "#lk" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
+      "#cond_install" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock)
+  }}}
+    Walog__logInstall #l
+  {{{ (blkCount installEnd:u64), RET (#blkCount, #installEnd);
+      "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
+      "His_locked" ∷ locked γ.(lock_name)
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ"; iNamed "Hpre". (* TODO: would be nice to do this anonymously *)
+  iNamed "Hlkinv".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+  wp_call.
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  (* TODO: SliceTake of memLog (but should be read-only) *)
+Admitted.
+
+Theorem wp_Walog__installer γ l :
+  {{{ is_wal P l γ }}}
+    Walog__installer #l
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "#Hwal HΦ".
+  iMod (is_wal_read_mem with "Hwal") as "#Hmem".
+  wp_call.
+  iNamed "Hmem".
+  iNamed "Hstfields".
+  wp_loadField.
+  wp_apply (acquire_spec with "lk").
+  iIntros "[Hlocked Hlockinv]".
+  wp_apply (wp_inc_nthread with "[$Hlockinv $st]"); iIntros "Hlockinv".
+  wp_pures.
+  wp_bind (For _ _ _).
+  wp_apply (wp_forBreak_cond (fun _ => "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ ∗ "Hlocked" ∷ locked γ.(lock_name))%I
+           with "[] [$Hlocked $Hlockinv]").
+  { clear Φ.
+    iIntros "!>" (Φ) "I HΦ"; iNamed "I".
+    wp_apply (wp_load_shutdown with "[$st $Hlockinv]"); iIntros (shutdown) "Hlockinv".
+    wp_pures.
+    wp_if_destruct.
+    - wp_pures.
+      wp_apply (wp_Walog__logInstall with "[$st $d $lk $memlock $condInstall $cond_install $Hlocked $Hlockinv]").
+      iIntros (blkCount installEnd) "post"; iNamed "post".
+      wp_pures.
+      wp_bind (If _ _ _).
+      wp_if_destruct.
+      { wp_apply util_proof.wp_DPrintf; wp_pures.
+        iApply ("HΦ" with "[$]"). }
+      wp_loadField.
+      wp_apply (wp_condWait with "[$cond_install $lk $His_locked $Hlkinv]").
+      iIntros "[His_locked Hlkinv]".
+      wp_pures.
+      iApply ("HΦ" with "[$]").
+    - iApply ("HΦ" with "[$]"). }
+  iIntros "I"; iNamed "I".
+  wp_apply util_proof.wp_DPrintf.
+  wp_apply (wp_dec_nthread with "[$Hlockinv $st]"); iIntros "Hlockinv".
+  wp_loadField.
+  wp_apply (wp_condSignal with "[$cond_shut]").
+  wp_loadField.
+  wp_apply (release_spec with "[$lk $Hlocked $Hlockinv]").
+  iApply ("HΦ" with "[$]").
+Qed.
+
 End goose_lang.
