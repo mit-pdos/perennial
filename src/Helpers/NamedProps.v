@@ -1,8 +1,6 @@
 From iris.proofmode Require Import tactics environments intro_patterns.
-From iris.proofmode Require ltac_tactics.
 From iris.base_logic.lib Require Import iprop.
-
-From iris_string_ident Require ltac2_string_ident.
+From iris_string_ident Require Import ltac2_string_ident.
 
 (* NamedProps implements [named name P], which is equivalent to P but knows to
    name itself [name] when iIntro'd. The syntax looks like [name ∷ P], in
