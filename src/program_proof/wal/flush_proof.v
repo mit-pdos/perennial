@@ -48,7 +48,7 @@ Proof.
   iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
                            "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
   iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
-  iMod (group_txn_valid with "Htxns HdiskEnd_txn") as "(%HdiskEnd_txn_valid&Htxns)"; first by solve_ndisj.
+  iMod (txn_pos_valid with "Htxns HdiskEnd_txn") as "(%HdiskEnd_txn_valid&Htxns)"; first by solve_ndisj.
   apply is_txn_bound in HdiskEnd_txn_valid.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
           with "[% //] [%] [$HP]") as "[HP HQ]".
@@ -94,13 +94,13 @@ Proof.
     iExists σₗ; simpl.
     iFrame. }
   iFrame.
-  (* TODO: definitely not enough, need the wal invariant to allocate a new group_txn *)
+  (* TODO: definitely not enough, need the wal invariant to allocate a new txn_pos *)
 Admitted.
 
 Theorem simulate_flush l γ Q σ pos txn_id :
   (is_wal_inner l γ σ ∗ P σ) -∗
   diskEnd_at_least γ.(circ_name) (int.val pos) -∗
-  group_txn γ txn_id pos -∗
+  txn_pos γ txn_id pos -∗
   (∀ (σ σ' : log_state.t) (b : ()),
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
@@ -114,9 +114,9 @@ Proof.
                            "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
   iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
   iDestruct (diskEnd_is_agree_2 with "Hcirc_diskEnd Hlb") as %HdiskEnd_lb.
-  iMod (group_txn_valid with "Htxns Hpos_txn") as (His_txn) "Htxns"; first by solve_ndisj.
+  iMod (txn_pos_valid with "Htxns Hpos_txn") as (His_txn) "Htxns"; first by solve_ndisj.
   pose proof (is_txn_bound _ _ _ His_txn).
-  iMod (group_txn_valid with "Htxns HdiskEnd_txn") as (HdiskEnd_is_txn) "Htxns"; first by solve_ndisj.
+  iMod (txn_pos_valid with "Htxns HdiskEnd_txn") as (HdiskEnd_is_txn) "Htxns"; first by solve_ndisj.
   pose proof (is_txn_bound _ _ _ HdiskEnd_is_txn).
   pose proof (wal_wf_txns_mono_pos Hwf His_txn HdiskEnd_is_txn).
 
@@ -164,7 +164,7 @@ Qed.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ txn_id pos :
   {{{ is_wal P l γ ∗
-      group_txn γ txn_id pos ∗
+      txn_pos γ txn_id pos ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗
