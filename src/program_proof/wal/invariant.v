@@ -42,7 +42,7 @@ Record wal_names :=
     memLog_name : gname;
     lock_name : gname;
     cs_name : gname;
-    groupTxns_name : gen_heapG nat u64 Σ;
+    txns_name : gen_heapG nat (u64 * list update.t) Σ;
     new_installed_name : gname;
     being_installed_name : gname;
   }.
@@ -81,12 +81,18 @@ Record locked_state :=
 Global Instance locked_state_eta: Settable _ :=
   settable! Build_locked_state <memStart; diskEnd; nextDiskEnd; memLog>.
 
+Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
+  readonly (mapsto (hG:=γ.(txns_name)) txn_id 1 txn).
+
 (** TODO: rename.
 
  [group_txn] no longer has anything to do with grouping, it's just a persistent
 fact about a valid (transaction, pos) pair. *)
 Definition group_txn γ txn_id (pos: u64) : iProp Σ :=
-  readonly (mapsto (hG:=γ.(groupTxns_name)) txn_id 1%Qp pos).
+  ∃ upds, txn_val γ txn_id (pos, upds).
+
+Instance group_txn_persistent γ txn_id pos :
+  Persistent (group_txn γ txn_id pos) := _.
 
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the memStart_txn_id *)
@@ -266,6 +272,10 @@ on crash where [memLog] is restored from the circ log *)
    all the logged updates, contains grouped transactions in groupTxns, and
    finally contains a tail of transactions that are subject to absorption and
    not owned by the logger. *)
+(* TODO: this is now too strong, since "group_txn" is any valid transaction.
+Instead of every prefix, this should probably only talk about the real diskEnd,
+which is in practice the only crash point (whereas the spec has a lot of
+freedom) *)
 Definition is_crash_memlog γ
            (memStart_txn_id: nat) memLog txns (memStart: u64): iProp Σ :=
       (* the high-level structure here is to relate each group-committed transaction to the
@@ -309,64 +319,73 @@ Definition is_durable γ txns durable_lb : iProp Σ :=
       ⌜(durable_lb ≤ diskEnd_txn_id)%nat ⌝ ∗
        log_inv γ txns diskEnd_txn_id).
 
-Definition txns_pos_map (txns: list (u64 * list update.t)) : gmap nat u64 :=
-  list_to_imap txns.*1.
-
-Theorem txns_pos_is_txn txns (txn_id: nat) (pos: u64) :
-  is_txn txns txn_id pos <-> txns_pos_map txns !! txn_id = Some pos.
+Theorem txn_map_to_is_txn txns (txn_id: nat) (pos: u64) upds :
+  list_to_imap txns !! txn_id = Some (pos, upds) ->
+  is_txn txns txn_id pos.
 Proof.
-  rewrite /is_txn /txns_pos_map.
-  rewrite -list_lookup_fmap.
-  rewrite lookup_list_to_imap //.
+  rewrite /is_txn.
+  rewrite lookup_list_to_imap.
+  by intros ->.
 Qed.
 
-Definition is_groupTxns γ txns : iProp Σ :=
-    gen_heap_ctx (hG:=γ.(groupTxns_name)) (txns_pos_map txns) ∗
-    ([∗ map] txn_id↦pos ∈ (txns_pos_map txns),
-     group_txn γ txn_id pos).
+Definition txns_ctx γ txns : iProp Σ :=
+  gen_heap_ctx (hG:=γ.(txns_name)) (list_to_imap txns) ∗
+  ([∗ map] txn_id↦txn ∈ list_to_imap txns,
+      txn_val γ txn_id txn).
 
 Theorem alloc_group_txn γ txns E pos upds :
-  is_groupTxns γ txns ={E}=∗
-  is_groupTxns γ (txns ++ [(pos, upds)]) ∗ group_txn γ (length txns) pos.
+  txns_ctx γ txns ={E}=∗
+  txns_ctx γ (txns ++ [(pos, upds)]) ∗ txn_val γ (length txns) (pos, upds).
 Proof.
   iIntros "[Hctx Htxns]".
-  rewrite /is_groupTxns /txns_pos_map.
-  rewrite fmap_app /=.
+  rewrite /txns_ctx.
   rewrite list_to_imap_app1.
-  assert (list_to_imap txns.*1 !! length txns.*1 = None) as Hempty.
+  assert (list_to_imap txns !! length txns = None) as Hempty.
   { rewrite lookup_list_to_imap.
     apply lookup_ge_None_2; lia. }
-  iMod (gen_heap_alloc _ (length txns.*1) pos with "Hctx") as "[$ Hmapsto]"; first by auto.
+  iMod (gen_heap_alloc _ (length txns) (pos, upds) with "Hctx") as "[$ Hmapsto]"; first by auto.
   rewrite -> big_sepM_insert by auto.
   iFrame.
   iMod (readonly_alloc_1 with "Hmapsto") as "#Hgroup_txn".
   iModIntro.
   iFrame "#".
-  autorewrite with len.
-  iFrame "#".
 Qed.
 
-Theorem is_groupTxns_complete γ txns txn_id pos :
-  is_txn txns txn_id pos ->
-  is_groupTxns γ txns -∗ group_txn γ txn_id pos.
+Theorem txns_ctx_complete γ txns txn_id txn :
+  txns !! txn_id = Some txn ->
+  txns_ctx γ txns -∗ txn_val γ txn_id txn.
 Proof.
-  rewrite txns_pos_is_txn; intros Hlookup.
+  rewrite /is_txn.
+  rewrite -lookup_list_to_imap.
+  intros Hlookup.
   iIntros "[Hctx #Htxns]".
   iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htxns") as "[$ _]".
 Qed.
 
+Theorem txns_ctx_txn_pos γ txns txn_id pos :
+  is_txn txns txn_id pos ->
+  txns_ctx γ txns -∗ group_txn γ txn_id pos.
+Proof.
+  intros [txn [Hlookup ->]]%fmap_Some_1.
+  rewrite txns_ctx_complete; eauto.
+  iIntros "Htxn_val".
+  destruct txn as [pos upds].
+  iExists _; iFrame.
+Qed.
+
 Theorem group_txn_valid γ txns E txn_id pos :
   ↑nroot.@"readonly" ⊆ E ->
-  is_groupTxns γ txns -∗
+  txns_ctx γ txns -∗
   group_txn γ txn_id pos -∗
-  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ is_groupTxns γ txns.
+  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ txns_ctx γ txns.
 Proof.
-  rewrite /is_groupTxns /group_txn.
+  rewrite /txns_ctx /group_txn.
   iIntros (Hsub) "Hgroup Htxn".
   iDestruct "Hgroup" as "[Hctx Hgroup_txns]".
-  iMod (readonly_load with "Htxn") as (q) "Htxn_id"; first by set_solver.
+  iDestruct "Htxn" as (upds) "Hval".
+  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
   iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
-  apply txns_pos_is_txn in Hlookup.
+  apply txn_map_to_is_txn in Hlookup.
   iIntros "!>".
   iSplit; eauto.
 Qed.
@@ -377,7 +396,7 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "Hmem" ∷ is_wal_mem l γ ∗
     "Hdurable" ∷ is_durable γ s.(log_state.txns) s.(log_state.durable_lb) ∗
     "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) ∗
-    "Htxns" ∷ is_groupTxns γ s.(log_state.txns).
+    "Htxns" ∷ txns_ctx γ s.(log_state.txns).
 
 Definition is_wal (l : loc) γ : iProp Σ :=
   inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
