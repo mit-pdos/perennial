@@ -449,10 +449,13 @@ Section maplist.
   Implicit Types m : gmap K V.
   Implicit Types l : list LV.
 
-  Definition big_sepML Φ m l : PROP :=
+  Definition big_sepML_def Φ m l : PROP :=
     (∃ lm,
-      ⌜ l ≡ₚ map snd (map_to_list lm) ⌝ ∗
+      ⌜ l ≡ₚ snd <$> (map_to_list lm) ⌝ ∗
       [∗ map] k ↦ v;lvm ∈ m;lm, Φ k v lvm)%I.
+  Definition big_sepML_aux : seal (@big_sepML_def). Proof. by eexists. Qed.
+  Definition big_sepML := unseal big_sepML_aux.
+  Definition big_sepML_eq : @big_sepML = @big_sepML_def := big_sepML_aux.(seal_eq).
 
   Global Instance big_sepML_proper :
     Proper (pointwise_relation _ (pointwise_relation _ (pointwise_relation _ (⊢)))
@@ -462,6 +465,7 @@ Section maplist.
     intros P0 P1 HP.
     intros m0 m Hm; subst.
     intros l0 l1 Hl.
+    rewrite big_sepML_eq.
     iIntros "Hml".
     iDestruct "Hml" as (lm) "[Hlm Hml]".
     rewrite Hl.
@@ -476,7 +480,7 @@ Section maplist.
     ⊢ big_sepML Φ ∅ nil.
   Proof.
     iIntros.
-    rewrite /big_sepML.
+    rewrite big_sepML_eq.
     iExists ∅.
     iSplit; eauto.
     iApply big_sepM2_empty. done.
@@ -488,6 +492,7 @@ Section maplist.
     big_sepML Φ (<[k := v]> m) (lv :: l).
   Proof.
     iIntros "% [Hp Hml]".
+    rewrite big_sepML_eq.
     iDestruct "Hml" as (lm) "[% Hml]".
     iDestruct (big_sepM2_lookup_1_none with "Hml") as %Hlmnone; eauto.
     iExists (<[k := lv]> lm).
@@ -519,6 +524,7 @@ Section maplist.
       big_sepML Φ (delete k m) l.
   Proof.
     iIntros "Hml".
+    rewrite big_sepML_eq.
     iDestruct "Hml" as (lm) "[% Hml]".
     assert (lv ∈ lv :: l) by apply elem_of_list_here.
     setoid_rewrite H1 in H2.
@@ -554,6 +560,15 @@ Section maplist.
       big_sepML Φ (delete k m) (delete i l).
   Proof.
     iIntros (Hm) "Hml".
+    rewrite big_sepML_eq.
+    iDestruct "Hml" as (lm) "[% Hml]".
+    iDestruct (big_sepM2_lookup_1_some with "Hml") as (x2) "%"; eauto.
+    iDestruct (big_sepM2_delete with "Hml") as "[Hk Hml]"; eauto.
+    iExists _, _; iFrame.
+    iSplitR.
+    { admit. }
+    iExists _; iFrame.
+    admit.
   Admitted.
 
   Theorem big_sepML_lookup_l_acc Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
@@ -590,7 +605,7 @@ Section maplist.
     ⌜ ∀ k v lv, Φ k v lv -∗ Ψ k v lv ⌝ -∗
     big_sepML Ψ m l.
   Proof.
-    rewrite /big_sepML; iIntros "Hml %".
+    rewrite big_sepML_eq; iIntros "Hml %".
     iDestruct "Hml" as (lm) "[% Hml]".
     iExists lm; iSplitR; first by eauto.
     iApply big_sepM2_mono; eauto.
@@ -618,6 +633,7 @@ Section maplist.
     big_sepML Φ m [] -∗
     ⌜ m = ∅ ⌝.
   Proof.
+    rewrite /big_sepML.
   Admitted.
 
   Theorem big_sepML_empty_l Φ l `{!∀ k v lv, Absorbing (Φ k v lv)} :
@@ -630,26 +646,65 @@ Section maplist.
     big_sepML (λ k v lv, Φ k v lv ∗ Ψ k v lv) m l -∗
     big_sepML Φ m l ∗ big_sepML Ψ m l.
   Proof.
-    rewrite /big_sepML.
-  Admitted.
+    iIntros "Hml".
+    rewrite big_sepML_eq.
+    iDestruct "Hml" as (lm) "[% Hml]".
+    iDestruct (big_sepM2_sep with "Hml") as "[Hml0 Hml1]".
+    iSplitL "Hml0".
+    { iExists _. iFrame. done. }
+    { iExists _. iFrame. done. }
+  Qed.
 
-  Theorem big_sepML_sepM Φ (P : K -> V -> PROP) m l :
+  Theorem big_sepML_sepM Φ (P : K -> V -> PROP) m l `{!∀ k v, Absorbing (P k v)}:
     big_sepML (λ k v lv, Φ k v lv ∗ P k v) m l ⊣⊢
     big_sepML Φ m l ∗ big_opM _ P m.
   Proof.
-    rewrite /big_sepML; iSplit.
+    rewrite big_sepML_eq; iSplit.
+    - iIntros "Hlm".
+      iDestruct "Hlm" as (lm) "[% Hlm]".
+      iDestruct (big_sepM2_sep with "Hlm") as "[Hlm0 Hlm1]".
+      iSplitL "Hlm0".
+      + iExists _. iFrame. done.
+      + iDestruct (big_sepM2_sepM_1 with "Hlm1") as "Hlm1".
+        iDestruct (big_sepM_mono with "Hlm1") as "Hlm1"; last by iFrame.
+        iIntros (k x Hkx) "H".
+        iDestruct "H" as (y2) "[% H]". iFrame.
+    - iIntros "[Hlm Hm]".
+      iDestruct "Hlm" as (lm) "[% Hlm]".
+      iExists _. iSplitR; first by eauto.
+      iApply big_sepM2_sep; iFrame.
+      rewrite big_sepM2_eq /big_sepM2_def.
+      admit.
   Admitted.
 
-  Theorem big_sepML_sepL Φ (P : LV -> PROP) m l :
+  Theorem big_sepML_sepL Φ (P : LV -> PROP) m l `{!∀ lv, Absorbing (P lv)}:
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l ⊣⊢
     big_sepML Φ m l ∗ big_opL _ (λ i, P) l.
   Proof.
-    rewrite /big_sepML; iSplit.
+    rewrite big_sepML_eq; iSplit.
+    - iIntros "Hlm".
+      iDestruct "Hlm" as (lm) "[% Hlm]".
+      iDestruct (big_sepM2_sep with "Hlm") as "[Hlm0 Hlm1]".
+      iSplitL "Hlm0".
+      + iExists _. iFrame. done.
+      + iDestruct (big_sepM2_sepM_2 with "Hlm1") as "Hlm1".
+        rewrite big_opM_eq /big_opM_def H1 big_sepL_fmap.
+        iApply big_sepL_mono; last by iFrame.
+        iIntros (???) "H".
+        destruct y.
+        iDestruct "H" as (?) "[% H]". iFrame.
+    - iIntros "Hlm".
+      iDestruct "Hlm" as "[Hlm Hl]".
+      iDestruct "Hlm" as (lm) "[% Hlm]".
+      iExists _. iSplitR; first by eauto.
+      rewrite big_sepM2_eq /big_sepM2_def.
+      admit.
   Admitted.
 
   Global Instance big_sepML_persistent `(!∀ k v lv, Persistent (Φ k v lv)) :
     Persistent (big_sepML Φ m l).
   Proof.
+    rewrite big_sepML_eq.
     typeclasses eauto.
   Qed.
 
