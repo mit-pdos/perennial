@@ -579,6 +579,10 @@ Section maplist.
       Φ k v' lv' -∗
       big_sepML Φ (<[k := v']> m) (<[i := lv']> l).
   Proof.
+    iIntros (Hi) "Hml".
+    rewrite big_sepML_eq /big_sepML_def.
+    iDestruct "Hml" as (lm) "[% Hml]".
+    admit.
   Admitted.
 
   Theorem big_sepML_lookup_l_app_acc Φ m lv l0 l1 `{!∀ k v lv, Absorbing (Φ k v lv)} :
@@ -633,14 +637,26 @@ Section maplist.
     big_sepML Φ m [] -∗
     ⌜ m = ∅ ⌝.
   Proof.
-    rewrite /big_sepML.
-  Admitted.
+    rewrite big_sepML_eq /big_sepML_def.
+    iIntros "Hml".
+    iDestruct "Hml" as (lm) "[% Hml]".
+    destruct (map_to_list lm) eqn:Heq.
+    - apply map_to_list_empty_inv in Heq; subst.
+      iDestruct (big_sepM2_empty_l with "Hml") as %He. done.
+    - simpl in *. apply Permutation_nil_cons in H1. eauto.
+  Qed.
 
   Theorem big_sepML_empty_l Φ l `{!∀ k v lv, Absorbing (Φ k v lv)} :
     big_sepML Φ ∅ l -∗
     ⌜ l = [] ⌝.
   Proof.
-  Admitted.
+    rewrite big_sepML_eq /big_sepML_def.
+    iIntros "Hml".
+    iDestruct "Hml" as (lm) "[% Hml]".
+    iDestruct (big_sepM2_empty_r with "Hml") as %He; subst.
+    rewrite map_to_list_empty /= in H1.
+    iPureIntro. eapply Permutation.Permutation_nil. done.
+  Qed.
 
   Theorem big_sepML_sep Φ Ψ m l :
     big_sepML (λ k v lv, Φ k v lv ∗ Ψ k v lv) m l -∗
