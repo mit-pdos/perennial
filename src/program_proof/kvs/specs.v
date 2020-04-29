@@ -46,13 +46,19 @@ Definition nat_key_to_addr key : specs.addr :=
 Definition kvpair_val (pair : specs.addr*Slice.t): val :=
   (#(fst pair).(specs.addrBlock), (slice_val (snd pair), #()))%V.
 
+Theorem kvpair_val_t key data : val_ty (kvpair_val (key, data)) (struct.t KVPair.S).
+Proof.
+  repeat constructor.
+  rewrite /blockT; val_ty.
+Qed.
+
 (* Links a list of kvpairs to a slice *)
 Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ :=
   ∃ slice_kvps, is_slice slice_val (struct.t KVPair.S) 1 (kvpair_val <$> slice_kvps)
                          ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
   let '(kvpair.mk key buf) := ls_kvp in ∃ blk,
       ⌜specs.is_bufData_at_off blk 0 buf⌝
-      ∗ is_block (snd slice_kvp) blk
+      ∗ is_block (snd slice_kvp) 1 blk
       ∗ ⌜fst slice_kvp = key⌝.
 
 Definition kvpairs_match (pairs: list kvpair.t) γDisk : iProp Σ :=
@@ -74,7 +80,7 @@ Definition crashed_kvs kvp_ls kvsblks γDisk : iProp Σ :=
 
 Definition ptsto_kvpair (l: loc) (pair: kvpair.t) : iProp Σ :=
       ∃ bs blk, (l↦[KVPair.S :: "Key"] #(pair.(kvpair.key).(specs.addrBlock)) ∗
-                  l ↦[KVPair.S :: "Val"] (slice_val bs) ∗ is_block bs
+                  l ↦[KVPair.S :: "Val"] (slice_val bs) ∗ is_block bs 1
  blk
                   ∗ ⌜specs.is_bufData_at_off blk 0 pair.(kvpair.val)⌝)%I.
 
@@ -96,7 +102,7 @@ Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key:
        ∗ ⌜valid_key key sz⌝
   }}}
     KVS__Get #kvsl #((key.(specs.addrBlock)))
-  {{{(pairl: loc) v, RET #pairl;
+  {{{(pairl: loc) v ok, RET (#pairl, #ok);
      ptsto_kvs kvsl kvsblks sz γDisk ∗ ptsto_kvpair pairl (kvpair.mk key v)
   }}}.
 Proof.
@@ -138,27 +144,28 @@ Proof.
            iPoseProof (big_sepM_lookup _ kvsblks key (existT defs.KindBlock blk) with "HkvsMt") as "HsepM"; eauto.
          }
          { simpl. auto. }
-      --
-           rewrite <- (valid_key_eq_addr _ _ Hkey).
-           iApply "HkeyMt".
-
-  - iSplitL "Hbm"; auto.
-    iPureIntro.
-    destruct Hkey as [knat [Hknat Hkey]].
-    rewrite Hknat.
-    unfold abstraction.LogSz in *. simpl in *.
-    admit.
-    (*apply Hkey.
-    Print specs.valid_addr.
-    simpl. split; simpl; try word; auto.*)
-  - iIntros (bptr).
-    iDestruct "Hmapsto" as "[Hmaps0 Hmaps]".
-    iApply "Hmapsto".
-  specs.wp_BufMap__Lookup.
-  wp_loadField.
-  Searchabout "Begin".
-  wp_pures; eauto.
-  iPoseProof (wp_buftxn_Begin _ _ _ with "Htxn") as "WP_buftxn_Begin".
+      -- iIntros (bptr dirty) "[HisBuf HPostRead]".
+         iDestruct "HPostRead" as "H".
+         simpl in *.
+         iSpecialize ("H" $! blk dirty).
+         iDestruct "HisBuf" as (data sz0) "[Hbaddr [Hbsz [Hbdata [Hbdirty [HvalidA [Hsz0 [Hnotnil HisBufData]]]]]]]".
+         wp_loadField; wp_let.
+         iMod ("H" with "[-Hϕ Htxnl Hsz]") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
+         { iSplit; eauto. iExists data, sz0; iFrame; auto. }
+         wp_apply (wp_BufTxn__CommitWait buftx γt γDisk {[key := existT defs.KindBlock blk]} with "[Hmapsto HisBuf]").
+         {
+           iFrame; auto.
+           rewrite <- HbuildAddr, big_opM_singleton; auto.
+         }
+         iIntros (ok) "Hmapsto".
+         wp_let.
+         wp_pures.
+         wp_apply wp_allocStruct.
+         { apply (kvpair_val_t key data). }
+         iIntros (l0) "Hl0".
+         wp_pures. iApply ("Hϕ" $! l0).
+         unfold ptsto_kvs.
+         unfold ptsto_kvpair.
 Admitted.
 
 Theorem wpc_KVS__MultiPut kvsl s sz kvp_ls_before kvp_slice kvp_ls stk k E1 E2:
