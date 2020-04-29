@@ -150,18 +150,28 @@ Theorem wp_forSlicePrefix (P: list V -> list V -> iProp Σ) stk E s t q vs (body
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); is_slice_small s t q vs ∗ P vs nil }}}.
 Proof.
-  iIntros "#Hbody".
-  iIntros "!>" (Φ) "[Hs HP] HΦ".
-  wp_apply (wp_forSlicePrefix
-              (λ l1 l2, ∃ vs1 vs2,
-                  ⌜l1 = list.untype vs1 ∧ l2 = list.untype vs2⌝ ∗
-                  P vs1 vs2) with "[] [$Hs HP]")%I.
-  { clear.
-    iIntros (i x vs vs').
-    iIntros "!>" (Φ) "HP HΦ".
-    iDestruct "HP" as (vs1 vs2 [-> Heq2]) "HP".
-    admit.
+  iIntros "#Hind".
+  iIntros (Φ) "!> [Hs Hi0] HΦ".
+  iApply (wp_forSlice (λ i, P (take (int.nat i) vs) (drop (int.nat i) vs))
+    with "[] [$Hs $Hi0]").
+  {
+    iIntros (i x). iModIntro.
+    iIntros (Φ0) "(HP & % & %) HΦ0".
+    wp_apply ("Hind" with "[HP]").
+    { eapply drop_S in H0. rewrite H0. iFrame. }
+    iIntros "HP".
+    iApply "HΦ0".
+    iExactEq "HP". f_equal.
+    { apply take_S_r in H0. rewrite -H0. f_equal. word. }
+    f_equal. word.
   }
-Admitted.
+
+  iModIntro. iIntros "[HP Hs]".
+  iDestruct (is_slice_small_sz with "Hs") as %<-.
+  iApply "HΦ". iFrame.
+  rewrite /list.untype fmap_length.
+  rewrite firstn_all.
+  rewrite drop_all. done.
+Qed.
 
 End heap.

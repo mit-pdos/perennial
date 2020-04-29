@@ -542,7 +542,28 @@ Theorem wp_forSlicePrefix (P: list val -> list val -> iProp Σ) stk E s t q vs (
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); is_slice_small s t q vs ∗ P vs nil }}}.
 Proof.
-Admitted.
+  iIntros "#Hind".
+  iIntros (Φ) "!> [Hs Hi0] HΦ".
+  iApply (wp_forSlice (λ i, P (take (int.nat i) vs) (drop (int.nat i) vs))
+    with "[] [$Hs $Hi0]").
+  {
+    iIntros (i x). iModIntro.
+    iIntros (Φ0) "(HP & % & %) HΦ0".
+    wp_apply ("Hind" with "[HP]").
+    { eapply drop_S in H0. rewrite H0. iFrame. }
+    iIntros "HP".
+    iApply "HΦ0".
+    iExactEq "HP". f_equal.
+    { apply take_S_r in H0. rewrite -H0. f_equal. word. }
+    f_equal. word.
+  }
+
+  iModIntro. iIntros "[HP Hs]".
+  iDestruct (is_slice_small_sz with "Hs") as %<-.
+  iApply "HΦ". iFrame.
+  rewrite firstn_all.
+  rewrite drop_all. done.
+Qed.
 
 Theorem wp_forSliceEach (I: iProp Σ) (P Q: val -> iProp Σ) stk E s t q vs (body: val) :
   (∀ (i: u64) (x: val),
