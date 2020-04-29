@@ -109,13 +109,13 @@ Proof.
   remember(bool_decide (int.val sz < int.val _)) as Hszcomp.
   destruct Hszcomp; wp_pures.
   - wp_apply wp_panic.
-    destruct (decide_rel Z.lt (int.val sz) _); try discriminate. omega.
+    destruct (decide_rel Z.lt (int.val sz) _); try discriminate. lia.
   - change (u64_instance.u64.(@word.add 64) (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2)
       with (U64 LogSz).
     remember(bool_decide (int.val _ < int.val LogSz)) as Hlgszcomp.
     destruct Hlgszcomp; wp_pures.
     * wp_apply wp_panic.
-      destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. omega.
+      destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. lia.
     * wp_loadField.
       Check wp_buftxn_Begin.
       wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
