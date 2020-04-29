@@ -255,7 +255,7 @@ Proof.
                            (Reading O) with "Hσ")
     as "(Hσ & Hblock & Hl)".
   { rewrite concat_replicate_length. cut (0 < int.nat n)%nat; first by lia.
-    eauto with *. }
+    lia. }
   { destruct Hfresh as (?&?). rewrite //=. }
   { destruct Hfresh as (H'&?); eauto. eapply H'. }
   { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
