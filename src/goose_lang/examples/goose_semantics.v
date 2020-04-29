@@ -458,6 +458,17 @@ Definition testCompareNilToNil: val :=
     let: "s" := ref (zero_val (refT uint64T)) in
     (![refT uint64T] "s" = #null).
 
+Definition testComparePointerWrappedToNil: val :=
+  rec: "testComparePointerWrappedToNil" <> :=
+    let: "s" := ref (zero_val (slice.T byteT)) in
+    "s" <-[slice.T byteT] NewSlice byteT #1;;
+    ![slice.T byteT] "s" ≠ slice.nil.
+
+Definition testComparePointerWrappedDefaultToNil: val :=
+  rec: "testComparePointerWrappedDefaultToNil" <> :=
+    let: "s" := ref (zero_val (slice.T byteT)) in
+    (![slice.T byteT] "s" = slice.nil).
+
 (* operations.go *)
 
 (* helpers *)

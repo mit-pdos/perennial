@@ -49,6 +49,8 @@ Example testMapSize_ok : testMapSize #() ~~> #true := t.
 Fail Example testCompareSliceToNil_ok : failing_testCompareSliceToNil #() ~~> #true := t.
 Example testComparePointerToNil_ok : testComparePointerToNil #() ~~> #true := t.
 Example testCompareNilToNil_ok : testCompareNilToNil #() ~~> #true := t.
+Example testComparePointerWrappedToNil_ok : testComparePointerWrappedToNil #() ~~> #true := t.
+Example testComparePointerWrappedDefaultToNil_ok : testComparePointerWrappedDefaultToNil #() ~~> #true := t.
 
 (* operations.go *)
 Example testReverseAssignOps64_ok : testReverseAssignOps64 #() ~~> #true := t.
