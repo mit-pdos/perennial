@@ -51,7 +51,7 @@ Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ
                          ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
   let '(kvpair.mk key buf) := ls_kvp in ∃ blk,
       ⌜specs.is_bufData_at_off blk 0 buf⌝
-      ∗ is_block (snd slice_kvp) blk
+      ∗ is_block (snd slice_kvp) 1 blk
       ∗ ⌜fst slice_kvp = key⌝.
 
 Definition kvpairs_match (pairs: list kvpair.t) γDisk : iProp Σ :=
@@ -73,7 +73,7 @@ Definition crashed_kvs kvp_ls kvsblks γDisk : iProp Σ :=
 
 Definition ptsto_kvpair (l: loc) (pair: kvpair.t) : iProp Σ :=
       ∃ bs blk, (l↦[KVPair.S :: "Key"] #(pair.(kvpair.key).(specs.addrBlock)) ∗
-                  l ↦[KVPair.S :: "Val"] (slice_val bs) ∗ is_block bs
+                  l ↦[KVPair.S :: "Val"] (slice_val bs) ∗ is_block bs 1
  blk
                   ∗ ⌜specs.is_bufData_at_off blk 0 pair.(kvpair.val)⌝)%I.
 
