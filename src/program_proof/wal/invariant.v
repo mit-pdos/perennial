@@ -329,7 +329,7 @@ Definition is_groupTxns γ txns : iProp Σ :=
 
 Theorem alloc_group_txn γ txns E pos upds :
   is_groupTxns γ txns ={E}=∗
-  is_groupTxns γ (txns ++ [(pos, upds)]).
+  is_groupTxns γ (txns ++ [(pos, upds)]) ∗ group_txn γ (length txns) pos.
 Proof.
   iIntros "[Hctx Htxns]".
   rewrite /is_groupTxns /txns_pos_map.
@@ -341,8 +341,11 @@ Proof.
   iMod (gen_heap_alloc _ (length txns.*1) pos with "Hctx") as "[$ Hmapsto]"; first by auto.
   rewrite -> big_sepM_insert by auto.
   iFrame.
-  iMod (readonly_alloc_1 with "Hmapsto") as "Hgroup_txn".
-  by iFrame.
+  iMod (readonly_alloc_1 with "Hmapsto") as "#Hgroup_txn".
+  iModIntro.
+  iFrame "#".
+  autorewrite with len.
+  iFrame "#".
 Qed.
 
 Theorem is_groupTxns_complete γ txns txn_id pos :
