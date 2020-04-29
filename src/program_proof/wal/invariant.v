@@ -43,7 +43,6 @@ Record wal_names :=
     lock_name : gname;
     cs_name : gname;
     groupTxns_name : gen_heapG nat u64 Σ;
-    txns_name : gname;
     new_installed_name : gname;
     being_installed_name : gname;
   }.
@@ -99,7 +98,6 @@ Definition memLog_linv γ memStart (memLog: list update.t) : iProp Σ :=
   (∃ (memStart_txn_id: nat) (txns: list (u64 * list update.t)),
       "HownmemStart" ∷ own γ.(memStart_name) (● Excl' (memStart, memStart_txn_id)) ∗
       "HownmemLog" ∷ own γ.(memLog_name) (● Excl' memLog) ∗
-      "Howntxns" ∷ own γ.(txns_name) (● Excl' txns) ∗
       "HmemStart_txn" ∷ group_txn γ memStart_txn_id memStart ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
@@ -377,7 +375,6 @@ Qed.
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "Hmem" ∷ is_wal_mem l γ ∗
-    "Howntxns" ∷ own γ.(txns_name) (◯ Excl' s.(log_state.txns)) ∗
     "Hdurable" ∷ is_durable γ s.(log_state.txns) s.(log_state.durable_lb) ∗
     "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) ∗
     "Htxns" ∷ is_groupTxns γ s.(log_state.txns).

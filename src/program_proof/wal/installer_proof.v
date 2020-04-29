@@ -106,7 +106,7 @@ Proof.
   wp_apply (wp_Read_fupd (⊤∖↑walN) (λ b, Q b)%I _ 1 (* q=1 *) with "[Hfupd]").
   { iDestruct "Hwal" as "[Hwal Hcirc]".
     iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
-    iDestruct "Hinner" as "(>? & ? & >? & ? & Hinstalled & ?)"; iNamed.
+    iDestruct "Hinner" as "(>? & ? & ? & Hinstalled & ?)"; iNamed.
     iDestruct (is_installed_to_read with "Hinstalled") as "[>Hinstalled_read Hinstalled]".
     iDestruct (in_bounds_valid _ σ with "Ha_valid") as %Hlookup.
     iDestruct (is_installed_read_lookup Hlookup with "Hinstalled_read") as
