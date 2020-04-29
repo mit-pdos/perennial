@@ -645,7 +645,7 @@ Section na_heap.
     - efeed pose proof (Hwf1 l); eauto.
       { rewrite -addr_id_of_base; eauto. }
       { lia. }
-    - apply not_elem_of_dom; eauto.
+    - apply (not_elem_of_dom (D := gset L)); eauto.
   Qed.
 
   Lemma na_heap_write_lookup tls σ l q v :
