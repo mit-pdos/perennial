@@ -179,4 +179,32 @@ Section block_addr_defs.
     - rewrite -insert_union_singleton_l fmap_insert insert_union_singleton_l IHvs //=.
   Qed.
 
+  Lemma heap_array_lookup_dom_id {V} l l' (vs: list V):
+    l' ∈ dom (gset L1) (heap_array l vs) →
+    addr_id l' = addr_id l.
+  Proof.
+    revert l l'.
+    induction vs => l l' //=.
+    set_unfold. intros [Hl|Hr].
+    - subst. eauto.
+    - eapply IHvs in Hr. rewrite Hr addr_id_of_plus //.
+  Qed.
+
+  Lemma heap_array_lookup_dom_base {V} l l' (vs: list V):
+    l' ∈ dom (gset L1) (heap_array l vs) →
+    addr_base l' = addr_base l.
+  Proof.
+    rewrite addr_base_eq_addr_id. apply heap_array_lookup_dom_id.
+  Qed.
+
+  Lemma heap_array_lookup_base_ne {V} l l' z (vs: list V):
+    addr_base l ≠ addr_base l' →
+    heap_array l vs !! addr_plus_off l' z = None.
+  Proof.
+    intros. destruct (heap_array l vs !! _) as [v|] eqn:Heq => //.
+    apply (elem_of_dom_2 (D := gset L1)), heap_array_lookup_dom_base in Heq.
+    rewrite addr_base_of_plus in Heq.
+    congruence.
+  Qed.
+
 End block_addr_defs.

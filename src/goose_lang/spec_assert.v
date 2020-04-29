@@ -55,7 +55,7 @@ Context `{invG Σ}.
 
 Definition spec_interp σ : iProp Σ :=
     (na_heap_ctx tls σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world)
-      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I.
+      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝)%I.
 
 Definition spec_stateN := nroot .@ "source".@  "state".
 
@@ -145,6 +145,44 @@ Proof.
   solve_ndisj.
 Qed.
 
+Lemma spec_interp_null σ l:
+  addr_base l = null →
+  ▷ spec_interp σ -∗
+  ▷ ⌜ heap σ !! l = None ⌝.
+Proof.
+  iIntros (Hl) "Hinterp !>".
+  iDestruct "Hinterp" as "(_&_&?&?&H)".
+  iDestruct "H" as %Hnonnull. iPureIntro.
+  rewrite (addr_plus_off_decode l) Hl. eapply Hnonnull.
+Qed.
+
+Lemma ghost_load_null_stuck j K `{LanguageCtx _ K} E l:
+  addr_base l = null →
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+Proof.
+  iIntros (Hnull ?) "(#Hctx&#Hstate) Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct (spec_interp_null _ l with "Hinterp") as ">Hnone"; eauto.
+  iDestruct "Hnone" as %Hnone.
+  iMod (ghost_step_stuck with "Hj Hctx H") as %[].
+  {
+  split; first done.
+  apply prim_head_irreducible; auto.
+  * inversion 1; repeat (monad_inv; simpl in * ).
+    match goal with
+      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
+    end.
+    simpl in *. monad_inv; eauto.
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val #l = e').
+    { move: Heq. destruct Ki => //=; congruence. }
+    subst. eauto.
+  }
+  solve_ndisj.
+Qed.
+
 Lemma ghost_load_rd j K `{LanguageCtx _ K} E n l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
@@ -199,7 +237,7 @@ Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
 Proof.
   iIntros (Hlen Hn Φ) "(#Hctx&Hstate) Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
-  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest3&Hrest4))".
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step. simpl.
     econstructor; last (repeat econstructor).
@@ -224,8 +262,18 @@ Proof.
     by rewrite (loc_add_0) in Hfresh.
   }
   { eauto. }
-  iMod ("Hclo" with "[Hσ H Hrest]").
-  { iNext. iExists _. iFrame "H". iFrame. }
+  iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest3 Hrest4]").
+  { iNext. iExists _. iFrame "H". iFrame.
+    iDestruct "Hrest4" as %Hnon_null.
+    iPureIntro. intros off.
+    cut (∀ off x, heap (state_init_heap l x v σ) !! addr_plus_off null off =
+                heap σ !! addr_plus_off null off).
+    { intros ->. eauto. }
+    intros.  rewrite /state_init_heap/ state_insert_list.
+    rewrite lookup_union_r //.
+    eapply heap_array_lookup_base_ne. erewrite isFresh_base; eauto.
+    eapply isFresh_not_null; eauto.
+  }
   iModIntro.
   iExists _. iFrame.
   unfold mapsto_vals.

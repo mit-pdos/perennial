@@ -970,6 +970,12 @@ Proof.
   intros Hbound. destruct Hbound as (?&?); eauto.
 Qed.
 
+Theorem isFresh_base σ l :
+  isFresh σ l -> addr_base l = l.
+Proof.
+  intros Hbound **. eapply addr_offset_0_is_base, isFresh_offset0; eauto.
+Qed.
+
 Theorem fresh_locs_isFresh σ :
   isFresh σ (fresh_locs (dom (gset loc) σ.(heap))).
 Proof.
@@ -1334,6 +1340,24 @@ Proof.
   * inversion 1; eauto.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     apply Panic_fill_item_inv in Heq; subst; auto; by exfalso.
+Qed.
+
+Definition null_non_alloc {V} (h : gmap loc V) :=
+  ∀ off, h !! (addr_plus_off null off) = None.
+
+Lemma fresh_alloc_equiv_null_non_alloc σ v:
+  null_non_alloc (<[fresh_locs (dom (gset loc) σ.(heap)):=v]> σ.(heap)) ↔
+  null_non_alloc (σ.(heap)).
+Proof.
+  split.
+  - rewrite /null_non_alloc => Hn off. etransitivity; last eapply (Hn off).
+    rewrite lookup_insert_ne; first done.
+    eapply plus_off_preserves_non_null, addr_base_non_null_offset; eauto.
+    eapply isFresh_not_null, fresh_locs_isFresh.
+  - rewrite /null_non_alloc => Hn off. etransitivity; last eapply (Hn off).
+    rewrite lookup_insert_ne; first done.
+    eapply plus_off_preserves_non_null, addr_base_non_null_offset; eauto.
+    eapply isFresh_not_null, fresh_locs_isFresh.
 Qed.
 
 End goose_lang.

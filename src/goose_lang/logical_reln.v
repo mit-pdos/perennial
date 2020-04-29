@@ -310,7 +310,7 @@ Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
 
 Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=
-  ∀ σ σs, sty_initP σ σs → ffi_initP σ.(world) ∧ ffi_initP σs.(world).
+  ∀ σ σs, sty_initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) ∧ ffi_initP σs.(world).
 
 Definition sty_crash_obligation :=
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
@@ -1154,8 +1154,10 @@ Proof using spec_trans.
         { lia. }
         { solve_ndisj. }
       }
-    * (* UB because base is a null pointer *)
-    admit.
+    * iDestruct "Hnull" as %(?&->&->).
+      iMod (ghost_load_null_stuck with "[$] [$]") as %[].
+      { rewrite addr_base_of_plus //=. }
+      { solve_ndisj. }
   - admit.
   - admit.
   - subst.

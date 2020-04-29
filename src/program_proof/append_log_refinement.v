@@ -244,6 +244,7 @@ Definition appendΣ := #[lockΣ; stagedΣ;
 Instance subG_appendPreG: ∀ Σ, subG appendΣ Σ → appendG Σ.
 Proof. solve_inG. Qed.
 Definition append_initP (σimpl: @state disk_op disk_model) (σspec : @state log_op log_model) : Prop :=
+  (null_non_alloc σspec.(heap)) ∧
   (σimpl.(world) = init_disk ∅ SIZE) ∧
   (σspec.(world) = UnInit).
 Definition append_update_pre (Σ: gFunctors) (hG: appendG Σ) (n: append_names) : appendG Σ := hG.
@@ -265,7 +266,7 @@ Proof.
   rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hC hAppend σs σi Hinit) "Hdisk".
   rewrite /log_start /append_init/log_init.
-  inversion Hinit as [Heqi Heqs]. rewrite Heqs Heqi.
+  inversion Hinit as [Hnn [Heqi Heqs]]. rewrite Heqs Heqi.
   iIntros "(Huninit_frag&Hlog_frag)". rewrite /P//=.
   rewrite /thread_tok_full.
   iMod (ghost_var_alloc ((O, id) : append_nat_K)) as (γ) "Hown".
@@ -278,7 +279,7 @@ Proof.
 Qed.
 
 Lemma append_init_obligation2: sty_init_obligation2 append_initP.
-Proof. intros ?? (?&?). rewrite //=. Qed.
+Proof. intros ?? (?&?&?). rewrite //=. Qed.
 
 Definition append_op_trans (op: log_spec_ext.(@spec_ext_op_field).(@external)) : @val disk_op :=
   match op with

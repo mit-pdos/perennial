@@ -848,7 +848,7 @@ Proof.
   { iMod ("Hclo" with "[Hσ H Hrest Hgh]") as "_".
     - iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen".
       iDestruct "Hgh" as "[Hgh Hmap]". simpl in *.
-      rewrite right_id; auto.
+      rewrite right_id; auto. rewrite fresh_alloc_equiv_null_non_alloc; iFrame.
     - iModIntro. iExists _. iFrame "Hopen". iFrame.
   }
 Qed.
@@ -951,7 +951,7 @@ Proof.
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { auto. }
   iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
-  { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
+  { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". rewrite fresh_alloc_equiv_null_non_alloc. iFrame. }
   iModIntro. iExists _. iFrame "Hopen". iFrame.
 Qed.
 
