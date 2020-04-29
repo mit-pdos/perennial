@@ -94,6 +94,57 @@ Qed.
 
 Hint Resolve sN_inv_sub_minus_state.
 
+Lemma ghost_load_block_oob_stuck j K `{LanguageCtx _ K} E l n
+  (Hoff: (addr_offset l < 0 ∨ n <= addr_offset l)%Z):
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  na_block_size (addr_base l) n →
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iDestruct (@na_block_size_oob_lookup with "Hσ Hl") as %Hnone; auto.
+  iMod (ghost_step_stuck with "Hj Hctx H") as %[].
+  {
+  split; first done.
+  apply prim_head_irreducible; auto.
+  * inversion 1; repeat (monad_inv; simpl in * ).
+    match goal with
+      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
+    end.
+    simpl in *. monad_inv; eauto.
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val #l = e').
+    { move: Heq. destruct Ki => //=; congruence. }
+    subst. eauto.
+  }
+  solve_ndisj.
+Qed.
+
+Lemma ghost_load_write_stuck j K `{LanguageCtx _ K} E l q (v: val):
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  na_heap_mapsto_st (WSt) l q v -∗
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iDestruct (@na_heap_write_lookup with "Hσ Hl") as %([]&?&Hlock); try inversion Hlock; subst.
+  iMod (ghost_step_stuck with "Hj Hctx H") as %[].
+  {
+  split; first done.
+  apply prim_head_irreducible; auto.
+  * inversion 1; repeat (monad_inv; simpl in * ).
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val #l = e').
+    { move: Heq. destruct Ki => //=; congruence. }
+    subst. eauto.
+  }
+  solve_ndisj.
+Qed.
+
 Lemma ghost_load_rd j K `{LanguageCtx _ K} E n l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗

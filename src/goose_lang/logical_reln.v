@@ -1142,14 +1142,17 @@ Proof using spec_trans.
           iIntros "!> !>". iExists _. iFrame. iFrame "Hval".
         }
         {
-          (* UB, load while there's a write going on, which we can tell from
-           na_heap_mapsto_st WSt lvs (1 / 2)  *)
-          admit.
+          iDestruct "Hwriter" as "(>Hfc&>Hspts)".
+          rewrite ?loc_add_0.
+          iMod (ghost_load_write_stuck with "[$] [$] [$]") as %[].
+          { solve_ndisj. }
         }
       }
       {
-        (* UB because #lv offset is is negative / greater than block size *)
-        admit.
+        iDestruct "Hoob" as %Hoob.
+        iMod (ghost_load_block_oob_stuck with "[$] [$] [$]") as %[].
+        { lia. }
+        { solve_ndisj. }
       }
     * (* UB because base is a null pointer *)
     admit.

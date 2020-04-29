@@ -127,7 +127,7 @@ Section definitions.
   Definition meta_eq : @meta = @meta_def := meta_aux.(seal_eq).
 
   Definition block_sizes_wf (σ: gmap L (LK * V)) (sz: gmap Z Z) : Prop :=
-    (∀ l z, l ∈ dom (gset L) σ → sz !! addr_id l = Some z → (0 ≤ addr_offset l ≤ z)%Z) ∧
+    (∀ l z, l ∈ dom (gset L) σ → sz !! addr_id l = Some z → (0 ≤ addr_offset l < z)%Z) ∧
     (∀ l, l ∈ dom (gset Z) sz → addr_encode (l, 0)%Z ∈ dom (gset L) σ).
 
   Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ m (sz: gmap Z Z),
@@ -354,8 +354,8 @@ Section na_heap.
   Qed.
 
   Lemma na_heap_alloc_base tls σ l v lk (z: Z) :
-    (0 ≤ z)%Z →
-    (∀ z', (z < z')%Z ∨ (z' < 0)%Z → σ !! addr_plus_off l z' = None) →
+    (0 < z)%Z →
+    (∀ z', (z <= z')%Z ∨ (z' < 0)%Z → σ !! addr_plus_off l z' = None) →
     σ !! l = None →
     addr_offset l = 0%Z →
     tls lk = RSt 0 →
@@ -398,7 +398,7 @@ Section na_heap.
         { rewrite lookup_insert. inversion 1. rewrite Hoff. split; subst; eauto. lia. }
         { destruct (decide (addr_id l = addr_id l')) as [e|ne].
           - rewrite -e. rewrite lookup_insert. inversion 1; subst.
-            cut (¬ (z' < addr_offset l') ∧ ¬ (addr_offset l' < 0))%Z; first by lia.
+            cut (¬ (z' <= addr_offset l') ∧ ¬ (addr_offset l' < 0))%Z; first by lia.
             apply elem_of_dom in Hin as (x&Heq).
             rewrite (addr_plus_off_decode l') in Heq.
             assert (addr_base l' = l) as <-.
@@ -626,6 +626,34 @@ Section na_heap.
     unshelve (apply: prod_local_update_2).
     apply csum_local_update_r.
     apply nat_local_update; lia.
+  Qed.
+
+  Lemma na_block_size_oob_lookup tls σ l n (Hoff: (addr_offset l < 0 ∨ n <= addr_offset l)%Z):
+    na_heap_ctx tls σ -∗ na_block_size (addr_base l) n -∗ ⌜ σ !! l = None ⌝.
+  Proof.
+    iIntros "Hσ". iIntros "Hmt".
+    iDestruct "Hσ" as (m sz Hσm) "[Hσ [? [Hsize Hwf]]]".
+    rewrite na_block_size_eq /na_block_size_def.
+    iDestruct (own_valid_2 with "Hsize Hmt") as %[Hl?]%auth_both_valid.
+    iDestruct "Hwf" as %Hwf.
+    iPureIntro. move: Hl=> /singleton_included_l [H' [Hlook Hincl]].
+    move: Hlook. rewrite /to_na_heap lookup_fmap fmap_Some_equiv.
+    intros (z&Hlook&Hequiv). rewrite Hequiv in Hincl *.
+    move=> /Some_included_total/to_agree_included. inversion 1; subst.
+    destruct Hwf as (Hwf1&Hwf2).
+    destruct (decide (l ∈ dom (gset L) σ)).
+    - efeed pose proof (Hwf1 l); eauto.
+      { rewrite -addr_id_of_base; eauto. }
+      { lia. }
+    - apply not_elem_of_dom; eauto.
+  Qed.
+
+  Lemma na_heap_write_lookup tls σ l q v :
+    na_heap_ctx tls σ -∗ na_heap_mapsto_st WSt l q v -∗ ⌜∃ lk, σ !! l = Some (lk, v) ∧ tls lk = WSt⌝.
+  Proof.
+    iIntros "Hσ". iIntros "Hmt".
+    iDestruct "Hσ" as (m sz Hσm) "[Hσ ?]".
+    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[n' [Hσl ?]]; eauto.
   Qed.
 
   Lemma na_heap_read' tls σ n l q v :

@@ -48,6 +48,10 @@ Section block_addr_defs.
     addr_id (addr_plus_off l off) = addr_id l.
   Proof. rewrite /addr_base/addr_id/addr_plus_off addr_decode_encode //=. Qed.
 
+  Lemma addr_id_of_base (l: L1):
+    addr_id (addr_base l) = addr_id l.
+  Proof. rewrite /addr_base/addr_id/addr_plus_off addr_decode_encode //=. Qed.
+
   Lemma addr_base_of_plus (l: L1) off:
     addr_base (addr_plus_off l off) = addr_base l.
   Proof. rewrite /addr_base addr_id_of_plus //=. Qed.
