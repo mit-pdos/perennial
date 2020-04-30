@@ -69,8 +69,7 @@ Record lowState :=
 Global Instance lowState_eta: Settable _ :=
   settable! Build_lowState <memLogSlice; memLogMapPtr; shutdown; nthread>.
 
-Global Instance lowState_witness: Inhabited lowState :=
-  populate (Build_lowState inhabitant inhabitant inhabitant inhabitant).
+Global Instance lowState_witness: Inhabited lowState := populate!.
 
 Record locked_state :=
   { memStart: u64;
@@ -80,6 +79,8 @@ Record locked_state :=
 
 Global Instance locked_state_eta: Settable _ :=
   settable! Build_locked_state <memStart; diskEnd; nextDiskEnd; memLog>.
+
+Global Instance locked_state_witness: Inhabited locked_state := populate!.
 
 Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
   readonly (mapsto (hG:=γ.(txns_name)) txn_id 1 txn).

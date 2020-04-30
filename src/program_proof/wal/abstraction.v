@@ -3,7 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From stdpp Require Import gmap.
 From iris.algebra Require Import ofe.
 
-From Perennial.Helpers Require Import Integers.
+From Perennial.Helpers Require Import Tactics Integers.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.goose_lang Require Import ffi.disk.
 
@@ -12,7 +12,7 @@ Module update.
     mk { addr: u64;
          b: Block; }.
   Global Instance _eta: Settable _ := settable! mk <addr; b>.
-  Global Instance _witness: Inhabited t := populate (mk inhabitant inhabitant).
+  Global Instance _witness: Inhabited t := populate!.
 End update.
 
 Canonical Structure updateO := leibnizO update.t.
@@ -39,7 +39,7 @@ Module log_state.
         durable_lb: nat;
       }.
   Global Instance _eta: Settable _ := settable! mk <d; txns; installed_lb; durable_lb>.
-  Global Instance _witness: Inhabited t := populate (mk inhabitant inhabitant inhabitant inhabitant).
+  Global Instance _witness: Inhabited t := populate!.
 
   Definition updates σ : list update.t := txn_upds σ.(txns).
 End log_state.
