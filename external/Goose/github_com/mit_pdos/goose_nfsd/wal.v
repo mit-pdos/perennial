@@ -429,9 +429,7 @@ Definition WalogState__endGroupTxn: val :=
 
 Definition copyUpdateBlock: val :=
   rec: "copyUpdateBlock" "u" :=
-    let: "blk" := NewSlice byteT disk.BlockSize in
-    SliceCopy byteT "blk" (struct.get Update.S "Block" "u");;
-    "blk".
+    util.CloneByteSlice (struct.get Update.S "Block" "u").
 
 (* readMem implements ReadMem, assuming memLock is held *)
 Definition WalogState__readMem: val :=

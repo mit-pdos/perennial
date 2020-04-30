@@ -2,6 +2,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.program_proof Require Export wal.abstraction.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
+From Perennial.program_proof Require util_proof.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -215,17 +216,9 @@ Proof.
   iIntros (Φ) "Hb HΦ".
   destruct u as [a s]; simpl.
   wp_call.
-  wp_apply wp_new_slice; first by auto.
-  iIntros (s') "Hs'".
-  iDestruct (is_slice_to_small with "Hs'") as "Hs'".
-  wp_pures.
-  wp_apply (wp_SliceCopy_full with "[$Hb $Hs']").
-  { iPureIntro.
-    autorewrite with len.
-    rewrite length_Block_to_vals.
-    reflexivity. }
-  iIntros "(Hs&Hs')".
-  wp_pures.
+  wp_apply (util_proof.wp_CloneByteSlice with "Hb").
+  iIntros (s') "(Hb&Hb')".
+  iDestruct (is_slice_to_small with "Hb'") as "Hb'".
   iApply ("HΦ" with "[$]").
 Qed.
 
