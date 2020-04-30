@@ -96,17 +96,20 @@ Proof.
   wpc_bind (super.MkFsSuper _).
 Admitted.
 
-Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key:
+Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key v:
   {{{
        ptsto_kvs kvsl kvsblks sz γDisk
+       ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock v)⌝
        ∗ ⌜valid_key key sz⌝
   }}}
     KVS__Get #kvsl #((key.(specs.addrBlock)))
-  {{{(pairl: loc) v ok, RET (#pairl, #ok);
-     ptsto_kvs kvsl kvsblks sz γDisk ∗ ptsto_kvpair pairl (kvpair.mk key v)
+    {{{(pairl: loc) ok, RET (#pairl, #ok);
+       ⌜kvsblks !! key = Some (existT defs.KindBlock v)⌝
+       ∗ ptsto_kvs kvsl kvsblks sz γDisk
+       ∗ ptsto_kvpair pairl (kvpair.mk key v)
   }}}.
 Proof.
-  iIntros (ϕ) "[Hkvs %Hkey] Hϕ".
+  iIntros (ϕ) "[Hkvs [%Hlookup %Hkey]] Hϕ".
   iDestruct "Hkvs" as (l) "[Htxnl [Hsz [#Htxn [%HinKvs HkvsMt]]]]".
   pose Hkey as Hkey'.
   destruct Hkey' as [HbuildAddr [Hkaddr [Hklgsz Hsz]]].
@@ -186,13 +189,15 @@ Proof.
          { apply (kvpair_val_t key data). }
          iIntros (l0) "Hl0".
          wp_pures. iApply ("Hϕ" $! l0).
+         iSplitR; rewrite HMapUnion; auto.
          iSplitL "Htxnl Hsz HkvsMt".
-         { unfold ptsto_kvs. iExists l. iFrame; auto.
-           iSplitR; auto. iPureIntro. rewrite HMapUnion. apply HinKvs.
-         }
+         { unfold ptsto_kvs. iExists l. iFrame; auto. }
          {
            unfold ptsto_kvpair.
-           iExists data.  simpl in *.
+           iExists data.
+           Search Block.
+           Check (defs.bufDataT defs.KindBlock).
+           simpl in *.
 Admitted.
 
 Theorem wpc_KVS__MultiPut kvsl s sz kvp_ls_before kvp_slice kvp_ls stk k E1 E2:
