@@ -30,3 +30,9 @@ Definition SumOverflows: val :=
 Definition SumOverflows32: val :=
   rec: "SumOverflows32" "n" "m" :=
     "n" + "m" < "n".
+
+Definition CloneByteSlice: val :=
+  rec: "CloneByteSlice" "s" :=
+    let: "s2" := NewSlice byteT (slice.len "s") in
+    SliceCopy byteT "s2" "s";;
+    "s2".
