@@ -107,7 +107,7 @@ Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key:
   }}}.
 Proof.
   iIntros (ϕ) "[Hkvs %Hkey] Hϕ".
-  iDestruct "Hkvs" as (l) "[Htxnl [Hsz [Htxn [%HinKvs HkvsMt]]]]".
+  iDestruct "Hkvs" as (l) "[Htxnl [Hsz [#Htxn [%HinKvs HkvsMt]]]]".
   pose Hkey as Hkey'.
   destruct Hkey' as [HbuildAddr [Hkaddr [Hklgsz Hsz]]].
   wp_call.
@@ -124,7 +124,6 @@ Proof.
     * wp_apply wp_panic.
       destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. lia.
     * wp_loadField.
-      Check wp_buftxn_Begin.
       wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".
       wp_let.
@@ -134,14 +133,38 @@ Proof.
       pose Hkey as Hkey'.
       destruct (valid_key_under_sz kvsblks key sz Hkey') as [blk HkeyLookup].
 
-      iMod (BufTxn_lift buftx _ γDisk kvsblks with "[Hbtxn HkvsMt]") as "[Hbtxn HkvsMt]"; iFrame; eauto.
+      (*rewrite Map.delete_insert_union _ _ _ _ kvsblks {[key := Some (existT defs.KindBlock blk)]} key (existT defs.KindBlock blk).*)
+      pose ({[key := existT defs.KindBlock blk]} : gmap (specs.addr) ({K & defs.bufDataT K})) as keyMp.
+      assert ((delete key kvsblks) ##ₘ keyMp) as HMapDisjoint.
+      {
+        apply map_disjoint_singleton_r.
+        apply lookup_delete.
+      }
+      assert ((delete key kvsblks) ∪ keyMp = kvsblks) as HMapUnion.
+      { rewrite Map.delete_insert_union; auto.
+        eapply (union_empty_r kvsblks).
+        unfold elem_of. auto.
+      }
+      rewrite <- HMapUnion.
+      Search "big_sepM".
 
-      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn HkvsMt]").
+      iPoseProof (big_opM_union (λ k b, mapsto_txn γDisk k (projT2 b)) (delete key kvsblks) keyMp) as "H"; auto.
+      iPoseProof ("H" with "HkvsMt") as "HkvsMt".
+      iDestruct "HkvsMt" as "[HrestMt HkeyMt]".
+
+      iMod (BufTxn_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]"; iFrame; eauto.
+
+      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn HkeyMt]").
       -- iSplitL "Hbtxn"; auto.
-         iSplitL "HkvsMt".
+         iSplitL "HkeyMt".
          {
            rewrite <- HbuildAddr. simpl.
-           iPoseProof (big_sepM_lookup _ kvsblks key (existT defs.KindBlock blk) with "HkvsMt") as "HsepM"; eauto.
+           iPoseProof (big_sepM_lookup _ keyMp key (existT defs.KindBlock blk) with "HkeyMt") as "HsepM"; eauto.
+           Search "union".
+           pose (lookup_union_r (delete key kvsblks) (keyMp) key) as Hun.
+           rewrite <- HMapUnion in HkeyLookup.
+           assert ((delete key kvsblks) !! key =None) as Hdel by apply lookup_delete.
+           apply Hun in Hdel. rewrite HkeyLookup in Hdel. auto.
          }
          { simpl. auto. }
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".
@@ -164,7 +187,9 @@ Proof.
          { apply (kvpair_val_t key data). }
          iIntros (l0) "Hl0".
          wp_pures. iApply ("Hϕ" $! l0).
-         unfold ptsto_kvs.
+         iSplitL "Htxnl Hsz Hmapsto".
+         { unfold ptsto_kvs. iExists l. iFrame; auto.
+           iSplitR; auto. iSplitR; auto.
          unfold ptsto_kvpair.
 Admitted.
 
