@@ -7,6 +7,7 @@ From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.super.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
+From Goose Require github_com.mit_pdos.goose_nfsd.util.
 
 Definition DISKNAME : expr := #(str"goose_kvs.img").
 
@@ -57,13 +58,11 @@ Definition KVS__Get: val :=
     else #());;
     let: "btxn" := buftxn.Begin (struct.loadF KVS.S "txn" "kvs") in
     let: "akey" := addr.MkAddr "key" #0 in
-    let: "data" := struct.loadF buf.Buf.S "Data" (buftxn.BufTxn__ReadBuf "btxn" "akey" common.NBITBLOCK) in
-    let: "data_copy" := NewSlice byteT (slice.len "data") in
-    SliceCopy byteT "data_copy" "data";;
+    let: "data" := util.CloneByteSlice (struct.loadF buf.Buf.S "Data" (buftxn.BufTxn__ReadBuf "btxn" "akey" common.NBITBLOCK)) in
     let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
     (struct.new KVPair.S [
        "Key" ::= "key";
-       "Val" ::= "data_copy"
+       "Val" ::= "data"
      ], "ok").
 
 Definition KVS__Delete: val :=
