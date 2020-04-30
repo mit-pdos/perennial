@@ -160,7 +160,6 @@ Proof.
          {
            rewrite <- HbuildAddr. simpl.
            iPoseProof (big_sepM_lookup _ keyMp key (existT defs.KindBlock blk) with "HkeyMt") as "HsepM"; eauto.
-           Search "union".
            pose (lookup_union_r (delete key kvsblks) (keyMp) key) as Hun.
            rewrite <- HMapUnion in HkeyLookup.
            assert ((delete key kvsblks) !! key =None) as Hdel by apply lookup_delete.
@@ -168,12 +167,11 @@ Proof.
          }
          { simpl. auto. }
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".
-         iDestruct "HPostRead" as "H".
          simpl in *.
-         iSpecialize ("H" $! blk dirty).
+         iSpecialize ("HPostRead" $! blk dirty).
          iDestruct "HisBuf" as (data sz0) "[Hbaddr [Hbsz [Hbdata [Hbdirty [HvalidA [Hsz0 [Hnotnil HisBufData]]]]]]]".
          wp_loadField; wp_let.
-         iMod ("H" with "[-Hϕ Htxnl Hsz]") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
+         iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt]") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
          { iSplit; eauto. iExists data, sz0; iFrame; auto. }
          wp_apply (wp_BufTxn__CommitWait buftx γt γDisk {[key := existT defs.KindBlock blk]} with "[Hmapsto HisBuf]").
          {
@@ -181,16 +179,20 @@ Proof.
            rewrite <- HbuildAddr, big_opM_singleton; auto.
          }
          iIntros (ok) "Hmapsto".
+         iPoseProof ("H" with "[HrestMt Hmapsto]") as "HkvsMt"; iFrame; auto.
          wp_let.
          wp_pures.
          wp_apply wp_allocStruct.
          { apply (kvpair_val_t key data). }
          iIntros (l0) "Hl0".
          wp_pures. iApply ("Hϕ" $! l0).
-         iSplitL "Htxnl Hsz Hmapsto".
+         iSplitL "Htxnl Hsz HkvsMt".
          { unfold ptsto_kvs. iExists l. iFrame; auto.
-           iSplitR; auto. iSplitR; auto.
-         unfold ptsto_kvpair.
+           iSplitR; auto. iPureIntro. rewrite HMapUnion. apply HinKvs.
+         }
+         {
+           unfold ptsto_kvpair.
+           iExists data.  simpl in *.
 Admitted.
 
 Theorem wpc_KVS__MultiPut kvsl s sz kvp_ls_before kvp_slice kvp_ls stk k E1 E2:
