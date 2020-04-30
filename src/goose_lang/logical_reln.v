@@ -656,6 +656,75 @@ Proof.
   { iNext. iExists _, _. iLeft. iFrame. }
 Qed.
 
+Lemma logical_reln_prepare_write t ts vs v j K (Hctx: LanguageCtx K):
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+  {{{ spec_ctx ∗ val_interp (hS := hS) (structRefT (t :: ts)) vs v ∗ j ⤇ K (PrepareWrite vs) }}}
+    PrepareWrite v
+    {{{ RET #();
+        ∃ (ls l: loc) mem_vs mem_v γ,
+                       ⌜ vs = #ls ∧ v = #l ⌝ ∗
+                       inv locN (loc_inv γ ls l (val_interp (hS := hS) t)) ∗
+                       fc_tok γ (1/2)%Qp ∗
+                       j ⤇ K #() ∗
+                       na_heap_mapsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp mem_vs ∗
+                       (∀ v' : sval, na_heap_mapsto ls 1 v' -∗ heap_mapsto ls 1 v') ∗
+                       na_heap_mapsto_st (hG := heapG_na_heapG) WSt l 1 mem_v ∗
+                       (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')}}}.
+Proof.
+  intros. iIntros "(#Hctx&Hvl&Hj) HΦ".
+  rewrite val_interp_struct_unfold.
+  iDestruct "Hvl" as "[Hv|Hnull]".
+  * iDestruct "Hv" as (lv lvs n H0lt Hnonemtpy (->&->&?&?&?)) "(Hpaired&Hblock1&Hblocked2&Hloc)".
+    iDestruct "Hloc" as "[Hinbound|Hoob]".
+    {
+      iDestruct "Hinbound" as "(H&_)".
+      rewrite /is_loc. iDestruct "H" as "(Hlocinv&Hpaired')".
+      iDestruct "Hlocinv" as (γ) "#Hlocinv".
+      iInv "Hlocinv" as "Hlocinv_body" "Hclo".
+      rewrite /loc_inv. iDestruct "Hlocinv_body" as (mem_vs mem_v) "H".
+      iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
+      {
+        iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
+        rewrite ?loc_add_0.
+        iApply (wp_prepare_write with "[$]"). iIntros "!> Hpts".
+        iMod (@ghost_prepare_write _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hptsclo&Hj)".
+        { solve_ndisj. }
+        iDestruct "Hspts" as "(Hspts1&Hspts2)".
+        iMod (fc_auth_first_tok with "Hfc") as "(Hfc&Htok)".
+        iMod ("Hclo" with "[Hspts1 Hfc Hval]").
+        { iNext. iExists mem_vs, mem_v. iRight. iRight. iFrame. }
+        iApply "HΦ". iModIntro. iExists _, _, _, _, _. iFrame "Hlocinv". iFrame.
+        eauto.
+      }
+      {
+        iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&>Hpts&#Hval)".
+        rewrite ?loc_add_0.
+        iMod (ghost_prepare_write_read_stuck with "Hctx Hspts Hj") as %[].
+        { lia. }
+        { solve_ndisj. }
+      }
+      {
+        (* UB: writer during write *)
+        iDestruct "Hwriter" as "(>Hfc&>Hspts)".
+        rewrite ?loc_add_0.
+        iMod (ghost_prepare_write_write_stuck with "Hctx Hspts Hj") as %[].
+        { solve_ndisj. }
+      }
+    }
+    {
+      (* UB: oob *)
+      iDestruct "Hoob" as %Hoob.
+      iMod (ghost_prepare_write_block_oob_stuck with "[$] [$] [$]") as %[].
+      { lia. }
+      { solve_ndisj. }
+    }
+  * iDestruct "Hnull" as %(?&->&->).
+    (* UB: null *)
+    iMod (ghost_prepare_write_null_stuck with "[$] [$]") as %[].
+    { rewrite addr_base_of_plus //=. }
+    { solve_ndisj. }
+Qed.
+
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
   ∀ Γ es e τ, expr_transTy _ _ _ spec_trans Γ es e τ →
@@ -1215,63 +1284,9 @@ Proof using spec_trans.
 
     simpl.
     spec_bind (PrepareWrite vsl) as Hctx'.
-
-    rewrite val_interp_struct_unfold.
-    iDestruct "Hvl" as "[Hv|Hnull]".
-    * iDestruct "Hv" as (lv lvs n H0lt Hnonemtpy (->&->&?&?&?)) "(Hpaired&Hblock1&Hblocked2&Hloc)".
-      iDestruct "Hloc" as "[Hinbound|Hoob]".
-      {
-        iDestruct "Hinbound" as "(H&_)".
-        rewrite /is_loc. iDestruct "H" as "(Hlocinv&Hpaired')".
-        iDestruct "Hlocinv" as (γ) "Hlocinv".
-        iInv "Hlocinv" as "Hlocinv_body" "Hclo".
-        rewrite /loc_inv. iDestruct "Hlocinv_body" as (??) "H".
-        iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
-        {
-          iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
-          rewrite ?loc_add_0.
-          wp_step.
-          iApply (wp_prepare_write with "[$]"). iIntros "!> Hpts".
-          iMod (@ghost_prepare_write _ _ _ _ _ _ _ _ _ Hctx' with "[$] Hspts Hj") as "(Hspts&Hptsclo&Hj)".
-          { solve_ndisj. }
-          iDestruct "Hspts" as "(Hspts1&Hspts2)".
-          iMod (fc_auth_first_tok with "Hfc") as "(Hfc&Htok)".
-          iMod ("Hclo" with "[Hpts Hspts1 Hfc Hval]").
-          { iNext. iExists _, _. iRight. iRight. iFrame. }
-          iModIntro. wp_pures.
-          (* FinishWrite *)
-          admit.
-        }
-        {
-          iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&>Hpts&#Hval)".
-          (* UB: readers during write *)
-          admit.
-        }
-        {
-          (* UB: writer during write *)
-          iDestruct "Hwriter" as "(>Hfc&>Hspts)".
-          admit.
-        }
-      }
-      {
-        (* UB: oob *)
-        iDestruct "Hoob" as %Hoob.
-        admit.
-        (*
-        iMod (ghost_load_block_oob_stuck with "[$] [$] [$]") as %[].
-        { lia. }
-        { solve_ndisj. }
-         *)
-      }
-    * iDestruct "Hnull" as %(?&->&->).
-      (* UB: null *)
-      (*
-      iMod (ghost_load_null_stuck with "[$] [$]") as %[].
-      { rewrite addr_base_of_plus //=. }
-      { solve_ndisj. }
-       *)
+    wp_apply (logical_reln_prepare_write _ _ _ _ _ _ (Hctx') with "[Hvl Hj]").
+    { iFrame "Hspec Hvl". iFrame "Hj". }
     admit.
-
   - admit.
   - admit.
   - admit.

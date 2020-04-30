@@ -670,16 +670,21 @@ Section na_heap.
   Lemma na_heap_read' tls σ n l q v :
     na_heap_ctx tls σ -∗
     na_heap_mapsto_st (RSt n) l q v -∗
-    ∃ lk n, ⌜σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
+    ∃ lk n', ⌜σ !! l = Some (lk, v) ∧ tls lk = RSt n' ∧ n ≤ n'⌝.
   Proof.
     iIntros "Hσ". iIntros "Hmt".
     iDestruct "Hσ" as (m sz Hσm) "[Hσ ?]".
-    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[n' [Hσl ?]]; eauto.
+    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[n' [Hσl [? ?]]]; eauto.
+    iPureIntro. eexists _, _. split_and!; eauto. lia.
   Qed.
 
   Lemma na_heap_read tls σ l q v :
     na_heap_ctx tls σ -∗ l ↦{q} v -∗ ∃ lk n, ⌜σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
-  Proof. rewrite na_heap_mapsto_eq. iApply na_heap_read'. Qed.
+  Proof.
+    rewrite na_heap_mapsto_eq. iIntros "H1 H2".
+    iDestruct (na_heap_read' with "H1 H2") as %Hpure.
+    iPureIntro. destruct Hpure as (?&?&?&?&?); eauto.
+  Qed.
 
   Lemma na_heap_read_1' tls σ n l v :
     na_heap_ctx tls σ -∗ na_heap_mapsto_st (RSt n) l 1 v -∗ ⌜∃ lk, σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
