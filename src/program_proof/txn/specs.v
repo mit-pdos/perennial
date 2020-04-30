@@ -848,7 +848,8 @@ Opaque struct.t.
              *)
             admit.
           }
-        admit.
+          admit.
+        }
     }
 
     iIntros "[Hbbblist_s HI]".
