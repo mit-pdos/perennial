@@ -58,10 +58,12 @@ Definition KVS__Get: val :=
     let: "btxn" := buftxn.Begin (struct.loadF KVS.S "txn" "kvs") in
     let: "akey" := addr.MkAddr "key" #0 in
     let: "data" := struct.loadF buf.Buf.S "Data" (buftxn.BufTxn__ReadBuf "btxn" "akey" common.NBITBLOCK) in
+    let: "data_copy" := NewSlice byteT (slice.len "data") in
+    SliceCopy byteT "data_copy" "data";;
     let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
     (struct.new KVPair.S [
        "Key" ::= "key";
-       "Val" ::= "data"
+       "Val" ::= "data_copy"
      ], "ok").
 
 Definition KVS__Delete: val :=
