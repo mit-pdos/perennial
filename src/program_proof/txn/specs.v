@@ -155,13 +155,14 @@ Definition is_txn (l : loc)
       "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l γMaps)
   )%I.
 
+Global Instance is_txn_persistent l gData : Persistent (is_txn l gData) := _.
+
 Theorem is_txn_dup l gData :
   is_txn l gData -∗
   is_txn l gData ∗
   is_txn l gData.
 Proof.
-  iIntros "#Htxn".
-  iSplit; iFrame "#".
+  iIntros "#$".
 Qed.
 
 Lemma gmDataP_eq gm gh :
@@ -888,7 +889,7 @@ Theorem wp_txn__doCommit l q gData bufs buflist bufamap :
   }}}.
 Proof.
   iIntros (Φ) "(#Htxn & Hbufs & Hbufpre) HΦ".
-  iDestruct (is_txn_dup with "Htxn") as "[Htxn0 _]".
+  iPoseProof "Htxn" as "Htxn0".
   iNamed "Htxn".
 
   wp_call.

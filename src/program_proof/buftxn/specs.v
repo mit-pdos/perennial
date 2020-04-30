@@ -58,13 +58,12 @@ Theorem wp_buftxn_Begin l γUnified :
       is_buftxn buftx γt γUnified
   }}}.
 Proof.
-  iIntros (Φ) "Htxn HΦ".
+  iIntros (Φ) "#Htxn HΦ".
 
   wp_call.
   wp_apply (wp_MkBufMap with "[$]").
   iIntros (bufmap) "Hbufmap".
-  iDestruct (is_txn_dup with "Htxn") as "[Htxn Htxn0]".
-  wp_apply (wp_Txn__GetTransId with "Htxn0").
+  wp_apply (wp_Txn__GetTransId with "Htxn").
   iIntros (tid) "Htid".
   wp_apply wp_allocStruct; eauto.
   iIntros (buftx) "Hbuftx".
@@ -75,7 +74,7 @@ Proof.
   iApply "HΦ".
   iExists _, _, _, _, _.
   iFrame.
-  rewrite big_sepM_empty. iFrame.
+  rewrite big_sepM_empty. iFrame "Htxn ∗".
   iSplit. { iApply big_sepM_empty. done. }
   iApply big_sepM_empty. done.
 
@@ -101,7 +100,7 @@ Theorem wp_BufTxn__ReadBuf buftx γt γUnified a sz v :
 Proof.
   iIntros (Φ) "(Htxn & Ha & ->) HΦ".
   iDestruct "Htxn" as (l mT bufmap gBufmap txid)
-    "(Hl & Hbufmap & Htxid & Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".
+    "(Hl & Hbufmap & Htxid & #Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".
   iDestruct (gen_heap_valid with "Hγtctx Ha") as %HmT_a2.
   iDestruct (big_sepM_lookup with "Hvalid") as "%"; eauto.
   wp_call.
@@ -130,7 +129,7 @@ Proof.
       iFrame "Ha".
       iModIntro.
       iExists _, _, _, _, _.
-      iFrame.
+      iFrame "# ∗".
       iDestruct (big_sepM_lookup with "Hbufmapt") as %HmT_a; eauto.
       iSplitL "Hbufmapt".
       {
@@ -167,7 +166,7 @@ Proof.
       iFrame "Ha".
       iModIntro.
       iExists _, _, _, _, _.
-      iFrame.
+      iFrame "# ∗".
       iDestruct (big_sepM_lookup with "Hbufmapt") as %HmT_a; eauto.
       iSplitL "Hbufmapt".
       {
@@ -192,7 +191,6 @@ Proof.
     iDestruct (big_sepM_lookup_acc with "Hm") as "[Hma Hm]"; eauto.
     rewrite Hbufmap_a /=.
 
-    iDestruct (is_txn_dup with "Htxn") as "[Htxn Htxn2]".
     wp_apply (wp_txn_Load with "[$Htxn $Hma]").
     iIntros (bufptr b) "(Hbuf & % & % & Hma)".
     wp_pures.
@@ -227,7 +225,7 @@ Proof.
       iFrame "Ha".
       iModIntro.
       iExists _, _, _, _, _.
-      iFrame.
+      iFrame "# ∗".
 
       rewrite insert_insert.
       iSplitL "Hbufmapt".
@@ -265,7 +263,7 @@ Proof.
       iFrame "Ha".
       iModIntro.
       iExists _, _, _, _, _.
-      iFrame.
+      iFrame "# ∗".
 
       rewrite insert_insert.
       iSplitL "Hbufmapt".
