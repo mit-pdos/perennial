@@ -13,6 +13,7 @@ Class buftxnG Σ :=
     buftxn_bufs  :> gen_heapPreG addr {K & bufDataT K} Σ;
     (* XXX: never used? *)
     buftxn_hb    :> gen_heapPreG u64 heapspec.heap_block Σ;
+    buftxn_gmap_u64_block :> inG Σ (ghostR $ gmapO u64 abstraction.blockO)
   }.
 
 Section heap.

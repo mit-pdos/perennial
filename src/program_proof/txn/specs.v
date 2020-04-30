@@ -495,7 +495,7 @@ Theorem wp_txn__installBufs l q gData walHeap walptr γLatest (glatest : gmap u6
         updBlockOK walUpd gData walHeap bufamap
   }}}.
 Proof.
-  iIntros (Φ) "(#Hinv & #Hiswal Hlatestfrag & Hbufs & Hbufpre) HΦ".
+  iIntros (Φ) "(#Hinv & #Hiswal & #log & Hlatestfrag & Hbufs & Hbufpre) HΦ".
 
 Opaque struct.t.
   wp_call.
@@ -1018,13 +1018,13 @@ Proof.
       apply Hmdata.
     }
 
-    iAssert (⌜ ∀ k v, mx !! k = Some v -> mData0 !! k = Some v ⌝)%I as "%Hsubset".
+    iAssert (⌜ ∀ k v, mx !! k = Some v -> mData !! k = Some v ⌝)%I as "%Hsubset".
     { iIntros (k v Hkv).
       iDestruct (big_sepML_lookup_m_acc with "Hx") as (i lv) "(% & Hx2 & _)"; eauto.
       iDestruct "Hx2" as (_) "(Hx2 & _)". done.
     }
 
-    rewrite <- (map_difference_union mx mData0) at 2.
+    rewrite <- (map_difference_union mx mData) at 2.
     2: { apply map_subseteq_spec. eauto. }
 
     iDestruct (big_sepM_union with "Hmdata_m") as "[Hmx Hmdata_m]".
@@ -1034,7 +1034,7 @@ Proof.
     iDestruct (big_sepML_mono _
       (λ k (v : {K : bufDataKind & gmap u64 (updatable_buf (bufDataT K))}) lv,
         (∃ (installed_bs : Block * list Block),
-          ( ( ⌜mData0 !! k = Some v⌝ ∗
+          ( ( ⌜mData !! k = Some v⌝ ∗
               ⌜lv.(update.addr) = k⌝ ∗
               txn_bufDataT_in_block (fst installed_bs) (snd installed_bs) (projT2 v)) ) ∗
             mapsto lv.(update.addr) 1 (HB (fst installed_bs) (snd installed_bs)) )
