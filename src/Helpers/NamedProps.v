@@ -27,6 +27,44 @@ Section named.
   Proof. auto. Qed.
   Theorem from_named name P : named name P -∗ P.
   Proof. auto. Qed.
+
+  Fixpoint env_to_named_prop_go (acc : PROP) (Γ : env PROP) : PROP :=
+    match Γ with
+    | Enil => acc
+    | Esnoc Γ (INamed name) P => env_to_named_prop_go (named name P ∗ acc)%I Γ
+    | Esnoc Γ _ P => env_to_named_prop_go (P ∗ acc)%I Γ
+    end.
+  Definition env_to_named_prop (Γ : env PROP) : PROP :=
+    match Γ with
+    | Enil => emp%I
+    | Esnoc Γ (INamed name) P => env_to_named_prop_go (named name P) Γ
+    | Esnoc Γ _ P => env_to_named_prop_go P Γ
+    end.
+
+  Theorem env_to_named_prop_go_unname (acc: PROP) Γ :
+    env_to_named_prop_go acc Γ = env_to_prop_go acc Γ.
+  Proof.
+    revert acc.
+    induction Γ; simpl; auto; intros.
+    rewrite IHΓ.
+    destruct i; simpl; auto.
+  Qed.
+
+  Theorem env_to_named_prop_unname (Γ: env PROP) :
+    env_to_named_prop Γ = env_to_prop Γ.
+  Proof.
+    destruct Γ; auto.
+    destruct i; simpl; rewrite env_to_named_prop_go_unname //.
+  Qed.
+
+  Lemma tac_named_accu Δ (P: PROP) :
+    env_to_named_prop (env_spatial Δ) = P →
+    envs_entails Δ P.
+  Proof.
+    rewrite env_to_named_prop_unname.
+    apply coq_tactics.tac_accu.
+  Qed.
+
 End named.
 
 Ltac to_pm_ident H :=
@@ -121,6 +159,9 @@ Local Ltac iNamed_go H :=
   iNamedDestruct H.
 
 Tactic Notation "iNamed" constr(H) := iNamed_go H.
+
+Tactic Notation "iNamedAccu" :=
+  iStartProof; eapply tac_named_accu; [cbv [env_to_named_prop env_to_named_prop_go]; reduction.pm_reflexivity || fail "iNamedAccu: not an evar"].
 
 Ltac prove_named :=
   repeat rewrite -to_named.
