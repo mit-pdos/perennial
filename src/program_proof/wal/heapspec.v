@@ -5,6 +5,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import Transitions List.
 From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.specs.
+From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.algebra Require Import deletable_heap.
 
 Inductive heap_block :=
@@ -1231,5 +1232,21 @@ Proof using gen_heapPreG0.
       rewrite app_nil_r; auto.
     }
 Qed.
+
+
+Theorem wp_wal_Read l walptr walHeap blkno :
+  {{{ is_wal N (wal_heap_inv walHeap) walptr ∗
+      (∃ (installed : Block) (bs : list Block),
+          mapsto (hG := walHeap) blkno 1 (HB installed bs))
+  }}}
+    wal.Walog__Read #l #blkno
+  {{{ bl installed bs, RET (slice_val bl);
+     ∃ b, is_block bl 1 b ∗ 
+     mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
+     ⌜ b ∈ installed :: bs ⌝
+  }}}.
+Proof.
+Admitted.
+
 
 End heap.

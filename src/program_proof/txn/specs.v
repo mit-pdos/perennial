@@ -6,6 +6,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
+From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.specs buf.defs buf.specs disk_lib.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.Helpers Require Import NamedProps Map.
@@ -204,13 +205,16 @@ Theorem wp_txn_Load K l gData a v :
       ⌜ existT b.(bufKind) b.(bufData) = existT K v ⌝ ∗
       mapsto_txn gData a v
   }}}.
-Proof  using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
+Proof using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
   iIntros (Φ) "(Htxn & Hstable) HΦ".
   iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
   iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".
 
   wp_call.
   wp_loadField.
+  
+  (* wp_apply (wp_wal_Read). *)
+  
   wp_call.
 
   wp_apply (wp_Walog__ReadMem _ _ (λ mb,
@@ -808,7 +812,43 @@ Opaque struct.t.
         iPureIntro.
         rewrite /is_bufData_at_off; intuition eauto.
 
-      - admit.
+      - wp_pures.
+        wp_if_destruct.
+        {
+          wp_apply (wp_buf_loadField_data with "Hisbuf").
+          iIntros (bufdata) "[Hbufdata Hisbuf]".
+          wp_pures.
+          wp_store.
+          iApply "HΦloop".
+          (* TODO: maybe mostly repeat proof from above ... *)
+          admit.
+        }
+        {
+          wp_load.
+          wp_pures.
+          rewrite /slice.nil.
+          destruct blk_slice.
+          rewrite <- slice_val_fold.
+          destruct (decide ( (@eq (@val disk_op)
+                      (@PairV disk_op
+                         (@PairV disk_op (@LitV disk_op ptr) (@LitV disk_op sz))
+                         (@LitV disk_op cap))
+                      (@PairV disk_op
+                         (@PairV disk_op (@LitV disk_op null) (@LitV disk_op Z0))
+                         (@LitV disk_op Z0))))).
+          {
+            rewrite e.
+            wp_pures.
+            
+            (* XXX factor out proof from wp_txn_load 
+
+  WP (#blk <-[slice.T byteT] wal.Walog__Read (struct.loadF Txn.S "log" #l) #k;; #());; 
+     buf.Buf__Install #bufptr ![slice.T byteT] #blk {{ v, Φloop v }}
+
+             *)
+            admit.
+          }
+        admit.
     }
 
     iIntros "[Hbbblist_s HI]".
