@@ -1301,4 +1301,24 @@ Proof using gen_heapPreG0.
   }
 Admitted.
 
+Theorem wal_heap_mapsto_latest walHeap γLatest l glatest a v E :
+  ↑N ⊆ E ->
+  is_wal N (wal_heap_inv walHeap γLatest) l ∗
+  own γLatest (◯ (Excl' glatest)) ∗
+  mapsto (hG := walHeap) a 1 v ={E}=∗
+  ⌜ glatest !! a = Some (hb_latest_update v) ⌝.
+Proof.
+  iIntros (HNE) "(Hwal & Hlatestfrag & Hmapsto)".
+  iInv N as ">[Hl Hheap]".
+  iDestruct "Hheap" as (σ) "Hheap".
+  iDestruct "Hheap" as (gh) "(Hctx & H0 & H1)".
+(*
+  iDestruct (ghost_var_agree with "[]") as "Hagree".
+Print wal_heap_inv.
+  iModIntro.
+  iInv "Hwal" as "Hwal_inner".
+  unfold is_wal.
+*)
+Admitted.
+
 End heap.
