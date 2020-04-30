@@ -23,16 +23,18 @@ Proof.
 Qed.
 
 Theorem wp_If_join stk E (R: iProp Σ) (b: bool) e1 e2 :
-  (∀ (Φ': val → iProp Σ), R -∗ ▷ (R -∗ Φ' #()) -∗ WP e1 @ stk; E {{ Φ' }}) -∗
-  (∀ (Φ': val → iProp Σ), R -∗ ▷ (R -∗ Φ' #()) -∗ WP e2 @ stk; E {{ Φ' }}) -∗
-  ∀ Φ, R -∗ ▷ (R -∗ Φ #()) -∗ WP if: #b then e1 else e2 @ stk; E {{ Φ }}.
+  R -∗
+  ∀ Φ, (▷ (R -∗ Φ #()) -∗ WP e1 @ stk; E {{ Φ }}) ∧
+       (▷ (R -∗ Φ #()) -∗ WP e2 @ stk; E {{ Φ }}) -∗
+       ▷ (R -∗ Φ #()) -∗ WP if: #b then e1 else e2 @ stk; E {{ Φ }}.
 Proof.
-  iIntros "He1 He2".
-  iIntros (Φ) "HR HΦ".
+  iIntros "R" (Φ) "Hwp HΦ".
   wp_if_destruct.
-  - wp_apply ("He1" with "[$HR]").
+  - iDestruct "Hwp" as "[He1 _]".
+    wp_apply "He1".
     iFrame.
-  - wp_apply ("He2" with "[$HR]").
+  - iDestruct "Hwp" as "[_ He2]".
+    wp_apply "He2".
     iFrame.
 Qed.
 
