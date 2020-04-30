@@ -1360,6 +1360,20 @@ Proof.
     eapply isFresh_not_null, fresh_locs_isFresh.
 Qed.
 
+Lemma upd_equiv_null_non_alloc σ l v:
+  is_Some (heap σ !! l) →
+  null_non_alloc (<[l:=v]> σ.(heap)) ↔
+  null_non_alloc (σ.(heap)).
+Proof.
+  intros Hsome.
+  split.
+  - rewrite /null_non_alloc => Hn off. specialize (Hn off).
+    apply lookup_insert_None in Hn as (?&?); eauto.
+  - rewrite /null_non_alloc => Hn off.
+    apply lookup_insert_None; split; eauto.
+    intros Heq. subst. specialize (Hn off). destruct Hsome as (?&?); congruence.
+Qed.
+
 End goose_lang.
 
 Bind Scope expr_scope with expr.

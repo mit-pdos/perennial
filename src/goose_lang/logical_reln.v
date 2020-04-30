@@ -1173,6 +1173,103 @@ Proof using spec_trans.
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
 
+    iApply wp_wpc.
+    iApply wp_fupd.
+    rewrite /Store. wp_pures.
+    wp_bind (PrepareWrite _).
+
+    (* XXX need tactic to do these pure det reductions ... *)
+    simpl.
+    spec_bind (App _ vsl) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (App _ vsl) with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. econstructor. eauto.
+    }
+    simpl.
+    clear Hctx'.
+
+
+    spec_bind (Rec _ _ _) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (Rec _ _ _)
+            with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { simpl. iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. econstructor; eauto.
+      * simpl. econstructor. econstructor.
+      * econstructor. eauto.
+    }
+    clear Hctx'.
+
+    spec_bind (App _ _) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ _
+            with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { simpl. iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. econstructor; eauto.
+    }
+    clear Hctx'.
+
+    simpl.
+    spec_bind (PrepareWrite vsl) as Hctx'.
+
+    rewrite val_interp_struct_unfold.
+    iDestruct "Hvl" as "[Hv|Hnull]".
+    * iDestruct "Hv" as (lv lvs n H0lt Hnonemtpy (->&->&?&?&?)) "(Hpaired&Hblock1&Hblocked2&Hloc)".
+      iDestruct "Hloc" as "[Hinbound|Hoob]".
+      {
+        iDestruct "Hinbound" as "(H&_)".
+        rewrite /is_loc. iDestruct "H" as "(Hlocinv&Hpaired')".
+        iDestruct "Hlocinv" as (γ) "Hlocinv".
+        iInv "Hlocinv" as "Hlocinv_body" "Hclo".
+        rewrite /loc_inv. iDestruct "Hlocinv_body" as (??) "H".
+        iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
+        {
+          iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
+          rewrite ?loc_add_0.
+          wp_step.
+          iApply (wp_prepare_write with "[$]"). iIntros "!> Hpts".
+          iMod (@ghost_prepare_write _ _ _ _ _ _ _ _ _ Hctx' with "[$] Hspts Hj") as "(Hspts&Hptsclo&Hj)".
+          { solve_ndisj. }
+          iDestruct "Hspts" as "(Hspts1&Hspts2)".
+          iMod (fc_auth_first_tok with "Hfc") as "(Hfc&Htok)".
+          iMod ("Hclo" with "[Hpts Hspts1 Hfc Hval]").
+          { iNext. iExists _, _. iRight. iRight. iFrame. }
+          iModIntro. wp_pures.
+          (* FinishWrite *)
+          admit.
+        }
+        {
+          iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&>Hpts&#Hval)".
+          (* UB: readers during write *)
+          admit.
+        }
+        {
+          (* UB: writer during write *)
+          iDestruct "Hwriter" as "(>Hfc&>Hspts)".
+          admit.
+        }
+      }
+      {
+        (* UB: oob *)
+        iDestruct "Hoob" as %Hoob.
+        admit.
+        (*
+        iMod (ghost_load_block_oob_stuck with "[$] [$] [$]") as %[].
+        { lia. }
+        { solve_ndisj. }
+         *)
+      }
+    * iDestruct "Hnull" as %(?&->&->).
+      (* UB: null *)
+      (*
+      iMod (ghost_load_null_stuck with "[$] [$]") as %[].
+      { rewrite addr_base_of_plus //=. }
+      { solve_ndisj. }
+       *)
     admit.
 
   - admit.

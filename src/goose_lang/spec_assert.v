@@ -219,6 +219,30 @@ Proof.
   iModIntro. iApply "Hclo_l". iFrame.
 Qed.
 
+Lemma ghost_prepare_write j K `{LanguageCtx _ K} E l v :
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  l s↦ v -∗
+  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) ={E}=∗
+  na_heap_mapsto_st WSt l 1 v ∗ (∀ v', na_heap_mapsto l 1 v' -∗ l s↦ v') ∗ j ⤇ K #().
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iMod (na_heap_write_prepare _ _ _ _ Writing with "Hσ Hl") as (lk1 (Hlookup&Hlock)) "(Hσ&?)"; first done.
+  destruct lk1; inversion Hlock; subst.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_simpl; simpl).
+  }
+  { eauto. }
+  iMod ("Hclo" with "[Hσ H Hrest]").
+  { iNext. iExists _. iFrame "H". simpl. iFrame; simpl. rewrite upd_equiv_null_non_alloc; eauto. }
+  by iFrame.
+Qed.
+
 Definition spec_mapsto_vals_toks l q vs : iProp Σ :=
   ([∗ list] j↦vj ∈ vs, (l +ₗ j) s↦{q} vj ∗ meta_token (hG := refinement_na_heapG) (l +ₗ j) ⊤)%I.
 

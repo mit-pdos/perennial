@@ -16,7 +16,7 @@ Import uPred.
    domains/ranges of values, as opposed to lambda-rust locs and values. *)
 
 Definition lock_stateR : cmraT :=
-  csumR (exclR unitO) natR.
+  csumR unitR natR.
 
 Definition na_heapUR (L V: Type) `{Countable L} : ucmraT :=
   gmapUR L (prodR (prodR fracR lock_stateR) (agreeR (leibnizO V))).
@@ -81,7 +81,7 @@ Inductive lock_state :=
   | RSt: nat → lock_state.
 
 Definition to_lock_stateR (x : lock_state) : lock_stateR :=
-  match x with RSt n => Cinr n | WSt => Cinl (Excl ()) end.
+  match x with RSt n => Cinr n | WSt => Cinl (()) end.
 
 Definition to_na_heap {L V LK} `{Countable L} (tls : LK → lock_state) :
   gmap L (LK * V) → na_heapUR L V :=
@@ -220,6 +220,16 @@ Section na_heap.
   (** General properties of mapsto and freeable *)
   Global Instance na_heap_mapsto_timeless l q v : Timeless (l↦{q}v).
   Proof. rewrite na_heap_mapsto_eq /na_heap_mapsto_def. apply _. Qed.
+
+  Global Instance na_heap_mapsto_st_fractional l v: Fractional (λ q, na_heap_mapsto_st WSt l q v)%I.
+  Proof.
+    intros p q. rewrite /na_heap_mapsto_st.
+    rewrite -own_op -auth_frag_op singleton_op -?pair_op -Cinl_op ?agree_idemp //=.
+  Qed.
+
+  Global Instance na_heap_mapsto_st_as_fractional l q v:
+    AsFractional (na_heap_mapsto_st WSt l q v) (λ q, na_heap_mapsto_st WSt l q v)%I q.
+  Proof. split. done. apply _. Qed.
 
   Global Instance na_heap_mapsto_fractional l v: Fractional (λ q, l ↦{q} v)%I.
   Proof.
@@ -591,6 +601,7 @@ Section na_heap.
     destruct lk as [|n] eqn:Hls, (tls ls'') as [|n''] eqn:Hls',
        Hincl as [[[|n'|]|] [=]%leibniz_equiv]; subst.
     { by exists ls'', O. }
+    { exists ls'', O; eauto. }
     { by exists ls'', n'. }
     { by exists ls'', O; rewrite Nat.add_0_r. }
   Qed.
