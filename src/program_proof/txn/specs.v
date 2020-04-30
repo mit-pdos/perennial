@@ -134,7 +134,7 @@ Qed.
 
 Definition is_txn_locked l (γLatest : gname) : iProp Σ :=
   (
-    ∃ (mData : gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))}) (nextId : u64) (pos : u64) (glatest : gmap u64 Block),
+    ∃ (nextId : u64) (pos : u64) (glatest : gmap u64 Block),
       "Hwal_latest" ∷ own γLatest (◯ (Excl' glatest)) ∗
       "Histxn_nextid" ∷ l ↦[Txn.S :: "nextId"] #nextId ∗
       "Histxn_pos" ∷ l ↦[Txn.S :: "pos"] #pos
@@ -1154,13 +1154,13 @@ Theorem wp_Txn__GetTransId l gData :
     txn.Txn__GetTransId #l
   {{{ (i : u64), RET #i; emp }}}.
 Proof.
-  iIntros (Φ) "Htxn HΦ".
-  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
+  iIntros (Φ) "#Htxn HΦ".
+  iNamed "Htxn".
   wp_call.
   wp_loadField.
   wp_apply acquire_spec; eauto.
   iIntros "[Hlocked Htxnlocked]".
-  iDestruct "Htxnlocked" as (? nextId pos) "(Htxnheap & Hnextid & Hpos)".
+  iNamed "Htxnlocked".
   wp_loadField.
   wp_apply wp_ref_to; eauto.
   iIntros (id) "Hid".
@@ -1174,7 +1174,7 @@ Proof.
     wp_loadField.
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[$Hlock $Hlocked Htxnheap Hnextid Hpos]").
+    wp_apply (release_spec with "[$Histxn_lock $Hlocked Hwal_latest Histxn_nextid Histxn_pos]").
     {
       iExists _, _, _. iFrame.
     }
@@ -1183,7 +1183,7 @@ Proof.
   - wp_loadField.
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[$Hlock $Hlocked Htxnheap Hnextid Hpos]").
+    wp_apply (release_spec with "[$Histxn_lock $Hlocked Hwal_latest Histxn_nextid Histxn_pos]").
     {
       iExists _, _, _. iFrame.
     }
