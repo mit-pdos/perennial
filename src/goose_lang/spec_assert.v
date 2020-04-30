@@ -5,7 +5,7 @@ From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
 From Perennial.algebra Require Export frac_count.
 From Perennial.Helpers Require Export Transitions.
-From Perennial.program_logic Require Export spec_assert.
+From Perennial.program_logic Require Export spec_assert language_ctx.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import tactics notation lifting.
 
@@ -374,7 +374,98 @@ Lemma test_resolution4 l v :
 Proof using Type.
   iIntros "H". eauto.
 Qed.
+Unset Printing Implicit.
 
 End resolution_test.
 
 Arguments refinement_spec_ffiG {spec_ext spec_ffi spec_ffi_semantics spec_ffi_interp0 Σ hRG} : rename.
+
+Section tacs.
+Context {spec_ext: spec_ext_op}.
+Context {spec_ffi: spec_ffi_model}.
+Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
+Context `{!spec_ffi_interp spec_ffi}.
+Existing Instance spec_ffi_interp_field.
+Existing Instance spec_ext_semantics_field.
+Existing Instance spec_ext_op_field.
+Existing Instance spec_ffi_model_field.
+
+
+Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
+
+Lemma tac_refine_bind (K: sexpr → sexpr) `{LanguageCtx _ K} (K' : list (ectxi_language.ectx_item _)) (e e': sexpr):
+  ectx_language.fill K' e' = e →
+  (K e = (λ x, K (ectx_language.fill K' x)) e') ∧
+  LanguageCtx (λ x, K (ectx_language.fill K' x)).
+Proof. rewrite //=. intros ->. split; auto. apply comp_ctx; auto. apply ectx_lang_ctx. Qed.
+
+End tacs.
+
+(* Some duplication here with reshape_expr that is used in wp... the need for the duplication is
+   that the K returned by reshape_expr will be an ectx_item list for the *implementation* layer,
+   not for the spec layer *)
+
+Ltac refine_reshape_expr e tac :=
+  let rec go K e :=
+    match e with
+    | _                               => tac K e
+    | App ?e (Val ?v)                 => add_item (@AppLCtx spec_ext_op_field v) K e
+    | App ?e1 ?e2                     => add_item (@AppRCtx spec_ext_op_field e1) K e2
+    | UnOp ?op ?e                     => add_item (@UnOpCtx spec_ext_op_field op) K e
+    | BinOp ?op (Val ?v) ?e           => add_item (@BinOpRCtx spec_ext_op_field op v) K e
+    | BinOp ?op ?e1 ?e2               => add_item (@BinOpLCtx spec_ext_op_field op e2) K e1
+    | If ?e0 ?e1 ?e2                  => add_item (IfCtx e1 e2) K e0
+    | Pair (Val ?v) ?e                => add_item (PairRCtx v) K e
+    | Pair ?e1 ?e2                    => add_item (PairLCtx e2) K e1
+    | Fst ?e                          => add_item (@FstCtx spec_ext_op_field) K e
+    | Snd ?e                          => add_item (@SndCtx spec_ext_op_field) K e
+    | InjL ?e                         => add_item (@InjLCtx spec_ext_op_field) K e
+    | InjR ?e                         => add_item (@InjRCtx spec_ext_op_field) K e
+    | Case ?e0 ?e1 ?e2                => add_item (CaseCtx e1 e2) K e0
+    | Primitive2 ?op (Val ?v) ?e      => add_item (@Primitive2RCtx spec_ext_op_field op v) K e
+    | Primitive2 ?op ?e1 ?e2          => add_item (@Primitive2LCtx spec_ext_op_field op e2) K e1
+    | Primitive1 ?op ?e               => add_item (@Primitive1Ctx spec_ext_op_field op) K e
+    | ExternalOp ?op ?e               => add_item (@ExternalOpCtx spec_ext_op_field op) K e
+    (* | Primitive3 ?op (Val ?v0) (Val ?v1) ?e2 => add_item (Primitive3RCtx op v0 v1) K e2
+    | Primitive3 ?op (Val ?v0) ?e1 ?e2     => add_item (Primitive3MCtx op v0 e2) K e1
+    | Primitive3 ?op ?e0 ?e1 ?e2           => add_item (Primitive3LCtx op e1 e2) K e0 *)
+    | CmpXchg (Val ?v0) (Val ?v1) ?e2 => add_item (CmpXchgRCtx v0 v1) K e2
+    | CmpXchg (Val ?v0) ?e1 ?e2       => add_item (CmpXchgMCtx v0 e2) K e1
+    | CmpXchg ?e0 ?e1 ?e2             => add_item (CmpXchgLCtx e1 e2) K e0
+    end
+  with add_item Ki K e :=
+    go (Ki :: K) e
+  in
+  go (@nil (@ectx_item spec_ext_op_field)) e.
+
+Tactic Notation "spec_bind" open_constr(efoc) " as " ident(H) :=
+  iStartProof;
+  lazymatch goal with
+  | |- context[ (?j ⤇ ?Kinit ?e)%I ] =>
+    let H' := fresh H in
+    refine_reshape_expr e ltac:(fun K' e' => unify e' efoc; destruct (tac_refine_bind Kinit K' e e') as (->&H'); [split; eauto|])
+    || fail "spec_bind: cannot find" efoc "in" e
+  end.
+
+Section tacs_test.
+Context {spec_ext: spec_ext_op}.
+Context {spec_ffi: spec_ffi_model}.
+Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
+Context `{!spec_ffi_interp spec_ffi}.
+Existing Instance spec_ffi_interp_field.
+Existing Instance spec_ext_semantics_field.
+Existing Instance spec_ext_op_field.
+Existing Instance spec_ffi_model_field.
+
+Context {Σ: gFunctors}.
+Context {hG: heapG Σ}.
+Context {hR: refinement_heapG Σ}.
+
+Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
+
+Lemma test j (K: sexpr → sexpr) `{LanguageCtx _ K} (e: sexpr):
+  j ⤇ K (PrepareWrite e) -∗
+  j ⤇ K (PrepareWrite e).
+Proof. spec_bind e as Hctx. Abort.
+
+End tacs_test.

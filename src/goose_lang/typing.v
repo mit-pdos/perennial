@@ -331,13 +331,10 @@ Section goose_lang.
   | load_hasTy l t ts :
       Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ Load l : t
-  | prepare_write_hasTy l t ts :
-      Γ ⊢ l : structRefT (t::ts) ->
-      Γ ⊢ PrepareWrite l : unitT
-  | finish_store_hasTy l v t ts :
+  | store_hasTy l v t ts :
       Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ v : t ->
-      Γ ⊢ FinishStore l v : unitT
+      Γ ⊢ Store l v : unitT
   | start_read_hasTy l t ts :
       Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ StartRead l : t

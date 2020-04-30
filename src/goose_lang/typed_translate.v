@@ -165,15 +165,12 @@ Section translate.
   | load_transTy l l' t ts :
       Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ Load l -- Load l' : t
-  (* XXX: need to fix this and next four to be for compound
-     use of prepare followed by finish *)
-  | prepare_write_transTy l l' t ts:
-      Γ ⊢ l -- l' : structRefT (t::ts) ->
-      Γ ⊢ PrepareWrite l -- PrepareWrite l' : unitT
-  | finish_store_transTy l l' v v' t ts :
+  | store_transTy l l' v v' t ts :
       Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ v -- v' : t ->
-      Γ ⊢ FinishStore l v -- FinishStore l' v' : unitT
+      Γ ⊢ Store l v -- Store l' v' : t
+  (* XXX: need to fix this to be for compound
+     use of prepare followed by finish *)
   | start_read_transTy l l' t ts :
       Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ StartRead l -- StartRead l' : t
