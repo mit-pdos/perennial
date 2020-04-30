@@ -23,32 +23,34 @@ Proof.
 Qed.
 
 Theorem wp_If_join (R: iProp Σ) (b: bool) stk E e1 e2 :
-  ∀ Φ, (▷ (R -∗ Φ #()) -∗ WP e1 @ stk; E {{ Φ }}) ∧
-       (▷ (R -∗ Φ #()) -∗ WP e2 @ stk; E {{ Φ }}) -∗
+  ∀ Φ, (⌜ b = true ⌝ ∗ ▷ (R -∗ Φ #()) -∗ WP e1 @ stk; E {{ Φ }}) ∧
+       (⌜ b = false ⌝ ∗ ▷ (R -∗ Φ #()) -∗ WP e2 @ stk; E {{ Φ }}) -∗
        ▷ (R -∗ Φ #()) -∗ WP if: #b then e1 else e2 @ stk; E {{ Φ }}.
 Proof.
   iIntros (Φ) "Hwp HΦ".
   wp_if_destruct.
   - iDestruct "Hwp" as "[He1 _]".
     wp_apply "He1".
-    iFrame.
+    iFrame. done.
   - iDestruct "Hwp" as "[_ He2]".
     wp_apply "He2".
-    iFrame.
+    iFrame. done.
 Qed.
 
 (* similar to above but with persistence modalities coming from hoare triple notation *)
 Theorem wp_If_join_triples (P R: iProp Σ) (b: bool) stk E e1 e2 :
-  {{{ P }}} e1 @ stk; E {{{ RET #(); R }}} -∗
-  {{{ P }}} e2 @ stk; E {{{ RET #(); R }}} -∗
+  {{{ P ∗ ⌜ b = true ⌝ }}} e1 @ stk; E {{{ RET #(); R }}} -∗
+  {{{ P ∗ ⌜ b = false ⌝ }}} e2 @ stk; E {{{ RET #(); R }}} -∗
   {{{ P }}} if: #b then e1 else e2 @ stk; E {{{ RET #(); R }}}.
 Proof.
   iIntros "#He1 #He2".
   iIntros "!>" (Φ) "HR HΦ".
   wp_if_destruct.
   - wp_apply ("He1" with "[$HR]").
+    1: done.
     iFrame.
   - wp_apply ("He2" with "[$HR]").
+    1: done.
     iFrame.
 Qed.
 

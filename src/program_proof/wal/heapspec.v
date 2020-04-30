@@ -1233,20 +1233,52 @@ Proof using gen_heapPreG0.
     }
 Qed.
 
-
-Theorem wp_wal_Read l walptr walHeap blkno :
-  {{{ is_wal N (wal_heap_inv walHeap) walptr ∗
-      (∃ (installed : Block) (bs : list Block),
-          mapsto (hG := walHeap) blkno 1 (HB installed bs))
+Theorem wp_Walog__Read (Q : Block -> iProp Σ) l blkno walHeap N2 :
+  {{{ is_wal N (wal_heap_inv walHeap) l ∗
+      ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=>
+        ∃ installed bs, mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
+        ( ∀ b, readmem_q walHeap blkno installed bs (Some b) ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q b ) ∗
+        ( readmem_q walHeap blkno installed bs None ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗
+          ( |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=>
+            ∃ installed bs, mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
+            ( ∀ b, readinstalled_q walHeap blkno installed bs b ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q b ) ) ) )
   }}}
     wal.Walog__Read #l #blkno
-  {{{ bl installed bs, RET (slice_val bl);
-     ∃ b, is_block bl 1 b ∗ 
-     mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
-     ⌜ b ∈ installed :: bs ⌝
+  {{{ bl b, RET (slice_val bl);
+    is_block bl 1 b ∗
+    Q b
   }}}.
-Proof.
-Admitted.
-
+Proof using gen_heapPreG0.
+  iIntros (Φ) "(#Hwal & Hmem) HΦ".
+  wp_call.
+  wp_apply (wp_Walog__ReadMem with "[$Hwal Hmem]").
+  { iApply (wal_heap_readmem N2 _ _
+      (λ mb,
+        match mb with
+        | Some b => Q b
+        | None =>
+          |={⊤ ∖ ↑N, ⊤ ∖ ↑N ∖ ↑N2}=>
+            ∃ installed bs, mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
+            ( ∀ b, readinstalled_q walHeap blkno installed bs b ={⊤ ∖ ↑N ∖ ↑N2, ⊤ ∖ ↑N}=∗ Q b )
+        end)%I).
+    iMod "Hmem" as (installed bs) "(Hmapsto & Hqs & Hqn)".
+    iModIntro.
+    iExists _, _. iFrame.
+    iIntros (mb) "Hrmq".
+    destruct mb.
+    { iApply "Hqs". iFrame. }
+    iApply "Hqn". iFrame.
+  }
+  iIntros (ok bl) "H".
+  wp_pures.
+  wp_if_destruct.
+  - iDestruct "H" as (b) "[H Q]".
+    iApply "HΦ". iFrame.
+  - wp_apply (wp_Walog__ReadInstalled with "[$Hwal H]").
+    { iApply wal_heap_readinstalled; iFrame. }
+    iIntros (bli) "H".
+    iDestruct "H" as (b) "[H Q]".
+    iApply "HΦ". iFrame.
+Qed.
 
 End heap.

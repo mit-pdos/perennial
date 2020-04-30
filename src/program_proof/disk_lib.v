@@ -28,6 +28,20 @@ Definition is_block_full (s:Slice.t) (b:Block) :=
 Global Instance is_block_timeless s q b :
   Timeless (is_block s q b) := _.
 
+Theorem is_block_not_nil s q b :
+  is_block s q b -∗
+  ⌜ s ≠ Slice.nil ⌝.
+Proof.
+  iIntros "Hb".
+  rewrite /is_block.
+  iDestruct (is_slice_small_not_null with "Hb") as "%Hnull"; eauto.
+  { rewrite /Block_to_vals fmap_length.
+    rewrite vec_to_list_length.
+    rewrite /block_bytes. lia. }
+  iPureIntro.
+  destruct s. rewrite /Slice.nil. simpl in *. congruence.
+Qed.
+
 Definition list_to_block (l: list u8) : Block :=
   match decide (length l = Z.to_nat 4096) with
   | left H => eq_rect _ _ (list_to_vec l) _ H

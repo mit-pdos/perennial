@@ -132,6 +132,34 @@ Global Instance is_slice_small_timeless s t q vs :
 Definition slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
   (#ptr, #sz, #cap)%V = slice_val (Slice.mk ptr sz cap) := eq_refl.
 
+Theorem is_slice_small_not_null s bt q vs :
+  bt ≠ unitBT ->
+  length vs > 0 ->
+  is_slice_small s (baseT bt) q vs -∗
+  ⌜ s.(Slice.ptr) ≠ null ⌝.
+Proof.
+  iIntros (Hbt Hvs) "[Hs %]".
+  destruct s; destruct vs; simpl in *; try lia.
+  rewrite array_cons.
+  iDestruct "Hs" as "[Hptr _]".
+  rewrite base_mapsto_untype.
+  2: { destruct bt; eauto. }
+  iApply heap_mapsto_non_null.
+  iDestruct "Hptr" as "[Hptr %]".
+  iFrame.
+Qed.
+
+Theorem is_slice_not_null s bt q vs :
+  bt ≠ unitBT ->
+  length vs > 0 ->
+  is_slice s (baseT bt) q vs -∗
+  ⌜ s.(Slice.ptr) ≠ null ⌝.
+Proof.
+  iIntros (Hbt Hvs) "[Hs _]".
+  iApply is_slice_small_not_null; last by iFrame.
+  all: eauto.
+Qed.
+
 
 (* TODO: order commands so primitives are opaque only after proofs *)
 Transparent raw_slice.
