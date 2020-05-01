@@ -44,11 +44,10 @@ Proof.
   wp_call.
   iDestruct "Hinv" as (σ) "(Hinner&HP)".
   iNamed "Hinner".
-  iDestruct "Hdurable" as (diskEnd_txn_id Hdurable_bound) "Hloginv".
-  iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
-                           "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
-  iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
-  iMod (txn_pos_valid with "Htxns HdiskEnd_txn") as "(%HdiskEnd_txn_valid&Htxns)"; first by solve_ndisj.
+  iNamed "Hdurable".
+  iNamed "Hloginv".
+  iDestruct "Hcirc_diskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
+  iMod (txn_pos_valid with "Htxns_ctx HdiskEnd_txn") as "(%HdiskEnd_txn_valid&Htxns_ctx)"; first by solve_ndisj.
   apply is_txn_bound in HdiskEnd_txn_valid.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
           with "[% //] [%] [$HP]") as "[HP HQ]".
@@ -69,8 +68,9 @@ Proof.
     iFrame.
     iExists diskEnd_txn_id.
     iSplit; first by (iPureIntro; lia).
-    iExists _, _, _, _; iFrame.
+    iExists _; iFrame.
     iSplit; auto.
+    iExists _; iFrame "# ∗".
 Qed.
 
 Theorem wp_endGroupTxn st γ :
@@ -110,14 +110,13 @@ Proof.
   iIntros "Hinv #Hlb #Hpos_txn Hfupd".
   iDestruct "Hinv" as "[Hinner HP]".
   iNamed "Hinner".
-  iDestruct "Hdurable" as (diskEnd_txn_id Hdurable_bound) "Hloginv".
-  iDestruct "Hloginv" as (memStart memStart_txn_id memLog cs)
-                           "(HownmemStart&HownmemLog&Howncs&%Hcircmatches&HcrashmemLog&HdiskEnd)".
-  iDestruct "HdiskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
+  iNamed "Hdurable".
+  iNamed "Hloginv".
+  iDestruct "Hcirc_diskEnd" as (diskEnd) "[#HdiskEnd_txn Hcirc_diskEnd]".
   iDestruct (diskEnd_is_agree_2 with "Hcirc_diskEnd Hlb") as %HdiskEnd_lb.
-  iMod (txn_pos_valid with "Htxns Hpos_txn") as (His_txn) "Htxns"; first by solve_ndisj.
+  iMod (txn_pos_valid with "Htxns_ctx Hpos_txn") as (His_txn) "Htxns_ctx"; first by solve_ndisj.
   pose proof (is_txn_bound _ _ _ His_txn).
-  iMod (txn_pos_valid with "Htxns HdiskEnd_txn") as (HdiskEnd_is_txn) "Htxns"; first by solve_ndisj.
+  iMod (txn_pos_valid with "Htxns_ctx HdiskEnd_txn") as (HdiskEnd_is_txn) "Htxns_ctx"; first by solve_ndisj.
   pose proof (is_txn_bound _ _ _ HdiskEnd_is_txn).
   pose proof (wal_wf_txns_mono_pos Hwf His_txn HdiskEnd_is_txn).
 
@@ -138,14 +137,9 @@ Proof.
   simpl.
   iFrame.
   destruct (decide (pos = diskEnd)); subst.
-  - iExists (Nat.max diskEnd_txn_id txn_id); iFrame.
-    iSplit.
-    { iPureIntro.
-      lia. }
-    iExists _, _, _, _; iFrame.
-    iSplit; auto.
-    iExists _; iFrame.
-    destruct (Nat.max_spec diskEnd_txn_id txn_id) as [[? ->] | [? ->]]; auto.
+  - (* TODO: maybe this shouldn't happen, because for anything before
+    nextDiskEnd we should have the highest txn_id already *)
+    admit.
   - (* TODO: add support for this to word (at least as a goal, if not forward
     reasoning) *)
     assert (int.val pos ≠ int.val diskEnd).
@@ -157,11 +151,12 @@ Proof.
     { iPureIntro.
       cut (txn_id ≤ diskEnd_txn_id)%nat; first by lia.
       lia. }
-    iExists _, _, _, _; iFrame.
+    iExists _; iFrame.
     iSplit; auto.
+    iExists _; iFrame "# ∗".
     Grab Existential Variables.
-    all: constructor.
-Qed.
+    all: try constructor.
+Admitted.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ txn_id pos :
   {{{ is_wal P l γ ∗

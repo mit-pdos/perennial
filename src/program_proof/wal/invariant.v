@@ -38,11 +38,10 @@ Let circN := walN .@ "circ".
 
 Record wal_names :=
   { circ_name: circ_names;
-    memStart_name : gname;
-    memLog_name : gname;
     lock_name : gname;
     cs_name : gname;
-    txns_name : gen_heapG nat (u64 * list update.t) Σ;
+    txns_ctx_name : gen_heapG nat (u64 * list update.t) Σ;
+    txns_name : gname;
     new_installed_name : gname;
     being_installed_name : gname;
   }.
@@ -83,7 +82,7 @@ Global Instance locked_state_eta: Settable _ :=
 Global Instance locked_state_witness: Inhabited locked_state := populate!.
 
 Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
-  readonly (mapsto (hG:=γ.(txns_name)) txn_id 1 txn).
+  readonly (mapsto (hG:=γ.(txns_ctx_name)) txn_id 1 txn).
 
 Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
   ∃ upds, txn_val γ txn_id (pos, upds).
@@ -99,9 +98,8 @@ Definition is_mem_memLog γ memLog txns memStart_txn_id : Prop :=
 
 Definition memLog_linv γ memStart (memLog: list update.t) : iProp Σ :=
   (∃ (memStart_txn_id: nat) (txns: list (u64 * list update.t)),
-      "HownmemStart" ∷ own γ.(memStart_name) (● Excl' (memStart, memStart_txn_id)) ∗
-      "HownmemLog" ∷ own γ.(memLog_name) (● Excl' memLog) ∗
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id memStart ∗
+      "Howntxns" ∷ own γ.(txns_name) (◯ Excl' txns) ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
@@ -166,15 +164,6 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
     "lk" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ).
 
 Global Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
-
-Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
-  own γ.(cs_name) (● (Excl' cs)).
-
-Definition circ_matches_memlog (memStart : u64) (memLog : list update.t)
-                               (cs: circΣ.t) :=
-  ∀ (off : nat) u,
-    cs.(circΣ.upds) !! off = Some u ->
-    memLog !! (off + int.nat cs.(circΣ.start) - int.nat memStart)%nat = Some u.
 
 (** subslice takes elements with indices [n, m) in list [l] *)
 Definition subslice {A} (n m: nat) (l: list A): list A :=
@@ -262,60 +251,28 @@ Proof.
   auto.
 Qed.
 
-(** the more complicated role of memLog is to correctly store committed
-transactions if we roll it back to a [txn_pos] boundary, which is what happens
-on crash where [memLog] is restored from the circ log *)
-(* This is complicated a bit by the fact that the memLog can contain elements
-   before diskStart (before the installer has a chance to trim them), contains
-   all the logged updates, contains grouped transactions in groupTxns, and
-   finally contains a tail of transactions that are subject to absorption and
-   not owned by the logger. *)
-(* TODO: this is now too strong, since "txn_pos" is any valid transaction.
-Instead of every prefix, this should probably only talk about the real diskEnd,
-which is in practice the only crash point (whereas the spec has a lot of
-freedom) *)
-Definition is_crash_memlog γ
-           (memStart_txn_id: nat) memLog txns (memStart: u64): iProp Σ :=
-      (* the high-level structure here is to relate each group-committed transaction to the
-      "cumulative updates" through that transaction. *)
-      ∀ (txn_id : nat) (pos : u64),
-        ⌜memStart_txn_id ≤ txn_id⌝ -∗
-        (* note that we'll only read from this for the durable txn, but we need
-        to track it from the moment a group txn is allocated (when nextDiskEnd
-        is set) *)
-        txn_pos γ txn_id pos -∗
-        (* the "cumulative updates" part - we can't talk about update lists here
-        because the abstract state has all the updates that have gone through
-        the system while the implementation maintains post-absorption
-        transactions. Instead we state that the updates when coalesced in order
-        are the same using [apply_upds] on an empty disk, which automatically
-        captures that the latest update to each address should match, including
-        the absence of any updates. The result is that the cached read from the
-        memLog is a correct way to read from the abstract list of updates
-        through txn. *)
-        ⌜apply_upds (take (int.nat pos - int.nat memStart) memLog) ∅ =
-        apply_upds (txn_upds (subslice memStart_txn_id (txn_id+1) txns)) ∅⌝.
+Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
+  own γ.(cs_name) (● (Excl' cs)).
+
+Definition circ_matches_txns (cs:circΣ.t) txns diskEnd_txn_id :=
+  apply_upds (txn_upds $ subslice (int.nat cs.(circΣ.start)) diskEnd_txn_id txns) ∅ =
+  apply_upds cs.(circΣ.upds) ∅.
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
 Definition log_inv γ txns diskEnd_txn_id : iProp Σ :=
-  ∃ (memStart: u64) (memStart_txn_id: nat) (memLog: list update.t) (cs: circΣ.t),
-    own γ.(memStart_name) (◯ (Excl' (memStart, memStart_txn_id))) ∗
-    own γ.(memLog_name) (◯ Excl' memLog) ∗
-    own γ.(cs_name) (◯ (Excl' cs)) ∗
-    ⌜circ_matches_memlog memStart memLog cs⌝ ∗
-    is_crash_memlog γ memStart_txn_id memLog txns memStart ∗
+  ∃ (cs: circΣ.t),
+    "Howncs" ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
+    "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns diskEnd_txn_id⌝ ∗
     (* this sub-part establishes that diskEnd_txn_id is the durable point *)
-    (∃ (diskEnd: u64),
-        txn_pos γ diskEnd_txn_id diskEnd ∗
-        diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
+    "Hcirc_diskEnd" ∷ (∃ (diskEnd: u64),
+                          txn_pos γ diskEnd_txn_id diskEnd ∗
+                          diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
 
 Definition is_durable γ txns durable_lb : iProp Σ :=
   (∃ (diskEnd_txn_id: nat),
-    (* TODO(tej): does this make sense? it's the only constraint on
-        durable_lb *)
-      ⌜(durable_lb ≤ diskEnd_txn_id)%nat ⌝ ∗
-       log_inv γ txns diskEnd_txn_id).
+      "%Hdurable_bound" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat ⌝ ∗
+      "Hloginv" ∷ log_inv γ txns diskEnd_txn_id).
 
 Theorem txn_map_to_is_txn txns (txn_id: nat) (pos: u64) upds :
   list_to_imap txns !! txn_id = Some (pos, upds) ->
@@ -327,7 +284,7 @@ Proof.
 Qed.
 
 Definition txns_ctx γ txns : iProp Σ :=
-  gen_heap_ctx (hG:=γ.(txns_name)) (list_to_imap txns) ∗
+  gen_heap_ctx (hG:=γ.(txns_ctx_name)) (list_to_imap txns) ∗
   ([∗ map] txn_id↦txn ∈ list_to_imap txns,
       txn_val γ txn_id txn).
 
@@ -393,7 +350,9 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "Hmem" ∷ is_wal_mem l γ ∗
     "Hdurable" ∷ is_durable γ s.(log_state.txns) s.(log_state.durable_lb) ∗
     "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) ∗
-    "Htxns" ∷ txns_ctx γ s.(log_state.txns).
+    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
+    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns))
+.
 
 Definition is_wal (l : loc) γ : iProp Σ :=
   inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
