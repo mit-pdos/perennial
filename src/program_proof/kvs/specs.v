@@ -80,9 +80,6 @@ Definition crashed_kvs kvp_ls kvsblks γDisk : iProp Σ :=
       ([∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I
       ∗ kvpairs_match kvp_ls γDisk.
 
-Definition ptsto_kvpair (l: loc) (pair: specs.addr * Slice.t) : iProp Σ :=
-  (l↦[struct.t KVPair.S] (kvpair_val pair) ∗ ∃ blk, is_block (snd pair) 1 blk)%I.
-
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
     MkKVS #d #(U64(Z.of_nat sz)) @ NotStuck; k; E1; E2
@@ -95,34 +92,24 @@ Proof.
   wpc_bind (super.MkFsSuper _).
 Admitted.
 
-Lemma is_slice_small_same data1 data2 blk :
-  is_slice_small data1 u8T 1 (Block_to_vals blk) ∗ is_slice_small data2 u8T 1 (Block_to_vals blk) -∗
-  is_slice_small data1 u8T 1 (Block_to_vals blk) ∗ is_slice_small data2 u8T 1 (Block_to_vals blk) ∗ ⌜data1=data2⌝.
-Proof.
-  iIntros "[H1 H2]".
-  unfold is_slice_small.
-  iDestruct "H1" as "[HD1 %Hl1]".
-  iDestruct "H2" as "[HD2 %Hl2]".
-  induction data1; induction data2; subst.
-  simpl in *.
-  admit.
-Admitted. (*XXX is this true??? *)
-
- Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key blk data:
+ Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key blk:
   {{{
        ptsto_kvs kvsl kvsblks sz γDisk
        ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock (defs.bufBlock blk))⌝
        ∗ ⌜valid_key key sz⌝
-       ∗ specs.is_buf_data data (defs.bufBlock blk) key
   }}}
     KVS__Get #kvsl #((key.(specs.addrBlock)))
-    {{{(pairl: loc) ok, RET (#pairl, #ok);
+    {{{(pairl: loc) ok data, RET (#pairl, #ok);
        ptsto_kvs kvsl kvsblks sz γDisk
-       ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock (defs.bufBlock blk))⌝
-                                ∗ ptsto_kvpair pairl (key, data)
+      (* State of KVS remains unchanged *)
+      ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock (defs.bufBlock blk))⌝
+      (* Data returned is the data at the specified kvs block *)
+      ∗ is_block data 1 blk
+      (* Data returned is in the form of a kvpair *)
+      ∗ pairl ↦[struct.t KVPair.S] (kvpair_val (pair key data))
   }}}.
 Proof.
-  iIntros (ϕ) "[Hkvs [%HkeyLookup [%Hkey Hdata]]] Hϕ".
+  iIntros (ϕ) "[Hkvs [%HkeyLookup %Hkey ]] Hϕ".
   iDestruct "Hkvs" as (l) "[Htxnl [Hsz [#Htxn [%HinKvs HkvsMt]]]]".
   pose Hkey as Hkey'.
   destruct Hkey' as [HbuildAddr [Hkaddr [Hklgsz Hsz]]].
@@ -148,24 +135,11 @@ Proof.
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
 
-      (*rewrite Map.delete_insert_union _ _ _ _ kvsblks {[key := Some (existT defs.KindBlock blk)]} key (existT defs.KindBlock blk).*)
+      iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k (projT2 b)) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
       pose ({[key := existT defs.KindBlock (defs.bufBlock blk)]} : gmap (specs.addr) ({K & defs.bufDataT K})) as keyMp.
-      assert ((delete key kvsblks) ##ₘ keyMp) as HMapDisjoint.
-      {
-        apply map_disjoint_singleton_r.
-        apply lookup_delete.
-      }
-      assert ((delete key kvsblks) ∪ keyMp = kvsblks) as HMapUnion.
-      { rewrite Map.delete_insert_union; auto.
-        eapply (union_empty_r kvsblks).
-        unfold elem_of. auto.
-      }
-      rewrite <- HMapUnion.
-      iPoseProof (big_opM_union (λ k b, mapsto_txn γDisk k (projT2 b)) (delete key kvsblks) keyMp) as "H"; auto.
-      iPoseProof ("H" with "HkvsMt") as "HkvsMt".
-      iDestruct "HkvsMt" as "[HrestMt HkeyMt]".
 
       iMod (BufTxn_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]"; iFrame; eauto.
+      { iApply big_sepM_singleton; auto. }
 
       wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn HkeyMt]").
       -- iSplitL "Hbtxn"; auto.
@@ -173,21 +147,19 @@ Proof.
          {
            rewrite <- HbuildAddr. simpl.
            iPoseProof (big_sepM_lookup _ keyMp key (existT defs.KindBlock (defs.bufBlock blk)) with "HkeyMt") as "HsepM"; eauto.
-           pose (lookup_union_r (delete key kvsblks) (keyMp) key) as Hun.
-           rewrite <- HMapUnion in HkeyLookup.
-           assert ((delete key kvsblks) !! key =None) as Hdel by apply lookup_delete.
-           apply Hun in Hdel. rewrite HkeyLookup in Hdel. auto.
+           apply lookup_singleton.
          }
          { simpl. auto. }
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".
          simpl in *.
          iSpecialize ("HPostRead" $! (defs.bufBlock blk) dirty).
-         iDestruct "HisBuf" as (data0 sz0) "[Hbaddr [Hbsz [Hbdata [Hbdirty [HvalidA [Hsz0 [Hnotnil HisBufData]]]]]]]".
+         iDestruct "HisBuf" as (data sz0) "[Hbaddr [Hbsz [Hbdata [Hbdirty [HvalidA [Hsz0 [Hnotnil HisBufData]]]]]]]".
+         wp_loadField.
+         wp_apply (util_proof.wp_CloneByteSlice with "HisBufData").
+         iIntros (data') "[HisBlkData HisBlkData']".
 
-         iPoseProof (is_slice_small_same data data0 blk with "[Hdata HisBufData]") as "[Hdata [HisBufData <-]]"; iFrame; eauto.
-
-         wp_loadField; wp_let.
-         iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt Hdata]") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
+         wp_let.
+         iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
          { iSplit; eauto. iExists data, sz0; iFrame; auto. }
          wp_apply (wp_BufTxn__CommitWait buftx γt γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[Hmapsto HisBuf]").
          {
@@ -195,21 +167,21 @@ Proof.
            rewrite <- HbuildAddr, big_opM_singleton; auto.
          }
          iIntros (ok) "Hmapsto".
-         iPoseProof ("H" with "[HrestMt Hmapsto]") as "HkvsMt"; iFrame; auto.
+         rewrite big_sepM_singleton.
+         iPoseProof ("HrestMt" with "Hmapsto") as "Hmapsto".
          wp_let.
          wp_pures.
          wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
          wp_pures. iApply ("Hϕ" $! lptr).
-         iSplitL "Htxnl Hsz HkvsMt".
-         { unfold ptsto_kvs. iExists l. rewrite HMapUnion. iFrame; auto. }
-         iSplitR; rewrite HMapUnion; auto.
+         iSplitL "Htxnl Hsz Hmapsto".
+         { unfold ptsto_kvs. iExists l. iFrame; auto. }
+         iSplitR; auto.
          {
-           unfold ptsto_kvpair.
-           unfold ptsto_kvpair, is_block, kvpair_val. simpl in *.
-           change u8T with byteT.
-           iFrame; auto.
+           iFrame; eauto.
+           unfold is_block.
+           iApply is_slice_to_small; auto.
          }
-Admitted.
+Qed.
 
 Theorem wpc_KVS__MultiPut kvsl s sz kvp_ls_before kvp_slice kvp_ls stk k E1 E2:
   {{{
