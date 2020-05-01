@@ -99,7 +99,9 @@ Proof.
   wp_apply (wp_Read_fupd (⊤∖↑walN) (λ b, Q b)%I _ 1 (* q=1 *) with "[Hfupd]").
   { iDestruct "Hwal" as "[Hwal Hcirc]".
     iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
-    iDestruct "Hinner" as "(>? & ? & ? & Hinstalled & ?)"; iNamed.
+    iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
+    iNamed "Hdisk".
+
     iDestruct (is_installed_to_read with "Hinstalled") as "[>Hinstalled_read Hinstalled]".
     iDestruct (in_bounds_valid _ σ with "Ha_valid") as %Hlookup.
     iDestruct (is_installed_read_lookup Hlookup with "Hinstalled_read") as
@@ -110,18 +112,21 @@ Proof.
     iIntros "Hb".
     iSpecialize ("Hinstalled_read" with "Hb").
     iSpecialize ("Hinstalled" with "Hinstalled_read").
+    iNamed "circ.start".
     iMod ("Hfupd" $! σ σ b with "[//] [] HP") as "[HP HQ]".
     { iPureIntro.
       repeat (simpl; monad_simpl).
       exists σ txn_id.
-      { econstructor; eauto. }
+      { econstructor; eauto; lia. }
       repeat (simpl; monad_simpl). }
     iFrame.
     iApply "Hclose".
     iModIntro.
     iExists _; iFrame "HP".
     iFrame.
-    auto.
+    iSplit; auto.
+    iExists _, _; iFrame.
+    iExists _; by iFrame.
   }
   iIntros (s b) "(HQ&Hs)".
   iApply "HΦ".

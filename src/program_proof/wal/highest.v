@@ -11,7 +11,7 @@ in the future. *)
 
 Implicit Types (txn_id: nat) (pos: u64).
 (* everything in this file is about [nat]s *)
-Close Scope Z.
+Local Close Scope Z.
 
 (* NOTE: we no longer use [is_highest_txn] *)
 Definition is_highest_txn txns txn_id pos :=
@@ -19,6 +19,12 @@ Definition is_highest_txn txns txn_id pos :=
   forall txn_id', is_txn txns txn_id' pos ->
                   txn_id' <= txn_id.
 
+Theorem is_highest_weaken {txns txn_id pos} :
+  is_highest_txn txns txn_id pos ->
+  is_txn txns txn_id pos.
+Proof.
+  rewrite /is_highest_txn; naive_solver.
+Qed.
 
 Fixpoint find_highest_index poss pos: option nat :=
   match poss with
@@ -159,33 +165,13 @@ Proof.
     eapply find_highest_index_none; eauto.
 Qed.
 
-Theorem is_highest_txn_bound txns txn_id pos :
+Theorem is_highest_txn_bound {txns txn_id pos} :
   is_highest_txn txns txn_id pos ->
   txn_id ≤ length txns.
 Proof.
   destruct 1 as [His_txn _].
   eauto using is_txn_bound.
 Qed.
-
-(*
-Lemma wal_wf_txns_mono_highest {σ txn_id1 pos1 txn_id2 pos2} :
-  wal_wf σ ->
-  is_txn σ.(log_state.txns) txn_id1 pos1 ->
-  is_highest_txn σ.(log_state.txns) txn_id2 pos2 ->
-  int.val pos1 ≤ int.val pos2 ->
-  txn_id1 ≤ txn_id2.
-Proof.
-  intros Hwf Htxn1 Htxn2 Hle.
-  destruct (decide (pos1 = pos2)); subst.
-  - apply Htxn2 in Htxn1; lia.
-  - eapply wal_wf_txns_mono_pos; eauto.
-    + eapply Htxn2.
-    + assert (int.val pos1 ≠ int.val pos2).
-      { intro H.
-        assert (pos1 = pos2) by word; congruence. }
-      lia.
-Qed.
-*)
 
 Fixpoint pos_indices (poss: list u64) (i: nat): gmap u64 nat :=
   match poss with

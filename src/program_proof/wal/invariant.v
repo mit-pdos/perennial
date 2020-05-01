@@ -5,7 +5,7 @@ From Perennial.Helpers Require Export Transitions NamedProps Map.
 
 From Perennial.algebra Require Export deletable_heap.
 From Perennial.program_proof Require Export proof_prelude.
-From Perennial.program_proof Require Export wal.lib.
+From Perennial.program_proof Require Export wal.lib wal.highest.
 From Perennial.program_proof Require Export wal.circ_proof.
 From Perennial.program_proof Require Export wal.specs.
 
@@ -180,16 +180,14 @@ Qed.
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
-Definition is_installed γ d txns installed_lb : iProp Σ :=
-  ∃ (installed_txn_id: nat) (new_installed_txn_id: nat) (being_installed: gmap Z unit) diskStart,
-    "Hstart_is" ∷ start_is γ.(circ_name) (1/4) diskStart ∗
-    "#Hstart_txn" ∷ txn_pos γ installed_txn_id diskStart ∗
+Definition is_installed γ d txns (installed_txn_id: nat) : iProp Σ :=
+  ∃ (new_installed_txn_id: nat) (being_installed: gmap Z unit),
     (* TODO: the other half of these are owned by the installer, giving it full
      knowledge of in-progress installations and exclusive update rights; need to
      write down what it maintains as part of its loop invariant *)
     "Howninstalled" ∷ (own γ.(new_installed_name) (● Excl' new_installed_txn_id) ∗
      own γ.(being_installed_name) (● Excl' being_installed)) ∗
-    "%Hinstalled_bounds" ∷ ⌜(installed_lb ≤ installed_txn_id ≤ new_installed_txn_id)%nat ∧ (new_installed_txn_id ≤ length txns)%nat⌝ ∗
+    "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ new_installed_txn_id)%nat ∧ (new_installed_txn_id ≤ length txns)%nat⌝ ∗
     "Hdata" ∷ ([∗ map] a ↦ _ ∈ d,
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
@@ -201,6 +199,9 @@ Definition is_installed γ d txns installed_lb : iProp Σ :=
         apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
        a d↦ b ∗ ⌜2 + LogSz ≤ a⌝).
 
+Global Instance is_installed_Timeless γ d txns installed_txn_id :
+  Timeless (is_installed γ d txns installed_txn_id) := _.
+
 (* weakening of [is_installed] for the sake of reading *)
 Definition is_installed_read γ d txns installed_lb : iProp Σ :=
   ([∗ map] a ↦ _ ∈ d,
@@ -211,10 +212,7 @@ Definition is_installed_read γ d txns installed_lb : iProp Σ :=
       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
 
 Global Instance is_installed_read_Timeless {γ d txns installed_lb} :
-  Timeless (is_installed_read γ d txns installed_lb).
-Proof.
-  apply _.
-Qed.
+  Timeless (is_installed_read γ d txns installed_lb) := _.
 
 Theorem is_installed_weaken_read γ d txns installed_lb :
   is_installed γ d txns installed_lb -∗
@@ -231,12 +229,14 @@ Proof.
     iExists b'; iFrame.
     iPureIntro.
     split; auto.
+    (*
     destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_txn_id ].
     - split; auto.
       split; try lia.
     - split; auto; lia. }
   iIntros "Hmap".
   admit.
+*)
 Admitted.
 
 Theorem is_installed_to_read γ d txns installed_lb E :
@@ -254,26 +254,70 @@ Qed.
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   own γ.(cs_name) (● (Excl' cs)).
 
-Definition circ_matches_txns (cs:circΣ.t) txns diskEnd_txn_id :=
-  apply_upds (txn_upds $ subslice (int.nat cs.(circΣ.start)) diskEnd_txn_id txns) ∅ =
+Implicit Types (installed_txn_id:nat) (diskEnd_txn_id:nat).
+
+Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id diskEnd_txn_id :=
+  apply_upds (txn_upds $ subslice installed_txn_id diskEnd_txn_id txns) ∅ =
   apply_upds cs.(circΣ.upds) ∅.
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
-Definition log_inv γ txns diskEnd_txn_id : iProp Σ :=
+Definition is_durable γ txns installed_txn_id diskEnd_txn_id : iProp Σ :=
   ∃ (cs: circΣ.t),
     "Howncs" ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
-    "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns diskEnd_txn_id⌝ ∗
-    (* this sub-part establishes that diskEnd_txn_id is the durable point *)
-    "Hcirc_diskEnd" ∷ (∃ (diskEnd: u64),
-                          txn_pos γ diskEnd_txn_id diskEnd ∗
-                          diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
+    "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id diskEnd_txn_id⌝.
 
-Definition is_durable γ txns durable_lb : iProp Σ :=
-  (∃ (diskEnd_txn_id: nat),
-      "%Hdurable_bound" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat ⌝ ∗
-      "Hloginv" ∷ log_inv γ txns diskEnd_txn_id).
+Global Instance is_durable_timeless γ txns installed_txn_id diskEnd_txn_id :
+  Timeless (is_durable γ txns installed_txn_id diskEnd_txn_id) := _.
 
+Definition is_installed_txn γ txns installed_txn_id installed_lb: iProp Σ :=
+  ∃ (diskStart: u64),
+    "%Hinstalled_bound" ∷ ⌜(installed_lb ≤ installed_txn_id)%nat⌝ ∗
+    "Hstart_is" ∷ start_is γ.(circ_name) (1/4) diskStart ∗
+    "%Hstart_txn" ∷ ⌜is_highest_txn txns installed_txn_id diskStart⌝.
+
+Definition is_durable_txn γ txns diskEnd_txn_id durable_lb: iProp Σ :=
+  ∃ (diskEnd: u64),
+    "%Hdurable_lb" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat⌝ ∗
+    "Hend_is" ∷ diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd) ∗
+    "%Hend_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝.
+
+Definition txns_ctx γ txns : iProp Σ :=
+  gen_heap_ctx (hG:=γ.(txns_ctx_name)) (list_to_imap txns) ∗
+  ([∗ map] txn_id↦txn ∈ list_to_imap txns,
+      txn_val γ txn_id txn).
+
+(** the complete wal invariant *)
+Definition is_wal_inner (l : loc) γ s : iProp Σ :=
+    "%Hwf" ∷ ⌜wal_wf s⌝ ∗
+    "Hmem" ∷ is_wal_mem l γ ∗
+    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
+    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
+    "Hdisk" ∷ ∃ installed_txn_id diskEnd_txn_id,
+      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
+      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "circ.start" ∷ is_installed_txn γ s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "circ.end"   ∷ is_durable_txn γ s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
+.
+
+Definition is_wal (l : loc) γ : iProp Σ :=
+  inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
+  is_circular circN (circular_pred γ) γ.(circ_name).
+
+Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
+Proof.
+  iIntros "#Hwal".
+  iDestruct "Hwal" as "[Hinv _]".
+  iApply (inv_dup_acc with "Hinv"); first by set_solver.
+  iIntros "HinvI".
+  iDestruct "HinvI" as (σ) "[HinvI HP]".
+  iDestruct "HinvI" as "(%Hwf&#Hmem&Hrest)".
+  iSplitL; last by auto.
+  iExists _; iFrame.
+  by iFrame "∗ Hmem".
+Qed.
+
+(** * some facts about txn_ctx *)
 Theorem txn_map_to_is_txn txns (txn_id: nat) (pos: u64) upds :
   list_to_imap txns !! txn_id = Some (pos, upds) ->
   is_txn txns txn_id pos.
@@ -282,11 +326,6 @@ Proof.
   rewrite lookup_list_to_imap.
   by intros ->.
 Qed.
-
-Definition txns_ctx γ txns : iProp Σ :=
-  gen_heap_ctx (hG:=γ.(txns_ctx_name)) (list_to_imap txns) ∗
-  ([∗ map] txn_id↦txn ∈ list_to_imap txns,
-      txn_val γ txn_id txn).
 
 Theorem alloc_txn_pos γ txns E pos upds :
   txns_ctx γ txns ={E}=∗
@@ -344,33 +383,8 @@ Proof.
   iSplit; eauto.
 Qed.
 
-(** the complete wal invariant *)
-Definition is_wal_inner (l : loc) γ s : iProp Σ :=
-    "%Hwf" ∷ ⌜wal_wf s⌝ ∗
-    "Hmem" ∷ is_wal_mem l γ ∗
-    "Hdurable" ∷ is_durable γ s.(log_state.txns) s.(log_state.durable_lb) ∗
-    "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) ∗
-    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
-    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns))
-.
 
-Definition is_wal (l : loc) γ : iProp Σ :=
-  inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
-  is_circular circN (circular_pred γ) γ.(circ_name).
-
-Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
-Proof.
-  iIntros "#Hwal".
-  iDestruct "Hwal" as "[Hinv _]".
-  iApply (inv_dup_acc with "Hinv"); first by set_solver.
-  iIntros "HinvI".
-  iDestruct "HinvI" as (σ) "[HinvI HP]".
-  iDestruct "HinvI" as "(%Hwf&#Hmem&Hrest)".
-  iSplitL; last by auto.
-  iExists _; iFrame.
-  by iFrame "∗ Hmem".
-Qed.
-
+(** * accessors for fields whose values don't matter for correctness *)
 Theorem wal_linv_shutdown st γ :
   wal_linv st γ -∗ ∃ (shutdown:bool) (nthread:u64),
       (st ↦[WalogState.S :: "shutdown"] #shutdown ∗
@@ -424,6 +438,27 @@ Proof.
   eapply Hmono in Hord; eauto.
   word. (* contradiction from [pos1 = pos2] *)
 Qed.
+
+Lemma wal_wf_txns_mono_highest {σ txn_id1 pos1 txn_id2 pos2} :
+  wal_wf σ ->
+  is_txn σ.(log_state.txns) txn_id1 pos1 ->
+  is_highest_txn σ.(log_state.txns) txn_id2 pos2 ->
+  int.val pos1 ≤ int.val pos2 ->
+  (txn_id1 ≤ txn_id2)%nat.
+Proof.
+  intros Hwf Htxn1 Htxn2 Hle.
+  destruct (decide (pos1 = pos2)); subst.
+  - apply Htxn2 in Htxn1; lia.
+  - eapply wal_wf_txns_mono_pos; eauto.
+    + eapply Htxn2.
+    + assert (int.val pos1 ≠ int.val pos2).
+      { intro H.
+        assert (pos1 = pos2) by word; congruence. }
+      lia.
+Qed.
+
+
+(** * WPs for field operations in terms of lock invariant *)
 
 Ltac shutdown_fields :=
   let shutdown := fresh "shutdown" in
