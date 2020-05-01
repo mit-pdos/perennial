@@ -149,16 +149,17 @@ Theorem wp_new_wal bs :
 Proof.
 Admitted.
 
-Theorem wp_Walog__MemAppend (Q: u64 -> iProp Σ) l bufs bs :
+Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l bufs bs :
   {{{ is_wal l ∗
        updates_slice bufs bs ∗
+       PreQ ∗
        (∀ σ σ' pos,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
-         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos))
+         (P σ ∗ PreQ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos))
    }}}
     Walog__MemAppend #l (slice_val bufs)
-  {{{ pos (ok : bool), RET (#pos, #ok); if ok then Q pos else emp }}}.
+  {{{ pos (ok : bool), RET (#pos, #ok); if ok then Q pos else PreQ }}}.
 Proof.
   iIntros (Φ) "(Hwal & Hupds & Hfupd) HΦ".
   wp_call.
