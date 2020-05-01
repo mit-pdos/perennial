@@ -57,26 +57,29 @@ Definition Txn__Load: val :=
 (* Installs the txn's bufs into their blocks and returns the blocks.
    A buf may only partially update a disk block and several bufs may
    apply to the same disk block. Assume caller holds commit lock. *)
+Definition Txn__installBufsMap: val :=
+  rec: "Txn__installBufsMap" "txn" "bufs" :=
+    let: "blks" := NewMap (slice.T byteT) in
+    ForSlice (refT (struct.t buf.Buf.S)) <> "b" "bufs"
+      (if: (struct.loadF buf.Buf.S "Sz" "b" = common.NBITBLOCK)
+      then MapInsert "blks" (struct.get addr.Addr.S "Blkno" (struct.loadF buf.Buf.S "Addr" "b")) (struct.loadF buf.Buf.S "Data" "b")
+      else
+        let: "blk" := ref (zero_val (slice.T byteT)) in
+        let: ("mapblk", "ok") := MapGet "blks" (struct.get addr.Addr.S "Blkno" (struct.loadF buf.Buf.S "Addr" "b")) in
+        (if: "ok"
+        then "blk" <-[slice.T byteT] "mapblk"
+        else
+          "blk" <-[slice.T byteT] wal.Walog__Read (struct.loadF Txn.S "log" "txn") (struct.get addr.Addr.S "Blkno" (struct.loadF buf.Buf.S "Addr" "b"));;
+          MapInsert "blks" (struct.get addr.Addr.S "Blkno" (struct.loadF buf.Buf.S "Addr" "b")) (![slice.T byteT] "blk"));;
+        buf.Buf__Install "b" (![slice.T byteT] "blk"));;
+    "blks".
+
 Definition Txn__installBufs: val :=
   rec: "Txn__installBufs" "txn" "bufs" :=
-    let: "blks" := ref_to (slice.T (struct.t wal.Update.S)) (NewSlice (struct.t wal.Update.S) #0) in
-    let: "bufsByBlock" := ref_to (mapT (slice.T (refT (struct.t buf.Buf.S)))) (NewMap (slice.T (struct.ptrT buf.Buf.S))) in
-    ForSlice (refT (struct.t buf.Buf.S)) <> "b" "bufs"
-      (MapInsert (![mapT (slice.T (refT (struct.t buf.Buf.S)))] "bufsByBlock") (struct.get addr.Addr.S "Blkno" (struct.loadF buf.Buf.S "Addr" "b")) (SliceAppend (refT (struct.t buf.Buf.S)) (Fst (MapGet (![mapT (slice.T (refT (struct.t buf.Buf.S)))] "bufsByBlock") (struct.get addr.Addr.S "Blkno" (struct.loadF buf.Buf.S "Addr" "b")))) "b"));;
-    MapIter (![mapT (slice.T (refT (struct.t buf.Buf.S)))] "bufsByBlock") (λ: "blkno" "bufs",
-      let: "blk" := ref (zero_val (slice.T byteT)) in
-      ForSlice (refT (struct.t buf.Buf.S)) <> "b" "bufs"
-        (if: (struct.loadF buf.Buf.S "Sz" "b" = common.NBITBLOCK)
-        then "blk" <-[slice.T byteT] struct.loadF buf.Buf.S "Data" "b"
-        else
-          (if: (![slice.T byteT] "blk" = slice.nil)
-          then
-            "blk" <-[slice.T byteT] wal.Walog__Read (struct.loadF Txn.S "log" "txn") "blkno";;
-            #()
-          else #());;
-          buf.Buf__Install "b" (![slice.T byteT] "blk"));;
-      let: "walblk" := wal.MkBlockData "blkno" (![slice.T byteT] "blk") in
-      "blks" <-[slice.T (struct.t wal.Update.S)] SliceAppend (struct.t wal.Update.S) (![slice.T (struct.t wal.Update.S)] "blks") "walblk");;
+    let: "blks" := ref (zero_val (slice.T (struct.t wal.Update.S))) in
+    let: "bufmap" := Txn__installBufsMap "txn" "bufs" in
+    MapIter "bufmap" (λ: "blkno" "data",
+      "blks" <-[slice.T (struct.t wal.Update.S)] SliceAppend (struct.t wal.Update.S) (![slice.T (struct.t wal.Update.S)] "blks") (wal.MkBlockData "blkno" "data"));;
     ![slice.T (struct.t wal.Update.S)] "blks".
 
 (* Acquires the commit log, installs the txn's buffers into their
