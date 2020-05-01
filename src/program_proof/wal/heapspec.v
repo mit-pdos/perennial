@@ -7,6 +7,7 @@ From Perennial.Helpers Require Import Transitions List.
 From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.specs.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.algebra Require Import deletable_heap.
+From Perennial.Helpers Require Import NamedProps.
 
 Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)
@@ -16,7 +17,11 @@ Section heap.
 
 Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
-Context `{!inG Σ (authR (optionUR (exclR (gmapO u64 blockO))))}.
+Context `{!inG Σ
+        (authR
+           (optionUR
+              (exclR (prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO)))))))}.
+Context `{!inG Σ (authR mnatUR)}.
 Context (N: namespace).
 
 (* Invariant and definitions *)
@@ -35,11 +40,20 @@ Definition hb_latest_update (hb : heap_block) :=
   | HB installed bs => latest_update installed bs
   end.
 
-Definition wal_heap_inv (γh : gen_heapG u64 heap_block Σ) (γLatest : gname) (ls : log_state.t) : iProp Σ :=
+Record wal_heap_gnames := {
+  wal_heap_h : gen_heapG u64 heap_block Σ;
+  wal_heap_txns : gname;
+  wal_heap_installed : gname;
+}.
+
+Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block),
-    gen_heap_ctx (hG := γh) gh ∗
-    ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
-    own γLatest (● (Excl' ((hb_latest_update <$> gh) : gmap u64 Block))).
+    "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
+    "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
+    "Htxns" ∷ own γ.(wal_heap_txns) (● (Excl' (ls.(log_state.d), ls.(log_state.txns)))) ∗
+    "Hinstalled" ∷ own γ.(wal_heap_installed) (● (ls.(log_state.installed_lb) : mnat)) ∗
+    "Hinstalledfrag" ∷ own γ.(wal_heap_installed) (◯ (ls.(log_state.installed_lb) : mnat)) ∗
+    "%Hwf" ∷ ⌜ wal_wf ls ⌝.
 
 Definition no_updates (l: list update.t) a : Prop :=
   forall u, u ∈ l -> u.(update.addr) ≠ a.
@@ -705,7 +719,17 @@ Proof.
   unfold wal_wf; simpl.
   intuition.
 Qed.
-  
+
+(* NEED EXTRA PREMISE that addrs in [t] are well-formed *)
+Theorem wal_wf_append_txns σ t txns :
+  wal_wf σ ->
+  txns = σ.(log_state.txns) ->
+  wal_wf (set log_state.txns (λ _, txns ++ [t]) σ).
+Proof.
+  destruct σ.
+  unfold wal_wf; simpl.
+  intuition.
+Admitted.
 
 Lemma updates_since_updates σ (txn_id:nat) (a:u64) pos' bs :
   wal_wf σ ->
@@ -794,15 +818,12 @@ Qed.
 (* Specs *)
 
 Lemma wal_update_durable (gh : gmap u64 heap_block) (σ : log_state.t) new_durable :
-  forall a b hb,
   (σ.(log_state.durable_lb) ≤ new_durable ≤ length (log_state.txns σ))%nat ->
-  (gh !! a = Some hb) ->
-  (last_disk σ !! int.val a = Some b) ->
   ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
    [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
      (set log_state.durable_lb (λ _ : nat, new_durable) σ) a1 b0.
 Proof.
-  iIntros (a b hb) "% % % Hmap".
+  iIntros "% Hmap".
   destruct σ; simpl in *.
   rewrite /set /=.
   iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
@@ -816,15 +837,12 @@ Proof.
 Qed.
 
 Lemma wal_update_installed (gh : gmap u64 heap_block) (σ : log_state.t) new_installed :
-  forall a b hb,
   (σ.(log_state.installed_lb) ≤ new_installed ≤ σ.(log_state.durable_lb))%nat ->
-  (gh !! a = Some hb) ->
-  (last_disk σ !! int.val a = Some b) ->
   ([∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr σ a1 b0) -∗
    [∗ map] a1↦b0 ∈ gh, wal_heap_inv_addr
      (set log_state.installed_lb (λ _ : nat, new_installed) σ) a1 b0.
 Proof.
-  iIntros (a b hb) "% % % Hmap".
+  iIntros "% Hmap".
   destruct σ eqn:sigma; simpl in *.
   rewrite /set /=.
   iDestruct (big_sepM_mono _ (wal_heap_inv_addr {|
@@ -839,7 +857,7 @@ Proof.
   intuition.
   simpl in *.
 
-  destruct a0.
+  destruct a.
   exists x.
   intuition.
   lia.
@@ -849,24 +867,24 @@ Definition readmem_q γh (a : u64) (installed : Block) (bs : list Block) (res : 
   (
     match res with
     | Some resb =>
-      mapsto (hG := γh) a 1 (HB installed bs) ∗
+      mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
       ⌜ resb = latest_update installed bs ⌝
     | None =>
-      mapsto (hG := γh) a 1 (HB (latest_update installed bs) nil)
+      mapsto (hG := γh.(wal_heap_h)) a 1 (HB (latest_update installed bs) nil)
     end
   )%I.
 
-Theorem wal_heap_readmem E γh γLatest a (Q : option Block -> iProp Σ) :
-  ( |={⊤ ∖ ↑N, E}=> ∃ installed bs, mapsto (hG := γh) a 1 (HB installed bs) ∗
+Theorem wal_heap_readmem E γh a (Q : option Block -> iProp Σ) :
+  ( |={⊤ ∖ ↑N, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
         ( ∀ mb, readmem_q γh a installed bs mb ={E, ⊤ ∖ ↑N}=∗ Q mb ) ) -∗
   ( ∀ σ σ' mb,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
-      ( (wal_heap_inv γh γLatest) σ ={⊤ ∖ ↑N}=∗ (wal_heap_inv γh γLatest) σ' ∗ Q mb ) ).
+      ( (wal_heap_inv γh) σ ={⊤ ∖ ↑N}=∗ (wal_heap_inv γh) σ' ∗ Q mb ) ).
 Proof.
   iIntros "Ha".
   iIntros (σ σ' mb) "% % Hinv".
-  iDestruct "Hinv" as (gh) "(Hctx & Hgh & Hlatest)".
+  iNamed "Hinv".
 
   iMod "Ha" as (installed bs) "[Ha Hfupd]".
   iDestruct (gen_heap_valid with "Hctx Ha") as "%".
@@ -889,11 +907,14 @@ Proof.
     iMod "Hfupd".
 
     iModIntro.
-    iSplitL "Hctx Hgh Hlatest".
-    + iExists _; iFrame.
+    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag".
+    + iExists _; iFrame. done.
     + iFrame.
 
   - simpl in *; monad_inv.
+
+    iMod (own_update_2 with "Hinstalled Hinstalledfrag") as "[Hinstalled Hinstalledfrag]".
+    { apply auth_update. apply (mnat_local_update _ _ new_installed). intuition idtac. }
 
     iMod (gen_heap_update _ _ _ (HB (latest_update installed (updates_since x a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
     iDestruct ("Hfupd" $! None with "[Ha]") as "Hfupd".
@@ -903,48 +924,42 @@ Proof.
     }
     iMod "Hfupd".
     iModIntro.
-    iSplitL "Hctx Hgh Hlatest".
+    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag".
     2: iFrame.
 
     iDestruct (wal_update_durable gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_durable with "Hgh") as "Hgh"; eauto.
-    + rewrite last_disk_installed_lb; auto.
-      apply updates_since_to_last_disk; eauto.
-      lia.
-    + iDestruct (wal_update_installed gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_installed with "Hgh") as "Hgh"; eauto.
-      -- rewrite last_disk_installed_lb; auto.
-         apply updates_since_to_last_disk; eauto.
-         1: apply wal_wf_advance_durable_lb; auto.
-         subst; simpl in *.
-         lia.
-      -- iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
-         iDestruct ("Hgh" $! (HB (latest_update installed (updates_since x a σ)) nil) with "[]") as "Hx".
-          {
-            rewrite /wal_heap_inv_addr /=.
-            iPureIntro; intros.
-            simpl in H5.
-            exists new_installed. intuition try lia.
-            {
-              rewrite -updates_since_to_last_disk; eauto.
-              1: rewrite no_updates_since_last_disk; auto.
-              2: lia.
-              apply wal_wf_advance_installed_lb with (σ := (set log_state.durable_lb (λ _ : nat, new_durable) σ)).
-              1: apply wal_wf_advance_durable_lb; auto.
-              simpl.
-              lia.
-            }
-            {
-              rewrite no_updates_since_nil; auto.
-              apply wal_wf_advance_installed_lb with (σ := (set log_state.durable_lb (λ _ : nat, new_durable) σ)).
-              1: apply wal_wf_advance_durable_lb; auto.
-              simpl.
-              lia.
-            }
-          }
-          rewrite /wal_heap_inv.
-          iExists _; iFrame.
+    iDestruct (wal_update_installed gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_installed with "Hgh") as "Hgh"; eauto.
+    iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
+    iDestruct ("Hgh" $! (HB (latest_update installed (updates_since x a σ)) nil) with "[]") as "Hx".
+    {
+      rewrite /wal_heap_inv_addr /=.
+      iPureIntro; intros.
+      simpl in H5.
+      exists new_installed. intuition try lia.
+      {
+        rewrite -updates_since_to_last_disk; eauto.
+        1: rewrite no_updates_since_last_disk; auto.
+        2: lia.
+        apply wal_wf_advance_installed_lb with (σ := (set log_state.durable_lb (λ _ : nat, new_durable) σ)).
+        1: apply wal_wf_advance_durable_lb; auto.
+        simpl.
+        lia.
+      }
+      {
+        rewrite no_updates_since_nil; auto.
+        apply wal_wf_advance_installed_lb with (σ := (set log_state.durable_lb (λ _ : nat, new_durable) σ)).
+        1: apply wal_wf_advance_durable_lb; auto.
+        simpl.
+        lia.
+      }
+    }
+    rewrite /wal_heap_inv.
+    iExists _; iFrame.
 
-          rewrite fmap_insert /= insert_id; first by iFrame.
-          rewrite lookup_fmap H /= //.
+    iPureIntro.
+    eapply wal_wf_advance_installed_lb.
+    2: { intuition idtac. simpl in *. lia. }
+    eapply wal_wf_advance_durable_lb; eauto.
 Qed.
 
 Definition readinstalled_q γh (a : u64) (installed : Block) (bs : list Block) (res : Block) : iProp Σ :=
@@ -953,13 +968,13 @@ Definition readinstalled_q γh (a : u64) (installed : Block) (bs : list Block) (
     ⌜ res ∈ installed :: bs ⌝
   )%I.
 
-Theorem wal_heap_readinstalled E γh γLatest a (Q : Block -> iProp Σ) :
-  ( |={⊤ ∖ ↑N, E}=> ∃ installed bs, mapsto (hG := γh) a 1 (HB installed bs) ∗
-        ( ∀ b, readinstalled_q γh a installed bs b ={E, ⊤ ∖ ↑N}=∗ Q b ) ) -∗
+Theorem wal_heap_readinstalled E γh a (Q : Block -> iProp Σ) :
+  ( |={⊤ ∖ ↑N, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
+        ( ∀ b, readinstalled_q γh.(wal_heap_h) a installed bs b ={E, ⊤ ∖ ↑N}=∗ Q b ) ) -∗
   ( ∀ σ σ' b',
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_read_installed a) σ σ' b'⌝ -∗
-      ( (wal_heap_inv γh γLatest) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh γLatest) σ' ∗ Q b' ) ).
+      ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q b' ) ).
 Proof  using N gen_heapPreG0 heapG0 Σ.
   iIntros "Ha".
   iIntros (σ σ' b') "% % Hinv".
@@ -986,14 +1001,13 @@ Proof  using N gen_heapPreG0 heapG0 Σ.
     3: eauto.
     3: eauto.
     all: simpl; try lia.
-    }
+  }
   iMod "Hfupd".
   iModIntro.
   iFrame.
   destruct H0.
   intuition.
 
-  rewrite /wal_heap_inv.
   iExists _. iFrame.
 Qed.
 
@@ -1135,20 +1149,22 @@ Proof.
 Qed.
 
 
-Theorem wal_heap_memappend E γh γLatest bs (Q : u64 -> iProp Σ) (glatest : gmap u64 Block) :
-  own γLatest (◯ (Excl' glatest)) ∗
-  ( |={⊤ ∖ ↑N, E}=> ∃ olds, memappend_pre γh bs olds ∗
-        ( ∀ txn_id glatest',
-          own γLatest (◯ (Excl' glatest')) ∗ memappend_q γh bs olds txn_id
+Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ)
+                           (σd : disk) (σtxns : list (u64 * list update.t)) :
+  own γh.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+  ( |={⊤ ∖ ↑N, E}=> ∃ olds, memappend_pre γh.(wal_heap_h) bs olds ∗
+        ( ∀ txn_id σtxns',
+          own γh.(wal_heap_txns) (◯ (Excl' (σd, σtxns'))) ∗
+          memappend_q γh.(wal_heap_h) bs olds txn_id
           ={E, ⊤ ∖ ↑N}=∗ Q txn_id ) ) -∗
   ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
-      ( (wal_heap_inv γh γLatest) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh γLatest) σ' ∗ Q txn_id ) ).
+      ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
 Proof using gen_heapPreG0.
-  iIntros "[Hlatestfrag Hpre]".
+  iIntros "[Htxnsfrag Hpre]".
   iIntros (σ σ' pos) "% % Hinv".
-  iDestruct "Hinv" as (gh) "(Hctx & Hgh & Hlatest)".
+  iNamed "Hinv".
 
   simpl in *; monad_inv.
   simpl in *.
@@ -1165,15 +1181,19 @@ Proof using gen_heapPreG0.
 
   iMod (wal_heap_memappend_pre_to_q with "[$Hctx $Hpre]") as "[Hctx Hq]".
 
-  iMod (ghost_var_update _ (hb_latest_update <$> memappend_gh gh bs olds : gmap u64 Block) with "Hlatest Hlatestfrag") as "[Hlatest Hlatestfrag]".
+  iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+  inversion Hagree; clear Hagree. subst.
+  iMod (ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Htxnsfrag") as "[Htxns Htxnsfrag]".
 
   iSpecialize ("Hfupd" $! (pos')).
-  iDestruct ("Hfupd" with "[$Hlatestfrag $Hq]") as "Hfupd".
+  iDestruct ("Hfupd" with "[$Htxnsfrag $Hq]") as "Hfupd".
   iMod "Hfupd".
   iModIntro.
   iFrame.
 
   iExists _. iFrame.
+  iSplitL.
+  2: { iPureIntro. eapply wal_wf_append_txns; eauto. }
   intuition.
 
   iDestruct (big_sepM_forall with "Hgh") as %Hgh.
@@ -1233,49 +1253,120 @@ Proof using gen_heapPreG0.
     }
 Qed.
 
-Theorem wp_Walog__Read l (blkno : u64) walHeap γLatest (glatest : gmap u64 Block) b :
-  {{{ is_wal N (wal_heap_inv walHeap γLatest) l ∗
-      own γLatest (◯ (Excl' glatest)) ∗
-      ⌜ glatest !! blkno = Some b ⌝
+Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
+Proof. apply _. Qed.
+
+Theorem no_updates_since_le σ a t0 t1 :
+  (t0 ≤ t1)%nat ->
+  no_updates_since σ a t0 ->
+  no_updates_since σ a t1.
+Proof.
+  rewrite /no_updates_since /txn_upds; intros.
+  eapply incl_Forall; eauto.
+  admit.
+Admitted.
+
+Theorem wp_Walog__Read l (blkno : u64) γ (σd : disk) (σtxns : list (u64 * list update.t)) b :
+  {{{ is_wal N (wal_heap_inv γ) l ∗
+      own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+      ⌜ apply_upds (txn_upds σtxns) σd !! int.val blkno = Some b ⌝
   }}}
     wal.Walog__Read #l #blkno
   {{{ bl, RET (slice_val bl);
-      own γLatest (◯ (Excl' glatest)) ∗
+      own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
       is_block bl 1 b
   }}}.
 Proof using gen_heapPreG0.
-  iIntros (Φ) "(#Hwal & Hlatestfrag & %Hb) HΦ".
+  iIntros (Φ) "(#Hwal & Htxnsfrag & %Hb) HΦ".
   wp_call.
   wp_apply (wp_Walog__ReadMem _ _
     (λ mb,
       match mb with
-      | Some b' => own γLatest (◯ (Excl' glatest)) ∗ ⌜ b' = b ⌝
-      | None => emp
+      | Some b' => own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗ ⌜ b' = b ⌝
+      | None =>
+        ∀ (σ σ' : log_state.t) (b0 : Block),
+          ⌜wal_wf σ⌝
+          -∗ ⌜relation.denote (log_read_installed blkno) σ σ' b0⌝
+             -∗ wal_heap_inv γ σ
+                ={⊤ ∖ ↑N}=∗ wal_heap_inv γ σ'
+                            ∗ own γ.(wal_heap_txns) (◯ Excl' (σd, σtxns)) ∗ ⌜b0 = b⌝
       end
-    )%I with "[$Hwal Hlatestfrag]").
+    )%I with "[$Hwal Htxnsfrag]").
   { iIntros (σ σ' mb) "%Hwal_wf %Hrelation Hwalinv".
-    iDestruct "Hwalinv" as (gh) "(Hctx & Hgh & Hlatest)".
-    iDestruct (ghost_var_agree with "Hlatest Hlatestfrag") as %<-.
+    iNamed "Hwalinv".
+    iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+    inversion Hagree; clear Hagree; subst.
 
     simpl in *; monad_inv.
     destruct x.
     {
       simpl in *; monad_inv.
       simpl in *; monad_inv.
-      rewrite lookup_fmap in Hb.
-      apply fmap_Some_1 in Hb.
-      destruct Hb; intuition.
-      iDestruct (big_sepM_lookup_acc with "Hgh") as "[%Ha Hgh]"; eauto.
-      destruct x.
-      destruct Ha; intuition.
+
       unfold last_disk in Hrelation.
-      admit.
+      unfold disk_at_txn_id in Hrelation.
+      rewrite firstn_all in Hrelation.
+      rewrite Hb in Hrelation.
+
+      simpl in *; monad_inv.
+
+      iModIntro. iFrame. iSplitL; last by done.
+      iExists _. iFrame. done.
     }
     {
       simpl in *; monad_inv.
       simpl in *; monad_inv.
 
-      admit.
+      iMod (own_update_2 with "Hinstalled Hinstalledfrag") as "[Hinstalled #Hinstalledfrag]".
+      { apply auth_update. apply (mnat_local_update _ _ new_installed). intuition idtac. }
+
+      iModIntro.
+      iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag".
+      { iExists _. iFrame. iFrame "Hinstalledfrag".
+        iSplitL.
+        {
+          iApply wal_update_installed; first by intuition lia.
+          iApply wal_update_durable; first by intuition lia.
+          iFrame. }
+        iPureIntro.
+        eapply wal_wf_advance_installed_lb; last by (intuition; simpl; lia).
+        eapply wal_wf_advance_durable_lb; eauto.
+      }
+
+      iIntros (σ0 σ1 b0) "%Hwf' %Hrelation Hwalinv".
+      simpl in *; monad_inv.
+      simpl in *; monad_inv.
+      match goal with
+      | H : context[unwrap ?x] |- _ => destruct x eqn:?
+      end.
+      2: simpl in *; monad_inv.
+      simpl in *; monad_inv.
+
+      iRename "Hinstalledfrag" into "Hinstalledfrag0".
+      iNamed "Hwalinv".
+      iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+      inversion Hagree; clear Hagree; subst.
+      rewrite <- H5 in Hb.
+      rewrite <- H6 in Hb.
+
+      iDestruct (own_valid_2 with "Hinstalled Hinstalledfrag0")
+        as %[?%mnat_included _]%auth_both_valid.
+
+      rewrite no_updates_since_last_disk in Heqo; eauto.
+      2: {
+        rewrite /no_updates_since. rewrite H6.
+        eapply no_updates_since_le; last by eauto.
+        lia.
+      }
+
+      unfold last_disk in Heqo.
+      unfold disk_at_txn_id in Heqo.
+      rewrite firstn_all in Heqo.
+      rewrite Hb in Heqo.
+      inversion Heqo; subst.
+
+      iModIntro. iFrame. iSplitL; last by done.
+      iExists _. iFrame. done.
     }
   }
 
@@ -1288,28 +1379,40 @@ Proof using gen_heapPreG0.
     iFrame.
   }
   {
-    admit.
+    wp_pures.
+    wp_apply (wp_Walog__ReadInstalled _ _
+      (λ b', own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗ ⌜ b' = b ⌝)%I
+      with "[$Hwal $Hbl]").
+    iIntros (bli) "Hbli".
+    iDestruct "Hbli" as (b0) "(Hb0 & Hlatestfrag & ->)".
+    iApply "HΦ". iFrame.
   }
-Admitted.
+Qed.
 
-Theorem wal_heap_mapsto_latest walHeap γLatest l glatest a v E :
+Theorem wal_heap_mapsto_latest γ l σd σtxns (a : u64) (v : heap_block) E :
   ↑N ⊆ E ->
-  is_wal N (wal_heap_inv walHeap γLatest) l ∗
-  own γLatest (◯ (Excl' glatest)) ∗
-  mapsto (hG := walHeap) a 1 v ={E}=∗
-  ⌜ glatest !! a = Some (hb_latest_update v) ⌝.
+  is_wal N (wal_heap_inv γ) l ∗
+  own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
+  ⌜ apply_upds (txn_upds σtxns) σd !! int.val a = Some (hb_latest_update v) ⌝.
 Proof.
-  iIntros (HNE) "(Hwal & Hlatestfrag & Hmapsto)".
+  iIntros (HNE) "(Hwal & Htxnsfrag & Hmapsto)".
   iInv N as ">[Hl Hheap]".
-  iDestruct "Hheap" as (σ) "Hheap".
-  iDestruct "Hheap" as (gh) "(Hctx & H0 & H1)".
-(*
-  iDestruct (ghost_var_agree with "[]") as "Hagree".
-Print wal_heap_inv.
+  iNamed "Hheap".
+  iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+  inversion Hagree; clear Hagree; subst.
+  iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
+  iDestruct (big_sepM_lookup with "Hgh") as "%Hvalid_gh"; eauto.
+  destruct v.
+  destruct Hvalid_gh; intuition idtac.
   iModIntro.
-  iInv "Hwal" as "Hwal_inner".
-  unfold is_wal.
-*)
-Admitted.
+  iSplitL "Hl Hctx Hgh Htxns Hinstalled Hinstalledfrag".
+  { iNext. iFrame. iExists _. iExists _. iFrame. done. }
+  iModIntro. iPureIntro.
+  eapply updates_since_to_last_disk in H; eauto.
+  2: lia.
+
+  rewrite /last_disk /disk_at_txn_id firstn_all H2 in H. done.
+Qed.
 
 End heap.
