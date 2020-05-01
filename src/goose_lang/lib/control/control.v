@@ -23,8 +23,8 @@ Proof.
 Qed.
 
 Theorem wp_If_join (R: iProp Σ) (b: bool) stk E e1 e2 :
-  ∀ Φ, (⌜ b = true ⌝ ∗ ▷ (R -∗ Φ #()) -∗ WP e1 @ stk; E {{ Φ }}) ∧
-       (⌜ b = false ⌝ ∗ ▷ (R -∗ Φ #()) -∗ WP e2 @ stk; E {{ Φ }}) -∗
+  ∀ Φ, (⌜ b = true ⌝ ∗ (R -∗ Φ #()) -∗ WP e1 @ stk; E {{ Φ }}) ∧
+       (⌜ b = false ⌝ ∗ (R -∗ Φ #()) -∗ WP e2 @ stk; E {{ Φ }}) -∗
        ▷ (R -∗ Φ #()) -∗ WP if: #b then e1 else e2 @ stk; E {{ Φ }}.
 Proof.
   iIntros (Φ) "Hwp HΦ".
