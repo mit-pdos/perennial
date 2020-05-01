@@ -8,6 +8,7 @@ From Perennial.program_logic Require Import recovery_weakestpre recovery_adequac
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
 From Perennial.goose_lang Require Import metatheory.
+From Perennial.Helpers Require Import Qextra.
 
 Set Default Proof Using "Type".
 
@@ -725,6 +726,53 @@ Proof.
     { solve_ndisj. }
 Qed.
 
+Lemma logical_reln_finish_store (ls l: loc) (vs vs': sval) (v v': ival) j K (Hctx: LanguageCtx K) (γ: gname):
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) vTy,
+  {{{ spec_ctx ∗ vTy vs v ∗ j ⤇ K (FinishStore #ls vs) ∗ fc_tok γ (1/2)%Qp ∗
+      inv locN (loc_inv γ ls l vTy) ∗
+      na_heap_mapsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp vs' ∗
+      (∀ v' : sval, na_heap_mapsto ls 1 v' -∗ heap_mapsto ls 1 v') ∗
+      na_heap_mapsto_st (hG := heapG_na_heapG) WSt l 1 v' ∗
+      (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')
+ }}}
+    FinishStore #l v
+ {{{ RET #(); j ⤇ K (of_val #()) }}}.
+Proof.
+  intros. iIntros "(#Hctx&Hv&Hj&Htok&#Hlocinv&Hspts&Hspts_clo&Hpts&Hpts_clo) HΦ".
+  iInv "Hlocinv" as "Hlocinv_body" "Hclo".
+  rewrite /loc_inv. iDestruct "Hlocinv_body" as (mem_vs mem_v) "H".
+  iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
+  {
+    iDestruct "H0readers" as "(>Hfc&_&>Hpts'&_)".
+    iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
+    iDestruct (na_heap_mapsto_frac_valid2 with "Hpts Hpts'") as %Hval.
+    apply Z2Qc_inj_le in Hval. lia.
+  }
+  {
+    iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts'&>Hpts'&_)".
+    iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
+    iDestruct (na_heap_mapsto_frac_valid2 with "Hpts Hpts'") as %Hval.
+    exfalso. eapply (Qp_plus_1_nle_1), Hval.
+  }
+  {
+    iDestruct "Hwriter" as "(>Hfc&>Hspts')".
+    iDestruct (na_heap_mapsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
+    { iFrame. }
+    subst.
+    iCombine "Hspts Hspts'" as "Hspts".
+    wp_apply (wp_finish_store with "[$]").
+    iIntros "Hl".
+    iMod (ghost_finish_store with "Hctx Hspts Hspts_clo Hj") as "(?&Hj)".
+    { solve_ndisj. }
+    iMod (fc_auth_drop_last with "[$]") as "Hfc".
+    iMod ("Hclo" with "[-Hj HΦ]").
+    { iNext. iExists _, _. iLeft. iFrame. }
+    iApply "HΦ"; eauto.
+  }
+Qed.
+
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
   ∀ Γ es e τ, expr_transTy _ _ _ spec_trans Γ es e τ →
@@ -1239,7 +1287,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
     simpl. spec_bind (subst_map _ l) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[Hvarg] [] H"); last done.
     iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
 
     iApply wp_wpc.
@@ -1286,7 +1334,38 @@ Proof using spec_trans.
     spec_bind (PrepareWrite vsl) as Hctx'.
     wp_apply (logical_reln_prepare_write _ _ _ _ _ _ (Hctx') with "[Hvl Hj]").
     { iFrame "Hspec Hvl". iFrame "Hj". }
-    admit.
+    clear Hctx'.
+
+    iDestruct 1 as (lsval lval ?? γ (->&->)) "(#Hlocinv&Htok&Hj&Hspts&Hspts_clo&Hpts&Hpts_clo)".
+
+    simpl.
+    spec_bind (Rec _ _ _) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (Rec _ _ _)
+            with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+
+    simpl.
+    spec_bind (App _ _) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (App _ _)
+            with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+    simpl.
+
+    wp_pures.
+    wp_apply (logical_reln_finish_store with "[-]").
+    { iFrame. iFrame "#". eauto. }
+    iIntros "Hj".
+    iModIntro. iExists _. iFrame. eauto.
   - admit.
   - admit.
   - admit.

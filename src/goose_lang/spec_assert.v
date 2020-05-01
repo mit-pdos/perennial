@@ -219,6 +219,35 @@ Proof.
   iModIntro. iApply "Hclo_l". iFrame.
 Qed.
 
+Lemma ghost_finish_store j K `{LanguageCtx _ K} E l (v' v: val) :
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  na_heap_mapsto_st WSt l 1 v' -∗
+  (∀ v', na_heap_mapsto (hG := refinement_na_heapG) l 1 v' -∗ l s↦ v') -∗
+  j ⤇ K (FinishStore (Val $ LitV $ LitLoc l) v) ={E}=∗
+  l s↦ v ∗ j ⤇ K #().
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hl Hlclo Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iMod (na_heap_write_finish_vs _ _ _ _ (Reading 0) with "Hl Hσ") as (lkw (?&Hlock)) "(Hσ&Hl)"; first done.
+  destruct lkw; inversion Hlock; subst.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_inv; simpl in *; monad_simpl).
+    econstructor.
+    - rewrite /is_Writing/ifThenElse. destruct (decide _).
+      * econstructor. eauto.
+      * exfalso; eauto.
+    - repeat (monad_inv; simpl in *; monad_simpl).
+  }
+  { eauto. }
+  iMod ("Hclo" with "[Hσ H Hrest]").
+  { iNext. iExists _. iFrame "H". simpl. iFrame; simpl. rewrite upd_equiv_null_non_alloc; eauto. }
+  simpl. iFrame. iModIntro. iApply "Hlclo"; eauto.
+Qed.
+
 Lemma ghost_prepare_write j K `{LanguageCtx _ K} E l v :
   nclose sN ⊆ E →
   spec_ctx -∗

@@ -168,7 +168,7 @@ Section translate.
   | store_transTy l l' v v' t ts :
       Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ v -- v' : t ->
-      Γ ⊢ Store l v -- Store l' v' : t
+      Γ ⊢ Store l v -- Store l' v' : unitT
   (* XXX: need to fix this to be for compound
      use of prepare followed by finish *)
   | start_read_transTy l l' t ts :

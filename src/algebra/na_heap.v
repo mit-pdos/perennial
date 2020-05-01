@@ -240,11 +240,37 @@ Section na_heap.
     AsFractional (l ↦{q} v) (λ q, l ↦{q} v)%I q.
   Proof. split. done. apply _. Qed.
 
-  Lemma na_heap_mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 ∗ l ↦{q2} v2 ⊢ ⌜v1 = v2⌝.
+  Lemma na_heap_mapsto_st_agree l st1 st2 q1 q2 v1 v2 :
+    na_heap_mapsto_st st1 l q1 v1 ∗
+    na_heap_mapsto_st st2 l q2 v2 -∗
+    ⌜v1 = v2⌝.
   Proof.
-    rewrite na_heap_mapsto_eq -own_op -auth_frag_op own_valid discrete_valid.
+    rewrite -own_op -auth_frag_op own_valid discrete_valid.
     eapply pure_elim; [done|]=> /auth_frag_valid /=.
     rewrite singleton_op -pair_op singleton_valid=> -[? /agree_op_invL'->]; eauto.
+  Qed.
+
+  Lemma na_heap_mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 ∗ l ↦{q2} v2 ⊢ ⌜v1 = v2⌝.
+  Proof. by rewrite na_heap_mapsto_eq na_heap_mapsto_st_agree. Qed.
+
+  Lemma na_heap_mapsto_frac_valid l q st v : na_heap_mapsto_st st l q v -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+  Proof.
+    rewrite /na_heap_mapsto_st.
+    rewrite own_valid discrete_valid.
+    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid'.
+    iPureIntro. naive_solver.
+  Qed.
+
+  Lemma na_heap_mapsto_frac_valid2 l q q' st st' v v' :
+    na_heap_mapsto_st st l q v -∗
+    na_heap_mapsto_st st' l q' v' -∗
+    ⌜(q ⋅ q' ≤ 1%Qp)%Qc⌝.
+  Proof.
+    iIntros "Hown1 Hown2". iCombine "Hown1 Hown2" as "Hown".
+    rewrite /na_heap_mapsto_st own_valid discrete_valid.
+    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid'.
+    iDestruct "Hown" as %Hpure.
+    iPureIntro. naive_solver.
   Qed.
 
   (** General properties of [meta] and [meta_token] *)

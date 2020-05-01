@@ -122,6 +122,11 @@ Definition Store {ext:ext_op} : val :=
 (* The unicode ← is already part of the notation "_ ← _; _" for bind. *)
 Notation "e1 <- e2" := (Store e1%E e2%E) (at level 80) : expr_scope.
 
+Definition Read {ext:ext_op} : val :=
+  LamV "l" ((Let "v" (StartRead (Var "l"))
+                     (Seq (FinishRead (Var "l"))
+                          (Var "v")))).
+
 (* The breaking point '/  ' makes sure that the body of the rec is indented
 by two spaces in case the whole rec does not fit on a single line. *)
 Notation "'rec:' f x := e" := (Rec f%binder x%binder e%E)
