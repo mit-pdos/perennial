@@ -208,6 +208,51 @@ Proof.
   simpl. auto.
 Qed.
 
+Theorem wp_forSlice_updates (I: u64 -> iProp Σ) stk E s q us (body: val) :
+  (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t),
+      {{{ I i ∗ ⌜(int.nat i < length us)%nat⌝ ∗
+                is_block uv.2 q u.(update.b) ∗
+                ⌜us !! int.nat i = Some u⌝ }}}
+        body #i (update_val uv) @ stk; E
+      {{{ RET #(); I (word.add i (U64 1)) ∗
+                   is_block uv.2 q u.(update.b) }}}) -∗
+    {{{ I (U64 0) ∗ updates_slice_frag s q us }}}
+      forSlice (struct.t Update.S) body (slice_val s) @ stk; E
+    {{{ RET #(); I s.(Slice.sz) ∗ updates_slice_frag s q us }}}.
+Proof.
+  iIntros "#Hwp".
+  iIntros "!>" (Φ) "(I0&Hupds) HΦ".
+  iDestruct "Hupds" as (bks) "(Hs&Hbs)".
+  iDestruct (is_slice_small_sz with "Hs") as %Hslen.
+  autorewrite with len in Hslen.
+  iDestruct (big_sepL2_length with "Hbs") as %Hlen_eq.
+  wp_apply (wp_forSlice
+              (fun i => I i ∗
+                       [∗ list] b_upd;upd ∈ bks;us, is_block b_upd.2 q upd.(update.b)
+                       ∗ ⌜b_upd.1 = upd.(update.addr)⌝)%I with "[] [$I0 $Hs $Hbs]").
+  {
+    clear Φ.
+    iIntros (i x).
+    iIntros "!>" (Φ) "[(HI&Hbs) %] HΦ".
+    destruct H as [Hbound Hlookup].
+    rewrite list_lookup_fmap in Hlookup.
+    apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
+    destruct (list_lookup_lt _ us (int.nat i) ltac:(word)) as [u Hlookup'].
+    iDestruct (big_sepL2_lookup_acc with "Hbs") as "[[Hb %] Hbs]"; eauto.
+    wp_apply ("Hwp" with "[$HI $Hb]").
+    - iPureIntro.
+      split; auto.
+      word.
+    - iIntros "(HI&Hb)".
+      iSpecialize ("Hbs" with "[$Hb //]").
+      iApply ("HΦ" with "[$]").
+  }
+  iIntros "[(HI&Hbs) Hs]".
+  iApply "HΦ".
+  iFrame.
+  iExists _; iFrame.
+Qed.
+
 Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) q b :
   {{{ is_block (snd u) q b }}}
     copyUpdateBlock (update_val u) @ stk; E
