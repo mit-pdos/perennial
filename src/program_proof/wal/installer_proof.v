@@ -82,14 +82,6 @@ Proof.
     iPureIntro; eauto. }
 Qed.
 
-(* simpler read_installed just for experimenting *)
-Definition log_read_installed (a:u64): transition log_state.t Block :=
-  installed_txn_id ← suchThat (fun s txn_id =>
-                                 s.(log_state.installed_lb) ≤
-                                 txn_id)%nat;
-  d ← reads (disk_at_txn_id installed_txn_id);
-  unwrap (d !! int.val a).
-
 Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ a :
   {{{ is_wal P l γ ∗
       in_bounds γ a ∗
