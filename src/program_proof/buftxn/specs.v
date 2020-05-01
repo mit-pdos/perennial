@@ -9,7 +9,8 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
 From Perennial.program_proof Require Import txn.specs buf.defs buf.specs addr.specs.
 
 Class buftxnG Σ :=
-  { buftxn_bool  :> inG Σ (ghostR $ boolO);
+  { buftxn_txn   :> txnG Σ;
+    buftxn_bool  :> inG Σ (ghostR $ boolO);
     buftxn_bufs  :> gen_heapPreG addr {K & bufDataT K} Σ;
     (* XXX: never used? *)
     buftxn_hb    :> gen_heapPreG u64 heapspec.heap_block Σ;

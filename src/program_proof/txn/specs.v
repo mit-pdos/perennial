@@ -17,19 +17,20 @@ Inductive updatable_buf (T : Type) :=
 
 Arguments UB {T} v modifiedSinceInstallG.
 
+Class txnG (Σ: gFunctors) :=
+  { txn_bool :> inG Σ (ghostR $ boolO);
+    txn_gmap_u64_block :> inG Σ (ghostR $ gmapO u64 blockO);
+    txn_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
+    txn_mnat :> inG Σ (authR mnatUR);
+  }.
+
 Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
 Context `{!{K & gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ}}.
 Context `{!gen_heapPreG addr {K & @bufDataT K} Σ}.
-Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
-Context `{!inG Σ (authR (optionUR (exclR (gmapO u64 blockO))))}.
-Context `{!inG Σ
-        (authR
-           (optionUR
-              (exclR (prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO)))))))}.
-Context `{!inG Σ (authR mnatUR)}.
+Context `{!txnG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -206,7 +207,7 @@ Theorem wp_txn_Load K l gData a v :
       ⌜ existT b.(bufKind) b.(bufData) = existT K v ⌝ ∗
       mapsto_txn gData a v
   }}}.
-Proof using gen_heapPreG0 heapG0 inG0 lockG0 Σ.
+Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iIntros (Φ) "(Htxn & Hstable) HΦ".
   iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
   iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".
