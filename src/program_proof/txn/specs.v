@@ -25,6 +25,11 @@ Context `{!{K & gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ}}.
 Context `{!gen_heapPreG addr {K & @bufDataT K} Σ}.
 Context `{!inG Σ (authR (optionUR (exclR boolO)))}.
 Context `{!inG Σ (authR (optionUR (exclR (gmapO u64 blockO))))}.
+Context `{!inG Σ
+        (authR
+           (optionUR
+              (exclR (prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO)))))))}.
+Context `{!inG Σ (authR mnatUR)}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -144,11 +149,11 @@ Definition is_txn (l : loc)
     (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
     : iProp Σ :=
   (
-    ∃ γLatest γLock (walHeap : gen_heapG u64 heap_block Σ) (mu : loc) (walptr : loc),
+    ∃ γLatest γLock (walHeap : wal_heap_gnames) (mu : loc) (walptr : loc),
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
-      "Hiswal" ∷ is_wal walN (wal_heap_inv walHeap γLatest) walptr ∗
-      "Histxna" ∷ inv invN (is_txn_always walHeap gData) ∗
+      "Hiswal" ∷ is_wal walN (wal_heap_inv walHeap) walptr ∗
+      "Histxna" ∷ inv invN (is_txn_always walHeap.(wal_heap_h) gData) ∗
       "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l γLatest)
   )%I.
 
@@ -189,8 +194,6 @@ Proof.
   destruct (decide (projT1 gm = projT1 gm)); eauto.
   rewrite <- Eqdep.Eq_rect_eq.eq_rect_eq. iFrame.
 Qed.
-
-
 
 Theorem wp_txn_Load K l gData a v :
   {{{ is_txn l gData ∗
