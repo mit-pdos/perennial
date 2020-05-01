@@ -200,7 +200,7 @@ Definition is_installed γ d txns installed_lb : iProp Σ :=
      write down what it maintains as part of its loop invariant *)
     "Howninstalled" ∷ (own γ.(new_installed_name) (● Excl' new_installed_txn_id) ∗
      own γ.(being_installed_name) (● Excl' being_installed)) ∗
-    "%Hinstalled_bounds" ∷ ⌜(installed_lb ≤ installed_txn_id ≤ new_installed_txn_id)%nat⌝ ∗
+    "%Hinstalled_bounds" ∷ ⌜(installed_lb ≤ installed_txn_id ≤ new_installed_txn_id)%nat ∧ (new_installed_txn_id ≤ length txns)%nat⌝ ∗
     "Hdata" ∷ ([∗ map] a ↦ _ ∈ d,
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
@@ -216,7 +216,7 @@ Definition is_installed γ d txns installed_lb : iProp Σ :=
 Definition is_installed_read γ d txns installed_lb : iProp Σ :=
   ([∗ map] a ↦ _ ∈ d,
     ∃ (b: Block),
-      ⌜∃ txn_id', (installed_lb ≤ txn_id')%nat ∧
+      ⌜∃ txn_id', (installed_lb ≤ txn_id' ≤ length txns)%nat ∧
       let txns := take txn_id' txns in
       apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
@@ -243,7 +243,8 @@ Proof.
     iPureIntro.
     split; auto.
     destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_txn_id ].
-    - split; auto; lia.
+    - split; auto.
+      split; try lia.
     - split; auto; lia. }
   iIntros "Hmap".
   admit.

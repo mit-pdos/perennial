@@ -122,7 +122,8 @@ Definition installed_disk (s:log_state.t): disk :=
 Definition log_read_installed (a:u64): transition log_state.t Block :=
   installed_txn_id ← suchThat (fun s txn_id =>
                                  s.(log_state.installed_lb) ≤
-                                 txn_id);
+                                 txn_id ≤
+                                 length s.(log_state.txns))%nat;
   d ← reads (disk_at_txn_id installed_txn_id);
   unwrap (d !! int.val a).
 

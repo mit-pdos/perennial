@@ -63,7 +63,7 @@ Theorem is_installed_read_lookup {γ d txns installed_lb} {a: u64} :
   is_Some (d !! int.val a) ->
   is_installed_read γ d txns installed_lb -∗
   ∃ txn_id b,
-    ⌜(installed_lb ≤ txn_id)%nat ∧
+    ⌜(installed_lb ≤ txn_id ≤ length txns)%nat ∧
       apply_upds (txn_upds (take txn_id txns)) d !! int.val a = Some b⌝ ∗
     int.val a d↦ b ∗ (int.val a d↦ b -∗ is_installed_read γ d txns installed_lb).
 Proof.
@@ -75,7 +75,8 @@ Proof.
   destruct Hbvalue as [txn_id (Htxn_id_bound&Htxns_val)].
   iExists txn_id, b.
   iFrame "Hb".
-  iSplit; first by auto.
+  iSplit.
+  { iPureIntro. split; auto; lia. }
   iIntros "Hb".
   iApply ("Hbs" with "[Hb]").
   { iExists _; iFrame.
