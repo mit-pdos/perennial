@@ -1277,7 +1277,13 @@ Proof using gen_heapPreG0.
     {
       simpl in *; monad_inv.
       simpl in *; monad_inv.
-
+      rewrite lookup_fmap in Hb.
+      apply fmap_Some_1 in Hb.
+      destruct Hb; intuition.
+      iDestruct (big_sepM_lookup_acc with "Hgh") as "[%Ha Hgh]"; eauto.
+      destruct x.
+      destruct Ha; intuition.
+      unfold last_disk in Hrelation.
       admit.
     }
     {
