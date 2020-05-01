@@ -1389,15 +1389,13 @@ Proof using gen_heapPreG0.
   }
 Qed.
 
-Theorem wal_heap_mapsto_latest γ l σd σtxns (a : u64) (v : heap_block) E :
-  ↑N ⊆ E ->
-  is_wal N (wal_heap_inv γ) l ∗
+Theorem wal_heap_mapsto_latest_helper γ σd σtxns (a : u64) (v : heap_block) σ :
+  wal_heap_inv γ σ ∗
   own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
-  mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v -∗
   ⌜ apply_upds (txn_upds σtxns) σd !! int.val a = Some (hb_latest_update v) ⌝.
 Proof.
-  iIntros (HNE) "(Hwal & Htxnsfrag & Hmapsto)".
-  iInv N as ">[Hl Hheap]".
+  iIntros "(Hheap & Htxnsfrag & Hmapsto)".
   iNamed "Hheap".
   iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
   inversion Hagree; clear Hagree; subst.
@@ -1405,14 +1403,29 @@ Proof.
   iDestruct (big_sepM_lookup with "Hgh") as "%Hvalid_gh"; eauto.
   destruct v.
   destruct Hvalid_gh; intuition idtac.
-  iModIntro.
-  iSplitL "Hl Hctx Hgh Htxns Hinstalled Hinstalledfrag".
-  { iNext. iFrame. iExists _. iExists _. iFrame. done. }
-  iModIntro. iPureIntro.
+  iPureIntro.
   eapply updates_since_to_last_disk in H; eauto.
   2: lia.
-
   rewrite /last_disk /disk_at_txn_id firstn_all H2 in H. done.
+Qed.
+
+Theorem wal_heap_mapsto_latest γ l σd σtxns (a : u64) (v : heap_block) E :
+  ↑N ⊆ E ->
+  is_wal N (wal_heap_inv γ) l ∗
+  own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
+    own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+    mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
+    ⌜ apply_upds (txn_upds σtxns) σd !! int.val a = Some (hb_latest_update v) ⌝.
+Proof.
+  iIntros (HNE) "(Hwal & Htxnsfrag & Hmapsto)".
+  iInv N as ">[Hl Hheap]".
+  iDestruct "Hheap" as (σ) "Hheap".
+  iDestruct (wal_heap_mapsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
+  iModIntro.
+  iSplitL "Hl Hheap".
+  { iNext. iFrame. iExists _. iFrame. }
+  iModIntro. iFrame. done.
 Qed.
 
 End heap.
