@@ -182,6 +182,10 @@ Module WalogState.
   ].
 End WalogState.
 
+Definition WalogState__memEnd: val :=
+  rec: "WalogState__memEnd" "st" :=
+    struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st").
+
 Module Walog.
   Definition S := struct.decl [
     "memLock" :: lockRefT;
@@ -425,7 +429,7 @@ Definition WalogState__doMemAppend: val :=
    Assumes caller holds memLock. *)
 Definition WalogState__endGroupTxn: val :=
   rec: "WalogState__endGroupTxn" "st" :=
-    struct.storeF WalogState.S "nextDiskEnd" "st" (struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st")).
+    struct.storeF WalogState.S "nextDiskEnd" "st" (WalogState__memEnd "st").
 
 Definition copyUpdateBlock: val :=
   rec: "copyUpdateBlock" "u" :=
@@ -491,8 +495,7 @@ Definition Walog__MemAppend: val :=
           "ok" <-[boolT] #false;;
           Break
         else
-          let: "memEnd" := struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l") + slice.len (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) in
-          let: "memSize" := "memEnd" - struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
+          let: "memSize" := WalogState__memEnd (struct.loadF Walog.S "st" "l") - struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
           (if: "memSize" + slice.len "bufs" > LOGSZ
           then
             util.DPrintf #5 (#(str"memAppend: log is full; try again")) #();;

@@ -84,6 +84,7 @@ Proof.
   iNamed "Hfield_ptsto".
   rewrite -wp_fupd.
   wp_call.
+  rewrite /WalogState__memEnd.
   wp_loadField. wp_loadField. wp_apply wp_slice_len. wp_storeField.
   iApply "HΦ".
   iDestruct (updates_slice_len with "His_memLog") as %HmemLog_len.
