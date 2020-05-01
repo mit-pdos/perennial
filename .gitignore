@@ -3,6 +3,7 @@
 /doc
 *.lia.cache
 *.nia.cache
+*.nra.cache
 
 # emacs
 *.aux
