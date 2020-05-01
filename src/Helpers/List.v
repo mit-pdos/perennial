@@ -48,6 +48,14 @@ Section list.
     apply lookup_seq in Hlookup; intuition subst.
     apply H0; eauto.
   Qed.
+
+  (* copied from Coq 8.12+alpha for compatibility with Coq 8.11 *)
+  Lemma incl_Forall P l1 l2 : incl l2 l1 -> Forall P l1 -> Forall P l2.
+  Proof.
+    intros Hincl HF.
+    apply List.Forall_forall; intros a Ha.
+    apply List.Forall_forall with (x:=a) in HF; intuition.
+  Qed.
 End list.
 
 (* section for more specific list lemmas that aren't for arbitrary [list A] *)
