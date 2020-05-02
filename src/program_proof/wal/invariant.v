@@ -81,6 +81,11 @@ Global Instance locked_state_eta: Settable _ :=
 
 Global Instance locked_state_witness: Inhabited locked_state := populate!.
 
+Definition locked_wf (σ: locked_state) :=
+  int.val σ.(memStart) ≤ int.val σ.(diskEnd) ≤ int.val σ.(nextDiskEnd) ∧
+  int.val σ.(diskEnd) ≤ int.val σ.(memStart) + length σ.(memLog) ∧
+  int.val σ.(memStart) + length σ.(memLog) < 2^64.
+
 Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
   readonly (mapsto (hG:=γ.(txns_ctx_name)) txn_id 1 txn).
 
@@ -115,6 +120,7 @@ Definition wal_linv_fields st σ: iProp Σ :=
           "HmemLogMap" ∷ st ↦[WalogState.S :: "memLogMap"] #σₗ.(memLogMapPtr) ∗
           "Hshutdown" ∷ st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
           "Hnthread" ∷ st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
+  "%Hlocked_wf" ∷ ⌜locked_wf σ⌝ ∗
   "His_memLogMap" ∷ is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅) ∗
   "His_memLog" ∷ updates_slice σₗ.(memLogSlice) σ.(memLog))%I.
 
@@ -403,7 +409,7 @@ Proof.
   iIntros (shutdown' nthread') "Hshutdown Hnthread".
   iExists σ; iFrame "# ∗".
   iExists (set shutdown (λ _, shutdown') (set nthread (λ _, nthread') σₗ)); simpl.
-  iFrame.
+  by iFrame.
 Qed.
 
 Theorem wal_linv_load_nextDiskEnd st γ :
@@ -421,7 +427,7 @@ Proof.
   iIntros "HnextDiskEnd2".
   iCombine "HnextDiskEnd1 HnextDiskEnd2" as "HnextDiskEnd".
   iExists _; iFrame "# ∗".
-  iExists _; iFrame.
+  iExists _; by iFrame.
 Qed.
 
 Lemma wal_wf_txns_mono_pos {σ txn_id1 pos1 txn_id2 pos2} :

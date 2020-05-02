@@ -74,7 +74,7 @@ Proof.
     apply_upds formulation is actually a good way to phrase it, especially since
     [apply_upds] and [compute_memLogMap] are similar fold_left's) *)
       admit.
-    + iExists _; iFrame.
+    + iExists _; by iFrame.
   - wp_pures.
     iApply ("HΦ" $! Slice.nil false).
     iFrame.

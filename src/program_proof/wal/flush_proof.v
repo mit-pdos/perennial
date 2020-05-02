@@ -70,6 +70,8 @@ Proof.
     eauto.
 Qed.
 
+Hint Unfold locked_wf : word.
+
 Theorem wp_endGroupTxn st γ :
   {{{ wal_linv st γ }}}
     WalogState__endGroupTxn #st
@@ -90,8 +92,11 @@ Proof.
   iSplitL "HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread His_memLogMap His_memLog".
   { iModIntro.
     iExists σₗ; simpl.
-    iFrame. }
-  iFrame.
+    iFrame.
+    iPureIntro.
+    { hnf; simpl; word. }
+  }
+  iFrame "# ∗".
   (* TODO: definitely not enough, need the wal invariant to allocate a new txn_pos *)
 Admitted.
 
@@ -205,7 +210,7 @@ Proof.
     - wp_loadField.
       wp_apply (wp_condWait with "[-HΦ $cond_logger $lk $Hlocked]").
       { iExists _; iFrame "∗ #".
-        iExists _; iFrame. }
+        iExists _; by iFrame. }
       iIntros "(Hlocked&Hlockin)".
       wp_pures.
       iApply "HΦ"; iFrame.
@@ -215,7 +220,7 @@ Proof.
       apply bool_decide_eq_true in Heqb.
       iSplitL.
       { iExists _; iFrame "HdiskEnd_at_least Hstart_at_least ∗".
-        iExists _; iFrame. }
+        iExists _; by iFrame. }
       iApply (diskEnd_at_least_mono with "HdiskEnd_at_least"); auto.
   }
 
