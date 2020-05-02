@@ -840,8 +840,8 @@ Proof.
         replace (S (Pos.to_nat n')) with (S (Pos.to_nat n') + 0)%nat by lia.
         iMod (fc_auth_new_tok _ q q' with "Hfc") as "(Hfc&Htok)"; eauto.
         specialize (Qp_div_2 q') => Hq'.
-        rewrite -[x in na_heap_mapsto_st _ _ x _]Hq'.
-        rewrite -[x in na_heap_mapsto_st (hG := refinement_na_heapG) _ _ x _]Hq'.
+        rewrite -[x in na_heap_mapsto_st _ lv x _]Hq'.
+        rewrite -[x in na_heap_mapsto_st (hG := refinement_na_heapG) _ _ x mem_vs]Hq'.
         iDestruct (na_heap_mapsto_st_rd_frac _ 1 O with "Hpts") as "(Hpts1&Hpts2)".
         iDestruct (na_heap_mapsto_st_rd_frac _ _ _ with "Hspts") as "(Hspts1&Hspts2)".
         iMod ("Hclo" with "[Hpts2 Hspts1 Hfc Hval]").
