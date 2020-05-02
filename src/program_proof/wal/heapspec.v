@@ -1315,7 +1315,7 @@ Proof.
   intros.
   eapply in_drop_ge; eauto.
   lia.
-Qed.c
+Qed.
 
 Theorem wp_Walog__Read l (blkno : u64) γ (σd : disk) (σtxns : list (u64 * list update.t)) b :
   {{{ is_wal N (wal_heap_inv γ) l ∗
