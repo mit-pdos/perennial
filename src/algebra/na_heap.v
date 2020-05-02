@@ -273,6 +273,15 @@ Section na_heap.
     iPureIntro. naive_solver.
   Qed.
 
+  Lemma na_heap_mapsto_st_rd_frac l n n' q q' v v' :
+    na_heap_mapsto_st (RSt (n + n')) l (q + q') v ⊣⊢
+    na_heap_mapsto_st (RSt n) l (q) v ∗
+    na_heap_mapsto_st (RSt n') l (q') v.
+  Proof.
+    rewrite /na_heap_mapsto_st.
+    rewrite -own_op -auth_frag_op singleton_op -?pair_op -Cinr_op ?agree_idemp nat_op_plus //=.
+  Qed.
+
   (** General properties of [meta] and [meta_token] *)
   Global Instance meta_token_timeless l N : Timeless (meta_token l N).
   Proof. rewrite meta_token_eq /meta_token_def. apply _. Qed.
@@ -743,20 +752,44 @@ Section na_heap.
     eauto.
   Qed.
 
+  Lemma na_heap_read_prepare' tls rl σ l n q v :
+    is_read_lock tls rl →
+    na_heap_ctx tls σ -∗ na_heap_mapsto_st (RSt n) l q v ==∗ ∃ lk n',
+      ⌜ σ !! l = Some (lk, v) ∧ tls lk = RSt n' ⌝ ∗
+      na_heap_ctx tls (<[l:=(rl lk, v)]> σ) ∗
+      na_heap_mapsto_st (RSt (S n)) l q v.
+  Proof.
+    iIntros (Hrl) "Hσ Hmt".
+    iDestruct "Hσ" as (m sz Hσm) "[Hσ Hσm]".
+    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[lk [n' [Hσl Hlkeq]]]; eauto.
+    iMod (na_heap_read_vs _ _ n (S n) with "Hσ Hmt") as "[Hσ Hmt]"; [ done | done | by eapply Hrl | ].
+    iModIntro. iExists lk, (n + n'); iSplit; [done|]. iFrame "Hσ Hmt".
+    iExists _, _. rewrite dom_insert_L block_sizes_wf_override //. iFrame. iPureIntro; set_solver.
+  Qed.
+
   Lemma na_heap_read_prepare tls rl σ l q v :
     is_read_lock tls rl →
     na_heap_ctx tls σ -∗ l ↦{q} v ==∗ ∃ lk n,
       ⌜ σ !! l = Some (lk, v) ∧ tls lk = RSt n ⌝ ∗
       na_heap_ctx tls (<[l:=(rl lk, v)]> σ) ∗
       na_heap_mapsto_st (RSt 1) l q v.
+  Proof. rewrite na_heap_mapsto_eq. apply na_heap_read_prepare'. Qed.
+
+  Lemma na_heap_read_finish_vs' tls url l n q v:
+    is_read_unlock tls url →
+    na_heap_mapsto_st (RSt (S n)) l q v -∗
+    (∀ σ2, na_heap_ctx tls σ2 ==∗ ∃ lk n',
+            ⌜σ2 !! l = Some (lk, v) ∧ tls lk = RSt (S n') ⌝ ∗
+            na_heap_ctx tls (<[l:=(url lk, v)]> σ2) ∗
+            na_heap_mapsto_st (RSt n) l q v).
   Proof.
-    iIntros (Hrl) "Hσ Hmt".
-    rewrite na_heap_mapsto_eq.
-    iDestruct "Hσ" as (m sz Hσm) "[Hσ Hσm]".
-    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[lk [n [Hσl Hlkeq]]]; eauto.
-    iMod (na_heap_read_vs _ _ 0 1 with "Hσ Hmt") as "[Hσ Hmt]"; [ done | done | by eapply Hrl | ].
-    iModIntro. iExists lk, n; iSplit; [done|]. iFrame "Hσ Hmt".
-    iExists _, _. rewrite dom_insert_L block_sizes_wf_override //. iFrame. iPureIntro; set_solver.
+    iIntros (Hurl) "Hmt".
+    iIntros (σ2). iIntros "Hσ".
+    iDestruct "Hσ" as (m' sz Hσm) "[Hσ Hσm]".
+    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[lk [n' [Hσl Hlkeq]]]; eauto.
+    iMod (na_heap_read_vs _ _ (S n) n with "Hσ Hmt") as "[Hσ Hmt]"; [ done | done | by eapply Hurl | ].
+    iExists lk, (n + n'); iModIntro; iSplit; [done|]. iFrame. iExists _, _.
+    rewrite dom_insert_L block_sizes_wf_override //. iFrame. iPureIntro; set_solver.
   Qed.
 
   Lemma na_heap_read_finish_vs tls url l q v:
@@ -765,16 +798,7 @@ Section na_heap.
     (∀ σ2, na_heap_ctx tls σ2 ==∗ ∃ lk n,
             ⌜σ2 !! l = Some (lk, v) ∧ tls lk = RSt (S n) ⌝ ∗
             na_heap_ctx tls (<[l:=(url lk, v)]> σ2) ∗ l ↦{q} v).
-  Proof.
-    iIntros (Hurl) "Hmt".
-    rewrite na_heap_mapsto_eq.
-    iIntros (σ2). iIntros "Hσ".
-    iDestruct "Hσ" as (m' sz Hσm) "[Hσ Hσm]".
-    iDestruct (na_heap_mapsto_lookup with "Hσ Hmt") as %[lk [n [Hσl Hlkeq]]]; eauto.
-    iMod (na_heap_read_vs _ _ 1 0 with "Hσ Hmt") as "[Hσ Hmt]"; [ done | done | by eapply Hurl | ].
-    iExists lk, n; iModIntro; iSplit; [done|]. iFrame. iExists _, _.
-    rewrite dom_insert_L block_sizes_wf_override //. iFrame. iPureIntro; set_solver.
-  Qed.
+  Proof. rewrite na_heap_mapsto_eq. apply na_heap_read_finish_vs'. Qed.
 
   Lemma na_heap_read_na tls rl url σ l q v :
     is_read_lock tls rl →

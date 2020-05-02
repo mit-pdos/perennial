@@ -1370,7 +1370,6 @@ Proof using spec_trans.
   - admit.
   - admit.
   - admit.
-  - admit.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.

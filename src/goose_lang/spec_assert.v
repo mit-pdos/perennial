@@ -374,6 +374,138 @@ Proof.
   solve_ndisj.
 Qed.
 
+Lemma ghost_finish_read j K `{LanguageCtx _ K} E l n q (v: val) :
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  na_heap_mapsto_st (RSt (S n)) l q v -∗
+  j ⤇ K (FinishRead (Val $ LitV $ LitLoc l)) ={E}=∗
+  na_heap_mapsto_st (RSt n) l q v ∗ j ⤇ K #().
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iMod (na_heap_read_finish_vs' _ (fun m => match m with | Reading (S n) => Reading n | _ => m end) with "Hl Hσ") as (lk1 n1 (Hlookup&Hlock)) "[Hσ Hl]".
+  1: {
+    intros lk lkn Hlk. destruct lk; inversion Hlk; subst.
+    rewrite /= //.
+  }
+  destruct lk1; inversion Hlock; subst.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_inv; simpl in *; monad_simpl).
+  }
+  { eauto. }
+  iMod ("Hclo" with "[Hσ H Hrest]").
+  { iNext. iExists _. iFrame "H". simpl. iFrame; simpl. rewrite upd_equiv_null_non_alloc; eauto. }
+  simpl. by iFrame.
+Qed.
+
+Lemma ghost_start_read j K `{LanguageCtx _ K} E l n q (v: val) :
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  na_heap_mapsto_st (RSt n) l q v -∗
+  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) ={E}=∗
+  na_heap_mapsto_st (RSt (S n)) l q v ∗ j ⤇ K v.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iMod (na_heap_read_prepare' _ (fun m => match m with | Reading n => Reading (S n) | _ => m end) with "Hσ Hl") as (lk1 n1 (Hlookup&Hlock)) "[Hσ Hl]".
+  1: {
+    intros lk lkn Hlk. destruct lk; inversion Hlk; subst.
+    rewrite /= //.
+  }
+  destruct lk1; inversion Hlock; subst.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_simpl; simpl).
+  }
+  { eauto. }
+  iMod ("Hclo" with "[Hσ H Hrest]").
+  { iNext. iExists _. iFrame "H". simpl. iFrame; simpl. rewrite upd_equiv_null_non_alloc; eauto. }
+  by iFrame.
+Qed.
+
+Lemma ghost_start_read_block_oob_stuck j K `{LanguageCtx _ K} E l n
+  (Hoff: (addr_offset l < 0 ∨ n <= addr_offset l)%Z):
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  na_block_size (addr_base l) n →
+  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iDestruct (@na_block_size_oob_lookup with "Hσ Hl") as %Hnone; auto.
+  iMod (ghost_step_stuck with "Hj Hctx H") as %[].
+  {
+  split; first done.
+  apply prim_head_irreducible; auto.
+  * inversion 1; repeat (monad_inv; simpl in * ).
+    match goal with
+      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
+    end.
+    simpl in *. monad_inv; eauto.
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val #l = e').
+    { move: Heq. destruct Ki => //=; congruence. }
+    subst. eauto.
+  }
+  solve_ndisj.
+Qed.
+
+Lemma ghost_start_read_write_stuck j K `{LanguageCtx _ K} E l q (v: val):
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  na_heap_mapsto_st (WSt) l q v -∗
+  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hl Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iDestruct (@na_heap_write_lookup with "Hσ Hl") as %([]&?&Hlock); try inversion Hlock; subst.
+  iMod (ghost_step_stuck with "Hj Hctx H") as %[].
+  {
+  split; first done.
+  apply prim_head_irreducible; auto.
+  * inversion 1; repeat (monad_inv; simpl in * ).
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val #l = e').
+    { move: Heq. destruct Ki => //=; congruence. }
+    subst. eauto.
+  }
+  solve_ndisj.
+Qed.
+
+Lemma ghost_start_read_null_stuck j K `{LanguageCtx _ K} E l:
+  addr_base l = null →
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+Proof.
+  iIntros (Hnull ?) "(#Hctx&#Hstate) Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct (spec_interp_null _ l with "Hinterp") as ">Hnone"; eauto.
+  iDestruct "Hnone" as %Hnone.
+  iMod (ghost_step_stuck with "Hj Hctx H") as %[].
+  {
+  split; first done.
+  apply prim_head_irreducible; auto.
+  * inversion 1; repeat (monad_inv; simpl in * ).
+    match goal with
+      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
+    end.
+    simpl in *. monad_inv; eauto.
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val #l = e').
+    { move: Heq. destruct Ki => //=; congruence. }
+    subst. eauto.
+  }
+  solve_ndisj.
+Qed.
+
 Definition spec_mapsto_vals_toks l q vs : iProp Σ :=
   ([∗ list] j↦vj ∈ vs, (l +ₗ j) s↦{q} vj ∗ meta_token (hG := refinement_na_heapG) (l +ₗ j) ⊤)%I.
 

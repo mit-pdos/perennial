@@ -169,14 +169,9 @@ Section translate.
       Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ v -- v' : t ->
       Γ ⊢ Store l v -- Store l' v' : unitT
-  (* XXX: need to fix this to be for compound
-     use of prepare followed by finish *)
-  | start_read_transTy l l' t ts :
+  | read_transTy l l' t ts :
       Γ ⊢ l -- l' : structRefT (t::ts) ->
-      Γ ⊢ StartRead l -- StartRead l' : t
-  | finish_read_transTy l l' t ts :
-      Γ ⊢ l -- l' : structRefT (t::ts) ->
-      Γ ⊢ FinishRead l -- FinishRead l' : unitT
+      Γ ⊢ Read l -- Read l' : t
   | cmpxchg_transTy l l' v1 v1' v2 v2' t ts :
       Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ v1 -- v1' : t ->
