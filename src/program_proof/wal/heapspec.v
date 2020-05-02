@@ -1256,6 +1256,49 @@ Qed.
 Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
 Proof. apply _. Qed.
 
+
+Theorem incl_concat {A: Type} (l1 l2: list (list A)):
+  incl l1 l2 ->
+  incl (concat l1) (concat l2).
+Proof.
+  intros.
+Admitted.
+
+
+Theorem in_drop {A} (l: list A):
+  forall n e,
+    In e (drop n l) -> In e l.
+Proof.
+  induction l.
+  - intros.
+    rewrite drop_nil in H.
+    rewrite <- elem_of_list_In in H.
+    apply not_elem_of_nil in H; auto.
+  - intros.
+    destruct (decide (n = 0%nat)); subst.
+    + rewrite skipn_O in H; auto.
+    + rewrite <- elem_of_list_In.
+      assert (n = 0%nat ∨ (∃ m : nat, n = S m)) by apply Nat.zero_or_succ.
+      destruct H0; subst; try congruence.
+      destruct H0; subst.
+      rewrite skipn_cons in H.
+      specialize (IHl x e).
+      apply elem_of_cons.
+      right.
+      rewrite elem_of_list_In; auto.
+Qed.
+
+Theorem in_drop_ge {A} (l: list A) (n0 n1: nat):
+  n0 <= n1 ->
+  forall e, In e (drop n1 l) -> In e (drop n0 l).
+Proof.
+  intros.
+  replace (drop n1 l) with (drop (n1-n0) (drop n0 l)) in H0.
+  1: apply in_drop  in H0; auto.
+  rewrite drop_drop.
+  replace ((n0 + (n1 - n0))%nat) with (n1) by lia; auto.
+Qed.
+  
 Theorem no_updates_since_le σ a t0 t1 :
   (t0 ≤ t1)%nat ->
   no_updates_since σ a t0 ->
@@ -1263,8 +1306,16 @@ Theorem no_updates_since_le σ a t0 t1 :
 Proof.
   rewrite /no_updates_since /txn_upds; intros.
   eapply incl_Forall; eauto.
-  admit.
-Admitted.
+  unfold log_state.txns.
+  destruct σ.
+  simpl in *.
+  repeat rewrite fmap_drop.
+  apply incl_concat.
+  unfold incl.
+  intros.
+  eapply in_drop_ge; eauto.
+  lia.
+Qed.c
 
 Theorem wp_Walog__Read l (blkno : u64) γ (σd : disk) (σtxns : list (u64 * list update.t)) b :
   {{{ is_wal N (wal_heap_inv γ) l ∗
