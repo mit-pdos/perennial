@@ -2,8 +2,9 @@
 need to compose some things together *)
 From Perennial.program_proof.wal Require
      flush_proof
-     logger_proof
      read_proof
+     write_proof
+     logger_proof
      installer_proof.
 
 From Perennial.program_proof.wal Require highest.
