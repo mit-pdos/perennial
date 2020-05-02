@@ -117,6 +117,7 @@ Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
             (∃ q q' (n: positive), ⌜ (q + q' = 1)%Qp ⌝ ∗
                 fc_auth γ (Some (q, n)) ∗
                 na_heap_mapsto_st (RSt (Pos.to_nat n)) ls q vs ∗
+                (∀ v', na_heap_mapsto (hG := refinement_na_heapG) l q v' -∗ l s↦{q} v') ∗
                 l ↦{q} v ∗ vTy vs v)
             ∨
             (fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗
@@ -698,7 +699,7 @@ Proof.
         eauto.
       }
       {
-        iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&>Hpts&#Hval)".
+        iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
         rewrite ?loc_add_0.
         iMod (ghost_prepare_write_read_stuck with "Hctx Hspts Hj") as %[].
         { lia. }
@@ -750,7 +751,7 @@ Proof.
     apply Z2Qc_inj_le in Hval. lia.
   }
   {
-    iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts'&>Hpts'&_)".
+    iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts'&Hspts'_clo&>Hpts'&_)".
     iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
     rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
     iDestruct (na_heap_mapsto_frac_valid2 with "Hpts Hpts'") as %Hval.
@@ -1247,13 +1248,13 @@ Proof using spec_trans.
           iIntros "!> !>". iExists _. iFrame. iFrame "Hval".
         }
         {
-          iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&>Hpts&#Hval)".
+          iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
           rewrite ?loc_add_0.
           wp_step.
           iApply (wp_load with "[$]"). iIntros "!> Hpts".
           iMod (ghost_load_rd with "[$] Hspts Hj") as "(Hspts&Hj)".
           { solve_ndisj. }
-          iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
+          iMod ("Hclo" with "[Hpts Hspts Hspts_clo Hfc Hval]").
           { iNext. iExists _, _. iRight. iLeft. iExists _, _, _. iFrame. iFrame "Hval". eauto. }
           iIntros "!> !>". iExists _. iFrame. iFrame "Hval".
         }
