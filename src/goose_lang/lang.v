@@ -948,6 +948,14 @@ Proof.
   congruence.
 Qed.
 
+Lemma addr_base_non_null l:
+  addr_base l ≠ null →
+  l ≠ null.
+Proof.
+  intros Hneq Heq'. rewrite /addr_base Heq' addr_encode_decode' in Hneq.
+  congruence.
+Qed.
+
 Lemma plus_off_preserves_non_null l:
   addr_base l ≠ null →
   ∀ z, l ≠ addr_plus_off null z.

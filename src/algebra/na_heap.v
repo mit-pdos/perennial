@@ -273,7 +273,7 @@ Section na_heap.
     iPureIntro. naive_solver.
   Qed.
 
-  Lemma na_heap_mapsto_st_rd_frac l n n' q q' v v' :
+  Lemma na_heap_mapsto_st_rd_frac l n n' q q' v :
     na_heap_mapsto_st (RSt (n + n')) l (q + q') v ⊣⊢
     na_heap_mapsto_st (RSt n) l (q) v ∗
     na_heap_mapsto_st (RSt n') l (q') v.

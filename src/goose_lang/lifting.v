@@ -372,6 +372,10 @@ Global Instance load_atomic s v : Atomic s (Load (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance finish_store_atomic s v1 v2 : Atomic s (FinishStore (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
+Global Instance start_read_atomic s v : Atomic s (StartRead (Val v)).
+Proof. solve_atomic. Qed.
+Global Instance finish_read_atomic s v1 : Atomic s (FinishRead (Val v1)).
+Proof. solve_atomic. Qed.
 Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance fork_atomic s e : Atomic s (Fork e).

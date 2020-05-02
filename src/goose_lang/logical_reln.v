@@ -116,9 +116,9 @@ Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
    (∃ vs v, (fc_auth γ None ∗ ls s↦ vs ∗ l ↦ v ∗ vTy vs v) ∨
             (∃ q q' (n: positive), ⌜ (q + q' = 1)%Qp ⌝ ∗
                 fc_auth γ (Some (q, n)) ∗
-                na_heap_mapsto_st (RSt (Pos.to_nat n)) ls q vs ∗
-                (∀ v', na_heap_mapsto (hG := refinement_na_heapG) l q v' -∗ l s↦{q} v') ∗
-                l ↦{q} v ∗ vTy vs v)
+                na_heap_mapsto_st (RSt (Pos.to_nat n)) ls q' vs ∗
+                (∀ v', na_heap_mapsto (hG := refinement_na_heapG) ls q' v' -∗ ls s↦{q'} v') ∗
+                l ↦{q'} v ∗ vTy vs v)
             ∨
             (fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗
              na_heap_mapsto_st WSt ls (1/2)%Qp vs))%I.
@@ -772,6 +772,117 @@ Proof.
     { iNext. iExists _, _. iLeft. iFrame. }
     iApply "HΦ"; eauto.
   }
+Qed.
+
+Lemma logical_reln_start_read t ts vs v j K (Hctx: LanguageCtx K):
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+  {{{ spec_ctx ∗ val_interp (hS := hS) (structRefT (t :: ts)) vs v ∗ j ⤇ K (StartRead vs) }}}
+    StartRead v
+    {{{ mem_v, RET mem_v;
+        ∃ (ls l: loc) (mem_vs: sval) γ q,
+                       ⌜ vs = #ls ∧ v = #l ⌝ ∗
+                       inv locN (loc_inv γ ls l (val_interp (hS := hS) t)) ∗
+                       fc_tok γ q ∗
+                       j ⤇ K mem_vs ∗
+                       na_heap_mapsto_st (hG := refinement_na_heapG) (RSt O) ls q mem_vs ∗
+                       na_heap_mapsto_st (hG := heapG_na_heapG) (RSt 1) l q mem_v ∗
+                       (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')}}}.
+Proof.
+  intros. iIntros "(#Hctx&Hvl&Hj) HΦ".
+  rewrite val_interp_struct_unfold.
+  iDestruct "Hvl" as "[Hv|Hnull]".
+  * iDestruct "Hv" as (lv lvs n H0lt Hnonemtpy (->&->&?&?&?)) "(Hpaired&Hblock1&Hblocked2&Hloc)".
+    iDestruct "Hloc" as "[Hinbound|Hoob]".
+    {
+      iDestruct "Hinbound" as "(H&_)".
+      rewrite /is_loc. iDestruct "H" as "(Hlocinv&Hpaired')".
+      iDestruct "Hlocinv" as (γ) "#Hlocinv".
+      iInv "Hlocinv" as "Hlocinv_body" "Hclo".
+      rewrite /loc_inv. iDestruct "Hlocinv_body" as (mem_vs mem_v) "H".
+      iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
+      {
+        iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
+        rewrite ?loc_add_0.
+        iApply (wp_start_read with "[$]"). iIntros "!> (Hpts&Hpts_clo)".
+        iDestruct (heap_mapsto_na_acc with "Hspts") as "(Hspts&Hspts_clo)".
+        rewrite na_heap_mapsto_eq.
+        iMod (@ghost_start_read _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hj)".
+        { solve_ndisj. }
+        replace (RSt 1) with (RSt (1 + O)%nat) by eauto.
+        iMod (fc_auth_first_tok with "Hfc") as "(Hfc&Htok)".
+        iEval (replace 1%Qp with (1/2 + 1/2)%Qp by apply Qp_half_half) in "Hpts".
+        iEval (replace 1%Qp with (1/2 + 1/2)%Qp by apply Qp_half_half) in "Hspts".
+        iDestruct (na_heap_mapsto_st_rd_frac _ 1 O with "Hpts") as "(Hpts1&Hpts2)".
+        iDestruct (na_heap_mapsto_st_rd_frac _ 1 O with "Hspts") as "(Hspts1&Hspts2)".
+        iMod ("Hclo" with "[Hpts2 Hspts1 Hfc Hval]").
+        { iNext. iExists mem_vs, mem_v. iRight. iLeft. iExists (1/2)%Qp, (1/2)%Qp, _. iFrame.
+          iSplitL "".
+          { rewrite Qp_half_half; eauto. }
+          iSplitL "".
+          { rewrite -na_heap_mapsto_eq. iIntros (?) "H". iApply (na_mapsto_to_heap with "H").
+            apply addr_base_non_null; eauto.
+          }
+          iFrame "Hval".
+          iApply (na_mapsto_to_heap with "[Hpts2]").
+          { apply addr_base_non_null; eauto. }
+          { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
+        }
+        iApply "HΦ".
+        iModIntro. iExists _, _, _, _, _. iFrame. iFrame "Hlocinv". eauto.
+      }
+      {
+        iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
+        rewrite ?loc_add_0.
+        iApply (wp_start_read with "[$]"). iIntros "!> (Hpts&Hpts_clo)".
+        rewrite na_heap_mapsto_eq.
+        iMod (@ghost_start_read _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hj)".
+        { solve_ndisj. }
+        replace (S (Pos.to_nat n')) with (S (Pos.to_nat n') + 0)%nat by lia.
+        iMod (fc_auth_new_tok _ q q' with "Hfc") as "(Hfc&Htok)"; eauto.
+        specialize (Qp_div_2 q') => Hq'.
+        rewrite -[x in na_heap_mapsto_st _ _ x _]Hq'.
+        rewrite -[x in na_heap_mapsto_st (hG := refinement_na_heapG) _ _ x _]Hq'.
+        iDestruct (na_heap_mapsto_st_rd_frac _ 1 O with "Hpts") as "(Hpts1&Hpts2)".
+        iDestruct (na_heap_mapsto_st_rd_frac _ _ _ with "Hspts") as "(Hspts1&Hspts2)".
+        iMod ("Hclo" with "[Hpts2 Hspts1 Hfc Hval]").
+        { iNext. iExists mem_vs, mem_v. iRight. iLeft. iExists (q + q'/2)%Qp, (q'/2)%Qp, _. iFrame.
+          iSplitL "".
+          { iPureIntro. rewrite -assoc Hq'. eauto. }
+          replace (S (Pos.to_nat n')) with ((Pos.to_nat (n' + 1)))%nat by lia. iFrame.
+          iSplitL "".
+          { rewrite -na_heap_mapsto_eq. iIntros (?) "H". iApply (na_mapsto_to_heap with "H").
+            apply addr_base_non_null; eauto.
+          }
+          iFrame "Hval".
+          iApply (na_mapsto_to_heap with "[Hpts2]").
+          { apply addr_base_non_null; eauto. }
+          { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
+        }
+        iApply "HΦ".
+        iModIntro. iExists _, _, _, _, _. iFrame. iFrame "Hlocinv". iSplitL ""; first eauto.
+        { rewrite -na_heap_mapsto_eq. iIntros (?) "H". iApply (na_mapsto_to_heap with "H").
+          apply addr_base_non_null; eauto. }
+      }
+      {
+        (* UB: writer during read *)
+        iDestruct "Hwriter" as "(>Hfc&>Hspts)".
+        rewrite ?loc_add_0.
+        iMod (ghost_start_read_write_stuck with "Hctx Hspts Hj") as %[].
+        { solve_ndisj. }
+      }
+    }
+    {
+      (* UB: oob *)
+      iDestruct "Hoob" as %Hoob.
+      iMod (ghost_start_read_block_oob_stuck with "[$] [$] [$]") as %[].
+      { lia. }
+      { solve_ndisj. }
+    }
+  * iDestruct "Hnull" as %(?&->&->).
+    (* UB: null *)
+    iMod (ghost_start_read_null_stuck with "[$] [$]") as %[].
+    { rewrite addr_base_of_plus //=. }
+    { solve_ndisj. }
 Qed.
 
 Lemma sty_fundamental_lemma:
