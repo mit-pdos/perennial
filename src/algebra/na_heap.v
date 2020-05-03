@@ -250,6 +250,17 @@ Section na_heap.
     rewrite singleton_op -pair_op singleton_valid=> -[? /agree_op_invL'->]; eauto.
   Qed.
 
+  Lemma na_heap_mapsto_st_WSt_agree l st q1 q2 v1 v2 :
+    na_heap_mapsto_st WSt l q1 v1 ∗
+    na_heap_mapsto_st st l q2 v2 -∗
+    ⌜WSt = st⌝.
+  Proof.
+    destruct st; first eauto.
+    rewrite -own_op -auth_frag_op own_valid discrete_valid.
+    eapply pure_elim; [done|]=> /auth_frag_valid /=.
+    rewrite singleton_op -?pair_op singleton_valid=> -[[? []] _].
+  Qed.
+
   Lemma na_heap_mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 ∗ l ↦{q2} v2 ⊢ ⌜v1 = v2⌝.
   Proof. by rewrite na_heap_mapsto_eq na_heap_mapsto_st_agree. Qed.
 

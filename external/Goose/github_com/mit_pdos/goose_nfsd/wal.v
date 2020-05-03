@@ -474,6 +474,18 @@ Definition Walog__Read: val :=
     then "blk"
     else Walog__ReadInstalled "l" "blkno").
 
+Definition WalogState__updatesOverflowU64: val :=
+  rec: "WalogState__updatesOverflowU64" "st" "newUpdates" :=
+    util.SumOverflows (WalogState__memEnd "st") "newUpdates".
+
+(* TODO: relate this calculation to the circular log free space *)
+Definition WalogState__memLogHasSpace: val :=
+  rec: "WalogState__memLogHasSpace" "st" "newUpdates" :=
+    let: "memSize" := WalogState__memEnd "st" - struct.loadF WalogState.S "diskEnd" "st" in
+    (if: "memSize" + "newUpdates" > LOGSZ
+    then #false
+    else #true).
+
 (* Append to in-memory log.
 
    On success returns the pos for this append.
@@ -488,24 +500,24 @@ Definition Walog__MemAppend: val :=
       let: "txn" := ref_to LogPosition #0 in
       let: "ok" := ref_to boolT #true in
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
+      let: "st" := struct.loadF Walog.S "st" "l" in
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        (if: util.SumOverflows (struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l")) (slice.len "bufs")
+        (if: WalogState__updatesOverflowU64 "st" (slice.len "bufs")
         then
           "ok" <-[boolT] #false;;
           Break
         else
-          let: "memSize" := WalogState__memEnd (struct.loadF Walog.S "st" "l") - struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
-          (if: "memSize" + slice.len "bufs" > LOGSZ
+          (if: WalogState__memLogHasSpace "st" (slice.len "bufs")
           then
+            "txn" <-[LogPosition] WalogState__doMemAppend "st" "bufs";;
+            Break
+          else
             util.DPrintf #5 (#(str"memAppend: log is full; try again")) #();;
-            WalogState__endGroupTxn (struct.loadF Walog.S "st" "l");;
+            WalogState__endGroupTxn "st";;
             lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
             lock.condWait (struct.loadF Walog.S "condLogger" "l");;
-            Continue
-          else
-            "txn" <-[LogPosition] WalogState__doMemAppend (struct.loadF Walog.S "st" "l") "bufs";;
-            Break)));;
+            Continue)));;
       lock.release (struct.loadF Walog.S "memLock" "l");;
       (![LogPosition] "txn", ![boolT] "ok")).
 

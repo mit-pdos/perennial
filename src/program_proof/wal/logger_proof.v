@@ -55,12 +55,12 @@ Proof.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[$His_cond2 $Hlocked $His_lock His_memLog His_memLogMap HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread HnextDiskEnd_txn HmemLog_linv]").
-      { iExists _; iFrame "∗ #". iExists _; iFrame. }
+      { iExists _; iFrame "∗ #". iExists _; by iFrame. }
       iIntros "(Hlocked&Hlkinv)".
       wp_pures.
       iApply ("HΦ" with "[$]").
     - iApply "HΦ"; iFrame.
-      iExists _; iFrame "∗ #". iExists _; iFrame.
+      iExists _; iFrame "∗ #". iExists _; by iFrame.
   }
   iIntros "(Hlocked&Hlkinv)".
 Admitted.
