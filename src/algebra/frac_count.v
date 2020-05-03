@@ -4,7 +4,10 @@ From iris.proofmode Require Import tactics.
 From iris.bi Require Import fractional.
 From iris.algebra Require Import excl csum frac auth agree.
 
-(* Very heavily based on part of the ARC CMRA from the weakmem branch of lambda-rust by Dang et al. *)
+(* Very heavily based on part of the ARC CMRA from the weakmem branch of lambda-rust by Dang et al.
+   See https://gitlab.mpi-sws.org/iris/lambda-rust/-/blob/masters/weak_mem/theories/lang/arc_cmra.v
+   We rename their StrongAuth and StrongTok to fc_auth and fc_tok and remove some of the Rust ARC terminology.
+ *)
 
 (* Lets you take a fractional permission and split it up while tracking how many splits there
    are. *)
@@ -58,6 +61,34 @@ Section frac_count.
     apply frac_valid'. rewrite -Hqq' comm -{2}(Qp_div_2 q').
     apply Qcplus_le_mono_l. rewrite -{1}(Qcanon.Qcplus_0_l (q'/2)%Qp).
     apply Qcplus_le_mono_r, Qp_ge_0.
+  Qed.
+
+  Lemma fc_auth_last_agree γ q q':
+    fc_auth γ (Some (q,1%positive)) -∗ fc_tok γ q' -∗
+    ⌜ q = q' ⌝.
+  Proof.
+    iIntros "H● H◯".
+    iDestruct (own_valid_2 with "H● H◯") as %[Hincl ?]%auth_both_valid.
+    iPureIntro. apply option_included in Hincl as [|(q1&q2&Heq1&Heq2&Hcase)]; first by congruence.
+    apply (inj Some) in Heq1. apply (inj Some) in Heq2. subst.
+    destruct Hcase as [Hcase1|Hcase2].
+    - inversion Hcase1; subst; eauto.
+    - apply prod_included in Hcase2 as (?&Hpos%pos_included). inversion Hpos.
+  Qed.
+
+  Lemma fc_auth_non_last_agree γ n q q':
+    fc_auth γ (Some (q, (1 + n)%positive)) -∗ fc_tok γ q' -∗
+    ⌜ ∃ q0, q = (q0 + q')%Qp ⌝.
+  Proof.
+    iIntros "H● H◯".
+    iDestruct (own_valid_2 with "H● H◯") as %[Hincl ?]%auth_both_valid.
+    iPureIntro. apply option_included in Hincl as [|(q1&q2&Heq1&Heq2&Hcase)]; first by congruence.
+    apply (inj Some) in Heq1. apply (inj Some) in Heq2. subst.
+    destruct Hcase as [Hcase1|Hcase2].
+    - inversion Hcase1 as (?&Hpos_equiv). inversion Hpos_equiv; destruct n; simpl in *; lia.
+    - apply prod_included in Hcase2 as (Hq_incl&_).
+      inversion Hq_incl as (q0&Heq). inversion Heq as [Heq']. simpl in Heq'.
+      rewrite (comm _ _ q0) in Heq' * => ->. eauto.
   Qed.
 
   Lemma fc_auth_drop_last γ q:

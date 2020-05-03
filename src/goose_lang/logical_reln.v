@@ -117,7 +117,7 @@ Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
             (∃ q q' (n: positive), ⌜ (q + q' = 1)%Qp ⌝ ∗
                 fc_auth γ (Some (q, n)) ∗
                 na_heap_mapsto_st (RSt (Pos.to_nat n)) ls q' vs ∗
-                (∀ v', na_heap_mapsto (hG := refinement_na_heapG) ls q' v' -∗ ls s↦{q'} v') ∗
+                (∀ v', na_heap_mapsto (hG := refinement_na_heapG) ls 1 v' -∗ ls s↦ v') ∗
                 l ↦{q'} v ∗ vTy vs v)
             ∨
             (fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗
@@ -780,10 +780,11 @@ Lemma logical_reln_start_read t ts vs v j K (Hctx: LanguageCtx K):
     StartRead v
     {{{ mem_v, RET mem_v;
         ∃ (ls l: loc) (mem_vs: sval) γ q,
-                       ⌜ vs = #ls ∧ v = #l ⌝ ∗
+                       ⌜ vs = #ls ∧ v = #l ∧ ls ≠ null ∧ l ≠ null ⌝ ∗
                        inv locN (loc_inv γ ls l (val_interp (hS := hS) t)) ∗
                        fc_tok γ q ∗
                        j ⤇ K mem_vs ∗
+                       val_interp (hS := hS) t mem_vs mem_v ∗
                        na_heap_mapsto_st (hG := refinement_na_heapG) (RSt O) ls q mem_vs ∗
                        na_heap_mapsto_st (hG := heapG_na_heapG) (RSt 1) l q mem_v ∗
                        (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')}}}.
@@ -828,7 +829,8 @@ Proof.
           { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
         }
         iApply "HΦ".
-        iModIntro. iExists _, _, _, _, _. iFrame. iFrame "Hlocinv". eauto.
+        iModIntro. iExists _, _, _, _, _. iFrame. iFrame "Hlocinv Hval". iPureIntro; split_and!; eauto;
+        eapply addr_base_non_null; eauto.
       }
       {
         iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
@@ -859,7 +861,9 @@ Proof.
           { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
         }
         iApply "HΦ".
-        iModIntro. iExists _, _, _, _, _. iFrame. iFrame "Hlocinv". iSplitL ""; first eauto.
+        iModIntro. iExists _, _, _, _, _. iFrame. iFrame "#".
+        iSplitL "".
+        { iPureIntro; split_and!; eauto; eapply addr_base_non_null; eauto. }
         { rewrite -na_heap_mapsto_eq. iIntros (?) "H". iApply (na_mapsto_to_heap with "H").
           apply addr_base_non_null; eauto. }
       }
@@ -883,6 +887,100 @@ Proof.
     iMod (ghost_start_read_null_stuck with "[$] [$]") as %[].
     { rewrite addr_base_of_plus //=. }
     { solve_ndisj. }
+Qed.
+
+Lemma logical_reln_finish_read (ls l: loc) (vs': sval) (v': ival) j K (Hctx: LanguageCtx K) (γ: gname) q
+  (Hnonnull: l ≠ null):
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) vTy,
+ {{{ spec_ctx ∗ j ⤇ K (FinishRead #ls) ∗ fc_tok γ q ∗
+      inv locN (loc_inv γ ls l vTy) ∗
+      na_heap_mapsto_st (hG := refinement_na_heapG) (RSt O) ls q vs' ∗
+      na_heap_mapsto_st (hG := heapG_na_heapG) (RSt 1) l q v' ∗
+      (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')
+ }}}
+    FinishRead #l
+ {{{ RET #(); j ⤇ K (of_val #()) }}}.
+Proof.
+  intros. iIntros "(#Hctx&Hj&Htok&#Hlocinv&Hspts&Hpts&Hpts_clo) HΦ".
+  iInv "Hlocinv" as "Hlocinv_body" "Hclo".
+  rewrite /loc_inv. iDestruct "Hlocinv_body" as (mem_vs mem_v) "H".
+  iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
+  {
+    iDestruct "H0readers" as "(>Hfc&_&>Hpts'&_)".
+    iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
+    iDestruct (na_heap_mapsto_frac_valid2 with "Hpts Hpts'") as %Hval.
+    exfalso. rewrite comm in Hval *. eapply (Qp_plus_1_nle_1).
+  }
+  {
+    iDestruct "Hreaders" as (q1 q2 n') "(>Hq_sum&>Hfc&>Hspts'&Hspts'_clo&>Hpts'&Hvty)".
+    iDestruct "Hq_sum" as %Hq_sum.
+    iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    wp_apply (wp_finish_read with "[Hpts]").
+    { iFrame. iIntros (?). iApply na_mapsto_to_heap; eauto. }
+    iIntros "Hpts".
+    iDestruct (heap_mapsto_na_acc with "Hpts") as "(Hpts&_)".
+    rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
+
+    assert (n' = 1 ∨ ∃ n'', n' = 1 + n'')%positive as [H1reader|Hmore].
+    { induction n' using Pos.peano_ind; eauto.
+      right. exists n'. lia.
+    }
+    - subst. iDestruct (fc_auth_last_agree with "Hfc Htok") as %Hq. subst.
+      iDestruct (na_heap_mapsto_st_agree with "[Hpts Hpts']") as %Heq.
+      { iFrame. } subst.
+      iDestruct (na_heap_mapsto_st_rd_frac with "[$]") as "Hpts".
+      rewrite Hq_sum Nat.add_0_r.
+      iMod (ghost_finish_read with "Hctx Hspts' Hj") as "(Hspts'&Hj)".
+      { solve_ndisj. }
+      iDestruct (na_heap_mapsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
+      { iFrame. } subst.
+      iDestruct (na_heap_mapsto_st_rd_frac (hG := refinement_na_heapG) with "[Hspts Hspts']") as "Hspts".
+      { iFrame. }
+      iMod (fc_auth_drop_last with "[$]") as "Hfc".
+      iMod ("Hclo" with "[- Hj HΦ]").
+      {
+        iNext. iExists _, _. iLeft. iFrame.
+        iDestruct ("Hpts_clo" with "[$]") as "$".
+        rewrite Nat.add_0_r.
+        iApply "Hspts'_clo".
+        iEval (rewrite comm Hq_sum) in "Hspts".
+        eauto.
+      }
+      iApply "HΦ". eauto.
+    - destruct Hmore as (n''&->).
+      iDestruct (fc_auth_non_last_agree with "[$] [$]") as %(q'&Hq).
+      iDestruct (na_heap_mapsto_st_agree with "[Hpts Hpts']") as %Heq.
+      { iFrame. } subst.
+      iDestruct (na_heap_mapsto_st_rd_frac with "[$]") as "Hpts".
+      replace (Pos.to_nat (1 + n'')) with (S (Pos.to_nat n'')) by lia.
+      iMod (ghost_finish_read with "Hctx Hspts' Hj") as "(Hspts'&Hj)".
+      { solve_ndisj. }
+      iDestruct (na_heap_mapsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
+      { iFrame. } subst.
+      iDestruct (na_heap_mapsto_st_rd_frac (hG := refinement_na_heapG) with "[Hspts Hspts']") as "Hspts".
+      { iFrame. }
+      iMod (fc_auth_drop with "[$]") as "Hfc".
+      iMod ("Hclo" with "[- Hj HΦ]").
+      {
+        iNext. iExists _, _. iRight. iLeft. iFrame.
+        iExists _, _, _.
+        rewrite ?Nat.add_0_r.
+        iFrame.
+        iSplitL "".
+        { iPureIntro. rewrite -Hq_sum. rewrite -assoc {1}(comm _ q2). eauto. }
+        rewrite (comm _ q2).
+        iApply na_mapsto_to_heap; auto.
+        rewrite na_heap_mapsto_eq. iFrame.
+      }
+      iApply "HΦ". eauto.
+  }
+  {
+    iDestruct "Hwriter" as "(>Hfc&>Hspts')".
+    iDestruct (na_heap_mapsto_st_WSt_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
+    { iFrame. }
+    congruence.
+  }
 Qed.
 
 Lemma sty_fundamental_lemma:
@@ -1478,7 +1576,94 @@ Proof using spec_trans.
     { iFrame. iFrame "#". eauto. }
     iIntros "Hj".
     iModIntro. iExists _. iFrame. eauto.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) l').
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    simpl. spec_bind (subst_map _ l) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
+
+    iApply wp_wpc.
+    iApply wp_fupd.
+    rewrite /Read. wp_pures.
+    wp_bind (StartRead _).
+
+    (* XXX need tactic to do these pure det reductions ... *)
+    simpl.
+    spec_bind (App _ vsl) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (App _ vsl) with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. econstructor. eauto.
+    }
+    simpl.
+    clear Hctx'.
+
+    spec_bind (StartRead vsl) as Hctx'.
+    wp_apply (logical_reln_start_read _ _ _ _ _ _ (Hctx') with "[Hvl Hj]").
+    { iFrame "Hspec Hvl". iFrame "Hj". }
+    clear Hctx'.
+
+    iIntros (mem_v).
+    iDestruct 1 as (lsval lval ?? γ (->&->&?&?)) "(#Hlocinv&Htok&Hj&#Hval&Hspts&Hpts&Hpts_clo)".
+
+    simpl.
+    spec_bind (Rec _ _ _) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (Rec _ _ _)
+            with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+
+    simpl.
+    spec_bind (App _ _) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (App _ _)
+            with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+    simpl.
+
+    wp_pures.
+    spec_bind (FinishRead _) as Hctx'.
+    wp_apply (logical_reln_finish_read with "[-]").
+    { eauto. }
+    { iFrame. iFrame "#". }
+    iIntros "Hj".
+    clear Hctx'.
+
+    simpl.
+    spec_bind (Rec _ _ _) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (Rec _ _ _)
+            with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+
+    simpl.
+    spec_bind (App _ _) as Hctx'.
+    iMod (ghost_step_lifting_puredet _ _ _ (App _ _)
+            with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. simpl. repeat econstructor; eauto.
+    }
+    wp_pures.
+    iModIntro. iExists _. simpl. iFrame. eauto.
   - admit.
   - admit.
   - admit.
