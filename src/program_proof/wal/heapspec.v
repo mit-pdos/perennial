@@ -1256,14 +1256,54 @@ Qed.
 Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
 Proof. apply _. Qed.
 
+Theorem in_concat_list {A: Type} (l: list (list A)):
+  forall l', In l' l -> forall e, In e l' -> In e (concat l).
+Proof.
+  intros.
+  induction l.
+  - simpl in *; auto.
+  - rewrite concat_cons.
+    apply in_or_app.
+    rewrite <- elem_of_list_In in H.
+    apply elem_of_cons in H.
+    intuition; subst.
+    + left; auto.
+    + right.
+      apply IHl.
+      rewrite <- elem_of_list_In; auto.
+Qed.
+
+Theorem concat_list_in {A: Type} (l: list (list A)):
+  forall e, In e (concat l) -> exists l', In e l' /\ In l' l.
+Proof.
+  intros.
+  induction l.
+  - simpl in *. exfalso; auto.
+  - rewrite concat_cons in H.
+    apply in_app_or in H.
+    intuition.
+    + exists a.
+      split; auto.
+      rewrite <- elem_of_list_In.
+      apply elem_of_list_here.
+    + destruct H. intuition.
+      exists x.
+      split; auto.
+      apply in_cons; auto.
+Qed.  
 
 Theorem incl_concat {A: Type} (l1 l2: list (list A)):
   incl l1 l2 ->
   incl (concat l1) (concat l2).
 Proof.
+  unfold incl.
   intros.
-Admitted.
-
+  apply concat_list_in in H0.
+  destruct H0.
+  intuition.
+  specialize (H x).
+  eapply in_concat_list; auto.
+Qed.
 
 Theorem in_drop {A} (l: list A):
   forall n e,
