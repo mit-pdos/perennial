@@ -724,6 +724,7 @@ Qed.
 Theorem wal_wf_append_txns σ t txns :
   wal_wf σ ->
   txns = σ.(log_state.txns) ->
+  addrs_wf (snd t) σ.(log_state.d) ->
   wal_wf (set log_state.txns (λ _, txns ++ [t]) σ).
 Proof.
   destruct σ.
@@ -1011,6 +1012,7 @@ Proof  using N gen_heapPreG0 heapG0 Σ.
   iExists _. iFrame.
 Qed.
 
+(* XXX something about wf_addr for bs *)
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
   [∗ list] _ ↦ u; old ∈ bs; olds,
     mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old)).
@@ -1193,7 +1195,10 @@ Proof using gen_heapPreG0.
 
   iExists _. iFrame.
   iSplitL.
-  2: { iPureIntro. eapply wal_wf_append_txns; eauto. }
+  2: {
+    iPureIntro. eapply wal_wf_append_txns; simpl; eauto.
+    admit. (* XXX precondition should provide wf_addrs for u in bs? *)
+  }
   intuition.
 
   iDestruct (big_sepM_forall with "Hgh") as %Hgh.
