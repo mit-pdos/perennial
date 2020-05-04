@@ -61,6 +61,18 @@ Definition no_updates (l: list update.t) a : Prop :=
 Definition is_update (l: list update.t) a b : Prop :=
   ∃ u, u ∈ l /\ u.(update.addr) = a /\ u.(update.b) = b.
 
+Record locked_walheap := {
+  locked_wh_σd : disk;
+  locked_wh_σtxns : list (u64 * list update.t);
+}.
+
+Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
+  own γ.(wal_heap_txns) (◯ (Excl' (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)))).
+
+Definition locked_wh_disk (lwh : locked_walheap) : disk :=
+  apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
+
+
 (* Helper lemmas *)
 
 Theorem apply_upds_cons disk u ul :
@@ -1151,21 +1163,20 @@ Proof.
 Qed.
 
 
-Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ)
-                           (σd : disk) (σtxns : list (u64 * list update.t)) :
-  own γh.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑N, E}=> ∃ olds, memappend_pre γh.(wal_heap_h) bs olds ∗
-        ( ∀ txn_id σtxns',
-          own γh.(wal_heap_txns) (◯ (Excl' (σd, σtxns'))) ∗
+        ( ∀ txn_id lwh',
+          is_locked_walheap γh lwh' ∗
           memappend_q γh.(wal_heap_h) bs olds txn_id
           ={E, ⊤ ∖ ↑N}=∗ Q txn_id ) ) -∗
   ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
-      ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
+      ( (wal_heap_inv γh) σ ∗ is_locked_walheap γh lwh
+          ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
 Proof using gen_heapPreG0.
-  iIntros "[Htxnsfrag Hpre]".
-  iIntros (σ σ' pos) "% % Hinv".
+  iIntros "Hpre".
+  iIntros (σ σ' pos) "% % [Hinv Hlockedheap]".
   iNamed "Hinv".
 
   simpl in *; monad_inv.
@@ -1183,12 +1194,12 @@ Proof using gen_heapPreG0.
 
   iMod (wal_heap_memappend_pre_to_q with "[$Hctx $Hpre]") as "[Hctx Hq]".
 
-  iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+  iDestruct (ghost_var_agree with "Htxns Hlockedheap") as "%Hagree".
   inversion Hagree; clear Hagree. subst.
-  iMod (ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Htxnsfrag") as "[Htxns Htxnsfrag]".
+  iMod (ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
 
-  iSpecialize ("Hfupd" $! (pos')).
-  iDestruct ("Hfupd" with "[$Htxnsfrag $Hq]") as "Hfupd".
+  iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _)).
+  iDestruct ("Hfupd" with "[$Hlockedheap $Hq]") as "Hfupd".
   iMod "Hfupd".
   iModIntro.
   iFrame.
@@ -1213,9 +1224,9 @@ Proof using gen_heapPreG0.
   destruct (decide (k ∈ fmap update.addr bs)).
   - eapply elem_of_list_fmap in e as ex.
     destruct ex. intuition. subst.
-    apply elem_of_list_lookup in H2; destruct H2.
+    apply elem_of_list_lookup in H4; destruct H4.
     edestruct Hbs_in_gh; eauto; intuition.
-    specialize (Hgh _ H3). simpl in *.
+    specialize (Hgh _ H5). simpl in *.
     destruct Hgh as [txn_id' Hgh].
     exists txn_id'.
 
@@ -1251,7 +1262,7 @@ Proof using gen_heapPreG0.
     }
 
     {
-      rewrite -H3.
+      rewrite -H5.
       etransitivity; first apply updates_since_updates; auto.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
@@ -1361,17 +1372,6 @@ Proof.
   eapply in_drop_ge; eauto.
   lia.
 Qed.
-
-Record locked_walheap := {
-  locked_wh_σd : disk;
-  locked_wh_σtxns : list (u64 * list update.t);
-}.
-
-Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
-  own γ.(wal_heap_txns) (◯ (Excl' (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)))).
-
-Definition locked_wh_disk (lwh : locked_walheap) : disk :=
-  apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
 
 Theorem wp_Walog__Read l (blkno : u64) γ lwh b :
   {{{ is_wal N (wal_heap_inv γ) l ∗

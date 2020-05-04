@@ -910,7 +910,7 @@ Proof.
   iNamed "Htxnlocked".
 
   wp_apply (wp_txn__installBufs with "[$Histxna $Hiswal $Histxn_wal $Hbufs $Hbufpre $Hwal_latest]").
-  iIntros (blks updlist) "(Hwal_latest & Hblks & Hmapstos & Hupdmap)".
+  iIntros (blks updlist) "(Hwal_latest & Hblks & Hmapstos & #Hupdmap)".
   wp_pures.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
@@ -918,9 +918,8 @@ Proof.
   wp_apply (wp_Walog__MemAppend _ _
     (is_locked_walheap walHeap lwh)
     (λ npos, ∃ lwh', is_locked_walheap walHeap lwh' ∗ emp)%I
-    with "[$Hiswal $Hblks Hupdmap Hmapstos $Hwal_latest]").
-  { (*
-    iApply (wal_heap_memappend _ (⊤ ∖ ↑walN ∖ ↑invN)). iFrame.
+    with "[$Hiswal $Hblks Hmapstos $Hwal_latest]").
+  { iApply (wal_heap_memappend _ (⊤ ∖ ↑walN ∖ ↑invN)).
     iInv invN as ">Hinner" "Hinner_close".
     iModIntro.
     iNamed "Hinner".
@@ -944,17 +943,11 @@ Proof.
     { iIntros; iFrame. }
     iDestruct (big_sepM2_sep with "Hgmdata") as "[Hgmdata #Hmdata_gmdata]".
 
-    iDestruct (big_sepML_sepL with "Hupdmap") as "[#Hupdmap0 Hupdmap1]".
-    iDestruct (big_sepML_map_val_exists with "Hupdmap0 []") as (mx) "Hx".
+    iDestruct (big_sepML_map_val_exists with "Hupdmap []") as (mx) "Hx".
     {
       iIntros (k v lv Hkv Hp).
-      specialize (Hcomplete k).
-      destruct Hcomplete as [Hcomplete1 Hcomplete2].
-      edestruct Hcomplete2 as [off Hoff]; eauto.
-      destruct Hoff.
-
-      iDestruct (big_sepM_lookup with "Hbufamap_gdata") as "%Hgdata"; eauto.
-      destruct Hgdata. simpl in *.
+      destruct Hp as [Hk Hp].
+      destruct Hp as [K [GH [Hgdata Hp]]].
 
       iDestruct (big_sepM2_lookup_2_some with "Hmdata_gmdata") as (mv) "%Hmdata"; eauto.
 
@@ -966,7 +959,7 @@ Proof.
     iAssert (⌜ ∀ k v, mx !! k = Some v -> mData !! k = Some v ⌝)%I as "%Hsubset".
     { iIntros (k v Hkv).
       iDestruct (big_sepML_lookup_m_acc with "Hx") as (i lv) "(% & Hx2 & _)"; eauto.
-      iDestruct "Hx2" as (_) "(Hx2 & _)". done.
+      iDestruct "Hx2" as (v0) "(% & % & %)". done.
     }
 
     rewrite <- (map_difference_union mx mData) at 2.
@@ -987,7 +980,7 @@ Proof.
     {
       iIntros (k v lv). iPureIntro.
       iIntros "[H0 H1]".
-      iDestruct "H0" as (_) "[H00 <-]".
+      iDestruct "H0" as (v0) "(% & <- & %)".
       iDestruct "H1" as (installed bs) "[H10 H11]".
       iExists (installed, bs). iFrame. done. }
 
@@ -1004,7 +997,7 @@ Proof.
       rewrite zip_fst_snd. iFrame.
     }
 
-    iIntros (txn_id glatest') "[Hlatestfrag Hq]".
+    iIntros (txn_id lwh') "[Hlockedheap Hq]".
     rewrite /memappend_q.
     rewrite big_sepL2_alt.
     iDestruct "Hq" as "[_ Hq]".
@@ -1023,16 +1016,24 @@ Proof.
   wp_pures.
   wp_storeField.
   wp_loadField.
-(*
-  wp_apply (release_spec with "[$Histxn_lock $Hlocked Histxn_nextid Hlatestfrag Histxn_pos]").
-  { iExists _, _, _. iFrame. }
+  destruct ok.
+  {
+    iDestruct "Hnpos" as (lwh') "[Hlockedheap Hnpos]".
+    wp_apply (release_spec with "[$Histxn_lock $Hlocked Histxn_nextid Hlockedheap Histxn_pos]").
+    { iExists _, _, _. iFrame. }
 
-  wp_pures.
-  iApply "HΦ".
-  destruct ok; last by iFrame.
-*)
-*)
-  admit.
+    wp_pures.
+    iApply "HΦ".
+    admit.
+  }
+  {
+    wp_apply (release_spec with "[$Histxn_lock $Hlocked Histxn_nextid Hnpos Histxn_pos]").
+    { iExists _, _, _. iFrame. }
+
+    wp_pures.
+    iApply "HΦ".
+    done.
+  }
 Admitted.
 
 Theorem wp_txn_CommitWait l q gData bufs buflist bufamap (wait : bool) (id : u64) :
