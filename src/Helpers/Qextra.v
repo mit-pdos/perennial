@@ -9,8 +9,36 @@ Proof. rewrite /Qcanon.Qcle //= ?Qreduction.Qred_correct. Qed.
 
 Lemma Qp_plus_1_nle_1 (q: Qp): (1%Qp + q <= 1%Qp)%Qc -> False.
 Proof.
-  rewrite -(Qcanon.Qcplus_0_r Qp_one) /Qcanon.Qcle //= ?Qreduction.Qred_correct.
-  assert (QArith_base.Qlt 0 (Qcanon.this q)).
-  { destruct q. simpl in *. eauto. }
-  nra.
+  apply Qp_not_plus_q_ge_1.
+Qed.
+
+Lemma Qp_split_1 (q: Qp) :
+  (q<1)%Qc ->
+  ∃ q', (1-q)%Qp = Some q' ∧
+        (q' + q = 1)%Qp.
+Proof.
+  intros Hbound.
+  rewrite /Qp_minus /Qp_plus.
+  destruct (decide (0 < 1%Qp - q)%Qc); try congruence.
+  - eexists; split; first by auto.
+    apply Qp_eq; simpl.
+    field.
+  - exfalso.
+    apply n.
+    simpl.
+    rewrite /Qcminus.
+    replace 0%Qc with (q + -q)%Qc by field.
+    apply Qcplus_lt_mono_r; auto.
+Qed.
+
+Theorem Qp_div_2_lt (q: Qp) : (q/2 < q)%Qc.
+Proof.
+  destruct q as [q ?].
+  simpl.
+  rewrite /Qcdiv.
+  replace q with (q * (/2 * 2))%Qc at 2.
+  { apply Qcmult_lt_mono_pos_l; auto.
+    reflexivity. }
+  rewrite Qcmult_inv_l //.
+  rewrite Qcanon.Qcmult_1_r //.
 Qed.
