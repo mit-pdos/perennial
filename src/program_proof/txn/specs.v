@@ -209,7 +209,7 @@ Theorem wp_txn_Load K l gData a v :
   }}}.
 Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iIntros (Φ) "(Htxn & Hstable) HΦ".
-  iDestruct "Htxn" as (γMaps γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
+  iDestruct "Htxn" as (γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
   iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".
 
   wp_call.
