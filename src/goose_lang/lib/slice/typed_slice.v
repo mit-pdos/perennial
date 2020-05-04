@@ -47,6 +47,15 @@ Proof.
   rewrite /list.untype fmap_replicate //.
 Qed.
 
+Lemma is_slice_to_small s t q vs :
+  is_slice s t q vs -∗ is_slice_small s t q vs.
+Proof.
+  rewrite /is_slice /is_slice_small.
+  iIntros "Hs".
+  iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
+  done.
+Qed.
+
 Lemma wp_NewSlice stk E t `{!IntoValForType IntoVal0 t} (sz: u64) :
   {{{ True }}}
     NewSlice t #sz @ stk; E

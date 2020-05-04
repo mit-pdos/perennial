@@ -308,6 +308,41 @@ Section map.
 End map.
 
 
+Section gmap_addr_by_block.
+
+Variable (T : Type).
+
+Definition lookup_block (m : gmap u64 (gmap u64 T)) (blkno : u64) : gmap u64 T :=
+  match m !! blkno with
+  | None => ∅
+  | Some bm => bm
+  end.
+
+Fixpoint gmap_addr_by_block_helper (ml : list (addr * T)) : gmap u64 (gmap u64 T) :=
+  match ml with
+  | [] => ∅
+  | (a, t) :: ml' =>
+    let m' := gmap_addr_by_block_helper ml' in
+    <[ a.(addrBlock) := <[a.(addrOff) := t]> (lookup_block m' a.(addrBlock)) ]> m'
+  end.
+
+Definition gmap_addr_by_block (m : gmap addr T) : gmap u64 (gmap u64 T) :=
+  gmap_addr_by_block_helper (map_to_list m).
+
+Theorem gmap_addr_by_block_empty :
+  gmap_addr_by_block ∅ = ∅.
+Proof.
+Admitted.
+
+Theorem gmap_addr_by_block_insert (m : gmap addr T) (a : addr) (v : T) :
+  gmap_addr_by_block (<[a:=v]> m) =
+    <[a.(addrBlock) := <[a.(addrOff) := v]> (lookup_block (gmap_addr_by_block m) a.(addrBlock))]> (gmap_addr_by_block m).
+Proof.
+Admitted.
+
+End gmap_addr_by_block.
+
+
 Hint Unfold block_bytes : word.
 Hint Unfold valid_addr : word.
 Hint Unfold addr2flat : word.
