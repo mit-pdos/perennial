@@ -560,7 +560,7 @@ Qed.
 Lemma wp_input s E tr (sel: u64) Or :
   {{{ trace_frag tr ∗ oracle_frag Or }}}
      Input (LitV (LitInt sel)) @ s; E
-  {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr)}}}.
+  {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr) ∗ oracle_frag Or}}}.
 Proof.
   iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "(Hσ&?&?&Htr_auth&Hor_auth) !>"; iSplit.
@@ -569,7 +569,7 @@ Proof.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
   iFrame. iMod (trace_update with "[$] [$]") as "(?&?)".
-  iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
+  iModIntro. iFrame; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)

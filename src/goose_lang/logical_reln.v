@@ -1859,8 +1859,56 @@ Proof using spec_trans.
       iMod (ghost_cmpxchg_null_stuck with "[$] [$]") as %[].
       { rewrite addr_base_of_plus //=. }
       { solve_ndisj. }
-  - admit.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) sel').
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (subst_map _ sel) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
+    clear Hctx'.
+    simpl.
+
+    iApply wp_wpc.
+    iApply wp_fupd.
+    iInv "Htrace" as (????) ">(He1&He2&Htr1&Htr2&Hor1&Hor2)" "Hclo".
+    iDestruct "He1" as %->.
+    iDestruct "He2" as %->.
+    iDestruct "Hvl" as (?) "(%&%)". subst.
+    wp_apply (wp_input with "[$]").
+    iIntros "(Htr1&Hor1)".
+    iMod (ghost_input with "[$] [$] [$] [$]") as "(Hj&?&?)".
+    { solve_ndisj. }
+    { solve_ndisj. }
+    iMod ("Hclo" with "[-Hj]").
+    { iNext. iExists _, _, _, _. iFrame. eauto. }
+    iIntros "!> !>". iExists _. iFrame. eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) v').
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (subst_map _ v) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
+    clear Hctx'.
+    simpl.
+
+    iApply wp_wpc.
+    iApply wp_fupd.
+    iInv "Htrace" as (????) ">(He1&He2&Htr1&Htr2&Hor1&Hor2)" "Hclo".
+    iDestruct "He1" as %->.
+    iDestruct "He2" as %->.
+    iDestruct "Hvl" as (?) "(%&%)". subst.
+    wp_apply (wp_output with "[$]").
+    iIntros "Htr1".
+    iMod (ghost_output with "[$] [$] [$]") as "(Hj&?)".
+    { solve_ndisj. }
+    { solve_ndisj. }
+    iMod ("Hclo" with "[-Hj]").
+    { iNext. iExists _, _, _, _. iFrame. eauto. }
+    iIntros "!> !>". iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.

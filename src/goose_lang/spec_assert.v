@@ -105,6 +105,57 @@ Qed.
 
 Hint Resolve sN_inv_sub_minus_state.
 
+Lemma ghost_output j K `{LanguageCtx _ K} E tr lit :
+  nclose spec_stateN ⊆ E →
+  nclose sN_inv ⊆ E →
+  spec_ctx -∗
+  trace_frag tr -∗
+  j ⤇ K (Output (LitV lit)) ={E}=∗
+  j ⤇ K (LitV LitUnit) ∗ trace_frag (add_event (Out_ev lit) tr).
+Proof.
+  iIntros (??) "(#Hctx&#Hstate) Htr_frag Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&?&>Htr_auth&?)".
+  iDestruct (trace_agree with "[$] [$]") as %?; subst.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_simpl; simpl).
+  }
+  { solve_ndisj. }
+  iMod (trace_update with "[$] [$]") as "(?&Htr_frag)".
+  iMod ("Hclo" with "[-Hj Htr_frag]").
+  { iNext. iExists _. iFrame. rewrite //=. }
+  iFrame. eauto.
+Qed.
+
+Lemma ghost_input j K `{LanguageCtx _ K} E tr (sel: u64) Or :
+  nclose spec_stateN ⊆ E →
+  nclose sN_inv ⊆ E →
+  spec_ctx -∗
+  trace_frag tr -∗
+  oracle_frag Or -∗
+  j ⤇ K (Input (LitV (LitInt sel))) ={E}=∗
+  j ⤇ K (LitV (LitInt (Or tr sel))) ∗ trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr) ∗
+  oracle_frag Or.
+Proof.
+  iIntros (??) "(#Hctx&#Hstate) Htr_frag Hor_frag Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&?&>Htr_auth&>Hor_auth&?)".
+  iDestruct (trace_agree with "[$] [$]") as %?; subst.
+  iDestruct (oracle_agree with "[$] [$]") as %?; subst.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_simpl; simpl).
+  }
+  { solve_ndisj. }
+  iMod (trace_update with "[$] [$]") as "(?&Htr_frag)".
+  iMod ("Hclo" with "[-Hj Htr_frag Hor_frag]").
+  { iNext. iExists _. iFrame. rewrite //=. }
+  iFrame. eauto.
+Qed.
+
 Lemma ghost_load_block_oob_stuck j K `{LanguageCtx _ K} E l n
   (Hoff: (addr_offset l < 0 ∨ n <= addr_offset l)%Z):
   nclose sN ⊆ E →

@@ -182,7 +182,7 @@ Section translate.
   (** I/O *)
   | input_hasTy sel sel' :
       Γ ⊢ sel -- sel' : uint64T ->
-      Γ ⊢ Input sel -- sel' : uint64T
+      Γ ⊢ Input sel -- Input sel' : uint64T
   | output_hasTy v v' :
       Γ ⊢ v -- v' : uint64T ->
       Γ ⊢ Output v -- Output v' : unitT
