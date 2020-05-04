@@ -171,15 +171,45 @@ Section goose_lang.
     | _ => false
     end.
 
+  Fixpoint is_unboxed_baseTy (t: ty) : bool :=
+    match t with
+    | baseT _ => true
+    | arrayT _ => true
+    | structRefT _ => true
+    | _ => false
+    end.
+
+  Fixpoint is_unboxedTy (t: ty) : bool :=
+    match t with
+    | baseT _ => true
+    | arrayT _ => true
+    | structRefT _ => true
+    | sumT t1 t2 => is_unboxed_baseTy t1 && is_unboxed_baseTy t2
+    | _ => false
+    end.
+
   Fixpoint is_comparableTy (t: ty) : bool :=
     match t with
     | baseT _ => true
     | prodT t1 t2 => is_comparableTy t1 && is_comparableTy t2
+    | sumT t1 t2 => is_comparableTy t1 && is_comparableTy t2
     | arrayT _ => true
     | structRefT _ => true
-    (* Arguably we could allow equality testing on sums, etc. *)
     | _ => false
     end.
+
+  Lemma unboxed_baseTy_unboxed (t1: ty):
+    is_unboxed_baseTy t1 = true →
+    is_unboxedTy t1 = true.
+  Proof. destruct t1 => //=. Qed.
+
+  Lemma unboxedTy_comparable (t: ty):
+    is_unboxedTy t = true →
+    is_comparableTy t = true.
+  Proof.
+    induction t => //=. intros (?&?)%andb_prop.
+    rewrite IHt1 //=; eauto using unboxed_baseTy_unboxed.
+  Qed.
 
   Fixpoint flatten_ty (t: ty) : list ty :=
     match t with
@@ -342,6 +372,7 @@ Section goose_lang.
       Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ FinishRead l : unitT
   | cmpxchg_hasTy l v1 v2 t ts :
+      is_unboxedTy t = true ->
       Γ ⊢ l : structRefT (t::ts) ->
       Γ ⊢ v1 : t ->
       Γ ⊢ v2 : t ->

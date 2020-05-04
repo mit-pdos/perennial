@@ -490,6 +490,73 @@ Proof.
                                      LitLoc l = LitLoc l'); eauto. inversion 1; eauto.
 Qed.
 
+Lemma structRefT_unboxed_baseTy ts vs v:
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+  val_interp (hS := hS) (structRefT ts) vs v -∗
+  ⌜ ∃ ls l, vs = LitV ls ∧ v = LitV l ∧ lit_is_unboxed ls ∧ lit_is_unboxed l ⌝.
+Proof.
+  intros.
+  iDestruct 1 as "[H1|Hnull1]".
+  * iDestruct "H1" as (?? n1 ?? (?&?&?&?&Hoffset1)) "(Hpaired1&_)".
+    subst. iPureIntro. do 2 eexists; split_and!; eauto; simpl; eauto.
+  * iDestruct "Hnull1" as %(?&(Hnull1s&Hnull1)).
+    subst. iPureIntro. do 2 eexists; split_and!; eauto; simpl; eauto.
+Qed.
+
+Lemma structRefT_unboxedTy ts vs v:
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+  val_interp (hS := hS) (structRefT ts) vs v -∗
+  ⌜ val_is_unboxed vs ∧ val_is_unboxed v ⌝.
+Proof.
+  intros.
+  iDestruct 1 as "[H1|Hnull1]".
+  * iDestruct "H1" as (?? n1 ?? (?&?&?&?&Hoffset1)) "(Hpaired1&_)".
+    subst. eauto.
+  * iDestruct "Hnull1" as %(?&(Hnull1s&Hnull1)). subst.
+    eauto.
+Qed.
+
+Lemma unboxed_baseTy_val_unboxed_lit t vs v:
+  is_unboxed_baseTy t = true →
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+  val_interp (hS := hS) t vs v -∗
+  ⌜ ∃ ls l, vs = LitV ls ∧ v = LitV l ∧ lit_is_unboxed ls ∧ lit_is_unboxed l ⌝.
+Proof.
+  clear spec_trans.
+  revert vs v.
+  induction t => vs v; try (inversion 1; fail).
+  - intros. destruct t; iPureIntro; naive_solver.
+  - intros. iIntros "H".
+    iDestruct (arrayT_structRefT_promote with "H") as "H".
+    iApply (structRefT_unboxed_baseTy); eauto.
+  - intros.
+    iApply (structRefT_unboxed_baseTy); eauto.
+Qed.
+
+Lemma unboxedTy_val_unboxed t vs v:
+  is_unboxedTy t = true →
+  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+  val_interp (hS := hS) t vs v -∗
+  ⌜ val_is_unboxed vs ∧ val_is_unboxed v ⌝.
+Proof.
+  clear spec_trans.
+  revert vs v.
+  induction t => vs v; try (inversion 1; fail).
+  - intros. destruct t; iPureIntro; naive_solver.
+  - intros (?&?)%andb_prop.
+    intros.
+    iDestruct 1 as "[H|H]".
+    * iDestruct "H" as (?? (->&->)) "H".
+      iDestruct (unboxed_baseTy_val_unboxed_lit  with "H") as %(?&?&?&?&?&?); subst; eauto.
+    * iDestruct "H" as (?? (->&->)) "H".
+      iDestruct (unboxed_baseTy_val_unboxed_lit  with "H") as %(?&?&?&?&?&?); subst; eauto.
+  - intros. iIntros "H".
+    iDestruct (arrayT_structRefT_promote with "H") as "H".
+    iApply (structRefT_unboxedTy); eauto.
+  - intros.
+    iApply (structRefT_unboxedTy); eauto.
+Qed.
+
 Lemma comparableTy_val_eq t vs1 v1 vs2 v2:
   is_comparableTy t = true →
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
@@ -509,6 +576,18 @@ Proof.
     iPoseProof (IHt1 with "H1 H1'") as "%"; eauto.
     iPoseProof (IHt2 with "H2 H2'") as "%"; eauto.
     iPureIntro. naive_solver.
+  - intros (?&?)%andb_prop.
+    intros.
+    iDestruct 1 as "[H|H]";
+    iDestruct 1 as "[H'|H']";
+    iDestruct "H" as (?? (->&->)) "H";
+    iDestruct "H'" as (?? (->&->)) "H'".
+    * iPoseProof (IHt1 with "H H'") as "%"; eauto.
+      iPureIntro. split; inversion 1; subst; f_equal; naive_solver.
+    * iPureIntro; split; inversion 1.
+    * iPureIntro; split; inversion 1.
+    * iPoseProof (IHt2 with "H H'") as "%"; eauto.
+      iPureIntro. split; inversion 1; subst; f_equal; naive_solver.
   - intros.
     iIntros "H1 H2".
     iDestruct (arrayT_structRefT_promote with "H1") as "H1".
@@ -1664,7 +1743,122 @@ Proof using spec_trans.
     }
     wp_pures.
     iModIntro. iExists _. simpl. iFrame. eauto.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) l').
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (subst_map _ l) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
+    clear Hctx'.
+    simpl.
+
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) v1').
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (subst_map _ v1) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[Hvl] [] H"); last done.
+    iIntros (v1_done) "H". iDestruct "H" as (vs1_done) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) v2').
+    iPoseProof (IHHtyping3 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (subst_map _ v2) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[Hvl Hv1] [] H"); last done.
+    iIntros (v2_done) "H". iDestruct "H" as (vs2_done) "(Hj&Hvs2_done)".
+    clear Hctx'.
+    simpl.
+
+
+    iApply wp_wpc.
+    iApply wp_fupd.
+
+    rewrite val_interp_struct_unfold.
+    iDestruct "Hvl" as "[Hv|Hnull]".
+    * iDestruct "Hv" as (lv lvs n H0lt Hnonemtpy (->&->&?&?&?)) "(Hpaired&Hblock1&Hblocked2&Hloc)".
+      iDestruct "Hloc" as "[Hinbound|Hoob]".
+      {
+        iDestruct "Hinbound" as "(H&_)".
+        rewrite /is_loc. iDestruct "H" as "(Hlocinv&Hpaired')".
+        iDestruct "Hlocinv" as (γ) "Hlocinv".
+        iInv "Hlocinv" as "Hlocinv_body" "Hclo".
+        rewrite /loc_inv. iDestruct "Hlocinv_body" as (mem_vs mem_v) "H".
+        iDestruct (unboxedTy_val_unboxed with "Hv1") as %(Hsunboxed&Hunboxed).
+        { eauto. }
+        iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
+        {
+          iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
+          rewrite ?loc_add_0.
+          iDestruct (comparableTy_val_eq with "Hv1 Hval") as ">Heq".
+          { apply unboxedTy_comparable. eauto. }
+          iDestruct "Heq" as %Heq_iff.
+          destruct (decide (mem_v = v1_done)).
+          * wp_apply (wp_cmpxchg_suc with "Hpts"); first eauto.
+            { right. eauto. }
+            iIntros "Hpts".
+            iMod (ghost_cmpxchg_suc with "[$] Hspts Hj") as "(Hspts&Hj)".
+            { symmetry. eapply Heq_iff; eauto. }
+            { right; eauto. }
+            { solve_ndisj. }
+            iMod ("Hclo" with "[Hpts Hspts Hfc Hval Hvs2_done]").
+            { iNext. iExists _, _. iLeft. iFrame. }
+            iIntros "!> !>". iExists _. iFrame. iExists _, _, _, _. iFrame. iSplitL ""; first eauto.
+            iFrame "Hval". eauto.
+          * wp_apply (wp_cmpxchg_fail with "Hpts"); first eauto.
+            { right. eauto. }
+            iIntros "Hpts".
+            iMod (ghost_cmpxchg_fail with "[$] Hspts Hj") as "(Hspts&Hj)".
+            { naive_solver. }
+            { right; eauto. }
+            { solve_ndisj. }
+            iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
+            { iNext. iExists _, _. iLeft. iFrame. eauto. }
+            iIntros "!> !>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
+            iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
+        }
+        {
+          iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
+          rewrite ?loc_add_0.
+          iDestruct (comparableTy_val_eq with "Hv1 Hval") as ">Heq".
+          { apply unboxedTy_comparable. eauto. }
+          iDestruct "Heq" as %Heq_iff.
+          destruct (decide (mem_v = v1_done)).
+          * iMod (ghost_cmpxchg_suc_read_stuck with "[$] Hspts Hj") as %[].
+            { symmetry. eapply Heq_iff; eauto. }
+            { lia. }
+            { solve_ndisj. }
+          * wp_apply (wp_cmpxchg_fail with "Hpts"); first eauto.
+            { right. eauto. }
+            iIntros "Hpts".
+            iMod (ghost_cmpxchg_fail_rd with "[$] Hspts Hj") as "(Hspts&Hj)".
+            { naive_solver. }
+            { right; eauto. }
+            { solve_ndisj. }
+            iMod ("Hclo" with "[Hpts Hspts Hfc Hval Hspts_clo]").
+            { iNext. iExists _, _. iRight. iLeft. iExists _, _, _. iFrame. iFrame "%". eauto. }
+            iIntros "!> !>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
+            iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
+        }
+        {
+          iDestruct "Hwriter" as "(>Hfc&>Hspts)".
+          rewrite ?loc_add_0.
+          iMod (ghost_cmpxchg_write_stuck with "[$] [$] [$]") as %[].
+          { solve_ndisj. }
+        }
+      }
+      {
+        iDestruct "Hoob" as %Hoob.
+        iMod (ghost_cmpxchg_block_oob_stuck with "[$] [$] [$]") as %[].
+        { lia. }
+        { solve_ndisj. }
+      }
+    * iDestruct "Hnull" as %(?&->&->).
+      iMod (ghost_cmpxchg_null_stuck with "[$] [$]") as %[].
+      { rewrite addr_base_of_plus //=. }
+      { solve_ndisj. }
   - admit.
   - admit.
   - subst.

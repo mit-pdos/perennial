@@ -173,6 +173,7 @@ Section translate.
       Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ Read l -- Read l' : t
   | cmpxchg_transTy l l' v1 v1' v2 v2' t ts :
+      is_unboxedTy t = true ->
       Γ ⊢ l -- l' : structRefT (t::ts) ->
       Γ ⊢ v1 -- v1' : t ->
       Γ ⊢ v2 -- v2' : t ->
