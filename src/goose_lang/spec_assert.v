@@ -205,6 +205,59 @@ Proof.
   iFrame. eauto.
 Qed.
 
+Lemma ghost_cmpxchg_fail j K `{LanguageCtx _ K} E l q v' v1 v2:
+  v' ≠ v1 → vals_compare_safe v' v1 →
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  l s↦{q} v' -∗
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗
+  l s↦{q} v' ∗ j ⤇ K (PairV v' (LitV $ LitBool false)).
+Proof.
+  iIntros (???) "(#Hctx&#Hstate) Hl0 Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iDestruct (heap_mapsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
+  iDestruct (@na_heap_read with "Hσ Hl") as %(lk&?&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_simpl; simpl).
+  }
+  { eauto. }
+  rewrite bool_decide_false //.
+  iMod ("Hclo" with "[Hσ H Hrest]").
+  { iNext. iExists _. iFrame. }
+  simpl. iFrame. iModIntro. iApply "Hclo_l"; eauto.
+Qed.
+
+Lemma ghost_cmpxchg_suc j K `{LanguageCtx _ K} E l v' v1 v2:
+  v' = v1 → vals_compare_safe v' v1 →
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  l s↦ v' -∗
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗
+  l s↦ v2 ∗ j ⤇ K (PairV v' (LitV $ LitBool true)).
+Proof.
+  iIntros (???) "(#Hctx&#Hstate) Hl0 Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&Hrest)".
+  iDestruct (heap_mapsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
+  iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (na_heap_write _ _ _ (Reading 0) with "Hσ Hl") as "(Hσ&Hl)"; first done.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { eapply head_prim_step.
+    rewrite /= /head_step /=.
+    repeat (monad_simpl; simpl).
+  }
+  { eauto. }
+  rewrite bool_decide_true //.
+  iMod ("Hclo" with "[Hσ H Hrest]").
+  { iNext. iExists _. iFrame "H". simpl. iFrame; simpl. rewrite upd_equiv_null_non_alloc; eauto. }
+  simpl. iFrame. iModIntro. iApply "Hclo_l"; eauto.
+Qed.
+
 Lemma ghost_load j K `{LanguageCtx _ K} E l q v:
   nclose sN ⊆ E →
   spec_ctx -∗
