@@ -1362,19 +1362,33 @@ Proof.
   lia.
 Qed.
 
-Theorem wp_Walog__Read l (blkno : u64) γ (σd : disk) (σtxns : list (u64 * list update.t)) b :
+Record locked_walheap := {
+  locked_wh_σd : disk;
+  locked_wh_σtxns : list (u64 * list update.t);
+}.
+
+Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
+  own γ.(wal_heap_txns) (◯ (Excl' (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)))).
+
+Definition locked_wh_disk (lwh : locked_walheap) : disk :=
+  apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
+
+Theorem wp_Walog__Read l (blkno : u64) γ lwh b :
   {{{ is_wal N (wal_heap_inv γ) l ∗
-      own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
-      ⌜ apply_upds (txn_upds σtxns) σd !! int.val blkno = Some b ⌝
+      is_locked_walheap γ lwh ∗
+      ⌜ locked_wh_disk lwh !! int.val blkno = Some b ⌝
   }}}
     wal.Walog__Read #l #blkno
   {{{ bl, RET (slice_val bl);
-      own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+      is_locked_walheap γ lwh ∗
       is_block bl 1 b
   }}}.
 Proof using gen_heapPreG0.
   iIntros (Φ) "(#Hwal & Htxnsfrag & %Hb) HΦ".
   wp_call.
+  unfold locked_wh_disk in *.
+  destruct lwh as [σd σtxns].
+  unfold is_locked_walheap in *. simpl in *.
   wp_apply (wp_Walog__ReadMem _ _
     (λ mb,
       match mb with
@@ -1485,11 +1499,11 @@ Proof using gen_heapPreG0.
   }
 Qed.
 
-Theorem wal_heap_mapsto_latest_helper γ σd σtxns (a : u64) (v : heap_block) σ :
+Theorem wal_heap_mapsto_latest_helper γ lwh (a : u64) (v : heap_block) σ :
   wal_heap_inv γ σ ∗
-  own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+  is_locked_walheap γ lwh ∗
   mapsto (hG := γ.(wal_heap_h)) a 1 v -∗
-  ⌜ apply_upds (txn_upds σtxns) σd !! int.val a = Some (hb_latest_update v) ⌝.
+  ⌜ locked_wh_disk lwh !! int.val a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros "(Hheap & Htxnsfrag & Hmapsto)".
   iNamed "Hheap".
@@ -1502,17 +1516,18 @@ Proof.
   iPureIntro.
   eapply updates_since_to_last_disk in H; eauto.
   2: lia.
-  rewrite /last_disk /disk_at_txn_id firstn_all H2 in H. done.
+  rewrite /last_disk /disk_at_txn_id firstn_all H4 in H.
+  rewrite /locked_wh_disk. rewrite -H0 -H1. done.
 Qed.
 
-Theorem wal_heap_mapsto_latest γ l σd σtxns (a : u64) (v : heap_block) E :
+Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E :
   ↑N ⊆ E ->
   is_wal N (wal_heap_inv γ) l ∗
-  own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+  is_locked_walheap γ lwh ∗
   mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
-    own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+    is_locked_walheap γ lwh ∗
     mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
-    ⌜ apply_upds (txn_upds σtxns) σd !! int.val a = Some (hb_latest_update v) ⌝.
+    ⌜ locked_wh_disk lwh !! int.val a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros (HNE) "(Hwal & Htxnsfrag & Hmapsto)".
   iInv N as ">[Hl Hheap]".

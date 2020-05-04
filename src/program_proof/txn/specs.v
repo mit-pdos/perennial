@@ -423,50 +423,36 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 Qed.
 
 Definition is_txn_buf_pre (bufptr:loc) (a : addr) (buf : buf) gData : iProp Σ :=
-  is_buf bufptr a buf ∗
-  ∃ data, @mapsto_txn buf.(bufKind) gData a data.
+  "Hisbuf" ∷ is_buf bufptr a buf ∗
+  "Hmapto" ∷ ∃ data, @mapsto_txn buf.(bufKind) gData a data.
 
 Definition is_txn_buf_blkno (bufptr : loc) (a : addr) (buf : buf) blkno :=
   ( "Hisbuf" ∷ is_buf bufptr a buf ∗
     "%HaddrBlock" ∷ ⌜a.(addrBlock) = blkno⌝ )%I.
 
-Definition is_bbbmap_entry (bbblist: list loc) s (bufamap : gmap addr buf) blkno :=
-  ( ∃ bufamap0,
-    "Hbbblist_s" ∷ is_slice s (refT (struct.t buf.Buf.S)) 1 bbblist ∗
-    "%Hbbblist_notempty" ∷ ⌜ length bbblist > 0 ⌝ ∗
-    "%Hbufamap_subset" ∷ ⌜ bufamap0 ⊆ bufamap ⌝ ∗
-    "Hbbblist" ∷ [∗ maplist] a ↦ buf; bufptr ∈ bufamap0; bbblist,
-      is_txn_buf_blkno bufptr a buf blkno )%I.
+Definition updOffsetsOK blknum diskLatest walBlock K (offmap : gmap u64 buf) : Prop :=
+  ∀ off,
+    valid_addr (Build_addr blknum off) ->
+    valid_off K off ->
+    match offmap !! off with
+    | None => ∀ (bufData : @bufDataT K),
+      is_bufData_at_off diskLatest off bufData ->
+      is_bufData_at_off walBlock off bufData
+    | Some buf =>
+      is_bufData_at_off walBlock off buf.(bufData)
+    end.
 
-Definition bufsByBlock_buflist bufsByBlock_l (bufsByBlock:loc)
-                               (bufamap : gmap addr buf) (buflist: list loc) : iProp Σ :=
-  ( ∃ (bbbmap: Map.t Slice.t) buflists,
-    "HbufsByBlock_l" ∷ bufsByBlock_l ↦[mapT (slice.T (refT (struct.t buf.Buf.S)))] #bufsByBlock ∗
-    "HbufsByBlock" ∷ is_map bufsByBlock bbbmap ∗
-    "%Hbuflist_perm" ∷ ⌜ concat buflists ≡ₚ buflist ⌝ ∗
-    "Hbbbmap" ∷ [∗ maplist] blkno↦s; bbblist ∈ bbbmap; buflists,
-      is_bbbmap_entry bbblist s bufamap blkno ).
+Definition updBlockOK blknum walBlock K (locked_wh_disk : disk) (offmap : gmap u64 buf) : Prop :=
+  ∀ diskLatest,
+    locked_wh_disk !! int.val blknum = Some diskLatest ->
+    updOffsetsOK blknum diskLatest walBlock K offmap.
 
-Definition updBlockOK walUpd
-  (gData : gmap u64 {K : bufDataKind & gen_heapG u64 (updatable_buf (bufDataT K)) Σ})
-  (walHeap : gen_heapG u64 heap_block Σ) (bufamap : gmap addr buf) : iProp Σ :=
-  let blknum := walUpd.(update.addr) in
-  let walBlock := walUpd.(update.b) in
+Definition updBlockKindOK blknum walBlock
+              (gData : gmap u64 {K : bufDataKind & gen_heapG u64 (updatable_buf (bufDataT K)) Σ})
+              (locked_wh_disk : disk) (offmap : gmap u64 buf) : Prop :=
   ∃ K gDataGH,
-    ⌜ gData !! blknum = Some (existT K gDataGH) ⌝ ∗
-    ∀ diskInstalled diskBs,
-      mapsto (hG := walHeap) blknum 1 (HB diskInstalled diskBs) -∗
-      let diskLatest := latest_update diskInstalled diskBs in
-      ∀ off,
-        ⌜ valid_addr (Build_addr blknum off) ->
-          valid_off K off ->
-          match bufamap !! (Build_addr blknum off) with
-          | None => ∀ (bufData : @bufDataT K),
-            is_bufData_at_off diskLatest off bufData ->
-            is_bufData_at_off walBlock off bufData
-          | Some buf =>
-            is_bufData_at_off walBlock off buf.(bufData)
-          end ⌝.
+    gData !! blknum = Some (existT K gDataGH) ∧
+    updBlockOK blknum walBlock K locked_wh_disk offmap.
 
 Lemma valid_off_block blknum off :
   valid_addr (Build_addr blknum off) ->
@@ -477,91 +463,109 @@ Proof.
   admit.
 Admitted.
 
-Theorem wp_txn__installBufs l q gData walptr γ (σd :disk) (σtxns : list (u64 * list update.t)) bufs buflist (bufamap : gmap addr buf) :
+
+Theorem wp_txn__installBufsMap l q gData walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
   {{{ inv invN (is_txn_always γ.(wal_heap_h) gData) ∗
       is_wal walN (wal_heap_inv γ) walptr ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
-      own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
+      is_locked_walheap γ lwh ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre bufptrval a buf gData
   }}}
-    Txn__installBufs #l (slice_val bufs)
-  {{{ (blks : Slice.t) updlist (updmap : gmap u64 unit), RET (slice_val blks);
-      own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗
-      updates_slice blks updlist ∗
-      ⌜ ∀ blkno, (∃ off, is_Some (bufamap !! (Build_addr blkno off))) <->
-                 is_Some (updmap !! blkno) ⌝ ∗
+    Txn__installBufsMap #l (slice_val bufs)
+  {{{ (blkmapref : loc) (blkmap : Map.t Slice.t), RET #blkmapref;
+      is_locked_walheap γ lwh ∗
+      is_map blkmapref blkmap ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
         ∃ data, @mapsto_txn buf.(bufKind) gData a data ) ∗
-      [∗ maplist] blkno ↦ _; walUpd ∈ updmap; updlist,
-        ⌜ walUpd.(update.addr) = blkno ⌝ ∗
-        updBlockOK walUpd gData γ.(wal_heap_h) bufamap
+      [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap,
+        ∃ b,
+          is_block blkslice 1 b ∗
+          ⌜ updBlockKindOK blkno b gData (locked_wh_disk lwh) offmap ⌝
   }}}.
 Proof.
   iIntros (Φ) "(#Hinv & #Hiswal & #log & Hlatestfrag & Hbufs & Hbufpre) HΦ".
 
-(*
 Opaque struct.t.
   wp_call.
-  wp_apply wp_new_slice. { repeat econstructor. }
+  wp_apply wp_NewMap.
   iIntros (blks) "Hblks".
-
-  wp_apply wp_ref_to; [val_ty|].
-  iIntros (blks_l) "Hblks_l".
-
-  wp_pures.
-  wp_apply map.wp_NewMap.
-  iIntros (bufsByBlock) "HbufsByBlock".
-
-  wp_apply wp_ref_to; [val_ty|].
-  iIntros (bufsByBlock_l) "HbufsByBlock_l".
-
-  wp_pures.
 
   iDestruct (is_slice_to_small with "Hbufs") as "Hbufs".
   wp_apply (wp_forSlicePrefix
       (fun done todo =>
-        ∃ bufamap_todo bufamap_done,
+        ∃ bufamap_todo bufamap_done blkmap,
         "<-" ∷ ⌜ done ++ todo = buflist ⌝ ∗
+        "->" ∷ ⌜ bufamap_done = bufamap ∖ bufamap_todo ⌝ ∗
+        "Hblks" ∷ is_map blks blkmap ∗
         "Hbufamap_todo" ∷ ( [∗ maplist] a↦buf;bufptrval ∈ bufamap_todo;todo, is_txn_buf_pre bufptrval a buf gData ) ∗
-        "Hbufamap_done" ∷ bufsByBlock_buflist bufsByBlock_l bufsByBlock bufamap_done done ∗
-        "Hbufamap_done_mapsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, ∃ data, @mapsto_txn buf.(bufKind) gData a data ) ∗
-        "%Htodo_done_disjoint" ∷ ⌜ dom (gset addr) bufamap_todo ## dom (gset addr) bufamap_done ⌝ ∗
-        "%Htodo_done_complete" ∷ ⌜ bufamap_todo ∪ bufamap_done = bufamap ⌝)%I
-      with "[] [$Hbufs Hbufpre HbufsByBlock_l HbufsByBlock]").
+        "Hbufamap_done" ∷ ( [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap_done,
+          ∃ b,
+            is_block blkslice 1 b ∗
+            ⌜ updBlockKindOK blkno b gData (locked_wh_disk lwh) offmap ⌝ ) ∗
+        "Hbufamap_done_mapsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, ∃ data, @mapsto_txn buf.(bufKind) gData a data )
+      )%I
+      with "[] [$Hbufs Hbufpre Hblks]").
   2: {
-    iExists _, ∅.
+    iExists bufamap, ∅, ∅.
     iSplitR; try done.
-    iSplitL "Hbufpre"; first by iFrame.
-    iSplitL.
-    {
-      iExists ∅, nil. rewrite /=.
-      iFrame.
-      iSplitL "HbufsByBlock".
-      { iApply is_map_retype. rewrite /=.
-        iExactEq "HbufsByBlock". f_equal. f_equal.
-        rewrite fmap_empty; done. }
-      iSplitR; first by done.
-      iApply big_sepML_empty.
-    }
     iSplitR.
-    { iApply big_sepM_empty. done. }
-    iPureIntro.
-    rewrite dom_empty.
-    split.
-    1: apply disjoint_empty_r.
-    rewrite right_id_L; eauto.
+    { iPureIntro. rewrite map_difference_diag. done. }
+    iFrame "Hblks". iFrame "Hbufpre".
+    iSplit.
+    { rewrite gmap_addr_by_block_empty. iApply big_sepM2_empty. done. }
+    iApply big_sepM_empty. done.
   }
-
   {
     iIntros (i b done todo).
     iIntros (Φ') "!> HP HΦ'".
     iNamed "HP".
-    iNamed "Hbufamap_done".
-    iDestruct (big_sepML_delete_cons with "Hbufamap_todo") as (a bufptr) "(%Hb & Htxnbuf & Hbufamap_todo)".
-    iDestruct "Htxnbuf" as "(Hisbuf&Hmapto)".
-    wp_apply (wp_buf_loadField_addr with "Hisbuf"). iIntros "Hisbuf".
+
+    iDestruct (big_sepML_delete_cons with "Hbufamap_todo") as (a buf) "(%Hb & Htxnbuf & Hbufamap_todo)".
+    iNamed "Htxnbuf".
+
+    wp_pures.
+    wp_apply (wp_buf_loadField_sz with "Hisbuf"). iIntros "Hisbuf".
+    destruct (decide (buf.(bufKind) = KindBlock)).
+
+    - replace (bufSz buf.(bufKind)) with (bufSz KindBlock) by congruence.
+      wp_pures.
+
+      wp_apply (wp_buf_loadField_data with "Hisbuf"). iIntros (bufdata) "[Hbufdata Hisbuf_wd]".
+      wp_apply (wp_buf_wd_loadField_addr with "Hisbuf_wd"). iIntros "Hisbuf_wd".
+
+      wp_apply (wp_MapInsert with "Hblks").
+      { reflexivity. }
+      iIntros "Hblks".
+
+      iApply "HΦ'".
+      iExists (delete a bufamap_todo), (<[a := buf]> (bufamap ∖ bufamap_todo)), _.
+      iSplitR.
+      { rewrite -app_assoc. simpl. done. }
+      iSplitR.
+      { admit. }
+      iFrame "Hblks".
+      iFrame "Hbufamap_todo".
+      iSplitR "Hbufamap_done_mapsto Hmapto".
+      2: {
+        iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_mapsto").
+        simpl. iFrame.
+      }
+      rewrite /map_insert.
+      rewrite gmap_addr_by_block_insert.
+      iApply (big_sepM2_insert_2 with "[Hbufdata] Hbufamap_done").
+      simpl.
+      rewrite /is_buf_data /is_block.
+      destruct (buf.(bufData)); try congruence.
+      iExists _. iFrame. iPureIntro.
+
+      admit.
+
+    - admit.
+  }
+
+(*
     wp_load.
     wp_apply (wp_MapGet with "HbufsByBlock").
     iIntros (v1 ok) "[%Hmapget HbufsByBlock]".

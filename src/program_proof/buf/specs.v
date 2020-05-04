@@ -8,6 +8,7 @@ From Perennial.program_proof Require Import util_proof disk_lib.
 From Perennial.program_proof.buf Require Import defs.
 From Perennial.program_proof.addr Require Import specs.
 From Perennial.program_proof.wal Require Import abstraction.
+From Perennial.Helpers Require Import NamedProps.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -24,16 +25,20 @@ Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ 
   | bufBlock b => is_slice_small s u8T 1%Qp (Block_to_vals b)
   end.
 
+Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : Slice.t) : iProp Σ :=
+  ∃ (sz : u64),
+    "Haddr" ∷ bufptr ↦[Buf.S :: "Addr"] (addr2val a) ∗
+    "Hsz" ∷ bufptr ↦[Buf.S :: "Sz"] #sz ∗
+    "Hdata" ∷ bufptr ↦[Buf.S :: "Data"] (slice_val data) ∗
+    "Hdirty" ∷ bufptr ↦[Buf.S :: "dirty"] #o.(bufDirty) ∗
+    "%" ∷ ⌜ valid_addr a ∧ valid_off o.(bufKind) a.(addrOff) ⌝ ∗
+    "->" ∷ ⌜ sz = bufSz o.(bufKind) ⌝ ∗
+    "%" ∷ ⌜ #bufptr ≠ #null ⌝.
+
 Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
-  ∃ (data : Slice.t) (sz : u64),
-    bufptr ↦[Buf.S :: "Addr"] (addr2val a) ∗
-    bufptr ↦[Buf.S :: "Sz"] #sz ∗
-    bufptr ↦[Buf.S :: "Data"] (slice_val data) ∗
-    bufptr ↦[Buf.S :: "dirty"] #o.(bufDirty) ∗
-    ⌜ valid_addr a ∧ valid_off o.(bufKind) a.(addrOff) ⌝ ∗
-    ⌜ sz = bufSz o.(bufKind) ⌝ ∗
-    ⌜ #bufptr ≠ #null ⌝ ∗
-    is_buf_data data o.(bufData) a.
+  ∃ (data : Slice.t),
+    "Hisbuf_without_data" ∷ is_buf_without_data bufptr a o data ∗
+    "Hbufdata" ∷ is_buf_data data o.(bufData) a.
 
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 loc) (am : gmap addr loc),
@@ -46,8 +51,9 @@ Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
 Theorem is_buf_not_null bufptr a o :
   is_buf bufptr a o -∗ ⌜ #bufptr ≠ #null ⌝.
 Proof.
-  iIntros "Hbuf".
-  iDestruct "Hbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & % & % & Hbufdata)".
+  iIntros "Hisbuf".
+  iNamed "Hisbuf".
+  iNamed "Hisbuf_without_data".
   eauto.
 Qed.
 
@@ -62,10 +68,11 @@ Theorem wp_buf_loadField_sz bufptr a b :
   }}}.
 Proof using.
   iIntros (Φ) "Hisbuf HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  iNamed "Hisbuf".
+  iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _, _. iFrame. done.
+  iExists _. iFrame. iExists _. iFrame. done.
 Qed.
 
 Theorem wp_buf_loadField_addr bufptr a b :
@@ -79,10 +86,11 @@ Theorem wp_buf_loadField_addr bufptr a b :
   }}}.
 Proof using.
   iIntros (Φ) "Hisbuf HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  iNamed "Hisbuf".
+  iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _, _. iFrame. done.
+  iExists _; iFrame. iExists _; iFrame. done.
 Qed.
 
 Theorem wp_buf_loadField_dirty bufptr a b :
@@ -96,10 +104,71 @@ Theorem wp_buf_loadField_dirty bufptr a b :
   }}}.
 Proof using.
   iIntros (Φ) "Hisbuf HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  iNamed "Hisbuf".
+  iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _, _. iFrame. done.
+  iExists _; iFrame. iExists _; iFrame. done.
+Qed.
+
+Theorem wp_buf_wd_loadField_sz bufptr a b dataslice :
+  {{{
+    is_buf_without_data bufptr a b dataslice
+  }}}
+    struct.loadF buf.Buf.S "Sz" #bufptr
+  {{{
+    RET #(bufSz b.(bufKind));
+    is_buf_without_data bufptr a b dataslice
+  }}}.
+Proof using.
+  iIntros (Φ) "Hisbuf_without_data HΦ".
+  iNamed "Hisbuf_without_data".
+  wp_loadField.
+  iApply "HΦ".
+  iExists _. iFrame. done.
+Qed.
+
+Theorem wp_buf_wd_loadField_addr bufptr a b dataslice :
+  {{{
+    is_buf_without_data bufptr a b dataslice
+  }}}
+    struct.loadF buf.Buf.S "Addr" #bufptr
+  {{{
+    RET (addr2val a);
+    is_buf_without_data bufptr a b dataslice
+  }}}.
+Proof using.
+  iIntros (Φ) "Hisbuf_without_data HΦ".
+  iNamed "Hisbuf_without_data".
+  wp_loadField.
+  iApply "HΦ".
+  iExists _. iFrame. done.
+Qed.
+
+Theorem wp_buf_wd_loadField_dirty bufptr a b dataslice :
+  {{{
+    is_buf_without_data bufptr a b dataslice
+  }}}
+    struct.loadF buf.Buf.S "dirty" #bufptr
+  {{{
+    RET #(b.(bufDirty));
+    is_buf_without_data bufptr a b dataslice
+  }}}.
+Proof using.
+  iIntros (Φ) "Hisbuf_without_data HΦ".
+  iNamed "Hisbuf_without_data".
+  wp_loadField.
+  iApply "HΦ".
+  iExists _. iFrame. done.
+Qed.
+
+Theorem is_buf_return_data bufptr a b dataslice (v' : bufDataT b.(bufKind)) :
+  is_buf_data dataslice v' a ∗
+  is_buf_without_data bufptr a b dataslice -∗
+  is_buf bufptr a (Build_buf b.(bufKind) v' b.(bufDirty)).
+Proof.
+  iIntros "[Hbufdata Hisbuf_without_data]".
+  iExists _. iFrame.
 Qed.
 
 Theorem wp_buf_loadField_data bufptr a b :
@@ -110,18 +179,15 @@ Theorem wp_buf_loadField_data bufptr a b :
   {{{
     (vslice : Slice.t), RET (slice_val vslice);
     is_buf_data vslice b.(bufData) a ∗
-    (∀ (v' : bufDataT b.(bufKind)),
-      is_buf_data vslice v' a -∗
-      is_buf bufptr a (Build_buf b.(bufKind) v' b.(bufDirty)))
+    is_buf_without_data bufptr a b vslice
   }}}.
 Proof using.
   iIntros (Φ) "Hisbuf HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  iNamed "Hisbuf".
+  iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iFrame.
-  iIntros (v') "Hisdata".
-  iExists _, _. iFrame. done.
+  iFrame. iExists _; iFrame. done.
 Qed.
 
 Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k') :
@@ -137,12 +203,14 @@ Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k'
   }}}.
 Proof using.
   iIntros (Φ) "(Hisbuf & Hisbufdata & %) HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  iNamed "Hisbuf".
+  iClear "Hbufdata".
+  iNamed "Hisbuf_without_data".
   wp_apply (wp_storeField with "Hdata"); eauto.
   { eapply slice_val_ty. } (* XXX why does [val_ty] fail? *)
   iIntros "Hdata".
   iApply "HΦ".
-  iExists _, _. iFrame. subst. done.
+  iExists _; iFrame. iExists _; iFrame. intuition subst. done.
 Qed.
 
 Theorem wp_MkBufMap :
@@ -189,7 +257,8 @@ Theorem wp_BufMap__Insert l m bl a b :
 Proof using.
   iIntros (Φ) "[Hbufmap Hbuf] HΦ".
   iDestruct "Hbufmap" as (mptr mm am) "(Hmptr & Hmap & % & Ham)".
-  iDestruct "Hbuf" as (bufdata bufsz) "(Hbuf.addr & Hbuf.sz & Hbuf.data & Hbuf.dirty & % & Hdata)".
+  iNamed "Hbuf".
+  iNamed "Hisbuf_without_data".
 
   wp_call.
   wp_loadField.
@@ -206,16 +275,12 @@ Proof using.
   - iDestruct (big_sepM2_lookup_1_some with "Ham") as (v2) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Ham") as "[Hcur Hacc]"; eauto.
     iApply "Hacc".
-    iExists _, _. iFrame.
-    iDestruct "Hdata" as "(% & % & Hdata)". iFrame.
-    done.
+    iExists _; iFrame. iExists _; iFrame. done.
 
   - iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
     iApply big_sepM2_insert; eauto.
     iFrame "Ham".
-    iExists _, _. iFrame.
-    iDestruct "Hdata" as "(% & % & Hdata)". iFrame.
-    done.
+    iExists _; iFrame. iExists _; iFrame. done.
 Qed.
 
 Theorem wp_BufMap__Del l m a :
@@ -494,8 +559,8 @@ Proof using.
 
   iDestruct (buf_mapsto_non_null with "[$]") as %Hnotnull.
 
-  iExists _, _.
-  iFrame.
+  iExists _. iFrame.
+  iExists _. iFrame.
   iSplitL; try done.
   iSplitL; try done.
 
@@ -537,10 +602,7 @@ Proof using.
 
   iDestruct (buf_mapsto_non_null with "[$]") as %Hnotnull.
 
-  iExists _, _.
-  iFrame.
-  iSplitR; first done.
-  iSplitR; first done.
+(*
   rewrite /valid_off in Hoff.
 Opaque PeanoNat.Nat.div.
   destruct bufdata; cbn; cbn in Hatoff.
@@ -633,6 +695,7 @@ Opaque PeanoNat.Nat.div.
     rewrite firstn_all2.
     2: { rewrite length_Block_to_vals /block_bytes. word. }
     rewrite skipn_O //.
+*)
 Admitted.
 
 Theorem wp_Buf__Install bufptr a b blk_s blk :
@@ -653,7 +716,8 @@ Theorem wp_Buf__Install bufptr a b blk_s blk :
   }}}.
 Proof.
   iIntros (Φ) "[Hisbuf Hblk] HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  iNamed "Hisbuf".
+  iNamed "Hisbuf_without_data".
   wp_call.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
@@ -669,9 +733,9 @@ Proof.
     { admit. }
     iIntros "[Hblk %]".
 
-    iDestruct "Hisdata" as (x) "[Hisdata <-]".
-    wp_apply (wp_SliceGet with "[$Hisdata]"); first done.
-    iIntros "[Hisdata %]".
+    iDestruct "Hbufdata" as (x) "[Hbufdata <-]".
+    wp_apply (wp_SliceGet with "[$Hbufdata]"); first done.
+    iIntros "[Hbufdata %]".
 
     wp_call.
     admit.
@@ -726,11 +790,12 @@ Theorem wp_Buf__SetDirty bufptr a b :
   }}}.
 Proof.
   iIntros (Φ) "Hisbuf HΦ".
-  iDestruct "Hisbuf" as (data sz) "(Haddr & Hsz & Hdata & Hdirty & % & -> & % & Hisdata)".
+  iNamed "Hisbuf".
+  iNamed "Hisbuf_without_data".
   wp_call.
   wp_storeField.
   iApply "HΦ".
-  iExists _, _. iFrame. done.
+  iExists _; iFrame. iExists _; iFrame. done.
 Qed.
 
 End heap.
