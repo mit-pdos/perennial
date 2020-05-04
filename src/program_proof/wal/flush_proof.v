@@ -86,17 +86,9 @@ Proof.
   rewrite /WalogState__memEnd.
   wp_loadField. wp_loadField. wp_apply wp_slice_len. wp_storeField.
   iApply "HΦ".
-  iDestruct (updates_slice_len with "His_memLog") as %HmemLog_len.
+  (* iDestruct (updates_slice_len with "His_memLog") as %HmemLog_len. *)
   iExists (set nextDiskEnd (λ _, word.add σ.(memStart) σₗ.(memLogSlice).(Slice.sz)) σ).
   simpl.
-  iSplitL "HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread His_memLogMap His_memLog".
-  { iModIntro.
-    iExists σₗ; simpl.
-    iFrame.
-    iPureIntro.
-    { hnf; simpl; word. }
-  }
-  iFrame "# ∗".
   (* TODO: definitely not enough, need the wal invariant to allocate a new txn_pos *)
 Admitted.
 
@@ -210,7 +202,7 @@ Proof.
     - wp_loadField.
       wp_apply (wp_condWait with "[-HΦ $cond_logger $lk $Hlocked]").
       { iExists _; iFrame "∗ #".
-        iExists _; by iFrame. }
+        iExists _; by iFrame "∗ #". }
       iIntros "(Hlocked&Hlockin)".
       wp_pures.
       iApply "HΦ"; iFrame.
@@ -220,7 +212,7 @@ Proof.
       apply bool_decide_eq_true in Heqb.
       iSplitL.
       { iExists _; iFrame "HdiskEnd_at_least Hstart_at_least ∗".
-        iExists _; by iFrame. }
+        iExists _; by iFrame "# ∗". }
       iApply (diskEnd_at_least_mono with "HdiskEnd_at_least"); auto.
   }
 

@@ -140,12 +140,12 @@ Definition cutMemLog (installEnd: u64) (σ: locked_state) : locked_state :=
 
 Theorem wp_WalogState__cutMemLog γ (st: loc) σ (installEnd: u64) :
   {{{ wal_linv_fields st σ ∗
-      memLog_linv γ σ.(memStart) σ.(memLog)}}}
+      memLog_linv γ σ.(memStart) σ.(nextDiskEnd) σ.(memLog)}}}
     WalogState__cutMemLog #st #installEnd
   {{{ σ', RET #();
       ⌜σ' = cutMemLog installEnd σ⌝ ∗
       wal_linv_fields st σ' ∗
-      memLog_linv γ σ'.(memStart) σ'.(memLog)
+      memLog_linv γ σ'.(memStart) σ'.(nextDiskEnd) σ'.(memLog)
   }}}.
 Proof.
 Admitted.

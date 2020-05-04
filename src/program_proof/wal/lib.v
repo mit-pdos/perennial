@@ -47,6 +47,14 @@ Proof.
     intros ? ? [a b]; auto.
 Qed.
 
+Theorem updates_slice_to_frag bk_s bs :
+  updates_slice bk_s bs -∗
+  updates_slice_frag bk_s 1 bs.
+Proof.
+  iIntros "Hupds".
+  iDestruct (updates_slice_frag_acc with "Hupds") as "[$ _]".
+Qed.
+
 Lemma updates_slice_frag_len bk_s q bs :
   updates_slice_frag bk_s q bs -∗ ⌜int.val bk_s.(Slice.sz) = length bs⌝.
 Proof.
@@ -134,7 +142,36 @@ Proof.
   - apply _.
 Qed.
 
-Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
+Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) q (u: update.t) :
+  {{{ updates_slice_frag bk_s q bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
+    SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
+  {{{ uv, RET (update_val uv);
+      ⌜uv.1 = u.(update.addr)⌝ ∗
+      is_block uv.2 q u.(update.b) ∗
+      (is_block uv.2 q u.(update.b) -∗ updates_slice_frag bk_s q bs)
+  }}}.
+Proof.
+  iIntros (Φ) "[Hupds %Hlookup] HΦ".
+  iDestruct "Hupds" as (bks) "[Hbk_s Hbks]".
+  iDestruct (big_sepL2_lookup_2_some _ _ _ _ _ Hlookup with "Hbks")
+    as %[b_upd Hlookup_bs].
+  wp_apply (wp_SliceGet with "[$Hbk_s]").
+  { iPureIntro.
+    rewrite list_lookup_fmap.
+    rewrite Hlookup_bs //. }
+  iIntros "[Hbk_s _]".
+  iApply "HΦ".
+  iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hbi Hbks]"; eauto.
+  destruct u as [a b]; simpl.
+  iDestruct "Hbi" as "[Hbi <-]".
+  iSplit; first by auto.
+  iFrame.
+  iIntros "Hbi".
+  iSpecialize ("Hbks" with "[$Hbi //]").
+  iExists _; iFrame.
+Qed.
+
+Theorem wp_SliceGet_updates' stk E bk_s bs (i: u64) (u: update.t) :
   {{{ updates_slice bk_s bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
     SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
   {{{ uv, RET (update_val uv);
@@ -144,26 +181,16 @@ Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) (u: update.t) :
   }}}.
 Proof.
   iIntros (Φ) "[Hupds %Hlookup] HΦ".
-  iDestruct "Hupds" as (bks) "[Hbk_s Hbks]".
-  iDestruct (big_sepL2_lookup_2_some _ _ _ _ _ Hlookup with "Hbks")
-    as %[b_upd Hlookup_bs].
-  iDestruct (is_slice_small_acc with "Hbk_s") as "[Hbk_s Hbk_s_rest]".
-  wp_apply (wp_SliceGet with "[$Hbk_s]").
-  { iPureIntro.
-    rewrite list_lookup_fmap.
-    rewrite Hlookup_bs //. }
-  iIntros "[Hbk_s _]".
-  iDestruct ("Hbk_s_rest" with "Hbk_s") as "Hbk_s".
+  iDestruct (updates_slice_frag_acc with "Hupds") as "[Hfrag Hupds]".
+  wp_apply (wp_SliceGet_updates with "[$Hfrag]"); eauto.
+  iIntros (uv) "(%&Hb&Hrest)".
   iApply "HΦ".
-  iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hbi Hbks]"; eauto.
-  destruct u as [a b]; simpl.
-  iDestruct "Hbi" as "[Hbi <-]".
-  iSplit; first by auto.
+  iSplit; auto.
   iFrame.
-  iIntros "Hbi".
-  iSpecialize ("Hbks" with "[$Hbi //]").
-  rewrite /updates_slice.
-  iExists _; iFrame.
+  iIntros "Hb".
+  iApply "Hupds".
+  iApply "Hrest".
+  iFrame.
 Qed.
 
 Lemma has_zero_update : has_zero (struct.t Update.S).

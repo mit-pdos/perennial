@@ -95,20 +95,43 @@ Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
 Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
 
+(** subslice takes elements with indices [n, m) in list [l] *)
+Definition subslice {A} (n m: nat) (l: list A): list A :=
+  drop n (take m l).
+
+Theorem subslice_length {A} n m (l: list A) :
+  (m <= length l)%nat ->
+  length (subslice n m l) = (m - n)%nat.
+Proof.
+  rewrite /subslice; intros; autorewrite with len.
+  lia.
+Qed.
+
+Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :=
+  apply_upds log ∅ =
+  apply_upds (txn_upds txns) ∅.
+
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the memStart_txn_id *)
-Definition is_mem_memLog γ memLog txns memStart_txn_id : Prop :=
-  apply_upds memLog ∅ =
-  apply_upds (txn_upds (drop memStart_txn_id txns)) ∅.
+Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
+  has_updates memLog (drop memStart_txn_id txns).
 
-Definition memLog_linv γ memStart (memLog: list update.t) : iProp Σ :=
-  (∃ (memStart_txn_id: nat) (txns: list (u64 * list update.t)),
+Definition memLog_linv γ memStart nextDiskEnd (memLog: list update.t) : iProp Σ :=
+  (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id memStart ∗
+      "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id nextDiskEnd ∗
       "Howntxns" ∷ own γ.(txns_name) (◯ Excl' txns) ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
-      "%His_memLog" ∷ ⌜is_mem_memLog γ memLog txns memStart_txn_id⌝).
+      "%His_memLog" ∷ ⌜is_mem_memLog memLog txns memStart_txn_id⌝ ∗
+      (* when nextDiskEnd gets set, we track that it has the right updates to
+      use for [is_durable] when the new transaction is logged *)
+      "%His_nextDiskEnd" ∷
+        ⌜has_updates
+          (take (int.nat nextDiskEnd - int.nat memStart)%nat memLog)
+          (subslice memStart_txn_id nextDiskEnd_txn_id txns)⌝
+  ).
 
 Definition wal_linv_fields st σ: iProp Σ :=
   (∃ σₗ,
@@ -122,7 +145,14 @@ Definition wal_linv_fields st σ: iProp Σ :=
           "Hnthread" ∷ st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
   "%Hlocked_wf" ∷ ⌜locked_wf σ⌝ ∗
   "His_memLogMap" ∷ is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅) ∗
-  "His_memLog" ∷ updates_slice σₗ.(memLogSlice) σ.(memLog))%I.
+  let absorbIndex := (int.nat σ.(nextDiskEnd) - int.nat σ.(memStart))%nat in
+  "#His_memLog" ∷ readonly (updates_slice_frag σₗ.(memLogSlice) 1 (take absorbIndex σ.(memLog))) ∗
+  "HabsorbLog" ∷ updates_slice_frag
+  (* [memLog[nextDiskEnd-memStart:]] is fully owned by the lock invariant (for absorption) *)
+                     (slice_skip σₗ.(memLogSlice) (struct.t Update.S) (word.sub σ.(nextDiskEnd) σ.(memStart)))
+                     1
+                     (drop absorbIndex σ.(memLog))
+  )%I.
 
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
@@ -130,12 +160,7 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
     "Hfields" ∷ wal_linv_fields st σ ∗
     "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
     "#Hstart_at_least" ∷ start_at_least γ.(circ_name) σ.(memStart) ∗
-    "HmemLog_linv" ∷ memLog_linv γ σ.(memStart) σ.(memLog) ∗
-    (* a group-commit transaction is logged by setting nextDiskEnd to its pos -
-       these conditions ensure that it is recorded as an absorption boundary,
-       since at this point it becomes a plausible crash point *)
-    "HnextDiskEnd_txn" ∷ ( ∃ (nextDiskEnd_txn_id : nat),
-      txn_pos γ nextDiskEnd_txn_id σ.(nextDiskEnd) )
+    "HmemLog_linv" ∷ memLog_linv γ σ.(memStart) σ.(nextDiskEnd) σ.(memLog)
     .
 
 (** The implementation state contained in the *Walog struct, which is all
@@ -170,18 +195,6 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
     "lk" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ).
 
 Global Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
-
-(** subslice takes elements with indices [n, m) in list [l] *)
-Definition subslice {A} (n m: nat) (l: list A): list A :=
-  drop n (take m l).
-
-Theorem subslice_length {A} n m (l: list A) :
-  (m <= length l)%nat ->
-  length (subslice n m l) = (m - n)%nat.
-Proof.
-  rewrite /subslice; intros; autorewrite with len.
-  lia.
-Qed.
 
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
@@ -409,7 +422,7 @@ Proof.
   iIntros (shutdown' nthread') "Hshutdown Hnthread".
   iExists σ; iFrame "# ∗".
   iExists (set shutdown (λ _, shutdown') (set nthread (λ _, nthread') σₗ)); simpl.
-  by iFrame.
+  by iFrame "# ∗".
 Qed.
 
 Theorem wal_linv_load_nextDiskEnd st γ :
@@ -427,7 +440,7 @@ Proof.
   iIntros "HnextDiskEnd2".
   iCombine "HnextDiskEnd1 HnextDiskEnd2" as "HnextDiskEnd".
   iExists _; iFrame "# ∗".
-  iExists _; by iFrame.
+  iExists _; by iFrame "# ∗".
 Qed.
 
 Lemma wal_wf_txns_mono_pos {σ txn_id1 pos1 txn_id2 pos2} :

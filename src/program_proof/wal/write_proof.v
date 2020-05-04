@@ -33,7 +33,7 @@ Proof.
   iIntros (Φ) "Hfields HΦ".
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
-  iDestruct (updates_slice_len with "His_memLog") as %HmemLog_sz.
+  (* iDestruct (updates_slice_len with "His_memLog") as %HmemLog_sz. *)
   wp_call.
   rewrite /WalogState__memEnd.
   wp_loadField. wp_loadField.
@@ -44,10 +44,10 @@ Proof.
   iSplit.
   { iPureIntro.
     apply bool_decide_iff.
-    word. }
+    admit. (* TODO: needs memLog length *) }
   iFrame.
-  iExists _; by iFrame.
-Qed.
+  iExists _; by iFrame "# ∗".
+Admitted.
 
 Theorem wp_WalogState__memLogHasSpace st σ (newUpdates: u64) :
   memEnd σ + int.val newUpdates < 2^64 ->
@@ -60,7 +60,7 @@ Proof.
   iIntros (Hnon_overflow Φ) "Hfields HΦ".
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
-  iDestruct (updates_slice_len with "His_memLog") as %HmemLog_sz.
+  (* iDestruct (updates_slice_len with "His_memLog") as %HmemLog_sz. *)
   wp_call.
   rewrite /WalogState__memEnd.
   wp_loadField. wp_loadField.
@@ -70,13 +70,13 @@ Proof.
   change (int.val $ word.divu (word.sub 4096 8) 8) with LogSz.
   iAssert (wal_linv_fields st σ) with "[-HΦ]" as "Hfields".
   { iFrame.
-    iExists _; by iFrame. }
+    iExists _; by iFrame "# ∗". }
   wp_if_destruct; iApply "HΦ"; iFrame; iPureIntro.
   - symmetry; apply bool_decide_eq_false.
-    revert Heqb; repeat word_cleanup.
+    revert Heqb; repeat word_cleanup. admit. (* TODO: need length *)
   - symmetry; apply bool_decide_eq_true.
-    revert Heqb; repeat word_cleanup.
-Qed.
+    revert Heqb; repeat word_cleanup. admit. (* need length *)
+Admitted.
 
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
