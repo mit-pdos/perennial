@@ -84,6 +84,9 @@ Example testOverwriteArray_ok : testOverwriteArray #() ~~> #true := t.
 Fail Example testStringAppend_ok : failing_testStringAppend #() ~~> #true := t.
 Fail Example testStringLength_ok : failing_testStringLength #() ~~> #true := t.
 
+(* struct_pointers.go *)
+Fail Example testFooBarMutation_ok : failing_testFooBarMutation #() ~~> #true := t.
+
 (* structs.go *)
 Fail Example testStructUpdates_ok : failing_testStructUpdates #() ~~> #true := t.
 Example testNestedStructUpdates_ok : testNestedStructUpdates #() ~~> #true := t.
