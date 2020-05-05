@@ -9,6 +9,7 @@ From Perennial.goose_lang Require Import typing typed_translate adequacy refinem
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
 From Perennial.goose_lang Require Import metatheory.
 From Perennial.Helpers Require Import Qextra.
+From Perennial.Helpers Require List.
 
 Set Default Proof Using "Type".
 
@@ -230,7 +231,7 @@ Definition structRefT_interp (ts: list (sval → ival → iProp Σ)) (* (val_lis
                      (([∗ list] j↦vty ∈ (ts),
                        is_loc (ls +ₗ j) (l +ₗ j) vty)
                        ∨
-                      ⌜addr_offset l < 0 ∨ n ≤ addr_offset l⌝))
+                      ⌜addr_offset l + length ts ≤ 0 ∨ n ≤ addr_offset l⌝))
                  ∨ (∃ off, ⌜ vs = #(null +ₗ off) ∧ v = #(null +ₗ off) ⌝))%I.
 
 Definition arrowT_interp (t1 t2: sty) (val_interp: sty → sval → ival → iProp Σ) : sval → ival → iProp Σ :=
@@ -415,8 +416,10 @@ Proof.
     destruct (decide (0 ≤ idx  ∧ idx < n)%Z) as [(Hr1&Hr2)|Hout]; last first.
     { iRight. iPureIntro. rewrite Heq1.
       assert (idx < 0 ∨ n <= idx) as [?|?] by lia.
-      - left.
-        apply Z.mul_neg_pos; lia.
+      - left. rewrite map_length.
+        assert (idx * length (flatten_ty t) + length (flatten_ty t) =
+                (idx + 1) * length (flatten_ty t)) as -> by ring.
+        apply Z.mul_nonpos_nonneg; lia.
       - right.
         apply Z.mul_le_mono_nonneg_r; lia.
     }
@@ -796,7 +799,7 @@ Proof.
       (* UB: oob *)
       iDestruct "Hoob" as %Hoob.
       iMod (ghost_prepare_write_block_oob_stuck with "[$] [$] [$]") as %[].
-      { lia. }
+      { simpl in Hoob. lia. }
       { solve_ndisj. }
     }
   * iDestruct "Hnull" as %(?&->&->).
@@ -958,7 +961,7 @@ Proof.
       (* UB: oob *)
       iDestruct "Hoob" as %Hoob.
       iMod (ghost_start_read_block_oob_stuck with "[$] [$] [$]") as %[].
-      { lia. }
+      { simpl in Hoob. lia. }
       { solve_ndisj. }
     }
   * iDestruct "Hnull" as %(?&->&->).
@@ -1503,7 +1506,60 @@ Proof using spec_trans.
     iApply (wpc_mono' with "[] [] H"); last done.
     iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
     iExists _. iFrame "Hj". iApply arrayT_structRefT_promote. eauto.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
+    iSpecialize ("H" $! j (λ x, K (ectx_language.fill [BinOpLCtx _ _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
+
+    iApply wp_wpc.
+    iApply wp_fupd.
+    iDestruct "Hv1" as "[Hv1|Hnull]"; last first.
+    { iDestruct "Hnull" as %(off'&Heq1'&Heq2'). subst.
+      wp_pures.
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { solve_ndisj. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step. repeat econstructor; eauto.
+      }
+      iModIntro. iExists _. iFrame. iRight.
+      iExists _. rewrite /loc_add. rewrite addr_plus_plus. eauto.
+    }
+    iDestruct "Hv1" as (l' ls' n Hgtzero Hnonempty Hpeq) "(Hpaired&Hblock1&Hblock2&Hlist)".
+    destruct Hpeq as (->&->&?&?&Hoff).
+    wp_pures.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { solve_ndisj. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. repeat econstructor; eauto.
+    }
+    iModIntro.
+    iExists _. iFrame.
+    replace (k * int.val 1) with k by word.
+    iLeft.
+    rewrite ?map_length.
+    iExists _, _, _, _, _. iSplitL "".
+    { iPureIntro. split_and!; eauto. rewrite ?addr_offset_of_plus Hoff //. }
+    iFrame.
+    iDestruct "Hlist" as "[Hinb|Hoob]".
+    {
+      iLeft. setoid_rewrite loc_add_assoc.
+      rewrite -?List.list_fmap_map fmap_drop.
+      iDestruct (big_sepL_drop _ _ (Z.to_nat k) with "Hinb") as "H".
+      iApply (big_sepL_mono with "H").
+      iIntros (k' ? _) "H".
+      replace (Z.of_nat (Z.to_nat k + k')%nat) with (k + k'); eauto. lia.
+    }
+    {
+      iRight.
+      iDestruct "Hoob" as %Hoob. iPureIntro.
+      rewrite ?addr_offset_of_plus drop_length. lia.
+    }
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) l').
@@ -1559,7 +1615,7 @@ Proof using spec_trans.
       {
         iDestruct "Hoob" as %Hoob.
         iMod (ghost_load_block_oob_stuck with "[$] [$] [$]") as %[].
-        { lia. }
+        { simpl in Hoob. lia. }
         { solve_ndisj. }
       }
     * iDestruct "Hnull" as %(?&->&->).
@@ -1855,7 +1911,7 @@ Proof using spec_trans.
       {
         iDestruct "Hoob" as %Hoob.
         iMod (ghost_cmpxchg_block_oob_stuck with "[$] [$] [$]") as %[].
-        { lia. }
+        { simpl in Hoob. lia. }
         { solve_ndisj. }
       }
     * iDestruct "Hnull" as %(?&->&->).

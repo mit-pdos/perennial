@@ -6,6 +6,10 @@ Section list.
   Notation list := (list A).
   Implicit Types (l:list).
 
+  Lemma list_fmap_map {B} (f: A → B) (l: list):
+    f <$> l = map f l.
+  Proof. induction l => //=. Qed.
+
   Definition Forall_idx (P: nat -> A -> Prop) (start:nat) (l: list): Prop :=
     Forall2 P (seq start (length l)) l.
 

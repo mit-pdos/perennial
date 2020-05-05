@@ -161,6 +161,7 @@ Section translate.
       Γ ⊢ e -- e' : arrayT t ->
       Γ ⊢ e -- e' : structRefT (flatten_ty t)
   | struct_offset_op_transTy e1 e1' (k: Z) ts :
+      0 ≤ k →
       Z.to_nat k < length ts →
       Γ ⊢ e1 -- e1' : structRefT ts ->
       Γ ⊢ BinOp (OffsetOp k) e1 #1 -- BinOp (OffsetOp k) e1' #1 : structRefT (drop (Z.to_nat k) ts)
