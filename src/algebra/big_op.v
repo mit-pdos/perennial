@@ -847,6 +847,13 @@ Section maplist.
     typeclasses eauto.
   Qed.
 
+  Global Instance big_sepML_absorbing `(!∀ k v lv, Absorbing (Φ k v lv)) :
+    Absorbing (big_sepML Φ m l).
+  Proof.
+    rewrite big_sepML_eq.
+    typeclasses eauto.
+  Qed.
+
 End maplist.
 
 Section maplist2.
@@ -858,17 +865,49 @@ Section maplist2.
   Implicit Types mw : gmap K W.
   Implicit Types l : list LV.
 
+  Theorem big_sepML_map_val_exists_helper Φ mv l (R : K -> V -> W -> Prop)
+      `{!∀ k v lv, Absorbing (Φ k v lv)} :
+    big_sepML Φ mv l -∗
+    ⌜ ∀ k v lv,
+      mv !! k = Some v ->
+      Φ k v lv -∗
+      ⌜ ∃ w, R k v w ⌝ ⌝ -∗
+    ∃ mw,
+      ⌜ dom (gset K) mw = dom (gset K) mv ⌝ ∗
+      big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v lv) mw l.
+  Proof.
+    iIntros "Hml HR".
+    iInduction l as [|] "Hi" forall (mv).
+    - iExists ∅.
+      iDestruct (big_sepML_empty_m with "Hml") as "->".
+      iSplit; last by iApply big_sepML_empty.
+      repeat rewrite dom_empty_L; eauto.
+    - iDestruct (big_sepML_delete_cons with "Hml") as (k v) "(% & Hk & Hml)".
+      iDestruct "HR" as %HR.
+      iSpecialize ("Hi" with "Hml []").
+      { iPureIntro. iIntros. iApply HR; last by iFrame.
+        apply lookup_delete_Some in H2; intuition eauto. }
+      iDestruct "Hi" as (mw) "[% Hi]".
+      iExists (<[k := v]> mw).
+      iSplitR.
+      { admit. }
+      admit.
+  Admitted.
+
   Theorem big_sepML_map_val_exists Φ mv l (R : K -> V -> W -> Prop)
       `{!∀ k v lv, Absorbing (Φ k v lv)} :
     big_sepML Φ mv l -∗
-    ( ∀ k v lv,
-      ⌜ mv !! k = Some v ⌝ -∗
+    ⌜ ∀ k v lv,
+      mv !! k = Some v ->
       Φ k v lv -∗
-      ⌜ ∃ w, R k v w ⌝ ) -∗
+      ⌜ ∃ w, R k v w ⌝ ⌝ -∗
     ∃ mw,
       big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v lv) mw l.
   Proof.
-  Admitted.
+    iIntros "Hml HR".
+    iDestruct (big_sepML_map_val_exists_helper with "Hml HR") as (mw) "[% H]".
+    iExists _; iFrame.
+  Qed.
 
   Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l
       `{!∀ k v lv w, Absorbing (Φw k v lv w)} :
