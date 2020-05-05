@@ -615,6 +615,7 @@ Opaque struct.t.
       }
       rewrite /map_insert.
       rewrite gmap_addr_by_block_insert.
+      2: { eapply lookup_difference_None; eauto. }
       iApply (big_sepM2_insert_2 with "[Hbufdata] Hbufamap_done").
       simpl.
       rewrite /is_buf_data /is_block.
@@ -739,6 +740,7 @@ Opaque struct.t.
         iApply (big_sepM_insert_2 with "[Hmapto] [$Hbufamap_done_mapsto]").
         iExists _. iFrame. }
       rewrite gmap_addr_by_block_insert.
+      2: { eapply lookup_difference_None; eauto. }
       replace (blkmap') with (<[a.(addrBlock) := blkslice]> blkmap') at 2.
       2: { rewrite insert_id; eauto. }
       iApply big_sepM2_insert_delete.

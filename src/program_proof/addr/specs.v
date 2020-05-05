@@ -329,16 +329,51 @@ Fixpoint gmap_addr_by_block_helper (ml : list (addr * T)) : gmap u64 (gmap u64 T
 Definition gmap_addr_by_block (m : gmap addr T) : gmap u64 (gmap u64 T) :=
   gmap_addr_by_block_helper (map_to_list m).
 
+Theorem gmap_addr_by_block_helper_permutation l l' :
+  Permutation l l' ->
+  NoDup (fst <$> l) ->
+  gmap_addr_by_block_helper l = gmap_addr_by_block_helper l'.
+Proof.
+  intros.
+  induction H; simpl; eauto.
+  - destruct x. erewrite IHPermutation; eauto. inversion H0; subst; eauto.
+  - destruct x. destruct y. inversion H0; subst. inversion H3; subst.
+    destruct (decide (a0.(addrBlock) = a.(addrBlock))).
+    + rewrite e. repeat rewrite insert_insert. f_equal.
+      destruct (decide (a0.(addrOff) = a.(addrOff))).
+      * destruct a, a0; simpl in *; subst. set_solver.
+      * rewrite /lookup_block ?lookup_insert.
+        rewrite insert_commute; eauto.
+    + rewrite insert_commute; eauto.
+      f_equal.
+      * rewrite /lookup_block. rewrite lookup_insert_ne; eauto.
+      * rewrite /lookup_block. rewrite lookup_insert_ne; eauto.
+  - erewrite IHPermutation1; eauto.
+    eapply IHPermutation2.
+    rewrite -H. eauto.
+Qed.
+
 Theorem gmap_addr_by_block_empty :
   gmap_addr_by_block ∅ = ∅.
 Proof.
-Admitted.
+  rewrite /gmap_addr_by_block map_to_list_empty /=.
+  reflexivity.
+Qed.
 
 Theorem gmap_addr_by_block_insert (m : gmap addr T) (a : addr) (v : T) :
+  m !! a = None ->
   gmap_addr_by_block (<[a:=v]> m) =
-    <[a.(addrBlock) := <[a.(addrOff) := v]> (lookup_block (gmap_addr_by_block m) a.(addrBlock))]> (gmap_addr_by_block m).
+    <[a.(addrBlock) :=
+      <[a.(addrOff) := v]> (lookup_block (gmap_addr_by_block m) a.(addrBlock))]>
+    (gmap_addr_by_block m).
 Proof.
-Admitted.
+  intros.
+  rewrite /gmap_addr_by_block.
+  erewrite gmap_addr_by_block_helper_permutation at 1.
+  2: apply map_to_list_insert; eauto.
+  2: eapply NoDup_fst_map_to_list.
+  reflexivity.
+Qed.
 
 End gmap_addr_by_block.
 
