@@ -574,12 +574,35 @@ Section maplist.
     iDestruct "Hml" as (lm) "[% Hml]".
     iDestruct (big_sepM2_lookup_1_some with "Hml") as (x2) "%"; eauto.
     iDestruct (big_sepM2_delete with "Hml") as "[Hk Hml]"; eauto.
+
+    apply elem_of_map_to_list in H2 as H2'.
+    eapply (elem_of_list_fmap_1 snd) in H2'.
+    rewrite <- H1 in H2'.
+    eapply elem_of_list_lookup_1 in H2'.
+    destruct H2'.
+
     iExists _, _; iFrame.
-    iSplitR.
-    { admit. }
+    iSplitR; eauto.
+
     iExists _; iFrame.
     admit.
   Admitted.
+
+  Lemma list_some_map_to_list (l : list LV) (i : nat) (lv : LV) (lm : gmap K LV) :
+    l !! i = Some lv ->
+    l ≡ₚ (map_to_list lm).*2 ->
+    ∃ k,
+      lm !! k = Some lv.
+  Proof.
+    intros.
+    assert (lv ∈ l). { eapply elem_of_list_lookup_2; eauto. }
+    rewrite -> H1 in H2.
+    eapply elem_of_list_fmap_2 in H2.
+    destruct H2. intuition subst.
+    destruct x.
+    apply elem_of_map_to_list in H4.
+    eexists. eauto.
+  Qed.
 
   Theorem big_sepML_lookup_l_acc Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
     l !! i = Some lv ->
@@ -592,6 +615,16 @@ Section maplist.
     iIntros (Hi) "Hml".
     rewrite big_sepML_eq /big_sepML_def.
     iDestruct "Hml" as (lm) "[% Hml]".
+    eapply list_some_map_to_list in Hi as Hi'; eauto. destruct Hi'.
+    iDestruct (big_sepM2_lookup_2_some with "Hml") as (xm) "%"; eauto.
+    iDestruct (big_sepM2_insert_acc with "Hml") as "[Hx Hml]"; eauto.
+    iExists _, _.
+    iSplitR; first by done.
+    iFrame.
+    iIntros (??) "Hx".
+    iSpecialize ("Hml" with "Hx").
+    iExists (<[x := a0]> lm). iFrame.
+    iPureIntro.
     admit.
   Admitted.
 
@@ -602,7 +635,18 @@ Section maplist.
       Φ k v' lv' -∗
       big_sepML Φ (<[k := v']> m) (l0 ++ lv' :: l1).
   Proof.
-  Admitted.
+    iIntros "Hml".
+    iDestruct (big_sepML_lookup_l_acc with "Hml") as "Hres".
+    { rewrite lookup_app_r. erewrite Nat.sub_diag. eauto. lia. }
+    iDestruct "Hres" as (k v) "(% & Hk & Hml)".
+    iExists _, _.
+    iSplitR; first eauto.
+    iFrame.
+    iIntros (v' lv') "Hk".
+    iSpecialize ("Hml" with "Hk").
+    replace (length l0) with (length l0 + 0) by lia.
+    rewrite insert_app_r. simpl. iFrame.
+  Qed.
 
   Theorem big_sepML_lookup_m_acc Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
     m !! k = Some v ->
@@ -724,6 +768,10 @@ Section maplist.
       iDestruct "Hlm" as (lm) "[% Hlm]".
       iExists _. iSplitR; first by eauto.
       rewrite big_sepM2_eq /big_sepM2_def.
+      iDestruct "Hlm" as "[% Hlm]".
+      iSplit; eauto.
+      rewrite H1.
+      iApply big_sepM_sep; iFrame.
       admit.
   Admitted.
 
