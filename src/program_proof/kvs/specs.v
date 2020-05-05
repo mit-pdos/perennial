@@ -53,17 +53,19 @@ Proof.
 Qed.
 
 (* Links a list of kvpairs to a slice *)
-Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ :=
+Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz: iProp Σ :=
   ∃ slice_kvps, is_slice slice_val (struct.t KVPair.S) 1 (kvpair_val <$> slice_kvps)
                          ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
   let '(kvpair.mk key bs) := ls_kvp in ∃ (blk: Block),
+      ⌜fst slice_kvp = key ∧ valid_key key sz⌝ ∗
       ⌜bs = snd slice_kvp⌝ ∗
-      is_block bs 1 blk ∗
-      ⌜fst slice_kvp = key⌝.
+      is_block bs 1 blk.
 
-Definition kvpairs_match (pairs: list kvpair.t) γDisk : iProp Σ :=
-  [∗ list] kvp ∈ pairs, let '(kvpair.mk a bs) := kvp in
-                        (∃ blk, is_block bs 1 blk ∗ mapsto_txn γDisk a (defs.bufBlock blk))%I.
+Definition kvpairs_valid_match (pairs: list kvpair.t) kvsblks γDisk sz : iProp Σ :=
+  [∗ list] kvp ∈ pairs, let '(kvpair.mk key bs) := kvp in
+                        (∃ blk, is_block bs 1 blk ∗ mapsto_txn γDisk key (defs.bufBlock blk)
+        ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock (defs.bufBlock blk))⌝
+        ∗ ⌜valid_key key sz⌝)%I.
 
 Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K})
            (sz : nat) γDisk : iProp Σ :=
@@ -183,17 +185,34 @@ Proof.
          }
 Qed.
 
-Theorem wpc_KVS__MultiPut kvsl s sz kvp_ls_before kvp_slice kvp_ls stk k E1 E2:
+Theorem wpc_KVS__MultiPut kvsl kvsblks sz γDisk kvp_ls_before kvp_ls_new kvp_slice:
   {{{
-       ptsto_kvs kvsl s sz
-                 ∗ kvpairs_match s kvp_ls_before
-                 ∗ kvpairs_slice kvp_slice kvp_ls
+       ptsto_kvs kvsl kvsblks sz γDisk
+       ∗ kvpairs_valid_match kvp_ls_before kvsblks γDisk sz
+       ∗ kvpairs_valid_slice kvp_slice kvp_ls_new sz
   }}}
-    KVS__MultiPut #kvsl (slice_val kvp_slice) @ stk; k; E1; E2
+    KVS__MultiPut #kvsl (slice_val kvp_slice)
   {{{ (ok: bool), RET #ok;
-      ptsto_kvs kvsl s sz ∗ kvpairs_match s kvp_ls
-  }}}
-  {{{ crashed_kvs s sz kvp_ls ∨ crashed_kvs s sz kvp_ls_before }}}.
+      ptsto_kvs kvsl kvsblks sz γDisk
+       ∗ kvpairs_valid_match kvp_ls_new kvsblks γDisk sz
+  }}}.
 Proof.
+  iIntros (ϕ) "[Hkvs [HkvpBefore HkvpArgs]] Hϕ".
+  iDestruct "Hkvs" as (l) "[Htxnl [Hsz [#Htxn [%HinKvs HkvsMt]]]]".
+  pose Hkey as Hkey'.
+  destruct Hkey' as [HbuildAddr [Hkaddr [Hklgsz Hsz]]].
+  wp_call.
+  wp_loadField.
+  wp_pures.
+  remember(bool_decide (int.val sz < int.val _)) as Hszcomp.
+  destruct Hszcomp; wp_pures.
+  - wp_apply wp_panic.
+    destruct (decide_rel Z.lt (int.val sz) _); try discriminate. lia.
+  - change (u64_instance.u64.(@word.add 64) (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2)
+      with (U64 LogSz).
+    remember(bool_decide (int.val _ < int.val LogSz)) as Hlgszcomp.
+    destruct Hlgszcomp; wp_pures.
+    * wp_apply wp_panic.
+
 Admitted.
 End heap.
