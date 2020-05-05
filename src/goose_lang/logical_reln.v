@@ -1378,9 +1378,6 @@ Proof using spec_trans.
   - admit.
   - admit.
   - admit.
-  - admit.
-  - admit.
-  - admit.
   (* pointers *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1959,7 +1956,6 @@ Proof using spec_trans.
     { iApply big_sepM_empty. eauto. }
     { rewrite fmap_empty subst_map_empty. iFrame. }
     rewrite fmap_empty subst_map_empty. eauto.
-  - admit.
 Admitted.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field

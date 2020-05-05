@@ -118,6 +118,7 @@ Section translate.
   | snd_transTy e e' t1 t2 :
       Γ ⊢ e -- e' : prodT t1 t2 ->
       Γ ⊢ Snd e -- Snd e' : t2
+  (*
   | mapNil_transTy def def' vt :
       Γ ⊢ def -- def' : vt ->
       Γ ⊢ InjL def -- InjL def' : mapValT vt
@@ -131,6 +132,7 @@ Section translate.
       Γ ⊢ e1 -- e1' : arrowT vt t ->
       Γ ⊢ e2 -- e2' : arrowT (prodT (prodT uint64T vt ) (mapValT vt)) t ->
       Γ ⊢ Case cond e1 e2 -- Case cond' e1' e2' : t
+  *)
   | inl_transTy e e' t1 t2 :
       Γ ⊢ e -- e' : t1 ->
       Γ ⊢ InjL e -- InjL e' : sumT t1 t2
@@ -213,9 +215,11 @@ Section translate.
   | rec_val_transTy f x e e' t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ ∅) ⊢ e -- e' : t2 ->
       Γ ⊢v RecV f x e -- RecV f x e' : arrowT t1 t2
+  (*
   | mapNilV_transTy v v' t :
       Γ ⊢v v -- v' : t ->
       Γ ⊢v MapNilV v  -- MapNilV v': mapValT t
+  *)
   where "Γ ⊢v v1 -- v2 : A" := (val_transTy Γ v1 v2 A).
 
 End translate.

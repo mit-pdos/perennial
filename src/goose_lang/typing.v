@@ -107,7 +107,10 @@ Section goose_lang.
   Fixpoint has_zero (t:ty): Prop :=
     match t with
     | baseT _ => True
+    (*
     | mapValT t => has_zero t
+    *)
+    | mapValT t => False
     | prodT t1 t2 => has_zero t1 ∧ has_zero t2
     | sumT t1 t2 => has_zero t1
     | arrowT _ t2 => has_zero t2
@@ -317,6 +320,7 @@ Section goose_lang.
   | snd_hasTy e t1 t2 :
       Γ ⊢ e : prodT t1 t2 ->
       Γ ⊢ Snd e : t2
+  (*
   | mapNil_hasTy def vt :
       Γ ⊢ def : vt ->
       Γ ⊢ InjL def : mapValT vt
@@ -330,6 +334,7 @@ Section goose_lang.
       Γ ⊢ e1 : arrowT vt t ->
       Γ ⊢ e2 : arrowT (prodT (prodT uint64T vt ) (mapValT vt)) t ->
       Γ ⊢ Case cond e1 e2 : t
+  *)
   | inl_hasTy e t1 t2 :
       Γ ⊢ e : t1 ->
       Γ ⊢ InjL e : sumT t1 t2
@@ -410,9 +415,11 @@ Section goose_lang.
   | rec_val_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ ∅) ⊢ e : t2 ->
       Γ ⊢v RecV f x e : arrowT t1 t2
+  (*
   | mapNilV_hasTy v t :
       Γ ⊢v v : t ->
       Γ ⊢v MapNilV v : mapValT t
+  *)
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
@@ -509,6 +516,7 @@ Section goose_lang.
   Qed.
 
   Definition NewMap (t:ty) : expr := Alloc (zero_val (mapValT t)).
+  (*
   Theorem NewMap_t t Γ : has_zero t -> Γ ⊢ NewMap t : mapT t.
   Proof.
     intros Hzero.
@@ -517,6 +525,7 @@ Section goose_lang.
     constructor.
     apply zero_val_ty; eauto.
   Qed.
+  *)
 
 End goose_lang.
 
@@ -533,7 +542,9 @@ Proof.
 Qed.
 
 Hint Resolve empty_context_to_any empty_context_to_any_val : types.
+(*
 Hint Resolve NewMap_t : types.
+*)
 Hint Resolve hasTy_ty_congruence : types.
 Hint Constructors expr_hasTy : types.
 Hint Constructors val_hasTy : types.
