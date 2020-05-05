@@ -145,7 +145,7 @@ Proof.
 Qed.
 
 Global Instance updates_slice_frag_AsMapsTo bk_s bs :
-  AsMapsTo (updates_slice_frag bk_s 1 bs) (λ bk_s q bs, updates_slice_frag bk_s q bs) bk_s bs.
+  AsMapsTo (updates_slice_frag bk_s 1 bs) (λ q, updates_slice_frag bk_s q bs).
 Proof.
   constructor; auto; intros; apply _.
   Grab Existential Variables.
