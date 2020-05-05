@@ -116,30 +116,37 @@ Proof.
   congruence.
 Qed.
 
+Global Instance updates_slice_frag_fractional bk_s q bs :
+  fractional.AsFractional (updates_slice_frag bk_s q bs) (λ q, updates_slice_frag bk_s q bs) q.
+Proof.
+  split; auto.
+  hnf; intros q1 q2.
+  iSplit.
+  + iIntros "Hupds".
+    iDestruct "Hupds" as (bks) "[Hupds Hbs]".
+    iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
+    iDestruct (fractional.fractional_split_1 with "Hbs") as "[Hbs1 Hbs2]".
+    iSplitL "Hupds1 Hbs1".
+    * iExists _; iFrame.
+    * iExists _; iFrame.
+  + iIntros "[Hupds1 Hupds2]".
+    iDestruct "Hupds1" as (bks) "[Hbs1 Hupds1]".
+    iDestruct "Hupds2" as (bks') "[Hbs2 Hupds2]".
+    iDestruct (is_slice_small_agree with "Hbs1 Hbs2") as %Heq.
+    apply (fmap_inj update_val) in Heq; auto using update_val_inj; subst.
+    iDestruct (fractional.fractional_split_2 with "Hbs1 Hbs2") as "Hbs".
+    { apply _. }
+    iDestruct (fractional.fractional_split_2 _ _ _ _ q1 q2 with "Hupds1 Hupds2") as "Hupds".
+    { apply _. }
+    iExists _; iFrame.
+Qed.
+
 Global Instance updates_slice_frag_AsMapsTo bk_s bs :
   AsMapsTo (updates_slice_frag bk_s 1 bs) (λ bk_s q bs, updates_slice_frag bk_s q bs) bk_s bs.
 Proof.
-  constructor; auto; intros.
-  - intros q1 q2.
-    iSplit.
-    + iIntros "Hupds".
-      iDestruct "Hupds" as (bks) "[Hupds Hbs]".
-      iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
-      iDestruct (fractional.fractional_split_1 with "Hbs") as "[Hbs1 Hbs2]".
-      iSplitL "Hupds1 Hbs1".
-      * iExists _; iFrame.
-      * iExists _; iFrame.
-    + iIntros "[Hupds1 Hupds2]".
-      iDestruct "Hupds1" as (bks) "[Hbs1 Hupds1]".
-      iDestruct "Hupds2" as (bks') "[Hbs2 Hupds2]".
-      iDestruct (is_slice_small_agree with "Hbs1 Hbs2") as %Heq.
-      apply (fmap_inj update_val) in Heq; auto using update_val_inj; subst.
-      iDestruct (fractional.fractional_split_2 with "Hbs1 Hbs2") as "Hbs".
-      { apply _. }
-      iDestruct (fractional.fractional_split_2 _ _ _ _ q1 q2 with "Hupds1 Hupds2") as "Hupds".
-      { apply _. }
-      iExists _; iFrame.
-  - apply _.
+  constructor; auto; intros; apply _.
+  Grab Existential Variables.
+  exact 1%Qp.
 Qed.
 
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) q (u: update.t) :

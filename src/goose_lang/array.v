@@ -67,11 +67,11 @@ Proof.
   by setoid_rewrite Hoff.
 Qed.
 
-Lemma array_split (i:Z) l t vs :
+Lemma array_split (i:Z) l t q vs :
   0 <= i ->
   i <= Z.of_nat (length vs) ->
-  l ↦∗[t] vs ⊣⊢
-        l ↦∗[t] (take (Z.to_nat i) vs) ∗ (l +ₗ[t] i) ↦∗[t] (drop (Z.to_nat i) vs).
+  l ↦∗[t]{q} vs ⊣⊢
+        l ↦∗[t]{q} (take (Z.to_nat i) vs) ∗ (l +ₗ[t] i) ↦∗[t]{q} (drop (Z.to_nat i) vs).
 Proof.
   intros Hn Hlength.
   rewrite <- (take_drop (Z.to_nat i) vs) at 1.
