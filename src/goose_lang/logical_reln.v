@@ -1078,8 +1078,11 @@ Proof using spec_trans.
       (P0 := (λ Γ vs v τ
              (HTYPE: val_transTy _ _ _ spec_trans Γ vs v τ),
              forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
-               ⊢ ctx_has_semTy (hS := hS) Γ vs v τ));
-    intros ??????; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx".
+               ⊢ sty_inv hS -∗ spec_ctx -∗ trace_ctx -∗ val_interp (hS := hS) τ vs v));
+    try (intros ??????; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx");
+    try (intros ??????; iIntros "#Hinv #Hspec #Htrace").
+
+
   (* Variables *)
   - subst.
     rewrite lookup_fmap in e.
@@ -1107,7 +1110,10 @@ Proof using spec_trans.
     simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
     iApply ("Hinterp" with "[$]").
     { iFrame. }
-  - iApply (IHHtyping with "[//] [$] [$] [$] [$]").
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iApply wp_wpc. iApply wp_value. iExists _. iFrame.
+    iApply (IHHtyping with "[$] [$] [$]").
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
@@ -1919,11 +1925,40 @@ Proof using spec_trans.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iPoseProof (Hrules with "[$] [$] [$] [] Hj") as "H"; eauto.
   (* Values *)
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - inversion b; subst; eauto.
+    * iRight. iExists O. rewrite loc_add_0 //=.
+    * iRight. iExists O. rewrite loc_add_0 //=.
+  - iPoseProof (IHHtyping with "[$] [$] [$]") as "Hv1"; eauto.
+    iPoseProof (IHHtyping0 with "[$] [$] [$]") as "Hv2"; eauto.
+    iExists _, _, _, _. iSplitL ""; first by eauto. iFrame.
+  - iLeft. iExists _, _.
+    iSplitL ""; first by eauto. iApply (IHHtyping with "[$] [$] [$]").
+  - iRight. iExists _, _.
+    iSplitR ""; first by eauto. iApply (IHHtyping with "[$] [$] [$]").
+  - iLöb as "IH".
+    iExists _, _, _, _, _, _.
+    iSplitL ""; first by eauto. iAlways.
+    iIntros (varg vsarg) "Hvarg".
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_pures; first auto.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)".
+    }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. econstructor; eauto.
+    }
+
+    iPoseProof (ctx_has_semTy_subst with "[] []") as "H1".
+    { iApply IHHtyping. }
+    { simpl. iApply "IH". }
+    iPoseProof (ctx_has_semTy_subst with "[] Hvarg") as "H2".
+    { iApply "H1". }
+    iSpecialize ("H2" $! ∅ with "[] [$] [$] [$] [] [//] [Hj]").
+    { iPureIntro. apply: fmap_empty. }
+    { iApply big_sepM_empty. eauto. }
+    { rewrite fmap_empty subst_map_empty. iFrame. }
+    rewrite fmap_empty subst_map_empty. eauto.
   - admit.
 Admitted.
 

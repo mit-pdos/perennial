@@ -211,7 +211,7 @@ Section translate.
       Γ ⊢v v2 -- v2' : t2 ->
       Γ ⊢v InjRV v2 -- InjRV v2' : sumT t1 t2
   | rec_val_transTy f x e e' t1 t2 :
-      (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e -- e' : t2 ->
+      (<[f := arrowT t1 t2]> $ <[x := t1]> $ ∅) ⊢ e -- e' : t2 ->
       Γ ⊢v RecV f x e -- RecV f x e' : arrowT t1 t2
   | mapNilV_transTy v v' t :
       Γ ⊢v v -- v' : t ->

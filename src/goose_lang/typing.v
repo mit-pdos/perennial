@@ -408,7 +408,7 @@ Section goose_lang.
       Γ ⊢v v2 : t2 ->
       Γ ⊢v InjRV v2 : sumT t1 t2
   | rec_val_hasTy f x e t1 t2 :
-      (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) ⊢ e : t2 ->
+      (<[f := arrowT t1 t2]> $ <[x := t1]> $ ∅) ⊢ e : t2 ->
       Γ ⊢v RecV f x e : arrowT t1 t2
   | mapNilV_hasTy v t :
       Γ ⊢v v : t ->
