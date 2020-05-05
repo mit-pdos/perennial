@@ -376,9 +376,11 @@ Opaque struct.t.
     iApply big_sepM_insert_delete.
     iSplitL "Hma".
     { rewrite lookup_insert. rewrite Hbufmap_a /=.
+      destruct v; simpl in *; subst.
       destruct (b0.(bufDirty)).
-      { iDestruct "Hma" as (v0) "Hma". iExists _; iFrame. admit. }
-      iExists _; iFrame. admit.
+      { iDestruct "Hma" as (v0) "Hma".
+        iExists _; iFrame. }
+      iExists _; iFrame.
     }
     iApply (big_sepM_mono with "Hm").
     iIntros (k x0 Hkx0) "Hk".
@@ -436,7 +438,8 @@ Opaque struct.t.
     iApply big_sepM_insert_delete.
     iSplitL "Hma".
     { rewrite lookup_insert. rewrite Hbufmap_a /=.
-      iExists _. iFrame. admit.
+      destruct v, v0; simpl in *; subst.
+      iExists _. iFrame.
     }
     iApply (big_sepM_mono with "Hm").
     iIntros (k x0 Hkx0) "Hk".
@@ -444,7 +447,7 @@ Opaque struct.t.
     { subst. rewrite lookup_delete in Hkx0. congruence. }
     rewrite -> lookup_insert_ne by eauto.
     destruct (gBufmap !! k); eauto.
-Admitted.
+Qed.
 
 Theorem BufTxn_lift_one buftx γt γUnified a v :
   (
@@ -562,9 +565,11 @@ Proof.
   iFrame.
   iApply big_sepM_mono; last iFrame.
   iIntros (???) "H".
-  (* prove that gBufmap!!k=None for all k∈m *)
-  admit.
-Admitted.
+
+  destruct (gBufmap !! k); last by iFrame.
+  destruct b.(bufDirty); iFrame.
+  iExists _; iFrame.
+Qed.
 
 Theorem BufTxn_lift_pred `{!Liftable P} buftx γt γUnified :
   (
