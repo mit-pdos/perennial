@@ -309,6 +309,37 @@ Proof.
   reflexivity.
 Qed.
 
+Theorem apply_update_lookup_some_disk_some u d (a:u64):
+  forall b, apply_upds [u] d !! int.val a = Some b ->
+       exists b1, d !! int.val a = Some b1.
+Proof.
+  intros.
+  destruct (decide (u.(update.addr) = a)).
+  - destruct u; subst; simpl in *.
+    apply lookup_insert_Some in H as H'.
+    intuition; try congruence.
+    subst.
+    admit.  (* XXX not right *)
+  - destruct u; simpl in *.
+    rewrite lookup_insert_ne in H; eauto.
+    admit. (* word *)
+Admitted.
+
+Theorem apply_upds_lookup_some_disk_some l d (a: u64):
+  forall b,
+    apply_upds l d !! (int.val a) = Some b ->
+    ∃ b1, d !! (int.val a) = Some b1.
+Proof.
+  generalize dependent d.
+  induction l.
+  - intros. simpl in *; eauto.
+  - intros.
+    rewrite apply_upds_cons in H.
+    specialize (IHl (apply_upds [a0] d) b).
+    destruct IHl; auto.
+    apply apply_update_lookup_some_disk_some in H0; eauto.
+Qed.
+      
 Theorem lookup_apply_update_ne a:
   forall l d u,
     u.(update.addr) ≠ a ->
@@ -1024,7 +1055,6 @@ Proof  using N gen_heapPreG0 heapG0 Σ.
   iExists _. iFrame.
 Qed.
 
-(* XXX something about wf_addr for bs *)
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
   [∗ list] _ ↦ u; old ∈ bs; olds,
     mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old)).
@@ -1162,7 +1192,6 @@ Proof.
   erewrite IHbs; eauto.
 Qed.
 
-
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑N, E}=> ∃ olds, memappend_pre γh.(wal_heap_h) bs olds ∗
         ( ∀ txn_id lwh',
@@ -1196,6 +1225,7 @@ Proof using gen_heapPreG0.
 
   iDestruct (ghost_var_agree with "Htxns Hlockedheap") as "%Hagree".
   inversion Hagree; clear Hagree. subst.
+
   iMod (ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
 
   iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _)).
@@ -1205,16 +1235,29 @@ Proof using gen_heapPreG0.
   iFrame.
 
   iExists _. iFrame.
+
+  iDestruct (big_sepM_forall with "Hgh") as %Hgh.
+  
   iSplitL.
   2: {
     iPureIntro. eapply wal_wf_append_txns; simpl; eauto.
-    admit. (* XXX precondition should provide wf_addrs for u in bs? *)
+
+    
+    unfold addrs_wf.
+    intros.
+    specialize (Hbs_in_gh u i).
+    destruct Hbs_in_gh; auto.
+    intuition.
+    1: admit. (* XXX  2 + LogSz ≤ int.val u.(update.addr) *)
+    specialize (Hgh (u.(update.addr)) (HB x.1 x.2) H5).
+    destruct Hgh.
+    intuition.
+    unfold disk_at_txn_id in H3.
+    apply apply_upds_lookup_some_disk_some in H3; eauto.
   }
+
   intuition.
-
-  iDestruct (big_sepM_forall with "Hgh") as %Hgh.
   iApply big_sepM_forall.
-
   iIntros (k b Hkb).
   destruct b.
   iPureIntro.
