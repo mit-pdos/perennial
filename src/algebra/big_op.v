@@ -107,6 +107,16 @@ End map.
 
 Section list.
 
+  Lemma big_sepL_drop {A} `{!BiAffine PROP} (Φ: nat → A → PROP) (m: list A) (n: nat):
+    ([∗ list] k ↦ x ∈ m, Φ k x) ⊢ ([∗ list] k ↦ x ∈ drop n m, Φ (n + k) x).
+  Proof.
+    rewrite -{1}(take_drop n m) big_sepL_app take_length.
+    iIntros "(_&H)".
+    destruct (decide (length m ≤ n)).
+    - rewrite drop_ge //=.
+    - rewrite Nat.min_l //=; lia.
+  Qed.
+
   Lemma big_sepL_mono_with_inv' {A} P Φ Ψ (m: list A) n :
     (∀ k x, m !! k = Some x → P ∗ Φ (k + n) x ⊢ P ∗ Ψ (k + n) x) →
     P ∗ ([∗ list] k ↦ x ∈ m, Φ (k + n) x) ⊢ P ∗ [∗ list] k ↦ x ∈ m, Ψ (k + n) x.
@@ -911,7 +921,7 @@ Section maplist2.
     { iIntros.
     iExists _; iFrame.
 *)
-  Qed.
+  Admitted.
 
   Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l
       `{!∀ k v lv w, Absorbing (Φw k v lv w)} :
