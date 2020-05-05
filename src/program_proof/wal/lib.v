@@ -202,13 +202,6 @@ Proof.
   iFrame.
 Qed.
 
-Lemma has_zero_update : has_zero (struct.t Update.S).
-Proof.
-  repeat constructor.
-Qed.
-
-Hint Resolve has_zero_update.
-
 Transparent slice.T.
 Theorem val_ty_update uv :
   val_ty (update_val uv) (struct.t Update.S).
@@ -218,6 +211,42 @@ Qed.
 Opaque slice.T.
 
 Hint Resolve val_ty_update : val_ty.
+
+Theorem wp_SliceSet_updates stk E bk_s bs (i: u64) (u0 u: update.t) uv :
+  bs !! int.nat i = Some u0 ->
+  {{{ updates_slice_frag bk_s 1 bs ∗ is_update uv 1 u }}}
+    SliceSet (struct.t Update.S) (slice_val bk_s) #i (update_val uv) @ stk; E
+  {{{ RET #(); updates_slice_frag bk_s 1 (<[int.nat i := u]> bs)
+  }}}.
+Proof.
+  iIntros (Hlookup Φ) "[Hupds Hu] HΦ".
+  iDestruct "Hupds" as (bks) "[Hbk_s Hbks]".
+  iDestruct (big_sepL2_length with "Hbks") as %Hlen.
+  assert (exists uv0, bks !! int.nat i = Some uv0) as [uv0 Hlookup_bks].
+  { apply lookup_lt_Some in Hlookup.
+    apply list_lookup_lt.
+    lia. }
+  iDestruct (big_sepL2_insert_acc _ _ _ _ _ _ Hlookup_bks Hlookup with "Hbks")
+    as "[Hbki Hbks]".
+  wp_apply (wp_SliceSet with "[$Hbk_s]").
+  { iPureIntro.
+    split; auto.
+    rewrite list_lookup_fmap.
+    apply fmap_is_Some.
+    eauto. }
+  iIntros "Hbk_s".
+  iApply "HΦ".
+  iSpecialize ("Hbks" with "[$Hu //]").
+  rewrite -list_fmap_insert.
+  iExists _; iFrame.
+Qed.
+
+Lemma has_zero_update : has_zero (struct.t Update.S).
+Proof.
+  repeat constructor.
+Qed.
+
+Hint Resolve has_zero_update.
 
 Theorem wp_SliceAppend_updates {stk E bk_s bs} {uv: u64 * Slice.t} {b} :
   length bs + 1 < 2^64 ->
