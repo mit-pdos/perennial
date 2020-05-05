@@ -107,16 +107,6 @@ End map.
 
 Section list.
 
-  Lemma big_sepL_drop {A} `{!BiAffine PROP} (Φ: nat → A → PROP) (m: list A) (n: nat):
-    ([∗ list] k ↦ x ∈ m, Φ k x) ⊢ ([∗ list] k ↦ x ∈ drop n m, Φ (n + k) x).
-  Proof.
-    rewrite -{1}(take_drop n m) big_sepL_app take_length.
-    iIntros "(_&H)".
-    destruct (decide (length m ≤ n)).
-    - rewrite drop_ge //=.
-    - rewrite Nat.min_l //=; lia.
-  Qed.
-
   Lemma big_sepL_mono_with_inv' {A} P Φ Ψ (m: list A) n :
     (∀ k x, m !! k = Some x → P ∗ Φ (k + n) x ⊢ P ∗ Ψ (k + n) x) →
     P ∗ ([∗ list] k ↦ x ∈ m, Φ (k + n) x) ⊢ P ∗ [∗ list] k ↦ x ∈ m, Ψ (k + n) x.
@@ -604,6 +594,38 @@ Section maplist.
     eexists. eauto.
   Qed.
 
+  Lemma map_to_list_some_list (l : list LV) (k : K) (lv : LV) (lm : gmap K LV) :
+    lm !! k = Some lv ->
+    l ≡ₚ (map_to_list lm).*2 ->
+    ∃ (i : nat),
+      l !! i = Some lv.
+  Proof.
+    intros.
+    apply elem_of_map_to_list in H0.
+    eapply elem_of_list_fmap_1 in H0.
+    erewrite <- H1 in H0.
+    eapply elem_of_list_lookup_1 in H0.
+    eauto.
+  Qed.
+
+  Lemma map_to_list_insert_overwrite (l : list LV) (i : nat) (k : K) (lv lv' : LV) (lm : gmap K LV) :
+    l !! i = Some lv ->
+    lm !! k = Some lv ->
+    l ≡ₚ (map_to_list lm).*2 ->
+    <[i := lv']> l ≡ₚ (map_to_list (<[k := lv']> lm)).*2.
+  Proof.
+    intros.
+    rewrite -insert_delete.
+    rewrite map_to_list_insert.
+    2: apply lookup_delete.
+
+    erewrite delete_Permutation in H2; eauto.
+    erewrite (delete_Permutation _ i lv').
+    2: { rewrite list_lookup_insert; eauto.
+         eapply lookup_lt_Some; eauto. }
+    admit.
+  Admitted.
+
   Theorem big_sepML_lookup_l_acc Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
     l !! i = Some lv ->
     big_sepML Φ m l -∗
@@ -625,8 +647,8 @@ Section maplist.
     iSpecialize ("Hml" with "Hx").
     iExists (<[x := a0]> lm). iFrame.
     iPureIntro.
-    admit.
-  Admitted.
+    eapply map_to_list_insert_overwrite; eauto.
+  Qed.
 
   Theorem big_sepML_lookup_l_app_acc Φ m lv l0 l1 `{!∀ k v lv, Absorbing (Φ k v lv)} :
     big_sepML Φ m (l0 ++ lv :: l1) -∗
@@ -656,7 +678,21 @@ Section maplist.
       Φ k v' lv' -∗
       big_sepML Φ (<[k := v']> m) (<[i := lv']> l).
   Proof.
-  Admitted.
+    iIntros (Hi) "Hml".
+    rewrite big_sepML_eq /big_sepML_def.
+    iDestruct "Hml" as (lm) "[% Hml]".
+    iDestruct (big_sepM2_lookup_1_some with "Hml") as (xm) "%"; eauto.
+    iDestruct (big_sepM2_insert_acc with "Hml") as "[Hx Hml]"; eauto.
+    eapply map_to_list_some_list in H2 as H2'; eauto. destruct H2'.
+    iExists _, _.
+    iSplitR; first by done.
+    iFrame.
+    iIntros (??) "Hx".
+    iSpecialize ("Hml" with "Hx").
+    iExists (<[k := a0]> lm). iFrame.
+    iPureIntro.
+    eapply map_to_list_insert_overwrite; eauto.
+  Qed.
 
   Theorem big_sepML_mono Φ Ψ m l `{!∀ k v lv, Absorbing (Φ k v lv)} `{!∀ k v lv, Absorbing (Ψ k v lv)} :
     big_sepML Φ m l -∗
@@ -805,14 +841,31 @@ Section maplist2.
   Proof.
   Admitted.
 
-  Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l :
+  Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l
+      `{!∀ k v lv w, Absorbing (Φw k v lv w)} :
     big_sepML (λ k v lv, ∃ w, Φw k v lv w) m l -∗
     ∃ lw,
       ⌜ l = fst <$> lw ⌝ ∗
       big_sepML (λ k v lv, Φw k v (fst lv) (snd lv)) m lw.
   Proof.
-    rewrite /big_sepML.
-  Admitted.
+    iIntros "Hml".
+    iInduction l as [|] "Hi" forall (m).
+    - iExists nil.
+      iDestruct (big_sepML_empty_m with "Hml") as "->".
+      iSplitR; first by done.
+      iApply big_sepML_empty.
+    - iDestruct (big_sepML_delete_cons with "Hml") as (k v) "(% & Hk & Hml)".
+      iDestruct "Hk" as (w) "Hk".
+      iSpecialize ("Hi" with "Hml").
+      iDestruct "Hi" as (lw) "(% & Hi)".
+      iExists ((a, w) :: lw).
+      iSplitR; first by subst; eauto.
+      replace m with (<[k := v]> (delete k m)) at 2.
+      2: { rewrite insert_delete. rewrite insert_id; eauto. }
+      iApply big_sepML_insert.
+      { rewrite lookup_delete; eauto. }
+      iFrame.
+  Qed.
 
 End maplist2.
 
