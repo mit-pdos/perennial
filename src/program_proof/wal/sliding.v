@@ -1,7 +1,7 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.Helpers Require Export NamedProps.
+From Perennial.Helpers Require Export NamedProps List.
 
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib.
@@ -301,11 +301,20 @@ Proof.
   auto.
 Qed.
 
+Hint Unfold slidingM.endPos : word.
+
+Theorem slidingM_endPos_val σ :
+  slidingM.wf σ ->
+  int.val (slidingM.endPos σ) = int.val σ.(slidingM.start) + length σ.(slidingM.log).
+Proof.
+  intros.
+  word.
+Qed.
+
 Theorem wp_sliding__end l σ :
   {{{ is_sliding l σ }}}
     sliding__end #l
-  {{{ (endPos:u64), RET #endPos; ⌜int.val endPos = (int.val σ.(slidingM.start) + length σ.(slidingM.log))%Z⌝ ∗
-                                 is_sliding l σ }}}.
+  {{{ RET #(slidingM.endPos σ); is_sliding l σ }}}.
 Proof.
   iIntros (Φ) "Hsliding HΦ".
   iNamed "Hsliding"; iNamed "Hinv".
@@ -315,10 +324,8 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_pures.
+  replace (word.add σ.(slidingM.start) logSlice.(Slice.sz)) with (slidingM.endPos σ) by word.
   iApply "HΦ".
-  iSplit.
-  { iPureIntro.
-    word. }
   iSplit; auto.
   iExists _, _; iFrame "# ∗".
 Qed.
@@ -485,5 +492,125 @@ Proof.
       f_equal.
       erewrite addrPosMap_absorb_eq; eauto.
 Qed.
+
+Theorem wp_sliding_append l σ uv u :
+  {{{ is_sliding l σ ∗ is_update uv 1 u }}}
+    sliding__append #l (update_val uv)
+  {{{ RET #(); is_sliding l (set slidingM.log (λ log, log ++ [u]) σ) }}}.
+Proof.
+  iIntros (Φ) "[Hsliding Hu] HΦ".
+  iNamed "Hsliding"; iNamed "Hinv".
+Admitted.
+
+Theorem wp_sliding__takeFrom l σ (start: u64) :
+  int.val σ.(slidingM.start) ≤ int.val start ≤ int.val σ.(slidingM.mutable) ->
+  {{{ is_sliding l σ }}}
+    sliding__takeFrom #l #start
+  {{{ q s, RET (slice_val s); is_sliding l σ ∗
+           let from := slidingM.logIndex σ start in
+           let to := slidingM.logIndex σ σ.(slidingM.mutable) in
+           updates_slice_frag s q (subslice from to σ.(slidingM.log)) }}}.
+Proof.
+Admitted.
+
+Theorem wp_sliding__takeTill l σ (endPos: u64) :
+  int.val σ.(slidingM.start) ≤ int.val endPos ≤ int.val σ.(slidingM.mutable) ->
+  {{{ is_sliding l σ }}}
+    sliding__takeTill #l #endPos
+  {{{ q s, RET (slice_val s); is_sliding l σ ∗
+           let to := slidingM.logIndex σ endPos in
+           updates_slice_frag s q (take to σ.(slidingM.log)) }}}.
+Proof.
+Admitted.
+
+Theorem wp_sliding__deleteFrom l σ (newStart: u64) :
+  int.val σ.(slidingM.start) ≤ int.val newStart ≤ int.val σ.(slidingM.mutable) ->
+  {{{ is_sliding l σ }}}
+    sliding__deleteFrom #l #newStart
+  {{{ RET #(); is_sliding l
+        (set slidingM.log (drop (slidingM.logIndex σ newStart)) σ) }}}.
+Proof.
+Admitted.
+
+Lemma numMutable_after_clear σ :
+  slidingM.wf σ ->
+  slidingM.numMutable (set slidingM.mutable (λ _ : u64, slidingM.endPos σ) σ) =
+  U64 (length σ.(slidingM.log)).
+Proof.
+  intros Hwf.
+  rewrite /slidingM.numMutable /slidingM.endPos /=.
+  word_cleanup.
+  word.
+Qed.
+
+Theorem wp_sliding__clearMutable l σ :
+  {{{ is_sliding l σ }}}
+    sliding__clearMutable #l
+  {{{ RET #(); is_sliding l (set slidingM.mutable (λ _, slidingM.endPos σ) σ) }}}.
+Proof.
+  iIntros (Φ) "Hsliding HΦ".
+  wp_call.
+  wp_apply (wp_sliding__end with "Hsliding"); iIntros "Hsliding".
+  iNamed "Hsliding"; iNamed "Hinv".
+  rewrite -wp_fupd.
+  wp_storeField.
+  iNamed "log_mutable".
+  unshelve iMod (readonly_alloc_1 with "log_mutable") as "readonly_new".
+  2: apply _.
+  rewrite /readonly_log.
+  iDestruct (readonly_extend with "log_readonly readonly_new") as "log_readonly'".
+  iClear "log_readonly".
+  iModIntro.
+  iApply "HΦ".
+  iSplit.
+  - iPureIntro.
+    split_and!; simpl; try word.
+    rewrite numMutable_after_clear; auto.
+    word.
+  - simpl.
+    iExists _, _; iFrame.
+    iSplitL.
+    + rewrite /readonly_log.
+      simpl.
+      iApply (readonly_iff with "log_readonly'").
+      intros q; simpl.
+      rewrite numMutable_after_clear; auto.
+      iSplit.
+      { iIntros "[Hupds1 Hupds2]".
+        iDestruct (updates_slice_frag_combine with "[$Hupds1 $Hupds2]") as "Hupds".
+        { revert Hwf; word. }
+        rewrite take_ge; len.
+        iDestruct "Hupds" as (bks) "[Hs Hbks]".
+        iExists _; iFrame.
+        admit. (* taking all of a slice preserves is_slice_small (removes capacity) *)
+      }
+      iIntros "Hupds".
+      rewrite {1}take_ge; len.
+      iDestruct (updates_slice_frag_split _ _ (slidingM.numMutable σ) with "Hupds") as "[Hupds1 Hupds2]".
+      { simpl; revert Hwf; word. }
+      iFrame.
+      iDestruct "Hupds1" as (bks) "[Hs Hbks]".
+      iExists _; iFrame.
+      admit. (* similar, took whole slice before skipping *)
+    + rewrite /mutable_log /=.
+      iSplit.
+      { iPureIntro; word. }
+      rewrite numMutable_after_clear; auto.
+      rewrite drop_ge; len.
+      iExists nil; simpl.
+      admit. (* is_slice_small nil *)
+Admitted.
+
+Theorem wp_sliding__posForAddr l σ (a: u64) :
+  {{{ is_sliding l σ }}}
+    sliding__posForAddr #l #a
+  {{{ (pos: u64) (ok: bool), RET (#pos, #ok);
+      is_sliding l σ ∗
+      ⌜if ok then int.val σ.(slidingM.start) ≤ int.val pos ≤ int.val (slidingM.endPos σ) ∧
+                  find_highest_index (update.addr <$> σ.(slidingM.log)) a = Some (slidingM.logIndex σ pos)
+      else find_highest_index (update.addr <$> σ.(slidingM.log)) a = None⌝
+  }}}.
+Proof.
+Admitted.
 
 End goose_lang.
