@@ -551,6 +551,52 @@ Section maplist.
     done.
   Qed.
 
+  Lemma map_to_list_insert_overwrite (l : list LV) (i : nat) (k : K) (lv lv' : LV) (lm : gmap K LV) :
+    l !! i = Some lv ->
+    lm !! k = Some lv ->
+    l ≡ₚ (map_to_list lm).*2 ->
+    <[i := lv']> l ≡ₚ (map_to_list (<[k := lv']> lm)).*2.
+  Proof.
+    intros.
+    rewrite -insert_delete.
+    rewrite map_to_list_insert.
+    2: apply lookup_delete.
+
+    erewrite delete_Permutation in H2; eauto.
+    erewrite (delete_Permutation _ i lv').
+    2: { rewrite list_lookup_insert; eauto.
+         eapply lookup_lt_Some; eauto. }
+    erewrite <- (insert_id lm) in H2; eauto.
+    rewrite -insert_delete in H2.
+    erewrite map_to_list_insert in H2.
+    2: apply lookup_delete.
+    simpl in *.
+    apply Permutation.Permutation_cons_inv in H2.
+    rewrite -H2.
+    eapply Permutation_cons.
+    repeat rewrite delete_take_drop.
+    rewrite -> take_insert by lia.
+    rewrite -> drop_insert_gt by lia.
+    eauto.
+  Qed.
+
+  Lemma map_to_list_delete (l : list LV) (lm : gmap K LV) (k : K) (i : nat) (x : LV) :
+    l !! i = Some x ->
+    lm !! k = Some x ->
+    l ≡ₚ (map_to_list lm).*2 ->
+    delete i l ≡ₚ (map_to_list (delete k lm)).*2.
+  Proof.
+    intros.
+    erewrite delete_Permutation in H2; eauto.
+    erewrite <- (insert_id lm) in H2; eauto.
+    rewrite -insert_delete in H2.
+    erewrite map_to_list_insert in H2.
+    2: apply lookup_delete.
+    simpl in *.
+    apply Permutation.Permutation_cons_inv in H2.
+    eauto.
+  Qed.
+
   Theorem big_sepML_delete_m Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
     m !! k = Some v ->
     big_sepML Φ m l -∗
@@ -575,8 +621,9 @@ Section maplist.
     iSplitR; eauto.
 
     iExists _; iFrame.
-    admit.
-  Admitted.
+    iPureIntro.
+    eapply map_to_list_delete; eauto.
+  Qed.
 
   Lemma list_some_map_to_list (l : list LV) (i : nat) (lv : LV) (lm : gmap K LV) :
     l !! i = Some lv ->
@@ -607,24 +654,6 @@ Section maplist.
     eapply elem_of_list_lookup_1 in H0.
     eauto.
   Qed.
-
-  Lemma map_to_list_insert_overwrite (l : list LV) (i : nat) (k : K) (lv lv' : LV) (lm : gmap K LV) :
-    l !! i = Some lv ->
-    lm !! k = Some lv ->
-    l ≡ₚ (map_to_list lm).*2 ->
-    <[i := lv']> l ≡ₚ (map_to_list (<[k := lv']> lm)).*2.
-  Proof.
-    intros.
-    rewrite -insert_delete.
-    rewrite map_to_list_insert.
-    2: apply lookup_delete.
-
-    erewrite delete_Permutation in H2; eauto.
-    erewrite (delete_Permutation _ i lv').
-    2: { rewrite list_lookup_insert; eauto.
-         eapply lookup_lt_Some; eauto. }
-    admit.
-  Admitted.
 
   Theorem big_sepML_lookup_l_acc Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
     l !! i = Some lv ->
