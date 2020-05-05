@@ -13,7 +13,7 @@ Section goose_lang.
   Class AsMapsTo (P: iProp Σ)
         (Φ : Qp -> iProp Σ) :=
     { as_mapsto : P ≡ Φ 1%Qp;
-      as_mapsto_fractional :> Fractional (λ q, Φ q);
+      as_mapsto_fractional :> Fractional Φ;
       as_mapsto_timeless :> ∀ q, Timeless (Φ q);
     }.
 
@@ -21,8 +21,9 @@ Section goose_lang.
 
   Let N := nroot .@ "readonly".
 
+  Definition readonly_inner Φ: iProp Σ := ∃ (q: Qp), ⌜(Qcanon.Qclt q 1)%Qp⌝ ∗ Φ q.
   Definition readonly_def P `{H: AsMapsTo P Φ}: iProp Σ :=
-    inv N (∃ (q: Qp), ⌜(Qcanon.Qclt q 1)%Qp⌝ ∗ Φ q).
+    inv N (readonly_inner Φ).
   Definition readonly_aux : seal (@readonly_def). Proof. by eexists. Qed.
   Definition readonly := readonly_aux.(unseal).
   Definition readonly_eq : @readonly = @readonly_def := readonly_aux.(seal_eq).
@@ -37,6 +38,7 @@ Section goose_lang.
     unseal.
     iIntros (Hbound) "HP".
     iMod (inv_alloc with "[HP]") as "$"; auto.
+    rewrite /readonly_inner; auto.
   Qed.
 
   Global Instance readonly_persistent P `{H: AsMapsTo P Φ} : Persistent (readonly P).
@@ -59,6 +61,20 @@ Section goose_lang.
     reflexivity.
   Qed.
 
+  Theorem readonly_inner_dup Φ {H: Fractional Φ} :
+    readonly_inner Φ -∗ readonly_inner Φ ∗ readonly_inner Φ.
+  Proof.
+    iIntros "HΦ".
+    iDestruct "HΦ" as (q) "[% HΦ]".
+    iDestruct (fractional_half with "HΦ") as "[HΦ1 HΦ2]".
+    { split; auto. }
+    { split; auto. }
+    assert (Qcanon.Qclt (q/2)%Qp 1).
+    { etransitivity; eauto.
+      apply Qp_div_2_lt. }
+    iSplitL "HΦ1"; iExists _; by iFrame.
+  Qed.
+
   Theorem readonly_load_lt P `{H: AsMapsTo P Φ} E :
     ↑N ⊆ E ->
     readonly P ={E}=∗ ∃ (q: Qp), ⌜(Qcanon.Qclt q 1)%Qc⌝ ∗ Φ q.
@@ -67,15 +83,8 @@ Section goose_lang.
     unseal.
     assert (Timeless (∃ q, Φ q)).
     { apply _. }
-    iMod (inv_dup_acc (∃ (q: Qp), ⌜(Qcanon.Qclt q 1)%Qc⌝ ∗ Φ q) with "Hro []") as ">H"; first by auto.
-    { iIntros "HΦ".
-      iDestruct "HΦ" as (q) "[% HΦ]".
-      iDestruct (fractional_half with "HΦ") as "[HΦ1 HΦ2]".
-      assert (Qcanon.Qclt (q/2)%Qp 1).
-      { etransitivity; eauto.
-        apply Qp_div_2_lt. }
-      iSplitL "HΦ1"; iExists _; by iFrame.
-    }
+    iMod (inv_dup_acc (readonly_inner Φ) with "Hro []") as ">H"; first by auto.
+    { iApply readonly_inner_dup. }
     iModIntro.
     auto.
   Qed.
@@ -86,6 +95,60 @@ Section goose_lang.
   Proof.
     iIntros (Hsub) "Hro".
     iMod (readonly_load_lt with "Hro") as (q) "[% HΦ]"; auto.
+  Qed.
+
+  Theorem readonly_iff P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
+    (∀ q, Φ1 q ≡ Φ2 q) ->
+    readonly P -∗ readonly Q.
+  Proof.
+    unseal; rewrite /readonly_inner.
+    intros Hequiv.
+    iIntros "HP".
+    iApply (inv_iff with "HP").
+    setoid_rewrite Hequiv.
+    iIntros "!> !>".
+    iSplit; auto.
+  Qed.
+
+  Global Instance readonly_sep P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
+    AsMapsTo (P ∗ Q) (λ q, Φ1 q ∗ Φ2 q)%I.
+  Proof.
+    split; try apply _.
+    rewrite (as_mapsto (P:=P)) (as_mapsto (P:=Q)) //.
+  Qed.
+
+  Lemma Qclt_plus_r (q q': Qp) :
+    Qcanon.Qclt q (q + q')%Qp.
+  Proof.
+  Admitted.
+
+  Theorem readonly_extend P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
+    readonly P -∗ readonly Q -∗ readonly (P ∗ Q).
+  Proof.
+    unseal.
+    iIntros "HP HQ".
+    iDestruct (inv_combine_dup with "[] HP HQ") as "Hinv".
+    { iApply readonly_inner_dup. }
+    iApply (inv_iff with "Hinv").
+    { iIntros "!> !>".
+      rewrite /readonly_inner.
+      iSplit.
+      - iIntros "[H1 H2]".
+        iDestruct "H1" as (q1) "[% H1]".
+        iDestruct "H2" as (q2) "[% H2]".
+        destruct (Qp_lower_bound q1 q2) as [q [q1' [q2' [-> ->]]]].
+        iExists q.
+        iSplitR.
+        { iPureIntro.
+          etransitivity; eauto.
+          apply Qclt_plus_r. }
+        iDestruct (fractional_split_1 with "H1") as "[H1 _]".
+        iDestruct (fractional_split_1 with "H2") as "[H2 _]".
+        iFrame.
+      - iIntros "H".
+        iDestruct "H" as (q) "(%&H1&H2)".
+        iSplitL "H1"; iExists _; by iFrame.
+    }
   Qed.
 
 End goose_lang.
