@@ -730,6 +730,28 @@ Proof.
   solve_ndisj.
 Qed.
 
+Lemma ghost_allocN_non_pos_stuck j K `{LanguageCtx _ K} E v (n: u64) :
+  ¬ (0 < int.val n)%Z →
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) ={E}=∗ False.
+Proof.
+  iIntros (Hnonpos ?) "(#Hctx&#Hstate) Hj".
+  iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
+  iMod (ghost_step_stuck with "Hj Hctx H") as %[].
+  {
+  split; first done.
+  apply prim_head_irreducible; auto.
+  * inversion 1; repeat (monad_inv; simpl in * ).
+    simpl in *. monad_inv; eauto.
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val #n = e' ∨ of_val v = e').
+    { move: Heq. destruct Ki => //=; naive_solver congruence. }
+    naive_solver.
+  }
+  solve_ndisj.
+Qed.
+
 Definition spec_mapsto_vals_toks l q vs : iProp Σ :=
   ([∗ list] j↦vj ∈ vs, (l +ₗ j) s↦{q} vj ∗ meta_token (hG := refinement_na_heapG) (l +ₗ j) ⊤)%I.
 

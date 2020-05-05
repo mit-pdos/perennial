@@ -1401,7 +1401,11 @@ Proof using spec_trans.
     iApply wp_fupd.
     iDestruct "Hv1" as (nint) "(->&->)".
     destruct (decide (0 < int.val nint)) as [Hnonneg|]; last first.
-    { (* this is UB *) admit. }
+    {
+      iMod (ghost_allocN_non_pos_stuck with "[$] [$]") as %[].
+      { eauto. }
+      { solve_ndisj. }
+    }
     iDestruct (length_flatten_well_typed with "Hv2") as %(Hspecsize&Hsize).
     iApply wp_allocN_seq_sized_meta.
     { rewrite -Hsize. destruct (flatten_ty t) as [|]; try congruence; simpl; try lia. }
