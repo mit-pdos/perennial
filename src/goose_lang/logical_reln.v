@@ -1375,12 +1375,169 @@ Proof using spec_trans.
   - admit.
   - admit.
   (* data *)
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    wpc_bind (subst_map _ e2').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e2) as Hctx'.
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    iSpecialize ("H" $! j _ Hctx'  with "Hj").
+    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    simpl.
+    clear Hctx'.
+
+    spec_bind (_ ,_)%E as Hctx'.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. repeat econstructor; eauto.
+    }
+    wpc_pures; auto.
+    iExists _. iFrame. iExists _, _, _, _. iFrame. eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v) "H". iDestruct "H" as (vs) "(Hj&Hv)".
+    clear Hctx'.
+    simpl.
+    iDestruct "Hv" as (???? (->&->)) "(?&?)".
+
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. repeat econstructor; eauto.
+    }
+    iApply wp_wpc; wp_pures; eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v) "H". iDestruct "H" as (vs) "(Hj&Hv)".
+    clear Hctx'.
+    simpl.
+    iDestruct "Hv" as (???? (->&->)) "(?&?)".
+
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. repeat econstructor; eauto.
+    }
+    iApply wp_wpc; wp_pures; eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    simpl.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. repeat econstructor; eauto.
+    }
+    wpc_pures; auto.
+    iExists _. iFrame. iLeft. iExists _, _; iFrame; eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    simpl.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step. repeat econstructor; eauto.
+    }
+    wpc_pures; auto.
+    iExists _. iFrame. iRight. iExists _, _; iFrame; eauto.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) cond').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) cond) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    iDestruct "Hv1" as "[Hleft|Hright]".
+    {
+      iDestruct "Hleft" as (?? (->&->)) "Hv".
+      wpc_pures; first auto.
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step. repeat econstructor; eauto.
+      }
+      wpc_bind (subst_map _ e1').
+      iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
+      spec_bind (subst_map _ e1) as Hctx'.
+      iSpecialize ("H" $! j _ Hctx' with "Hj").
+      iApply (wpc_mono' with "[Hv] [] H"); last done.
+      iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+      simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
+      iSpecialize ("Hinterp" with "[$]").
+      iSpecialize ("Hinterp" $! j _ Hctx with "Hj").
+      iApply (wpc_mono' with "[] [] Hinterp"); last done.
+      iIntros (v') "H". iDestruct "H" as (vs') "(Hj&Hv')".
+      iExists _. iFrame.
+    }
+    {
+      iDestruct "Hright" as (?? (->&->)) "Hv".
+      wpc_pures; first auto.
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step. repeat econstructor; eauto.
+      }
+      wpc_bind (subst_map _ e2').
+      iPoseProof (IHHtyping3 with "[//] [$] [$] [$] [$]") as "H"; eauto.
+      spec_bind (subst_map _ e2) as Hctx'.
+      iSpecialize ("H" $! j _ Hctx' with "Hj").
+      iApply (wpc_mono' with "[Hv] [] H"); last done.
+      iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+      simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
+      iSpecialize ("Hinterp" with "[$]").
+      iSpecialize ("Hinterp" $! j _ Hctx with "Hj").
+      iApply (wpc_mono' with "[] [] Hinterp"); last done.
+      iIntros (v') "H". iDestruct "H" as (vs') "(Hj&Hv')".
+      iExists _. iFrame.
+    }
   (* pointers *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1547,7 +1704,12 @@ Proof using spec_trans.
     replace (k * int.val 1) with k by word.
     iLeft.
     rewrite ?map_length.
-    iExists _, _, _, _, _. iSplitL "".
+    unshelve (iExists (l' +ₗ k), (ls' +ₗ k), _, _, _; iFrame).
+    { eauto. }
+    {
+      apply List.map_neq_nil, List.drop_lt. lia.
+    }
+    iSplitL "".
     { iPureIntro. split_and!; eauto. rewrite ?addr_offset_of_plus Hoff //. }
     iFrame.
     iDestruct "Hlist" as "[Hinb|Hoob]".
