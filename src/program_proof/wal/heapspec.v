@@ -994,8 +994,8 @@ Proof.
     iMod "Hfupd".
 
     iModIntro.
-    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag".
-    + iExists _; iFrame. done.
+    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps Hcrash_heaps_own".
+    + iExists _, _; iFrame. done.
     + iFrame.
 
   - simpl in *; monad_inv.
@@ -1011,7 +1011,7 @@ Proof.
     }
     iMod "Hfupd".
     iModIntro.
-    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag".
+    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps Hcrash_heaps_own".
     2: iFrame.
 
     iDestruct (wal_update_durable gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_durable with "Hgh") as "Hgh"; eauto.
@@ -1041,8 +1041,12 @@ Proof.
       }
     }
     rewrite /wal_heap_inv.
-    iExists _; iFrame.
+    iExists _, _; iFrame.
 
+    iSplitR.
+    2: {
+      iNamed "Hcrash_heaps".
+      iExists _. iFrame. iPureIntro. intuition eauto. rewrite /=. lia. }
     iPureIntro.
     eapply wal_wf_advance_installed_lb.
     2: { intuition idtac. simpl in *. lia. }
@@ -1065,7 +1069,7 @@ Theorem wal_heap_readinstalled E γh a (Q : Block -> iProp Σ) :
 Proof  using N gen_heapPreG0 heapG0 Σ.
   iIntros "Ha".
   iIntros (σ σ' b') "% % Hinv".
-  iDestruct "Hinv" as (gh) "(Hctx & Hgh & Hlatest)".
+  iNamed "Hinv".
 
   iMod "Ha" as (installed bs) "[Ha Hfupd]".
   iDestruct (gen_heap_valid with "Hctx Ha") as "%".
@@ -1095,7 +1099,7 @@ Proof  using N gen_heapPreG0 heapG0 Σ.
   destruct H0.
   intuition.
 
-  iExists _. iFrame.
+  iExists _, _. iFrame. done.
 Qed.
 
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
