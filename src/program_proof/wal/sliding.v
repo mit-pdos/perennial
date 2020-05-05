@@ -6,6 +6,7 @@ From Perennial.Helpers Require Export NamedProps.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib.
 From Perennial.program_proof Require Import wal.highest.
+From Perennial.program_proof Require Import disk_lib.
 
 Module slidingM.
   Record t :=
@@ -21,6 +22,8 @@ Module slidingM.
     word.sub σ.(mutable) σ.(start).
   Definition addrPosMap (σ:t): gmap u64 u64 :=
     compute_memLogMap σ.(log) σ.(start).
+  Definition logIndex (σ:t) (pos: u64) : nat :=
+    (int.nat pos - int.nat σ.(start))%nat.
 
   Definition wf (σ:t) :=
     int.val σ.(start) ≤ int.val σ.(mutable) ∧
@@ -133,8 +136,7 @@ Proof.
   wp_apply (wp_forSlice
               (fun i => "Hm" ∷ is_map addrPosPtr
                                (compute_memLogMap (take (int.nat i) log) start) ∗
-                      "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, disk_lib.is_block b_upd.2 1 upd.(update.b)
-                                                                ∗ ⌜b_upd.1 = upd.(update.addr)⌝
+                      "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, is_update b_upd 1 upd
               )%I
            with "[] [His_map $Hblocks $Hs]").
   2: {
@@ -152,7 +154,7 @@ Proof.
     iApply "HΦ".
     replace (int.nat (word.add i 1)) with (1 + int.nat i)%nat by word.
     destruct (list_lookup_lt _ log (int.nat i)) as [u Hlookup']; first by word.
-    iDestruct (big_sepL2_lookup_acc with "Hblocks") as "[[Hb %Huaddr] Hblocks]"; eauto.
+    iDestruct (big_sepL2_lookup_acc with "Hblocks") as "[[%Huaddr Hb] Hblocks]"; eauto.
     iSpecialize ("Hblocks" with "[$Hb //]").
     iFrame "Hblocks".
     rewrite Huaddr.
@@ -305,8 +307,8 @@ Theorem wp_sliding__end l σ :
   {{{ (endPos:u64), RET #endPos; ⌜int.val endPos = (int.val σ.(slidingM.start) + length σ.(slidingM.log))%Z⌝ ∗
                                  is_sliding l σ }}}.
 Proof.
-  iIntros (Φ) "Hs HΦ".
-  iNamed "Hs"; iNamed "Hinv".
+  iIntros (Φ) "Hsliding HΦ".
+  iNamed "Hsliding"; iNamed "Hinv".
   iDestruct (memLog_sz with "log_mutable") as %Hlog_sz.
   wp_call.
   wp_loadField.
@@ -319,6 +321,143 @@ Proof.
     word. }
   iSplit; auto.
   iExists _, _; iFrame "# ∗".
+Qed.
+
+Hint Unfold slidingM.logIndex : word.
+
+Theorem wp_sliding__get l σ (pos: u64) (u: update.t) :
+  int.val σ.(slidingM.start) ≤ int.val pos ->
+  σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u ->
+  {{{ is_sliding l σ }}}
+    sliding__get #l #pos
+  {{{ uv q, RET update_val uv;
+      is_update uv q u ∗
+        (is_block uv.2 q u.(update.b) -∗ is_sliding l σ)
+  }}}.
+Proof.
+  iIntros (Hbound Hlookup Φ) "Hsliding HΦ".
+  iNamed "Hsliding"; iNamed "Hinv".
+  wp_call.
+  wp_loadField. wp_loadField.
+  iMod (memLog_combine with "log_readonly log_mutable") as (q') "[Hlog Hlog_mutable]"; auto.
+  wp_apply (wp_SliceGet_updates with "[$Hlog]").
+  { iPureIntro.
+    lazymatch type of Hlookup with
+    | _ !! ?i = _ =>
+      lazymatch goal with
+      | [ |- _ !! ?i' = _ ] =>
+        replace i' with i by word; eassumption
+      end
+    end.
+  }
+  iIntros (uv) "(Hu&Hlog)".
+  iApply "HΦ".
+  iFrame.
+  iIntros "Hb"; iSpecialize ("Hlog" with "Hb").
+  iSpecialize ("Hlog_mutable" with "Hlog").
+  iSplit; auto.
+  iExists _, _; iFrame "# ∗".
+Qed.
+
+Lemma readonly_log_update_mutable logSlice σ (pos: u64) u :
+  slidingM.wf σ ->
+  int.val σ.(slidingM.mutable) ≤ int.val pos ->
+  readonly_log logSlice σ -∗
+  readonly_log logSlice (set slidingM.log
+    (λ log : list update.t,
+      <[(int.nat pos - int.nat σ.(slidingM.start))%nat:=u]> log) σ).
+Proof.
+  iIntros (Hwf Hbound) "Hreadonly".
+  rewrite /readonly_log.
+  iExactEq "Hreadonly".
+  rewrite /slidingM.numMutable /=.
+  match goal with
+  | [ |- readonly (updates_slice_frag _ _ ?us1) =
+    readonly (updates_slice_frag _ _ ?us2) ] =>
+    replace us1 with us2; auto
+  end.
+  rewrite take_insert; auto.
+  word.
+Qed.
+
+Lemma numMutable_set_log f σ :
+  slidingM.numMutable (set slidingM.log f σ) =
+  slidingM.numMutable σ.
+Proof.
+  rewrite /slidingM.numMutable //=.
+Qed.
+
+Lemma addrPosMap_absorb_eq pos u u0 σ :
+  σ.(slidingM.log) !! slidingM.logIndex σ pos = Some u0 ->
+  u0.(update.addr) = u.(update.addr) ->
+  slidingM.addrPosMap
+    (set slidingM.log
+          (λ log : list update.t,
+                  <[(int.nat pos - int.nat σ.(slidingM.start))%nat:=u]> log) σ) =
+  slidingM.addrPosMap σ.
+Proof.
+  intros Hlookup Haddreq.
+  rewrite /slidingM.addrPosMap /=.
+  rewrite /compute_memLogMap.
+  f_equal.
+  apply map_eq; intros pos'.
+  rewrite !pos_indices_lookup.
+  f_equal.
+  rewrite list_fmap_insert.
+Admitted.
+
+Theorem wp_sliding__update l σ (pos: u64) uv u0 u :
+  σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u0 ->
+  int.val σ.(slidingM.mutable) ≤ int.val pos ->
+  (* must be an absorption update, since we don't update addrPos map *)
+  u0.(update.addr) = u.(update.addr) ->
+  {{{ is_sliding l σ ∗ is_update uv 1 u }}}
+    sliding__update #l #pos (update_val uv)
+  {{{ RET #();
+      is_sliding l (set slidingM.log
+                        (λ log, <[ (int.nat pos - int.nat σ.(slidingM.start))%nat := u]> log) σ)
+  }}}.
+Proof.
+  iIntros (Hlookup Hmutable_bound Haddreq Φ) "[Hsliding Hu] HΦ".
+  iNamed "Hsliding"; iNamed "Hinv".
+  iDestruct (memLog_sz with "log_mutable") as %Hsz.
+  wp_call.
+  wp_loadField. wp_loadField. wp_loadField. wp_loadField.
+  iNamed "log_mutable".
+  wp_apply wp_SliceSkip'.
+  { iPureIntro.
+    revert Hwf; word. }
+  fold (slidingM.numMutable σ).
+  wp_apply (wp_SliceSet_updates with "[$log_mutable $Hu]").
+  { rewrite lookup_drop.
+    rewrite <- Hlookup.
+    f_equal.
+    word. }
+  iIntros "log_mutable".
+  iApply "HΦ".
+  iSplit.
+  - iPureIntro.
+    rewrite /slidingM.wf /=.
+    split_and; try word.
+    rewrite !numMutable_set_log.
+    revert Hwf; len.
+  - iExists _, _; iFrame.
+    iSplitL "".
+    { iApply (readonly_log_update_mutable with "log_readonly"); auto. }
+    iSplitL "log_mutable".
+    + iSplit.
+      { iPureIntro; simpl; len. }
+      rewrite !numMutable_set_log /=.
+      rewrite -> drop_insert_le by len.
+      iExactEq "log_mutable".
+      rewrite /named.
+      f_equal.
+      f_equal.
+      word.
+    + iExactEq "is_addrPos".
+      rewrite /named.
+      f_equal.
+      erewrite addrPosMap_absorb_eq; eauto.
 Qed.
 
 End goose_lang.

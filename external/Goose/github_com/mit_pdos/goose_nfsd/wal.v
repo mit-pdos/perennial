@@ -185,7 +185,7 @@ Definition sliding__get: val :=
 (* update does an in-place absorb of an update to u *)
 Definition sliding__update: val :=
   rec: "sliding__update" "s" "pos" "u" :=
-    SliceSet (struct.t Update.S) (struct.loadF sliding.S "log" "s") ("pos" - struct.loadF sliding.S "start" "s") "u".
+    SliceSet (struct.t Update.S) (SliceSkip (struct.t Update.S) (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - struct.loadF sliding.S "start" "s")) ("pos" - struct.loadF sliding.S "mutable" "s") "u".
 
 Definition sliding__append: val :=
   rec: "sliding__append" "s" "u" :=
