@@ -458,7 +458,9 @@ Lemma valid_off_block blknum off :
   valid_off KindBlock off ->
   off = 0.
 Proof.
-  rewrite /valid_addr /valid_off /bufSz; intuition idtac.
+  rewrite /valid_addr /valid_off /bufSz /addr2flat_z; intuition idtac.
+  simpl addrOff in *.
+  simpl addrBlock in *.
   admit.
 Admitted.
 
@@ -524,7 +526,7 @@ Theorem wp_txn__installBufsMap l q gData walptr γ lwh bufs buflist (bufamap : g
           is_block blkslice 1 b ∗
           ⌜ updBlockKindOK blkno b gData (locked_wh_disk lwh) offmap ⌝
   }}}.
-Proof.
+Proof using gen_heapPreG0 heapG0 txnG0 Σ.
   iIntros (Φ) "(#Hinv & #Hiswal & #log & Hlockedheap & Hbufs & Hbufpre) HΦ".
 
 Opaque struct.t.
@@ -538,6 +540,7 @@ Opaque struct.t.
         ∃ bufamap_todo bufamap_done blkmap,
         "<-" ∷ ⌜ done ++ todo = buflist ⌝ ∗
         "->" ∷ ⌜ bufamap_done = bufamap ∖ bufamap_todo ⌝ ∗
+        "%" ∷ ⌜ bufamap_todo ⊆ bufamap ⌝ ∗
         "Hblks" ∷ is_map blks blkmap ∗
         "Hbufamap_todo" ∷ ( [∗ maplist] a↦buf;bufptrval ∈ bufamap_todo;todo, is_txn_buf_pre bufptrval a buf gData ) ∗
         "Hbufamap_done" ∷ ( [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap_done,
@@ -554,6 +557,8 @@ Opaque struct.t.
     iSplitR.
     { iPureIntro. rewrite map_difference_diag. done. }
     iFrame "Hblks". iFrame "Hbufpre". iFrame "Hlockedheap".
+    iSplitR.
+    { iPureIntro. set_solver. }
     iSplit.
     { rewrite gmap_addr_by_block_empty. iApply big_sepM2_empty. done. }
     iApply big_sepM_empty. done.
@@ -591,7 +596,8 @@ Opaque struct.t.
       iSplitR.
       { rewrite -app_assoc. simpl. done. }
       iSplitR.
-      { admit. }
+      { iPureIntro. erewrite map_difference_delete; eauto.
+        eapply lookup_weaken; eauto. }
       iFrame "Hblks".
       iFrame "Hbufamap_todo".
 
@@ -600,6 +606,8 @@ Opaque struct.t.
       iDestruct (mapsto_txn_valid_off with "Hmapto") as "%Hoff_valid".
 
       iFrame "Hlockedheap".
+      iSplitR.
+      { iPureIntro. etransitivity; first by apply delete_subseteq. eauto. }
       iSplitR "Hbufamap_done_mapsto Hmapto".
       2: {
         iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_mapsto").
@@ -631,7 +639,8 @@ Opaque struct.t.
         exfalso.
         destruct buf; simpl in *.
         destruct bufKind; cbn in *; try congruence.
-        all: admit.
+        { inversion H2. }
+        { inversion H2. }
       }
 
       wp_apply wp_ref_of_zero; first by eauto.
@@ -663,7 +672,7 @@ Opaque struct.t.
       {
         iIntros "(-> & HΦ)".
         wp_store.
-        apply map_get_true in H0.
+        apply map_get_true in H1.
         iDestruct (big_sepM2_lookup_1_some with "Hbufamap_done") as (xx) "%Hx"; eauto.
         iDestruct (big_sepM2_delete with "Hbufamap_done") as "[Ha Hbufamap_done]"; eauto.
         iDestruct "Ha" as (b0) "[Hisblock %]".
@@ -672,8 +681,8 @@ Opaque struct.t.
         iSplit; first by done.
         iPureIntro.
         rewrite /lookup_block Hx.
-        destruct H1. destruct H1. intuition eauto.
-        rewrite Hgdata in H2. inversion H2. subst. eauto.
+        destruct H2. destruct H2. intuition eauto.
+        rewrite Hgdata in H3. inversion H3. subst. eauto.
       }
       {
         iIntros "(-> & HΦ)".
@@ -691,7 +700,7 @@ Opaque struct.t.
         iApply "HΦ".
         iExists _, _, _. iFrame.
 
-        apply map_get_false in H0; destruct H0; subst.
+        apply map_get_false in H1; destruct H1; subst.
         iDestruct (big_sepM2_lookup_1_none with "Hbufamap_done") as %Hnone; eauto.
 
         rewrite delete_insert_delete.
@@ -721,7 +730,10 @@ Opaque struct.t.
       iSplitR.
       { rewrite -app_assoc. done. }
       iSplitR.
-      { admit. }
+      { iPureIntro. erewrite map_difference_delete; eauto.
+        erewrite lookup_weaken; eauto. }
+      iSplitR.
+      { iPureIntro. etransitivity; first by apply delete_subseteq. eauto. }
       iSplitR "Hbufamap_done_mapsto Hmapto".
       2: {
         iApply (big_sepM_insert_2 with "[Hmapto] [$Hbufamap_done_mapsto]").
@@ -736,7 +748,7 @@ Opaque struct.t.
       eexists _, _. intuition eauto.
       intro diskLatest; intros.
       intro off; intros.
-      specialize (H2 diskLatest H3 off oldBufData H4 H5 H6).
+      specialize (H3 diskLatest H4 off oldBufData H5 H6 H7).
       destruct (decide (a.(addrOff) = off)).
       + subst.
         rewrite lookup_insert.
@@ -746,8 +758,7 @@ Opaque struct.t.
                     a.(addrBlock) !! a.(addrOff)); eauto.
         intuition eauto.
         destruct b0; simpl in *.
-        subst.
-        eapply Hinstall_ok. eauto.
+        subst. eauto.
 
       + rewrite lookup_insert_ne; eauto.
         specialize (Hinstall_ok off).
@@ -755,18 +766,16 @@ Opaque struct.t.
         destruct (lookup_block (gmap_addr_by_block (bufamap ∖ bufamap_todo))
                     a.(addrBlock) !! off); eauto.
         destruct b0; simpl in *. intuition subst.
-        specialize (Hinstall_ok _ H7). eauto.
+        eauto.
   }
 
   iIntros "[Hbufs H]". iNamed "H".
   wp_pures.
 
   iDestruct (big_sepML_empty_m with "Hbufamap_todo") as "%Hbufamap_todo_empty"; subst.
-  replace (bufamap ∖ ∅) with (bufamap).
-  2: { admit. }
-
+  rewrite map_difference_empty.
   iApply "HΦ". iFrame.
-Admitted.
+Qed.
 
 Theorem wp_MkBlockData blkno dataslice :
   {{{
@@ -865,11 +874,14 @@ Proof.
     iExists _, _, (delete k offmaps_todo), (<[k := x]> offmaps_done).
     iFrame "Hblks_var Hblks' Hmtodo".
     iSplitR.
-    { iPureIntro. rewrite H1. admit. }
+    { iPureIntro. rewrite H1. rewrite delete_insert_union; eauto. }
     iSplitR.
     { iPureIntro. set_solver. }
     iApply big_sepML_insert_app.
-    { admit. }
+    { eapply not_elem_of_dom.
+      assert (k ∈ dom (gset u64) offmaps_todo).
+      { eapply elem_of_dom; eauto. }
+      set_solver. }
     iFrame "Hmdone".
     simpl. done.
   }

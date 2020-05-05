@@ -111,3 +111,33 @@ Proof.
     rewrite -> lookup_ge_None_2 by lia.
     auto.
 Qed.
+
+Lemma map_difference_delete `{Countable K} {V} (a b : gmap K V) (k : K) (v : V) :
+  a !! k = Some v ->
+  a ∖ delete k b = <[k := v]> (a ∖ b).
+Proof.
+  intros.
+  eapply map_eq.
+  intros.
+  destruct (decide (k = i)); subst.
+  { rewrite lookup_insert.
+    eapply lookup_difference_Some; intuition eauto.
+    rewrite lookup_delete; eauto. }
+  rewrite lookup_insert_ne; eauto.
+  destruct ((a ∖ b) !! i) eqn:He.
+  { apply lookup_difference_Some in He.
+    apply lookup_difference_Some.
+    intuition eauto. rewrite lookup_delete_ne; eauto. }
+  apply lookup_difference_None in He.
+  apply lookup_difference_None.
+  intuition eauto. rewrite lookup_delete_ne; eauto.
+Qed.
+
+Lemma map_difference_empty `{Countable K} {V} (m : gmap K V) :
+  m ∖ ∅ = m.
+Proof.
+  apply map_eq; intros.
+  destruct (m !! i) eqn:He.
+  - eapply lookup_difference_Some; intuition eauto.
+  - eapply lookup_difference_None; intuition eauto.
+Qed.
