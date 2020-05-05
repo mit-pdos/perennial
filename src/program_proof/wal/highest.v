@@ -26,7 +26,7 @@ Proof.
   rewrite /is_highest_txn; naive_solver.
 Qed.
 
-Fixpoint find_highest_index poss pos: option nat :=
+Fixpoint find_highest_index `{!EqDecision A} (poss: list A) (pos: A): option nat :=
   match poss with
   | [] => None
   | pos'::poss => if decide (pos = pos') then
@@ -39,7 +39,7 @@ Fixpoint find_highest_index poss pos: option nat :=
                   else (λ i, (1 + i)) <$> find_highest_index poss pos
   end.
 
-Fixpoint find_highest_index' poss pos: option nat :=
+Fixpoint find_highest_index' `{!EqDecision A} (poss: list A) (pos: A): option nat :=
   match poss with
   | [] => None
   | pos'::poss =>
@@ -50,7 +50,7 @@ Fixpoint find_highest_index' poss pos: option nat :=
     end
   end.
 
-Theorem find_highest_index'_ok poss pos :
+Theorem find_highest_index'_ok `{!EqDecision A} (poss: list A) (pos: A) :
   find_highest_index poss pos = find_highest_index' poss pos.
 Proof.
   induction poss; simpl; auto.

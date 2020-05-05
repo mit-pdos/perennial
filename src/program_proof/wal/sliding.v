@@ -387,6 +387,29 @@ Proof.
   rewrite /slidingM.numMutable //=.
 Qed.
 
+Theorem option_fmap_nat_max (m: option nat) :
+  Nat.max 0 <$> m = m.
+Proof.
+  destruct m; auto.
+Qed.
+
+Theorem find_highest_index_insert_present `{!EqDecision A} (poss: list A) i pos pos' :
+  poss !! i = Some pos ->
+  find_highest_index (<[i := pos]> poss) pos' =
+  find_highest_index poss pos'.
+Proof.
+  intros Hlookup.
+  generalize dependent i.
+  induction poss; simpl; intros; auto.
+  destruct (decide (i = 0%nat)); subst.
+  - simpl.
+    inversion Hlookup; subst; clear Hlookup.
+    destruct (decide (pos' = pos')); try congruence.
+  - replace i with (S (i - 1)) in * by lia; simpl in *.
+    generalize dependent (i - 1)%nat; clear i; intros i Hlookup ?.
+    rewrite IHposs; eauto.
+Qed.
+
 Lemma addrPosMap_absorb_eq pos u u0 σ :
   σ.(slidingM.log) !! slidingM.logIndex σ pos = Some u0 ->
   u0.(update.addr) = u.(update.addr) ->
@@ -404,7 +427,10 @@ Proof.
   rewrite !pos_indices_lookup.
   f_equal.
   rewrite list_fmap_insert.
-Admitted.
+  rewrite find_highest_index_insert_present; auto.
+  rewrite list_lookup_fmap.
+  rewrite Hlookup /=; congruence.
+Qed.
 
 Theorem wp_sliding__update l σ (pos: u64) uv u0 u :
   σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u0 ->
