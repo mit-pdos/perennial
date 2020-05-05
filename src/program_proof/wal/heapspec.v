@@ -13,7 +13,26 @@ Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)
 .
 
+Record async `{Countable T} := {
+  latest : T;
+  pending : list T;
+}.
+
+Arguments async T {_ _}.
+Arguments Build_async {_ _ _}.
+
+Definition possible `{Countable T} (ab : async T) :=
+  pending ab ++ [latest ab].
+
+Definition sync `{Countable T} (v : T) : async T :=
+  Build_async v nil.
+
+Definition async_put `{Countable T} (v : T) (a : async T) :=
+  Build_async v (possible a).
+
 Section heap.
+
+Canonical Structure asyncCrashHeapO := leibnizO (async (u64 * gname)).
 
 Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
@@ -21,6 +40,8 @@ Context `{!inG Σ
         (authR
            (optionUR
               (exclR (prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO)))))))}.
+Context `{!inG Σ (authR (optionUR (exclR asyncCrashHeapO)))}.
+Context `{!inG Σ (authR (gen_heap.gen_heapUR u64 Block))}.
 Context `{!inG Σ (authR mnatUR)}.
 Context (N: namespace).
 
@@ -42,18 +63,38 @@ Definition hb_latest_update (hb : heap_block) :=
 
 Record wal_heap_gnames := {
   wal_heap_h : gen_heapG u64 heap_block Σ;
+    (* current heap *)
+  wal_heap_crash_heaps : gname;
+    (* possible crashes; latest has the same contents as current heap *)
   wal_heap_txns : gname;
   wal_heap_installed : gname;
 }.
 
+Definition wal_heap_inv_crash (pos : u64) (crashheap : gname)
+      (base : disk) (txns_prefix : list (u64 * list update.t)) : iProp Σ :=
+  let txn_disk := apply_upds (txn_upds txns_prefix) base in
+  ∃ (heapdisk : gmap u64 Block) inGH,
+    "%Htxnpos" ∷ ⌜ fst <$> last txns_prefix = Some pos ⌝ ∗
+    "Hcrashheap" ∷ gen_heap_ctx (hG := GenHeapG _ _ _ _ _ inGH crashheap) heapdisk ∗
+    "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), heapdisk !! a = txn_disk !! int.val a ⌝.
+
+Definition wal_heap_inv_crashes (heaps : async (u64 * gname)) (ls : log_state.t) : iProp Σ :=
+  "%Hcrashes_complete" ∷ ⌜ (ls.(log_state.durable_lb) + length (possible heaps) = length ls.(log_state.txns))%nat ⌝ ∗
+  "Hpossible_heaps" ∷ [∗ list] i ↦ asyncelem ∈ possible heaps,
+    let txn_id := (ls.(log_state.durable_lb) + i)%nat in
+    wal_heap_inv_crash (fst asyncelem) (snd asyncelem)
+      ls.(log_state.d) (take txn_id ls.(log_state.txns)).
+
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
-  ∃ (gh : gmap u64 heap_block),
+  ∃ (gh : gmap u64 heap_block) (crash_heaps : async (u64 * gname)),
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ own γ.(wal_heap_txns) (● (Excl' (ls.(log_state.d), ls.(log_state.txns)))) ∗
     "Hinstalled" ∷ own γ.(wal_heap_installed) (● (ls.(log_state.installed_lb) : mnat)) ∗
     "Hinstalledfrag" ∷ own γ.(wal_heap_installed) (◯ (ls.(log_state.installed_lb) : mnat)) ∗
-    "%Hwf" ∷ ⌜ wal_wf ls ⌝.
+    "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
+    "Hcrash_heaps_own" ∷ own γ.(wal_heap_crash_heaps) (● (Excl' crash_heaps)) ∗
+    "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls.
 
 Definition no_updates (l: list update.t) a : Prop :=
   forall u, u ∈ l -> u.(update.addr) ≠ a.
@@ -1192,26 +1233,40 @@ Proof.
   erewrite IHbs; eauto.
 Qed.
 
+
+
+Fixpoint apply_upds_u64 (d : gmap u64 Block) (upds : list update.t) : gmap u64 Block :=
+  match upds with
+  | nil => d
+  | u :: upds' =>
+    apply_upds_u64 (<[u.(update.addr) := u.(update.b)]> d) upds'
+  end.
+
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
-  ( |={⊤ ∖ ↑N, E}=> ∃ olds, memappend_pre γh.(wal_heap_h) bs olds ∗
-        ( ∀ txn_id lwh',
+  ( |={⊤ ∖ ↑N, E}=> ∃ olds,
+            memappend_pre γh.(wal_heap_h) bs olds ∗
+        ( ∀ txn_id lwh' crash_heaps',
           is_locked_walheap γh lwh' ∗
+          own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps') ∗
           memappend_q γh.(wal_heap_h) bs olds txn_id
           ={E, ⊤ ∖ ↑N}=∗ Q txn_id ) ) -∗
   ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
-      ( (wal_heap_inv γh) σ ∗ is_locked_walheap γh lwh
+      ( (wal_heap_inv γh) σ ∗ (∃ crash_heaps,
+            "Hlockedheap" ∷ is_locked_walheap γh lwh ∗
+            "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps))
           ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
 Proof using gen_heapPreG0.
   iIntros "Hpre".
-  iIntros (σ σ' pos) "% % [Hinv Hlockedheap]".
+  iIntros (σ σ' pos) "% % [Hinv Hpreq]".
+  iNamed "Hpreq".
   iNamed "Hinv".
 
   simpl in *; monad_inv.
   simpl in *.
 
-  iMod "Hpre" as (olds) "[Hpre Hfupd]".
+  iMod "Hpre" as (olds) "(Hpre & Hfupd)".
 
   destruct H.
   destruct H as [txn_id Htxn].
@@ -1228,21 +1283,40 @@ Proof using gen_heapPreG0.
 
   iMod (ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
 
+  iNamed "Hcrash_heaps".
+  iDestruct (big_sepL_app with "Hpossible_heaps") as "[Hpossible_heaps [Hlatest _]]".
+  iNamed "Hlatest".
+  iMod (gen_heap_init (apply_upds_u64 heapdisk bs)) as (newcrashheap) "Hnewcrashheap".
+
+  iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as "%"; subst.
+  iMod (ghost_var_update _ (async_put (pos', gen_heap_name newcrashheap) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
+
+  (* GENERATE THE WAND FOR Hfupd:
+
+[
+  ( ∃ prefix, own γ_for_list (prefix ++ [previous_old_γ]) ) -∗
+  ∀ a v, a ∉ liftable_P ->
+         mapsto (hG := previous_old_γ) a v -∗ mapsto (hG := previous_old_γ) a v ∗
+                                              mapsto (hG := new_γ) a v.
+]
+
+  *)
+
   iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _)).
-  iDestruct ("Hfupd" with "[$Hlockedheap $Hq]") as "Hfupd".
+  iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag]") as "Hfupd".
   iMod "Hfupd".
+
   iModIntro.
   iFrame.
 
-  iExists _. iFrame.
+  iExists _, _. iFrame.
 
   iDestruct (big_sepM_forall with "Hgh") as %Hgh.
-  
-  iSplitL.
+  iSplitL "Hgh".
+  2: iSplitR.
   2: {
     iPureIntro. eapply wal_wf_append_txns; simpl; eauto.
 
-    
     unfold addrs_wf.
     intros.
     specialize (Hbs_in_gh u i).
@@ -1254,6 +1328,38 @@ Proof using gen_heapPreG0.
     intuition.
     unfold disk_at_txn_id in H3.
     apply apply_upds_lookup_some_disk_some in H3; eauto.
+  }
+  2: {
+    iSplitR.
+    { iPureIntro. rewrite /= /async_put /possible app_length /= ?app_length /=.
+      rewrite -Hcrashes_complete. rewrite /possible ?app_length /=. lia.
+    }
+    rewrite /async_put /possible /=.
+    iApply big_sepL_app.
+    iSplitR "Hnewcrashheap".
+    2: { iSplitL; last by done.
+      destruct newcrashheap.
+      iExists _, _.
+      iFrame "Hnewcrashheap".
+      iSplitR.
+      { iPureIntro. rewrite app_length /=. admit. }
+      iPureIntro. intros a0.
+      (* rewrite with Hcrashheap_contents *)
+      admit.
+    }
+    iApply big_sepL_app.
+    iSplitL "Hpossible_heaps".
+    { iApply (big_sepL_mono with "Hpossible_heaps").
+      iIntros (k h Hkh) "H".
+      rewrite take_app_le; first by iFrame.
+      admit.
+    }
+    iSplitL; last by done.
+    iExists _, _. iFrame.
+    iSplit.
+    { iPureIntro. rewrite -Htxnpos. admit. }
+    iPureIntro. intros a0. rewrite Hcrashheap_contents.
+    admit.
   }
 
   intuition.
