@@ -79,11 +79,13 @@ Definition wal_heap_inv_crash (pos : u64) (crashheap : gname)
     "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), heapdisk !! a = txn_disk !! int.val a ⌝.
 
 Definition wal_heap_inv_crashes (heaps : async (u64 * gname)) (ls : log_state.t) : iProp Σ :=
-  "%Hcrashes_complete" ∷ ⌜ (ls.(log_state.durable_lb) + length (possible heaps) = length ls.(log_state.txns))%nat ⌝ ∗
-  "Hpossible_heaps" ∷ [∗ list] i ↦ asyncelem ∈ possible heaps,
-    let txn_id := (ls.(log_state.durable_lb) + i)%nat in
-    wal_heap_inv_crash (fst asyncelem) (snd asyncelem)
-      ls.(log_state.d) (take txn_id ls.(log_state.txns)).
+  ∃ (durable_heaps_lb : nat),
+    "%Hdurable_heaps_lb" ∷ ⌜ durable_heaps_lb ≤ ls.(log_state.durable_lb) ⌝ ∗
+    "%Hcrashes_complete" ∷ ⌜ (durable_heaps_lb + length (possible heaps) = length ls.(log_state.txns))%nat ⌝ ∗
+    "Hpossible_heaps" ∷ [∗ list] i ↦ asyncelem ∈ possible heaps,
+      let txn_id := (durable_heaps_lb + i)%nat in
+      wal_heap_inv_crash (fst asyncelem) (snd asyncelem)
+        ls.(log_state.d) (take txn_id ls.(log_state.txns)).
 
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block) (crash_heaps : async (u64 * gname)),
@@ -1330,6 +1332,9 @@ Proof using gen_heapPreG0.
     apply apply_upds_lookup_some_disk_some in H3; eauto.
   }
   2: {
+    iExists _.
+    iSplitR.
+    { iPureIntro. eassumption. }
     iSplitR.
     { iPureIntro. rewrite /= /async_put /possible app_length /= ?app_length /=.
       rewrite -Hcrashes_complete. rewrite /possible ?app_length /=. lia.
@@ -1570,7 +1575,7 @@ Proof using gen_heapPreG0.
       simpl in *; monad_inv.
 
       iModIntro. iFrame. iSplitL; last by done.
-      iExists _. iFrame. done.
+      iExists _, _. iFrame. done.
     }
     {
       simpl in *; monad_inv.
@@ -1580,16 +1585,21 @@ Proof using gen_heapPreG0.
       { apply auth_update. apply (mnat_local_update _ _ new_installed). intuition idtac. }
 
       iModIntro.
-      iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag".
-      { iExists _. iFrame. iFrame "Hinstalledfrag".
-        iSplitL.
+      iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps_own Hcrash_heaps".
+      { iExists _, _. iFrame. iFrame "Hinstalledfrag".
+        iSplitL "Hgh".
         {
           iApply wal_update_installed; first by intuition lia.
           iApply wal_update_durable; first by intuition lia.
           iFrame. }
-        iPureIntro.
-        eapply wal_wf_advance_installed_lb; last by (intuition; simpl; lia).
-        eapply wal_wf_advance_durable_lb; eauto.
+        iSplitR.
+        {
+          iPureIntro.
+          eapply wal_wf_advance_installed_lb; last by (intuition; simpl; lia).
+          eapply wal_wf_advance_durable_lb; eauto.
+        }
+        iNamed "Hcrash_heaps".
+        iExists _. iFrame. simpl. iPureIntro. intuition eauto. lia.
       }
 
       iIntros (σ0 σ1 b0) "%Hwf' %Hrelation Hwalinv".
@@ -1625,7 +1635,7 @@ Proof using gen_heapPreG0.
       inversion Heqo; subst.
 
       iModIntro. iFrame. iSplitL; last by done.
-      iExists _. iFrame. done.
+      iExists _, _. iFrame. done.
     }
   }
 
