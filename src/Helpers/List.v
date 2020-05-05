@@ -105,3 +105,15 @@ Proof.
   induction H; eauto.
   simpl. rewrite H. rewrite IHForall2. eauto.
 Qed.
+
+(** subslice takes elements with indices [n, m) in list [l] *)
+Definition subslice {A} (n m: nat) (l: list A): list A :=
+  drop n (take m l).
+
+Theorem subslice_length {A} n m (l: list A) :
+  (m <= length l)%nat ->
+  length (subslice n m l) = (m - n)%nat.
+Proof.
+  rewrite /subslice; intros; autorewrite with len.
+  lia.
+Qed.

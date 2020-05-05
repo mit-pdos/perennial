@@ -95,18 +95,6 @@ Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
 Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
 
-(** subslice takes elements with indices [n, m) in list [l] *)
-Definition subslice {A} (n m: nat) (l: list A): list A :=
-  drop n (take m l).
-
-Theorem subslice_length {A} n m (l: list A) :
-  (m <= length l)%nat ->
-  length (subslice n m l) = (m - n)%nat.
-Proof.
-  rewrite /subslice; intros; autorewrite with len.
-  lia.
-Qed.
-
 Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :=
   apply_upds log ∅ =
   apply_upds (txn_upds txns) ∅.
