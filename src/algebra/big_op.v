@@ -865,13 +865,14 @@ Section maplist2.
   Implicit Types mw : gmap K W.
   Implicit Types l : list LV.
 
+(*
   Theorem big_sepML_map_val_exists_helper Φ mv l (R : K -> V -> W -> Prop)
       `{!∀ k v lv, Absorbing (Φ k v lv)} :
     big_sepML Φ mv l -∗
-    ⌜ ∀ k v lv,
-      mv !! k = Some v ->
+    ( ∀ k v lv,
+      ⌜ mv !! k = Some v ⌝ -∗
       Φ k v lv -∗
-      ⌜ ∃ w, R k v w ⌝ ⌝ -∗
+      ⌜ ∃ w, R k v w ⌝ ) -∗
     ∃ mw,
       ⌜ dom (gset K) mw = dom (gset K) mv ⌝ ∗
       big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v lv) mw l.
@@ -883,9 +884,8 @@ Section maplist2.
       iSplit; last by iApply big_sepML_empty.
       repeat rewrite dom_empty_L; eauto.
     - iDestruct (big_sepML_delete_cons with "Hml") as (k v) "(% & Hk & Hml)".
-      iDestruct "HR" as %HR.
       iSpecialize ("Hi" with "Hml []").
-      { iPureIntro. iIntros. iApply HR; last by iFrame.
+      { iIntros. iApply "HR"; last by iFrame.
         apply lookup_delete_Some in H2; intuition eauto. }
       iDestruct "Hi" as (mw) "[% Hi]".
       iExists (<[k := v]> mw).
@@ -893,20 +893,24 @@ Section maplist2.
       { admit. }
       admit.
   Admitted.
+*)
 
   Theorem big_sepML_map_val_exists Φ mv l (R : K -> V -> W -> Prop)
       `{!∀ k v lv, Absorbing (Φ k v lv)} :
     big_sepML Φ mv l -∗
-    ⌜ ∀ k v lv,
-      mv !! k = Some v ->
+    ( ∀ k v lv,
+      ⌜ mv !! k = Some v ⌝ -∗
       Φ k v lv -∗
-      ⌜ ∃ w, R k v w ⌝ ⌝ -∗
+      ⌜ ∃ w, R k v w ⌝ ) -∗
     ∃ mw,
       big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v lv) mw l.
   Proof.
+(*
     iIntros "Hml HR".
-    iDestruct (big_sepML_map_val_exists_helper with "Hml HR") as (mw) "[% H]".
+    iDestruct (big_sepML_map_val_exists_helper with "Hml [HR]") as (mw) "[% H]".
+    { iIntros.
     iExists _; iFrame.
+*)
   Qed.
 
   Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l
