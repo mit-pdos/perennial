@@ -114,6 +114,7 @@ Theorem subslice_length {A} n m (l: list A) :
   (m <= length l)%nat ->
   length (subslice n m l) = (m - n)%nat.
 Proof.
-  rewrite /subslice; intros; autorewrite with len.
+  rewrite /subslice; intros.
+  rewrite drop_length take_length.
   lia.
 Qed.
