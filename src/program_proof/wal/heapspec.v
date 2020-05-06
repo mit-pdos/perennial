@@ -733,7 +733,6 @@ Proof.
   intuition.
 Qed.
 
-(* NEED EXTRA PREMISE that addrs in [t] are well-formed *)
 Theorem wal_wf_append_txns σ t txns :
   wal_wf σ ->
   txns = σ.(log_state.txns) ->
@@ -743,6 +742,24 @@ Proof.
   destruct σ.
   unfold wal_wf; simpl.
   intuition.
+  all: subst.
+  {
+    rewrite /addrs_wf in H2.
+    rewrite /addrs_wf.
+    intros.
+    specialize (H2 i u).
+    apply H2.
+    unfold log_state.updates in *.
+    unfold txn_upds in *.
+    simpl in *.
+    admit.
+  }
+  {
+    apply H with (txn_id1 := txn_id1) (txn_id2 := txn_id2); eauto.
+    all: admit.
+  }
+  rewrite app_length.
+  lia.
 Admitted.
 
 Lemma updates_since_updates σ (txn_id:nat) (a:u64) pos' bs :
