@@ -73,7 +73,91 @@ Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
   apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
 
+(* In lemmas; probably belong in one of the external list libraries *)
 
+Theorem in_concat_list {A: Type} (l: list (list A)):
+  forall l', In l' l -> forall e, In e l' -> In e (concat l).
+Proof.
+  intros.
+  induction l.
+  - simpl in *; auto.
+  - rewrite concat_cons.
+    apply in_or_app.
+    rewrite <- elem_of_list_In in H.
+    apply elem_of_cons in H.
+    intuition; subst.
+    + left; auto.
+    + right.
+      apply IHl.
+      rewrite <- elem_of_list_In; auto.
+Qed.
+
+Theorem concat_list_in {A: Type} (l: list (list A)):
+  forall e, In e (concat l) -> exists l', In e l' /\ In l' l.
+Proof.
+  intros.
+  induction l.
+  - simpl in *. exfalso; auto.
+  - rewrite concat_cons in H.
+    apply in_app_or in H.
+    intuition.
+    + exists a.
+      split; auto.
+      rewrite <- elem_of_list_In.
+      apply elem_of_list_here.
+    + destruct H. intuition.
+      exists x.
+      split; auto.
+      apply in_cons; auto.
+Qed.  
+
+Theorem incl_concat {A: Type} (l1 l2: list (list A)):
+  incl l1 l2 ->
+  incl (concat l1) (concat l2).
+Proof.
+  unfold incl.
+  intros.
+  apply concat_list_in in H0.
+  destruct H0.
+  intuition.
+  specialize (H x).
+  eapply in_concat_list; auto.
+Qed.
+
+Theorem in_drop {A} (l: list A):
+  forall n e,
+    In e (drop n l) -> In e l.
+Proof.
+  induction l.
+  - intros.
+    rewrite drop_nil in H.
+    rewrite <- elem_of_list_In in H.
+    apply not_elem_of_nil in H; auto.
+  - intros.
+    destruct (decide (n = 0%nat)); subst.
+    + rewrite skipn_O in H; auto.
+    + rewrite <- elem_of_list_In.
+      assert (n = 0%nat ∨ (∃ m : nat, n = S m)) by apply Nat.zero_or_succ.
+      destruct H0; subst; try congruence.
+      destruct H0; subst.
+      rewrite skipn_cons in H.
+      specialize (IHl x e).
+      apply elem_of_cons.
+      right.
+      rewrite elem_of_list_In; auto.
+Qed.
+
+Theorem in_drop_ge {A} (l: list A) (n0 n1: nat):
+  n0 <= n1 ->
+  forall e, In e (drop n1 l) -> In e (drop n0 l).
+Proof.
+  intros.
+  replace (drop n1 l) with (drop (n1-n0) (drop n0 l)) in H0.
+  1: apply in_drop  in H0; auto.
+  rewrite drop_drop.
+  replace ((n0 + (n1 - n0))%nat) with (n1) by lia; auto.
+Qed.
+  
 (* Helper lemmas *)
 
 Theorem apply_upds_cons disk u ul :
@@ -733,34 +817,75 @@ Proof.
   intuition.
 Qed.
 
-Theorem wal_wf_append_txns σ t txns :
+Theorem wal_wf_append_txns σ txn_id pos' bs txns :
   wal_wf σ ->
   txns = σ.(log_state.txns) ->
-  addrs_wf (snd t) σ.(log_state.d) ->
-  wal_wf (set log_state.txns (λ _, txns ++ [t]) σ).
+  addrs_wf bs σ.(log_state.d) ->
+  is_txn σ.(log_state.txns) txn_id pos' ->
+  (∀ (pos : u64) (txn_id : nat),
+    is_txn σ.(log_state.txns) txn_id pos → int.val pos' >= int.val pos) ->
+  wal_wf (set log_state.txns (λ _, txns ++ [(pos', bs)]) σ).
 Proof.
   destruct σ.
   unfold wal_wf; simpl.
   intuition.
   all: subst.
   {
-    rewrite /addrs_wf in H2.
+    rewrite /addrs_wf in H4.
     rewrite /addrs_wf.
     intros.
-    specialize (H2 i u).
-    apply H2.
+    specialize (H4 i u).
     unfold log_state.updates in *.
     unfold txn_upds in *.
     simpl in *.
-    admit.
+    rewrite fmap_app in H0.
+    rewrite concat_app in H0.
+    destruct (decide (i < (length (concat txns0.*2)))).
+    +  apply H4.
+       rewrite -> lookup_app_l in H0; auto.
+       lia.
+    + rewrite /addrs_wf in H3.
+      specialize (H1 (i - (length (concat txns0.*2)))%nat u).
+      apply H1.
+      rewrite -> lookup_app_r in H0; auto; last lia.
+      simpl in H0.
+      rewrite -> app_nil_r in H0; auto.
   }
   {
-    apply H with (txn_id1 := txn_id1) (txn_id2 := txn_id2); eauto.
-    all: admit.
+    destruct (decide (txn_id1 < (length (txns0)))).
+    - destruct (decide (txn_id2 < (length (txns0)))).
+      + rewrite -> lookup_app_l in H8; last lia.
+        rewrite -> lookup_app_l in H9; last lia.
+        apply H with (txn_id1 := txn_id1) (txn_id2 := txn_id2); eauto.
+      + rewrite -> lookup_app_l in H8; last lia.
+        rewrite -> lookup_app_r in H9; last lia.
+        rewrite <- list_lookup_fmap in H9.
+        simpl in H9.
+        apply elem_of_list_lookup_2 in H9.
+        apply elem_of_list_singleton in H9; subst.
+        rewrite /is_txn in H3.
+        specialize (H3 pos1 txn_id1 H8).
+        lia.
+    - destruct (decide (txn_id2 < (length (txns0)))).
+      + rewrite -> lookup_app_r in H8; last lia.
+        rewrite -> lookup_app_l in H9; last lia.
+        exfalso.
+        lia.
+      + rewrite -> lookup_app_r in H8; last lia.
+        rewrite -> lookup_app_r in H9; last lia.
+        rewrite <- list_lookup_fmap in H8.
+        simpl in H8.
+        apply elem_of_list_lookup_2 in H8.
+        apply elem_of_list_singleton in H8; subst.
+        rewrite <- list_lookup_fmap in H9.
+        simpl in H9.
+        apply elem_of_list_lookup_2 in H9.
+        apply elem_of_list_singleton in H9; subst.
+        lia.
   }
   rewrite app_length.
   lia.
-Admitted.
+Qed.
 
 Lemma updates_since_updates σ (txn_id:nat) (a:u64) pos' bs :
   wal_wf σ ->
@@ -1230,7 +1355,6 @@ Proof using gen_heapPreG0.
   iSplitL.
   2: {
     iPureIntro. eapply wal_wf_append_txns; simpl; eauto.
-    
     unfold addrs_wf.
     intros.
     specialize (Hbs_in_gh u i).
@@ -1306,89 +1430,6 @@ Qed.
 Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
 Proof. apply _. Qed.
 
-Theorem in_concat_list {A: Type} (l: list (list A)):
-  forall l', In l' l -> forall e, In e l' -> In e (concat l).
-Proof.
-  intros.
-  induction l.
-  - simpl in *; auto.
-  - rewrite concat_cons.
-    apply in_or_app.
-    rewrite <- elem_of_list_In in H.
-    apply elem_of_cons in H.
-    intuition; subst.
-    + left; auto.
-    + right.
-      apply IHl.
-      rewrite <- elem_of_list_In; auto.
-Qed.
-
-Theorem concat_list_in {A: Type} (l: list (list A)):
-  forall e, In e (concat l) -> exists l', In e l' /\ In l' l.
-Proof.
-  intros.
-  induction l.
-  - simpl in *. exfalso; auto.
-  - rewrite concat_cons in H.
-    apply in_app_or in H.
-    intuition.
-    + exists a.
-      split; auto.
-      rewrite <- elem_of_list_In.
-      apply elem_of_list_here.
-    + destruct H. intuition.
-      exists x.
-      split; auto.
-      apply in_cons; auto.
-Qed.  
-
-Theorem incl_concat {A: Type} (l1 l2: list (list A)):
-  incl l1 l2 ->
-  incl (concat l1) (concat l2).
-Proof.
-  unfold incl.
-  intros.
-  apply concat_list_in in H0.
-  destruct H0.
-  intuition.
-  specialize (H x).
-  eapply in_concat_list; auto.
-Qed.
-
-Theorem in_drop {A} (l: list A):
-  forall n e,
-    In e (drop n l) -> In e l.
-Proof.
-  induction l.
-  - intros.
-    rewrite drop_nil in H.
-    rewrite <- elem_of_list_In in H.
-    apply not_elem_of_nil in H; auto.
-  - intros.
-    destruct (decide (n = 0%nat)); subst.
-    + rewrite skipn_O in H; auto.
-    + rewrite <- elem_of_list_In.
-      assert (n = 0%nat ∨ (∃ m : nat, n = S m)) by apply Nat.zero_or_succ.
-      destruct H0; subst; try congruence.
-      destruct H0; subst.
-      rewrite skipn_cons in H.
-      specialize (IHl x e).
-      apply elem_of_cons.
-      right.
-      rewrite elem_of_list_In; auto.
-Qed.
-
-Theorem in_drop_ge {A} (l: list A) (n0 n1: nat):
-  n0 <= n1 ->
-  forall e, In e (drop n1 l) -> In e (drop n0 l).
-Proof.
-  intros.
-  replace (drop n1 l) with (drop (n1-n0) (drop n0 l)) in H0.
-  1: apply in_drop  in H0; auto.
-  rewrite drop_drop.
-  replace ((n0 + (n1 - n0))%nat) with (n1) by lia; auto.
-Qed.
-  
 Theorem no_updates_since_le σ a t0 t1 :
   (t0 ≤ t1)%nat ->
   no_updates_since σ a t0 ->
