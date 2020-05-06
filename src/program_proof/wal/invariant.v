@@ -1,12 +1,12 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Export wal.
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.Helpers Require Export Transitions NamedProps Map.
+From Perennial.Helpers Require Export Transitions List NamedProps Map.
 
 From Perennial.algebra Require Export deletable_heap.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest.
-From Perennial.program_proof Require Export wal.circ_proof.
+From Perennial.program_proof Require Export wal.circ_proof wal.sliding.
 From Perennial.program_proof Require Export wal.specs.
 
 Canonical Structure circO := leibnizO circΣ.t.
@@ -59,32 +59,28 @@ Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 u6
 
 (** low-level, unimportant state *)
 Record lowState :=
-  { memLogSlice: Slice.t;
-    memLogMapPtr: loc;
+  { memLogPtr: loc;
     shutdown: bool;
     nthread: u64;
   }.
 
 Global Instance lowState_eta: Settable _ :=
-  settable! Build_lowState <memLogSlice; memLogMapPtr; shutdown; nthread>.
+  settable! Build_lowState <memLogPtr; shutdown; nthread>.
 
 Global Instance lowState_witness: Inhabited lowState := populate!.
 
 Record locked_state :=
-  { memStart: u64;
-    diskEnd: u64;
-    nextDiskEnd: u64;
-    memLog: list update.t; }.
+  { diskEnd: u64;
+    memLog: slidingM.t; }.
 
 Global Instance locked_state_eta: Settable _ :=
-  settable! Build_locked_state <memStart; diskEnd; nextDiskEnd; memLog>.
+  settable! Build_locked_state <diskEnd; memLog>.
 
 Global Instance locked_state_witness: Inhabited locked_state := populate!.
 
 Definition locked_wf (σ: locked_state) :=
-  int.val σ.(memStart) ≤ int.val σ.(diskEnd) ≤ int.val σ.(nextDiskEnd) ∧
-  int.val σ.(diskEnd) ≤ int.val σ.(memStart) + length σ.(memLog) ∧
-  int.val σ.(memStart) + length σ.(memLog) < 2^64.
+  int.val σ.(memLog).(slidingM.start) ≤ int.val σ.(diskEnd) ≤ int.val σ.(memLog).(slidingM.mutable) ∧
+  slidingM.wf σ.(memLog).
 
 Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
   readonly (mapsto (hG:=γ.(txns_ctx_name)) txn_id 1 txn).
@@ -95,18 +91,6 @@ Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
 Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
 
-(** subslice takes elements with indices [n, m) in list [l] *)
-Definition subslice {A} (n m: nat) (l: list A): list A :=
-  drop n (take m l).
-
-Theorem subslice_length {A} n m (l: list A) :
-  (m <= length l)%nat ->
-  length (subslice n m l) = (m - n)%nat.
-Proof.
-  rewrite /subslice; intros; autorewrite with len.
-  lia.
-Qed.
-
 Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :=
   apply_upds log ∅ =
   apply_upds (txn_upds txns) ∅.
@@ -116,42 +100,32 @@ abstract state starting at the memStart_txn_id *)
 Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
   has_updates memLog (drop memStart_txn_id txns).
 
-Definition memLog_linv γ memStart nextDiskEnd (memLog: list update.t) : iProp Σ :=
+Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
   (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
-      "HmemStart_txn" ∷ txn_pos γ memStart_txn_id memStart ∗
-      "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id nextDiskEnd ∗
+      "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
+      "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
       "Howntxns" ∷ own γ.(txns_name) (◯ Excl' txns) ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
-      "%His_memLog" ∷ ⌜is_mem_memLog memLog txns memStart_txn_id⌝ ∗
+      "%His_memLog" ∷ ⌜is_mem_memLog σ.(slidingM.log) txns memStart_txn_id⌝ ∗
       (* when nextDiskEnd gets set, we track that it has the right updates to
       use for [is_durable] when the new transaction is logged *)
       "%His_nextDiskEnd" ∷
         ⌜has_updates
-          (take (int.nat nextDiskEnd - int.nat memStart)%nat memLog)
+          (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))
           (subslice memStart_txn_id nextDiskEnd_txn_id txns)⌝
   ).
 
 Definition wal_linv_fields st σ: iProp Σ :=
   (∃ σₗ,
       "Hfield_ptsto" ∷
-         ("HmemLog" ∷ st ↦[WalogState.S :: "memLog"] (slice_val σₗ.(memLogSlice)) ∗
-          "HmemStart" ∷ st ↦[WalogState.S :: "memStart"] #σ.(memStart) ∗
+         ("HmemLog" ∷ st ↦[WalogState.S :: "memLog"] #σₗ.(memLogPtr) ∗
           "HdiskEnd" ∷ st ↦[WalogState.S :: "diskEnd"] #σ.(diskEnd) ∗
-          "HnextDiskEnd" ∷ st ↦[WalogState.S :: "nextDiskEnd"] #σ.(nextDiskEnd) ∗
-          "HmemLogMap" ∷ st ↦[WalogState.S :: "memLogMap"] #σₗ.(memLogMapPtr) ∗
           "Hshutdown" ∷ st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
           "Hnthread" ∷ st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
   "%Hlocked_wf" ∷ ⌜locked_wf σ⌝ ∗
-  "His_memLogMap" ∷ is_map σₗ.(memLogMapPtr) (compute_memLogMap σ.(memLog) σ.(memStart) ∅) ∗
-  let absorbIndex := (int.nat σ.(nextDiskEnd) - int.nat σ.(memStart))%nat in
-  "#His_memLog" ∷ readonly (updates_slice_frag σₗ.(memLogSlice) 1 (take absorbIndex σ.(memLog))) ∗
-  "HabsorbLog" ∷ updates_slice_frag
-  (* [memLog[nextDiskEnd-memStart:]] is fully owned by the lock invariant (for absorption) *)
-                     (slice_skip σₗ.(memLogSlice) (struct.t Update.S) (word.sub σ.(nextDiskEnd) σ.(memStart)))
-                     1
-                     (drop absorbIndex σ.(memLog))
+  "His_memLog" ∷ is_sliding σₗ.(memLogPtr) σ.(memLog)
   )%I.
 
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
@@ -159,8 +133,8 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
   ∃ σ,
     "Hfields" ∷ wal_linv_fields st σ ∗
     "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
-    "#Hstart_at_least" ∷ start_at_least γ.(circ_name) σ.(memStart) ∗
-    "HmemLog_linv" ∷ memLog_linv γ σ.(memStart) σ.(nextDiskEnd) σ.(memLog)
+    "#Hstart_at_least" ∷ start_at_least γ.(circ_name) σ.(memLog).(slidingM.start) ∗
+    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog)
     .
 
 (** The implementation state contained in the *Walog struct, which is all
@@ -425,23 +399,14 @@ Proof.
   by iFrame "# ∗".
 Qed.
 
+(* TODO: need a replacement in terms of memLog *)
 Theorem wal_linv_load_nextDiskEnd st γ :
   wal_linv st γ -∗
     ∃ (x:u64),
       st ↦[WalogState.S :: "nextDiskEnd"]{1/2} #x ∗
          (st ↦[WalogState.S :: "nextDiskEnd"]{1/2} #x -∗ wal_linv st γ).
 Proof.
-  iIntros "Hlkinv".
-  iNamed "Hlkinv".
-  iNamed "Hfields".
-  iNamed "Hfield_ptsto".
-  iDestruct "HnextDiskEnd" as "[HnextDiskEnd1 HnextDiskEnd2]".
-  iExists _; iFrame "HnextDiskEnd2".
-  iIntros "HnextDiskEnd2".
-  iCombine "HnextDiskEnd1 HnextDiskEnd2" as "HnextDiskEnd".
-  iExists _; iFrame "# ∗".
-  iExists _; by iFrame "# ∗".
-Qed.
+Abort.
 
 Lemma wal_wf_txns_mono_pos {σ txn_id1 pos1 txn_id2 pos2} :
   wal_wf σ ->

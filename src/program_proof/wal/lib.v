@@ -15,6 +15,10 @@ Proof.
   destruct u; rewrite /blockT; val_ty.
 Qed.
 
+Definition is_update (uv: u64*Slice.t) (q:Qp) (u: update.t): iProp Σ :=
+  ⌜uv.1 = u.(update.addr)⌝ ∗
+  is_block uv.2 q u.(update.b).
+
 Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
   ∃ bks, is_slice bk_s (struct.t Update.S) 1 (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
@@ -23,9 +27,7 @@ Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
 
 Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp Σ :=
   ∃ bks, is_slice_small bk_s (struct.t Update.S) q (update_val <$> bks) ∗
-   [∗ list] _ ↦ b_upd;upd ∈ bks;bs,
-       is_block (snd b_upd) q upd.(update.b) ∗
-       ⌜fst b_upd = upd.(update.addr)⌝.
+   [∗ list] _ ↦ uv;upd ∈ bks;bs, is_update uv q upd.
 
 Theorem updates_slice_frag_acc bk_s bs :
   updates_slice bk_s bs -∗
@@ -38,13 +40,15 @@ Proof.
   iSplitR "Hbks".
   - iExists _; iFrame.
     iApply (big_sepL2_mono with "Hupds").
-    intros ? ? [a b]; auto.
+    intros ? ? [a b] **.
+    by iIntros "[$ %]".
   - iIntros "Hupds".
     iDestruct "Hupds" as (bks') "[Hs Hupds]".
     iSpecialize ("Hbks" with "Hs").
     iExists _; iFrame.
     iApply (big_sepL2_mono with "Hupds").
-    intros ? ? [a b]; auto.
+    intros ? ? [a b] **.
+    by iIntros "[% $]".
 Qed.
 
 Theorem updates_slice_to_frag bk_s bs :
@@ -95,9 +99,8 @@ Qed.
 
 Instance is_blocks_AsFractional bks q v :
   fractional.AsFractional
-    ([∗ list] b_upd;upd ∈ bks;v,
-                                (is_block b_upd.2 q upd.(update.b) ∗ ⌜b_upd.1 = upd.(update.addr)⌝))%I
-    (λ q, [∗ list] b_upd;upd ∈ bks;v, (is_block b_upd.2 q upd.(update.b) ∗ ⌜b_upd.1 = upd.(update.addr)⌝))%I
+    ([∗ list] b_upd;upd ∈ bks;v, is_update b_upd q upd)
+    (λ q, [∗ list] b_upd;upd ∈ bks;v, is_update b_upd q upd)%I
     q.
 Proof.
   constructor; auto.
@@ -116,38 +119,44 @@ Proof.
   congruence.
 Qed.
 
-Global Instance updates_slice_frag_AsMapsTo bk_s bs :
-  AsMapsTo (updates_slice_frag bk_s 1 bs) (λ bk_s q bs, updates_slice_frag bk_s q bs) bk_s bs.
+Global Instance updates_slice_frag_fractional bk_s q bs :
+  fractional.AsFractional (updates_slice_frag bk_s q bs) (λ q, updates_slice_frag bk_s q bs) q.
 Proof.
-  constructor; auto; intros.
-  - intros q1 q2.
-    iSplit.
-    + iIntros "Hupds".
-      iDestruct "Hupds" as (bks) "[Hupds Hbs]".
-      iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
-      iDestruct (fractional.fractional_split_1 with "Hbs") as "[Hbs1 Hbs2]".
-      iSplitL "Hupds1 Hbs1".
-      * iExists _; iFrame.
-      * iExists _; iFrame.
-    + iIntros "[Hupds1 Hupds2]".
-      iDestruct "Hupds1" as (bks) "[Hbs1 Hupds1]".
-      iDestruct "Hupds2" as (bks') "[Hbs2 Hupds2]".
-      iDestruct (is_slice_small_agree with "Hbs1 Hbs2") as %Heq.
-      apply (fmap_inj update_val) in Heq; auto using update_val_inj; subst.
-      iDestruct (fractional.fractional_split_2 with "Hbs1 Hbs2") as "Hbs".
-      { apply _. }
-      iDestruct (fractional.fractional_split_2 _ _ _ _ q1 q2 with "Hupds1 Hupds2") as "Hupds".
-      { apply _. }
-      iExists _; iFrame.
-  - apply _.
+  split; auto.
+  hnf; intros q1 q2.
+  iSplit.
+  + iIntros "Hupds".
+    iDestruct "Hupds" as (bks) "[Hupds Hbs]".
+    iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
+    iDestruct (fractional.fractional_split_1 with "Hbs") as "[Hbs1 Hbs2]".
+    iSplitL "Hupds1 Hbs1".
+    * iExists _; iFrame.
+    * iExists _; iFrame.
+  + iIntros "[Hupds1 Hupds2]".
+    iDestruct "Hupds1" as (bks) "[Hbs1 Hupds1]".
+    iDestruct "Hupds2" as (bks') "[Hbs2 Hupds2]".
+    iDestruct (is_slice_small_agree with "Hbs1 Hbs2") as %Heq.
+    apply (fmap_inj update_val) in Heq; auto using update_val_inj; subst.
+    iDestruct (fractional.fractional_split_2 with "Hbs1 Hbs2") as "Hbs".
+    { apply _. }
+    iDestruct (fractional.fractional_split_2 _ _ _ _ q1 q2 with "Hupds1 Hupds2") as "Hupds".
+    { apply _. }
+    iExists _; iFrame.
+Qed.
+
+Global Instance updates_slice_frag_AsMapsTo bk_s bs :
+  AsMapsTo (updates_slice_frag bk_s 1 bs) (λ q, updates_slice_frag bk_s q bs).
+Proof.
+  constructor; auto; intros; apply _.
+  Grab Existential Variables.
+  exact 1%Qp.
 Qed.
 
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) q (u: update.t) :
   {{{ updates_slice_frag bk_s q bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
     SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
   {{{ uv, RET (update_val uv);
-      ⌜uv.1 = u.(update.addr)⌝ ∗
-      is_block uv.2 q u.(update.b) ∗
+      is_update uv q u ∗
       (is_block uv.2 q u.(update.b) -∗ updates_slice_frag bk_s q bs)
   }}}.
 Proof.
@@ -163,9 +172,9 @@ Proof.
   iApply "HΦ".
   iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hbi Hbks]"; eauto.
   destruct u as [a b]; simpl.
-  iDestruct "Hbi" as "[Hbi <-]".
-  iSplit; first by auto.
-  iFrame.
+  iDestruct "Hbi" as "[%Heq Hbi]".
+  iSplitL "Hbi".
+  { by iFrame. }
   iIntros "Hbi".
   iSpecialize ("Hbks" with "[$Hbi //]").
   iExists _; iFrame.
@@ -183,7 +192,7 @@ Proof.
   iIntros (Φ) "[Hupds %Hlookup] HΦ".
   iDestruct (updates_slice_frag_acc with "Hupds") as "[Hfrag Hupds]".
   wp_apply (wp_SliceGet_updates with "[$Hfrag]"); eauto.
-  iIntros (uv) "(%&Hb&Hrest)".
+  iIntros (uv) "((%&Hb)&Hrest)".
   iApply "HΦ".
   iSplit; auto.
   iFrame.
@@ -192,13 +201,6 @@ Proof.
   iApply "Hrest".
   iFrame.
 Qed.
-
-Lemma has_zero_update : has_zero (struct.t Update.S).
-Proof.
-  repeat constructor.
-Qed.
-
-Hint Resolve has_zero_update.
 
 Transparent slice.T.
 Theorem val_ty_update uv :
@@ -209,6 +211,42 @@ Qed.
 Opaque slice.T.
 
 Hint Resolve val_ty_update : val_ty.
+
+Theorem wp_SliceSet_updates stk E bk_s bs (i: u64) (u0 u: update.t) uv :
+  bs !! int.nat i = Some u0 ->
+  {{{ updates_slice_frag bk_s 1 bs ∗ is_update uv 1 u }}}
+    SliceSet (struct.t Update.S) (slice_val bk_s) #i (update_val uv) @ stk; E
+  {{{ RET #(); updates_slice_frag bk_s 1 (<[int.nat i := u]> bs)
+  }}}.
+Proof.
+  iIntros (Hlookup Φ) "[Hupds Hu] HΦ".
+  iDestruct "Hupds" as (bks) "[Hbk_s Hbks]".
+  iDestruct (big_sepL2_length with "Hbks") as %Hlen.
+  assert (exists uv0, bks !! int.nat i = Some uv0) as [uv0 Hlookup_bks].
+  { apply lookup_lt_Some in Hlookup.
+    apply list_lookup_lt.
+    lia. }
+  iDestruct (big_sepL2_insert_acc _ _ _ _ _ _ Hlookup_bks Hlookup with "Hbks")
+    as "[Hbki Hbks]".
+  wp_apply (wp_SliceSet with "[$Hbk_s]").
+  { iPureIntro.
+    split; auto.
+    rewrite list_lookup_fmap.
+    apply fmap_is_Some.
+    eauto. }
+  iIntros "Hbk_s".
+  iApply "HΦ".
+  iSpecialize ("Hbks" with "[$Hu //]").
+  rewrite -list_fmap_insert.
+  iExists _; iFrame.
+Qed.
+
+Lemma has_zero_update : has_zero (struct.t Update.S).
+Proof.
+  repeat constructor.
+Qed.
+
+Hint Resolve has_zero_update.
 
 Theorem wp_SliceAppend_updates {stk E bk_s bs} {uv: u64 * Slice.t} {b} :
   length bs + 1 < 2^64 ->
@@ -238,7 +276,7 @@ Qed.
 Theorem wp_forSlice_updates (I: u64 -> iProp Σ) stk E s q us (body: val) :
   (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t),
       {{{ I i ∗ ⌜(int.nat i < length us)%nat⌝ ∗
-                is_block uv.2 q u.(update.b) ∗
+                is_update uv q u ∗
                 ⌜us !! int.nat i = Some u⌝ }}}
         body #i (update_val uv) @ stk; E
       {{{ RET #(); I (word.add i (U64 1)) ∗
@@ -255,8 +293,7 @@ Proof.
   iDestruct (big_sepL2_length with "Hbs") as %Hlen_eq.
   wp_apply (wp_forSlice
               (fun i => I i ∗
-                       [∗ list] b_upd;upd ∈ bks;us, is_block b_upd.2 q upd.(update.b)
-                       ∗ ⌜b_upd.1 = upd.(update.addr)⌝)%I with "[] [$I0 $Hs $Hbs]").
+                       [∗ list] b_upd;upd ∈ bks;us, is_update b_upd q upd)%I with "[] [$I0 $Hs $Hbs]").
   {
     clear Φ.
     iIntros (i x).
@@ -265,7 +302,7 @@ Proof.
     rewrite list_lookup_fmap in Hlookup.
     apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
     destruct (list_lookup_lt _ us (int.nat i) ltac:(word)) as [u Hlookup'].
-    iDestruct (big_sepL2_lookup_acc with "Hbs") as "[[Hb %] Hbs]"; eauto.
+    iDestruct (big_sepL2_lookup_acc with "Hbs") as "[[% Hb] Hbs]"; eauto.
     wp_apply ("Hwp" with "[$HI $Hb]").
     - iPureIntro.
       split; auto.

@@ -134,18 +134,14 @@ Proof.
   iDestruct (is_slice_to_small with "Hs") as "$".
 Qed.
 
-Definition cutMemLog (installEnd: u64) (σ: locked_state) : locked_state :=
-  set memStart (λ _, installEnd)
-      (set memLog (drop (int.nat installEnd-int.nat σ.(memStart))%nat) σ).
-
 Theorem wp_WalogState__cutMemLog γ (st: loc) σ (installEnd: u64) :
   {{{ wal_linv_fields st σ ∗
-      memLog_linv γ σ.(memStart) σ.(nextDiskEnd) σ.(memLog)}}}
+      memLog_linv γ σ.(memLog)}}}
     WalogState__cutMemLog #st #installEnd
   {{{ σ', RET #();
-      ⌜σ' = cutMemLog installEnd σ⌝ ∗
+      (* TODO: only memLog is changed, following spec in sliding *)
       wal_linv_fields st σ' ∗
-      memLog_linv γ σ'.(memStart) σ'.(nextDiskEnd) σ'.(memLog)
+      memLog_linv γ σ'.(memLog)
   }}}.
 Proof.
 Admitted.
@@ -187,6 +183,8 @@ Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)
 Proof.
 Admitted.
 
+Hint Unfold locked_wf : word.
+
 Theorem wp_Walog__logInstall γ l σₛ :
   {{{ "#st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
@@ -212,9 +210,16 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_loadField.
-  wp_loadField.
-  wp_loadField.
-  (* TODO: SliceTake of memLog (but should be read-only) *)
+  wp_apply (wp_sliding__takeTill with "His_memLog"); first by word.
+  iIntros (q s) "(His_memLog&Htxn_slice)".
+  wp_pures.
+  wp_apply wp_slice_len; wp_pures.
+  wp_if_destruct; wp_pures.
+  { iApply "HΦ".
+    iFrame "His_locked".
+    iExists _; iFrame "# ∗".
+    iExists _; by iFrame "# ∗". }
+  (* note that we get to keep Htxn_slice *)
 Admitted.
 
 Theorem wp_Walog__installer γ l :

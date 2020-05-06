@@ -399,7 +399,7 @@ Qed.
 
 Global Instance struct_mapsto_as_mapsto d l v :
   AsMapsTo (struct_mapsto l 1 d v)
-           (fun l q v => struct_mapsto l q d v) l v.
+           (fun q => struct_mapsto l q d v).
 Proof.
   split; [ done | apply _ | apply _ ].
 Qed.
@@ -418,7 +418,7 @@ Qed.
 
 Global Instance struct_field_mapsto_as_mapsto d f l v :
   AsMapsTo (struct_field_mapsto l 1 d f v)
-           (fun l q v => struct_field_mapsto l q d f v) l v.
+           (fun q => struct_field_mapsto l q d f v).
 Proof.
   split; [ done | apply _ | apply _ ].
 Qed.
