@@ -67,6 +67,9 @@ Section named.
 
 End named.
 
+(* XXX(tej): Is this a good idea? I don't know. *)
+Definition destruct: string := "*".
+
 Ltac to_pm_ident H :=
   lazymatch type of H with
   | string => constr:(INamed H)
@@ -78,55 +81,6 @@ Ltac string_to_ident s :=
   lazymatch ident_fun with
   | λ (x:_), _ => x
   end.
-
-Ltac iNameHyp H :=
-  let i := to_pm_ident H in
-  lazymatch goal with
-  | |- context[Esnoc _ i (named ?name ?P)] =>
-    let Htmp := iFresh in
-    iRename i into Htmp;
-    let pat := intro_pat.parse_one name in
-    lazymatch pat with
-    | IPure (IGallinaNamed ?name) =>
-      let id := string_to_ident name in
-      let id := fresh id in
-      iPure Htmp as id
-    | _ => iDestruct (from_named with Htmp) as pat
-    end;
-    (* TODO: we do this renaming so we can clear the original hypothesis, but
-    this only happens when it isn't consumed (when P is persistent); ideally we
-    would do this whole manipulation with something lower-level that always
-    replaced the hypothesis, but also supported an intro pattern for the result.
-    Otherwise this may have significant performance cost with large
-    environments. *)
-    try iClear Htmp
-  | |- context[Esnoc _ i _] =>
-    fail "iNameHyp: hypothesis" H "is not a named"
-  | _ => fail 1 "iNameHyp: hypothesis" H "not found"
-  end.
-
-Tactic Notation "iNamed" :=
-  repeat match goal with
-         | |- context[Esnoc _ ?i (named ?name ?P)] =>
-           iNameHyp i
-         (* TODO: debug this for destructing anonymous composites *)
-         (* | |- context[Esnoc _ ?i ?P] =>
-           lazymatch P with
-           | context[named _ _] => progress iNamed i
-           end *)
-         end.
-
-(* this is a super-simple but maybe non-performant implementation *)
-Ltac iNamedDestruct H :=
-  let rec go H :=
-      first [iNameHyp H
-            | let Htmp1 := iFresh in
-              let Htmp2 := iFresh in
-              let pat := constr:(IList [[IIdent Htmp1; IIdent Htmp2]]) in
-              iDestruct H as pat;
-              iNameHyp Htmp1; go Htmp2
-            | idtac ]
-  in go H.
 
 Local Ltac iDeex_go i x H :=
   let x' := fresh x in
@@ -148,20 +102,100 @@ Ltac iDeexHyp H :=
                   end in
   go tt; repeat go tt.
 
+Local Ltac iNameHyp_go H :=
+  let i := to_pm_ident H in
+  lazymatch goal with
+  | |- context[Esnoc _ i (named ?name ?P)] =>
+    let Htmp := iFresh in
+    iRename i into Htmp;
+    let pat := intro_pat.parse_one name in
+    lazymatch pat with
+    | IPure (IGallinaNamed ?name) =>
+      let id := string_to_ident name in
+      let id := fresh id in
+      iPure Htmp as id
+    | IForall => iNamed_go Htmp
+    | _ => iDestruct (from_named with Htmp) as pat
+    end;
+    (* TODO: we do this renaming so we can clear the original hypothesis, but
+    this only happens when it isn't consumed (when P is persistent); ideally we
+    would do this whole manipulation with something lower-level that always
+    replaced the hypothesis, but also supported an intro pattern for the result.
+    Otherwise this may have significant performance cost with large
+    environments. *)
+    try iClear Htmp
+  | |- context[Esnoc _ i _] =>
+    fail "iNameHyp: hypothesis" H "is not a named"
+  | _ => fail 1 "iNameHyp: hypothesis" H "not found"
+  end with
+(* this is a super-simple but maybe non-performant implementation *)
+  (* Ltac *) iNamedDestruct H :=
+  let rec go H :=
+      first [iNameHyp_go H
+            | let Htmp1 := iFresh in
+              let Htmp2 := iFresh in
+              let pat := constr:(IList [[IIdent Htmp1; IIdent Htmp2]]) in
+              iDestruct H as pat;
+              iNameHyp_go Htmp1; go Htmp2
+            | idtac ]
+  in go H with
+  (* Ltac *) iNamed_go H :=
+  try iDeexHyp H;
+  iNamedDestruct H.
+
+Ltac iNameHyp H := iNameHyp_go H.
+
+Tactic Notation "iNamed" :=
+  repeat match goal with
+         | |- context[Esnoc _ ?i (named ?name ?P)] =>
+           iNameHyp i
+         (* TODO: debug this for destructing anonymous composites *)
+         (* | |- context[Esnoc _ ?i ?P] =>
+           lazymatch P with
+           | context[named _ _] => progress iNamed i
+           end *)
+         end.
+
 Ltac iDeex :=
   repeat match goal with
          | |- context[Esnoc _ ?i (bi_exist (fun x => _))] =>
            iDeex_go
          end.
 
-Local Ltac iNamed_go H :=
-  try iDeexHyp H;
-  iNamedDestruct H.
-
 Tactic Notation "iNamed" constr(H) := iNamed_go H.
 
 Tactic Notation "iNamedAccu" :=
   iStartProof; eapply tac_named_accu; [cbv [env_to_named_prop env_to_named_prop_go]; reduction.pm_reflexivity || fail "iNamedAccu: not an evar"].
+
+Ltac iRed :=
+  lazymatch goal with
+  | [ |- envs_entails _ ?g ] =>
+    let g' := (eval red in g) in
+    change_no_check g with g'
+  end.
+
+Ltac iHnf :=
+  lazymatch goal with
+  | [ |- envs_entails _ ?g ] =>
+    let g' := (eval hnf in g) in
+    change_no_check g with g'
+  end.
+
+Ltac iFrameNamed :=
+  lazymatch goal with
+  | [ |- envs_entails _ ?g ] =>
+    repeat match g with
+           | context[named ?p ?P] =>
+             let pat := intro_patterns.intro_pat.parse_one p in
+             lazymatch pat with
+             | IIdent ?name => iFrame name
+             | IIntuitionistic (IIdent ?name) => iFrame name
+             | IPure (IGallinaNamed ?name) =>
+               let name := string_to_ident name in
+               iFrame (name)
+             end
+           end
+  end.
 
 Ltac prove_named :=
   repeat rewrite -to_named.
@@ -338,6 +372,39 @@ Module tests.
       iIntros "? ?"; iNamed.
       iDeexHyp "HP2".
       iExists x0; iFrame.
+    Qed.
+
+    Example test_nested_destruct Ψ :
+      ⊢ ("%wf" ∷ ⌜True⌝ ∗
+      destruct ∷ ∃ x, "psi" ∷ Ψ x) -∗
+      ∃ x, Ψ x.
+    Proof.
+      iIntros "H"; iNamed "H".
+      iExists _; iExact "psi".
+    Qed.
+
+    Example test_frame_named_spatial P1 P2 :
+      "H1" ∷ P1 ∗ "H2" ∷ P2 -∗
+      "H1" ∷ P1 ∗ "H2" ∷ P2.
+    Proof.
+      iIntros "I". iNamed "I".
+      iFrameNamed.
+    Qed.
+
+    Example test_frame_named_persistent P1 P2 :
+      "#H1" ∷ □ P1 ∗ "H2" ∷ P2 -∗
+      "#H1" ∷ □ P1 ∗ "H2" ∷ P2.
+    Proof.
+      iIntros "I". iNamed "I".
+      iFrameNamed.
+    Qed.
+
+    Example test_frame_named_pure P1 P2 :
+      "%Hwf" ∷ ⌜False⌝ ∗ "#H1" ∷ □ P1 ∗ "H2" ∷ P2 -∗
+      "%Hwf" ∷ ⌜False⌝ ∗ "#H1" ∷ P1 ∗ "H2" ∷ P2.
+    Proof.
+      iIntros "I". iNamed "I".
+      iFrameNamed.
     Qed.
 
   End tests.
