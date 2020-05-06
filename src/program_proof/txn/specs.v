@@ -880,7 +880,7 @@ Proof.
     iSplitR.
     { iPureIntro. set_solver. }
     iApply big_sepML_insert_app.
-    { eapply not_elem_of_dom.
+    { eapply (not_elem_of_dom (D:=gset u64)).
       assert (k ∈ dom (gset u64) offmaps_todo).
       { eapply elem_of_dom; eauto. }
       set_solver. }
