@@ -10,7 +10,7 @@ Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
 Implicit Types (γ: wal_names (Σ:=Σ)).
-Implicit Types (s: log_state.t) (memLog: list update.t) (txns: list (u64 * list update.t)).
+Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
@@ -40,30 +40,52 @@ Proof.
   wp_bind (For _ _ _).
   (* TODO: need inner part of wal_linv with fixed memLog, so we can say after
   this wait loop [length memLog ≤ Z.of_nat LogSz] *)
+  iNamed "Hlkinv".
   wp_apply (wp_forBreak_cond
-              (λ b, locked γ.(lock_name) ∗
-                    wal_linv σₛ.(wal_st) γ)%I
-              with "[] [$Hlkinv $Hlocked]").
-  { iIntros "!>" (Φ') "(Hlocked&Hlkinv) HΦ".
-    wp_loadField.
-    iNamed "Hlkinv".
+              (λ b, "Hlocked" ∷ locked γ.(lock_name) ∗
+                    "*" ∷ ∃ σ, "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
+                               "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
+                               "#HdiskEnd_at_least'" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
+                               "#Hstart_at_least'" ∷ start_at_least γ.(circ_name) σ.(memLog).(slidingM.start) ∗
+                               "%Hbreak" ∷ ⌜b = false → (length σ.(memLog).(slidingM.log) ≤ LogSz)⌝
+              )%I
+              with "[] [$Hlocked Hfields HmemLog_linv]").
+  2: {
+    iExists _; iFrame "# ∗".
+    iPureIntro. inversion 1.
+  }
+  { iIntros "!>" (Φ') "HI HΦ".
+    iNamed "HI".
     iNamed "Hfields".
     iNamed "Hfield_ptsto".
-    wp_loadField.
+    wp_loadField. wp_loadField.
     wp_apply (wp_log_len with "His_memLog"); iIntros "His_memLog".
     wp_pures.
     change (int.val (word.divu (word.sub 4096 8) 8)) with LogSz.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
-      { iExists _; iFrame "∗ #". iExists _; by iFrame "# ∗". }
+      { iExists _; iFrame "∗ #". iExists _; iFrame "% # ∗". }
       iIntros "(Hlocked&Hlkinv)".
       wp_pures.
-      iApply ("HΦ" with "[$]").
+      iApply "HΦ"; iFrame.
+      iClear "HdiskEnd_at_least Hstart_at_least".
+      iNamed "Hlkinv".
+      iExists _; iFrame "# ∗".
+      iPureIntro; inversion 1.
     - iApply "HΦ"; iFrame.
-      iExists _; iFrame "∗ #". iExists _; by iFrame "# ∗".
+      iExists _; iFrame "∗ #".
+      iSplit.
+      { iExists _; by iFrame "# ∗". }
+      iPureIntro.
+      intros _.
+      unfold locked_wf, slidingM.wf in Hlocked_wf.
+      revert Heqb; word.
   }
-  iIntros "(Hlocked&Hlkinv)".
+  iIntros "HI"; iNamed "HI".
+  (* TODO: move the rest of this function into a separate function, which gets
+  to assume there is space in the log *)
+  specialize (Hbreak eq_refl).
 Admitted.
 
 Theorem wp_Walog__logger l γ :
