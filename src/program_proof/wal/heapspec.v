@@ -1400,7 +1400,7 @@ Proof using gen_heapPreG0.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
     }
-Qed.
+Admitted.
 
 Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
 Proof. apply _. Qed.
