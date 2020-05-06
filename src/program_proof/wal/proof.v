@@ -5,6 +5,7 @@ From Perennial.program_proof.wal Require
      read_proof
      write_proof
      logger_proof
-     installer_proof.
+     installer_proof
+     recovery_proof.
 
 From Perennial.program_proof.wal Require highest.
