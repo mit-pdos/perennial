@@ -10,14 +10,14 @@ Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
 Implicit Types (γ: wal_names (Σ:=Σ)).
-Implicit Types (s: log_state.t) (memLog: list update.t) (txns: list (u64 * list update.t)).
+Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
 
-Lemma memLogMap_ok_memLog_lookup memStart memLog a i :
+Lemma memLogMap_ok_memLog_lookup memStart (memLog: list update.t) a i :
   int.val memStart + Z.of_nat (length memLog) < 2^64 ->
   map_get (compute_memLogMap memLog memStart ∅) a = (i, true) ->
   ∃ b, memLog !! int.nat (word.sub i memStart) = Some (update.mk a b)
@@ -32,51 +32,16 @@ Admitted.
 
 Opaque struct.t.
 
-Theorem memLog_split_combine (s: Slice.t) memStart nextDiskEnd (q: Qp) memLog :
-  Qcanon.Qclt q 1 ->
-    let boundary := (int.nat nextDiskEnd - int.nat memStart)%nat in
-    updates_slice_frag s q (take boundary memLog) ∗
-    updates_slice_frag (slice_skip s (struct.t Update.S) (word.sub nextDiskEnd memStart)) 1
-                        (drop boundary memLog)
-                        ⊣⊢
-    updates_slice_frag s (q/2) memLog ∗
-    (updates_slice_frag s (q/2) memLog ∗
-      ∃ q',⌜(1-q/2)%Qp=Some q'⌝ ∗ updates_slice_frag (slice_skip s (struct.t Update.S) (word.sub nextDiskEnd memStart)) q'
-                      (drop boundary memLog)).
-Proof.
-Admitted.
-
-Theorem memLog_combine (s: Slice.t) memStart nextDiskEnd (q: Qp) memLog :
-  Qcanon.Qclt q 1 ->
-    let boundary := (int.nat nextDiskEnd - int.nat memStart)%nat in
-    updates_slice_frag s q (take boundary memLog) ∗
-    updates_slice_frag (slice_skip s (struct.t Update.S) (word.sub nextDiskEnd memStart)) 1
-                        (drop boundary memLog) -∗
-                        updates_slice_frag s (q/2) memLog ∗
-   (updates_slice_frag s (q/2) memLog -∗
-     (* could drop this conjunct (it doesn't need to go back
-     into the [readonly]) *)
-     updates_slice_frag s q (take boundary memLog) ∗
-     updates_slice_frag (slice_skip s (struct.t Update.S) (word.sub nextDiskEnd memStart)) 1
-                        (drop boundary memLog)).
-Proof.
-  intros.
-  rewrite memLog_split_combine; auto.
-  iIntros "(Hfrag1&Hfrag2&Habsorb)".
-  iFrame.
-  auto.
-Qed.
-
 Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
   {{{ wal_linv_fields st σ ∗
-      memLog_linv γ σ.(memStart) σ.(nextDiskEnd) σ.(memLog) }}}
+      memLog_linv γ σ.(memLog) }}}
     WalogState__readMem #st #a
   {{{ b_s (ok:bool), RET (slice_val b_s, #ok);
       (if ok then ∃ b, is_block b_s 1 b ∗
-                       ⌜apply_upds σ.(memLog) ∅ !! int.val a = Some b⌝
-      else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog) ∅ !! int.val a = None⌝) ∗
+                       ⌜apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = Some b⌝
+      else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = None⌝) ∗
       "Hfields" ∷ wal_linv_fields st σ ∗
-      "HmemLog_linv" ∷ memLog_linv γ σ.(memStart) σ.(nextDiskEnd) σ.(memLog)
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog)
   }}}.
 Proof.
   iIntros (Φ) "(Hfields&HmemLog_inv) HΦ".
@@ -84,69 +49,31 @@ Proof.
   iNamed "Hfield_ptsto".
   wp_call.
   wp_loadField.
-  wp_apply (wp_MapGet with "His_memLogMap").
-  iIntros (i ok) "(%Hmapget&His_memLogMap)".
-  wp_pures.
-  wp_if_destruct.
-  - wp_apply util_proof.wp_DPrintf.
-    wp_loadField. wp_loadField.
-    apply memLogMap_ok_memLog_lookup in Hmapget as [b HmemLog_lookup];
-      last by admit. (* TODO: in-bounds proof *)
-    iMod (readonly_load_lt with "His_memLog") as (q) "[%Hqbound HmemLog_slice]"; first by auto.
-    iDestruct (memLog_combine with "[$HmemLog_slice $HabsorbLog]") as "[HmemLog_slice HabsorbLog']"; first by auto.
-    wp_apply (wp_SliceGet_updates with "[$HmemLog_slice]"); eauto.
-    simpl.
-    iIntros ([a' u_s]) "(<-&Hb&HmemLog_slice)".
-    wp_apply (wp_copyUpdateBlock with "Hb").
-    iIntros (s') "[Hb Hb_new]".
-    iSpecialize ("HmemLog_slice" with "Hb").
-    iDestruct ("HabsorbLog'" with "HmemLog_slice") as "[HmemLog_slice HabsorbLog]".
-    wp_pures.
-    iApply "HΦ".
-    iFrame.
-    iSplitL "Hb_new".
-    + iExists _; iFrame.
-      iPureIntro.
-      simpl in HmemLog_lookup |- *.
-    (* TODO: this comes from HmemLog_lookup plus that a' is maximal (the
-    apply_upds formulation is actually a good way to phrase it, especially since
-    [apply_upds] and [compute_memLogMap] are similar fold_left's) *)
-      admit.
-    + iExists _; by iFrame "# ∗".
-  - wp_pures.
-    iApply ("HΦ" $! Slice.nil false).
-    iFrame.
-    iSplit; [ | iExists _; by iFrame "# ∗" ].
-    iPureIntro.
-    split; auto.
-    (* TODO: need a theorem about missing in compute_memLogMap (should follow
-    from a general equality about lookups) *)
-    admit.
 Admitted.
 
-Theorem simulate_read_cache_hit {l γ Q σ memStart nextDiskEnd memLog b a} :
-  apply_upds memLog ∅ !! int.val a = Some b ->
+Theorem simulate_read_cache_hit {l γ Q σ memLog b a} :
+  apply_upds memLog.(slidingM.log) ∅ !! int.val a = Some b ->
   (is_wal_inner l γ σ ∗ P σ) -∗
-  memLog_linv γ memStart nextDiskEnd memLog -∗
+  memLog_linv γ memLog -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ ∗ P σ) ∗
               "HQ" ∷ Q (Some b) ∗
-              "HmemLog_linv" ∷ memLog_linv γ memStart nextDiskEnd memLog.
+              "HmemLog_linv" ∷ memLog_linv γ memLog.
 Proof.
 Admitted.
 
-Theorem simulate_read_cache_miss {l γ Q σ memStart nextDiskEnd memLog a} :
-  apply_upds memLog ∅ !! int.val a = None ->
+Theorem simulate_read_cache_miss {l γ Q σ memLog a} :
+  apply_upds memLog.(slidingM.log) ∅ !! int.val a = None ->
   (is_wal_inner l γ σ ∗ P σ) -∗
-  memLog_linv γ memStart nextDiskEnd memLog -∗
+  memLog_linv γ memLog -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗
               "HQ" ∷ Q None ∗
-              "HmemLog_linv" ∷ memLog_linv γ memStart nextDiskEnd memLog.
+              "HmemLog_linv" ∷ memLog_linv γ memLog.
 Proof.
 Admitted.
 

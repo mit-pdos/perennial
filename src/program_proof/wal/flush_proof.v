@@ -84,12 +84,29 @@ Proof.
   rewrite -wp_fupd.
   wp_call.
   rewrite /WalogState__memEnd.
-  wp_loadField. wp_loadField. wp_apply wp_slice_len. wp_storeField.
+  wp_loadField. wp_apply (wp_sliding__clearMutable with "His_memLog"); iIntros "His_memLog".
   iApply "HΦ".
-  (* iDestruct (updates_slice_len with "His_memLog") as %HmemLog_len. *)
-  iExists (set nextDiskEnd (λ _, word.add σ.(memStart) σₗ.(memLogSlice).(Slice.sz)) σ).
+  iModIntro.
+  iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf.
+  iExists (set memLog (λ _,
+                       (set slidingM.mutable (λ _ : u64, slidingM.endPos σ.(memLog)) σ.(memLog))) σ).
   simpl.
-  (* TODO: definitely not enough, need the wal invariant to allocate a new txn_pos *)
+  iFrame "#".
+  iSplitR "HmemLog_linv".
+  { iExists _; iFrame.
+    iPureIntro.
+    split_and!; simpl; auto; try word.
+    transitivity (int.val σ.(memLog).(slidingM.mutable)); try word.
+    (* TODO: should be straightforward from here *)
+    rewrite /slidingM.endPos.
+    repeat word_cleanup.
+    destruct Hlocked_wf.
+    destruct H3.
+    repeat word_cleanup.
+    admit.
+  }
+  (* TODO: definitely not enough, need the wal invariant to ensure new values in
+  read-only region are correct *)
 Admitted.
 
 Theorem simulate_flush l γ Q σ pos txn_id :
@@ -148,6 +165,29 @@ Proof.
   all: constructor.
 Qed.
 
+(* this is a dumb memory safety proof for loading nextDiskEnd when its value
+doesn't matter for correctness *)
+Theorem wp_load_some_nextDiskEnd st γ :
+  {{{ wal_linv st γ }}}
+        struct.loadF sliding.S "mutable"
+          (struct.loadF WalogState.S "memLog" #st)
+  {{{ (nextDiskEnd:u64), RET #nextDiskEnd; wal_linv st γ }}}.
+Proof.
+  iIntros (Φ) "Hinv HΦ".
+  iNamed "Hinv".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+  wp_loadField.
+  (* this is very bad, breaks sliding abstraction boundary *)
+  iNamed "His_memLog"; iNamed "Hinv". wp_loadField.
+  iApply "HΦ".
+  iExists _; iFrame "# ∗".
+  iExists _; iFrame "# ∗".
+  iSplit; auto.
+  iSplit; auto.
+  iExists _, _; iFrame "# ∗".
+Qed.
+
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ txn_id pos :
   {{{ is_wal P l γ ∗
       txn_pos γ txn_id pos ∗
@@ -168,10 +208,8 @@ Proof.
   wp_loadField.
   wp_apply (wp_condBroadcast with "cond_logger").
   wp_loadField.
-  iDestruct (wal_linv_load_nextDiskEnd with "Hlkinv")
-    as (nextDiskEnd) "[HnextDiskEnd Hlkinv]".
-  wp_loadField.
-  iSpecialize ("Hlkinv" with "HnextDiskEnd").
+
+  wp_apply (wp_load_some_nextDiskEnd with "Hlkinv"); iIntros (x) "Hlkinv".
   wp_pures.
 
   wp_apply (wp_If_optional with "[] [Hlkinv Hlocked]"); [ | iAccu | ].

@@ -79,7 +79,7 @@ Global Instance locked_state_eta: Settable _ :=
 Global Instance locked_state_witness: Inhabited locked_state := populate!.
 
 Definition locked_wf (σ: locked_state) :=
-  int.val σ.(memLog).(slidingM.start) ≤ int.val σ.(diskEnd) ≤ int.val (slidingM.endPos σ.(memLog)) ∧
+  int.val σ.(memLog).(slidingM.start) ≤ int.val σ.(diskEnd) ≤ int.val σ.(memLog).(slidingM.mutable) ∧
   slidingM.wf σ.(memLog).
 
 Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=

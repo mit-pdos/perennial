@@ -18,7 +18,7 @@ Let N := walN.
 Let circN := walN .@ "circ".
 
 Definition memEnd (σ: locked_state): Z :=
-  int.val σ.(memStart) + length σ.(memLog).
+  int.val (slidingM.endPos σ.(memLog)).
 
 Hint Unfold locked_wf : word.
 Hint Unfold memEnd : word.
@@ -36,18 +36,21 @@ Proof.
   (* iDestruct (updates_slice_len with "His_memLog") as %HmemLog_sz. *)
   wp_call.
   rewrite /WalogState__memEnd.
-  wp_loadField. wp_loadField.
-  wp_apply wp_slice_len.
+  wp_loadField. wp_apply (wp_sliding__end with "His_memLog"); iIntros "His_memLog".
   wp_apply util_proof.wp_SumOverflows.
   iIntros (?) "->".
   iApply "HΦ".
   iSplit.
   { iPureIntro.
     apply bool_decide_iff.
-    admit. (* TODO: needs memLog length *) }
+    word. }
   iFrame.
   iExists _; by iFrame "# ∗".
-Admitted.
+Qed.
+
+Hint Unfold slidingM.endPos : word.
+Hint Unfold slidingM.wf : word.
+Hint Unfold slidingM.numMutable : word.
 
 Theorem wp_WalogState__memLogHasSpace st σ (newUpdates: u64) :
   memEnd σ + int.val newUpdates < 2^64 ->
@@ -63,8 +66,7 @@ Proof.
   (* iDestruct (updates_slice_len with "His_memLog") as %HmemLog_sz. *)
   wp_call.
   rewrite /WalogState__memEnd.
-  wp_loadField. wp_loadField.
-  wp_apply wp_slice_len.
+  wp_loadField. wp_apply (wp_sliding__end with "His_memLog"); iIntros "His_memLog".
   wp_loadField.
   wp_pures.
   change (int.val $ word.divu (word.sub 4096 8) 8) with LogSz.
@@ -73,7 +75,7 @@ Proof.
     iExists _; by iFrame "# ∗". }
   wp_if_destruct; iApply "HΦ"; iFrame; iPureIntro.
   - symmetry; apply bool_decide_eq_false.
-    revert Heqb; repeat word_cleanup. admit. (* TODO: need length *)
+    revert Heqb; repeat word_cleanup. admit.
   - symmetry; apply bool_decide_eq_true.
     revert Heqb; repeat word_cleanup. admit. (* need length *)
 Admitted.
@@ -143,7 +145,8 @@ Proof.
         iDestruct "Hsim" as "[_ $]".
         iExists _; iFrame "# ∗".
       - wp_apply wp_slice_len.
-        wp_apply (wp_WalogState__memLogHasSpace with "Hfields"); first by word.
+        wp_apply (wp_WalogState__memLogHasSpace with "Hfields").
+        { revert Heqb0; word. }
         iIntros (?) "[-> Hfields]".
         wp_if_destruct.
         + admit.

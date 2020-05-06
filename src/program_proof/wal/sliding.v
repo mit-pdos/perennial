@@ -64,6 +64,31 @@ Proof.
   iIntros "H"; iNamed "H"; auto.
 Qed.
 
+Theorem memLog_sz s σ :
+  mutable_log s σ -∗
+  ⌜int.nat s.(Slice.sz) = length (slidingM.log σ)⌝.
+Proof.
+  iIntros "H".
+  iNamed "H".
+  auto.
+Qed.
+
+Theorem wp_log_len l σ :
+  {{{ is_sliding l σ }}}
+    slice.len (struct.loadF sliding.S "log" #l)
+  {{{ RET #(U64 $ length σ.(slidingM.log)); is_sliding l σ }}}.
+Proof.
+  iIntros (Φ) "Hsliding HΦ".
+  iNamed "Hsliding"; iNamed "Hinv".
+  iDestruct (memLog_sz with "log_mutable") as %Hsz.
+  wp_loadField.
+  rewrite /slice.len; wp_pures. (* XXX: wp_apply wp_slice_len doesn't work for some reason *)
+  replace logSlice.(Slice.sz) with (U64 $ length σ.(slidingM.log)) by word.
+  iApply "HΦ".
+  iSplit; auto.
+  iExists _, _; iFrame "# ∗".
+Qed.
+
 Lemma take_0 {A} (l: list A) : take 0 l = [].
 Proof. reflexivity. Qed.
 
@@ -292,16 +317,8 @@ Proof.
   iApply (fractional.fractional_split_2 with "Hupds2 Hq'").
 Qed.
 
-Theorem memLog_sz s σ :
-  mutable_log s σ -∗
-  ⌜int.nat s.(Slice.sz) = length (slidingM.log σ)⌝.
-Proof.
-  iIntros "H".
-  iNamed "H".
-  auto.
-Qed.
-
 Hint Unfold slidingM.endPos : word.
+
 
 Theorem slidingM_endPos_val σ :
   slidingM.wf σ ->
