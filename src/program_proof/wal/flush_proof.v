@@ -70,8 +70,6 @@ Proof.
     eauto.
 Qed.
 
-Hint Unfold locked_wf : word.
-
 Theorem wp_endGroupTxn st γ :
   {{{ wal_linv st γ }}}
     WalogState__endGroupTxn #st

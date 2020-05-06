@@ -17,27 +17,30 @@ Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
 
-Theorem wp_Walog__logAppend l γ σₛ :
-  {{{ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
-      readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
-      readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
-      is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
-      is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
-      readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
-      wal_linv σₛ.(wal_st) γ ∗
-      locked γ.(lock_name) ∗
-      is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
+Theorem wp_Walog__waitForSpace l γ σₛ :
+  {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
+      "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
+      "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+      "#His_cond1" ∷ is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
+      "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
+      "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
+      "Hlocked" ∷ locked γ.(lock_name) ∗
+      "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
   }}}
-    Walog__logAppend #l
-  {{{ (progress:bool), RET #progress;
-      wal_linv σₛ.(wal_st) γ ∗
-      locked γ.(lock_name)
+    Walog__waitForSpace #l
+  {{{ σ, RET #();
+      "Hlocked" ∷ locked γ.(lock_name)  ∗
+      "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
+      "#HdiskEnd_at_least'" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
+      "#Hstart_at_least'" ∷ start_at_least γ.(circ_name) σ.(memLog).(slidingM.start) ∗
+      "%Hhas_space" ∷ ⌜length σ.(memLog).(slidingM.log) ≤ LogSz⌝
   }}}.
 Proof.
-  iIntros (Φ) "(#HmemLock& #HcondLogger& #HcondInstall &
-              #His_cond1 & #His_cond2 & #Hf & Hlkinv& Hlocked& #His_lock) HΦ".
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
   wp_call.
-  wp_bind (For _ _ _).
   (* TODO: need inner part of wal_linv with fixed memLog, so we can say after
   this wait loop [length memLog ≤ Z.of_nat LogSz] *)
   iNamed "Hlkinv".
@@ -83,9 +86,39 @@ Proof.
       revert Heqb; word.
   }
   iIntros "HI"; iNamed "HI".
-  (* TODO: move the rest of this function into a separate function, which gets
-  to assume there is space in the log *)
-  specialize (Hbreak eq_refl).
+  specialize (Hbreak ltac:(auto)).
+  iApply "HΦ".
+  iFrameNamed. auto.
+Qed.
+
+Theorem wp_Walog__logAppend l γ σₛ :
+  {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
+      "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
+      "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+      "#His_cond1" ∷ is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
+      "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
+      "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
+      "Hlocked" ∷ locked γ.(lock_name) ∗
+      "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
+  }}}
+    Walog__logAppend #l
+  {{{ (progress:bool), RET #progress;
+      wal_linv σₛ.(wal_st) γ ∗
+      locked γ.(lock_name)
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
+  wp_call.
+  wp_apply (wp_Walog__waitForSpace with "[$Hlkinv $Hlocked]").
+  { iFrameNamed. iFrame "#". }
+  iIntros (σ) "Hpost"; iNamed "Hpost".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+  wp_loadField. wp_loadField.
+  wp_loadField. wp_loadField.
+  wp_apply (wp_sliding__takeFrom with "His_memLog").
+  { word. }
 Admitted.
 
 Theorem wp_Walog__logger l γ :

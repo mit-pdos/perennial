@@ -20,7 +20,6 @@ Let circN := walN .@ "circ".
 Definition memEnd (σ: locked_state): Z :=
   int.val (slidingM.endPos σ.(memLog)).
 
-Hint Unfold locked_wf : word.
 Hint Unfold memEnd : word.
 
 Theorem wp_WalogState__updatesOverflowU64 st σ (newUpdates: u64) :
