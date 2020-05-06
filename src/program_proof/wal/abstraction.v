@@ -44,10 +44,12 @@ Module log_state.
   Definition updates σ : list update.t := txn_upds σ.(txns).
 End log_state.
 
+Definition addr_wf (a: u64) (d: disk) :=
+  2 + LogSz ≤ int.val a ∧
+  ∃ (b: Block), d !! (int.val a) = Some b.
+
 Definition addrs_wf (updates: list update.t) (d: disk) :=
-  forall i u, updates !! i = Some u ->
-              2 + LogSz ≤ int.val u.(update.addr) ∧
-              ∃ (b: Block), d !! (int.val u.(update.addr)) = Some b.
+  forall i u, updates !! i = Some u -> addr_wf (u.(update.addr)) d.
 
 Definition wal_wf (s : log_state.t) :=
   addrs_wf (log_state.updates s) s.(log_state.d) ∧

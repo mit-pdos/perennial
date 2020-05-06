@@ -6,6 +6,15 @@ Section list.
   Notation list := (list A).
   Implicit Types (l:list).
 
+  Lemma map_neq_nil {B: Type} (f: A → B) (l: list): l ≠ [] → map f l ≠ [].
+  Proof. induction l => //=. Qed.
+
+  Lemma length_nonzero_neq_nil (l: list): (0 < length l)%nat → l ≠ [].
+  Proof. induction l => //=. inversion 1. Qed.
+
+  Lemma drop_lt (l : list) (n : nat): (n < length l)%nat → drop n l ≠ [].
+  Proof.  intros. eapply length_nonzero_neq_nil. rewrite drop_length. lia. Qed.
+
   Lemma list_fmap_map {B} (f: A → B) (l: list):
     f <$> l = map f l.
   Proof. induction l => //=. Qed.
@@ -108,4 +117,17 @@ Proof.
   intros a b H.
   induction H; eauto.
   simpl. rewrite H. rewrite IHForall2. eauto.
+Qed.
+
+(** subslice takes elements with indices [n, m) in list [l] *)
+Definition subslice {A} (n m: nat) (l: list A): list A :=
+  drop n (take m l).
+
+Theorem subslice_length {A} n m (l: list A) :
+  (m <= length l)%nat ->
+  length (subslice n m l) = (m - n)%nat.
+Proof.
+  rewrite /subslice; intros.
+  rewrite drop_length take_length.
+  lia.
 Qed.

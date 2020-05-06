@@ -12,7 +12,7 @@ Proof.
   apply Qp_not_plus_q_ge_1.
 Qed.
 
-Lemma Qp_split_1 (q: Qp) :
+Local Lemma Qp_split_1_helper (q: Qp) :
   (q<1)%Qc ->
   ∃ q', (1-q)%Qp = Some q' ∧
         (q' + q = 1)%Qp.
@@ -29,6 +29,16 @@ Proof.
     rewrite /Qcminus.
     replace 0%Qc with (q + -q)%Qc by field.
     apply Qcplus_lt_mono_r; auto.
+Qed.
+
+Lemma Qp_split_1 (q: Qp) :
+  (q<1)%Qc ->
+  ∃ q', (q + q' = 1)%Qp.
+Proof.
+  intros.
+  destruct (Qp_split_1_helper q) as [q' [? ?]]; auto.
+  exists q'.
+  rewrite Qp_plus_comm //.
 Qed.
 
 Theorem Qp_div_2_lt (q: Qp) : (q/2 < q)%Qc.

@@ -783,6 +783,43 @@ Definition failing_testStringLength: val :=
     "s" <-[stringT] stringAppend (![stringT] "s") #23;;
     (![boolT] "ok") && (strLen (![stringT] "s") = #3).
 
+(* struct_pointers.go *)
+
+Module Bar.
+  Definition S := struct.decl [
+    "a" :: uint64T;
+    "b" :: uint64T
+  ].
+End Bar.
+
+(* Foo contains a nested struct which is intended to be manipulated through a
+   Foo pointer *)
+Module Foo.
+  Definition S := struct.decl [
+    "bar" :: struct.t Bar.S
+  ].
+End Foo.
+
+Definition Bar__mutate: val :=
+  rec: "Bar__mutate" "bar" :=
+    struct.storeF Bar.S "a" "bar" #2;;
+    struct.storeF Bar.S "b" "bar" #3.
+
+Definition Foo__mutateBar: val :=
+  rec: "Foo__mutateBar" "foo" :=
+    Bar__mutate (struct.loadF Foo.S "bar" "foo").
+
+Definition failing_testFooBarMutation: val :=
+  rec: "failing_testFooBarMutation" <> :=
+    let: "x" := struct.mk Foo.S [
+      "bar" ::= struct.mk Bar.S [
+        "a" ::= #0;
+        "b" ::= #0
+      ]
+    ] in
+    Foo__mutateBar "x";;
+    (struct.get Bar.S "a" (struct.get Foo.S "bar" "x") = #2).
+
 (* structs.go *)
 
 Module TwoInts.

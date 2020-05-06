@@ -151,6 +151,88 @@ Definition Advance: val :=
     disk.Write LOGHDR2 "b";;
     disk.Barrier #().
 
+(* 0sliding.go *)
+
+Module sliding.
+  Definition S := struct.decl [
+    "log" :: slice.T (struct.t Update.S);
+    "start" :: LogPosition;
+    "mutable" :: LogPosition;
+    "addrPos" :: mapT LogPosition
+  ].
+End sliding.
+
+Definition mkSliding: val :=
+  rec: "mkSliding" "log" "start" :=
+    let: "addrPos" := NewMap LogPosition in
+    ForSlice (struct.t Update.S) "i" "buf" "log"
+      (MapInsert "addrPos" (struct.get Update.S "Addr" "buf") ("start" + "i"));;
+    struct.new sliding.S [
+      "log" ::= "log";
+      "start" ::= "start";
+      "mutable" ::= "start" + slice.len "log";
+      "addrPos" ::= "addrPos"
+    ].
+
+Definition sliding__end: val :=
+  rec: "sliding__end" "s" :=
+    struct.loadF sliding.S "start" "s" + slice.len (struct.loadF sliding.S "log" "s").
+
+Definition sliding__get: val :=
+  rec: "sliding__get" "s" "pos" :=
+    SliceGet (struct.t Update.S) (struct.loadF sliding.S "log" "s") ("pos" - struct.loadF sliding.S "start" "s").
+
+(* update does an in-place absorb of an update to u *)
+Definition sliding__update: val :=
+  rec: "sliding__update" "s" "pos" "u" :=
+    SliceSet (struct.t Update.S) (SliceSkip (struct.t Update.S) (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - struct.loadF sliding.S "start" "s")) ("pos" - struct.loadF sliding.S "mutable" "s") "u".
+
+Definition sliding__append: val :=
+  rec: "sliding__append" "s" "u" :=
+    let: "pos" := struct.loadF sliding.S "start" "s" + slice.len (struct.loadF sliding.S "log" "s") in
+    struct.storeF sliding.S "log" "s" (SliceAppend (struct.t Update.S) (struct.loadF sliding.S "log" "s") "u");;
+    MapInsert (struct.loadF sliding.S "addrPos" "s") (struct.get Update.S "Addr" "u") "pos".
+
+(* takeFrom takes the read-only updates from a logical start position to the
+   current mutable boundary *)
+Definition sliding__takeFrom: val :=
+  rec: "sliding__takeFrom" "s" "start" :=
+    let: "off" := struct.loadF sliding.S "start" "s" in
+    SliceSubslice (struct.t Update.S) (struct.loadF sliding.S "log" "s") ("start" - "off") (struct.loadF sliding.S "mutable" "s" - "off").
+
+(* takeTill takes the read-only updates till a logical start position (which
+   should be within the read-only region; that is, end <= s.mutable) *)
+Definition sliding__takeTill: val :=
+  rec: "sliding__takeTill" "s" "end" :=
+    SliceTake (struct.loadF sliding.S "log" "s") ("end" - struct.loadF sliding.S "start" "s").
+
+(* deleteFrom deletes read-only updates up to newStart,
+   correctly updating the start position *)
+Definition sliding__deleteFrom: val :=
+  rec: "sliding__deleteFrom" "s" "newStart" :=
+    let: "start" := struct.loadF sliding.S "start" "s" in
+    ForSlice (struct.t Update.S) "i" "u" (SliceTake (struct.loadF sliding.S "log" "s") ("newStart" - "start"))
+      (let: "pos" := "start" + "i" in
+      let: "blkno" := struct.get Update.S "Addr" "u" in
+      let: ("oldPos", "ok") := MapGet (struct.loadF sliding.S "addrPos" "s") "blkno" in
+      (if: "ok" && ("oldPos" ≤ "pos")
+      then
+        util.DPrintf #5 (#(str"memLogMap: del %d %d
+        ")) #();;
+        MapDelete (struct.loadF sliding.S "addrPos" "s") "blkno"
+      else #()));;
+    struct.storeF sliding.S "log" "s" (SliceSkip (struct.t Update.S) (struct.loadF sliding.S "log" "s") ("newStart" - "start"));;
+    struct.storeF sliding.S "start" "s" "newStart".
+
+Definition sliding__clearMutable: val :=
+  rec: "sliding__clearMutable" "s" :=
+    struct.storeF sliding.S "mutable" "s" (sliding__end "s").
+
+Definition sliding__posForAddr: val :=
+  rec: "sliding__posForAddr" "s" "a" :=
+    let: ("pos", "ok") := MapGet (struct.loadF sliding.S "addrPos" "s") "a" in
+    ("pos", "ok").
+
 (* 0waldefs.go *)
 
 (*  wal implements write-ahead logging
@@ -172,11 +254,8 @@ Definition Advance: val :=
 
 Module WalogState.
   Definition S := struct.decl [
-    "memLog" :: slice.T (struct.t Update.S);
-    "memStart" :: LogPosition;
+    "memLog" :: struct.ptrT sliding.S;
     "diskEnd" :: LogPosition;
-    "nextDiskEnd" :: LogPosition;
-    "memLogMap" :: mapT LogPosition;
     "shutdown" :: boolT;
     "nthread" :: uint64T
   ].
@@ -184,7 +263,7 @@ End WalogState.
 
 Definition WalogState__memEnd: val :=
   rec: "WalogState__memEnd" "st" :=
-    struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st").
+    sliding__end (struct.loadF WalogState.S "memLog" "st").
 
 Module Walog.
   Definition S := struct.decl [
@@ -211,18 +290,7 @@ Definition Walog__LogSz: val :=
    Assumes caller holds memLock *)
 Definition WalogState__cutMemLog: val :=
   rec: "WalogState__cutMemLog" "st" "installEnd" :=
-    ForSlice (struct.t Update.S) "i" "blk" (SliceTake (struct.loadF WalogState.S "memLog" "st") ("installEnd" - struct.loadF WalogState.S "memStart" "st"))
-      (let: "pos" := struct.loadF WalogState.S "memStart" "st" + "i" in
-      let: "blkno" := struct.get Update.S "Addr" "blk" in
-      let: ("oldPos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" "st") "blkno" in
-      (if: "ok" && ("oldPos" ≤ "pos")
-      then
-        util.DPrintf #5 (#(str"memLogMap: del %d %d
-        ")) #();;
-        MapDelete (struct.loadF WalogState.S "memLogMap" "st") "blkno"
-      else #()));;
-    struct.storeF WalogState.S "memLog" "st" (SliceSkip (struct.t Update.S) (struct.loadF WalogState.S "memLog" "st") ("installEnd" - struct.loadF WalogState.S "memStart" "st"));;
-    struct.storeF WalogState.S "memStart" "st" "installEnd".
+    sliding__deleteFrom (struct.loadF WalogState.S "memLog" "st") "installEnd".
 
 (* installBlocks installs the updates in bufs to the data region
 
@@ -251,7 +319,7 @@ Definition installBlocks: val :=
 Definition Walog__logInstall: val :=
   rec: "Walog__logInstall" "l" :=
     let: "installEnd" := struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
-    let: "bufs" := SliceTake (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) ("installEnd" - struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l")) in
+    let: "bufs" := sliding__takeTill (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) "installEnd" in
     (if: (slice.len "bufs" = #0)
     then (#0, "installEnd")
     else
@@ -299,21 +367,18 @@ Definition Walog__installer: val :=
 Definition Walog__logAppend: val :=
   rec: "Walog__logAppend" "l" :=
     Skip;;
-    (for: (λ: <>, slice.len (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) > LOGSZ); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, slice.len (struct.loadF sliding.S "log" (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l"))) > LOGSZ); (λ: <>, Skip) := λ: <>,
       lock.condWait (struct.loadF Walog.S "condInstall" "l");;
       Continue);;
-    let: "memstart" := struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l") in
-    let: "memlog" := struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l") in
-    let: "newDiskEnd" := struct.loadF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l") in
     let: "diskEnd" := struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
-    let: "newbufs" := SliceSubslice (struct.t Update.S) "memlog" ("diskEnd" - "memstart") ("newDiskEnd" - "memstart") in
+    let: "newbufs" := sliding__takeFrom (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) "diskEnd" in
     (if: (slice.len "newbufs" = #0)
     then #false
     else
       lock.release (struct.loadF Walog.S "memLock" "l");;
       circularAppender__Append (struct.loadF Walog.S "circ" "l") (struct.loadF Walog.S "d" "l") "diskEnd" "newbufs";;
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
-      struct.storeF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") "newDiskEnd";;
+      struct.storeF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") ("diskEnd" + slice.len "newbufs");;
       lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
       lock.condBroadcast (struct.loadF Walog.S "condInstall" "l");;
       #true).
@@ -341,23 +406,13 @@ Definition Walog__logger: val :=
 
 (* wal.go *)
 
-Definition Walog__recover: val :=
-  rec: "Walog__recover" "l" :=
-    util.DPrintf #1 (#(str"recover %d %d
-    ")) #();;
-    ForSlice (struct.t Update.S) "i" "buf" (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l"))
-      (MapInsert (struct.loadF WalogState.S "memLogMap" (struct.loadF Walog.S "st" "l")) (struct.get Update.S "Addr" "buf") (struct.loadF WalogState.S "memStart" (struct.loadF Walog.S "st" "l") + "i")).
-
 Definition mkLog: val :=
   rec: "mkLog" "disk" :=
     let: ("circ", ("start", ("end", "memLog"))) := recoverCircular "disk" in
     let: "ml" := lock.new #() in
     let: "st" := struct.new WalogState.S [
-      "memLog" ::= "memLog";
-      "memStart" ::= "start";
+      "memLog" ::= mkSliding "memLog" "start";
       "diskEnd" ::= "end";
-      "nextDiskEnd" ::= "end";
-      "memLogMap" ::= NewMap LogPosition;
       "shutdown" ::= #false;
       "nthread" ::= #0
     ] in
@@ -372,7 +427,6 @@ Definition mkLog: val :=
     ] in
     util.DPrintf #1 (#(str"mkLog: size %d
     ")) #();;
-    Walog__recover "l";;
     "l".
 
 Definition Walog__startBackgroundThreads: val :=
@@ -394,14 +448,14 @@ Definition MkLog: val :=
    Assumes caller holds memLock *)
 Definition WalogState__memWrite: val :=
   rec: "WalogState__memWrite" "st" "bufs" :=
-    let: "pos" := ref_to LogPosition (struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st")) in
+    let: "pos" := ref_to LogPosition (sliding__end (struct.loadF WalogState.S "memLog" "st")) in
     ForSlice (struct.t Update.S) <> "buf" "bufs"
-      (let: ("oldpos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" "st") (struct.get Update.S "Addr" "buf") in
-      (if: "ok" && ("oldpos" ≥ struct.loadF WalogState.S "nextDiskEnd" "st")
+      (let: ("oldpos", "ok") := sliding__posForAddr (struct.loadF WalogState.S "memLog" "st") (struct.get Update.S "Addr" "buf") in
+      (if: "ok" && ("oldpos" ≥ struct.loadF sliding.S "mutable" (struct.loadF WalogState.S "memLog" "st"))
       then
         util.DPrintf #5 (#(str"memWrite: absorb %d pos %d old %d
         ")) #();;
-        SliceSet (struct.t Update.S) (struct.loadF WalogState.S "memLog" "st") ("oldpos" - struct.loadF WalogState.S "memStart" "st") "buf"
+        sliding__update (struct.loadF WalogState.S "memLog" "st") "oldpos" "buf"
       else
         (if: "ok"
         then
@@ -410,15 +464,14 @@ Definition WalogState__memWrite: val :=
         else
           util.DPrintf #5 (#(str"memLogMap: add %d pos %d
           ")) #());;
-        struct.storeF WalogState.S "memLog" "st" (SliceAppend (struct.t Update.S) (struct.loadF WalogState.S "memLog" "st") "buf");;
-        MapInsert (struct.loadF WalogState.S "memLogMap" "st") (struct.get Update.S "Addr" "buf") (![LogPosition] "pos");;
+        sliding__append (struct.loadF WalogState.S "memLog" "st") "buf";;
         "pos" <-[LogPosition] ![LogPosition] "pos" + #1)).
 
 (* Assumes caller holds memLock *)
 Definition WalogState__doMemAppend: val :=
   rec: "WalogState__doMemAppend" "st" "bufs" :=
     WalogState__memWrite "st" "bufs";;
-    let: "txn" := struct.loadF WalogState.S "memStart" "st" + slice.len (struct.loadF WalogState.S "memLog" "st") in
+    let: "txn" := sliding__end (struct.loadF WalogState.S "memLog" "st") in
     "txn".
 
 (* Grab all of the current transactions and record them for the next group commit (when the logger gets around to it).
@@ -429,7 +482,7 @@ Definition WalogState__doMemAppend: val :=
    Assumes caller holds memLock. *)
 Definition WalogState__endGroupTxn: val :=
   rec: "WalogState__endGroupTxn" "st" :=
-    struct.storeF WalogState.S "nextDiskEnd" "st" (WalogState__memEnd "st").
+    sliding__clearMutable (struct.loadF WalogState.S "memLog" "st").
 
 Definition copyUpdateBlock: val :=
   rec: "copyUpdateBlock" "u" :=
@@ -438,12 +491,12 @@ Definition copyUpdateBlock: val :=
 (* readMem implements ReadMem, assuming memLock is held *)
 Definition WalogState__readMem: val :=
   rec: "WalogState__readMem" "st" "blkno" :=
-    let: ("pos", "ok") := MapGet (struct.loadF WalogState.S "memLogMap" "st") "blkno" in
+    let: ("pos", "ok") := sliding__posForAddr (struct.loadF WalogState.S "memLog" "st") "blkno" in
     (if: "ok"
     then
       util.DPrintf #5 (#(str"read memLogMap: read %d pos %d
       ")) #();;
-      let: "u" := SliceGet (struct.t Update.S) (struct.loadF WalogState.S "memLog" "st") ("pos" - struct.loadF WalogState.S "memStart" "st") in
+      let: "u" := sliding__get (struct.loadF WalogState.S "memLog" "st") "pos" in
       let: "blk" := copyUpdateBlock "u" in
       ("blk", #true)
     else (slice.nil, #false)).
@@ -531,7 +584,7 @@ Definition Walog__Flush: val :=
     ")) #();;
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
-    (if: "pos" > struct.loadF WalogState.S "nextDiskEnd" (struct.loadF Walog.S "st" "l")
+    (if: "pos" > struct.loadF sliding.S "mutable" (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l"))
     then
       WalogState__endGroupTxn (struct.loadF Walog.S "st" "l");;
       #()

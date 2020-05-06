@@ -50,11 +50,12 @@ Proof.
     iNamed "Hfields".
     iNamed "Hfield_ptsto".
     wp_loadField.
-    wp_apply wp_slice_len; wp_pures.
+    wp_apply (wp_log_len with "His_memLog"); iIntros "His_memLog".
+    wp_pures.
     change (int.val (word.divu (word.sub 4096 8) 8)) with LogSz.
     wp_if_destruct.
     - wp_loadField.
-      wp_apply (wp_condWait with "[$His_cond2 $Hlocked $His_lock His_memLog His_memLogMap HmemLog HmemStart HdiskEnd HnextDiskEnd HmemLogMap Hshutdown Hnthread HmemLog_linv HabsorbLog]").
+      wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
       { iExists _; iFrame "∗ #". iExists _; by iFrame "# ∗". }
       iIntros "(Hlocked&Hlkinv)".
       wp_pures.
