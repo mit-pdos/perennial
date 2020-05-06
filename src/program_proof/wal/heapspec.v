@@ -36,12 +36,12 @@ Canonical Structure asyncCrashHeapO := leibnizO (async (u64 * gname)).
 
 Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
+Context `{!gen_heapPreG u64 Block Σ}.
 Context `{!inG Σ
         (authR
            (optionUR
               (exclR (prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO)))))))}.
 Context `{!inG Σ (authR (optionUR (exclR asyncCrashHeapO)))}.
-Context `{!inG Σ (authR (gen_heap.gen_heapUR u64 Block))}.
 Context `{!inG Σ (authR mnatUR)}.
 Context (N: namespace).
 
@@ -74,9 +74,9 @@ Record wal_heap_gnames := {
 Definition wal_heap_inv_crash (pos : u64) (crashheap : gname)
       (base : disk) (txns_prefix : list (u64 * list update.t)) : iProp Σ :=
   let txn_disk := apply_upds (txn_upds txns_prefix) base in
-  ∃ (heapdisk : gmap u64 Block) inGH,
+  ∃ (heapdisk : gmap u64 Block), ∀ preG,
     "%Htxnpos" ∷ ⌜ fst <$> last txns_prefix = Some pos ⌝ ∗
-    "Hcrashheap" ∷ gen_heap_ctx (hG := GenHeapG _ _ _ _ _ inGH crashheap) heapdisk ∗
+    "Hcrashheap" ∷ gen_heap_ctx (hG := GenHeapG_Pre _ _ _ preG crashheap) heapdisk ∗
     "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), heapdisk !! a = txn_disk !! int.val a ⌝.
 
 Definition wal_heap_inv_crashes (heaps : async (u64 * gname)) (ls : log_state.t) : iProp Σ :=
@@ -1216,21 +1216,37 @@ Fixpoint apply_upds_u64 (d : gmap u64 Block) (upds : list update.t) : gmap u64 B
   match upds with
   | nil => d
   | u :: upds' =>
-    apply_upds_u64 (<[u.(update.addr) := u.(update.b)]> d) upds'
+    <[u.(update.addr) := u.(update.b)]> (apply_upds_u64 d upds')
   end.
 
+Lemma apply_upds_u64_split heapdisk bs γ unmodified :
+  NoDup (map update.addr bs) ->
+  ( ∀ u, u ∈ bs -> unmodified !! u.(update.addr) = None ) ->
+  ( ∀ l v, unmodified !! l = Some v → heapdisk !! l = Some v ) ->
+  ⊢ ([∗ map] l↦v ∈ apply_upds_u64 heapdisk bs, mapsto (hG := γ) l 1 v) -∗
+    ([∗ map] l↦v ∈ unmodified, mapsto (hG := γ) l 1 v) ∗
+    ([∗ list] u ∈ bs, mapsto (hG := γ) u.(update.addr) 1 u.(update.b)) : iProp Σ.
+Proof.
+  iIntros (Hnodup Hdisjoint Hinheapdisk) "Happly".
+  iInduction bs as [|] "Hbs"; simpl.
+  { iSplitL; last by done.
+    iApply (big_sepM_subseteq with "Happly").
+    apply map_subseteq_spec; eauto. }
+  admit.
+Admitted.
+
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
-  ( ∀ crash_heaps,
+  ( ∀ crash_heaps preG,
     own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps)
     ={⊤ ∖ ↑N, E}=∗
-          ∃ olds unmodifiedBlocks inGH,
-            let γoldcrash := GenHeapG _ _ _ _ _ inGH (snd (latest crash_heaps)) in
+          ∃ olds unmodifiedBlocks,
+            let γoldcrash := GenHeapG_Pre _ _ _ preG (snd (latest crash_heaps)) in
             memappend_pre γh.(wal_heap_h) bs olds ∗
             ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
             ⌜ ∀ u, u ∈ bs -> unmodifiedBlocks !! u.(update.addr) = None ⌝ ∗
             own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps) ∗
         ( ∀ txn_id lwh' new_crash_heap,
-          let γnewcrash := GenHeapG _ _ _ _ _ inGH new_crash_heap in
+          let γnewcrash := GenHeapG_Pre _ _ _ preG new_crash_heap in
           is_locked_walheap γh lwh' ∗
           own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (txn_id, new_crash_heap) crash_heaps)) ∗
           ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
@@ -1257,7 +1273,7 @@ Proof using gen_heapPreG0.
   iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as "%"; subst.
   iSpecialize ("Hpre" with "Hcrashheapsfrag").
 
-  iMod "Hpre" as (olds unmodifiedBlocks inGH) "(Hpre & Hunmodified & % & Hcrashheapsfrag & Hfupd)".
+  iMod "Hpre" as (olds unmodifiedBlocks) "(Hpre & Hunmodified & % & Hcrashheapsfrag & Hfupd)".
 
   destruct H.
   destruct H as [txn_id Htxn].
@@ -1277,16 +1293,21 @@ Proof using gen_heapPreG0.
   iNamed "Hcrash_heaps".
   iDestruct (big_sepL_app with "Hpossible_heaps") as "[Hpossible_heaps [Hlatest _]]".
   iNamed "Hlatest".
-  iMod (gen_heap_init (∅ : gmap u64 Block)) as (newcrashheap) "Hnewcrashheap".
+  iSpecialize ("Hlatest" $! _).
+  iNamed "Hlatest".
+  iMod (gen_heap_init_gname (∅ : gmap u64 Block)) as (newcrashheap) "Hnewcrashheap".
   iMod (gen_heap_alloc_gen ∅ (apply_upds_u64 heapdisk bs) with "Hnewcrashheap") as "[Hnewcrashheap Hnewmapsto]".
   { apply map_disjoint_empty_r. }
 
-  (* construct Hunmodified for new heap using Hnewmapsto *)
+  iDestruct (gen_heap_valid_gen with "Hcrashheap [Hunmodified]") as %Hunmodified.
+  { iApply (big_sepM_mono with "Hunmodified").
+    iIntros (k x Hkx) "H". iExists _. iFrame. }
+  iDestruct (apply_upds_u64_split with "Hnewmapsto") as "[Hunmodified_new Hbs_new]"; eauto.
 
-  iMod (ghost_var_update _ (async_put (pos', gen_heap_name newcrashheap) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
+  iMod (ghost_var_update _ (async_put (pos', newcrashheap) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
 
-  iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _) (gen_heap_name newcrashheap)).
-  iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag $Hunmodified]") as "Hfupd".
+  iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _) newcrashheap).
+  iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag $Hunmodified $Hunmodified_new $Hbs_new]") as "Hfupd".
   iMod "Hfupd".
 
   iModIntro.
@@ -1305,7 +1326,7 @@ Proof using gen_heapPreG0.
     specialize (Hbs_in_gh u i).
     destruct Hbs_in_gh; auto.
     intuition.
-    specialize (Hgh (u.(update.addr)) (HB x.1 x.2) H5).
+    specialize (Hgh (u.(update.addr)) (HB x.1 x.2)).
     intuition; auto.
   }
   2: {
@@ -1320,8 +1341,7 @@ Proof using gen_heapPreG0.
     iApply big_sepL_app.
     iSplitR "Hnewcrashheap".
     2: { iSplitL; last by done.
-      destruct newcrashheap.
-      iExists _, _.
+      iExists _. iIntros (preG).
       iFrame "Hnewcrashheap".
       iSplitR.
       { iPureIntro. rewrite app_length /=. admit. }

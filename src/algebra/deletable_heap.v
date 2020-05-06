@@ -25,6 +25,12 @@ Definition gen_heapΣ (L V : Type) `{Countable L} : gFunctors := #[
   GFunctor (authR (gen_heap.gen_heapUR L V))
 ].
 
+Definition GenHeapG_Pre (L V : Type) (Σ : gFunctors) `{Countable L}
+                        (p : gen_heapPreG L V Σ)
+                        (n : gname) : gen_heapG L V Σ.
+  refine (GenHeapG _ _ _ _ _ _ n).
+Defined.
+
 Instance xsubG_gen_heapPreG {Σ L V} `{Countable L} :
   subG (gen_heapΣ L V) Σ → gen_heapPreG L V Σ.
 Proof. solve_inG. Qed.
@@ -65,6 +71,14 @@ Proof.
   iMod (own_alloc (● gen_heap.to_gen_heap σ)) as (γh) "Hh".
   { rewrite auth_auth_valid. exact: gen_heap.to_gen_heap_valid. }
   iModIntro. iExists (GenHeapG L V Σ _ _ _ γh). done.
+Qed.
+
+Lemma gen_heap_init_gname `{Countable L, !gen_heapPreG L V Σ} σ :
+  ⊢ |==> ∃ gn : gname, gen_heap_ctx (hG := GenHeapG _ _ _ _ _ gen_heap_preG_inG gn) σ.
+Proof.
+  iMod (own_alloc (● gen_heap.to_gen_heap σ)) as (γh) "Hh".
+  { rewrite auth_auth_valid. exact: gen_heap.to_gen_heap_valid. }
+  iModIntro. iExists γh. done.
 Qed.
 
 Section gen_heap.
@@ -160,6 +174,15 @@ Section gen_heap.
     rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
       as %[Hl%gen_heap.gen_heap_singleton_included _]%auth_both_valid; auto.
+  Qed.
+
+  Lemma gen_heap_valid_gen σ m : gen_heap_ctx σ -∗ ([∗ map] l ↦ v ∈ m, ∃ q, l ↦{q} v) -∗
+      ⌜ ∀ l v, m !! l = Some v -> σ !! l = Some v⌝.
+  Proof.
+    iIntros "Hσ Hm" (l v Hlv).
+    iDestruct (big_sepM_lookup with "Hm") as (q) "Hl"; eauto.
+    iDestruct (gen_heap_valid with "Hσ Hl") as %Hv.
+    done.
   Qed.
 
   Lemma gen_heap_update σ l v1 v2 :
