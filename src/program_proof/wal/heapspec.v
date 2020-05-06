@@ -1241,19 +1241,27 @@ Proof using gen_heapPreG0.
   iSplitL.
   2: {
     iPureIntro. eapply wal_wf_append_txns; simpl; eauto.
-
     
     unfold addrs_wf.
     intros.
     specialize (Hbs_in_gh u i).
     destruct Hbs_in_gh; auto.
     intuition.
-    1: admit. (* XXX  2 + LogSz ≤ int.val u.(update.addr) *)
+    admit.
+    
+    (*
     specialize (Hgh (u.(update.addr)) (HB x.1 x.2) H5).
     destruct Hgh.
     intuition.
     unfold disk_at_txn_id in H3.
+    
+    unfold wal_wf in a.
+    intuition.
+    unfold addrs_wf in H7.
+    
+    
     apply apply_upds_lookup_some_disk_some in H3; eauto.
+    *)
   }
 
   intuition.
