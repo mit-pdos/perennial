@@ -1371,9 +1371,84 @@ Proof using spec_trans.
     iPureIntro. split; first auto. do 2 f_equal.
     by apply bool_decide_iff.
   (* bin op *)
-  - admit.
-  - admit.
-  - admit.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map _ e1').
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (_ _ e1) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    simpl.
+
+    wpc_bind (subst_map _ e2').
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (_ _ e2) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    simpl.
+
+    iDestruct "Hspec" as "(#Hsrc&#Hstate)".
+    (* Be patient, this is handling a bunch of cases. *)
+    destruct op; inversion e; subst;
+      iDestruct "Hv1" as (?) "(%&%)"; subst;
+      iDestruct "Hv2" as (?) "(%&%)"; subst;
+      (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
+       [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
+        | set_solver+ | wpc_pures; eauto; iExists _; iFrame; eauto]).
+
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map _ e1').
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (_ _ e1) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    simpl.
+
+    wpc_bind (subst_map _ e2').
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (_ _ e2) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    simpl.
+
+    iDestruct "Hspec" as "(#Hsrc&#Hstate)".
+    (* Be patient this is handling a bunch of cases. *)
+    destruct op; inversion e; subst;
+      iDestruct "Hv1" as (?) "(%&%)"; subst;
+      iDestruct "Hv2" as (?) "(%&%)"; subst;
+      (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
+       [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
+        | set_solver+ | wpc_pures; eauto; iExists _; iFrame; eauto]).
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    wpc_bind (subst_map _ e1').
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (_ _ e1) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[] [] H"); last done.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    simpl.
+
+    wpc_bind (subst_map _ e2').
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
+    spec_bind (_ _ e2) as Hctx'.
+    iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    simpl.
+
+    iDestruct "Hspec" as "(#Hsrc&#Hstate)".
+    iDestruct "Hv1" as (?) "(%&%)"; subst;
+    iDestruct "Hv2" as (?) "(%&%)"; subst;
+    (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
+     [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
+      | set_solver+ | wpc_pures; eauto; iExists _; iFrame; eauto]).
+
   (* data *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -2178,7 +2253,7 @@ Proof using spec_trans.
     { iApply big_sepM_empty. eauto. }
     { rewrite fmap_empty subst_map_empty. iFrame. }
     rewrite fmap_empty subst_map_empty. eauto.
-Admitted.
+Qed.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
          spec_ffi_interp_adequacy_field.
