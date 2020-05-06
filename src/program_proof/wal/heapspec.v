@@ -27,7 +27,8 @@ Context (N: namespace).
 (* Invariant and definitions *)
 
 Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iProp Σ :=
-  ⌜ match b with
+  ⌜ addr_wf a ls.(log_state.d) /\
+    match b with
     | HB installed_block blocks_since_install =>
       ∃ (txn_id : nat),
         txn_id ≤ ls.(log_state.installed_lb) ∧
@@ -309,37 +310,6 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem apply_update_lookup_some_disk_some u d (a:u64):
-  forall b, apply_upds [u] d !! int.val a = Some b ->
-       exists b1, d !! int.val a = Some b1.
-Proof.
-  intros.
-  destruct (decide (u.(update.addr) = a)).
-  - destruct u; subst; simpl in *.
-    apply lookup_insert_Some in H as H'.
-    intuition; try congruence.
-    subst.
-    admit.  (* XXX not right *)
-  - destruct u; simpl in *.
-    rewrite lookup_insert_ne in H; eauto.
-    admit. (* word *)
-Admitted.
-
-Theorem apply_upds_lookup_some_disk_some l d (a: u64):
-  forall b,
-    apply_upds l d !! (int.val a) = Some b ->
-    ∃ b1, d !! (int.val a) = Some b1.
-Proof.
-  generalize dependent d.
-  induction l.
-  - intros. simpl in *; eauto.
-  - intros.
-    rewrite apply_upds_cons in H.
-    specialize (IHl (apply_upds [a0] d) b).
-    destruct IHl; auto.
-    apply apply_update_lookup_some_disk_some in H0; eauto.
-Qed.
-      
 Theorem lookup_apply_update_ne a:
   forall l d u,
     u.(update.addr) ≠ a ->
@@ -900,8 +870,7 @@ Proof.
   destruct x; eauto.
   intuition.
   simpl in *.
-
-  destruct a.
+  destruct H3.
   exists x.
   intuition.
   lia.
@@ -935,6 +904,7 @@ Proof.
   iDestruct (big_sepM_lookup with "Hgh") as "%"; eauto.
 
   destruct H0.
+  destruct H1.
   intuition.
 
   simpl in *; monad_inv.
@@ -978,7 +948,8 @@ Proof.
     {
       rewrite /wal_heap_inv_addr /=.
       iPureIntro; intros.
-      simpl in H5.
+      simpl in H6.
+      split; auto.
       exists new_installed. intuition try lia.
       {
         rewrite -updates_since_to_last_disk; eauto.
@@ -1040,7 +1011,8 @@ Proof  using N gen_heapPreG0 heapG0 Σ.
   iDestruct ("Hfupd" $! b with "[Ha]") as "Hfupd".
   { rewrite /readinstalled_q. iFrame.
     iPureIntro.
-    destruct H0; intuition. subst.
+    intuition.
+    destruct H4; intuition. subst.
     eapply updates_since_apply_upds.
     3: eauto.
     3: eauto.
@@ -1247,21 +1219,8 @@ Proof using gen_heapPreG0.
     specialize (Hbs_in_gh u i).
     destruct Hbs_in_gh; auto.
     intuition.
-    admit.
-    
-    (*
     specialize (Hgh (u.(update.addr)) (HB x.1 x.2) H5).
-    destruct Hgh.
-    intuition.
-    unfold disk_at_txn_id in H3.
-    
-    unfold wal_wf in a.
-    intuition.
-    unfold addrs_wf in H7.
-    
-    
-    apply apply_upds_lookup_some_disk_some in H3; eauto.
-    *)
+    intuition; auto.
   }
 
   intuition.
@@ -1274,11 +1233,16 @@ Proof using gen_heapPreG0.
 
   destruct (decide (k ∈ fmap update.addr bs)).
   - eapply elem_of_list_fmap in e as ex.
-    destruct ex. intuition. subst.
-    apply elem_of_list_lookup in H4; destruct H4.
-    edestruct Hbs_in_gh; eauto; intuition.
-    specialize (Hgh _ H5). simpl in *.
+    destruct ex.
+    destruct H.
+    subst.
+    apply elem_of_list_lookup in H3; destruct H3.
+    edestruct Hbs_in_gh; eauto.
+    destruct H3.
+    specialize (Hgh _ H4). simpl in *.
+    destruct Hgh as [addr_wf Hgh].
     destruct Hgh as [txn_id' Hgh].
+    intuition; auto.
     exists txn_id'.
 
     pose proof Hkb as Hkb'.
@@ -1302,7 +1266,9 @@ Proof using gen_heapPreG0.
     specialize (Hgh _ Hkb).
     simpl in *.
 
+    destruct Hgh as [wf_addr Hgh].
     destruct Hgh as [pos Hgh].
+    intuition; auto.
     exists pos.
     intuition.
 
@@ -1318,7 +1284,7 @@ Proof using gen_heapPreG0.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
     }
-Admitted.
+Qed.
 
 Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
 Proof. apply _. Qed.
@@ -1563,6 +1529,7 @@ Proof.
   iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
   iDestruct (big_sepM_lookup with "Hgh") as "%Hvalid_gh"; eauto.
   destruct v.
+  destruct Hvalid_gh as [wf_addr Hvalid_gh].
   destruct Hvalid_gh; intuition idtac.
   iPureIntro.
   eapply updates_since_to_last_disk in H; eauto.
