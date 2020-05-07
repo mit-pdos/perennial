@@ -615,7 +615,9 @@ Proof.
       rewrite numMutable_after_clear; auto.
       rewrite drop_ge; len.
       iExists nil; simpl.
-      admit. (* is_slice_small nil *)
+      iSplit; auto.
+      iApply is_slice_small_nil.
+      simpl; word.
 Admitted.
 
 Theorem wp_sliding__posForAddr l σ (a: u64) :
