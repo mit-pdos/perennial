@@ -641,7 +641,7 @@ Proof.
 Qed.
 
 Theorem wp_circularAppender__logBlocks γ c (d: val)
-        (startpos_lb endpos : u64) (bufs : Slice.t)
+        (startpos_lb endpos : u64) (bufs : Slice.t) q
         (addrs : list u64) (blocks : list Block) diskaddrslice (upds : list update.t) :
   length addrs = Z.to_nat LogSz ->
   int.val endpos + Z.of_nat (length upds) < 2^64 ->
@@ -652,7 +652,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs) ∗
-      updates_slice bufs upds
+      updates_slice_frag bufs q upds
   }}}
     circularAppender__logBlocks #c d #endpos (slice_val bufs)
   {{{ RET #();
@@ -662,19 +662,17 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
-      updates_slice bufs upds
+      updates_slice_frag bufs q upds
   }}}.
 Proof.
   iIntros (Haddrs_len Hendpos_overflow Hhasspace Φ) "(#Hcirc & Hγblocks & #Hstart & Hend & Hdiskaddrs & Hslice & Hupdslice) HΦ".
   wp_lam. wp_let. wp_let. wp_let.
-  iDestruct (updates_slice_len with "Hupdslice") as %Hupdlen.
+  iDestruct (updates_slice_frag_len with "Hupdslice") as %Hupdlen.
   iDestruct "Hupdslice" as (bks) "[Hupdslice Hbks]".
 
-  iDestruct (is_slice_sz with "Hupdslice") as %Hslen.
+  iDestruct (is_slice_small_sz with "Hupdslice") as %Hslen.
   rewrite fmap_length in Hslen.
   iDestruct (big_sepL2_length with "Hbks") as %Hslen2.
-
-  iDestruct (is_slice_small_acc with "Hupdslice") as "[Hupdslice Hupdslice_rest]".
 
   wp_apply (wp_forSlice (fun i =>
     let addrs' := update_addrs addrs (int.val endpos) (take (int.nat i) upds) in
@@ -683,8 +681,7 @@ Proof.
     c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
     is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
     diskEnd_is γ (1/2) (int.val endpos) ∗
-    ( [∗ list] b_upd;upd ∈ bks;upds, let '{| update.addr := a; update.b := b |} := upd in
-                                       is_block b_upd.2 1 b ∗ ⌜b_upd.1 = a⌝)
+    ( [∗ list] b_upd;upd ∈ bks;upds, is_update b_upd q upd)
     )%I (* XXX why is %I needed? *)
     with "[] [$Hγblocks $Hdiskaddrs $Hslice $Hupdslice $Hend $Hbks]").
 
@@ -695,7 +692,6 @@ Proof.
     rewrite -> take_ge by lia.
     iFrame.
     rewrite /updates_slice.
-    iDestruct ("Hupdslice_rest" with "Hupdslice") as "Hupdslice".
     iExists _; iFrame.
   }
 
@@ -707,7 +703,8 @@ Proof.
   destruct (list_lookup_lt _ upds (int.nat i)); first by word.
   iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hi Hbks]"; eauto.
   destruct x as [addr_i b_i]; simpl.
-  iDestruct "Hi" as "[Hi ->]".
+  iDestruct "Hi" as "[%Heq Hi]".
+  simpl in Heq; subst.
 
   wp_pures.
   wp_apply wp_DPrintf.
@@ -928,11 +925,11 @@ Proof.
   f_equal; word.
 Qed.
 
-Theorem wp_circular__Append (Q: iProp Σ) γ (d: val) (startpos endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
+Theorem wp_circular__Append (Q: iProp Σ) γ (d: val) q (startpos endpos : u64) (bufs : Slice.t) (upds : list update.t) c :
   int.val endpos + Z.of_nat (length upds) < 2^64 ->
   (int.val endpos - int.val startpos) + length upds ≤ LogSz ->
   {{{ is_circular γ ∗
-      updates_slice bufs upds ∗
+      updates_slice_frag bufs q upds ∗
       diskEnd_is γ (1/2) (int.val endpos) ∗
       start_at_least γ startpos ∗
       is_circular_appender γ c ∗
@@ -941,7 +938,7 @@ Theorem wp_circular__Append (Q: iProp Σ) γ (d: val) (startpos endpos : u64) (b
   }}}
     circularAppender__Append #c d #endpos (slice_val bufs)
   {{{ RET #(); Q ∗
-      updates_slice bufs upds ∗
+      updates_slice_frag bufs q upds ∗
       is_circular_appender γ c ∗
       diskEnd_is γ (1/2) (int.val endpos + length upds)
   }}}.
@@ -952,7 +949,7 @@ Proof.
 
   wp_apply (wp_circularAppender__logBlocks with "[$Hcirc $Hγblocks $HdiskAddrs $Hstart $Hend $Haddrs $Hslice]"); try word.
   iIntros "(Hγblocks&Hend&HdiskAddrs&Hs&Hupds)".
-  iDestruct (updates_slice_len with "Hupds") as %Hbufsz.
+  iDestruct (updates_slice_frag_len with "Hupds") as %Hbufsz.
   wp_pures.
   wp_apply wp_slice_len.
   wp_pures.

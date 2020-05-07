@@ -46,6 +46,7 @@ Record wal_names :=
     new_installed_name : gname;
     being_installed_name : gname;
     diskEnd_avail_name : gname;
+    start_avail_name : gname;
   }.
 
 Implicit Types (γ: wal_names).
@@ -133,11 +134,13 @@ Definition wal_linv_fields st σ: iProp Σ :=
 Definition diskEnd_linv γ (diskEnd: u64): iProp Σ :=
   "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val diskEnd) ∗
   "HdiskEnd_exactly" ∷ thread_own_ctx γ.(diskEnd_avail_name)
-                               (diskEnd_is γ.(circ_name) (1/2) (int.val diskEnd)).
+                         (diskEnd_is γ.(circ_name) (1/2) (int.val diskEnd)).
 
 Definition diskStart_linv γ (start: u64): iProp Σ :=
   "#Hstart_at_least" ∷ start_at_least γ.(circ_name) start ∗
-  "Hstart_exactly" ∷ start_is γ.(circ_name) (1/2) start.
+  (* TODO: this should be available only to the logger? *)
+  "Hstart_exactly" ∷ thread_own_ctx γ.(start_avail_name)
+                       (start_is γ.(circ_name) (1/2) start).
 
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
