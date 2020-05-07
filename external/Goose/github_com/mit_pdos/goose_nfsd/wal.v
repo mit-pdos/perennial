@@ -376,7 +376,7 @@ Definition Walog__waitForSpace: val :=
    Returns true if it made progress (for liveness, not important for
    correctness). *)
 Definition Walog__logAppend: val :=
-  rec: "Walog__logAppend" "l" :=
+  rec: "Walog__logAppend" "l" "circ" :=
     Walog__waitForSpace "l";;
     let: "diskEnd" := struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
     let: "newbufs" := sliding__takeFrom (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) "diskEnd" in
@@ -384,7 +384,7 @@ Definition Walog__logAppend: val :=
     then #false
     else
       lock.release (struct.loadF Walog.S "memLock" "l");;
-      circularAppender__Append (struct.loadF Walog.S "circ" "l") (struct.loadF Walog.S "d" "l") "diskEnd" "newbufs";;
+      circularAppender__Append "circ" (struct.loadF Walog.S "d" "l") "diskEnd" "newbufs";;
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
       struct.storeF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") ("diskEnd" + slice.len "newbufs");;
       lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
@@ -396,12 +396,12 @@ Definition Walog__logAppend: val :=
    Operates by continuously polling for in-memory transactions, driven by
    condLogger for scheduling *)
 Definition Walog__logger: val :=
-  rec: "Walog__logger" "l" :=
+  rec: "Walog__logger" "l" "circ" :=
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
     struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" "l") + #1);;
     Skip;;
     (for: (λ: <>, ~ (struct.loadF WalogState.S "shutdown" (struct.loadF Walog.S "st" "l"))); (λ: <>, Skip) := λ: <>,
-      let: "progress" := Walog__logAppend "l" in
+      let: "progress" := Walog__logAppend "l" "circ" in
       (if: ~ "progress"
       then lock.condWait (struct.loadF Walog.S "condLogger" "l")
       else #());;
@@ -439,7 +439,7 @@ Definition mkLog: val :=
 
 Definition Walog__startBackgroundThreads: val :=
   rec: "Walog__startBackgroundThreads" "l" :=
-    Fork (Walog__logger "l");;
+    Fork (Walog__logger "l" (struct.loadF Walog.S "circ" "l"));;
     Fork (Walog__installer "l").
 
 Definition MkLog: val :=

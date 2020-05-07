@@ -92,11 +92,11 @@ Proof.
 Qed.
 
 (** log_inv is the resources exclusively owned by the logger thread *)
-Definition log_inv γ σₛ: iProp Σ :=
+Definition log_inv γ circ_l: iProp Σ :=
   "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
-  "Happender" ∷ is_circular_appender γ.(circ_name) σₛ.(circ).
+  "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
 
-Theorem wp_Walog__logAppend l γ σₛ :
+Theorem wp_Walog__logAppend l circ_l γ σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
       "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
@@ -110,13 +110,13 @@ Theorem wp_Walog__logAppend l γ σₛ :
       "#Hcirc" ∷ is_circular circN (circular_pred γ) γ.(circ_name) ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "Hlocked" ∷ locked γ.(lock_name) ∗
-      "Hlogger" ∷ log_inv γ σₛ
+      "Hlogger" ∷ log_inv γ circ_l
   }}}
-    Walog__logAppend #l
+    Walog__logAppend #l #circ_l
   {{{ (progress:bool), RET #progress;
       wal_linv σₛ.(wal_st) γ ∗
       locked γ.(lock_name) ∗
-      thread_own γ.(diskEnd_avail_name) Available
+      log_inv γ circ_l
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
@@ -136,7 +136,7 @@ Proof.
   wp_apply wp_slice_len; wp_pures.
   wp_if_destruct; wp_pures.
   { iApply "HΦ".
-    iFrame "Hlocked HnotLogging".
+    iFrame "Hlocked HnotLogging Happender".
     iExists _; iFrame.
     iExists _; iFrame "% ∗".
   }
@@ -147,19 +147,18 @@ Proof.
   wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs $His_lock $Hlocked]").
   { iExists _; iFrame "# ∗".
     iExists _; iFrame "% ∗". }
-  wp_loadField. wp_loadField.
+  wp_loadField.
   wp_apply (wp_circular__Append with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least]").
   { admit. }
   { admit. }
+  (* TODO: append fupd *)
 Admitted.
 
-Theorem wp_Walog__logger l γ :
+Theorem wp_Walog__logger l circ_l γ :
   {{{ "#Hwal" ∷ is_wal P l γ ∗
-      thread_own γ.(diskEnd_avail_name) Available
-      (* TODO: for is_circular_appender, probably should just not put c in Walog
-      but as local variable in logger *)
+      "Hlogger" ∷ log_inv γ circ_l
   }}}
-    Walog__logger #l
+    Walog__logger #l #circ_l
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
@@ -175,19 +174,15 @@ Proof.
   wp_apply (wp_inc_nthread with "[$st $Hlkinv]"); iIntros "Hlkinv".
   wp_pures.
   wp_bind (For _ _ _).
-  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗ thread_own γ.(diskEnd_avail_name) Available)%I
+  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗ log_inv γ circ_l)%I
               with "[] [$]").
-  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&HnotLogging) HΦ".
+  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&Hlogger) HΦ"; iNamed "Hlogger".
     wp_apply (wp_load_shutdown with "[$st $Hlkinv]"); iIntros (shutdown) "Hlkinv".
     wp_pures.
     wp_if_destruct.
     - wp_pures.
-      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $HnotLogging]").
-      { iFrame "# ∗".
-        iDestruct "Hwal" as "[Hwal Hcirc]".
-        iFrame "#".
-        admit.
-      }
+      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $HnotLogging $Happender]").
+      { iFrame "# ∗". }
       iIntros (progress) "(Hlkinv&Hlk_held&HnotLogging)".
       wp_pures.
       destruct (negb progress); [ wp_if_true | wp_if_false ]; wp_pures.
@@ -199,7 +194,7 @@ Proof.
       + iApply ("HΦ" with "[$]").
     - iApply ("HΦ" with "[$]").
   }
-  iIntros "(Hlkinv&Hlk_held&HnotLogging)".
+  iIntros "(Hlkinv&Hlk_held&Hlogger)".
   wp_apply util_proof.wp_DPrintf.
   wp_apply (wp_dec_nthread with "[$st $Hlkinv]"); iIntros "Hlkinv".
   wp_loadField.
@@ -207,6 +202,6 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[$lk $Hlk_held $Hlkinv]").
   iApply ("HΦ" with "[//]").
-Admitted.
+Qed.
 
 End goose_lang.
