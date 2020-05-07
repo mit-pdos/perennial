@@ -36,12 +36,10 @@ Proof.
   apply _.
 Qed.
 
-Theorem IntoVal_eq_fmap_map {ext V K} (H: @IntoVal ext V) `{Countable K}:
-  ∀ (m m' : gmap K V),
-  to_val <$> m = to_val <$> m' ->
-  m = m'.
+Instance Inj_fmap_map {K} `{!EqDecision K} `{!Countable K} {A B} (f: A → B) `{!Inj eq eq f} :
+  Inj eq eq (fmap (M:=gmap K) f).
 Proof.
-  intros.
+  intros m m' H.
   rewrite <- (list_to_map_to_list m) in *.
   rewrite <- (list_to_map_to_list m') in *.
   pose proof (NoDup_fst_map_to_list m).
@@ -50,9 +48,9 @@ Proof.
   generalize dependent (map_to_list m').
   intros.
   eapply list_to_map_proper; eauto.
-  rewrite -?list_to_map_fmap in H1.
-  apply (inj (fmap (prod_map id to_val))).
-  eapply list_to_map_inj in H1; eauto.
+  rewrite -!list_to_map_fmap in H.
+  apply (inj (fmap (prod_map id f))).
+  eapply list_to_map_inj in H; eauto.
   { rewrite -list_fmap_compose /compose /prod_map /=. eauto. }
   { rewrite -list_fmap_compose /compose /prod_map /=. eauto. }
 Qed.

@@ -276,7 +276,7 @@ Proof.
   replace mtodo' with (∅ : gmap u64 V).
   2: { erewrite map_fmap_empty_inv; eauto. }
   rewrite /Map.untype /= in H0.
-  eapply IntoVal_eq_fmap_map in H0; subst.
+  apply (inj (fmap to_val)) in H0; subst.
   done.
 Qed.
 
