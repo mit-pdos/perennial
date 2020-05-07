@@ -757,7 +757,7 @@ Proof.
   split; auto.
   rewrite <- elem_of_list_In in H2.
   rewrite <- elem_of_list_In.
-  eapply elem_of_fmap_1 in H2.
+  eapply elem_of_list_fmap_2 in H2.
   destruct H2.
   intuition.
   eapply elem_of_list_fmap_1_alt; eauto.
@@ -767,8 +767,7 @@ Proof.
   rewrite -> firstn_length_le in Hlen by lia.
   rewrite -> lookup_take in H4 by lia.
   apply elem_of_list_lookup_2 in H4; auto.
-  (* existential variables? *)
-Admitted.
+Qed.
 
 Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
   forall l a b b1,
@@ -1363,6 +1362,34 @@ Fixpoint apply_upds_u64 (d : gmap u64 Block) (upds : list update.t) : gmap u64 B
     apply_upds_u64 (<[u.(update.addr) := u.(update.b)]> d) upds'
   end.
 
+Lemma apply_upds_u64_insert bs : ∀ heapdisk u,
+  u.(update.addr) ∉ map update.addr bs ->
+  apply_upds_u64 (<[u.(update.addr) := u.(update.b)]> heapdisk) bs =
+  <[u.(update.addr) := u.(update.b)]> (apply_upds_u64 heapdisk bs).
+Proof.
+  induction bs; intros; eauto.
+  destruct a; simpl.
+  destruct (decide (addr = u.(update.addr))); subst.
+  - simpl in H. exfalso. apply H. apply elem_of_list_here.
+  - rewrite -> insert_commute by eauto.
+    rewrite IHbs; eauto.
+    intro Hne. apply H. apply elem_of_list_further. eauto. 
+Qed.
+
+Lemma apply_upds_u64_delete bs : ∀ heapdisk a,
+  a ∉ map update.addr bs ->
+  apply_upds_u64 (delete a heapdisk) bs =
+  delete a (apply_upds_u64 heapdisk bs).
+Proof.
+  induction bs; intros; eauto.
+  destruct a; simpl.
+  destruct (decide (addr = a0)); subst.
+  - simpl in H. exfalso. apply H. apply elem_of_list_here.
+  - rewrite <- delete_insert_ne by eauto.
+    rewrite IHbs; eauto.
+    intro Hne. apply H. apply elem_of_list_further. eauto. 
+Qed.
+
 Lemma apply_upds_u64_split heapdisk bs γ unmodified :
   NoDup (map update.addr bs) ->
   ( ∀ u, u ∈ bs -> unmodified !! u.(update.addr) = None ) ->
@@ -1372,12 +1399,23 @@ Lemma apply_upds_u64_split heapdisk bs γ unmodified :
     ([∗ list] u ∈ bs, mapsto (hG := γ) u.(update.addr) 1 u.(update.b)) : iProp Σ.
 Proof.
   iIntros (Hnodup Hdisjoint Hinheapdisk) "Happly".
-  iInduction bs as [|] "Hbs"; simpl.
+  iInduction bs as [|] "Hbs" forall (heapdisk Hinheapdisk); simpl.
   { iSplitL; last by done.
     iApply (big_sepM_subseteq with "Happly").
     apply map_subseteq_spec; eauto. }
-  admit.
-Admitted.
+  inversion Hnodup; subst.
+  rewrite apply_upds_u64_insert; eauto.
+  iDestruct (big_sepM_insert_delete with "Happly") as "[Ha Happly]". iFrame "Ha".
+  rewrite -apply_upds_u64_delete; eauto.
+  iDestruct ("Hbs" with "[] [] [] Happly") as "Happly"; last by iFrame.
+  - eauto.
+  - iPureIntro. intros. eapply Hdisjoint. eapply elem_of_list_further. eauto.
+  - iPureIntro. intros. destruct (decide (l = a.(update.addr))); subst.
+    + exfalso.
+      rewrite Hdisjoint in H; try congruence.
+      apply elem_of_list_here.
+    + rewrite lookup_delete_ne; eauto.
+Qed.
 
 Lemma apply_upds_u64_apply_upds bs :
   ∀ heapdisk d,
