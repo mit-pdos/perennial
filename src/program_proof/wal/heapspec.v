@@ -1380,10 +1380,8 @@ Proof.
 Admitted.
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
-  ( ∀ crash_heaps,
-    own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps)
-    ={⊤ ∖ ↑N, E}=∗
-          ∃ olds unmodifiedBlocks,
+  ( |={⊤ ∖ ↑N, E}=>
+          ∃ olds unmodifiedBlocks crash_heaps,
             let γoldcrash := GenHeapG_Pre _ _ _ crashPreG (snd (latest crash_heaps)) in
             memappend_pre γh.(wal_heap_h) bs olds ∗
             ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
@@ -1401,9 +1399,8 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
-      ( (wal_heap_inv γh) σ ∗ (∃ crash_heaps,
-            "Hlockedheap" ∷ is_locked_walheap γh lwh ∗
-            "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps))
+      ( (wal_heap_inv γh) σ ∗
+            ("Hlockedheap" ∷ is_locked_walheap γh lwh)
           ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
 Proof using gen_heapPreG0.
   iIntros "Hpre".
@@ -1414,10 +1411,9 @@ Proof using gen_heapPreG0.
   simpl in *; monad_inv.
   simpl in *.
 
+  iMod "Hpre" as (olds unmodifiedBlocks crash_heaps0) "(Hpre & Hunmodified & % & Hcrashheapsfrag & Hfupd)".
   iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as "%"; subst.
-  iSpecialize ("Hpre" with "Hcrashheapsfrag").
-
-  iMod "Hpre" as (olds unmodifiedBlocks) "(Hpre & Hunmodified & % & Hcrashheapsfrag & Hfupd)".
+  rename crash_heaps0 into crash_heaps.
 
   destruct H.
   destruct H as [txn_id Htxn].

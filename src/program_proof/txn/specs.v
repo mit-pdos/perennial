@@ -28,6 +28,8 @@ Section heap.
 Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!gen_heapPreG u64 heap_block Σ}.
+Context `{!gen_heapPreG u64 Block Σ}.
+Context `{!inG Σ (authR (optionUR (exclR asyncCrashHeapO)))}.
 Context `{!{K & gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ}}.
 Context `{!gen_heapPreG addr {K & @bufDataT K} Σ}.
 Context `{!txnG Σ}.
@@ -116,21 +118,24 @@ Definition gmDataP (gm : {K & gmap u64 (updatable_buf (@bufDataT K))})
 Defined.
 
 Definition is_txn_always
-    (walHeap : gen_heapG u64 heap_block Σ)
+    (γ : wal_heap_gnames)
     (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
     : iProp Σ :=
   (
-    ∃ (mData : gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))}),
+    ∃ (mData : gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))})
+      (crash_heaps : async (u64 * gname)),
       "Hgmdata" ∷ ( [∗ map] _ ↦ gm;gh ∈ mData;gData, gmDataP gm gh ) ∗
       "Hmdata_m" ∷ ( [∗ map] blkno ↦ datamap ∈ mData,
           ∃ installed bs,
-            "Hmdata_hb" ∷ mapsto (hG := walHeap) blkno 1 (HB installed bs) ∗
-            "Hmdata_in_block" ∷ txn_bufDataT_in_block installed bs (projT2 datamap) )
+            "Hmdata_hb" ∷ mapsto (hG := γ.(wal_heap_h)) blkno 1 (HB installed bs) ∗
+            "Hmdata_in_block" ∷ txn_bufDataT_in_block installed bs (projT2 datamap) ) ∗
+      "Hcrashheaps" ∷ own γ.(wal_heap_crash_heaps) (◯ Excl' crash_heaps)
   )%I.
 
 Global Instance is_txn_always_timeless walHeap gData :
   Timeless (is_txn_always walHeap gData).
 Proof.
+  apply exist_timeless; intros.
   apply exist_timeless; intros.
   apply sep_timeless; refine _.
   apply big_sepM2_timeless; intros.
@@ -154,7 +159,7 @@ Definition is_txn (l : loc)
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       "Hiswal" ∷ is_wal walN (wal_heap_inv walHeap) walptr ∗
-      "Histxna" ∷ inv invN (is_txn_always walHeap.(wal_heap_h) gData) ∗
+      "Histxna" ∷ inv invN (is_txn_always walHeap gData) ∗
       "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l walHeap)
   )%I.
 
@@ -228,12 +233,12 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
     iApply (wal_heap_readmem walN (⊤ ∖ ↑walN ∖ ↑invN) with "[Hstable Hmod]").
 
     iInv invN as ">Hinv_inner" "Hinv_closer".
-    iDestruct "Hinv_inner" as (mData) "(Hctxdata & Hdata)".
+    iNamed "Hinv_inner".
 
-    iDestruct (big_sepM2_lookup_2_some with "Hctxdata") as %Hblk; eauto.
+    iDestruct (big_sepM2_lookup_2_some with "Hgmdata") as %Hblk; eauto.
     destruct Hblk.
 
-    iDestruct (big_sepM2_lookup_acc with "Hctxdata") as "[Hctxdatablk Hctxdata]"; eauto.
+    iDestruct (big_sepM2_lookup_acc with "Hgmdata") as "[Hctxdatablk Hctxdata]"; eauto.
     iDestruct (gmDataP_eq with "Hctxdatablk") as "%".
     simpl in *; subst.
     iDestruct (gmDataP_ctx with "Hctxdatablk") as "Hctxdatablk".
@@ -241,7 +246,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
     iDestruct ("Hctxdata" with "[Hctxdatablk]") as "Hctxdata".
     { iApply gmDataP_ctx'. iFrame. }
 
-    iDestruct (big_sepM_lookup_acc with "Hdata") as "[Hdatablk Hdata]"; eauto.
+    iDestruct (big_sepM_lookup_acc with "Hmdata_m") as "[Hdatablk Hdata]"; eauto.
     iDestruct "Hdatablk" as (blk_installed blk_bs) "(Hblk & Hinblk)".
 
     iExists _, _. iFrame.
@@ -261,7 +266,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
       iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
       {
         iModIntro.
-        iExists _.
+        iExists _, _.
         iFrame.
         iApply "Hdata".
         iExists _, _. iFrame.
@@ -284,7 +289,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
       iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
       {
         iModIntro.
-        iExists _.
+        iExists _, _.
         iFrame.
         iApply "Hdata".
         iExists _, _.
@@ -354,12 +359,12 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
     iApply (wal_heap_readinstalled walN (⊤ ∖ ↑walN ∖ ↑invN) with "[Hlatest Hown]").
 
     iInv invN as ">Hinv_inner" "Hinv_closer".
-    iDestruct "Hinv_inner" as (mData) "(Hctxdata & Hdata)".
+    iNamed "Hinv_inner".
 
-    iDestruct (big_sepM2_lookup_2_some with "Hctxdata") as %Hblk; eauto.
+    iDestruct (big_sepM2_lookup_2_some with "Hgmdata") as %Hblk; eauto.
     destruct Hblk.
 
-    iDestruct (big_sepM2_lookup_acc with "Hctxdata") as "[Hctxblock Hctxdata]"; eauto.
+    iDestruct (big_sepM2_lookup_acc with "Hgmdata") as "[Hctxblock Hctxdata]"; eauto.
     iDestruct (gmDataP_eq with "Hctxblock") as "%".
     simpl in *; subst.
     iDestruct (gmDataP_ctx with "Hctxblock") as "Hctxblock".
@@ -367,7 +372,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
     iDestruct ("Hctxdata" with "[Hctxblock]") as "Hctxdata".
     { iApply gmDataP_ctx'. iFrame. }
 
-    iDestruct (big_sepM_lookup_acc with "Hdata") as "[Hblock Hdata]"; eauto.
+    iDestruct (big_sepM_lookup_acc with "Hmdata_m") as "[Hblock Hdata]"; eauto.
     iDestruct "Hblock" as (blk_installed blk_bs) "(Hblk & Hinblk)".
 
     iExists _, _. iFrame "Hblk".
@@ -388,7 +393,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
     iDestruct ("Hinv_closer" with "[-]") as "Hinv_closer".
     {
       iModIntro.
-      iExists _.
+      iExists _, _.
       iFrame.
       iApply "Hdata".
       iExists _, _. iFrame.
@@ -478,7 +483,7 @@ Theorem mapsto_txn_locked N γ l lwh a K data gData E :
   ↑invN ⊆ E ->
   ↑N ⊆ E ∖ ↑invN ->
   is_wal N (wal_heap_inv γ) l ∗
-  inv invN (is_txn_always γ.(wal_heap_h) gData) ∗
+  inv invN (is_txn_always γ gData) ∗
   is_locked_walheap γ lwh ∗
   @mapsto_txn K gData a data
   ={E}=∗
@@ -495,8 +500,8 @@ Proof.
   iDestruct "Ha" as (installed bs) "[Ha Hb]".
   iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Ha]") as "(Hlockedheap & Ha & %)"; eauto.
   iModIntro.
-  iSplitL "Hgmdata Hmdata_m Ha Hb".
-  { iNext. iExists _. iFrame.
+  iSplitL "Hgmdata Hmdata_m Hcrashheaps Ha Hb".
+  { iNext. iExists _, _. iFrame.
     iApply "Hmdata_m". iExists _, _. iFrame. }
   iModIntro.
   iFrame.
@@ -507,7 +512,7 @@ Qed.
 
 
 Theorem wp_txn__installBufsMap l q gData walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
-  {{{ inv invN (is_txn_always γ.(wal_heap_h) gData) ∗
+  {{{ inv invN (is_txn_always γ gData) ∗
       is_wal walN (wal_heap_inv γ) walptr ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ lwh ∗
@@ -797,7 +802,7 @@ Proof.
 Qed.
 
 Theorem wp_txn__installBufs l q gData walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
-  {{{ inv invN (is_txn_always γ.(wal_heap_h) gData) ∗
+  {{{ inv invN (is_txn_always γ gData) ∗
       is_wal walN (wal_heap_inv γ) walptr ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ lwh ∗
@@ -1007,7 +1012,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 txnG0 Σ.
   wp_loadField.
 
   wp_apply (wp_Walog__MemAppend _ _
-    (is_locked_walheap walHeap lwh)
+    ("Hlockedheap" ∷ is_locked_walheap walHeap lwh)
     (λ npos,
       ∃ lwh',
         "Hlockedheap" ∷ is_locked_walheap walHeap lwh' ∗
@@ -1081,6 +1086,8 @@ Proof using gen_heapPreG0 heapG0 lockG0 txnG0 Σ.
 
     iDestruct (big_sepML_exists with "Hx_mx") as (updlist_olds) "[-> Hx_mx]".
     iExists (snd <$> updlist_olds).
+    iExists ∅.
+    iExists _.
 
     iDestruct (big_sepML_sepL_split with "Hx_mx") as "[Hx_mx Hupdlist_olds]".
 
@@ -1092,7 +1099,15 @@ Proof using gen_heapPreG0 heapG0 lockG0 txnG0 Σ.
       rewrite zip_fst_snd. iFrame.
     }
 
-    iIntros (txn_id lwh') "[Hlockedheap Hq]".
+    iSplitR.
+    { iApply big_sepM_empty. done. }
+
+    iSplitR.
+    { iPureIntro. intros. rewrite lookup_empty. done. }
+
+    iFrame "Hcrashheaps".
+
+    iIntros (txn_id lwh' new_crash_heap) "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hq)".
     rewrite /memappend_q.
     rewrite big_sepL2_alt.
     iDestruct "Hq" as "[_ Hq]".
@@ -1132,7 +1147,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 txnG0 Σ.
     iExists _. iFrame.
     iApply "Hinner_close".
     iNext.
-    iExists _. iFrame.
+    iExists _, _. iFrame.
   }
 
   iIntros (npos ok) "Hnpos".
