@@ -84,7 +84,7 @@ Definition wal_heap_inv_crash (pos : u64) (crashheap : gname)
 Definition wal_heap_inv_crashes (heaps : async (u64 * gname)) (ls : log_state.t) : iProp Σ :=
   ∃ (durable_heaps_lb : nat),
     "%Hdurable_heaps_lb" ∷ ⌜ durable_heaps_lb ≤ ls.(log_state.durable_lb) ⌝ ∗
-    "%Hcrashes_complete" ∷ ⌜ (durable_heaps_lb + length (possible heaps) = length ls.(log_state.txns))%nat ⌝ ∗
+    "%Hcrashes_complete" ∷ ⌜ (durable_heaps_lb + length (possible heaps) = length ls.(log_state.txns) + 1)%nat ⌝ ∗
     "Hpossible_heaps" ∷ [∗ list] i ↦ asyncelem ∈ possible heaps,
       let txn_id := (durable_heaps_lb + i)%nat in
       wal_heap_inv_crash (fst asyncelem) (snd asyncelem)
@@ -1360,7 +1360,7 @@ Fixpoint apply_upds_u64 (d : gmap u64 Block) (upds : list update.t) : gmap u64 B
   match upds with
   | nil => d
   | u :: upds' =>
-    <[u.(update.addr) := u.(update.b)]> (apply_upds_u64 d upds')
+    apply_upds_u64 (<[u.(update.addr) := u.(update.b)]> d) upds'
   end.
 
 Lemma apply_upds_u64_split heapdisk bs γ unmodified :
@@ -1378,6 +1378,24 @@ Proof.
     apply map_subseteq_spec; eauto. }
   admit.
 Admitted.
+
+Lemma apply_upds_u64_apply_upds bs :
+  ∀ heapdisk d,
+  ( ∀ (a : u64), heapdisk !! a = d !! int.val a ) ->
+  ∀ (a : u64), apply_upds_u64 heapdisk bs !! a =
+    apply_upds bs d !! int.val a.
+Proof.
+  induction bs; simpl; eauto; intros.
+  destruct a; simpl.
+  erewrite IHbs. { reflexivity. }
+  intros a.
+  destruct (decide (a = addr)); subst.
+  - repeat rewrite lookup_insert. eauto.
+  - rewrite -> lookup_insert_ne by eauto.
+    rewrite H.
+    rewrite lookup_insert_ne; eauto.
+    intro Hne. apply n. word.
+Qed.
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑N, E}=>
@@ -1467,38 +1485,41 @@ Proof using gen_heapPreG0.
     intuition; auto.
   }
   2: {
-    iExists _.
+    rewrite /possible app_length /= in Hcrashes_complete.
+    rewrite -> firstn_all2 in Htxnpos by lia.
+    rewrite -> firstn_all2 in Hcrashheap_contents by lia.
+
+    iExists durable_heaps_lb.
     iSplitR.
     { iPureIntro. eassumption. }
     iSplitR.
-    { iPureIntro. rewrite /= /async_put /possible app_length /= ?app_length /=.
-      rewrite -Hcrashes_complete. rewrite /possible ?app_length /=. lia.
-    }
+    { iPureIntro. rewrite /= /async_put /possible app_length /= ?app_length /=. lia. }
     rewrite /async_put /possible /=.
     iApply big_sepL_app.
     iSplitR "Hnewcrashheap".
     2: { iSplitL; last by done.
+      rewrite firstn_all2.
+      2: { rewrite app_length -Hcrashes_complete /possible app_length /=. lia. }
       iExists _.
       iFrame "Hnewcrashheap".
       iSplitR.
-      { iPureIntro. rewrite app_length /=. admit. }
+      { iPureIntro. rewrite last_snoc //. }
       iPureIntro. intros a0.
-      (* rewrite with Hcrashheap_contents *)
-      admit.
+      rewrite right_id.
+      rewrite txn_upds_app apply_upds_app /=.
+      unfold txn_upds at 1; simpl. rewrite app_nil_r.
+      eapply apply_upds_u64_apply_upds; eauto.
     }
     iApply big_sepL_app.
     iSplitL "Hpossible_heaps".
     { iApply (big_sepL_mono with "Hpossible_heaps").
       iIntros (k h Hkh) "H".
       rewrite take_app_le; first by iFrame.
-      admit.
-    }
+      apply lookup_lt_Some in Hkh. lia. }
     iSplitL; last by done.
+    rewrite -> take_app_alt by lia.
     iExists _. iFrame.
-    iSplit.
-    { iPureIntro. rewrite -Htxnpos. admit. }
-    iPureIntro. intros a0. rewrite Hcrashheap_contents.
-    admit.
+    iSplit; eauto.
   }
 
   intuition.
@@ -1562,7 +1583,7 @@ Proof using gen_heapPreG0.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
     }
-Admitted.
+Qed.
 
 Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
 Proof. apply _. Qed.
