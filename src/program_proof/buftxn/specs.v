@@ -10,17 +10,10 @@ From Perennial.program_proof Require Import txn.specs buf.defs buf.specs addr.sp
 
 Class buftxnG Σ :=
   { buftxn_txn   :> txnG Σ;
-    buftxn_bool  :> inG Σ (ghostR $ boolO);
     buftxn_bufs  :> gen_heapPreG addr {K & bufDataT K} Σ;
-    (* XXX: never used? *)
-    buftxn_hb    :> gen_heapPreG u64 heapspec.heap_block Σ;
-    buftxn_u64b  :> gen_heapPreG u64 Block Σ;
-    buftxn_async :> inG Σ (authR (optionUR (exclR heapspec.asyncCrashHeapO)));
-    buftxn_gmap_u64_block :> inG Σ (ghostR $ gmapO u64 abstraction.blockO)
   }.
 
 Section heap.
-Context `{!heapG Σ}.
 Context `{!lockG Σ}.
 Context `{!buftxnG Σ}.
 

@@ -30,19 +30,21 @@ Definition sync `{Countable T} (v : T) : async T :=
 Definition async_put `{Countable T} (v : T) (a : async T) :=
   Build_async v (possible a).
 
-Section heap.
-
 Canonical Structure asyncCrashHeapO := leibnizO (async (u64 * gname)).
 
-Context `{!heapG Σ}.
-Context `{!gen_heapPreG u64 heap_block Σ}.
-Context `{!gen_heapPreG u64 Block Σ}.
-Context `{!inG Σ
-        (authR
-           (optionUR
-              (exclR (prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO)))))))}.
-Context `{!inG Σ (authR (optionUR (exclR asyncCrashHeapO)))}.
-Context `{!inG Σ (authR mnatUR)}.
+
+Class walheapG (Σ: gFunctors) :=
+  { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
+    walheap_u64_Block :> gen_heapPreG u64 Block Σ;
+    walheap_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
+    walheap_mnat :> inG Σ (authR mnatUR);
+    walheap_asyncCrashHeap :> inG Σ (ghostR asyncCrashHeapO);
+    walheap_heap :> heapG Σ
+  }.
+
+Section heap.
+
+Context `{!walheapG Σ}.
 Context (N: namespace).
 
 Definition crashPreG : gen_heapPreG u64 Block Σ := _.
@@ -778,7 +780,7 @@ Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
     b ≠ b1 ->
     (exists u, u ∈ (txn_upds (drop (txn_id) l)) 
           /\ u.(update.addr) = a /\ u.(update.b) = b1).
-Proof using N gen_heapPreG0 heapG0 Σ.
+Proof using N walheapG0 Σ.
   intros.
   replace (take txn_id' l) with (take txn_id l ++ drop txn_id (take txn_id' l)) in H2.
   2: {
@@ -806,7 +808,7 @@ Theorem updates_since_apply_upds σ a (txn_id txn_id' : nat) installedb b :
   disk_at_txn_id txn_id σ !! int.val a = Some installedb ->
   disk_at_txn_id txn_id' σ !! int.val a = Some b ->
   b ∈ installedb :: updates_since txn_id a σ.
-Proof  using N gen_heapPreG0 heapG0 Σ.
+Proof using N walheapG0 Σ.
   unfold updates_since, disk_at_txn_id in *.
   generalize (σ.(log_state.txns)).
   generalize (σ.(log_state.d)).
@@ -1180,7 +1182,7 @@ Theorem wal_heap_readinstalled E γh a (Q : Block -> iProp Σ) :
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_read_installed a) σ σ' b'⌝ -∗
       ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q b' ) ).
-Proof  using N gen_heapPreG0 heapG0 Σ.
+Proof using N walheapG0 Σ.
   iIntros "Ha".
   iIntros (σ σ' b') "% % Hinv".
   iNamed "Hinv".
@@ -1458,7 +1460,7 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
       ( (wal_heap_inv γh) σ ∗
             ("Hlockedheap" ∷ is_locked_walheap γh lwh)
           ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
-Proof using gen_heapPreG0.
+Proof using walheapG0.
   iIntros "Hpre".
   iIntros (σ σ' pos) "% % [Hinv Hpreq]".
   iNamed "Hpreq".
@@ -1654,7 +1656,7 @@ Theorem wp_Walog__Read l (blkno : u64) γ lwh b :
       is_locked_walheap γ lwh ∗
       is_block bl 1 b
   }}}.
-Proof using gen_heapPreG0.
+Proof using walheapG0.
   iIntros (Φ) "(#Hwal & Htxnsfrag & %Hb) HΦ".
   wp_call.
   unfold locked_wh_disk in *.
