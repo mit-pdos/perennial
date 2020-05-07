@@ -28,9 +28,6 @@ Context `{spec_interp: @spec_ffi_interp spec_ffi}.
 Context `{spec_adeq: !spec_ffi_interp_adequacy}.
 Context (spec_ty: ext_types (@spec_ext_op_field spec_ext)).
 
-Context {LVL_INIT: nat}.
-Context {LVL_OPS: nat}.
-
 Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
 Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
 Notation sval := (@val (@spec_ext_op_field spec_ext)).
@@ -65,22 +62,11 @@ Class specTy_model :=
       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ vs v,
         sty_val_interp hS τ vs v -∗
         ⌜ flatten_struct vs = [vs] ∧ flatten_struct v = [v] ⌝;
-    (*
-    sty_val_size:
-      forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ vs v,
-        sty_val_interp hS τ vs v -∗
-        ⌜ length (flatten_struct vs) = 1%nat ∧
-          length (flatten_struct v) = 1%nat ⌝;
-    *)
+    sty_lvl_init: nat;
+    sty_lvl_ops: nat;
     sty_inv_persistent:
       forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
         Persistent (sty_inv hS) }.
-
-(*
-Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
-Context `{Hcpre: @cfgPreG spec_lang Σ}.
-Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
-*)
 
 Section reln_defs.
 Context `{hG: !heapG Σ}.
@@ -93,7 +79,7 @@ Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semanti
 
 Definition has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
-      j ⤇ K es -∗ WPC e @ NotStuck; LVL_OPS; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ v, ∃ vs, j ⤇ K (of_val vs)
+      j ⤇ K es -∗ WPC e @ NotStuck; sty_lvl_ops; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ v, ∃ vs, j ⤇ K (of_val vs)
                                                                     ∗ vty vs v }}
                                                       {{ True }})%I.
 
@@ -345,9 +331,9 @@ Definition sty_crash_inv_obligation :=
      e (Φ: ival → iProp Σ),
     ⊢ sty_init hS -∗
     spec_ctx -∗
-    (sty_inv hS -∗ (WPC e @ NotStuck; LVL_OPS; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ True%I }})) -∗
+    (sty_inv hS -∗ (WPC e @ NotStuck; sty_lvl_ops; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ True%I }})) -∗
     |={⊤}=> sty_inv hS ∗
-    WPC e @ NotStuck; LVL_INIT; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ sty_crash_cond hS }}).
+    WPC e @ NotStuck; sty_lvl_init; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ sty_crash_cond hS }}).
 
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
@@ -2290,11 +2276,11 @@ Lemma sty_inv_to_wpc hG hC hRG hS es e τ j:
   trace_ctx -∗
   sty_init hS -∗
   j ⤇ es -∗
-  WPC e @ LVL_INIT; ⊤;⊤ ∖ ↑sN {{ _, True }}{{sty_derived_crash_condition hG hC hRG}}.
+  WPC e @ sty_lvl_init; ⊤;⊤ ∖ ↑sN {{ _, True }}{{sty_derived_crash_condition hG hC hRG}}.
 Proof.
   iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules) "#Hspec #Htrace Hinit Hj".
     rewrite /sty_crash_obligation in Hsty_crash.
-  iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ LVL_INIT; ⊤;⊤ ∖ ↑sN ∖ styN {{ _, True }}{{sty_crash_cond hS}})%I with "[-]" as ">(#Hinv&H)".
+  iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ sty_lvl_init; ⊤;⊤ ∖ ↑sN ∖ styN {{ _, True }}{{sty_crash_cond hS}})%I with "[-]" as ">(#Hinv&H)".
   {
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iApply (Hsty_crash_inv with "[$] [$] [Hj]").
@@ -2312,7 +2298,7 @@ Proof.
       iSplit.
       - eauto.
       - eauto. rewrite difference_diag_L.
-        simpl. replace (LVL_OPS - LVL_OPS)%nat with O by lia. eauto.
+        simpl. replace (sty_lvl_ops - sty_lvl_ops)%nat with O by lia. eauto.
     }
   }
   iApply (wpc_strong_mono with "[$]"); eauto.
@@ -2320,7 +2306,7 @@ Proof.
   iSplit.
   - eauto.
   - iIntros.
-    simpl. replace (LVL_INIT - LVL_INIT)%nat with O by lia. simpl.
+    simpl. replace (sty_lvl_init - sty_lvl_init)%nat with O by lia. simpl.
     replace (⊤ ∖ ↑sN ∖ (⊤ ∖ ↑sN ∖ styN)) with (styN); last first.
     {
       rewrite difference_difference_remainder_L; auto.
@@ -2349,7 +2335,7 @@ Proof.
   intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Htype Htrace Horacle Hinit.
   eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
            (Φ := λ _ _ _ _, True%I) (Φc := sty_derived_crash_condition)
-           (k := LVL_INIT) (initP := initP); eauto.
+           (k := sty_lvl_init) (initP := initP); eauto.
   { apply _. }
   { apply _. }
   { apply _. }
