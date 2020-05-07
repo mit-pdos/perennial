@@ -242,7 +242,44 @@ Theorem wp_MapIter_2 stk E mref m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (bod
   ((is_map mref m ∗ I ∅ m) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof.
-Admitted.
+  iIntros "Hm HI #Hbody HΦ".
+  iDestruct (is_map_untype with "Hm") as "Hm".
+Check map.wp_MapIter_2.
+  wp_apply (map.wp_MapIter_2 _ _ _ _
+    (λ mtodo mdone, ∃ mtodo' mdone',
+      ⌜ mtodo = to_val <$> mtodo' ⌝ ∗
+      ⌜ mdone = to_val <$> mdone' ⌝ ∗
+      I mtodo' mdone')%I
+    with "Hm [HI] [Hbody]").
+  { rewrite /Map.untype /=.
+    iExists m, ∅. iSplitR; first by done. rewrite fmap_empty. iSplitR; done. }
+  { iIntros.
+    iIntros (Φbody).
+    iModIntro.
+    iIntros "[HI %] HΦ".
+    iDestruct "HI" as (mtodo' mdone') "(-> & -> & HI)".
+    rewrite lookup_fmap in H.
+    destruct (mtodo' !! k) eqn:He; simpl in H; try congruence.
+    inversion H; clear H; subst.
+    wp_apply ("Hbody" with "[$HI] [HΦ]"); eauto.
+    iNext.
+    iIntros "H".
+    iApply "HΦ"; iFrame.
+    iExists (delete k mtodo'), (<[k:=v0]> mdone').
+    iSplitR.
+    { rewrite fmap_delete. done. }
+    iSplitR.
+    { rewrite fmap_insert. done. }
+    iFrame. }
+  iIntros "(Hm & HI)".
+  iDestruct "HI" as (mtodo' mdone') "(% & % & HI)".
+  iApply "HΦ". iFrame.
+  replace mtodo' with (∅ : gmap u64 V).
+  2: { erewrite map_fmap_empty_inv; eauto. }
+  rewrite /Map.untype /= in H0.
+  eapply IntoVal_eq_fmap_map in H0; subst.
+  done.
+Qed.
 
 End heap.
 
