@@ -19,19 +19,16 @@ Arguments UB {T} v modifiedSinceInstallG.
 
 Class txnG (Σ: gFunctors) :=
   { txn_bool :> inG Σ (ghostR $ boolO);
-    txn_gmap_u64_block :> inG Σ (ghostR $ gmapO u64 blockO);
-    txn_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
-    txn_mnat :> inG Σ (authR mnatUR);
+    txn_walheap :> walheapG Σ
   }.
 
-Section heap.
-Context `{!heapG Σ}.
-Context `{!lockG Σ}.
-Context `{!gen_heapPreG u64 heap_block Σ}.
-Context `{!gen_heapPreG u64 Block Σ}.
-Context `{!inG Σ (authR (optionUR (exclR asyncCrashHeapO)))}.
+(*
 Context `{!{K & gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ}}.
 Context `{!gen_heapPreG addr {K & @bufDataT K} Σ}.
+*)
+
+Section heap.
+Context `{!lockG Σ}.
 Context `{!txnG Σ}.
 
 Implicit Types s : Slice.t.
@@ -57,10 +54,10 @@ Proof.
   iIntros "H0 H1".
   iDestruct "H0" as (g0 m0) "(% & % & H0m & H0own)".
   iDestruct "H1" as (g1 m1) "(% & % & H1m & H1own)".
-  rewrite H1 in H3; inversion H3.
+  rewrite H0 in H2; inversion H2.
   subst.
-  apply eq_sigT_eq_dep in H6.
-  apply Eqdep_dec.eq_dep_eq_dec in H6; subst.
+  apply eq_sigT_eq_dep in H5.
+  apply Eqdep_dec.eq_dep_eq_dec in H5; subst.
   2: apply bufDataKind_eq_dec.
   iDestruct (mapsto_valid_2 with "H0m H1m") as %x.
   exfalso; eauto.
@@ -212,7 +209,7 @@ Theorem wp_txn_Load K l gData a v :
       ⌜ existT b.(bufKind) b.(bufData) = existT K v ⌝ ∗
       mapsto_txn gData a v
   }}}.
-Proof using gen_heapPreG0 heapG0 lockG0 Σ.
+Proof using txnG0 lockG0 Σ.
   iIntros (Φ) "(Htxn & Hstable) HΦ".
   iDestruct "Htxn" as (γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
   iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".
@@ -406,8 +403,8 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
     iModIntro.
     iPureIntro.
 
-    apply elem_of_list_lookup_1 in H3.
-    destruct H3 as [prefix H3].
+    apply elem_of_list_lookup_1 in H2.
+    destruct H2 as [prefix H2].
     specialize (Hinblk prefix).
     erewrite latest_update_take_some in Hinblk; eauto.
   }
@@ -531,7 +528,7 @@ Theorem wp_txn__installBufsMap l q gData walptr γ lwh bufs buflist (bufamap : g
           is_block blkslice 1 b ∗
           ⌜ updBlockKindOK blkno b gData (locked_wh_disk lwh) offmap ⌝
   }}}.
-Proof using gen_heapPreG0 heapG0 txnG0 Σ.
+Proof using txnG0 txnG0 Σ.
   iIntros (Φ) "(#Hinv & #Hiswal & #log & Hlockedheap & Hbufs & Hbufpre) HΦ".
 
 Opaque struct.t.
@@ -645,8 +642,8 @@ Opaque struct.t.
         exfalso.
         destruct buf; simpl in *.
         destruct bufKind; cbn in *; try congruence.
-        { inversion H2. }
-        { inversion H2. }
+        { inversion H1. }
+        { inversion H1. }
       }
 
       wp_apply wp_ref_of_zero; first by eauto.
@@ -678,7 +675,7 @@ Opaque struct.t.
       {
         iIntros "(-> & HΦ)".
         wp_store.
-        apply map_get_true in H1.
+        apply map_get_true in H0.
         iDestruct (big_sepM2_lookup_1_some with "Hbufamap_done") as (xx) "%Hx"; eauto.
         iDestruct (big_sepM2_delete with "Hbufamap_done") as "[Ha Hbufamap_done]"; eauto.
         iDestruct "Ha" as (b0) "[Hisblock %]".
@@ -687,8 +684,8 @@ Opaque struct.t.
         iSplit; first by done.
         iPureIntro.
         rewrite /lookup_block Hx.
-        destruct H2. destruct H2. intuition eauto.
-        rewrite Hgdata in H3. inversion H3. subst. eauto.
+        destruct H1. destruct H1. intuition eauto.
+        rewrite Hgdata in H2. inversion H2. subst. eauto.
       }
       {
         iIntros "(-> & HΦ)".
@@ -706,7 +703,7 @@ Opaque struct.t.
         iApply "HΦ".
         iExists _, _, _. iFrame.
 
-        apply map_get_false in H1; destruct H1; subst.
+        apply map_get_false in H0; destruct H0; subst.
         iDestruct (big_sepM2_lookup_1_none with "Hbufamap_done") as %Hnone; eauto.
 
         rewrite delete_insert_delete.
@@ -755,7 +752,7 @@ Opaque struct.t.
       eexists _, _. intuition eauto.
       intro diskLatest; intros.
       intro off; intros.
-      specialize (H3 diskLatest H4 off oldBufData H5 H6 H7).
+      specialize (H2 diskLatest H3 off oldBufData H4 H5 H6).
       destruct (decide (a.(addrOff) = off)).
       + subst.
         rewrite lookup_insert.
@@ -881,7 +878,7 @@ Proof.
     iExists _, _, (delete k offmaps_todo), (<[k := x]> offmaps_done).
     iFrame "Hblks_var Hblks' Hmtodo".
     iSplitR.
-    { iPureIntro. rewrite H1. rewrite delete_insert_union; eauto. }
+    { iPureIntro. rewrite H0. rewrite delete_insert_union; eauto. }
     iSplitR.
     { iPureIntro. set_solver. }
     iApply big_sepML_insert_app.
@@ -897,7 +894,7 @@ Proof.
   iNamed "H".
   wp_load.
   iDestruct (big_sepM2_empty_r with "Hmtodo") as "->".
-  rewrite left_id in H0. subst.
+  rewrite left_id in H. subst.
   iApply "HΦ".
   iFrame.
 Admitted.
@@ -992,7 +989,7 @@ Theorem wp_txn__doCommit l q gData bufs buflist bufamap :
           mapsto_txn gData a buf.(bufData)
       else emp
   }}}.
-Proof using gen_heapPreG0 heapG0 lockG0 txnG0 Σ.
+Proof using txnG0 lockG0 Σ.
   iIntros (Φ) "(#Htxn & Hbufs & Hbufpre) HΦ".
   iPoseProof "Htxn" as "Htxn0".
   iNamed "Htxn".
