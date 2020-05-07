@@ -18,9 +18,12 @@ Let N := walN.
 Let circN := walN .@ "circ".
 
 Definition memEnd (σ: locked_state): Z :=
-  int.val (slidingM.endPos σ.(memLog)).
+  int.val σ.(memLog).(slidingM.start) + length σ.(memLog).(slidingM.log).
 
 Hint Unfold memEnd : word.
+Hint Unfold slidingM.endPos : word.
+Hint Unfold slidingM.wf : word.
+Hint Unfold slidingM.numMutable : word.
 
 Theorem wp_WalogState__updatesOverflowU64 st σ (newUpdates: u64) :
   {{{ wal_linv_fields st σ }}}
@@ -47,10 +50,6 @@ Proof.
   iExists _; by iFrame "# ∗".
 Qed.
 
-Hint Unfold slidingM.endPos : word.
-Hint Unfold slidingM.wf : word.
-Hint Unfold slidingM.numMutable : word.
-
 Theorem wp_WalogState__memLogHasSpace st σ (newUpdates: u64) :
   memEnd σ + int.val newUpdates < 2^64 ->
   {{{ wal_linv_fields st σ }}}
@@ -74,10 +73,10 @@ Proof.
     iExists _; by iFrame "# ∗". }
   wp_if_destruct; iApply "HΦ"; iFrame; iPureIntro.
   - symmetry; apply bool_decide_eq_false.
-    revert Heqb; repeat word_cleanup. admit.
+    revert Heqb; repeat word_cleanup.
   - symmetry; apply bool_decide_eq_true.
-    revert Heqb; repeat word_cleanup. admit. (* need length *)
-Admitted.
+    revert Heqb; repeat word_cleanup.
+Qed.
 
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
