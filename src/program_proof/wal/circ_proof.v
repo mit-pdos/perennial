@@ -375,7 +375,7 @@ Proof.
   by iFrame.
 Qed.
 
-Theorem wp_circular__Advance (Q: iProp Σ) γ d (start0: u64) (newStart : u64) (diskEnd_lb: Z) :
+Theorem wp_circular__Advance (Q: iProp Σ) γ (d: val) (start0: u64) (newStart : u64) (diskEnd_lb: Z) :
   {{{ is_circular γ ∗
       start_is γ (1/2) start0 ∗
       diskEnd_at_least γ diskEnd_lb ∗
@@ -383,7 +383,7 @@ Theorem wp_circular__Advance (Q: iProp Σ) γ d (start0: u64) (newStart : u64) (
     (∀ σ, ⌜circ_wf σ⌝ ∗ P σ -∗
       (∀ σ' b, ⌜relation.denote (circ_advance newStart) σ σ' b⌝ ∗ ⌜circ_wf σ'⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
   }}}
-    Advance #d #newStart
+    Advance d #newStart
   {{{ RET #(); Q ∗ start_is γ (1/2) newStart }}}.
 Proof.
   iIntros (Φ) "(#Hcirc&Hstart&#Hend&%&Hfupd) HΦ".
@@ -605,7 +605,7 @@ Proof.
   word.
 Qed.
 
-Theorem wp_circularAppender__logBlocks γ c d
+Theorem wp_circularAppender__logBlocks γ c (d: val)
         (startpos_lb endpos : u64) (bufs : Slice.t)
         (addrs : list u64) (blocks : list Block) diskaddrslice (upds : list update.t) :
   length addrs = Z.to_nat LogSz ->
@@ -619,7 +619,7 @@ Theorem wp_circularAppender__logBlocks γ c d
       is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs) ∗
       updates_slice bufs upds
   }}}
-    circularAppender__logBlocks #c #d #endpos (slice_val bufs)
+    circularAppender__logBlocks #c d #endpos (slice_val bufs)
   {{{ RET #();
       let addrs' := update_addrs addrs (int.val endpos) upds in
       let blocks' := update_blocks blocks (int.val endpos) upds in
@@ -915,7 +915,7 @@ Proof.
   f_equal; word.
 Qed.
 
-Theorem wp_circular__Append (Q: iProp Σ) γ d (startpos endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
+Theorem wp_circular__Append (Q: iProp Σ) γ (d: val) (startpos endpos : u64) (bufs : Slice.t) (upds : list update.t) c (circAppenderList : list u64) :
   int.val endpos + Z.of_nat (length upds) < 2^64 ->
   (int.val endpos - int.val startpos) + length upds ≤ LogSz ->
   {{{ is_circular γ ∗
@@ -926,7 +926,7 @@ Theorem wp_circular__Append (Q: iProp Σ) γ d (startpos endpos : u64) (bufs : S
       (∀ σ, ⌜circ_wf σ⌝ ∗ P σ -∗
           ∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ∗ ⌜circ_wf σ'⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
   }}}
-    circularAppender__Append #c #d #endpos (slice_val bufs)
+    circularAppender__Append #c d #endpos (slice_val bufs)
   {{{ RET #(); Q ∗
       updates_slice bufs upds ∗
       is_circular_appender γ c ∗

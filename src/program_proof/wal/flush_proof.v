@@ -246,8 +246,9 @@ Proof.
       iFrame "Hlocked".
       apply negb_false_iff in Heqb.
       apply bool_decide_eq_true in Heqb.
+      iNamed "HdiskEnd_circ".
       iSplitL.
-      { iExists _; iFrame "HdiskEnd_at_least Hstart_at_least ∗".
+      { iExists _; iFrame "# ∗".
         iExists _; by iFrame "# ∗". }
       iApply (diskEnd_at_least_mono with "HdiskEnd_at_least"); auto.
   }

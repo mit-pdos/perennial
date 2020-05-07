@@ -5,7 +5,7 @@ From Perennial.Helpers Require Export Transitions List NamedProps Map.
 
 From Perennial.algebra Require Export deletable_heap.
 From Perennial.program_proof Require Export proof_prelude.
-From Perennial.program_proof Require Export wal.lib wal.highest.
+From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
 From Perennial.program_proof Require Export wal.circ_proof wal.sliding.
 From Perennial.program_proof Require Export wal.specs.
 
@@ -22,6 +22,7 @@ Class walG Σ :=
     wal_txns         :> inG Σ (ghostR $ listO $ prodO u64O (listO updateO));
     wal_nat          :> inG Σ (ghostR $ natO);
     wal_addr_set     :> inG Σ (ghostR $ gmapO ZO unitO);
+    wal_thread_owned :> thread_ownG Σ;
   }.
 
 Section goose_lang.
@@ -44,6 +45,7 @@ Record wal_names :=
     txns_name : gname;
     new_installed_name : gname;
     being_installed_name : gname;
+    diskEnd_avail_name : gname;
   }.
 
 Implicit Types (γ: wal_names).
@@ -128,14 +130,22 @@ Definition wal_linv_fields st σ: iProp Σ :=
   "His_memLog" ∷ is_sliding σₗ.(memLogPtr) σ.(memLog)
   )%I.
 
+Definition diskEnd_linv γ (diskEnd: u64): iProp Σ :=
+  "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val diskEnd) ∗
+  "HdiskEnd_exactly" ∷ thread_own_ctx γ.(diskEnd_avail_name)
+                               (diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
+
+Definition diskStart_linv γ (start: u64): iProp Σ :=
+  "#Hstart_at_least" ∷ start_at_least γ.(circ_name) start ∗
+  "Hstart_exactly" ∷ start_is γ.(circ_name) (1/4) start.
+
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
   ∃ σ,
     "Hfields" ∷ wal_linv_fields st σ ∗
-    "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
-    "#Hstart_at_least" ∷ start_at_least γ.(circ_name) σ.(memLog).(slidingM.start) ∗
-    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog)
-    .
+    "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+    "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
+    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog).
 
 (** The implementation state contained in the *Walog struct, which is all
 read-only. *)

@@ -33,8 +33,8 @@ Theorem wp_Walog__waitForSpace l γ σₛ :
       "Hlocked" ∷ locked γ.(lock_name)  ∗
       "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
       "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
-      "#HdiskEnd_at_least'" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
-      "#Hstart_at_least'" ∷ start_at_least γ.(circ_name) σ.(memLog).(slidingM.start) ∗
+      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+      "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
       "%Hhas_space" ∷ ⌜length σ.(memLog).(slidingM.log) ≤ LogSz⌝
   }}}.
 Proof.
@@ -48,12 +48,13 @@ Proof.
               (λ b, "Hlocked" ∷ locked γ.(lock_name) ∗
                     "*" ∷ ∃ σ, "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
                                "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
-                               "#HdiskEnd_at_least'" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
-                               "#Hstart_at_least'" ∷ start_at_least γ.(circ_name) σ.(memLog).(slidingM.start) ∗
+                               "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+                               "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
                                "%Hbreak" ∷ ⌜b = false → (length σ.(memLog).(slidingM.log) ≤ LogSz)⌝
               )%I
-              with "[] [$Hlocked Hfields HmemLog_linv]").
+              with "[] [-HΦ]").
   2: {
+    iFrame.
     iExists _; iFrame "# ∗".
     iPureIntro. inversion 1.
   }
@@ -72,7 +73,6 @@ Proof.
       iIntros "(Hlocked&Hlkinv)".
       wp_pures.
       iApply "HΦ"; iFrame.
-      iClear "HdiskEnd_at_least Hstart_at_least".
       iNamed "Hlkinv".
       iExists _; iFrame "# ∗".
       iPureIntro; inversion 1.
@@ -95,17 +95,21 @@ Theorem wp_Walog__logAppend l γ σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
       "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+      "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
+      "#circ" ∷ readonly (l ↦[Walog.S :: "circ"] #σₛ.(circ)) ∗
       "#His_cond1" ∷ is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
       "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
       "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "Hlocked" ∷ locked γ.(lock_name) ∗
-      "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
+      "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available
   }}}
     Walog__logAppend #l
   {{{ (progress:bool), RET #progress;
       wal_linv σₛ.(wal_st) γ ∗
-      locked γ.(lock_name)
+      locked γ.(lock_name) ∗
+      thread_own γ.(diskEnd_avail_name) Available
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
@@ -119,14 +123,32 @@ Proof.
   wp_loadField. wp_loadField.
   wp_apply (wp_sliding__takeFrom with "His_memLog").
   { word. }
+  iIntros (q s) "(His_memLog&Hbufs)".
+  wp_pures.
+  wp_apply wp_slice_len; wp_pures.
+  wp_if_destruct; wp_pures.
+  { iApply "HΦ".
+    iFrame "Hlocked HnotLogging".
+    iExists _; iFrame.
+    iExists _; iFrame "% ∗".
+  }
+  iNamed "HdiskEnd_circ".
+  iMod (thread_own_get with "HdiskEnd_exactly HnotLogging") as "(HdiskEnd_exactly&HdiskEnd_is&HareLogging)".
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ HareLogging $His_lock $Hlocked]").
+  { iExists _; iFrame "# ∗".
+    iExists _; iFrame "% ∗". }
+  wp_loadField. wp_loadField.
+  (* wp_apply wp_circular__Append. *)
 Admitted.
 
 Theorem wp_Walog__logger l γ :
-  {{{ is_wal P l γ }}}
+  {{{ "#Hwal" ∷ is_wal P l γ ∗
+      "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available }}}
     Walog__logger #l
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "#Hwal HΦ".
+  iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
   iMod (is_wal_read_mem with "Hwal") as "#Hmem".
   wp_call.
   iNamed "Hmem".
@@ -139,16 +161,16 @@ Proof.
   wp_apply (wp_inc_nthread with "[$st $Hlkinv]"); iIntros "Hlkinv".
   wp_pures.
   wp_bind (For _ _ _).
-  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name))%I
-              with "[] [$Hlkinv $Hlk_held]").
-  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held) HΦ".
+  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗ thread_own γ.(diskEnd_avail_name) Available)%I
+              with "[] [$]").
+  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&HnotLogging) HΦ".
     wp_apply (wp_load_shutdown with "[$st $Hlkinv]"); iIntros (shutdown) "Hlkinv".
     wp_pures.
     wp_if_destruct.
     - wp_pures.
-      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held]").
+      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $HnotLogging]").
       { iFrame "#". }
-      iIntros (progress) "(Hlkinv&Hlk_held)".
+      iIntros (progress) "(Hlkinv&Hlk_held&HnotLogging)".
       wp_pures.
       destruct (negb progress); [ wp_if_true | wp_if_false ]; wp_pures.
       + wp_loadField.
@@ -159,7 +181,7 @@ Proof.
       + iApply ("HΦ" with "[$]").
     - iApply ("HΦ" with "[$]").
   }
-  iIntros "(Hlkinv&Hlk_held)".
+  iIntros "(Hlkinv&Hlk_held&HnotLogging)".
   wp_apply util_proof.wp_DPrintf.
   wp_apply (wp_dec_nthread with "[$st $Hlkinv]"); iIntros "Hlkinv".
   wp_loadField.

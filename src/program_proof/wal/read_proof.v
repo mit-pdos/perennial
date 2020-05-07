@@ -111,8 +111,8 @@ Proof.
     { iNext.
       iExists _; iFrame. }
     wp_loadField.
-    wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields]").
-    { iExists _; iFrame "HdiskEnd_at_least Hstart_at_least ∗". }
+    wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields HdiskEnd_circ Hstart_circ]").
+    { iExists _; iFrame. }
     wp_pures.
     iApply "HΦ".
     iExists _; iFrame.
@@ -122,8 +122,8 @@ Proof.
     iModIntro.
     iFrame "Hinv".
     wp_loadField.
-    wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields]").
-    { iExists _; iFrame "HdiskEnd_at_least Hstart_at_least ∗". }
+    wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields HdiskEnd_circ Hstart_circ]").
+    { iExists _; iFrame. }
     wp_pures.
     iApply "HΦ".
     iFrame.
