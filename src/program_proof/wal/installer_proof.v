@@ -125,8 +125,8 @@ Proof.
     iExists _; iFrame "HP".
     iFrame.
     iSplit; auto.
-    iExists _, _; iFrame.
-    iExists _; by iFrame.
+    iExists _, _, _; iFrame "# ∗".
+    auto.
   }
   iIntros (s b) "(HQ&Hs)".
   iApply "HΦ".

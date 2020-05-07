@@ -64,9 +64,7 @@ Proof.
       econstructor; monad_simpl; lia. }
   - simpl.
     iFrame.
-    iExists _, _; iFrame.
-    iExists diskEnd; iFrame.
-    iSplit; first by (iPureIntro; lia).
+    iExists _, _, _; iFrame "# ∗".
     eauto.
 Qed.
 
@@ -108,6 +106,7 @@ Proof.
 Admitted.
 
 Theorem simulate_flush l γ Q σ pos txn_id :
+  is_circular circN (circular_pred γ) γ.(circ_name) -∗
   (is_wal_inner l γ σ ∗ P σ) -∗
   diskEnd_at_least γ.(circ_name) (int.val pos) -∗
   txn_pos γ txn_id pos -∗
@@ -116,12 +115,13 @@ Theorem simulate_flush l γ Q σ pos txn_id :
         -∗ ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
   |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗ Q.
 Proof.
-  iIntros "Hinv #Hlb #Hpos_txn Hfupd".
+  iIntros "#Hcirc Hinv #Hlb #Hpos_txn Hfupd".
   iDestruct "Hinv" as "[Hinner HP]".
   iNamed "Hinner".
   iNamed "Hdisk".
   iNamed "circ.end".
-  iDestruct (diskEnd_is_agree_2 with "Hend_is Hlb") as %HdiskEnd_lb.
+  iMod (is_circular_diskEnd_lb_agree with "Hlb Hcirc Howncs") as "(%Hlb&Howncs)".
+  { admit. (* oops, shouldn't have made the circ name a subset of the wal name *) }
   iMod (txn_pos_valid with "Htxns_ctx Hpos_txn") as (His_txn) "Htxns_ctx"; first by solve_ndisj.
   pose proof (is_txn_bound _ _ _ His_txn).
   pose proof (is_highest_txn_bound Hend_txn).
@@ -152,16 +152,15 @@ Proof.
         word. }
       lia.
   }
-  iExists installed_txn_id, diskEnd_txn_id; iFrame.
-  iExists _; iFrame.
-  iSplit.
-  { iPureIntro.
-    cut (txn_id ≤ diskEnd_txn_id)%nat; first by lia.
-    lia. }
-  auto.
+  iExists _, installed_txn_id, diskEnd_txn_id; iFrame "# ∗".
+  iExists diskEnd.
+  iPureIntro.
+  split_and!; auto.
+  cut (txn_id ≤ diskEnd_txn_id)%nat; first by lia.
+  lia.
   Grab Existential Variables.
-  all: constructor.
-Qed.
+  all: try constructor.
+Admitted.
 
 (* this is a dumb memory safety proof for loading nextDiskEnd when its value
 doesn't matter for correctness *)
@@ -256,11 +255,11 @@ Proof.
   iIntros "(Hlkinv&Hlocked&#HdiskEnd_lb)".
   wp_seq.
   wp_bind Skip.
-  iDestruct "Hwal" as "[Hwal _]".
+  iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as "Hinv".
   wp_call.
   iDestruct "Hinv" as (σ) "[Hinner HP]".
-  iMod (simulate_flush with "[$Hinner $HP] HdiskEnd_lb Hpos_txn Hfupd") as "[Hinv HQ]".
+  iMod (simulate_flush with "[$] [$Hinner $HP] HdiskEnd_lb Hpos_txn Hfupd") as "[Hinv HQ]".
   iModIntro.
   iFrame "Hinv".
 

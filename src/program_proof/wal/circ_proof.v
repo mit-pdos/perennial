@@ -210,6 +210,41 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
     is_slice_small s uint64T 1 (u64val <$> addrs).
 
+Lemma diskEnd_is_agree γ q1 q2 endpos1 endpos2 :
+  diskEnd_is γ q1 endpos1 -∗
+  diskEnd_is γ q2 endpos2 -∗
+  ⌜endpos1 = endpos2⌝.
+Proof.
+  iIntros "[% Hend1] [% Hend2]".
+  iDestruct (fmcounter_agree_1 with "Hend1 Hend2") as %Heq.
+  iPureIntro.
+  word.
+Qed.
+
+Lemma diskEnd_is_agree_2 γ q endpos lb :
+  diskEnd_is γ q endpos -∗
+  diskEnd_at_least γ lb -∗
+  ⌜lb ≤ endpos ⌝.
+Proof.
+  iIntros "[% Hend] Hlb".
+  iDestruct (fmcounter_agree_2 with "Hend Hlb") as %Hlb.
+  iPureIntro.
+  word.
+Qed.
+
+Global Instance is_circular_state_timeless γ σ :
+  Timeless (is_circular_state γ σ) := _.
+
+Theorem is_circular_state_pos_acc γ σ :
+  is_circular_state γ σ -∗
+    circ_positions γ σ  ∗
+    (circ_positions γ σ -∗ is_circular_state γ σ).
+Proof.
+  iIntros "His_circ".
+  iDestruct "His_circ" as "(%Hwf&$&Hrest)"; iIntros "Hpos".
+  iFrame "% ∗".
+Qed.
+
 Theorem is_circular_inner_wf γ addrs blocks σ :
   own γ.(addrs_name) (◯ Excl' addrs) ∗
   own γ.(blocks_name) (◯ Excl' blocks) -∗
@@ -869,28 +904,6 @@ Lemma circ_low_wf_update_addrs
                 (update_blocks blocks' (int.val endpos) upds).
 Proof.
   rewrite /circ_low_wf; len.
-Qed.
-
-Lemma diskEnd_is_agree γ q1 q2 endpos1 endpos2 :
-  diskEnd_is γ q1 endpos1 -∗
-  diskEnd_is γ q2 endpos2 -∗
-  ⌜endpos1 = endpos2⌝.
-Proof.
-  iIntros "[% Hend1] [% Hend2]".
-  iDestruct (fmcounter_agree_1 with "Hend1 Hend2") as %Heq.
-  iPureIntro.
-  word.
-Qed.
-
-Lemma diskEnd_is_agree_2 γ q endpos lb :
-  diskEnd_is γ q endpos -∗
-  diskEnd_at_least γ lb -∗
-  ⌜lb ≤ endpos ⌝.
-Proof.
-  iIntros "[% Hend] Hlb".
-  iDestruct (fmcounter_agree_2 with "Hend Hlb") as %Hlb.
-  iPureIntro.
-  word.
 Qed.
 
 Lemma circ_positions_append upds γ σ (startpos endpos: u64) :

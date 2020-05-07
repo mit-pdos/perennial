@@ -273,16 +273,14 @@ Definition is_durable γ txns installed_txn_id diskEnd_txn_id : iProp Σ :=
 Global Instance is_durable_timeless γ txns installed_txn_id diskEnd_txn_id :
   Timeless (is_durable γ txns installed_txn_id diskEnd_txn_id) := _.
 
-Definition is_installed_txn γ txns installed_txn_id installed_lb: iProp Σ :=
-  ∃ (diskStart: u64),
+Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
     "%Hinstalled_bound" ∷ ⌜(installed_lb ≤ installed_txn_id)%nat⌝ ∗
-    "Hstart_is" ∷ start_is γ.(circ_name) (1/4) diskStart ∗
-    "%Hstart_txn" ∷ ⌜is_highest_txn txns installed_txn_id diskStart⌝.
+    "%Hstart_txn" ∷ ⌜is_highest_txn txns installed_txn_id (circΣ.start cs)⌝.
 
-Definition is_durable_txn γ txns diskEnd_txn_id durable_lb: iProp Σ :=
+Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
   ∃ (diskEnd: u64),
     "%Hdurable_lb" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat⌝ ∗
-    "Hend_is" ∷ diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd) ∗
+    "%HdiskEnd_val" ∷ ⌜int.val diskEnd = circΣ.diskEnd cs⌝ ∗
     "%Hend_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝.
 
 Definition txns_ctx γ txns : iProp Σ :=
@@ -296,11 +294,12 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "Hmem" ∷ is_wal_mem l γ ∗
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
     "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ installed_txn_id diskEnd_txn_id,
+    "Hdisk" ∷ ∃ cs installed_txn_id diskEnd_txn_id,
+      "Howncs"     ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
       "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "circ.start" ∷ is_installed_txn γ s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "circ.end"   ∷ is_durable_txn γ s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
+      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
 .
 
 Definition is_wal (l : loc) γ : iProp Σ :=
@@ -318,6 +317,28 @@ Proof.
   iSplitL; last by auto.
   iExists _; iFrame.
   by iFrame "∗ Hmem".
+Qed.
+
+Theorem is_circular_diskEnd_lb_agree E γ lb cs :
+  ↑circN ⊆ E ->
+  diskEnd_at_least γ.(circ_name) lb -∗
+  is_circular circN (circular_pred γ) γ.(circ_name) -∗
+  own γ.(cs_name) (◯ Excl' cs) -∗
+  |={E}=> ⌜lb ≤ circΣ.diskEnd cs⌝ ∗ own γ.(cs_name) (◯ Excl' cs).
+Proof.
+  rewrite /circular_pred.
+  iIntros (Hsub) "#HdiskEnd_lb #Hcirc Hown".
+  iInv "Hcirc" as ">Hinner" "Hclose".
+  iDestruct "Hinner" as (σ) "(Hstate&Hγ)".
+  unify_ghost.
+  iFrame "Hown".
+  iDestruct (is_circular_state_pos_acc with "Hstate") as "([HdiskStart HdiskEnd]&Hstate)".
+  iDestruct (diskEnd_is_agree_2 with "HdiskEnd HdiskEnd_lb") as %Hlb.
+  iFrame (Hlb).
+  iSpecialize ("Hstate" with "[$HdiskStart $HdiskEnd]").
+  iApply "Hclose".
+  iNext.
+  iExists _; iFrame.
 Qed.
 
 (** * some facts about txn_ctx *)
