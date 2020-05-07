@@ -28,8 +28,7 @@ Module slidingM.
   Definition wf (σ:t) :=
     int.val σ.(start) ≤ int.val σ.(mutable) ∧
     int.val σ.(start) + length σ.(log) < 2^64 ∧
-    (* TODO: derive this from the invariant *)
-    int.val (numMutable σ) <= length σ.(log).
+    int.val σ.(mutable) - int.val σ.(start) <= length σ.(log).
 End slidingM.
 
 Section goose_lang.
@@ -476,7 +475,7 @@ Proof.
   iNamed "log_mutable".
   wp_apply wp_SliceSkip'.
   { iPureIntro.
-    revert Hwf; word. }
+    word. }
   fold (slidingM.numMutable σ).
   wp_apply (wp_SliceSet_updates with "[$log_mutable $Hu]").
   { rewrite lookup_drop.
@@ -489,7 +488,6 @@ Proof.
   - iPureIntro.
     rewrite /slidingM.wf /=.
     split_and; try word.
-    rewrite !numMutable_set_log.
     revert Hwf; len.
   - iExists _, _; iFrame.
     iSplitL "".
@@ -582,8 +580,6 @@ Proof.
   iSplit.
   - iPureIntro.
     split_and!; simpl; try word.
-    rewrite numMutable_after_clear; auto.
-    word.
   - simpl.
     iExists _, _; iFrame.
     iSplitL.
@@ -595,7 +591,7 @@ Proof.
       iSplit.
       { iIntros "[Hupds1 Hupds2]".
         iDestruct (updates_slice_frag_combine with "[$Hupds1 $Hupds2]") as "Hupds".
-        { revert Hwf; word. }
+        { word. }
         rewrite take_ge; len.
         iDestruct "Hupds" as (bks) "[Hs Hbks]".
         iExists _; iFrame.
@@ -604,7 +600,7 @@ Proof.
       iIntros "Hupds".
       rewrite {1}take_ge; len.
       iDestruct (updates_slice_frag_split _ _ (slidingM.numMutable σ) with "Hupds") as "[Hupds1 Hupds2]".
-      { simpl; revert Hwf; word. }
+      { simpl; word. }
       iFrame.
       iDestruct "Hupds1" as (bks) "[Hs Hbks]".
       iExists _; iFrame.

@@ -96,6 +96,8 @@ Definition log_inv γ circ_l: iProp Σ :=
   "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
   "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
 
+Hint Unfold slidingM.logIndex slidingM.wf : word.
+
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
@@ -148,10 +150,12 @@ Proof.
   { iExists _; iFrame "# ∗".
     iExists _; iFrame "% ∗". }
   wp_loadField.
-  wp_apply (wp_circular__Append with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least]").
-  { admit. }
-  { admit. }
+  wp_apply (wp_circular__Append _ _ (emp) with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least]").
+  { rewrite subslice_length; word. }
+  { rewrite subslice_length; word. }
+
   (* TODO: append fupd *)
+
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :

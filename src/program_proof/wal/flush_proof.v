@@ -92,14 +92,9 @@ Proof.
   { iExists _; iFrame.
     iPureIntro.
     split_and!; simpl; auto; try word.
-    transitivity (int.val σ.(memLog).(slidingM.mutable)); try word.
-    (* TODO: should be straightforward from here *)
     rewrite /slidingM.endPos.
-    repeat word_cleanup.
-    destruct Hlocked_wf.
-    destruct H3.
-    repeat word_cleanup.
-    admit.
+    unfold locked_wf, slidingM.wf in Hlocked_wf.
+    word.
   }
   (* TODO: definitely not enough, need the wal invariant to ensure new values in
   read-only region are correct *)
