@@ -355,6 +355,17 @@ Definition Walog__installer: val :=
 
 (* logger.go *)
 
+(* Waits on the installer thread to free space in the log so everything
+   logged fits on disk.
+
+   establishes uint64(len(l.memLog)) <= LOGSZ *)
+Definition Walog__waitForSpace: val :=
+  rec: "Walog__waitForSpace" "l" :=
+    Skip;;
+    (for: (λ: <>, slice.len (struct.loadF sliding.S "log" (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l"))) > LOGSZ); (λ: <>, Skip) := λ: <>,
+      lock.condWait (struct.loadF Walog.S "condInstall" "l");;
+      Continue).
+
 (* logAppend appends to the log, if it can find transactions to append.
 
    It grabs the new writes in memory and not on disk through l.nextDiskEnd; if
@@ -366,10 +377,7 @@ Definition Walog__installer: val :=
    correctness). *)
 Definition Walog__logAppend: val :=
   rec: "Walog__logAppend" "l" :=
-    Skip;;
-    (for: (λ: <>, slice.len (struct.loadF sliding.S "log" (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l"))) > LOGSZ); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF Walog.S "condInstall" "l");;
-      Continue);;
+    Walog__waitForSpace "l";;
     let: "diskEnd" := struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
     let: "newbufs" := sliding__takeFrom (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) "diskEnd" in
     (if: (slice.len "newbufs" = #0)

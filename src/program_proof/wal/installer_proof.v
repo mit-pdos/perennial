@@ -183,8 +183,6 @@ Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)
 Proof.
 Admitted.
 
-Hint Unfold locked_wf : word.
-
 Theorem wp_Walog__logInstall γ l σₛ :
   {{{ "#st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗

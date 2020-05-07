@@ -10,23 +10,97 @@ Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
 Implicit Types (γ: wal_names (Σ:=Σ)).
-Implicit Types (s: log_state.t) (memLog: list update.t) (txns: list (u64 * list update.t)).
+Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
 
+Theorem wp_Walog__waitForSpace l γ σₛ :
+  {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
+      "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
+      "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+      "#His_cond1" ∷ is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
+      "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
+      "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
+      "Hlocked" ∷ locked γ.(lock_name) ∗
+      "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
+  }}}
+    Walog__waitForSpace #l
+  {{{ σ, RET #();
+      "Hlocked" ∷ locked γ.(lock_name)  ∗
+      "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
+      "#HdiskEnd_at_least'" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
+      "#Hstart_at_least'" ∷ start_at_least γ.(circ_name) σ.(memLog).(slidingM.start) ∗
+      "%Hhas_space" ∷ ⌜length σ.(memLog).(slidingM.log) ≤ LogSz⌝
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  (* TODO: need inner part of wal_linv with fixed memLog, so we can say after
+  this wait loop [length memLog ≤ Z.of_nat LogSz] *)
+  iNamed "Hlkinv".
+  wp_apply (wp_forBreak_cond
+              (λ b, "Hlocked" ∷ locked γ.(lock_name) ∗
+                    "*" ∷ ∃ σ, "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
+                               "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
+                               "#HdiskEnd_at_least'" ∷ diskEnd_at_least γ.(circ_name) (int.val σ.(diskEnd)) ∗
+                               "#Hstart_at_least'" ∷ start_at_least γ.(circ_name) σ.(memLog).(slidingM.start) ∗
+                               "%Hbreak" ∷ ⌜b = false → (length σ.(memLog).(slidingM.log) ≤ LogSz)⌝
+              )%I
+              with "[] [$Hlocked Hfields HmemLog_linv]").
+  2: {
+    iExists _; iFrame "# ∗".
+    iPureIntro. inversion 1.
+  }
+  { iIntros "!>" (Φ') "HI HΦ".
+    iNamed "HI".
+    iNamed "Hfields".
+    iNamed "Hfield_ptsto".
+    wp_loadField. wp_loadField.
+    wp_apply (wp_log_len with "His_memLog"); iIntros "His_memLog".
+    wp_pures.
+    change (int.val (word.divu (word.sub 4096 8) 8)) with LogSz.
+    wp_if_destruct.
+    - wp_loadField.
+      wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
+      { iExists _; iFrame "∗ #". iExists _; iFrame "% # ∗". }
+      iIntros "(Hlocked&Hlkinv)".
+      wp_pures.
+      iApply "HΦ"; iFrame.
+      iClear "HdiskEnd_at_least Hstart_at_least".
+      iNamed "Hlkinv".
+      iExists _; iFrame "# ∗".
+      iPureIntro; inversion 1.
+    - iApply "HΦ"; iFrame.
+      iExists _; iFrame "∗ #".
+      iSplit.
+      { iExists _; by iFrame "# ∗". }
+      iPureIntro.
+      intros _.
+      unfold locked_wf, slidingM.wf in Hlocked_wf.
+      revert Heqb; word.
+  }
+  iIntros "HI"; iNamed "HI".
+  specialize (Hbreak ltac:(auto)).
+  iApply "HΦ".
+  iFrameNamed. auto.
+Qed.
+
 Theorem wp_Walog__logAppend l γ σₛ :
-  {{{ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
-      readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
-      readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
-      is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
-      is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
-      readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
-      wal_linv σₛ.(wal_st) γ ∗
-      locked γ.(lock_name) ∗
-      is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
+  {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
+      "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
+      "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+      "#His_cond1" ∷ is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
+      "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
+      "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
+      "Hlocked" ∷ locked γ.(lock_name) ∗
+      "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
   }}}
     Walog__logAppend #l
   {{{ (progress:bool), RET #progress;
@@ -34,36 +108,17 @@ Theorem wp_Walog__logAppend l γ σₛ :
       locked γ.(lock_name)
   }}}.
 Proof.
-  iIntros (Φ) "(#HmemLock& #HcondLogger& #HcondInstall &
-              #His_cond1 & #His_cond2 & #Hf & Hlkinv& Hlocked& #His_lock) HΦ".
+  iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
   wp_call.
-  wp_bind (For _ _ _).
-  (* TODO: need inner part of wal_linv with fixed memLog, so we can say after
-  this wait loop [length memLog ≤ Z.of_nat LogSz] *)
-  wp_apply (wp_forBreak_cond
-              (λ b, locked γ.(lock_name) ∗
-                    wal_linv σₛ.(wal_st) γ)%I
-              with "[] [$Hlkinv $Hlocked]").
-  { iIntros "!>" (Φ') "(Hlocked&Hlkinv) HΦ".
-    wp_loadField.
-    iNamed "Hlkinv".
-    iNamed "Hfields".
-    iNamed "Hfield_ptsto".
-    wp_loadField.
-    wp_apply (wp_log_len with "His_memLog"); iIntros "His_memLog".
-    wp_pures.
-    change (int.val (word.divu (word.sub 4096 8) 8)) with LogSz.
-    wp_if_destruct.
-    - wp_loadField.
-      wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
-      { iExists _; iFrame "∗ #". iExists _; by iFrame "# ∗". }
-      iIntros "(Hlocked&Hlkinv)".
-      wp_pures.
-      iApply ("HΦ" with "[$]").
-    - iApply "HΦ"; iFrame.
-      iExists _; iFrame "∗ #". iExists _; by iFrame "# ∗".
-  }
-  iIntros "(Hlocked&Hlkinv)".
+  wp_apply (wp_Walog__waitForSpace with "[$Hlkinv $Hlocked]").
+  { iFrameNamed. iFrame "#". }
+  iIntros (σ) "Hpost"; iNamed "Hpost".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+  wp_loadField. wp_loadField.
+  wp_loadField. wp_loadField.
+  wp_apply (wp_sliding__takeFrom with "His_memLog").
+  { word. }
 Admitted.
 
 Theorem wp_Walog__logger l γ :

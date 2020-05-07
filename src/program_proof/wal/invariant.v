@@ -492,3 +492,5 @@ Ltac destruct_is_wal :=
   iMod (is_wal_read_mem with "Hwal") as "#Hmem";
   wp_call;
   iNamed "Hmem"; iNamed "Hstfields".
+
+Hint Unfold locked_wf : word.
