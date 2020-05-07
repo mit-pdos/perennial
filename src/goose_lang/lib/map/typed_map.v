@@ -227,7 +227,7 @@ Proof.
   iApply (big_sepM_mono (λ k v, ∃ v0, ⌜to_val v = to_val v0⌝ ∗ Q k v0)%I).
   { iIntros (k v Hkv) "H".
     iDestruct "H" as (v0) "[% H]".
-    apply IntoVal_eq in H; subst. iFrame. }
+    apply (inj to_val) in H; subst. iFrame. }
   iDestruct (bi_iff_1 with "HQ") as "HQ"; first by iApply big_sepM_fmap.
   iFrame.
 Qed.
@@ -244,7 +244,6 @@ Theorem wp_MapIter_2 stk E mref m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (bod
 Proof.
   iIntros "Hm HI #Hbody HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
-Check map.wp_MapIter_2.
   wp_apply (map.wp_MapIter_2 _ _ _ _
     (λ mtodo mdone, ∃ mtodo' mdone',
       ⌜ mtodo = to_val <$> mtodo' ⌝ ∗
