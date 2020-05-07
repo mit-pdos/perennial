@@ -390,7 +390,7 @@ Proof using SIZE.
 Qed.
 
 Lemma append_crash_obligation:
-  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ _ _ appendTy_model.
+  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ appendTy_model.
 Proof using SIZE.
   clear SIZE_bounds.
   rewrite /sty_crash_obligation//=.
