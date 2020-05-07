@@ -133,11 +133,11 @@ Definition wal_linv_fields st σ: iProp Σ :=
 Definition diskEnd_linv γ (diskEnd: u64): iProp Σ :=
   "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val diskEnd) ∗
   "HdiskEnd_exactly" ∷ thread_own_ctx γ.(diskEnd_avail_name)
-                               (diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
+                               (diskEnd_is γ.(circ_name) (1/2) (int.val diskEnd)).
 
 Definition diskStart_linv γ (start: u64): iProp Σ :=
   "#Hstart_at_least" ∷ start_at_least γ.(circ_name) start ∗
-  "Hstart_exactly" ∷ start_is γ.(circ_name) (1/4) start.
+  "Hstart_exactly" ∷ start_is γ.(circ_name) (1/2) start.
 
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
