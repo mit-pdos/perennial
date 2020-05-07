@@ -176,7 +176,7 @@ Section gen_heap.
       as %[Hl%gen_heap.gen_heap_singleton_included _]%auth_both_valid; auto.
   Qed.
 
-  Lemma gen_heap_valid_gen σ m : gen_heap_ctx σ -∗ ([∗ map] l ↦ v ∈ m, ∃ q, l ↦{q} v) -∗
+  Lemma gen_heap_valid_gen σ m : gen_heap_ctx σ -∗ ([∗ map] l ↦ v ∈ m, ∃ q, mapsto (hG:=gen_heapG0) l q v) -∗
       ⌜ ∀ l v, m !! l = Some v -> σ !! l = Some v⌝.
   Proof.
     iIntros "Hσ Hm" (l v Hlv).
