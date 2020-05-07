@@ -101,6 +101,16 @@ Section instances.
     constructor; auto.
   Qed.
 
+  Global Instance u8_IntoVal : IntoVal u8 :=
+    {| to_val := λ (x: u8), #x;
+       IntoVal_def := U8 0;
+       IntoVal_eq := ltac:(congruence) |}.
+
+  Global Instance u8_IntoVal_byteT : IntoValForType u8_IntoVal byteT.
+  Proof.
+    constructor; eauto.
+  Qed.
+
   Global Instance loc_IntoVal : IntoVal loc :=
     {| to_val := λ (l: loc), #l;
        IntoVal_def := null;
