@@ -177,6 +177,20 @@ Proof.
   iApply (is_map_retype with "Hm").
 Qed.
 
+Theorem bi_iff_1 {PROP:bi} (P Q: PROP) :
+  P ≡ Q ->
+  ⊢ P -∗ Q.
+Proof.
+  intros ->; auto.
+Qed.
+
+Theorem bi_iff_2 {PROP:bi} (P Q: PROP) :
+  P ≡ Q ->
+  ⊢ Q -∗ P.
+Proof.
+  intros ->; auto.
+Qed.
+
 Theorem wp_MapIter stk E mref m (I: iProp Σ) (P Q: u64 -> V -> iProp Σ) (body: val) Φ:
   is_map mref m -∗
   I -∗
@@ -210,7 +224,13 @@ Proof.
   iIntros "(Hm & HI & HQ)".
   iApply "HΦ". iFrame.
   rewrite /Map.untype /=.
-Admitted.
+  iApply (big_sepM_mono (λ k v, ∃ v0, ⌜to_val v = to_val v0⌝ ∗ Q k v0)%I).
+  { iIntros (k v Hkv) "H".
+    iDestruct "H" as (v0) "[% H]".
+    apply IntoVal_eq in H; subst. iFrame. }
+  iDestruct (bi_iff_1 with "HQ") as "HQ"; first by iApply big_sepM_fmap.
+  iFrame.
+Qed.
 
 Theorem wp_MapIter_2 stk E mref m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (body: val) Φ:
   is_map mref m -∗

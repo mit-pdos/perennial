@@ -4,6 +4,7 @@ From Perennial.goose_lang.lib Require Import typed_mem slice.slice struct.struct
 Class IntoVal {ext: ext_op} V :=
   { to_val: V -> val;
     IntoVal_def: V;
+    IntoVal_eq: ∀ v v', to_val v = to_val v' -> v = v'
   }.
 
 Class IntoValForType {ext V} (H: @IntoVal ext V) {ext_ty: ext_types ext} (t:ty) :=
@@ -17,7 +18,8 @@ Section instances.
   Context {ext: ext_op} {ext_ty: ext_types ext}.
   Global Instance u64_IntoVal : IntoVal u64 :=
     {| to_val := λ (x: u64), #x;
-       IntoVal_def := U64 0; |}.
+       IntoVal_def := U64 0;
+       IntoVal_eq := ltac:(congruence) |}.
 
   Global Instance u64_IntoVal_uint64T : IntoValForType u64_IntoVal uint64T.
   Proof.
@@ -27,6 +29,7 @@ Section instances.
   Global Instance loc_IntoVal : IntoVal loc :=
     {| to_val := λ (l: loc), #l;
        IntoVal_def := null;
+       IntoVal_eq := ltac:(congruence)
     |}.
 
   Global Instance loc_IntoVal_struct_ptr t : IntoValForType loc_IntoVal (struct.ptrT t).
@@ -39,10 +42,16 @@ Section instances.
     constructor; auto.
   Qed.
 
-  Global Instance slice_IntoVal : IntoVal Slice.t :=
+  Global Instance slice_IntoVal : IntoVal Slice.t.
+    refine
     {| to_val := slice_val;
        IntoVal_def := Slice.nil;
+       IntoVal_eq := _
     |}.
+    destruct v, v'.
+    rewrite /slice_val /=.
+    intro H; inversion H; eauto.
+  Defined.
 
   Global Instance slice_IntoVal_ref t : IntoValForType slice_IntoVal (slice.T t).
   Proof.
