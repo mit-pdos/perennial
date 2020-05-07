@@ -118,65 +118,8 @@ Definition loc_paired ls l :=
   (meta (hG := refinement_na_heapG) ls rlN l ∗
    meta (hG := heapG_na_heapG) l rlN ls)%I.
 
-Lemma loc_paired_eq_iff ls l ls' l':
-  loc_paired ls l -∗
-  loc_paired ls' l' -∗
-  ⌜ l = l' ↔ ls = ls' ⌝.
-Proof.
-  iIntros "(#Hmls&#Hml) (#Hmls'&#Hml')".
-  destruct (decide (ls = ls')).
-  { subst. iDestruct (meta_agree with "Hmls Hmls'") as %Heq.
-    eauto. }
-  destruct (decide (l = l')).
-  { subst. iDestruct (meta_agree with "Hml Hml'") as %Heq.
-    eauto. }
-  eauto.
-Qed.
-
-Lemma loc_paired_base_eq_iff ls l ls' l':
-  addr_offset l = addr_offset ls →
-  addr_offset l' = addr_offset ls' →
-  loc_paired (addr_base ls) (addr_base l) -∗
-  loc_paired (addr_base ls') (addr_base l') -∗
-  ⌜ l = l' ↔ ls = ls' ⌝.
-Proof.
-  iIntros (??) "(#Hmls&#Hml) (#Hmls'&#Hml')".
-  destruct (decide (ls = ls')).
-  { subst. iDestruct (meta_agree with "Hmls Hmls'") as %Heq.
-    iPureIntro.
-    apply addr_base_and_offset_eq_iff; eauto; split; eauto.
-  }
-  destruct (decide (l = l')).
-  { subst. iDestruct (meta_agree with "Hml Hml'") as %Heq.
-    iPureIntro.
-    apply addr_base_and_offset_eq_iff; eauto; split; eauto.
-  }
-  eauto.
-Qed.
-
 Definition is_loc ls l vTy :=
   ((∃ γ, inv locN (loc_inv γ ls l vTy)) ∗ loc_paired ls l)%I.
-
-Lemma is_loc_loc_paired ls l vTy:
-  is_loc ls l vTy -∗ loc_paired ls l.
-Proof. iIntros "(?&$)". Qed.
-
-Lemma is_loc_eq_iff ls l ls' l' vTy vTy':
-  is_loc ls l vTy -∗
-  is_loc ls' l' vTy' -∗
-  ⌜ l = l' ↔ ls = ls' ⌝.
-Proof.
-  iIntros "(?&H1) (?&H2)".
-  iApply (loc_paired_eq_iff with "H1 H2").
-Qed.
-
-Lemma litv_loc_eq_iff (ls l ls' l': loc):
-  (l = l' ↔ ls = ls') →
-  ((#l : ival) = #l' ↔ (#ls: sval) = #ls').
-Proof.
-  intros Heq.
-  split; inversion 1; subst; do 2 f_equal; eapply Heq; auto.
-Qed.
 
 Definition prodT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
   λ vs v, (∃ v1 v2 vs1 vs2, ⌜ v = (v1, v2)%V ∧ vs = (vs1, vs2)%V⌝
@@ -370,8 +313,66 @@ Qed.
 
 Existing Instances sty_inv_persistent.
 
+Section pfs.
+  Context `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
+Lemma loc_paired_eq_iff ls l ls' l':
+  loc_paired ls l -∗
+  loc_paired ls' l' -∗
+  ⌜ l = l' ↔ ls = ls' ⌝.
+Proof.
+  iIntros "(#Hmls&#Hml) (#Hmls'&#Hml')".
+  destruct (decide (ls = ls')).
+  { subst. iDestruct (meta_agree with "Hmls Hmls'") as %Heq.
+    eauto. }
+  destruct (decide (l = l')).
+  { subst. iDestruct (meta_agree with "Hml Hml'") as %Heq.
+    eauto. }
+  eauto.
+Qed.
+
+Lemma loc_paired_base_eq_iff ls l ls' l':
+  addr_offset l = addr_offset ls →
+  addr_offset l' = addr_offset ls' →
+  loc_paired (addr_base ls) (addr_base l) -∗
+  loc_paired (addr_base ls') (addr_base l') -∗
+  ⌜ l = l' ↔ ls = ls' ⌝.
+Proof.
+  iIntros (??) "(#Hmls&#Hml) (#Hmls'&#Hml')".
+  destruct (decide (ls = ls')).
+  { subst. iDestruct (meta_agree with "Hmls Hmls'") as %Heq.
+    iPureIntro.
+    apply addr_base_and_offset_eq_iff; eauto; split; eauto.
+  }
+  destruct (decide (l = l')).
+  { subst. iDestruct (meta_agree with "Hml Hml'") as %Heq.
+    iPureIntro.
+    apply addr_base_and_offset_eq_iff; eauto; split; eauto.
+  }
+  eauto.
+Qed.
+
+Lemma is_loc_loc_paired ls l vTy:
+  is_loc ls l vTy -∗ loc_paired ls l.
+Proof. iIntros "(?&$)". Qed.
+
+Lemma is_loc_eq_iff ls l ls' l' vTy vTy':
+  is_loc ls l vTy -∗
+  is_loc ls' l' vTy' -∗
+  ⌜ l = l' ↔ ls = ls' ⌝.
+Proof.
+  iIntros "(?&H1) (?&H2)".
+  iApply (loc_paired_eq_iff with "H1 H2").
+Qed.
+
+Lemma litv_loc_eq_iff (ls l ls' l': loc):
+  (l = l' ↔ ls = ls') →
+  ((#l : ival) = #l' ↔ (#ls: sval) = #ls').
+Proof.
+  intros Heq.
+  split; inversion 1; subst; do 2 f_equal; eapply Heq; auto.
+Qed.
+
 Lemma arrayT_structRefT_promote vs v t:
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
     val_interp (hS := hS) (arrayT t) vs v -∗
     val_interp (hS := hS) (structRefT (flatten_ty t)) vs v.
 Proof.
@@ -420,7 +421,7 @@ Proof.
   - iRight. eauto.
 Qed.
 
-Lemma ctx_has_semTy_subst `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
+Lemma ctx_has_semTy_subst
       e es t x v vs tx Γ:
       ctx_has_semTy (hS := hS) (<[x:=tx]> Γ) es e t -∗
       val_interp (hS := hS) tx vs v -∗
@@ -446,7 +447,6 @@ Proof.
 Qed.
 
 Lemma structRefT_comparableTy_val_eq ts vs1 v1 vs2 v2:
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) (structRefT ts) vs1 v1 -∗
   val_interp (hS := hS) (structRefT ts) vs2 v2 -∗
   ⌜ v1 = v2 ↔ vs1 = vs2 ⌝.
@@ -480,7 +480,6 @@ Proof.
 Qed.
 
 Lemma structRefT_unboxed_baseTy ts vs v:
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) (structRefT ts) vs v -∗
   ⌜ ∃ ls l, vs = LitV ls ∧ v = LitV l ∧ lit_is_unboxed ls ∧ lit_is_unboxed l ⌝.
 Proof.
@@ -493,7 +492,6 @@ Proof.
 Qed.
 
 Lemma structRefT_unboxedTy ts vs v:
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) (structRefT ts) vs v -∗
   ⌜ val_is_unboxed vs ∧ val_is_unboxed v ⌝.
 Proof.
@@ -507,7 +505,6 @@ Qed.
 
 Lemma unboxed_baseTy_val_unboxed_lit t vs v:
   is_unboxed_baseTy t = true →
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) t vs v -∗
   ⌜ ∃ ls l, vs = LitV ls ∧ v = LitV l ∧ lit_is_unboxed ls ∧ lit_is_unboxed l ⌝.
 Proof.
@@ -524,7 +521,6 @@ Qed.
 
 Lemma unboxedTy_val_unboxed t vs v:
   is_unboxedTy t = true →
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) t vs v -∗
   ⌜ val_is_unboxed vs ∧ val_is_unboxed v ⌝.
 Proof.
@@ -548,7 +544,6 @@ Qed.
 
 Lemma comparableTy_val_eq t vs1 v1 vs2 v2:
   is_comparableTy t = true →
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) t vs1 v1 -∗
   val_interp (hS := hS) t vs2 v2 -∗
   ⌜ v1 = v2 ↔ vs1 = vs2 ⌝.
@@ -586,19 +581,18 @@ Proof.
 Qed.
 
 Lemma sty_val_size:
-      forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ vs v,
+      forall  τ vs v,
         sty_val_interp hS τ vs v -∗
         ⌜ length (flatten_struct vs) = 1%nat ∧
           length (flatten_struct v) = 1%nat ⌝.
 Proof. iIntros. by iDestruct (sty_val_flatten with "[$]") as %[-> ->]. Qed.
 
 Lemma length_flatten_well_typed vs v t:
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
   val_interp (hS := hS) t vs v -∗
   ⌜ length (flatten_ty t) = length (flatten_struct vs) ∧
     length (flatten_ty t) = length (flatten_struct v) ⌝.
 Proof.
-  iIntros (Σ hG hC hRG hG' HS) "Hval".
+  iIntros "Hval".
   iInduction t as [] "IH" forall (vs v).
   - destruct t; iDestruct "Hval" as %Hval;
     repeat destruct Hval as (?&Hval); subst; eauto.
@@ -620,16 +614,14 @@ Proof.
   - rewrite /val_interp/=. iDestruct (sty_val_size with "Hval") as "(%&%)"; eauto.
 Qed.
 
-
 Lemma flatten_well_typed vs v t i vsi vi ti:
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
     flatten_ty t !! i = Some ti →
     flatten_struct vs !! i = Some vsi →
     flatten_struct v !! i = Some vi →
     val_interp (hS := hS) t vs v -∗
     val_interp (hS := hS) ti vsi vi.
 Proof.
-  iIntros (Σ hG hC hRG HS Hlookup1 Hlookup2 Hlookup3) "Hval".
+  iIntros (Hlookup1 Hlookup2 Hlookup3) "Hval".
   iInduction t as [] "IH" forall (vs v i Hlookup1 Hlookup2 Hlookup3).
   - simpl in *.
     destruct t; destruct i; simpl in *; inversion Hlookup1; subst; eauto;
@@ -696,7 +688,6 @@ Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
     val_typing_ind := Induction for val_transTy Sort Prop.
 
 Lemma loc_paired_init l ls:
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ),
   meta_token l ⊤ -∗
   meta_token (hG := refinement_na_heapG) ls ⊤ ==∗
   loc_paired ls l.
@@ -710,7 +701,7 @@ Proof.
 Qed.
 
 Lemma is_loc_init l ls v vs:
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) P,
+  forall  P,
   l ↦ v -∗
   meta_token l ⊤ -∗
   ls s↦ vs -∗
@@ -727,7 +718,6 @@ Proof.
 Qed.
 
 Lemma logical_reln_prepare_write t ts vs v j K (Hctx: LanguageCtx K):
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   {{{ spec_ctx ∗ val_interp (hS := hS) (structRefT (t :: ts)) vs v ∗ j ⤇ K (PrepareWrite vs) }}}
     PrepareWrite v
     {{{ RET #();
@@ -796,7 +786,7 @@ Proof.
 Qed.
 
 Lemma logical_reln_finish_store (ls l: loc) (vs vs': sval) (v v': ival) j K (Hctx: LanguageCtx K) (γ: gname):
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) vTy,
+  forall vTy,
   {{{ spec_ctx ∗ vTy vs v ∗ j ⤇ K (FinishStore #ls vs) ∗ fc_tok γ (1/2)%Qp ∗
       inv locN (loc_inv γ ls l vTy) ∗
       na_heap_mapsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp vs' ∗
@@ -843,7 +833,6 @@ Proof.
 Qed.
 
 Lemma logical_reln_start_read t ts vs v j K (Hctx: LanguageCtx K):
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
   {{{ spec_ctx ∗ val_interp (hS := hS) (structRefT (t :: ts)) vs v ∗ j ⤇ K (StartRead vs) }}}
     StartRead v
     {{{ mem_v, RET mem_v;
@@ -959,7 +948,7 @@ Qed.
 
 Lemma logical_reln_finish_read (ls l: loc) (vs': sval) (v': ival) j K (Hctx: LanguageCtx K) (γ: gname) q
   (Hnonnull: l ≠ null):
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) vTy,
+  forall vTy,
  {{{ spec_ctx ∗ j ⤇ K (FinishRead #ls) ∗ fc_tok γ q ∗
       inv locN (loc_inv γ ls l vTy) ∗
       na_heap_mapsto_st (hG := refinement_na_heapG) (RSt O) ls q vs' ∗
@@ -1054,7 +1043,6 @@ Qed.
 Lemma sty_fundamental_lemma:
   sty_rules_obligation →
   ∀ Γ es e τ, expr_transTy _ _ _ spec_trans Γ es e τ →
-  forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
     ⊢ ctx_has_semTy (hS := hS) Γ es e τ.
 Proof using spec_trans.
   iIntros (Hrules ???? Htyping).
@@ -1062,14 +1050,12 @@ Proof using spec_trans.
       (spec_trans := spec_trans)
       (P := (λ Γ es e τ
              (HTYPE: expr_transTy _ _ _ spec_trans Γ es e τ),
-             forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
                ⊢ ctx_has_semTy (hS := hS) Γ es e τ))
       (P0 := (λ Γ vs v τ
              (HTYPE: val_transTy _ _ _ spec_trans Γ vs v τ),
-             forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
                ⊢ sty_inv hS -∗ spec_ctx -∗ trace_ctx -∗ val_interp (hS := hS) τ vs v));
-    try (intros ??????; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx");
-    try (intros ??????; iIntros "#Hinv #Hspec #Htrace").
+    try (intros; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx");
+    try (intros; iIntros "#Hinv #Hspec #Htrace").
 
 
   (* Variables *)
@@ -2240,6 +2226,8 @@ Proof using spec_trans.
     { rewrite fmap_empty subst_map_empty. iFrame. }
     rewrite fmap_empty subst_map_empty. eauto.
 Qed.
+End pfs.
+  
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
          spec_ffi_interp_adequacy_field.
