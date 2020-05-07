@@ -155,7 +155,7 @@ Definition is_txn_always
             "Hmdata_in_block" ∷ txn_bufDataT_in_block installed bs (projT2 datamap) ) ∗
       "Hcrashheapsmatch" ∷ txn_crash_heaps_match crash_heaps txn_crash_heaps ∗
       "Hcrashheaps" ∷ own γ.(wal_heap_crash_heaps) (◯ (Excl' crash_heaps)) ∗
-      "Htxncrashheaps" ∷ emp  (* own γ_txn_crash_heaps (● (Excl' txn_crash_heaps)) *)
+      "Htxncrashheaps" ∷ own γ_txn_crash_heaps (● (Excl' txn_crash_heaps))
   )%I.
 
 Global Instance is_txn_always_timeless walHeap gData γcrash :
@@ -1007,21 +1007,35 @@ Proof.
   intros ->; auto.
 Qed.
 
-Theorem wp_txn__doCommit l q gData γcrash bufs buflist bufamap :
+Theorem wp_txn__doCommit l q gData γcrash bufs buflist bufamap E :
   {{{ is_txn l gData γcrash ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
-        is_txn_buf_pre bufptrval a buf gData
+      ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
+        is_txn_buf_pre bufptrval a buf gData ) ∗
+      ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=>
+          ∃ unmodifiedBufs (txn_crash_heaps : async (u64 * gmap u64 (bufDataKind * gname))),
+            "Htxn_crash_heaps_frag" ∷ own γcrash (◯ (Excl' txn_crash_heaps)) ∗
+            let latest_crash := snd (latest txn_crash_heaps) in
+            "Htxn_unmod" ∷ ( [∗ map] a ↦ b ∈ unmodifiedBufs, mapsto_txn_crash latest_crash a b.(bufData) ) ∗
+            "%Htxn_unmod_disjoint" ∷ ⌜ ∀ a, is_Some (bufamap !! a) -> unmodifiedBufs !! a = None ⌝ ∗
+            "Htxn_crash_close" ∷ ( ∀ txn_id new_crash,
+              own γcrash (◯ (Excl' (async_put (txn_id, new_crash) txn_crash_heaps))) ∗
+              ( [∗ map] a ↦ b ∈ unmodifiedBufs, mapsto_txn_crash latest_crash a b.(bufData) ) ∗
+              ( [∗ map] a ↦ b ∈ unmodifiedBufs, mapsto_txn_crash new_crash a b.(bufData) ) ∗
+              ( [∗ map] a ↦ b ∈ bufamap, mapsto_txn_crash new_crash a b.(bufData) )
+              ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ emp ) )
   }}}
     Txn__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
       if ok then
         [∗ map] a ↦ buf ∈ bufamap,
           mapsto_txn gData a buf.(bufData)
-      else emp
+      else
+        [∗ map] a ↦ buf ∈ bufamap,
+          ∃ (data : @bufDataT buf.(bufKind)), mapsto_txn gData a data
   }}}.
 Proof using txnG0 lockG0 Σ.
-  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre) HΦ".
+  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hcrash_fupd) HΦ".
   iPoseProof "Htxn" as "Htxn0".
   iNamed "Htxn".
 
@@ -1046,11 +1060,16 @@ Proof using txnG0 lockG0 Σ.
         "Hlockedheap" ∷ is_locked_walheap walHeap lwh' ∗
         "Hmapstos" ∷ [∗ map] k↦x ∈ bufamap, mapsto_txn gData k x.(bufData)
     )%I
-    with "[$Hiswal $Hblks Hmapstos $Hwal_latest]").
-  { iApply (wal_heap_memappend _ (⊤ ∖ ↑walN ∖ ↑invN)).
+    with "[$Hiswal $Hblks Hmapstos $Hwal_latest Hcrash_fupd]").
+  { iApply (wal_heap_memappend _ E).
     iInv invN as ">Hinner" "Hinner_close".
+    iMod "Hcrash_fupd".
     iModIntro.
     iNamed "Hinner".
+    iNamed "Hcrash_fupd".
+    iDestruct (ghost_var_agree with "Htxncrashheaps Htxn_crash_heaps_frag") as "%"; subst.
+    rename txn_crash_heaps0 into txn_crash_heaps.
+
     rewrite /memappend_pre.
 
     iDestruct (big_sepM_mono _
@@ -1173,9 +1192,17 @@ Proof using txnG0 lockG0 Σ.
     iMod (memappend_mapsto_update with "[$Hgmdata $Hmapstos $Hmx $Hmdata_m]") as (mData') "(Hgmdata & Hmapstos & Hmdata)".
 
     iExists _. iFrame.
-    iApply "Hinner_close".
-    iNext.
-    iExists _, _. iFrame.
+
+    (* update txn_crash_heaps *)
+
+    iMod ("Htxn_crash_close" with "[Htxn_crash_heaps_frag]") as "Htxn_crash_close".
+    { admit. }
+
+    iMod ("Hinner_close" with "[-]") as "Hinner_close".
+    { iNext.
+      iExists _, _. iFrame. }
+
+    iModIntro. done.
   }
 
   iIntros (npos ok) "Hnpos".
