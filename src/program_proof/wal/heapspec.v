@@ -13,24 +13,25 @@ Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)
 .
 
-Record async `{Countable T} := {
+Record async T := {
   latest : T;
   pending : list T;
 }.
 
-Arguments async T {_ _}.
-Arguments Build_async {_ _ _}.
+Arguments pending {T} _.
+Arguments latest {T} _.
+Arguments Build_async {_}.
 
-Definition possible `{Countable T} (ab : async T) :=
+Definition possible `(ab : async T) :=
   pending ab ++ [latest ab].
 
-Definition sync `{Countable T} (v : T) : async T :=
+Definition sync `(v : T) : async T :=
   Build_async v nil.
 
-Definition async_put `{Countable T} (v : T) (a : async T) :=
+Definition async_put `(v : T) (a : async T) :=
   Build_async v (possible a).
 
-Canonical Structure asyncCrashHeapO := leibnizO (async (u64 * gname)).
+Canonical Structure asyncO T := leibnizO (async T).
 
 
 Class walheapG (Σ: gFunctors) :=
@@ -38,7 +39,7 @@ Class walheapG (Σ: gFunctors) :=
     walheap_u64_Block :> gen_heapPreG u64 Block Σ;
     walheap_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
     walheap_mnat :> inG Σ (authR mnatUR);
-    walheap_asyncCrashHeap :> inG Σ (ghostR asyncCrashHeapO);
+    walheap_asyncCrashHeap :> inG Σ (ghostR $ asyncO (u64 * gname));
     walheap_heap :> heapG Σ
   }.
 

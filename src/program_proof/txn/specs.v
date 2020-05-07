@@ -19,17 +19,16 @@ Arguments UB {T} v modifiedSinceInstallG.
 
 Class txnG (Σ: gFunctors) :=
   { txn_bool :> inG Σ (ghostR $ boolO);
-    txn_walheap :> walheapG Σ
+    txn_walheap :> walheapG Σ;
+    txn_asyncTxnCrashHeap :> inG Σ (ghostR $ asyncO (u64 * gmap u64 (bufDataKind * gname)));
+    txn_crashheap :> ∀ K, gen_heapPreG u64 (@bufDataT K) Σ
   }.
-
-(*
-Context `{!{K & gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ}}.
-Context `{!gen_heapPreG addr {K & @bufDataT K} Σ}.
-*)
 
 Section heap.
 Context `{!lockG Σ}.
 Context `{!txnG Σ}.
+
+Definition txnBlockCrashPreG {K} : gen_heapPreG u64 (@bufDataT K) Σ := _.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -114,30 +113,61 @@ Definition gmDataP (gm : {K & gmap u64 (updatable_buf (@bufDataT K))})
   refine (projT2 gm).
 Defined.
 
+Definition txn_crash_heap_off_match {K} (walblock : Block) (gm : gmap u64 (@bufDataT K)) : iProp Σ :=
+  (* Very similar to txn_bufDataT_in_block *)
+  (
+    [∗ map] off ↦ bufData ∈ gm,
+      ⌜ is_bufData_at_off walblock off bufData ⌝
+  )%I.
+
+Definition txn_crash_heaps_match (crash_heaps : async (u64 * gname))
+                                 (txn_crash_heaps : async (u64 * gmap u64 (bufDataKind * gname))) : iProp Σ :=
+  ( [∗ list] walh;txnh ∈ possible crash_heaps;possible txn_crash_heaps,
+      ⌜ fst walh = fst txnh ⌝ ∗
+      let walγ := GenHeapG_Pre _ _ _ crashPreG (snd walh) in
+      let crashgData := snd txnh in
+      [∗ map] blkno ↦ crash_off ∈ crashgData,
+        ∃ walblock (offmap : gmap u64 (@bufDataT (fst crash_off))),
+          mapsto (hG := walγ) blkno 1 walblock ∗
+          gen_heap_ctx (hG := GenHeapG_Pre _ _ _ txnBlockCrashPreG (snd crash_off)) offmap ∗
+          txn_crash_heap_off_match walblock offmap
+  )%I.
+
+Definition mapsto_txn_crash {K} (cgData : gmap u64 (bufDataKind * gname)) (a : addr) (v : @bufDataT K) : iProp Σ :=
+  ∃ hGname,
+    ⌜ valid_addr a ∧ valid_off K a.(addrOff) ⌝ ∗
+    ⌜ cgData !! a.(addrBlock) = Some (K, hGname) ⌝ ∗
+    mapsto (hG := GenHeapG_Pre _ _ _ txnBlockCrashPreG hGname) a.(addrOff) 1 v.
+
 Definition is_txn_always
     (γ : wal_heap_gnames)
-    (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
+    (gData : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
+    (γ_txn_crash_heaps : gname)
     : iProp Σ :=
   (
     ∃ (mData : gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))})
-      (crash_heaps : async (u64 * gname)),
+      (crash_heaps : async (u64 * gname))
+      (txn_crash_heaps : async (u64 * gmap u64 (bufDataKind * gname))),
       "Hgmdata" ∷ ( [∗ map] _ ↦ gm;gh ∈ mData;gData, gmDataP gm gh ) ∗
       "Hmdata_m" ∷ ( [∗ map] blkno ↦ datamap ∈ mData,
           ∃ installed bs,
             "Hmdata_hb" ∷ mapsto (hG := γ.(wal_heap_h)) blkno 1 (HB installed bs) ∗
             "Hmdata_in_block" ∷ txn_bufDataT_in_block installed bs (projT2 datamap) ) ∗
-      "Hcrashheaps" ∷ own γ.(wal_heap_crash_heaps) (◯ Excl' crash_heaps)
+      "Hcrashheapsmatch" ∷ txn_crash_heaps_match crash_heaps txn_crash_heaps ∗
+      "Hcrashheaps" ∷ own γ.(wal_heap_crash_heaps) (◯ (Excl' crash_heaps)) ∗
+      "Htxncrashheaps" ∷ emp  (* own γ_txn_crash_heaps (● (Excl' txn_crash_heaps)) *)
   )%I.
 
-Global Instance is_txn_always_timeless walHeap gData :
-  Timeless (is_txn_always walHeap gData).
+Global Instance is_txn_always_timeless walHeap gData γcrash :
+  Timeless (is_txn_always walHeap gData γcrash).
 Proof.
+  apply exist_timeless; intros.
   apply exist_timeless; intros.
   apply exist_timeless; intros.
   apply sep_timeless; refine _.
   apply big_sepM2_timeless; intros.
   rewrite /gmDataP.
-  destruct (decide (projT1 x1 = projT1 x2)); refine _.
+  destruct (decide (projT1 x2 = projT1 x3)); refine _.
 Qed.
 
 Definition is_txn_locked l γ : iProp Σ :=
@@ -150,22 +180,23 @@ Definition is_txn_locked l γ : iProp Σ :=
 
 Definition is_txn (l : loc)
     (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
+    γcrash
     : iProp Σ :=
   (
     ∃ γLock (walHeap : wal_heap_gnames) (mu : loc) (walptr : loc),
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       "Hiswal" ∷ is_wal walN (wal_heap_inv walHeap) walptr ∗
-      "Histxna" ∷ inv invN (is_txn_always walHeap gData) ∗
+      "Histxna" ∷ inv invN (is_txn_always walHeap gData γcrash) ∗
       "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l walHeap)
   )%I.
 
-Global Instance is_txn_persistent l gData : Persistent (is_txn l gData) := _.
+Global Instance is_txn_persistent l gData γ : Persistent (is_txn l gData γ) := _.
 
-Theorem is_txn_dup l gData :
-  is_txn l gData -∗
-  is_txn l gData ∗
-  is_txn l gData.
+Theorem is_txn_dup l gData γcrash :
+  is_txn l gData γcrash -∗
+  is_txn l gData γcrash ∗
+  is_txn l gData γcrash.
 Proof.
   iIntros "#$".
 Qed.
@@ -198,8 +229,8 @@ Proof.
   rewrite <- Eqdep.Eq_rect_eq.eq_rect_eq. iFrame.
 Qed.
 
-Theorem wp_txn_Load K l gData a v :
-  {{{ is_txn l gData ∗
+Theorem wp_txn_Load K l gData γcrash a v :
+  {{{ is_txn l gData γcrash ∗
       mapsto_txn gData a v
   }}}
     Txn__Load #l (addr2val a) #(bufSz K)
@@ -263,7 +294,7 @@ Proof using txnG0 lockG0 Σ.
       iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
       {
         iModIntro.
-        iExists _, _.
+        iExists _, _, _.
         iFrame.
         iApply "Hdata".
         iExists _, _. iFrame.
@@ -286,7 +317,7 @@ Proof using txnG0 lockG0 Σ.
       iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
       {
         iModIntro.
-        iExists _, _.
+        iExists _, _, _.
         iFrame.
         iApply "Hdata".
         iExists _, _.
@@ -390,7 +421,7 @@ Proof using txnG0 lockG0 Σ.
     iDestruct ("Hinv_closer" with "[-]") as "Hinv_closer".
     {
       iModIntro.
-      iExists _, _.
+      iExists _, _, _.
       iFrame.
       iApply "Hdata".
       iExists _, _. iFrame.
@@ -476,11 +507,11 @@ Proof.
   iExists _. done.
 Qed.
 
-Theorem mapsto_txn_locked N γ l lwh a K data gData E :
+Theorem mapsto_txn_locked N γ l lwh a K data gData γcrash E :
   ↑invN ⊆ E ->
   ↑N ⊆ E ∖ ↑invN ->
   is_wal N (wal_heap_inv γ) l ∗
-  inv invN (is_txn_always γ gData) ∗
+  inv invN (is_txn_always γ gData γcrash) ∗
   is_locked_walheap γ lwh ∗
   @mapsto_txn K gData a data
   ={E}=∗
@@ -497,8 +528,8 @@ Proof.
   iDestruct "Ha" as (installed bs) "[Ha Hb]".
   iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Ha]") as "(Hlockedheap & Ha & %)"; eauto.
   iModIntro.
-  iSplitL "Hgmdata Hmdata_m Hcrashheaps Ha Hb".
-  { iNext. iExists _, _. iFrame.
+  iSplitL "Hgmdata Hmdata_m Hcrashheaps Ha Hb Htxncrashheaps Hcrashheapsmatch".
+  { iNext. iExists _, _, _. iFrame.
     iApply "Hmdata_m". iExists _, _. iFrame. }
   iModIntro.
   iFrame.
@@ -508,8 +539,8 @@ Proof.
 Qed.
 
 
-Theorem wp_txn__installBufsMap l q gData walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
-  {{{ inv invN (is_txn_always γ gData) ∗
+Theorem wp_txn__installBufsMap l q gData γcrash walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
+  {{{ inv invN (is_txn_always γ gData γcrash) ∗
       is_wal walN (wal_heap_inv γ) walptr ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ lwh ∗
@@ -798,8 +829,8 @@ Proof.
   done.
 Qed.
 
-Theorem wp_txn__installBufs l q gData walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
-  {{{ inv invN (is_txn_always γ gData) ∗
+Theorem wp_txn__installBufs l q gData γcrash walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
+  {{{ inv invN (is_txn_always γ gData γcrash) ∗
       is_wal walN (wal_heap_inv γ) walptr ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ lwh ∗
@@ -976,8 +1007,8 @@ Proof.
   intros ->; auto.
 Qed.
 
-Theorem wp_txn__doCommit l q gData bufs buflist bufamap :
-  {{{ is_txn l gData ∗
+Theorem wp_txn__doCommit l q gData γcrash bufs buflist bufamap :
+  {{{ is_txn l gData γcrash ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre bufptrval a buf gData
