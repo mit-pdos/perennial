@@ -1173,8 +1173,8 @@ Proof using txnG0 lockG0 Σ.
         "Hlockedheap" ∷ is_locked_walheap walHeap lwh' ∗
         "Hmapstos" ∷ [∗ map] k↦x ∈ bufamap, mapsto_txn gData k x.(bufData)
     )%I
-    with "[$Hiswal $Hblks Hmapstos $Hwal_latest Hcrash_fupd]").
-  { iApply (wal_heap_memappend (⊤ ∖ ↑walN ∖ ↑invN)).
+    with "[$Hiswal $Hblks Hmapstos Hwal_latest Hcrash_fupd]").
+  { iApply (wal_heap_memappend (⊤ ∖ ↑walN ∖ ↑invN) with "[Hmapstos Hcrash_fupd] Hwal_latest").
     iInv invN as ">Hinner" "Hinner_close".
     iMod "Hcrash_fupd".
     iModIntro.

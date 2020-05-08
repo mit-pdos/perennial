@@ -1,4 +1,5 @@
 From Perennial.goose_lang.lib Require Import typed_mem.impl.
+From Perennial.goose_lang.lib Require Import control.impl.
 
 (** * Slice library *)
 
@@ -131,6 +132,7 @@ Definition SliceSet t: val :=
 
 Definition SliceAppend t: val :=
   λ: "s1" "x",
+  Assume (slice.len "s1" < #(2^64-1));;
   let: "sz" := slice.len "s1" + #1 in
   if: slice.cap "s1" - slice.len "s1" ≥ #1 then
     (* re-use existing capacity *)

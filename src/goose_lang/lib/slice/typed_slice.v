@@ -86,22 +86,29 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
+Lemma wp_SliceAppend' stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
+  {{{ is_slice s t 1 vs }}}
+    SliceAppend t (slice_val s) (to_val x) @ stk; E
+  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ".
+  wp_apply (slice.wp_SliceAppend' with "Hs").
+  { apply to_val_has_zero. }
+  { apply to_val_ty. }
+  iIntros (s') "Hs".
+  rewrite /list.untype.
+  change [to_val x] with (to_val <$> [x]).
+  rewrite -fmap_app.
+  iApply ("HΦ" with "Hs").
+Qed.
+
 Lemma wp_SliceAppend stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
   {{{ is_slice s t 1 vs ∗ ⌜int.val s.(Slice.sz) + 1 < 2^64⌝ }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
   {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
 Proof.
   iIntros (Φ) "[Hs %] HΦ".
-  wp_apply (slice.wp_SliceAppend with "[$Hs]").
-  { apply to_val_has_zero. }
-  { iSplit; first by auto.
-    iPureIntro.
-    apply to_val_ty. }
-  iIntros (s') "Hs".
-  rewrite /list.untype.
-  change [to_val x] with (to_val <$> [x]).
-  rewrite -fmap_app.
-  iApply ("HΦ" with "Hs").
+  wp_apply (wp_SliceAppend' with "Hs"); auto.
 Qed.
 
 Lemma wp_SliceAppend_to_zero stk E t `{!IntoValForType IntoVal0 t} v (x: val) :
