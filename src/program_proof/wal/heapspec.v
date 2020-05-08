@@ -1664,7 +1664,7 @@ Proof using walheapG0.
   unfold locked_wh_disk in *.
   destruct lwh as [σd σtxns].
   unfold is_locked_walheap in *. simpl in *.
-  wp_apply (wp_Walog__ReadMem _ _
+  wp_apply (wp_Walog__ReadMem _
     (λ mb,
       match mb with
       | Some b' => own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗ ⌜ b' = b ⌝
@@ -1673,7 +1673,7 @@ Proof using walheapG0.
           ⌜wal_wf σ⌝
           -∗ ⌜relation.denote (log_read_installed blkno) σ σ' b0⌝
              -∗ wal_heap_inv γ σ
-                ={⊤ ∖ ↑N}=∗ wal_heap_inv γ σ'
+                ={⊤ ∖ ↑walN}=∗ wal_heap_inv γ σ'
                             ∗ own γ.(wal_heap_txns) (◯ Excl' (σd, σtxns)) ∗ ⌜b0 = b⌝
       end
     )%I with "[$Hwal Htxnsfrag]").
@@ -1770,14 +1770,15 @@ Proof using walheapG0.
   }
   {
     wp_pures.
-    wp_apply (wp_Walog__ReadInstalled _ _
+    wp_apply (wp_Walog__ReadInstalled _
       (λ b', own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗ ⌜ b' = b ⌝)%I
       with "[$Hwal $Hbl]").
+    { admit. }
     iIntros (bli) "Hbli".
     iDestruct "Hbli" as (b0) "(Hb0 & Hlatestfrag & ->)".
     iApply "HΦ". iFrame.
   }
-Qed.
+Admitted.
 
 Theorem wal_heap_mapsto_latest_helper γ lwh (a : u64) (v : heap_block) σ :
   wal_heap_inv γ σ ∗
