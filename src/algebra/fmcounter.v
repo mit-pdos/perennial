@@ -97,11 +97,7 @@ Proof.
   rewrite /fmcounter_lb.
   iApply (own_mono with "Hlb").
   apply @auth_frag_mono.
-  exists n2.
-  hnf.
-  rewrite /op /cmra_op /=.
-  rewrite /ucmra_op /mnatUR /mnat_op.
-  lia.
+  apply mnat_included; auto.
 Qed.
 
 Lemma fmcounter_sep γ q1 q2 n:
