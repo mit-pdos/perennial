@@ -913,10 +913,76 @@ Instance unopened_log_durable sz:
   IntoCrash (λ _ _, unopened_log sz) (λ _ _, unopened_log sz).
 Proof. apply _. Qed.
 
-Instance typed_ptsto_into_crash l descr val:
-  IntoCrash (λ _ _, l ↦[descr] val)%I (λ _ _, True)%I.
-Proof. iIntros (??) "H". iIntros (???). eauto. Qed.
+(*
+From iris.proofmode Require Import base intro_patterns spec_patterns
+                                   sel_patterns coq_tactics reduction.
 
-Instance ptsto_log_post_crash (l:loc) (vs:list Block):
+From Perennial.Helpers Require Import NamedProps.
+
+Ltac apply_into_crash id A :=
+  let Hpose := fresh "Hpose" in
+  pose proof (_ : IntoCrash (λ _ _, A) _) as Hpose.
+(*  iEval (rewrite Hpose) in id; clear Hpose *)
+
+Ltac crash_env Γ :=
+  match Γ with
+    | environments.Enil => idtac
+    | environments.Esnoc ?Γ' ?id ?A => first [ apply_into_crash id A || iClear id ] ; crash_env Γ'
+  end.
+
+Ltac iCrash :=
+  match goal with
+  | [ |- environments.envs_entails ?Γ _] =>
+    let H := iFresh in
+    let spatial := pm_eval (environments.env_spatial Γ) in
+    let intuit := pm_eval (environments.env_intuitionistic Γ) in
+    crash_env spatial; crash_env intuit
+    (*
+    iApply (modus_ponens with "[-]"); [ iNamedAccu | ];
+    rewrite ?post_crash_named ?post_crash_sep
+     *)
+  end.
+
+Instance ptsto_log_into_crash l vs:
   IntoCrash (λ _ _, ptsto_log l vs) (λ _ _, crashed_log vs).
-Proof. Abort.
+Proof.
+  iIntros (??) "HP". iDestruct "HP" as (??) "(H1&H2)". 
+  Check into_crash.
+  Print Instances IntoCrash.
+  Check @into_crash.
+  apply_into_crash "H2" (is_log' H H0 vs).
+  iCrash.
+  pose proof (_ : IntoCrash (λ _ _, is_log' H H0 vs) _) as Hfoo.
+  rewrite Hfoo.
+  rewrite (@into_crash _ _ _ _ _ (is_log'_durable _ _ _)). iCrash.
+  iIntros 
+ apply _. Qed.
+
+(*
+From iris.proofmode Require Import tactics monpred.
+Instance heapG_index_heapG {Σ} (hGi: heapG_index (Σ := Σ)) : heapG Σ.
+Proof. move: hGi. rewrite /heapG_index//=. Defined.
+
+Existing Instance FromModal_post_crash.
+
+Definition fun2monpred {Σ} (P : heapG Σ → iProp Σ) : monPred (heapG_index (Σ := Σ)) (iPropI Σ) :=
+  {| monPred_at := (λ hG, P (heapG_index_heapG hG)) |}.
+
+Notation "'<>' P" := (fun2monpred (λ H, P)) (at level 100) : bi_scope.
+
+Instance IntoCrash_IntoCrash' {Σ} (P: ∀ Σ, heapG Σ → iProp Σ) Q:
+  IntoCrash (P) Q →
+  IntoCrash' (fun2monpred (P Σ))%I (fund2monpred(Q Σ))%I.
+
+Instance is_log'_durable' {Σ} sz disk_sz vs:
+  IntoCrash' (Σ := Σ) (<> is_log' sz disk_sz vs)%I (<> is_log' sz disk_sz vs)%I.
+
+Lemma ptsto_log_post_crash {Σ: gFunctors} (l:loc) (vs:list Block) disk_sz sz:
+  (<> log_fields l sz disk_sz) -∗ (<> is_log' sz disk_sz vs) -∗ post_crash' (Σ := Σ) (<> crashed_log vs).
+Proof.
+  iIntros "H1 H2".
+  iModIntro. iStopProof. iStartProof (iPropI Σ). iIntros (?) => //=.
+Abort.
+
+*)
+*)

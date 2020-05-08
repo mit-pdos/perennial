@@ -1,5 +1,8 @@
 From Perennial.goose_lang Require Import lifting.
 From iris.proofmode Require Import tactics monpred.
+From Perennial.Helpers Require Import NamedProps.
+From iris.proofmode Require Import base intro_patterns spec_patterns
+                                   sel_patterns coq_tactics reduction.
 
 
 Section goose_lang.
@@ -110,6 +113,10 @@ Proof.
   iExists x. iApply ("Hall" with "[$] [$]").
 Qed.
 
+Lemma post_crash_named P name:
+  named name (post_crash (λ hG, P hG)) -∗
+  post_crash (λ hG, named name (P hG)).
+Proof. rewrite //=. Qed.
 
 End post_crash_prop.
 
@@ -191,9 +198,46 @@ Section IntoCrash.
   Proof. iIntros "HP HQ". rewrite into_crash. iApply post_crash_sep. iFrame. Qed.
 
 End IntoCrash.
+End goose_lang.
+
+Lemma modus_ponens {Σ} (P Q: iProp Σ)  : P -∗ (P -∗ Q) -∗ Q.
+Proof. iIntros "HP Hwand". by iApply "Hwand". Qed.
+
+Ltac crash_env Γ :=
+  match Γ with
+    | environments.Enil => idtac
+    | environments.Esnoc ?Γ' ?id ?A => first [ iEval (rewrite into_crash) in id || iClear id ] ; crash_env Γ'
+  end.
+
+Ltac iCrash :=
+  match goal with
+  | [ |- environments.envs_entails ?Γ _] =>
+    let H := iFresh in
+    let spatial := pm_eval (environments.env_spatial Γ) in
+    let intuit := pm_eval (environments.env_intuitionistic Γ) in
+    crash_env spatial; crash_env intuit;
+    iApply (modus_ponens with "[-]"); [ iNamedAccu | ];
+    rewrite ?post_crash_named ?post_crash_sep; iApply post_crash_mono;
+    intros; simpl; iIntros H; iNamed H
+  end.
+
+Section goose_lang.
+Context `{ffi_semantics: ext_semantics}.
+Context `{!ffi_interp ffi}.
+Context {Σ: gFunctors}.
+Section modality_alt.
+  Context `{hG: !heapG Σ}.
+  Context `{Hi1: !IntoCrash P P'}.
+  Context `{Hi2: !IntoCrash Q Q'}.
+  Lemma test R :
+    P Σ hG -∗ Q Σ hG -∗ R Σ hG -∗ post_crash (λ hG', P' Σ hG' ∗ Q' Σ hG').
+  Proof.
+    iIntros "HP HQ HR". iCrash. iFrame.
+  Qed.
+
+End modality_alt.
 
 Section modality.
-  Context {Σ: gFunctors}.
 
   Program Definition heapG_index: biIndex :=
     {| bi_index_type := heapG Σ;
@@ -239,7 +283,7 @@ Section modality.
     IntoCrash' (post_crash' P) P.
   Proof. rewrite //=. Qed.
 
-  Lemma test P Q: post_crash' (P -∗ Q) -∗ post_crash' P -∗ post_crash' Q.
+  Lemma test2 P Q: post_crash' (P -∗ Q) -∗ post_crash' P -∗ post_crash' Q.
   Proof. iIntros "Hwand HP". iModIntro. by iApply "Hwand". Qed.
 End modality.
 End goose_lang.
