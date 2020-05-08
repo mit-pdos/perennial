@@ -98,19 +98,6 @@ Proof.
       exists (a::l1), l2; eauto.
 Qed.
 
-Lemma insert_insert_ne `{!EqDecision K} `{!Countable K} V (m: gmap K V) (k1 k2: K) v1 v2 :
-  k1 ≠ k2 ->
-  <[k1 := v1]> (<[k2 := v2]> m) =
-  <[k2 := v2]> (<[k1 := v1]> m).
-Proof.
-  intros Hneq.
-  apply map_eq; intros k.
-  destruct (decide (k = k1)), (decide (k = k2)); subst; try congruence;
-    repeat (rewrite -> lookup_insert ||
-            rewrite -> lookup_insert_ne by auto);
-    auto.
-Qed.
-
 Theorem apply_upds_insert_other upds (z: Z) (a: u64) b d :
   z ≠ int.val a →
   apply_upds upds (<[int.val a := b]> d) !! z =
@@ -123,7 +110,7 @@ Proof.
     destruct (decide (int.val a = int.val a0)).
     + rewrite e.
       rewrite insert_insert //.
-    + rewrite insert_insert_ne; auto.
+    + rewrite insert_commute; auto.
 Qed.
 
 Theorem apply_upds_lookup_insert_highest upds (a: u64) b d :
