@@ -1052,6 +1052,71 @@ Proof.
   iIntros (k x Hkx) "[Hmapsto Hvalid]". iFrame.
 Qed.
 
+Lemma crash_txn_bufs_to_wal_blocks (unmodifiedBufs : gmap addr {K & @bufDataT K})
+                                   (wal_crash_heap txn_crash_heap : gname)
+                                   (updlist : list update.t) :
+  ( [∗ map] a↦b ∈ unmodifiedBufs, mapsto_txn_crash txn_crash_heap a b ) -∗
+  txn_crash_heap_match wal_crash_heap txn_crash_heap -∗
+  ∃ wal_blocks,
+    ( [∗ map] a↦b ∈ unmodifiedBufs, mapsto_txn_crash txn_crash_heap a b ) ∗
+    ⌜∀ u : update.t, u ∈ updlist → wal_blocks !! u.(update.addr) = None⌝ ∗
+    let P := [∗ map] a↦b ∈ wal_blocks,
+                 mapsto (hG := GenHeapG_Pre _ _ _ crashPreG wal_crash_heap) a 1 b in
+    P ∗
+    ( P -∗ txn_crash_heap_match wal_crash_heap txn_crash_heap ).
+Proof.
+  iIntros "Hbufs Hmatch".
+  iDestruct "Hmatch" as (wal_crash_map) "[Hctx Hmatch]".
+  iAssert (⌜ unmodifiedBufs ⊆ wal_crash_map ⌝)%I as "%Hsubset".
+  { rewrite map_subseteq_spec.
+    iIntros (i b Hib).
+    iDestruct (big_sepM_lookup with "Hbufs") as "[% Hbuf]"; eauto.
+    iDestruct (gen_heap_valid with "Hctx Hbuf") as "%Hvalid".
+    done. }
+
+  rewrite -(map_union_filter
+              (λ x, Forall (λ u, u.(update.addr) ≠ (fst x)) updlist ∧
+                    is_Some (gmap_addr_by_block unmodifiedBufs !! fst x))
+              (gmap_addr_by_block wal_crash_map)).
+  iDestruct (big_sepM_union with "Hmatch") as "[Hmatch0 Hmatch1]".
+  { eapply map_disjoint_filter. }
+
+  iDestruct (big_sepM_sepM2 with "Hmatch0") as (wal_blocks) "Hmatch0".
+
+  iExists wal_blocks.
+  iFrame "Hbufs".
+
+  iAssert (⌜∀ u : update.t, u ∈ updlist → wal_blocks !! u.(update.addr) = None⌝)%I as "%Hdisjoint".
+  { iIntros (u Hu).
+    destruct (wal_blocks !! u.(update.addr)) eqn:He; eauto.
+    iDestruct (big_sepM2_lookup_2_some with "Hmatch0") as (z) "%Hfiltered"; eauto.
+    eapply map_filter_lookup_Some in Hfiltered; intuition idtac.
+    eapply Forall_forall in H1; eauto. }
+
+  iSplitR; first by done.
+  iDestruct (big_sepM2_sep with "Hmatch0") as "[Hmatch00 Hmatch01]".
+  iDestruct (big_sepM2_sepM_2 with "Hmatch00") as "Hmatch00".
+
+  iSplitL "Hmatch00".
+  { iApply (big_sepM_mono with "Hmatch00").
+    iIntros (???) "H".
+    iDestruct "H" as (?) "[% H]". iFrame. }
+
+  iIntros "Hmatch00".
+  iDestruct (big_sepM2_flip with "Hmatch01") as "Hmatch01".
+  iDestruct (big_sepM2_sepM_merge with "[$Hmatch01 $Hmatch00]") as "Hmatch0".
+  iDestruct (big_sepM2_sepM_2 with "Hmatch0") as "Hmatch0".
+  iDestruct (big_sepM_mono with "Hmatch0") as "Hmatch0".
+  2: {
+    iDestruct (big_sepM_union with "[$Hmatch0 $Hmatch1]") as "Hmatch".
+    { eapply map_disjoint_filter. }
+    rewrite map_union_filter.
+    iExists _. iFrame. }
+
+  iIntros (???) "H".
+  iDestruct "H" as (b) "[% [H0 H1]]". iExists b. iFrame.
+Qed.
+
 Theorem wp_txn__doCommit l q gData γcrash bufs buflist bufamap E :
   {{{ is_txn l gData γcrash ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -1185,18 +1250,12 @@ Proof using txnG0 lockG0 Σ.
     iDestruct (big_sepL2_app_inv with "Hcrashheapsmatch") as "[Hcrashheapsmatch [[% Hcrashheapmatch_latest] _]]".
     { lia. }
 
-    (* ([∗ map] a↦b;offmap ∈ ?crash_blocks;gmap_addr_by_block
-                                        (unmodifiedBufs
-                                         ∪ ((λ b : buf,
-                                               existT 
-                                                 b.(bufKind) 
-                                                 b.(bufData)) <$> bufamap)), 
-   mapsto a 1 b ∗ txn_crash_heap_off_match b offmap)
-    *)
-
-    iExists ∅.
+    iDestruct (crash_txn_bufs_to_wal_blocks with "Htxn_unmod Hcrashheapmatch_latest")
+      as (wal_unmodified_blocks) "(Hwal_blocks_old & %Hwal_unmod_disjoint & Hwal_unmod & Hcrashheapmatch_latest)".
+    iExists wal_unmodified_blocks.
     iExists _.
 
+    iFrame "Hwal_unmod Hcrashheaps".
     iDestruct (big_sepML_sepL_split with "Hx_mx") as "[Hx_mx Hupdlist_olds]".
 
     iSplitL "Hupdlist_olds".
@@ -1207,17 +1266,11 @@ Proof using txnG0 lockG0 Σ.
       rewrite zip_fst_snd. iFrame.
     }
 
-    iSplitR.
-    { iApply big_sepM_empty. done. }
-
-    iSplitR.
-    { iPureIntro. intros. rewrite lookup_empty. done. }
-
-    iFrame "Hcrashheaps".
+    iSplitR; first by eauto.
 
     iIntros (txn_id lwh' new_crash_heap) "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hq)".
     rewrite /memappend_q.
-    rewrite big_sepL2_alt.
+    rewrite (big_sepL2_alt _ updlist_olds.*1).
     iDestruct "Hq" as "[_ Hq]".
     rewrite zip_fst_snd.
 
@@ -1250,19 +1303,33 @@ Proof using txnG0 lockG0 Σ.
       iFrame. done.
     }
 
+    iDestruct ("Hcrashheapmatch_latest" with "Hunmod") as "Hcrashheapmatch_latest".
+
     iMod (memappend_mapsto_update with "[$Hgmdata $Hmapstos $Hmx $Hmdata_m]") as (mData') "(Hgmdata & Hmapstos & Hmdata)".
-    iMod (txn_crash_heap_alloc _ _ _ _ (unmodifiedBufs ∪ ((λ b, existT _ b.(bufData)) <$> bufamap)) with "[$Htxncrashheaps $Htxn_crash_heaps_frag]")
+    iMod (txn_crash_heap_alloc _ _ _ (wal_unmodified_blocks ∪ (list_to_map ((λ u, (u.(update.addr), u.(update.b))) <$> updlist_olds.*1))) (unmodifiedBufs ∪ ((λ b, existT _ b.(bufData)) <$> bufamap)) with "[$Htxncrashheaps $Htxn_crash_heaps_frag]")
       as (txn_crash_new) "(Htxncrashheaps & Htxn_crash_heaps_frag & Htxn_crash_heap_ok & Htxn_crash_mapstos)".
     { admit. }
 
     iExists _. iFrame.
 
-    iMod ("Htxn_crash_close" with "[$Htxn_crash_heaps_frag $Htxn_unmod Htxn_crash_mapstos]") as "Htxn_crash_close".
-    { admit. }
+    iMod ("Htxn_crash_close" with "[$Htxn_crash_heaps_frag $Hwal_blocks_old Htxn_crash_mapstos]") as "Htxn_crash_close".
+    { iDestruct (big_sepM_union with "Htxn_crash_mapstos") as "[H0 H1]".
+      { rewrite /map_disjoint /map_relation /option_relation. intro a. rewrite lookup_fmap.
+        specialize (Htxn_unmod_disjoint a). destruct (unmodifiedBufs !! a).
+        { destruct (bufamap !! a); simpl; eauto.
+          assert (is_Some (Some b)); intuition eauto. congruence. }
+        { destruct (bufamap !! a); simpl; eauto. }
+      }
+      iFrame.
+      iApply big_sepM_fmap. iFrame.
+    }
 
     iMod ("Hinner_close" with "[-]") as "Hinner_close".
     { iNext.
       iExists _, _, _. iFrame.
+      iSplitL "Hcrashheapmatch_latest".
+      { iSplitL; last by done.
+        iFrame. done. }
       iSplitL; last by done.
       iSplitR; first by eauto.
       rewrite /=. iFrame.
@@ -1291,9 +1358,9 @@ Proof using txnG0 lockG0 Σ.
 
     wp_pures.
     iApply "HΦ".
-    done.
+    admit.
   }
-Qed.
+Admitted.
 
 Theorem wp_txn_CommitWait l q gData bufs buflist bufamap (wait : bool) (id : u64) :
   {{{ is_txn l gData ∗

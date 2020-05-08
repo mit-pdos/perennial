@@ -312,6 +312,23 @@ Section map2.
       eauto.
   Qed.
 
+  Lemma big_sepM_sepM2 Φ (m1 : gmap K A)
+      (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
+    ( [∗ map] k↦y1 ∈ m1, ∃ y2, Φ k y1 y2 ) -∗
+    ∃ m2, ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ).
+  Proof.
+    iIntros "Hm".
+  Admitted.
+
+  Lemma big_sepM2_sepM_merge Φ (Ψ : K -> A -> PROP) (m1 : gmap K A) (m2 : gmap K B)
+      (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
+    ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) ∗
+    ( [∗ map] k↦y1 ∈ m1, Ψ k y1 ) -∗
+    ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ∗ Ψ k y1 ).
+  Proof.
+    iIntros "[Hm2 Hm]".
+  Admitted.
+
 End map2.
 
 Section list2.
