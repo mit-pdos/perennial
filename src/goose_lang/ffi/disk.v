@@ -545,9 +545,8 @@ Section crash.
   Existing Instances disk.disk_op disk.disk_model disk.disk_ty.
   Existing Instances disk.disk_semantics disk.disk_interp.
   Existing Instance diskG0.
-  Context `{!heapG Σ}.
 
-  Lemma disk_mapsto_post_crash l q v:
+  Lemma disk_mapsto_post_crash `{!heapG Σ} l q v:
     l d↦{q} v -∗ post_crash (λ _, l d↦{q} v).
   Proof.
     iIntros "H". iIntros (???) "#Hrel".
@@ -555,5 +554,13 @@ Section crash.
     iDestruct "Hrel" as %(Heq1&Heq2).
     rewrite /diskG0. rewrite Heq1. eauto.
   Qed.
+
+  Global Instance disk_mapsto_durable l q v:
+    Durable (λ _ _, l d↦{q} v)%I.
+  Proof. intros ??. apply disk_mapsto_post_crash. Qed.
+
+  Global Instance disk_array_durable l vs:
+    Durable (λ _ _, l d↦∗ vs)%I.
+  Proof. apply _. Qed.
 End crash.
 

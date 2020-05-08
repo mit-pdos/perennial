@@ -1,5 +1,6 @@
 From Perennial.goose_lang.examples Require Import append_log.
 From Perennial.goose_lang.lib Require Import encoding.
+From Perennial.goose_lang Require Import crash_modality.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import marshal_proof.
@@ -892,3 +893,40 @@ Qed.
 
 End heap.
 
+Instance is_hdr_durable sz disk_sz:
+  Durable (λ _ _, is_hdr sz disk_sz).
+Proof. apply _. Qed.
+
+Instance is_log'_durable sz disk_sz vs:
+  Durable (λ _ _, is_log' sz disk_sz vs).
+Proof. apply _. Qed.
+
+Instance crashed_log_durable bs:
+  Durable (λ _ _, crashed_log bs).
+Proof. apply _. Qed.
+
+Instance uninit_log_durable sz:
+  Durable (λ _ _, uninit_log sz).
+Proof. apply _. Qed.
+
+Instance unopened_log_durable sz:
+  Durable (λ _ _, unopened_log sz).
+Proof. apply _. Qed.
+
+Section durable.
+Context `{hG: !heapG Σ}.
+Context `{!crashG Σ}.
+
+
+Lemma is_hdr_durable1 sz disk_sz:
+  is_hdr sz disk_sz -∗ post_crash (λ _, is_hdr sz disk_sz).
+Proof.
+  iApply (post_crash_exists with "[]").
+  iIntros (b) "(Hpts&%)".
+  iApply (post_crash_sep with "[Hpts ]").
+  iSplitL "Hpts".
+  - iApply disk_mapsto_post_crash; eauto.
+  - by iApply post_crash_pure.
+Qed.
+
+End durable.
