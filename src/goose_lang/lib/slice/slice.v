@@ -1,7 +1,8 @@
 From RecordUpdate Require Import RecordSet.
 From Perennial.goose_lang Require Import proofmode array.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
-From Perennial.goose_lang.lib Require Export typed_mem slice.impl.
+From Perennial.goose_lang.lib Require Export slice.impl typed_mem.
+From Perennial.goose_lang.lib Require Import control.control.
 Set Default Proof Using "Type".
 
 Module Slice.
@@ -762,21 +763,27 @@ Proof.
   auto.
 Qed.
 
-Lemma wp_SliceAppend stk E s t vs x :
+Lemma wp_SliceAppend' stk E s t vs x :
   has_zero t ->
-  {{{ is_slice s t 1 vs ∗ ⌜int.val s.(Slice.sz) + 1 < 2^64⌝ ∗ ⌜val_ty x t⌝ }}}
+  val_ty x t ->
+  {{{ is_slice s t 1 vs }}}
     SliceAppend t s x @ stk; E
   {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
 Proof.
-  iIntros (Hzero Φ) "(Hs&%) HΦ".
-  destruct H as [Hbound Hty].
-  wp_lam; repeat wp_step.
-  repeat wp_step.
+  iIntros (Hzero Hty Φ) "Hs HΦ".
+  wp_call.
+  wp_apply wp_slice_len.
+  wp_apply wp_Assume.
+  iIntros (Hbound).
+  apply bool_decide_eq_true in Hbound.
+  assert (int.val s.(Slice.sz) + 1 < 2^64) by word.
+  wp_pures.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_lam; wp_pures.
+  wp_apply wp_slice_len; wp_pures.
   iDestruct "Hs" as "((Hptr&%)&Hfree)".
   iDestruct "Hfree" as (extra Hextralen) "Hfree".
-  wp_call.
-  wp_call.
-  wp_call.
   wp_if_destruct.
   - wp_call.
     rewrite word.unsigned_sub in Heqb.
@@ -850,6 +857,16 @@ Proof.
       iExactEq "HnewFree"; word_eq.
 Qed.
 
+Lemma wp_SliceAppend stk E s t vs x :
+  has_zero t ->
+  {{{ is_slice s t 1 vs ∗ ⌜int.val s.(Slice.sz) + 1 < 2^64⌝ ∗ ⌜val_ty x t⌝ }}}
+    SliceAppend t s x @ stk; E
+  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
+Proof.
+  iIntros (Hzero Φ) "(Hs&%&%) HΦ".
+  wp_apply (wp_SliceAppend' with "[$Hs]"); auto.
+Qed.
+
 Lemma wp_SliceAppend_to_zero stk E t x :
   val_ty x t ->
   has_zero t ->
@@ -859,7 +876,7 @@ Lemma wp_SliceAppend_to_zero stk E t x :
 Proof.
   iIntros (Hty Hzero Φ) "_ HΦ".
   iDestruct (is_slice_zero t 1) as "Hs".
-  wp_apply (wp_SliceAppend with "[$Hs]"); auto.
+  wp_apply (wp_SliceAppend' with "Hs"); auto.
 Qed.
 
 Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :
