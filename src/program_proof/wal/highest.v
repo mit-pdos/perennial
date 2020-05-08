@@ -1,6 +1,6 @@
 From stdpp Require Import list.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_proof.wal Require Import specs.
+From Perennial.program_proof.wal Require Import transitions.
 From Perennial.program_proof.wal Require Import abstraction.
 
 (*! Reasoning about is_highest_txn. *)

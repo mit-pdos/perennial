@@ -39,13 +39,14 @@ Class walheapG (Σ: gFunctors) :=
     walheap_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
     walheap_mnat :> inG Σ (authR mnatUR);
     walheap_asyncCrashHeap :> inG Σ (ghostR asyncCrashHeapO);
-    walheap_heap :> heapG Σ
+    walheap_heap :> heapG Σ;
+    walheap_wal :> walG Σ
   }.
 
 Section heap.
 
 Context `{!walheapG Σ}.
-Context (N: namespace).
+Context `{!lockG Σ}.
 
 Definition crashPreG : gen_heapPreG u64 Block Σ := _.
 
@@ -73,6 +74,7 @@ Record wal_heap_gnames := {
     (* possible crashes; latest has the same contents as current heap *)
   wal_heap_txns : gname;
   wal_heap_installed : gname;
+  wal_heap_walnames : @wal_names Σ
 }.
 
 Definition wal_heap_inv_crash (pos : u64) (crashheap : gname)
@@ -780,7 +782,7 @@ Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
     b ≠ b1 ->
     (exists u, u ∈ (txn_upds (drop (txn_id) l)) 
           /\ u.(update.addr) = a /\ u.(update.b) = b1).
-Proof using N walheapG0 Σ.
+Proof using walheapG0 Σ.
   intros.
   replace (take txn_id' l) with (take txn_id l ++ drop txn_id (take txn_id' l)) in H2.
   2: {
@@ -808,7 +810,7 @@ Theorem updates_since_apply_upds σ a (txn_id txn_id' : nat) installedb b :
   disk_at_txn_id txn_id σ !! int.val a = Some installedb ->
   disk_at_txn_id txn_id' σ !! int.val a = Some b ->
   b ∈ installedb :: updates_since txn_id a σ.
-Proof using N walheapG0 Σ.
+Proof using walheapG0 Σ.
   unfold updates_since, disk_at_txn_id in *.
   generalize (σ.(log_state.txns)).
   generalize (σ.(log_state.d)).
@@ -1076,12 +1078,12 @@ Definition readmem_q γh (a : u64) (installed : Block) (bs : list Block) (res : 
   )%I.
 
 Theorem wal_heap_readmem E γh a (Q : option Block -> iProp Σ) :
-  ( |={⊤ ∖ ↑N, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
-        ( ∀ mb, readmem_q γh a installed bs mb ={E, ⊤ ∖ ↑N}=∗ Q mb ) ) -∗
+  ( |={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
+        ( ∀ mb, readmem_q γh a installed bs mb ={E, ⊤ ∖ ↑walN}=∗ Q mb ) ) -∗
   ( ∀ σ σ' mb,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
-      ( (wal_heap_inv γh) σ ={⊤ ∖ ↑N}=∗ (wal_heap_inv γh) σ' ∗ Q mb ) ).
+      ( (wal_heap_inv γh) σ ={⊤ ∖ ↑walN}=∗ (wal_heap_inv γh) σ' ∗ Q mb ) ).
 Proof.
   iIntros "Ha".
   iIntros (σ σ' mb) "% % Hinv".
@@ -1176,13 +1178,13 @@ Definition readinstalled_q γh (a : u64) (installed : Block) (bs : list Block) (
   )%I.
 
 Theorem wal_heap_readinstalled E γh a (Q : Block -> iProp Σ) :
-  ( |={⊤ ∖ ↑N, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
-        ( ∀ b, readinstalled_q γh.(wal_heap_h) a installed bs b ={E, ⊤ ∖ ↑N}=∗ Q b ) ) -∗
+  ( |={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
+        ( ∀ b, readinstalled_q γh.(wal_heap_h) a installed bs b ={E, ⊤ ∖ ↑walN}=∗ Q b ) ) -∗
   ( ∀ σ σ' b',
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_read_installed a) σ σ' b'⌝ -∗
-      ( (wal_heap_inv γh) σ ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q b' ) ).
-Proof using N walheapG0 Σ.
+      ( (wal_heap_inv γh) σ ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ Q b' ) ).
+Proof using walheapG0 Σ.
   iIntros "Ha".
   iIntros (σ σ' b') "% % Hinv".
   iNamed "Hinv".
@@ -1438,7 +1440,7 @@ Proof.
 Qed.
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
-  ( |={⊤ ∖ ↑N, E}=>
+  ( |={⊤ ∖ ↑walN, E}=>
           ∃ olds unmodifiedBlocks crash_heaps,
             let γoldcrash := GenHeapG_Pre _ _ _ crashPreG (snd (latest crash_heaps)) in
             memappend_pre γh.(wal_heap_h) bs olds ∗
@@ -1453,13 +1455,13 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
           ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γnewcrash) a 1 b ) ∗
           ( [∗ list] u ∈ bs, mapsto (hG := γnewcrash) u.(update.addr) 1 u.(update.b) ) ∗
           memappend_q γh.(wal_heap_h) bs olds txn_id
-          ={E, ⊤ ∖ ↑N}=∗ Q txn_id ) ) -∗
+          ={E, ⊤ ∖ ↑walN}=∗ Q txn_id ) ) -∗
   ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
       ( (wal_heap_inv γh) σ ∗
             ("Hlockedheap" ∷ is_locked_walheap γh lwh)
-          ={⊤ ∖↑ N}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
+          ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
 Proof using walheapG0.
   iIntros "Hpre".
   iIntros (σ σ' pos) "% % [Hinv Hpreq]".
@@ -1646,8 +1648,8 @@ Proof.
   lia.
 Qed.
 
-Theorem wp_Walog__Read l (blkno : u64) γ lwh b :
-  {{{ is_wal N (wal_heap_inv γ) l ∗
+Theorem wp_Walog__Read l (blkno : u64) γ lwh b wn :
+  {{{ is_wal (wal_heap_inv γ) l wn ∗
       is_locked_walheap γ lwh ∗
       ⌜ locked_wh_disk lwh !! int.val blkno = Some b ⌝
   }}}
@@ -1799,23 +1801,21 @@ Proof.
   rewrite /locked_wh_disk. rewrite -H0 -H1. done.
 Qed.
 
-Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E :
-  ↑N ⊆ E ->
-  is_wal N (wal_heap_inv γ) l ∗
+Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn :
+  ↑walN ⊆ E ->
+  is_wal (wal_heap_inv γ) l wn ∗
   is_locked_walheap γ lwh ∗
   mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
     is_locked_walheap γ lwh ∗
     mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
     ⌜ locked_wh_disk lwh !! int.val a = Some (hb_latest_update v) ⌝.
 Proof.
-  iIntros (HNE) "(Hwal & Htxnsfrag & Hmapsto)".
-  iInv N as ">[Hl Hheap]".
-  iDestruct "Hheap" as (σ) "Hheap".
+  iIntros (HNE) "(#Hwal & Htxnsfrag & Hmapsto)".
+  iMod (is_wal_open with "Hwal") as (σ) "[>Hheap Hclose]"; eauto.
   iDestruct (wal_heap_mapsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
+  iMod ("Hclose" with "Hheap").
   iModIntro.
-  iSplitL "Hl Hheap".
-  { iNext. iFrame. iExists _. iFrame. }
-  iModIntro. iFrame. done.
+  iFrame. done.
 Qed.
 
 End heap.

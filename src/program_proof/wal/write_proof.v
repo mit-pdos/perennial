@@ -314,6 +314,6 @@ Proof.
         + admit.
         + wp_apply util_proof.wp_DPrintf.
           admit.
-Abort.
+Admitted.
 
 End goose_lang.

@@ -7,7 +7,7 @@ From Perennial.algebra Require Export deletable_heap.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
 From Perennial.program_proof Require Export wal.circ_proof wal.sliding.
-From Perennial.program_proof Require Export wal.specs.
+From Perennial.program_proof Require Export wal.transitions.
 
 Canonical Structure circO := leibnizO circΣ.t.
 
@@ -320,6 +320,22 @@ Proof.
   iSplitL; last by auto.
   iExists _; iFrame.
   by iFrame "∗ Hmem".
+Qed.
+
+Theorem is_wal_open l wn E :
+  ↑walN ⊆ E ->
+  is_wal l wn
+  ={E, E ∖ ↑walN}=∗
+    ∃ σ, ▷ P σ ∗
+    ( ▷ P σ ={E ∖ ↑walN, E}=∗ emp ).
+Proof.
+  iIntros (HN) "[#Hwalinv #Hcirc]".
+  iInv walN as (σ) "[Hwalinner HP]" "Hclose".
+  iModIntro.
+  iExists _. iFrame.
+  iIntros "HP".
+  iApply "Hclose". iNext.
+  iExists _. iFrame.
 Qed.
 
 Theorem is_circular_diskEnd_lb_agree E γ lb cs :
