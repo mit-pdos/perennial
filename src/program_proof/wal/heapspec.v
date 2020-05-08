@@ -1456,16 +1456,18 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
           ( [∗ list] u ∈ bs, mapsto (hG := γnewcrash) u.(update.addr) 1 u.(update.b) ) ∗
           memappend_q γh.(wal_heap_h) bs olds txn_id
           ={E, ⊤ ∖ ↑walN}=∗ Q txn_id ) ) -∗
-  ( ∀ σ σ' txn_id,
+  is_locked_walheap γh lwh -∗
+  ( ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
-      ( (wal_heap_inv γh) σ ∗
-            ("Hlockedheap" ∷ is_locked_walheap γh lwh)
-          ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ).
+      ( (wal_heap_inv γh) σ
+          ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ) ∧
+    "Hlockedheap" ∷ is_locked_walheap γh lwh ).
 Proof using walheapG0.
-  iIntros "Hpre".
-  iIntros (σ σ' pos) "% % [Hinv Hpreq]".
-  iNamed "Hpreq".
+  iIntros "Hpre Hlockedheap".
+  iSplit; last by iFrame.
+
+  iIntros (σ σ' pos) "% % Hinv".
   iNamed "Hinv".
 
   simpl in *; monad_inv.
