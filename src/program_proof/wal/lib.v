@@ -317,6 +317,48 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Theorem wp_forSlicePrefix_updates (I: list update.t -> list update.t -> iProp Σ) stk E s q us (body: val) :
+  (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t) (upds upds': list update.t),
+      {{{ I upds (u :: upds') ∗
+            is_update uv q u ∗
+            ⌜(int.nat i < length us)%nat⌝ ∗
+            ⌜us !! int.nat i = Some u⌝ ∗
+            ⌜upds ++ u :: upds' = us⌝ ∗
+            ⌜length upds = int.nat i⌝ }}}
+        body #i (update_val uv) @ stk; E
+      {{{ RET #(); I (upds ++ [u]) upds' ∗
+                   is_block uv.2 q u.(update.b) }}}) -∗
+    {{{ I [] us ∗ updates_slice_frag s q us }}}
+      forSlice (struct.t Update.S) body (slice_val s) @ stk; E
+    {{{ RET #(); I us [] ∗ updates_slice_frag s q us }}}.
+Proof.
+  iIntros "#Hwp".
+  iIntros "!>" (Φ) "[HI Hupds] HΦ".
+  iDestruct (updates_slice_frag_len with "Hupds") as %Hsz.
+  wp_apply (wp_forSlice_updates
+              (λ i, I (take (int.nat i) us) (drop (int.nat i) us))
+              with "[] [$HI $Hupds]").
+  {
+    clear Φ.
+    iIntros (i uv u) "!>".
+    iIntros (Φ) "(HI&%&Hu&%) HΦ".
+    wp_apply ("Hwp" with "[HI $Hu]").
+    { rewrite (drop_S _ _ _ H0). iFrame.
+      iPureIntro.
+      split_and!; auto; len.
+      rewrite take_drop_middle; auto.
+    }
+    iIntros "(HI&Hu)".
+    iApply "HΦ"; iFrame.
+    iExactEq "HI".
+    f_equal; auto.
+    - apply take_S_r in H0. rewrite -H0. f_equal. word.
+    - f_equal; word.
+  }
+  rewrite -> take_ge, drop_ge by word.
+  iFrame.
+Qed.
+
 Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) q b :
   {{{ is_block (snd u) q b }}}
     copyUpdateBlock (update_val u) @ stk; E
