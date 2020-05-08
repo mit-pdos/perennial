@@ -894,39 +894,22 @@ Qed.
 End heap.
 
 Instance is_hdr_durable sz disk_sz:
-  Durable (λ _ _, is_hdr sz disk_sz).
+  IntoCrash (λ _ _, is_hdr sz disk_sz) (λ _ _, is_hdr sz disk_sz).
 Proof. apply _. Qed.
 
 Instance is_log'_durable sz disk_sz vs:
-  Durable (λ _ _, is_log' sz disk_sz vs).
+  IntoCrash (λ _ _, is_log' sz disk_sz vs) (λ _ _, is_log' sz disk_sz vs).
 Proof. apply _. Qed.
 
 Instance crashed_log_durable bs:
-  Durable (λ _ _, crashed_log bs).
+  IntoCrash (λ _ _, crashed_log bs) (λ _ _, crashed_log bs).
 Proof. apply _. Qed.
 
 Instance uninit_log_durable sz:
-  Durable (λ _ _, uninit_log sz).
+  IntoCrash (λ _ _, uninit_log sz) (λ _ _, uninit_log sz).
 Proof. apply _. Qed.
 
 Instance unopened_log_durable sz:
-  Durable (λ _ _, unopened_log sz).
+  IntoCrash (λ _ _, unopened_log sz) (λ _ _, unopened_log sz).
 Proof. apply _. Qed.
 
-Section durable.
-Context `{hG: !heapG Σ}.
-Context `{!crashG Σ}.
-
-
-Lemma is_hdr_durable1 sz disk_sz:
-  is_hdr sz disk_sz -∗ post_crash (λ _, is_hdr sz disk_sz).
-Proof.
-  iApply (post_crash_exists with "[]").
-  iIntros (b) "(Hpts&%)".
-  iApply (post_crash_sep with "[Hpts ]").
-  iSplitL "Hpts".
-  - iApply disk_mapsto_post_crash; eauto.
-  - by iApply post_crash_pure.
-Qed.
-
-End durable.

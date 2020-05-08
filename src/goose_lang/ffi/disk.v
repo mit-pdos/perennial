@@ -540,7 +540,6 @@ Next Obligation.
   destruct Hold as [[]] => //=.
 Qed.
 
-
 Section crash.
   Existing Instances disk.disk_op disk.disk_model disk.disk_ty.
   Existing Instances disk.disk_semantics disk.disk_interp.
@@ -555,12 +554,12 @@ Section crash.
     rewrite /diskG0. rewrite Heq1. eauto.
   Qed.
 
-  Global Instance disk_mapsto_durable l q v:
-    Durable (λ _ _, l d↦{q} v)%I.
+  Global Instance disk_mapsto_into_crash l q v:
+    IntoCrash (λ _ _, l d↦{q} v)%I (λ _ _, l d↦{q} v)%I.
   Proof. intros ??. apply disk_mapsto_post_crash. Qed.
 
-  Global Instance disk_array_durable l vs:
-    Durable (λ _ _, l d↦∗ vs)%I.
+  Global Instance disk_array_into_crash l vs:
+    IntoCrash (λ _ _, l d↦∗ vs)%I (λ _ _, l d↦∗ vs)%I.
   Proof. apply _. Qed.
 End crash.
 
