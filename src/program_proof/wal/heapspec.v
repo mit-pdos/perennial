@@ -147,6 +147,15 @@ Proof.
   iIntros "Hm".
 Admitted.
 
+Lemma mnat_snapshot_le γ m n :
+  (m ≤ n)%nat ->
+  own γ (● (n : mnat)) ==∗
+  own γ (● (n : mnat)) ∗
+  own γ (◯ (m : mnat)).
+Proof.
+  iIntros (H) "Hn".
+Admitted.
+
 
 (* In lemmas; probably belong in one of the external list libraries *)
 
@@ -1836,6 +1845,36 @@ Proof.
   iMod ("Hclose" with "Hheap").
   iModIntro.
   iFrame. done.
+Qed.
+
+Theorem wp_Walog__Flush_heap l γ (txn_id : nat) (pos : u64) :
+  {{{ is_wal (wal_heap_inv γ) l (wal_heap_walnames γ) ∗
+      txn_pos (wal_heap_walnames γ) txn_id pos
+  }}}
+    wal.Walog__Flush #l #pos
+  {{{ RET #();
+      own (wal_heap_durable_lb γ) (◯ (txn_id : mnat))
+  }}}.
+Proof using walheapG0.
+  iIntros (Φ) "(#Hwal & Hpos) HΦ".
+  wp_apply (wp_Walog__Flush with "[$Hwal $Hpos]").
+  2: { iIntros "H". iApply "HΦ". iExact "H". }
+  iIntros (σ σ' r Hwf Htransition) "Hinv".
+
+  simpl in *; monad_inv.
+  intuition idtac.
+
+  iNamed "Hinv".
+  iMod (mnat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+  { lia. }
+  iMod (mnat_snapshot_le _ txn_id with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb Hpost]".
+  { lia. }
+  iFrame "Hpost".
+
+  iModIntro.
+  iExists _, _. iFrame.
+  iPureIntro.
+  eapply wal_wf_advance_durable_lb; eauto. lia.
 Qed.
 
 End heap.
