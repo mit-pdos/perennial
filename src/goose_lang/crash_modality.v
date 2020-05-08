@@ -165,7 +165,16 @@ Section durable.
       setoid_rewrite <-Nat.add_succ_l.
       eauto.
   Qed.
+
+  Lemma durable_post_crash_frame_l `{hG: !heapG Σ} P `{!Durable P} Q:
+    (P Σ hG) -∗ post_crash Q -∗ post_crash (λ hG', P Σ hG' ∗ Q hG').
+  Proof. iIntros "HP HQ". rewrite durable. iApply post_crash_sep. iFrame. Qed.
+
+  Lemma durable_post_crash_frame_r `{hG: !heapG Σ} P `{!Durable P} Q:
+    post_crash Q -∗ (P Σ hG) -∗ post_crash (λ hG', Q hG' ∗ P Σ hG').
+  Proof. iIntros "HP HQ". rewrite durable. iApply post_crash_sep. iFrame. Qed.
+
 End durable.
+
+
 End goose_lang.
-
-
