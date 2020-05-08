@@ -224,6 +224,8 @@ Proof using SIZE.
      sty_init := @append_init;
      sty_crash_cond := @append_crash_cond;
      styN := appendN;
+     sty_lvl_init := LVL (LVL_INIT);
+     sty_lvl_ops := LVL (LVL_OPS);
      sty_val_interp := @append_val_interp |}.
  - intros ? [] [] => //=.
  - intros ? [] => //=.
@@ -249,7 +251,7 @@ Definition append_initP (σimpl: @state disk_op disk_model) (σspec : @state log
   (σspec.(world) = UnInit).
 Definition append_update_pre (Σ: gFunctors) (hG: appendG Σ) (n: append_names) : appendG Σ := hG.
 
-Program Instance appendTy_update_model : specTy_update _ appendTy_model :=
+Program Instance appendTy_update_model : specTy_update appendTy_model :=
   {| sty_preG := appendG;
             styΣ := appendΣ;
             subG_styPreG := subG_appendPreG;
@@ -261,7 +263,7 @@ Notation append_nat_K :=
 (leibnizO (nat * ((@spec_lang log_spec_ext log_spec_ffi_model log_spec_ext_semantics).(language.expr)
                            → (@spec_lang log_spec_ext log_spec_ffi_model log_spec_ext_semantics).(language.expr)))).
 
-Lemma append_init_obligation1: sty_init_obligation1 _ appendTy_update_model append_initP.
+Lemma append_init_obligation1: sty_init_obligation1 appendTy_update_model append_initP.
 Proof.
   rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hC hAppend σs σi Hinit) "Hdisk".
@@ -296,7 +298,7 @@ Inductive append_trans : @val log_op -> @val disk_op -> Prop :=
 
 
 Lemma append_rules_obligation:
-  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ (LVL (LVL_OPS)) appendTy_model append_trans.
+  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ appendTy_model append_trans.
 Proof.
   intros vs0 vs v0 v0' t1 t2 Htype0 Htrans.
   inversion Htype0 as [op Heq Htype]; subst.
@@ -315,6 +317,7 @@ Proof.
     { set_solver+. }
     { intros ?. eexists. simpl.
       apply head_prim_step. econstructor; eauto. }
+    rewrite /LVL_OPS.
     wpc_apply (@wpc_Log__Reset with "[$] []").
     { eauto. }
     { rewrite /LVL_INV. lia. }
@@ -369,7 +372,7 @@ Proof.
 Admitted.
 
 Lemma append_crash_inv_obligation:
-  @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ (LVL (LVL_INIT)) (LVL (LVL_OPS)) appendTy_model.
+  @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ appendTy_model.
 Proof using SIZE.
   clear SIZE_bounds.
   rewrite /sty_crash_inv_obligation//=.

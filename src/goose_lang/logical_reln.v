@@ -26,7 +26,7 @@ Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{spec_interp: @spec_ffi_interp spec_ffi}.
 Context `{spec_adeq: !spec_ffi_interp_adequacy}.
-Context (spec_ty: ext_types (@spec_ext_op_field spec_ext)).
+Context {spec_ty: ext_types (@spec_ext_op_field spec_ext)}.
 
 Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
 Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
@@ -226,7 +226,7 @@ Class specTy_update `(hsT_model: !specTy_model) :=
         sty_get_names _ (sty_update_pre _ hPre names) = names;
   }.
 
-Section reln_adeq.
+Section reln_obligations.
 
 Context `{hsT_model: !specTy_model} (spec_trans: sval → ival → Prop).
 
@@ -293,28 +293,63 @@ Definition ctx_has_semTy `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_h
             (subst_map (subst_ival <$> Γsubst) e)
             (val_interp (hS := hS) τ).
 
-Instance base_interp_pers Σ es e t:
+Global Instance base_interp_pers Σ es e t:
       Persistent (base_ty_interp (Σ := Σ) t es e).
 Proof. destruct t; apply _. Qed.
 
-Instance val_interp_pers `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t:
+Global Instance val_interp_pers `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t:
       Persistent (val_interp (hS := hS) t es e).
 Proof.
  revert es e. induction t => ?? //=; try apply _.
  by apply sty_val_persistent.
 Qed.
 
-Instance sty_ctx_prop_pers `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
+Global Instance sty_ctx_prop_pers `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
       (Γsubst: gmap string subst_tuple) :
       Persistent ([∗ map] t ∈ Γsubst, val_interp (hS := hS) (subst_ty t) (subst_sval t) (subst_ival t))%I.
 Proof.
   apply big_sepM_persistent => ??. by apply val_interp_pers.
 Qed.
 
+End reln_obligations.
+
 Existing Instances sty_inv_persistent.
+End reln.
+
+Arguments val_interp {ext ffi ffi_semantics interp spec_ext spec_ffi spec_ffi_semantics spec_interp _ Σ hG hRG
+  hC smodel hS} _%heap_type (_ _)%val_scope.
+
+Arguments ctx_has_semTy {ext ffi ffi_semantics interp spec_ext spec_ffi spec_ffi_semantics spec_interp _
+  hsT_model Σ hG hC hRG hS} _ (_ _)%expr_scope _%heap_type.
+
+Arguments specTy_model {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec_interp} spec_ty.
+
 
 Section pfs.
-  Context `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
+Context {ext: ext_op}.
+Context {ffi: ffi_model}.
+Context {ffi_semantics: ext_semantics ext ffi}.
+Context `{interp: !ffi_interp ffi}.
+Context `{interp_adeq: !ffi_interp_adequacy}.
+Context (impl_ty: ext_types ext).
+
+Context {spec_ext: spec_ext_op}.
+Context {spec_ffi: spec_ffi_model}.
+Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
+Context `{spec_interp: @spec_ffi_interp spec_ffi}.
+Context `{spec_adeq: !spec_ffi_interp_adequacy}.
+Context (spec_ty: ext_types (@spec_ext_op_field spec_ext)).
+
+Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
+Notation sval := (@val (@spec_ext_op_field spec_ext)).
+Notation istate := (@state ext).
+Notation iexpr := (@expr ext).
+Notation ival := (@val ext).
+Notation sty := (@ty (@val_tys _ spec_ty)).
+
+Context `{hsT_model: !specTy_model spec_ty} (spec_trans: sval → ival → Prop).
+Context `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
 Lemma loc_paired_eq_iff ls l ls' l':
   loc_paired ls l -∗
   loc_paired ls' l' -∗
@@ -420,9 +455,8 @@ Proof.
     eauto.
   - iRight. eauto.
 Qed.
-
 Lemma ctx_has_semTy_subst
-      e es t x v vs tx Γ:
+      e (es: sexpr) (t: sty) x v vs tx Γ:
       ctx_has_semTy (hS := hS) (<[x:=tx]> Γ) es e t -∗
       val_interp (hS := hS) tx vs v -∗
       ctx_has_semTy (hS := hS) Γ (subst' x vs es) (subst' x v e) t.
@@ -579,6 +613,9 @@ Proof.
     iApply (structRefT_comparableTy_val_eq with "H1 H2").
   - intros. apply structRefT_comparableTy_val_eq.
 Qed.
+
+Arguments sty_val_interp {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec_interp _ specTy_model Σ
+  heapG0 refinement_heapG0 H}.
 
 Lemma sty_val_size:
       forall  τ vs v,
@@ -1040,8 +1077,10 @@ Proof.
   }
 Qed.
 
+Existing Instances sty_inv_persistent.
+
 Lemma sty_fundamental_lemma:
-  sty_rules_obligation →
+  sty_rules_obligation spec_trans →
   ∀ Γ es e τ, expr_transTy _ _ _ spec_trans Γ es e τ →
     ⊢ ctx_has_semTy (hS := hS) Γ es e τ.
 Proof using spec_trans.
@@ -2227,10 +2266,39 @@ Proof using spec_trans.
     rewrite fmap_empty subst_map_empty. eauto.
 Qed.
 End pfs.
-  
+
+
+Section adeq.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
          spec_ffi_interp_adequacy_field.
+
+Context {ext: ext_op}.
+Context {ffi: ffi_model}.
+Context {ffi_semantics: ext_semantics ext ffi}.
+Context `{interp: !ffi_interp ffi}.
+Context `{interp_adeq: !ffi_interp_adequacy}.
+Context (impl_ty: ext_types ext).
+
+Context {spec_ext: spec_ext_op}.
+Context {spec_ffi: spec_ffi_model}.
+Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
+Context `{spec_interp: @spec_ffi_interp spec_ffi}.
+Context `{spec_adeq: !spec_ffi_interp_adequacy}.
+Context (spec_ty: ext_types (@spec_ext_op_field spec_ext)).
+
+Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
+Notation sval := (@val (@spec_ext_op_field spec_ext)).
+Notation istate := (@state ext).
+Notation iexpr := (@expr ext).
+Notation ival := (@val ext).
+Notation sty := (@ty (@val_tys _ spec_ty)).
+
+Context `{hsT_model: !specTy_model spec_ty} (spec_trans: sval → ival → Prop).
+Context (upd: specTy_update hsT_model).
+
+Existing Instance sty_inv_persistent.
 
 Section pre_assumptions.
 
@@ -2238,7 +2306,7 @@ Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
 Context `{Hcrashpre: crashPreG Σ}.
-Context `{Hstypre: !sty_preG Σ}.
+Context `{Hstypre: !sty_preG (hsT_model := hsT_model) (specTy_update := upd) Σ}.
 
 Definition sty_derived_crash_condition :=
     (λ (hG: heapG Σ) (hC: crashG Σ) (hRG: refinement_heapG Σ), ∃ hS,
@@ -2259,7 +2327,7 @@ Lemma sty_inv_to_wpc hG hC hRG hS es e τ j:
   expr_transTy _ _ _ spec_trans ∅ es e τ →
   sty_crash_inv_obligation →
   sty_crash_obligation →
-  sty_rules_obligation →
+  sty_rules_obligation spec_trans →
   spec_ctx -∗
   trace_ctx -∗
   sty_init hS -∗
@@ -2273,7 +2341,7 @@ Proof.
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iApply (Hsty_crash_inv with "[$] [$] [Hj]").
     { iIntros "#Hinv'".
-      iPoseProof (sty_fundamental_lemma Hsty_rules ∅ _ _ _ Htype) as "H"; eauto.
+      iPoseProof (sty_fundamental_lemma _ _ Hsty_rules ∅ _ _ _ Htype) as "H"; eauto.
       iSpecialize ("H" $! ∅ with "[] [$] [$] [$] []").
       { iPureIntro. apply: fmap_empty. }
       { by rewrite big_sepM_empty. }
@@ -2309,11 +2377,11 @@ Existing Instances subG_cfgG subG_refinement_heapPreG subG_crashG.
 Definition logical_relnΣ := #[styΣ; heapΣ; @cfgΣ spec_lang; refinement_heapΣ; crashΣ].
 
 Lemma sty_adequacy es σs e σ τ initP:
-  sty_init_obligation1 initP →
+  sty_init_obligation1 upd initP →
   sty_init_obligation2 initP →
   sty_crash_inv_obligation →
   sty_crash_obligation →
-  sty_rules_obligation →
+  sty_rules_obligation spec_trans →
   expr_transTy _ _ _ spec_trans ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
@@ -2360,6 +2428,4 @@ Proof.
 Qed.
 
 
-End reln_adeq.
-
-End reln.
+End adeq.
