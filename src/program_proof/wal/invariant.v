@@ -6,7 +6,7 @@ From Perennial.Helpers Require Export Transitions List NamedProps Map.
 From Perennial.algebra Require Export deletable_heap.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
-From Perennial.program_proof Require Export wal.circ_proof wal.sliding.
+From Perennial.program_proof Require Export wal.circ_proof wal.sliding_proof.
 From Perennial.program_proof Require Export wal.transitions.
 
 Canonical Structure circO := leibnizO circΣ.t.
