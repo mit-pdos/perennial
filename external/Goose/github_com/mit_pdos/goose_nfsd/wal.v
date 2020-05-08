@@ -182,6 +182,11 @@ Definition sliding__get: val :=
   rec: "sliding__get" "s" "pos" :=
     SliceGet (struct.t Update.S) (struct.loadF sliding.S "log" "s") ("pos" - struct.loadF sliding.S "start" "s").
 
+Definition sliding__posForAddr: val :=
+  rec: "sliding__posForAddr" "s" "a" :=
+    let: ("pos", "ok") := MapGet (struct.loadF sliding.S "addrPos" "s") "a" in
+    ("pos", "ok").
+
 (* update does an in-place absorb of an update to u *)
 Definition sliding__update: val :=
   rec: "sliding__update" "s" "pos" "u" :=
@@ -192,6 +197,31 @@ Definition sliding__append: val :=
     let: "pos" := struct.loadF sliding.S "start" "s" + slice.len (struct.loadF sliding.S "log" "s") in
     struct.storeF sliding.S "log" "s" (SliceAppend (struct.t Update.S) (struct.loadF sliding.S "log" "s") "u");;
     MapInsert (struct.loadF sliding.S "addrPos" "s") (struct.get Update.S "Addr" "u") "pos".
+
+(* Absorbs writes in in-memory transactions (avoiding those that might be in
+   the process of being logged or installed).
+
+   Assumes caller holds memLock *)
+Definition sliding__memWrite: val :=
+  rec: "sliding__memWrite" "s" "bufs" :=
+    let: "pos" := ref_to LogPosition (sliding__end "s") in
+    ForSlice (struct.t Update.S) <> "buf" "bufs"
+      (let: ("oldpos", "ok") := sliding__posForAddr "s" (struct.get Update.S "Addr" "buf") in
+      (if: "ok" && ("oldpos" ≥ struct.loadF sliding.S "mutable" "s")
+      then
+        util.DPrintf #5 (#(str"memWrite: absorb %d pos %d old %d
+        ")) #();;
+        sliding__update "s" "oldpos" "buf"
+      else
+        (if: "ok"
+        then
+          util.DPrintf #5 (#(str"memLogMap: replace %d pos %d old %d
+          ")) #()
+        else
+          util.DPrintf #5 (#(str"memLogMap: add %d pos %d
+          ")) #());;
+        sliding__append "s" "buf";;
+        "pos" <-[LogPosition] ![LogPosition] "pos" + #1)).
 
 (* takeFrom takes the read-only updates from a logical start position to the
    current mutable boundary *)
@@ -227,11 +257,6 @@ Definition sliding__deleteFrom: val :=
 Definition sliding__clearMutable: val :=
   rec: "sliding__clearMutable" "s" :=
     struct.storeF sliding.S "mutable" "s" (sliding__end "s").
-
-Definition sliding__posForAddr: val :=
-  rec: "sliding__posForAddr" "s" "a" :=
-    let: ("pos", "ok") := MapGet (struct.loadF sliding.S "addrPos" "s") "a" in
-    ("pos", "ok").
 
 (* 0waldefs.go *)
 
@@ -448,37 +473,10 @@ Definition MkLog: val :=
     Walog__startBackgroundThreads "l";;
     "l".
 
-(* memWrite writes out bufs to the in-memory log
-
-   Absorbs writes in in-memory transactions (avoiding those that might be in
-   the process of being logged or installed).
-
-   Assumes caller holds memLock *)
-Definition memWrite: val :=
-  rec: "memWrite" "memLog" "bufs" :=
-    let: "pos" := ref_to LogPosition (sliding__end "memLog") in
-    ForSlice (struct.t Update.S) <> "buf" "bufs"
-      (let: ("oldpos", "ok") := sliding__posForAddr "memLog" (struct.get Update.S "Addr" "buf") in
-      (if: "ok" && ("oldpos" ≥ struct.loadF sliding.S "mutable" "memLog")
-      then
-        util.DPrintf #5 (#(str"memWrite: absorb %d pos %d old %d
-        ")) #();;
-        sliding__update "memLog" "oldpos" "buf"
-      else
-        (if: "ok"
-        then
-          util.DPrintf #5 (#(str"memLogMap: replace %d pos %d old %d
-          ")) #()
-        else
-          util.DPrintf #5 (#(str"memLogMap: add %d pos %d
-          ")) #());;
-        sliding__append "memLog" "buf";;
-        "pos" <-[LogPosition] ![LogPosition] "pos" + #1)).
-
 (* Assumes caller holds memLock *)
 Definition doMemAppend: val :=
   rec: "doMemAppend" "memLog" "bufs" :=
-    memWrite "memLog" "bufs";;
+    sliding__memWrite "memLog" "bufs";;
     let: "txn" := sliding__end "memLog" in
     "txn".
 
