@@ -78,16 +78,30 @@ Proof.
     revert Heqb; repeat word_cleanup.
 Qed.
 
-Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
+(* TODO: this intermediate function still provides no value, since it has
+essentially the same spec as sliding.memWrite *)
+Theorem wp_WalogState__doMemAppend l memLog bufs upds :
+  {{{ "His_memLog" ∷ is_sliding l memLog ∗
+      "Hupds" ∷ updates_slice_frag bufs 1 upds
+  }}}
+    doMemAppend #l (slice_val bufs)
+  {{{ (pos:u64), RET #(slidingM.endPos (memWrite memLog upds));
+      "His_memLog" ∷ is_sliding l (memWrite memLog upds) ∗
+      "Hupds" ∷ updates_slice_frag bufs 1 upds }}}.
+Proof.
+Admitted.
+
+Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> nat -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
        updates_slice bufs bs ∗
        (∀ σ σ' pos,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
-         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos)) ∧ PreQ
+         let txn_id := length σ'.(log_state.txns) in
+         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos txn_id ∗ txn_pos γ txn_id pos)) ∧ PreQ
    }}}
     Walog__MemAppend #l (slice_val bufs)
-  {{{ pos (ok : bool), RET (#pos, #ok); if ok then Q pos else PreQ }}}.
+  {{{ pos (ok : bool), RET (#pos, #ok); if ok then ∃ txn_id, Q pos txn_id ∗ txn_pos γ txn_id pos else PreQ }}}.
 Proof.
   iIntros (Φ) "(#Hwal & Hbufs & Hfupd) HΦ".
   wp_call.
@@ -115,12 +129,14 @@ Proof.
                    ∃ (txn: u64) (ok: bool),
                      "txn" ∷ txn_l ↦[uint64T] #txn ∗
                      "ok" ∷ ok_l ↦[boolT] #ok ∗
-                     "Hsim" ∷ (if b then
-                       ((∀ (σ σ' : log_state.t) pos,
-                           ⌜wal_wf σ⌝
-                            -∗ ⌜relation.denote (log_mem_append bs) σ σ' pos⌝
-                            -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q pos) ∧ PreQ)
-                     else (if ok then Q txn else PreQ)) ∗
+                     "Hsim" ∷ ((∀ (σ σ' : log_state.t) pos,
+                                   ⌜wal_wf σ⌝
+                                   -∗ ⌜relation.denote (log_mem_append bs) σ σ' pos⌝
+                                   -∗ P σ
+                                   ={⊤ ∖ ↑N}=∗ P σ'
+                                            ∗ Q pos (length σ'.(log_state.txns))
+                                            ∗ txn_pos γ (length σ'.(log_state.txns)) pos)
+                               ∧ PreQ) ∗
                      "Hlocked" ∷ locked γ.(lock_name) ∗
                      "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ
                 )%I
@@ -140,7 +156,6 @@ Proof.
         wp_pures.
         iApply "HΦ".
         iExists _, _; iFrame.
-        iDestruct "Hsim" as "[_ $]".
         iExists _; iFrame "# ∗".
       - wp_apply wp_slice_len.
         wp_apply (wp_WalogState__memLogHasSpace with "Hfields").

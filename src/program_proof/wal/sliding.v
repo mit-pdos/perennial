@@ -688,6 +688,29 @@ Proof.
   iApply "HΦ"; iFrame.
 Qed.
 
+Theorem apply_upds_app upds1 upds2 d :
+  apply_upds (upds1 ++ upds2) d =
+  apply_upds upds2 (apply_upds upds1 d).
+Proof.
+  rewrite /apply_upds fold_left_app //.
+Qed.
+
+Theorem memWrite_apply_upds memLog upds d :
+  apply_upds (memWrite memLog upds).(slidingM.log) d =
+  apply_upds (memLog.(slidingM.log) ++ upds) d.
+Proof.
+  revert d memLog.
+  induction upds; simpl; intros.
+  - rewrite app_nil_r //.
+  - rewrite IHupds.
+    rewrite cons_middle.
+    rewrite app_assoc.
+    rewrite !apply_upds_app.
+    f_equal.
+    destruct a as [a b]; simpl.
+    rewrite /memWrite_one.
+Abort.
+
 Theorem wp_sliding__takeFrom l σ (start: u64) :
   int.val σ.(slidingM.start) ≤ int.val start ≤ int.val σ.(slidingM.mutable) ->
   {{{ is_sliding l σ }}}

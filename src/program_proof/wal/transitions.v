@@ -73,9 +73,6 @@ Definition log_mem_append (txn: list update.t): transition log_state.t u64 :=
   modify (set log_state.txns (fun txns => txns ++ [(pos,txn)]));;
   ret pos.
 
-Definition apply_upds (upds: list update.t) (d: disk): disk :=
-  fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
-
 Definition disk_at_txn_id (txn_id: nat) (s:log_state.t): disk :=
   apply_upds (txn_upds (take txn_id (log_state.txns s))) s.(log_state.d).
 
