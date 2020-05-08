@@ -73,6 +73,7 @@ Record wal_heap_gnames := {
     (* current heap *)
   wal_heap_crash_heaps : gname;
     (* possible crashes; latest has the same contents as current heap *)
+  wal_heap_durable_lb : gname;
   wal_heap_txns : gname;
   wal_heap_installed : gname;
   wal_heap_walnames : @wal_names Σ
@@ -87,13 +88,11 @@ Definition wal_heap_inv_crash (pos : u64) (crashheap : gname)
     "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), heapdisk !! a = txn_disk !! int.val a ⌝.
 
 Definition wal_heap_inv_crashes (heaps : async (u64 * gname)) (ls : log_state.t) : iProp Σ :=
-  ∃ (durable_heaps_lb : nat),
-    "%Hdurable_heaps_lb" ∷ ⌜ durable_heaps_lb ≤ ls.(log_state.durable_lb) ⌝ ∗
-    "%Hcrashes_complete" ∷ ⌜ (durable_heaps_lb + length (possible heaps) = length ls.(log_state.txns) + 1)%nat ⌝ ∗
-    "Hpossible_heaps" ∷ [∗ list] i ↦ asyncelem ∈ possible heaps,
-      let txn_id := (durable_heaps_lb + i)%nat in
-      wal_heap_inv_crash (fst asyncelem) (snd asyncelem)
-        ls.(log_state.d) (take txn_id ls.(log_state.txns)).
+  "%Hcrashes_complete" ∷ ⌜ length (possible heaps) = length ls.(log_state.txns) ⌝ ∗
+  "Hpossible_heaps" ∷ [∗ list] i ↦ asyncelem ∈ possible heaps,
+    let txn_id := (1 + i)%nat in
+    wal_heap_inv_crash (fst asyncelem) (snd asyncelem)
+      ls.(log_state.d) (take txn_id ls.(log_state.txns)).
 
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block) (crash_heaps : async (u64 * gname)),
@@ -101,10 +100,10 @@ Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ own γ.(wal_heap_txns) (● (Excl' (ls.(log_state.d), ls.(log_state.txns)))) ∗
     "Hinstalled" ∷ own γ.(wal_heap_installed) (● (ls.(log_state.installed_lb) : mnat)) ∗
-    "Hinstalledfrag" ∷ own γ.(wal_heap_installed) (◯ (ls.(log_state.installed_lb) : mnat)) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
     "Hcrash_heaps_own" ∷ own γ.(wal_heap_crash_heaps) (● (Excl' crash_heaps)) ∗
-    "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls.
+    "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls ∗
+    "Hcrash_heaps_lb" ∷ own γ.(wal_heap_durable_lb) (● (ls.(log_state.durable_lb) : mnat)).
 
 Definition no_updates (l: list update.t) a : Prop :=
   forall u, u ∈ l -> u.(update.addr) ≠ a.
@@ -122,6 +121,32 @@ Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
   apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
+
+
+Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
+Proof. apply _. Qed.
+
+Lemma mnat_advance γ m n :
+  (m ≤ n)%nat ->
+  own γ (● (m : mnat)) ==∗
+  own γ (● (n : mnat)).
+Proof.
+  iIntros (H) "Hm".
+  iMod (own_update with "Hm") as "Hn".
+  2: iFrame; done.
+  eapply auth_update_auth.
+  eapply mnat_local_update.
+  lia.
+Qed.
+
+Lemma mnat_snapshot γ m :
+  own γ (● (m : mnat)) ==∗
+  own γ (● (m : mnat)) ∗
+  own γ (◯ (m : mnat)).
+Proof.
+  iIntros "Hm".
+Admitted.
+
 
 (* In lemmas; probably belong in one of the external list libraries *)
 
@@ -1112,14 +1137,18 @@ Proof.
     iMod "Hfupd".
 
     iModIntro.
-    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps Hcrash_heaps_own".
+    iSplitL "Hctx Hgh Htxns Hinstalled Hcrash_heaps Hcrash_heaps_own Hcrash_heaps_lb".
     + iExists _, _; iFrame. done.
     + iFrame.
 
   - simpl in *; monad_inv.
 
-    iMod (own_update_2 with "Hinstalled Hinstalledfrag") as "[Hinstalled Hinstalledfrag]".
-    { apply auth_update. apply (mnat_local_update _ _ new_installed). intuition idtac. }
+    iMod (mnat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
+    { intuition idtac. }
+
+    iMod (mnat_snapshot with "Hinstalled") as "[Hinstalled Hinstalledfrag]".
+    iMod (mnat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+    { lia. }
 
     iMod (gen_heap_update _ _ _ (HB (latest_update installed (updates_since x a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
     iDestruct ("Hfupd" $! None with "[Ha]") as "Hfupd".
@@ -1129,7 +1158,7 @@ Proof.
     }
     iMod "Hfupd".
     iModIntro.
-    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps Hcrash_heaps_own".
+    iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps Hcrash_heaps_own Hcrash_heaps_lb".
     2: iFrame.
 
     iDestruct (wal_update_durable gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_durable with "Hgh") as "Hgh"; eauto.
@@ -1162,10 +1191,6 @@ Proof.
     rewrite /wal_heap_inv.
     iExists _, _; iFrame.
 
-    iSplitR.
-    2: {
-      iNamed "Hcrash_heaps".
-      iExists _. iFrame. iPureIntro. intuition eauto. rewrite /=. lia. }
     iPureIntro.
     eapply wal_wf_advance_installed_lb.
     2: { intuition idtac. simpl in *. lia. }
@@ -1534,9 +1559,6 @@ Proof using walheapG0.
     rewrite -> firstn_all2 in Htxnpos by lia.
     rewrite -> firstn_all2 in Hcrashheap_contents by lia.
 
-    iExists durable_heaps_lb.
-    iSplitR.
-    { iPureIntro. eassumption. }
     iSplitR.
     { iPureIntro. rewrite /= /async_put /possible app_length /= ?app_length /=. lia. }
     rewrite /async_put /possible /=.
@@ -1630,9 +1652,6 @@ Proof using walheapG0.
     }
 Qed.
 
-Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
-Proof. apply _. Qed.
-
 Theorem no_updates_since_le σ a t0 t1 :
   (t0 ≤ t1)%nat ->
   no_updates_since σ a t0 ->
@@ -1705,25 +1724,23 @@ Proof using walheapG0.
       simpl in *; monad_inv.
       simpl in *; monad_inv.
 
-      iMod (own_update_2 with "Hinstalled Hinstalledfrag") as "[Hinstalled #Hinstalledfrag]".
-      { apply auth_update. apply (mnat_local_update _ _ new_installed). intuition idtac. }
+      iMod (mnat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
+      { intuition idtac. }
+      iMod (mnat_snapshot with "Hinstalled") as "[Hinstalled #Hinstalledfrag]".
+      iMod (mnat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+      { lia. }
 
       iModIntro.
-      iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps_own Hcrash_heaps".
-      { iExists _, _. iFrame. iFrame "Hinstalledfrag".
+      iSplitL "Hctx Hgh Htxns Hinstalled Hcrash_heaps_own Hcrash_heaps Hcrash_heaps_lb".
+      { iExists _, _. iFrame.
         iSplitL "Hgh".
         {
           iApply wal_update_installed; first by intuition lia.
           iApply wal_update_durable; first by intuition lia.
           iFrame. }
-        iSplitR.
-        {
-          iPureIntro.
-          eapply wal_wf_advance_installed_lb; last by (intuition; simpl; lia).
-          eapply wal_wf_advance_durable_lb; eauto.
-        }
-        iNamed "Hcrash_heaps".
-        iExists _. iFrame. simpl. iPureIntro. intuition eauto. lia.
+        iPureIntro.
+        eapply wal_wf_advance_installed_lb; last by (intuition; simpl; lia).
+        eapply wal_wf_advance_durable_lb; eauto.
       }
 
       iIntros (σ0 σ1 b0) "%Hwf' %Hrelation Hwalinv".
@@ -1735,14 +1752,13 @@ Proof using walheapG0.
       2: simpl in *; monad_inv.
       simpl in *; monad_inv.
 
-      iRename "Hinstalledfrag" into "Hinstalledfrag0".
       iNamed "Hwalinv".
       iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
       inversion Hagree; clear Hagree; subst.
       rewrite <- H5 in Hb.
       rewrite <- H6 in Hb.
 
-      iDestruct (own_valid_2 with "Hinstalled Hinstalledfrag0")
+      iDestruct (own_valid_2 with "Hinstalled Hinstalledfrag")
         as %[?%mnat_included _]%auth_both_valid.
 
       rewrite no_updates_since_last_disk in Heqo; eauto.
