@@ -455,11 +455,10 @@ Proof.
   rewrite Hlookup /=; congruence.
 Qed.
 
-Theorem wp_sliding__update l σ (pos: u64) uv u0 u :
-  σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u0 ->
-  int.val σ.(slidingM.mutable) ≤ int.val pos ->
+Theorem wp_sliding__update l σ (pos: u64) uv u :
   (* must be an absorption update, since we don't update addrPos map *)
-  u0.(update.addr) = u.(update.addr) ->
+  update.addr <$> σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u.(update.addr) ->
+  int.val σ.(slidingM.mutable) ≤ int.val pos ->
   {{{ is_sliding l σ ∗ is_update uv 1 u }}}
     sliding__update #l #pos (update_val uv)
   {{{ RET #();
@@ -467,7 +466,8 @@ Theorem wp_sliding__update l σ (pos: u64) uv u0 u :
                         (λ log, <[ (int.nat pos - int.nat σ.(slidingM.start))%nat := u]> log) σ)
   }}}.
 Proof.
-  iIntros (Hlookup Hmutable_bound Haddreq Φ) "[Hsliding Hu] HΦ".
+  iIntros (Hlookup Hmutable_bound Φ) "[Hsliding Hu] HΦ".
+  apply fmap_Some_1 in Hlookup as [u0 [Hlookup Haddreq]].
   iNamed "Hsliding"; iNamed "Hinv".
   iDestruct (memLog_sz with "log_mutable") as %Hsz.
   wp_call.
@@ -508,6 +508,8 @@ Proof.
       erewrite addrPosMap_absorb_eq; eauto.
 Qed.
 
+(* TODO: should require that we aren't absorbing (uv.1 shouldn't appear in the
+mutable region) *)
 Theorem wp_sliding_append l σ uv u :
   {{{ is_sliding l σ ∗ is_update uv 1 u }}}
     sliding__append #l (update_val uv)

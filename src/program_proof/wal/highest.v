@@ -82,7 +82,7 @@ Proof.
     rewrite lookup_nil in H; congruence.
 Abort.
 
-Theorem find_highest_index_none_poss poss pos :
+Theorem find_highest_index_none `{!EqDecision A} (poss: list A) (pos: A) :
   find_highest_index poss pos = None ->
   forall txn_id, ~poss !! txn_id = Some pos.
 Proof.
@@ -97,13 +97,14 @@ Proof.
       eauto.
 Qed.
 
-Theorem find_highest_index_none txns pos :
+Theorem find_highest_index_none_txn txns pos :
   find_highest_index txns.*1 pos = None ->
   forall txn_id, ~is_txn txns txn_id pos.
 Proof.
   intros.
-  rewrite /is_txn -list_lookup_fmap.
-  eapply find_highest_index_none_poss in H; eauto.
+  rewrite /is_txn.
+  eapply find_highest_index_none in H; eauto.
+  rewrite list_lookup_fmap in H; eauto.
 Qed.
 
 (* not actually used, just used to figure out how to do these inductions *)
@@ -125,13 +126,12 @@ Proof.
       simpl; eauto.
 Qed.
 
-Theorem find_highest_index_ok txns txn_id pos :
-  find_highest_index txns.*1 pos = Some txn_id ->
-  is_highest_txn txns txn_id pos.
+Theorem find_highest_index_ok' `{!EqDecision A} (poss: list A) txn_id (pos: A) :
+  find_highest_index poss pos = Some txn_id ->
+  poss !! txn_id = Some pos ∧
+  (∀ txn_id', poss !! txn_id' = Some pos ->
+              txn_id' <= txn_id).
 Proof.
-  rewrite /is_highest_txn /is_txn.
-  setoid_rewrite <- list_lookup_fmap.
-  generalize dependent txns.*1; intros poss.
   revert txn_id pos.
   induction poss as [|pos' poss IH]; simpl; intros.
   - congruence.
@@ -145,13 +145,23 @@ Proof.
       -- intuition eauto.
          destruct txn_id'; simpl in *; try lia.
          exfalso.
-         eapply find_highest_index_none_poss; eauto.
+         eapply find_highest_index_none; eauto.
     + apply fmap_Some in H as [txn_id'' [? ->]].
       apply IH in H as [Hlookup Hhighest].
       simpl; intuition eauto.
       destruct txn_id'; try lia.
       simpl in H.
       apply Hhighest in H; lia.
+Qed.
+
+Theorem find_highest_index_ok txns txn_id pos :
+  find_highest_index txns.*1 pos = Some txn_id ->
+  is_highest_txn txns txn_id pos.
+Proof.
+  rewrite /is_highest_txn /is_txn.
+  intros.
+  setoid_rewrite <- list_lookup_fmap.
+  apply find_highest_index_ok'; auto.
 Qed.
 
 Theorem is_txn_round_up txns txn_id pos :
@@ -162,7 +172,7 @@ Proof.
   destruct_with_eqn (find_highest_index txns.*1 pos).
   - exists n; eauto using find_highest_index_ok.
   - exfalso.
-    eapply find_highest_index_none; eauto.
+    eapply find_highest_index_none_txn; eauto.
 Qed.
 
 Theorem is_highest_txn_bound {txns txn_id pos} :

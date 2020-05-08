@@ -454,16 +454,16 @@ Definition MkLog: val :=
    the process of being logged or installed).
 
    Assumes caller holds memLock *)
-Definition WalogState__memWrite: val :=
-  rec: "WalogState__memWrite" "st" "bufs" :=
-    let: "pos" := ref_to LogPosition (sliding__end (struct.loadF WalogState.S "memLog" "st")) in
+Definition memWrite: val :=
+  rec: "memWrite" "memLog" "bufs" :=
+    let: "pos" := ref_to LogPosition (sliding__end "memLog") in
     ForSlice (struct.t Update.S) <> "buf" "bufs"
-      (let: ("oldpos", "ok") := sliding__posForAddr (struct.loadF WalogState.S "memLog" "st") (struct.get Update.S "Addr" "buf") in
-      (if: "ok" && ("oldpos" ≥ struct.loadF sliding.S "mutable" (struct.loadF WalogState.S "memLog" "st"))
+      (let: ("oldpos", "ok") := sliding__posForAddr "memLog" (struct.get Update.S "Addr" "buf") in
+      (if: "ok" && ("oldpos" ≥ struct.loadF sliding.S "mutable" "memLog")
       then
         util.DPrintf #5 (#(str"memWrite: absorb %d pos %d old %d
         ")) #();;
-        sliding__update (struct.loadF WalogState.S "memLog" "st") "oldpos" "buf"
+        sliding__update "memLog" "oldpos" "buf"
       else
         (if: "ok"
         then
@@ -472,14 +472,14 @@ Definition WalogState__memWrite: val :=
         else
           util.DPrintf #5 (#(str"memLogMap: add %d pos %d
           ")) #());;
-        sliding__append (struct.loadF WalogState.S "memLog" "st") "buf";;
+        sliding__append "memLog" "buf";;
         "pos" <-[LogPosition] ![LogPosition] "pos" + #1)).
 
 (* Assumes caller holds memLock *)
-Definition WalogState__doMemAppend: val :=
-  rec: "WalogState__doMemAppend" "st" "bufs" :=
-    WalogState__memWrite "st" "bufs";;
-    let: "txn" := sliding__end (struct.loadF WalogState.S "memLog" "st") in
+Definition doMemAppend: val :=
+  rec: "doMemAppend" "memLog" "bufs" :=
+    memWrite "memLog" "bufs";;
+    let: "txn" := sliding__end "memLog" in
     "txn".
 
 (* Grab all of the current transactions and record them for the next group commit (when the logger gets around to it).
@@ -571,7 +571,7 @@ Definition Walog__MemAppend: val :=
         else
           (if: WalogState__memLogHasSpace "st" (slice.len "bufs")
           then
-            "txn" <-[LogPosition] WalogState__doMemAppend "st" "bufs";;
+            "txn" <-[LogPosition] doMemAppend (struct.loadF WalogState.S "memLog" "st") "bufs";;
             Break
           else
             util.DPrintf #5 (#(str"memAppend: log is full; try again")) #();;
