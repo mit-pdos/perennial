@@ -78,6 +78,31 @@ Proof.
     revert Heqb; repeat word_cleanup.
 Qed.
 
+Theorem wp_WalogState__memWrite st σ γ bufs upds :
+  {{{ "Hfields" ∷ wal_linv_fields st σ ∗
+      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+      "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
+      "Hupds" ∷ updates_slice_frag bufs 1 upds
+  }}}
+    WalogState__memWrite #st (slice_val bufs)
+  {{{ RET #();
+      "Hfields" ∷ wal_linv_fields st σ ∗
+      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+      "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
+      "HmemLog_linv" ∷ memLog_linv γ (set slidingM.log (λ log, log ++ upds) σ.(memLog)) }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+  wp_call.
+  wp_loadField.
+  wp_apply (wp_sliding__end with "His_memLog"); iIntros "His_memLog".
+  wp_apply wp_ref_to; [ auto | iIntros (pos_l) "pos" ].
+  wp_pures.
+  (* TODO: wp_forSlicePrefix for updates_slice_frag *)
+Abort.
+
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
        updates_slice bufs bs ∗
