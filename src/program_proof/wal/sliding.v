@@ -126,13 +126,6 @@ Proof.
     + rewrite insert_insert_ne; auto.
 Qed.
 
-Instance int_val_inj `{word: Interface.word width} {ok: word.ok word} : Inj eq eq int.val.
-Proof.
-  intros x1 x2.
-  intros.
-  apply word.unsigned_inj in H; auto.
-Qed.
-
 Theorem apply_upds_lookup_insert_highest upds (a: u64) b d :
   a ∉ update.addr <$> upds →
   apply_upds upds (<[int.val a:=b]> d) !! int.val a = Some b.
