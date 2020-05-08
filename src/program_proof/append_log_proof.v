@@ -913,3 +913,10 @@ Instance unopened_log_durable sz:
   IntoCrash (λ _ _, unopened_log sz) (λ _ _, unopened_log sz).
 Proof. apply _. Qed.
 
+Instance typed_ptsto_into_crash l descr val:
+  IntoCrash (λ _ _, l ↦[descr] val)%I (λ _ _, True)%I.
+Proof. iIntros (??) "H". iIntros (???). eauto. Qed.
+
+Instance ptsto_log_post_crash (l:loc) (vs:list Block):
+  IntoCrash (λ _ _, ptsto_log l vs) (λ _ _, crashed_log vs).
+Proof. Abort.

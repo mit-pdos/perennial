@@ -562,4 +562,3 @@ Section crash.
     IntoCrash (λ _ _, l d↦∗ vs)%I (λ _ _, l d↦∗ vs)%I.
   Proof. apply _. Qed.
 End crash.
-

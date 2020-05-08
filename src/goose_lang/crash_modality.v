@@ -1,4 +1,6 @@
 From Perennial.goose_lang Require Import lifting.
+From iris.proofmode Require Import tactics monpred.
+
 
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.
@@ -10,7 +12,7 @@ Definition post_crash `{hG: !heapG Σ} (P: forall {hG': heapG Σ}, iProp Σ) : i
                              @P hG').
 *)
 
-Definition post_crash `{hG: !heapG Σ} (P: heapG Σ → iProp Σ) : iProp Σ :=
+Definition post_crash {Σ} (P: heapG Σ → iProp Σ) `{hG: !heapG Σ}  : iProp Σ :=
   (∀ σ σ' hG', ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ (heapG_ffiG (hG := hG')) σ' -∗
                              (P hG')).
 
@@ -38,6 +40,14 @@ Lemma post_crash_mono P Q:
 Proof.
   iIntros (Hmono) "HP". iIntros (???) "#Hrel".
   iApply Hmono. iApply "HP"; eauto.
+Qed.
+
+Lemma post_crash_pers P Q:
+  (P -∗ post_crash Q) →
+  □ P -∗ post_crash (λ hG, □ Q hG).
+Proof.
+  iIntros (Hmono) "#HP". iIntros (???) "#Hrel".
+  iAlways. iApply Hmono; eauto.
 Qed.
 
 Lemma post_crash_sep P Q:
@@ -123,9 +133,6 @@ Section IntoCrash.
     IntoCrash (λ Σ hG, P Σ hG ∧ Q Σ hG)%I (λ Σ hG, P' Σ hG ∧ Q' Σ hG)%I.
   Proof. iIntros (H1 H2 ??). rewrite ?into_crash post_crash_and //. Qed.
 
-  Search _ IntoPure.
-  Print IntoPure.
-
   (* XXX: probably should rephrase in terms of IntoPure *)
   Global Instance pure_into_crash (P: Prop) :
     IntoCrash (λ _ _, ⌜ P ⌝%I) (λ _ _, ⌜ P ⌝%I).
@@ -185,5 +192,54 @@ Section IntoCrash.
 
 End IntoCrash.
 
+Section modality.
+  Context {Σ: gFunctors}.
 
+  Program Definition heapG_index: biIndex :=
+    {| bi_index_type := heapG Σ;
+       bi_index_rel := (=);
+    |}.
+  Next Obligation. admit. Admitted.
+
+  Local Notation monPred := (monPred heapG_index ((iPropI Σ))).
+  Local Notation monPredI := (monPredI heapG_index ((iPropI Σ))).
+
+  Program Definition post_crash' (P: monPred) : monPred :=
+    {| monPred_at := λ hG, post_crash (hG := hG) P |}.
+
+  Class IntoCrash' (P Q: monPred) :=
+    into_crash' : ∀ hG, P hG -∗ post_crash' Q hG.
+
+  Lemma modality_post_crash_mixin :
+    modality_mixin (PROP1 := monPredI) (PROP2 := monPredI) (post_crash') (MIEnvTransform IntoCrash') (MIEnvTransform IntoCrash').
+  Proof.
+    split.
+    - rewrite /modality_intuitionistic_action_spec.
+      split.
+      * rewrite /IntoCrash'/post_crash'. intros. split.
+        intros hG => //=. iIntros "HP".
+        iPoseProof (post_crash_pers (P hG) Q with "[HP]") as "H".
+        ** eauto.
+        ** iApply "HP".
+        ** iIntros (???) "H'". iSpecialize ("H" with "[$]"). eauto.
+      * admit.
+    - rewrite /modality_spatial_action_spec.
+      rewrite /IntoCrash'/post_crash'. intros. split. intros hG. eauto.
+    - rewrite /IntoCrash'/post_crash'. intros. split. intros hG. simpl. iIntros "H". iIntros (??). eauto.
+    - admit.
+    - admit.
+  Admitted.
+
+  Definition modality_post_crash := Modality _ (modality_post_crash_mixin).
+
+  Instance FromModal_post_crash P: FromModal modality_post_crash (post_crash' P) (post_crash' P) P.
+  Proof. rewrite /FromModal//=. Qed.
+
+  Instance IntoCrash_post_crash P:
+    IntoCrash' (post_crash' P) P.
+  Proof. rewrite //=. Qed.
+
+  Lemma test P Q: post_crash' (P -∗ Q) -∗ post_crash' P -∗ post_crash' Q.
+  Proof. iIntros "Hwand HP". iModIntro. by iApply "Hwand". Qed.
+End modality.
 End goose_lang.
