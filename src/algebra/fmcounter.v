@@ -96,7 +96,13 @@ Proof.
   iIntros (Hle) "Hlb".
   rewrite /fmcounter_lb.
   iApply (own_mono with "Hlb").
-Admitted.
+  apply @auth_frag_mono.
+  exists n2.
+  hnf.
+  rewrite /op /cmra_op /=.
+  rewrite /ucmra_op /mnatUR /mnat_op.
+  lia.
+Qed.
 
 Lemma fmcounter_sep γ q1 q2 n:
   fmcounter γ (q1 + q2) n ⊣⊢ fmcounter γ q1 n ∗ fmcounter γ q2 n.
