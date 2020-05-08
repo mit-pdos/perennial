@@ -103,7 +103,6 @@ Theorem find_highest_index_none_not_in `{!EqDecision A} (poss: list A) (pos: A) 
 Proof.
   intros Hlookup.
   intros Hin.
-  Search _ elem_of list_lookup.
   apply elem_of_list_lookup_1 in Hin as [i Hlookup'].
   eapply find_highest_index_none in Hlookup; eauto.
 Qed.
