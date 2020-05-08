@@ -1,12 +1,10 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From RecordUpdate Require Import RecordSet.
-From Tactical Require Import SimplMatch.
 
-From Perennial.Helpers Require Export NamedProps List.
+From Perennial.Helpers Require Export NamedProps.
 
 From Perennial.program_proof Require Export proof_prelude.
-From Perennial.program_proof Require Export wal.lib wal.sliding.
-From Perennial.program_proof Require Import wal.highest.
+From Perennial.program_proof Require Export wal.sliding.
 From Perennial.program_proof Require Import disk_lib.
 
 Section goose_lang.
@@ -627,29 +625,6 @@ Proof.
   iIntros "HI"; iNamed "HI".
   iApply "HΦ"; iFrame.
 Qed.
-
-Theorem apply_upds_app upds1 upds2 d :
-  apply_upds (upds1 ++ upds2) d =
-  apply_upds upds2 (apply_upds upds1 d).
-Proof.
-  rewrite /apply_upds fold_left_app //.
-Qed.
-
-Theorem memWrite_apply_upds memLog upds d :
-  apply_upds (memWrite memLog upds).(slidingM.log) d =
-  apply_upds (memLog.(slidingM.log) ++ upds) d.
-Proof.
-  revert d memLog.
-  induction upds; simpl; intros.
-  - rewrite app_nil_r //.
-  - rewrite IHupds.
-    rewrite cons_middle.
-    rewrite app_assoc.
-    rewrite !apply_upds_app.
-    f_equal.
-    destruct a as [a b]; simpl.
-    rewrite /memWrite_one.
-Abort.
 
 Theorem wp_sliding__takeFrom l σ (start: u64) :
   int.val σ.(slidingM.start) ≤ int.val start ≤ int.val σ.(slidingM.mutable) ->
