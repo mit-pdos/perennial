@@ -34,7 +34,6 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Definition lockN : namespace := nroot .@ "txnlock".
 Definition invN : namespace := nroot .@ "txninv".
-Definition walN : namespace := nroot .@ "txnwal".
 
 Definition mapsto_txn {K} (gData : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})  (a : addr) (v : @bufDataT K) : iProp Σ :=
   ∃ hG γm,
@@ -188,7 +187,7 @@ Definition is_txn (l : loc)
     ∃ γLock (walHeap : wal_heap_gnames) (mu : loc) (walptr : loc),
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
-      "Hiswal" ∷ is_wal walN (wal_heap_inv walHeap) walptr ∗
+      "Hiswal" ∷ is_wal (wal_heap_inv walHeap) walptr (wal_heap_walnames walHeap) ∗
       "Histxna" ∷ inv invN (is_txn_always walHeap gData γcrash) ∗
       "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l walHeap)
   )%I.
@@ -252,7 +251,7 @@ Proof using txnG0 lockG0 Σ.
 
   wp_call.
 
-  wp_apply (wp_Walog__ReadMem _ _ (λ mb,
+  wp_apply (wp_Walog__ReadMem _ (λ mb,
     mapsto a.(addrOff) 1 (UB v γm) ∗
     match mb with
     | Some b => own γm (◯ Excl' true) ∗
@@ -260,7 +259,7 @@ Proof using txnG0 lockG0 Σ.
     | None => own γm (◯ Excl' false)
     end)%I with "[$Hwal Hstable Hmod]").
   {
-    iApply (wal_heap_readmem walN (⊤ ∖ ↑walN ∖ ↑invN) with "[Hstable Hmod]").
+    iApply (wal_heap_readmem (⊤ ∖ ↑walN ∖ ↑invN) with "[Hstable Hmod]").
 
     iInv invN as ">Hinv_inner" "Hinv_closer".
     iNamed "Hinv_inner".
@@ -380,13 +379,16 @@ Proof using txnG0 lockG0 Σ.
   iDestruct ("Hres") as "(Hlatest & Hown)".
   wp_pures.
 
-  wp_apply (wp_Walog__ReadInstalled _ _
+  wp_apply (wp_Walog__ReadInstalled _
     (λ b, ⌜ is_bufData_at_off b a.(addrOff) v ⌝ ∗
       mapsto (hG := hG) a.(addrOff) 1 (UB v γm) ∗
       own γm (◯ (Excl' true)))%I
     with "[$Hwal Hlatest Hown]").
   {
-    iApply (wal_heap_readinstalled walN (⊤ ∖ ↑walN ∖ ↑invN) with "[Hlatest Hown]").
+    iSplitR.
+    { admit. }
+
+    iApply (wal_heap_readinstalled (⊤ ∖ ↑walN ∖ ↑invN) with "[Hlatest Hown]").
 
     iInv invN as ">Hinv_inner" "Hinv_closer".
     iNamed "Hinv_inner".
@@ -455,7 +457,7 @@ Proof using txnG0 lockG0 Σ.
   iSplitR; first done.
   iSplitR; first done.
   iExists _, _. iFrame. done.
-Qed.
+Admitted.
 
 Definition is_txn_buf_pre (bufptr:loc) (a : addr) (buf : buf) gData : iProp Σ :=
   "Hisbuf" ∷ is_buf bufptr a buf ∗
@@ -509,10 +511,10 @@ Proof.
   iExists _. done.
 Qed.
 
-Theorem mapsto_txn_locked N γ l lwh a K data gData γcrash E :
+Theorem mapsto_txn_locked γ l lwh a K data gData γcrash E :
   ↑invN ⊆ E ->
-  ↑N ⊆ E ∖ ↑invN ->
-  is_wal N (wal_heap_inv γ) l ∗
+  ↑walN ⊆ E ∖ ↑invN ->
+  is_wal (wal_heap_inv γ) l (wal_heap_walnames γ) ∗
   inv invN (is_txn_always γ gData γcrash) ∗
   is_locked_walheap γ lwh ∗
   @mapsto_txn K gData a data
@@ -543,7 +545,7 @@ Qed.
 
 Theorem wp_txn__installBufsMap l q gData γcrash walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
   {{{ inv invN (is_txn_always γ gData γcrash) ∗
-      is_wal walN (wal_heap_inv γ) walptr ∗
+      is_wal (wal_heap_inv γ) walptr (wal_heap_walnames γ) ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ lwh ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -833,7 +835,7 @@ Qed.
 
 Theorem wp_txn__installBufs l q gData γcrash walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
   {{{ inv invN (is_txn_always γ gData γcrash) ∗
-      is_wal walN (wal_heap_inv γ) walptr ∗
+      is_wal (wal_heap_inv γ) walptr (wal_heap_walnames γ) ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ lwh ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -1164,7 +1166,7 @@ Proof using txnG0 lockG0 Σ.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
 
-  wp_apply (wp_Walog__MemAppend _ _
+  wp_apply (wp_Walog__MemAppend _
     ("Hlockedheap" ∷ is_locked_walheap walHeap lwh)
     (λ npos,
       ∃ lwh',
@@ -1172,7 +1174,7 @@ Proof using txnG0 lockG0 Σ.
         "Hmapstos" ∷ [∗ map] k↦x ∈ bufamap, mapsto_txn gData k x.(bufData)
     )%I
     with "[$Hiswal $Hblks Hmapstos $Hwal_latest Hcrash_fupd]").
-  { iApply (wal_heap_memappend _ E).
+  { iApply (wal_heap_memappend (⊤ ∖ ↑walN ∖ ↑invN)).
     iInv invN as ">Hinner" "Hinner_close".
     iMod "Hcrash_fupd".
     iModIntro.
@@ -1362,8 +1364,8 @@ Proof using txnG0 lockG0 Σ.
   }
 Admitted.
 
-Theorem wp_txn_CommitWait l q gData bufs buflist bufamap (wait : bool) (id : u64) :
-  {{{ is_txn l gData ∗
+Theorem wp_txn_CommitWait l q gData bufs buflist bufamap (wait : bool) (id : u64) γcrash :
+  {{{ is_txn l gData γcrash ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre bufptrval a buf gData
@@ -1422,8 +1424,8 @@ Proof.
     iFrame.
 Admitted.
 
-Theorem wp_Txn__GetTransId l gData :
-  {{{ is_txn l gData }}}
+Theorem wp_Txn__GetTransId l gData γcrash :
+  {{{ is_txn l gData γcrash }}}
     txn.Txn__GetTransId #l
   {{{ (i : u64), RET #i; emp }}}.
 Proof.

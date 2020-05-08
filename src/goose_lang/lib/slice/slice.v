@@ -218,6 +218,16 @@ Proof.
   rewrite left_id; auto.
 Qed.
 
+Theorem is_slice_small_nil t q s :
+  int.val s.(Slice.sz) = 0 ->
+  ⊢ is_slice_small s t q [].
+Proof.
+  intros Hsz.
+  iSplit.
+  - iApply array_nil; auto.
+  - rewrite Hsz /=; auto.
+Qed.
+
 Theorem zero_slice_val t :
   zero_val (slice.T t) = slice_val Slice.nil.
 Proof.

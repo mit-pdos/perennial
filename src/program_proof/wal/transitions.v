@@ -1,0 +1,128 @@
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
+
+From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+
+From Perennial.Helpers Require Import Transitions.
+From Perennial.program_proof Require util_proof.
+From Perennial.program_proof Require Import proof_prelude disk_lib.
+From Perennial.program_proof Require Import wal.lib.
+
+Implicit Types (txn_id:nat) (pos: u64).
+
+Existing Instance r_mbind.
+Existing Instance fallback_genPred.
+
+Definition update_durable: transition log_state.t unit :=
+  new_durable ← suchThat
+              (λ s new_durable,
+               (s.(log_state.durable_lb) ≤
+                new_durable ≤
+                length s.(log_state.txns))%nat);
+  modify (set log_state.durable_lb (λ _, new_durable)).
+
+Definition update_installed: transition log_state.t nat :=
+  new_installed ← suchThat
+              (λ s new_installed,
+                 (s.(log_state.installed_lb) ≤
+                  new_installed ≤
+                  s.(log_state.durable_lb))%nat);
+  modify (set log_state.installed_lb (λ _, new_installed));;
+  ret new_installed.
+
+Definition log_crash : transition log_state.t unit :=
+  crash_txn ← suchThat
+            (λ s (crash_txn: nat),
+               s.(log_state.durable_lb) ≤ crash_txn);
+  modify (set log_state.txns (fun txns => take crash_txn txns));;
+  modify (set log_state.durable_lb (fun _ => crash_txn));;
+  ret tt.
+
+Definition suchThatMax {Σ} (pred: Σ -> nat -> Prop) : transition Σ nat :=
+  suchThat (λ s x, pred s x ∧ ∀ y, pred s y -> y ≤ x).
+
+Definition is_txn (txns: list (u64 * list update.t)) (txn_id: nat) (pos: u64): Prop :=
+  fst <$> txns !! txn_id = Some pos.
+
+Theorem is_txn_bound txns txn_id pos :
+  is_txn txns txn_id pos ->
+  (txn_id ≤ length txns)%nat.
+Proof.
+  rewrite /is_txn -list_lookup_fmap.
+  intros H%lookup_lt_Some.
+  autorewrite with len in H; lia.
+Qed.
+
+Definition log_flush (pos:u64) (txn_id: nat) : transition log_state.t unit :=
+  assert (λ s, is_txn s.(log_state.txns) txn_id pos);;
+  new_durable ← suchThat
+              (λ s (new_durable: nat),
+                 (Nat.max s.(log_state.durable_lb) txn_id ≤ new_durable ≤ length s.(log_state.txns))%nat);
+  modify (set log_state.durable_lb (λ _, (new_durable)));;
+  ret tt.
+
+Definition allocPos : transition log_state.t u64 :=
+  suchThat (λ s (pos': u64),
+            (∃ txn_id', is_txn s.(log_state.txns) txn_id' pos') ∧
+            (∀ (pos: u64) txn_id,
+                is_txn s.(log_state.txns) txn_id pos ->
+                int.val pos' >= int.val pos)).
+
+Definition log_mem_append (txn: list update.t): transition log_state.t u64 :=
+  pos ← allocPos;
+  modify (set log_state.txns (fun txns => txns ++ [(pos,txn)]));;
+  ret pos.
+
+Definition apply_upds (upds: list update.t) (d: disk): disk :=
+  fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
+
+Definition disk_at_txn_id (txn_id: nat) (s:log_state.t): disk :=
+  apply_upds (txn_upds (take txn_id (log_state.txns s))) s.(log_state.d).
+
+Definition updates_for_addr (a: u64) (l : list update.t) : list Block :=
+  update.b <$> filter (λ u, u.(update.addr) = a) l.
+
+Definition updates_since (txn_id: nat) (a: u64) (s : log_state.t) : list Block :=
+  updates_for_addr a (txn_upds (drop txn_id (log_state.txns s))).
+
+Fixpoint latest_update (base: Block) (upds: list Block) : Block :=
+  match upds with
+  | u :: upds' =>
+    latest_update u upds'
+  | nil => base
+  end.
+
+Definition last_disk (s:log_state.t): disk :=
+  disk_at_txn_id (length (log_state.txns s)) s.
+
+Definition no_updates_since σ a txn_id :=
+  Forall (λ u, u.(update.addr) ≠ a)
+         (txn_upds (drop txn_id (log_state.txns σ))).
+
+Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
+  ok ← any bool;
+  if (ok:bool)
+  then d ← reads last_disk;
+       match d !! int.val a with
+       | None => undefined
+       | Some b => ret (Some b)
+       end
+  else
+    (* on miss, read makes [installed_to] precise enough so the caller can
+    use [log_read_installed] and together get the current value at [a] *)
+    update_durable;;
+    update_installed;;
+    suchThat (fun s (_:unit) =>
+                no_updates_since s a s.(log_state.installed_lb));;
+    ret None.
+
+Definition installed_disk (s:log_state.t): disk :=
+  disk_at_txn_id s.(log_state.installed_lb) s.
+
+Definition log_read_installed (a:u64): transition log_state.t Block :=
+  installed_txn_id ← suchThat (fun s txn_id =>
+                                 s.(log_state.installed_lb) ≤
+                                 txn_id ≤
+                                 length s.(log_state.txns))%nat;
+  d ← reads (disk_at_txn_id installed_txn_id);
+  unwrap (d !! int.val a).

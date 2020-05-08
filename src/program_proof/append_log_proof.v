@@ -1,5 +1,6 @@
 From Perennial.goose_lang.examples Require Import append_log.
 From Perennial.goose_lang.lib Require Import encoding.
+From Perennial.goose_lang Require Import crash_modality.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import marshal_proof.
@@ -892,3 +893,30 @@ Qed.
 
 End heap.
 
+Instance is_hdr_durable sz disk_sz:
+  IntoCrash (λ _ _, is_hdr sz disk_sz) (λ _ _, is_hdr sz disk_sz).
+Proof. apply _. Qed.
+
+Instance is_log'_durable sz disk_sz vs:
+  IntoCrash (λ _ _, is_log' sz disk_sz vs) (λ _ _, is_log' sz disk_sz vs).
+Proof. apply _. Qed.
+
+Instance crashed_log_durable bs:
+  IntoCrash (λ _ _, crashed_log bs) (λ _ _, crashed_log bs).
+Proof. apply _. Qed.
+
+Instance uninit_log_durable sz:
+  IntoCrash (λ _ _, uninit_log sz) (λ _ _, uninit_log sz).
+Proof. apply _. Qed.
+
+Instance unopened_log_durable sz:
+  IntoCrash (λ _ _, unopened_log sz) (λ _ _, unopened_log sz).
+Proof. apply _. Qed.
+
+Instance typed_ptsto_into_crash l descr val:
+  IntoCrash (λ _ _, l ↦[descr] val)%I (λ _ _, True)%I.
+Proof. iIntros (??) "H". iIntros (???). eauto. Qed.
+
+Instance ptsto_log_post_crash (l:loc) (vs:list Block):
+  IntoCrash (λ _ _, ptsto_log l vs) (λ _ _, crashed_log vs).
+Proof. Abort.

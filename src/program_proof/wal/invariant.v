@@ -7,7 +7,7 @@ From Perennial.algebra Require Export deletable_heap.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
 From Perennial.program_proof Require Export wal.circ_proof wal.sliding.
-From Perennial.program_proof Require Export wal.specs.
+From Perennial.program_proof Require Export wal.transitions.
 
 Canonical Structure circO := leibnizO circΣ.t.
 
@@ -46,6 +46,7 @@ Record wal_names :=
     new_installed_name : gname;
     being_installed_name : gname;
     diskEnd_avail_name : gname;
+    start_avail_name : gname;
   }.
 
 Implicit Types (γ: wal_names).
@@ -133,11 +134,13 @@ Definition wal_linv_fields st σ: iProp Σ :=
 Definition diskEnd_linv γ (diskEnd: u64): iProp Σ :=
   "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val diskEnd) ∗
   "HdiskEnd_exactly" ∷ thread_own_ctx γ.(diskEnd_avail_name)
-                               (diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd)).
+                         (diskEnd_is γ.(circ_name) (1/2) (int.val diskEnd)).
 
 Definition diskStart_linv γ (start: u64): iProp Σ :=
   "#Hstart_at_least" ∷ start_at_least γ.(circ_name) start ∗
-  "Hstart_exactly" ∷ start_is γ.(circ_name) (1/4) start.
+  (* TODO: this should be available only to the logger? *)
+  "Hstart_exactly" ∷ thread_own_ctx γ.(start_avail_name)
+                       (start_is γ.(circ_name) (1/2) start).
 
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
@@ -273,16 +276,14 @@ Definition is_durable γ txns installed_txn_id diskEnd_txn_id : iProp Σ :=
 Global Instance is_durable_timeless γ txns installed_txn_id diskEnd_txn_id :
   Timeless (is_durable γ txns installed_txn_id diskEnd_txn_id) := _.
 
-Definition is_installed_txn γ txns installed_txn_id installed_lb: iProp Σ :=
-  ∃ (diskStart: u64),
+Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
     "%Hinstalled_bound" ∷ ⌜(installed_lb ≤ installed_txn_id)%nat⌝ ∗
-    "Hstart_is" ∷ start_is γ.(circ_name) (1/4) diskStart ∗
-    "%Hstart_txn" ∷ ⌜is_highest_txn txns installed_txn_id diskStart⌝.
+    "%Hstart_txn" ∷ ⌜is_highest_txn txns installed_txn_id (circΣ.start cs)⌝.
 
-Definition is_durable_txn γ txns diskEnd_txn_id durable_lb: iProp Σ :=
+Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
   ∃ (diskEnd: u64),
     "%Hdurable_lb" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat⌝ ∗
-    "Hend_is" ∷ diskEnd_is γ.(circ_name) (1/4) (int.val diskEnd) ∗
+    "%HdiskEnd_val" ∷ ⌜int.val diskEnd = circΣ.diskEnd cs⌝ ∗
     "%Hend_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝.
 
 Definition txns_ctx γ txns : iProp Σ :=
@@ -296,11 +297,12 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "Hmem" ∷ is_wal_mem l γ ∗
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
     "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ installed_txn_id diskEnd_txn_id,
+    "Hdisk" ∷ ∃ cs installed_txn_id diskEnd_txn_id,
+      "Howncs"     ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
       "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "circ.start" ∷ is_installed_txn γ s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "circ.end"   ∷ is_durable_txn γ s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
+      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
 .
 
 Definition is_wal (l : loc) γ : iProp Σ :=
@@ -318,6 +320,44 @@ Proof.
   iSplitL; last by auto.
   iExists _; iFrame.
   by iFrame "∗ Hmem".
+Qed.
+
+Theorem is_wal_open l wn E :
+  ↑walN ⊆ E ->
+  is_wal l wn
+  ={E, E ∖ ↑walN}=∗
+    ∃ σ, ▷ P σ ∗
+    ( ▷ P σ ={E ∖ ↑walN, E}=∗ emp ).
+Proof.
+  iIntros (HN) "[#Hwalinv #Hcirc]".
+  iInv walN as (σ) "[Hwalinner HP]" "Hclose".
+  iModIntro.
+  iExists _. iFrame.
+  iIntros "HP".
+  iApply "Hclose". iNext.
+  iExists _. iFrame.
+Qed.
+
+Theorem is_circular_diskEnd_lb_agree E γ lb cs :
+  ↑circN ⊆ E ->
+  diskEnd_at_least γ.(circ_name) lb -∗
+  is_circular circN (circular_pred γ) γ.(circ_name) -∗
+  own γ.(cs_name) (◯ Excl' cs) -∗
+  |={E}=> ⌜lb ≤ circΣ.diskEnd cs⌝ ∗ own γ.(cs_name) (◯ Excl' cs).
+Proof.
+  rewrite /circular_pred.
+  iIntros (Hsub) "#HdiskEnd_lb #Hcirc Hown".
+  iInv "Hcirc" as ">Hinner" "Hclose".
+  iDestruct "Hinner" as (σ) "(Hstate&Hγ)".
+  unify_ghost.
+  iFrame "Hown".
+  iDestruct (is_circular_state_pos_acc with "Hstate") as "([HdiskStart HdiskEnd]&Hstate)".
+  iDestruct (diskEnd_is_agree_2 with "HdiskEnd HdiskEnd_lb") as %Hlb.
+  iFrame (Hlb).
+  iSpecialize ("Hstate" with "[$HdiskStart $HdiskEnd]").
+  iApply "Hclose".
+  iNext.
+  iExists _; iFrame.
 Qed.
 
 (** * some facts about txn_ctx *)

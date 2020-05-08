@@ -278,6 +278,9 @@ Section log_interp.
        ffi_ctx := @log_ctx;
        ffi_start := @log_start;
        ffi_restart := @log_restart;
+       ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @logG_state_inG _ hF1 = @logG_state_inG _ hF2 ∧
+                                           log_names_state (log_get_names hF1) =
+                                           log_names_state (log_get_names hF2) ⌝%I;
     |}.
   Next Obligation. intros ? [[]] [] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
@@ -455,9 +458,6 @@ Program Instance log_interp_adequacy:
      subG_ffiPreG := subG_logG;
      ffi_initP := λ σ, σ = UnInit;
      ffi_update_pre := @log_update_pre;
-     ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @logG_state_inG _ hF1 = @logG_state_inG _ hF2 ∧
-                                           log_names_state (log_get_names hF1) =
-                                           log_names_state (log_get_names hF2) ⌝%I;
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.

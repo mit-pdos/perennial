@@ -284,7 +284,7 @@ Definition wpc_post_crash k E e es Φ Φc : iProp Σ :=
       ∃ σs' (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
       ffi_ctx (refinement_spec_ffiG) σs.(world) ∗
       ∀ (hRG': refinement_heapG Σ),
-      ffi_crash_rel (ext := spec_ext_op_field) Σ
+      ffi_crash_rel Σ
                       (refinement_spec_ffiG (hRG := hRG)) σs.(world)
                       (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
       ffi_restart (refinement_spec_ffiG) σs'.(world) -∗

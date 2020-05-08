@@ -106,7 +106,9 @@ Class ffi_interp (ffi: ffi_model) :=
                                      = ffi_update Σ hF names2;
     ffi_ctx: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
     ffi_start: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
-    ffi_restart: ∀ `{ffiG Σ}, ffi_state -> iProp Σ
+    ffi_restart: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
+    ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
+    ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiG Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ')
   }.
 
 Arguments ffi_ctx {ffi FfiInterp Σ} fG : rename.

@@ -7,6 +7,7 @@ From iris.program_logic Require Import ectx_lifting.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing.
+From Perennial.goose_lang Require Import crash_modality.
 
 Set Default Proof Using "Type".
 (* this is purely cosmetic but it makes printing line up with how the code is
@@ -201,7 +202,9 @@ Section disk.
        ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap.gen_heap_ctx d;
        ffi_start := fun _ _ (d: @ffi_state disk_model) =>
                       ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l 1 v))%I;
-       ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I |}.
+       ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
+       ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
+    |}.
   Next Obligation. intros ? [[]] [] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
@@ -521,7 +524,6 @@ Program Instance disk_interp_adequacy:
      subG_ffiPreG := subG_diskG;
      ffi_initP := λ _, True;
      ffi_update_pre := @disk_update_pre;
-     ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
@@ -537,3 +539,26 @@ Next Obligation.
   iFrame. iPureIntro; split_and!; auto.
   destruct Hold as [[]] => //=.
 Qed.
+
+Section crash.
+  Existing Instances disk.disk_op disk.disk_model disk.disk_ty.
+  Existing Instances disk.disk_semantics disk.disk_interp.
+  Existing Instance diskG0.
+
+  Lemma disk_mapsto_post_crash `{!heapG Σ} l q v:
+    l d↦{q} v -∗ post_crash (λ _, l d↦{q} v).
+  Proof.
+    iIntros "H". iIntros (???) "#Hrel".
+    rewrite /ffi_crash_rel.
+    iDestruct "Hrel" as %(Heq1&Heq2).
+    rewrite /diskG0. rewrite Heq1. eauto.
+  Qed.
+
+  Global Instance disk_mapsto_into_crash l q v:
+    IntoCrash (λ _ _, l d↦{q} v)%I (λ _ _, l d↦{q} v)%I.
+  Proof. intros ??. apply disk_mapsto_post_crash. Qed.
+
+  Global Instance disk_array_into_crash l vs:
+    IntoCrash (λ _ _, l d↦∗ vs)%I (λ _ _, l d↦∗ vs)%I.
+  Proof. apply _. Qed.
+End crash.

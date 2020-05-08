@@ -28,8 +28,7 @@ Module slidingM.
   Definition wf (σ:t) :=
     int.val σ.(start) ≤ int.val σ.(mutable) ∧
     int.val σ.(start) + length σ.(log) < 2^64 ∧
-    (* TODO: derive this from the invariant *)
-    int.val (numMutable σ) <= length σ.(log).
+    int.val σ.(mutable) - int.val σ.(start) <= length σ.(log).
 End slidingM.
 
 Section goose_lang.
@@ -456,11 +455,10 @@ Proof.
   rewrite Hlookup /=; congruence.
 Qed.
 
-Theorem wp_sliding__update l σ (pos: u64) uv u0 u :
-  σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u0 ->
-  int.val σ.(slidingM.mutable) ≤ int.val pos ->
+Theorem wp_sliding__update l σ (pos: u64) uv u :
   (* must be an absorption update, since we don't update addrPos map *)
-  u0.(update.addr) = u.(update.addr) ->
+  update.addr <$> σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u.(update.addr) ->
+  int.val σ.(slidingM.mutable) ≤ int.val pos ->
   {{{ is_sliding l σ ∗ is_update uv 1 u }}}
     sliding__update #l #pos (update_val uv)
   {{{ RET #();
@@ -468,7 +466,8 @@ Theorem wp_sliding__update l σ (pos: u64) uv u0 u :
                         (λ log, <[ (int.nat pos - int.nat σ.(slidingM.start))%nat := u]> log) σ)
   }}}.
 Proof.
-  iIntros (Hlookup Hmutable_bound Haddreq Φ) "[Hsliding Hu] HΦ".
+  iIntros (Hlookup Hmutable_bound Φ) "[Hsliding Hu] HΦ".
+  apply fmap_Some_1 in Hlookup as [u0 [Hlookup Haddreq]].
   iNamed "Hsliding"; iNamed "Hinv".
   iDestruct (memLog_sz with "log_mutable") as %Hsz.
   wp_call.
@@ -476,7 +475,7 @@ Proof.
   iNamed "log_mutable".
   wp_apply wp_SliceSkip'.
   { iPureIntro.
-    revert Hwf; word. }
+    word. }
   fold (slidingM.numMutable σ).
   wp_apply (wp_SliceSet_updates with "[$log_mutable $Hu]").
   { rewrite lookup_drop.
@@ -489,7 +488,6 @@ Proof.
   - iPureIntro.
     rewrite /slidingM.wf /=.
     split_and; try word.
-    rewrite !numMutable_set_log.
     revert Hwf; len.
   - iExists _, _; iFrame.
     iSplitL "".
@@ -510,6 +508,8 @@ Proof.
       erewrite addrPosMap_absorb_eq; eauto.
 Qed.
 
+(* TODO: should require that we aren't absorbing (uv.1 shouldn't appear in the
+mutable region) *)
 Theorem wp_sliding_append l σ uv u :
   {{{ is_sliding l σ ∗ is_update uv 1 u }}}
     sliding__append #l (update_val uv)
@@ -582,8 +582,6 @@ Proof.
   iSplit.
   - iPureIntro.
     split_and!; simpl; try word.
-    rewrite numMutable_after_clear; auto.
-    word.
   - simpl.
     iExists _, _; iFrame.
     iSplitL.
@@ -595,7 +593,7 @@ Proof.
       iSplit.
       { iIntros "[Hupds1 Hupds2]".
         iDestruct (updates_slice_frag_combine with "[$Hupds1 $Hupds2]") as "Hupds".
-        { revert Hwf; word. }
+        { word. }
         rewrite take_ge; len.
         iDestruct "Hupds" as (bks) "[Hs Hbks]".
         iExists _; iFrame.
@@ -604,7 +602,7 @@ Proof.
       iIntros "Hupds".
       rewrite {1}take_ge; len.
       iDestruct (updates_slice_frag_split _ _ (slidingM.numMutable σ) with "Hupds") as "[Hupds1 Hupds2]".
-      { simpl; revert Hwf; word. }
+      { simpl; word. }
       iFrame.
       iDestruct "Hupds1" as (bks) "[Hs Hbks]".
       iExists _; iFrame.
@@ -615,7 +613,9 @@ Proof.
       rewrite numMutable_after_clear; auto.
       rewrite drop_ge; len.
       iExists nil; simpl.
-      admit. (* is_slice_small nil *)
+      iSplit; auto.
+      iApply is_slice_small_nil.
+      simpl; word.
 Admitted.
 
 Theorem wp_sliding__posForAddr l σ (a: u64) :

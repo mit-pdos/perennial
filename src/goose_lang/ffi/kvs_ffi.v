@@ -344,6 +344,9 @@ Section kvs_interp.
        ffi_ctx := @kvs_ctx;
        ffi_start := @kvs_start;
        ffi_restart := @kvs_restart;
+       ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @kvsG_state_inG _ hF1 = @kvsG_state_inG _ hF2 ∧
+                                           kvs_names_state (kvs_get_names hF1) =
+                                           kvs_names_state (kvs_get_names hF2) ⌝%I;
     |}.
   Next Obligation.
     intros.
@@ -560,9 +563,6 @@ From Perennial.goose_lang Require Import adequacy.
      subG_ffiPreG := subG_kvsG;
      ffi_initP := λ σ, σ = UnInit;
      ffi_update_pre := @kvs_update_pre;
-     ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @kvsG_state_inG _ hF1 = @kvsG_state_inG _ hF2 ∧
-                                           kvs_names_state (kvs_get_names hF1) =
-                                           kvs_names_state (kvs_get_names hF2) ⌝%I;
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation.
