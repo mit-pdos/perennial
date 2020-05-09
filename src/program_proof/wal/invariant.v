@@ -469,7 +469,9 @@ Proof.
   rewrite /is_txn; intros.
   destruct (decide (txn_id1 ≤ txn_id2)%nat); first by auto.
   assert (txn_id2 < txn_id1)%nat as Hord by lia.
-  eapply Hmono in Hord; eauto.
+  rewrite -list_lookup_fmap in H.
+  rewrite -list_lookup_fmap in H0.
+  eapply (Hmono _ _) in Hord; eauto.
   word. (* contradiction from [pos1 = pos2] *)
 Qed.
 

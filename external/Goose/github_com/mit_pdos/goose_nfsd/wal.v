@@ -570,6 +570,7 @@ Definition Walog__MemAppend: val :=
           (if: WalogState__memLogHasSpace "st" (slice.len "bufs")
           then
             "txn" <-[LogPosition] doMemAppend (struct.loadF WalogState.S "memLog" "st") "bufs";;
+            Linearize;;
             Break
           else
             util.DPrintf #5 (#(str"memAppend: log is full; try again")) #();;

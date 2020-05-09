@@ -4,9 +4,6 @@ From Perennial.program_proof Require Export wal.abstraction.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.program_proof Require util_proof.
 
-Definition apply_upds (upds: list update.t) (d: disk): disk :=
-  fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
-
 Section heap.
 Context `{!heapG Σ}.
 Definition update_val (up:u64*Slice.t): val :=
