@@ -179,17 +179,22 @@ Definition is_txn_locked l γ : iProp Σ :=
       "Histxn_pos" ∷ l ↦[Txn.S :: "pos"] #pos
  )%I.
 
+Record txn_names := {
+  txn_crash : gname;
+  txn_walnames : @wal_heap_gnames Σ
+}.
+
 Definition is_txn (l : loc)
     (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
-    γcrash
+    (γ : txn_names)
     : iProp Σ :=
   (
-    ∃ γLock (walHeap : wal_heap_gnames) (mu : loc) (walptr : loc),
+    ∃ γLock (mu : loc) (walptr : loc),
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
-      "Hiswal" ∷ is_wal (wal_heap_inv walHeap) walptr (wal_heap_walnames walHeap) ∗
-      "Histxna" ∷ inv invN (is_txn_always walHeap gData γcrash) ∗
-      "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l walHeap)
+      "Hiswal" ∷ is_wal (wal_heap_inv (txn_walnames γ)) walptr (wal_heap_walnames (txn_walnames γ)) ∗
+      "Histxna" ∷ inv invN (is_txn_always (txn_walnames γ) gData (txn_crash γ)) ∗
+      "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l (txn_walnames γ))
   )%I.
 
 Global Instance is_txn_persistent l gData γ : Persistent (is_txn l gData γ) := _.
@@ -243,7 +248,7 @@ Theorem wp_txn_Load K l gData γcrash a v :
   }}}.
 Proof using txnG0 lockG0 Σ.
   iIntros (Φ) "(Htxn & Hstable) HΦ".
-  iDestruct "Htxn" as (γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
+  iDestruct "Htxn" as (γLock mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
   iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".
 
   wp_call.
@@ -1119,20 +1124,20 @@ Proof.
   iDestruct "H" as (b) "[% [H0 H1]]". iExists b. iFrame.
 Qed.
 
-Theorem wp_txn__doCommit l q gData γcrash bufs buflist bufamap E :
-  {{{ is_txn l gData γcrash ∗
+Theorem wp_txn__doCommit l q gData γ bufs buflist bufamap E :
+  {{{ is_txn l gData γ ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre bufptrval a buf gData ) ∗
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=>
           ∃ (unmodifiedBufs : gmap addr {K & @bufDataT K})
             (txn_crash_heaps : async (u64 * gname)),
-            "Htxn_crash_heaps_frag" ∷ own γcrash (◯ (Excl' txn_crash_heaps)) ∗
+            "Htxn_crash_heaps_frag" ∷ own (txn_crash γ) (◯ (Excl' txn_crash_heaps)) ∗
             let latest_crash := snd (latest txn_crash_heaps) in
             "Htxn_unmod" ∷ ( [∗ map] a ↦ b ∈ unmodifiedBufs, mapsto_txn_crash latest_crash a b ) ∗
             "%Htxn_unmod_disjoint" ∷ ⌜ ∀ a, is_Some (bufamap !! a) -> unmodifiedBufs !! a = None ⌝ ∗
             "Htxn_crash_close" ∷ ( ∀ txn_id new_crash,
-              own γcrash (◯ (Excl' (async_put (txn_id, new_crash) txn_crash_heaps))) ∗
+              own (txn_crash γ) (◯ (Excl' (async_put (txn_id, new_crash) txn_crash_heaps))) ∗
               ( [∗ map] a ↦ b ∈ unmodifiedBufs, mapsto_txn_crash latest_crash a b ) ∗
               ( [∗ map] a ↦ b ∈ unmodifiedBufs, mapsto_txn_crash new_crash a b ) ∗
               ( [∗ map] a ↦ b ∈ bufamap, mapsto_txn_crash new_crash a (existT _ b.(bufData)) )
@@ -1141,6 +1146,7 @@ Theorem wp_txn__doCommit l q gData γcrash bufs buflist bufamap E :
     Txn__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
       if ok then
+        ( ∃ txn_id, txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id commitpos ) ∗
         [∗ map] a ↦ buf ∈ bufamap,
           mapsto_txn gData a buf.(bufData)
       else
@@ -1167,14 +1173,15 @@ Proof using txnG0 lockG0 Σ.
   wp_loadField.
 
   wp_apply (wp_Walog__MemAppend _
-    ("Hlockedheap" ∷ is_locked_walheap walHeap lwh)
+    ("Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh)
     (λ npos,
       ∃ lwh',
-        "Hlockedheap" ∷ is_locked_walheap walHeap lwh' ∗
-        "Hmapstos" ∷ [∗ map] k↦x ∈ bufamap, mapsto_txn gData k x.(bufData)
+        "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh' ∗
+        "Hmapstos" ∷ ( [∗ map] k↦x ∈ bufamap, mapsto_txn gData k x.(bufData) ) ∗
+        "Hpos" ∷ ( ∃ txn_id, txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id npos )
     )%I
     with "[$Hiswal $Hblks Hmapstos Hwal_latest Hcrash_fupd]").
-  { iApply (wal_heap_memappend (⊤ ∖ ↑walN ∖ ↑invN) with "[Hmapstos Hcrash_fupd] Hwal_latest").
+  { iApply (wal_heap_memappend E with "[Hmapstos Hcrash_fupd] Hwal_latest").
     iInv invN as ">Hinner" "Hinner_close".
     iMod "Hcrash_fupd".
     iModIntro.
@@ -1192,7 +1199,7 @@ Proof using txnG0 lockG0 Σ.
       )%I with "Hmapstos") as "Hmapstos".
     {
       iIntros (k x Hkx) "H".
-      iDestruct "H" as (data h γ) "(% & % & H0 & H1)".
+      iDestruct "H" as (data h γ0) "(% & % & H0 & H1)".
       iSplitL.
       { iExists _, _, _. iFrame. done. }
       iExists _. done.
@@ -1270,7 +1277,7 @@ Proof using txnG0 lockG0 Σ.
 
     iSplitR; first by eauto.
 
-    iIntros (txn_id lwh' new_crash_heap) "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hq)".
+    iIntros (txn_id lwh' new_crash_heap) "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hpos & Hq)".
     rewrite /memappend_q.
     rewrite (big_sepL2_alt _ updlist_olds.*1).
     iDestruct "Hq" as "[_ Hq]".
@@ -1326,7 +1333,7 @@ Proof using txnG0 lockG0 Σ.
       iApply big_sepM_fmap. iFrame.
     }
 
-    iMod ("Hinner_close" with "[-]") as "Hinner_close".
+    iMod ("Hinner_close" with "[-Hpos]") as "Hinner_close".
     { iNext.
       iExists _, _, _. iFrame.
       iSplitL "Hcrashheapmatch_latest".
@@ -1337,7 +1344,7 @@ Proof using txnG0 lockG0 Σ.
       rewrite /=. iFrame.
     }
 
-    iModIntro. done.
+    iModIntro. iExists _. iFrame.
   }
 
   iIntros (npos ok) "Hnpos".
@@ -1390,19 +1397,22 @@ Proof.
   destruct (decide (int.val 0 < int.val bufs.(Slice.sz))).
   - wp_pures.
     wp_apply (wp_txn__doCommit with "[$Htxn $Hbufs $Hbufpre]").
+    { iModIntro. iExists ∅. admit. }
+
     iIntros (commitpos ok) "Hbufpost".
 
     wp_pures.
     destruct ok; wp_pures.
-    + destruct wait; wp_pures.
+    + iDestruct "Hbufpost" as "[Hpos Hbufamap]".
+      destruct wait; wp_pures.
       * iNamed "Htxn".
         wp_loadField.
-        wp_apply (wp_Walog__Flush with "[$Hiswal]").
-        { admit. }
+        iDestruct "Hpos" as (txn_id) "#Hpos".
+        wp_apply (wp_Walog__Flush_heap with "[$Hiswal $Hpos]").
         iIntros "HQ".
         wp_load.
         iApply "HΦ".
-        admit.
+        iFrame.
 
       * wp_pures.
         wp_load.
@@ -1413,7 +1423,7 @@ Proof.
       wp_store.
       wp_load.
       iApply "HΦ".
-      iFrame.
+      iFrame. done.
 
   - wp_apply util_proof.wp_DPrintf.
     wp_load.
@@ -1465,5 +1475,7 @@ Proof.
     wp_load.
     iApply "HΦ". done.
 Qed.
+
+
 
 End heap.

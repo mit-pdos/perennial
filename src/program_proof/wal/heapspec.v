@@ -1260,9 +1260,7 @@ Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Blo
   [∗ list] _ ↦ u; old ∈ bs; olds,
     mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old)).
 
-(* TODO: must promise something about txn_id/pos *)
-Definition memappend_q γh (bs : list update.t) (olds : list (Block * list Block)) (pos: u64): iProp Σ :=
-(*  (∃ pos, is_txn txn_id pos) *)
+Definition memappend_q γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
   [∗ list] _ ↦ u; old ∈ bs; olds,
     mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old ++ [u.(update.b)])).
 
@@ -1290,12 +1288,12 @@ Proof.
   eauto.
 Qed.
 
-Lemma wal_heap_memappend_pre_to_q gh γh bs olds new_txn_id :
+Lemma wal_heap_memappend_pre_to_q gh γh bs olds :
   ( gen_heap_ctx gh ∗
     memappend_pre γh bs olds )
   ==∗
   ( gen_heap_ctx (memappend_gh gh bs olds) ∗
-    memappend_q γh bs olds new_txn_id ).
+    memappend_q γh bs olds ).
 Proof.
   iIntros "(Hctx & Hpre)".
   iDestruct (big_sepL2_length with "Hpre") as %Hlen.
@@ -1482,15 +1480,16 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
             ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
             ⌜ ∀ u, u ∈ bs -> unmodifiedBlocks !! u.(update.addr) = None ⌝ ∗
             own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps) ∗
-        ( ∀ txn_id lwh' new_crash_heap,
+        ( ∀ pos lwh' new_crash_heap,
           let γnewcrash := GenHeapG_Pre _ _ _ crashPreG new_crash_heap in
           is_locked_walheap γh lwh' ∗
-          own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (txn_id, new_crash_heap) crash_heaps)) ∗
+          own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (pos, new_crash_heap) crash_heaps)) ∗
           ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
           ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γnewcrash) a 1 b ) ∗
           ( [∗ list] u ∈ bs, mapsto (hG := γnewcrash) u.(update.addr) 1 u.(update.b) ) ∗
-          memappend_q γh.(wal_heap_h) bs olds txn_id
-          ={E, ⊤ ∖ ↑walN}=∗ Q txn_id ) ) -∗
+          txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos ∗
+          memappend_q γh.(wal_heap_h) bs olds
+          ={E, ⊤ ∖ ↑walN}=∗ Q pos ) ) -∗
   is_locked_walheap γh lwh -∗
   ( ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
@@ -1543,6 +1542,7 @@ Proof using walheapG0.
 
   iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _) newcrashheap).
   iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag $Hunmodified $Hunmodified_new $Hbs_new]") as "Hfupd".
+  { admit. }
   iMod "Hfupd".
 
   iModIntro.
@@ -1659,7 +1659,7 @@ Proof using walheapG0.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
     }
-Qed.
+Admitted.
 
 Theorem no_updates_since_le σ a t0 t1 :
   (t0 ≤ t1)%nat ->
