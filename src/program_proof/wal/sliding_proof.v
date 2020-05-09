@@ -18,9 +18,9 @@ Definition readonly_log logSlice σ : iProp Σ :=
                   (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition mutable_log logSlice σ : iProp Σ :=
-  "%logSlice_wf" ∷ ⌜int.nat logSlice.(Slice.sz) = length σ.(slidingM.log)⌝ ∗
-  "log_mutable" ∷ updates_slice_frag
-        (slice_skip logSlice (struct.t Update.S) (slidingM.numMutable σ)) 1
+  "%logSlice_wf" ∷ ⌜int.nat logSlice.(Slice.sz) = length σ.(slidingM.log) ∧ int.val logSlice.(Slice.sz) ≤ int.val logSlice.(Slice.cap)⌝ ∗
+  "log_mutable" ∷ updates_slice
+        (slice_skip logSlice (struct.t Update.S) (slidingM.numMutable σ))
         (drop (int.nat (slidingM.numMutable σ)) σ.(slidingM.log)).
 
 Definition is_sliding (l: loc) (σ: slidingM.t) : iProp Σ :=
@@ -45,7 +45,7 @@ Theorem memLog_sz s σ :
 Proof.
   iIntros "H".
   iNamed "H".
-  auto.
+  iPureIntro; word.
 Qed.
 
 Theorem wp_log_len l σ :
@@ -274,6 +274,7 @@ Proof.
   iMod (readonly_load_lt with "Hread") as (q) "[%Hqlt HreadLog]"; first by auto.
   iModIntro.
   destruct (Qextra.Qp_split_1 _ Hqlt) as [q' Hqq'].
+  iDestruct (updates_slice_frag_acc with "Hmut") as "[Hmut Hmut_full]".
   iEval (rewrite -Hqq') in "Hmut".
   iDestruct (fractional.fractional_split_1 with "Hmut") as "[Hmut Hq']".
   iDestruct (updates_slice_frag_len with "HreadLog") as %Hlen1.
@@ -289,7 +290,9 @@ Proof.
   iDestruct (updates_slice_frag_split _ _ (slidingM.numMutable σ) with "Hupds") as "[Hupds2 Hupds1]".
   { revert Hlen1 Hlen2; word. }
   iSplit; auto.
-  iApply (fractional.fractional_split_2 with "Hupds2 Hq'").
+  iCombine "Hupds2 Hq'" as "Hmut".
+  iSpecialize ("Hmut_full" with "Hmut").
+  iFrame.
 Qed.
 
 Hint Unfold slidingM.endPos : word.
@@ -465,6 +468,7 @@ Proof.
   { iPureIntro.
     word. }
   fold (slidingM.numMutable σ).
+  iDestruct (updates_slice_frag_acc with "log_mutable") as "[log_mutable log_mutable_full]".
   wp_apply (wp_SliceSet_updates with "[$log_mutable $Hu]").
   { rewrite lookup_drop.
     rewrite <- Hlookup.
@@ -480,6 +484,7 @@ Proof.
   - iExists _, _; iFrame.
     iSplitL "".
     { iApply (readonly_log_update_mutable with "log_readonly"); auto. }
+    iDestruct ("log_mutable_full" with "log_mutable") as "log_mutable".
     iSplitL "log_mutable".
     + iSplit.
       { iPureIntro; simpl; len. }
@@ -667,6 +672,109 @@ Proof.
   word.
 Qed.
 
+Theorem is_slice_small_take_all s t q vs (n: u64) :
+  int.val n = int.nat s.(Slice.sz) →
+  is_slice_small (slice_take s t n) t q vs ⊣⊢
+  is_slice_small s t q vs.
+Proof.
+  intros.
+  rewrite /is_slice_small.
+  simpl.
+  f_equiv.
+  iPureIntro; intuition idtac.
+  - word.
+  - word.
+Qed.
+
+Theorem slice_skip_take_commute s t n1 n2 :
+  slice_skip (slice_take s t n1) t n2 =
+  slice_take (slice_skip s t n2) t (word.sub n1 n2).
+Proof.
+  intros.
+  destruct s as [ptr len cap]; simpl.
+  rewrite /slice_take /slice_skip; simpl.
+  f_equal.
+Qed.
+
+Lemma is_slice_nil s t q :
+  int.val s.(Slice.sz) = 0 ->
+  int.val s.(Slice.cap) = 0 ->
+  ⊢ is_slice s t q [].
+Proof.
+  destruct s as [ptr len cap]; simpl; intros.
+  iSplitL.
+  - iApply is_slice_small_nil; simpl; auto.
+  - iExists []; simpl.
+    iSplitL.
+    + iPureIntro; lia.
+    + iApply array_nil; auto.
+Qed.
+
+Theorem is_slice_cap_skip s n t :
+  int.val n ≤ int.val s.(Slice.sz) ->
+  is_slice_cap s t -∗ is_slice_cap (slice_skip s t n) t.
+Proof.
+  iIntros (Hbound) "Hcap".
+  iDestruct "Hcap" as (extra Hlen) "Ha".
+  rewrite /is_slice_cap /=.
+  word_cleanup.
+  set (n' := (length extra - (int.nat s.(Slice.cap) - int.nat s.(Slice.sz)))%nat).
+  iExists (drop n' extra).
+  iSplit.
+  { iPureIntro; simpl.
+    len. }
+  iDestruct (array_split n' with "Ha") as "[Ha1 Ha2]"; try word.
+  rewrite Nat2Z.id.
+  iExactEq "Ha2".
+  rewrite !loc_add_assoc.
+  f_equal.
+  f_equal.
+  word.
+Qed.
+
+Theorem slice_skip_skip (n m: u64) s t :
+  int.val m ≤ int.val n ≤ int.val s.(Slice.sz) ->
+  int.val s.(Slice.sz) ≤ int.val s.(Slice.cap) ->
+  slice_skip s t n =
+  slice_skip (slice_skip s t m) t (word.sub n m).
+Proof.
+  intros Hbound Hwf.
+  rewrite /slice_skip /=.
+  f_equal.
+  - rewrite !loc_add_assoc.
+    f_equal.
+    word_cleanup.
+  - repeat word_cleanup.
+  - repeat word_cleanup.
+Qed.
+
+Theorem is_slice_cap_wf s t :
+  is_slice_cap s t -∗ ⌜int.val s.(Slice.sz) ≤ int.val s.(Slice.cap)⌝.
+Proof.
+  iIntros "Hcap".
+  iDestruct "Hcap" as (extra) "[% Hcap]".
+  iPureIntro.
+  word.
+Qed.
+
+Theorem is_slice_wf s t q vs :
+  is_slice s t q vs -∗ ⌜int.val s.(Slice.sz) ≤ int.val s.(Slice.cap)⌝.
+Proof.
+  rewrite is_slice_split.
+  iIntros "[Hs Hcap]".
+  iDestruct (is_slice_cap_wf with "Hcap") as "$".
+Qed.
+
+Theorem is_slice_cap_skip_more s n1 n2 t :
+  int.val n1 ≤ int.val n2 ≤ int.val s.(Slice.sz) ->
+  int.val s.(Slice.sz) ≤ int.val s.(Slice.cap) ->
+  is_slice_cap (slice_skip s t n1) t -∗ is_slice_cap (slice_skip s t n2) t.
+Proof.
+  iIntros (Hbound Hwf) "Hcap".
+  rewrite (slice_skip_skip n2 n1); try (repeat word_cleanup).
+  iApply (is_slice_cap_skip with "Hcap"); simpl; try word.
+Qed.
+
 Theorem wp_sliding__clearMutable l σ :
   {{{ is_sliding l σ }}}
     sliding__clearMutable #l
@@ -679,8 +787,10 @@ Proof.
   rewrite -wp_fupd.
   wp_storeField.
   iNamed "log_mutable".
-  unshelve iMod (readonly_alloc_1 with "log_mutable") as "readonly_new".
-  2: apply _.
+  iDestruct (updates_slice_cap_acc with "log_mutable") as "[log_mutable log_mutable_cap]".
+  unshelve iMod (readonly_alloc_1 with "log_mutable") as "readonly_new";
+    (* XXX: why is this necessary to trigger typeclass resolution? *)
+    [ | apply _ | ].
   rewrite /readonly_log.
   iDestruct (readonly_extend with "log_readonly readonly_new") as "log_readonly'".
   iClear "log_readonly".
@@ -690,8 +800,9 @@ Proof.
   - iPureIntro.
     split_and!; simpl; try word.
   - simpl.
-    iExists _, _; iFrame.
-    iSplitL.
+    iExists logSlice, addrPosPtr; iFrame.
+    iSplitL "log_readonly'".
+
     + rewrite /readonly_log.
       simpl.
       iApply (readonly_iff with "log_readonly'").
@@ -704,7 +815,8 @@ Proof.
         rewrite take_ge; len.
         iDestruct "Hupds" as (bks) "[Hs Hbks]".
         iExists _; iFrame.
-        admit. (* taking all of a slice preserves is_slice_small (removes capacity) *)
+        rewrite -> is_slice_small_take_all by word.
+        iFrame.
       }
       iIntros "Hupds".
       rewrite {1}take_ge; len.
@@ -713,16 +825,21 @@ Proof.
       iFrame.
       iDestruct "Hupds1" as (bks) "[Hs Hbks]".
       iExists _; iFrame.
-      admit. (* similar, took whole slice before skipping *)
+      rewrite slice_skip_take_commute.
+      rewrite -> is_slice_small_take_all by (simpl; word).
+      iFrame.
+
     + rewrite /mutable_log /=.
       iSplit.
       { iPureIntro; word. }
       rewrite numMutable_after_clear; auto.
       rewrite drop_ge; len.
-      iExists nil; simpl.
-      iSplit; auto.
-      iApply is_slice_small_nil.
-      simpl; word.
-Admitted.
+      rewrite updates_slice_cap_acc.
+      iSplitR.
+      { iExists nil; simpl.
+        iSplit; auto.
+        iApply is_slice_small_nil; simpl; word. }
+      iApply (is_slice_cap_skip_more with "log_mutable_cap"); try word.
+Qed.
 
 End goose_lang.

@@ -40,15 +40,23 @@ doesn't make use of capacity *)
 Definition is_slice_small (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
   s.(Slice.ptr) ↦∗[t]{q} vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
 
-Definition is_slice (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
-  is_slice_small s t q vs ∗
+Definition is_slice_cap (s: Slice.t) (t:ty): iProp Σ :=
   (∃ extra, ⌜Z.of_nat (length extra) = Slice.extra s⌝ ∗
             (s.(Slice.ptr) +ₗ[t] int.val s.(Slice.sz)) ↦∗[t] extra).
+
+Definition is_slice (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
+  is_slice_small s t q vs ∗ is_slice_cap s t.
 
 Lemma is_slice_to_small s t q vs :
   is_slice s t q vs -∗ is_slice_small s t q vs.
 Proof.
   iDestruct 1 as "[$ _]".
+Qed.
+
+Lemma is_slice_split s t q vs :
+  is_slice s t q vs ⊣⊢ is_slice_small s t q vs ∗ is_slice_cap s t.
+Proof.
+  rewrite /is_slice //.
 Qed.
 
 Lemma is_slice_small_acc s t q vs :
@@ -298,7 +306,9 @@ Proof.
   iSplitR.
   { iPureIntro.
     rewrite replicate_length.
+    simpl.
     word. }
+  simpl.
   iExactEq "Hextra"; word_eq.
 Qed.
 
@@ -808,6 +818,7 @@ Proof.
       iPureIntro.
       word. }
     iExists extra'.
+    simpl.
     iSplitR; first by iPureIntro; word.
     rewrite loc_add_assoc.
     iExactEq "Hfree"; word_eq.
@@ -853,7 +864,9 @@ Proof.
       iSplitR.
       { rewrite replicate_length.
         iPureIntro.
+        simpl.
         word. }
+      simpl.
       iExactEq "HnewFree"; word_eq.
 Qed.
 
