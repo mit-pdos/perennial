@@ -91,17 +91,17 @@ Theorem wp_WalogState__doMemAppend l memLog bufs upds :
 Proof.
 Admitted.
 
-Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> nat -> iProp Σ) l γ bufs bs :
+Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
        updates_slice bufs bs ∗
        (∀ σ σ' pos,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
          let txn_id := length σ'.(log_state.txns) in
-         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q pos txn_id ∗ txn_pos γ txn_id pos)) ∧ PreQ
+         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ (txn_pos γ txn_id pos -∗ Q pos))) ∧ PreQ
    }}}
     Walog__MemAppend #l (slice_val bufs)
-  {{{ pos (ok : bool), RET (#pos, #ok); if ok then ∃ txn_id, Q pos txn_id ∗ txn_pos γ txn_id pos else PreQ }}}.
+  {{{ pos (ok : bool), RET (#pos, #ok); if ok then Q pos ∗ ∃ txn_id, txn_pos γ txn_id pos else PreQ }}}.
 Proof.
   iIntros (Φ) "(#Hwal & Hbufs & Hfupd) HΦ".
   wp_call.
@@ -129,14 +129,13 @@ Proof.
                    ∃ (txn: u64) (ok: bool),
                      "txn" ∷ txn_l ↦[uint64T] #txn ∗
                      "ok" ∷ ok_l ↦[boolT] #ok ∗
-                     "Hsim" ∷ ((∀ (σ σ' : log_state.t) pos,
-                                   ⌜wal_wf σ⌝
-                                   -∗ ⌜relation.denote (log_mem_append bs) σ σ' pos⌝
-                                   -∗ P σ
-                                   ={⊤ ∖ ↑N}=∗ P σ'
-                                            ∗ Q pos (length σ'.(log_state.txns))
-                                            ∗ txn_pos γ (length σ'.(log_state.txns)) pos)
-                               ∧ PreQ) ∗
+                    "Hsim" ∷ ((∀ (σ σ' : log_state.t) pos,
+                                ⌜wal_wf σ⌝
+                                -∗ ⌜relation.denote (log_mem_append bs) σ σ' pos⌝
+                                    -∗ P σ
+                                      ={⊤ ∖ ↑N}=∗ P σ'
+                                                  ∗ (txn_pos γ (length σ'.(log_state.txns)) pos
+                                                      -∗ Q pos)) ∧ PreQ) ∗
                      "Hlocked" ∷ locked γ.(lock_name) ∗
                      "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ
                 )%I

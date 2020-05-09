@@ -987,8 +987,10 @@ Theorem wp_txn__doCommit l q gData bufs buflist bufamap :
     Txn__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
       if ok then
-        [∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn gData a buf.(bufData)
+        ([∗ map] a ↦ buf ∈ bufamap,
+          mapsto_txn gData a buf.(bufData)) ∗
+        (* TODO: need to expose ghost names in is_txn *)
+        (∃ γ txn_num, txn_pos γ txn_num commitpos)
       else emp
   }}}.
 Proof using txnG0 lockG0 Σ.
@@ -1155,13 +1157,16 @@ Proof using txnG0 lockG0 Σ.
   wp_loadField.
   destruct ok.
   {
+    iDestruct "Hnpos" as "[Hnpos Htxn_pos]".
     iNamed "Hnpos".
+    iDestruct "Htxn_pos" as (txn_num) "#Htxn_pos".
     wp_apply (release_spec with "[$Histxn_lock $Hlocked Histxn_nextid Hlockedheap Histxn_pos]").
     { iExists _, _, _. iFrame. }
 
     wp_pures.
     iApply "HΦ".
     iFrame.
+    iExists _, _; iFrame "#".
   }
   {
     wp_apply (release_spec with "[$Histxn_lock $Hlocked Histxn_nextid Hnpos Histxn_pos]").
@@ -1203,7 +1208,8 @@ Proof.
 
     wp_pures.
     destruct ok; wp_pures.
-    + destruct wait; wp_pures.
+    + iDestruct "Hbufpost" as "[Hbufpost Htxn_pos]".
+      destruct wait; wp_pures.
       * iNamed "Htxn".
         wp_loadField.
         wp_apply (wp_Walog__Flush with "[$Hiswal]").
@@ -1229,6 +1235,10 @@ Proof.
     iApply "HΦ".
 
     iDestruct (is_slice_sz with "Hbufs") as %Hbuflistlen.
+    assert (int.val bufs.(Slice.sz) = 0) by (revert n; word).
+    assert (length (list.untype buflist) = 0%nat) by word.
+    rewrite fmap_length in H0.
+    apply length_zero_iff_nil in H0; subst.
     (* buflist is nil, so bufamap is ∅, so goal is emp *)
     iFrame.
 Admitted.

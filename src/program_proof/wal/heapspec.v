@@ -1460,8 +1460,9 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
+        let txn_num := length σ'.(log_state.txns) in
       ( (wal_heap_inv γh) σ
-          ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ) ∧
+          ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
     "Hlockedheap" ∷ is_locked_walheap γh lwh ).
 Proof using walheapG0.
   iIntros "Hpre Hlockedheap".
@@ -1507,11 +1508,11 @@ Proof using walheapG0.
   iMod (ghost_var_update _ (async_put (pos', newcrashheap) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
 
   iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _) newcrashheap).
-  iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag $Hunmodified $Hunmodified_new $Hbs_new]") as "Hfupd".
-  iMod "Hfupd".
+  iMod ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag $Hunmodified $Hunmodified_new $Hbs_new]") as "HQ".
 
   iModIntro.
   iFrame.
+  iSplitL; last by auto.
 
   iExists _, _. iFrame.
 
