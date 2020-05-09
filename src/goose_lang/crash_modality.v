@@ -231,13 +231,13 @@ Ltac crash_env Γ :=
 Ltac iCrash :=
   match goal with
   | [ |- environments.envs_entails ?Γ _] =>
-    let H := iFresh in
     let spatial := pm_eval (environments.env_spatial Γ) in
     let intuit := pm_eval (environments.env_intuitionistic Γ) in
     crash_env spatial; crash_env intuit;
     iApply (modus_ponens with "[-]"); [ iNamedAccu | ];
     rewrite ?post_crash_named ?post_crash_sep; iApply post_crash_mono;
-    intros; simpl; iIntros H; iNamed H
+    intros; simpl;
+    let H := iFresh in iIntros H; iNamed H
   end.
 
 Section goose_lang.
