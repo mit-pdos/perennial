@@ -167,16 +167,16 @@ Proof.
 
   wpc_bind (struct.loadF _ _ _).
   wpc_frame "HΦ Hvs".
-  { iIntros "((H&_)&(_&Hvs))". by iApply "H". }
+  { crash_case. iDestruct "Hvs" as "(_&$)". }
   wp_loadField.
-  iIntros "(HΦ&Hvs)".
+  iIntros "H". iNamed "H".
 
   wpc_bind (lock.acquire _).
   wpc_frame "HΦ Hvs".
-  { iIntros "((H&_)&(_&Hvs))". by iApply "H". }
+  { crash_case. iDestruct "Hvs" as "(_&$)". }
   wp_apply (crash_lock.acquire_spec with "His_lock"); first by set_solver+.
   iIntros "H". iDestruct "H" as (Γ) "Hcrash_locked".
-  iIntros "(HΦ&Hvs)".
+  iIntros "H". iNamed "H".
 
   wpc_pures; auto.
   { iDestruct "Hvs" as "(_&$)". }
@@ -220,7 +220,7 @@ Proof.
   { by iApply Hwand. }
 
   wpc_frame "HQ HΦ".
-  { iIntros "(?&H)"; iApply "H". by iApply Hwand. }
+  { crash_case. by iApply Hwand. }
 
   wp_bind (struct.loadF _ _ _).
   wp_loadField.

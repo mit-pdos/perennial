@@ -1392,15 +1392,39 @@ Proof.
   iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
   iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
 
+  Ltac show_crash :=
+    try (iDestruct "HΦ" as "[HΦc _]"; iIntros; iApply "HΦc");
+    iSplitR; eauto;
+    iFrame "Hpos";
+    iExists _, _; iSplitR; eauto;
+    iFrame; iSplitR; eauto;
+    iExists _, _, _; iFrame; eauto.
+
   wpc_apply (wpc_Read with "[Hd0]"); first iFrame.
-  iSplit.
-  (* XXX why do we still need to re-prove the invariant with WPC? *)
-  { iDestruct "HΦ" as "[HΦc _]". iIntros "Hd0". iApply "HΦc".
-    iSplitR; eauto.
-    iFrame "Hpos".
-    iExists _, _. iSplitR; eauto.
-    iFrame. iSplitR; eauto.
-    iExists _, _, _. iFrame. eauto. }
+  iSplit; first by show_crash.
+
+  iIntros (s0) "!> [Hd0 Hs0]".
+  wpc_pures; first by show_crash.
+
+  wpc_apply (wpc_Read with "[Hd1]"); first iFrame.
+  iSplit; first by show_crash.
+
+  iIntros (s1) "!> [Hd1 Hs1]".
+  wpc_pures; first by show_crash.
+
+  wpc_bind (decodeHdr1 _).
+  wpc_frame_compl "Hs0"; first by show_crash.
+  wp_apply (wp_decodeHdr1 with "Hs0"); [ eauto | word | ].
+  iIntros (addrs) "Hdiskaddrs H". iNamed "H".
+  wpc_pures; first by show_crash.
+
+  wpc_bind (decodeHdr2 _).
+  wpc_frame_compl "Hs1"; first by show_crash.
+  wp_apply (wp_decodeHdr2 with "Hs1"); [ eauto | ].
+  iIntros "H". iNamed "H".
+
+  wpc_pures; first by show_crash.
+
 Admitted.
 
 End heap.

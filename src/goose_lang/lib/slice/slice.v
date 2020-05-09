@@ -478,9 +478,9 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_SliceGet stk E sl t q vs (i: u64) v0 :
+Lemma wp_SliceGet_body stk E sl t q vs (i: u64) v0 :
   {{{ is_slice_small sl t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
-    SliceGet t sl #i @ stk; E
+    ![t] (slice.ptr (sl) +ₗ[t] #i) @ stk; E
   {{{ RET v0; is_slice_small sl t q vs ∗ ⌜val_ty v0 t⌝ }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
@@ -497,6 +497,20 @@ Proof.
   iSpecialize ("Hsl'" with "Hi").
   iApply "HΦ"; iFrame.
   iPureIntro; auto.
+Qed.
+
+
+Lemma wp_SliceGet stk E sl t q vs (i: u64) v0 :
+  {{{ is_slice_small sl t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+    SliceGet t sl #i @ stk; E
+  {{{ RET v0; is_slice_small sl t q vs ∗ ⌜val_ty v0 t⌝ }}}.
+Proof.
+  iIntros (Φ) "[Hsl %] HΦ".
+  destruct sl as [ptr sz].
+  rewrite /SliceGet.
+  repeat wp_step.
+  wp_apply (wp_SliceGet_body with "[Hsl]"); last done.
+  { iFrame. eauto. }
 Qed.
 
 Lemma list_lookup_lt A (l: list A) (i: nat) :

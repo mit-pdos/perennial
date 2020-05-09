@@ -158,7 +158,7 @@ Section proof.
     rewrite /with_lock.
     wpc_bind (lock.acquire lk).
     wpc_frame "Hwp".
-    { iIntros "($&_)". }
+    { iDestruct "Hwp" as "($&_)".  }
     iApply (acquire_spec with "Hcrash").
     { set_solver. }
     iNext. iIntros "H Hwp". iDestruct "H" as (?) "H".
@@ -183,7 +183,7 @@ Section proof.
     { iDestruct "H" as "(_&H)". eauto. }
 
     wpc_frame "H".
-    { iIntros "(_&$)". }
+    { iDestruct "H" as "(_&$)". }
     iApply (release_spec with "Hlocked").
     { auto. }
     iNext. iIntros "_ H".

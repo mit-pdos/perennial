@@ -4,6 +4,7 @@ From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import atomic.
 From Perennial.goose_lang Require Import lifting.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant.
+From Perennial.Helpers Require Export NamedProps.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -218,6 +219,18 @@ Tactic Notation "iRight" "in" constr(H) := let pat := constr:(intro_patterns.ILi
 (* TODO: fix this to use a tac_ theorem; look at tac_wp_allocN for an example of
 env splitting *)
 
+(*
 Tactic Notation "wpc_frame" constr(pat) :=
   iApply wp_wpc_frame';
   iSplitL pat; [ iAccu | iSplitR; [ iModIntro | ] ].
+*)
+
+Tactic Notation "wpc_frame" constr(pat) :=
+  iApply wp_wpc_frame';
+  iSplitL pat; [ iNamedAccu | iSplitR; [ iModIntro; let H := iFresh in iIntros H; iNamed H | ] ].
+
+(* XXX: it would be nice if iSplitL would understand the negation selector, so that wpc_frame "-H" would
+   have the same effect as this next tactic: *)
+Tactic Notation "wpc_frame_compl" constr(pat) :=
+  iApply wp_wpc_frame';
+  iSplitR pat; [ iNamedAccu | iSplitR; [ iModIntro; let H := iFresh in iIntros H; iNamed H | ] ].

@@ -248,7 +248,7 @@ Proof.
   iSplit; first (by iApply "HΦ").
   iModIntro. wpc_pures; first done.
   wpc_frame "Hda HΦ".
-  { iIntros "(?&H)". by iApply "H". }
+  { by crash_case. }
   wp_apply (wp_raw_slice with "Hs").
   iIntros (s) "Hs".
   iIntros "(?&HΦ)". iApply "HΦ".

@@ -148,10 +148,9 @@ Proof.
   wpc_pures; first by auto.
   wpc_bind (load_ty _ _).
   wpc_frame "HIx HΦ".
-  { iIntros "(HIx&HΦ)".
-    crash_case; auto. }
+  { crash_case; auto. }
   wp_load.
-  iIntros "(HIx&HΦ)".
+  iIntros "H". iNamed "H".
   wpc_pures; first by auto.
   wpc_bind (If _ _ _).
   wpc_if_destruct; wpc_pures; auto.
@@ -163,11 +162,10 @@ Proof.
     wpc_pures; first by auto.
     wpc_bind (store_ty _ _).
     wpc_frame "HIx HΦ".
-    { iIntros "(HIx&HΦ)".
-      crash_case; auto. }
+    { crash_case; auto. }
     wp_load.
     wp_store.
-    iIntros "(HIx&HΦ)".
+    iIntros "H". iNamed "H".
     wpc_pure _ Hcrash.
     { crash_case; auto. }
     wpc_pure _ Hcrash.
