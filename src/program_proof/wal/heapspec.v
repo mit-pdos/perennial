@@ -139,14 +139,6 @@ Proof.
   lia.
 Qed.
 
-Lemma mnat_snapshot γ m :
-  own γ (● (m : mnat)) ==∗
-  own γ (● (m : mnat)) ∗
-  own γ (◯ (m : mnat)).
-Proof.
-  iIntros "Hm".
-Admitted.
-
 Lemma mnat_snapshot_le γ m n :
   (m ≤ n)%nat ->
   own γ (● (n : mnat)) ==∗
@@ -154,7 +146,23 @@ Lemma mnat_snapshot_le γ m n :
   own γ (◯ (m : mnat)).
 Proof.
   iIntros (H) "Hn".
-Admitted.
+  iMod (own_update _ _ ((● (n : mnat)) ⋅ ◯ (m : mnat)) with "Hn") as "[Hn Hm]".
+  2: iFrame; done.
+  apply auth_update_alloc.
+  apply local_update_unital_discrete.
+  compute -[max]. lia.
+Qed.
+
+Lemma mnat_snapshot γ m :
+  own γ (● (m : mnat)) ==∗
+  own γ (● (m : mnat)) ∗
+  own γ (◯ (m : mnat)).
+Proof.
+  iIntros "Hm".
+  iMod (mnat_snapshot_le _ _ m with "Hm") as "[Hm Hmfrag]"; first by reflexivity.
+  iModIntro.
+  iFrame.
+Qed.
 
 
 (* In lemmas; probably belong in one of the external list libraries *)
