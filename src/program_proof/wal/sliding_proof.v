@@ -36,15 +36,14 @@ Definition is_sliding (l: loc) (σ: slidingM.t) : iProp Σ :=
 
 Theorem is_sliding_wf l σ : is_sliding l σ -∗ ⌜slidingM.wf σ⌝.
 Proof.
-  iIntros "H"; iNamed "H"; auto.
+  iNamed 1; auto.
 Qed.
 
 Theorem memLog_sz s σ :
   mutable_log s σ -∗
   ⌜int.nat s.(Slice.sz) = length (slidingM.log σ)⌝.
 Proof.
-  iIntros "H".
-  iNamed "H".
+  iNamed 1.
   iPureIntro; word.
 Qed.
 
@@ -627,7 +626,7 @@ Proof.
       split; auto.
       word.
   }
-  iIntros "HI"; iNamed "HI".
+  iNamed 1.
   iApply "HΦ"; iFrame.
 Qed.
 
