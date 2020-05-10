@@ -1481,10 +1481,9 @@ Proof.
 Qed.
 
 Definition memappend_crash_pre γh (bs: list update.t) (unmodifiedBlocks:  gmap u64 Block) crash_heaps γoldcrash : iProp Σ :=
-  ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
-  ⌜ ∀ u, u ∈ bs -> unmodifiedBlocks !! u.(update.addr) = None ⌝ ∗
-  own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps).
-
+  "Hunmodified" ∷ ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
+  "%Hnooverlap" ∷ ⌜ ∀ u, u ∈ bs -> unmodifiedBlocks !! u.(update.addr) = None ⌝ ∗
+  "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps).
 
 Definition memappend_crash γh (bs: list update.t) (unmodifiedBlocks:  gmap u64 Block)
            crash_heaps γoldcrash pos lwh' new_crash_heap : iProp Σ :=
@@ -1495,7 +1494,6 @@ Definition memappend_crash γh (bs: list update.t) (unmodifiedBlocks:  gmap u64 
     ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γnewcrash) a 1 b ) ∗
     ( [∗ list] u ∈ bs, mapsto (hG := γnewcrash) u.(update.addr) 1 u.(update.b) ) ∗
     txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos.
-
                                          
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑walN, E}=>
@@ -1526,7 +1524,7 @@ Proof using walheapG0.
   simpl in *.
 
   iMod "Hpre" as (olds unmodifiedBlocks crash_heaps0) "(Hpre & Hprecrash & Hfupd)".
-  iDestruct "Hprecrash" as "(Hunmodified & % & Hcrashheapsfrag)".
+  iNamed "Hprecrash".
 
   iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as "%"; subst.
   rename crash_heaps0 into crash_heaps.
@@ -1632,10 +1630,10 @@ Proof using walheapG0.
     destruct ex.
     destruct H.
     subst.
-    apply elem_of_list_lookup in H4; destruct H4.
+    apply elem_of_list_lookup in H3; destruct H3.
     edestruct Hbs_in_gh; eauto.
-    destruct H4.
-    specialize (Hgh _ H5). simpl in *.
+    destruct H3.
+    specialize (Hgh _ H4). simpl in *.
     destruct Hgh as [addr_wf Hgh].
     destruct Hgh as [txn_id' Hgh].
     intuition; auto.
@@ -1675,7 +1673,7 @@ Proof using walheapG0.
     }
 
     {
-      rewrite -H6.
+      rewrite -H5.
       etransitivity; first apply updates_since_updates; auto.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
