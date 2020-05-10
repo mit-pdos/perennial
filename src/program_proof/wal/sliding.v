@@ -20,6 +20,8 @@ Module slidingM.
 
   Definition endPos (σ:t): u64 :=
     word.add σ.(start) (U64 $ Z.of_nat $ length σ.(log)).
+  Definition memEnd σ : Z :=
+    int.val σ.(start) + length σ.(log).
   Definition numMutable (σ:t): u64 :=
     word.sub σ.(mutable) σ.(start).
   Definition addrPosMap (σ:t): gmap u64 u64 :=
@@ -31,6 +33,13 @@ Module slidingM.
     int.val σ.(start) ≤ int.val σ.(mutable) ∧
     int.val σ.(start) + length σ.(log) < 2^64 ∧
     int.val σ.(mutable) - int.val σ.(start) <= length σ.(log).
+
+  Theorem memEnd_ok σ :
+    wf σ -> int.val (endPos σ) = memEnd σ.
+  Proof.
+    rewrite /wf /endPos /memEnd; intros.
+    word.
+  Qed.
 End slidingM.
 
 Definition memWrite_one memLog (u: update.t) : slidingM.t :=

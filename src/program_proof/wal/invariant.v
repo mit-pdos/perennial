@@ -50,15 +50,8 @@ Record wal_names :=
   }.
 
 Implicit Types (γ: wal_names).
-Implicit Types (s: log_state.t) (memLog: list update.t) (txns: list (u64 * list update.t)).
+Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
-
-Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 u64) : gmap u64 u64 :=
-  match memLog with
-  | nil => m
-  | u :: memLog' =>
-    compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := pos ]> m)
-  end.
 
 (** low-level, unimportant state *)
 Record lowState :=
@@ -101,7 +94,8 @@ Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the memStart_txn_id *)
 Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
-  has_updates memLog (drop memStart_txn_id txns).
+  has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
+  (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
 Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
   (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
@@ -111,7 +105,7 @@ Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
-      "%His_memLog" ∷ ⌜is_mem_memLog σ.(slidingM.log) txns memStart_txn_id⌝ ∗
+      "%His_memLog" ∷ ⌜is_mem_memLog σ txns memStart_txn_id⌝ ∗
       (* when nextDiskEnd gets set, we track that it has the right updates to
       use for [is_durable] when the new transaction is logged *)
       "%His_nextDiskEnd" ∷

@@ -17,6 +17,7 @@ Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
 
+(* TODO: replace with slidingM.memEnd (which has an identical definition) *)
 Definition memEnd (σ: locked_state): Z :=
   int.val σ.(memLog).(slidingM.start) + length σ.(memLog).(slidingM.log).
 
