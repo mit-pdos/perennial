@@ -1191,6 +1191,7 @@ Proof using txnG0 lockG0 Σ.
     rename txn_crash_heaps0 into txn_crash_heaps.
 
     rewrite /memappend_pre.
+    rewrite /memappend_crash_pre.
 
     iDestruct (big_sepM_mono _
       (λ a buf,
@@ -1276,10 +1277,12 @@ Proof using txnG0 lockG0 Σ.
     }
 
     iSplitR; first by eauto.
-
-    iIntros (txn_id lwh' new_crash_heap) "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hpos & Hq)".
-    rewrite /memappend_q.
+    
+    iIntros (txn_id lwh' new_crash_heap) "(Hcrash & Hq)".
+    rewrite /memappend_crash /memappend_q.
+    iDestruct "Hcrash" as "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hpos)".
     rewrite (big_sepL2_alt _ updlist_olds.*1).
+    
     iDestruct "Hq" as "[_ Hq]".
     rewrite zip_fst_snd.
 
