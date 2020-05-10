@@ -37,7 +37,7 @@ Definition walN := nroot .@ "wal".
 Let N := walN.
 Let circN := walN .@ "circ".
 
-Record wal_names :=
+Record wal_names := mkWalNames
   { circ_name: circ_names;
     lock_name : gname;
     cs_name : gname;
@@ -48,6 +48,10 @@ Record wal_names :=
     diskEnd_avail_name : gname;
     start_avail_name : gname;
   }.
+
+Instance _eta_wal_names : Settable _ :=
+  settable! mkWalNames <circ_name; lock_name; cs_name; txns_ctx_name; txns_name;
+                        new_installed_name; being_installed_name; diskEnd_avail_name; start_avail_name>.
 
 Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
@@ -298,6 +302,23 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
 .
+
+(* XXX: should we reset the ghost state? In which case many of these components can be removed *)
+Definition is_wal_inner_durable γ s : iProp Σ :=
+    "%Hwf" ∷ ⌜wal_wf s⌝ ∗
+    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
+    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
+    "Hdisk" ∷ ∃ cs installed_txn_id diskEnd_txn_id,
+      "Hcirc"      ∷ is_circular_state γ.(circ_name) cs ∗
+      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
+      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
+.
+
+(* This is produced by recovery as a post condition, can be used to get is_wal *)
+Definition is_wal_inv_pre (l: loc) γ s : iProp Σ :=
+  is_wal_inner l γ s ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
 
 Definition is_wal (l : loc) γ : iProp Σ :=
   inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
