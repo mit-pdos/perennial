@@ -116,23 +116,24 @@ Qed.
 Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; iPureIntro; word : core.
 
-Theorem wpc_forUpto (I: u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
+Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
   int.val start <= int.val max ->
+  (∀ i, I i -∗ I' i) →
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.val i < int.val max⌝ }}}
         body #() @ stk; k; E1; E2
       {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦[uint64T] #i }}}
-      {{{ I i ∨ I (word.add i (U64 1)) }}}) -∗
+      {{{ I' i ∨ I' (word.add i (U64 1)) }}}) -∗
   {{{ I start ∗ l ↦[uint64T] #start }}}
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
        body) @ stk; k; E1; E2
   {{{ RET #(); I max ∗ l ↦[uint64T] #max }}}
-  {{{ ∃ (i:u64), I i ∗ ⌜int.val start <= int.val i <= int.val max⌝ }}}.
+  {{{ ∃ (i:u64), I' i ∗ ⌜int.val start <= int.val i <= int.val max⌝ }}}.
 Proof.
-  iIntros (Hstart_max) "#Hbody".
+  iIntros (Hstart_max Himpl) "#Hbody".
   iIntros (Φ Φc) "!> (H0 & Hl) HΦ".
   rewrite /For /Continue.
-  wpc_rec Hcrash; first by crash_case; auto.
+  wpc_rec Hcrash; first by (rewrite Himpl; crash_case; auto).
   wpc_let Hcrash.
   wpc_let Hcrash.
   wpc_pure (Rec _ _ _) Hcrash.
@@ -145,29 +146,32 @@ Proof.
   iDestruct "H0" as "HIx".
   clear Hcrash.
   iLöb as "IH" forall (x Hbounds).
-  wpc_pures; first by auto.
+  wpc_pures.
+  { iDestruct (Himpl with "[$]") as "?"; eauto. }
   wpc_bind (load_ty _ _).
   wpc_frame "HIx HΦ".
-  { crash_case; auto. }
+  { crash_case. iDestruct (Himpl with "[$]") as "?"; eauto. }
   wp_load.
   iIntros "H". iNamed "H".
-  wpc_pures; first by auto.
+  wpc_pures.
+  { iDestruct (Himpl with "[$]") as "?"; eauto. }
   wpc_bind (If _ _ _).
-  wpc_if_destruct; wpc_pures; auto.
+  wpc_if_destruct; wpc_pures; auto; try (by (iDestruct (Himpl with "[$]") as "?"; eauto)).
   - wpc_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
     iSplit.
     { iIntros "[IH1 | IH2]"; crash_case; auto. }
     iIntros "!> [HIx Hl]".
-    wpc_pures; first by auto.
+    wpc_pures.
+    { iDestruct (Himpl with "[$]") as "?"; eauto. }
     wpc_bind (store_ty _ _).
     wpc_frame "HIx HΦ".
-    { crash_case; auto. }
+    { crash_case. iDestruct (Himpl with "[$]") as "?"; eauto. }
     wp_load.
     wp_store.
     iIntros "H". iNamed "H".
     wpc_pure _ Hcrash.
-    { crash_case; auto. }
+    { crash_case. iDestruct (Himpl with "[$]") as "?"; eauto. }
     wpc_pure _ Hcrash.
     iApply ("IH" with "[] HIx Hl").
     { iPureIntro; word. }
