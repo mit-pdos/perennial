@@ -298,6 +298,65 @@ Proof.
   rewrite /numMutableN; intros; word.
 Qed.
 
+Lemma is_installed_append γ d txns txns' txn_id :
+  is_installed γ d txns txn_id -∗
+  is_installed γ d (txns ++ txns') txn_id.
+Proof.
+  rewrite /is_installed.
+  iNamed 1.
+  iExists new_installed_txn_id, being_installed.
+  iFrame.
+  iSplitR "Hdata".
+  - iPureIntro.
+    len.
+  - iApply (big_sepM_mono with "Hdata"); simpl.
+    intros.
+    rewrite take_app_le; auto.
+    destruct matches; lia.
+Qed.
+
+Lemma is_durable_append γ txns txns' installed_txn_id diskEnd_txn_id :
+  (diskEnd_txn_id ≤ length txns)%nat ->
+  is_durable γ txns installed_txn_id diskEnd_txn_id -∗
+  is_durable γ (txns ++ txns') installed_txn_id diskEnd_txn_id.
+Proof.
+  intros Hbound.
+  rewrite /is_durable; iNamed 1.
+  iExists _; iFrame.
+  iPureIntro.
+  rewrite /circ_matches_txns in Hcirc_matches |- *.
+  rewrite -> subslice_app_1 by auto; auto.
+Qed.
+
+Theorem disk_inv_append γ σs cs pos upds :
+  disk_inv γ σs cs -∗
+  disk_inv γ (set log_state.txns (λ txns, txns ++ [(pos, upds)]) σs) cs.
+Proof.
+  rewrite /disk_inv; iNamed 1; simpl.
+  iExists installed_txn_id, diskEnd_txn_id; iFrame.
+  iNamed "circ.start".
+  iNamed "circ.end".
+  iSplitL "Hinstalled"; [ | iSplitL "Hdurable"; [ | iSplit; iPureIntro ] ].
+  - iApply (is_installed_append with "[$]").
+  - iApply (is_durable_append with "[$]").
+    eapply is_highest_txn_bound; eauto.
+  - split; try lia.
+    (* TODO: oops, this is pretty tricky; we're promising to maintain the
+    highest txn_id for diskEnd and installEnd in the invariant. After an append,
+    can these change?
+
+    I believe they can, at least because of empty transactions. This special
+    case is definitely fine, since then we can just increase diskEnd_txn_id and
+    logically incorporate the new transaction, but we need to know that it
+    really is empty. Absorption is more complicated. We can't absorb into the
+    durable transactions, but I'm not sure where the strict inequality comes
+    from that makes that true. *)
+    admit.
+  - simpl.
+    eexists; intuition eauto.
+    admit. (* same issue *)
+Admitted.
+
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
        updates_slice bufs bs ∗
@@ -435,7 +494,9 @@ Proof.
             - rewrite slidingM.memEnd_ok; eauto.
               eapply is_mem_memLog_endpos_highest; eauto. }
           simpl.
-          admit. (* Hdisk is preserved by extension (can factor this out easily if the whole clause gets a definition) *)
+          iDestruct "Hdisk" as (cs) "Hdisk".
+          iExists cs.
+          iApply (disk_inv_append with "Hdisk").
         }
 
         (* continue and prove loop invariant (lock invariant mostly) *)

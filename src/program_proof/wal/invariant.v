@@ -297,7 +297,7 @@ Definition txns_ctx γ txns : iProp Σ :=
   ([∗ map] txn_id↦txn ∈ list_to_imap txns,
       txn_val γ txn_id txn).
 
-Definition disk_inv γ s cs : iProp Σ :=
+Definition disk_inv γ s (cs: circΣ.t) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
       "Howncs"     ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
