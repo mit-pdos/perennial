@@ -45,6 +45,12 @@ Example testNestedGoStyleLoops_ok : testNestedGoStyleLoops #() ~~> #true := t.
 Example testIterateMap_ok : testIterateMap #() ~~> #true := t.
 Example testMapSize_ok : testMapSize #() ~~> #true := t.
 
+(* multiple_return.go *)
+Example testReturnTwo_ok : testReturnTwo #() ~~> #true := t.
+Example testAnonymousBinding_ok : testAnonymousBinding #() ~~> #true := t.
+Fail Example testReturnThree_ok : failing_testReturnThree #() ~~> #true := t.
+Fail Example testReturnFour_ok : failing_testReturnFour #() ~~> #true := t.
+
 (* nil.go *)
 Fail Example testCompareSliceToNil_ok : failing_testCompareSliceToNil #() ~~> #true := t.
 Example testComparePointerToNil_ok : testComparePointerToNil #() ~~> #true := t.
