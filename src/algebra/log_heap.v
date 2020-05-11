@@ -61,6 +61,7 @@ Section definitions.
     own (log_heap_name hG) (● (to_log_heap σfun)).
 
   Definition mapsto_log (first: nat) (last: option nat) (l: L) (q: Qp) (v: V) : iProp Σ :=
+    (* require [first < length (possible σl)] *)
     ( ⌜ hG = hG ⌝ )%I.
 
 End definitions.
@@ -95,15 +96,23 @@ Section log_heap.
   Proof.
   Admitted.
 
-  Lemma mapsto_log_advance first first' last l q v :
-    first ≤ first' ->
+  Lemma log_heap_valid_latest σl l q v first last :
+    log_heap_ctx σl -∗
+      mapsto_log first last l q v -∗
+      ⌜latest σl !! l = Some v⌝.
+  Proof.
+  Admitted.
+
+  Lemma mapsto_log_advance σl first first' last l q v :
+    (first ≤ first' < length (possible σl))%nat ->
+    log_heap_ctx σl -∗
     mapsto_log first last l q v -∗ mapsto_log first' last l q v.
   Proof.
   Admitted.
 
   Lemma log_heap_append σl l v v' first :
     log_heap_ctx σl -∗
-      mapsto_log first None l 1%Qp v ∗ ⌜ (first < length (possible σl))%nat ⌝ -∗
+      mapsto_log first None l 1%Qp v -∗
       ( let σ := <[l := v]> (latest σl) in
         log_heap_ctx (async_put σ σl) ∗
         mapsto_log first (Some (length (possible σl))) l 1%Qp v ∗

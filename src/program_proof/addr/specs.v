@@ -394,6 +394,14 @@ Theorem gmap_addr_by_block_off_not_empty (m : gmap addr T) (blkno : u64) (offmap
 Proof.
 Admitted.
 
+Theorem gmap_addr_by_block_lookup (m : gmap addr T) (a : addr) (v : T) :
+  m !! a = Some v ->
+  ∃ offmap,
+    gmap_addr_by_block m !! a.(addrBlock) = Some offmap ∧
+    offmap !! a.(addrOff) = Some v.
+Proof.
+Admitted.
+
 
 Context {PROP : bi}.
 
