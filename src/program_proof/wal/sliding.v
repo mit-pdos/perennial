@@ -74,6 +74,12 @@ Proof.
   apply memWrite_same_mutable_and_start.
 Qed.
 
+Lemma memWrite_same_start memLog upds :
+  (memWrite memLog upds).(slidingM.start) = memLog.(slidingM.start).
+Proof.
+  apply memWrite_same_mutable_and_start.
+Qed.
+
 Lemma memWrite_app1 memLog upds u :
   memWrite memLog (upds ++ [u]) = memWrite_one (memWrite memLog upds) u.
 Proof.

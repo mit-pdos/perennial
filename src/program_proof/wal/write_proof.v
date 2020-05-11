@@ -1,5 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
+From Tactical Require Import SimplMatch.
+
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 
@@ -17,11 +19,7 @@ Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
 
-(* TODO: replace with slidingM.memEnd (which has an identical definition) *)
-Definition memEnd (σ: locked_state): Z :=
-  int.val σ.(memLog).(slidingM.start) + length σ.(memLog).(slidingM.log).
-
-Hint Unfold memEnd : word.
+Hint Unfold slidingM.memEnd : word.
 Hint Unfold slidingM.endPos : word.
 Hint Unfold slidingM.wf : word.
 Hint Unfold slidingM.numMutable : word.
@@ -29,7 +27,7 @@ Hint Unfold slidingM.numMutable : word.
 Theorem wp_WalogState__updatesOverflowU64 st σ (newUpdates: u64) :
   {{{ wal_linv_fields st σ }}}
     WalogState__updatesOverflowU64 #st #newUpdates
-  {{{ (overflow:bool), RET #overflow; ⌜overflow = bool_decide (memEnd σ + int.val newUpdates >= 2^64)⌝ ∗
+  {{{ (overflow:bool), RET #overflow; ⌜overflow = bool_decide (slidingM.memEnd σ.(memLog) + int.val newUpdates >= 2^64)⌝ ∗
                                       wal_linv_fields st σ
   }}}.
 Proof.
@@ -52,10 +50,10 @@ Proof.
 Qed.
 
 Theorem wp_WalogState__memLogHasSpace st σ (newUpdates: u64) :
-  memEnd σ + int.val newUpdates < 2^64 ->
+  slidingM.memEnd σ.(memLog) + int.val newUpdates < 2^64 ->
   {{{ wal_linv_fields st σ }}}
     WalogState__memLogHasSpace #st #newUpdates
-  {{{ (has_space:bool), RET #has_space; ⌜has_space = bool_decide (memEnd σ - int.val σ.(diskEnd) + int.val newUpdates ≤ LogSz)⌝ ∗
+  {{{ (has_space:bool), RET #has_space; ⌜has_space = bool_decide (slidingM.memEnd σ.(memLog) - int.val σ.(diskEnd) + int.val newUpdates ≤ LogSz)⌝ ∗
                                         wal_linv_fields st σ
   }}}.
 Proof.
@@ -95,6 +93,60 @@ Lemma is_wal_wf l γ σ :
   is_wal_inner l γ σ -∗ ⌜wal_wf σ⌝.
 Proof.
   by iNamed 1.
+Qed.
+
+Lemma length_singleton {A} (x: A) :
+  length [x] = 1%nat.
+Proof. reflexivity. Qed.
+
+Hint Rewrite @length_singleton : len.
+
+Lemma memWrite_one_length_bound σ u :
+  length σ.(slidingM.log) ≤
+  length (memWrite_one σ u).(slidingM.log) ≤
+  S (length σ.(slidingM.log)).
+Proof.
+  rewrite /memWrite_one.
+  destruct matches; simpl; len.
+Qed.
+
+Lemma memWrite_length_bound σ upds :
+  length σ.(slidingM.log) ≤
+  length (memWrite σ upds).(slidingM.log) ≤
+  length σ.(slidingM.log) + length upds.
+Proof.
+  revert σ.
+  induction upds; simpl; len; intros.
+  pose proof (IHupds (memWrite_one σ a)).
+  pose proof (memWrite_one_length_bound σ a).
+  lia.
+Qed.
+
+Lemma is_mem_memLog_endpos_highest σ txns start_txn_id upds :
+  is_mem_memLog σ txns start_txn_id ->
+  (forall pos txn_id, is_txn txns txn_id pos -> int.val pos ≤ slidingM.memEnd (memWrite σ upds)).
+Proof.
+  pose proof (memWrite_length_bound σ upds) as Hσ'len.
+  destruct 1 as [Hupds Hhighest].
+  rewrite /is_txn; intros.
+  rewrite -list_lookup_fmap in H.
+  apply (Forall_lookup_1 _ _ _ _ Hhighest) in H; eauto.
+  rewrite /slidingM.memEnd in H |- *.
+  rewrite memWrite_same_start.
+  lia.
+Qed.
+
+Theorem memWrite_wf σ upds :
+  int.val σ.(slidingM.start) + length σ.(slidingM.log) + length upds < 2^64 ->
+  slidingM.wf σ ->
+  slidingM.wf (memWrite σ upds).
+Proof.
+  rewrite /slidingM.wf.
+  intros.
+  pose proof (memWrite_length_bound σ upds).
+  destruct_and!; split_and!;
+              rewrite ?memWrite_same_mutable ?memWrite_same_start;
+    auto; lia.
 Qed.
 
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
@@ -183,6 +235,10 @@ Proof.
         wp_loadField.
         wp_apply (wp_WalogState__doMemAppend with "[$His_memLog $Hbufs]").
         set (memLog' := memWrite σ.(memLog) bs).
+        assert (slidingM.wf memLog').
+        { subst memLog'.
+          apply memWrite_wf; [ word | ].
+          destruct Hlocked_wf; auto. }
         iNamed 1.
         iDestruct "Hwal" as "[Hwal Hcirc]".
         rewrite -wp_fupd.
@@ -192,12 +248,19 @@ Proof.
         wp_call.
         iDestruct (is_wal_wf with "Hinner") as %Hwal_wf.
         iDestruct "Hsim" as "[Hsim _]".
+        iNamed "HmemLog_linv".
+        iNamed "Hinner".
+        (* XXX: unify_ghost doesn't rewrite everywhere *)
+        iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
         iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σ') with "[% //] [%] [$HP]") as "[HP HQ]".
         { simpl; monad_simpl.
           eexists _ (slidingM.endPos memLog'); simpl; monad_simpl.
           econstructor; eauto.
-          admit. (* new endpos should actually be the highest *)
-        }
+          destruct Hlocked_wf.
+          rewrite slidingM.memEnd_ok; eauto.
+          eapply is_mem_memLog_endpos_highest; eauto. }
+        (* TODO: now need to update at least the two copies of txns in ghost
+        state, if not other ghost variables *)
         admit.
       - wp_apply util_proof.wp_DPrintf.
         admit.
