@@ -461,18 +461,18 @@ Definition returnThree: val :=
   rec: "returnThree" <> :=
     (#2, #true, #(U32 1)).
 
-Definition failing_testReturnThree: val :=
-  rec: "failing_testReturnThree" <> :=
-    let: ("x", ("y", "z")) := returnThree #() in
+Definition testReturnThree: val :=
+  rec: "testReturnThree" <> :=
+    let: (("x", "y"), "z") := returnThree #() in
     ("x" = #2) && ("y" = #true) && ("z" = #(U32 1)).
 
 Definition returnFour: val :=
   rec: "returnFour" <> :=
     (#2, #true, #(U32 1), #7).
 
-Definition failing_testReturnFour: val :=
-  rec: "failing_testReturnFour" <> :=
-    let: ("x", ("y", ("z", "w"))) := returnFour #() in
+Definition testReturnFour: val :=
+  rec: "testReturnFour" <> :=
+    let: ((("x", "y"), "z"), "w") := returnFour #() in
     ("x" = #2) && ("y" = #true) && ("z" = #(U32 1)) && ("w" = #7).
 
 (* nil.go *)

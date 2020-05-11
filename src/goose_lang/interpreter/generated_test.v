@@ -48,8 +48,8 @@ Example testMapSize_ok : testMapSize #() ~~> #true := t.
 (* multiple_return.go *)
 Example testReturnTwo_ok : testReturnTwo #() ~~> #true := t.
 Example testAnonymousBinding_ok : testAnonymousBinding #() ~~> #true := t.
-Fail Example testReturnThree_ok : failing_testReturnThree #() ~~> #true := t.
-Fail Example testReturnFour_ok : failing_testReturnFour #() ~~> #true := t.
+Example testReturnThree_ok : testReturnThree #() ~~> #true := t.
+Example testReturnFour_ok : testReturnFour #() ~~> #true := t.
 
 (* nil.go *)
 Fail Example testCompareSliceToNil_ok : failing_testCompareSliceToNil #() ~~> #true := t.
