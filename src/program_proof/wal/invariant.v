@@ -297,18 +297,21 @@ Definition txns_ctx γ txns : iProp Σ :=
   ([∗ map] txn_id↦txn ∈ list_to_imap txns,
       txn_val γ txn_id txn).
 
+Definition disk_inv γ s cs : iProp Σ :=
+ ∃ installed_txn_id diskEnd_txn_id,
+      "Howncs"     ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
+      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
+      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
+
 (** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "Hmem" ∷ is_wal_mem l γ ∗
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
     "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ cs installed_txn_id diskEnd_txn_id,
-      "Howncs"     ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
-      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
-      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
+    "Hdisk" ∷ ∃ cs, disk_inv γ s cs
 .
 
 (* XXX: should we reset the ghost state? In which case many of these components can be removed *)
@@ -316,12 +319,7 @@ Definition is_wal_inner_durable γ s : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
     "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ cs installed_txn_id diskEnd_txn_id,
-      "Hcirc"      ∷ is_circular_state γ.(circ_name) cs ∗
-      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
-      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
+    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv γ s cs ∗ "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
 
 (* This is produced by recovery as a post condition, can be used to get is_wal *)

@@ -73,7 +73,7 @@ Proof.
   Ltac show_crash2 :=
     try (crash_case); iExists _;
     iSplitL ""; first auto;
-    iFrame; iExists _, _, _; iFrame; iFrame "#".
+    iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
 
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
@@ -94,7 +94,7 @@ Proof.
   { crash_case. iExists γ'.
     rewrite /is_wal_inner_durable. simpl. rewrite /is_durable_txn/is_installed_txn/is_durable//=.
     simpl. iSplitL ""; first auto. rewrite /txns_ctx.
-    iFrame. iExists _, _, _. iFrame. iFrame "#".
+    iFrame. iExists _; iFrame.
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (γlock ml) "Hlock".

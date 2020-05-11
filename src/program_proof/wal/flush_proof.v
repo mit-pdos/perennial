@@ -150,7 +150,7 @@ Proof.
   iExists _, installed_txn_id, diskEnd_txn_id; iFrame "# ∗".
   iExists diskEnd.
   iPureIntro.
-  split_and!; auto.
+  split_and!; simpl; auto.
   cut (txn_id ≤ diskEnd_txn_id)%nat; first by lia.
   lia.
   Grab Existential Variables.
