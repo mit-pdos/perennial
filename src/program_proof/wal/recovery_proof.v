@@ -84,6 +84,7 @@ Proof.
   wp_apply (wp_mkSliding with "[$]").
   { destruct Hwf_circ as (?&?). subst; lia. }
   iIntros (lslide) "Hsliding".
+  iDestruct (is_sliding_wf with "[$]") as %Hsliding_wf.
   wp_apply wp_allocStruct; first by auto.
   iIntros (st) "Hwal_state".
   wp_pures.
@@ -95,18 +96,14 @@ Proof.
       iDestruct "Hwal_state" as "(?&?&?&?&_)".
       iFrame. iPureIntro. rewrite /locked_wf//=.
       { destruct Hwf_circ as (?&?). subst. split.
-        * split; first lia.
-          (* XXX: This constraint seems unprovable (?) but maybe I need to exploit the fact
-             that we should assume the is_wal_state in the precondition is a post-crash state ?? *)
-          admit.
-        * rewrite /slidingM.wf //=; split; try lia.
+        * split; first lia. rewrite -H1. rewrite /circΣ.diskEnd. word.
+        * eauto.
       }
     }
     (* XXX: need to create a whole bunch of ghost state earlier *)
     admit.
   }
 Abort.
-
 
 Theorem wpc_MkLog_recover stk k E1 E2 d γ σ :
   {{{ is_wal_inner_durable γ σ }}}

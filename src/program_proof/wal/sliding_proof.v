@@ -122,7 +122,7 @@ Theorem wp_mkSliding s log (start: u64) :
   int.val start + length log < 2^64 ->
   {{{ updates_slice_frag s 1 log }}}
     mkSliding (slice_val s) #start
-  {{{ (l: loc), RET #l; is_sliding l (slidingM.mk log start start) }}}.
+  {{{ (l: loc), RET #l; is_sliding l (slidingM.mk log start (int.val start + length log)) }}}.
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   rewrite /mkSliding; wp_pures.
@@ -167,10 +167,19 @@ Proof.
   wp_apply wp_slice_len.
   wp_apply wp_allocStruct; auto.
   iIntros (l) "Hl".
-  iDestruct (struct_fields_split with "Hl") as "(Hf1&Hf2&Hf3&Hf4)".
+  iDestruct (struct_fields_split with "Hl") as "(Hf1&Hf2&Hf3&Hf4&%)".
   iApply "HΦ".
   iAssert (updates_slice_frag s 1 log) with "[Hs Hblocks]" as "Hlog".
   { iExists _; iFrame. }
+  iSplitL "".
+  { iPureIntro. rewrite /slidingM.wf//=; split; word. }
+  iExists _, _. iFrame. rewrite //=.
+  iSplitL "Hf3".
+  { rewrite -to_named. iExactEq "Hf3". do 2 f_equal. rewrite -Hlen in Hbound *.
+    (* XXX why can't word discharge this? *)
+    (* word. *)
+    admit.
+  }
 Admitted.
 
 Theorem is_slice_small_take_drop s t q n vs :
