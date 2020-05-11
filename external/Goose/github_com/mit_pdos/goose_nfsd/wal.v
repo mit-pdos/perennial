@@ -441,7 +441,7 @@ Definition Walog__logger: val :=
 
 Definition mkLog: val :=
   rec: "mkLog" "disk" :=
-    let: ("circ", ("start", ("end", "memLog"))) := recoverCircular "disk" in
+    let: ((("circ", "start"), "end"), "memLog") := recoverCircular "disk" in
     let: "ml" := lock.new #() in
     let: "st" := struct.new WalogState.S [
       "memLog" ::= mkSliding "memLog" "start";
