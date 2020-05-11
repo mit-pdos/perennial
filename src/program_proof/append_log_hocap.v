@@ -1,5 +1,6 @@
 From Perennial.goose_lang.examples Require Import append_log.
 From Perennial.goose_lang.lib Require Import encoding crash_lock.
+From Perennial.goose_lang Require Import crash_modality.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import marshal_proof.
@@ -55,6 +56,8 @@ Definition log_state_to_crash (s: log_state) :=
 
 Definition log_crash_cond' s : iProp Σ :=
   log_state_to_crash s ∗ P s.
+
+Existing Instances is_hdr_durable is_log'_durable crashed_log_durable uninit_log_durable ptsto_log_into_crash.
 
 Definition log_crash_cond : iProp Σ :=
   ∃ (s: log_state), log_state_to_crash s ∗ P s.
@@ -164,16 +167,16 @@ Proof.
 
   wpc_bind (struct.loadF _ _ _).
   wpc_frame "HΦ Hvs".
-  { iIntros "((H&_)&(_&Hvs))". by iApply "H". }
+  { crash_case. iDestruct "Hvs" as "(_&$)". }
   wp_loadField.
-  iIntros "(HΦ&Hvs)".
+  iIntros "H". iNamed "H".
 
   wpc_bind (lock.acquire _).
   wpc_frame "HΦ Hvs".
-  { iIntros "((H&_)&(_&Hvs))". by iApply "H". }
+  { crash_case. iDestruct "Hvs" as "(_&$)". }
   wp_apply (crash_lock.acquire_spec with "His_lock"); first by set_solver+.
   iIntros "H". iDestruct "H" as (Γ) "Hcrash_locked".
-  iIntros "(HΦ&Hvs)".
+  iIntros "H". iNamed "H".
 
   wpc_pures; auto.
   { iDestruct "Hvs" as "(_&$)". }
@@ -217,7 +220,7 @@ Proof.
   { by iApply Hwand. }
 
   wpc_frame "HQ HΦ".
-  { iIntros "(?&H)"; iApply "H". by iApply Hwand. }
+  { crash_case. by iApply Hwand. }
 
   wp_bind (struct.loadF _ _ _).
   wp_loadField.
@@ -459,3 +462,34 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
 Qed.
 
 End hocap.
+
+Section hocap_crash.
+Context `{!heapG Σ}.
+Context `{!crashG Σ}.
+Context `{!lockG Σ, stagedG Σ}.
+Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
+
+Implicit Types v : val.
+Implicit Types z : Z.
+Implicit Types (stk:stuckness) (E: coPset).
+
+Context (Nlog: namespace).
+
+Context (P: log_state -> iProp Σ).
+Context (SIZE: nat).
+
+Instance log_state_to_crash_durable  s:
+  IntoCrash (log_state_to_crash SIZE s) (λ _, log_state_to_crash SIZE s).
+Proof. destruct s; apply _. Qed.
+
+Instance log_crash_cond_into_crash (P': _ → _ → iProp Σ):
+  (∀ s, IntoCrash (P s) (P' s)) →
+  IntoCrash (log_crash_cond P SIZE) (λ hG, ∃ s, log_state_to_crash SIZE s ∗ P' s hG)%I.
+Proof.
+  intros Hcrash.
+  rewrite /IntoCrash.
+  iIntros "HP".
+  iDestruct "HP" as (?) "(HP1&HP2)".
+  iCrash. iExists _. iFrame.
+Qed.
+End hocap_crash.

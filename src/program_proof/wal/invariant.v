@@ -6,7 +6,7 @@ From Perennial.Helpers Require Export Transitions List NamedProps Map.
 From Perennial.algebra Require Export deletable_heap.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
-From Perennial.program_proof Require Export wal.circ_proof wal.sliding.
+From Perennial.program_proof Require Export wal.circ_proof wal.sliding_proof.
 From Perennial.program_proof Require Export wal.transitions.
 
 Canonical Structure circO := leibnizO circΣ.t.
@@ -37,7 +37,7 @@ Definition walN := nroot .@ "wal".
 Let N := walN.
 Let circN := walN .@ "circ".
 
-Record wal_names :=
+Record wal_names := mkWalNames
   { circ_name: circ_names;
     lock_name : gname;
     cs_name : gname;
@@ -49,16 +49,13 @@ Record wal_names :=
     start_avail_name : gname;
   }.
 
-Implicit Types (γ: wal_names).
-Implicit Types (s: log_state.t) (memLog: list update.t) (txns: list (u64 * list update.t)).
-Implicit Types (pos: u64) (txn_id: nat).
+Instance _eta_wal_names : Settable _ :=
+  settable! mkWalNames <circ_name; lock_name; cs_name; txns_ctx_name; txns_name;
+                        new_installed_name; being_installed_name; diskEnd_avail_name; start_avail_name>.
 
-Fixpoint compute_memLogMap (memLog : list update.t) (pos : u64) (m : gmap u64 u64) : gmap u64 u64 :=
-  match memLog with
-  | nil => m
-  | u :: memLog' =>
-    compute_memLogMap memLog' (word.add pos 1) (<[ update.addr u := pos ]> m)
-  end.
+Implicit Types (γ: wal_names).
+Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
+Implicit Types (pos: u64) (txn_id: nat).
 
 (** low-level, unimportant state *)
 Record lowState :=
@@ -101,7 +98,8 @@ Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the memStart_txn_id *)
 Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
-  has_updates memLog (drop memStart_txn_id txns).
+  has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
+  (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
 Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
   (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
@@ -111,7 +109,7 @@ Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
-      "%His_memLog" ∷ ⌜is_mem_memLog σ.(slidingM.log) txns memStart_txn_id⌝ ∗
+      "%His_memLog" ∷ ⌜is_mem_memLog σ txns memStart_txn_id⌝ ∗
       (* when nextDiskEnd gets set, we track that it has the right updates to
       use for [is_durable] when the new transaction is logged *)
       "%His_nextDiskEnd" ∷
@@ -305,6 +303,23 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
 .
 
+(* XXX: should we reset the ghost state? In which case many of these components can be removed *)
+Definition is_wal_inner_durable γ s : iProp Σ :=
+    "%Hwf" ∷ ⌜wal_wf s⌝ ∗
+    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
+    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
+    "Hdisk" ∷ ∃ cs installed_txn_id diskEnd_txn_id,
+      "Hcirc"      ∷ is_circular_state γ.(circ_name) cs ∗
+      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
+      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
+.
+
+(* This is produced by recovery as a post condition, can be used to get is_wal *)
+Definition is_wal_inv_pre (l: loc) γ s : iProp Σ :=
+  is_wal_inner l γ s ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
+
 Definition is_wal (l : loc) γ : iProp Σ :=
   inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
   is_circular circN (circular_pred γ) γ.(circ_name).
@@ -469,7 +484,9 @@ Proof.
   rewrite /is_txn; intros.
   destruct (decide (txn_id1 ≤ txn_id2)%nat); first by auto.
   assert (txn_id2 < txn_id1)%nat as Hord by lia.
-  eapply Hmono in Hord; eauto.
+  rewrite -list_lookup_fmap in H.
+  rewrite -list_lookup_fmap in H0.
+  eapply (Hmono _ _) in Hord; eauto.
   word. (* contradiction from [pos1 = pos2] *)
 Qed.
 

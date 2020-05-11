@@ -6,7 +6,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require util_proof.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
-From Perennial.program_proof Require Import wal.lib.
+From Perennial.program_proof Require Import wal.abstraction.
 
 Implicit Types (txn_id:nat) (pos: u64).
 
@@ -63,18 +63,65 @@ Definition log_flush (pos:u64) (txn_id: nat) : transition log_state.t unit :=
 
 Definition allocPos : transition log_state.t u64 :=
   suchThat (λ s (pos': u64),
-            (∃ txn_id', is_txn s.(log_state.txns) txn_id' pos') ∧
             (∀ (pos: u64) txn_id,
                 is_txn s.(log_state.txns) txn_id pos ->
-                int.val pos' >= int.val pos)).
+                int.val pos ≤ int.val pos')).
 
 Definition log_mem_append (txn: list update.t): transition log_state.t u64 :=
   pos ← allocPos;
   modify (set log_state.txns (fun txns => txns ++ [(pos,txn)]));;
   ret pos.
 
-Definition apply_upds (upds: list update.t) (d: disk): disk :=
-  fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
+Lemma list_singleton_lookup {A} (i: nat) (x1 x2: A) :
+  [x1] !! i = Some x2 ->
+  (i = 0%nat) ∧ x1 = x2.
+Proof.
+  destruct i; simpl.
+  - inversion 1; auto.
+  - rewrite lookup_nil; inversion 1.
+Qed.
+
+Theorem mem_append_preserves_wf σ pos upds :
+  addrs_wf upds σ.(log_state.d) ->
+  (* pos should be at least as high as any position given out *)
+  (∀ (pos': u64) txn_id,
+      is_txn σ.(log_state.txns) txn_id pos' ->
+      int.val pos' ≤ int.val pos) ->
+  wal_wf σ ->
+  wal_wf (set log_state.txns (λ txns, txns ++ [(pos, upds)]) σ).
+Proof.
+  simpl.
+  intros Haddrwf Hpos_highest Hwf.
+  destruct_and! Hwf.
+  split_and!; simpl; auto.
+  - rewrite /log_state.updates /=.
+    rewrite /addrs_wf.
+    rewrite txn_upds_app.
+    apply Forall_app_2; eauto.
+    rewrite txn_upds_single //.
+  - rewrite fmap_app.
+    simpl.
+    apply list_mono_app.
+    split_and!; auto.
+    { apply list_mono_singleton. }
+    intros.
+    apply list_singleton_lookup in Hx2 as [-> ->].
+    eapply Hpos_highest; eauto.
+    rewrite /is_txn.
+    rewrite -list_lookup_fmap; eauto.
+  - len.
+Qed.
+
+Theorem log_mem_append_preserves_wf txn σ σ' pos :
+  addrs_wf txn σ.(log_state.d) ->
+  wal_wf σ ->
+  relation.denote (log_mem_append txn) σ σ' pos ->
+  wal_wf σ'.
+Proof.
+  simpl.
+  intros Haddrwf Hwf Htrans; monad_inv.
+  eapply mem_append_preserves_wf; eauto.
+Qed.
 
 Definition disk_at_txn_id (txn_id: nat) (s:log_state.t): disk :=
   apply_upds (txn_upds (take txn_id (log_state.txns s))) s.(log_state.d).

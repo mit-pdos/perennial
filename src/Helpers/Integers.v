@@ -190,6 +190,13 @@ Instance u64_eq_dec : EqDecision u64 := _.
 Instance u32_eq_dec : EqDecision u32 := _.
 Instance u8_eq_dec : EqDecision u8 := _.
 
+Instance int_val_inj `(word: Interface.word width) {word_ok: word.ok word} : Inj eq eq word.unsigned.
+Proof.
+  intros x1 x2.
+  intros.
+  apply word.unsigned_inj in H; auto.
+Qed.
+
 Instance byte_eq_dec : EqDecision byte.
 Proof. solve_decision. Defined.
 

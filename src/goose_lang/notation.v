@@ -179,18 +179,18 @@ Notation "'let:' ( x , y ) := e1 'in' e2" :=
        e1%E)
   (at level 200, x at level 1, e1, e2 at level 200,
    format "'[' 'let:'  ( x ,  y )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
-Notation "'let:' ( x , ( y , z ) ) := e1 'in' e2" :=
+Notation "'let:' ( ( x , y ) , z ) := e1 'in' e2" :=
   (Lam "__p"
-       (Lam x%binder (Lam y%binder (Lam z%binder e2%E (Snd (Snd "__p"))) (Fst (Snd "__p"))) (Fst "__p"))
+       (Lam x%binder (Lam y%binder (Lam z%binder e2%E (Snd "__p")) (Snd (Fst "__p"))) (Fst (Fst "__p")))
        e1%E)
   (at level 200, x at level 1, y at level 1, e1, e2 at level 200,
-   format "'[' 'let:'  ( x , ( y , z ) )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
-Notation "'let:' ( x , ( y , ( z , w ) ) ) := e1 'in' e2" :=
+   format "'[' 'let:'  ( ( x , y ) , z )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( ( x , y ) , z ) , w ) := e1 'in' e2" :=
   (Lam "__p"
-       (Lam x%binder (Lam y%binder (Lam z%binder (Lam w%binder e2%E (Snd (Snd (Snd "__p")))) (Fst (Snd (Snd "__p")))) (Fst (Snd "__p"))) (Fst "__p"))
+       (Lam x%binder (Lam y%binder (Lam z%binder (Lam w%binder e2%E (Snd "__p")) (Snd (Fst "__p"))) (Snd (Fst (Fst "__p")))) (Fst (Fst (Fst "__p"))))
        e1%E)
   (at level 200, x at level 1, y at level 1, z at level 1, e1, e2 at level 200,
-   format "'[' 'let:'  ( x , ( y , ( z , w ) ) )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
+   format "'[' 'let:'  ( ( ( x , y ) , z ) , w )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
 Notation "e1 ;; e2" := (Lam BAnon e2%E e1%E)
   (at level 100, e2 at level 200,
    format "'[' '[hv' '[' e1 ']' ;;  ']' '/' e2 ']'") : expr_scope.

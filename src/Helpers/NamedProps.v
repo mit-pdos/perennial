@@ -140,8 +140,12 @@ Local Ltac iNameHyp_go H :=
             | idtac ]
   in go H with
   (* Ltac *) iNamed_go H :=
-  try iDeexHyp H;
-  iNamedDestruct H.
+  lazymatch H with
+  | 1%Z => let i := iFresh in iIntros i; iNamed_go i
+  | 1%nat => let i := iFresh in iIntros i; iNamed_go i
+  | _ => try iDeexHyp H;
+         iNamedDestruct H
+  end.
 
 Ltac iNameHyp H := iNameHyp_go H.
 

@@ -35,34 +35,46 @@ Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp 
   ∃ bks, is_slice_small bk_s (struct.t Update.S) q (update_val <$> bks) ∗
    [∗ list] _ ↦ uv;upd ∈ bks;bs, is_update uv q upd.
 
-Theorem updates_slice_frag_acc bk_s bs :
-  updates_slice bk_s bs -∗
-  updates_slice_frag bk_s 1 bs ∗
-   (updates_slice_frag bk_s 1 bs -∗ updates_slice bk_s bs).
+Theorem updates_slice_cap_acc bk_s bs :
+  updates_slice bk_s bs ⊣⊢
+  updates_slice_frag bk_s 1 bs ∗ is_slice_cap bk_s (struct.t Update.S).
 Proof.
-  iIntros "Hupds".
-  iDestruct "Hupds" as (bks) "[Hbks Hupds]".
-  iDestruct (is_slice_small_acc with "Hbks") as "[Hbks_small Hbks]".
-  iSplitR "Hbks".
-  - iExists _; iFrame.
-    iApply (big_sepL2_mono with "Hupds").
-    intros ? ? [a b] **.
-    by iIntros "[$ %]".
+  iSplit.
   - iIntros "Hupds".
-    iDestruct "Hupds" as (bks') "[Hs Hupds]".
-    iSpecialize ("Hbks" with "Hs").
+    iDestruct "Hupds" as (bks) "[Hbks Hupds]".
+    iDestruct (is_slice_split with "Hbks") as "[Hbks_small $]".
     iExists _; iFrame.
     iApply (big_sepL2_mono with "Hupds").
     intros ? ? [a b] **.
-    by iIntros "[% $]".
+      by iIntros "[$ %]".
+  - iIntros "[Hupds Hcap]".
+    iDestruct "Hupds" as (bks) "[Hbks Hupds]".
+    iDestruct (is_slice_split with "[$Hbks $Hcap]") as "Hbks".
+    iExists _; iFrame.
+    iApply (big_sepL2_mono with "Hupds").
+    intros ? ? [a b] **.
+      by iIntros "[% $]".
+Qed.
+
+Theorem updates_slice_frag_acc bk_s bs :
+  updates_slice bk_s bs -∗
+  updates_slice_frag bk_s 1 bs ∗
+   (∀ bs', updates_slice_frag bk_s 1 bs' -∗ updates_slice bk_s bs').
+Proof.
+  iIntros "Hupds".
+  rewrite updates_slice_cap_acc.
+  iDestruct "Hupds" as "[$ Hcap]".
+  iIntros (bs') "Hupds".
+  rewrite updates_slice_cap_acc.
+  iFrame.
 Qed.
 
 Theorem updates_slice_to_frag bk_s bs :
   updates_slice bk_s bs -∗
   updates_slice_frag bk_s 1 bs.
 Proof.
-  iIntros "Hupds".
-  iDestruct (updates_slice_frag_acc with "Hupds") as "[$ _]".
+  rewrite updates_slice_cap_acc.
+  iIntros "[$ _]".
 Qed.
 
 Lemma updates_slice_frag_len bk_s q bs :
@@ -186,28 +198,6 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Theorem wp_SliceGet_updates' stk E bk_s bs (i: u64) (u: update.t) :
-  {{{ updates_slice bk_s bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
-    SliceGet (struct.t Update.S) (slice_val bk_s) #i @ stk; E
-  {{{ uv, RET (update_val uv);
-      ⌜uv.1 = u.(update.addr)⌝ ∗
-      is_block uv.2 1 u.(update.b) ∗
-      (is_block uv.2 1 u.(update.b) -∗ updates_slice bk_s bs)
-  }}}.
-Proof.
-  iIntros (Φ) "[Hupds %Hlookup] HΦ".
-  iDestruct (updates_slice_frag_acc with "Hupds") as "[Hfrag Hupds]".
-  wp_apply (wp_SliceGet_updates with "[$Hfrag]"); eauto.
-  iIntros (uv) "((%&Hb)&Hrest)".
-  iApply "HΦ".
-  iSplit; auto.
-  iFrame.
-  iIntros "Hb".
-  iApply "Hupds".
-  iApply "Hrest".
-  iFrame.
-Qed.
-
 Transparent slice.T.
 Theorem val_ty_update uv :
   val_ty (update_val uv) (struct.t Update.S).
@@ -219,6 +209,35 @@ Opaque slice.T.
 Hint Resolve val_ty_update : val_ty.
 
 Theorem wp_SliceSet_updates stk E bk_s bs (i: u64) (u0 u: update.t) uv :
+  bs !! int.nat i = Some u0 ->
+  {{{ updates_slice_frag bk_s 1 bs ∗ is_update uv 1 u }}}
+    SliceSet (struct.t Update.S) (slice_val bk_s) #i (update_val uv) @ stk; E
+  {{{ RET #(); updates_slice_frag bk_s 1 (<[int.nat i := u]> bs)
+  }}}.
+Proof.
+  iIntros (Hlookup Φ) "[Hupds Hu] HΦ".
+  iDestruct "Hupds" as (bks) "[Hbk_s Hbks]".
+  iDestruct (big_sepL2_length with "Hbks") as %Hlen.
+  assert (exists uv0, bks !! int.nat i = Some uv0) as [uv0 Hlookup_bks].
+  { apply lookup_lt_Some in Hlookup.
+    apply list_lookup_lt.
+    lia. }
+  iDestruct (big_sepL2_insert_acc _ _ _ _ _ _ Hlookup_bks Hlookup with "Hbks")
+    as "[Hbki Hbks]".
+  wp_apply (wp_SliceSet with "[$Hbk_s]").
+  { iPureIntro.
+    split; auto.
+    rewrite list_lookup_fmap.
+    apply fmap_is_Some.
+    eauto. }
+  iIntros "Hbk_s".
+  iApply "HΦ".
+  iSpecialize ("Hbks" with "[$Hu //]").
+  rewrite -list_fmap_insert.
+  iExists _; iFrame.
+Qed.
+
+Theorem wp_SliceSet_updates' stk E bk_s bs (i: u64) (u0 u: update.t) uv :
   bs !! int.nat i = Some u0 ->
   {{{ updates_slice_frag bk_s 1 bs ∗ is_update uv 1 u }}}
     SliceSet (struct.t Update.S) (slice_val bk_s) #i (update_val uv) @ stk; E

@@ -40,15 +40,23 @@ doesn't make use of capacity *)
 Definition is_slice_small (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
   s.(Slice.ptr) ↦∗[t]{q} vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
 
-Definition is_slice (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
-  is_slice_small s t q vs ∗
+Definition is_slice_cap (s: Slice.t) (t:ty): iProp Σ :=
   (∃ extra, ⌜Z.of_nat (length extra) = Slice.extra s⌝ ∗
             (s.(Slice.ptr) +ₗ[t] int.val s.(Slice.sz)) ↦∗[t] extra).
+
+Definition is_slice (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
+  is_slice_small s t q vs ∗ is_slice_cap s t.
 
 Lemma is_slice_to_small s t q vs :
   is_slice s t q vs -∗ is_slice_small s t q vs.
 Proof.
   iDestruct 1 as "[$ _]".
+Qed.
+
+Lemma is_slice_split s t q vs :
+  is_slice s t q vs ⊣⊢ is_slice_small s t q vs ∗ is_slice_cap s t.
+Proof.
+  rewrite /is_slice //.
 Qed.
 
 Lemma is_slice_small_acc s t q vs :
@@ -298,7 +306,9 @@ Proof.
   iSplitR.
   { iPureIntro.
     rewrite replicate_length.
+    simpl.
     word. }
+  simpl.
   iExactEq "Hextra"; word_eq.
 Qed.
 
@@ -468,9 +478,9 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_SliceGet stk E sl t q vs (i: u64) v0 :
+Lemma wp_SliceGet_body stk E sl t q vs (i: u64) v0 :
   {{{ is_slice_small sl t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
-    SliceGet t sl #i @ stk; E
+    ![t] (slice.ptr (sl) +ₗ[t] #i) @ stk; E
   {{{ RET v0; is_slice_small sl t q vs ∗ ⌜val_ty v0 t⌝ }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
@@ -487,6 +497,20 @@ Proof.
   iSpecialize ("Hsl'" with "Hi").
   iApply "HΦ"; iFrame.
   iPureIntro; auto.
+Qed.
+
+
+Lemma wp_SliceGet stk E sl t q vs (i: u64) v0 :
+  {{{ is_slice_small sl t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+    SliceGet t sl #i @ stk; E
+  {{{ RET v0; is_slice_small sl t q vs ∗ ⌜val_ty v0 t⌝ }}}.
+Proof.
+  iIntros (Φ) "[Hsl %] HΦ".
+  destruct sl as [ptr sz].
+  rewrite /SliceGet.
+  repeat wp_step.
+  wp_apply (wp_SliceGet_body with "[Hsl]"); last done.
+  { iFrame. eauto. }
 Qed.
 
 Lemma list_lookup_lt A (l: list A) (i: nat) :
@@ -808,6 +832,7 @@ Proof.
       iPureIntro.
       word. }
     iExists extra'.
+    simpl.
     iSplitR; first by iPureIntro; word.
     rewrite loc_add_assoc.
     iExactEq "Hfree"; word_eq.
@@ -853,7 +878,9 @@ Proof.
       iSplitR.
       { rewrite replicate_length.
         iPureIntro.
+        simpl.
         word. }
+      simpl.
       iExactEq "HnewFree"; word_eq.
 Qed.
 

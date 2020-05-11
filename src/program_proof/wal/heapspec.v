@@ -352,26 +352,6 @@ Proof.
          }
 Qed.
 
-Theorem txn_upds_cons txn txnl:
-  txn_upds (txn :: txnl) =
-  txn_upds [txn] ++ txn_upds txnl.
-Proof.
-  unfold txn_upds.
-  rewrite <- concat_app.
-  rewrite <- fmap_app.
-  f_equal.
-Qed.
-
-Theorem txn_upds_app txn1 txn2:
-  txn_upds (txn1 ++ txn2) =
-  txn_upds txn1 ++ txn_upds txn2.
-Proof.
-  unfold txn_upds.
-  rewrite <- concat_app.
-  rewrite <- fmap_app.
-  f_equal.
-Qed.
-
 Theorem take_drop_txns:
   forall (txn_id: nat) txns,
     txn_id <= length txns ->
@@ -908,74 +888,18 @@ Proof.
   intuition.
 Qed.
 
-Theorem wal_wf_append_txns σ txn_id pos' bs txns :
+Theorem wal_wf_append_txns σ pos' bs txns :
   wal_wf σ ->
   txns = σ.(log_state.txns) ->
   addrs_wf bs σ.(log_state.d) ->
-  is_txn σ.(log_state.txns) txn_id pos' ->
   (∀ (pos : u64) (txn_id : nat),
     is_txn σ.(log_state.txns) txn_id pos → int.val pos' >= int.val pos) ->
   wal_wf (set log_state.txns (λ _, txns ++ [(pos', bs)]) σ).
 Proof.
-  destruct σ.
-  unfold wal_wf; simpl.
-  intuition.
-  all: subst.
-  {
-    rewrite /addrs_wf in H4.
-    rewrite /addrs_wf.
-    intros.
-    specialize (H4 i u).
-    unfold log_state.updates in *.
-    unfold txn_upds in *.
-    simpl in *.
-    rewrite fmap_app in H0.
-    rewrite concat_app in H0.
-    destruct (decide (i < (length (concat txns0.*2)))).
-    +  apply H4.
-       rewrite -> lookup_app_l in H0; auto.
-       lia.
-    + rewrite /addrs_wf in H3.
-      specialize (H1 (i - (length (concat txns0.*2)))%nat u).
-      apply H1.
-      rewrite -> lookup_app_r in H0; auto; last lia.
-      simpl in H0.
-      rewrite -> app_nil_r in H0; auto.
-  }
-  {
-    destruct (decide (txn_id1 < (length (txns0)))).
-    - destruct (decide (txn_id2 < (length (txns0)))).
-      + rewrite -> lookup_app_l in H8; last lia.
-        rewrite -> lookup_app_l in H9; last lia.
-        apply H with (txn_id1 := txn_id1) (txn_id2 := txn_id2); eauto.
-      + rewrite -> lookup_app_l in H8; last lia.
-        rewrite -> lookup_app_r in H9; last lia.
-        rewrite <- list_lookup_fmap in H9.
-        simpl in H9.
-        apply elem_of_list_lookup_2 in H9.
-        apply elem_of_list_singleton in H9; subst.
-        rewrite /is_txn in H3.
-        specialize (H3 pos1 txn_id1 H8).
-        lia.
-    - destruct (decide (txn_id2 < (length (txns0)))).
-      + rewrite -> lookup_app_r in H8; last lia.
-        rewrite -> lookup_app_l in H9; last lia.
-        exfalso.
-        lia.
-      + rewrite -> lookup_app_r in H8; last lia.
-        rewrite -> lookup_app_r in H9; last lia.
-        rewrite <- list_lookup_fmap in H8.
-        simpl in H8.
-        apply elem_of_list_lookup_2 in H8.
-        apply elem_of_list_singleton in H8; subst.
-        rewrite <- list_lookup_fmap in H9.
-        simpl in H9.
-        apply elem_of_list_lookup_2 in H9.
-        apply elem_of_list_singleton in H9; subst.
-        lia.
-  }
-  rewrite app_length.
-  lia.
+  intros Hwf -> Haddrs_wf Hhighest.
+  eapply mem_append_preserves_wf; eauto.
+  intros.
+  eapply Hhighest in H; lia.
 Qed.
 
 Lemma updates_since_updates σ (txn_id:nat) (a:u64) pos' bs :
@@ -1510,8 +1434,9 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
+        let txn_num := length σ'.(log_state.txns) in
       ( (wal_heap_inv γh) σ
-          ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ Q txn_id ) ) ∧
+          ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
     "Hlockedheap" ∷ is_locked_walheap γh lwh ).
 Proof using walheapG0.
   iIntros "Hpre Hlockedheap".
@@ -1528,9 +1453,6 @@ Proof using walheapG0.
 
   iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as "%"; subst.
   rename crash_heaps0 into crash_heaps.
-
-  destruct H.
-  destruct H as [txn_id Htxn].
 
   iDestruct (memappend_pre_nodup with "Hpre") as %Hnodup.
 
@@ -1558,7 +1480,7 @@ Proof using walheapG0.
 
   iMod (ghost_var_update _ (async_put (pos', newcrashheap) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
 
-  iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _) newcrashheap ).
+  iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _) newcrashheap).
 
   iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag $Hunmodified $Hunmodified_new $Hbs_new]") as "Hfupd".
   { admit. }
@@ -1566,6 +1488,7 @@ Proof using walheapG0.
 
   iModIntro.
   iFrame.
+  iSplitL; last by auto.
 
   iExists _, _. iFrame.
 
@@ -1574,13 +1497,15 @@ Proof using walheapG0.
   2: iSplitR.
   2: {
     iPureIntro. eapply wal_wf_append_txns; simpl; eauto.
-    unfold addrs_wf.
-    intros.
-    specialize (Hbs_in_gh u i).
-    destruct Hbs_in_gh; auto.
-    intuition.
-    specialize (Hgh (u.(update.addr)) (HB x.1 x.2)).
-    intuition; auto.
+    { unfold addrs_wf.
+      intros.
+      apply Forall_lookup; intros i u.
+      specialize (Hbs_in_gh u i).
+      intuition eauto.
+      destruct H4; eauto.
+      specialize (Hgh (u.(update.addr)) (HB x.1 x.2)).
+      intuition; auto. }
+    admit.
   }
   2: {
     rewrite /possible app_length /= in Hcrashes_complete.
@@ -1628,7 +1553,7 @@ Proof using walheapG0.
   destruct (decide (k ∈ fmap update.addr bs)).
   - eapply elem_of_list_fmap in e as ex.
     destruct ex.
-    destruct H.
+    destruct H1.
     subst.
     apply elem_of_list_lookup in H3; destruct H3.
     edestruct Hbs_in_gh; eauto.

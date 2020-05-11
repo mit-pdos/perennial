@@ -441,7 +441,7 @@ Definition Walog__logger: val :=
 
 Definition mkLog: val :=
   rec: "mkLog" "disk" :=
-    let: ("circ", ("start", ("end", "memLog"))) := recoverCircular "disk" in
+    let: ((("circ", "start"), "end"), "memLog") := recoverCircular "disk" in
     let: "ml" := lock.new #() in
     let: "st" := struct.new WalogState.S [
       "memLog" ::= mkSliding "memLog" "start";
@@ -570,6 +570,7 @@ Definition Walog__MemAppend: val :=
           (if: WalogState__memLogHasSpace "st" (slice.len "bufs")
           then
             "txn" <-[LogPosition] doMemAppend (struct.loadF WalogState.S "memLog" "st") "bufs";;
+            Linearize;;
             Break
           else
             util.DPrintf #5 (#(str"memAppend: log is full; try again")) #();;

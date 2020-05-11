@@ -1,12 +1,14 @@
-From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From RecordUpdate Require Import RecordSet.
+From Tactical Require Import SimplMatch.
 
-From Perennial.Helpers Require Export NamedProps List.
+From Perennial.Helpers Require Export NamedProps List Integers Tactics.
+(* TODO: I failed to get a reasonable setup with stdpp and ssreflect and such
+without this, but it's really importing too much (we don't need the IPM here) *)
+From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Export wal.lib wal.highest.
 
-From Perennial.program_proof Require Export proof_prelude.
-From Perennial.program_proof Require Export wal.lib.
-From Perennial.program_proof Require Import wal.highest.
-From Perennial.program_proof Require Import disk_lib.
+Set Default Goal Selector "!".
+Set Default Proof Using "Type".
 
 Module slidingM.
   Record t :=
@@ -18,6 +20,8 @@ Module slidingM.
 
   Definition endPos (σ:t): u64 :=
     word.add σ.(start) (U64 $ Z.of_nat $ length σ.(log)).
+  Definition memEnd σ : Z :=
+    int.val σ.(start) + length σ.(log).
   Definition numMutable (σ:t): u64 :=
     word.sub σ.(mutable) σ.(start).
   Definition addrPosMap (σ:t): gmap u64 u64 :=
@@ -29,507 +33,14 @@ Module slidingM.
     int.val σ.(start) ≤ int.val σ.(mutable) ∧
     int.val σ.(start) + length σ.(log) < 2^64 ∧
     int.val σ.(mutable) - int.val σ.(start) <= length σ.(log).
-End slidingM.
 
-Section goose_lang.
-Context `{!heapG Σ}.
-
-Implicit Types (l: loc) (σ: slidingM.t).
-
-Definition readonly_log logSlice σ : iProp Σ :=
-      readonly (updates_slice_frag
-                  (slice_take logSlice (struct.t Update.S) (slidingM.numMutable σ)) 1
-                  (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
-
-Definition mutable_log logSlice σ : iProp Σ :=
-  "%logSlice_wf" ∷ ⌜int.nat logSlice.(Slice.sz) = length σ.(slidingM.log)⌝ ∗
-  "log_mutable" ∷ updates_slice_frag
-        (slice_skip logSlice (struct.t Update.S) (slidingM.numMutable σ)) 1
-        (drop (int.nat (slidingM.numMutable σ)) σ.(slidingM.log)).
-
-Definition is_sliding (l: loc) (σ: slidingM.t) : iProp Σ :=
-  "%Hwf" ∷ ⌜slidingM.wf σ⌝ ∗
-  "Hinv" ∷ ∃ (logSlice: Slice.t) (addrPosPtr: loc),
-    "log" ∷ l ↦[sliding.S :: "log"] (slice_val logSlice) ∗
-    "start" ∷ l ↦[sliding.S :: "start"] #σ.(slidingM.start) ∗
-    "mutable" ∷ l ↦[sliding.S :: "mutable"] #σ.(slidingM.mutable) ∗
-    "addrPos" ∷ l ↦[sliding.S :: "addrPos"] #addrPosPtr ∗
-    "#log_readonly" ∷ readonly_log logSlice σ ∗
-    "log_mutable" ∷ mutable_log logSlice σ ∗
-    "is_addrPos" ∷ is_map addrPosPtr (slidingM.addrPosMap σ).
-
-Theorem is_sliding_wf l σ : is_sliding l σ -∗ ⌜slidingM.wf σ⌝.
-Proof.
-  iIntros "H"; iNamed "H"; auto.
-Qed.
-
-Theorem memLog_sz s σ :
-  mutable_log s σ -∗
-  ⌜int.nat s.(Slice.sz) = length (slidingM.log σ)⌝.
-Proof.
-  iIntros "H".
-  iNamed "H".
-  auto.
-Qed.
-
-Theorem wp_log_len l σ :
-  {{{ is_sliding l σ }}}
-    slice.len (struct.loadF sliding.S "log" #l)
-  {{{ RET #(U64 $ length σ.(slidingM.log)); is_sliding l σ }}}.
-Proof.
-  iIntros (Φ) "Hsliding HΦ".
-  iNamed "Hsliding"; iNamed "Hinv".
-  iDestruct (memLog_sz with "log_mutable") as %Hsz.
-  wp_loadField.
-  rewrite /slice.len; wp_pures. (* XXX: wp_apply wp_slice_len doesn't work for some reason *)
-  replace logSlice.(Slice.sz) with (U64 $ length σ.(slidingM.log)) by word.
-  iApply "HΦ".
-  iSplit; auto.
-  iExists _, _; iFrame "# ∗".
-Qed.
-
-Lemma take_0 {A} (l: list A) : take 0 l = [].
-Proof. reflexivity. Qed.
-
-Lemma compute_memLogMap_nil start : compute_memLogMap nil start = ∅.
-Proof.
-  rewrite /compute_memLogMap.
-  simpl.
-  rewrite fmap_empty //.
-Qed.
-
-Theorem find_highest_index_app1 poss (pos: u64) :
-  find_highest_index (poss ++ [pos]) pos = Some (length poss).
-Proof.
-  rewrite find_highest_index'_ok.
-  induction poss; simpl.
-  { destruct (decide (pos = pos)); congruence. }
-  rewrite IHposs //=.
-Qed.
-
-Theorem find_highest_index_app_ne poss (pos pos': u64) :
-  pos ≠ pos' ->
-  find_highest_index (poss ++ [pos]) pos' =
-  find_highest_index poss pos'.
-Proof.
-  induction poss; simpl; intros.
-  { destruct (decide (pos' = pos)); congruence. }
-  rewrite IHposs; auto.
-Qed.
-
-Theorem memLogMap_append log start u (i: u64) :
-  int.nat i = length log ->
-  int.nat start + length log < 2^64 ->
-  compute_memLogMap (log ++ [u]) start =
-  map_insert (compute_memLogMap log start) u.(update.addr) (word.add start i).
-Proof.
-  intros Hlen Hoverflow.
-  rewrite /compute_memLogMap.
-  rewrite fmap_app; simpl.
-  destruct u as [a0 ?]; simpl.
-  apply map_eq; intros a.
-  rewrite lookup_fmap.
-  rewrite pos_indices_lookup.
-  rewrite -option_fmap_compose.
-  destruct (decide (a = a0)); subst; [ rewrite lookup_insert | rewrite lookup_insert_ne; auto ].
-  - rewrite find_highest_index_app1 /=.
-    autorewrite with len.
-    f_equal.
+  Theorem memEnd_ok σ :
+    wf σ -> int.val (endPos σ) = memEnd σ.
+  Proof.
+    rewrite /wf /endPos /memEnd; intros.
     word.
-  - rewrite -> find_highest_index_app_ne by auto.
-    rewrite lookup_fmap.
-    rewrite pos_indices_lookup.
-    rewrite -option_fmap_compose.
-    auto.
-Qed.
-
-Theorem wp_mkSliding s log (start: u64) :
-  int.val start + length log < 2^64 ->
-  {{{ updates_slice_frag s 1 log }}}
-    mkSliding (slice_val s) #start
-  {{{ (l: loc), RET #l; is_sliding l (slidingM.mk log start start) }}}.
-Proof.
-  iIntros (Hbound Φ) "Hs HΦ".
-  rewrite /mkSliding; wp_pures.
-  wp_apply (wp_NewMap u64 (t:=uint64T)).
-  iIntros (addrPosPtr) "His_map".
-  wp_pures.
-  iDestruct (updates_slice_frag_len with "Hs") as %Hlen.
-  iDestruct "Hs" as (bks) "[Hs Hblocks]".
-
-  wp_apply (wp_forSlice
-              (fun i => "Hm" ∷ is_map addrPosPtr
-                               (compute_memLogMap (take (int.nat i) log) start) ∗
-                      "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, is_update b_upd 1 upd
-              )%I
-           with "[] [His_map $Hblocks $Hs]").
-  2: {
-    rewrite take_0 compute_memLogMap_nil.
-    iFrame.
-  }
-  { clear Φ.
-    iIntros (i us).
-    iIntros "!>" (Φ) "(HI&%Hlt&%Hlookup) HΦ"; iNamed "HI".
-    rewrite list_lookup_fmap in Hlookup.
-    apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
-    wp_pures.
-    wp_apply (wp_MapInsert with "Hm"); auto.
-    iIntros "Hm".
-    iApply "HΦ".
-    replace (int.nat (word.add i 1)) with (1 + int.nat i)%nat by word.
-    destruct (list_lookup_lt _ log (int.nat i)) as [u Hlookup']; first by word.
-    iDestruct (big_sepL2_lookup_acc with "Hblocks") as "[[%Huaddr Hb] Hblocks]"; eauto.
-    iSpecialize ("Hblocks" with "[$Hb //]").
-    iFrame "Hblocks".
-    rewrite Huaddr.
-    erewrite take_S_r; eauto.
-    erewrite memLogMap_append; eauto; len.
-  }
-
-  rewrite -> take_ge by len.
-  iIntros "(HI&Hs)"; iNamed "HI".
-  wp_pures.
-  wp_apply wp_slice_len.
-  wp_apply wp_allocStruct; auto.
-  iIntros (l) "Hl".
-  iDestruct (struct_fields_split with "Hl") as "(Hf1&Hf2&Hf3&Hf4)".
-  iApply "HΦ".
-  iAssert (updates_slice_frag s 1 log) with "[Hs Hblocks]" as "Hlog".
-  { iExists _; iFrame. }
-Admitted.
-
-Theorem is_slice_small_take_drop s t q n vs :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-   is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-   is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ⊣⊢
-  is_slice_small s t q vs.
-Proof.
-  intros Hbound.
-  iSplit.
-  - iIntros "(Hs1 & Hs2)".
-    iDestruct "Hs1" as "[Ha1 %Hlen1]".
-    iDestruct "Hs2" as "[Ha2 %Hlen2]".
-    autorewrite with len in Hlen1, Hlen2.
-    simpl in Hlen1, Hlen2 |- *.
-    iDestruct (array_split with "[$Ha1 $Ha2]") as "Ha"; try word.
-    iFrame.
-    iPureIntro.
-    revert Hlen1; word.
-  - iIntros "Hs".
-    iDestruct "Hs" as "[Ha %Hlen]".
-    iDestruct (array_split (int.nat n) with "Ha") as "[Ha1 Ha2]"; try word.
-    rewrite Z2Nat.id; try word.
-    iFrame.
-    iPureIntro; simpl; len.
-Qed.
-
-Theorem is_slice_small_take_drop_1 s t q n vs :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-  is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-                  is_slice_small (slice_take s t n) t q (take (int.nat n) vs) -∗
-  is_slice_small s t q vs.
-Proof.
-  intros Hbound.
-  rewrite is_slice_small_take_drop; auto.
-Qed.
-
-Theorem updates_slice_frag_combine s q (n: u64) log :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-  updates_slice_frag (slice_skip s (struct.t Update.S) n) q (drop (int.nat n) log) ∗
-  updates_slice_frag (slice_take s (struct.t Update.S) n) q (take (int.nat n) log) -∗
-  updates_slice_frag s q log.
-Proof.
-  iIntros (Hbound) "[Hs2 Hs1]".
-  iDestruct (updates_slice_frag_len with "Hs1") as %Hlenlog1.
-  iDestruct (updates_slice_frag_len with "Hs2") as %Hlenlog2.
-  iDestruct "Hs1" as (bks1) "[Hs1 Hblocks1]".
-  iDestruct "Hs2" as (bks2) "[Hs2 Hblocks2]".
-  iDestruct (is_slice_small_sz with "Hs1") as %Hsz1.
-  iDestruct (is_slice_small_sz with "Hs2") as %Hsz2.
-  autorewrite with len in *.
-  simpl in *.
-  iDestruct  (is_slice_small_take_drop_1 s _ _ n (update_val <$> bks1 ++ bks2) with "[Hs1 Hs2]") as "Hs".
-  { word. }
-  { rewrite fmap_app.
-    rewrite drop_app_ge; len.
-    rewrite take_app_le; len.
-    rewrite take_ge; len.
-    rewrite Hsz1 minus_diag drop_0.
-    iFrame. }
-  iExists _; iFrame.
-  rewrite -{3}(take_drop (int.nat n) log).
-  iApply (big_sepL2_app with "Hblocks1 Hblocks2").
-Qed.
-
-Theorem updates_slice_frag_split s q (n: u64) log :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-  updates_slice_frag s q log -∗
-  updates_slice_frag (slice_skip s (struct.t Update.S) n) q (drop (int.nat n) log) ∗
-  updates_slice_frag (slice_take s (struct.t Update.S) n) q (take (int.nat n) log).
-Proof.
-  iIntros (Hbound) "Hs".
-  iDestruct (updates_slice_frag_len with "Hs") as %Hlen.
-  iDestruct "Hs" as (bks) "[Hs Hblocks]".
-  iDestruct (is_slice_small_sz with "Hs") as %Hbks_len.
-  autorewrite with len in Hbks_len.
-  iDestruct (is_slice_small_take_drop _ _ _ n with "Hs") as "[Hs1 Hs2]"; eauto.
-  rewrite -{1}(take_drop (int.nat n) log) -{1}(take_drop (int.nat n) bks).
-  iDestruct (big_sepL2_app_inv with "Hblocks") as "[Hblocks2 Hblocks1]".
-  { len. }
-  rewrite -fmap_drop -fmap_take.
-  iSplitL "Hs1 Hblocks1".
-  - iExists _; iFrame.
-  - iExists _; iFrame.
-Qed.
-
-Hint Unfold slidingM.wf : word.
-Hint Unfold slidingM.numMutable : word.
-
-Theorem memLog_combine s σ :
-  slidingM.wf σ ->
-  readonly_log s σ -∗
-  mutable_log s σ -∗
-  |={⊤}=> ∃ q, updates_slice_frag s q (slidingM.log σ) ∗
-       (updates_slice_frag s q (slidingM.log σ) -∗ mutable_log s σ).
-Proof.
-  rewrite /mutable_log.
-  iIntros (Hwf) "Hread Hmut".
-  iDestruct "Hmut" as "(%logSlice_wf&Hmut)"; rewrite /named.
-  iMod (readonly_load_lt with "Hread") as (q) "[%Hqlt HreadLog]"; first by auto.
-  iModIntro.
-  destruct (Qextra.Qp_split_1 _ Hqlt) as [q' Hqq'].
-  iEval (rewrite -Hqq') in "Hmut".
-  iDestruct (fractional.fractional_split_1 with "Hmut") as "[Hmut Hq']".
-  iDestruct (updates_slice_frag_len with "HreadLog") as %Hlen1.
-  iDestruct (updates_slice_frag_len with "Hmut") as %Hlen2.
-  autorewrite with len in Hlen1, Hlen2.
-  simpl in Hlen1, Hlen2.
-  iDestruct (updates_slice_frag_combine with "[$Hmut $HreadLog]") as "Hlog".
-  { destruct Hwf as (?&?&?).
-    revert Hlen1 Hlen2; word. }
-  iExists q; iFrame.
-  iIntros "Hupds".
-  rewrite -Hqq'.
-  iDestruct (updates_slice_frag_split _ _ (slidingM.numMutable σ) with "Hupds") as "[Hupds2 Hupds1]".
-  { revert Hlen1 Hlen2; word. }
-  iSplit; auto.
-  iApply (fractional.fractional_split_2 with "Hupds2 Hq'").
-Qed.
-
-Hint Unfold slidingM.endPos : word.
-
-
-Theorem slidingM_endPos_val σ :
-  slidingM.wf σ ->
-  int.val (slidingM.endPos σ) = int.val σ.(slidingM.start) + length σ.(slidingM.log).
-Proof.
-  intros.
-  word.
-Qed.
-
-Theorem wp_sliding__end l σ :
-  {{{ is_sliding l σ }}}
-    sliding__end #l
-  {{{ RET #(slidingM.endPos σ); is_sliding l σ }}}.
-Proof.
-  iIntros (Φ) "Hsliding HΦ".
-  iNamed "Hsliding"; iNamed "Hinv".
-  iDestruct (memLog_sz with "log_mutable") as %Hlog_sz.
-  wp_call.
-  wp_loadField.
-  wp_loadField.
-  wp_apply wp_slice_len.
-  wp_pures.
-  replace (word.add σ.(slidingM.start) logSlice.(Slice.sz)) with (slidingM.endPos σ) by word.
-  iApply "HΦ".
-  iSplit; auto.
-  iExists _, _; iFrame "# ∗".
-Qed.
-
-Hint Unfold slidingM.logIndex : word.
-
-Theorem wp_sliding__get l σ (pos: u64) (u: update.t) :
-  int.val σ.(slidingM.start) ≤ int.val pos ->
-  σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u ->
-  {{{ is_sliding l σ }}}
-    sliding__get #l #pos
-  {{{ uv q, RET update_val uv;
-      is_update uv q u ∗
-        (is_block uv.2 q u.(update.b) -∗ is_sliding l σ)
-  }}}.
-Proof.
-  iIntros (Hbound Hlookup Φ) "Hsliding HΦ".
-  iNamed "Hsliding"; iNamed "Hinv".
-  wp_call.
-  wp_loadField. wp_loadField.
-  iMod (memLog_combine with "log_readonly log_mutable") as (q') "[Hlog Hlog_mutable]"; auto.
-  wp_apply (wp_SliceGet_updates with "[$Hlog]").
-  { iPureIntro.
-    lazymatch type of Hlookup with
-    | _ !! ?i = _ =>
-      lazymatch goal with
-      | [ |- _ !! ?i' = _ ] =>
-        replace i' with i by word; eassumption
-      end
-    end.
-  }
-  iIntros (uv) "(Hu&Hlog)".
-  iApply "HΦ".
-  iFrame.
-  iIntros "Hb"; iSpecialize ("Hlog" with "Hb").
-  iSpecialize ("Hlog_mutable" with "Hlog").
-  iSplit; auto.
-  iExists _, _; iFrame "# ∗".
-Qed.
-
-Theorem wp_sliding__posForAddr l σ (a: u64) :
-  {{{ is_sliding l σ }}}
-    sliding__posForAddr #l #a
-  {{{ (pos: u64) (ok: bool), RET (#pos, #ok);
-      is_sliding l σ ∗
-      ⌜if ok then int.val σ.(slidingM.start) ≤ int.val pos ≤ int.val (slidingM.endPos σ) ∧
-                  find_highest_index (update.addr <$> σ.(slidingM.log)) a = Some (slidingM.logIndex σ pos)
-      else find_highest_index (update.addr <$> σ.(slidingM.log)) a = None⌝
-  }}}.
-Proof.
-Admitted.
-
-Lemma readonly_log_update_mutable logSlice σ (pos: u64) u :
-  slidingM.wf σ ->
-  int.val σ.(slidingM.mutable) ≤ int.val pos ->
-  readonly_log logSlice σ -∗
-  readonly_log logSlice (set slidingM.log
-    (λ log : list update.t,
-      <[(int.nat pos - int.nat σ.(slidingM.start))%nat:=u]> log) σ).
-Proof.
-  iIntros (Hwf Hbound) "Hreadonly".
-  rewrite /readonly_log.
-  iExactEq "Hreadonly".
-  rewrite /slidingM.numMutable /=.
-  match goal with
-  | [ |- readonly (updates_slice_frag _ _ ?us1) =
-    readonly (updates_slice_frag _ _ ?us2) ] =>
-    replace us1 with us2; auto
-  end.
-  rewrite take_insert; auto.
-  word.
-Qed.
-
-Lemma numMutable_set_log f σ :
-  slidingM.numMutable (set slidingM.log f σ) =
-  slidingM.numMutable σ.
-Proof.
-  rewrite /slidingM.numMutable //=.
-Qed.
-
-Theorem option_fmap_nat_max (m: option nat) :
-  Nat.max 0 <$> m = m.
-Proof.
-  destruct m; auto.
-Qed.
-
-Theorem find_highest_index_insert_present `{!EqDecision A} (poss: list A) i pos pos' :
-  poss !! i = Some pos ->
-  find_highest_index (<[i := pos]> poss) pos' =
-  find_highest_index poss pos'.
-Proof.
-  intros Hlookup.
-  generalize dependent i.
-  induction poss; simpl; intros; auto.
-  destruct (decide (i = 0%nat)); subst.
-  - simpl.
-    inversion Hlookup; subst; clear Hlookup.
-    destruct (decide (pos' = pos')); try congruence.
-  - replace i with (S (i - 1)) in * by lia; simpl in *.
-    generalize dependent (i - 1)%nat; clear i; intros i Hlookup ?.
-    rewrite IHposs; eauto.
-Qed.
-
-Lemma addrPosMap_absorb_eq pos u u0 σ :
-  σ.(slidingM.log) !! slidingM.logIndex σ pos = Some u0 ->
-  u0.(update.addr) = u.(update.addr) ->
-  slidingM.addrPosMap
-    (set slidingM.log
-          (λ log : list update.t,
-                  <[(int.nat pos - int.nat σ.(slidingM.start))%nat:=u]> log) σ) =
-  slidingM.addrPosMap σ.
-Proof.
-  intros Hlookup Haddreq.
-  rewrite /slidingM.addrPosMap /=.
-  rewrite /compute_memLogMap.
-  f_equal.
-  apply map_eq; intros pos'.
-  rewrite !pos_indices_lookup.
-  f_equal.
-  rewrite list_fmap_insert.
-  rewrite find_highest_index_insert_present; auto.
-  rewrite list_lookup_fmap.
-  rewrite Hlookup /=; congruence.
-Qed.
-
-Theorem wp_sliding__update l σ (pos: u64) uv u :
-  (* must be an absorption update, since we don't update addrPos map *)
-  update.addr <$> σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u.(update.addr) ->
-  int.val σ.(slidingM.mutable) ≤ int.val pos ->
-  {{{ is_sliding l σ ∗ is_update uv 1 u }}}
-    sliding__update #l #pos (update_val uv)
-  {{{ RET #();
-      is_sliding l (set slidingM.log
-                        (λ log, <[ (int.nat pos - int.nat σ.(slidingM.start))%nat := u]> log) σ)
-  }}}.
-Proof.
-  iIntros (Hlookup Hmutable_bound Φ) "[Hsliding Hu] HΦ".
-  apply fmap_Some_1 in Hlookup as [u0 [Hlookup Haddreq]].
-  iNamed "Hsliding"; iNamed "Hinv".
-  iDestruct (memLog_sz with "log_mutable") as %Hsz.
-  wp_call.
-  wp_loadField. wp_loadField. wp_loadField. wp_loadField.
-  iNamed "log_mutable".
-  wp_apply wp_SliceSkip'.
-  { iPureIntro.
-    word. }
-  fold (slidingM.numMutable σ).
-  wp_apply (wp_SliceSet_updates with "[$log_mutable $Hu]").
-  { rewrite lookup_drop.
-    rewrite <- Hlookup.
-    f_equal.
-    word. }
-  iIntros "log_mutable".
-  iApply "HΦ".
-  iSplit.
-  - iPureIntro.
-    rewrite /slidingM.wf /=.
-    split_and; try word.
-    revert Hwf; len.
-  - iExists _, _; iFrame.
-    iSplitL "".
-    { iApply (readonly_log_update_mutable with "log_readonly"); auto. }
-    iSplitL "log_mutable".
-    + iSplit.
-      { iPureIntro; simpl; len. }
-      rewrite !numMutable_set_log /=.
-      rewrite -> drop_insert_le by len.
-      iExactEq "log_mutable".
-      rewrite /named.
-      f_equal.
-      f_equal.
-      word.
-    + iExactEq "is_addrPos".
-      rewrite /named.
-      f_equal.
-      erewrite addrPosMap_absorb_eq; eauto.
-Qed.
-
-(* TODO: should require that we aren't absorbing (uv.1 shouldn't appear in the
-mutable region) *)
-Theorem wp_sliding_append l σ uv u :
-  {{{ is_sliding l σ ∗ is_update uv 1 u }}}
-    sliding__append #l (update_val uv)
-  {{{ RET #(); is_sliding l (set slidingM.log (λ log, log ++ [u]) σ) }}}.
-Proof.
-  iIntros (Φ) "[Hsliding Hu] HΦ".
-  iNamed "Hsliding"; iNamed "Hinv".
-Admitted.
+  Qed.
+End slidingM.
 
 Definition memWrite_one memLog (u: update.t) : slidingM.t :=
   match find_highest_index (update.addr <$> memLog.(slidingM.log)) u.(update.addr) with
@@ -543,28 +54,6 @@ Definition memWrite_one memLog (u: update.t) : slidingM.t :=
 (* pure version of memWrite; equivalent to [log ++ upds], except for absorption *)
 Definition memWrite memLog (upds: list update.t): slidingM.t :=
   foldl memWrite_one memLog upds.
-
-Theorem wp_if_mutable l memLog (ok: bool) (pos: u64) :
-  {{{ is_sliding l memLog }}}
-    if: #ok then #pos ≥ struct.loadF sliding.S "mutable" #l else #false
-  {{{ RET #(bool_decide (ok = true ∧ int.val memLog.(slidingM.mutable) ≤ int.val pos));
-      is_sliding l memLog }}}.
-Proof.
-  iIntros (Φ) "Hs HΦ".
-  wp_if_destruct.
-  - iNamed "Hs".
-    iNamed "Hinv".
-    wp_loadField.
-    wp_pures.
-    iSpecialize ("HΦ" with "[-]").
-    { iFrame "% ∗".
-      iExists _, _; iFrame "# ∗". }
-    iExactEq "HΦ".
-    erewrite bool_decide_iff; eauto.
-    intuition auto.
-  - simpl.
-    iApply ("HΦ" with "[$]").
-Qed.
 
 Lemma memWrite_same_mutable_and_start memLog upds :
   (memWrite memLog upds).(slidingM.mutable) = memLog.(slidingM.mutable) ∧
@@ -585,206 +74,119 @@ Proof.
   apply memWrite_same_mutable_and_start.
 Qed.
 
+Lemma memWrite_same_start memLog upds :
+  (memWrite memLog upds).(slidingM.start) = memLog.(slidingM.start).
+Proof.
+  apply memWrite_same_mutable_and_start.
+Qed.
+
 Lemma memWrite_app1 memLog upds u :
   memWrite memLog (upds ++ [u]) = memWrite_one (memWrite memLog upds) u.
 Proof.
   rewrite /memWrite foldl_app //=.
 Qed.
 
-Theorem wp_sliding__memWrite l memLog bufs upds :
-  {{{ is_sliding l memLog ∗ updates_slice_frag bufs 1 upds }}}
-    sliding__memWrite #l (slice_val bufs)
-  {{{ RET #(); is_sliding l (memWrite memLog upds) }}}.
+Theorem apply_upds_app upds1 upds2 d :
+  apply_upds (upds1 ++ upds2) d =
+  apply_upds upds2 (apply_upds upds1 d).
 Proof.
-  iIntros (Φ) "(Hs&Hupds) HΦ".
-  wp_call.
-  wp_apply (wp_sliding__end with "Hs"); iIntros "Hs".
-  wp_apply wp_ref_to; [ val_ty | iIntros (pos_l) "pos" ].
-  rewrite /LogPosition.
-  wp_apply (wp_forSlicePrefix_updates_consume
-              (λ done todo,
-               "*" ∷ (∃ (pos_val: u64), "pos" ∷ pos_l ↦[uint64T] #pos_val) ∗
-               "Hs" ∷ is_sliding l (memWrite memLog done))%I
-           with "[] [$Hupds pos Hs]").
-  2: {
-    simpl; iFrame.
-    iExists _; iFrame.
-  }
-  { clear Φ.
-    iIntros (i uv u done todo).
-    iIntros "!>" (Φ) "(Hpre&Hupd&%Hiteration) HΦ". iNamed "Hpre".
-    wp_pures.
-    iDestruct (is_update_addr with "Hupd") as %Haddr_eq.
-    wp_apply (wp_sliding__posForAddr with "[$]").
-    iIntros (pos ok) "(Hs&%Hlookup)".
-    iDestruct (is_sliding_wf with "Hs") as %Hwf.
-    wp_pures.
-    wp_apply (wp_if_mutable with "Hs"); iIntros "Hs".
-    wp_if_destruct.
+  rewrite /apply_upds fold_left_app //.
+Qed.
 
-    (* absorption *)
-    - destruct Heqb as [-> Hpos_large].
-      destruct Hlookup as (HposBound&Hlookup).
-      wp_apply util_proof.wp_DPrintf.
-      wp_apply (wp_sliding__update with "[$Hs $Hupd]"); auto.
-      { destruct_and? Hlookup.
-        apply find_highest_index_ok' in Hlookup as [Hlookup Hhighest].
-        rewrite list_lookup_fmap in Hlookup.
-        congruence. }
-      iIntros "Hs".
-      iApply "HΦ".
-      iSplitL "pos".
-      { iExists _; iFrame. }
-      rewrite memWrite_app1.
-      set (memLog':=memWrite memLog done) in *.
-      iExactEq "Hs".
-      rewrite /named.
-      f_equal.
-      rewrite /memWrite_one.
-      replace u.(update.addr).
-      rewrite Hlookup.
-      destruct (decide
-      (int.val memLog'.(slidingM.mutable) - int.val memLog'.(slidingM.start)
-       ≤ slidingM.logIndex memLog' pos)); [ auto | word ].
-
-    (* append *)
-    - wp_bind (If _ _ _).
-      wp_apply (wp_If_join emp).
-      { iSplit.
-        - iIntros "[-> Hwp]".
-          wp_apply util_proof.wp_DPrintf.
-          iApply "Hwp"; auto.
-        - iIntros "[-> Hwp]".
-          wp_apply util_proof.wp_DPrintf.
-          iApply "Hwp"; auto.
-      }
-      iIntros "_"; wp_pures.
-      wp_apply (wp_sliding_append with "[$Hs $Hupd]"); iIntros "Hs".
-      wp_pures.
-      wp_load.
-      wp_store.
-      iApply "HΦ".
-      iFrame.
-      iSplitL "pos".
-      { iExists _; iFrame. }
-      iExactEq "Hs".
-      rewrite /named.
-      f_equal.
-      rewrite memWrite_app1.
-      rewrite /memWrite_one.
-      replace (u.(update.addr)).
-      destruct_with_eqn (find_highest_index (update.addr <$> (memWrite memLog done).(slidingM.log)) uv.1); auto.
-      destruct (decide
-                  (int.val (memWrite memLog done).(slidingM.mutable) -
-                  int.val (memWrite memLog done).(slidingM.start) ≤ n)); auto.
-      exfalso.
-      destruct ok; try congruence.
-      destruct Hlookup as [? Heq]; inversion Heq; subst.
-      contradiction Heqb.
+Theorem find_highest_index_Some_split `{EqDecision A} (l: list A) (x: A) n :
+  find_highest_index l x = Some n ->
+  exists l1 l2, l = l1 ++ [x] ++ l2 ∧
+           x ∉ l2 ∧
+           length l1 = n.
+Proof.
+  revert n.
+  induction l; simpl; intros.
+  - congruence.
+  - destruct matches in *; try inversion H; subst.
+    + destruct (IHl n0) as (l1 & l2 & (-> & Hnotin & <-)); auto.
+      exists (a :: l1), l2; eauto.
+    + exists [], l.
       split; auto.
-      word.
+      eapply find_highest_index_none_not_in in Heqo; auto.
+    + apply fmap_Some_1 in H as [n' [? ->]].
+      eapply IHl in H as (l1 & l2 & (-> & Hnotin & <-)).
+      exists (a::l1), l2; eauto.
+Qed.
+
+Theorem apply_upds_insert_other upds (z: Z) (a: u64) b d :
+  z ≠ int.val a →
+  apply_upds upds (<[int.val a := b]> d) !! z =
+  apply_upds upds d !! z.
+Proof.
+  revert z a b d.
+  induction upds; simpl; intros.
+  - rewrite lookup_insert_ne; auto.
+  - destruct a as [a b'].
+    destruct (decide (int.val a = int.val a0)).
+    + rewrite e.
+      rewrite insert_insert //.
+    + rewrite insert_commute; auto.
+Qed.
+
+Theorem apply_upds_lookup_insert_highest upds (a: u64) b d :
+  a ∉ update.addr <$> upds →
+  apply_upds upds (<[int.val a:=b]> d) !! int.val a = Some b.
+Proof.
+  revert a b d.
+  induction upds; simpl; intros.
+  - rewrite lookup_insert //.
+  - destruct a as [a b']; simpl in *.
+    apply not_elem_of_cons in H as [Hneq Hnotin].
+    rewrite apply_upds_insert_other; auto.
+    apply not_inj; auto.
+Qed.
+
+Theorem apply_upds_insert_commute upds (a: u64) b b0 d :
+  a ∉ update.addr <$> upds →
+  apply_upds upds (<[int.val a := b]> d) =
+  <[int.val a := b]> (apply_upds upds (<[int.val a := b0]> d)).
+Proof.
+  intros Hnotin.
+  apply map_eq; intros z.
+  destruct (decide (z = int.val a)); subst.
+  2: {
+    rewrite apply_upds_insert_other; auto.
+    rewrite lookup_insert_ne; auto.
+    rewrite apply_upds_insert_other; auto.
   }
-  iIntros "HI"; iNamed "HI".
-  iApply "HΦ"; iFrame.
+  rewrite lookup_insert.
+  rewrite apply_upds_lookup_insert_highest; auto.
 Qed.
 
-Theorem wp_sliding__takeFrom l σ (start: u64) :
-  int.val σ.(slidingM.start) ≤ int.val start ≤ int.val σ.(slidingM.mutable) ->
-  {{{ is_sliding l σ }}}
-    sliding__takeFrom #l #start
-  {{{ q s, RET (slice_val s); is_sliding l σ ∗
-           let from := slidingM.logIndex σ start in
-           let to := slidingM.logIndex σ σ.(slidingM.mutable) in
-           updates_slice_frag s q (subslice from to σ.(slidingM.log)) }}}.
+Theorem memWrite_apply_upds memLog upds d :
+  apply_upds (memWrite memLog upds).(slidingM.log) d =
+  apply_upds (memLog.(slidingM.log) ++ upds) d.
 Proof.
-Admitted.
-
-Theorem wp_sliding__takeTill l σ (endPos: u64) :
-  int.val σ.(slidingM.start) ≤ int.val endPos ≤ int.val σ.(slidingM.mutable) ->
-  {{{ is_sliding l σ }}}
-    sliding__takeTill #l #endPos
-  {{{ q s, RET (slice_val s); is_sliding l σ ∗
-           let to := slidingM.logIndex σ endPos in
-           updates_slice_frag s q (take to σ.(slidingM.log)) }}}.
-Proof.
-Admitted.
-
-Theorem wp_sliding__deleteFrom l σ (newStart: u64) :
-  int.val σ.(slidingM.start) ≤ int.val newStart ≤ int.val σ.(slidingM.mutable) ->
-  {{{ is_sliding l σ }}}
-    sliding__deleteFrom #l #newStart
-  {{{ RET #(); is_sliding l
-        (set slidingM.log (drop (slidingM.logIndex σ newStart)) σ) }}}.
-Proof.
-Admitted.
-
-Lemma numMutable_after_clear σ :
-  slidingM.wf σ ->
-  slidingM.numMutable (set slidingM.mutable (λ _ : u64, slidingM.endPos σ) σ) =
-  U64 (length σ.(slidingM.log)).
-Proof.
-  intros Hwf.
-  rewrite /slidingM.numMutable /slidingM.endPos /=.
-  word_cleanup.
-  word.
+  revert d memLog.
+  induction upds; simpl; intros.
+  - rewrite app_nil_r //.
+  - rewrite IHupds.
+    rewrite cons_middle.
+    rewrite app_assoc.
+    rewrite !apply_upds_app.
+    f_equal.
+    destruct a as [a b]; simpl.
+    rewrite /memWrite_one.
+    destruct matches; simpl;
+      (* the non-aborption cases are easy *)
+      try rewrite apply_upds_app; auto.
+    eapply find_highest_index_Some_split in Heqo as (poss1 & poss2 & (Heq & Hnotin & Hlen)).
+    apply fmap_app_inv in Heq as (upd1 & upd2' & (-> & Heq%eq_sym & ->)).
+    simpl in Heq, Hnotin.
+    apply fmap_cons_inv in Heq as (u & upd2 & (-> & -> & ->)).
+    destruct u as [a b'].
+    simpl in Hnotin.
+    autorewrite with len in Hlen; subst.
+    rewrite -> insert_app_r_alt by len.
+    rewrite minus_diag.
+    simpl.
+    rewrite !apply_upds_app.
+    simpl.
+    generalize dependent (apply_upds upd1 d); intros d'.
+    apply apply_upds_insert_commute; auto.
 Qed.
-
-Theorem wp_sliding__clearMutable l σ :
-  {{{ is_sliding l σ }}}
-    sliding__clearMutable #l
-  {{{ RET #(); is_sliding l (set slidingM.mutable (λ _, slidingM.endPos σ) σ) }}}.
-Proof.
-  iIntros (Φ) "Hsliding HΦ".
-  wp_call.
-  wp_apply (wp_sliding__end with "Hsliding"); iIntros "Hsliding".
-  iNamed "Hsliding"; iNamed "Hinv".
-  rewrite -wp_fupd.
-  wp_storeField.
-  iNamed "log_mutable".
-  unshelve iMod (readonly_alloc_1 with "log_mutable") as "readonly_new".
-  2: apply _.
-  rewrite /readonly_log.
-  iDestruct (readonly_extend with "log_readonly readonly_new") as "log_readonly'".
-  iClear "log_readonly".
-  iModIntro.
-  iApply "HΦ".
-  iSplit.
-  - iPureIntro.
-    split_and!; simpl; try word.
-  - simpl.
-    iExists _, _; iFrame.
-    iSplitL.
-    + rewrite /readonly_log.
-      simpl.
-      iApply (readonly_iff with "log_readonly'").
-      intros q; simpl.
-      rewrite numMutable_after_clear; auto.
-      iSplit.
-      { iIntros "[Hupds1 Hupds2]".
-        iDestruct (updates_slice_frag_combine with "[$Hupds1 $Hupds2]") as "Hupds".
-        { word. }
-        rewrite take_ge; len.
-        iDestruct "Hupds" as (bks) "[Hs Hbks]".
-        iExists _; iFrame.
-        admit. (* taking all of a slice preserves is_slice_small (removes capacity) *)
-      }
-      iIntros "Hupds".
-      rewrite {1}take_ge; len.
-      iDestruct (updates_slice_frag_split _ _ (slidingM.numMutable σ) with "Hupds") as "[Hupds1 Hupds2]".
-      { simpl; word. }
-      iFrame.
-      iDestruct "Hupds1" as (bks) "[Hs Hbks]".
-      iExists _; iFrame.
-      admit. (* similar, took whole slice before skipping *)
-    + rewrite /mutable_log /=.
-      iSplit.
-      { iPureIntro; word. }
-      rewrite numMutable_after_clear; auto.
-      rewrite drop_ge; len.
-      iExists nil; simpl.
-      iSplit; auto.
-      iApply is_slice_small_nil.
-      simpl; word.
-Admitted.
-
-End goose_lang.

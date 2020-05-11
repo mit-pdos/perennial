@@ -17,17 +17,16 @@ Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
 
+(* TODO: prove this using new compute_memLog, probably has enough theorems to do
+it *)
 Lemma memLogMap_ok_memLog_lookup memStart (memLog: list update.t) a i :
   int.val memStart + Z.of_nat (length memLog) < 2^64 ->
-  map_get (compute_memLogMap memLog memStart ∅) a = (i, true) ->
+  map_get (compute_memLogMap memLog memStart) a = (i, true) ->
   ∃ b, memLog !! int.nat (word.sub i memStart) = Some (update.mk a b)
   (* also, i is the highest index such that this is true *).
 Proof.
   intros Hbound Hlookup.
   apply map_get_true in Hlookup.
-  assert (int.val memStart ≤ int.val i) by admit. (* from how memLogMap is computed and lack of overflow *)
-  replace (int.nat (word.sub i memStart)) with (int.nat i - int.nat memStart)%nat by word.
-  (* this is hard, induction is hard with this left fold *)
 Admitted.
 
 Opaque struct.t.

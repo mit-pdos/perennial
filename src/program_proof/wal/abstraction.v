@@ -49,16 +49,106 @@ Definition addr_wf (a: u64) (d: disk) :=
   ∃ (b: Block), d !! (int.val a) = Some b.
 
 Definition addrs_wf (updates: list update.t) (d: disk) :=
-  forall i u, updates !! i = Some u -> addr_wf (u.(update.addr)) d.
+  Forall (λ u, addr_wf u.(update.addr) d) updates.
+
+(** * Monotonic lists *)
+Section list_mono.
+  Context {A} (ltR: A → A → Prop) {Htrans: Transitive ltR}.
+  Implicit Types (l: list A).
+  Definition list_mono l :=
+    ∀ (i1 i2: nat) (x1 x2: A)
+      (Hlt: (i1 < i2)%nat)
+      (Hx1: l !! i1 = Some x1)
+      (Hx2: l !! i2 = Some x2),
+      ltR x1 x2.
+
+  Theorem list_mono_app l1 l2 :
+    list_mono (l1 ++ l2) <->
+    list_mono l1 ∧ list_mono l2 ∧
+    (∀ i1 i2 x1 x2
+       (Hx1: l1 !! i1 = Some x1)
+       (Hx2: l2 !! i2 = Some x2),
+        ltR x1 x2).
+  Proof.
+    split; intros.
+    - split_and!.
+      + rewrite /list_mono; intros **.
+        apply (H i1 i2 x1 x2); auto.
+        { rewrite lookup_app_l; auto.
+          eapply lookup_lt_Some; eauto. }
+        { rewrite lookup_app_l; auto.
+          eapply lookup_lt_Some; eauto. }
+      + rewrite /list_mono; intros.
+        apply (H (length l1 + i1)%nat (length l1 + i2)%nat x1 x2).
+        { lia. }
+        { rewrite lookup_app_r; auto; try lia.
+          replace (length l1 + i1 - length l1)%nat with i1 by lia; auto. }
+        { rewrite lookup_app_r; auto; try lia.
+          replace (length l1 + i2 - length l1)%nat with i2 by lia; auto. }
+      + intros.
+        apply (H i1 (length l1 + i2)%nat x1 x2).
+        { apply lookup_lt_Some in Hx1.
+          lia. }
+        { rewrite lookup_app_l; auto.
+          eapply lookup_lt_Some; eauto. }
+        { rewrite lookup_app_r; auto; try lia.
+          replace (length l1 + i2 - length l1)%nat with i2 by lia; auto. }
+    - destruct_and! H.
+      hnf; intros **.
+      apply lookup_app_Some in Hx1.
+      apply lookup_app_Some in Hx2.
+      intuition idtac.
+      + eapply H0; eauto.
+      + eapply H2; eauto.
+      + apply lookup_lt_Some in H4.
+        apply lookup_lt_Some in H1.
+        lia.
+      + eapply H; [ | eauto | eauto ].
+        lia.
+  Qed.
+
+  Theorem list_mono_singleton (x:A) :
+    list_mono [x].
+  Proof.
+    hnf; intros.
+    apply lookup_lt_Some in Hx1.
+    apply lookup_lt_Some in Hx2.
+    simpl in *.
+    lia.
+  Qed.
+
+End list_mono.
 
 Definition wal_wf (s : log_state.t) :=
   addrs_wf (log_state.updates s) s.(log_state.d) ∧
   (* monotonicity of txnids  *)
-  (forall (pos1 pos2: u64) (txn_id1 txn_id2: nat),
-      (txn_id1 < txn_id2)%nat ->
-      fst <$> s.(log_state.txns) !! txn_id1 = Some pos1 ->
-      fst <$> s.(log_state.txns) !! txn_id2 = Some pos2 ->
-      (* can get the same handle for two transactions due to absorption or
-        empty transactions *)
-      int.val pos1 ≤ int.val pos2) ∧
+  list_mono (λ pos1 pos2, int.val pos1 ≤ int.val pos2) (fst <$> s.(log_state.txns)) ∧
   s.(log_state.installed_lb) ≤ s.(log_state.durable_lb) ≤ length s.(log_state.txns).
+
+(** * apply_upds: interpret txns on top of disk *)
+Definition apply_upds (upds: list update.t) (d: disk): disk :=
+  fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
+
+(** * Properties of above definitions *)
+
+Theorem txn_upds_app txn1 txn2:
+  txn_upds (txn1 ++ txn2) =
+  txn_upds txn1 ++ txn_upds txn2.
+Proof.
+  rewrite /txn_upds.
+  rewrite -concat_app -fmap_app //=.
+Qed.
+
+Theorem txn_upds_cons txn txnl:
+  txn_upds (txn :: txnl) =
+  txn_upds [txn] ++ txn_upds txnl.
+Proof.
+  rewrite -txn_upds_app //=.
+Qed.
+
+Theorem txn_upds_single pos upds :
+  txn_upds [(pos, upds)] = upds.
+Proof.
+  rewrite /txn_upds /=.
+  rewrite app_nil_r //.
+Qed.

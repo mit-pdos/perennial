@@ -554,11 +554,11 @@ Section crash.
     rewrite /diskG0. rewrite Heq1. eauto.
   Qed.
 
-  Global Instance disk_mapsto_into_crash l q v:
-    IntoCrash (λ _ _, l d↦{q} v)%I (λ _ _, l d↦{q} v)%I.
-  Proof. intros ??. apply disk_mapsto_post_crash. Qed.
+  Global Instance disk_mapsto_into_crash `{!heapG Σ} l q v:
+    IntoCrash (l d↦{q} v)%I (λ hG, l d↦{q} v)%I.
+  Proof. apply disk_mapsto_post_crash. Qed.
 
-  Global Instance disk_array_into_crash l vs:
-    IntoCrash (λ _ _, l d↦∗ vs)%I (λ _ _, l d↦∗ vs)%I.
+  Global Instance disk_array_into_crash `{!heapG Σ} l vs:
+    IntoCrash (l d↦∗ vs)%I (λ _, l d↦∗ vs)%I.
   Proof. apply _. Qed.
 End crash.

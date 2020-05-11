@@ -196,6 +196,18 @@ Proof using HAff.
   * rewrite Nat_iter_S. iMod "H". iMod "H". eauto.
 Qed.
 
+Lemma step_fupdN_inner_plus' E1 k1 k2 (P: PROP):
+  (|={E1,∅}_k1=> |={∅,∅}_k2=> P)
+  ⊢ |={E1,∅}_(k1+k2)=> P.
+Proof using HAff.
+  rewrite Nat_iter_add.
+  iIntros "H". iMod "H". iModIntro.
+  iApply (step_fupdN_mono with "H"). iIntros "H".
+  destruct k2.
+  * simpl. do 3 iMod "H". eauto.
+  * rewrite Nat_iter_S. iMod "H". iMod "H". eauto.
+Qed.
+
 Lemma step_fupdN_ne E1 E2 n:
   NonExpansive (λ (P: PROP), |={E1, E2}▷=>^n P)%I.
 Proof.

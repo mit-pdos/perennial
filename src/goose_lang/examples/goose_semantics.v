@@ -441,6 +441,40 @@ Definition testMapSize: val :=
     "ok" <-[boolT] (![boolT] "ok") && (MapLen "m" = #3);;
     ![boolT] "ok".
 
+(* multiple_return.go *)
+
+Definition returnTwo: val :=
+  rec: "returnTwo" <> :=
+    (#2, #3).
+
+Definition testReturnTwo: val :=
+  rec: "testReturnTwo" <> :=
+    let: ("x", "y") := returnTwo #() in
+    ("x" = #2) && ("y" = #3).
+
+Definition testAnonymousBinding: val :=
+  rec: "testAnonymousBinding" <> :=
+    let: (<>, "y") := returnTwo #() in
+    ("y" = #3).
+
+Definition returnThree: val :=
+  rec: "returnThree" <> :=
+    (#2, #true, #(U32 1)).
+
+Definition testReturnThree: val :=
+  rec: "testReturnThree" <> :=
+    let: (("x", "y"), "z") := returnThree #() in
+    ("x" = #2) && ("y" = #true) && ("z" = #(U32 1)).
+
+Definition returnFour: val :=
+  rec: "returnFour" <> :=
+    (#2, #true, #(U32 1), #7).
+
+Definition testReturnFour: val :=
+  rec: "testReturnFour" <> :=
+    let: ((("x", "y"), "z"), "w") := returnFour #() in
+    ("x" = #2) && ("y" = #true) && ("z" = #(U32 1)) && ("w" = #7).
+
 (* nil.go *)
 
 Definition failing_testCompareSliceToNil: val :=

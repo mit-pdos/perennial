@@ -97,6 +97,16 @@ Proof.
       eauto.
 Qed.
 
+Theorem find_highest_index_none_not_in `{!EqDecision A} (poss: list A) (pos: A) :
+  find_highest_index poss pos = None ->
+  pos ∉ poss.
+Proof.
+  intros Hlookup.
+  intros Hin.
+  apply elem_of_list_lookup_1 in Hin as [i Hlookup'].
+  eapply find_highest_index_none in Hlookup; eauto.
+Qed.
+
 Theorem find_highest_index_none_txn txns pos :
   find_highest_index txns.*1 pos = None ->
   forall txn_id, ~is_txn txns txn_id pos.

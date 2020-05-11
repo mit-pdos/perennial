@@ -86,7 +86,7 @@ Proof.
   wpc_pures; eauto.
   wpc_bind (Log__mkHdr _).
   wpc_frame "Hhdr HΦ".
-  { iIntros "(Hhdr&HΦ)"; crash_case; iFrame. }
+  { crash_case; iFrame. }
   wp_apply (wp_mkHdr with "[$]").
   iIntros (l cap b) "(Hb&%&Hfields) (Hhdr&HΦ)".
   iDestruct "Hhdr" as (b0) "(Hd0&%)".
@@ -344,20 +344,17 @@ Lemma wpc_SliceGet stk k E1 E2 s t q vs (i: u64) v0 :
   {{{ True }}}.
 Proof.
   iIntros (Φ Φc) "[Hs %] HΦ".
+  rewrite /SliceGet.
+  wpc_pures; first auto.
   wpc_frame "HΦ".
-  { iIntros "HΦ".
-    crash_case.
-    auto. }
-  wp_apply (wp_SliceGet with "[$Hs]").
+  { by crash_case. }
+  iApply (wp_SliceGet_body with "[$Hs]").
   { eauto. }
-  iIntros "[Hs %] HΦ".
+  iIntros "!> [Hs %] HΦ". iNamed "HΦ".
   iRight in "HΦ".
-  iAssert (▷ Φ v0)%I with "[Hs HΦ]" as "HΦ'".
-  { iApply "HΦ".
-    iSplitL; auto.
-  }
-  (* TODO: is there a way to strip the later? *)
-Admitted.
+  iApply "HΦ".
+  iSplitL; auto.
+Qed.
 
 Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s t q vs (body: val) :
   (∀ (i: u64) (x: val),
@@ -594,7 +591,7 @@ Proof.
   wpc_pures; first by eauto.
   wpc_if_destruct; wpc_pures; try by eauto.
   - wpc_frame "Hdisk HΦ".
-    { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
+    { iApply "HΦ". eauto. }
     wp_apply wp_new_free_lock; iIntros (ml) "_".
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
@@ -605,12 +602,12 @@ Proof.
       word. }
     wpc_bind (struct.alloc _ _).
     wpc_frame "Hdisk HΦ".
-    { iIntros "(Hdisk&HΦ)". iApply "HΦ". eauto. }
+    { iApply "HΦ". eauto. }
     wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
     wp_pures.
-    iIntros "(Hdisk&HΦ)".
+    iIntros "H". iNamed "H".
     wpc_pures; first by eauto.
     iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
     iDestruct (block_to_is_hdr with "Hd0") as (sz0 disk_sz0) "Hhdr".
@@ -670,20 +667,20 @@ Proof.
   wpc_pures.
   { iApply (is_log_crash_l with "Hlog"). }
   wpc_bind (struct.loadF _ _ _).
-  wpc_frame "Hlog HΦ"; [ iIntros "[Hlog HΦ]" | ].
+  wpc_frame "Hlog HΦ".
   { crash_case.
     iApply (is_log_crash_l with "Hlog"). }
   wp_apply (wp_loadField with "Hsz"); iIntros "Hsz".
-  iIntros "[Hlog HΦ]".
+  iIntros "H"; iNamed "H".
 
   wpc_pures.
   { iApply (is_log_crash_l with "Hlog"). }
   wpc_bind (struct.loadF _ _ _).
-  wpc_frame "Hlog HΦ"; [ iIntros "[Hlog HΦ]" | ].
+  wpc_frame "Hlog HΦ".
   { crash_case.
     iApply (is_log_crash_l with "Hlog"). }
   wp_apply (wp_loadField with "Hdisk_sz"); iIntros "Hdisk_sz".
-  iIntros "[Hlog HΦ]".
+  iIntros "H"; iNamed "H".
 
   wpc_pures.
   { iApply (is_log_crash_l with "Hlog"). }
@@ -746,7 +743,7 @@ Proof.
 
         (* TODO: finish proof *)
         wpc_bind (struct.storeF _ _ _ _).
-        wpc_frame "Hhdr Hlog Hnew Hfree HΦ"; [ iIntros "(Hhdr&Hlog&Hnew&Hfree&HΦ)" | ].
+        wpc_frame "Hhdr Hlog Hnew Hfree HΦ".
         { crash_case.
           iApply is_log_crash_l.
           iApply (is_log_split with "[$] [$] Hnew Hfree [%]"); len. }
@@ -755,7 +752,7 @@ Proof.
         wp_apply wp_slice_len.
         wp_pures.
         wp_storeField.
-        iIntros "(Hhdr&Hlog&Hnew&Hfree&HΦ)".
+        iIntros "H". iNamed "H".
 
         wpc_pures.
         { iApply is_log_crash_l.
@@ -814,11 +811,9 @@ Proof.
   { iApply (is_log_crash_l with "[$]"). }
   wpc_bind (struct.storeF _ _ _ _).
   wpc_frame "Hlog HΦ".
-  { iIntros "(Hlog&HΦ)".
-    crash_case.
-    iApply (is_log_crash_l with "[$]"). }
+  { crash_case. iApply (is_log_crash_l with "[$]"). }
   wp_storeField.
-  iIntros "(Hlog&HΦ)".
+  iIntros "H"; iNamed "H".
   wpc_pures.
   { iApply (is_log_crash_l with "[$]"). }
   iDestruct "Hlog" as "(Hhdr&Hlog&%&Hfree)".
@@ -860,7 +855,7 @@ Proof.
   iIntros (s) "[Hd0 Hs]".
   iDestruct "Hhdr" as %Hhdr.
   wpc_frame "Hd0 HΦ Hlog_rest".
-  { iIntros "(?&HΦ&?)". iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame; eauto. }
+  { iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame; eauto. }
   wp_steps.
   iDestruct (is_slice_sz with "Hs") as %Hsz.
   rewrite length_Block_to_vals in Hsz.
@@ -893,30 +888,44 @@ Qed.
 
 End heap.
 
+Section crash.
+Context `{!heapG Σ}.
+
 Instance is_hdr_durable sz disk_sz:
-  IntoCrash (λ _ _, is_hdr sz disk_sz) (λ _ _, is_hdr sz disk_sz).
+  IntoCrash (is_hdr sz disk_sz) (λ _, is_hdr sz disk_sz).
 Proof. apply _. Qed.
 
 Instance is_log'_durable sz disk_sz vs:
-  IntoCrash (λ _ _, is_log' sz disk_sz vs) (λ _ _, is_log' sz disk_sz vs).
+  IntoCrash (is_log' sz disk_sz vs) (λ _, is_log' sz disk_sz vs).
 Proof. apply _. Qed.
 
 Instance crashed_log_durable bs:
-  IntoCrash (λ _ _, crashed_log bs) (λ _ _, crashed_log bs).
+  IntoCrash (crashed_log bs) (λ _, crashed_log bs).
 Proof. apply _. Qed.
 
 Instance uninit_log_durable sz:
-  IntoCrash (λ _ _, uninit_log sz) (λ _ _, uninit_log sz).
+  IntoCrash (uninit_log sz) (λ _, uninit_log sz).
 Proof. apply _. Qed.
 
 Instance unopened_log_durable sz:
-  IntoCrash (λ _ _, unopened_log sz) (λ _ _, unopened_log sz).
+  IntoCrash (unopened_log sz) (λ _, unopened_log sz).
 Proof. apply _. Qed.
 
-Instance typed_ptsto_into_crash l descr val:
-  IntoCrash (λ _ _, l ↦[descr] val)%I (λ _ _, True)%I.
-Proof. iIntros (??) "H". iIntros (???). eauto. Qed.
+Instance ptsto_log_into_crash l vs:
+  IntoCrash (ptsto_log l vs) (λ _, crashed_log vs).
+Proof.
+  rewrite /IntoCrash.
+  iIntros "HP". iDestruct "HP" as (??) "(H1&H2)".
+  (* log_fields gets cleared because it's not durable, is_log' sticks around *)
+  iCrash. iExists _, _. eauto.
+Qed.
 
-Instance ptsto_log_post_crash (l:loc) (vs:list Block):
-  IntoCrash (λ _ _, ptsto_log l vs) (λ _ _, crashed_log vs).
-Proof. Abort.
+Lemma ptsto_log_into_crash_test l vs:
+  ptsto_log l vs -∗ post_crash (λ hG, crashed_log vs).
+Proof.
+  iIntros "HP".
+  (* ptsto_log gets transformed into crashed_log when we go under the modality *)
+  iCrash. eauto.
+Qed.
+
+End crash.
