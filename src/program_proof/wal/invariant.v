@@ -49,7 +49,7 @@ Record wal_names := mkWalNames
     start_avail_name : gname;
   }.
 
-Instance _eta_wal_names : Settable _ :=
+Global Instance _eta_wal_names : Settable _ :=
   settable! mkWalNames <circ_name; lock_name; cs_name; txns_ctx_name; txns_name;
                         new_installed_name; being_installed_name; diskEnd_avail_name; start_avail_name>.
 
