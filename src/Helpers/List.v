@@ -131,3 +131,12 @@ Proof.
   rewrite drop_length take_length.
   lia.
 Qed.
+
+Theorem subslice_app_1 {A} n m (l1 l2: list A) :
+  (m ≤ length l1)%nat →
+  subslice n m (l1 ++ l2) = subslice n m l1.
+Proof.
+  intros.
+  rewrite /subslice.
+  rewrite take_app_le; auto.
+Qed.

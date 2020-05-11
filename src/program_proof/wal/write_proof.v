@@ -122,6 +122,17 @@ Proof.
   lia.
 Qed.
 
+Lemma memWrite_memEnd_bound σ upds :
+  slidingM.memEnd σ ≤
+  slidingM.memEnd (memWrite σ upds) ≤
+  slidingM.memEnd σ + length upds.
+Proof.
+  pose proof (memWrite_length_bound σ upds).
+  rewrite /slidingM.memEnd.
+  rewrite memWrite_same_start.
+  lia.
+Qed.
+
 Lemma is_mem_memLog_endpos_highest σ txns start_txn_id upds :
   is_mem_memLog σ txns start_txn_id ->
   (forall pos txn_id, is_txn txns txn_id pos -> int.val pos ≤ slidingM.memEnd (memWrite σ upds)).
@@ -134,6 +145,19 @@ Proof.
   rewrite /slidingM.memEnd in H |- *.
   rewrite memWrite_same_start.
   lia.
+Qed.
+
+Theorem memWrite_one_wf σ u :
+  int.val σ.(slidingM.start) + S (length σ.(slidingM.log)) < 2^64 ->
+  slidingM.wf σ ->
+  slidingM.wf (memWrite_one σ u).
+Proof.
+  rewrite /slidingM.wf.
+  intros.
+  pose proof (memWrite_one_length_bound σ u).
+  destruct_and!; split_and!;
+              rewrite ?memWrite_one_same_mutable ?memWrite_one_same_start;
+    auto; lia.
 Qed.
 
 Theorem memWrite_wf σ upds :
@@ -169,6 +193,109 @@ Proof.
   rewrite /locked_wf; intros.
   rewrite !memWrite_same_mutable !memWrite_same_start.
   destruct_and!; split_and!; auto.
+Qed.
+
+Lemma is_mem_memLog_append (bs : list update.t) (σ : locked_state) (σs : log_state.t) (memStart_txn_id : nat) :
+    slidingM.wf (memWrite σ.(memLog) bs) →
+    (memStart_txn_id ≤ length σs.(log_state.txns))%nat →
+    is_mem_memLog σ.(memLog) σs.(log_state.txns) memStart_txn_id →
+    is_mem_memLog (memWrite σ.(memLog) bs)
+                    (σs.(log_state.txns) ++ [(slidingM.endPos (memWrite σ.(memLog) bs), bs)])
+                    memStart_txn_id.
+Proof.
+  intros Hwf HmemStart_bound.
+  rewrite /is_mem_memLog /has_updates.
+  intros [Hupdates Hpos_bound].
+  split.
+  - rewrite -> drop_app_le by auto.
+    rewrite txn_upds_app.
+    rewrite memWrite_apply_upds.
+    rewrite !apply_upds_app.
+    simpl.
+    rewrite Hupdates //.
+  - rewrite fmap_app.
+    apply Forall_app; split.
+    + eapply Forall_impl; eauto.
+      simpl; intros.
+      pose proof (memWrite_memEnd_bound σ.(memLog) bs).
+      word.
+    + apply Forall_singleton.
+      rewrite slidingM.memEnd_ok; auto.
+      lia.
+Qed.
+
+Hint Rewrite memWrite_one_same_start memWrite_one_same_mutable : sliding.
+Hint Rewrite memWrite_same_start memWrite_same_mutable : sliding.
+
+Ltac sliding := autorewrite with sliding; try done.
+
+Definition numMutableN (memLog: slidingM.t): nat :=
+  (int.nat memLog.(slidingM.mutable) - int.nat memLog.(slidingM.start))%nat.
+
+Theorem memWrite_one_same_numMutableN memLog u :
+  numMutableN (memWrite_one memLog u) = numMutableN memLog.
+Proof.
+  rewrite /numMutableN; sliding.
+Qed.
+
+Theorem memWrite_same_numMutableN memLog upds :
+  numMutableN (memWrite memLog upds) = numMutableN memLog.
+Proof.
+  rewrite /numMutableN; sliding.
+Qed.
+
+Lemma memWrite_one_preserves_mutable memLog u :
+  slidingM.wf memLog →
+  take (numMutableN (memWrite_one memLog u)) (memWrite_one memLog u).(slidingM.log) =
+  take (numMutableN memLog) memLog.(slidingM.log).
+Proof.
+  intros Hwf.
+  rewrite /memWrite_one /numMutableN.
+  destruct matches; simpl.
+  - rewrite -> take_insert by lia; auto.
+  - rewrite -> take_app_le by word; auto.
+  - rewrite -> take_app_le by word; auto.
+Qed.
+
+Lemma memWrite_preserves_mutable' memLog upds :
+  slidingM.wf memLog ->
+  int.val memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
+  take
+    (numMutableN (memWrite memLog upds))
+    (memWrite memLog upds).(slidingM.log) =
+  take
+    (numMutableN memLog)
+    memLog.(slidingM.log).
+Proof.
+  intros Hwf Hoverflow.
+  generalize dependent memLog.
+  induction upds; simpl; auto; intros.
+  rewrite IHupds; sliding.
+  - rewrite memWrite_one_preserves_mutable; auto.
+  - eapply memWrite_one_wf; eauto; try lia.
+  - pose proof (memWrite_one_length_bound memLog a); lia.
+Qed.
+
+Lemma memWrite_preserves_mutable memLog upds :
+  slidingM.wf memLog ->
+  int.val memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
+  take
+    (numMutableN memLog)
+    (memWrite memLog upds).(slidingM.log) =
+  take
+    (numMutableN memLog)
+    memLog.(slidingM.log).
+Proof.
+  intros Hwf Hoverflow.
+  pose proof (memWrite_preserves_mutable' memLog upds) as Hwf'.
+  rewrite memWrite_same_numMutableN in Hwf'; eauto.
+Qed.
+
+Lemma numMutableN_ok memLog :
+  slidingM.wf memLog ->
+  int.nat (slidingM.numMutable memLog) = numMutableN memLog.
+Proof.
+  rewrite /numMutableN; intros; word.
 Qed.
 
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
@@ -258,40 +385,46 @@ Proof.
       - iNamed "Hfields". iNamed "Hfield_ptsto".
         wp_loadField.
         wp_apply (wp_WalogState__doMemAppend with "[$His_memLog $Hbufs]").
+        assert (slidingM.wf σ.(memLog)).
+        { destruct Hlocked_wf; auto. }
         set (memLog' := memWrite σ.(memLog) bs).
         assert (slidingM.wf memLog').
         { subst memLog'.
-          apply memWrite_wf; [ word | ].
-          destruct Hlocked_wf; auto. }
+          apply memWrite_wf; [ word | auto ]. }
         iNamed 1.
         iDestruct "Hwal" as "[Hwal Hcirc]".
         rewrite -wp_fupd.
         wp_store.
         wp_bind Skip.
-        iInv "Hwal" as (σ') "[Hinner HP]".
+        iInv "Hwal" as (σs) "[Hinner HP]".
         wp_call.
         iDestruct (is_wal_wf with "Hinner") as %Hwal_wf.
         iDestruct "Hsim" as "[Hsim _]".
         iNamed "HmemLog_linv".
+        iDestruct "HmemStart_txn" as "#HmemStart_txn".
+        iDestruct "HnextDiskEnd_txn" as "#HnextDiskEnd_txn".
         iNamed "Hinner".
         (* XXX: unify_ghost doesn't rewrite everywhere *)
         iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
-        iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σ') with "[% //] [%] [$HP]") as "[HP HQ]".
+        iMod (txn_pos_valid with "Htxns_ctx HmemStart_txn") as (HmemStart_txn) "Htxns_ctx"; first by solve_ndisj.
+        iMod (txn_pos_valid with "Htxns_ctx HnextDiskEnd_txn") as (HnextDiskEnd_txn) "Htxns_ctx"; first by solve_ndisj.
+        iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σs)
+                with "[% //] [%] [$HP]") as "[HP HQ]".
         { simpl; monad_simpl.
           eexists _ (slidingM.endPos memLog'); simpl; monad_simpl.
           econstructor; eauto.
           destruct Hlocked_wf.
           rewrite slidingM.memEnd_ok; eauto.
           eapply is_mem_memLog_endpos_highest; eauto. }
-        (* TODO: now need to update at least the two copies of txns in ghost
-        state, if not other ghost variables *)
-        iMod (ghost_var_update _ (σ'.(log_state.txns) ++ [(slidingM.endPos memLog', bs)]) with "γtxns Howntxns")
-          as "[γtxns Howntxns]".
+        iMod (ghost_var_update _ (σs.(log_state.txns) ++ [(slidingM.endPos memLog', bs)])
+                with "γtxns Howntxns") as "[γtxns Howntxns]".
         iMod (alloc_txn_pos (slidingM.endPos memLog') bs with "Htxns_ctx") as "[Htxns_ctx #Hnew_txn]".
         iDestruct (txn_val_to_pos with "Hnew_txn") as "Hnew_txn_pos".
         iSpecialize ("HQ" with "Hnew_txn_pos").
         iModIntro.
         iSplitL "Hdisk Hmem HP γtxns Htxns_ctx".
+
+        (* re-prove invariant *)
         {
           iNext.
           iExists _; iFrame "HP".
@@ -304,6 +437,8 @@ Proof.
           simpl.
           admit. (* Hdisk is preserved by extension (can factor this out easily if the whole clause gets a definition) *)
         }
+
+        (* continue and prove loop invariant (lock invariant mostly) *)
         wp_pures.
         iModIntro.
         iApply "HΦ".
@@ -318,10 +453,15 @@ Proof.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
         iExists memStart_txn_id, nextDiskEnd_txn_id, _; iFrame.
-        rewrite memWrite_same_start memWrite_same_mutable; iFrame.
-        (* TODO: should have used HmemStart_txn and HnextDiskEnd_txn to get is_pos
-        facts, when we had a txn ctx *)
-        admit. (* some proofs that lock invariant is stable under appending transactions *)
+        rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
+        { iSplit; iPureIntro.
+          - eapply is_mem_memLog_append; eauto.
+            eapply is_txn_bound; eauto.
+          - rewrite -> numMutableN_ok in His_nextDiskEnd |- * by auto.
+            rewrite memWrite_same_numMutableN.
+            rewrite memWrite_preserves_mutable; auto; try word.
+            rewrite subslice_app_1; auto.
+            eapply is_txn_bound; eauto. }
       - wp_apply util_proof.wp_DPrintf.
         admit.
 Admitted.

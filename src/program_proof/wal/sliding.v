@@ -55,17 +55,36 @@ Definition memWrite_one memLog (u: update.t) : slidingM.t :=
 Definition memWrite memLog (upds: list update.t): slidingM.t :=
   foldl memWrite_one memLog upds.
 
-Lemma memWrite_same_mutable_and_start memLog upds :
+Local Lemma memWrite_one_same_mutable_and_start memLog u :
+  (memWrite_one memLog u).(slidingM.mutable) = memLog.(slidingM.mutable) ∧
+  (memWrite_one memLog u).(slidingM.start) = memLog.(slidingM.start).
+Proof.
+  revert memLog.
+  intros.
+  rewrite /memWrite_one.
+  destruct matches.
+Qed.
+
+Lemma memWrite_one_same_mutable memLog u :
+  (memWrite_one memLog u).(slidingM.mutable) = memLog.(slidingM.mutable).
+Proof.
+  apply memWrite_one_same_mutable_and_start.
+Qed.
+
+Lemma memWrite_one_same_start memLog u :
+  (memWrite_one memLog u).(slidingM.start) = memLog.(slidingM.start).
+Proof.
+  apply memWrite_one_same_mutable_and_start.
+Qed.
+
+Local Lemma memWrite_same_mutable_and_start memLog upds :
   (memWrite memLog upds).(slidingM.mutable) = memLog.(slidingM.mutable) ∧
   (memWrite memLog upds).(slidingM.start) = memLog.(slidingM.start).
 Proof.
   revert memLog.
   induction upds; simpl; auto; intros.
   destruct (IHupds (memWrite_one memLog a)) as [-> ->].
-  rewrite /memWrite_one.
-  destruct memLog as [log start mutable]; simpl.
-  destruct (find_highest_index (update.addr <$> log) a.(update.addr)); simpl; auto.
-  destruct (decide (int.val mutable - int.val start ≤ n)); simpl; auto.
+  apply memWrite_one_same_mutable_and_start.
 Qed.
 
 Lemma memWrite_same_mutable memLog upds :
