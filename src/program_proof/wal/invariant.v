@@ -88,6 +88,14 @@ Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
 Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
   ∃ upds, txn_val γ txn_id (pos, upds).
 
+Theorem txn_val_to_pos γ txn_id pos upds :
+  txn_val γ txn_id (pos, upds) -∗ txn_pos γ txn_id pos.
+Proof.
+  rewrite /txn_pos.
+  iIntros "Hval".
+  iExists _; iFrame.
+Qed.
+
 Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
 
@@ -385,7 +393,7 @@ Proof.
   by intros ->.
 Qed.
 
-Theorem alloc_txn_pos γ txns E pos upds :
+Theorem alloc_txn_pos pos upds γ txns E :
   txns_ctx γ txns ={E}=∗
   txns_ctx γ (txns ++ [(pos, upds)]) ∗ txn_val γ (length txns) (pos, upds).
 Proof.

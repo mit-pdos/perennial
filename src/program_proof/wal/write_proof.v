@@ -149,13 +149,35 @@ Proof.
     auto; lia.
 Qed.
 
+Lemma set_txns_d f σ :
+  (set log_state.txns f σ).(log_state.d) = σ.(log_state.d).
+Proof. auto. Qed.
+
+Lemma set_txns_installed_lb f σ :
+  (set log_state.txns f σ).(log_state.installed_lb) = σ.(log_state.installed_lb).
+Proof. auto. Qed.
+
+Lemma set_txns_durable_lb f σ :
+  (set log_state.txns f σ).(log_state.durable_lb) = σ.(log_state.durable_lb).
+Proof. auto. Qed.
+
+Lemma locked_wf_memWrite σ upds :
+  slidingM.wf (memWrite σ.(memLog) upds) ->
+  locked_wf σ ->
+  locked_wf (set memLog (λ _, memWrite σ.(memLog) upds) σ).
+Proof.
+  rewrite /locked_wf; intros.
+  rewrite !memWrite_same_mutable !memWrite_same_start.
+  destruct_and!; split_and!; auto.
+Qed.
+
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
        updates_slice bufs bs ∗
        (∀ σ σ' pos,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
-         let txn_id := length σ'.(log_state.txns) in
+         let txn_id := length σ.(log_state.txns) in
          (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ (txn_pos γ txn_id pos -∗ Q pos))) ∧ PreQ
    }}}
     Walog__MemAppend #l (slice_val bufs)
@@ -188,14 +210,15 @@ Proof.
                    ∃ (txn: u64) (ok: bool),
                      "txn" ∷ txn_l ↦[uint64T] #txn ∗
                      "ok" ∷ ok_l ↦[boolT] #ok ∗
+                     "%Hok_is" ∷ ⌜if b then ok = true else True⌝ ∗
                     "Hsim" ∷ (if b then
                                (∀ (σ σ' : log_state.t) pos,
                                 ⌜wal_wf σ⌝
                                 -∗ ⌜relation.denote (log_mem_append bs) σ σ' pos⌝
-                                    -∗ P σ
-                                      ={⊤ ∖ ↑N}=∗ P σ'
-                                                  ∗ (txn_pos γ (length σ'.(log_state.txns)) pos
-                                                      -∗ Q pos)) ∧ PreQ else
+                                -∗ P σ
+                                ={⊤ ∖ ↑N}=∗ P σ'
+                                ∗ (txn_pos γ (length σ.(log_state.txns)) pos
+                                -∗ Q pos)) ∧ PreQ else
                                (if ok then Q txn else PreQ)) ∗
                      "Hlocked" ∷ locked γ.(lock_name) ∗
                      "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ ∗
@@ -203,10 +226,11 @@ Proof.
                 )%I
                 with  "[] [-HΦ]"
              ).
-    2: { iExists _, _; iFrame. }
+    2: { iExists _, _; iFrame. auto. }
     { clear Φ.
       iIntros "!>" (Φ) "HI HΦ". iNamed "HI".
       wp_pures.
+      intuition subst.
       (* hide postcondition from the IPM goal *)
       match goal with
       | |- context[Esnoc _ (INamed "HΦ") ?P] =>
@@ -261,7 +285,43 @@ Proof.
           eapply is_mem_memLog_endpos_highest; eauto. }
         (* TODO: now need to update at least the two copies of txns in ghost
         state, if not other ghost variables *)
-        admit.
+        iMod (ghost_var_update _ (σ'.(log_state.txns) ++ [(slidingM.endPos memLog', bs)]) with "γtxns Howntxns")
+          as "[γtxns Howntxns]".
+        iMod (alloc_txn_pos (slidingM.endPos memLog') bs with "Htxns_ctx") as "[Htxns_ctx #Hnew_txn]".
+        iDestruct (txn_val_to_pos with "Hnew_txn") as "Hnew_txn_pos".
+        iSpecialize ("HQ" with "Hnew_txn_pos").
+        iModIntro.
+        iSplitL "Hdisk Hmem HP γtxns Htxns_ctx".
+        {
+          iNext.
+          iExists _; iFrame "HP".
+          iFrame.
+          iSplit; [ iPureIntro | ].
+          { eapply mem_append_preserves_wf; eauto.
+            - admit. (* new writes should be in-bounds *)
+            - rewrite slidingM.memEnd_ok; eauto.
+              eapply is_mem_memLog_endpos_highest; eauto. }
+          simpl.
+          admit. (* Hdisk is preserved by extension (can factor this out easily if the whole clause gets a definition) *)
+        }
+        wp_pures.
+        iModIntro.
+        iApply "HΦ".
+        iExists _, _; iFrame.
+        rewrite (right_id _ bi_sep).
+        iFrame "HQ".
+        iExists (set memLog (λ _, memLog') σ); simpl.
+        rewrite memWrite_same_start.
+        iFrame.
+        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns".
+        { iExists _; iFrame.
+          iPureIntro.
+          eapply locked_wf_memWrite; eauto. }
+        iExists memStart_txn_id, nextDiskEnd_txn_id, _; iFrame.
+        rewrite memWrite_same_start memWrite_same_mutable; iFrame.
+        (* TODO: should have used HmemStart_txn and HnextDiskEnd_txn to get is_pos
+        facts, when we had a txn ctx *)
+        admit. (* some proofs that lock invariant is stable under appending transactions *)
       - wp_apply util_proof.wp_DPrintf.
         admit.
 Admitted.
