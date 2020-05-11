@@ -76,7 +76,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 
   wp_apply wp_new_free_lock; auto.
 
-  iIntros (shardlock) "Hfreelock".
+  iIntros (γ shardlock) "Hfreelock".
 
   wp_pures.
   iDestruct (is_free_lock_ty with "Hfreelock") as "%".
@@ -99,7 +99,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
     iIntros; iFrame.
   }
 
-  iMod (alloc_lock with "Hfreelock Hinner") as (γ) "Hlock".
+  iMod (alloc_lock with "Hfreelock Hinner") as "Hlock".
   iDestruct (struct_fields_split with "Hls") as "(Hmu & Hstate & _)".
   iMod (readonly_alloc_1 with "Hmu") as "mu".
   iMod (readonly_alloc_1 with "Hstate") as "Hstate".

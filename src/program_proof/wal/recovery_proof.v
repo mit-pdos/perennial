@@ -88,10 +88,7 @@ Proof.
   iMod (thread_own_alloc with "Hdisk") as (γdiskEnd_avail_name) "(HdiskEnd_exactly&Hthread_end)".
   iMod (start_is_get_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
   iMod (thread_own_alloc with "Hstart") as (γstart_avail_name) "(Hstart_exactly&Hthread_start)".
-  set (γ' :=
-         (set start_avail_name (λ _, γstart_avail_name)
-              (set diskEnd_avail_name (λ _, γdiskEnd_avail_name)
-                   (set circ_name (λ _, γcirc') γ)))).
+  set (γ' := (set circ_name (λ _, γcirc') γ)).
 
   wpc_frame_compl "Hupd_slice HdiskEnd_exactly Hstart_exactly".
   { crash_case. iExists γ'.
@@ -100,7 +97,14 @@ Proof.
     iFrame. iExists _, _, _. iFrame. iFrame "#".
   }
   wp_pures.
-  wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
+  wp_apply (wp_new_free_lock); iIntros (γlock ml) "Hlock".
+
+  clear γ'.
+  set (γ' :=
+         (set lock_name (λ _, γlock)
+              (set start_avail_name (λ _, γstart_avail_name)
+                   (set diskEnd_avail_name (λ _, γdiskEnd_avail_name)
+                        (set circ_name (λ _, γcirc') γ))))).
   wp_pures.
   iDestruct (updates_slice_to_frag with "[$]") as "Hupd_slice".
   wp_apply (wp_mkSliding with "[$]").
@@ -110,7 +114,7 @@ Proof.
   wp_apply wp_allocStruct; first by auto.
   iIntros (st) "Hwal_state".
   wp_pures.
-  iMod (alloc_lock _ _ _ (wal_linv st γ') with "[$] [-]").
+  iMod (alloc_lock _ _ _ _ (wal_linv st γ') with "[$] [-]").
   { rewrite /wal_linv.
     assert (int.val diskStart + length upds = int.val diskEnd) as Heq_plus.
     { etransitivity; last eassumption. rewrite /circΣ.diskEnd //=. subst. word. }
