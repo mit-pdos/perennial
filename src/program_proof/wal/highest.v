@@ -187,7 +187,7 @@ Qed.
 
 Theorem is_highest_txn_bound {txns txn_id pos} :
   is_highest_txn txns txn_id pos ->
-  txn_id ≤ length txns.
+  txn_id < length txns.
 Proof.
   destruct 1 as [His_txn _].
   eauto using is_txn_bound.

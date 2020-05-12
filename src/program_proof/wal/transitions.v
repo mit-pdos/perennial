@@ -46,7 +46,7 @@ Definition is_txn (txns: list (u64 * list update.t)) (txn_id: nat) (pos: u64): P
 
 Theorem is_txn_bound txns txn_id pos :
   is_txn txns txn_id pos ->
-  (txn_id ≤ length txns)%nat.
+  (txn_id < length txns)%nat.
 Proof.
   rewrite /is_txn -list_lookup_fmap.
   intros H%lookup_lt_Some.

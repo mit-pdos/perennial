@@ -113,6 +113,7 @@ Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
   (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
+      "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       "Howntxns" ∷ own γ.(txns_name) (◯ Excl' txns) ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
@@ -123,7 +124,7 @@ Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
       "%His_nextDiskEnd" ∷
         ⌜has_updates
           (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))
-          (subslice memStart_txn_id nextDiskEnd_txn_id txns)⌝
+          (subslice memStart_txn_id (S nextDiskEnd_txn_id) txns)⌝
   ).
 
 Definition wal_linv_fields st σ: iProp Σ :=
@@ -431,6 +432,22 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Theorem txn_pos_valid' γ txns E txn_id pos :
+  ↑nroot.@"readonly" ⊆ E ->
+  ▷ txns_ctx γ txns -∗
+  txn_pos γ txn_id pos -∗
+  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ ▷ txns_ctx γ txns.
+Proof.
+  rewrite /txns_ctx /txn_pos.
+  iIntros (Hsub) "[>Hctx Htxns] Htxn".
+  iDestruct "Htxn" as (upds) "Hval".
+  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
+  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
+  apply txn_map_to_is_txn in Hlookup.
+  iIntros "!>".
+  iSplit; eauto.
+Qed.
+
 Theorem txn_pos_valid γ txns E txn_id pos :
   ↑nroot.@"readonly" ⊆ E ->
   txns_ctx γ txns -∗
@@ -447,6 +464,25 @@ Proof.
   iSplit; eauto.
 Qed.
 
+Theorem txn_pos_valid_locked l γ txns txn_id pos :
+  is_wal l γ -∗
+  txn_pos γ txn_id pos -∗
+  own γ.(txns_name) (◯ Excl' txns) -∗
+  |={⊤}=> ⌜is_txn txns txn_id pos⌝ ∗ own γ.(txns_name) (◯ Excl' txns).
+Proof.
+  iIntros "[#Hwal _] #Hpos Howntxns".
+  iInv "Hwal" as (σ) "[Hinner HP]".
+  iDestruct "Hinner" as "(>%Hwf&Hmem&Htxns_ctx&>γtxns&Hdisk)".
+  rewrite /named.
+  iDestruct (ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
+  iFrame "Howntxns".
+  iMod (txn_pos_valid' _ _ (⊤ ∖ ↑N) with "Htxns_ctx [$Hpos]") as "(%His_txn & Hctx)"; first by solve_ndisj.
+  iModIntro.
+  iSplitL.
+  { iNext.
+    iExists _; by iFrame. }
+  auto.
+Qed.
 
 (** * accessors for fields whose values don't matter for correctness *)
 Theorem wal_linv_shutdown st γ :

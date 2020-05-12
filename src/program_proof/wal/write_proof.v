@@ -316,7 +316,7 @@ Proof.
 Qed.
 
 Lemma is_durable_append γ txns txns' installed_txn_id diskEnd_txn_id :
-  (diskEnd_txn_id ≤ length txns)%nat ->
+  (diskEnd_txn_id < length txns)%nat ->
   is_durable γ txns installed_txn_id diskEnd_txn_id -∗
   is_durable γ (txns ++ txns') installed_txn_id diskEnd_txn_id.
 Proof.
@@ -325,7 +325,7 @@ Proof.
   iExists _; iFrame.
   iPureIntro.
   rewrite /circ_matches_txns in Hcirc_matches |- *.
-  rewrite -> subslice_app_1 by auto; auto.
+  rewrite -> subslice_app_1 by lia; auto.
 Qed.
 
 Theorem disk_inv_append γ σs cs pos upds :
@@ -515,14 +515,18 @@ Proof.
           eapply locked_wf_memWrite; eauto. }
         iExists memStart_txn_id, nextDiskEnd_txn_id, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
+        iSplit.
+        { autorewrite with len.
+          rewrite Nat.add_sub.
+          iFrame "#". }
         { iSplit; iPureIntro.
           - eapply is_mem_memLog_append; eauto.
-            eapply is_txn_bound; eauto.
+            pose proof (is_txn_bound _ _ _ HmemStart_txn); lia.
           - rewrite -> numMutableN_ok in His_nextDiskEnd |- * by auto.
             rewrite memWrite_same_numMutableN.
             rewrite memWrite_preserves_mutable; auto; try word.
-            rewrite subslice_app_1; auto.
-            eapply is_txn_bound; eauto. }
+            pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
+            rewrite -> subslice_app_1 by lia; auto. }
       - wp_apply util_proof.wp_DPrintf.
         admit.
 Admitted.
