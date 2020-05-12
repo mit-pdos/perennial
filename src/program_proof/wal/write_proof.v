@@ -405,7 +405,7 @@ Proof.
                                 ={⊤ ∖ ↑N}=∗ P σ'
                                 ∗ (txn_pos γ (length σ.(log_state.txns)) pos
                                 -∗ Q pos)) ∧ PreQ else
-                               (if ok then Q txn else PreQ)) ∗
+                               (if ok then Q txn ∗ ∃ txn_id, txn_pos γ txn_id txn else PreQ)) ∗
                      "Hlocked" ∷ locked γ.(lock_name) ∗
                      "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ ∗
                      "Hbufs" ∷ if b then updates_slice_frag bufs 1 bs else emp
@@ -506,6 +506,8 @@ Proof.
         iExists _, _; iFrame.
         rewrite (right_id _ bi_sep).
         iFrame "HQ".
+        iSplit.
+        { iExists _; iFrame "#". }
         iExists (set memLog (λ _, memLog') σ); simpl.
         rewrite memWrite_same_start.
         iFrame.
@@ -541,7 +543,13 @@ Proof.
         iApply "HΦ".
         iExists _, _; by iFrame. }
     iNamed 1.
-    admit.
+    wp_loadField.
+    wp_apply (release_spec with "[$lk $Hlocked $Hlockinv]").
+    wp_pures.
+    wp_load. wp_load.
+    wp_pures.
+    iApply "HΦ".
+    destruct ok; iFrame.
 Admitted.
 
 End goose_lang.
