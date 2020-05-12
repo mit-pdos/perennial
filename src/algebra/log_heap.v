@@ -149,6 +149,14 @@ Section log_heap.
   Proof.
   Admitted.
 
+  Lemma mapsto_cur_range_agree first rfirst rlast l q v q' v' :
+    first < rlast ->
+    mapsto_cur first l q v -∗
+    mapsto_range rfirst rlast l q' v' -∗
+    ⌜ v = v' ⌝.
+  Proof.
+  Admitted.
+
   Lemma log_heap_append σl l v v' first :
     log_heap_ctx σl -∗
       mapsto_log first None l 1%Qp v -∗
