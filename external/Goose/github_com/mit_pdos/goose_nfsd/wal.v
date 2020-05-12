@@ -488,8 +488,7 @@ Definition doMemAppend: val :=
    Assumes caller holds memLock. *)
 Definition WalogState__endGroupTxn: val :=
   rec: "WalogState__endGroupTxn" "st" :=
-    sliding__clearMutable (struct.loadF WalogState.S "memLog" "st");;
-    Linearize.
+    sliding__clearMutable (struct.loadF WalogState.S "memLog" "st").
 
 Definition copyUpdateBlock: val :=
   rec: "copyUpdateBlock" "u" :=

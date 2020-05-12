@@ -140,3 +140,12 @@ Proof.
   rewrite /subslice.
   rewrite take_app_le; auto.
 Qed.
+
+Lemma subslice_to_end {A} n m (l: list A) :
+  (length l ≤ m)%nat →
+  subslice n m l = drop n l.
+Proof.
+  intros Hbound.
+  rewrite /subslice.
+  rewrite take_ge; auto.
+Qed.

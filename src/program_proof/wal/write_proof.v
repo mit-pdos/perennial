@@ -3,7 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Tactical Require Import SimplMatch.
 
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import wal.invariant.
+From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
 Section goose_lang.
 Context `{!heapG Σ}.
@@ -528,7 +528,20 @@ Proof.
             pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
             rewrite -> subslice_app_1 by lia; auto. }
       - wp_apply util_proof.wp_DPrintf.
-        admit.
+        iAssert (wal_linv σₛ.(wal_st) γ) with "[Hfields HmemLog_linv HdiskEnd_circ Hstart_circ]" as "Hlockinv".
+        { iExists _; iFrame. }
+        wp_apply (wp_endGroupTxn with "[$Hwal $Hlockinv]").
+        iIntros "Hlockinv".
+        wp_loadField.
+        wp_apply (wp_condBroadcast with "[$cond_logger]").
+        wp_loadField.
+        wp_apply (wp_condWait with "[$cond_logger $Hlocked $lk $Hlockinv]").
+        iIntros "(Hlocked&Hlockinv)".
+        wp_pures.
+        iApply "HΦ".
+        iExists _, _; by iFrame. }
+    iNamed 1.
+    admit.
 Admitted.
 
 End goose_lang.

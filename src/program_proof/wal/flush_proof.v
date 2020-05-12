@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import wal.invariant.
+From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
 Section goose_lang.
 Context `{!heapG Σ}.
@@ -67,55 +67,6 @@ Proof.
     iExists _, _, _; iFrame "# ∗".
     eauto.
 Qed.
-
-Theorem wp_endGroupTxn l st γ :
-  {{{ is_wal P l γ ∗ wal_linv st γ }}}
-    WalogState__endGroupTxn #st
-  {{{ RET #(); wal_linv st γ }}}.
-Proof.
-  iIntros (Φ) "(#Hwal & Hlkinv) HΦ".
-  iNamed "Hlkinv".
-  iNamed "Hfields".
-  iNamed "Hfield_ptsto".
-  rewrite -wp_fupd.
-  wp_call.
-  rewrite /WalogState__memEnd.
-  wp_loadField. wp_apply (wp_sliding__clearMutable with "His_memLog"); iIntros "His_memLog".
-  wp_seq.
-
-  (*
-  iDestruct "Hwal" as "[Hwal _]".
-  iInv "Hwal" as "Hinner".
-*)
-  wp_pures.
-
-  iApply "HΦ".
-  iNamed "HmemLog_linv".
-  iDestruct "HmemStart_txn" as "#HmemStart_txn".
-  iDestruct "HnextDiskEnd_txn" as "#HnextDiskEnd_txn".
-  iDestruct "HmemEnd_txn" as "#HmemEnd_txn".
-  iMod (txn_pos_valid_locked with "Hwal HmemEnd_txn Howntxns") as "(%HmemEnd_is_txn & Howntxns)".
-  iModIntro.
-  iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf.
-  iExists (set memLog (λ _,
-                       (set slidingM.mutable (λ _ : u64, slidingM.endPos σ.(memLog)) σ.(memLog))) σ).
-  simpl.
-  iFrame "# ∗".
-  iSplitR "Howntxns".
-  { iExists _; iFrame.
-    iPureIntro.
-    split_and!; simpl; auto; try word.
-    rewrite /slidingM.endPos.
-    unfold locked_wf, slidingM.wf in Hlocked_wf.
-    word.
-  }
-  iExists memStart_txn_id, (length txns - 1)%nat, txns; simpl.
-  iFrame "# ∗".
-  destruct_and! His_memLog.
-  iPureIntro; split.
-  - split_and!; simpl; auto.
-  - admit.
-Admitted.
 
 Theorem simulate_flush l γ Q σ pos txn_id :
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
