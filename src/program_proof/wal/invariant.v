@@ -420,6 +420,19 @@ Proof.
   iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htxns") as "[$ _]".
 Qed.
 
+Theorem txns_ctx_complete' γ txns txn_id txn :
+  txns !! txn_id = Some txn ->
+  ▷ txns_ctx γ txns -∗ ▷ txn_val γ txn_id txn ∗ ▷ txns_ctx γ txns.
+Proof.
+  rewrite /is_txn.
+  rewrite -lookup_list_to_imap.
+  intros Hlookup.
+  iIntros "[Hctx #Htxns]".
+  iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htxns") as "[$ _]".
+  iNext.
+  iFrame "∗ #".
+Qed.
+
 Theorem txns_ctx_txn_pos γ txns txn_id pos :
   is_txn txns txn_id pos ->
   txns_ctx γ txns -∗ txn_pos γ txn_id pos.
@@ -447,20 +460,45 @@ Proof.
   iSplit; eauto.
 Qed.
 
+Theorem txn_val_valid γ txns E txn_id txn :
+  ↑nroot.@"readonly" ⊆ E ->
+  txns_ctx γ txns -∗
+  txn_val γ txn_id txn -∗
+  |={E}=> ⌜txns !! txn_id = Some txn⌝ ∗ txns_ctx γ txns.
+Proof.
+  rewrite /txns_ctx /txn_val.
+  iIntros (Hsub) "[Hctx Htxns] Hval".
+  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
+  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
+  rewrite lookup_list_to_imap in Hlookup.
+  iIntros "!>".
+  iSplit; eauto.
+Qed.
+
 Theorem txn_pos_valid γ txns E txn_id pos :
   ↑nroot.@"readonly" ⊆ E ->
   txns_ctx γ txns -∗
   txn_pos γ txn_id pos -∗
   |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ txns_ctx γ txns.
 Proof.
-  rewrite /txns_ctx /txn_pos.
-  iIntros (Hsub) "[Hctx Htxns] Htxn".
+  rewrite /txn_pos.
+  iIntros (Hsub) "Hctx Htxn".
   iDestruct "Htxn" as (upds) "Hval".
-  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
-  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
-  apply txn_map_to_is_txn in Hlookup.
-  iIntros "!>".
-  iSplit; eauto.
+  iMod (txn_val_valid with "Hctx Hval") as "(%&$)"; auto.
+  iPureIntro.
+  rewrite /is_txn.
+  rewrite H //.
+Qed.
+
+Theorem is_wal_txns_lookup l γ σ :
+  is_wal_inner l γ σ -∗
+  (∃ txns, txns_ctx γ txns ∗ own γ.(txns_name) (● Excl' txns) ∗
+             (txns_ctx γ txns ∗ own γ.(txns_name) (● Excl' txns) -∗
+              is_wal_inner l γ σ)).
+Proof.
+  iNamed 1.
+  iExists _; iFrame.
+  by iIntros "($ & $)".
 Qed.
 
 Theorem txn_pos_valid_locked l γ txns txn_id pos :
@@ -471,16 +509,131 @@ Theorem txn_pos_valid_locked l γ txns txn_id pos :
 Proof.
   iIntros "[#Hwal _] #Hpos Howntxns".
   iInv "Hwal" as (σ) "[Hinner HP]".
-  iDestruct "Hinner" as "(>%Hwf&Hmem&Htxns_ctx&>γtxns&Hdisk)".
-  rewrite /named.
+  iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(Htxns_ctx & >γtxns & Hinner)".
   iDestruct (ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
   iFrame "Howntxns".
   iMod (txn_pos_valid' _ _ (⊤ ∖ ↑N) with "Htxns_ctx [$Hpos]") as "(%His_txn & Hctx)"; first by solve_ndisj.
   iModIntro.
   iSplitL.
   { iNext.
-    iExists _; by iFrame. }
+    iExists _; iFrame.
+    iApply ("Hinner" with "[$]"). }
   auto.
+Qed.
+
+Definition txns_are γ (start: nat) txns_sub: iProp Σ :=
+  [∗ list] i↦txn ∈ txns_sub, txn_val γ (start + i)%nat txn.
+
+Lemma txns_are_cons γ start txn txns_sub :
+  txns_are γ start (txn::txns_sub) ⊣⊢
+  txn_val γ start txn ∗ txns_are γ (S start) txns_sub.
+Proof.
+  rewrite /txns_are /=.
+  replace (start + 0)%nat with start by lia.
+  f_equiv.
+  f_equiv.
+  intros n txn'.
+  f_equiv.
+  lia.
+Qed.
+
+Global Instance txns_are_Persistent γ start txns_sub : Persistent (txns_are γ start txns_sub) := _.
+
+Lemma subslice_none {A} n m (l: list A) :
+  (m ≤ n)%nat →
+  subslice n m l = [].
+Proof.
+  intros.
+  rewrite /subslice.
+  rewrite -length_zero_iff_nil.
+  rewrite drop_length take_length.
+  lia.
+Qed.
+
+Theorem txns_are_sound γ E txns start txns_sub :
+  ↑nroot.@"readonly" ⊆ E →
+  txns_ctx γ txns -∗
+  txns_are γ start txns_sub -∗
+  |={E}=> ⌜subslice start (start + length txns_sub)%nat txns = txns_sub⌝ ∗ txns_ctx γ txns.
+Proof.
+  iIntros (Hsub) "Hctx Htxns_are".
+  iInduction txns_sub as [|txn txns_sub] "IH" forall (start).
+  - simpl.
+    iFrame.
+    iPureIntro.
+    rewrite subslice_none; auto.
+    lia.
+  - simpl.
+    iDestruct (txns_are_cons with "Htxns_are") as "[Htxn_start Htxns_are]".
+    iMod (txn_val_valid with "Hctx Htxn_start") as "(%Hstart&Hctx)"; auto.
+    iMod ("IH" with "Hctx Htxns_are") as "(%&Hctx)".
+    iFrame.
+    iPureIntro.
+    rewrite /subslice in H |- *.
+    rewrite Nat.add_succ_r.
+    simpl in H.
+    erewrite drop_S; eauto.
+    + rewrite H; eauto.
+    + rewrite lookup_take; eauto.
+      lia.
+Qed.
+
+Theorem subslice_cons {A} (n m: nat) (l: list A) x :
+  l !! n = Some x →
+  (n < m)%nat →
+  subslice n m l =
+  x :: subslice (S n) m l.
+Proof.
+  intros Hlookup Hbound.
+  apply elem_of_list_split_length in Hlookup as (l1 & l2 & [? ?]); subst.
+  rewrite /subslice.
+  rewrite !skipn_firstn_comm.
+  repeat rewrite -> drop_app_ge by lia.
+  replace (length l1 - length l1)%nat with 0%nat by lia.
+  replace (S (length l1) - length l1)%nat with 1%nat by lia; simpl.
+  rewrite drop_0.
+  replace (m - length l1)%nat with (S (m - S (length l1)))%nat by lia.
+  simpl.
+  auto.
+Qed.
+
+Theorem get_txns_are l γ txns start till txns_sub :
+  txns_sub = subslice start (start + length txns_sub)%nat txns →
+  till = (start + length txns_sub)%nat →
+  (start + length txns_sub ≤ length txns)%nat →
+  own γ.(txns_name) (◯ Excl' txns) -∗
+  is_wal l γ -∗
+  |={⊤}=> ▷ txns_are γ start txns_sub ∗ own γ.(txns_name) (◯ Excl' txns).
+Proof.
+  intros; subst till.
+  iIntros "Hown #Hwal".
+  iInduction txns_sub as [|txn txns_sub] "IH" forall (start H H1).
+  - rewrite /txns_are /=.
+    by iFrame.
+  - rewrite txns_are_cons.
+    simpl in H1.
+    iDestruct "Hwal" as "[Hwal _]".
+    iInv "Hwal" as (σ) "[Hinner HP]".
+    iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(Htxns_ctx & >γtxns & Hinner)".
+    destruct (list_lookup_lt _ txns start) as [txn' Hlookup]; len.
+    iDestruct (ghost_var_agree with "γtxns Hown") as %Heq; subst.
+    iDestruct (txns_ctx_complete' _ _ _ _ Hlookup with "Htxns_ctx") as "(Htxn & Htxns_ctx)".
+    erewrite subslice_cons in H; eauto; simpl; len.
+    inversion H; subst; clear H.
+    iModIntro.
+    iSplitL "Hinner Htxns_ctx HP γtxns".
+    { iNext.
+      iExists _; iFrame.
+      iApply "Hinner"; iFrame. }
+    iMod ("IH" $! (S start) with "[] [] Hown") as "(Htxns_are & Hown)".
+    { iPureIntro.
+      f_equal.
+      rewrite -> subslice_length by lia.
+      lia. }
+    { rewrite -> subslice_length by lia.
+      iPureIntro; lia. }
+    iModIntro.
+    iFrame.
 Qed.
 
 (** * accessors for fields whose values don't matter for correctness *)
