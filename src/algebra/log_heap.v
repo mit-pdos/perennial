@@ -69,17 +69,15 @@ Section definitions.
                      end in
     own (log_heap_name hG) (● (to_log_heap σfun)).
 
-  Definition mapsto_log (first: nat) (last: option nat) (l: L) (q: Qp) (v: V) : iProp Σ.
+  Definition mapsto_cur (first: nat) (l: L) (v: V) : iProp Σ.
   Proof using hG.
     (* require [first < length (possible σl)] *)
-    (* if last = Some x, require [first < x ≤ length (possible σl)] *)
   Admitted.
 
-  Definition mapsto_cur (first: nat) l q v :=
-    mapsto_log first None l q v.
-
-  Definition mapsto_range (first last: nat) l q v :=
-    mapsto_log first (Some last) l q v.
+  Definition mapsto_txn (txnid: nat) (l: L) (v: V) : iProp Σ.
+  Proof using hG.
+    (* require [first < length (possible σl)] *)
+  Admitted.
 
 End definitions.
 
@@ -99,71 +97,43 @@ Section log_heap.
   Implicit Types l : L.
   Implicit Types v : V.
 
-  Lemma log_heap_valid σl l q v first last :
+  Lemma log_heap_valid_cur σl l v first :
     log_heap_ctx σl -∗
-      mapsto_log first last l q v -∗
-      ⌜ first < length (possible σl) ∧
-        ∀ n σ,
-          first ≤ n ->
-          match last with
-          | Some a => n < a
-          | None => True
-          end ->
-          possible σl !! n = Some σ ->
-          σ !! l = Some v⌝.
-  Proof.
-  Admitted.
-
-  Lemma log_heap_valid_cur σl l q v first :
-    log_heap_ctx σl -∗
-      mapsto_cur first l q v -∗
+      mapsto_cur first l v -∗
       ⌜latest σl !! l = Some v⌝.
   Proof.
-    iIntros "Hctx Hm".
-    iDestruct (log_heap_valid with "Hctx Hm") as %[Hv0 Hv1].
-    iPureIntro.
-    eapply Hv1.
-
-    specialize (Hv1 (length (pending σl)) (latest σl)).
-    3: eapply lookup_possible_latest.
-    2: done.
-    rewrite /possible app_length /= in Hv0. lia.
-  Qed.
-
-  Global Instance mapsto_range_persistent first last l q v :
-    Persistent (mapsto_range first last l q v).
-  Proof.
   Admitted.
 
-  Lemma mapsto_log_advance σl first first' last l q v :
-    (first ≤ first' < length (possible σl))%nat ->
+  Lemma log_heap_valid_txn σl l v txnid :
     log_heap_ctx σl -∗
-    mapsto_log first last l q v -∗ mapsto_log first' last l q v.
+      mapsto_txn txnid l v -∗
+      ∃ σ,
+        ⌜possible σl !! txnid = Some σ ∧ σ !! l = Some v⌝.
   Proof.
   Admitted.
 
-  Lemma mapsto_cur_snapshot σl first l q v :
+  Lemma mapsto_cur_advance σl l v first first' :
+    first ≤ first' < length (possible σl) ->
     log_heap_ctx σl -∗
-    mapsto_cur first l q v -∗
-    mapsto_cur first l q v ∗ mapsto_range first (length (possible σl)) l q v.
+      mapsto_cur first l v -∗
+      mapsto_cur first' l v.
   Proof.
   Admitted.
 
-  Lemma mapsto_cur_range_agree first rfirst rlast l q v q' v' :
-    first < rlast ->
-    mapsto_cur first l q v -∗
-    mapsto_range rfirst rlast l q' v' -∗
+  Lemma mapsto_cur_txn_agree first txnid l v v' :
+    first ≤ txnid ->
+    mapsto_cur first l v -∗
+    mapsto_txn txnid l v' -∗
     ⌜ v = v' ⌝.
   Proof.
   Admitted.
 
-  Lemma log_heap_append σl l v v' first :
+  Lemma log_heap_append σl σmod l v v' first :
     log_heap_ctx σl -∗
-      mapsto_log first None l 1%Qp v -∗
-      ( let σ := <[l := v]> (latest σl) in
+      ( [∗ map] l↦v ∈ σmod, mapsto_cur first l v ) ==∗
+      ( let σ := σmod ∪ (latest σl) in
         log_heap_ctx (async_put σ σl) ∗
-        mapsto_log first (Some (length (possible σl))) l 1%Qp v ∗
-        mapsto_log (length (possible σl)) None l 1%Qp v' ).
+        [∗ map] l↦v ∈ σ, mapsto_txn (length (possible σl)) l v ).
   Proof.
   Admitted.
 
