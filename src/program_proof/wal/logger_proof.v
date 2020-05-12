@@ -154,8 +154,22 @@ Proof.
   { rewrite subslice_length; word. }
   { rewrite subslice_length; word. }
 
-  (* TODO: append fupd *)
+  { (* Append fupd *)
+    rewrite /circular_pred.
+    iIntros (cs) "(%Hcirc_wf&Hcirc_ctx)".
+    iIntros (cs' [] [Htrans Hcirc_wf']).
+    simpl in Htrans; monad_inv.
+    iInv "Hwal" as (σs) "[Hinner HP]".
+    { admit. (* TODO: adjust namespaces *) }
 
+    iDestruct "Hinner" as "(>%Hwf&Hmem&Htxns_ctx&>?&>?)".
+    iNamed.
+    iNamed "Hdisk".
+    iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
+    (* TODO: need to be able to checkpoint knowledge of the transactions based
+    on the memLog while we still have the log, and then connect that to the new
+    transactions after opening the invariant. txns is append-only, so the
+    knowledge that we had about the prefix still applies *)
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :

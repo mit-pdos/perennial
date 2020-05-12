@@ -145,7 +145,6 @@ Definition diskEnd_linv γ (diskEnd: u64): iProp Σ :=
 
 Definition diskStart_linv γ (start: u64): iProp Σ :=
   "#Hstart_at_least" ∷ start_at_least γ.(circ_name) start ∗
-  (* TODO: this should be available only to the logger? *)
   "Hstart_exactly" ∷ thread_own_ctx γ.(start_avail_name)
                        (start_is γ.(circ_name) (1/2) start).
 
