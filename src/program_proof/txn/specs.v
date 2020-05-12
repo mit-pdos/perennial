@@ -1111,19 +1111,18 @@ Proof using txnG0 lockG0 Σ.
     rewrite /memappend_pre.
     rewrite /memappend_crash_pre.
 
-    (* XXX up to here *)
-
     iDestruct (big_sepM_mono _
-      (λ a buf,
-        ( ∃ data, mapsto_txn γ a (existT buf.(bufKind) data) )
+       (λ a buf,
+         ∃ first, mapsto_txn γ first a (existT buf.(bufKind) buf.(bufData))
       )%I with "Hmapstos") as "Hmapstos".
     {
       iIntros (k x Hkx) "H".
-      iDestruct "H" as (data h γ0) "(% & % & H0 & H1)".
-      iSplitL.
-      { iExists _, _, _. iFrame. done. }
+      iDestruct "H" as (data first) "Hmapsto".
       iExists _. done.
     }
+
+    (* XXX up to here *)
+
     iDestruct (big_sepM_sep with "Hmapstos") as "[Hmapstos #Hbufamap_gdata]".
 
     iDestruct (big_sepM2_mono _ (λ k gm gh, gmDataP gm gh ∗ emp)%I with "Hgmdata") as "Hgmdata".
