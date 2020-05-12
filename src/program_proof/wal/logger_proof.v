@@ -41,8 +41,6 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_call.
-  (* TODO: need inner part of wal_linv with fixed memLog, so we can say after
-  this wait loop [length memLog ≤ Z.of_nat LogSz] *)
   iNamed "Hlkinv".
   wp_apply (wp_forBreak_cond
               (λ b, "Hlocked" ∷ locked γ.(lock_name) ∗
