@@ -38,7 +38,7 @@ Record txn_names := {
 
 Definition mapsto_txn (γ : txn_names) first (l : addr) (v : {K & bufDataT K}) : iProp Σ :=
   ∃ γm,
-    "Hmapsto_log" ∷ mapsto_log (hG := γ.(txn_logheap)) first None l 1 v ∗
+    "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) first l 1 v ∗
     "Hmapsto_meta" ∷ mapsto (hG := γ.(txn_metaheap)) l 1 γm ∗
     "Hmod_frag" ∷ own γm (◯ (Excl' true)).
 
@@ -112,13 +112,7 @@ Definition is_txn_always (γ : txn_names) : iProp Σ :=
   )%I.
 
 Global Instance is_txn_always_timeless γ :
-  Timeless (is_txn_always γ).
-Proof.
-  apply exist_timeless; intros.
-  apply exist_timeless; intros.
-  apply exist_timeless; intros.
-  apply sep_timeless; refine _.
-Qed.
+  Timeless (is_txn_always γ) := _.
 
 Definition is_txn_locked l γ : iProp Σ :=
   (
@@ -151,7 +145,7 @@ Proof.
   iInv invN as ">Halways".
   iNamed "Halways".
 
-  iDestruct (log_heap_valid_latest with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+  iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
   iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
   eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
@@ -1111,6 +1105,69 @@ Proof using txnG0 lockG0 Σ.
     rewrite /memappend_pre.
     rewrite /memappend_crash_pre.
 
+(*
+    iDestruct (gmap_addr_by_block_big_sepM with "Hmapstos") as "Hmapstos".
+
+    iDestruct (big_sepM2_filter _ (λ k, is_Some (gmap_addr_by_block bufamap !! k)) with "Hheapmatch") as "[Hheapmatch_in Hheapmatch_out]".
+    iDestruct (big_sepM2_sepM_1 with "Hheapmatch_in") as "Hheapmatch_in".
+
+    iDestruct (big_sepML_sepM2_shift with "[Hupdmap] []") as "Hupdmap2".
+
+    iDestruct (big_sepM_mono_wand _
+      (λ blkno offmap, (
+        [∗ map] off↦v ∈ offmap, 
+             ∃ (data : bufDataT v.(bufKind)) (first : nat),
+               mapsto_txn γ first {| addrBlock := blkno; addrOff := off |}
+                 (existT v.(bufKind) data)) ∗
+        ⌜ is_Some (gmap_addr_by_block logm.(latest) !! blkno) ⌝)%I _ (log_heap_ctx logm)
+      with "[] [$Hmapstos $Hlogheapctx]") as "[Hlogheapctx Hmapstos]".
+    {
+      iIntros (k x Hkx) "[Hlogheapctx Hx]".
+      eapply gmap_addr_by_block_off_not_empty in Hkx as Hx.
+      assert (x = (list_to_map (map_to_list x) : gmap u64 buf)) as Hlm. { rewrite list_to_map_to_list; eauto. }
+      rewrite -> Hlm in *.
+      destruct (map_to_list x) eqn:Hxl.
+      { simpl in Hx. congruence. }
+      simpl.
+      iDestruct (big_sepM_lookup_acc with "Hx") as "[H Hx]".
+      { apply lookup_insert. }
+      iNamed "H".
+      iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as %Hvalid.
+      eapply gmap_addr_by_block_lookup in Hvalid as Hvalidblock; destruct Hvalidblock; intuition idtac.
+      iDestruct ("Hx" with "[Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hx".
+      { iExists _, _, _. iFrame. }
+      iFrame "Hlogheapctx". iFrame. eauto.
+    }
+    iDestruct (big_sepM_sep with "Hmapstos") as "[Hmapstos #Hmapsto_latest]".
+
+
+Search _ gmap insert.
+Search _ gmap ∅.
+
+    iDestruct (big_sepML_sepM with "[$Hupdmap $Hmapstos]") as "Hmapstos".
+
+    rewrite -(map_union_filter
+                (λ x, is_Some (gmap_addr_by_block bufamap !! fst x))
+                (gmap_addr_by_block logm.(latest))).
+
+    iDestruct (big_sepM_union with "Hmatch") as "[Hmatch0 Hmatch1]".
+    { eapply map_disjoint_filter. }
+
+
+
+Check big_sepML_map_val_exists.
+
+updlist ->
+[Hupdmap]
+bufamap ->
+[Hmapstos]
+logm.(latest) ->
+[Hheapmatch]
+olds
+
+*)
+
+(*
     iDestruct (big_sepM_mono _
        (λ a buf,
          ∃ first, mapsto_txn γ first a (existT buf.(bufKind) buf.(bufData))
@@ -1293,19 +1350,20 @@ Proof using txnG0 lockG0 Σ.
     iApply "HΦ".
     admit.
   }
+*)
 Admitted.
 
-Theorem wp_txn_CommitWait l q gData bufs buflist bufamap (wait : bool) (id : u64) γcrash :
-  {{{ is_txn l gData γcrash ∗
+Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) :
+  {{{ is_txn l γ ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
-        is_txn_buf_pre bufptrval a buf gData
+        is_txn_buf_pre γ bufptrval a buf
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait #id
-  {{{ (ok : bool), RET #ok;
+  {{{ (ok : bool) (txn_id : nat), RET #ok;
       if ok then
         [∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn gData a buf.(bufData)
+          mapsto_txn γ txn_id a (existT _ buf.(bufData))
       else emp
   }}}.
 Proof.
@@ -1362,8 +1420,8 @@ Proof.
     iFrame.
 Admitted.
 
-Theorem wp_Txn__GetTransId l gData γcrash :
-  {{{ is_txn l gData γcrash }}}
+Theorem wp_Txn__GetTransId l γ :
+  {{{ is_txn l γ }}}
     txn.Txn__GetTransId #l
   {{{ (i : u64), RET #i; emp }}}.
 Proof.

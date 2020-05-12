@@ -49,6 +49,15 @@ Definition sync {T} (v : T) : async T :=
 Definition async_put {T} (v : T) (a : async T) :=
   Build_async v (possible a).
 
+Lemma lookup_possible_latest {T} (a : async T) :
+  possible a !! length (pending a) = Some (latest a).
+Proof.
+  rewrite /possible.
+  rewrite -> lookup_app_r by lia.
+  replace (length (pending a) - length (pending a)) with 0 by lia.
+  reflexivity.
+Qed.
+
 
 Section definitions.
   Context `{hG : log_heapG L V Σ}.
@@ -60,9 +69,17 @@ Section definitions.
                      end in
     own (log_heap_name hG) (● (to_log_heap σfun)).
 
-  Definition mapsto_log (first: nat) (last: option nat) (l: L) (q: Qp) (v: V) : iProp Σ :=
+  Definition mapsto_log (first: nat) (last: option nat) (l: L) (q: Qp) (v: V) : iProp Σ.
+  Proof using hG.
     (* require [first < length (possible σl)] *)
-    ( ⌜ hG = hG ⌝ )%I.
+    (* if last = Some x, require [first < x ≤ length (possible σl)] *)
+  Admitted.
+
+  Definition mapsto_cur (first: nat) l q v :=
+    mapsto_log first None l q v.
+
+  Definition mapsto_range (first last: nat) l q v :=
+    mapsto_log first (Some last) l q v.
 
 End definitions.
 
@@ -85,21 +102,36 @@ Section log_heap.
   Lemma log_heap_valid σl l q v first last :
     log_heap_ctx σl -∗
       mapsto_log first last l q v -∗
-      ⌜∀ n σ,
-        first ≤ n ->
-        match last with
-        | Some a => n < a
-        | None => True
-        end ->
-        possible σl !! n = Some σ ->
-        σ !! l = Some v⌝.
+      ⌜ first < length (possible σl) ∧
+        ∀ n σ,
+          first ≤ n ->
+          match last with
+          | Some a => n < a
+          | None => True
+          end ->
+          possible σl !! n = Some σ ->
+          σ !! l = Some v⌝.
   Proof.
   Admitted.
 
-  Lemma log_heap_valid_latest σl l q v first last :
+  Lemma log_heap_valid_cur σl l q v first :
     log_heap_ctx σl -∗
-      mapsto_log first last l q v -∗
+      mapsto_cur first l q v -∗
       ⌜latest σl !! l = Some v⌝.
+  Proof.
+    iIntros "Hctx Hm".
+    iDestruct (log_heap_valid with "Hctx Hm") as %[Hv0 Hv1].
+    iPureIntro.
+    eapply Hv1.
+
+    specialize (Hv1 (length (pending σl)) (latest σl)).
+    3: eapply lookup_possible_latest.
+    2: done.
+    rewrite /possible app_length /= in Hv0. lia.
+  Qed.
+
+  Global Instance mapsto_range_persistent first last l q v :
+    Persistent (mapsto_range first last l q v).
   Proof.
   Admitted.
 
@@ -107,6 +139,13 @@ Section log_heap.
     (first ≤ first' < length (possible σl))%nat ->
     log_heap_ctx σl -∗
     mapsto_log first last l q v -∗ mapsto_log first' last l q v.
+  Proof.
+  Admitted.
+
+  Lemma mapsto_cur_snapshot σl first l q v :
+    log_heap_ctx σl -∗
+    mapsto_cur first l q v -∗
+    mapsto_cur first l q v ∗ mapsto_range first (length (possible σl)) l q v.
   Proof.
   Admitted.
 
