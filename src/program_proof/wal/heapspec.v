@@ -868,6 +868,7 @@ Proof.
   destruct σ.
   unfold wal_wf; simpl.
   intuition.
+  lia.
 Qed.
 
 Theorem wal_wf_append_txns σ pos' bs txns :
@@ -1100,7 +1101,6 @@ Proof.
       {
         rewrite -updates_since_to_last_disk; eauto.
         1: rewrite no_updates_since_last_disk; auto.
-        2: lia.
         apply wal_wf_advance_installed_lb with (σ := (set log_state.durable_lb (λ _ : nat, new_durable) σ)).
         1: apply wal_wf_advance_durable_lb; auto.
         simpl.
@@ -1119,7 +1119,7 @@ Proof.
 
     iPureIntro.
     eapply wal_wf_advance_installed_lb.
-    2: { intuition idtac. simpl in *. lia. }
+    2: { intuition idtac. }
     eapply wal_wf_advance_durable_lb; eauto.
 Qed.
 
@@ -1487,7 +1487,7 @@ Proof using walheapG0.
       apply Forall_lookup; intros i u.
       specialize (Hbs_in_gh u i).
       intuition eauto.
-      destruct H4; eauto.
+      destruct H3; eauto.
       specialize (Hgh (u.(update.addr)) (HB x.1 x.2)).
       intuition; auto. }
     admit.
@@ -1539,10 +1539,10 @@ Proof using walheapG0.
   - eapply elem_of_list_fmap in e as ex.
     destruct ex.
     destruct H1.
-    subst.
-    apply elem_of_list_lookup in H3; destruct H3.
+    subst; destruct H0.
+    apply elem_of_list_lookup in H1; destruct H1.
     edestruct Hbs_in_gh; eauto.
-    destruct H3.
+    destruct H3. subst.
     specialize (Hgh _ H4). simpl in *.
     destruct Hgh as [addr_wf Hgh].
     destruct Hgh as [txn_id' Hgh].
@@ -1605,7 +1605,6 @@ Proof.
   unfold incl.
   intros.
   eapply in_drop_ge; eauto.
-  lia.
 Qed.
 
 Theorem wp_Walog__Read l (blkno : u64) γ lwh b wn :
@@ -1754,7 +1753,6 @@ Proof.
   destruct Hvalid_gh; intuition idtac.
   iPureIntro.
   eapply updates_since_to_last_disk in H; eauto.
-  2: lia.
   rewrite /last_disk /disk_at_txn_id firstn_all H4 in H.
   rewrite /locked_wh_disk. rewrite -H0 -H1. done.
 Qed.
