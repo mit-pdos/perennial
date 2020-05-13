@@ -74,11 +74,6 @@ Section definitions.
     (* l ↦ v in latest σ *)
   Admitted.
 
-  Definition log_heap_at_txn (txnid: nat) (m: gmap L V) : iProp Σ.
-  Proof using hG.
-    (* require [txnid < length (possible σl)] *)
-  Admitted.
-
 End definitions.
 
 
@@ -106,30 +101,11 @@ Section log_heap.
   Proof.
   Admitted.
 
-  Lemma log_heap_valid_txn σl σ txnid :
-    log_heap_ctx σl -∗
-      log_heap_at_txn txnid σ -∗
-      ⌜possible σl !! txnid = Some σ⌝.
-  Proof.
-  Admitted.
-
-  Lemma log_heap_at_txn_get σl σ txnid :
-    possible σl !! txnid = Some σ ->
-    log_heap_ctx σl -∗
-      log_heap_at_txn txnid σ.
-  Proof.
-  Admitted.
-
-  Global Instance log_heap_at_txn_persistent txnid σ : Persistent (log_heap_at_txn txnid σ).
-  Proof.
-  Admitted.
-
   Lemma log_heap_append σl σmod :
     log_heap_ctx σl -∗
       ( [∗ map] l↦v ∈ σmod, ∃ v', mapsto_cur l v' ) ==∗
       let σ := σmod ∪ (latest σl) in
       log_heap_ctx (async_put σ σl) ∗
-      log_heap_at_txn (length (possible σl)) σ ∗
       ( [∗ map] l↦v ∈ σmod, mapsto_cur l v ).
   Proof.
   Admitted.

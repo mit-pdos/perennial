@@ -1387,22 +1387,20 @@ Qed.
 Definition memappend_crash_pre γh (bs: list update.t) crash_heaps : iProp Σ :=
   "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps).
 
-Definition memappend_crash γh (bs: list update.t) crash_heaps pos lwh'
-           new_crash_heap : iProp Σ :=
+Definition memappend_crash γh (bs: list update.t) (crash_heaps : async (u64 * gmap u64 Block)) pos lwh' : iProp Σ :=
+  let new_crash_heap := apply_upds_u64 (snd $ latest crash_heaps) bs in
   is_locked_walheap γh lwh' ∗
-  own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (pos, new_crash_heap) crash_heaps)) ∗
-  txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos.
+  own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (pos, new_crash_heap) crash_heaps)).
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑walN, E}=>
       ∃ olds crash_heaps,
         memappend_pre γh.(wal_heap_h) bs olds ∗
         memappend_crash_pre γh bs crash_heaps ∗
-        ( ∀ pos lwh' new_crash_heap,
-            memappend_crash γh bs crash_heaps pos lwh'
-                            new_crash_heap ∗
+        ( ∀ pos lwh',
+            memappend_crash γh bs crash_heaps pos lwh' ∗
             memappend_q γh.(wal_heap_h) bs olds
-          ={E, ⊤ ∖ ↑walN}=∗ Q pos ) ) -∗
+          ={E, ⊤ ∖ ↑walN}=∗ txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps) + 1) pos -∗ Q pos ) ) -∗
   is_locked_walheap γh lwh -∗
   ( ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
@@ -1437,34 +1435,35 @@ Proof using walheapG0.
   iMod (ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
 
   iNamed "Hcrash_heaps".
-  iDestruct (big_sepL_app with "Hpossible_heaps") as "[Hpossible_heaps [Hlatest _]]".
+  rewrite /memappend_crash_pre. iNamed "Hprecrash".
+  iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as %<-.
+  iDestruct "Hpossible_heaps" as "#Hpossible_heaps".
+  iDestruct (big_sepL_app with "Hpossible_heaps") as "[_ Hlatest]".
+  simpl.
+  iDestruct "Hlatest" as "[Hlatest _]".
   iNamed "Hlatest".
-  iMod (gen_heap_init_gname (∅ : gmap u64 Block)) as (newcrashheap) "Hnewcrashheap".
-  iMod (gen_heap_alloc_gen ∅ (apply_upds_u64 heapdisk bs) with "Hnewcrashheap") as "[Hnewcrashheap Hnewmapsto]".
-  { apply map_disjoint_empty_r. }
 
-  iDestruct (gen_heap_valid_gen with "Hcrashheap [Hunmodified]") as %Hunmodified.
-  { iApply (big_sepM_mono with "Hunmodified").
-    iIntros (k x Hkx) "H". iExists _. iFrame. }
-  iDestruct (apply_upds_u64_split with "Hnewmapsto") as "[Hunmodified_new Hbs_new]"; eauto.
+  iMod (ghost_var_update _ (async_put (pos', apply_upds_u64 (snd $ latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
 
-  iMod (ghost_var_update _ (async_put (pos', newcrashheap) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
+  iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _)).
 
-  iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _) newcrashheap).
-
-  iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag $Hunmodified $Hunmodified_new $Hbs_new]") as "Hfupd".
-  { admit. }
+  iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag]") as "Hfupd".
   iMod "Hfupd".
 
   iModIntro.
+  iSplitR "Hfupd".
+  2: {
+    iIntros "Hpos".
+    iApply "Hfupd".
+    iExactEq "Hpos". f_equal.
+    rewrite Hcrashes_complete app_length /=. lia.
+  }
+
+  iExists _, _.
   iFrame.
-  iSplitL; last by auto.
-
-  iExists _, _. iFrame.
-
   iDestruct (big_sepM_forall with "Hgh") as %Hgh.
-  iSplitL "Hgh".
-  2: iSplitR.
+  iSplitL.
+  2: iSplit.
   2: {
     iPureIntro. eapply wal_wf_append_txns; simpl; eauto.
     { unfold addrs_wf.
@@ -1486,29 +1485,26 @@ Proof using walheapG0.
     { iPureIntro. rewrite /= /async_put /possible app_length /= ?app_length /=. lia. }
     rewrite /async_put /possible /=.
     iApply big_sepL_app.
-    iSplitR "Hnewcrashheap".
+    iSplit.
     2: { iSplitL; last by done.
       rewrite firstn_all2.
       2: { rewrite app_length -Hcrashes_complete /possible app_length /=. lia. }
-      iExists _.
-      iFrame "Hnewcrashheap".
       iSplitR.
       { iPureIntro. rewrite last_snoc //. }
-      iPureIntro. intros a0.
-      rewrite right_id.
+      iPureIntro. intros a0. simpl.
       rewrite txn_upds_app apply_upds_app /=.
       unfold txn_upds at 1; simpl. rewrite app_nil_r.
       eapply apply_upds_u64_apply_upds; eauto.
     }
     iApply big_sepL_app.
-    iSplitL "Hpossible_heaps".
-    { iApply (big_sepL_mono with "Hpossible_heaps").
+    iDestruct (big_sepL_app with "Hpossible_heaps") as "[H0 H1]".
+    iSplit.
+    { iApply (big_sepL_mono with "H0").
       iIntros (k h Hkh) "H".
       rewrite take_app_le; first by iFrame.
       apply lookup_lt_Some in Hkh. lia. }
     iSplitL; last by done.
     rewrite -> take_app_alt by lia.
-    iExists _. iFrame.
     iSplit; eauto.
   }
 
