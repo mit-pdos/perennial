@@ -178,6 +178,12 @@ Section IntoCrash.
     iIntros (?) "H". iApply post_crash_forall; last eauto. iIntros (?). iApply H.
   Qed.
 
+  (*
+  Global Instance post_crash_into_crash P:
+    IntoCrash (post_crash P) P.
+  Proof. rewrite /IntoCrash. by iApply post_crash_mono. Qed.
+   *)
+
   Lemma into_crash_proper P P' Q Q':
     IntoCrash P Q →
     (P ⊣⊢ P') →
@@ -225,20 +231,24 @@ Proof. iIntros "HP Hwand". by iApply "Hwand". Qed.
 Ltac crash_env Γ :=
   match Γ with
     | environments.Enil => idtac
+    | environments.Esnoc ?Γ' ?id (post_crash _) => crash_env Γ'
     | environments.Esnoc ?Γ' ?id ?A => first [ iEval (rewrite (@into_crash _ _ _ _ _ A) )in id || iClear id ] ; crash_env Γ'
   end.
 
-Ltac iCrash :=
+Ltac crash_ctx :=
   match goal with
   | [ |- environments.envs_entails ?Γ _] =>
     let spatial := pm_eval (environments.env_spatial Γ) in
     let intuit := pm_eval (environments.env_intuitionistic Γ) in
-    crash_env spatial; crash_env intuit;
-    iApply (modus_ponens with "[-]"); [ iNamedAccu | ];
-    rewrite ?post_crash_named ?post_crash_sep; iApply post_crash_mono;
-    intros; simpl;
-    let H := iFresh in iIntros H; iNamed H
+    crash_env spatial; crash_env intuit
   end.
+
+Ltac iCrash :=
+  crash_ctx;
+  iApply (modus_ponens with "[-]"); [ iNamedAccu | ];
+  rewrite ?post_crash_named ?post_crash_sep; iApply post_crash_mono;
+  intros; simpl;
+  let H := iFresh in iIntros H; iNamed H.
 
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.

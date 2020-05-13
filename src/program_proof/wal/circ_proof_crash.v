@@ -32,20 +32,26 @@ Proof.
   rewrite /IntoCrash. iApply post_crash_nodep.
 Qed.
 
-Instance  is_circular_state_durable γ (σ : circΣ.t):
+Global Instance  is_circular_state_durable γ (σ : circΣ.t):
   IntoCrash (is_circular_state γ σ) (λ _, is_circular_state γ σ).
 Proof. apply _. Qed.
 
+Lemma is_circular_state_post_crash σ γ P':
+  (IntoCrash (P σ) (P' σ)) →
+  is_circular_state γ σ ∗ P σ -∗ post_crash (λ hG, is_circular_state γ σ ∗ P' σ hG).
+Proof. iIntros (?) "His". rewrite /is_circular. iCrash. eauto. Qed.
+
 Lemma is_circular_post_crash γ P' :
-  (∀ s, IntoCrash (▷ P s) (P' s)) →
-  is_circular N P γ ={↑N, ∅}=∗ post_crash (λ hG, ∃ σ, is_circular_state γ σ ∗ P' σ hG).
+  (∀ s, IntoCrash (P s) (P' s)) →
+  is_circular N P γ ={↑N, ∅}=∗ ▷ post_crash (λ hG, ∃ σ, is_circular_state γ σ ∗ P' σ hG).
 Proof.
   iIntros (?) "His".
   rewrite /is_circular.
-  iInv "His" as "Hinner" "Hclo".
+  iInv "His" as "Hinner" "_".
   iDestruct "Hinner" as (σ) "(>His&HP)".
   rewrite difference_diag_L.
-  iModIntro. iCrash. iExists _. iFrame.
+  iModIntro. iNext. iPoseProof (is_circular_state_post_crash with "[$]") as "H".
+  iCrash. eauto.
 Qed.
 
 (* Once the circular buffer is initialized or recovered, the is_circular

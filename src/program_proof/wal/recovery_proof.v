@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 From Perennial.program_proof Require Import wal.circ_proof_crash.
+From Perennial.goose_lang Require Import crash_modality.
 
 Section goose_lang.
 Context `{!heapG Σ}.
@@ -41,14 +42,27 @@ Proof.
   iIntros "Hfm". by iMod (fmcounter.fmcounter_get_lb with "[$]") as "($&$)".
 Qed.
 
-(* XXX: this used to have a postcondition that would give you some σ' which was
-   the crash of σ:
+Existing Instance own_into_crash.
 
-      ⌜relation.denote (log_crash) σ σ' tt⌝ ∗
+Lemma is_wal_inner_durable_post_crash γ σ P':
+  (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
+  is_wal_inner_durable γ σ ∗ P σ -∗
+  post_crash (λ hG, ∃ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗ is_wal_inner_durable γ σ' ∗ P' σ' hG).
+Proof.
+  iIntros (Hcrash) "(His_wal&HP)".
+  rewrite /is_wal_inner_durable.
+  iNamed "His_wal".
+  iNamed "Hdisk".
+  (* How do we fish out the σ' that we're going to crash to ? *)
+Abort.
 
-   However, I think simulating the crash to σ' should be
-   done using post_crash modality at the time when we initially
-   crashed. mkLog_recover is itself a no-op at the spec level. *)
+Lemma is_wal_post_crash γ P' l:
+  (∀ σ σ', relation.denote (log_crash) σ σ' tt →
+           IntoCrash (P σ) (P' σ')) →
+  is_wal P l γ ={↑walN, ∅}=∗ ▷
+  post_crash (λ hG, ∃ σ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗ is_wal_inner_durable γ σ' ∗ P' σ' hG).
+Proof.
+Abort.
 
 Theorem wpc_mkLog_recover k E2 d γ σ :
   {{{ is_wal_inner_durable γ σ }}}
