@@ -1056,7 +1056,7 @@ Proof.
 Qed.
 *)
 
-Theorem wp_txn__doCommit l q γ bufs buflist bufamap E :
+Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
   {{{ is_txn l γ ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -1065,13 +1065,13 @@ Theorem wp_txn__doCommit l q γ bufs buflist bufamap E :
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
             own γ.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
-            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ emp ) )
+            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ) )
   }}}
     Txn__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
       if ok then
         ∃ txn_id,
-        txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id commitpos ∗
+        txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id commitpos ∗ Q txn_id ∗
         [∗ map] a ↦ buf ∈ bufamap,
           mapsto_txn γ a (existT _ buf.(bufData))
       else
@@ -1385,7 +1385,7 @@ Check big_sepML_map_val_exists.
 *)
 Admitted.
 
-Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) E :
+Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) E (Q : nat -> iProp Σ) :
   {{{ is_txn l γ ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -1395,16 +1395,14 @@ Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) E
             let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
             ⌜bufamap ≠ ∅⌝ ∗
             own γ.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
-            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ emp ) ∗
-          "Hcrashstates_fupd_empty" ∷ (
-            ⌜bufamap = ∅⌝ ∗
-            own γ.(txn_crashstates) (◯ (Excl' σl))
-            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ emp ) )
+            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl))  ))
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait #id
   {{{ (ok : bool), RET #ok;
       if ok then
-        ∃ (txn_id : nat),
+        ( ⌜bufamap ≠ ∅⌝ -∗ ∃ (txn_id : nat),
+          Q txn_id ∗
+          ( ⌜wait=true⌝ -∗ own γ.(txn_walnames).(wal_heap_durable_lb) (◯ (txn_id : mnat)) ) ) ∗
         [∗ map] a ↦ buf ∈ bufamap,
           mapsto_txn γ a (existT _ buf.(bufData))
       else
@@ -1445,22 +1443,22 @@ Proof.
 
     wp_pures.
     destruct ok; wp_pures.
-    + iDestruct "Hbufpost" as (txn_id) "[#Hpos Hbufamap]".
+    + iDestruct "Hbufpost" as (txn_id) "(#Hpos & Hq & Hbufamap)".
       destruct wait; wp_pures.
       * iNamed "Htxn".
         wp_loadField.
         wp_apply (wp_Walog__Flush_heap with "[$Hiswal $Hpos]").
         iIntros "HQ".
         wp_load.
-        iApply "HΦ".
-        iExists txn_id.
-        iFrame.
+        iApply "HΦ". iFrame.
+        iIntros (?). iExists txn_id. iFrame.
+        done.
 
       * wp_pures.
         wp_load.
-        iApply "HΦ".
-        iExists txn_id.
-        iFrame.
+        iApply "HΦ". iFrame.
+        iIntros (?). iExists txn_id. iFrame.
+        iIntros (?). intuition congruence.
 
     + wp_apply util_proof.wp_DPrintf.
       wp_store.
@@ -1476,14 +1474,14 @@ Proof.
     wp_load.
     iApply "HΦ".
 
-    iExists (0%nat).
-
     iDestruct (is_slice_sz with "Hbufs") as %Hbuflistlen.
     assert (int.val bufs.(Slice.sz) = 0) by (revert n; word).
     assert (length (list.untype buflist) = 0%nat) by word.
     rewrite fmap_length in H0.
     apply length_zero_iff_nil in H0; subst.
-    iApply big_sepM_empty. done.
+
+    iSplit; last by iApply big_sepM_empty.
+    iIntros. congruence.
 Admitted.
 
 Theorem wp_Txn__GetTransId l γ :
