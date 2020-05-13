@@ -36,6 +36,7 @@ Record txn_names := {
   txn_kinds : gmap u64 bufDataKind
 }.
 
+
 Definition mapsto_txn (γ : txn_names) first (l : addr) (v : {K & bufDataT K}) : iProp Σ :=
   ∃ γm,
     "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) first l v ∗
@@ -1093,7 +1094,7 @@ Proof using txnG0 lockG0 Σ.
         "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh' ∗
         "Hmapstos" ∷ ( [∗ map] k↦x ∈ bufamap,
           ∃ first data,
-            mapsto_log (hG := γ.(txn_logheap)) first (Some txn_id) k 1 (existT x.(bufKind) data) ∗
+            mapsto_cur (hG := γ.(txn_logheap)) first k (existT x.(bufKind) data) ∗
             mapsto_txn γ txn_id k (existT _ x.(bufData)) ) ∗
         "Hpos" ∷ txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id npos
     )%I
