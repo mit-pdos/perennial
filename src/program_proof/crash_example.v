@@ -35,19 +35,44 @@ Definition LogSz := 513.
 Definition A0 := LogSz + 0.
 Definition A1 := LogSz + 1.
 
+Definition is_ver γ (v : state.ver) : iProp Σ :=
+  "Hv0" ∷ is_lock (mapsto (hG := γ) (Build_addr A0 0) 1%Qp (existT _ (bufBlock v.(state.b0)))) ∗
+  "Hv1" ∷ is_lock (mapsto (Build_addr A1 0) 1%Qp (existT _ (bufBlock v.(state.b1)))).
+
+Definition is_state (l : loc) γ (sl : state.t) : iProp Σ :=
+  ∃ txn_id,
+    "#Histxn" ∷ is_txn l γ ∗
+    "Hpossible" ∷ is_ver γ (latest sl).
+
+
+
+
 Definition is_ver (M : addr -> {K & bufDataT K} -> iProp Σ) (v : state.ver) : iProp Σ :=
   "Hv0" ∷ M (Build_addr A0 0) (existT _ (bufBlock v.(state.b0))) ∗
   "Hv1" ∷ M (Build_addr A1 0) (existT _ (bufBlock v.(state.b1))).
 
 Definition is_state (l : loc) γ (sl : state.t) : iProp Σ :=
   ∃ txn_id,
-    "Histxn" ∷ is_txn l γ ∗
+    "#Histxn" ∷ is_txn l γ ∗
     "Hpossible" ∷ [∗ list] i ↦ s ∈ possible sl,
       is_ver (λ a v, mapsto_range (hG := γ.(txn_logheap)) (txn_id+i) (S txn_id+i) a 1%Qp v) s.
 
+(* Q1: where does mapsto_txn go?
+  could go into lockmap, but is this the way it's usually done?
+*)
+
+(* Q2: how to re-prove [is_ver] for a new txn_id without decomposing into mapsto facts? *)
+
 Example is_state_write_0 l γ sl first data' data E :
   is_state l γ sl ∗
-  mapsto_txn γ first (Build_addr A0 0) (existT KindBlock data') ={E}=∗
+  mapsto_txn γ first (Build_addr A0 0) (existT KindBlock data')
+(*
+  ( ∀ a q v,
+      a ∉ writtenBufs ->
+      mapsto_range γ first (S first) a q v -∗
+      mapsto_range γ (S first) (S (S first)) a q v )
+*)
+  ={E}=∗
   ∃ txn_id,
     is_state l γ (async_put (set state.b0 (λ _, data) (latest sl)) sl) ∗
     mapsto_txn γ txn_id (Build_addr A0 0) (existT KindBlock (bufBlock data)).
@@ -61,16 +86,28 @@ Proof.
   iDestruct (mapsto_cur_range_agree with "Hmapsto_log Hv0") as %Hagree.
   { admit. }
 
+  iNamed "Histxn".
+(*
+  iInv "Histxna" as "Htxinv". "Htxinv_close".
+*)
+  iDestruct (mapsto_cur_snapshot with "[] Hmapsto_log") as "[Hmapsto_log Hmapsto_snap]".
+  { admit. }
+
   iModIntro.
   iExists 0%nat.
-  iSplitL.
-  { iExists _. iFrame "Histxn".
+  iSplitR "Hmapsto_log Hmapsto_meta Hmod_frag".
+  2: { iExists _. iFrame. admit. }
+
+  { iExists _. iSplitR.
+    { admit. }
     iFrame. rewrite big_sepL_nil.
     iSplitR; first by done.
     simpl.
     iSplitL; last by done.
     unfold is_ver.
     unfold set. simpl.
+    
+  }
 Admitted.
 
 

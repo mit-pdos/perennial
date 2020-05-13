@@ -1109,11 +1109,39 @@ Proof using txnG0 lockG0 Σ.
     rewrite /memappend_pre.
     rewrite /memappend_crash_pre.
 
-(*
     iDestruct (gmap_addr_by_block_big_sepM with "Hmapstos") as "Hmapstos".
-
     iDestruct (big_sepM2_filter _ (λ k, is_Some (gmap_addr_by_block bufamap !! k)) with "Hheapmatch") as "[Hheapmatch_in Hheapmatch_out]".
     iDestruct (big_sepM2_sepM_1 with "Hheapmatch_in") as "Hheapmatch_in".
+
+(*
+
+action items:
+
+- gmap curry
+- big_sepM2 from two big_sepM's that agree on keys
+- big_sepML factored into L-to-M existential correspondence
+- big_sepMmany
+
+*)
+
+(* Iris has a gmap_addr_by_block!!  gmap prod *)
+
+(*
+
+updlist ->
+[Hupdmap]
+bufamap ->
+[Hmapstos]
+logm.(latest) ->
+[Hheapmatch]
+olds
+
+*)
+
+
+(*
+
+
 
     iDestruct (big_sepML_sepM2_shift with "[Hupdmap] []") as "Hupdmap2".
 
@@ -1160,14 +1188,6 @@ Search _ gmap ∅.
 
 
 Check big_sepML_map_val_exists.
-
-updlist ->
-[Hupdmap]
-bufamap ->
-[Hmapstos]
-logm.(latest) ->
-[Hheapmatch]
-olds
 
 *)
 
