@@ -83,7 +83,8 @@ End definitions.
 
 
 Lemma seq_heap_init `{log_heapPreG L V Σ} σl:
-  ⊢ |==> ∃ _ : log_heapG L V Σ, log_heap_ctx σl.
+  ⊢ |==> ∃ _ : log_heapG L V Σ, log_heap_ctx σl ∗
+    [∗ map] l↦v ∈ latest σl, mapsto_cur l v.
 Proof.
 Admitted.
 
@@ -112,16 +113,24 @@ Section log_heap.
   Proof.
   Admitted.
 
+  Lemma log_heap_at_txn_get σl σ txnid :
+    possible σl !! txnid = Some σ ->
+    log_heap_ctx σl -∗
+      log_heap_at_txn txnid σ.
+  Proof.
+  Admitted.
+
   Global Instance log_heap_at_txn_persistent txnid σ : Persistent (log_heap_at_txn txnid σ).
   Proof.
   Admitted.
 
   Lemma log_heap_append σl σmod :
     log_heap_ctx σl -∗
-      ( [∗ map] l↦v ∈ σmod, mapsto_cur l v ) ==∗
+      ( [∗ map] l↦v ∈ σmod, ∃ v', mapsto_cur l v' ) ==∗
       let σ := σmod ∪ (latest σl) in
       log_heap_ctx (async_put σ σl) ∗
-      log_heap_at_txn (length (possible σl)) σ.
+      log_heap_at_txn (length (possible σl)) σ ∗
+      ( [∗ map] l↦v ∈ σmod, mapsto_cur l v ).
   Proof.
   Admitted.
 

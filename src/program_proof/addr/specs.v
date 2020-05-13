@@ -329,6 +329,11 @@ Fixpoint gmap_addr_by_block_helper (ml : list (addr * T)) : gmap u64 (gmap u64 T
 Definition gmap_addr_by_block (m : gmap addr T) : gmap u64 (gmap u64 T) :=
   gmap_addr_by_block_helper (map_to_list m).
 
+(* TODO: convert to using [gmap_uncurry].  Probably requires changing the
+  definition of the [addr] type to be a tuple.  That requires changing all
+  the uses of [a.(addrBlock)] to be [addrBlock a], etc. *)
+
+
 Theorem gmap_addr_by_block_helper_permutation l l' :
   Permutation l l' ->
   NoDup (fst <$> l) ->
