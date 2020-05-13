@@ -274,13 +274,8 @@ Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id diskEnd_txn_id 
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
-Definition is_durable γ txns installed_txn_id diskEnd_txn_id : iProp Σ :=
-  ∃ (cs: circΣ.t),
-    "Howncs" ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
+Definition is_durable γ cs txns installed_txn_id diskEnd_txn_id : iProp Σ :=
     "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id diskEnd_txn_id⌝.
-
-Global Instance is_durable_timeless γ txns installed_txn_id diskEnd_txn_id :
-  Timeless (is_durable γ txns installed_txn_id diskEnd_txn_id) := _.
 
 Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
     "%Hinstalled_bound" ∷ ⌜(installed_lb ≤ installed_txn_id)%nat⌝ ∗
@@ -301,7 +296,7 @@ Definition disk_inv γ s (cs: circΣ.t) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
       "Howncs"     ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
-      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
 

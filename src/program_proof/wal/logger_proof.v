@@ -183,7 +183,6 @@ Proof.
     iNext.
     iExists _; iFrame.
     iSplitR; auto.
-    (* TODO: seem to be two copies of own γ.(cs_name) (◯ Excl' cs) in the invariant *)
     iExists _, installed_txn_id, nextDiskEnd_txn_id.
 Admitted.
 
