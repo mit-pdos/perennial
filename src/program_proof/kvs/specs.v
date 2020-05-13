@@ -91,7 +91,6 @@ Proof.
   iIntros (ϕ ϕc) "_ Hϕ".
   rewrite /MkKVS.
   wpc_pures; eauto.
-  wpc_bind (super.MkFsSuper _).
 Admitted.
 
  Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key blk:

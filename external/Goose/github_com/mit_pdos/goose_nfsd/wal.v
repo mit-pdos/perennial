@@ -187,11 +187,16 @@ Definition sliding__posForAddr: val :=
     let: ("pos", "ok") := MapGet (struct.loadF sliding.S "addrPos" "s") "a" in
     ("pos", "ok").
 
-(* update does an in-place absorb of an update to u *)
+(* update does an in-place absorb of an update to u
+
+   internal to sliding *)
 Definition sliding__update: val :=
   rec: "sliding__update" "s" "pos" "u" :=
     SliceSet (struct.t Update.S) (SliceSkip (struct.t Update.S) (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - struct.loadF sliding.S "start" "s")) ("pos" - struct.loadF sliding.S "mutable" "s") "u".
 
+(* append writes an update that cannot be absorbed
+
+   internal to sliding *)
 Definition sliding__append: val :=
   rec: "sliding__append" "s" "u" :=
     let: "pos" := struct.loadF sliding.S "start" "s" + slice.len (struct.loadF sliding.S "log" "s") in
