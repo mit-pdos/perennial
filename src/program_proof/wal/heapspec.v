@@ -20,7 +20,7 @@ Class walheapG (Σ: gFunctors) :=
   { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
     walheap_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
     walheap_mnat :> inG Σ (authR mnatUR);
-    walheap_asyncCrashHeap :> inG Σ (ghostR $ asyncO (u64 * gmap u64 Block));
+    walheap_asyncCrashHeap :> inG Σ (ghostR $ asyncO (gmap u64 Block));
     walheap_heap :> heapG Σ;
     walheap_wal :> walG Σ
   }.
@@ -58,21 +58,19 @@ Record wal_heap_gnames := {
   wal_heap_walnames : @wal_names Σ
 }.
 
-Definition wal_heap_inv_crash (pos : u64) (crashheap : gmap u64 Block)
+Definition wal_heap_inv_crash (crashheap : gmap u64 Block)
       (base : disk) (txns_prefix : list (u64 * list update.t)) : iProp Σ :=
   let txn_disk := apply_upds (txn_upds txns_prefix) base in
-    "%Htxnpos" ∷ ⌜ fst <$> last txns_prefix = Some pos ⌝ ∗
     "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), crashheap !! a = txn_disk !! int.val a ⌝.
 
-Definition wal_heap_inv_crashes (heaps : async (u64 * gmap u64 Block)) (ls : log_state.t) : iProp Σ :=
+Definition wal_heap_inv_crashes (heaps : async (gmap u64 Block)) (ls : log_state.t) : iProp Σ :=
   "%Hcrashes_complete" ∷ ⌜ length (possible heaps) = length ls.(log_state.txns) ⌝ ∗
   "Hpossible_heaps" ∷ [∗ list] i ↦ asyncelem ∈ possible heaps,
     let txn_id := (1 + i)%nat in
-    wal_heap_inv_crash (fst asyncelem) (snd asyncelem)
-      ls.(log_state.d) (take txn_id ls.(log_state.txns)).
+    wal_heap_inv_crash asyncelem ls.(log_state.d) (take txn_id ls.(log_state.txns)).
 
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
-  ∃ (gh : gmap u64 heap_block) (crash_heaps : async (u64 * gmap u64 Block)),
+  ∃ (gh : gmap u64 heap_block) (crash_heaps : async (gmap u64 Block)),
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ own γ.(wal_heap_txns) (● (Excl' (ls.(log_state.d), ls.(log_state.txns)))) ∗
@@ -1387,10 +1385,10 @@ Qed.
 Definition memappend_crash_pre γh (bs: list update.t) crash_heaps : iProp Σ :=
   "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps).
 
-Definition memappend_crash γh (bs: list update.t) (crash_heaps : async (u64 * gmap u64 Block)) pos lwh' : iProp Σ :=
-  let new_crash_heap := apply_upds_u64 (snd $ latest crash_heaps) bs in
+Definition memappend_crash γh (bs: list update.t) (crash_heaps : async (gmap u64 Block)) lwh' : iProp Σ :=
+  let new_crash_heap := apply_upds_u64 (latest crash_heaps) bs in
   is_locked_walheap γh lwh' ∗
-  own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (pos, new_crash_heap) crash_heaps)).
+  own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (new_crash_heap) crash_heaps)).
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑walN, E}=>
@@ -1398,7 +1396,7 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
         memappend_pre γh.(wal_heap_h) bs olds ∗
         memappend_crash_pre γh bs crash_heaps ∗
         ( ∀ pos lwh',
-            memappend_crash γh bs crash_heaps pos lwh' ∗
+            memappend_crash γh bs crash_heaps lwh' ∗
             memappend_q γh.(wal_heap_h) bs olds
           ={E, ⊤ ∖ ↑walN}=∗ txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps) + 1) pos -∗ Q pos ) ) -∗
   is_locked_walheap γh lwh -∗
@@ -1441,9 +1439,10 @@ Proof using walheapG0.
   iDestruct (big_sepL_app with "Hpossible_heaps") as "[_ Hlatest]".
   simpl.
   iDestruct "Hlatest" as "[Hlatest _]".
+  rewrite /wal_heap_inv_crash.
   iNamed "Hlatest".
 
-  iMod (ghost_var_update _ (async_put (pos', apply_upds_u64 (snd $ latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
+  iMod (ghost_var_update _ (async_put (apply_upds_u64 (latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
 
   iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _)).
 
@@ -1478,7 +1477,6 @@ Proof using walheapG0.
   }
   2: {
     rewrite /possible app_length /= in Hcrashes_complete.
-    rewrite -> firstn_all2 in Htxnpos by lia.
     rewrite -> firstn_all2 in Hcrashheap_contents by lia.
 
     iSplitR.
@@ -1489,8 +1487,6 @@ Proof using walheapG0.
     2: { iSplitL; last by done.
       rewrite firstn_all2.
       2: { rewrite app_length -Hcrashes_complete /possible app_length /=. lia. }
-      iSplitR.
-      { iPureIntro. rewrite last_snoc //. }
       iPureIntro. intros a0. simpl.
       rewrite txn_upds_app apply_upds_app /=.
       unfold txn_upds at 1; simpl. rewrite app_nil_r.
@@ -1505,7 +1501,7 @@ Proof using walheapG0.
       apply lookup_lt_Some in Hkh. lia. }
     iSplitL; last by done.
     rewrite -> take_app_alt by lia.
-    iSplit; eauto.
+    eauto.
   }
 
   intuition.

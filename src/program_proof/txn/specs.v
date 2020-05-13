@@ -97,7 +97,7 @@ Definition is_txn_always (γ : txn_names) : iProp Σ :=
   (
     ∃ (logm : async (gmap addr {K & bufDataT K}))
       (metam : gmap addr gname)
-      (crash_heaps : async (u64 * gname)),
+      (crash_heaps : async (gmap u64 Block)),
       "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
       "Hcrashstates" ∷ own γ.(txn_crashstates) (● (Excl' logm)) ∗
       "Hmetactx" ∷ gen_heap_ctx (hG := γ.(txn_metaheap)) metam ∗
@@ -108,10 +108,9 @@ Definition is_txn_always (γ : txn_names) : iProp Σ :=
           "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
       "Hcrashheaps" ∷ own γ.(txn_walnames).(wal_heap_crash_heaps) (◯ (Excl' crash_heaps)) ∗
       "Hcrashheapsmatch" ∷ ( [∗ list] logmap;walheap ∈ possible logm;possible crash_heaps,
-        [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block logmap,
-          ∃ walblock blockK,
+        [∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
+          ∃ blockK,
             "%Htxn_cb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
-            "Htxn_cb" ∷ mapsto (hG := GenHeapG_Pre _ _ _ crashPreG (snd walheap)) blkno 1 walblock ∗
             "Htxn_in_cb" ∷ bufDataTs_in_crashblock walblock blkno blockK offmap )
   )%I.
 
@@ -1131,8 +1130,6 @@ action items:
 - big_sepMmany
 
 *)
-
-(* Iris has a gmap_addr_by_block!!  gmap prod *)
 
 (*
 
