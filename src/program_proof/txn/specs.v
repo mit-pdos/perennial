@@ -575,8 +575,10 @@ Opaque struct.t.
       iSplitR "Hbufamap_done_mapsto Hmapto".
       2: {
         iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_mapsto").
-        simpl. iExists _, _. iFrame.
-        admit.
+        intuition.
+        rewrite e.
+        iExists _, _.
+        iFrame.
       }
       rewrite /map_insert.
       rewrite gmap_addr_by_block_insert.
