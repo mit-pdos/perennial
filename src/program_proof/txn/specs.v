@@ -38,7 +38,7 @@ Record txn_names := {
 
 Definition mapsto_txn (γ : txn_names) first (l : addr) (v : {K & bufDataT K}) : iProp Σ :=
   ∃ γm,
-    "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) first l 1 v ∗
+    "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) first l v ∗
     "Hmapsto_meta" ∷ mapsto (hG := γ.(txn_metaheap)) l 1 γm ∗
     "Hmod_frag" ∷ own γm (◯ (Excl' true)).
 
@@ -202,7 +202,7 @@ Proof using txnG0 lockG0 Σ.
   wp_call.
 
   wp_apply (wp_Walog__ReadMem _ (λ mb,
-    "Hmapsto_log" ∷ mapsto_log first None a 1 v ∗
+    "Hmapsto_log" ∷ mapsto_cur first a v ∗
     "Hmapsto_meta" ∷ mapsto a 1 γm ∗
     match mb with
     | Some b =>
@@ -218,7 +218,7 @@ Proof using txnG0 lockG0 Σ.
     iNamed "Hinv_inner".
     iModIntro.
 
-    iDestruct (log_heap_valid_latest with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+    iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
     iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
     eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
@@ -316,7 +316,7 @@ Proof using txnG0 lockG0 Σ.
 
   wp_apply (wp_Walog__ReadInstalled _
     (λ b,
-      "Hmapsto_log" ∷ mapsto_log first None a 1 v ∗
+      "Hmapsto_log" ∷ mapsto_cur first a v ∗
       "Hmapsto_meta" ∷ mapsto a 1 γm ∗
       "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝ ∗
       "Hmod_frag" ∷ own γm (◯ Excl' true)
@@ -332,7 +332,7 @@ Proof using txnG0 lockG0 Σ.
     iNamed "Hinv_inner".
     iModIntro.
 
-    iDestruct (log_heap_valid_latest with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+    iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
     iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
     eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
@@ -575,6 +575,7 @@ Opaque struct.t.
       2: {
         iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_mapsto").
         simpl. iExists _, _. iFrame.
+        admit.
       }
       rewrite /map_insert.
       rewrite gmap_addr_by_block_insert.
