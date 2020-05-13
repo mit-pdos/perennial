@@ -16,6 +16,7 @@ Typeclasses Opaque struct_field_mapsto.
 
 Class walG Σ :=
   { wal_circ         :> circG Σ;
+    wal_txns_map     :> gen_heapPreG nat (u64 * list update.t) Σ;
     wal_circ_state   :> inG Σ (ghostR $ circO);
     wal_txn_id       :> inG Σ (ghostR $ prodO u64O natO);
     wal_list_update  :> inG Σ (ghostR $ listO updateO);
@@ -219,8 +220,7 @@ Definition is_installed_read γ d txns installed_lb : iProp Σ :=
   ([∗ map] a ↦ _ ∈ d,
     ∃ (b: Block),
       ⌜∃ txn_id', (installed_lb ≤ txn_id' ≤ length txns)%nat ∧
-      let txns := take txn_id' txns in
-      apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
+      apply_upds (txn_upds (take txn_id' txns)) d !! a = Some b⌝ ∗
       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
 
 Global Instance is_installed_read_Timeless {γ d txns installed_lb} :
@@ -294,9 +294,15 @@ Definition txns_ctx γ txns : iProp Σ :=
 
 Definition disk_inv γ s (cs: circΣ.t) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
-      "Howncs"     ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
       "Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
+
+Definition disk_inv_durable γ s (cs: circΣ.t) : iProp Σ :=
+ ∃ installed_txn_id diskEnd_txn_id,
+      "#Hinstalled" ∷ is_installed_read γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) ∗
+      "#Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
 
@@ -306,15 +312,14 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "Hmem" ∷ is_wal_mem l γ ∗
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
     "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ cs, disk_inv γ s cs
+    "Hdisk" ∷ ∃ cs, "Howncs" ∷ own γ.(cs_name) (◯ Excl' cs) ∗ "Hdisk" ∷ disk_inv γ s cs
 .
 
 (* XXX: should we reset the ghost state? In which case many of these components can be removed *)
 Definition is_wal_inner_durable γ s : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
-    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
-    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv γ s cs ∗ "Hcirc" ∷ is_circular_state γ.(circ_name) cs
+    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv_durable γ s cs ∗
+                    "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
 
 (* This is produced by recovery as a post condition, can be used to get is_wal *)
@@ -384,6 +389,36 @@ Proof.
   rewrite /is_txn.
   rewrite lookup_list_to_imap.
   by intros ->.
+Qed.
+
+Lemma gen_heap_init_strong `{Countable L, !gen_heapPreG L V Σ} σ :
+  ⊢ |==> ∃ _ : gen_heapG L V Σ, gen_heap_ctx σ ∗ [∗ map] k↦v ∈ σ, mapsto k 1 v.
+Proof.
+Admitted.
+
+Global Instance circ_names_inhabited : Inhabited circ_names := populate!.
+
+Definition wal_names_dummy {hG:gen_heapPreG nat (u64 * list update.t) Σ} : wal_names.
+  constructor; try exact inhabitant.
+  constructor; try exact inhabitant.
+  apply _.
+Defined.
+
+Theorem alloc_txns_ctx E txns :
+  ↑nroot.@"readonly" ⊆ E →
+  ⊢ |={E}=> ∃ γtxns, txns_ctx (set txns_ctx_name (λ _, γtxns) wal_names_dummy) txns.
+Proof.
+  iIntros (Hsub).
+  iMod (gen_heap_init_strong (list_to_imap txns)) as (γtxns) "(Hctx & Hmapsto)".
+  iExists γtxns.
+  iFrame "Hctx".
+  iApply big_sepM_fupd.
+  iApply (big_sepM_mono with "Hmapsto").
+  intros i txn **; simpl.
+  iIntros "Hmapsto".
+  iMod (readonly_alloc_1 with "Hmapsto") as "Hreadonly".
+  rewrite /txn_val; iFrame.
+  auto.
 Qed.
 
 Theorem alloc_txn_pos pos upds γ txns E :

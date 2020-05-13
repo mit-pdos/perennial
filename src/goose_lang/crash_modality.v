@@ -214,6 +214,13 @@ Section IntoCrash.
       * intros. setoid_rewrite Nat.add_succ_r. setoid_rewrite <-Nat.add_succ_l. eauto.
   Qed.
 
+  Global Instance big_sepM_into_crash `{Countable K} :
+    ∀ (A : Type) Φ (Ψ : heapG Σ → K → A → iProp Σ) (m : gmap K A),
+    (∀ (k : K) (x : A), IntoCrash (Φ k x) (λ hG, Ψ hG k x)) →
+    IntoCrash ([∗ map] k↦x ∈ m, Φ k x)%I (λ hG, [∗ map] k↦x ∈ m, Ψ hG k x)%I.
+  Proof.
+  Admitted.
+
   Lemma into_crash_post_crash_frame_l P P' `{!IntoCrash P P'} Q:
     P -∗ post_crash Q -∗ post_crash (λ hG', P' hG' ∗ Q hG').
   Proof. iIntros "HP HQ". rewrite (@into_crash _ _ P). iApply post_crash_sep. iFrame. Qed.

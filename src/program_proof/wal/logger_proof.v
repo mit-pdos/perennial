@@ -183,7 +183,11 @@ Proof.
     iNext.
     iExists _; iFrame.
     iSplitR; auto.
-    iExists _, installed_txn_id, nextDiskEnd_txn_id.
+    iExists _; iFrame.
+    iNamed "Hdisk".
+    iExists installed_txn_id, nextDiskEnd_txn_id.
+    iFrame "# ∗".
+    (* TODO: extend is_durable and is_durable_txn *)
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :

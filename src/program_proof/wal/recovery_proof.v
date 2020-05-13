@@ -44,17 +44,85 @@ Qed.
 
 Existing Instance own_into_crash.
 
-Lemma is_wal_inner_durable_post_crash γ σ P':
-  (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
-  is_wal_inner_durable γ σ ∗ P σ -∗
-  post_crash (λ hG, ∃ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗ is_wal_inner_durable γ σ' ∗ P' σ' hG).
+Definition log_crash_to σ diskEnd_txn_id :=
+  set log_state.durable_lb (λ _, diskEnd_txn_id)
+      (set log_state.txns (take diskEnd_txn_id) σ).
+
+Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
+  is_durable_txn γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
+  is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
+  ⌜relation.denote log_crash σ (log_crash_to σ diskEnd_txn_id) tt⌝.
 Proof.
-  iIntros (Hcrash) "(His_wal&HP)".
+  iNamed 1.
+  rewrite /is_durable.
+  iNamed 1.
+  iPureIntro.
+  simpl.
+  eexists _ diskEnd_txn_id; simpl; monad_simpl.
+  constructor.
+  split; try lia.
+  eapply is_highest_txn_bound; eauto.
+Qed.
+
+Ltac iPersist H :=
+  let H' := (eval cbn in (String.append "#" H)) in
+  iDestruct H as H'.
+
+Instance is_installed_Durable γ d txns txn_id :
+  IntoCrash (is_installed_read γ d txns txn_id)
+            (λ _, is_installed_read γ d txns txn_id).
+Proof. apply _. Qed.
+
+Lemma log_crash_to_wf σ σ' x :
+  wal_wf σ →
+  relation.denote log_crash σ σ' x →
+  wal_wf σ'.
+Proof.
+  simpl.
+  intros Hwf Htrans; monad_inv.
+  destruct_and! Hwf; split_and!; simpl.
+  - rewrite /log_state.updates; simpl.
+    rewrite /addrs_wf.
+    admit. (* txn_upds (take) is a prefix, then use Forall_take *)
+  - rewrite fmap_take.
+    admit. (* list_mono of take *)
+  - lia.
+  - len.
+Admitted.
+
+Lemma is_wal_inner_durable_post_crash l γ σ cs P':
+  (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
+  "Hinner" ∷ is_wal_inner l γ σ ∗ "HP" ∷ P σ ∗
+  "Hcirc" ∷ is_circular_state γ.(circ_name) cs ∗ "γcs" ∷ circular_pred γ cs  -∗
+  post_crash (λ hG, ∃ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗
+                            is_wal_inner_durable γ σ' ∗
+                            P' σ' hG).
+Proof.
+  rewrite /circular_pred.
+  iIntros (Hcrash). iNamed 1.
   rewrite /is_wal_inner_durable.
-  iNamed "His_wal".
+  iNamed "Hinner".
   iNamed "Hdisk".
-  (* How do we fish out the σ' that we're going to crash to ? *)
-Abort.
+  iNamed "Hdisk".
+  iPersist "Hdurable".
+  unify_ghost.
+  clear cs; rename cs0 into cs.
+  iDestruct (is_installed_weaken_read with "Hinstalled") as "[Hinstalled _]".
+  set (σ':= log_crash_to σ diskEnd_txn_id).
+  iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
+  specialize (Hcrash _ Htrans).
+  iCrash.
+  iExists _; iFrame "% ∗".
+  iSplit.
+  { iPureIntro.
+    eapply log_crash_to_wf; eauto. }
+  iExists cs; iFrame.
+  rewrite /disk_inv_durable.
+  iExists installed_txn_id, diskEnd_txn_id; simpl.
+  iSplitL "Hinstalled".
+  { admit. (* TODO: is_installed_read needs an upper bound of diskEnd_txn_id for this to be true *) }
+  admit. (* TODO: figure out how these pure facts are preserved *)
+Admitted.
 
 Lemma is_wal_post_crash γ P' l:
   (∀ σ σ', relation.denote (log_crash) σ σ' tt →
@@ -63,6 +131,11 @@ Lemma is_wal_post_crash γ P' l:
   post_crash (λ hG, ∃ σ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗ is_wal_inner_durable γ σ' ∗ P' σ' hG).
 Proof.
 Abort.
+
+(* holds for log states which are possible after a crash (essentially these have
+no mutable state) *)
+Definition wal_post_crash σ: Prop :=
+  σ.(log_state.durable_lb) = length σ.(log_state.txns).
 
 Theorem wpc_mkLog_recover k E2 d γ σ :
   {{{ is_wal_inner_durable γ σ }}}
@@ -102,6 +175,8 @@ Proof.
   iMod (thread_own_alloc with "Hdisk") as (γdiskEnd_avail_name) "(HdiskEnd_exactly&Hthread_end)".
   iMod (start_is_get_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
   iMod (thread_own_alloc with "Hstart") as (γstart_avail_name) "(Hstart_exactly&Hthread_start)".
+  iMod (ghost_var_alloc σ.(log_state.txns)) as (γtxns_name) "(γtxns & Howntxns)".
+  (* TODO: allocate txns with alloc_txns_ctx *)
   set (γ' := (set circ_name (λ _, γcirc') γ)).
 
   wpc_frame_compl "Hupd_slice HdiskEnd_exactly Hstart_exactly".
@@ -145,9 +220,9 @@ Proof.
     rewrite //= /diskEnd_linv/diskStart_linv -Heq_plus.
     iFrame. iFrame "Hdisk_atLeast Hstart_atLeast".
     rewrite /memLog_linv //=.
-
     admit.
   }
+
 Abort.
 
 Theorem wpc_MkLog_recover stk k E1 E2 d γ σ :

@@ -45,6 +45,7 @@ Proof.
   iDestruct "Hinv" as (σ) "(Hinner&HP)".
   iNamed "Hinner".
   iNamed "Hdisk".
+  iNamed "Hdisk".
   iNamed "circ.end".
   pose proof (is_highest_txn_bound Hend_txn) as Hend_bound.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
@@ -64,7 +65,8 @@ Proof.
       econstructor; monad_simpl; lia. }
   - simpl.
     iFrame.
-    iExists _, _, _; iFrame "# ∗".
+    iExists _; iFrame.
+    iExists _, _; iFrame "# ∗".
     eauto.
 Qed.
 
@@ -81,6 +83,7 @@ Proof.
   iIntros "#Hcirc Hinv #Hlb #Hpos_txn Hfupd".
   iDestruct "Hinv" as "[Hinner HP]".
   iNamed "Hinner".
+  iNamed "Hdisk".
   iNamed "Hdisk".
   iNamed "circ.end".
   iMod (is_circular_diskEnd_lb_agree with "Hlb Hcirc Howncs") as "(%Hlb&Howncs)".
@@ -115,7 +118,8 @@ Proof.
         word. }
       lia.
   }
-  iExists _, installed_txn_id, diskEnd_txn_id; iFrame "# ∗".
+  iExists _; iFrame.
+  iExists installed_txn_id, diskEnd_txn_id; iFrame "# ∗".
   iExists diskEnd.
   iPureIntro.
   split_and!; simpl; auto.

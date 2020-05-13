@@ -494,7 +494,8 @@ Proof.
               eapply is_mem_memLog_endpos_highest; eauto. }
           simpl.
           iDestruct "Hdisk" as (cs) "Hdisk".
-          iExists cs.
+          iNamed "Hdisk".
+          iExists cs; iFrame.
           iApply (disk_inv_append with "Hdisk").
         }
 

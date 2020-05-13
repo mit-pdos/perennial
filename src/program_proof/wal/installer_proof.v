@@ -101,6 +101,7 @@ Proof.
     iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
     iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
     iNamed "Hdisk".
+    iNamed "Hdisk".
 
     iDestruct (is_installed_to_read with "Hinstalled") as "[>Hinstalled_read Hinstalled]".
     iDestruct (in_bounds_valid _ σ with "Ha_valid") as %Hlookup.
@@ -125,7 +126,8 @@ Proof.
     iExists _; iFrame "HP".
     iFrame.
     iSplit; auto.
-    iExists _, _, _; iFrame "# ∗".
+    iExists _; iFrame.
+    iExists _, _; iFrame "# ∗".
     auto.
   }
   iIntros (s b) "(HQ&Hs)".
