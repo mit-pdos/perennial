@@ -18,10 +18,9 @@ Canonical Structure asyncO T := leibnizO (async T).
 
 Class walheapG (Σ: gFunctors) :=
   { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
-    walheap_u64_Block :> gen_heapPreG u64 Block Σ;
     walheap_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
     walheap_mnat :> inG Σ (authR mnatUR);
-    walheap_asyncCrashHeap :> inG Σ (ghostR $ asyncO (u64 * gname));
+    walheap_asyncCrashHeap :> inG Σ (ghostR $ asyncO (u64 * gmap u64 Block));
     walheap_heap :> heapG Σ;
     walheap_wal :> walG Σ
   }.
@@ -30,8 +29,6 @@ Section heap.
 
 Context `{!walheapG Σ}.
 Context `{!lockG Σ}.
-
-Definition crashPreG : gen_heapPreG u64 Block Σ := _.
 
 (* Invariant and definitions *)
 
@@ -61,15 +58,13 @@ Record wal_heap_gnames := {
   wal_heap_walnames : @wal_names Σ
 }.
 
-Definition wal_heap_inv_crash (pos : u64) (crashheap : gname)
+Definition wal_heap_inv_crash (pos : u64) (crashheap : gmap u64 Block)
       (base : disk) (txns_prefix : list (u64 * list update.t)) : iProp Σ :=
   let txn_disk := apply_upds (txn_upds txns_prefix) base in
-  ∃ (heapdisk : gmap u64 Block),
     "%Htxnpos" ∷ ⌜ fst <$> last txns_prefix = Some pos ⌝ ∗
-    "Hcrashheap" ∷ gen_heap_ctx (hG := GenHeapG_Pre _ _ _ crashPreG crashheap) heapdisk ∗
-    "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), heapdisk !! a = txn_disk !! int.val a ⌝.
+    "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), crashheap !! a = txn_disk !! int.val a ⌝.
 
-Definition wal_heap_inv_crashes (heaps : async (u64 * gname)) (ls : log_state.t) : iProp Σ :=
+Definition wal_heap_inv_crashes (heaps : async (u64 * gmap u64 Block)) (ls : log_state.t) : iProp Σ :=
   "%Hcrashes_complete" ∷ ⌜ length (possible heaps) = length ls.(log_state.txns) ⌝ ∗
   "Hpossible_heaps" ∷ [∗ list] i ↦ asyncelem ∈ possible heaps,
     let txn_id := (1 + i)%nat in
@@ -77,7 +72,7 @@ Definition wal_heap_inv_crashes (heaps : async (u64 * gname)) (ls : log_state.t)
       ls.(log_state.d) (take txn_id ls.(log_state.txns)).
 
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
-  ∃ (gh : gmap u64 heap_block) (crash_heaps : async (u64 * gname)),
+  ∃ (gh : gmap u64 heap_block) (crash_heaps : async (u64 * gmap u64 Block)),
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ own γ.(wal_heap_txns) (● (Excl' (ls.(log_state.d), ls.(log_state.txns)))) ∗
@@ -1403,7 +1398,7 @@ Definition memappend_crash γh (bs: list update.t) (unmodifiedBlocks:  gmap u64 
     ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γnewcrash) a 1 b ) ∗
     ( [∗ list] u ∈ bs, mapsto (hG := γnewcrash) u.(update.addr) 1 u.(update.b) ) ∗
     txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos.
-                                         
+
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑walN, E}=>
       ∃ olds unmodifiedBlocks crash_heaps,
