@@ -69,17 +69,18 @@ Section definitions.
                      end in
     own (log_heap_name hG) (● (to_log_heap σfun)).
 
-  Definition mapsto_cur (first: nat) (l: L) (v: V) : iProp Σ.
+  Definition mapsto_cur (l: L) (v: V) : iProp Σ.
   Proof using hG.
-    (* require [first < length (possible σl)] *)
+    (* l ↦ v in latest σ *)
   Admitted.
 
-  Definition mapsto_txn (txnid: nat) (l: L) (v: V) : iProp Σ.
+  Definition log_heap_at_txn (txnid: nat) (m: gmap L V) : iProp Σ.
   Proof using hG.
-    (* require [first < length (possible σl)] *)
+    (* require [txnid < length (possible σl)] *)
   Admitted.
 
 End definitions.
+
 
 Lemma seq_heap_init `{log_heapPreG L V Σ} σl:
   ⊢ |==> ∃ _ : log_heapG L V Σ, log_heap_ctx σl.
@@ -97,43 +98,30 @@ Section log_heap.
   Implicit Types l : L.
   Implicit Types v : V.
 
-  Lemma log_heap_valid_cur σl l v first :
+  Lemma log_heap_valid_cur σl l v :
     log_heap_ctx σl -∗
-      mapsto_cur first l v -∗
+      mapsto_cur l v -∗
       ⌜latest σl !! l = Some v⌝.
   Proof.
   Admitted.
 
-  Lemma log_heap_valid_txn σl l v txnid :
+  Lemma log_heap_valid_txn σl σ txnid :
     log_heap_ctx σl -∗
-      mapsto_txn txnid l v -∗
-      ∃ σ,
-        ⌜possible σl !! txnid = Some σ ∧ σ !! l = Some v⌝.
+      log_heap_at_txn txnid σ -∗
+      ⌜possible σl !! txnid = Some σ⌝.
   Proof.
   Admitted.
 
-  Lemma mapsto_cur_advance σl l v first first' :
-    first ≤ first' < length (possible σl) ->
-    log_heap_ctx σl -∗
-      mapsto_cur first l v -∗
-      mapsto_cur first' l v.
+  Global Instance log_heap_at_txn_persistent txnid σ : Persistent (log_heap_at_txn txnid σ).
   Proof.
   Admitted.
 
-  Lemma mapsto_cur_txn_agree first txnid l v v' :
-    first ≤ txnid ->
-    mapsto_cur first l v -∗
-    mapsto_txn txnid l v' -∗
-    ⌜ v = v' ⌝.
-  Proof.
-  Admitted.
-
-  Lemma log_heap_append σl σmod l v v' first :
+  Lemma log_heap_append σl σmod :
     log_heap_ctx σl -∗
-      ( [∗ map] l↦v ∈ σmod, mapsto_cur first l v ) ==∗
-      ( let σ := σmod ∪ (latest σl) in
-        log_heap_ctx (async_put σ σl) ∗
-        [∗ map] l↦v ∈ σ, mapsto_txn (length (possible σl)) l v ).
+      ( [∗ map] l↦v ∈ σmod, mapsto_cur l v ) ==∗
+      let σ := σmod ∪ (latest σl) in
+      log_heap_ctx (async_put σ σl) ∗
+      log_heap_at_txn (length (possible σl)) σ.
   Proof.
   Admitted.
 
