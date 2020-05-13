@@ -106,8 +106,7 @@ Theorem wp_Walog__logAppend l circ_l γ σₛ :
       "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
       "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
-      "#Hwal" ∷ inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
-      "#Hcirc" ∷ is_circular circN (circular_pred γ) γ.(circ_name) ∗
+      "#Hwal" ∷ is_wal P l γ ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "Hlocked" ∷ locked γ.(lock_name) ∗
       "Hlogger" ∷ log_inv γ circ_l
@@ -142,12 +141,25 @@ Proof.
   }
   iNamed "HdiskEnd_circ".
   iMod (thread_own_get with "HdiskEnd_exactly HnotLogging") as "(HdiskEnd_exactly&HdiskEnd_is&HareLogging)".
+  iNamed "HmemLog_linv".
   iNamed "Hstart_circ".
-  wp_loadField.
+  iDestruct "HmemStart_txn" as "#HmemStart_txn".
+  iDestruct "HnextDiskEnd_txn" as "#HnextDiskEnd_txn".
+  iMod (txn_pos_valid_locked with "Hwal HmemStart_txn Howntxns") as "(%HmemStart_txn&Howntxns)".
+  iMod (txn_pos_valid_locked with "Hwal HnextDiskEnd_txn Howntxns") as "(%HnextDiskEnd_txn&Howntxns)".
+  (* XXX: should duplicate monotonicity of txns to lock invariant *)
+  iMod (get_txns_are _ _ _ _ memStart_txn_id (S nextDiskEnd_txn_id) with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
+  { admit. }
+  (* use this to also strip a later *)
+  wp_apply (wp_loadField_ro with "HmemLock").
+  iDestruct "Htxns_are" as "#Htxns_are".
   wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs $His_lock $Hlocked]").
   { iExists _; iFrame "# ∗".
-    iExists _; iFrame "% ∗". }
+    iSplitR "Howntxns HmemEnd_txn".
+    - iExists _; iFrame "% ∗".
+    - iExists _, _, _; iFrame "# % ∗". }
   wp_loadField.
+  iDestruct "Hwal" as "[Hwal Hcirc]".
   wp_apply (wp_circular__Append _ _ (emp) with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least]").
   { rewrite subslice_length; word. }
   { rewrite subslice_length; word. }
@@ -164,10 +176,15 @@ Proof.
     iNamed.
     iNamed "Hdisk".
     iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
-    (* TODO: need to be able to checkpoint knowledge of the transactions based
-    on the memLog while we still have the log, and then connect that to the new
-    transactions after opening the invariant. txns is append-only, so the
-    knowledge that we had about the prefix still applies *)
+    iMod (txns_are_sound with "Htxns_ctx Htxns_are") as "(%Htxns_are & Htxns_ctx)"; first by solve_ndisj.
+    iMod (ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iModIntro.
+    iSplitL; [ | done ].
+    iNext.
+    iExists _; iFrame.
+    iSplitR; auto.
+    (* TODO: seem to be two copies of own γ.(cs_name) (◯ Excl' cs) in the invariant *)
+    iExists _, installed_txn_id, nextDiskEnd_txn_id.
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :

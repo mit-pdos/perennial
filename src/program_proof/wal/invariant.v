@@ -460,6 +460,23 @@ Proof.
   iSplit; eauto.
 Qed.
 
+(* XXX: I have an explosion of these variants that differ in laters, because I only need the timeless part of txn_ctx;
+ should I be using ▷^n txns_ctx? or doing something else ? *)
+Theorem txn_val_valid' γ txns E txn_id txn :
+  ↑nroot.@"readonly" ⊆ E ->
+  ▷ txns_ctx γ txns -∗
+  txn_val γ txn_id txn -∗
+  |={E}=> ⌜txns !! txn_id = Some txn⌝ ∗ ▷ txns_ctx γ txns.
+Proof.
+  rewrite /txns_ctx /txn_val.
+  iIntros (Hsub) "[>Hctx Htxns] Hval".
+  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
+  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
+  rewrite lookup_list_to_imap in Hlookup.
+  iIntros "!>".
+  iSplit; eauto.
+Qed.
+
 Theorem txn_val_valid γ txns E txn_id txn :
   ↑nroot.@"readonly" ⊆ E ->
   txns_ctx γ txns -∗
@@ -552,9 +569,9 @@ Qed.
 
 Theorem txns_are_sound γ E txns start txns_sub :
   ↑nroot.@"readonly" ⊆ E →
-  txns_ctx γ txns -∗
+  ▷ txns_ctx γ txns -∗
   txns_are γ start txns_sub -∗
-  |={E}=> ⌜subslice start (start + length txns_sub)%nat txns = txns_sub⌝ ∗ txns_ctx γ txns.
+  |={E}=> ⌜subslice start (start + length txns_sub)%nat txns = txns_sub⌝ ∗ ▷ txns_ctx γ txns.
 Proof.
   iIntros (Hsub) "Hctx Htxns_are".
   iInduction txns_sub as [|txn txns_sub] "IH" forall (start).
@@ -565,7 +582,7 @@ Proof.
     lia.
   - simpl.
     iDestruct (txns_are_cons with "Htxns_are") as "[Htxn_start Htxns_are]".
-    iMod (txn_val_valid with "Hctx Htxn_start") as "(%Hstart&Hctx)"; auto.
+    iMod (txn_val_valid' with "Hctx Htxn_start") as "(%Hstart&Hctx)"; auto.
     iMod ("IH" with "Hctx Htxns_are") as "(%&Hctx)".
     iFrame.
     iPureIntro.
@@ -598,20 +615,22 @@ Proof.
 Qed.
 
 Theorem get_txns_are l γ txns start till txns_sub :
-  txns_sub = subslice start (start + length txns_sub)%nat txns →
-  till = (start + length txns_sub)%nat →
-  (start + length txns_sub ≤ length txns)%nat →
+  txns_sub = subslice start till txns →
+  (start ≤ till < length txns)%nat →
   own γ.(txns_name) (◯ Excl' txns) -∗
   is_wal l γ -∗
   |={⊤}=> ▷ txns_are γ start txns_sub ∗ own γ.(txns_name) (◯ Excl' txns).
 Proof.
-  intros; subst till.
+  intros.
   iIntros "Hown #Hwal".
-  iInduction txns_sub as [|txn txns_sub] "IH" forall (start H H1).
+  iInduction txns_sub as [|txn txns_sub] "IH" forall (start till H H0).
   - rewrite /txns_are /=.
     by iFrame.
-  - rewrite txns_are_cons.
-    simpl in H1.
+  - assert (start ≠ till).
+    { intros ->.
+      rewrite subslice_none in H; try lia.
+      inversion H. }
+    rewrite txns_are_cons.
     iDestruct "Hwal" as "[Hwal _]".
     iInv "Hwal" as (σ) "[Hinner HP]".
     iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(Htxns_ctx & >γtxns & Hinner)".
@@ -627,11 +646,8 @@ Proof.
       iApply "Hinner"; iFrame. }
     iMod ("IH" $! (S start) with "[] [] Hown") as "(Htxns_are & Hown)".
     { iPureIntro.
-      f_equal.
-      rewrite -> subslice_length by lia.
-      lia. }
-    { rewrite -> subslice_length by lia.
-      iPureIntro; lia. }
+      f_equal. }
+    { iPureIntro; lia. }
     iModIntro.
     iFrame.
 Qed.
