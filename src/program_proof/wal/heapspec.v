@@ -1384,29 +1384,22 @@ Proof.
     intro Hne. apply n. word.
 Qed.
 
-Definition memappend_crash_pre γh (bs: list update.t) (unmodifiedBlocks:  gmap u64 Block) crash_heaps γoldcrash : iProp Σ :=
-  "Hunmodified" ∷ ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
-  "%Hnooverlap" ∷ ⌜ ∀ u, u ∈ bs -> unmodifiedBlocks !! u.(update.addr) = None ⌝ ∗
+Definition memappend_crash_pre γh (bs: list update.t) crash_heaps : iProp Σ :=
   "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps).
 
-Definition memappend_crash γh (bs: list update.t) (unmodifiedBlocks:  gmap u64 Block)
-           crash_heaps γoldcrash pos lwh' new_crash_heap : iProp Σ :=
-  let γnewcrash := GenHeapG_Pre _ _ _ crashPreG new_crash_heap in
-     is_locked_walheap γh lwh' ∗
-     own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (pos, new_crash_heap) crash_heaps)) ∗
-    ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γoldcrash) a 1 b ) ∗
-    ( [∗ map] a ↦ b ∈ unmodifiedBlocks, mapsto (hG := γnewcrash) a 1 b ) ∗
-    ( [∗ list] u ∈ bs, mapsto (hG := γnewcrash) u.(update.addr) 1 u.(update.b) ) ∗
-    txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos.
+Definition memappend_crash γh (bs: list update.t) crash_heaps pos lwh'
+           new_crash_heap : iProp Σ :=
+  is_locked_walheap γh lwh' ∗
+  own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (pos, new_crash_heap) crash_heaps)) ∗
+  txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos.
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑walN, E}=>
-      ∃ olds unmodifiedBlocks crash_heaps,
-        let γoldcrash := GenHeapG_Pre _ _ _ crashPreG (snd (latest crash_heaps)) in
+      ∃ olds crash_heaps,
         memappend_pre γh.(wal_heap_h) bs olds ∗
-        memappend_crash_pre γh bs unmodifiedBlocks crash_heaps γoldcrash ∗
+        memappend_crash_pre γh bs crash_heaps ∗
         ( ∀ pos lwh' new_crash_heap,
-            memappend_crash γh bs unmodifiedBlocks crash_heaps γoldcrash pos lwh'
+            memappend_crash γh bs crash_heaps pos lwh'
                             new_crash_heap ∗
             memappend_q γh.(wal_heap_h) bs olds
           ={E, ⊤ ∖ ↑walN}=∗ Q pos ) ) -∗
@@ -1428,11 +1421,8 @@ Proof using walheapG0.
   simpl in *; monad_inv.
   simpl in *.
 
-  iMod "Hpre" as (olds unmodifiedBlocks crash_heaps0) "(Hpre & Hprecrash & Hfupd)".
+  iMod "Hpre" as (olds crash_heaps0) "(Hpre & Hprecrash & Hfupd)".
   iNamed "Hprecrash".
-
-  iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as "%"; subst.
-  rename crash_heaps0 into crash_heaps.
 
   iDestruct (memappend_pre_nodup with "Hpre") as %Hnodup.
 
