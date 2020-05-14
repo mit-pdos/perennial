@@ -7,10 +7,8 @@ From Perennial.program_proof Require Import proof_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import kvs.
 From Perennial.program_proof Require Import txn.specs buftxn.specs.
-From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import marshal_proof.
 
 Module kvpair.
   Record t :=
@@ -21,7 +19,6 @@ Module kvpair.
 End kvpair.
 
 Section heap.
-Context `{!heapG Σ}.
 Context `{!crashG Σ}.
 Context `{!lockG Σ}.
 Context `{!buftxnG Σ}.
@@ -128,10 +125,7 @@ Proof.
     * wp_apply wp_panic.
       destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. lia.
     * wp_loadField.
-      Set Printing Implicit.
-          Check wp_buftxn_Begin.
-      wp_bind (buftxn.Begin _).
-      wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
+      wp_apply (wp_buftxn_Begin with "Htxn").
       iIntros (buftx γt) "Hbtxn".
       wp_let.
       wp_call.
@@ -145,7 +139,7 @@ Proof.
       iMod (BufTxn_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]"; iFrame; eauto.
       { iApply big_sepM_singleton; auto. }
 
-      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn HkeyMt]").
+      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[Hbtxn HkeyMt]").
       -- iSplitL "Hbtxn"; auto.
          iSplitL "HkeyMt".
          {
