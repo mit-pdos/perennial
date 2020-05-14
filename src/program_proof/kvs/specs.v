@@ -61,7 +61,7 @@ Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz:
       ⌜bs = snd slice_kvp⌝ ∗
       is_block bs 1 blk.
 
-Definition kvpairs_valid_match (pairs: list kvpair.t) kvsblks γDisk sz : iProp Σ :=
+Definition kvpairs_valid_match (pairs: list kvpair.t) (kvsblks : gmap specs.addr {K & defs.bufDataT K}) γDisk sz : iProp Σ :=
   [∗ list] kvp ∈ pairs, let '(kvpair.mk key bs) := kvp in
                         (∃ blk, is_block bs 1 blk ∗ mapsto_txn γDisk key (defs.bufBlock blk)
         ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock (defs.bufBlock blk))⌝
@@ -78,9 +78,9 @@ Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K
       )⌝
       ∗ [∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I.
 
-Definition crashed_kvs kvp_ls kvsblks γDisk : iProp Σ :=
+Definition crashed_kvs kvp_ls kvsblks γDisk sz : iProp Σ :=
       ([∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I
-      ∗ kvpairs_match kvp_ls γDisk.
+      ∗ kvpairs_valid_match kvp_ls kvsblks γDisk sz.
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
