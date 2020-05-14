@@ -91,6 +91,7 @@ Proof.
   iIntros (ϕ ϕc) "_ Hϕ".
   rewrite /MkKVS.
   wpc_pures; eauto.
+  wpc_bind (super.MkFsSuper _).
 Admitted.
 
  Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key blk:
@@ -128,6 +129,9 @@ Proof.
     * wp_apply wp_panic.
       destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. lia.
     * wp_loadField.
+      Set Printing Implicit.
+          Check wp_buftxn_Begin.
+      wp_bind (buftxn.Begin _).
       wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".
       wp_let.
