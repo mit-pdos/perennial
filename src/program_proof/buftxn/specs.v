@@ -24,11 +24,11 @@ Definition is_buftxn (buftx : loc)
                      (γT : gen_heapG addr {K & bufDataT K} Σ)
                      γUnified : iProp Σ :=
   (
-    ∃ (l : loc) mT (bufmap : loc) (gBufmap : gmap addr buf) (txid : u64) γcrash,
+    ∃ (l : loc) mT (bufmap : loc) (gBufmap : gmap addr buf) (txid : u64),
       buftx ↦[BufTxn.S :: "txn"] #l ∗
       buftx ↦[BufTxn.S :: "bufs"] #bufmap ∗
       buftx ↦[BufTxn.S :: "Id"] #txid ∗
-      is_txn l γUnified γcrash ∗
+      is_txn l γUnified ∗
       is_bufmap bufmap gBufmap ∗
       gen_heap_ctx (hG := γT) mT ∗
       ( [∗ map] a ↦ b ∈ gBufmap,
@@ -41,14 +41,15 @@ Definition is_buftxn (buftx : loc)
                      | Some buf => bufDirty buf
                      end in
         if dirty then
-          ∃ (v0 : bufDataT (projT1 v)),
-            mapsto_txn γUnified a v0
+         (*  XXX old: ∃ (v0 : bufDataT (projT1 v)),
+            mapsto_txn γUnified a v0 *)
+          mapsto_txn γUnified a v
         else
-          mapsto_txn γUnified a (projT2 v) )
+          mapsto_txn γUnified a v )
   )%I.
 
-Theorem wp_buftxn_Begin l γUnified γcrash :
-  {{{ is_txn l γUnified γcrash
+Theorem wp_buftxn_Begin l γUnified:
+  {{{ is_txn l γUnified
   }}}
     Begin #l
   {{{ (buftx : loc) γt, RET #buftx;
@@ -69,7 +70,7 @@ Proof.
   iMod (gen_heap_init (gen_heapPreG0:=buftxn_bufs) ∅) as (γt) "Htxctx".
   wp_pures.
   iApply "HΦ".
-  iExists _, _, _, _, _, _.
+  iExists _, _, _, _, _.
   iFrame.
   rewrite big_sepM_empty. iFrame "Htxn ∗".
   iSplit. { iApply big_sepM_empty. done. }
@@ -141,7 +142,7 @@ Proof.
           eauto. }
       }
 
-      iSplitL "Hvalid".
+v      iSplitL "Hvalid".
       {
         iDestruct (big_sepM_insert_acc with "Hvalid") as "[Ha Hvalid]"; eauto.
         iApply "Hvalid"; eauto.
