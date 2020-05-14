@@ -329,6 +329,16 @@ Section map2.
     iIntros "Hm".
   Admitted.
 
+  Lemma big_sepM_sepM2_merge (Φ : K -> A -> PROP) (Ψ : K -> B -> PROP)
+    (m1 : gmap K A) (m2 : gmap K B) :
+    dom (gset K) m1 = dom (gset K) m2 ->
+    ( [∗ map] k↦y1 ∈ m1, Φ k y1 ) ∗
+    ( [∗ map] k↦y2 ∈ m2, Ψ k y2 ) -∗
+    [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 ∗ Ψ k y2.
+  Proof.
+    iIntros (Hdom) "[Hm1 Hm2]".
+  Admitted.
+
   Lemma big_sepM2_sepM_merge Φ (Ψ : K -> A -> PROP) (m1 : gmap K A) (m2 : gmap K B)
       (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
     ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) ∗
