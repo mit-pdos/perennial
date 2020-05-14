@@ -478,15 +478,19 @@ Proof.
     iDestruct (big_sepM_lookup with "Hbufmapt") as %Ha2; eauto.
     rewrite Ha2 in Hnone; congruence.
   }
-
-  iDestruct (mapsto_txn_valid with "Ha") as %Havalid.
+  
+  iNamed "Htxn".
+  iDestruct (mapsto_txn_valid with "[Ha Histxna]") as "Havalid".
+  {
+    (* XXX *)
+  }
   iDestruct (mapsto_txn_valid_off with "Ha") as %Havalidoff.
-
+  
   iMod ((gen_heap_alloc _ _ v) with "Hγtctx") as "[Hγtctx Haa]"; eauto.
   iModIntro.
   iSplitR "Haa"; [|iFrame].
 
-  iExists _, _, _, _, _, _.
+  iExists _, _, _, _, _.
   iFrame.
   iSplitL "Hbufmapt".
   { iApply big_sepM_mono; iFrame.
