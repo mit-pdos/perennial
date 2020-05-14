@@ -41,9 +41,8 @@ Definition is_buftxn (buftx : loc)
                      | Some buf => bufDirty buf
                      end in
         if dirty then
-         (*  XXX old: ∃ (v0 : bufDataT (projT1 v)),
-            mapsto_txn γUnified a v0 *)
-          mapsto_txn γUnified a v
+          ∃ (v0 : bufDataT (projT1 v)),
+            mapsto_txn γUnified a (existT _ v0)
         else
           mapsto_txn γUnified a v )
   )%I.
@@ -97,7 +96,7 @@ Theorem wp_BufTxn__ReadBuf buftx γt γUnified a sz v :
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & Ha & ->) HΦ".
-  iDestruct "Htxn" as (l mT bufmap gBufmap txid γcrash)
+  iDestruct "Htxn" as (l mT bufmap gBufmap txid)
     "(Hl & Hbufmap & Htxid & #Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".
   iDestruct (gen_heap_valid with "Hγtctx Ha") as %HmT_a2.
   iDestruct (big_sepM_lookup with "Hvalid") as "%"; eauto.
@@ -126,7 +125,7 @@ Proof.
       iMod (gen_heap_update with "Hγtctx Ha") as "[Hγtctx Ha]".
       iFrame "Ha".
       iModIntro.
-      iExists _, _, _, _, _, _.
+      iExists _, _, _, _, _.
       iFrame "# ∗".
       iDestruct (big_sepM_lookup with "Hbufmapt") as %HmT_a; eauto.
       iSplitL "Hbufmapt".
@@ -142,7 +141,7 @@ Proof.
           eauto. }
       }
 
-v      iSplitL "Hvalid".
+      iSplitL "Hvalid".
       {
         iDestruct (big_sepM_insert_acc with "Hvalid") as "[Ha Hvalid]"; eauto.
         iApply "Hvalid"; eauto.
@@ -163,7 +162,7 @@ v      iSplitL "Hvalid".
     + subst.
       iFrame "Ha".
       iModIntro.
-      iExists _, _, _, _, _, _.
+      iExists _, _, _, _, _.
       iFrame "# ∗".
       iDestruct (big_sepM_lookup with "Hbufmapt") as %HmT_a; eauto.
       iSplitL "Hbufmapt".
@@ -222,7 +221,7 @@ v      iSplitL "Hvalid".
       iMod (gen_heap_update with "Hγtctx Ha") as "[Hγtctx Ha]".
       iFrame "Ha".
       iModIntro.
-      iExists _, _, _, _, _, _.
+      iExists _, _, _, _, _.
       iFrame "# ∗".
 
       rewrite insert_insert.
@@ -260,7 +259,7 @@ v      iSplitL "Hvalid".
     + subst.
       iFrame "Ha".
       iModIntro.
-      iExists _, _, _, _, _, _.
+      iExists _, _, _, _, _.
       iFrame "# ∗".
 
       rewrite insert_insert.
@@ -298,7 +297,7 @@ Proof using.
   iIntros (Φ) "(Htxn & Ha & Hvslice & -> & %) HΦ".
 Opaque struct.t.
   wp_call.
-  iDestruct "Htxn" as (l mT bufmap gBufmap txid γcrash)
+  iDestruct "Htxn" as (l mT bufmap gBufmap txid)
     "(Hl & Hbufmap & Htxid & Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".
   iDestruct (gen_heap_valid with "Hγtctx Ha") as %HmT_a2.
   iDestruct (big_sepM_lookup with "Hvalid") as "%"; eauto.
@@ -343,7 +342,7 @@ Opaque struct.t.
 
     iDestruct ("Hisbufmap" with "Hisbuf") as "Hisbufmap".
 
-    iExists _, _, _, _, _, _.
+    iExists _, _, _, _, _.
     iFrame.
     rewrite /=.
 
@@ -406,7 +405,7 @@ Opaque struct.t.
     iApply "HΦ".
     iFrame "Ha".
 
-    iExists _, _, _, _, _, _.
+    iExists _, _, _, _, _.
     iFrame.
     rewrite /=.
 
@@ -457,7 +456,7 @@ Theorem BufTxn_lift_one buftx γt γUnified a v :
   ).
 Proof.
   iIntros "[Htxn Ha]".
-  iDestruct "Htxn" as (l mT bufmap gBufmap txid γcrash)
+  iDestruct "Htxn" as (l mT bufmap gBufmap txid)
     "(Hl & Hbufmap & Htxid & Htxn & Hisbufmap & Hγtctx & Hbufmapt & Hvalid & Hm)".
 
   iAssert (⌜ mT !! a = None ⌝)%I as %Hnone.
