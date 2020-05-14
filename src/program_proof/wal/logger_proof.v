@@ -89,11 +89,6 @@ Proof.
   iFrameNamed. auto.
 Qed.
 
-(** log_inv is the resources exclusively owned by the logger thread *)
-Definition log_inv γ circ_l: iProp Σ :=
-  "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
-  "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
-
 Hint Unfold slidingM.logIndex slidingM.wf : word.
 
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
@@ -109,13 +104,13 @@ Theorem wp_Walog__logAppend l circ_l γ σₛ :
       "#Hwal" ∷ is_wal P l γ ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "Hlocked" ∷ locked γ.(lock_name) ∗
-      "Hlogger" ∷ log_inv γ circ_l
+      "Hlogger" ∷ logger_inv γ circ_l
   }}}
     Walog__logAppend #l #circ_l
   {{{ (progress:bool), RET #progress;
       wal_linv σₛ.(wal_st) γ ∗
       locked γ.(lock_name) ∗
-      log_inv γ circ_l
+      logger_inv γ circ_l
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
@@ -192,7 +187,7 @@ Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :
   {{{ "#Hwal" ∷ is_wal P l γ ∗
-      "Hlogger" ∷ log_inv γ circ_l
+      "Hlogger" ∷ logger_inv γ circ_l
   }}}
     Walog__logger #l #circ_l
   {{{ RET #(); True }}}.
@@ -210,7 +205,7 @@ Proof.
   wp_apply (wp_inc_nthread with "[$st $Hlkinv]"); iIntros "Hlkinv".
   wp_pures.
   wp_bind (For _ _ _).
-  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗ log_inv γ circ_l)%I
+  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗ logger_inv γ circ_l)%I
               with "[] [$]").
   { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&Hlogger) HΦ"; iNamed "Hlogger".
     wp_apply (wp_load_shutdown with "[$st $Hlkinv]"); iIntros (shutdown) "Hlkinv".

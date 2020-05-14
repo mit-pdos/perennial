@@ -330,6 +330,15 @@ Definition is_wal (l : loc) γ : iProp Σ :=
   inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
   is_circular circN (circular_pred γ) γ.(circ_name).
 
+(** logger_inv is the resources exclusively owned by the logger thread *)
+Definition logger_inv γ circ_l: iProp Σ :=
+  "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
+  "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
+
+(* TODO: also needs authoritative ownership of some other variables *)
+Definition installer_inv γ: iProp Σ :=
+  "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available.
+
 Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
 Proof.
   iIntros "#Hwal".
