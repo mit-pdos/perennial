@@ -233,7 +233,7 @@ Definition sliding__memWrite: val :=
 Definition sliding__takeFrom: val :=
   rec: "sliding__takeFrom" "s" "start" :=
     let: "off" := struct.loadF sliding.S "start" "s" in
-    SliceSubslice (struct.t Update.S) (struct.loadF sliding.S "log" "s") ("start" - "off") (struct.loadF sliding.S "mutable" "s" - "off").
+    SliceSkip (struct.t Update.S) (SliceTake (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - "off")) ("start" - "off").
 
 (* takeTill takes the read-only updates till a logical start position (which
    should be within the read-only region; that is, end <= s.mutable) *)

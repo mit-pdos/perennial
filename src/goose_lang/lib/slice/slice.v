@@ -353,6 +353,29 @@ Lemma slice_split s (n: u64) t q vs :
            is_slice (slice_skip s t n) t q (drop (int.nat n) vs).
 *)
 
+Lemma slice_small_split s (n: u64) t q vs :
+  0 <= int.val n <= length vs →
+  is_slice_small s t q vs -∗ is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ∗
+           is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs).
+Proof.
+  iIntros (Hbounds) "Hs".
+  iDestruct "Hs" as "[Ha %]".
+  iDestruct (array_split (int.nat n) with "Ha") as "[Ha1 Ha2]"; try lia.
+  iSplitL "Ha1".
+  - iSplit; simpl.
+    + iExactEq "Ha1".
+      repeat (f_equal; try word).
+    + iPureIntro.
+      rewrite take_length.
+      word.
+  - iSplit; simpl.
+    + iExactEq "Ha2".
+      repeat (f_equal; try word).
+    + iPureIntro.
+      rewrite drop_length.
+      word.
+Qed.
+
 Lemma wp_SliceSkip' Φ stk E s t (n: u64):
   ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
   Φ (slice_val (slice_skip s t n)) -∗
@@ -366,7 +389,7 @@ Proof.
   iApply "HΦ".
 Qed.
 
-Lemma wp_SliceTake Φ stk E s t vs (n: u64):
+Lemma wp_SliceTake Φ stk E s t (n: u64):
   ⌜int.val n ≤ int.val s.(Slice.sz)⌝ -∗
   Φ (slice_val (slice_take s t n)) -∗
   WP (SliceTake (slice_val s) #n) @ stk; E {{ Φ }}.

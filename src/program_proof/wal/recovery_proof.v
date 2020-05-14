@@ -195,7 +195,7 @@ Proof.
                    (set diskEnd_avail_name (λ _, γdiskEnd_avail_name)
                         (set circ_name (λ _, γcirc') γ))))).
   wp_pures.
-  iDestruct (updates_slice_to_frag with "[$]") as "Hupd_slice".
+  iDestruct (updates_slice_cap_acc with "Hupd_slice") as "[Hupd_slice Hupds_cap]".
   wp_apply (wp_mkSliding with "[$]").
   { destruct Hwf_circ as (?&?). subst; lia. }
   iIntros (lslide) "Hsliding".
