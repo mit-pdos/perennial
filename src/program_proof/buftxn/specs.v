@@ -448,7 +448,7 @@ Qed.
 Theorem BufTxn_lift_one buftx γt γUnified a v :
   (
     is_buftxn buftx γt γUnified ∗
-    mapsto_txn γUnified a (projT2 v)
+    mapsto_txn γUnified a v
   )
     ==∗
   (
@@ -508,7 +508,7 @@ Qed.
 Theorem BufTxn_lift buftx γt γUnified (m : gmap addr {K & _}) :
   (
     is_buftxn buftx γt γUnified ∗
-    [∗ map] a ↦ v ∈ m, mapsto_txn γUnified a (projT2 v)
+    [∗ map] a ↦ v ∈ m, mapsto_txn γUnified a v
   )
     ==∗
   (
@@ -570,7 +570,7 @@ Qed.
 Theorem BufTxn_lift_pred `{!Liftable P} buftx γt γUnified :
   (
     is_buftxn buftx γt γUnified ∗
-    P (fun a v => mapsto_txn γUnified a (projT2 v))
+    P (fun a v => mapsto_txn γUnified a v)
   )
     ==∗
   (
@@ -598,7 +598,7 @@ Theorem wp_BufTxn__CommitWait buftx γt γUnified mods :
     BufTxn__CommitWait #buftx #true
   {{{
     (ok : bool), RET #ok;
-    [∗ map] a ↦ v ∈ mods, mapsto_txn γUnified a (projT2 v)
+    [∗ map] a ↦ v ∈ mods, mapsto_txn γUnified a v
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hmods) HΦ".
@@ -631,7 +631,7 @@ Theorem wp_BufTxn__CommitWait_pred `{!Liftable P} buftx γt γUnified :
     BufTxn__CommitWait #buftx #true
   {{{
     (ok: bool), RET #ok;
-    P (fun a v => mapsto_txn γUnified a (projT2 v))
+    P (fun a v => mapsto_txn γUnified a v)
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hp) HΦ".
