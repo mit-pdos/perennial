@@ -73,6 +73,25 @@ Instance is_installed_Durable γ d txns txn_id :
             (λ _, is_installed_read γ d txns txn_id).
 Proof. apply _. Qed.
 
+Lemma concat_mono {A: Type} (l1 l2: list (list A)):
+  incl l1 l2 →
+  incl (concat l1) (concat l2).
+Proof. intros Hincl a. rewrite ?in_concat. naive_solver. Qed.
+
+Lemma take_incl {A} (l: list A) n:
+  incl (take n l) l.
+Proof. intros a. rewrite -{2}(firstn_skipn n l) in_app_iff. auto. Qed.
+
+Lemma fmap_incl {A B} (f: A → B) (l l': list A):
+  incl l l' →
+  incl (fmap f l) (fmap f l').
+Proof.
+  intros Hincl a. rewrite -?elem_of_list_In.
+  intros (?&?&Hin')%elem_of_list_fmap. subst.
+  apply elem_of_list_fmap. eexists; split; eauto.
+  move: Hin'. rewrite ?elem_of_list_In. eauto.
+Qed.
+
 Lemma log_crash_to_wf σ σ' x :
   wal_wf σ →
   relation.denote log_crash σ σ' x →
@@ -80,15 +99,17 @@ Lemma log_crash_to_wf σ σ' x :
 Proof.
   simpl.
   intros Hwf Htrans; monad_inv.
-  destruct_and! Hwf; split_and!; simpl.
+  destruct Hwf as (Haddrs&Hmono&Hb1&hb2).
+  split_and!; simpl.
   - rewrite /log_state.updates; simpl.
-    rewrite /addrs_wf.
-    admit. (* txn_upds (take) is a prefix, then use Forall_take *)
-  - rewrite fmap_take.
-    admit. (* list_mono of take *)
+    eapply incl_Forall; eauto.
+    apply concat_mono, fmap_incl, take_incl.
+  - move: Hmono.
+    rewrite -{1}(firstn_skipn (crash_txn) (σ.(log_state.txns))).
+    rewrite fmap_app list_mono_app; naive_solver.
   - lia.
   - len.
-Admitted.
+Qed.
 
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
