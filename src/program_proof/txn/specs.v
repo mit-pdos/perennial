@@ -579,7 +579,7 @@ Opaque struct.t.
         iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_mapsto").
         intuition.
         rewrite e.
-        iExists _, _.
+        iExists _.
         iFrame.
       }
       rewrite /map_insert.
@@ -707,7 +707,7 @@ Opaque struct.t.
       iSplitR "Hbufamap_done_mapsto Hmapto".
       2: {
         iApply (big_sepM_insert_2 with "[Hmapto] [$Hbufamap_done_mapsto]").
-        iExists _, _. iFrame. }
+        iExists _. iFrame. }
       rewrite gmap_addr_by_block_insert.
       2: { eapply lookup_difference_None; eauto. }
       replace (blkmap') with (<[a.(addrBlock) := blkslice]> blkmap') at 2.
