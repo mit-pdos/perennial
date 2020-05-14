@@ -15,6 +15,7 @@ Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 (* TODO: prove this using new compute_memLog, probably has enough theorems to do
@@ -103,8 +104,10 @@ Proof.
   wp_pures.
   destruct ok.
   - iDestruct "Hb" as (b) "[Hb %HmemLog_lookup]".
+    iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
     iMod (simulate_read_cache_hit HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
       as "([Hinner HP]&?&?)"; iNamed.
+    iMod "HinnerN" as "_".
     iModIntro.
     iSplitL "Hinner HP".
     { iNext.
@@ -116,8 +119,10 @@ Proof.
     iApply "HΦ".
     iExists _; iFrame.
   - iDestruct "Hb" as "[-> %HmemLog_lookup]".
+    iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
     iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
       as "(Hinv&?&?)"; iNamed.
+    iMod "HinnerN" as "_".
     iModIntro.
     iFrame "Hinv".
     wp_loadField.

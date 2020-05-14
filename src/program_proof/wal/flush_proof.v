@@ -15,6 +15,7 @@ Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Theorem wal_wf_update_durable :
@@ -48,11 +49,13 @@ Proof.
   iNamed "Hdisk".
   iNamed "circ.end".
   pose proof (is_highest_txn_bound Hend_txn) as Hend_bound.
+  iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
           with "[% //] [%] [$HP]") as "[HP HQ]".
   { simpl.
     econstructor; monad_simpl.
     econstructor; monad_simpl; lia. }
+  iMod "HinnerN" as "_".
   iSpecialize ("HΦ" with "HQ").
   iFrame "HΦ".
   iIntros "!> !>".
@@ -78,7 +81,7 @@ Theorem simulate_flush l γ Q σ pos txn_id :
   (∀ (σ σ' : log_state.t) (b : ()),
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
-  |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗ Q.
+  |={⊤ ∖ ↑innerN}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗ Q.
 Proof.
   iIntros "#Hcirc Hinv #Hlb #Hpos_txn Hfupd".
   iDestruct "Hinv" as "[Hinner HP]".
@@ -86,18 +89,18 @@ Proof.
   iNamed "Hdisk".
   iNamed "Hdisk".
   iNamed "circ.end".
-  iMod (is_circular_diskEnd_lb_agree with "Hlb Hcirc Howncs") as "(%Hlb&Howncs)".
-  { admit. (* oops, shouldn't have made the circ name a subset of the wal name *) }
+  iMod (is_circular_diskEnd_lb_agree with "Hlb Hcirc Howncs") as "(%Hlb&Howncs)"; first by solve_ndisj.
   iMod (txn_pos_valid with "Htxns_ctx Hpos_txn") as (His_txn) "Htxns_ctx"; first by solve_ndisj.
   pose proof (is_txn_bound _ _ _ His_txn).
   pose proof (is_highest_txn_bound Hend_txn).
   pose proof (wal_wf_txns_mono_pos Hwf His_txn (is_highest_weaken Hend_txn)).
 
+  iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, Nat.max σ.(log_state.durable_lb) txn_id) σ) with "[% //] [%] HP") as "[HP HQ]".
   { simpl; monad_simpl.
     repeat (econstructor; monad_simpl; eauto).
-    lia.
-  }
+    lia. }
+  iMod "HinnerN" as "_".
   iFrame "HQ".
   iModIntro.
   iExists _; iFrame "HP".
@@ -127,7 +130,7 @@ Proof.
   lia.
   Grab Existential Variables.
   all: try constructor.
-Admitted.
+Qed.
 
 (* this is a dumb memory safety proof for loading nextDiskEnd when its value
 doesn't matter for correctness *)

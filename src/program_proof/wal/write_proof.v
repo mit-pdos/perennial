@@ -17,6 +17,7 @@ Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Hint Unfold slidingM.memEnd : word.
@@ -466,6 +467,7 @@ Proof.
         iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
         iMod (txn_pos_valid with "Htxns_ctx HmemStart_txn") as (HmemStart_txn) "Htxns_ctx"; first by solve_ndisj.
         iMod (txn_pos_valid with "Htxns_ctx HnextDiskEnd_txn") as (HnextDiskEnd_txn) "Htxns_ctx"; first by solve_ndisj.
+        iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
         iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σs)
                 with "[% //] [%] [$HP]") as "[HP HQ]".
         { simpl; monad_simpl.
@@ -474,6 +476,7 @@ Proof.
           destruct Hlocked_wf.
           rewrite slidingM.memEnd_ok; eauto.
           eapply is_mem_memLog_endpos_highest; eauto. }
+        iMod "HinnerN" as "_".
         iMod (ghost_var_update _ (σs.(log_state.txns) ++ [(slidingM.endPos memLog', bs)])
                 with "γtxns Howntxns") as "[γtxns Howntxns]".
         iMod (alloc_txn_pos (slidingM.endPos memLog') bs with "Htxns_ctx") as "[Htxns_ctx #Hnew_txn]".

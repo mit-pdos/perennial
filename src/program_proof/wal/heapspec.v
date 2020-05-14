@@ -1738,7 +1738,7 @@ Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn :
     ⌜ locked_wh_disk lwh !! int.val a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros (HNE) "(#Hwal & Htxnsfrag & Hmapsto)".
-  iMod (is_wal_open with "Hwal") as (σ) "[>Hheap Hclose]"; eauto.
+  iMod (is_wal_open with "Hwal") as (σ) "[>Hheap Hclose]"; first by solve_ndisj.
   iDestruct (wal_heap_mapsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
   iMod ("Hclose" with "Hheap").
   iModIntro.

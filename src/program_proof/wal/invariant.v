@@ -36,6 +36,7 @@ Implicit Types (v:val) (z:Z).
 Context (P: log_state.t -> iProp Σ).
 Definition walN := nroot .@ "wal".
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Record wal_names := mkWalNames
@@ -327,7 +328,7 @@ Definition is_wal_inv_pre (l: loc) γ s : iProp Σ :=
   is_wal_inner l γ s ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
 
 Definition is_wal (l : loc) γ : iProp Σ :=
-  inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
+  inv innerN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
   is_circular circN (circular_pred γ) γ.(circ_name).
 
 (** logger_inv is the resources exclusively owned by the logger thread *)
@@ -353,14 +354,14 @@ Proof.
 Qed.
 
 Theorem is_wal_open l wn E :
-  ↑walN ⊆ E ->
+  ↑innerN ⊆ E ->
   is_wal l wn
-  ={E, E ∖ ↑walN}=∗
+  ={E, E ∖ ↑innerN}=∗
     ∃ σ, ▷ P σ ∗
-    ( ▷ P σ ={E ∖ ↑walN, E}=∗ emp ).
+    ( ▷ P σ ={E ∖ ↑innerN, E}=∗ emp ).
 Proof.
-  iIntros (HN) "[#Hwalinv #Hcirc]".
-  iInv walN as (σ) "[Hwalinner HP]" "Hclose".
+  iIntros (HN) "[#? _]".
+  iInv innerN as (σ) "[Hwalinner HP]" "Hclose".
   iModIntro.
   iExists _. iFrame.
   iIntros "HP".
@@ -563,12 +564,12 @@ Theorem txn_pos_valid_locked l γ txns txn_id pos :
   own γ.(txns_name) (◯ Excl' txns) -∗
   |={⊤}=> ⌜is_txn txns txn_id pos⌝ ∗ own γ.(txns_name) (◯ Excl' txns).
 Proof.
-  iIntros "[#Hwal _] #Hpos Howntxns".
-  iInv "Hwal" as (σ) "[Hinner HP]".
+  iIntros "[#? _] #Hpos Howntxns".
+  iInv innerN as (σ) "[Hinner HP]".
   iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(Htxns_ctx & >γtxns & Hinner)".
   iDestruct (ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
   iFrame "Howntxns".
-  iMod (txn_pos_valid' _ _ (⊤ ∖ ↑N) with "Htxns_ctx [$Hpos]") as "(%His_txn & Hctx)"; first by solve_ndisj.
+  iMod (txn_pos_valid' _ _ (⊤ ∖ ↑innerN) with "Htxns_ctx [$Hpos]") as "(%His_txn & Hctx)"; first by solve_ndisj.
   iModIntro.
   iSplitL.
   { iNext.

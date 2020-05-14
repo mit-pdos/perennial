@@ -46,6 +46,7 @@ Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Definition in_bounds γ (a: u64): iProp Σ. Admitted.
@@ -96,7 +97,7 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ a :
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
   wp_call.
-  wp_apply (wp_Read_fupd (⊤∖↑walN) (λ b, Q b)%I _ 1 (* q=1 *) with "[Hfupd]").
+  wp_apply (wp_Read_fupd _ (λ b, Q b)%I _ 1 (* q=1 *) with "[Hfupd]").
   { iDestruct "Hwal" as "[Hwal Hcirc]".
     iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
     iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
@@ -114,12 +115,17 @@ Proof.
     iSpecialize ("Hinstalled_read" with "Hb").
     iSpecialize ("Hinstalled" with "Hinstalled_read").
     iNamed "circ.start".
+    fold innerN.
+    iMod (fupd_intro_mask' _ (⊤∖↑N)) as "HinnerN".
+    { solve_ndisj. }
+
     iMod ("Hfupd" $! σ σ b with "[//] [] HP") as "[HP HQ]".
     { iPureIntro.
       repeat (simpl; monad_simpl).
       exists σ txn_id.
       { econstructor; eauto; lia. }
       repeat (simpl; monad_simpl). }
+    iMod "HinnerN" as "_".
     iFrame.
     iApply "Hclose".
     iModIntro.

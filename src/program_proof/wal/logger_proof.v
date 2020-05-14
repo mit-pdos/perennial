@@ -165,7 +165,6 @@ Proof.
     iIntros (cs' [] [Htrans Hcirc_wf']).
     simpl in Htrans; monad_inv.
     iInv "Hwal" as (σs) "[Hinner HP]".
-    { admit. (* TODO: adjust namespaces *) }
 
     iDestruct "Hinner" as "(>%Hwf&Hmem&Htxns_ctx&>?&>?)".
     iNamed.
