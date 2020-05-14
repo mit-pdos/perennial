@@ -118,41 +118,6 @@ Proof.
     auto.
 Qed.
 
-Theorem is_slice_small_take_drop s t q n vs :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-   is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-   is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ⊣⊢
-  is_slice_small s t q vs.
-Proof.
-  intros Hbound.
-  iSplit.
-  - iIntros "(Hs1 & Hs2)".
-    iDestruct "Hs1" as "[Ha1 %Hlen1]".
-    iDestruct "Hs2" as "[Ha2 %Hlen2]".
-    autorewrite with len in Hlen1, Hlen2.
-    simpl in Hlen1, Hlen2 |- *.
-    iDestruct (array_split with "[$Ha1 $Ha2]") as "Ha"; try word.
-    iFrame.
-    iPureIntro.
-    revert Hlen1; word.
-  - iIntros "Hs".
-    iDestruct "Hs" as "[Ha %Hlen]".
-    iDestruct (array_split (int.nat n) with "Ha") as "[Ha1 Ha2]"; try word.
-    rewrite Z2Nat.id; try word.
-    iFrame.
-    iPureIntro; simpl; len.
-Qed.
-
-Theorem is_slice_small_take_drop_1 s t q n vs :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-  is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-                  is_slice_small (slice_take s t n) t q (take (int.nat n) vs) -∗
-  is_slice_small s t q vs.
-Proof.
-  intros Hbound.
-  rewrite is_slice_small_take_drop; auto.
-Qed.
-
 Theorem updates_slice_frag_split s q (n: u64) log :
   (int.nat n <= int.nat s.(Slice.sz))%nat ->
   updates_slice_frag s q log -∗
@@ -200,34 +165,6 @@ Proof.
   iExists _; iFrame.
   rewrite -{3}(take_drop (int.nat n) log).
   iApply (big_sepL2_app with "Hblocks1 Hblocks2").
-Qed.
-
-Theorem is_slice_cap_bound s t :
-  is_slice_cap s t -∗ ⌜int.val s.(Slice.sz) ≤ int.val s.(Slice.cap)⌝.
-Proof.
-  iDestruct 1 as (extra) "[% _]".
-  iPureIntro.
-  word.
-Qed.
-
-Theorem is_slice_cap_skip s t n :
-  int.val n ≤ int.val s.(Slice.sz) →
-  is_slice_cap s t -∗
-  is_slice_cap (slice_skip s t n) t.
-Proof.
-  iDestruct 1 as (extra) "[% Hextra]".
-  rewrite /slice_skip.
-  iExists extra; simpl.
-  iSplit.
-  { iPureIntro.
-    word. }
-  iExactEq "Hextra".
-  rewrite loc_add_assoc.
-  rewrite -Z.mul_add_distr_l.
-  f_equal.
-  f_equal.
-  f_equal.
-  word.
 Qed.
 
 Theorem wp_mkSliding s log (start: u64) :
@@ -296,7 +233,7 @@ Proof.
   iSplitL "Hf3".
   { rewrite /named. iExactEq "Hf3". do 3 f_equal.
     word. }
-  iDestruct (is_slice_cap_bound with "Hcap") as %Hcap.
+  iDestruct (is_slice_cap_wf with "Hcap") as %Hcap.
   iSplitR.
   - rewrite /readonly_log /slidingM.numMutable /=.
     rewrite -> take_ge by word.
@@ -421,11 +358,11 @@ Qed.
 Theorem addrPosMap_lookup_inv σ pos :
   slidingM.addrPosMap σ !! pos = (λ (n:nat), U64 (Z.of_nat (int.nat σ.(slidingM.start) + n)%nat)) <$> (find_highest_index (update.addr <$> σ.(slidingM.log)) pos).
 Proof.
-    rewrite /slidingM.addrPosMap /compute_memLogMap.
-    rewrite lookup_fmap.
-    rewrite pos_indices_lookup.
-    rewrite -option_fmap_compose.
-    auto.
+  rewrite /slidingM.addrPosMap /compute_memLogMap.
+  rewrite lookup_fmap.
+  rewrite pos_indices_lookup.
+  rewrite -option_fmap_compose.
+  auto.
 Qed.
 
 Theorem wp_sliding__posForAddr l σ (a: u64) :
@@ -745,12 +682,11 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_loadField.
+  wp_loadField.
   iDestruct (memLog_sz with "log_mutable") as %Hs.
   iMod (readonly_load with "log_readonly") as (q) "Hlog"; first by set_solver.
   iDestruct "Hlog" as (bks) "[Hs Hblocks]".
-  wp_apply (wp_SliceTake _ _ _ _ (uint64T * (blockT * unitT))%ht).
-  { iPureIntro.
-    word. }
+  wp_apply (wp_SliceTake (uint64T * (blockT * unitT))%ht); first by word.
   wp_apply wp_SliceSkip'.
   { iPureIntro.
     simpl; word. }
@@ -774,6 +710,21 @@ Proof.
   admit. (* need to do some annoying list split *)
 Admitted.
 
+Theorem wp_SliceTake_updates s (n: u64) q (upds: list update.t) :
+  int.val n ≤ length upds →
+  {{{ updates_slice_frag s q upds }}}
+    SliceTake (slice_val s) #n
+  {{{ RET (slice_val (slice_take s (struct.t Update.S) n));
+      updates_slice_frag (slice_take s (struct.t Update.S) n) q (take (int.nat n) upds) }}}.
+Proof.
+  iIntros (Hbound Φ) "Hupds HΦ".
+  iDestruct (updates_slice_frag_len with "Hupds") as %Hlen.
+  wp_apply wp_SliceTake; first by word.
+  iApply "HΦ".
+  iDestruct (updates_slice_frag_split with "Hupds") as "[_ $]".
+  word.
+Qed.
+
 Theorem wp_sliding__takeTill l σ (endPos: u64) :
   int.val σ.(slidingM.start) ≤ int.val endPos ≤ int.val σ.(slidingM.mutable) ->
   {{{ is_sliding l σ }}}
@@ -782,7 +733,24 @@ Theorem wp_sliding__takeTill l σ (endPos: u64) :
            let to := slidingM.logIndex σ endPos in
            updates_slice_frag s q (take to σ.(slidingM.log)) }}}.
 Proof.
-Admitted.
+  iIntros (Hbound Φ) "Hs HΦ".
+  iNamed "Hs"; iNamed "Hinv".
+  wp_call.
+  repeat wp_loadField.
+  iDestruct (memLog_sz with "log_mutable") as %Hsz.
+  iMod (readonly_load with "log_readonly") as (q) "Hlog"; first by set_solver.
+  wp_apply wp_SliceTake.
+  { word. }
+  wp_apply (wp_SliceTake_updates with "Hlog"); first by len.
+  iIntros "Hupds".
+  iApply "HΦ".
+  iSplitR "Hupds".
+  { iSplit; auto.
+    iExists _, _; iFrame "# ∗". }
+  rewrite take_take.
+  iExactEq "Hupds".
+  repeat (f_equal; try word).
+Qed.
 
 Theorem wp_sliding__deleteFrom l σ (newStart: u64) :
   int.val σ.(slidingM.start) ≤ int.val newStart ≤ int.val σ.(slidingM.mutable) ->
@@ -816,74 +784,6 @@ Proof.
   iPureIntro; intuition idtac.
   - word.
   - word.
-Qed.
-
-Theorem slice_skip_take_commute s t n1 n2 :
-  slice_skip (slice_take s t n1) t n2 =
-  slice_take (slice_skip s t n2) t (word.sub n1 n2).
-Proof.
-  intros.
-  destruct s as [ptr len cap]; simpl.
-  rewrite /slice_take /slice_skip; simpl.
-  f_equal.
-Qed.
-
-Lemma is_slice_nil s t q :
-  int.val s.(Slice.sz) = 0 ->
-  int.val s.(Slice.cap) = 0 ->
-  ⊢ is_slice s t q [].
-Proof.
-  destruct s as [ptr len cap]; simpl; intros.
-  iSplitL.
-  - iApply is_slice_small_nil; simpl; auto.
-  - iExists []; simpl.
-    iSplitL.
-    + iPureIntro; lia.
-    + iApply array_nil; auto.
-Qed.
-
-Theorem slice_skip_skip (n m: u64) s t :
-  int.val m ≤ int.val n ≤ int.val s.(Slice.sz) ->
-  int.val s.(Slice.sz) ≤ int.val s.(Slice.cap) ->
-  slice_skip s t n =
-  slice_skip (slice_skip s t m) t (word.sub n m).
-Proof.
-  intros Hbound Hwf.
-  rewrite /slice_skip /=.
-  f_equal.
-  - rewrite !loc_add_assoc.
-    f_equal.
-    word_cleanup.
-  - repeat word_cleanup.
-  - repeat word_cleanup.
-Qed.
-
-(* TODO: remove duplicate copy above and consolidate in slice.v *)
-Theorem is_slice_cap_wf s t :
-  is_slice_cap s t -∗ ⌜int.val s.(Slice.sz) ≤ int.val s.(Slice.cap)⌝.
-Proof.
-  iIntros "Hcap".
-  iDestruct "Hcap" as (extra) "[% Hcap]".
-  iPureIntro.
-  word.
-Qed.
-
-Theorem is_slice_wf s t q vs :
-  is_slice s t q vs -∗ ⌜int.val s.(Slice.sz) ≤ int.val s.(Slice.cap)⌝.
-Proof.
-  rewrite is_slice_split.
-  iIntros "[Hs Hcap]".
-  iDestruct (is_slice_cap_wf with "Hcap") as "$".
-Qed.
-
-Theorem is_slice_cap_skip_more s n1 n2 t :
-  int.val n1 ≤ int.val n2 ≤ int.val s.(Slice.sz) ->
-  int.val s.(Slice.sz) ≤ int.val s.(Slice.cap) ->
-  is_slice_cap (slice_skip s t n1) t -∗ is_slice_cap (slice_skip s t n2) t.
-Proof.
-  iIntros (Hbound Hwf) "Hcap".
-  rewrite (slice_skip_skip n2 n1); try (repeat word_cleanup).
-  iApply (is_slice_cap_skip with "Hcap"); simpl; try word.
 Qed.
 
 Theorem wp_sliding__clearMutable l σ :
