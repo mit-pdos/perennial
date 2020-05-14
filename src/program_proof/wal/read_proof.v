@@ -18,19 +18,86 @@ Let N := walN.
 Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
-(* TODO: prove this using new compute_memLog, probably has enough theorems to do
-it *)
-Lemma memLogMap_ok_memLog_lookup memStart (memLog: list update.t) a i :
-  int.val memStart + Z.of_nat (length memLog) < 2^64 ->
-  map_get (compute_memLogMap memLog memStart) a = (i, true) ->
-  ∃ b, memLog !! int.nat (word.sub i memStart) = Some (update.mk a b)
-  (* also, i is the highest index such that this is true *).
-Proof.
-  intros Hbound Hlookup.
-  apply map_get_true in Hlookup.
-Admitted.
-
 Opaque struct.t.
+
+Lemma fmap_app_split3_inv {A B} (f: A -> B) (l: list A) (l1 l2: list B) (x: B) :
+  f <$> l = l1 ++ [x] ++ l2 →
+  ∃ l1' x' l2',
+    l1 = f <$> l1' ∧
+    l2 = f <$> l2' ∧
+    x = f x' ∧
+    l = l1' ++ [x'] ++ l2'.
+Proof.
+  intros H.
+  apply fmap_app_inv in H as (l1' & l2' & (?&?&?)); subst.
+  symmetry in H0.
+  apply fmap_app_inv in H0 as (l1'' & l2'' & (?&?&?)); subst.
+  symmetry in H.
+  destruct l1''; try solve [ inversion H ].
+  destruct l1''; try solve [ inversion H ].
+  inversion H; subst.
+  eexists _, _, _; eauto.
+Qed.
+
+(* TODO: why does [apply_upds_insert_commute] even have a b0? *)
+Theorem apply_upds_insert_commute' upds (a: u64) b d :
+  a ∉ update.addr <$> upds →
+  apply_upds upds (<[int.val a := b]> d) =
+  <[int.val a := b]> (apply_upds upds d).
+Proof.
+  intros Hnotin.
+  apply map_eq; intros z.
+  destruct (decide (z = int.val a)); subst.
+  2: {
+    rewrite apply_upds_insert_other; auto.
+    rewrite lookup_insert_ne; auto.
+  }
+  rewrite lookup_insert.
+  rewrite apply_upds_lookup_insert_highest; auto.
+Qed.
+
+Theorem find_highest_index_apply_upds log u i :
+  find_highest_index (update.addr <$> log) u.(update.addr) = Some i →
+  log !! i = Some u →
+  apply_upds log ∅ !! (int.val u.(update.addr)) = Some u.(update.b).
+Proof.
+  intros.
+  apply find_highest_index_Some_split in H as (poss1 & poss2 & (Heq & Hnotin & <-)).
+  apply fmap_app_split3_inv in Heq as (log1 & u' & log2 & (?&?&?&?)); subst.
+  assert (u = u'); [ | subst ].
+  { autorewrite with len in H0.
+    rewrite -> lookup_app_r in H0 by lia.
+    rewrite minus_diag /= in H0.
+    congruence. }
+  clear H0 H2.
+  destruct u' as [a b]; simpl in *.
+  rewrite apply_upds_app /=.
+  rewrite apply_upds_insert_commute'; auto.
+  rewrite lookup_insert //.
+Qed.
+
+Lemma apply_upds_not_in_general (a: u64) log d :
+    forall (Hnotin: a ∉ update.addr <$> log),
+    d !! int.val a = None →
+    apply_upds log d !! int.val a = None.
+Proof.
+  revert d.
+  induction log; simpl; intros; auto.
+  destruct a0 as [a' b]; simpl in *.
+  fold (update.addr <$> log) in Hnotin.
+  apply not_elem_of_cons in Hnotin as [Hneq Hnotin].
+  rewrite IHlog; eauto.
+  rewrite lookup_insert_ne //.
+  apply not_inj; auto.
+Qed.
+
+Lemma apply_upds_not_in (a: u64) log :
+    a ∉ update.addr <$> log →
+    apply_upds log ∅ !! int.val a = None.
+Proof.
+  intros Hnotin.
+  apply apply_upds_not_in_general; auto.
+Qed.
 
 Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
   {{{ wal_linv_fields st σ ∗
@@ -49,7 +116,44 @@ Proof.
   iNamed "Hfield_ptsto".
   wp_call.
   wp_loadField.
-Admitted.
+  wp_apply (wp_sliding__posForAddr with "His_memLog").
+  iIntros (pos ok) "(His_memLog&%Hlookup)".
+  wp_pures.
+  wp_if_destruct; subst.
+  - destruct Hlookup as [Hbound Hfind].
+    wp_apply util_proof.wp_DPrintf.
+    wp_loadField.
+    (* need to identify the update that we're looking up *)
+    pose proof (find_highest_index_ok' _ _ _ Hfind) as [Hlookup Hhighest].
+    rewrite list_lookup_fmap in Hlookup.
+    apply fmap_Some_1 in Hlookup as [u [ Hlookup ->]].
+
+    wp_apply (wp_sliding__get with "His_memLog"); eauto.
+    { lia. }
+    iIntros (uv q) "(Hu & His_memLog)".
+    iDestruct "Hu" as "(%Hu&Hb)".
+    wp_apply (wp_copyUpdateBlock with "Hb").
+    iIntros (s') "[Hb Hb']".
+    iSpecialize ("His_memLog" with "Hb").
+    wp_pures.
+    iApply "HΦ".
+    iFrame "HmemLog_inv".
+    iSplitL "Hb'".
+    { iExists _; iFrame.
+      iPureIntro.
+      eapply find_highest_index_apply_upds; eauto. }
+    iExists _; by iFrame.
+  - wp_pures.
+    change (slice.nil) with (slice_val Slice.nil).
+    iApply "HΦ".
+    iFrame "HmemLog_inv".
+    iSplit.
+    { iPureIntro.
+      split; auto.
+      apply find_highest_index_none_not_in in Hlookup.
+      apply apply_upds_not_in; auto. }
+    iExists _; by iFrame.
+Qed.
 
 Theorem simulate_read_cache_hit {l γ Q σ memLog b a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = Some b ->
