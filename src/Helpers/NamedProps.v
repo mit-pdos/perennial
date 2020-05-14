@@ -16,7 +16,22 @@ From iris_string_ident Require Import ltac2_string_ident.
   patterns. This means you can write [#H] to automatically introduce to the
   persistent context, [%H] to name a pure fact (using string_to_ident), or even
   something crazy like ["[<- H]"] to destruct the hypothesis and rewrite by the
-  first conjunct. *)
+  first conjunct.
+
+  There are a few more top-level tactics provided to work with named
+  propositions:
+  - [iNamed] names any anonymous hypotheses (without destructing them)
+  - [iNamed 1] on a wand introduces and destructs the the premise.
+  - [iFrameNamed] is a work-in-progress tactic to frame a goal with named
+    conjuncts with the hypotheses using the names. This is intended to be much
+    faster than framing the entire persistent and spatial contexts.
+
+  Note that this library provides general support for propositions and are not
+  specific to definitions. You can use them in Hoare logic preconditions (to
+  make the first iIntros more stable), in the postcondition (to make it easier
+  for the caller to re-introduce hypotheses), or in loop invariants (to serve
+  both of these purposes).
+ *)
 
 Section named.
   Context {PROP:bi}.
