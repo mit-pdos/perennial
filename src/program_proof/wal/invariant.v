@@ -224,46 +224,6 @@ Definition is_installed_read γ d txns installed_lb : iProp Σ :=
       apply_upds (txn_upds (take txn_id' txns)) d !! a = Some b⌝ ∗
       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
 
-Global Instance is_installed_read_Timeless {γ d txns installed_lb} :
-  Timeless (is_installed_read γ d txns installed_lb) := _.
-
-Theorem is_installed_weaken_read γ d txns installed_lb :
-  is_installed γ d txns installed_lb -∗
-  is_installed_read γ d txns installed_lb ∗ (is_installed_read γ d txns installed_lb -∗
-                                            is_installed γ d txns installed_lb).
-Proof.
-  rewrite /is_installed /is_installed_read.
-  iIntros "I".
-  iNamed "I".
-  iSplitL "Hdata".
-  { iApply (big_sepM_mono with "Hdata").
-    iIntros (a b0 Hlookup) "HI".
-    iDestruct "HI" as (b') "(%&Hb&%)".
-    iExists b'; iFrame.
-    iPureIntro.
-    split; auto.
-    (*
-    destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_txn_id ].
-    - split; auto.
-      split; try lia.
-    - split; auto; lia. }
-  iIntros "Hmap".
-  admit.
-*)
-Admitted.
-
-Theorem is_installed_to_read γ d txns installed_lb E :
-  ▷ is_installed γ d txns installed_lb -∗
-    (|={E}=> is_installed_read γ d txns installed_lb) ∗
-    ▷ (is_installed_read γ d txns installed_lb -∗
-       is_installed γ d txns installed_lb).
-Proof.
-  iIntros "Hfull".
-  iDestruct (is_installed_weaken_read with "Hfull") as "[Hread $]".
-  iDestruct "Hread" as ">$".
-  auto.
-Qed.
-
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   own γ.(cs_name) (● (Excl' cs)).
 
@@ -339,6 +299,47 @@ Definition logger_inv γ circ_l: iProp Σ :=
 (* TODO: also needs authoritative ownership of some other variables *)
 Definition installer_inv γ: iProp Σ :=
   "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available.
+
+Global Instance is_installed_read_Timeless {γ d txns installed_lb} :
+  Timeless (is_installed_read γ d txns installed_lb) := _.
+
+Theorem is_installed_weaken_read γ d txns installed_lb :
+  is_installed γ d txns installed_lb -∗
+  is_installed_read γ d txns installed_lb ∗ (is_installed_read γ d txns installed_lb -∗
+                                            is_installed γ d txns installed_lb).
+Proof.
+  rewrite /is_installed /is_installed_read.
+  iIntros "I".
+  iNamed "I".
+  iSplitL "Hdata".
+  { iApply (big_sepM_mono with "Hdata").
+    iIntros (a b0 Hlookup) "HI".
+    iDestruct "HI" as (b') "(%&Hb&%)".
+    iExists b'; iFrame.
+    iPureIntro.
+    split; auto.
+    (*
+    destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_txn_id ].
+    - split; auto.
+      split; try lia.
+    - split; auto; lia. }
+  iIntros "Hmap".
+  admit.
+*)
+Admitted.
+
+Theorem is_installed_to_read γ d txns installed_lb E :
+  ▷ is_installed γ d txns installed_lb -∗
+    (|={E}=> is_installed_read γ d txns installed_lb) ∗
+    ▷ (is_installed_read γ d txns installed_lb -∗
+       is_installed γ d txns installed_lb).
+Proof.
+  iIntros "Hfull".
+  iDestruct (is_installed_weaken_read with "Hfull") as "[Hread $]".
+  iDestruct "Hread" as ">$".
+  auto.
+Qed.
+
 
 Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
 Proof.

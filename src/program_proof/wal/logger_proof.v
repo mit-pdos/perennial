@@ -15,6 +15,7 @@ Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Theorem wp_Walog__waitForSpace l γ σₛ :
@@ -91,6 +92,90 @@ Qed.
 
 Hint Unfold slidingM.logIndex slidingM.wf : word.
 
+Lemma take_more {A} (n m: nat) (l: list A) :
+  (n ≤ length l)%nat →
+  take (n + m) l = take n l ++ take m (drop n l).
+Proof.
+  intros Hbound.
+  rewrite -{1}(take_drop n l).
+  rewrite -> take_app_ge by len.
+  f_equal.
+  f_equal.
+  len.
+Qed.
+
+Lemma subslice_def {A} (n m: nat) (l: list A) :
+  subslice n m l = drop n (take m l).
+Proof. reflexivity. Qed.
+
+Lemma subslice_comm {A} (n m: nat) (l: list A) :
+  subslice n m l = take (m - n)%nat (drop n l).
+Proof. rewrite /subslice skipn_firstn_comm //. Qed.
+
+(** this is a way to re-fold subslice after commuting it, a useful inverse to
+[subslice_comm] *)
+Lemma subslice_take_drop {A} (n k: nat) (l: list A) :
+  take k (drop n l) = subslice n (n + k) l.
+Proof. rewrite /subslice firstn_skipn_comm //. Qed.
+
+Lemma apply_upds_lookup_Some (txns: list update.t) (d: disk) (a: u64) (i: nat) :
+  find_highest_index (update.addr <$> txns) a = Some i →
+  ∃ u, txns !! i = Some u ∧ a = u.(update.addr) ∧
+       apply_upds txns d !! (int.val a) = Some u.(update.b).
+Proof.
+Admitted.
+
+Lemma apply_upds_lookup_None (txns: list update.t) (d: disk) (a: u64) :
+  find_highest_index (update.addr <$> txns) a = None →
+  apply_upds txns d !! (int.val a) = d !! (int.val a).
+Proof.
+Admitted.
+
+Lemma apply_upds_lookup_overflow (txns: list update.t) (d: disk) z :
+  2^64 ≤ z →
+  apply_upds txns d !! z = d !! z.
+Proof.
+Admitted.
+
+Lemma apply_upds_eq_nil (txns1 txns2: list update.t) :
+  apply_upds txns1 ∅ = apply_upds txns2 ∅ →
+  (forall d, apply_upds txns1 d = apply_upds txns2 d).
+Proof.
+Admitted.
+
+Theorem subslice_split_r {A} n m m' (l: list A) :
+  (n ≤ m ≤ m')%nat →
+  (m ≤ length l)%nat →
+  subslice n m' l = subslice n m l ++ subslice m m' l.
+Proof.
+  intros Hbound1 Hbound2.
+  rewrite /subslice.
+  replace m' with (m + (m' - m))%nat by lia.
+  rewrite -> take_more by lia.
+  rewrite -> drop_app_le by len.
+  f_equal.
+  rewrite -> drop_app_le by len.
+  rewrite -> (drop_ge (take m l)) by len.
+  auto.
+Qed.
+
+Lemma circ_matches_extend cs txns installed_txn_id diskEnd_txn_id new_txn nextDiskEnd_txn_id :
+  (installed_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat →
+  (nextDiskEnd_txn_id < length txns)%nat →
+  apply_upds (txn_upds (subslice diskEnd_txn_id nextDiskEnd_txn_id txns)) ∅ =
+  apply_upds new_txn ∅ →
+  circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
+  circ_matches_txns (set upds (λ u, u ++ new_txn) cs) txns installed_txn_id nextDiskEnd_txn_id.
+Proof.
+  rewrite /circ_matches_txns /=.
+  intros.
+  rewrite -> (subslice_split_r installed_txn_id diskEnd_txn_id nextDiskEnd_txn_id) by lia.
+  rewrite txn_upds_app !apply_upds_app.
+  rewrite H2.
+  apply apply_upds_eq_nil.
+  auto.
+Qed.
+
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
@@ -145,7 +230,7 @@ Proof.
   (* XXX: should duplicate monotonicity of txns to lock invariant *)
   iMod (get_txns_are _ _ _ _ memStart_txn_id (S nextDiskEnd_txn_id) with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
   { admit. }
-  (* use this to also strip a later *)
+  (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
   wp_apply (wp_loadField_ro with "HmemLock").
   iDestruct "Htxns_are" as "#Htxns_are".
   wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs $His_lock $Hlocked]").
@@ -171,6 +256,8 @@ Proof.
     iNamed "Hdisk".
     iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
     iMod (txns_are_sound with "Htxns_ctx Htxns_are") as "(%Htxns_are & Htxns_ctx)"; first by solve_ndisj.
+    iMod (txn_pos_valid' with "Htxns_ctx HmemStart_txn") as "(%HmemStart'&Htxns_ctx)"; first by solve_ndisj.
+    iMod (txn_pos_valid' with "Htxns_ctx HnextDiskEnd_txn") as "(%HnextDiskEnd'&Htxns_ctx)"; first by solve_ndisj.
     iMod (ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
     iModIntro.
     iSplitL; [ | done ].
@@ -181,7 +268,14 @@ Proof.
     iNamed "Hdisk".
     iExists installed_txn_id, nextDiskEnd_txn_id.
     iFrame "# ∗".
-    (* TODO: extend is_durable and is_durable_txn *)
+    iSplitL "Hdurable".
+    { iDestruct "Hdurable" as %Hmatches.
+      iPureIntro.
+      eapply circ_matches_extend; eauto; try lia.
+      { admit. }
+      { apply is_txn_bound in HnextDiskEnd'; auto. }
+
+
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :
