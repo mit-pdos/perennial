@@ -105,13 +105,6 @@ Proof.
   rewrite /memWrite foldl_app //=.
 Qed.
 
-Theorem apply_upds_app upds1 upds2 d :
-  apply_upds (upds1 ++ upds2) d =
-  apply_upds upds2 (apply_upds upds1 d).
-Proof.
-  rewrite /apply_upds fold_left_app //.
-Qed.
-
 Theorem find_highest_index_Some_split `{EqDecision A} (l: list A) (x: A) n :
   find_highest_index l x = Some n ->
   exists l1 l2, l = l1 ++ [x] ++ l2 ∧
@@ -160,10 +153,10 @@ Proof.
     apply not_inj; auto.
 Qed.
 
-Theorem apply_upds_insert_commute upds (a: u64) b b0 d :
+Theorem apply_upds_insert_commute upds (a: u64) b d :
   a ∉ update.addr <$> upds →
   apply_upds upds (<[int.val a := b]> d) =
-  <[int.val a := b]> (apply_upds upds (<[int.val a := b0]> d)).
+  <[int.val a := b]> (apply_upds upds d).
 Proof.
   intros Hnotin.
   apply map_eq; intros z.
@@ -171,7 +164,6 @@ Proof.
   2: {
     rewrite apply_upds_insert_other; auto.
     rewrite lookup_insert_ne; auto.
-    rewrite apply_upds_insert_other; auto.
   }
   rewrite lookup_insert.
   rewrite apply_upds_lookup_insert_highest; auto.
@@ -207,5 +199,6 @@ Proof.
     rewrite !apply_upds_app.
     simpl.
     generalize dependent (apply_upds upd1 d); intros d'.
-    apply apply_upds_insert_commute; auto.
+    rewrite !apply_upds_insert_commute; auto.
+    rewrite insert_insert //.
 Qed.

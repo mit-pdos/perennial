@@ -15,6 +15,12 @@ Context (P: log_state.t -> iProp Σ).
 Hint Unfold slidingM.wf : word.
 Hint Unfold slidingM.numMutable : word.
 
+Lemma logIndex_set_mutable f σ pos :
+  slidingM.logIndex (set slidingM.mutable f σ) pos = slidingM.logIndex σ pos.
+Proof.
+  rewrite /slidingM.logIndex //=.
+Qed.
+
 Theorem wp_endGroupTxn l st γ :
   {{{ is_wal P l γ ∗ wal_linv st γ }}}
     WalogState__endGroupTxn #st
@@ -50,17 +56,16 @@ Proof.
     unfold locked_wf, slidingM.wf in Hlocked_wf.
     word.
   }
-  iExists memStart_txn_id, (length txns - 1)%nat, txns; simpl.
+  iExists memStart_txn_id, diskEnd_txn_id, (length txns - 1)%nat, txns; simpl.
   iFrame "# ∗".
   destruct_and! His_memLog.
-  iPureIntro; split.
+  iPureIntro; split_and!.
+  - auto.
   - split_and!; simpl; auto.
   - pose proof (is_txn_bound _ _ _ HmemEnd_is_txn).
     replace (S (length txns - 1)) with (length txns) by lia.
-    rewrite -> subslice_to_end by lia.
-    rewrite take_ge; auto.
-    rewrite /slidingM.numMutable /slidingM.endPos; simpl.
-    repeat word_cleanup.
-Qed.
+    rewrite !logIndex_set_mutable.
+    admit. (* TODO: fix this proof by extending has_updates with longer subslice *)
+Admitted.
 
 End goose_lang.

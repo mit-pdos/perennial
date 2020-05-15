@@ -33,7 +33,7 @@ Theorem wp_Walog__waitForSpace l γ σₛ :
   {{{ σ, RET #();
       "Hlocked" ∷ locked γ.(lock_name)  ∗
       "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
-      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) ∗
       "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
       "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
       "%Hhas_space" ∷ ⌜length σ.(memLog).(slidingM.log) ≤ LogSz⌝
@@ -46,7 +46,7 @@ Proof.
   wp_apply (wp_forBreak_cond
               (λ b, "Hlocked" ∷ locked γ.(lock_name) ∗
                     "*" ∷ ∃ σ, "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
-                               "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) ∗
+                               "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) ∗
                                "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
                                "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
                                "%Hbreak" ∷ ⌜b = false → (length σ.(memLog).(slidingM.log) ≤ LogSz)⌝
@@ -162,18 +162,14 @@ Qed.
 Lemma circ_matches_extend cs txns installed_txn_id diskEnd_txn_id new_txn nextDiskEnd_txn_id :
   (installed_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat →
   (nextDiskEnd_txn_id < length txns)%nat →
-  apply_upds (txn_upds (subslice diskEnd_txn_id nextDiskEnd_txn_id txns)) ∅ =
-  apply_upds new_txn ∅ →
+  has_updates new_txn (subslice diskEnd_txn_id nextDiskEnd_txn_id txns) →
   circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
   circ_matches_txns (set upds (λ u, u ++ new_txn) cs) txns installed_txn_id nextDiskEnd_txn_id.
 Proof.
   rewrite /circ_matches_txns /=.
   intros.
   rewrite -> (subslice_split_r installed_txn_id diskEnd_txn_id nextDiskEnd_txn_id) by lia.
-  rewrite txn_upds_app !apply_upds_app.
-  rewrite H2.
-  apply apply_upds_eq_nil.
-  auto.
+  apply has_updates_app; auto.
 Qed.
 
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
@@ -237,7 +233,7 @@ Proof.
   { iExists _; iFrame "# ∗".
     iSplitR "Howntxns HmemEnd_txn".
     - iExists _; iFrame "% ∗".
-    - iExists _, _, _; iFrame "# % ∗". }
+    - iExists _, _, _, _; iFrame "# % ∗". }
   wp_loadField.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   wp_apply (wp_circular__Append _ _ (emp) with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least]").
@@ -274,7 +270,6 @@ Proof.
       eapply circ_matches_extend; eauto; try lia.
       { admit. }
       { apply is_txn_bound in HnextDiskEnd'; auto. }
-
 
 Admitted.
 

@@ -142,18 +142,6 @@ Proof.
   iDestruct (is_slice_to_small with "Hs") as "$".
 Qed.
 
-Theorem wp_WalogState__cutMemLog γ (st: loc) σ (installEnd: u64) :
-  {{{ wal_linv_fields st σ ∗
-      memLog_linv γ σ.(memLog)}}}
-    WalogState__cutMemLog #st #installEnd
-  {{{ σ', RET #();
-      (* TODO: only memLog is changed, following spec in sliding *)
-      wal_linv_fields st σ' ∗
-      memLog_linv γ σ'.(memLog)
-  }}}.
-Proof.
-Admitted.
-
 Fixpoint list_to_gmap_set {A} `{!EqDecision A} `{!Countable A} (l: list A): gmap A unit :=
   match l with
   | [] => ∅

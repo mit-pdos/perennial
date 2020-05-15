@@ -208,7 +208,8 @@ Proof.
   rewrite /is_mem_memLog /has_updates.
   intros [Hupdates Hpos_bound].
   split.
-  - rewrite -> drop_app_le by auto.
+  - intros.
+    rewrite -> drop_app_le by auto.
     rewrite txn_upds_app.
     rewrite memWrite_apply_upds.
     rewrite !apply_upds_app.
@@ -292,6 +293,21 @@ Proof.
   rewrite memWrite_same_numMutableN in Hwf'; eauto.
 Qed.
 
+Lemma memWrite_preserves_mutable_suffix memLog upds diskEnd :
+  slidingM.wf memLog ->
+  int.val memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
+  subslice (slidingM.logIndex memLog diskEnd)
+           (slidingM.logIndex memLog memLog.(slidingM.mutable))
+           (memWrite memLog upds).(slidingM.log) =
+  subslice (slidingM.logIndex memLog diskEnd)
+           (slidingM.logIndex memLog memLog.(slidingM.mutable))
+           memLog.(slidingM.log).
+Proof.
+  intros Hwf Hoverflow.
+  rewrite /subslice.
+  rewrite memWrite_preserves_mutable; auto.
+Qed.
+
 Lemma numMutableN_ok memLog :
   slidingM.wf memLog ->
   int.nat (slidingM.numMutable memLog) = numMutableN memLog.
@@ -356,6 +372,14 @@ Proof.
     eexists; intuition eauto.
     admit. (* same issue *)
 Admitted.
+
+Lemma memWrite_preserves_logIndex σ upds pos :
+  slidingM.logIndex (memWrite σ upds) pos =
+  slidingM.logIndex σ pos.
+Proof.
+  rewrite /slidingM.logIndex.
+  rewrite memWrite_same_start //.
+Qed.
 
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
@@ -518,8 +542,14 @@ Proof.
         { iExists _; iFrame.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
-        iExists memStart_txn_id, nextDiskEnd_txn_id, _; iFrame.
+        iExists memStart_txn_id, diskEnd_txn_id, nextDiskEnd_txn_id, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
+        iSplit.
+        { iPureIntro.
+          admit. (* TODO: need to somehow separate diskEnd from endPos (probably
+          even after aborption for non-empty writes, must advance by at least
+          one block) *)
+        }
         iSplit.
         { autorewrite with len.
           rewrite Nat.add_sub.
@@ -527,11 +557,11 @@ Proof.
         { iSplit; iPureIntro.
           - eapply is_mem_memLog_append; eauto.
             pose proof (is_txn_bound _ _ _ HmemStart_txn); lia.
-          - rewrite -> numMutableN_ok in His_nextDiskEnd |- * by auto.
-            rewrite memWrite_same_numMutableN.
-            rewrite memWrite_preserves_mutable; auto; try word.
-            pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
-            rewrite -> subslice_app_1 by lia; auto. }
+          - pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
+            rewrite -> subslice_app_1 by lia.
+            rewrite !memWrite_preserves_logIndex.
+            rewrite memWrite_preserves_mutable_suffix; auto.
+            word. }
       - wp_apply util_proof.wp_DPrintf.
         iAssert (wal_linv σₛ.(wal_st) γ) with "[Hfields HmemLog_linv HdiskEnd_circ Hstart_circ]" as "Hlockinv".
         { iExists _; iFrame. }

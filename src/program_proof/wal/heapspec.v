@@ -209,26 +209,6 @@ Qed.
   
 (* Helper lemmas *)
 
-Theorem apply_upds_cons disk u ul :
-  apply_upds (u :: ul) disk =
-  apply_upds ul (apply_upds [u] disk).
-Proof.
-  reflexivity.
-Qed.
-
-Theorem apply_upds_app : forall u1 u2 disk,
-  apply_upds (u1 ++ u2) disk =
-  apply_upds u2 (apply_upds u1 disk).
-Proof.
-  induction u1.
-  - reflexivity.
-  - simpl app.
-    intros.
-    rewrite apply_upds_cons.
-    rewrite IHu1.
-    reflexivity.
-Qed.
-
 Theorem is_update_cons_eq: forall l a0,
   is_update (a0 :: l) a0.(update.addr) a0.(update.b).
 Proof.

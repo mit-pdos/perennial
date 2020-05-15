@@ -101,19 +101,16 @@ Qed.
 Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
 
-Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :=
-  apply_upds log ∅ =
-  apply_upds (txn_upds txns) ∅.
-
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the memStart_txn_id *)
 Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
   has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
   (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
-Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
-  (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
+Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) : iProp Σ :=
+  (∃ (memStart_txn_id: nat) (diskEnd_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
+      "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
       "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
       "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       "Howntxns" ∷ own γ.(txns_name) (◯ Excl' txns) ∗
@@ -125,8 +122,10 @@ Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
       use for [is_durable] when the new transaction is logged *)
       "%His_nextDiskEnd" ∷
         ⌜has_updates
-          (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))
-          (subslice memStart_txn_id (S nextDiskEnd_txn_id) txns)⌝
+          (subslice (slidingM.logIndex σ diskEnd)
+                    (slidingM.logIndex σ σ.(slidingM.mutable))
+                    σ.(slidingM.log))
+          (subslice diskEnd_txn_id (S nextDiskEnd_txn_id) txns)⌝
   ).
 
 Definition wal_linv_fields st σ: iProp Σ :=
@@ -156,7 +155,7 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
     "Hfields" ∷ wal_linv_fields st σ ∗
     "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
     "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
-    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog).
+    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd).
 
 (** The implementation state contained in the *Walog struct, which is all
 read-only. *)
@@ -230,8 +229,7 @@ Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
 Implicit Types (installed_txn_id:nat) (diskEnd_txn_id:nat).
 
 Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id diskEnd_txn_id :=
-  apply_upds (txn_upds $ subslice installed_txn_id diskEnd_txn_id txns) ∅ =
-  apply_upds cs.(circΣ.upds) ∅.
+  has_updates cs.(circΣ.upds) (subslice installed_txn_id diskEnd_txn_id txns).
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)

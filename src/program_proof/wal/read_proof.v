@@ -39,23 +39,6 @@ Proof.
   eexists _, _, _; eauto.
 Qed.
 
-(* TODO: why does [apply_upds_insert_commute] even have a b0? *)
-Theorem apply_upds_insert_commute' upds (a: u64) b d :
-  a ∉ update.addr <$> upds →
-  apply_upds upds (<[int.val a := b]> d) =
-  <[int.val a := b]> (apply_upds upds d).
-Proof.
-  intros Hnotin.
-  apply map_eq; intros z.
-  destruct (decide (z = int.val a)); subst.
-  2: {
-    rewrite apply_upds_insert_other; auto.
-    rewrite lookup_insert_ne; auto.
-  }
-  rewrite lookup_insert.
-  rewrite apply_upds_lookup_insert_highest; auto.
-Qed.
-
 Theorem find_highest_index_apply_upds log u i :
   find_highest_index (update.addr <$> log) u.(update.addr) = Some i →
   log !! i = Some u →
@@ -72,7 +55,7 @@ Proof.
   clear H0 H2.
   destruct u' as [a b]; simpl in *.
   rewrite apply_upds_app /=.
-  rewrite apply_upds_insert_commute'; auto.
+  rewrite apply_upds_insert_commute; auto.
   rewrite lookup_insert //.
 Qed.
 
@@ -101,14 +84,14 @@ Qed.
 
 Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
   {{{ wal_linv_fields st σ ∗
-      memLog_linv γ σ.(memLog) }}}
+      memLog_linv γ σ.(memLog) σ.(diskEnd) }}}
     WalogState__readMem #st #a
   {{{ b_s (ok:bool), RET (slice_val b_s, #ok);
       (if ok then ∃ b, is_block b_s 1 b ∗
                        ⌜apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = Some b⌝
       else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = None⌝) ∗
       "Hfields" ∷ wal_linv_fields st σ ∗
-      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog)
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd)
   }}}.
 Proof.
   iIntros (Φ) "(Hfields&HmemLog_inv) HΦ".
@@ -155,29 +138,29 @@ Proof.
     iExists _; by iFrame.
 Qed.
 
-Theorem simulate_read_cache_hit {l γ Q σ memLog b a} :
+Theorem simulate_read_cache_hit {l γ Q σ memLog diskEnd b a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = Some b ->
   (is_wal_inner l γ σ ∗ P σ) -∗
-  memLog_linv γ memLog -∗
+  memLog_linv γ memLog diskEnd -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ ∗ P σ) ∗
               "HQ" ∷ Q (Some b) ∗
-              "HmemLog_linv" ∷ memLog_linv γ memLog.
+              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd.
 Proof.
 Admitted.
 
-Theorem simulate_read_cache_miss {l γ Q σ memLog a} :
+Theorem simulate_read_cache_miss {l γ Q σ memLog diskEnd a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = None ->
   (is_wal_inner l γ σ ∗ P σ) -∗
-  memLog_linv γ memLog -∗
+  memLog_linv γ memLog diskEnd -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗
               "HQ" ∷ Q None ∗
-              "HmemLog_linv" ∷ memLog_linv γ memLog.
+              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd.
 Proof.
 Admitted.
 
