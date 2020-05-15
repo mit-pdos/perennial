@@ -4,23 +4,23 @@ Import RecordSetNotations.
 From Perennial.algebra Require Import deletable_heap liftable log_heap.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import wal.specs wal.heapspec.
 From Perennial.program_proof Require Import addr.specs.
 From Perennial.program_proof Require Import buf.specs buf.defs.
 From Perennial.program_proof Require Import txn.specs.
-(*
 From Perennial.program_proof Require Import buftxn.specs.
-*)
+From Perennial.goose_lang Require Import spec_assert.
+From iris_string_ident Require Import ltac2_string_ident.
 
 
 Module state.
-  Record ver := mkver {
-    b0 : Block;
-    b1 : Block;
+  Record t := mk {
+    b0 : async {K & bufDataT K};
+    b1 : async {K & bufDataT K};
   }.
-  Global Instance _eta: Settable _ := settable! mkver <b0; b1>.
-  Global Instance ver_eqdec : EqDecision ver. Admitted.
-  Global Instance ver_countable : Countable ver. Admitted.
-  Definition t := async ver.
+  Global Instance _eta: Settable _ := settable! mk <b0; b1>.
+  Global Instance ver_eqdec : EqDecision t. Admitted.
+  Global Instance ver_countable : Countable t. Admitted.
 End state.
 
 
@@ -32,36 +32,182 @@ Context `{!txnG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Definition LogSz := 513.
-Definition A0 := LogSz + 0.
-Definition A1 := LogSz + 1.
+Definition A0 : addr := (Build_addr (LogSz + 0) 0).
+Definition A1 : addr := (Build_addr (LogSz + 1) 0).
 
-Definition is_ver γ (v : state.ver) : iProp Σ :=
-  "Hv0" ∷ is_lock (mapsto (hG := γ) (Build_addr A0 0) 1%Qp (existT _ (bufBlock v.(state.b0)))) ∗
-  "Hv1" ∷ is_lock (mapsto (Build_addr A1 0) 1%Qp (existT _ (bufBlock v.(state.b1)))).
+Theorem a0_a1 : A0 ≠ A1.
+  unfold A0, A1, LogSz. intro H.
+  inversion H.
+Qed.
 
-Definition is_state (l : loc) γ (sl : state.t) : iProp Σ :=
-  ∃ txn_id,
-    "#Histxn" ∷ is_txn l γ ∗
-    "Hpossible" ∷ is_ver γ (latest sl).
+Hint Resolve a0_a1 : core.
 
 
+Definition kvN := nroot .@ "kv".
+
+Definition is_one_of {T} (o : option T) (choices : async T) :=
+  ∃ v,
+    o = Some v ∧
+    v ∈ possible choices.
+
+Lemma is_one_of_put T o av (v' : T) :
+  is_one_of o av ->
+  is_one_of o (async_put v' av).
+Proof.
+  intros.
+  destruct H; intuition idtac.
+  eexists _; intuition eauto.
+  unfold possible in H1.
+  rewrite /async_put /possible /=.
+  eapply elem_of_app.
+  eauto.
+Qed.
+
+Lemma is_one_of_latest T (v : T) av :
+  is_one_of (Some v) (async_put v av).
+Proof.
+  intros.
+  eexists _. intuition eauto.
+  unfold possible, async_put. simpl.
+  eapply elem_of_app; right.
+  eapply elem_of_list_here.
+Qed.
+
+Hint Resolve is_one_of_put : core.
+Hint Resolve is_one_of_latest : core.
 
 
-Definition is_ver (M : addr -> {K & bufDataT K} -> iProp Σ) (v : state.ver) : iProp Σ :=
-  "Hv0" ∷ M (Build_addr A0 0) (existT _ (bufBlock v.(state.b0))) ∗
-  "Hv1" ∷ M (Build_addr A1 0) (existT _ (bufBlock v.(state.b1))).
+Definition is_state_ver (s : state.t) (crashσ : gmap addr {K & bufDataT K}) : Prop :=
+  is_one_of (crashσ !! A0) s.(state.b0) ∧
+  is_one_of (crashσ !! A1) s.(state.b1).
 
-Definition is_state (l : loc) γ (sl : state.t) : iProp Σ :=
-  ∃ txn_id,
-    "#Histxn" ∷ is_txn l γ ∗
-    "Hpossible" ∷ [∗ list] i ↦ s ∈ possible sl,
-      is_ver (λ a v, mapsto_range (hG := γ.(txn_logheap)) (txn_id+i) (S txn_id+i) a 1%Qp v) s.
+Axiom source_state_is : state.t -> iProp Σ.
+Global Instance source_state_timeless : Timeless (source_state_is s). Admitted.
 
-(* Q1: where does mapsto_txn go?
-  could go into lockmap, but is this the way it's usually done?
+(* XXX interesting tidbit:
+
+  how to make sure that the value observed by a read is the latest simulated state?
+
+  the invariant below allows the in-memory state to correspond to some pending [inmem_s]
+  guys that haven't flushed yet (if they are synchronous).
+
+  one solution is to extend the lock invariant for an object (e.g., block b0 or block b1,
+  or inode in nfs server).  the lock invariant should promise that all pending changes to
+  that object have been simulated.  that is, the object's part of the [state.t] satisfying
+  the current [source_state_is] predicate must be equal to that object's part in every
+  pending [state.t] in [inmem_s] as well.
+
+  i.e., ∀ s' ∈ inmem_s, s'.(state.b0) = s.(state.b0)
 *)
 
-(* Q2: how to re-prove [is_ver] for a new txn_id without decomposing into mapsto facts? *)
+Definition is_state_always γ : iProp Σ :=
+  ∃ lb (σl : async (gmap addr {K & bufDataT K})) s (inmem_s : list state.t),
+    "Hsource" ∷ source_state_is s ∗
+    "Hinmem_s" ∷ (
+      [∗ list] s0;s1 ∈ (s :: take (length inmem_s - 1) inmem_s);inmem_s,
+        source_state_is s0 ==∗ source_state_is s1
+    ) ∗
+    "Hdurable" ∷ own γ.(txn_walnames).(wal_heap_durable_lb) (◯ (lb : mnat)) ∗
+    "Hcrash" ∷ own γ.(txn_crashstates (Σ:=Σ)) (◯ (Excl' σl)) ∗
+    (* XXX not sufficient: need to make sure that s' for a later state in (possible σl)
+      cannot be older than the s' of an earlier state in (possible σl). *)
+    "%Hstate" ∷ ⌜ Forall (λ σ, ∃ s', s' ∈ s :: inmem_s /\ is_state_ver s' σ) (skipn lb (possible σl)) ⌝ ∗
+    (* XXX should perhaps come from the txn layer *)
+    "%Hlb_ok" ∷ ⌜ lb < length (possible σl) ⌝.
+
+Global Instance is_state_always_timeless : Timeless (is_state_always γ). Admitted.
+(* XXX how to make the fupd's in Hinmem_s timeless? *)
+
+Definition is_state (l : loc) γ : iProp Σ :=
+  "#Histxn" ∷ is_txn l γ ∗
+  "#Hstateinv" ∷ inv kvN (is_state_always γ).
+
+
+Inductive op :=
+| Write0async : {K & bufDataT K} -> op
+| Write0sync : {K & bufDataT K} -> op
+| Read0 : op.
+
+Axiom pending_op : nat -> op -> iProp Σ.
+Axiom done_op : nat -> {K & bufDataT K} -> iProp Σ.
+
+Theorem pending_write_0_async_exec s j v :
+  source_state_is s ∗ pending_op j (Write0async v) ==∗
+  source_state_is (set state.b0 (λ v0, async_put v v0) s) ∗ done_op j v.
+Admitted.
+
+Theorem pending_write_0_sync_exec s j v :
+  source_state_is s ∗ pending_op j (Write0sync v) ==∗
+  source_state_is (set state.b0 (λ _, sync v) s) ∗ done_op j v.
+Admitted.
+
+Theorem pending_read_0_exec s j :
+  source_state_is s ∗ pending_op j Read0 ==∗
+  source_state_is s ∗ done_op j (latest s.(state.b0)).
+Admitted.
+
+
+Example write_0_async j (v : {K & bufDataT K}) l γ :
+  let mt := <[A0 := v]> (∅ : gmap addr {K & bufDataT K}) in
+  is_state l γ -∗
+  pending_op j (Write0async v) -∗
+  ( |={⊤ ∖ ↑walN ∖ ↑invN, ⊤ ∖ ↑walN ∖ ↑invN ∖ ↑kvN}=>
+      ∃ (σl : async (gmap addr {K & bufDataT K})),
+        "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯ (Excl' σl)) ∗
+        "Hcrashstates_fupd" ∷ (
+          let σ := mt ∪ latest σl in
+          own γ.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
+          ={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑kvN, ⊤ ∖ ↑walN ∖ ↑invN}=∗ done_op j v )).
+Proof using crashG0.
+  iIntros (mt) "#Hs Hop".
+  iNamed "Hs".
+  iInv kvN as ">Hkv" "Hkvclose"; eauto.
+  iNamed "Hkv".
+  iModIntro.
+  iExists _. iFrame.
+  iIntros "Hcrash".
+  iMod (pending_write_0_async_exec with "[$Hsource $Hop]") as "[Hsource Hop]".
+  iMod ("Hkvclose" with "[Hsource Hdurable Hcrash]") as "Hkvclose".
+  {
+    iNext. iExists _, _, _. iFrame.
+    iPureIntro. subst mt.
+
+    unfold possible in *. rewrite -> app_length in *. simpl in *.
+    rewrite -> drop_app_le in Hstate by lia.
+    apply Forall_app in Hstate as Hstate'; destruct Hstate' as [Hpending Hlatest].
+
+    rewrite /async_put /possible /=.
+    rewrite app_length. simpl. split; last by lia.
+
+    rewrite -> drop_app_le by len.
+    rewrite -> drop_app_le by len.
+
+    apply Forall_app; split.
+    {
+      eapply Forall_impl; eauto.
+      intros σ [Hσ0 Hσ1].
+      destruct s; simpl in *.
+      rewrite /set /=.
+      split; eauto.
+      simpl.
+      eapply is_one_of_put; eauto.
+    }
+
+    inversion Hlatest; subst.
+    eapply Forall_cons; split; last by eauto.
+    destruct H1. unfold set. destruct s; simpl in *.
+    split; simpl.
+    { erewrite lookup_union_Some_l.
+      2: rewrite lookup_insert; eauto.
+      eapply is_one_of_latest. }
+    rewrite lookup_union_r; eauto.
+    rewrite -> lookup_insert_ne by eauto; apply lookup_empty.
+  }
+
+  done.
+Qed.
+
+
 
 Example is_state_write_0 l γ sl first data' data E :
   is_state l γ sl ∗
