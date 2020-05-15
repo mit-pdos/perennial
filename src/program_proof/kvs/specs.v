@@ -40,10 +40,10 @@ Definition nat_key_to_addr key : specs.addr :=
   specs.Build_addr key 0.
 
 (*XXXway to generalize from wal/abstractions.v?*)
-Definition kvpair_val (pair : (specs.addr * Slice.t)): val :=
-  (#(fst pair).(specs.addrBlock), (slice_val (snd pair), #()))%V.
+Definition kvpair_val (pair : kvpair.t): val :=
+  (#(pair.(kvpair.key).(specs.addrBlock)), (slice_val (pair.(kvpair.val)), #()))%V.
 
-Theorem kvpair_val_t key data : val_ty (kvpair_val (key, data)) (struct.t KVPair.S).
+Theorem kvpair_val_t key data : val_ty (kvpair_val (kvpair.mk key data)) (struct.t KVPair.S).
 Proof.
   repeat constructor.
   rewrite /blockT; val_ty.
@@ -54,8 +54,8 @@ Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz:
   ∃ slice_kvps, is_slice slice_val (struct.t KVPair.S) 1 (kvpair_val <$> slice_kvps)
                          ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
   let '(kvpair.mk key bs) := ls_kvp in ∃ (blk: Block),
-      ⌜fst slice_kvp = key ∧ valid_key key sz⌝ ∗
-      ⌜bs = snd slice_kvp⌝ ∗
+      ⌜slice_kvp.(kvpair.key) = key ∧ valid_key key sz⌝ ∗
+      ⌜bs = slice_kvp.(kvpair.val)⌝ ∗
       is_block bs 1 blk.
 
 Definition kvpairs_valid_match (pairs: list kvpair.t) (kvsblks : gmap specs.addr {K & defs.bufDataT K}) γDisk sz : iProp Σ :=
@@ -104,7 +104,7 @@ Admitted.
       (* Data returned is the data at the specified kvs block *)
       ∗ is_block data 1 blk
       (* Data returned is in the form of a kvpair *)
-      ∗ pairl ↦[struct.t KVPair.S] (kvpair_val (pair key data))
+      ∗ pairl ↦[struct.t KVPair.S] (kvpair_val (kvpair.mk key data))
   }}}.
 Proof.
   iIntros (ϕ) "[Hkvs [%HkeyLookup %Hkey ]] Hϕ".
@@ -196,20 +196,75 @@ Theorem wpc_KVS__MultiPut kvsl kvsblks sz γDisk kvp_ls_before kvp_ls_new kvp_sl
 Proof.
   iIntros (ϕ) "[Hkvs [HkvpBefore HkvpArgs]] Hϕ".
   iDestruct "Hkvs" as (l) "[Htxnl [Hsz [#Htxn [%HinKvs HkvsMt]]]]".
-  pose Hkey as Hkey'.
-  destruct Hkey' as [HbuildAddr [Hkaddr [Hklgsz Hsz]]].
   wp_call.
   wp_loadField.
   wp_pures.
-  remember(bool_decide (int.val sz < int.val _)) as Hszcomp.
-  destruct Hszcomp; wp_pures.
-  - wp_apply wp_panic.
-    destruct (decide_rel Z.lt (int.val sz) _); try discriminate. lia.
-  - change (u64_instance.u64.(@word.add 64) (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2)
-      with (U64 LogSz).
-    remember(bool_decide (int.val _ < int.val LogSz)) as Hlgszcomp.
-    destruct Hlgszcomp; wp_pures.
-    * wp_apply wp_panic.
+  wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
+  iIntros (buftx γt) "Hbtxn".
+  wp_let.
+  Check wp_forSlicePrefix.
+  wp_apply (wp_forSlicePrefix
+        (fun done todo =>
+           ∃ kvp_ls_done kvp_ls_todo kvsblks_todo kvsblks_done,
+            "done_kvp_val" :: [∗ list] val; kvp ∈ done; kvp_ls_done, ⌜ val = kvpair_val kvp ⌝∗
+            "todo_kvp_val" :: [∗ list] val; kvp ∈ todo; kvp_ls_todo, ⌜ val = kvpair_val kvp ⌝ ∗
+        "<-" ∷ ⌜ kvp_ls_done ++ kvp_ls_todo = kvp_ls_new ⌝ ∗
+        "->" ∷ ⌜ kvsblks_done = kvsblks ∖ kvsblks_todo ⌝ ∗
+        "%" ∷ ⌜ kvsblks_todo ⊆ kvsblks ⌝ ∗
+        "Hkvp_done_match_new" :: kvpairs_valid_match kvp_ls_done kvsblks_done γDisk sz
+      )%I with "Htxn").
+
 
 Admitted.
+
+
+Theorem wp_forSlice_updates_consume (I: u64 -> iProp Σ) stk E s q us (body: val) :
+  (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t),
+      {{{ I i ∗ ⌜(int.nat i < length us)%nat⌝ ∗ pf
+                is_update uv q u ∗
+                ⌜us !! int.nat i = Some u⌝ }}}
+        body #i (update_val uv) @ stk; E
+      {{{ RET #(); I (word.add i (U64 1)) }}}) -∗
+    {{{ I (U64 0) ∗ updates_slice_frag s q us }}}
+      forSlice (struct.t Update.S) body (slice_val s) @ stk; E
+    {{{ RET #(); I s.(Slice.sz) }}}.
+Proof.
+  iIntros "#Hwp".
+  iIntros "!>" (Φ) "(I0&Hupds) HΦ".
+  iDestruct "Hupds" as (bks) "(Hs&Hbs)".
+  iDestruct (is_slice_small_sz with "Hs") as %Hslen.
+  autorewrite with len in Hslen.
+  iDestruct (big_sepL2_length with "Hbs") as %Hlen_eq.
+  wp_apply (wp_forSlice
+              (fun i => I i ∗
+                       [∗ list] b_upd;upd ∈ (drop (int.nat i) bks);(drop (int.nat i) us),
+                                            is_update b_upd q upd)%I
+              with "[] [$I0 $Hs $Hbs]").
+  {
+    clear Φ.
+    iIntros (i x).
+    iIntros "!>" (Φ) "[(HI&Hbs) %] HΦ".
+    destruct H as [Hbound Hlookup].
+    rewrite list_lookup_fmap in Hlookup.
+    apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
+    destruct (list_lookup_lt _ us (int.nat i) ltac:(word)) as [u Hlookup'].
+    erewrite (drop_S bks); eauto.
+    erewrite (drop_S us); eauto.
+    simpl.
+    iDestruct "Hbs" as "[[% Hb] Hbs]".
+    wp_apply ("Hwp" with "[$HI $Hb]").
+    - iPureIntro.
+      split; auto.
+      word.
+    - iIntros "HI".
+      iApply "HΦ".
+      iFrame.
+      iExactEq "Hbs".
+      repeat (f_equal; try word).
+  }
+  iIntros "[(HI&Hbs) Hs]".
+  iApply "HΦ".
+  iFrame.
+Qed.
+
 End heap.
