@@ -125,7 +125,7 @@ Proof.
     * wp_apply wp_panic.
       destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. lia.
     * wp_loadField.
-      wp_apply (wp_buftxn_Begin with "Htxn").
+      wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".
       wp_let.
       wp_call.
@@ -151,14 +151,15 @@ Proof.
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".
          simpl in *.
          iSpecialize ("HPostRead" $! (defs.bufBlock blk) dirty).
-         iDestruct "HisBuf" as (data sz0) "[Hbaddr [Hbsz [Hbdata [Hbdirty [HvalidA [Hsz0 [Hnotnil HisBufData]]]]]]]".
+         iNamed "HisBuf". simpl.
+         iDestruct "Hisbuf_without_data" as (sz0) "[Hbaddr [Hbsz [Hbdata Hbdirty]]]"; simpl.
          wp_loadField.
-         wp_apply (util_proof.wp_CloneByteSlice with "HisBufData").
+         wp_apply (util_proof.wp_CloneByteSlice with "Hbufdata").
          iIntros (data') "[HisBlkData HisBlkData']".
 
          wp_let.
          iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
-         { iSplit; eauto. iExists data, sz0; iFrame; auto. }
+         { iSplit; eauto. iExists data. iFrame; auto. iExists sz0; simpl. iSplitL "Hbsz"; auto. }
          wp_apply (wp_BufTxn__CommitWait buftx γt γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[Hmapsto HisBuf]").
          {
            iFrame; auto.
