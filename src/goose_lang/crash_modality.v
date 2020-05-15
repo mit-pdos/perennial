@@ -1,9 +1,9 @@
-From Perennial.goose_lang Require Import lifting.
 From iris.proofmode Require Import tactics monpred.
 From Perennial.Helpers Require Import NamedProps.
 From iris.proofmode Require Import base intro_patterns spec_patterns
                                    sel_patterns coq_tactics reduction.
 
+From Perennial.goose_lang Require Import lifting.
 
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.
