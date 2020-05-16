@@ -223,9 +223,9 @@ Proof.
   iDestruct "HnextDiskEnd_txn" as "#HnextDiskEnd_txn".
   iMod (txn_pos_valid_locked with "Hwal HmemStart_txn Howntxns") as "(%HmemStart_txn&Howntxns)".
   iMod (txn_pos_valid_locked with "Hwal HnextDiskEnd_txn Howntxns") as "(%HnextDiskEnd_txn&Howntxns)".
-  (* XXX: should duplicate monotonicity of txns to lock invariant *)
-  iMod (get_txns_are _ _ _ _ memStart_txn_id (S nextDiskEnd_txn_id) with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
-  { admit. }
+  iMod (get_txns_are _ _ _ _ memStart_txn_id nextDiskEnd_txn_id with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
+  { pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
+    lia. }
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
   wp_apply (wp_loadField_ro with "HmemLock").
   iDestruct "Htxns_are" as "#Htxns_are".
@@ -262,19 +262,51 @@ Proof.
     iSplitR; auto.
     iExists _; iFrame.
     iNamed "Hdisk".
+    iNamed "circ.end".
+    assert (diskEnd_txn_id0 = diskEnd_txn_id); [ | subst ].
+    { (* TODO: need to somehow prove [diskEnd_txn_id0 = diskEnd_txn_id], which
+         is maybe based on the fact that diskEnd hasn't changed (due to
+         diskEnd_is ownership) and that it's the highest transaction id *)
+      admit. }
     iExists installed_txn_id, nextDiskEnd_txn_id.
     iFrame "# ∗".
     iSplitL "Hdurable".
     { iDestruct "Hdurable" as %Hmatches.
       iPureIntro.
       eapply circ_matches_extend; eauto; try lia.
-      { admit. }
+      { split; try lia. admit. }
       { apply is_txn_bound in HnextDiskEnd'; auto. }
-
       pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
       rewrite -> subslice_length in Htxns_are by lia.
       replace (memStart_txn_id + (S nextDiskEnd_txn_id - memStart_txn_id))%nat
-              with (S nextDiskEnd_txn_id) in Htxns_are.
+              with (S nextDiskEnd_txn_id) in Htxns_are by lia.
+      (* this is basically [His_nextDiskEnd], except that we have to use
+      [Htxns_are] to prove the relevant transactions haven't changed *)
+      admit. }
+    rewrite /is_durable_txn.
+    iExists σ.(memLog).(slidingM.mutable).
+    iSplit.
+    { iPureIntro.
+      lia. }
+    iSplit.
+    { iPureIntro.
+      simpl.
+      admit. (* recalculate diskEnd *) }
+    { iPureIntro.
+      admit. (* this is tricky - it's a txn pos, but that it's highest is due to
+      some bounds *) }
+  }
+  rewrite -> subslice_length by word.
+  iIntros "(_&Hupds&Hcirc_ppaneder&HdiskEnd_is)".
+  wp_loadField.
+  wp_apply (acquire_spec with "His_lock").
+  iIntros "(His_locked&Hlockinv)".
+  iNamed "Hlockinv".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+  wp_apply wp_slice_len.
+  wp_loadField. wp_storeField.
+  admit. (* TODO: restore lock invariant with new diskEnd *)
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :
