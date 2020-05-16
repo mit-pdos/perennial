@@ -5,31 +5,9 @@ From iris.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
+From Perennial.goose_lang Require Export wpr_lifting.
 From Perennial.goose_lang Require Import typing adequacy lang.
 Set Default Proof Using "Type".
-
-Section wpr_definitions.
-
-Context `{ffi_semantics: ext_semantics}.
-Context {ext_tys: ext_types ext}.
-Context `{!ffi_interp ffi}.
-
-Canonical Structure heap_namesO := leibnizO heap_names.
-
-Global Instance heapG_perennialG `{!heapG Σ} : perennialG heap_lang heap_crash_lang heap_namesO Σ :=
-{
-  perennial_irisG := λ Hinv hnames, @heapG_irisG _ _ _ _ _ (heap_update _ _ Hinv (@pbundleT _ _ hnames));
-  perennial_invG := λ _ _, eq_refl
-}.
-
-Definition wpr `{hG: !heapG Σ} `{hC: !crashG Σ} (s: stuckness) (k: nat) (E: coPset)
-  (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapG Σ → iProp Σ) (Φr: heapG Σ → val → iProp Σ) :=
-  wpr s k (heapG_invG) hC ({| pbundleT := heap_get_names Σ _ |}) E e recv
-              Φ
-              (λ Hi names, Φinv (heap_update _ _ Hi (@pbundleT _ _ names)))
-              (λ Hi names v, Φr (heap_update _ _ Hi (@pbundleT _ _ names)) v).
-
-End wpr_definitions.
 
 Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} `{crashPreG Σ} s k e r σ φ φr φinv Φinv (HINIT: ffi_initP σ.(world)) :
   (∀ `{Hheap : !heapG Σ} `{Hc: !crashG Σ},
@@ -75,7 +53,7 @@ Proof.
   rewrite ffi_update_pre_update //=. iFrame.
   rewrite /wpr. rewrite /hG//=.
   rewrite heap_update_pre_get.
-  iApply (wpr_strong_mono with "Hwp").
+  iApply (recovery_weakestpre.wpr_strong_mono with "Hwp").
   repeat iSplit; eauto.
   - iIntros. rewrite heap_update_pre_update. eauto.
 Qed.

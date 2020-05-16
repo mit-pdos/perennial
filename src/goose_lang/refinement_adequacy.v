@@ -373,7 +373,7 @@ Proof using Hrpre Hhpre Hcpre.
   iSplit.
   { iAlways. iIntros (?) "H". iApply "H". }
   iIntros "Hstart Hstart_spec Hj".
-  iApply (idempotence_wpr _ _ ⊤ ⊤ _ _ (λ _ _, _) _ _ (λ t,
+  iApply (recovery_weakestpre.idempotence_wpr _ _ ⊤ ⊤ _ _ (λ _ _, _) _ _ (λ Hi0 t,
    ∃ Hi hC hRef, let hG := heap_update Σ Hheap Hi pbundleT in
                  ∃ es' σs' stat, ⌜ erased_rsteps es ([es], σs) (es', σs') stat ⌝ ∗
                                  ⌜ crash_safe es ([es], σs) ⌝ ∗
