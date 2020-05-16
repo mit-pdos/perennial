@@ -48,20 +48,36 @@ Definition log_crash_to σ diskEnd_txn_id :=
   set log_state.durable_lb (λ _, diskEnd_txn_id)
       (set log_state.txns (take diskEnd_txn_id) σ).
 
-Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
+Lemma crash_to_diskEnd_S γ cs σ diskEnd_txn_id installed_txn_id :
   is_durable_txn γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
   is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
-  ⌜relation.denote log_crash σ (log_crash_to σ diskEnd_txn_id) tt⌝.
+  ⌜relation.denote log_crash σ (log_crash_to σ (S diskEnd_txn_id)) tt⌝.
 Proof.
   iNamed 1.
   rewrite /is_durable.
   iNamed 1.
   iPureIntro.
   simpl.
-  eexists _ diskEnd_txn_id; simpl; monad_simpl.
+  eexists _ (S diskEnd_txn_id); simpl; monad_simpl.
   constructor.
   split; try lia.
   eapply is_highest_txn_bound; eauto.
+Qed.
+
+Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
+  is_durable_txn γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
+  is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
+  ⌜relation.denote log_crash σ (log_crash_to σ (diskEnd_txn_id)) tt⌝.
+Proof.
+  iNamed 1.
+  rewrite /is_durable.
+  iNamed 1.
+  iPureIntro.
+  simpl.
+  eexists _ (diskEnd_txn_id); simpl; monad_simpl.
+  constructor.
+  split; try lia.
+  efeed pose proof (is_highest_txn_bound Hend_txn). lia.
 Qed.
 
 Ltac iPersist H :=
@@ -111,6 +127,33 @@ Proof.
   - len.
 Qed.
 
+Lemma is_highest_txn_implies_non_empty_txns γ cs txns installed_txn_id:
+  is_highest_txn txns installed_txn_id (start cs) →
+  txns ≠ [].
+Proof.
+  rewrite /is_highest_txn/is_txn.
+  rewrite fmap_Some.
+  intros ((?&Hlookup&_)&_).
+  apply elem_of_list_lookup_2 in Hlookup.
+  destruct txns; eauto.
+  set_solver.
+Qed.
+
+(* XXX: I think this suggests that we're going to have to require the initial state
+   to have a non empty list of txns. *)
+Lemma is_installed_txn_implies_non_empty_txns γ cs txns installed_txn_id lb:
+  is_installed_txn γ cs txns installed_txn_id lb -∗
+  ⌜ txns ≠ [] ⌝.
+Proof. iNamed 1. iPureIntro; by eapply is_highest_txn_implies_non_empty_txns. Qed.
+
+Lemma circ_matches_txns_crash cs txns installed_txn_id diskEnd_txn_id:
+  circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
+  circ_matches_txns cs (take (diskEnd_txn_id) txns) installed_txn_id diskEnd_txn_id.
+Proof.
+  rewrite /circ_matches_txns/has_updates.
+  intros Heq d. rewrite Heq /subslice take_idemp //=.
+Qed.
+
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
   "Hinner" ∷ is_wal_inner l γ σ ∗ "HP" ∷ P σ ∗
@@ -125,6 +168,7 @@ Proof.
   iNamed "Hinner".
   iNamed "Hdisk".
   iNamed "Hdisk".
+
   iPersist "Hdurable".
   unify_ghost.
   clear cs; rename cs0 into cs.
@@ -132,6 +176,9 @@ Proof.
   set (σ':= log_crash_to σ diskEnd_txn_id).
   iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
   specialize (Hcrash _ Htrans).
+  iDestruct "circ.start" as %Hcirc_start.
+  iDestruct "circ.end" as %Hcirc_end.
+  iDestruct "Hdurable" as %Hdurable.
   iCrash.
   iExists _; iFrame "% ∗".
   iSplit.
@@ -140,9 +187,24 @@ Proof.
   iExists cs; iFrame.
   rewrite /disk_inv_durable.
   iExists installed_txn_id, diskEnd_txn_id; simpl.
+  assert (installed_txn_id ≤ diskEnd_txn_id).
+  { admit. (* TODO: is_installed_read needs an upper bound of diskEnd_txn_id for this to be true *) }
   iSplitL "Hinstalled".
   { admit. (* TODO: is_installed_read needs an upper bound of diskEnd_txn_id for this to be true *) }
-  admit. (* TODO: figure out how these pure facts are preserved *)
+  iPureIntro. split_and!.
+  - apply circ_matches_txns_crash; auto.
+  - naive_solver.
+  - destruct Hcirc_start as (Hcirc_start1&Hcirc_start2).
+    split; auto.
+    * destruct Hcirc_start2 as (Htxn&?). rewrite /is_txn.
+      rewrite -Htxn. f_equal.
+      rewrite lookup_take; eauto.
+      (* XXX: this requires installed_txn_id be *strictly* less than diskEnd_txn_id *)
+      admit.
+    * intros.
+      destruct Hcirc_start2 as (?&Hhigh). eapply Hhigh.
+      admit.
+  - admit.
 Admitted.
 
 Lemma is_wal_post_crash γ P' l:

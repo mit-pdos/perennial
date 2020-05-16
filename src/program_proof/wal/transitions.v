@@ -33,7 +33,7 @@ Definition update_installed: transition log_state.t nat :=
 Definition log_crash : transition log_state.t unit :=
   crash_txn ← suchThat
             (λ s (crash_txn: nat),
-               (s.(log_state.durable_lb) ≤ crash_txn < length s.(log_state.txns))%nat);
+               (s.(log_state.durable_lb) ≤ crash_txn ≤ length s.(log_state.txns))%nat);
   modify (set log_state.txns (fun txns => take crash_txn txns));;
   modify (set log_state.durable_lb (fun _ => crash_txn));;
   ret tt.
