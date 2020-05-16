@@ -271,6 +271,10 @@ Proof.
       { admit. }
       { apply is_txn_bound in HnextDiskEnd'; auto. }
 
+      pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
+      rewrite -> subslice_length in Htxns_are by lia.
+      replace (memStart_txn_id + (S nextDiskEnd_txn_id - memStart_txn_id))%nat
+              with (S nextDiskEnd_txn_id) in Htxns_are.
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :

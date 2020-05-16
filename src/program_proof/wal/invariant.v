@@ -109,6 +109,7 @@ Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
 
 Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) : iProp Σ :=
   (∃ (memStart_txn_id: nat) (diskEnd_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
+      "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
       "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
@@ -125,7 +126,7 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) : iProp Σ :=
           (subslice (slidingM.logIndex σ diskEnd)
                     (slidingM.logIndex σ σ.(slidingM.mutable))
                     σ.(slidingM.log))
-          (subslice diskEnd_txn_id (S nextDiskEnd_txn_id) txns)⌝
+          (subslice diskEnd_txn_id nextDiskEnd_txn_id txns)⌝
   ).
 
 Definition wal_linv_fields st σ: iProp Σ :=

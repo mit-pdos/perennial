@@ -544,6 +544,8 @@ Proof.
           eapply locked_wf_memWrite; eauto. }
         iExists memStart_txn_id, diskEnd_txn_id, nextDiskEnd_txn_id, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
+        autorewrite with len.
+        iFrame "%".
         iSplit.
         { iPureIntro.
           admit. (* TODO: need to somehow separate diskEnd from endPos (probably

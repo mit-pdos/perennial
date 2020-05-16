@@ -57,15 +57,16 @@ Proof.
     word.
   }
   iExists memStart_txn_id, diskEnd_txn_id, (length txns - 1)%nat, txns; simpl.
-  iFrame "# ∗".
+  iFrame "% # ∗".
   destruct_and! His_memLog.
-  iPureIntro; split_and!.
-  - auto.
-  - split_and!; simpl; auto.
+  iPureIntro; split_and!; auto; try lia.
+  - pose proof (is_highest_txn_bound HdiskEnd_txn); lia.
   - pose proof (is_txn_bound _ _ _ HmemEnd_is_txn).
     replace (S (length txns - 1)) with (length txns) by lia.
     rewrite !logIndex_set_mutable.
-    admit. (* TODO: fix this proof by extending has_updates with longer subslice *)
+    admit. (* TODO: invariant needs to say mem_log after mutable has appropriate
+    updates (before we got this from the has_updates for the entire memLog, but
+    now we need to build it from the pieces) *)
 Admitted.
 
 End goose_lang.
