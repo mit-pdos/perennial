@@ -73,6 +73,39 @@ Proof.
   iModIntro. iExists (GenHeapG L V Σ _ _ _ γh). done.
 Qed.
 
+Lemma heap_init_to_bigOp `{Countable L, hG: !gen_heapG L V Σ} γ σ:
+  γ = gen_heap_name hG →
+  own γ (◯ (gen_heap.to_gen_heap σ)) -∗
+      [∗ map] i↦v ∈ σ, i ↦ v .
+Proof.
+  intros ->.
+  induction σ using map_ind.
+  - iIntros. rewrite //=.
+  - iIntros "Hown".
+    rewrite big_opM_insert //.
+    iAssert (own (gen_heap_name _)
+                 (◯ gen_heap.to_gen_heap m) ∗
+                 (i ↦ x))%I
+      with "[Hown]" as "[Hrest $]".
+    {
+      rewrite mapsto_eq /mapsto_def //.
+      rewrite gen_heap.to_gen_heap_insert insert_singleton_op; last by apply gen_heap.lookup_to_gen_heap_None.
+      rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
+    }
+    by iApply IHσ.
+Qed.
+
+Lemma gen_heap_strong_init `{Countable L, !gen_heapPreG L V Σ} σ :
+  ⊢ (|==> ∃ (H0 : gen_heapG L V Σ)
+          (Hpf: @gen_heap_inG _ _ _ _ _ H0 = gen_heap_preG_inG),
+    gen_heap_ctx σ ∗ [∗ map] i↦v ∈ σ, i ↦ v).
+Proof.
+  iMod (own_alloc (● gen_heap.to_gen_heap σ ⋅ ◯ gen_heap.to_gen_heap σ)) as (γ) "(?&H)".
+  { apply auth_both_valid; split; auto. exact: gen_heap.to_gen_heap_valid. }
+  iModIntro. iExists (GenHeapG L V Σ _ _ _ γ), eq_refl.
+  iFrame. by iApply (heap_init_to_bigOp (hG := GenHeapG L V Σ _ _ _ γ) γ with "[$]").
+Qed.
+
 Lemma gen_heap_init_gname `{Countable L, !gen_heapPreG L V Σ} σ :
   ⊢ |==> ∃ gn : gname, gen_heap_ctx (hG := GenHeapG _ _ _ _ _ gen_heap_preG_inG gn) σ.
 Proof.

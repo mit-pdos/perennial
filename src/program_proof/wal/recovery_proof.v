@@ -154,6 +154,18 @@ Proof.
   intros Heq d. rewrite Heq /subslice take_idemp //=.
 Qed.
 
+Lemma is_txn_from_take_is_txn n txns id pos:
+  is_txn (take n txns) id pos →
+  is_txn txns id pos.
+Proof.
+  rewrite /is_txn.
+  rewrite ?fmap_Some.
+  intros (x&Hlookup&Hpos).
+  eexists; split; eauto.
+  rewrite -(firstn_skipn n txns).
+  apply lookup_app_l_Some; eauto.
+Qed.
+
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
   "Hinner" ∷ is_wal_inner l γ σ ∗ "HP" ∷ P σ ∗
@@ -187,7 +199,7 @@ Proof.
   iExists cs; iFrame.
   rewrite /disk_inv_durable.
   iExists installed_txn_id, diskEnd_txn_id; simpl.
-  assert (installed_txn_id ≤ diskEnd_txn_id).
+  assert (installed_txn_id < diskEnd_txn_id).
   { admit. (* TODO: is_installed_read needs an upper bound of diskEnd_txn_id for this to be true *) }
   iSplitL "Hinstalled".
   { admit. (* TODO: is_installed_read needs an upper bound of diskEnd_txn_id for this to be true *) }
@@ -198,13 +210,19 @@ Proof.
     split; auto.
     * destruct Hcirc_start2 as (Htxn&?). rewrite /is_txn.
       rewrite -Htxn. f_equal.
-      rewrite lookup_take; eauto.
       (* XXX: this requires installed_txn_id be *strictly* less than diskEnd_txn_id *)
-      admit.
+      rewrite lookup_take; eauto. lia.
     * intros.
-      destruct Hcirc_start2 as (?&Hhigh). eapply Hhigh.
-      admit.
-  - admit.
+      destruct Hcirc_start2 as (Htxn&Hhigh). eapply Hhigh.
+      eapply is_txn_from_take_is_txn; eauto.
+  - destruct Hcirc_end as (x&?&?&?).
+    exists x; split_and!; eauto.
+    rewrite /is_highest_txn.
+    split.
+    * rewrite /is_txn.
+    (* XXX: This doesn't seem provable, if we have lost diskEnd_txn_id (as we will under
+       the current crash to definition). *)
+    admit.
 Admitted.
 
 Lemma is_wal_post_crash γ P' l:

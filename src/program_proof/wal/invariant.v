@@ -275,7 +275,6 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "Hdisk" ∷ ∃ cs, "Howncs" ∷ own γ.(cs_name) (◯ Excl' cs) ∗ "Hdisk" ∷ disk_inv γ s cs
 .
 
-(* XXX: should we reset the ghost state? In which case many of these components can be removed *)
 Definition is_wal_inner_durable γ s : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv_durable γ s cs ∗
@@ -401,11 +400,6 @@ Proof.
   by intros ->.
 Qed.
 
-Lemma gen_heap_init_strong `{Countable L, !gen_heapPreG L V Σ} σ :
-  ⊢ |==> ∃ _ : gen_heapG L V Σ, gen_heap_ctx σ ∗ [∗ map] k↦v ∈ σ, mapsto k 1 v.
-Proof.
-Admitted.
-
 Global Instance circ_names_inhabited : Inhabited circ_names := populate!.
 
 Definition wal_names_dummy {hG:gen_heapPreG nat (u64 * list update.t) Σ} : wal_names.
@@ -419,7 +413,7 @@ Theorem alloc_txns_ctx E txns :
   ⊢ |={E}=> ∃ γtxns, txns_ctx (set txns_ctx_name (λ _, γtxns) wal_names_dummy) txns.
 Proof.
   iIntros (Hsub).
-  iMod (gen_heap_init_strong (list_to_imap txns)) as (γtxns) "(Hctx & Hmapsto)".
+  iMod (gen_heap_strong_init (list_to_imap txns)) as (γtxns _) "(Hctx & Hmapsto)".
   iExists γtxns.
   iFrame "Hctx".
   iApply big_sepM_fupd.
