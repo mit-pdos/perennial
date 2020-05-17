@@ -9,6 +9,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import kvs.
 From Perennial.program_proof Require Import txn.specs buftxn.specs.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
+From Perennial.Helpers Require Import NamedProps Map List.
 
 Module kvpair.
   Record t :=
@@ -202,69 +203,27 @@ Proof.
   wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
   iIntros (buftx γt) "Hbtxn".
   wp_let.
-  Check wp_forSlicePrefix.
   wp_apply (wp_forSlicePrefix
         (fun done todo =>
            ∃ kvp_ls_done kvp_ls_todo kvsblks_todo kvsblks_done,
-            "done_kvp_val" :: [∗ list] val; kvp ∈ done; kvp_ls_done, ⌜ val = kvpair_val kvp ⌝∗
-            "todo_kvp_val" :: [∗ list] val; kvp ∈ todo; kvp_ls_todo, ⌜ val = kvpair_val kvp ⌝ ∗
-        "<-" ∷ ⌜ kvp_ls_done ++ kvp_ls_todo = kvp_ls_new ⌝ ∗
+                     "<-" ∷ ⌜ kvp_ls_done ++ kvp_ls_todo = kvp_ls_new ⌝ ∗
         "->" ∷ ⌜ kvsblks_done = kvsblks ∖ kvsblks_todo ⌝ ∗
         "%" ∷ ⌜ kvsblks_todo ⊆ kvsblks ⌝ ∗
-        "Hkvp_done_match_new" :: kvpairs_valid_match kvp_ls_done kvsblks_done γDisk sz
-      )%I with "Htxn").
-
+            "Hkvs" ∷ (ptsto_kvs kvsl kvsblks sz γDisk) ∗
+            "Hdone_kvp_val" ∷ ([∗ list] val; kvp ∈ done; kvp_ls_done, ⌜ val = kvpair_val kvp ⌝) ∗
+            "Htodo_kvp_val" ∷ ([∗ list] val; kvp ∈ todo; kvp_ls_todo, ⌜ val = kvpair_val kvp ⌝) ∗
+        "Hkvp_done_match_new" ∷ kvpairs_valid_match kvp_ls_done kvsblks_done γDisk sz
+        )%I with "[Hsz Htxnl]").
+  { iIntros (i x vs vs').
+    iModIntro.
+    iIntros (lϕ) "H".
+    iNamed "H".
+    iIntros "Hinv".
+    wp_pures.
+    iNamed "Hinv".
+    wp_loadField.
 
 Admitted.
 
-
-Theorem wp_forSlice_updates_consume (I: u64 -> iProp Σ) stk E s q us (body: val) :
-  (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t),
-      {{{ I i ∗ ⌜(int.nat i < length us)%nat⌝ ∗ pf
-                is_update uv q u ∗
-                ⌜us !! int.nat i = Some u⌝ }}}
-        body #i (update_val uv) @ stk; E
-      {{{ RET #(); I (word.add i (U64 1)) }}}) -∗
-    {{{ I (U64 0) ∗ updates_slice_frag s q us }}}
-      forSlice (struct.t Update.S) body (slice_val s) @ stk; E
-    {{{ RET #(); I s.(Slice.sz) }}}.
-Proof.
-  iIntros "#Hwp".
-  iIntros "!>" (Φ) "(I0&Hupds) HΦ".
-  iDestruct "Hupds" as (bks) "(Hs&Hbs)".
-  iDestruct (is_slice_small_sz with "Hs") as %Hslen.
-  autorewrite with len in Hslen.
-  iDestruct (big_sepL2_length with "Hbs") as %Hlen_eq.
-  wp_apply (wp_forSlice
-              (fun i => I i ∗
-                       [∗ list] b_upd;upd ∈ (drop (int.nat i) bks);(drop (int.nat i) us),
-                                            is_update b_upd q upd)%I
-              with "[] [$I0 $Hs $Hbs]").
-  {
-    clear Φ.
-    iIntros (i x).
-    iIntros "!>" (Φ) "[(HI&Hbs) %] HΦ".
-    destruct H as [Hbound Hlookup].
-    rewrite list_lookup_fmap in Hlookup.
-    apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
-    destruct (list_lookup_lt _ us (int.nat i) ltac:(word)) as [u Hlookup'].
-    erewrite (drop_S bks); eauto.
-    erewrite (drop_S us); eauto.
-    simpl.
-    iDestruct "Hbs" as "[[% Hb] Hbs]".
-    wp_apply ("Hwp" with "[$HI $Hb]").
-    - iPureIntro.
-      split; auto.
-      word.
-    - iIntros "HI".
-      iApply "HΦ".
-      iFrame.
-      iExactEq "Hbs".
-      repeat (f_equal; try word).
-  }
-  iIntros "[(HI&Hbs) Hs]".
-  iApply "HΦ".
-  iFrame.
-Qed.
 
 End heap.
