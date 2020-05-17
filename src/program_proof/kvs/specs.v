@@ -161,9 +161,10 @@ Proof.
          iIntros (data') "[HisBlkData HisBlkData']".
 
          wp_let.
-         iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
+         iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "HisBuf"; unfold specs.is_buf.
          { iSplit; eauto. iExists data. iFrame; auto. iExists sz0; simpl. iSplitL "Hbsz"; auto. }
-         wp_apply (wp_BufTxn__CommitWait buftx γt γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[Hmapsto HisBuf]").
+         (* Need a Q for CommitWait *)
+         wp_apply (wp_BufTxn__CommitWait buftx keyMp γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[HisBuf]").
          {
            iFrame; auto.
            rewrite <- HbuildAddr, big_opM_singleton; auto.
