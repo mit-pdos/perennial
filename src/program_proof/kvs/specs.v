@@ -136,16 +136,19 @@ Proof.
       iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k b) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
       pose ({[key := existT defs.KindBlock (defs.bufBlock blk)]} : gmap (specs.addr) ({K & defs.bufDataT K})) as keyMp.
 
-      iMod (BufTxn_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]" iFrame; eauto.
+      iDestruct (BufTxn_lift buftx _ γDisk keyMp _ with "[Hbtxn HkeyMt]") as "He".
+      1: admit. (* E top? *)
+      1: iFrame.
       { iApply big_sepM_singleton; auto. }
+      rewrite right_id.
+      iMod "He".
 
-      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[Hbtxn HkeyMt]").
-      -- iSplitL "Hbtxn"; auto.
-         iSplitL "HkeyMt".
+      wp_apply (wp_BufTxn__ReadBuf buftx keyMp γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[He]").
+      -- iSplitL "He"; auto.
+         iPureIntro. split.
          {
            rewrite <- HbuildAddr. simpl.
-           iPoseProof (big_sepM_lookup _ keyMp key (existT defs.KindBlock (defs.bufBlock blk)) with "HkeyMt") as "HsepM"; eauto.
-           apply lookup_singleton.
+           apply lookup_insert.
          }
          { simpl. auto. }
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".
