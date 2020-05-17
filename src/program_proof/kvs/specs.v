@@ -126,17 +126,17 @@ Proof.
       destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. lia.
     * wp_loadField.
       wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
-      iIntros (buftx γt) "Hbtxn".
+      iIntros (buftx) "Hbtxn".
       wp_let.
       wp_call.
       change (u64_instance.u64.(@word.mul 64) 4096 8) with (U64 32768).
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
 
-      iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k (projT2 b)) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
+      iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k b) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
       pose ({[key := existT defs.KindBlock (defs.bufBlock blk)]} : gmap (specs.addr) ({K & defs.bufDataT K})) as keyMp.
 
-      iMod (BufTxn_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]"; iFrame; eauto.
+      iMod (BufTxn_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]" iFrame; eauto.
       { iApply big_sepM_singleton; auto. }
 
       wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[Hbtxn HkeyMt]").
