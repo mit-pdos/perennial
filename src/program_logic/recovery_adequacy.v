@@ -351,17 +351,17 @@ Qed.
 Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofeT) `{!invPreG Σ} `{!crashPreG Σ} s k e r σ φ φr φinv Φinv :
   (∀ `{Hinv : !invG Σ} `{Hc: !crashG Σ} κs,
      ⊢ |={⊤}=> ∃ (t: pbundleG T Σ)
-         (stateI : pbundleG T Σ→ state Λ → list (observation Λ) → iProp Σ)
+         (stateI : invG Σ → pbundleG T Σ→ state Λ → list (observation Λ) → iProp Σ)
          (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf,
         let _ : perennialG Λ CS _ Σ :=
             PerennialG _ _ T Σ
               (λ Hi t,
-               IrisG Λ Σ Hi (λ σ κs _, stateI t σ κs)
+               IrisG Λ Σ Hi (λ σ κs _, stateI Hi t σ κs)
                     (fork_post t)) Hpf
                in
-       □ (∀ σ κ, stateI t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
-       □ (∀ Hi t, Φinv Hi t -∗ □ ∀ σ κ, stateI t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
-       stateI t σ κs ∗ wpr s k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝)) →
+       □ (∀ σ κ, stateI Hinv t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
+       □ (∀ Hi t, Φinv Hi t -∗ □ ∀ σ κ, stateI Hi t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
+       stateI Hinv t σ κs ∗ wpr s k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝)) →
   recv_adequate (CS := CS) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
 Proof.
   intros Hwp.
@@ -376,8 +376,8 @@ Proof.
                (perennialG0 :=
           PerennialG _ _ T Σ
             (λ Hi t,
-             IrisG Λ Σ Hi (λ σ κs _, stateI t σ κs)
-                  (Hfork_post t)) Hpf) _ _ (λ _ t, (∀ σ κ, stateI t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝))%I
+             IrisG Λ Σ Hi (λ σ κs _, stateI Hi t σ κs)
+                  (Hfork_post t)) Hpf) _ _ (λ Hi t, (∀ σ κ, stateI Hi t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝))%I
                _ [] with "[Hw] [H] [] [] HNC") as "H"; eauto.
   { rewrite app_nil_r. eauto. }
   iApply (step_fupdN_fresh_wand with "H").

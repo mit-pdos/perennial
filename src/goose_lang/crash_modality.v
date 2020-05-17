@@ -1,9 +1,9 @@
-From Perennial.goose_lang Require Import lifting.
 From iris.proofmode Require Import tactics monpred.
 From Perennial.Helpers Require Import NamedProps.
 From iris.proofmode Require Import base intro_patterns spec_patterns
                                    sel_patterns coq_tactics reduction.
 
+From Perennial.goose_lang Require Import lifting.
 
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.
@@ -178,6 +178,12 @@ Section IntoCrash.
     iIntros (?) "H". iApply post_crash_forall; last eauto. iIntros (?). iApply H.
   Qed.
 
+  (*
+  Global Instance post_crash_into_crash P:
+    IntoCrash (post_crash P) P.
+  Proof. rewrite /IntoCrash. by iApply post_crash_mono. Qed.
+   *)
+
   Lemma into_crash_proper P P' Q Q':
     IntoCrash P Q →
     (P ⊣⊢ P') →
@@ -208,6 +214,13 @@ Section IntoCrash.
       * intros. setoid_rewrite Nat.add_succ_r. setoid_rewrite <-Nat.add_succ_l. eauto.
   Qed.
 
+  Global Instance big_sepM_into_crash `{Countable K} :
+    ∀ (A : Type) Φ (Ψ : heapG Σ → K → A → iProp Σ) (m : gmap K A),
+    (∀ (k : K) (x : A), IntoCrash (Φ k x) (λ hG, Ψ hG k x)) →
+    IntoCrash ([∗ map] k↦x ∈ m, Φ k x)%I (λ hG, [∗ map] k↦x ∈ m, Ψ hG k x)%I.
+  Proof.
+  Admitted.
+
   Lemma into_crash_post_crash_frame_l P P' `{!IntoCrash P P'} Q:
     P -∗ post_crash Q -∗ post_crash (λ hG', P' hG' ∗ Q hG').
   Proof. iIntros "HP HQ". rewrite (@into_crash _ _ P). iApply post_crash_sep. iFrame. Qed.
@@ -225,20 +238,24 @@ Proof. iIntros "HP Hwand". by iApply "Hwand". Qed.
 Ltac crash_env Γ :=
   match Γ with
     | environments.Enil => idtac
+    | environments.Esnoc ?Γ' ?id (post_crash _) => crash_env Γ'
     | environments.Esnoc ?Γ' ?id ?A => first [ iEval (rewrite (@into_crash _ _ _ _ _ A) )in id || iClear id ] ; crash_env Γ'
   end.
 
-Ltac iCrash :=
+Ltac crash_ctx :=
   match goal with
   | [ |- environments.envs_entails ?Γ _] =>
     let spatial := pm_eval (environments.env_spatial Γ) in
     let intuit := pm_eval (environments.env_intuitionistic Γ) in
-    crash_env spatial; crash_env intuit;
-    iApply (modus_ponens with "[-]"); [ iNamedAccu | ];
-    rewrite ?post_crash_named ?post_crash_sep; iApply post_crash_mono;
-    intros; simpl;
-    let H := iFresh in iIntros H; iNamed H
+    crash_env spatial; crash_env intuit
   end.
+
+Ltac iCrash :=
+  crash_ctx;
+  iApply (modus_ponens with "[-]"); [ iNamedAccu | ];
+  rewrite ?post_crash_named ?post_crash_sep; iApply post_crash_mono;
+  intros; simpl;
+  let H := iFresh in iIntros H; iNamed H.
 
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.

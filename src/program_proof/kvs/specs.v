@@ -7,10 +7,8 @@ From Perennial.program_proof Require Import proof_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import kvs.
 From Perennial.program_proof Require Import txn.specs buftxn.specs.
-From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import marshal_proof.
 
 Module kvpair.
   Record t :=
@@ -21,7 +19,6 @@ Module kvpair.
 End kvpair.
 
 Section heap.
-Context `{!heapG Σ}.
 Context `{!crashG Σ}.
 Context `{!lockG Σ}.
 Context `{!buftxnG Σ}.
@@ -61,7 +58,7 @@ Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz:
       ⌜bs = snd slice_kvp⌝ ∗
       is_block bs 1 blk.
 
-Definition kvpairs_valid_match (pairs: list kvpair.t) kvsblks γDisk sz : iProp Σ :=
+Definition kvpairs_valid_match (pairs: list kvpair.t) (kvsblks : gmap specs.addr {K & defs.bufDataT K}) γDisk sz : iProp Σ :=
   [∗ list] kvp ∈ pairs, let '(kvpair.mk key bs) := kvp in
                         (∃ blk, is_block bs 1 blk ∗ mapsto_txn γDisk key (defs.bufBlock blk)
         ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock (defs.bufBlock blk))⌝
@@ -78,9 +75,9 @@ Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K
       )⌝
       ∗ [∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I.
 
-Definition crashed_kvs kvp_ls kvsblks γDisk : iProp Σ :=
+Definition crashed_kvs kvp_ls kvsblks γDisk sz : iProp Σ :=
       ([∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I
-      ∗ kvpairs_match kvp_ls γDisk.
+      ∗ kvpairs_valid_match kvp_ls kvsblks γDisk sz.
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
@@ -91,7 +88,6 @@ Proof.
   iIntros (ϕ ϕc) "_ Hϕ".
   rewrite /MkKVS.
   wpc_pures; eauto.
-  wpc_bind (super.MkFsSuper _).
 Admitted.
 
  Theorem wpc_KVS__Get kvsl kvsblks sz γDisk key blk:
@@ -143,7 +139,7 @@ Proof.
       iMod (BufTxn_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]"; iFrame; eauto.
       { iApply big_sepM_singleton; auto. }
 
-      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) 32768 with "[Hbtxn HkeyMt]").
+      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[Hbtxn HkeyMt]").
       -- iSplitL "Hbtxn"; auto.
          iSplitL "HkeyMt".
          {
@@ -155,14 +151,15 @@ Proof.
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".
          simpl in *.
          iSpecialize ("HPostRead" $! (defs.bufBlock blk) dirty).
-         iDestruct "HisBuf" as (data sz0) "[Hbaddr [Hbsz [Hbdata [Hbdirty [HvalidA [Hsz0 [Hnotnil HisBufData]]]]]]]".
+         iNamed "HisBuf". simpl.
+         iDestruct "Hisbuf_without_data" as (sz0) "[Hbaddr [Hbsz [Hbdata Hbdirty]]]"; simpl.
          wp_loadField.
-         wp_apply (util_proof.wp_CloneByteSlice with "HisBufData").
+         wp_apply (util_proof.wp_CloneByteSlice with "Hbufdata").
          iIntros (data') "[HisBlkData HisBlkData']".
 
          wp_let.
          iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
-         { iSplit; eauto. iExists data, sz0; iFrame; auto. }
+         { iSplit; eauto. iExists data. iFrame; auto. iExists sz0; simpl. iSplitL "Hbsz"; auto. }
          wp_apply (wp_BufTxn__CommitWait buftx γt γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[Hmapsto HisBuf]").
          {
            iFrame; auto.

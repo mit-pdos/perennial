@@ -46,6 +46,7 @@ Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Definition in_bounds γ (a: u64): iProp Σ. Admitted.
@@ -96,10 +97,11 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ a :
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
   wp_call.
-  wp_apply (wp_Read_fupd (⊤∖↑walN) (λ b, Q b)%I _ 1 (* q=1 *) with "[Hfupd]").
+  wp_apply (wp_Read_fupd _ (λ b, Q b)%I _ 1 (* q=1 *) with "[Hfupd]").
   { iDestruct "Hwal" as "[Hwal Hcirc]".
     iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
     iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
+    iNamed "Hdisk".
     iNamed "Hdisk".
 
     iDestruct (is_installed_to_read with "Hinstalled") as "[>Hinstalled_read Hinstalled]".
@@ -113,19 +115,25 @@ Proof.
     iSpecialize ("Hinstalled_read" with "Hb").
     iSpecialize ("Hinstalled" with "Hinstalled_read").
     iNamed "circ.start".
+    fold innerN.
+    iMod (fupd_intro_mask' _ (⊤∖↑N)) as "HinnerN".
+    { solve_ndisj. }
+
     iMod ("Hfupd" $! σ σ b with "[//] [] HP") as "[HP HQ]".
     { iPureIntro.
       repeat (simpl; monad_simpl).
       exists σ txn_id.
       { econstructor; eauto; lia. }
       repeat (simpl; monad_simpl). }
+    iMod "HinnerN" as "_".
     iFrame.
     iApply "Hclose".
     iModIntro.
     iExists _; iFrame "HP".
     iFrame.
     iSplit; auto.
-    iExists _, _, _; iFrame "# ∗".
+    iExists _; iFrame.
+    iExists _, _; iFrame "# ∗".
     auto.
   }
   iIntros (s b) "(HQ&Hs)".
@@ -133,18 +141,6 @@ Proof.
   iExists _; iFrame.
   iDestruct (is_slice_to_small with "Hs") as "$".
 Qed.
-
-Theorem wp_WalogState__cutMemLog γ (st: loc) σ (installEnd: u64) :
-  {{{ wal_linv_fields st σ ∗
-      memLog_linv γ σ.(memLog)}}}
-    WalogState__cutMemLog #st #installEnd
-  {{{ σ', RET #();
-      (* TODO: only memLog is changed, following spec in sliding *)
-      wal_linv_fields st σ' ∗
-      memLog_linv γ σ'.(memLog)
-  }}}.
-Proof.
-Admitted.
 
 Fixpoint list_to_gmap_set {A} `{!EqDecision A} `{!Countable A} (l: list A): gmap A unit :=
   match l with

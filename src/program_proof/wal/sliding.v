@@ -55,17 +55,36 @@ Definition memWrite_one memLog (u: update.t) : slidingM.t :=
 Definition memWrite memLog (upds: list update.t): slidingM.t :=
   foldl memWrite_one memLog upds.
 
-Lemma memWrite_same_mutable_and_start memLog upds :
+Local Lemma memWrite_one_same_mutable_and_start memLog u :
+  (memWrite_one memLog u).(slidingM.mutable) = memLog.(slidingM.mutable) ∧
+  (memWrite_one memLog u).(slidingM.start) = memLog.(slidingM.start).
+Proof.
+  revert memLog.
+  intros.
+  rewrite /memWrite_one.
+  destruct matches.
+Qed.
+
+Lemma memWrite_one_same_mutable memLog u :
+  (memWrite_one memLog u).(slidingM.mutable) = memLog.(slidingM.mutable).
+Proof.
+  apply memWrite_one_same_mutable_and_start.
+Qed.
+
+Lemma memWrite_one_same_start memLog u :
+  (memWrite_one memLog u).(slidingM.start) = memLog.(slidingM.start).
+Proof.
+  apply memWrite_one_same_mutable_and_start.
+Qed.
+
+Local Lemma memWrite_same_mutable_and_start memLog upds :
   (memWrite memLog upds).(slidingM.mutable) = memLog.(slidingM.mutable) ∧
   (memWrite memLog upds).(slidingM.start) = memLog.(slidingM.start).
 Proof.
   revert memLog.
   induction upds; simpl; auto; intros.
   destruct (IHupds (memWrite_one memLog a)) as [-> ->].
-  rewrite /memWrite_one.
-  destruct memLog as [log start mutable]; simpl.
-  destruct (find_highest_index (update.addr <$> log) a.(update.addr)); simpl; auto.
-  destruct (decide (int.val mutable - int.val start ≤ n)); simpl; auto.
+  apply memWrite_one_same_mutable_and_start.
 Qed.
 
 Lemma memWrite_same_mutable memLog upds :
@@ -84,13 +103,6 @@ Lemma memWrite_app1 memLog upds u :
   memWrite memLog (upds ++ [u]) = memWrite_one (memWrite memLog upds) u.
 Proof.
   rewrite /memWrite foldl_app //=.
-Qed.
-
-Theorem apply_upds_app upds1 upds2 d :
-  apply_upds (upds1 ++ upds2) d =
-  apply_upds upds2 (apply_upds upds1 d).
-Proof.
-  rewrite /apply_upds fold_left_app //.
 Qed.
 
 Theorem find_highest_index_Some_split `{EqDecision A} (l: list A) (x: A) n :
@@ -141,10 +153,10 @@ Proof.
     apply not_inj; auto.
 Qed.
 
-Theorem apply_upds_insert_commute upds (a: u64) b b0 d :
+Theorem apply_upds_insert_commute upds (a: u64) b d :
   a ∉ update.addr <$> upds →
   apply_upds upds (<[int.val a := b]> d) =
-  <[int.val a := b]> (apply_upds upds (<[int.val a := b0]> d)).
+  <[int.val a := b]> (apply_upds upds d).
 Proof.
   intros Hnotin.
   apply map_eq; intros z.
@@ -152,7 +164,6 @@ Proof.
   2: {
     rewrite apply_upds_insert_other; auto.
     rewrite lookup_insert_ne; auto.
-    rewrite apply_upds_insert_other; auto.
   }
   rewrite lookup_insert.
   rewrite apply_upds_lookup_insert_highest; auto.
@@ -188,5 +199,6 @@ Proof.
     rewrite !apply_upds_app.
     simpl.
     generalize dependent (apply_upds upd1 d); intros d'.
-    apply apply_upds_insert_commute; auto.
+    rewrite !apply_upds_insert_commute; auto.
+    rewrite insert_insert //.
 Qed.

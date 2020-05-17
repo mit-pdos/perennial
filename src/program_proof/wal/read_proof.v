@@ -15,32 +15,83 @@ Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
-
-(* TODO: prove this using new compute_memLog, probably has enough theorems to do
-it *)
-Lemma memLogMap_ok_memLog_lookup memStart (memLog: list update.t) a i :
-  int.val memStart + Z.of_nat (length memLog) < 2^64 ->
-  map_get (compute_memLogMap memLog memStart) a = (i, true) ->
-  ∃ b, memLog !! int.nat (word.sub i memStart) = Some (update.mk a b)
-  (* also, i is the highest index such that this is true *).
-Proof.
-  intros Hbound Hlookup.
-  apply map_get_true in Hlookup.
-Admitted.
 
 Opaque struct.t.
 
+Lemma fmap_app_split3_inv {A B} (f: A -> B) (l: list A) (l1 l2: list B) (x: B) :
+  f <$> l = l1 ++ [x] ++ l2 →
+  ∃ l1' x' l2',
+    l1 = f <$> l1' ∧
+    l2 = f <$> l2' ∧
+    x = f x' ∧
+    l = l1' ++ [x'] ++ l2'.
+Proof.
+  intros H.
+  apply fmap_app_inv in H as (l1' & l2' & (?&?&?)); subst.
+  symmetry in H0.
+  apply fmap_app_inv in H0 as (l1'' & l2'' & (?&?&?)); subst.
+  symmetry in H.
+  destruct l1''; try solve [ inversion H ].
+  destruct l1''; try solve [ inversion H ].
+  inversion H; subst.
+  eexists _, _, _; eauto.
+Qed.
+
+Theorem find_highest_index_apply_upds log u i :
+  find_highest_index (update.addr <$> log) u.(update.addr) = Some i →
+  log !! i = Some u →
+  apply_upds log ∅ !! (int.val u.(update.addr)) = Some u.(update.b).
+Proof.
+  intros.
+  apply find_highest_index_Some_split in H as (poss1 & poss2 & (Heq & Hnotin & <-)).
+  apply fmap_app_split3_inv in Heq as (log1 & u' & log2 & (?&?&?&?)); subst.
+  assert (u = u'); [ | subst ].
+  { autorewrite with len in H0.
+    rewrite -> lookup_app_r in H0 by lia.
+    rewrite minus_diag /= in H0.
+    congruence. }
+  clear H0 H2.
+  destruct u' as [a b]; simpl in *.
+  rewrite apply_upds_app /=.
+  rewrite apply_upds_insert_commute; auto.
+  rewrite lookup_insert //.
+Qed.
+
+Lemma apply_upds_not_in_general (a: u64) log d :
+    forall (Hnotin: a ∉ update.addr <$> log),
+    d !! int.val a = None →
+    apply_upds log d !! int.val a = None.
+Proof.
+  revert d.
+  induction log; simpl; intros; auto.
+  destruct a0 as [a' b]; simpl in *.
+  fold (update.addr <$> log) in Hnotin.
+  apply not_elem_of_cons in Hnotin as [Hneq Hnotin].
+  rewrite IHlog; eauto.
+  rewrite lookup_insert_ne //.
+  apply not_inj; auto.
+Qed.
+
+Lemma apply_upds_not_in (a: u64) log :
+    a ∉ update.addr <$> log →
+    apply_upds log ∅ !! int.val a = None.
+Proof.
+  intros Hnotin.
+  apply apply_upds_not_in_general; auto.
+Qed.
+
 Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
   {{{ wal_linv_fields st σ ∗
-      memLog_linv γ σ.(memLog) }}}
+      memLog_linv γ σ.(memLog) σ.(diskEnd) }}}
     WalogState__readMem #st #a
   {{{ b_s (ok:bool), RET (slice_val b_s, #ok);
       (if ok then ∃ b, is_block b_s 1 b ∗
                        ⌜apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = Some b⌝
       else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = None⌝) ∗
       "Hfields" ∷ wal_linv_fields st σ ∗
-      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog)
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd)
   }}}.
 Proof.
   iIntros (Φ) "(Hfields&HmemLog_inv) HΦ".
@@ -48,31 +99,68 @@ Proof.
   iNamed "Hfield_ptsto".
   wp_call.
   wp_loadField.
-Admitted.
+  wp_apply (wp_sliding__posForAddr with "His_memLog").
+  iIntros (pos ok) "(His_memLog&%Hlookup)".
+  wp_pures.
+  wp_if_destruct; subst.
+  - destruct Hlookup as [Hbound Hfind].
+    wp_apply util_proof.wp_DPrintf.
+    wp_loadField.
+    (* need to identify the update that we're looking up *)
+    pose proof (find_highest_index_ok' _ _ _ Hfind) as [Hlookup Hhighest].
+    rewrite list_lookup_fmap in Hlookup.
+    apply fmap_Some_1 in Hlookup as [u [ Hlookup ->]].
 
-Theorem simulate_read_cache_hit {l γ Q σ memLog b a} :
+    wp_apply (wp_sliding__get with "His_memLog"); eauto.
+    { lia. }
+    iIntros (uv q) "(Hu & His_memLog)".
+    iDestruct "Hu" as "(%Hu&Hb)".
+    wp_apply (wp_copyUpdateBlock with "Hb").
+    iIntros (s') "[Hb Hb']".
+    iSpecialize ("His_memLog" with "Hb").
+    wp_pures.
+    iApply "HΦ".
+    iFrame "HmemLog_inv".
+    iSplitL "Hb'".
+    { iExists _; iFrame.
+      iPureIntro.
+      eapply find_highest_index_apply_upds; eauto. }
+    iExists _; by iFrame.
+  - wp_pures.
+    change (slice.nil) with (slice_val Slice.nil).
+    iApply "HΦ".
+    iFrame "HmemLog_inv".
+    iSplit.
+    { iPureIntro.
+      split; auto.
+      apply find_highest_index_none_not_in in Hlookup.
+      apply apply_upds_not_in; auto. }
+    iExists _; by iFrame.
+Qed.
+
+Theorem simulate_read_cache_hit {l γ Q σ memLog diskEnd b a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = Some b ->
   (is_wal_inner l γ σ ∗ P σ) -∗
-  memLog_linv γ memLog -∗
+  memLog_linv γ memLog diskEnd -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ ∗ P σ) ∗
               "HQ" ∷ Q (Some b) ∗
-              "HmemLog_linv" ∷ memLog_linv γ memLog.
+              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd.
 Proof.
 Admitted.
 
-Theorem simulate_read_cache_miss {l γ Q σ memLog a} :
+Theorem simulate_read_cache_miss {l γ Q σ memLog diskEnd a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = None ->
   (is_wal_inner l γ σ ∗ P σ) -∗
-  memLog_linv γ memLog -∗
+  memLog_linv γ memLog diskEnd -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗
               "HQ" ∷ Q None ∗
-              "HmemLog_linv" ∷ memLog_linv γ memLog.
+              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd.
 Proof.
 Admitted.
 
@@ -103,8 +191,10 @@ Proof.
   wp_pures.
   destruct ok.
   - iDestruct "Hb" as (b) "[Hb %HmemLog_lookup]".
+    iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
     iMod (simulate_read_cache_hit HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
       as "([Hinner HP]&?&?)"; iNamed.
+    iMod "HinnerN" as "_".
     iModIntro.
     iSplitL "Hinner HP".
     { iNext.
@@ -116,8 +206,10 @@ Proof.
     iApply "HΦ".
     iExists _; iFrame.
   - iDestruct "Hb" as "[-> %HmemLog_lookup]".
+    iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
     iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
       as "(Hinv&?&?)"; iNamed.
+    iMod "HinnerN" as "_".
     iModIntro.
     iFrame "Hinv".
     wp_loadField.

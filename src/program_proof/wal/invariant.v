@@ -16,6 +16,7 @@ Typeclasses Opaque struct_field_mapsto.
 
 Class walG Σ :=
   { wal_circ         :> circG Σ;
+    wal_txns_map     :> gen_heapPreG nat (u64 * list update.t) Σ;
     wal_circ_state   :> inG Σ (ghostR $ circO);
     wal_txn_id       :> inG Σ (ghostR $ prodO u64O natO);
     wal_list_update  :> inG Σ (ghostR $ listO updateO);
@@ -35,6 +36,7 @@ Implicit Types (v:val) (z:Z).
 Context (P: log_state.t -> iProp Σ).
 Definition walN := nroot .@ "wal".
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Record wal_names := mkWalNames
@@ -49,7 +51,7 @@ Record wal_names := mkWalNames
     start_avail_name : gname;
   }.
 
-Instance _eta_wal_names : Settable _ :=
+Global Instance _eta_wal_names : Settable _ :=
   settable! mkWalNames <circ_name; lock_name; cs_name; txns_ctx_name; txns_name;
                         new_installed_name; being_installed_name; diskEnd_avail_name; start_avail_name>.
 
@@ -88,12 +90,16 @@ Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
 Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
   ∃ upds, txn_val γ txn_id (pos, upds).
 
+Theorem txn_val_to_pos γ txn_id pos upds :
+  txn_val γ txn_id (pos, upds) -∗ txn_pos γ txn_id pos.
+Proof.
+  rewrite /txn_pos.
+  iIntros "Hval".
+  iExists _; iFrame.
+Qed.
+
 Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
-
-Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :=
-  apply_upds log ∅ =
-  apply_upds (txn_upds txns) ∅.
 
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the memStart_txn_id *)
@@ -101,10 +107,13 @@ Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
   has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
   (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
-Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
-  (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
+Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) : iProp Σ :=
+  (∃ (memStart_txn_id: nat) (diskEnd_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
+      "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
+      "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
       "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
+      "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       "Howntxns" ∷ own γ.(txns_name) (◯ Excl' txns) ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
@@ -114,8 +123,10 @@ Definition memLog_linv γ (σ: slidingM.t) : iProp Σ :=
       use for [is_durable] when the new transaction is logged *)
       "%His_nextDiskEnd" ∷
         ⌜has_updates
-          (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))
-          (subslice memStart_txn_id nextDiskEnd_txn_id txns)⌝
+          (subslice (slidingM.logIndex σ diskEnd)
+                    (slidingM.logIndex σ σ.(slidingM.mutable))
+                    σ.(slidingM.log))
+          (subslice diskEnd_txn_id nextDiskEnd_txn_id txns)⌝
   ).
 
 Definition wal_linv_fields st σ: iProp Σ :=
@@ -136,7 +147,6 @@ Definition diskEnd_linv γ (diskEnd: u64): iProp Σ :=
 
 Definition diskStart_linv γ (start: u64): iProp Σ :=
   "#Hstart_at_least" ∷ start_at_least γ.(circ_name) start ∗
-  (* TODO: this should be available only to the logger? *)
   "Hstart_exactly" ∷ thread_own_ctx γ.(start_avail_name)
                        (start_is γ.(circ_name) (1/2) start).
 
@@ -146,7 +156,7 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
     "Hfields" ∷ wal_linv_fields st σ ∗
     "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
     "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
-    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog).
+    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd).
 
 (** The implementation state contained in the *Walog struct, which is all
 read-only. *)
@@ -211,9 +221,83 @@ Definition is_installed_read γ d txns installed_lb : iProp Σ :=
   ([∗ map] a ↦ _ ∈ d,
     ∃ (b: Block),
       ⌜∃ txn_id', (installed_lb ≤ txn_id' ≤ length txns)%nat ∧
-      let txns := take txn_id' txns in
-      apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
+      apply_upds (txn_upds (take txn_id' txns)) d !! a = Some b⌝ ∗
       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
+
+Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
+  own γ.(cs_name) (● (Excl' cs)).
+
+Implicit Types (installed_txn_id:nat) (diskEnd_txn_id:nat).
+
+Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id diskEnd_txn_id :=
+  has_updates cs.(circΣ.upds) (subslice installed_txn_id diskEnd_txn_id txns).
+
+(** an invariant governing the data logged for crash recovery of (a prefix of)
+memLog. *)
+Definition is_durable γ cs txns installed_txn_id diskEnd_txn_id : iProp Σ :=
+    "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id diskEnd_txn_id⌝.
+
+Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
+    "%Hinstalled_bound" ∷ ⌜(installed_lb ≤ installed_txn_id)%nat⌝ ∗
+    "%Hstart_txn" ∷ ⌜is_highest_txn txns installed_txn_id (circΣ.start cs)⌝.
+
+Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
+  ∃ (diskEnd: u64),
+    "%Hdurable_lb" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat⌝ ∗
+    "%HdiskEnd_val" ∷ ⌜int.val diskEnd = circΣ.diskEnd cs⌝ ∗
+    "%Hend_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝.
+
+Definition txns_ctx γ txns : iProp Σ :=
+  gen_heap_ctx (hG:=γ.(txns_ctx_name)) (list_to_imap txns) ∗
+  ([∗ map] txn_id↦txn ∈ list_to_imap txns,
+      txn_val γ txn_id txn).
+
+Definition disk_inv γ s (cs: circΣ.t) : iProp Σ :=
+ ∃ installed_txn_id diskEnd_txn_id,
+      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
+      "Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
+
+Definition disk_inv_durable γ s (cs: circΣ.t) : iProp Σ :=
+ ∃ installed_txn_id diskEnd_txn_id,
+      "#Hinstalled" ∷ is_installed_read γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) ∗
+      "#Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
+
+(** the complete wal invariant *)
+Definition is_wal_inner (l : loc) γ s : iProp Σ :=
+    "%Hwf" ∷ ⌜wal_wf s⌝ ∗
+    "Hmem" ∷ is_wal_mem l γ ∗
+    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
+    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
+    "Hdisk" ∷ ∃ cs, "Howncs" ∷ own γ.(cs_name) (◯ Excl' cs) ∗ "Hdisk" ∷ disk_inv γ s cs
+.
+
+(* XXX: should we reset the ghost state? In which case many of these components can be removed *)
+Definition is_wal_inner_durable γ s : iProp Σ :=
+    "%Hwf" ∷ ⌜wal_wf s⌝ ∗
+    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv_durable γ s cs ∗
+                    "Hcirc" ∷ is_circular_state γ.(circ_name) cs
+.
+
+(* This is produced by recovery as a post condition, can be used to get is_wal *)
+Definition is_wal_inv_pre (l: loc) γ s : iProp Σ :=
+  is_wal_inner l γ s ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
+
+Definition is_wal (l : loc) γ : iProp Σ :=
+  inv innerN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
+  is_circular circN (circular_pred γ) γ.(circ_name).
+
+(** logger_inv is the resources exclusively owned by the logger thread *)
+Definition logger_inv γ circ_l: iProp Σ :=
+  "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
+  "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
+
+(* TODO: also needs authoritative ownership of some other variables *)
+Definition installer_inv γ: iProp Σ :=
+  "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available.
 
 Global Instance is_installed_read_Timeless {γ d txns installed_lb} :
   Timeless (is_installed_read γ d txns installed_lb) := _.
@@ -255,74 +339,6 @@ Proof.
   auto.
 Qed.
 
-Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
-  own γ.(cs_name) (● (Excl' cs)).
-
-Implicit Types (installed_txn_id:nat) (diskEnd_txn_id:nat).
-
-Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id diskEnd_txn_id :=
-  apply_upds (txn_upds $ subslice installed_txn_id diskEnd_txn_id txns) ∅ =
-  apply_upds cs.(circΣ.upds) ∅.
-
-(** an invariant governing the data logged for crash recovery of (a prefix of)
-memLog. *)
-Definition is_durable γ txns installed_txn_id diskEnd_txn_id : iProp Σ :=
-  ∃ (cs: circΣ.t),
-    "Howncs" ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
-    "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id diskEnd_txn_id⌝.
-
-Global Instance is_durable_timeless γ txns installed_txn_id diskEnd_txn_id :
-  Timeless (is_durable γ txns installed_txn_id diskEnd_txn_id) := _.
-
-Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
-    "%Hinstalled_bound" ∷ ⌜(installed_lb ≤ installed_txn_id)%nat⌝ ∗
-    "%Hstart_txn" ∷ ⌜is_highest_txn txns installed_txn_id (circΣ.start cs)⌝.
-
-Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
-  ∃ (diskEnd: u64),
-    "%Hdurable_lb" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat⌝ ∗
-    "%HdiskEnd_val" ∷ ⌜int.val diskEnd = circΣ.diskEnd cs⌝ ∗
-    "%Hend_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝.
-
-Definition txns_ctx γ txns : iProp Σ :=
-  gen_heap_ctx (hG:=γ.(txns_ctx_name)) (list_to_imap txns) ∗
-  ([∗ map] txn_id↦txn ∈ list_to_imap txns,
-      txn_val γ txn_id txn).
-
-(** the complete wal invariant *)
-Definition is_wal_inner (l : loc) γ s : iProp Σ :=
-    "%Hwf" ∷ ⌜wal_wf s⌝ ∗
-    "Hmem" ∷ is_wal_mem l γ ∗
-    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
-    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ cs installed_txn_id diskEnd_txn_id,
-      "Howncs"     ∷ own γ.(cs_name) (◯ (Excl' cs)) ∗
-      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
-      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
-.
-
-(* XXX: should we reset the ghost state? In which case many of these components can be removed *)
-Definition is_wal_inner_durable γ s : iProp Σ :=
-    "%Hwf" ∷ ⌜wal_wf s⌝ ∗
-    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
-    "γtxns"  ∷ own γ.(txns_name) (● Excl' s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ cs installed_txn_id diskEnd_txn_id,
-      "Hcirc"      ∷ is_circular_state γ.(circ_name) cs ∗
-      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
-      "Hdurable"   ∷ is_durable γ s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb)
-.
-
-(* This is produced by recovery as a post condition, can be used to get is_wal *)
-Definition is_wal_inv_pre (l: loc) γ s : iProp Σ :=
-  is_wal_inner l γ s ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
-
-Definition is_wal (l : loc) γ : iProp Σ :=
-  inv N (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
-  is_circular circN (circular_pred γ) γ.(circ_name).
 
 Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
 Proof.
@@ -338,14 +354,14 @@ Proof.
 Qed.
 
 Theorem is_wal_open l wn E :
-  ↑walN ⊆ E ->
+  ↑innerN ⊆ E ->
   is_wal l wn
-  ={E, E ∖ ↑walN}=∗
+  ={E, E ∖ ↑innerN}=∗
     ∃ σ, ▷ P σ ∗
-    ( ▷ P σ ={E ∖ ↑walN, E}=∗ emp ).
+    ( ▷ P σ ={E ∖ ↑innerN, E}=∗ emp ).
 Proof.
-  iIntros (HN) "[#Hwalinv #Hcirc]".
-  iInv walN as (σ) "[Hwalinner HP]" "Hclose".
+  iIntros (HN) "[#? _]".
+  iInv innerN as (σ) "[Hwalinner HP]" "Hclose".
   iModIntro.
   iExists _. iFrame.
   iIntros "HP".
@@ -385,7 +401,37 @@ Proof.
   by intros ->.
 Qed.
 
-Theorem alloc_txn_pos γ txns E pos upds :
+Lemma gen_heap_init_strong `{Countable L, !gen_heapPreG L V Σ} σ :
+  ⊢ |==> ∃ _ : gen_heapG L V Σ, gen_heap_ctx σ ∗ [∗ map] k↦v ∈ σ, mapsto k 1 v.
+Proof.
+Admitted.
+
+Global Instance circ_names_inhabited : Inhabited circ_names := populate!.
+
+Definition wal_names_dummy {hG:gen_heapPreG nat (u64 * list update.t) Σ} : wal_names.
+  constructor; try exact inhabitant.
+  constructor; try exact inhabitant.
+  apply _.
+Defined.
+
+Theorem alloc_txns_ctx E txns :
+  ↑nroot.@"readonly" ⊆ E →
+  ⊢ |={E}=> ∃ γtxns, txns_ctx (set txns_ctx_name (λ _, γtxns) wal_names_dummy) txns.
+Proof.
+  iIntros (Hsub).
+  iMod (gen_heap_init_strong (list_to_imap txns)) as (γtxns) "(Hctx & Hmapsto)".
+  iExists γtxns.
+  iFrame "Hctx".
+  iApply big_sepM_fupd.
+  iApply (big_sepM_mono with "Hmapsto").
+  intros i txn **; simpl.
+  iIntros "Hmapsto".
+  iMod (readonly_alloc_1 with "Hmapsto") as "Hreadonly".
+  rewrite /txn_val; iFrame.
+  auto.
+Qed.
+
+Theorem alloc_txn_pos pos upds γ txns E :
   txns_ctx γ txns ={E}=∗
   txns_ctx γ (txns ++ [(pos, upds)]) ∗ txn_val γ (length txns) (pos, upds).
 Proof.
@@ -414,6 +460,19 @@ Proof.
   iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htxns") as "[$ _]".
 Qed.
 
+Theorem txns_ctx_complete' γ txns txn_id txn :
+  txns !! txn_id = Some txn ->
+  ▷ txns_ctx γ txns -∗ ▷ txn_val γ txn_id txn ∗ ▷ txns_ctx γ txns.
+Proof.
+  rewrite /is_txn.
+  rewrite -lookup_list_to_imap.
+  intros Hlookup.
+  iIntros "[Hctx #Htxns]".
+  iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htxns") as "[$ _]".
+  iNext.
+  iFrame "∗ #".
+Qed.
+
 Theorem txns_ctx_txn_pos γ txns txn_id pos :
   is_txn txns txn_id pos ->
   txns_ctx γ txns -∗ txn_pos γ txn_id pos.
@@ -425,14 +484,14 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Theorem txn_pos_valid γ txns E txn_id pos :
+Theorem txn_pos_valid' γ txns E txn_id pos :
   ↑nroot.@"readonly" ⊆ E ->
-  txns_ctx γ txns -∗
+  ▷ txns_ctx γ txns -∗
   txn_pos γ txn_id pos -∗
-  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ txns_ctx γ txns.
+  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ ▷ txns_ctx γ txns.
 Proof.
   rewrite /txns_ctx /txn_pos.
-  iIntros (Hsub) "[Hctx Htxns] Htxn".
+  iIntros (Hsub) "[>Hctx Htxns] Htxn".
   iDestruct "Htxn" as (upds) "Hval".
   iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
   iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
@@ -441,6 +500,197 @@ Proof.
   iSplit; eauto.
 Qed.
 
+(* XXX: I have an explosion of these variants that differ in laters, because I only need the timeless part of txn_ctx;
+ should I be using ▷^n txns_ctx? or doing something else ? *)
+Theorem txn_val_valid' γ txns E txn_id txn :
+  ↑nroot.@"readonly" ⊆ E ->
+  ▷ txns_ctx γ txns -∗
+  txn_val γ txn_id txn -∗
+  |={E}=> ⌜txns !! txn_id = Some txn⌝ ∗ ▷ txns_ctx γ txns.
+Proof.
+  rewrite /txns_ctx /txn_val.
+  iIntros (Hsub) "[>Hctx Htxns] Hval".
+  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
+  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
+  rewrite lookup_list_to_imap in Hlookup.
+  iIntros "!>".
+  iSplit; eauto.
+Qed.
+
+Theorem txn_val_valid γ txns E txn_id txn :
+  ↑nroot.@"readonly" ⊆ E ->
+  txns_ctx γ txns -∗
+  txn_val γ txn_id txn -∗
+  |={E}=> ⌜txns !! txn_id = Some txn⌝ ∗ txns_ctx γ txns.
+Proof.
+  rewrite /txns_ctx /txn_val.
+  iIntros (Hsub) "[Hctx Htxns] Hval".
+  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
+  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
+  rewrite lookup_list_to_imap in Hlookup.
+  iIntros "!>".
+  iSplit; eauto.
+Qed.
+
+Theorem txn_pos_valid γ txns E txn_id pos :
+  ↑nroot.@"readonly" ⊆ E ->
+  txns_ctx γ txns -∗
+  txn_pos γ txn_id pos -∗
+  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ txns_ctx γ txns.
+Proof.
+  rewrite /txn_pos.
+  iIntros (Hsub) "Hctx Htxn".
+  iDestruct "Htxn" as (upds) "Hval".
+  iMod (txn_val_valid with "Hctx Hval") as "(%&$)"; auto.
+  iPureIntro.
+  rewrite /is_txn.
+  rewrite H //.
+Qed.
+
+Theorem is_wal_txns_lookup l γ σ :
+  is_wal_inner l γ σ -∗
+  (∃ txns, txns_ctx γ txns ∗ own γ.(txns_name) (● Excl' txns) ∗
+             (txns_ctx γ txns ∗ own γ.(txns_name) (● Excl' txns) -∗
+              is_wal_inner l γ σ)).
+Proof.
+  iNamed 1.
+  iExists _; iFrame.
+  by iIntros "($ & $)".
+Qed.
+
+Theorem txn_pos_valid_locked l γ txns txn_id pos :
+  is_wal l γ -∗
+  txn_pos γ txn_id pos -∗
+  own γ.(txns_name) (◯ Excl' txns) -∗
+  |={⊤}=> ⌜is_txn txns txn_id pos⌝ ∗ own γ.(txns_name) (◯ Excl' txns).
+Proof.
+  iIntros "[#? _] #Hpos Howntxns".
+  iInv innerN as (σ) "[Hinner HP]".
+  iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(Htxns_ctx & >γtxns & Hinner)".
+  iDestruct (ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
+  iFrame "Howntxns".
+  iMod (txn_pos_valid' _ _ (⊤ ∖ ↑innerN) with "Htxns_ctx [$Hpos]") as "(%His_txn & Hctx)"; first by solve_ndisj.
+  iModIntro.
+  iSplitL.
+  { iNext.
+    iExists _; iFrame.
+    iApply ("Hinner" with "[$]"). }
+  auto.
+Qed.
+
+Definition txns_are γ (start: nat) txns_sub: iProp Σ :=
+  [∗ list] i↦txn ∈ txns_sub, txn_val γ (start + i)%nat txn.
+
+Lemma txns_are_cons γ start txn txns_sub :
+  txns_are γ start (txn::txns_sub) ⊣⊢
+  txn_val γ start txn ∗ txns_are γ (S start) txns_sub.
+Proof.
+  rewrite /txns_are /=.
+  replace (start + 0)%nat with start by lia.
+  f_equiv.
+  f_equiv.
+  intros n txn'.
+  f_equiv.
+  lia.
+Qed.
+
+Global Instance txns_are_Persistent γ start txns_sub : Persistent (txns_are γ start txns_sub) := _.
+
+Lemma subslice_none {A} n m (l: list A) :
+  (m ≤ n)%nat →
+  subslice n m l = [].
+Proof.
+  intros.
+  rewrite /subslice.
+  rewrite -length_zero_iff_nil.
+  rewrite drop_length take_length.
+  lia.
+Qed.
+
+Theorem txns_are_sound γ E txns start txns_sub :
+  ↑nroot.@"readonly" ⊆ E →
+  ▷ txns_ctx γ txns -∗
+  txns_are γ start txns_sub -∗
+  |={E}=> ⌜subslice start (start + length txns_sub)%nat txns = txns_sub⌝ ∗ ▷ txns_ctx γ txns.
+Proof.
+  iIntros (Hsub) "Hctx Htxns_are".
+  iInduction txns_sub as [|txn txns_sub] "IH" forall (start).
+  - simpl.
+    iFrame.
+    iPureIntro.
+    rewrite subslice_none; auto.
+    lia.
+  - simpl.
+    iDestruct (txns_are_cons with "Htxns_are") as "[Htxn_start Htxns_are]".
+    iMod (txn_val_valid' with "Hctx Htxn_start") as "(%Hstart&Hctx)"; auto.
+    iMod ("IH" with "Hctx Htxns_are") as "(%&Hctx)".
+    iFrame.
+    iPureIntro.
+    rewrite /subslice in H |- *.
+    rewrite Nat.add_succ_r.
+    simpl in H.
+    erewrite drop_S; eauto.
+    + rewrite H; eauto.
+    + rewrite lookup_take; eauto.
+      lia.
+Qed.
+
+Theorem subslice_cons {A} (n m: nat) (l: list A) x :
+  l !! n = Some x →
+  (n < m)%nat →
+  subslice n m l =
+  x :: subslice (S n) m l.
+Proof.
+  intros Hlookup Hbound.
+  apply elem_of_list_split_length in Hlookup as (l1 & l2 & [? ?]); subst.
+  rewrite /subslice.
+  rewrite !skipn_firstn_comm.
+  repeat rewrite -> drop_app_ge by lia.
+  replace (length l1 - length l1)%nat with 0%nat by lia.
+  replace (S (length l1) - length l1)%nat with 1%nat by lia; simpl.
+  rewrite drop_0.
+  replace (m - length l1)%nat with (S (m - S (length l1)))%nat by lia.
+  simpl.
+  auto.
+Qed.
+
+Theorem get_txns_are l γ txns start till txns_sub :
+  txns_sub = subslice start till txns →
+  (start ≤ till < length txns)%nat →
+  own γ.(txns_name) (◯ Excl' txns) -∗
+  is_wal l γ -∗
+  |={⊤}=> ▷ txns_are γ start txns_sub ∗ own γ.(txns_name) (◯ Excl' txns).
+Proof.
+  intros.
+  iIntros "Hown #Hwal".
+  iInduction txns_sub as [|txn txns_sub] "IH" forall (start till H H0).
+  - rewrite /txns_are /=.
+    by iFrame.
+  - assert (start ≠ till).
+    { intros ->.
+      rewrite subslice_none in H; try lia.
+      inversion H. }
+    rewrite txns_are_cons.
+    iDestruct "Hwal" as "[Hwal _]".
+    iInv "Hwal" as (σ) "[Hinner HP]".
+    iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(Htxns_ctx & >γtxns & Hinner)".
+    destruct (list_lookup_lt _ txns start) as [txn' Hlookup]; len.
+    iDestruct (ghost_var_agree with "γtxns Hown") as %Heq; subst.
+    iDestruct (txns_ctx_complete' _ _ _ _ Hlookup with "Htxns_ctx") as "(Htxn & Htxns_ctx)".
+    erewrite subslice_cons in H; eauto; simpl; len.
+    inversion H; subst; clear H.
+    iModIntro.
+    iSplitL "Hinner Htxns_ctx HP γtxns".
+    { iNext.
+      iExists _; iFrame.
+      iApply "Hinner"; iFrame. }
+    iMod ("IH" $! (S start) with "[] [] Hown") as "(Htxns_are & Hown)".
+    { iPureIntro.
+      f_equal. }
+    { iPureIntro; lia. }
+    iModIntro.
+    iFrame.
+Qed.
 
 (** * accessors for fields whose values don't matter for correctness *)
 Theorem wal_linv_shutdown st γ :

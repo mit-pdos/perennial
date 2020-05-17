@@ -310,7 +310,7 @@ Proof using PStartedOpening_Timeless.
       ** iApply "HΦ". iDestruct "Hvs" as "($&_)".
       ** iExists (Opening s). iFrame.
     * iNext. iIntros (lptr) "(Hlog&Hlock)".
-      iDestruct "Hlock" as (ml) "(Hpts&Hlock)".
+      iDestruct "Hlock" as (γ ml) "(Hpts&Hlock)".
       iDestruct "Hvs" as "(_&Hvs)".
       iInv "Hinv" as "H" "Hclo".
       iDestruct "H" as (s') "(Hlog_state_to_inv&>Hauth_state)".
@@ -332,7 +332,7 @@ Proof using PStartedOpening_Timeless.
          { iAlways. iDestruct 1 as (?) "(?&?)". iExists _. iFrame. by iApply ptsto_log_crashed. }
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
-         iFrame. iExists _. iFrame.
+         iFrame. iExists _, _. iFrame.
       ** iApply "HΦ". by iApply Hwand.
   - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
     { iNext. iExists _. iFrame. iExists _, _. iFrame. eauto. }
@@ -437,7 +437,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
       iMod ("Hclo" with "[HPOpened Hauth_state Hfrag_state]") as "_".
       { iNext. iExists _; iFrame. }
       iDestruct "Hlog" as "(Hlog&Hlock)".
-      iDestruct "Hlock" as (ml) "(Hpts&Hlock)".
+      iDestruct "Hlock" as (γ ml) "(Hpts&Hlock)".
       iSplitL "HP Hlog".
       { iExists _. iFrame. eauto. }
       iModIntro.
@@ -451,7 +451,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
          { iAlways. iDestruct 1 as (?) "(?&?)". iExists _. iFrame. by iApply ptsto_log_crashed. }
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
-         iFrame. iExists _. iFrame.
+         iFrame. iExists _, _. iFrame.
       ** iApply "HΦ". by iApply Hwand.
   - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
     { iNext. iExists _. iFrame. iExists _, _. iFrame. eauto. }

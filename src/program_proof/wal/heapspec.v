@@ -227,26 +227,6 @@ Qed.
   
 (* Helper lemmas *)
 
-Theorem apply_upds_cons disk u ul :
-  apply_upds (u :: ul) disk =
-  apply_upds ul (apply_upds [u] disk).
-Proof.
-  reflexivity.
-Qed.
-
-Theorem apply_upds_app : forall u1 u2 disk,
-  apply_upds (u1 ++ u2) disk =
-  apply_upds u2 (apply_upds u1 disk).
-Proof.
-  induction u1.
-  - reflexivity.
-  - simpl app.
-    intros.
-    rewrite apply_upds_cons.
-    rewrite IHu1.
-    reflexivity.
-Qed.
-
 Theorem is_update_cons_eq: forall l a0,
   is_update (a0 :: l) a0.(update.addr) a0.(update.b).
 Proof.
@@ -1403,7 +1383,7 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
-        let txn_num := length σ'.(log_state.txns) in
+        let txn_num := length σ.(log_state.txns) in
       ( (wal_heap_inv γh) σ
           ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
     "Hlockedheap" ∷ is_locked_walheap γh lwh ).
@@ -1744,7 +1724,7 @@ Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn :
     ⌜ locked_wh_disk lwh !! int.val a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros (HNE) "(#Hwal & Htxnsfrag & Hmapsto)".
-  iMod (is_wal_open with "Hwal") as (σ) "[>Hheap Hclose]"; eauto.
+  iMod (is_wal_open with "Hwal") as (σ) "[>Hheap Hclose]"; first by solve_ndisj.
   iDestruct (wal_heap_mapsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
   iMod ("Hclose" with "Hheap").
   iModIntro.

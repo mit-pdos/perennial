@@ -210,6 +210,10 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
     is_slice_small s uint64T 1 (u64val <$> addrs).
 
+Lemma is_circular_state_wf γ σ :
+  is_circular_state γ σ -∗ ⌜ circ_wf σ ⌝.
+Proof. iDestruct 1 as "($&_)". Qed.
+
 Lemma diskEnd_is_agree γ q1 q2 endpos1 endpos2 :
   diskEnd_is γ q1 endpos1 -∗
   diskEnd_is γ q2 endpos2 -∗
@@ -1191,7 +1195,8 @@ Theorem wpc_recoverCircular stk k E1 E2 d σ γ :
       start_is γ' (1/2) diskStart ∗
       diskEnd_is γ' (1/2) (int.val diskStart + length upds) ∗
       ⌜σ.(circΣ.start) = diskStart⌝ ∗
-      ⌜σ.(circΣ.upds) = upds⌝
+      ⌜σ.(circΣ.upds) = upds⌝ ∗
+      ⌜circΣ.diskEnd σ = int.val diskEnd⌝
   }}}
   {{{ is_circular_state γ σ }}}.
 Proof.
@@ -1437,8 +1442,12 @@ Proof.
       f_equal.
       destruct Hwf; len. }
     iPureIntro; intuition eauto.
-    rewrite take_ge; auto.
-    destruct Hwf; word.
+    * rewrite take_ge; auto.
+      destruct Hwf; word.
+    * word_cleanup.
+      destruct Hwf.
+      rewrite /circΣ.diskEnd.
+      word.
 Qed.
 
 

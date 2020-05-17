@@ -161,21 +161,20 @@ Proof.
   { subst. congruence. }
 Qed.
 
-Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr Φinv :
+Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr (Φinv: heapG Σ → iProp Σ) :
   null_non_alloc σs.(heap) →
   ffi_initP σ.(world) →
   ffi_initP σs.(world) →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   (∀ `{Hheap : !heapG Σ} `{Hc: !crashG Σ} {Href: refinement_heapG Σ}
-     (HPF: ∃ Hi' Ht', Hheap = heap_update_pre _ _ Hi' (@pbundleT _ Σ Ht')),
+    (* (HPF: ∃ Hi' Ht', Hheap = heap_update_pre _ _ Hi' (@pbundleT _ Σ Ht') *),
      ⊢ |={⊤}=>
        (spec_ctx' rs ([es], σs) -∗
         trace_ctx -∗
-       □ (∀ Hi t, Φinv Hi t -∗
-                       let _ := heap_update _ Hheap Hi (@pbundleT _ _ t) in
+       □ (∀ hG, Φinv hG -∗
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], σs) ∗ trace_ctx (hR := Href')) ∗
-        (ffi_start (heapG_ffiG) σ.(world) -∗ ffi_start (refinement_spec_ffiG) σs.(world) -∗ O ⤇ es -∗ wpr NotStuck k _ Hc {| pbundleT := heap_get_names _ Hheap |}  ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ v, ⌜φr v⌝)))) →
+        (ffi_start (heapG_ffiG) σ.(world) -∗ ffi_start (refinement_spec_ffiG) σs.(world) -∗ O ⤇ es -∗ wpr NotStuck k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝)))) →
   trace_refines e r σ es rs σs.
 Proof using Hrpre Hhpre Hcpre.
   intros ????? Hwp Hsafe.
@@ -194,41 +193,20 @@ Proof using Hrpre Hhpre Hcpre.
       * do 3 eexists; eauto.
       * rewrite Htrs. by exists []; rewrite app_nil_r.
   }
-  eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ Φinv).
-  iIntros (???) "".
-  iMod (na_heap.na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
-  iMod (proph_map.proph_map_name_init _ κs σ.(used_proph_id)) as (name_proph_map) "Hp".
-  iMod (ffi_name_init _ _ σ.(world)) as (name_ffi) "(Hw&Hs)"; first auto.
-  iMod (trace_name_init (hT := heap_preG_trace) σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
-  set (hnames :=
-         {| heap_heap_names := name_na_heap;
-            heap_proph_name := name_proph_map;
-            heap_ffi_names := name_ffi;
-            heap_trace_names := name_trace |}).
-  set (hG := heap_update_pre _ _ _ (hnames)).
-  iExists ({| pbundleT := hnames |}).
-  iExists
-    (λ t σ κs, let _ := heap_update_names Σ hG (@pbundleT _ _ t) in
-               state_interp σ κs O)%I,
-    (λ t _, True%I).
-  iExists (λ _ _, eq_refl).
+  eapply (heap_recv_adequacy _ _ _ _ _ _ _ _ _ Φinv); auto.
+  iIntros (hG Hc) "???".
   iMod (goose_spec_init2 with "[$] [$]") as (HrG) "(#Hspec&Hpool&Hrs&#Htrace)"; try (by symmetry); eauto.
   iMod (Hwp hG Hc HrG with "[$] [$]") as "(#H1&Hwp)".
-  { eexists _, {| pbundleT := hnames |}; eauto. }
   iDestruct (source_pool_singleton with "Hpool") as "Hpool".
   iSpecialize ("Hwp" with "[$] [$] [$]"). iFrame.
-  rewrite /heapG_ffiG//= ffi_update_pre_update. iFrame.
   iModIntro. iSplit.
-  - iAlways. iIntros (??) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
+  - iAlways. iIntros (???) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
     iApply (trace_inv_open with "[$] [$] [$] [$]").
-  - iSplitR "Hwp"; last first.
-    { rewrite heap_update_pre_get; eauto. }
-    iAlways. iIntros (Hi' Hnames') "Hinv".
-    iClear "Hspec Htrace".
-    iDestruct ("H1" with "Hinv") as (?) "(#Hspec_ctx&#Htrace_ctx)".
+  - iAlways. iIntros (?) "H".
+    iDestruct ("H1" with "H") as (?) "(#Hspec_ctx&#Htrace_ctx)".
     iClear "H1". iAlways.
-    iIntros (??) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
-    iApply (@trace_inv_open (heap_update Σ hG _ (@pbundleT _ _ Hnames')) with "[$] [$] [$] [$]").
+    iIntros (???) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
+    iApply (@trace_inv_open with "[$] [$] [$] [$]").
 Qed.
 
 End refinement.
@@ -382,20 +360,20 @@ Proof using Hrpre Hhpre Hcpre.
   eapply heap_recv_refinement_adequacy with
       (k0 := k)
       (φ := λ _, True) (φr := λ _, True)
-      (Φinv := λ Hi Ht,
-               (∀ Hheap (HPF: ∃ Hi' Ht', Hheap = heap_update_pre _ _ Hi' (@pbundleT _ _ Ht')),
-                         let H := heap_update Σ Hheap Hi pbundleT in
+      (Φinv := λ hG,
+               (* (∀  Hheap  (HPF: ∃ Hi' Ht', Hheap = heap_update_pre _ _ Hi' (@pbundleT _ _ Ht') ) *)
+               (
                          ∃ Href' : refinement_heapG Σ, spec_ctx' es ([es], σs)
                                                                  ∗ trace_ctx)%I); eauto.
   { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }
-  iIntros (Hheap Hc Href Hpf).
+  iIntros (Hheap Hc Href).
   iModIntro. iIntros "#Hspec #Htrace".
   iSplit.
-  { iAlways. iIntros (??) "H". iApply "H". eauto. }
+  { iAlways. iIntros (?) "H". iApply "H". }
   iIntros "Hstart Hstart_spec Hj".
-  iApply (idempotence_wpr _ _ ⊤ ⊤ _ _ (λ _ _, _) _ _ (λ t,
+  iApply (recovery_weakestpre.idempotence_wpr _ _ ⊤ ⊤ _ _ (λ _ _, _) _ _ (λ Hi0 t,
    ∃ Hi hC hRef, let hG := heap_update Σ Hheap Hi pbundleT in
                  ∃ es' σs' stat, ⌜ erased_rsteps es ([es], σs) (es', σs') stat ⌝ ∗
                                  ⌜ crash_safe es ([es], σs) ⌝ ∗
@@ -445,21 +423,13 @@ Proof using Hrpre Hhpre Hcpre.
     rewrite /state_interp//=.
     rewrite ffi_update_update. iFrame.
     iSplit.
-    * iClear "∗". iIntros (Hheap' Hpf').
-      iExists HrG. rewrite //=.
-      iSplitL.
-      ** rewrite /hG //=.
-      ** destruct Hpf as (?&?&->).
-         destruct Hpf' as (?&?&->).
-         rewrite /hG //=.
+    * iClear "∗". eauto.
     * iDestruct (source_pool_singleton with "Hpool") as "Hpool".
       iDestruct ("Hwpc" with "[$] [$] [$] [] [$]") as "H".
       { rewrite /spec_ctx/spec_ctx'.
         iDestruct "Hspec" as "(H1&$)".
         iExists _, _. iFrame "H1".
       }
-      rewrite /perennial_irisG. simpl.
-      rewrite /perennial_irisG. simpl.
       iPoseProof (wpc_trace_inv_open k _ _ e _ Hc' _ Φ Φc with "Hspec Htrace H") as "H".
       rewrite /hG//=.
       rewrite /heap_update/heap_get_names//= ffi_update_update.

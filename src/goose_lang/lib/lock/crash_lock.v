@@ -58,25 +58,25 @@ Section proof.
 *)
 
 
-  Lemma alloc_crash_lock' Γ k E lk (R Rcrash : iProp Σ) bset:
+  Lemma alloc_crash_lock' Γ k E γ lk (R Rcrash : iProp Σ) bset:
     □ (R -∗ Rcrash) -∗
-    is_free_lock lk -∗
+    is_free_lock γ lk -∗
     na_crash_bundle Γ Ncrash k R bset -∗
     na_crash_val Γ Rcrash bset
-    ={E}=∗ ∃ γ, is_crash_lock k γ #lk R Rcrash.
+    ={E}=∗ is_crash_lock k γ #lk R Rcrash.
   Proof using ext_tys.
     iIntros "Hwand Hfree Hfull Hval".
-    iMod (alloc_lock Nlock _ with "Hfree Hfull") as (γ') "Hlk".
-    iModIntro. iExists _, _, _. rewrite /is_crash_lock. eauto.
+    iMod (alloc_lock Nlock _ with "Hfree Hfull") as "Hlk".
+    iModIntro. iExists _, _. rewrite /is_crash_lock. eauto.
   Qed.
 
-  Lemma alloc_crash_lock k k' E Φ Φc e lk (R Rcrash : iProp Σ):
+  Lemma alloc_crash_lock k k' E Φ Φc e γ lk (R Rcrash : iProp Σ):
     (k' < k)%nat →
     □ (R -∗ Rcrash) ∗
     R ∗
     Φc ∗
-    is_free_lock lk ∗
-    (∀ γ, Φc -∗ is_crash_lock (LVL k') γ #lk R Rcrash -∗
+    is_free_lock γ lk ∗
+    (Φc -∗ is_crash_lock (LVL k') γ #lk R Rcrash -∗
           WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Φc }}) -∗
     WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ Rcrash }}.
   Proof using ext_tys.
@@ -88,8 +88,8 @@ Section proof.
     { iFrame "HR". }
     iApply (wpc_na_crash_inv_init _ _ k k' Ncrash E with "[-]"); try assumption.
     iFrame.
-    iMod (alloc_crash_lock' with "HRcrash Hfree Hfull Hval") as (?) "Hlk".
-    iApply ("Hwp" with "[$]"). by iFrame.
+    iMod (alloc_crash_lock' with "HRcrash Hfree Hfull Hval") as (??) "Hlk".
+    iApply ("Hwp" with "[$]"). rewrite /is_crash_lock. iExists _, _. iFrame.
   Qed.
 
   Lemma acquire_spec k E γ (R Rcrash : iProp Σ) lk:

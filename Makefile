@@ -7,7 +7,7 @@ VFILES := $(filter-out $(TEST_VFILES),$(PROJ_VFILES))
 TEST_VO := $(TEST_VFILES:.v=.vo)
 QUICK_CHECK_FILES := $(shell find 'src/program_proof/wal' -name "*.v")
 
-COQ_ARGS :=
+COQ_ARGS := -noglob
 
 TIMED:=true
 ifeq ($(TIMED), true)

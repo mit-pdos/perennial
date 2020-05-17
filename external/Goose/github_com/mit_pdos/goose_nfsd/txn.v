@@ -5,7 +5,6 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.buf.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.super.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.mit_pdos.goose_nfsd.wal.
 
@@ -15,18 +14,16 @@ Module Txn.
   Definition S := struct.decl [
     "mu" :: lockRefT;
     "log" :: struct.ptrT wal.Walog.S;
-    "fs" :: struct.ptrT super.FsSuper.S;
     "nextId" :: TransId;
     "pos" :: wal.LogPosition
   ].
 End Txn.
 
 Definition MkTxn: val :=
-  rec: "MkTxn" "fs" :=
+  rec: "MkTxn" "d" :=
     let: "txn" := struct.new Txn.S [
       "mu" ::= lock.new #();
-      "log" ::= wal.MkLog (struct.loadF super.FsSuper.S "Disk" "fs");
-      "fs" ::= "fs";
+      "log" ::= wal.MkLog "d";
       "nextId" ::= #0;
       "pos" ::= #0
     ] in

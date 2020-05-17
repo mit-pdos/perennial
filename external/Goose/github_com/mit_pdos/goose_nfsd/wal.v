@@ -187,11 +187,16 @@ Definition sliding__posForAddr: val :=
     let: ("pos", "ok") := MapGet (struct.loadF sliding.S "addrPos" "s") "a" in
     ("pos", "ok").
 
-(* update does an in-place absorb of an update to u *)
+(* update does an in-place absorb of an update to u
+
+   internal to sliding *)
 Definition sliding__update: val :=
   rec: "sliding__update" "s" "pos" "u" :=
     SliceSet (struct.t Update.S) (SliceSkip (struct.t Update.S) (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - struct.loadF sliding.S "start" "s")) ("pos" - struct.loadF sliding.S "mutable" "s") "u".
 
+(* append writes an update that cannot be absorbed
+
+   internal to sliding *)
 Definition sliding__append: val :=
   rec: "sliding__append" "s" "u" :=
     let: "pos" := struct.loadF sliding.S "start" "s" + slice.len (struct.loadF sliding.S "log" "s") in
@@ -227,21 +232,20 @@ Definition sliding__memWrite: val :=
    current mutable boundary *)
 Definition sliding__takeFrom: val :=
   rec: "sliding__takeFrom" "s" "start" :=
-    let: "off" := struct.loadF sliding.S "start" "s" in
-    SliceSubslice (struct.t Update.S) (struct.loadF sliding.S "log" "s") ("start" - "off") (struct.loadF sliding.S "mutable" "s" - "off").
+    SliceSkip (struct.t Update.S) (SliceTake (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - struct.loadF sliding.S "start" "s")) ("start" - struct.loadF sliding.S "start" "s").
 
 (* takeTill takes the read-only updates till a logical start position (which
    should be within the read-only region; that is, end <= s.mutable) *)
 Definition sliding__takeTill: val :=
   rec: "sliding__takeTill" "s" "end" :=
-    SliceTake (struct.loadF sliding.S "log" "s") ("end" - struct.loadF sliding.S "start" "s").
+    SliceTake (SliceTake (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - struct.loadF sliding.S "start" "s")) ("end" - struct.loadF sliding.S "start" "s").
 
 (* deleteFrom deletes read-only updates up to newStart,
    correctly updating the start position *)
 Definition sliding__deleteFrom: val :=
   rec: "sliding__deleteFrom" "s" "newStart" :=
     let: "start" := struct.loadF sliding.S "start" "s" in
-    ForSlice (struct.t Update.S) "i" "u" (SliceTake (struct.loadF sliding.S "log" "s") ("newStart" - "start"))
+    ForSlice (struct.t Update.S) "i" "u" (SliceTake (SliceTake (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - "start")) ("newStart" - "start"))
       (let: "pos" := "start" + "i" in
       let: "blkno" := struct.get Update.S "Addr" "u" in
       let: ("oldPos", "ok") := MapGet (struct.loadF sliding.S "addrPos" "s") "blkno" in

@@ -129,6 +129,10 @@ Definition wal_wf (s : log_state.t) :=
 Definition apply_upds (upds: list update.t) (d: disk): disk :=
   fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
 
+Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :=
+  forall d, apply_upds log d =
+            apply_upds (txn_upds txns) d.
+
 (** * Properties of above definitions *)
 
 Theorem txn_upds_app txn1 txn2:
@@ -151,4 +155,26 @@ Theorem txn_upds_single pos upds :
 Proof.
   rewrite /txn_upds /=.
   rewrite app_nil_r //.
+Qed.
+
+Theorem apply_upds_cons disk u ul :
+  apply_upds (u :: ul) disk =
+  apply_upds ul (apply_upds [u] disk).
+Proof. reflexivity. Qed.
+
+Theorem apply_upds_app upds1 upds2 d :
+  apply_upds (upds1 ++ upds2) d =
+  apply_upds upds2 (apply_upds upds1 d).
+Proof.
+  rewrite /apply_upds fold_left_app //.
+Qed.
+
+Theorem has_updates_app log1 txns1 log2 txns2 :
+  has_updates log1 txns1 ->
+  has_updates log2 txns2 ->
+  has_updates (log1 ++ log2) (txns1 ++ txns2).
+Proof.
+  rewrite /has_updates; intros.
+  rewrite txn_upds_app !apply_upds_app.
+  rewrite H H0 //.
 Qed.

@@ -33,7 +33,7 @@ Definition update_installed: transition log_state.t nat :=
 Definition log_crash : transition log_state.t unit :=
   crash_txn ← suchThat
             (λ s (crash_txn: nat),
-               s.(log_state.durable_lb) ≤ crash_txn);
+               (s.(log_state.durable_lb) ≤ crash_txn ≤ length s.(log_state.txns))%nat);
   modify (set log_state.txns (fun txns => take crash_txn txns));;
   modify (set log_state.durable_lb (fun _ => crash_txn));;
   ret tt.
@@ -46,7 +46,7 @@ Definition is_txn (txns: list (u64 * list update.t)) (txn_id: nat) (pos: u64): P
 
 Theorem is_txn_bound txns txn_id pos :
   is_txn txns txn_id pos ->
-  (txn_id ≤ length txns)%nat.
+  (txn_id < length txns)%nat.
 Proof.
   rewrite /is_txn -list_lookup_fmap.
   intros H%lookup_lt_Some.

@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import wal.invariant.
+From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
 Section goose_lang.
 Context `{!heapG Σ}.
@@ -15,6 +15,7 @@ Implicit Types (pos: u64) (txn_id: nat).
 
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
+Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Theorem wal_wf_update_durable :
@@ -45,13 +46,16 @@ Proof.
   iDestruct "Hinv" as (σ) "(Hinner&HP)".
   iNamed "Hinner".
   iNamed "Hdisk".
+  iNamed "Hdisk".
   iNamed "circ.end".
   pose proof (is_highest_txn_bound Hend_txn) as Hend_bound.
+  iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
           with "[% //] [%] [$HP]") as "[HP HQ]".
   { simpl.
     econstructor; monad_simpl.
     econstructor; monad_simpl; lia. }
+  iMod "HinnerN" as "_".
   iSpecialize ("HΦ" with "HQ").
   iFrame "HΦ".
   iIntros "!> !>".
@@ -64,41 +68,10 @@ Proof.
       econstructor; monad_simpl; lia. }
   - simpl.
     iFrame.
-    iExists _, _, _; iFrame "# ∗".
+    iExists _; iFrame.
+    iExists _, _; iFrame "# ∗".
     eauto.
 Qed.
-
-Theorem wp_endGroupTxn st γ :
-  {{{ wal_linv st γ }}}
-    WalogState__endGroupTxn #st
-  {{{ RET #(); wal_linv st γ }}}.
-Proof.
-  iIntros (Φ) "Hlkinv HΦ".
-  iNamed "Hlkinv".
-  iNamed "Hfields".
-  iNamed "Hfield_ptsto".
-  rewrite -wp_fupd.
-  wp_call.
-  rewrite /WalogState__memEnd.
-  wp_loadField. wp_apply (wp_sliding__clearMutable with "His_memLog"); iIntros "His_memLog".
-  iApply "HΦ".
-  iModIntro.
-  iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf.
-  iExists (set memLog (λ _,
-                       (set slidingM.mutable (λ _ : u64, slidingM.endPos σ.(memLog)) σ.(memLog))) σ).
-  simpl.
-  iFrame "#".
-  iSplitR "HmemLog_linv".
-  { iExists _; iFrame.
-    iPureIntro.
-    split_and!; simpl; auto; try word.
-    rewrite /slidingM.endPos.
-    unfold locked_wf, slidingM.wf in Hlocked_wf.
-    word.
-  }
-  (* TODO: definitely not enough, need the wal invariant to ensure new values in
-  read-only region are correct *)
-Admitted.
 
 Theorem simulate_flush l γ Q σ pos txn_id :
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
@@ -108,25 +81,26 @@ Theorem simulate_flush l γ Q σ pos txn_id :
   (∀ (σ σ' : log_state.t) (b : ()),
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
-  |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗ Q.
+  |={⊤ ∖ ↑innerN}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗ Q.
 Proof.
   iIntros "#Hcirc Hinv #Hlb #Hpos_txn Hfupd".
   iDestruct "Hinv" as "[Hinner HP]".
   iNamed "Hinner".
   iNamed "Hdisk".
+  iNamed "Hdisk".
   iNamed "circ.end".
-  iMod (is_circular_diskEnd_lb_agree with "Hlb Hcirc Howncs") as "(%Hlb&Howncs)".
-  { admit. (* oops, shouldn't have made the circ name a subset of the wal name *) }
+  iMod (is_circular_diskEnd_lb_agree with "Hlb Hcirc Howncs") as "(%Hlb&Howncs)"; first by solve_ndisj.
   iMod (txn_pos_valid with "Htxns_ctx Hpos_txn") as (His_txn) "Htxns_ctx"; first by solve_ndisj.
   pose proof (is_txn_bound _ _ _ His_txn).
   pose proof (is_highest_txn_bound Hend_txn).
   pose proof (wal_wf_txns_mono_pos Hwf His_txn (is_highest_weaken Hend_txn)).
 
+  iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, Nat.max σ.(log_state.durable_lb) txn_id) σ) with "[% //] [%] HP") as "[HP HQ]".
   { simpl; monad_simpl.
     repeat (econstructor; monad_simpl; eauto).
-    lia.
-  }
+    lia. }
+  iMod "HinnerN" as "_".
   iFrame "HQ".
   iModIntro.
   iExists _; iFrame "HP".
@@ -147,15 +121,16 @@ Proof.
         word. }
       lia.
   }
-  iExists _, installed_txn_id, diskEnd_txn_id; iFrame "# ∗".
+  iExists _; iFrame.
+  iExists installed_txn_id, diskEnd_txn_id; iFrame "# ∗".
   iExists diskEnd.
   iPureIntro.
-  split_and!; auto.
+  split_and!; simpl; auto.
   cut (txn_id ≤ diskEnd_txn_id)%nat; first by lia.
   lia.
   Grab Existential Variables.
   all: try constructor.
-Admitted.
+Qed.
 
 (* this is a dumb memory safety proof for loading nextDiskEnd when its value
 doesn't matter for correctness *)
@@ -208,7 +183,7 @@ Proof.
   {
     iIntros (Φ') "(Hlkinv&Hlocked) HΦ".
     wp_loadField.
-    wp_apply (wp_endGroupTxn with "[$Hlkinv]").
+    wp_apply (wp_endGroupTxn with "[$Hwal $Hlkinv]").
     iIntros "Hlkinv".
     wp_pures.
     iApply ("HΦ" with "[$]").
