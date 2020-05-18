@@ -118,6 +118,32 @@ Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
   has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
   (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
+Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) (txns: list (u64 * list update.t)) : iProp Σ :=
+  (∃ (memStart_txn_id: nat) (diskEnd_txn_id: nat) (nextDiskEnd_txn_id: nat),
+      "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
+      "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
+      "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
+      "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
+      (* TODO: probably not true, endpos isn't in txns *)
+      "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
+      (* Here we establish what the memLog contains, which is necessary for reads
+      to work (they read through memLogMap, but the lock invariant establishes
+      that this matches memLog). *)
+      "%His_memLog" ∷ ⌜is_mem_memLog σ txns memStart_txn_id⌝ ∗
+      (* when nextDiskEnd gets set, we track that it has the right updates to
+      use for [is_durable] when the new transaction is logged *)
+      "%His_nextDiskEnd" ∷
+        ⌜has_updates
+          (subslice (slidingM.logIndex σ diskEnd)
+                    (slidingM.logIndex σ σ.(slidingM.mutable))
+                    σ.(slidingM.log))
+          (subslice diskEnd_txn_id (S nextDiskEnd_txn_id) txns)⌝
+  ).
+
+Global Instance memLog_linv_pers_core_persistent γ σ diskEnd txns:
+  Persistent (memLog_linv_pers_core γ σ diskEnd txns).
+Proof. apply _. Qed.
+
 Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) : iProp Σ :=
   (∃ (memStart_txn_id: nat) (diskEnd_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
@@ -269,7 +295,7 @@ Definition disk_inv γ s (cs: circΣ.t) : iProp Σ :=
 
 Definition disk_inv_durable γ s (cs: circΣ.t) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
-      "#Hinstalled" ∷ is_installed_read γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) diskEnd_txn_id ∗
+      "Hinstalled" ∷ is_installed_read γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) diskEnd_txn_id ∗
       "#Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
@@ -283,8 +309,14 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "Hdisk" ∷ ∃ cs, "Howncs" ∷ own γ.(cs_name) (◯ Excl' cs) ∗ "Hdisk" ∷ disk_inv γ s cs
 .
 
+(* holds for log states which are possible after a crash (essentially these have
+no mutable state) *)
+Definition wal_post_crash σ: Prop :=
+  S (σ.(log_state.durable_lb)) = length σ.(log_state.txns).
+
 Definition is_wal_inner_durable γ s : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
+    "%Hpostcrash" ∷ ⌜wal_post_crash s⌝ ∗
     "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv_durable γ s cs ∗
                     "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
@@ -760,6 +792,13 @@ Proof.
       lia.
 Qed.
 
+Lemma memLog_linv_pers_core_strengthen γ σ diskEnd txns:
+  (memLog_linv_pers_core γ σ diskEnd txns) -∗
+  (own γ.(txns_name) (◯ Excl' txns)) -∗
+  memLog_linv γ σ diskEnd.
+Proof.
+  iNamed 1. iIntros "H". iExists _, _, _, _. iFrame. iFrame "%".
+Qed.
 
 (** * WPs for field operations in terms of lock invariant *)
 

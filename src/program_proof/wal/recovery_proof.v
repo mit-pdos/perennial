@@ -111,6 +111,16 @@ Proof.
   - len.
 Qed.
 
+Lemma log_crash_to_post_crash σ σ' x :
+  relation.denote log_crash σ σ' x →
+  wal_post_crash σ'.
+Proof.
+  simpl.
+  intros Htrans; monad_inv.
+  rewrite /wal_post_crash //=.
+  rewrite take_length. lia.
+Qed.
+
 Lemma is_highest_txn_implies_non_empty_txns γ cs txns installed_txn_id:
   is_highest_txn txns installed_txn_id (start cs) →
   txns ≠ [].
@@ -154,15 +164,24 @@ Qed.
 
 Hint Unfold circ_matches_txns : word.
 
+Lemma lookup_take_Some {A: Type} (l: list A) (n i: nat) a:
+  (take n l !! i = Some a) → (i < n)%nat.
+Proof.
+  intros His_Some.
+  apply not_ge => Hge.
+  rewrite lookup_take_ge in His_Some; auto; congruence.
+Qed.
+
 Lemma is_highest_txn_take txns txn_id pos :
   is_highest_txn txns txn_id pos →
   is_highest_txn (take (S txn_id) txns) txn_id pos.
 Proof.
-  rewrite /is_highest_txn /is_txn; intuition auto.
+  rewrite /is_highest_txn /is_txn. intros (Hlook&Hle); split.
   - rewrite -> lookup_take by lia; auto.
-  - apply H1.
-    rewrite -list_lookup_fmap in H.
-Admitted.
+  - intros txn_id'. rewrite ?fmap_Some.
+    intros (x&Hlookup&Hpos); subst.
+    eapply lookup_take_Some in Hlookup; lia.
+Qed.
 
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
@@ -194,6 +213,9 @@ Proof.
   iSplit.
   { iPureIntro.
     eapply log_crash_to_wf; eauto. }
+  iSplit.
+  { iPureIntro.
+    eapply log_crash_to_post_crash; eauto. }
   iExists cs; iFrame.
   rewrite /disk_inv_durable.
   iExists installed_txn_id, diskEnd_txn_id; simpl.
@@ -234,11 +256,6 @@ Lemma is_wal_post_crash γ P' l:
 Proof.
 Abort.
 
-(* holds for log states which are possible after a crash (essentially these have
-no mutable state) *)
-Definition wal_post_crash σ: Prop :=
-  σ.(log_state.durable_lb) = length σ.(log_state.txns).
-
 Theorem wpc_mkLog_recover k E2 d γ σ :
   {{{ is_wal_inner_durable γ σ }}}
     mkLog #d @ NotStuck; k; ⊤; E2
@@ -251,6 +268,7 @@ Proof.
   clear P.
   iIntros (Φ Φc) "Hcs HΦ".
   rewrite /mkLog.
+  Print recoverCircular.
 
   Ltac show_crash1 := eauto.
 
@@ -261,6 +279,7 @@ Proof.
 
   Ltac show_crash2 :=
     try (crash_case); iExists _;
+    iSplitL ""; first auto;
     iSplitL ""; first auto;
     iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
 
@@ -278,24 +297,77 @@ Proof.
   iMod (start_is_get_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
   iMod (thread_own_alloc with "Hstart") as (γstart_avail_name) "(Hstart_exactly&Hthread_start)".
   iMod (ghost_var_alloc σ.(log_state.txns)) as (γtxns_name) "(γtxns & Howntxns)".
-  (* TODO: allocate txns with alloc_txns_ctx *)
-  set (γ' := (set circ_name (λ _, γcirc') γ)).
+  iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "(Htxns_ctx&Htxns)".
+  { solve_ndisj. }
+  Lemma txns_ctx_gname_eq γ γ' txns :
+    txns_ctx_name γ = txns_ctx_name γ' →
+    txns_ctx γ txns = txns_ctx γ' txns.
+  Proof. rewrite /txns_ctx/gen_heap_ctx/txn_val => -> //=. Qed.
 
-  wpc_frame_compl "Hupd_slice HdiskEnd_exactly Hstart_exactly".
-  { crash_case. iExists γ'.
+  set (γ0 :=
+         ((set txns_name (λ _, γtxns_name)
+         (set txns_ctx_name (λ _, γtxns_ctx_name)
+                   (set start_avail_name (λ _, γstart_avail_name)
+                        (set diskEnd_avail_name (λ _, γdiskEnd_avail_name)
+                             (set circ_name (λ _, γcirc') γ))))))).
+
+  set (memLog := {|
+                 slidingM.log := upds;
+                 slidingM.start := diskStart;
+                 slidingM.mutable := int.val diskStart + length upds |}).
+
+  iAssert (memLog_linv_pers_core γ0 memLog diskEnd σ.(log_state.txns)) with "[-]" as "#H".
+  {
+    rewrite /memLog_linv_pers_core.
+    rewrite /disk_inv_durable.
+    iNamed "Hdiskinv".
+    iExists installed_txn_id, diskEnd_txn_id, (S diskEnd_txn_id).
+    iDestruct "circ.start" as %Hcirc_start.
+    iDestruct "circ.end" as %Hcirc_end.
+    iDestruct "Hdurable" as %Hdurable.
+    iSplitL "".
+    { iPureIntro; by word. }
+    iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
+    { subst. destruct Hcirc_start as (_&(?&?)); eauto. }
+    iSplitL "".
+    { iPureIntro. destruct Hcirc_end as (x&?&?&?).
+      assert (x = diskEnd) as ->; eauto. word.
+    }
+    iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
+    { (** XXX this seems unprovable. *) admit. }
+    iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
+    { (** XXX no idea how to prove.  *)
+      rewrite /memLog//=. rewrite /slidingM.endPos//=.
+      admit.
+    }
+    iSplitL "".
+    { iPureIntro. rewrite /is_mem_memLog//=.
+      rewrite /circ_matches_txns in Hdurable.
+      destruct Hdurable as (Hupd&Hlb).
+      split.
+      - subst.
+        rewrite subslice_to_end // in Hupd.
+        { destruct Hcirc_end as (?&?&?). rewrite /wal_post_crash in Hpostcrash. lia. }
+      - rewrite /memLog//=. rewrite /slidingM.memEnd//=.
+        admit.
+    }
+    admit.
+  }
+
+  wpc_frame_compl "Htxns_ctx Howntxns Htxns γtxns Hupd_slice HdiskEnd_exactly Hstart_exactly".
+  { crash_case. iExists γ0.
     rewrite /is_wal_inner_durable. simpl. rewrite /is_durable_txn/is_installed_txn/is_durable//=.
-    simpl. iSplitL ""; first auto. rewrite /txns_ctx.
+    simpl.
+    iSplitL ""; first auto. rewrite /txns_ctx.
+    iSplitL ""; first auto.
     iFrame. iExists _; iFrame.
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (γlock ml) "Hlock".
+  iDestruct (memLog_linv_pers_core_strengthen with "[$] [$]") as "HmemLog_linv".
 
-  clear γ'.
-  set (γ' :=
-         (set lock_name (λ _, γlock)
-              (set start_avail_name (λ _, γstart_avail_name)
-                   (set diskEnd_avail_name (λ _, γdiskEnd_avail_name)
-                        (set circ_name (λ _, γcirc') γ))))).
+  set (γ' := (set lock_name (λ _, γlock) γ0)).
+
   wp_pures.
   iDestruct (updates_slice_cap_acc with "Hupd_slice") as "[Hupd_slice Hupds_cap]".
   wp_apply (wp_mkSliding with "[$]").
@@ -305,7 +377,8 @@ Proof.
   wp_apply wp_allocStruct; first by auto.
   iIntros (st) "Hwal_state".
   wp_pures.
-  iMod (alloc_lock _ _ _ _ (wal_linv st γ') with "[$] [-]").
+  iMod (alloc_lock walN _ _ _ (wal_linv st γ')
+          with "[$] [HmemLog_linv Hsliding Hwal_state Hstart_exactly HdiskEnd_exactly]") as "#lk".
   { rewrite /wal_linv.
     assert (int.val diskStart + length upds = int.val diskEnd) as Heq_plus.
     { etransitivity; last eassumption. rewrite /circΣ.diskEnd //=. subst. word. }
@@ -321,10 +394,16 @@ Proof.
     }
     rewrite //= /diskEnd_linv/diskStart_linv -Heq_plus.
     iFrame. iFrame "Hdisk_atLeast Hstart_atLeast".
-    rewrite /memLog_linv //=.
-    admit.
   }
-
+  wp_pures.
+  wp_apply (wp_newCond with "[$]").
+  iIntros (condLogger) "cond_logger".
+  wp_apply (wp_newCond with "[$]").
+  iIntros (condInstall) "cond_install".
+  wp_apply (wp_newCond with "[$]").
+  iIntros (condShut) "cond_shut".
+  wp_apply wp_allocStruct.
+  { econstructor; repeat (try econstructor). (* How to do val_ty for Disk? *) admit. }
 Abort.
 
 Theorem wpc_MkLog_recover stk k E1 E2 d γ σ :
