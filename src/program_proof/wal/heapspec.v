@@ -325,23 +325,23 @@ Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
   wal_wf σ ->
   disk_at_txn_id txn_id σ !! int.val a = Some installed ->
   (txn_id ≤ σ.(log_state.installed_lb))%nat ->
-  last_disk σ !! int.val a = Some (latest_update installed (updates_since txn_id a σ)).
+  last_disk σ !! int.val a = Some (latest_update installed (updates_since (S txn_id) a σ)).
 Proof.
   destruct σ.
   unfold last_disk, updates_since, disk_at_txn_id.
   simpl.
   intros.
-  rewrite firstn_all.
-  rewrite (take_drop_txns txn_id txns).
+  rewrite -> take_ge by lia.
+  rewrite (take_drop_txns (S txn_id) txns).
   2: {
     unfold wal_wf in H; intuition; simpl in *.
     lia.
   }
   rewrite apply_upds_app.
   generalize dependent H0.
-  generalize (apply_upds (txn_upds (take txn_id txns)) d).
+  generalize (apply_upds (txn_upds (take (S txn_id) txns)) d).
   intros.
-  generalize (txn_upds (drop txn_id txns)).
+  generalize (txn_upds (drop (S txn_id) txns)).
   intros.
   generalize dependent d0.
   generalize dependent installed.
@@ -501,7 +501,7 @@ Qed.
 
 Theorem no_updates_since_last_disk σ a (txn_id : nat) :
   wal_wf σ ->
-  no_updates_since σ a txn_id ->
+  no_updates_since σ a (S txn_id) ->
   disk_at_txn_id txn_id σ !! int.val a = last_disk σ !! int.val a.
 Proof.
   unfold last_disk, no_updates_since, wal_wf, last_disk, disk_at_txn_id.
@@ -511,25 +511,25 @@ Proof.
   clear H.
   destruct (decide (txn_id < length l)).
   2: {
-    rewrite take_ge; last lia.
-    rewrite firstn_all.
+    rewrite -> take_ge by lia.
+    rewrite -> take_ge by lia.
     reflexivity.
   }
-  replace l with (take txn_id l ++ drop txn_id l) at 3.
+  replace l with (take (S txn_id) l ++ drop (S txn_id) l) at 3.
   2 : {
     rewrite firstn_skipn; eauto.
   }
   rewrite firstn_app.
-  assert (length (take txn_id l) = txn_id).
+  assert (length (take (S txn_id) l) = S txn_id).
   {
     rewrite firstn_length_le; eauto.
     lia.
   }
   rewrite H; subst.
   rewrite firstn_firstn.
-  assert( (Init.Nat.min (Datatypes.length l) txn_id) = txn_id) by lia.
+  assert( (Init.Nat.min (S (Datatypes.length l)) (S txn_id)) = S txn_id) by lia.
   rewrite H3.
-  assert (take (length l - txn_id) (drop txn_id l) = drop txn_id l).
+  assert (take (S (length l) - S txn_id) (drop (S txn_id) l) = drop (S txn_id) l).
   {
     rewrite take_ge; eauto.
     rewrite skipn_length; lia.

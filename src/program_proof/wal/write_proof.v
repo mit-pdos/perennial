@@ -315,9 +315,9 @@ Proof.
   rewrite /numMutableN; intros; word.
 Qed.
 
-Lemma is_installed_append γ d txns txns' txn_id :
-  is_installed γ d txns txn_id -∗
-  is_installed γ d (txns ++ txns') txn_id.
+Lemma is_installed_append γ d txns txns' txn_id diskEnd_txn_id :
+  is_installed γ d txns txn_id diskEnd_txn_id -∗
+  is_installed γ d (txns ++ txns') txn_id diskEnd_txn_id.
 Proof.
   rewrite /is_installed.
   iNamed 1.

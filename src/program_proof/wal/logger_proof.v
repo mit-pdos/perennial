@@ -162,14 +162,26 @@ Qed.
 Lemma circ_matches_extend cs txns installed_txn_id diskEnd_txn_id new_txn nextDiskEnd_txn_id :
   (installed_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat →
   (nextDiskEnd_txn_id < length txns)%nat →
-  has_updates new_txn (subslice diskEnd_txn_id nextDiskEnd_txn_id txns) →
+  has_updates new_txn (subslice (S diskEnd_txn_id) (S nextDiskEnd_txn_id) txns) →
   circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
   circ_matches_txns (set upds (λ u, u ++ new_txn) cs) txns installed_txn_id nextDiskEnd_txn_id.
 Proof.
   rewrite /circ_matches_txns /=.
-  intros.
-  rewrite -> (subslice_split_r installed_txn_id diskEnd_txn_id nextDiskEnd_txn_id) by lia.
+  intros ? ? ? [? ?].
+  split; [ | lia ].
+  rewrite -> (subslice_split_r installed_txn_id (S diskEnd_txn_id) (S nextDiskEnd_txn_id)) by lia.
   apply has_updates_app; auto.
+Qed.
+
+Lemma is_installed_extend_durable γ d txns installed_txn_id diskEnd_txn_id diskEnd_txn_id' :
+  (diskEnd_txn_id ≤ diskEnd_txn_id' < length txns)%nat →
+  is_installed γ d txns installed_txn_id diskEnd_txn_id -∗
+  is_installed γ d txns installed_txn_id diskEnd_txn_id'.
+Proof.
+  intros Hbound.
+  iNamed 1.
+  iExists _, _; iFrame.
+  iPureIntro; lia.
 Qed.
 
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
@@ -270,6 +282,10 @@ Proof.
       admit. }
     iExists installed_txn_id, nextDiskEnd_txn_id.
     iFrame "# ∗".
+    iSplitL "Hinstalled".
+    { iApply (is_installed_extend_durable with "Hinstalled").
+      apply is_txn_bound in HnextDiskEnd'.
+      word. }
     iSplitL "Hdurable".
     { iDestruct "Hdurable" as %Hmatches.
       iPureIntro.

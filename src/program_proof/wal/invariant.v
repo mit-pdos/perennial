@@ -84,11 +84,22 @@ Definition locked_wf (σ: locked_state) :=
   int.val σ.(memLog).(slidingM.start) ≤ int.val σ.(diskEnd) ≤ int.val σ.(memLog).(slidingM.mutable) ∧
   slidingM.wf σ.(memLog).
 
+(*
+txns: list (u64 * list update.t)
+txn_id is referenced by pos, log < pos contains updates through and including upds
+[txn_id: (pos, upds)]
+*)
+
 Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
   readonly (mapsto (hG:=γ.(txns_ctx_name)) txn_id 1 txn).
 
 Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
   ∃ upds, txn_val γ txn_id (pos, upds).
+
+Definition txns_ctx γ txns : iProp Σ :=
+  gen_heap_ctx (hG:=γ.(txns_ctx_name)) (list_to_imap txns) ∗
+  ([∗ map] txn_id↦txn ∈ list_to_imap txns,
+      txn_val γ txn_id txn).
 
 Theorem txn_val_to_pos γ txn_id pos upds :
   txn_val γ txn_id (pos, upds) -∗ txn_pos γ txn_id pos.
@@ -113,6 +124,7 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) : iProp Σ :=
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
       "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
+      (* TODO: probably not true, endpos isn't in txns *)
       "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       "Howntxns" ∷ own γ.(txns_name) (◯ Excl' txns) ∗
       (* Here we establish what the memLog contains, which is necessary for reads
@@ -126,7 +138,7 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) : iProp Σ :=
           (subslice (slidingM.logIndex σ diskEnd)
                     (slidingM.logIndex σ σ.(slidingM.mutable))
                     σ.(slidingM.log))
-          (subslice diskEnd_txn_id nextDiskEnd_txn_id txns)⌝
+          (subslice diskEnd_txn_id (S nextDiskEnd_txn_id) txns)⌝
   ).
 
 Definition wal_linv_fields st σ: iProp Σ :=
@@ -194,14 +206,14 @@ Global Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
-Definition is_installed γ d txns (installed_txn_id: nat) : iProp Σ :=
+Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) : iProp Σ :=
   ∃ (new_installed_txn_id: nat) (being_installed: gmap Z unit),
     (* TODO: the other half of these are owned by the installer, giving it full
      knowledge of in-progress installations and exclusive update rights; need to
      write down what it maintains as part of its loop invariant *)
     "Howninstalled" ∷ (own γ.(new_installed_name) (● Excl' new_installed_txn_id) ∗
      own γ.(being_installed_name) (● Excl' being_installed)) ∗
-    "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ new_installed_txn_id)%nat ∧ (new_installed_txn_id ≤ length txns)%nat⌝ ∗
+    "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ new_installed_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
     "Hdata" ∷ ([∗ map] a ↦ _ ∈ d,
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
@@ -209,19 +221,19 @@ Definition is_installed γ d txns (installed_txn_id: nat) : iProp Σ :=
        ⌜let txn_id' := (if being_installed !! a
                         then new_installed_txn_id
                         else installed_txn_id) in
-        let txns := take txn_id' txns in
+        let txns := take (S txn_id') txns in
         apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
        a d↦ b ∗ ⌜2 + LogSz ≤ a⌝).
 
-Global Instance is_installed_Timeless γ d txns installed_txn_id :
-  Timeless (is_installed γ d txns installed_txn_id) := _.
+Global Instance is_installed_Timeless γ d txns installed_txn_id diskEnd_txn_id :
+  Timeless (is_installed γ d txns installed_txn_id diskEnd_txn_id) := _.
 
 (* weakening of [is_installed] for the sake of reading *)
-Definition is_installed_read γ d txns installed_lb : iProp Σ :=
+Definition is_installed_read γ d txns installed_lb diskEnd_txn_id : iProp Σ :=
   ([∗ map] a ↦ _ ∈ d,
     ∃ (b: Block),
-      ⌜∃ txn_id', (installed_lb ≤ txn_id' ≤ length txns)%nat ∧
-      apply_upds (txn_upds (take txn_id' txns)) d !! a = Some b⌝ ∗
+      ⌜∃ txn_id', (installed_lb ≤ txn_id' ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat ∧
+      apply_upds (txn_upds (take (S txn_id') txns)) d !! a = Some b⌝ ∗
       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
 
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
@@ -230,7 +242,8 @@ Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
 Implicit Types (installed_txn_id:nat) (diskEnd_txn_id:nat).
 
 Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id diskEnd_txn_id :=
-  has_updates cs.(circΣ.upds) (subslice installed_txn_id diskEnd_txn_id txns).
+  has_updates cs.(circΣ.upds) (subslice installed_txn_id (S diskEnd_txn_id) txns) ∧
+  (installed_txn_id ≤ diskEnd_txn_id)%nat.
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
@@ -247,21 +260,16 @@ Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
     "%HdiskEnd_val" ∷ ⌜int.val diskEnd = circΣ.diskEnd cs⌝ ∗
     "%Hend_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝.
 
-Definition txns_ctx γ txns : iProp Σ :=
-  gen_heap_ctx (hG:=γ.(txns_ctx_name)) (list_to_imap txns) ∗
-  ([∗ map] txn_id↦txn ∈ list_to_imap txns,
-      txn_val γ txn_id txn).
-
 Definition disk_inv γ s (cs: circΣ.t) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
-      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id ∗
+      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
 
 Definition disk_inv_durable γ s (cs: circΣ.t) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
-      "#Hinstalled" ∷ is_installed_read γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) ∗
+      "#Hinstalled" ∷ is_installed_read γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) diskEnd_txn_id ∗
       "#Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
@@ -298,13 +306,13 @@ Definition logger_inv γ circ_l: iProp Σ :=
 Definition installer_inv γ: iProp Σ :=
   "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available.
 
-Global Instance is_installed_read_Timeless {γ d txns installed_lb} :
-  Timeless (is_installed_read γ d txns installed_lb) := _.
+Global Instance is_installed_read_Timeless {γ d txns installed_lb diskEnd_txn_id} :
+  Timeless (is_installed_read γ d txns installed_lb diskEnd_txn_id) := _.
 
-Theorem is_installed_weaken_read γ d txns installed_lb :
-  is_installed γ d txns installed_lb -∗
-  is_installed_read γ d txns installed_lb ∗ (is_installed_read γ d txns installed_lb -∗
-                                            is_installed γ d txns installed_lb).
+Theorem is_installed_weaken_read γ d txns installed_lb diskEnd_txn_id :
+  is_installed γ d txns installed_lb diskEnd_txn_id -∗
+  is_installed_read γ d txns installed_lb diskEnd_txn_id ∗ (is_installed_read γ d txns installed_lb diskEnd_txn_id -∗
+                                            is_installed γ d txns installed_lb diskEnd_txn_id).
 Proof.
   rewrite /is_installed /is_installed_read.
   iIntros "I".
@@ -326,11 +334,11 @@ Proof.
 *)
 Admitted.
 
-Theorem is_installed_to_read γ d txns installed_lb E :
-  ▷ is_installed γ d txns installed_lb -∗
-    (|={E}=> is_installed_read γ d txns installed_lb) ∗
-    ▷ (is_installed_read γ d txns installed_lb -∗
-       is_installed γ d txns installed_lb).
+Theorem is_installed_to_read γ d txns installed_lb diskEnd_txn_id E :
+  ▷ is_installed γ d txns installed_lb diskEnd_txn_id -∗
+    (|={E}=> is_installed_read γ d txns installed_lb diskEnd_txn_id) ∗
+    ▷ (is_installed_read γ d txns installed_lb diskEnd_txn_id -∗
+       is_installed γ d txns installed_lb diskEnd_txn_id).
 Proof.
   iIntros "Hfull".
   iDestruct (is_installed_weaken_read with "Hfull") as "[Hread $]".

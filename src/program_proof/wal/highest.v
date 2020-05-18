@@ -13,7 +13,6 @@ Implicit Types (txn_id: nat) (pos: u64).
 (* everything in this file is about [nat]s *)
 Local Close Scope Z.
 
-(* NOTE: we no longer use [is_highest_txn] *)
 Definition is_highest_txn txns txn_id pos :=
   is_txn txns txn_id pos ∧
   forall txn_id', is_txn txns txn_id' pos ->

@@ -60,13 +60,13 @@ Theorem in_bounds_valid γ σ a :
 Proof. Admitted.
 
 (* this is more or less big_sepM_lookup_acc, but with is_installed_read unfolded *)
-Theorem is_installed_read_lookup {γ d txns installed_lb} {a: u64} :
+Theorem is_installed_read_lookup {γ d txns installed_lb durable_txn_id} {a: u64} :
   is_Some (d !! int.val a) ->
-  is_installed_read γ d txns installed_lb -∗
+  is_installed_read γ d txns installed_lb durable_txn_id -∗
   ∃ txn_id b,
-    ⌜(installed_lb ≤ txn_id ≤ length txns)%nat ∧
-      apply_upds (txn_upds (take txn_id txns)) d !! int.val a = Some b⌝ ∗
-    int.val a d↦ b ∗ (int.val a d↦ b -∗ is_installed_read γ d txns installed_lb).
+    ⌜(installed_lb ≤ txn_id ≤ durable_txn_id)%nat ∧
+      apply_upds (txn_upds (take (S txn_id) txns)) d !! int.val a = Some b⌝ ∗
+    int.val a d↦ b ∗ (int.val a d↦ b -∗ is_installed_read γ d txns installed_lb durable_txn_id).
 Proof.
   rewrite /is_installed_read.
   iIntros (Hlookup) "Hbs".
@@ -82,6 +82,16 @@ Proof.
   iApply ("Hbs" with "[Hb]").
   { iExists _; iFrame.
     iPureIntro; eauto. }
+Qed.
+
+Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
+  is_durable_txn γ cs txns diskEnd_txn_id durable_lb -∗
+  ⌜(diskEnd_txn_id < length txns)%nat⌝.
+Proof.
+  iNamed 1.
+  iPureIntro.
+  apply is_highest_weaken in Hend_txn.
+  apply is_txn_bound in Hend_txn; lia.
 Qed.
 
 Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ a :
@@ -118,6 +128,7 @@ Proof.
     fold innerN.
     iMod (fupd_intro_mask' _ (⊤∖↑N)) as "HinnerN".
     { solve_ndisj. }
+    iDestruct (is_durable_txn_bound with "circ.end") as %Hdurable_bound.
 
     iMod ("Hfupd" $! σ σ b with "[//] [] HP") as "[HP HQ]".
     { iPureIntro.

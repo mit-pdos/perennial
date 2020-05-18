@@ -46,47 +46,31 @@ Existing Instance own_into_crash.
 
 Definition log_crash_to σ diskEnd_txn_id :=
   set log_state.durable_lb (λ _, diskEnd_txn_id)
-      (set log_state.txns (take diskEnd_txn_id) σ).
-
-Lemma crash_to_diskEnd_S γ cs σ diskEnd_txn_id installed_txn_id :
-  is_durable_txn γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
-  is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
-  ⌜relation.denote log_crash σ (log_crash_to σ (S diskEnd_txn_id)) tt⌝.
-Proof.
-  iNamed 1.
-  rewrite /is_durable.
-  iNamed 1.
-  iPureIntro.
-  simpl.
-  eexists _ (S diskEnd_txn_id); simpl; monad_simpl.
-  constructor.
-  split; try lia.
-  eapply is_highest_txn_bound; eauto.
-Qed.
+      (set log_state.txns (take (S diskEnd_txn_id)) σ).
 
 Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
   is_durable_txn γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
   is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
-  ⌜relation.denote log_crash σ (log_crash_to σ (diskEnd_txn_id)) tt⌝.
+  ⌜relation.denote log_crash σ (log_crash_to σ diskEnd_txn_id) tt⌝.
 Proof.
   iNamed 1.
   rewrite /is_durable.
   iNamed 1.
   iPureIntro.
   simpl.
-  eexists _ (diskEnd_txn_id); simpl; monad_simpl.
+  eexists _ diskEnd_txn_id; simpl; monad_simpl.
   constructor.
   split; try lia.
-  efeed pose proof (is_highest_txn_bound Hend_txn). lia.
+  eapply is_highest_txn_bound; eauto.
 Qed.
 
 Ltac iPersist H :=
   let H' := (eval cbn in (String.append "#" H)) in
   iDestruct H as H'.
 
-Instance is_installed_Durable γ d txns txn_id :
-  IntoCrash (is_installed_read γ d txns txn_id)
-            (λ _, is_installed_read γ d txns txn_id).
+Instance is_installed_Durable γ d txns txn_id diskEnd_txn_id :
+  IntoCrash (is_installed_read γ d txns txn_id diskEnd_txn_id)
+            (λ _, is_installed_read γ d txns txn_id diskEnd_txn_id).
 Proof. apply _. Qed.
 
 Lemma concat_mono {A: Type} (l1 l2: list (list A)):
@@ -121,7 +105,7 @@ Proof.
     eapply incl_Forall; eauto.
     apply concat_mono, fmap_incl, take_incl.
   - move: Hmono.
-    rewrite -{1}(firstn_skipn (crash_txn) (σ.(log_state.txns))).
+    rewrite -{1}(firstn_skipn (S crash_txn) (σ.(log_state.txns))).
     rewrite fmap_app list_mono_app; naive_solver.
   - lia.
   - len.
@@ -148,10 +132,12 @@ Proof. iNamed 1. iPureIntro; by eapply is_highest_txn_implies_non_empty_txns. Qe
 
 Lemma circ_matches_txns_crash cs txns installed_txn_id diskEnd_txn_id:
   circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
-  circ_matches_txns cs (take (diskEnd_txn_id) txns) installed_txn_id diskEnd_txn_id.
+  circ_matches_txns cs (take (S diskEnd_txn_id) txns) installed_txn_id diskEnd_txn_id.
 Proof.
   rewrite /circ_matches_txns/has_updates.
-  intros Heq d. rewrite Heq /subslice take_idemp //=.
+  destruct 1 as [Heq Hlb].
+  split; auto.
+  intros d. rewrite Heq /subslice take_idemp //=.
 Qed.
 
 Lemma is_txn_from_take_is_txn n txns id pos:
@@ -165,6 +151,18 @@ Proof.
   rewrite -(firstn_skipn n txns).
   apply lookup_app_l_Some; eauto.
 Qed.
+
+Hint Unfold circ_matches_txns : word.
+
+Lemma is_highest_txn_take txns txn_id pos :
+  is_highest_txn txns txn_id pos →
+  is_highest_txn (take (S txn_id) txns) txn_id pos.
+Proof.
+  rewrite /is_highest_txn /is_txn; intuition auto.
+  - rewrite -> lookup_take by lia; auto.
+  - apply H1.
+    rewrite -list_lookup_fmap in H.
+Admitted.
 
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
@@ -199,10 +197,19 @@ Proof.
   iExists cs; iFrame.
   rewrite /disk_inv_durable.
   iExists installed_txn_id, diskEnd_txn_id; simpl.
-  assert (installed_txn_id < diskEnd_txn_id).
-  { admit. (* TODO: is_installed_read needs an upper bound of diskEnd_txn_id for this to be true *) }
+  assert (installed_txn_id <= diskEnd_txn_id) by word.
   iSplitL "Hinstalled".
-  { admit. (* TODO: is_installed_read needs an upper bound of diskEnd_txn_id for this to be true *) }
+  { rewrite /is_installed_read.
+    iApply (big_sepM_mono with "Hinstalled").
+    iIntros (a b0 Hlookup) "H".
+    iDestruct "H" as (b) "(%Happly_upds&Ha&%Ha_bound)".
+    iExists b; iFrame "% ∗".
+    iPureIntro.
+    destruct Happly_upds as (txn_id'&Hbound&Happly).
+    exists txn_id'; split_and!; auto; autorewrite with len; try lia.
+    rewrite take_take.
+    replace (S txn_id' `min` S diskEnd_txn_id)%nat with (S txn_id') by lia.
+    auto. }
   iPureIntro. split_and!.
   - apply circ_matches_txns_crash; auto.
   - naive_solver.
@@ -210,20 +217,14 @@ Proof.
     split; auto.
     * destruct Hcirc_start2 as (Htxn&?). rewrite /is_txn.
       rewrite -Htxn. f_equal.
-      (* XXX: this requires installed_txn_id be *strictly* less than diskEnd_txn_id *)
       rewrite lookup_take; eauto. lia.
     * intros.
       destruct Hcirc_start2 as (Htxn&Hhigh). eapply Hhigh.
       eapply is_txn_from_take_is_txn; eauto.
   - destruct Hcirc_end as (x&?&?&?).
     exists x; split_and!; eauto.
-    rewrite /is_highest_txn.
-    split.
-    * rewrite /is_txn.
-    (* XXX: This doesn't seem provable, if we have lost diskEnd_txn_id (as we will under
-       the current crash to definition). *)
-    admit.
-Admitted.
+    apply is_highest_txn_take; auto.
+Qed.
 
 Lemma is_wal_post_crash γ P' l:
   (∀ σ σ', relation.denote (log_crash) σ σ' tt →

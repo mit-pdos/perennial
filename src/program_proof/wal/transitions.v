@@ -17,7 +17,7 @@ Definition update_durable: transition log_state.t unit :=
   new_durable ← suchThat
               (λ s new_durable,
                (s.(log_state.durable_lb) ≤
-                new_durable ≤
+                new_durable <
                 length s.(log_state.txns))%nat);
   modify (set log_state.durable_lb (λ _, new_durable)).
 
@@ -33,8 +33,8 @@ Definition update_installed: transition log_state.t nat :=
 Definition log_crash : transition log_state.t unit :=
   crash_txn ← suchThat
             (λ s (crash_txn: nat),
-               (s.(log_state.durable_lb) ≤ crash_txn ≤ length s.(log_state.txns))%nat);
-  modify (set log_state.txns (fun txns => take crash_txn txns));;
+               (s.(log_state.durable_lb) ≤ crash_txn < length s.(log_state.txns))%nat);
+  modify (set log_state.txns (fun txns => take (S crash_txn) txns));;
   modify (set log_state.durable_lb (fun _ => crash_txn));;
   ret tt.
 
@@ -57,7 +57,7 @@ Definition log_flush (pos:u64) (txn_id: nat) : transition log_state.t unit :=
   assert (λ s, is_txn s.(log_state.txns) txn_id pos);;
   new_durable ← suchThat
               (λ s (new_durable: nat),
-                 (Nat.max s.(log_state.durable_lb) txn_id ≤ new_durable ≤ length s.(log_state.txns))%nat);
+                 (Nat.max s.(log_state.durable_lb) txn_id ≤ new_durable < length s.(log_state.txns))%nat);
   modify (set log_state.durable_lb (λ _, (new_durable)));;
   ret tt.
 
@@ -124,7 +124,7 @@ Proof.
 Qed.
 
 Definition disk_at_txn_id (txn_id: nat) (s:log_state.t): disk :=
-  apply_upds (txn_upds (take txn_id (log_state.txns s))) s.(log_state.d).
+  apply_upds (txn_upds (take (S txn_id) (log_state.txns s))) s.(log_state.d).
 
 Definition updates_for_addr (a: u64) (l : list update.t) : list Block :=
   update.b <$> filter (λ u, u.(update.addr) = a) l.
@@ -169,7 +169,7 @@ Definition installed_disk (s:log_state.t): disk :=
 Definition log_read_installed (a:u64): transition log_state.t Block :=
   installed_txn_id ← suchThat (fun s txn_id =>
                                  s.(log_state.installed_lb) ≤
-                                 txn_id ≤
+                                 txn_id <
                                  length s.(log_state.txns))%nat;
   d ← reads (disk_at_txn_id installed_txn_id);
   unwrap (d !! int.val a).
