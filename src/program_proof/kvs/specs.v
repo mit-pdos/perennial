@@ -202,9 +202,9 @@ Proof.
                      "<-" ∷ ⌜ kvp_ls_done ++ kvp_ls_todo = kvp_ls_new ⌝ ∗
         "->" ∷ ⌜ kvsblks_done = kvsblks ∖ kvsblks_todo ⌝ ∗
         "%" ∷ ⌜ kvsblks_todo ⊆ kvsblks ⌝ ∗
-            "Hkvs" ∷ (ptsto_kvs kvsl kvsblks sz γDisk) ∗
-            "Hdone_kvp_val" ∷ ([∗ list] val; kvp ∈ done; kvp_ls_done, ⌜ val = kvpair_val kvp ⌝) ∗
-            "Htodo_kvp_val" ∷ ([∗ list] val; kvp ∈ todo; kvp_ls_todo, ⌜ val = kvpair_val kvp ⌝) ∗
+        "Hkvs" ∷ (ptsto_kvs kvsl kvsblks sz γDisk) ∗
+        "Hdone_kvp_val" ∷ ([∗ list] val; kvp ∈ done; kvp_ls_done, ⌜ val = kvpair_val kvp ⌝) ∗
+        "Htodo_kvp_val" ∷ ([∗ list] val; kvp ∈ todo; kvp_ls_todo, ⌜ val = kvpair_val kvp ⌝) ∗
         "Hkvp_done_match_new" ∷ kvpairs_valid_match kvp_ls_done kvsblks_done γDisk sz
         )%I with "[Hsz Htxnl]").
   { iIntros (i x vs vs').
