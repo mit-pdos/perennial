@@ -345,16 +345,31 @@ Proof.
       some bounds *) }
   }
   rewrite -> subslice_length by word.
-  iIntros "(_&Hupds&Hcirc_ppaneder&HdiskEnd_is)".
+  iIntros "(Hpost&Hupds&Hcirc_appender&HdiskEnd_is)"; iNamed "Hpost".
   wp_loadField.
   wp_apply (acquire_spec with "His_lock").
   iIntros "(His_locked&Hlockinv)".
   iNamed "Hlockinv".
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
+  iRename "HdiskEnd_at_least" into "HdiskEnd_at_least_old".
+  iNamed "HdiskEnd_circ".
+  iMod (thread_own_put with "HdiskEnd_exactly HareLogging [HdiskEnd_is γdiskEnd_txn_id1]")
+    as "[HdiskEnd_exactly HnotLogging]"; first by iAccu.
   wp_apply wp_slice_len.
   wp_loadField. wp_storeField.
-  admit. (* TODO: restore lock invariant with new diskEnd *)
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "His_cond1").
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "His_cond2").
+  wp_pures.
+  iApply "HΦ".
+  iFrame "His_locked".
+  iSplitR "Hcirc_appender HnotLogging Hown_diskEnd_txn_id".
+  - (* TODO: come up with a simpler expression for new diskEnd *)
+    iExists (set diskEnd (λ _, int.val σ.(diskEnd) + int.val s.(Slice.sz)) σ).
+  - iFrame.
+    iExists _; iFrame.
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :
