@@ -4,24 +4,36 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.tchajed.marshal.
 
+(* 0alloc.go *)
+
 Module unit.
   Definition S := struct.decl [
   ].
 End unit.
 
-(* Allocator manages free disk blocks. It does not store its state durably, so
+(* allocator manages free disk blocks. It does not store its state durably, so
    the caller is responsible for returning its set of free disk blocks on
    recovery. *)
-Module Allocator.
+Module allocator.
   Definition S := struct.decl [
     "m" :: lockRefT;
     "free" :: mapT (struct.t unit.S)
   ].
-End Allocator.
+End allocator.
 
-Definition NewAllocator: val :=
-  rec: "NewAllocator" "free" :=
-    struct.new Allocator.S [
+Definition FreeRange: val :=
+  rec: "FreeRange" "start" "sz" :=
+    let: "m" := NewMap (struct.t unit.S) in
+    let: "i" := ref_to uint64T "start" in
+    (for: (λ: <>, ![uint64T] "i" < "start" + "sz"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      MapInsert "m" (![uint64T] "i") (struct.mk unit.S [
+      ]);;
+      Continue);;
+    "m".
+
+Definition newAllocator: val :=
+  rec: "newAllocator" "free" :=
+    struct.new allocator.S [
       "m" ::= lock.new #();
       "free" ::= "free"
     ].
@@ -39,100 +51,129 @@ Definition findKey: val :=
     (![uint64T] "found", ![boolT] "ok").
 
 (* Reserve transfers ownership of a free block from the allocator to the caller *)
-Definition Allocator__Reserve: val :=
-  rec: "Allocator__Reserve" "a" :=
-    lock.acquire (struct.loadF Allocator.S "m" "a");;
-    let: ("k", "ok") := findKey (struct.loadF Allocator.S "free" "a") in
-    MapDelete (struct.loadF Allocator.S "free" "a") "k";;
-    lock.release (struct.loadF Allocator.S "m" "a");;
+Definition allocator__Reserve: val :=
+  rec: "allocator__Reserve" "a" :=
+    lock.acquire (struct.loadF allocator.S "m" "a");;
+    let: ("k", "ok") := findKey (struct.loadF allocator.S "free" "a") in
+    MapDelete (struct.loadF allocator.S "free" "a") "k";;
+    lock.release (struct.loadF allocator.S "m" "a");;
     ("k", "ok").
 
-Module Inode.
+(* 0inode.go *)
+
+Module inode.
   Definition S := struct.decl [
     "d" :: disk.Disk;
     "m" :: lockRefT;
     "addr" :: uint64T;
     "addrs" :: slice.T uint64T
   ].
-End Inode.
+End inode.
 
-Definition OpenInode: val :=
-  rec: "OpenInode" "d" "addr" :=
+Definition openInode: val :=
+  rec: "openInode" "d" "addr" :=
     let: "b" := disk.Read "addr" in
     let: "dec" := marshal.NewDec "b" in
     let: "numAddrs" := marshal.Dec__GetInt "dec" in
     let: "addrs" := marshal.Dec__GetInts "dec" "numAddrs" in
-    struct.mk Inode.S [
+    struct.new inode.S [
       "d" ::= "d";
       "m" ::= lock.new #();
       "addr" ::= "addr";
       "addrs" ::= "addrs"
     ].
 
-Definition Inode__UsedBlocks: val :=
-  rec: "Inode__UsedBlocks" "i" :=
-    lock.acquire (struct.get Inode.S "m" "i");;
-    let: "addrs" := struct.get Inode.S "addrs" "i" in
-    lock.release (struct.get Inode.S "m" "i");;
+Definition inode__UsedBlocks: val :=
+  rec: "inode__UsedBlocks" "i" :=
+    lock.acquire (struct.loadF inode.S "m" "i");;
+    let: "addrs" := struct.loadF inode.S "addrs" "i" in
+    lock.release (struct.loadF inode.S "m" "i");;
     "addrs".
 
-Definition Inode__Read: val :=
-  rec: "Inode__Read" "i" "off" :=
-    lock.acquire (struct.get Inode.S "m" "i");;
-    let: "a" := SliceGet uint64T (struct.get Inode.S "addrs" "i") "off" in
+Definition inode__Read: val :=
+  rec: "inode__Read" "i" "off" :=
+    lock.acquire (struct.loadF inode.S "m" "i");;
+    let: "a" := SliceGet uint64T (struct.loadF inode.S "addrs" "i") "off" in
+    lock.release (struct.loadF inode.S "m" "i");;
     let: "b" := disk.Read "a" in
-    lock.release (struct.get Inode.S "m" "i");;
     "b".
 
-Definition Inode__Append: val :=
-  rec: "Inode__Append" "i" "a" :=
-    lock.acquire (struct.get Inode.S "m" "i");;
-    struct.storeF Inode.S "addrs" "i" (SliceAppend uint64T (struct.get Inode.S "addrs" "i") "a");;
+Definition inode__Size: val :=
+  rec: "inode__Size" "i" :=
+    lock.acquire (struct.loadF inode.S "m" "i");;
+    let: "sz" := slice.len (struct.loadF inode.S "addrs" "i") in
+    lock.release (struct.loadF inode.S "m" "i");;
+    "sz".
+
+Definition inode__Append: val :=
+  rec: "inode__Append" "i" "a" :=
+    lock.acquire (struct.loadF inode.S "m" "i");;
+    struct.storeF inode.S "addrs" "i" (SliceAppend uint64T (struct.loadF inode.S "addrs" "i") "a");;
     let: "enc" := marshal.NewEnc disk.BlockSize in
-    marshal.Enc__PutInt "enc" (slice.len (struct.get Inode.S "addrs" "i"));;
-    marshal.Enc__PutInts "enc" (struct.get Inode.S "addrs" "i");;
+    marshal.Enc__PutInt "enc" (slice.len (struct.loadF inode.S "addrs" "i"));;
+    marshal.Enc__PutInts "enc" (struct.loadF inode.S "addrs" "i");;
     let: "hdr" := marshal.Enc__Finish "enc" in
-    disk.Write (struct.get Inode.S "addr" "i") "hdr";;
-    lock.release (struct.get Inode.S "m" "i").
+    disk.Write (struct.loadF inode.S "addr" "i") "hdr";;
+    lock.release (struct.loadF inode.S "m" "i").
+
+(* dir.go *)
 
 Definition NumInodes : expr := #5.
 
 Module Dir.
   Definition S := struct.decl [
     "d" :: disk.Disk;
-    "allocator" :: struct.ptrT Allocator.S;
-    "inodes" :: slice.T (struct.t Inode.S)
+    "allocator" :: struct.ptrT allocator.S;
+    "inodes" :: slice.T (struct.ptrT inode.S)
   ].
 End Dir.
 
-Definition OpenDir: val :=
-  rec: "OpenDir" "d" "free" :=
-    let: "inodes" := ref (zero_val (slice.T (struct.t Inode.S))) in
+Definition openInodes: val :=
+  rec: "openInodes" "d" :=
+    let: "inodes" := ref (zero_val (slice.T (refT (struct.t inode.S)))) in
     let: "addr" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "addr" < NumInodes); (λ: <>, "addr" <-[uint64T] ![uint64T] "addr" + #1) := λ: <>,
-      "inodes" <-[slice.T (struct.t Inode.S)] SliceAppend (struct.t Inode.S) (![slice.T (struct.t Inode.S)] "inodes") (OpenInode "d" (![uint64T] "addr"));;
+      "inodes" <-[slice.T (refT (struct.t inode.S))] SliceAppend (refT (struct.t inode.S)) (![slice.T (refT (struct.t inode.S))] "inodes") (openInode "d" (![uint64T] "addr"));;
       Continue);;
-    ForSlice (struct.t Inode.S) <> "i" (![slice.T (struct.t Inode.S)] "inodes")
-      (ForSlice uint64T <> "a" (Inode__UsedBlocks "i")
+    ![slice.T (refT (struct.t inode.S))] "inodes".
+
+Definition deleteInodeBlocks: val :=
+  rec: "deleteInodeBlocks" "numInodes" "free" :=
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, ![uint64T] "i" < "numInodes"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      MapDelete "free" (![uint64T] "i");;
+      Continue).
+
+Definition OpenDir: val :=
+  rec: "OpenDir" "d" "free" :=
+    let: "inodes" := openInodes "d" in
+    ForSlice (refT (struct.t inode.S)) <> "i" "inodes"
+      (ForSlice uint64T <> "a" (inode__UsedBlocks "i")
         (MapDelete "free" "a"));;
-    let: "allocator" := NewAllocator "free" in
+    deleteInodeBlocks NumInodes "free";;
+    let: "allocator" := newAllocator "free" in
     struct.new Dir.S [
       "d" ::= "d";
       "allocator" ::= "allocator";
-      "inodes" ::= ![slice.T (struct.t Inode.S)] "inodes"
+      "inodes" ::= "inodes"
     ].
 
 Definition Dir__Read: val :=
   rec: "Dir__Read" "d" "ino" "off" :=
-    let: "i" := SliceGet (struct.t Inode.S) (struct.loadF Dir.S "inodes" "d") "ino" in
-    Inode__Read "i" "off".
+    let: "i" := SliceGet (refT (struct.t inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
+    inode__Read "i" "off".
+
+Definition Dir__Size: val :=
+  rec: "Dir__Size" "d" "ino" :=
+    let: "i" := SliceGet (refT (struct.t inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
+    inode__Size "i".
 
 Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
-    let: ("a", "ok") := Allocator__Reserve (struct.loadF Dir.S "allocator" "d") in
+    let: ("a", "ok") := allocator__Reserve (struct.loadF Dir.S "allocator" "d") in
     (if: ~ "ok"
     then #false
     else
       disk.Write "a" "b";;
-      Inode__Append (SliceGet (struct.t Inode.S) (struct.loadF Dir.S "inodes" "d") "ino") "a";;
+      inode__Append (SliceGet (refT (struct.t inode.S)) (struct.loadF Dir.S "inodes" "d") "ino") "a";;
       #true).
