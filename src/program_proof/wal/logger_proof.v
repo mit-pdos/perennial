@@ -184,6 +184,23 @@ Proof.
   iPureIntro; lia.
 Qed.
 
+Lemma circ_diskEnd_app σ upds' :
+  circΣ.diskEnd (set circΣ.upds (λ u, u ++ upds') σ) =
+  circΣ.diskEnd σ + length upds'.
+Proof.
+  rewrite /circΣ.diskEnd /=.
+  len.
+Qed.
+
+Lemma logIndex_diff memLog pos1 pos2 :
+  int.val memLog.(slidingM.start) ≤ int.val pos1 →
+  (slidingM.logIndex memLog pos2 - slidingM.logIndex memLog pos1)%nat =
+  (int.nat pos2 - int.nat pos1)%nat.
+Proof.
+  rewrite /slidingM.logIndex; intros.
+  lia.
+Qed.
+
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
@@ -262,7 +279,7 @@ Proof.
 
   { (* Append fupd *)
     rewrite /circular_pred.
-    iIntros (cs) "(%Hcirc_wf&Hcirc_ctx)".
+    iIntros (cs) "(%Hcirc_wf&%HdiskEnd_eq&Hcirc_ctx)".
     iIntros (cs' [] [Htrans Hcirc_wf']).
     simpl in Htrans; monad_inv.
     iInv "Hwal" as (σs) "[Hinner HP]".
@@ -319,7 +336,10 @@ Proof.
     iSplit.
     { iPureIntro.
       simpl.
-      admit. (* recalculate diskEnd *) }
+      rewrite circ_diskEnd_app.
+      rewrite -> subslice_length by word.
+      rewrite -> logIndex_diff by word.
+      word. }
     { iPureIntro.
       admit. (* this is tricky - it's a txn pos, but that it's highest is due to
       some bounds *) }
