@@ -33,8 +33,8 @@ Theorem wp_Walog__waitForSpace l γ σₛ :
   {{{ σ, RET #();
       "Hlocked" ∷ locked γ.(lock_name)  ∗
       "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
-      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) ∗
-      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
       "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
       "%Hhas_space" ∷ ⌜length σ.(memLog).(slidingM.log) ≤ LogSz⌝
   }}}.
@@ -46,8 +46,8 @@ Proof.
   wp_apply (wp_forBreak_cond
               (λ b, "Hlocked" ∷ locked γ.(lock_name) ∗
                     "*" ∷ ∃ σ, "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
-                               "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) ∗
-                               "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+                               "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+                               "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
                                "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
                                "%Hbreak" ∷ ⌜b = false → (length σ.(memLog).(slidingM.log) ≤ LogSz)⌝
               )%I
@@ -223,12 +223,17 @@ Proof.
   wp_apply wp_slice_len; wp_pures.
   wp_if_destruct; wp_pures.
   { iApply "HΦ".
-    iFrame "Hlocked HnotLogging Happender".
-    iExists _; iFrame.
-    iExists _; iFrame "% ∗".
+    iFrame "Hlocked".
+    iSplitR "HnotLogging Hown_diskEnd_txn_id Happender".
+    - iExists _; iFrame.
+      iExists _; iFrame "% ∗".
+    - iFrame.
+      iExists _; iFrame.
   }
   iNamed "HdiskEnd_circ".
-  iMod (thread_own_get with "HdiskEnd_exactly HnotLogging") as "(HdiskEnd_exactly&HdiskEnd_is&HareLogging)".
+  iMod (thread_own_get with "HdiskEnd_exactly HnotLogging") as
+      "(HdiskEnd_exactly&Hlog_owned&HareLogging)";
+    iNamed "Hlog_owned".
   iNamed "HmemLog_linv".
   iNamed "Hstart_circ".
   iDestruct "HmemStart_txn" as "#HmemStart_txn".
@@ -241,14 +246,17 @@ Proof.
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
   wp_apply (wp_loadField_ro with "HmemLock").
   iDestruct "Htxns_are" as "#Htxns_are".
-  wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs $His_lock $Hlocked]").
+  wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs Hown_diskEnd_txn_id γdiskEnd_txn_id1 $His_lock $Hlocked]").
   { iExists _; iFrame "# ∗".
     iSplitR "Howntxns HmemEnd_txn".
     - iExists _; iFrame "% ∗".
-    - iExists _, _, _, _; iFrame "# % ∗". }
+    - iExists _, _, _; iFrame "# % ∗". }
   wp_loadField.
   iDestruct "Hwal" as "[Hwal Hcirc]".
-  wp_apply (wp_circular__Append _ _ (emp) with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least]").
+  wp_apply (wp_circular__Append _ _
+                              ("γdiskEnd_txn_id1" ∷ own γ.(diskEnd_txn_id_name) (●{1/2} Excl' nextDiskEnd_txn_id) ∗
+                               "Hown_diskEnd_txn_id" ∷ own γ.(diskEnd_txn_id_name) (◯ Excl' nextDiskEnd_txn_id))
+              with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least Hown_diskEnd_txn_id γdiskEnd_txn_id1]").
   { rewrite subslice_length; word. }
   { rewrite subslice_length; word. }
 
@@ -263,23 +271,27 @@ Proof.
     iNamed.
     iNamed "Hdisk".
     iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
-    iMod (txns_are_sound with "Htxns_ctx Htxns_are") as "(%Htxns_are & Htxns_ctx)"; first by solve_ndisj.
-    iMod (txn_pos_valid' with "Htxns_ctx HmemStart_txn") as "(%HmemStart'&Htxns_ctx)"; first by solve_ndisj.
-    iMod (txn_pos_valid' with "Htxns_ctx HnextDiskEnd_txn") as "(%HnextDiskEnd'&Htxns_ctx)"; first by solve_ndisj.
+    iMod (txns_are_sound with "Htxns_ctx Htxns_are")
+      as "(%Htxns_are & Htxns_ctx)"; first by solve_ndisj.
+    iMod (txn_pos_valid' with "Htxns_ctx HmemStart_txn")
+      as "(%HmemStart'&Htxns_ctx)"; first by solve_ndisj.
+    iMod (txn_pos_valid' with "Htxns_ctx HnextDiskEnd_txn")
+      as "(%HnextDiskEnd'&Htxns_ctx)"; first by solve_ndisj.
     iMod (ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iNamed "Hdisk".
+    iDestruct (ghost_var_frac_frac_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.
+    iCombine "γdiskEnd_txn_id1 γdiskEnd_txn_id2" as "γdiskEnd_txn_id".
+    iDestruct (ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
+    iMod (ghost_var_update _ with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
+        "[[γdiskEnd_txn_id1 $] $]".
+
     iModIntro.
     iSplitL; [ | done ].
     iNext.
     iExists _; iFrame.
     iSplitR; auto.
     iExists _; iFrame.
-    iNamed "Hdisk".
     iNamed "circ.end".
-    assert (diskEnd_txn_id0 = diskEnd_txn_id); [ | subst ].
-    { (* TODO: need to somehow prove [diskEnd_txn_id0 = diskEnd_txn_id], which
-         is maybe based on the fact that diskEnd hasn't changed (due to
-         diskEnd_is ownership) and that it's the highest transaction id *)
-      admit. }
     iExists installed_txn_id, nextDiskEnd_txn_id.
     iFrame "# ∗".
     iSplitL "Hinstalled".
@@ -347,14 +359,14 @@ Proof.
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗ logger_inv γ circ_l)%I
               with "[] [$]").
-  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&Hlogger) HΦ"; iNamed "Hlogger".
+  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&Hlogger) HΦ".
     wp_apply (wp_load_shutdown with "[$st $Hlkinv]"); iIntros (shutdown) "Hlkinv".
     wp_pures.
     wp_if_destruct.
     - wp_pures.
-      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $HnotLogging $Happender]").
+      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $Hlogger]").
       { iFrame "# ∗". }
-      iIntros (progress) "(Hlkinv&Hlk_held&HnotLogging)".
+      iIntros (progress) "(Hlkinv&Hlk_held&Hlogger)".
       wp_pures.
       destruct (negb progress); [ wp_if_true | wp_if_false ]; wp_pures.
       + wp_loadField.

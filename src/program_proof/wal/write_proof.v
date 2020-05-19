@@ -381,6 +381,19 @@ Proof.
   rewrite memWrite_same_start //.
 Qed.
 
+Lemma subslice_from_take {A} m (l: list A) :
+  take m l = subslice 0 m l.
+Proof.
+  rewrite /subslice //.
+Qed.
+
+Lemma subslice_from_drop {A} n (l: list A) :
+  drop n l = subslice n (length l) l.
+Proof.
+  rewrite /subslice.
+  rewrite take_ge; auto.
+Qed.
+
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
        updates_slice bufs bs ∗
@@ -542,7 +555,7 @@ Proof.
         { iExists _; iFrame.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
-        iExists memStart_txn_id, diskEnd_txn_id, nextDiskEnd_txn_id, _; iFrame.
+        iExists memStart_txn_id, nextDiskEnd_txn_id, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
         autorewrite with len.
         iFrame "%".
@@ -556,14 +569,22 @@ Proof.
         { autorewrite with len.
           rewrite Nat.add_sub.
           iFrame "#". }
-        { iSplit; iPureIntro.
+        { iPureIntro.
+          pose proof (is_txn_bound _ _ _ HmemStart_txn).
+          pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
+          split_and!.
           - eapply is_mem_memLog_append; eauto.
-            pose proof (is_txn_bound _ _ _ HmemStart_txn); lia.
-          - pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
-            rewrite -> subslice_app_1 by lia.
+            lia.
+          - rewrite -> drop_app_le by lia.
             rewrite !memWrite_preserves_logIndex.
-            rewrite memWrite_preserves_mutable_suffix; auto.
-            word. }
+            (* TODO: stronger property then used for [is_mem_memLog_append] -
+            need to decompose memWrite so that it extends has_updates starting
+            at mutable *)
+            admit.
+          - rewrite -> subslice_app_1 by lia.
+            rewrite !memWrite_preserves_logIndex.
+            rewrite memWrite_preserves_mutable_suffix; [ | word | word ].
+            auto. }
       - wp_apply util_proof.wp_DPrintf.
         iAssert (wal_linv σₛ.(wal_st) γ) with "[Hfields HmemLog_linv HdiskEnd_circ Hstart_circ]" as "Hlockinv".
         { iExists _; iFrame. }

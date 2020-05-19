@@ -268,7 +268,6 @@ Proof.
   clear P.
   iIntros (Φ Φc) "Hcs HΦ".
   rewrite /mkLog.
-  Print recoverCircular.
 
   Ltac show_crash1 := eauto.
 
@@ -293,6 +292,7 @@ Proof.
 
   iDestruct (is_circular_state_wf with "Hcirc") as %Hwf_circ.
   iMod (diskEnd_is_get_at_least with "[$]") as "(Hdisk&#Hdisk_atLeast)".
+  (* TODO: also allocate diskEnd_txn_id ghost var and put in this thread_own_alloc *)
   iMod (thread_own_alloc with "Hdisk") as (γdiskEnd_avail_name) "(HdiskEnd_exactly&Hthread_end)".
   iMod (start_is_get_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
   iMod (thread_own_alloc with "Hstart") as (γstart_avail_name) "(Hstart_exactly&Hthread_start)".
@@ -316,12 +316,12 @@ Proof.
                  slidingM.start := diskStart;
                  slidingM.mutable := int.val diskStart + length upds |}).
 
-  iAssert (memLog_linv_pers_core γ0 memLog diskEnd σ.(log_state.txns)) with "[-]" as "#H".
+  iNamed "Hdiskinv".
+  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id σ.(log_state.txns)) with "[-]" as "#H".
   {
     rewrite /memLog_linv_pers_core.
     rewrite /disk_inv_durable.
-    iNamed "Hdiskinv".
-    iExists installed_txn_id, diskEnd_txn_id, (S diskEnd_txn_id).
+    iExists installed_txn_id, (S diskEnd_txn_id).
     iDestruct "circ.start" as %Hcirc_start.
     iDestruct "circ.end" as %Hcirc_end.
     iDestruct "Hdurable" as %Hdurable.
@@ -361,6 +361,7 @@ Proof.
     iSplitL ""; first auto. rewrite /txns_ctx.
     iSplitL ""; first auto.
     iFrame. iExists _; iFrame.
+    admit.
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (γlock ml) "Hlock".
@@ -394,6 +395,7 @@ Proof.
     }
     rewrite //= /diskEnd_linv/diskStart_linv -Heq_plus.
     iFrame. iFrame "Hdisk_atLeast Hstart_atLeast".
+    admit. (* need to include diskEnd_txn_id_name in thread_own_ctx *)
   }
   wp_pures.
   wp_apply (wp_newCond with "[$]").
@@ -403,7 +405,7 @@ Proof.
   wp_apply (wp_newCond with "[$]").
   iIntros (condShut) "cond_shut".
   wp_apply wp_allocStruct.
-  { econstructor; repeat (try econstructor). (* How to do val_ty for Disk? *) admit. }
+  { repeat econstructor. (* How to do val_ty for Disk? *) admit. }
 Abort.
 
 Theorem wpc_MkLog_recover stk k E1 E2 d γ σ :

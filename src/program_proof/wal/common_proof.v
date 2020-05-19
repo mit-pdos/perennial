@@ -56,7 +56,7 @@ Proof.
     unfold locked_wf, slidingM.wf in Hlocked_wf.
     word.
   }
-  iExists memStart_txn_id, diskEnd_txn_id, (length txns - 1)%nat, txns; simpl.
+  iExists memStart_txn_id, (length txns - 1)%nat, txns; simpl.
   iFrame "% # ∗".
   destruct_and! His_memLog.
   iPureIntro; split_and!; auto; try lia.
