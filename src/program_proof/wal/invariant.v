@@ -443,6 +443,29 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Theorem is_circular_diskEnd_is_agree E q γ diskEnd cs :
+  ↑circN ⊆ E ->
+  diskEnd_is γ.(circ_name) q diskEnd -∗
+  is_circular circN (circular_pred γ) γ.(circ_name) -∗
+  own γ.(cs_name) (◯ Excl' cs) -∗
+  |={E}=> ⌜diskEnd = circΣ.diskEnd cs⌝ ∗
+          diskEnd_is γ.(circ_name) q diskEnd ∗
+          own γ.(cs_name) (◯ Excl' cs).
+Proof.
+  rewrite /circular_pred.
+  iIntros (Hsub) "HdiskEnd_is #Hcirc Hown".
+  iInv "Hcirc" as ">Hinner" "Hclose".
+  iDestruct "Hinner" as (σ) "(Hstate&Hγ)".
+  unify_ghost.
+  iFrame "Hown".
+  iDestruct (is_circular_state_pos_acc with "Hstate") as "([HdiskStart HdiskEnd]&Hstate)".
+  iDestruct (diskEnd_is_agree with "HdiskEnd HdiskEnd_is") as %Heq; subst; iFrame.
+  iSpecialize ("Hstate" with "[$HdiskStart $HdiskEnd]").
+  iMod ("Hclose" with "[-]") as "_"; auto.
+  iNext.
+  iExists _; iFrame.
+Qed.
+
 (** * some facts about txn_ctx *)
 Theorem txn_map_to_is_txn txns (txn_id: nat) (pos: u64) upds :
   list_to_imap txns !! txn_id = Some (pos, upds) ->

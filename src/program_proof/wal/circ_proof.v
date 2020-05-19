@@ -419,7 +419,7 @@ Theorem wp_circular__Advance (Q: iProp Σ) γ (d: val) (start0: u64) (newStart :
       start_is γ (1/2) start0 ∗
       diskEnd_at_least γ diskEnd_lb ∗
       ⌜int.val start0 ≤ int.val newStart ≤ diskEnd_lb⌝ ∗
-    (∀ σ, ⌜circ_wf σ⌝ ∗ P σ -∗
+    (∀ σ, ⌜circ_wf σ⌝ ∗ P σ ∗ ⌜σ.(circΣ.start) = start0⌝ -∗
       (∀ σ' b, ⌜relation.denote (circ_advance newStart) σ σ' b⌝ ∗ ⌜circ_wf σ'⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
   }}}
     Advance d #newStart
@@ -937,7 +937,7 @@ Theorem wp_circular__Append (Q: iProp Σ) γ (d: val) q (startpos endpos : u64) 
       diskEnd_is γ (1/2) (int.val endpos) ∗
       start_at_least γ startpos ∗
       is_circular_appender γ c ∗
-      (∀ σ, ⌜circ_wf σ⌝ ∗ P σ -∗
+      (∀ σ, ⌜circ_wf σ⌝ ∗ ⌜circΣ.diskEnd σ = int.val endpos⌝ ∗ P σ -∗
           ∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ∗ ⌜circ_wf σ'⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
   }}}
     circularAppender__Append #c d #endpos (slice_val bufs)
