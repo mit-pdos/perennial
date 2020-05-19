@@ -34,12 +34,21 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "--goose", help="path to goose repo", required=True, metavar="GOOSE_PATH"
+        "--goose",
+        help="path to goose repo",
+        required=True,
+        metavar="GOOSE_PATH",
     )
     parser.add_argument(
         "--nfsd",
         help="path to goose-nfsd repo (skip translation if not provided)",
         metavar="GOOSE_NFSD_PATH",
+        default=None,
+    )
+    parser.add_argument(
+        "--examples",
+        help="path to perennial-examples repo (skip translation if not provided)",
+        metavar="PERENNIAL_EXAMPLES_PATH",
         default=None,
     )
 
@@ -48,11 +57,14 @@ def main():
     goose_dir = args.goose
     goose_nfsd_dir = args.nfsd
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
+    examples_dir = args.examples
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
     if goose_nfsd_dir is not None and not os.path.isdir(goose_nfsd_dir):
         parser.error("goose-nfsd directory does not exist")
+    if examples_dir is not None and not os.path.isdir(examples_dir):
+        parser.error("perennial-examples directory does not exist")
 
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
@@ -98,11 +110,13 @@ def main():
     for example in ["append_log", "logging2", "rfc1813", "simpledb", "wal"]:
         run_goose(
             path.join(goose_dir, "internal/examples/", example),
-            path.join(perennial_dir, "src/goose_lang/examples/", example + ".v"),
+            path.join(
+                perennial_dir, "src/goose_lang/examples/", example + ".v"
+            ),
         )
 
     if goose_nfsd_dir is not None:
-        nfsd_pkgs = [
+        pkgs = [
             "addr",
             "alloc",
             "buf",
@@ -115,7 +129,7 @@ def main():
             "util",
             "wal",
         ]
-        for pkg in nfsd_pkgs:
+        for pkg in pkgs:
             if pkg == ".":
                 run_goose(
                     goose_nfsd_dir,
@@ -128,6 +142,16 @@ def main():
                     path.join(perennial_dir, "external/Goose"),
                     pkg="github.com/mit-pdos/goose-nfsd/" + pkg,
                 )
+    if examples_dir is not None:
+        pkgs = [
+            "dir",
+        ]
+        for pkg in pkgs:
+            run_goose(
+                path.join(examples_dir, pkg),
+                path.join(perennial_dir, "external/Goose"),
+                pkg="github.com/mit-pdos/perennial-examples/" + pkg,
+            )
 
 
 if __name__ == "__main__":

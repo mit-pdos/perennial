@@ -17,6 +17,8 @@ From Perennial.program_proof Require
      wal.specs
      txn.specs
      buftxn.specs.
+From Perennial.program_proof.examples Require
+     dir_proof.
 From Perennial.goose_lang Require
      ffi.append_log_ffi
      ffi.kvs_ffi.
