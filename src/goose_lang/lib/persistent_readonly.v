@@ -151,6 +151,17 @@ Section goose_lang.
     }
   Qed.
 
+  Theorem readonly_weaken E P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
+    ↑N ⊆ E →
+    (∀ q, Φ1 q -∗ Φ2 q) -∗
+    readonly P ={E}=∗ readonly Q.
+  Proof.
+    iIntros (Hsub) "Himpl HP".
+    iMod (readonly_load_lt with "HP") as (q) "[% HΦ1]"; first by solve_ndisj.
+    iDestruct ("Himpl" with "HΦ1") as "HΦ2".
+    iMod (readonly_alloc with "HΦ2"); auto.
+  Qed.
+
 End goose_lang.
 
 Instance heap_mapsto_AsMapsTo `{ext: !ext_op} `{!na_heapG loc val Σ}
