@@ -198,7 +198,7 @@ Instance statet_error_ret : MRet (StateT btstate Error) :=
   StateT_ret Error Error_ret.
 
 (* Single-step interpreter for external disk operations. *)
-Fixpoint disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr :=
+Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr :=
   match (op, v) with
   | (ReadOp, (LitV (LitInt _))) =>
     bts <- mget;
