@@ -2,6 +2,56 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+(* allocator.go *)
+
+Module unit.
+  Definition S := struct.decl [
+  ].
+End unit.
+
+Definition findKey: val :=
+  rec: "findKey" "m" :=
+    let: "found" := ref_to uint64T #0 in
+    let: "ok" := ref_to boolT #false in
+    MapIter "m" (λ: "k" <>,
+      (if: ~ (![boolT] "ok")
+      then
+        "found" <-[uint64T] "k";;
+        "ok" <-[boolT] #true
+      else #()));;
+    (![uint64T] "found", ![boolT] "ok").
+
+Definition allocate: val :=
+  rec: "allocate" "m" :=
+    let: ("k", "ok") := findKey "m" in
+    MapDelete "m" "k";;
+    ("k", "ok").
+
+Definition freeRange: val :=
+  rec: "freeRange" "sz" :=
+    let: "m" := NewMap (struct.t unit.S) in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, ![uint64T] "i" < "sz"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      MapInsert "m" (![uint64T] "i") (struct.mk unit.S [
+      ]);;
+      Continue);;
+    "m".
+
+Definition testAllocateDistinct: val :=
+  rec: "testAllocateDistinct" <> :=
+    let: "free" := freeRange #4 in
+    let: ("a1", <>) := allocate "free" in
+    let: ("a2", <>) := allocate "free" in
+    "a1" ≠ "a2".
+
+Definition testAllocateFull: val :=
+  rec: "testAllocateFull" <> :=
+    let: "free" := freeRange #2 in
+    let: (<>, "ok1") := allocate "free" in
+    let: (<>, "ok2") := allocate "free" in
+    let: (<>, "ok3") := allocate "free" in
+    ("ok1" && "ok2") && (~ "ok3").
+
 (* comparisons.go *)
 
 Definition testCompareAll: val :=

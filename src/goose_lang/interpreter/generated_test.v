@@ -6,6 +6,10 @@ From Perennial.goose_lang.interpreter Require Import test_config.
 (* test functions *)
 From Perennial.goose_lang.examples Require Import goose_semantics.
 
+(* allocator.go *)
+Example testAllocateDistinct_ok : testAllocateDistinct #() ~~> #true := t.
+Example testAllocateFull_ok : testAllocateFull #() ~~> #true := t.
+
 (* comparisons.go *)
 Example testCompareAll_ok : testCompareAll #() ~~> #true := t.
 Example testCompareGT_ok : testCompareGT #() ~~> #true := t.
