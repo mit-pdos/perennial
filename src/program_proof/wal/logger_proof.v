@@ -368,6 +368,9 @@ Proof.
   iSplitR "Hcirc_appender HnotLogging Hown_diskEnd_txn_id".
   - (* TODO: come up with a simpler expression for new diskEnd *)
     iExists (set diskEnd (λ _, int.val σ.(diskEnd) + int.val s.(Slice.sz)) σ).
+    simpl.
+    iFrame.
+    admit.
   - iFrame.
     iExists _; iFrame.
 Admitted.

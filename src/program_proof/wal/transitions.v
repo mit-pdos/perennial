@@ -130,7 +130,7 @@ Definition updates_for_addr (a: u64) (l : list update.t) : list Block :=
   update.b <$> filter (λ u, u.(update.addr) = a) l.
 
 Definition updates_since (txn_id: nat) (a: u64) (s : log_state.t) : list Block :=
-  updates_for_addr a (txn_upds (drop txn_id (log_state.txns s))).
+  updates_for_addr a (txn_upds (drop (S txn_id) (log_state.txns s))).
 
 Fixpoint latest_update (base: Block) (upds: list Block) : Block :=
   match upds with
@@ -144,7 +144,7 @@ Definition last_disk (s:log_state.t): disk :=
 
 Definition no_updates_since σ a txn_id :=
   Forall (λ u, u.(update.addr) ≠ a)
-         (txn_upds (drop txn_id (log_state.txns σ))).
+         (txn_upds (drop (S txn_id) (log_state.txns σ))).
 
 Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
   ok ← any bool;
