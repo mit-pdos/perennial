@@ -9,6 +9,7 @@ From Perennial.program_proof.buf Require Import defs.
 From Perennial.program_proof.addr Require Import specs.
 From Perennial.program_proof.wal Require Import abstraction.
 From Perennial.Helpers Require Import NamedProps.
+From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -19,10 +20,10 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ :=
   match d with
-  | bufBit b => ∃ (b0 : u8), is_slice_small s u8T 1%Qp (#b0 :: nil) ∗
+  | bufBit b => ∃ (b0 : u8), slice.is_slice_small s u8T 1%Qp (#b0 :: nil) ∗
     ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
-  | bufInode i => is_slice_small s u8T 1%Qp (inode_to_vals i)
-  | bufBlock b => is_slice_small s u8T 1%Qp (Block_to_vals b)
+  | bufInode i => slice.is_slice_small s u8T 1%Qp (inode_to_vals i)
+  | bufBlock b => slice.is_slice_small s u8T 1%Qp (Block_to_vals b)
   end.
 
 Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : Slice.t) : iProp Σ :=
@@ -373,13 +374,11 @@ Theorem wp_BufMap__DirtyBufs l m :
   }}}
     BufMap__DirtyBufs #l
   {{{
-    (s : Slice.t) bufptrlist dirtylist, RET (slice_val s);
+    (s : Slice.t) (bufptrlist : list loc), RET (slice_val s);
     is_slice s (refT (struct.t Buf.S)) 1 bufptrlist ∗
-    ⌜ dirtylist ≡ₚ filter (λ x, (snd x).(bufDirty) = true) (map_to_list m) ⌝ ∗
-    [∗ list] _ ↦ bufptrval; addrbuf ∈ bufptrlist; dirtylist,
-      ∃ (bufptr : loc),
-        ⌜ bufptrval = #bufptr ⌝ ∗
-        is_buf bufptr (fst addrbuf) (snd addrbuf)
+    let dirtybufs := filter (λ x, (snd x).(bufDirty) = true) m in
+    [∗ maplist] a ↦ b;bufptr ∈ dirtybufs;bufptrlist,
+      is_buf bufptr a b
   }}}.
 Proof using.
 Opaque struct.t.
@@ -389,16 +388,22 @@ Opaque struct.t.
   wp_apply wp_ref_of_zero; eauto.
   iIntros (bufs) "Hbufs".
   wp_loadField.
+
+  iDestruct (big_sepM2_dom with "Hmap") as %Hdom.
   iDestruct (big_sepM2_sepM_1 with "Hmap") as "Hmap".
   iDestruct (big_sepM_flatid_addr_map_1 with "Hmap") as "Hmap"; eauto.
 
 (*
-  wp_apply (wp_MapIter _ _ _ _
-    (∃ s bufptrlist,
-      bufs ↦[slice.T (refT (struct.t Buf.S))] (slice_val s) ∗
-      is_slice s (refT (struct.t Buf.S)) 1 bufptrlist
-      (* XXX *))
-    with "Hismap [Hbufs] Hmap").
+  wp_apply (wp_MapIter_3 _ _ _ _
+    (λ (mtodo mdone : gmap u64 loc),
+      ∃ (bufptrslice : Slice.t) (bufptrlist : list loc) (bufdone : gmap addr buf),
+        "Hbufs" ∷ bufs ↦[slice.T (refT (struct.t Buf.S))] (slice_val bufptrslice) ∗
+        "Hbufptrslice" ∷ is_slice bufptrslice (refT (struct.t Buf.S)) 1 bufptrlist ∗
+        "Hdone" ∷ ( [∗ maplist] a↦b;bufptr ∈ filter (λ x, (x.2).(bufDirty) = true) bufdone;bufptrlist, is_buf bufptr a b ) ∗
+        "Hdoneptr" ∷ ⌜ bufptrlist ⊆ snd <$> map_to_list mdone ⌝ ∗
+        
+    )%I
+    with "Hismap [Hbufs] [Hmap]").
   {
     iExists _, nil.
     iSplitL.
@@ -569,7 +574,7 @@ Qed.
 
 Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) :
   {{{
-    is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
+    slice.is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
     ⌜ valid_addr a ⌝
   }}}
@@ -729,12 +734,12 @@ Proof.
     wp_loadField.
     wp_call.
 
-    wp_apply (wp_SliceGet with "[$Hblk]").
+    wp_apply (slice.wp_SliceGet with "[$Hblk]").
     { admit. }
     iIntros "[Hblk %]".
 
     iDestruct "Hbufdata" as (x) "[Hbufdata <-]".
-    wp_apply (wp_SliceGet with "[$Hbufdata]"); first done.
+    wp_apply (slice.wp_SliceGet with "[$Hbufdata]"); first done.
     iIntros "[Hbufdata %]".
 
     wp_call.

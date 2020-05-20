@@ -329,6 +329,11 @@ Fixpoint gmap_addr_by_block_helper (ml : list (addr * T)) : gmap u64 (gmap u64 T
 Definition gmap_addr_by_block (m : gmap addr T) : gmap u64 (gmap u64 T) :=
   gmap_addr_by_block_helper (map_to_list m).
 
+(* TODO: convert to using [gmap_uncurry].  Probably requires changing the
+  definition of the [addr] type to be a tuple.  That requires changing all
+  the uses of [a.(addrBlock)] to be [addrBlock a], etc. *)
+
+
 Theorem gmap_addr_by_block_helper_permutation l l' :
   Permutation l l' ->
   NoDup (fst <$> l) ->
@@ -374,6 +379,51 @@ Proof.
   2: eapply NoDup_fst_map_to_list.
   reflexivity.
 Qed.
+
+Theorem gmap_addr_by_block_filter (m : gmap addr T) (P : u64 -> Prop)
+    `{! ∀ blkno, Decision (P blkno)} :
+  gmap_addr_by_block (filter (λ x, P (fst x).(addrBlock)) m) =
+  filter (λ x, P (fst x)) (gmap_addr_by_block m).
+Proof.
+  rewrite /gmap_addr_by_block map_filter_alt.
+  erewrite gmap_addr_by_block_helper_permutation.
+  2: rewrite map_to_list_to_map; first by reflexivity.
+  3: eapply NoDup_fst_map_to_list.
+  2: admit.
+  generalize (map_to_list m); intros.
+Admitted.
+
+Theorem gmap_addr_by_block_off_not_empty (m : gmap addr T) (blkno : u64) (offmap : gmap u64 T) :
+  gmap_addr_by_block m !! blkno = Some offmap ->
+  offmap ≠ ∅.
+Proof.
+Admitted.
+
+Theorem gmap_addr_by_block_lookup (m : gmap addr T) (a : addr) (v : T) :
+  m !! a = Some v ->
+  ∃ offmap,
+    gmap_addr_by_block m !! a.(addrBlock) = Some offmap ∧
+    offmap !! a.(addrOff) = Some v.
+Proof.
+Admitted.
+
+
+Context {PROP : bi}.
+
+Theorem gmap_addr_by_block_big_sepM (m : gmap addr T) (Φ : addr -> T -> PROP) :
+  ( [∗ map] a ↦ v ∈ m, Φ a v ) -∗
+  ( [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block m,
+      [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ).
+Proof.
+  iIntros "Hm".
+  replace m with (list_to_map (map_to_list m) : gmap addr T) at 1.
+  2: { apply list_to_map_to_list. }
+  rewrite /gmap_addr_by_block.
+  assert (NoDup (fst <$> map_to_list m)).
+  { apply NoDup_fst_map_to_list. }
+  revert H.
+  generalize (map_to_list m); intros.
+Admitted.
 
 End gmap_addr_by_block.
 

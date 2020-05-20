@@ -61,7 +61,7 @@ Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz:
 
 Definition kvpairs_valid_match (pairs: list kvpair.t) (kvsblks : gmap specs.addr {K & defs.bufDataT K}) γDisk sz : iProp Σ :=
   [∗ list] kvp ∈ pairs, let '(kvpair.mk key bs) := kvp in
-                        (∃ blk, is_block bs 1 blk ∗ mapsto_txn γDisk key (defs.bufBlock blk)
+                        (∃ blk, is_block bs 1 blk ∗ mapsto_txn γDisk key (existT defs.KindBlock (defs.bufBlock blk))
         ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock (defs.bufBlock blk))⌝
         ∗ ⌜valid_key key sz⌝)%I.
 
@@ -74,10 +74,10 @@ Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K
       ⌜(∀ n : nat, n < sz -> ∃ blk,
              kvsblks !! (nat_key_to_addr n) = Some (existT defs.KindBlock (defs.bufBlock blk))
       )⌝
-      ∗ [∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I.
+      ∗ [∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k b)%I.
 
 Definition crashed_kvs kvp_ls kvsblks γDisk sz : iProp Σ :=
-      ([∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I
+      ([∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k b)%I
       ∗ kvpairs_valid_match kvp_ls kvsblks γDisk sz.
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
@@ -127,26 +127,29 @@ Proof.
       destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. lia.
     * wp_loadField.
       wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
-      iIntros (buftx γt) "Hbtxn".
+      iIntros (buftx) "Hbtxn".
       wp_let.
       wp_call.
       change (u64_instance.u64.(@word.mul 64) 4096 8) with (U64 32768).
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
 
-      iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k (projT2 b)) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
+      iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k b) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
       pose ({[key := existT defs.KindBlock (defs.bufBlock blk)]} : gmap (specs.addr) ({K & defs.bufDataT K})) as keyMp.
 
-      iMod (BufTxn_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]"; iFrame; eauto.
+      iDestruct (BufTxn_lift buftx _ γDisk keyMp _ with "[Hbtxn HkeyMt]") as "He".
+      1: admit. (* E top? *)
+      1: iFrame.
       { iApply big_sepM_singleton; auto. }
+      rewrite right_id.
+      iMod "He".
 
-      wp_apply (wp_BufTxn__ReadBuf buftx γt γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[Hbtxn HkeyMt]").
-      -- iSplitL "Hbtxn"; auto.
-         iSplitL "HkeyMt".
+      wp_apply (wp_BufTxn__ReadBuf buftx keyMp γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[He]").
+      -- iSplitL "He"; auto.
+         iPureIntro. split.
          {
            rewrite <- HbuildAddr. simpl.
-           iPoseProof (big_sepM_lookup _ keyMp key (existT defs.KindBlock (defs.bufBlock blk)) with "HkeyMt") as "HsepM"; eauto.
-           apply lookup_singleton.
+           apply lookup_insert.
          }
          { simpl. auto. }
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".
@@ -159,9 +162,10 @@ Proof.
          iIntros (data') "[HisBlkData HisBlkData']".
 
          wp_let.
-         iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
+         iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "HisBuf"; unfold specs.is_buf.
          { iSplit; eauto. iExists data. iFrame; auto. iExists sz0; simpl. iSplitL "Hbsz"; auto. }
-         wp_apply (wp_BufTxn__CommitWait buftx γt γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[Hmapsto HisBuf]").
+         (* Need a Q for CommitWait *)
+         wp_apply (wp_BufTxn__CommitWait buftx keyMp γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[HisBuf]").
          {
            iFrame; auto.
            rewrite <- HbuildAddr, big_opM_singleton; auto.

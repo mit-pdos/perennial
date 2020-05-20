@@ -104,6 +104,15 @@ Section map.
     ([∗ map] k↦y ∈ <[i:=x]> m, Φ k y) ⊣⊢ Φ i x ∗ [∗ map] k↦y ∈ delete i m, Φ k y.
   Proof. rewrite -insert_delete big_sepM_insert ?lookup_delete //. Qed.
 
+  Lemma big_sepM_mono_wand Φ Ψ m (I : PROP) :
+    ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
+      I ∗ Φ k x -∗ I ∗ Ψ k x )%I -∗
+    I ∗ ([∗ map] k↦x ∈ m, Φ k x) -∗
+    I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
+  Proof.
+    iIntros "Hwand [HI Hm]".
+  Admitted.
+
   Context `{FUpd PROP}.
   Lemma big_sepM_mono_fupd Φ Ψ m (I : PROP) E :
     ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
@@ -311,6 +320,47 @@ Section map2.
       rewrite -> lookup_delete_ne in H1 by eauto.
       eauto.
   Qed.
+
+  Lemma big_sepM_sepM2 Φ (m1 : gmap K A)
+      (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
+    ( [∗ map] k↦y1 ∈ m1, ∃ y2, Φ k y1 y2 ) -∗
+    ∃ m2, ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ).
+  Proof.
+    iIntros "Hm".
+  Admitted.
+
+  Lemma big_sepM_sepM2_merge (Φ : K -> A -> PROP) (Ψ : K -> B -> PROP)
+    (m1 : gmap K A) (m2 : gmap K B) :
+    dom (gset K) m1 = dom (gset K) m2 ->
+    ( [∗ map] k↦y1 ∈ m1, Φ k y1 ) ∗
+    ( [∗ map] k↦y2 ∈ m2, Ψ k y2 ) -∗
+    [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 ∗ Ψ k y2.
+  Proof.
+    iIntros (Hdom) "[Hm1 Hm2]".
+  Admitted.
+
+  Lemma big_sepM2_sepM_merge Φ (Ψ : K -> A -> PROP) (m1 : gmap K A) (m2 : gmap K B)
+      (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
+    ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) ∗
+    ( [∗ map] k↦y1 ∈ m1, Ψ k y1 ) -∗
+    ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ∗ Ψ k y1 ).
+  Proof.
+    iIntros "[Hm2 Hm]".
+  Admitted.
+
+  Lemma big_sepM2_filter Φ (P : K -> Prop) (m1 : gmap K A) (m2 : gmap K B) 
+                         `{! ∀ k, Decision (P k)} :
+    ⊢
+    ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) ∗-∗
+    ( ( [∗ map] k↦y1;y2 ∈ filter (λ x, P x.1) m1;filter (λ x, P x.1) m2, Φ k y1 y2 ) ∗
+      ( [∗ map] k↦y1;y2 ∈ filter (λ x, ¬P x.1) m1;filter (λ x, ¬P x.1) m2, Φ k y1 y2 ) ).
+  Proof.
+    iSplit.
+    - iIntros "Hm".
+      admit.
+    - iIntros "[Hmp Hmn]".
+      admit.
+  Admitted.
 
 End map2.
 
@@ -954,6 +1004,15 @@ Section maplist2.
     { iIntros.
     iExists _; iFrame.
 *)
+  Admitted.
+
+  Theorem big_sepML_sepM2_shift (Φ : K -> V -> W -> LV -> PROP) mv mw l (R : K -> V -> W -> Prop)
+      `{!∀ k v w lv, Absorbing (Φ k v w lv)} :
+    big_sepML (λ k v lv, ∃ w, ⌜ R k v w ⌝ ∗ Φ k v w lv) mv l -∗
+    big_sepM2 (λ k v w, ⌜ R k v w ⌝) mv mw -∗
+    big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v w lv) mw l.
+  Proof.
+    iIntros "Hml Hvw".
   Admitted.
 
   Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l

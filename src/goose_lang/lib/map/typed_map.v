@@ -2,6 +2,7 @@ From Perennial.goose_lang Require Import notation proofmode typing.
 From Perennial.goose_lang.lib Require Import typed_mem into_val.
 From Perennial.goose_lang.lib Require Import map.impl.
 From Perennial.goose_lang.lib Require map.map.
+From Perennial.Helpers Require Import Map.
 Import uPred.
 
 From iris_string_ident Require Import ltac2_string_ident.
@@ -278,6 +279,39 @@ Proof.
   rewrite /Map.untype /= in H0.
   apply (inj (fmap to_val)) in H0; subst.
   done.
+Qed.
+
+Theorem wp_MapIter_3 stk E mref m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (body: val) Φ:
+  is_map mref m -∗
+  I m ∅ -∗
+  (∀ (k: u64) (v: V) (mtodo mdone : gmap u64 V),
+      {{{ I mtodo mdone ∗ ⌜m = mtodo ∪ mdone ∧ dom (gset u64) mtodo ## dom (gset u64) mdone ∧ mtodo !! k = Some v⌝ }}}
+        body #k (to_val v) @ stk; E
+      {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
+  ((is_map mref m ∗ I ∅ m) -∗ Φ #()) -∗
+  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+Proof using t ext_ty IntoValForType0.
+  iIntros "Hismap HI #Hbody HΦ".
+  wp_apply (wp_MapIter_2 _ _ _ _
+    (λ mtodo mdone,
+      I mtodo mdone ∗ ⌜m = mtodo ∪ mdone ∧ dom (gset u64) mtodo ## dom (gset u64) mdone⌝)%I
+    with "Hismap [$HI]").
+  { iPureIntro; split.
+    { rewrite right_id; eauto. }
+    set_solver. }
+  { iIntros (k v mtodo mdone).
+    iModIntro.
+    iIntros (Φ0) "[[HI %] %] HΦ".
+    iApply ("Hbody" with "[$HI]").
+    { iPureIntro. intuition eauto. }
+    iNext.
+    iIntros "HI".
+    iApply "HΦ". iFrame "HI".
+    iPureIntro; split.
+    2: set_solver.
+    rewrite delete_insert_union; intuition eauto. }
+  iIntros "(Hm & HI & %)".
+  iApply "HΦ". iFrame.
 Qed.
 
 End heap.

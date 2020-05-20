@@ -49,6 +49,15 @@ Definition sync {T} (v : T) : async T :=
 Definition async_put {T} (v : T) (a : async T) :=
   Build_async v (possible a).
 
+Lemma lookup_possible_latest {T} (a : async T) :
+  possible a !! length (pending a) = Some (latest a).
+Proof.
+  rewrite /possible.
+  rewrite -> lookup_app_r by lia.
+  replace (length (pending a) - length (pending a)) with 0 by lia.
+  reflexivity.
+Qed.
+
 
 Section definitions.
   Context `{hG : log_heapG L V Σ}.
@@ -60,13 +69,17 @@ Section definitions.
                      end in
     own (log_heap_name hG) (● (to_log_heap σfun)).
 
-  Definition mapsto_log (first: nat) (last: option nat) (l: L) (q: Qp) (v: V) : iProp Σ :=
-    ( ⌜ hG = hG ⌝ )%I.
+  Definition mapsto_cur (l: L) (v: V) : iProp Σ.
+  Proof using hG.
+    (* l ↦ v in latest σ *)
+  Admitted.
 
 End definitions.
 
+
 Lemma seq_heap_init `{log_heapPreG L V Σ} σl:
-  ⊢ |==> ∃ _ : log_heapG L V Σ, log_heap_ctx σl.
+  ⊢ |==> ∃ _ : log_heapG L V Σ, log_heap_ctx σl ∗
+    [∗ map] l↦v ∈ latest σl, mapsto_cur l v.
 Proof.
 Admitted.
 
@@ -81,33 +94,19 @@ Section log_heap.
   Implicit Types l : L.
   Implicit Types v : V.
 
-  Lemma log_heap_valid σl l q v first last :
+  Lemma log_heap_valid_cur σl l v :
     log_heap_ctx σl -∗
-      mapsto_log first last l q v -∗
-      ⌜∀ n σ,
-        first ≤ n ->
-        match last with
-        | Some a => n < a
-        | None => True
-        end ->
-        possible σl !! n = Some σ ->
-        σ !! l = Some v⌝.
+      mapsto_cur l v -∗
+      ⌜latest σl !! l = Some v⌝.
   Proof.
   Admitted.
 
-  Lemma mapsto_log_advance first first' last l q v :
-    first ≤ first' ->
-    mapsto_log first last l q v -∗ mapsto_log first' last l q v.
-  Proof.
-  Admitted.
-
-  Lemma log_heap_append σl l v v' first :
+  Lemma log_heap_append σl σmod :
     log_heap_ctx σl -∗
-      mapsto_log first None l 1%Qp v ∗ ⌜ (first < length (possible σl))%nat ⌝ -∗
-      ( let σ := <[l := v]> (latest σl) in
-        log_heap_ctx (async_put σ σl) ∗
-        mapsto_log first (Some (length (possible σl))) l 1%Qp v ∗
-        mapsto_log (length (possible σl)) None l 1%Qp v' ).
+      ( [∗ map] l↦v ∈ σmod, ∃ v', mapsto_cur l v' ) ==∗
+      let σ := σmod ∪ (latest σl) in
+      log_heap_ctx (async_put σ σl) ∗
+      ( [∗ map] l↦v ∈ σmod, mapsto_cur l v ).
   Proof.
   Admitted.
 

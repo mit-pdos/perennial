@@ -3,7 +3,7 @@ Import RecordSetNotations.
 
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.algebra Require Import deletable_heap.
+From Perennial.algebra Require Import deletable_heap log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
@@ -11,21 +11,14 @@ From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.Helpers Require Import NamedProps Map.
 
-Inductive updatable_buf (T : Type) :=
-| UB : forall (v : T) (modifiedSinceInstallG : gname), updatable_buf T
-.
-
-Arguments UB {T} v modifiedSinceInstallG.
-
 Class txnG (Σ: gFunctors) :=
-  { txn_bool :> inG Σ (ghostR $ boolO);
-    txn_walheap :> walheapG Σ
+  {
+    txn_boolG :> inG Σ (ghostR $ boolO);
+    txn_walheapG :> walheapG Σ;
+    txn_logheapG :> log_heapPreG addr {K & bufDataT K} Σ;
+    txn_metaheapG :> gen_heapPreG addr gname Σ;
+    txn_crashstatesG :> inG Σ (ghostR $ asyncO (gmap addr {K & bufDataT K}));
   }.
-
-(*
-Context `{!{K & gen_heapPreG u64 (updatable_buf (@bufDataT K)) Σ}}.
-Context `{!gen_heapPreG addr {K & @bufDataT K} Σ}.
-*)
 
 Section heap.
 Context `{!lockG Σ}.
@@ -37,22 +30,31 @@ Implicit Types (stk:stuckness) (E: coPset).
 Definition lockN : namespace := nroot .@ "txnlock".
 Definition invN : namespace := nroot .@ "txninv".
 
-Definition mapsto_txn {K} (gData : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})  (a : addr) (v : @bufDataT K) : iProp Σ :=
-  ∃ hG γm,
-    ⌜ valid_addr a ∧ valid_off K a.(addrOff) ⌝ ∗
-    ⌜ gData !! a.(addrBlock) = Some (existT K hG) ⌝ ∗
-    mapsto (hG := hG) a.(addrOff) 1 (UB v γm) ∗
-    own γm (◯ (Excl' true)).
+Record txn_names := {
+  txn_logheap : log_heapG addr {K & bufDataT K} Σ;
+  txn_metaheap : gen_heapG addr gname Σ;
+  txn_walnames : @wal_heap_gnames Σ;
+  txn_crashstates : gname;
+  txn_kinds : gmap u64 bufDataKind;
+}.
 
-Theorem mapsto_txn_2 {K1 K2} gData a v0 v1 :
-  @mapsto_txn K1 gData a v0 -∗
-  @mapsto_txn K2 gData a v1 -∗
+
+Definition mapsto_txn (γ : txn_names) (l : addr) (v : {K & bufDataT K}) : iProp Σ :=
+  ∃ γm,
+    "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) l v ∗
+    "Hmapsto_meta" ∷ mapsto (hG := γ.(txn_metaheap)) l 1 γm ∗
+    "Hmod_frag" ∷ own γm (◯ (Excl' true)).
+
+Theorem mapsto_txn_2 {K1 K2} a v0 v1 :
+  @mapsto_txn K1 a v0 -∗
+  @mapsto_txn K2 a v1 -∗
   False.
 Proof.
   rewrite /mapsto_txn.
   iIntros "H0 H1".
-  iDestruct "H0" as (g0 m0) "(% & % & H0m & H0own)".
-  iDestruct "H1" as (g1 m1) "(% & % & H1m & H1own)".
+  iDestruct "H0" as (g0) "(H0log & H0m & H0own)".
+  iDestruct "H1" as (g1) "(H1log & H1m & H1own)".
+(*
   rewrite H0 in H2; inversion H2.
   subst.
   apply eq_sigT_eq_dep in H5.
@@ -60,84 +62,60 @@ Proof.
   2: apply bufDataKind_eq_dec.
   iDestruct (mapsto_valid_2 with "H0m H1m") as %x.
   exfalso; eauto.
-Qed.
+*)
+Admitted.
 
-Theorem mapsto_txn_valid {K} gData a v :
-  @mapsto_txn K gData a v -∗
-  ⌜ valid_addr a ⌝.
-Proof.
-  rewrite /mapsto_txn.
-  iIntros "H".
-  iDestruct "H" as (h g) "[% _]"; intuition; done.
-Qed.
+Definition bufDataT_in_block (walblock : Block) blockK (blkno off : u64) (bufData : {K & bufDataT K}) : Prop :=
+  is_bufData_at_off walblock off (projT2 bufData) ∧
+  valid_addr (Build_addr blkno off) ∧
+  valid_off (projT1 bufData) off ∧
+  blockK = projT1 bufData.
 
-Theorem mapsto_txn_valid_off {K} gData a v :
-  @mapsto_txn K gData a v -∗
-  ⌜ valid_off K a.(addrOff) ⌝.
-Proof.
-  rewrite /mapsto_txn.
-  iIntros "H".
-  iDestruct "H" as (h g) "[% _]"; intuition; done.
-Qed.
-
-Definition txn_bufDataT_in_block {K} (installed : Block) (bs : list Block)
-                                 (gm : gmap u64 (updatable_buf (@bufDataT K))) : iProp Σ :=
-  (
-    [∗ map] off ↦ ub ∈ gm,
-      match ub with
-      | UB bufData γm =>
-        ⌜ is_bufData_at_off (latest_update installed bs) off bufData ⌝ ∗
-        ∃ (modifiedSinceInstall : bool),
-          own γm (● (Excl' modifiedSinceInstall)) ∗
-          if modifiedSinceInstall then emp
-          else
-            ⌜ ∀ prefix,
-              is_bufData_at_off (latest_update installed (take prefix bs)) off bufData ⌝
-      end
+Definition bufDataTs_in_block (installed : Block) (bs : list Block) (blkno : u64) blockK
+                              (offmap : gmap u64 {K & bufDataT K})
+                              (metamap : gmap u64 gname) : iProp Σ :=
+  ( [∗ map] off ↦ bufData;γm ∈ offmap;metamap,
+      ∃ (modifiedSinceInstall : bool),
+      "%Hoff_in_block" ∷ ⌜ bufDataT_in_block (latest_update installed bs) blockK blkno off bufData ⌝ ∗
+      "Hoff_own" ∷ own γm (● (Excl' modifiedSinceInstall)) ∗
+      "%Hoff_prefix_in_block" ∷ ⌜ if modifiedSinceInstall then True else
+        ∀ prefix,
+          bufDataT_in_block (latest_update installed (take prefix bs)) blockK blkno off bufData ⌝
   )%I.
 
-Global Instance txn_bufDataT_in_block_timeless K installed bs gm : Timeless (@txn_bufDataT_in_block K installed bs gm).
-Proof.
-  apply big_sepM_timeless; intros.
-  destruct x.
-  apply sep_timeless; refine _.
-  apply exist_timeless.
-  destruct x; refine _.
-Qed.
+Global Instance bufDataTs_in_block_timeless installed bs blkno blockK offmap metamap :
+  Timeless (bufDataTs_in_block installed bs blkno blockK offmap metamap) := _.
 
-Definition gmDataP (gm : {K & gmap u64 (updatable_buf (@bufDataT K))})
-                   (gh : {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ}) : iProp Σ.
-  refine (if decide (projT1 gm = projT1 gh) then _ else False)%I.
-  refine (gen_heap_ctx (hG := projT2 gh) _)%I.
-  rewrite <- e.
-  refine (projT2 gm).
-Defined.
-
-Definition is_txn_always
-    (γ : wal_heap_gnames)
-    (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
-    : iProp Σ :=
-  (
-    ∃ (mData : gmap u64 {K & gmap u64 (updatable_buf (@bufDataT K))})
-      (crash_heaps : async (u64 * gname)),
-      "Hgmdata" ∷ ( [∗ map] _ ↦ gm;gh ∈ mData;gData, gmDataP gm gh ) ∗
-      "Hmdata_m" ∷ ( [∗ map] blkno ↦ datamap ∈ mData,
-          ∃ installed bs,
-            "Hmdata_hb" ∷ mapsto (hG := γ.(wal_heap_h)) blkno 1 (HB installed bs) ∗
-            "Hmdata_in_block" ∷ txn_bufDataT_in_block installed bs (projT2 datamap) ) ∗
-      "Hcrashheaps" ∷ own γ.(wal_heap_crash_heaps) (◯ Excl' crash_heaps)
+Definition bufDataTs_in_crashblock (walblock : Block) (blkno : u64) blockK
+                                   (offmap : gmap u64 {K & bufDataT K}) : iProp Σ :=
+  (* Very similar to txn_bufDataT_in_block *)
+  ( [∗ map] off ↦ bufData ∈ offmap,
+      ⌜ bufDataT_in_block walblock blockK blkno off bufData ⌝
   )%I.
 
-Global Instance is_txn_always_timeless walHeap gData :
-  Timeless (is_txn_always walHeap gData).
-Proof.
-  apply exist_timeless; intros.
-  apply exist_timeless; intros.
-  apply sep_timeless; refine _.
-  apply big_sepM2_timeless; intros.
-  rewrite /gmDataP.
-  destruct (decide (projT1 x1 = projT1 x2)); refine _.
-Qed.
+Definition is_txn_always (γ : txn_names) : iProp Σ :=
+  (
+    ∃ (logm : async (gmap addr {K & bufDataT K}))
+      (metam : gmap addr gname)
+      (crash_heaps : async (gmap u64 Block)),
+      "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
+      "Hcrashstates" ∷ own γ.(txn_crashstates) (● (Excl' logm)) ∗
+      "Hmetactx" ∷ gen_heap_ctx (hG := γ.(txn_metaheap)) metam ∗
+      "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
+        ∃ installed bs blockK,
+          "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
+          "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
+          "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
+      "Hcrashheaps" ∷ own γ.(txn_walnames).(wal_heap_crash_heaps) (◯ (Excl' crash_heaps)) ∗
+      "Hcrashheapsmatch" ∷ ( [∗ list] logmap;walheap ∈ possible logm;possible crash_heaps,
+        [∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
+          ∃ blockK,
+            "%Htxn_cb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
+            "Htxn_in_cb" ∷ bufDataTs_in_crashblock walblock blkno blockK offmap )
+  )%I.
+
+Global Instance is_txn_always_timeless γ :
+  Timeless (is_txn_always γ) := _.
 
 Definition is_txn_locked l γ : iProp Σ :=
   (
@@ -147,71 +125,79 @@ Definition is_txn_locked l γ : iProp Σ :=
       "Histxn_pos" ∷ l ↦[Txn.S :: "pos"] #pos
  )%I.
 
-Definition is_txn (l : loc)
-    (gData   : gmap u64 {K & gen_heapG u64 (updatable_buf (@bufDataT K)) Σ})
-    : iProp Σ :=
+Definition is_txn (l : loc) (γ : txn_names) : iProp Σ :=
   (
-    ∃ γLock (walHeap : wal_heap_gnames) (mu : loc) (walptr : loc),
+    ∃ γLock (mu : loc) (walptr : loc),
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
-      "Hiswal" ∷ is_wal (wal_heap_inv walHeap) walptr (wal_heap_walnames walHeap) ∗
-      "Histxna" ∷ inv invN (is_txn_always walHeap gData) ∗
-      "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l walHeap)
+      "Hiswal" ∷ is_wal (wal_heap_inv (txn_walnames γ)) walptr (wal_heap_walnames (txn_walnames γ)) ∗
+      "Histxna" ∷ inv invN (is_txn_always γ) ∗
+      "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l (txn_walnames γ))
   )%I.
 
-Global Instance is_txn_persistent l gData : Persistent (is_txn l gData) := _.
+Global Instance is_txn_persistent l γ : Persistent (is_txn l γ) := _.
 
-Theorem is_txn_dup l gData :
-  is_txn l gData -∗
-  is_txn l gData ∗
-  is_txn l gData.
+Theorem mapsto_txn_valid γ a v E :
+  ↑invN ⊆ E ->
+  inv invN (is_txn_always γ) -∗
+  mapsto_txn γ a v ={E}=∗
+    mapsto_txn γ a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ∧ γ.(txn_kinds) !! a.(addrBlock) = Some (projT1 v) ⌝.
+Proof.
+  iIntros (HN) "#Hinv H".
+  iNamed "H".
+  iInv invN as ">Halways".
+  iNamed "Halways".
+
+  iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+  iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
+
+  eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
+  eapply gmap_addr_by_block_lookup in Hmetavalid; destruct Hmetavalid.
+  intuition idtac.
+
+  iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hblockmatch Hheapmatch]"; eauto.
+  iNamed "Hblockmatch".
+  iNamed "Htxn_in_hb".
+  iDestruct (big_sepM2_lookup_acc with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
+  iNamed "Hoff".
+  iDestruct ("Htxn_in_hb" with "[Hoff_own]") as "Htxn_in_hb"; eauto.
+  iDestruct ("Hheapmatch" with "[Htxn_hb Htxn_in_hb]") as "Hheapmatch".
+  { iExists _, _, _; iFrame. done. }
+
+  iModIntro.
+  iSplitR "Hmapsto_log Hmapsto_meta Hmod_frag".
+  { iModIntro. iExists _, _, _. iFrame. }
+  iModIntro.
+  iSplitL.
+  { iExists _. iFrame. }
+  iPureIntro.
+  unfold bufDataT_in_block in *.
+  intuition eauto; congruence.
+Qed.
+
+Theorem is_txn_dup l γ :
+  is_txn l γ -∗
+  is_txn l γ ∗
+  is_txn l γ.
 Proof.
   iIntros "#$".
 Qed.
 
-Lemma gmDataP_eq gm gh :
-  gmDataP gm gh -∗ ⌜ projT1 gm = projT1 gh ⌝.
-Proof.
-  iIntros "H".
-  rewrite /gmDataP.
-  destruct (decide (projT1 gm = projT1 gh)); eauto.
-Qed.
-
-Lemma gmDataP_ctx gm (gh : gen_heapG u64 (updatable_buf (@bufDataT (projT1 gm))) Σ) :
-  gmDataP gm (existT (projT1 gm) gh) -∗
-  gen_heap_ctx (hG := gh) (projT2 gm).
-Proof.
-  iIntros "H".
-  rewrite /gmDataP /=.
-  destruct (decide (projT1 gm = projT1 gm)); eauto.
-  rewrite <- Eqdep.Eq_rect_eq.eq_rect_eq. iFrame.
-Qed.
-
-Lemma gmDataP_ctx' gm (gh : gen_heapG u64 (updatable_buf (@bufDataT (projT1 gm))) Σ) :
-  gen_heap_ctx (hG := gh) (projT2 gm) -∗
-  gmDataP gm (existT (projT1 gm) gh).
-Proof.
-  iIntros "H".
-  rewrite /gmDataP /=.
-  destruct (decide (projT1 gm = projT1 gm)); eauto.
-  rewrite <- Eqdep.Eq_rect_eq.eq_rect_eq. iFrame.
-Qed.
-
-Theorem wp_txn_Load K l gData a v :
-  {{{ is_txn l gData ∗
-      mapsto_txn gData a v
+Theorem wp_txn_Load l γ a v :
+  {{{ is_txn l γ ∗
+      mapsto_txn γ a v
   }}}
-    Txn__Load #l (addr2val a) #(bufSz K)
+    Txn__Load #l (addr2val a) #(bufSz (projT1 v))
   {{{ (bufptr : loc) b, RET #bufptr;
       is_buf bufptr a b ∗
       ⌜ b.(bufDirty) = false ⌝ ∗
-      ⌜ existT b.(bufKind) b.(bufData) = existT K v ⌝ ∗
-      mapsto_txn gData a v
+      ⌜ existT b.(bufKind) b.(bufData) = v ⌝ ∗
+      mapsto_txn γ a v
   }}}.
 Proof using txnG0 lockG0 Σ.
-  iIntros (Φ) "(Htxn & Hstable) HΦ".
-  iDestruct "Htxn" as (γLock walHeap mu walptr) "(#Hl & #Hwalptr & #Hwal & #Hinv & #Hlock)".
-  iDestruct "Hstable" as (hG γm) "(% & % & Hstable & Hmod)".
+  iIntros (Φ) "(#Htxn & Hstable) HΦ".
+  iNamed "Htxn".
+  iNamed "Hstable".
 
   wp_call.
   wp_loadField.
@@ -219,102 +205,87 @@ Proof using txnG0 lockG0 Σ.
   wp_call.
 
   wp_apply (wp_Walog__ReadMem _ (λ mb,
-    mapsto a.(addrOff) 1 (UB v γm) ∗
+    "Hmapsto_log" ∷ mapsto_cur a v ∗
+    "Hmapsto_meta" ∷ mapsto a 1 γm ∗
     match mb with
-    | Some b => own γm (◯ Excl' true) ∗
-      ⌜ is_bufData_at_off b a.(addrOff) v ⌝
-    | None => own γm (◯ Excl' false)
-    end)%I with "[$Hwal Hstable Hmod]").
+    | Some b =>
+      "Hmod_frag" ∷ own γm (◯ Excl' true) ∗
+      "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝
+    | None =>
+      "Hmod_frag" ∷ own γm (◯ Excl' false)
+    end)%I with "[$Hiswal Hmapsto_log Hmapsto_meta Hmod_frag]").
   {
-    iApply (wal_heap_readmem (⊤ ∖ ↑walN ∖ ↑invN) with "[Hstable Hmod]").
+    iApply (wal_heap_readmem (⊤ ∖ ↑walN ∖ ↑invN) with "[Hmapsto_log Hmapsto_meta Hmod_frag]").
 
     iInv invN as ">Hinv_inner" "Hinv_closer".
     iNamed "Hinv_inner".
-
-    iDestruct (big_sepM2_lookup_2_some with "Hgmdata") as %Hblk; eauto.
-    destruct Hblk.
-
-    iDestruct (big_sepM2_lookup_acc with "Hgmdata") as "[Hctxdatablk Hctxdata]"; eauto.
-    iDestruct (gmDataP_eq with "Hctxdatablk") as "%".
-    simpl in *; subst.
-    iDestruct (gmDataP_ctx with "Hctxdatablk") as "Hctxdatablk".
-    iDestruct (gen_heap_valid with "Hctxdatablk Hstable") as %Hblockoff.
-    iDestruct ("Hctxdata" with "[Hctxdatablk]") as "Hctxdata".
-    { iApply gmDataP_ctx'. iFrame. }
-
-    iDestruct (big_sepM_lookup_acc with "Hmdata_m") as "[Hdatablk Hdata]"; eauto.
-    iDestruct "Hdatablk" as (blk_installed blk_bs) "(Hblk & Hinblk)".
-
-    iExists _, _. iFrame.
-
     iModIntro.
+
+    iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+    iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
+
+    eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
+    eapply gmap_addr_by_block_lookup in Hmetavalid; destruct Hmetavalid.
+    intuition idtac.
+
+    iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hblockmatch Hheapmatch]"; eauto.
+    iNamed "Hblockmatch".
+    iExists _, _; iFrame "Htxn_hb".
+
+    iNamed "Htxn_in_hb".
     iIntros (mb) "Hrmq".
     destruct mb; rewrite /=.
 
     {
       iDestruct "Hrmq" as "[Hrmq %]".
-
-      iDestruct (big_sepM_lookup_acc with "Hinblk") as "[Hinblk Hinblkother]"; eauto.
-      iDestruct "Hinblk" as "(% & Hinblk)".
-      iDestruct ("Hinblkother" with "[Hinblk]") as "Hinblk".
-      { iFrame. done. }
-
-      iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
+      iDestruct (big_sepM2_lookup_acc with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
+      iNamed "Hoff".
+      iDestruct ("Htxn_in_hb" with "[Hoff_own]") as "Htxn_in_hb"; eauto.
+      iDestruct ("Hheapmatch" with "[Hrmq Htxn_in_hb]") as "Hheapmatch".
+      { iExists _, _, _. iFrame. done. }
+      iDestruct ("Hinv_closer" with "[-Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hinv_closer".
       {
         iModIntro.
-        iExists _, _.
-        iFrame.
-        iApply "Hdata".
-        iExists _, _. iFrame.
+        iExists _, _, _. iFrame.
       }
 
       iMod "Hinv_closer".
-      iModIntro.
-      intuition; subst.
-      iFrame. done.
+      iModIntro. iFrame.
+      iPureIntro.
+      rewrite /bufDataT_in_block in Hoff_in_block. subst. intuition eauto.
     }
 
     {
-      iDestruct (big_sepM_delete with "Hinblk") as "[Hinblk Hinblkother]"; eauto.
-      rewrite /=.
-      iDestruct "Hinblk" as "[% Hinblk]".
-      iDestruct "Hinblk" as (modSince) "[Hγm Hinblk]".
-      iDestruct (ghost_var_agree with "Hγm Hmod") as %->.
-      iMod (ghost_var_update _ false with "Hγm Hmod") as "[Hγm Hmod]".
+      iDestruct (big_sepM2_delete with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
+      iNamed "Hoff".
+      iMod (ghost_var_update _ false with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
 
-      iDestruct ("Hinv_closer" with "[-Hmod]") as "Hinv_closer".
+      iDestruct ("Hinv_closer" with "[-Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hinv_closer".
       {
         iModIntro.
-        iExists _, _.
+        iExists _, _, _. iFrame.
+        iApply "Hheapmatch".
+        iExists _, _, _.
         iFrame.
-        iApply "Hdata".
-        iExists _, _.
-        iFrame.
-        iDestruct (big_sepM_mono with "Hinblkother") as "Hinblkother".
+        iSplitR; first by done.
+        iDestruct (big_sepM2_mono with "Htxn_in_hb") as "Htxn_in_hb".
         2: {
-          replace (projT2 x) with (<[a.(addrOff) := UB v γm]> (delete a.(addrOff) (projT2 x))) at 2.
-          2: {
-            rewrite insert_delete.
-            rewrite insert_id; eauto.
-          }
-          iApply big_sepM_insert; first apply lookup_delete.
-          iFrame.
-          iSplitR.
-          { simpl. done. }
-          iExists _; iFrame.
-          iPureIntro; intros.
+          iDestruct (big_sepM2_insert_delete with "[$Htxn_in_hb Hoff_own]") as "Htxn_in_hb".
+          2: rewrite -> (insert_id x) by eauto.
+          2: rewrite -> (insert_id x0) by eauto.
+          2: iApply "Htxn_in_hb".
+          iExists _. iFrame.
+          iSplit; first by done.
+          iPureIntro. intros.
           rewrite take_nil /=. eauto.
         }
 
-        intros.
-        iIntros "H". destruct x0. rewrite /=.
-        iDestruct "H" as "[% H]".
-        iDestruct "H" as (modSince) "[H Hif]".
-        iSplitR; eauto.
-        iExists _. iFrame.
-        destruct modSince; iFrame.
-        iDestruct "Hif" as %Hif.
-        iPureIntro. intros. rewrite take_nil. eauto.
+        iIntros (k y1 y2 Hky1 Hky2) "H".
+        iNamed "H". iExists _. iFrame.
+        iSplit; first by done.
+        iPureIntro. intros.
+        destruct modifiedSinceInstall0; eauto.
+        intros. rewrite take_nil /=. eauto.
       }
 
       iMod "Hinv_closer".
@@ -328,107 +299,104 @@ Proof using txnG0 lockG0 Σ.
   {
     (* Case 1: hit in the cache *)
 
-    iDestruct ("Hres") as (b) "(Hisblock & Hlatest & Hown & %)".
+    iDestruct "Hres" as (b) "[Hisblock Hres]".
+    iNamed "Hres".
     wp_pures.
     rewrite /is_block.
-    wp_apply (wp_MkBufLoad with "[$Hisblock]").
-    { intuition. }
+    wp_apply (wp_MkBufLoad with "[$Hisblock]"); eauto.
     iIntros (bufptr) "Hbuf".
     wp_pures.
     iApply "HΦ". iFrame.
     rewrite /=.
     iSplitR; first done.
-    iSplitR; first done.
-    iExists _, _. iFrame. done.
+    destruct v. iSplitR; first done.
+    iExists _. iFrame.
   }
 
   (* Case 2: missed in cache *)
-  iDestruct ("Hres") as "(Hlatest & Hown)".
+  iNamed "Hres".
   wp_pures.
 
   wp_apply (wp_Walog__ReadInstalled _
-    (λ b, ⌜ is_bufData_at_off b a.(addrOff) v ⌝ ∗
-      mapsto (hG := hG) a.(addrOff) 1 (UB v γm) ∗
-      own γm (◯ (Excl' true)))%I
-    with "[$Hwal Hlatest Hown]").
+    (λ b,
+      "Hmapsto_log" ∷ mapsto_cur a v ∗
+      "Hmapsto_meta" ∷ mapsto a 1 γm ∗
+      "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝ ∗
+      "Hmod_frag" ∷ own γm (◯ Excl' true)
+    )%I
+    with "[$Hiswal Hmapsto_log Hmapsto_meta Hmod_frag]").
   {
     iSplitR.
     { admit. }
 
-    iApply (wal_heap_readinstalled (⊤ ∖ ↑walN ∖ ↑invN) with "[Hlatest Hown]").
+    iApply (wal_heap_readinstalled (⊤ ∖ ↑walN ∖ ↑invN) with "[Hmapsto_log Hmapsto_meta Hmod_frag]").
 
     iInv invN as ">Hinv_inner" "Hinv_closer".
     iNamed "Hinv_inner".
-
-    iDestruct (big_sepM2_lookup_2_some with "Hgmdata") as %Hblk; eauto.
-    destruct Hblk.
-
-    iDestruct (big_sepM2_lookup_acc with "Hgmdata") as "[Hctxblock Hctxdata]"; eauto.
-    iDestruct (gmDataP_eq with "Hctxblock") as "%".
-    simpl in *; subst.
-    iDestruct (gmDataP_ctx with "Hctxblock") as "Hctxblock".
-    iDestruct (gen_heap_valid with "Hctxblock Hlatest") as %Hblockoff.
-    iDestruct ("Hctxdata" with "[Hctxblock]") as "Hctxdata".
-    { iApply gmDataP_ctx'. iFrame. }
-
-    iDestruct (big_sepM_lookup_acc with "Hmdata_m") as "[Hblock Hdata]"; eauto.
-    iDestruct "Hblock" as (blk_installed blk_bs) "(Hblk & Hinblk)".
-
-    iExists _, _. iFrame "Hblk".
-
     iModIntro.
+
+    iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+    iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
+
+    eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
+    eapply gmap_addr_by_block_lookup in Hmetavalid; destruct Hmetavalid.
+    intuition idtac.
+
+    iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hblockmatch Hheapmatch]"; eauto.
+    iNamed "Hblockmatch".
+    iExists _, _; iFrame "Htxn_hb".
+    iNamed "Htxn_in_hb".
+
     iIntros (b) "Hriq".
     iDestruct "Hriq" as "[Hriq %]".
 
-    iDestruct (big_sepM_lookup_acc with "Hinblk") as "[Hinblk Hinblkother]"; eauto.
-    rewrite /=.
-    iDestruct "Hinblk" as "[% Hinblk]".
-    iDestruct "Hinblk" as (modSince) "[Hγm Hinblk]".
-    iDestruct (ghost_var_agree with "Hγm Hown") as %->.
-    iMod (ghost_var_update _ true with "Hγm Hown") as "[Hγm Hown]".
-    iDestruct "Hinblk" as %Hinblk.
-    iFrame.
+    iDestruct (big_sepM2_lookup_acc with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
+    iNamed "Hoff".
+    iDestruct (ghost_var_agree with "Hoff_own Hmod_frag") as %->.
+    iMod (ghost_var_update _ true with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
+    iDestruct ("Htxn_in_hb" with "[Hoff_own]") as "Htxn_in_hb"; eauto.
+    iDestruct ("Hheapmatch" with "[Hriq Htxn_in_hb]") as "Hheapmatch".
+    { iExists _, _, _. iFrame. done. }
 
+    iFrame.
     iDestruct ("Hinv_closer" with "[-]") as "Hinv_closer".
     {
       iModIntro.
-      iExists _, _.
+      iExists _, _, _.
       iFrame.
-      iApply "Hdata".
-      iExists _, _. iFrame.
-      iApply "Hinblkother".
-      iSplitR; first done.
-      iExists _; iFrame.
     }
 
     iMod "Hinv_closer".
     iModIntro.
     iPureIntro.
 
-    apply elem_of_list_lookup_1 in H2.
-    destruct H2 as [prefix H2].
-    specialize (Hinblk prefix).
-    erewrite latest_update_take_some in Hinblk; eauto.
+    apply elem_of_list_lookup_1 in H0.
+    destruct H0 as [prefix H0].
+    specialize (Hoff_prefix_in_block prefix).
+    erewrite latest_update_take_some in Hoff_prefix_in_block by eauto.
+    rewrite /bufDataT_in_block in Hoff_prefix_in_block.
+    intuition eauto.
   }
 
   iIntros (bslice) "Hres".
-  iDestruct "Hres" as (b) "(Hb & % & Hlatest & Hmod)".
+  iDestruct "Hres" as (b) "[Hb Hres]".
+  iNamed "Hres".
   wp_pures.
   rewrite /is_block.
-  wp_apply (wp_MkBufLoad with "[$Hb]").
-  { intuition. }
+  wp_apply (wp_MkBufLoad with "[$Hb]"); eauto.
   iIntros (bufptr) "Hbuf".
   wp_pures.
   iApply "HΦ".
-  iFrame. rewrite /=.
+  iFrame.
   iSplitR; first done.
+  destruct v.
   iSplitR; first done.
-  iExists _, _. iFrame. done.
+  iExists _. iFrame.
 Admitted.
 
-Definition is_txn_buf_pre (bufptr:loc) (a : addr) (buf : buf) gData : iProp Σ :=
+Definition is_txn_buf_pre γ (bufptr:loc) (a : addr) (buf : buf) : iProp Σ :=
   "Hisbuf" ∷ is_buf bufptr a buf ∗
-  "Hmapto" ∷ ∃ data, @mapsto_txn buf.(bufKind) gData a data.
+  "Hmapto" ∷ ∃ data, mapsto_txn γ a (existT buf.(bufKind) data).
 
 Definition is_txn_buf_blkno (bufptr : loc) (a : addr) (buf : buf) blkno :=
   ( "Hisbuf" ∷ is_buf bufptr a buf ∗
@@ -450,11 +418,9 @@ Definition updBlockOK blknum walBlock K (locked_wh_disk : disk) (offmap : gmap u
     locked_wh_disk !! int.val blknum = Some diskLatest ->
     updOffsetsOK blknum diskLatest walBlock K offmap.
 
-Definition updBlockKindOK blknum walBlock
-              (gData : gmap u64 {K : bufDataKind & gen_heapG u64 (updatable_buf (bufDataT K)) Σ})
-              (locked_wh_disk : disk) (offmap : gmap u64 buf) : Prop :=
-  ∃ K gDataGH,
-    gData !! blknum = Some (existT K gDataGH) ∧
+Definition updBlockKindOK blknum walBlock γ (locked_wh_disk : disk) (offmap : gmap u64 buf) : Prop :=
+  ∃ K,
+    γ.(txn_kinds) !! blknum = Some K ∧
     updBlockOK blknum walBlock K locked_wh_disk offmap.
 
 Lemma valid_off_block blknum off :
@@ -468,39 +434,30 @@ Proof.
   admit.
 Admitted.
 
-Lemma mapsto_txn_gGata_kind gData K a data :
-  @mapsto_txn K gData a data -∗
-  ∃ gDataGH,
-    ⌜ gData !! a.(addrBlock) = Some (existT K gDataGH) ⌝.
-Proof.
-  iIntros "Hmapsto".
-  iDestruct "Hmapsto" as (x y) "(% & % & H0 & H1)".
-  iExists _. done.
-Qed.
-
-Theorem mapsto_txn_locked γ l lwh a K data gData E :
+Theorem mapsto_txn_locked (γ : txn_names) l lwh a data E :
   ↑invN ⊆ E ->
   ↑walN ⊆ E ∖ ↑invN ->
-  is_wal (wal_heap_inv γ) l (wal_heap_walnames γ) ∗
-  inv invN (is_txn_always γ gData) ∗
-  is_locked_walheap γ lwh ∗
-  @mapsto_txn K gData a data
+  is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) ∗
+  inv invN (is_txn_always γ) ∗
+  is_locked_walheap γ.(txn_walnames) lwh ∗
+  mapsto_txn γ a data
   ={E}=∗
-    is_locked_walheap γ lwh ∗
-    @mapsto_txn K gData a data ∗
+    is_locked_walheap γ.(txn_walnames) lwh ∗
+    mapsto_txn γ a data ∗
     ⌜ ∃ v, locked_wh_disk lwh !! int.val a.(addrBlock) = Some v ⌝.
 Proof.
   iIntros (H0 H1) "(#Hiswal & #Hinv & Hlockedheap & Hmapsto)".
   iInv "Hinv" as ">Htxnalways".
   iNamed "Htxnalways".
+(*
   iDestruct "Hmapsto" as (??) "(% & % & Hmapsto & Hown)".
   iDestruct (big_sepM2_lookup_2_some with "Hgmdata") as (x1) "%Hmdata"; eauto.
   iDestruct (big_sepM_lookup_acc with "Hmdata_m") as "[Ha Hmdata_m]"; eauto.
   iDestruct "Ha" as (installed bs) "[Ha Hb]".
   iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Ha]") as "(Hlockedheap & Ha & %)"; eauto.
   iModIntro.
-  iSplitL "Hgmdata Hmdata_m Hcrashheaps Ha Hb".
-  { iNext. iExists _, _. iFrame.
+  iSplitL "Hgmdata Hmdata_m Hcrashheaps Ha Hb Htxncrashheaps Hcrashheapsmatch".
+  { iNext. iExists _, _, _. iFrame.
     iApply "Hmdata_m". iExists _, _. iFrame. }
   iModIntro.
   iFrame.
@@ -508,27 +465,29 @@ Proof.
   { iExists _, _. iFrame. done. }
   iExists _. done.
 Qed.
+*)
+Admitted.
 
 
-Theorem wp_txn__installBufsMap l q gData walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
-  {{{ inv invN (is_txn_always γ gData) ∗
-      is_wal (wal_heap_inv γ) walptr (wal_heap_walnames γ) ∗
+Theorem wp_txn__installBufsMap l q walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
+  {{{ inv invN (is_txn_always γ) ∗
+      is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
-      is_locked_walheap γ lwh ∗
+      is_locked_walheap γ.(txn_walnames) lwh ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
-        is_txn_buf_pre bufptrval a buf gData
+        is_txn_buf_pre γ bufptrval a buf
   }}}
     Txn__installBufsMap #l (slice_val bufs)
   {{{ (blkmapref : loc) (blkmap : Map.t Slice.t), RET #blkmapref;
-      is_locked_walheap γ lwh ∗
+      is_locked_walheap γ.(txn_walnames) lwh ∗
       is_map blkmapref blkmap ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
-        ∃ data, @mapsto_txn buf.(bufKind) gData a data ) ∗
+        ∃ data, mapsto_txn γ a (existT buf.(bufKind) data) ) ∗
       [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap,
         ∃ b,
           is_block blkslice 1 b ∗
-          ⌜ updBlockKindOK blkno b gData (locked_wh_disk lwh) offmap ⌝
+          ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) offmap ⌝
   }}}.
 Proof using txnG0 txnG0 Σ.
   iIntros (Φ) "(#Hinv & #Hiswal & #log & Hlockedheap & Hbufs & Hbufpre) HΦ".
@@ -546,13 +505,13 @@ Opaque struct.t.
         "->" ∷ ⌜ bufamap_done = bufamap ∖ bufamap_todo ⌝ ∗
         "%" ∷ ⌜ bufamap_todo ⊆ bufamap ⌝ ∗
         "Hblks" ∷ is_map blks blkmap ∗
-        "Hbufamap_todo" ∷ ( [∗ maplist] a↦buf;bufptrval ∈ bufamap_todo;todo, is_txn_buf_pre bufptrval a buf gData ) ∗
+        "Hbufamap_todo" ∷ ( [∗ maplist] a↦buf;bufptrval ∈ bufamap_todo;todo, is_txn_buf_pre γ bufptrval a buf ) ∗
         "Hbufamap_done" ∷ ( [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap_done,
           ∃ b,
             is_block blkslice 1 b ∗
-            ⌜ updBlockKindOK blkno b gData (locked_wh_disk lwh) offmap ⌝ ) ∗
-        "Hbufamap_done_mapsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, ∃ data, @mapsto_txn buf.(bufKind) gData a data ) ∗
-        "Hlockedheap" ∷ is_locked_walheap γ lwh
+            ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) offmap ⌝ ) ∗
+        "Hbufamap_done_mapsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, ∃ data, mapsto_txn γ a (existT buf.(bufKind) data) ) ∗
+        "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh
       )%I
       with "[] [$Hbufs Hbufpre Hblks Hlockedheap]").
   2: {
@@ -588,6 +547,13 @@ Opaque struct.t.
     - replace (bufSz buf.(bufKind)) with (bufSz KindBlock) by congruence.
       wp_pures.
 
+      iMod (mapsto_txn_valid with "Hinv Hmapto") as "[Hmapto %Hvalid]".
+      { solve_ndisj. }
+
+      generalize dependent data.
+      rewrite e.
+      intros.
+
       wp_apply (wp_buf_loadField_data with "Hisbuf"). iIntros (bufdata) "[Hbufdata Hisbuf_wd]".
       wp_apply (wp_buf_wd_loadField_addr with "Hisbuf_wd"). iIntros "Hisbuf_wd".
 
@@ -605,17 +571,16 @@ Opaque struct.t.
       iFrame "Hblks".
       iFrame "Hbufamap_todo".
 
-      iDestruct (mapsto_txn_gGata_kind with "Hmapto") as (K) "%Hgdata_kind".
-      iDestruct (mapsto_txn_valid with "Hmapto") as "%Haddr_valid".
-      iDestruct (mapsto_txn_valid_off with "Hmapto") as "%Hoff_valid".
-
       iFrame "Hlockedheap".
       iSplitR.
       { iPureIntro. etransitivity; first by apply delete_subseteq. eauto. }
       iSplitR "Hbufamap_done_mapsto Hmapto".
       2: {
         iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_mapsto").
-        simpl. iExists _. iFrame.
+        intuition.
+        rewrite e.
+        iExists _.
+        iFrame.
       }
       rewrite /map_insert.
       rewrite gmap_addr_by_block_insert.
@@ -628,13 +593,13 @@ Opaque struct.t.
       destruct bufData; try congruence.
 
       iExists _. iFrame. iPureIntro.
-      eexists _, _. intuition eauto.
+      eexists _. intuition eauto.
       intro diskLatest; intros.
       intro off; intros.
 
-      eapply valid_off_block in Hoff_valid; eauto.
       eapply valid_off_block in H2; eauto.
-      rewrite Hoff_valid. rewrite H2.
+      eapply valid_off_block in H5; eauto.
+      rewrite H2. rewrite H5.
       rewrite lookup_insert.
       simpl. done.
 
@@ -655,7 +620,8 @@ Opaque struct.t.
       wp_apply (wp_MapGet with "Hblks"). iIntros (v ok) "[% Hblks]".
       wp_pures.
 
-      iDestruct (mapsto_txn_gGata_kind with "Hmapto") as (x) "%Hgdata".
+      iMod (mapsto_txn_valid with "Hinv Hmapto") as "[Hmapto %Hvalid]".
+      { solve_ndisj. }
 
       wp_apply (wp_If_join
         ( ∃ blkslice blk blkmap',
@@ -665,10 +631,10 @@ Opaque struct.t.
                   delete a.(addrBlock) (gmap_addr_by_block (bufamap ∖ bufamap_todo)),
                   ∃ b0 : Block,
                     is_block blkslice 1 b0
-                    ∗ ⌜updBlockKindOK blkno b0 gData
+                    ∗ ⌜updBlockKindOK blkno b0 γ
                          (locked_wh_disk lwh) offmap⌝ ) ∗
             "Hisbuf" ∷ is_buf b a buf ∗
-            "Hlockedheap" ∷ is_locked_walheap γ lwh ∗
+            "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh ∗
             "Hblks" ∷ is_map blks blkmap' ∗
             "%" ∷ ⌜ blkmap' !! a.(addrBlock) = Some blkslice ⌝ ∗
             "%" ∷ ⌜ updBlockOK a.(addrBlock) blk buf.(bufKind) (locked_wh_disk lwh) (lookup_block (gmap_addr_by_block (bufamap ∖ bufamap_todo)) a.(addrBlock)) ⌝
@@ -686,14 +652,13 @@ Opaque struct.t.
         iSplit; first by done.
         iPureIntro.
         rewrite /lookup_block Hx.
-        destruct H1. destruct H1. intuition eauto.
-        rewrite Hgdata in H2. inversion H2. subst. eauto.
+        destruct H1. destruct H1. intuition idtac.
+        rewrite H1 in H6. inversion H6; clear H6; subst. eauto.
       }
       {
         iIntros "(-> & HΦ)".
         wp_apply (wp_buf_loadField_addr with "Hisbuf"). iIntros "Hisbuf".
         wp_loadField.
-
         wp_apply (wp_Walog__Read with "[$Hiswal $Hlockedheap]"); eauto.
         iIntros (s) "[Hlockedheap Hisblock]".
         wp_store.
@@ -751,10 +716,10 @@ Opaque struct.t.
       iFrame "Hbufamap_done".
       iExists _. iFrame. iPureIntro.
 
-      eexists _, _. intuition eauto.
+      eexists _. intuition eauto.
       intro diskLatest; intros.
       intro off; intros.
-      specialize (H2 diskLatest H3 off oldBufData H4 H5 H6).
+      specialize (H2 diskLatest H4 off oldBufData H7 H8 H9).
       destruct (decide (a.(addrOff) = off)).
       + subst.
         rewrite lookup_insert.
@@ -781,7 +746,7 @@ Opaque struct.t.
   iDestruct (big_sepML_empty_m with "Hbufamap_todo") as "%Hbufamap_todo_empty"; subst.
   rewrite map_difference_empty.
   iApply "HΦ". iFrame.
-Qed.
+Admitted.
 
 Theorem wp_MkBlockData blkno dataslice :
   {{{
@@ -800,24 +765,24 @@ Proof.
   done.
 Qed.
 
-Theorem wp_txn__installBufs l q gData walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
-  {{{ inv invN (is_txn_always γ gData) ∗
-      is_wal (wal_heap_inv γ) walptr (wal_heap_walnames γ) ∗
+Theorem wp_txn__installBufs l q walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
+  {{{ inv invN (is_txn_always γ) ∗
+      is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
-      is_locked_walheap γ lwh ∗
+      is_locked_walheap γ.(txn_walnames) lwh ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
-        is_txn_buf_pre bufptrval a buf gData
+        is_txn_buf_pre γ bufptrval a buf
   }}}
     Txn__installBufs #l (slice_val bufs)
   {{{ (blkslice : Slice.t) upds, RET (slice_val blkslice);
-      is_locked_walheap γ lwh ∗
+      is_locked_walheap γ.(txn_walnames) lwh ∗
       updates_slice blkslice upds ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
-        ∃ data, @mapsto_txn buf.(bufKind) gData a data ) ∗
+        ∃ data, mapsto_txn γ a (existT buf.(bufKind) data) ) ∗
       [∗ maplist] blkno ↦ offmap; upd ∈ gmap_addr_by_block bufamap; upds,
         ⌜ upd.(update.addr) = blkno ⌝ ∗
-        ⌜ updBlockKindOK blkno upd.(update.b) gData (locked_wh_disk lwh) offmap ⌝
+        ⌜ updBlockKindOK blkno upd.(update.b) γ (locked_wh_disk lwh) offmap ⌝
   }}}.
 Proof.
   iIntros (Φ) "(#Hinv & #Hiswal & #Hlog & Hlockedheap & Hbufs & Hbufpre) HΦ".
@@ -838,10 +803,10 @@ Proof.
         "%" ∷ ⌜ dom (gset u64) offmaps_todo ## dom (gset u64) offmaps_done ⌝ ∗
         "Hmtodo" ∷ ( [∗ map] blkno↦blkslice;offmap ∈ mtodo;offmaps_todo, ∃ b : Block,
                                           is_block blkslice 1 b ∗
-                                          ⌜ updBlockKindOK blkno b gData (locked_wh_disk lwh) offmap ⌝ ) ∗
+                                          ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) offmap ⌝ ) ∗
         "Hmdone" ∷ ( [∗ maplist] blkno↦offmap;upd ∈ offmaps_done;upds,
                                           ⌜ upd.(update.addr) = blkno ⌝ ∗
-                                          ⌜ updBlockKindOK blkno upd.(update.b) gData (locked_wh_disk lwh) offmap ⌝ )
+                                          ⌜ updBlockKindOK blkno upd.(update.b) γ (locked_wh_disk lwh) offmap ⌝ )
     )%I with "Hblkmapref [Hblks_var Hblkmap]").
   {
     rewrite zero_slice_val.
@@ -901,22 +866,21 @@ Proof.
   iFrame.
 Admitted.
 
+(*
 Theorem memappend_mapsto_update E mData gData bufamap mx updlist_olds lwh walHeap :
   ( [∗ map] k↦y ∈ (mData ∖ mx), ∃ (installed : Block) (bs : list Block),
     "Hmdata_hb" ∷ mapsto (hG := walHeap.(wal_heap_h)) k 1 (HB installed bs) ∗
-    "Hmdata_in_block" ∷ txn_bufDataT_in_block installed bs (projT2 y) ) ∗
+    "Hmdata_in_block" ∷ bufDataTs_in_block installed bs (projT2 y) ) ∗
   ( [∗ maplist] k↦v;lv ∈ mx;updlist_olds, ∃ offmap : gmap u64 buf,
     ⌜mData !! k = Some v⌝ ∗
     ⌜(lv.1).(update.addr) = k⌝ ∗
-    txn_bufDataT_in_block lv.2.1 lv.2.2 (projT2 v) ∗
+    bufDataTs_in_block lv.2.1 lv.2.2 (projT2 v) ∗
     mapsto (hG := walHeap.(wal_heap_h)) (lv.1).(update.addr) 1 (HB lv.2.1 (lv.2.2 ++ [(lv.1).(update.b)])) ∗
     ⌜gmap_addr_by_block bufamap !! (lv.1).(update.addr) = Some offmap⌝ ∗
     ⌜ updBlockKindOK (lv.1).(update.addr) (lv.1).(update.b) gData (locked_wh_disk lwh) offmap⌝ ) ∗
-  ( [∗ map] y1;y2 ∈ mData;gData, gmDataP y1 y2 ) ∗
   ( [∗ map] k↦x ∈ bufamap, ∃ data : bufDataT x.(bufKind), mapsto_txn gData k data )
   ={E}=∗
     ∃ mData',
-      ( [∗ map] y1;y2 ∈ mData';gData, gmDataP y1 y2 ) ∗
       ( [∗ map] k↦x ∈ bufamap, mapsto_txn gData k x.(bufData) ) ∗
       ( [∗ map] k↦y ∈ mData', ∃ (installed : Block) (bs : list Block),
         "Hmdata_hb" ∷ mapsto (hG := walHeap.(wal_heap_h)) k 1 (HB installed bs) ∗
@@ -963,6 +927,7 @@ Proof.
 Qed.
 *)
 Admitted.
+*)
 
 Theorem bi_iff_1 {PROP:bi} (P Q: PROP) :
   P ≡ Q ->
@@ -978,23 +943,142 @@ Proof.
   intros ->; auto.
 Qed.
 
-Theorem wp_txn__doCommit l q gData bufs buflist bufamap :
-  {{{ is_txn l gData ∗
+(*
+Lemma txn_crash_heap_alloc γcrash txn_crash_heaps wal_crash_new
+                           (crash_blocks : gmap u64 Block)
+                           (crash_bufs : gmap addr {K & @bufDataT K})
+                           npos :
+  ⊢ own γcrash (● Excl' txn_crash_heaps) ∗
+    own γcrash (◯ Excl' txn_crash_heaps) ∗
+    ( [∗ map] a↦b ∈ crash_bufs, ⌜valid_addr a ∧ valid_off (projT1 b) a.(addrOff)⌝ ) ∗
+    ( [∗ map] a↦b;offmap ∈ crash_blocks;gmap_addr_by_block crash_bufs,
+        mapsto (hG := GenHeapG_Pre _ _ _ crashPreG wal_crash_new) a 1 b ∗
+        txn_crash_heap_off_match b offmap )
+    ==∗
+      ∃ txn_crash_new,
+        own γcrash (● Excl' (async_put (npos, txn_crash_new) txn_crash_heaps)) ∗
+        own γcrash (◯ Excl' (async_put (npos, txn_crash_new) txn_crash_heaps)) ∗
+        txn_crash_heap_match wal_crash_new txn_crash_new ∗
+        ( [∗ map] a↦b ∈ crash_bufs, mapsto_txn_crash txn_crash_new a b ).
+Proof.
+  iIntros "(Hown & Hfrag & Hvalids & Hblocks)".
+  iMod (gen_heap_init_gname ∅) as (txn_crash_new) "Htxn_crash_new".
+  iMod (ghost_var_update with "Hown Hfrag") as "[Hown Hfrag]".
+  iMod (gen_heap_alloc_gen ∅ crash_bufs with "Htxn_crash_new") as "[Htxn_crash_new Hnewbufs]".
+  { apply map_disjoint_empty_r. }
+  rewrite right_id.
+  iModIntro.
+  iExists _.
+  iFrame.
+
+  iSplitL "Htxn_crash_new Hblocks".
+  { iExists _. iFrame.
+    iDestruct (big_sepM2_sepM_2 with "Hblocks") as "Hbufs".
+    iApply (big_sepM_mono with "Hbufs").
+    iIntros (k x Hkx) "H".
+    iDestruct "H" as (b) "(% & H0 & H1)".
+    iExists _. iFrame. }
+
+  iDestruct (bi_iff_2 with "[Hvalids Hnewbufs]") as "Hnewbufs".
+  { apply (big_sepM_sep (K := addr) (A := {K & bufDataT K})). }
+  { iFrame. }
+
+  iApply (big_sepM_mono with "Hnewbufs").
+  iIntros (k x Hkx) "[Hmapsto Hvalid]". iFrame.
+Qed.
+*)
+
+(*
+Lemma crash_txn_bufs_to_wal_blocks (unmodifiedBufs : gmap addr {K & @bufDataT K})
+                                   (wal_crash_heap txn_crash_heap : gname)
+                                   (updlist : list update.t) :
+  ( [∗ map] a↦b ∈ unmodifiedBufs, mapsto_txn_crash txn_crash_heap a b ) -∗
+  txn_crash_heap_match wal_crash_heap txn_crash_heap -∗
+  ∃ wal_blocks,
+    ( [∗ map] a↦b ∈ unmodifiedBufs, mapsto_txn_crash txn_crash_heap a b ) ∗
+    ⌜∀ u : update.t, u ∈ updlist → wal_blocks !! u.(update.addr) = None⌝ ∗
+    let P := [∗ map] a↦b ∈ wal_blocks,
+                 mapsto (hG := GenHeapG_Pre _ _ _ crashPreG wal_crash_heap) a 1 b in
+    P ∗
+    ( P -∗ txn_crash_heap_match wal_crash_heap txn_crash_heap ).
+Proof.
+  iIntros "Hbufs Hmatch".
+  iDestruct "Hmatch" as (wal_crash_map) "[Hctx Hmatch]".
+  iAssert (⌜ unmodifiedBufs ⊆ wal_crash_map ⌝)%I as "%Hsubset".
+  { rewrite map_subseteq_spec.
+    iIntros (i b Hib).
+    iDestruct (big_sepM_lookup with "Hbufs") as "[% Hbuf]"; eauto.
+    iDestruct (gen_heap_valid with "Hctx Hbuf") as "%Hvalid".
+    done. }
+
+  rewrite -(map_union_filter
+              (λ x, Forall (λ u, u.(update.addr) ≠ (fst x)) updlist ∧
+                    is_Some (gmap_addr_by_block unmodifiedBufs !! fst x))
+              (gmap_addr_by_block wal_crash_map)).
+  iDestruct (big_sepM_union with "Hmatch") as "[Hmatch0 Hmatch1]".
+  { eapply map_disjoint_filter. }
+
+  iDestruct (big_sepM_sepM2 with "Hmatch0") as (wal_blocks) "Hmatch0".
+
+  iExists wal_blocks.
+  iFrame "Hbufs".
+
+  iAssert (⌜∀ u : update.t, u ∈ updlist → wal_blocks !! u.(update.addr) = None⌝)%I as "%Hdisjoint".
+  { iIntros (u Hu).
+    destruct (wal_blocks !! u.(update.addr)) eqn:He; eauto.
+    iDestruct (big_sepM2_lookup_2_some with "Hmatch0") as (z) "%Hfiltered"; eauto.
+    eapply map_filter_lookup_Some in Hfiltered; intuition idtac.
+    eapply Forall_forall in H1; eauto. }
+
+  iSplitR; first by done.
+  iDestruct (big_sepM2_sep with "Hmatch0") as "[Hmatch00 Hmatch01]".
+  iDestruct (big_sepM2_sepM_2 with "Hmatch00") as "Hmatch00".
+
+  iSplitL "Hmatch00".
+  { iApply (big_sepM_mono with "Hmatch00").
+    iIntros (???) "H".
+    iDestruct "H" as (?) "[% H]". iFrame. }
+
+  iIntros "Hmatch00".
+  iDestruct (big_sepM2_flip with "Hmatch01") as "Hmatch01".
+  iDestruct (big_sepM2_sepM_merge with "[$Hmatch01 $Hmatch00]") as "Hmatch0".
+  iDestruct (big_sepM2_sepM_2 with "Hmatch0") as "Hmatch0".
+  iDestruct (big_sepM_mono with "Hmatch0") as "Hmatch0".
+  2: {
+    iDestruct (big_sepM_union with "[$Hmatch0 $Hmatch1]") as "Hmatch".
+    { eapply map_disjoint_filter. }
+    rewrite map_union_filter.
+    iExists _. iFrame. }
+
+  iIntros (???) "H".
+  iDestruct "H" as (b) "[% [H0 H1]]". iExists b. iFrame.
+Qed.
+*)
+
+Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
+  {{{ is_txn l γ ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
-        is_txn_buf_pre bufptrval a buf gData
+      ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
+      ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
+          "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯ (Excl' σl)) ∗
+          "Hcrashstates_fupd" ∷ (
+            let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
+            own γ.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
+            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ) )
   }}}
     Txn__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
       if ok then
-        ([∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn gData a buf.(bufData)) ∗
-        (* TODO: need to expose ghost names in is_txn *)
-        (∃ γ txn_num, txn_pos γ txn_num commitpos)
-      else emp
+        ∃ txn_id,
+        txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id commitpos ∗ Q txn_id ∗
+        [∗ map] a ↦ buf ∈ bufamap,
+          mapsto_txn γ a (existT _ buf.(bufData))
+      else
+        [∗ map] a ↦ buf ∈ bufamap,
+          ∃ data, mapsto_txn γ a (existT buf.(bufKind) data)
   }}}.
 Proof using txnG0 lockG0 Σ.
-  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre) HΦ".
+  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
   iPoseProof "Htxn" as "Htxn0".
   iNamed "Htxn".
 
@@ -1013,31 +1097,118 @@ Proof using txnG0 lockG0 Σ.
   wp_loadField.
 
   wp_apply (wp_Walog__MemAppend _
-    ("Hlockedheap" ∷ is_locked_walheap walHeap lwh)
+    ("Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh)
     (λ npos,
-      ∃ lwh',
-        "Hlockedheap" ∷ is_locked_walheap walHeap lwh' ∗
-        "Hmapstos" ∷ [∗ map] k↦x ∈ bufamap, mapsto_txn gData k x.(bufData)
+      ∃ lwh' txn_id,
+        "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh' ∗
+        "Hmapstos" ∷ ( [∗ map] k↦x ∈ bufamap, mapsto_txn γ k (existT _ x.(bufData)) ) ∗
+        "Hpos" ∷ txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id npos
     )%I
-    with "[$Hiswal $Hblks Hmapstos Hwal_latest]").
-  { iApply (wal_heap_memappend (⊤ ∖ ↑walN ∖ ↑invN) with "[Hmapstos] Hwal_latest").
+    with "[$Hiswal $Hblks Hmapstos Hwal_latest Hfupd]").
+  { iApply (wal_heap_memappend E with "[Hmapstos Hfupd] Hwal_latest").
     iInv invN as ">Hinner" "Hinner_close".
+    iMod "Hfupd".
     iModIntro.
     iNamed "Hinner".
-    rewrite /memappend_pre.
+    iNamed "Hfupd".
 
+    rewrite /memappend_pre.
+    rewrite /memappend_crash_pre.
+
+    iDestruct (ghost_var_agree with "Hcrashstates Hcrashstates_frag") as %->.
+
+    iDestruct (gmap_addr_by_block_big_sepM with "Hmapstos") as "Hmapstos".
+    iDestruct (big_sepM2_filter _ (λ k, is_Some (gmap_addr_by_block bufamap !! k)) with "Hheapmatch") as "[Hheapmatch_in Hheapmatch_out]".
+    iDestruct (big_sepM2_sepM_1 with "Hheapmatch_in") as "Hheapmatch_in".
+
+(*
+
+action items:
+
+- big_sepM2 from two big_sepM's that agree on keys
+- big_sepML factored into L-to-M existential correspondence
+- big_sepMmany
+
+*)
+
+(*
+
+updlist ->
+[Hupdmap]
+bufamap ->
+[Hmapstos]
+logm.(latest) ->
+[Hheapmatch]
+olds
+
+*)
+
+
+(*
+
+
+
+    iDestruct (big_sepML_sepM2_shift with "[Hupdmap] []") as "Hupdmap2".
+
+    iDestruct (big_sepM_mono_wand _
+      (λ blkno offmap, (
+        [∗ map] off↦v ∈ offmap, 
+             ∃ (data : bufDataT v.(bufKind)) (first : nat),
+               mapsto_txn γ first {| addrBlock := blkno; addrOff := off |}
+                 (existT v.(bufKind) data)) ∗
+        ⌜ is_Some (gmap_addr_by_block logm.(latest) !! blkno) ⌝)%I _ (log_heap_ctx logm)
+      with "[] [$Hmapstos $Hlogheapctx]") as "[Hlogheapctx Hmapstos]".
+    {
+      iIntros (k x Hkx) "[Hlogheapctx Hx]".
+      eapply gmap_addr_by_block_off_not_empty in Hkx as Hx.
+      assert (x = (list_to_map (map_to_list x) : gmap u64 buf)) as Hlm. { rewrite list_to_map_to_list; eauto. }
+      rewrite -> Hlm in *.
+      destruct (map_to_list x) eqn:Hxl.
+      { simpl in Hx. congruence. }
+      simpl.
+      iDestruct (big_sepM_lookup_acc with "Hx") as "[H Hx]".
+      { apply lookup_insert. }
+      iNamed "H".
+      iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as %Hvalid.
+      eapply gmap_addr_by_block_lookup in Hvalid as Hvalidblock; destruct Hvalidblock; intuition idtac.
+      iDestruct ("Hx" with "[Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hx".
+      { iExists _, _, _. iFrame. }
+      iFrame "Hlogheapctx". iFrame. eauto.
+    }
+    iDestruct (big_sepM_sep with "Hmapstos") as "[Hmapstos #Hmapsto_latest]".
+
+
+Search _ gmap insert.
+Search _ gmap ∅.
+
+    iDestruct (big_sepML_sepM with "[$Hupdmap $Hmapstos]") as "Hmapstos".
+
+    rewrite -(map_union_filter
+                (λ x, is_Some (gmap_addr_by_block bufamap !! fst x))
+                (gmap_addr_by_block logm.(latest))).
+
+    iDestruct (big_sepM_union with "Hmatch") as "[Hmatch0 Hmatch1]".
+    { eapply map_disjoint_filter. }
+
+
+
+Check big_sepML_map_val_exists.
+
+*)
+
+(*
     iDestruct (big_sepM_mono _
-      (λ a buf,
-        ( ∃ data : bufDataT buf.(bufKind), mapsto_txn gData a data ) ∗
-        ⌜ ∃ γ, gData !! a.(addrBlock) = Some (existT buf.(bufKind) γ) ⌝
+       (λ a buf,
+         ∃ first, mapsto_txn γ first a (existT buf.(bufKind) buf.(bufData))
       )%I with "Hmapstos") as "Hmapstos".
     {
       iIntros (k x Hkx) "H".
-      iDestruct "H" as (data h γ) "(% & % & H0 & H1)".
-      iSplitL.
-      { iExists _, _, _. iFrame. done. }
+      iDestruct "H" as (data first) "Hmapsto".
       iExists _. done.
     }
+
+    (* XXX up to here *)
+
     iDestruct (big_sepM_sep with "Hmapstos") as "[Hmapstos #Hbufamap_gdata]".
 
     iDestruct (big_sepM2_mono _ (λ k gm gh, gmDataP gm gh ∗ emp)%I with "Hgmdata") as "Hgmdata".
@@ -1087,9 +1258,18 @@ Proof using txnG0 lockG0 Σ.
 
     iDestruct (big_sepML_exists with "Hx_mx") as (updlist_olds) "[-> Hx_mx]".
     iExists (snd <$> updlist_olds).
-    iExists ∅.
+
+    iDestruct (big_sepL2_length with "Hcrashheapsmatch") as "%Hcrashlen".
+    rewrite /possible ?app_length /= in Hcrashlen.
+    iDestruct (big_sepL2_app_inv with "Hcrashheapsmatch") as "[Hcrashheapsmatch [[% Hcrashheapmatch_latest] _]]".
+    { lia. }
+
+    iDestruct (crash_txn_bufs_to_wal_blocks with "Htxn_unmod Hcrashheapmatch_latest")
+      as (wal_unmodified_blocks) "(Hwal_blocks_old & %Hwal_unmod_disjoint & Hwal_unmod & Hcrashheapmatch_latest)".
+    iExists wal_unmodified_blocks.
     iExists _.
 
+    iFrame "Hwal_unmod Hcrashheaps".
     iDestruct (big_sepML_sepL_split with "Hx_mx") as "[Hx_mx Hupdlist_olds]".
 
     iSplitL "Hupdlist_olds".
@@ -1100,17 +1280,13 @@ Proof using txnG0 lockG0 Σ.
       rewrite zip_fst_snd. iFrame.
     }
 
-    iSplitR.
-    { iApply big_sepM_empty. done. }
-
-    iSplitR.
-    { iPureIntro. intros. rewrite lookup_empty. done. }
-
-    iFrame "Hcrashheaps".
-
-    iIntros (txn_id lwh' new_crash_heap) "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hq)".
-    rewrite /memappend_q.
-    rewrite big_sepL2_alt.
+    iSplitR; first by eauto.
+    
+    iIntros (txn_id lwh' new_crash_heap) "(Hcrash & Hq)".
+    rewrite /memappend_crash /memappend_q.
+    iDestruct "Hcrash" as "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hpos)".
+    rewrite (big_sepL2_alt _ updlist_olds.*1).
+    
     iDestruct "Hq" as "[_ Hq]".
     rewrite zip_fst_snd.
 
@@ -1143,12 +1319,39 @@ Proof using txnG0 lockG0 Σ.
       iFrame. done.
     }
 
+    iDestruct ("Hcrashheapmatch_latest" with "Hunmod") as "Hcrashheapmatch_latest".
+
     iMod (memappend_mapsto_update with "[$Hgmdata $Hmapstos $Hmx $Hmdata_m]") as (mData') "(Hgmdata & Hmapstos & Hmdata)".
+    iMod (txn_crash_heap_alloc _ _ _ (wal_unmodified_blocks ∪ (list_to_map ((λ u, (u.(update.addr), u.(update.b))) <$> updlist_olds.*1))) (unmodifiedBufs ∪ ((λ b, existT _ b.(bufData)) <$> bufamap)) with "[$Htxncrashheaps $Htxn_crash_heaps_frag]")
+      as (txn_crash_new) "(Htxncrashheaps & Htxn_crash_heaps_frag & Htxn_crash_heap_ok & Htxn_crash_mapstos)".
+    { admit. }
 
     iExists _. iFrame.
-    iApply "Hinner_close".
-    iNext.
-    iExists _, _. iFrame.
+
+    iMod ("Htxn_crash_close" with "[$Htxn_crash_heaps_frag $Hwal_blocks_old Htxn_crash_mapstos]") as "Htxn_crash_close".
+    { iDestruct (big_sepM_union with "Htxn_crash_mapstos") as "[H0 H1]".
+      { rewrite /map_disjoint /map_relation /option_relation. intro a. rewrite lookup_fmap.
+        specialize (Htxn_unmod_disjoint a). destruct (unmodifiedBufs !! a).
+        { destruct (bufamap !! a); simpl; eauto.
+          assert (is_Some (Some b)); intuition eauto. congruence. }
+        { destruct (bufamap !! a); simpl; eauto. }
+      }
+      iFrame.
+      iApply big_sepM_fmap. iFrame.
+    }
+
+    iMod ("Hinner_close" with "[-Hpos]") as "Hinner_close".
+    { iNext.
+      iExists _, _, _. iFrame.
+      iSplitL "Hcrashheapmatch_latest".
+      { iSplitL; last by done.
+        iFrame. done. }
+      iSplitL; last by done.
+      iSplitR; first by eauto.
+      rewrite /=. iFrame.
+    }
+
+    iModIntro. iExists _. iFrame.
   }
 
   iIntros (npos ok) "Hnpos".
@@ -1174,25 +1377,37 @@ Proof using txnG0 lockG0 Σ.
 
     wp_pures.
     iApply "HΦ".
-    done.
+    admit.
   }
-Qed.
+*)
+Admitted.
 
-Theorem wp_txn_CommitWait l q gData bufs buflist bufamap (wait : bool) (id : u64) :
-  {{{ is_txn l gData ∗
+Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) E (Q : nat -> iProp Σ) :
+  {{{ is_txn l γ ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
-      [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
-        is_txn_buf_pre bufptrval a buf gData
+      ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
+      ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
+          "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯ (Excl' σl)) ∗
+          "Hcrashstates_fupd" ∷ (
+            let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
+            ⌜bufamap ≠ ∅⌝ ∗
+            own γ.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
+            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl))  ))
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait #id
   {{{ (ok : bool), RET #ok;
       if ok then
+        ( ⌜bufamap ≠ ∅⌝ -∗ ∃ (txn_id : nat),
+          Q txn_id ∗
+          ( ⌜wait=true⌝ -∗ own γ.(txn_walnames).(wal_heap_durable_lb) (◯ (txn_id : mnat)) ) ) ∗
         [∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn gData a buf.(bufData)
-      else emp
+          mapsto_txn γ a (existT _ buf.(bufData))
+      else
+        [∗ map] a ↦ buf ∈ bufamap,
+          ∃ data, mapsto_txn γ a (existT buf.(bufKind) data)
   }}}.
 Proof.
-  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre) HΦ".
+  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
 
   wp_call.
   wp_apply wp_ref_to; [val_ty|].
@@ -1203,26 +1418,44 @@ Proof.
   rewrite bool_decide_decide.
   destruct (decide (int.val 0 < int.val bufs.(Slice.sz))).
   - wp_pures.
-    wp_apply (wp_txn__doCommit with "[$Htxn $Hbufs $Hbufpre]").
+
+    iAssert (⌜ bufamap ≠ ∅ ⌝)%I as "%Hnotempty".
+    { admit. }
+
+    wp_apply (wp_txn__doCommit with "[$Htxn $Hbufs $Hbufpre Hfupd]").
+    {
+      iMod "Hfupd".
+      iModIntro.
+      iNamed "Hfupd".
+      iExists σl. iFrame "Hcrashstates_frag".
+
+      iIntros "H".
+      iMod ("Hcrashstates_fupd" with "[H]").
+      { iFrame. done. }
+
+      iModIntro. done.
+    }
+
     iIntros (commitpos ok) "Hbufpost".
 
     wp_pures.
     destruct ok; wp_pures.
-    + iDestruct "Hbufpost" as "[Hbufpost Htxn_pos]".
+    + iDestruct "Hbufpost" as (txn_id) "(#Hpos & Hq & Hbufamap)".
       destruct wait; wp_pures.
       * iNamed "Htxn".
         wp_loadField.
-        wp_apply (wp_Walog__Flush with "[$Hiswal]").
-        { admit. }
+        wp_apply (wp_Walog__Flush_heap with "[$Hiswal $Hpos]").
         iIntros "HQ".
         wp_load.
-        iApply "HΦ".
-        admit.
+        iApply "HΦ". iFrame.
+        iIntros (?). iExists txn_id. iFrame.
+        done.
 
       * wp_pures.
         wp_load.
-        iApply "HΦ".
-        iFrame.
+        iApply "HΦ". iFrame.
+        iIntros (?). iExists txn_id. iFrame.
+        iIntros (?). intuition congruence.
 
     + wp_apply util_proof.wp_DPrintf.
       wp_store.
@@ -1231,6 +1464,10 @@ Proof.
       iFrame.
 
   - wp_apply util_proof.wp_DPrintf.
+
+    iAssert (⌜ bufamap = ∅ ⌝)%I as "%Hempty".
+    { admit. }
+
     wp_load.
     iApply "HΦ".
 
@@ -1239,12 +1476,13 @@ Proof.
     assert (length (list.untype buflist) = 0%nat) by word.
     rewrite fmap_length in H0.
     apply length_zero_iff_nil in H0; subst.
-    (* buflist is nil, so bufamap is ∅, so goal is emp *)
-    iFrame.
+
+    iSplit; last by iApply big_sepM_empty.
+    iIntros. congruence.
 Admitted.
 
-Theorem wp_Txn__GetTransId l gData :
-  {{{ is_txn l gData }}}
+Theorem wp_Txn__GetTransId l γ :
+  {{{ is_txn l γ }}}
     txn.Txn__GetTransId #l
   {{{ (i : u64), RET #i; emp }}}.
 Proof.
@@ -1284,5 +1522,7 @@ Proof.
     wp_load.
     iApply "HΦ". done.
 Qed.
+
+
 
 End heap.
