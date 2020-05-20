@@ -57,6 +57,7 @@ Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iPr
     match b with
     | HB installed_block blocks_since_install =>
       ∃ (txn_id : nat),
+      (* TODO: why is this _less than_ the installed lower-bound? *)
         txn_id ≤ ls.(log_state.installed_lb) ∧
         disk_at_txn_id txn_id ls !! int.val a = Some installed_block ∧
         updates_since txn_id a ls = blocks_since_install
@@ -331,17 +332,17 @@ Proof.
   unfold last_disk, updates_since, disk_at_txn_id.
   simpl.
   intros.
-  rewrite firstn_all.
-  rewrite (take_drop_txns txn_id txns).
+  rewrite -> take_ge by lia.
+  rewrite (take_drop_txns (S txn_id) txns).
   2: {
     unfold wal_wf in H; intuition; simpl in *.
     lia.
   }
   rewrite apply_upds_app.
   generalize dependent H0.
-  generalize (apply_upds (txn_upds (take txn_id txns)) d).
+  generalize (apply_upds (txn_upds (take (S txn_id) txns)) d).
   intros.
-  generalize (txn_upds (drop txn_id txns)).
+  generalize (txn_upds (drop (S txn_id) txns)).
   intros.
   generalize dependent d0.
   generalize dependent installed.
@@ -457,7 +458,7 @@ Proof.
   unfold no_updates_since, updates_since.
   generalize σ.(log_state.txns).
   intro l.
-  generalize (txn_upds (drop txn_id l)).
+  generalize (txn_upds (drop (S txn_id) l)).
   intros. intuition.
   unfold updates_for_addr.
   induction l0.
@@ -511,25 +512,25 @@ Proof.
   clear H.
   destruct (decide (txn_id < length l)).
   2: {
-    rewrite take_ge; last lia.
-    rewrite firstn_all.
+    rewrite -> take_ge by lia.
+    rewrite -> take_ge by lia.
     reflexivity.
   }
-  replace l with (take txn_id l ++ drop txn_id l) at 3.
+  replace l with (take (S txn_id) l ++ drop (S txn_id) l) at 3.
   2 : {
     rewrite firstn_skipn; eauto.
   }
   rewrite firstn_app.
-  assert (length (take txn_id l) = txn_id).
+  assert (length (take (S txn_id) l) = S txn_id).
   {
     rewrite firstn_length_le; eauto.
     lia.
   }
   rewrite H; subst.
   rewrite firstn_firstn.
-  assert( (Init.Nat.min (Datatypes.length l) txn_id) = txn_id) by lia.
+  assert( (Init.Nat.min (S (Datatypes.length l)) (S txn_id)) = S txn_id) by lia.
   rewrite H3.
-  assert (take (length l - txn_id) (drop txn_id l) = drop txn_id l).
+  assert (take (S (length l) - S txn_id) (drop (S txn_id) l) = drop (S txn_id) l).
   {
     rewrite take_ge; eauto.
     rewrite skipn_length; lia.
@@ -736,15 +737,15 @@ Qed.
 Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
   forall l a b b1,
     txn_id <= txn_id' ->
-    txn_id' <= length l ->
-    apply_upds (txn_upds (take txn_id l)) d !! int.val a = Some b ->
-    apply_upds (txn_upds (take txn_id' l)) d !! int.val a = Some b1 ->
+    txn_id' < length l ->
+    apply_upds (txn_upds (take (S txn_id) l)) d !! int.val a = Some b ->
+    apply_upds (txn_upds (take (S txn_id') l)) d !! int.val a = Some b1 ->
     b ≠ b1 ->
-    (exists u, u ∈ (txn_upds (drop (txn_id) l)) 
+    (exists u, u ∈ (txn_upds (drop (S txn_id) l))
           /\ u.(update.addr) = a /\ u.(update.b) = b1).
 Proof using walheapG0 Σ.
   intros.
-  replace (take txn_id' l) with (take txn_id l ++ drop txn_id (take txn_id' l)) in H2.
+  replace (take (S txn_id') l) with (take (S txn_id) l ++ drop (S txn_id) (take (S txn_id') l)) in H2.
   2: {
     rewrite skipn_firstn_comm.
     rewrite take_take_drop.
@@ -759,14 +760,12 @@ Proof using walheapG0 Σ.
   exists u.
   intuition.
   rewrite skipn_firstn_comm in H5.
-  apply txn_ups_take_elem_of in H5; auto.
-  rewrite skipn_length.
-  lia.
+  apply txn_ups_take_elem_of in H5; len; auto.
 Qed.
 
 Theorem updates_since_apply_upds σ a (txn_id txn_id' : nat) installedb b :
   txn_id ≤ txn_id' ->
-  txn_id' <= length (log_state.txns σ) ->
+  txn_id' < length (log_state.txns σ) ->
   disk_at_txn_id txn_id σ !! int.val a = Some installedb ->
   disk_at_txn_id txn_id' σ !! int.val a = Some b ->
   b ∈ installedb :: updates_since txn_id a σ.
@@ -782,7 +781,7 @@ Proof using walheapG0 Σ.
   }
   eapply apply_upds_since_txn_id_new with (txn_id := txn_id) (txn_id' := txn_id') in H0; eauto.
   destruct H0. destruct H0. intuition.
-  assert (In b (map update.b (filter (λ u : update.t, u.(update.addr) = a) (txn_upds (drop txn_id l))))).
+  assert (In b (map update.b (filter (λ u : update.t, u.(update.addr) = a) (txn_upds (drop (S txn_id) l))))).
   {
     rewrite in_map_iff.
     exists x; eauto.
@@ -805,7 +804,7 @@ Qed.
 
 Theorem wal_wf_advance_durable_lb σ (txn_id:nat) :
   wal_wf σ ->
- (σ.(log_state.durable_lb) ≤ txn_id ≤ length σ.(log_state.txns))%nat ->
+ (σ.(log_state.durable_lb) ≤ txn_id < length σ.(log_state.txns))%nat ->
   wal_wf (set log_state.durable_lb (λ _ : nat, txn_id) σ).
 Proof.
   destruct σ.
@@ -867,7 +866,7 @@ Qed.
 
 Lemma disk_at_txn_id_append σ (txn_id : nat) pos new :
   wal_wf σ ->
-  (txn_id ≤ length σ.(log_state.txns))%nat ->
+  (txn_id < length σ.(log_state.txns))%nat ->
   disk_at_txn_id txn_id σ =
     disk_at_txn_id txn_id (set log_state.txns
                                  (λ upds, upds ++ [(pos,new)]) σ).
@@ -1035,7 +1034,8 @@ Proof.
     iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps Hcrash_heaps_own".
     2: iFrame.
 
-    iDestruct (wal_update_durable gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_durable with "Hgh") as "Hgh"; eauto.
+    iDestruct (wal_update_durable gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_durable with "Hgh") as "Hgh".
+    { rewrite /set /=; lia. }
     iDestruct (wal_update_installed gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_installed with "Hgh") as "Hgh"; eauto.
     iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
     iDestruct ("Hgh" $! (HB (latest_update installed (updates_since x a σ)) nil) with "[]") as "Hx".
@@ -1596,7 +1596,7 @@ Proof using walheapG0.
 
       unfold last_disk in Hrelation.
       unfold disk_at_txn_id in Hrelation.
-      rewrite firstn_all in Hrelation.
+      rewrite -> take_ge in Hrelation by lia.
       rewrite Hb in Hrelation.
 
       simpl in *; monad_inv.
@@ -1657,7 +1657,7 @@ Proof using walheapG0.
 
       unfold last_disk in Heqo.
       unfold disk_at_txn_id in Heqo.
-      rewrite firstn_all in Heqo.
+      rewrite -> take_ge in Heqo by lia.
       rewrite Hb in Heqo.
       inversion Heqo; subst.
 
@@ -1704,8 +1704,8 @@ Proof.
   iPureIntro.
   eapply updates_since_to_last_disk in H; eauto.
   2: lia.
-  rewrite /last_disk /disk_at_txn_id firstn_all H4 in H.
-  rewrite /locked_wh_disk. rewrite -H0 -H1. done.
+  rewrite /last_disk /disk_at_txn_id take_ge in H; try lia.
+  rewrite /locked_wh_disk. rewrite -H0 -H1 /=. congruence.
 Qed.
 
 Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn :

@@ -26,6 +26,24 @@ Proof.
   done.
 Qed.
 
+Lemma ghost_var_frac_agree γ q (a1 a2: A) :
+  own γ (●{q} (Excl' a1)) -∗ own γ (◯ (Excl' a2)) -∗ ⌜ a1 = a2 ⌝.
+Proof.
+  iIntros "Hγ1 Hγ2".
+  iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
+  iDestruct "H" as %(_&<-%Excl_included%leibniz_equiv&_)%auth_both_frac_valid.
+  done.
+Qed.
+
+Lemma ghost_var_frac_frac_agree γ q1 q2 (a1 a2: A) :
+  own γ (●{q1} (Excl' a1)) -∗ own γ (●{q2} (Excl' a2)) -∗ ⌜ a1 = a2 ⌝.
+Proof.
+  iIntros "Hγ1 Hγ2".
+  iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
+  iDestruct "H" as %Hvalid%auth_auth_frac_op_inv%leibniz_equiv.
+  by inversion Hvalid.
+Qed.
+
 Lemma ghost_var_update γ (a1' a1 a2 : A) :
   own γ (● (Excl' a1)) -∗ own γ (◯ (Excl' a2)) ==∗
     own γ (● (Excl' a1')) ∗ own γ (◯ (Excl' a1')).

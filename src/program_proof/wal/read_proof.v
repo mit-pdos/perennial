@@ -82,16 +82,16 @@ Proof.
   apply apply_upds_not_in_general; auto.
 Qed.
 
-Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) :
+Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) diskEnd_txn_id :
   {{{ wal_linv_fields st σ ∗
-      memLog_linv γ σ.(memLog) σ.(diskEnd) }}}
+      memLog_linv γ σ.(memLog) σ.(diskEnd) diskEnd_txn_id }}}
     WalogState__readMem #st #a
   {{{ b_s (ok:bool), RET (slice_val b_s, #ok);
       (if ok then ∃ b, is_block b_s 1 b ∗
                        ⌜apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = Some b⌝
       else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = None⌝) ∗
       "Hfields" ∷ wal_linv_fields st σ ∗
-      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd)
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) diskEnd_txn_id
   }}}.
 Proof.
   iIntros (Φ) "(Hfields&HmemLog_inv) HΦ".
@@ -138,29 +138,30 @@ Proof.
     iExists _; by iFrame.
 Qed.
 
-Theorem simulate_read_cache_hit {l γ Q σ memLog diskEnd b a} :
+Theorem simulate_read_cache_hit {l γ Q σ memLog diskEnd diskEnd_txn_id b a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = Some b ->
   (is_wal_inner l γ σ ∗ P σ) -∗
-  memLog_linv γ memLog diskEnd -∗
+  memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ ∗ P σ) ∗
               "HQ" ∷ Q (Some b) ∗
-              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd.
+              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
 Admitted.
 
-Theorem simulate_read_cache_miss {l γ Q σ memLog diskEnd a} :
+(* TODO: this is hard, should prove it at some point *)
+Theorem simulate_read_cache_miss {l γ Q σ memLog diskEnd diskEnd_txn_id a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = None ->
   (is_wal_inner l γ σ ∗ P σ) -∗
-  memLog_linv γ memLog diskEnd -∗
+  memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗
               "HQ" ∷ Q None ∗
-              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd.
+              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
 Admitted.
 

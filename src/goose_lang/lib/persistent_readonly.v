@@ -151,6 +151,37 @@ Section goose_lang.
     }
   Qed.
 
+  Theorem readonly_inner_sep Φ1 Φ2 :
+    □ (∀ q, Φ1 q ↔ Φ2 q ∗ (Φ2 q -∗ Φ1 q)) -∗
+    readonly_inner Φ1 ↔
+    (* note that this is true, but it doesn't cleanly separate readonly into two
+    halves to be able to use [inv_sep], and using [inv_alter] runs into a
+    similar issue *)
+    ∃ (q: Qp), ⌜Qcanon.Qclt q 1⌝ ∗ Φ2 q ∗ (Φ2 q -∗ Φ1 q).
+  Proof.
+    iIntros "#Hiff".
+    iSplit.
+    - iIntros "H1".
+      iDestruct "H1" as (q) "[% H1]".
+      iExists _; iFrame "%".
+      iApply ("Hiff" with "H1").
+    - iIntros "H12".
+      iDestruct "H12" as (q) "(%&H2&H1)".
+      iExists q; iFrame "%".
+      iApply ("H1" with "H2").
+  Qed.
+
+  Theorem readonly_weaken E P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
+    ↑N ⊆ E →
+    (∀ q, Φ1 q -∗ Φ2 q) -∗
+    readonly P ={E}=∗ readonly Q.
+  Proof.
+    iIntros (Hsub) "Himpl HP".
+    iMod (readonly_load_lt with "HP") as (q) "[% HΦ1]"; first by solve_ndisj.
+    iDestruct ("Himpl" with "HΦ1") as "HΦ2".
+    iMod (readonly_alloc with "HΦ2"); auto.
+  Qed.
+
 End goose_lang.
 
 Instance heap_mapsto_AsMapsTo `{ext: !ext_op} `{!na_heapG loc val Σ}

@@ -123,7 +123,7 @@ Definition wal_wf (s : log_state.t) :=
   addrs_wf (log_state.updates s) s.(log_state.d) ∧
   (* monotonicity of txnids  *)
   list_mono (λ pos1 pos2, int.val pos1 ≤ int.val pos2) (fst <$> s.(log_state.txns)) ∧
-  s.(log_state.installed_lb) ≤ s.(log_state.durable_lb) ≤ length s.(log_state.txns).
+  s.(log_state.installed_lb) ≤ s.(log_state.durable_lb) < length s.(log_state.txns).
 
 (** * apply_upds: interpret txns on top of disk *)
 Definition apply_upds (upds: list update.t) (d: disk): disk :=

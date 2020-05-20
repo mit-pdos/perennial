@@ -33,8 +33,8 @@ Theorem wp_Walog__waitForSpace l γ σₛ :
   {{{ σ, RET #();
       "Hlocked" ∷ locked γ.(lock_name)  ∗
       "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
-      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) ∗
-      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+      "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
       "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
       "%Hhas_space" ∷ ⌜length σ.(memLog).(slidingM.log) ≤ LogSz⌝
   }}}.
@@ -46,8 +46,8 @@ Proof.
   wp_apply (wp_forBreak_cond
               (λ b, "Hlocked" ∷ locked γ.(lock_name) ∗
                     "*" ∷ ∃ σ, "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
-                               "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) ∗
-                               "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+                               "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+                               "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
                                "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
                                "%Hbreak" ∷ ⌜b = false → (length σ.(memLog).(slidingM.log) ≤ LogSz)⌝
               )%I
@@ -162,14 +162,43 @@ Qed.
 Lemma circ_matches_extend cs txns installed_txn_id diskEnd_txn_id new_txn nextDiskEnd_txn_id :
   (installed_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat →
   (nextDiskEnd_txn_id < length txns)%nat →
-  has_updates new_txn (subslice diskEnd_txn_id nextDiskEnd_txn_id txns) →
+  has_updates new_txn (subslice (S diskEnd_txn_id) (S nextDiskEnd_txn_id) txns) →
   circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
   circ_matches_txns (set upds (λ u, u ++ new_txn) cs) txns installed_txn_id nextDiskEnd_txn_id.
 Proof.
   rewrite /circ_matches_txns /=.
-  intros.
-  rewrite -> (subslice_split_r installed_txn_id diskEnd_txn_id nextDiskEnd_txn_id) by lia.
+  intros ? ? ? [? ?].
+  split; [ | lia ].
+  rewrite -> (subslice_split_r installed_txn_id (S diskEnd_txn_id) (S nextDiskEnd_txn_id)) by lia.
   apply has_updates_app; auto.
+Qed.
+
+Lemma is_installed_extend_durable γ d txns installed_txn_id diskEnd_txn_id diskEnd_txn_id' :
+  (diskEnd_txn_id ≤ diskEnd_txn_id' < length txns)%nat →
+  is_installed γ d txns installed_txn_id diskEnd_txn_id -∗
+  is_installed γ d txns installed_txn_id diskEnd_txn_id'.
+Proof.
+  intros Hbound.
+  iNamed 1.
+  iExists _, _; iFrame.
+  iPureIntro; lia.
+Qed.
+
+Lemma circ_diskEnd_app σ upds' :
+  circΣ.diskEnd (set circΣ.upds (λ u, u ++ upds') σ) =
+  circΣ.diskEnd σ + length upds'.
+Proof.
+  rewrite /circΣ.diskEnd /=.
+  len.
+Qed.
+
+Lemma logIndex_diff memLog pos1 pos2 :
+  int.val memLog.(slidingM.start) ≤ int.val pos1 →
+  (slidingM.logIndex memLog pos2 - slidingM.logIndex memLog pos1)%nat =
+  (int.nat pos2 - int.nat pos1)%nat.
+Proof.
+  rewrite /slidingM.logIndex; intros.
+  lia.
 Qed.
 
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
@@ -211,12 +240,17 @@ Proof.
   wp_apply wp_slice_len; wp_pures.
   wp_if_destruct; wp_pures.
   { iApply "HΦ".
-    iFrame "Hlocked HnotLogging Happender".
-    iExists _; iFrame.
-    iExists _; iFrame "% ∗".
+    iFrame "Hlocked".
+    iSplitR "HnotLogging Hown_diskEnd_txn_id Happender".
+    - iExists _; iFrame.
+      iExists _; iFrame "% ∗".
+    - iFrame.
+      iExists _; iFrame.
   }
   iNamed "HdiskEnd_circ".
-  iMod (thread_own_get with "HdiskEnd_exactly HnotLogging") as "(HdiskEnd_exactly&HdiskEnd_is&HareLogging)".
+  iMod (thread_own_get with "HdiskEnd_exactly HnotLogging") as
+      "(HdiskEnd_exactly&Hlog_owned&HareLogging)";
+    iNamed "Hlog_owned".
   iNamed "HmemLog_linv".
   iNamed "Hstart_circ".
   iDestruct "HmemStart_txn" as "#HmemStart_txn".
@@ -229,20 +263,23 @@ Proof.
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
   wp_apply (wp_loadField_ro with "HmemLock").
   iDestruct "Htxns_are" as "#Htxns_are".
-  wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs $His_lock $Hlocked]").
+  wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs Hown_diskEnd_txn_id γdiskEnd_txn_id1 $His_lock $Hlocked]").
   { iExists _; iFrame "# ∗".
     iSplitR "Howntxns HmemEnd_txn".
     - iExists _; iFrame "% ∗".
-    - iExists _, _, _, _; iFrame "# % ∗". }
+    - iExists _, _, _; iFrame "# % ∗". }
   wp_loadField.
   iDestruct "Hwal" as "[Hwal Hcirc]".
-  wp_apply (wp_circular__Append _ _ (emp) with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least]").
+  wp_apply (wp_circular__Append _ _
+                              ("γdiskEnd_txn_id1" ∷ own γ.(diskEnd_txn_id_name) (●{1/2} Excl' nextDiskEnd_txn_id) ∗
+                               "Hown_diskEnd_txn_id" ∷ own γ.(diskEnd_txn_id_name) (◯ Excl' nextDiskEnd_txn_id))
+              with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least Hown_diskEnd_txn_id γdiskEnd_txn_id1]").
   { rewrite subslice_length; word. }
   { rewrite subslice_length; word. }
 
   { (* Append fupd *)
     rewrite /circular_pred.
-    iIntros (cs) "(%Hcirc_wf&Hcirc_ctx)".
+    iIntros (cs) "(%Hcirc_wf&%HdiskEnd_eq&Hcirc_ctx)".
     iIntros (cs' [] [Htrans Hcirc_wf']).
     simpl in Htrans; monad_inv.
     iInv "Hwal" as (σs) "[Hinner HP]".
@@ -251,25 +288,33 @@ Proof.
     iNamed.
     iNamed "Hdisk".
     iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
-    iMod (txns_are_sound with "Htxns_ctx Htxns_are") as "(%Htxns_are & Htxns_ctx)"; first by solve_ndisj.
-    iMod (txn_pos_valid' with "Htxns_ctx HmemStart_txn") as "(%HmemStart'&Htxns_ctx)"; first by solve_ndisj.
-    iMod (txn_pos_valid' with "Htxns_ctx HnextDiskEnd_txn") as "(%HnextDiskEnd'&Htxns_ctx)"; first by solve_ndisj.
+    iMod (txns_are_sound with "Htxns_ctx Htxns_are")
+      as "(%Htxns_are & Htxns_ctx)"; first by solve_ndisj.
+    iMod (txn_pos_valid' with "Htxns_ctx HmemStart_txn")
+      as "(%HmemStart'&Htxns_ctx)"; first by solve_ndisj.
+    iMod (txn_pos_valid' with "Htxns_ctx HnextDiskEnd_txn")
+      as "(%HnextDiskEnd'&Htxns_ctx)"; first by solve_ndisj.
     iMod (ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iNamed "Hdisk".
+    iDestruct (ghost_var_frac_frac_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.
+    iCombine "γdiskEnd_txn_id1 γdiskEnd_txn_id2" as "γdiskEnd_txn_id".
+    iDestruct (ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
+    iMod (ghost_var_update _ with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
+        "[[γdiskEnd_txn_id1 $] $]".
+
     iModIntro.
     iSplitL; [ | done ].
     iNext.
     iExists _; iFrame.
     iSplitR; auto.
     iExists _; iFrame.
-    iNamed "Hdisk".
     iNamed "circ.end".
-    assert (diskEnd_txn_id0 = diskEnd_txn_id); [ | subst ].
-    { (* TODO: need to somehow prove [diskEnd_txn_id0 = diskEnd_txn_id], which
-         is maybe based on the fact that diskEnd hasn't changed (due to
-         diskEnd_is ownership) and that it's the highest transaction id *)
-      admit. }
     iExists installed_txn_id, nextDiskEnd_txn_id.
     iFrame "# ∗".
+    iSplitL "Hinstalled".
+    { iApply (is_installed_extend_durable with "Hinstalled").
+      apply is_txn_bound in HnextDiskEnd'.
+      word. }
     iSplitL "Hdurable".
     { iDestruct "Hdurable" as %Hmatches.
       iPureIntro.
@@ -291,22 +336,43 @@ Proof.
     iSplit.
     { iPureIntro.
       simpl.
-      admit. (* recalculate diskEnd *) }
+      rewrite circ_diskEnd_app.
+      rewrite -> subslice_length by word.
+      rewrite -> logIndex_diff by word.
+      word. }
     { iPureIntro.
       admit. (* this is tricky - it's a txn pos, but that it's highest is due to
       some bounds *) }
   }
   rewrite -> subslice_length by word.
-  iIntros "(_&Hupds&Hcirc_ppaneder&HdiskEnd_is)".
+  iIntros "(Hpost&Hupds&Hcirc_appender&HdiskEnd_is)"; iNamed "Hpost".
   wp_loadField.
   wp_apply (acquire_spec with "His_lock").
   iIntros "(His_locked&Hlockinv)".
   iNamed "Hlockinv".
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
+  iRename "HdiskEnd_at_least" into "HdiskEnd_at_least_old".
+  iNamed "HdiskEnd_circ".
+  iMod (thread_own_put with "HdiskEnd_exactly HareLogging [HdiskEnd_is γdiskEnd_txn_id1]")
+    as "[HdiskEnd_exactly HnotLogging]"; first by iAccu.
   wp_apply wp_slice_len.
   wp_loadField. wp_storeField.
-  admit. (* TODO: restore lock invariant with new diskEnd *)
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "His_cond1").
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "His_cond2").
+  wp_pures.
+  iApply "HΦ".
+  iFrame "His_locked".
+  iSplitR "Hcirc_appender HnotLogging Hown_diskEnd_txn_id".
+  - (* TODO: come up with a simpler expression for new diskEnd *)
+    iExists (set diskEnd (λ _, int.val σ.(diskEnd) + int.val s.(Slice.sz)) σ).
+    simpl.
+    iFrame.
+    admit.
+  - iFrame.
+    iExists _; iFrame.
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :
@@ -331,14 +397,14 @@ Proof.
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗ logger_inv γ circ_l)%I
               with "[] [$]").
-  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&Hlogger) HΦ"; iNamed "Hlogger".
+  { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&Hlogger) HΦ".
     wp_apply (wp_load_shutdown with "[$st $Hlkinv]"); iIntros (shutdown) "Hlkinv".
     wp_pures.
     wp_if_destruct.
     - wp_pures.
-      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $HnotLogging $Happender]").
+      wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $Hlogger]").
       { iFrame "# ∗". }
-      iIntros (progress) "(Hlkinv&Hlk_held&HnotLogging)".
+      iIntros (progress) "(Hlkinv&Hlk_held&Hlogger)".
       wp_pures.
       destruct (negb progress); [ wp_if_true | wp_if_false ]; wp_pures.
       + wp_loadField.

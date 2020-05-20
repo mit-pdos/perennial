@@ -51,18 +51,29 @@ Proof.
   iExists false; iFrame.
 Qed.
 
-Theorem thread_own_put γ P :
+Theorem thread_own_put {γ} P' P :
   thread_own_ctx γ P -∗
   thread_own γ Used -∗
-  P ==∗ thread_own_ctx γ P ∗ thread_own γ Available.
+  P' ==∗ thread_own_ctx γ P' ∗ thread_own γ Available.
 Proof.
   rewrite /thread_own.
-  iIntros "Hctx Hγ HP".
+  iIntros "Hctx Hγ HP'".
   iDestruct "Hctx" as (available) "(Hown&_)".
   iMod (ghost_var_update γ true with "Hγ Hown") as "($&Hown)".
   iModIntro.
   iExists true; iFrame.
 Qed.
+
+Theorem thread_own_put_same {γ} P :
+  thread_own_ctx γ P -∗
+  thread_own γ Used -∗
+  P ==∗ thread_own_ctx γ P ∗ thread_own γ Available.
+Proof.
+  iIntros "Hctx Hused HP".
+  iMod (thread_own_put P with "Hctx Hused HP") as "[$ $]".
+  auto.
+Qed.
+
 End thread_owned.
 
 Global Opaque thread_own_ctx thread_own.
