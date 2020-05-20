@@ -1026,3 +1026,84 @@ Notation "'[∗' 'maplist]' k ↦ x ; v ∈ m ; l , P" :=
   : bi_scope.
 
 Opaque big_sepML.
+
+(** * additional instances for big_sepM *)
+Instance big_sepM_IntoPure {PROP: bi} `{Countable K} {V}
+        (Φ: K → V → PROP) (P: K → V → Prop)
+        {ΦP: ∀ k v, IntoPure (Φ k v) (P k v)}
+        (m: gmap K V) :
+  IntoPure ([∗ map] k↦x ∈ m, Φ k x) (map_Forall P m).
+Proof.
+  rewrite -(list_to_map_to_list m).
+  pose proof (NoDup_fst_map_to_list m) as HNoDup; revert HNoDup.
+  generalize (map_to_list m) as kvs.
+  induction kvs as [|kv kvs IH]; simpl; intros; auto.
+  - hnf.
+    iIntros "_ !%".
+    apply map_Forall_empty.
+  - hnf; iIntros "HP".
+    apply NoDup_cons in HNoDup as [HnotElem HNoDup].
+    intuition.
+    assert (list_to_map (M:=gmap _ _) kvs !! kv.1 = None).
+    { apply not_elem_of_list_to_map; auto. }
+    rewrite -> big_sepM_insert by auto.
+    iDestruct (into_pure with "HP") as %?.
+    iPureIntro.
+    rewrite -> map_Forall_insert by auto.
+    auto.
+Qed.
+
+Lemma big_sepM_from_Forall {PROP: bi} `{Countable K} {V}
+      (Φ: K → V → PROP) (P: K → V → Prop)
+      (m: gmap K V) :
+  (∀ k v, P k v → ⊢ Φ k v) →
+  map_Forall P m →
+  ⊢ [∗ map] k↦x ∈ m, Φ k x.
+Proof.
+  intros HfromP.
+  rewrite -(list_to_map_to_list m).
+  pose proof (NoDup_fst_map_to_list m) as HNoDup; revert HNoDup.
+  generalize (map_to_list m) as kvs.
+  induction kvs as [|kv kvs IH]; simpl; intros; auto.
+  - rewrite big_sepM_empty; auto.
+  - apply NoDup_cons in HNoDup as [HnotElem HNoDup].
+    assert (list_to_map (M:=gmap _ _) kvs !! kv.1 = None).
+    { apply not_elem_of_list_to_map; auto. }
+    rewrite -> big_sepM_insert by auto.
+    rewrite -> map_Forall_insert in H0 by auto.
+    intuition.
+    iSplitL.
+    + iDestruct HfromP as "$"; auto.
+    + auto.
+Qed.
+
+Instance big_sepM_FromPure_affine {PROP: bi} `{Countable K} {V}
+          (Φ: K → V → PROP) (P: K → V → Prop)
+          {ΦP: ∀ k v, FromPure true (Φ k v) (P k v)}
+          (m: gmap K V) :
+  FromPure true ([∗ map] k↦x ∈ m, Φ k x) (map_Forall P m).
+Proof.
+  hnf; simpl.
+  iIntros "%".
+  iDestruct (big_sepM_from_Forall) as "$"; eauto.
+Qed.
+
+Instance big_sepM_FromPure {PROP: bi} `{Countable K} {V}
+          `{BiAffine PROP}
+          (Φ: K → V → PROP) (P: K → V → Prop)
+          {ΦP: ∀ k v, FromPure false (Φ k v) (P k v)}
+          (m: gmap K V) :
+  FromPure false ([∗ map] k↦x ∈ m, Φ k x) (map_Forall P m).
+Proof.
+  hnf; simpl.
+  iIntros "%".
+  iDestruct (big_sepM_from_Forall) as "$"; eauto.
+Qed.
+
+Lemma big_sepM_lookup_holds {PROP:bi} `{Countable K} {V}
+      `{BiAffine PROP} (m: gmap K V) :
+  ⊢@{PROP} [∗ map] k↦v ∈ m, ⌜m !! k = Some v⌝.
+Proof.
+  iPureIntro.
+  apply map_Forall_lookup; auto.
+Qed.

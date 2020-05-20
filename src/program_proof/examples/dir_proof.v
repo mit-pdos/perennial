@@ -76,23 +76,8 @@ Proof.
     word.
 Qed.
 
-Lemma big_sepM_lookup_holds {PROP:bi} `{Countable K} {V} (m: gmap K V) :
-  ⊢@{PROP} [∗ map] k↦v ∈ m, ⌜m !! k = Some v⌝.
-Proof.
-  rewrite big_opM_eq /big_opM_def /curry /=.
-  assert (map_Forall (λ (k:K) (v:V), m !! k = Some v) m) as Hmap.
-  { apply map_Forall_lookup; auto. }
-  apply map_Forall_to_list in Hmap.
-  generalize dependent (map_to_list m).
-  induction l as [|kv kvs IH]; simpl; intros; auto.
-  inversion Hmap; subst.
-  destruct kv as [k v].
-  iSplitL.
-  + simpl in H3; auto.
-  + intuition.
-Qed.
-
-Lemma big_sepM_lookup_unit (PROP:bi) `{Countable K} (m: gmap K ()) :
+Lemma big_sepM_lookup_unit (PROP:bi) `{Countable K}
+  `{BiAffine PROP} (m: gmap K ()) :
   ⊢@{PROP} [∗ map] k↦_ ∈ m, ⌜m !! k = Some tt⌝.
 Proof.
   iDestruct (big_sepM_lookup_holds m) as "Hmap".
