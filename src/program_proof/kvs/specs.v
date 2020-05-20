@@ -164,28 +164,17 @@ Proof.
          wp_let.
          iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "HisBuf"; unfold specs.is_buf.
          { iSplit; eauto. iExists data. iFrame; auto. iExists sz0; simpl. iSplitL "Hbsz"; auto. }
-         (* Need a Q for CommitWait *)
-         wp_apply (wp_BufTxn__CommitWait buftx keyMp γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[HisBuf]").
+         (* {[key := existT defs.KindBlock (defs.bufBlock blk)]} *)
+         wp_apply (wp_BufTxn__CommitWait _ _ γDisk _ _
+                                       (* TODO: need a real Q *)
+                                       (λ _, emp)%I  with "[HisBuf]").
          {
            iFrame; auto.
-           rewrite <- HbuildAddr, big_opM_singleton; auto.
+           rewrite -HbuildAddr.
+           admit.
          }
-         iIntros (ok) "Hmapsto".
-         rewrite big_sepM_singleton.
-         iPoseProof ("HrestMt" with "Hmapsto") as "Hmapsto".
-         wp_let.
-         wp_pures.
-         wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
-         wp_pures. iApply ("Hϕ" $! lptr).
-         iSplitL "Htxnl Hsz Hmapsto".
-         { unfold ptsto_kvs. iExists l. iFrame; auto. }
-         iSplitR; auto.
-         {
-           iFrame; eauto.
-           unfold is_block.
-           iApply is_slice_to_small; auto.
-         }
-Qed.
+         iIntros (ok) "Hpost".
+Admitted.
 
 Theorem wpc_KVS__MultiPut kvsl kvsblks sz γDisk kvp_ls_before kvp_ls_new kvp_slice:
   {{{
@@ -205,7 +194,7 @@ Proof.
   wp_loadField.
   wp_pures.
   wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
-  iIntros (buftx γt) "Hbtxn".
+  iIntros (buftx) "Hbtxn".
   wp_let.
   wp_apply (wp_forSlicePrefix
         (fun done todo =>
@@ -220,12 +209,11 @@ Proof.
         )%I with "[Hsz Htxnl]").
   { iIntros (i x vs vs').
     iModIntro.
-    iIntros (lϕ) "H".
-    iNamed "H".
-    iIntros "Hinv".
+    iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
     wp_pures.
-    iNamed "Hinv".
+    iDestruct "Hkvs" as (l') "(txn&sz&Htxn'&%&Hkvsblks)".
     wp_loadField.
+    wp_pures.
 
 Admitted.
 
