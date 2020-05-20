@@ -1,3 +1,4 @@
+From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import Map.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
@@ -17,19 +18,30 @@ Proof.
   constructor; auto.
 Qed.
 
+(* state representation types (defined here since modules can't be in sections) *)
+Module alloc.
+  Record t :=
+    mk { free: gset u64; }.
+  Global Instance _eta : Settable _ := settable! mk <free>.
+  Global Instance _inhabited : Inhabited t := populate!.
+End alloc.
+
 Section goose.
 Context `{!heapG Σ}.
+Context `{!lockG Σ}.
 
-Implicit Types (free: gmap u64 ()).
+Let allocN := nroot.@"allocator".
+
+Implicit Types (m: gmap u64 ()) (free: gset u64).
 
 Theorem wp_FreeRange (start sz: u64) :
   int.val start + int.val sz < 2^64 ->
   {{{ True }}}
     FreeRange #start #sz
-  {{{ (mref: loc) free, RET #mref;
-      is_map mref free ∗
+  {{{ (mref: loc) m, RET #mref;
+      is_map mref m ∗
       ⌜∀ (x:u64), int.val start ≤ int.val x < int.val start + int.val sz ->
-                  free !! x = Some tt⌝ }}}.
+                  m !! x = Some tt⌝ }}}.
 Proof.
   iIntros (Hbound Φ) "_ HΦ".
   wp_call.
@@ -38,9 +50,9 @@ Proof.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (il) "i".
   wp_pures.
-  wp_apply (wp_forUpto (λ i, ∃ free, "Hmap" ∷ is_map mref free ∗
+  wp_apply (wp_forUpto (λ i, ∃ m, "Hmap" ∷ is_map mref m ∗
       "%Hmap_vals" ∷ ⌜∀ (x:u64), int.val start ≤ int.val x < int.val i ->
-                      free !! x = Some tt⌝)%I
+                      m !! x = Some tt⌝)%I
             with "[] [Hmap $i]").
   - word.
   - clear Φ.
@@ -85,12 +97,12 @@ Proof.
   destruct x; auto.
 Qed.
 
-Theorem wp_findKey mref free :
-  {{{ is_map mref free }}}
+Theorem wp_findKey mref m :
+  {{{ is_map mref m }}}
     findKey #mref
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
-      ⌜if ok then free !! k = Some tt else True⌝ ∗
-      is_map mref free
+      ⌜if ok then m !! k = Some tt else True⌝ ∗
+      is_map mref m
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
@@ -104,8 +116,8 @@ Proof.
                        (∃ (found: u64) (ok: bool),
                            "found" ∷ found_l ↦[uint64T] #found ∗
                            "ok" ∷ ok_l ↦[boolT] #ok ∗
-                           "%Hfound_is" ∷ ⌜if ok then free !! found = Some tt else True⌝)
-                       (λ k _, ⌜free !! k = Some tt⌝)%I
+                           "%Hfound_is" ∷ ⌜if ok then m !! found = Some tt else True⌝)
+                       (λ k _, ⌜m !! k = Some tt⌝)%I
                        (λ _ _, True)%I
                        with "Hmap [found ok]").
   - iExists _, _; iFrame.
@@ -134,5 +146,38 @@ Proof.
     iApply "HΦ"; iFrame.
     auto.
 Qed.
+
+Implicit Types (P: alloc.t → iProp Σ).
+Implicit Types (l:loc) (γ:gname) (σ: alloc.t).
+
+Definition allocator_linv (mref: loc) σ : iProp Σ :=
+  ∃ m, is_map mref m ∗ ⌜dom (gset _) m = σ.(alloc.free)⌝ ∗
+       [∗ set] k ∈ σ.(alloc.free), ∃ b, int.val k d↦ b
+.
+
+Definition is_allocator P (l: loc) (γ: gname) : iProp Σ :=
+  ∃ (lref mref: loc) m,
+    "m" ∷ readonly (l ↦[allocator.S :: "m"] #lref) ∗
+    "free" ∷ readonly (l ↦[allocator.S :: "mref"] #mref) ∗
+    is_lock allocN γ #lref (∃ σ, allocator_linv mref σ ∗ P σ)
+.
+
+Theorem wp_newAllocator mref m P :
+  {{{ is_map mref m ∗ P (alloc.mk (dom (gset _) m)) }}}
+    newAllocator #mref
+  {{{ l γ, RET #l; is_allocator P l γ }}}.
+Proof.
+Admitted.
+
+Theorem wp_Reserve P (Q: u64 → iProp Σ) l γ :
+  {{{ is_allocator P l γ ∗
+      (∀ σ σ' a,
+          ⌜a ∈ σ.(alloc.free) ∧ σ' = set alloc.free (λ free, free ∖ {[a]}) σ⌝ -∗
+          P σ ={⊤ ∖ ↑allocN}=∗ P σ' ∗ Q a)
+  }}}
+    allocator__Reserve #l
+  {{{ a, RET #a; is_allocator P l γ ∗ Q a ∗ ∃ b, int.val a d↦ b }}}.
+Proof.
+Admitted.
 
 End goose.
