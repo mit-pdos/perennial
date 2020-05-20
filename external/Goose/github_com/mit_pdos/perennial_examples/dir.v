@@ -24,8 +24,9 @@ End allocator.
 Definition FreeRange: val :=
   rec: "FreeRange" "start" "sz" :=
     let: "m" := NewMap (struct.t unit.S) in
+    let: "end" := "start" + "sz" in
     let: "i" := ref_to uint64T "start" in
-    (for: (λ: <>, ![uint64T] "i" < "start" + "sz"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, ![uint64T] "i" < "end"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       MapInsert "m" (![uint64T] "i") (struct.mk unit.S [
       ]);;
       Continue);;
