@@ -256,6 +256,19 @@ Lemma is_wal_post_crash γ P' l:
 Proof.
 Abort.
 
+Lemma txns_ctx_gname_eq γ γ' txns :
+  txns_ctx_name γ = txns_ctx_name γ' →
+  txns_ctx γ txns = txns_ctx γ' txns.
+Proof. rewrite /txns_ctx/gen_heap_ctx/txn_val => -> //=. Qed.
+
+Ltac show_crash1 := eauto.
+
+Ltac show_crash2 :=
+  try (crash_case); iExists _;
+  iSplitL ""; first auto;
+  iSplitL ""; first auto;
+  iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
+
 Theorem wpc_mkLog_recover k E2 d γ σ :
   {{{ is_wal_inner_durable γ σ }}}
     mkLog #d @ NotStuck; k; ⊤; E2
@@ -269,18 +282,11 @@ Proof.
   iIntros (Φ Φc) "Hcs HΦ".
   rewrite /mkLog.
 
-  Ltac show_crash1 := eauto.
 
   wpc_pures; first by show_crash1.
   iNamed "Hcs".
   iNamed "Hdisk".
   wpc_bind (recoverCircular _).
-
-  Ltac show_crash2 :=
-    try (crash_case); iExists _;
-    iSplitL ""; first auto;
-    iSplitL ""; first auto;
-    iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
 
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
@@ -299,10 +305,6 @@ Proof.
   iMod (ghost_var_alloc σ.(log_state.txns)) as (γtxns_name) "(γtxns & Howntxns)".
   iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "(Htxns_ctx&Htxns)".
   { solve_ndisj. }
-  Lemma txns_ctx_gname_eq γ γ' txns :
-    txns_ctx_name γ = txns_ctx_name γ' →
-    txns_ctx γ txns = txns_ctx γ' txns.
-  Proof. rewrite /txns_ctx/gen_heap_ctx/txn_val => -> //=. Qed.
 
   set (γ0 :=
          ((set txns_name (λ _, γtxns_name)
