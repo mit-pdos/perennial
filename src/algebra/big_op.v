@@ -1073,7 +1073,7 @@ Proof.
     rewrite -> map_Forall_insert in H0 by auto.
     intuition.
     iSplitL.
-    + iDestruct HfromP as "$"; auto.
+    + iApply HfromP; auto.
     + auto.
 Qed.
 
@@ -1085,7 +1085,7 @@ Instance big_sepM_FromPure_affine {PROP: bi} `{Countable K} {V}
 Proof.
   hnf; simpl.
   iIntros "%".
-  iDestruct (big_sepM_from_Forall) as "$"; eauto.
+  iApply big_sepM_from_Forall; eauto.
 Qed.
 
 Instance big_sepM_FromPure {PROP: bi} `{Countable K} {V}
@@ -1097,7 +1097,7 @@ Instance big_sepM_FromPure {PROP: bi} `{Countable K} {V}
 Proof.
   hnf; simpl.
   iIntros "%".
-  iDestruct (big_sepM_from_Forall) as "$"; eauto.
+  iApply big_sepM_from_Forall; eauto.
 Qed.
 
 Lemma big_sepM_lookup_holds {PROP:bi} `{Countable K} {V}

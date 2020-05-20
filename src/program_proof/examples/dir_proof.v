@@ -109,9 +109,7 @@ Proof.
                        (λ _ _, True)%I
                        with "Hmap [found ok]").
   - iExists _, _; iFrame.
-  - (* TODO: should be able to prove this with iPureIntro and then something
-    simple, but there's no IntoPure for big_sepM *)
-    iApply big_sepM_lookup_unit.
+  - iApply big_sepM_lookup_unit.
   - iIntros (k v) "!>".
     clear Φ.
     iIntros (Φ) "[HI %Helem] HΦ"; iNamed "HI".
