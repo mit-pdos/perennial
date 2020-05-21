@@ -752,6 +752,101 @@ Proof.
   repeat (f_equal; try word).
 Qed.
 
+Theorem memLogMap_drop1_not_highest (σ: slidingM.t) (upd: update.t) i :
+  slidingM.wf σ
+  → σ.(slidingM.log) !! O = Some upd
+  → find_highest_index (update.addr <$> σ.(slidingM.log)) upd.(update.addr) = Some i
+  → (i > 0)%nat
+  → slidingM.addrPosMap
+      (set slidingM.start (word.add 1)
+        (set slidingM.log (drop 1) σ)) =
+    slidingM.addrPosMap σ.
+Proof.
+  intros (_ & Hbounds & _) Hlookup Hhighest Hgt.
+  rewrite /slidingM.addrPosMap /compute_memLogMap.
+  rewrite /set /=.
+  rewrite fmap_drop.
+  remember (update.addr <$> σ.(slidingM.log)) as addrs.
+  assert (addrs !! O = Some upd.(update.addr))
+    by rewrite Heqaddrs list_lookup_fmap Hlookup //=.
+  remember upd.(update.addr) as addr.
+  remember σ.(slidingM.start) as start.
+  replace (length σ.(slidingM.log)) with (length addrs) in Hbounds
+    by rewrite Heqaddrs map_length //.
+  clear Heqaddr Heqaddrs upd Hlookup Heqstart σ.
+
+  f_equal.
+  apply map_eq.
+  intros oaddr.
+  rewrite pos_indices_lookup pos_indices_lookup.
+  destruct addrs; first by eauto.
+  rewrite /= drop_0.
+  rewrite /= in H.
+  inversion H. clear H.
+  rewrite /= in Hbounds.
+  rewrite /= decide_True in Hhighest. 2: eauto.
+  destruct (find_highest_index addrs addr) eqn:Hn; inversion Hhighest.
+  2: lia.
+  subst.
+  clear Hhighest Hgt.
+  destruct (decide (oaddr = addr)).
+  {
+    subst.
+    rewrite Hn /=.
+    f_equal.
+    word.
+  }
+  destruct (find_highest_index addrs oaddr).
+  2: eauto.
+  simpl.
+  f_equal.
+  word.
+Qed.
+
+Theorem memLogMap_drop1_highest (σ: slidingM.t) (upd: update.t) :
+  slidingM.wf σ
+  → σ.(slidingM.log) !! O = Some upd
+  → find_highest_index (update.addr <$> σ.(slidingM.log)) upd.(update.addr) = Some O
+  → slidingM.addrPosMap
+      (set slidingM.start (word.add 1)
+        (set slidingM.log (drop 1) σ)) =
+    map_del (slidingM.addrPosMap σ) upd.(update.addr).
+Proof.
+  intros (_ & Hbounds & _) Hlookup Hhighest.
+  rewrite /slidingM.addrPosMap /compute_memLogMap.
+  rewrite /set /=.
+  rewrite fmap_drop.
+  remember (update.addr <$> σ.(slidingM.log)) as addrs.
+  assert (addrs !! O = Some upd.(update.addr))
+    by rewrite Heqaddrs list_lookup_fmap Hlookup //=.
+  remember upd.(update.addr) as addr.
+  remember σ.(slidingM.start) as start.
+  replace (length σ.(slidingM.log)) with (length addrs) in Hbounds
+    by rewrite Heqaddrs map_length //.
+  clear Heqaddr Heqaddrs upd Hlookup Heqstart σ.
+
+  rewrite /map_del -fmap_delete.
+  f_equal.
+  apply map_eq.
+  intros oaddr.
+  rewrite pos_indices_lookup.
+  destruct addrs; first by eauto.
+  rewrite /= drop_0.
+  rewrite /= in H.
+  inversion H. clear H. subst.
+  rewrite /= in Hbounds.
+  rewrite /= decide_True in Hhighest. 2: eauto.
+  destruct (find_highest_index addrs addr) eqn:Hn; first by inversion Hhighest.
+  destruct (decide (oaddr = addr)).
+  1: subst; rewrite lookup_delete Hn /= //.
+  rewrite lookup_delete_ne. 2: eauto.
+  Search partial_alter.
+  rewrite lookup_partial_alter_ne. 2: eauto.
+  rewrite pos_indices_lookup.
+  repeat f_equal.
+  word.
+Qed.
+
 Theorem wp_sliding__deleteFrom l σ (newStart: u64) :
   int.val σ.(slidingM.start) ≤ int.val newStart ≤ int.val σ.(slidingM.mutable) ->
   {{{ is_sliding l σ }}}
@@ -796,6 +891,8 @@ Proof.
     iIntros (i u).
     iIntros "!>" (Φ) "(HI & %Hlt & %Hlookup) HΦ".
     iNamed "HI".
+    rewrite /slice_take /= in Hlt.
+    replace (int.val (word.sub newStart σ.(slidingM.start))) with ((int.val newStart) - (int.val σ.(slidingM.start))) in Hlt by word.
     rewrite list_lookup_fmap in Hlookup.
     apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
     wp_pures.
@@ -803,16 +900,20 @@ Proof.
     wp_apply (wp_MapGet with "HaddrPos").
     iIntros (pos ok) "[%Hmapget HaddrPos]".
     wp_pures.
+
+    assert ((int.nat i) <
+      length (take (int.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log))
+    )%nat as Hlt' by (rewrite take_length; word).
+    destruct (list_lookup_lt _ _ _ Hlt') as (upd & Hupd).
+    clear Hlt'.
+    iDestruct (big_sepL2_lookup_acc with "Hbks") as "[[%Huaddr Hb] Hbks]"; eauto.
+    iAssert (is_update uv q upd) with "[Hb]" as "Hbk"; first by (iFrame; eauto).
+    iPoseProof ("Hbks" with "Hbk") as "Hbks".
+    rewrite lookup_take in Hupd. 2: word.
+
     destruct ok; wp_pures.
     2: {
       (* contradiction: blkno must exist in s.addrPos *)
-      rewrite /slice_take /= in Hlt.
-      replace (int.val (word.sub newStart σ.(slidingM.start))) with ((int.val newStart) - (int.val σ.(slidingM.start))) in Hlt by word.
-      assert ((int.nat i) <
-        length (take (int.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log))
-      )%nat as Hlt' by (rewrite take_length; word).
-      destruct (list_lookup_lt _ _ _ Hlt') as (upd & Hupd).
-      iDestruct (big_sepL2_lookup_acc with "Hbks") as "[[%Huaddr Hb] Hbks]"; eauto.
       apply map_get_false in Hmapget.
       destruct Hmapget as [Hmapget _].
       rewrite addrPosMap_lookup_inv /= in Hmapget.
@@ -820,33 +921,72 @@ Proof.
       apply find_highest_index_none with (txn_id := O) in Hmapget.
       rewrite Huaddr list_lookup_fmap lookup_drop Nat.add_0_r in Hmapget.
       replace (slidingM.logIndex σ (word.add σ.(slidingM.start) i)) with (int.nat i) in Hmapget by word.
-      rewrite lookup_take in Hupd. 2: word.
-      rewrite Hupd /= in Hmapget.
-      intuition.
+      rewrite Hupd //= in Hmapget.
     }
     apply map_get_true in Hmapget.
     rewrite addrPosMap_lookup_inv /= in Hmapget.
     apply fmap_Some_1 in Hmapget as [oldPos [Hindex ->]]; simpl.
+    rewrite Huaddr in Hindex.
     pose proof (find_highest_index_ok' _ _ _ Hindex) as [Hlookup_oldPos _].
     apply lookup_lt_Some in Hlookup_oldPos.
     rewrite fmap_length drop_length in Hlookup_oldPos.
+
+    remember (set slidingM.start (word.add i)
+      (set slidingM.log (drop (int.nat i)) σ))
+      as σtrunc.
+    replace (set slidingM.start (word.add (word.add i 1))
+      (set slidingM.log (drop (int.nat (word.add i 1))) σ))
+      with (set slidingM.start (word.add 1)
+      (set slidingM.log (drop 1) σtrunc)).
+    2: {
+      subst.
+      destruct σ.
+      rewrite /set /=.
+      f_equal.
+      - rewrite drop_drop.
+        f_equal.
+        word.
+      - word_cleanup.
+        rewrite /word.wrap Zplus_mod_idemp_r.
+        f_equal.
+        lia.
+    }
+
+    replace (int.nat (word.add i σ.(slidingM.start))) with (int.nat i + int.nat σ.(slidingM.start))%nat by word.
+    replace (int.val (word.add σ.(slidingM.start) i)) with (int.val (int.nat i + int.nat σ.(slidingM.start))%nat) by word.
+    replace (int.val (int.nat i + int.nat σ.(slidingM.start) + oldPos)%nat) with (int.val i + int.val σ.(slidingM.start) + oldPos) by word.
+    replace (int.val (int.nat i + int.nat σ.(slidingM.start))%nat) with (int.val i + int.val σ.(slidingM.start)) by word.
+
     wp_if_destruct.
     2: {
       iApply "HΦ".
       iFrame.
-      (* TODO: make into a lemma *)
-      admit.
+      erewrite memLogMap_drop1_not_highest.
+      - iFrame.
+      - rewrite Heqσtrunc /slidingM.wf drop_length /=.
+        word.
+      - rewrite Heqσtrunc /set /= lookup_drop Nat.add_0_r Hupd //.
+      - rewrite Heqσtrunc /set /= Hindex //.
+      - word.
     }
+
     wp_pures.
     wp_apply util_proof.wp_DPrintf.
     wp_pures.
     wp_loadField.
     wp_apply (wp_MapDelete with "HaddrPos").
     iIntros "HaddrPos".
+    rewrite Huaddr.
     iApply "HΦ".
     iFrame.
-    (* TODO: make into a lemma *)
-    admit.
+    assert (oldPos = O) by lia.
+    subst oldPos.
+    erewrite memLogMap_drop1_highest.
+    - iFrame.
+    - rewrite Heqσtrunc /slidingM.wf drop_length /=.
+      word.
+    - rewrite Heqσtrunc /set /= lookup_drop Nat.add_0_r Hupd //.
+    - rewrite Heqσtrunc /set /= Hindex //.
   }
   iIntros "[HI HlogSlice]".
   iNamed "HI".
@@ -857,6 +997,45 @@ Proof.
   iApply (wp_storeField with "log"); first by (rewrite /field_ty /=; eauto).
   iIntros "!> log".
   wp_pures.
+
+  destruct σ eqn:Hσ.
+  rewrite /slidingM.logIndex /set /readonly_log /slidingM.numMutable /=.
+  rewrite /= in logSlice_wf.
+  rewrite /= in HnewStart.
+  rewrite /slidingM.wf /= in Hwf.
+
+  iAssert (∀ q, (updates_slice_frag
+                      (slice_take logSlice
+                         (uint64T * (blockT * unitT)%ht)
+                         (word.sub mutable start)) q
+                      (take (int.nat (word.sub mutable start))
+                         log)) -∗
+    (updates_slice_frag
+       (slice_take
+          (slice_skip logSlice (uint64T * (blockT * unitT)%ht)
+             (word.sub newStart start))
+          (uint64T * (blockT * unitT)%ht)
+          (word.sub mutable newStart)) q
+       (take (int.nat (word.sub mutable newStart))
+          (drop (int.nat newStart - int.nat start) log))))%I as "Hlog_implies".
+  {
+    clear q.
+    iIntros (q) "Hlog".
+    iPoseProof (updates_slice_frag_split _ _ (int.nat newStart - int.nat start) with "Hlog") as "[Hlog _]".
+    {
+      rewrite /slice_take /=.
+      word.
+    }
+    iExactEq "Hlog".
+    f_equal.
+    - rewrite /slice_take /slice_skip /=.
+      repeat (f_equal; try word).
+    - rewrite firstn_skipn_comm.
+      repeat (f_equal; try word).
+  }
+  iPoseProof (readonly_weaken with "Hlog_implies log_readonly") as "> Hlog_frag"; first by eauto.
+  iClear "Hlog_implies".
+
   wp_storeField.
   iApply "HΦ".
   iFrame.
@@ -868,34 +1047,19 @@ Proof.
   }
   iExists _, _.
   iFrame.
-  iSplitR.
-  {
-    (* TODO: need to split out relevant chunk from readonly *)
-    admit.
-  }
   iSplitL "log_mutable".
   {
     rewrite /mutable_log /set drop_length /=.
     iSplit; first by (iPureIntro; word).
     rewrite /slice_skip /slidingM.numMutable drop_drop loc_add_assoc -Z.mul_add_distr_l /=.
-    replace (slidingM.logIndex σ newStart + int.nat (word.sub σ.(slidingM.mutable) newStart))%nat
-      with (int.nat (word.sub σ.(slidingM.mutable) σ.(slidingM.start)))%nat by word.
-    replace (int.val (word.sub newStart σ.(slidingM.start)) + int.val (word.sub σ.(slidingM.mutable) newStart))
-      with (int.val (word.sub σ.(slidingM.mutable) σ.(slidingM.start))) by word.
-    replace (word.sub (word.sub logSlice.(Slice.sz) (word.sub newStart σ.(slidingM.start))) (word.sub σ.(slidingM.mutable) newStart))
-      with (word.sub logSlice.(Slice.sz) (word.sub σ.(slidingM.mutable) σ.(slidingM.start)))
-      by (apply word.unsigned_inj; word).
-    replace (word.sub (word.sub logSlice.(Slice.cap) (word.sub newStart σ.(slidingM.start))) (word.sub σ.(slidingM.mutable) newStart))
-      with (word.sub logSlice.(Slice.cap) (word.sub σ.(slidingM.mutable) σ.(slidingM.start)))
-      by (apply word.unsigned_inj; word).
-    iAssumption.
+    iExactEq "log_mutable".
+    rewrite /named.
+    repeat (f_equal; try word).
   }
-  rewrite /slice_take /=.
-  replace (word.add σ.(slidingM.start) (word.sub newStart σ.(slidingM.start))) with newStart by word.
-  rewrite /set /=.
-  replace (word.add (word.sub newStart σ.(slidingM.start)) σ.(slidingM.start)) with newStart by word.
-  iFrame.
-Admitted.
+  iExactEq "HaddrPos".
+  rewrite /named.
+  repeat (f_equal; try word).
+Qed.
 
 Lemma numMutable_after_clear σ :
   slidingM.wf σ ->
