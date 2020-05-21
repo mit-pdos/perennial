@@ -275,7 +275,7 @@ Theorem wp_MapIter stk E mref (m: gmap u64 val * val) (I: iProp Σ) (P Q: u64 ->
       {{{ I ∗ P k v }}}
         body #k v @ stk; E
       {{{ RET #(); I ∗ Q k v }}}) -∗
-  ((is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ fst m, Q k v) -∗ Φ #()) -∗
+  ▷ ((is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ fst m, Q k v) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "Hm Hi Hp #Hind HΦ".

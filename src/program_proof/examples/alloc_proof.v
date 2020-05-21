@@ -101,7 +101,8 @@ Theorem wp_findKey mref m :
   {{{ is_map mref m }}}
     findKey #mref
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
-      ⌜if ok then m !! k = Some tt else True⌝ ∗
+      ⌜if ok then m !! k = Some tt else True⌝ ∗ (* TODO: easier if this
+      promises to find a key if it exists *)
       is_map mref m
   }}}.
 Proof.
@@ -151,16 +152,21 @@ Implicit Types (P: alloc.t → iProp Σ).
 Implicit Types (l:loc) (γ:gname) (σ: alloc.t).
 
 Definition allocator_linv (mref: loc) σ : iProp Σ :=
-  ∃ m, is_map mref m ∗ ⌜dom (gset _) m = σ.(alloc.free)⌝ ∗
-       [∗ set] k ∈ σ.(alloc.free), ∃ b, int.val k d↦ b
+  ∃ m, "Hfreemap" ∷ is_map mref m ∗
+       "%Hfreeset" ∷ ⌜dom (gset _) m = σ.(alloc.free)⌝ ∗
+       "Hblocks" ∷ [∗ set] k ∈ σ.(alloc.free), ∃ b, int.val k d↦ b
 .
 
 Definition is_allocator P (l: loc) (γ: gname) : iProp Σ :=
-  ∃ (lref mref: loc) m,
+  ∃ (lref mref: loc),
     "#m" ∷ readonly (l ↦[allocator.S :: "m"] #lref) ∗
-    "#free" ∷ readonly (l ↦[allocator.S :: "mref"] #mref) ∗
-    "#His_lock" ∷ is_lock allocN γ #lref (∃ σ, allocator_linv mref σ ∗ P σ)
+    "#free" ∷ readonly (l ↦[allocator.S :: "free"] #mref) ∗
+    "#His_lock" ∷ is_lock allocN γ #lref (∃ σ, "Hlockinv" ∷ allocator_linv mref σ ∗ "HP" ∷ P σ)
 .
+
+Global Instance is_allocator_Persistent P l γ :
+  Persistent (is_allocator P l γ).
+Proof. apply _. Qed.
 
 Theorem wp_newAllocator P mref m :
   {{{ is_map mref m ∗ P (alloc.mk (dom (gset _) m)) }}}
@@ -169,15 +175,57 @@ Theorem wp_newAllocator P mref m :
 Proof.
 Admitted.
 
-Theorem wp_Reserve P (Q: u64 → iProp Σ) l γ :
+Theorem wp_Reserve P (Q: option u64 → iProp Σ) l γ :
   {{{ is_allocator P l γ ∗
-      (∀ σ σ' a,
-          ⌜a ∈ σ.(alloc.free) ∧ σ' = set alloc.free (λ free, free ∖ {[a]}) σ⌝ -∗
-          P σ ={⊤ ∖ ↑allocN}=∗ P σ' ∗ Q a)
+      (∀ σ σ' ma,
+          ⌜match ma with
+           | Some a => a ∈ σ.(alloc.free) ∧ σ' = set alloc.free (λ free, free ∖ {[a]}) σ
+           | None => σ' = σ
+           end⌝ -∗
+          P σ ={⊤}=∗ P σ' ∗ Q ma)
   }}}
     allocator__Reserve #l
-  {{{ a, RET #a; is_allocator P l γ ∗ Q a ∗ ∃ b, int.val a d↦ b }}}.
+  {{{ a (ok: bool), RET (#a, #ok);
+      if ok then Q (Some a) ∗ (∃ b, int.val a d↦ b)
+      else Q None }}}.
 Proof.
+  iIntros (Φ) "(Hinv&Hfupd) HΦ"; iNamed "Hinv".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "His_lock").
+  iIntros "(His_locked & Hinner)"; iNamed "Hinner".
+  iNamed "Hlockinv".
+  wp_loadField.
+  wp_apply (wp_findKey with "Hfreemap").
+  iIntros (k ok) "[%Hk Hfreemap]".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_MapDelete with "Hfreemap"); iIntros "Hfreemap".
+  iMod ("Hfupd" $! _ (if ok then _ else _) (if ok then Some k else None) with "[] HP") as "[HP HQ]".
+  { destruct ok; simpl; auto.
+    iPureIntro.
+    split; auto.
+    rewrite -Hfreeset.
+    apply (elem_of_dom (D:=gset _)); eauto.  }
+  wp_loadField.
+  (* TODO: need to pull out a disk points-to if returning true *)
+  wp_apply (release_spec with "[-HΦ HQ $His_lock $His_locked]").
+  { iExists _; iFrame.
+    iExists _; iFrame.
+    destruct ok; simpl.
+    - iSplitR.
+      + iPureIntro.
+        rewrite /map_del dom_delete_L. congruence.
+      + rewrite (big_sepS_delete _ _ k).
+        { iDestruct "Hblocks" as "[_ $]". }
+        rewrite -Hfreeset.
+        apply elem_of_dom; eauto.
+    - iFrame.
+      iPureIntro.
+      rewrite /map_del dom_delete_L.
+      admit. (* actually need to know that k is not free *) }
+  wp_pures.
+  iApply "HΦ".
 Admitted.
 
 End goose.

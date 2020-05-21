@@ -200,7 +200,7 @@ Theorem wp_MapIter stk E mref m (I: iProp Σ) (P Q: u64 -> V -> iProp Σ) (body:
       {{{ I ∗ P k v }}}
         body #k (to_val v) @ stk; E
       {{{ RET #(); I ∗ Q k v }}}) -∗
-  ((is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ m, Q k v) -∗ Φ #()) -∗
+  ▷ ((is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ m, Q k v) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "Hm HI HP #Hbody HΦ".
@@ -312,6 +312,25 @@ Proof using t ext_ty IntoValForType0.
     rewrite delete_insert_union; intuition eauto. }
   iIntros "(Hm & HI & %)".
   iApply "HΦ". iFrame.
+Qed.
+
+Theorem wp_MapIter_empty {stk E} (mref: loc) (body: val) :
+  {{{ is_map mref (∅: Map.t V) }}}
+    MapIter #mref body @ stk; E
+  {{{ RET #(); is_map mref (∅: Map.t V) }}}.
+Proof.
+  iIntros (Φ) "Hismap HΦ".
+  wp_apply (wp_MapIter stk E _ _ (emp)%I
+                       (λ _ _, False)%I
+                       (λ _ _, False)%I body
+              with "Hismap [] [] [] [HΦ]").
+  - auto.
+  - auto.
+  - clear Φ.
+    iIntros (k v) "!>".
+    iIntros (Φ) "[_ []]".
+  - iIntros "!> (Hmap & _ & _)".
+    iApply ("HΦ" with "[$]").
 Qed.
 
 End heap.
