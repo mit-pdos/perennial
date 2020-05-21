@@ -333,6 +333,46 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
+Theorem wp_MapIter_fold {stk E} (mref: loc) (body: val)
+        (P: gmap u64 V → iProp Σ) m Φ :
+  is_map mref m -∗
+  P ∅ -∗
+  (∀ m0 (k: u64) v, {{{ P m0 ∗ ⌜m0 !! k = None ∧ m !! k = Some v⌝ }}}
+                      body #k (to_val v)
+                    {{{ RET #(); P (<[k:=v]> m0) }}}) -∗
+  ▷ ((is_map mref m ∗ P m) -∗ Φ #()) -∗
+  WP MapIter #mref body @ stk; E {{ Φ }}.
+Proof.
+  iIntros "Hm HP #Hbody".
+  iIntros "HΦ".
+  wp_apply (map.wp_MapIter_fold _ _ (λ mv, ∃ m, ⌜mv = (Map.untype m).1⌝ ∗ P m)%I
+              with "[Hm] [HP]").
+  { iFrame. }
+  { iExists ∅; iFrame.
+    rewrite /= fmap_empty //. }
+  { clear Φ.
+    iIntros (m0 k v) "!>".
+    iIntros (Φ) "[HP %] HΦ".
+    destruct H as [Hnone Hsome].
+    iDestruct "HP" as (m') "[-> HP]".
+    simpl in Hnone, Hsome.
+    rewrite lookup_fmap in Hnone.
+    rewrite lookup_fmap in Hsome.
+    apply fmap_None in Hnone.
+    apply fmap_Some_1 in Hsome as [v' [Hsome ->]].
+    wp_apply ("Hbody" with "[$HP]"); auto.
+    iIntros "HP".
+    iApply "HΦ".
+    iExists _; iFrame.
+    iPureIntro.
+    simpl.
+    rewrite fmap_insert //. }
+  iIntros "[Hmap HP]".
+  iDestruct "HP" as (m') "[%Heq HP]".
+  apply (inj (fmap to_val)) in Heq; subst.
+  iApply "HΦ"; iFrame.
+Qed.
+
 End heap.
 
 Arguments wp_NewMap {_ _ _ _ _ _ _} V {_} {t}.

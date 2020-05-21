@@ -4,6 +4,8 @@ From Perennial.goose_lang.lib Require Import typed_mem.
 From Perennial.goose_lang.lib Require Export map.impl.
 Import uPred.
 
+From iris_string_ident Require Import ltac2_string_ident.
+
 Set Default Proof Using "Type".
 
 Section heap.
@@ -325,6 +327,18 @@ Proof.
 Unshelve.
   apply map_val_split in a; destruct m'; intuition idtac.
 Qed.
+
+Theorem wp_MapIter_fold {stk E} (mref: loc) (body: val)
+        (P: gmap u64 val → iProp Σ) m Φ :
+  is_map mref m -∗
+  P ∅ -∗
+  (∀ m0 (k: u64) v, {{{ P m0 ∗ ⌜m0 !! k = None ∧ m.1 !! k = Some v⌝ }}}
+                      body #k v
+                    {{{ RET #(); P (<[k:=v]> m0) }}}) -∗
+  ▷ ((is_map mref m ∗ P m.1) -∗ Φ #()) -∗
+  WP MapIter #mref body @ stk; E {{ Φ }}.
+Proof.
+Admitted.
 
 Theorem wp_MapIter_2 stk E mref (m: gmap u64 val * val) (I: gmap u64 val -> gmap u64 val -> iProp Σ) (body: val) Φ:
   is_map mref m -∗
