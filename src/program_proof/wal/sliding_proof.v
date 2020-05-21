@@ -840,7 +840,6 @@ Proof.
   destruct (decide (oaddr = addr)).
   1: subst; rewrite lookup_delete Hn /= //.
   rewrite lookup_delete_ne. 2: eauto.
-  Search partial_alter.
   rewrite lookup_partial_alter_ne. 2: eauto.
   rewrite pos_indices_lookup.
   repeat f_equal.
