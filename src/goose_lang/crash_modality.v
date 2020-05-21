@@ -113,6 +113,18 @@ Proof.
   iExists x. iApply ("Hall" with "[$] [$]").
 Qed.
 
+Global Instance from_exist_post_crash {A} (Φ: heapG Σ → iProp Σ) (Ψ: heapG Σ → A → iProp Σ)
+  {Himpl: ∀ hG, FromExist (Φ hG) (λ x, Ψ hG x)} :
+  FromExist (post_crash (λ hG, Φ hG)) (λ x, post_crash (λ hG, Ψ hG x)).
+Proof.
+  hnf; iIntros "H".
+  iDestruct "H" as (x) "H".
+  rewrite /post_crash.
+  iIntros (σ σ' hG') "Hrel".
+  iSpecialize ("H" with "Hrel").
+  iExists x; iFrame.
+Qed.
+
 Lemma post_crash_named P name:
   named name (post_crash (λ hG, P hG)) -∗
   post_crash (λ hG, named name (P hG)).

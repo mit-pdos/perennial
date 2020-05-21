@@ -162,7 +162,7 @@ Definition is_allocator P (l: loc) (γ: gname) : iProp Σ :=
     is_lock allocN γ #lref (∃ σ, allocator_linv mref σ ∗ P σ)
 .
 
-Theorem wp_newAllocator mref m P :
+Theorem wp_newAllocator P mref m :
   {{{ is_map mref m ∗ P (alloc.mk (dom (gset _) m)) }}}
     newAllocator #mref
   {{{ l γ, RET #l; is_allocator P l γ }}}.
