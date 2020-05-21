@@ -7,6 +7,7 @@ From Perennial.program_proof Require Import proof_prelude.
 
 From Perennial.goose_lang.lib Require Import typed_slice.
 From Perennial.program_proof Require Import marshal_proof.
+From Perennial.program_proof Require Import disk_lib.
 
 Module inode.
   Record t :=
@@ -40,9 +41,9 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
 .
 
 Definition is_inode l γ P : iProp Σ :=
-  ∃ (d:val) (lref: loc), "d" ∷ readonly (l ↦[inode.S :: "d"] d) ∗
-                         "m" ∷ readonly (l ↦[inode.S :: "m"] #lref) ∗
-                         "Hlock" ∷ is_lock inodeN γ #lref (∃ σ, inode_linv l σ ∗ P σ).
+  ∃ (d:val) (lref: loc), "#d" ∷ readonly (l ↦[inode.S :: "d"] d) ∗
+                         "#m" ∷ readonly (l ↦[inode.S :: "m"] #lref) ∗
+                         "#Hlock" ∷ is_lock inodeN γ #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ).
 
 Definition is_inode_durable σ : iProp Σ :=
   ∃ (addrs: list u64) (extra: list u8) (hdr: Block),
@@ -86,12 +87,71 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem wp_openInode d addr σ P :
+Theorem wp_openInode {d addr σ P} :
   addr = σ.(inode.addr) ->
   {{{ is_inode_durable σ ∗ P σ }}}
     openInode d #addr
   {{{ l γ, RET #l; is_inode l γ P }}}.
 Proof.
 Admitted.
+
+Theorem wp_UsedBlocks {l γ P} :
+  {{{ is_inode l γ P }}}
+    inode__UsedBlocks
+  {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
+      (* TODO: what should the spec be? this seems to help discover the
+      footprint of is_durable; how do we use that? *)
+      is_slice s uint64T 1 addrs }}}.
+Proof.
+Admitted.
+
+Theorem wp_inode__Read {l γ P} {off: u64} Q :
+  {{{ is_inode l γ P ∗
+      (∀ σ σ' mb,
+        ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
+        P σ ={⊤ ∖ ↑inodeN}=∗ P σ' ∗ Q mb)
+  }}}
+    inode__Read #l #off
+  {{{ s mb, RET slice_val s;
+      (match mb with
+       | Some b => ∃ s, is_block s 1 b
+       | None => ⌜s = Slice.nil⌝
+       end) ∗ Q mb }}}.
+Proof.
+Admitted.
+
+Theorem wp_inode__Size {l γ P} (Q: u64 -> iProp Σ) :
+  {{{ is_inode l γ P ∗
+      (∀ σ σ' sz,
+          ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
+          P σ ={⊤}=∗ P σ' ∗ Q sz)
+  }}}
+    inode__Size #l
+  {{{ sz, RET #sz; Q sz }}}.
+Proof.
+  iIntros (Φ) "(Hinv & Hfupd) HΦ"; iNamed "Hinv".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "(Hlocked & Hinner)". iNamed "Hinner".
+  iNamed "Hlockinv".
+  wp_loadField.
+  iDestruct (is_slice_sz with "Haddrs") as %Haddrs_sz.
+  iDestruct (big_sepL2_length with "Hdata") as %Hblocks_length.
+  wp_apply wp_slice_len.
+  wp_loadField.
+  iMod ("Hfupd" $! σ σ addr_s.(Slice.sz) with "[$HP]") as "[HP HQ]".
+  { iPureIntro.
+    split; auto.
+    rewrite /inode.size.
+    autorewrite with len in Haddrs_sz.
+    rewrite -Haddrs_sz //. }
+  wp_apply (release_spec with "[-HQ HΦ $Hlock]").
+  { iFrame "Hlocked".
+    iExists σ; iFrame.
+    iExists _, _, _, _; iFrame "∗ %". }
+  wp_pures.
+  iApply ("HΦ" with "[$]").
+Qed.
 
 End goose.

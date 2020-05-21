@@ -157,9 +157,9 @@ Definition allocator_linv (mref: loc) σ : iProp Σ :=
 
 Definition is_allocator P (l: loc) (γ: gname) : iProp Σ :=
   ∃ (lref mref: loc) m,
-    "m" ∷ readonly (l ↦[allocator.S :: "m"] #lref) ∗
-    "free" ∷ readonly (l ↦[allocator.S :: "mref"] #mref) ∗
-    is_lock allocN γ #lref (∃ σ, allocator_linv mref σ ∗ P σ)
+    "#m" ∷ readonly (l ↦[allocator.S :: "m"] #lref) ∗
+    "#free" ∷ readonly (l ↦[allocator.S :: "mref"] #mref) ∗
+    "#His_lock" ∷ is_lock allocN γ #lref (∃ σ, allocator_linv mref σ ∗ P σ)
 .
 
 Theorem wp_newAllocator P mref m :

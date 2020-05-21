@@ -11,6 +11,14 @@ Module list.
     list V -> list val := fun l => to_val <$> l.
 End list.
 
+Lemma list_untype_length `{IntoVal V} (l: list V) :
+  length (list.untype l) = length l.
+Proof.
+  rewrite /list.untype fmap_length //.
+Qed.
+
+Hint Rewrite @list_untype_length : len.
+
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.

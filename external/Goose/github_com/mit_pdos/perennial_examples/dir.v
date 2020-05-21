@@ -94,10 +94,15 @@ Definition inode__UsedBlocks: val :=
 Definition inode__Read: val :=
   rec: "inode__Read" "i" "off" :=
     lock.acquire (struct.loadF inode.S "m" "i");;
-    let: "a" := SliceGet uint64T (struct.loadF inode.S "addrs" "i") "off" in
-    lock.release (struct.loadF inode.S "m" "i");;
-    let: "b" := disk.Read "a" in
-    "b".
+    (if: "off" ≥ slice.len (struct.loadF inode.S "addrs" "i")
+    then
+      lock.release (struct.loadF inode.S "m" "i");;
+      slice.nil
+    else
+      let: "a" := SliceGet uint64T (struct.loadF inode.S "addrs" "i") "off" in
+      let: "b" := disk.Read "a" in
+      lock.release (struct.loadF inode.S "m" "i");;
+      "b").
 
 Definition inode__Size: val :=
   rec: "inode__Size" "i" :=
