@@ -1093,18 +1093,10 @@ Instance big_sepM_IntoPure {PROP: bi} `{Countable K} {V}
         (m: gmap K V) :
   IntoPure ([∗ map] k↦x ∈ m, Φ k x) (map_Forall P m).
 Proof.
-  rewrite -(list_to_map_to_list m).
-  pose proof (NoDup_fst_map_to_list m) as HNoDup; revert HNoDup.
-  generalize (map_to_list m) as kvs.
-  induction kvs as [|kv kvs IH]; simpl; intros; auto.
-  - hnf.
-    iIntros "_ !%".
+  induction m using map_ind; simpl.
+  - hnf; iIntros "_ !%".
     apply map_Forall_empty.
   - hnf; iIntros "HP".
-    apply NoDup_cons in HNoDup as [HnotElem HNoDup].
-    intuition.
-    assert (list_to_map (M:=gmap _ _) kvs !! kv.1 = None).
-    { apply not_elem_of_list_to_map; auto. }
     rewrite -> big_sepM_insert by auto.
     iDestruct (into_pure with "HP") as %?.
     iPureIntro.
@@ -1120,16 +1112,10 @@ Lemma big_sepM_from_Forall {PROP: bi} `{Countable K} {V}
   ⊢ [∗ map] k↦x ∈ m, Φ k x.
 Proof.
   intros HfromP.
-  rewrite -(list_to_map_to_list m).
-  pose proof (NoDup_fst_map_to_list m) as HNoDup; revert HNoDup.
-  generalize (map_to_list m) as kvs.
-  induction kvs as [|kv kvs IH]; simpl; intros; auto.
-  - rewrite big_sepM_empty; auto.
-  - apply NoDup_cons in HNoDup as [HnotElem HNoDup].
-    assert (list_to_map (M:=gmap _ _) kvs !! kv.1 = None).
-    { apply not_elem_of_list_to_map; auto. }
-    rewrite -> big_sepM_insert by auto.
-    rewrite -> map_Forall_insert in H0 by auto.
+  induction m using map_ind; simpl; intros.
+  - iApply big_sepM_empty; auto.
+  - rewrite -> big_sepM_insert by auto.
+    rewrite -> map_Forall_insert in H1 by auto.
     intuition.
     iSplitL.
     + iApply HfromP; auto.
