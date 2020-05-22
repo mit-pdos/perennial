@@ -155,7 +155,7 @@ Theorem wp_inode__Read {l γ P} {off: u64} Q :
   {{{ is_inode l γ P ∗
       (∀ σ σ' mb,
         ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
-        P σ ={⊤ ∖ ↑inodeN}=∗ P σ' ∗ Q mb)
+        P σ ={⊤}=∗ P σ' ∗ Q mb)
   }}}
     inode__Read #l #off
   {{{ s mb, RET slice_val s;
@@ -164,7 +164,57 @@ Theorem wp_inode__Read {l γ P} {off: u64} Q :
        | None => ⌜s = Slice.nil⌝
        end) ∗ Q mb }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(Hinode&Hfupd) HΦ"; iNamed "Hinode".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "(His_locked&Hlk)"; iNamed "Hlk".
+  iNamed "Hlockinv".
+  wp_loadField.
+  iDestruct (big_sepL2_length with "Hdata") as %Hlen1.
+  iDestruct (is_slice_sz with "Haddrs") as %Hlen2.
+  autorewrite with len in Hlen2.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_if_destruct.
+  - wp_loadField.
+    iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
+    { iPureIntro.
+      eauto. }
+    wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr addrs Haddrs Hdata]").
+    { iExists _; iFrame.
+      iExists _, _, _, _; iFrame "∗ %". }
+    wp_pures.
+    change slice.nil with (slice_val Slice.nil).
+    iApply "HΦ"; iFrame.
+    rewrite lookup_ge_None_2 //.
+    rewrite -Hlen1 Hlen2.
+    word.
+  - wp_loadField.
+    destruct (list_lookup_lt _ addrs (int.nat off)) as [addr Hlookup].
+    { word. }
+    iDestruct (is_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
+    wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
+    iIntros "Haddrs_small".
+    wp_pures.
+    iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
+    destruct Hblock_lookup as [b0 Hlookup2].
+    iDestruct (is_slice_split with "[$Haddrs_small $Haddrs]") as "Haddrs".
+    iDestruct (big_sepL2_lookup_acc with "Hdata") as "[Hb Hdata]"; eauto.
+    wp_apply (wp_Read with "Hb"); iIntros (s) "[Hb Hs]".
+    iSpecialize ("Hdata" with "Hb").
+    wp_loadField.
+    iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
+    { iPureIntro; eauto. }
+    wp_apply (release_spec with "[$Hlock $His_locked Hhdr addr addrs Haddrs Hdata HP]").
+    { iExists _; iFrame.
+      iExists _, _, _, _; iFrame "∗ %". }
+    wp_pures.
+    iApply "HΦ"; iFrame.
+    rewrite Hlookup2.
+    iDestruct (is_slice_split with "Hs") as "[Hs _]".
+    iExists _; iFrame.
+Qed.
 
 Theorem wp_inode__Size {l γ P} (Q: u64 -> iProp Σ) :
   {{{ is_inode l γ P ∗
