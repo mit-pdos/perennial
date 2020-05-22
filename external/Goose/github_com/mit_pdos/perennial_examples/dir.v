@@ -62,6 +62,8 @@ Definition allocator__Reserve: val :=
 
 (* 0inode.go *)
 
+Definition InodeMaxBlocks : expr := #511.
+
 Module inode.
   Definition S := struct.decl [
     "d" :: disk.Disk;
@@ -111,16 +113,32 @@ Definition inode__Size: val :=
     lock.release (struct.loadF inode.S "m" "i");;
     "sz".
 
-Definition inode__Append: val :=
-  rec: "inode__Append" "i" "a" :=
-    lock.acquire (struct.loadF inode.S "m" "i");;
-    struct.storeF inode.S "addrs" "i" (SliceAppend uint64T (struct.loadF inode.S "addrs" "i") "a");;
+Definition inode__mkHdr: val :=
+  rec: "inode__mkHdr" "i" :=
     let: "enc" := marshal.NewEnc disk.BlockSize in
     marshal.Enc__PutInt "enc" (slice.len (struct.loadF inode.S "addrs" "i"));;
     marshal.Enc__PutInts "enc" (struct.loadF inode.S "addrs" "i");;
     let: "hdr" := marshal.Enc__Finish "enc" in
-    disk.Write (struct.loadF inode.S "addr" "i") "hdr";;
-    lock.release (struct.loadF inode.S "m" "i").
+    "hdr".
+
+(* Append adds a block to the inode.
+
+   Takes ownership of the disk at a.
+
+   Returns false if Append fails (due to running out of space in the inode) *)
+Definition inode__Append: val :=
+  rec: "inode__Append" "i" "a" :=
+    lock.acquire (struct.loadF inode.S "m" "i");;
+    (if: slice.len (struct.loadF inode.S "addrs" "i") ≥ InodeMaxBlocks
+    then
+      lock.release (struct.loadF inode.S "m" "i");;
+      #false
+    else
+      struct.storeF inode.S "addrs" "i" (SliceAppend uint64T (struct.loadF inode.S "addrs" "i") "a");;
+      let: "hdr" := inode__mkHdr "i" in
+      disk.Write (struct.loadF inode.S "addr" "i") "hdr";;
+      lock.release (struct.loadF inode.S "m" "i");;
+      #true).
 
 (* dir.go *)
 
@@ -181,5 +199,7 @@ Definition Dir__Append: val :=
     then #false
     else
       disk.Write "a" "b";;
-      inode__Append (SliceGet (refT (struct.t inode.S)) (struct.loadF Dir.S "inodes" "d") "ino") "a";;
-      #true).
+      let: "ok2" := inode__Append (SliceGet (refT (struct.t inode.S)) (struct.loadF Dir.S "inodes" "d") "ino") "a" in
+      (if: ~ "ok2"
+      then #false
+      else #true)).

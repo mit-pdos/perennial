@@ -9,6 +9,8 @@ From Perennial.goose_lang.lib Require Import typed_slice.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.program_proof Require Import disk_lib.
 
+Definition InodeMaxBlocks: Z := 511.
+
 Module inode.
   Record t :=
     mk { addr: u64;
@@ -16,9 +18,11 @@ Module inode.
   Global Instance _eta: Settable _ := settable! mk <addr; blocks>.
   Global Instance _witness: Inhabited t := populate!.
 
-  Definition wf σ := length σ.(blocks) ≤ 511.
+  Definition wf σ := length σ.(blocks) ≤ InodeMaxBlocks.
   Definition size σ := length σ.(blocks).
 End inode.
+
+Hint Unfold inode.wf InodeMaxBlocks : word.
 
 Section goose.
 Context `{!heapG Σ}.
@@ -80,8 +84,6 @@ Proof.
   reflexivity.
 Qed.
 
-Hint Unfold inode.wf : word.
-
 Theorem init_inode addr :
   int.val addr d↦ block0 -∗ is_inode_durable (inode.mk addr []).
 Proof.
@@ -92,10 +94,9 @@ Proof.
   iPureIntro.
   split.
   - rewrite /inode.wf /=.
-    lia.
+    cbv; congruence.
   - reflexivity.
 Qed.
-
 
 Theorem wp_openInode {d:loc} {addr σ P} :
   addr = σ.(inode.addr) ->
@@ -248,6 +249,134 @@ Proof.
     iExists _, _, _, _; iFrame "∗ %". }
   wp_pures.
   iApply ("HΦ" with "[$]").
+Qed.
+
+Theorem wp_inode__mkHdr l addr_s addrs :
+  length addrs ≤ InodeMaxBlocks ->
+  {{{ "addrs" ∷ l ↦[inode.S :: "addrs"] (slice_val addr_s) ∗
+      "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
+  }}}
+    inode__mkHdr #l
+  {{{ s b extra, RET (slice_val s);
+      is_block s 1 b ∗
+      ⌜Block_to_vals b = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
+      "addrs" ∷ l ↦[inode.S :: "addrs"] (slice_val addr_s) ∗
+      "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
+  }}}.
+Proof.
+  iIntros (Hbound Φ) "Hpre HΦ"; iNamed "Hpre".
+  wp_call.
+  wp_apply wp_new_enc; iIntros (enc) "[Henc %]".
+  wp_pures.
+  wp_loadField.
+  iDestruct (is_slice_sz with "Haddrs") as %Hlen.
+  autorewrite with len in Hlen.
+  wp_apply wp_slice_len.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_loadField.
+  iDestruct (is_slice_split with "Haddrs") as "[Haddrs Hcap]".
+  wp_apply (wp_Enc__PutInts with "[$Henc $Haddrs]").
+  { word. }
+  iIntros "[Henc Haddrs]".
+  iDestruct (is_slice_split with "[$Haddrs $Hcap]") as "Haddrs".
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (s) "[Hs %]".
+  wp_pures.
+  iApply "HΦ".
+  iFrame.
+  autorewrite with len in H0.
+  iSplitL "Hs".
+  - rewrite -list_to_block_to_vals; len.
+    + iFrame.
+    + rewrite H0.
+      rewrite H; reflexivity.
+  - iPureIntro.
+    rewrite list_to_block_to_vals; len.
+    + rewrite app_nil_l.
+      repeat (f_equal; try word).
+    + rewrite H0.
+      rewrite H; reflexivity.
+Qed.
+
+Theorem wp_inode__Append {l γ P} (Q: bool -> iProp Σ) (a: u64) (b0: Block) :
+  {{{ is_inode l γ P ∗ int.val a d↦ b0 ∗
+      (∀ σ σ' (ok: bool),
+          ⌜(if ok
+           then σ' = set inode.blocks (λ bs, bs ++ [b0]) σ
+           else σ' = σ) ∧
+          ok = bool_decide (1 + inode.size σ ≤ InodeMaxBlocks)⌝ -∗
+        ⌜inode.wf σ⌝ -∗
+         P σ ={⊤}=∗ P σ' ∗ Q ok)
+  }}}
+    inode__Append #l #a
+  {{{ (ok: bool), RET #ok; Q ok ∗ if ok then emp else int.val a d↦ b0 }}}.
+Proof.
+  iIntros (Φ) "(Hinode&Ha&Hfupd) HΦ"; iNamed "Hinode".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "(His_locked&Hlk)"; iNamed "Hlk".
+  iNamed "Hlockinv".
+  wp_loadField.
+  iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
+  iDestruct (big_sepL2_length with "Hdata") as %Hlen2.
+  autorewrite with len in Hlen1.
+  wp_apply wp_slice_len; wp_pures.
+  wp_if_destruct.
+  - wp_loadField.
+    iMod ("Hfupd" $! σ σ false with "[%] [% //] HP") as "[HP HQ]".
+    { split; auto.
+      symmetry; apply bool_decide_eq_false_2.
+      rewrite /inode.size.
+      rewrite -Hlen2 Hlen1.
+      word. }
+    wp_apply (release_spec with "[$Hlock $His_locked Hhdr addr addrs Haddrs Hdata HP]").
+    { iExists _; iFrame.
+      iExists _, _, _, _; iFrame "∗ %". }
+    wp_pures.
+    iApply "HΦ"; iFrame.
+  - wp_loadField.
+    wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
+    { iPureIntro.
+      word. }
+    iIntros (addr_s') "Haddrs".
+    Transparent slice.T.
+    wp_storeField.
+    Opaque slice.T.
+    wp_apply (wp_inode__mkHdr with "[$addrs $Haddrs]").
+    { autorewrite with len; simpl.
+      word. }
+    iIntros (s b extra') "(Hb&%Hencded&?&?)"; iNamed.
+    wp_loadField.
+    wp_apply (wp_Write_fupd ⊤
+                            ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0]) σ) ∗
+                            "Hhdr" ∷ int.val σ.(inode.addr) d↦ b ∗
+                            "HQ" ∷ Q true) with "[$Hb Hhdr Hfupd HP]").
+    { iMod ("Hfupd" $! σ _ true with "[%] [% //] HP") as "[HP HQ]".
+      { split; eauto.
+        symmetry; apply bool_decide_eq_true_2.
+        rewrite /inode.size.
+        rewrite -Hlen2 Hlen1; word. }
+      iExists hdr; iFrame.
+      iModIntro. iNext.
+      by iIntros "$". }
+    iIntros "(Hs&Hpost)"; iNamed "Hpost".
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlock $His_locked addr addrs Haddrs HP Hhdr Hdata Ha]").
+    { iExists _; iFrame.
+      iExists _, _, _, _; iFrame "∗ %".
+      iSplitR.
+      - iPureIntro.
+        rewrite /inode.wf /=.
+        autorewrite with len; simpl.
+        rewrite -Hlen2 Hlen1; word.
+      - simpl.
+        iApply (big_sepL2_app with "[$Hdata] [Ha]").
+        simpl; iFrame. }
+    wp_pures.
+    iApply "HΦ"; iFrame.
 Qed.
 
 End goose.
