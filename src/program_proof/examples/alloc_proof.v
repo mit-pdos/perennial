@@ -97,7 +97,9 @@ Proof.
   destruct x; auto.
 Qed.
 
-Theorem wp_findKey mref m :
+(* this is superceded by wp_findKey, but that theorem relies in an unproven map
+iteration theorem *)
+Theorem wp_findKey' mref m :
   {{{ is_map mref m }}}
     findKey #mref
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
@@ -148,7 +150,7 @@ Proof.
     auto.
 Qed.
 
-Theorem wp_findKey' mref m :
+Theorem wp_findKey mref m :
   {{{ is_map mref m }}}
     findKey #mref
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
@@ -156,7 +158,42 @@ Theorem wp_findKey' mref m :
       is_map mref m
   }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "Hmap HΦ".
+  wp_call.
+  wp_apply wp_ref_to; first by val_ty.
+  iIntros (found_l) "found".
+  wp_apply wp_ref_to; first by val_ty.
+  iIntros (ok_l) "ok".
+  wp_pures.
+  wp_apply (wp_MapIter_fold _ _ (λ mdone, ∃ (found: u64) (ok: bool),
+                           "found" ∷ found_l ↦[uint64T] #found ∗
+                           "ok" ∷ ok_l ↦[boolT] #ok ∗
+                           "%Hfound_is" ∷ ⌜if ok then m !! found = Some tt else mdone = ∅⌝)%I
+           with "Hmap [found ok]").
+  - iExists _, _; by iFrame.
+  - clear Φ.
+    iIntros (mdone k v) "!>".
+    iIntros (Φ) "(HI&(%&%)) HΦ"; iNamed "HI".
+    wp_pures.
+    wp_load.
+    wp_pures.
+    wp_if_destruct;
+      (* TODO: automate this in wp_if_destruct *)
+      [ apply negb_true_iff in Heqb | apply negb_false_iff in Heqb ]; subst.
+    + wp_store. wp_store.
+      iApply "HΦ".
+      iExists _, _; iFrame.
+      destruct v; auto.
+    + iApply "HΦ".
+      iExists _, _; iFrame.
+      auto.
+  - iIntros "[Hm HI]"; iNamed "HI".
+    wp_load. wp_load.
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+    destruct ok; auto.
+Qed.
 
 Implicit Types (P: alloc.t → iProp Σ).
 Implicit Types (l:loc) (γ:gname) (σ: alloc.t).
