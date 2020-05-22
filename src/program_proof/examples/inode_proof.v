@@ -143,14 +143,30 @@ Proof.
 Qed.
 
 Theorem wp_UsedBlocks {l γ P} :
+  (* TODO: it would be cool to run this before allocating the lock invariant for
+  the inode; we could recover a "pre-inode" and then in a purely logical step
+  allocate all the lock invariants in the caller; otherwise this code can't
+  return the slice literally because it'll be protected by a lock. *)
   {{{ is_inode l γ P }}}
-    inode__UsedBlocks
+    inode__UsedBlocks #l
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
       (* TODO: what should the spec be? this seems to help discover the
       footprint of is_durable; how do we use that? *)
       is_slice s uint64T 1 addrs }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "[His_locked Hlk]"; iNamed "Hlk".
+  iNamed "Hlockinv".
+  wp_loadField.
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr addrs Haddrs Hdata]").
+  { iExists _; iFrame.
+    iExists _, _, _, _; iFrame "∗ %". }
+  wp_pures.
+Abort.
 
 Theorem wp_inode__Read {l γ P} {off: u64} Q :
   {{{ is_inode l γ P ∗
