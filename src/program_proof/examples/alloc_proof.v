@@ -246,13 +246,21 @@ Global Instance is_allocator_Persistent P l γ :
   Persistent (is_allocator P l γ).
 Proof. apply _. Qed.
 
-Theorem wp_newAllocator P mref m :
-  {{{ is_map mref m ∗ ([∗ map] a↦_ ∈ m, ∃ b, int.val a d↦ b) ∗
-      P (alloc.mk (dom (gset _) m)) }}}
+Theorem allocator_durable_from_map m :
+  ([∗ map] a↦_ ∈ m, ∃ b, int.val a d↦ b) -∗
+  allocator_durable (alloc.mk (dom (gset _) m)).
+Proof.
+  iIntros "Hblocks".
+  iApply (big_sepM_dom with "Hblocks").
+Qed.
+
+Theorem wp_newAllocator P mref m σ :
+  dom (gset _) m = σ.(alloc.free) ->
+  {{{ is_map mref m ∗ allocator_durable σ ∗ P σ }}}
     newAllocator #mref
   {{{ l γ, RET #l; is_allocator P l γ }}}.
 Proof.
-  iIntros (Φ) "(Hmap&Hblocks&HP) HΦ".
+  iIntros (Hfree Φ) "(Hmap&Hblocks&HP) HΦ".
   wp_call.
   wp_apply wp_new_free_lock.
   iIntros (γ lk) "Hlock".
@@ -267,9 +275,7 @@ Proof.
           with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame.
     iExists _; simpl; iFrame.
-    iSplitR; first by auto.
-    iApply (big_sepM_dom with "Hblocks").
-  }
+    auto. }
   iModIntro.
   iApply "HΦ".
   iExists _, _; iFrame "#".
