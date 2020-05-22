@@ -56,17 +56,21 @@ endif
 
 .PHONY: skip-qed unskip-qed ci
 
-SLOW_QED_FILES := src/program_logic/crash_weakestpre.v\
-	src/program_logic/staged_invariant.v\
-	src/program_logic/crash_adequacy.v\
-	src/program_logic/recovery_adequacy.v\
-	src/program_logic/crash_inv.v\
-	src/goose_lang/interpreter/interpreter.v\
+SLOW_QED_FILES :=
 	src/goose_lang/interpreter/disk_interpreter.v\
+	src/goose_lang/interpreter/interpreter.v\
+	src/goose_lang/logical_reln_fund.v\
+	src/program_logic/crash_adequacy.v\
+	src/program_logic/crash_inv.v\
+	src/program_logic/crash_weakestpre.v\
+	src/program_logic/recovery_adequacy.v\
+	src/program_logic/staged_invariant.v\
 	src/program_proof/append_log_proof.v\
 	src/program_proof/lockmap_proof.v\
 	src/program_proof/wal/circ_proof.v\
-	src/program_proof/wal/proof.v
+	src/program_proof/wal/flush_proof.v\
+	src/program_proof/wal/logger_proof.v\
+	src/program_proof/wal/sliding_proof.v
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
