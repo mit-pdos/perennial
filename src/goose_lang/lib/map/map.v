@@ -328,17 +328,70 @@ Unshelve.
   apply map_val_split in a; destruct m'; intuition idtac.
 Qed.
 
-Theorem wp_MapIter_fold {stk E} (mref: loc) (body: val)
+Theorem wp_MapIter_fold {stk E} {mref: loc} {body: val}
         (P: gmap u64 val → iProp Σ) m Φ :
   is_map mref m -∗
   P ∅ -∗
   (∀ m0 (k: u64) v, {{{ P m0 ∗ ⌜m0 !! k = None ∧ m.1 !! k = Some v⌝ }}}
-                      body #k v
+                      body #k v @ stk; E
                     {{{ RET #(); P (<[k:=v]> m0) }}}) -∗
   ▷ ((is_map mref m ∗ P m.1) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ Φ }}.
 Proof.
 Admitted.
+
+Lemma union_with_Some_l {A} (x:A) my :
+  union_with (λ (x _ : A), Some x) (Some x) my = Some x.
+Proof.
+  rewrite /union_with /=.
+  destruct my; auto.
+Qed.
+
+Lemma union_with_Some_r {A} my :
+  union_with (λ (x _ : A), Some x) None my = my.
+Proof.
+  rewrite /union_with /=.
+  destruct my; auto.
+Qed.
+
+Lemma union_insert_delete:
+  ∀ (m' : gmap u64 val) (k : u64) (v: val) (mtodo : gmap u64 val),
+    m' !! k = None →
+    m' ##ₘ mtodo →
+    mtodo !! k = Some v →
+    <[k:=v]> m' ∪ delete k mtodo = m' ∪ mtodo.
+Proof.
+  intros m' k v mtodo Hnone Hdisj Hsome.
+  apply map_eq; intros k0.
+  rewrite !lookup_union.
+  destruct (decide (k = k0)); subst.
+  - rewrite lookup_insert Hnone Hsome.
+    rewrite union_with_Some_l union_with_Some_r //.
+  - rewrite lookup_insert_ne //.
+    destruct_with_eqn (m' !! k0).
+    + rewrite !union_with_Some_l //.
+    + rewrite !union_with_Some_r.
+      rewrite lookup_delete_ne //.
+Qed.
+
+Lemma insert_delete_disjoint:
+  ∀ (m' : gmap u64 val) (k : u64) (v: val) (mtodo : gmap u64 val),
+    m' !! k = None →
+    m' ##ₘ mtodo →
+    mtodo !! k = Some v →
+    <[k:=v]> m' ##ₘ delete k mtodo.
+Proof.
+  intros m' k v mtodo Hnone Hdisj Hsome.
+  apply map_disjoint_alt.
+  assert (forall i, m' !! i = None ∨ mtodo !! i = None) as Hdisj'.
+  { apply map_disjoint_alt; auto. }
+  intros.
+  destruct (decide (k = i)); subst.
+  - rewrite lookup_delete; eauto.
+  - rewrite lookup_insert_ne //.
+    destruct (Hdisj' i); eauto.
+    rewrite lookup_delete_ne; eauto.
+Qed.
 
 Theorem wp_MapIter_2 stk E mref (m: gmap u64 val * val) (I: gmap u64 val -> gmap u64 val -> iProp Σ) (body: val) Φ:
   is_map mref m -∗
@@ -350,6 +403,47 @@ Theorem wp_MapIter_2 stk E mref (m: gmap u64 val * val) (I: gmap u64 val -> gmap
   ((is_map mref m ∗ I ∅ (fst m)) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof.
-Admitted.
+  iIntros "Hm HI #Hbody HΦ".
+  wp_apply (wp_MapIter_fold (λ mdone, ∃ mtodo, ⌜mdone ∪ mtodo = m.1 ∧ mdone ##ₘ mtodo⌝ ∗ I mtodo mdone)%I
+           with "Hm [HI]").
+  { iExists m.1; iFrame.
+    iPureIntro.
+    rewrite left_id_L.
+    split; auto.
+    apply map_disjoint_empty_l. }
+  { clear Φ.
+    iIntros (m' k v) "!>".
+    destruct m as [m def].
+    iIntros (Φ) "[HI %] HΦ".
+    iDestruct "HI" as (mtodo) "[%Hunion HI]"; simpl in *.
+    destruct Hunion as [<- Hdisj].
+    destruct H as [Hnone Hsome].
+    rewrite lookup_union in Hsome.
+    rewrite Hnone /= in Hsome.
+    rewrite union_with_Some_r in Hsome.
+    wp_apply ("Hbody" with "[$HI //]").
+    iIntros "HI".
+    iApply "HΦ".
+    iExists _; iFrame.
+    iPureIntro.
+    split.
+    + apply union_insert_delete; auto.
+    + apply insert_delete_disjoint; auto. }
+  iIntros "[Hm HI]".
+  iDestruct "HI" as (mtodo) "[%Htodo HI]".
+  iApply "HΦ"; iFrame.
+  destruct Htodo.
+  assert (mtodo = ∅).
+  { destruct (decide (mtodo = ∅)); auto.
+    destruct (map_choose mtodo) as (i & x & Hlookup); auto.
+    pose proof Hlookup.
+    eapply map_disjoint_Some_r in Hlookup; eauto.
+    assert ( (m.1 ∪ mtodo) !! i = m.1 !! i) by congruence.
+    rewrite Hlookup in H2.
+    rewrite lookup_union_r // in H2.
+    congruence. }
+  subst.
+  iFrame.
+Qed.
 
 End heap.

@@ -338,14 +338,14 @@ Theorem wp_MapIter_fold {stk E} (mref: loc) (body: val)
   is_map mref m -∗
   P ∅ -∗
   (∀ m0 (k: u64) v, {{{ P m0 ∗ ⌜m0 !! k = None ∧ m !! k = Some v⌝ }}}
-                      body #k (to_val v)
+                      body #k (to_val v) @ stk; E
                     {{{ RET #(); P (<[k:=v]> m0) }}}) -∗
   ▷ ((is_map mref m ∗ P m) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ Φ }}.
 Proof.
   iIntros "Hm HP #Hbody".
   iIntros "HΦ".
-  wp_apply (map.wp_MapIter_fold _ _ (λ mv, ∃ m, ⌜mv = (Map.untype m).1⌝ ∗ P m)%I
+  wp_apply (map.wp_MapIter_fold (λ mv, ∃ m, ⌜mv = (Map.untype m).1⌝ ∗ P m)%I
               with "[Hm] [HP]").
   { iFrame. }
   { iExists ∅; iFrame.
