@@ -5,6 +5,25 @@ From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import into_val.
 
+(* TODO: upstream this *)
+Lemma gset_eq `{Countable A} (c1 c2: gset A) :
+  (forall (x:A), x ∈ c1 ↔ x ∈ c2) → c1 = c2.
+Proof.
+  intros Hexteq.
+  destruct c1 as [c1], c2 as [c2].
+  f_equal.
+  apply map_eq.
+  rewrite /elem_of /gset_elem_of/mapset.mapset_elem_of /= in Hexteq.
+  intros.
+  destruct (c1 !! i) eqn:Hc1;
+    destruct (c2 !! i) eqn:Hc2; auto.
+  - destruct u, u0; auto.
+  - destruct u; apply Hexteq in Hc1.
+    congruence.
+  - destruct u; apply Hexteq in Hc2.
+    congruence.
+Qed.
+
 Instance unit_IntoVal : IntoVal ().
 Proof.
   refine {| to_val := λ _, #();
@@ -222,11 +241,20 @@ Theorem wp_newAllocator P mref m :
 Proof.
 Admitted.
 
-Lemma empty_difference `{Countable K} V (m: gmap K V) :
+Lemma map_empty_difference `{Countable K} {V} (m: gmap K V) :
   ∅ ∖ m = ∅.
 Proof.
   apply map_eq; intros.
   rewrite lookup_difference_None; eauto.
+Qed.
+
+Lemma set_empty_difference `{Countable K} (m: gset K) :
+  ∅ ∖ m = ∅.
+Proof.
+  apply gset_eq; intros.
+  rewrite elem_of_difference.
+  intuition auto.
+  apply not_elem_of_empty in H0; auto.
 Qed.
 
 Theorem wp_Reserve P (Q: option u64 → iProp Σ) l γ :
@@ -283,13 +311,12 @@ Proof.
       subst.
       rewrite -Hfreeset.
       rewrite !dom_empty_L.
-      (* apply empty_difference. *)
-      admit. (* TODO: unable to apply empty_difference *)
+      apply set_empty_difference.
     - destruct ok; iFrame. }
 
   wp_pures.
   iApply "HΦ".
   destruct ok; iFrame.
-Admitted.
+Qed.
 
 End goose.
