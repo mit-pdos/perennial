@@ -97,10 +97,10 @@ Proof.
 Qed.
 
 
-Theorem wp_openInode {d:val} {addr σ P} :
+Theorem wp_openInode {d:loc} {addr σ P} :
   addr = σ.(inode.addr) ->
   {{{ is_inode_durable σ ∗ P σ }}}
-    openInode d #addr
+    openInode #d #addr
   {{{ l γ, RET #l; is_inode l γ P }}}.
 Proof.
   intros ->.
@@ -126,9 +126,7 @@ Proof.
   rewrite -wp_fupd.
   wp_apply wp_new_free_lock.
   iIntros (γ lref) "Hlock".
-  wp_apply wp_allocStruct.
-  { repeat econstructor; auto.
-    admit. (* oops, can't allocate structs with disks *) }
+  wp_apply wp_allocStruct; auto.
   iIntros (l) "Hinode".
   iDestruct (struct_fields_split with "Hinode") as "(d&m&addr&addrs&_)".
   iMod (readonly_alloc_1 with "d") as "#d".
@@ -141,7 +139,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iExists _, _; iFrame "#".
-Admitted.
+Qed.
 
 Theorem wp_UsedBlocks {l γ P} :
   {{{ is_inode l γ P }}}
