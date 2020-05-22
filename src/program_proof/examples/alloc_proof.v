@@ -235,11 +235,33 @@ Global Instance is_allocator_Persistent P l γ :
 Proof. apply _. Qed.
 
 Theorem wp_newAllocator P mref m :
-  {{{ is_map mref m ∗ P (alloc.mk (dom (gset _) m)) }}}
+  {{{ is_map mref m ∗ ([∗ map] a↦_ ∈ m, ∃ b, int.val a d↦ b) ∗
+      P (alloc.mk (dom (gset _) m)) }}}
     newAllocator #mref
   {{{ l γ, RET #l; is_allocator P l γ }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(Hmap&Hblocks&HP) HΦ".
+  wp_call.
+  wp_apply wp_new_free_lock.
+  iIntros (γ lk) "Hlock".
+  rewrite -wp_fupd.
+  wp_apply wp_allocStruct; auto.
+  iIntros (l) "Hallocator".
+  iDestruct (struct_fields_split with "Hallocator") as "(m&free&_)".
+  iMod (readonly_alloc_1 with "m") as "#m".
+  iMod (readonly_alloc_1 with "free") as "#free".
+  iMod (alloc_lock allocN ⊤ _ _
+                   (∃ σ, "Hlockinv" ∷ allocator_linv mref σ ∗ "HP" ∷ P σ)%I
+          with "[$Hlock] [-HΦ]") as "#Hlock".
+  { iExists _; iFrame.
+    iExists _; simpl; iFrame.
+    iSplitR; first by auto.
+    iApply (big_sepM_dom with "Hblocks").
+  }
+  iModIntro.
+  iApply "HΦ".
+  iExists _, _; iFrame "#".
+Qed.
 
 Lemma map_empty_difference `{Countable K} {V} (m: gmap K V) :
   ∅ ∖ m = ∅.
