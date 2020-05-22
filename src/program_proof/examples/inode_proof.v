@@ -15,6 +15,8 @@ Module inode.
          blocks: list Block; }.
   Global Instance _eta: Settable _ := settable! mk <addr; blocks>.
   Global Instance _witness: Inhabited t := populate!.
+
+  Definition wf σ := length σ.(blocks) ≤ 511.
   Definition size σ := length σ.(blocks).
 End inode.
 
@@ -29,7 +31,8 @@ Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 
 Definition inode_linv (l:loc) σ : iProp Σ :=
   ∃ (addr_s: Slice.t) (addrs: list u64) (extra: list u8) (hdr: Block),
-    "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (map EncUInt64 addrs)) ++ extra⌝ ∗
+    "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
+    "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
     "addr" ∷ l ↦[inode.S :: "addr"] #σ.(inode.addr) ∗
     "addrs" ∷ l ↦[inode.S :: "addrs"] (slice_val addr_s) ∗
@@ -47,7 +50,8 @@ Definition is_inode l γ P : iProp Σ :=
 
 Definition is_inode_durable σ : iProp Σ :=
   ∃ (addrs: list u64) (extra: list u8) (hdr: Block),
-    "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (map EncUInt64 addrs)) ++ extra⌝ ∗
+    "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
+    "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
     "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b.
 
@@ -76,6 +80,8 @@ Proof.
   reflexivity.
 Qed.
 
+Hint Unfold inode.wf : word.
+
 Theorem init_inode addr :
   int.val addr d↦ block0 -∗ is_inode_durable (inode.mk addr []).
 Proof.
@@ -84,15 +90,57 @@ Proof.
   cbv [inode.addr inode.blocks big_sepL2].
   iFrame "Hhdr".
   iPureIntro.
-  reflexivity.
+  split.
+  - rewrite /inode.wf /=.
+    lia.
+  - reflexivity.
 Qed.
 
-Theorem wp_openInode {d addr σ P} :
+
+Theorem wp_openInode {d:val} {addr σ P} :
   addr = σ.(inode.addr) ->
   {{{ is_inode_durable σ ∗ P σ }}}
     openInode d #addr
   {{{ l γ, RET #l; is_inode l γ P }}}.
 Proof.
+  intros ->.
+  iIntros (Φ) "(Hinode&HP) HΦ"; iNamed "Hinode".
+  iDestruct (big_sepL2_length with "Hdata") as %Hblocklen.
+  wp_call.
+  wp_apply (wp_Read with "Hhdr").
+  iIntros (s) "(Hhdr&Hs)".
+  wp_pures.
+  iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
+  rewrite Hencoded.
+  wp_apply (wp_NewDec with "Hs").
+  iIntros (dec) "[Hdec %Hsz]".
+  wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
+  wp_pures.
+  wp_apply (wp_Dec__GetInts _ _ _ addrs _ nil with "[Hdec]").
+  { rewrite app_nil_r; iFrame.
+    iPureIntro.
+    rewrite Hblocklen.
+    word. }
+  iIntros (addr_s) "[_ Haddrs]".
+  wp_pures.
+  rewrite -wp_fupd.
+  wp_apply wp_new_free_lock.
+  iIntros (γ lref) "Hlock".
+  wp_apply wp_allocStruct.
+  { repeat econstructor; auto.
+    admit. (* oops, can't allocate structs with disks *) }
+  iIntros (l) "Hinode".
+  iDestruct (struct_fields_split with "Hinode") as "(d&m&addr&addrs&_)".
+  iMod (readonly_alloc_1 with "d") as "#d".
+  iMod (readonly_alloc_1 with "m") as "#m".
+  iMod (alloc_lock inodeN ⊤ _ _
+                   (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ)%I
+          with "[$Hlock] [-HΦ]") as "#Hlock".
+  { iExists _; iFrame.
+    iExists _, _, _, _; iFrame "% ∗". }
+  iModIntro.
+  iApply "HΦ".
+  iExists _, _; iFrame "#".
 Admitted.
 
 Theorem wp_UsedBlocks {l γ P} :
