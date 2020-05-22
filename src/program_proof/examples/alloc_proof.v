@@ -1,6 +1,8 @@
 From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import Map.
 
+From Perennial.goose_lang Require Import crash_modality.
+
 From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import into_val.
@@ -223,12 +225,22 @@ Definition allocator_linv (mref: loc) σ : iProp Σ :=
        "Hblocks" ∷ [∗ set] k ∈ σ.(alloc.free), ∃ b, int.val k d↦ b
 .
 
+Definition allocator_durable σ : iProp Σ :=
+  ([∗ set] k ∈ σ.(alloc.free), ∃ b, int.val k d↦ b)%I.
+
 Definition is_allocator P (l: loc) (γ: gname) : iProp Σ :=
   ∃ (lref mref: loc),
     "#m" ∷ readonly (l ↦[allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[allocator.S :: "free"] #mref) ∗
     "#His_lock" ∷ is_lock allocN γ #lref (∃ σ, "Hlockinv" ∷ allocator_linv mref σ ∗ "HP" ∷ P σ)
 .
+
+Instance allocator_post_crash mref σ :
+  IntoCrash (allocator_linv mref σ) (λ _, allocator_durable σ).
+Proof.
+  hnf; iIntros "H"; iNamed "H".
+  by iFrame.
+Qed.
 
 Global Instance is_allocator_Persistent P l γ :
   Persistent (is_allocator P l γ).
