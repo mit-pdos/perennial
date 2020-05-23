@@ -2,72 +2,15 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+From Goose Require github_com.mit_pdos.perennial_examples.alloc.
 From Goose Require github_com.mit_pdos.perennial_examples.inode.
-
-(* 0alloc.go *)
-
-Module unit.
-  Definition S := struct.decl [
-  ].
-End unit.
-
-(* allocator manages free disk blocks. It does not store its state durably, so
-   the caller is responsible for returning its set of free disk blocks on
-   recovery. *)
-Module allocator.
-  Definition S := struct.decl [
-    "m" :: lockRefT;
-    "free" :: mapT (struct.t unit.S)
-  ].
-End allocator.
-
-Definition FreeRange: val :=
-  rec: "FreeRange" "start" "sz" :=
-    let: "m" := NewMap (struct.t unit.S) in
-    let: "end" := "start" + "sz" in
-    let: "i" := ref_to uint64T "start" in
-    (for: (λ: <>, ![uint64T] "i" < "end"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      MapInsert "m" (![uint64T] "i") (struct.mk unit.S [
-      ]);;
-      Continue);;
-    "m".
-
-Definition newAllocator: val :=
-  rec: "newAllocator" "free" :=
-    struct.new allocator.S [
-      "m" ::= lock.new #();
-      "free" ::= "free"
-    ].
-
-Definition findKey: val :=
-  rec: "findKey" "m" :=
-    let: "found" := ref_to uint64T #0 in
-    let: "ok" := ref_to boolT #false in
-    MapIter "m" (λ: "k" <>,
-      (if: ~ (![boolT] "ok")
-      then
-        "found" <-[uint64T] "k";;
-        "ok" <-[boolT] #true
-      else #()));;
-    (![uint64T] "found", ![boolT] "ok").
-
-(* Reserve transfers ownership of a free block from the allocator to the caller *)
-Definition allocator__Reserve: val :=
-  rec: "allocator__Reserve" "a" :=
-    lock.acquire (struct.loadF allocator.S "m" "a");;
-    let: ("k", "ok") := findKey (struct.loadF allocator.S "free" "a") in
-    MapDelete (struct.loadF allocator.S "free" "a") "k";;
-    lock.release (struct.loadF allocator.S "m" "a");;
-    ("k", "ok").
-
-(* dir.go *)
 
 Definition NumInodes : expr := #5.
 
 Module Dir.
   Definition S := struct.decl [
     "d" :: disk.Disk;
-    "allocator" :: struct.ptrT allocator.S;
+    "allocator" :: struct.ptrT alloc.Allocator.S;
     "inodes" :: slice.T (struct.ptrT inode.Inode.S)
   ].
 End Dir.
@@ -95,7 +38,7 @@ Definition OpenDir: val :=
       (ForSlice uint64T <> "a" (inode.Inode__UsedBlocks "i")
         (MapDelete "free" "a"));;
     deleteInodeBlocks NumInodes "free";;
-    let: "allocator" := newAllocator "free" in
+    let: "allocator" := alloc.New "free" in
     struct.new Dir.S [
       "d" ::= "d";
       "allocator" ::= "allocator";
@@ -114,7 +57,7 @@ Definition Dir__Size: val :=
 
 Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
-    let: ("a", "ok") := allocator__Reserve (struct.loadF Dir.S "allocator" "d") in
+    let: ("a", "ok") := alloc.Allocator__Reserve (struct.loadF Dir.S "allocator" "d") in
     (if: ~ "ok"
     then #false
     else

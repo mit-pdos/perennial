@@ -3,7 +3,7 @@ From Perennial.Helpers Require Import Map.
 
 From Perennial.goose_lang Require Import crash_modality.
 
-From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
+From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import into_val.
 
@@ -230,8 +230,8 @@ Definition allocator_durable σ : iProp Σ :=
 
 Definition is_allocator P (l: loc) (γ: gname) : iProp Σ :=
   ∃ (lref mref: loc),
-    "#m" ∷ readonly (l ↦[allocator.S :: "m"] #lref) ∗
-    "#free" ∷ readonly (l ↦[allocator.S :: "free"] #mref) ∗
+    "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
+    "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
     "#His_lock" ∷ is_lock allocN γ #lref (∃ σ, "Hlockinv" ∷ allocator_linv mref σ ∗ "HP" ∷ P σ)
 .
 
@@ -257,7 +257,7 @@ Qed.
 Theorem wp_newAllocator P mref m σ :
   dom (gset _) m = σ.(alloc.free) ->
   {{{ is_map mref m ∗ allocator_durable σ ∗ P σ }}}
-    newAllocator #mref
+    New #mref
   {{{ l γ, RET #l; is_allocator P l γ }}}.
 Proof.
   iIntros (Hfree Φ) "(Hmap&Hblocks&HP) HΦ".
@@ -306,7 +306,7 @@ Theorem wp_Reserve P (Q: option u64 → iProp Σ) l γ :
            end⌝ -∗
           P σ ={⊤}=∗ P σ' ∗ Q ma)
   }}}
-    allocator__Reserve #l
+    Allocator__Reserve #l
   {{{ a (ok: bool), RET (#a, #ok);
       if ok then Q (Some a) ∗ (∃ b, int.val a d↦ b)
       else Q None }}}.
