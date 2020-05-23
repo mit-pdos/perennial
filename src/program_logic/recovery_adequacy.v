@@ -247,7 +247,7 @@ Proof.
     iIntros "H". iApply "H".
   }
   iIntros "H".
-  rewrite -step_fupdN_inner_fupd.
+  rewrite -(step_fupdN_inner_fupd _ _ (3 * (S (S k)))).
   iApply (step_fupdN_inner_wand' with "H").
   { reflexivity. }
   { reflexivity. }
