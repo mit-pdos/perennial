@@ -145,6 +145,7 @@ def main():
     if examples_dir is not None:
         pkgs = [
             "dir",
+            "inode",
         ]
         for pkg in pkgs:
             run_goose(

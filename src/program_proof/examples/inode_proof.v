@@ -2,7 +2,7 @@ From RecordUpdate Require Import RecordSet.
 
 From Perennial.goose_lang Require Import crash_modality.
 
-From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
+From Goose.github_com.mit_pdos.perennial_examples Require Import inode.
 From Perennial.program_proof Require Import proof_prelude.
 
 From Perennial.goose_lang.lib Require Import typed_slice.
@@ -38,8 +38,8 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
-    "addr" ∷ l ↦[inode.S :: "addr"] #σ.(inode.addr) ∗
-    "addrs" ∷ l ↦[inode.S :: "addrs"] (slice_val addr_s) ∗
+    "addr" ∷ l ↦[Inode.S :: "addr"] #σ.(inode.addr) ∗
+    "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
     "Haddrs" ∷ is_slice addr_s uint64T 1 addrs ∗
     (* TODO: this does not support reading lock-free; we could make it [∃ q,
     int.val a d↦{q} b], but that wouldn't support lock-free writes if we
@@ -48,8 +48,8 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
 .
 
 Definition is_inode l γ P : iProp Σ :=
-  ∃ (d:val) (lref: loc), "#d" ∷ readonly (l ↦[inode.S :: "d"] d) ∗
-                         "#m" ∷ readonly (l ↦[inode.S :: "m"] #lref) ∗
+  ∃ (d:val) (lref: loc), "#d" ∷ readonly (l ↦[Inode.S :: "d"] d) ∗
+                         "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
                          "#Hlock" ∷ is_lock inodeN γ #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ).
 
 Definition is_inode_durable σ : iProp Σ :=
@@ -98,10 +98,10 @@ Proof.
   - reflexivity.
 Qed.
 
-Theorem wp_openInode {d:loc} {addr σ P} :
+Theorem wp_Open {d:loc} {addr σ P} :
   addr = σ.(inode.addr) ->
   {{{ is_inode_durable σ ∗ P σ }}}
-    openInode #d #addr
+    inode.Open #d #addr
   {{{ l γ, RET #l; is_inode l γ P }}}.
 Proof.
   intros ->.
@@ -142,13 +142,13 @@ Proof.
   iExists _, _; iFrame "#".
 Qed.
 
-Theorem wp_UsedBlocks {l γ P} :
+Theorem wp_Inode__UsedBlocks {l γ P} :
   (* TODO: it would be cool to run this before allocating the lock invariant for
   the inode; we could recover a "pre-inode" and then in a purely logical step
   allocate all the lock invariants in the caller; otherwise this code can't
   return the slice literally because it'll be protected by a lock. *)
   {{{ is_inode l γ P }}}
-    inode__UsedBlocks #l
+    Inode__UsedBlocks #l
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
       (* TODO: what should the spec be? this seems to help discover the
       footprint of is_durable; how do we use that? *)
@@ -168,13 +168,13 @@ Proof.
   wp_pures.
 Abort.
 
-Theorem wp_inode__Read {l γ P} {off: u64} Q :
+Theorem wp_Inode__Read {l γ P} {off: u64} Q :
   {{{ is_inode l γ P ∗
       (∀ σ σ' mb,
         ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
         P σ ={⊤}=∗ P σ' ∗ Q mb)
   }}}
-    inode__Read #l #off
+    Inode__Read #l #off
   {{{ s mb, RET slice_val s;
       (match mb with
        | Some b => ∃ s, is_block s 1 b
@@ -233,13 +233,13 @@ Proof.
     iExists _; iFrame.
 Qed.
 
-Theorem wp_inode__Size {l γ P} (Q: u64 -> iProp Σ) :
+Theorem wp_Inode__Size {l γ P} (Q: u64 -> iProp Σ) :
   {{{ is_inode l γ P ∗
       (∀ σ σ' sz,
           ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
           P σ ={⊤}=∗ P σ' ∗ Q sz)
   }}}
-    inode__Size #l
+    Inode__Size #l
   {{{ sz, RET #sz; Q sz }}}.
 Proof.
   iIntros (Φ) "(Hinv & Hfupd) HΦ"; iNamed "Hinv".
@@ -267,16 +267,16 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
-Theorem wp_inode__mkHdr l addr_s addrs :
+Theorem wp_Inode__mkHdr l addr_s addrs :
   length addrs ≤ InodeMaxBlocks ->
-  {{{ "addrs" ∷ l ↦[inode.S :: "addrs"] (slice_val addr_s) ∗
+  {{{ "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
   }}}
-    inode__mkHdr #l
+    Inode__mkHdr #l
   {{{ s b extra, RET (slice_val s);
       is_block s 1 b ∗
       ⌜Block_to_vals b = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
-      "addrs" ∷ l ↦[inode.S :: "addrs"] (slice_val addr_s) ∗
+      "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
   }}}.
 Proof.
@@ -316,7 +316,7 @@ Proof.
       rewrite H; reflexivity.
 Qed.
 
-Theorem wp_inode__Append {l γ P} (Q: bool -> iProp Σ) (a: u64) (b0: Block) :
+Theorem wp_Inode__Append {l γ P} (Q: bool -> iProp Σ) (a: u64) (b0: Block) :
   {{{ is_inode l γ P ∗ int.val a d↦ b0 ∗
       (∀ σ σ' (ok: bool),
           ⌜(if ok
@@ -326,7 +326,7 @@ Theorem wp_inode__Append {l γ P} (Q: bool -> iProp Σ) (a: u64) (b0: Block) :
         ⌜inode.wf σ⌝ -∗
          P σ ={⊤}=∗ P σ' ∗ Q ok)
   }}}
-    inode__Append #l #a
+    Inode__Append #l #a
   {{{ (ok: bool), RET #ok; Q ok ∗ if ok then emp else int.val a d↦ b0 }}}.
 Proof.
   iIntros (Φ) "(Hinode&Ha&Hfupd) HΦ"; iNamed "Hinode".
@@ -361,7 +361,7 @@ Proof.
     Transparent slice.T.
     wp_storeField.
     Opaque slice.T.
-    wp_apply (wp_inode__mkHdr with "[$addrs $Haddrs]").
+    wp_apply (wp_Inode__mkHdr with "[$addrs $Haddrs]").
     { autorewrite with len; simpl.
       word. }
     iIntros (s b extra') "(Hb&%Hencded&?&?)"; iNamed.

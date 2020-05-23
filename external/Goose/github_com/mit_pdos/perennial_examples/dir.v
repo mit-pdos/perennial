@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-From Goose Require github_com.tchajed.marshal.
+From Goose Require github_com.mit_pdos.perennial_examples.inode.
 
 (* 0alloc.go *)
 
@@ -60,86 +60,6 @@ Definition allocator__Reserve: val :=
     lock.release (struct.loadF allocator.S "m" "a");;
     ("k", "ok").
 
-(* 0inode.go *)
-
-Definition InodeMaxBlocks : expr := #511.
-
-Module inode.
-  Definition S := struct.decl [
-    "d" :: disk.Disk;
-    "m" :: lockRefT;
-    "addr" :: uint64T;
-    "addrs" :: slice.T uint64T
-  ].
-End inode.
-
-Definition openInode: val :=
-  rec: "openInode" "d" "addr" :=
-    let: "b" := disk.Read "addr" in
-    let: "dec" := marshal.NewDec "b" in
-    let: "numAddrs" := marshal.Dec__GetInt "dec" in
-    let: "addrs" := marshal.Dec__GetInts "dec" "numAddrs" in
-    struct.new inode.S [
-      "d" ::= "d";
-      "m" ::= lock.new #();
-      "addr" ::= "addr";
-      "addrs" ::= "addrs"
-    ].
-
-Definition inode__UsedBlocks: val :=
-  rec: "inode__UsedBlocks" "i" :=
-    lock.acquire (struct.loadF inode.S "m" "i");;
-    let: "addrs" := struct.loadF inode.S "addrs" "i" in
-    lock.release (struct.loadF inode.S "m" "i");;
-    "addrs".
-
-Definition inode__Read: val :=
-  rec: "inode__Read" "i" "off" :=
-    lock.acquire (struct.loadF inode.S "m" "i");;
-    (if: "off" ≥ slice.len (struct.loadF inode.S "addrs" "i")
-    then
-      lock.release (struct.loadF inode.S "m" "i");;
-      slice.nil
-    else
-      let: "a" := SliceGet uint64T (struct.loadF inode.S "addrs" "i") "off" in
-      let: "b" := disk.Read "a" in
-      lock.release (struct.loadF inode.S "m" "i");;
-      "b").
-
-Definition inode__Size: val :=
-  rec: "inode__Size" "i" :=
-    lock.acquire (struct.loadF inode.S "m" "i");;
-    let: "sz" := slice.len (struct.loadF inode.S "addrs" "i") in
-    lock.release (struct.loadF inode.S "m" "i");;
-    "sz".
-
-Definition inode__mkHdr: val :=
-  rec: "inode__mkHdr" "i" :=
-    let: "enc" := marshal.NewEnc disk.BlockSize in
-    marshal.Enc__PutInt "enc" (slice.len (struct.loadF inode.S "addrs" "i"));;
-    marshal.Enc__PutInts "enc" (struct.loadF inode.S "addrs" "i");;
-    let: "hdr" := marshal.Enc__Finish "enc" in
-    "hdr".
-
-(* Append adds a block to the inode.
-
-   Takes ownership of the disk at a.
-
-   Returns false if Append fails (due to running out of space in the inode) *)
-Definition inode__Append: val :=
-  rec: "inode__Append" "i" "a" :=
-    lock.acquire (struct.loadF inode.S "m" "i");;
-    (if: slice.len (struct.loadF inode.S "addrs" "i") ≥ InodeMaxBlocks
-    then
-      lock.release (struct.loadF inode.S "m" "i");;
-      #false
-    else
-      struct.storeF inode.S "addrs" "i" (SliceAppend uint64T (struct.loadF inode.S "addrs" "i") "a");;
-      let: "hdr" := inode__mkHdr "i" in
-      disk.Write (struct.loadF inode.S "addr" "i") "hdr";;
-      lock.release (struct.loadF inode.S "m" "i");;
-      #true).
-
 (* dir.go *)
 
 Definition NumInodes : expr := #5.
@@ -148,18 +68,18 @@ Module Dir.
   Definition S := struct.decl [
     "d" :: disk.Disk;
     "allocator" :: struct.ptrT allocator.S;
-    "inodes" :: slice.T (struct.ptrT inode.S)
+    "inodes" :: slice.T (struct.ptrT inode.Inode.S)
   ].
 End Dir.
 
 Definition openInodes: val :=
   rec: "openInodes" "d" :=
-    let: "inodes" := ref (zero_val (slice.T (refT (struct.t inode.S)))) in
+    let: "inodes" := ref (zero_val (slice.T (refT (struct.t inode.Inode.S)))) in
     let: "addr" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "addr" < NumInodes); (λ: <>, "addr" <-[uint64T] ![uint64T] "addr" + #1) := λ: <>,
-      "inodes" <-[slice.T (refT (struct.t inode.S))] SliceAppend (refT (struct.t inode.S)) (![slice.T (refT (struct.t inode.S))] "inodes") (openInode "d" (![uint64T] "addr"));;
+      "inodes" <-[slice.T (refT (struct.t inode.Inode.S))] SliceAppend (refT (struct.t inode.Inode.S)) (![slice.T (refT (struct.t inode.Inode.S))] "inodes") (inode.Open "d" (![uint64T] "addr"));;
       Continue);;
-    ![slice.T (refT (struct.t inode.S))] "inodes".
+    ![slice.T (refT (struct.t inode.Inode.S))] "inodes".
 
 Definition deleteInodeBlocks: val :=
   rec: "deleteInodeBlocks" "numInodes" "free" :=
@@ -171,8 +91,8 @@ Definition deleteInodeBlocks: val :=
 Definition OpenDir: val :=
   rec: "OpenDir" "d" "free" :=
     let: "inodes" := openInodes "d" in
-    ForSlice (refT (struct.t inode.S)) <> "i" "inodes"
-      (ForSlice uint64T <> "a" (inode__UsedBlocks "i")
+    ForSlice (refT (struct.t inode.Inode.S)) <> "i" "inodes"
+      (ForSlice uint64T <> "a" (inode.Inode__UsedBlocks "i")
         (MapDelete "free" "a"));;
     deleteInodeBlocks NumInodes "free";;
     let: "allocator" := newAllocator "free" in
@@ -184,13 +104,13 @@ Definition OpenDir: val :=
 
 Definition Dir__Read: val :=
   rec: "Dir__Read" "d" "ino" "off" :=
-    let: "i" := SliceGet (refT (struct.t inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
-    inode__Read "i" "off".
+    let: "i" := SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
+    inode.Inode__Read "i" "off".
 
 Definition Dir__Size: val :=
   rec: "Dir__Size" "d" "ino" :=
-    let: "i" := SliceGet (refT (struct.t inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
-    inode__Size "i".
+    let: "i" := SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
+    inode.Inode__Size "i".
 
 Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
@@ -199,7 +119,7 @@ Definition Dir__Append: val :=
     then #false
     else
       disk.Write "a" "b";;
-      let: "ok2" := inode__Append (SliceGet (refT (struct.t inode.S)) (struct.loadF Dir.S "inodes" "d") "ino") "a" in
+      let: "ok2" := inode.Inode__Append (SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino") "a" in
       (if: ~ "ok2"
       then #false
       else #true)).
