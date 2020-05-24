@@ -174,7 +174,7 @@ Section goose_lang.
     | _ => false
     end.
 
-  Fixpoint is_unboxed_baseTy (t: ty) : bool :=
+  Definition is_unboxed_baseTy (t: ty) : bool :=
     match t with
     | baseT _ => true
     | arrayT _ => true
@@ -182,7 +182,7 @@ Section goose_lang.
     | _ => false
     end.
 
-  Fixpoint is_unboxedTy (t: ty) : bool :=
+  Definition is_unboxedTy (t: ty) : bool :=
     match t with
     | baseT _ => true
     | arrayT _ => true
