@@ -7,8 +7,8 @@ Local Existing Instances monoid_ne monoid_assoc monoid_comm
   monoid_homomorphism_op_proper
   monoid_homomorphism_ne weak_monoid_homomorphism_proper.
 
-From iris.bi Require Import derived_laws_sbi plainly big_op.
-Import interface.bi derived_laws_bi.bi derived_laws_sbi.bi.
+From iris.bi Require Import derived_laws plainly big_op.
+Import interface.bi derived_laws.bi.
 
 Lemma elem_of_map_list {A B} (l : list A) (f : A -> B) a :
   a ∈ map f l ->

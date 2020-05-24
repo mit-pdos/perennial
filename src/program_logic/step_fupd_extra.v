@@ -18,7 +18,7 @@ Notation "|={ E1 , E2 }_ k =>^ n P" :=
 
 Section step_fupdN.
 
-Context {PROP: sbi} {H: BiFUpd PROP} {HAff: BiAffine PROP}.
+Context {PROP: bi} {H: BiFUpd PROP} {HAff: BiAffine PROP}.
 Implicit Types P Q: PROP.
 
 Lemma step_fupd_sep E P Q : (|={E}▷=> P) ∗ (|={E}▷=> Q) -∗ |={E}▷=> P ∗ Q.
