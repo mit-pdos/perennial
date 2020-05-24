@@ -19,8 +19,8 @@ Module Allocator.
   ].
 End Allocator.
 
-Definition FreeRange: val :=
-  rec: "FreeRange" "start" "sz" :=
+Definition freeRange: val :=
+  rec: "freeRange" "start" "sz" :=
     let: "m" := NewMap (struct.t unit.S) in
     let: "end" := "start" + "sz" in
     let: "i" := ref_to uint64T "start" in
@@ -30,8 +30,27 @@ Definition FreeRange: val :=
       Continue);;
     "m".
 
+(* mapRemove deletes addresses in remove from m
+
+   like m -= remove *)
+Definition mapRemove: val :=
+  rec: "mapRemove" "m" "remove" :=
+    MapIter "remove" (λ: "k" <>,
+      MapDelete "m" "k").
+
+(* SetAdd adds addresses in add to m
+
+   like m += add *)
+Definition SetAdd: val :=
+  rec: "SetAdd" "m" "add" :=
+    ForSlice uint64T <> "k" "add"
+      (MapInsert "m" "k" (struct.mk unit.S [
+      ])).
+
 Definition New: val :=
-  rec: "New" "free" :=
+  rec: "New" "start" "sz" "used" :=
+    let: "free" := freeRange "start" "sz" in
+    mapRemove "free" "used";;
     struct.new Allocator.S [
       "m" ::= lock.new #();
       "free" ::= "free"
