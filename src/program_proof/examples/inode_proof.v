@@ -3,7 +3,9 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.goose_lang Require Import crash_modality.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import inode.
+
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.goose_lang Require Import lib.into_val.
 
 From Perennial.goose_lang.lib Require Import typed_slice.
 From Perennial.program_proof Require Import marshal_proof.
@@ -316,18 +318,43 @@ Proof.
       rewrite H; reflexivity.
 Qed.
 
-Theorem wp_Inode__Append {l γ P} (Q: bool -> iProp Σ) (a: u64) (b0: Block) :
+Inductive AppendStatus :=
+| AppendOk
+| AppendFull
+| AppendAgain.
+
+Instance AppendStatus_witness : Inhabited AppendStatus := populate!.
+
+Instance AppendStatus_eq_dec : EqDecision AppendStatus.
+Proof. solve_decision. Qed.
+
+Instance AppendStatus_val : IntoVal AppendStatus.
+Proof.
+  refine {| to_val := λ v, match v with
+                           | AppendOk => #(U8 0)
+                           | AppendAgain => #(U8 1)
+                           | AppendFull => #(U8 2)
+                           end;
+            IntoVal_def := AppendOk;
+         |}.
+  abstract (intros [] []; auto; inversion 1).
+Defined.
+
+Theorem wp_Inode__Append {l γ P} (Q: AppendStatus -> iProp Σ) (a: u64) (b0: Block) :
   {{{ is_inode l γ P ∗ int.val a d↦ b0 ∗
-      (∀ σ σ' (ok: bool),
-          ⌜(if ok
-           then σ' = set inode.blocks (λ bs, bs ++ [b0]) σ
-           else σ' = σ) ∧
-          ok = bool_decide (1 + inode.size σ ≤ InodeMaxBlocks)⌝ -∗
+      (∀ σ σ' (status: AppendStatus),
+          ⌜(match status with
+            | AppendOk => σ' = set inode.blocks (λ bs, bs ++ [b0]) σ
+            (* TODO: if status is AppendAgain, still need to take ownership of a
+               even if blocks don't change *)
+            | _ => σ' = σ
+            end) ∧
+          (status = AppendFull ↔ 1 + inode.size σ > InodeMaxBlocks)⌝ -∗
         ⌜inode.wf σ⌝ -∗
-         P σ ={⊤}=∗ P σ' ∗ Q ok)
+         P σ ={⊤}=∗ P σ' ∗ Q status)
   }}}
     Inode__Append #l #a
-  {{{ (ok: bool), RET #ok; Q ok ∗ if ok then emp else int.val a d↦ b0 }}}.
+  {{{ (status: AppendStatus), RET (to_val status); Q status ∗ if bool_decide (status = AppendOk) then emp else int.val a d↦ b0 }}}.
 Proof.
   iIntros (Φ) "(Hinode&Ha&Hfupd) HΦ"; iNamed "Hinode".
   wp_call.
@@ -342,9 +369,10 @@ Proof.
   wp_apply wp_slice_len; wp_pures.
   wp_if_destruct.
   - wp_loadField.
-    iMod ("Hfupd" $! σ σ false with "[%] [% //] HP") as "[HP HQ]".
+    iMod ("Hfupd" $! σ σ AppendFull with "[%] [% //] HP") as "[HP HQ]".
     { split; auto.
-      symmetry; apply bool_decide_eq_false_2.
+      split; auto.
+      intros.
       rewrite /inode.size.
       rewrite -Hlen2 Hlen1.
       word. }
@@ -352,7 +380,9 @@ Proof.
     { iExists _; iFrame.
       iExists _, _, _, _; iFrame "∗ %". }
     wp_pures.
+    change #(U8 2) with (to_val AppendFull).
     iApply "HΦ"; iFrame.
+    rewrite bool_decide_eq_false_2; auto.
   - wp_loadField.
     wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
     { iPureIntro.
@@ -369,10 +399,10 @@ Proof.
     wp_apply (wp_Write_fupd ⊤
                             ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0]) σ) ∗
                             "Hhdr" ∷ int.val σ.(inode.addr) d↦ b ∗
-                            "HQ" ∷ Q true) with "[$Hb Hhdr Hfupd HP]").
-    { iMod ("Hfupd" $! σ _ true with "[%] [% //] HP") as "[HP HQ]".
+                            "HQ" ∷ Q AppendOk) with "[$Hb Hhdr Hfupd HP]").
+    { iMod ("Hfupd" $! σ _ AppendOk with "[%] [% //] HP") as "[HP HQ]".
       { split; eauto.
-        symmetry; apply bool_decide_eq_true_2.
+        split; try congruence.
         rewrite /inode.size.
         rewrite -Hlen2 Hlen1; word. }
       iExists hdr; iFrame.
@@ -392,7 +422,9 @@ Proof.
         iApply (big_sepL2_app with "[$Hdata] [Ha]").
         simpl; iFrame. }
     wp_pures.
+    change #(U8 0) with (to_val AppendOk).
     iApply "HΦ"; iFrame.
+    rewrite bool_decide_eq_true_2; auto.
 Qed.
 
 End goose.

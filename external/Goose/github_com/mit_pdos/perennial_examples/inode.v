@@ -63,21 +63,40 @@ Definition Inode__mkHdr: val :=
     let: "hdr" := marshal.Enc__Finish "enc" in
     "hdr".
 
+Definition AppendStatus: ty := byteT.
+
+Definition AppendOk : expr := #(U8 0).
+
+Definition AppendAgain : expr := #(U8 1).
+
+Definition AppendFull : expr := #(U8 2).
+
 (* Append adds a block to the inode.
 
-   Takes ownership of the disk at a.
+   Takes ownership of the disk at a on success.
 
-   Returns false if Append fails (due to running out of space in the inode) *)
+   Returns:
+   - AppendOk on success and takes ownership of the allocated block.
+   - AppendFull if inode is out of space (and returns the allocated block)
+   - AppendAgain if inode needs a metadata block. Call i.Alloc and try again.
+   	 Returns the allocated block. *)
 Definition Inode__Append: val :=
   rec: "Inode__Append" "i" "a" :=
     lock.acquire (struct.loadF Inode.S "m" "i");;
     (if: slice.len (struct.loadF Inode.S "addrs" "i") ≥ MaxBlocks
     then
       lock.release (struct.loadF Inode.S "m" "i");;
-      #false
+      AppendFull
     else
       struct.storeF Inode.S "addrs" "i" (SliceAppend uint64T (struct.loadF Inode.S "addrs" "i") "a");;
       let: "hdr" := Inode__mkHdr "i" in
       disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
       lock.release (struct.loadF Inode.S "m" "i");;
-      #true).
+      AppendOk).
+
+(* Give a block to the inode for metadata purposes.
+
+   Returns true if the block was consumed. *)
+Definition Inode__Alloc: val :=
+  rec: "Inode__Alloc" "i" "a" :=
+    #false.

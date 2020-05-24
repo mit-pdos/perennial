@@ -63,6 +63,6 @@ Definition Dir__Append: val :=
     else
       disk.Write "a" "b";;
       let: "ok2" := inode.Inode__Append (SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino") "a" in
-      (if: ~ "ok2"
+      (if: "ok2" ≠ inode.AppendOk
       then #false
       else #true)).
