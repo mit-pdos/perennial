@@ -64,7 +64,7 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
     (* TODO: this does not support reading lock-free; we could make it [∃ q,
     int.val a d↦{q} b], but that wouldn't support lock-free writes if we
     implemented those *)
-    "HdataDirect" ∷ [∗ list] a;b ∈ dirAddrs;(take (int.nat maxDirect) σ.(inode.blocks)), int.val a d↦ b ∗
+    "HdataDirect" ∷ ([∗ list] a;b ∈ dirAddrs;(take (int.nat maxDirect) σ.(inode.blocks)), int.val a d↦ b) ∗
     (* state that we can split up all blocks of the inode after maxDirect into indirect block sized chunks *)
     (* the last chunk might be a prefix, which should be fine *)
     "%HIndBlocks" ∷ ⌜∀ index, nth index listIndBlocks [] = take (int.nat maxIndirect) (drop (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) σ.(inode.blocks))⌝ ∗
@@ -83,14 +83,13 @@ Definition is_inode_durable σ : iProp Σ :=
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
     "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b.
-
 (*
 Instance is_inode_crash l σ :
   IntoCrash (inode_linv l σ) (λ _, is_inode_durable σ).
 Proof.
   hnf; iIntros "Hinv".
   iNamed "Hinv".
-  iExists addrs, extra, hdr.
+  iExists dirAddrs, indAddrs, listIndBlocks, sz, numInd. extra, hdr.
   iFrame "% ∗".
   auto.
 Qed.
