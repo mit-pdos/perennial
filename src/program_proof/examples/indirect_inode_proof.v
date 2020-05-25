@@ -2,7 +2,7 @@ From RecordUpdate Require Import RecordSet.
 
 From Perennial.goose_lang Require Import crash_modality.
 
-From Goose.github_com.mit_pdos.perennial_examples Require Import inode.
+From Goose.github_com.mit_pdos.perennial_examples Require Import indirect_inode.
 
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang Require Import lib.into_val.
@@ -38,25 +38,33 @@ Let inodeN := nroot.@"inode".
 Implicit Types (σ: inode.t).
 Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 
-(* is_indirect: takes addr of metadata block, actual data block (inode.t), states disk-pt facts for all *)
-(* full and prefix *)
+Definition is_indirect l (blocks : list Block) : iProp Σ :=
+  ∃ (s: Slice.t) (addrs: list u64),
+  "%Hlen" ∷ ⌜length(addrs) <= indirectNumBlocks⌝ ∗
+  "Haddrs" ∷ is_slice s uint64T 1 addrs ∗
+    (* TODO: this does not support reading lock-free; we could make it [∃ q,
+    int.val a d↦{q} b], but that wouldn't support lock-free writes if we
+    implemented those *)
+  "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
+  .
 
 Definition inode_linv (l:loc) σ : iProp Σ :=
   ∃ (direct_s indirect_s: Slice.t) (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block),
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs))⌝ ∗
-    "%Hlen" ∷ ⌜len(dirAddrs) = maxDirect ∧ len(indAddrs) = maxIndirect ∧ int.val sz < InodeMaxBlocks ∧ int.val numInd <= maxIndirect⌝ ∗
+    "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧ length(indAddrs) = int.nat maxIndirect ∧ int.val sz < InodeMaxBlocks ∧ int.val numInd <= maxIndirect⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
     "addr" ∷ l ↦[Inode.S :: "addr"] #σ.(inode.addr) ∗
     "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
     "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
-    "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.Nat sz) dirAddrs) ∗
-    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.Nat numInd) indAddrs) ∗
+    "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.nat sz) dirAddrs) ∗
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs) ∗
     (* TODO: this does not support reading lock-free; we could make it [∃ q,
     int.val a d↦{q} b], but that wouldn't support lock-free writes if we
     implemented those *)
-    "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b
+    "HdataDirect" ∷ [∗ list] a;b ∈ dirAddrs;(take (int.nat maxDirect) σ.(inode.blocks)), int.val a d↦ b
+    (*"HdataIndirect" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b*)
 .
 
 Definition is_inode l γ P : iProp Σ :=
@@ -71,6 +79,7 @@ Definition is_inode_durable σ : iProp Σ :=
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
     "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b.
 
+(*
 Instance is_inode_crash l σ :
   IntoCrash (inode_linv l σ) (λ _, is_inode_durable σ).
 Proof.
@@ -436,5 +445,5 @@ Proof.
     iApply "HΦ"; iFrame.
     rewrite bool_decide_eq_true_2; auto.
 Qed.
-
+*)
 End goose.

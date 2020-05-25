@@ -18,7 +18,8 @@ From Perennial.program_proof Require
      txn.specs
      buftxn.specs.
 From Perennial.program_proof.examples Require
-     dir_proof.
+     dir_proof
+     indirect_inode_proof.
 From Perennial.goose_lang Require
      ffi.append_log_ffi
      ffi.kvs_ffi.
