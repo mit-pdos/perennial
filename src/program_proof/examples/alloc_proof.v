@@ -6,25 +6,7 @@ From Perennial.goose_lang Require Import crash_modality.
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import into_val.
-
-(* TODO: upstream this *)
-Lemma gset_eq `{Countable A} (c1 c2: gset A) :
-  (forall (x:A), x ∈ c1 ↔ x ∈ c2) → c1 = c2.
-Proof.
-  intros Hexteq.
-  destruct c1 as [c1], c2 as [c2].
-  f_equal.
-  apply map_eq.
-  rewrite /elem_of /gset_elem_of/mapset.mapset_elem_of /= in Hexteq.
-  intros.
-  destruct (c1 !! i) eqn:Hc1;
-    destruct (c2 !! i) eqn:Hc2; auto.
-  - destruct u, u0; auto.
-  - destruct u; apply Hexteq in Hc1.
-    congruence.
-  - destruct u; apply Hexteq in Hc2.
-    congruence.
-Qed.
+From Perennial.program_proof.examples Require Import range_set.
 
 Instance unit_IntoVal : IntoVal ().
 Proof.
@@ -42,9 +24,13 @@ Qed.
 (* state representation types (defined here since modules can't be in sections) *)
 Module alloc.
   Record t :=
-    mk { free: gset u64; }.
-  Global Instance _eta : Settable _ := settable! mk <free>.
+    mk { domain: gset u64;
+         used: gset u64;
+       }.
+  Global Instance _eta : Settable _ := settable! mk <domain; used>.
   Global Instance _witness : Inhabited t := populate!.
+
+  Definition free σ := σ.(domain) ∖ σ.(used).
 End alloc.
 
 Section goose.
@@ -55,14 +41,39 @@ Let allocN := nroot.@"allocator".
 
 Implicit Types (m: gmap u64 ()) (free: gset u64).
 
-Theorem wp_FreeRange (start sz: u64) :
+Lemma rangeSet_append_one:
+  ∀ start sz : u64,
+    int.val start + int.val sz < 2 ^ 64
+    → ∀ i : u64,
+      int.val i < int.val (word.add start sz)
+      → int.val start ≤ int.val i
+      → {[i]} ∪ rangeSet (int.val start) (int.val i - int.val start) =
+        rangeSet (int.val start) (int.val i - int.val start + 1).
+Proof.
+  intros start sz Hbound i Hibound Hilower_bound.
+  replace (int.val (word.add start sz)) with (int.val start + int.val sz) in Hibound by word.
+  apply gset_eq; intros.
+  rewrite elem_of_union.
+  rewrite elem_of_singleton.
+  rewrite !rangeSet_lookup; try word.
+  destruct (decide (x = i)); subst.
+  - split; intros; eauto.
+    word.
+  - intuition; try word.
+    right.
+    assert (int.val x ≠ int.val i) by (apply not_inj; auto).
+    word.
+Qed.
+
+Definition is_addrset (m_ref: loc) (addrs: gset u64): iProp Σ :=
+  ∃ m, is_map m_ref m ∗ ⌜dom (gset _) m = addrs⌝.
+
+Theorem wp_freeRange (start sz: u64) :
   int.val start + int.val sz < 2^64 ->
   {{{ True }}}
-    FreeRange #start #sz
-  {{{ (mref: loc) m, RET #mref;
-      is_map mref m ∗
-      ⌜∀ (x:u64), int.val start ≤ int.val x < int.val start + int.val sz ->
-                  m !! x = Some tt⌝ }}}.
+    freeRange #start #sz
+  {{{ (mref: loc), RET #mref;
+      is_addrset mref (rangeSet (int.val start) (int.val sz)) }}}.
 Proof.
   iIntros (Hbound Φ) "_ HΦ".
   wp_call.
@@ -71,11 +82,12 @@ Proof.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (il) "i".
   wp_pures.
-  wp_apply (wp_forUpto (λ i, ∃ m, "Hmap" ∷ is_map mref m ∗
-      "%Hmap_vals" ∷ ⌜∀ (x:u64), int.val start ≤ int.val x < int.val i ->
-                      m !! x = Some tt⌝)%I
+  wp_apply (wp_forUpto (λ i, "%Hilower_bound" ∷ ⌜int.val start ≤ int.val i⌝ ∗
+                             "*" ∷ ∃ m, "Hmap" ∷ is_map mref m ∗
+                                        "%Hmapdom" ∷ ⌜dom (gset _) m = rangeSet (int.val start) (int.val i - int.val start)⌝)%I
             with "[] [Hmap $i]").
   - word.
+
   - clear Φ.
     iIntros (i).
     iIntros "!>" (Φ) "(HI & i & %Hibound) HΦ"; iNamed "HI".
@@ -86,27 +98,27 @@ Proof.
     wp_pures.
     iApply "HΦ".
     iFrame.
+    iSplitR.
+    { iPureIntro; word. }
+    rewrite /named.
     iExists _; iFrame.
     iPureIntro.
-    replace (int.val (word.add i 1)) with (int.val i + 1) by word.
-    intros x Hxbound.
-    destruct (decide (x = i)); subst.
-    + rewrite lookup_insert //.
-    + rewrite lookup_insert_ne //.
-      apply Hmap_vals.
-      assert (int.val x ≠ int.val i) by (apply not_inj; auto).
-      word.
-  - iExists _; iFrame.
-    iPureIntro.
-    intros x Hxbound.
-    word.
-  - iIntros "[HI i]"; iNamed "HI".
+    rewrite /map_insert dom_insert_L.
+    rewrite Hmapdom.
+    replace (int.val (word.add i 1) - int.val start) with ((int.val i - int.val start) + 1) by word.
+    eapply rangeSet_append_one; eauto.
+
+  - iSplitR; auto.
+    rewrite -> rangeSet_diag by word.
+    iExists _; iFrame.
+    rewrite dom_empty_L; auto.
+  - iIntros "(HI&Hil)"; iNamed "HI".
     wp_pures.
     iApply "HΦ"; iFrame.
-    iPureIntro.
-    intros.
-    apply Hmap_vals.
-    word.
+    iExists _; iFrame.
+    iPureIntro; auto.
+    rewrite Hmapdom.
+    repeat (f_equal; try word).
 Qed.
 
 Lemma big_sepM_lookup_unit (PROP:bi) `{Countable K}
@@ -171,12 +183,12 @@ Proof.
     auto.
 Qed.
 
-Theorem wp_findKey mref m :
-  {{{ is_map mref m }}}
+Theorem wp_findKey mref free :
+  {{{ is_addrset mref free }}}
     findKey #mref
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
-      ⌜if ok then m !! k = Some tt else m = ∅⌝ ∗
-      is_map mref m
+      ⌜if ok then k ∈ free else free = ∅⌝ ∗
+      is_addrset mref free
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
@@ -186,6 +198,7 @@ Proof.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (ok_l) "ok".
   wp_pures.
+  iDestruct "Hmap" as (m) "[Hmap %Hmapdom]".
   wp_apply (wp_MapIter_fold _ _ (λ mdone, ∃ (found: u64) (ok: bool),
                            "found" ∷ found_l ↦[uint64T] #found ∗
                            "ok" ∷ ok_l ↦[boolT] #ok ∗
@@ -212,21 +225,64 @@ Proof.
     wp_load. wp_load.
     wp_pures.
     iApply "HΦ".
+    destruct ok.
+    + iSplitR.
+      { iPureIntro.
+        rewrite -Hmapdom.
+        apply elem_of_dom; eauto. }
+      iExists _; iFrame "% ∗".
+    + iSplitR.
+      { iPureIntro.
+        rewrite -Hmapdom; subst.
+        rewrite dom_empty_L //. }
+      iExists _; iFrame "% ∗".
+Qed.
+
+Theorem wp_mapRemove m_ref remove_ref free remove :
+  {{{ is_addrset m_ref free ∗ is_addrset remove_ref remove }}}
+    mapRemove #m_ref #remove_ref
+  {{{ RET #(); is_addrset m_ref (free ∖ remove) ∗ is_addrset remove_ref remove }}}.
+Proof.
+  iIntros (Φ) "[His_free His_remove] HΦ".
+  rewrite /mapRemove.
+  wp_pures.
+  iDestruct "His_remove" as (m) "[His_remove %Hdom]".
+  wp_apply (wp_MapIter_2 _ _ _ _
+                         (λ mtodo mdone, is_addrset m_ref (free ∖ dom (gset _) mdone))
+              with "His_remove [His_free] [] [HΦ]").
+  - rewrite dom_empty_L.
+    rewrite difference_empty_L.
     iFrame.
-    destruct ok; auto.
+
+  - clear Hdom m Φ.
+    iIntros (k [] mtodo mdone) "!>".
+    iIntros (Φ) "[His_free %Hin] HΦ".
+    wp_call.
+    iDestruct "His_free" as (m) "[His_free %Hdom]".
+    wp_apply (wp_MapDelete with "His_free").
+    iIntros "Hm".
+    iApply "HΦ".
+    iExists _; iFrame.
+    iPureIntro.
+    rewrite /map_del dom_delete_L.
+    set_solver.
+  - iIntros "[Hremove Hfree]".
+    iApply "HΦ".
+    rewrite Hdom.
+    iFrame.
+    iExists _; iFrame "% ∗".
 Qed.
 
 Implicit Types (P: alloc.t → iProp Σ).
 Implicit Types (l:loc) (γ:gname) (σ: alloc.t).
 
 Definition allocator_linv (mref: loc) σ : iProp Σ :=
-  ∃ m, "Hfreemap" ∷ is_map mref m ∗
-       "%Hfreeset" ∷ ⌜dom (gset _) m = σ.(alloc.free)⌝ ∗
-       "Hblocks" ∷ [∗ set] k ∈ σ.(alloc.free), ∃ b, int.val k d↦ b
+  "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
+  "Hblocks" ∷ [∗ set] k ∈ alloc.free σ, ∃ b, int.val k d↦ b
 .
 
 Definition allocator_durable σ : iProp Σ :=
-  ([∗ set] k ∈ σ.(alloc.free), ∃ b, int.val k d↦ b)%I.
+  ([∗ set] k ∈ alloc.free σ, ∃ b, int.val k d↦ b)%I.
 
 Definition is_allocator P (l: loc) (γ: gname) : iProp Σ :=
   ∃ (lref mref: loc),
@@ -246,22 +302,32 @@ Global Instance is_allocator_Persistent P l γ :
   Persistent (is_allocator P l γ).
 Proof. apply _. Qed.
 
-Theorem allocator_durable_from_map m :
+Theorem allocator_durable_from_map m σ :
+  alloc.free σ = dom (gset _) m →
   ([∗ map] a↦_ ∈ m, ∃ b, int.val a d↦ b) -∗
-  allocator_durable (alloc.mk (dom (gset _) m)).
+  allocator_durable σ.
 Proof.
-  iIntros "Hblocks".
+  iIntros (Hdom) "Hblocks".
+  rewrite /allocator_durable.
+  rewrite Hdom.
   iApply (big_sepM_dom with "Hblocks").
 Qed.
 
-Theorem wp_newAllocator P mref m σ :
-  dom (gset _) m = σ.(alloc.free) ->
-  {{{ is_map mref m ∗ allocator_durable σ ∗ P σ }}}
-    New #mref
+Theorem wp_newAllocator P mref (start sz: u64) used :
+  int.val start + int.val sz < 2^64 →
+  {{{ is_addrset mref used ∗
+      let σ0 := {| alloc.domain := rangeSet (int.val start) (int.val sz);
+                   alloc.used := used |} in
+      allocator_durable σ0 ∗ P σ0 }}}
+    New #start #sz #mref
   {{{ l γ, RET #l; is_allocator P l γ }}}.
 Proof.
-  iIntros (Hfree Φ) "(Hmap&Hblocks&HP) HΦ".
+  iIntros (Hoverflow Φ) "(Hused&Hblocks&HP) HΦ".
   wp_call.
+  wp_apply wp_freeRange; first by auto.
+  iIntros (mref') "Hfree".
+  wp_pures.
+  wp_apply (wp_mapRemove with "[$Hfree $Hused]"); iIntros "(Hfree & Hused)".
   wp_apply wp_new_free_lock.
   iIntros (γ lk) "Hlock".
   rewrite -wp_fupd.
@@ -271,11 +337,11 @@ Proof.
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "free") as "#free".
   iMod (alloc_lock allocN ⊤ _ _
-                   (∃ σ, "Hlockinv" ∷ allocator_linv mref σ ∗ "HP" ∷ P σ)%I
+                   (∃ σ, "Hlockinv" ∷ allocator_linv mref' σ ∗ "HP" ∷ P σ)%I
           with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame.
-    iExists _; simpl; iFrame.
-    auto. }
+    rewrite /alloc.free /=.
+    iFrame. }
   iModIntro.
   iApply "HΦ".
   iExists _, _; iFrame "#".
@@ -297,11 +363,19 @@ Proof.
   apply not_elem_of_empty in H0; auto.
 Qed.
 
+Theorem alloc_free_use σ new :
+  alloc.free (set alloc.used (λ used, used ∪ new) σ) =
+  alloc.free σ ∖ new.
+Proof.
+  rewrite /alloc.free /=.
+  set_solver.
+Qed.
+
 Theorem wp_Reserve P (Q: option u64 → iProp Σ) l γ :
   {{{ is_allocator P l γ ∗
      (∀ σ σ' ma,
           ⌜match ma with
-           | Some a => a ∈ σ.(alloc.free) ∧ σ' = set alloc.free (λ free, free ∖ {[a]}) σ
+           | Some a => a ∈ alloc.free σ ∧ σ' = set alloc.used (λ used, used ∪ {[a]}) σ
            | None => σ' = σ
            end⌝ -∗
           P σ ={⊤}=∗ P σ' ∗ Q ma)
@@ -322,37 +396,39 @@ Proof.
   iIntros (k ok) "[%Hk Hfreemap]".
   wp_pures.
   wp_loadField.
+  iDestruct "Hfreemap" as (m') "[Hfreemap %Hdom]".
   wp_apply (wp_MapDelete with "Hfreemap"); iIntros "Hfreemap".
-  iMod ("Hfupd" $! _ (if ok then _ else _) (if ok then Some k else None) with "[] HP") as "[HP HQ]".
-  { destruct ok; simpl; auto.
+  iAssert (is_addrset mref (alloc.free σ ∖ {[k]})) with "[Hfreemap]" as "Hfreemap".
+  { iExists _; iFrame.
     iPureIntro.
-    split; auto.
-    rewrite -Hfreeset.
-    apply (elem_of_dom (D:=gset _)); eauto.  }
+    rewrite /map_del.
+    rewrite dom_delete_L.
+    set_solver. }
+  iMod ("Hfupd" $! _ (if ok then _ else _) (if ok then Some k else None) with "[] HP") as "[HP HQ]".
+  { destruct ok; simpl; auto. }
   wp_loadField.
 
   (* extract block, if ok *)
-  iAssert (([∗ set] k0 ∈ if ok then σ.(alloc.free) ∖ {[k]} else σ.(alloc.free), ∃ b, int.val k0 d↦ b) ∗
+  iAssert (([∗ set] k0 ∈ if ok then alloc.free σ ∖ {[k]} else alloc.free σ, ∃ b, int.val k0 d↦ b) ∗
           if ok then (∃ b, int.val k d↦ b) else emp)%I
           with "[Hblocks]" as "[Hblocks Hbk]".
   { destruct ok.
     - iDestruct (big_sepS_delete with "Hblocks") as "[$ $]".
-      rewrite -Hfreeset.
-      apply elem_of_dom; eauto.
+      auto.
     - iFrame. }
 
   wp_apply (release_spec with "[-HΦ HQ Hbk $His_lock $His_locked]").
   { iExists _; iFrame.
-    iExists _; iFrame.
-    iSplitR.
-    - rewrite /map_del dom_delete_L.
-      iPureIntro.
-      destruct ok; simpl; try congruence.
-      subst.
-      rewrite -Hfreeset.
-      rewrite !dom_empty_L.
-      apply set_empty_difference.
-    - destruct ok; iFrame. }
+    iSplitL "Hfreemap".
+    - destruct ok; simpl.
+      + rewrite alloc_free_use; iFrame.
+      + rewrite Hk.
+        iExactEq "Hfreemap".
+        rewrite /named.
+        f_equal.
+        set_solver.
+    - destruct ok; iFrame.
+      rewrite alloc_free_use; iFrame. }
 
   wp_pures.
   iApply "HΦ".

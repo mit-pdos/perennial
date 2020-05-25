@@ -24,21 +24,13 @@ Definition openInodes: val :=
       Continue);;
     ![slice.T (refT (struct.t inode.Inode.S))] "inodes".
 
-Definition deleteInodeBlocks: val :=
-  rec: "deleteInodeBlocks" "numInodes" "free" :=
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < "numInodes"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      MapDelete "free" (![uint64T] "i");;
-      Continue).
-
 Definition OpenDir: val :=
-  rec: "OpenDir" "d" "free" :=
+  rec: "OpenDir" "d" "sz" :=
     let: "inodes" := openInodes "d" in
+    let: "used" := NewMap (struct.t alloc.unit.S) in
     ForSlice (refT (struct.t inode.Inode.S)) <> "i" "inodes"
-      (ForSlice uint64T <> "a" (inode.Inode__UsedBlocks "i")
-        (MapDelete "free" "a"));;
-    deleteInodeBlocks NumInodes "free";;
-    let: "allocator" := alloc.New "free" in
+      (alloc.SetAdd "used" (inode.Inode__UsedBlocks "i"));;
+    let: "allocator" := alloc.New NumInodes ("sz" - NumInodes) "used" in
     struct.new Dir.S [
       "d" ::= "d";
       "allocator" ::= "allocator";
