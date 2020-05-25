@@ -79,7 +79,7 @@ unskip-qed:
 
 ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
 	$(Q)if [ ${TIMED} = "true" ]; then \
-		./etc/timing-report.py; \
+		./etc/timing-report.py --max-files 30; \
 		fi
 
 clean:
