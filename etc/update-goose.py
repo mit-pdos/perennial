@@ -146,6 +146,7 @@ def main():
         pkgs = [
             "alloc",
             "inode",
+            "indirect_inode",
             "dir",
         ]
         for pkg in pkgs:
