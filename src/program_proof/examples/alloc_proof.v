@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Import crash_modality.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.goose_lang.lib Require Import into_val.
+From Perennial.goose_lang.lib Require Import typed_slice into_val.
 From Perennial.program_proof.examples Require Import range_set.
 
 Instance unit_IntoVal : IntoVal ().
@@ -271,6 +271,38 @@ Proof.
     rewrite Hdom.
     iFrame.
     iExists _; iFrame "% ∗".
+Qed.
+
+Theorem wp_SetAdd mref used addr_s q addrs :
+  {{{ is_addrset mref used ∗ is_slice_small addr_s uint64T q addrs }}}
+    SetAdd #mref (slice_val addr_s)
+  {{{ RET #(); is_addrset mref (used ∪ list_to_set addrs) ∗
+               is_slice_small addr_s uint64T q addrs }}}.
+Proof.
+  iIntros (Φ) "(Hused&Haddrs) HΦ".
+  rewrite /SetAdd; wp_pures.
+  wp_apply (wp_forSlicePrefix (λ done todo, is_addrset mref (used ∪ list_to_set done))
+                              with "[] [Hused $Haddrs]").
+
+  - clear Φ.
+    iIntros (i a done _) "!>".
+    iIntros (Φ) "Hused HΦ".
+    wp_pures.
+    iDestruct "Hused" as (m) "[Hused %Hdom]".
+    wp_apply (wp_MapInsert _ _ _ _ () with "Hused").
+    { auto. }
+    iIntros "Hm".
+    iApply "HΦ".
+    iExists _; iFrame.
+    iPureIntro.
+    rewrite /map_insert dom_insert_L.
+    set_solver.
+  - simpl.
+    iExactEq "Hused".
+    f_equal.
+    set_solver.
+  - iIntros "[Hs Haddrs]".
+    iApply "HΦ"; iFrame.
 Qed.
 
 Implicit Types (P: alloc.t → iProp Σ).
