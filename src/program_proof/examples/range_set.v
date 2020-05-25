@@ -41,52 +41,6 @@ Proof.
     apply elem_of_seqZ; word.
 Qed.
 
-(*
-Lemma rangeSet_prepend (start sz k: nat) :
-  Z.of_nat (start + S sz) < 2^64 ->
-  (k = start + sz)%nat ->
-  <[U64 start:=()]> (rangeSet (S start) sz) =
-  <[U64 k:=()]> (rangeSet start sz).
-Proof.
-  intros Hoverflow ->.
-  change (<[U64 start:=()]> (rangeSet (S start) sz)) with
-      (rangeSet start (S sz)).
-  apply map_eq; intros.
-  destruct (decide (i = (start+sz)%nat)); subst.
-  - rewrite lookup_insert.
-    rewrite rangeSet_lookup_Some_1; try word; auto.
-  - rewrite -> lookup_insert_ne by auto.
-    rewrite -> !rangeSet_lookup by lia.
-    repeat match goal with
-           | |- context[decide ?P] => destruct (decide P)
-           end; intuition; try word.
-    contradiction n.
-    word.
-Qed.
-
-Lemma rangeSet_insert_one:
-  ∀ start sz i : u64,
-    int.val start + int.val sz < 2^64 ->
-    int.val i < int.val start + int.val sz
-    → int.val start ≤ int.val i
-    → rangeSet (int.nat start) (S (int.nat i - int.nat start)) =
-      <[i:=()]> (rangeSet (int.nat start) (int.nat i - int.nat start)).
-Proof.
-  intros start sz i Hoverflow Hibound Hilower_bound.
-  apply map_eq; intros k.
-  destruct (decide (k = i)); subst.
-  - rewrite lookup_insert.
-    rewrite rangeSet_lookup_Some_1; try word; auto.
-  - rewrite -> lookup_insert_ne by auto.
-    rewrite -> !rangeSet_lookup by lia.
-    repeat match goal with
-           | |- context[decide ?P] => destruct (decide P)
-           end; intuition; try word.
-    contradiction n.
-    word.
-Qed.
-*)
-
 (* TODO: upstream this *)
 Lemma gset_eq `{Countable A} (c1 c2: gset A) :
   (forall (x:A), x ∈ c1 ↔ x ∈ c2) → c1 = c2.
@@ -126,55 +80,3 @@ Proof.
   rewrite H.
   auto.
 Qed.
-
-(*
-Theorem wp_freeRange (start sz: u64) :
-  int.val start + int.val sz < 2^64 ->
-  {{{ True }}}
-    freeRange #start #sz
-  {{{ (mref: loc), RET #mref;
-      is_map mref (rangeSet (int.nat start) (int.nat sz)) }}}.
-Proof.
-  iIntros (Hbound Φ) "_ HΦ".
-  wp_call.
-  wp_apply (wp_NewMap () (t:=struct.t unit.S)).
-  iIntros (mref) "Hmap".
-  wp_apply wp_ref_to; first by val_ty.
-  iIntros (il) "i".
-  wp_pures.
-  wp_apply (wp_forUpto (λ i, "%Hilower_bound" ∷ ⌜int.val start ≤ int.val i⌝ ∗
-                             "Hmap" ∷ is_map mref (rangeSet (int.nat start) (int.nat i - int.nat start)%nat))%I
-            with "[] [Hmap $i]").
-  - word.
-  - clear Φ.
-    iIntros (i).
-    iIntros "!>" (Φ) "(HI & i & %Hibound) HΦ"; iNamed "HI".
-    wp_pures.
-    wp_load.
-    wp_apply (wp_MapInsert _ _ _ _ () with "Hmap"); auto.
-    iIntros "Hm".
-    wp_pures.
-    iApply "HΦ".
-    iFrame.
-    iSplitR.
-    { iPureIntro; word. }
-    rewrite /named.
-    iExactEq "Hm".
-    f_equal.
-    replace (int.val (word.add start sz)) with (int.val start + int.val sz) in Hibound by word.
-    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
-    replace (S (int.nat i) - int.nat start)%nat with (S (int.nat i - int.nat start)) by word.
-    rewrite /map_insert.
-    erewrite rangeSet_insert_one; eauto.
-
-  - iSplitR; auto.
-    rewrite -> rangeSet_diag by lia; auto.
-  - iIntros "(HI&Hil)"; iNamed "HI".
-    wp_pures.
-    iApply "HΦ".
-    iExactEq "Hmap".
-    f_equal.
-    f_equal.
-    word.
-Qed.
-*)
