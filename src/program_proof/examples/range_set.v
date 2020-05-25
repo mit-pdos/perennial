@@ -114,7 +114,7 @@ Proof.
   apply gset_eq; intros.
   split; intros Helem.
   - contradiction (Hnoelem x).
-  - contradiction (not_elem_of_empty x).
+  - contradiction (not_elem_of_empty (C:=gset A) x).
 Qed.
 
 Lemma rangeSet_diag (start sz: Z) :
