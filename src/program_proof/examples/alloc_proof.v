@@ -147,6 +147,7 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) l γ :
            | Some a => a ∈ alloc.free σ ∧ σ' = set alloc.used ({[a]} ∪.) σ
            | None => σ' = σ
            end⌝ -∗
+           ⌜alloc.wf σ⌝ -∗
           P σ ={⊤}=∗ P σ' ∗ Q ma)
   }}}
     Allocator__Reserve #l
@@ -174,7 +175,7 @@ Proof.
     rewrite /map_del.
     rewrite dom_delete_L.
     set_solver. }
-  iMod ("Hfupd" $! _ (if ok then _ else _) (if ok then Some k else None) with "[] HP") as "[HP HQ]".
+  iMod ("Hfupd" $! _ (if ok then _ else _) (if ok then Some k else None) with "[] [%//] HP") as "[HP HQ]".
   { destruct ok; simpl; auto. }
   wp_loadField.
   destruct ok.
@@ -258,6 +259,7 @@ Theorem wp_Free (Q: iProp Σ) l γ (a: u64) :
   {{{ is_allocator l γ ∗ Ψ a ∗ alloc_used γ a ∗
      (∀ σ σ',
           ⌜σ' = set alloc.used (λ used, used ∖ {[a]}) σ⌝ -∗
+          ⌜alloc.wf σ⌝ -∗
           P σ ={⊤}=∗ P σ' ∗ Q)
   }}}
     Allocator__Free #l #a
@@ -280,7 +282,7 @@ Proof.
     rewrite /map_insert dom_insert_L.
     set_solver. }
   wp_loadField.
-  iMod ("Hfupd" $! σ with "[] HP") as "[HP HQ]".
+  iMod ("Hfupd" $! σ with "[] [%//] HP") as "[HP HQ]".
   { iPureIntro.
     eauto. }
   iDestruct (alloc_used_valid with "Hallocated Hused") as %Hused.
