@@ -27,7 +27,7 @@ Let allocN := nroot.@"allocator".
 
 Implicit Types (m: gmap u64 ()) (free: gset u64).
 
-Implicit Types (P: alloc.t → iProp Σ).
+Context (P: alloc.t → iProp Σ).
 Implicit Types (l:loc) (γ:gname) (σ: alloc.t).
 
 Definition allocator_linv (mref: loc) σ : iProp Σ :=
@@ -38,7 +38,7 @@ Definition allocator_linv (mref: loc) σ : iProp Σ :=
 Definition allocator_durable σ : iProp Σ :=
   ([∗ set] k ∈ alloc.free σ, ∃ b, int.val k d↦ b)%I.
 
-Definition is_allocator P (l: loc) (γ: gname) : iProp Σ :=
+Definition is_allocator (l: loc) (γ: gname) : iProp Σ :=
   ∃ (lref mref: loc),
     "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
@@ -52,8 +52,8 @@ Proof.
   by iFrame.
 Qed.
 
-Global Instance is_allocator_Persistent P l γ :
-  Persistent (is_allocator P l γ).
+Global Instance is_allocator_Persistent l γ :
+  Persistent (is_allocator l γ).
 Proof. apply _. Qed.
 
 Theorem allocator_durable_from_map m σ :
@@ -67,14 +67,14 @@ Proof.
   iApply (big_sepM_dom with "Hblocks").
 Qed.
 
-Theorem wp_newAllocator P mref (start sz: u64) used :
+Theorem wp_newAllocator mref (start sz: u64) used :
   int.val start + int.val sz < 2^64 →
   {{{ is_addrset mref used ∗
       let σ0 := {| alloc.domain := rangeSet (int.val start) (int.val sz);
                    alloc.used := used |} in
       allocator_durable σ0 ∗ P σ0 }}}
     New #start #sz #mref
-  {{{ l γ, RET #l; is_allocator P l γ }}}.
+  {{{ l γ, RET #l; is_allocator l γ }}}.
 Proof.
   iIntros (Hoverflow Φ) "(Hused&Hblocks&HP) HΦ".
   wp_call.
@@ -121,12 +121,13 @@ Theorem alloc_free_use σ new :
   alloc.free (set alloc.used (λ used, used ∪ new) σ) =
   alloc.free σ ∖ new.
 Proof.
+  clear.
   rewrite /alloc.free /=.
   set_solver.
 Qed.
 
-Theorem wp_Reserve P (Q: option u64 → iProp Σ) l γ :
-  {{{ is_allocator P l γ ∗
+Theorem wp_Reserve (Q: option u64 → iProp Σ) l γ :
+  {{{ is_allocator l γ ∗
      (∀ σ σ' ma,
           ⌜match ma with
            | Some a => a ∈ alloc.free σ ∧ σ' = set alloc.used (λ used, used ∪ {[a]}) σ
@@ -212,8 +213,8 @@ Proof.
   rewrite gset_difference_difference //.
 Qed.
 
-Theorem wp_Free P (Q: iProp Σ) l γ (a: u64) :
-  {{{ is_allocator P l γ ∗ (∃ b, int.val a d↦ b) ∗
+Theorem wp_Free (Q: iProp Σ) l γ (a: u64) :
+  {{{ is_allocator l γ ∗ (∃ b, int.val a d↦ b) ∗
      (∀ σ σ',
           ⌜if decide (a ∈ σ.(alloc.domain))
            then σ' = set alloc.used (λ used, used ∖ {[a]}) σ
