@@ -245,6 +245,15 @@ Proof.
   apply lookup_gset_to_gmap_Some in Hlookup as [? _]; auto.
 Qed.
 
+(* TODO: upstream: https://gitlab.mpi-sws.org/iris/stdpp/-/merge_requests/162 *)
+Lemma gset_to_gmap_difference_singleton `{Countable K} {A} (x : A) i (Y: gset K) :
+  gset_to_gmap x (Y ∖ {[i]}) = delete i (gset_to_gmap x Y).
+Proof.
+  apply map_eq; intros j; apply option_eq; intros y.
+  rewrite lookup_delete_Some !lookup_gset_to_gmap_Some elem_of_difference
+    elem_of_singleton; destruct (decide (i = j)); intuition.
+Qed.
+
 Theorem wp_Free (Q: iProp Σ) l γ (a: u64) :
   {{{ is_allocator l γ ∗ Ψ a ∗ alloc_used γ a ∗
      (∀ σ σ',
@@ -254,6 +263,7 @@ Theorem wp_Free (Q: iProp Σ) l γ (a: u64) :
     Allocator__Free #l #a
   {{{ RET #(); Q }}}.
 Proof.
+  clear Hitemcrash.
   iIntros (Φ) "(Halloc&Hb&Hused&Hfupd) HΦ"; iNamed "Halloc".
   wp_call.
   wp_loadField.
@@ -294,9 +304,9 @@ Proof.
     rewrite /named.
     f_equal.
     simpl.
-    admit. (* TODO: gset_to_gmap delete/difference *)
+    rewrite -gset_to_gmap_difference_singleton //.
   }
   iApply ("HΦ" with "[$]").
-Admitted.
+Qed.
 
 End goose.
