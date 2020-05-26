@@ -8,6 +8,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang Require Import lib.into_val.
 
 From Perennial.goose_lang.lib Require Import typed_slice.
+From Perennial.Helpers Require Import List.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.program_proof Require Import disk_lib.
 
@@ -39,48 +40,50 @@ Implicit Types (σ: inode.t).
 Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 
 Definition is_indirect (a: u64) indBlock (blocks : list Block) : iProp Σ :=
-  ∃ (addrs: list u64),
+  ∃ (addrs: list u64) (padding: list u64),
   "diskAddr" ∷ int.val a d↦ indBlock ∗
+  "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> addrs) ++ (EncUInt64 <$> padding))⌝ ∗
   "%Hlen" ∷ ⌜length(addrs) <= indirectNumBlocks⌝ ∗
   "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
   .
 
-Definition inode_linv (l:loc) σ : iProp Σ :=
-  ∃ (direct_s indirect_s: Slice.t) (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block),
+Definition ind_blocks_at_index σ index : list Block :=
+  let begin := int.nat (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) in
+  List.subslice begin (begin + (int.nat indirectNumBlocks)) σ.(inode.blocks).
+
+Definition is_inode_durable_with σ (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block)
+  : iProp Σ  :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs))⌝ ∗
     "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧ length(indAddrs) = int.nat maxIndirect ∧ int.val sz < InodeMaxBlocks ∧ int.val numInd <= maxIndirect⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
+    "HdataDirect" ∷ ([∗ list] a;b ∈ dirAddrs;(take (int.nat maxDirect) σ.(inode.blocks)), int.val a d↦ b) ∗
+    "HdataIndirect" ∷ [∗ list] index↦a ∈ indAddrs, ∃ indBlock,
+    is_indirect a indBlock (ind_blocks_at_index σ index)
+.
+
+Definition is_inode_durable σ : iProp Σ  :=
+  ∃ (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block),
+    is_inode_durable_with σ dirAddrs indAddrs sz numInd hdr
+.
+
+Definition inode_linv (l:loc) σ : iProp Σ :=
+  ∃ (direct_s indirect_s: Slice.t) (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block),
+    "Hdurable" ∷ is_inode_durable_with σ dirAddrs indAddrs sz numInd hdr ∗
     "addr" ∷ l ↦[Inode.S :: "addr"] #σ.(inode.addr) ∗
     "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
     "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.nat sz) dirAddrs) ∗
-    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs) ∗
-    "HdataDirect" ∷ ([∗ list] a;b ∈ dirAddrs;(take (int.nat maxDirect) σ.(inode.blocks)), int.val a d↦ b) ∗
-    "HdataIndirect" ∷ [∗ list] index↦a ∈ indAddrs, ∃ indBlock,
-    let blocks := take (int.nat maxIndirect) (drop (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) σ.(inode.blocks)) in
-    is_indirect a indBlock blocks
-.
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs).
 
-Definition is_inode l γ P : iProp Σ :=
-  ∃ (d:val) (lref: loc), "#d" ∷ readonly (l ↦[Inode.S :: "d"] d) ∗
-                         "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
-                         "#Hlock" ∷ is_lock inodeN γ #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ).
-
-Definition is_inode_durable σ : iProp Σ :=
-  ∃ (addrs: list u64) (extra: list u8) (hdr: Block),
-    "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
-    "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
-    "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
-    "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b.
-(*
 Instance is_inode_crash l σ :
   IntoCrash (inode_linv l σ) (λ _, is_inode_durable σ).
 Proof.
   hnf; iIntros "Hinv".
   iNamed "Hinv".
-  iExists dirAddrs, indAddrs, listIndBlocks, sz, numInd. extra, hdr.
+  iNamed "Hdurable".
+  iExists dirAddrs, indAddrs, sz, numInd, hdr.
   iFrame "% ∗".
   auto.
 Qed.
