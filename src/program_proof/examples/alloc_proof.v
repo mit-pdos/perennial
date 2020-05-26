@@ -467,4 +467,80 @@ Proof.
   destruct ok; iFrame.
 Qed.
 
+Lemma gset_difference_difference `{Countable K} (A B C: gset K) :
+  C ⊆ A →
+  A ∖ (B ∖ C) = A ∖ B ∪ C.
+Proof.
+  intros.
+  apply gset_eq; intros k.
+  rewrite !elem_of_difference.
+  intuition.
+  - destruct (decide (k ∈ C)); set_solver.
+  - set_solver.
+  - set_solver.
+Qed.
+
+Theorem alloc_free_free σ new :
+  new ⊆ σ.(alloc.domain) →
+  alloc.free (set alloc.used (λ used, used ∖ new) σ) =
+  alloc.free σ ∪ new.
+Proof.
+  intros Hsub.
+  rewrite /alloc.free /=.
+  rewrite gset_difference_difference //.
+Qed.
+
+Theorem wp_Free P (Q: iProp Σ) l γ (a: u64) :
+  {{{ is_allocator P l γ ∗ (∃ b, int.val a d↦ b) ∗
+     (∀ σ σ',
+          ⌜if decide (a ∈ σ.(alloc.domain))
+           then σ' = set alloc.used (λ used, used ∖ {[a]}) σ
+           else σ' = σ⌝ -∗
+          P σ ={⊤}=∗ P σ' ∗ Q)
+  }}}
+    Allocator__Free #l #a
+  {{{ RET #(); Q }}}.
+Proof.
+  iIntros (Φ) "(Halloc&Hb&Hfupd) HΦ"; iNamed "Halloc".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "His_lock").
+  iIntros "(Hlocked&Hinv)"; iNamed "Hinv".
+  iNamed "Hlockinv".
+  wp_loadField.
+  iDestruct "Hfreemap" as (m) "[Hfreemap %Hdom]".
+  wp_apply (wp_MapInsert _ _ _ _ () with "Hfreemap"); first by auto.
+  iIntros "Hfreemap".
+  iAssert (is_addrset mref (alloc.free σ ∪ {[a]})) with "[Hfreemap]" as "Hfreemap".
+  { iExists _; iFrame.
+    iPureIntro.
+    rewrite /map_insert dom_insert_L.
+    set_solver. }
+  wp_loadField.
+  iMod ("Hfupd" $! σ (if decide (a ∈ σ.(alloc.domain)) then _ else _)
+          with "[] HP") as "[HP HQ]".
+  { iPureIntro.
+    destruct (decide (a ∈ σ.(alloc.domain))); eauto. }
+  wp_apply (release_spec with "[$His_lock $Hlocked Hb Hblocks Hfreemap HP]").
+  { iExists _; iFrame.
+    rewrite /allocator_linv.
+    destruct (decide (a ∈ σ.(alloc.domain))); iFrame.
+    - rewrite alloc_free_free; last first.
+      { apply elem_of_subseteq_singleton; auto. }
+      iFrame "Hfreemap".
+      iAssert (⌜a ∈ alloc.free σ⌝ -∗ ⌜False⌝)%I as "%Hnotfree".
+      { iIntros (Hin).
+        iDestruct (big_sepS_delete with "Hblocks") as "[Hb' _]"; eauto.
+        iDeexHyp "Hb".
+        iDeexHyp "Hb'".
+        iDestruct (gen_heap.mapsto_mapsto_ne with "Hb Hb'") as %Hnoteq; auto. }
+      rewrite big_sepS_union; last first.
+      { rewrite disjoint_singleton_r; auto. }
+      rewrite big_opS_singleton.
+      iFrame.
+    - admit. (* TODO: oops, can't mark something free if it's not in the domain
+      (really need a to be in the domain) *) }
+  iApply ("HΦ" with "[$]").
+Admitted.
+
 End goose.

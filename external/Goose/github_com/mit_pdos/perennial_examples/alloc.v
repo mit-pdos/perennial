@@ -76,3 +76,10 @@ Definition Allocator__Reserve: val :=
     MapDelete (struct.loadF Allocator.S "free" "a") "k";;
     lock.release (struct.loadF Allocator.S "m" "a");;
     ("k", "ok").
+
+Definition Allocator__Free: val :=
+  rec: "Allocator__Free" "a" "addr" :=
+    lock.acquire (struct.loadF Allocator.S "m" "a");;
+    MapInsert (struct.loadF Allocator.S "free" "a") "addr" (struct.mk unit.S [
+    ]);;
+    lock.release (struct.loadF Allocator.S "m" "a").
