@@ -89,7 +89,7 @@ Proof.
 Qed.
 
 (* TODO: these are copied from the circ proof *)
-
+(*
 Definition block0: Block :=
   list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
 
