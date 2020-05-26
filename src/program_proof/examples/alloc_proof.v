@@ -28,15 +28,16 @@ Let allocN := nroot.@"allocator".
 Implicit Types (m: gmap u64 ()) (free: gset u64).
 
 Context (P: alloc.t → iProp Σ).
+Context (Ψ: u64 → iProp Σ).
 Implicit Types (l:loc) (γ:gname) (σ: alloc.t).
 
 Definition allocator_linv (mref: loc) σ : iProp Σ :=
   "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
-  "Hblocks" ∷ [∗ set] k ∈ alloc.free σ, ∃ b, int.val k d↦ b
+  "Hblocks" ∷ [∗ set] k ∈ alloc.free σ, Ψ k
 .
 
 Definition allocator_durable σ : iProp Σ :=
-  ([∗ set] k ∈ alloc.free σ, ∃ b, int.val k d↦ b)%I.
+  ([∗ set] k ∈ alloc.free σ, Ψ k)%I.
 
 Definition is_allocator (l: loc) (γ: gname) : iProp Σ :=
   ∃ (lref mref: loc),
@@ -45,6 +46,7 @@ Definition is_allocator (l: loc) (γ: gname) : iProp Σ :=
     "#His_lock" ∷ is_lock allocN γ #lref (∃ σ, "Hlockinv" ∷ allocator_linv mref σ ∗ "HP" ∷ P σ)
 .
 
+Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
 Instance allocator_post_crash mref σ :
   IntoCrash (allocator_linv mref σ) (λ _, allocator_durable σ).
 Proof.
@@ -58,7 +60,7 @@ Proof. apply _. Qed.
 
 Theorem allocator_durable_from_map m σ :
   alloc.free σ = dom (gset _) m →
-  ([∗ map] a↦_ ∈ m, ∃ b, int.val a d↦ b) -∗
+  ([∗ map] a↦_ ∈ m, Ψ a) -∗
   allocator_durable σ.
 Proof.
   iIntros (Hdom) "Hblocks".
@@ -111,10 +113,8 @@ Qed.
 Lemma set_empty_difference `{Countable K} (m: gset K) :
   ∅ ∖ m = ∅.
 Proof.
-  apply gset_eq; intros.
-  rewrite elem_of_difference.
-  intuition auto.
-  apply not_elem_of_empty in H0; auto.
+  clear.
+  set_solver.
 Qed.
 
 Theorem alloc_free_use σ new :
@@ -137,9 +137,10 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) l γ :
   }}}
     Allocator__Reserve #l
   {{{ a (ok: bool), RET (#a, #ok);
-      if ok then Q (Some a) ∗ (∃ b, int.val a d↦ b)
+      if ok then Q (Some a) ∗ Ψ a
       else Q None }}}.
 Proof.
+  clear.
   iIntros (Φ) "(Hinv&Hfupd) HΦ"; iNamed "Hinv".
   wp_call.
   wp_loadField.
@@ -164,8 +165,8 @@ Proof.
   wp_loadField.
 
   (* extract block, if ok *)
-  iAssert (([∗ set] k0 ∈ if ok then alloc.free σ ∖ {[k]} else alloc.free σ, ∃ b, int.val k0 d↦ b) ∗
-          if ok then (∃ b, int.val k d↦ b) else emp)%I
+  iAssert (([∗ set] k0 ∈ if ok then alloc.free σ ∖ {[k]} else alloc.free σ, Ψ k0) ∗
+          if ok then Ψ k else emp)%I
           with "[Hblocks]" as "[Hblocks Hbk]".
   { destruct ok.
     - iDestruct (big_sepS_delete with "Hblocks") as "[$ $]".
@@ -193,7 +194,8 @@ Qed.
 Lemma gset_difference_difference `{Countable K} (A B C: gset K) :
   C ⊆ A →
   A ∖ (B ∖ C) = A ∖ B ∪ C.
-Proof.
+Proof using.
+  clear.
   intros.
   apply gset_eq; intros k.
   rewrite !elem_of_difference.
@@ -214,11 +216,9 @@ Proof.
 Qed.
 
 Theorem wp_Free (Q: iProp Σ) l γ (a: u64) :
-  {{{ is_allocator l γ ∗ (∃ b, int.val a d↦ b) ∗
+  {{{ is_allocator l γ ∗ Ψ a ∗
      (∀ σ σ',
-          ⌜if decide (a ∈ σ.(alloc.domain))
-           then σ' = set alloc.used (λ used, used ∖ {[a]}) σ
-           else σ' = σ⌝ -∗
+          ⌜σ' = set alloc.used (λ used, used ∖ {[a]}) σ⌝ -∗
           P σ ={⊤}=∗ P σ' ∗ Q)
   }}}
     Allocator__Free #l #a
@@ -240,29 +240,21 @@ Proof.
     rewrite /map_insert dom_insert_L.
     set_solver. }
   wp_loadField.
-  iMod ("Hfupd" $! σ (if decide (a ∈ σ.(alloc.domain)) then _ else _)
-          with "[] HP") as "[HP HQ]".
+  iMod ("Hfupd" $! σ with "[] HP") as "[HP HQ]".
   { iPureIntro.
-    destruct (decide (a ∈ σ.(alloc.domain))); eauto. }
+    eauto. }
   wp_apply (release_spec with "[$His_lock $Hlocked Hb Hblocks Hfreemap HP]").
   { iExists _; iFrame.
     rewrite /allocator_linv.
-    destruct (decide (a ∈ σ.(alloc.domain))); iFrame.
-    - rewrite alloc_free_free; last first.
-      { apply elem_of_subseteq_singleton; auto. }
-      iFrame "Hfreemap".
-      iAssert (⌜a ∈ alloc.free σ⌝ -∗ ⌜False⌝)%I as "%Hnotfree".
-      { iIntros (Hin).
-        iDestruct (big_sepS_delete with "Hblocks") as "[Hb' _]"; eauto.
-        iDeexHyp "Hb".
-        iDeexHyp "Hb'".
-        iDestruct (gen_heap.mapsto_mapsto_ne with "Hb Hb'") as %Hnoteq; auto. }
-      rewrite big_sepS_union; last first.
-      { rewrite disjoint_singleton_r; auto. }
-      rewrite big_opS_singleton.
-      iFrame.
-    - admit. (* TODO: oops, can't mark something free if it's not in the domain
-      (really need a to be in the domain) *) }
+    assert (a ∈ σ.(alloc.domain)) by admit.
+    assert (a ∉ alloc.free σ) by admit.
+    rewrite alloc_free_free; last first.
+    { apply elem_of_subseteq_singleton; auto. }
+    iFrame "Hfreemap".
+    rewrite big_sepS_union; last first.
+    { apply disjoint_singleton_r; auto. }
+    rewrite big_opS_singleton.
+    iFrame. }
   iApply ("HΦ" with "[$]").
 Admitted.
 
