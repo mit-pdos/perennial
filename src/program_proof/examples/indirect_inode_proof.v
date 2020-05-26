@@ -38,19 +38,18 @@ Let inodeN := nroot.@"inode".
 Implicit Types (σ: inode.t).
 Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 
-Definition is_indirect l (blocks : list Block) : iProp Σ :=
-  ∃ (s: Slice.t) (addrs: list u64),
-  "indirectLoc" ∷ l ↦ (slice_val s) ∗
+Definition is_indirect (a: u64) indBlock (blocks : list Block) : iProp Σ :=
+  ∃ (addrs: list u64),
+  "diskAddr" ∷ int.val a d↦ indBlock ∗
   "%Hlen" ∷ ⌜length(addrs) <= indirectNumBlocks⌝ ∗
-  "Haddrs" ∷ is_slice s uint64T 1 addrs ∗
-    (* TODO: this does not support reading lock-free; we could make it [∃ q,
-    int.val a d↦{q} b], but that wouldn't support lock-free writes if we
-    implemented those *)
+  (* TODO: this does not support reading lock-free; we could make it [∃ q,
+  int.val a d↦{q} b], but that wouldn't support lock-free writes if we
+  implemented those *)
   "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
   .
 
 Definition inode_linv (l:loc) σ : iProp Σ :=
-  ∃ (direct_s indirect_s: Slice.t) (dirAddrs indAddrs: list u64) (listIndBlocks: list (list Block)) (sz: u64) (numInd: u64) (hdr: Block),
+  ∃ (direct_s indirect_s: Slice.t) (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block),
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs))⌝ ∗
     "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧ length(indAddrs) = int.nat maxIndirect ∧ int.val sz < InodeMaxBlocks ∧ int.val numInd <= maxIndirect⌝ ∗
@@ -65,11 +64,10 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
     int.val a d↦{q} b], but that wouldn't support lock-free writes if we
     implemented those *)
     "HdataDirect" ∷ ([∗ list] a;b ∈ dirAddrs;(take (int.nat maxDirect) σ.(inode.blocks)), int.val a d↦ b) ∗
-    (* state that we can split up all blocks of the inode after maxDirect into indirect block sized chunks *)
-    (* the last chunk might be a prefix, which should be fine *)
-    "%HIndBlocks" ∷ ⌜∀ index, nth index listIndBlocks [] = take (int.nat maxIndirect) (drop (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) σ.(inode.blocks))⌝ ∗
-    (* XXX check whether this is how to convert u64 to loc *)
-    "HdataIndirect" ∷ [∗ list] a;b ∈ indAddrs;listIndBlocks, is_indirect (Build_loc (int.val a) 0) b
+    "HdataIndirect" ∷ [∗ list] a ∈ indAddrs, ∃ index indBlock blocks,
+    ⌜a = nth index indAddrs 0⌝ ∗
+    ⌜blocks = take (int.nat maxIndirect) (drop (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) σ.(inode.blocks))⌝ ∗
+    is_indirect a indBlock blocks
 .
 
 Definition is_inode l γ P : iProp Σ :=
