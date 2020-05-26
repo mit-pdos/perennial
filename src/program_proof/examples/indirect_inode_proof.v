@@ -42,9 +42,6 @@ Definition is_indirect (a: u64) indBlock (blocks : list Block) : iProp Σ :=
   ∃ (addrs: list u64),
   "diskAddr" ∷ int.val a d↦ indBlock ∗
   "%Hlen" ∷ ⌜length(addrs) <= indirectNumBlocks⌝ ∗
-  (* TODO: this does not support reading lock-free; we could make it [∃ q,
-  int.val a d↦{q} b], but that wouldn't support lock-free writes if we
-  implemented those *)
   "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
   .
 
@@ -60,13 +57,9 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.nat sz) dirAddrs) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs) ∗
-    (* TODO: this does not support reading lock-free; we could make it [∃ q,
-    int.val a d↦{q} b], but that wouldn't support lock-free writes if we
-    implemented those *)
     "HdataDirect" ∷ ([∗ list] a;b ∈ dirAddrs;(take (int.nat maxDirect) σ.(inode.blocks)), int.val a d↦ b) ∗
-    "HdataIndirect" ∷ [∗ list] a ∈ indAddrs, ∃ index indBlock blocks,
-    ⌜a = nth index indAddrs 0⌝ ∗
-    ⌜blocks = take (int.nat maxIndirect) (drop (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) σ.(inode.blocks))⌝ ∗
+    "HdataIndirect" ∷ [∗ list] index↦a ∈ indAddrs, ∃ indBlock,
+    let blocks := take (int.nat maxIndirect) (drop (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) σ.(inode.blocks)) in
     is_indirect a indBlock blocks
 .
 
