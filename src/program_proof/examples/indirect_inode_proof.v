@@ -12,7 +12,7 @@ From Perennial.Helpers Require Import List.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.program_proof Require Import disk_lib.
 
-Definition InodeMaxBlocks: Z := 511.
+Definition MaxBlocks: Z := 5620.
 Definition maxDirect: Z := 500.
 Definition maxIndirect: Z := 10.
 Definition indirectNumBlocks: Z := 512.
@@ -24,11 +24,11 @@ Module inode.
   Global Instance _eta: Settable _ := settable! mk <addr; blocks>.
   Global Instance _witness: Inhabited t := populate!.
 
-  Definition wf σ := length σ.(blocks) ≤ InodeMaxBlocks.
+  Definition wf σ := length σ.(blocks) ≤ MaxBlocks.
   Definition size σ := length σ.(blocks).
 End inode.
 
-Hint Unfold inode.wf InodeMaxBlocks : word.
+Hint Unfold inode.wf MaxBlocks : word.
 
 Section goose.
 Context `{!heapG Σ}.
@@ -55,10 +55,12 @@ Definition is_inode_durable_with σ (dirAddrs indAddrs: list u64) (sz: u64) (num
   : iProp Σ  :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs))⌝ ∗
-    "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧ length(indAddrs) = int.nat maxIndirect ∧ int.val sz < InodeMaxBlocks ∧ int.val numInd <= maxIndirect⌝ ∗
+    "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧ length(indAddrs) = int.nat maxIndirect ∧ int.val sz < MaxBlocks ∧ int.val numInd <= maxIndirect⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
-    "HdataDirect" ∷ ([∗ list] a;b ∈ dirAddrs;(take (int.nat maxDirect) σ.(inode.blocks)), int.val a d↦ b) ∗
-    "HdataIndirect" ∷ [∗ list] index↦a ∈ indAddrs, ∃ indBlock,
+    (* Double check: we can only state ptsto facts about inode blocks that exist? *)
+    "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
+                     [∗ list] a;b ∈ take len dirAddrs;take len σ.(inode.blocks), int.val a d↦ b) ∗
+    "HdataIndirect" ∷ [∗ list] index↦a ∈ take (int.nat numInd) indAddrs, ∃ indBlock,
     is_indirect a indBlock (ind_blocks_at_index σ index)
 .
 
@@ -89,7 +91,6 @@ Proof.
 Qed.
 
 (* TODO: these are copied from the circ proof *)
-(*
 Definition block0: Block :=
   list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
 
@@ -107,16 +108,20 @@ Theorem init_inode addr :
   int.val addr d↦ block0 -∗ is_inode_durable (inode.mk addr []).
 Proof.
   iIntros "Hhdr".
-  iExists [], (replicate (int.nat (4096-8)) (U8 0)), block0.
-  cbv [inode.addr inode.blocks big_sepL2].
+  iExists (replicate (Z.to_nat maxDirect) (U64 0)), (replicate (Z.to_nat maxIndirect) (U64 0)), (U64 0), (U64 0), block0.
+  unfold is_inode_durable_with.
   iFrame "Hhdr".
-  iPureIntro.
-  split.
-  - rewrite /inode.wf /=.
-    cbv; congruence.
-  - reflexivity.
+  repeat iSplit; auto.
+  - cbv [inode.addr inode.blocks big_sepL2].
+    rewrite firstn_nil.
+    unfold maxDirect.
+    rewrite Min.min_0_r.
+    simpl in *.
+    auto.
+  - rewrite take_0. simpl in *; auto.
 Qed.
 
+(*
 Theorem wp_Open {d:loc} {addr σ P} :
   addr = σ.(inode.addr) ->
   {{{ is_inode_durable σ ∗ P σ }}}
@@ -287,7 +292,7 @@ Proof.
 Qed.
 
 Theorem wp_Inode__mkHdr l addr_s addrs :
-  length addrs ≤ InodeMaxBlocks ->
+  length addrs ≤ MaxBlocks ->
   {{{ "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
   }}}
@@ -366,7 +371,7 @@ Theorem wp_Inode__Append {l γ P} (Q: AppendStatus -> iProp Σ) (a: u64) (b0: Bl
                even if blocks don't change *)
             | _ => σ' = σ
             end) ∧
-          (status = AppendFull ↔ 1 + inode.size σ > InodeMaxBlocks)⌝ -∗
+          (status = AppendFull ↔ 1 + inode.size σ > MaxBlocks)⌝ -∗
         ⌜inode.wf σ⌝ -∗
          P σ ={⊤}=∗ P σ' ∗ Q status)
   }}}
