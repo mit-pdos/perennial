@@ -23,6 +23,8 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+      with:
+        submodules: true
     - uses: coq-community/docker-coq-action@v1
       with:
         opam_file: 'coq-perennial.opam'
