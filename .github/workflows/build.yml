@@ -1,0 +1,37 @@
+name: CI
+
+# Controls when the action will run:
+# https://help.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#filtering-for-specific-branches-tags-and-paths
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: csail-openstack
+    strategy:
+      matrix:
+        coq_version:
+          - dev
+        ocaml_version: ['4.07-flambda']
+      max-parallel: 4
+      # don't cancel all in-progress jobs if one matrix job fails:
+      fail-fast: false
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - uses: coq-community/docker-coq-action@v1
+      with:
+        opam_file: 'coq-perennial.opam'
+        coq_version: ${{ matrix.coq_version }}
+        ocaml_version: ${{ matrix.ocaml_version }}
+        custom_script: |
+          startGroup Print opam config
+            opam config list; opam repo list; opam list
+          endGroup
+          startGroup Build
+            make -j4 -k ci
+          endGroup
