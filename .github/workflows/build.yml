@@ -31,6 +31,11 @@ jobs:
         coq_version: ${{ matrix.coq_version }}
         ocaml_version: ${{ matrix.ocaml_version }}
         custom_script: |
+          startGroup Install dependencies
+            sudo apt-get update
+            sudo apt-get install -y python3 python3-pip sqlite3
+            pip3 install -r etc/requirements.txt -r etc/requirements-test.txt
+          endGroup
           startGroup Print opam config
             opam config list; opam repo list; opam list
           endGroup
