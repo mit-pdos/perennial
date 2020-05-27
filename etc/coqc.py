@@ -44,6 +44,7 @@ class TimingDb:
     @classmethod
     def from_file(cls, fname):
         conn = sqlite3.connect(fname, isolation_level=None)
+        conn.execute("""PRAGMA journal_mode=WAL""")
         conn.execute(
             """CREATE TABLE IF NOT EXISTS qed_timings """
             + """(fname text NOT NULL, ident text NOT NULL, time real NOT NULL, """
