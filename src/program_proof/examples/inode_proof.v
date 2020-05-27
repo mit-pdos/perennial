@@ -15,8 +15,10 @@ Definition InodeMaxBlocks: Z := 511.
 
 Module inode.
   Record t :=
-    mk { blocks: list Block; }.
-  Global Instance _eta: Settable _ := settable! mk <blocks>.
+    mk { (* addresses consumed by this inode *)
+         addrs: gset u64;
+         blocks: list Block; }.
+  Global Instance _eta: Settable _ := settable! mk <addrs; blocks>.
   Global Instance _witness: Inhabited t := populate!.
 
   Definition wf σ := length σ.(blocks) ≤ InodeMaxBlocks.
@@ -38,6 +40,7 @@ Definition is_inode_durable addr σ (addrs: list u64) : iProp Σ :=
   ∃ (extra: list u8) (hdr: Block),
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
+    "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
     "Hhdr" ∷ int.val addr d↦ hdr ∗
     (* TODO: this does not support reading lock-free; we could make it [∃ q,
     int.val a d↦{q} b], but that wouldn't support lock-free writes if we
@@ -58,6 +61,26 @@ Definition is_inode l γ P (addr: u64) : iProp Σ :=
                          "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
                          "#addr" ∷ readonly (l ↦[Inode.S :: "addr"] #addr) ∗
                          "#Hlock" ∷ is_lock inodeN γ #lref (∃ σ, "Hlockinv" ∷ inode_linv l addr σ ∗ "HP" ∷ P σ).
+
+Definition pre_inode l γ P addr σ : iProp Σ :=
+  ∃ (d:val) (lref: loc), "#d" ∷ readonly (l ↦[Inode.S :: "d"] d) ∗
+                         "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
+                         "#addr" ∷ readonly (l ↦[Inode.S :: "addr"] #addr) ∗
+                         "Hlock" ∷ is_free_lock γ lref ∗
+                         "Hlockinv" ∷ inode_linv l addr σ ∗
+                         "HP" ∷ P σ.
+
+Theorem pre_inode_init {E} l γ P addr σ :
+  pre_inode l γ P addr σ ={E}=∗ is_inode l γ P addr.
+Proof.
+  iNamed 1.
+  iExists _, _; iFrame "#".
+  iMod (alloc_lock inodeN _ _ _
+                   (∃ σ, "Hlockinv" ∷ inode_linv l addr σ ∗ "HP" ∷ P σ)%I
+          with "[$Hlock] [Hlockinv HP]") as "$".
+  { iExists _; iFrame. }
+  auto.
+Qed.
 
 Global Instance is_inode_crash l addr σ :
   IntoCrash (inode_linv l addr σ) (λ _, ∃ addrs, is_inode_durable addr σ addrs)%I.
@@ -92,23 +115,24 @@ Qed.
 valid post-crash inode state, which we can then recover with the usual [Open]
 recovery procedure. *)
 Theorem init_inode addr :
-  int.val addr d↦ block0 -∗ is_inode_durable addr (inode.mk []) [].
+  int.val addr d↦ block0 -∗ is_inode_durable addr (inode.mk ∅ []) [].
 Proof.
   iIntros "Hhdr".
   iExists (replicate (int.nat (4096-8)) (U8 0)), block0.
   cbv [inode.blocks big_sepL2].
   iFrame "Hhdr".
   iPureIntro.
-  split.
+  split_and!.
   - rewrite /inode.wf /=.
     cbv; congruence.
+  - reflexivity.
   - reflexivity.
 Qed.
 
 Theorem wp_Open {d:loc} {addr addrs σ P} :
   {{{ is_inode_durable addr σ addrs ∗ P σ }}}
     inode.Open #d #addr
-  {{{ l γ, RET #l; is_inode l γ P addr }}}.
+  {{{ l γ, RET #l; pre_inode l γ P addr σ }}}.
 Proof.
   iIntros (Φ) "(Hinode&HP) HΦ"; iNamed "Hinode".
   iDestruct (big_sepL2_length with "Hdata") as %Hblocklen.
@@ -138,44 +162,40 @@ Proof.
   iMod (readonly_alloc_1 with "d") as "#d".
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "addr") as "#addr".
-  iMod (alloc_lock inodeN ⊤ _ _
-                   (∃ σ, "Hlockinv" ∷ inode_linv l addr σ ∗ "HP" ∷ P σ)%I
-          with "[$Hlock] [-HΦ]") as "#Hlock".
-  { iExists _; iFrame.
-    iExists _, _; iFrameNamed.
-    iExists _, _; iFrameNamed. }
   iModIntro.
   iApply "HΦ".
   iExists _, _; iFrameNamed.
+  iExists _, _; iFrame "% ∗".
+  iExists _, _; iFrame "% ∗".
 Qed.
 
-Theorem wp_Inode__UsedBlocks {l γ P addr} :
-  (* TODO: it would be cool to run this before allocating the lock invariant for
-  the inode; we could recover a "pre-inode" and then in a purely logical step
-  allocate all the lock invariants in the caller; otherwise this code can't
-  return the slice literally because it'll be protected by a lock. *)
-  {{{ is_inode l γ P addr }}}
+Theorem is_inode_durable_addrs addr σ addrs :
+  is_inode_durable addr σ addrs -∗
+  ⌜list_to_set addrs = σ.(inode.addrs)⌝.
+Proof.
+  iNamed 1.
+  iFrame "%".
+Qed.
+
+Theorem wp_Inode__UsedBlocks {l γ P addr σ} :
+  {{{ pre_inode l γ P addr σ }}}
     Inode__UsedBlocks #l
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
-      (* TODO: what should the spec be? this seems to help discover the
-      footprint of is_durable; how do we use that? *)
-      is_slice s uint64T 1 addrs }}}.
+      is_slice s uint64T 1 addrs ∗
+      ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
+      (is_slice s uint64T 1 addrs -∗ pre_inode l γ P addr σ) }}}.
 Proof.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
   wp_call.
-  wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
-  iIntros "[His_locked Hlk]"; iNamed "Hlk".
   iNamed "Hlockinv".
   wp_loadField.
-  wp_loadField.
-  wp_apply (release_spec with "[$Hlock $His_locked HP Hdurable addrs Haddrs]").
-  { iExists _; iFrame.
-    iExists _, _.
-    iFrame "Hdurable".
-    iFrameNamed. }
-  wp_pures.
-Abort.
+  iApply "HΦ".
+  iDestruct (is_inode_durable_addrs with "Hdurable") as %Haddrs.
+  iFrame (Haddrs) "Haddrs".
+  iIntros "Hs".
+  iExists _, _; iFrame "# ∗".
+  iExists _, _; iFrame; auto.
+Qed.
 
 Theorem wp_Inode__Read {l γ P addr} {off: u64} Q :
   {{{ is_inode l γ P addr ∗
@@ -366,7 +386,7 @@ Theorem wp_Inode__Append {l γ P addr} (Q: AppendStatus -> iProp Σ) (a: u64) (b
   {{{ is_inode l γ P addr ∗ int.val a d↦ b0 ∗
       (∀ σ σ' (status: AppendStatus),
           ⌜(match status with
-            | AppendOk => σ' = set inode.blocks (λ bs, bs ++ [b0]) σ
+            | AppendOk => σ' = set inode.blocks (λ bs, bs ++ [b0]) (set inode.addrs ({[a]} ∪.) σ)
             (* TODO: if status is AppendAgain, still need to take ownership of a
                even if blocks don't change *)
             | _ => σ' = σ
@@ -421,7 +441,8 @@ Proof.
     iIntros (s b extra') "(Hb&%Hencded&?&?)"; iNamed.
     wp_loadField.
     wp_apply (wp_Write_fupd ⊤
-                            ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0]) σ) ∗
+                            ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0])
+                                           (set inode.addrs ({[a]} ∪.) σ)) ∗
                             "Hhdr" ∷ int.val addr d↦ b ∗
                             "HQ" ∷ Q AppendOk) with "[$Hb Hhdr Hfupd HP]").
     { iMod ("Hfupd" $! σ _ AppendOk with "[%] [% //] HP") as "[HP HQ]".
@@ -442,7 +463,13 @@ Proof.
         autorewrite with len; simpl.
         rewrite -Hlen2 Hlen1; word. }
       iExists _, _; iFrame "% ∗".
-      simpl; auto. }
+      iSplit.
+      - iPureIntro.
+        simpl.
+        rewrite list_to_set_app_L.
+        simpl.
+        set_solver.
+      - simpl; auto. }
     wp_pures.
     change #(U8 0) with (to_val AppendOk).
     iApply "HΦ"; iFrame.

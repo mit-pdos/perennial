@@ -28,12 +28,12 @@ Definition Open: val :=
       "addrs" ::= "addrs"
     ].
 
+(* UsedBlocks returns the addresses allocated to the inode for the purposes
+   of recovery. Assumes full ownership of the inode, so does not lock,
+   and expects the caller to need only temporary access to the returned slice. *)
 Definition Inode__UsedBlocks: val :=
   rec: "Inode__UsedBlocks" "i" :=
-    lock.acquire (struct.loadF Inode.S "m" "i");;
-    let: "addrs" := struct.loadF Inode.S "addrs" "i" in
-    lock.release (struct.loadF Inode.S "m" "i");;
-    "addrs".
+    struct.loadF Inode.S "addrs" "i".
 
 Definition Inode__Read: val :=
   rec: "Inode__Read" "i" "off" :=
