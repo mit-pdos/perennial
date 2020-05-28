@@ -27,6 +27,14 @@ Proof using HAff.
   iModIntro. iNext. iMod "H1". iMod "H2". by iFrame.
 Qed.
 
+Lemma step_fupdN_sep P Q k  : (|={∅,∅}_k=> P) ∗ (|={∅,∅}_k=> Q) -∗ |={∅, ∅}_k=> P ∗ Q.
+Proof using HAff.
+  iInduction k as [| k] "IH".
+  - iIntros "(>>HP&>>HQ) !> !>". iFrame.
+  - iIntros "(>>HP&>>HQ) !> !> !>".
+    iApply ("IH" with "[$]").
+Qed.
+
 Lemma step_fupdN_le {E1 E2 : coPset} (n1 n2 : nat) (P: PROP):
   E2 ⊆ E1 →
   n1 ≤ n2 → (|={E1,E2}▷=>^n1 P) -∗ |={E1,E2}▷=>^n2 P.

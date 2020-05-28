@@ -134,6 +134,18 @@ Proof.
   iApply wpc_staged_inv_init; last (by iFrame); eauto.
 Qed.
 
+Lemma wpc_na_crash_inv_init_wand Γ s k k' N E2 e Φ Φc P :
+  k' < k →
+  na_crash_pending Γ N (LVL k') P ∗
+  WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ P -∗ Φc }} ⊢
+  WPC e @ s; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  crash_unseal.
+  iIntros (?) "(H&?)".
+  iDestruct "H" as (?) "(?&?)".
+  iApply wpc_staged_inv_init_wand; last (by iFrame); eauto.
+Qed.
+
 Lemma na_crash_inv_open_modify Γ N k' k E E' P Q R bset:
   ↑N ⊆ E →
   na_crash_bundle Γ N k' Q bset -∗

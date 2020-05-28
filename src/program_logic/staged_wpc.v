@@ -439,6 +439,20 @@ Proof.
     rewrite -PeanoNat.Nat.pow_succ_r'. apply Nat.pow_le_mono_r_iff; lia.
 Qed.
 
+Lemma wpc_staged_inv_init_wand Γ s k k' N E1 E2 e Φ Φc P i :
+  k' < k →
+  ↑N ⊆ E1 →
+  staged_inv Γ N (LVL k') (E1 ∖ ↑N) (E1 ∖ ↑N) ∗
+  staged_crash_pending Γ P i ∗
+  WPC e @ s; LVL k; E1; E2 {{ Φ }} {{ P -∗ Φc }} ⊢
+  WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (??) "(Hstaged&Hcrash&Hwp)".
+  iAssert (WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ (P -∗ Φc) ∗ P }})%I with "[-]" as "Hwp"; last first.
+  { iApply (wpc_mono with "Hwp"); auto. rewrite wand_elim_l //. }
+  by iApply (wpc_staged_inv_init with "[$]").
+Qed.
+
 Lemma wpc_staged_inv_open Γ s k k' E1 E1' E2 e Φ Φc Q Qrest Qnew P N b bset :
   E1 ⊆ E1' →
   ↑N ⊆ E1 →
