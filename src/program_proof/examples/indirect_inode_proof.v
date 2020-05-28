@@ -79,7 +79,36 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
     "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.nat sz) dirAddrs) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs).
 
-Instance is_inode_crash l σ :
+Definition is_inode l γ P : iProp Σ :=
+  ∃ (d:val) (lref: loc),
+    "#d" ∷ readonly (l ↦[Inode.S :: "d"] d) ∗
+    "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
+    "#Hlock" ∷ is_lock inodeN γ #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ).
+
+Definition pre_inode l γ P σ : iProp Σ :=
+  ∃ (d:val) (lref: loc), "#d" ∷ readonly (l ↦[Inode.S :: "d"] d) ∗
+                         "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
+                         "Hlock" ∷ is_free_lock γ lref ∗
+                         "Hlockinv" ∷ inode_linv l σ ∗
+                         "HP" ∷ P σ.
+
+Theorem pre_inode_init {E} l γ P σ :
+  pre_inode l γ P σ ={E}=∗ is_inode l γ P.
+Proof.
+  iNamed 1.
+  iExists _, _; iFrame "#".
+  iMod (alloc_lock inodeN _ _ _
+                   (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ)%I
+          with "[$Hlock] [Hlockinv HP]") as "$".
+  { iExists _; iFrame. }
+  auto.
+Qed.
+
+Global Instance is_inode_Persistent l γ P:
+  Persistent (is_inode l γ P).
+Proof. apply _. Qed.
+
+Global Instance is_inode_crash l σ :
   IntoCrash (inode_linv l σ) (λ _, is_inode_durable σ).
 Proof.
   hnf; iIntros "Hinv".
@@ -190,7 +219,7 @@ Proof.
   { iExists _; iFrame.
     iExists _, _, _, _; iFrame "∗ %". }
   wp_pures.
-Abort.
+Abort. *)
 
 Theorem wp_Inode__Read {l γ P} {off: u64} Q :
   {{{ is_inode l γ P ∗
@@ -205,6 +234,8 @@ Theorem wp_Inode__Read {l γ P} {off: u64} Q :
        | None => ⌜s = Slice.nil⌝
        end) ∗ Q mb }}}.
 Proof.
+Admitted.
+(*
   iIntros (Φ) "(Hinode&Hfupd) HΦ"; iNamed "Hinode".
   wp_call.
   wp_loadField.
