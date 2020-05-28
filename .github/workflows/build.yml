@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: csail-openstack
+    runs-on: self-hosted
     strategy:
       matrix:
         coq_version:

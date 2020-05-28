@@ -88,7 +88,7 @@ clean:
 	$(Q)rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.vos) $(ALL_VFILES:.v=.vok) $(ALL_VFILES:.v=.glob)
 	$(Q)find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
 	$(Q)find . $(SRC_DIRS) -name ".lia.cache" -exec rm {} \;
-	$(Q)rm -f .timing.sqlite3
+	$(Q)rm -f $(TIMING_DB)*
 	rm -f _CoqProject .coqdeps.d
 
 .PHONY: default test
