@@ -10,8 +10,9 @@ QUICK_CHECK_FILES := $(shell find 'src/program_proof/wal' -name "*.v")
 COQ_ARGS := -noglob
 
 TIMED:=true
+TIMING_DB:=.timing.sqlite3
 ifeq ($(TIMED), true)
-TIMING_ARGS := --timing-db .timing.sqlite3
+TIMING_ARGS := --timing-db $(TIMING_DB)
 else
 TIMING_ARGS := --no-timing
 endif
@@ -79,7 +80,7 @@ unskip-qed:
 
 ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
 	$(Q)if [ ${TIMED} = "true" ]; then \
-		./etc/timing-report.py --max-files 30; \
+		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
 		fi
 
 clean:

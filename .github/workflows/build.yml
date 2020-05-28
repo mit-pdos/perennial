@@ -40,5 +40,5 @@ jobs:
             opam config list; opam repo list; opam list
           endGroup
           startGroup Build
-            make -j8 -k ci
+            make TIMING_DB=/tmp/timing.sqlite3 -j8 -k ci
           endGroup
