@@ -39,5 +39,5 @@ jobs:
             opam config list; opam repo list; opam list
           endGroup
           startGroup Build
-            make TIMED=false -j8 -k ci
+            make -j8 -k ci
           endGroup
