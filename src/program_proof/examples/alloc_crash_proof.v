@@ -209,7 +209,7 @@ Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   P σ -∗
-  (∀ γ, is_allocator_pre γ  n' (alloc.domain σ) (alloc.free σ) -∗
+  (∀ γ, is_allocator_pre γ n' (alloc.domain σ) (alloc.free σ) -∗
         WPC e @ NotStuck; LVL n; ⊤; E2 {{ Φ }} {{ alloc_crash_cond -∗ Φc }}) -∗
   |={⊤}=> WPC e @ NotStuck; (LVL ((S n) + set_size (alloc.domain σ))); ⊤; E2' {{ Φ }} {{ Φc }}%I.
 Proof using allocG0.
@@ -249,17 +249,16 @@ Qed.
 (* TODO: prove something useful for initializing from zero blocks *)
 
 
-Theorem wp_newAllocator mref (start sz: u64) used :
+Theorem wp_newAllocator γ n mref (start sz: u64) used domset freeset :
   int.val start + int.val sz < 2^64 →
+  domset = rangeSet (int.val start) (int.val sz) →
+  freeset = domset ∖ used →
   {{{ is_addrset mref used ∗
-      let σ0 := {| alloc.domain := rangeSet (int.val start) (int.val sz);
-                   alloc.reserved := ∅;
-                   alloc.used := used |} in
-      ⌜alloc.wf σ0⌝ ∗ allocator_durable σ0 ∗ P σ0 }}}
+      is_allocator_pre γ n (domset) (freeset) }}}
     New #start #sz #mref
-  {{{ l γ, RET #l; is_allocator l γ }}}.
+  {{{ l, RET #l; is_allocator l domset γ n }}}.
 Proof using allocG0.
-  iIntros (Hoverflow Φ) "(Hused&%Hwf&Hblocks&HP) HΦ".
+  iIntros (Hoverflow Hdom Husedeq Φ) "(Hused&Hpre) HΦ".
   wp_call.
   wp_apply wp_freeRange; first by auto.
   iIntros (mref') "Hfree".
@@ -271,20 +270,17 @@ Proof using allocG0.
   wp_apply wp_allocStruct; auto.
   iIntros (l) "Hallocator".
   iDestruct (struct_fields_split with "Hallocator") as "(m&free&_)".
+  iNamed "Hpre".
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "free") as "#free".
-  iMod (gen_heap_init (gset_to_gmap () used)) as (γ2) "Husedctx".
-  set (γ:={| alloc_lock_name := γ1; alloc_used_name := γ2 |}).
-  iMod (alloc_lock allocN ⊤ _ _
-                   (∃ σ, "Hlockinv" ∷ allocator_linv γ mref' σ ∗ "HP" ∷ P σ)%I
+  iMod (alloc_lock allocN ⊤ _ _ (allocator_linv γ n mref')%I
           with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame.
-    rewrite /alloc.free /= difference_empty_L.
-    iFrame "% ∗".
+    rewrite Husedeq Hdom. iFrame.
   }
   iModIntro.
-  iApply ("HΦ" $! _ γ).
-  iExists _, _; iFrame "#".
+  iApply ("HΦ" $! _).
+  iExists _, _, _; iFrame "#".
 Qed.
 
 Lemma map_empty_difference `{Countable K} {V} (m: gmap K V) :
