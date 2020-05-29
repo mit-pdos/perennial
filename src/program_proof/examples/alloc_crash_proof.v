@@ -314,16 +314,18 @@ Proof.
   set_solver.
 Qed.
 
-(*
 Theorem alloc_free_reserve σ new :
-  alloc.free (set alloc.reserved (union new) σ) =
-  alloc.free σ ∖ new.
+  new ∈ alloc.free σ →
+  alloc.free (<[new := block_reserved]> σ) =
+  alloc.free σ ∖ {[new]}.
 Proof.
   clear.
   rewrite /alloc.free /=.
-  set_solver.
-Qed.
+  (* XXX: The current map_filter_insert* lemmas are not general enough *)
+  rewrite map_filter_insert_not.
+Admitted.
 
+(*
 Theorem alloc_free_use σ new :
   alloc.free (set alloc.used (union new) σ) =
   alloc.free σ ∖ new.
@@ -334,7 +336,7 @@ Proof.
 Qed.
 *)
 
-Theorem wp_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1 E2:
+Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1 E2:
   ↑N ⊆ E1 →
   ↑allocN ⊆ E1 →
   ↑nroot.@"readonly" ⊆ E1 →
@@ -350,7 +352,7 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1
   }}}
     Allocator__Reserve #l  @ NotStuck; n; E1; E2
   {{{ a (ok: bool), RET (#a, #ok);
-      if ok then Q (Some a) ∗ free_block γ n' a
+      if ok then Q (Some a) ∗ reserved_block γ n' a
       else Q None }}}
   {{{ Qc }}}.
 Proof.
@@ -414,21 +416,6 @@ Proof.
 
   destruct ok.
 
-  (*
-  wpc_pures; first by show_crash1.
-  wpc_bind (struct.loadF _ _ _).
-  wpc_frame "Hfupd HΦ"; first by show_crash1.
-  wp_loadField.
-  iNamed 1.
-
-   *)
-
-  (*
-  iMod ("Hfupd" $! _ (if ok then _ else _) (if ok then Some k else None) with "[] [%//] HP") as "[HP HQ]".
-  { destruct ok; simpl; auto. }
-  wp_loadField.
-   *)
-
   - (* extract block *)
 
     iNamed "H".
@@ -438,26 +425,36 @@ Proof.
     { iPureIntro; split; last by reflexivity. rewrite Heq. eauto. }
 
 
-    iNamed "Hdurable".
     iDestruct (big_sepS_delete with "Hblocks") as "[Hbk Hblocks]"; eauto.
+    iNamed "Hbk".
 
-    iMod (gen_heap_alloc _ k () with "Hallocated") as "[Hallocated His_used]".
-    { apply lookup_gset_to_gmap_None.
-      rewrite /alloc.free in Hk; set_solver. }
+    iMod (gen_heap_update _ k _ block_reserved with "[$] [$]") as "(Hctx&Hmapsto)".
+    iMod (ghost_var_update _ (alloc.free (<[k := block_reserved]>σ)) with "Hfreeset_auth [$]")
+         as "(Hfreeset_auth&Hfreeset_frag)".
 
-    wp_apply (release_spec with "[-HΦ HQ Hbk His_used $His_lock $His_locked]").
+    iModIntro. iSplitL "HP Hfreeset_auth Hctx".
+    { iNext. iExists _. iFrame. iPureIntro.
+      rewrite dom_insert_L.
+      assert (k ∈ dom (gset u64) σ).
+      { admit. }
+      set_solver.
+    }
+    iSplit.
+    { iModIntro. crash_case. iApply HQ. iFrame. }
+    iModIntro.
+    Ltac show_crash2 HQ :=
+      try crash_case; iApply HQ; iFrame.
+
+    wpc_pures; first by show_crash2 HQ.
+
+    wpc_frame "HΦ HQ"; first by show_crash2 HQ.
+    wp_loadField.
+    wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hfreemap $His_locked $His_lock]"); first assumption.
     { iExists _; iFrame.
-      assert (alloc.wf (set alloc.reserved ({[k]} ∪.) σ)) as Hwf''.
-      { rewrite /alloc.wf in Hwf |- *; set_solver. }
-      iFrame "%".
-      iSplitL "Hfreemap".
-      - rewrite alloc_free_reserve; iFrame.
-      - iSplitL "Hblocks".
-        { rewrite alloc_free_reserve; iFrame. }
-        simpl.
-        rewrite -gset_to_gmap_union_singleton //. }
+      rewrite alloc_free_reserve; last by congruence. rewrite Heq. eauto.
+    }
     wp_pures.
-    iApply "HΦ"; iFrame.
+    iNamed 1. iApply "HΦ"; iFrame.
   - wp_apply (release_spec with "[-HΦ HQ $His_lock $His_locked]").
     { iExists _; iFrame "∗ %".
       iExactEq "Hfreemap"; rewrite /named.
