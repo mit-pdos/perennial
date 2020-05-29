@@ -29,6 +29,7 @@ Class allocG Σ :=
 Module alloc.
   Definition t := gmap u64 block_status.
 
+  Definition domain (σ: t) : gset u64 := dom (gset u64) σ.
   Definition free (σ: t) : gset u64 := dom (gset u64) (filter (λ x, x.2 = block_free) σ).
   Definition used (σ: t) : gset u64 := dom (gset u64) (filter (λ x, x.2 = block_used) σ).
   Definition unused (σ: t) : gset u64 := dom (gset u64) (filter (λ x, x.2 ≠ block_used) σ).
@@ -78,8 +79,6 @@ Instance alloc_names_eta : Settable _ := settable! Build_alloc_names <alloc_used
 
 Implicit Types (a: u64) (m: gmap u64 ()) (free: gset u64).
 
-Context (SIZE: nat).
-Context (MAX: nat).
 Context (P: alloc.t → iProp Σ).
 Context (Ψ: u64 → iProp Σ).
 Context (N: namespace).
@@ -92,12 +91,12 @@ Definition Ncrash := N.@"crash".
 Definition free_block_cinv γ addr : iProp Σ :=
   Ψ addr ∨ mapsto (hG := alloc_used_name γ) addr 1 block_used.
 
-Definition free_block γ k : iProp Σ :=
-  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL MAX) (Ψ k) i ∗ na_crash_val Γ (free_block_cinv γ k) i) ∗
+Definition free_block γ n k : iProp Σ :=
+  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (free_block_cinv γ k) i) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_used_name γ) k 1 block_free).
 
-Definition free_block_pending γ k : iProp Σ :=
-  (∃ Γ, na_crash_pending Γ Ncrash (LVL MAX) (free_block_cinv γ k)).
+Definition free_block_pending γ n k : iProp Σ :=
+  (∃ Γ, na_crash_pending Γ Ncrash (LVL n) (free_block_cinv γ k)).
 
 (*
 Definition block_status_interp γ k st : iProp Σ :=
@@ -108,28 +107,29 @@ Definition block_status_interp γ k st : iProp Σ :=
   end.
 *)
 
-Definition allocator_linv γ (mref: loc) : iProp Σ :=
+Definition allocator_linv γ n (mref: loc) : iProp Σ :=
  ∃ (freeset: gset u64),
   "Hfreemap" ∷ is_addrset mref (freeset) ∗
-  "Hblocks" ∷ [∗ set] k ∈ freeset, free_block γ k
+  "Hblocks" ∷ [∗ set] k ∈ freeset, free_block γ n k
 .
 
-Definition allocator_inv γ : iProp Σ :=
+Definition allocator_inv γ (d: gset u64) : iProp Σ :=
   ∃ σ,
+    "%Hdom" ∷ ⌜ dom _ σ = d ⌝ ∗
     "Hstatus" ∷ gen_heap_ctx (hG:=γ.(alloc_used_name)) σ ∗
     "HP" ∷ P σ.
 
-Definition is_allocator (l: loc) γ : iProp Σ :=
+Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
   ∃ (lref mref: loc) (γlk: gname),
     "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
-    "#His_lock" ∷ is_lock allocN γlk #lref (allocator_linv γ mref) ∗
-    "#Halloc_inv" ∷ inv N (allocator_inv γ)
+    "#His_lock" ∷ is_lock allocN γlk #lref (allocator_linv γ n mref) ∗
+    "#Halloc_inv" ∷ inv N (allocator_inv γ d)
 .
 
-Definition is_allocator_pre γ freeset : iProp Σ :=
-  "#Halloc_inv" ∷ inv N (allocator_inv γ) ∗
-  "Hblocks" ∷ [∗ set] k ∈ freeset, free_block γ k.
+Definition is_allocator_pre γ n d freeset : iProp Σ :=
+  "#Halloc_inv" ∷ inv N (allocator_inv γ d) ∗
+  "Hblocks" ∷ [∗ set] k ∈ freeset, free_block γ n k.
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
 (*
@@ -141,8 +141,8 @@ Proof.
 Qed.
 *)
 
-Global Instance is_allocator_Persistent l γ :
-  Persistent (is_allocator l γ).
+Global Instance is_allocator_Persistent l γ d n:
+  Persistent (is_allocator l d γ n).
 Proof. apply _. Qed.
 
 Definition alloc_crash_cond : iProp Σ :=
@@ -165,13 +165,13 @@ Proof.
   try (by rewrite decide_True).
 Qed.
 
-Lemma free_block_init γ σ E:
+Lemma free_block_init γ n σ E:
   ↑Ncrash ⊆ E →
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   ([∗ map] k↦v ∈ σ, mapsto (hG := alloc_used_name γ) k 1 v) -∗
-  |={E}=> ([∗ set] k ∈ dom (gset _) σ, free_block_pending γ k) ∗
-          ([∗ set] k ∈ alloc.free σ, free_block γ k).
+  |={E}=> ([∗ set] k ∈ dom (gset _) σ, free_block_pending γ n k) ∗
+          ([∗ set] k ∈ alloc.free σ, free_block γ n k).
 Proof.
   iIntros (Hin Hcrashed) "Hfree Hpts".
   rewrite -?Hcrashed.
@@ -182,7 +182,7 @@ Proof.
   iIntros (k x Hlookup) "(Hmaps&HΨ)".
   destruct x.
   - (* TODO: should they all be in the same na_crash_inv? *)
-    iMod (na_crash_inv_init Ncrash (LVL MAX) E) as (Γ) "H".
+    iMod (na_crash_inv_init Ncrash (LVL n) E) as (Γ) "H".
     iMod (na_crash_inv_alloc _ _ _ _ (free_block_cinv γ k) (Ψ k) with "[$] [$] []") as
         (i) "(Hbund&Hval&Hpend)".
     { auto. }
@@ -193,7 +193,7 @@ Proof.
     iExists _, _. iFrame.
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
-    iMod (na_crash_inv_init Ncrash (LVL MAX) E) as (Γ) "H".
+    iMod (na_crash_inv_init Ncrash (LVL n) E) as (Γ) "H".
     iMod (na_crash_inv_alloc _ _ _ _ (free_block_cinv γ k) (mapsto k 1 block_used) with "[$] [$] []") as
         (i) "(Hbund&Hval&Hpend)".
     { auto. }
@@ -202,26 +202,49 @@ Proof.
     iExists _. iFrame.
 Qed.
 
-Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc Φc' E2 E2' k σ:
+Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
+  (n' < n)%nat →
   E2 ⊆ E2' →
   ↑N ⊆ E2' ∖ E2 →
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   P σ -∗
-  □ (alloc_crash_cond -∗ Φc -∗ Φc') -∗
-  (∀ γ, is_allocator_pre γ (alloc.free σ) -∗ WPC e @ NotStuck; LVL k; ⊤; E2 {{ Φ }} {{ Φc }}) -∗
-  |={⊤}=> WPC e @ NotStuck; (LVL (k + set_size (alloc.unused σ))); ⊤; E2' {{ Φ }} {{ Φc' }}%I.
-Proof.
-  iIntros (?? Hcrash) "Hstate HP #Hcrash1 HWP".
+  (∀ γ, is_allocator_pre γ  n' (alloc.domain σ) (alloc.free σ) -∗
+        WPC e @ NotStuck; LVL n; ⊤; E2 {{ Φ }} {{ alloc_crash_cond -∗ Φc }}) -∗
+  |={⊤}=> WPC e @ NotStuck; (LVL ((S n) + set_size (alloc.domain σ))); ⊤; E2' {{ Φ }} {{ Φc }}%I.
+Proof using allocG0.
+  iIntros (??? Hcrash) "Hstate HP HWP".
   iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
   set (γ := {| alloc_used_name := γheap |}).
-  iMod (inv_alloc N _ (allocator_inv γ) with "[HP Hctx]") as "#Hinv".
-  { iNext. iExists _. iFrame. }
-  iMod (free_block_init γ with "[$] [$]").
+  iMod (inv_alloc N _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx]") as "#Hinv".
+  { iNext. iExists _. iFrame. eauto. }
+  iMod (free_block_init γ n' with "[$] [$]") as "(Hpending&Hblock)".
   { set_solver+. }
   { eauto. }
-Abort.
-
+  iSpecialize ("HWP" $! γ with "[$]").
+  iModIntro.
+  iApply (wpc_na_crash_inv_big_sepS_init_wand with "[Hpending]").
+  { iApply (big_sepS_mono with "Hpending"). iIntros (? Hin) "Hpending".
+    rewrite /free_block_pending.
+    iDestruct "Hpending" as (Γ) "Hpending".
+    iExists _, _, n'. iFrame. iPureIntro; eauto.
+  }
+  iApply wpc_later_crash'.
+  iApply (wpc_inv'); try eassumption. iFrame "Hinv". iFrame "HWP".
+  iAlways. iIntros "Hinner Hwand !> !> Hset".
+  iApply "Hwand". rewrite /alloc_crash_cond.
+  iNamed "Hinner".
+  iExists _. iFrame.
+  rewrite /alloc.unused.
+  rewrite -Hdom.
+  rewrite -?big_sepM_dom big_sepM_filter.
+  iDestruct (big_sepM_mono_with_inv with "Hstatus Hset") as "(_&$)".
+  iIntros (k x Hlookup) "(Hctx&Hfree)".
+  iDestruct "Hfree" as "[HΨ|Hused]".
+  - iFrame. destruct (decide _); eauto.
+  - iDestruct (gen_heap_valid with "[$] Hused") as %Hlookup'.
+    iFrame. rewrite decide_False //= => Heq. congruence.
+Qed.
 
 (* TODO: prove something useful for initializing from zero blocks *)
 
