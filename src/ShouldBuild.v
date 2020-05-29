@@ -24,6 +24,10 @@ From Perennial.goose_lang Require
      ffi.append_log_ffi
      ffi.kvs_ffi.
 
+(* WIP slice library *)
+From Perennial.goose_lang.lib Require
+     slice.pred_slice.
+
 (* goose output *)
 From Perennial.goose_lang.examples Require
      goose_unittest simpledb logging2 rfc1813.

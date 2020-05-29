@@ -7,6 +7,7 @@ Class IntoVal {ext: ext_op} V :=
     IntoVal_inj :> Inj eq eq to_val;
   }.
 
+(* TODO: make V explicit and H implicit, so `{!IntoValForType V t} does the right thing *)
 Class IntoValForType {ext V} (H: @IntoVal ext V) {ext_ty: ext_types ext} (t:ty) :=
     { def_is_zero: to_val IntoVal_def = zero_val t;
       to_val_has_zero: has_zero t;
