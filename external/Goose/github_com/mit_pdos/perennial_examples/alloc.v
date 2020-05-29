@@ -74,6 +74,7 @@ Definition Allocator__Reserve: val :=
     lock.acquire (struct.loadF Allocator.S "m" "a");;
     let: ("k", "ok") := findKey (struct.loadF Allocator.S "free" "a") in
     MapDelete (struct.loadF Allocator.S "free" "a") "k";;
+    Linearize;;
     lock.release (struct.loadF Allocator.S "m" "a");;
     ("k", "ok").
 
