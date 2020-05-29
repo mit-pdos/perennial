@@ -22,8 +22,12 @@ Proof.
   try (abstract (right; congruence)).
 Qed.
 
+Canonical Structure gset64O := leibnizO (gset u64).
+
 Class allocG Σ :=
-  { alloc_used_preG :> gen_heapPreG u64 block_status Σ; }.
+  { alloc_used_preG :> gen_heapPreG u64 block_status Σ;
+    alloc_freeset :> inG Σ (ghostR gset64O);
+ }.
 
 (* state representation types (defined here since modules can't be in sections) *)
 Module alloc.
@@ -73,9 +77,11 @@ Context `{!stagedG Σ}.
 Let allocN := nroot.@"allocator".
 
 Record alloc_names :=
-  { alloc_used_name: gen_heapG u64 block_status Σ; }.
+  { alloc_status_name: gen_heapG u64 block_status Σ;
+    alloc_free_name : gname;
+  }.
 
-Instance alloc_names_eta : Settable _ := settable! Build_alloc_names <alloc_used_name>.
+Instance alloc_names_eta : Settable _ := settable! Build_alloc_names <alloc_status_name; alloc_free_name>.
 
 Implicit Types (a: u64) (m: gmap u64 ()) (free: gset u64).
 
@@ -89,11 +95,15 @@ Definition Ncrash := N.@"crash".
 
 (* crash_inv: either exists Ψ, etc. or block *)
 Definition free_block_cinv γ addr : iProp Σ :=
-  Ψ addr ∨ mapsto (hG := alloc_used_name γ) addr 1 block_used.
+  Ψ addr ∨ mapsto (hG := alloc_status_name γ) addr 1 block_used.
 
 Definition free_block γ n k : iProp Σ :=
   "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (free_block_cinv γ k) i) ∗
-  "Hmapsto" ∷ (mapsto (hG := alloc_used_name γ) k 1 block_free).
+  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_free).
+
+Definition reserved_block γ n k : iProp Σ :=
+  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (free_block_cinv γ k) i) ∗
+  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved).
 
 Definition free_block_pending γ n k : iProp Σ :=
   (∃ Γ, na_crash_pending Γ Ncrash (LVL n) (free_block_cinv γ k)).
@@ -110,14 +120,17 @@ Definition block_status_interp γ k st : iProp Σ :=
 Definition allocator_linv γ n (mref: loc) : iProp Σ :=
  ∃ (freeset: gset u64),
   "Hfreemap" ∷ is_addrset mref (freeset) ∗
-  "Hblocks" ∷ [∗ set] k ∈ freeset, free_block γ n k
+  "Hblocks" ∷ ([∗ set] k ∈ freeset, free_block γ n k) ∗
+  "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯ (Excl' freeset))
 .
 
 Definition allocator_inv γ (d: gset u64) : iProp Σ :=
   ∃ σ,
     "%Hdom" ∷ ⌜ dom _ σ = d ⌝ ∗
-    "Hstatus" ∷ gen_heap_ctx (hG:=γ.(alloc_used_name)) σ ∗
-    "HP" ∷ P σ.
+    "Hstatus" ∷ gen_heap_ctx (hG:=γ.(alloc_status_name)) σ ∗
+    "Hfreeset_auth" ∷ own (γ.(alloc_free_name)) (● (Excl' (alloc.free σ))) ∗
+    "HP" ∷ P σ
+.
 
 Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
   ∃ (lref mref: loc) (γlk: gname),
@@ -129,7 +142,9 @@ Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
 
 Definition is_allocator_pre γ n d freeset : iProp Σ :=
   "#Halloc_inv" ∷ inv N (allocator_inv γ d) ∗
-  "Hblocks" ∷ [∗ set] k ∈ freeset, free_block γ n k.
+  "Hblocks" ∷ ([∗ set] k ∈ freeset, free_block γ n k) ∗
+  "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯ (Excl' freeset))
+.
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
 (*
@@ -169,7 +184,7 @@ Lemma free_block_init γ n σ E:
   ↑Ncrash ⊆ E →
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
-  ([∗ map] k↦v ∈ σ, mapsto (hG := alloc_used_name γ) k 1 v) -∗
+  ([∗ map] k↦v ∈ σ, mapsto (hG := alloc_status_name γ) k 1 v) -∗
   |={E}=> ([∗ set] k ∈ dom (gset _) σ, free_block_pending γ n k) ∗
           ([∗ set] k ∈ alloc.free σ, free_block γ n k).
 Proof.
@@ -215,8 +230,10 @@ Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
 Proof using allocG0.
   iIntros (??? Hcrash) "Hstate HP HWP".
   iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
-  set (γ := {| alloc_used_name := γheap |}).
-  iMod (inv_alloc N _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx]") as "#Hinv".
+  iMod (ghost_var_alloc (alloc.free σ)) as (γfree) "(Hfree&Hfree_frag)".
+  set (γ := {| alloc_status_name := γheap;
+               alloc_free_name := γfree |}).
+  iMod (inv_alloc N _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx Hfree]") as "#Hinv".
   { iNext. iExists _. iFrame. eauto. }
   iMod (free_block_init γ n' with "[$] [$]") as "(Hpending&Hblock)".
   { set_solver+. }
@@ -297,6 +314,7 @@ Proof.
   set_solver.
 Qed.
 
+(*
 Theorem alloc_free_reserve σ new :
   alloc.free (set alloc.reserved (union new) σ) =
   alloc.free σ ∖ new.
@@ -314,48 +332,112 @@ Proof.
   rewrite /alloc.free /=.
   set_solver.
 Qed.
+*)
 
-Theorem wp_Reserve (Q: option u64 → iProp Σ) l γ :
-  {{{ is_allocator l γ ∗
+Theorem wp_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1 E2:
+  ↑N ⊆ E1 →
+  ↑allocN ⊆ E1 →
+  ↑nroot.@"readonly" ⊆ E1 →
+  (∀ o, Q o -∗ Qc) →
+  {{{ is_allocator l dset γ n' ∗
      (∀ σ σ' ma,
           ⌜match ma with
-           | Some a => a ∈ alloc.free σ ∧ σ' = set alloc.reserved ({[a]} ∪.) σ
-           | None => σ' = σ
+           | Some a => a ∈ alloc.free σ ∧ σ' = <[a := block_reserved]> σ
+           | None => σ' = σ ∧ alloc.free σ = ∅
            end⌝ -∗
-           ⌜alloc.wf σ⌝ -∗
-          P σ ={⊤}=∗ P σ' ∗ Q ma)
+          P σ ={E1 ∖ ↑N}=∗ P σ' ∗ Q ma) ∧
+      Qc
   }}}
-    Allocator__Reserve #l
+    Allocator__Reserve #l  @ NotStuck; n; E1; E2
   {{{ a (ok: bool), RET (#a, #ok);
-      if ok then Q (Some a) ∗ Ψ a ∗ alloc_used γ a
-      else Q None }}}.
+      if ok then Q (Some a) ∗ free_block γ n' a
+      else Q None }}}
+  {{{ Qc }}}.
 Proof.
   clear.
-  iIntros (Φ) "(Hinv&Hfupd) HΦ"; iNamed "Hinv".
-  wp_call.
+  iIntros (Hsub0 Hsub1 Hsub2 HQ Φ Φc) "(Hinv&Hfupd) HΦ". iNamed "Hinv".
+  rewrite /Allocator__Reserve.
+
+  Ltac show_crash1 :=
+    try crash_case; iDestruct "Hfupd" as "(_&$)".
+
+  wpc_pures; first by show_crash1.
+  iMod (readonly_load with "m") as (?) "m'".
+  { assumption. }
+  iMod (readonly_load with "free") as (?) "free'".
+  { assumption. }
+
+
+
+  wpc_bind (lock.acquire _).
+  wpc_frame "Hfupd HΦ"; first by show_crash1.
   wp_loadField.
-  wp_apply (acquire_spec with "His_lock").
-  iIntros "(His_locked & Hinner)"; iNamed "Hinner".
-  iNamed "Hlockinv".
+  wp_apply (acquire_spec' with "His_lock"); first assumption.
+  iIntros "(His_locked & Hinner)"; iNamed "Hinner". iNamed 1.
+
+  wpc_pures; first by show_crash1.
+  wpc_bind (findKey _).
+  wpc_frame "Hfupd HΦ"; first by show_crash1.
   wp_loadField.
   wp_apply (wp_findKey with "Hfreemap").
   iIntros (k ok) "[%Hk Hfreemap]".
-  wp_pures.
+  iNamed 1.
+
+
+  wpc_pures; first by show_crash1.
+
+  wpc_bind (impl.MapDelete _ _).
+  wpc_frame "Hfupd HΦ"; first by show_crash1.
   wp_loadField.
   iDestruct "Hfreemap" as (m') "[Hfreemap %Hdom]".
   wp_apply (wp_MapDelete with "Hfreemap"); iIntros "Hfreemap".
-  iAssert (is_addrset mref (alloc.free σ ∖ {[k]})) with "[Hfreemap]" as "Hfreemap".
+  iNamed 1.
+
+
+  iAssert (is_addrset mref (freeset ∖ {[k]})) with "[Hfreemap]" as "Hfreemap".
   { iExists _; iFrame.
     iPureIntro.
     rewrite /map_del.
     rewrite dom_delete_L.
     set_solver. }
+
+
+  wpc_pure _ _; first by show_crash1.
+  wpc_pure _ _; first by show_crash1.
+
+  (* Linearization point here. *)
+  wpc_bind (Skip).
+  iApply wpc_atomic_no_mask; iSplit; first by show_crash1.
+  iInv "Halloc_inv" as "H".
+  wp_pures.
+
+
+  destruct ok.
+
+  (*
+  wpc_pures; first by show_crash1.
+  wpc_bind (struct.loadF _ _ _).
+  wpc_frame "Hfupd HΦ"; first by show_crash1.
+  wp_loadField.
+  iNamed 1.
+
+   *)
+
+  (*
   iMod ("Hfupd" $! _ (if ok then _ else _) (if ok then Some k else None) with "[] [%//] HP") as "[HP HQ]".
   { destruct ok; simpl; auto. }
   wp_loadField.
-  destruct ok.
+   *)
 
   - (* extract block *)
+
+    iNamed "H".
+    iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
+    iDestruct "Hfupd" as "(Hfupd&_)".
+    iMod ("Hfupd" $! σ _ (Some k) with "[] [$]") as "(HP&HQ)".
+    { iPureIntro; split; last by reflexivity. rewrite Heq. eauto. }
+
+
     iNamed "Hdurable".
     iDestruct (big_sepS_delete with "Hblocks") as "[Hbk Hblocks]"; eauto.
 
@@ -410,7 +492,7 @@ Proof.
 Qed.
 
 Lemma alloc_used_valid γ a used :
-  gen_heap_ctx (hG:=γ.(alloc_used_name)) (gset_to_gmap () used) -∗
+  gen_heap_ctx (hG:=γ.(alloc_status_name)) (gset_to_gmap () used) -∗
   alloc_used γ a -∗
   ⌜a ∈ used⌝.
 Proof.

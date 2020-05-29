@@ -48,10 +48,10 @@ Proof.
     word.
 Qed.
 
-Theorem wp_freeRange (start sz: u64) :
+Theorem wp_freeRange (start sz: u64) E :
   int.val start + int.val sz < 2^64 ->
   {{{ True }}}
-    freeRange #start #sz
+    freeRange #start #sz @ E
   {{{ (mref: loc), RET #mref;
       is_addrset mref (rangeSet (int.val start) (int.val sz)) }}}.
 Proof.
@@ -112,9 +112,9 @@ Qed.
 
 (* this is superceded by wp_findKey, but that theorem relies in an unproven map
 iteration theorem *)
-Theorem wp_findKey' mref m :
+Theorem wp_findKey' mref m E :
   {{{ is_map mref m }}}
-    findKey #mref
+    findKey #mref @ E
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
       ⌜if ok then m !! k = Some tt else True⌝ ∗ (* TODO: easier if this
       promises to find a key if it exists *)
@@ -163,9 +163,9 @@ Proof.
     auto.
 Qed.
 
-Theorem wp_findKey mref free :
+Theorem wp_findKey mref free E :
   {{{ is_addrset mref free }}}
-    findKey #mref
+    findKey #mref @ E
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
       ⌜if ok then k ∈ free else free = ∅⌝ ∗
       is_addrset mref free
@@ -218,9 +218,9 @@ Proof.
       iExists _; iFrame "% ∗".
 Qed.
 
-Theorem wp_mapRemove m_ref remove_ref free remove :
+Theorem wp_mapRemove m_ref remove_ref free remove E :
   {{{ is_addrset m_ref free ∗ is_addrset remove_ref remove }}}
-    mapRemove #m_ref #remove_ref
+    mapRemove #m_ref #remove_ref @ E
   {{{ RET #(); is_addrset m_ref (free ∖ remove) ∗ is_addrset remove_ref remove }}}.
 Proof.
   iIntros (Φ) "[His_free His_remove] HΦ".
@@ -253,9 +253,9 @@ Proof.
     iExists _; iFrame "% ∗".
 Qed.
 
-Theorem wp_SetAdd mref used addr_s q (addrs: list u64) :
+Theorem wp_SetAdd mref used addr_s q (addrs: list u64) E :
   {{{ is_addrset mref used ∗ is_slice_small addr_s uint64T q addrs }}}
-    SetAdd #mref (slice_val addr_s)
+    SetAdd #mref (slice_val addr_s) @ E
   {{{ RET #(); is_addrset mref (used ∪ list_to_set addrs) ∗
                is_slice_small addr_s uint64T q addrs }}}.
 Proof.
