@@ -136,14 +136,37 @@ Qed.
 
 Lemma wpc_na_crash_inv_init_wand Γ s k k' N E2 e Φ Φc P :
   k' < k →
-  na_crash_pending Γ N (LVL k') P ∗
-  WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ P -∗ Φc }} ⊢
+  na_crash_pending Γ N (LVL k') P -∗
+  WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ P -∗ Φc }} -∗
   WPC e @ s; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
   crash_unseal.
-  iIntros (?) "(H&?)".
+  iIntros (?) "H ?".
   iDestruct "H" as (?) "(?&?)".
   iApply wpc_staged_inv_init_wand; last (by iFrame); eauto.
+Qed.
+
+Lemma wpc_na_crash_inv_big_sepS_init_wand `{Countable A} (σ: gset A)(P: A → iProp Σ) k s E2 e Φ Φc  :
+  ([∗ set] a ∈ σ, ∃ Γ N k', ⌜ k' < k ⌝ ∗ na_crash_pending Γ N (LVL k') (P a)) -∗
+  WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ ([∗ set] a ∈ σ, P a) -∗ Φc }} -∗
+  WPC e @ s; LVL (k + size σ); ⊤; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iInduction σ as [| x σ ?] "IH" using set_ind_L forall (Φc).
+  - rewrite size_empty right_id. iIntros "_ Hwp".
+    iApply (wpc_mono with "Hwp"); eauto.
+    rewrite big_sepS_empty //=. iIntros "H". by iApply "H".
+  - rewrite big_sepS_union; last by set_solver.
+    rewrite big_sepS_singleton.
+    iIntros "(HPx&Hrest)". iDestruct "HPx" as (?? k' Hlt) "Hpending".
+    iIntros "Hwp". replace (k + size ({[x]} ∪ σ)) with (S (k + size σ)); last first.
+    { rewrite size_union; last by set_solver. rewrite size_singleton. lia. }
+    iApply (wpc_na_crash_inv_init_wand with "Hpending").
+    { lia. }
+    iApply ("IH" with "Hrest").
+    iApply (wpc_mono with "Hwp"); auto.
+    iIntros "Hwand Hrest HP". iApply "Hwand".
+    rewrite big_sepS_union ?big_sepS_singleton; last by set_solver.
+    iFrame.
 Qed.
 
 Lemma na_crash_inv_open_modify Γ N k' k E E' P Q R bset:
