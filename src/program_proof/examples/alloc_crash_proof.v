@@ -321,9 +321,13 @@ Theorem alloc_free_reserve σ new :
 Proof.
   clear.
   rewrite /alloc.free /=.
-  (* XXX: The current map_filter_insert* lemmas are not general enough *)
-  rewrite map_filter_insert_not.
-Admitted.
+  rewrite map_filter_insert_not_strong //=.
+  rewrite map_filter_delete (dom_delete_L) //.
+Qed.
+
+Theorem alloc_free_subset σ :
+  alloc.free σ ⊆ dom _ σ.
+Proof. by apply dom_map_filter_subseteq. Qed.
 
 (*
 Theorem alloc_free_use σ new :
@@ -436,7 +440,7 @@ Proof.
     { iNext. iExists _. iFrame. iPureIntro.
       rewrite dom_insert_L.
       assert (k ∈ dom (gset u64) σ).
-      { admit. }
+      { rewrite -Heq in Hk. by apply alloc_free_subset. }
       set_solver.
     }
     iSplit.
@@ -455,13 +459,25 @@ Proof.
     }
     wp_pures.
     iNamed 1. iApply "HΦ"; iFrame.
-  - wp_apply (release_spec with "[-HΦ HQ $His_lock $His_locked]").
-    { iExists _; iFrame "∗ %".
-      iExactEq "Hfreemap"; rewrite /named.
-      f_equal.
-      set_solver. }
+  - iNamed "H".
+    iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
+    iDestruct "Hfupd" as "(Hfupd&_)".
+    iMod ("Hfupd" $! σ _ None with "[] [$]") as "(HP&HQ)".
+    { iPureIntro; split; first by reflexivity. congruence. }
+
+    iModIntro. iSplitL "HP Hfreeset_auth Hstatus".
+    { iNext. iExists _. iFrame. iPureIntro. eauto. }
+    iSplit.
+    { iModIntro. crash_case. iApply HQ. iFrame. }
+    iModIntro.
+    wpc_pures; first by show_crash2 HQ.
+
+    wpc_frame "HΦ HQ"; first by show_crash2 HQ.
+    wp_loadField.
+    wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hfreemap $His_locked $His_lock]"); first assumption.
+    { iExists _; iFrame. rewrite Hk set_empty_difference. iFrame. }
     wp_pures.
-    iApply "HΦ"; iFrame.
+    iNamed 1. iApply "HΦ"; iFrame.
 Qed.
 
 Lemma gset_difference_difference `{Countable K} (A B C: gset K) :
