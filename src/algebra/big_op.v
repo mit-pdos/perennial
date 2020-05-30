@@ -132,8 +132,8 @@ Section map.
   Proof. rewrite -insert_delete big_sepM_insert ?lookup_delete //. Qed.
 
   Lemma big_sepM_mono_wand Φ Ψ m (I : PROP) :
-    ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
-      I ∗ Φ k x -∗ I ∗ Ψ k x )%I -∗
+    □ ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
+      I ∗ Φ k x -∗ I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) -∗
     I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
   Proof.
@@ -142,8 +142,8 @@ Section map.
 
   Context `{FUpd PROP}.
   Lemma big_sepM_mono_fupd Φ Ψ m (I : PROP) E :
-    ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
-      I ∗ Φ k x ={E}=∗ I ∗ Ψ k x )%I -∗
+   □ ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
+      I ∗ Φ k x ={E}=∗ I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) ={E}=∗
     I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
   Proof.
