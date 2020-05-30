@@ -84,6 +84,18 @@ Section map.
     iFrame.
   Qed.
 
+  Lemma map_filter_insert_not_strong:
+  ∀ (K : Type) (M : Type → Type) (H : FMap M) (H0 : ∀ A, Lookup K A (M A)) (H1 : ∀ A, Empty (M A))
+    (H2 : ∀ A, PartialAlter K A (M A)) (H3 : OMap M) (H4 : Merge M) (H5 : ∀ A, FinMapToList K A (M A))
+    (EqDecision0 : EqDecision K),
+    FinMap K M
+    → ∀ A (P : K * A → Prop) (H7 : ∀ x : K * A, Decision (P x)) (m : M A) (i : K) (x : A),
+       ¬ P (i, x) → filter P (<[i:=x]> m) = (filter P (delete i m)).
+  Proof.
+    intros. rewrite -insert_delete map_filter_insert_not' //= => ?.
+    rewrite lookup_delete //=.
+  Qed.
+
   Lemma big_sepM_filter Φ (R: K * A → Prop) {Hdec: ∀ k, Decision (R k)} m :
     ([∗ map] k ↦ x ∈ filter R m, Φ k x) ⊣⊢
     ([∗ map] k ↦ x ∈ m, if decide (R (k, x)) then Φ k x else emp).
