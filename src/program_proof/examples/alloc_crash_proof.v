@@ -322,7 +322,6 @@ Proof.
 Qed.
 
 Theorem alloc_free_reserve σ new :
-  new ∈ alloc.free σ →
   alloc.free (<[new := block_reserved]> σ) =
   alloc.free σ ∖ {[new]}.
 Proof.
@@ -330,6 +329,25 @@ Proof.
   rewrite /alloc.free /=.
   rewrite map_filter_insert_not_strong //=.
   rewrite map_filter_delete (dom_delete_L) //.
+Qed.
+
+Theorem alloc_free_free σ new :
+  alloc.free (<[new := block_free]> σ) =
+  alloc.free σ ∪ {[new]}.
+Proof.
+  clear.
+  rewrite /alloc.free /=.
+  rewrite map_filter_insert //= dom_insert_L. set_solver.
+Qed.
+
+Theorem reserved_not_in_alloc_free σ a :
+  σ !! a = Some block_reserved →
+  a ∉ alloc.free σ.
+Proof.
+  clear.
+  rewrite /alloc.free /= => Hlook.
+  rewrite elem_of_dom. intros (x&(His&Heq)%map_filter_lookup_Some).
+  simpl in Heq. rewrite Heq Hlook in His. congruence.
 Qed.
 
 Theorem alloc_free_subset σ :
@@ -462,7 +480,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hfreemap $His_locked $His_lock]"); first assumption.
     { iExists _; iFrame.
-      rewrite alloc_free_reserve; last by congruence. rewrite Heq. eauto.
+      rewrite alloc_free_reserve. rewrite Heq. eauto.
     }
     wp_pures.
     iNamed 1. iApply "HΦ"; iFrame.
@@ -598,6 +616,7 @@ Proof.
   iPureIntro.
   apply lookup_gset_to_gmap_Some in Hlookup as [? _]; auto.
 Qed.
+*)
 
 (* TODO: upstream: https://gitlab.mpi-sws.org/iris/stdpp/-/merge_requests/162 *)
 Lemma gset_to_gmap_difference_singleton `{Countable K} {A} (x : A) i (Y: gset K) :
@@ -608,61 +627,65 @@ Proof.
     elem_of_singleton; destruct (decide (i = j)); intuition.
 Qed.
 
-Theorem wp_Free (Q: iProp Σ) l γ (a: u64) :
-  {{{ is_allocator l γ ∗ Ψ a ∗ alloc_used γ a ∗
-     (∀ σ σ',
-          ⌜σ' = set alloc.used (λ used, used ∖ {[a]}) σ⌝ -∗
-          ⌜alloc.wf σ⌝ -∗
-          P σ ={⊤}=∗ P σ' ∗ Q)
+(*** XXX: should probably make this a WPC in case the fupd requires a durable resource *)
+Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
+  ↑N ⊆ E →
+  ↑allocN ⊆ E →
+  ↑nroot.@"readonly" ⊆ E →
+  {{{ is_allocator l d γ n' ∗ reserved_block γ n' a ∗
+     (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ P σ ={E ∖↑N}=∗ P (<[ a := block_free ]> σ) ∗ Q)
   }}}
-    Allocator__Free #l #a
+    Allocator__Free #l #a @ E
   {{{ RET #(); Q }}}.
 Proof.
   clear Hitemcrash.
-  iIntros (Φ) "(Halloc&Hb&Hused&Hfupd) HΦ"; iNamed "Halloc".
+  iIntros (Hsub1 Hsub2 Hsub3 Φ) "(Halloc&Hreserved&Hfupd) HΦ"; iNamed "Halloc".
+  iMod (readonly_load with "m") as (?) "m'".
+  { assumption. }
+  iMod (readonly_load with "free") as (?) "free'".
+  { assumption. }
   wp_call.
   wp_loadField.
-  wp_apply (acquire_spec with "His_lock").
+  wp_apply (acquire_spec' with "His_lock").
+  { auto. }
   iIntros "(Hlocked&Hinv)"; iNamed "Hinv".
-  iNamed "Hlockinv".
   wp_loadField.
   iDestruct "Hfreemap" as (m) "[Hfreemap %Hdom]".
   wp_apply (wp_MapInsert _ _ _ _ () with "Hfreemap"); first by auto.
   iIntros "Hfreemap".
-  iAssert (is_addrset mref (alloc.free σ ∪ {[a]})) with "[Hfreemap]" as "Hfreemap".
+  do 2 wp_pure _.
+  wp_bind (Skip).
+
+  iInv "Halloc_inv" as "H" "Hclo".
+  wp_pure _.
+  iNamed "H".
+  iNamed "Hreserved".
+  iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
+  iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
+  iMod (gen_heap_update _ a _ block_free with "[$] [$]") as "(Hctx&Hmapsto)".
+  iMod (ghost_var_update _ (alloc.free (<[a := block_free]>σ)) with "Hfreeset_auth [$]")
+    as "(Hfreeset_auth&Hfreeset_frag)".
+  iMod ("Hfupd" $! σ with "[%//] HP") as "[HP HQ]".
+  iMod ("Hclo" with "[HP Hctx Hfreeset_auth]").
+  { iNext. iExists _. iFrame. erewrite dom_update_status; eauto. }
+  iModIntro. wp_pures.
+  iAssert (is_addrset mref (alloc.free (<[a := block_free]>σ))) with "[Hfreemap]" as "Hfreemap".
   { iExists _; iFrame.
     iPureIntro.
-    rewrite /map_insert dom_insert_L.
+    rewrite /map_insert dom_insert_L alloc_free_free.
     set_solver. }
   wp_loadField.
-  iMod ("Hfupd" $! σ with "[] [%//] HP") as "[HP HQ]".
-  { iPureIntro.
-    eauto. }
-  iDestruct (alloc_used_valid with "Hallocated Hused") as %Hused.
-  assert (a ∉ alloc.free σ) by set_solver.
-  assert (a ∈ σ.(alloc.domain)) by set_solver.
-  assert (alloc.wf (set alloc.used (λ used : gset u64, used ∖ {[a]}) σ)) as Hwf''.
-  { set_solver. }
-  iMod (gen_heap_delete with "[$Hallocated $Hused]") as "Hallocated".
-  wp_apply (release_spec with "[$His_lock $Hlocked Hb Hdurable Hfreemap Hallocated HP]").
-  { iNamed "Hdurable".
-    iExists _; iFrame "HP".
-    iFrame "%".
-    rewrite alloc_free_free; last first.
-    { apply elem_of_subseteq_singleton; auto. }
-    iFrame "Hfreemap".
+  wp_apply (release_spec' with "[$His_lock $Hlocked Hmapsto Hfreemap Hcrashinv Hfreeset_frag Hblocks]").
+  { auto. }
+  {
+    iExists _. iFrame "Hfreemap Hfreeset_frag".
+    rewrite alloc_free_free.
     rewrite big_sepS_union; last first.
-    { apply disjoint_singleton_r; auto. }
+    { apply disjoint_singleton_r; auto. by apply reserved_not_in_alloc_free. }
     rewrite big_opS_singleton.
-    iFrame "Hb Hblocks".
-    iExactEq "Hallocated".
-    rewrite /named.
-    f_equal.
-    simpl.
-    rewrite -gset_to_gmap_difference_singleton //.
+    rewrite Heq. iFrame.
   }
   iApply ("HΦ" with "[$]").
 Qed.
-*)
 
 End goose.

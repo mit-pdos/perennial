@@ -83,4 +83,5 @@ Definition Allocator__Free: val :=
     lock.acquire (struct.loadF Allocator.S "m" "a");;
     MapInsert (struct.loadF Allocator.S "free" "a") "addr" (struct.mk unit.S [
     ]);;
+    Linearize;;
     lock.release (struct.loadF Allocator.S "m" "a").
