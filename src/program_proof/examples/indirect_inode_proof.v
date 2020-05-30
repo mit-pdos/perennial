@@ -55,7 +55,8 @@ Definition is_inode_durable_with σ (dirAddrs indAddrs: list u64) (sz: u64) (num
   : iProp Σ  :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs))⌝ ∗
-    "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧ length(indAddrs) = int.nat maxIndirect ∧ int.val sz < MaxBlocks ∧ int.val numInd <= maxIndirect⌝ ∗
+    "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧ length(indAddrs) = int.nat maxIndirect ∧ int.val numInd <= maxIndirect ∧
+    int.val sz < MaxBlocks ∧ int.val sz = length (σ.(inode.blocks))⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
     (* Double check: we can only state ptsto facts about inode blocks that exist? *)
     "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
@@ -234,37 +235,38 @@ Theorem wp_Inode__Read {l γ P} {off: u64} Q :
        | None => ⌜s = Slice.nil⌝
        end) ∗ Q mb }}}.
 Proof.
-Admitted.
-(*
   iIntros (Φ) "(Hinode&Hfupd) HΦ"; iNamed "Hinode".
   wp_call.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "(His_locked&Hlk)"; iNamed "Hlk".
   iNamed "Hlockinv".
+  iNamed "Hdurable".
+  destruct Hlen as [HdirLen [HindirLen [HnumInd [HszMax Hszeq]]]].
   wp_loadField.
-  iDestruct (big_sepL2_length with "Hdata") as %Hlen1.
-  iDestruct (is_slice_sz with "Haddrs") as %Hlen2.
-  autorewrite with len in Hlen2.
-  wp_apply wp_slice_len.
-  wp_pures.
+  wp_op.
   wp_if_destruct.
   - wp_loadField.
     iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
     { iPureIntro.
       eauto. }
-    wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr addrs Haddrs Hdata]").
+    wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr
+             size direct indirect Hdirect Hindirect HdataDirect HdataIndirect]").
     { iExists _; iFrame.
-      iExists _, _, _, _; iFrame "∗ %". }
+      iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, hdr. iFrame "∗ %".
+      iPureIntro. auto.
+    }
     wp_pures.
     change slice.nil with (slice_val Slice.nil).
     iApply "HΦ"; iFrame.
     rewrite lookup_ge_None_2 //.
-    rewrite -Hlen1 Hlen2.
+    rewrite Hszeq in Heqb.
     word.
-  - wp_loadField.
-    destruct (list_lookup_lt _ addrs (int.nat off)) as [addr Hlookup].
-    { word. }
+  - wp_op.
+    wp_if_destruct.
+    { wp_loadField.
+      destruct (list_lookup_lt _ dirAddrs (int.nat off)) as [addr Hlookup].
+      { unfold maxDirect. rewrite HdirLen. unfold maxDirect. word. }
     iDestruct (is_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
     wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
     iIntros "Haddrs_small".
