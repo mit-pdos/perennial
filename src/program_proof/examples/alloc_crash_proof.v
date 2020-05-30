@@ -93,20 +93,35 @@ Implicit Types (l:loc) (γ:alloc_names) (σ: alloc.t).
 
 Definition Ncrash := N.@"crash".
 
-(* crash_inv: either exists Ψ, etc. or block *)
-Definition free_block_cinv γ addr : iProp Σ :=
+Definition allocator_inv γ (d: gset u64) : iProp Σ :=
+  ∃ σ,
+    "%Hdom" ∷ ⌜ dom _ σ = d ⌝ ∗
+    "Hstatus" ∷ gen_heap_ctx (hG:=γ.(alloc_status_name)) σ ∗
+    "Hfreeset_auth" ∷ own (γ.(alloc_free_name)) (● (Excl' (alloc.free σ))) ∗
+    "HP" ∷ P σ
+.
+
+Definition block_cinv γ addr : iProp Σ :=
   Ψ addr ∨ mapsto (hG := alloc_status_name γ) addr 1 block_used.
 
 Definition free_block γ n k : iProp Σ :=
-  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (free_block_cinv γ k) i) ∗
+  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (block_cinv γ k) i) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_free).
 
-Definition reserved_block γ n k : iProp Σ :=
-  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (free_block_cinv γ k) i) ∗
-  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved).
-
 Definition free_block_pending γ n k : iProp Σ :=
-  (∃ Γ, na_crash_pending Γ Ncrash (LVL n) (free_block_cinv γ k)).
+  (∃ Γ, na_crash_pending Γ Ncrash (LVL n) (block_cinv γ k)).
+
+Definition reserved_block γ n k : iProp Σ :=
+  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (block_cinv γ k) i) ∗
+  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
+  "Halloc_inv" ∷ ∃ d, inv N (allocator_inv γ d).
+
+Definition reserved_block_in_prep γ (n: nat) k : iProp Σ :=
+  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
+  "Halloc_inv" ∷ ∃ d, inv N (allocator_inv γ d).
+
+Definition used_block γ k : iProp Σ :=
+  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_used).
 
 (*
 Definition block_status_interp γ k st : iProp Σ :=
@@ -122,14 +137,6 @@ Definition allocator_linv γ n (mref: loc) : iProp Σ :=
   "Hfreemap" ∷ is_addrset mref (freeset) ∗
   "Hblocks" ∷ ([∗ set] k ∈ freeset, free_block γ n k) ∗
   "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯ (Excl' freeset))
-.
-
-Definition allocator_inv γ (d: gset u64) : iProp Σ :=
-  ∃ σ,
-    "%Hdom" ∷ ⌜ dom _ σ = d ⌝ ∗
-    "Hstatus" ∷ gen_heap_ctx (hG:=γ.(alloc_status_name)) σ ∗
-    "Hfreeset_auth" ∷ own (γ.(alloc_free_name)) (● (Excl' (alloc.free σ))) ∗
-    "HP" ∷ P σ
 .
 
 Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
@@ -198,7 +205,7 @@ Proof.
   destruct x.
   - (* TODO: should they all be in the same na_crash_inv? *)
     iMod (na_crash_inv_init Ncrash (LVL n) E) as (Γ) "H".
-    iMod (na_crash_inv_alloc _ _ _ _ (free_block_cinv γ k) (Ψ k) with "[$] [$] []") as
+    iMod (na_crash_inv_alloc _ _ _ _ (block_cinv γ k) (Ψ k) with "[$] [$] []") as
         (i) "(Hbund&Hval&Hpend)".
     { auto. }
     { iAlways. iIntros "H". iLeft. eauto. }
@@ -209,7 +216,7 @@ Proof.
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
     iMod (na_crash_inv_init Ncrash (LVL n) E) as (Γ) "H".
-    iMod (na_crash_inv_alloc _ _ _ _ (free_block_cinv γ k) (mapsto k 1 block_used) with "[$] [$] []") as
+    iMod (na_crash_inv_alloc _ _ _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] [$] []") as
         (i) "(Hbund&Hval&Hpend)".
     { auto. }
     { iAlways. iIntros "H". iRight. eauto. }
@@ -459,6 +466,7 @@ Proof.
     }
     wp_pures.
     iNamed 1. iApply "HΦ"; iFrame.
+    { iExists _. eauto. }
   - iNamed "H".
     iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
     iDestruct "Hfupd" as "(Hfupd&_)".
@@ -480,6 +488,81 @@ Proof.
     iNamed 1. iApply "HΦ"; iFrame.
 Qed.
 
+Lemma prepare_reserved_block E n n' γ e a Φ Φc:
+  (S n < n')%nat →
+  language.to_val e = None →
+  reserved_block γ n' a -∗
+  Φc ∧
+  (Ψ a -∗
+   reserved_block_in_prep γ n' a -∗
+   WPC e @ LVL n; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φ v ∧ Φc) ∗ block_cinv γ a }}
+                                   {{ Φc ∗ block_cinv γ a }}) -∗
+  WPC e @  (LVL (S (S n))); ⊤; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (??) "Hreserved H".
+  iNamed "Hreserved".
+  iDestruct "Halloc_inv" as (?) "#Hinv".
+  iDestruct "Hcrashinv" as (Γ i) "(Hbundle&Hval)".
+  iApply (wpc_na_crash_inv_open_modify _ (λ _, block_cinv γ a) with "[$] [$] [H Hmapsto]"); try iFrame; auto.
+  iSplit.
+  - iDestruct "H" as "($&_)".
+  - iIntros "HR". iDestruct "H" as "(_&H)".
+    iSpecialize ("H" with "[$] [Hmapsto]").
+    { iFrame. iExists _. eauto. }
+    iApply (wpc_strong_mono with "H"); eauto.
+    iSplit.
+    * iIntros (?) "(Hclose&?)". iModIntro. iFrame. iFrame "#".
+      iSplitL.
+      ** eauto.
+      ** eauto.
+    * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
+Qed.
+
+Lemma free_mark_used_non_free σ a:
+  σ !! a ≠ Some block_free →
+  alloc.free (<[a := block_used]> σ) = alloc.free σ.
+Proof.
+  intros Hneq. rewrite /alloc.free.
+  rewrite map_filter_insert_not' //=.
+  { intros []; subst; eauto. }
+Qed.
+
+Lemma dom_update_status σ a x x':
+  σ !! a = Some x →
+  dom (gset u64) (<[a := x']>σ) = dom (gset u64) σ.
+Proof.
+  intros Hlookup. rewrite dom_insert_L.
+  cut (a ∈ dom (gset u64) σ).
+  { set_solver+. }
+  apply elem_of_dom; eauto.
+Qed.
+
+Lemma mark_used E γ n' a Q:
+  ↑N ⊆ E →
+   reserved_block_in_prep γ n' a -∗
+   (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗
+         P σ ={E ∖ ↑ N}=∗ P (<[a := block_used]> σ) ∗ Q)
+   ={E,E ∖ ↑N, E}▷=∗ Q ∗ used_block γ a.
+Proof.
+  iIntros (?) "Hprep Hfupd".
+  iNamed "Hprep".
+  iDestruct "Halloc_inv" as (d) "#Hinv".
+  iInv "Hinv" as "H" "Hclo".
+  iModIntro. iNext. iNamed "H".
+  iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
+  iMod ("Hfupd" with "[//] [$]") as "(HP&HQ)".
+  iMod (gen_heap_update _ a _ block_used with "[$] [$]") as "(Hctx&Hmapsto)".
+  iMod ("Hclo" with "[HP Hctx Hfreeset_auth]").
+  { iNext. iExists _. iFrame "HP Hctx".
+    rewrite (dom_update_status σ a block_reserved) //=.
+    iFrame "%".
+    rewrite (free_mark_used_non_free) //=.
+    intros Heq; subst; eauto. rewrite Heq in Hlookup'. congruence.
+  }
+  iModIntro. iFrame.
+Qed.
+
+(*
 Lemma gset_difference_difference `{Countable K} (A B C: gset K) :
   C ⊆ A →
   A ∖ (B ∖ C) = A ∖ B ∪ C.
@@ -580,5 +663,6 @@ Proof.
   }
   iApply ("HΦ" with "[$]").
 Qed.
+*)
 
 End goose.

@@ -19,6 +19,7 @@ From Perennial.program_proof Require
      buftxn.specs.
 From Perennial.program_proof.examples Require
      dir_proof
+     alloc_crash_proof
      indirect_inode_proof.
 From Perennial.goose_lang Require
      ffi.append_log_ffi
