@@ -267,8 +267,12 @@ Proof.
     { wp_loadField.
       destruct (list_lookup_lt _ dirAddrs (int.nat off)) as [addr Hlookup].
       { unfold maxDirect. rewrite HdirLen. unfold maxDirect. word. }
-    iDestruct (is_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
-    wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
+      iDestruct (is_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
+      Check wp_SliceGet.
+      wp_apply (wp_SliceGet _ _ _ _ _ (take (int.nat sz) dirAddrs) _ addr with "[Hdirect_small]").
+        Set Printing Implicit.
+      - iSplit; auto.
+
     iIntros "Haddrs_small".
     wp_pures.
     iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
