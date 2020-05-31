@@ -222,6 +222,31 @@ Proof.
   wp_pures.
 Abort. *)
 
+Theorem wp_indNum {off: u64} :
+  {{{
+       ⌜int.val off > maxDirect⌝
+  }}}
+    indNum #off
+  {{{(v: u64), RET #v;
+      ⌜int.val v = ((int.val off) - maxDirect) `div` indirectNumBlocks⌝
+  }}}.
+Proof.
+  iIntros (ϕ) "_ Hϕ".
+  wp_call.
+  iApply "Hϕ".
+  iPureIntro.
+  unfold indirectNumBlocks. unfold maxDirect.
+  word_cleanup.
+Admitted.
+
+Theorem wp_readIndirect {disk indAddr : u64} :
+  {{{ True }}}
+     readIndirect #disk #indAddr
+  {{{ s indBlockAddrs, RET slice_val s;
+      is_block s 1 indBlockAddrs }}}.
+Proof.
+Admitted.
+
 Theorem wp_Inode__Read {l γ P} {off: u64} Q :
   {{{ is_inode l γ P ∗
       (∀ σ σ' mb,
@@ -263,37 +288,59 @@ Proof.
     rewrite Hszeq in Heqb.
     word.
   - wp_op.
+    assert (int.val off < int.val sz) as Hszoff by lia.
+    unfold maxDirect in *.
+
     wp_if_destruct.
-    { wp_loadField.
+
+    (* Is direct block *)
+    {
+      wp_loadField.
       destruct (list_lookup_lt _ dirAddrs (int.nat off)) as [addr Hlookup].
       { unfold maxDirect. rewrite HdirLen. unfold maxDirect. word. }
       iDestruct (is_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
-      Check wp_SliceGet.
       wp_apply (wp_SliceGet _ _ _ _ _ (take (int.nat sz) dirAddrs) _ addr with "[Hdirect_small]").
-        Set Printing Implicit.
-      - iSplit; auto.
+      { iSplit; auto.
+        unfold maxDirect in *.
+        iPureIntro.
+        rewrite lookup_take; auto.
+        word.
+      }
+      iIntros "Hdirect_small".
+      wp_pures.
+      iDestruct (big_sepL2_lookup_1_some _ _ _ (int.nat off) addr with "HdataDirect") as "%Hblock_lookup"; eauto.
+      { rewrite lookup_take; [auto | word]. }
+      destruct Hblock_lookup as [b0 Hlookup2].
+      iDestruct (is_slice_split with "[$Hdirect_small $Hdirect]") as "Hdirect".
+      iDestruct (big_sepL2_lookup_acc _ _ _ _ addr with "HdataDirect") as "[Hb HdataDirect]"; eauto.
+      { rewrite lookup_take; [auto | word]. }
+      wp_apply (wp_Read with "Hb"); iIntros (s) "[Hb Hs]".
+      iSpecialize ("HdataDirect" with "Hb").
+      wp_loadField.
+      iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
+      { iPureIntro; eauto. }
+      wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr
+             size direct indirect Hdirect Hindirect HdataDirect HdataIndirect]").
+      { iExists _; iFrame.
+        iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, hdr. iFrame "∗ %".
+        iPureIntro; auto.
+      }
+      wp_pures.
+      iApply "HΦ"; iFrame.
+      rewrite lookup_take in Hlookup2; [ | word ].
+      rewrite Hlookup2.
+      iDestruct (is_slice_split with "Hs") as "[Hs _]".
+      iExists _; iFrame.
+    }
 
-    iIntros "Haddrs_small".
-    wp_pures.
-    iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
-    destruct Hblock_lookup as [b0 Hlookup2].
-    iDestruct (is_slice_split with "[$Haddrs_small $Haddrs]") as "Haddrs".
-    iDestruct (big_sepL2_lookup_acc with "Hdata") as "[Hb Hdata]"; eauto.
-    wp_apply (wp_Read with "Hb"); iIntros (s) "[Hb Hs]".
-    iSpecialize ("Hdata" with "Hb").
-    wp_loadField.
-    iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
-    { iPureIntro; eauto. }
-    wp_apply (release_spec with "[$Hlock $His_locked Hhdr addr addrs Haddrs Hdata HP]").
-    { iExists _; iFrame.
-      iExists _, _, _, _; iFrame "∗ %". }
-    wp_pures.
-    iApply "HΦ"; iFrame.
-    rewrite Hlookup2.
-    iDestruct (is_slice_split with "Hs") as "[Hs _]".
-    iExists _; iFrame.
-Qed.
+    (* Is indirect block *)
+    {
+      assert (int.val off >= int.val 500) as Hoff500 by word.
+      admit.
+    }
+Admitted.
 
+(*
 Theorem wp_Inode__Size {l γ P} (Q: u64 -> iProp Σ) :
   {{{ is_inode l γ P ∗
       (∀ σ σ' sz,
