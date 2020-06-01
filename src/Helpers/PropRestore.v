@@ -42,15 +42,17 @@ Section bi.
     iApply (HQ_join with "[$]").
   Qed.
 
-  (* TODO: check precedence; this instance should be tried before restore_IntoSep *)
-  Global Instance restore_IntoSep_persistent_1 R P P1 P2 Q `{!Persistent P1} `{BiAffine PROP} :
+  Global Instance restore_IntoSep_persistent_1 R P P1 P2 Q `{BiAffine PROP} :
     IntoSep P P1 P2 →
     FromSep P P1 P2 →
-    IntoSep (Restore R P Q) P1 (Restore R P2 Q) | 10.
+    (* NOTE: need Persistent to be later so resolving IntoSep resolves P1
+    first *)
+    Persistent P1 →
+    IntoSep (Restore R P Q) P1 (Restore R P2 Q) | 5.
   Proof.
     unseal.
     rewrite /IntoSep /FromSep.
-    iIntros (HP_split HP_join) "[HP #HR]".
+    iIntros (HP_split HP_join ?) "[HP #HR]".
     iDestruct (HP_split with "HP") as "[#HP1 $]".
     iFrame "HP1".
     iIntros "!> HP2".
@@ -107,12 +109,14 @@ Section bi.
 
 End bi.
 
+From Perennial Require Import Helpers.NamedProps.
+
 Section tests.
   Context {PROP:bi}.
   Context `{BiAffine PROP}.
   Implicit Types (P Q R:PROP).
 
-  Definition all3 P1 P2 P3 :=
+  Definition all3 P1 P2 P3: PROP :=
     (P1 ∗ P2 ∗ P3)%I.
 
   Theorem example1 P1 P2 P3 :
@@ -125,6 +129,43 @@ Section tests.
     iFrame "HP2".
     iIntros "HP2".
     iApply "Hall3"; iFrame.
+  Qed.
+
+  Definition absr P1 P2 P3 :=
+    ("HP1" ∷ P1 ∗ "#HP2" ∷ □P2 ∗ "HP3" ∷ P3)%I.
+
+  Theorem example2 P1 P2 P3 :
+    absr P1 P2 P3 -∗ P2 ∗ P3 ∗ (P3 -∗ absr P1 P2 P3).
+  Proof.
+    iIntros "H".
+    iDestruct (restore_intro with "H") as "H".
+    (* TODO: iNamed does not unfold this, should probably make this
+    programmable (or just use IntoSep in the iNamed implementation?) *)
+    iDestruct "H" as "(?&?&?&H)"; iNamed.
+    iDestruct (restore_elim with "H") as "#Habsr"; iClear "H".
+    iSplitL ""; [ iFrame "#" | ].
+    iSplitL "HP3"; [ iFrame | ].
+    iIntros "HP3".
+    iApply "Habsr"; iFrame.
+  Qed.
+
+  Definition absr' P1 P2 (Φ: nat → PROP): PROP :=
+    ("#HP1" ∷ □P1 ∗
+    "Hrest" ∷ ∃ n, "Hn1" ∷ Φ (n+1) ∗ "HP2" ∷ P2)%I.
+
+  Theorem example3 P1 P2 Φ :
+    absr' P1 P2 Φ -∗ P2 ∗ (P2 -∗ absr' P1 P2 Φ).
+  Proof.
+    iIntros "H".
+    iDestruct (restore_intro with "H") as "H".
+    (* TODO: more annoying structural destructs that iNameHyp should be doing *)
+    iDestruct "H" as "(?&H)"; iNamed.
+    iDestruct "H" as (n) "(?&?&H)"; iNamed.
+    iDestruct (restore_elim with "H") as "#Habsr"; iClear "H".
+    iSplitL "HP2"; [ iFrame | ].
+    iIntros "HP2".
+    (* this is the real benefit: no need to iFrame/iExist carefully *)
+    iApply ("Habsr" with "[$]").
   Qed.
 
 End tests.
