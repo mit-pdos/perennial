@@ -45,6 +45,14 @@ Definition is_indirect (a: u64) indBlock (blocks : list Block) : iProp Σ :=
   "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> addrs) ++ (EncUInt64 <$> padding))⌝ ∗
   "%Hlen" ∷ ⌜length(addrs) <= indirectNumBlocks⌝ ∗
   "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
+.
+
+Definition is_indirect_block_data (a : u64) (addrs: list u64) (indBlock: Block) (blocks : list Block) : iProp Σ :=
+  ∃ padding,
+  "diskAddr" ∷ int.val a d↦ indBlock ∗
+  "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> addrs) ++ (EncUInt64 <$> padding))⌝ ∗
+  "%Hlen" ∷ ⌜length(addrs) <= indirectNumBlocks⌝ ∗
+  "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
   .
 
 Definition ind_blocks_at_index σ index : list Block :=
@@ -240,12 +248,21 @@ Proof.
   word.
 Qed.
 
-Theorem wp_readIndirect {disk indAddr : u64} :
-  {{{ True }}}
-     readIndirect #disk #indAddr
-  {{{ s indBlockAddrs, RET slice_val s;
-      is_block s 1 indBlockAddrs }}}.
+Theorem wp_readIndirect {l σ} {indirect_s : Slice.t} {numInd : Z} {indAddrs : list u64} {index : nat} {d a : u64}:
+  {{{
+    "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
+    "%Hlen" ∷ ⌜length(indAddrs) = int.nat maxIndirect ∧ int.val numInd <= maxIndirect⌝ ∗
+    "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
+    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs) ∗
+    "%Haddr" ∷ ⌜a = nth index indAddrs 0⌝
+  }}}
+     readIndirect #d #a
+     {{{ s indBlockAddrs indBlock, RET slice_val s;
+         is_indirect_block_data a indBlockAddrs indBlock (ind_blocks_at_index σ index) ∗
+         is_block s 1 indBlock}}}.
 Proof.
+
 Admitted.
 
 Theorem wp_Inode__Read {l γ P} {off: u64} Q :
