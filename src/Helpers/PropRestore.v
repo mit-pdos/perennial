@@ -75,23 +75,17 @@ Section bi.
     iApply HΦ_ex; eauto.
   Qed.
 
-  Theorem restore_finish R P Q :
-    Restore R P Q -∗ P ∗ Restore R emp (P ∗ Q).
+  Global Instance restore_finish_IntoSep R P Q :
+    IntoSep (Restore R P Q) P (Restore R emp (P ∗ Q)) | 30.
   Proof.
     unseal.
+    rewrite /IntoSep.
     iIntros "[$ #HR]".
     rewrite /Restore_def; iFrame.
     rewrite left_id.
     iIntros "!> _".
     iIntros "[? ?]".
     iApply ("HR" with "[$] [$]").
-  Qed.
-
-  Global Instance restore_finish_IntoSep R P Q :
-    IntoSep (Restore R P Q) P (Restore R emp (P ∗ Q)) | 30.
-  Proof.
-    rewrite /IntoSep.
-    iApply restore_finish.
   Qed.
 
   (* not an instance so that applying restore_elim destroys the Restore *)
@@ -139,14 +133,15 @@ Section tests.
   Proof.
     iIntros "H".
     iDestruct (restore_intro with "H") as "H".
-    (* TODO: iNamed does not unfold this, should probably make this
-    programmable (or just use IntoSep in the iNamed implementation?) *)
-    iDestruct "H" as "(?&?&?&H)"; iNamed.
-    iDestruct (restore_elim with "H") as "#Habsr"; iClear "H".
+    iNamed "H".
+    (* TODO: it would be awesome if this was part of [iNamed], but we would need
+    to remember the original name in order to give it to the Restore at the
+    end *)
+    iDestruct (restore_elim with "[$]") as "#H".
     iSplitL ""; [ iFrame "#" | ].
     iSplitL "HP3"; [ iFrame | ].
     iIntros "HP3".
-    iApply "Habsr"; iFrame.
+    iApply "H"; iFrame.
   Qed.
 
   Definition absr' P1 P2 (Φ: nat → PROP): PROP :=
@@ -158,7 +153,6 @@ Section tests.
   Proof.
     iIntros "H".
     iDestruct (restore_intro with "H") as "H".
-    (* TODO: more annoying structural destructs that iNameHyp should be doing *)
     iDestruct "H" as "(?&H)"; iNamed.
     iDestruct "H" as (n) "(?&?&H)"; iNamed.
     iDestruct (restore_elim with "H") as "#Habsr"; iClear "H".

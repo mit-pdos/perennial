@@ -29,6 +29,10 @@ From Perennial.goose_lang Require
 From Perennial.goose_lang.lib Require
      slice.pred_slice.
 
+(* WIP library for restoring destructed props *)
+From Perennial.Helpers Require
+     PropRestore.
+
 (* goose output *)
 From Perennial.goose_lang.examples Require
      goose_unittest simpledb logging2 rfc1813.
