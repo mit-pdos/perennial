@@ -228,16 +228,17 @@ Theorem wp_indNum {off: u64} :
   }}}
     indNum #off
   {{{(v: u64), RET #v;
-      ⌜int.val v = ((int.val off) - maxDirect) `div` indirectNumBlocks⌝
+      ⌜int.val v = (int.val off - maxDirect) `div` indirectNumBlocks⌝
   }}}.
 Proof.
-  iIntros (ϕ) "_ Hϕ".
+  iIntros (ϕ) "%H Hϕ".
   wp_call.
   iApply "Hϕ".
   iPureIntro.
-  unfold indirectNumBlocks. unfold maxDirect.
+  unfold indirectNumBlocks. unfold maxDirect in *.
   word_cleanup.
-Admitted.
+  word.
+Qed.
 
 Theorem wp_readIndirect {disk indAddr : u64} :
   {{{ True }}}
