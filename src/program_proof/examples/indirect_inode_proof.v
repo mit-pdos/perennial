@@ -261,9 +261,10 @@ Theorem wp_readIndirect {l σ} {indirect_s : Slice.t} {numInd : Z} {indAddrs : l
     "%Haddr" ∷ ⌜a = nth index indAddrs 0⌝
   }}}
      readIndirect #d #a
-     {{{ s indBlockAddrs indBlock, RET slice_val s;
-         is_indirect_block_data a indBlockAddrs indBlock (ind_blocks_at_index σ index) ∗
-         is_block s 1 indBlock}}}.
+  {{{ s indBlockAddrs indBlock, RET slice_val s;
+      is_indirect_block_data a indBlockAddrs indBlock (ind_blocks_at_index σ index) ∗
+      is_block s 1 indBlock
+  }}}.
 Proof.
 Admitted.
 
@@ -390,7 +391,7 @@ Proof.
       iDestruct (big_sepL_lookup_acc _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
 
       wp_loadField.
-      (*wp_apply wp_readIndirect.*)
+      (*wp_apply (wp_readIndirect with "[-]").*)
       admit.
     }
 Admitted.
