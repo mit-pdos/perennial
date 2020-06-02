@@ -26,7 +26,7 @@ To compile just run `make` with Coq on your `$PATH`.
 
 ## Compilation times
 
-Perennial takes about 30-40 CPU minutes to compile. Compiling in parallel with `make -j2` (or a higher number, depending on how many cores you have) is significantly faster, and can cut the time down to 10-15 minutes.
+Perennial takes about 50-60 CPU minutes to compile. Compiling in parallel with `make -j4` is significantly faster, and can cut the time down to 12-15 minutes.
 
 Incremental builds are better, after Iris and some core libraries are compiled.
 
@@ -138,12 +138,13 @@ cycle. Note that technically `vok` checking isn't the same as regular compilatio
 
 * `Helpers/`
 
-  - `CountableTactics.v`
-    Automation for producing `Countable` instances (for simple finite types)
   - `Integers.v`
     Wrapper around `coqutil`'s word library for u64, u32, and u8.
   - `Transitions.v`
     A library for writing relations in a monadic, combinator style.
+  - `NamedProps.v`
+    An Iris library for naming hypotheses within definitions and using them to
+    automatically destruct propositions.
   - other files are basically standard library extensions
 
 * `algebra/`
@@ -163,3 +164,5 @@ systems with Perennial](https://www.chajed.io/papers/perennial:sosp2019.pdf)".
 Goose is briefly described in a CoqPL extended abstract and associated talk,
 "[Verifying concurrent Go code in Coq with
 Goose](https://www.chajed.io/papers/goose:coqpl2020.pdf)".
+
+The verified interpreter and test framework for Goose is described in a masters' thesis, "[Waddle: A proven interpreter and test framework for a subset of the Go semantics](https://pdos.csail.mit.edu/papers/gibsons-meng.pdf)".
