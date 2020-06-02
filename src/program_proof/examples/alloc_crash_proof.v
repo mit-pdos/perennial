@@ -506,6 +506,13 @@ Proof.
     iNamed 1. iApply "HΦ"; iFrame.
 Qed.
 
+Theorem block_cinv_free_pred γ a :
+  Ψ a -∗ block_cinv γ a.
+Proof.
+  iIntros "HΨ".
+  iLeft; auto.
+Qed.
+
 Lemma prepare_reserved_block E n n' γ e a Φ Φc:
   (S n < n')%nat →
   language.to_val e = None →
@@ -627,7 +634,7 @@ Proof.
     elem_of_singleton; destruct (decide (i = j)); intuition.
 Qed.
 
-(*** XXX: should probably make this a WPC in case the fupd requires a durable resource *)
+(** XXX: should probably make this a WPC in case the fupd requires a durable resource *)
 Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   ↑N ⊆ E →
   ↑allocN ⊆ E →

@@ -261,7 +261,7 @@ Proof.
   { pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
     lia. }
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
-  wp_apply (wp_loadField_ro with "HmemLock").
+  wp_apply (wp_loadField_ro with "HmemLock"); first by auto.
   iDestruct "Htxns_are" as "#Htxns_are".
   wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs Hown_diskEnd_txn_id γdiskEnd_txn_id1 $His_lock $Hlocked]").
   { iExists _; iFrame "# ∗".

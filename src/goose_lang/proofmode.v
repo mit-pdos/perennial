@@ -135,6 +135,8 @@ Tactic Notation "wp_if_destruct" :=
            | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
            | [ H: bool_decide _ = true |- _ ] => apply bool_decide_eq_true_1 in H
            | [ H: bool_decide _ = false |- _ ] => apply bool_decide_eq_false_1 in H
+           | [ H: negb _ = true |- _ ] => apply negb_true_iff in H; subst
+           | [ H: negb _ = false |- _ ] => apply negb_false_iff in H; subst
            | [ H: LitV _ = LitV _ |- _ ] => apply inv_litv in H
            | [ H: @eq base_lit _ _ |- _ ] => inversion H; subst; clear H
            end;

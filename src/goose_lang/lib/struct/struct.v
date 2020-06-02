@@ -536,22 +536,25 @@ Proof.
   iApply ("HΦ" with "[//]").
 Qed.
 
-Theorem wp_loadField_ro stk l d f fv :
+Theorem wp_loadField_ro {stk E} l d f fv :
+  ↑nroot.@"readonly" ⊆ E →
   {{{ readonly (struct_field_mapsto l 1%Qp d f fv) }}}
-    struct.loadF d f #l @ stk; ⊤
+    struct.loadF d f #l @ stk; E
   {{{ RET fv; True }}}.
 Proof.
-  iIntros (Φ) "#Hro HΦ".
-  iMod (readonly_load with "Hro") as (q) "Hl"; first by set_solver.
+  iIntros (? Φ) "#Hro HΦ".
+  iMod (readonly_load with "Hro") as (q) "Hl"; first by solve_ndisj.
   wp_apply (wp_loadField with "Hl"); iIntros "_".
   iApply ("HΦ" with "[//]").
 Qed.
 
-Lemma tac_wp_loadField_ro Δ s i K l d f v Φ :
+Lemma tac_wp_loadField_ro {E} Δ s i K l d f v Φ :
+  ↑nroot.@"readonly" ⊆ E →
   envs_lookup i Δ = Some (true, readonly (struct_field_mapsto l 1%Qp d f v))%I →
-  envs_entails Δ (WP fill K (Val v) @ s; ⊤ {{ Φ }}) →
-  envs_entails Δ (WP fill K (struct.loadF d f (LitV l)) @ s; ⊤ {{ Φ }}).
+  envs_entails Δ (WP fill K (Val v) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP fill K (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
+  intros ?.
   rewrite envs_entails_eq=> ? HΦ.
   rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_loadField_ro.
   rewrite envs_lookup_split //; simpl.
@@ -661,17 +664,18 @@ Tactic Notation "wp_loadField" :=
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_loadField_ro _ _ _ K))
-      |fail 1 "wp_load: cannot find 'loadField' in" e];
-    [iAssumptionCore
+      |fail 1 "wp_loadField: cannot find 'struct.loadF' in" e];
+    [try solve_ndisj
+    |iAssumptionCore
     |wp_finish]
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_loadField _ _ _ _ _ K))
-      |fail 2 "wp_load: cannot find 'loadField' in" e];
+      |fail 2 "wp_loadField: cannot find 'struct.loadF' in" e];
     [iSolveTC
     |solve_mapsto ()
     |wp_finish]
-  | _ => fail 1 "wp_load: not a 'wp'"
+  | _ => fail 1 "wp_loadField: not a 'wp'"
   end.
 
 Tactic Notation "wp_storeField" :=

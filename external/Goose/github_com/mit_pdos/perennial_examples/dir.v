@@ -49,12 +49,5 @@ Definition Dir__Size: val :=
 
 Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
-    let: ("a", "ok") := alloc.Allocator__Reserve (struct.loadF Dir.S "allocator" "d") in
-    (if: ~ "ok"
-    then #false
-    else
-      disk.Write "a" "b";;
-      let: "ok2" := inode.Inode__Append (SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino") "a" in
-      (if: "ok2" ≠ inode.AppendOk
-      then #false
-      else #true)).
+    let: "i" := SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
+    inode.Inode__Append "i" "b" (struct.loadF Dir.S "allocator" "d").

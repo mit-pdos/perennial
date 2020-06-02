@@ -155,7 +155,11 @@ Proof.
   iApply (HΦc with "[$]").
 Qed.
 
-Tactic Notation "wpc_rec" simple_intropattern(H) := wpc_pure (App (RecV _ _ _) _) H.
+Tactic Notation "wpc_rec" simple_intropattern(H) :=
+  let HAsRecV := fresh in
+  pose proof AsRecV_recv as HAsRecV;
+  wpc_pure (App (RecV _ _ _) _) H;
+  clear HAsRecV.
 Tactic Notation "wpc_let" simple_intropattern(H) := wpc_pure (Rec BAnon (BNamed _) _) H; wpc_rec H.
 
 Ltac wpc_bind_core K :=
@@ -201,12 +205,15 @@ Tactic Notation "wpc_if_destruct" :=
   | |- envs_entails _ (wpc _ _ _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _ _) =>
     destruct cond eqn:?;
              repeat match goal with
+                    (* TODO: factor out common code with wp_if_destruct *)
                     | [ H: (?x <? ?y)%Z = true |- _ ] => apply Z.ltb_lt in H
                     | [ H: (?x <? ?y)%Z = false |- _ ] => apply Z.ltb_ge in H
                     | [ H: (?x <=? ?y)%Z = true |- _ ] => apply Z.leb_le in H
                     | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
                     | [ H: bool_decide _ = true |- _ ] => apply bool_decide_eq_true_1 in H
                     | [ H: bool_decide _ = false |- _ ] => apply bool_decide_eq_false_1 in H
+                    | [ H: Datatypes.negb _ = true |- _ ] => apply negb_true_iff in H; subst
+                    | [ H: Datatypes.negb _ = false |- _ ] => apply negb_false_iff in H; subst
                     end
   end.
 
