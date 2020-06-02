@@ -393,6 +393,13 @@ Definition reserve_fupd E (Palloc: alloc.t → iProp Σ) : iProp Σ :=
      end⌝ -∗
   Palloc σ ={E}=∗ Palloc σ'.
 
+(* free really means unreserve (we don't have a way to unallocate something
+marked used) *)
+Definition free_fupd E (Palloc: alloc.t → iProp Σ) (a:u64) : iProp Σ :=
+  ∀ (σ: alloc.t),
+    ⌜σ !! a = Some block_reserved⌝ -∗
+  Palloc σ ={E}=∗ Palloc (<[a:=block_free]> σ).
+
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
 
 Theorem wpc_Inode__Append {k E2}
@@ -406,8 +413,9 @@ Theorem wpc_Inode__Append {k E2}
   ↑inodeN ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
   {{{ "Hinode" ∷ is_inode l γ P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
-      "Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
+      "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
       "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
+      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑Ncrash allocN ∖ ↑allocN) Palloc a) ∗
       "Hfupd" ∷ (∀ σ σ',
           ⌜∃ addrs', σ' = set inode.blocks (λ bs, bs ++ [b0])
                               (set inode.addrs (addrs' ∪.) σ)⌝ -∗
@@ -441,27 +449,28 @@ Proof.
     iSplit; first by prove_crash1.
     iIntros "Hb Hreserved".
     iDeexHyp "Hb".
-    iAssert (□ ∀ b0, int.val a d↦ b0 ∗ reserved_block_in_prep Palloc allocN γalloc n a -∗
-                      block_cinv Ψ γalloc a)%I as "#Hbc".
-    { iIntros "!>" (b') "[Hb Hreserved]".
+    iAssert (□ ∀ b0 R, int.val a d↦ b0 ∗
+                       reserved_block_in_prep Palloc allocN γalloc n a ∗
+                       ((True -∗ Φc) ∧ R) -∗
+                      Φc ∗ block_cinv Ψ γalloc a)%I as "#Hbc".
+    { iIntros "!>" (b' R) "(Hb&Hreserved&HΦ)".
+      iSplitL "HΦ".
+      { crash_case; auto. }
       iApply block_cinv_free_pred.
       iExists _; iFrame. }
+    Ltac prove_crash2 :=
+      iApply ("Hbc" with "[$]").
     wpc_apply (wpc_Write with "[Hb $Hbdata]").
     { iExists _; iFrame. }
     iSplit.
     { iIntros "Hb".
       iDestruct "Hb" as (b') "(Hb&Hbdata)".
-      iSplitL "HΦ"; first by prove_crash1.
-      iApply ("Hbc" with "[$]"). }
+      prove_crash2. }
     iIntros "!> [Hda _]".
 
-    wpc_pures.
-    { iSplitL "HΦ"; first by prove_crash1.
-      iApply ("Hbc" with "[$]"). }
+    wpc_pures; first by prove_crash2.
     wpc_bind (lock.acquire _).
-    wpc_frame "Hreserved Hda HΦ".
-    { iSplitL "HΦ"; first by prove_crash1.
-      iApply ("Hbc" with "[$]"). }
+    wpc_frame "Hreserved Hda HΦ"; first by prove_crash2.
     wp_loadField.
     wp_apply (acquire_spec' with "Hlock"); first by solve_ndisj.
     iIntros "(His_locked&Hlk)"; iNamed "Hlk".
@@ -469,38 +478,50 @@ Proof.
     iNamed "Hdurable".
     iNamed 1.
 
-    wpc_pures.
-    { iSplitL "HΦ"; first by prove_crash1.
-      iApply ("Hbc" with "[$]"). }
+    wpc_pures; first by prove_crash2.
     wpc_bind (slice.len _ ≥ _)%E.
-    wpc_frame "Hreserved Hda HΦ".
-    { iSplitL "HΦ"; first by prove_crash1.
-      iApply ("Hbc" with "[$]"). }
+    wpc_frame "Hreserved Hda HΦ"; first by prove_crash2.
     wp_loadField.
     iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
     iDestruct (big_sepL2_length with "Hdata") as %Hlen2.
     autorewrite with len in Hlen1.
     wp_apply wp_slice_len; wp_pures.
     iNamed 1.
+    wpc_if_destruct.
+    + (* don't have space, need to return block *)
+      wpc_pures; first by prove_crash2.
+      wpc_frame "Hreserved Hda HΦ"; first by prove_crash2.
+      wp_apply (wp_Free _ _ _ emp with "[$Halloc]").
+      { admit. (* TODO: not true, Ncrash should be independent of invariant namespace *) }
+      { admit. (* need assumption *) }
+      { auto. }
+      { iSplitR.
+        { admit. (* XXX: don't have reserved_block because it's wpc_framed out -
+        making wp_Free a wpc probably solves this problem *) }
+        iIntros (σ' Hreserved) "HP".
+        iMod ("Hfree_fupd" with "[//] HP") as "$".
+        auto. }
+      iIntros "_".
+      wp_pures.
+      wp_loadField.
+      wp_apply (release_spec' with "[$Hlock $His_locked Hhdr addrs Haddrs Hdata HP]"); first by auto.
+      { iExists _; iFrame.
+        iExists _, _; iFrame "∗ %".
+        iExists _, _; iFrame "∗ %". }
+      wp_pures.
+      iNamed 1.
+      (* this goals are entirely in the wrong order (should go block_cinv, then
+      Φc, then Φ) *)
+      iSplitR "Hreserved Hda".
+      { iSplit.
+        - iRight in "HΦ".
+          iApply "HΦ"; auto.
+        - prove_crash1. }
+      iApply block_cinv_free_pred.
+      iExists _; iFrame.
+    + wpc_pures; first by prove_crash2.
 
     (*
-  wp_if_destruct.
-  - wp_loadField.
-    iMod ("Hfupd" $! σ σ AppendFull with "[%] [% //] HP") as "[HP HQ]".
-    { split; auto.
-      split; auto.
-      intros.
-      rewrite /inode.size.
-      rewrite -Hlen2 Hlen1.
-      word. }
-    wp_apply (release_spec with "[$Hlock $His_locked Hhdr addr addrs Haddrs Hdata HP]").
-    { iExists _; iFrame.
-      iExists _, _; iFrame "∗ %".
-      iExists _, _; iFrame "∗ %". }
-    wp_pures.
-    change #(U8 2) with (to_val AppendFull).
-    iApply "HΦ"; iFrame.
-    rewrite bool_decide_eq_false_2; auto.
   - wp_loadField.
     wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
     { iPureIntro.
