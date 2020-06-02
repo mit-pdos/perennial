@@ -12,10 +12,10 @@ From Perennial.Helpers Require Import List.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.program_proof Require Import disk_lib.
 
-Definition MaxBlocks: Z := 5620.
 Definition maxDirect: Z := 500.
 Definition maxIndirect: Z := 10.
 Definition indirectNumBlocks: Z := 512.
+Definition MaxBlocks: Z := maxDirect + maxIndirect*indirectNumBlocks.
 
 Module inode.
   Record t :=
@@ -63,8 +63,11 @@ Definition is_inode_durable_with σ (dirAddrs indAddrs: list u64) (sz: u64) (num
   : iProp Σ  :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs))⌝ ∗
-    "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧ length(indAddrs) = int.nat maxIndirect ∧ int.val numInd <= maxIndirect ∧
-    int.val sz < MaxBlocks ∧ int.val sz = length (σ.(inode.blocks))⌝ ∗
+    "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧
+      length(indAddrs) = int.nat maxIndirect ∧
+      (int.val sz > maxDirect -> int.val numInd = Z.add ((int.val sz - maxDirect) `div` indirectNumBlocks) 1) ∧
+      int.val sz < MaxBlocks ∧
+      int.val sz = length (σ.(inode.blocks))⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
     (* Double check: we can only state ptsto facts about inode blocks that exist? *)
     "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
@@ -232,7 +235,7 @@ Abort. *)
 
 Theorem wp_indNum {off: u64} :
   {{{
-       ⌜int.val off > maxDirect⌝
+       ⌜int.val off >= maxDirect⌝
   }}}
     indNum #off
   {{{(v: u64), RET #v;
@@ -262,7 +265,6 @@ Theorem wp_readIndirect {l σ} {indirect_s : Slice.t} {numInd : Z} {indAddrs : l
          is_indirect_block_data a indBlockAddrs indBlock (ind_blocks_at_index σ index) ∗
          is_block s 1 indBlock}}}.
 Proof.
-
 Admitted.
 
 Theorem wp_Inode__Read {l γ P} {off: u64} Q :
@@ -351,9 +353,44 @@ Proof.
       iExists _; iFrame.
     }
 
+
     (* Is indirect block *)
     {
       assert (int.val off >= int.val 500) as Hoff500 by word.
+      assert (int.val sz > 500) as Hsz by word.
+
+      wp_apply wp_indNum.
+      { iPureIntro. auto. }
+
+      iIntros (v) "%Hv".
+
+      destruct (list_lookup_lt _ (take (int.nat numInd) indAddrs) (int.nat v)) as [addr Hlookup].
+      {
+        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+        rewrite firstn_length Hv HindirLen.
+        rewrite (HnumInd Hsz).
+        assert (((int.val sz - 500) `div` 512) < 10) as H.
+        {
+          apply (Zdiv_lt_upper_bound (int.val sz - 500) 512 10); lia.
+        }
+        rewrite Min.min_l; try word.
+        assert (((int.val off - 500) `div` 512) <= ((int.val sz - 500) `div` 512)) as H'.
+        {
+          apply Z_div_le; lia.
+
+        }
+        word.
+      }
+      wp_loadField.
+      iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
+      wp_apply (wp_SliceGet _ _ _ _ 1 (take (int.nat numInd) indAddrs) _ addr with "[Hindirect_small]"); iFrame; auto.
+
+      iIntros "Hindirect_small".
+      iDestruct (is_slice_split with "[$Hindirect_small $Hindirect]") as "Hindirect".
+      iDestruct (big_sepL_lookup_acc _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
+
+      wp_loadField.
+      (*wp_apply wp_readIndirect.*)
       admit.
     }
 Admitted.
