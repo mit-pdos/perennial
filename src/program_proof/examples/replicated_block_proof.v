@@ -20,12 +20,17 @@ Section goose.
 
   Implicit Types (addr: u64) (σ: rblock.t) (γ: gname).
 
+  Definition addr_wf (addr: u64) := int.val addr+1 < 2^64.
+  Hint Unfold addr_wf : word.
+
   Definition rblock_linv addr σ : iProp Σ :=
-    ("Hprimary" ∷ int.val addr d↦ σ ∗
+    ("%Haddr_wf" ∷ ⌜addr_wf addr⌝ ∗
+     "Hprimary" ∷ int.val addr d↦ σ ∗
      "Hbackup" ∷ (int.val addr + 1) d↦ σ)%I.
 
   Definition rblock_cinv addr σ :=
-    ("Hprimary" ∷ int.val addr d↦ σ ∗
+    ("%Haddr_wf" ∷ ⌜addr_wf addr⌝ ∗
+     "Hprimary" ∷ int.val addr d↦ σ ∗
      "Hbackup" ∷ ∃ b0, (int.val addr + 1) d↦ b0)%I.
 
   Instance rblock_crash addr σ :
@@ -34,53 +39,93 @@ Section goose.
     rewrite /IntoCrash.
     iNamed 1.
     rewrite /rblock_cinv.
-    iFrame "Hprimary".
+    iFrame "% Hprimary".
     iIntros (???) "?".
     iExists _; iFrame.
   Qed.
 
   Definition is_rblock (γ: gname) (l: loc) addr : iProp Σ :=
     ∃ (d_ref m_ref: loc),
-      "d" ∷ readonly (l ↦[RepBlock.S :: "d"] #d_ref) ∗
-      "addr" ∷ readonly (l ↦[RepBlock.S :: "addr"] #addr) ∗
-      "m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_ref) ∗
-      is_lock N γ #m_ref (∃ σ, rblock_linv addr σ ∗ P σ).
+      "#d" ∷ readonly (l ↦[RepBlock.S :: "d"] #d_ref) ∗
+      "#addr" ∷ readonly (l ↦[RepBlock.S :: "addr"] #addr) ∗
+      "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_ref) ∗
+      "#Hlock" ∷ is_lock N γ #m_ref (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ).
 
   Definition block0: Block :=
     list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
 
   Theorem init_zero_cinv addr :
+    addr_wf addr →
     int.val addr d↦ block0 ∗ (int.val addr + 1) d↦ block0 -∗
     rblock_cinv addr block0.
   Proof.
-    iIntros "(Hp&Hb)".
+    iIntros (Haddr_wf) "(Hp&Hb)".
+    iFrame "%".
     iSplitL "Hp".
     - iExact "Hp".
     - iExists block0; iExact "Hb".
   Qed.
 
   Theorem wp_Open d_ref addr σ :
+    int.val addr + 1 < 2^64 →
     {{{ rblock_cinv addr σ }}}
       Open #d_ref #addr
     {{{ γ (l:loc), RET #l; is_rblock γ l addr }}}.
   Proof.
   Admitted.
 
-  Theorem wp_Read (Q: Block → iProp Σ) γ l addr (primary: bool) :
+  Theorem wp_RepBlock__Read (Q: Block → iProp Σ) γ l addr (primary: bool) :
     {{{ "Hrb" ∷ is_rblock γ l addr ∗
         "Hfupd" ∷ (∀ σ, P σ ={⊤}=∗ P σ ∗ Q σ) }}}
-      Read #l #primary
+      RepBlock__Read #l #primary
     {{{ s b, RET (slice_val s); is_block s 1 b ∗ Q b }}}.
   Proof.
+    iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
+    iNamed "Hrb".
+    wp_call.
+    wp_loadField.
+    wp_apply (acquire_spec with "Hlock").
+    iIntros "(His_locked&Hlk)"; iNamed "Hlk".
+    wp_pures.
   Admitted.
 
-  Theorem wp_Write (Q: iProp Σ) γ l addr (s: Slice.t) q (b: Block) :
+  Theorem wp_RepBlock__Write (Q: iProp Σ) γ l addr (s: Slice.t) q (b: Block) :
     {{{ "Hrb" ∷ is_rblock γ l addr ∗
         "Hb" ∷ is_block s q b ∗
         "Hfupd" ∷ (∀ σ σ', P σ ={⊤}=∗ P σ' ∗ Q) }}}
-      Write #l (slice_val s)
+      RepBlock__Write #l (slice_val s)
     {{{ RET #(); Q }}}.
   Proof.
-  Admitted.
+    iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
+    iNamed "Hrb".
+    wp_call.
+    wp_loadField.
+    wp_apply (acquire_spec with "Hlock").
+    iIntros "(His_locked&Hlk)"; iNamed "Hlk".
+    wp_pures.
+    iNamed "Hlkinv".
+    wp_loadField.
+    wp_apply (wp_Write_fupd ⊤ (int.val addr d↦ b ∗ P b ∗ Q) with "[Hb Hprimary Hfupd HP]").
+    { iFrame "Hb".
+      iMod ("Hfupd" with "HP") as "[$ $]".
+      iExists _; iFrame.
+      iIntros "!> !> Hp".
+      by iFrame. }
+    iIntros "(Hb&Hprimary&HP&HQ)".
+    wp_loadField.
+    wp_apply (wp_Write with "[Hb Hbackup]").
+    { iExists _; iFrame.
+      iExactEq "Hbackup".
+      f_equal.
+      word. }
+    iIntros "(Hbackup&Hb)".
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlock $His_locked HP Hprimary Hbackup]").
+    { iExists _; iFrame "% ∗".
+      iExactEq "Hbackup".
+      rewrite /named.
+      repeat (f_equal; try word). }
+    iApply ("HΦ" with "[$]").
+  Qed.
 
 End goose.
