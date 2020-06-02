@@ -100,6 +100,21 @@ Section goose.
     iExists _, _; iFrame.
   Qed.
 
+  Theorem wp_RepBlock__readAddr addr l (primary: bool) :
+    {{{ readonly (l ↦[RepBlock.S :: "addr"] #addr) }}}
+      RepBlock__readAddr #l #primary
+    {{{ (a: u64), RET #a; ⌜a = addr ∨ a = word.add addr 1⌝ }}}.
+  Proof.
+    iIntros (Φ) "#addr HΦ".
+    wp_call.
+    wp_if_destruct.
+    - wp_loadField.
+      iApply "HΦ"; auto.
+    - wp_loadField.
+      wp_pures.
+      iApply "HΦ"; auto.
+  Qed.
+
   Theorem wp_RepBlock__Read (Q: Block → iProp Σ) γ l addr (primary: bool) :
     {{{ "Hrb" ∷ is_rblock γ l addr ∗
         "Hfupd" ∷ (∀ σ, P σ ={⊤}=∗ P σ ∗ Q σ) }}}
@@ -113,7 +128,25 @@ Section goose.
     wp_apply (acquire_spec with "Hlock").
     iIntros "(His_locked&Hlk)"; iNamed "Hlk".
     wp_pures.
-  Admitted.
+    wp_apply (wp_RepBlock__readAddr with "addr").
+    iIntros (addr' Haddr'_eq).
+    iAssert (int.val addr' d↦ σ ∗
+                   (int.val addr' d↦ σ -∗ rblock_linv addr σ))%I
+      with "[Hlkinv]" as "(Haddr'&Hlkinv)".
+    { iNamed "Hlkinv".
+      iFrame "%".
+      destruct Haddr'_eq; subst; iFrame "% ∗"; auto. }
+    wp_apply (wp_Read with "Haddr'").
+    iIntros (s) "(Haddr'&Hb)".
+    iDestruct (is_slice_to_small with "Hb") as "Hb".
+    iSpecialize ("Hlkinv" with "Haddr'").
+    wp_loadField.
+    iMod ("Hfupd" with "HP") as "[HP HQ]".
+    wp_apply (release_spec with "[$Hlock $His_locked Hlkinv HP]").
+    { iExists _; iFrame. }
+    wp_pures.
+    iApply "HΦ"; iFrame.
+  Qed.
 
   Theorem wp_RepBlock__Write (Q: iProp Σ) γ l addr (s: Slice.t) q (b: Block) :
     {{{ "Hrb" ∷ is_rblock γ l addr ∗
