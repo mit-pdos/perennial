@@ -450,10 +450,9 @@ Proof.
     iIntros "Hb Hreserved".
     iDeexHyp "Hb".
     iAssert (□ ∀ b0 R, int.val a d↦ b0 ∗
-                       reserved_block_in_prep Palloc allocN γalloc n a ∗
                        ((True -∗ Φc) ∧ R) -∗
                       Φc ∗ block_cinv Ψ γalloc a)%I as "#Hbc".
-    { iIntros "!>" (b' R) "(Hb&Hreserved&HΦ)".
+    { iIntros "!>" (b' R) "(Hb&HΦ)".
       iSplitL "HΦ".
       { crash_case; auto. }
       iApply block_cinv_free_pred.
@@ -470,7 +469,7 @@ Proof.
 
     wpc_pures; first by prove_crash2.
     wpc_bind (lock.acquire _).
-    wpc_frame "Hreserved Hda HΦ"; first by prove_crash2.
+    wpc_frame "Hda HΦ"; first by prove_crash2.
     wp_loadField.
     wp_apply (acquire_spec' with "Hlock"); first by solve_ndisj.
     iIntros "(His_locked&Hlk)"; iNamed "Hlk".
@@ -480,7 +479,7 @@ Proof.
 
     wpc_pures; first by prove_crash2.
     wpc_bind (slice.len _ ≥ _)%E.
-    wpc_frame "Hreserved Hda HΦ"; first by prove_crash2.
+    wpc_frame "Hda HΦ"; first by prove_crash2.
     wp_loadField.
     iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
     iDestruct (big_sepL2_length with "Hdata") as %Hlen2.
@@ -490,14 +489,13 @@ Proof.
     wpc_if_destruct.
     + (* don't have space, need to return block *)
       wpc_pures; first by prove_crash2.
-      wpc_frame "Hreserved Hda HΦ"; first by prove_crash2.
-      wp_apply (wp_Free _ _ _ emp with "[$Halloc]").
+      wpc_frame "Hda HΦ"; first by prove_crash2.
+      wp_apply (wp_Free _ _ _ emp with "[$Halloc Hreserved]").
       { admit. (* TODO: not true, Ncrash should be independent of invariant namespace *) }
       { admit. (* need assumption *) }
       { auto. }
-      { iSplitR.
-        { admit. (* XXX: don't have reserved_block because it's wpc_framed out -
-        making wp_Free a wpc probably solves this problem *) }
+      { iSplitL "Hreserved".
+        { admit. (* XXX: can I go back to being a reserved_block? *) }
         iIntros (σ' Hreserved) "HP".
         iMod ("Hfree_fupd" with "[//] HP") as "$".
         auto. }
@@ -512,7 +510,7 @@ Proof.
       iNamed 1.
       (* this goals are entirely in the wrong order (should go block_cinv, then
       Φc, then Φ) *)
-      iSplitR "Hreserved Hda".
+      iSplitR "Hda".
       { iSplit.
         - iRight in "HΦ".
           iApply "HΦ"; auto.
