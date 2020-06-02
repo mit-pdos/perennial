@@ -20,19 +20,12 @@ Section goose.
 
   Implicit Types (addr: u64) (σ: rblock.t) (γ: gname).
 
-  (* TODO: no longer needed, now that we say the second block is at word.add
-  addr 1 *)
-  Definition addr_wf (addr: u64) := int.val addr+1 < 2^64.
-  Hint Unfold addr_wf : word.
-
   Definition rblock_linv addr σ : iProp Σ :=
-    ("%Haddr_wf" ∷ ⌜addr_wf addr⌝ ∗
-     "Hprimary" ∷ int.val addr d↦ σ ∗
+    ("Hprimary" ∷ int.val addr d↦ σ ∗
      "Hbackup" ∷ int.val (word.add addr 1) d↦ σ)%I.
 
   Definition rblock_cinv addr σ :=
-    ("%Haddr_wf" ∷ ⌜addr_wf addr⌝ ∗
-     "Hprimary" ∷ int.val addr d↦ σ ∗
+    ("Hprimary" ∷ int.val addr d↦ σ ∗
      "Hbackup" ∷ ∃ b0, int.val (word.add addr 1) d↦ b0)%I.
 
   Instance rblock_crash addr σ :
@@ -41,7 +34,7 @@ Section goose.
     rewrite /IntoCrash.
     iNamed 1.
     rewrite /rblock_cinv.
-    iFrame "% Hprimary".
+    iFrame "Hprimary".
     iIntros (???) "?".
     iExists _; iFrame.
   Qed.
@@ -57,24 +50,21 @@ Section goose.
     list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
 
   Theorem init_zero_cinv addr :
-    addr_wf addr →
     int.val addr d↦ block0 ∗ int.val (word.add addr 1) d↦ block0 -∗
     rblock_cinv addr block0.
   Proof.
-    iIntros (Haddr_wf) "(Hp&Hb)".
-    iFrame "%".
+    iIntros "(Hp&Hb)".
     iSplitL "Hp".
     - iExact "Hp".
     - iExists block0; iExact "Hb".
   Qed.
 
   Theorem wp_Open (d_ref: loc) addr σ :
-    int.val addr + 1 < 2^64 →
     {{{ rblock_cinv addr σ ∗ P σ }}}
       Open #d_ref #addr
     {{{ γ (l:loc), RET #l; is_rblock γ l addr }}}.
   Proof.
-    iIntros (Hbound Φ) "(Hinv&HP) HΦ"; iNamed "Hinv".
+    iIntros (Φ) "(Hinv&HP) HΦ"; iNamed "Hinv".
     wp_call.
     wp_apply (wp_Read with "Hprimary").
     iIntros (s) "(Hprimary&Hb)".
@@ -91,7 +81,7 @@ Section goose.
     iDestruct (struct_fields_split with "Hrb") as "(d&addr&m&_)".
     iMod (alloc_lock N ⊤ _ _ (∃ σ, rblock_linv addr σ ∗ P σ)%I
             with "Hfree_lock [Hprimary Hbackup HP]") as "Hlock".
-    { iExists _; iFrame "% ∗". }
+    { iExists _; iFrame. }
     iMod (readonly_alloc_1 with "d") as "d".
     iMod (readonly_alloc_1 with "addr") as "addr".
     iMod (readonly_alloc_1 with "m") as "m".
@@ -134,8 +124,7 @@ Section goose.
                    (int.val addr' d↦ σ -∗ rblock_linv addr σ))%I
       with "[Hlkinv]" as "(Haddr'&Hlkinv)".
     { iNamed "Hlkinv".
-      iFrame "%".
-      destruct Haddr'_eq; subst; iFrame "% ∗"; auto. }
+      destruct Haddr'_eq; subst; iFrame; auto. }
     wp_apply (wp_Read with "Haddr'").
     iIntros (s) "(Haddr'&Hb)".
     iDestruct (is_slice_to_small with "Hb") as "Hb".
@@ -177,7 +166,7 @@ Section goose.
     iIntros "(Hbackup&Hb)".
     wp_loadField.
     wp_apply (release_spec with "[$Hlock $His_locked HP Hprimary Hbackup]").
-    { iExists _; iFrame "% ∗". }
+    { iExists _; iFrame. }
     iApply ("HΦ" with "[$]").
   Qed.
 
