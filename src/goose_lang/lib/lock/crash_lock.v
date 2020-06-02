@@ -74,22 +74,20 @@ Section proof.
     (k' < k)%nat →
     □ (R -∗ Rcrash) ∗
     R ∗
-    Φc ∗
     is_free_lock γ lk ∗
-    (Φc -∗ is_crash_lock (LVL k') γ #lk R Rcrash -∗
-          WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Φc }}) -∗
-    WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ Rcrash }}.
+    (is_crash_lock (LVL k') γ #lk R Rcrash -∗
+          WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Rcrash -∗ Φc }}) -∗
+    WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc }}.
   Proof using ext_tys.
-    iIntros (?) "(#HRcrash&HR&HΦc&Hfree&Hwp)".
+    iIntros (?) "(#HRcrash&HR&Hfree&Hwp)".
     iMod (na_crash_inv_init Ncrash (LVL k') ⊤) as (Γ) "Hinv".
     iMod (na_crash_inv_alloc Γ Ncrash (LVL k') ⊤ Rcrash R with "Hinv [HR] HRcrash") as
         (bset) "(Hfull&Hval&Hpending)".
     { set_solver. }
     { iFrame "HR". }
-    iApply (wpc_na_crash_inv_init _ _ k k' Ncrash E with "[-]"); try assumption.
-    iFrame.
+    iApply (wpc_na_crash_inv_init_wand _ _ k k' Ncrash E with "Hpending [-]"); try assumption.
     iMod (alloc_crash_lock' with "HRcrash Hfree Hfull Hval") as (??) "Hlk".
-    iApply ("Hwp" with "[$]"). rewrite /is_crash_lock. iExists _, _. iFrame.
+    iApply ("Hwp" with "[Hlk]"). rewrite /is_crash_lock. iExists _, _. iFrame.
   Qed.
 
   Lemma acquire_spec k E γ (R Rcrash : iProp Σ) lk:

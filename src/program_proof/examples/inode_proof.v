@@ -380,11 +380,6 @@ Proof.
   iApply ("Himpl" with "[//]").
 Qed.
 
-Ltac wpc_call :=
-  let Hcrash := fresh "Hcrash" in
-  wpc_rec Hcrash;
-  [ crash_case .. | wpc_pure _ Hcrash; [crash_case ..  | repeat (wpc_pure _ Hcrash; []); clear Hcrash] ].
-
 Definition reserve_fupd E (Palloc: alloc.t → iProp Σ) : iProp Σ :=
   ∀ (σ σ': alloc.t) ma,
     ⌜match ma with

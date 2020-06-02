@@ -162,6 +162,11 @@ Tactic Notation "wpc_rec" simple_intropattern(H) :=
   clear HAsRecV.
 Tactic Notation "wpc_let" simple_intropattern(H) := wpc_pure (Rec BAnon (BNamed _) _) H; wpc_rec H.
 
+Ltac wpc_call :=
+  let Hcrash := fresh "Hcrash" in
+  wpc_rec Hcrash;
+  [ crash_case .. | wpc_pure _ Hcrash; [crash_case ..  | repeat (wpc_pure _ Hcrash; []); clear Hcrash] ].
+
 Ltac wpc_bind_core K :=
   lazymatch eval hnf in K with
   | [] => idtac
