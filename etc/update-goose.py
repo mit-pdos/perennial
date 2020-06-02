@@ -144,6 +144,7 @@ def main():
                 )
     if examples_dir is not None:
         pkgs = [
+            "replicated_block",
             "alloc",
             "inode",
             "indirect_inode",
