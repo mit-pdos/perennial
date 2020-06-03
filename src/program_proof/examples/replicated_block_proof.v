@@ -21,7 +21,7 @@ Section goose.
   Let N := nroot.@"replicated_block".
   Context (P: rblock.t → iProp Σ).
 
-  Implicit Types (addr: u64) (σ: rblock.t) (γ: gname).
+  Implicit Types (l:loc) (addr: u64) (σ: rblock.t) (γ: gname).
 
   Definition rblock_linv addr σ : iProp Σ :=
     ("Hprimary" ∷ int.val addr d↦ σ ∗
@@ -234,23 +234,33 @@ Section goose.
     iApply "HΦ"; iFrame.
   Admitted.
 
-  Theorem wp_RepBlock__Write (Q: iProp Σ) γ l k' addr (s: Slice.t) q (b: Block) :
-    {{{ "Hrb" ∷ is_rblock γ l k' addr ∗
+  Theorem wpc_RepBlock__Write (Q: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
+    (S k < k')%nat →
+    {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
         "Hfupd" ∷ (∀ σ σ', P σ ={⊤}=∗ P σ' ∗ Q) }}}
-      RepBlock__Write #l (slice_val s)
-    {{{ RET #(); Q }}}.
+      RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
+    {{{ RET #(); Q }}}
+    {{{ (* TODO: fix this to restore any durable resources used in fupd, as
+    usual *)
+         True }}}.
   Proof.
-    iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hrb".
-    wp_call.
+    wpc_call; auto.
+    wpc_bind_seq.
+    wpc_frame "HΦ"; first by crash_case.
+    wp_loadField.
+    wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+    iIntros "His_locked". iDestruct "His_locked" as (γlk) "His_locked".
+    iNamed 1.
+    wpc_pures; auto.
+    wpc_bind_seq.
+    iApply (use_crash_locked with "His_locked"); auto.
+    iSplitL; first by crash_case.
+    iNamed 1.
+
     (*
-    wp_loadField.
-    wp_apply (acquire_spec with "Hlock").
-    iIntros "(His_locked&Hlk)"; iNamed "Hlk".
-    wp_pures.
-    iNamed "Hlkinv".
-    wp_loadField.
     wp_apply (wp_Write_fupd ⊤ (int.val addr d↦ b ∗ P b ∗ Q) with "[Hb Hprimary Hfupd HP]").
     { iFrame "Hb".
       iMod ("Hfupd" with "HP") as "[$ $]".
