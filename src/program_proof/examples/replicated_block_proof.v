@@ -101,7 +101,7 @@ Section goose.
     { iExists _; iFrame. }
     iSplit; [ | iNext ].
     { iIntros "Hpost".
-      iDestruct "Hpost" as (b') "(Hbackup&_)".
+      iDestruct "Hpost" as (b') "Hbackup".
       crash_case; prove_crash1. }
     iIntros "(Hbackup&_)".
 

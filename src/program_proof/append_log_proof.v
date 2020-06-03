@@ -96,8 +96,7 @@ Proof.
     iApply (block_array_to_slice with "Hb"). }
   iSplit.
   - iIntros "Hcrash".
-    iDestruct "Hcrash" as "[Hd0 _]".
-    iDestruct "Hd0" as "[Hd0 | Hd0]".
+    iDestruct "Hcrash" as "[Hd0 | Hd0]".
     + iApply "HΦ".
       iLeft.
       iExists _; by iFrame.
@@ -427,10 +426,10 @@ Proof.
 Qed.
 
 Theorem wpc_WriteArray stk k E1 E2 l bs q (s: Slice.t) b (off: u64) :
-  {{{ l d↦∗ bs ∗ is_slice_small s byteT q (Block_to_vals b) ∗ ⌜0 <= int.val off - l < Z.of_nat (length bs)⌝ }}}
+  {{{ l d↦∗ bs ∗ is_block s q b ∗ ⌜0 <= int.val off - l < Z.of_nat (length bs)⌝ }}}
     Write #off (slice_val s) @ stk; k; E1; E2
-  {{{ RET #(); l d↦∗ <[Z.to_nat (int.val off - l) := b]> bs ∗ is_slice_small s byteT q (Block_to_vals b) }}}
-  {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
+  {{{ RET #(); l d↦∗ <[Z.to_nat (int.val off - l) := b]> bs ∗ is_block s q b }}}
+  {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ }}}.
 Proof.
   iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ".
   destruct (list_lookup_lt _ bs (Z.to_nat (int.val off - l))) as [b0 Hlookup].
@@ -441,7 +440,7 @@ Proof.
   - iExists _; iFrame.
   - iSplit.
     + iIntros "Hcrash"; crash_case.
-      iDestruct "Hcrash" as (b') "(Hoff&Hs)".
+      iDestruct "Hcrash" as (b') "Hoff".
       iSpecialize ("Hda_rest" with "Hoff").
       iExists _; iFrame.
       iPureIntro.
@@ -503,7 +502,7 @@ Proof.
     + iSplit.
       * len.
         iIntros "Hcrash".
-        iDestruct "Hcrash" as (bs') "(Hd&%&_)".
+        iDestruct "Hcrash" as (bs') "(Hd&%)".
         crash_case.
         iExists _; iFrame.
         iPureIntro.
