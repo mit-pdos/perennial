@@ -238,7 +238,7 @@ Section goose.
     (S k < k')%nat →
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
-        "Hfupd" ∷ (∀ σ σ', P σ ={⊤}=∗ P σ' ∗ Q) }}}
+        "Hfupd" ∷ (∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) }}}
       RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ RET #(); Q }}}
     {{{ (* TODO: fix this to restore any durable resources used in fupd, as
@@ -257,27 +257,74 @@ Section goose.
     wpc_pures; auto.
     wpc_bind_seq.
     iApply (use_crash_locked with "His_locked"); auto.
-    iSplitL; first by crash_case.
+    iSplit; first by crash_case.
     iNamed 1.
-
-    (*
-    wp_apply (wp_Write_fupd ⊤ (int.val addr d↦ b ∗ P b ∗ Q) with "[Hb Hprimary Hfupd HP]").
-    { iFrame "Hb".
-      iMod ("Hfupd" with "HP") as "[$ $]".
+    wpc_call.
+    { iSplitL "HΦ"; first by crash_case.
       iExists _; iFrame.
-      iIntros "!> !> Hp".
-      by iFrame. }
-    iIntros "(Hb&Hprimary&HP&HQ)".
+      iApply rblock_linv_to_cinv; iFrame. }
+    iNamed "Hlkinv".
+    wpc_bind (struct.loadF _ _ _).
+    wpc_frame "HΦ Hprimary Hbackup HP".
+    { iSplitL "HΦ"; first by crash_case.
+      iExists _; iFrame "HP".
+      iApply rblock_linv_to_cinv; iFrame. }
     wp_loadField.
-    wp_apply (wp_Write with "[Hb Hbackup]").
+    iNamed 1.
+    wpc_apply (wpc_Write_fupd (⊤ ∖ ↑N) ("Hprimary" ∷ int.val addr d↦ b ∗
+                                        "HP" ∷ P b ∗
+                                        "HQ" ∷ Q)
+              with "[$Hb Hprimary Hfupd HP]").
+    { iSplit; [ iNamedAccu | ].
+      iModIntro.
+      iExists _; iFrame.
+      iNext.
+      iIntros "Hda".
+      iMod ("Hfupd" with "HP") as "[$ $]".
+      iModIntro; auto. }
+    iSplit; [ | iNext ].
+    { iIntros "Hpost".
+      iSplitL "HΦ"; first by crash_case.
+      iDestruct "Hpost" as "[Hpost|Hpost]"; iNamed "Hpost".
+      - iExists _; iFrame "HP".
+        iApply rblock_linv_to_cinv; iFrame.
+      - iExists _; iFrame.
+        iExists _; iFrame. }
+    iIntros "(Hb&Hpost)"; iNamed "Hpost".
+
+    wpc_pures.
+    { iSplitL "HΦ"; first by crash_case.
+      iExists _; iFrame.
+      iExists _; iFrame. }
+    wpc_bind (struct.loadF _ _ _).
+    wpc_frame "HΦ Hprimary Hbackup HP".
+    { iSplitL "HΦ"; first by crash_case.
+      iExists _; iFrame.
+      iExists _; iFrame. }
+    wp_loadField.
+    iNamed 1.
+    wpc_pures.
+    { iSplitL "HΦ"; first by crash_case.
+      iExists _; iFrame.
+      iExists _; iFrame. }
+    wpc_apply (wpc_Write with "[$Hb Hbackup]").
     { iExists _; iFrame. }
+    iSplit; [ | iNext ].
+    { iIntros "Hb". iDeexHyp "Hb".
+      iSplitL "HΦ"; first by crash_case.
+      iExists _; iFrame.
+      iExists _; iFrame. }
     iIntros "(Hbackup&Hb)".
-    wp_loadField.
-    wp_apply (release_spec with "[$Hlock $His_locked HP Hprimary Hbackup]").
+    iSplitR "Hprimary Hbackup HP"; last first.
     { iExists _; iFrame. }
-    iApply ("HΦ" with "[$]").
+    iIntros "His_locked".
+    iSplit; last by crash_case.
+    wpc_pures; first by crash_case.
+    wpc_frame "HΦ"; first by crash_case.
+    wp_loadField.
+    wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
+    iNamed 1.
+    iApply "HΦ"; auto.
   Qed.
-*)
-  Admitted.
 
 End goose.
