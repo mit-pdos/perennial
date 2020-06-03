@@ -47,12 +47,15 @@ Definition is_indirect (a: u64) indBlock (blocks : list Block) : iProp Σ :=
   "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
 .
 
-Definition is_indirect_block_data (a : u64) (addrs: list u64) (indBlock: Block) (blocks : list Block) : iProp Σ :=
+Definition is_indirect_block_data
+           (a : u64) (indBlkAddrs_s : Slice.t) (indBlkAddrs: list u64)
+           (indBlock: Block) (specBlocks : list Block) : iProp Σ :=
   ∃ padding,
   "diskAddr" ∷ int.val a d↦ indBlock ∗
-  "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> addrs) ++ (EncUInt64 <$> padding))⌝ ∗
-  "%Hlen" ∷ ⌜length(addrs) <= indirectNumBlocks⌝ ∗
-  "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
+  "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> indBlkAddrs) ++ (EncUInt64 <$> padding))⌝ ∗
+  "%Hlen" ∷ ⌜length(indBlkAddrs) = length specBlocks⌝ ∗
+  "Hdata" ∷ ([∗ list] a;b ∈ indBlkAddrs;specBlocks, int.val a d↦ b) ∗
+  "HindBlkAddrs" ∷ is_slice indBlkAddrs_s uint64T 1 indBlkAddrs
   .
 
 Definition ind_blocks_at_index σ index : list Block :=
@@ -251,20 +254,37 @@ Proof.
   word.
 Qed.
 
+Theorem wp_indOff {off: u64} :
+  {{{
+       ⌜int.val off >= maxDirect⌝
+  }}}
+    indOff #off
+  {{{(v: u64), RET #v;
+     ⌜int.val v = (int.val off - maxDirect) `mod` indirectNumBlocks⌝
+  }}}.
+Proof.
+  iIntros (ϕ) "%H Hϕ".
+  wp_call.
+  iApply "Hϕ".
+  iPureIntro.
+  unfold indirectNumBlocks. unfold maxDirect in *.
+  word_cleanup.
+  word.
+Qed.
+
 Theorem wp_readIndirect {l σ}
-        indirect_s (numInd: u64) (indAddrs : list u64) (index : nat) (d : loc) (a : u64):
+        indirect_s (numInd: u64) (indAddrs : list u64) (index : u64) (d : loc) (a : u64):
   {{{
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hlen" ∷ ⌜length(indAddrs) = int.nat maxIndirect ∧ int.val numInd <= maxIndirect⌝ ∗
     "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs) ∗
-    "%Haddr" ∷ ⌜Some a = (take (int.nat numInd) indAddrs) !! index⌝
+    "%Haddr" ∷ ⌜Some a = (take (int.nat numInd) indAddrs) !! int.nat index⌝
   }}}
      readIndirect #d #a
-  {{{ s indBlockAddrs indBlock, RET slice_val s;
-      is_indirect_block_data a indBlockAddrs indBlock (ind_blocks_at_index σ index) ∗
-      is_block s 1 indBlock
+  {{{ indBlkAddrs_s indBlkAddrs indBlk, RET slice_val indBlkAddrs_s;
+      is_indirect_block_data a indBlkAddrs_s indBlkAddrs indBlk (ind_blocks_at_index σ (int.val index))
   }}}.
 Proof.
 Admitted.
@@ -376,16 +396,15 @@ Proof.
           rewrite (HnumInd Hsz).
           lia.
       }
+      assert (((int.val off - 500) `div` 512) <= ((int.val sz - 500) `div` 512)) as Hoff.
+      {
+        apply Z_div_le; lia.
+      }
       destruct (list_lookup_lt _ (take (int.nat numInd) indAddrs) (int.nat v)) as [addr Hlookup].
       {
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         rewrite firstn_length Hv HindirLen.
-        rewrite Min.min_l; try word.
-        assert (((int.val off - 500) `div` 512) <= ((int.val sz - 500) `div` 512)) as H'.
-        {
-          apply Z_div_le; lia.
-        }
-        word.
+        rewrite Min.min_l; word.
       }
       wp_loadField.
       iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
@@ -396,12 +415,57 @@ Proof.
       iDestruct (big_sepL_lookup_acc _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
 
       wp_loadField.
-      wp_apply (wp_readIndirect indirect_s numInd indAddrs (int.nat v) d addr with "[-]").
-      { iFrame. iSplitL; auto. }
-      iIntros (indBlockAddrs_s indBlockAddrs indBlock) "[HindBlock HisBlk]".
+      wp_apply (wp_readIndirect indirect_s numInd indAddrs v d addr with "[-]").
+      { iFrame; auto. }
+      iIntros (indBlkAddrs_s indBlkAddrs indBlk) "H". iNamed "H".
+
       wp_let.
-      (*wp_apply wp_indOff.
-      wp_apply (wp_SliceGet _ _ _ _ 1 indBlockAddrs _ (indOff off)). with "[Hindirect_small]"); iFrame; auto.
+      wp_apply wp_indOff.
+      { iPureIntro; auto. }
+      iIntros (offset) "%Hoffset".
+
+      clear Heqb Heqb0.
+      assert (int.nat sz = length(σ.(inode.blocks))) as HszeqNat by word.
+      assert (int.val offset < length indBlkAddrs) as HoffsetInBounds.
+      {
+        unfold ind_blocks_at_index in Hlen.
+        unfold maxDirect, indirectNumBlocks in *.
+        rewrite Hlen.
+
+        destruct (dec_ge (length σ.(inode.blocks)) ((500 + int.nat v * 512) + 512)) as [HlenGe | HlenNotGe].
+        (* Subslice fully contained in blocks *)
+        {
+          rewrite subslice_length.
+          - rewrite minus_plus. rewrite Hoffset.
+            apply Z_mod_lt; word.
+          - word.
+        }
+        (* Subslice goes to end of blocks *)
+        {
+          pose (not_ge _ _ HlenNotGe) as HlenLt.
+          rewrite subslice_to_end.
+          - rewrite Hoffset.
+            rewrite skipn_length.
+            * admit.
+          - rewrite -HszeqNat Hv.
+            admit.
+        }
+      }
+      destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlk].
+      {
+        word.
+      }
+      (*iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
+      wp_apply (wp_SliceGet _ _ _ _ 1 (take (int.nat numInd) inBlockAddrs) _ addr with "[Hindirect_small]"); iFrame; auto.
+
+      iIntros "Hindirect_small".
+      iDestruct (is_slice_split with "[$Hindirect_small $Hindirect]") as "Hindirect".
+      iDestruct (big_sepL_lookup_acc _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
+
+      unfold is_block.
+      wp_apply (wp_SliceGet _ _ _ _ 1 indBlockAddrs _ offset with "[HindBlock HisBlk]").
+      { unfold is_indirect_block_data. .
+      iFrame; auto.
       wp_apply wp_Read.*)
       admit.
     }
