@@ -284,7 +284,9 @@ Theorem wp_readIndirect {l σ}
   }}}
      readIndirect #d #a
   {{{ indBlkAddrs_s indBlkAddrs indBlk, RET slice_val indBlkAddrs_s;
-      is_indirect_block_data a indBlkAddrs_s indBlkAddrs indBlk (ind_blocks_at_index σ (int.val index))
+    "HindBlkAddrs" ∷ is_indirect_block_data a indBlkAddrs_s indBlkAddrs indBlk (ind_blocks_at_index σ (int.val index)) ∗
+    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs)
   }}}.
 Proof.
 Admitted.
@@ -415,9 +417,12 @@ Proof.
       iDestruct (big_sepL_lookup_acc _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
 
       wp_loadField.
-      wp_apply (wp_readIndirect indirect_s numInd indAddrs v d addr with "[-]").
-      { iFrame; auto. }
-      iIntros (indBlkAddrs_s indBlkAddrs indBlk) "H". iNamed "H".
+      wp_apply (wp_readIndirect indirect_s numInd indAddrs v d addr with "[indirect Hindirect]").
+      { iFrame. iSplit.
+        - iPureIntro; eauto.
+        - auto.
+      }
+      iIntros (indBlkAddrs_s indBlkAddrs indBlk) "H". iNamed "H". iNamed "HindBlkAddrs".
 
       wp_let.
       wp_apply wp_indOff.
@@ -451,22 +456,39 @@ Proof.
             admit.
         }
       }
-      destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlk].
-      {
-        word.
+      destruct (list_lookup_lt _ (ind_blocks_at_index σ (int.val v)) (int.nat offset)) as [inodeblkaddr HlookupInodeBlk]; try word.
+      destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlk]; try word.
+      iDestruct (is_slice_split with "HindBlkAddrs") as "[HindBlkAddrs_small HindBlkAddrs]".
+      wp_apply (wp_SliceGet _ _ _ _ 1 indBlkAddrs _ blkaddr with "[HindBlkAddrs_small]"); iFrame; auto.
+
+      iIntros "HindBlkAddrs_small".
+      iDestruct (is_slice_split with "[$HindBlkAddrs_small $HindBlkAddrs]") as "HindBlkAddrs".
+      iDestruct (big_sepL2_lookup_acc _ _ _ _ _ with "Hdata") as "[Hb' Hdata]"; eauto.
+      wp_apply (wp_Read with "Hb'"); iIntros (s) "[Hb' Hs]".
+      wp_let.
+      iSpecialize ("Hdata" with "Hb'").
+      wp_loadField.
+      iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
+      { iPureIntro; eauto. }
+      wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr
+             size direct indirect Hdirect Hindirect HdataDirect Hdata]").
+      { iExists _; iFrame.
+        iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, hdr. iFrame "∗ %".
+        iSplit.
+        - iPureIntro; auto.
+        - admit.
       }
-      (*iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
-      wp_apply (wp_SliceGet _ _ _ _ 1 (take (int.nat numInd) inBlockAddrs) _ addr with "[Hindirect_small]"); iFrame; auto.
+      wp_pures.
+      iApply "HΦ"; iFrame.
+      (*
+      iDestruct (big_sepL2_lookup_1_some _ _ _ (int.nat off) addr with "HdataIndirect") as "%Hblock_lookup"; eauto.
+      { rewrite lookup_take; [auto | word]. }
+      destruct Hblock_lookup as [b0 Hlookup2].
 
-      iIntros "Hindirect_small".
-      iDestruct (is_slice_split with "[$Hindirect_small $Hindirect]") as "Hindirect".
-      iDestruct (big_sepL_lookup_acc _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
-
-      unfold is_block.
-      wp_apply (wp_SliceGet _ _ _ _ 1 indBlockAddrs _ offset with "[HindBlock HisBlk]").
-      { unfold is_indirect_block_data. .
-      iFrame; auto.
-      wp_apply wp_Read.*)
+      rewrite lookup_take in Hlookup2; [ | word ].
+      rewrite Hlookup2.
+      iDestruct (is_slice_split with "Hs") as "[Hs _]".
+      iExists _; iFrame.*)
       admit.
     }
 Admitted.
