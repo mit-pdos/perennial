@@ -255,6 +255,42 @@ Proof.
   iFrame.
 Qed.
 
+Theorem wpc_Write_fupd {stk k E1 E2} E1' (Q Qc: iProp Σ) (a: u64) s q b :
+  {{{ is_slice_small s byteT q (Block_to_vals b) ∗
+      ((|={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Q)) ∧ Qc) }}}
+    Write #a (slice_val s) @ stk;k; E1;E2
+  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}
+  {{{ Qc ∨ Q }}}.
+Proof.
+  iIntros (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "[Hs Hfupd]".
+  rewrite /Write /slice.ptr.
+  wpc_pures.
+  { iRight in "Hfupd". iFrame. }
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  wpc_atomic.
+  { iRight in "Hfupd". iFrame. }
+  iLeft in "Hfupd".
+  iMod "Hfupd" as (b0) "[Hda HQ]".
+  wp_apply (wp_WriteOp with "[Hda Hs]").
+  { iIntros "!>".
+    iExists b0; iFrame.
+    by iApply slice_to_block_array. }
+  iIntros "[Hda Hmapsto]".
+  iMod ("HQ" with "Hda") as "HQ".
+  iModIntro.
+  iSplit; iModIntro.
+  - crash_case; iFrame.
+  - iApply "HΦ".
+    iFrame.
+    destruct s; simpl in Hsz.
+    replace sz with (U64 4096).
+    + by iApply block_array_to_slice.
+    + rewrite length_Block_to_vals in Hsz.
+      change block_bytes with (Z.to_nat 4096) in Hsz.
+      word.
+Qed.
+
 Theorem wpc_Write stk k E1 E2 (a: u64) s q b :
   {{{ ∃ b0, int.val a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s) @ stk; k; E1; E2
