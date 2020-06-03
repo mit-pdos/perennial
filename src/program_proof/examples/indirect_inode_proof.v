@@ -39,54 +39,51 @@ Let inodeN := nroot.@"inode".
 Implicit Types (σ: inode.t).
 Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 
-Definition is_indirect (a: u64) indBlock (blocks : list Block) : iProp Σ :=
-  ∃ (addrs: list u64) (padding: list u64),
-  "diskAddr" ∷ int.val a d↦ indBlock ∗
-  "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> addrs) ++ (EncUInt64 <$> padding))⌝ ∗
-  "%Hlen" ∷ ⌜length(addrs) <= indirectNumBlocks⌝ ∗
-  "Hdata" ∷ [∗ list] a;b ∈ addrs;blocks, int.val a d↦ b
-.
-
-Definition is_indirect_block_data
-           (a : u64) (indBlkAddrs_s : Slice.t) (indBlkAddrs: list u64)
-           (indBlock: Block) (specBlocks : list Block) : iProp Σ :=
-  ∃ padding,
+Definition is_indirect (a: u64) (indBlkAddrs_s : Slice.t)
+           (indBlkAddrs: list u64) (indBlock : Block) (specBlocks : list Block) : iProp Σ :=
+  ∃ (padding: list u64),
   "diskAddr" ∷ int.val a d↦ indBlock ∗
   "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> indBlkAddrs) ++ (EncUInt64 <$> padding))⌝ ∗
-  "%Hlen" ∷ ⌜length(indBlkAddrs) = length specBlocks⌝ ∗
+  "%Hlen" ∷ ⌜length(indBlkAddrs) = length(specBlocks)⌝ ∗
   "Hdata" ∷ ([∗ list] a;b ∈ indBlkAddrs;specBlocks, int.val a d↦ b) ∗
   "HindBlkAddrs" ∷ is_slice indBlkAddrs_s uint64T 1 indBlkAddrs
-  .
+.
 
 Definition ind_blocks_at_index σ index : list Block :=
   let begin := int.nat (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) in
   List.subslice begin (begin + (int.nat indirectNumBlocks)) σ.(inode.blocks).
 
-Definition is_inode_durable_with σ (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block)
+  Definition is_inode_durable_with σ
+             (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64)
+             (indBlocks : list Block) (hdr: Block)
   : iProp Σ  :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs))⌝ ∗
-    "%Hlen" ∷ ⌜length(dirAddrs) = int.nat maxDirect ∧
+    "%Hlen" ∷ ⌜
+      length(dirAddrs) = int.nat maxDirect ∧
       length(indAddrs) = int.nat maxIndirect ∧
-      (int.val sz > maxDirect -> int.val numInd = Z.add ((int.val sz - maxDirect) `div` indirectNumBlocks) 1) ∧
+      int.val sz = length (σ.(inode.blocks)) ∧
       int.val sz < MaxBlocks ∧
-      int.val sz = length (σ.(inode.blocks))⌝ ∗
+      (int.val sz > maxDirect -> int.val numInd = Z.add ((int.val sz - maxDirect) `div` indirectNumBlocks) 1) ∧
+      length indBlocks = int.nat numInd
+    ⌝ ∗
     "Hhdr" ∷ int.val σ.(inode.addr) d↦ hdr ∗
     (* Double check: we can only state ptsto facts about inode blocks that exist? *)
     "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
                      [∗ list] a;b ∈ take len dirAddrs;take len σ.(inode.blocks), int.val a d↦ b) ∗
-    "HdataIndirect" ∷ [∗ list] index↦a ∈ take (int.nat numInd) indAddrs, ∃ indBlock,
-    is_indirect a indBlock (ind_blocks_at_index σ index)
+    "HdataIndirect" ∷ [∗ list] index↦a;indBlock ∈ take (int.nat numInd) indAddrs;indBlocks,
+    ∃ indBlkAddrs_s indBlkAddrs, is_indirect a indBlkAddrs_s indBlkAddrs indBlock (ind_blocks_at_index σ index)
 .
 
 Definition is_inode_durable σ : iProp Σ  :=
-  ∃ (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block),
-    is_inode_durable_with σ dirAddrs indAddrs sz numInd hdr
+  ∃ (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (indBlocks : list Block) (hdr: Block),
+    is_inode_durable_with σ dirAddrs indAddrs sz numInd indBlocks hdr
 .
 
 Definition inode_linv (l:loc) σ : iProp Σ :=
-  ∃ (direct_s indirect_s: Slice.t) (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64) (hdr: Block),
-    "Hdurable" ∷ is_inode_durable_with σ dirAddrs indAddrs sz numInd hdr ∗
+  ∃ (direct_s indirect_s: Slice.t) (dirAddrs indAddrs: list u64)
+    (sz: u64) (numInd: u64) (indBlocks: list Block) (hdr: Block),
+    "Hdurable" ∷ is_inode_durable_with σ dirAddrs indAddrs sz numInd indBlocks hdr ∗
     "addr" ∷ l ↦[Inode.S :: "addr"] #σ.(inode.addr) ∗
     "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
     "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
@@ -129,7 +126,7 @@ Proof.
   hnf; iIntros "Hinv".
   iNamed "Hinv".
   iNamed "Hdurable".
-  iExists dirAddrs, indAddrs, sz, numInd, hdr.
+  iExists dirAddrs, indAddrs, sz, numInd, indBlocks, hdr.
   iFrame "% ∗".
   auto.
 Qed.
@@ -152,7 +149,7 @@ Theorem init_inode addr :
   int.val addr d↦ block0 -∗ is_inode_durable (inode.mk addr []).
 Proof.
   iIntros "Hhdr".
-  iExists (replicate (Z.to_nat maxDirect) (U64 0)), (replicate (Z.to_nat maxIndirect) (U64 0)), (U64 0), (U64 0), block0.
+  iExists (replicate (Z.to_nat maxDirect) (U64 0)), (replicate (Z.to_nat maxIndirect) (U64 0)), (U64 0), (U64 0), [], block0.
   unfold is_inode_durable_with.
   iFrame "Hhdr".
   repeat iSplit; auto.
@@ -177,7 +174,8 @@ Proof.
   iDestruct (big_sepL2_length with "Hdata") as %Hblocklen.
   wp_call.
   wp_apply (wp_Read with "Hhdr").
-  iIntros (s) "(Hhdr&Hs)".
+  iIntros (s) "(Hhdr&Hs)"
+.
   wp_pures.
   iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
   rewrite Hencoded.
@@ -273,18 +271,19 @@ Proof.
 Qed.
 
 Theorem wp_readIndirect {l σ}
-        indirect_s (numInd: u64) (indAddrs : list u64) (index : u64) (d : loc) (a : u64):
+        indirect_s (numInd: u64) (indAddrs : list u64) (indBlocks : list Block) (indBlk: Block) (index : u64) (d : loc) (a : u64):
   {{{
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hlen" ∷ ⌜length(indAddrs) = int.nat maxIndirect ∧ int.val numInd <= maxIndirect⌝ ∗
     "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs) ∗
-    "%Haddr" ∷ ⌜Some a = (take (int.nat numInd) indAddrs) !! int.nat index⌝
+    "%Haddr" ∷ ⌜Some a = (take (int.nat numInd) indAddrs) !! int.nat index⌝ ∗
+    "%HindBlk" ∷ ⌜Some indBlk = indBlocks !! int.nat index⌝
   }}}
      readIndirect #d #a
-  {{{ indBlkAddrs_s indBlkAddrs indBlk, RET slice_val indBlkAddrs_s;
-    "HindBlkAddrs" ∷ is_indirect_block_data a indBlkAddrs_s indBlkAddrs indBlk (ind_blocks_at_index σ (int.val index)) ∗
+  {{{ indBlkAddrs_s indBlkAddrs, RET slice_val indBlkAddrs_s;
+    "HindBlkAddrs" ∷ is_indirect a indBlkAddrs_s indBlkAddrs indBlk (ind_blocks_at_index σ (int.val index)) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs)
   }}}.
@@ -311,7 +310,7 @@ Proof.
   iIntros "(His_locked&Hlk)"; iNamed "Hlk".
   iNamed "Hlockinv".
   iNamed "Hdurable".
-  destruct Hlen as [HdirLen [HindirLen [HnumInd [HszMax Hszeq]]]].
+  destruct Hlen as [HdirLen [HindirLen [HszEqLen [HszMax [HnumInd HindBlksLen]]]]].
   wp_loadField.
   wp_op.
   wp_if_destruct.
@@ -322,14 +321,14 @@ Proof.
     wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr
              size direct indirect Hdirect Hindirect HdataDirect HdataIndirect]").
     { iExists _; iFrame.
-      iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, hdr. iFrame "∗ %".
-      iPureIntro. auto.
+      iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, indBlocks, hdr. iFrame "∗ %".
+      iPureIntro. split; auto.
     }
     wp_pures.
     change slice.nil with (slice_val Slice.nil).
     iApply "HΦ"; iFrame.
     rewrite lookup_ge_None_2 //.
-    rewrite Hszeq in Heqb.
+    rewrite HszEqLen in Heqb.
     word.
   - wp_op.
     assert (int.val off < int.val sz) as Hszoff by lia.
@@ -366,8 +365,8 @@ Proof.
       wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr
              size direct indirect Hdirect Hindirect HdataDirect HdataIndirect]").
       { iExists _; iFrame.
-        iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, hdr. iFrame "∗ %".
-        iPureIntro; auto.
+        iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, indBlocks, hdr. iFrame "∗ %".
+        iPureIntro; split; auto.
       }
       wp_pures.
       iApply "HΦ"; iFrame.
@@ -402,27 +401,33 @@ Proof.
       {
         apply Z_div_le; lia.
       }
+      assert (int.val v < int.val numInd) as HvMax. {
+        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. word.
+      }
       destruct (list_lookup_lt _ (take (int.nat numInd) indAddrs) (int.nat v)) as [addr Hlookup].
       {
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         rewrite firstn_length Hv HindirLen.
         rewrite Min.min_l; word.
       }
+      destruct (list_lookup_lt _ indBlocks (int.nat v)) as [indBlk HlookupBlk].
+      {
+        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+        rewrite HindBlksLen. word.
+      }
+
       wp_loadField.
       iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
       wp_apply (wp_SliceGet _ _ _ _ 1 (take (int.nat numInd) indAddrs) _ addr with "[Hindirect_small]"); iFrame; auto.
 
       iIntros "Hindirect_small".
       iDestruct (is_slice_split with "[$Hindirect_small $Hindirect]") as "Hindirect".
-      iDestruct (big_sepL_lookup_acc _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
+      iDestruct (big_sepL2_lookup_acc _ _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
 
       wp_loadField.
-      wp_apply (wp_readIndirect indirect_s numInd indAddrs v d addr with "[indirect Hindirect]").
-      { iFrame. iSplit.
-        - iPureIntro; eauto.
-        - auto.
-      }
-      iIntros (indBlkAddrs_s indBlkAddrs indBlk) "H". iNamed "H". iNamed "HindBlkAddrs".
+      wp_apply (wp_readIndirect indirect_s numInd indAddrs indBlocks indBlk v d addr with "[indirect Hindirect]").
+      { iFrame. iSplit; eauto. }
+      iIntros (indBlkAddrs_s indBlkAddrs) "H". iNamed "H". iNamed "HindBlkAddrs".
 
       wp_let.
       wp_apply wp_indOff.
@@ -457,39 +462,37 @@ Proof.
         }
       }
       destruct (list_lookup_lt _ (ind_blocks_at_index σ (int.val v)) (int.nat offset)) as [inodeblkaddr HlookupInodeBlk]; try word.
-      destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlk]; try word.
+      destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlkInd]; try word.
       iDestruct (is_slice_split with "HindBlkAddrs") as "[HindBlkAddrs_small HindBlkAddrs]".
       wp_apply (wp_SliceGet _ _ _ _ 1 indBlkAddrs _ blkaddr with "[HindBlkAddrs_small]"); iFrame; auto.
 
       iIntros "HindBlkAddrs_small".
       iDestruct (is_slice_split with "[$HindBlkAddrs_small $HindBlkAddrs]") as "HindBlkAddrs".
       iDestruct (big_sepL2_lookup_acc _ _ _ _ _ with "Hdata") as "[Hb' Hdata]"; eauto.
+
       wp_apply (wp_Read with "Hb'"); iIntros (s) "[Hb' Hs]".
       wp_let.
-      iSpecialize ("Hdata" with "Hb'").
+
+      iSpecialize ("HdataIndirect" with "Hb").
+
       wp_loadField.
       iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
       { iPureIntro; eauto. }
       wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr
-             size direct indirect Hdirect Hindirect HdataDirect Hdata]").
+             size direct indirect Hdirect Hindirect HdataDirect HdataIndirect Hdata]").
       { iExists _; iFrame.
-        iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, hdr. iFrame "∗ %".
-        iSplit.
-        - iPureIntro; auto.
-        - admit.
+        iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, indBlocks, hdr. iFrame "∗ %".
+        iPureIntro; split; auto.
       }
       wp_pures.
       iApply "HΦ"; iFrame.
-      (*
-      iDestruct (big_sepL2_lookup_1_some _ _ _ (int.nat off) addr with "HdataIndirect") as "%Hblock_lookup"; eauto.
-      { rewrite lookup_take; [auto | word]. }
-      destruct Hblock_lookup as [b0 Hlookup2].
 
-      rewrite lookup_take in Hlookup2; [ | word ].
-      rewrite Hlookup2.
-      iDestruct (is_slice_split with "Hs") as "[Hs _]".
-      iExists _; iFrame.*)
-      admit.
+      assert ((σ.(inode.blocks)) !! (int.nat off) = Some inodeblkaddr) as HlookupInodeBlk'.
+      {
+        admit.
+      }
+      rewrite HlookupInodeBlk'.
+      iExists _; iDestruct (is_slice_split with "Hs") as "[Hs_small Hs]"; eauto.
     }
 Admitted.
 
