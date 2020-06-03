@@ -379,14 +379,14 @@ Proof.
 
     (* Is indirect block *)
     {
-      assert (int.val off >= int.val 500) as Hoff500 by word.
-      assert (int.val sz > 500) as Hsz by word.
-
       wp_apply wp_indNum.
       { iPureIntro. auto. }
 
       iIntros (v) "%Hv".
 
+      (* Here are a bunch of facts *)
+      assert (int.val off >= int.val 500) as Hoff500 by word.
+      assert (int.val sz > 500) as Hsz by word.
       assert (int.val numInd <= maxIndirect) as HnumIndMax.
       {
          unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
@@ -397,10 +397,10 @@ Proof.
           rewrite (HnumInd Hsz).
           lia.
       }
-      assert (((int.val off - 500) `div` 512) <= ((int.val sz - 500) `div` 512)) as Hoff.
-      {
+      assert (((int.val off - 500) `div` 512) <= ((int.val sz - 500) `div` 512)) as Hoff. {
         apply Z_div_le; lia.
       }
+
       assert (int.val v < int.val numInd) as HvMax. {
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. word.
       }
@@ -415,7 +415,9 @@ Proof.
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         rewrite HindBlksLen. word.
       }
+      assert (int.nat sz = length(σ.(inode.blocks))) as HszeqNat by word.
 
+      (* Now we actually step through the program *)
       wp_loadField.
       iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
       wp_apply (wp_SliceGet _ _ _ _ 1 (take (int.nat numInd) indAddrs) _ addr with "[Hindirect_small]"); iFrame; auto.
@@ -434,8 +436,7 @@ Proof.
       { iPureIntro; auto. }
       iIntros (offset) "%Hoffset".
 
-      clear Heqb Heqb0.
-      assert (int.nat sz = length(σ.(inode.blocks))) as HszeqNat by word.
+      (* More facts about offset *)
       assert (int.val offset < length indBlkAddrs) as HoffsetInBounds.
       {
         unfold ind_blocks_at_index in Hlen.
@@ -463,6 +464,12 @@ Proof.
       }
       destruct (list_lookup_lt _ (ind_blocks_at_index σ (int.val v)) (int.nat offset)) as [inodeblkaddr HlookupInodeBlk]; try word.
       destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlkInd]; try word.
+      assert ((σ.(inode.blocks)) !! (int.nat off) = Some inodeblkaddr) as HlookupInodeBlk'.
+      {
+        admit.
+      }
+
+      (* Continue through the program *)
       iDestruct (is_slice_split with "HindBlkAddrs") as "[HindBlkAddrs_small HindBlkAddrs]".
       wp_apply (wp_SliceGet _ _ _ _ 1 indBlkAddrs _ blkaddr with "[HindBlkAddrs_small]"); iFrame; auto.
 
@@ -487,10 +494,6 @@ Proof.
       wp_pures.
       iApply "HΦ"; iFrame.
 
-      assert ((σ.(inode.blocks)) !! (int.nat off) = Some inodeblkaddr) as HlookupInodeBlk'.
-      {
-        admit.
-      }
       rewrite HlookupInodeBlk'.
       iExists _; iDestruct (is_slice_split with "Hs") as "[Hs_small Hs]"; eauto.
     }
