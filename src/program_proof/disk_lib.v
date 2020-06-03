@@ -256,21 +256,21 @@ Proof.
 Qed.
 
 Theorem wpc_Write_fupd {stk k E1 E2} E1' (Q Qc: iProp Σ) (a: u64) s q b :
-  {{{ is_slice_small s byteT q (Block_to_vals b) ∗
-      ((|={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Q)) ∧ Qc) }}}
+  {{{ is_block s q b ∗
+      (Qc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Q)) }}}
     Write #a (slice_val s) @ stk;k; E1;E2
-  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}
+  {{{ RET #(); is_block s q b ∗ Q }}}
   {{{ Qc ∨ Q }}}.
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "[Hs Hfupd]".
   rewrite /Write /slice.ptr.
   wpc_pures.
-  { iRight in "Hfupd". iFrame. }
+  { iLeft in "Hfupd". iFrame. }
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   wpc_atomic.
-  { iRight in "Hfupd". iFrame. }
-  iLeft in "Hfupd".
+  { iLeft in "Hfupd". iFrame. }
+  iRight in "Hfupd".
   iMod "Hfupd" as (b0) "[Hda HQ]".
   wp_apply (wp_WriteOp with "[Hda Hs]").
   { iIntros "!>".
@@ -292,67 +292,53 @@ Proof.
 Qed.
 
 Theorem wpc_Write stk k E1 E2 (a: u64) s q b :
-  {{{ ∃ b0, int.val a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
+  {{{ ∃ b0, int.val a d↦ b0 ∗ is_block s q b }}}
     Write #a (slice_val s) @ stk; k; E1; E2
-  {{{ RET #(); int.val a d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}
-  {{{ ∃ b', int.val a d↦ b' ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
+  {{{ RET #(); int.val a d↦ b ∗ is_block s q b }}}
+  {{{ ∃ b', int.val a d↦ b' }}}.
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
-  rewrite /Write /slice.ptr.
-  wpc_pures.
-  { iExists b0; iFrame. }
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  wpc_atomic.
-  { iExists b0; iFrame. }
-  wp_apply (wp_WriteOp with "[Hda Hs]").
-  { iIntros "!>".
-    iExists b0; iFrame.
-    by iApply slice_to_block_array. }
-  iIntros "[Hda Hmapsto]".
+  wpc_apply (wpc_Write_fupd E1 (int.val a d↦ b)
+            with "[$Hs Hda]").
+  { iSplit; [ iNamedAccu | ].
+    iModIntro.
+    iExists _; iFrame.
+    iIntros "!> $ //".
+  }
   iSplit.
-  - iModIntro; crash_case.
-    iExists b; iFrame.
-    destruct s; simpl in Hsz.
-    replace sz with (U64 4096).
-    + by iApply block_array_to_slice.
-    + rewrite length_Block_to_vals in Hsz.
-      change block_bytes with (Z.to_nat 4096) in Hsz.
-      word.
-  - iApply "HΦ".
-    iFrame.
-    iSplitL; auto.
-    by iApply array_to_block_array.
+  { rewrite /named. (* TODO: iNamed on this and doesn't work *)
+    iIntros "Hda".
+    crash_case.
+    iDestruct "Hda" as "[Hda | Hda]"; iExists _; iFrame. }
+  iNext.
+  iIntros "[Hb Hd]".
+  iApply "HΦ"; iFrame.
 Qed.
 
 Theorem wpc_Write' stk k E1 E2 (a: u64) s q b0 b :
-  {{{ int.val a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
+  {{{ int.val a d↦ b0 ∗ is_block s q b }}}
     Write #a (slice_val s) @ stk; k; E1; E2
-  {{{ RET #(); int.val a d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}
-  {{{ (int.val a d↦ b0 ∨ int.val a d↦ b) ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
+  {{{ RET #(); int.val a d↦ b ∗ is_block s q b }}}
+  {{{ (int.val a d↦ b0 ∨ int.val a d↦ b) }}}.
 Proof.
-  iIntros (Φ Φc) "[Hda Hs] HΦ".
-  rewrite /Write /slice.ptr.
-  wpc_pures; iFrame.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  wpc_atomic; iFrame.
-  wp_apply (wp_WriteOp with "[Hda Hs]").
-  { iIntros "!>".
-    iExists b0; iFrame.
-    by iApply slice_to_block_array. }
-  iIntros "[Hda Hmapsto]".
+  iIntros (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "[Hda Hs]".
+  wpc_apply (wpc_Write_fupd E1 (int.val a d↦ b)
+            with "[$Hs Hda]").
+  { iSplit; [ iNamedAccu | ].
+    iModIntro.
+    iExists _; iFrame.
+    iIntros "!> $ //".
+  }
   iSplit.
-  - iModIntro; crash_case; iFrame.
-    destruct s; simpl in Hsz.
-    replace sz with (U64 4096).
-    + by iApply block_array_to_slice.
-    + rewrite length_Block_to_vals in Hsz.
-      change block_bytes with (Z.to_nat 4096) in Hsz.
-      word.
-  - iApply "HΦ".
-    iFrame.
-    iSplitL; auto.
-    by iApply array_to_block_array.
+  { rewrite /named. (* TODO: iNamed on this and doesn't work *)
+    iIntros "Hda".
+    crash_case.
+    auto. }
+  iNext.
+  iIntros "[Hb Hd]".
+  iApply "HΦ"; iFrame.
 Qed.
 
 Theorem slice_to_block s q bs :
