@@ -4,7 +4,7 @@ From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import atomic.
 From Perennial.goose_lang Require Import lifting.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant.
-From Perennial.Helpers Require Export NamedProps.
+From Perennial.Helpers Require Export NamedProps ProofCaching.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -88,6 +88,12 @@ Ltac solve_vals_compare_safe :=
      [True] or we have it in the context. *)
   fast_done || (left; fast_done) || (right; fast_done).
 
+Tactic Notation "iCache" "with" constr(Hs) :=
+  lazymatch goal with
+  | [ |- envs_entails _ (wpc _ _ _ _ _ _ ?Φc) ] =>
+        iCache_go Φc Hs "#?"
+  end.
+
 (** The argument [efoc] can be used to specify the construct that should be
 reduced. For example, you can write [wp_pure (EIf _ _ _)], which will search
 for an [EIf _ _ _] in the expression, and reduce it.
@@ -126,7 +132,7 @@ Ltac crash_case :=
 Ltac wpc_pures :=
   iStartProof;
   let Hcrash := fresh "Hcrash" in
-  wpc_pure _ Hcrash; [crash_case ..  | repeat (wpc_pure _ Hcrash; []); clear Hcrash].
+  wpc_pure _ Hcrash; [try iFromCache; crash_case ..  | repeat (wpc_pure _ Hcrash; []); clear Hcrash].
 
 Lemma tac_wpc_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} K Δ s k E1 E2 Φ Φc e f :
@@ -165,7 +171,7 @@ Tactic Notation "wpc_let" simple_intropattern(H) := wpc_pure (Rec BAnon (BNamed 
 Ltac wpc_call :=
   let Hcrash := fresh "Hcrash" in
   wpc_rec Hcrash;
-  [ crash_case .. | wpc_pure _ Hcrash; [crash_case ..  | repeat (wpc_pure _ Hcrash; []); clear Hcrash] ].
+  [ try iFromCache; crash_case .. | wpc_pure _ Hcrash; [try iFromCache; crash_case ..  | repeat (wpc_pure _ Hcrash; []); clear Hcrash] ].
 
 Ltac wpc_bind_core K :=
   lazymatch eval hnf in K with
@@ -181,6 +187,12 @@ Tactic Notation "wpc_bind" open_constr(efoc) :=
     || fail "wpc_bind: cannot find" efoc "in" e
   | |- envs_entails _ (wp ?s ?E ?e ?Q) => fail "wpc_bind: 'wp', not a 'wpc'"
   | _ => fail "wpc_bind: not a 'wpc'"
+  end.
+
+Ltac wpc_bind_seq :=
+  lazymatch goal with
+  | [ |- envs_entails _ (wpc _ _ _ _ (App (Lam _ ?e2) ?e1) _ _) ] =>
+    wpc_bind e1
   end.
 
 Tactic Notation "wpc_atomic" :=
@@ -203,7 +215,7 @@ Tactic Notation "wpc_apply_core" open_constr(lem) tactic(tac) :=
     | _ => fail "wpc_apply: not a 'wpc'"
     end).
 Tactic Notation "wpc_apply" open_constr(lem) :=
-  wpc_apply_core lem (fun H => iApplyHyp H; try iNext).
+  wpc_apply_core lem (fun H => iApplyHyp H; (try (iSplit; [ iFromCache | try iNext ]))).
 
 Tactic Notation "wpc_if_destruct" :=
   match goal with
@@ -239,10 +251,14 @@ Tactic Notation "wpc_frame" constr(pat) :=
 
 Tactic Notation "wpc_frame" constr(pat) :=
   iApply wp_wpc_frame';
-  iSplitL pat; [ iNamedAccu | iSplitR; [ iModIntro; let H := iFresh in iIntros H; iNamed H | ] ].
+  iSplitL pat; [ iNamedAccu (* create Φc' from hyps matching pat *)
+               | iSplitR; [ iModIntro; iNamed 1; try iFromCache (* prove crash condition from selected hyps *)
+                          | (* remaining wp proof *) ] ].
 
 (* XXX: it would be nice if iSplitL would understand the negation selector, so that wpc_frame "-H" would
    have the same effect as this next tactic: *)
 Tactic Notation "wpc_frame_compl" constr(pat) :=
   iApply wp_wpc_frame';
-  iSplitR pat; [ iNamedAccu | iSplitR; [ iModIntro; let H := iFresh in iIntros H; iNamed H | ] ].
+  iSplitR pat; [ iNamedAccu
+               | iSplitR; [ iModIntro; iNamed 1; try iFromCache
+                          | ] ].
