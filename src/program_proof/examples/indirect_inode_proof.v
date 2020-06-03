@@ -92,13 +92,13 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs).
 
 Definition is_inode l γ P : iProp Σ :=
-  ∃ (d:val) (lref: loc),
-    "#d" ∷ readonly (l ↦[Inode.S :: "d"] d) ∗
+  ∃ (d lref: loc),
+    "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
     "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
     "#Hlock" ∷ is_lock inodeN γ #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ).
 
 Definition pre_inode l γ P σ : iProp Σ :=
-  ∃ (d:val) (lref: loc), "#d" ∷ readonly (l ↦[Inode.S :: "d"] d) ∗
+  ∃ (d lref: loc), "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
                          "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
                          "Hlock" ∷ is_free_lock γ lref ∗
                          "Hlockinv" ∷ inode_linv l σ ∗
@@ -251,14 +251,15 @@ Proof.
   word.
 Qed.
 
-Theorem wp_readIndirect {l σ} {indirect_s : Slice.t} {numInd : Z} {indAddrs : list u64} {index : nat} {d a : u64}:
+Theorem wp_readIndirect {l σ}
+        indirect_s (numInd: u64) (indAddrs : list u64) (index : nat) (d : loc) (a : u64):
   {{{
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hlen" ∷ ⌜length(indAddrs) = int.nat maxIndirect ∧ int.val numInd <= maxIndirect⌝ ∗
     "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs) ∗
-    "%Haddr" ∷ ⌜a = nth index indAddrs 0⌝
+    "%Haddr" ∷ ⌜Some a = (take (int.nat numInd) indAddrs) !! index⌝
   }}}
      readIndirect #d #a
   {{{ s indBlockAddrs indBlock, RET slice_val s;
@@ -365,20 +366,24 @@ Proof.
 
       iIntros (v) "%Hv".
 
+      assert (int.val numInd <= maxIndirect) as HnumIndMax.
+      {
+         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+         assert (((int.val sz - 500) `div` 512) < 10) as H.
+          {
+            apply (Zdiv_lt_upper_bound (int.val sz - 500) 512 10); lia.
+          }
+          rewrite (HnumInd Hsz).
+          lia.
+      }
       destruct (list_lookup_lt _ (take (int.nat numInd) indAddrs) (int.nat v)) as [addr Hlookup].
       {
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         rewrite firstn_length Hv HindirLen.
-        rewrite (HnumInd Hsz).
-        assert (((int.val sz - 500) `div` 512) < 10) as H.
-        {
-          apply (Zdiv_lt_upper_bound (int.val sz - 500) 512 10); lia.
-        }
         rewrite Min.min_l; try word.
         assert (((int.val off - 500) `div` 512) <= ((int.val sz - 500) `div` 512)) as H'.
         {
           apply Z_div_le; lia.
-
         }
         word.
       }
@@ -391,7 +396,13 @@ Proof.
       iDestruct (big_sepL_lookup_acc _ _ _ addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
 
       wp_loadField.
-      (*wp_apply (wp_readIndirect with "[-]").*)
+      wp_apply (wp_readIndirect indirect_s numInd indAddrs (int.nat v) d addr with "[-]").
+      { iFrame. iSplitL; auto. }
+      iIntros (indBlockAddrs_s indBlockAddrs indBlock) "[HindBlock HisBlk]".
+      wp_let.
+      (*wp_apply wp_indOff.
+      wp_apply (wp_SliceGet _ _ _ _ 1 indBlockAddrs _ (indOff off)). with "[Hindirect_small]"); iFrame; auto.
+      wp_apply wp_Read.*)
       admit.
     }
 Admitted.
