@@ -383,7 +383,16 @@ Section map2.
     ∃ m2, ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ).
   Proof.
     iIntros "Hm".
-  Admitted.
+    iInduction m1 as [|i x m] "IH" using map_ind.
+    - iExists ∅. iApply big_sepM2_empty. done.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iDestruct "Hi" as (y2) "Hi".
+      iDestruct ("IH" with "Hm") as (m2) "Hm".
+      iExists (<[i := y2]> m2).
+      iDestruct (big_sepM2_lookup_1_none with "Hm") as "%Hm2i"; eauto.
+      iApply big_sepM2_insert; eauto.
+      iFrame.
+  Qed.
 
   Lemma big_sepM_sepM2_merge (Φ : K -> A -> PROP) (Ψ : K -> B -> PROP)
     (m1 : gmap K A) (m2 : gmap K B) :
@@ -402,7 +411,20 @@ Section map2.
     ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ∗ Ψ k y1 ).
   Proof.
     iIntros "[Hm2 Hm]".
-  Admitted.
+    iInduction m1 as [|i x m] "IH" using map_ind forall (m2).
+    - iDestruct (big_sepM2_empty_r with "Hm2") as "%He". subst. iApply big_sepM2_empty. done.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iDestruct (big_sepM2_lookup_1_some _ _ _ i with "Hm2") as (x2) "%Hm2i"; eauto.
+      { rewrite lookup_insert; eauto. }
+      replace (m2) with (<[i:=x2]> (delete i m2)).
+      2: { rewrite insert_delete insert_id //. }
+      iDestruct (big_sepM2_insert with "Hm2") as "[Hii Hm2]"; eauto.
+      { rewrite lookup_delete; eauto. }
+      iDestruct ("IH" with "Hm2 Hm") as "Hm2".
+      iApply big_sepM2_insert; eauto.
+      { rewrite lookup_delete; eauto. }
+      iFrame.
+  Qed.
 
   Lemma big_sepM2_filter Φ (P : K -> Prop) (m1 : gmap K A) (m2 : gmap K B) 
                          `{! ∀ k, Decision (P k)} :
