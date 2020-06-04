@@ -276,7 +276,7 @@ Proof.
     iExists _, _; iFrame "#".*)
 Admitted.
 
-Theorem wp_Inode__UsedBlocks {l γ P} :
+(*Theorem wp_Inode__UsedBlocks {l γ P} :
   (* TODO: it would be cool to run this before allocating the lock invariant for
   the inode; we could recover a "pre-inode" and then in a purely logical step
   allocate all the lock invariants in the caller; otherwise this code can't
