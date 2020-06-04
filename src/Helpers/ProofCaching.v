@@ -1,6 +1,50 @@
 From iris.proofmode Require Import tactics environments.
 From Perennial.Helpers Require Import NamedProps.
 
+(** * Caching and re-using Iris proofs.
+
+    Tactics for saving an Iris proof using a collection of hypotheses.
+
+    Usage:
+
+    [iCache P with "H1 H2..."] asks the user to prove [P] using hypotheses H1
+    H2... from the context. It creates a cached proof in the persistent context.
+
+    Later, [iFromCache] attempts to prove the goal using a matching cache and
+    the exact same hypotheses (including names).
+ *)
+
+(** Implementation details:
+
+    A cache [c] for a result [R] remembers an [env] ([c.(cache_prop)]) and a
+    list of names used, and the persistent statement in the context is:
+
+    □ ([∗] c -∗ R)
+
+    Constructing the proof just involves setting up this statement. It uses
+    [iNamed] to serialize/deserialize the hypotheses while retaining names. See
+    [cached_make] for where the naming comes from, and [iCache_go] for some
+    cleanup after iApplying that theorem.
+
+    To restore the cache, we just split the environment with [envs_split] using
+    the list of names in the cache and match exactly with the cache's
+    environment. This works well because it uses a canonical order specified in
+    the cache, so after splitting we can look for equality. See
+    [tac_cached_use].
+
+    Finally, we use a cute trick to make the caches look pleasant: a
+    printing-only notation in [cache_hide_scope] that doesn't print the
+    environment and only shows the goal and hypotheses. It's possible to hide
+    things using implicits instead, but this solution has some advantages:
+
+    - Caches are displayed as [cache_for!], which tells you something funny is
+      going on.
+    - We have a little more control over the display (for example, it says
+      [cache_for! ... with ...] as a hint for what the second argument means).
+    - Caches can be temporarily displayed with [Close Scope cache_hide_scope].
+
+ *)
+
 Section bi.
   Context {PROP: bi}.
   Context `{!BiAffine PROP}.
