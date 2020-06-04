@@ -236,29 +236,29 @@ Section goose.
     iApply "HΦ"; iFrame.
   Qed.
 
-  Theorem wpc_RepBlock__Write (Q: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
+  Theorem wpc_RepBlock__Write (Q: iProp Σ) (Qc: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
     (S k < k')%nat →
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
-        "Hfupd" ∷ (∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) }}}
+        "HQc" ∷ (Q -∗ Qc) ∗
+        "Hfupd" ∷ ((∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) ∧ Qc) }}}
       RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ RET #(); Q }}}
-    {{{ (* TODO: fix this to restore any durable resources used in fupd, as
-    usual *)
-         True }}}.
+    {{{ Qc }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hrb".
-    wpc_call; auto.
+    wpc_call.
+    { iRight in "Hfupd"; auto. }
+    iCache with "HΦ Hfupd".
+    { crash_case.
+      iRight in "Hfupd"; auto. }
     wpc_bind_seq.
-    wpc_frame "HΦ"; first by crash_case.
+    wpc_frame "HΦ Hfupd".
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
     iIntros "His_locked". iDestruct "His_locked" as (γlk) "His_locked".
     iNamed 1.
-
-    iCache with "HΦ".
-    { by crash_case. }
 
     wpc_pures.
     wpc_bind_seq.
@@ -267,14 +267,14 @@ Section goose.
     iNamed 1.
     iNamed "Hlkinv".
 
-    iCache with "HP Hprimary Hbackup HΦ".
-    { iSplitL "HΦ"; first by crash_case.
+    iCache with "HP Hprimary Hbackup HΦ Hfupd".
+    { iSplitL "HΦ Hfupd"; first by iFromCache.
       iExists _; iFrame.
       iExists _; iFrame. }
 
     wpc_call.
     wpc_bind (struct.loadF _ _ _).
-    wpc_frame "HΦ Hprimary Hbackup HP".
+    wpc_frame "HΦ Hfupd Hprimary Hbackup HP".
     wp_loadField.
     iNamed 1.
     wpc_apply (wpc_Write_fupd (⊤ ∖ ↑N) ("Hprimary" ∷ int.val addr d↦ b ∗
@@ -290,21 +290,24 @@ Section goose.
       iModIntro; auto. }
     iSplit; [ | iNext ].
     { iIntros "Hpost".
-      iSplitL "HΦ"; first by crash_case.
-      iDestruct "Hpost" as "[Hpost|Hpost]"; iNamed "Hpost".
-      - iExists _; iFrame "HP".
-        iApply rblock_linv_to_cinv; iFrame.
+      iDestruct "Hpost" as "[Hpost|Hpost]"; iNamed "Hpost"; try iFromCache.
+      iSplitL "HΦ HQc HQ".
+      - crash_case.
+        iApply ("HQc" with "[$]").
       - iExists _; iFrame.
         iExists _; iFrame. }
     iIntros "(Hb&Hpost)"; iNamed "Hpost".
-    iCache with "HΦ Hprimary Hbackup HP".
-    { iSplitL "HΦ"; first by crash_case.
+    iCache Φc with "HΦ HQ HQc".
+    { crash_case.
+      iApply ("HQc" with "[$]"). }
+    iCache with "HΦ HQ HQc Hprimary Hbackup HP".
+    { iSplitL "HΦ HQc HQ"; first by iFromCache.
       iExists _; iFrame.
       iExists _; iFrame. }
 
     wpc_pures.
     wpc_bind (struct.loadF _ _ _).
-    wpc_frame "HΦ Hprimary Hbackup HP". (* TODO: can we get these from a cache? *)
+    wpc_frame "HΦ HQ HQc Hprimary Hbackup HP". (* TODO: can we get these from a cache? *)
     wp_loadField.
     iNamed 1.
     wpc_pures.
@@ -312,7 +315,7 @@ Section goose.
     { iFrame. }
     iSplit; [ | iNext ].
     { iIntros "[Hbackup|Hbackup]"; try iFromCache.
-      iSplitL "HΦ"; first by crash_case.
+      iSplitL "HΦ HQ HQc"; first by iFromCache.
       iExists _; iFrame.
       iExists _; iFrame. }
     iIntros "(Hbackup&Hb)".
@@ -321,7 +324,7 @@ Section goose.
     iIntros "His_locked".
     iSplit; last by iFromCache.
     wpc_pures.
-    wpc_frame "HΦ".
+    wpc_frame "HΦ HQ HQc".
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
     iNamed 1.
