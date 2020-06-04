@@ -1,5 +1,7 @@
 From iris.algebra Require Export big_op.
 From iris.proofmode Require Import tactics.
+From iris_string_ident Require Import ltac2_string_ident.
+
 Set Default Proof Using "Type*".
 Local Existing Instances monoid_ne monoid_assoc monoid_comm
   monoid_left_id monoid_right_id monoid_proper
@@ -131,24 +133,51 @@ Section map.
     ([∗ map] k↦y ∈ <[i:=x]> m, Φ k y) ⊣⊢ Φ i x ∗ [∗ map] k↦y ∈ delete i m, Φ k y.
   Proof. rewrite -insert_delete big_sepM_insert ?lookup_delete //. Qed.
 
+  Context `{BiAffine PROP}.
   Lemma big_sepM_mono_wand Φ Ψ m (I : PROP) :
     □ ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
       I ∗ Φ k x -∗ I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) -∗
     I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
   Proof.
-    iIntros "Hwand [HI Hm]".
-  Admitted.
+    iIntros "#Hwand [HI Hm]".
+    iInduction m as [|i x m] "IH" using map_ind.
+    - iFrame. iApply big_sepM_empty. done.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iDestruct ("Hwand" with "[] [$HI $Hi]") as "[HI Hi]".
+      { rewrite lookup_insert. eauto. }
+      iDestruct ("IH" with "[Hwand] HI Hm") as "[HI Hm]".
+      { iModIntro. iIntros (k x0 Hkx0) "[HI Hk]".
+        destruct (decide (k = i)); subst; try congruence.
+        iApply ("Hwand" with "[]").
+        { rewrite lookup_insert_ne; eauto. }
+        iFrame.
+      }
+      iFrame. iApply big_sepM_insert; eauto. iFrame.
+  Qed.
 
-  Context `{FUpd PROP}.
+  Context `{BiFUpd PROP}.
   Lemma big_sepM_mono_fupd Φ Ψ m (I : PROP) E :
    □ ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
       I ∗ Φ k x ={E}=∗ I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) ={E}=∗
     I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
   Proof.
-    iIntros "Hfupd [HI Hm]".
-  Admitted.
+    iIntros "#Hfupd [HI Hm]".
+    iInduction m as [|i x m] "IH" using map_ind.
+    - iModIntro. iFrame. iApply big_sepM_empty. done.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iMod ("Hfupd" with "[] [$HI $Hi]") as "[HI Hi]".
+      { rewrite lookup_insert. eauto. }
+      iMod ("IH" with "[Hfupd] HI Hm") as "[HI Hm]".
+      { iModIntro. iIntros (k x0 Hkx0) "[HI Hk]".
+        destruct (decide (k = i)); subst; try congruence.
+        iApply "Hfupd".
+        { rewrite lookup_insert_ne; eauto. }
+        iFrame.
+      }
+      iFrame. iApply big_sepM_insert; eauto. iFrame. done.
+  Qed.
 
 End map.
 
