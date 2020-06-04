@@ -103,7 +103,7 @@ Proof.
   rewrite (addr_plus_off_decode l) Hl. eapply Hnonnull.
 Qed.
 
-Hint Resolve sN_inv_sub_minus_state.
+Hint Resolve sN_inv_sub_minus_state : core.
 
 Lemma ghost_output j K `{LanguageCtx _ K} E tr lit :
   nclose spec_stateN ⊆ E →

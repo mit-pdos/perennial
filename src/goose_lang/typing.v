@@ -452,7 +452,7 @@ Section goose_lang.
       move: HΓ. rewrite ?lookup_insert_ne //=; eauto.
   Qed.
 
-  Hint Resolve extend_context_add.
+  Hint Resolve extend_context_add : core.
 
   Theorem context_extension Γ (t: ty) e :
       Γ ⊢ e : t ->

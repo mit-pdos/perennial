@@ -271,7 +271,7 @@ Proof.
   repeat constructor.
 Qed.
 
-Hint Resolve has_zero_update.
+Hint Resolve has_zero_update : core.
 
 Theorem wp_SliceAppend_updates {stk E bk_s bs} {uv: u64 * Slice.t} {b} :
   length bs + 1 < 2^64 ->

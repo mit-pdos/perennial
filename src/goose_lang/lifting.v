@@ -843,7 +843,7 @@ Proof.
   rewrite /is_Writing; eauto.
 Qed.
 
-Hint Resolve is_Writing_Some.
+Hint Resolve is_Writing_Some : core.
 
 Lemma wp_prepare_write s E l v :
   {{{ ▷ l ↦ v }}} PrepareWrite (Val $ LitV (LitLoc l)) @ s; E

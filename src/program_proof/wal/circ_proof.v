@@ -895,7 +895,7 @@ Proof.
   rewrite /circ_low_wf; len.
 Qed.
 
-Hint Resolve circ_low_wf_log_blocks.
+Hint Resolve circ_low_wf_log_blocks : core.
 
 Lemma circ_low_wf_update_addrs
       (endpos : u64) (upds : list update.t) (addrs : list u64)

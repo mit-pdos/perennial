@@ -1143,7 +1143,7 @@ Proof.
   inversion 1; auto.
 Qed.
 
-Hint Resolve suchThat_false.
+Hint Resolve suchThat_false : core.
 
 Lemma val_head_stuck e1 σ1 κ e2 σ2 efs : head_step e1 σ1 κ e2 σ2 efs → to_val e1 = None.
 Proof.
