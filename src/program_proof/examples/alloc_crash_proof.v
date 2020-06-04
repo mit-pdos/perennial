@@ -506,11 +506,19 @@ Proof.
     iNamed 1. iApply "HΦ"; iFrame.
 Qed.
 
-Theorem block_cinv_free_pred γ a :
+Lemma block_cinv_free_pred γ a :
   Ψ a -∗ block_cinv γ a.
 Proof.
   iIntros "HΨ".
   iLeft; auto.
+Qed.
+
+Lemma block_cinv_from_used γ a :
+  used_block γ a -∗ block_cinv γ a.
+Proof.
+  rewrite /used_block /block_cinv.
+  iIntros "Hused".
+  iRight; auto.
 Qed.
 
 Lemma prepare_reserved_block E n n' γ e a Φ Φc:
