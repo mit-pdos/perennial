@@ -4,17 +4,16 @@ Import RecordSetNotations.
 From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr.
 
-Section heap.
-Context `{!heapG Σ}.
-Context `{!lockG Σ}.
+Set Implicit Arguments.
 
-Implicit Types s : Slice.t.
-Implicit Types (stk:stuckness) (E: coPset).
+Definition addr := (u64 * u64)%type.
 
-Record addr := {
-  addrBlock : u64;
-  addrOff : u64;
-}.
+Definition addrBlock (a : addr) := fst a.
+Definition addrOff (a : addr) := snd a.
+Definition Build_addr b o : addr := (b, o).
+
+Notation "a '.(addrBlock)'" := (addrBlock a) (at level 0, only parsing).
+Notation "a '.(addrOff)'" := (addrOff a) (at level 0, only parsing).
 
 Global Instance addr_eq_dec : EqDecision addr.
 Proof.
@@ -24,7 +23,7 @@ Defined.
 Global Instance addr_finite : Countable addr.
 Proof.
   refine (inj_countable'
-            (fun a => (a.(addrBlock), a.(addrOff)))
+            (fun a => a)
             (fun '(b, o) => Build_addr b o) _);
     by intros [].
 Qed.
@@ -66,9 +65,9 @@ Proof.
   unfold valid_addr, addr2flat_z, block_bytes in *.
   simpl in *.
   intuition.
-  replace addrOff0 with addrOff1 in *.
-  { replace addrBlock0 with addrBlock1; auto.
-    assert (int.val addrBlock0 * Z.to_nat 4096 * 8 = int.val addrBlock1 * Z.to_nat 4096 * 8) by lia.
+  replace u0 with u2 in *.
+  { replace u with u1; auto.
+    assert (int.val u * Z.to_nat 4096 * 8 = int.val u1 * Z.to_nat 4096 * 8) by lia.
     word.
   }
   word.
@@ -83,7 +82,6 @@ Proof.
   eapply addr2flat_eq; eauto.
 Qed.
 
-Set Implicit Arguments.
 
 Section flatid2addr.
 
@@ -310,123 +308,124 @@ End map.
 
 Section gmap_addr_by_block.
 
-Variable (T : Type).
+  Variable (T : Type).
 
-Definition lookup_block (m : gmap u64 (gmap u64 T)) (blkno : u64) : gmap u64 T :=
-  match m !! blkno with
-  | None => ∅
-  | Some bm => bm
-  end.
+  Definition lookup_block (m : gmap u64 (gmap u64 T)) (blkno : u64) : gmap u64 T :=
+    match m !! blkno with
+    | None => ∅
+    | Some bm => bm
+    end.
 
-Fixpoint gmap_addr_by_block_helper (ml : list (addr * T)) : gmap u64 (gmap u64 T) :=
-  match ml with
-  | [] => ∅
-  | (a, t) :: ml' =>
-    let m' := gmap_addr_by_block_helper ml' in
-    <[ a.(addrBlock) := <[a.(addrOff) := t]> (lookup_block m' a.(addrBlock)) ]> m'
-  end.
+  Fixpoint gmap_addr_by_block_helper (ml : list (addr * T)) : gmap u64 (gmap u64 T) :=
+    match ml with
+    | [] => ∅
+    | (a, t) :: ml' =>
+      let m' := gmap_addr_by_block_helper ml' in
+      <[ a.(addrBlock) := <[a.(addrOff) := t]> (lookup_block m' a.(addrBlock)) ]> m'
+    end.
 
-Definition gmap_addr_by_block (m : gmap addr T) : gmap u64 (gmap u64 T) :=
-  gmap_addr_by_block_helper (map_to_list m).
+  Definition gmap_addr_by_block (m : gmap addr T) : gmap u64 (gmap u64 T) :=
+    gmap_addr_by_block_helper (map_to_list m).
 
-(* TODO: convert to using [gmap_uncurry].  Probably requires changing the
-  definition of the [addr] type to be a tuple.  That requires changing all
-  the uses of [a.(addrBlock)] to be [addrBlock a], etc. *)
+  (* TODO: convert to using [gmap_uncurry].  *)
 
 
-Theorem gmap_addr_by_block_helper_permutation l l' :
-  Permutation l l' ->
-  NoDup (fst <$> l) ->
-  gmap_addr_by_block_helper l = gmap_addr_by_block_helper l'.
-Proof.
-  intros.
-  induction H; simpl; eauto.
-  - destruct x. erewrite IHPermutation; eauto. inversion H0; subst; eauto.
-  - destruct x. destruct y. inversion H0; subst. inversion H3; subst.
-    destruct (decide (a0.(addrBlock) = a.(addrBlock))).
-    + rewrite e. repeat rewrite insert_insert. f_equal.
-      destruct (decide (a0.(addrOff) = a.(addrOff))).
-      * destruct a, a0; simpl in *; subst. set_solver.
-      * rewrite /lookup_block ?lookup_insert.
-        rewrite insert_commute; eauto.
-    + rewrite insert_commute; eauto.
-      f_equal.
-      * rewrite /lookup_block. rewrite lookup_insert_ne; eauto.
-      * rewrite /lookup_block. rewrite lookup_insert_ne; eauto.
-  - erewrite IHPermutation1; eauto.
-    eapply IHPermutation2.
-    rewrite -H. eauto.
-Qed.
+  Theorem gmap_addr_by_block_helper_permutation l l' :
+    Permutation l l' ->
+    NoDup (fst <$> l) ->
+    gmap_addr_by_block_helper l = gmap_addr_by_block_helper l'.
+  Proof.
+    intros.
+    induction H; simpl; eauto.
+    - destruct x. erewrite IHPermutation; eauto. inversion H0; subst; eauto.
+    - destruct x. destruct y. inversion H0; subst. inversion H3; subst.
+      destruct (decide (a0.(addrBlock) = a.(addrBlock))).
+      + rewrite e. repeat rewrite insert_insert. f_equal.
+        destruct (decide (a0.(addrOff) = a.(addrOff))).
+        * destruct a, a0; simpl in *; subst. set_solver.
+        * rewrite /lookup_block ?lookup_insert.
+          rewrite insert_commute; eauto.
+      + rewrite insert_commute; eauto.
+        f_equal.
+        * rewrite /lookup_block. rewrite lookup_insert_ne; eauto.
+        * rewrite /lookup_block. rewrite lookup_insert_ne; eauto.
+    - erewrite IHPermutation1; eauto.
+      eapply IHPermutation2.
+      rewrite -H. eauto.
+  Qed.
 
-Theorem gmap_addr_by_block_empty :
-  gmap_addr_by_block ∅ = ∅.
-Proof.
-  rewrite /gmap_addr_by_block map_to_list_empty /=.
-  reflexivity.
-Qed.
+  Theorem gmap_addr_by_block_empty :
+    gmap_addr_by_block ∅ = ∅.
+  Proof.
+    rewrite /gmap_addr_by_block map_to_list_empty /=.
+    reflexivity.
+  Qed.
 
-Theorem gmap_addr_by_block_insert (m : gmap addr T) (a : addr) (v : T) :
-  m !! a = None ->
-  gmap_addr_by_block (<[a:=v]> m) =
-    <[a.(addrBlock) :=
-      <[a.(addrOff) := v]> (lookup_block (gmap_addr_by_block m) a.(addrBlock))]>
-    (gmap_addr_by_block m).
-Proof.
-  intros.
-  rewrite /gmap_addr_by_block.
-  erewrite gmap_addr_by_block_helper_permutation at 1.
-  2: apply map_to_list_insert; eauto.
-  2: eapply NoDup_fst_map_to_list.
-  reflexivity.
-Qed.
+  Theorem gmap_addr_by_block_insert (m : gmap addr T) (a : addr) (v : T) :
+    m !! a = None ->
+    gmap_addr_by_block (<[a:=v]> m) =
+      <[a.(addrBlock) :=
+        <[a.(addrOff) := v]> (lookup_block (gmap_addr_by_block m) a.(addrBlock))]>
+      (gmap_addr_by_block m).
+  Proof.
+    intros.
+    rewrite /gmap_addr_by_block.
+    erewrite gmap_addr_by_block_helper_permutation at 1.
+    2: apply map_to_list_insert; eauto.
+    2: eapply NoDup_fst_map_to_list.
+    reflexivity.
+  Qed.
 
-Theorem gmap_addr_by_block_filter (m : gmap addr T) (P : u64 -> Prop)
-    `{! ∀ blkno, Decision (P blkno)} :
-  gmap_addr_by_block (filter (λ x, P (fst x).(addrBlock)) m) =
-  filter (λ x, P (fst x)) (gmap_addr_by_block m).
-Proof.
-  rewrite /gmap_addr_by_block map_filter_alt.
-  erewrite gmap_addr_by_block_helper_permutation.
-  2: rewrite map_to_list_to_map; first by reflexivity.
-  3: eapply NoDup_fst_map_to_list.
-  2: admit.
-  generalize (map_to_list m); intros.
-Admitted.
+  Theorem gmap_addr_by_block_filter (m : gmap addr T) (P : u64 -> Prop)
+      `{! ∀ blkno, Decision (P blkno)} :
+    gmap_addr_by_block (filter (λ x, P (fst x).(addrBlock)) m) =
+    filter (λ x, P (fst x)) (gmap_addr_by_block m).
+  Proof.
+    rewrite /gmap_addr_by_block map_filter_alt.
+    erewrite gmap_addr_by_block_helper_permutation.
+    2: rewrite map_to_list_to_map; first by reflexivity.
+    3: eapply NoDup_fst_map_to_list.
+    2: admit.
+    generalize (map_to_list m); intros.
+  Admitted.
 
-Theorem gmap_addr_by_block_off_not_empty (m : gmap addr T) (blkno : u64) (offmap : gmap u64 T) :
-  gmap_addr_by_block m !! blkno = Some offmap ->
-  offmap ≠ ∅.
-Proof.
-Admitted.
+  Theorem gmap_addr_by_block_off_not_empty (m : gmap addr T) (blkno : u64) (offmap : gmap u64 T) :
+    gmap_addr_by_block m !! blkno = Some offmap ->
+    offmap ≠ ∅.
+  Proof.
+  Admitted.
 
-Theorem gmap_addr_by_block_lookup (m : gmap addr T) (a : addr) (v : T) :
-  m !! a = Some v ->
-  ∃ offmap,
-    gmap_addr_by_block m !! a.(addrBlock) = Some offmap ∧
-    offmap !! a.(addrOff) = Some v.
-Proof.
-Admitted.
+  Theorem gmap_addr_by_block_lookup (m : gmap addr T) (a : addr) (v : T) :
+    m !! a = Some v ->
+    ∃ offmap,
+      gmap_addr_by_block m !! a.(addrBlock) = Some offmap ∧
+      offmap !! a.(addrOff) = Some v.
+  Proof.
+  Admitted.
 
 
-Context {PROP : bi}.
+  Context {PROP : bi}.
 
-Theorem gmap_addr_by_block_big_sepM (m : gmap addr T) (Φ : addr -> T -> PROP) :
-  ( [∗ map] a ↦ v ∈ m, Φ a v ) -∗
-  ( [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block m,
-      [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ).
-Proof.
-  iIntros "Hm".
-  replace m with (list_to_map (map_to_list m) : gmap addr T) at 1.
-  2: { apply list_to_map_to_list. }
-  rewrite /gmap_addr_by_block.
-  assert (NoDup (fst <$> map_to_list m)).
-  { apply NoDup_fst_map_to_list. }
-  revert H.
-  generalize (map_to_list m); intros.
-Admitted.
+  Theorem gmap_addr_by_block_big_sepM (m : gmap addr T) (Φ : addr -> T -> PROP) :
+    ( [∗ map] a ↦ v ∈ m, Φ a v ) -∗
+    ( [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block m,
+        [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ).
+  Proof.
+    iIntros "Hm".
+    replace m with (list_to_map (map_to_list m) : gmap addr T) at 1.
+    2: { apply list_to_map_to_list. }
+    rewrite /gmap_addr_by_block.
+    assert (NoDup (fst <$> map_to_list m)).
+    { apply NoDup_fst_map_to_list. }
+    revert H.
+    generalize (map_to_list m); intros.
+  Admitted.
 
 End gmap_addr_by_block.
 
+
+Section heap.
+Context `{!heapG Σ}.
 
 Hint Unfold block_bytes : word.
 Hint Unfold valid_addr : word.
