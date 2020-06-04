@@ -53,7 +53,7 @@ Section goose.
       "#d" ∷ readonly (l ↦[RepBlock.S :: "d"] #d_ref) ∗
       "#addr" ∷ readonly (l ↦[RepBlock.S :: "addr"] #addr) ∗
       "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_ref) ∗
-      "#Hlock" ∷ is_crash_lock N N (LVL k') γ #m_ref (* XXX: what is the nat? *)
+      "#Hlock" ∷ is_crash_lock N N (LVL k') γ #m_ref
       (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)
       (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)
   .
@@ -76,16 +76,19 @@ Section goose.
     {{{ rblock_cinv addr σ ∗ P σ }}}
       Open #d_ref #addr @ NotStuck;LVL (S (S k)); ⊤;E2
     {{{ γ (l:loc), RET #l; is_rblock γ k' l addr }}}
-    {{{ rblock_cinv addr σ ∗ P σ }}}.
+    {{{ ∃ σ', rblock_cinv addr σ' ∗ P σ' }}}.
   Proof.
     iIntros (? Φ Φc) "(Hinv&HP) HΦ"; iNamed "Hinv".
     iDeexHyp "Hbackup".
     wpc_call.
     { iFrame.
-      iExists _; iFrame. }
+      iExists _; iFrame.
+      iExists _; iFrame.
+    }
     iCache with "Hprimary Hbackup HP HΦ".
     { crash_case.
       iFrame.
+      iExists _; iFrame.
       iExists _; iFrame. }
     wpc_apply (wpc_Read with "Hprimary").
     iSplit; [ | iNext ].
@@ -99,10 +102,12 @@ Section goose.
     { iIntros "[Hbackup|Hbackup]"; try iFromCache.
       crash_case.
       iFrame.
+      iExists _; iFrame.
       iExists _; iFrame. }
     iIntros "(Hbackup&_)".
     iCache with "HP HΦ Hprimary Hbackup".
     { crash_case; iFrame.
+      iExists _; iFrame.
       iExists _; iFrame. }
 
     (* allocate lock *)
@@ -129,9 +134,7 @@ Section goose.
     (* allocate struct *)
     rewrite -wpc_fupd.
     wpc_frame "HΦ".
-    { iNamed 1. crash_case. admit. (* TODO: stuck, crash lock subtracted the
-    crash invariant but this is too weak (it replaced the initial σ with an arbitrary
-    σ') *) }
+    { iNamed 1. crash_case. iExists _; iFrame. }
     wp_apply wp_allocStruct; auto.
     iIntros (l) "Hrb".
     iNamed 1.
@@ -144,7 +147,7 @@ Section goose.
     iModIntro.
     iApply "HΦ".
     iExists _, _; iFrame.
-  Admitted.
+  Qed.
 
   Theorem wp_RepBlock__readAddr addr l (primary: bool) :
     {{{ readonly (l ↦[RepBlock.S :: "addr"] #addr) }}}
@@ -164,6 +167,7 @@ Section goose.
   Theorem wpc_RepBlock__Read (Q: Block → iProp Σ) (Qc: iProp Σ) {k E2} {k' γ l} addr (primary: bool) :
     (S k < k')%nat →
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
+        "HQc" ∷ (∀ σ, Q σ -∗ Qc) ∗
         "Hfupd" ∷ ((∀ σ, P σ ={⊤ ∖ ↑N}=∗ P σ ∗ Q σ) ∧ Qc) }}}
       RepBlock__Read #l #primary @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ s b, RET (slice_val s); is_block s 1 b ∗ Q b }}}
@@ -205,8 +209,9 @@ Section goose.
     iSplit; [ | iNext ].
     { iIntros "Hd".
       iSpecialize ("Hlkinv" with "Hd").
-      (* iSplitL "HΦ Hfupd"; first by prove_crash1. *)
-      iSplitL "HΦ"; first by admit.
+      iSplitL "HΦ HQ HQc".
+      { crash_case.
+        iApply ("HQc" with "HQ"). }
       iExists _; iFrame.
       iApply rblock_linv_to_cinv; iFrame. }
     iIntros (s) "(Haddr'&Hb)".
@@ -216,10 +221,12 @@ Section goose.
     (* TODO: why is this the second goal? *)
     { iExists _; iFrame. }
     iIntros "His_locked".
-    iSplit; last by admit. (* TODO: why is this the second goal? *)
-    wpc_pures; first by admit.
-
-    wpc_frame "HΦ"; first by admit.
+    iCache Φc with "HΦ HQ HQc".
+    { crash_case.
+      iApply ("HQc" with "HQ"). }
+    iSplit; last by iFromCache. (* TODO: why is this the second goal? *)
+    wpc_pures.
+    wpc_frame "HΦ HQ HQc".
 
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
@@ -227,7 +234,7 @@ Section goose.
     iNamed 1.
     iRight in "HΦ".
     iApply "HΦ"; iFrame.
-  Admitted.
+  Qed.
 
   Theorem wpc_RepBlock__Write (Q: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
     (S k < k')%nat →
