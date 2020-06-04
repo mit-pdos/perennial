@@ -15,6 +15,8 @@ Definition Build_addr b o : addr := (b, o).
 Notation "a '.(addrBlock)'" := (addrBlock a) (at level 0, only parsing).
 Notation "a '.(addrOff)'" := (addrOff a) (at level 0, only parsing).
 
+Remove Hints finite.finite_countable : typeclass_instances.
+
 Definition addr2val (a : addr) : val :=
   (#a.(addrBlock), (#a.(addrOff), #())).
 
