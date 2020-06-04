@@ -449,28 +449,8 @@ Opaque struct.t.
 Transparent struct.t.
 Admitted.
 
-Definition vtake' {A} (i n : nat) (H : (i ≤ n)%nat) (v : vec A n) : vec A i.
-  destruct (decide (i = n)%nat); subst.
-  - exact v.
-  - assert (i < n)%nat as Hf by abstract lia.
-    replace i with (fin_to_nat (nat_to_fin Hf)) by abstract rewrite fin_to_nat_to_fin //.
-    refine (vtake _ v).
-Defined.
-
-Definition vdrop' {A} (i n : nat) (H : (i < n)%nat) (v : vec A n) : vec A (n-i).
-  replace i with (fin_to_nat (nat_to_fin H)) by abstract rewrite fin_to_nat_to_fin //.
-  refine (vdrop _ v).
-Defined.
-
-Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : option (vec u8 elemsize).
-  destruct (decide (elemsize = 0)%nat); first exact None.
-  destruct (decide ((S n) * elemsize <= block_bytes)%nat); last exact None.
-  refine (Some _).
-
-  replace elemsize with ((S n * elemsize) - n * elemsize)%nat by abstract lia.
-  refine (vdrop' _ _ _ _); first abstract lia.
-  refine (vtake' _ _ _ b); abstract lia.
-Defined.
+Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list val :=
+  drop (n * elemsize) (take ((S n) * elemsize) (Block_to_vals b)).
 
 Lemma roundup_multiple a b:
   b > 0 ->
@@ -483,51 +463,12 @@ Proof.
   - lia.
 Qed.
 
-Lemma extract_nth_skipn_firstn blk sz offcount e:
-  extract_nth blk sz offcount = Some e ->
-  b2val <$> vec_to_list e =
-    skipn (offcount*sz)
-          (firstn (offcount*sz + sz) (Block_to_vals blk)).
-Proof.
-  pose proof (length_Block_to_vals blk) as H; revert H.
-  rewrite /extract_nth /Block_to_vals fmap_length; intros.
-  rewrite -fmap_take -fmap_drop. f_equal.
-
-  destruct (decide (sz = 0)%nat); try congruence.
-  destruct (decide ((S offcount) * sz ≤ block_bytes)%nat); try congruence.
-  inversion H0; clear H0; subst.
-
-  rewrite /vtake' /vdrop'.
-  destruct (decide (sz + offcount * sz = block_bytes)%nat).
-  - rewrite -> firstn_all2 by lia.
-
-    assert (offcount * sz < block_bytes)%nat as Hf by lia.
-    replace (@drop u8 (offcount * sz)) with (@drop u8 (fin_to_nat (nat_to_fin Hf))).
-    2: { rewrite fin_to_nat_to_fin; auto. }
-    rewrite -vec_to_list_drop.
-
-    admit.
-
-  - assert (offcount * sz + sz < block_bytes)%nat as Hf by lia.
-    replace (offcount * sz + sz)%nat with (fin_to_nat (nat_to_fin Hf)).
-    2: { rewrite fin_to_nat_to_fin; auto. }
-    rewrite -vec_to_list_take.
-
-    assert (offcount * sz < (@fin_to_nat block_bytes (nat_to_fin Hf)))%nat as Hf2.
-    { rewrite fin_to_nat_to_fin. lia. }
-    replace (@drop u8 (offcount * sz)%nat) with (@drop u8 (fin_to_nat (nat_to_fin Hf2))).
-    2: { rewrite fin_to_nat_to_fin; auto. }
-    rewrite -vec_to_list_drop.
-
-    admit.
-Admitted.
-
 Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop :=
   valid_off K off ∧
   match d with
   | bufBlock d => b = d
-  | bufInode i => extract_nth b inode_bytes ((int.nat off)/(inode_bytes*8)) = Some i
-  | bufBit d => ∃ (b0 : u8), extract_nth b 1 ((int.nat off)/8) = Some (Vector.of_list [b0]) ∧
+  | bufInode i => extract_nth b inode_bytes ((int.nat off)/(inode_bytes*8)) = inode_to_vals i
+  | bufBit d => ∃ (b0 : u8), extract_nth b 1 ((int.nat off)/8) = #b0 :: nil ∧
       get_bit b0 (word.modu off 8) = d
   end.
 
@@ -606,17 +547,16 @@ Proof using.
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
 
   iDestruct (buf_mapsto_non_null with "[$]") as %Hnotnull.
+  iExists _.
+  iSplitR "Hs".
+  { iExists _. rewrite /=. iFrame. iPureIntro. intuition eauto. congruence. }
 
-(*
   rewrite /valid_off in Hoff.
 Opaque PeanoNat.Nat.div.
   destruct bufdata; cbn; cbn in Hatoff.
   - destruct Hatoff; intuition.
-    iSplitR.
-    { iPureIntro. congruence. }
     iExists _.
     iSplitL; last eauto.
-    iExactEq "Hs"; f_equal.
 
     unfold valid_addr in *.
     unfold addr2flat_z in *.
@@ -636,23 +576,24 @@ Opaque PeanoNat.Nat.div.
         apply Zdiv_le_upper_bound; lia.
     }
 
-    eapply extract_nth_skipn_firstn in H3.
-    rewrite /b2val /= in H3.
-    rewrite H3.
+    rewrite -H3 /extract_nth.
+    replace (int.nat a.(addrOff) `div` 8 * 1)%nat with (int.nat a.(addrOff) `div` 8)%nat by lia.
+    replace (S (int.nat a.(addrOff) `div` 8) * 1)%nat with (S (int.nat a.(addrOff) `div` 8))%nat by lia.
+    iExactEq "Hs". f_equal.
     f_equal.
-    { replace (int.nat a.(addrOff) `div` 8 * 1)%nat with (int.nat a.(addrOff) `div` 8)%nat by lia.
+    { admit. }
+    f_equal.
+    { admit. }
+
+(*
       apply Nat2Z.inj.
       rewrite -> div_Zdiv by lia.
       rewrite -> Z2Nat.id by lia.
       rewrite -> Z2Nat.id by ( eapply Z_div_pos; lia ).
       lia.
-    }
-    f_equal.
-    { admit. }
+*)
 
-  - iSplitR.
-    { iPureIntro. congruence. }
-    iExactEq "Hs"; f_equal.
+  - iExactEq "Hs"; f_equal.
 
     unfold valid_addr in *.
     unfold addr2flat_z in *.
@@ -672,16 +613,13 @@ Opaque PeanoNat.Nat.div.
         apply Zdiv_le_upper_bound; lia.
     }
 
-    eapply extract_nth_skipn_firstn in Hatoff.
-    rewrite /inode_to_vals Hatoff.
+    rewrite -Hatoff /extract_nth.
     f_equal.
     { admit. }
     f_equal.
     { admit. }
 
   - intuition subst.
-    iSplitR.
-    { iPureIntro. congruence. }
     iExactEq "Hs".
 
     assert (a.(addrOff) = 0) as Hoff0.
@@ -700,7 +638,6 @@ Opaque PeanoNat.Nat.div.
     rewrite firstn_all2.
     2: { rewrite length_Block_to_vals /block_bytes. word. }
     rewrite skipn_O //.
-*)
 Admitted.
 
 Theorem wp_Buf__Install bufptr a b blk_s blk :
