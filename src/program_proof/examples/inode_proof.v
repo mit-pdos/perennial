@@ -423,25 +423,26 @@ Theorem wpc_Inode__Append {k E2}
 Proof.
   iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iNamed "Hinode".
-  Ltac prove_crash1 ::= crash_case; solve [ iPureIntro; trivial ].
-  wpc_call; first by prove_crash1.
+  wpc_call; first by auto.
+  iCache with "HΦ".
+  { crash_case; auto. }
   wpc_apply (wpc_Reserve _ _ _ (λ ma, emp)%I emp with "[$Halloc]"); auto.
   { (* Reserve fupd *)
     iSplit; auto.
     iIntros (σ σ' ma Htrans) "HP".
     iMod ("Halloc_fupd" with "[] HP"); eauto. }
   iSplit.
-  { iIntros "_"; prove_crash1. }
+  { iIntros "_"; iFromCache. }
   iIntros "!>" (a ok) "Hblock".
-  wpc_pures; first by prove_crash1.
+  wpc_pures.
   wpc_if_destruct.
-  - wpc_pures; first by prove_crash1.
+  - wpc_pures.
     iRight in "HΦ".
     by iApply "HΦ".
   - iDestruct "Hblock" as "[_ Hb]".
-    wpc_pures; first by prove_crash1.
+    wpc_pures.
     iApply (prepare_reserved_block with "Hb"); auto.
-    iSplit; first by prove_crash1.
+    iSplit; first by iFromCache.
     iIntros "Hb Hreserved".
     iDeexHyp "Hb".
     iAssert (□ ∀ b0 R, int.val a d↦ b0 ∗
@@ -452,19 +453,19 @@ Proof.
       { crash_case; auto. }
       iApply block_cinv_free_pred.
       iExists _; iFrame. }
-    Ltac prove_crash2 :=
-      iApply ("Hbc" with "[$]").
-    wpc_apply (wpc_Write with "[Hb $Hbdata]").
-    { iExists _; iFrame. }
+
+    iCache with "HΦ Hb".
+    { iApply ("Hbc" with "[$]"). }
+    wpc_apply (wpc_Write' with "[$Hb $Hbdata]").
     iSplit.
-    { iIntros "Hb".
-      iDestruct "Hb" as (b') "(Hb&Hbdata)".
-      prove_crash2. }
+    { iIntros "[Hb|Hb]"; try iFromCache.
+      iApply ("Hbc" with "[$]"). }
     iIntros "!> [Hda _]".
 
-    wpc_pures; first by prove_crash2.
-    wpc_bind (lock.acquire _).
-    wpc_frame "Hda HΦ"; first by prove_crash2.
+    iCache with "HΦ Hda"; first by (iApply ("Hbc" with "[$]")).
+    wpc_pures.
+    wpc_bind_seq.
+    wpc_frame "Hda HΦ".
     wp_loadField.
     wp_apply (acquire_spec' with "Hlock"); first by solve_ndisj.
     iIntros "(His_locked&Hlk)"; iNamed "Hlk".
@@ -472,9 +473,9 @@ Proof.
     iNamed "Hdurable".
     iNamed 1.
 
-    wpc_pures; first by prove_crash2.
+    wpc_pures.
     wpc_bind (slice.len _ ≥ _)%E.
-    wpc_frame "Hda HΦ"; first by prove_crash2.
+    wpc_frame "Hda HΦ".
     wp_loadField.
     iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
     iDestruct (big_sepL2_length with "Hdata") as %Hlen2.
@@ -483,8 +484,8 @@ Proof.
     iNamed 1.
     wpc_if_destruct.
     + (* don't have space, need to return block *)
-      wpc_pures; first by prove_crash2.
-      wpc_frame "Hda HΦ"; first by prove_crash2.
+      wpc_pures.
+      wpc_frame "Hda HΦ".
       wp_apply (wp_Free _ _ _ emp with "[$Halloc Hreserved]").
       { admit. (* TODO: not true, Ncrash should be independent of invariant namespace *) }
       { admit. (* need assumption *) }
@@ -506,13 +507,12 @@ Proof.
       (* this goals are entirely in the wrong order (should go block_cinv, then
       Φc, then Φ) *)
       iSplitR "Hda".
-      { iSplit.
-        - iRight in "HΦ".
-          iApply "HΦ"; auto.
-        - prove_crash1. }
+      { iSplit; last iFromCache.
+        iRight in "HΦ".
+        iApply "HΦ"; auto. }
       iApply block_cinv_free_pred.
       iExists _; iFrame.
-    + wpc_pures; first by prove_crash2.
+    + wpc_pures.
 
     (*
   - wp_loadField.
