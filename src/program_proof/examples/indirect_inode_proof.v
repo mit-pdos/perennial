@@ -162,51 +162,119 @@ Proof.
   - rewrite take_0. simpl in *; auto.
 Qed.
 
-(*
 Theorem wp_Open {d:loc} {addr σ P} :
   addr = σ.(inode.addr) ->
   {{{ is_inode_durable σ ∗ P σ }}}
-    inode.Open #d #addr
+    indirect_inode.Open #d #addr
   {{{ l γ, RET #l; is_inode l γ P }}}.
 Proof.
   intros ->.
   iIntros (Φ) "(Hinode&HP) HΦ"; iNamed "Hinode".
-  iDestruct (big_sepL2_length with "Hdata") as %Hblocklen.
+  iDestruct (big_sepL2_length with "HdataDirect") as %Hblocklen.
+  destruct Hlen as [HdirLen [HindirLen [HszEqLen [HszMax [HnumInd HindBlksLen]]]]].
+
   wp_call.
   wp_apply (wp_Read with "Hhdr").
-  iIntros (s) "(Hhdr&Hs)"
-.
+  iIntros (s) "(Hhdr&Hs)".
   wp_pures.
   iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
   rewrite Hencoded.
-  wp_apply (wp_NewDec with "Hs").
+
+  assert (encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) =
+          encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) ++ [])
+  as HappNil.
+  { rewrite app_nil_r; auto. }
+  rewrite HappNil.
+  wp_apply (wp_NewDec _ _ s ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) []
+                      with "Hs").
   iIntros (dec) "[Hdec %Hsz]".
+
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
   wp_pures.
-  wp_apply (wp_Dec__GetInts _ _ _ addrs _ nil with "[Hdec]").
-  { rewrite app_nil_r; iFrame.
-    iPureIntro.
-    rewrite Hblocklen.
-    word. }
-  iIntros (addr_s) "[_ Haddrs]".
-  wp_pures.
-  rewrite -wp_fupd.
-  wp_apply wp_new_free_lock.
-  iIntros (γ lref) "Hlock".
-  wp_apply wp_allocStruct; auto.
-  iIntros (l) "Hinode".
-  iDestruct (struct_fields_split with "Hinode") as "(d&m&addr&addrs&_)".
-  iMod (readonly_alloc_1 with "d") as "#d".
-  iMod (readonly_alloc_1 with "m") as "#m".
-  iMod (alloc_lock inodeN ⊤ _ _
-                   (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ)%I
-          with "[$Hlock] [-HΦ]") as "#Hlock".
-  { iExists _; iFrame.
-    iExists _, _, _, _; iFrame "% ∗". }
-  iModIntro.
-  iApply "HΦ".
-  iExists _, _; iFrame "#".
-Qed.
+  wp_call.
+
+  destruct (bool_decide (int.val sz <= int.val 500)); wp_pures.
+  {
+    wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ([EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) with "[Hdec]").
+    { iFrame.
+      iPureIntro.
+      unfold maxDirect in *.
+      word.
+    }
+    iIntros (diraddr_s) "[Hdec Hdiraddrs]".
+    wp_pures.
+
+    wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
+    wp_pures.
+
+    wp_apply (wp_Dec__GetInts _ _ _ indAddrs _ [] with "[Hdec]").
+    { rewrite app_nil_r. iFrame.
+      iPureIntro.
+      unfold maxIndirect in *.
+      word.
+    }
+    iIntros (indaddr_s) "[_ Hindaddrs]".
+    wp_pures.
+
+    rewrite -wp_fupd.
+    wp_apply wp_new_free_lock.
+    iIntros (γ lref) "Hlock".
+    wp_apply (wp_SliceTake uint64T sz).
+    {
+      admit.
+    }
+    wp_call.
+    admit.
+  }
+  {
+    wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ([EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) with "[Hdec]").
+    { iFrame.
+      iPureIntro.
+      unfold maxDirect in *.
+      word.
+    }
+    iIntros (diraddr_s) "[Hdec Hdiraddrs]".
+    wp_pures.
+
+    wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
+    wp_pures.
+
+    wp_apply (wp_Dec__GetInts _ _ _ indAddrs _ [] with "[Hdec]").
+    { rewrite app_nil_r. iFrame.
+      iPureIntro.
+      unfold maxIndirect in *.
+      word.
+    }
+    iIntros (indaddr_s) "[_ Hindaddrs]".
+    wp_pures.
+
+    rewrite -wp_fupd.
+    wp_apply wp_new_free_lock.
+    iIntros (γ lref) "Hlock".
+    wp_apply (wp_SliceTake uint64T 500).
+    {
+      admit.
+    }
+    wp_call.
+    wp_call.
+    unfold slice.ptr.
+    admit.
+  }
+
+    (*wp_apply wp_allocStruct; auto.
+    iIntros (l) "Hinode".
+    iDestruct (struct_fields_split with "Hinode") as "(d&m&addr&addrs&_)".
+    iMod (readonly_alloc_1 with "d") as "#d".
+    iMod (readonly_alloc_1 with "m") as "#m".
+    iMod (alloc_lock inodeN ⊤ _ _
+                    (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ)%I
+            with "[$Hlock] [-HΦ]") as "#Hlock".
+    { iExists _; iFrame.
+      iExists _, _, _, _; iFrame "% ∗". }
+    iModIntro.
+    iApply "HΦ".
+    iExists _, _; iFrame "#".*)
+Admitted.
 
 Theorem wp_Inode__UsedBlocks {l γ P} :
   (* TODO: it would be cool to run this before allocating the lock invariant for
