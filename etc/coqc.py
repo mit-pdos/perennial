@@ -187,6 +187,8 @@ def read_coqproject(fname):
     args = []
     with open(fname) as f:
         for line in f:
+            if line.startswith("#"):
+                continue
             args.extend(line.rstrip().split(" "))
     return [arg for arg in args if arg != "-arg"]
 
@@ -197,7 +199,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--proj", default=None, help="path to _CoqProject to use for options"
+        "--proj", default=None, help="path to __CoqProject to use for options",
     )
 
     parser.add_argument(

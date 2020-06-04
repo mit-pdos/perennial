@@ -1,5 +1,8 @@
 -Q src Perennial
--arg -w -arg -notation-overridden,-redundant-canonical-projection,-several-object-files,-implicit-core-hint-db,-undeclared-scope,-solve_obligation_error,-auto-template,-ambiguous-paths,-convert_concl_no_check,-funind-cannot-define-graph,-funind-cannot-build-inversion
+-arg -w -arg -implicit-core-hint-db
+# Iris-disabled warnings
+-arg -w -arg -notation-overridden,-redundant-canonical-projection,-convert_concl_no_check,-undeclared-scope
+-arg -w -arg -funind-cannot-define-graph,-funind-cannot-build-inversion
 -Q external/iris/theories iris
 -Q external/stdpp/theories stdpp
 -Q external/coqutil/src/coqutil coqutil

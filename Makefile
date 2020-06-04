@@ -26,7 +26,9 @@ vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
 
 _CoqProject: _CoqProject.in
-	@cat $< > $@
+	@echo "COQPROJECT"
+	@echo "# auto-generated - DO NOT EDIT (see _CoqProject.in)" > $@
+	@cat $< >> $@
 	@if coqc --version | grep -q -F 'version 8.11' ; then \
 		echo "-Q external/string-ident-v8.11/theories iris_string_ident"; \
 		else \
