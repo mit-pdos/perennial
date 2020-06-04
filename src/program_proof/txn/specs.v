@@ -597,6 +597,7 @@ Opaque struct.t.
       intro diskLatest; intros.
       intro off; intros.
 
+      destruct a.
       eapply valid_off_block in H2; eauto.
       eapply valid_off_block in H5; eauto.
       rewrite H2. rewrite H5.
@@ -637,7 +638,7 @@ Opaque struct.t.
             "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh ∗
             "Hblks" ∷ is_map blks blkmap' ∗
             "%" ∷ ⌜ blkmap' !! a.(addrBlock) = Some blkslice ⌝ ∗
-            "%" ∷ ⌜ updBlockOK a.(addrBlock) blk buf.(bufKind) (locked_wh_disk lwh) (lookup_block (gmap_addr_by_block (bufamap ∖ bufamap_todo)) a.(addrBlock)) ⌝
+            "%" ∷ ⌜ updBlockOK a.(addrBlock) blk buf.(bufKind) (locked_wh_disk lwh) (default ∅ ((gmap_addr_by_block (bufamap ∖ bufamap_todo)) !! a.(addrBlock))) ⌝
         )%I
         with "[Hbufamap_done Hisbuf Hblkvar Hlockedheap Hblks]"); first iSplit.
       {
@@ -651,7 +652,7 @@ Opaque struct.t.
         iExists _, _, _. iFrame.
         iSplit; first by done.
         iPureIntro.
-        rewrite /lookup_block Hx.
+        rewrite Hx.
         destruct H1. destruct H1. intuition idtac.
         rewrite H1 in H6. inversion H6; clear H6; subst. eauto.
       }
@@ -680,7 +681,7 @@ Opaque struct.t.
         iSplit; first by done.
         iPureIntro.
 
-        rewrite /lookup_block Hnone.
+        rewrite Hnone.
         intro diskLatest; intros.
         intro off; intros.
         rewrite lookup_empty; intros.
@@ -725,8 +726,8 @@ Opaque struct.t.
         rewrite lookup_insert.
         specialize (Hinstall_ok a.(addrOff)).
         destruct (decide (a.(addrOff) = a.(addrOff))); try congruence.
-        destruct (lookup_block (gmap_addr_by_block (bufamap ∖ bufamap_todo))
-                    a.(addrBlock) !! a.(addrOff)); eauto.
+        destruct (default ∅ ((gmap_addr_by_block (bufamap ∖ bufamap_todo)) !!
+                    a.(addrBlock)) !! a.(addrOff)); eauto.
         intuition eauto.
         destruct b0; simpl in *.
         subst. eauto.
@@ -734,8 +735,8 @@ Opaque struct.t.
       + rewrite lookup_insert_ne; eauto.
         specialize (Hinstall_ok off).
         destruct (decide (off = a.(addrOff))); try congruence.
-        destruct (lookup_block (gmap_addr_by_block (bufamap ∖ bufamap_todo))
-                    a.(addrBlock) !! off); eauto.
+        destruct (default ∅ ((gmap_addr_by_block (bufamap ∖ bufamap_todo)) !!
+                    a.(addrBlock)) !! off); eauto.
         destruct b0; simpl in *. intuition subst.
         eauto.
   }
