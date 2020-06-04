@@ -6,7 +6,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import addr.
 
 Set Implicit Arguments.
 
-Definition addr := (u64 * u64)%type.
+Definition addr : Type := u64 * u64.
 
 Definition addrBlock (a : addr) := fst a.
 Definition addrOff (a : addr) := snd a.
@@ -14,19 +14,6 @@ Definition Build_addr b o : addr := (b, o).
 
 Notation "a '.(addrBlock)'" := (addrBlock a) (at level 0, only parsing).
 Notation "a '.(addrOff)'" := (addrOff a) (at level 0, only parsing).
-
-Global Instance addr_eq_dec : EqDecision addr.
-Proof.
-  solve_decision.
-Defined.
-
-Global Instance addr_finite : Countable addr.
-Proof.
-  refine (inj_countable'
-            (fun a => a)
-            (fun '(b, o) => Build_addr b o) _);
-    by intros [].
-Qed.
 
 Definition addr2val (a : addr) : val :=
   (#a.(addrBlock), (#a.(addrOff), #())).
@@ -306,74 +293,85 @@ Section map.
 End map.
 
 
+Section gmap_curry.
+
+  Context `{EqDecision A} `{Countable A}.
+  Context `{EqDecision B} `{Countable B}.
+  Variable (T : Type).
+
+  Theorem gmap_uncurry_insert (m : gmap (A * B) T) (k : A * B) (v : T) :
+    m !! k = None ->
+    gmap_uncurry (<[k:=v]> m) =
+      <[fst k :=
+        <[snd k := v]> (default ∅ ((gmap_uncurry m) !! fst k))]>
+      (gmap_uncurry m).
+  Proof.
+    intros.
+    destruct k as [b o].
+    rewrite /gmap_uncurry.
+    rewrite map_fold_insert_L; eauto.
+    2: {
+      intros.
+      destruct j1, j2.
+      destruct (decide (a = a0)); subst.
+      - repeat rewrite <- partial_alter_compose.
+        apply partial_alter_ext.
+        destruct x; intros; simpl.
+        + rewrite insert_commute; eauto. congruence.
+        + rewrite insert_commute; eauto. congruence.
+      - rewrite partial_alter_commute; eauto.
+    }
+
+    simpl.
+    eapply partial_alter_ext; intros.
+    rewrite H2. reflexivity.
+  Qed.
+
+  Theorem gmap_uncurry_lookup_exists (m : gmap (A * B) T) (k : A * B) (v : T) :
+    m !! k = Some v ->
+    ∃ offmap,
+      gmap_uncurry m !! (fst k) = Some offmap ∧
+      offmap !! (snd k) = Some v.
+  Proof.
+    intros.
+    destruct k.
+    destruct (gmap_uncurry m !! a) eqn:He.
+    - eexists; intuition eauto.
+      rewrite -lookup_gmap_uncurry in H1.
+      rewrite He in H1; simpl in H1. eauto.
+    - exfalso. simpl in He.
+      pose proof (lookup_gmap_uncurry_None m a). destruct H2.
+      rewrite H2 in H1; eauto. congruence.
+  Qed.
+
+End gmap_curry.
+
+
 Section gmap_addr_by_block.
 
   Variable (T : Type).
 
-  Definition lookup_block (m : gmap u64 (gmap u64 T)) (blkno : u64) : gmap u64 T :=
-    match m !! blkno with
-    | None => ∅
-    | Some bm => bm
-    end.
-
-  Fixpoint gmap_addr_by_block_helper (ml : list (addr * T)) : gmap u64 (gmap u64 T) :=
-    match ml with
-    | [] => ∅
-    | (a, t) :: ml' =>
-      let m' := gmap_addr_by_block_helper ml' in
-      <[ a.(addrBlock) := <[a.(addrOff) := t]> (lookup_block m' a.(addrBlock)) ]> m'
-    end.
-
   Definition gmap_addr_by_block (m : gmap addr T) : gmap u64 (gmap u64 T) :=
-    gmap_addr_by_block_helper (map_to_list m).
-
-  (* TODO: convert to using [gmap_uncurry].  *)
-
-
-  Theorem gmap_addr_by_block_helper_permutation l l' :
-    Permutation l l' ->
-    NoDup (fst <$> l) ->
-    gmap_addr_by_block_helper l = gmap_addr_by_block_helper l'.
-  Proof.
-    intros.
-    induction H; simpl; eauto.
-    - destruct x. erewrite IHPermutation; eauto. inversion H0; subst; eauto.
-    - destruct x. destruct y. inversion H0; subst. inversion H3; subst.
-      destruct (decide (a0.(addrBlock) = a.(addrBlock))).
-      + rewrite e. repeat rewrite insert_insert. f_equal.
-        destruct (decide (a0.(addrOff) = a.(addrOff))).
-        * destruct a, a0; simpl in *; subst. set_solver.
-        * rewrite /lookup_block ?lookup_insert.
-          rewrite insert_commute; eauto.
-      + rewrite insert_commute; eauto.
-        f_equal.
-        * rewrite /lookup_block. rewrite lookup_insert_ne; eauto.
-        * rewrite /lookup_block. rewrite lookup_insert_ne; eauto.
-    - erewrite IHPermutation1; eauto.
-      eapply IHPermutation2.
-      rewrite -H. eauto.
-  Qed.
+    gmap_uncurry m.
 
   Theorem gmap_addr_by_block_empty :
     gmap_addr_by_block ∅ = ∅.
   Proof.
-    rewrite /gmap_addr_by_block map_to_list_empty /=.
-    reflexivity.
+    rewrite /gmap_addr_by_block /gmap_uncurry.
+    apply map_fold_empty.
   Qed.
 
   Theorem gmap_addr_by_block_insert (m : gmap addr T) (a : addr) (v : T) :
     m !! a = None ->
     gmap_addr_by_block (<[a:=v]> m) =
       <[a.(addrBlock) :=
-        <[a.(addrOff) := v]> (lookup_block (gmap_addr_by_block m) a.(addrBlock))]>
+        <[a.(addrOff) := v]> (default ∅ ((gmap_addr_by_block m) !! a.(addrBlock)))]>
       (gmap_addr_by_block m).
   Proof.
     intros.
+    destruct a as [b o].
     rewrite /gmap_addr_by_block.
-    erewrite gmap_addr_by_block_helper_permutation at 1.
-    2: apply map_to_list_insert; eauto.
-    2: eapply NoDup_fst_map_to_list.
-    reflexivity.
+    rewrite gmap_uncurry_insert; eauto.
   Qed.
 
   Theorem gmap_addr_by_block_filter (m : gmap addr T) (P : u64 -> Prop)
@@ -381,19 +379,51 @@ Section gmap_addr_by_block.
     gmap_addr_by_block (filter (λ x, P (fst x).(addrBlock)) m) =
     filter (λ x, P (fst x)) (gmap_addr_by_block m).
   Proof.
-    rewrite /gmap_addr_by_block map_filter_alt.
-    erewrite gmap_addr_by_block_helper_permutation.
-    2: rewrite map_to_list_to_map; first by reflexivity.
-    3: eapply NoDup_fst_map_to_list.
-    2: admit.
-    generalize (map_to_list m); intros.
-  Admitted.
+    induction m using map_ind.
+    - rewrite /gmap_addr_by_block /gmap_uncurry.
+      rewrite map_filter_empty.
+      rewrite map_fold_empty.
+      rewrite map_filter_empty. eauto.
+    - destruct i as [b o].
+      rewrite gmap_addr_by_block_insert; eauto; simpl.
+      destruct (decide (P b)).
+      2: {
+        rewrite map_filter_insert_not; eauto.
+        rewrite map_filter_insert_not; eauto.
+      }
+
+      rewrite map_filter_insert; eauto.
+      rewrite map_filter_insert; eauto.
+      rewrite -IHm; clear IHm.
+      rewrite gmap_addr_by_block_insert; eauto; simpl.
+      2: { rewrite map_filter_lookup_None; eauto. }
+
+      f_equal. f_equal. f_equal.
+      rewrite /gmap_addr_by_block.
+
+      clear H0.
+      induction m using map_ind.
+      + rewrite map_filter_empty. eauto.
+      + destruct (decide (P (addrBlock i))).
+        * rewrite map_filter_insert; eauto.
+          repeat rewrite gmap_uncurry_insert; eauto.
+          2: rewrite map_filter_lookup_None; eauto.
+          destruct (decide (i.1 = b)); subst.
+          { repeat rewrite lookup_insert. f_equal. f_equal. rewrite IHm. eauto. }
+          repeat rewrite lookup_insert_ne; eauto.
+        * rewrite map_filter_insert_not; eauto. rewrite IHm.
+          rewrite gmap_uncurry_insert; eauto.
+          destruct (decide (i.1 = b)); subst.
+          { exfalso. apply n. eauto. }
+          rewrite lookup_insert_ne; eauto.
+  Qed.
 
   Theorem gmap_addr_by_block_off_not_empty (m : gmap addr T) (blkno : u64) (offmap : gmap u64 T) :
     gmap_addr_by_block m !! blkno = Some offmap ->
     offmap ≠ ∅.
   Proof.
-  Admitted.
+    intros. eapply gmap_uncurry_non_empty. eauto.
+  Qed.
 
   Theorem gmap_addr_by_block_lookup (m : gmap addr T) (a : addr) (v : T) :
     m !! a = Some v ->
@@ -401,7 +431,10 @@ Section gmap_addr_by_block.
       gmap_addr_by_block m !! a.(addrBlock) = Some offmap ∧
       offmap !! a.(addrOff) = Some v.
   Proof.
-  Admitted.
+    intros.
+    rewrite /gmap_addr_by_block.
+    apply gmap_uncurry_lookup_exists. eauto.
+  Qed.
 
 
   Context {PROP : bi}.
@@ -412,14 +445,27 @@ Section gmap_addr_by_block.
         [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ).
   Proof.
     iIntros "Hm".
-    replace m with (list_to_map (map_to_list m) : gmap addr T) at 1.
-    2: { apply list_to_map_to_list. }
-    rewrite /gmap_addr_by_block.
-    assert (NoDup (fst <$> map_to_list m)).
-    { apply NoDup_fst_map_to_list. }
-    revert H.
-    generalize (map_to_list m); intros.
-  Admitted.
+    iInduction m as [|i x m] "IH" using map_ind.
+    - rewrite gmap_addr_by_block_empty. iApply big_sepM_empty. done.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iDestruct ("IH" with "Hm") as "Hm".
+      rewrite gmap_addr_by_block_insert; eauto.
+      destruct i as [b o].
+      destruct (gmap_addr_by_block m !! b) eqn:He.
+      + iDestruct (big_sepM_insert_acc with "Hm") as "[Hb Hm]"; eauto.
+        iApply "Hm".
+        iApply big_sepM_insert.
+        { simpl.
+          pose proof (lookup_gmap_uncurry m b o).
+          rewrite H in H0. rewrite He in H0. simpl in H0.
+          rewrite He. simpl. eauto. }
+        rewrite He. iFrame.
+      + iApply big_sepM_insert; eauto.
+        iFrame.
+        rewrite He /=.
+        iApply big_sepM_insert; eauto. iFrame.
+        iApply big_sepM_empty. done.
+  Qed.
 
 End gmap_addr_by_block.
 
