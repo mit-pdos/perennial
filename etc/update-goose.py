@@ -40,6 +40,11 @@ def main():
         metavar="GOOSE_PATH",
     )
     parser.add_argument(
+        "--skip-goose-examples",
+        help="skip translating examples in Goose",
+        action="store_true",
+    )
+    parser.add_argument(
         "--nfsd",
         help="path to goose-nfsd repo (skip translation if not provided)",
         metavar="GOOSE_NFSD_PATH",
@@ -95,25 +100,32 @@ def main():
     if args.compile:
         compile_goose()
 
-    run_goose(
-        path.join(goose_dir, "internal/examples/unittest"),
-        path.join(perennial_dir, "src/goose_lang/examples/goose_unittest.v"),
-    )
-    run_goose(
-        path.join(goose_dir, "internal/examples/semantics"),
-        path.join(perennial_dir, "src/goose_lang/examples/goose_semantics.v"),
-    )
-    run_goose_test_gen(
-        path.join(goose_dir, "internal/examples/semantics"),
-        path.join(perennial_dir, "src/goose_lang/interpreter/generated_test.v"),
-    )
-    for example in ["append_log", "logging2", "rfc1813", "simpledb", "wal"]:
+    if not args.skip_goose_examples:
         run_goose(
-            path.join(goose_dir, "internal/examples/", example),
+            path.join(goose_dir, "internal/examples/unittest"),
             path.join(
-                perennial_dir, "src/goose_lang/examples/", example + ".v"
+                perennial_dir, "src/goose_lang/examples/goose_unittest.v"
             ),
         )
+        run_goose(
+            path.join(goose_dir, "internal/examples/semantics"),
+            path.join(
+                perennial_dir, "src/goose_lang/examples/goose_semantics.v"
+            ),
+        )
+        run_goose_test_gen(
+            path.join(goose_dir, "internal/examples/semantics"),
+            path.join(
+                perennial_dir, "src/goose_lang/interpreter/generated_test.v"
+            ),
+        )
+        for example in ["append_log", "logging2", "rfc1813", "simpledb", "wal"]:
+            run_goose(
+                path.join(goose_dir, "internal/examples/", example),
+                path.join(
+                    perennial_dir, "src/goose_lang/examples/", example + ".v"
+                ),
+            )
 
     if goose_nfsd_dir is not None:
         pkgs = [
