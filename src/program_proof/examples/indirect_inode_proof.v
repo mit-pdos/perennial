@@ -193,27 +193,25 @@ Proof.
   wp_pures.
   wp_call.
 
-  destruct (bool_decide (int.val sz <= int.val 500)); wp_pures.
-  {
-    wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ([EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) with "[Hdec]").
-    { iFrame.
-      iPureIntro.
-      unfold maxDirect in *.
-      word.
-    }
-    iIntros (diraddr_s) "[Hdec Hdiraddrs]".
-    wp_pures.
+  wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ([EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) with "[Hdec]").
+  { iFrame.
+    iPureIntro.
+    unfold maxDirect in *.
+    word.
+  }
+  iIntros (diraddr_s) "[Hdec Hdiraddrs]".
+  wp_pures.
 
-    wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
-    wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
+  wp_pures.
 
-    wp_apply (wp_Dec__GetInts _ _ _ indAddrs _ [] with "[Hdec]").
-    { rewrite app_nil_r. iFrame.
-      iPureIntro.
-      unfold maxIndirect in *.
-      word.
-    }
-    iIntros (indaddr_s) "[_ Hindaddrs]".
+  wp_apply (wp_Dec__GetInts _ _ _ indAddrs _ [] with "[Hdec]").
+  { rewrite app_nil_r. iFrame.
+    iPureIntro.
+    unfold maxIndirect in *.
+    word.
+  }
+  iIntros (indaddr_s) "[_ Hindaddrs]".
     wp_pures.
 
     rewrite -wp_fupd.
