@@ -191,8 +191,6 @@ Proof.
 
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
   wp_pures.
-  wp_call.
-
   wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ([EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) with "[Hdec]").
   { iFrame.
     iPureIntro.
@@ -202,6 +200,7 @@ Proof.
   iIntros (diraddr_s) "[Hdec Hdiraddrs]".
   wp_pures.
 
+  (*
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
   wp_pures.
 
@@ -224,40 +223,7 @@ Proof.
     wp_call.
     admit.
   }
-  {
-    wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ([EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) with "[Hdec]").
-    { iFrame.
-      iPureIntro.
-      unfold maxDirect in *.
-      word.
-    }
-    iIntros (diraddr_s) "[Hdec Hdiraddrs]".
-    wp_pures.
-
-    wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
-    wp_pures.
-
-    wp_apply (wp_Dec__GetInts _ _ _ indAddrs _ [] with "[Hdec]").
-    { rewrite app_nil_r. iFrame.
-      iPureIntro.
-      unfold maxIndirect in *.
-      word.
-    }
-    iIntros (indaddr_s) "[_ Hindaddrs]".
-    wp_pures.
-
-    rewrite -wp_fupd.
-    wp_apply wp_new_free_lock.
-    iIntros (γ lref) "Hlock".
-    wp_apply (wp_SliceTake uint64T 500).
-    {
-      admit.
-    }
-    wp_call.
-    wp_call.
-    unfold slice.ptr.
-    admit.
-  }
+   *)
 
     (*wp_apply wp_allocStruct; auto.
     iIntros (l) "Hinode".

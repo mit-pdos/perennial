@@ -120,12 +120,11 @@ Definition Inode__mkHdr: val :=
   rec: "Inode__mkHdr" "i" :=
     let: "enc" := marshal.NewEnc disk.BlockSize in
     marshal.Enc__PutInt "enc" (struct.loadF Inode.S "size" "i");;
-    let: "direct" := struct.loadF Inode.S "direct" "i" in
-    marshal.Enc__PutInts "enc" "direct";;
-    padInts "enc" (maxDirect - slice.len "direct");;
-    marshal.Enc__PutInt "enc" (slice.len (struct.loadF Inode.S "indirect" "i"));;
+    marshal.Enc__PutInts "enc" (struct.loadF Inode.S "direct" "i");;
+    padInts "enc" (maxDirect - slice.len (struct.loadF Inode.S "direct" "i"));;
     marshal.Enc__PutInts "enc" (struct.loadF Inode.S "indirect" "i");;
     padInts "enc" (maxIndirect - slice.len (struct.loadF Inode.S "indirect" "i"));;
+    marshal.Enc__PutInt "enc" (slice.len (struct.loadF Inode.S "indirect" "i"));;
     let: "hdr" := marshal.Enc__Finish "enc" in
     "hdr".
 
