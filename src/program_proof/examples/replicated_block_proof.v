@@ -183,8 +183,7 @@ Section goose.
     wpc_bind_seq; wpc_frame "HΦ Hfupd".
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-    iIntros "Hlkd"; iNamed 1.
-    iDestruct "Hlkd" as (γlk) "His_locked".
+    iIntros (γlk) "His_locked"; iNamed 1.
     wpc_pures.
     wpc_bind (RepBlock__readAddr _ _); wpc_frame "HΦ Hfupd".
     wp_apply (wp_RepBlock__readAddr with "addr").
@@ -257,7 +256,7 @@ Section goose.
     wpc_frame "HΦ Hfupd".
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-    iIntros "His_locked". iDestruct "His_locked" as (γlk) "His_locked".
+    iIntros (γlk) "His_locked".
     iNamed 1.
 
     wpc_pures.

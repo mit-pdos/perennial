@@ -175,8 +175,8 @@ Proof.
   wpc_frame "HΦ Hvs".
   { crash_case. iDestruct "Hvs" as "(_&$)". }
   wp_apply (crash_lock.acquire_spec with "His_lock"); first by set_solver+.
-  iIntros "H". iDestruct "H" as (Γ) "Hcrash_locked".
-  iIntros "H". iNamed "H".
+  iIntros (Γ) "Hcrash_locked".
+  iNamed 1.
 
   wpc_pures; auto.
   { iDestruct "Hvs" as "(_&$)". }

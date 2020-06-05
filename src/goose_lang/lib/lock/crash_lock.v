@@ -94,13 +94,13 @@ Section proof.
     ↑Nlock ⊆ E →
     {{{ is_crash_lock k γ lk R Rcrash }}}
     lock.acquire lk @ E
-    {{{ RET #(); ∃ γlk, crash_locked k γlk lk R Rcrash }}}.
+    {{{ γlk, RET #(); crash_locked k γlk lk R Rcrash }}}.
   Proof.
     iIntros (? Φ) "Hcrash HΦ".
     rewrite /is_crash_lock.
     iDestruct "Hcrash" as (??) "(#His_lock&#Hval&#HRcrash)".
     wp_apply (acquire_spec' with "His_lock"); auto.
-    iIntros "(?&?)". iApply "HΦ". iExists _, _, _. iFrame. iFrame "#".
+    iIntros "(?&?)". iApply "HΦ". iExists _, _. iFrame. iFrame "#".
   Qed.
 
   Lemma use_crash_locked E k k' Γ e lk R Rcrash Φ Φc:
@@ -159,7 +159,7 @@ Section proof.
     { iDestruct "Hwp" as "($&_)".  }
     iApply (acquire_spec with "Hcrash").
     { set_solver. }
-    iNext. iIntros "H Hwp". iDestruct "H" as (?) "H".
+    iNext. iIntros (?) "H Hwp".
     wpc_pures.
     { iDestruct "Hwp" as "($&_)". }
 
