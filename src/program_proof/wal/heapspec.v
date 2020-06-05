@@ -850,11 +850,8 @@ Proof.
   intros Hwf -> Haddrs_wf Hhighest.
   eapply mem_append_preserves_wf; eauto.
   intros.
-(*
-  eapply Hhighest in H; lia.
+  eapply Hhighest in H; word.
 Qed.
-*)
-Admitted.
 
 Lemma updates_since_updates σ (txn_id:nat) (a:u64) pos' bs :
   wal_wf σ ->
@@ -1374,7 +1371,7 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
         ( ∀ pos lwh',
             memappend_crash γh bs crash_heaps lwh' ∗
             memappend_q γh.(wal_heap_h) bs olds
-          ={E, ⊤ ∖ ↑walN}=∗ txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps) + 1) pos -∗ Q pos ) ) -∗
+          ={E, ⊤ ∖ ↑walN}=∗ txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos -∗ Q pos ) ) -∗
   is_locked_walheap γh lwh -∗
   ( ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
@@ -1431,10 +1428,7 @@ Proof using walheapG0.
     iIntros "Hpos".
     iApply "Hfupd".
     iExactEq "Hpos". f_equal.
-    (*
-    rewrite Hcrashes_complete app_length /=. lia.
-     *)
-    admit. (* off by 1? *)
+    eauto.
   }
 
   iExists _, _.
@@ -1452,7 +1446,7 @@ Proof using walheapG0.
       destruct H3; eauto.
       specialize (Hgh (u.(update.addr)) (HB x.1 x.2)).
       intuition; auto. }
-    admit.
+    intros. apply H in H0. lia.
   }
   2: {
     rewrite /possible app_length /= in Hcrashes_complete.
@@ -1544,7 +1538,7 @@ Proof using walheapG0.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
     }
-Admitted.
+Qed.
 
 Theorem no_updates_since_le σ a t0 t1 :
   (t0 ≤ t1)%nat ->
