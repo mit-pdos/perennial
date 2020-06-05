@@ -546,6 +546,68 @@ Section map2.
       iFrame.
   Qed.
 
+  Theorem map_zip_empty_l (m2 : gmap K B) :
+    map_zip (∅ : gmap K A) m2 = ∅.
+  Proof.
+    rewrite /map_zip.
+    apply map_eq; intros.
+    erewrite lookup_merge by reflexivity.
+    repeat rewrite lookup_empty; eauto.
+  Qed.
+
+  Theorem map_zip_empty_r (m1 : gmap K A) :
+    map_zip m1 (∅ : gmap K B) = ∅.
+  Proof.
+    rewrite /map_zip.
+    apply map_eq; intros.
+    erewrite lookup_merge by reflexivity.
+    repeat rewrite lookup_empty; eauto.
+    destruct (m1 !! i); eauto.
+  Qed.
+
+  Theorem map_zip_insert (m1 : gmap K A) (m2 : gmap K B) i v1 v2 :
+    map_zip (<[i:=v1]> m1) (<[i:=v2]> m2) =
+    <[i:=(v1, v2)]> (map_zip m1 m2).
+  Proof.
+    rewrite /map_zip.
+    apply map_eq; intros.
+    destruct (decide (i = i0)); subst.
+    - erewrite lookup_merge by reflexivity.
+      repeat rewrite lookup_insert. eauto.
+    - erewrite lookup_merge by reflexivity.
+      repeat rewrite lookup_insert_ne; eauto.
+      erewrite lookup_merge by reflexivity.
+      repeat rewrite lookup_insert_ne; eauto.
+  Qed.
+
+  Theorem map_zip_lookup_none_1 (m1 : gmap K A) (m2 : gmap K B) i :
+    m1 !! i = None ->
+    map_zip m1 m2 !! i = None.
+  Proof.
+    intros; rewrite /map_zip.
+    erewrite lookup_merge by reflexivity.
+    rewrite H0; eauto.
+  Qed.
+
+  Theorem map_zip_lookup_none_2 (m1 : gmap K A) (m2 : gmap K B) i :
+    m2 !! i = None ->
+    map_zip m1 m2 !! i = None.
+  Proof.
+    intros; rewrite /map_zip.
+    erewrite lookup_merge by reflexivity.
+    destruct (m1 !! i); eauto; rewrite H0; eauto.
+  Qed.
+
+  Theorem map_zip_lookup_some (m1 : gmap K A) (m2 : gmap K B) i v1 v2:
+    m1 !! i = Some v1 ->
+    m2 !! i = Some v2 ->
+    map_zip m1 m2 !! i = Some (v1, v2).
+  Proof.
+    intros; rewrite /map_zip.
+    erewrite lookup_merge by reflexivity.
+    rewrite H0 H1. eauto.
+  Qed.
+
   Theorem map_zip_filter (m1 : gmap K A) (m2 : gmap K B) (P : K -> Prop)
     `{Hdk : ∀ k, Decision (P k)}
     `{Hdka : ∀ (ka : K * A), Decision (P ka.1)}
@@ -1095,6 +1157,7 @@ Section maplist.
     { iExists _. iFrame. done. }
   Qed.
 
+  Context `{BiAffine PROP}.
   Theorem big_sepML_sepM Φ (P : K -> V -> PROP) m l `{!∀ k v, Absorbing (P k v)}:
     big_sepML (λ k v lv, Φ k v lv ∗ P k v) m l ⊣⊢
     big_sepML Φ m l ∗ big_opM _ P m.
@@ -1112,10 +1175,35 @@ Section maplist.
     - iIntros "[Hlm Hm]".
       iDestruct "Hlm" as (lm) "[% Hlm]".
       iExists _. iSplitR; first by eauto.
+      iDestruct (big_sepM2_dom with "Hlm") as "%Hmlm".
       iApply big_sepM2_sep; iFrame.
       rewrite big_sepM2_eq /big_sepM2_def.
-      admit.
-  Admitted.
+      iSplit.
+      { iPureIntro. split; intros.
+        { apply elem_of_dom. rewrite -Hmlm. apply elem_of_dom. eauto. }
+        { apply elem_of_dom. rewrite Hmlm. apply elem_of_dom. eauto. }
+      }
+      clear H2.
+      iInduction m as [|i x m] "IH" using map_ind forall (lm Hmlm).
+      { rewrite dom_empty_L in Hmlm. rewrite (dom_empty_inv_L lm); eauto.
+        rewrite map_zip_empty_l. iApply big_sepM_empty. done. }
+      iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      assert (is_Some (lm !! i)) as Hlmi.
+      { apply elem_of_dom. rewrite -Hmlm. apply elem_of_dom. rewrite lookup_insert; eauto. }
+      destruct Hlmi.
+      replace lm with (<[i:=x0]> (delete i lm)).
+      2: { rewrite insert_delete insert_id; eauto. }
+      rewrite map_zip_insert.
+      iApply big_sepM_insert.
+      { rewrite map_zip_lookup_none_1; eauto. }
+      iFrame.
+      iApply "IH"; last by iFrame.
+      iPureIntro.
+      rewrite dom_delete_L -Hmlm dom_insert_L.
+      assert (i ∉ dom (gset K) m).
+      { apply not_elem_of_dom. eauto. }
+      set_solver.
+  Qed.
 
   Theorem big_sepML_sepL_split Φ (P : LV -> PROP) m l `{!∀ lv, Absorbing (P lv)}:
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l -∗
@@ -1128,7 +1216,7 @@ Section maplist.
     iSplitL "Hlm0".
     + iExists _. iFrame. done.
     + iDestruct (big_sepM2_sepM_2 with "Hlm1") as "Hlm1".
-      rewrite big_opM_eq /big_opM_def H1 big_sepL_fmap.
+      rewrite big_opM_eq /big_opM_def H2 big_sepL_fmap.
       iApply big_sepL_mono; last by iFrame.
       iIntros (???) "H".
       destruct y.
@@ -1147,10 +1235,37 @@ Section maplist.
     rewrite big_sepM2_eq /big_sepM2_def.
     iDestruct "Hlm" as "[% Hlm]".
     iSplit; eauto.
-    rewrite H1.
+    rewrite H2.
     iApply big_sepM_sep; iFrame.
-    admit.
-  Admitted.
+
+    clear H2.
+    iInduction lm as [|i x lm] "IH" using map_ind forall (m H3).
+    { rewrite map_zip_empty_r. iApply big_sepM_empty. done. }
+    rewrite map_to_list_insert; eauto.
+    rewrite fmap_cons /=.
+    iDestruct "Hl" as "[Hx Hl]".
+    assert (is_Some (m !! i)) as Hmi.
+    { apply H3. rewrite lookup_insert. eauto. }
+    destruct Hmi.
+    replace m with (<[i:=x0]> (delete i m)).
+    2: { rewrite insert_delete insert_id; eauto. }
+    rewrite map_zip_insert.
+    iApply big_sepM_insert.
+    { rewrite map_zip_lookup_none_2; eauto. }
+    iFrame.
+    iApply "IH"; last by iFrame.
+
+    iPureIntro.
+    split; intros.
+    - destruct (decide (i = k)); subst.
+      + rewrite lookup_delete in H5. inversion H5. congruence.
+      + rewrite lookup_delete_ne in H5; eauto.
+        apply H3 in H5. rewrite lookup_insert_ne in H5; eauto.
+    - destruct (decide (i = k)); subst.
+      + inversion H5. congruence.
+      + rewrite lookup_delete_ne; eauto.
+        eapply H3. rewrite lookup_insert_ne; eauto.
+  Qed.
 
   Theorem big_sepML_sepL Φ (P : LV -> PROP) m l `{!∀ lv, Absorbing (P lv)}:
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l ⊣⊢
