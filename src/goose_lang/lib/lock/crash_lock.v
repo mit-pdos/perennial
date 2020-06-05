@@ -103,16 +103,17 @@ Section proof.
     iIntros "(?&?)". iApply "HΦ". iExists _, _. iFrame. iFrame "#".
   Qed.
 
-  Lemma use_crash_locked E k k' Γ e lk R Rcrash Φ Φc:
+  Lemma use_crash_locked E1 E2 k k' Γ e lk R Rcrash Φ Φc:
     (S k < k')%nat →
+    ↑Ncrash ⊆ E1 →
     language.to_val e = None →
     crash_locked (LVL k') Γ lk R Rcrash -∗
     Φc ∧ (R -∗
-         WPC e @ LVL k; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') Γ lk R Rcrash -∗ (Φ v ∧ Φc)) ∗ R }}
+         WPC e @ LVL k; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') Γ lk R Rcrash -∗ (Φ v ∧ Φc)) ∗ R }}
                                          {{ Φc ∗ Rcrash }}) -∗
-    WPC e @  (LVL (S (S k))); ⊤; E {{ Φ }} {{ Φc }}.
+    WPC e @  (LVL (S (S k))); E1; E2 {{ Φ }} {{ Φc }}.
   Proof.
-    iIntros (??) "Hcrash_locked H".
+    iIntros (???) "Hcrash_locked H".
     iDestruct "Hcrash_locked" as (??) "(Hfull&#His_lock&#Hval&#HRcrash&Hlocked)".
     iApply (wpc_na_crash_inv_open with "[$] [$] [H Hlocked]"); try iFrame; auto.
     iSplit.
