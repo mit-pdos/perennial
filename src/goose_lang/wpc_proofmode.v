@@ -161,6 +161,8 @@ Proof.
   iApply (HΦc with "[$]").
 Qed.
 
+(* TODO: write a tac_wpc_wp_frame that also uses a cache *)
+
 Tactic Notation "wpc_rec" simple_intropattern(H) :=
   let HAsRecV := fresh in
   pose proof AsRecV_recv as HAsRecV;
