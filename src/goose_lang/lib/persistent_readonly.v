@@ -120,7 +120,8 @@ Section goose_lang.
   Lemma Qclt_plus_r (q q': Qp) :
     Qcanon.Qclt q (q + q')%Qp.
   Proof.
-  Admitted.
+    apply Qp_lt_sum; eauto.
+  Qed.
 
   Theorem readonly_extend P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
     readonly P -∗ readonly Q -∗ readonly (P ∗ Q).
