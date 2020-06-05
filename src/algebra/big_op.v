@@ -1377,15 +1377,6 @@ Section maplist2.
     iExists _; iFrame.
   Qed.
 
-  Theorem big_sepML_sepM2_shift (Φ : K -> V -> W -> LV -> PROP) mv mw l (R : K -> V -> W -> Prop)
-      `{!∀ k v w lv, Absorbing (Φ k v w lv)} :
-    big_sepML (λ k v lv, ∃ w, ⌜ R k v w ⌝ ∗ Φ k v w lv) mv l -∗
-    big_sepM2 (λ k v w, ⌜ R k v w ⌝) mv mw -∗
-    big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v w lv) mw l.
-  Proof.
-    iIntros "Hml Hvw".
-  Admitted.
-
   Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l
       `{!∀ k v lv w, Absorbing (Φw k v lv w)} :
     big_sepML (λ k v lv, ∃ w, Φw k v lv w) m l -∗
