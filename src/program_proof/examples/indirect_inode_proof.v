@@ -180,8 +180,8 @@ Proof.
   iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
   rewrite Hencoded.
 
-  assert (encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) =
-          encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ [EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) ++ [])
+  assert (encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ (EncUInt64 <$> indAddrs)++ [EncUInt64 numInd] ) =
+          encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ (EncUInt64 <$> indAddrs)++ [EncUInt64 numInd] ) ++ [])
   as HappNil.
   { rewrite app_nil_r; auto. }
   rewrite HappNil.
@@ -191,7 +191,7 @@ Proof.
 
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
   wp_pures.
-  wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ([EncUInt64 numInd] ++ (EncUInt64 <$> indAddrs)) with "[Hdec]").
+  wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ((EncUInt64 <$> indAddrs) ++ [EncUInt64 numInd]) with "[Hdec]").
   { iFrame.
     iPureIntro.
     unfold maxDirect in *.
@@ -200,7 +200,6 @@ Proof.
   iIntros (diraddr_s) "[Hdec Hdiraddrs]".
   wp_pures.
 
-  (*
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
   wp_pures.
 
