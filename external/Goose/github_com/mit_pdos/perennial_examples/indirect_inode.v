@@ -34,10 +34,10 @@ Definition Open: val :=
     let: "b" := disk.Read "addr" in
     let: "dec" := marshal.NewDec "b" in
     let: "size" := marshal.Dec__GetInt "dec" in
-    let: "numDirect" := min "size" maxDirect in
     let: "direct" := marshal.Dec__GetInts "dec" maxDirect in
-    let: "numIndirect" := marshal.Dec__GetInt "dec" in
     let: "indirect" := marshal.Dec__GetInts "dec" maxIndirect in
+    let: "numIndirect" := marshal.Dec__GetInt "dec" in
+    let: "numDirect" := min "size" maxDirect in
     struct.new Inode.S [
       "d" ::= "d";
       "m" ::= lock.new #();
