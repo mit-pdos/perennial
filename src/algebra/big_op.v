@@ -229,6 +229,100 @@ Section list.
   Qed.
 End list.
 
+
+Section filter.
+  Context `{Countable K}.
+  Context {A B : Type}.
+
+  Theorem map_filter_lookup_key_in (m : gmap K A) (P : K -> Prop)
+      (_ : ∀ (ka : K * A), Decision (P ka.1)) i :
+    P i ->
+    filter (λ x, P x.1) m !! i = m !! i.
+  Proof.
+    destruct (m !! i) eqn:He; intros.
+    - rewrite map_filter_lookup_Some; eauto.
+    - rewrite map_filter_lookup_None; eauto.
+  Qed.
+
+  Theorem map_filter_lookup_key_notin (m : gmap K A) (P : K -> Prop)
+      (_ : ∀ (ka : K * A), Decision (P ka.1)) i :
+    ~ P i ->
+    filter (λ x, P x.1) m !! i = None.
+  Proof.
+    rewrite map_filter_lookup_None; eauto.
+  Qed.
+
+  Lemma filter_same_keys_0' (m1 : gmap K A) (m2 : gmap K B) (P : K -> Prop)
+                            `{Hdka : ∀ (ka : K * A), Decision (P ka.1)}
+                            `{Hdkb : ∀ (kb : K * B), Decision (P kb.1)} :
+    (∀ k, is_Some (m1 !! k) -> is_Some (m2 !! k)) ->
+    ∀ k, is_Some (filter (λ x, P x.1) m1 !! k) ->
+         is_Some (filter (λ x, P x.1) m2 !! k).
+  Proof.
+    intros.
+    destruct H1.
+    eapply map_filter_lookup_Some in H1. destruct H1.
+    assert (is_Some (m2 !! k)).
+    { apply H0. eauto. }
+    destruct H3.
+    eexists.
+    eapply map_filter_lookup_Some. eauto.
+  Qed.
+
+  Lemma filter_same_keys_1' (m1 : gmap K A) (m2 : gmap K B) (P : K -> Prop)
+                            `{Hdk : ∀ k, Decision (P k)}
+                            `{Hdka : ∀ (ka : K * A), Decision (P ka.1)}
+                            `{Hdkb : ∀ (kb : K * B), Decision (P kb.1)} :
+    (∀ k, is_Some (filter (λ x, P x.1) m1 !! k) ->
+          is_Some (filter (λ x, P x.1) m2 !! k)) ->
+    (∀ k, is_Some (filter (λ x, ¬ P x.1) m1 !! k) ->
+          is_Some (filter (λ x, ¬ P x.1) m2 !! k)) ->
+    ∀ k, is_Some (m1 !! k) -> is_Some (m2 !! k).
+  Proof.
+    intros.
+    destruct H2.
+    destruct (decide (P k)).
+    - edestruct H0.
+      { eexists. eapply map_filter_lookup_Some. eauto. }
+      eapply map_filter_lookup_Some in H3. intuition eauto.
+    - edestruct H1.
+      { eexists. eapply map_filter_lookup_Some. eauto. }
+      eapply map_filter_lookup_Some in H3. intuition eauto.
+  Qed.
+End filter.
+
+Lemma filter_same_keys_0 `{Countable K} `(m1 : gmap K A) `(m2 : gmap K B) (P : K -> Prop)
+                         `{Hdka : ∀ (ka : K * A), Decision (P ka.1)}
+                         `{Hdkb : ∀ (kb : K * B), Decision (P kb.1)} :
+  (∀ k, is_Some (m1 !! k) <-> is_Some (m2 !! k)) ->
+  ∀ k, is_Some (filter (λ x, P x.1) m1 !! k) <->
+       is_Some (filter (λ x, P x.1) m2 !! k).
+Proof.
+  split.
+  - apply filter_same_keys_0'. intros. eapply H0. eauto.
+  - apply filter_same_keys_0'. intros. eapply H0. eauto.
+Qed.
+
+Lemma filter_same_keys_1 `{Countable K} `(m1 : gmap K A) `(m2 : gmap K B) (P : K -> Prop)
+                         `{Hdk : ∀ k, Decision (P k)}
+                         `{Hdka : ∀ (ka : K * A), Decision (P ka.1)}
+                         `{Hdkb : ∀ (kb : K * B), Decision (P kb.1)} :
+  (∀ k, is_Some (filter (λ x, P x.1) m1 !! k) <->
+        is_Some (filter (λ x, P x.1) m2 !! k)) ->
+  (∀ k, is_Some (filter (λ x, ¬ P x.1) m1 !! k) <->
+        is_Some (filter (λ x, ¬ P x.1) m2 !! k)) ->
+  ∀ k, is_Some (m1 !! k) <-> is_Some (m2 !! k).
+Proof.
+  split.
+  - eapply filter_same_keys_1'; eauto.
+    + intros; eapply H0; eauto.
+    + intros; eapply H1; eauto.
+  - eapply filter_same_keys_1'; eauto.
+    + intros; eapply H0; eauto.
+    + intros; eapply H1; eauto.
+Qed.
+
+
 Section map2.
   Context `{Countable K} {A B : Type}.
   Implicit Types Φ Ψ : K → A → B → PROP.
@@ -402,7 +496,33 @@ Section map2.
     [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 ∗ Ψ k y2.
   Proof.
     iIntros (Hdom) "[Hm1 Hm2]".
-  Admitted.
+    iInduction m1 as [|i x m] "IH" using map_ind forall (m2 Hdom).
+    - rewrite dom_empty_L in Hdom. symmetry in Hdom. apply dom_empty_inv_L in Hdom.
+      subst. iApply big_sepM2_empty. done.
+    - destruct (m2 !! i) eqn:He.
+      2: {
+        apply not_elem_of_dom in He.
+        rewrite -Hdom in He.
+        exfalso. apply He.
+        apply elem_of_dom. rewrite lookup_insert. eauto.
+      }
+      iDestruct (big_sepM_insert with "Hm1") as "[Hi1 Hm1]"; eauto.
+      replace (m2) with (<[i:=b]> (delete i m2)).
+      2: {
+        rewrite insert_delete. rewrite insert_id; eauto.
+      }
+      iDestruct (big_sepM_insert with "Hm2") as "[Hi2 Hm2]"; eauto.
+      { rewrite lookup_delete; eauto. }
+      iApply big_sepM2_insert; eauto.
+      { rewrite lookup_delete; eauto. }
+      iFrame.
+      iSpecialize ("IH" $! (delete i m2) _ with "Hm1 Hm2"). iApply "IH".
+  Unshelve.
+    rewrite dom_delete_L -Hdom dom_insert_L.
+    assert (i ∉ dom (gset K) m).
+    { apply not_elem_of_dom. eauto. }
+    set_solver.
+  Qed.
 
   Lemma big_sepM2_sepM_merge Φ (Ψ : K -> A -> PROP) (m1 : gmap K A) (m2 : gmap K B)
       (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
@@ -426,6 +546,23 @@ Section map2.
       iFrame.
   Qed.
 
+  Theorem map_zip_filter (m1 : gmap K A) (m2 : gmap K B) (P : K -> Prop)
+    `{Hdk : ∀ k, Decision (P k)}
+    `{Hdka : ∀ (ka : K * A), Decision (P ka.1)}
+    `{Hdkb : ∀ (kb : K * B), Decision (P kb.1)}
+    `{Hdkab : ∀ (kab : K * (A * B)), Decision (P kab.1)} :
+    map_zip (filter (λ x, P x.1) m1) (filter (λ x, P x.1) m2) =
+    filter (λ x, P x.1) (map_zip m1 m2).
+  Proof.
+    rewrite /map_zip.
+    apply map_eq; intros.
+    erewrite lookup_merge by reflexivity.
+    destruct (decide (P i)).
+    - repeat rewrite map_filter_lookup_key_in; eauto.
+      erewrite lookup_merge by reflexivity; eauto.
+    - repeat rewrite map_filter_lookup_key_notin; eauto.
+  Qed.
+
   Lemma big_sepM2_filter Φ (P : K -> Prop) (m1 : gmap K A) (m2 : gmap K B) 
                          `{! ∀ k, Decision (P k)} :
     ⊢
@@ -433,12 +570,31 @@ Section map2.
     ( ( [∗ map] k↦y1;y2 ∈ filter (λ x, P x.1) m1;filter (λ x, P x.1) m2, Φ k y1 y2 ) ∗
       ( [∗ map] k↦y1;y2 ∈ filter (λ x, ¬P x.1) m1;filter (λ x, ¬P x.1) m2, Φ k y1 y2 ) ).
   Proof.
+    rewrite big_sepM2_eq /big_sepM2_def.
     iSplit.
-    - iIntros "Hm".
-      admit.
-    - iIntros "[Hmp Hmn]".
-      admit.
-  Admitted.
+    - iIntros "[% Hm]".
+      erewrite <- (map_union_filter _ (map_zip m1 m2)).
+      iDestruct (big_sepM_union with "Hm") as "[Hmp Hmnp]".
+      { eapply map_disjoint_filter. }
+      iSplitL "Hmp".
+      + iSplit.
+        { iPureIntro; eapply filter_same_keys_0; eauto. }
+        rewrite map_zip_filter. iFrame.
+      + iSplit.
+        { iPureIntro.
+          eapply (filter_same_keys_0 _ _ (λ k, ¬ P k)). eauto. }
+        rewrite (map_zip_filter _ _ (λ k, ¬ P k)). iFrame.
+    - iIntros "[[% Hm1] [% Hm2]]".
+      iSplit.
+      { iPureIntro. eapply filter_same_keys_1; eauto. }
+      rewrite map_zip_filter.
+      rewrite (map_zip_filter _ _ (λ k, ¬ P k)).
+      iDestruct (big_sepM_union with "[$Hm1 $Hm2]") as "Hm".
+      { eapply map_disjoint_filter. }
+      rewrite map_union_filter. iFrame.
+  Unshelve.
+    all: typeclasses eauto.
+  Qed.
 
 End map2.
 
