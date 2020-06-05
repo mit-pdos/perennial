@@ -1280,7 +1280,21 @@ Section maplist.
     big_sepML Φ m l -∗
     big_opL _ (λ _ lv, ∃ k v, ⌜ m !! k = Some v ⌝ ∗ Φ k v lv) l.
   Proof.
-  Admitted.
+    rewrite big_sepML_eq /big_sepML_def.
+    iIntros "Hml".
+    iDestruct "Hml" as (lm) "[%Hllm Hml]".
+    iDestruct (big_sepM2_sepM_2 with "Hml") as "Hlm".
+
+    rewrite Hllm; clear Hllm.
+    iInduction lm as [|i x lm] "IH" using map_ind.
+    { rewrite map_to_list_empty. done. }
+    iDestruct (big_sepM_insert with "Hlm") as "[Hi Hlm]"; eauto.
+    rewrite map_to_list_insert; eauto.
+    rewrite fmap_cons /=.
+    iSplitL "Hi".
+    { iExists _. iFrame. }
+    iApply "IH". iFrame.
+  Qed.
 
   Global Instance big_sepML_persistent `(!∀ k v lv, Persistent (Φ k v lv)) :
     Persistent (big_sepML Φ m l).
@@ -1307,11 +1321,12 @@ Section maplist2.
   Implicit Types mw : gmap K W.
   Implicit Types l : list LV.
 
-(*
+  Context `{BiAffine PROP}.
+
   Theorem big_sepML_map_val_exists_helper Φ mv l (R : K -> V -> W -> Prop)
       `{!∀ k v lv, Absorbing (Φ k v lv)} :
     big_sepML Φ mv l -∗
-    ( ∀ k v lv,
+    □ ( ∀ k v lv,
       ⌜ mv !! k = Some v ⌝ -∗
       Φ k v lv -∗
       ⌜ ∃ w, R k v w ⌝ ) -∗
@@ -1326,34 +1341,41 @@ Section maplist2.
       iSplit; last by iApply big_sepML_empty.
       repeat rewrite dom_empty_L; eauto.
     - iDestruct (big_sepML_delete_cons with "Hml") as (k v) "(% & Hk & Hml)".
-      iSpecialize ("Hi" with "Hml []").
-      { iIntros. iApply "HR"; last by iFrame.
-        apply lookup_delete_Some in H2; intuition eauto. }
+      iDestruct "HR" as "#HR".
+      iSpecialize ("Hi" with "Hml [HR]").
+      { iModIntro.
+        iIntros. iApply "HR"; last by iFrame.
+        apply lookup_delete_Some in a0; intuition eauto. }
       iDestruct "Hi" as (mw) "[% Hi]".
-      iExists (<[k := v]> mw).
+      iDestruct ("HR" with "[] Hk") as (w) "%HR"; eauto.
+      iExists (<[k := w]> mw).
       iSplitR.
-      { admit. }
-      admit.
-  Admitted.
-*)
+      { iPureIntro. rewrite dom_insert_L H3 dom_delete_L.
+        assert (k ∈ dom (gset K) mv).
+        { apply elem_of_dom; eauto. }
+        rewrite -union_difference_L; eauto.
+        set_solver.
+      }
+      iDestruct (big_sepML_insert with "[$Hi Hk]") as "Hml".
+      2: { iExists _. iFrame. done. }
+      2: iFrame.
+      apply not_elem_of_dom. rewrite H3. set_solver.
+  Qed.
 
   Theorem big_sepML_map_val_exists Φ mv l (R : K -> V -> W -> Prop)
       `{!∀ k v lv, Absorbing (Φ k v lv)} :
     big_sepML Φ mv l -∗
-    ( ∀ k v lv,
+    □ ( ∀ k v lv,
       ⌜ mv !! k = Some v ⌝ -∗
       Φ k v lv -∗
       ⌜ ∃ w, R k v w ⌝ ) -∗
     ∃ mw,
       big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v lv) mw l.
   Proof.
-(*
     iIntros "Hml HR".
-    iDestruct (big_sepML_map_val_exists_helper with "Hml [HR]") as (mw) "[% H]".
-    { iIntros.
+    iDestruct (big_sepML_map_val_exists_helper with "Hml HR") as (mw) "[% H]".
     iExists _; iFrame.
-*)
-  Admitted.
+  Qed.
 
   Theorem big_sepML_sepM2_shift (Φ : K -> V -> W -> LV -> PROP) mv mw l (R : K -> V -> W -> Prop)
       `{!∀ k v w lv, Absorbing (Φ k v w lv)} :
