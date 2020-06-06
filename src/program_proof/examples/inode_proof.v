@@ -714,93 +714,23 @@ Proof.
         iExists _; iFrame. }
 
       wpc_pures.
-
-    (*
-    + wpc_pures.
-      wpc_bind_seq.
-      wpc_frame "HΦ Hda".
-      wp_loadField.
-      wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
-      { iPureIntro.
-        word. }
-      iIntros (addr_s') "Haddrs".
-      Transparent slice.T.
-      wp_storeField.
-      Opaque slice.T.
-      iNamed 1.
+      iSplitR "HP Haddrs addrs Hdurable"; last first.
+      { iExists _; iFrame "HP".
+        iExists _, _; iFrame "∗ %". }
+      iIntros "His_locked".
+      iSplit; last iFromCache.
       wpc_pures.
       wpc_bind_seq.
-      wpc_frame "HΦ Hda".
-      wp_apply (wp_Inode__mkHdr with "[$addrs $Haddrs]").
-      { autorewrite with len; simpl.
-        word. }
-      iIntros (s b' extra') "(Hb&%Hencoded'&?&?)"; iNamed.
-      iNamed 1.
-      wpc_pures.
-      wpc_bind (struct.loadF _ _ _).
-      wpc_frame "HΦ Hda".
-      wp_loadField.
-      iNamed 1.
-
-      wpc_bind (Write _ _).
-      wpc_apply (wpc_Write_fupd _
-                              ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0])
-                                            (set inode.addrs ({[a]} ∪.) σ)) ∗
-                              "Hhdr" ∷ int.val addr d↦ b' ∗
-                              "Hused" ∷ used_block γalloc a ∗
-                              "HQ" ∷ Q) with "[$Hb Hhdr Hfupd HP Hreserved]").
-      { iSplit; [ iNamedAccu | ].
-
-
-        iMod (mark_used _ _ (⊤ ∖ ↑Ncrash allocN) _ _ _ (emp)%I with "Hreserved []") as "Hget_used".
-        { admit. (* TODO: split up allocN and Ncrash allocN *) }
-        { iIntros (σ' Hreserved) "HPalloc".
-          iMod ("Huse_fupd" with "[% //] HPalloc") as "$".
-          auto. }
-
-        iModIntro.
-        iExists _; iFrame.
-        iNext.
-        iIntros "Hda".
-        iMod "Hget_used" as "[_ Hused]".
-        iMod (fupd_intro_mask' _ (⊤ ∖ ↑allocN)) as "HinnerN"; first by solve_ndisj.
-        iMod ("Hfupd" with "[%] [% //] HP") as "[$ HQ]".
-        { eexists; eauto. }
-        iMod "HinnerN" as "_".
-
-        by iFrame. }
-      iSplit; [ | iNext ].
-      { iIntros "[Hcrash|Hcrash]"; iNamed; iFromCache. }
-      iIntros "(Hb&Hpost)"; iNamed "Hpost".
-      wpc_pures.
-      wpc_bind_seq.
-      iCache with "HΦ Hused".
-      { iSplitL "HΦ"; first by iFromCache.
-        iApply block_cinv_from_used; iFrame. }
       wpc_frame "HΦ Hused".
       wp_loadField.
-      wp_apply (release_spec' with "[$Hlock $His_locked addr addrs Haddrs HP Hhdr Hdata Hda]"); auto.
-      { iExists _; iFrame.
-        iExists _, _; iFrame "∗ %".
-        iApply wlog_assume_l; [ | iIntros (?) ].
-        { rewrite /inode.wf /=.
-          autorewrite with len; simpl.
-          rewrite -Hlen2 Hlen1; word. }
-        iExists _, _; iFrame "% ∗".
-        iSplit.
-        - iPureIntro.
-          simpl.
-          rewrite list_to_set_app_L.
-          simpl.
-          set_solver.
-        - simpl; auto. }
-
+      wp_apply (crash_lock.release_spec with "His_locked"); auto.
       iNamed 1.
       wpc_pures.
-      iDestruct (block_cinv_from_used with "Hused") as "$".
-      iSplit; try iFromCache.
+      iSplitR "Hused"; last first.
+      { iApply block_cinv_from_used; iFrame. }
+      iSplit; last iFromCache.
       iApply "HΦ"; iFrame.
-*)
+      Fail idtac.
 Admitted.
 
 End goose.
