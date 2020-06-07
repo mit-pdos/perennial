@@ -1514,3 +1514,75 @@ Proof.
   iPureIntro.
   apply map_Forall_lookup; auto.
 Qed.
+
+Section big_sepms_def.
+
+  Context {PROP : bi}.
+  Context `{Countable K}.
+
+  Inductive bsm_maps : Type :=
+  | bsm_cons : ∀ {T : Type} (m : gmap K T) (ms' : bsm_maps), bsm_maps
+  | bsm_nil : bsm_maps
+  .
+
+  Fixpoint bsm_pred (ms : bsm_maps) : Type :=
+    match ms with
+    | @bsm_cons T _ ms' => T -> bsm_pred ms'
+    | bsm_nil => PROP
+    end.
+
+  Fixpoint bsm_keys_match (keys : gset K) (ms : bsm_maps) : Prop :=
+    match ms with
+    | @bsm_cons T m ms' =>
+      keys = dom (gset K) m ∧
+      bsm_keys_match keys ms'
+    | bsm_nil => True
+    end.
+
+  Fixpoint bsm_key_pred (k : K) (ms : bsm_maps) (P : bsm_pred ms) {struct ms} : PROP.
+    destruct ms.
+    - exact (∃ (v : T), ⌜ m !! k = Some v ⌝ ∗ bsm_key_pred k ms (P v))%I.
+    - exact P.
+  Defined.
+
+  Definition big_sepMs (ms : bsm_maps) (P : K -> bsm_pred ms) : PROP :=
+    ( ∃ (keys : gset K),
+        ⌜ bsm_keys_match keys ms ⌝ ∗
+        [∗ set] k ∈ keys, bsm_key_pred k ms (P k)
+    )%I.
+
+End big_sepms_def.
+
+Declare Scope big_sepms_maps_scope.
+Delimit Scope big_sepms_maps_scope with big_sepms_maps.
+Notation "[]" :=
+  (bsm_nil)
+  : big_sepms_maps_scope.
+Notation "[ mx ]" :=
+  (bsm_cons mx bsm_nil)
+  : big_sepms_maps_scope.
+Notation "[ mx ; my ; .. ; mz ]" :=
+  (bsm_cons mx (bsm_cons my .. (bsm_cons mz bsm_nil) ..))
+  : big_sepms_maps_scope.
+
+Notation "'[∗' 'maps]' k ↦ x ; .. ; y ∈ ms , P" :=
+  (big_sepMs ms%big_sepms_maps (fun k => (fun x => .. (fun y => P) .. )))
+  (at level 200, ms at level 10, k at level 1,
+   x closed binder, y closed binder,
+   right associativity,
+   format "[∗  maps]  k ↦ x ; .. ; y  ∈  ms ,  P")
+  : bi_scope.
+
+Section big_sepms.
+
+  Context {PROP : bi}.
+  Context `{Countable K}.
+  Variable (A : Type).
+
+  Theorem big_sepM_sepMs (m : gmap K A) (P : K -> A -> PROP):
+    ( [∗ map] k ↦ v ∈ m, P k v ) -∗
+    [∗ maps] k ↦ v ∈ [m], P k v.
+  Proof.
+  Abort.
+
+End big_sepms.
