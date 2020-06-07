@@ -1555,9 +1555,6 @@ End big_sepms_def.
 
 Declare Scope big_sepms_maps_scope.
 Delimit Scope big_sepms_maps_scope with big_sepms_maps.
-Notation "[]" :=
-  (bsm_nil)
-  : big_sepms_maps_scope.
 Notation "[ mx ]" :=
   (bsm_cons mx bsm_nil)
   : big_sepms_maps_scope.
