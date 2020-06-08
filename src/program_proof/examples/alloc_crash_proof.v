@@ -111,8 +111,8 @@ Definition free_block γ n k : iProp Σ :=
 Definition free_block_pending γ n k : iProp Σ :=
   (∃ Γ, na_crash_pending Γ Ncrash (LVL n) (block_cinv γ k)).
 
-Definition reserved_block γ n k : iProp Σ :=
-  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (block_cinv γ k) i) ∗
+Definition reserved_block γ n k P : iProp Σ :=
+  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) P i ∗ na_crash_val Γ (block_cinv γ k) i) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
   "Halloc_inv" ∷ ∃ d, inv N (allocator_inv γ d).
 
@@ -381,7 +381,7 @@ Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E
   }}}
     Allocator__Reserve #l  @ NotStuck; n; E1; E2
   {{{ a (ok: bool), RET (#a, #ok);
-      if ok then Q (Some a) ∗ reserved_block γ n' a
+      if ok then Q (Some a) ∗ reserved_block γ n' a (Ψ a)
       else Q None }}}
   {{{ Qc }}}.
 Proof.
@@ -521,12 +521,45 @@ Proof.
   iRight; auto.
 Qed.
 
-Lemma prepare_reserved_block E n n' γ e a Φ Φc:
+Lemma prepare_reserved_block_reuse R' E R n n' γ e a Φ Φc:
   (S n < n')%nat →
   language.to_val e = None →
-  reserved_block γ n' a -∗
+  reserved_block γ n' a R -∗
   Φc ∧
-  (Ψ a -∗
+  (R -∗
+   reserved_block_in_prep γ n' a -∗
+   WPC e @ LVL n; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (reserved_block γ n' a (R' v) -∗ Φ v ∧ Φc) ∗
+                                           (R' v) ∗
+                                           reserved_block_in_prep γ n' a ∗
+                                           □ (R' v -∗ block_cinv γ a) }}
+                                   {{ Φc ∗ block_cinv γ a }}) -∗
+  WPC e @  (LVL (S (S n))); ⊤; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (??) "Hreserved H".
+  iNamed "Hreserved".
+  iDestruct "Halloc_inv" as (?) "#Hinv".
+  iDestruct "Hcrashinv" as (Γ i) "(Hbundle&#Hval)".
+  iApply (wpc_na_crash_inv_open_modify _ (λ v, R' v) with "[$] [$] [H Hmapsto]"); try iFrame; auto.
+  iSplit.
+  - iDestruct "H" as "($&_)".
+  - iIntros "HR". iDestruct "H" as "(_&H)".
+    iSpecialize ("H" with "[$] [Hmapsto]").
+    { iFrame. iExists _. eauto. }
+    iApply (wpc_strong_mono with "H"); eauto.
+    iSplit.
+    * iIntros (?) "(Hclose&HR&Hprep&Hcinv)". iModIntro. iFrame. iFrame "#".
+      iIntros. iApply "Hclose". iSplitR "Hprep".
+      ** iExists _, _. by iFrame.
+      ** iIntros. eauto.
+    * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
+Qed.
+
+Lemma prepare_reserved_block E R n n' γ e a Φ Φc:
+  (S n < n')%nat →
+  language.to_val e = None →
+  reserved_block γ n' a R -∗
+  Φc ∧
+  (R -∗
    reserved_block_in_prep γ n' a -∗
    WPC e @ LVL n; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φ v ∧ Φc) ∗ block_cinv γ a }}
                                    {{ Φc ∗ block_cinv γ a }}) -∗
@@ -535,8 +568,8 @@ Proof.
   iIntros (??) "Hreserved H".
   iNamed "Hreserved".
   iDestruct "Halloc_inv" as (?) "#Hinv".
-  iDestruct "Hcrashinv" as (Γ i) "(Hbundle&Hval)".
-  iApply (wpc_na_crash_inv_open_modify _ (λ _, block_cinv γ a) with "[$] [$] [H Hmapsto]"); try iFrame; auto.
+  iDestruct "Hcrashinv" as (Γ i) "(Hbundle&#Hval)".
+  iApply (wpc_na_crash_inv_open_modify _ (λ v, block_cinv γ a) with "[$] [$] [H Hmapsto]"); try iFrame; auto.
   iSplit.
   - iDestruct "H" as "($&_)".
   - iIntros "HR". iDestruct "H" as "(_&H)".
@@ -544,8 +577,8 @@ Proof.
     { iFrame. iExists _. eauto. }
     iApply (wpc_strong_mono with "H"); eauto.
     iSplit.
-    * iIntros (?) "(Hclose&?)". iModIntro. iFrame. iFrame "#".
-      iSplitL.
+    * iIntros (?) "(Hclose&Hcinv)". iModIntro. iFrame. iFrame "#".
+      iSplitL "".
       ** eauto.
       ** eauto.
     * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
@@ -647,7 +680,7 @@ Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   ↑N ⊆ E →
   ↑allocN ⊆ E →
   ↑nroot.@"readonly" ⊆ E →
-  {{{ is_allocator l d γ n' ∗ reserved_block γ n' a ∗
+  {{{ is_allocator l d γ n' ∗ reserved_block γ n' a (Ψ a) ∗
      (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ P σ ={E ∖↑N}=∗ P (<[ a := block_free ]> σ) ∗ Q)
   }}}
     Allocator__Free #l #a @ E
