@@ -17,6 +17,28 @@ Definition maxIndirect: Z := 10.
 Definition indirectNumBlocks: Z := 512.
 Definition MaxBlocks: Z := maxDirect + maxIndirect*indirectNumBlocks.
 
+Lemma indirect_blocks_maxBlocks:
+  (MaxBlocks - maxDirect) `div` indirectNumBlocks = maxIndirect.
+Proof.
+  rewrite /MaxBlocks /maxDirect /indirectNumBlocks /maxIndirect.
+  change (500 + 10 * 512 - 500) with (10*512).
+  rewrite Z.div_mul; auto.
+Qed.
+
+Lemma indirect_blocks_upperbound sz:
+  sz < MaxBlocks ->
+  (sz - maxDirect) `div` indirectNumBlocks < maxIndirect.
+Proof.
+  intros.
+  rewrite -indirect_blocks_maxBlocks.
+  rewrite /MaxBlocks /maxDirect /indirectNumBlocks /maxIndirect.
+  rewrite /MaxBlocks /maxDirect /indirectNumBlocks /maxIndirect in H.
+  rewrite /MaxBlocks in H.
+  change (500 + 10 * 512 - 500) with (10*512).
+  rewrite Z.div_mul; auto.
+  (*TODO I think I need to leverage the div_mod fact *)
+Admitted.
+
 Module inode.
   Record t :=
     mk { addr: u64;
@@ -214,18 +236,29 @@ Proof.
   wp_pures.
 
   wp_call.
-  destruct (bool_decide (int.val sz <= int.val 500)) eqn:HnumDir; wp_pures.
+  iDestruct "Hdiraddrs" as "[[HdirPtsto %Hdirs_len'] Hdirs_cap]".
+  iDestruct "Hindaddrs" as "[[HindPtsto %Hinds_len'] Hinds_cap]".
+  assert (length dirAddrs = int.nat diraddr_s.(Slice.sz) ∧
+         length indAddrs = int.nat indaddr_s.(Slice.sz)) as [Hdirs_len Hinds_len].
+  {
+    split; [rewrite -Hdirs_len' | rewrite -Hinds_len']; rewrite fmap_length; auto.
+  }
+  iAssert (slice.is_slice diraddr_s uint64T 1 (u64val <$> dirAddrs)) with "[HdirPtsto Hdirs_cap]" as "Hdiraddrs".
+  {
+    unfold is_slice, slice.is_slice. iFrame.
+    iPureIntro; auto.
+  }
+  iAssert (slice.is_slice indaddr_s uint64T 1 (u64val <$> indAddrs)) with "[HindPtsto Hinds_cap]" as "Hindaddrs".
+  {
+    unfold is_slice, slice.is_slice. iFrame.
+    iPureIntro; auto.
+  }
 
+  destruct (bool_decide (int.val sz <= maxDirect)) eqn:HnumDir; unfold maxDirect in HnumDir; rewrite HnumDir; wp_pures.
   all: rewrite -wp_fupd; wp_apply wp_new_free_lock.
   all: iIntros (γ lref) "Hlock".
-  all: unfold slice.is_slice, slice.is_slice_small;
-    iDestruct "Hdiraddrs" as "[[HdirPtsto %Hdirs_len] Hdirs_cap]";
-    iDestruct "Hindaddrs" as "[[HindPtsto %Hinds_len] Hinds_cap]";
-    rewrite fmap_length in Hdirs_len;
-    rewrite fmap_length in Hinds_len;
-    unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
   {
-    assert (int.val sz <= int.val 500) as Hsz500.
+    assert (int.val sz <= int.val maxDirect) as HszBound.
     {
       case_bool_decide.
       - auto.
@@ -234,13 +267,14 @@ Proof.
     wp_apply (wp_SliceTake uint64T sz).
     {
       rewrite HdirLen in Hdirs_len.
-      assert (500 = int.val (diraddr_s.(Slice.sz))) by word.
+      assert (int.val maxDirect = int.val (diraddr_s.(Slice.sz))).
+      { unfold maxDirect in *. word. }
       rewrite -H; auto.
     }
+    pose (HnumInd2 HszBound) as HnumInd.
     wp_apply (wp_SliceTake uint64T numInd).
     {
       rewrite HindirLen in Hinds_len.
-      pose (HnumInd2 Hsz500) as HnumInd.
       word.
     }
     wp_apply wp_allocStruct; auto.
@@ -258,68 +292,52 @@ Proof.
       iSplit; iFrame.
       - iFrame "∗ %".
         iPureIntro. repeat (split; auto).
-      - iPoseProof (slice_small_split (diraddr_s) sz uint64T 1 (u64val <$> dirAddrs)) as "HsplitDir".
-        { rewrite fmap_length. rewrite HdirLen. word. }
-        iAssert (slice.is_slice diraddr_s uint64T 1 (u64val <$> dirAddrs)) with "[HdirPtsto Hdirs_cap]" as "HdirSlice".
+      - iSplitL "Hdiraddrs"; unfold is_slice; rewrite /list.untype fmap_take//.
         {
-          iApply is_slice_split. unfold slice.is_slice_small.
-          iSplitL "HdirPtsto"; [iSplitL; auto | auto].
-          iPureIntro. rewrite /list.untype. repeat (rewrite fmap_length). auto.
+          iApply (is_slice_take_cap with "Hdiraddrs").
+          rewrite Hdirs_len' -Hdirs_len.
+          rewrite HdirLen; auto.
         }
-
-        iPoseProof (slice_small_split(indaddr_s) numInd uint64T 1 (u64val <$> indAddrs)) as "HsplitInd".
-        { rewrite fmap_length. rewrite HindirLen. word. }
-        iAssert (slice.is_slice indaddr_s uint64T 1 (u64val <$> indAddrs)) with "[HindPtsto Hinds_cap]" as "HindSlice".
         {
-          iApply is_slice_split. unfold slice.is_slice_small.
-          iSplitL "HindPtsto"; [iSplitL; auto | auto].
-          iPureIntro. rewrite /list.untype. repeat (rewrite fmap_length). auto.
+          iApply (is_slice_take_cap with "Hindaddrs").
+          rewrite Hinds_len' -Hinds_len.
+          rewrite /maxIndirect in HindirLen.
+          rewrite HindirLen /maxIndirect; auto.
+          word.
         }
-
-        iSplitL "HsplitDir HdirSlice".
-        *
-          iDestruct (is_slice_split with "HdirSlice") as "[Hdirect_small Hdirect]".
-          iPoseProof ("HsplitDir" with "Hdirect_small") as "[H1 H2]".
-          (*Check is_slice_take_cap.*)
-          admit.
-          (*iApply (is_slice_take_cap _ _ _ _ _ _ _).
-
-          unfold is_slice, slice.is_slice.
-          iSplitL "H1"; auto.
-          { replace
-               (slice.is_slice_small (slice_take diraddr_s uint64T sz) uint64T 1
-                                     (take (int.nat sz) (u64val <$> dirAddrs)))
-               with
-               (slice.is_slice_small (slice_take diraddr_s uint64T sz) uint64T 1
-                                     (list.untype (take (int.nat sz) dirAddrs))); auto.
-             { rewrite /list.untype fmap_take//. }
-          } *)
-        * admit.
     }
     iModIntro.
     iApply "HΦ".
     iExists _, _; iFrame "#".
   }
   {
-    assert (int.val sz > int.val 500) as Hsz500.
+    assert (int.val sz > int.val maxDirect) as HszBound.
     {
       case_bool_decide.
       - discriminate.
-      - word.
+      - rewrite /maxDirect; word.
     }
-    wp_apply (wp_SliceTake uint64T 500).
+    pose (HnumInd1 HszBound) as HnumInd.
+    wp_apply (wp_SliceTake uint64T maxDirect).
     {
       rewrite HdirLen in Hdirs_len.
-      assert (500 = int.val (diraddr_s.(Slice.sz))) by word.
-      rewrite -H; auto.
-      word.
+      assert (maxDirect = int.val (diraddr_s.(Slice.sz))).
+      {
+        unfold maxDirect in Hdirs_len. unfold maxDirect. by word.
+      }
+      rewrite -H; word.
     }
     wp_apply (wp_SliceTake uint64T numInd).
     {
       rewrite HindirLen in Hinds_len.
-      pose (HnumInd1 Hsz500) as HnumInd.
       rewrite HnumInd.
-      admit.
+      assert ((int.val sz - maxDirect) `div` indirectNumBlocks + 1 < maxIndirect + 1) as HmaxCmp. {
+        rewrite Z.lt_add_lt_sub_r.
+        change (maxIndirect + 1 - 1) with (maxIndirect).
+        apply indirect_blocks_upperbound. auto.
+      }
+      unfold maxIndirect in *.
+      word.
     }
     wp_apply wp_allocStruct; auto.
     iIntros (l) "Hinode".
@@ -336,13 +354,28 @@ Proof.
       iSplit; iFrame.
       - iFrame "∗ %".
         iPureIntro. repeat (split; auto).
-      - admit.
+      - iSplitL "Hdiraddrs"; unfold is_slice; rewrite /list.untype fmap_take//.
+        {
+          change (to_val <$> dirAddrs) with (u64val<$> dirAddrs).
+          rewrite take_ge; try word.
+          iEval (rewrite -(firstn_all (u64val <$> dirAddrs)) fmap_length HdirLen /maxDirect).
+          iApply (is_slice_take_cap with "Hdiraddrs").
+          rewrite Hdirs_len' -Hdirs_len HdirLen /maxDirect. word.
+        }
+        {
+          iApply (is_slice_take_cap with "Hindaddrs").
+          pose (indirect_blocks_upperbound (int.val sz)) as Hbound.
+          rewrite Hinds_len' -Hinds_len.
+          rewrite /maxIndirect HindirLen /maxIndirect HnumInd.
+          unfold maxIndirect in Hbound.
+          word.
+        }
     }
     iModIntro.
     iApply "HΦ".
     iExists _, _; iFrame "#".
   }
-Admitted.
+Qed.
 
 (*Theorem wp_Inode__UsedBlocks {l γ P} :
   (* TODO: it would be cool to run this before allocating the lock invariant for
