@@ -378,7 +378,7 @@ Qed.
 Definition slice_take (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
   {| Slice.ptr := sl.(Slice.ptr);
      Slice.sz := n;
-     Slice.cap := n;
+     Slice.cap := sl.(Slice.cap);
   |}.
 
 Definition slice_skip (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
@@ -395,7 +395,14 @@ Lemma slice_split s (n: u64) t q vs :
   int.nat n <= length vs ->
   is_slice s t q vs -∗ is_slice (slice_take s t n) t q (take (int.nat n) vs) ∗
            is_slice (slice_skip s t n) t q (drop (int.nat n) vs).
-*)
+ *)
+
+Theorem is_slice_take_cap s t q vs n :
+  int.val n <= length vs ->
+  is_slice s t q vs -∗
+  is_slice (slice_take s t n) t q (take (int.nat n) vs).
+Proof.
+Admitted.
 
 Lemma slice_small_split s (n: u64) t q vs :
   int.val n <= length vs →
@@ -542,6 +549,7 @@ Proof.
   - wp_apply wp_panic.
     word.
   - wp_call.
+    wp_call.
     iApply "HΦ".
 Qed.
 

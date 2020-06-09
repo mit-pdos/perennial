@@ -106,8 +106,7 @@ Definition SliceTake: val :=
   λ: "s" "n", if: slice.len "s" < "n"
               then Panic "slice index out-of-bounds"
               else
-                (* TODO: could this have extra capacity? *)
-                (slice.ptr "s", "n", "n").
+                (slice.ptr "s", "n", slice.cap "s").
 
 Definition SliceSubslice t: val :=
   λ: "s" "n1" "n2",
