@@ -204,6 +204,13 @@ Proof.
   iFrame "%".
 Qed.
 
+Theorem is_inode_durable_size addr σ addrs :
+  is_inode_durable addr σ addrs -∗ ⌜length addrs = length σ.(inode.blocks)⌝.
+Proof.
+  iNamed 1.
+  iDestruct (big_sepL2_length with "Hdata") as "$".
+Qed.
+
 Theorem wp_Inode__UsedBlocks {l γ P addr σ} :
   {{{ pre_inode l γ P addr σ }}}
     Inode__UsedBlocks #l
@@ -241,7 +248,7 @@ Theorem wpc_Inode__Read {k E2} {l γ k' P addr} {off: u64} Q :
   {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
       "Hfupd" ∷ (∀ σ σ' mb,
         ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
-        P σ ={⊤}=∗ P σ' ∗ Q mb)
+        P σ ={⊤ ∖ ↑inodeN}=∗ P σ' ∗ Q mb)
   }}}
     Inode__Read #l #off @ NotStuck; LVL (S (S k)); ⊤; E2
   {{{ s mb, RET slice_val s;
@@ -272,40 +279,53 @@ Proof.
     iApply (inode_linv_to_cinv with "[$]"). }
   wpc_call.
   wpc_bind (_ ≥ _)%E.
-  wpc_frame "HΦ Hlockinv HP".
-
-  (*
-  iIntros "(His_locked&Hlk)"; iNamed "Hlk".
   iNamed "Hlockinv".
-  iNamed "Hdurable".
+  iCache with "HΦ HP Hdurable".
+  { iSplitL "HΦ"; first by iFromCache.
+    iExists _; iFrame.
+    iExists _; iFrame. }
+  iDestruct (is_inode_durable_size with "Hdurable") as %Hlen1.
+  wpc_frame "HΦ Hdurable HP".
   wp_loadField.
-  iDestruct (big_sepL2_length with "Hdata") as %Hlen1.
   iDestruct (is_slice_sz with "Haddrs") as %Hlen2.
   autorewrite with len in Hlen2.
   wp_apply wp_slice_len.
   wp_pures.
-  wp_if_destruct.
-  - wp_loadField.
-    iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
+  iNamed 1.
+  wpc_if_destruct.
+  - iMod ("Hfupd" $! σ σ None with "[$HP]") as "[HP HQ]".
     { iPureIntro.
-      eauto. }
-    wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr addrs Haddrs Hdata]").
+      split; auto.
+      rewrite lookup_ge_None_2 //.
+      lia. }
+    wpc_pures.
+    iSplitR "HP addrs Haddrs Hdurable"; last first.
     { iExists _; iFrame.
-      iExists _, _; iFrame "∗ %".
       iExists _, _; iFrame "∗ %". }
+    iIntros "His_locked".
+    iSplit; last iFromCache.
+    wpc_pures.
+    wpc_frame "HΦ".
+    wp_loadField.
+    wp_apply (crash_lock.release_spec with "His_locked"); auto.
     wp_pures.
+    iNamed 1.
+    iRight in "HΦ".
     change slice.nil with (slice_val Slice.nil).
     iApply "HΦ"; iFrame.
-    rewrite lookup_ge_None_2 //.
-    rewrite -Hlen1 Hlen2.
-    word.
-  - wp_loadField.
-    destruct (list_lookup_lt _ addrs (int.nat off)) as [addr' Hlookup].
+    auto.
+  - destruct (list_lookup_lt _ addrs (int.nat off)) as [addr' Hlookup].
     { word. }
     iDestruct (is_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
+    wpc_pures.
+    wpc_bind_seq.
+    wpc_frame "HΦ HP Hdurable".
+    wp_loadField.
     wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
-    iIntros "Haddrs_small".
-    wp_pures.
+    iIntros "Haddrs_small"; iNamed 1.
+    wpc_pures.
+
+  (*
     iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
     destruct Hblock_lookup as [b0 Hlookup2].
     iDestruct (is_slice_split with "[$Haddrs_small $Haddrs]") as "Haddrs".
@@ -327,13 +347,6 @@ Proof.
 Qed.
 *)
 Admitted.
-
-Theorem is_inode_durable_size addr σ addrs :
-  is_inode_durable addr σ addrs -∗ ⌜length addrs = length σ.(inode.blocks)⌝.
-Proof.
-  iNamed 1.
-  iDestruct (big_sepL2_length with "Hdata") as "$".
-Qed.
 
 Theorem wp_Inode__Size {k E2} {l k' γ P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
   (S k < k')%nat →
