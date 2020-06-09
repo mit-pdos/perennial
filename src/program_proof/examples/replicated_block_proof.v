@@ -8,6 +8,16 @@ From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
 
+(** * Replicated block example
+
+    Replicates single-block writes across two underlying disk blocks, and
+    supports read from either the "primary" or "backup" block.
+
+    On crash the blocks may disagree. In that case the recovery procedure copies
+    from the primary to restore synchronization.
+ *)
+
+(* the abstract state of the replicated block is  *)
 Module rblock.
   Definition t := Block.
 End rblock.
@@ -18,10 +28,11 @@ Section goose.
   Context `{!crashG Σ}.
   Context `{!stagedG Σ}.
 
-  Let N := nroot.@"replicated_block".
-  Context (P: rblock.t → iProp Σ).
-
   Implicit Types (l:loc) (addr: u64) (σ: rblock.t) (γ: gname).
+
+  (* the replicated block has a stronger lock invariant [rblock_linv] that holds
+  when the lock is free as well as a weaker crash invariant [rblock_cinv] that
+  holds at all intermediate points *)
 
   Definition rblock_linv addr σ : iProp Σ :=
     ("Hprimary" ∷ int.val addr d↦ σ ∗
@@ -48,6 +59,12 @@ Section goose.
     auto.
   Qed.
 
+  (** the abstraction relation for the replicated block is written in HOCAP
+  style, by quantifying over an arbitrary caller-specified predicate [P] of the
+  block's state. *)
+  Let N := nroot.@"replicated_block".
+  Context (P: rblock.t → iProp Σ).
+
   Definition is_rblock (γ: gname) (k': nat) (l: loc) addr : iProp Σ :=
     ∃ (d_ref m_ref: loc),
       "#d" ∷ readonly (l ↦[RepBlock.S :: "d"] #d_ref) ∗
@@ -57,6 +74,10 @@ Section goose.
       (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)
       (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)
   .
+
+  Global Instance is_rblock_Persistent γ k' l addr :
+    Persistent (is_rblock γ k' l addr).
+  Proof. apply _. Qed.
 
   Definition block0: Block :=
     list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
@@ -71,7 +92,10 @@ Section goose.
     - iExists block0; iExact "Hb".
   Qed.
 
-  Theorem wp_Open {k E2} (d_ref: loc) k' addr σ :
+  (* Open is the replicated block's recovery procedure, which constructs the
+  in-memory state as well as recovering the synchronization between primary and
+  backup, going from the crash invariant to the lock invariant. *)
+  Theorem wpc_Open {k E2} (d_ref: loc) k' addr σ :
     (k' < S k)%nat →
     {{{ rblock_cinv addr σ ∗ P σ }}}
       Open #d_ref #addr @ NotStuck;LVL (S (S k)); ⊤;E2
@@ -149,6 +173,8 @@ Section goose.
     iExists _, _; iFrame.
   Qed.
 
+  (* this is an example of a small helper function which needs only a WP spec
+  since the spec does not talk about durable state. *)
   Theorem wp_RepBlock__readAddr addr l (primary: bool) :
     {{{ readonly (l ↦[RepBlock.S :: "addr"] #addr) }}}
       RepBlock__readAddr #l #primary
@@ -199,8 +225,6 @@ Section goose.
       with "[Hlkinv]" as "(Haddr'&Hlkinv)".
     { iNamed "Hlkinv".
       destruct Haddr'_eq; subst; iFrame; auto. }
-    (* TODO: this isn't what I want, somehow I want to use the right side for
-    the crash condition *)
     iLeft in "Hfupd".
     iMod ("Hfupd" with "HP") as "[HP HQ]".
 
@@ -276,6 +300,15 @@ Section goose.
     wpc_frame "HΦ Hfupd Hprimary Hbackup HP".
     wp_loadField.
     iNamed 1.
+    (* This is an interesting example illustrating crash safety - notice that we
+    produce [Q] atomically during this Write. This is the only valid simulation
+    point in this example, because if we crash the operation has logically
+    occurred due to recovery.
+
+    Also note that this is quite different from the Perennial example which
+    requires helping due to the possibility of losing the first disk block
+    between crash and recovery - the commit cannot happen until recovery
+    succesfully synchronizes the disks. *)
     wpc_apply (wpc_Write_fupd (⊤ ∖ ↑N) ("Hprimary" ∷ int.val addr d↦ b ∗
                                         "HP" ∷ P b ∗
                                         "HQ" ∷ Q)
