@@ -258,7 +258,45 @@ Proof.
       iSplit; iFrame.
       - iFrame "∗ %".
         iPureIntro. repeat (split; auto).
-      - admit.
+      - iPoseProof (slice_small_split (diraddr_s) sz uint64T 1 (u64val <$> dirAddrs)) as "HsplitDir".
+        { rewrite fmap_length. rewrite HdirLen. word. }
+        iAssert (slice.is_slice diraddr_s uint64T 1 (u64val <$> dirAddrs)) with "[HdirPtsto Hdirs_cap]" as "HdirSlice".
+        {
+          iApply is_slice_split. unfold slice.is_slice_small.
+          iSplitL "HdirPtsto"; [iSplitL; auto | auto].
+          iPureIntro. rewrite /list.untype. repeat (rewrite fmap_length). auto.
+        }
+
+        iPoseProof (slice_small_split(indaddr_s) numInd uint64T 1 (u64val <$> indAddrs)) as "HsplitInd".
+        { rewrite fmap_length. rewrite HindirLen. word. }
+        iAssert (slice.is_slice indaddr_s uint64T 1 (u64val <$> indAddrs)) with "[HindPtsto Hinds_cap]" as "HindSlice".
+        {
+          iApply is_slice_split. unfold slice.is_slice_small.
+          iSplitL "HindPtsto"; [iSplitL; auto | auto].
+          iPureIntro. rewrite /list.untype. repeat (rewrite fmap_length). auto.
+        }
+
+        iSplitL "HsplitDir HdirSlice".
+        *
+          iDestruct (is_slice_split with "HdirSlice") as "[Hdirect_small Hdirect]".
+          iPoseProof ("HsplitDir" with "Hdirect_small") as "[H1 H2]".
+
+          unfold is_slice, slice.is_slice.
+          iSplitL "H1"; auto.
+          { replace
+               (slice.is_slice_small (slice_take diraddr_s uint64T sz) uint64T 1
+                                     (take (int.nat sz) (u64val <$> dirAddrs)))
+               with
+               (slice.is_slice_small (slice_take diraddr_s uint64T sz) uint64T 1
+                                     (list.untype (take (int.nat sz) dirAddrs))); auto.
+             { rewrite /list.untype fmap_take//. }
+          }
+          {
+            Search slice_skip.
+            Search is_slice_cap.
+          }
+    {
+
     }
     iModIntro.
     iApply "HΦ".
