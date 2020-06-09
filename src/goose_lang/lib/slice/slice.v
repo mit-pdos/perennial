@@ -516,12 +516,6 @@ Proof.
   f_equal.
 Qed.
 
-Theorem is_slice_take_cap s t q vs n :
-  is_slice s t q vs -∗
-  is_slice (slice_take s t n) t q (take (int.nat n) vs).
-Proof.
-Admitted.
-
 (** * Hoare triples *)
 
 Lemma wp_SliceSkip' Φ stk E s t (n: u64):
