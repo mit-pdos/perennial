@@ -92,6 +92,7 @@ Tactic Notation "iCache" "with" constr(Hs) :=
   lazymatch goal with
   | [ |- envs_entails _ (wpc _ _ _ _ _ _ ?Φc) ] =>
         iCache_go Φc Hs "#?"
+  | _ => fail 1 "not a wpc goal"
   end.
 
 (** The argument [efoc] can be used to specify the construct that should be
