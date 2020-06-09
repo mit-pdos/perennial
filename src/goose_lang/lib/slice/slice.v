@@ -397,12 +397,30 @@ Lemma slice_split s (n: u64) t q vs :
            is_slice (slice_skip s t n) t q (drop (int.nat n) vs).
  *)
 
-Theorem is_slice_take_cap s t q vs n :
+Theorem is_slice_take_cap s t vs n :
   int.val n <= length vs ->
-  is_slice s t q vs -∗
-  is_slice (slice_take s t n) t q (take (int.nat n) vs).
+  is_slice s t 1 vs -∗
+  is_slice (slice_take s t n) t 1 (take (int.nat n) vs).
 Proof.
-Admitted.
+  intros.
+  rewrite /is_slice /is_slice_small /is_slice_cap /slice_take /=.
+  rewrite -> firstn_length_le by lia.
+  iIntros "[[Hsmall %] Hcap]".
+  iDestruct "Hcap" as (extra) "[% Hcap]".
+  iDestruct (array_split (int.nat n) with "Hsmall") as "[Hsmall0 Hsmall1]"; try lia.
+  word_cleanup.
+  iSplitL "Hsmall0".
+  - iFrame. done.
+  - iExists _. iSplitR.
+    2: {
+      iApply array_app. iFrame "Hsmall1".
+      replace (int.val (Slice.sz s)) with (int.val n + length (drop (int.nat n) vs)).
+      2: { rewrite drop_length. lia. }
+      rewrite Z.mul_add_distr_l -loc_add_assoc //.
+    }
+    iPureIntro.
+    rewrite app_length drop_length. lia.
+Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
   int.val n <= length vs →
