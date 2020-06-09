@@ -280,6 +280,9 @@ Proof.
         *
           iDestruct (is_slice_split with "HdirSlice") as "[Hdirect_small Hdirect]".
           iPoseProof ("HsplitDir" with "Hdirect_small") as "[H1 H2]".
+          (*Check is_slice_take_cap.*)
+          admit.
+          (*iApply (is_slice_take_cap _ _ _ _ _ _ _).
 
           unfold is_slice, slice.is_slice.
           iSplitL "H1"; auto.
@@ -290,13 +293,8 @@ Proof.
                (slice.is_slice_small (slice_take diraddr_s uint64T sz) uint64T 1
                                      (list.untype (take (int.nat sz) dirAddrs))); auto.
              { rewrite /list.untype fmap_take//. }
-          }
-          {
-            Search slice_skip.
-            Search is_slice_cap.
-          }
-    {
-
+          } *)
+        * admit.
     }
     iModIntro.
     iApply "HΦ".
