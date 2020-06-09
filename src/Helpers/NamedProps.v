@@ -1,5 +1,4 @@
 From iris.proofmode Require Import tactics environments intro_patterns.
-From iris.base_logic.lib Require Import iprop.
 From iris_string_ident Require Import ltac2_string_ident.
 
 (* NamedProps implements [named name P], which is equivalent to P but knows to
@@ -224,9 +223,9 @@ Notation "name ∷ P" := (named name P%I) (at level 79).
 (* TODO: maybe we should move tests out *)
 Module tests.
   Section tests.
-    Context {Σ:gFunctors}.
-    Implicit Types (P Q R : iProp Σ).
-    Implicit Types (Ψ: nat -> iProp Σ).
+    Context {PROP: bi} {Haffine: BiAffine PROP}.
+    Implicit Types (P Q R : PROP).
+    Implicit Types (Ψ: nat -> PROP).
     Implicit Types (φ: Prop).
 
     Example test_name_named_1 P Q :
@@ -318,11 +317,11 @@ Module tests.
       iSplitL "HP"; [ iExists x | ]; iFrame.
     Qed.
 
-    Definition rep_invariant Ψ Q : iProp Σ :=
-      (∃ x, named "HP" (Ψ x) ∗ named "HQ" Q).
+    Definition rep_invariant Ψ Q : PROP :=
+      (∃ x, named "HP" (Ψ x) ∗ named "HQ" Q)%I.
 
-    Example test_exist_destruct_under_definition (P: nat -> iProp Σ) Q :
-      ⊢ rep_invariant P Q -∗ (∃ x, P x) ∗ Q.
+    Example test_exist_destruct_under_definition Ψ Q :
+      ⊢ rep_invariant Ψ Q -∗ (∃ x, Ψ x) ∗ Q.
     Proof.
       iIntros "H".
       iNamed "H".
@@ -345,7 +344,7 @@ Module tests.
       iExists (x+y+z); iFrame "H".
     Qed.
 
-    Example test_iNamed_destruct_pat (φ: Prop) P Q :
+    Example test_iNamed_destruct_pat φ P Q :
       ⊢ named "[%Hfoo HP]" (⌜φ⌝ ∗ P) ∗
         named "HQ" Q ∗
         named "HP2" P
