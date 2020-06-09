@@ -161,6 +161,7 @@ def main():
             "inode",
             "indirect_inode",
             "dir",
+            "single_inode",
         ]
         for pkg in pkgs:
             run_goose(
