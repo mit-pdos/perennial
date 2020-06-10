@@ -128,7 +128,7 @@ Section goose_lang.
   Proof.
     unseal.
     iIntros "HP HQ".
-    iDestruct (inv_combine_dup with "[] HP HQ") as "Hinv".
+    iDestruct (inv_combine_dup_l with "[] HP HQ") as "Hinv".
     { iApply readonly_inner_dup. }
     iApply (inv_iff with "Hinv").
     { iIntros "!> !>".

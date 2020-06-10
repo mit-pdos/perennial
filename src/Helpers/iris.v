@@ -14,17 +14,3 @@ Proof.
   iIntros "!> !>".
   iFrame.
 Qed.
-
-Lemma inv_combine_dup {Σ} `{!invG Σ} N (P Q: iProp Σ) :
-  □ (P -∗ P ∗ P) -∗
-  inv N P -∗ inv N Q -∗ inv N (P ∗ Q).
-Proof.
-  rewrite inv_eq. iIntros "#HPdup #HinvP #HinvQ !#"; iIntros (E ?).
-  iMod ("HinvP" with "[%]") as "[HP HcloseP]"; first set_solver.
-  iDestruct ("HPdup" with "HP") as "[$ HP]".
-  iMod ("HcloseP" with "HP") as "_".
-  iMod ("HinvQ" with "[%]") as "[$ HcloseQ]"; first set_solver.
-  iMod (fupd_intro_mask' _ (E ∖ ↑N)) as "Hclose"; first set_solver.
-  iIntros "!> [HP HQ]".
-  iMod "Hclose" as %_. iMod ("HcloseQ" with "HQ") as %_. auto.
-Qed.
