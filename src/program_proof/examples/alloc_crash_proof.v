@@ -170,6 +170,18 @@ Proof. apply _. Qed.
 Definition alloc_crash_cond : iProp Σ :=
   ∃ σ, P σ ∗ [∗ set] k ∈ alloc.unused σ, Ψ k.
 
+Theorem reserved_block_weaken γ n k R R' :
+  □(R -∗ R') -∗
+  reserved_block γ n k R -∗
+  reserved_block γ n k R'.
+Proof.
+  iIntros "#HR'"; iNamed 1.
+  iDestruct "Hcrashinv" as (Γ i) "[Hbundle Hval]".
+  iFrame.
+  iExists _, _; iFrame.
+  iApply (na_crash_bundle_weaken with "HR' Hbundle").
+Qed.
+
 (*
 Lemma mapsto_pts_to_free:
   [∗ map] i↦v ∈ σ, mapsto i 1 v -∗

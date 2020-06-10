@@ -104,7 +104,7 @@ Definition staged_bundle (Q Q': iProp Σ) b (bundle: gset nat) : iProp Σ :=
       mapsto (hG := sphG) i 1 bundle ∗
       meta (hG := sphG) i bN γ ∗
       own γ (◯ Excl' (b, (γprop, γprop'))) ∗
-      ▷▷ (Q ≡ Qalt) ∗ ▷▷ (Q' ≡ Qalt') ∗
+      ▷▷ (□ (Qalt -∗ Q)) ∗ ▷▷ (□ (Qalt' -∗ Q')) ∗
       saved_prop_own γprop Qalt ∗
       saved_prop_own γprop' Qalt').
 
@@ -346,7 +346,11 @@ Proof.
   }
   iModIntro. iExists _.
   iSplitL "Hbundle H2".
-  { iExists _, _, _, _, Q, Qr. iFrame. iFrame "#". eauto. }
+  { iExists _, _, _, _, Q, Qr. iFrame. iFrame "#".
+    iSplitL.
+    - iIntros "!> !> !> $".
+    - iIntros "!> !> !> $".
+  }
   iSplitL "".
   { iExists _. rewrite ?big_sepS_singleton. iFrame "#".
     iSplitL "".
@@ -357,6 +361,44 @@ Proof.
   iSplitL.
   { iExists _. iFrame. iFrame "#". }
   { iExists _. iFrame. iFrame "#". }
+Qed.
+
+Theorem staged_bundle_weaken Q1 Q1' Q2 Q2' b bundle :
+  □(Q1 -∗ Q2) -∗
+  □(Q1' -∗ Q2') -∗
+  staged_bundle Q1 Q1' b bundle -∗
+  staged_bundle Q2 Q2' b bundle.
+Proof.
+  iIntros "#HQ12 #HQ12' H".
+  iDestruct "H" as (i γ γprop γprop' Qalt Qalt') "(Hbundle&Hmeta&Hown&#Hequiv1&#Hequiv2&Hsaved1&Hsaved2)".
+  iExists i, γ, γprop, γprop', Qalt, Qalt'; iFrame.
+  iSplitL "Hequiv1".
+  - iIntros "!> !> !> H".
+    iDestruct ("Hequiv1" with "H") as "H".
+    iApply "HQ12"; auto.
+  - iIntros "!> !> !> H".
+    iDestruct ("Hequiv2" with "H") as "H".
+    iApply "HQ12'"; auto.
+Qed.
+
+Theorem staged_bundle_weaken_1 Q1 Q1' Q2 b bundle :
+  □(Q1 -∗ Q2) -∗
+  staged_bundle Q1 Q1' b bundle -∗
+  staged_bundle Q2 Q1' b bundle.
+Proof.
+  iIntros "#HQ12 H".
+  iApply staged_bundle_weaken; iFrame "# ∗".
+  auto.
+Qed.
+
+Theorem staged_bundle_weaken_2 Q1 Q1' Q2' b bundle :
+  □(Q1' -∗ Q2') -∗
+  staged_bundle Q1 Q1' b bundle -∗
+  staged_bundle Q1 Q2' b bundle.
+Proof.
+  iIntros "#HQ12' H".
+  iApply staged_bundle_weaken; iFrame "# ∗".
+  auto.
 Qed.
 
 Lemma later_equiv_big_sepS {L} `{Countable L} (s: gset L) (P Q: L → iProp Σ):
@@ -696,11 +738,15 @@ Proof.
   iDestruct (saved_prop_agree with "Hsavedr1 Hsavedr1'") as "Hequivr1'".
   iDestruct (saved_prop_agree with "Hsavedr2 Hsavedr2'") as "Hequivr2'".
   iNext.
-  iRewrite "Hequiv1". iRewrite "Hequiv1'".
-  iRewrite "Hequiv2". iRewrite "Hequiv2'".
-  iRewrite "Hequiv1_alt". iRewrite "Hequivr1'".
-  iRewrite "Hequiv2_alt". iRewrite "Hequivr2'".
-  eauto.
+  iSplitL; iModIntro.
+  - iRewrite -"Hequiv1'". iRewrite -"Hequiv2'".
+    iIntros "[H1 H2]".
+    iDestruct ("Hequiv1" with "H1") as "$".
+    iDestruct ("Hequiv2" with "H2") as "$".
+  - iRewrite -"Hequivr1'". iRewrite -"Hequivr2'".
+    iIntros "[H1 H2]".
+    iDestruct ("Hequiv1_alt" with "H1") as "$".
+    iDestruct ("Hequiv2_alt" with "H2") as "$".
 Qed.
 
 Lemma staged_inv_open E N k E1 E2 P Q Qr b s:
@@ -733,7 +779,7 @@ Proof.
   - iLeft.
     iModIntro. iSplitL "Hlive".
     { iNext. iDestruct (saved_prop_agree with "Hsaved HQs") as "Hequiv'".
-      iNext. iRewrite "Hequiv". iRewrite "Hequiv'". auto. }
+      iNext. iApply "Hequiv". iRewrite "Hequiv'". auto. }
     iNext.
     iIntros (Q' Qr' b') "(HQs'&#Hwand')".
     iMod (saved_prop_alloc Q') as (γprop_new) "#Hsaved_new".
@@ -783,11 +829,12 @@ Proof.
         apply lookup_delete_Some in Hlookup_delete as (?&?).
         rewrite /Qs'/Qsr'/bunch_crashed. rewrite ?decide_False //. }
     }
-    iModIntro. iExists _, _, _, _, _, _. iFrame. iFrame "#". eauto.
+    iModIntro. iExists _, _, _, _, _, _. iFrame. iFrame "#".
+    iSplitL; iIntros "!> !> !> $".
   - iRight.
     iModIntro. iDestruct "Hcrashed" as "(HQsr&Hcrashed)". iSplitL "HQsr".
     { iNext. iDestruct (saved_prop_agree with "Hsavedr HQr") as "Hequiv'".
-      iNext. iRewrite "Hequiv_alt". iRewrite "Hequiv'". auto. }
+      iNext. iApply "Hequiv_alt". iRewrite "Hequiv'". auto. }
     iFrame "HC".
     iMod (saved_prop_alloc True%I) as (γprop'_new) "#Hsaved'_new".
     iMod (bunches_wf_to_later with "Hbunch_wf") as "Hbunch_wf".

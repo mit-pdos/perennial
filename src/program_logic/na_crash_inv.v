@@ -80,6 +80,18 @@ Lemma na_crash_inv_pending_weaken Γ N k P:
   na_crash_pending Γ N k P -∗ na_crash_inv Γ N k.
 Proof. crash_unseal. iIntros "H". iDestruct "H" as (?) "(?&?)"; eauto. Qed.
 
+Lemma na_crash_bundle_weaken Γ N k Q Q' bset :
+  □(Q -∗ Q') -∗
+  na_crash_bundle Γ N k Q bset -∗
+  na_crash_bundle Γ N k Q' bset.
+Proof.
+  crash_unseal.
+  iIntros "#HQ' H".
+  iDestruct "H" as (Qr) "[Hinv Hbundle]".
+  iExists Qr; iFrame.
+  iApply (staged_bundle_weaken_1 with "HQ' Hbundle").
+Qed.
+
 Lemma wpc_na_crash_inv_open_modify Γ Qnew s k k' E1 E2 e Φ Φc Q P bset N :
   ↑N ⊆ E1 →
   S k < k' →
