@@ -61,23 +61,21 @@ Let inodeN := nroot.@"inode".
 Implicit Types (σ: inode.t).
 Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 
-Definition is_indirect (a: u64) (indBlkAddrs_s : Slice.t)
-           (indBlkAddrs: list u64) (indBlock : Block) (specBlocks : list Block) : iProp Σ :=
+Definition is_indirect (a: u64) (indBlkAddrs: list u64) (indBlock : Block) (specBlocks : list Block) : iProp Σ :=
   ∃ (padding: list u64),
   "diskAddr" ∷ int.val a d↦ indBlock ∗
   "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> indBlkAddrs) ++ (EncUInt64 <$> padding))⌝ ∗
   "%Hlen" ∷ ⌜length(indBlkAddrs) = length(specBlocks)⌝ ∗
-  "Hdata" ∷ ([∗ list] a;b ∈ indBlkAddrs;specBlocks, int.val a d↦ b) ∗
-  "HindBlkAddrs" ∷ is_slice indBlkAddrs_s uint64T 1 indBlkAddrs
+  "Hdata" ∷ ([∗ list] a;b ∈ indBlkAddrs;specBlocks, int.val a d↦ b)
 .
 
-Definition ind_blocks_at_index σ (index : Z) : list Block :=
+Definition ind_blocks_at_index σ index : list Block :=
   let begin := int.nat (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) in
   List.subslice begin (begin + (int.nat indirectNumBlocks)) σ.(inode.blocks).
 
-  Definition is_inode_durable_with σ
-             (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64)
-             (indBlocks : list Block) (hdr: Block)
+Definition is_inode_durable_with σ
+            (dirAddrs indAddrs: list u64) (sz: u64) (numInd: u64)
+            (indBlocks : list Block) (hdr: Block)
   : iProp Σ  :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ (EncUInt64 <$> indAddrs) ++ [EncUInt64 numInd])⌝ ∗
@@ -95,7 +93,7 @@ Definition ind_blocks_at_index σ (index : Z) : list Block :=
     "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
                      [∗ list] a;b ∈ take len dirAddrs;take len σ.(inode.blocks), int.val a d↦ b) ∗
     "HdataIndirect" ∷ [∗ list] index↦a;indBlock ∈ take (int.nat numInd) indAddrs;indBlocks,
-    ∃ indBlkAddrs_s indBlkAddrs, is_indirect a indBlkAddrs_s indBlkAddrs indBlock (ind_blocks_at_index σ index)
+    ∃ indBlkAddrs, is_indirect a indBlkAddrs indBlock (ind_blocks_at_index σ index)
 .
 
 Definition is_inode_durable σ : iProp Σ  :=
@@ -440,29 +438,72 @@ Proof.
 Qed.
 
 Theorem wp_readIndirect {l σ}
-        indirect_s (numInd: u64) (indAddrs : list u64) (indBlocks : list Block) (indBlk: Block) (index: nat) (d : loc) (a : u64):
+        indirect_s (numInd: u64) (indAddrs : list u64)
+        (indBlocks : list Block) (indBlk: Block) (indBlkAddrs : list u64)
+        (index: nat) (d : loc) (a : u64):
   {{{
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hlen" ∷ ⌜length(indAddrs) = int.nat maxIndirect ∧ int.val numInd <= maxIndirect⌝ ∗
     "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
-    "addr" ∷ (int.val a) d↦ indBlk ∗
+    "%Haddr" ∷ ⌜Some a = (take (int.nat numInd) indAddrs) !! index⌝ ∗
+    "%HindBlk" ∷ ⌜Some indBlk = indBlocks!! index⌝ ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs) ∗
-    "%Haddr" ∷ ⌜Some a = (take (int.nat numInd) indAddrs) !! index⌝ ∗
-    "%HindBlk" ∷ ⌜Some indBlk = indBlocks !! index⌝
+    "HindBlkAddrs" ∷ is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ index)
   }}}
      readIndirect #d #a
-  {{{ indBlkAddrs_s indBlkAddrs, RET slice_val indBlkAddrs_s;
-    "HindBlkAddrs" ∷ is_indirect a indBlkAddrs_s indBlkAddrs indBlk (ind_blocks_at_index σ index) ∗
+  {{{ indBlkAddrs_s, RET slice_val indBlkAddrs_s;
+    "HindBlk" ∷ is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ index) ∗
+    "HindBlkAddrs" ∷ is_slice indBlkAddrs_s uint64T 1 indBlkAddrs ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs)
   }}}.
 Proof.
-  iIntros (ϕ) "H Hϕ". iNamed "H".
+  iIntros (ϕ) "H Hϕ". iNamed "H". iNamed "HindBlkAddrs".
   destruct Hlen as [HindAddrsMax HnumIndBound].
   wp_call.
-  wp_apply wp_Read.
-  Print is_indirect.
+
+  wp_apply ((wp_Read a 1 indBlk) with "[diskAddr]"); auto.
+  iIntros (s) "[diskAddr Hs]".
+  wp_let.
+  unfold is_block_full.
+  iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
+  rewrite Hencoded.
+
+  assert (encode ((EncUInt64 <$> indBlkAddrs) ++ (EncUInt64 <$> padding))
+                 = (encode ((EncUInt64 <$> indBlkAddrs) ++ (EncUInt64 <$> padding)) ++ []))
+    as HappNil.
+  { rewrite app_nil_r. auto. }
+  rewrite HappNil.
+
+  wp_apply (wp_NewDec _ _ s ((EncUInt64 <$> indBlkAddrs) ++ (EncUInt64 <$> padding)) [] with "Hs").
+  iIntros (dec) "[Hdec %Hdec_s]".
+  wp_pures.
+
+  rewrite -fmap_app.
+  wp_apply (wp_Dec__GetInts _ _ _ (indBlkAddrs++padding) _ [] with "[Hdec]").
+  { rewrite app_nil_r.
+    iFrame.
+    iPureIntro.
+    rewrite /ind_blocks_at_index /maxIndirect /maxDirect /indirectNumBlocks in Hlen0.
+    assert (length (Block_to_vals indBlk) = length (b2val <$> encode ((EncUInt64 <$> indBlkAddrs) ++ (EncUInt64 <$> padding)))).
+    {
+      rewrite Hencoded. auto.
+    }
+    rewrite fmap_length in H.
+    rewrite length_Block_to_vals in H.
+    unfold block_bytes in H.
+    rewrite encode_app_length in H.
+
+    rewrite (length_encode_fmap_uniform 8 EncUInt64 indBlkAddrs) in H;
+        [| intros; by rewrite -encode_singleton encode_singleton_length].
+    rewrite (length_encode_fmap_uniform 8 EncUInt64 padding) in H;
+      [| intros; by rewrite -encode_singleton encode_singleton_length].
+    rewrite app_length.
+    word.
+  }
+  iIntros (indBlk_s) "[_ HindBlks]".
+  iApply "Hϕ".
 Admitted.
 
 Theorem wp_Inode__Read {l γ P} {off: u64} Q :
@@ -602,12 +643,13 @@ Proof.
       iDestruct (big_sepL2_lookup_acc _ (take (int.nat numInd) indAddrs) _ (int.nat v) addr with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
 
       wp_loadField.
-      wp_apply (wp_readIndirect indirect_s numInd indAddrs indBlocks indBlk (int.nat v) d addr with "[indirect Hindirect Hb]").
-      { iDestruct "Hb" as (indBlkAddrs_s indBlkAddrs) "Haddr"; iNamed "Haddr".
+      iDestruct "Hb" as (indBlkAddrs) "HaddrIndirect".
+      wp_apply (wp_readIndirect indirect_s numInd indAddrs indBlocks indBlk
+                                indBlkAddrs (int.nat v) d addr with "[indirect Hindirect HaddrIndirect]").
+      {
         iFrame. iSplit; eauto.
       }
-
-      iIntros (indBlkAddrs_s indBlkAddrs) "H". iNamed "H". iNamed "HindBlkAddrs".
+      iIntros (indBlkAddrs_s) "H". iNamed "H". iNamed "HindBlkAddrs".
 
       wp_let.
       wp_apply wp_indOff.
@@ -662,7 +704,7 @@ Proof.
 
 
       iSpecialize ("Hdata" with "Hb'").
-      iAssert (∃ indBlkAddrs_s indBlkAddrs, is_indirect addr indBlkAddrs_s indBlkAddrs indBlk (ind_blocks_at_index σ (int.nat v)))%I
+      iAssert (∃ indBlkAddrs, is_indirect addr indBlkAddrs indBlk (ind_blocks_at_index σ (int.nat v)))%I
         with "[diskAddr HindBlkAddrs Hdata]" as "HaddrIndirect".
       {
         iExists indBlkAddrs_s, indBlkAddrs.
