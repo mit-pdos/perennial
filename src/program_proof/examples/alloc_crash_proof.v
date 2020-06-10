@@ -566,18 +566,19 @@ Proof.
     * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
 Qed.
 
-Lemma prepare_reserved_block E R n n' γ e a Φ Φc:
+Lemma prepare_reserved_block E1 E2 R n n' γ e a Φ Φc:
+  ↑Ncrash ⊆ E1 →
   (S n < n')%nat →
   language.to_val e = None →
   reserved_block γ n' a R -∗
   Φc ∧
   (R -∗
    reserved_block_in_prep γ n' a -∗
-   WPC e @ LVL n; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φ v ∧ Φc) ∗ block_cinv γ a }}
+   WPC e @ LVL n; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (Φ v ∧ Φc) ∗ block_cinv γ a }}
                                    {{ Φc ∗ block_cinv γ a }}) -∗
-  WPC e @  (LVL (S (S n))); ⊤; E {{ Φ }} {{ Φc }}.
+  WPC e @  (LVL (S (S n))); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (??) "Hreserved H".
+  iIntros (???) "Hreserved H".
   iNamed "Hreserved".
   iDestruct "Halloc_inv" as (?) "#Hinv".
   iDestruct "Hcrashinv" as (Γ i) "(Hbundle&#Hval)".
