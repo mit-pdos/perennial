@@ -453,7 +453,7 @@ Theorem wp_readIndirect {l σ}
   }}}
      readIndirect #d #a
   {{{ indBlkAddrs_s, RET slice_val indBlkAddrs_s;
-    "HindBlk" ∷ is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ index) ∗
+    "HindBlkIndirect" ∷ is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ index) ∗
     "HindBlkAddrs" ∷ is_slice indBlkAddrs_s uint64T 1 indBlkAddrs ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs)
@@ -649,7 +649,7 @@ Proof.
       {
         iFrame. iSplit; eauto.
       }
-      iIntros (indBlkAddrs_s) "H". iNamed "H". iNamed "HindBlkAddrs".
+      iIntros (indBlkAddrs_s) "H". iNamed "H". iNamed "HindBlkIndirect".
 
       wp_let.
       wp_apply wp_indOff.
@@ -681,7 +681,8 @@ Proof.
           - rewrite -HszeqNat Hv.
             admit.
         }
-      }
+
+}
       destruct (list_lookup_lt _ (ind_blocks_at_index σ (int.nat v)) (int.nat offset)) as [inodeblkaddr HlookupInodeBlk].
       { rewrite -Hlen. word. }
       destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlkInd]; try word.
@@ -707,7 +708,7 @@ Proof.
       iAssert (∃ indBlkAddrs, is_indirect addr indBlkAddrs indBlk (ind_blocks_at_index σ (int.nat v)))%I
         with "[diskAddr HindBlkAddrs Hdata]" as "HaddrIndirect".
       {
-        iExists indBlkAddrs_s, indBlkAddrs.
+        iExists indBlkAddrs.
         unfold is_indirect.
         iExists padding.
         iFrame. iSplit; auto.
