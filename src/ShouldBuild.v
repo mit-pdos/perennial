@@ -26,14 +26,12 @@ From Perennial.program_proof.examples Require
 From Perennial.goose_lang Require
      ffi.append_log_ffi
      ffi.kvs_ffi.
+From Perennial.tutorial Require
+     ipm_extensions.
 
 (* WIP slice library *)
 From Perennial.goose_lang.lib Require
      slice.pred_slice.
-
-(* WIP library for restoring destructed props *)
-From Perennial.Helpers Require
-     PropRestore.
 
 (* goose output *)
 From Perennial.goose_lang.examples Require

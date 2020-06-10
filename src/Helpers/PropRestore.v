@@ -26,20 +26,47 @@ Section bi.
     auto.
   Qed.
 
+  Global Instance restore_impl_proper :
+    Proper ((⊣⊢) ==> (⊣⊢) ==> (⊣⊢) ==> (⊣⊢)) Restore.
+  Proof. unseal; solve_proper. Qed.
+
+  Theorem restore_sep R P P1 P2 Q :
+    P ⊣⊢ P1 ∗ P2 →
+    Restore R P Q -∗ P1 ∗ Restore R P2 (P1 ∗ Q).
+  Proof.
+    intros Hequiv.
+    rewrite Hequiv.
+    unseal.
+    iIntros "[[HP1 HP2] #HPR]".
+    iFrame "HP1 HP2".
+    iIntros "!> HP2 [HP1 HQ]".
+    iApply ("HPR" with "[$] [$]").
+  Qed.
+
   Global Instance restore_IntoSep R P P1 P2 Q :
     IntoSep P P1 P2 →
     FromSep P P1 P2 →
     IntoSep (Restore R P Q) P1 (Restore R P2 (P1 ∗ Q)) | 20.
   Proof.
     rewrite /IntoSep /FromSep.
-    unseal.
-    iIntros (HP_split HQ_join) "[HP #HPR]".
-    iDestruct (HP_split with "HP") as "[HP1 HP2]".
-    iFrame "HP1".
-    iFrame "HP2".
-    iIntros "!> HP2 [HP1 HQ]".
-    iApply ("HPR" with "[HP1 HP2] [$]").
-    iApply (HQ_join with "[$]").
+    iIntros (HP_split HQ_join) "HP".
+    iApply (restore_sep with "HP").
+    iSplit; auto.
+    - iApply HP_split.
+    - iApply HQ_join.
+  Qed.
+
+  (* if we have emp, don't star onto it, just replace it *)
+  Global Instance restore_IntoSep_emp R P P1 P2 :
+    IntoSep P P1 P2 →
+    FromSep P P1 P2 →
+    IntoSep (Restore R P emp) P1 (Restore R P2 P1) | 19.
+  Proof.
+    iIntros (??).
+    rewrite /IntoSep.
+    iIntros "HP".
+    iDestruct "HP" as "[$ H]".
+    rewrite right_id //.
   Qed.
 
   Global Instance restore_IntoSep_persistent_1 R P P1 P2 Q `{BiAffine PROP} :
@@ -75,6 +102,20 @@ Section bi.
     iApply HΦ_ex; eauto.
   Qed.
 
+  Global Instance restore_finish_Persistent R P Q `{!Persistent P} `{BiAffine PROP} :
+    IntoSep (Restore R P Q) P (Restore R emp Q).
+  Proof.
+    unseal.
+    rewrite /IntoSep.
+    iIntros "[#HP #HR]".
+    iSpecialize ("HR" with "HP").
+    iFrame "HP".
+    rewrite /Restore_def; iFrame.
+    rewrite left_id.
+    iIntros "!> _".
+    iFrame "#".
+  Qed.
+
   Global Instance restore_finish_IntoSep R P Q :
     IntoSep (Restore R P Q) P (Restore R emp (P ∗ Q)) | 30.
   Proof.
@@ -86,6 +127,15 @@ Section bi.
     iIntros "!> _".
     iIntros "[? ?]".
     iApply ("HR" with "[$] [$]").
+  Qed.
+
+  (* if we have emp, don't star onto it, just replace it *)
+  Global Instance restore_finish_IntoSep_emp R P :
+    IntoSep (Restore R P emp) P (Restore R emp P) | 29.
+  Proof.
+    rewrite /IntoSep.
+    iIntros "[$ HR]".
+    rewrite right_id //.
   Qed.
 
   (* not an instance so that applying restore_elim destroys the Restore *)
