@@ -510,6 +510,7 @@ Theorem wpc_Inode__Append {k E2}
   ↑nroot.@"readonly" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
   ↑inodeN ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
   ↑nroot.@"allocator" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
+  ↑Ncrash allocN ⊆ (@top coPset _) ∖ ↑inodeN →
   {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
       "HQc" ∷ (Q -∗ Qc) ∗
@@ -527,7 +528,7 @@ Theorem wpc_Inode__Append {k E2}
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
   {{{ Qc }}}.
 Proof.
-  iIntros (????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iIntros (?????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iNamed "Hinode".
   wpc_call.
   { iRight in "Hfupd"; auto. }
@@ -624,7 +625,6 @@ Proof.
       wp_apply (wp_Free _ _ _ emp with "[$Halloc Hreserved]").
       { auto. }
       { auto. }
-      { auto. }
       { iSplitL "Hreserved".
         { iApply (reserved_block_weaken with "[] Hreserved").
           iIntros "!> Hda".
@@ -665,7 +665,6 @@ Proof.
       iNamed 1.
 
       iApply (prepare_reserved_block with "Hreserved"); auto; try lia.
-      { admit. (* TODO: add assumption *) }
       iSplit; first iFromCache.
       iIntros "Hda Hreserved".
       wpc_bind (Write _ _).
@@ -685,7 +684,8 @@ Proof.
 
 
         iMod (mark_used _ _ _ _ _ _ (emp)%I with "Hreserved []") as "Hget_used".
-        { admit. (* TODO: split up allocN and Ncrash allocN *) }
+        { admit. (* TODO: this is probably true with the right assumption about
+        inodeN and allocN *) }
         { iIntros (σ' Hreserved) "HPalloc".
           iMod ("Huse_fupd" with "[% //] HPalloc") as "$".
           auto. }

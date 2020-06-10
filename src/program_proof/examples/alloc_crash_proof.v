@@ -74,8 +74,6 @@ Context `{!allocG Σ}.
 Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 
-Let allocN := nroot.@"allocator".
-
 Record alloc_names :=
   { alloc_status_name: gen_heapG u64 block_status Σ;
     alloc_free_name : gname;
@@ -90,8 +88,9 @@ Context (Ψ: u64 → iProp Σ).
 Context (N: namespace).
 Implicit Types (l:loc) (γ:alloc_names) (σ: alloc.t).
 
-
+Definition Nlock := N.@"allocator".
 Definition Ncrash := N.@"crash".
+Definition Ninv := N.@"inv".
 
 Definition allocator_inv γ (d: gset u64) : iProp Σ :=
   ∃ σ,
@@ -114,11 +113,11 @@ Definition free_block_pending γ n k : iProp Σ :=
 Definition reserved_block γ n k P : iProp Σ :=
   "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) P i ∗ na_crash_val Γ (block_cinv γ k) i) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
-  "Halloc_inv" ∷ ∃ d, inv N (allocator_inv γ d).
+  "Halloc_inv" ∷ ∃ d, inv Ninv (allocator_inv γ d).
 
 Definition reserved_block_in_prep γ (n: nat) k : iProp Σ :=
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
-  "Halloc_inv" ∷ ∃ d, inv N (allocator_inv γ d).
+  "Halloc_inv" ∷ ∃ d, inv Ninv (allocator_inv γ d).
 
 Definition used_block γ k : iProp Σ :=
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_used).
@@ -143,12 +142,12 @@ Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
   ∃ (lref mref: loc) (γlk: gname),
     "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
-    "#His_lock" ∷ is_lock allocN γlk #lref (allocator_linv γ n mref) ∗
-    "#Halloc_inv" ∷ inv N (allocator_inv γ d)
+    "#His_lock" ∷ is_lock Nlock γlk #lref (allocator_linv γ n mref) ∗
+    "#Halloc_inv" ∷ inv Ninv (allocator_inv γ d)
 .
 
 Definition is_allocator_pre γ n d freeset : iProp Σ :=
-  "#Halloc_inv" ∷ inv N (allocator_inv γ d) ∗
+  "#Halloc_inv" ∷ inv Ninv (allocator_inv γ d) ∗
   "Hblocks" ∷ ([∗ set] k ∈ freeset, free_block γ n k) ∗
   "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯ (Excl' freeset))
 .
@@ -252,7 +251,7 @@ Proof using allocG0.
   iMod (ghost_var_alloc (alloc.free σ)) as (γfree) "(Hfree&Hfree_frag)".
   set (γ := {| alloc_status_name := γheap;
                alloc_free_name := γfree |}).
-  iMod (inv_alloc N _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx Hfree]") as "#Hinv".
+  iMod (inv_alloc Ninv _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx Hfree]") as "#Hinv".
   { iNext. iExists _. iFrame. eauto. }
   iMod (free_block_init γ n' with "[$] [$]") as "(Hpending&Hblock)".
   { set_solver+. }
@@ -266,7 +265,10 @@ Proof using allocG0.
     iExists _, _, n'. iFrame. iPureIntro; eauto.
   }
   iApply wpc_later_crash'.
-  iApply (wpc_inv'); try eassumption. iFrame "Hinv". iFrame "HWP".
+  iApply (wpc_inv' Ninv _ _ _ E2).
+  { assumption. }
+  { solve_ndisj. }
+  iFrame "Hinv". iFrame "HWP".
   iAlways. iIntros "Hinner Hwand !> !> Hset".
   iApply "Hwand". rewrite /alloc_crash_cond.
   iNamed "Hinner".
@@ -309,7 +311,7 @@ Proof using allocG0.
   iNamed "Hpre".
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "free") as "#free".
-  iMod (alloc_lock allocN ⊤ _ _ (allocator_linv γ n mref')%I
+  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref')%I
           with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame.
     rewrite Husedeq Hdom. iFrame.
@@ -379,7 +381,6 @@ Qed.
 
 Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1 E2:
   ↑N ⊆ E1 →
-  ↑allocN ⊆ E1 →
   ↑nroot.@"readonly" ⊆ E1 →
   (∀ o, Q o -∗ Qc) →
   {{{ is_allocator l dset γ n' ∗
@@ -398,7 +399,9 @@ Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E
   {{{ Qc }}}.
 Proof.
   clear.
-  iIntros (Hsub0 Hsub1 Hsub2 HQ Φ Φc) "(Hinv&Hfupd) HΦ". iNamed "Hinv".
+  iIntros (Hsub0 Hsub2 HQ Φ Φc) "(Hinv&Hfupd) HΦ". iNamed "Hinv".
+  assert ((↑Nlock : coPset) ⊆ E1) as Hsub1.
+  { solve_ndisj. }
   rewrite /Allocator__Reserve.
 
   Ltac show_crash1 :=
@@ -462,9 +465,10 @@ Proof.
     iNamed "H".
     iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
     iDestruct "Hfupd" as "(Hfupd&_)".
+    iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ (Some k) with "[] [$]") as "(HP&HQ)".
     { iPureIntro; split; last by reflexivity. rewrite Heq. eauto. }
-
+    iMod "Hrestore_mask" as "_".
 
     iDestruct (big_sepS_delete with "Hblocks") as "[Hbk Hblocks]"; eauto.
     iNamed "Hbk".
@@ -499,9 +503,11 @@ Proof.
     { iExists _. eauto. }
   - iNamed "H".
     iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
+    iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iDestruct "Hfupd" as "(Hfupd&_)".
     iMod ("Hfupd" $! σ _ None with "[] [$]") as "(HP&HQ)".
     { iPureIntro; split; first by reflexivity. congruence. }
+    iMod "Hrestore_mask" as "_".
 
     iModIntro. iSplitL "HP Hfreeset_auth Hstatus".
     { iNext. iExists _. iFrame. iPureIntro. eauto. }
@@ -617,11 +623,11 @@ Proof.
 Qed.
 
 Lemma mark_used E γ n' a Q:
-  ↑N ⊆ E →
+  ↑Ninv ⊆ E →
    reserved_block_in_prep γ n' a -∗
    (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗
          P σ ={E ∖ ↑ N}=∗ P (<[a := block_used]> σ) ∗ Q)
-   ={E,E ∖ ↑N, E}▷=∗ Q ∗ used_block γ a.
+   ={E,E ∖ ↑Ninv, E}▷=∗ Q ∗ used_block γ a.
 Proof.
   iIntros (?) "Hprep Hfupd".
   iNamed "Hprep".
@@ -629,7 +635,9 @@ Proof.
   iInv "Hinv" as "H" "Hclo".
   iModIntro. iNext. iNamed "H".
   iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
+  iMod (fupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
   iMod ("Hfupd" with "[//] [$]") as "(HP&HQ)".
+  iMod "Hrestore_mask" as "_".
   iMod (gen_heap_update _ a _ block_used with "[$] [$]") as "(Hctx&Hmapsto)".
   iMod ("Hclo" with "[HP Hctx Hfreeset_auth]").
   { iNext. iExists _. iFrame "HP Hctx".
@@ -691,7 +699,6 @@ Qed.
 (** XXX: should probably make this a WPC in case the fupd requires a durable resource *)
 Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   ↑N ⊆ E →
-  ↑allocN ⊆ E →
   ↑nroot.@"readonly" ⊆ E →
   {{{ is_allocator l d γ n' ∗ reserved_block γ n' a (Ψ a) ∗
      (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ P σ ={E ∖↑N}=∗ P (<[ a := block_free ]> σ) ∗ Q)
@@ -700,7 +707,8 @@ Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   {{{ RET #(); Q }}}.
 Proof.
   clear Hitemcrash.
-  iIntros (Hsub1 Hsub2 Hsub3 Φ) "(Halloc&Hreserved&Hfupd) HΦ"; iNamed "Halloc".
+  iIntros (Hsub1 Hsub3 Φ) "(Halloc&Hreserved&Hfupd) HΦ"; iNamed "Halloc".
+  assert (↑Nlock ⊆ E) as Hsub2 by solve_ndisj.
   iMod (readonly_load with "m") as (?) "m'".
   { assumption. }
   iMod (readonly_load with "free") as (?) "free'".
@@ -726,7 +734,9 @@ Proof.
   iMod (gen_heap_update _ a _ block_free with "[$] [$]") as "(Hctx&Hmapsto)".
   iMod (ghost_var_update _ (alloc.free (<[a := block_free]>σ)) with "Hfreeset_auth [$]")
     as "(Hfreeset_auth&Hfreeset_frag)".
+  iMod (fupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
   iMod ("Hfupd" $! σ with "[%//] HP") as "[HP HQ]".
+  iMod "Hrestore_mask" as "_".
   iMod ("Hclo" with "[HP Hctx Hfreeset_auth]").
   { iNext. iExists _. iFrame. erewrite dom_update_status; eauto. }
   iModIntro. wp_pures.
