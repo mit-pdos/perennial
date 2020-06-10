@@ -1,4 +1,5 @@
 -Q src Perennial
+-arg -w -arg -ssr-search-moved
 # Iris-disabled warnings
 -arg -w -arg -notation-overridden,-redundant-canonical-projection,-convert_concl_no_check,-undeclared-scope
 -arg -w -arg -funind-cannot-define-graph,-funind-cannot-build-inversion
