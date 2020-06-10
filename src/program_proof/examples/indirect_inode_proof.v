@@ -317,7 +317,7 @@ Proof.
       - discriminate.
       - rewrite /maxDirect; word.
     }
-    pose (HnumInd1 HszBound) as HnumInd.
+    pose proof (HnumInd1 HszBound) as HnumInd.
     wp_apply (wp_SliceTake uint64T maxDirect).
     {
       rewrite HdirLen in Hdirs_len.
@@ -357,7 +357,7 @@ Proof.
       - iSplitL "Hdiraddrs"; unfold is_slice; rewrite /list.untype fmap_take//.
         {
           change (to_val <$> dirAddrs) with (u64val<$> dirAddrs).
-          rewrite take_ge; try word.
+          rewrite take_ge; last by len.
           iEval (rewrite -(firstn_all (u64val <$> dirAddrs)) fmap_length HdirLen /maxDirect).
           iApply (is_slice_take_cap with "Hdiraddrs").
           rewrite Hdirs_len' -Hdirs_len HdirLen /maxDirect. word.
