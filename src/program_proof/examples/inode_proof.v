@@ -506,7 +506,7 @@ Theorem wpc_Inode__Append {k E2}
         (Q: iProp Σ) (Qc: iProp Σ)
         (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
   (S (S (S k)) < n)%nat →
-  (S k < k')%nat →
+  (S (S (S k)) < k')%nat →
   ↑nroot.@"readonly" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
   ↑inodeN ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
   ↑nroot.@"allocator" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
@@ -515,7 +515,7 @@ Theorem wpc_Inode__Append {k E2}
       "HQc" ∷ (Q -∗ Qc) ∗
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
       "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
-      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑Ncrash allocN ∖ ↑allocN) Palloc a) ∗
+      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
       "#Huse_fupd" ∷ □ (∀ a, use_fupd (⊤ ∖ ↑Ncrash allocN ∖ ↑inodeN ∖ ↑allocN) Palloc a) ∗
       "Hfupd" ∷ ((∀ σ σ',
           ⌜∃ addrs', σ' = set inode.blocks (λ bs, bs ++ [b0])
@@ -549,7 +549,8 @@ Proof.
     by iApply "HΦ".
   - iDestruct "Hblock" as "[_ Hb]".
     wpc_pures.
-    iApply (prepare_reserved_block with "Hb"); auto.
+    wpc_bind_seq.
+    iApply (prepare_reserved_block_reuse with "Hb"); auto.
     iSplit; first by iFromCache.
     iIntros "Hb Hreserved".
     iDeexHyp "Hb".
@@ -571,11 +572,18 @@ Proof.
     { iIntros "[Hb|Hb]"; try iFromCache.
       iApply ("Hbc" with "[$]"). }
     iIntros "!> [Hda _]".
-
-    iCache with "HΦ Hfupd Hda"; first by (iApply ("Hbc" with "[$]")).
+    iFrame "Hreserved".
+    iSplitR "Hda"; last first.
+    { instantiate (1:=λ _, _); simpl.
+      iSplitL; [ iAccu | ].
+      iAlways.
+      iIntros "Hda".
+      iApply block_cinv_free_pred. iExists _; iFrame. }
+    iIntros "Hreserved".
+    iSplit; last iFromCache.
     wpc_pures.
     wpc_bind_seq.
-    wpc_frame "Hda Hfupd HΦ".
+    wpc_frame "Hfupd HΦ".
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
     iIntros (γlk) "His_locked". iNamed 1.
@@ -584,8 +592,8 @@ Proof.
     crash_lock_open "His_locked".
     iNamed 1.
     iNamed "Hlockinv".
-    iCache with "HΦ Hfupd Hda HP Hdurable".
-    { iSplitL "HΦ Hfupd Hda"; first by iFromCache.
+    iCache with "HΦ Hfupd HP Hdurable".
+    { iSplitL "HΦ Hfupd"; first by iFromCache.
       iExists _; iFrame.
       iExists _; iFrame. }
     iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
@@ -593,7 +601,7 @@ Proof.
     iDestruct (is_inode_durable_size with "Hdurable") as %Hlen2.
     wpc_call.
     wpc_bind (slice.len _ ≥ _)%E.
-    wpc_frame "HΦ Hfupd Hda HP Hdurable".
+    wpc_frame "HΦ Hfupd HP Hdurable".
     wp_loadField.
     wp_apply wp_slice_len; wp_pures.
     iNamed 1.
@@ -606,34 +614,32 @@ Proof.
       iSplit; last by iFromCache.
       wpc_pures.
       wpc_bind_seq.
-      wpc_frame "HΦ Hfupd Hda".
+      wpc_frame "HΦ Hfupd".
       wp_loadField.
       wp_apply (crash_lock.release_spec with "His_locked"); auto.
       iNamed 1.
       wpc_pures.
       wpc_bind (alloc.Allocator__Free _ _).
-      wpc_frame "Hda HΦ Hfupd".
+      wpc_frame "HΦ Hfupd".
       wp_apply (wp_Free _ _ _ emp with "[$Halloc Hreserved]").
-      { admit. (* TODO: not true, Ncrash should be independent of invariant namespace *) }
+      { auto. }
       { auto. }
       { auto. }
       { iSplitL "Hreserved".
-        { admit. (* XXX: can I go back to being a reserved_block? *) }
+        { iApply (reserved_block_weaken with "[] Hreserved").
+          iIntros "!> Hda".
+          iExists _; iFrame. }
         iIntros (σ' Hreserved) "HP".
         iMod ("Hfree_fupd" with "[//] HP") as "$".
         auto. }
       iIntros "_".
       iNamed 1.
       wpc_pures.
-      iSplitR "Hda".
-      { iSplit; last iFromCache.
-        iRight in "HΦ".
-        iApply "HΦ"; auto. }
-      iApply block_cinv_free_pred.
-      iExists _; iFrame.
+      iRight in "HΦ".
+      iApply "HΦ"; auto.
     + wpc_pures.
       wpc_bind_seq.
-      wpc_frame "HΦ Hfupd Hda HP Hdurable".
+      wpc_frame "HΦ Hfupd HP Hdurable".
       wp_loadField.
       wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
       { iPureIntro.
@@ -645,7 +651,7 @@ Proof.
       iNamed 1.
       wpc_pures.
       wpc_bind_seq.
-      wpc_frame "HΦ Hfupd Hda HP Hdurable".
+      wpc_frame "HΦ Hfupd HP Hdurable".
       wp_apply (wp_Inode__mkHdr with "[$addrs $Haddrs]").
       { autorewrite with len; simpl.
         word. }
@@ -654,10 +660,13 @@ Proof.
       wpc_pures.
 
       wpc_bind (struct.loadF _ _ _).
-      wpc_frame "HΦ Hfupd Hda HP Hdurable".
+      wpc_frame "HΦ Hfupd HP Hdurable".
       wp_loadField.
       iNamed 1.
 
+      (* TODO: cannot apply prepare_reserved_block due to masks *)
+      (*
+      iApply prepare_reserved_block.
       wpc_bind (Write _ _).
       iNamed "Hdurable".
       iAssert ((int.val addr d↦ hdr -∗
@@ -756,6 +765,7 @@ Proof.
       iSplit; last iFromCache.
       iApply "HΦ"; iFrame.
       Fail idtac.
+*)
 Admitted.
 
 End goose.
