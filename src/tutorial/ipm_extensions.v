@@ -9,7 +9,7 @@ Section bi.
   Context (P Q R: PROP).
   Context `{!Persistent Q}.
 
-  (*! Brief teasers: *)
+  (*! Brief previews: *)
 
   (** * first extension: named propositions *)
   Import Perennial.Helpers.NamedProps.

@@ -1193,7 +1193,8 @@ Qed.
 Lemma wp_wpc_frame' s E1 E2 e Φ Φc Φc' k:
   Φc' ∗
   □ (Φc' -∗ Φc) ∗
-  WP e @ s ; E1 {{ λ v, Φc' -∗ Φ v }} ⊢ WPC e @ s ; k ; E1 ; E2 {{ Φ }} {{ Φc }}.
+  WP e @ s ; E1 {{ λ v, Φc' -∗ Φ v }} ⊢
+  WPC e @ s ; k ; E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "(HΦc&#HΦc_imp&Hwp)".
   iApply (wpc_strong_mono' s s k k E1 E1 E2 E2 _ (λ v, Φc' ∗ (Φc' -∗ Φ v))%I _ (Φc' ∗ True)%I
@@ -1207,7 +1208,8 @@ Proof.
 Qed.
 
 Lemma wp_wpc_frame s E1 E2 e Φ Φc k:
-  Φc ∗ WP e @ s ; E1 {{ λ v, Φc -∗ Φ v }} ⊢ WPC e @ s ; k ; E1 ; E2 {{ Φ }} {{ Φc }}.
+  Φc ∗ WP e @ s ; E1 {{ λ v, Φc -∗ Φ v }} ⊢
+  WPC e @ s ; k ; E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "(HΦc&Hwp)".
   iApply wp_wpc_frame'.
