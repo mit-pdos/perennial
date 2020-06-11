@@ -683,16 +683,23 @@ Proof.
         }
         (* Subslice goes to end of blocks *)
         {
+          rewrite Hv in HlenNotGe.
           pose (not_ge _ _ HlenNotGe) as HlenLt.
           rewrite subslice_to_end.
           - rewrite Hoffset.
             rewrite skipn_length.
-            * admit.
+            assert (int.val v < 10). {
+              unfold maxIndirect in *.
+              apply (Z.lt_le_trans (int.val v) (int.val numInd) 10); auto.
+            }
+            rewrite Hv.
+            rewrite -HszeqNat.
+            word_cleanup.
+            admit.
           - rewrite -HszeqNat Hv.
             admit.
         }
-
-}
+      }
       destruct (list_lookup_lt _ (ind_blocks_at_index σ (int.nat v)) (int.nat offset)) as [inodeblkaddr HlookupInodeBlk].
       { rewrite -Hlen. word. }
       destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlkInd]; try word.
@@ -743,7 +750,6 @@ Proof.
     }
 Admitted.
 
-(*
 Theorem wp_Inode__Size {l γ P} (Q: u64 -> iProp Σ) :
   {{{ is_inode l γ P ∗
       (∀ σ σ' sz,
@@ -758,26 +764,26 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "(Hlocked & Hinner)". iNamed "Hinner".
-  iNamed "Hlockinv".
+  iNamed "Hlockinv". iNamed "Hdurable".
   wp_loadField.
-  iDestruct (is_slice_sz with "Haddrs") as %Haddrs_sz.
-  iDestruct (big_sepL2_length with "Hdata") as %Hblocks_length.
-  wp_apply wp_slice_len.
+  wp_let.
   wp_loadField.
-  iMod ("Hfupd" $! σ σ addr_s.(Slice.sz) with "[$HP]") as "[HP HQ]".
+  iMod ("Hfupd" $! σ σ sz with "[$HP]") as "[HP HQ]".
   { iPureIntro.
     split; auto.
     rewrite /inode.size.
-    autorewrite with len in Haddrs_sz.
-    rewrite -Haddrs_sz //. }
+    word.
+  }
   wp_apply (release_spec with "[-HQ HΦ $Hlock]").
   { iFrame "Hlocked".
     iExists σ; iFrame.
-    iExists _, _, _, _; iFrame "∗ %". }
+    iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, indBlocks, hdr. iFrame "∗ %".
+  }
   wp_pures.
   iApply ("HΦ" with "[$]").
 Qed.
 
+(*
 Theorem wp_Inode__mkHdr l addr_s addrs :
   length addrs ≤ MaxBlocks ->
   {{{ "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
