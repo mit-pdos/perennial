@@ -1,3 +1,5 @@
+From RecordUpdate Require Import RecordSet.
+
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.algebra Require Import deletable_heap.
 
@@ -28,22 +30,122 @@ Section goose.
   Let allocN := nroot.@"allocator".
   Context (P: s_inode.t → iProp Σ).
 
-  Definition is_single_inode l (sz: Z) k' k'' : iProp Σ :=
+  Definition Pinode γblocks γused (s: inode.t): iProp Σ :=
+    "Hownblocks" ∷ own γblocks (◯ Excl' (s.(inode.blocks): listBlockO)) ∗
+    "Hused1" ∷ own γused (●{1/2} Excl' s.(inode.addrs)).
+
+  Definition Palloc γused (s: alloc.t): iProp Σ :=
+    "Hused2" ∷ own γused (●{1/2} Excl' (alloc.used s)).
+
+  Definition s_inode_inv γblocks γused (blocks: list Block) (used: gset u64): iProp Σ :=
+    "Hγblocks" ∷ own γblocks (● Excl' (blocks: listBlockO)) ∗
+    "Hγused" ∷ own γused (◯ Excl' used).
+
+  Definition is_single_inode l (sz: Z) k' : iProp Σ :=
     ∃ (inode_ref alloc_ref: loc) γinode γalloc γused γblocks,
-      l ↦[SingleInode.S :: "i"] #inode_ref ∗
-      l ↦[SingleInode.S :: "alloc"] #alloc_ref ∗
-      is_inode inode_ref k' γinode
-        (λ s, own γblocks (◯ Excl' (s.(inode.blocks): listBlockO)) ∗
-              own γused (●{1/2} Excl' s.(inode.addrs)))
-        (U64 0) ∗
-      is_allocator
-        (λ s, own γused (●{1/2} Excl' (alloc.used s)))
+      "#i" ∷ readonly (l ↦[SingleInode.S :: "i"] #inode_ref) ∗
+      "#alloc" ∷ readonly (l ↦[SingleInode.S :: "alloc"] #alloc_ref) ∗
+      "#Hinode" ∷ is_inode inode_ref (LVL k') γinode (Pinode γblocks γused) (U64 0) ∗
+      "#Halloc" ∷ is_allocator (Palloc γused)
         (λ a, ∃ b, int.val a d↦ b)
-        allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k'' ∗
-      inv N (∃ (blocks: list Block) (used:gset u64),
-                own γblocks (● Excl' (blocks: listBlockO)) ∗
-                P blocks ∗
-                own γused (◯ Excl' used))
+        allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
+      "#Hinv" ∷ inv N (∃ σ (used:gset u64),
+                          s_inode_inv γblocks γused σ used ∗
+                          P σ)
   .
+
+  Instance s_inode_inv_Timeless :
+    Timeless (s_inode_inv γblocks γused blocks used).
+  Proof. apply _. Qed.
+
+  (* TODO: needs allocator and inode crash conditions and init obligations *)
+  Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64)
+          k' γblocks γused σ0 :
+    (* TODO: export inode_crash_cond to capture this *)
+    {{{ (∃ s addrs, is_inode_durable (U64 0) s addrs ∗ Pinode γblocks γused s) ∗ P σ0 }}}
+      Open #d_ref #sz @ NotStuck; k; ⊤; E2
+    {{{ l, RET #l; is_single_inode l (int.val sz) k' }}}
+    {{{ ∃ σ', P σ' }}}.
+  Proof.
+  Abort.
+
+  Lemma alloc_used_reserve s u :
+    u ∈ alloc.free s →
+    alloc.used (<[u:=block_reserved]> s) =
+    alloc.used s.
+  Proof.
+    rewrite /alloc.free /alloc.used.
+    intros Hufree.
+    apply elem_of_dom in Hufree as [status Hufree].
+    apply map_filter_lookup_Some in Hufree as [Hufree ?];
+      simpl in *; subst.
+    rewrite map_filter_insert_not_strong //=.
+  Admitted.
+
+  Lemma alloc_free_reserved s a :
+    s !! a = Some block_reserved →
+    alloc.used (<[a := block_free]> s) =
+    alloc.used s.
+  Proof.
+    rewrite /alloc.used.
+    intros Hareserved.
+    rewrite map_filter_insert_not_strong //=.
+  Admitted.
+
+  Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
+    (3 + k < k')%nat →
+    {{{ "Hinode" ∷ is_single_inode l sz k' ∗
+        "Hb" ∷ is_block b_s 1 b0 ∗
+        "Hfupd" ∷ ((∀ σ σ',
+          ⌜σ' = σ ++ [b0]⌝ -∗
+         P σ ={⊤ ∖ ↑allocN}=∗ P σ' ∗ Q))
+    }}}
+      SingleInode__Append #l (slice_val b_s) @ NotStuck; LVL (S (S (S (S k)))); ⊤; E2
+    {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    wpc_call.
+    { crash_case; auto. }
+    iCache with "HΦ".
+    { crash_case; auto. }
+    iNamed "Hinode".
+    wpc_bind (struct.loadF _ _ _); wpc_frame "HΦ".
+    wp_loadField.
+    iNamed 1.
+    wpc_bind (struct.loadF _ _ _); wpc_frame "HΦ".
+    wp_loadField.
+    iNamed 1.
+    wpc_apply (wpc_Inode__Append Q emp%I
+                 with "[$Hb $Hinode $Halloc Hfupd]");
+      try lia; try solve_ndisj.
+    {
+      iSplitR.
+      { by iIntros "_". }
+      iSplit; [ | iSplit; [ | iSplit ] ]; try iModIntro.
+      - iIntros (s s' ma Hma) "HPalloc".
+        destruct ma; intuition subst; auto.
+        iEval (rewrite /Palloc) in "HPalloc"; iNamed.
+        iEval (rewrite /Palloc /named).
+        rewrite alloc_used_reserve //.
+      - iIntros (a s s') "HPalloc".
+        iEval (rewrite /Palloc) in "HPalloc"; iNamed.
+        iEval (rewrite /Palloc /named).
+        rewrite alloc_free_reserved //.
+      - iIntros (a s s') "HPalloc".
+        (* XXX: not true; can't mark blocks used in isolation, need to do it
+           with inode fupd *)
+        admit.
+      - iSplitL; auto.
+        (* XXX: also not true, need allocator fupd as well *)
+        admit.
+    }
+    iSplit.
+    { iIntros "_".
+      iFromCache. }
+    iNext.
+    iIntros (ok) "HQ".
+    iApply "HΦ"; auto.
+  Abort.
 
 End goose.

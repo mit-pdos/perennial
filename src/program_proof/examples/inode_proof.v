@@ -509,7 +509,6 @@ Theorem wpc_Inode__Append {k E2}
   (S (S (S k)) < k')%nat →
   ↑nroot.@"readonly" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
   ↑inodeN ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
-  ↑nroot.@"allocator" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
   ↑Ncrash allocN ⊆ (@top coPset _) ∖ ↑inodeN →
   {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
@@ -528,7 +527,7 @@ Theorem wpc_Inode__Append {k E2}
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
   {{{ Qc }}}.
 Proof.
-  iIntros (?????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iIntros (????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iNamed "Hinode".
   wpc_call.
   { iRight in "Hfupd"; auto. }
