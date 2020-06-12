@@ -516,12 +516,14 @@ Theorem wpc_Inode__Append {k E2}
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
       "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
       "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
-      "#Huse_fupd" ∷ □ (∀ a, use_fupd (⊤ ∖ ↑inodeN ∖ ↑Ncrash allocN ∖ ↑allocN) Palloc a) ∗
-      "Hfupd" ∷ ((∀ σ σ',
-          ⌜∃ addrs', σ' = set inode.blocks (λ bs, bs ++ [b0])
-                              (set inode.addrs (addrs' ∪.) σ)⌝ -∗
+      "Hfupd" ∷ ((∀ σ σ' addr',
+        ⌜σ' = set inode.blocks (λ bs, bs ++ [b0])
+                              (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
         ⌜inode.wf σ⌝ -∗
-         P σ ={⊤ ∖ ↑allocN}=∗ P σ' ∗ Q) ∧ Qc)
+        ∀ s,
+        ⌜s !! addr' = Some block_reserved⌝ -∗
+         P σ ∗ Palloc s ={⊤ ∖ ↑allocN}=∗
+         P σ' ∗ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)
   }}}
     Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S (S (S k)))); ⊤; E2
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
@@ -657,7 +659,6 @@ Proof.
       iIntros (s b' extra') "(Hb&%Hencoded'&?&?)"; iNamed.
       iNamed 1.
       wpc_pures.
-
       wpc_bind (struct.loadF _ _ _).
       wpc_frame "HΦ Hfupd HP Hdurable".
       wp_loadField.
@@ -680,25 +681,26 @@ Proof.
                               "Hused" ∷ used_block γalloc a ∗
                               "HQ" ∷ Q) with "[$Hb Hhdr Hfupd HP Hreserved]").
       { iSplit; [ iNamedAccu | ].
+        iLeft in "Hfupd".
+        set (σ':=set inode.blocks (λ bs : list Block, bs ++ [b0])
+                     (set inode.addrs (union {[a]}) σ)).
+        iSpecialize ("Hfupd" $! σ σ' a with "[% //] [% //]").
 
-
-        iMod (mark_used _ _ _ _ _ _ (emp)%I with "Hreserved []") as "Hget_used".
+        iMod (mark_used _ _ _ _ _ _ (P σ' ∗ Q)%I with "Hreserved [HP Hfupd]") as "Hget_used".
         { admit. (* TODO: this is probably true with the right assumption about
         inodeN and allocN *) }
-        { iIntros (σ' Hreserved) "HPalloc".
-          iMod ("Huse_fupd" with "[% //] HPalloc") as "$".
-          auto. }
+        { clear.
+          iIntros (s Hreserved) "HPalloc".
+          iMod (fupd_intro_mask' _ (⊤ ∖ ↑allocN)) as "HinnerN".
+          { admit. (* namespace issues *) }
+          iMod ("Hfupd" with "[% //] [$HP $HPalloc]") as "(HP&HPalloc&HQ)".
+          iFrame. }
 
         iModIntro.
         iExists _; iFrame.
         iNext.
         iIntros "Hhdr".
-        iMod "Hget_used" as "[_ Hused]".
-        iMod (fupd_intro_mask' _ (⊤ ∖ ↑allocN)) as "HinnerN".
-        { admit. (* namespace issues *) }
-        iMod ("Hfupd" with "[%] [% //] HP") as "[$ HQ]".
-        { eexists; eauto. }
-        iMod "HinnerN" as "_".
+        iMod "Hget_used" as "[ (HP&HQ) Hused]".
 
         by iFrame. }
       iSplit; [ | iNext ].

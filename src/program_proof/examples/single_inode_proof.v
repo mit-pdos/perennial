@@ -14,7 +14,8 @@ Module s_inode.
   Definition t := list Block.
 End s_inode.
 
-Definition listBlockO := discreteO (list Block).
+(* discrete ofe over lists *)
+Canonical Structure listLO A := leibnizO (list A).
 
 Section goose.
   Context `{!heapG Σ}.
@@ -22,7 +23,7 @@ Section goose.
   Context `{!crashG Σ}.
   Context `{!allocG Σ}.
   Context `{!stagedG Σ}.
-  Context `{!inG Σ (ghostR listBlockO)}.
+  Context `{!inG Σ (ghostR (listLO Block))}.
 
   Implicit Types (l:loc) (σ: s_inode.t) (γ: gname).
 
@@ -31,14 +32,14 @@ Section goose.
   Context (P: s_inode.t → iProp Σ).
 
   Definition Pinode γblocks γused (s: inode.t): iProp Σ :=
-    "Hownblocks" ∷ own γblocks (◯ Excl' (s.(inode.blocks): listBlockO)) ∗
+    "Hownblocks" ∷ own γblocks (◯ Excl' (s.(inode.blocks): listLO Block)) ∗
     "Hused1" ∷ own γused (●{1/2} Excl' s.(inode.addrs)).
 
   Definition Palloc γused (s: alloc.t): iProp Σ :=
     "Hused2" ∷ own γused (●{1/2} Excl' (alloc.used s)).
 
   Definition s_inode_inv γblocks γused (blocks: list Block) (used: gset u64): iProp Σ :=
-    "Hγblocks" ∷ own γblocks (● Excl' (blocks: listBlockO)) ∗
+    "Hγblocks" ∷ own γblocks (● Excl' (blocks : listLO Block)) ∗
     "Hγused" ∷ own γused (◯ Excl' used).
 
   Definition is_single_inode l (sz: Z) k' : iProp Σ :=
@@ -132,13 +133,20 @@ Section goose.
         iEval (rewrite /Palloc) in "HPalloc"; iNamed.
         iEval (rewrite /Palloc /named).
         rewrite alloc_free_reserved //.
-      - iIntros (a s s') "HPalloc".
-        (* XXX: not true; can't mark blocks used in isolation, need to do it
-           with inode fupd *)
+      - iIntros (σ σ' addr' -> Hwf s Hreserved) "(HPinode&HPalloc)".
+        iEval (rewrite /Palloc) in "HPalloc"; iNamed.
+        iNamed "HPinode".
+        iDestruct (ghost_var_frac_frac_agree with "Hused1 Hused2") as %Heq;
+          rewrite -Heq.
+        iCombine "Hused1 Hused2" as "Hused".
+        iInv "Hinv" as (σ' used) "[>Hinner HP]" "Hclose".
+        iNamed "Hinner".
+        iDestruct (ghost_var_agree with "Hused Hγused") as %<-.
+        iMod (ghost_var_update _ (union {[addr']} σ.(inode.addrs))
+                               with "Hused Hγused") as
+            "[Hused Hγused]".
         admit.
-      - iSplitL; auto.
-        (* XXX: also not true, need allocator fupd as well *)
-        admit.
+      - auto.
     }
     iSplit.
     { iIntros "_".
