@@ -383,6 +383,15 @@ Module tests.
       iExact "HP".
     Qed.
 
+    Example test_exists Ψ :
+      named "HP2" (∃ my_name, Ψ my_name) -∗
+      named "HP" (∃ x, Ψ x).
+    Proof.
+      iIntros "?"; iNamed.
+      iDeexHyp "HP2".
+      iExists my_name; iFrame.
+    Qed.
+
     Example test_exists_freshen x Ψ :
       named "HP" (Ψ x) -∗ named "HP2" (∃ x, Ψ x) -∗
       named "HP" (∃ x, Ψ x).
