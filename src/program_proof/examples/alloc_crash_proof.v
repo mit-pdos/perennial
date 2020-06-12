@@ -626,7 +626,7 @@ Lemma mark_used E γ n' a Q:
   ↑Ninv ⊆ E →
    reserved_block_in_prep γ n' a -∗
    (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗
-         P σ ={E ∖ ↑ N}=∗ P (<[a := block_used]> σ) ∗ Q)
+         P σ ={E ∖ ↑ N}=∗ ▷ P (<[a := block_used]> σ) ∗ Q)
    ={E,E ∖ ↑Ninv, E}▷=∗ Q ∗ used_block γ a.
 Proof.
   iIntros (?) "Hprep Hfupd".

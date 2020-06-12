@@ -93,13 +93,25 @@ Section goose.
     rewrite map_filter_insert_not_strong //=.
   Admitted.
 
+  Lemma alloc_used_insert s a :
+    alloc.used (<[a := block_used]> s) = {[a]} ∪ alloc.used s.
+  Proof.
+    rewrite /alloc.used.
+    rewrite map_filter_insert //.
+    set_solver.
+  Qed.
+
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
     (3 + k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
         "Hfupd" ∷ ((∀ σ σ',
           ⌜σ' = σ ++ [b0]⌝ -∗
-         P σ ={⊤ ∖ ↑allocN}=∗ P σ' ∗ Q))
+        (* TODO: to be able to use an invariant within another HOCAP fupd I had
+        to make this fupd from [▷ P(σ)] to [▷ P(σ')] rather than our usual
+        [P(σ)] to [P(σ')]; normally we seem to get around this by linearizing at
+        a Skip? *)
+         ▷ P σ ={⊤ ∖ ↑allocN ∖ ↑N}=∗ ▷ P σ' ∗ Q))
     }}}
       SingleInode__Append #l (slice_val b_s) @ NotStuck; LVL (S (S (S (S k)))); ⊤; E2
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
@@ -139,13 +151,25 @@ Section goose.
         iDestruct (ghost_var_frac_frac_agree with "Hused1 Hused2") as %Heq;
           rewrite -Heq.
         iCombine "Hused1 Hused2" as "Hused".
-        iInv "Hinv" as (σ' used) "[>Hinner HP]" "Hclose".
+        iInv "Hinv" as (σ0 used) "[>Hinner HP]" "Hclose".
         iNamed "Hinner".
-        iDestruct (ghost_var_agree with "Hused Hγused") as %<-.
+        iDestruct (ghost_var_agree with "Hused Hγused") as %?; subst.
         iMod (ghost_var_update _ (union {[addr']} σ.(inode.addrs))
                                with "Hused Hγused") as
             "[Hused Hγused]".
-        admit.
+        iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %?; subst.
+        iMod (ghost_var_update _ ((σ.(inode.blocks) ++ [b0]) : listLO Block)
+                with "Hγblocks Hownblocks") as "[Hγblocks Hownblocks]".
+        iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
+        iDestruct "Hused" as "[Hused1 Hused2]".
+        iMod ("Hclose" with "[Hγused Hγblocks HP]") as "_".
+        { iNext.
+          iExists _, _; iFrame. }
+        iModIntro.
+        iFrame.
+        rewrite /Palloc.
+        rewrite alloc_used_insert -Heq.
+        iFrame.
       - auto.
     }
     iSplit.
@@ -154,6 +178,6 @@ Section goose.
     iNext.
     iIntros (ok) "HQ".
     iApply "HΦ"; auto.
-  Abort.
+  Qed.
 
 End goose.
