@@ -244,7 +244,7 @@ Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
   P σ -∗
   (∀ γ, is_allocator_pre γ n' (alloc.domain σ) (alloc.free σ) -∗
         WPC e @ NotStuck; LVL n; ⊤; E2 {{ Φ }} {{ alloc_crash_cond -∗ Φc }}) -∗
-  |={⊤}=> WPC e @ NotStuck; (LVL ((S n) + set_size (alloc.domain σ))); ⊤; E2' {{ Φ }} {{ Φc }}%I.
+  WPC e @ NotStuck; (LVL ((S n) + set_size (alloc.domain σ))); ⊤; E2' {{ Φ }} {{ Φc }}%I.
 Proof using allocG0.
   iIntros (??? Hcrash) "Hstate HP HWP".
   iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
@@ -257,7 +257,6 @@ Proof using allocG0.
   { set_solver+. }
   { eauto. }
   iSpecialize ("HWP" $! γ with "[$]").
-  iModIntro.
   iApply (wpc_na_crash_inv_big_sepS_init_wand with "[Hpending]").
   { iApply (big_sepS_mono with "Hpending"). iIntros (? Hin) "Hpending".
     rewrite /free_block_pending.
