@@ -22,7 +22,8 @@ Tactic Notation "wp_expr_eval" tactic(t) :=
   | _ => fail "wp_expr_eval: not a 'wp'"
   end.
 
-Lemma tac_wp_pure `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ Δ' s E e1 e2 φ n Φ :
+Lemma tac_wp_pure `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}
+      Δ Δ' s E e1 e2 φ n Φ :
   PureExec φ n e1 e2 →
   φ →
   MaybeIntoLaterNEnvs n Δ Δ' →
@@ -33,7 +34,8 @@ Proof.
   rewrite HΔ' -lifting.wp_pure_step_later //.
 Qed.
 
-Lemma tac_wp_pure_no_later `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E e1 e2 φ n Φ :
+Lemma tac_wp_pure_no_later `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}
+      Δ s E e1 e2 φ n Φ :
   PureExec φ n e1 e2 →
   φ →
   envs_entails Δ (WP e2 @ s; E {{ Φ }}) →
@@ -42,6 +44,20 @@ Proof.
   rewrite envs_entails_eq=> ?? HΔ'.
   rewrite HΔ' -lifting.wp_pure_step_later //.
   iIntros "$".
+Qed.
+
+Lemma tac_wp_pure_no_later_ctx `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}
+      Δ s E K e1 e2 φ n Φ :
+  PureExec φ n e1 e2 →
+  φ →
+  envs_entails Δ (WP (fill K e2) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
+Proof.
+  intros ???.
+  eapply tac_wp_pure_no_later.
+  - apply pure_exec_fill; eauto.
+  - auto.
+  - auto.
 Qed.
 
 Lemma tac_wp_value `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ v :
@@ -109,7 +125,7 @@ Tactic Notation "wp_pure_no_later" open_constr(efoc) :=
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
       unify e' efoc;
-      eapply (tac_wp_pure_no_later _ _ _ (fill K e'));
+      eapply (tac_wp_pure_no_later_ctx _ _ _ K e');
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |wp_finish                      (* new goal *)
