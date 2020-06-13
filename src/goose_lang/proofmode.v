@@ -33,6 +33,17 @@ Proof.
   rewrite HΔ' -lifting.wp_pure_step_later //.
 Qed.
 
+Lemma tac_wp_pure_no_later `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E e1 e2 φ n Φ :
+  PureExec φ n e1 e2 →
+  φ →
+  envs_entails Δ (WP e2 @ s; E {{ Φ }}) →
+  envs_entails Δ (WP e1 @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_eq=> ?? HΔ'.
+  rewrite HΔ' -lifting.wp_pure_step_later //.
+  iIntros "$".
+Qed.
+
 Lemma tac_wp_value `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ v :
   envs_entails Δ (Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).
 Proof. rewrite envs_entails_eq=> ->. by apply wp_value. Qed.
@@ -45,10 +56,7 @@ Ltac wp_value_head :=
 Lemma tac_wp_true_elim Σ Δ (P: iProp Σ) :
   envs_entails Δ P ->
   envs_entails Δ (bi_wand (bi_pure True) P).
-Proof. rewrite envs_entails_eq=> ->.
-  iIntros "H _".
-  iApply "H".
-Qed.
+Proof. rewrite envs_entails_eq=> ->. iIntros "$ _ //". Qed.
 
 Lemma tac_wp_true Σ (Δ: envs (iPropI Σ)) :
   envs_entails Δ (bi_pure True).
@@ -79,10 +87,9 @@ for an [EIf _ _ _] in the expression, and reduce it.
 The use of [open_constr] in this tactic is essential. It will convert all holes
 (i.e. [_]s) into evars, that later get unified when an occurences is found
 (see [unify e' efoc] in the code below). *)
-Tactic Notation "wp_pure" open_constr(efoc) :=
-  iStartProof;
+Tactic Notation "wp_pure_later" open_constr(efoc) :=
   lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
       unify e' efoc;
@@ -96,11 +103,39 @@ Tactic Notation "wp_pure" open_constr(efoc) :=
   | _ => fail "wp_pure: not a 'wp'"
   end.
 
+Tactic Notation "wp_pure_no_later" open_constr(efoc) :=
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    let e := eval simpl in e in
+    reshape_expr e ltac:(fun K e' =>
+      unify e' efoc;
+      eapply (tac_wp_pure_no_later _ _ _ (fill K e'));
+      [iSolveTC                       (* PureExec *)
+      |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
+      |wp_finish                      (* new goal *)
+      ])
+    || fail "wp_pure: cannot find" efoc "in" e "or" efoc "is not a redex"
+  | _ => fail "wp_pure: not a 'wp'"
+  end.
+
+(* smart version that decides which one to use *)
+Tactic Notation "wp_pure" open_constr(efoc) :=
+  iStartProof;
+  lazymatch goal with
+  | |- envs_entails ?envs _ =>
+    lazymatch envs with
+    | context[Esnoc _ _ (bi_later _)] => wp_pure_later efoc
+    | _ => wp_pure_no_later efoc
+    end
+  end.
+
 (* TODO: do this in one go, without [repeat]. *)
 Ltac wp_pures :=
   iStartProof;
-  repeat (wp_pure _; []). (* The `;[]` makes sure that no side-condition
+ (* The `;[]` makes sure that no side-condition
                              magically spawns. *)
+  try ((wp_pure _; []);
+       repeat (wp_pure_no_later _; [])).
 
 (** Unlike [wp_pures], the tactics [wp_rec] and [wp_lam] should also reduce
 lambdas/recs that are hidden behind a definition, i.e. they should use
