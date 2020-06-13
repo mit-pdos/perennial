@@ -206,7 +206,7 @@ Section goose.
     iCache with "HΦ Hfupd".
     { crash_case;
         by iRight in "Hfupd". }
-    wpc_bind_seq; wpc_frame.
+    wpc_frame_seq.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
     iIntros (γlk) "His_locked"; iNamed 1.
@@ -276,7 +276,7 @@ Section goose.
     iCache with "HΦ Hfupd".
     { crash_case.
       iRight in "Hfupd"; auto. }
-    wpc_bind_seq; wpc_frame.
+    wpc_frame_seq.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
     iIntros (γlk) "His_locked".

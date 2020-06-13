@@ -1212,55 +1212,50 @@ Proof.
   iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
   iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
 
-  Ltac show_crash :=
-    try (iDestruct "HΦ" as "[HΦc _]"; iIntros; iApply "HΦc");
-    iSplitR; eauto;
-    iFrame "Hpos";
-    iExists _, _; iSplitR; eauto;
-    iFrame; iSplitR; eauto;
-    iExists _, _, _; iFrame; eauto.
+  iCache with "HΦ Hpos Haddrs Hblocks Hd0 Hd1 Hd2".
+  { crash_case.
+    iFrame "% ∗".
+    iExists _, _; iFrame "∗ %".
+    iExists _, _, _; iFrame "∗ %". }
 
-  wpc_apply (wpc_Read with "[Hd0]"); first iFrame.
-  iSplit; first by show_crash.
+  wpc_apply (wpc_Read with "[Hd0]"); first by iFrame.
+  iSplit.
+  { iIntros "Hd0"; iFromCache. }
 
   iIntros (s0) "!> [Hd0 Hs0]".
-  wpc_pures; first by show_crash.
+  wpc_pures.
 
   wpc_apply (wpc_Read with "[Hd1]"); first iFrame.
-  iSplit; first by show_crash.
+  iSplit.
+  { iIntros "Hd1"; iFromCache. }
 
   iIntros (s1) "!> [Hd1 Hs1]".
-  wpc_pures; first by show_crash.
+  wpc_pures.
 
   wpc_bind (decodeHdr1 _).
-  wpc_frame_compl "Hs0"; first by show_crash.
+  wpc_frame.
   wp_apply (wp_decodeHdr1 with "Hs0"); [ eauto | word | ].
   iIntros (addrs) "Hdiskaddrs H". iNamed "H".
-  wpc_pures; first by show_crash.
+  wpc_pures.
 
   wpc_bind (decodeHdr2 _).
-  wpc_frame_compl "Hs1"; first by show_crash.
+  wpc_frame.
   wp_apply (wp_decodeHdr2 with "Hs1"); [ eauto | ].
   iNamed 1.
 
-  wpc_pures; first by show_crash.
-
-  wpc_bind (ref _)%E.
-  wpc_frame_compl ""; first by show_crash.
+  wpc_pures.
+  wpc_frame_seq.
   wp_apply wp_ref_of_zero; eauto.
   iIntros (bufsloc) "Hbufsloc".
   iNamed 1.
 
-  wpc_pures; first by show_crash.
-
-  wpc_bind (ref_to _ _)%E.
-  wpc_frame_compl ""; first by show_crash.
+  wpc_pures.
+  wpc_frame_seq.
   wp_apply wp_ref_to; eauto.
   iIntros (pos) "Hposl".
   iNamed 1.
 
-  wpc_pures; first by show_crash.
-
+  wpc_pures.
   wpc_apply (wpc_forUpto (fun i =>
     ⌜int.val σ.(start) <= int.val i⌝ ∗
     (∃ bufSlice,
@@ -1280,13 +1275,12 @@ Proof.
     iDestruct "Hbufs" as (bufSlice) "[Hbufsloc Hupds]".
     iDestruct (updates_slice_len with "Hupds") as %Hupdslen.
 
-    Ltac show_crash_left :=
-      try crash_case; iLeft; iFrame.
+    wpc_pures.
+    { iLeft; iAssumption. }
+    iCache with "HΦ Hd2".
+    { crash_case; iLeft; iFrame. }
 
-    wpc_pures; first by show_crash_left.
-
-    wpc_bind (SliceGet _ _ _).
-    wpc_frame "Hd2 HΦ"; first by show_crash_left.
+    wpc_frame_seq.
     wp_load.
     destruct (list_lookup_lt _ addrs0 (Z.to_nat $ (int.val i `mod` LogSz))) as [a Halookup].
     { destruct Hlow_wf.
@@ -1300,14 +1294,14 @@ Proof.
       eauto. }
     iIntros "[Hdiskaddrs _]".
     iNamed 1.
-    wpc_pures; first by show_crash_left.
+    wpc_pures.
 
     wpc_bind (load_ty _ _).
-    wpc_frame_compl "Hposl"; first by show_crash_left.
+    wpc_frame.
     wp_load.
     iNamed 1.
 
-    wpc_pures; first by show_crash_left.
+    wpc_pures.
     change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
     destruct (list_lookup_lt _ blocks0 (Z.to_nat (int.val i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
@@ -1332,14 +1326,14 @@ Proof.
       f_equal.
       mod_bound; word. }
     rewrite list_insert_id; eauto.
-    wpc_pures; first by show_crash_left.
+    wpc_pures.
 
     wpc_bind (load_ty _ _).
-    wpc_frame_compl "Hbufsloc"; first by show_crash_left.
+    wpc_frame.
     wp_load.
     iNamed 1.
 
-    wpc_frame "Hd2 HΦ"; first by show_crash_left.
+    wpc_frame.
     wp_apply (wp_SliceAppend_updates (uv:=(a, b_s)) with "[$Hupds Hb_s]"); first by len.
     { iApply is_slice_to_small. iFrame. }
     iIntros (bufSlice') "Hupds'".
@@ -1385,12 +1379,12 @@ Proof.
     auto.
 
   - iSplit.
-    { iDestruct 1 as (i) "(Hd2&%)"; show_crash. }
+    { iDestruct 1 as (i) "(Hd2&%)"; iFromCache. }
 
     iIntros "!> [(_ & HI & Hdiskaddrs & Hd2) Hposl]".
     iDestruct "HI" as (bufSlice) "[Hbufsloc Hupds]".
 
-    wpc_frame_compl "Hbufsloc"; first by show_crash.
+    wpc_frame.
     wp_pures.
 
     Transparent struct.t.

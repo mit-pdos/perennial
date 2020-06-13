@@ -228,13 +228,16 @@ Tactic Notation "wpc_frame" :=
   | _ => fail 1 "wpc_frame: not a wpc"
   end.
 
-Tactic Notation "wpc_frame_new" constr(pat) :=
+Ltac wpc_frame_go d pat :=
   let js := (eval cbv in (INamed <$> words pat)) in
-  apply (tac_wpc_wp_frame _ base.Left js);
+  apply (tac_wpc_wp_frame _ d js);
   [ reduction.pm_reduce; split; [ try iFromCache (* crash condition from framed hyps *)
                                 | (* remaining wp *)
                                 cbv [env_to_named_prop env_to_named_prop_go cache_prop]
   ] ].
+
+Tactic Notation "wpc_frame" constr(pat) := wpc_frame_go base.Left pat.
+Tactic Notation "wpc_frame_compl" constr(pat) := wpc_frame_go base.Right pat.
 
 Tactic Notation "wpc_rec" simple_intropattern(H) :=
   let HAsRecV := fresh in
@@ -269,6 +272,8 @@ Ltac wpc_bind_seq :=
   | [ |- envs_entails _ (wpc _ _ _ _ (App (Lam _ ?e2) ?e1) _ _) ] =>
     wpc_bind e1
   end.
+
+Ltac wpc_frame_seq := wpc_bind_seq; wpc_frame.
 
 Tactic Notation "wpc_atomic" :=
   iApply wpc_atomic_no_mask;
@@ -314,17 +319,3 @@ Tactic Notation "iLeft" "in" constr(H) := let pat := constr:(intro_patterns.ILis
                                           iDestruct H as pat.
 Tactic Notation "iRight" "in" constr(H) := let pat := constr:(intro_patterns.IList [[intro_patterns.IDrop; intro_patterns.IIdent H]]) in
                                            iDestruct H as pat.
-
-Tactic Notation "wpc_frame" constr(pat) :=
-  iApply wp_wpc_frame';
-  iSplitL pat; [ iNamedAccu (* create Φc' from hyps matching pat *)
-               | iSplitR; [ iModIntro; iNamed 1; try iFromCache (* prove crash condition from selected hyps *)
-                          | (* remaining wp proof *) ] ].
-
-(* XXX: it would be nice if iSplitL would understand the negation selector, so that wpc_frame "-H" would
-   have the same effect as this next tactic: *)
-Tactic Notation "wpc_frame_compl" constr(pat) :=
-  iApply wp_wpc_frame';
-  iSplitR pat; [ iNamedAccu
-               | iSplitR; [ iModIntro; iNamed 1; try iFromCache
-                          | ] ].
