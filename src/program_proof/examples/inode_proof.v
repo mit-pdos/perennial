@@ -164,7 +164,7 @@ Proof.
   iSplit; [ | iNext ].
   { iIntros "Hhdr"; iFromCache. }
   iIntros (s) "(Hhdr&Hs)".
-  wpc_frame "HP Hdata Hhdr HΦ".
+  wpc_frame.
   wp_pures.
   iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
   rewrite Hencoded.
@@ -264,7 +264,7 @@ Proof.
   iCache with "HΦ".
   { crash_case; auto. }
   wpc_bind_seq.
-  wpc_frame "HΦ".
+  wpc_frame.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); first by set_solver.
   iIntros (γlk) "His_locked".
@@ -285,7 +285,7 @@ Proof.
     iExists _; iFrame.
     iExists _; iFrame. }
   iDestruct (is_inode_durable_size with "Hdurable") as %Hlen1.
-  wpc_frame "HΦ Hdurable HP".
+  wpc_frame.
   wp_loadField.
   iDestruct (is_slice_sz with "Haddrs") as %Hlen2.
   autorewrite with len in Hlen2.
@@ -318,8 +318,7 @@ Proof.
     { word. }
     iDestruct (is_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
     wpc_pures.
-    wpc_bind_seq.
-    wpc_frame "HΦ HP Hdurable".
+    wpc_frame_seq.
     wp_loadField.
     wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
     iIntros "Haddrs_small"; iNamed 1.
@@ -366,8 +365,7 @@ Proof.
   wpc_pures; auto.
   iCache with "HΦ"; first crash_case.
   { auto. }
-  wpc_bind_seq.
-  wpc_frame "HΦ".
+  wpc_frame_seq.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
   iIntros (γlk) "His_locked".
@@ -392,7 +390,7 @@ Proof.
   { iSplitL "HΦ"; first by iFromCache.
     iExists _; iFrame.
     iExists _; iFrame. }
-  wpc_frame "HΦ HQ HQc Hdurable HP".
+  wpc_frame.
   wp_loadField.
   wp_apply wp_slice_len.
   iNamed 1.
@@ -402,7 +400,7 @@ Proof.
   iIntros "His_locked".
   iSplit; last iFromCache.
   wpc_pures.
-  wpc_frame "HΦ".
+  wpc_frame.
   wp_loadField.
   wp_apply (crash_lock.release_spec with "His_locked"); auto.
   wp_pures.
@@ -584,8 +582,7 @@ Proof.
     iIntros "Hreserved".
     iSplit; last iFromCache.
     wpc_pures.
-    wpc_bind_seq.
-    wpc_frame "Hfupd HΦ".
+    wpc_frame_seq.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
     iIntros (γlk) "His_locked". iNamed 1.
@@ -603,7 +600,7 @@ Proof.
     iDestruct (is_inode_durable_size with "Hdurable") as %Hlen2.
     wpc_call.
     wpc_bind (slice.len _ ≥ _)%E.
-    wpc_frame "HΦ Hfupd HP Hdurable".
+    wpc_frame.
     wp_loadField.
     wp_apply wp_slice_len; wp_pures.
     iNamed 1.
@@ -615,14 +612,12 @@ Proof.
       iIntros "His_locked".
       iSplit; last by iFromCache.
       wpc_pures.
-      wpc_bind_seq.
-      wpc_frame "HΦ Hfupd".
+      wpc_frame_seq.
       wp_loadField.
       wp_apply (crash_lock.release_spec with "His_locked"); auto.
       iNamed 1.
       wpc_pures.
-      wpc_bind (alloc.Allocator__Free _ _).
-      wpc_frame "HΦ Hfupd".
+      wpc_frame_seq.
       wp_apply (wp_Free _ _ _ emp with "[$Halloc Hreserved]").
       { auto. }
       { auto. }
@@ -634,13 +629,13 @@ Proof.
         iMod ("Hfree_fupd" with "[//] HP") as "$".
         auto. }
       iIntros "_".
+      wp_pures.
       iNamed 1.
       wpc_pures.
       iRight in "HΦ".
       iApply "HΦ"; auto.
     + wpc_pures.
-      wpc_bind_seq.
-      wpc_frame "HΦ Hfupd HP Hdurable".
+      wpc_frame_seq.
       wp_loadField.
       wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
       { iPureIntro.
@@ -651,8 +646,7 @@ Proof.
       Opaque slice.T.
       iNamed 1.
       wpc_pures.
-      wpc_bind_seq.
-      wpc_frame "HΦ Hfupd HP Hdurable".
+      wpc_frame_seq.
       wp_apply (wp_Inode__mkHdr with "[$addrs $Haddrs]").
       { autorewrite with len; simpl.
         word. }
@@ -660,7 +654,7 @@ Proof.
       iNamed 1.
       wpc_pures.
       wpc_bind (struct.loadF _ _ _).
-      wpc_frame "HΦ Hfupd HP Hdurable".
+      wpc_frame.
       wp_loadField.
       iNamed 1.
 
@@ -759,8 +753,7 @@ Proof.
       iIntros "His_locked".
       iSplit; last iFromCache.
       wpc_pures.
-      wpc_bind_seq.
-      wpc_frame "HΦ HQ HQc".
+      wpc_frame_seq.
       wp_loadField.
       wp_apply (crash_lock.release_spec with "His_locked"); auto.
       iNamed 1.
