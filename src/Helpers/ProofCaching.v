@@ -68,6 +68,20 @@ Section bi.
   Global Instance cached_Persistent : Persistent (@cached R c).
   Proof. unseal. apply _. Qed.
 
+  Lemma cached_elim R (c: cache R) Δs :
+    Δs.(env_spatial) = c.(cache_prop) →
+    cached c -∗
+    of_envs Δs -∗
+    R.
+  Proof.
+    unseal.
+    iIntros (Hsubenv) "#Hcache HΔ".
+    iDestruct (envs_clear_spatial_sound with "HΔ") as "(HΔ'&HΔs)".
+    iApply "Hcache".
+    rewrite -Hsubenv.
+    iAssumption.
+  Qed.
+
   Local Theorem tac_cached_use {Δ: envs PROP} i {R} (c: cache R) :
     envs_lookup i Δ = Some (true, cached c) →
     match envs_split base.Left c.(cache_names) Δ with
@@ -76,7 +90,6 @@ Section bi.
     end →
     envs_entails Δ R.
   Proof.
-    unseal.
     iIntros (Hlookup Hsubenv).
     destruct_with_eqn (envs_split base.Left c.(cache_names) Δ); [ | contradiction ].
     destruct p as [Γs Γ'].
@@ -85,10 +98,7 @@ Section bi.
     iDestruct (envs_lookup_intuitionistic_sound _ _ _ Hlookup with "HΔ") as
         "[#Hcache HΔ]".
     iDestruct (envs_split_sound with "HΔ") as "[HΔ1 HΔ2]"; eauto.
-    iDestruct (envs_clear_spatial_sound with "HΔ1") as "(HΔ'&HΔs)".
-    iApply "Hcache".
-    rewrite -Hsubenv.
-    iAssumption.
+    iApply (cached_elim with "Hcache HΔ1"); auto.
   Qed.
 
   Local Theorem cached_make R (c: cache R) :
@@ -104,6 +114,8 @@ Section bi.
 End bi.
 
 Arguments cached {PROP R} c.
+Arguments cache_names {PROP R} c.
+Arguments cache_prop {PROP R} c.
 
 Ltac iCache_go P Hs pat :=
   let Hs := words Hs in

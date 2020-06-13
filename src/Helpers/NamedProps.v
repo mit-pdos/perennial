@@ -71,6 +71,12 @@ Section named.
     destruct i; simpl; rewrite env_to_named_prop_go_unname //.
   Qed.
 
+  Theorem env_to_named_prop_sound (Γ: env PROP) :
+    env_to_named_prop Γ ≡ ([∗] Γ)%I.
+  Proof.
+    rewrite env_to_named_prop_unname env_to_prop_sound //.
+  Qed.
+
   Lemma tac_named_accu Δ (P: PROP) :
     env_to_named_prop (env_spatial Δ) = P →
     envs_entails Δ P.

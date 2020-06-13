@@ -147,22 +147,94 @@ Proof. rewrite envs_entails_eq=> -> ->. by apply: wpc_bind. Qed.
   supply a tactic to combine with the current context (and maybe some notation
   to hide it from display). *)
 Lemma tac_wpc_wp_frame `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
-      `{!heapG Σ, !crashG Σ} Δ d js Δ1 Δ2 s k E1 E2 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
-  envs_split d js Δ = Some (Δ1, Δ2) ->
-  envs_entails Δ1 Φc ->
-  envs_entails Δ2 (WP e @ s; E1 {{ v, (of_envs Δ1 -∗ Φ v)%I }}) ->
+      `{!heapG Σ, !crashG Σ} Δ d js s k E1 E2 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
+  match envs_split d js Δ with
+  | Some (Δ1, Δ2) => envs_entails Δ1 Φc ∧
+                     envs_entails Δ2 (WP e @ s; E1
+                             {{ v, (env_to_named_prop Δ1.(env_spatial) -∗ Φ v)%I }})
+  | None => False
+  end ->
   envs_entails Δ (WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }}).
 Proof.
-  rewrite envs_entails_eq=> Hsplit HΦc Hwp.
+  destruct (envs_split d js Δ) as [[Δ1 Δ2]|] eqn:Hsplit; [ | contradiction ].
+  rewrite envs_entails_eq=> Hentails.
+  destruct Hentails as [HΦc Hwp].
   rewrite (envs_split_sound _ _ _ _ _ Hsplit).
   rewrite {}Hwp.
   iIntros "[HΦc' Hwp]".
   iApply (wp_wpc_frame' _ _ _ _ _ _ (of_envs Δ1)); iFrame.
-  iIntros "!> HΔ1".
-  iApply (HΦc with "[$]").
+  iSplitR.
+  { iAlways; iApply HΦc. }
+  iApply (wp_mono with "Hwp"); cbv beta.
+  iIntros (v) "Hwand HΔ".
+  iApply "Hwand".
+  iDestruct (envs_clear_spatial_sound with "HΔ") as "[Hp Hs]".
+  rewrite env_to_named_prop_sound.
+  iAssumption.
 Qed.
 
-(* TODO: write a tac_wpc_wp_frame that also uses a cache *)
+Lemma tac_wpc_wp_frame_cache `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+      `{!heapG Σ, !crashG Σ} (Φc: iProp Σ) i (* name of cache *) (c: cache Φc)
+      Δ stk k E1 E2 e (Φ: _ → iProp Σ)  :
+  envs_lookup i Δ = Some (true, cached c) →
+  match envs_split Left c.(cache_names) Δ with
+  | Some (Δ1, Δ2) => Δ1.(env_spatial) = c.(cache_prop) ∧
+                     envs_entails Δ2 (WP e @ stk; E1 {{ v, (env_to_named_prop Δ1.(env_spatial) -∗ Φ v)%I }})
+  | None => False
+  end →
+  envs_entails Δ (WPC e @ stk; k; E1; E2 {{ Φ }} {{ Φc }}).
+Proof.
+  rewrite envs_entails_eq=> Hcache H.
+  destruct (envs_split Left (cache_names c) Δ) as [[Δ1 Δ2]|] eqn:Hsplit;
+    [ | contradiction ].
+  destruct H as (Hcenv & Hwp).
+  iIntros "HΔ".
+  iDestruct (envs_lookup_intuitionistic_sound _ _ _ Hcache
+               with "HΔ") as "[#Hcache HΔ]".
+  rewrite (envs_split_sound _ _ _ _ _ Hsplit).
+  iDestruct "HΔ" as "[Hcrash HΔ2]".
+  iApply wp_wpc_frame'.
+  iSplitL "Hcrash"; [ iAccu | ].
+  iSplit.
+  { iModIntro.
+    iIntros "Hcrash".
+    iApply (cached_elim with "Hcache Hcrash"); eauto. }
+  iDestruct (Hwp with "HΔ2") as "Hwp".
+  iApply (wp_mono with "Hwp"); cbv beta.
+  iIntros (v) "Hwand HΔ".
+  iApply "Hwand".
+  iDestruct (envs_clear_spatial_sound with "HΔ") as "[Hp Hs]".
+  rewrite env_to_named_prop_unname env_to_prop_sound.
+  iAssumption.
+Qed.
+
+Tactic Notation "wpc_frame" :=
+  lazymatch goal with
+  | [ |- envs_entails (Envs ?Γp _ _) (wpc _ _ _ _ _ _ ?Φc) ] =>
+    first [ match Γp with
+            | context[Esnoc _ ?i (@cached _ Φc ?c)] =>
+              apply (tac_wpc_wp_frame_cache Φc i c);
+              [ reflexivity (* lookup should always succeed, found by context match *)
+              | reduction.pm_reduce; split;
+                [ (* cache hypothesis match *)
+                  reflexivity
+                | (* remaining wp *)
+                cbv [env_to_named_prop env_to_named_prop_go cache_prop]
+                ]
+              ]
+            end
+          | fail 1 "no cache for crash condition" Φc
+          ]
+  | _ => fail 1 "wpc_frame: not a wpc"
+  end.
+
+Tactic Notation "wpc_frame_new" constr(pat) :=
+  let js := (eval cbv in (INamed <$> words pat)) in
+  apply (tac_wpc_wp_frame _ base.Left js);
+  [ reduction.pm_reduce; split; [ try iFromCache (* crash condition from framed hyps *)
+                                | (* remaining wp *)
+                                cbv [env_to_named_prop env_to_named_prop_go cache_prop]
+  ] ].
 
 Tactic Notation "wpc_rec" simple_intropattern(H) :=
   let HAsRecV := fresh in
@@ -242,15 +314,6 @@ Tactic Notation "iLeft" "in" constr(H) := let pat := constr:(intro_patterns.ILis
                                           iDestruct H as pat.
 Tactic Notation "iRight" "in" constr(H) := let pat := constr:(intro_patterns.IList [[intro_patterns.IDrop; intro_patterns.IIdent H]]) in
                                            iDestruct H as pat.
-
-(* TODO: fix this to use a tac_ theorem; look at tac_wp_allocN for an example of
-env splitting *)
-
-(*
-Tactic Notation "wpc_frame" constr(pat) :=
-  iApply wp_wpc_frame';
-  iSplitL pat; [ iAccu | iSplitR; [ iModIntro | ] ].
-*)
 
 Tactic Notation "wpc_frame" constr(pat) :=
   iApply wp_wpc_frame';

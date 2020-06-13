@@ -137,7 +137,7 @@ Section goose.
     (* allocate lock *)
     wpc_pures.
     wpc_bind (lock.new _).
-    wpc_frame "HP Hprimary Hbackup HΦ". (* ie, everything *)
+    wpc_frame.
     wp_apply wp_new_free_lock.
     iIntros (γ m_ref) "Hfree_lock".
     iNamed 1.
@@ -206,12 +206,12 @@ Section goose.
     iCache with "HΦ Hfupd".
     { crash_case;
         by iRight in "Hfupd". }
-    wpc_bind_seq; wpc_frame "HΦ Hfupd".
+    wpc_bind_seq; wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
     iIntros (γlk) "His_locked"; iNamed 1.
     wpc_pures.
-    wpc_bind (RepBlock__readAddr _ _); wpc_frame "HΦ Hfupd".
+    wpc_bind (RepBlock__readAddr _ _); wpc_frame.
     wp_apply (wp_RepBlock__readAddr with "addr").
     iIntros (addr' Haddr'_eq).
     iNamed 1.
@@ -249,7 +249,7 @@ Section goose.
       iApply ("HQc" with "HQ"). }
     iSplit; last by iFromCache. (* TODO: why is this the second goal? *)
     wpc_pures.
-    wpc_frame "HΦ HQ HQc".
+    wpc_frame.
 
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
@@ -276,8 +276,7 @@ Section goose.
     iCache with "HΦ Hfupd".
     { crash_case.
       iRight in "Hfupd"; auto. }
-    wpc_bind_seq.
-    wpc_frame "HΦ Hfupd".
+    wpc_bind_seq; wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
     iIntros (γlk) "His_locked".
@@ -297,7 +296,7 @@ Section goose.
 
     wpc_call.
     wpc_bind (struct.loadF _ _ _).
-    wpc_frame "HΦ Hfupd Hprimary Hbackup HP".
+    wpc_frame.
     wp_loadField.
     iNamed 1.
     (* This is an interesting example illustrating crash safety - notice that we
@@ -339,7 +338,7 @@ Section goose.
 
     wpc_pures.
     wpc_bind (struct.loadF _ _ _).
-    wpc_frame "HΦ HQ HQc Hprimary Hbackup HP". (* TODO: can we get these from a cache? *)
+    wpc_frame.
     wp_loadField.
     iNamed 1.
     wpc_pures.
@@ -356,7 +355,7 @@ Section goose.
     iIntros "His_locked".
     iSplit; last by iFromCache.
     wpc_pures.
-    wpc_frame "HΦ HQ HQc".
+    wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
     iNamed 1.
