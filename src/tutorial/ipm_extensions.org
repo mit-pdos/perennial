@@ -2,9 +2,9 @@
 
 * Introduction
 Perennial is a research project on verified concurrent storage systems.
-** Iris
-** Crash program logic
-** Verifying Go programs
+** Iris (concurrency)
+** Crash program logic (storage)
+** Verifying Go programs (systems)
 * iNamed
 named propositions
 ** [[file:ipm_extensions.v::first extension][Coq demo]]
@@ -16,6 +16,7 @@ caching subproofs
 ** [[file:ipm_extensions.v::second extension][Coq demo]]
 ** arises in crash safety since crash conditions are repetitive
 ** simple example [[file:../program_proof/examples/replicated_block_proof.v::wpc_RepBlock__Read][replicated block Read]]
+** integration with [[file:../goose_lang/wpc_proofmode.v::tac_wpc_wp_frame_cache][wpc_frame]]
 * Restore
 destruct and then reconstruct (WIP)
 ** [[file:ipm_extensions.v::third extension][Coq demo]]

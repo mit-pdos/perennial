@@ -187,10 +187,6 @@ Lemma tac_wpc_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
   envs_entails Δ (WPC fill K e @ s; k; E1; E2 {{ Φ }} {{ Φc }}).
 Proof. rewrite envs_entails_eq=> -> ->. by apply: wpc_bind. Qed.
 
-  (* TODO: to make this useful, we need a wrapper tactic. In addition, this
-  theorem creates an of_envs in the postcondition of the WP, which we should
-  supply a tactic to combine with the current context (and maybe some notation
-  to hide it from display). *)
 Lemma tac_wpc_wp_frame `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} Δ d js s k E1 E2 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
   match envs_split d js Δ with

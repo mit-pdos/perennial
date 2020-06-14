@@ -4,10 +4,12 @@ From Perennial.Helpers Require NamedProps ProofCaching PropRestore.
 (*+ Demo of Perennial's IPM extensions +*)
 
 Section bi.
-  Context {PROP: bi} {Haff: BiAffine PROP}.
+  Context {PROP: bi}.
+  (* quick note: not all of these features require an affine logic, but
+  it makes the demo easier and in practice we use the Iris base logic *)
+  Context {Haff: BiAffine PROP}.
 
   Context (P Q R: PROP).
-  Context `{!Persistent Q}.
 
   (*! Brief previews: *)
 
@@ -38,7 +40,7 @@ Section bi.
   *)
 
   Definition is_bar :=
-    ("#HQ" ∷ Q ∗
+    ("#HQ" ∷ □Q ∗
      "HR" ∷ R)%I.
 
   Theorem is_bar_read_Q :
@@ -48,6 +50,7 @@ Section bi.
     iModIntro.
     iExact "HQ".
   Qed.
+
 
   (** * second extension: proof caching *)
   Import Perennial.Helpers.ProofCaching.
@@ -74,7 +77,8 @@ Section bi.
     - iFromCache.
   Qed.
 
-  (** * third extension: restore destructed prop *)
+
+  (** * third extension: restore destructed proposition *)
   Import Perennial.Helpers.PropRestore.
 
   (* note that this isn't fully implemented *)
