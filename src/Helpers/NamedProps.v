@@ -87,9 +87,6 @@ Section named.
 
 End named.
 
-(* XXX(tej): Is this a good idea? I don't know. *)
-Definition destruct: string := "*".
-
 Ltac to_pm_ident H :=
   lazymatch type of H with
   | string => constr:(INamed H)
@@ -106,6 +103,8 @@ Local Ltac iDeex_go i x H :=
   let x' := fresh x in
   iDestructHyp i as (x') H.
 
+(* iDeexHyp is like [iDestruct "H" as (?) "H"] except that it preserves the name
+of the binder and repeats while the goal is an existential *)
 Ltac iDeexHyp H :=
   let i := to_pm_ident H in
   let rec go _ := lazymatch goal with
@@ -122,18 +121,27 @@ Ltac iDeexHyp H :=
                   end in
   go tt; repeat go tt.
 
+Ltac iDeex :=
+  repeat match goal with
+         | |- context[Esnoc _ ?i (bi_exist (fun x => _))] =>
+           iDeex_go
+         end.
+
 Local Ltac iNameHyp_go H :=
   let i := to_pm_ident H in
   lazymatch goal with
   | |- context[Esnoc _ i (named ?name ?P)] =>
     let Htmp := iFresh in
     iRename i into Htmp;
+    (* we treat a couple patterns specially: *)
     let pat := intro_pat.parse_one name in
     lazymatch pat with
+    (* pure intros are freshened (otherwise they block using iNamed) *)
     | IPure (IGallinaNamed ?name) =>
       let id := string_to_ident name in
       let id := fresh id in
       iPure Htmp as id
+    (* the token "*" causes iNamed to recurse *)
     | IForall => iNamed_go Htmp
     | _ => iDestruct (from_named with Htmp) as pat
     end;
@@ -148,7 +156,12 @@ Local Ltac iNameHyp_go H :=
     fail "iNameHyp: hypothesis" H "is not a named"
   | _ => fail 1 "iNameHyp: hypothesis" H "not found"
   end with
-(* this is a super-simple but maybe non-performant implementation *)
+  (* The core of iNamed is destructing and recursing over the resulting
+   conjuncts; the implementation currently just calls iDestruct and then
+   attempts to name the new anonymous hypotheses, but a better implementation
+   would probably use the IntoSep typeclass and look for names right then. We
+   might also want a dedicated typeclass that can provide names, in case they
+   need to come from elsewhere (the main test case for this is PropRestore). *)
   (* Ltac *) iNamedDestruct H :=
   let rec go H :=
       first [iNameHyp_go H
@@ -159,20 +172,27 @@ Local Ltac iNameHyp_go H :=
               iNameHyp_go Htmp1; go Htmp2
             | idtac ]
   in go H with
+  (* this is the top-level iNamed H tactic. *)
   (* Ltac *) iNamed_go H :=
   lazymatch H with
   | 1%Z => let i := iFresh in iIntros i; iNamed_go i
   | 1%nat => let i := iFresh in iIntros i; iNamed_go i
-  | _ => try iDeexHyp H;
-         iNamedDestruct H
+  | _ => (* first destruct the existentials, then split the conjuncts (but only
+    these two levels, since the user might destruct only a few levels deep) *)
+    try iDeexHyp H;
+    iNamedDestruct H
   end.
 
-Ltac iNameHyp H := iNameHyp_go H.
+Tactic Notation "iNamed" constr(H) := iNamed_go H.
 
+(* iNamed names any hypotheses that are anonymous but have a name. This is
+primarily useful when you for some reason need to introduce using ? and then
+separately name (this can arise if [iNamed] isn't doing the right thing, or
+wouldn't work for all the conjuncts) *)
 Tactic Notation "iNamed" :=
   repeat match goal with
          | |- context[Esnoc _ ?i (named ?name ?P)] =>
-           iNameHyp i
+           iNameHyp_go i
          (* TODO: debug this for destructing anonymous composites *)
          (* | |- context[Esnoc _ ?i ?P] =>
            lazymatch P with
@@ -180,16 +200,15 @@ Tactic Notation "iNamed" :=
            end *)
          end.
 
-Ltac iDeex :=
-  repeat match goal with
-         | |- context[Esnoc _ ?i (bi_exist (fun x => _))] =>
-           iDeex_go
-         end.
-
-Tactic Notation "iNamed" constr(H) := iNamed_go H.
+(* iNameHyp only introduces names for a single hypothesis (and is usually not
+useful on its own) *)
+Ltac iNameHyp H := iNameHyp_go H.
 
 Tactic Notation "iNamedAccu" :=
-  iStartProof; eapply tac_named_accu; [cbv [env_to_named_prop env_to_named_prop_go]; reduction.pm_reflexivity || fail "iNamedAccu: not an evar"].
+  iStartProof; eapply tac_named_accu; [
+    first [ cbv [ env_to_named_prop env_to_named_prop_go ];
+            reduction.pm_reflexivity | fail 1 "iNamedAccu: not an evar" ]
+  ].
 
 Ltac iRed :=
   lazymatch goal with
@@ -222,8 +241,11 @@ Ltac iFrameNamed :=
   end.
 
 Ltac prove_named :=
-  repeat rewrite -to_named.
+  iEval (rewrite /named).
 
+(* this is crucially placed just below level 80, which is where ∗ is, so that
+you can change [P ∗ Q] to ["HP" ∷ P ∗ "HQ" ∷ Q] without adding parentheses to
+attach the names correctly *)
 Notation "name ∷ P" := (named name P%I) (at level 79).
 
 (* TODO: maybe we should move tests out *)
@@ -409,7 +431,7 @@ Module tests.
 
     Example test_nested_destruct Ψ :
       ⊢ ("%wf" ∷ ⌜True⌝ ∗
-      destruct ∷ ∃ x, "psi" ∷ Ψ x) -∗
+      "*" ∷ ∃ x, "psi" ∷ Ψ x) -∗
       ∃ x, Ψ x.
     Proof.
       iIntros "H"; iNamed "H".

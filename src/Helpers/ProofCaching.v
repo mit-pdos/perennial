@@ -107,15 +107,21 @@ Section bi.
   Proof.
     unseal.
     iIntros "#HR !>".
-    rewrite env_to_named_prop_unname.
-    rewrite env_to_prop_sound.
-    auto.
+    rewrite env_to_named_prop_sound //.
   Qed.
 End bi.
 
 Arguments cached {PROP R} c.
 Arguments cache_names {PROP R} c.
 Arguments cache_prop {PROP R} c.
+
+(* following the pattern from proofmode/reduction.v *)
+Declare Reduction cached_eval :=
+  cbv [ env_to_named_prop env_to_named_prop_go cache_prop ].
+Ltac cached_eval t :=
+  eval cached_eval in t.
+Ltac cached_reduce :=
+  match goal with |- ?u => let v := cached_eval u in convert_concl_no_check v end.
 
 Ltac iCache_go P Hs pat :=
   let Hs := words Hs in
@@ -126,7 +132,7 @@ Ltac iCache_go P Hs pat :=
   | Some (?Δ, _) => let Γs := (eval cbv [env_spatial] in Δ.(env_spatial)) in
                     iAssert (cached (Cache P Γs Hs)) as pat;
                     [ iApply cached_make; iModIntro;
-                      cbv [env_to_named_prop env_to_named_prop_go cache_prop];
+                      cached_reduce;
                       iNamed 1
                     | ]
   | None => fail 1 "hypotheses not found"

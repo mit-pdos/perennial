@@ -245,7 +245,7 @@ Proof.
   iIntros (v) "Hwand HΔ".
   iApply "Hwand".
   iDestruct (envs_clear_spatial_sound with "HΔ") as "[Hp Hs]".
-  rewrite env_to_named_prop_unname env_to_prop_sound.
+  rewrite env_to_named_prop_sound.
   iAssumption.
 Qed.
 
@@ -260,7 +260,7 @@ Tactic Notation "wpc_frame" :=
                 [ (* cache hypothesis match *)
                   reflexivity
                 | (* remaining wp *)
-                cbv [env_to_named_prop env_to_named_prop_go cache_prop]
+                cached_reduce
                 ]
               ]
             end
@@ -274,7 +274,7 @@ Ltac wpc_frame_go d pat :=
   apply (tac_wpc_wp_frame _ d js);
   [ reduction.pm_reduce; split; [ try iFromCache (* crash condition from framed hyps *)
                                 | (* remaining wp *)
-                                cbv [env_to_named_prop env_to_named_prop_go cache_prop]
+                                cached_reduce
   ] ].
 
 Tactic Notation "wpc_frame" constr(pat) := wpc_frame_go base.Left pat.

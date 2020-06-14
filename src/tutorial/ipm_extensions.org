@@ -9,7 +9,7 @@ Perennial is a research project on verified concurrent storage systems.
 named propositions
 ** [[file:ipm_extensions.v::first extension][Coq demo]]
 ** "simple" example [[file:../program_proof/wal/sliding_proof.v::is_sliding][sliding abstraction relation]]
-** really hairy usage [[file:../program_proof/wal/invariant.v::Definition memLog_linv][wal memLog_linv]]
+** really hairy usage [[file:../program_proof/wal/invariant.v::Definition memLog_linv γ][wal memLog_linv]]
 ** examples in Hoare logic [[file:../program_proof/examples/inode_proof.v::wpc_Inode__Append][inode append wpc]], [[file:../program_proof/examples/inode_proof.v::wpc_Write_fupd][applying wpc_Write]]
 * iCache
 caching subproofs
