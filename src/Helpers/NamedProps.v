@@ -35,6 +35,10 @@ From iris_string_ident Require Import ltac2_string_ident.
 Section named.
   Context {PROP:bi}.
 
+  (* Named props are just the underlying prop. We used to have this sealed, but
+  it turns out that this inconveniently required many forwarding typeclass
+  instances (for things like [IntoPure], [Persistent], and framing) and we
+  didn't run into any issues making it completely transparent. *)
   Definition named (name: string) (P: PROP): PROP := P.
 
   Theorem to_named name P : P -∗ named name P.

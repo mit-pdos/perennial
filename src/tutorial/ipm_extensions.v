@@ -31,25 +31,29 @@ Section bi.
   (* there are several problems this solves:
     - you're about to destruct a definition, but don't remember what's inside,
       so you have to print it to come up with the right intro pattern
-    - the names used for a definition are repeated in every into pattern rather
-      than colocated with the definition (where you can see what each conjunct
-      is)
+    - the names used for a definition are repeated in every intro pattern,
+      rather than being stated once and next to the definition they introduce
     - when you change a definition all intro patterns that reference it have to
       be updated, sometimes with an obscure change (eg, add a new name in the
       5th position)
   *)
 
-  Definition is_bar :=
-    ("#HQ" ∷ □Q ∗
-     "HR" ∷ R)%I.
 
-  Theorem is_bar_read_Q :
-    is_bar -∗ □Q.
+
+
+  (* one application: saving the context *)
+  Theorem save_context_iNamedAccu :
+    P ∗ Q -∗ P ∗ Q.
   Proof.
-    iNamed 1.
-    iModIntro.
-    iExact "HQ".
+    iIntros "(HP & HQ)".
+    iApply bi.wand_elim_r.
+    iSplitL; [ iNamedAccu | ]. (* we store the context, like [iAccu]... *)
+    iNamed 1. (* ...but then we can get it back *)
+    iFrame.
   Qed.
+
+
+
 
 
   (** * second extension: proof caching *)
@@ -78,10 +82,16 @@ Section bi.
   Qed.
 
 
+
+
   (** * third extension: restore destructed proposition *)
   Import Perennial.Helpers.PropRestore.
 
   (* note that this isn't fully implemented *)
+
+  Definition is_bar :=
+    ("#HQ" ∷ □Q ∗
+     "HR" ∷ R)%I.
 
   (* here's the problem we're trying to solve: *)
   Theorem bar_acc_R_bad_proof :

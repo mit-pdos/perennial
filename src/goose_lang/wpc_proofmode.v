@@ -214,13 +214,18 @@ Proof.
   iAssumption.
 Qed.
 
+(* combines using [wpc_frame Hs] with [iFromCache], simultaneously framing and
+   proving the crash condition using a cache *)
 Lemma tac_wpc_wp_frame_cache `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} (Φc: iProp Σ) i (* name of cache *) (c: cache Φc)
       Δ stk k E1 E2 e (Φ: _ → iProp Σ)  :
   envs_lookup i Δ = Some (true, cached c) →
   match envs_split Left c.(cache_names) Δ with
-  | Some (Δ1, Δ2) => Δ1.(env_spatial) = c.(cache_prop) ∧
-                     envs_entails Δ2 (WP e @ stk; E1 {{ v, (env_to_named_prop Δ1.(env_spatial) -∗ Φ v)%I }})
+  | Some (Δ1, Δ2) =>
+    (* we use the cache hypotheses [Δ1] for the crash condition... *)
+    Δ1.(env_spatial) = c.(cache_prop) ∧
+    envs_entails Δ2 (* and the remainder [Δ2] to prove a wp for the same [e] *)
+      (WP e @ stk; E1 {{ v, (env_to_named_prop Δ1.(env_spatial) -∗ Φ v)%I }})
   | None => False
   end →
   envs_entails Δ (WPC e @ stk; k; E1; E2 {{ Φ }} {{ Φc }}).
