@@ -1,5 +1,10 @@
 #+TITLE: IPM extensions
 
+You can follow along in the demo file associated with this tutorial by just
+building that file, with ~make -j4 src/tutorial/ipm_extensions.vo~ (should only
+take a couple minutes). You will need to initialize the submodules (~git
+submodule init~) to get stdpp, iris, and string-ident.
+
 * Introduction
 Perennial is a research project on verified concurrent storage systems.
 ** Iris (concurrency)
