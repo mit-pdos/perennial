@@ -336,7 +336,15 @@ Tactic Notation "wpc_apply_core" open_constr(lem) tactic(tac) :=
       reshape_expr e ltac:(fun K e' =>
         wpc_bind_core K; tac H) ||
       lazymatch iTypeOf H with
-      | Some (_,?P) => fail "wp_apply: cannot apply" P
+      | Some (_,?P) =>
+        lazymatch P with
+        | wpc _ ?k' ?E1' _ ?e' _ _ =>
+          first [ unify k k' | fail 1 "wpc_apply: cannot apply, k mismatch:" k' "≠" k ];
+          first [ unify E1 E1' | fail 1 "wpc_apply: cannot apply E1 mismatch:" E1' "≠" E1 ];
+          first [ unify e e' | fail 1 "wpc_apply: cannot apply" P ];
+          fail "wpc_apply: cannot apply" P
+        | _ => fail "wpc_apply: cannot apply" P "(not a wpc)"
+        end
       end
     | _ => fail "wpc_apply: not a 'wpc'"
     end).
