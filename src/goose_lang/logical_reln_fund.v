@@ -12,6 +12,8 @@ From Perennial.Helpers Require Import Qextra.
 From Perennial.Helpers Require List.
 From Perennial.goose_lang Require Import logical_reln_defns.
 
+Set Default Proof Using "Type".
+
 Section pfs.
 Context {ext: ext_op}.
 Context {ffi: ffi_model}.

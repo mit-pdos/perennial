@@ -29,7 +29,6 @@ Theorem wp_MkLog_init d (bs: list Block) :
 Proof.
 Admitted.
 
-Set Nested Proofs Allowed.
 Lemma diskEnd_is_get_at_least (γ: circ_names) q (z: Z):
   diskEnd_is γ q z ==∗ diskEnd_is γ q z ∗ diskEnd_at_least γ z.
 Proof.

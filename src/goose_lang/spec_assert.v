@@ -9,6 +9,8 @@ From Perennial.program_logic Require Export spec_assert language_ctx.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import tactics notation lifting.
 
+Set Default Proof Using "Type".
+
 (* Wrapper around ffi_models and so on to avoid clashes between the ffi for
    the spec and the concrete *)
 

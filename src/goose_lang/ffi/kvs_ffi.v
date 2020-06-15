@@ -5,6 +5,8 @@ From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
 From Perennial.algebra Require Import gen_heap_names.
 
+Set Default Proof Using "Type".
+
 (* TODO: move this out, it's completely general *)
 (* Generalize life cycle of object state *)
 Section recoverable.
