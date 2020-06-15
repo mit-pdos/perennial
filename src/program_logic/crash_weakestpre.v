@@ -70,17 +70,17 @@ such that *if* one has a single-character mask (e.g. [E]), the second line
 should align with the binder(s) on the first line. *)
 Notation "'WPC' e @ s ; k ; E1 ; E2 {{ v , Q } } {{ R } }" := (wpc s k%nat E1 E2 e%E (λ v, Q) R)
   (at level 20, e, Q, R at level 200,
-   format "'[' 'WPC'  e  '/' '[          ' @  s ;  k ;  E1 ;  E2  {{  v ,  Q  } }  {{ R } } ']' ']'") : bi_scope.
+   format "'[' 'WPC'  e  '/' '[          ' @  s ;  k ;  E1 ;  E2  {{  v ,  Q  } }  {{  R  } } ']' ']'") : bi_scope.
 Notation "'WPC' e @ k ; E1 ; E2 {{ v , Q } } {{ R } }" := (wpc NotStuck k%nat E1 E2 e%E (λ v, Q) R)
   (at level 20, e, Q, R at level 200,
-   format "'[' 'WPC'  e  '/' '[       ' @  k ;  E1 ; E2  {{  v ,  Q  } } {{ R } } ']' ']'") : bi_scope.
+   format "'[' 'WPC'  e  '/' '[       ' @  k ;  E1 ; E2  {{  v ,  Q  } }  {{  R  } } ']' ']'") : bi_scope.
 
 (* Texan triples *)
 Notation "'{{{' P } } } e @ s ; k ; E1 ; E2 {{{ x .. y , 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc,
       P -∗ (Qc -∗ Φc) ∧ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }})%I
     (at level 20, x closed binder, y closed binder,
-     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  s ; k ;  E1 ; E2 '/' {{{  x  ..  y ,  RET  pat ;  Q  } } } '/' {{{ Qc } } } ']'") : bi_scope.
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  s ; k ;  E1 ; E2 '/' {{{  x  ..  y ,  RET  pat ;  Q  } } } '/' {{{  Qc  } } } ']'") : bi_scope.
 (*
 Notation "'{{{' P } } } e @ E {{{ x .. y , 'RET' pat ; Q } } }" :=
   (□ ∀ Φ,
@@ -107,7 +107,7 @@ Notation "'{{{' P } } } e ? {{{ x .. y , 'RET' pat ; Q } } }" :=
 Notation "'{{{' P } } } e @ s ; k ; E1 ; E2 {{{ 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc, P -∗ (Qc -∗ Φc) ∧ ▷ (Q -∗ Φ pat%V) -∗ WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }})%I
     (at level 20,
-     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  s ; k ;  E1 ; E2 '/' {{{  RET  pat ;  Q  } } } '/' {{{ Qc } } } ']'") : bi_scope.
+     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  s ; k ;  E1 ; E2 '/' {{{  RET  pat ;  Q  } } } '/' {{{  Qc  } } } ']'") : bi_scope.
 (*
 Notation "'{{{' P } } } e @ E {{{ 'RET' pat ; Q } } }" :=
   (□ ∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e @ E {{ Φ }})%I
