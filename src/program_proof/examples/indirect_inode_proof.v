@@ -780,18 +780,28 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
-(*
-Theorem wp_Inode__mkHdr l addr_s addrs :
-  length addrs ≤ MaxBlocks ->
-  {{{ "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
-      "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
+Theorem wp_Inode__mkHdr l (sz numInd : u64) dirAddrs indAddrs direct_s indirect_s:
+  (length(dirAddrs) = int.nat maxDirect ∧
+  length(indAddrs) = int.nat maxIndirect ∧
+  int.val sz < MaxBlocks ∧
+  (int.val sz > maxDirect -> int.val numInd = Z.add ((int.val sz - maxDirect) `div` indirectNumBlocks) 1) ∧
+  (int.val sz <= maxDirect -> int.val numInd = 0)) ->
+  {{{
+    "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
+    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
+    "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
+    "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.nat sz) dirAddrs) ∗
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs)
   }}}
     Inode__mkHdr #l
-  {{{ s b extra, RET (slice_val s);
-      is_block s 1 b ∗
-      ⌜Block_to_vals b = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
-      "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
-      "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
+  {{{ s hdr, RET (slice_val s);
+    is_block s 1 hdr ∗
+    "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ (EncUInt64 <$> indAddrs) ++ [EncUInt64 numInd])⌝ ∗
+    "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
+    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
+    "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
+    "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.nat sz) dirAddrs) ∗
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs)
   }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ"; iNamed "Hpre".
@@ -799,17 +809,57 @@ Proof.
   wp_apply wp_new_enc; iIntros (enc) "[Henc %]".
   wp_pures.
   wp_loadField.
-  iDestruct (is_slice_sz with "Haddrs") as %Hlen.
-  autorewrite with len in Hlen.
-  wp_apply wp_slice_len.
+  iDestruct (is_slice_sz with "Hdirect") as %HDirlen.
+  iDestruct (is_slice_sz with "Hindirect") as %HIndlen.
+  autorewrite with len in HDirlen.
+  autorewrite with len in HIndlen.
+  destruct Hbound as [HdirAddrsLen [HindAddrsLen [Hszmax [HnumInd1 HnumInd2]]]].
+
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
   iIntros "Henc".
+  rewrite app_nil_l.
   wp_loadField.
-  iDestruct (is_slice_split with "Haddrs") as "[Haddrs Hcap]".
-  wp_apply (wp_Enc__PutInts with "[$Henc $Haddrs]").
-  { word. }
-  iIntros "[Henc Haddrs]".
+
+  iDestruct (is_slice_split with "Hdirect") as "[Hdirect Hcap]".
+  wp_apply (wp_Enc__PutInts with "[$Henc $Hdirect]").
+  { admit. }
+
+  iIntros "[Henc Hdirect]".
+  wp_loadField.
+  wp_apply wp_slice_len; wp_pures.
+  wp_call.
+  wp_call.
+  change (#0) with (zero_val (baseT uint64BT)).
+  wp_apply wp_ref_of_zero; auto.
+
+  iIntros (i) "Hi".
+  wp_let.
+  wp_pures.
+
+  wp_apply (wp_forUpto (λ i, "%Hiupper_bound" ∷ ⌜int.val i < ((500 - int.val direct_s.(Slice.sz)))⌝ ∗
+                             "Henc" ∷ (is_enc enc ([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat sz) dirAddrs))
+                             (int.val 4096 - 8 - 8 * length (take (int.nat sz) dirAddrs)))
+                       ) _ _
+                     0 (500 - int.val direct_s.(Slice.sz)) _
+              with "[] [Henc]").
+  {
+    rewrite /maxDirect in HdirAddrsLen. rewrite HdirAddrsLen in HDirlen. word.
+  }
+  {
+    iIntros; iModIntro; iIntros (ϕ0) "Hiupper_bound Hϕ0".
+    wp_pures.
+    iApply "Hϕ0".
+  }
+    word.
+    rewrite HDirlen.
+  }
+  change (#0) with (zero_val (baseT uint64BT)).
+  wp_apply wp_forUpto.
+  wp_load.
+  wp_apply (wp_Enc__padInts with "[$Henc $Hdirect]").
+
+
   iDestruct (is_slice_split with "[$Haddrs $Hcap]") as "Haddrs".
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s) "[Hs %]".
