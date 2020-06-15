@@ -29,6 +29,7 @@ Section goose.
 
   Let N := nroot.@"single_inode".
   Let allocN := nroot.@"allocator".
+  Let inodeN := nroot.@"inode".
   Context (P: s_inode.t → iProp Σ).
 
   Definition Pinode γblocks γused (s: inode.t): iProp Σ :=
@@ -69,6 +70,52 @@ Section goose.
     {{{ ∃ σ', P σ' }}}.
   Proof.
   Abort.
+
+  Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
+    (S k < k')%nat →
+    {{{ "#Hinode" ∷ is_single_inode l sz k' ∗
+        "Hfupd" ∷ (∀ σ mb,
+                      ⌜mb = σ !! int.nat i⌝ -∗
+                      ▷ P σ ={⊤ ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
+    }}}
+      SingleInode__Read #l #i @ NotStuck; LVL (S (S k)); ⊤;E2
+    {{{ (s:Slice.t) mb, RET (slice_val s);
+        match mb with
+        | None => ⌜s = Slice.nil⌝
+        | Some b => is_block s 1 b
+        end ∗ Q mb }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    wpc_call.
+    { crash_case; auto. }
+    iCache with "HΦ Hfupd".
+    { crash_case; auto. }
+    iNamed "Hinode".
+    wpc_bind (struct.loadF _ _ _); wpc_frame.
+    wp_loadField.
+    iNamed 1.
+    wpc_apply (wpc_Inode__Read Q with "[$Hinode Hfupd]").
+    { lia. }
+    { clear.
+      iIntros (σ σ' mb) "[ [-> ->] HPinode]".
+      iInv "Hinv" as "Hinner".
+      iDestruct "Hinner" as (σ' used) "[>Hsinv HP]".
+      iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
+      iNamed "Hsinv".
+      iNamed "HPinode".
+      iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
+      iModIntro.
+      iFrame.
+      iSplitL; auto.
+      iNext.
+      iExists _, _; iFrame. }
+    iSplit.
+    - iIntros "_".
+      crash_case; auto.
+    - iIntros "!>" (s mb) "[Hb HQ]".
+      iApply "HΦ"; iFrame.
+  Qed.
 
   Lemma alloc_used_reserve s u :
     u ∈ alloc.free s →

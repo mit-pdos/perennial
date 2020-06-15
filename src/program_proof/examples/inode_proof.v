@@ -253,7 +253,7 @@ Theorem wpc_Inode__Read {k E2} {l γ k' P addr} {off: u64} Q :
     Inode__Read #l #off @ NotStuck; LVL (S (S k)); ⊤; E2
   {{{ s mb, RET slice_val s;
       (match mb with
-       | Some b => ∃ s, is_block s 1 b
+       | Some b => is_block s 1 b
        | None => ⌜s = Slice.nil⌝
        end) ∗ Q mb }}}
     {{{ True }}}.
