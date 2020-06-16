@@ -278,7 +278,7 @@ Section goose.
         "HQc" ∷ (Q -∗ Qc) ∗
         "Hfupd" ∷ ((∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) ∧ Qc) }}}
       RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
-    {{{ RET #(); Q }}}
+    {{{ RET #(); Q ∗ is_block s q b }}}
     {{{ Qc }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
@@ -371,7 +371,7 @@ Section goose.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
     iNamed 1.
-    iApply "HΦ"; auto.
+    iApply "HΦ"; iFrame.
   Qed.
 
 End goose.
