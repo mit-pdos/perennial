@@ -913,68 +913,26 @@ Proof.
 
   wp_apply (wp_padInts enc (U64 (10 - int.val (indirect_s.(Slice.sz))))
                ((([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat sz) dirAddrs)) ++
-               (EncUInt64 <$> replicate (int.nat (500 - int.val direct_s.(Slice.sz))) 0)) ++
+               (EncUInt64 <$> replicate (int.nat (500 - int.val direct_s.(Slice.sz))) (U64 0))) ++
                (EncUInt64 <$> take (int.nat numInd) indAddrs))
-               (4008 - 8 * length (take (int.nat numInd) indAddrs)) with "Henc").
+               (4008 - 8 * length (take (int.nat numInd) indAddrs)) with "[Henc]").
   {
     iSplitR "Henc"; auto.
     iPureIntro.
     split; admit.
   }
+  iIntros "Henc".
+  replace (int.val (4008 - 8 * length (take (int.nat numInd) indAddrs)) -
+           8 * int.nat (10 - int.val indirect_s.(Slice.sz))) with 3928.
+  2: admit.
 
-
-  wp_call.
-  wp_call.
-  change (#0) with (zero_val (baseT uint64BT)).
-  wp_apply wp_ref_of_zero; auto.
-
-  iIntros (i0) "Hi0".
-  wp_let.
-  wp_pures.
-
- wp_apply (wp_forUpto (λ i, "%Hiupper_bound" ∷ ⌜int.val i <= ((10 - int.val indirect_s.(Slice.sz)))⌝ ∗
-                             "Henc" ∷ is_enc enc ([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat numInd) dirAddrs))
-                             (int.val 4096 - 8 - 8 * (length (take (int.nat numInd) indAddrs)))
-                       )%I _ _
-                     0 (10 - int.val indirect_s.(Slice.sz)) _
-              with "[] [Henc Hi] [-]").
-  {
-    rewrite /maxIndirect in HindAddrsLen. rewrite HindAddrsLen in HIndlen.
-    admit.
-  }
-  {
-    iIntros. iModIntro. iIntros (ϕ0) "H Hϕ0".
-    iDestruct "H" as "[H [Hi %Hibound]]".
-    iNamed "H".
-    wp_pures.
-    wp_apply (wp_Enc__PutInt with "Henc").
-    {
-      admit.
-    }
-    iIntros "Henc".
-    wp_pures.
-    iApply "Hϕ0".
-    iFrame.
-
-    iSplitR "Henc".
-    - iPureIntro. (*Need to show doesn't overflow*) admit.
-    - admit.
-  }
-  {
-    iSplitL "Henc"; iFrame; auto.
-    - iPureIntro. admit.
-  }
-
-  iModIntro.
-  iIntros "[H Hi]".
-  iNamed "H".
   wp_pures.
   wp_loadField.
-
-
-
-
-
+  wp_apply wp_slice_len; wp_pures.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
 
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s) "[Hs %]".
@@ -989,11 +947,12 @@ Proof.
       rewrite H; reflexivity.
   - iPureIntro.
     rewrite list_to_block_to_vals; len.
-    + rewrite app_nil_l.
+    + (*TODO show that dir/ind have 0s at end*)
       repeat (f_equal; try word).
+      admit.
     + rewrite H0.
       rewrite H; reflexivity.
-Qed.
+Admitted.
 
 Inductive AppendStatus :=
 | AppendOk
@@ -1017,6 +976,7 @@ Proof.
   abstract (intros [] []; auto; inversion 1).
 Defined.
 
+(*
 Theorem wp_Inode__Append {l γ P} (Q: AppendStatus -> iProp Σ) (a: u64) (b0: Block) :
   {{{ is_inode l γ P ∗ int.val a d↦ b0 ∗
       (∀ σ σ' (status: AppendStatus),
