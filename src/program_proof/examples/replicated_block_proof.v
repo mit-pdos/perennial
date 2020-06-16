@@ -218,8 +218,8 @@ Section goose.
     ∀ Φ Φc,
         "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hfupd" ∷ (Φc (* crash condition before lin.point *) ∧
-                   ▷ (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P σ ∗ ((∀ s, is_block s 1 σ -∗ Φ (slice_val s))
-                                                  ∧ Φc (* crash condition after lin.point *)))) -∗
+                   ▷ (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P σ ∗ (Φc (* crash condition after lin.point *) ∧
+                                                 (∀ s, is_block s 1 σ -∗ Φ (slice_val s))))) -∗
       WPC RepBlock__Read #l #primary @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
@@ -255,7 +255,7 @@ Section goose.
     { iIntros "Hd".
       iSpecialize ("Hlkinv" with "Hd").
       iSplitL "HQ".
-      { by iRight in "HQ". }
+      { by iLeft in "HQ". }
       iExists _; iFrame.
       iApply rblock_linv_to_cinv; iFrame. }
     iIntros (s) "(Haddr'&Hb)".
@@ -267,7 +267,7 @@ Section goose.
     { iExists _; iFrame. }
     iIntros "His_locked".
     iCache Φc with "HQ".
-    { by iRight in "HQ". }
+    { by iLeft in "HQ". }
     iSplit; first by iFromCache.
     wpc_pures.
     wpc_frame.
@@ -276,7 +276,7 @@ Section goose.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
     wp_pures.
     iNamed 1.
-    iLeft in "HQ".
+    iRight in "HQ".
     iApply "HQ"; iFrame.
   Qed.
 
@@ -284,7 +284,8 @@ Section goose.
     (S k < k')%nat →
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
         "HQc" ∷ (∀ σ, Q σ -∗ Qc) ∗ (* crash condition after "linearization point" *)
-        "Hfupd" ∷ ((∀ σ, P σ ={⊤ ∖ ↑N}=∗ P σ ∗ Q σ) ∧ Qc (* crash condition before "linearization point" *)) }}}
+        "Hfupd" ∷ (Qc (* crash condition before "linearization point" *) ∧
+                   (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P σ ∗ Q σ)) }}}
       RepBlock__Read #l #primary @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ s b, RET (slice_val s); is_block s 1 b ∗ Q b }}}
     {{{ Qc }}}.
@@ -293,11 +294,11 @@ Section goose.
     iApply wpc_RepBlock__Read'; first done.
     iFrame "Hrb".
     iSplit.
-    - iRight in "Hfupd". iLeft in "HΦ". iApply "HΦ". done.
-    - iNext. iIntros (σ) "HP". iLeft in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
+    - iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done.
+    - iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
       iModIntro. iFrame "HP". iSplit.
-      + iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
       + iLeft in "HΦ". iApply "HΦ". iApply "HQc". done.
+      + iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
   Theorem wpc_RepBlock__Write (Q: iProp Σ) (Qc: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
