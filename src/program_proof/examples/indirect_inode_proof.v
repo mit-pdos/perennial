@@ -178,13 +178,6 @@ Proof.
   unfold is_inode_durable_with.
   iFrame "Hhdr".
   repeat iSplit; auto.
-  - cbv [inode.addr inode.blocks big_sepL2].
-    rewrite firstn_nil.
-    unfold maxDirect.
-    rewrite Min.min_0_r.
-    simpl in *.
-    auto.
-  - rewrite take_0. simpl in *; auto.
 Qed.
 
 Theorem wp_Open {d:loc} {addr σ P} :
