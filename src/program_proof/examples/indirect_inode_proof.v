@@ -780,6 +780,63 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
+Theorem wp_padInts enc (n: u64) (encoded : list encodable) (off: Z):
+  {{{
+    ⌜ int.val 0 ≤ int.val n ∧ off >= 8*(int.val n) ⌝ ∗
+    is_enc enc encoded off
+  }}}
+    padInts (EncM.to_val enc) #n
+  {{{ RET #();
+    is_enc enc (encoded ++ (EncUInt64 <$> replicate (int.nat n) (U64 0))) (int.val off-(8*int.nat n))
+  }}}.
+Proof.
+  iIntros (ϕ) "[%Hi Henc] Hϕ".
+  wp_call.
+  wp_call.
+  change (#0) with (zero_val (baseT uint64BT)).
+  wp_apply wp_ref_of_zero; auto.
+  iIntros (i) "Hi".
+  wp_let.
+
+  wp_apply (wp_forUpto (λ i, "%Hiupper_bound" ∷ ⌜int.val i <= int.val n⌝ ∗
+                       "Henc" ∷ is_enc enc (encoded ++ (EncUInt64 <$> (replicate (int.nat i) (U64 0))))
+                       (off - (8 * int.nat i)))%I _ _
+                    0 n
+            with "[] [Henc Hi] [-]").
+  {
+    word.
+  }
+  {
+    iIntros. iModIntro. iIntros (ϕ0) "H Hϕ0".
+    iDestruct "H" as "[H [Hi %Hibound]]"
+.
+    iNamed "H".
+    wp_pures.
+    wp_apply (wp_Enc__PutInt with "Henc").
+    {
+      admit.
+    }
+    iIntros "Henc".
+    wp_pures.
+    iApply "Hϕ0".
+    iFrame.
+    iSplitR "Henc".
+    - iPureIntro. (*Need to show doesn't overflow*) admit.
+    - (*Need to show that replicate can turn into append*)admit.
+  }
+  {
+    iSplitL "Henc"; iFrame; auto.
+    iSplitR "Henc".
+    - iPureIntro. admit.
+    - admit. (*need to show 0 replicate and 0 addition*)
+  }
+
+  iModIntro.
+  iIntros "[H Hi]".
+  iNamed "H".
+  iApply "Hϕ"; iFrame.
+Admitted.
+
 Theorem wp_Inode__mkHdr l (sz numInd : u64) dirAddrs indAddrs direct_s indirect_s:
   (length(dirAddrs) = int.nat maxDirect ∧
   length(indAddrs) = int.nat maxIndirect ∧
@@ -828,39 +885,97 @@ Proof.
   iIntros "[Henc Hdirect]".
   wp_loadField.
   wp_apply wp_slice_len; wp_pures.
+
+  wp_apply (wp_padInts enc (U64 (500 - int.val (direct_s.(Slice.sz))))
+                       ([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat sz) dirAddrs))
+                       (int.val 4096 - 8 - 8 * length (take (int.nat sz) dirAddrs)) with "[Henc]").
+  {
+    iSplitR "Henc"; auto.
+    iPureIntro.
+    split; admit.
+  }
+
+  iIntros "Henc".
+  replace (int.val (int.val 4096 - 8 - 8 * length (take (int.nat sz) dirAddrs)) -
+           8 * int.nat (500 - int.val direct_s.(Slice.sz))) with 4008.
+  2: admit.
+
+  wp_pures.
+  wp_loadField.
+
+  iDestruct (is_slice_split with "Hindirect") as "[Hindirect Hcapind]".
+  wp_apply (wp_Enc__PutInts with "[$Henc $Hindirect]").
+  { admit. }
+
+  iIntros "[Henc Hindirect]".
+  wp_loadField.
+  wp_apply wp_slice_len; wp_pures.
+
+  wp_apply (wp_padInts enc (U64 (10 - int.val (indirect_s.(Slice.sz))))
+               ((([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat sz) dirAddrs)) ++
+               (EncUInt64 <$> replicate (int.nat (500 - int.val direct_s.(Slice.sz))) 0)) ++
+               (EncUInt64 <$> take (int.nat numInd) indAddrs))
+               (4008 - 8 * length (take (int.nat numInd) indAddrs)) with "Henc").
+  {
+    iSplitR "Henc"; auto.
+    iPureIntro.
+    split; admit.
+  }
+
+
   wp_call.
   wp_call.
   change (#0) with (zero_val (baseT uint64BT)).
   wp_apply wp_ref_of_zero; auto.
 
-  iIntros (i) "Hi".
+  iIntros (i0) "Hi0".
   wp_let.
   wp_pures.
 
-  wp_apply (wp_forUpto (λ i, "%Hiupper_bound" ∷ ⌜int.val i < ((500 - int.val direct_s.(Slice.sz)))⌝ ∗
-                             "Henc" ∷ (is_enc enc ([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat sz) dirAddrs))
-                             (int.val 4096 - 8 - 8 * length (take (int.nat sz) dirAddrs)))
-                       ) _ _
-                     0 (500 - int.val direct_s.(Slice.sz)) _
-              with "[] [Henc]").
+ wp_apply (wp_forUpto (λ i, "%Hiupper_bound" ∷ ⌜int.val i <= ((10 - int.val indirect_s.(Slice.sz)))⌝ ∗
+                             "Henc" ∷ is_enc enc ([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat numInd) dirAddrs))
+                             (int.val 4096 - 8 - 8 * (length (take (int.nat numInd) indAddrs)))
+                       )%I _ _
+                     0 (10 - int.val indirect_s.(Slice.sz)) _
+              with "[] [Henc Hi] [-]").
   {
-    rewrite /maxDirect in HdirAddrsLen. rewrite HdirAddrsLen in HDirlen. word.
+    rewrite /maxIndirect in HindAddrsLen. rewrite HindAddrsLen in HIndlen.
+    admit.
   }
   {
-    iIntros; iModIntro; iIntros (ϕ0) "Hiupper_bound Hϕ0".
+    iIntros. iModIntro. iIntros (ϕ0) "H Hϕ0".
+    iDestruct "H" as "[H [Hi %Hibound]]".
+    iNamed "H".
+    wp_pures.
+    wp_apply (wp_Enc__PutInt with "Henc").
+    {
+      admit.
+    }
+    iIntros "Henc".
     wp_pures.
     iApply "Hϕ0".
+    iFrame.
+
+    iSplitR "Henc".
+    - iPureIntro. (*Need to show doesn't overflow*) admit.
+    - admit.
   }
-    word.
-    rewrite HDirlen.
+  {
+    iSplitL "Henc"; iFrame; auto.
+    - iPureIntro. admit.
   }
-  change (#0) with (zero_val (baseT uint64BT)).
-  wp_apply wp_forUpto.
-  wp_load.
-  wp_apply (wp_Enc__padInts with "[$Henc $Hdirect]").
+
+  iModIntro.
+  iIntros "[H Hi]".
+  iNamed "H".
+  wp_pures.
+  wp_loadField.
 
 
-  iDestruct (is_slice_split with "[$Haddrs $Hcap]") as "Haddrs".
+
+
+
+
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s) "[Hs %]".
   wp_pures.
