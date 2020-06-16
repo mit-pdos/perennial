@@ -99,7 +99,7 @@ Lemma wpc_na_crash_inv_open_modify Γ Qnew s k k' E1 E2 e Φ Φc Q P bset N :
   na_crash_bundle Γ N (LVL k') Q bset -∗
   na_crash_val Γ P bset -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, Qnew v ∗ □ (Qnew v -∗ P)  ∗ (na_crash_bundle Γ N (LVL k') (Qnew v) bset -∗ (Φ v ∧ Φc))}}
+                    {{λ v, Qnew v ∗ □ (Qnew v -∗ P)  ∗ (na_crash_bundle Γ N (LVL k') (Qnew v) bset -∗ (Φc ∧ Φ v))}}
                     {{ Φc ∗ P }})) -∗
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
@@ -127,7 +127,7 @@ Lemma wpc_na_crash_inv_open Γ s k k' E1 E2 e Φ Φc Q P bset N:
   na_crash_bundle Γ N (LVL k') Q bset -∗
   na_crash_val Γ P bset -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, Q ∗ □ (Q -∗ P) ∗ (na_crash_bundle Γ N (LVL k') Q bset -∗ (Φ v ∧ Φc))}}
+                    {{λ v, Q ∗ □ (Q -∗ P) ∗ (na_crash_bundle Γ N (LVL k') Q bset -∗ (Φc ∧ Φ v))}}
                     {{ Φc ∗ P }})) -∗
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.

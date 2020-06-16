@@ -239,7 +239,7 @@ Section goose.
     iIntros "His_locked".
     iCache Φc with "HQ".
     { by iRight in "HQ". }
-    iSplit; last by iFromCache. (* TODO: why is this the second goal? RALF: because use_crash_locked puts [Φc] to the right. *)
+    iSplit; first by iFromCache.
     wpc_pures.
     wpc_frame.
 
@@ -344,7 +344,7 @@ Section goose.
     { crash_case.
       iApply ("HQc" with "[$]"). }
     iCache with "HΦ HQ HQc Hprimary Hbackup HP".
-    { iSplitL "HΦ HQc HQ"; first by iFromCache.
+    { iSplitL "HΦ HQc HQ"; first iFromCache.
       iExists _; iFrame.
       iExists _; iFrame. }
 
@@ -365,7 +365,7 @@ Section goose.
     iSplitR "Hprimary Hbackup HP"; last first.
     { iExists _; iFrame. }
     iIntros "His_locked".
-    iSplit; last by iFromCache.
+    iSplit; first iFromCache.
     wpc_pures.
     wpc_frame.
     wp_loadField.

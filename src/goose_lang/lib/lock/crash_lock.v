@@ -109,7 +109,7 @@ Section proof.
     language.to_val e = None →
     crash_locked (LVL k') Γ lk R Rcrash -∗
     Φc ∧ (R -∗
-         WPC e @ LVL k; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') Γ lk R Rcrash -∗ (Φ v ∧ Φc)) ∗ R }}
+         WPC e @ LVL k; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') Γ lk R Rcrash -∗ (Φc ∧ Φ v)) ∗ R }}
                                          {{ Φc ∗ Rcrash }}) -∗
     WPC e @  (LVL (S (S k))); E1; E2 {{ Φ }} {{ Φc }}.
   Proof.
@@ -150,7 +150,7 @@ Section proof.
     (S k < k')%nat →
     to_val e = None →
     is_crash_lock (LVL k') γ lk R Rcrash ∗
-    (Φc ∧ (R -∗ WPC e @ (LVL k); (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φ #() ∧ Φc) ∗ R }} {{ Φc ∗ Rcrash }})) -∗
+    (Φc ∧ (R -∗ WPC e @ (LVL k); (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φc ∧ Φ #()) ∗ R }} {{ Φc ∗ Rcrash }})) -∗
     WPC (with_lock lk e) @ (LVL (S (S k))) ; ⊤; E {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (??) "(#Hcrash&Hwp)".
@@ -175,18 +175,18 @@ Section proof.
     { iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto. }
     iIntros (?) "(H&?)". iModIntro. iFrame.
     iIntros "Hlocked".
-    iSplit; last first.
-    { iDestruct "H" as "(_&H)". eauto. }
+    iSplit.
+    { iDestruct "H" as "(H&_)". eauto. }
 
     wpc_pures.
-    { iDestruct "H" as "(_&H)". eauto. }
+    { iDestruct "H" as "(H&_)". eauto. }
 
     wpc_frame "H".
-    { iDestruct "H" as "(_&$)". }
+    { iDestruct "H" as "($&_)". }
     iApply (release_spec with "Hlocked").
     { auto. }
     iNext. iIntros "_ H".
-    { iDestruct "H" as "($&_)". }
+    { iDestruct "H" as "(_&$)". }
   Qed.
 
 End proof.

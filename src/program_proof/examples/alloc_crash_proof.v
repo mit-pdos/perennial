@@ -545,7 +545,7 @@ Lemma prepare_reserved_block_reuse R' E R n n' γ e a Φ Φc:
   Φc ∧
   (R -∗
    reserved_block_in_prep γ n' a -∗
-   WPC e @ LVL n; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (reserved_block γ n' a (R' v) -∗ Φ v ∧ Φc) ∗
+   WPC e @ LVL n; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (reserved_block γ n' a (R' v) -∗ Φc ∧ Φ v) ∗
                                            (R' v) ∗
                                            reserved_block_in_prep γ n' a ∗
                                            □ (R' v -∗ block_cinv γ a) }}
@@ -579,7 +579,7 @@ Lemma prepare_reserved_block E1 E2 R n n' γ e a Φ Φc:
   Φc ∧
   (R -∗
    reserved_block_in_prep γ n' a -∗
-   WPC e @ LVL n; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (Φ v ∧ Φc) ∗ block_cinv γ a }}
+   WPC e @ LVL n; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (Φc ∧ Φ v) ∗ block_cinv γ a }}
                                    {{ Φc ∗ block_cinv γ a }}) -∗
   WPC e @  (LVL (S (S n))); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.

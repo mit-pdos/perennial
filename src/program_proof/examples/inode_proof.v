@@ -303,7 +303,7 @@ Proof.
     { iExists _; iFrame.
       iExists _, _; iFrame "∗ %". }
     iIntros "His_locked".
-    iSplit; last iFromCache.
+    iSplit; first iFromCache.
     wpc_pures.
     wpc_frame "HΦ".
     wp_loadField.
@@ -398,7 +398,7 @@ Proof.
   { iExists _; iFrame.
     iExists _, _; iFrame "∗ %". }
   iIntros "His_locked".
-  iSplit; last iFromCache.
+  iSplit; first iFromCache.
   wpc_pures.
   wpc_frame.
   wp_loadField.
@@ -580,7 +580,7 @@ Proof.
       iIntros "Hda".
       iApply block_cinv_free_pred. iExists _; iFrame. }
     iIntros "Hreserved".
-    iSplit; last iFromCache.
+    iSplit; first iFromCache.
     wpc_pures.
     wpc_frame_seq.
     wp_loadField.
@@ -610,7 +610,7 @@ Proof.
       { iExists _; iFrame.
         iExists _, _; iFrame "∗ %". }
       iIntros "His_locked".
-      iSplit; last by iFromCache.
+      iSplit; first iFromCache.
       wpc_pures.
       wpc_frame_seq.
       wp_loadField.
@@ -743,7 +743,7 @@ Proof.
 
       wpc_pures.
       iSplitR "Hused"; last iFromCache.
-      iSplit; last first.
+      iSplit.
       { iSplitL "HΦ HQ HQc"; first iFromCache.
         iExists _; iFrame.
         iExists _; iFrame. }
@@ -751,7 +751,7 @@ Proof.
       { iExists _; iFrame "HP".
         iExists _, _; iFrame "∗ %". }
       iIntros "His_locked".
-      iSplit; last iFromCache.
+      iSplit; first iFromCache.
       wpc_pures.
       wpc_frame_seq.
       wp_loadField.

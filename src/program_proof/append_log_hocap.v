@@ -214,7 +214,7 @@ Proof.
   iSplitR "Hpts HP"; last first.
   { iExists _; iFrame. eauto. }
   iModIntro. iIntros.
-  iSplit; last first.
+  iSplit.
   { iApply "HΦ"; by iApply Hwand. }
   wpc_pures.
   { by iApply Hwand. }
@@ -326,6 +326,7 @@ Proof using PStartedOpening_Timeless.
       { iAlways. iIntros "H". iDestruct "H" as (bs) "(?&?)". iExists _. iFrame.
         simpl. by iApply ptsto_log_crashed. }
       iIntros "Hfull". iSplit.
+      ** iApply "HΦ". by iApply Hwand.
       ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
          { iNext; iExists _; iFrame. }
          iMod (alloc_crash_lock' with "[] Hlock Hfull Hval") as (?) "Hcrash_lock".
@@ -333,7 +334,6 @@ Proof using PStartedOpening_Timeless.
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
          iFrame. iExists _, _. iFrame.
-      ** iApply "HΦ". by iApply Hwand.
   - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
     { iNext. iExists _. iFrame. iExists _, _. iFrame. eauto. }
     iApply step_fupdN_inner_later; auto.
@@ -445,6 +445,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
       { iAlways. iIntros "H". iDestruct "H" as (bs) "(?&?)". iExists _. iFrame.
         simpl. by iApply ptsto_log_crashed. }
       iIntros "Hfull". iSplit.
+      ** iApply "HΦ". by iApply Hwand.
       ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
          { iNext; iExists _; iFrame. }
          iMod (alloc_crash_lock' with "[] Hlock Hfull Hval") as (?) "Hcrash_lock".
@@ -452,7 +453,6 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
          iFrame. iExists _, _. iFrame.
-      ** iApply "HΦ". by iApply Hwand.
   - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
     { iNext. iExists _. iFrame. iExists _, _. iFrame. eauto. }
     iApply step_fupdN_inner_later; auto.
