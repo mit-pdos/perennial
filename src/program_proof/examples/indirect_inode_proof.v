@@ -25,19 +25,23 @@ Proof.
   rewrite Z.div_mul; auto.
 Qed.
 
+Lemma indirect_blocks_upperbound_off sz:
+  sz < maxIndirect * indirectNumBlocks ->
+  sz `div` indirectNumBlocks < maxIndirect.
+Proof.
+  intros.
+  apply Zdiv_lt_upper_bound; eauto.
+  rewrite /indirectNumBlocks //.
+Qed.
+
 Lemma indirect_blocks_upperbound sz:
   sz < MaxBlocks ->
   (sz - maxDirect) `div` indirectNumBlocks < maxIndirect.
 Proof.
+  rewrite /MaxBlocks.
   intros.
-  rewrite -indirect_blocks_maxBlocks.
-  rewrite /MaxBlocks /maxDirect /indirectNumBlocks /maxIndirect.
-  rewrite /MaxBlocks /maxDirect /indirectNumBlocks /maxIndirect in H.
-  rewrite /MaxBlocks in H.
-  change (500 + 10 * 512 - 500) with (10*512).
-  rewrite Z.div_mul; auto.
-  (*TODO I think I need to leverage the div_mod fact *)
-Admitted.
+  eapply indirect_blocks_upperbound_off. lia.
+Qed.
 
 Module inode.
   Record t :=
