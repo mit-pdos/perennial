@@ -1,6 +1,8 @@
 From iris.proofmode Require Import tactics environments intro_patterns.
 From iris_string_ident Require Import ltac2_string_ident.
 
+Set Default Proof Using "Type".
+
 (* NamedProps implements [named name P], which is equivalent to P but knows to
    name itself [name] when iIntro'd. The syntax looks like [name ∷ P], in
    analogy to in Gallina where you might write [forall (Hfoo: 3 < 4), ...] for a
@@ -32,18 +34,21 @@ From iris_string_ident Require Import ltac2_string_ident.
   both of these purposes).
  *)
 
+(* Named props are just the underlying prop. We used to have this sealed, but it
+turns out that this inconveniently required many forwarding typeclass instances
+(for things like [IntoPure], [Persistent], and framing) and we didn't run into
+any issues making it completely transparent.
+
+For efficiency reasons, don't even bother requiring P to be a PROP (this
+introduces an extra coercion to the carrier) *)
+Definition named {A} (name: string) (P: A): A := P.
+
 Section named.
   Context {PROP:bi}.
 
-  (* Named props are just the underlying prop. We used to have this sealed, but
-  it turns out that this inconveniently required many forwarding typeclass
-  instances (for things like [IntoPure], [Persistent], and framing) and we
-  didn't run into any issues making it completely transparent. *)
-  Definition named (name: string) (P: PROP): PROP := P.
-
-  Theorem to_named name P : P -∗ named name P.
+  Theorem to_named name (P: PROP) : P -∗ named name P.
   Proof. auto. Qed.
-  Theorem from_named name P : named name P -∗ P.
+  Theorem from_named name (P: PROP) : named name P -∗ P.
   Proof. auto. Qed.
 
   Fixpoint env_to_named_prop_go (acc : PROP) (Γ : env PROP) : PROP :=
@@ -257,6 +262,7 @@ Hint Extern 0 (environments.envs_entails _ (named _ _)) => unfold named : core.
 
 (* TODO: maybe we should move tests out *)
 Module tests.
+  Set Default Proof Using "All".
   Section tests.
     Context {PROP: bi} {Haffine: BiAffine PROP}.
     Implicit Types (P Q R : PROP).
