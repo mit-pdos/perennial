@@ -7,6 +7,7 @@ notifications:
     - tchajed@mit.edu
     - joseph.tassarotti@bc.edu
     - nickolai@csail.mit.edu
+    - research@ralfj.de
 
 branches:
   only:
