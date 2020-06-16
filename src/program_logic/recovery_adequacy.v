@@ -26,14 +26,14 @@ Fixpoint step_fupdN_fresh k (ns: list nat) Hi0 (Hc0: crashG Σ) t0
   match ns with
   | [] => P Hi0 Hc0 t0
   | (n :: ns) =>
-    (|={⊤, ⊤}_k=>^(S (S n)) |={⊤, ∅}_k=> ▷
+    (|={⊤}_k=>^(S (S n)) |={⊤, ∅}_k=> ▷
      ∀ Hi' Hc', NC ={⊤}=∗ (∃ t' : pbundleG T Σ, step_fupdN_fresh k ns Hi' Hc' t' P))%I
   end.
 
 Lemma step_fupdN_fresh_snoc k (ns: list nat) n Hi0 Hc0 t0 Q:
   step_fupdN_fresh k (ns ++ [n]) Hi0 Hc0 t0 Q ≡
   step_fupdN_fresh k (ns) Hi0 Hc0 t0
-    (λ Hi Hc' _, |={⊤, ⊤}_k=>^(S (S n)) |={⊤, ∅}_k=> ▷ ∀ Hi' Hc', NC ={⊤}=∗ ∃ t', Q Hi' Hc' t')%I.
+    (λ Hi Hc' _, |={⊤}_k=>^(S (S n)) |={⊤, ∅}_k=> ▷ ∀ Hi' Hc', NC ={⊤}=∗ ∃ t', Q Hi' Hc' t')%I.
 Proof.
   apply (anti_symm (⊢)%I).
   - revert Hi0 Hc0 t0 Q.
@@ -63,8 +63,8 @@ Proof.
 Qed.
 
 Lemma step_fupdN_fresh_pattern_wand {H: invG Σ} k n (Q Q': iProp Σ):
-  (|={⊤, ⊤}_k=>^(S n) |={⊤, ∅}_k=> ▷ Q) -∗ (Q -∗ Q') -∗
-  (|={⊤, ⊤}_k=>^(S n) |={⊤, ∅}_k=> ▷ Q').
+  (|={⊤}_k=>^(S n) |={⊤, ∅}_k=> ▷ Q) -∗ (Q -∗ Q') -∗
+  (|={⊤}_k=>^(S n) |={⊤, ∅}_k=> ▷ Q').
 Proof.
   iIntros "H Hwand". simpl.
   iApply (step_fupdN_wand with "H").
@@ -90,7 +90,7 @@ Proof.
 Qed.
 
 Lemma step_fupdN_fresh_pattern_plain' {H: invG Σ} k n (Q: iProp Σ) `{!Plain Q}:
-  (|={⊤, ⊤}_k=>^(S n) |={⊤, ∅}_k=> ▷ Q) -∗
+  (|={⊤}_k=>^(S n) |={⊤, ∅}_k=> ▷ Q) -∗
   (|={⊤}=> ▷^(S (S n) * (S (S k))) Q).
 Proof.
   iIntros "H".
@@ -126,7 +126,7 @@ Fixpoint fresh_later_count k (ns: list nat) :=
 
 Lemma step_fupdN_fresh_plain `{!invPreG Σ} `{!crashPreG Σ} P `{!Plain P} k ns n:
   (∀ Hinv' Hc', NC -∗ |={⊤}=> ∃ t, step_fupdN_fresh k ns Hinv' Hc' t
-                  (λ _ _ _, |={⊤, ⊤}_k=>^(S n) |={⊤, ∅}=> P)) -∗
+                  (λ _ _ _, |={⊤}_k=>^(S n) |={⊤, ∅}=> P)) -∗
   ▷^(fresh_later_count k ns + S (S k + S n * (S (S k)))) P.
 Proof.
   iIntros "H".
@@ -164,7 +164,7 @@ Qed.
 (* XXX this probably needs to be tweaked. *)
 Lemma step_fupdN_fresh_soundness `{!invPreG Σ} `{!crashPreG Σ} (φ : Prop) k ns n:
   (∀ (Hinv : invG Σ) (Hc: crashG Σ), NC -∗ (|={⊤}=> (∃ t0, step_fupdN_fresh k ns Hinv Hc t0
-                             (λ _ _ _, |={⊤, ⊤}_k=>^(S (S n)) |={⊤, ∅}=> ▷ ⌜φ⌝)))%I) →
+                             (λ _ _ _, |={⊤}_k=>^(S (S n)) |={⊤, ∅}=> ▷ ⌜φ⌝)))%I) →
   φ.
 Proof.
   intros Hiter.
@@ -186,7 +186,7 @@ Lemma wptp_recv_strong_normal_adequacy Φ Φinv Φr κs' s k Hi Hc t n ns r1 e1 
   wpr s k Hi Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   wptp s k t1 -∗ NC -∗ step_fupdN_fresh (3 * (S (S k))) ns Hi Hc t (λ Hi' Hc' t',
     ⌜ Hi' = Hi ∧ Hc' = Hc ∧ t' = t ⌝ ∗
-    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S n) ∃ e2 t2',
+    (|={⊤}_(3 * (S (S k)))=>^(S n) ∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
     state_interp σ2 κs' (length t2') ∗
@@ -214,7 +214,7 @@ Lemma wptp_recv_strong_crash_adequacy Φ Φinv Φinv' Φr κs' s k Hi Hc t ns n 
   wpr s k Hi Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   □ (∀ Hi' t', Φinv Hi' t' -∗ □ Φinv' Hi' t') -∗
   wptp s k t1 -∗ NC -∗ step_fupdN_fresh (3 * (S (S k))) ns Hi Hc t (λ Hi' Hc' t',
-    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S (S n)) ∃ e2 t2',
+    (|={⊤}_(3 * (S (S k)))=>^(S (S n)) ∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
     state_interp σ2 κs' (length t2') ∗
@@ -284,7 +284,7 @@ Lemma wptp_recv_strong_adequacy Φ Φinv Φinv' Φr κs' s k Hi Hc t ns n r1 e1 
   wpr s k Hi Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   □ (∀ Hi' t', Φinv Hi' t' -∗ □ Φinv' Hi' t') -∗
   wptp s k t1 -∗ NC -∗ step_fupdN_fresh (3 * (S (S k))) ns Hi Hc t (λ Hi' Hc' t',
-    (|={⊤, ⊤}_(3 * (S (S k)))=>^(S (S n)) ∃ e2 t2',
+    (|={⊤}_(3 * (S (S k)))=>^(S (S n)) ∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
     state_interp σ2 κs' (length t2') ∗

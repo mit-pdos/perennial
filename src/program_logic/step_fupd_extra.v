@@ -10,10 +10,10 @@ Notation "|={ E1 , E2 }_ k => P" :=
        format "|={ E1 , E2 }_ k =>  P").
 
 
-Notation "|={ E1 , E2 }_ k =>^ n P" :=
-    (Nat.iter n (λ Q, (|={E1, ∅}=> |={∅, ∅}▷=>^k |={∅, E2}=> Q)) P)%I
-      (at level 99, E1, E2 at level 50, k, n at level 9, P at level 200,
-       format "|={ E1 , E2 }_ k =>^ n  P").
+Notation "|={ E }_ k =>^ n P" :=
+    (Nat.iter n (λ Q, (|={E%I, ∅}=> |={∅, ∅}▷=>^k |={∅, E}=> Q)) P)%I
+      (at level 99, E at level 50, k, n at level 9, P at level 200,
+       format "|={ E }_ k =>^ n  P").
 
 
 Section step_fupdN.
@@ -137,9 +137,9 @@ Lemma step_fupdN_innerN_wand E1 E2 k1 k2 n1 n2 (P Q: PROP):
   E2 ⊆ E1 →
   k2 ≤ k1 →
   n2 ≤ n1 →
-  (|={E2,E2}_k2=>^n2 P) -∗
+  (|={E2}_k2=>^n2 P) -∗
   (P -∗ Q) -∗
-  (|={E1,E1}_k1=>^n1 Q).
+  (|={E1}_k1=>^n1 Q).
 Proof using HAff.
   iIntros (?? Hle) "HP HPQ".
   iInduction Hle as [] "IH".
@@ -172,10 +172,10 @@ Proof using HAff.
   by iApply "HPQ".
 Qed.
 
-Lemma step_fupdN_innerN_wand' E1 E2 k n (P Q: PROP):
-  (|={E1,E2}_k=>^n P) -∗
+Lemma step_fupdN_innerN_wand' E k n (P Q: PROP):
+  (|={E}_k=>^n P) -∗
   (P -∗ Q) -∗
-  |={E1,E2}_k=>^n Q.
+  |={E}_k=>^n Q.
 Proof using HAff.
   iIntros "HP HPQ". iInduction n as [| n] "IH".
   - rewrite //=. by iApply "HPQ".
@@ -183,9 +183,9 @@ Proof using HAff.
     iIntros; by iApply ("IH" with "[$] [$]").
 Qed.
 
-Lemma step_fupdN_innerN_S_fupd E1 E2 k n (P: PROP):
-  (|={E1,E2}_k=>^(S n) |={E2}=> P) -∗
-  (|={E1,E2}_k=>^(S n) P).
+Lemma step_fupdN_innerN_S_fupd E k n (P: PROP):
+  (|={E}_k=>^(S n) |={E}=> P) -∗
+  (|={E}_k=>^(S n) P).
 Proof using HAff.
   rewrite !Nat_iter_S_r.
   iIntros "H". iApply (step_fupdN_innerN_wand' with "H").
@@ -247,7 +247,7 @@ Qed.
 Lemma step_fupdN_innerN_plain `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
       (k n: nat) (P: PROP) :
   Plain P →
-  ⊢ (|={⊤, ⊤}_k=>^n P) -∗
+  ⊢ (|={⊤}_k=>^n P) -∗
   |={⊤}=> ▷^(n * (S k)) P.
 Proof using HAff.
   iIntros (HPlain).
