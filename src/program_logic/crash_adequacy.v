@@ -70,7 +70,7 @@ Qed.
 Lemma wptp_steps s k n e1 t1 κs κs' t2 σ1 σ2 Φ Φc :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗ WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗ wptp s k t1 -∗ NC -∗
-  |={⊤,⊤}_(3 * (S (S k)))=>^n (∃ e2 t2',
+  |={⊤}_(3 * (S (S k)))=>^n (∃ e2 t2',
     ⌜t2 = e2 :: t2'⌝ ∗
     state_interp σ2 κs' (pred (length t2)) ∗
     WPC e2 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} ∗ wptp s k t2' ∗
@@ -110,7 +110,7 @@ Lemma wptp_strong_adequacy Φ Φc k κs' s n e1 t1 κs t2 σ1 σ2 :
   WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC -∗
-  |={⊤,⊤}_(3 * (S (S k)))=>^(S n) (∃ e2 t2',
+  |={⊤}_(3 * (S (S k)))=>^(S n) (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
     state_interp σ2 κs' (length t2') ∗
@@ -150,7 +150,7 @@ Lemma wptp_strong_crash_adequacy Φ Φc κs' s k n e1 t1 κs t2 σ1 σ2 :
   state_interp σ1 (κs ++ κs') (length t1) -∗
   WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
-  NC -∗ |={⊤,⊤}_(3 * S (S k))=>^(S n) |={⊤,⊤}_(S k)=> |={⊤, ∅}_(S k)=> (∃ e2 t2',
+  NC -∗ |={⊤}_(3 * S (S k))=>^(S n) |={⊤,⊤}_(S k)=> |={⊤, ∅}_(S k)=> (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     Φc ∗ state_interp σ2 κs' (length t2') ∗ C).
 Proof.
