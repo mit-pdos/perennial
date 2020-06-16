@@ -66,12 +66,22 @@ Section goose.
   Let N := nroot.@"replicated_block".
   Context (P: rblock.t → iProp Σ).
 
-  Definition is_rblock (γ: gname) (k': nat) (l: loc) addr : iProp Σ :=
-    ∃ (d_ref m_ref: loc),
+  (* low-level rblock state *)
+  Definition rblock_state l d_ref m_ref addr : iProp Σ :=
       (* reflect coq values in program data structure *)
       "#d" ∷ readonly (l ↦[RepBlock.S :: "d"] #d_ref) ∗
       "#addr" ∷ readonly (l ↦[RepBlock.S :: "addr"] #addr) ∗
-      "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_ref) ∗
+      "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_ref).
+
+  Definition is_pre_rblock (γ: gname) (k': nat) (l: loc) addr σ : iProp Σ :=
+    "*" ∷ (∃ (d_ref m_ref: loc),
+      "Hro_state" ∷ rblock_state l d_ref m_ref addr ∗
+      "Hfree_lock" ∷ is_free_lock γ m_ref) ∗
+    "Hlinv" ∷ rblock_linv addr σ.
+
+  Definition is_rblock (γ: gname) (k': nat) (l: loc) addr : iProp Σ :=
+    ∃ (d_ref m_ref: loc),
+      "Hro_state" ∷ rblock_state l d_ref m_ref addr ∗
       (* lock protocol *)
       "#Hlock" ∷ is_crash_lock N N (LVL k') γ #m_ref
         (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)
@@ -100,16 +110,16 @@ Section goose.
   backup, going from the crash invariant to the lock invariant. *)
   Theorem wpc_Open {k E2} (d_ref: loc) k' addr σ :
     (k' < S k)%nat →
-    {{{ rblock_cinv addr σ ∗ P σ }}}
+    {{{ rblock_cinv addr σ }}}
       Open #d_ref #addr @ NotStuck;LVL (S (S k)); ⊤;E2
-    {{{ γ (l:loc), RET #l; is_rblock γ k' l addr }}}
-    {{{ ∃ σ', rblock_cinv addr σ' ∗ P σ' }}}.
+    {{{ γ (l:loc), RET #l; is_pre_rblock γ k' l addr σ }}}
+    {{{ rblock_cinv addr σ }}}.
   Proof.
-    iIntros (? Φ Φc) "(Hinv&HP) HΦ"; iNamed "Hinv".
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iDeexHyp "Hbackup".
     wpc_call.
     { eauto with iFrame. }
-    iCache with "Hprimary Hbackup HP HΦ".
+    iCache with "Hprimary Hbackup HΦ".
     { crash_case. eauto with iFrame. }
     (* read block content, write it to backup block *)
     wpc_apply (wpc_Read with "Hprimary").
@@ -124,7 +134,7 @@ Section goose.
     { iIntros "[Hbackup|Hbackup]"; try iFromCache.
       crash_case. eauto with iFrame. }
     iIntros "(Hbackup&_)".
-    iCache with "HP HΦ Hprimary Hbackup".
+    iCache with "HΦ Hprimary Hbackup".
     { crash_case. eauto with iFrame. }
 
     (* allocate lock *)
@@ -135,24 +145,9 @@ Section goose.
     iIntros (γ m_ref) "Hfree_lock".
     iNamed 1.
 
-    (* actually initialize the lock *)
-    iApply (alloc_crash_lock N N _ k' _ _ _ _ _ _
-                             (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)%I
-                             (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)%I
-            with "[$Hfree_lock Hprimary Hbackup HP HΦ]").
-    { lia. }
-    iSplitR.
-    { iIntros "!>"; iNamed 1.
-      iExists _; iFrame.
-      iApply rblock_linv_to_cinv; iFrame. }
-    iSplitL "Hprimary Hbackup HP".
-    { eauto with iFrame. }
-    iIntros "His_crash_lock".
-
     (* allocate struct *)
     rewrite -wpc_fupd.
-    wpc_frame "HΦ".
-    { iNamed 1. crash_case. eauto with iFrame. }
+    wpc_frame.
     wp_apply wp_allocStruct; auto.
     iIntros (l) "Hrb".
     iNamed 1.
@@ -164,7 +159,41 @@ Section goose.
     iMod (readonly_alloc_1 with "m") as "m".
     iModIntro.
     iApply "HΦ".
-    iExists _, _; iFrame.
+    rewrite /is_pre_rblock; eauto with iFrame.
+  Qed.
+
+  Theorem replicated_block_crash_obligation {k E2} e (Φ: val → iProp Σ) Φc
+          γ k' l addr σ0 :
+    (k' < k)%nat →
+    is_pre_rblock γ k' l addr σ0 -∗
+    P σ0 -∗
+    (is_rblock γ k' l addr -∗
+       WPC e @ LVL k; ⊤; E2 {{ Φ }}
+                            {{ ∀ σ, rblock_cinv addr σ ∗ P σ -∗ Φc }}) -∗
+    WPC e @ LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+  Proof.
+    iIntros (?) "Hpre HP Hwp".
+    iNamed "Hpre".
+
+    (* actually initialize the lock *)
+    iApply (alloc_crash_lock N N _ k' _ _ _ _ _ _
+                             (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)%I
+                             (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)%I
+            with "[- $Hfree_lock]").
+    { lia. }
+    iSplitR.
+    { iIntros "!>"; iNamed 1.
+      iExists _; iFrame.
+      iApply rblock_linv_to_cinv; iFrame. }
+    iSplitL "Hlinv HP".
+    { eauto with iFrame. }
+    iIntros "His_crash_lock".
+    iSpecialize ("Hwp" with "[Hro_state His_crash_lock]").
+    { iExists _, _; iFrame. }
+    iApply (wpc_mono' with "[] [] Hwp"); auto.
+    iIntros "HΦ Hcrash".
+    iNamed "Hcrash".
+    iApply "HΦ"; iFrame.
   Qed.
 
   (* this is an example of a small helper function which needs only a WP spec
@@ -195,6 +224,7 @@ Section goose.
   Proof.
     iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
     iNamed "Hrb".
+    iNamed "Hro_state".
     wpc_call.
     { by iLeft in "Hfupd". }
     iCache with "Hfupd".
@@ -283,6 +313,7 @@ Section goose.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hrb".
+    iNamed "Hro_state".
     wpc_call.
     { iRight in "Hfupd"; auto. }
     iCache with "HΦ Hfupd".
