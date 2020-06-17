@@ -1,5 +1,8 @@
 # mostly stolen from
 # https://github.com/mit-plv/bedrock2/blob/720023ddce9ba114f451cf3f0ebc8f9ee3002893/.github/workflows/main.yml
+
+name: Update coq/tested
+
 on:
   schedule:
     # run at 06:59 UTC (3am eastern) each day
