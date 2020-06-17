@@ -663,19 +663,6 @@ Proof.
       match goal with
       | |- envs_entails _ (wpc _ _ _ _ _ ?Φ0 _) => set (Φ':=Φ0)
       end.
-      (*
-      iNamed "Hdurable".
-      iAssert ((int.val addr d↦ hdr -∗
-               ([∗ list] a0;b1 ∈ addrs;σ.(inode.blocks), int.val a0 d↦ b1) -∗
-               is_inode_durable addr σ addrs))%I as "Hrestore_durable".
-      { iIntros "Hhdr Hdata".
-        iExists _, _; iFrame "% ∗". }
-      iCache with "HΦ Hfupd Hda HP Hhdr Hdata".
-      { iDestruct ("Hrestore_durable" with "[$] [$]") as "Hdurable".
-        iSplitR "Hda"; first iFromCache.
-        iApply block_cinv_free_pred.
-        iExists _; iFrame. }
-*)
       wpc_apply (wpc_Write_fupd with "[$Hb]").
       iSplit.
       { iSplitR "Hda"; first iFromCache.
