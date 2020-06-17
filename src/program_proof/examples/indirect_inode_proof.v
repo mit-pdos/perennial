@@ -1068,7 +1068,7 @@ Proof.
 
     iIntros (s b) "(Hb & %Hencded & ? & ? & ? & ? & ?)"; iNamed.
     wp_loadField.
-    wp_apply (wp_Write_fupd ⊤
+    wp_apply (wp_Write_fupd_triple ⊤  (* FIXME: use wp_Write_fupd instead *)
                             ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0]) σ) ∗
 
                 "Hhdr" ∷ int.val σ.(inode.addr) d↦ b ∗

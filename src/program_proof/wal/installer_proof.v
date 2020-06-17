@@ -107,38 +107,39 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ a :
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
   wp_call.
-  wp_apply (wp_Read_fupd _ (λ b, Q b)%I _ 1 (* q=1 *) with "[Hfupd]").
-  { iDestruct "Hwal" as "[Hwal Hcirc]".
-    iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
-    iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
-    iNamed "Hdisk".
-    iNamed "Hdisk".
+  wp_apply (wp_Read_fupd _ _ 1 (* q=1 *)).
+  iDestruct "Hwal" as "[Hwal Hcirc]".
+  iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
+  iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
+  iNamed "Hdisk".
+  iNamed "Hdisk".
 
-    iDestruct (is_installed_to_read with "Hinstalled") as "[>Hinstalled_read Hinstalled]".
-    iDestruct (in_bounds_valid _ σ with "Ha_valid") as %Hlookup.
-    iDestruct (is_installed_read_lookup Hlookup with "Hinstalled_read") as
-        (txn_id b [Htxn_id Hbval]) "(Hb&Hinstalled_read)".
-    iModIntro.
-    iExists b; iFrame "Hb".
-    iNext.
-    iIntros "Hb".
-    iSpecialize ("Hinstalled_read" with "Hb").
-    iSpecialize ("Hinstalled" with "Hinstalled_read").
-    iNamed "circ.start".
-    fold innerN.
-    iMod (fupd_intro_mask' _ (⊤∖↑N)) as "HinnerN".
-    { solve_ndisj. }
-    iDestruct (is_durable_txn_bound with "circ.end") as %Hdurable_bound.
+  iDestruct (is_installed_to_read with "Hinstalled") as "[>Hinstalled_read Hinstalled]".
+  iDestruct (in_bounds_valid _ σ with "Ha_valid") as %Hlookup.
+  iDestruct (is_installed_read_lookup Hlookup with "Hinstalled_read") as
+      (txn_id b [Htxn_id Hbval]) "(Hb&Hinstalled_read)".
+  iModIntro.
+  iExists b; iFrame "Hb".
+  iNext.
+  iIntros "Hb".
+  iSpecialize ("Hinstalled_read" with "Hb").
+  iSpecialize ("Hinstalled" with "Hinstalled_read").
+  iNamed "circ.start".
+  fold innerN.
+  iMod (fupd_intro_mask' _ (⊤∖↑N)) as "HinnerN".
+  { solve_ndisj. }
+  iDestruct (is_durable_txn_bound with "circ.end") as %Hdurable_bound.
 
-    iMod ("Hfupd" $! σ σ b with "[//] [] HP") as "[HP HQ]".
-    { iPureIntro.
-      repeat (simpl; monad_simpl).
-      exists σ txn_id.
-      { econstructor; eauto; lia. }
-      repeat (simpl; monad_simpl). }
-    iMod "HinnerN" as "_".
-    iFrame.
-    iApply "Hclose".
+  iMod ("Hfupd" $! σ σ b with "[//] [] HP") as "[HP HQ]".
+  { iPureIntro.
+    repeat (simpl; monad_simpl).
+    exists σ txn_id.
+    { econstructor; eauto; lia. }
+    repeat (simpl; monad_simpl). }
+  iMod "HinnerN" as "_".
+  iFrame.
+  iMod ("Hclose" with "[-HQ HΦ]") as "_".
+  {
     iModIntro.
     iExists _; iFrame "HP".
     iFrame.
@@ -147,7 +148,7 @@ Proof.
     iExists _, _; iFrame "# ∗".
     auto.
   }
-  iIntros (s b) "(HQ&Hs)".
+  iIntros "!>" (s) "Hs".
   iApply "HΦ".
   iExists _; iFrame.
   iDestruct (is_slice_to_small with "Hs") as "$".

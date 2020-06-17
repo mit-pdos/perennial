@@ -430,50 +430,48 @@ Proof.
   wp_call.
   wp_apply wp_hdr2; iIntros (s hdr2) "[Hb Hextra]".
   iDestruct "Hextra" as (extra) "%".
-  wp_apply (wp_Write_fupd (⊤ ∖ ↑N) (Q ∗ start_is γ (1/2) newStart) with "[$Hb Hfupd Hstart]").
+  wp_apply (wp_Write_fupd (⊤ ∖ ↑N) with "Hb").
+  rewrite /is_circular.
+  iInv "Hcirc" as "Hcirc_inv" "Hclose".
+  iDestruct "Hcirc_inv" as (σ) "[>Hcirc_state HP]".
+  iDestruct "Hcirc_state" as (Hwf) "(Hpos&Hcirc_state)".
+  iDestruct "Hcirc_state" as (addrs blocks Hupds) "(Hown&Hlow)".
+  iDestruct (start_is_to_eq with "[$] [$]") as %<-.
+  iDestruct (diskEnd_at_least_to_le with "[$] Hend") as %HdiskEnd_lb.
+  iDestruct (circ_state_wf with "Hown") as %Hlow_wf.
+  iDestruct (circ_state_wf with "Hown") as %(Hlen1&Hlen2).
+  iDestruct "Hlow" as (hdr1 hdr2_0 hdr2extra Hhdr1 Hhdr2) "(Hhdr1&Hhdr2&Hblocks)".
+  iExists hdr2_0; iFrame "Hhdr2".
+  iIntros "!> !> Hhdr2".
+  iDestruct ("Hfupd" with "[$HP]") as "Hfupd"; first by eauto.
+  iMod ("Hfupd" with "[]") as "[HP' HQ]".
+  { iPureIntro.
+    split.
+    - simpl; monad_simpl.
+    - eapply circ_wf_advance; eauto.
+      word. }
+  simpl.
+  iMod (circ_positions_advance newStart with "[$Hpos Hstart]") as "(Hpos&Hstart&Hstart_lb)"; auto.
+  { word. }
+  iMod ("Hclose" with "[-HQ HΦ Hstart Hstart_lb]") as "_".
+  { iNext.
+    iExists _; iFrame.
+    iSplitR.
+    - iPureIntro.
+      apply circ_wf_advance; eauto.
+      word.
+    - iExists _, _; iFrame "Hown".
+      iSplitR; [ iPureIntro | ].
+      { eapply has_circ_updates_advance; eauto; word. }
+      iExists _, _, _; iFrame.
+      iSplitR; auto.
+      rewrite Hhdr1.
+      iPureIntro.
+      rewrite -> diskEnd_advance_unchanged by word.
+      auto. } (* done restoring invariant *)
 
-  { rewrite /is_circular.
-    iInv "Hcirc" as "Hcirc_inv" "Hclose".
-    iDestruct "Hcirc_inv" as (σ) "[>Hcirc_state HP]".
-    iDestruct "Hcirc_state" as (Hwf) "(Hpos&Hcirc_state)".
-    iDestruct "Hcirc_state" as (addrs blocks Hupds) "(Hown&Hlow)".
-    iDestruct (start_is_to_eq with "[$] [$]") as %<-.
-    iDestruct (diskEnd_at_least_to_le with "[$] Hend") as %HdiskEnd_lb.
-    iDestruct (circ_state_wf with "Hown") as %Hlow_wf.
-    iDestruct (circ_state_wf with "Hown") as %(Hlen1&Hlen2).
-    iDestruct "Hlow" as (hdr1 hdr2_0 hdr2extra Hhdr1 Hhdr2) "(Hhdr1&Hhdr2&Hblocks)".
-    iExists hdr2_0; iFrame "Hhdr2".
-    iIntros "!> !> Hhdr2".
-    iDestruct ("Hfupd" with "[$HP]") as "Hfupd"; first by eauto.
-    iMod ("Hfupd" with "[]") as "[HP' HQ]".
-    { iPureIntro.
-      split.
-      - simpl; monad_simpl.
-      - eapply circ_wf_advance; eauto.
-        word. }
-    simpl.
-    iMod (circ_positions_advance newStart with "[$Hpos Hstart]") as "(Hpos&Hstart&Hstart_lb)"; auto.
-    { word. }
-    iMod ("Hclose" with "[-HQ Hstart Hstart_lb]").
-    { iNext.
-      iExists _; iFrame.
-      iSplitR.
-      - iPureIntro.
-        apply circ_wf_advance; eauto.
-        word.
-      - iExists _, _; iFrame "Hown".
-        iSplitR; [ iPureIntro | ].
-        { eapply has_circ_updates_advance; eauto; word. }
-        iExists _, _, _; iFrame.
-        iSplitR; auto.
-        rewrite Hhdr1.
-        iPureIntro.
-        rewrite -> diskEnd_advance_unchanged by word.
-        auto. } (* done restoring invariant *)
+  iIntros "!> Hs". (* done committing to disk *)
 
-    iModIntro; iFrame. } (* done committing to disk *)
-
-  iIntros "[_ (HQ&Hstart)]".
   wp_apply wp_Barrier.
   iApply ("HΦ" with "[$]").
 Qed.
@@ -714,65 +712,58 @@ Proof.
   wp_apply wp_DPrintf.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-  let blocks'' := constr:(<[Z.to_nat ((int.val endpos + int.val i) `mod` LogSz):=b_i]> (update_blocks blocks (int.val endpos) (take (int.nat i) upds))) in
-  wp_apply (wp_Write_fupd (⊤ ∖ ↑N)
-    (own γ.(blocks_name) (◯ Excl' blocks'') ∗
-     diskEnd_is γ (1/2) (int.val endpos))
-    with "[$Hi Hγblocks Hend]").
-  { word_cleanup.
-    rewrite wrap_small_log_addr.
-    word_cleanup.
+  wp_apply (wp_Write_fupd (⊤ ∖ ↑N) with "Hi").
+  word_cleanup.
+  rewrite wrap_small_log_addr.
+  word_cleanup.
 
-    iInv "Hcirc" as "HcircI" "Hclose".
-    iDestruct "HcircI" as (σ) "[>Hσ HP]".
-    iDestruct "Hσ" as (Hwf) "[Hpos Hσ]".
-    iDestruct "Hσ" as (addrs' blocks'' Hhas_upds) "(Hown&Hlow)".
-    iDestruct (circ_state_wf with "Hown") as %Hlowwf.
-    iDestruct (circ_state_wf with "Hown") as %[Hlen1 Hlen2].
-    iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
-    iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
-    iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0&Hd1&Hd2)".
-    pose proof (Z.mod_bound_pos (int.val endpos + int.val i) LogSz); intuition (try word).
-    destruct (list_lookup_lt _ blocks'' (Z.to_nat $ (int.val endpos + int.val i) `mod` LogSz)) as [b ?]; first by word.
-    iDestruct (disk_array_acc _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]"; eauto.
-    { word. }
-    iExists b.
-    assert (length (circ_proof.upds σ ++ upds) ≤ LogSz ∧
-    int.val endpos = circΣ.diskEnd σ ∧
-    int.val endpos + Z.of_nat (length upds) < 2^64) by len.
+  iInv "Hcirc" as "HcircI" "Hclose".
+  iDestruct "HcircI" as (σ) "[>Hσ HP]".
+  iDestruct "Hσ" as (Hwf) "[Hpos Hσ]".
+  iDestruct "Hσ" as (addrs' blocks'' Hhas_upds) "(Hown&Hlow)".
+  iDestruct (circ_state_wf with "Hown") as %Hlowwf.
+  iDestruct (circ_state_wf with "Hown") as %[Hlen1 Hlen2].
+  iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
+  iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
+  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0&Hd1&Hd2)".
+  pose proof (Z.mod_bound_pos (int.val endpos + int.val i) LogSz); intuition (try word).
+  destruct (list_lookup_lt _ blocks'' (Z.to_nat $ (int.val endpos + int.val i) `mod` LogSz)) as [b ?]; first by word.
+  iDestruct (disk_array_acc _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]"; eauto.
+  { word. }
+  iExists b.
+  assert (length (circ_proof.upds σ ++ upds) ≤ LogSz ∧
+          int.val endpos = circΣ.diskEnd σ ∧
+          int.val endpos + Z.of_nat (length upds) < 2^64) by len.
 
-    iFrame "Hdi".
-    iIntros "!> !> Hdi".
-    iSpecialize ("Hd2" with "Hdi").
-    iDestruct "Hown" as (_) "[Haddrs_auth Hblocks_auth]".
-    iDestruct (ghost_var_agree γ.(blocks_name) with "Hblocks_auth Hγblocks") as %->.
-    iMod (ghost_var_update γ.(blocks_name) _
-            with "Hblocks_auth Hγblocks") as "[Hblocks_auth Hγblocks]".
-    iFrame "Hγblocks Hend".
-    iMod ("Hclose" with "[-]").
-    { iModIntro.
-      iExists _; iFrame "HP".
-      iSplitR; first by auto.
-      iFrame "Hpos".
-      iExists _, _; iFrame.
-      iSplitR.
-      { iPureIntro.
-        generalize dependent (update_blocks blocks (int.val endpos)
-                 (take (int.nat i) upds)); intros blocks' **.
-        replace (int.val endpos) with (circΣ.diskEnd σ) by word.
-        eapply has_circ_updates_blocks; eauto.
-        autorewrite with len in *. word.
-      }
-      iSplitR.
-      { iPureIntro.
-        eapply circ_low_wf_blocks; eauto.
-      }
-      iExists hdr1, hdr2, hdr2extra.
-      by iFrame.
+  iFrame "Hdi".
+  iIntros "!> !> Hdi".
+  iSpecialize ("Hd2" with "Hdi").
+  iDestruct "Hown" as (_) "[Haddrs_auth Hblocks_auth]".
+  iDestruct (ghost_var_agree γ.(blocks_name) with "Hblocks_auth Hγblocks") as %->.
+  iMod (ghost_var_update γ.(blocks_name) _
+          with "Hblocks_auth Hγblocks") as "[Hblocks_auth Hγblocks]".
+  iMod ("Hclose" with "[-Hγblocks Hend HΦ HdiskAddrs Haddrs Hbks]") as "_".
+  { iModIntro.
+    iExists _; iFrame "HP".
+    iSplitR; first by auto.
+    iFrame "Hpos".
+    iExists _, _; iFrame.
+    iSplitR.
+    { iPureIntro.
+      generalize dependent (update_blocks blocks (int.val endpos)
+                                          (take (int.nat i) upds)); intros blocks' **.
+      replace (int.val endpos) with (circΣ.diskEnd σ) by word.
+      eapply has_circ_updates_blocks; eauto.
+      autorewrite with len in *. word.
     }
-    iPureIntro. word.
+    iSplitR.
+    { iPureIntro.
+      eapply circ_low_wf_blocks; eauto.
+    }
+    iExists hdr1, hdr2, hdr2extra.
+      by iFrame.
   }
-  iIntros "(Hs & Hγblocks & Hhasspace)".
+  iIntros "!> Hs".
   wp_loadField.
   wp_apply (wp_SliceSet with "[$Haddrs]").
   { iPureIntro.
@@ -782,10 +773,6 @@ Proof.
     change (word.divu (word.sub 4096 8) 8) with (U64 511).
     word_cleanup.
     apply lookup_lt_is_Some_2; len.
-    rewrite Haddrs_len.
-    pose proof (Z_mod_lt (int.val (word.add endpos i)) 511).
-    (* XXX why doesn't word work? *)
-    lia.
   }
   iIntros "Haddrs".
   iApply "HΦ".
@@ -961,48 +948,39 @@ Proof.
   iIntros (b_s b) "(HdiskAddrs&Hs&Hb&%)".
   wp_pures.
 
-  wp_apply (wp_Write_fupd _
-    (
-      Q ∗
-      diskEnd_is γ (1/2) (int.val endpos + length upds) ∗
-      own γ.(blocks_name) (◯ Excl' (update_blocks blocks' (int.val endpos) upds)) ∗
-      own γ.(addrs_name) (◯ Excl' (update_addrs addrs (int.val endpos) upds))
-    ) with "[Hb Hγblocks Hγaddrs Hend Hfupd]").
-  {
-    iDestruct (is_slice_small_sz with "Hb") as %Hslen.
-    rewrite fmap_length in Hslen.
+  iDestruct (is_slice_small_sz with "Hb") as %Hslen.
+  wp_apply (wp_Write_fupd with "Hb").  (*   *)
+  rewrite fmap_length in Hslen.
 
-    iFrame "Hb".
+  iInv N as "Hcircopen" "Hclose".
+  iDestruct "Hcircopen" as (σ) "[>[%Hwf Hcs] HP]".
+  iDestruct "Hcs" as "[Hpos Hcs]".
+  iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
+  iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
+  iDestruct "Hcs" as (addrs0 blocks0 Hupds) "[Hown Hlow]".
+  iDestruct "Hown" as (Hlow_wf') "[Haddrs Hblocks]".
+  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
+  iExists _. iFrame "Hd0".
+  iIntros "!> !> Hd0".
 
-    iInv N as "Hcircopen" "Hclose".
-    iDestruct "Hcircopen" as (σ) "[>[%Hwf Hcs] HP]".
-    iDestruct "Hcs" as "[Hpos Hcs]".
-    iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
-    iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
-    iDestruct "Hcs" as (addrs0 blocks0 Hupds) "[Hown Hlow]".
-    iDestruct "Hown" as (Hlow_wf') "[Haddrs Hblocks]".
-    iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
-    iExists _. iFrame "Hd0".
-    iIntros "!> !> Hd0".
+  iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
+  iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
+  iMod (ghost_var_update γ.(addrs_name) (update_addrs addrs (int.val endpos) upds) with "Haddrs Hγaddrs") as "[Haddrs Hγaddrs]".
+  iMod (circ_positions_append upds with "[$] Hstart [$]") as "[Hpos Hend]"; [ done | done | ].
+  iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd'.
+  iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb'.
 
-    iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
-    iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
-    iMod (ghost_var_update γ.(addrs_name) (update_addrs addrs (int.val endpos) upds) with "Haddrs Hγaddrs") as "[Haddrs Hγaddrs]".
-    iMod (circ_positions_append upds with "[$] Hstart [$]") as "[Hpos Hend]"; [ done | done | ].
-    iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd'.
-    iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb'.
-
-    iMod ("Hfupd" with "[$HP //] []") as "[HP $]".
-    { iPureIntro.
-      split.
-      - simpl; monad_simpl.
-      - destruct σ. rewrite /=.
-        rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
-        autorewrite with len in HdiskEnd'.
-        apply circ_wf_app; auto; len.
-    }
-    iFrame.
-    iApply "Hclose".
+  iMod ("Hfupd" with "[$HP //] []") as "[HP HQ]".
+  { iPureIntro.
+    split.
+    - simpl; monad_simpl.
+    - destruct σ. rewrite /=.
+      rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
+      autorewrite with len in HdiskEnd'.
+      apply circ_wf_app; auto; len.
+  }
+  iMod ("Hclose" with "[-Hγblocks Hγaddrs Hend HΦ HQ HdiskAddrs Hupds Hs]") as "_".
+  { 
     iNext. iExists _. iFrame.
     destruct σ. rewrite /=.
     iSplitR.
@@ -1029,10 +1007,9 @@ Proof.
       len. }
     rewrite Hhdr2. eauto.
   }
-  iIntros "[Hb_s (HQ & Hend & Ho1 & Ho2)]".
+  iIntros "!> Hb_s".
   wp_apply wp_Barrier.
-  iApply ("HΦ" with "[$HQ $Hend Ho1 Ho2 HdiskAddrs Hs $Hupds]").
-  iExists _, _, _. iFrame.
+  iApply "HΦ". iFrame. iExists _, _, _. iFrame.
   eauto using circ_low_wf_update_addrs.
 Qed.
 

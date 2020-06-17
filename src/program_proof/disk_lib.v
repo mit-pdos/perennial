@@ -118,13 +118,14 @@ Qed.
 
 Transparent disk.Read disk.Write.
 
-Theorem wp_Write_fupd {stk E} E' (Q: iProp Σ) (a: u64) s q b :
-  {{{ is_slice_small s byteT q (Block_to_vals b) ∗
-      (|={E,E'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E',E}=∗ Q)) }}}
-    Write #a (slice_val s) @ stk; E
-  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
+Theorem wp_Write_fupd {stk E} E' (a: u64) s q b :
+  ∀ Φ,
+    is_slice_small s byteT q (Block_to_vals b) -∗
+    (|={E,E'}=> ∃ b0, int.val a d↦ b0 ∗
+       ▷ (int.val a d↦ b ={E',E}=∗ (is_slice_small s byteT q (Block_to_vals b) -∗ Φ #()))) -∗
+    WP  Write #a (slice_val s) @ stk; E {{ Φ }}.
 Proof.
-  iIntros (Φ) "[Hs Hupd] HΦ".
+  iIntros (Φ) "Hs Hupd".
   wp_call.
   wp_call.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
@@ -138,10 +139,22 @@ Proof.
   iIntros "[Hda Hmapsto]".
   iMod ("Hupd" with "Hda") as "HQ".
   iModIntro.
-  iApply "HΦ".
+  iApply "HQ".
   iFrame.
   iSplitL; auto.
   by iApply array_to_block_array.
+Qed.
+
+Theorem wp_Write_fupd_triple {stk E} E' (Q: iProp Σ) (a: u64) s q b :
+  {{{ is_slice_small s byteT q (Block_to_vals b) ∗
+      (|={E,E'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E',E}=∗ Q)) }}}
+    Write #a (slice_val s) @ stk; E
+  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
+Proof.
+  iIntros (Φ) "[Hs Hupd] HΦ". iApply (wp_Write_fupd with "Hs").
+  iMod "Hupd" as (b0) "[Hda Hclose]". iModIntro. iExists b0.
+  iFrame. iIntros "!> Hda". iMod ("Hclose" with "Hda").
+  iIntros "!> Hs". iApply "HΦ". iFrame.
 Qed.
 
 Theorem wp_Write stk E (a: u64) s q b :
@@ -151,11 +164,9 @@ Theorem wp_Write stk E (a: u64) s q b :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
-  wp_apply (wp_Write_fupd E (int.val a d↦ b) with "[Hda $Hs]").
-  { iExists b0; iFrame.
-    iIntros "!> !> $". done. }
-  iIntros "[Hs Hda]".
-  iApply ("HΦ" with "[$]").
+  wp_apply (wp_Write_fupd E with "Hs").
+  iModIntro. iExists _. iFrame.
+  iIntros "!> Hda !> Hs". iApply "HΦ". iFrame.
 Qed.
 
 Theorem wp_Write' stk E (z: Z) (a: u64) s q b :
@@ -168,13 +179,13 @@ Proof.
   eauto.
 Qed.
 
-Lemma wp_Read_fupd {stk E} E' (Q: Block -> iProp Σ) (a: u64) q :
-  {{{ |={E,E'}=> ∃ b, int.val a d↦{q} b ∗ ▷ (int.val a d↦{q} b -∗ |={E',E}=> Q b) }}}
-    Read #a @ stk; E
-  {{{ s b, RET slice_val s;
-      Q b ∗ is_block_full s b }}}.
+Lemma wp_Read_fupd {stk E} E' (a: u64) q :
+  ∀ Φ,
+    (|={E,E'}=> ∃ b, int.val a d↦{q} b ∗
+      ▷ (int.val a d↦{q} b -∗ |={E',E}=> (∀ s, is_block_full s b -∗ Φ (slice_val s)))) -∗
+    WP  Read #a @ stk; E {{ Φ }}.
 Proof.
-  iIntros (Φ) "Hupd HΦ".
+  iIntros (Φ) "Hupd".
   wp_call.
   wp_bind (ExternalOp _ _).
   iApply (wp_atomic _ E E').
@@ -186,7 +197,19 @@ Proof.
   wp_pures.
   wp_apply (wp_raw_slice with "Hs").
   iIntros (s) "Hs".
-  iApply "HΦ"; iFrame.
+  iApply "HQ"; iFrame.
+Qed.
+
+Lemma wp_Read_fupd_triple {stk E} E' (Q: Block -> iProp Σ) (a: u64) q :
+  {{{ |={E,E'}=> ∃ b, int.val a d↦{q} b ∗ ▷ (int.val a d↦{q} b -∗ |={E',E}=> Q b) }}}
+    Read #a @ stk; E
+  {{{ s b, RET slice_val s;
+      Q b ∗ is_block_full s b }}}.
+Proof.
+  iIntros (Φ) "Hupd HΦ". iApply wp_Read_fupd.
+  iMod "Hupd" as (b0) "[Hda Hclose]". iModIntro. iExists b0.
+  iFrame. iIntros "!> Hda". iMod ("Hclose" with "Hda").
+  iIntros "!> * Hs". iApply "HΦ". iFrame.
 Qed.
 
 Lemma wp_Read {stk E} (a: u64) q b :
@@ -196,13 +219,10 @@ Lemma wp_Read {stk E} (a: u64) q b :
       int.val a d↦{q} b ∗ is_block_full s b }}}.
 Proof.
   iIntros (Φ) "Hda HΦ".
-  wp_apply (wp_Read_fupd E (fun b' => ⌜b' = b⌝ ∗ int.val a d↦{q} b')%I with "[Hda]").
-  { iModIntro.
-    iExists b; iFrame.
-    iNext.
-    iIntros "$ //".
-  }
-  iIntros (s b') "[[-> Hda] Hs]".
+  wp_apply (wp_Read_fupd E).
+  iModIntro.
+  iExists b; iFrame.
+  iIntros "!> Hda !> * Hs".
   iApply ("HΦ" with "[$]").
 Qed.
 
@@ -322,9 +342,7 @@ Proof.
     eauto. }
   iModIntro.
   iExists _; iFrame.
-  iNext.
-  iIntros "Hda".
-  iModIntro.
+  iIntros "!> Hda !>".
   iSplit.
   { crash_case; eauto. }
   iRight in "HΦ".
@@ -343,8 +361,7 @@ Proof.
   wpc_apply (wpc_Write' with "[$Hda $Hs]").
   iSplit.
   { iIntros "[Hda|Hda]"; crash_case; eauto. }
-  iNext.
-  iIntros "[Hda Hb]".
+  iIntros "!> [Hda Hb]".
   iRight in "HΦ".
   iApply "HΦ"; iFrame.
 Qed.
