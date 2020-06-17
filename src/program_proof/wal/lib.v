@@ -123,7 +123,7 @@ Instance is_blocks_AsFractional bks q v :
 Proof.
   constructor; auto.
   apply _.
-  Grab Existential Variables.
+  Unshelve.
   exact 1%Qp.
 Qed.
 
@@ -166,7 +166,7 @@ Global Instance updates_slice_frag_AsMapsTo bk_s bs :
   AsMapsTo (updates_slice_frag bk_s 1 bs) (λ q, updates_slice_frag bk_s q bs).
 Proof.
   constructor; auto; intros; apply _.
-  Grab Existential Variables.
+  Unshelve.
   exact 1%Qp.
 Qed.
 

@@ -167,7 +167,7 @@ Proof.
     iModIntro.
     iApply (sty_inv_to_wpc _ _ _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$]"); eauto.
   }
-  Grab Existential Variables.
+  Unshelve.
   apply subG_styPreG, _.
 Qed.
 

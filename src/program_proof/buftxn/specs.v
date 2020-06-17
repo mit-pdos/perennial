@@ -71,7 +71,7 @@ Proof.
   rewrite big_sepM_empty. iFrame "Htxn ∗".
   iSplit. 2: { iApply big_sepM_empty. done. }
   rewrite fmap_empty. done.
-  (* Grab Existential Variables. all: eauto. (* XXX, bug in Coq v8.11*) *)
+  (* Unshelve. all: eauto. (* XXX, bug in Coq v8.11*) *)
 Qed.
 
 Theorem wp_BufTxn__ReadBuf buftx mT γUnified a sz v :
@@ -279,7 +279,7 @@ Proof.
         simpl. eauto. }
       rewrite -> lookup_insert_ne by eauto.
       destruct (gBufmap !! k); eauto.
-      Grab Existential Variables.
+      Unshelve.
       all: eauto.
      *)
 Admitted.

@@ -128,7 +128,7 @@ Proof.
   split_and!; simpl; auto.
   cut (txn_id ≤ diskEnd_txn_id)%nat; first by lia.
   lia.
-  Grab Existential Variables.
+  Unshelve.
   all: try constructor.
 Qed.
 

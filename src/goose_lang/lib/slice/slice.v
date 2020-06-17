@@ -127,7 +127,7 @@ Theorem is_slice_small_Fractional s q t vs :
   fractional.AsFractional (is_slice_small s t q vs) (λ q, is_slice_small s t q vs) q.
 Proof.
   split; auto; apply _.
-  Grab Existential Variables.
+  Unshelve.
   exact 1%Qp.
 Qed.
 
@@ -135,7 +135,7 @@ Global Instance is_slice_small_as_mapsto s t vs :
   AsMapsTo (is_slice_small s t 1 vs) (λ q, is_slice_small s t q vs).
 Proof.
   constructor; auto; intros; apply _.
-  Grab Existential Variables.
+  Unshelve.
   exact 1%Qp.
 Qed.
 
