@@ -761,7 +761,7 @@ Theorem wp_padInts enc (n: u64) (encoded : list encodable) (off: Z):
   }}}
     padInts (EncM.to_val enc) #n
   {{{ RET #();
-    is_enc enc (encoded ++ (EncUInt64 <$> replicate (int.nat n) (U64 0))) (int.val off-(8*int.nat n))
+    is_enc enc (encoded ++ (EncUInt64 <$> replicate (int.nat n) (U64 0))) (int.val off-(8*int.val n))
   }}}.
 Proof.
   iIntros (ϕ) "[%Hi Henc] Hϕ".
@@ -811,9 +811,9 @@ Proof.
   iApply "Hϕ"; iFrame.
 Admitted.
 
-Theorem wp_Inode__mkHdr l (sz numInd : u64) dirAddrs indAddrs direct_s indirect_s:
-  (length(dirAddrs) = int.nat maxDirect ∧
-  length(indAddrs) = int.nat maxIndirect ∧
+Theorem wp_Inode__mkHdr l (sz numInd : u64) allocedDirAddrs allocedIndAddrs direct_s indirect_s:
+  (length(allocedDirAddrs) <= int.nat maxDirect ∧
+  length(allocedIndAddrs) = int.nat numInd ∧
   int.val sz < MaxBlocks ∧
   (int.val sz > maxDirect -> int.val numInd = Z.add ((int.val sz - maxDirect) `div` indirectNumBlocks) 1) ∧
   (int.val sz <= maxDirect -> int.val numInd = 0)) ->
@@ -821,18 +821,21 @@ Theorem wp_Inode__mkHdr l (sz numInd : u64) dirAddrs indAddrs direct_s indirect_
     "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
-    "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.nat sz) dirAddrs) ∗
-    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs)
+    "Hdirect" ∷ is_slice direct_s uint64T 1 allocedDirAddrs ∗
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 allocedIndAddrs
   }}}
     Inode__mkHdr #l
   {{{ s hdr, RET (slice_val s);
     is_block s 1 hdr ∗
-    "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> dirAddrs) ++ (EncUInt64 <$> indAddrs) ++ [EncUInt64 numInd])⌝ ∗
+    "%Hencoded" ∷ ⌜Block_to_vals hdr =
+    b2val <$> encode ([EncUInt64 sz] ++ (EncUInt64 <$> allocedDirAddrs) ++ (EncUInt64 <$> (replicate (int.nat (maxDirect - length allocedDirAddrs)) (U64 0)))
+                                     ++ (EncUInt64 <$> allocedIndAddrs) ++ (EncUInt64 <$> (replicate (int.nat (maxIndirect - length allocedIndAddrs)) (U64 0)))
+                                     ++ [EncUInt64 numInd])⌝ ∗
     "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
-    "Hdirect" ∷ is_slice direct_s uint64T 1 (take (int.nat sz) dirAddrs) ∗
-    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (int.nat numInd) indAddrs)
+    "Hdirect" ∷ is_slice direct_s uint64T 1 allocedDirAddrs ∗
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 allocedIndAddrs
   }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ"; iNamed "Hpre".
@@ -844,7 +847,19 @@ Proof.
   iDestruct (is_slice_sz with "Hindirect") as %HIndlen.
   autorewrite with len in HDirlen.
   autorewrite with len in HIndlen.
-  destruct Hbound as [HdirAddrsLen [HindAddrsLen [Hszmax [HnumInd1 HnumInd2]]]].
+  destruct Hbound as [HallocedDirAddrsLen [HallocedIndAddrsLen [Hszmax [HnumInd1 HnumInd2]]]].
+
+  assert (int.val numInd <= maxIndirect) as HnumInd.
+  {
+    destruct (bool_decide (int.val sz > maxDirect)) eqn:Heqsz.
+    - apply bool_decide_eq_true in Heqsz.
+      rewrite (HnumInd1 Heqsz).
+      pose (indirect_blocks_upperbound (int.val sz) Hszmax).
+      word.
+    - apply bool_decide_eq_false in Heqsz.
+      rewrite (HnumInd2 Heqsz).
+      rewrite /maxIndirect; word.
+  }
 
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
@@ -854,51 +869,57 @@ Proof.
 
   iDestruct (is_slice_split with "Hdirect") as "[Hdirect Hcap]".
   wp_apply (wp_Enc__PutInts with "[$Henc $Hdirect]").
-  { admit. }
+  {
+    rewrite /maxDirect in HallocedDirAddrsLen.
+    word.
+  }
 
   iIntros "[Henc Hdirect]".
   wp_loadField.
   wp_apply wp_slice_len; wp_pures.
 
   wp_apply (wp_padInts enc (U64 (500 - int.val (direct_s.(Slice.sz))))
-                       ([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat sz) dirAddrs))
-                       (int.val 4096 - 8 - 8 * length (take (int.nat sz) dirAddrs)) with "[Henc]").
+                       ([EncUInt64 sz] ++ (EncUInt64 <$> allocedDirAddrs))
+                       (int.val 4096 - 8 - 8 * length allocedDirAddrs) with "[Henc]").
   {
     iSplitR "Henc"; auto.
     iPureIntro.
-    split; admit.
+    split.
+    - rewrite HDirlen /maxDirect in HallocedDirAddrsLen. word.
+    - rewrite HDirlen. rewrite HDirlen /maxDirect in HallocedDirAddrsLen.
+      word.
   }
 
   iIntros "Henc".
-  replace (int.val (int.val 4096 - 8 - 8 * length (take (int.nat sz) dirAddrs)) -
-           8 * int.nat (500 - int.val direct_s.(Slice.sz))) with 4008.
-  2: admit.
+  replace (int.val (int.val 4096 - 8 - 8 * length allocedDirAddrs) -
+           8 * int.val (500 - int.val direct_s.(Slice.sz))) with 88.
+  2: rewrite HDirlen; rewrite HDirlen /maxDirect in HallocedDirAddrsLen; word.
 
   wp_pures.
   wp_loadField.
 
   iDestruct (is_slice_split with "Hindirect") as "[Hindirect Hcapind]".
   wp_apply (wp_Enc__PutInts with "[$Henc $Hindirect]").
-  { admit. }
+  { rewrite HallocedIndAddrsLen. rewrite /maxIndirect in HnumInd. word. }
 
   iIntros "[Henc Hindirect]".
   wp_loadField.
   wp_apply wp_slice_len; wp_pures.
 
   wp_apply (wp_padInts enc (U64 (10 - int.val (indirect_s.(Slice.sz))))
-               ((([EncUInt64 sz] ++ (EncUInt64 <$> take (int.nat sz) dirAddrs)) ++
+               ((([EncUInt64 sz] ++ (EncUInt64 <$> allocedDirAddrs) ++
                (EncUInt64 <$> replicate (int.nat (500 - int.val direct_s.(Slice.sz))) (U64 0))) ++
-               (EncUInt64 <$> take (int.nat numInd) indAddrs))
-               (4008 - 8 * length (take (int.nat numInd) indAddrs)) with "[Henc]").
+               (EncUInt64 <$> allocedIndAddrs)))
+               (88 - 8 * length allocedIndAddrs) with "[Henc]").
   {
     iSplitR "Henc"; auto.
     iPureIntro.
-    split; admit.
+    split; rewrite HIndlen /maxIndirect in HallocedIndAddrsLen HnumInd; word.
   }
   iIntros "Henc".
-  replace (int.val (4008 - 8 * length (take (int.nat numInd) indAddrs)) -
-           8 * int.nat (10 - int.val indirect_s.(Slice.sz))) with 3928.
-  2: admit.
+  rewrite /maxIndirect in HnumInd.
+  replace (int.val (88 - 8 * length allocedIndAddrs) -
+           8 * int.nat (10 - int.val indirect_s.(Slice.sz))) with 8 by word.
 
   wp_pures.
   wp_loadField.
@@ -921,12 +942,20 @@ Proof.
       rewrite H; reflexivity.
   - iPureIntro.
     rewrite list_to_block_to_vals; len.
-    + (*TODO show that dir/ind have 0s at end*)
+    +
       repeat (f_equal; try word).
-      admit.
+      rewrite HIndlen in HallocedIndAddrsLen.
+      rewrite /maxDirect /maxIndirect HDirlen HIndlen HallocedIndAddrsLen.
+      replace (Z.to_nat (int.val (88 - 8 * int.nat numInd) - 8 * int.val (10 - int.val indirect_s.(Slice.sz)) - 8))
+        with (int.nat 0) by (rewrite -HallocedIndAddrsLen; word).
+      rewrite replicate_0 app_nil_r.
+      rewrite -HallocedIndAddrsLen.
+      assert (indirect_s.(Slice.sz) = numInd) as foo by word; rewrite foo.
+      repeat (rewrite -app_assoc).
+      word_cleanup. reflexivity.
     + rewrite H0.
       rewrite H; reflexivity.
-Admitted.
+Qed.
 
 Inductive AppendStatus :=
 | AppendOk
@@ -985,8 +1014,7 @@ Proof.
   destruct (bool_decide (int.val 5620 <= int.val sz)) eqn:Hsz; wp_pures.
   {
     change (500 + 10 * 512) with (int.val 5620).
-    assert (int.val 5620 <= int.val sz).
-    { apply (bool_decide_eq_true (int.val 5620 <= int.val sz)). auto. }
+    apply bool_decide_eq_true in Hsz.
     wp_loadField.
     iMod ("Hfupd" $! σ σ AppendFull with "[%] [%] HP") as "[HP HQ]"; auto.
     { split; auto.
@@ -1020,10 +1048,7 @@ Proof.
     wp_storeField.
     wp_loadField.
     wp_storeField.
-    replace (take (int.nat sz) dirAddrs ++ [a]) with (take (int.nat sz) (dirAddrs ++ [a])).
-    2: admit.
-    Check wp_Inode__mkHdr.
-    wp_apply (wp_Inode__mkHdr _ _ _ (dirAddrs ++ [a]) _ _ _ with "[$direct $indirect $size Hdirect $Hindirect]").
+    wp_apply (wp_Inode__mkHdr _ _ numInd ((take (int.nat sz) dirAddrs) ++ [a]) _ _ _ with "[$direct $indirect $size Hdirect $Hindirect]").
 Admitted.
     (*
     { autorewrite with len; simpl.
