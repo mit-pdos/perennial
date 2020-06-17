@@ -15,12 +15,15 @@ Module SingleInode.
   ].
 End SingleInode.
 
+(* Restore the SingleInode from disk
+
+   sz should be the size of the disk to use *)
 Definition Open: val :=
-  rec: "Open" "d" :=
+  rec: "Open" "d" "sz" :=
     let: "i" := inode.Open "d" #0 in
     let: "used" := NewMap (struct.t alloc.unit.S) in
     alloc.SetAdd "used" (inode.Inode__UsedBlocks "i");;
-    let: "allocator" := alloc.New #1 (disk.Size #() - #1) "used" in
+    let: "allocator" := alloc.New #1 ("sz" - #1) "used" in
     struct.new SingleInode.S [
       "i" ::= "i";
       "alloc" ::= "allocator"
