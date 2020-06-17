@@ -231,18 +231,6 @@ Proof.
   iExists _, _; iFrame; auto.
 Qed.
 
-Ltac crash_lock_open H :=
-  lazymatch goal with
-  | [ |- envs_entails _ (wpc _ _ _ _ _ _ _) ] =>
-    (* TODO: check type of H and report mismatches in LVLs *)
-    iApply (use_crash_locked with H);
-    [ try lia (* LVL inequality *)
-    | try solve_ndisj (* Ncrash namespace *)
-    | first [ reflexivity | fail 1 "applied to a value?" ] (* to_val e = None *)
-    | iSplit; [ try iFromCache | ]
-    ]
-  end.
-
 Theorem wpc_Inode__Read {k E2} {l γ k' P addr} {off: u64} Q :
   (S k < k')%nat →
   {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗

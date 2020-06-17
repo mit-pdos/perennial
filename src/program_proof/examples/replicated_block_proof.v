@@ -240,8 +240,7 @@ Section goose.
     iNamed 1.
 
     wpc_bind_seq.
-    iApply (use_crash_locked with "His_locked"); auto.
-    iSplit; first by iFromCache.
+    crash_lock_open "His_locked".
     iNamed 1.
     iAssert (int.val addr' d↦ σ ∗
                    (int.val addr' d↦ σ -∗ rblock_linv addr σ))%I
@@ -327,8 +326,7 @@ Section goose.
 
     wpc_pures.
     wpc_bind_seq.
-    iApply (use_crash_locked with "His_locked"); auto.
-    iSplit; first by iFromCache.
+    crash_lock_open "His_locked".
     iNamed 1.
     iNamed "Hlkinv".
 

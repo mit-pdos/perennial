@@ -192,3 +192,26 @@ Section proof.
 End proof.
 
 End goose_lang.
+
+Ltac crash_lock_open H :=
+  lazymatch goal with
+  | [ |- envs_entails _ (wpc _ ?k _ _ _ _ _) ] =>
+    lazymatch k with
+    | LVL _ => idtac
+    | _ => fail 1 "crash_lock_open: wpc needs k of the form LVL (S (S ?k))"
+    end;
+    match iTypeOf H with
+    | Some (_, crash_locked _ _ (LVL _) _ _ _ _) =>
+      iApply (use_crash_locked with H);
+      [ try lia (* LVL inequality *)
+      | try solve_ndisj (* Ncrash namespace *)
+      | first [ reflexivity | fail 1 "applied to a value?" ] (* to_val e = None *)
+      | iSplit; [ try iFromCache | ]
+      ]
+    | Some (_, crash_locked _ _ _ _ _ _ _) =>
+      fail 1 "crash_lock_open:" H "does not have correct LVL"
+    | Some (_, _) => fail 1 "crash_lock_open:" H "is not a crash_locked fact"
+    | None => fail 1 "crash_lock_open:" H "not found"
+    end
+  | _ => fail 1 "crash_lock_open: not a wpc"
+  end.
