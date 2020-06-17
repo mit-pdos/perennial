@@ -347,7 +347,7 @@ Section goose.
     requires helping due to the possibility of losing the first disk block
     between crash and recovery - the commit cannot happen until recovery
     succesfully synchronizes the disks. *)
-    wpc_apply (wpc_Write_fupd' (⊤ ∖ ↑N) with "Hb").
+    wpc_apply (wpc_Write_fupd (⊤ ∖ ↑N) with "Hb").
     iModIntro. iExists _; iFrame. iIntros "!> Hprimary".
     (* linearization/simulation point: run Hfupd. *)
     iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HΦ]".

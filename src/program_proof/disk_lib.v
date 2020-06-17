@@ -255,10 +255,11 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wpc_Write_fupd' {stk k E1 E2} E1' (a: u64) s q b :
+Theorem wpc_Write_fupd {stk k E1 E2} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗
-    (Φc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Φc ∧ (is_block s q b -∗ Φ #()))) -∗
+    (Φc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗
+          Φc ∧ (is_block s q b -∗ Φ #()))) -∗
     WPC Write #a (slice_val s) @ stk;k; E1;E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Φ Φc) "Hs Hfupd".
@@ -289,7 +290,7 @@ Proof.
       word.
 Qed.
 
-Theorem wpc_Write_fupd {stk k E1 E2} E1' (Q Qc: iProp Σ) (a: u64) s q b :
+Theorem wpc_Write_fupd_triple {stk k E1 E2} E1' (Q Qc: iProp Σ) (a: u64) s q b :
   {{{ is_block s q b ∗
       (Qc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Q)) }}}
     Write #a (slice_val s) @ stk;k; E1;E2
@@ -298,38 +299,13 @@ Theorem wpc_Write_fupd {stk k E1 E2} E1' (Q Qc: iProp Σ) (a: u64) s q b :
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "[Hs Hfupd]".
-  iApply (wpc_Write_fupd' with "Hs"). iSplit.
+  iApply (wpc_Write_fupd with "Hs"). iSplit.
   { iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". iFrame. }
   iRight in "Hfupd". iMod "Hfupd" as (b0) "[Hv Hclose]". iModIntro.
   iExists b0. iFrame. iIntros "!> Hv". iMod ("Hclose" with "Hv") as "HQ".
   iModIntro. iSplit.
   { iLeft in "HΦ". iApply "HΦ". iFrame. }
   iRight in "HΦ". iIntros "Hblock". iApply "HΦ". iFrame.
-Qed.
-
-Theorem wpc_Write stk k E1 E2 (a: u64) s q b :
-  {{{ ∃ b0, int.val a d↦ b0 ∗ is_block s q b }}}
-    Write #a (slice_val s) @ stk; k; E1; E2
-  {{{ RET #(); int.val a d↦ b ∗ is_block s q b }}}
-  {{{ ∃ b', int.val a d↦ b' }}}.
-Proof.
-  iIntros (Φ Φc) "Hpre HΦ".
-  iDestruct "Hpre" as (b0) "[Hda Hs]".
-  wpc_apply (wpc_Write_fupd E1 (int.val a d↦ b)
-            with "[$Hs Hda]").
-  { iSplit; [ iNamedAccu | ].
-    iModIntro.
-    iExists _; iFrame.
-    iIntros "!> $ //".
-  }
-  iSplit.
-  { rewrite /named. (* TODO: iNamed on this and doesn't work *)
-    iIntros "Hda".
-    crash_case.
-    iDestruct "Hda" as "[Hda | Hda]"; iExists _; iFrame. }
-  iNext.
-  iIntros "[Hb Hd]".
-  iApply "HΦ"; iFrame.
 Qed.
 
 Theorem wpc_Write' stk k E1 E2 (a: u64) s q b0 b :
@@ -340,20 +316,36 @@ Theorem wpc_Write' stk k E1 E2 (a: u64) s q b0 b :
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "[Hda Hs]".
-  wpc_apply (wpc_Write_fupd E1 (int.val a d↦ b)
-            with "[$Hs Hda]").
-  { iSplit; [ iNamedAccu | ].
-    iModIntro.
-    iExists _; iFrame.
-    iIntros "!> $ //".
-  }
+  wpc_apply (wpc_Write_fupd with "[$Hs]").
   iSplit.
-  { rewrite /named. (* TODO: iNamed on this and doesn't work *)
-    iIntros "Hda".
-    crash_case.
-    auto. }
+  { crash_case.
+    eauto. }
+  iModIntro.
+  iExists _; iFrame.
   iNext.
-  iIntros "[Hb Hd]".
+  iIntros "Hda".
+  iModIntro.
+  iSplit.
+  { crash_case; eauto. }
+  iRight in "HΦ".
+  iIntros "Hb".
+  iApply "HΦ"; iFrame.
+Qed.
+
+Theorem wpc_Write stk k E1 E2 (a: u64) s q b :
+  {{{ ∃ b0, int.val a d↦ b0 ∗ is_block s q b }}}
+    Write #a (slice_val s) @ stk; k; E1; E2
+  {{{ RET #(); int.val a d↦ b ∗ is_block s q b }}}
+  {{{ ∃ b', int.val a d↦ b' }}}.
+Proof.
+  iIntros (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as (b0) "[Hda Hs]".
+  wpc_apply (wpc_Write' with "[$Hda $Hs]").
+  iSplit.
+  { iIntros "[Hda|Hda]"; crash_case; eauto. }
+  iNext.
+  iIntros "[Hda Hb]".
+  iRight in "HΦ".
   iApply "HΦ"; iFrame.
 Qed.
 

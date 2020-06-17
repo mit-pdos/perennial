@@ -659,19 +659,29 @@ Proof.
       iSplit; first iFromCache.
       iIntros "Hda Hreserved".
       wpc_bind (Write _ _).
+      (* hide this horrible postcondition for now *)
+      match goal with
+      | |- envs_entails _ (wpc _ _ _ _ _ ?Φ0 _) => set (Φ':=Φ0)
+      end.
+      (*
       iNamed "Hdurable".
       iAssert ((int.val addr d↦ hdr -∗
                ([∗ list] a0;b1 ∈ addrs;σ.(inode.blocks), int.val a0 d↦ b1) -∗
                is_inode_durable addr σ addrs))%I as "Hrestore_durable".
       { iIntros "Hhdr Hdata".
         iExists _, _; iFrame "% ∗". }
-      wpc_apply (wpc_Write_fupd _
-                              ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0])
-                                            (set inode.addrs ({[a]} ∪.) σ)) ∗
-                              "Hhdr" ∷ int.val addr d↦ b' ∗
-                              "Hused" ∷ used_block γalloc a ∗
-                              "HQ" ∷ Q) with "[$Hb Hhdr Hfupd HP Hreserved]").
-      { iSplit; [ iNamedAccu | ].
+      iCache with "HΦ Hfupd Hda HP Hhdr Hdata".
+      { iDestruct ("Hrestore_durable" with "[$] [$]") as "Hdurable".
+        iSplitR "Hda"; first iFromCache.
+        iApply block_cinv_free_pred.
+        iExists _; iFrame. }
+*)
+      wpc_apply (wpc_Write_fupd with "[$Hb]").
+      iSplit.
+      { iSplitR "Hda"; first iFromCache.
+        iApply block_cinv_free_pred.
+        iExists _; iFrame. }
+      { iNamed "Hdurable".
         iLeft in "Hfupd".
         set (σ':=set inode.blocks (λ bs : list Block, bs ++ [b0])
                      (set inode.addrs (union {[a]}) σ)).
@@ -692,25 +702,7 @@ Proof.
         iNext.
         iIntros "Hhdr".
         iMod "Hget_used" as "[ (HP&HQ) Hused]".
-
-        by iFrame. }
-      iSplit; [ | iNext ].
-      { iIntros "[Hcrash|Hcrash]"; iNamed "Hcrash".
-        - iDestruct ("Hrestore_durable" with "[$] [$]") as "Hdurable".
-          iSplitR "Hda"; first iFromCache.
-          iApply block_cinv_free_pred.
-          iExists _; iFrame.
-        - iSpecialize ("HQc" with "HQ").
-          iSplitR "Hused".
-          { iSplitL "HΦ HQc Hda"; first by crash_case.
-            iExists _; iFrame.
-            admit. (* TODO: need to prove inode_cinv (as in proof below) *) }
-          iApply block_cinv_from_used; iFrame. }
-      iIntros "(Hb&Hpost)"; iNamed "Hpost".
-      iCache Φc with "HΦ HQ HQc".
-      { iSpecialize ("HQc" with "HQ").
-        by crash_case. }
-
+        iModIntro.
       iAssert (is_inode_durable addr
                  (set inode.blocks (λ bs : list Block, bs ++ [b0])
                       (set inode.addrs (union {[a]}) σ))
@@ -730,22 +722,32 @@ Proof.
           set_solver. }
         simpl; auto. }
       iDestruct (is_inode_durable_wf with "Hdurable") as %Hwf'.
-      iCache (block_cinv Ψ γalloc a) with "Hused".
-      { iApply block_cinv_from_used; iFrame. }
-      iCache with "HΦ HQ HQc Hused HP Hdurable".
-      { iSplitR "Hused"; last iFromCache.
-        iSplitL "HΦ HQ HQc"; first iFromCache.
-        iExists _; iFrame "HP".
-        iExists _; iFrame. }
-
-      wpc_pures.
-      iSplitR "Hused"; last iFromCache.
-      iSplit.
-      { iSplitL "HΦ HQ HQc"; first iFromCache.
+      iCache Φc with "HΦ HQc HQ".
+      { crash_case.
+        iApply "HQc"; iFrame. }
+      match goal with
+      | |- envs_entails _ ((?P ∗ _) ∧ _) =>
+        iCache P with "HΦ HQc HQ HP Hdurable"
+      end.
+      { iSplitL "HΦ HQc HQ"; first iFromCache.
         iExists _; iFrame.
         iExists _; iFrame. }
+      iCache (block_cinv Ψ γalloc a) with "Hused".
+      { iApply block_cinv_from_used; iFrame. }
+      iSplit.
+      { iSplitR "Hused"; first iFromCache.
+        iFromCache. }
+      iIntros "Hb".
+      subst Φ'; cbv beta.
+      (* done applying wpc_Write_fupd *)
+
+      wpc_pures.
+      { iSplitR "Hused"; first iFromCache.
+        iFromCache. }
+      iSplitR "Hused"; last iFromCache.
+      iSplit; first iFromCache.
       iSplitR "HP Haddrs addrs Hdurable"; last first.
-      { iExists _; iFrame "HP".
+      { iExists _; iFrame.
         iExists _, _; iFrame "∗ %". }
       iIntros "His_locked".
       iSplit; first iFromCache.
