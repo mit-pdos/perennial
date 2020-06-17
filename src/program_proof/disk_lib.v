@@ -255,15 +255,13 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wpc_Write_fupd {stk k E1 E2} E1' (Q Qc: iProp Σ) (a: u64) s q b :
-  {{{ is_block s q b ∗
-      (Qc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Q)) }}}
-    Write #a (slice_val s) @ stk;k; E1;E2
-  {{{ RET #(); is_block s q b ∗ Q }}}
-  {{{ Qc ∨ Q }}}.
+Theorem wpc_Write_fupd' {stk k E1 E2} E1' (a: u64) s q b :
+  ∀ Φ Φc,
+    is_block s q b -∗
+    (Φc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Φc ∧ (is_block s q b -∗ Φ #()))) -∗
+    WPC Write #a (slice_val s) @ stk;k; E1;E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (Φ Φc) "Hpre HΦ".
-  iDestruct "Hpre" as "[Hs Hfupd]".
+  iIntros (Φ Φc) "Hs Hfupd".
   rewrite /Write /slice.ptr.
   wpc_pures.
   { iLeft in "Hfupd". iFrame. }
@@ -280,8 +278,8 @@ Proof.
   iMod ("HQ" with "Hda") as "HQ".
   iModIntro.
   iSplit; iModIntro.
-  - crash_case; iFrame.
-  - iApply "HΦ".
+  - by iLeft in "HQ".
+  - iRight in "HQ". iApply "HQ".
     iFrame.
     destruct s; simpl in Hsz.
     replace sz with (U64 4096).
@@ -289,6 +287,24 @@ Proof.
     + rewrite length_Block_to_vals in Hsz.
       change block_bytes with (Z.to_nat 4096) in Hsz.
       word.
+Qed.
+
+Theorem wpc_Write_fupd {stk k E1 E2} E1' (Q Qc: iProp Σ) (a: u64) s q b :
+  {{{ is_block s q b ∗
+      (Qc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Q)) }}}
+    Write #a (slice_val s) @ stk;k; E1;E2
+  {{{ RET #(); is_block s q b ∗ Q }}}
+  {{{ Qc ∨ Q }}}.
+Proof.
+  iIntros (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "[Hs Hfupd]".
+  iApply (wpc_Write_fupd' with "Hs"). iSplit.
+  { iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". iFrame. }
+  iRight in "Hfupd". iMod "Hfupd" as (b0) "[Hv Hclose]". iModIntro.
+  iExists b0. iFrame. iIntros "!> Hv". iMod ("Hclose" with "Hv") as "HQ".
+  iModIntro. iSplit.
+  { iLeft in "HΦ". iApply "HΦ". iFrame. }
+  iRight in "HΦ". iIntros "Hblock". iApply "HΦ". iFrame.
 Qed.
 
 Theorem wpc_Write stk k E1 E2 (a: u64) s q b :

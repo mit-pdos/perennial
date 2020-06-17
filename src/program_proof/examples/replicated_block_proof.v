@@ -293,11 +293,11 @@ Section goose.
     iApply wpc_RepBlock__Read'; first done.
     iFrame "Hrb".
     iSplit.
-    - iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done.
-    - iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
-      iModIntro. iFrame "HP". iSplit.
-      + iLeft in "HΦ". iApply "HΦ". iApply "HQc". done.
-      + iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
+    { iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done. }
+    iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
+    iModIntro. iFrame "HP". iSplit.
+    { iLeft in "HΦ". iApply "HΦ". iApply "HQc". done. }
+    iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
   Lemma wpc_RepBlock__Write' {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
@@ -347,24 +347,13 @@ Section goose.
     requires helping due to the possibility of losing the first disk block
     between crash and recovery - the commit cannot happen until recovery
     succesfully synchronizes the disks. *)
-    wpc_apply (wpc_Write_fupd (⊤ ∖ ↑N) ("Hprimary" ∷ int.val addr d↦ b ∗
-                                        "HP" ∷ P b ∗
-                                        "HΦ" ∷ (Φc ∧ (is_block s q b -∗ Φ #())))
-              with "[$Hb Hprimary Hfupd HP]").
-    { iSplit; [ iNamedAccu | ].
-      iModIntro.
-      iExists _; iFrame.
-      iNext.
-      iIntros "Hda".
-      iMod ("Hfupd" with "HP") as "[$ $]".
-      iModIntro; auto. }
-    iSplit; [ | iNext ].
-    { iIntros "Hpost".
-      iDestruct "Hpost" as "[Hpost|Hpost]"; iNamed "Hpost"; try iFromCache.
-      iSplitL "HΦ".
-      - by iLeft in "HΦ".
-      - eauto with iFrame. }
-    iIntros "(Hb&Hpost)"; iNamed "Hpost".
+    wpc_apply (wpc_Write_fupd' (⊤ ∖ ↑N) with "Hb").
+    iModIntro. iExists _; iFrame. iIntros "!> Hprimary".
+    (* linearization/simulation point: run Hfupd. *)
+    iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HΦ]".
+    iModIntro. iSplit.
+    { iLeft in "HΦ". eauto 10 with iFrame. }
+    iIntros "Hb".
     iCache Φc with "HΦ".
     { by iLeft in "HΦ". }
     iCache with "HΦ Hprimary Hbackup HP".
@@ -408,11 +397,11 @@ Section goose.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iApply wpc_RepBlock__Write'; first done.
     iFrame. iSplit.
-    - iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done.
-    - iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
-      iModIntro. iFrame "HP". iSplit.
-      + iLeft in "HΦ". iApply "HΦ". iApply "HQc". done.
-      + iIntros "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
+    { iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done. }
+    iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
+    iModIntro. iFrame "HP". iSplit.
+    { iLeft in "HΦ". iApply "HΦ". iApply "HQc". done. }
+    iIntros "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
 End goose.
