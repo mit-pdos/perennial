@@ -1037,7 +1037,6 @@ Proof.
   }
 
   wp_loadField.
-  wp_apply wp_slice_len; wp_pures.
   wp_if_destruct.
   - wp_loadField.
     wp_apply (wp_SliceAppend (V:=u64) with "[$Hdirect]").
@@ -1048,28 +1047,51 @@ Proof.
     wp_storeField.
     wp_loadField.
     wp_storeField.
-    wp_apply (wp_Inode__mkHdr _ _ numInd ((take (int.nat sz) dirAddrs) ++ [a]) _ _ _ with "[$direct $indirect $size Hdirect $Hindirect]").
-Admitted.
-    (*
-    { autorewrite with len; simpl.
-      word. }
-    iIntros (s b extra') "(Hb&%Hencded&?&?)"; iNamed.
+    wp_apply (wp_Inode__mkHdr _ _ numInd ((take (int.nat sz) dirAddrs) ++ [a]) _ _ _ with "[$direct $indirect $size $Hdirect $Hindirect]").
+    {
+      autorewrite with len; simpl.
+      assert (int.val (word.add sz 1) <= int.val 500) by word.
+      repeat split.
+      - rewrite /maxDirect. word.
+      - assert (int.val sz <= maxDirect) as Hszle.
+        { rewrite /maxDirect. word. }
+        rewrite (HnumInd2 Hszle).
+        word.
+      - rewrite /MaxBlocks /maxDirect /maxIndirect /indirectNumBlocks; word.
+      - intros. rewrite /maxDirect in H. contradiction.
+      - intros.
+        assert (int.val sz <= maxDirect) as Hszle.
+        { rewrite /maxDirect. word. }
+        rewrite (HnumInd2 Hszle).
+        word.
+    }
+
+    iIntros (s b) "(Hb & %Hencded & ? & ? & ? & ? & ?)"; iNamed.
     wp_loadField.
     wp_apply (wp_Write_fupd ⊤
                             ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0]) σ) ∗
 
                 "Hhdr" ∷ int.val σ.(inode.addr) d↦ b ∗
                             "HQ" ∷ Q AppendOk) with "[$Hb Hhdr Hfupd HP]").
-    { iMod ("Hfupd" $! σ _ AppendOk with "[%] [% //] HP") as "[HP HQ]".
+    { iMod ("Hfupd" $! σ _ AppendOk with "[%] [%] HP") as "[HP HQ]"; auto.
       { split; eauto.
         split; try congruence.
         rewrite /inode.size.
-        rewrite -Hlen2 Hlen1; word. }
+        rewrite -HszEqLen. word.
+      }
       iExists hdr; iFrame.
       iModIntro. iNext.
       by iIntros "$". }
     iIntros "(Hs&Hpost)"; iNamed "Hpost".
     wp_loadField.
+    wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr size direct indirect Hdirect Hindirect HdataDirect HdataIndirect]").
+    {
+      iExists σ; iFrame.
+Admitted.
+(*      iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, indBlocks, hdr. iFrame "∗ %".
+      iPureIntro; repeat (split; auto).
+    }
+
     wp_apply (release_spec with "[$Hlock $His_locked addr addrs Haddrs HP Hhdr Hdata Ha]").
     { iExists _; iFrame.
       iExists _, _, _, _; iFrame "∗ %".
