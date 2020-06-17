@@ -372,32 +372,6 @@ Proof.
   }
 Qed.
 
-(*Theorem wp_Inode__UsedBlocks {l γ P} :
-  (* TODO: it would be cool to run this before allocating the lock invariant for
-  the inode; we could recover a "pre-inode" and then in a purely logical step
-  allocate all the lock invariants in the caller; otherwise this code can't
-  return the slice literally because it'll be protected by a lock. *)
-  {{{ is_inode l γ P }}}
-    Inode__UsedBlocks #l
-  {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
-      (* TODO: what should the spec be? this seems to help discover the
-      footprint of is_durable; how do we use that? *)
-      is_slice s uint64T 1 addrs }}}.
-Proof.
-  iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
-  wp_call.
-  wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
-  iIntros "[His_locked Hlk]"; iNamed "Hlk".
-  iNamed "Hlockinv".
-  wp_loadField.
-  wp_loadField.
-  wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr addrs Haddrs Hdata]").
-  { iExists _; iFrame.
-    iExists _, _, _, _; iFrame "∗ %". }
-  wp_pures.
-Abort. *)
-
 Theorem wp_indNum {off: u64} :
   {{{
        ⌜int.val off >= maxDirect⌝
@@ -976,7 +950,6 @@ Proof.
   abstract (intros [] []; auto; inversion 1).
 Defined.
 
-(*
 Theorem wp_Inode__Append {l γ P} (Q: AppendStatus -> iProp Σ) (a: u64) (b0: Block) :
   {{{ is_inode l γ P ∗ int.val a d↦ b0 ∗
       (∀ σ σ' (status: AppendStatus),
@@ -999,43 +972,62 @@ Proof.
   wp_apply (acquire_spec with "Hlock").
   iIntros "(His_locked&Hlk)"; iNamed "Hlk".
   iNamed "Hlockinv".
-  wp_loadField.
-  iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
-  iDestruct (big_sepL2_length with "Hdata") as %Hlen2.
+  iNamed "Hdurable".
+  iDestruct (is_slice_sz with "Hdirect") as %Hlen1.
+  iDestruct (big_sepL2_length with "HdataDirect") as %Hlen2.
   autorewrite with len in Hlen1.
-  wp_apply wp_slice_len; wp_pures.
-  wp_if_destruct.
-  - wp_loadField.
-    iMod ("Hfupd" $! σ σ AppendFull with "[%] [% //] HP") as "[HP HQ]".
+  destruct Hlen as [HdirLen [HindirLen [HszEqLen [HszMax [HnumInd1 [HnumInd2 HindBlksLen]]]]]].
+
+  wp_loadField.
+  change (word.add 500 (word.mul 10 512)) with (U64 5620).
+
+  wp_pures.
+  destruct (bool_decide (int.val 5620 <= int.val sz)) eqn:Hsz; wp_pures.
+  {
+    change (500 + 10 * 512) with (int.val 5620).
+    assert (int.val 5620 <= int.val sz).
+    { apply (bool_decide_eq_true (int.val 5620 <= int.val sz)). auto. }
+    wp_loadField.
+    iMod ("Hfupd" $! σ σ AppendFull with "[%] [%] HP") as "[HP HQ]"; auto.
     { split; auto.
       split; auto.
       intros.
-      rewrite /inode.size.
-      rewrite -Hlen2 Hlen1.
-      word. }
-    wp_apply (release_spec with "[$Hlock $His_locked Hhdr addr addrs Haddrs Hdata HP]").
-    { iExists _; iFrame.
-      iExists _, _, _, _; iFrame "∗ %". }
+      rewrite -HszEqLen /inode.size /MaxBlocks /maxDirect /maxIndirect /indirectNumBlocks.
+      word.
+    }
+
+    wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr size direct indirect Hdirect Hindirect HdataDirect HdataIndirect]").
+    {
+      iExists σ; iFrame.
+      iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, indBlocks, hdr. iFrame "∗ %".
+      iPureIntro; repeat (split; auto).
+    }
     wp_pures.
-    change #(U8 2) with (to_val AppendFull).
-    iApply "HΦ"; iFrame.
+    iApply ("HΦ" $! AppendFull).
+    iSplitR "Ha"; auto.
     rewrite bool_decide_eq_false_2; auto.
+  }
+
+  wp_loadField.
+  wp_apply wp_slice_len; wp_pures.
+  wp_if_destruct.
   - wp_loadField.
-    wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
+    wp_apply (wp_SliceAppend (V:=u64) with "[$Hdirect]").
     { iPureIntro.
       word. }
     iIntros (addr_s') "Haddrs".
     Transparent slice.T.
     wp_storeField.
     Opaque slice.T.
-    wp_apply (wp_Inode__mkHdr with "[$addrs $Haddrs]").
+    wp_apply (wp_Inode__mkHdr with "[$direct $Hdirect]").
     { autorewrite with len; simpl.
       word. }
     iIntros (s b extra') "(Hb&%Hencded&?&?)"; iNamed.
     wp_loadField.
     wp_apply (wp_Write_fupd ⊤
                             ("HP" ∷ P (set inode.blocks (λ bs, bs ++ [b0]) σ) ∗
-                            "Hhdr" ∷ int.val σ.(inode.addr) d↦ b ∗
+
+                "Hhdr" ∷ int.val σ.(inode.addr) d↦ b ∗
                             "HQ" ∷ Q AppendOk) with "[$Hb Hhdr Hfupd HP]").
     { iMod ("Hfupd" $! σ _ AppendOk with "[%] [% //] HP") as "[HP HQ]".
       { split; eauto.
