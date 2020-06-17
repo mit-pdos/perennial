@@ -1015,11 +1015,17 @@ Proof.
     wp_apply (wp_SliceAppend (V:=u64) with "[$Hdirect]").
     { iPureIntro.
       word. }
-    iIntros (addr_s') "Haddrs".
+    iIntros (direct_s') "Hdirect".
     Transparent slice.T.
     wp_storeField.
-    Opaque slice.T.
-    wp_apply (wp_Inode__mkHdr with "[$direct $Hdirect]").
+    wp_loadField.
+    wp_storeField.
+    replace (take (int.nat sz) dirAddrs ++ [a]) with (take (int.nat sz) (dirAddrs ++ [a])).
+    2: admit.
+    Check wp_Inode__mkHdr.
+    wp_apply (wp_Inode__mkHdr _ _ _ (dirAddrs ++ [a]) _ _ _ with "[$direct $indirect $size Hdirect $Hindirect]").
+Admitted.
+    (*
     { autorewrite with len; simpl.
       word. }
     iIntros (s b extra') "(Hb&%Hencded&?&?)"; iNamed.
