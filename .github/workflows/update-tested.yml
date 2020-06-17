@@ -1,0 +1,27 @@
+# mostly stolen from
+# https://github.com/mit-plv/bedrock2/blob/720023ddce9ba114f451cf3f0ebc8f9ee3002893/.github/workflows/main.yml
+on:
+  schedule:
+    # run at 06:59 UTC (3am eastern) each day
+    - cron:  '59 6 * * *'
+
+jobs:
+  update_branch:
+    runs-on: ubuntu-latest
+    name: Update coq/tested
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        branch: 'master'
+        fetch-depth: 0
+    - name: Check CI passed on master
+      uses: samuelgruetter/check-ci-success@master
+      with:
+        repo_owner: 'mit-pdos'
+        repo_name: 'perennial'
+        branch_name: 'master'
+        check_name: 'Travis CI - Branch'
+    - name: Push to coq/tested
+      uses: ad-m/github-push-action@v0.6.0
+      with:
+        branch: 'coq/tested'
