@@ -43,14 +43,31 @@ Section goose.
     "Hγblocks" ∷ own γblocks (● Excl' (blocks : listLO Block)) ∗
     "Hγused" ∷ own γused (◯ Excl' used).
 
+  Definition s_inode_state l (inode_ref alloc_ref: loc) : iProp Σ :=
+    "#i" ∷ readonly (l ↦[SingleInode.S :: "i"] #inode_ref) ∗
+    "#alloc" ∷ readonly (l ↦[SingleInode.S :: "alloc"] #alloc_ref).
+
+  Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
+
+  Definition pre_s_inode l sz k'  : iProp Σ :=
+    ∃ inode_ref alloc_ref
+      γinode γalloc γused γblocks,
+    s_inode_state l inode_ref alloc_ref ∗
+    (∃ s_inode, pre_inode inode_ref γinode (U64 0) s_inode ∗
+                Pinode γblocks γused s_inode) ∗
+    (* TODO: is_allocator_pre and the allocator's initialization are very
+    different from the others - it consumes P, and the crash obligation can be
+    initialized without the allocator (because the allocator manages durable
+    state separate from its physical state) *)
+    (∃ s_alloc, is_allocator_pre (Palloc γused)
+                allocΨ allocN γalloc k' (rangeSet 1 (sz-1)) s_alloc).
+
   Definition is_single_inode l (sz: Z) k' : iProp Σ :=
     ∃ (inode_ref alloc_ref: loc) γinode γalloc γused γblocks,
-      "#i" ∷ readonly (l ↦[SingleInode.S :: "i"] #inode_ref) ∗
-      "#alloc" ∷ readonly (l ↦[SingleInode.S :: "alloc"] #alloc_ref) ∗
+      "Hro_state" ∷ s_inode_state l inode_ref alloc_ref ∗
       "#Hinode" ∷ is_inode inode_ref (LVL k') γinode (Pinode γblocks γused) (U64 0) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
-        (λ a, ∃ b, int.val a d↦ b)
-        allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
+        allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
       "#Hinv" ∷ inv N (∃ σ (used:gset u64),
                           s_inode_inv γblocks γused σ used ∗
                           P σ)
@@ -60,15 +77,15 @@ Section goose.
     Timeless (s_inode_inv γblocks γused blocks used).
   Proof. apply _. Qed.
 
-  (* TODO: needs allocator and inode crash conditions and init obligations *)
-  Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64)
-          k' γblocks γused σ0 :
-    (* TODO: export inode_crash_cond to capture this *)
-    {{{ (∃ s addrs, is_inode_durable (U64 0) s addrs ∗ Pinode γblocks γused s) ∗ P σ0 }}}
+  Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64) k' σ0 :
+    (* TODO: need to write down the crash condition for the single_inode *)
+    {{{ P σ0 }}}
       Open #d_ref #sz @ NotStuck; k; ⊤; E2
-    {{{ l, RET #l; is_single_inode l (int.val sz) k' }}}
+    {{{ l, RET #l; pre_s_inode l (int.val sz) k' }}}
     {{{ ∃ σ', P σ' }}}.
   Proof.
+    iIntros (Φ Φc) "Hpre HΦ".
+    wpc_call.
   Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
@@ -91,7 +108,7 @@ Section goose.
     { crash_case; auto. }
     iCache with "HΦ Hfupd".
     { crash_case; auto. }
-    iNamed "Hinode".
+    iNamed "Hinode". iNamed "Hro_state".
     wpc_bind (struct.loadF _ _ _); wpc_frame.
     wp_loadField.
     iNamed 1.
@@ -169,7 +186,7 @@ Section goose.
     { crash_case; auto. }
     iCache with "HΦ".
     { crash_case; auto. }
-    iNamed "Hinode".
+    iNamed "Hinode". iNamed "Hro_state".
     wpc_bind (struct.loadF _ _ _); wpc_frame "HΦ".
     wp_loadField.
     iNamed 1.
