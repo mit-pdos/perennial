@@ -1038,7 +1038,12 @@ Proof.
 
   wp_loadField.
   wp_if_destruct.
-  - wp_loadField.
+  - (* We're appending onto the direct blocks of the inode *)
+    assert (int.val sz <= maxDirect) as Hszle.
+    { rewrite /maxDirect. word. }
+    pose (HnumInd2 Hszle) as HnumInd.
+
+    wp_loadField.
     wp_apply (wp_SliceAppend (V:=u64) with "[$Hdirect]").
     { iPureIntro.
       word. }
@@ -1053,17 +1058,10 @@ Proof.
       assert (int.val (word.add sz 1) <= int.val 500) by word.
       repeat split.
       - rewrite /maxDirect. word.
-      - assert (int.val sz <= maxDirect) as Hszle.
-        { rewrite /maxDirect. word. }
-        rewrite (HnumInd2 Hszle).
-        word.
+      - word.
       - rewrite /MaxBlocks /maxDirect /maxIndirect /indirectNumBlocks; word.
       - intros. rewrite /maxDirect in H. contradiction.
-      - intros.
-        assert (int.val sz <= maxDirect) as Hszle.
-        { rewrite /maxDirect. word. }
-        rewrite (HnumInd2 Hszle).
-        word.
+      - word.
     }
 
     iIntros (s b) "(Hb & %Hencded & ? & ? & ? & ? & ?)"; iNamed.
@@ -1084,29 +1082,82 @@ Proof.
       by iIntros "$". }
     iIntros "(Hs&Hpost)"; iNamed "Hpost".
     wp_loadField.
-    wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr size direct indirect Hdirect Hindirect HdataDirect HdataIndirect]").
+    wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr size direct indirect Hdirect Hindirect HdataDirect HdataIndirect Ha]").
     {
-      iExists σ; iFrame.
-Admitted.
-(*      iExists direct_s, indirect_s, dirAddrs, indAddrs, sz, numInd, indBlocks, hdr. iFrame "∗ %".
-      iPureIntro; repeat (split; auto).
-    }
+      iExists (set inode.blocks (λ bs : list Block, bs ++ [b0]) σ); iFrame.
 
-    wp_apply (release_spec with "[$Hlock $His_locked addr addrs Haddrs HP Hhdr Hdata Ha]").
-    { iExists _; iFrame.
-      iExists _, _, _, _; iFrame "∗ %".
+      iExists direct_s', indirect_s,
+        (take (int.nat sz) dirAddrs ++ [a] ++ (replicate (int.nat (500 - int.nat (int.val sz + 1))) (U64 0))),
+        ((take (int.nat numInd) indAddrs) ++ replicate (int.nat (maxIndirect - length (take (int.nat numInd) indAddrs))) (U64 0)),
+        (word.add sz 1), numInd, indBlocks, b.
+      iFrame "∗ %".
+
+      assert (length (take (int.nat sz) dirAddrs ++ [a]) = int.nat (int.val sz + 1)) as HdirSliceLen.
+      {
+          rewrite app_length take_length HdirLen /maxDirect; simpl; word.
+      }
+
+      assert ((take (int.nat (word.add sz 1)) (take (int.nat sz) dirAddrs ++ [a] ++ replicate
+                                                  (int.nat (500 - int.nat (int.val sz + 1))) (U64 0)))
+              = (take (int.nat sz) dirAddrs ++ [a])) as HdirSlice.
+      { rewrite app_assoc (take_app_alt (take (int.nat sz) dirAddrs ++ [a]) (replicate (int.nat (500 - int.nat (int.val sz + 1))) (U64 0))); auto;
+          rewrite HdirSliceLen; word.
+      }
+
+      assert ((take (int.nat numInd) (take (int.nat numInd) indAddrs ++ replicate (int.nat (maxIndirect - length (take (int.nat numInd) indAddrs))) (U64 0)))
+              = (take (int.nat numInd) indAddrs)) as HindSlice.
+      { rewrite (take_app_alt (take (int.nat numInd) indAddrs) _); auto;
+          rewrite take_length HindirLen /maxIndirect; word.
+      }
+
+      rewrite HdirSlice HindSlice; iFrame.
+
       iSplitR.
-      - iPureIntro.
+      { iPureIntro.
         rewrite /inode.wf /=.
         autorewrite with len; simpl.
-        rewrite -Hlen2 Hlen1; word.
-      - simpl.
-        iApply (big_sepL2_app with "[$Hdata] [Ha]").
-        simpl; iFrame. }
+        rewrite /HszEqLen. word.
+      }
+      iSplitR.
+      { iPureIntro. rewrite HdirSliceLen /maxDirect in Hencded.
+        rewrite (app_assoc (take (int.nat sz) dirAddrs) [a] _).
+        rewrite (fmap_app EncUInt64 (take (int.nat sz) dirAddrs ++ [a]) _).
+        rewrite (fmap_app EncUInt64 (take (int.nat numInd) indAddrs) _).
+        repeat (rewrite -app_assoc).
+        auto.
+      }
+      iSplitR.
+      {
+        iPureIntro.
+        repeat (split; auto).
+        - rewrite app_assoc app_length HdirSliceLen replicate_length /maxDirect. word.
+        - rewrite /maxIndirect app_length replicate_length.
+          rewrite HnumInd take_0. simpl. word.
+        - simpl. rewrite app_length. simpl.
+          replace (length σ.(inode.blocks)) with (int.nat sz); word.
+        - rewrite /MaxBlocks /maxDirect /maxIndirect /indirectNumBlocks; word.
+        - intros. rewrite /maxDirect in H.
+          assert (int.val (word.add sz 1) <= 500) by word; contradiction.
+      }
+      iSplitR "HdataIndirect".
+      {
+        assert (length (σ.(inode.blocks)) = int.nat sz) by word.
+        rewrite app_length H /maxDirect; simpl.
+        admit.
+        (* iApply (big_sepL2_app with "[$HdataDirect] [Ha]").*)
+      }
+      {
+        rewrite HnumInd.
+        rewrite take_0.
+        rewrite HnumInd in HindBlksLen.
+        rewrite (nil_length_inv _ HindBlksLen).
+        auto.
+      }
+    }
     wp_pures.
     change #(U8 0) with (to_val AppendOk).
     iApply "HΦ"; iFrame.
     rewrite bool_decide_eq_true_2; auto.
-Qed.
-*)
+  - (* We're appending onto the indirect blocks of the inode *)
+Admitted.
 End goose.
