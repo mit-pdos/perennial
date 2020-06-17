@@ -53,6 +53,24 @@ Definition is_inode_durable addr σ (addrs: list u64) : iProp Σ :=
     "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b
 .
 
+Theorem is_inode_durable_read addr σ addrs :
+  is_inode_durable addr σ addrs -∗
+    ∃ extra hdr,
+      "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
+      "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
+      "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
+      "Hhdr" ∷ int.val addr d↦ hdr ∗
+      "Hdata" ∷ ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b) ∗
+      "Hdurable" ∷ □(int.val addr d↦ hdr -∗
+                    ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b) -∗
+                   is_inode_durable addr σ addrs).
+Proof.
+  iNamed 1.
+  iExists _, _; iFrame "∗ %".
+  iIntros "!> Hhdr Hdata".
+  iExists _, _; iFrame "∗ %".
+Qed.
+
 Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
   ∃ (addr_s: Slice.t) (addrs: list u64),
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
@@ -340,29 +358,39 @@ Proof.
     wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
     iIntros "Haddrs_small"; iNamed 1.
     wpc_pures.
-
-  (*
+    iDestruct (is_inode_durable_read with "Hdurable") as "H"; iNamed "H".
     iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
     destruct Hblock_lookup as [b0 Hlookup2].
     iDestruct (is_slice_split with "[$Haddrs_small $Haddrs]") as "Haddrs".
     iDestruct (big_sepL2_lookup_acc with "Hdata") as "[Hb Hdata]"; eauto.
-    wp_apply (wp_Read with "Hb"); iIntros (s) "[Hb Hs]".
-    iSpecialize ("Hdata" with "Hb").
-    wp_loadField.
     iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
     { iPureIntro; eauto. }
-    wp_apply (release_spec with "[$Hlock $His_locked Hhdr addr addrs Haddrs Hdata HP]").
+    wpc_apply (wpc_Read with "Hb").
+    iSplit.
+    { iIntros "Hda".
+      iSpecialize ("Hdata" with "Hda").
+      iSpecialize ("Hdurable" with "Hhdr Hdata").
+      iFromCache. }
+    iIntros "!>" (s) "[Hda Hb]".
+    iSpecialize ("Hdata" with "Hda").
+    iSpecialize ("Hdurable" with "Hhdr Hdata").
+    iSplitR "Hdurable addrs Haddrs HP"; last first.
     { iExists _; iFrame.
-      iExists _, _; iFrame "∗ %".
-      iExists _, _; iFrame "% ∗". }
+      iExists _, _; iFrame "∗ %". }
+    iIntros "His_locked".
+    iSplit; first iFromCache.
+    wpc_frame.
+    wp_loadField.
+    wp_apply (crash_lock.release_spec with "His_locked"); auto.
     wp_pures.
-    iApply "HΦ"; iFrame.
+    iNamed 1.
+    iRight in "HΦ".
+    iApply "HΦ".
+    iFrame.
     rewrite Hlookup2.
-    iDestruct (is_slice_split with "Hs") as "[Hs _]".
-    iExists _; iFrame.
+    iDestruct (slice.is_slice_to_small with "Hb") as "Hb".
+    iFrame.
 Qed.
-*)
-Admitted.
 
 Theorem wp_Inode__Size {k E2} {l k' γ P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
   (S k < k')%nat →
@@ -688,28 +716,28 @@ Proof.
       { iSplitR "Hda"; first iFromCache.
         iApply block_cinv_free_pred.
         iExists _; iFrame. }
-      { iNamed "Hdurable".
-        iLeft in "Hfupd".
-        set (σ':=set inode.blocks (λ bs : list Block, bs ++ [b0])
-                     (set inode.addrs (union {[a]}) σ)).
-        iSpecialize ("Hfupd" $! σ σ' a with "[% //] [% //]").
+      iNamed "Hdurable".
+      iLeft in "Hfupd".
+      set (σ':=set inode.blocks (λ bs : list Block, bs ++ [b0])
+                   (set inode.addrs (union {[a]}) σ)).
+      iSpecialize ("Hfupd" $! σ σ' a with "[% //] [% //]").
 
-        iMod (mark_used _ _ _ _ _ _ (P σ' ∗ Q)%I with "Hreserved [HP Hfupd]") as "Hget_used".
-        { admit. (* TODO: this is probably true with the right assumption about
+      iMod (mark_used _ _ _ _ _ _ (P σ' ∗ Q)%I with "Hreserved [HP Hfupd]") as "Hget_used".
+      { admit. (* TODO: this is probably true with the right assumption about
         inodeN and allocN *) }
-        { clear.
-          iIntros (s Hreserved) "HPalloc".
-          iMod (fupd_intro_mask' _ (⊤ ∖ ↑allocN)) as "HinnerN".
-          { admit. (* namespace issues *) }
-          iMod ("Hfupd" with "[% //] [$HP $HPalloc]") as "(HP&HPalloc&HQ)".
-          iFrame. }
+      { clear.
+        iIntros (s Hreserved) "HPalloc".
+        iMod (fupd_intro_mask' _ (⊤ ∖ ↑allocN)) as "HinnerN".
+        { admit. (* namespace issues *) }
+        iMod ("Hfupd" with "[% //] [$HP $HPalloc]") as "(HP&HPalloc&HQ)".
+        iFrame. }
 
-        iModIntro.
-        iExists _; iFrame.
-        iNext.
-        iIntros "Hhdr".
-        iMod "Hget_used" as "[ (HP&HQ) Hused]".
-        iModIntro.
+      iModIntro.
+      iExists _; iFrame.
+      iNext.
+      iIntros "Hhdr".
+      iMod "Hget_used" as "[ (HP&HQ) Hused]".
+      iModIntro.
       iAssert (is_inode_durable addr
                  (set inode.blocks (λ bs : list Block, bs ++ [b0])
                       (set inode.addrs (union {[a]}) σ))
