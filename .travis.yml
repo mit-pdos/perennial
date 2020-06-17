@@ -8,6 +8,7 @@ notifications:
     - joseph.tassarotti@bc.edu
     - nickolai@csail.mit.edu
     - research@ralfj.de
+    - tslilyai@mit.edu
 
 branches:
   only:
