@@ -213,7 +213,7 @@ Section goose.
       iApply "HΦ"; auto.
   Qed.
 
-  Lemma wpc_RepBlock__Read' {k E2} {k' γ l} addr (primary: bool) :
+  Lemma wpc_RepBlock__Read {k E2} {k' γ l} addr (primary: bool) :
     (S k < k')%nat →
     ∀ Φ Φc,
         "Hrb" ∷ is_rblock γ k' l addr ∗
@@ -279,7 +279,7 @@ Section goose.
     iApply "HQ"; iFrame.
   Qed.
 
-  Theorem wpc_RepBlock__Read (Q: Block → iProp Σ) (Qc: iProp Σ) {k E2} {k' γ l} addr (primary: bool) :
+  Theorem wpc_RepBlock__Read_triple (Q: Block → iProp Σ) (Qc: iProp Σ) {k E2} {k' γ l} addr (primary: bool) :
     (S k < k')%nat →
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗ (* replicated block protocol *)
         "HQc" ∷ (∀ σ, Q σ -∗ Qc) ∗ (* crash condition after "linearization point" *)
@@ -290,7 +290,7 @@ Section goose.
     {{{ Qc }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    iApply wpc_RepBlock__Read'; first done.
+    iApply wpc_RepBlock__Read; first done.
     iFrame "Hrb".
     iSplit.
     { iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done. }
@@ -300,7 +300,7 @@ Section goose.
     iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
-  Lemma wpc_RepBlock__Write' {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
+  Lemma wpc_RepBlock__Write {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
     (S k < k')%nat →
     ∀ Φ Φc,
         "Hrb" ∷ is_rblock γ k' l addr ∗
@@ -384,7 +384,7 @@ Section goose.
     iApply "HΦ"; iFrame.
   Qed.
 
-  Theorem wpc_RepBlock__Write (Q: iProp Σ) (Qc: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
+  Theorem wpc_RepBlock__Write_triple (Q: iProp Σ) (Qc: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
     (S k < k')%nat →
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
@@ -395,7 +395,7 @@ Section goose.
     {{{ Qc }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    iApply wpc_RepBlock__Write'; first done.
+    iApply wpc_RepBlock__Write; first done.
     iFrame. iSplit.
     { iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done. }
     iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
