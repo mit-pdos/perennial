@@ -227,7 +227,7 @@ Section goose.
     iNamed "Hro_state".
     wpc_call.
     { by iLeft in "Hfupd". }
-    iCache with "Hfupd".
+    iCache with "Hfupd". (* after we stripped the later, cache proof *)
     { by iLeft in "Hfupd". }
     wpc_frame_seq.
     wp_loadField.
@@ -261,10 +261,9 @@ Section goose.
     iIntros (s) "(Haddr'&Hb)".
     iDestruct (is_slice_to_small with "Hb") as "Hb".
     iSpecialize ("Hlkinv" with "Haddr'").
-    iSplitR "HP Hlkinv"; last first.
+    iSplitR "HP Hlkinv"; last by eauto with iFrame.
     (* TODO: why is this the second goal?
        RALF: because use_crash_locked puts [R] to the right. *)
-    { iExists _; iFrame. }
     iIntros "His_locked".
     iCache Φc with "HQ".
     { by iLeft in "HQ". }
@@ -282,7 +281,7 @@ Section goose.
 
   Theorem wpc_RepBlock__Read (Q: Block → iProp Σ) (Qc: iProp Σ) {k E2} {k' γ l} addr (primary: bool) :
     (S k < k')%nat →
-    {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
+    {{{ "Hrb" ∷ is_rblock γ k' l addr ∗ (* replicated block protocol *)
         "HQc" ∷ (∀ σ, Q σ -∗ Qc) ∗ (* crash condition after "linearization point" *)
         "Hfupd" ∷ (Qc (* crash condition before "linearization point" *) ∧
                    (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P σ ∗ Q σ)) }}}
@@ -301,24 +300,21 @@ Section goose.
       + iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
-  Theorem wpc_RepBlock__Write (Q: iProp Σ) (Qc: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
+  Lemma wpc_RepBlock__Write' {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
     (S k < k')%nat →
-    {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
+    ∀ Φ Φc,
+        "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
-        "HQc" ∷ (Q -∗ Qc) ∗
-        "Hfupd" ∷ ((∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) ∧ Qc) }}}
-      RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
-    {{{ RET #(); Q ∗ is_block s q b }}}
-    {{{ Qc }}}.
+        "Hfupd" ∷ (Φc ∧ ▷ (∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ (Φc ∧ (is_block s q b -∗ Φ #())))) -∗
+    WPC  RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
   Proof.
-    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
     iNamed "Hrb".
     iNamed "Hro_state".
     wpc_call.
-    { iRight in "Hfupd"; auto. }
-    iCache with "HΦ Hfupd".
-    { crash_case.
-      iRight in "Hfupd"; auto. }
+    { iLeft in "Hfupd"; auto. }
+    iCache with "Hfupd".
+    { iLeft in "Hfupd"; auto. }
     wpc_frame_seq.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
@@ -331,16 +327,17 @@ Section goose.
     iNamed 1.
     iNamed "Hlkinv".
 
-    iCache with "HP Hprimary Hbackup HΦ Hfupd".
-    { iSplitL "HΦ Hfupd"; first by iFromCache.
-      iExists _; iFrame.
-      iExists _; iFrame. }
+    iCache with "HP Hprimary Hbackup Hfupd".
+    { iSplitL "Hfupd"; first by iFromCache.
+      eauto with iFrame. }
 
+    (* call to (lower-case) write, doing the actual writes *)
     wpc_call.
     wpc_bind (struct.loadF _ _ _).
     wpc_frame.
     wp_loadField.
     iNamed 1.
+    (* first write *)
     (* This is an interesting example illustrating crash safety - notice that we
     produce [Q] atomically during this Write. This is the only valid simulation
     point in this example, because if we crash the operation has logically
@@ -352,7 +349,7 @@ Section goose.
     succesfully synchronizes the disks. *)
     wpc_apply (wpc_Write_fupd (⊤ ∖ ↑N) ("Hprimary" ∷ int.val addr d↦ b ∗
                                         "HP" ∷ P b ∗
-                                        "HQ" ∷ Q)
+                                        "HΦ" ∷ (Φc ∧ (is_block s q b -∗ Φ #())))
               with "[$Hb Hprimary Hfupd HP]").
     { iSplit; [ iNamedAccu | ].
       iModIntro.
@@ -364,19 +361,14 @@ Section goose.
     iSplit; [ | iNext ].
     { iIntros "Hpost".
       iDestruct "Hpost" as "[Hpost|Hpost]"; iNamed "Hpost"; try iFromCache.
-      iSplitL "HΦ HQc HQ".
-      - crash_case.
-        iApply ("HQc" with "[$]").
-      - iExists _; iFrame.
-        iExists _; iFrame. }
+      iSplitL "HΦ".
+      - by iLeft in "HΦ".
+      - eauto with iFrame. }
     iIntros "(Hb&Hpost)"; iNamed "Hpost".
-    iCache Φc with "HΦ HQ HQc".
-    { crash_case.
-      iApply ("HQc" with "[$]"). }
-    iCache with "HΦ HQ HQc Hprimary Hbackup HP".
-    { iSplitL "HΦ HQc HQ"; first iFromCache.
-      iExists _; iFrame.
-      iExists _; iFrame. }
+    iCache Φc with "HΦ".
+    { by iLeft in "HΦ". }
+    iCache with "HΦ Hprimary Hbackup HP".
+    { iSplitL "HΦ"; first iFromCache. eauto with iFrame. }
 
     wpc_pures.
     wpc_bind (struct.loadF _ _ _).
@@ -384,16 +376,15 @@ Section goose.
     wp_loadField.
     iNamed 1.
     wpc_pures.
+    (* second write *)
     wpc_apply (wpc_Write' with "[$Hb Hbackup]").
     { iFrame. }
     iSplit; [ | iNext ].
     { iIntros "[Hbackup|Hbackup]"; try iFromCache.
-      iSplitL "HΦ HQ HQc"; first by iFromCache.
-      iExists _; iFrame.
-      iExists _; iFrame. }
+      iSplitL "HΦ"; first by iFromCache. eauto with iFrame. }
     iIntros "(Hbackup&Hb)".
     iSplitR "Hprimary Hbackup HP"; last first.
-    { iExists _; iFrame. }
+    { eauto with iFrame. }
     iIntros "His_locked".
     iSplit; first iFromCache.
     wpc_pures.
@@ -402,6 +393,26 @@ Section goose.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
     iNamed 1.
     iApply "HΦ"; iFrame.
+  Qed.
+
+  Theorem wpc_RepBlock__Write (Q: iProp Σ) (Qc: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
+    (S k < k')%nat →
+    {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
+        "Hb" ∷ is_block s q b ∗
+        "HQc" ∷ (Q -∗ Qc) ∗
+        "Hfupd" ∷ (Qc ∧ (∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q)) }}}
+      RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
+    {{{ RET #(); Q ∗ is_block s q b }}}
+    {{{ Qc }}}.
+  Proof.
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iApply wpc_RepBlock__Write'; first done.
+    iFrame. iSplit.
+    - iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done.
+    - iNext. iIntros (σ σ') "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
+      iModIntro. iFrame "HP". iSplit.
+      + iLeft in "HΦ". iApply "HΦ". iApply "HQc". done.
+      + iIntros "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
 End goose.
