@@ -158,7 +158,7 @@ Definition Inode__Append: val :=
       lock.release (struct.loadF Inode.S "m" "i");;
       AppendFull
     else
-      (if: slice.len (struct.loadF Inode.S "direct" "i") < maxDirect
+      (if: struct.loadF Inode.S "size" "i" < maxDirect
       then
         struct.storeF Inode.S "direct" "i" (SliceAppend uint64T (struct.loadF Inode.S "direct" "i") "a");;
         struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
