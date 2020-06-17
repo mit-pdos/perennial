@@ -167,7 +167,9 @@ Proof.
     iModIntro.
     iApply (sty_inv_to_wpc _ _ _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$]"); eauto.
   }
-  Unshelve.
+  (* BUG: Coq v8.11 requires Grab Existential Variables and not Unshelve to get
+  this obligation *)
+  Grab Existential Variables.
   apply subG_styPreG, _.
 Qed.
 
