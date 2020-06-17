@@ -1112,6 +1112,7 @@ Proof.
 
       rewrite HdirSlice HindSlice; iFrame.
 
+      assert (int.val (word.add sz 1) <= 500) by word.
       iSplitR.
       { iPureIntro.
         rewrite /inode.wf /=.
@@ -1136,15 +1137,20 @@ Proof.
         - simpl. rewrite app_length. simpl.
           replace (length σ.(inode.blocks)) with (int.nat sz); word.
         - rewrite /MaxBlocks /maxDirect /maxIndirect /indirectNumBlocks; word.
-        - intros. rewrite /maxDirect in H.
-          assert (int.val (word.add sz 1) <= 500) by word; contradiction.
+        - intros. rewrite /maxDirect in H. contradiction.
       }
       iSplitR "HdataIndirect".
       {
         assert (length (σ.(inode.blocks)) = int.nat sz) by word.
-        rewrite app_length H /maxDirect; simpl.
-        admit.
-        (* iApply (big_sepL2_app with "[$HdataDirect] [Ha]").*)
+        assert ((length (σ.(inode.blocks) ++ [b0])) = (int.nat sz + 1)%nat) as Hlen by (rewrite -H0 app_length; simpl; word).
+        rewrite app_length H0 /maxDirect; simpl.
+        repeat (rewrite min_r); try word.
+        rewrite cons_middle app_assoc.
+        rewrite (take_app_alt (take (int.nat sz) dirAddrs ++ [a]) _); [ | rewrite HdirSliceLen; word].
+        replace (take (int.nat sz + 1) (σ.(inode.blocks) ++ [b0])) with ((take (int.nat sz) σ.(inode.blocks)) ++ [b0])
+          by (rewrite -Hlen -H0; repeat (rewrite firstn_all); auto).
+        iApply (big_sepL2_app with "[$HdataDirect] [Ha]").
+        iApply big_sepL2_singleton; auto.
       }
       {
         rewrite HnumInd.
