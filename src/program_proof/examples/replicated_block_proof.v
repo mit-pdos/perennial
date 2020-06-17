@@ -305,7 +305,7 @@ Section goose.
     ∀ Φ Φc,
         "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
-        "Hfupd" ∷ (Φc ∧ ▷ (∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ (Φc ∧ (is_block s q b -∗ Φ #())))) -∗
+        "Hfupd" ∷ (Φc ∧ ▷ (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P b ∗ (Φc ∧ (is_block s q b -∗ Φ #())))) -∗
     WPC  RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
@@ -400,7 +400,7 @@ Section goose.
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
         "HQc" ∷ (Q -∗ Qc) ∗
-        "Hfupd" ∷ (Qc ∧ (∀ σ σ', P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q)) }}}
+        "Hfupd" ∷ (Qc ∧ (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P b ∗ Q)) }}}
       RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ RET #(); Q ∗ is_block s q b }}}
     {{{ Qc }}}.
@@ -409,7 +409,7 @@ Section goose.
     iApply wpc_RepBlock__Write'; first done.
     iFrame. iSplit.
     - iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". done.
-    - iNext. iIntros (σ σ') "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
+    - iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
       iModIntro. iFrame "HP". iSplit.
       + iLeft in "HΦ". iApply "HΦ". iApply "HQc". done.
       + iIntros "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
