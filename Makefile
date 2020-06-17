@@ -5,7 +5,7 @@ TEST_VFILES := $(shell find 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find 'src' -name "*.v")
 VFILES := $(filter-out $(TEST_VFILES),$(PROJ_VFILES))
 TEST_VO := $(TEST_VFILES:.v=.vo)
-QUICK_CHECK_FILES := $(shell find 'src/program_proof' -name "*.v")
+QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
 
 COQ_ARGS := -noglob
 
