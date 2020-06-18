@@ -541,18 +541,17 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
       Palloc σ ={E}=∗ Palloc (<[a:=block_used]> σ)).
 
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
+Let allocN := nroot.@"allocator".
 
 Theorem wpc_Inode__Append {k E2}
         {l γ k' P addr}
         (* allocator stuff *)
-        {Palloc allocN γalloc domain n}
+        {Palloc γalloc domain n}
         (Q: iProp Σ) (Qc: iProp Σ)
         (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
   (S (S (S k)) < n)%nat →
   (S (S (S k)) < k')%nat →
   ↑nroot.@"readonly" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
-  ↑inodeN ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
-  ↑Ncrash allocN ⊆ (@top coPset _) ∖ ↑inodeN →
   {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
       "HQc" ∷ (Q -∗ Qc) ∗
@@ -565,14 +564,14 @@ Theorem wpc_Inode__Append {k E2}
         ⌜inode.wf σ⌝ -∗
         ∀ s,
         ⌜s !! addr' = Some block_reserved⌝ -∗
-         P σ ∗ Palloc s ={⊤ ∖ ↑allocN}=∗
+         P σ ∗ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
          P σ' ∗ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)
   }}}
     Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S (S (S k)))); ⊤; E2
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
   {{{ Qc }}}.
 Proof.
-  iIntros (????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
   { iRight in "Hfupd"; auto. }
@@ -704,6 +703,7 @@ Proof.
       iNamed 1.
 
       iApply (prepare_reserved_block with "Hreserved"); auto; try lia.
+      { solve_ndisj. }
       iSplit; first iFromCache.
       iIntros "Hda Hreserved".
       wpc_bind (Write _ _).
@@ -723,12 +723,11 @@ Proof.
       iSpecialize ("Hfupd" $! σ σ' a with "[% //] [% //]").
 
       iMod (mark_used _ _ _ _ _ _ (P σ' ∗ Q)%I with "Hreserved [HP Hfupd]") as "Hget_used".
-      { admit. (* TODO: this is probably true with the right assumption about
-        inodeN and allocN *) }
+      { solve_ndisj. }
       { clear.
         iIntros (s Hreserved) "HPalloc".
-        iMod (fupd_intro_mask' _ (⊤ ∖ ↑allocN)) as "HinnerN".
-        { admit. (* namespace issues *) }
+        iMod (fupd_intro_mask' _ (⊤ ∖ ↑allocN ∖ ↑inodeN)) as "HinnerN".
+        { solve_ndisj. }
         iMod ("Hfupd" with "[% //] [$HP $HPalloc]") as "(HP&HPalloc&HQ)".
         iFrame. }
 
@@ -793,7 +792,6 @@ Proof.
       iNamed 1.
       wpc_pures.
       iApply "HΦ"; iFrame.
-      Fail idtac.
-Admitted.
+Qed.
 
 End goose.

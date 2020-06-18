@@ -175,7 +175,7 @@ Section goose.
         to make this fupd from [▷ P(σ)] to [▷ P(σ')] rather than our usual
         [P(σ)] to [P(σ')]; normally we seem to get around this by linearizing at
         a Skip? *)
-         ▷ P σ ={⊤ ∖ ↑allocN ∖ ↑N}=∗ ▷ P σ' ∗ Q))
+         ▷ P σ ={⊤ ∖ ↑allocN ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ' ∗ Q))
     }}}
       SingleInode__Append #l (slice_val b_s) @ NotStuck; LVL (S (S (S (S k)))); ⊤; E2
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
