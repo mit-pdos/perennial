@@ -957,38 +957,15 @@ Proof.
       rewrite H; reflexivity.
 Qed.
 
-Inductive AppendStatus :=
-| AppendOk
-| AppendFull
-| AppendAgain.
-
-Instance AppendStatus_witness : Inhabited AppendStatus := populate!.
-
-Instance AppendStatus_eq_dec : EqDecision AppendStatus.
-Proof. solve_decision. Qed.
-
-Instance AppendStatus_val : IntoVal AppendStatus.
-Proof.
-  refine {| to_val := λ v, match v with
-                           | AppendOk => #(U8 0)
-                           | AppendAgain => #(U8 1)
-                           | AppendFull => #(U8 2)
-                           end;
-            IntoVal_def := AppendOk;
-         |}.
-  abstract (intros [] []; auto; inversion 1).
-Defined.
-
-Theorem wp_Inode__Append {l γ P} (Q: AppendStatus -> iProp Σ) (a: u64) (b0: Block) :
+(*
+Theorem wp_Inode__Append {l γ P} (Q: bool -> iProp Σ) (a: u64) (b0: Block) :
   {{{ is_inode l γ P ∗ int.val a d↦ b0 ∗
-      (∀ σ σ' (status: AppendStatus),
+      (∀ σ σ' (status: bool),
           ⌜(match status with
-            | AppendOk => σ' = set inode.blocks (λ bs, bs ++ [b0]) σ
-            (* TODO: if status is AppendAgain, still need to take ownership of a
-               even if blocks don't change *)
-            | _ => σ' = σ
+            | true => σ' = set inode.blocks (λ bs, bs ++ [b0]) σ
+            | false => σ' = σ
             end) ∧
-          (status = AppendFull ↔ 1 + inode.size σ > MaxBlocks)⌝ -∗
+          (status = false ↔ 1 + inode.size σ > MaxBlocks)⌝ -∗
         ⌜inode.wf σ⌝ -∗
          P σ ={⊤}=∗ P σ' ∗ Q status)
   }}}
@@ -1184,5 +1161,5 @@ Proof.
         rewrite lookup_take; auto.
         word.
       }
-Admitted.
+Admitted. *)
 End goose.
