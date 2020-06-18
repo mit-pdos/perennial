@@ -64,10 +64,8 @@ Definition Inode__UsedBlocks: val :=
   rec: "Inode__UsedBlocks" "i" :=
     let: "addrs" := ref (zero_val (slice.T uint64T)) in
     "addrs" <-[slice.T uint64T] NewSlice uint64T #0;;
-    lock.acquire (struct.loadF Inode.S "m" "i");;
     let: "direct" := struct.loadF Inode.S "direct" "i" in
     let: "indirect" := struct.loadF Inode.S "indirect" "i" in
-    lock.release (struct.loadF Inode.S "m" "i");;
     ForSlice uint64T <> "a" "direct"
       ("addrs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "addrs") "a");;
     ForSlice uint64T <> "blkAddr" "indirect"
