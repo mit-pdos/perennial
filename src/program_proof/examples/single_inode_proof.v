@@ -73,19 +73,62 @@ Section goose.
                           P σ)
   .
 
+  Definition s_inode_cinv σ : iProp Σ :=
+    ∃ γblocks γused,
+    "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (U64 0) s_inode ∗
+                           "HPinode" ∷ Pinode γblocks γused s_inode) ∗
+    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ ∗
+    "Hs_inode" ∷ (∃ used, s_inode_inv γblocks γused σ used)
+  .
+
   Instance s_inode_inv_Timeless :
     Timeless (s_inode_inv γblocks γused blocks used).
   Proof. apply _. Qed.
 
   Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64) k' σ0 :
-    (* TODO: need to write down the crash condition for the single_inode *)
-    {{{ P σ0 }}}
-      Open #d_ref #sz @ NotStuck; k; ⊤; E2
+    (k' < k)%nat →
+    {{{ "Hcinv" ∷ s_inode_cinv σ0 ∗ "HP" ∷ P σ0 }}}
+      Open #d_ref #sz @ NotStuck; LVL (S k); ⊤; E2
     {{{ l, RET #l; pre_s_inode l (int.val sz) k' }}}
-    {{{ ∃ σ', P σ' }}}.
+    {{{ ∃ σ', s_inode_cinv σ' ∗ P σ' }}}.
   Proof.
-    iIntros (Φ Φc) "Hpre HΦ".
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
+    { eauto with iFrame. }
+    iNamed "Hcinv".
+    iNamed "Hinode".
+    iCache with "HΦ HP Halloc Hs_inode Hinode_cinv HPinode".
+    { crash_case.
+      iExists _; iFrame.
+      iExists _, _; iFrame.
+      iExists _; iFrame. }
+    wpc_apply (inode_proof.wpc_Open with "Hinode_cinv").
+    iSplit.
+    { iIntros  "Hinode_cinv".
+      iFromCache. }
+    iIntros "!>" (l γ) "Hpre_inode".
+    iApply (inode_crash_obligation _ _ k' with "HPinode Hpre_inode").
+    { lia. }
+    iIntros "Hinode".
+    iCache with "HΦ HP Halloc Hs_inode".
+    { iDestruct 1 as (s_inode') "(Hinode_cinv&HPinode)".
+      crash_case.
+      (* TODO: replace with eauto automation *)
+      iExists _; iFrame.
+      iExists _, _; iFrame.
+      iExists _; iFrame. }
+    wpc_pures.
+    wpc_frame_seq.
+    change (InjLV #()) with (zero_val (mapValT (struct.t alloc.unit.S))).
+    wp_apply wp_NewMap.
+    iIntros (mref) "Hused".
+    iNamed 1.
+    wpc_pures.
+    wpc_frame_seq.
+    (* TODO: we need to run this before initializing the inode with
+    [inode_crash_obligation], but that is necessary to dismiss the inode stuff
+    from the crash obligation after opening. What went wrong? *)
+    wp_apply wp_Inode__UsedBlocks.
   Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
