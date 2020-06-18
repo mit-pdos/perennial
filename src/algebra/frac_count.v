@@ -2,7 +2,7 @@ From Coq.QArith Require Import Qcanon.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.bi Require Import fractional.
-From iris.algebra Require Import excl csum frac auth agree.
+From iris.algebra Require Import excl csum frac auth agree numbers.
 
 (* Very heavily based on part of the ARC CMRA from the weakmem branch of lambda-rust by Dang et al.
    See https://gitlab.mpi-sws.org/iris/lambda-rust/-/blob/masters/weak_mem/theories/lang/arc_cmra.v

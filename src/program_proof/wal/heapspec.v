@@ -1,6 +1,8 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
+From iris.algebra Require Import numbers.
+
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import Transitions List.
@@ -19,7 +21,7 @@ Canonical Structure asyncO T := leibnizO (async T).
 Class walheapG (Σ: gFunctors) :=
   { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
     walheap_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
-    walheap_mnat :> inG Σ (authR mnatUR);
+    walheap_max_nat :> inG Σ (authR max_natUR);
     walheap_asyncCrashHeap :> inG Σ (ghostR $ asyncO (gmap u64 Block));
     walheap_heap :> heapG Σ;
     walheap_wal :> walG Σ
@@ -75,11 +77,11 @@ Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ own γ.(wal_heap_txns) (● (Excl' (ls.(log_state.d), ls.(log_state.txns)))) ∗
-    "Hinstalled" ∷ own γ.(wal_heap_installed) (● (ls.(log_state.installed_lb) : mnat)) ∗
+    "Hinstalled" ∷ own γ.(wal_heap_installed) (● (MaxNat ls.(log_state.installed_lb))) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
     "Hcrash_heaps_own" ∷ own γ.(wal_heap_crash_heaps) (● (Excl' crash_heaps)) ∗
     "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls ∗
-    "Hcrash_heaps_lb" ∷ own γ.(wal_heap_durable_lb) (● (ls.(log_state.durable_lb) : mnat)).
+    "Hcrash_heaps_lb" ∷ own γ.(wal_heap_durable_lb) (● (MaxNat ls.(log_state.durable_lb))).
 
 Definition no_updates (l: list update.t) a : Prop :=
   forall u, u ∈ l -> u.(update.addr) ≠ a.
@@ -99,43 +101,49 @@ Definition locked_wh_disk (lwh : locked_walheap) : disk :=
   apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
 
 
-Global Instance mnat_frag_persistent γ (m : mnat) : Persistent (own γ (◯ m)).
+Global Instance max_nat_frag_persistent γ (m : max_nat) : Persistent (own γ (◯ m)).
 Proof. apply _. Qed.
 
-Lemma mnat_advance γ m n :
+Lemma max_nat_advance γ m n :
   (m ≤ n)%nat ->
-  own γ (● (m : mnat)) ==∗
-  own γ (● (n : mnat)).
+  own γ (● (MaxNat m)) ==∗
+  own γ (● (MaxNat n)).
 Proof.
   iIntros (H) "Hm".
   iMod (own_update with "Hm") as "Hn".
   2: iFrame; done.
   eapply auth_update_auth.
-  eapply mnat_local_update.
+  eapply max_nat_local_update.
+  simpl.
   lia.
 Qed.
 
-Lemma mnat_snapshot_le γ m n :
+Lemma max_nat_snapshot_le γ m n :
   (m ≤ n)%nat ->
-  own γ (● (n : mnat)) ==∗
-  own γ (● (n : mnat)) ∗
-  own γ (◯ (m : mnat)).
+  own γ (● (MaxNat n)) ==∗
+  own γ (● (MaxNat n)) ∗
+  own γ (◯ (MaxNat m)).
 Proof.
   iIntros (H) "Hn".
-  iMod (own_update _ _ ((● (n : mnat)) ⋅ ◯ (m : mnat)) with "Hn") as "[Hn Hm]".
+  iMod (own_update _ _ ((● (MaxNat n)) ⋅ ◯ (MaxNat m)) with "Hn") as "[Hn Hm]".
   2: iFrame; done.
   apply auth_update_alloc.
   apply local_update_unital_discrete.
-  compute -[max]. lia.
+  compute -[max].
+  intros.
+  inversion H1; subst; clear H1.
+  split; auto.
+  f_equal.
+  lia.
 Qed.
 
-Lemma mnat_snapshot γ m :
-  own γ (● (m : mnat)) ==∗
-  own γ (● (m : mnat)) ∗
-  own γ (◯ (m : mnat)).
+Lemma max_nat_snapshot γ (m: nat) :
+  own γ (● (MaxNat m)) ==∗
+  own γ (● (MaxNat m)) ∗
+  own γ (◯ (MaxNat m)).
 Proof.
   iIntros "Hm".
-  iMod (mnat_snapshot_le _ _ m with "Hm") as "[Hm Hmfrag]"; first by reflexivity.
+  iMod (max_nat_snapshot_le _ _ m with "Hm") as "[Hm Hmfrag]"; first by reflexivity.
   iModIntro.
   iFrame.
 Qed.
@@ -1035,11 +1043,11 @@ Proof.
 
   - simpl in *; monad_inv.
 
-    iMod (mnat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
+    iMod (max_nat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
     { intuition idtac. }
 
-    iMod (mnat_snapshot with "Hinstalled") as "[Hinstalled Hinstalledfrag]".
-    iMod (mnat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+    iMod (max_nat_snapshot with "Hinstalled") as "[Hinstalled Hinstalledfrag]".
+    iMod (max_nat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
     { lia. }
 
     iMod (gen_heap_update _ _ _ (HB (latest_update installed (updates_since x a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
@@ -1611,10 +1619,10 @@ Proof using walheapG0.
       simpl in *; monad_inv.
       simpl in *; monad_inv.
 
-      iMod (mnat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
+      iMod (max_nat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
       { intuition idtac. }
-      iMod (mnat_snapshot with "Hinstalled") as "[Hinstalled #Hinstalledfrag]".
-      iMod (mnat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+      iMod (max_nat_snapshot with "Hinstalled") as "[Hinstalled #Hinstalledfrag]".
+      iMod (max_nat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
       { lia. }
 
       iModIntro.
@@ -1646,12 +1654,13 @@ Proof using walheapG0.
       rewrite <- H6 in Hb.
 
       iDestruct (own_valid_2 with "Hinstalled Hinstalledfrag")
-        as %[?%mnat_included _]%auth_both_valid.
+        as %[?%max_nat_included _]%auth_both_valid.
 
       rewrite no_updates_since_last_disk in Heqo; eauto.
       2: {
         rewrite /no_updates_since. rewrite H6.
         eapply no_updates_since_le; last by eauto.
+        simpl in H7.
         lia.
       }
 
@@ -1730,7 +1739,7 @@ Theorem wp_Walog__Flush_heap l γ (txn_id : nat) (pos : u64) :
   }}}
     wal.Walog__Flush #l #pos
   {{{ RET #();
-      own (wal_heap_durable_lb γ) (◯ (txn_id : mnat))
+      own (wal_heap_durable_lb γ) (◯ (MaxNat txn_id))
   }}}.
 Proof using walheapG0.
   iIntros (Φ) "(#Hwal & Hpos) HΦ".
@@ -1742,9 +1751,9 @@ Proof using walheapG0.
   intuition idtac.
 
   iNamed "Hinv".
-  iMod (mnat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+  iMod (max_nat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
   { lia. }
-  iMod (mnat_snapshot_le _ txn_id with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb Hpost]".
+  iMod (max_nat_snapshot_le _ txn_id with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb Hpost]".
   { lia. }
   iFrame "Hpost".
 

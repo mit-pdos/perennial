@@ -2,7 +2,7 @@ From stdpp Require Export namespaces.
 From Coq Require Import Min.
 From stdpp Require Import coPset.
 From iris.algebra Require Import big_op gmap frac agree namespace_map.
-From iris.algebra Require Import csum excl auth cmra_big_op.
+From iris.algebra Require Import csum excl auth cmra_big_op numbers.
 From iris.bi Require Import fractional.
 From iris.base_logic Require Export lib.own.
 From iris.base_logic Require gen_heap.

@@ -1,6 +1,8 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
+From iris.algebra Require Import numbers.
+
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import deletable_heap log_heap.
@@ -1400,7 +1402,7 @@ Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) E
       if ok then
         ( ⌜bufamap ≠ ∅⌝ -∗ ∃ (txn_id : nat),
           Q txn_id ∗
-          ( ⌜wait=true⌝ -∗ own γ.(txn_walnames).(wal_heap_durable_lb) (◯ (txn_id : mnat)) ) ) ∗
+          ( ⌜wait=true⌝ -∗ own γ.(txn_walnames).(wal_heap_durable_lb) (◯ (MaxNat txn_id)) ) ) ∗
         [∗ map] a ↦ buf ∈ bufamap,
           mapsto_txn γ a (existT _ buf.(bufData))
       else

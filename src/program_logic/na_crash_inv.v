@@ -1,5 +1,5 @@
 From iris.proofmode Require Import base tactics classes.
-From iris.algebra Require Import excl.
+From iris.algebra Require Import excl numbers.
 From iris.base_logic Require Export invariants.
 From iris.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import staged_invariant crash_weakestpre staged_wpc.
