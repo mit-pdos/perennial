@@ -99,6 +99,12 @@ Qed.
 Global Instance fmcounter_lb_pers γ n: Persistent (fmcounter_lb γ n).
 Proof. apply _. Qed.
 
+Global Instance fmcounter_lb_timeless γ n: Timeless (fmcounter_lb γ n).
+Proof. apply _. Qed.
+
+Global Instance fmcounter_timeless γ q n: Timeless (fmcounter γ q n).
+Proof. apply _. Qed.
+
 Global Instance fmcounter_fractional γ n: Fractional (λ q, fmcounter γ q n).
 Proof. intros p q. apply fmcounter_sep. Qed.
 
@@ -111,3 +117,5 @@ Global Instance fmcounter_into_sep γ n :
 Proof. apply _. Qed.
 
 End fmc_props.
+
+Typeclasses Opaque fmcounter fmcounter_lb.

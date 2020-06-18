@@ -1,6 +1,5 @@
 From iris.bi.lib Require Import fractional.
 From Perennial.algebra Require Import deletable_heap.
-From Perennial.algebra Require Import fmcounter.
 
 From RecordUpdate Require Import RecordSet.
 
@@ -8,7 +7,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.program_logic Require Import staged_wpc.
 From Perennial.Helpers Require Import Transitions.
-From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang Require Import crash_modality fmcounter.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
@@ -32,7 +31,7 @@ Proof.
   rewrite /IntoCrash. iApply post_crash_nodep.
 Qed.
 
-Global Instance  is_circular_state_durable γ (σ : circΣ.t):
+Global Instance is_circular_state_durable γ (σ : circΣ.t):
   IntoCrash (is_circular_state γ σ) (λ _, is_circular_state γ σ).
 Proof. apply _. Qed.
 
