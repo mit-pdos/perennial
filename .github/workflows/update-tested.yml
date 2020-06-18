@@ -15,7 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        branch: 'master'
         fetch-depth: 0
     - name: Check CI passed on master
       uses: samuelgruetter/check-ci-success@master
@@ -27,4 +26,5 @@ jobs:
     - name: Push to coq/tested
       uses: ad-m/github-push-action@v0.6.0
       with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: 'coq/tested'
