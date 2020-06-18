@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+From Goose Require github_com.mit_pdos.perennial_examples.alloc.
 From Goose Require github_com.tchajed.marshal.
 
 Definition MaxBlocks : expr := #500 + #10 * #512.
@@ -128,14 +129,6 @@ Definition Inode__mkHdr: val :=
     let: "hdr" := marshal.Enc__Finish "enc" in
     "hdr".
 
-Definition AppendStatus: ty := byteT.
-
-Definition AppendOk : expr := #(U8 0).
-
-Definition AppendAgain : expr := #(U8 1).
-
-Definition AppendFull : expr := #(U8 2).
-
 Definition Inode__inSize: val :=
   rec: "Inode__inSize" "i" :=
     let: "hdr" := Inode__mkHdr "i" in
@@ -145,46 +138,52 @@ Definition Inode__inSize: val :=
 
    Takes ownership of the disk at a on success.
 
-   Returns:
-   - AppendOk on success and takes ownership of the allocated block.
-   - AppendFull if inode is out of space (and returns the allocated block)
-   - AppendAgain if inode needs a metadata block. Call i.Alloc and try again.
-   	 Returns the allocated block. *)
+   Returns false on failure (if the allocator or inode are out of space) *)
 Definition Inode__Append: val :=
-  rec: "Inode__Append" "i" "a" :=
-    lock.acquire (struct.loadF Inode.S "m" "i");;
-    (if: struct.loadF Inode.S "size" "i" ≥ MaxBlocks
-    then
-      lock.release (struct.loadF Inode.S "m" "i");;
-      AppendFull
+  rec: "Inode__Append" "i" "b" "allocator" :=
+    let: ("a", "ok") := alloc.Allocator__Reserve "allocator" in
+    (if: ~ "ok"
+    then #false
     else
-      (if: struct.loadF Inode.S "size" "i" < maxDirect
+      disk.Write "a" "b";;
+      lock.acquire (struct.loadF Inode.S "m" "i");;
+      (if: struct.loadF Inode.S "size" "i" ≥ MaxBlocks
       then
-        struct.storeF Inode.S "direct" "i" (SliceAppend uint64T (struct.loadF Inode.S "direct" "i") "a");;
-        struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
-        let: "hdr" := Inode__mkHdr "i" in
-        disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
         lock.release (struct.loadF Inode.S "m" "i");;
-        AppendOk
+        #false
       else
-        (if: indNum (struct.loadF Inode.S "size" "i") < slice.len (struct.loadF Inode.S "indirect" "i")
+        (if: struct.loadF Inode.S "size" "i" < maxDirect
         then
-          let: "indAddr" := SliceGet uint64T (struct.loadF Inode.S "indirect" "i") (indNum (struct.loadF Inode.S "size" "i")) in
-          let: "addrs" := readIndirect (struct.loadF Inode.S "d" "i") "indAddr" in
-          SliceSet uint64T "addrs" (indOff (struct.loadF Inode.S "size" "i")) "a";;
-          let: "diskBlk" := prepIndirect "addrs" in
-          disk.Write "indAddr" "diskBlk";;
+          struct.storeF Inode.S "direct" "i" (SliceAppend uint64T (struct.loadF Inode.S "direct" "i") "a");;
           struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
           let: "hdr" := Inode__mkHdr "i" in
           disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
           lock.release (struct.loadF Inode.S "m" "i");;
-          AppendOk
+          #true
         else
-          struct.storeF Inode.S "indirect" "i" (SliceAppend uint64T (struct.loadF Inode.S "indirect" "i") "a");;
+          let: "diskBlk" := ref (zero_val (slice.T byteT)) in
+          let: "indAddr" := ref (zero_val uint64T) in
+          (if: indNum (struct.loadF Inode.S "size" "i") < slice.len (struct.loadF Inode.S "indirect" "i")
+          then
+            "indAddr" <-[uint64T] SliceGet uint64T (struct.loadF Inode.S "indirect" "i") (indNum (struct.loadF Inode.S "size" "i"));;
+            let: "addrs" := readIndirect (struct.loadF Inode.S "d" "i") (![uint64T] "indAddr") in
+            SliceSet uint64T "addrs" (indOff (struct.loadF Inode.S "size" "i")) "a";;
+            "diskBlk" <-[slice.T byteT] prepIndirect "addrs"
+          else
+            let: ("indAddr", "ok") := alloc.Allocator__Reserve "allocator" in
+            (if: ~ "ok"
+            then
+              lock.release (struct.loadF Inode.S "m" "i");;
+              #false
+            else
+              struct.storeF Inode.S "indirect" "i" (SliceAppend uint64T (struct.loadF Inode.S "indirect" "i") "indAddr");;
+              "diskBlk" <-[slice.T byteT] prepIndirect (SliceSingleton "a")));;
+          disk.Write (![uint64T] "indAddr") (![slice.T byteT] "diskBlk");;
+          struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
           let: "hdr" := Inode__mkHdr "i" in
           disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
           lock.release (struct.loadF Inode.S "m" "i");;
-          AppendAgain))).
+          #true))).
 
 (* Give a block to the inode for metadata purposes.
    Precondition: Block at addr a should be zeroed

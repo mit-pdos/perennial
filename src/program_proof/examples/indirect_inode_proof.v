@@ -1165,5 +1165,24 @@ Proof.
     iApply "HΦ"; iFrame.
     rewrite bool_decide_eq_true_2; auto.
   - (* We're appending onto the indirect blocks of the inode *)
+    wp_loadField.
+    wp_apply wp_indNum; [ (iPureIntro; rewrite /maxDirect; word) | ].
+    iIntros (indIndex) "%HindIndex".
+    wp_loadField.
+    wp_apply wp_slice_len; wp_pures.
+    wp_if_destruct.
+    {
+      wp_loadField.
+      wp_apply wp_indNum; [ (iPureIntro; rewrite /maxDirect; word) | ].
+      iIntros (indIndex') "%HindIndex'".
+      wp_loadField.
+      iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
+      wp_apply (wp_SliceGet _ _ _ _ 1 (take (int.nat numInd) indAddrs) indIndex' a with "[Hindirect_small]").
+      { iSplit; auto.
+        unfold maxDirect in *.
+        iPureIntro.
+        rewrite lookup_take; auto.
+        word.
+      }
 Admitted.
 End goose.
