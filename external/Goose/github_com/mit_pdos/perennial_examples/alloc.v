@@ -68,7 +68,9 @@ Definition findKey: val :=
       else #()));;
     (![uint64T] "found", ![boolT] "ok").
 
-(* Reserve transfers ownership of a free block from the Allocator to the caller *)
+(* Reserve transfers ownership of a free block from the Allocator to the caller
+
+   The initial contents of the block are arbitrary. *)
 Definition Allocator__Reserve: val :=
   rec: "Allocator__Reserve" "a" :=
     lock.acquire (struct.loadF Allocator.S "m" "a");;
