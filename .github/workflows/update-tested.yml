@@ -16,13 +16,8 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Check CI passed on master
-      uses: samuelgruetter/check-ci-success@master
-      with:
-        repo_owner: 'mit-pdos'
-        repo_name: 'perennial'
-        branch_name: 'master'
-        check_name: 'Travis CI - Branch'
+    # this branch is protected so the push will fail if CI hasn't succeeded on
+    # this commit
     - name: Push to coq/tested
       uses: ad-m/github-push-action@v0.6.0
       with:
