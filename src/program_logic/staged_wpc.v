@@ -20,6 +20,21 @@ Implicit Types e : expr Λ.
 
 Opaque staged_bundle.
 
+Lemma staged_inv_init_cfupd Γ s k k' N E1 e Φ Φc P i:
+  k' ≤ k →
+  ↑N ⊆ E1 →
+  staged_inv Γ N (k') (E1 ∖ ↑N) (E1 ∖ ↑N) ∗
+  staged_crash_pending Γ P i -∗
+  |C={E1, ∅}_(S (S k))=> P.
+Proof.
+  iIntros (Hle Hin)  "(#Hinv&Hpending)".
+  iIntros "HΦc".
+  iApply (step_fupdN_inner_wand _ E1 _ (S (S k')) with "[HΦc Hpending]"); eauto; try lia.
+  iPoseProof (staged_inv_weak_open with "[$]") as "H"; eauto.
+  iApply (step_fupdN_inner_wand _ E1 with "H"); auto.
+  iIntros "HP". iApply step_fupdN_later; auto.
+Qed.
+
 Lemma wpc_staged_inv_init' Γ s k k' N E1 E2 e Φ Φc P i:
   k' ≤ k →
   ↑N ⊆ E1 →
@@ -31,10 +46,8 @@ Proof.
   iIntros (Hle Hin) "(#Hinv&Hpending&H)".
   iApply (wpc_strong_crash_frame s s _ _ E1 _ _ with "H"); try auto.
   { lia. }
-  iIntros "HΦc".
   replace (2 * S (S k) - S (S k)) with (S (S k)) by lia.
-  iApply (step_fupdN_inner_wand _ E1 _ (S (S k')) with "[HΦc Hpending]"); eauto; try lia.
-  iApply (staged_inv_weak_open); eauto.
+  iApply (staged_inv_init_cfupd); eauto.
 Qed.
 
 Lemma wpc_staged_inv_open_aux' Γ s k k' k'' E1 E1' E2 e Φ Φc P Q N bset :
@@ -218,7 +231,7 @@ Proof.
     iMod (staged_inv_open with "[$]") as "[(H&Hclo')|Hcrash]"; auto; last first.
     {
       iDestruct "Hcrash" as "(?&?&Hclo)".
-      iMod "Hclo". iApply step_fupdN_inner_later; try set_solver+.
+      iMod "Hclo". iIntros. iApply step_fupdN_inner_later; try set_solver+.
       iNext. iNext.
       iApply step_fupdN_inner_later; try set_solver+.
       do 2 iNext; eauto.
@@ -226,6 +239,7 @@ Proof.
     iMod (fupd_intro_mask' _ ∅) as "Hclo''".
     { set_solver. }
     replace (S (2 * (S (S k)))) with (S (S ((S k) + (S (S k))))) by lia.
+    iIntros "#HC".
     iModIntro. do 2 rewrite Nat_iter_S.
     iModIntro. iNext. iModIntro. iModIntro. iNext.
     iPoseProof (wpc_crash with "H [$]") as "H".
@@ -562,7 +576,7 @@ Proof.
   replace (S (S (S (LVL k)))) with (3 + LVL k) by lia.
   iApply (wpc_step_fupdN_inner_NC with "[Hwp]"); eauto.
   iApply (and_mono with "Hwp"); auto.
-  iIntros. by iApply intro_wpc_crash_modality.
+  iIntros. by iApply intro_cfupd.
 Qed.
 
 Lemma wpc_fupd_crash_shift_empty' s k E1 e Φ Φc :
