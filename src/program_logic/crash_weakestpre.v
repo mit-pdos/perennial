@@ -674,8 +674,6 @@ Proof.
   iIntros "H". iModIntro. iNext; eauto.
 Qed.
 
-(* TODO: use this (actually a wand version) to prove an ElimModal instance,
-similar to [elim_modal_fupd_wp]. *)
 Lemma wpc_strong_crash_frame s1 s2 k1 k2 E1 E2 E e Φ Φc Ψc :
   s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 →
   WPC e @ s1; k1; E1 ; E {{ Φ }} {{ Φc }} -∗
@@ -1426,6 +1424,35 @@ Section proofmode_classes.
   Proof.
     by rewrite /ElimModal intuitionistically_if_elim
       fupd_frame_r wand_elim_r fupd_wpc.
+  Qed.
+
+  Global Instance elim_modal_cfupd_wpc p s k kdiff E1 E2 e P Φ Φc :
+    ElimModal (kdiff <= k)%nat p false (cfupd kdiff E1 ∅ P) True
+              (WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }})
+              (WPC e @ s; (k-kdiff)%nat; E1; E2 {{ Φ }} {{ P -∗ Φc }}).
+  Proof.
+    rewrite /ElimModal intuitionistically_if_elim.
+    iIntros (?) "[Hc Hwpc]".
+    assert (kdiff = k - (k - kdiff))%nat as Hdiff by lia.
+    iSpecialize ("Hwpc" with "[//]").
+    iApply (wpc_crash_frame_wand with "Hwpc [Hc]").
+    { lia. }
+    replace (k - (k - kdiff)) with kdiff by lia.
+    iExact "Hc".
+  Qed.
+
+  Example test_wpc_frame s k1 k2 E1 E2 e Φ Φc Ψc :
+    k1 ≤ k2 →
+    WPC e @ s; k1; E1 ; E2 {{ Φ }} {{ Φc }} -∗
+    (|C={E1, ∅}_(k2-k1)=> Ψc) -∗
+    WPC e @ s; k2; E1 ; E2 {{ Φ }} {{ Φc ∗ Ψc }}.
+  Proof.
+    iIntros (?) "Hwpc Hc".
+    iMod "Hc" as "_".
+    { lia. }
+    replace (k2 - (k2 - k1)) with k1 by lia.
+    iApply (wpc_mono' with "[] [] Hwpc"); auto.
+    iIntros "$ $".
   Qed.
 
   (*
