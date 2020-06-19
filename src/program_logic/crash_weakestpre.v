@@ -8,8 +8,78 @@ Import uPred.
 
 (* Define a weakestpre with an explicit crash invariant (i.e. there is a postcondition and a crash condition *)
 
-Definition cfupd  `{!irisG Λ Σ} `{crashG Σ} (k: nat) E1 E2 :=
-  λ P, (C -∗ |={E1,E1}_(k)=> |={E2, ∅}=> |={∅, ∅}▷=>^(k) |={∅, ∅}=> P)%I.
+(* first, define a modality for establishing crash conditions *)
+Section cfupd.
+  Context `{!irisG Λ Σ} `{crashG Σ}.
+  Implicit Types (P: iProp Σ).
+
+  Definition cfupd (k: nat) E1 E2 :=
+    λ P, (C -∗ |={E1,E1}_(k)=> |={E2, ∅}=> |={∅, ∅}▷=>^(k) |={∅, ∅}=> P)%I.
+
+  Global Instance from_modal_fupd_iter k E P :
+    FromModal modality_id
+              (Nat.iter k (fupd E E) P)
+              (Nat.iter k (fupd E E) P) P.
+  Proof.
+    rewrite /FromModal /=.
+    iIntros "HP".
+    iInduction k as [|k] "IH".
+    - simpl; auto.
+    - simpl.
+      iModIntro.
+      iApply "IH"; iFrame.
+  Qed.
+
+  Theorem step_fupd_iter_intro k E1 E2 P :
+    E2 ⊆ E1 →
+    P -∗ (Nat.iter k (fun P : iProp Σ =>
+                        fupd E1 E2 (▷ (fupd E2 E1 P))) P).
+  Proof.
+    iIntros (?) "HP".
+    iInduction k as [|k] "IH".
+    - simpl; auto.
+    - simpl.
+      iMod (fupd_intro_mask' _ E2) as "Hclo"; auto.
+      iModIntro.
+      iModIntro.
+      iMod "Hclo" as "_".
+      iModIntro.
+      iApply ("IH" with "HP").
+  Qed.
+
+  Lemma fupd_iter_intro E1 k P :
+    P -∗ |={E1,E1}_(k)=> P.
+  Proof.
+    iIntros "HP".
+    iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver.
+    iModIntro.
+    iApply step_fupd_iter_intro; first by set_solver.
+    iMod "Hclo" as "_".
+    by iFrame.
+  Qed.
+
+  Lemma step_fupd_mask_weaken_iter k E1 E2 P :
+    E1 ⊆ E2 →
+    P -∗ |={E2,E1}_k=> P.
+  Proof.
+    iIntros (?) "HP".
+    iApply step_fupd_iter_intro; first by set_solver.
+    iMod (fupd_intro_mask' _ E1) as "_"; first by auto.
+    iApply fupd_intro_mask; first by set_solver.
+    iFrame.
+  Qed.
+
+  Global Instance from_modal_cfupd k E1 E2 P :
+    FromModal modality_id (cfupd k E1 E2 P) (cfupd k E1 E2 P) P.
+  Proof.
+    rewrite /FromModal /=.
+    iIntros "HP".
+    iIntros "_".
+    iApply fupd_iter_intro.
+    iApply step_fupd_mask_weaken_iter; first by set_solver.
+    iFrame.
+  Qed.
+End cfupd.
 
 (* Open to alternative notation for this. *)
 Notation "|C={ E1 , E2 }_ k => P" := (cfupd k E1 E2 P)
@@ -589,6 +659,8 @@ Proof.
   iIntros "H". iModIntro. iNext; eauto.
 Qed.
 
+(* TODO: use this (actually a wand version) to prove an ElimModal instance,
+similar to [elim_modal_fupd_wp]. *)
 Lemma wpc_strong_crash_frame s1 s2 k1 k2 E1 E2 E e Φ Φc Ψc :
   s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 →
   WPC e @ s1; k1; E1 ; E {{ Φ }} {{ Φc }} -∗
