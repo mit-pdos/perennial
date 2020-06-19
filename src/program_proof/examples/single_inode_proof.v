@@ -1,14 +1,16 @@
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.goose_lang Require Import crash_modality.
 From Perennial.algebra Require Import deletable_heap.
+From Perennial.goose_lang Require Import crash_modality.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import single_inode.
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
+
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof.examples Require Import
-     range_set alloc_crash_proof inode_proof.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof.examples Require Import
+     alloc_addrset alloc_crash_proof inode_proof.
+From Perennial.goose_lang.lib Require Export typed_slice into_val.
 
 Module s_inode.
   Definition t := list Block.
@@ -107,28 +109,38 @@ Section goose.
     { iIntros  "Hinode_cinv".
       iFromCache. }
     iIntros "!>" (l γ) "Hpre_inode".
-    iApply (inode_crash_obligation _ _ k' with "HPinode Hpre_inode").
-    { lia. }
-    iIntros "Hinode".
-    iCache with "HΦ HP Halloc Hs_inode".
-    { iDestruct 1 as (s_inode') "(Hinode_cinv&HPinode)".
-      crash_case.
-      (* TODO: replace with eauto automation *)
-      iExists _; iFrame.
-      iExists _, _; iFrame.
-      iExists _; iFrame. }
+    iCache with "HΦ HP Halloc Hs_inode Hpre_inode HPinode".
+    { iDestruct (pre_inode_to_cinv with "Hpre_inode") as "Hinode_cinv".
+      iFromCache. }
     wpc_pures.
     wpc_frame_seq.
     change (InjLV #()) with (zero_val (mapValT (struct.t alloc.unit.S))).
     wp_apply wp_NewMap.
     iIntros (mref) "Hused".
+    iDestruct (is_addrset_from_empty with "Hused") as "Hused".
     iNamed 1.
     wpc_pures.
-    wpc_frame_seq.
-    (* TODO: we need to run this before initializing the inode with
-    [inode_crash_obligation], but that is necessary to dismiss the inode stuff
-    from the crash obligation after opening. What went wrong? *)
-    wp_apply wp_Inode__UsedBlocks.
+    iDestruct (pre_inode_read_addrs with "Hpre_inode") as (addrs) "(Hused_blocks&Hdurable&Hpre_inode)".
+    wpc_bind_seq.
+    wpc_frame "HΦ HP Halloc Hs_inode Hdurable HPinode".
+    { crash_case.
+      iExists _; iFrame.
+      iExists _, _; iFrame.
+      iExists _; iFrame.
+      iExists _; iFrame. }
+    wp_apply (wp_Inode__UsedBlocks with "Hused_blocks").
+    iIntros (s) "(Haddrs&%Haddr_set&Hused_blocks)".
+    iDestruct (is_slice_small_read with "Haddrs") as "[Haddrs_small Haddrs]".
+    wp_apply (wp_SetAdd with "[$Hused $Haddrs_small]").
+    iIntros "[Hused Haddrs_small]".
+    iSpecialize ("Haddrs" with "Haddrs_small").
+    iSpecialize ("Hused_blocks" with "Haddrs").
+    iNamed 1.
+    iSpecialize ("Hpre_inode" with "Hused_blocks Hdurable").
+    wpc_pures.
+    (* TODO: I think to create the allocator we need to first use
+    alloc_crash_obligation to create is_allocator_pre, then call
+    wp_newAllocator *)
   Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :

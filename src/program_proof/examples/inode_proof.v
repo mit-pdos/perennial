@@ -117,6 +117,13 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Theorem pre_inode_to_cinv l γ addr σ :
+  pre_inode l γ addr σ -∗ inode_cinv addr σ.
+Proof.
+  iNamed 1.
+  iApply inode_linv_to_cinv; iFrame.
+Qed.
+
 Global Instance is_inode_Persistent l k γ P addr :
   Persistent (is_inode l k γ P addr).
 Proof. apply _. Qed.
@@ -258,24 +265,50 @@ Proof.
   iDestruct (big_sepL2_length with "Hdata") as "$".
 Qed.
 
-Theorem wp_Inode__UsedBlocks {l γ addr σ} :
-  {{{ pre_inode l γ addr σ }}}
+Definition used_blocks_pre l σ addrs: iProp Σ :=
+  ∃ addr_s,
+    "%Haddr_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
+    "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
+    "Haddrs" ∷ is_slice addr_s uint64T 1 addrs.
+
+(* this lets the caller frame out the durable state for the crash invariant and
+the memory state for UsedBlocks *)
+Theorem pre_inode_read_addrs l γ addr σ :
+  pre_inode l γ addr σ -∗
+  ∃ addrs, used_blocks_pre l σ addrs ∗
+           is_inode_durable addr σ addrs ∗
+           (used_blocks_pre l σ addrs -∗
+            is_inode_durable addr σ addrs -∗
+            pre_inode l γ addr σ).
+Proof.
+  iNamed 1.
+  iNamed "Hlockinv".
+  iDestruct (is_inode_durable_addrs with "Hdurable") as "%Haddr_set".
+  iExists addrs.
+  iSplitL "addrs Haddrs".
+  { iExists _; iFrame "% ∗". }
+  iFrame.
+  iNamed 1.
+  iIntros "Hdurable".
+  iExists _, _; iFrame.
+  iExists _, _; iFrame "∗ %".
+Qed.
+
+Theorem wp_Inode__UsedBlocks {l σ addrs} :
+  {{{ used_blocks_pre l σ addrs }}}
     Inode__UsedBlocks #l
-  {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
+  {{{ (s:Slice.t), RET (slice_val s);
       is_slice s uint64T 1 addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-      (is_slice s uint64T 1 addrs -∗ pre_inode l γ addr σ) }}}.
+      (is_slice s uint64T 1 addrs -∗ used_blocks_pre l σ addrs) }}}.
 Proof.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
   wp_call.
-  iNamed "Hlockinv".
   wp_loadField.
   iApply "HΦ".
-  iDestruct (is_inode_durable_addrs with "Hdurable") as %Haddrs.
-  iFrame (Haddrs) "Haddrs".
-  iIntros "Hs".
-  iExists _, _; iFrame "# ∗".
-  iExists _, _; iFrame; auto.
+  iFrame "∗ %".
+  iIntros "Haddrs".
+  iExists _; iFrame.
 Qed.
 
 Theorem wpc_Inode__Read {k E2} {l γ k' P addr} {off: u64} Q :
