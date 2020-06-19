@@ -2,6 +2,8 @@ From Coq Require Import ssreflect.
 From stdpp Require Import gmap fin_sets.
 From Perennial.Helpers Require Import Integers.
 
+Set Default Proof Using "Type".
+
 Definition rangeSet (start sz: Z): gset u64 :=
   list_to_set (U64 <$> seqZ start sz).
 
@@ -80,3 +82,17 @@ Proof.
   rewrite H.
   auto.
 Qed.
+
+Lemma rangeSet_set_size (start sz: Z) :
+  start + sz < 2^64 →
+  set_size (rangeSet start sz) = Z.to_nat sz.
+Proof.
+  rewrite /set_size.
+  rewrite /rangeSet.
+  rewrite /seqZ.
+  generalize dependent (Z.to_nat sz); intros sz'.
+  (* TODO: this seems hard; perhaps it would be fruitful to try a more
+  extensional strategy that uses the lookup theorem above to characterize
+  elements ∘ list_to_set (as a permutation of the underlying list, if NoDup) and
+  then look at the length of that list *)
+Admitted.

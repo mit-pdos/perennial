@@ -75,11 +75,11 @@ Section goose.
                           P σ)
   .
 
-  Definition s_inode_cinv σ : iProp Σ :=
+  Definition s_inode_cinv sz σ : iProp Σ :=
     ∃ γblocks γused,
     "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (U64 0) s_inode ∗
                            "HPinode" ∷ Pinode γblocks γused s_inode) ∗
-    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ ∗
+    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (sz-1)) ∗
     "Hs_inode" ∷ (∃ used, s_inode_inv γblocks γused σ used)
   .
 
@@ -89,12 +89,13 @@ Section goose.
 
   Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
-    {{{ "Hcinv" ∷ s_inode_cinv σ0 ∗ "HP" ∷ P σ0 }}}
-      Open #d_ref #sz @ NotStuck; LVL (S k); ⊤; E2
+    ↑allocN ⊆ E2 →
+    {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 ∗ "HP" ∷ P σ0 }}}
+      Open #d_ref #sz @ NotStuck; LVL (S k + (int.nat sz-1)); ⊤; E2
     {{{ l, RET #l; pre_s_inode l (int.val sz) k' }}}
-    {{{ ∃ σ', s_inode_cinv σ' ∗ P σ' }}}.
+    {{{ ∃ σ', s_inode_cinv (int.val sz) σ' ∗ P σ' }}}.
   Proof.
-    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { eauto with iFrame. }
     iNamed "Hcinv".
@@ -138,9 +139,29 @@ Section goose.
     iNamed 1.
     iSpecialize ("Hpre_inode" with "Hused_blocks Hdurable").
     wpc_pures.
-    (* TODO: I think to create the allocator we need to first use
-    alloc_crash_obligation to create is_allocator_pre, then call
-    wp_newAllocator *)
+    iDestruct "Halloc" as (s_alloc) "(%Halloc_dom&HPalloc&Halloc)".
+    replace (int.nat sz-1)%nat with (set_size (alloc.domain s_alloc)); last first.
+    { rewrite /alloc.domain Halloc_dom.
+      rewrite rangeSet_set_size; word. }
+    iApply (allocator_crash_obligation _ _ allocN _ _ _
+                                       (E2 ∖ ↑allocN) _ _ k'
+              with "Halloc HPalloc").
+    { lia. }
+    { set_solver. }
+    { set_solver. }
+    { (* ugh, we need to distinguish the precondition from the crash condition
+    in that in the precondition we know that the allocator is in a post-crash
+    state; would be nice to have a better pattern for this *)
+      admit. }
+    iIntros (γalloc) "His_alloc".
+    iEval (rewrite /alloc.domain Halloc_dom).
+    iCache with "HΦ HP His_alloc Hs_inode Hpre_inode HPinode".
+    { iIntros "Halloc".
+      iFromCache. }
+    (* TODO: allocator needs to be opened before initialization, so this can use
+    a WP and frame out the durable blocks *)
+    wpc_frame_seq.
+    iApply (wp_newAllocator with "[Hused]").
   Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
