@@ -4,7 +4,8 @@ From Perennial.goose_lang Require Import crash_modality.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import indirect_inode.
 
-From Perennial.program_proof.examples Require Import alloc_crash_proof.
+(*From Perennial.program_proof.examples Require Import alloc_crash_proof.*)
+From Perennial.program_proof.examples Require Import alloc_proof.
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import typed_slice.
@@ -124,35 +125,20 @@ Definition inode_linv (l:loc) σ : iProp Σ :=
 Definition inode_cinv σ: iProp Σ :=
   ∃ addrs, is_inode_durable σ addrs.
 
-Definition inode_state l (d_ref: loc) (lref: loc) addr : iProp Σ :=
+Definition inode_state l (d_ref: loc) (lref: loc) : iProp Σ :=
   "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d_ref) ∗
-  "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
-  "#addr" ∷ readonly (l ↦[Inode.S :: "addr"] #addr).
+  "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref).
 
 Definition is_inode l γ P : iProp Σ :=
   ∃ (d lref: loc),
-    "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
-    "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
+    "Hro_state" ∷ inode_state l d lref ∗
     "#Hlock" ∷ is_lock inodeN γ #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ).
 
 Definition pre_inode l γ P σ : iProp Σ :=
-  ∃ (d lref: loc), "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
-                         "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
-                         "Hlock" ∷ is_free_lock γ lref ∗
-                         "Hlockinv" ∷ inode_linv l σ ∗
-                         "HP" ∷ P σ.
-
-Theorem pre_inode_init {E} l γ P σ :
-  pre_inode l γ P σ ={E}=∗ is_inode l γ P.
-Proof.
-  iNamed 1.
-  iExists _, _; iFrame "#".
-  iMod (alloc_lock inodeN _ _ _
-                   (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ)%I
-          with "[$Hlock] [Hlockinv HP]") as "$".
-  { iExists _; iFrame. }
-  auto.
-Qed.
+  ∃ (d lref: loc),
+    "Hro_state" ∷ inode_state l d lref ∗
+    "Hfree_lock" ∷ is_free_lock γ lref ∗
+    "Hlockinv" ∷ inode_linv l σ.
 
 Global Instance is_inode_Persistent l γ P:
   Persistent (is_inode l γ P).
@@ -553,7 +539,7 @@ Theorem wp_Inode__Read {l γ P} {off: u64} Q :
        | None => ⌜s = Slice.nil⌝
        end) ∗ Q mb }}}.
 Proof.
-  iIntros (Φ) "(Hinode&Hfupd) HΦ"; iNamed "Hinode".
+  iIntros (Φ) "(Hinode&Hfupd) HΦ"; iNamed "Hinode"; iNamed "Hro_state".
   wp_call.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
@@ -787,7 +773,7 @@ Theorem wp_Inode__Size {l γ P} (Q: u64 -> iProp Σ) :
     Inode__Size #l
   {{{ sz, RET #sz; Q sz }}}.
 Proof.
-  iIntros (Φ) "(Hinv & Hfupd) HΦ"; iNamed "Hinv".
+  iIntros (Φ) "(Hinv & Hfupd) HΦ"; iNamed "Hinv"; iNamed "Hro_state".
   wp_call.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
@@ -1015,26 +1001,28 @@ Proof.
       rewrite H; reflexivity.
 Qed.
 
+
 Definition reserve_fupd E (Palloc: alloc.t → iProp Σ) : iProp Σ :=
   ∀ (σ σ': alloc.t) ma,
     ⌜match ma with
-     | Some a => a ∈ alloc.free σ ∧ σ' = <[a:=block_reserved]> σ
+     | Some a => a ∈ alloc.free σ (*∧ σ' = <[a:=block_reserved]> σ*)
      | None => σ' = σ ∧ alloc.free σ = ∅
      end⌝ -∗
   Palloc σ ={E}=∗ Palloc σ'.
 
 (* free really means unreserve (we don't have a way to unallocate something
 marked used) *)
-Definition free_fupd E (Palloc: alloc.t → iProp Σ) (a:u64) : iProp Σ :=
+(*Definition free_fupd E (Palloc: alloc.t → iProp Σ) (a:u64) : iProp Σ :=
   ∀ (σ: alloc.t),
     ⌜σ !! a = Some block_reserved⌝ -∗
   Palloc σ ={E}=∗ Palloc (<[a:=block_free]> σ).
-
+ *)
+(*
 Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
   (∀ σ : alloc.t,
       ⌜σ !! a = Some block_reserved⌝ -∗
       Palloc σ ={E}=∗ Palloc (<[a:=block_used]> σ)).
-
+*)
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
 Let allocN := nroot.@"allocator".
 
@@ -1047,23 +1035,54 @@ Theorem wpc_Inode__Append
   {{{ "Hinode" ∷ is_inode l γ P ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
       "HQc" ∷ (Q -∗ Qc) ∗
-      "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
-      "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
-      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
+      "%Halloc" ∷ ⌜is_allocator Palloc Ψ alloc_ref domain γalloc n⌝ ∗
+      (*"#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
+      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗*)
       "Hfupd" ∷ ((∀ σ σ' addr',
         ⌜σ' = set inode.blocks (λ bs, bs ++ [b0])
                               (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
         ⌜inode.wf σ⌝ -∗
         ∀ s,
-        ⌜s !! addr' = Some block_reserved⌝ -∗
+        (*⌜s !! addr' = Some block_reserved⌝ -∗*)
          P σ ∗ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
-         P σ' ∗ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)
+         P σ' ∗ Q)) (*∗ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)*)
   }}}
     Inode__Append #l (slice_val b_s) #alloc_ref
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}.
 Proof.
+  iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
+  iNamed "Hinode". iNamed "Hro_state".
+  wp_call.
+  Check wp_Reserve.
+  wp_apply (wp_Reserve Palloc Ψ _ alloc_ref _ _); auto.
+  { (* Reserve fupd *)
+    iSplit; eauto.
+    iIntros (σ σ' ma Htrans) "HP".
+    iMod ("Halloc_fupd" with "[] HP"); eauto. }
+  iSplit.
+  { iIntros "_"; iFromCache. }
+  iIntros "!>" (a ok) "Hblock".
+  wpc_pures.
+  wpc_if_destruct.
+  - wpc_pures.
+    iRight in "HΦ".
+    by iApply "HΦ".
+  - iDestruct "Hblock" as "[_ Hb]".
+    wpc_pures.
+    wpc_bind_seq.
+    iApply (prepare_reserved_block_reuse with "Hb"); auto.
+    iSplit; first by iFromCache.
+    iIntros "Hb Hreserved".
+    iDeexHyp "Hb".
+    iAssert (□ ∀ b0 R1 R2, int.val a d↦ b0 ∗
+                       ((Qc -∗ Φc) ∧ R1) ∗
+                       (R2 ∧ Qc) -∗
+                      Φc ∗ block_cinv Ψ γalloc a)%I as "#Hbc".
+
+
   iIntros (Φ) "(Hinode&Ha&Hfupd) HΦ"; iNamed "Hinode".
   wp_call.
+
   (*wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "(His_locked&Hlk)"; iNamed "Hlk".
