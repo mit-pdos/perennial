@@ -429,7 +429,8 @@ Proof.
   { eauto. }
 Qed.
 
-Definition LVL (k: nat) : nat := 3 ^ ((S (S k))).
+Notation base := 4.
+Definition LVL (k: nat) : nat := base ^ ((S (S k))).
 
 Lemma wpc_staged_inv_init Γ s k k' N E1 E2 e Φ Φc P i :
   k' < k →
@@ -440,16 +441,16 @@ Lemma wpc_staged_inv_init Γ s k k' N E1 E2 e Φ Φc P i :
   WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ Φc ∗ P }}.
 Proof.
   rewrite /LVL. iIntros (??) "(?&?&?)".
-  replace (3 ^ (S (S (S k)))) with (3 * (3 ^ ((S (S k))))) by auto.
-  iApply (wpc_idx_mono _ (2 * 3 ^ (S (S k)))).
+  replace (base ^ (S (S (S k)))) with (base * (base ^ ((S (S k))))) by auto.
+  iApply (wpc_idx_mono _ (2 * base ^ (S (S k)))).
   {  lia. }
   iApply wpc_staged_inv_init''; last first. iFrame; auto.
   - eauto.
-  - transitivity 3; first by auto. replace 3 with (3^1) by auto. apply Nat.pow_lt_mono_r_iff; eauto => //=. lia.
+  - transitivity (base)%nat; first by auto. replace base with (base^1) by auto. apply Nat.pow_lt_mono_r_iff; eauto => //=. lia.
     lia.
-  - apply (lt_le_trans _ (3 * (3 ^ (S (S k'))))).
-    cut (1 < 3 ^ (S (S k'))); try lia.
-    { replace 1 with (3^0) by auto. apply Nat.pow_lt_mono_r_iff; lia. }
+  - apply (lt_le_trans _ (base * (base ^ (S (S k'))))).
+    cut (1 < base ^ (S (S k'))); try lia.
+    { replace 1 with (base^0) by auto. apply Nat.pow_lt_mono_r_iff; lia. }
     rewrite -PeanoNat.Nat.pow_succ_r'. apply Nat.pow_le_mono_r_iff; lia.
 Qed.
 
@@ -476,17 +477,17 @@ Lemma wpc_staged_inv_open Γ s k k' E1 E1' E2 e Φ Φc Q Qrest Qnew P N b bset :
   staged_bundle Γ Q Qrest b bset ∗
   staged_crash Γ P bset ∗
   (Φc ∧ ((Q) -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅ {{λ v, ▷ Qnew v ∗ ▷ □ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗  (Φc ∧ Φ v))}} {{ Φc ∗ ▷ P }})) ⊢
-  WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
+  WPC e @ s; LVL ((S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   rewrite /LVL. iIntros (????) "(?&?&?)".
-  assert (Hpow: 3 ^ (S (S (S (S k)))) =  9 * 3 ^ (S (S k))).
-  { rewrite //=. lia. }
+  assert (Hpow: base ^ (S (S (S k))) =  4 * base ^ (S (S k))).
+  { rewrite //=. }
   rewrite Hpow.
-  iApply (wpc_idx_mono _ (4 * 3 ^ (S (S k)))).
+  iApply (wpc_idx_mono _ (4 * base ^ (S (S k)))).
   { lia. }
   iApply (wpc_staged_inv_open'' with "[$]"); eauto.
-  { transitivity (9 * 3 ^ (S (S k))); first by lia. rewrite -Hpow. apply Nat.pow_le_mono_r_iff; eauto. lia. }
-  { transitivity 3; first lia. replace 3 with (3^1) at 1; last by auto.
+  { transitivity (4 * base ^ (S (S k))); first by lia. rewrite -Hpow. apply Nat.pow_le_mono_r_iff; eauto. lia. }
+  { transitivity (base)%nat; first lia. replace base with (base^1) at 1; last by auto.
     apply Nat.pow_lt_mono_r_iff; eauto. lia. }
 Qed.
 
@@ -501,11 +502,11 @@ Lemma SSS_LVL k:
   (S (S (S (LVL k)))) ≤ LVL (S k).
 Proof.
   rewrite /LVL.
-  rewrite {1}(Nat.pow_succ_r' 3 (S (S k))).
-  replace (S (S (S (3 ^ (S (S k)))))) with (3 + (3^(S (S k)))); last by lia.
-  replace (2 * (3 ^ (S (S k)))) with (3 ^ (S (S k)) + (3 ^ (S (S k)))) by lia.
+  rewrite {1}(Nat.pow_succ_r' base (S (S k))).
+  replace (S (S (S (base ^ (S (S k)))))) with (3 + (base^(S (S k)))); last by lia.
+  replace (2 * (base ^ (S (S k)))) with (base ^ (S (S k)) + (base ^ (S (S k)))) by lia.
   apply plus_le_compat; auto.
-  { transitivity 9; first lia. replace 9 with (3^2) at 1; last by auto.
+  { transitivity (base)%nat; first lia. replace base with (base^1) at 1; last by auto.
   apply Nat.pow_le_mono_r_iff; eauto. lia. }
   lia.
 Qed.
@@ -584,12 +585,12 @@ Lemma wpc_fupd_crash_shift_empty' s k E1 e Φ Φc :
 Proof.
   iApply wpc_fupd_crash_shift_empty.
   rewrite /LVL.
-  cut (2 * 3 ^ (S (S k)) + 1 ≤ 3 ^ (S (S (S k)))); first lia.
-  assert (Hpow: 3 ^ ((S (S (S k)))) =  3 * 3 ^ (S (S k))).
+  cut (2 * base ^ (S (S k)) + 1 ≤ base ^ (S (S (S k)))); first lia.
+  assert (Hpow: base ^ ((S (S (S k)))) =  base * base ^ (S (S k))).
   { rewrite //=. }
   rewrite Hpow.
-  cut (1 ≤ 3 ^ (S (S k))); first lia.
-  replace 1 with (3^0) by auto. apply Nat.pow_le_mono_r_iff; eauto. lia.
+  cut (1 ≤ base ^ (S (S k))); first lia.
+  replace 1 with (base^0) by auto. apply Nat.pow_le_mono_r_iff; eauto. lia.
 Qed.
 
 End staged_inv_wpc.

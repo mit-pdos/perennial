@@ -320,7 +320,7 @@ Theorem wpc_Inode__Read {k E2} {l γ k' P addr} {off: u64} Q :
         ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
         ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ' ∗ Q mb)
   }}}
-    Inode__Read #l #off @ NotStuck; LVL (S (S k)); ⊤; E2
+    Inode__Read #l #off @ NotStuck; LVL (S k); ⊤; E2
   {{{ s mb, RET slice_val s;
       (match mb with
        | Some b => is_block s 1 b
@@ -433,7 +433,7 @@ Theorem wp_Inode__Size {k E2} {l k' γ P addr} (Q: u64 -> iProp Σ) (Qc: iProp �
           ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
           ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ' ∗ Q sz) ∧ Qc)
   }}}
-    Inode__Size #l @ NotStuck; LVL (S (S k)); ⊤; E2
+    Inode__Size #l @ NotStuck; LVL (S k); ⊤; E2
   {{{ sz, RET #sz; Q sz }}}
   {{{ True }}}.
 Proof.
@@ -581,8 +581,8 @@ Theorem wpc_Inode__Append {k E2}
         {Palloc γalloc domain n}
         (Q: iProp Σ) (Qc: iProp Σ)
         (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
-  (S (S (S k)) < n)%nat →
-  (S (S (S k)) < k')%nat →
+  (S (S k) < n)%nat →
+  (S (S k) < k')%nat →
   ↑nroot.@"readonly" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
   {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
@@ -599,7 +599,7 @@ Theorem wpc_Inode__Append {k E2}
          ▷ P σ ∗ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
          ▷ P σ' ∗ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)
   }}}
-    Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S (S (S k)))); ⊤; E2
+    Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S k)); ⊤; E2
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
   {{{ Qc }}}.
 Proof.

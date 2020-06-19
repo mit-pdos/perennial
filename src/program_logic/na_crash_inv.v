@@ -102,7 +102,7 @@ Lemma wpc_na_crash_inv_open_modify Γ Qnew s k k' E1 E2 e Φ Φc Q P bset N :
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
                     {{λ v, ▷ Qnew v ∗ ▷ □ (Qnew v -∗ P)  ∗ (na_crash_bundle Γ N (LVL k') (Qnew v) bset -∗ (Φc ∧ Φ v))}}
                     {{ Φc ∗ ▷ P }})) -∗
-  WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
+  WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   crash_unseal.
   iIntros (???) "Hbundle Hval Hwp".
@@ -130,7 +130,7 @@ Lemma wpc_na_crash_inv_open Γ s k k' E1 E2 e Φ Φc Q P bset N:
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
                     {{λ v, ▷ Q ∗ ▷ □ (Q -∗ P) ∗ (na_crash_bundle Γ N (LVL k') Q bset -∗ (Φc ∧ Φ v))}}
                     {{ Φc ∗ ▷ P }})) -∗
-  WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
+  WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (???) "H1 H2 Hwp". iApply (wpc_na_crash_inv_open_modify with "[$] [$]"); auto.
 Qed.

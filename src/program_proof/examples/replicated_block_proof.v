@@ -220,7 +220,7 @@ Section goose.
         "Hfupd" ∷ (Φc (* crash condition before lin.point *) ∧
                    ▷ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ (Φc (* crash condition after lin.point *) ∧
                                                  (∀ s, is_block s 1 σ -∗ Φ (slice_val s))))) -∗
-      WPC RepBlock__Read #l #primary @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
+      WPC RepBlock__Read #l #primary @ NotStuck; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
     iNamed "Hrb".
@@ -285,7 +285,7 @@ Section goose.
         "HQc" ∷ (∀ σ, Q σ -∗ Qc) ∗ (* crash condition after "linearization point" *)
         "Hfupd" ∷ (Qc (* crash condition before "linearization point" *) ∧
                    (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q σ)) }}}
-      RepBlock__Read #l #primary @ NotStuck; LVL (S (S k)); ⊤; E2
+      RepBlock__Read #l #primary @ NotStuck; LVL (S k); ⊤; E2
     {{{ s b, RET (slice_val s); is_block s 1 b ∗ Q b }}}
     {{{ Qc }}}.
   Proof.
@@ -306,7 +306,7 @@ Section goose.
         "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
         "Hfupd" ∷ (Φc ∧ ▷ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P b ∗ (Φc ∧ (is_block s q b -∗ Φ #())))) -∗
-    WPC  RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
+    WPC  RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
     iNamed "Hrb".
@@ -391,7 +391,7 @@ Section goose.
         "Hb" ∷ is_block s q b ∗
         "HQc" ∷ (Q -∗ Qc) ∗
         "Hfupd" ∷ (Qc ∧ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P b ∗ Q)) }}}
-      RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
+      RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S k); ⊤; E2
     {{{ RET #(); Q ∗ is_block s q b }}}
     {{{ Qc }}}.
   Proof.

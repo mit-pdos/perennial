@@ -151,7 +151,7 @@ Theorem wpc_Log__Reset k k' E2 l Q Qc:
      ((∀ bs, P (Opened bs l) ={⊤ ∖↑ N2}=∗ P (Opened [] l) ∗ Q) ∧
              Qc)
   }}}
-    Log__Reset #l @ NotStuck; (LVL (S (S (S k)))); ⊤; E2
+    Log__Reset #l @ NotStuck; (LVL (S (S k))); ⊤; E2
   {{{ RET #() ; Q }}}
   {{{ Qc }}}.
 Proof.
@@ -247,7 +247,7 @@ Theorem wpc_Open k k' E2 Qc Q:
                  ∗ (Qc ∧ ∀ l, P (Opening vs) -∗ PStartedOpening ={⊤ ∖ ↑N2 ∖ ↑N}=∗
                               Q l ∗ P (Opened vs l) ∗ POpened))
         ∧ Qc) }}}
-    Open #() @ NotStuck; LVL (S (S (S k))); ⊤; E2
+    Open #() @ NotStuck; LVL (S (S k)); ⊤; E2
   {{{ lptr, RET #lptr; is_log k' lptr ∗ Q lptr }}}
   {{{ Qc }}}.
 Proof using PStartedOpening_Timeless.
@@ -354,7 +354,7 @@ Theorem wpc_Init (sz: u64) k k' E2 Qc Q:
               ∗ (Qc ∧ ∀ l, P Initing -∗ PStartedIniting ={⊤ ∖ ↑N2 ∖ ↑N}=∗
                            Q l ∗ P (Opened [] l) ∗ POpened))
         ∧ Qc) }}}
-    Init #sz @ NotStuck; LVL (S (S (S k))); ⊤; E2
+    Init #sz @ NotStuck; LVL (S (S k)); ⊤; E2
   {{{ l, RET (#l, #true);  is_log k' l ∗ Q l}}}
   {{{ Qc }}}.
 Proof using PStartedIniting_Timeless SIZE_nonzero.

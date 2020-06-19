@@ -111,7 +111,7 @@ Section proof.
     Φc ∧ (R -∗
          WPC e @ LVL k; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') Γ lk R Rcrash -∗ (Φc ∧ Φ v)) ∗ ▷ R }}
                                          {{ Φc ∗ ▷ Rcrash }}) -∗
-    WPC e @  (LVL (S (S k))); E1; E2 {{ Φ }} {{ Φc }}.
+    WPC e @  (LVL (S k)); E1; E2 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (???) "Hcrash_locked H".
     iDestruct "Hcrash_locked" as (??) "(Hfull&#His_lock&#Hval&#HRcrash&Hlocked)".
@@ -151,7 +151,7 @@ Section proof.
     to_val e = None →
     is_crash_lock (LVL k') γ lk R Rcrash ∗
     (Φc ∧ (R -∗ WPC e @ (LVL k); (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φc ∧ Φ #()) ∗ ▷ R }} {{ Φc ∗ ▷ Rcrash }})) -∗
-    WPC (with_lock lk e) @ (LVL (S (S k))) ; ⊤; E {{ Φ }} {{ Φc }}.
+    WPC (with_lock lk e) @ (LVL (S k)) ; ⊤; E {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (??) "(#Hcrash&Hwp)".
     rewrite /with_lock.

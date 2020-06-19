@@ -222,7 +222,7 @@ Section goose.
                       ⌜mb = σ !! int.nat i⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
-      SingleInode__Read #l #i @ NotStuck; LVL (S (S k)); ⊤;E2
+      SingleInode__Read #l #i @ NotStuck; LVL (S k); ⊤;E2
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -293,7 +293,7 @@ Section goose.
   Qed.
 
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
-    (3 + k < k')%nat →
+    (2 + k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
         "Hfupd" ∷ ((∀ σ σ',
@@ -304,7 +304,7 @@ Section goose.
         a Skip? *)
          ▷ P σ ={⊤ ∖ ↑allocN ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ' ∗ Q))
     }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; LVL (S (S (S (S k)))); ⊤; E2
+      SingleInode__Append #l (slice_val b_s) @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.
