@@ -166,8 +166,8 @@ Global Instance is_allocator_Persistent l γ d n:
   Persistent (is_allocator l d γ n).
 Proof. apply _. Qed.
 
-Definition alloc_crash_cond : iProp Σ :=
-  ∃ σ, P σ ∗ [∗ set] k ∈ alloc.unused σ, Ψ k.
+Definition alloc_crash_cond (d: gset u64) : iProp Σ :=
+  ∃ σ, ⌜dom _ σ = d⌝ ∗ P σ ∗ [∗ set] k ∈ alloc.unused σ, Ψ k.
 
 Theorem reserved_block_weaken γ n k R R' :
   □(R -∗ R') -∗
@@ -180,13 +180,6 @@ Proof.
   iExists _, _; iFrame.
   iApply (na_crash_bundle_weaken with "HR' Hbundle").
 Qed.
-
-(*
-Lemma mapsto_pts_to_free:
-  [∗ map] i↦v ∈ σ, mapsto i 1 v -∗
-  [∗ map] i↦v ∈ alloc.free σ, mapsto i 1 v -∗
-*)
-Set Nested Proofs Allowed.
 
 Lemma free_big_sepS_to_all σ (Φ: u64 → iProp Σ):
   ([∗ set] k ∈ alloc.free σ, Φ k) ⊣⊢
@@ -243,7 +236,7 @@ Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   ▷ P σ -∗
   (∀ γ, is_allocator_pre γ n' (alloc.domain σ) (alloc.free σ) -∗
-        WPC e @ NotStuck; LVL n; ⊤; E2 {{ Φ }} {{ alloc_crash_cond -∗ Φc }}) -∗
+        WPC e @ NotStuck; LVL n; ⊤; E2 {{ Φ }} {{ alloc_crash_cond (alloc.domain σ) -∗ Φc }}) -∗
   WPC e @ NotStuck; (LVL ((S n) + set_size (alloc.domain σ))); ⊤; E2' {{ Φ }} {{ Φc }}%I.
 Proof using allocG0.
   iIntros (??? Hcrash) "Hstate HP HWP".
@@ -274,6 +267,7 @@ Proof using allocG0.
   iExists _. iFrame.
   rewrite /alloc.unused.
   rewrite -Hdom.
+  iSplitR; first by auto.
   rewrite -?big_sepM_dom big_sepM_filter.
   iDestruct (big_sepM_mono_with_inv with "Hstatus Hset") as "(_&$)".
   iIntros (k x Hlookup) "(Hctx&Hfree)".

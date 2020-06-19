@@ -1,14 +1,16 @@
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.goose_lang Require Import crash_modality.
 From Perennial.algebra Require Import deletable_heap.
+From Perennial.goose_lang Require Import crash_modality.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import single_inode.
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
+
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof.examples Require Import
-     range_set alloc_crash_proof inode_proof.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof.examples Require Import
+     alloc_addrset alloc_crash_proof inode_proof.
+From Perennial.goose_lang.lib Require Export typed_slice into_val.
 
 Module s_inode.
   Definition t := list Block.
@@ -77,11 +79,11 @@ Section goose.
                           P σ)
   .
 
-  Definition s_inode_cinv σ : iProp Σ :=
+  Definition s_inode_cinv sz σ : iProp Σ :=
     ∃ γblocks γused,
     "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (U64 0) s_inode ∗
                            "HPinode" ∷ Pinode γblocks γused s_inode) ∗
-    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ ∗
+    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (sz-1)) ∗
     "Hs_inode" ∷ (∃ used, s_inode_inv γblocks γused σ used)
   .
   Local Hint Extern 1 (environments.envs_entails _ (s_inode_cinv _)) => unfold s_inode_cinv : core.
@@ -92,41 +94,76 @@ Section goose.
 
   Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
-    {{{ "Hcinv" ∷ s_inode_cinv σ0 ∗ "HP" ∷ ▷ P σ0 }}}
-      Open #d_ref #sz @ NotStuck; LVL (S k); ⊤; E2
+    ↑allocN ⊆ E2 →
+    {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 ∗ "HP" ∷ ▷ P σ0 }}}
+      Open #d_ref #sz @ NotStuck; LVL (S k + (int.nat sz-1)); ⊤; E2
     {{{ l, RET #l; pre_s_inode l (int.val sz) k' }}}
-    {{{ ∃ σ', s_inode_cinv σ' ∗ ▷ P σ' }}}.
+    {{{ ∃ σ', s_inode_cinv (int.val sz) σ' ∗ ▷ P σ' }}}.
   Proof.
-    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { eauto with iFrame. }
     iNamed "Hcinv".
     iNamed "Hinode".
     iCache with "HΦ HP Halloc Hs_inode Hinode_cinv HPinode".
-    { crash_case. eauto 10 with iFrame. }
+    { crash_case. iExists _. iFrame. iExists _, _. iFrame. iExists _. iFrame. }
     wpc_apply (inode_proof.wpc_Open with "Hinode_cinv").
     iSplit.
     { iIntros  "Hinode_cinv".
       iFromCache. }
     iIntros "!>" (l γ) "Hpre_inode".
-    iApply (inode_crash_obligation _ _ k' with "HPinode Hpre_inode").
-    { lia. }
-    iIntros "Hinode".
-    iCache with "HΦ HP Halloc Hs_inode".
-    { iDestruct 1 as (s_inode') "(Hinode_cinv&HPinode)".
-      crash_case. eauto 10 with iFrame. }
+    iCache with "HΦ HP Halloc Hs_inode Hpre_inode HPinode".
+    { iDestruct (pre_inode_to_cinv with "Hpre_inode") as "Hinode_cinv".
+      iFromCache. }
     wpc_pures.
     wpc_frame_seq.
     change (InjLV #()) with (zero_val (mapValT (struct.t alloc.unit.S))).
     wp_apply wp_NewMap.
     iIntros (mref) "Hused".
+    iDestruct (is_addrset_from_empty with "Hused") as "Hused".
     iNamed 1.
     wpc_pures.
+    iDestruct (pre_inode_read_addrs with "Hpre_inode") as (addrs) "(Hused_blocks&Hdurable&Hpre_inode)".
+    wpc_bind_seq.
+    wpc_frame "HΦ HP Halloc Hs_inode Hdurable HPinode".
+    { crash_case.
+      iExists _; iFrame.
+      iExists _, _; iFrame.
+      iExists _; iFrame.
+      iExists _; iFrame. }
+    wp_apply (wp_Inode__UsedBlocks with "Hused_blocks").
+    iIntros (s) "(Haddrs&%Haddr_set&Hused_blocks)".
+    iDestruct (is_slice_small_read with "Haddrs") as "[Haddrs_small Haddrs]".
+    wp_apply (wp_SetAdd with "[$Hused $Haddrs_small]").
+    iIntros "[Hused Haddrs_small]".
+    iSpecialize ("Haddrs" with "Haddrs_small").
+    iSpecialize ("Hused_blocks" with "Haddrs").
+    iNamed 1.
+    iSpecialize ("Hpre_inode" with "Hused_blocks Hdurable").
+    wpc_pures.
+    iDestruct "Halloc" as (s_alloc) "(%Halloc_dom&HPalloc&Halloc)".
+    replace (int.nat sz-1)%nat with (set_size (alloc.domain s_alloc)); last first.
+    { rewrite /alloc.domain Halloc_dom.
+      rewrite rangeSet_set_size; word. }
+    iApply (allocator_crash_obligation _ _ allocN _ _ _
+                                       (E2 ∖ ↑allocN) _ _ k'
+              with "Halloc HPalloc").
+    { lia. }
+    { set_solver. }
+    { set_solver. }
+    { (* ugh, we need to distinguish the precondition from the crash condition
+    in that in the precondition we know that the allocator is in a post-crash
+    state; would be nice to have a better pattern for this *)
+      admit. }
+    iIntros (γalloc) "His_alloc".
+    iEval (rewrite /alloc.domain Halloc_dom).
+    iCache with "HΦ HP His_alloc Hs_inode Hpre_inode HPinode".
+    { iIntros "Halloc".
+      iFromCache. }
+    (* TODO: allocator needs to be opened before initialization, so this can use
+    a WP and frame out the durable blocks *)
     wpc_frame_seq.
-    (* TODO: we need to run this before initializing the inode with
-    [inode_crash_obligation], but that is necessary to dismiss the inode stuff
-    from the crash obligation after opening. What went wrong? *)
-    wp_apply wp_Inode__UsedBlocks.
+    iApply (wp_newAllocator with "[Hused]").
   Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :

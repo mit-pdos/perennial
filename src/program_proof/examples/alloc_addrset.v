@@ -24,6 +24,15 @@ Implicit Types (m: gmap u64 ()) (addrs: gset u64).
 Definition is_addrset (m_ref: loc) addrs: iProp Σ :=
   ∃ m, is_map m_ref m ∗ ⌜dom (gset _) m = addrs⌝.
 
+Theorem is_addrset_from_empty (m_ref: loc) :
+  is_map m_ref (∅: gmap u64 ()) -∗ is_addrset m_ref ∅.
+Proof.
+  iIntros "Hm".
+  iExists _; iFrame.
+  iPureIntro.
+  set_solver.
+Qed.
+
 Lemma rangeSet_append_one:
   ∀ start sz : u64,
     int.val start + int.val sz < 2 ^ 64
