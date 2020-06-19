@@ -20,7 +20,7 @@ Implicit Types e : expr Λ.
 
 Opaque staged_bundle.
 
-Lemma staged_inv_init_cfupd Γ s k k' N E1 e Φ Φc P i:
+Lemma staged_inv_init_cfupd' Γ k k' N E1 P i:
   k' ≤ k →
   ↑N ⊆ E1 →
   staged_inv Γ N (k') (E1 ∖ ↑N) (E1 ∖ ↑N) ∗
@@ -47,7 +47,7 @@ Proof.
   iApply (wpc_strong_crash_frame s s _ _ E1 _ _ with "H"); try auto.
   { lia. }
   replace (2 * S (S k) - S (S k)) with (S (S k)) by lia.
-  iApply (staged_inv_init_cfupd); eauto.
+  iApply (staged_inv_init_cfupd'); eauto.
 Qed.
 
 Lemma wpc_staged_inv_open_aux' Γ s k k' k'' E1 E1' E2 e Φ Φc P Q N bset :
@@ -385,6 +385,21 @@ Proof.
   - iSplit; first auto. iIntros. iApply fupd_mask_weaken; eauto; set_solver.
 Qed.
 
+Lemma staged_inv_init_cfupd'' Γ k k' N E1 P i:
+  S k' < k →
+  2 < k →
+  ↑N ⊆ E1 →
+  staged_inv Γ N (k') (E1 ∖ ↑N) (E1 ∖ ↑N) ∗
+  staged_crash_pending Γ P i -∗
+  |C={E1, ∅}_(k)=> P.
+Proof.
+  iIntros (Hle Hin ?) "(#Hinv&Hpending&H)".
+  destruct k as [|k]; first by lia.
+  destruct k as [|k]; first by lia.
+  iApply (staged_inv_init_cfupd' with "[$]").
+  - lia.
+  - eauto.
+Qed.
 
 Lemma wpc_staged_inv_init'' Γ s k k' N E1 E2 e Φ Φc P i:
   S k' < k →
@@ -431,6 +446,65 @@ Qed.
 
 Notation base := 4.
 Definition LVL (k: nat) : nat := base ^ ((S (S k))).
+
+Lemma staged_inv_init_cfupd Γ k k' N E1 P i:
+  k' < k →
+  ↑N ⊆ E1 →
+  staged_inv Γ N (LVL k') (E1 ∖ ↑N) (E1 ∖ ↑N) ∗
+  staged_crash_pending Γ P i -∗
+  |C={E1, ∅}_(LVL k)=> P.
+Proof.
+  rewrite /LVL.
+  iIntros (Hle Hin)  "(#Hinv&Hpending)".
+  iIntros "HΦc".
+  iApply (staged_inv_init_cfupd'' with "[$] [$]"); auto.
+  - apply (lt_le_trans _ (base * (base ^ (S (S k'))))).
+    cut (1 < base ^ (S (S k'))); try lia.
+    { replace 1 with (base^0) by auto. apply Nat.pow_lt_mono_r_iff; lia. }
+    rewrite -PeanoNat.Nat.pow_succ_r'. apply Nat.pow_le_mono_r_iff; lia.
+  - transitivity (base)%nat; first by auto. replace base with (base^1) by auto.
+    apply Nat.pow_lt_mono_r_iff; eauto => //=; lia.
+Qed.
+
+Lemma wpc_crash_frame_wand' s k k' E E' Ec e Φ Φc Ψc :
+  k' ≤ k → E' ⊆ E →
+  (|C={E', ∅}_(LVL k')=> Ψc) -∗
+  WPC e @ s; (LVL k); E ; Ec {{ Φ }} {{ Ψc -∗ Φc }} -∗
+  WPC e @ s; (LVL (S k)); E ; Ec {{ Φ }} {{ Φc }}.
+Proof.
+  rewrite /LVL. iIntros (??) "Hc Hwpc".
+  iApply (wpc_crash_frame_wand with "[$] [Hc]").
+  apply Nat.pow_le_mono_r_iff; lia.
+  iApply (cfupd_wand with "Hc"); auto.
+  replace (base ^ (S (S (S k)))) with (base * (base ^ ((S (S k))))) by auto.
+  transitivity (base ^ (S (S k))).
+  { apply Nat.pow_le_mono_r_iff; lia. }
+  lia.
+Qed.
+
+Lemma wpc_crash_frame_big_sepS_wand `{Countable A} (σ: gset A)(P: A → iProp Σ) k s E2 e Φ Φc  :
+  ([∗ set] a ∈ σ, ∃ k', ⌜ k' < k ⌝ ∗ |C={⊤, ∅}_(LVL k')=> P a) -∗
+  WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ ([∗ set] a ∈ σ, P a) -∗ Φc }} -∗
+  WPC e @ s; LVL (k + size σ); ⊤; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iInduction σ as [| x σ ?] "IH" using set_ind_L forall (Φc).
+  - rewrite size_empty right_id. iIntros "_ Hwp".
+    iApply (wpc_mono with "Hwp"); eauto.
+    rewrite big_sepS_empty //=. iIntros "H". by iApply "H".
+  - rewrite big_sepS_union; last by set_solver.
+    rewrite big_sepS_singleton.
+    iIntros "(HPx&Hrest)". iDestruct "HPx" as (k' Hlt) "Hpending".
+    iIntros "Hwp". replace (k + size ({[x]} ∪ σ)) with (S (k + size σ)); last first.
+    { rewrite size_union; last by set_solver. rewrite size_singleton. lia. }
+    iApply (wpc_crash_frame_wand' with "Hpending").
+    { lia. }
+    { eauto. }
+    iApply ("IH" with "Hrest").
+    iApply (wpc_mono with "Hwp"); auto.
+    iIntros "Hwand Hrest HP". iApply "Hwand".
+    rewrite big_sepS_union ?big_sepS_singleton; last by set_solver.
+    iFrame.
+Qed.
 
 Lemma wpc_staged_inv_init Γ s k k' N E1 E2 e Φ Φc P i :
   k' < k →

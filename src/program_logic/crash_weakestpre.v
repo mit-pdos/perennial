@@ -237,6 +237,21 @@ Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
+Lemma cfupd_wand  (E1 E1' E2 E2' : coPset) (k1 k2 : nat) P Q:
+  E2' ⊆ E2 →
+  E1' ⊆ E1 →
+  k2 ≤ k1 →
+  (|C={E1',E2'}_k2=> P) -∗
+  (P -∗ Q) -∗
+  |C={E1,E2}_k1=> Q.
+Proof.
+  iIntros (???) "HP HPQ".
+  iIntros "HC". iSpecialize ("HP" with "[$]").
+  iApply (step_fupdN_inner_wand with "HP"); auto.
+  iIntros "HP".
+  iApply (step_fupdN_inner_wand' with "HP"); auto.
+Qed.
+
 Lemma wpc_unfold s k E1 E2 e Φ Φc :
   WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }} ⊣⊢ wpc_pre s k (wpc (PROP:=iProp Σ) s k) E1 E2 e Φ Φc.
 Proof. rewrite wpc_eq. apply (fixpoint_unfold (wpc_pre s k)). Qed.
@@ -723,7 +738,6 @@ Proof.
     iApply (step_fupdN_inner_wand with "HΦ"); auto.
     iIntros; by iFrame.
 Qed.
-
 
 Lemma wpc_frame_l s k E1 E2 e Φ Φc R :
   R ∗ WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }} ⊢ WPC e @ s; k; E1 ; E2 {{ v, R ∗ Φ v }} {{ R ∗ Φc }}.
@@ -1298,6 +1312,18 @@ Proof.
   iIntros "(HΦc&Hwp)".
   iApply wp_wpc_frame'.
   iFrame. eauto.
+Qed.
+
+Lemma wpc_crash_frame_wand s k1 k2 E2 E e Φ Φc Ψc :
+  k1 ≤ k2 → 
+  WPC e @ s; k1; E2 ; E {{ Φ }} {{ Ψc -∗ Φc }} -∗
+  (|C={E2, ∅}_(k2-k1)=> Ψc) -∗
+  WPC e @ s; k2; E2 ; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros.
+  iAssert (WPC e @ s; k2; E2 ; E {{ Φ }} {{ (Ψc -∗ Φc) ∗ Ψc }})%I with "[-]" as "Hwp"; last first.
+  { iApply (wpc_mono with "Hwp"); auto. rewrite wand_elim_l //. }
+  by iApply (wpc_strong_crash_frame with "[$]").
 Qed.
 
 (*

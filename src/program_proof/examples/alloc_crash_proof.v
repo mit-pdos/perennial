@@ -141,14 +141,14 @@ Definition block_cinv γ addr : iProp Σ :=
   Ψ addr ∨ mapsto (hG := alloc_status_name γ) addr 1 block_used.
 
 Definition free_block γ n k : iProp Σ :=
-  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) (Ψ k) i ∗ na_crash_val Γ (block_cinv γ k) i) ∗
+  "Hcrashinv" ∷ (na_crash_inv Ncrash (LVL n) (Ψ k) (block_cinv γ k)) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_free).
 
 Definition free_block_pending γ n k : iProp Σ :=
-  (∃ Γ, na_crash_pending Γ Ncrash (LVL n) (block_cinv γ k)).
+  (|C={⊤, ∅}_(LVL (S n))=> block_cinv γ k).
 
 Definition reserved_block γ n k P : iProp Σ :=
-  "Hcrashinv" ∷ (∃ Γ i, na_crash_bundle Γ Ncrash (LVL n) P i ∗ na_crash_val Γ (block_cinv γ k) i) ∗
+  "Hcrashinv" ∷ (na_crash_inv Ncrash (LVL n) P (block_cinv γ k)) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
   "Halloc_inv" ∷ ∃ d, inv Ninv (allocator_inv γ d).
 
@@ -212,10 +212,7 @@ Theorem reserved_block_weaken γ n k R R' :
   reserved_block γ n k R'.
 Proof.
   iIntros "#HR'"; iNamed 1.
-  iDestruct "Hcrashinv" as (Γ i) "[Hbundle Hval]".
-  iFrame.
-  iExists _, _; iFrame.
-  iApply (na_crash_bundle_weaken with "HR' Hbundle").
+  iFrame. by iApply (na_crash_inv_weaken with "HR'").
 Qed.
 
 Lemma free_big_sepS_to_all σ (Φ: u64 → iProp Σ):
@@ -245,24 +242,18 @@ Proof.
   iIntros (k x Hlookup) "(Hmaps&HΨ)".
   destruct x.
   - (* TODO: should they all be in the same na_crash_inv? *)
-    iMod (na_crash_inv_init Ncrash (LVL n) E) as (Γ) "H".
-    iMod (na_crash_inv_alloc _ _ _ _ (block_cinv γ k) (Ψ k) with "[$] [$] []") as
-        (i) "(Hbund&Hval&Hpend)".
+    iMod (na_crash_inv_alloc Ncrash _ _ (block_cinv γ k) (Ψ k) with "[$] []") as
+        "(Hbund&Hpend)".
     { auto. }
     { iIntros "!> !> H". iLeft. eauto. }
-    iModIntro. iFrame. rewrite /free_block_pending.
-    iSplitL "Hpend".
-    { iExists _. iFrame. }
-    iExists _, _. iFrame.
+    iModIntro. iFrame. 
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
-    iMod (na_crash_inv_init Ncrash (LVL n) E) as (Γ) "H".
-    iMod (na_crash_inv_alloc _ _ _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] [$] []") as
-        (i) "(Hbund&Hval&Hpend)".
+    iMod (na_crash_inv_alloc Ncrash _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as
+        "(Hbund&Hpend)".
     { auto. }
     { iIntros "!> !> H". iRight. eauto. }
     iModIntro. iFrame.
-    iExists _. iFrame.
 Qed.
 
 Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
@@ -287,11 +278,10 @@ Proof using allocG0.
   { set_solver+. }
   { eauto. }
   iSpecialize ("HWP" $! γ with "[$]").
-  iApply (wpc_na_crash_inv_big_sepS_init_wand with "[Hpending]").
+  iApply (wpc_crash_frame_big_sepS_wand with "[Hpending]").
   { iApply (big_sepS_mono with "Hpending"). iIntros (? Hin) "Hpending".
     rewrite /free_block_pending.
-    iDestruct "Hpending" as (Γ) "Hpending".
-    iExists _, _, n'. iFrame. iPureIntro; eauto.
+    iExists (S n'). iFrame. iPureIntro; eauto. lia.
   }
   iApply wpc_later_crash'.
   iApply (wpc_inv' Ninv _ _ _ E2).
@@ -586,8 +576,7 @@ Proof.
   iIntros (??) "Hreserved H".
   iNamed "Hreserved".
   iDestruct "Halloc_inv" as (?) "#Hinv".
-  iDestruct "Hcrashinv" as (Γ i) "(Hbundle&#Hval)".
-  iApply (wpc_na_crash_inv_open_modify _ (λ v, R' v) with "[$] [$] [H Hmapsto]"); try iFrame; auto.
+  iApply (wpc_na_crash_inv_open_modify (λ v, R' v) with "[$] [H Hmapsto]"); try iFrame; auto.
   iSplit.
   - iDestruct "H" as "($&_)".
   - iIntros "HR". iDestruct "H" as "(_&H)".
@@ -597,7 +586,7 @@ Proof.
     iSplit.
     * iIntros (?) "(Hclose&HR&Hprep&Hcinv)". iModIntro. iFrame. iFrame "#".
       iIntros. iApply "Hclose". iSplitR "Hprep".
-      ** iExists _, _. by iFrame.
+      ** by iFrame.
       ** iIntros. eauto.
     * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
 Qed.
@@ -617,8 +606,7 @@ Proof.
   iIntros (???) "Hreserved H".
   iNamed "Hreserved".
   iDestruct "Halloc_inv" as (?) "#Hinv".
-  iDestruct "Hcrashinv" as (Γ i) "(Hbundle&#Hval)".
-  iApply (wpc_na_crash_inv_open_modify _ (λ v, block_cinv γ a) with "[$] [$] [H Hmapsto]"); try iFrame; auto.
+  iApply (wpc_na_crash_inv_open_modify (λ v, block_cinv γ a) with "[$] [H Hmapsto]"); try iFrame; auto.
   iSplit.
   - iDestruct "H" as "($&_)".
   - iIntros "HR". iDestruct "H" as "(_&H)".
