@@ -76,7 +76,7 @@ Section proof.
     val_ty.
   Qed.
 
-  Theorem alloc_lock E γ l R : is_free_lock γ l -∗ R ={E}=∗ is_lock γ #l R.
+  Theorem alloc_lock E γ l R : is_free_lock γ l -∗ ▷ R ={E}=∗ is_lock γ #l R.
   Proof.
     iIntros "(Hγ&Hl) HR".
     iMod (inv_alloc N _ (lock_inv γ l R) with "[Hl HR Hγ]") as "#?".
@@ -97,7 +97,7 @@ Section proof.
   Qed.
 
   Lemma newlock_spec E (R : iProp Σ):
-    {{{ R }}} lock.new #() @ E {{{ lk γ, RET lk; is_lock γ lk R }}}.
+    {{{ ▷ R }}} lock.new #() @ E {{{ lk γ, RET lk; is_lock γ lk R }}}.
   Proof using ext_tys.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
     wp_lam. wp_apply wp_alloc_untyped; first by auto.
@@ -138,7 +138,7 @@ Section proof.
 
   Lemma release_spec' E γ lk R :
     ↑N ⊆ E →
-    {{{ is_lock γ lk R ∗ locked γ ∗ R }}} lock.release lk @ E {{{ RET #(); True }}}.
+    {{{ is_lock γ lk R ∗ locked γ ∗ ▷ R }}} lock.release lk @ E {{{ RET #(); True }}}.
   Proof.
     iIntros (? Φ) "(Hlock & Hlocked & HR) HΦ".
     iDestruct "Hlock" as (l ->) "#Hinv".
@@ -157,7 +157,7 @@ Section proof.
   Qed.
 
   Lemma release_spec γ lk R :
-    {{{ is_lock γ lk R ∗ locked γ ∗ R }}} lock.release lk {{{ RET #(); True }}}.
+    {{{ is_lock γ lk R ∗ locked γ ∗ ▷ R }}} lock.release lk {{{ RET #(); True }}}.
   Proof. eapply release_spec'; auto. Qed.
 
   (** cond var proofs *)

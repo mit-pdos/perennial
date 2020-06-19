@@ -58,15 +58,15 @@ Definition bunch_wf k E E' (Ps Pr Qc: nat → iProp Σ) i bunch :=
      own γ (● Excl' (b, (γprop_stored, γprop_remainder))) ∗
      saved_prop_own γprop_stored (Ps i) ∗
      saved_prop_own γprop_remainder (Pr i) ∗
-     □ (C -∗ (Ps i) -∗ if b then |={E, E'}_k=> ([∗ set] j∈bunch, (Qc j)) ∗ (Pr i)
-                            else ([∗ set] j∈bunch, (Qc j)) ∗ (Pr i)))%I.
+     □ (C -∗ Ps i -∗ if b then |={E, E'}_k=> ([∗ set] j∈bunch, ▷ Qc j) ∗ (▷ Pr i)
+                            else ([∗ set] j∈bunch, ▷ Qc j) ∗ (▷ Pr i)))%I.
 
 Definition bunches_wf k E E' σ (Ps Pr Qc: nat → iProp Σ) :=
   ([∗ map] i↦bunch ∈ σ, bunch_wf k E E' Ps Pr Qc i bunch)%I.
 
 Definition bunch_live (Ps: nat → iProp Σ) i := Ps i.
 Definition bunch_crashed (Pr Qc: nat → iProp Σ) i bunch :=
-  (C ∗ Pr i ∗ ([∗ set] j ∈ bunch, Qc j ∨ (∃ γ, meta (hG := sghG) j pN γ ∗ staged_done γ)))%I.
+  (C ∗ ▷ Pr i ∗ ([∗ set] j ∈ bunch, ▷ Qc j ∨ (∃ γ, meta (hG := sghG) j pN γ ∗ staged_done γ)))%I.
 
 (*
 Definition inv_crashed (σ: gmap nat (gset nat)) (Pr Qc: nat → iProp Σ) :=
@@ -104,7 +104,7 @@ Definition staged_bundle (Q Q': iProp Σ) b (bundle: gset nat) : iProp Σ :=
       mapsto (hG := sphG) i 1 bundle ∗
       meta (hG := sphG) i bN γ ∗
       own γ (◯ Excl' (b, (γprop, γprop'))) ∗
-      ▷▷ (□ (Qalt -∗ Q)) ∗ ▷▷ (□ (Qalt' -∗ Q')) ∗
+      ▷ (□ (▷ Qalt -∗ ▷ Q)) ∗ ▷ (□ (▷ Qalt' -∗ ▷ Q')) ∗
       saved_prop_own γprop Qalt ∗
       saved_prop_own γprop' Qalt').
 
@@ -115,7 +115,7 @@ Definition staged_crash (i: nat) (P: iProp Σ) : iProp Σ :=
 
 Definition staged_crash (P: iProp Σ) s : iProp Σ :=
   (∃ Ps, ([∗ set] i ∈ s, ∃ γ, meta (hG := sghG) i cN γ ∗ saved_prop_own γ (Ps i)) ∗
-         □ (P -∗ ([∗ set] i ∈ s, Ps i))).
+         □ (▷ P -∗ ([∗ set] i ∈ s, ▷ Ps i))).
 
 Definition staged_crash_pending (P: iProp Σ) i : iProp Σ :=
   (mapsto (hG := sghG) i 1 ()) ∗
@@ -127,8 +127,8 @@ Definition bunch_wf_later k E E' (Ps Pr Qc: nat → iProp Σ) i bunch :=
      own γ (● Excl' (b, (γprop_stored, γprop_remainder))) ∗
      ▷ saved_prop_own γprop_stored (Ps i) ∗
      ▷ saved_prop_own γprop_remainder (Pr i) ∗
-     ▷ □ (C -∗ (Ps i) -∗ if b then |={E, E'}_k=> ([∗ set] j∈bunch, (Qc j)) ∗ (Pr i)
-                         else ([∗ set] j ∈ bunch, Qc j) ∗ (Pr i)))%I.
+     ▷ □ (C -∗ Ps i -∗ if b then |={E, E'}_k=> ([∗ set] j∈bunch, ▷ Qc j) ∗ (▷ Pr i)
+                         else ([∗ set] j ∈ bunch, ▷ Qc j) ∗ (▷ Pr i)))%I.
 
 Definition bunches_wf_later k E E' σ (Ps Pr Qc: nat → iProp Σ) :=
   ([∗ map] i↦bunch ∈ σ, bunch_wf_later k E E' Ps Pr Qc i bunch)%I.
@@ -154,8 +154,8 @@ Lemma bunches_wf_pers_lookup k E E' σ Ps Pr Qc i s γ (b: bool) γprop_stored �
   bunches_wf k E E' σ Ps Pr Qc -∗
      saved_prop_own γprop_stored (Ps i) ∗
      saved_prop_own γprop_remainder (Pr i) ∗
-     □ (C -∗ (Ps i) -∗ if b then |={E, E'}_k=> ([∗ set] j∈s, (Qc j)) ∗ (Pr i)
-                            else ([∗ set] j∈s, (Qc j)) ∗ (Pr i))%I.
+     □ (C -∗ Ps i -∗ if b then |={E, E'}_k=> ([∗ set] j∈s, ▷ Qc j) ∗ (▷ Pr i)
+                            else ([∗ set] j∈s, ▷ Qc j) ∗ (▷ Pr i))%I.
 Proof.
   iIntros (?) "#Hm Hown Hbunch".
   rewrite /bunches_wf.
@@ -173,8 +173,8 @@ Lemma bunches_wf_later_pers_lookup k E E' σ Ps Pr Qc i s γ (b: bool) γprop_st
   ▷ bunches_wf k E E' σ Ps Pr Qc -∗
      ▷ (saved_prop_own γprop_stored (Ps i) ∗
         saved_prop_own γprop_remainder (Pr i) ∗
-        □ (C -∗ (Ps i) -∗ if b then |={E, E'}_k=> ([∗ set] j∈s, (Qc j)) ∗ (Pr i)
-                            else ([∗ set] j∈s, (Qc j)) ∗ (Pr i)))%I.
+        □ (C -∗ Ps i -∗ if b then |={E, E'}_k=> ([∗ set] j∈s, ▷ Qc j) ∗ (▷ Pr i)
+                            else ([∗ set] j∈s, ▷ Qc j) ∗ (▷ Pr i)))%I.
 Proof.
   iIntros. iNext. iApply (bunches_wf_pers_lookup with "[$] [$] [$]"); eauto.
 Qed.
@@ -185,8 +185,8 @@ Lemma bunches_wf_later_pers_lookup_weak k E E' σ Ps Pr Qc i s:
      ▷ ∃ (b: bool) γprop_stored γprop_remainder,
          (saved_prop_own γprop_stored (Ps i) ∗
         saved_prop_own γprop_remainder (Pr i) ∗
-        □ (C -∗ (Ps i) -∗ if b then |={E, E'}_k=> ([∗ set] j∈s, (Qc j)) ∗ (Pr i)
-                            else ([∗ set] j∈s, (Qc j)) ∗ (Pr i)))%I.
+        □ (C -∗ Ps i -∗ if b then |={E, E'}_k=> ([∗ set] j∈s, ▷ Qc j) ∗ (▷ Pr i)
+                            else ([∗ set] j∈s, ▷ Qc j) ∗ (▷ Pr i)))%I.
 Proof.
   iIntros (?) "Hbunch". iNext.
   rewrite /bunches_wf.
@@ -247,7 +247,7 @@ Qed.
 Lemma staged_inv_alloc N k E E' P Q Qr:
   ↑N ⊆ E →
   staged_inv N k E' E' ∗
-  ▷ Q ∗ □ (C -∗ Q -∗ P ∗ Qr) ={E}=∗
+  ▷ Q ∗ □ (C -∗ ▷ Q -∗ ▷ P ∗ ▷ Qr) ={E}=∗
   ∃ i, staged_bundle Q Qr false {[i]} ∗ staged_crash P {[i]} ∗ staged_crash_pending P i.
 Proof.
   iIntros (?) "(Hinv&HQ&#HQP)".
@@ -299,7 +299,8 @@ Proof.
         iFrame "#".
         iAlways. iIntros.
         rewrite big_opS_singleton.
-        rewrite decide_True //. by iApply "HQP".
+        rewrite decide_True //.
+        by iApply "HQP".
       }
       iApply (big_sepM_mono with "Hbunch_wf").
       { iIntros (k' [] ?) "H".
@@ -348,8 +349,8 @@ Proof.
   iSplitL "Hbundle H2".
   { iExists _, _, _, _, Q, Qr. iFrame. iFrame "#".
     iSplitL.
-    - iIntros "!> !> !> $".
-    - iIntros "!> !> !> $".
+    - iIntros "!> !> $".
+    - iIntros "!> !> $".
   }
   iSplitL "".
   { iExists _. rewrite ?big_sepS_singleton. iFrame "#".
@@ -373,10 +374,10 @@ Proof.
   iDestruct "H" as (i γ γprop γprop' Qalt Qalt') "(Hbundle&Hmeta&Hown&#Hequiv1&#Hequiv2&Hsaved1&Hsaved2)".
   iExists i, γ, γprop, γprop', Qalt, Qalt'; iFrame.
   iSplitL "Hequiv1".
-  - iIntros "!> !> !> H".
+  - iIntros "!> !> H".
     iDestruct ("Hequiv1" with "H") as "H".
     iApply "HQ12"; auto.
-  - iIntros "!> !> !> H".
+  - iIntros "!> !> H".
     iDestruct ("Hequiv2" with "H") as "H".
     iApply "HQ12'"; auto.
 Qed.
@@ -463,7 +464,7 @@ Lemma staged_inv_weak_open E N k E1 P i:
   E1 ⊆ E ∖ ↑N →
   staged_inv N k E1 E1 ∗
   staged_crash_pending P i ∗
-  C -∗ |={E,E}_(S (S k))=> P.
+  C -∗ |={E,E}_(S (S k))=> ▷ P.
 Proof.
   iIntros (??) "(#Hinv&(Hpts&Hpending&Hsaved)&#HC)".
   iInv "Hinv" as "H" "Hclo".
@@ -484,7 +485,9 @@ Proof.
   iDestruct (later_or with "Hstatus") as "Hstatus".
   iMod (fupd_intro_mask' _ E1) as "Hclo_E"; first auto.
   iMod (fupd_intro_mask' _ (∅)) as "Hclo_E1"; first by set_solver.
-  iModIntro. rewrite Nat_iter_S. iModIntro. iNext. rewrite Nat_iter_S. do 2 iModIntro. iNext.
+  iModIntro. rewrite Nat_iter_S. iModIntro. iNext.
+  iEval (rewrite (lock bunch_crashed)) in "Hstatus". (* protect against ▷-stripping *)
+  rewrite Nat_iter_S. do 2 iModIntro. iNext. rewrite -lock.
   iDestruct "Hstatus" as "[Hlive|(_&Hcrashed)]".
   - rewrite /bunch_live.
     iSpecialize ("Hwand" with "[$] [$]").
@@ -547,7 +550,7 @@ Proof.
       iMod (pending_upd_done with "[$]") as "Hdone".
      iSpecialize ("Hstatus_rest" with "[HQsr HPcs Hdone]").
      {
-       iRight. iNext. rewrite /bunch_crashed. iFrame. iFrame "#".
+       iRight. rewrite /bunch_crashed. iFrame. iFrame "#".
        iApply big_sepS_delete; first eassumption.
        iSplitL "Hdone".
        {
@@ -592,12 +595,12 @@ Proof.
 
   iMod (bunches_wf_to_later with "Hbunch_wf") as "Hbunch_wf".
 
-  set (Qs' := (λ k, if decide (k = bid1) then (Qs bid1 ∗ Qs bid2)%I else
-                    if decide (k = bid2) then True%I else
-                    Qs k)).
-  set (Qsr' := (λ k, if decide (k = bid1) then (Qsr bid1 ∗ Qsr bid2)%I else
-                    if decide (k = bid2) then True%I else
-                    Qsr k)).
+  set (Qs' := (λ k, if decide (k = bid1) then (Qs bid1 ∗ Qs bid2) else
+                    if decide (k = bid2) then True else
+                    Qs k)%I).
+  set (Qsr' := (λ k, if decide (k = bid1) then (Qsr bid1 ∗ Qsr bid2) else
+                    if decide (k = bid2) then True else
+                    Qsr k)%I).
   iAssert (|==> bunches_wf_later k E' E' (<[bid2:=∅]> (<[bid1:=s1 ∪ s2]> σ)) Qs' Qsr' Pc ∗
                 ▷ saved_prop_own γprop1 (Qs bid1) ∗
                 ▷ saved_prop_own γprop1' (Qsr bid1) ∗
@@ -605,8 +608,8 @@ Proof.
                 ▷ saved_prop_own γprop2' (Qsr bid2) ∗
                 own γ1 (◯ Excl' (false, (γprop1_new, γprop1'_new))) ∗
                 own γ2 (◯ Excl' (false, (γprop2_new, γprop2'_new))) ∗
-                ▷ □ (C -∗ Qs bid1 -∗ ([∗ set] j ∈ s1, Pc j) ∗ Qsr bid1) ∗
-                ▷ □ (C -∗ Qs bid2 -∗ ([∗ set] j ∈ s2, Pc j) ∗ Qsr bid2))%I with "[Hbunch_wf Hown1 Hown2]"
+                ▷ □ (C -∗ Qs bid1 -∗ ([∗ set] j ∈ s1, ▷ Pc j) ∗ ▷ Qsr bid1) ∗
+                ▷ □ (C -∗ Qs bid2 -∗ ([∗ set] j ∈ s2, ▷ Pc j) ∗ ▷ Qsr bid2))%I with "[Hbunch_wf Hown1 Hown2]"
          as ">(Hbunches&#Hsaved1'&#Hsavedr1'&#Hsaved2'&#Hsavedr2'&Hown1&Hown2&#Hwand1&#Hwand2)".
   { rewrite /bunches_wf_later big_sepM_insert_delete.
     iDestruct (big_sepM_delete with "Hbunch_wf") as "(Hbid2_bunch&Hbunch_wf)"; first eapply Hin2.
@@ -614,7 +617,7 @@ Proof.
                   ▷ saved_prop_own γprop2 (Qs bid2) ∗
                   ▷ saved_prop_own γprop2' (Qsr bid2) ∗
                   own γ2 (◯ Excl' (false, (γprop2_new, γprop2'_new))) ∗
-                  ▷ □ (C -∗ Qs bid2 -∗ ([∗ set] j ∈ s2, Pc j) ∗ Qsr bid2))%I
+                  ▷ □ (C -∗ Qs bid2 -∗ ([∗ set] j ∈ s2, ▷ Pc j) ∗ ▷ Qsr bid2))%I
       with "[Hbid2_bunch Hown2]" as ">($&$&$&$&#Hwand2)".
     {
       iDestruct "Hbid2_bunch" as (????) "(Hm2&Hown_auth2&Hs2&Hsr2&#Hwand2)".
@@ -636,7 +639,7 @@ Proof.
                   ▷ saved_prop_own γprop1 (Qs bid1) ∗
                   ▷ saved_prop_own γprop1' (Qsr bid1) ∗
                   own γ1 (◯ Excl' (false ,(γprop1_new, γprop1'_new))) ∗
-                  ▷ □ (C -∗ Qs bid1 -∗ ([∗ set] j ∈ s1, Pc j) ∗ Qsr bid1))%I
+                  ▷ □ (C -∗ Qs bid1 -∗ ([∗ set] j ∈ s1, ▷ Pc j) ∗ ▷ Qsr bid1))%I
       with "[Hbid1_bunch Hown1]" as ">(?&$&$&$&Hwand1)".
     {
       iDestruct "Hbid1_bunch" as (????) "(Hm1&Hown_auth1&Hs1&Hsr1&#Hwand1)".
@@ -697,7 +700,7 @@ Proof.
           iSplitL "".
           { iRight. rewrite big_sepS_empty. iFrame "#". eauto. }
           iRight. iFrame. iFrame "#". iApply big_sepS_union; first by auto.
-          iFrame. iApply (big_sepS_mono with "Hb1cr"); eauto.
+          iFrame. iApply (big_sepS_mono with "Hb1cr"). eauto.
         }
       }
       iDestruct "Hb2" as "[Hb2l|(_&HQr2&Hb2cr)]".
@@ -737,16 +740,17 @@ Proof.
   iDestruct (saved_prop_agree with "Hsaved2 Hsaved2'") as "Hequiv2'".
   iDestruct (saved_prop_agree with "Hsavedr1 Hsavedr1'") as "Hequivr1'".
   iDestruct (saved_prop_agree with "Hsavedr2 Hsavedr2'") as "Hequivr2'".
-  iNext.
   iSplitL; iModIntro.
-  - iRewrite -"Hequiv1'". iRewrite -"Hequiv2'".
-    iIntros "[H1 H2]".
-    iDestruct ("Hequiv1" with "H1") as "$".
-    iDestruct ("Hequiv2" with "H2") as "$".
-  - iRewrite -"Hequivr1'". iRewrite -"Hequivr2'".
-    iIntros "[H1 H2]".
-    iDestruct ("Hequiv1_alt" with "H1") as "$".
-    iDestruct ("Hequiv2_alt" with "H2") as "$".
+  - iIntros "[H1 H2]".
+    iDestruct ("Hequiv1" with "[H1]") as "$".
+    { iNext. iRewrite "Hequiv1'". done. }
+    iDestruct ("Hequiv2" with "[H2]") as "$".
+    { iNext. iRewrite "Hequiv2'". done. }
+  - iIntros "[H1 H2]".
+    iDestruct ("Hequiv1_alt" with "[H1]") as "$".
+    { iNext. iRewrite "Hequivr1'". done. }
+    iDestruct ("Hequiv2_alt" with "[H2]") as "$".
+    { iNext. iRewrite "Hequivr2'". done. }
 Qed.
 
 Lemma staged_inv_open E N k E1 E2 P Q Qr b s:
@@ -755,8 +759,8 @@ Lemma staged_inv_open E N k E1 E2 P Q Qr b s:
   staged_inv N k E1 E2 ∗
   staged_bundle Q Qr b s ∗
   staged_crash P s ={E,E∖↑N}=∗
-  (▷ ▷ Q ∗ ▷ (∀ Q' Qr' b', ▷ Q' ∗ □ (C -∗ Q' -∗ if (b': bool) then |={E1, E2}_k=> P ∗ Qr' else
-                                                P ∗ Qr')
+  (▷ ▷ Q ∗ ▷ (∀ Q' Qr' b', ▷ Q' ∗ □ (C -∗ Q' -∗ if (b': bool) then |={E1, E2}_k=> ▷ P ∗ ▷ Qr' else
+                                                ▷ P ∗ ▷ Qr')
                          ={E∖↑N,E}=∗ staged_bundle Q' Qr' b' s)) ∨
   (▷ ▷ Qr ∗ C ∗ |={E∖↑N, E}=> staged_bundle Q True b s).
 Proof.
@@ -779,7 +783,7 @@ Proof.
   - iLeft.
     iModIntro. iSplitL "Hlive".
     { iNext. iDestruct (saved_prop_agree with "Hsaved HQs") as "Hequiv'".
-      iNext. iApply "Hequiv". iRewrite "Hequiv'". auto. }
+      iApply "Hequiv". iNext. iRewrite "Hequiv'". auto. }
     iNext.
     iIntros (Q' Qr' b') "(HQs'&#Hwand')".
     iMod (saved_prop_alloc Q') as (γprop_new) "#Hsaved_new".
@@ -809,8 +813,12 @@ Proof.
           iSpecialize ("Hwand'" with "[$] [$]").
           destruct b'.
           * iApply (step_fupdN_inner_wand' with "Hwand'"); auto.
-            iIntros "(?&$)". iRewrite -"Hequiv_crash". by iApply "Hcrash_wand".
-          * iDestruct ("Hwand'") as "(?&$)". iRewrite -"Hequiv_crash". by iApply "Hcrash_wand".
+            iIntros "(?&$)".
+            iApply big_sepS_later. iRewrite -"Hequiv_crash". iApply big_sepS_later.
+            by iApply "Hcrash_wand".
+          * iDestruct ("Hwand'") as "(?&$)".
+            iApply big_sepS_later. iRewrite -"Hequiv_crash". iApply big_sepS_later.
+            by iApply "Hcrash_wand".
         }
         iFrame "#".
         iModIntro. iApply (big_sepM_mono with "Hbunch_wf").
@@ -827,14 +835,16 @@ Proof.
       iApply (big_sepM_mono with "Hstatus_rest").
       { iIntros (k0 ? Hlookup_delete).
         apply lookup_delete_Some in Hlookup_delete as (?&?).
-        rewrite /Qs'/Qsr'/bunch_crashed. rewrite ?decide_False //. }
+        rewrite /Qs'/Qsr'/bunch_crashed. rewrite ?decide_False //.
+        apply or_mono_r. apply sep_mono_r. apply sep_mono; first by auto.
+        apply big_sepS_mono=>??. apply or_mono_l. auto. }
     }
     iModIntro. iExists _, _, _, _, _, _. iFrame. iFrame "#".
-    iSplitL; iIntros "!> !> !> $".
+    iSplitL; iIntros "!> !> $".
   - iRight.
     iModIntro. iDestruct "Hcrashed" as "(HQsr&Hcrashed)". iSplitL "HQsr".
     { iNext. iDestruct (saved_prop_agree with "Hsavedr HQr") as "Hequiv'".
-      iNext. iApply "Hequiv_alt". iRewrite "Hequiv'". auto. }
+      iApply "Hequiv_alt". iNext. iRewrite "Hequiv'". auto. }
     iFrame "HC".
     iMod (saved_prop_alloc True%I) as (γprop'_new) "#Hsaved'_new".
     iMod (bunches_wf_to_later with "Hbunch_wf") as "Hbunch_wf".
@@ -862,8 +872,8 @@ Proof.
           iSpecialize ("Hwand_old" with "[$] [$]").
           destruct b.
           * iApply (step_fupdN_inner_wand' with "Hwand_old"); auto.
-            iIntros "(?&?)". rewrite right_id. eauto.
-          * iDestruct ("Hwand_old") as "(?&?)". rewrite right_id //.
+            iIntros "(?&?)". iSplitL; eauto.
+          * iDestruct ("Hwand_old") as "(?&?)". iSplitL; eauto.
         }
         iFrame "#".
         iModIntro. iApply (big_sepM_mono with "Hbunch_wf").
@@ -893,8 +903,8 @@ Lemma staged_inv_NC_open E N k E1 E2 P Q Qr b s:
   staged_inv N k E1 E2 ∗
   staged_bundle Q Qr b s ∗
   staged_crash P s ={E,E∖↑N}=∗
-  (▷ ▷ Q ∗ ▷ (∀ Q' Qr' b', ▷ Q' ∗ □ (C -∗ Q' -∗ if (b': bool) then |={E1, E2}_k=> P ∗ Qr' else
-                                                P ∗ Qr')
+  (▷ ▷ Q ∗ ▷ (∀ Q' Qr' b', ▷ Q' ∗ □ (C -∗ Q' -∗ if (b': bool) then |={E1, E2}_k=> ▷ P ∗ ▷ Qr' else
+                                                ▷ P ∗ ▷ Qr')
                          ={E∖↑N,E}=∗ staged_bundle Q' Qr' b' s)).
 Proof.
   iIntros (??) "(HNC&Hinv&Hval)".

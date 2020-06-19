@@ -86,7 +86,7 @@ Theorem wp_newAllocator mref (start sz: u64) used :
   {{{ is_addrset mref used ∗
       let σ0 := {| alloc.domain := rangeSet (int.val start) (int.val sz);
                    alloc.used := used |} in
-      ⌜alloc.wf σ0⌝ ∗ allocator_durable σ0 ∗ P σ0 }}}
+      ⌜alloc.wf σ0⌝ ∗ allocator_durable σ0 ∗ ▷ P σ0 }}}
     New #start #sz #mref
   {{{ l γ, RET #l; is_allocator l γ }}}.
 Proof using allocG0.
@@ -148,7 +148,7 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) l γ :
            | None => σ' = σ
            end⌝ -∗
            ⌜alloc.wf σ⌝ -∗
-          P σ ={⊤}=∗ P σ' ∗ Q ma)
+          ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q ma)
   }}}
     Allocator__Reserve #l
   {{{ a (ok: bool), RET (#a, #ok);
@@ -202,7 +202,7 @@ Proof.
     wp_pures.
     iApply "HΦ"; iFrame.
   - wp_apply (release_spec with "[-HΦ HQ $His_lock $His_locked]").
-    { iExists _; iFrame "∗ %".
+    { iExists _; iFrame "∗ %". iNext.
       iExactEq "Hfreemap"; rewrite /named.
       f_equal.
       set_solver. }
@@ -260,7 +260,7 @@ Theorem wp_Free (Q: iProp Σ) l γ (a: u64) :
      (∀ σ σ',
           ⌜σ' = set alloc.used (λ used, used ∖ {[a]}) σ⌝ -∗
           ⌜alloc.wf σ⌝ -∗
-          P σ ={⊤}=∗ P σ' ∗ Q)
+          ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q)
   }}}
     Allocator__Free #l #a
   {{{ RET #(); Q }}}.
@@ -301,7 +301,7 @@ Proof.
     rewrite big_sepS_union; last first.
     { apply disjoint_singleton_r; auto. }
     rewrite big_opS_singleton.
-    iFrame "Hb Hblocks".
+    iFrame "Hb Hblocks". iNext.
     iExactEq "Hallocated".
     rewrite /named.
     f_equal.
