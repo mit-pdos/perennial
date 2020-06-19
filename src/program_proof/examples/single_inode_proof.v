@@ -87,15 +87,28 @@ Section goose.
     Timeless (s_inode_inv γblocks γused blocks used).
   Proof. apply _. Qed.
 
+  Theorem unify_used_set γblocks γused s_alloc s_inode :
+    Palloc γused s_alloc -∗
+    Pinode γblocks γused s_inode -∗
+    ⌜s_inode.(inode.addrs) = alloc.used s_alloc⌝.
+  Proof.
+    rewrite /Palloc; iNamed 1. (* TODO: shouldn't need to unfold, this is a bug
+    in iNamed *)
+    iNamed 1.
+    iDestruct (ghost_var_frac_frac_agree with "Hused1 Hused2") as %->.
+    auto.
+  Qed.
+
   Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
     ↑allocN ⊆ E2 →
+    (0 < int.val sz)%Z →
     {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 ∗ "HP" ∷ P σ0 }}}
-      Open #d_ref #sz @ NotStuck; LVL (S k + (int.nat sz-1)); ⊤; E2
+      Open #d_ref #sz @ NotStuck; LVL (S (S k + (int.nat sz-1))); ⊤; E2
     {{{ l, RET #l; pre_s_inode l (int.val sz) k' }}}
     {{{ ∃ σ', s_inode_cinv (int.val sz) σ' ∗ P σ' }}}.
   Proof.
-    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { eauto with iFrame. }
     iNamed "Hcinv".
@@ -109,10 +122,12 @@ Section goose.
     iSplit.
     { iIntros  "Hinode_cinv".
       iFromCache. }
-    iIntros "!>" (l γ) "Hpre_inode".
+    iIntros "!>" (inode_ref γ) "Hpre_inode".
     iCache with "HΦ HP Halloc Hs_inode Hpre_inode HPinode".
     { iDestruct (pre_inode_to_cinv with "Hpre_inode") as "Hinode_cinv".
       iFromCache. }
+    (* finished opening inode *)
+
     wpc_pures.
     wpc_frame_seq.
     change (InjLV #()) with (zero_val (mapValT (struct.t alloc.unit.S))).
@@ -129,6 +144,7 @@ Section goose.
       iExists _, _; iFrame.
       iExists _; iFrame.
       iExists _; iFrame. }
+
     wp_apply (wp_Inode__UsedBlocks with "Hused_blocks").
     iIntros (s) "(Haddrs&%Haddr_set&Hused_blocks)".
     iDestruct (is_slice_small_read with "Haddrs") as "[Haddrs_small Haddrs]".
@@ -140,28 +156,61 @@ Section goose.
     iSpecialize ("Hpre_inode" with "Hused_blocks Hdurable").
     wpc_pures.
     iDestruct "Halloc" as (s_alloc) "(%Halloc_dom&HPalloc&Halloc)".
+    iDestruct (unify_used_set with "[$] [$]") as %Hused.
     replace (int.nat sz-1)%nat with (set_size (alloc.domain s_alloc)); last first.
     { rewrite /alloc.domain Halloc_dom.
       rewrite rangeSet_set_size; word. }
+    (* done constructing free set *)
+
+  (* ugh, we need to distinguish the precondition from the crash condition
+    in that in the precondition we know that the allocator is in a post-crash
+    state; would be nice to have a better pattern for this *)
+    assert (alloc_post_crash s_alloc) by admit.
     iApply (allocator_crash_obligation _ _ allocN _ _ _
                                        (E2 ∖ ↑allocN) _ _ k'
               with "Halloc HPalloc").
     { lia. }
     { set_solver. }
     { set_solver. }
-    { (* ugh, we need to distinguish the precondition from the crash condition
-    in that in the precondition we know that the allocator is in a post-crash
-    state; would be nice to have a better pattern for this *)
-      admit. }
+    { auto. }
     iIntros (γalloc) "His_alloc".
     iEval (rewrite /alloc.domain Halloc_dom).
-    iCache with "HΦ HP His_alloc Hs_inode Hpre_inode HPinode".
+    iCache with "HΦ HP Hs_inode Hpre_inode HPinode".
     { iIntros "Halloc".
       iFromCache. }
-    (* TODO: allocator needs to be opened before initialization, so this can use
-    a WP and frame out the durable blocks *)
     wpc_frame_seq.
-    iApply (wp_newAllocator with "[Hused]").
+    iApply (wp_newAllocator with "[$Hused $His_alloc]").
+    { word. }
+    { word_cleanup.
+      rewrite /alloc.domain //. }
+    { rewrite left_id_L Haddr_set Hused.
+      apply alloc_post_crash_used; auto. }
+    iIntros "!>" (alloc_ref) "Halloc".
+    iNamed 1.
+    wpc_pures.
+    iApply (inode_crash_obligation _ _ k' with "HPinode Hpre_inode").
+    { lia. }
+    iIntros "Hinode".
+    iCache with "HΦ HP Hs_inode".
+    { iIntros "Hinode_crash Halloc".
+      crash_case.
+      iExists _; iFrame.
+      iExists _, _; iFrame. }
+    wpc_frame.
+    rewrite -wp_fupd.
+    wp_apply wp_allocStruct.
+    { auto. }
+    iIntros (l) "Hstruct".
+    iDestruct (struct_fields_split with "Hstruct") as "(i&alloc&_)".
+    iMod (readonly_alloc_1 with "i") as "#i".
+    iMod (readonly_alloc_1 with "alloc") as "#alloc".
+    iModIntro.
+    iNamed 1.
+    iApply "HΦ".
+    iExists _, _, _, _, _, _; iFrame "# ∗".
+    (* TODO: oops, wasn't supposed to run the inode and allocator crash
+    obligations, instead should move those proofs to the s_inode crash
+    obligation *)
   Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :

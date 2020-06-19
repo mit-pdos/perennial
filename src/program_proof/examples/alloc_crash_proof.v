@@ -41,6 +41,33 @@ Module alloc.
   Global Instance _witness : Inhabited t.
   Proof. econstructor. apply (∅: gmap u64 block_status). Defined.
 
+  Lemma unused_used_disjoint σ :
+    unused σ ## used σ.
+  Proof.
+    rewrite /unused /used.
+    apply elem_of_disjoint => a H1 H2.
+    apply elem_of_dom in H1 as [s1 [H1 Hs1]%map_filter_lookup_Some].
+    apply elem_of_dom in H2 as [s2 [H2 Hs2]%map_filter_lookup_Some].
+    congruence.
+  Qed.
+
+  Lemma unused_used_domain σ :
+    unused σ ∪ used σ = domain σ.
+  Proof.
+    rewrite /unused /used /domain.
+    apply gset_eq => a.
+    rewrite elem_of_union.
+    rewrite !elem_of_dom.
+    split.
+    - destruct 1.
+      + destruct H as [s [H _]%map_filter_lookup_Some]; eauto.
+      + destruct H as [s [H _]%map_filter_lookup_Some]; eauto.
+    - intros.
+      destruct H as [s H].
+      destruct (decide (s = block_used)); [right | left]; exists s.
+      + rewrite map_filter_lookup_Some; eauto.
+      + rewrite map_filter_lookup_Some; eauto.
+  Qed.
 End alloc.
 
 Definition alloc_post_crash (σ: alloc.t) : Prop :=
@@ -65,6 +92,16 @@ Proof.
   apply alloc_post_crash_lookup_unused; auto.
   rewrite /alloc.unused. rewrite elem_of_dom. eexists.
   rewrite map_filter_lookup_Some; split; eauto.
+Qed.
+
+Lemma alloc_post_crash_used σ :
+  alloc_post_crash σ →
+  alloc.free σ = alloc.domain σ ∖ alloc.used σ.
+Proof.
+  intros ->.
+  pose proof (alloc.unused_used_domain σ).
+  pose proof (alloc.unused_used_disjoint σ).
+  set_solver.
 Qed.
 
 Section goose.
