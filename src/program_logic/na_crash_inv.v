@@ -62,14 +62,15 @@ Proof. crash_unseal. iMod (staged_inv_init) as (Γ) "H". iExists Γ. iFrame "H".
 Lemma na_crash_inv_alloc Γ N k E P Q:
   ↑N ⊆ E →
   na_crash_inv Γ N k -∗
-  ▷ Q -∗ □ (Q -∗ P) ={E}=∗
+  ▷ Q -∗ ▷ □ (Q -∗ P) ={E}=∗
   ∃ i, na_crash_bundle Γ N k Q {[i]} ∗ na_crash_val Γ P {[i]} ∗ na_crash_pending Γ N k P.
 Proof.
   crash_unseal.
   iIntros (?) "#Hinv HQ #HQP".
   iMod (staged_inv_alloc Γ N k E (⊤ ∖ ↑N) P Q True%I with "[HQ]") as (i') "(Hbundle&#Hval&Hpend)".
   { auto. }
-  { iFrame "#". iFrame. iAlways; iIntros; eauto. rewrite right_id. iApply "HQP"; eauto. }
+  { iFrame "#". iFrame. iAlways; iIntros; eauto. iSplitL; last done.
+    iApply "HQP"; eauto. }
   iModIntro. iExists i'. iFrame "#".
   iSplitL "Hbundle".
   - iExists _. iFrame.
@@ -99,8 +100,8 @@ Lemma wpc_na_crash_inv_open_modify Γ Qnew s k k' E1 E2 e Φ Φc Q P bset N :
   na_crash_bundle Γ N (LVL k') Q bset -∗
   na_crash_val Γ P bset -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, Qnew v ∗ □ (Qnew v -∗ P)  ∗ (na_crash_bundle Γ N (LVL k') (Qnew v) bset -∗ (Φc ∧ Φ v))}}
-                    {{ Φc ∗ P }})) -∗
+                    {{λ v, ▷ Qnew v ∗ ▷ □ (Qnew v -∗ P)  ∗ (na_crash_bundle Γ N (LVL k') (Qnew v) bset -∗ (Φc ∧ Φ v))}}
+                    {{ Φc ∗ ▷ P }})) -∗
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   crash_unseal.
@@ -127,8 +128,8 @@ Lemma wpc_na_crash_inv_open Γ s k k' E1 E2 e Φ Φc Q P bset N:
   na_crash_bundle Γ N (LVL k') Q bset -∗
   na_crash_val Γ P bset -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, Q ∗ □ (Q -∗ P) ∗ (na_crash_bundle Γ N (LVL k') Q bset -∗ (Φc ∧ Φ v))}}
-                    {{ Φc ∗ P }})) -∗
+                    {{λ v, ▷ Q ∗ ▷ □ (Q -∗ P) ∗ (na_crash_bundle Γ N (LVL k') Q bset -∗ (Φc ∧ Φ v))}}
+                    {{ Φc ∗ ▷ P }})) -∗
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (???) "H1 H2 Hwp". iApply (wpc_na_crash_inv_open_modify with "[$] [$]"); auto.
@@ -203,7 +204,7 @@ Proof.
   iApply ("H" with "[HQ]").
   iDestruct "HQ" as "[(HQ&Hclo)|(?&HC&Hclo)]".
   - iLeft. iFrame. iIntros (Q') "(HQ'&#Hwand')". iMod ("Hclo" $! Q' True%I false with "[HQ']") as "H".
-    { iFrame. iAlways. iIntros. rewrite right_id. by iApply "Hwand'". }
+    { iFrame. iAlways. iIntros. iSplitL; last done. by iApply "Hwand'". }
     iModIntro. iExists _. iFrame "H Hinv Hwand'".
   - iRight. iFrame. iMod "Hclo". iModIntro. iExists _. iFrame. iFrame "#".
 Qed.

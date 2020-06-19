@@ -32,13 +32,16 @@ Section goose.
   Let inodeN := nroot.@"inode".
   Context (P: s_inode.t → iProp Σ).
 
-  Definition Pinode γblocks γused (s: inode.t): iProp Σ :=
+  (** Protocol invariant for inode library *)
+  Local Definition Pinode γblocks γused (s: inode.t): iProp Σ :=
     "Hownblocks" ∷ own γblocks (◯ Excl' (s.(inode.blocks): listLO Block)) ∗
     "Hused1" ∷ own γused (●{1/2} Excl' s.(inode.addrs)).
 
-  Definition Palloc γused (s: alloc.t): iProp Σ :=
+  (** Protocol invariant for alloc library *)
+  Local Definition Palloc γused (s: alloc.t): iProp Σ :=
     "Hused2" ∷ own γused (●{1/2} Excl' (alloc.used s)).
 
+  (** Our own invariant (added to this is [P blocks]). *)
   Definition s_inode_inv γblocks γused (blocks: list Block) (used: gset u64): iProp Σ :=
     "Hγblocks" ∷ own γblocks (● Excl' (blocks : listLO Block)) ∗
     "Hγused" ∷ own γused (◯ Excl' used).
@@ -47,7 +50,8 @@ Section goose.
     "#i" ∷ readonly (l ↦[SingleInode.S :: "i"] #inode_ref) ∗
     "#alloc" ∷ readonly (l ↦[SingleInode.S :: "alloc"] #alloc_ref).
 
-  Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
+  (** State of unallocated blocks (RALF: is that right?) *)
+  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
 
   Definition pre_s_inode l sz k'  : iProp Σ :=
     ∃ inode_ref alloc_ref
@@ -80,6 +84,7 @@ Section goose.
     "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ ∗
     "Hs_inode" ∷ (∃ used, s_inode_inv γblocks γused σ used)
   .
+  Local Hint Extern 1 (environments.envs_entails _ (s_inode_cinv _)) => unfold s_inode_cinv : core.
 
   Instance s_inode_inv_Timeless :
     Timeless (s_inode_inv γblocks γused blocks used).
@@ -87,10 +92,10 @@ Section goose.
 
   Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
-    {{{ "Hcinv" ∷ s_inode_cinv σ0 ∗ "HP" ∷ P σ0 }}}
+    {{{ "Hcinv" ∷ s_inode_cinv σ0 ∗ "HP" ∷ ▷ P σ0 }}}
       Open #d_ref #sz @ NotStuck; LVL (S k); ⊤; E2
     {{{ l, RET #l; pre_s_inode l (int.val sz) k' }}}
-    {{{ ∃ σ', s_inode_cinv σ' ∗ P σ' }}}.
+    {{{ ∃ σ', s_inode_cinv σ' ∗ ▷ P σ' }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
@@ -98,10 +103,7 @@ Section goose.
     iNamed "Hcinv".
     iNamed "Hinode".
     iCache with "HΦ HP Halloc Hs_inode Hinode_cinv HPinode".
-    { crash_case.
-      iExists _; iFrame.
-      iExists _, _; iFrame.
-      iExists _; iFrame. }
+    { crash_case. eauto 10 with iFrame. }
     wpc_apply (inode_proof.wpc_Open with "Hinode_cinv").
     iSplit.
     { iIntros  "Hinode_cinv".
@@ -112,11 +114,7 @@ Section goose.
     iIntros "Hinode".
     iCache with "HΦ HP Halloc Hs_inode".
     { iDestruct 1 as (s_inode') "(Hinode_cinv&HPinode)".
-      crash_case.
-      (* TODO: replace with eauto automation *)
-      iExists _; iFrame.
-      iExists _, _; iFrame.
-      iExists _; iFrame. }
+      crash_case. eauto 10 with iFrame. }
     wpc_pures.
     wpc_frame_seq.
     change (InjLV #()) with (zero_val (mapValT (struct.t alloc.unit.S))).
@@ -158,7 +156,7 @@ Section goose.
     wpc_apply (wpc_Inode__Read Q with "[$Hinode Hfupd]").
     { lia. }
     { clear.
-      iIntros (σ σ' mb) "[ [-> ->] HPinode]".
+      iIntros (σ σ' mb) "[ [-> ->] >HPinode]".
       iInv "Hinv" as "Hinner".
       iDestruct "Hinner" as (σ' used) "[>Hsinv HP]".
       iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
@@ -252,7 +250,7 @@ Section goose.
         iEval (rewrite /Palloc) in "HPalloc"; iNamed.
         iEval (rewrite /Palloc /named).
         rewrite alloc_free_reserved //.
-      - iIntros (σ σ' addr' -> Hwf s Hreserved) "(HPinode&HPalloc)".
+      - iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&HPalloc)".
         iEval (rewrite /Palloc) in "HPalloc"; iNamed.
         iNamed "HPinode".
         iDestruct (ghost_var_frac_frac_agree with "Hused1 Hused2") as %Heq;
