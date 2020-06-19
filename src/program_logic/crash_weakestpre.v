@@ -79,6 +79,25 @@ Section cfupd.
     iApply step_fupd_mask_weaken_iter; first by set_solver.
     iFrame.
   Qed.
+
+  Global Instance cfupd_frame p k E1 E2 R P Q :
+    Frame p R P Q →
+    Frame p R (cfupd k E1 E2 P) (cfupd k E1 E2 Q).
+  Proof.
+    rewrite /Frame.
+    iIntros (Hframe) "[HR Hfupd]".
+    iIntros "HC".
+    iSpecialize ("Hfupd" with "HC").
+    iMod "Hfupd". iModIntro.
+    iInduction k as [|k] "IH"; simpl.
+    - do 3 (iMod "Hfupd"; iModIntro).
+      iApply (Hframe with "[$HR $Hfupd]").
+    - iMod "Hfupd".
+      iSpecialize ("IH" with "HR").
+      iModIntro. iModIntro.
+      iMod "Hfupd"; iModIntro.
+  Abort.
+
 End cfupd.
 
 (* Open to alternative notation for this. *)
