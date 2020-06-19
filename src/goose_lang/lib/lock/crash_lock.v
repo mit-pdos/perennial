@@ -73,7 +73,7 @@ Section proof.
   Lemma alloc_crash_lock k k' E Φ Φc e γ lk (R Rcrash : iProp Σ):
     (k' < k)%nat →
     □ (R -∗ Rcrash) ∗
-    R ∗
+    ▷ R ∗
     is_free_lock γ lk ∗
     (is_crash_lock (LVL k') γ #lk R Rcrash -∗
           WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Rcrash -∗ Φc }}) -∗
@@ -109,8 +109,8 @@ Section proof.
     language.to_val e = None →
     crash_locked (LVL k') Γ lk R Rcrash -∗
     Φc ∧ (R -∗
-         WPC e @ LVL k; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') Γ lk R Rcrash -∗ (Φc ∧ Φ v)) ∗ R }}
-                                         {{ Φc ∗ Rcrash }}) -∗
+         WPC e @ LVL k; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') Γ lk R Rcrash -∗ (Φc ∧ Φ v)) ∗ ▷ R }}
+                                         {{ Φc ∗ ▷ Rcrash }}) -∗
     WPC e @  (LVL (S (S k))); E1; E2 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (???) "Hcrash_locked H".
@@ -150,7 +150,7 @@ Section proof.
     (S k < k')%nat →
     to_val e = None →
     is_crash_lock (LVL k') γ lk R Rcrash ∗
-    (Φc ∧ (R -∗ WPC e @ (LVL k); (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φc ∧ Φ #()) ∗ R }} {{ Φc ∗ Rcrash }})) -∗
+    (Φc ∧ (R -∗ WPC e @ (LVL k); (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φc ∧ Φ #()) ∗ ▷ R }} {{ Φc ∗ ▷ Rcrash }})) -∗
     WPC (with_lock lk e) @ (LVL (S (S k))) ; ⊤; E {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (??) "(#Hcrash&Hwp)".

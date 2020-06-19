@@ -58,7 +58,7 @@ Lemma wpc_staged_inv_open_aux' Γ s k k' k'' E1 E1' E2 e Φ Φc P Q N bset :
   (2 * (S k)) ≤ k' →
   staged_inv Γ N k' (E1' ∖ ↑N) (E1' ∖ ↑N) ∗
   NC ∗
-  staged_bundle Γ (WPC e @ k''; E1 ∖ ↑N; ∅ {{ v, Q v ∗ □ (Q v -∗ P) ∗ (staged_bundle Γ (Q v) True false bset -∗ Φc ∧ Φ v)}}{{Φc ∗ P}}) Φc true bset ∗
+  staged_bundle Γ (WPC e @ k''; E1 ∖ ↑N; ∅ {{ v, ▷ Q v ∗ ▷ □ (Q v -∗ P) ∗ (staged_bundle Γ (Q v) True false bset -∗ Φc ∧ Φ v)}}{{Φc ∗ ▷ P}}) Φc true bset ∗
   staged_crash Γ P bset
   ⊢ |={E1,E1}_(S (2 * S (S k)))=>
      WPC e @ s; 2 * S (S k); E1; E2 {{ v, Φ v }} {{Φc}} ∗ NC.
@@ -90,7 +90,7 @@ Proof.
       iDestruct "H" as "(H&_)".
       iMod ("H" with "[$]") as "((HQ&#HQP&HΦ)&HNC)".
       iMod ("Hclo'" $! _ True%I false with "[HQ]").
-      { iSplitL. iApply "HQ". iAlways.
+      { iSplitL. iApply "HQ". iIntros "!>".
         iIntros. iSplitL; last eauto. iApply "HQP"; eauto.
       }
       iModIntro. iSplitR "HNC"; last by iFrame.
@@ -124,7 +124,7 @@ Proof.
   iMod "Hclo" as "_".
   iSpecialize ("Hclo'" $! _ Φc true with "[H]").
   { iSplitL "H".
-    -  iApply "H".
+    - iNext. iApply "H".
     - iAlways. iIntros "HC H".
     iPoseProof (wpc_crash with "H") as "H".
     iSpecialize ("H" with "[$]").
@@ -274,7 +274,7 @@ Lemma wpc_staged_inv_open' Γ s k k' k'' E1 E1' E2 e Φ Φc Q Qrest Qnew P N b b
   to_val e = None →
   staged_inv Γ N k' (E1' ∖ ↑N) (E1' ∖ ↑N) ∗
   staged_bundle Γ Q Qrest b bset ∗
-  (Φc ∧ (Q -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗  (Φc ∧ Φ v))}} {{ Φc ∗ P }})) ∗
+  (Φc ∧ (Q -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, ▷ Qnew v ∗ ▷ □ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗  (Φc ∧ Φ v))}} {{ Φc ∗ ▷ P }})) ∗
   staged_crash Γ P bset
   ⊢
   WPC e @ s; (2 * (S (S (S k)))); E1; E2 {{ Φ }} {{ Φc }}.
@@ -341,7 +341,7 @@ Proof.
   iDestruct "H" as "(Hσ&H&Hefs&HNC)".
   iSpecialize ("Hclo" $!
                       (WPC e2 @ k''; E1 ∖ ↑N;∅
-                        {{ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗ Φc ∧ Φ v) }}{{Φc ∗ P}})%I
+                        {{ v, ▷ Qnew v ∗ ▷□ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗ Φc ∧ Φ v) }}{{Φc ∗ ▷ P}})%I
                Φc true with "[H]").
   { iSplitL "H".
     - iNext. iFrame.
@@ -413,7 +413,7 @@ Lemma wpc_staged_inv_open'' Γ s k k' k'' E1 E1' E2 e Φ Φc Q Qrest Qnew P N b 
   staged_inv Γ N k' (E1' ∖ ↑N) (E1' ∖ ↑N) ∗
   staged_bundle Γ Q Qrest b bset ∗
   staged_crash Γ P bset ∗
-  (Φc ∧ (Q -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗  (Φc ∧ Φ v))}} {{ Φc ∗ P }})) ⊢
+  (Φc ∧ (Q -∗ WPC e @ NotStuck; k''; (E1 ∖ ↑N); ∅ {{λ v, ▷ Qnew v ∗ ▷ □ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗  (Φc ∧ Φ v))}} {{ Φc ∗ ▷ P }})) ⊢
   WPC e @ s; (4 * k); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??????) "(?&?&?&?)".
@@ -475,7 +475,7 @@ Lemma wpc_staged_inv_open Γ s k k' E1 E1' E2 e Φ Φc Q Qrest Qnew P N b bset :
   staged_inv Γ N (LVL k') (E1' ∖ ↑N) (E1' ∖ ↑N) ∗
   staged_bundle Γ Q Qrest b bset ∗
   staged_crash Γ P bset ∗
-  (Φc ∧ ((Q) -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅ {{λ v, Qnew v ∗ □ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗  (Φc ∧ Φ v))}} {{ Φc ∗ P }})) ⊢
+  (Φc ∧ ((Q) -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅ {{λ v, ▷ Qnew v ∗ ▷ □ (Qnew v -∗ P) ∗ (staged_bundle Γ (Qnew v) True false bset -∗  (Φc ∧ Φ v))}} {{ Φc ∗ ▷ P }})) ⊢
   WPC e @ s; LVL (S (S k)); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   rewrite /LVL. iIntros (????) "(?&?&?)".

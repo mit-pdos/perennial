@@ -212,7 +212,7 @@ Proof.
     iMod (na_crash_inv_alloc _ _ _ _ (block_cinv γ k) (Ψ k) with "[$] [$] []") as
         (i) "(Hbund&Hval&Hpend)".
     { auto. }
-    { iAlways. iIntros "H". iLeft. eauto. }
+    { iIntros "!> !> H". iLeft. eauto. }
     iModIntro. iFrame. rewrite /free_block_pending.
     iSplitL "Hpend".
     { iExists _. iFrame. }
@@ -223,7 +223,7 @@ Proof.
     iMod (na_crash_inv_alloc _ _ _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] [$] []") as
         (i) "(Hbund&Hval&Hpend)".
     { auto. }
-    { iAlways. iIntros "H". iRight. eauto. }
+    { iIntros "!> !> H". iRight. eauto. }
     iModIntro. iFrame.
     iExists _. iFrame.
 Qed.
@@ -234,7 +234,7 @@ Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
   ↑N ⊆ E2' ∖ E2 →
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
-  P σ -∗
+  ▷ P σ -∗
   (∀ γ, is_allocator_pre γ n' (alloc.domain σ) (alloc.free σ) -∗
         WPC e @ NotStuck; LVL n; ⊤; E2 {{ Φ }} {{ alloc_crash_cond (alloc.domain σ) -∗ Φc }}) -∗
   WPC e @ NotStuck; (LVL ((S n) + set_size (alloc.domain σ))); ⊤; E2' {{ Φ }} {{ Φc }}%I.
@@ -382,7 +382,7 @@ Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E
            | Some a => a ∈ alloc.free σ ∧ σ' = <[a := block_reserved]> σ
            | None => σ' = σ ∧ alloc.free σ = ∅
            end⌝ -∗
-          P σ ={E1 ∖ ↑N}=∗ P σ' ∗ Q ma) ∧
+          ▷ P σ ={E1 ∖ ↑N}=∗ ▷ P σ' ∗ Q ma) ∧
       Qc
   }}}
     Allocator__Reserve #l  @ NotStuck; n; E1; E2
@@ -543,7 +543,7 @@ Lemma prepare_reserved_block_reuse R' E R n n' γ e a Φ Φc:
                                            (R' v) ∗
                                            reserved_block_in_prep γ n' a ∗
                                            □ (R' v -∗ block_cinv γ a) }}
-                                   {{ Φc ∗ block_cinv γ a }}) -∗
+                                   {{ Φc ∗ ▷ block_cinv γ a }}) -∗
   WPC e @  (LVL (S (S n))); ⊤; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hreserved H".
@@ -574,7 +574,7 @@ Lemma prepare_reserved_block E1 E2 R n n' γ e a Φ Φc:
   (R -∗
    reserved_block_in_prep γ n' a -∗
    WPC e @ LVL n; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (Φc ∧ Φ v) ∗ block_cinv γ a }}
-                                   {{ Φc ∗ block_cinv γ a }}) -∗
+                                   {{ Φc ∗ ▷ block_cinv γ a }}) -∗
   WPC e @  (LVL (S (S n))); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (???) "Hreserved H".
@@ -694,7 +694,7 @@ Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   ↑N ⊆ E →
   ↑nroot.@"readonly" ⊆ E →
   {{{ is_allocator l d γ n' ∗ reserved_block γ n' a (Ψ a) ∗
-     (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ P σ ={E ∖↑N}=∗ P (<[ a := block_free ]> σ) ∗ Q)
+     (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ ▷ P σ ={E ∖↑N}=∗ ▷ P (<[ a := block_free ]> σ) ∗ Q)
   }}}
     Allocator__Free #l #a @ E
   {{{ RET #(); Q }}}.

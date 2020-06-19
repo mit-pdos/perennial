@@ -41,7 +41,7 @@ Section goose.
     ("Hprimary" ∷ int.val addr d↦ σ ∗
      "Hbackup" ∷ ∃ b0, int.val (word.add addr 1) d↦ b0)%I.
   (* Let eauto unfold this *)
-  Local Hint Extern 0 (environments.envs_entails _ (rblock_cinv _ _)) => unfold rblock_cinv : core.
+  Local Hint Extern 1 (environments.envs_entails _ (rblock_cinv _ _)) => unfold rblock_cinv : core.
 
   Theorem rblock_linv_to_cinv addr σ :
     rblock_linv addr σ -∗ rblock_cinv addr σ.
@@ -166,7 +166,7 @@ Section goose.
           γ k' l addr σ0 :
     (k' < k)%nat →
     is_pre_rblock γ k' l addr σ0 -∗
-    P σ0 -∗
+    ▷ P σ0 -∗
     (is_rblock γ k' l addr -∗
        WPC e @ LVL k; ⊤; E2 {{ Φ }}
                             {{ ∀ σ, rblock_cinv addr σ ∗ P σ -∗ Φc }}) -∗
@@ -218,7 +218,7 @@ Section goose.
     ∀ Φ Φc,
         "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hfupd" ∷ (Φc (* crash condition before lin.point *) ∧
-                   ▷ (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P σ ∗ (Φc (* crash condition after lin.point *) ∧
+                   ▷ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ (Φc (* crash condition after lin.point *) ∧
                                                  (∀ s, is_block s 1 σ -∗ Φ (slice_val s))))) -∗
       WPC RepBlock__Read #l #primary @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
   Proof.
@@ -284,7 +284,7 @@ Section goose.
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗ (* replicated block protocol *)
         "HQc" ∷ (∀ σ, Q σ -∗ Qc) ∗ (* crash condition after "linearization point" *)
         "Hfupd" ∷ (Qc (* crash condition before "linearization point" *) ∧
-                   (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P σ ∗ Q σ)) }}}
+                   (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q σ)) }}}
       RepBlock__Read #l #primary @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ s b, RET (slice_val s); is_block s 1 b ∗ Q b }}}
     {{{ Qc }}}.
@@ -305,7 +305,7 @@ Section goose.
     ∀ Φ Φc,
         "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
-        "Hfupd" ∷ (Φc ∧ ▷ (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P b ∗ (Φc ∧ (is_block s q b -∗ Φ #())))) -∗
+        "Hfupd" ∷ (Φc ∧ ▷ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P b ∗ (Φc ∧ (is_block s q b -∗ Φ #())))) -∗
     WPC  RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
@@ -329,7 +329,7 @@ Section goose.
 
     iCache with "HP Hprimary Hbackup Hfupd".
     { iSplitL "Hfupd"; first by iFromCache.
-      eauto with iFrame. }
+      eauto 10 with iFrame. }
 
     (* call to (lower-case) write, doing the actual writes *)
     wpc_call.
@@ -356,10 +356,11 @@ Section goose.
     iIntros "Hb".
     iCache Φc with "HΦ".
     { by iLeft in "HΦ". }
-    iCache with "HΦ Hprimary Hbackup HP".
-    { iSplitL "HΦ"; first iFromCache. eauto with iFrame. }
 
     wpc_pures.
+    { iSplitL "HΦ"; first iFromCache. eauto 10 with iFrame. }
+    iCache with "HΦ Hprimary Hbackup HP".
+    { iSplitL "HΦ"; first iFromCache. eauto 10 with iFrame. }
     wpc_bind (struct.loadF _ _ _).
     wpc_frame.
     wp_loadField.
@@ -370,7 +371,7 @@ Section goose.
     { iFrame. }
     iSplit; [ | iNext ].
     { iIntros "[Hbackup|Hbackup]"; try iFromCache.
-      iSplitL "HΦ"; first by iFromCache. eauto with iFrame. }
+      iSplitL "HΦ"; first by iFromCache. eauto 10 with iFrame. }
     iIntros "(Hbackup&Hb)".
     iSplitR "Hprimary Hbackup HP"; last first.
     { eauto with iFrame. }
@@ -389,7 +390,7 @@ Section goose.
     {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
         "Hb" ∷ is_block s q b ∗
         "HQc" ∷ (Q -∗ Qc) ∗
-        "Hfupd" ∷ (Qc ∧ (∀ σ, P σ ={⊤ ∖ ↑N}=∗ P b ∗ Q)) }}}
+        "Hfupd" ∷ (Qc ∧ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P b ∗ Q)) }}}
       RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ RET #(); Q ∗ is_block s q b }}}
     {{{ Qc }}}.
