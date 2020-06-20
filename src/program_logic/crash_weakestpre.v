@@ -70,15 +70,119 @@ Section cfupd.
   Qed.
 
   Global Instance from_modal_cfupd k E1 E2 P :
-    FromModal modality_id (cfupd k E1 E2 P) (cfupd k E1 E2 P) P.
+    FromModal modality_id (cfupd k E1 E2 P) (cfupd k E1 E2 P) (▷^k P).
   Proof.
     rewrite /FromModal /=.
     iIntros "HP".
     iIntros "_".
     iApply fupd_iter_intro.
-    iApply step_fupd_mask_weaken_iter; first by set_solver.
-    iFrame.
+    iApply step_fupdN_later; first set_solver.
+    iApply fupd_mask_weaken; first set_solver.
+    iModIntro.
+    by iFrame.
   Qed.
+
+  Lemma ineq_to_diff n1 n2 :
+    (n1 ≤ n2)%nat →
+    ∃ n1' d,
+      (n2 - n1 = d) ∧
+      n1 = n1' ∧
+      n2 = n1' + d.
+  Proof.
+    intros.
+    exists n1, (n2-n1); lia.
+  Qed.
+
+  Theorem elim_modal_step_fupdN_subtract E1 E2 k1 k2 P Q :
+    (k1 ≤ k2)%nat →
+    (|={E1,E2}▷=>^k1 P) -∗
+    (P -∗ |={E1,E2}▷=>^(k2-k1) Q) -∗
+    |={E1,E2}▷=>^k2 Q.
+  Proof.
+    iIntros (?) "HP HQ".
+    destruct (ineq_to_diff _ _ H0) as (k&kd&->&?&?); subst.
+    clear H0.
+    iInduction k as [|k] "IH"; simpl.
+    - iApply "HQ"; auto.
+    - iMod "HP"; iModIntro. iNext.
+      iMod "HP"; iModIntro.
+      iApply ("IH" with "HP HQ").
+  Qed.
+
+  Theorem elim_modal_step_fupdN_mono E1 E2 k P Q :
+    (|={E1,E2}▷=>^k P) -∗
+    (P -∗ Q) -∗
+    |={E1,E2}▷=>^k Q.
+  Proof.
+    iIntros "HP HQ".
+    iApply (elim_modal_step_fupdN_subtract with "HP"); auto.
+    replace (k-k) with 0 by lia; simpl.
+    auto.
+  Qed.
+
+  Theorem elim_modal_step_fupd_masks k1 k2 E1 E2 P Q :
+    (k1 ≤ k2)%nat →
+    E1 ⊆ E2 →
+    (|={E1,E2}_k1=> P) -∗
+    (P -∗ (|={E1,E2}_(k2-k1)=> Q)) -∗
+    (|={E1,E2}_k2=> Q).
+  Proof.
+    iIntros (??) "Hfupd HQ".
+    (* rearrange theorem to an addition rather than a subtraction *)
+    destruct (ineq_to_diff _ _ H0) as (k&kd&->&?&?); subst; clear H0.
+    iApply step_fupdN_inner_plus.
+    iMod "Hfupd". iModIntro.
+    iApply (elim_modal_step_fupdN_mono with "Hfupd").
+    iIntros "HP".
+    iMod "HP".
+    iSpecialize ("HQ" with "HP").
+    iApply fupd_mask_weaken; auto.
+  Qed.
+
+  (* these instances are local to avoid breaking the proofs in this file *)
+
+  Local Instance elim_modal_step_fupd p k1 k2 E P Q :
+    ElimModal (k1 ≤ k2)%nat p false (|={E,E}_k1=> P) P
+              (|={E,E}_k2=> Q) (|={E,E}_(k2-k1)=> Q).
+  Proof.
+    rewrite /ElimModal intuitionistically_if_elim /=.
+    iIntros (?) "[Hfupd HQ]".
+    iApply (elim_modal_step_fupd_masks with "Hfupd"); auto.
+  Qed.
+
+  Local Instance elim_modal_step_fupd_same p k E P Q :
+    ElimModal True p false (|={E,E}_k=> P) P
+              (|={E,E}_k=> Q) (|={E}=> Q).
+  Proof.
+    rewrite /ElimModal intuitionistically_if_elim.
+    iIntros (?) "[Hfupd HQ]".
+    iMod "Hfupd" as "HP".
+    replace (k-k) with 0 by lia.
+    simpl.
+    iSpecialize ("HQ" with "HP").
+    iMod "HQ".
+    iApply fupd_intro_mask; first set_solver; auto.
+  Qed.
+
+  Global Instance elim_modal_cfupd p k1 k2 E1 E2 P Q :
+    ElimModal (k1 ≤ k2)%nat p false (cfupd k1 E1 E2 P) P
+              (cfupd k2 E1 E2 Q) (cfupd (k2-k1) E1 E2 Q).
+  Proof.
+    rewrite /ElimModal intuitionistically_if_elim /cfupd /=.
+    iIntros (?) "[Hfupd HQ]".
+    iIntros "#HC".
+    iSpecialize ("Hfupd" with "HC").
+    iMod "Hfupd".
+    iApply step_fupd_iter_intro; first set_solver.
+    iApply fupd_intro_mask; first set_solver.
+    iMod "Hfupd"; iModIntro.
+    iApply (elim_modal_step_fupdN_subtract with "Hfupd"); auto.
+    iIntros "HP".
+    destruct (decide (k2-k1 = 0)).
+    - rewrite e; simpl.
+      iMod "HP".
+      iSpecialize ("HQ" with "HP HC").
+  Abort.
 
   Global Instance cfupd_frame p k E1 E2 R P Q :
     Frame p R P Q →
@@ -89,14 +193,10 @@ Section cfupd.
     iIntros "HC".
     iSpecialize ("Hfupd" with "HC").
     iMod "Hfupd". iModIntro.
-    iInduction k as [|k] "IH"; simpl.
-    - do 3 (iMod "Hfupd"; iModIntro).
-      iApply (Hframe with "[$HR $Hfupd]").
-    - iMod "Hfupd".
-      iSpecialize ("IH" with "HR").
-      iModIntro. iModIntro.
-      iMod "Hfupd"; iModIntro.
-  Abort.
+    iApply (elim_modal_step_fupdN_mono with "Hfupd").
+    iIntros ">HQ !>".
+    iApply Hframe; iFrame.
+  Qed.
 
 End cfupd.
 
