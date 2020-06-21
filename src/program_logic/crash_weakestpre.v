@@ -32,7 +32,7 @@ Section cfupd.
 
   Theorem step_fupd_iter_intro k E1 E2 P :
     E2 ⊆ E1 →
-    P -∗ (Nat.iter k (fun P : iProp Σ =>
+    ▷^k P -∗ (Nat.iter k (fun P : iProp Σ =>
                         fupd E1 E2 (▷ (fupd E2 E1 P))) P).
   Proof.
     iIntros (?) "HP".
@@ -48,27 +48,44 @@ Section cfupd.
   Qed.
 
   Lemma fupd_iter_intro E1 k P :
-    P -∗ |={E1,E1}_(k)=> P.
+    ▷^k P -∗ |={E1,E1}_(k)=> P.
   Proof.
     iIntros "HP".
     iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver.
     iModIntro.
     iApply step_fupd_iter_intro; first by set_solver.
+    iModIntro.
     iMod "Hclo" as "_".
     by iFrame.
   Qed.
 
   Lemma step_fupd_mask_weaken_iter k E1 E2 P :
     E1 ⊆ E2 →
-    P -∗ |={E2,E1}_k=> P.
+    ▷^k P -∗ |={E2,E1}_k=> P.
   Proof.
     iIntros (?) "HP".
     iApply step_fupd_iter_intro; first by set_solver.
-    iMod (fupd_intro_mask' _ E1) as "_"; first by auto.
-    iApply fupd_intro_mask; first by set_solver.
-    iFrame.
+    iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver.
+    iModIntro. iModIntro.
+    iMod "Hclo" as "_".
+    iApply fupd_mask_weaken; auto.
   Qed.
 
+  Theorem from_modal_cfupd_2k_laters k E1 E2 P :
+    (▷^(2*k) P) -∗ (cfupd k E1 E2 P).
+  Proof.
+    iIntros "HP".
+    iIntros "_".
+    iApply step_fupd_mask_weaken_iter; auto.
+    iModIntro.
+    iApply step_fupdN_later; first set_solver.
+    iApply fupd_mask_weaken; first set_solver.
+    iModIntro.
+    by iFrame.
+  Qed.
+
+  (* this is simpler to prove than from_modal_cfupd_2k_laters since it only uses
+  one of the ▷^k in cfupd, not both *)
   Global Instance from_modal_cfupd k E1 E2 P :
     FromModal modality_id (cfupd k E1 E2 P) (cfupd k E1 E2 P) (▷^k P).
   Proof.
@@ -174,6 +191,7 @@ Section cfupd.
     iSpecialize ("Hfupd" with "HC").
     iMod "Hfupd".
     iApply step_fupd_iter_intro; first set_solver.
+    iApply laterN_intro.
     iApply fupd_intro_mask; first set_solver.
     iMod "Hfupd"; iModIntro.
     iApply (elim_modal_step_fupdN_subtract with "Hfupd"); auto.
@@ -182,6 +200,9 @@ Section cfupd.
     - rewrite e; simpl.
       iMod "HP".
       iSpecialize ("HQ" with "HP HC").
+      (* XXX: I don't think this theorem is true with constant masks; maybe we
+      should just wait and see what principle is needed to combine cfupd
+      modalities *)
   Abort.
 
   Global Instance cfupd_frame p k E1 E2 R P Q :
