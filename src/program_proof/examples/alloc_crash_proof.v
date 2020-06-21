@@ -183,11 +183,37 @@ Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
     "#Halloc_inv" ∷ inv Ninv (allocator_inv γ d)
 .
 
+Definition is_allocator_mem_pre (l: loc) σ : iProp Σ :=
+  ∃ (lref mref: loc) (γlk: gname),
+    "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
+    "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
+    "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
+    "Hfree_lock" ∷ is_free_lock γlk lref.
+
 Definition is_allocator_pre γ n d freeset : iProp Σ :=
   "#Halloc_inv" ∷ inv Ninv (allocator_inv γ d) ∗
   "Hblocks" ∷ ([∗ set] k ∈ freeset, free_block γ n k) ∗
   "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯ (Excl' freeset))
 .
+
+Theorem is_allocator_pre_alloc {n} l σ :
+  ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
+  is_allocator_mem_pre l σ ={⊤}=∗
+  ∃ γ, is_allocator_pre γ n (alloc.domain σ) (alloc.free σ).
+Proof.
+  iIntros "Hunused". iNamed 1.
+  iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
+  iMod (ghost_var_alloc (alloc.free σ)) as (γfree) "(Hfree&Hfree_frag)".
+  set (γ := {| alloc_status_name := γheap;
+               alloc_free_name := γfree |}).
+  (* TODO: this is where we need to allocate the [free_block]s, which contain a
+  bunch of [na_crash_inv]s. *)
+  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref)%I
+          with "[$Hfree_lock] [-]") as "#Hlock".
+  { iExists _; iFrame.
+    iNext. admit.
+  }
+Abort.
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
 (*
