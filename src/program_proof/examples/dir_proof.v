@@ -41,6 +41,7 @@ Local Definition Palloc γused (s: alloc.t): iProp Σ :=
 
 (** Our own invariant (added to this is [P dir]) *)
 Definition dir_inv γblocks (dir: dir.t): iProp Σ :=
+  "%Hdom" ∷ ⌜ dom (gset nat) dir.(dir.inodes) = list_to_set (seq 0 5) ⌝ ∗
   "Hγblocks" ∷ own γblocks (● (Excl <$> dir.(dir.inodes)) : blocksR).
 
 (** In-memory state of the directory (persistent) *)
