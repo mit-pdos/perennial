@@ -73,7 +73,7 @@ Section goose.
       "#addr" ∷ readonly (l ↦[RepBlock.S :: "addr"] #addr) ∗
       "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_ref).
 
-  Definition is_pre_rblock (γ: gname) (k': nat) (l: loc) addr σ : iProp Σ :=
+  Definition is_pre_rblock (γ: gname) (l: loc) addr σ : iProp Σ :=
     "*" ∷ (∃ (d_ref m_ref: loc),
       "Hro_state" ∷ rblock_state l d_ref m_ref addr ∗
       "Hfree_lock" ∷ is_free_lock γ m_ref) ∗
@@ -103,6 +103,28 @@ Section goose.
     iSplitL "Hp".
     - iExact "Hp".
     - iExists block0; iExact "Hb".
+  Qed.
+
+  Theorem replicated_block_cfupd {γ l} k' addr σ0 :
+    is_pre_rblock γ l addr σ0 -∗
+    ▷ P σ0 ={⊤}=∗
+    is_rblock γ k' l addr ∗
+    |C={⊤,∅}_(LVL (S k'))=> ∃ σ, rblock_cinv addr σ ∗ P σ.
+  Proof.
+    iIntros "Hpre HP"; iNamed "Hpre".
+
+    (* actually initialize the lock *)
+    iMod (alloc_crash_lock_cfupd N N k'
+                             (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)%I
+                             (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)%I
+            with "Hfree_lock [] [Hlinv HP]") as "(Hlk&$)".
+    { iIntros "!>"; iNamed 1.
+      iExists _; iFrame.
+      iApply rblock_linv_to_cinv; iFrame. }
+    { eauto with iFrame. }
+
+    iModIntro.
+    iExists _, _; iFrame.
   Qed.
 
   (* Open is the replicated block's recovery procedure, which constructs the
@@ -160,40 +182,6 @@ Section goose.
     iModIntro.
     iApply "HΦ".
     rewrite /is_pre_rblock; eauto with iFrame.
-  Qed.
-
-  Theorem replicated_block_crash_obligation {k E2} e (Φ: val → iProp Σ) Φc
-          γ k' l addr σ0 :
-    (k' < k)%nat →
-    is_pre_rblock γ k' l addr σ0 -∗
-    ▷ P σ0 -∗
-    (is_rblock γ k' l addr -∗
-       WPC e @ LVL k; ⊤; E2 {{ Φ }}
-                            {{ ∀ σ, rblock_cinv addr σ ∗ P σ -∗ Φc }}) -∗
-    WPC e @ LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
-  Proof.
-    iIntros (?) "Hpre HP Hwp".
-    iNamed "Hpre".
-
-    (* actually initialize the lock *)
-    iApply (alloc_crash_lock N N _ k' _ _ _ _ _ _
-                             (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)%I
-                             (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)%I
-            with "[- $Hfree_lock]").
-    { lia. }
-    iSplitR.
-    { iIntros "!>"; iNamed 1.
-      iExists _; iFrame.
-      iApply rblock_linv_to_cinv; iFrame. }
-    iSplitL "Hlinv HP".
-    { eauto with iFrame. }
-    iIntros "His_crash_lock".
-    iSpecialize ("Hwp" with "[Hro_state His_crash_lock]").
-    { iExists _, _; iFrame. }
-    iApply (wpc_mono' with "[] [] Hwp"); auto.
-    iIntros "HΦ Hcrash".
-    iNamed "Hcrash".
-    iApply "HΦ"; iFrame.
   Qed.
 
   (* this is an example of a small helper function which needs only a WP spec
